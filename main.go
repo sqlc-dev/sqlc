@@ -1,4 +1,4 @@
-package main
+package strongdb
 
 import (
 	"context"
@@ -51,10 +51,10 @@ WHERE id = $1
   AND account_id = $2
 `
 
-func (t *EndpointConfigTable) Filter(ctx context.Context, req *FilterReq) (*[]EndpointConfig, error) {
+func (t *EndpointConfigTable) Filter(ctx context.Context, req *FilterReq) ([]*EndpointConfig, error) {
 	var ec EndpointConfig
-	row := t.db.QueryRowContext(ctx, fetchQuery, req.ID, req.AccountID)
-	return &ec, row.Scan(&ec.ID, &ec.AccountID, &ec.Settings)
+	row := t.db.QueryRowContext(ctx, fetchQuery, req.ID, req.Acct)
+	return []*EndpointConfig{&ec}, row.Scan(&ec.ID, &ec.AccountID, &ec.Settings)
 }
 
 func main() {
