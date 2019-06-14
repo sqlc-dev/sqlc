@@ -1,0 +1,1 @@
+ALTER TABLE account ADD COLUMN billed_yearly BOOL DEFAULT FALSE;

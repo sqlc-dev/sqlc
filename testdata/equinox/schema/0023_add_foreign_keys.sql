@@ -1,0 +1,9 @@
+ALTER TABLE assets ADD CONSTRAINT assets_releasesid_fkey FOREIGN KEY (releasesid) REFERENCES releases(sid);
+ALTER TABLE publishings ADD CONSTRAINT publishings_channelsid_fkey FOREIGN KEY (channelsid) REFERENCES channels(sid);
+ALTER TABLE publishings ADD CONSTRAINT publishings_releasesid_fkey FOREIGN KEY (releasesid) REFERENCES releases(sid);
+ALTER TABLE releases ADD CONSTRAINT releases_appsid_fkey FOREIGN KEY (appsid) REFERENCES applications(sid);
+ALTER TABLE tasks ADD CONSTRAINT tasks_rawassetsid_fkey FOREIGN KEY (rawassetsid) REFERENCES assets(sid);
+ALTER TABLE tasks ADD CONSTRAINT tasks_buildsid_fkey FOREIGN KEY (buildsid) REFERENCES builds(sid);
+ALTER TABLE channels ADD CONSTRAINT channels_appsid_fkey FOREIGN KEY (appsid) REFERENCES applications(sid);
+ALTER TABLE builds ADD CONSTRAINT builds_releasesid_fkey FOREIGN KEY (releasesid) REFERENCES releases(sid);
+ALTER TABLE builds ADD CONSTRAINT builds_channelsid_fkey FOREIGN KEY (channelsid) REFERENCES channels(sid);

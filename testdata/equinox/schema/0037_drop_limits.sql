@@ -1,0 +1,9 @@
+ALTER TABLE account_limits
+DROP COLUMN max_channels,
+DROP COLUMN max_releases,
+DROP COLUMN allow_build_msi,
+DROP COLUMN allow_build_pkg,
+DROP COLUMN allow_build_rpm,
+DROP COLUMN allow_build_deb,
+DROP COLUMN allow_homebrew,
+DROP COLUMN allow_download_page_controls;

@@ -1,0 +1,1 @@
+ALTER TABLE applications ADD COLUMN build_pkg BOOL DEFAULT FALSE;
