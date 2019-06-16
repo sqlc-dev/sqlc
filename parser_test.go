@@ -11,7 +11,7 @@ func TestParseSchema(t *testing.T) {
 		t.Error(err)
 	}
 
-	q, err := ParseQueries(filepath.Join("testdata", "ondeck", "query"))
+	q, err := ParseQueries(s, filepath.Join("testdata", "ondeck", "query"))
 	if err != nil {
 		t.Error(err)
 	}

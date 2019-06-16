@@ -11,6 +11,7 @@ import (
 	"text/template"
 
 	"github.com/davecgh/go-spew/spew"
+	sq "github.com/elgris/sqrl"
 	"github.com/kyleconroy/strongdb/postgres"
 	pg "github.com/lfittl/pg_query_go"
 	nodes "github.com/lfittl/pg_query_go/nodes"
@@ -90,12 +91,11 @@ func isNotNull(n nodes.ColumnDef) bool {
 	return false
 }
 
-func ParseQueries(dir string) (*postgres.Schema, error) {
+func ParseQueries(s *postgres.Schema, dir string) (*postgres.Schema, error) {
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
 		return nil, err
 	}
-	s := postgres.Schema{}
 	for _, f := range files {
 		blob, err := ioutil.ReadFile(filepath.Join(dir, f.Name()))
 		if err != nil {
@@ -105,9 +105,9 @@ func ParseQueries(dir string) (*postgres.Schema, error) {
 		if err != nil {
 			return nil, err
 		}
-		parseFuncs(&s, tree)
+		parseFuncs(s, tree)
 	}
-	return &s, nil
+	return s, nil
 }
 
 func parseFuncs(s *postgres.Schema, tree pg.ParsetreeList) {
@@ -119,13 +119,32 @@ func parseFuncs(s *postgres.Schema, tree pg.ParsetreeList) {
 		switch n := raw.Stmt.(type) {
 		case nodes.SelectStmt:
 			t := tableName(n)
-			spew.Dump(t)
+			c := columnNames(s, t)
+			q := sq.Select(c...).From(t)
+
+			// Where
+
+			// Order
+			query, _, _ := q.ToSql()
 			spew.Dump(n)
-			// log.Printf("%T\n", n)
+			log.Printf("%s\n", query)
 		default:
 			log.Printf("%T\n", n)
 		}
 	}
+}
+
+func columnNames(s *postgres.Schema, table string) []string {
+	cols := []string{}
+	for _, t := range s.Tables {
+		if t.Name != table {
+			continue
+		}
+		for _, c := range t.Columns {
+			cols = append(cols, c.Name)
+		}
+	}
+	return cols
 }
 
 func tableName(n nodes.SelectStmt) string {
