@@ -6,19 +6,17 @@ import (
 )
 
 func TestParseSchema(t *testing.T) {
-	s, err := ParseSchmea(filepath.Join("testdata", "equinox", "schema"))
+	s, err := ParseSchmea(filepath.Join("testdata", "ondeck", "schema"))
 	if err != nil {
 		t.Error(err)
 	}
 
-	q, err := ParseQueries(filepath.Join("testdata", "equinox", "queries"))
+	q, err := ParseQueries(filepath.Join("testdata", "ondeck", "query"))
 	if err != nil {
 		t.Error(err)
 	}
 	t.Logf("%#v", q)
 
-	if false {
-		source := generate(s)
-		t.Logf(source)
-	}
+	source := generate(s)
+	t.Logf(source)
 }

@@ -5,11 +5,14 @@ type Schema struct {
 }
 
 type Table struct {
+	GoName  string
 	Name    string
 	Columns []Column
 }
 
 type Column struct {
-	Name string
-	Type string
+	GoName  string
+	Name    string
+	Type    string
+	NotNull bool
 }

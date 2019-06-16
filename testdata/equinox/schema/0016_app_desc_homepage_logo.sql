@@ -1,3 +1,0 @@
-ALTER TABLE applications ADD COLUMN about TEXT DEFAULT '';
-ALTER TABLE applications ADD COLUMN homepage VARCHAR(255) DEFAULT '';
-ALTER TABLE applications ADD COLUMN logo_url VARCHAR(255) DEFAULT '';

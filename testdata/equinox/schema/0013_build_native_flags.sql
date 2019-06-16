@@ -1,3 +1,0 @@
-ALTER TABLE applications ADD COLUMN build_msi BOOL DEFAULT FALSE;
-ALTER TABLE applications ADD COLUMN build_rpm BOOL DEFAULT TRUE;
-ALTER TABLE applications ADD COLUMN build_deb BOOL DEFAULT TRUE;

@@ -1,1 +1,0 @@
-ALTER TABLE releases ALTER COLUMN max_assets SET DEFAULT 100;

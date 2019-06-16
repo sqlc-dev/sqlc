@@ -1,2 +1,0 @@
-ALTER TABLE applications ADD COLUMN windows_uuid_386 VARCHAR(64) NOT NULL DEFAULT '';
-ALTER TABLE applications ADD COLUMN windows_uuid_amd64 VARCHAR(64) NOT NULL DEFAULT '';

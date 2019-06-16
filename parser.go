@@ -3,6 +3,7 @@ package strongdb
 import (
 	"bufio"
 	"bytes"
+	"go/format"
 	"io/ioutil"
 	"log"
 	"path/filepath"
@@ -16,6 +17,11 @@ import (
 )
 
 func ParseSchmea(dir string) (*postgres.Schema, error) {
+	// Keep the import around
+	if false {
+		spew.Dump(dir)
+	}
+
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
 		return nil, err
@@ -44,13 +50,18 @@ func parse(s *postgres.Schema, tree pg.ParsetreeList) {
 		switch n := raw.Stmt.(type) {
 		case nodes.CreateStmt:
 			table := postgres.Table{
-				Name: *n.Relation.Relname,
+				Name:   *n.Relation.Relname,
+				GoName: structName(*n.Relation.Relname),
 			}
 			for _, elt := range n.TableElts.Items {
 				switch n := elt.(type) {
 				case nodes.ColumnDef:
+					// spew.Dump(n)
+					// log.Printf("not null: %t", n.IsNotNull)
 					table.Columns = append(table.Columns, postgres.Column{
-						Name: *n.Colname,
+						Name:    *n.Colname,
+						GoName:  structName(*n.Colname),
+						NotNull: isNotNull(n),
 					})
 				}
 			}
@@ -59,6 +70,24 @@ func parse(s *postgres.Schema, tree pg.ParsetreeList) {
 			// spew.Dump(n)
 		}
 	}
+}
+
+func isNotNull(n nodes.ColumnDef) bool {
+	if n.IsNotNull {
+		return true
+	}
+	for _, c := range n.Constraints.Items {
+		switch n := c.(type) {
+		case nodes.Constraint:
+			if n.Contype == nodes.CONSTR_NOTNULL {
+				return true
+			}
+			if n.Contype == nodes.CONSTR_PRIMARY {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func ParseQueries(dir string) (*postgres.Schema, error) {
@@ -111,8 +140,8 @@ func tableName(n nodes.SelectStmt) string {
 
 var hh = `package equinox
 {{range .Tables}}
-type {{.Name | struct}} struct { {{- range .Columns}}
-    {{.Name | struct}} string
+type {{.GoName}} struct { {{- range .Columns}}
+  {{.GoName}} {{if .NotNull }}string{{else}}sql.NullString{{end}}
   {{- end}}
 }
 {{end}}
@@ -124,20 +153,26 @@ func structName(name string) string {
 	}
 	out := ""
 	for _, p := range strings.Split(name, "_") {
-		out += strings.Title(p)
+		if p == "id" {
+			out += "ID"
+		} else {
+			out += strings.Title(p)
+		}
 	}
 	return out
 }
 
 func generate(s *postgres.Schema) string {
-	funcMap := template.FuncMap{
-		"struct": structName,
-	}
+	funcMap := template.FuncMap{}
 
 	fileTmpl := template.Must(template.New("table").Funcs(funcMap).Parse(hh))
 	var b bytes.Buffer
 	w := bufio.NewWriter(&b)
 	fileTmpl.Execute(w, s)
 	w.Flush()
-	return b.String()
+	code, err := format.Source(b.Bytes())
+	if err != nil {
+		panic(err)
+	}
+	return string(code)
 }
