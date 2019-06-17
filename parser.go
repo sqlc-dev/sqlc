@@ -173,8 +173,6 @@ func parseFuncs(s *postgres.Schema, r *Result, tree pg.ParsetreeList) {
 			q = orderBy(q, n)
 			query, _, _ := q.ToSql()
 
-			fmt.Println(args)
-
 			tab := getTable(s, t)
 			r.Queries[i].Table = tab
 			r.Queries[i].Args = parseArgs(tab, args)
@@ -398,7 +396,6 @@ func generate(r *Result) string {
 		Schema:  r.Schema,
 	})
 	w.Flush()
-	fmt.Println(b.String())
 	code, err := format.Source(b.Bytes())
 	if err != nil {
 		panic(fmt.Errorf("source error: %s", err))

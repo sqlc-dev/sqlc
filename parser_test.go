@@ -1,6 +1,8 @@
 package strongdb
 
 import (
+	"io/ioutil"
+	"log"
 	"path/filepath"
 	"testing"
 )
@@ -15,8 +17,15 @@ func TestParseSchema(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	t.Logf("%#v", q)
 
 	source := generate(q)
-	t.Logf(source)
+
+	blob, err := ioutil.ReadFile(filepath.Join("testdata", "ondeck", "db.go"))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if source != string(blob) {
+		t.Errorf("output differs")
+	}
 }
