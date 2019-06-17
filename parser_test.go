@@ -17,6 +17,6 @@ func TestParseSchema(t *testing.T) {
 	}
 	t.Logf("%#v", q)
 
-	source := generate(s)
+	source := generate(q)
 	t.Logf(source)
 }

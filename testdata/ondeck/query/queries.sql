@@ -1,17 +1,14 @@
--- name: ListCities
--- result: many
+-- name: ListCities :many
 SELECT *
 FROM city
 ORDER BY name;
 
--- name: GetCity
--- result: one
+-- name: GetCity :one
 SELECT *
 FROM city
 WHERE slug = $1;
 
--- name: ListVenues
--- result: many
+-- name: ListVenues :many
 SELECT *
 FROM venue
 WHERE city = $1

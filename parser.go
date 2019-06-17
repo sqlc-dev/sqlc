@@ -3,12 +3,14 @@ package strongdb
 import (
 	"bufio"
 	"bytes"
+	"fmt"
 	"go/format"
 	"io/ioutil"
 	"log"
 	"path/filepath"
 	"strings"
 	"text/template"
+	"unicode"
 
 	"github.com/davecgh/go-spew/spew"
 	sq "github.com/elgris/sqrl"
@@ -91,7 +93,31 @@ func isNotNull(n nodes.ColumnDef) bool {
 	return false
 }
 
-func ParseQueries(s *postgres.Schema, dir string) (*postgres.Schema, error) {
+type Query struct {
+	Type       string
+	MethodName string
+	StmtName   string
+	QueryName  string
+	SQL        string
+	Args       []Arg
+	Table      postgres.Table
+}
+
+type Result struct {
+	Schema  *postgres.Schema
+	Queries []Query
+}
+
+func getTable(s *postgres.Schema, name string) postgres.Table {
+	for _, t := range s.Tables {
+		if t.Name == name {
+			return t
+		}
+	}
+	return postgres.Table{}
+}
+
+func ParseQueries(s *postgres.Schema, dir string) (*Result, error) {
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
 		return nil, err
@@ -101,17 +127,36 @@ func ParseQueries(s *postgres.Schema, dir string) (*postgres.Schema, error) {
 		if err != nil {
 			return nil, err
 		}
+		r := Result{Schema: s, Queries: parseQueries(blob)}
 		tree, err := pg.Parse(string(blob))
 		if err != nil {
 			return nil, err
 		}
-		parseFuncs(s, tree)
+		parseFuncs(s, &r, tree)
+		return &r, nil
 	}
-	return s, nil
+	return nil, nil
 }
 
-func parseFuncs(s *postgres.Schema, tree pg.ParsetreeList) {
-	for _, stmt := range tree.Statements {
+func parseQueries(t []byte) []Query {
+	q := []Query{}
+	for _, line := range strings.Split(string(t), "\n") {
+		if !strings.HasPrefix(line, "-- name:") {
+			continue
+		}
+		part := strings.Split(line, " ")
+		q = append(q, Query{
+			MethodName: part[2],
+			Type:       strings.TrimSpace(part[3]),
+			StmtName:   lowerTitle(part[2]),
+			QueryName:  lowerTitle(part[2]),
+		})
+	}
+	return q
+}
+
+func parseFuncs(s *postgres.Schema, r *Result, tree pg.ParsetreeList) {
+	for i, stmt := range tree.Statements {
 		raw, ok := stmt.(nodes.RawStmt)
 		if !ok {
 			continue
@@ -119,19 +164,79 @@ func parseFuncs(s *postgres.Schema, tree pg.ParsetreeList) {
 		switch n := raw.Stmt.(type) {
 		case nodes.SelectStmt:
 			t := tableName(n)
+
 			c := columnNames(s, t)
-			q := sq.Select(c...).From(t)
-
-			// Where
-
-			// Order
+			args := []string{}
+			psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+			q := psql.Select(c...).From(t)
+			q, args = where(q, n, args)
+			q = orderBy(q, n)
 			query, _, _ := q.ToSql()
-			spew.Dump(n)
-			log.Printf("%s\n", query)
+
+			fmt.Println(args)
+
+			tab := getTable(s, t)
+			r.Queries[i].Table = tab
+			r.Queries[i].Args = parseArgs(tab, args)
+			r.Queries[i].SQL = query
 		default:
 			log.Printf("%T\n", n)
 		}
 	}
+}
+
+func where(q *sq.SelectBuilder, n nodes.SelectStmt, args []string) (*sq.SelectBuilder, []string) {
+	// Only equality supported
+	eq := sq.Eq{}
+	switch a := n.WhereClause.(type) {
+	case nodes.A_Expr:
+		switch n := a.Lexpr.(type) {
+		case nodes.ColumnRef:
+			key := ""
+			for _, n := range n.Fields.Items {
+				switch n := n.(type) {
+				case nodes.String:
+					key += n.Str
+				}
+			}
+			args = append(args, key)
+			eq[key] = "?"
+		}
+		// switch n := a.Lexpr.(type) {
+		// case nodes.ParamRef:
+		// }
+	}
+	return q.Where(eq), args
+}
+
+func orderBy(q *sq.SelectBuilder, n nodes.SelectStmt) *sq.SelectBuilder {
+	for _, n := range n.SortClause.Items {
+		switch n := n.(type) {
+		case nodes.SortBy:
+			switch n := n.Node.(type) {
+			case nodes.ColumnRef:
+				for _, n := range n.Fields.Items {
+					switch n := n.(type) {
+					case nodes.String:
+						q = q.OrderBy(n.Str)
+					}
+				}
+			}
+		}
+	}
+	return q
+}
+
+func parseArgs(t postgres.Table, args []string) []Arg {
+	a := []Arg{}
+	for _, arg := range args {
+		for _, c := range t.Columns {
+			if c.Name == arg {
+				a = append(a, Arg{Name: c.Name, Type: "string"})
+			}
+		}
+	}
+	return a
 }
 
 func columnNames(s *postgres.Schema, table string) []string {
@@ -157,12 +262,91 @@ func tableName(n nodes.SelectStmt) string {
 	return ""
 }
 
-var hh = `package equinox
-{{range .Tables}}
+var hh = `package {{.Package}}
+import (
+	"context"
+	"database/sql"
+)
+
+{{range .Schema.Tables}}
 type {{.GoName}} struct { {{- range .Columns}}
   {{.GoName}} {{if .NotNull }}string{{else}}sql.NullString{{end}}
   {{- end}}
 }
+{{end}}
+
+type dbtx interface {
+	ExecContext(context.Context, string, ...interface{}) (sql.Result, error)
+	PrepareContext(context.Context, string) (*sql.Stmt, error)
+	QueryContext(context.Context, string, ...interface{}) (*sql.Rows, error)
+	QueryRowContext(context.Context, string, ...interface{}) *sql.Row
+}
+
+type Queries struct {
+	db dbtx
+
+	tx         *sql.Tx
+	{{- range .Queries}}
+	{{.StmtName}}  *sql.Stmt
+	{{- end}}
+}
+
+{{range .Queries}}
+const {{.QueryName}} = {{$.Q}}
+{{.SQL}}
+{{$.Q}}
+
+{{if eq .Type ":one"}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{range .Args}}{{.Name}} {{.Type}},{{end}}) ({{.Table.GoName}}, error) {
+	var row *sql.Row
+	switch {
+	case q.{{.StmtName}} != nil && q.tx != nil:
+		row = q.tx.StmtContext(ctx, q.{{.StmtName}}).QueryRowContext(ctx, {{range .Args}}{{.Name}},{{end}})
+	case q.{{.StmtName}} != nil:
+		row = q.{{.StmtName}}.QueryRowContext(ctx, {{range .Args}}{{.Name}},{{end}})
+	default:
+		row = q.db.QueryRowContext(ctx, {{.QueryName}}, {{range .Args}}{{.Name}},{{end}})
+	}
+	i := {{.Table.GoName}}{}
+	err := row.Scan({{range .Table.Columns}}&i.{{.GoName}},{{end}})
+	return c, err
+}
+{{end}}
+
+{{if eq .Type ":many"}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{range .Args}}{{.Name}} {{.Type}},{{end}}) ([]{{.Table.GoName}}, error) {
+	var rows *sql.Rows
+	var err error
+	switch {
+	case q.{{.StmtName}} != nil && q.tx != nil:
+		rows, err = q.tx.StmtContext(ctx, q.{{.StmtName}}).QueryContext(ctx, {{range .Args}}{{.Name}},{{end}})
+	case q.{{.StmtName}} != nil:
+		rows, err = q.{{.StmtName}}.QueryContext(ctx, {{range .Args}}{{.Name}},{{end}})
+	default:
+		rows, err = q.db.QueryContext(ctx, {{.QueryName}}, {{range .Args}}{{.Name}},{{end}})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []{{.Table.GoName}}{}
+	for rows.Next() {
+		i := {{.Table.GoName}}{}
+		if err := row.Scan({{range .Table.Columns}}&i.{{.GoName}},{{end}}); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+{{end}}
+
 {{end}}
 `
 
@@ -181,17 +365,43 @@ func structName(name string) string {
 	return out
 }
 
-func generate(s *postgres.Schema) string {
-	funcMap := template.FuncMap{}
+type Arg struct {
+	Name string
+	Type string
+}
+
+type tmplCtx struct {
+	Q       string
+	Package string
+	Queries []Query
+	Schema  *postgres.Schema
+}
+
+func lowerTitle(s string) string {
+	a := []rune(s)
+	a[0] = unicode.ToLower(a[0])
+	return string(a)
+}
+
+func generate(r *Result) string {
+	funcMap := template.FuncMap{
+		"lowerTitle": lowerTitle,
+	}
 
 	fileTmpl := template.Must(template.New("table").Funcs(funcMap).Parse(hh))
 	var b bytes.Buffer
 	w := bufio.NewWriter(&b)
-	fileTmpl.Execute(w, s)
+	fileTmpl.Execute(w, tmplCtx{
+		Q:       "`",
+		Queries: r.Queries,
+		Package: "ondeck",
+		Schema:  r.Schema,
+	})
 	w.Flush()
+	fmt.Println(b.String())
 	code, err := format.Source(b.Bytes())
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("source error: %s", err))
 	}
 	return string(code)
 }
