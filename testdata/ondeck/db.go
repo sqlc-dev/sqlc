@@ -25,17 +25,65 @@ type dbtx interface {
 	QueryRowContext(context.Context, string, ...interface{}) *sql.Row
 }
 
+func New(db dbtx) *Queries {
+	return &Queries{db: db}
+}
+
+func Prepare(ctx context.Context, db dbtx) (*Queries, error) {
+	q := Queries{db: db}
+	var err error
+	if q.getCity, err = db.PrepareContext(ctx, getCity); err != nil {
+		return nil, err
+	}
+	if q.listCities, err = db.PrepareContext(ctx, listCities); err != nil {
+		return nil, err
+	}
+	if q.listVenues, err = db.PrepareContext(ctx, listVenues); err != nil {
+		return nil, err
+	}
+	return &q, nil
+}
+
 type Queries struct {
 	db dbtx
 
 	tx         *sql.Tx
-	listCities *sql.Stmt
 	getCity    *sql.Stmt
+	listCities *sql.Stmt
 	listVenues *sql.Stmt
 }
 
+func (q *Queries) WithTx(tx *sql.Tx) *Queries {
+	return &Queries{
+		tx:         tx,
+		db:         tx,
+		getCity:    q.getCity,
+		listCities: q.listCities,
+		listVenues: q.listVenues,
+	}
+}
+
+const getCity = `
+SELECT slug, name FROM city WHERE slug = $1
+`
+
+func (q *Queries) GetCity(ctx context.Context, slug string) (City, error) {
+	var row *sql.Row
+	switch {
+	case q.getCity != nil && q.tx != nil:
+		row = q.tx.StmtContext(ctx, q.getCity).QueryRowContext(ctx, slug)
+	case q.getCity != nil:
+		row = q.getCity.QueryRowContext(ctx, slug)
+	default:
+		row = q.db.QueryRowContext(ctx, getCity, slug)
+	}
+	i := City{}
+	err := row.Scan(&i.Slug, &i.Name)
+	return i, err
+}
+
 const listCities = `
-SELECT slug, name FROM city WHERE  ORDER BY name
+SELECT slug, name FROM city ORDER BY name
 `
 
 func (q *Queries) ListCities(ctx context.Context) ([]City, error) {
@@ -68,25 +116,6 @@ func (q *Queries) ListCities(ctx context.Context) ([]City, error) {
 		return nil, err
 	}
 	return items, nil
-}
-
-const getCity = `
-SELECT slug, name FROM city WHERE slug = $1
-`
-
-func (q *Queries) GetCity(ctx context.Context, slug string) (City, error) {
-	var row *sql.Row
-	switch {
-	case q.getCity != nil && q.tx != nil:
-		row = q.tx.StmtContext(ctx, q.getCity).QueryRowContext(ctx, slug)
-	case q.getCity != nil:
-		row = q.getCity.QueryRowContext(ctx, slug)
-	default:
-		row = q.db.QueryRowContext(ctx, getCity, slug)
-	}
-	i := City{}
-	err := row.Scan(&i.Slug, &i.Name)
-	return i, err
 }
 
 const listVenues = `

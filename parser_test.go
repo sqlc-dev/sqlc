@@ -1,6 +1,7 @@
 package strongdb
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"path/filepath"
@@ -27,5 +28,6 @@ func TestParseSchema(t *testing.T) {
 
 	if source != string(blob) {
 		t.Errorf("output differs")
+		fmt.Println(source)
 	}
 }

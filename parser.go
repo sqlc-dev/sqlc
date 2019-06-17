@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"path/filepath"
+	"sort"
 	"strings"
 	"text/template"
 	"unicode"
@@ -186,6 +187,7 @@ func parseFuncs(s *postgres.Schema, r *Result, tree pg.ParsetreeList) {
 func where(q *sq.SelectBuilder, n nodes.SelectStmt, args []string) (*sq.SelectBuilder, []string) {
 	// Only equality supported
 	eq := sq.Eq{}
+	found := false
 	switch a := n.WhereClause.(type) {
 	case nodes.A_Expr:
 		switch n := a.Lexpr.(type) {
@@ -197,12 +199,16 @@ func where(q *sq.SelectBuilder, n nodes.SelectStmt, args []string) (*sq.SelectBu
 					key += n.Str
 				}
 			}
+			found = true
 			args = append(args, key)
 			eq[key] = "?"
 		}
 		// switch n := a.Lexpr.(type) {
 		// case nodes.ParamRef:
 		// }
+	}
+	if !found {
+		return q, args
 	}
 	return q.Where(eq), args
 }
@@ -280,6 +286,20 @@ type dbtx interface {
 	QueryRowContext(context.Context, string, ...interface{}) *sql.Row
 }
 
+func New(db dbtx) *Queries {
+	return &Queries{db: db}
+}
+
+func Prepare(ctx context.Context, db dbtx) (*Queries, error) {
+	q := Queries{db: db}
+	var err error{{range .Queries}}
+	if q.{{.StmtName}}, err = db.PrepareContext(ctx, {{.QueryName}}); err != nil {
+		return nil, err
+	}
+	{{- end}}
+	return &q, nil
+}
+
 type Queries struct {
 	db dbtx
 
@@ -287,6 +307,16 @@ type Queries struct {
 	{{- range .Queries}}
 	{{.StmtName}}  *sql.Stmt
 	{{- end}}
+}
+
+func (q *Queries) WithTx(tx *sql.Tx) *Queries {
+	return &Queries{
+		tx: tx,
+		db: tx,
+		{{- range .Queries}}
+		{{.StmtName}}: q.{{.StmtName}},
+		{{- end}}
+	}
 }
 
 {{range .Queries}}
@@ -382,6 +412,8 @@ func lowerTitle(s string) string {
 }
 
 func generate(r *Result, pkg string) string {
+	sort.Slice(r.Queries, func(i, j int) bool { return r.Queries[i].MethodName < r.Queries[j].MethodName })
+
 	funcMap := template.FuncMap{
 		"lowerTitle": lowerTitle,
 	}
