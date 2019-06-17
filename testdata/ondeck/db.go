@@ -56,7 +56,7 @@ func (q *Queries) ListCities(ctx context.Context) ([]City, error) {
 	items := []City{}
 	for rows.Next() {
 		i := City{}
-		if err := row.Scan(&i.Slug, &i.Name); err != nil {
+		if err := rows.Scan(&i.Slug, &i.Name); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -86,7 +86,7 @@ func (q *Queries) GetCity(ctx context.Context, slug string) (City, error) {
 	}
 	i := City{}
 	err := row.Scan(&i.Slug, &i.Name)
-	return c, err
+	return i, err
 }
 
 const listVenues = `
@@ -111,7 +111,7 @@ func (q *Queries) ListVenues(ctx context.Context, city string) ([]Venue, error) 
 	items := []Venue{}
 	for rows.Next() {
 		i := Venue{}
-		if err := row.Scan(&i.Slug, &i.Name, &i.City, &i.SpotifyPlaylist, &i.SongkickID); err != nil {
+		if err := rows.Scan(&i.Slug, &i.Name, &i.City, &i.SpotifyPlaylist, &i.SongkickID); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

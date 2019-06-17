@@ -307,7 +307,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{range .Args}}{{.Name}} 
 	}
 	i := {{.Table.GoName}}{}
 	err := row.Scan({{range .Table.Columns}}&i.{{.GoName}},{{end}})
-	return c, err
+	return i, err
 }
 {{end}}
 
@@ -330,7 +330,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{range .Args}}{{.Name}} 
 	items := []{{.Table.GoName}}{}
 	for rows.Next() {
 		i := {{.Table.GoName}}{}
-		if err := row.Scan({{range .Table.Columns}}&i.{{.GoName}},{{end}}); err != nil {
+		if err := rows.Scan({{range .Table.Columns}}&i.{{.GoName}},{{end}}); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
