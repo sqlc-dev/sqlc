@@ -381,7 +381,7 @@ func lowerTitle(s string) string {
 	return string(a)
 }
 
-func generate(r *Result) string {
+func generate(r *Result, pkg string) string {
 	funcMap := template.FuncMap{
 		"lowerTitle": lowerTitle,
 	}
@@ -392,7 +392,7 @@ func generate(r *Result) string {
 	fileTmpl.Execute(w, tmplCtx{
 		Q:       "`",
 		Queries: r.Queries,
-		Package: "ondeck",
+		Package: pkg,
 		Schema:  r.Schema,
 	})
 	w.Flush()

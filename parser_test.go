@@ -18,7 +18,7 @@ func TestParseSchema(t *testing.T) {
 		t.Error(err)
 	}
 
-	source := generate(q)
+	source := generate(q, "ondeck")
 
 	blob, err := ioutil.ReadFile(filepath.Join("testdata", "ondeck", "db.go"))
 	if err != nil {
