@@ -63,8 +63,10 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	}
 }
 
-const getCity = `
-SELECT slug, name FROM city WHERE slug = $1
+const getCity = `-- name: GetCity :one
+SELECT slug, name
+FROM city
+WHERE slug = $1
 `
 
 func (q *Queries) GetCity(ctx context.Context, slug string) (City, error) {
@@ -82,8 +84,10 @@ func (q *Queries) GetCity(ctx context.Context, slug string) (City, error) {
 	return i, err
 }
 
-const listCities = `
-SELECT slug, name FROM city ORDER BY name
+const listCities = `-- name: ListCities :many
+SELECT slug, name
+FROM city
+ORDER BY name
 `
 
 func (q *Queries) ListCities(ctx context.Context) ([]City, error) {
@@ -118,8 +122,11 @@ func (q *Queries) ListCities(ctx context.Context) ([]City, error) {
 	return items, nil
 }
 
-const listVenues = `
-SELECT slug, name, city, spotify_playlist, songkick_id FROM venue WHERE city = $1 ORDER BY name
+const listVenues = `-- name: ListVenues :many
+SELECT slug, name, city, spotify_playlist, songkick_id
+FROM venue
+WHERE city = $1
+ORDER BY name
 `
 
 func (q *Queries) ListVenues(ctx context.Context, city string) ([]Venue, error) {

@@ -14,7 +14,6 @@ import (
 	"unicode"
 
 	"github.com/davecgh/go-spew/spew"
-	sq "github.com/elgris/sqrl"
 	"github.com/kyleconroy/strongdb/postgres"
 	pg "github.com/lfittl/pg_query_go"
 	nodes "github.com/lfittl/pg_query_go/nodes"
@@ -133,7 +132,7 @@ func ParseQueries(s *postgres.Schema, dir string) (*Result, error) {
 		if err != nil {
 			return nil, err
 		}
-		parseFuncs(s, &r, tree)
+		parseFuncs(s, &r, string(blob), tree)
 		return &r, nil
 	}
 	return nil, nil
@@ -156,88 +155,106 @@ func parseQueries(t []byte) []Query {
 	return q
 }
 
-func parseFuncs(s *postgres.Schema, r *Result, tree pg.ParsetreeList) {
+func pluckQuery(source string, n nodes.RawStmt) (string, error) {
+	// TODO: Bounds checking
+	head := n.StmtLocation
+	tail := n.StmtLocation + n.StmtLen
+	return strings.TrimSpace(source[head:tail]), nil
+}
+
+func parseFuncs(s *postgres.Schema, r *Result, source string, tree pg.ParsetreeList) {
 	for i, stmt := range tree.Statements {
 		raw, ok := stmt.(nodes.RawStmt)
 		if !ok {
 			continue
 		}
+
 		switch n := raw.Stmt.(type) {
 		case nodes.SelectStmt:
 			t := tableName(n)
-
 			c := columnNames(s, t)
-			args := []string{}
-			psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-			q := psql.Select(c...).From(t)
-			q, args = where(q, n, args)
-			q = orderBy(q, n)
-			query, _, _ := q.ToSql()
+
+			rawSQL, _ := pluckQuery(source, raw)
+			refs := extractArgs(n)
 
 			tab := getTable(s, t)
 			r.Queries[i].Table = tab
-			r.Queries[i].Args = parseArgs(tab, args)
-			r.Queries[i].SQL = query
+			r.Queries[i].Args = parseArgs(tab, refs)
+			r.Queries[i].SQL = strings.Replace(rawSQL, "*", strings.Join(c, ", "), 1)
 		default:
 			log.Printf("%T\n", n)
 		}
 	}
 }
 
-func where(q *sq.SelectBuilder, n nodes.SelectStmt, args []string) (*sq.SelectBuilder, []string) {
-	// Only equality supported
-	eq := sq.Eq{}
-	found := false
-	switch a := n.WhereClause.(type) {
-	case nodes.A_Expr:
-		switch n := a.Lexpr.(type) {
-		case nodes.ColumnRef:
-			key := ""
-			for _, n := range n.Fields.Items {
-				switch n := n.(type) {
-				case nodes.String:
-					key += n.Str
-				}
-			}
-			found = true
-			args = append(args, key)
-			eq[key] = "?"
-		}
-		// switch n := a.Lexpr.(type) {
-		// case nodes.ParamRef:
-		// }
-	}
-	if !found {
-		return q, args
-	}
-	return q.Where(eq), args
+func extractArgs(n nodes.Node) []paramRef {
+	refs := findRefs([]paramRef{}, n, nil)
+	sort.Slice(refs, func(i, j int) bool { return refs[i].ref.Number < refs[j].ref.Number })
+	return refs
 }
 
-func orderBy(q *sq.SelectBuilder, n nodes.SelectStmt) *sq.SelectBuilder {
-	for _, n := range n.SortClause.Items {
-		switch n := n.(type) {
-		case nodes.SortBy:
-			switch n := n.Node.(type) {
+type paramRef struct {
+	parent nodes.Node
+	ref    nodes.ParamRef
+}
+
+func findRefs(r []paramRef, parent, n nodes.Node) []paramRef {
+	if n == nil {
+		n = parent
+	}
+	switch n := n.(type) {
+	case nodes.RawStmt:
+		r = findRefs(r, n.Stmt, nil)
+	case nodes.SelectStmt:
+		r = findRefs(r, n.WhereClause, nil)
+		r = findRefs(r, n.LimitCount, nil)
+		r = findRefs(r, n.LimitOffset, nil)
+	case nodes.BoolExpr:
+		for _, item := range n.Args.Items {
+			r = findRefs(r, item, nil)
+		}
+	case nodes.A_Expr:
+		r = findRefs(r, n, n.Lexpr)
+		r = findRefs(r, n, n.Rexpr)
+	case nodes.ParamRef:
+		r = append(r, paramRef{
+			parent: parent,
+			ref:    n,
+		})
+	case nodes.ColumnRef:
+	case nil:
+	default:
+		log.Printf("%T\n", n)
+	}
+	return r
+}
+
+func parseArgs(t postgres.Table, args []paramRef) []Arg {
+	typeMap := map[string]string{}
+	for _, c := range t.Columns {
+		typeMap[c.Name] = "string"
+	}
+	a := []Arg{}
+	for _, ref := range args {
+		switch n := ref.parent.(type) {
+		case nodes.A_Expr:
+			switch n := n.Lexpr.(type) {
 			case nodes.ColumnRef:
+				key := ""
 				for _, n := range n.Fields.Items {
 					switch n := n.(type) {
 					case nodes.String:
-						q = q.OrderBy(n.Str)
+						key += n.Str
 					}
 				}
+				if typ, ok := typeMap[key]; ok {
+					a = append(a, Arg{Name: key, Type: typ})
+				} else {
+					panic("unknown column: " + key)
+				}
 			}
-		}
-	}
-	return q
-}
-
-func parseArgs(t postgres.Table, args []string) []Arg {
-	a := []Arg{}
-	for _, arg := range args {
-		for _, c := range t.Columns {
-			if c.Name == arg {
-				a = append(a, Arg{Name: c.Name, Type: "string"})
-			}
+		default:
+			panic(fmt.Sprintf("unsupported type: %T", n))
 		}
 	}
 	return a
@@ -320,8 +337,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 }
 
 {{range .Queries}}
-const {{.QueryName}} = {{$.Q}}
-{{.SQL}}
+const {{.QueryName}} = {{$.Q}}{{.SQL}}
 {{$.Q}}
 
 {{if eq .Type ":one"}}
