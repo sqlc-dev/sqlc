@@ -56,33 +56,43 @@ func Prepare(ctx context.Context, db dbtx) (*Queries, error) {
 	if q.listVenues, err = db.PrepareContext(ctx, listVenues); err != nil {
 		return nil, err
 	}
+	if q.updateCityName, err = db.PrepareContext(ctx, updateCityName); err != nil {
+		return nil, err
+	}
+	if q.updateVenueName, err = db.PrepareContext(ctx, updateVenueName); err != nil {
+		return nil, err
+	}
 	return &q, nil
 }
 
 type Queries struct {
 	db dbtx
 
-	tx          *sql.Tx
-	createCity  *sql.Stmt
-	createVenue *sql.Stmt
-	deleteVenue *sql.Stmt
-	getCity     *sql.Stmt
-	getVenue    *sql.Stmt
-	listCities  *sql.Stmt
-	listVenues  *sql.Stmt
+	tx              *sql.Tx
+	createCity      *sql.Stmt
+	createVenue     *sql.Stmt
+	deleteVenue     *sql.Stmt
+	getCity         *sql.Stmt
+	getVenue        *sql.Stmt
+	listCities      *sql.Stmt
+	listVenues      *sql.Stmt
+	updateCityName  *sql.Stmt
+	updateVenueName *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
-		tx:          tx,
-		db:          tx,
-		createCity:  q.createCity,
-		createVenue: q.createVenue,
-		deleteVenue: q.deleteVenue,
-		getCity:     q.getCity,
-		getVenue:    q.getVenue,
-		listCities:  q.listCities,
-		listVenues:  q.listVenues,
+		tx:              tx,
+		db:              tx,
+		createCity:      q.createCity,
+		createVenue:     q.createVenue,
+		deleteVenue:     q.deleteVenue,
+		getCity:         q.getCity,
+		getVenue:        q.getVenue,
+		listCities:      q.listCities,
+		listVenues:      q.listVenues,
+		updateCityName:  q.updateCityName,
+		updateVenueName: q.updateVenueName,
 	}
 }
 
@@ -277,4 +287,45 @@ func (q *Queries) ListVenues(ctx context.Context, city string) ([]Venue, error) 
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateCityName = `-- name: UpdateCityName :exec
+UPDATE city
+SET name = $2
+WHERE slug = $1
+`
+
+func (q *Queries) UpdateCityName(ctx context.Context, slug string, name string) error {
+	var err error
+	switch {
+	case q.updateCityName != nil && q.tx != nil:
+		_, err = q.tx.StmtContext(ctx, q.updateCityName).ExecContext(ctx, slug, name)
+	case q.updateCityName != nil:
+		_, err = q.updateCityName.ExecContext(ctx, slug, name)
+	default:
+		_, err = q.db.ExecContext(ctx, updateCityName, slug, name)
+	}
+	return err
+}
+
+const updateVenueName = `-- name: UpdateVenueName :one
+UPDATE venue
+SET name = $2
+WHERE slug = $1
+RETURNING id
+`
+
+func (q *Queries) UpdateVenueName(ctx context.Context, slug string, name string) (int, error) {
+	var row *sql.Row
+	switch {
+	case q.updateVenueName != nil && q.tx != nil:
+		row = q.tx.StmtContext(ctx, q.updateVenueName).QueryRowContext(ctx, slug, name)
+	case q.updateVenueName != nil:
+		row = q.updateVenueName.QueryRowContext(ctx, slug, name)
+	default:
+		row = q.db.QueryRowContext(ctx, updateVenueName, slug, name)
+	}
+	var i int
+	err := row.Scan(&i)
+	return i, err
 }

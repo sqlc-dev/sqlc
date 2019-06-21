@@ -46,3 +46,14 @@ INSERT INTO venue (
     $3,
     $4
 ) RETURNING id;
+
+-- name: UpdateCityName :exec
+UPDATE city
+SET name = $2
+WHERE slug = $1;
+
+-- name: UpdateVenueName :one
+UPDATE venue
+SET name = $2
+WHERE slug = $1
+RETURNING id;

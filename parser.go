@@ -192,6 +192,7 @@ func parseFuncs(s *postgres.Schema, r *Result, source string, tree pg.ParsetreeL
 		case nodes.SelectStmt:
 		case nodes.DeleteStmt:
 		case nodes.InsertStmt:
+		case nodes.UpdateStmt:
 		default:
 			log.Printf("%T\n", n)
 			continue
@@ -250,14 +251,15 @@ func findRefs(r []paramRef, parent, n nodes.Node) []paramRef {
 		n = parent
 	}
 	switch n := n.(type) {
-	case nodes.RawStmt:
-		r = findRefs(r, n.Stmt, nil)
+	case nodes.A_Expr:
+		r = findRefs(r, n, n.Lexpr)
+		r = findRefs(r, n, n.Rexpr)
+	case nodes.ColumnRef:
+	case nodes.BoolExpr:
+		r = findRefs(r, n.Args, nil)
 	case nodes.DeleteStmt:
 		r = findRefs(r, n.WhereClause, nil)
-	case nodes.SelectStmt:
-		r = findRefs(r, n.WhereClause, nil)
-		r = findRefs(r, n.LimitCount, nil)
-		r = findRefs(r, n.LimitOffset, nil)
+	case nodes.FuncCall:
 	case nodes.InsertStmt:
 		switch s := n.SelectStmt.(type) {
 		case nodes.SelectStmt:
@@ -268,20 +270,26 @@ func findRefs(r []paramRef, parent, n nodes.Node) []paramRef {
 				}
 			}
 		}
-	case nodes.BoolExpr:
-		for _, item := range n.Args.Items {
+	case nodes.List:
+		for _, item := range n.Items {
 			r = findRefs(r, item, nil)
 		}
-	case nodes.A_Expr:
-		r = findRefs(r, n, n.Lexpr)
-		r = findRefs(r, n, n.Rexpr)
 	case nodes.ParamRef:
 		r = append(r, paramRef{
 			parent: parent,
 			ref:    n,
 		})
-	case nodes.ColumnRef:
-	case nodes.FuncCall:
+	case nodes.RawStmt:
+		r = findRefs(r, n.Stmt, nil)
+	case nodes.ResTarget:
+		r = findRefs(r, n, n.Val)
+	case nodes.SelectStmt:
+		r = findRefs(r, n.WhereClause, nil)
+		r = findRefs(r, n.LimitCount, nil)
+		r = findRefs(r, n.LimitOffset, nil)
+	case nodes.UpdateStmt:
+		r = findRefs(r, n.TargetList, nil)
+		r = findRefs(r, n.WhereClause, nil)
 	case nil:
 	default:
 		log.Printf("%T\n", n)
@@ -291,22 +299,24 @@ func findRefs(r []paramRef, parent, n nodes.Node) []paramRef {
 
 func findOutputs(r []nodes.ColumnRef, n nodes.Node) []nodes.ColumnRef {
 	switch n := n.(type) {
-	case nodes.RawStmt:
-		r = findOutputs(r, n.Stmt)
+	case nodes.ColumnRef:
+		r = append(r, n)
 	case nodes.DeleteStmt:
 		r = findOutputs(r, n.ReturningList)
-	case nodes.SelectStmt:
-		r = findOutputs(r, n.TargetList)
 	case nodes.InsertStmt:
 		r = findOutputs(r, n.ReturningList)
 	case nodes.List:
 		for _, i := range n.Items {
 			r = findOutputs(r, i)
 		}
+	case nodes.RawStmt:
+		r = findOutputs(r, n.Stmt)
 	case nodes.ResTarget:
 		r = findOutputs(r, n.Val)
-	case nodes.ColumnRef:
-		r = append(r, n)
+	case nodes.SelectStmt:
+		r = findOutputs(r, n.TargetList)
+	case nodes.UpdateStmt:
+		r = findOutputs(r, n.ReturningList)
 	case nil:
 	default:
 		log.Printf("%T\n", n)
@@ -369,6 +379,10 @@ func columnNames(s *postgres.Schema, table string) []string {
 
 func tableName(n nodes.Node) string {
 	switch n := n.(type) {
+	case nodes.DeleteStmt:
+		return *n.Relation.Relname
+	case nodes.InsertStmt:
+		return *n.Relation.Relname
 	case nodes.SelectStmt:
 		for _, item := range n.FromClause.Items {
 			switch i := item.(type) {
@@ -376,9 +390,7 @@ func tableName(n nodes.Node) string {
 				return *i.Relname
 			}
 		}
-	case nodes.DeleteStmt:
-		return *n.Relation.Relname
-	case nodes.InsertStmt:
+	case nodes.UpdateStmt:
 		return *n.Relation.Relname
 	}
 	return ""
