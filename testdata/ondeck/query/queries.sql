@@ -13,3 +13,7 @@ SELECT *
 FROM venue
 WHERE city = $1
 ORDER BY name;
+
+-- name: DeleteVenue :exec
+DELETE FROM venue
+WHERE slug = $1;

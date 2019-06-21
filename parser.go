@@ -181,6 +181,16 @@ func parseFuncs(s *postgres.Schema, r *Result, source string, tree pg.ParsetreeL
 			r.Queries[i].Table = tab
 			r.Queries[i].Args = parseArgs(tab, refs)
 			r.Queries[i].SQL = strings.Replace(rawSQL, "*", strings.Join(c, ", "), 1)
+		case nodes.DeleteStmt:
+			t := tableName(n)
+
+			rawSQL, _ := pluckQuery(source, raw)
+			refs := extractArgs(n)
+
+			tab := getTable(s, t)
+			r.Queries[i].Table = tab
+			r.Queries[i].Args = parseArgs(tab, refs)
+			r.Queries[i].SQL = rawSQL
 		default:
 			log.Printf("%T\n", n)
 		}
@@ -205,6 +215,8 @@ func findRefs(r []paramRef, parent, n nodes.Node) []paramRef {
 	switch n := n.(type) {
 	case nodes.RawStmt:
 		r = findRefs(r, n.Stmt, nil)
+	case nodes.DeleteStmt:
+		r = findRefs(r, n.WhereClause, nil)
 	case nodes.SelectStmt:
 		r = findRefs(r, n.WhereClause, nil)
 		r = findRefs(r, n.LimitCount, nil)
@@ -273,12 +285,17 @@ func columnNames(s *postgres.Schema, table string) []string {
 	return cols
 }
 
-func tableName(n nodes.SelectStmt) string {
-	for _, item := range n.FromClause.Items {
-		switch i := item.(type) {
-		case nodes.RangeVar:
-			return *i.Relname
+func tableName(n nodes.Node) string {
+	switch n := n.(type) {
+	case nodes.SelectStmt:
+		for _, item := range n.FromClause.Items {
+			switch i := item.(type) {
+			case nodes.RangeVar:
+				return *i.Relname
+			}
 		}
+	case nodes.DeleteStmt:
+		return *n.Relation.Relname
 	}
 	return ""
 }
@@ -390,6 +407,22 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{range .Args}}{{.Name}} 
 	return items, nil
 }
 {{end}}
+
+{{if eq .Type ":exec"}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{range .Args}}{{.Name}} {{.Type}},{{end}}) error {
+	var err error
+	switch {
+	case q.{{.StmtName}} != nil && q.tx != nil:
+		_, err = q.tx.StmtContext(ctx, q.{{.StmtName}}).ExecContext(ctx, {{range .Args}}{{.Name}},{{end}})
+	case q.{{.StmtName}} != nil:
+		_, err = q.{{.StmtName}}.ExecContext(ctx, {{range .Args}}{{.Name}},{{end}})
+	default:
+		_, err = q.db.ExecContext(ctx, {{.QueryName}}, {{range .Args}}{{.Name}},{{end}})
+	}
+	return err
+}
+{{end}}
+
 
 {{end}}
 `

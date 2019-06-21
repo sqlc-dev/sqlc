@@ -32,6 +32,9 @@ func New(db dbtx) *Queries {
 func Prepare(ctx context.Context, db dbtx) (*Queries, error) {
 	q := Queries{db: db}
 	var err error
+	if q.deleteVenue, err = db.PrepareContext(ctx, deleteVenue); err != nil {
+		return nil, err
+	}
 	if q.getCity, err = db.PrepareContext(ctx, getCity); err != nil {
 		return nil, err
 	}
@@ -47,20 +50,40 @@ func Prepare(ctx context.Context, db dbtx) (*Queries, error) {
 type Queries struct {
 	db dbtx
 
-	tx         *sql.Tx
-	getCity    *sql.Stmt
-	listCities *sql.Stmt
-	listVenues *sql.Stmt
+	tx          *sql.Tx
+	deleteVenue *sql.Stmt
+	getCity     *sql.Stmt
+	listCities  *sql.Stmt
+	listVenues  *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
-		tx:         tx,
-		db:         tx,
-		getCity:    q.getCity,
-		listCities: q.listCities,
-		listVenues: q.listVenues,
+		tx:          tx,
+		db:          tx,
+		deleteVenue: q.deleteVenue,
+		getCity:     q.getCity,
+		listCities:  q.listCities,
+		listVenues:  q.listVenues,
 	}
+}
+
+const deleteVenue = `-- name: DeleteVenue :exec
+DELETE FROM venue
+WHERE slug = $1
+`
+
+func (q *Queries) DeleteVenue(ctx context.Context, slug string) error {
+	var err error
+	switch {
+	case q.deleteVenue != nil && q.tx != nil:
+		_, err = q.tx.StmtContext(ctx, q.deleteVenue).ExecContext(ctx, slug)
+	case q.deleteVenue != nil:
+		_, err = q.deleteVenue.ExecContext(ctx, slug)
+	default:
+		_, err = q.db.ExecContext(ctx, deleteVenue, slug)
+	}
+	return err
 }
 
 const getCity = `-- name: GetCity :one
