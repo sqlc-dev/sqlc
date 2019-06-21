@@ -17,3 +17,17 @@ ORDER BY name;
 -- name: DeleteVenue :exec
 DELETE FROM venue
 WHERE slug = $1;
+
+-- name: GetVenue :one
+SELECT *
+FROM venue
+WHERE slug = $1 AND city = $2;
+
+-- name: CreateCity :one
+INSERT INTO city (
+    name,
+    slug
+) VALUES (
+    $1,
+    $2
+) RETURNING *;

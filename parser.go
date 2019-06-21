@@ -59,10 +59,10 @@ func parse(s *postgres.Schema, tree pg.ParsetreeList) {
 			for _, elt := range n.TableElts.Items {
 				switch n := elt.(type) {
 				case nodes.ColumnDef:
-					// spew.Dump(n)
 					// log.Printf("not null: %t", n.IsNotNull)
 					table.Columns = append(table.Columns, postgres.Column{
 						Name:    *n.Colname,
+						Type:    join(n.TypeName.Names, "."),
 						GoName:  structName(*n.Colname),
 						NotNull: isNotNull(n),
 					})
@@ -73,6 +73,16 @@ func parse(s *postgres.Schema, tree pg.ParsetreeList) {
 			// spew.Dump(n)
 		}
 	}
+}
+
+func join(list nodes.List, sep string) string {
+	items := []string{}
+	for _, item := range list.Items {
+		if n, ok := item.(nodes.String); ok {
+			items = append(items, n.Str)
+		}
+	}
+	return strings.Join(items, sep)
 }
 
 func isNotNull(n nodes.ColumnDef) bool {
@@ -101,6 +111,7 @@ type Query struct {
 	SQL        string
 	Args       []Arg
 	Table      postgres.Table
+	ReturnType string
 }
 
 type Result struct {
@@ -179,6 +190,7 @@ func parseFuncs(s *postgres.Schema, r *Result, source string, tree pg.ParsetreeL
 
 			tab := getTable(s, t)
 			r.Queries[i].Table = tab
+			r.Queries[i].ReturnType = tab.GoName
 			r.Queries[i].Args = parseArgs(tab, refs)
 			r.Queries[i].SQL = strings.Replace(rawSQL, "*", strings.Join(c, ", "), 1)
 		case nodes.DeleteStmt:
@@ -189,8 +201,20 @@ func parseFuncs(s *postgres.Schema, r *Result, source string, tree pg.ParsetreeL
 
 			tab := getTable(s, t)
 			r.Queries[i].Table = tab
+			r.Queries[i].ReturnType = tab.GoName
 			r.Queries[i].Args = parseArgs(tab, refs)
 			r.Queries[i].SQL = rawSQL
+		case nodes.InsertStmt:
+			t := tableName(n)
+			c := columnNames(s, t)
+			rawSQL, _ := pluckQuery(source, raw)
+			refs := extractArgs(n)
+
+			tab := getTable(s, t)
+			r.Queries[i].Table = tab
+			r.Queries[i].ReturnType = tab.GoName
+			r.Queries[i].Args = parseArgs(tab, refs)
+			r.Queries[i].SQL = strings.Replace(rawSQL, "*", strings.Join(c, ", "), 1)
 		default:
 			log.Printf("%T\n", n)
 		}
@@ -221,6 +245,16 @@ func findRefs(r []paramRef, parent, n nodes.Node) []paramRef {
 		r = findRefs(r, n.WhereClause, nil)
 		r = findRefs(r, n.LimitCount, nil)
 		r = findRefs(r, n.LimitOffset, nil)
+	case nodes.InsertStmt:
+		switch s := n.SelectStmt.(type) {
+		case nodes.SelectStmt:
+			for _, vl := range s.ValuesLists {
+				for i, v := range vl {
+					// TODO: Index error
+					r = findRefs(r, n.Cols.Items[i], v)
+				}
+			}
+		}
 	case nodes.BoolExpr:
 		for _, item := range n.Args.Items {
 			r = findRefs(r, item, nil)
@@ -265,6 +299,15 @@ func parseArgs(t postgres.Table, args []paramRef) []Arg {
 					panic("unknown column: " + key)
 				}
 			}
+		case nodes.ResTarget:
+			key := *n.Name
+			if typ, ok := typeMap[key]; ok {
+				a = append(a, Arg{Name: key, Type: typ})
+			} else {
+				panic("unknown column: " + key)
+			}
+		case nodes.ParamRef:
+			a = append(a, Arg{Name: "_", Type: "interface{}"})
 		default:
 			panic(fmt.Sprintf("unsupported type: %T", n))
 		}
@@ -296,6 +339,8 @@ func tableName(n nodes.Node) string {
 		}
 	case nodes.DeleteStmt:
 		return *n.Relation.Relname
+	case nodes.InsertStmt:
+		return *n.Relation.Relname
 	}
 	return ""
 }
@@ -304,11 +349,12 @@ var hh = `package {{.Package}}
 import (
 	"context"
 	"database/sql"
+	"time"
 )
 
 {{range .Schema.Tables}}
 type {{.GoName}} struct { {{- range .Columns}}
-  {{.GoName}} {{if .NotNull }}string{{else}}sql.NullString{{end}}
+  {{.GoName}} {{.GoType}}
   {{- end}}
 }
 {{end}}
@@ -358,7 +404,7 @@ const {{.QueryName}} = {{$.Q}}{{.SQL}}
 {{$.Q}}
 
 {{if eq .Type ":one"}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, {{range .Args}}{{.Name}} {{.Type}},{{end}}) ({{.Table.GoName}}, error) {
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{range .Args}}{{.Name}} {{.Type}},{{end}}) ({{.ReturnType}}, error) {
 	var row *sql.Row
 	switch {
 	case q.{{.StmtName}} != nil && q.tx != nil:
@@ -375,7 +421,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{range .Args}}{{.Name}} 
 {{end}}
 
 {{if eq .Type ":many"}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, {{range .Args}}{{.Name}} {{.Type}},{{end}}) ([]{{.Table.GoName}}, error) {
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{range .Args}}{{.Name}} {{.Type}},{{end}}) ([]{{.ReturnType}}, error) {
 	var rows *sql.Rows
 	var err error
 	switch {

@@ -1,12 +1,12 @@
 package strongdb
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"path/filepath"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	pg "github.com/lfittl/pg_query_go"
 	nodes "github.com/lfittl/pg_query_go/nodes"
 )
@@ -88,8 +88,8 @@ func TestParseSchema(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	if source != string(blob) {
-		t.Errorf("output differs")
-		fmt.Println(source)
+	if diff := cmp.Diff(source, string(blob)); diff != "" {
+		t.Errorf("genreated code differed (-want +got):\n%s", diff)
+		t.Log(source)
 	}
 }
