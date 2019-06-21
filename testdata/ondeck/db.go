@@ -13,12 +13,12 @@ type City struct {
 
 type Venue struct {
 	ID              int
-	CreatedAt       time.Time
 	Slug            string
 	Name            string
 	City            sql.NullString
 	SpotifyPlaylist string
 	SongkickID      sql.NullString
+	CreatedAt       time.Time
 }
 
 type dbtx interface {
@@ -192,7 +192,7 @@ func (q *Queries) GetCity(ctx context.Context, slug string) (City, error) {
 }
 
 const getVenue = `-- name: GetVenue :one
-SELECT id, created_at, slug, name, city, spotify_playlist, songkick_id
+SELECT id, slug, name, city, spotify_playlist, songkick_id, created_at
 FROM venue
 WHERE slug = $1 AND city = $2
 `
@@ -208,7 +208,7 @@ func (q *Queries) GetVenue(ctx context.Context, slug string, city string) (Venue
 		row = q.db.QueryRowContext(ctx, getVenue, slug, city)
 	}
 	var i Venue
-	err := row.Scan(&i.ID, &i.CreatedAt, &i.Slug, &i.Name, &i.City, &i.SpotifyPlaylist, &i.SongkickID)
+	err := row.Scan(&i.ID, &i.Slug, &i.Name, &i.City, &i.SpotifyPlaylist, &i.SongkickID, &i.CreatedAt)
 	return i, err
 }
 
@@ -251,7 +251,7 @@ func (q *Queries) ListCities(ctx context.Context) ([]City, error) {
 }
 
 const listVenues = `-- name: ListVenues :many
-SELECT id, created_at, slug, name, city, spotify_playlist, songkick_id
+SELECT id, slug, name, city, spotify_playlist, songkick_id, created_at
 FROM venue
 WHERE city = $1
 ORDER BY name
@@ -275,7 +275,7 @@ func (q *Queries) ListVenues(ctx context.Context, city string) ([]Venue, error) 
 	items := []Venue{}
 	for rows.Next() {
 		var i Venue
-		if err := rows.Scan(&i.ID, &i.CreatedAt, &i.Slug, &i.Name, &i.City, &i.SpotifyPlaylist, &i.SongkickID); err != nil {
+		if err := rows.Scan(&i.ID, &i.Slug, &i.Name, &i.City, &i.SpotifyPlaylist, &i.SongkickID, &i.CreatedAt); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

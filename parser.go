@@ -51,6 +51,40 @@ func parse(s *postgres.Schema, tree pg.ParsetreeList) {
 			continue
 		}
 		switch n := raw.Stmt.(type) {
+		case nodes.AlterTableStmt:
+			idx := -1
+			for i, table := range s.Tables {
+				if table.Name == *n.Relation.Relname {
+					idx = i
+				}
+			}
+			if idx < 0 {
+				panic("could not find table " + *n.Relation.Relname)
+			}
+
+			for _, cmd := range n.Cmds.Items {
+				switch cmd := cmd.(type) {
+				case nodes.AlterTableCmd:
+					switch cmd.Subtype {
+					case nodes.AT_AddColumn:
+						switch n := cmd.Def.(type) {
+						case nodes.ColumnDef:
+							s.Tables[idx].Columns = append(s.Tables[idx].Columns, postgres.Column{
+								Name:    *n.Colname,
+								Type:    join(n.TypeName.Names, "."),
+								GoName:  structName(*n.Colname),
+								NotNull: isNotNull(n),
+							})
+						}
+					case nodes.AT_DropColumn:
+						for i, c := range s.Tables[idx].Columns {
+							if c.Name == *cmd.Name {
+								s.Tables[idx].Columns = append(s.Tables[idx].Columns[:i], s.Tables[idx].Columns[i+1:]...)
+							}
+						}
+					}
+				}
+			}
 		case nodes.CreateStmt:
 			table := postgres.Table{
 				Name:   *n.Relation.Relname,
@@ -69,6 +103,21 @@ func parse(s *postgres.Schema, tree pg.ParsetreeList) {
 				}
 			}
 			s.Tables = append(s.Tables, table)
+		case nodes.RenameStmt:
+			switch n.RenameType {
+			case nodes.OBJECT_TABLE:
+				idx := -1
+				for i, table := range s.Tables {
+					if table.Name == *n.Relation.Relname {
+						idx = i
+					}
+				}
+				if idx < 0 {
+					panic("could not find table " + *n.Relation.Relname)
+				}
+				s.Tables[idx].Name = *n.Newname
+				s.Tables[idx].GoName = structName(*n.Newname)
+			}
 		default:
 			// spew.Dump(n)
 		}

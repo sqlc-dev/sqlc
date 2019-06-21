@@ -1,6 +1,6 @@
-CREATE TABLE venue (
+CREATE TABLE venues (
     id               SERIAL primary key,
-    created_at       TIMESTAMP NOT NULL DEFAULT NOW(),
+    dropped          text,
     slug             text not null,
     name             text not null,
     city             text references city(slug),
