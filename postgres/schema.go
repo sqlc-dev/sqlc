@@ -30,6 +30,12 @@ func (c Column) GoType() string {
 		return "int"
 	case "pg_catalog.timestamp":
 		return "time.Time"
+	case "pg_catalog.varchar":
+		if c.NotNull {
+			return "string"
+		} else {
+			return "sql.NullString"
+		}
 	default:
 		return "interface{}"
 	}
