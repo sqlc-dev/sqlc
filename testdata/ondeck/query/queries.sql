@@ -31,3 +31,18 @@ INSERT INTO city (
     $1,
     $2
 ) RETURNING *;
+
+-- name: CreateVenue :one
+INSERT INTO venue (
+    name,
+    slug,
+    created_at,
+    spotify_playlist,
+    city
+) VALUES (
+    $1,
+    $2,
+    NOW(),
+    $3,
+    $4
+) RETURNING id;

@@ -103,6 +103,14 @@ func isNotNull(n nodes.ColumnDef) bool {
 	return false
 }
 
+func isStar(n nodes.ColumnRef) bool {
+	if len(n.Fields.Items) != 1 {
+		return false
+	}
+	_, aStar := n.Fields.Items[0].(nodes.A_Star)
+	return aStar
+}
+
 type Query struct {
 	Type       string
 	MethodName string
@@ -112,6 +120,7 @@ type Query struct {
 	Args       []Arg
 	Table      postgres.Table
 	ReturnType string
+	ScanRecord bool
 }
 
 type Result struct {
@@ -179,46 +188,50 @@ func parseFuncs(s *postgres.Schema, r *Result, source string, tree pg.ParsetreeL
 		if !ok {
 			continue
 		}
-
 		switch n := raw.Stmt.(type) {
 		case nodes.SelectStmt:
-			t := tableName(n)
-			c := columnNames(s, t)
-
-			rawSQL, _ := pluckQuery(source, raw)
-			refs := extractArgs(n)
-
-			tab := getTable(s, t)
-			r.Queries[i].Table = tab
-			r.Queries[i].ReturnType = tab.GoName
-			r.Queries[i].Args = parseArgs(tab, refs)
-			r.Queries[i].SQL = strings.Replace(rawSQL, "*", strings.Join(c, ", "), 1)
 		case nodes.DeleteStmt:
-			t := tableName(n)
-
-			rawSQL, _ := pluckQuery(source, raw)
-			refs := extractArgs(n)
-
-			tab := getTable(s, t)
-			r.Queries[i].Table = tab
-			r.Queries[i].ReturnType = tab.GoName
-			r.Queries[i].Args = parseArgs(tab, refs)
-			r.Queries[i].SQL = rawSQL
 		case nodes.InsertStmt:
-			t := tableName(n)
-			c := columnNames(s, t)
-			rawSQL, _ := pluckQuery(source, raw)
-			refs := extractArgs(n)
-
-			tab := getTable(s, t)
-			r.Queries[i].Table = tab
-			r.Queries[i].ReturnType = tab.GoName
-			r.Queries[i].Args = parseArgs(tab, refs)
-			r.Queries[i].SQL = strings.Replace(rawSQL, "*", strings.Join(c, ", "), 1)
 		default:
 			log.Printf("%T\n", n)
+			continue
+		}
+
+		t := tableName(raw.Stmt)
+		c := columnNames(s, t)
+
+		rawSQL, _ := pluckQuery(source, raw)
+		refs := extractArgs(raw.Stmt)
+		outs := findOutputs(nil, raw.Stmt)
+
+		tab := getTable(s, t)
+		r.Queries[i].Table = tab
+		r.Queries[i].Args = parseArgs(tab, refs)
+
+		if len(outs) == 0 {
+			r.Queries[i].SQL = rawSQL
+		} else if len(outs) == 1 && isStar(outs[0]) {
+			r.Queries[i].ReturnType = tab.GoName
+			r.Queries[i].ScanRecord = true
+			r.Queries[i].SQL = strings.Replace(rawSQL, "*", strings.Join(c, ", "), 1)
+		} else {
+			r.Queries[i].ReturnType = returnType(tab, outs)
+			r.Queries[i].SQL = rawSQL
 		}
 	}
+}
+
+func returnType(t postgres.Table, refs []nodes.ColumnRef) string {
+	if len(refs) != 1 {
+		panic("too many return columns")
+	}
+	name := join(refs[0].Fields, ".")
+	for _, c := range t.Columns {
+		if c.Name == name {
+			return c.GoType()
+		}
+	}
+	return "interface{}"
 }
 
 func extractArgs(n nodes.Node) []paramRef {
@@ -268,6 +281,32 @@ func findRefs(r []paramRef, parent, n nodes.Node) []paramRef {
 			ref:    n,
 		})
 	case nodes.ColumnRef:
+	case nodes.FuncCall:
+	case nil:
+	default:
+		log.Printf("%T\n", n)
+	}
+	return r
+}
+
+func findOutputs(r []nodes.ColumnRef, n nodes.Node) []nodes.ColumnRef {
+	switch n := n.(type) {
+	case nodes.RawStmt:
+		r = findOutputs(r, n.Stmt)
+	case nodes.DeleteStmt:
+		r = findOutputs(r, n.ReturningList)
+	case nodes.SelectStmt:
+		r = findOutputs(r, n.TargetList)
+	case nodes.InsertStmt:
+		r = findOutputs(r, n.ReturningList)
+	case nodes.List:
+		for _, i := range n.Items {
+			r = findOutputs(r, i)
+		}
+	case nodes.ResTarget:
+		r = findOutputs(r, n.Val)
+	case nodes.ColumnRef:
+		r = append(r, n)
 	case nil:
 	default:
 		log.Printf("%T\n", n)
@@ -414,8 +453,12 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{range .Args}}{{.Name}} 
 	default:
 		row = q.db.QueryRowContext(ctx, {{.QueryName}}, {{range .Args}}{{.Name}},{{end}})
 	}
-	i := {{.Table.GoName}}{}
+	var i {{.ReturnType}}
+	{{- if .ScanRecord}}
 	err := row.Scan({{range .Table.Columns}}&i.{{.GoName}},{{end}})
+	{{- else}}
+	err := row.Scan(&i)
+	{{- end}}
 	return i, err
 }
 {{end}}
@@ -436,10 +479,14 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{range .Args}}{{.Name}} 
 		return nil, err
 	}
 	defer rows.Close()
-	items := []{{.Table.GoName}}{}
+	items := []{{.ReturnType}}{}
 	for rows.Next() {
-		i := {{.Table.GoName}}{}
+		var i {{.ReturnType}}
+		{{- if .ScanRecord}}
 		if err := rows.Scan({{range .Table.Columns}}&i.{{.GoName}},{{end}}); err != nil {
+		{{- else}}
+		if err := rows.Scan(&i); err != nil {
+		{{- end}}
 			return nil, err
 		}
 		items = append(items, i)
@@ -525,6 +572,7 @@ func generate(r *Result, pkg string) string {
 	w.Flush()
 	code, err := format.Source(b.Bytes())
 	if err != nil {
+		fmt.Println(b.String())
 		panic(fmt.Errorf("source error: %s", err))
 	}
 	return string(code)
