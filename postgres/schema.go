@@ -1,5 +1,7 @@
 package postgres
 
+import "log"
+
 type Schema struct {
 	Tables []Table
 }
@@ -28,6 +30,16 @@ func (c Column) GoType() string {
 		}
 	case "serial":
 		return "int"
+	case "integer":
+		return "int"
+	case "bool":
+		return "bool"
+	case "pg_catalog.bool":
+		return "bool"
+	case "pg_catalog.int4":
+		return "int"
+	case "pg_catalog.int8":
+		return "int"
 	case "pg_catalog.timestamp":
 		return "time.Time"
 	case "pg_catalog.varchar":
@@ -37,6 +49,7 @@ func (c Column) GoType() string {
 			return "sql.NullString"
 		}
 	default:
+		log.Printf("unknown Postgres type: %s\n", c.Type)
 		return "interface{}"
 	}
 }

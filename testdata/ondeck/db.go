@@ -137,15 +137,15 @@ INSERT INTO venue (
 ) RETURNING id
 `
 
-func (q *Queries) CreateVenue(ctx context.Context, name string, slug string, spotify_playlist string, city string) (int, error) {
+func (q *Queries) CreateVenue(ctx context.Context, name string, slug string, spotifyPlaylist string, city string) (int, error) {
 	var row *sql.Row
 	switch {
 	case q.createVenue != nil && q.tx != nil:
-		row = q.tx.StmtContext(ctx, q.createVenue).QueryRowContext(ctx, name, slug, spotify_playlist, city)
+		row = q.tx.StmtContext(ctx, q.createVenue).QueryRowContext(ctx, name, slug, spotifyPlaylist, city)
 	case q.createVenue != nil:
-		row = q.createVenue.QueryRowContext(ctx, name, slug, spotify_playlist, city)
+		row = q.createVenue.QueryRowContext(ctx, name, slug, spotifyPlaylist, city)
 	default:
-		row = q.db.QueryRowContext(ctx, createVenue, name, slug, spotify_playlist, city)
+		row = q.db.QueryRowContext(ctx, createVenue, name, slug, spotifyPlaylist, city)
 	}
 	var i int
 	err := row.Scan(&i)

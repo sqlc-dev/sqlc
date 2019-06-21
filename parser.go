@@ -392,7 +392,7 @@ func parseArgs(t postgres.Table, args []paramRef) []Arg {
 					}
 				}
 				if typ, ok := typeMap[key]; ok {
-					a = append(a, Arg{Name: key, Type: typ})
+					a = append(a, Arg{Name: argName(key), Type: typ})
 				} else {
 					panic("unknown column: " + key)
 				}
@@ -400,7 +400,7 @@ func parseArgs(t postgres.Table, args []paramRef) []Arg {
 		case nodes.ResTarget:
 			key := *n.Name
 			if typ, ok := typeMap[key]; ok {
-				a = append(a, Arg{Name: key, Type: typ})
+				a = append(a, Arg{Name: argName(key), Type: typ})
 			} else {
 				panic("unknown column: " + key)
 			}
@@ -599,6 +599,20 @@ func structName(name string) string {
 type Arg struct {
 	Name string
 	Type string
+}
+
+func argName(name string) string {
+	out := ""
+	for i, p := range strings.Split(name, "_") {
+		if i == 0 {
+			out += strings.ToLower(p)
+		} else if p == "id" {
+			out += "ID"
+		} else {
+			out += strings.Title(p)
+		}
+	}
+	return out
 }
 
 type tmplCtx struct {
