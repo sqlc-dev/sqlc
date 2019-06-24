@@ -177,6 +177,20 @@ type Result struct {
 	Queries []Query
 }
 
+func (r Result) Records() []postgres.Table {
+	used := map[string]struct{}{}
+	for _, q := range r.Queries {
+		used[q.ReturnType] = struct{}{}
+	}
+	var tables []postgres.Table
+	for _, t := range r.Schema.Tables {
+		if _, ok := used[t.GoName]; ok {
+			tables = append(tables, t)
+		}
+	}
+	return tables
+}
+
 func getTable(s *postgres.Schema, name string) postgres.Table {
 	for _, t := range s.Tables {
 		if t.Name == name {
@@ -453,7 +467,7 @@ import (
 	"time"
 )
 
-{{range .Schema.Tables}}
+{{range .Records}}
 type {{.GoName}} struct { {{- range .Columns}}
   {{.GoName}} {{.GoType}}
   {{- end}}
@@ -621,6 +635,7 @@ type tmplCtx struct {
 	Package string
 	Queries []Query
 	Schema  *postgres.Schema
+	Records []postgres.Table
 }
 
 func lowerTitle(s string) string {
@@ -644,6 +659,7 @@ func generate(r *Result, pkg string) string {
 		Queries: r.Queries,
 		Package: pkg,
 		Schema:  r.Schema,
+		Records: r.Records(),
 	})
 	w.Flush()
 	code, err := format.Source(b.Bytes())
