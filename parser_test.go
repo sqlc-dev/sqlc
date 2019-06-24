@@ -49,14 +49,17 @@ func TestPluck(t *testing.T) {
 }
 
 func TestExtractArgs(t *testing.T) {
-	queries := []string{
-		"SELECT * FROM venue WHERE slug = $1 AND city = $2",
-		"SELECT * FROM venue WHERE slug = $1",
-		"SELECT * FROM venue LIMIT $1",
-		"SELECT * FROM venue OFFSET $1",
+	queries := []struct {
+		query string
+		count int
+	}{
+		{"SELECT * FROM venue WHERE slug = $1 AND city = $2", 2},
+		{"SELECT * FROM venue WHERE slug = $1", 1},
+		{"SELECT * FROM venue LIMIT $1", 1},
+		{"SELECT * FROM venue OFFSET $1", 1},
 	}
 	for _, q := range queries {
-		tree, err := pg.Parse(q)
+		tree, err := pg.Parse(q.query)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -65,7 +68,9 @@ func TestExtractArgs(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-			t.Logf("refs: %#v", refs)
+			if len(refs) != q.count {
+				t.Errorf("expected %d refs, got %d", q.count, len(refs))
+			}
 		}
 	}
 }

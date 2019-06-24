@@ -33,9 +33,17 @@ func (c Column) GoType() string {
 	case "integer":
 		return "int"
 	case "bool":
-		return "bool"
+		if c.NotNull {
+			return "bool"
+		} else {
+			return "sql.NullBool"
+		}
 	case "pg_catalog.bool":
-		return "bool"
+		if c.NotNull {
+			return "bool"
+		} else {
+			return "sql.NullBool"
+		}
 	case "pg_catalog.int4":
 		return "int"
 	case "pg_catalog.int8":

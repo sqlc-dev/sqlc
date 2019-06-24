@@ -191,6 +191,7 @@ func ParseQueries(s *postgres.Schema, dir string) (*Result, error) {
 	if err != nil {
 		return nil, err
 	}
+	var q []Query
 	for _, f := range files {
 		blob, err := ioutil.ReadFile(filepath.Join(dir, f.Name()))
 		if err != nil {
@@ -202,9 +203,9 @@ func ParseQueries(s *postgres.Schema, dir string) (*Result, error) {
 			return nil, err
 		}
 		parseFuncs(s, &r, string(blob), tree)
-		return &r, nil
+		q = append(q, r.Queries...)
 	}
-	return nil, nil
+	return &Result{Schema: s, Queries: q}, nil
 }
 
 func parseQueries(t []byte) []Query {
