@@ -6,7 +6,7 @@ ORDER BY name;
 
 -- name: DeleteVenue :exec
 DELETE FROM venue
-WHERE slug = $1;
+WHERE slug = $1 AND slug = $1;
 
 -- name: GetVenue :one
 SELECT *

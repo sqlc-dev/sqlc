@@ -15,7 +15,7 @@ type Venue struct {
 	ID              int
 	Slug            string
 	Name            string
-	City            sql.NullString
+	City            string
 	SpotifyPlaylist string
 	SongkickID      sql.NullString
 	CreatedAt       time.Time
@@ -154,7 +154,7 @@ func (q *Queries) CreateVenue(ctx context.Context, name string, slug string, spo
 
 const deleteVenue = `-- name: DeleteVenue :exec
 DELETE FROM venue
-WHERE slug = $1
+WHERE slug = $1 AND slug = $1
 `
 
 func (q *Queries) DeleteVenue(ctx context.Context, slug string) error {

@@ -3,7 +3,7 @@ CREATE TABLE venues (
     dropped          text,
     slug             text         not null,
     name             varchar(255) not null,
-    city             text         references city(slug),
+    city             text         not null references city(slug),
     spotify_playlist varchar      not null,
     songkick_id      text
 )

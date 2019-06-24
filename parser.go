@@ -311,7 +311,16 @@ func returnType(t postgres.Table, refs []nodes.ColumnRef) string {
 }
 
 func extractArgs(n nodes.Node) []paramRef {
-	refs := findRefs([]paramRef{}, n, nil)
+	allrefs := findRefs([]paramRef{}, n, nil)
+	refs := make([]paramRef, 0)
+	seen := map[int]struct{}{}
+	for _, r := range allrefs {
+		if _, ok := seen[r.ref.Number]; ok {
+			continue
+		}
+		refs = append(refs, r)
+		seen[r.ref.Number] = struct{}{}
+	}
 	sort.Slice(refs, func(i, j int) bool { return refs[i].ref.Number < refs[j].ref.Number })
 	return refs
 }
@@ -402,7 +411,7 @@ func findOutputs(r []nodes.ColumnRef, n nodes.Node) []nodes.ColumnRef {
 func parseArgs(t postgres.Table, args []paramRef) []Arg {
 	typeMap := map[string]string{}
 	for _, c := range t.Columns {
-		typeMap[c.Name] = "string"
+		typeMap[c.Name] = c.GoType()
 	}
 	a := []Arg{}
 	for _, ref := range args {
@@ -603,6 +612,24 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{range .Args}}{{.Name}} 
 }
 {{end}}
 
+{{if eq .Type ":execrows"}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{range .Args}}{{.Name}} {{.Type}},{{end}}) (int64, error) {
+	var result sql.Result
+	var err error
+	switch {
+	case q.{{.StmtName}} != nil && q.tx != nil:
+		result, err = q.tx.StmtContext(ctx, q.{{.StmtName}}).ExecContext(ctx, {{range .Args}}{{.Name}},{{end}})
+	case q.{{.StmtName}} != nil:
+		result, err = q.{{.StmtName}}.ExecContext(ctx, {{range .Args}}{{.Name}},{{end}})
+	default:
+		result, err = q.db.ExecContext(ctx, {{.QueryName}}, {{range .Args}}{{.Name}},{{end}})
+	}
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+{{end}}
 
 {{end}}
 `
