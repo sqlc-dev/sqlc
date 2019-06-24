@@ -191,6 +191,17 @@ func (r Result) Records() []postgres.Table {
 	return tables
 }
 
+func (r Result) UsesTime() bool {
+	for _, table := range r.Records() {
+		for _, c := range table.Columns {
+			if c.GoType() == "time.Time" {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func getTable(s *postgres.Schema, name string) postgres.Table {
 	for _, t := range s.Tables {
 		if t.Name == name {
@@ -464,7 +475,7 @@ var hh = `package {{.Package}}
 import (
 	"context"
 	"database/sql"
-	"time"
+	{{if .ImportTime}}"time"{{end}}
 )
 
 {{range .Records}}
@@ -631,11 +642,12 @@ func argName(name string) string {
 }
 
 type tmplCtx struct {
-	Q       string
-	Package string
-	Queries []Query
-	Schema  *postgres.Schema
-	Records []postgres.Table
+	Q          string
+	Package    string
+	Queries    []Query
+	Schema     *postgres.Schema
+	Records    []postgres.Table
+	ImportTime bool
 }
 
 func lowerTitle(s string) string {
@@ -655,11 +667,12 @@ func generate(r *Result, pkg string) string {
 	var b bytes.Buffer
 	w := bufio.NewWriter(&b)
 	fileTmpl.Execute(w, tmplCtx{
-		Q:       "`",
-		Queries: r.Queries,
-		Package: pkg,
-		Schema:  r.Schema,
-		Records: r.Records(),
+		Q:          "`",
+		Queries:    r.Queries,
+		Package:    pkg,
+		Schema:     r.Schema,
+		Records:    r.Records(),
+		ImportTime: r.UsesTime(),
 	})
 	w.Flush()
 	code, err := format.Source(b.Bytes())
