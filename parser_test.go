@@ -1,4 +1,4 @@
-package strongdb
+package dinosql
 
 import (
 	"io/ioutil"

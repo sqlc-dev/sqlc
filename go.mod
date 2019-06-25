@@ -1,4 +1,4 @@
-module github.com/kyleconroy/strongdb
+module github.com/kyleconroy/dinosql
 
 go 1.12
 

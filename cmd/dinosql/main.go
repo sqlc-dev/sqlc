@@ -4,7 +4,7 @@ import (
 	"flag"
 	"log"
 
-	"github.com/kyleconroy/strongdb"
+	"github.com/kyleconroy/dinosql"
 )
 
 func main() {
@@ -13,7 +13,7 @@ func main() {
 	out := flag.String("out", "db.go", "output file")
 	flag.Parse()
 
-	if err := strongdb.Exec(*sch, flag.Arg(0), *pkg, *out); err != nil {
+	if err := dinosql.Exec(*sch, flag.Arg(0), *pkg, *out); err != nil {
 		log.Fatal(err)
 	}
 }

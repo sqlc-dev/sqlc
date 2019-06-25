@@ -1,4 +1,4 @@
-package strongdb
+package dinosql
 
 import (
 	"bufio"
@@ -14,7 +14,7 @@ import (
 	"unicode"
 
 	"github.com/davecgh/go-spew/spew"
-	"github.com/kyleconroy/strongdb/postgres"
+	"github.com/kyleconroy/dinosql/postgres"
 	pg "github.com/lfittl/pg_query_go"
 	nodes "github.com/lfittl/pg_query_go/nodes"
 )
