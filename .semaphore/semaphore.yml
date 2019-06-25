@@ -1,0 +1,17 @@
+# For more Go information and examples, see
+# https://docs.semaphoreci.com/article/86-language-golang
+version: v1.0
+name: Hello Semaphore
+agent:
+  machine:
+    type: e1-standard-2
+    os_image: ubuntu1804
+blocks:
+  - name: Golang example
+    task:
+      jobs:
+        - name: Run Go
+          commands:
+            - checkout
+            - sem-version go 1.12
+            - go test -v ./...
