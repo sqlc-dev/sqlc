@@ -33,3 +33,9 @@ UPDATE venue
 SET name = $2
 WHERE slug = $1
 RETURNING id;
+
+-- name: VenueCountByCity :many
+SELECT
+    slug,
+    city
+FROM venue;

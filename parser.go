@@ -160,6 +160,11 @@ func isStar(n nodes.ColumnRef) bool {
 	return aStar
 }
 
+type Field struct {
+	Name string
+	Type string
+}
+
 type Query struct {
 	Type       string
 	MethodName string
@@ -168,7 +173,9 @@ type Query struct {
 	SQL        string
 	Args       []Arg
 	Table      postgres.Table
+	Fields     []Field
 	ReturnType string
+	RowStruct  bool
 	ScanRecord bool
 }
 
@@ -289,7 +296,14 @@ func parseFuncs(s *postgres.Schema, r *Result, source string, tree pg.ParsetreeL
 		} else if len(outs) == 1 && isStar(outs[0]) {
 			r.Queries[i].ReturnType = tab.GoName
 			r.Queries[i].ScanRecord = true
+			r.Queries[i].Fields = fieldsFromTable(tab)
 			r.Queries[i].SQL = strings.Replace(rawSQL, "*", strings.Join(c, ", "), 1)
+		} else if len(outs) > 1 {
+			r.Queries[i].ReturnType = r.Queries[i].MethodName + "Row"
+			r.Queries[i].ScanRecord = true
+			r.Queries[i].RowStruct = true
+			r.Queries[i].Fields = fieldsFromRefs(tab, outs)
+			r.Queries[i].SQL = rawSQL
 		} else {
 			r.Queries[i].ReturnType = returnType(tab, outs)
 			r.Queries[i].SQL = rawSQL
@@ -297,9 +311,37 @@ func parseFuncs(s *postgres.Schema, r *Result, source string, tree pg.ParsetreeL
 	}
 }
 
+func fieldsFromRefs(t postgres.Table, refs []nodes.ColumnRef) []Field {
+	var f []Field
+	for _, cf := range refs {
+		name := join(cf.Fields, ".")
+		for _, c := range t.Columns {
+			if c.Name == name {
+				f = append(f, Field{
+					Name: c.GoName,
+					Type: c.GoType(),
+				})
+			}
+		}
+	}
+	return f
+}
+
+func fieldsFromTable(t postgres.Table) []Field {
+	var f []Field
+	for _, c := range t.Columns {
+		f = append(f, Field{
+			Name: c.GoName,
+			Type: c.GoType(),
+		})
+	}
+	return f
+}
+
 func returnType(t postgres.Table, refs []nodes.ColumnRef) string {
 	if len(refs) != 1 {
-		panic("too many return columns")
+		// panic("too many return columns")
+		return "interface{}"
 	}
 	name := join(refs[0].Fields, ".")
 	for _, c := range t.Columns {
@@ -387,6 +429,9 @@ func findOutputs(r []nodes.ColumnRef, n nodes.Node) []nodes.ColumnRef {
 		r = append(r, n)
 	case nodes.DeleteStmt:
 		r = findOutputs(r, n.ReturningList)
+	case nodes.FuncCall:
+		// join(n.Funcname.List, ".")
+		spew.Dump(n)
 	case nodes.InsertStmt:
 		r = findOutputs(r, n.ReturningList)
 	case nodes.List:
@@ -538,6 +583,13 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 const {{.QueryName}} = {{$.Q}}{{.SQL}}
 {{$.Q}}
 
+{{if .RowStruct}}
+type {{.MethodName}}Row struct { {{- range .Fields}}
+  {{.Name}} {{.Type}}
+  {{- end}}
+}
+{{end}}
+
 {{if eq .Type ":one"}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{range .Args}}{{.Name}} {{.Type}},{{end}}) ({{.ReturnType}}, error) {
 	var row *sql.Row
@@ -551,7 +603,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{range .Args}}{{.Name}} 
 	}
 	var i {{.ReturnType}}
 	{{- if .ScanRecord}}
-	err := row.Scan({{range .Table.Columns}}&i.{{.GoName}},{{end}})
+	err := row.Scan({{range .Fields}}&i.{{.Name}},{{end}})
 	{{- else}}
 	err := row.Scan(&i)
 	{{- end}}
@@ -579,7 +631,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{range .Args}}{{.Name}} 
 	for rows.Next() {
 		var i {{.ReturnType}}
 		{{- if .ScanRecord}}
-		if err := rows.Scan({{range .Table.Columns}}&i.{{.GoName}},{{end}}); err != nil {
+		if err := rows.Scan({{range .Fields}}&i.{{.Name}},{{end}}); err != nil {
 		{{- else}}
 		if err := rows.Scan(&i); err != nil {
 		{{- end}}
