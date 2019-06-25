@@ -152,11 +152,14 @@ func isNotNull(n nodes.ColumnDef) bool {
 	return false
 }
 
-func isStar(n nodes.ColumnRef) bool {
-	if len(n.Fields.Items) != 1 {
+func isStar(n outputRef) bool {
+	if n.ref == nil {
 		return false
 	}
-	_, aStar := n.Fields.Items[0].(nodes.A_Star)
+	if len(n.ref.Fields.Items) != 1 {
+		return false
+	}
+	_, aStar := n.ref.Fields.Items[0].(nodes.A_Star)
 	return aStar
 }
 
@@ -311,16 +314,24 @@ func parseFuncs(s *postgres.Schema, r *Result, source string, tree pg.ParsetreeL
 	}
 }
 
-func fieldsFromRefs(t postgres.Table, refs []nodes.ColumnRef) []Field {
+func fieldsFromRefs(t postgres.Table, refs []outputRef) []Field {
 	var f []Field
 	for _, cf := range refs {
-		name := join(cf.Fields, ".")
-		for _, c := range t.Columns {
-			if c.Name == name {
-				f = append(f, Field{
-					Name: c.GoName,
-					Type: c.GoType(),
-				})
+		if cf.fun == "count" {
+			f = append(f, Field{
+				Name: strings.Title(cf.fun),
+				Type: "int",
+			})
+		}
+		if cf.ref != nil {
+			name := join(cf.ref.Fields, ".")
+			for _, c := range t.Columns {
+				if c.Name == name {
+					f = append(f, Field{
+						Name: c.GoName,
+						Type: c.GoType(),
+					})
+				}
 			}
 		}
 	}
@@ -338,12 +349,12 @@ func fieldsFromTable(t postgres.Table) []Field {
 	return f
 }
 
-func returnType(t postgres.Table, refs []nodes.ColumnRef) string {
+func returnType(t postgres.Table, refs []outputRef) string {
 	if len(refs) != 1 {
 		// panic("too many return columns")
 		return "interface{}"
 	}
-	name := join(refs[0].Fields, ".")
+	name := join(refs[0].ref.Fields, ".")
 	for _, c := range t.Columns {
 		if c.Name == name {
 			return c.GoType()
@@ -423,15 +434,19 @@ func findRefs(r []paramRef, parent, n nodes.Node) []paramRef {
 	return r
 }
 
-func findOutputs(r []nodes.ColumnRef, n nodes.Node) []nodes.ColumnRef {
+type outputRef struct {
+	ref *nodes.ColumnRef
+	fun string
+}
+
+func findOutputs(r []outputRef, n nodes.Node) []outputRef {
 	switch n := n.(type) {
 	case nodes.ColumnRef:
-		r = append(r, n)
+		r = append(r, outputRef{ref: &n})
 	case nodes.DeleteStmt:
 		r = findOutputs(r, n.ReturningList)
 	case nodes.FuncCall:
-		// join(n.Funcname.List, ".")
-		spew.Dump(n)
+		r = append(r, outputRef{fun: join(n.Funcname, ".")})
 	case nodes.InsertStmt:
 		r = findOutputs(r, n.ReturningList)
 	case nodes.List:

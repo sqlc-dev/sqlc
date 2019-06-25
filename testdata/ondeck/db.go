@@ -62,37 +62,42 @@ func Prepare(ctx context.Context, db dbtx) (*Queries, error) {
 	if q.updateVenueName, err = db.PrepareContext(ctx, updateVenueName); err != nil {
 		return nil, err
 	}
+	if q.venueCountByCity, err = db.PrepareContext(ctx, venueCountByCity); err != nil {
+		return nil, err
+	}
 	return &q, nil
 }
 
 type Queries struct {
 	db dbtx
 
-	tx              *sql.Tx
-	createCity      *sql.Stmt
-	createVenue     *sql.Stmt
-	deleteVenue     *sql.Stmt
-	getCity         *sql.Stmt
-	getVenue        *sql.Stmt
-	listCities      *sql.Stmt
-	listVenues      *sql.Stmt
-	updateCityName  *sql.Stmt
-	updateVenueName *sql.Stmt
+	tx               *sql.Tx
+	createCity       *sql.Stmt
+	createVenue      *sql.Stmt
+	deleteVenue      *sql.Stmt
+	getCity          *sql.Stmt
+	getVenue         *sql.Stmt
+	listCities       *sql.Stmt
+	listVenues       *sql.Stmt
+	updateCityName   *sql.Stmt
+	updateVenueName  *sql.Stmt
+	venueCountByCity *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
-		tx:              tx,
-		db:              tx,
-		createCity:      q.createCity,
-		createVenue:     q.createVenue,
-		deleteVenue:     q.deleteVenue,
-		getCity:         q.getCity,
-		getVenue:        q.getVenue,
-		listCities:      q.listCities,
-		listVenues:      q.listVenues,
-		updateCityName:  q.updateCityName,
-		updateVenueName: q.updateVenueName,
+		tx:               tx,
+		db:               tx,
+		createCity:       q.createCity,
+		createVenue:      q.createVenue,
+		deleteVenue:      q.deleteVenue,
+		getCity:          q.getCity,
+		getVenue:         q.getVenue,
+		listCities:       q.listCities,
+		listVenues:       q.listVenues,
+		updateCityName:   q.updateCityName,
+		updateVenueName:  q.updateVenueName,
+		venueCountByCity: q.venueCountByCity,
 	}
 }
 
@@ -328,4 +333,50 @@ func (q *Queries) UpdateVenueName(ctx context.Context, slug string, name string)
 	var i int
 	err := row.Scan(&i)
 	return i, err
+}
+
+const venueCountByCity = `-- name: VenueCountByCity :many
+SELECT
+    city,
+    count(*)
+FROM venue
+GROUP BY 1
+ORDER BY 1
+`
+
+type VenueCountByCityRow struct {
+	City  string
+	Count int
+}
+
+func (q *Queries) VenueCountByCity(ctx context.Context) ([]VenueCountByCityRow, error) {
+	var rows *sql.Rows
+	var err error
+	switch {
+	case q.venueCountByCity != nil && q.tx != nil:
+		rows, err = q.tx.StmtContext(ctx, q.venueCountByCity).QueryContext(ctx)
+	case q.venueCountByCity != nil:
+		rows, err = q.venueCountByCity.QueryContext(ctx)
+	default:
+		rows, err = q.db.QueryContext(ctx, venueCountByCity)
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []VenueCountByCityRow{}
+	for rows.Next() {
+		var i VenueCountByCityRow
+		if err := rows.Scan(&i.City, &i.Count); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

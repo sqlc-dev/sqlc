@@ -36,6 +36,8 @@ RETURNING id;
 
 -- name: VenueCountByCity :many
 SELECT
-    slug,
-    city
-FROM venue;
+    city,
+    count(*)
+FROM venue
+GROUP BY 1
+ORDER BY 1;
