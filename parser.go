@@ -617,11 +617,7 @@ import (
 type {{.GoName}} string
 
 func (e *{{.GoName}}) Scan(v interface{}) error {
-    bytes, ok := v.([]byte)
-    if !ok {
-        return err
-    }
-    *e = {{.GoName}}(string(bytes))
+    *e = {{.GoName}}(string(v.([]byte)))
     return nil
 }
 

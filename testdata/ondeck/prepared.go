@@ -10,11 +10,7 @@ import (
 type StatusEnum string
 
 func (e *StatusEnum) Scan(v interface{}) error {
-	bytes, ok := v.([]byte)
-	if !ok {
-		return err
-	}
-	*e = StatusEnum(string(bytes))
+	*e = StatusEnum(string(v.([]byte)))
 	return nil
 }
 
