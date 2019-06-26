@@ -3,6 +3,7 @@ package dinosql
 import (
 	"io/ioutil"
 	"log"
+	"os/exec"
 	"path/filepath"
 	"testing"
 
@@ -113,4 +114,20 @@ func TestParseSchema(t *testing.T) {
 			t.Log(source)
 		}
 	})
+}
+
+func TestCompile(t *testing.T) {
+	files := []string{
+		filepath.Join("testdata", "ondeck", "db.go"),
+		filepath.Join("testdata", "ondeck", "prepared.go"),
+	}
+	for _, filename := range files {
+		f := filename
+		t.Run(f, func(t *testing.T) {
+			output, err := exec.Command("go", "build", f).CombinedOutput()
+			if err != nil {
+				t.Errorf("%s: %s:", err, string(output))
+			}
+		})
+	}
 }
