@@ -15,3 +15,5 @@ blocks:
             - checkout
             - sem-version go 1.12
             - go test -v ./...
+            - go build testdata/ondeck/db.go
+            - go build testdata/ondeck/prepared.go
