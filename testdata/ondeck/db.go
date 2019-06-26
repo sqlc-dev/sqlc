@@ -3,7 +3,28 @@ package ondeck
 import (
 	"context"
 	"database/sql"
+	"database/sql/driver"
 	"time"
+)
+
+type StatusEnum string
+
+func (e *StatusEnum) Scan(v interface{}) error {
+	bytes, ok := v.([]byte)
+	if !ok {
+		return err
+	}
+	*e = StatusEnum(string(bytes))
+	return nil
+}
+
+func (e StatusEnum) Value() (driver.Value, error) {
+	return []byte(string(e)), nil
+}
+
+const (
+	StatusOpen   StatusEnum = "open"
+	StatusClosed            = "closed"
 )
 
 type City struct {
@@ -13,6 +34,7 @@ type City struct {
 
 type Venue struct {
 	ID              int
+	Status          StatusEnum
 	Slug            string
 	Name            string
 	City            string
@@ -197,7 +219,7 @@ func (q *Queries) GetCity(ctx context.Context, slug string) (City, error) {
 }
 
 const getVenue = `-- name: GetVenue :one
-SELECT id, slug, name, city, spotify_playlist, songkick_id, created_at
+SELECT id, status, slug, name, city, spotify_playlist, songkick_id, created_at
 FROM venue
 WHERE slug = $1 AND city = $2
 `
@@ -213,7 +235,7 @@ func (q *Queries) GetVenue(ctx context.Context, slug string, city string) (Venue
 		row = q.db.QueryRowContext(ctx, getVenue, slug, city)
 	}
 	var i Venue
-	err := row.Scan(&i.ID, &i.Slug, &i.Name, &i.City, &i.SpotifyPlaylist, &i.SongkickID, &i.CreatedAt)
+	err := row.Scan(&i.ID, &i.Status, &i.Slug, &i.Name, &i.City, &i.SpotifyPlaylist, &i.SongkickID, &i.CreatedAt)
 	return i, err
 }
 
@@ -256,7 +278,7 @@ func (q *Queries) ListCities(ctx context.Context) ([]City, error) {
 }
 
 const listVenues = `-- name: ListVenues :many
-SELECT id, slug, name, city, spotify_playlist, songkick_id, created_at
+SELECT id, status, slug, name, city, spotify_playlist, songkick_id, created_at
 FROM venue
 WHERE city = $1
 ORDER BY name
@@ -280,7 +302,7 @@ func (q *Queries) ListVenues(ctx context.Context, city string) ([]Venue, error) 
 	items := []Venue{}
 	for rows.Next() {
 		var i Venue
-		if err := rows.Scan(&i.ID, &i.Slug, &i.Name, &i.City, &i.SpotifyPlaylist, &i.SongkickID, &i.CreatedAt); err != nil {
+		if err := rows.Scan(&i.ID, &i.Status, &i.Slug, &i.Name, &i.City, &i.SpotifyPlaylist, &i.SongkickID, &i.CreatedAt); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

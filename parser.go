@@ -69,11 +69,14 @@ func parse(s *postgres.Schema, tree pg.ParsetreeList) {
 					case nodes.AT_AddColumn:
 						switch n := cmd.Def.(type) {
 						case nodes.ColumnDef:
+							ctype := join(n.TypeName.Names, ".")
+							notNull := isNotNull(n)
 							s.Tables[idx].Columns = append(s.Tables[idx].Columns, postgres.Column{
 								Name:    *n.Colname,
-								Type:    join(n.TypeName.Names, "."),
+								Type:    ctype,
+								NotNull: notNull,
 								GoName:  structName(*n.Colname),
-								NotNull: isNotNull(n),
+								GoType:  columnType(s, ctype, notNull),
 							})
 						}
 					case nodes.AT_DropColumn:
@@ -85,6 +88,18 @@ func parse(s *postgres.Schema, tree pg.ParsetreeList) {
 					}
 				}
 			}
+		case nodes.CreateEnumStmt:
+			vals := []string{}
+			for _, item := range n.Vals.Items {
+				if n, ok := item.(nodes.String); ok {
+					vals = append(vals, n.Str)
+				}
+			}
+			s.Enums = append(s.Enums, postgres.Enum{
+				Name:   join(n.TypeName, "."),
+				GoName: structName(join(n.TypeName, ".")) + "Enum",
+				Vals:   vals,
+			})
 		case nodes.CreateStmt:
 			table := postgres.Table{
 				Name:   *n.Relation.Relname,
@@ -94,11 +109,14 @@ func parse(s *postgres.Schema, tree pg.ParsetreeList) {
 				switch n := elt.(type) {
 				case nodes.ColumnDef:
 					// log.Printf("not null: %t", n.IsNotNull)
+					ctype := join(n.TypeName.Names, ".")
+					notNull := isNotNull(n)
 					table.Columns = append(table.Columns, postgres.Column{
 						Name:    *n.Colname,
-						Type:    join(n.TypeName.Names, "."),
+						Type:    ctype,
+						NotNull: notNull,
 						GoName:  structName(*n.Colname),
-						NotNull: isNotNull(n),
+						GoType:  columnType(s, ctype, notNull),
 					})
 				}
 			}
@@ -204,7 +222,7 @@ func (r Result) Records() []postgres.Table {
 func (r Result) UsesTime() bool {
 	for _, table := range r.Records() {
 		for _, c := range table.Columns {
-			if c.GoType() == "time.Time" {
+			if c.GoType == "time.Time" {
 				return true
 			}
 		}
@@ -329,7 +347,7 @@ func fieldsFromRefs(t postgres.Table, refs []outputRef) []Field {
 				if c.Name == name {
 					f = append(f, Field{
 						Name: c.GoName,
-						Type: c.GoType(),
+						Type: c.GoType,
 					})
 				}
 			}
@@ -343,7 +361,7 @@ func fieldsFromTable(t postgres.Table) []Field {
 	for _, c := range t.Columns {
 		f = append(f, Field{
 			Name: c.GoName,
-			Type: c.GoType(),
+			Type: c.GoType,
 		})
 	}
 	return f
@@ -357,7 +375,7 @@ func returnType(t postgres.Table, refs []outputRef) string {
 	name := join(refs[0].ref.Fields, ".")
 	for _, c := range t.Columns {
 		if c.Name == name {
-			return c.GoType()
+			return c.GoType
 		}
 	}
 	return "interface{}"
@@ -471,7 +489,7 @@ func findOutputs(r []outputRef, n nodes.Node) []outputRef {
 func parseArgs(t postgres.Table, args []paramRef) []Arg {
 	typeMap := map[string]string{}
 	for _, c := range t.Columns {
-		typeMap[c.Name] = c.GoType()
+		typeMap[c.Name] = c.GoType
 	}
 	a := []Arg{}
 	for _, ref := range args {
@@ -521,6 +539,53 @@ func columnNames(s *postgres.Schema, table string) []string {
 	return cols
 }
 
+func columnType(s *postgres.Schema, cType string, notNull bool) string {
+	switch cType {
+	case "text":
+		if notNull {
+			return "string"
+		} else {
+			return "sql.NullString"
+		}
+	case "serial":
+		return "int"
+	case "integer":
+		return "int"
+	case "bool":
+		if notNull {
+			return "bool"
+		} else {
+			return "sql.NullBool"
+		}
+	case "pg_catalog.bool":
+		if notNull {
+			return "bool"
+		} else {
+			return "sql.NullBool"
+		}
+	case "pg_catalog.int4":
+		return "int"
+	case "pg_catalog.int8":
+		return "int"
+	case "pg_catalog.timestamp":
+		return "time.Time"
+	case "pg_catalog.varchar":
+		if notNull {
+			return "string"
+		} else {
+			return "sql.NullString"
+		}
+	default:
+		for _, e := range s.Enums {
+			if cType == e.Name {
+				return e.GoName
+			}
+		}
+		log.Printf("unknown Postgres type: %s\n", cType)
+		return "interface{}"
+	}
+}
+
 func tableName(n nodes.Node) string {
 	switch n := n.(type) {
 	case nodes.DeleteStmt:
@@ -544,8 +609,36 @@ var hh = `package {{.Package}}
 import (
 	"context"
 	"database/sql"
+	{{with .Schema.Enums}}"database/sql/driver"{{end}}
 	{{if .ImportTime}}"time"{{end}}
 )
+
+{{range .Schema.Enums}}
+type {{.GoName}} string
+
+func (e *{{.GoName}}) Scan(v interface{}) error {
+    bytes, ok := v.([]byte)
+    if !ok {
+        return err
+    }
+    *e = {{.GoName}}(string(bytes))
+    return nil
+}
+
+func (e {{.GoName}}) Value() (driver.Value, error) {
+    return []byte(string(e)), nil
+}
+
+const (
+	{{- range $i, $c := .Constants}}
+	{{- if eq $i 0}}
+	{{$c.Name}} {{$c.Type}} = "{{$c.Value}}"
+	{{- else}}
+	{{$c.Name}} = "{{$c.Value}}"
+	{{- end}}
+	{{- end}}
+)
+{{end}}
 
 {{range .Records}}
 type {{.GoName}} struct { {{- range .Columns}}
@@ -702,9 +795,9 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{range .Args}}{{.Name}} 
 `
 
 func structName(name string) string {
-	if strings.HasSuffix(name, "s") {
-		name = name[:len(name)-1]
-	}
+	// if strings.HasSuffix(name, "s") {
+	// 	name = name[:len(name)-1]
+	// }
 	out := ""
 	for _, p := range strings.Split(name, "_") {
 		if p == "id" {
