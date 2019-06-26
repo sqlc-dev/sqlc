@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 )
 
-func Exec(schemaDir, queryDir, pkg, out string) error {
+func Exec(schemaDir, queryDir, pkg, out string, prepare bool) error {
 	s, err := ParseSchmea(schemaDir)
 	if err != nil {
 		return err
@@ -15,6 +15,6 @@ func Exec(schemaDir, queryDir, pkg, out string) error {
 		return err
 	}
 
-	source := generate(q, pkg)
+	source := generate(q, pkg, prepare)
 	return ioutil.WriteFile(out, []byte(source), 0644)
 }

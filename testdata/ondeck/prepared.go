@@ -54,13 +54,71 @@ func New(db dbtx) *Queries {
 	return &Queries{db: db}
 }
 
+func Prepare(ctx context.Context, db dbtx) (*Queries, error) {
+	q := Queries{db: db}
+	var err error
+	if q.createCity, err = db.PrepareContext(ctx, createCity); err != nil {
+		return nil, err
+	}
+	if q.createVenue, err = db.PrepareContext(ctx, createVenue); err != nil {
+		return nil, err
+	}
+	if q.deleteVenue, err = db.PrepareContext(ctx, deleteVenue); err != nil {
+		return nil, err
+	}
+	if q.getCity, err = db.PrepareContext(ctx, getCity); err != nil {
+		return nil, err
+	}
+	if q.getVenue, err = db.PrepareContext(ctx, getVenue); err != nil {
+		return nil, err
+	}
+	if q.listCities, err = db.PrepareContext(ctx, listCities); err != nil {
+		return nil, err
+	}
+	if q.listVenues, err = db.PrepareContext(ctx, listVenues); err != nil {
+		return nil, err
+	}
+	if q.updateCityName, err = db.PrepareContext(ctx, updateCityName); err != nil {
+		return nil, err
+	}
+	if q.updateVenueName, err = db.PrepareContext(ctx, updateVenueName); err != nil {
+		return nil, err
+	}
+	if q.venueCountByCity, err = db.PrepareContext(ctx, venueCountByCity); err != nil {
+		return nil, err
+	}
+	return &q, nil
+}
+
 type Queries struct {
-	db dbtx
+	db               dbtx
+	tx               *sql.Tx
+	createCity       *sql.Stmt
+	createVenue      *sql.Stmt
+	deleteVenue      *sql.Stmt
+	getCity          *sql.Stmt
+	getVenue         *sql.Stmt
+	listCities       *sql.Stmt
+	listVenues       *sql.Stmt
+	updateCityName   *sql.Stmt
+	updateVenueName  *sql.Stmt
+	venueCountByCity *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
-		db: tx,
+		db:               tx,
+		tx:               tx,
+		createCity:       q.createCity,
+		createVenue:      q.createVenue,
+		deleteVenue:      q.deleteVenue,
+		getCity:          q.getCity,
+		getVenue:         q.getVenue,
+		listCities:       q.listCities,
+		listVenues:       q.listVenues,
+		updateCityName:   q.updateCityName,
+		updateVenueName:  q.updateVenueName,
+		venueCountByCity: q.venueCountByCity,
 	}
 }
 
@@ -75,7 +133,15 @@ INSERT INTO city (
 `
 
 func (q *Queries) CreateCity(ctx context.Context, name string, slug string) (City, error) {
-	row := q.db.QueryRowContext(ctx, createCity, name, slug)
+	var row *sql.Row
+	switch {
+	case q.createCity != nil && q.tx != nil:
+		row = q.tx.StmtContext(ctx, q.createCity).QueryRowContext(ctx, name, slug)
+	case q.createCity != nil:
+		row = q.createCity.QueryRowContext(ctx, name, slug)
+	default:
+		row = q.db.QueryRowContext(ctx, createCity, name, slug)
+	}
 	var i City
 	err := row.Scan(&i.Slug, &i.Name)
 	return i, err
@@ -98,7 +164,15 @@ INSERT INTO venue (
 `
 
 func (q *Queries) CreateVenue(ctx context.Context, name string, slug string, spotifyPlaylist string, city string) (int, error) {
-	row := q.db.QueryRowContext(ctx, createVenue, name, slug, spotifyPlaylist, city)
+	var row *sql.Row
+	switch {
+	case q.createVenue != nil && q.tx != nil:
+		row = q.tx.StmtContext(ctx, q.createVenue).QueryRowContext(ctx, name, slug, spotifyPlaylist, city)
+	case q.createVenue != nil:
+		row = q.createVenue.QueryRowContext(ctx, name, slug, spotifyPlaylist, city)
+	default:
+		row = q.db.QueryRowContext(ctx, createVenue, name, slug, spotifyPlaylist, city)
+	}
 	var i int
 	err := row.Scan(&i)
 	return i, err
@@ -110,7 +184,15 @@ WHERE slug = $1 AND slug = $1
 `
 
 func (q *Queries) DeleteVenue(ctx context.Context, slug string) error {
-	_, err := q.db.ExecContext(ctx, deleteVenue, slug)
+	var err error
+	switch {
+	case q.deleteVenue != nil && q.tx != nil:
+		_, err = q.tx.StmtContext(ctx, q.deleteVenue).ExecContext(ctx, slug)
+	case q.deleteVenue != nil:
+		_, err = q.deleteVenue.ExecContext(ctx, slug)
+	default:
+		_, err = q.db.ExecContext(ctx, deleteVenue, slug)
+	}
 	return err
 }
 
@@ -121,7 +203,15 @@ WHERE slug = $1
 `
 
 func (q *Queries) GetCity(ctx context.Context, slug string) (City, error) {
-	row := q.db.QueryRowContext(ctx, getCity, slug)
+	var row *sql.Row
+	switch {
+	case q.getCity != nil && q.tx != nil:
+		row = q.tx.StmtContext(ctx, q.getCity).QueryRowContext(ctx, slug)
+	case q.getCity != nil:
+		row = q.getCity.QueryRowContext(ctx, slug)
+	default:
+		row = q.db.QueryRowContext(ctx, getCity, slug)
+	}
 	var i City
 	err := row.Scan(&i.Slug, &i.Name)
 	return i, err
@@ -134,7 +224,15 @@ WHERE slug = $1 AND city = $2
 `
 
 func (q *Queries) GetVenue(ctx context.Context, slug string, city string) (Venue, error) {
-	row := q.db.QueryRowContext(ctx, getVenue, slug, city)
+	var row *sql.Row
+	switch {
+	case q.getVenue != nil && q.tx != nil:
+		row = q.tx.StmtContext(ctx, q.getVenue).QueryRowContext(ctx, slug, city)
+	case q.getVenue != nil:
+		row = q.getVenue.QueryRowContext(ctx, slug, city)
+	default:
+		row = q.db.QueryRowContext(ctx, getVenue, slug, city)
+	}
 	var i Venue
 	err := row.Scan(&i.ID, &i.Status, &i.Slug, &i.Name, &i.City, &i.SpotifyPlaylist, &i.SongkickID, &i.CreatedAt)
 	return i, err
@@ -147,7 +245,16 @@ ORDER BY name
 `
 
 func (q *Queries) ListCities(ctx context.Context) ([]City, error) {
-	rows, err := q.db.QueryContext(ctx, listCities)
+	var rows *sql.Rows
+	var err error
+	switch {
+	case q.listCities != nil && q.tx != nil:
+		rows, err = q.tx.StmtContext(ctx, q.listCities).QueryContext(ctx)
+	case q.listCities != nil:
+		rows, err = q.listCities.QueryContext(ctx)
+	default:
+		rows, err = q.db.QueryContext(ctx, listCities)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -177,7 +284,16 @@ ORDER BY name
 `
 
 func (q *Queries) ListVenues(ctx context.Context, city string) ([]Venue, error) {
-	rows, err := q.db.QueryContext(ctx, listVenues, city)
+	var rows *sql.Rows
+	var err error
+	switch {
+	case q.listVenues != nil && q.tx != nil:
+		rows, err = q.tx.StmtContext(ctx, q.listVenues).QueryContext(ctx, city)
+	case q.listVenues != nil:
+		rows, err = q.listVenues.QueryContext(ctx, city)
+	default:
+		rows, err = q.db.QueryContext(ctx, listVenues, city)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -206,7 +322,15 @@ WHERE slug = $1
 `
 
 func (q *Queries) UpdateCityName(ctx context.Context, slug string, name string) error {
-	_, err := q.db.ExecContext(ctx, updateCityName, slug, name)
+	var err error
+	switch {
+	case q.updateCityName != nil && q.tx != nil:
+		_, err = q.tx.StmtContext(ctx, q.updateCityName).ExecContext(ctx, slug, name)
+	case q.updateCityName != nil:
+		_, err = q.updateCityName.ExecContext(ctx, slug, name)
+	default:
+		_, err = q.db.ExecContext(ctx, updateCityName, slug, name)
+	}
 	return err
 }
 
@@ -218,7 +342,15 @@ RETURNING id
 `
 
 func (q *Queries) UpdateVenueName(ctx context.Context, slug string, name string) (int, error) {
-	row := q.db.QueryRowContext(ctx, updateVenueName, slug, name)
+	var row *sql.Row
+	switch {
+	case q.updateVenueName != nil && q.tx != nil:
+		row = q.tx.StmtContext(ctx, q.updateVenueName).QueryRowContext(ctx, slug, name)
+	case q.updateVenueName != nil:
+		row = q.updateVenueName.QueryRowContext(ctx, slug, name)
+	default:
+		row = q.db.QueryRowContext(ctx, updateVenueName, slug, name)
+	}
 	var i int
 	err := row.Scan(&i)
 	return i, err
@@ -239,7 +371,16 @@ type VenueCountByCityRow struct {
 }
 
 func (q *Queries) VenueCountByCity(ctx context.Context) ([]VenueCountByCityRow, error) {
-	rows, err := q.db.QueryContext(ctx, venueCountByCity)
+	var rows *sql.Rows
+	var err error
+	switch {
+	case q.venueCountByCity != nil && q.tx != nil:
+		rows, err = q.tx.StmtContext(ctx, q.venueCountByCity).QueryContext(ctx)
+	case q.venueCountByCity != nil:
+		rows, err = q.venueCountByCity.QueryContext(ctx)
+	default:
+		rows, err = q.db.QueryContext(ctx, venueCountByCity)
+	}
 	if err != nil {
 		return nil, err
 	}

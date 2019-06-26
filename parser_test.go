@@ -86,15 +86,31 @@ func TestParseSchema(t *testing.T) {
 		t.Error(err)
 	}
 
-	source := generate(q, "ondeck")
+	t.Run("default", func(t *testing.T) {
+		source := generate(q, "ondeck", false)
 
-	blob, err := ioutil.ReadFile(filepath.Join("testdata", "ondeck", "db.go"))
-	if err != nil {
-		log.Fatal(err)
-	}
+		blob, err := ioutil.ReadFile(filepath.Join("testdata", "ondeck", "db.go"))
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	if diff := cmp.Diff(source, string(blob)); diff != "" {
-		t.Errorf("genreated code differed (-want +got):\n%s", diff)
-		t.Log(source)
-	}
+		if diff := cmp.Diff(source, string(blob)); diff != "" {
+			t.Errorf("genreated code differed (-want +got):\n%s", diff)
+			t.Log(source)
+		}
+	})
+
+	t.Run("prepared", func(t *testing.T) {
+		source := generate(q, "ondeck", true)
+
+		blob, err := ioutil.ReadFile(filepath.Join("testdata", "ondeck", "prepared.go"))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if diff := cmp.Diff(source, string(blob)); diff != "" {
+			t.Errorf("genreated code differed (-want +got):\n%s", diff)
+			t.Log(source)
+		}
+	})
 }

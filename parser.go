@@ -658,6 +658,7 @@ func New(db dbtx) *Queries {
 	return &Queries{db: db}
 }
 
+{{if .PrepareSupport}}
 func Prepare(ctx context.Context, db dbtx) (*Queries, error) {
 	q := Queries{db: db}
 	var err error{{range .Queries}}
@@ -667,22 +668,27 @@ func Prepare(ctx context.Context, db dbtx) (*Queries, error) {
 	{{- end}}
 	return &q, nil
 }
+{{end}}
 
 type Queries struct {
 	db dbtx
 
+    {{- if .PrepareSupport}}
 	tx         *sql.Tx
 	{{- range .Queries}}
 	{{.StmtName}}  *sql.Stmt
+	{{- end}}
 	{{- end}}
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
-		tx: tx,
 		db: tx,
+     	{{- if .PrepareSupport}}
+		tx: tx,
 		{{- range .Queries}}
 		{{.StmtName}}: q.{{.StmtName}},
+		{{- end}}
 		{{- end}}
 	}
 }
@@ -700,6 +706,7 @@ type {{.MethodName}}Row struct { {{- range .Fields}}
 
 {{if eq .Type ":one"}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{range .Args}}{{.Name}} {{.Type}},{{end}}) ({{.ReturnType}}, error) {
+  	{{- if $.PrepareSupport}}
 	var row *sql.Row
 	switch {
 	case q.{{.StmtName}} != nil && q.tx != nil:
@@ -709,6 +716,9 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{range .Args}}{{.Name}} 
 	default:
 		row = q.db.QueryRowContext(ctx, {{.QueryName}}, {{range .Args}}{{.Name}},{{end}})
 	}
+	{{- else}}
+	row := q.db.QueryRowContext(ctx, {{.QueryName}}, {{range .Args}}{{.Name}},{{end}})
+	{{- end}}
 	var i {{.ReturnType}}
 	{{- if .ScanRecord}}
 	err := row.Scan({{range .Fields}}&i.{{.Name}},{{end}})
@@ -721,6 +731,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{range .Args}}{{.Name}} 
 
 {{if eq .Type ":many"}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{range .Args}}{{.Name}} {{.Type}},{{end}}) ([]{{.ReturnType}}, error) {
+  	{{- if $.PrepareSupport}}
 	var rows *sql.Rows
 	var err error
 	switch {
@@ -731,6 +742,9 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{range .Args}}{{.Name}} 
 	default:
 		rows, err = q.db.QueryContext(ctx, {{.QueryName}}, {{range .Args}}{{.Name}},{{end}})
 	}
+  	{{- else}}
+	rows, err := q.db.QueryContext(ctx, {{.QueryName}}, {{range .Args}}{{.Name}},{{end}})
+  	{{- end}}
 	if err != nil {
 		return nil, err
 	}
@@ -759,6 +773,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{range .Args}}{{.Name}} 
 
 {{if eq .Type ":exec"}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{range .Args}}{{.Name}} {{.Type}},{{end}}) error {
+  	{{- if $.PrepareSupport}}
 	var err error
 	switch {
 	case q.{{.StmtName}} != nil && q.tx != nil:
@@ -768,12 +783,16 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{range .Args}}{{.Name}} 
 	default:
 		_, err = q.db.ExecContext(ctx, {{.QueryName}}, {{range .Args}}{{.Name}},{{end}})
 	}
+  	{{- else}}
+	_, err := q.db.ExecContext(ctx, {{.QueryName}}, {{range .Args}}{{.Name}},{{end}})
+  	{{- end}}
 	return err
 }
 {{end}}
 
 {{if eq .Type ":execrows"}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{range .Args}}{{.Name}} {{.Type}},{{end}}) (int64, error) {
+  	{{- if $.PrepareSupport}}
 	var result sql.Result
 	var err error
 	switch {
@@ -784,6 +803,9 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{range .Args}}{{.Name}} 
 	default:
 		result, err = q.db.ExecContext(ctx, {{.QueryName}}, {{range .Args}}{{.Name}},{{end}})
 	}
+	{{- else}}
+	result, err := q.db.ExecContext(ctx, {{.QueryName}}, {{range .Args}}{{.Name}},{{end}})
+	{{- end}}
 	if err != nil {
 		return 0, err
 	}
@@ -829,12 +851,13 @@ func argName(name string) string {
 }
 
 type tmplCtx struct {
-	Q          string
-	Package    string
-	Queries    []Query
-	Schema     *postgres.Schema
-	Records    []postgres.Table
-	ImportTime bool
+	Q              string
+	Package        string
+	Queries        []Query
+	Schema         *postgres.Schema
+	Records        []postgres.Table
+	ImportTime     bool
+	PrepareSupport bool
 }
 
 func lowerTitle(s string) string {
@@ -843,7 +866,7 @@ func lowerTitle(s string) string {
 	return string(a)
 }
 
-func generate(r *Result, pkg string) string {
+func generate(r *Result, pkg string, prepare bool) string {
 	sort.Slice(r.Queries, func(i, j int) bool { return r.Queries[i].MethodName < r.Queries[j].MethodName })
 
 	funcMap := template.FuncMap{
@@ -854,12 +877,13 @@ func generate(r *Result, pkg string) string {
 	var b bytes.Buffer
 	w := bufio.NewWriter(&b)
 	fileTmpl.Execute(w, tmplCtx{
-		Q:          "`",
-		Queries:    r.Queries,
-		Package:    pkg,
-		Schema:     r.Schema,
-		Records:    r.Records(),
-		ImportTime: r.UsesTime(),
+		PrepareSupport: prepare,
+		Q:              "`",
+		Queries:        r.Queries,
+		Package:        pkg,
+		Schema:         r.Schema,
+		Records:        r.Records(),
+		ImportTime:     r.UsesTime(),
 	})
 	w.Flush()
 	code, err := format.Source(b.Bytes())
