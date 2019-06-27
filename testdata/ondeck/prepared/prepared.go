@@ -1,22 +1,12 @@
-package ondeck
+package prepared
 
 import (
 	"context"
 	"database/sql"
-	"database/sql/driver"
 	"time"
 )
 
 type StatusEnum string
-
-func (e *StatusEnum) Scan(v interface{}) error {
-	*e = StatusEnum(string(v.([]byte)))
-	return nil
-}
-
-func (e StatusEnum) Value() (driver.Value, error) {
-	return []byte(string(e)), nil
-}
 
 const (
 	StatusOpen   StatusEnum = "open"
@@ -145,29 +135,31 @@ func (q *Queries) CreateCity(ctx context.Context, name string, slug string) (Cit
 
 const createVenue = `-- name: CreateVenue :one
 INSERT INTO venue (
-    name,
     slug,
+    name,
+    city,
     created_at,
     spotify_playlist,
-    city
+    status
 ) VALUES (
     $1,
     $2,
-    NOW(),
     $3,
-    $4
+    NOW(),
+    $4,
+    $5
 ) RETURNING id
 `
 
-func (q *Queries) CreateVenue(ctx context.Context, name string, slug string, spotifyPlaylist string, city string) (int, error) {
+func (q *Queries) CreateVenue(ctx context.Context, slug string, name string, city string, spotifyPlaylist string, status StatusEnum) (int, error) {
 	var row *sql.Row
 	switch {
 	case q.createVenue != nil && q.tx != nil:
-		row = q.tx.StmtContext(ctx, q.createVenue).QueryRowContext(ctx, name, slug, spotifyPlaylist, city)
+		row = q.tx.StmtContext(ctx, q.createVenue).QueryRowContext(ctx, slug, name, city, spotifyPlaylist, status)
 	case q.createVenue != nil:
-		row = q.createVenue.QueryRowContext(ctx, name, slug, spotifyPlaylist, city)
+		row = q.createVenue.QueryRowContext(ctx, slug, name, city, spotifyPlaylist, status)
 	default:
-		row = q.db.QueryRowContext(ctx, createVenue, name, slug, spotifyPlaylist, city)
+		row = q.db.QueryRowContext(ctx, createVenue, slug, name, city, spotifyPlaylist, status)
 	}
 	var i int
 	err := row.Scan(&i)

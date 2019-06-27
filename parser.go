@@ -246,6 +246,9 @@ func ParseQueries(s *postgres.Schema, dir string) (*Result, error) {
 	}
 	var q []Query
 	for _, f := range files {
+		if !strings.HasSuffix(f.Name(), ".sql") {
+			continue
+		}
 		blob, err := ioutil.ReadFile(filepath.Join(dir, f.Name()))
 		if err != nil {
 			return nil, err
@@ -609,21 +612,11 @@ var hh = `package {{.Package}}
 import (
 	"context"
 	"database/sql"
-	{{with .Schema.Enums}}"database/sql/driver"{{end}}
 	{{if .ImportTime}}"time"{{end}}
 )
 
 {{range .Schema.Enums}}
 type {{.GoName}} string
-
-func (e *{{.GoName}}) Scan(v interface{}) error {
-    *e = {{.GoName}}(string(v.([]byte)))
-    return nil
-}
-
-func (e {{.GoName}}) Value() (driver.Value, error) {
-    return []byte(string(e)), nil
-}
 
 const (
 	{{- range $i, $c := .Constants}}

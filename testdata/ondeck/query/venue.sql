@@ -15,17 +15,19 @@ WHERE slug = $1 AND city = $2;
 
 -- name: CreateVenue :one
 INSERT INTO venue (
-    name,
     slug,
+    name,
+    city,
     created_at,
     spotify_playlist,
-    city
+    status
 ) VALUES (
     $1,
     $2,
-    NOW(),
     $3,
-    $4
+    NOW(),
+    $4,
+    $5
 ) RETURNING id;
 
 -- name: UpdateVenueName :one

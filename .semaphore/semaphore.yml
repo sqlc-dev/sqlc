@@ -7,11 +7,20 @@ agent:
     type: e1-standard-2
     os_image: ubuntu1804
 blocks:
-  - name: Golang example
+  - name: DinoSQL
     task:
       jobs:
-        - name: Run Go
+        - name: Test dinosql
           commands:
             - checkout
             - sem-version go 1.12
+            - go test -v ./...
+        - name: Test dinosql/ondeck
+          commands:
+            - sem-service start postgres
+            - sudo apt-get install -y -qq postgresql-client
+            - createdb -U postgres -h 0.0.0.0 dinotest
+            - checkout
+            - sem-version go 1.12
+            - cd testdata/ondeck
             - go test -v ./...
