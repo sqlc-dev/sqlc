@@ -53,7 +53,7 @@ func provision(t *testing.T, source string) (*sql.DB, func()) {
 func TestQueries(t *testing.T) {
 	t.Parallel()
 
-	sdb, cleanup := provision(t, "postgres://localhost/dinotest?sslmode=disable")
+	sdb, cleanup := provision(t, "postgres://postgres:@localhost/dinotest?sslmode=disable")
 	defer cleanup()
 
 	files, err := ioutil.ReadDir("schema")
@@ -168,7 +168,7 @@ func TestQueries(t *testing.T) {
 func TestPrepared(t *testing.T) {
 	t.Parallel()
 
-	sdb, cleanup := provision(t, "postgres://localhost/dinotest?sslmode=disable")
+	sdb, cleanup := provision(t, "postgres://postgres:@localhost/dinotest?sslmode=disable")
 	defer cleanup()
 
 	files, err := ioutil.ReadDir("schema")
