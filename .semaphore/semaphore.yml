@@ -10,15 +10,14 @@ blocks:
   - name: DinoSQL
     task:
       jobs:
-        - name: Setup
+        - name: Test dinosql
           commands:
             - checkout
             - sem-version go 1.12
-        - name: Test dinosql
-          commands:
             - go test -v ./...
         - name: Test dinosql/ondeck
           commands:
-            - pushd testdata/ondeck
+            - checkout
+            - sem-version go 1.12
+            - cd testdata/ondeck
             - go test -v ./...
-            - popd
