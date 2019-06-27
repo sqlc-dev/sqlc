@@ -17,6 +17,9 @@ blocks:
             - go test -v ./...
         - name: Test dinosql/ondeck
           commands:
+            - sem-service start postgres
+            - sudo apt-get install -y -qq postgresql-client
+            - createdb -U postgres -h 0.0.0.0 dinotest
             - checkout
             - sem-version go 1.12
             - cd testdata/ondeck
