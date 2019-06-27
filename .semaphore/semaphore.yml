@@ -7,11 +7,18 @@ agent:
     type: e1-standard-2
     os_image: ubuntu1804
 blocks:
-  - name: Golang example
+  - name: DinoSQL
     task:
       jobs:
-        - name: Run Go
+        - name: Setup
           commands:
             - checkout
             - sem-version go 1.12
+        - name: Test dinosql
+          commands:
             - go test -v ./...
+        - name: Test dinosql/ondeck
+          commands:
+            - pushd testdata/ondeck
+            - go test -v ./...
+            - popd
