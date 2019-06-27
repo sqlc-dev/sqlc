@@ -102,9 +102,9 @@ func TestParseSchema(t *testing.T) {
 	})
 
 	t.Run("prepared", func(t *testing.T) {
-		source := generate(q, "ondeck", true)
+		source := generate(q, "prepared", true)
 
-		blob, err := ioutil.ReadFile(filepath.Join("testdata", "ondeck", "prepared.go"))
+		blob, err := ioutil.ReadFile(filepath.Join("testdata", "ondeck", "prepared", "prepared.go"))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -119,7 +119,7 @@ func TestParseSchema(t *testing.T) {
 func TestCompile(t *testing.T) {
 	files := []string{
 		filepath.Join("testdata", "ondeck", "db.go"),
-		filepath.Join("testdata", "ondeck", "prepared.go"),
+		filepath.Join("testdata", "ondeck", "prepared", "prepared.go"),
 	}
 	for _, filename := range files {
 		f := filename
