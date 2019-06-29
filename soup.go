@@ -1,0 +1,776 @@
+package dinosql
+
+import (
+	"fmt"
+
+	nodes "github.com/lfittl/pg_query_go/nodes"
+)
+
+type vistior interface {
+	visit(nodes.Node) vistior
+}
+
+func walkn(f vistior, node nodes.Node) {
+	if node != nil {
+		walk(f, node)
+	}
+}
+
+func walk(f vistior, node nodes.Node) {
+	if f = f.visit(node); f == nil {
+		return
+	}
+
+	switch n := node.(type) {
+
+	case nodes.A_ArrayExpr:
+		walkn(f, n.Elements)
+
+	case nodes.A_Const:
+		walkn(f, n.Val)
+
+	case nodes.A_Expr:
+		walkn(f, n.Name)
+		walkn(f, n.Lexpr)
+		walkn(f, n.Rexpr)
+
+	case nodes.A_Indices:
+		walkn(f, n.Lidx)
+		walkn(f, n.Uidx)
+
+	case nodes.A_Indirection:
+		walkn(f, n.Arg)
+		walkn(f, n.Indirection)
+
+	case nodes.A_Star:
+		// pass
+
+	case nodes.AccessPriv:
+		walkn(f, n.Cols)
+
+	case nodes.Aggref:
+		walkn(f, n.Xpr)
+		walkn(f, n.Aggargtypes)
+		walkn(f, n.Aggdirectargs)
+		walkn(f, n.Args)
+		walkn(f, n.Aggorder)
+		walkn(f, n.Aggdistinct)
+		walkn(f, n.Aggfilter)
+
+	case nodes.Alias:
+		walkn(f, n.Colnames)
+
+	case nodes.AlterCollationStmt:
+		walkn(f, n.Collname)
+
+	case nodes.AlterDatabaseSetStmt:
+		walkn(f, n.Setstmt)
+
+	case nodes.AlterDatabaseStmt:
+		walkn(f, n.Options)
+
+	case nodes.AlterDefaultPrivilegesStmt:
+		walkn(f, n.Action)
+		walkn(f, n.Options)
+
+	case nodes.AlterDomainStmt:
+		walkn(f, n.TypeName)
+		walkn(f, n.Def)
+
+	case nodes.AlterEnumStmt:
+		walkn(f, n.TypeName)
+
+	case nodes.AlterEventTrigStmt:
+		// pass
+
+	case nodes.AlterExtensionContentsStmt:
+		walkn(f, n.Object)
+
+	case nodes.AlterExtensionStmt:
+		walkn(f, n.Options)
+
+	case nodes.AlterFdwStmt:
+		walkn(f, n.FuncOptions)
+		walkn(f, n.Options)
+
+	case nodes.AlterForeignServerStmt:
+		walkn(f, n.Options)
+
+	case nodes.AlterFunctionStmt:
+		walkn(f, n.Func)
+		walkn(f, n.Actions)
+
+	case nodes.AlterObjectDependsStmt:
+		walkn(f, n.Relation)
+		walkn(f, n.Object)
+		walkn(f, n.Extname)
+
+	case nodes.AlterObjectSchemaStmt:
+		walkn(f, n.Relation)
+		walkn(f, n.Object)
+
+	case nodes.AlterOpFamilyStmt:
+		walkn(f, n.Opfamilyname)
+		walkn(f, n.Items)
+
+	case nodes.AlterOperatorStmt:
+		walkn(f, n.Opername)
+		walkn(f, n.Options)
+
+	case nodes.AlterOwnerStmt:
+		walkn(f, n.Relation)
+		walkn(f, n.Object)
+		walkn(f, n.Newowner)
+
+	case nodes.AlterPolicyStmt:
+		walkn(f, n.Table)
+		walkn(f, n.Roles)
+		walkn(f, n.Qual)
+		walkn(f, n.WithCheck)
+
+	case nodes.AlterPublicationStmt:
+		walkn(f, n.Options)
+		walkn(f, n.Tables)
+
+	case nodes.AlterRoleSetStmt:
+		walkn(f, n.Role)
+		walkn(f, n.Setstmt)
+
+	case nodes.AlterRoleStmt:
+		walkn(f, n.Role)
+		walkn(f, n.Options)
+
+	case nodes.AlterSeqStmt:
+		walkn(f, n.Sequence)
+		walkn(f, n.Options)
+
+	case nodes.AlterSubscriptionStmt:
+		walkn(f, n.Publication)
+		walkn(f, n.Options)
+
+	case nodes.AlterSystemStmt:
+		walkn(f, n.Setstmt)
+
+	case nodes.AlterTSConfigurationStmt:
+		walkn(f, n.Cfgname)
+		walkn(f, n.Tokentype)
+		walkn(f, n.Dicts)
+
+	case nodes.AlterTSDictionaryStmt:
+		walkn(f, n.Dictname)
+		walkn(f, n.Options)
+
+	case nodes.AlterTableCmd:
+		walkn(f, n.Newowner)
+		walkn(f, n.Def)
+
+	case nodes.AlterTableMoveAllStmt:
+		walkn(f, n.Roles)
+
+	case nodes.AlterTableSpaceOptionsStmt:
+		walkn(f, n.Options)
+
+	case nodes.AlterTableStmt:
+		walkn(f, n.Relation)
+		walkn(f, n.Cmds)
+
+	case nodes.AlterUserMappingStmt:
+		walkn(f, n.User)
+		walkn(f, n.Options)
+
+	case nodes.AlternativeSubPlan:
+		walkn(f, n.Xpr)
+		walkn(f, n.Subplans)
+
+	case nodes.ArrayCoerceExpr:
+		walkn(f, n.Xpr)
+		walkn(f, n.Arg)
+
+	case nodes.ArrayExpr:
+		walkn(f, n.Xpr)
+		walkn(f, n.Elements)
+
+	case nodes.ArrayRef:
+		walkn(f, n.Xpr)
+		walkn(f, n.Refupperindexpr)
+		walkn(f, n.Reflowerindexpr)
+		walkn(f, n.Refexpr)
+		walkn(f, n.Refassgnexpr)
+
+	case nodes.BitString:
+		// pass
+
+	case nodes.BlockIdData:
+		// pass
+
+	case nodes.BoolExpr:
+		walkn(f, n.Xpr)
+		walkn(f, n.Args)
+
+	case nodes.BooleanTest:
+		walkn(f, n.Xpr)
+		walkn(f, n.Arg)
+
+	case nodes.CaseExpr:
+		walkn(f, n.Xpr)
+		walkn(f, n.Arg)
+		walkn(f, n.Args)
+		walkn(f, n.Defresult)
+
+	case nodes.CaseTestExpr:
+		walkn(f, n.Xpr)
+
+	case nodes.CaseWhen:
+		walkn(f, n.Xpr)
+		walkn(f, n.Expr)
+		walkn(f, n.Result)
+
+	case nodes.CheckPointStmt:
+		// pass
+
+	case nodes.ClosePortalStmt:
+		// pass
+
+	case nodes.ClusterStmt:
+		walkn(f, n.Relation)
+
+	case nodes.CoalesceExpr:
+		walkn(f, n.Xpr)
+		walkn(f, n.Args)
+
+	case nodes.CoerceToDomain:
+		walkn(f, n.Xpr)
+		walkn(f, n.Arg)
+
+	case nodes.CoerceToDomainValue:
+		walkn(f, n.Xpr)
+
+	case nodes.CoerceViaIO:
+		walkn(f, n.Xpr)
+		walkn(f, n.Arg)
+
+	case nodes.CollateClause:
+		walkn(f, n.Arg)
+		walkn(f, n.Collname)
+
+	case nodes.CollateExpr:
+		walkn(f, n.Xpr)
+		walkn(f, n.Arg)
+
+	case nodes.ColumnDef:
+		walkn(f, n.TypeName)
+		walkn(f, n.RawDefault)
+		walkn(f, n.CookedDefault)
+		walkn(f, n.Constraints)
+		walkn(f, n.Fdwoptions)
+
+	case nodes.ColumnRef:
+		walkn(f, n.Fields)
+
+	case nodes.CommentStmt:
+		walkn(f, n.Object)
+
+	case nodes.CommonTableExpr:
+		walkn(f, n.Aliascolnames)
+		walkn(f, n.Ctequery)
+		walkn(f, n.Ctecolnames)
+		walkn(f, n.Ctecolcollations)
+
+	case nodes.CompositeTypeStmt:
+		walkn(f, n.Typevar)
+		walkn(f, n.Coldeflist)
+
+	case nodes.Const:
+		walkn(f, n.Xpr)
+
+	case nodes.Constraint:
+		walkn(f, n.RawExpr)
+		walkn(f, n.Keys)
+		walkn(f, n.Exclusions)
+		walkn(f, n.Options)
+		walkn(f, n.WhereClause)
+		walkn(f, n.Pktable)
+		walkn(f, n.FkAttrs)
+		walkn(f, n.PkAttrs)
+		walkn(f, n.OldConpfeqop)
+
+	case nodes.ConstraintsSetStmt:
+		walkn(f, n.Constraints)
+
+	case nodes.ConvertRowtypeExpr:
+		walkn(f, n.Xpr)
+		walkn(f, n.Arg)
+
+	case nodes.CopyStmt:
+		walkn(f, n.Relation)
+		walkn(f, n.Query)
+		walkn(f, n.Attlist)
+		walkn(f, n.Options)
+
+	case nodes.CreateAmStmt:
+		walkn(f, n.HandlerName)
+
+	case nodes.CreateCastStmt:
+		walkn(f, n.Sourcetype)
+		walkn(f, n.Targettype)
+		walkn(f, n.Func)
+
+	case nodes.CreateConversionStmt:
+		walkn(f, n.ConversionName)
+		walkn(f, n.FuncName)
+
+	case nodes.CreateDomainStmt:
+		walkn(f, n.Domainname)
+		walkn(f, n.TypeName)
+		walkn(f, n.CollClause)
+		walkn(f, n.Constraints)
+
+	case nodes.CreateEnumStmt:
+		walkn(f, n.TypeName)
+		walkn(f, n.Vals)
+
+	case nodes.CreateEventTrigStmt:
+		walkn(f, n.Whenclause)
+		walkn(f, n.Funcname)
+
+	case nodes.CreateExtensionStmt:
+		walkn(f, n.Options)
+
+	case nodes.CreateFdwStmt:
+		walkn(f, n.FuncOptions)
+		walkn(f, n.Options)
+
+	case nodes.CreateForeignServerStmt:
+		walkn(f, n.Options)
+
+	case nodes.CreateForeignTableStmt:
+		walkn(f, n.Base)
+		walkn(f, n.Options)
+
+	case nodes.CreateFunctionStmt:
+		walkn(f, n.Funcname)
+		walkn(f, n.Parameters)
+		walkn(f, n.ReturnType)
+		walkn(f, n.Options)
+		walkn(f, n.WithClause)
+
+	case nodes.CreateOpClassItem:
+		walkn(f, n.Name)
+		walkn(f, n.OrderFamily)
+		walkn(f, n.ClassArgs)
+		walkn(f, n.Storedtype)
+
+	case nodes.CreateOpClassStmt:
+		walkn(f, n.Opclassname)
+		walkn(f, n.Opfamilyname)
+		walkn(f, n.Datatype)
+		walkn(f, n.Items)
+
+	case nodes.CreateOpFamilyStmt:
+		walkn(f, n.Opfamilyname)
+
+	case nodes.CreatePLangStmt:
+		walkn(f, n.Plhandler)
+		walkn(f, n.Plinline)
+		walkn(f, n.Plvalidator)
+
+	case nodes.CreatePolicyStmt:
+		walkn(f, n.Table)
+		walkn(f, n.Roles)
+		walkn(f, n.Qual)
+		walkn(f, n.WithCheck)
+
+	case nodes.CreatePublicationStmt:
+		walkn(f, n.Options)
+		walkn(f, n.Tables)
+
+	case nodes.CreateRangeStmt:
+		walkn(f, n.TypeName)
+		walkn(f, n.Params)
+
+	case nodes.CreateRoleStmt:
+		walkn(f, n.Options)
+
+	case nodes.CreateSchemaStmt:
+		walkn(f, n.Authrole)
+		walkn(f, n.SchemaElts)
+
+	case nodes.CreateSeqStmt:
+		walkn(f, n.Sequence)
+		walkn(f, n.Options)
+
+	case nodes.CreateStatsStmt:
+		walkn(f, n.Defnames)
+		walkn(f, n.StatTypes)
+		walkn(f, n.Exprs)
+		walkn(f, n.Relations)
+
+	case nodes.CreateStmt:
+		walkn(f, n.Relation)
+		walkn(f, n.TableElts)
+		walkn(f, n.InhRelations)
+		walkn(f, n.Partbound)
+		walkn(f, n.Partspec)
+		walkn(f, n.Constraints)
+		walkn(f, n.Options)
+		walkn(f, n.OfTypename)
+
+	case nodes.CreateSubscriptionStmt:
+		walkn(f, n.Publication)
+		walkn(f, n.Options)
+
+	case nodes.CreateTableAsStmt:
+		walkn(f, n.Query)
+		walkn(f, n.Into)
+
+	case nodes.CreateTransformStmt:
+		walkn(f, n.TypeName)
+		walkn(f, n.Fromsql)
+		walkn(f, n.Tosql)
+
+	case nodes.CreateTrigStmt:
+		walkn(f, n.Relation)
+		walkn(f, n.Funcname)
+		walkn(f, n.Args)
+		walkn(f, n.Columns)
+		walkn(f, n.WhenClause)
+		walkn(f, n.TransitionRels)
+		walkn(f, n.Constrrel)
+
+	case nodes.CreateUserMappingStmt:
+		walkn(f, n.User)
+		walkn(f, n.Options)
+
+	case nodes.CreatedbStmt:
+		walkn(f, n.Options)
+
+	case nodes.CurrentOfExpr:
+		walkn(f, n.Xpr)
+
+	case nodes.DeallocateStmt:
+		// pass
+
+	case nodes.DeclareCursorStmt:
+		walkn(f, n.Query)
+
+	case nodes.DefElem:
+		walkn(f, n.Arg)
+
+	case nodes.DefineStmt:
+		walkn(f, n.Defnames)
+		walkn(f, n.Args)
+		walkn(f, n.Definition)
+
+	case nodes.DeleteStmt:
+		walkn(f, n.Relation)
+		walkn(f, n.UsingClause)
+		walkn(f, n.WhereClause)
+		walkn(f, n.ReturningList)
+		walkn(f, n.WithClause)
+
+	case nodes.DiscardStmt:
+		// pass
+
+	case nodes.DoStmt:
+		walkn(f, n.Args)
+
+	case nodes.DropOwnedStmt:
+		walkn(f, n.Roles)
+
+	case nodes.DropRoleStmt:
+		walkn(f, n.Roles)
+
+	case nodes.DropStmt:
+		walkn(f, n.Objects)
+
+	case nodes.DropSubscriptionStmt:
+		// pass
+
+	case nodes.DropTableSpaceStmt:
+		// pass
+
+	case nodes.DropUserMappingStmt:
+		walkn(f, n.User)
+
+	case nodes.DropdbStmt:
+		// pass
+
+	case nodes.ExecuteStmt:
+		walkn(f, n.Params)
+
+	case nodes.ExplainStmt:
+		walkn(f, n.Query)
+		walkn(f, n.Options)
+
+	case nodes.Expr:
+		// pass
+
+	case nodes.FetchStmt:
+		// pass
+
+	case nodes.FieldSelect:
+		walkn(f, n.Xpr)
+		walkn(f, n.Arg)
+
+	case nodes.FieldStore:
+		walkn(f, n.Xpr)
+		walkn(f, n.Arg)
+		walkn(f, n.Newvals)
+		walkn(f, n.Fieldnums)
+
+	case nodes.Float:
+		// pass
+
+	case nodes.FromExpr:
+		walkn(f, n.Fromlist)
+		walkn(f, n.Quals)
+
+	case nodes.FuncCall:
+		walkn(f, n.Funcname)
+		walkn(f, n.Args)
+		walkn(f, n.AggOrder)
+		walkn(f, n.AggFilter)
+		walkn(f, n.Over)
+
+	case nodes.FuncExpr:
+		walkn(f, n.Xpr)
+		walkn(f, n.Args)
+
+	case nodes.FunctionParameter:
+		walkn(f, n.ArgType)
+		walkn(f, n.Defexpr)
+
+	case nodes.GrantRoleStmt:
+		walkn(f, n.GrantedRoles)
+		walkn(f, n.GranteeRoles)
+		walkn(f, n.Grantor)
+
+	case nodes.GrantStmt:
+		walkn(f, n.Objects)
+		walkn(f, n.Privileges)
+		walkn(f, n.Grantees)
+
+	case nodes.GroupingFunc:
+		walkn(f, n.Xpr)
+		walkn(f, n.Args)
+		walkn(f, n.Refs)
+		walkn(f, n.Cols)
+
+	case nodes.GroupingSet:
+		walkn(f, n.Content)
+
+	case nodes.ImportForeignSchemaStmt:
+		walkn(f, n.TableList)
+		walkn(f, n.Options)
+
+	case nodes.IndexElem:
+		walkn(f, n.Expr)
+		walkn(f, n.Collation)
+		walkn(f, n.Opclass)
+
+	case nodes.IndexStmt:
+		walkn(f, n.Relation)
+		walkn(f, n.IndexParams)
+		walkn(f, n.Options)
+		walkn(f, n.WhereClause)
+		walkn(f, n.ExcludeOpNames)
+
+	case nodes.InferClause:
+		walkn(f, n.IndexElems)
+		walkn(f, n.WhereClause)
+
+	case nodes.InferenceElem:
+		walkn(f, n.Xpr)
+		walkn(f, n.Expr)
+
+	case nodes.InlineCodeBlock:
+		// pass
+
+	case nodes.InsertStmt:
+		walkn(f, n.Relation)
+		walkn(f, n.Cols)
+		walkn(f, n.SelectStmt)
+		walkn(f, n.OnConflictClause)
+		walkn(f, n.WithClause)
+
+	case nodes.Integer:
+		// pass
+
+	case nodes.IntoClause:
+		walkn(f, n.Rel)
+		walkn(f, n.ColNames)
+		walkn(f, n.Options)
+		walkn(f, n.ViewQuery)
+
+	case nodes.JoinExpr:
+		walkn(f, n.Larg)
+		walkn(f, n.Rarg)
+		walkn(f, n.UsingClause)
+		walkn(f, n.Quals)
+		walkn(f, n.Alias)
+
+	case nodes.List:
+		for _, item := range n.Items {
+			walkn(f, item)
+		}
+
+	case nodes.ListenStmt:
+		// pass
+
+	case nodes.LoadStmt:
+		// pass
+
+	case nodes.LockStmt:
+		walkn(f, n.Relations)
+
+	case nodes.LockingClause:
+		walkn(f, n.LockedRels)
+
+	case nodes.MinMaxExpr:
+		walkn(f, n.Xpr)
+		walkn(f, n.Args)
+
+	case nodes.MultiAssignRef:
+		walkn(f, n.Source)
+
+	case nodes.NamedArgExpr:
+		walkn(f, n.Xpr)
+		walkn(f, n.Arg)
+
+	case nodes.NextValueExpr:
+		walkn(f, n.Xpr)
+
+	case nodes.NotifyStmt:
+		// pass
+
+	case nodes.Null:
+		// pass
+
+	case nodes.NullTest:
+		walkn(f, n.Xpr)
+		walkn(f, n.Arg)
+
+	case nodes.ObjectWithArgs:
+		walkn(f, n.Objname)
+		walkn(f, n.Objargs)
+
+	case nodes.OnConflictClause:
+		walkn(f, n.Infer)
+		walkn(f, n.TargetList)
+		walkn(f, n.WhereClause)
+
+	case nodes.OnConflictExpr:
+		walkn(f, n.ArbiterElems)
+		walkn(f, n.ArbiterWhere)
+		walkn(f, n.OnConflictSet)
+		walkn(f, n.OnConflictWhere)
+		walkn(f, n.ExclRelTlist)
+
+	case nodes.OpExpr:
+		walkn(f, n.Xpr)
+		walkn(f, n.Args)
+
+	case nodes.Param:
+		walkn(f, n.Xpr)
+
+	case nodes.ParamExecData:
+		// pass
+
+	case nodes.ParamExternData:
+		// pass
+
+	case nodes.ParamListInfoData:
+		// pass
+
+	case nodes.ParamRef:
+		// pass
+
+	case nodes.PartitionBoundSpec:
+		walkn(f, n.Listdatums)
+		walkn(f, n.Lowerdatums)
+		walkn(f, n.Upperdatums)
+
+	case nodes.PartitionCmd:
+		walkn(f, n.Name)
+		walkn(f, n.Bound)
+
+	case nodes.PartitionElem:
+		walkn(f, n.Expr)
+		walkn(f, n.Collation)
+		walkn(f, n.Opclass)
+
+	case nodes.PartitionRangeDatum:
+		walkn(f, n.Value)
+
+	case nodes.PartitionSpec:
+		walkn(f, n.PartParams)
+
+	case nodes.PrepareStmt:
+		walkn(f, n.Argtypes)
+		walkn(f, n.Query)
+
+	case nodes.Query:
+		walkn(f, n.UtilityStmt)
+		walkn(f, n.CteList)
+		walkn(f, n.Jointree)
+		walkn(f, n.TargetList)
+		walkn(f, n.OnConflict)
+		walkn(f, n.ReturningList)
+		walkn(f, n.GroupClause)
+		walkn(f, n.GroupingSets)
+		walkn(f, n.HavingQual)
+		walkn(f, n.WindowClause)
+		walkn(f, n.DistinctClause)
+		walkn(f, n.SortClause)
+		walkn(f, n.LimitCount)
+		walkn(f, n.RowMarks)
+		walkn(f, n.SetOperations)
+		walkn(f, n.ConstraintDeps)
+		walkn(f, n.WithCheckOptions)
+
+	case nodes.RangeFunction:
+		walkn(f, n.Functions)
+		walkn(f, n.Alias)
+		walkn(f, n.Coldeflist)
+
+	case nodes.RangeSubselect:
+		walkn(f, n.Subquery)
+		walkn(f, n.Alias)
+
+	case nodes.RangeTableFunc:
+		walkn(f, n.Docexpr)
+		walkn(f, n.Rowexpr)
+		walkn(f, n.Namespaces)
+		walkn(f, n.Columns)
+		walkn(f, n.Alias)
+
+	case nodes.RangeTableFuncCol:
+		walkn(f, n.TypeName)
+		walkn(f, n.Colexpr)
+		walkn(f, n.Coldefexpr)
+
+	case nodes.RangeTableSample:
+		walkn(f, n.Relation)
+		walkn(f, n.Method)
+		walkn(f, n.Args)
+
+	case nodes.RangeTblEntry:
+		walkn(f, n.Tablesample)
+		walkn(f, n.Subquery)
+		walkn(f, n.Joinaliasvars)
+		walkn(f, n.Functions)
+		walkn(f, n.Tablefunc)
+		walkn(f, n.ValuesLists)
+		walkn(f, n.Coltypes)
+		walkn(f, n.Colcollations)
+		walkn(f, n.Alias)
+		walkn(f, n.Eref)
+		walkn(f, n.SecurityQuals)
+
+	default:
+		panic(fmt.Sprintf("walk: unexpected node type %T", n))
+
+	}
+
+	f.visit(nil)
+}
