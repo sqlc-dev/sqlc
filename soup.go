@@ -10,9 +10,16 @@ type Vistior interface {
 	Visit(nodes.Node) Vistior
 }
 
-func walkn(f vistior, node nodes.Node) {
+type VisitorFunc func(nodes.Node)
+
+func (vf VisitorFunc) Visit(node nodes.Node) Vistior {
+	vf(node)
+	return vf
+}
+
+func walkn(f Vistior, node nodes.Node) {
 	if node != nil {
-		walk(f, node)
+		Walk(f, node)
 	}
 }
 
@@ -64,13 +71,17 @@ func Walk(f Vistior, node nodes.Node) {
 		walkn(f, n.Collname)
 
 	case nodes.AlterDatabaseSetStmt:
-		walkn(f, n.Setstmt)
+		if n.Setstmt != nil {
+			walkn(f, *n.Setstmt)
+		}
 
 	case nodes.AlterDatabaseStmt:
 		walkn(f, n.Options)
 
 	case nodes.AlterDefaultPrivilegesStmt:
-		walkn(f, n.Action)
+		if n.Action != nil {
+			walkn(f, *n.Action)
+		}
 		walkn(f, n.Options)
 
 	case nodes.AlterDomainStmt:
@@ -97,16 +108,22 @@ func Walk(f Vistior, node nodes.Node) {
 		walkn(f, n.Options)
 
 	case nodes.AlterFunctionStmt:
-		walkn(f, n.Func)
+		if n.Func != nil {
+			walkn(f, n.Func)
+		}
 		walkn(f, n.Actions)
 
 	case nodes.AlterObjectDependsStmt:
-		walkn(f, n.Relation)
+		if n.Relation != nil {
+			walkn(f, *n.Relation)
+		}
 		walkn(f, n.Object)
 		walkn(f, n.Extname)
 
 	case nodes.AlterObjectSchemaStmt:
-		walkn(f, n.Relation)
+		if n.Relation != nil {
+			walkn(f, *n.Relation)
+		}
 		walkn(f, n.Object)
 
 	case nodes.AlterOpFamilyStmt:
@@ -114,16 +131,24 @@ func Walk(f Vistior, node nodes.Node) {
 		walkn(f, n.Items)
 
 	case nodes.AlterOperatorStmt:
-		walkn(f, n.Opername)
+		if n.Opername != nil {
+			walkn(f, *n.Opername)
+		}
 		walkn(f, n.Options)
 
 	case nodes.AlterOwnerStmt:
-		walkn(f, n.Relation)
+		if n.Relation != nil {
+			walkn(f, *n.Relation)
+		}
 		walkn(f, n.Object)
-		walkn(f, n.Newowner)
+		if n.Newowner != nil {
+			walkn(f, *n.Newowner)
+		}
 
 	case nodes.AlterPolicyStmt:
-		walkn(f, n.Table)
+		if n.Table != nil {
+			walkn(f, *n.Table)
+		}
 		walkn(f, n.Roles)
 		walkn(f, n.Qual)
 		walkn(f, n.WithCheck)
@@ -462,11 +487,15 @@ func Walk(f Vistior, node nodes.Node) {
 		walkn(f, n.Definition)
 
 	case nodes.DeleteStmt:
-		walkn(f, n.Relation)
+		if n.Relation != nil {
+			walkn(f, *n.Relation)
+		}
 		walkn(f, n.UsingClause)
 		walkn(f, n.WhereClause)
 		walkn(f, n.ReturningList)
-		walkn(f, n.WithClause)
+		if n.WithClause != nil {
+			walkn(f, *n.WithClause)
+		}
 
 	case nodes.DiscardStmt:
 		// pass
@@ -530,7 +559,9 @@ func Walk(f Vistior, node nodes.Node) {
 		walkn(f, n.Args)
 		walkn(f, n.AggOrder)
 		walkn(f, n.AggFilter)
-		walkn(f, n.Over)
+		if n.Over != nil {
+			walkn(f, *n.Over)
+		}
 
 	case nodes.FuncExpr:
 		walkn(f, n.Xpr)
@@ -587,11 +618,17 @@ func Walk(f Vistior, node nodes.Node) {
 		// pass
 
 	case nodes.InsertStmt:
-		walkn(f, n.Relation)
+		if n.Relation != nil {
+			walkn(f, *n.Relation)
+		}
 		walkn(f, n.Cols)
 		walkn(f, n.SelectStmt)
-		walkn(f, n.OnConflictClause)
-		walkn(f, n.WithClause)
+		if n.OnConflictClause != nil {
+			walkn(f, *n.OnConflictClause)
+		}
+		if n.WithClause != nil {
+			walkn(f, *n.WithClause)
+		}
 
 	case nodes.Integer:
 		// pass
@@ -778,7 +815,9 @@ func Walk(f Vistior, node nodes.Node) {
 		// pass
 
 	case nodes.RangeVar:
-		walkn(f, n.Alias)
+		if n.Alias != nil {
+			walkn(f, *n.Alias)
+		}
 
 	case nodes.RawStmt:
 		walkn(f, n.Stmt)
@@ -844,7 +883,9 @@ func Walk(f Vistior, node nodes.Node) {
 
 	case nodes.SelectStmt:
 		walkn(f, n.DistinctClause)
-		walkn(f, n.IntoClause)
+		if n.IntoClause != nil {
+			walkn(f, *n.IntoClause)
+		}
 		walkn(f, n.TargetList)
 		walkn(f, n.FromClause)
 		walkn(f, n.WhereClause)
@@ -860,9 +901,15 @@ func Walk(f Vistior, node nodes.Node) {
 		walkn(f, n.LimitOffset)
 		walkn(f, n.LimitCount)
 		walkn(f, n.LockingClause)
-		walkn(f, n.WithClause)
-		walkn(f, n.Larg)
-		walkn(f, n.Rarg)
+		if n.WithClause != nil {
+			walkn(f, *n.WithClause)
+		}
+		if n.Larg != nil {
+			walkn(f, *n.Larg)
+		}
+		if n.Rarg != nil {
+			walkn(f, *n.Rarg)
+		}
 
 	case nodes.SetOperationStmt:
 		walkn(f, n.Larg)
@@ -944,12 +991,16 @@ func Walk(f Vistior, node nodes.Node) {
 		// pass
 
 	case nodes.UpdateStmt:
-		walkn(f, n.Relation)
+		if n.Relation != nil {
+			walkn(f, *n.Relation)
+		}
 		walkn(f, n.TargetList)
 		walkn(f, n.WhereClause)
 		walkn(f, n.FromClause)
 		walkn(f, n.ReturningList)
-		walkn(f, n.WithClause)
+		if n.WithClause != nil {
+			walkn(f, *n.WithClause)
+		}
 
 	case nodes.VacuumStmt:
 		walkn(f, n.Relation)
