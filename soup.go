@@ -6,8 +6,8 @@ import (
 	nodes "github.com/lfittl/pg_query_go/nodes"
 )
 
-type vistior interface {
-	visit(nodes.Node) vistior
+type Vistior interface {
+	Visit(nodes.Node) Vistior
 }
 
 func walkn(f vistior, node nodes.Node) {
@@ -16,8 +16,8 @@ func walkn(f vistior, node nodes.Node) {
 	}
 }
 
-func walk(f vistior, node nodes.Node) {
-	if f = f.visit(node); f == nil {
+func Walk(f Vistior, node nodes.Node) {
+	if f = f.Visit(node); f == nil {
 		return
 	}
 
@@ -1008,5 +1008,5 @@ func walk(f vistior, node nodes.Node) {
 
 	}
 
-	f.visit(nil)
+	f.Visit(nil)
 }
