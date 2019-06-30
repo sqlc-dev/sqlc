@@ -783,6 +783,226 @@ func walk(f vistior, node nodes.Node) {
 	case nodes.RawStmt:
 		walkn(f, n.Stmt)
 
+	case nodes.ReassignOwnedStmt:
+		walkn(f, n.Roles)
+		walkn(f, n.Newrole)
+
+	case nodes.RefreshMatViewStmt:
+		walkn(f, n.Relation)
+
+	case nodes.ReindexStmt:
+		walkn(f, n.Relation)
+
+	case nodes.RelabelType:
+		walkn(f, n.Xpr)
+		walkn(f, n.Arg)
+
+	case nodes.RenameStmt:
+		walkn(f, n.Relation)
+		walkn(f, n.Object)
+
+	case nodes.ReplicaIdentityStmt:
+		// pass
+
+	case nodes.ResTarget:
+		walkn(f, n.Indirection)
+		walkn(f, n.Val)
+
+	case nodes.RoleSpec:
+		// pass
+
+	case nodes.RowCompareExpr:
+		walkn(f, n.Xpr)
+		walkn(f, n.Opnos)
+		walkn(f, n.Opfamilies)
+		walkn(f, n.Inputcollids)
+		walkn(f, n.Largs)
+		walkn(f, n.Rargs)
+
+	case nodes.RowExpr:
+		walkn(f, n.Xpr)
+		walkn(f, n.Args)
+		walkn(f, n.Colnames)
+
+	case nodes.RowMarkClause:
+		// pass
+
+	case nodes.RuleStmt:
+		walkn(f, n.Relation)
+		walkn(f, n.WhereClause)
+		walkn(f, n.Actions)
+
+	case nodes.SQLValueFunction:
+		walkn(f, n.Xpr)
+
+	case nodes.ScalarArrayOpExpr:
+		walkn(f, n.Xpr)
+		walkn(f, n.Args)
+
+	case nodes.SecLabelStmt:
+		walkn(f, n.Object)
+
+	case nodes.SelectStmt:
+		walkn(f, n.DistinctClause)
+		walkn(f, n.IntoClause)
+		walkn(f, n.TargetList)
+		walkn(f, n.FromClause)
+		walkn(f, n.WhereClause)
+		walkn(f, n.GroupClause)
+		walkn(f, n.HavingClause)
+		walkn(f, n.WindowClause)
+		for _, vs := range n.ValuesLists {
+			for _, v := range vs {
+				walkn(f, v)
+			}
+		}
+		walkn(f, n.SortClause)
+		walkn(f, n.LimitOffset)
+		walkn(f, n.LimitCount)
+		walkn(f, n.LockingClause)
+		walkn(f, n.WithClause)
+		walkn(f, n.Larg)
+		walkn(f, n.Rarg)
+
+	case nodes.SetOperationStmt:
+		walkn(f, n.Larg)
+		walkn(f, n.Rarg)
+		walkn(f, n.ColTypes)
+		walkn(f, n.ColTypmods)
+		walkn(f, n.ColCollations)
+		walkn(f, n.GroupClauses)
+
+	case nodes.SetToDefault:
+		walkn(f, n.Xpr)
+
+	case nodes.SortBy:
+		walkn(f, n.Node)
+		walkn(f, n.UseOp)
+
+	case nodes.SortGroupClause:
+		// pass
+
+	case nodes.String:
+		// pass
+
+	case nodes.SubLink:
+		walkn(f, n.Xpr)
+		walkn(f, n.Testexpr)
+		walkn(f, n.OperName)
+		walkn(f, n.Subselect)
+
+	case nodes.SubPlan:
+		walkn(f, n.Xpr)
+		walkn(f, n.Testexpr)
+		walkn(f, n.ParamIds)
+		walkn(f, n.SetParam)
+		walkn(f, n.ParParam)
+		walkn(f, n.Args)
+
+	case nodes.TableFunc:
+		walkn(f, n.NsUris)
+		walkn(f, n.NsNames)
+		walkn(f, n.Docexpr)
+		walkn(f, n.Rowexpr)
+		walkn(f, n.Colnames)
+		walkn(f, n.Coltypes)
+		walkn(f, n.Coltypmods)
+		walkn(f, n.Colcollations)
+		walkn(f, n.Colexprs)
+		walkn(f, n.Coldefexprs)
+
+	case nodes.TableLikeClause:
+		walkn(f, n.Relation)
+
+	case nodes.TableSampleClause:
+		walkn(f, n.Args)
+		walkn(f, n.Repeatable)
+
+	case nodes.TargetEntry:
+		walkn(f, n.Xpr)
+		walkn(f, n.Expr)
+
+	case nodes.TransactionStmt:
+		walkn(f, n.Options)
+
+	case nodes.TriggerTransition:
+		// pass
+
+	case nodes.TruncateStmt:
+		walkn(f, n.Relations)
+
+	case nodes.TypeCast:
+		walkn(f, n.Arg)
+		walkn(f, n.TypeName)
+
+	case nodes.TypeName:
+		walkn(f, n.Names)
+		walkn(f, n.Typmods)
+		walkn(f, n.ArrayBounds)
+
+	case nodes.UnlistenStmt:
+		// pass
+
+	case nodes.UpdateStmt:
+		walkn(f, n.Relation)
+		walkn(f, n.TargetList)
+		walkn(f, n.WhereClause)
+		walkn(f, n.FromClause)
+		walkn(f, n.ReturningList)
+		walkn(f, n.WithClause)
+
+	case nodes.VacuumStmt:
+		walkn(f, n.Relation)
+		walkn(f, n.VaCols)
+
+	case nodes.Var:
+		walkn(f, n.Xpr)
+
+	case nodes.VariableSetStmt:
+		walkn(f, n.Args)
+
+	case nodes.VariableShowStmt:
+		// pass
+
+	case nodes.ViewStmt:
+		walkn(f, n.View)
+		walkn(f, n.Aliases)
+		walkn(f, n.Query)
+		walkn(f, n.Options)
+
+	case nodes.WindowClause:
+		walkn(f, n.PartitionClause)
+		walkn(f, n.OrderClause)
+		walkn(f, n.StartOffset)
+		walkn(f, n.EndOffset)
+
+	case nodes.WindowDef:
+		walkn(f, n.PartitionClause)
+		walkn(f, n.OrderClause)
+		walkn(f, n.StartOffset)
+		walkn(f, n.EndOffset)
+
+	case nodes.WindowFunc:
+		walkn(f, n.Xpr)
+		walkn(f, n.Args)
+		walkn(f, n.Aggfilter)
+
+	case nodes.WithCheckOption:
+		walkn(f, n.Qual)
+
+	case nodes.WithClause:
+		walkn(f, n.Ctes)
+
+	case nodes.XmlExpr:
+		walkn(f, n.Xpr)
+		walkn(f, n.NamedArgs)
+		walkn(f, n.ArgNames)
+		walkn(f, n.Args)
+
+	case nodes.XmlSerialize:
+		walkn(f, n.Expr)
+		walkn(f, n.TypeName)
+
 	default:
 		panic(fmt.Sprintf("walk: unexpected node type %T", n))
 
