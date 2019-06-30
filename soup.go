@@ -767,6 +767,22 @@ func walk(f vistior, node nodes.Node) {
 		walkn(f, n.Eref)
 		walkn(f, n.SecurityQuals)
 
+	case nodes.RangeTblFunction:
+		walkn(f, n.Funcexpr)
+		walkn(f, n.Funccolnames)
+		walkn(f, n.Funccoltypes)
+		walkn(f, n.Funccoltypmods)
+		walkn(f, n.Funccolcollations)
+
+	case nodes.RangeTblRef:
+		// pass
+
+	case nodes.RangeVar:
+		walkn(f, n.Alias)
+
+	case nodes.RawStmt:
+		walkn(f, n.Stmt)
+
 	default:
 		panic(fmt.Sprintf("walk: unexpected node type %T", n))
 
