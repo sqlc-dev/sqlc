@@ -309,7 +309,7 @@ func parseFuncs(s *postgres.Schema, r *Result, source string, tree pg.ParsetreeL
 
 		rawSQL, _ := pluckQuery(source, raw)
 		refs := extractArgs(raw.Stmt)
-		outs := findOutputs(nil, raw.Stmt)
+		outs := findOutputs(raw.Stmt)
 
 		tab := getTable(s, t)
 		r.Queries[i].Table = tab
@@ -375,10 +375,12 @@ func returnType(t postgres.Table, refs []outputRef) string {
 		// panic("too many return columns")
 		return "interface{}"
 	}
-	name := join(refs[0].ref.Fields, ".")
-	for _, c := range t.Columns {
-		if c.Name == name {
-			return c.GoType
+	if refs[0].ref != nil {
+		name := join(refs[0].ref.Fields, ".")
+		for _, c := range t.Columns {
+			if c.Name == name {
+				return c.GoType
+			}
 		}
 	}
 	return "interface{}"
@@ -460,32 +462,33 @@ type outputRef struct {
 	fun string
 }
 
-func findOutputs(r []outputRef, n nodes.Node) []outputRef {
-	switch n := n.(type) {
-	case nodes.ColumnRef:
-		r = append(r, outputRef{ref: &n})
-	case nodes.DeleteStmt:
-		r = findOutputs(r, n.ReturningList)
-	case nodes.FuncCall:
-		r = append(r, outputRef{fun: join(n.Funcname, ".")})
-	case nodes.InsertStmt:
-		r = findOutputs(r, n.ReturningList)
-	case nodes.List:
-		for _, i := range n.Items {
-			r = findOutputs(r, i)
+func findOutputs(root nodes.Node) []outputRef {
+	var r []outputRef
+
+	appender := VisitorFunc(func(node nodes.Node) {
+		switch n := node.(type) {
+		case nodes.ColumnRef:
+			r = append(r, outputRef{ref: &n})
+		case nodes.FuncCall:
+			r = append(r, outputRef{fun: join(n.Funcname, ".")})
 		}
-	case nodes.RawStmt:
-		r = findOutputs(r, n.Stmt)
-	case nodes.ResTarget:
-		r = findOutputs(r, n.Val)
-	case nodes.SelectStmt:
-		r = findOutputs(r, n.TargetList)
-	case nodes.UpdateStmt:
-		r = findOutputs(r, n.ReturningList)
-	case nil:
-	default:
-		log.Printf("%T\n", n)
-	}
+	})
+
+	v := VisitorFunc(func(node nodes.Node) {
+		switch n := node.(type) {
+		case nodes.InsertStmt:
+			Walk(appender, n.ReturningList)
+			// return nil
+		case nodes.SelectStmt:
+			Walk(appender, n.TargetList)
+			// return nil
+		case nodes.UpdateStmt:
+			Walk(appender, n.ReturningList)
+			// return nil
+		}
+	})
+
+	Walk(v, root)
 	return r
 }
 
