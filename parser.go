@@ -462,34 +462,43 @@ type outputRef struct {
 	fun string
 }
 
+type appender struct {
+	refs []outputRef
+}
+
+func (a *appender) Visit(node nodes.Node) Visitor {
+	switch n := node.(type) {
+	case nodes.ColumnRef:
+		a.refs = append(a.refs, outputRef{ref: &n})
+	case nodes.FuncCall:
+		a.refs = append(a.refs, outputRef{fun: join(n.Funcname, ".")})
+	}
+	return a
+}
+
+type output struct {
+	a *appender
+}
+
+func (o *output) Visit(node nodes.Node) Visitor {
+	switch n := node.(type) {
+	case nodes.InsertStmt:
+		Walk(o.a, n.ReturningList)
+		return nil
+	case nodes.SelectStmt:
+		Walk(o.a, n.TargetList)
+		return nil
+	case nodes.UpdateStmt:
+		Walk(o.a, n.ReturningList)
+		return nil
+	}
+	return o
+}
+
 func findOutputs(root nodes.Node) []outputRef {
-	var r []outputRef
-
-	appender := VisitorFunc(func(node nodes.Node) {
-		switch n := node.(type) {
-		case nodes.ColumnRef:
-			r = append(r, outputRef{ref: &n})
-		case nodes.FuncCall:
-			r = append(r, outputRef{fun: join(n.Funcname, ".")})
-		}
-	})
-
-	v := VisitorFunc(func(node nodes.Node) {
-		switch n := node.(type) {
-		case nodes.InsertStmt:
-			Walk(appender, n.ReturningList)
-			// return nil
-		case nodes.SelectStmt:
-			Walk(appender, n.TargetList)
-			// return nil
-		case nodes.UpdateStmt:
-			Walk(appender, n.ReturningList)
-			// return nil
-		}
-	})
-
+	v := &output{&appender{}}
 	Walk(v, root)
-	return r
+	return v.a.refs
 }
 
 func parseArgs(t postgres.Table, args []paramRef) []Arg {

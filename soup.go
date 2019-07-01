@@ -6,24 +6,24 @@ import (
 	nodes "github.com/lfittl/pg_query_go/nodes"
 )
 
-type Vistior interface {
-	Visit(nodes.Node) Vistior
+type Visitor interface {
+	Visit(nodes.Node) Visitor
 }
 
 type VisitorFunc func(nodes.Node)
 
-func (vf VisitorFunc) Visit(node nodes.Node) Vistior {
+func (vf VisitorFunc) Visit(node nodes.Node) Visitor {
 	vf(node)
 	return vf
 }
 
-func walkn(f Vistior, node nodes.Node) {
+func walkn(f Visitor, node nodes.Node) {
 	if node != nil {
 		Walk(f, node)
 	}
 }
 
-func Walk(f Vistior, node nodes.Node) {
+func Walk(f Visitor, node nodes.Node) {
 	if f = f.Visit(node); f == nil {
 		return
 	}
