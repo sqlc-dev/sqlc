@@ -1,6 +1,7 @@
 package dinosql
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -44,5 +45,47 @@ func TestAlias(t *testing.T) {
 
 	if diff := cmp.Diff(expected, result.Queries); diff != "" {
 		t.Errorf("query mismatch: \n%s", diff)
+	}
+}
+
+const testComparisonSQL = `
+CREATE TABLE bar (id serial not null);
+
+-- name: HasBar :one
+SELECT count(*) %s 0
+FROM bar;
+`
+
+func TestComparisonOperators(t *testing.T) {
+	sqlTmpl := "-- name: HasBar :one\nSELECT count(*) %s 0\nFROM bar"
+
+	for _, op := range []string{">", "<", ">=", "<=", "<>", "!=", "="} {
+		o := op
+		t.Run(o, func(t *testing.T) {
+			result, err := parseSQL(fmt.Sprintf(testComparisonSQL, o))
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			expected := []Query{
+				{
+					Type:       ":one",
+					MethodName: "HasBar",
+					StmtName:   "hasBar",
+					QueryName:  "hasBar",
+					SQL:        fmt.Sprintf(sqlTmpl, o),
+					Args:       []Arg{},
+					Table: postgres.Table{
+						GoName:  "Bar",
+						Name:    "bar",
+						Columns: []postgres.Column{{GoName: "ID", GoType: "int", Name: "id", Type: "serial", NotNull: true}},
+					},
+					ReturnType: "bool",
+				},
+			}
+			if diff := cmp.Diff(expected, result.Queries); diff != "" {
+				t.Errorf("query mismatch: \n%s", diff)
+			}
+		})
 	}
 }

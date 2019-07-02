@@ -384,10 +384,10 @@ func parseFuncs(s *postgres.Schema, r *Result, source string, tree pg.ParsetreeL
 func fieldsFromRefs(t postgres.Table, refs []outputRef) []Field {
 	var f []Field
 	for _, cf := range refs {
-		if cf.fun == "count" {
+		if cf.typ != "" {
 			f = append(f, Field{
-				Name: strings.Title(cf.fun),
-				Type: "int",
+				Name: strings.Title(cf.name),
+				Type: cf.typ,
 			})
 		}
 		if cf.ref != nil {
@@ -420,6 +420,9 @@ func returnType(t postgres.Table, refs []outputRef) string {
 	if len(refs) != 1 {
 		// panic("too many return columns")
 		return "interface{}"
+	}
+	if refs[0].typ != "" {
+		return refs[0].typ
 	}
 	if refs[0].ref != nil {
 		fields := refs[0].ref.Fields.Items
@@ -510,8 +513,9 @@ func findRefs(r []paramRef, parent, n nodes.Node) []paramRef {
 }
 
 type outputRef struct {
-	ref *nodes.ColumnRef
-	fun string
+	ref  *nodes.ColumnRef
+	name string
+	typ  string
 }
 
 type appender struct {
@@ -519,13 +523,22 @@ type appender struct {
 }
 
 func (a *appender) Visit(node nodes.Node) Visitor {
-	switch n := node.(type) {
+	res, ok := node.(nodes.ResTarget)
+	if !ok {
+		return a
+	}
+	switch n := res.Val.(type) {
+	case nodes.A_Expr:
+		if postgres.IsComparisonOperator(join(n.Name, "")) {
+			// TODO: Generate a name for these operations
+			a.refs = append(a.refs, outputRef{name: "_", typ: "bool"})
+		}
 	case nodes.ColumnRef:
 		a.refs = append(a.refs, outputRef{ref: &n})
 	case nodes.FuncCall:
-		a.refs = append(a.refs, outputRef{fun: join(n.Funcname, ".")})
+		a.refs = append(a.refs, outputRef{name: join(n.Funcname, "."), typ: "int"})
 	}
-	return a
+	return nil
 }
 
 type output struct {
@@ -548,6 +561,7 @@ func (o *output) Visit(node nodes.Node) Visitor {
 }
 
 func findOutputs(root nodes.Node) []outputRef {
+	// spew.Dump(root)
 	v := &output{&appender{}}
 	Walk(v, root)
 	return v.a.refs
