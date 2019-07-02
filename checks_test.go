@@ -36,6 +36,14 @@ func TestParserErrors(t *testing.T) {
 			`,
 			Error{Code: "42703", Message: "column \"foo\" does not exist"},
 		},
+		{
+			"SELECT random(1);",
+			Error{
+				Code:    "42883",
+				Message: "function random(unknown) does not exist",
+				Hint:    "No function matches the given name and argument types. You might need to add explicit type casts.",
+			},
+		},
 	} {
 		test := tc
 		t.Run(test.query, func(t *testing.T) {

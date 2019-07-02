@@ -69,6 +69,9 @@ func ParseSchmea(dir string) (*postgres.Schema, error) {
 
 func parse(s *postgres.Schema, tree pg.ParsetreeList) error {
 	for _, stmt := range tree.Statements {
+		if err := validateFuncCall(stmt); err != nil {
+			return err
+		}
 		raw, ok := stmt.(nodes.RawStmt)
 		if !ok {
 			continue
