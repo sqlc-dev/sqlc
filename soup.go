@@ -283,7 +283,9 @@ func Walk(f Visitor, node nodes.Node) {
 		walkn(f, n.Arg)
 
 	case nodes.ColumnDef:
-		walkn(f, n.TypeName)
+		if n.TypeName != nil {
+			walkn(f, *n.TypeName)
+		}
 		walkn(f, n.RawDefault)
 		walkn(f, n.CookedDefault)
 		walkn(f, n.Constraints)
@@ -336,8 +338,12 @@ func Walk(f Visitor, node nodes.Node) {
 		walkn(f, n.HandlerName)
 
 	case nodes.CreateCastStmt:
-		walkn(f, n.Sourcetype)
-		walkn(f, n.Targettype)
+		if n.Sourcetype != nil {
+			walkn(f, *n.Sourcetype)
+		}
+		if n.Targettype != nil {
+			walkn(f, *n.Targettype)
+		}
 		walkn(f, n.Func)
 
 	case nodes.CreateConversionStmt:
@@ -346,8 +352,12 @@ func Walk(f Visitor, node nodes.Node) {
 
 	case nodes.CreateDomainStmt:
 		walkn(f, n.Domainname)
-		walkn(f, n.TypeName)
-		walkn(f, n.CollClause)
+		if n.TypeName != nil {
+			walkn(f, *n.TypeName)
+		}
+		if n.CollClause != nil {
+			walkn(f, *n.CollClause)
+		}
 		walkn(f, n.Constraints)
 
 	case nodes.CreateEnumStmt:
@@ -375,7 +385,9 @@ func Walk(f Visitor, node nodes.Node) {
 	case nodes.CreateFunctionStmt:
 		walkn(f, n.Funcname)
 		walkn(f, n.Parameters)
-		walkn(f, n.ReturnType)
+		if n.ReturnType != nil {
+			walkn(f, *n.ReturnType)
+		}
 		walkn(f, n.Options)
 		walkn(f, n.WithClause)
 
@@ -383,12 +395,16 @@ func Walk(f Visitor, node nodes.Node) {
 		walkn(f, n.Name)
 		walkn(f, n.OrderFamily)
 		walkn(f, n.ClassArgs)
-		walkn(f, n.Storedtype)
+		if n.Storedtype != nil {
+			walkn(f, *n.Storedtype)
+		}
 
 	case nodes.CreateOpClassStmt:
 		walkn(f, n.Opclassname)
 		walkn(f, n.Opfamilyname)
-		walkn(f, n.Datatype)
+		if n.Datatype != nil {
+			walkn(f, *n.Datatype)
+		}
 		walkn(f, n.Items)
 
 	case nodes.CreateOpFamilyStmt:
@@ -434,11 +450,17 @@ func Walk(f Visitor, node nodes.Node) {
 		walkn(f, n.Relation)
 		walkn(f, n.TableElts)
 		walkn(f, n.InhRelations)
-		walkn(f, n.Partbound)
-		walkn(f, n.Partspec)
+		if n.Partbound != nil {
+			walkn(f, *n.Partbound)
+		}
+		if n.Partspec != nil {
+			walkn(f, *n.Partspec)
+		}
 		walkn(f, n.Constraints)
 		walkn(f, n.Options)
-		walkn(f, n.OfTypename)
+		if n.OfTypename != nil {
+			walkn(f, *n.OfTypename)
+		}
 
 	case nodes.CreateSubscriptionStmt:
 		walkn(f, n.Publication)
@@ -449,9 +471,15 @@ func Walk(f Visitor, node nodes.Node) {
 		walkn(f, n.Into)
 
 	case nodes.CreateTransformStmt:
-		walkn(f, n.TypeName)
-		walkn(f, n.Fromsql)
-		walkn(f, n.Tosql)
+		if n.TypeName != nil {
+			walkn(f, *n.TypeName)
+		}
+		if n.Fromsql != nil {
+			walkn(f, *n.Fromsql)
+		}
+		if n.Tosql != nil {
+			walkn(f, *n.Tosql)
+		}
 
 	case nodes.CreateTrigStmt:
 		walkn(f, n.Relation)
@@ -568,7 +596,9 @@ func Walk(f Visitor, node nodes.Node) {
 		walkn(f, n.Args)
 
 	case nodes.FunctionParameter:
-		walkn(f, n.ArgType)
+		if n.ArgType != nil {
+			walkn(f, *n.ArgType)
+		}
 		walkn(f, n.Defexpr)
 
 	case nodes.GrantRoleStmt:
@@ -692,7 +722,9 @@ func Walk(f Visitor, node nodes.Node) {
 		walkn(f, n.Objargs)
 
 	case nodes.OnConflictClause:
-		walkn(f, n.Infer)
+		if n.Infer != nil {
+			walkn(f, *n.Infer)
+		}
 		walkn(f, n.TargetList)
 		walkn(f, n.WhereClause)
 
@@ -782,7 +814,9 @@ func Walk(f Visitor, node nodes.Node) {
 		walkn(f, n.Alias)
 
 	case nodes.RangeTableFuncCol:
-		walkn(f, n.TypeName)
+		if n.TypeName != nil {
+			walkn(f, *n.TypeName)
+		}
 		walkn(f, n.Colexpr)
 		walkn(f, n.Coldefexpr)
 
@@ -980,7 +1014,9 @@ func Walk(f Visitor, node nodes.Node) {
 
 	case nodes.TypeCast:
 		walkn(f, n.Arg)
-		walkn(f, n.TypeName)
+		if n.TypeName != nil {
+			walkn(f, *n.TypeName)
+		}
 
 	case nodes.TypeName:
 		walkn(f, n.Names)
@@ -1052,7 +1088,9 @@ func Walk(f Visitor, node nodes.Node) {
 
 	case nodes.XmlSerialize:
 		walkn(f, n.Expr)
-		walkn(f, n.TypeName)
+		if n.TypeName != nil {
+			walkn(f, *n.TypeName)
+		}
 
 	default:
 		panic(fmt.Sprintf("walk: unexpected node type %T", n))
