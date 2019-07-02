@@ -166,7 +166,9 @@ func Walk(f Visitor, node nodes.Node) {
 		walkn(f, n.Options)
 
 	case nodes.AlterSeqStmt:
-		walkn(f, n.Sequence)
+		if n.Sequence != nil {
+			walkn(f, *n.Sequence)
+		}
 		walkn(f, n.Options)
 
 	case nodes.AlterSubscriptionStmt:
@@ -196,7 +198,9 @@ func Walk(f Visitor, node nodes.Node) {
 		walkn(f, n.Options)
 
 	case nodes.AlterTableStmt:
-		walkn(f, n.Relation)
+		if n.Relation != nil {
+			walkn(f, *n.Relation)
+		}
 		walkn(f, n.Cmds)
 
 	case nodes.AlterUserMappingStmt:
@@ -257,7 +261,9 @@ func Walk(f Visitor, node nodes.Node) {
 		// pass
 
 	case nodes.ClusterStmt:
-		walkn(f, n.Relation)
+		if n.Relation != nil {
+			walkn(f, *n.Relation)
+		}
 
 	case nodes.CoalesceExpr:
 		walkn(f, n.Xpr)
@@ -304,7 +310,9 @@ func Walk(f Visitor, node nodes.Node) {
 		walkn(f, n.Ctecolcollations)
 
 	case nodes.CompositeTypeStmt:
-		walkn(f, n.Typevar)
+		if n.Typevar != nil {
+			walkn(f, *n.Typevar)
+		}
 		walkn(f, n.Coldeflist)
 
 	case nodes.Const:
@@ -316,7 +324,9 @@ func Walk(f Visitor, node nodes.Node) {
 		walkn(f, n.Exclusions)
 		walkn(f, n.Options)
 		walkn(f, n.WhereClause)
-		walkn(f, n.Pktable)
+		if n.Pktable != nil {
+			walkn(f, *n.Pktable)
+		}
 		walkn(f, n.FkAttrs)
 		walkn(f, n.PkAttrs)
 		walkn(f, n.OldConpfeqop)
@@ -329,7 +339,9 @@ func Walk(f Visitor, node nodes.Node) {
 		walkn(f, n.Arg)
 
 	case nodes.CopyStmt:
-		walkn(f, n.Relation)
+		if n.Relation != nil {
+			walkn(f, *n.Relation)
+		}
 		walkn(f, n.Query)
 		walkn(f, n.Attlist)
 		walkn(f, n.Options)
@@ -416,7 +428,9 @@ func Walk(f Visitor, node nodes.Node) {
 		walkn(f, n.Plvalidator)
 
 	case nodes.CreatePolicyStmt:
-		walkn(f, n.Table)
+		if n.Table != nil {
+			walkn(f, *n.Table)
+		}
 		walkn(f, n.Roles)
 		walkn(f, n.Qual)
 		walkn(f, n.WithCheck)
@@ -437,7 +451,9 @@ func Walk(f Visitor, node nodes.Node) {
 		walkn(f, n.SchemaElts)
 
 	case nodes.CreateSeqStmt:
-		walkn(f, n.Sequence)
+		if n.Sequence != nil {
+			walkn(f, *n.Sequence)
+		}
 		walkn(f, n.Options)
 
 	case nodes.CreateStatsStmt:
@@ -447,7 +463,9 @@ func Walk(f Visitor, node nodes.Node) {
 		walkn(f, n.Relations)
 
 	case nodes.CreateStmt:
-		walkn(f, n.Relation)
+		if n.Relation != nil {
+			walkn(f, *n.Relation)
+		}
 		walkn(f, n.TableElts)
 		walkn(f, n.InhRelations)
 		if n.Partbound != nil {
@@ -482,13 +500,17 @@ func Walk(f Visitor, node nodes.Node) {
 		}
 
 	case nodes.CreateTrigStmt:
-		walkn(f, n.Relation)
+		if n.Relation != nil {
+			walkn(f, *n.Relation)
+		}
 		walkn(f, n.Funcname)
 		walkn(f, n.Args)
 		walkn(f, n.Columns)
 		walkn(f, n.WhenClause)
 		walkn(f, n.TransitionRels)
-		walkn(f, n.Constrrel)
+		if n.Constrrel != nil {
+			walkn(f, *n.Constrrel)
+		}
 
 	case nodes.CreateUserMappingStmt:
 		walkn(f, n.User)

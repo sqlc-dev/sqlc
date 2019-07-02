@@ -6,6 +6,15 @@ import (
 	nodes "github.com/lfittl/pg_query_go/nodes"
 )
 
+type Error struct {
+	Message string
+	Code    string
+}
+
+func (e Error) Error() string {
+	return e.Message
+}
+
 func validateParamRef(n nodes.Node) error {
 	var allrefs []nodes.ParamRef
 
@@ -24,7 +33,10 @@ func validateParamRef(n nodes.Node) error {
 
 	for i := 1; i <= len(seen); i += 1 {
 		if _, ok := seen[i]; !ok {
-			return fmt.Errorf("missing parameter reference: $%d", i)
+			return Error{
+				Code:    "42P18",
+				Message: fmt.Sprintf("could not determine data type of parameter $%d", i),
+			}
 		}
 	}
 

@@ -26,11 +26,15 @@ func parseSQL(in string) (*Result, error) {
 	if err != nil {
 		return nil, err
 	}
-	parse(&s, tree)
+	if err := parse(&s, tree); err != nil {
+		return nil, err
+	}
 
 	var q []Query
 	r := Result{Schema: &s}
-	parseFuncs(&s, &r, in, tree)
+	if err := parseFuncs(&s, &r, in, tree); err != nil {
+		return nil, err
+	}
 	q = append(q, r.Queries...)
 
 	return &Result{Schema: &s, Queries: q}, nil
@@ -56,12 +60,14 @@ func ParseSchmea(dir string) (*postgres.Schema, error) {
 		if err != nil {
 			return nil, err
 		}
-		parse(&s, tree)
+		if err := parse(&s, tree); err != nil {
+			return nil, err
+		}
 	}
 	return &s, nil
 }
 
-func parse(s *postgres.Schema, tree pg.ParsetreeList) {
+func parse(s *postgres.Schema, tree pg.ParsetreeList) error {
 	for _, stmt := range tree.Statements {
 		raw, ok := stmt.(nodes.RawStmt)
 		if !ok {
@@ -76,7 +82,10 @@ func parse(s *postgres.Schema, tree pg.ParsetreeList) {
 				}
 			}
 			if idx < 0 {
-				panic("could not find table " + *n.Relation.Relname)
+				return Error{
+					Code:    "42P01",
+					Message: fmt.Sprintf("relation \"%s\" does not exist", *n.Relation.Relname),
+				}
 			}
 
 			for _, cmd := range n.Cmds.Items {
@@ -148,7 +157,10 @@ func parse(s *postgres.Schema, tree pg.ParsetreeList) {
 					}
 				}
 				if idx < 0 {
-					panic("could not find table " + *n.Relation.Relname)
+					return Error{
+						Code:    "42P01",
+						Message: fmt.Sprintf("relation \"%s\" does not exist", *n.Relation.Relname),
+					}
 				}
 				s.Tables[idx].Name = *n.Newname
 				s.Tables[idx].GoName = structName(*n.Newname)
@@ -157,6 +169,8 @@ func parse(s *postgres.Schema, tree pg.ParsetreeList) {
 			// spew.Dump(n)
 		}
 	}
+
+	return nil
 }
 
 func join(list nodes.List, sep string) string {
@@ -326,19 +340,21 @@ func rangeVars(root nodes.Node) []nodes.RangeVar {
 	return vars
 }
 
-func parseFuncs(s *postgres.Schema, r *Result, source string, tree pg.ParsetreeList) {
+func parseFuncs(s *postgres.Schema, r *Result, source string, tree pg.ParsetreeList) error {
 	for _, stmt := range tree.Statements {
+		if err := validateParamRef(stmt); err != nil {
+			return err
+		}
 		raw, ok := stmt.(nodes.RawStmt)
 		if !ok {
 			continue
 		}
-		switch n := raw.Stmt.(type) {
+		switch raw.Stmt.(type) {
 		case nodes.SelectStmt:
 		case nodes.DeleteStmt:
 		case nodes.InsertStmt:
 		case nodes.UpdateStmt:
 		default:
-			log.Printf("%T\n", n)
 			continue
 		}
 
@@ -347,17 +363,21 @@ func parseFuncs(s *postgres.Schema, r *Result, source string, tree pg.ParsetreeL
 		c := columnNames(s, t)
 
 		rawSQL, _ := pluckQuery(source, raw)
-		meta, err := parseQueryMetadata(rawSQL)
-		if err != nil {
-			panic(err)
-		}
-
 		refs := extractArgs(raw.Stmt)
 		outs := findOutputs(raw.Stmt)
 
 		tab := getTable(s, t)
+		args, err := resolveRefs(s, rvs, refs)
+		if err != nil {
+			return err
+		}
+
+		meta, err := parseQueryMetadata(rawSQL)
+		if err != nil {
+			continue
+		}
 		meta.Table = tab
-		meta.Args = resolveRefs(s, rvs, refs)
+		meta.Args = args
 
 		if len(outs) == 0 {
 			meta.SQL = rawSQL
@@ -373,12 +393,17 @@ func parseFuncs(s *postgres.Schema, r *Result, source string, tree pg.ParsetreeL
 			meta.Fields = fieldsFromRefs(tab, outs)
 			meta.SQL = rawSQL
 		} else {
-			meta.ReturnType = returnType(tab, outs)
+			rt, err := returnType(tab, outs)
+			if err != nil {
+				return err
+			}
+			meta.ReturnType = rt
 			meta.SQL = rawSQL
 		}
 
 		r.Queries = append(r.Queries, meta)
 	}
+	return nil
 }
 
 func fieldsFromRefs(t postgres.Table, refs []outputRef) []Field {
@@ -416,13 +441,12 @@ func fieldsFromTable(t postgres.Table) []Field {
 	return f
 }
 
-func returnType(t postgres.Table, refs []outputRef) string {
+func returnType(t postgres.Table, refs []outputRef) (string, error) {
 	if len(refs) != 1 {
-		// panic("too many return columns")
-		return "interface{}"
+		return "", fmt.Errorf("too many return columns")
 	}
 	if refs[0].typ != "" {
-		return refs[0].typ
+		return refs[0].typ, nil
 	}
 	if refs[0].ref != nil {
 		fields := refs[0].ref.Fields.Items
@@ -434,11 +458,15 @@ func returnType(t postgres.Table, refs []outputRef) string {
 		}
 		for _, c := range t.Columns {
 			if c.Name == name {
-				return c.GoType
+				return c.GoType, nil
 			}
 		}
+		return "", Error{
+			Code:    "42703",
+			Message: fmt.Sprintf("column \"%s\" does not exist", name),
+		}
 	}
-	return "interface{}"
+	return "", fmt.Errorf("could not figure out return type")
 }
 
 func extractArgs(n nodes.Node) []paramRef {
@@ -567,7 +595,7 @@ func findOutputs(root nodes.Node) []outputRef {
 	return v.a.refs
 }
 
-func resolveRefs(s *postgres.Schema, rvs []nodes.RangeVar, args []paramRef) []Arg {
+func resolveRefs(s *postgres.Schema, rvs []nodes.RangeVar, args []paramRef) ([]Arg, error) {
 	typeMap := map[string]map[string]string{}
 	for _, t := range s.Tables {
 		typeMap[t.Name] = map[string]string{}
@@ -617,7 +645,10 @@ func resolveRefs(s *postgres.Schema, rvs []nodes.RangeVar, args []paramRef) []Ar
 				if typ, ok := typeMap[table][key]; ok {
 					a = append(a, Arg{Name: argName(key), Type: typ})
 				} else {
-					panic("unknown column: " + alias + key)
+					return nil, Error{
+						Code:    "42703",
+						Message: fmt.Sprintf("column \"%s\" does not exist", key),
+					}
 				}
 			}
 		case nodes.ResTarget:
@@ -625,7 +656,10 @@ func resolveRefs(s *postgres.Schema, rvs []nodes.RangeVar, args []paramRef) []Ar
 			if typ, ok := typeMap[defaultTable][key]; ok {
 				a = append(a, Arg{Name: argName(key), Type: typ})
 			} else {
-				panic("unknown column: " + key)
+				return nil, Error{
+					Code:    "42703",
+					Message: fmt.Sprintf("column \"%s\" does not exist", key),
+				}
 			}
 		case nodes.ParamRef:
 			a = append(a, Arg{Name: "_", Type: "interface{}"})
@@ -633,7 +667,7 @@ func resolveRefs(s *postgres.Schema, rvs []nodes.RangeVar, args []paramRef) []Ar
 			panic(fmt.Sprintf("unsupported type: %T", n))
 		}
 	}
-	return a
+	return a, nil
 }
 
 func columnNames(s *postgres.Schema, table string) []string {
