@@ -9,6 +9,7 @@ import (
 	"log"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 	"text/template"
 	"unicode"
@@ -18,6 +19,22 @@ import (
 	pg "github.com/lfittl/pg_query_go"
 	nodes "github.com/lfittl/pg_query_go/nodes"
 )
+
+func parseSQL(in string) (*Result, error) {
+	s := postgres.Schema{}
+	tree, err := pg.Parse(in)
+	if err != nil {
+		return nil, err
+	}
+	parse(&s, tree)
+
+	var q []Query
+	r := Result{Schema: &s}
+	parseFuncs(&s, &r, in, tree)
+	q = append(q, r.Queries...)
+
+	return &Result{Schema: &s, Queries: q}, nil
+}
 
 func ParseSchmea(dir string) (*postgres.Schema, error) {
 	// Keep the import around
@@ -152,6 +169,16 @@ func join(list nodes.List, sep string) string {
 	return strings.Join(items, sep)
 }
 
+func stringSlice(list nodes.List) []string {
+	items := []string{}
+	for _, item := range list.Items {
+		if n, ok := item.(nodes.String); ok {
+			items = append(items, n.Str)
+		}
+	}
+	return items
+}
+
 func isNotNull(n nodes.ColumnDef) bool {
 	if n.IsNotNull {
 		return true
@@ -253,7 +280,7 @@ func ParseQueries(s *postgres.Schema, dir string) (*Result, error) {
 		if err != nil {
 			return nil, err
 		}
-		r := Result{Schema: s, Queries: parseQueries(blob)}
+		r := Result{Schema: s}
 		tree, err := pg.Parse(string(blob))
 		if err != nil {
 			return nil, err
@@ -264,21 +291,20 @@ func ParseQueries(s *postgres.Schema, dir string) (*Result, error) {
 	return &Result{Schema: s, Queries: q}, nil
 }
 
-func parseQueries(t []byte) []Query {
-	q := []Query{}
-	for _, line := range strings.Split(string(t), "\n") {
+func parseQueryMetadata(t string) (Query, error) {
+	for _, line := range strings.Split(t, "\n") {
 		if !strings.HasPrefix(line, "-- name:") {
 			continue
 		}
 		part := strings.Split(line, " ")
-		q = append(q, Query{
+		return Query{
 			MethodName: part[2],
 			Type:       strings.TrimSpace(part[3]),
 			StmtName:   lowerTitle(part[2]),
 			QueryName:  lowerTitle(part[2]),
-		})
+		}, nil
 	}
-	return q
+	return Query{}, fmt.Errorf("no query metadata found")
 }
 
 func pluckQuery(source string, n nodes.RawStmt) (string, error) {
@@ -288,8 +314,20 @@ func pluckQuery(source string, n nodes.RawStmt) (string, error) {
 	return strings.TrimSpace(source[head:tail]), nil
 }
 
+func rangeVars(root nodes.Node) []nodes.RangeVar {
+	var vars []nodes.RangeVar
+	find := VisitorFunc(func(node nodes.Node) {
+		switch n := node.(type) {
+		case nodes.RangeVar:
+			vars = append(vars, n)
+		}
+	})
+	Walk(find, root)
+	return vars
+}
+
 func parseFuncs(s *postgres.Schema, r *Result, source string, tree pg.ParsetreeList) {
-	for i, stmt := range tree.Statements {
+	for _, stmt := range tree.Statements {
 		raw, ok := stmt.(nodes.RawStmt)
 		if !ok {
 			continue
@@ -304,34 +342,42 @@ func parseFuncs(s *postgres.Schema, r *Result, source string, tree pg.ParsetreeL
 			continue
 		}
 
+		rvs := rangeVars(raw.Stmt)
 		t := tableName(raw.Stmt)
 		c := columnNames(s, t)
 
 		rawSQL, _ := pluckQuery(source, raw)
+		meta, err := parseQueryMetadata(rawSQL)
+		if err != nil {
+			panic(err)
+		}
+
 		refs := extractArgs(raw.Stmt)
 		outs := findOutputs(raw.Stmt)
 
 		tab := getTable(s, t)
-		r.Queries[i].Table = tab
-		r.Queries[i].Args = parseArgs(tab, refs)
+		meta.Table = tab
+		meta.Args = resolveRefs(s, rvs, refs)
 
 		if len(outs) == 0 {
-			r.Queries[i].SQL = rawSQL
+			meta.SQL = rawSQL
 		} else if len(outs) == 1 && isStar(outs[0]) {
-			r.Queries[i].ReturnType = tab.GoName
-			r.Queries[i].ScanRecord = true
-			r.Queries[i].Fields = fieldsFromTable(tab)
-			r.Queries[i].SQL = strings.Replace(rawSQL, "*", strings.Join(c, ", "), 1)
+			meta.ReturnType = tab.GoName
+			meta.ScanRecord = true
+			meta.Fields = fieldsFromTable(tab)
+			meta.SQL = strings.Replace(rawSQL, "*", strings.Join(c, ", "), 1)
 		} else if len(outs) > 1 {
-			r.Queries[i].ReturnType = r.Queries[i].MethodName + "Row"
-			r.Queries[i].ScanRecord = true
-			r.Queries[i].RowStruct = true
-			r.Queries[i].Fields = fieldsFromRefs(tab, outs)
-			r.Queries[i].SQL = rawSQL
+			meta.ReturnType = meta.MethodName + "Row"
+			meta.ScanRecord = true
+			meta.RowStruct = true
+			meta.Fields = fieldsFromRefs(tab, outs)
+			meta.SQL = rawSQL
 		} else {
-			r.Queries[i].ReturnType = returnType(tab, outs)
-			r.Queries[i].SQL = rawSQL
+			meta.ReturnType = returnType(tab, outs)
+			meta.SQL = rawSQL
 		}
+
+		r.Queries = append(r.Queries, meta)
 	}
 }
 
@@ -376,7 +422,13 @@ func returnType(t postgres.Table, refs []outputRef) string {
 		return "interface{}"
 	}
 	if refs[0].ref != nil {
-		name := join(refs[0].ref.Fields, ".")
+		fields := refs[0].ref.Fields.Items
+		node := fields[len(fields)-1]
+		name := ""
+		switch n := node.(type) {
+		case nodes.String:
+			name = n.Str
+		}
 		for _, c := range t.Columns {
 			if c.Name == name {
 				return c.GoType
@@ -501,33 +553,62 @@ func findOutputs(root nodes.Node) []outputRef {
 	return v.a.refs
 }
 
-func parseArgs(t postgres.Table, args []paramRef) []Arg {
-	typeMap := map[string]string{}
-	for _, c := range t.Columns {
-		typeMap[c.Name] = c.GoType
+func resolveRefs(s *postgres.Schema, rvs []nodes.RangeVar, args []paramRef) []Arg {
+	typeMap := map[string]map[string]string{}
+	for _, t := range s.Tables {
+		typeMap[t.Name] = map[string]string{}
+		for _, c := range t.Columns {
+			typeMap[t.Name][c.Name] = c.GoType
+		}
 	}
+
+	aliasMap := map[string]string{}
+	defaultTable := ""
+	for _, rv := range rvs {
+		if rv.Relname == nil {
+			continue
+		}
+		if defaultTable == "" {
+			defaultTable = *rv.Relname
+		}
+		if rv.Alias == nil {
+			continue
+		}
+		aliasMap[*rv.Alias.Aliasname] = *rv.Relname
+	}
+
 	a := []Arg{}
 	for _, ref := range args {
 		switch n := ref.parent.(type) {
 		case nodes.A_Expr:
 			switch n := n.Lexpr.(type) {
 			case nodes.ColumnRef:
-				key := ""
-				for _, n := range n.Fields.Items {
-					switch n := n.(type) {
-					case nodes.String:
-						key += n.Str
-					}
+				items := stringSlice(n.Fields)
+				var key, alias string
+				switch len(items) {
+				case 1:
+					key = items[0]
+				case 2:
+					alias = items[0]
+					key = items[1]
+				default:
+					panic("too many field items: " + strconv.Itoa(len(items)))
 				}
-				if typ, ok := typeMap[key]; ok {
+
+				table := aliasMap[alias]
+				if table == "" {
+					table = defaultTable
+				}
+
+				if typ, ok := typeMap[table][key]; ok {
 					a = append(a, Arg{Name: argName(key), Type: typ})
 				} else {
-					panic("unknown column: " + key)
+					panic("unknown column: " + alias + key)
 				}
 			}
 		case nodes.ResTarget:
 			key := *n.Name
-			if typ, ok := typeMap[key]; ok {
+			if typ, ok := typeMap[defaultTable][key]; ok {
 				a = append(a, Arg{Name: argName(key), Type: typ})
 			} else {
 				panic("unknown column: " + key)
