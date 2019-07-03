@@ -69,6 +69,9 @@ func ParseSchmea(dir string) (*postgres.Schema, error) {
 
 func parse(s *postgres.Schema, tree pg.ParsetreeList) error {
 	for _, stmt := range tree.Statements {
+		if err := validateFuncCall(stmt); err != nil {
+			return err
+		}
 		raw, ok := stmt.(nodes.RawStmt)
 		if !ok {
 			continue
@@ -299,7 +302,9 @@ func ParseQueries(s *postgres.Schema, dir string) (*Result, error) {
 		if err != nil {
 			return nil, err
 		}
-		parseFuncs(s, &r, string(blob), tree)
+		if err := parseFuncs(s, &r, string(blob), tree); err != nil {
+			return nil, err
+		}
 		q = append(q, r.Queries...)
 	}
 	return &Result{Schema: s, Queries: q}, nil
@@ -356,6 +361,10 @@ func parseFuncs(s *postgres.Schema, r *Result, source string, tree pg.ParsetreeL
 		case nodes.UpdateStmt:
 		default:
 			continue
+		}
+
+		if err := validateFuncCall(raw); err != nil {
+			return err
 		}
 
 		rvs := rangeVars(raw.Stmt)

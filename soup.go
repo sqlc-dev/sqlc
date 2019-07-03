@@ -158,11 +158,15 @@ func Walk(f Visitor, node nodes.Node) {
 		walkn(f, n.Tables)
 
 	case nodes.AlterRoleSetStmt:
-		walkn(f, n.Role)
+		if n.Role != nil {
+			walkn(f, *n.Role)
+		}
 		walkn(f, n.Setstmt)
 
 	case nodes.AlterRoleStmt:
-		walkn(f, n.Role)
+		if n.Role != nil {
+			walkn(f, *n.Role)
+		}
 		walkn(f, n.Options)
 
 	case nodes.AlterSeqStmt:
@@ -188,7 +192,9 @@ func Walk(f Visitor, node nodes.Node) {
 		walkn(f, n.Options)
 
 	case nodes.AlterTableCmd:
-		walkn(f, n.Newowner)
+		if n.Newowner != nil {
+			walkn(f, *n.Newowner)
+		}
 		walkn(f, n.Def)
 
 	case nodes.AlterTableMoveAllStmt:
@@ -204,7 +210,9 @@ func Walk(f Visitor, node nodes.Node) {
 		walkn(f, n.Cmds)
 
 	case nodes.AlterUserMappingStmt:
-		walkn(f, n.User)
+		if n.User != nil {
+			walkn(f, *n.User)
+		}
 		walkn(f, n.Options)
 
 	case nodes.AlternativeSubPlan:
@@ -447,7 +455,9 @@ func Walk(f Visitor, node nodes.Node) {
 		walkn(f, n.Options)
 
 	case nodes.CreateSchemaStmt:
-		walkn(f, n.Authrole)
+		if n.Authrole != nil {
+			walkn(f, *n.Authrole)
+		}
 		walkn(f, n.SchemaElts)
 
 	case nodes.CreateSeqStmt:
@@ -488,6 +498,12 @@ func Walk(f Visitor, node nodes.Node) {
 		walkn(f, n.Query)
 		walkn(f, n.Into)
 
+	case nodes.CreateTableSpaceStmt:
+		if n.Owner != nil {
+			walkn(f, *n.Owner)
+		}
+		walkn(f, n.Options)
+
 	case nodes.CreateTransformStmt:
 		if n.TypeName != nil {
 			walkn(f, *n.TypeName)
@@ -513,7 +529,9 @@ func Walk(f Visitor, node nodes.Node) {
 		}
 
 	case nodes.CreateUserMappingStmt:
-		walkn(f, n.User)
+		if n.User != nil {
+			walkn(f, *n.User)
+		}
 		walkn(f, n.Options)
 
 	case nodes.CreatedbStmt:
@@ -569,7 +587,9 @@ func Walk(f Visitor, node nodes.Node) {
 		// pass
 
 	case nodes.DropUserMappingStmt:
-		walkn(f, n.User)
+		if n.User != nil {
+			walkn(f, *n.User)
+		}
 
 	case nodes.DropdbStmt:
 		// pass
@@ -626,7 +646,9 @@ func Walk(f Visitor, node nodes.Node) {
 	case nodes.GrantRoleStmt:
 		walkn(f, n.GrantedRoles)
 		walkn(f, n.GranteeRoles)
-		walkn(f, n.Grantor)
+		if n.Grantor != nil {
+			walkn(f, *n.Grantor)
+		}
 
 	case nodes.GrantStmt:
 		walkn(f, n.Objects)
@@ -652,7 +674,9 @@ func Walk(f Visitor, node nodes.Node) {
 		walkn(f, n.Opclass)
 
 	case nodes.IndexStmt:
-		walkn(f, n.Relation)
+		if n.Relation != nil {
+			walkn(f, *n.Relation)
+		}
 		walkn(f, n.IndexParams)
 		walkn(f, n.Options)
 		walkn(f, n.WhereClause)
@@ -686,7 +710,9 @@ func Walk(f Visitor, node nodes.Node) {
 		// pass
 
 	case nodes.IntoClause:
-		walkn(f, n.Rel)
+		if n.Rel != nil {
+			walkn(f, *n.Rel)
+		}
 		walkn(f, n.ColNames)
 		walkn(f, n.Options)
 		walkn(f, n.ViewQuery)
@@ -782,8 +808,12 @@ func Walk(f Visitor, node nodes.Node) {
 		walkn(f, n.Upperdatums)
 
 	case nodes.PartitionCmd:
-		walkn(f, n.Name)
-		walkn(f, n.Bound)
+		if n.Name != nil {
+			walkn(f, *n.Name)
+		}
+		if n.Bound != nil {
+			walkn(f, *n.Bound)
+		}
 
 	case nodes.PartitionElem:
 		walkn(f, n.Expr)
@@ -880,20 +910,28 @@ func Walk(f Visitor, node nodes.Node) {
 
 	case nodes.ReassignOwnedStmt:
 		walkn(f, n.Roles)
-		walkn(f, n.Newrole)
+		if n.Newrole != nil {
+			walkn(f, *n.Newrole)
+		}
 
 	case nodes.RefreshMatViewStmt:
-		walkn(f, n.Relation)
+		if n.Relation != nil {
+			walkn(f, *n.Relation)
+		}
 
 	case nodes.ReindexStmt:
-		walkn(f, n.Relation)
+		if n.Relation != nil {
+			walkn(f, *n.Relation)
+		}
 
 	case nodes.RelabelType:
 		walkn(f, n.Xpr)
 		walkn(f, n.Arg)
 
 	case nodes.RenameStmt:
-		walkn(f, n.Relation)
+		if n.Relation != nil {
+			walkn(f, *n.Relation)
+		}
 		walkn(f, n.Object)
 
 	case nodes.ReplicaIdentityStmt:
@@ -923,7 +961,9 @@ func Walk(f Visitor, node nodes.Node) {
 		// pass
 
 	case nodes.RuleStmt:
-		walkn(f, n.Relation)
+		if n.Relation != nil {
+			walkn(f, *n.Relation)
+		}
 		walkn(f, n.WhereClause)
 		walkn(f, n.Actions)
 
@@ -1015,7 +1055,9 @@ func Walk(f Visitor, node nodes.Node) {
 		walkn(f, n.Coldefexprs)
 
 	case nodes.TableLikeClause:
-		walkn(f, n.Relation)
+		if n.Relation != nil {
+			walkn(f, *n.Relation)
+		}
 
 	case nodes.TableSampleClause:
 		walkn(f, n.Args)
@@ -1061,7 +1103,9 @@ func Walk(f Visitor, node nodes.Node) {
 		}
 
 	case nodes.VacuumStmt:
-		walkn(f, n.Relation)
+		if n.Relation != nil {
+			walkn(f, *n.Relation)
+		}
 		walkn(f, n.VaCols)
 
 	case nodes.Var:
@@ -1074,7 +1118,9 @@ func Walk(f Visitor, node nodes.Node) {
 		// pass
 
 	case nodes.ViewStmt:
-		walkn(f, n.View)
+		if n.View != nil {
+			walkn(f, *n.View)
+		}
 		walkn(f, n.Aliases)
 		walkn(f, n.Query)
 		walkn(f, n.Options)
