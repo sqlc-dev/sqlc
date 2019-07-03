@@ -60,7 +60,12 @@ func (v *funcCallVisitor) Visit(node nodes.Node) Visitor {
 		return v
 	}
 
-	name := join(funcCall.Funcname, "")
+	// Do not validate unknown functions
+	name := join(funcCall.Funcname, ".")
+	if _, ok := postgres.Functions[name]; !ok {
+		return v
+	}
+
 	args := len(funcCall.Args.Items)
 	if _, ok := postgres.Functions[name][args]; ok {
 		return v

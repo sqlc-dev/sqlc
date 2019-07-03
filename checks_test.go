@@ -1,10 +1,20 @@
 package dinosql
 
 import (
+	"path/filepath"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/kyleconroy/dinosql/postgres"
 )
+
+func TestFuncs(t *testing.T) {
+	_, err := ParseQueries(&postgres.Schema{}, filepath.Join("testdata", "funcs"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+}
 
 func TestParserErrors(t *testing.T) {
 	for _, tc := range []struct {
@@ -41,6 +51,14 @@ func TestParserErrors(t *testing.T) {
 			Error{
 				Code:    "42883",
 				Message: "function random(unknown) does not exist",
+				Hint:    "No function matches the given name and argument types. You might need to add explicit type casts.",
+			},
+		},
+		{
+			"SELECT position()",
+			Error{
+				Code:    "42883",
+				Message: "function pg_catalog.position() does not exist",
 				Hint:    "No function matches the given name and argument types. You might need to add explicit type casts.",
 			},
 		},
