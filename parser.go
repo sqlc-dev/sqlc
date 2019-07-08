@@ -1084,10 +1084,6 @@ func generate(r *Result, settings GenerateSettings) string {
 		Records:        r.Records(),
 		StdImports:     r.StdImports(),
 		PkgImports:     r.PkgImports(),
-		// ImportJSON:     r.UsesType("json.RawMessage"),
-		// ImportPQ:       r.UsesType("pq.NullTime"),
-		// ImportTime:     r.UsesType("time.Time"),
-		// ImportUUID:     r.UsesType("uuid.UUID"),
 	})
 	w.Flush()
 	code, err := format.Source(b.Bytes())
