@@ -88,7 +88,9 @@ func TestParseSchema(t *testing.T) {
 	}
 
 	t.Run("default", func(t *testing.T) {
-		source := generate(q, "ondeck", false)
+		source := generate(q, GenerateSettings{
+			Package: "ondeck",
+		})
 
 		blob, err := ioutil.ReadFile(filepath.Join("testdata", "ondeck", "db.go"))
 		if err != nil {
@@ -102,7 +104,10 @@ func TestParseSchema(t *testing.T) {
 	})
 
 	t.Run("prepared", func(t *testing.T) {
-		source := generate(q, "prepared", true)
+		source := generate(q, GenerateSettings{
+			Package:             "prepared",
+			EmitPreparedQueries: true,
+		})
 
 		blob, err := ioutil.ReadFile(filepath.Join("testdata", "ondeck", "prepared", "prepared.go"))
 		if err != nil {

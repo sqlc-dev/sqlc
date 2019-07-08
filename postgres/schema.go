@@ -24,8 +24,12 @@ type Constant struct {
 func (e Enum) Constants() []Constant {
 	var c []Constant
 	for _, v := range e.Vals {
+		name := ""
+		for _, part := range strings.Split(strings.Replace(v, "-", "_", -1), "_") {
+			name += strings.Title(part)
+		}
 		c = append(c, Constant{
-			Name:  strings.Title(e.Name) + strings.Title(v),
+			Name:  e.GoName + name,
 			Value: v,
 			Type:  e.GoName,
 		})

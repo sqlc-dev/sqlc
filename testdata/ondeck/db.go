@@ -6,11 +6,11 @@ import (
 	"time"
 )
 
-type StatusEnum string
+type Status string
 
 const (
-	StatusOpen   StatusEnum = "open"
-	StatusClosed            = "closed"
+	StatusOpen   Status = "open"
+	StatusClosed        = "closed"
 )
 
 type City struct {
@@ -20,7 +20,7 @@ type City struct {
 
 type Venue struct {
 	ID              int
-	Status          StatusEnum
+	Status          Status
 	Slug            string
 	Name            string
 	City            string
@@ -85,7 +85,7 @@ INSERT INTO venue (
 ) RETURNING id
 `
 
-func (q *Queries) CreateVenue(ctx context.Context, slug string, name string, city string, spotifyPlaylist string, status StatusEnum) (int, error) {
+func (q *Queries) CreateVenue(ctx context.Context, slug string, name string, city string, spotifyPlaylist string, status Status) (int, error) {
 	row := q.db.QueryRowContext(ctx, createVenue, slug, name, city, spotifyPlaylist, status)
 	var i int
 	err := row.Scan(&i)
