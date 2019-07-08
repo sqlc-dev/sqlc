@@ -57,7 +57,8 @@ func ParseSchmea(dir string) (*postgres.Schema, error) {
 		if err != nil {
 			return nil, err
 		}
-		tree, err := pg.Parse(string(blob))
+		contents := RemoveGooseRollback(string(blob))
+		tree, err := pg.Parse(contents)
 		if err != nil {
 			return nil, err
 		}
