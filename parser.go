@@ -15,6 +15,7 @@ import (
 	"unicode"
 
 	"github.com/davecgh/go-spew/spew"
+	"github.com/jinzhu/inflection"
 	"github.com/kyleconroy/dinosql/postgres"
 	pg "github.com/lfittl/pg_query_go"
 	nodes "github.com/lfittl/pg_query_go/nodes"
@@ -126,13 +127,13 @@ func parse(s *postgres.Schema, tree pg.ParsetreeList) error {
 			}
 			s.Enums = append(s.Enums, postgres.Enum{
 				Name:   join(n.TypeName, "."),
-				GoName: structName(join(n.TypeName, ".")) + "Enum",
+				GoName: structName(join(n.TypeName, ".")),
 				Vals:   vals,
 			})
 		case nodes.CreateStmt:
 			table := postgres.Table{
 				Name:   *n.Relation.Relname,
-				GoName: structName(*n.Relation.Relname),
+				GoName: inflection.Singular(structName(*n.Relation.Relname)),
 			}
 			for _, elt := range n.TableElts.Items {
 				switch n := elt.(type) {
@@ -166,7 +167,7 @@ func parse(s *postgres.Schema, tree pg.ParsetreeList) error {
 					}
 				}
 				s.Tables[idx].Name = *n.Newname
-				s.Tables[idx].GoName = structName(*n.Newname)
+				s.Tables[idx].GoName = inflection.Singular(structName(*n.Newname))
 			}
 		default:
 			// spew.Dump(n)
@@ -263,15 +264,40 @@ func (r Result) Records() []postgres.Table {
 	return tables
 }
 
-func (r Result) UsesTime() bool {
+func (r Result) UsesType(typ string) bool {
 	for _, table := range r.Records() {
 		for _, c := range table.Columns {
-			if c.GoType == "time.Time" {
+			if c.GoType == typ {
 				return true
 			}
 		}
 	}
 	return false
+}
+
+func (r Result) StdImports() []string {
+	imports := []string{
+		"context",
+		"database/sql",
+	}
+	if r.UsesType("json.RawMessage") {
+		imports = append(imports, "encoding/json")
+	}
+	if r.UsesType("time.Time") {
+		imports = append(imports, "time")
+	}
+	return imports
+}
+
+func (r Result) PkgImports() []string {
+	imports := []string{}
+	if r.UsesType("pq.NullTime") {
+		imports = append(imports, "github.com/lib/pq")
+	}
+	if r.UsesType("uuid.UUID") {
+		imports = append(imports, "github.com/google/uuid")
+	}
+	return imports
 }
 
 func getTable(s *postgres.Schema, name string) postgres.Table {
@@ -710,24 +736,40 @@ func columnType(s *postgres.Schema, cType string, notNull bool) string {
 		} else {
 			return "sql.NullBool"
 		}
+	case "jsonb":
+		return "json.RawMessage"
 	case "pg_catalog.bool":
 		if notNull {
 			return "bool"
 		} else {
 			return "sql.NullBool"
 		}
+	case "pg_catalog.int2":
+		return "uint8"
 	case "pg_catalog.int4":
 		return "int"
 	case "pg_catalog.int8":
 		return "int"
 	case "pg_catalog.timestamp":
-		return "time.Time"
+		if notNull {
+			return "time.Time"
+		} else {
+			return "pq.NullTime"
+		}
+	case "pg_catalog.timestamptz":
+		if notNull {
+			return "time.Time"
+		} else {
+			return "pq.NullTime"
+		}
 	case "pg_catalog.varchar":
 		if notNull {
 			return "string"
 		} else {
 			return "sql.NullString"
 		}
+	case "uuid":
+		return "uuid.UUID"
 	default:
 		for _, e := range s.Enums {
 			if cType == e.Name {
@@ -760,9 +802,13 @@ func tableName(n nodes.Node) string {
 
 var hh = `package {{.Package}}
 import (
-	"context"
-	"database/sql"
-	{{if .ImportTime}}"time"{{end}}
+	{{- range .StdImports}}
+	"{{.}}"
+	{{- end}}
+
+	{{- range .PkgImports}}
+	"{{.}}"
+	{{- end}}
 )
 
 {{range .Schema.Enums}}
@@ -781,7 +827,7 @@ const (
 
 {{range .Records}}
 type {{.GoName}} struct { {{- range .Columns}}
-  {{.GoName}} {{.GoType}}
+  {{.GoName}} {{.GoType}} {{if $.EmitTags}}{{$.Q}}json:"{{.Name}}"{{$.Q}}{{end}}
   {{- end}}
 }
 {{end}}
@@ -995,8 +1041,10 @@ type tmplCtx struct {
 	Queries        []Query
 	Schema         *postgres.Schema
 	Records        []postgres.Table
-	ImportTime     bool
+	StdImports     []string
+	PkgImports     []string
 	PrepareSupport bool
+	EmitTags       bool
 }
 
 func lowerTitle(s string) string {
@@ -1005,24 +1053,41 @@ func lowerTitle(s string) string {
 	return string(a)
 }
 
-func generate(r *Result, pkg string, prepare bool) string {
+type GenerateSettings struct {
+	Package             string
+	EmitPreparedQueries bool
+	EmitTags            bool
+}
+
+func generate(r *Result, settings GenerateSettings) string {
 	sort.Slice(r.Queries, func(i, j int) bool { return r.Queries[i].MethodName < r.Queries[j].MethodName })
 
 	funcMap := template.FuncMap{
 		"lowerTitle": lowerTitle,
 	}
 
+	pkg := "db"
+	if settings.Package != "" {
+		pkg = settings.Package
+	}
+
 	fileTmpl := template.Must(template.New("table").Funcs(funcMap).Parse(hh))
 	var b bytes.Buffer
 	w := bufio.NewWriter(&b)
 	fileTmpl.Execute(w, tmplCtx{
-		PrepareSupport: prepare,
+		PrepareSupport: settings.EmitPreparedQueries,
+		EmitTags:       settings.EmitTags,
 		Q:              "`",
 		Queries:        r.Queries,
 		Package:        pkg,
 		Schema:         r.Schema,
 		Records:        r.Records(),
-		ImportTime:     r.UsesTime(),
+		StdImports:     r.StdImports(),
+		PkgImports:     r.PkgImports(),
+		// ImportJSON:     r.UsesType("json.RawMessage"),
+		// ImportPQ:       r.UsesType("pq.NullTime"),
+		// ImportTime:     r.UsesType("time.Time"),
+		// ImportUUID:     r.UsesType("uuid.UUID"),
 	})
 	w.Flush()
 	code, err := format.Source(b.Bytes())
