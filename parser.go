@@ -1054,10 +1054,20 @@ func lowerTitle(s string) string {
 	return string(a)
 }
 
+type TypeOverride struct {
+	Package      string `json:"package"`
+	PostgresType string `json:"postgres_type"`
+	GoType       string `json:"go_type"`
+}
+
 type GenerateSettings struct {
-	Package             string
-	EmitPreparedQueries bool
-	EmitTags            bool
+	SchemaDir           string         `json:"schema"`
+	QueryDir            string         `json:"queries"`
+	Out                 string         `json:"out"`
+	Package             string         `json:"package"`
+	EmitPreparedQueries bool           `json:"emit_prepared_queries"`
+	EmitTags            bool           `json:"emit_tags"`
+	Overrides           []TypeOverride `json:"overrides"`
 }
 
 func generate(r *Result, settings GenerateSettings) string {

@@ -1,20 +1,31 @@
 package dinosql
 
 import (
+	"encoding/json"
 	"io/ioutil"
 )
 
-func Exec(schemaDir, queryDir, out string, settings GenerateSettings) error {
-	s, err := ParseSchmea(schemaDir)
+func Exec(settingsPath string) error {
+	blob, err := ioutil.ReadFile(settingsPath)
 	if err != nil {
 		return err
 	}
 
-	q, err := ParseQueries(s, queryDir)
+	var settings GenerateSettings
+	if err := json.Unmarshal(blob, &settings); err != nil {
+		return err
+	}
+
+	s, err := ParseSchmea(settings.SchemaDir)
+	if err != nil {
+		return err
+	}
+
+	q, err := ParseQueries(s, settings.QueryDir)
 	if err != nil {
 		return err
 	}
 
 	source := generate(q, settings)
-	return ioutil.WriteFile(out, []byte(source), 0644)
+	return ioutil.WriteFile(settings.Out, []byte(source), 0644)
 }
