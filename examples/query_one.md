@@ -54,7 +54,7 @@ type Queries struct {
 
 const getRecord = `-- name: GetRecord :one
 SELECT id FROM records
-WHERE id = $1;
+WHERE id = $1
 `
 
 func (q *Queries) GetRecord(ctx context.Context, id int) (Record, error) {

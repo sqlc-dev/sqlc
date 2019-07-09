@@ -1,4 +1,4 @@
-# Struct tags
+# JSON Struct tags
 
 ```sql
 CREATE TABLE authors (
@@ -7,8 +7,8 @@ CREATE TABLE authors (
 );
 ```
 
-When `emit_tags` is set, structs are generated with JSON struct tags. The JSON
-name for fields match the column name in the database.
+DinoSQL can generate structs with JSON tags. The JSON name for a field matches
+the column name in the database.
 
 ```go
 package db
