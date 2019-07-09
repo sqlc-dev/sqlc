@@ -1,8 +1,7 @@
 package dinosql
 
 import (
-	"go/parser"
-	"go/token"
+	"go/format"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
@@ -51,8 +50,8 @@ func TestExamples(t *testing.T) {
 			if _, err := pg.Parse(sql); err != nil {
 				t.Errorf("could not parse SQL: %s", err)
 			}
-			if _, err := parser.ParseFile(token.NewFileSet(), "", goc, parser.AllErrors); err != nil {
-				t.Errorf("could not parse Go: %s", err)
+			if _, err := format.Source([]byte(goc)); err != nil {
+				t.Errorf("could not format Go: %s", err)
 			}
 		})
 	}
