@@ -1,0 +1,26 @@
+# For more Go information and examples, see
+# https://docs.semaphoreci.com/article/86-language-golang
+version: v1.0
+name: Hello Semaphore
+agent:
+  machine:
+    type: e1-standard-2
+    os_image: ubuntu1804
+blocks:
+  - name: DinoSQL
+    task:
+      jobs:
+        - name: Test dinosql
+          commands:
+            - checkout
+            - sem-version go 1.12
+            - go test -v ./...
+        - name: Test dinosql/ondeck
+          commands:
+            - sem-service start postgres
+            - sudo apt-get install -y -qq postgresql-client
+            - createdb -U postgres -h 0.0.0.0 dinotest
+            - checkout
+            - sem-version go 1.12
+            - cd testdata/ondeck
+            - go test -v ./...
