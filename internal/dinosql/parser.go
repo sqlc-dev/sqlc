@@ -14,9 +14,10 @@ import (
 	"text/template"
 	"unicode"
 
+	"github.com/kyleconroy/dinosql/internal/postgres"
+
 	"github.com/davecgh/go-spew/spew"
 	"github.com/jinzhu/inflection"
-	"github.com/kyleconroy/dinosql/postgres"
 	pg "github.com/lfittl/pg_query_go"
 	nodes "github.com/lfittl/pg_query_go/nodes"
 )

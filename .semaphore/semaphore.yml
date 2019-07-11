@@ -22,5 +22,5 @@ blocks:
             - createdb -U postgres -h 0.0.0.0 dinotest
             - checkout
             - sem-version go 1.12
-            - cd testdata/ondeck
+            - cd internal/dinosql/testdata/ondeck
             - go test -v ./...

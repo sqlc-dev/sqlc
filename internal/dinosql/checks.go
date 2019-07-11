@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/kyleconroy/dinosql/postgres"
+	"github.com/kyleconroy/dinosql/internal/postgres"
 	nodes "github.com/lfittl/pg_query_go/nodes"
 )
 
