@@ -4,8 +4,9 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/kyleconroy/dinosql/internal/postgres"
+
 	"github.com/google/go-cmp/cmp"
-	"github.com/kyleconroy/dinosql/postgres"
 )
 
 func TestFuncs(t *testing.T) {

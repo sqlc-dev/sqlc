@@ -4,7 +4,7 @@ import (
 	"flag"
 	"log"
 
-	"github.com/kyleconroy/dinosql"
+	"github.com/kyleconroy/dinosql/internal/dinosql"
 )
 
 func main() {
