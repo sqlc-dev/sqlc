@@ -40,6 +40,13 @@ func ErrorRelationDoesNotExist(tbl string) Error {
 	}
 }
 
+func ErrorSchemaAlreadyExists(sch string) Error {
+	return Error{
+		Code:    "42P06",
+		Message: fmt.Sprintf("schema \"%s\" already exists", sch),
+	}
+}
+
 func ErrorSchemaDoesNotExist(sch string) Error {
 	return Error{
 		Code:    "3F000",

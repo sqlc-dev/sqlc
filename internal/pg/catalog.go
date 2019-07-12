@@ -3,11 +3,15 @@ package pg
 func NewCatalog() Catalog {
 	return Catalog{
 		Schemas: map[string]Schema{
-			"public": Schema{
-				Tables: map[string]Table{},
-				Enums:  map[string]Enum{},
-			},
+			"public": NewSchema(),
 		},
+	}
+}
+
+func NewSchema() Schema {
+	return Schema{
+		Tables: map[string]Table{},
+		Enums:  map[string]Enum{},
 	}
 }
 

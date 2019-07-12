@@ -41,7 +41,6 @@ func TestUpdate(t *testing.T) {
 								Vals: []string{"open", "closed"},
 							},
 						},
-						Tables: map[string]pg.Table{},
 					},
 				},
 			},
@@ -51,7 +50,6 @@ func TestUpdate(t *testing.T) {
 			pg.Catalog{
 				Schemas: map[string]pg.Schema{
 					"public": {
-						Enums: map[string]pg.Enum{},
 						Tables: map[string]pg.Table{
 							"venues": pg.Table{
 								Name: "venues",
@@ -70,12 +68,119 @@ func TestUpdate(t *testing.T) {
 			pg.Catalog{
 				Schemas: map[string]pg.Schema{
 					"public": {
-						Enums: map[string]pg.Enum{},
 						Tables: map[string]pg.Table{
 							"foo": pg.Table{
 								Name: "foo",
 							},
 						},
+					},
+				},
+			},
+		},
+		{
+			`
+			CREATE TABLE foo ();
+			ALTER TABLE foo DROP COLUMN IF EXISTS bar;
+			`,
+			pg.Catalog{
+				Schemas: map[string]pg.Schema{
+					"public": {
+						Tables: map[string]pg.Table{
+							"foo": pg.Table{
+								Name: "foo",
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			`
+			CREATE TABLE foo (bar text);
+			ALTER TABLE foo ALTER bar SET NOT NULL;
+			`,
+			pg.Catalog{
+				Schemas: map[string]pg.Schema{
+					"public": {
+						Tables: map[string]pg.Table{
+							"foo": pg.Table{
+								Name:    "foo",
+								Columns: []pg.Column{{Name: "bar", DataType: "text", NotNull: true}},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			`
+			CREATE TABLE foo (bar text NOT NULL);
+			ALTER TABLE foo ALTER bar DROP NOT NULL;
+			`,
+			pg.Catalog{
+				Schemas: map[string]pg.Schema{
+					"public": {
+						Tables: map[string]pg.Table{
+							"foo": pg.Table{
+								Name:    "foo",
+								Columns: []pg.Column{{Name: "bar", DataType: "text"}},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			`
+			CREATE TABLE foo (bar text);
+			ALTER TABLE foo ALTER bar SET DATA TYPE bool;
+			`,
+			pg.Catalog{
+				Schemas: map[string]pg.Schema{
+					"public": {
+						Tables: map[string]pg.Table{
+							"foo": pg.Table{
+								Name:    "foo",
+								Columns: []pg.Column{{Name: "bar", DataType: "bool"}},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			`
+			CREATE SCHEMA foo;
+			CREATE SCHEMA bar;
+			CREATE TABLE foo.baz ();
+			ALTER TABLE foo.baz SET SCHEMA bar;
+			`,
+			pg.Catalog{
+				Schemas: map[string]pg.Schema{
+					"public": {},
+					"foo":    {},
+					"bar": {
+						Tables: map[string]pg.Table{
+							"baz": pg.Table{
+								Name: "baz",
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			"CREATE TYPE status AS ENUM ('open', 'closed');",
+			pg.Catalog{
+				Schemas: map[string]pg.Schema{
+					"public": {
+						Enums: map[string]pg.Enum{
+							"status": pg.Enum{
+								Name: "status",
+								Vals: []string{"open", "closed"},
+							},
+						},
+						Tables: map[string]pg.Table{},
 					},
 				},
 			},
@@ -89,16 +194,34 @@ func TestUpdate(t *testing.T) {
 		},
 		{
 			`
-			CREATE TYPE status AS ENUM ('open', 'closed');
-			DROP TYPE status;
+			CREATE TABLE venues ();
+			DROP TABLE IF EXISTS venues;
+			DROP TABLE IF EXISTS venues;
 			`,
 			pg.NewCatalog(),
 		},
 		{
 			`
 			CREATE TABLE venues ();
-			DROP TABLE IF EXISTS venues;
-			DROP TABLE IF EXISTS venues;
+			ALTER TABLE venues RENAME TO arenas;
+			`,
+			pg.Catalog{
+				Schemas: map[string]pg.Schema{
+					"public": {
+						Enums: map[string]pg.Enum{},
+						Tables: map[string]pg.Table{
+							"arenas": pg.Table{
+								Name: "arenas",
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			`
+			CREATE TYPE status AS ENUM ('open', 'closed');
+			DROP TYPE status;
 			`,
 			pg.NewCatalog(),
 		},
@@ -126,32 +249,34 @@ func TestUpdate(t *testing.T) {
 		},
 		{
 			`
-			CREATE TABLE venues ();
-			ALTER TABLE venues RENAME TO arenas;
+			CREATE TYPE status AS ENUM ('open', 'closed');
+			DROP TYPE public.status;
 			`,
-			pg.Catalog{
-				Schemas: map[string]pg.Schema{
-					"public": {
-						Enums: map[string]pg.Enum{},
-						Tables: map[string]pg.Table{
-							"arenas": pg.Table{
-								Name: "arenas",
-							},
-						},
-					},
-				},
-			},
+			pg.NewCatalog(),
+		},
+		{
+			`
+			CREATE SCHEMA foo;
+			DROP SCHEMA foo;
+			`,
+			pg.NewCatalog(),
+		},
+		{
+			`
+			DROP SCHEMA IF EXISTS foo;
+			`,
+			pg.NewCatalog(),
 		},
 	} {
 		test := tc
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
-			t.Log(test.stmt)
-
 			c, err := buildCatalog(test.stmt)
 			if err != nil {
+				t.Log(test.stmt)
 				t.Fatal(err)
 			}
 			if diff := cmp.Diff(test.c, c, cmpopts.EquateEmpty()); diff != "" {
+				t.Log(test.stmt)
 				t.Errorf("catalog mismatch:\n%s", diff)
 			}
 		})
@@ -218,21 +343,82 @@ func TestUpdateErrors(t *testing.T) {
 			`,
 			pg.Error{Code: "42703", Message: "column \"bar\" of relation \"foo\" does not exist"},
 		},
+		{
+			`
+			CREATE TABLE foo ();
+			ALTER TABLE foo ALTER COLUMN bar SET NOT NULL;
+			`,
+			pg.Error{Code: "42703", Message: "column \"bar\" of relation \"foo\" does not exist"},
+		},
+		{
+			`
+			CREATE TABLE foo ();
+			ALTER TABLE foo ALTER COLUMN bar DROP NOT NULL;
+			`,
+			pg.Error{Code: "42703", Message: "column \"bar\" of relation \"foo\" does not exist"},
+		},
+		{
+			`
+			CREATE TABLE foo ();
+			ALTER TABLE foo ALTER COLUMN bar DROP NOT NULL;
+			`,
+			pg.Error{Code: "42703", Message: "column \"bar\" of relation \"foo\" does not exist"},
+		},
+		{
+			`
+			CREATE SCHEMA foo;
+			CREATE SCHEMA foo;
+			`,
+			pg.Error{Code: "42P06", Message: "schema \"foo\" already exists"},
+		},
+		{
+			`
+			ALTER TABLE foo.baz SET SCHEMA bar;
+			`,
+			pg.Error{Code: "3F000", Message: "schema \"foo\" does not exist"},
+		},
+		{
+			`
+			CREATE SCHEMA foo;
+			ALTER TABLE foo.baz SET SCHEMA bar;
+			`,
+			pg.Error{Code: "42P01", Message: "relation \"baz\" does not exist"},
+		},
+		{
+			`
+			CREATE SCHEMA foo;
+			CREATE TABLE foo.baz ();
+			ALTER TABLE foo.baz SET SCHEMA bar;
+			`,
+			pg.Error{Code: "3F000", Message: "schema \"bar\" does not exist"},
+		},
+		{
+			`
+			DROP SCHEMA bar;
+			`,
+			pg.Error{Code: "3F000", Message: "schema \"bar\" does not exist"},
+		},
 	} {
 		test := tc
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
-			t.Log(test.stmt)
 			_, err := buildCatalog(test.stmt)
 			if err == nil {
+				t.Log(test.stmt)
 				t.Fatal("err was nil")
 			}
 
 			var actual pg.Error
 			if err != nil {
-				actual = err.(pg.Error)
+				pge, ok := err.(pg.Error)
+				if !ok {
+					t.Log(test.stmt)
+					t.Fatal(err)
+				}
+				actual = pge
 			}
 
 			if diff := cmp.Diff(test.err, actual, cmpopts.EquateEmpty()); diff != "" {
+				t.Log(test.stmt)
 				t.Errorf("error mismatch: \n%s", diff)
 			}
 		})
