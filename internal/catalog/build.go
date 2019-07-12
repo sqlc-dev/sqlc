@@ -69,6 +69,32 @@ func Update(c *pg.Catalog, stmt nodes.Node) error {
 	}
 	switch n := raw.Stmt.(type) {
 
+	case nodes.AlterObjectSchemaStmt:
+		switch n.ObjectType {
+
+		case nodes.OBJECT_TABLE:
+			fqn, err := ParseRange(n.Relation)
+			if err != nil {
+				return err
+			}
+			from, exists := c.Schemas[fqn.Schema]
+			if !exists {
+				return pg.ErrorSchemaDoesNotExist(fqn.Schema)
+			}
+			table, exists := from.Tables[fqn.Rel]
+			if !exists {
+				return pg.ErrorRelationDoesNotExist(fqn.Rel)
+			}
+			to, exists := c.Schemas[*n.Newschema]
+			if !exists {
+				return pg.ErrorSchemaDoesNotExist(*n.Newschema)
+			}
+			// Move the table
+			delete(from.Tables, fqn.Rel)
+			to.Tables[fqn.Rel] = table
+
+		}
+
 	case nodes.AlterTableStmt:
 		fqn, err := ParseRange(n.Relation)
 		if err != nil {
@@ -86,55 +112,57 @@ func Update(c *pg.Catalog, stmt nodes.Node) error {
 		for _, cmd := range n.Cmds.Items {
 			switch cmd := cmd.(type) {
 			case nodes.AlterTableCmd:
+				idx := -1
+
+				// If cmd.Name is set, do a column lookup.
+				if cmd.Name != nil {
+					for i, c := range table.Columns {
+						if c.Name == *cmd.Name {
+							idx = i
+							break
+						}
+					}
+					if idx < 0 && !cmd.MissingOk {
+						return pg.ErrorColumnDoesNotExist(table.Name, *cmd.Name)
+					}
+					// If a missing column is allowed, skip this command
+					if idx < 0 && cmd.MissingOk {
+						continue
+					}
+				}
+
 				switch cmd.Subtype {
 
 				case nodes.AT_AddColumn:
-					switch d := cmd.Def.(type) {
-					case nodes.ColumnDef:
-						for _, c := range table.Columns {
-							if c.Name == *d.Colname {
-								return pg.ErrorColumnAlreadyExists(table.Name, *d.Colname)
-							}
+					d := cmd.Def.(nodes.ColumnDef)
+					for _, c := range table.Columns {
+						if c.Name == *d.Colname {
+							return pg.ErrorColumnAlreadyExists(table.Name, *d.Colname)
 						}
-						table.Columns = append(table.Columns, pg.Column{
-							Name:     *d.Colname,
-							DataType: join(d.TypeName.Names, "."),
-							NotNull:  isNotNull(d),
-						})
 					}
+					table.Columns = append(table.Columns, pg.Column{
+						Name:     *d.Colname,
+						DataType: join(d.TypeName.Names, "."),
+						NotNull:  isNotNull(d),
+					})
+
+				case nodes.AT_AlterColumnType:
+					d := cmd.Def.(nodes.ColumnDef)
+					table.Columns[idx].DataType = join(d.TypeName.Names, ".")
 
 				case nodes.AT_DropColumn:
-					removed := false
-					for i, c := range table.Columns {
-						if c.Name == *cmd.Name {
-							table.Columns = append(table.Columns[:i], table.Columns[i+1:]...)
-							removed = true
-						}
-					}
-					if !removed {
-						return pg.ErrorColumnDoesNotExist(table.Name, *cmd.Name)
-					}
+					table.Columns = append(table.Columns[:idx], table.Columns[idx+1:]...)
+
+				case nodes.AT_DropNotNull:
+					table.Columns[idx].NotNull = false
+
+				case nodes.AT_SetNotNull:
+					table.Columns[idx].NotNull = true
+
 				}
 
 				schema.Tables[fqn.Rel] = table
 			}
-		}
-
-	case nodes.CreateEnumStmt:
-		fqn, err := ParseList(n.TypeName)
-		if err != nil {
-			return err
-		}
-		schema, exists := c.Schemas[fqn.Schema]
-		if !exists {
-			return pg.ErrorSchemaDoesNotExist(fqn.Schema)
-		}
-		if _, exists := schema.Enums[fqn.Rel]; exists {
-			return pg.ErrorTypeAlreadyExists(fqn.Rel)
-		}
-		schema.Enums[fqn.Rel] = pg.Enum{
-			Name: fqn.Rel,
-			Vals: stringSlice(n.Vals),
 		}
 
 	case nodes.CreateStmt:
@@ -165,44 +193,85 @@ func Update(c *pg.Catalog, stmt nodes.Node) error {
 		}
 		schema.Tables[fqn.Rel] = table
 
+	case nodes.CreateEnumStmt:
+		fqn, err := ParseList(n.TypeName)
+		if err != nil {
+			return err
+		}
+		schema, exists := c.Schemas[fqn.Schema]
+		if !exists {
+			return pg.ErrorSchemaDoesNotExist(fqn.Schema)
+		}
+		if _, exists := schema.Enums[fqn.Rel]; exists {
+			return pg.ErrorTypeAlreadyExists(fqn.Rel)
+		}
+		schema.Enums[fqn.Rel] = pg.Enum{
+			Name: fqn.Rel,
+			Vals: stringSlice(n.Vals),
+		}
+
+	case nodes.CreateSchemaStmt:
+		name := *n.Schemaname
+		if _, exists := c.Schemas[name]; exists {
+			return pg.ErrorSchemaAlreadyExists(name)
+		}
+		c.Schemas[name] = pg.NewSchema()
+
 	case nodes.DropStmt:
 		for _, obj := range n.Objects.Items {
-			var fqn pg.FQN
-			var err error
+			if n.RemoveType == nodes.OBJECT_TABLE || n.RemoveType == nodes.OBJECT_TYPE {
+				var fqn pg.FQN
+				var err error
 
-			switch o := obj.(type) {
-			case nodes.List:
-				fqn, err = ParseList(o)
-			case nodes.TypeName:
-				fqn, err = ParseList(o.Names)
-			default:
-				return fmt.Errorf("nodes.DropStmt: unknown node in objects list: %T", o)
-			}
-			if err != nil {
-				return err
-			}
-
-			schema, exists := c.Schemas[fqn.Schema]
-			if !exists {
-				return pg.ErrorSchemaDoesNotExist(fqn.Schema)
-			}
-
-			switch n.RemoveType {
-
-			case nodes.OBJECT_TABLE:
-				if _, exists := schema.Tables[fqn.Rel]; exists {
-					delete(schema.Tables, fqn.Rel)
-				} else if !n.MissingOk {
-					return pg.ErrorRelationDoesNotExist(fqn.Rel)
+				switch o := obj.(type) {
+				case nodes.List:
+					fqn, err = ParseList(o)
+				case nodes.TypeName:
+					fqn, err = ParseList(o.Names)
+				default:
+					return fmt.Errorf("nodes.DropStmt: unknown node in objects list: %T", o)
+				}
+				if err != nil {
+					return err
 				}
 
-			case nodes.OBJECT_TYPE:
-				if _, exists := schema.Enums[fqn.Rel]; exists {
-					delete(schema.Enums, fqn.Rel)
-				} else if !n.MissingOk {
-					return pg.ErrorTypeDoesNotExist(fqn.Rel)
+				schema, exists := c.Schemas[fqn.Schema]
+				if !exists {
+					return pg.ErrorSchemaDoesNotExist(fqn.Schema)
 				}
 
+				switch n.RemoveType {
+				case nodes.OBJECT_TABLE:
+					if _, exists := schema.Tables[fqn.Rel]; exists {
+						delete(schema.Tables, fqn.Rel)
+					} else if !n.MissingOk {
+						return pg.ErrorRelationDoesNotExist(fqn.Rel)
+					}
+
+				case nodes.OBJECT_TYPE:
+					if _, exists := schema.Enums[fqn.Rel]; exists {
+						delete(schema.Enums, fqn.Rel)
+					} else if !n.MissingOk {
+						return pg.ErrorTypeDoesNotExist(fqn.Rel)
+					}
+
+				}
+
+			}
+
+			if n.RemoveType == nodes.OBJECT_SCHEMA {
+				var name string
+				switch o := obj.(type) {
+				case nodes.String:
+					name = o.Str
+				default:
+					return fmt.Errorf("nodes.DropStmt: unknown node in objects list: %T", o)
+				}
+				if _, exists := c.Schemas[name]; exists {
+					delete(c.Schemas, name)
+				} else if !n.MissingOk {
+					return pg.ErrorSchemaDoesNotExist(name)
+				}
 			}
 		}
 
