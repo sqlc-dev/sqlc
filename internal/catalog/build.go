@@ -277,17 +277,42 @@ func Update(c *pg.Catalog, stmt nodes.Node) error {
 
 	case nodes.RenameStmt:
 		switch n.RenameType {
+		case nodes.OBJECT_COLUMN:
+			fqn, err := ParseRange(n.Relation)
+			if err != nil {
+				return err
+			}
+			schema, exists := c.Schemas[fqn.Schema]
+			if !exists {
+				return pg.ErrorSchemaDoesNotExist(fqn.Schema)
+			}
+			table, exists := schema.Tables[fqn.Rel]
+			if !exists {
+				return pg.ErrorRelationDoesNotExist(fqn.Rel)
+			}
+			idx := -1
+			for i, c := range table.Columns {
+				if c.Name == *n.Subname {
+					idx = i
+				}
+				if c.Name == *n.Newname {
+					return pg.ErrorColumnAlreadyExists(table.Name, c.Name)
+				}
+			}
+			if idx < 0 {
+				return pg.ErrorColumnDoesNotExist(table.Name, *n.Subname)
+			}
+			table.Columns[idx].Name = *n.Newname
+
 		case nodes.OBJECT_TABLE:
 			fqn, err := ParseRange(n.Relation)
 			if err != nil {
 				return err
 			}
-
 			schema, exists := c.Schemas[fqn.Schema]
 			if !exists {
 				return pg.ErrorSchemaDoesNotExist(fqn.Schema)
 			}
-
 			table, exists := schema.Tables[fqn.Rel]
 			if !exists {
 				return pg.ErrorRelationDoesNotExist(fqn.Rel)

@@ -133,6 +133,24 @@ func TestUpdate(t *testing.T) {
 		{
 			`
 			CREATE TABLE foo (bar text);
+			ALTER TABLE foo RENAME bar TO baz;
+			`,
+			pg.Catalog{
+				Schemas: map[string]pg.Schema{
+					"public": {
+						Tables: map[string]pg.Table{
+							"foo": pg.Table{
+								Name:    "foo",
+								Columns: []pg.Column{{Name: "baz", DataType: "text"}},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			`
+			CREATE TABLE foo (bar text);
 			ALTER TABLE foo ALTER bar SET DATA TYPE bool;
 			`,
 			pg.Catalog{
@@ -397,6 +415,26 @@ func TestUpdateErrors(t *testing.T) {
 			DROP SCHEMA bar;
 			`,
 			pg.Error{Code: "3F000", Message: "schema \"bar\" does not exist"},
+		},
+		{
+			`
+			ALTER TABLE foo RENAME bar TO baz;
+			`,
+			pg.Error{Code: "42P01", Message: "relation \"foo\" does not exist"},
+		},
+		{
+			`
+			CREATE TABLE foo ();
+			ALTER TABLE foo RENAME bar TO baz;
+			`,
+			pg.Error{Code: "42703", Message: "column \"bar\" of relation \"foo\" does not exist"},
+		},
+		{
+			`
+			CREATE TABLE foo (bar text, baz text);
+			ALTER TABLE foo RENAME bar TO baz;
+			`,
+			pg.Error{Code: "42701", Message: "column \"baz\" of relation \"foo\" already exists"},
 		},
 	} {
 		test := tc
