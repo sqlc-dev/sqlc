@@ -14,169 +14,110 @@ import (
 	"text/template"
 	"unicode"
 
+	"github.com/kyleconroy/dinosql/internal/catalog"
+	core "github.com/kyleconroy/dinosql/internal/pg"
 	"github.com/kyleconroy/dinosql/internal/postgres"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/jinzhu/inflection"
 	pg "github.com/lfittl/pg_query_go"
 	nodes "github.com/lfittl/pg_query_go/nodes"
 )
 
 func parseSQL(in string) (*Result, error) {
-	s := postgres.Schema{}
 	tree, err := pg.Parse(in)
 	if err != nil {
 		return nil, err
 	}
-	if err := parse(&s, tree, GenerateSettings{}); err != nil {
+	c := core.NewCatalog()
+	if err := updateCatalog(&c, tree); err != nil {
 		return nil, err
 	}
 
 	var q []Query
-	r := Result{Schema: &s}
-	if err := parseFuncs(&s, &r, in, tree); err != nil {
+	s := convert(c, GenerateSettings{})
+	r := Result{Schema: s}
+	if err := parseFuncs(s, &r, in, tree); err != nil {
 		return nil, err
 	}
 	q = append(q, r.Queries...)
 
-	return &Result{Schema: &s, Queries: q}, nil
+	return &Result{Schema: s, Queries: q}, nil
 }
 
-func ParseSchmea(dir string, settings GenerateSettings) (*postgres.Schema, error) {
-	// Keep the import around
-	if false {
-		spew.Dump(dir)
-	}
-
+func ParseCatalog(dir string, settings GenerateSettings) (core.Catalog, error) {
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
-		return nil, err
+		return core.Catalog{}, err
 	}
-	s := postgres.Schema{}
+	c := core.NewCatalog()
 	for _, f := range files {
 		blob, err := ioutil.ReadFile(filepath.Join(dir, f.Name()))
 		if err != nil {
-			return nil, err
+			return c, err
 		}
 		contents := RemoveGooseRollback(string(blob))
 		tree, err := pg.Parse(contents)
 		if err != nil {
-			return nil, err
+			return c, err
 		}
-		if err := parse(&s, tree, settings); err != nil {
-			return nil, err
+		if err := updateCatalog(&c, tree); err != nil {
+			return c, err
 		}
 	}
-	return &s, nil
+	return c, nil
 }
 
-func parse(s *postgres.Schema, tree pg.ParsetreeList, settings GenerateSettings) error {
+func updateCatalog(c *core.Catalog, tree pg.ParsetreeList) error {
 	for _, stmt := range tree.Statements {
 		if err := validateFuncCall(stmt); err != nil {
 			return err
 		}
-		raw, ok := stmt.(nodes.RawStmt)
-		if !ok {
+		if err := catalog.Update(c, stmt); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// Eventually get rid of the postgres package. But for now, generate a
+// postgres.Schema from a pg.Catalog
+func convert(c core.Catalog, settings GenerateSettings) *postgres.Schema {
+	s := postgres.Schema{}
+
+	for name, schema := range c.Schemas {
+		// For now, only convert the public schema
+		if name != "public" {
 			continue
 		}
-		switch n := raw.Stmt.(type) {
-		case nodes.AlterTableStmt:
-			idx := -1
-			for i, table := range s.Tables {
-				if table.Name == *n.Relation.Relname {
-					idx = i
-				}
-			}
-			if idx < 0 {
-				return Error{
-					Code:    "42P01",
-					Message: fmt.Sprintf("relation \"%s\" does not exist", *n.Relation.Relname),
-				}
-			}
-
-			for _, cmd := range n.Cmds.Items {
-				switch cmd := cmd.(type) {
-				case nodes.AlterTableCmd:
-					switch cmd.Subtype {
-					case nodes.AT_AddColumn:
-						switch n := cmd.Def.(type) {
-						case nodes.ColumnDef:
-							ctype := join(n.TypeName.Names, ".")
-							notNull := isNotNull(n)
-							s.Tables[idx].Columns = append(s.Tables[idx].Columns, postgres.Column{
-								Name:    *n.Colname,
-								Type:    ctype,
-								NotNull: notNull,
-								GoName:  structName(*n.Colname),
-								GoType:  columnType(s, settings, ctype, notNull),
-							})
-						}
-					case nodes.AT_DropColumn:
-						for i, c := range s.Tables[idx].Columns {
-							if c.Name == *cmd.Name {
-								s.Tables[idx].Columns = append(s.Tables[idx].Columns[:i], s.Tables[idx].Columns[i+1:]...)
-							}
-						}
-					}
-				}
-			}
-		case nodes.CreateEnumStmt:
-			vals := []string{}
-			for _, item := range n.Vals.Items {
-				if n, ok := item.(nodes.String); ok {
-					vals = append(vals, n.Str)
-				}
-			}
+		for _, enum := range schema.Enums {
 			s.Enums = append(s.Enums, postgres.Enum{
-				Name:   join(n.TypeName, "."),
-				GoName: structName(join(n.TypeName, ".")),
-				Vals:   vals,
+				Name:   enum.Name,
+				GoName: structName(enum.Name),
+				Vals:   enum.Vals,
 			})
-		case nodes.CreateStmt:
-			table := postgres.Table{
-				Name:   *n.Relation.Relname,
-				GoName: inflection.Singular(structName(*n.Relation.Relname)),
+		}
+		for _, table := range schema.Tables {
+			t := postgres.Table{
+				Name:   table.Name,
+				GoName: inflection.Singular(structName(table.Name)),
 			}
-			for _, elt := range n.TableElts.Items {
-				switch n := elt.(type) {
-				case nodes.ColumnDef:
-					// log.Printf("not null: %t", n.IsNotNull)
-					ctype := join(n.TypeName.Names, ".")
-					notNull := isNotNull(n)
-					table.Columns = append(table.Columns, postgres.Column{
-						Name:    *n.Colname,
-						Type:    ctype,
-						NotNull: notNull,
-						GoName:  structName(*n.Colname),
-						GoType:  columnType(s, settings, ctype, notNull),
-					})
-				}
+			for _, column := range table.Columns {
+				t.Columns = append(t.Columns, postgres.Column{
+					Name:    column.Name,
+					Type:    column.DataType,
+					NotNull: column.NotNull,
+					GoName:  structName(column.Name),
+					GoType:  columnType(&s, settings, column.DataType, column.NotNull),
+				})
 			}
-			s.Tables = append(s.Tables, table)
-		case nodes.RenameStmt:
-			switch n.RenameType {
-			case nodes.OBJECT_TABLE:
-				idx := -1
-				for i, table := range s.Tables {
-					if table.Name == *n.Relation.Relname {
-						idx = i
-					}
-				}
-				if idx < 0 {
-					return Error{
-						Code:    "42P01",
-						Message: fmt.Sprintf("relation \"%s\" does not exist", *n.Relation.Relname),
-					}
-				}
-				s.Tables[idx].Name = *n.Newname
-				s.Tables[idx].GoName = inflection.Singular(structName(*n.Newname))
-			}
-		default:
-			// spew.Dump(n)
+			s.Tables = append(s.Tables, t)
 		}
 	}
 
-	return nil
+	// TODO: Sort tables
+	// TODO: Sort enums
+
+	return &s
 }
 
 func join(list nodes.List, sep string) string {
@@ -323,8 +264,9 @@ func getTable(s *postgres.Schema, name string) postgres.Table {
 	return postgres.Table{}
 }
 
-func ParseQueries(s *postgres.Schema, dir string) (*Result, error) {
-	files, err := ioutil.ReadDir(dir)
+func ParseQueries(c core.Catalog, settings GenerateSettings) (*Result, error) {
+	s := convert(c, settings)
+	files, err := ioutil.ReadDir(settings.QueryDir)
 	if err != nil {
 		return nil, err
 	}
@@ -333,7 +275,7 @@ func ParseQueries(s *postgres.Schema, dir string) (*Result, error) {
 		if !strings.HasSuffix(f.Name(), ".sql") {
 			continue
 		}
-		blob, err := ioutil.ReadFile(filepath.Join(dir, f.Name()))
+		blob, err := ioutil.ReadFile(filepath.Join(settings.QueryDir, f.Name()))
 		if err != nil {
 			return nil, err
 		}
