@@ -4,48 +4,65 @@ import (
 	"fmt"
 	"testing"
 
+	core "github.com/kyleconroy/dinosql/internal/pg"
 	"github.com/kyleconroy/dinosql/internal/postgres"
+	pg "github.com/lfittl/pg_query_go"
 
 	"github.com/google/go-cmp/cmp"
 )
 
-const testAliasSQL = `
-CREATE TABLE bar (id serial not null);
-CREATE TABLE foo (id serial not null, bar serial references bar(id));
-
--- name: DeleteFoo :exec
-DELETE FROM foo f
-USING bar b
-WHERE f.bar = b.id AND b.id = $1;
-`
-
-func TestAlias(t *testing.T) {
-	result, err := parseSQL(testAliasSQL)
+func parseSQLTwo(in string) (QueryTwo, error) {
+	tree, err := pg.Parse(in)
 	if err != nil {
-		t.Fatal(err)
+		return QueryTwo{}, err
+	}
+	c := core.NewCatalog()
+	if err := updateCatalog(&c, tree); err != nil {
+		return QueryTwo{}, err
 	}
 
-	expected := []Query{
+	for _, stmt := range tree.Statements {
+		q, found, err := parseQuery(c, stmt, in)
+		if found {
+			q.Stmt = nil
+			return q, err
+		}
+	}
+
+	return QueryTwo{}, fmt.Errorf("no query")
+}
+
+//TODO: Inline parseSQLTwo
+func TestQueries(t *testing.T) {
+	for _, tc := range []struct {
+		name  string
+		stmt  string
+		query QueryTwo
+	}{
 		{
-			Type:       ":exec",
-			MethodName: "DeleteFoo",
-			StmtName:   "deleteFoo",
-			QueryName:  "deleteFoo",
-			SQL:        "-- name: DeleteFoo :exec\nDELETE FROM foo f\nUSING bar b\nWHERE f.bar = b.id AND b.id = $1",
-			Args:       []Arg{{Name: "id", Type: "int"}},
-			Table: postgres.Table{
-				GoName: "Foo",
-				Name:   "foo",
-				Columns: []postgres.Column{
-					{GoName: "ID", GoType: "int", Name: "id", Type: "serial", NotNull: true},
-					{GoName: "Bar", GoType: "int", Name: "bar", Type: "serial"},
-				},
+			"alias",
+			`
+			CREATE TABLE bar (id serial not null);
+			CREATE TABLE foo (id serial not null, bar serial references bar(id));
+			
+			DELETE FROM foo f USING bar b
+			WHERE f.bar = b.id AND b.id = $1;
+			`,
+			QueryTwo{
+				Params: []Parameter{{Number: 1, Name: "id", Type: "serial"}},
 			},
 		},
-	}
-
-	if diff := cmp.Diff(expected, result.Queries); diff != "" {
-		t.Errorf("query mismatch: \n%s", diff)
+	} {
+		test := tc
+		t.Run(test.name, func(t *testing.T) {
+			q, err := parseSQLTwo(test.stmt)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if diff := cmp.Diff(test.query, q); diff != "" {
+				t.Errorf("query mismatch: \n%s", diff)
+			}
+		})
 	}
 }
 

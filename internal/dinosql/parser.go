@@ -140,24 +140,6 @@ func stringSlice(list nodes.List) []string {
 	return items
 }
 
-func isNotNull(n nodes.ColumnDef) bool {
-	if n.IsNotNull {
-		return true
-	}
-	for _, c := range n.Constraints.Items {
-		switch n := c.(type) {
-		case nodes.Constraint:
-			if n.Contype == nodes.CONSTR_NOTNULL {
-				return true
-			}
-			if n.Contype == nodes.CONSTR_PRIMARY {
-				return true
-			}
-		}
-	}
-	return false
-}
-
 func isStar(n outputRef) bool {
 	if n.ref == nil {
 		return false
@@ -174,6 +156,27 @@ type Field struct {
 	Type string
 }
 
+type Column struct {
+}
+
+type Parameter struct {
+	Number int
+	Type   string
+	Name   string // TODO: Relation?
+}
+
+// Name and Cmd may be empty
+// Maybe I don't need the SQL string if I have the raw Stmt?
+type QueryTwo struct {
+	SQL     string
+	Stmt    *nodes.RawStmt
+	Columns []Column
+	Params  []Parameter
+	Name    string
+	Cmd     string // TODO: Pick a better name. One of: one, many, exec, execrows
+}
+
+// TODO: The Query struct is overloaded
 type Query struct {
 	Type       string
 	MethodName string
@@ -280,11 +283,19 @@ func ParseQueries(c core.Catalog, settings GenerateSettings) (*Result, error) {
 			return nil, err
 		}
 		r := Result{Schema: s}
-		tree, err := pg.Parse(string(blob))
+		source := string(blob)
+		tree, err := pg.Parse(source)
 		if err != nil {
 			return nil, err
 		}
-		if err := parseFuncs(s, &r, string(blob), tree); err != nil {
+
+		for _, stmt := range tree.Statements {
+			if _, _, err := parseQuery(c, stmt, source); err != nil {
+				return nil, err
+			}
+		}
+
+		if err := parseFuncs(s, &r, source, tree); err != nil {
 			return nil, err
 		}
 		q = append(q, r.Queries...)
@@ -325,6 +336,64 @@ func rangeVars(root nodes.Node) []nodes.RangeVar {
 	})
 	Walk(find, root)
 	return vars
+}
+
+// TODO: Validate metadata
+func parseMetadata(t string) (string, string, error) {
+	for _, line := range strings.Split(t, "\n") {
+		if !strings.HasPrefix(line, "-- name:") {
+			continue
+		}
+		part := strings.Split(line, " ")
+		return part[2], strings.TrimSpace(part[3]), nil
+	}
+	return "", "", nil
+}
+
+func parseQuery(c core.Catalog, stmt nodes.Node, source string) (QueryTwo, bool, error) {
+	var q QueryTwo
+	if err := validateParamRef(stmt); err != nil {
+		return q, false, err
+	}
+	raw, ok := stmt.(nodes.RawStmt)
+	if !ok {
+		return q, false, nil
+	}
+	switch raw.Stmt.(type) {
+	case nodes.SelectStmt:
+	case nodes.DeleteStmt:
+	case nodes.InsertStmt:
+	case nodes.UpdateStmt:
+	default:
+		return q, false, nil
+	}
+	if err := validateFuncCall(raw); err != nil {
+		return q, false, err
+	}
+	rawSQL, err := pluckQuery(source, raw)
+	if err != nil {
+		return q, false, err
+	}
+	name, cmd, err := parseMetadata(rawSQL)
+	if err != nil {
+		return q, false, err
+	}
+
+	findOutputs(raw.Stmt)
+
+	rvs := rangeVars(raw.Stmt)
+	refs := findParameters(raw.Stmt)
+	params, err := resolveCatalogRefs(c, rvs, refs)
+	if err != nil {
+		return q, false, err
+	}
+
+	return QueryTwo{
+		Cmd:    cmd,
+		Name:   name,
+		Params: params,
+		Stmt:   &raw,
+	}, true, nil
 }
 
 func parseFuncs(s *postgres.Schema, r *Result, source string, tree pg.ParsetreeList) error {
@@ -616,6 +685,87 @@ func findParameters(root nodes.Node) []paramRef {
 	}
 	sort.Slice(refs, func(i, j int) bool { return refs[i].ref.Number < refs[j].ref.Number })
 	return refs
+}
+
+func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) ([]Parameter, error) {
+	typeMap := map[string]map[string]string{}
+	for _, t := range c.Schemas["public"].Tables {
+		typeMap[t.Name] = map[string]string{}
+		for _, c := range t.Columns {
+			typeMap[t.Name][c.Name] = c.DataType
+		}
+	}
+
+	aliasMap := map[string]string{}
+	defaultTable := ""
+	for _, rv := range rvs {
+		if rv.Relname == nil {
+			continue
+		}
+		if defaultTable == "" {
+			defaultTable = *rv.Relname
+		}
+		if rv.Alias == nil {
+			continue
+		}
+		aliasMap[*rv.Alias.Aliasname] = *rv.Relname
+	}
+
+	a := []Parameter{}
+	for _, ref := range args {
+		switch n := ref.parent.(type) {
+		case nodes.A_Expr:
+			switch n := n.Lexpr.(type) {
+			case nodes.ColumnRef:
+				items := stringSlice(n.Fields)
+				var key, alias string
+				switch len(items) {
+				case 1:
+					key = items[0]
+				case 2:
+					alias = items[0]
+					key = items[1]
+				default:
+					panic("too many field items: " + strconv.Itoa(len(items)))
+				}
+
+				table := aliasMap[alias]
+				if table == "" && ref.rv != nil && ref.rv.Relname != nil {
+					table = *ref.rv.Relname
+				}
+				if table == "" {
+					table = defaultTable
+				}
+
+				if typ, ok := typeMap[table][key]; ok {
+					a = append(a, Parameter{Number: ref.ref.Number, Name: argName(key), Type: typ})
+				} else {
+					return nil, Error{
+						Code:    "42703",
+						Message: fmt.Sprintf("column \"%s\" does not exist", key),
+					}
+				}
+			}
+		case nodes.ResTarget:
+			if n.Name == nil {
+				return nil, fmt.Errorf("nodes.ResTarget has nil name")
+			}
+			key := *n.Name
+			if typ, ok := typeMap[defaultTable][key]; ok {
+				a = append(a, Parameter{Number: ref.ref.Number, Name: argName(key), Type: typ})
+			} else {
+				return nil, Error{
+					Code:    "42703",
+					Message: fmt.Sprintf("column \"%s\" does not exist", key),
+				}
+			}
+		case nodes.ParamRef:
+			a = append(a, Parameter{Number: ref.ref.Number, Name: "_", Type: "interface{}"})
+		default:
+			// return nil, fmt.Errorf("unsupported type: %T", n)
+		}
+	}
+	return a, nil
 }
 
 func resolveRefs(s *postgres.Schema, rvs []nodes.RangeVar, args []paramRef) ([]Arg, error) {
