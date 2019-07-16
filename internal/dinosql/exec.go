@@ -16,12 +16,12 @@ func Exec(settingsPath string) error {
 		return err
 	}
 
-	s, err := ParseSchmea(settings.SchemaDir, settings)
+	c, err := ParseCatalog(settings.SchemaDir, settings)
 	if err != nil {
 		return err
 	}
 
-	q, err := ParseQueries(s, settings.QueryDir)
+	q, err := ParseQueries(c, settings)
 	if err != nil {
 		return err
 	}

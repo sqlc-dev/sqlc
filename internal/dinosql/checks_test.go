@@ -4,13 +4,15 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/kyleconroy/dinosql/internal/postgres"
+	"github.com/kyleconroy/dinosql/internal/pg"
 
 	"github.com/google/go-cmp/cmp"
 )
 
 func TestFuncs(t *testing.T) {
-	_, err := ParseQueries(&postgres.Schema{}, filepath.Join("testdata", "funcs"))
+	_, err := ParseQueries(pg.NewCatalog(), GenerateSettings{
+		QueryDir: filepath.Join("testdata", "funcs"),
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -29,14 +31,6 @@ func TestParserErrors(t *testing.T) {
 		{
 			"SELECT foo FROM bar WHERE baz = $1 AND baz = $3;",
 			Error{Code: "42P18", Message: "could not determine data type of parameter $2"},
-		},
-		{
-			"ALTER TABLE unknown RENAME TO known;",
-			Error{Code: "42P01", Message: "relation \"unknown\" does not exist"},
-		},
-		{
-			"ALTER TABLE unknown DROP COLUMN dropped;",
-			Error{Code: "42P01", Message: "relation \"unknown\" does not exist"},
 		},
 		{
 			`

@@ -77,12 +77,14 @@ func TestExtractArgs(t *testing.T) {
 }
 
 func TestParseSchema(t *testing.T) {
-	s, err := ParseSchmea(filepath.Join("testdata", "ondeck", "schema"), GenerateSettings{})
+	c, err := ParseCatalog(filepath.Join("testdata", "ondeck", "schema"), GenerateSettings{})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	q, err := ParseQueries(s, filepath.Join("testdata", "ondeck", "query"))
+	q, err := ParseQueries(c, GenerateSettings{
+		QueryDir: filepath.Join("testdata", "ondeck", "query"),
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
