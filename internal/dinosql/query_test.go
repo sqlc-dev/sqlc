@@ -25,12 +25,217 @@ func parseSQLTwo(in string) (QueryTwo, error) {
 	return q, err
 }
 
+const ondeckSchema = `
+CREATE TABLE city (
+    slug text PRIMARY KEY,
+    name text NOT NULL
+);
+
+CREATE TYPE status AS ENUM ('open', 'closed');
+
+CREATE TABLE venue (
+    id               SERIAL primary key,
+	create_at        timestamp    not null,
+    status           status       not null,
+    slug             text         not null,
+    name             varchar(255) not null,
+    city             text         not null references city(slug),
+    spotify_playlist varchar      not null,
+    songkick_id      text
+);
+`
+
 func TestQueries(t *testing.T) {
 	for _, tc := range []struct {
 		name  string
 		stmt  string
 		query QueryTwo
 	}{
+		{
+			"list_cities",
+			`
+			CREATE TABLE city (slug text primary key, name text not null);
+			SELECT * FROM city ORDER BY name;
+			`,
+			QueryTwo{
+				Columns: []core.Column{
+					{Name: "slug", DataType: "text", NotNull: true},
+					{Name: "name", DataType: "text", NotNull: true},
+				},
+			},
+		},
+		{
+			"get_city",
+			ondeckSchema + `
+			SELECT * FROM city WHERE slug = $1;
+			`,
+			QueryTwo{
+				Params: []Parameter{{Number: 1, Name: "slug", Type: "text"}},
+				Columns: []core.Column{
+					{Name: "slug", DataType: "text", NotNull: true},
+					{Name: "name", DataType: "text", NotNull: true},
+				},
+			},
+		},
+		{
+			"create_city",
+			ondeckSchema + `
+			INSERT INTO city (
+				name,
+				slug
+			) VALUES (
+				$1,
+				$2
+			) RETURNING *;
+			`,
+			QueryTwo{
+				Params: []Parameter{
+					{Number: 1, Name: "name", Type: "text"},
+					{Number: 2, Name: "slug", Type: "text"},
+				},
+				Columns: []core.Column{
+					{Name: "slug", DataType: "text", NotNull: true},
+					{Name: "name", DataType: "text", NotNull: true},
+				},
+			},
+		},
+		{
+			"create_city",
+			ondeckSchema + `
+			UPDATE city SET name = $2 WHERE slug = $1;
+			`,
+			QueryTwo{
+				Params: []Parameter{
+					{Number: 1, Name: "slug", Type: "text"},
+					{Number: 2, Name: "name", Type: "text"},
+				},
+			},
+		},
+		{
+			"list_venues",
+			ondeckSchema + `
+			SELECT *
+			FROM venue
+			WHERE city = $1
+			ORDER BY name;
+			`,
+			QueryTwo{
+				Columns: []core.Column{
+					{Name: "id", DataType: "serial", NotNull: true},
+					{Name: "create_at", DataType: "pg_catalog.timestamp", NotNull: true},
+					{Name: "status", DataType: "status", NotNull: true},
+					{Name: "slug", DataType: "text", NotNull: true},
+					{Name: "name", DataType: "pg_catalog.varchar", NotNull: true},
+					{Name: "city", DataType: "text", NotNull: true},
+					{Name: "spotify_playlist", DataType: "pg_catalog.varchar", NotNull: true},
+					{Name: "songkick_id", DataType: "text"},
+				},
+				Params: []Parameter{
+					{Number: 1, Name: "city", Type: "text"},
+				},
+			},
+		},
+		{
+			"delete_venue",
+			ondeckSchema + `
+			DELETE FROM venue
+			WHERE slug = $1 AND slug = $1;
+			`,
+			QueryTwo{
+				Params: []Parameter{
+					{Number: 1, Name: "slug", Type: "text"},
+				},
+			},
+		},
+		{
+			"get_venue",
+			ondeckSchema + `
+			SELECT *
+			FROM venue
+			WHERE slug = $1 AND city = $2;
+			`,
+			QueryTwo{
+				Columns: []core.Column{
+					{Name: "id", DataType: "serial", NotNull: true},
+					{Name: "create_at", DataType: "pg_catalog.timestamp", NotNull: true},
+					{Name: "status", DataType: "status", NotNull: true},
+					{Name: "slug", DataType: "text", NotNull: true},
+					{Name: "name", DataType: "pg_catalog.varchar", NotNull: true},
+					{Name: "city", DataType: "text", NotNull: true},
+					{Name: "spotify_playlist", DataType: "pg_catalog.varchar", NotNull: true},
+					{Name: "songkick_id", DataType: "text"},
+				},
+				Params: []Parameter{
+					{Number: 1, Name: "slug", Type: "text"},
+					{Number: 2, Name: "city", Type: "text"},
+				},
+			},
+		},
+		{
+			"create_venue",
+			ondeckSchema + `
+			INSERT INTO venue (
+				slug,
+				name,
+				city,
+				created_at,
+				spotify_playlist,
+				status
+			) VALUES (
+				$1,
+				$2,
+				$3,
+				NOW(),
+				$4,
+				$5
+			) RETURNING id;
+			`,
+			QueryTwo{
+				Columns: []core.Column{
+					{Name: "id", DataType: "serial", NotNull: true},
+				},
+				Params: []Parameter{
+					{Number: 1, Type: "text", Name: "slug"},
+					{Number: 2, Type: "pg_catalog.varchar", Name: "name"},
+					{Number: 3, Type: "text", Name: "city"},
+					{Number: 4, Type: "pg_catalog.varchar", Name: "spotifyPlaylist"},
+					{Number: 5, Type: "status", Name: "status"},
+				},
+			},
+		},
+		{
+			"update_venue_name",
+			ondeckSchema + `
+			UPDATE venue
+			SET name = $2
+			WHERE slug = $1
+			RETURNING id;
+			`,
+			QueryTwo{
+				Columns: []core.Column{
+					{Name: "id", DataType: "serial", NotNull: true},
+				},
+				Params: []Parameter{
+					{Number: 1, Type: "text", Name: "slug"},
+					{Number: 2, Type: "pg_catalog.varchar", Name: "name"},
+				},
+			},
+		},
+		{
+			"venue_count_by_city",
+			ondeckSchema + `
+			SELECT city, count(*)
+			FROM venue
+			GROUP BY 1
+			ORDER BY 1;
+			`,
+			QueryTwo{
+				Columns: []core.Column{
+					{Name: "city", DataType: "text", NotNull: true},
+					{Name: "count", DataType: "integer"},
+				},
+			},
+		},
 		{
 			"alias",
 			`
