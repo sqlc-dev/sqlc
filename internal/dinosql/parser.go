@@ -18,12 +18,16 @@ import (
 	core "github.com/kyleconroy/dinosql/internal/pg"
 	"github.com/kyleconroy/dinosql/internal/postgres"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/jinzhu/inflection"
 	pg "github.com/lfittl/pg_query_go"
 	nodes "github.com/lfittl/pg_query_go/nodes"
 )
 
 func parseSQL(in string) (*Result, error) {
+	if false {
+		spew.Dump(in)
+	}
 	tree, err := pg.Parse(in)
 	if err != nil {
 		return nil, err
@@ -51,6 +55,12 @@ func ParseCatalog(dir string, settings GenerateSettings) (core.Catalog, error) {
 	}
 	c := core.NewCatalog()
 	for _, f := range files {
+		if !strings.HasSuffix(f.Name(), ".sql") {
+			continue
+		}
+		if strings.HasPrefix(f.Name(), ".") {
+			continue
+		}
 		blob, err := ioutil.ReadFile(filepath.Join(dir, f.Name()))
 		if err != nil {
 			return c, err
@@ -157,6 +167,8 @@ type Field struct {
 }
 
 type Column struct {
+	Name string
+	Type string
 }
 
 type Parameter struct {
@@ -170,7 +182,8 @@ type Parameter struct {
 type QueryTwo struct {
 	SQL     string
 	Stmt    *nodes.RawStmt
-	Columns []Column
+	Columns []core.Column
+	Outs    []outputRef
 	Params  []Parameter
 	Name    string
 	Cmd     string // TODO: Pick a better name. One of: one, many, exec, execrows
@@ -278,6 +291,9 @@ func ParseQueries(c core.Catalog, settings GenerateSettings) (*Result, error) {
 		if !strings.HasSuffix(f.Name(), ".sql") {
 			continue
 		}
+		if strings.HasPrefix(f.Name(), ".") {
+			continue
+		}
 		blob, err := ioutil.ReadFile(filepath.Join(settings.QueryDir, f.Name()))
 		if err != nil {
 			return nil, err
@@ -379,8 +395,6 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string) (QueryTwo, bool,
 		return q, false, err
 	}
 
-	findOutputs(raw.Stmt)
-
 	rvs := rangeVars(raw.Stmt)
 	refs := findParameters(raw.Stmt)
 	params, err := resolveCatalogRefs(c, rvs, refs)
@@ -388,12 +402,210 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string) (QueryTwo, bool,
 		return q, false, err
 	}
 
+	cols, err := outputColumns(c, raw.Stmt)
+	if err != nil {
+		return q, false, err
+	}
+
 	return QueryTwo{
-		Cmd:    cmd,
-		Name:   name,
-		Params: params,
-		Stmt:   &raw,
+		Cmd:     cmd,
+		Name:    name,
+		Params:  params,
+		Columns: cols,
+		Stmt:    &raw,
 	}, true, nil
+}
+
+type QueryCatalog struct {
+	catalog core.Catalog
+	ctes    map[string]core.Table
+}
+
+func NewQueryCatalog(c core.Catalog, with *nodes.WithClause) QueryCatalog {
+	ctes := map[string]core.Table{}
+	if with != nil {
+		for _, item := range with.Ctes.Items {
+			if cte, ok := item.(nodes.CommonTableExpr); ok {
+				cols, err := outputColumns(c, cte.Ctequery)
+				if err != nil {
+					panic(err.Error())
+				}
+				ctes[*cte.Ctename] = core.Table{
+					Name:    *cte.Ctename,
+					Columns: cols,
+				}
+			}
+		}
+	}
+	return QueryCatalog{catalog: c, ctes: ctes}
+}
+
+func (qc QueryCatalog) GetTable(fqn core.FQN) (core.Table, error) {
+	cte, exists := qc.ctes[fqn.Rel]
+	if exists {
+		return cte, nil
+	}
+	schema, exists := qc.catalog.Schemas[fqn.Schema]
+	if !exists {
+		return core.Table{}, core.ErrorSchemaDoesNotExist(fqn.Schema)
+	}
+	table, exists := schema.Tables[fqn.Rel]
+	if !exists {
+		return core.Table{}, core.ErrorRelationDoesNotExist(fqn.Rel)
+	}
+	return table, nil
+}
+
+// Compute the output columns for a statement.
+//
+// Return an error if column references are ambiguous
+// Return an error if column references don't exist
+// Return an error if a table is referenced twice
+// Return an error if an unknown column is referenced
+func sourceTables(c core.Catalog, node nodes.Node) ([]core.Table, error) {
+	var list nodes.List
+	var with *nodes.WithClause
+	switch n := node.(type) {
+	case nodes.DeleteStmt:
+		list = nodes.List{
+			Items: []nodes.Node{*n.Relation},
+		}
+	case nodes.InsertStmt:
+		list = nodes.List{
+			Items: []nodes.Node{*n.Relation},
+		}
+	case nodes.UpdateStmt:
+		list = nodes.List{
+			Items: append(n.FromClause.Items, *n.Relation),
+		}
+	case nodes.SelectStmt:
+		with = n.WithClause
+		list = n.FromClause
+	default:
+		return nil, fmt.Errorf("sourceTables: unsupported node type: %T", n)
+	}
+
+	qc := NewQueryCatalog(c, with)
+
+	var tables []core.Table
+	for _, item := range list.Items {
+		switch n := item.(type) {
+		case nodes.RangeVar:
+			fqn, err := catalog.ParseRange(&n)
+			if err != nil {
+				return nil, err
+			}
+			table, err := qc.GetTable(fqn)
+			if err != nil {
+				return nil, err
+			}
+			tables = append(tables, table)
+		default:
+			return nil, fmt.Errorf("sourceTable: unsupported list item type: %T", n)
+		}
+	}
+	return tables, nil
+}
+
+func IsStarRef(cf nodes.ColumnRef) bool {
+	if len(cf.Fields.Items) != 1 {
+		return false
+	}
+	_, aStar := cf.Fields.Items[0].(nodes.A_Star)
+	return aStar
+}
+
+// Compute the output columns for a statement.
+//
+// Return an error if column references are ambiguous
+// Return an error if column references don't exist
+func outputColumns(c core.Catalog, node nodes.Node) ([]core.Column, error) {
+	tables, err := sourceTables(c, node)
+	if err != nil {
+		fmt.Println(tables)
+		return nil, err
+	}
+
+	var targets nodes.List
+	switch n := node.(type) {
+	case nodes.DeleteStmt:
+		targets = n.ReturningList
+	case nodes.InsertStmt:
+		targets = n.ReturningList
+	case nodes.SelectStmt:
+		targets = n.TargetList
+	case nodes.UpdateStmt:
+		targets = n.ReturningList
+	default:
+		return nil, fmt.Errorf("outputColumns: unsupported node type: %T", n)
+	}
+
+	var cols []core.Column
+
+	for _, target := range targets.Items {
+		res, ok := target.(nodes.ResTarget)
+		if !ok {
+			continue
+		}
+		switch n := res.Val.(type) {
+
+		case nodes.A_Expr:
+			if postgres.IsComparisonOperator(join(n.Name, "")) {
+				// TODO: Generate a name for these operations
+				cols = append(cols, core.Column{Name: "_", DataType: "bool", NotNull: true})
+			}
+
+		case nodes.ColumnRef:
+			parts := stringSlice(n.Fields)
+			var name, alias string
+			switch {
+			case IsStarRef(n):
+				// TODO: Disambiguate columns
+				for _, t := range tables {
+					for _, c := range t.Columns {
+						cols = append(cols, c)
+					}
+				}
+				continue
+			case len(parts) == 1:
+				name = parts[0]
+			case len(parts) == 2:
+				alias = parts[0]
+				name = parts[1]
+			default:
+				panic(fmt.Sprintf("unknown number of fields: %d", len(parts)))
+			}
+			var found int
+			for _, t := range tables {
+				if alias != "" && t.Name != alias {
+					continue
+				}
+				for _, c := range t.Columns {
+					if c.Name == name {
+						found += 1
+						cols = append(cols, c)
+					}
+				}
+			}
+			if found == 0 {
+				return nil, Error{
+					Code:    "42703",
+					Message: fmt.Sprintf("column \"%s\" does not exist", name),
+				}
+			}
+			if found > 1 {
+				return nil, Error{
+					Code:    "42703",
+					Message: fmt.Sprintf("column reference \"%s\" is ambiguous", name),
+				}
+			}
+
+		case nodes.FuncCall:
+			cols = append(cols, core.Column{Name: join(n.Funcname, "."), DataType: "integer"})
+
+		}
+	}
+	return cols, nil
 }
 
 func parseFuncs(s *postgres.Schema, r *Result, source string, tree pg.ParsetreeList) error {
@@ -573,43 +785,42 @@ type outputRef struct {
 	typ  string
 }
 
-type appender struct {
+type outputSearch struct {
 	refs []outputRef
 }
 
-func (a *appender) Visit(node nodes.Node) Visitor {
-	res, ok := node.(nodes.ResTarget)
-	if !ok {
-		return a
-	}
-	switch n := res.Val.(type) {
-	case nodes.A_Expr:
-		if postgres.IsComparisonOperator(join(n.Name, "")) {
-			// TODO: Generate a name for these operations
-			a.refs = append(a.refs, outputRef{name: "_", typ: "bool"})
+func (o *outputSearch) outs(list nodes.List) []outputRef {
+	var refs []outputRef
+	for _, node := range list.Items {
+		res, ok := node.(nodes.ResTarget)
+		if !ok {
+			continue
 		}
-	case nodes.ColumnRef:
-		a.refs = append(a.refs, outputRef{ref: &n})
-	case nodes.FuncCall:
-		a.refs = append(a.refs, outputRef{name: join(n.Funcname, "."), typ: "int"})
+		switch n := res.Val.(type) {
+		case nodes.A_Expr:
+			if postgres.IsComparisonOperator(join(n.Name, "")) {
+				// TODO: Generate a name for these operations
+				refs = append(refs, outputRef{name: "_", typ: "bool"})
+			}
+		case nodes.ColumnRef:
+			refs = append(refs, outputRef{ref: &n})
+		case nodes.FuncCall:
+			refs = append(refs, outputRef{name: join(n.Funcname, "."), typ: "int"})
+		}
 	}
-	return nil
-}
-
-type outputSearch struct {
-	a *appender
+	return refs
 }
 
 func (o *outputSearch) Visit(node nodes.Node) Visitor {
 	switch n := node.(type) {
 	case nodes.InsertStmt:
-		Walk(o.a, n.ReturningList)
+		o.refs = o.outs(n.ReturningList)
 		return nil
 	case nodes.SelectStmt:
-		Walk(o.a, n.TargetList)
+		o.refs = o.outs(n.TargetList)
 		return nil
 	case nodes.UpdateStmt:
-		Walk(o.a, n.ReturningList)
+		o.refs = o.outs(n.ReturningList)
 		return nil
 	}
 	return o
@@ -617,9 +828,9 @@ func (o *outputSearch) Visit(node nodes.Node) Visitor {
 
 func findOutputs(root nodes.Node) []outputRef {
 	// spew.Dump(root)
-	v := &outputSearch{&appender{}}
+	v := &outputSearch{}
 	Walk(v, root)
-	return v.a.refs
+	return v.refs
 }
 
 type paramRef struct {
@@ -711,7 +922,7 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 		aliasMap[*rv.Alias.Aliasname] = *rv.Relname
 	}
 
-	a := []Parameter{}
+	var a []Parameter
 	for _, ref := range args {
 		switch n := ref.parent.(type) {
 		case nodes.A_Expr:
