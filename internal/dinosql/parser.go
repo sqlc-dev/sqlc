@@ -124,9 +124,8 @@ func convert(c core.Catalog, settings GenerateSettings) *postgres.Schema {
 		}
 	}
 
-	// TODO: Sort tables
-	// TODO: Sort enums
-
+	sort.Slice(s.Tables, func(i, j int) bool { return s.Tables[i].Name < s.Tables[j].Name })
+	sort.Slice(s.Enums, func(i, j int) bool { return s.Enums[i].Name < s.Enums[j].Name })
 	return &s
 }
 
