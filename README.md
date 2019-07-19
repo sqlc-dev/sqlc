@@ -24,6 +24,5 @@ Usage:
 The commands are:
 
   check       verify SQL
-  fmt         format SQL
   gen         generate Go files by processing SQL
 ```

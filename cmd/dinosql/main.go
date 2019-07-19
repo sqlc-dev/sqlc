@@ -1,15 +1,11 @@
 package main
 
 import (
-	"flag"
-	"log"
+	"os"
 
-	"github.com/kyleconroy/dinosql/internal/dinosql"
+	"github.com/kyleconroy/dinosql/internal/cmd"
 )
 
 func main() {
-	flag.Parse()
-	if err := dinosql.Exec(flag.Arg(0)); err != nil {
-		log.Fatal(err)
-	}
+	os.Exit(cmd.Do(os.Args[1:], os.Stdin, os.Stdout, os.Stderr))
 }

@@ -642,7 +642,7 @@ func lowerTitle(s string) string {
 	return string(a)
 }
 
-func generate(r *Result, settings GenerateSettings) (string, error) {
+func Generate(r *Result, settings GenerateSettings) (string, error) {
 	funcMap := template.FuncMap{
 		"lowerTitle": lowerTitle,
 	}
