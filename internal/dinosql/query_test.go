@@ -20,9 +20,12 @@ func parseSQLTwo(in string) (QueryTwo, error) {
 		return QueryTwo{}, err
 	}
 
-	q, _, err := parseQuery(c, tree.Statements[len(tree.Statements)-1], in)
-	q.Stmt = nil
-	return q, err
+	q, err := parseQuery(c, tree.Statements[len(tree.Statements)-1], in)
+	if q == nil {
+		return QueryTwo{}, err
+	}
+	q.SQL = ""
+	return *q, err
 }
 
 const ondeckSchema = `
@@ -70,7 +73,7 @@ func TestQueries(t *testing.T) {
 			SELECT * FROM city WHERE slug = $1;
 			`,
 			QueryTwo{
-				Params: []Parameter{{Number: 1, Name: "slug", Type: "text"}},
+				Params: []Parameter{{Number: 1, Name: "slug", DataType: "text"}},
 				Columns: []core.Column{
 					{Name: "slug", DataType: "text", NotNull: true},
 					{Name: "name", DataType: "text", NotNull: true},
@@ -90,8 +93,8 @@ func TestQueries(t *testing.T) {
 			`,
 			QueryTwo{
 				Params: []Parameter{
-					{Number: 1, Name: "name", Type: "text"},
-					{Number: 2, Name: "slug", Type: "text"},
+					{Number: 1, Name: "name", DataType: "text"},
+					{Number: 2, Name: "slug", DataType: "text"},
 				},
 				Columns: []core.Column{
 					{Name: "slug", DataType: "text", NotNull: true},
@@ -106,8 +109,8 @@ func TestQueries(t *testing.T) {
 			`,
 			QueryTwo{
 				Params: []Parameter{
-					{Number: 1, Name: "slug", Type: "text"},
-					{Number: 2, Name: "name", Type: "text"},
+					{Number: 1, Name: "slug", DataType: "text"},
+					{Number: 2, Name: "name", DataType: "text"},
 				},
 			},
 		},
@@ -131,7 +134,7 @@ func TestQueries(t *testing.T) {
 					{Name: "songkick_id", DataType: "text"},
 				},
 				Params: []Parameter{
-					{Number: 1, Name: "city", Type: "text"},
+					{Number: 1, Name: "city", DataType: "text"},
 				},
 			},
 		},
@@ -143,7 +146,7 @@ func TestQueries(t *testing.T) {
 			`,
 			QueryTwo{
 				Params: []Parameter{
-					{Number: 1, Name: "slug", Type: "text"},
+					{Number: 1, Name: "slug", DataType: "text"},
 				},
 			},
 		},
@@ -166,8 +169,8 @@ func TestQueries(t *testing.T) {
 					{Name: "songkick_id", DataType: "text"},
 				},
 				Params: []Parameter{
-					{Number: 1, Name: "slug", Type: "text"},
-					{Number: 2, Name: "city", Type: "text"},
+					{Number: 1, Name: "slug", DataType: "text"},
+					{Number: 2, Name: "city", DataType: "text"},
 				},
 			},
 		},
@@ -195,11 +198,11 @@ func TestQueries(t *testing.T) {
 					{Name: "id", DataType: "serial", NotNull: true},
 				},
 				Params: []Parameter{
-					{Number: 1, Type: "text", Name: "slug"},
-					{Number: 2, Type: "pg_catalog.varchar", Name: "name"},
-					{Number: 3, Type: "text", Name: "city"},
-					{Number: 4, Type: "pg_catalog.varchar", Name: "spotifyPlaylist"},
-					{Number: 5, Type: "status", Name: "status"},
+					{Number: 1, DataType: "text", Name: "slug"},
+					{Number: 2, DataType: "pg_catalog.varchar", Name: "name"},
+					{Number: 3, DataType: "text", Name: "city"},
+					{Number: 4, DataType: "pg_catalog.varchar", Name: "spotifyPlaylist"},
+					{Number: 5, DataType: "status", Name: "status"},
 				},
 			},
 		},
@@ -216,8 +219,8 @@ func TestQueries(t *testing.T) {
 					{Name: "id", DataType: "serial", NotNull: true},
 				},
 				Params: []Parameter{
-					{Number: 1, Type: "text", Name: "slug"},
-					{Number: 2, Type: "pg_catalog.varchar", Name: "name"},
+					{Number: 1, DataType: "text", Name: "slug"},
+					{Number: 2, DataType: "pg_catalog.varchar", Name: "name"},
 				},
 			},
 		},
@@ -246,7 +249,7 @@ func TestQueries(t *testing.T) {
 			WHERE f.bar = b.id AND b.id = $1;
 			`,
 			QueryTwo{
-				Params: []Parameter{{Number: 1, Name: "id", Type: "serial"}},
+				Params: []Parameter{{Number: 1, Name: "id", DataType: "serial"}},
 			},
 		},
 		{
@@ -294,7 +297,7 @@ func TestQueries(t *testing.T) {
 			`,
 			QueryTwo{
 				Params: []Parameter{
-					{Number: 1, Name: "ready", Type: "bool"},
+					{Number: 1, Name: "ready", DataType: "bool"},
 				},
 				Columns: []core.Column{
 					{Name: "count", DataType: "integer", NotNull: false},
@@ -309,8 +312,8 @@ func TestQueries(t *testing.T) {
 			`,
 			QueryTwo{
 				Params: []Parameter{
-					{Number: 1, Name: "slug", Type: "text"},
-					{Number: 2, Name: "name", Type: "text"},
+					{Number: 1, Name: "slug", DataType: "text"},
+					{Number: 2, Name: "name", DataType: "text"},
 				},
 			},
 		},
@@ -325,8 +328,8 @@ func TestQueries(t *testing.T) {
 			`,
 			QueryTwo{
 				Params: []Parameter{
-					{Number: 1, Name: "meta", Type: "text"},
-					{Number: 2, Name: "ready", Type: "bool"},
+					{Number: 1, Name: "meta", DataType: "text"},
+					{Number: 2, Name: "ready", DataType: "bool"},
 				},
 			},
 		},

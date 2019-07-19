@@ -171,16 +171,16 @@ type Column struct {
 }
 
 type Parameter struct {
-	Number int
-	Type   string
-	Name   string // TODO: Relation?
+	Number   int
+	DataType string
+	Name     string // TODO: Relation?
+	NotNull  bool
 }
 
 // Name and Cmd may be empty
 // Maybe I don't need the SQL string if I have the raw Stmt?
 type QueryTwo struct {
 	SQL     string
-	Stmt    *nodes.RawStmt
 	Columns []core.Column
 	Outs    []outputRef
 	Params  []Parameter
@@ -203,29 +203,127 @@ type Query struct {
 	ScanRecord bool
 }
 
-type Result struct {
-	Schema  *postgres.Schema
-	Queries []Query
+type GoConstant struct {
+	Name  string
+	Type  string
+	Value string
 }
 
-func (r Result) Records() []postgres.Table {
-	used := map[string]struct{}{}
-	for _, q := range r.Queries {
-		used[q.ReturnType] = struct{}{}
+type GoEnum struct {
+	Name      string
+	Constants []GoConstant
+}
+
+type GoField struct {
+	Name string
+	Type string
+	Tags map[string]string
+}
+
+func (gf GoField) Tag() string {
+	var tags []string
+	for key, val := range gf.Tags {
+		tags = append(tags, fmt.Sprintf("%s\"%s\"", key, val))
 	}
-	var tables []postgres.Table
-	for _, t := range r.Schema.Tables {
-		if _, ok := used[t.GoName]; ok {
-			tables = append(tables, t)
+	if len(tags) == 0 {
+		return ""
+	}
+	sort.Strings(tags)
+	return strings.Join(tags, ",")
+}
+
+type GoStruct struct {
+	Name   string
+	Fields []GoField
+}
+
+// TODO: Terrible name
+type GoQueryValue struct {
+	Emit   bool
+	Name   string
+	Struct *GoStruct
+	typ    string
+}
+
+func (v GoQueryValue) EmitStruct() bool {
+	return v.Emit
+}
+
+func (v GoQueryValue) IsStruct() bool {
+	return v.Struct != nil
+}
+
+func (v GoQueryValue) isEmpty() bool {
+	return v.typ == "" && v.Name == "" && v.Struct == nil
+}
+
+func (v GoQueryValue) Pair() string {
+	if v.isEmpty() {
+		return ""
+	}
+	return v.Name + " " + v.Type()
+}
+
+func (v GoQueryValue) Type() string {
+	if v.typ != "" {
+		return v.typ
+	}
+	if v.Struct != nil {
+		return v.Struct.Name
+	}
+	panic("no type for GoQueryValue: " + v.Name)
+}
+
+func (v GoQueryValue) Params() string {
+	if v.isEmpty() {
+		return ""
+	}
+	var out []string
+	if v.Struct == nil {
+		out = append(out, v.Name)
+	} else {
+		for _, f := range v.Struct.Fields {
+			out = append(out, v.Name+"."+f.Name)
 		}
 	}
-	return tables
+	return strings.Join(out, ",")
+}
+
+func (v GoQueryValue) Scan() string {
+	var out []string
+	if v.Struct == nil {
+		out = append(out, "&"+v.Name)
+	} else {
+		for _, f := range v.Struct.Fields {
+			out = append(out, "&"+v.Name+"."+f.Name)
+		}
+	}
+	return strings.Join(out, ",")
+}
+
+// A struct used to generate methods and fields on the Queries struct
+type GoQuery struct {
+	Cmd          string
+	MethodName   string
+	FieldName    string
+	ConstantName string
+	SQL          string
+	Ret          GoQueryValue
+	Arg          GoQueryValue
+}
+
+type Result struct {
+	Settings  GenerateSettings
+	Schema    *postgres.Schema
+	Queries   []Query
+	QueryTwos []*QueryTwo
+	Catalog   core.Catalog
 }
 
 func (r Result) UsesType(typ string) bool {
-	for _, table := range r.Records() {
-		for _, c := range table.Columns {
-			if c.GoType == typ {
+	for _, strct := range r.Structs() {
+		for _, f := range strct.Fields {
+			if f.Type == typ {
 				return true
 			}
 		}
@@ -270,6 +368,257 @@ func (r Result) PkgImports(settings GenerateSettings) []string {
 	return imports
 }
 
+func (r Result) Enums() []GoEnum {
+	var enums []GoEnum
+	for name, schema := range r.Catalog.Schemas {
+		if name != "public" {
+			continue
+		}
+		for _, enum := range schema.Enums {
+			e := GoEnum{
+				Name: structName(enum.Name),
+			}
+			for _, v := range enum.Vals {
+				name := ""
+				for _, part := range strings.Split(strings.Replace(v, "-", "_", -1), "_") {
+					name += strings.Title(part)
+				}
+				e.Constants = append(e.Constants, GoConstant{
+					Name:  e.Name + name,
+					Value: v,
+					Type:  e.Name,
+				})
+			}
+			enums = append(enums, e)
+		}
+	}
+	if len(enums) > 0 {
+		sort.Slice(enums, func(i, j int) bool { return enums[i].Name < enums[j].Name })
+	}
+	return enums
+}
+
+func (r Result) Structs() []GoStruct {
+	var structs []GoStruct
+	for name, schema := range r.Catalog.Schemas {
+		if name != "public" {
+			continue
+		}
+		for _, table := range schema.Tables {
+			s := GoStruct{
+				Name: inflection.Singular(structName(table.Name)),
+			}
+			for _, column := range table.Columns {
+				s.Fields = append(s.Fields, GoField{
+					Name: structName(column.Name),
+					Type: r.goType(column.DataType, column.NotNull),
+					Tags: map[string]string{"json": column.Name},
+				})
+			}
+			structs = append(structs, s)
+		}
+	}
+	if len(structs) > 0 {
+		sort.Slice(structs, func(i, j int) bool { return structs[i].Name < structs[j].Name })
+	}
+	return structs
+}
+
+func (r Result) goType(columnType string, notNull bool) string {
+	for _, oride := range r.Settings.Overrides {
+		if oride.PostgresType == columnType && oride.Null != notNull {
+			return oride.GoType
+		}
+	}
+
+	switch columnType {
+	case "text":
+		if notNull {
+			return "string"
+		} else {
+			return "sql.NullString"
+		}
+	case "serial":
+		return "int"
+	case "integer":
+		return "int"
+	case "bool":
+		if notNull {
+			return "bool"
+		} else {
+			return "sql.NullBool"
+		}
+	case "jsonb":
+		return "json.RawMessage"
+	case "pg_catalog.bool":
+		if notNull {
+			return "bool"
+		} else {
+			return "sql.NullBool"
+		}
+	case "pg_catalog.int2":
+		return "uint8"
+	case "pg_catalog.int4":
+		return "int"
+	case "pg_catalog.int8":
+		return "int"
+	case "pg_catalog.timestamp":
+		if notNull {
+			return "time.Time"
+		} else {
+			return "pq.NullTime"
+		}
+	case "pg_catalog.timestamptz":
+		if notNull {
+			return "time.Time"
+		} else {
+			return "pq.NullTime"
+		}
+	case "pg_catalog.varchar":
+		if notNull {
+			return "string"
+		} else {
+			return "sql.NullString"
+		}
+	case "uuid":
+		return "uuid.UUID"
+	default:
+		for name, schema := range r.Catalog.Schemas {
+			if name != "public" {
+				continue
+			}
+			for _, enum := range schema.Enums {
+				if columnType == enum.Name {
+					return structName(enum.Name)
+				}
+			}
+		}
+		log.Printf("unknown Postgres type: %s\n", columnType)
+		return "interface{}"
+	}
+}
+
+func (r Result) GoQueries() []GoQuery {
+	structs := r.Structs()
+
+	var qs []GoQuery
+	for _, query := range r.QueryTwos {
+		if query.Name == "" {
+			continue
+		}
+		if query.Cmd == "" {
+			continue
+		}
+
+		// TODO: Will horribly break
+		var cols []string
+		for _, c := range query.Columns {
+			cols = append(cols, c.Name)
+		}
+
+		gq := GoQuery{
+			Cmd:          query.Cmd,
+			ConstantName: lowerTitle(query.Name),
+			FieldName:    lowerTitle(query.Name),
+			MethodName:   query.Name,
+			SQL:          strings.Replace(query.SQL, "*", strings.Join(cols, ", "), 1),
+		}
+
+		if len(query.Params) == 1 {
+			p := query.Params[0]
+			gq.Arg = GoQueryValue{
+				Name: p.Name,
+				typ:  r.goType(p.DataType, p.NotNull),
+			}
+		} else if len(query.Params) > 1 {
+			val := GoQueryValue{
+				Emit: true,
+				Name: "arg",
+				Struct: &GoStruct{
+					Name: gq.MethodName + "Params",
+				},
+			}
+			for _, p := range query.Params {
+				val.Struct.Fields = append(val.Struct.Fields, GoField{
+					Name: structName(p.Name),
+					Type: r.goType(p.DataType, p.NotNull),
+					Tags: map[string]string{
+						"json": p.Name,
+					},
+				})
+			}
+			gq.Arg = val
+		}
+
+		if len(query.Columns) == 1 {
+			c := query.Columns[0]
+			gq.Ret = GoQueryValue{
+				Name: c.Name,
+				typ:  r.goType(c.DataType, c.NotNull),
+			}
+		} else if len(query.Columns) > 1 {
+			var gs *GoStruct
+			var emit bool
+
+			for _, s := range structs {
+				if len(s.Fields) != len(query.Columns) {
+					continue
+				}
+				same := true
+				for i, f := range s.Fields {
+					c := query.Columns[i]
+					sameName := f.Name == structName(c.Name)
+					sameType := f.Type == r.goType(c.DataType, c.NotNull)
+					if !sameName || !sameType {
+						same = false
+					}
+				}
+				if same {
+					gs = &s
+					break
+				}
+			}
+
+			if gs == nil {
+				gs = &GoStruct{
+					Name: gq.MethodName + "Row",
+				}
+				for _, c := range query.Columns {
+					gs.Fields = append(gs.Fields, GoField{
+						Name: structName(c.Name),
+						Type: r.goType(c.DataType, c.NotNull),
+						Tags: map[string]string{"json": c.Name},
+					})
+				}
+				emit = true
+			}
+			gq.Ret = GoQueryValue{
+				Emit:   emit,
+				Name:   "i",
+				Struct: gs,
+			}
+		}
+
+		qs = append(qs, gq)
+	}
+	sort.Slice(qs, func(i, j int) bool { return qs[i].MethodName < qs[j].MethodName })
+	return qs
+}
+
+func (r Result) Records() []postgres.Table {
+	used := map[string]struct{}{}
+	for _, q := range r.Queries {
+		used[q.ReturnType] = struct{}{}
+	}
+	var tables []postgres.Table
+	for _, t := range r.Schema.Tables {
+		if _, ok := used[t.GoName]; ok {
+			tables = append(tables, t)
+		}
+	}
+	return tables
+}
+
 func getTable(s *postgres.Schema, name string) postgres.Table {
 	for _, t := range s.Tables {
 		if t.Name == name {
@@ -285,7 +634,10 @@ func ParseQueries(c core.Catalog, settings GenerateSettings) (*Result, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	var q []Query
+	var q2 []*QueryTwo
+
 	for _, f := range files {
 		if !strings.HasSuffix(f.Name(), ".sql") {
 			continue
@@ -297,7 +649,7 @@ func ParseQueries(c core.Catalog, settings GenerateSettings) (*Result, error) {
 		if err != nil {
 			return nil, err
 		}
-		r := Result{Schema: s}
+		r := Result{Schema: s, Settings: settings}
 		source := string(blob)
 		tree, err := pg.Parse(source)
 		if err != nil {
@@ -305,8 +657,12 @@ func ParseQueries(c core.Catalog, settings GenerateSettings) (*Result, error) {
 		}
 
 		for _, stmt := range tree.Statements {
-			if _, _, err := parseQuery(c, stmt, source); err != nil {
+			queryTwo, err := parseQuery(c, stmt, source)
+			if err != nil {
 				return nil, err
+			}
+			if queryTwo != nil {
+				q2 = append(q2, queryTwo)
 			}
 		}
 
@@ -315,7 +671,7 @@ func ParseQueries(c core.Catalog, settings GenerateSettings) (*Result, error) {
 		}
 		q = append(q, r.Queries...)
 	}
-	return &Result{Schema: s, Queries: q}, nil
+	return &Result{Schema: s, Queries: q, Catalog: c, QueryTwos: q2, Settings: settings}, nil
 }
 
 func parseQueryMetadata(t string) (Query, error) {
@@ -365,14 +721,13 @@ func parseMetadata(t string) (string, string, error) {
 	return "", "", nil
 }
 
-func parseQuery(c core.Catalog, stmt nodes.Node, source string) (QueryTwo, bool, error) {
-	var q QueryTwo
+func parseQuery(c core.Catalog, stmt nodes.Node, source string) (*QueryTwo, error) {
 	if err := validateParamRef(stmt); err != nil {
-		return q, false, err
+		return nil, err
 	}
 	raw, ok := stmt.(nodes.RawStmt)
 	if !ok {
-		return q, false, nil
+		return nil, nil
 	}
 	switch raw.Stmt.(type) {
 	case nodes.SelectStmt:
@@ -380,39 +735,39 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string) (QueryTwo, bool,
 	case nodes.InsertStmt:
 	case nodes.UpdateStmt:
 	default:
-		return q, false, nil
+		return nil, nil
 	}
 	if err := validateFuncCall(raw); err != nil {
-		return q, false, err
+		return nil, err
 	}
 	rawSQL, err := pluckQuery(source, raw)
 	if err != nil {
-		return q, false, err
+		return nil, err
 	}
 	name, cmd, err := parseMetadata(rawSQL)
 	if err != nil {
-		return q, false, err
+		return nil, err
 	}
 
 	rvs := rangeVars(raw.Stmt)
 	refs := findParameters(raw.Stmt)
 	params, err := resolveCatalogRefs(c, rvs, refs)
 	if err != nil {
-		return q, false, err
+		return nil, err
 	}
 
 	cols, err := outputColumns(c, raw.Stmt)
 	if err != nil {
-		return q, false, err
+		return nil, err
 	}
 
-	return QueryTwo{
+	return &QueryTwo{
 		Cmd:     cmd,
 		Name:    name,
 		Params:  params,
 		Columns: cols,
-		Stmt:    &raw,
-	}, true, nil
+		SQL:     rawSQL,
+	}, nil
 }
 
 type QueryCatalog struct {
@@ -948,7 +1303,7 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 				}
 
 				if typ, ok := typeMap[table][key]; ok {
-					a = append(a, Parameter{Number: ref.ref.Number, Name: argName(key), Type: typ})
+					a = append(a, Parameter{Number: ref.ref.Number, Name: argName(key), DataType: typ})
 				} else {
 					return nil, Error{
 						Code:    "42703",
@@ -962,7 +1317,7 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 			}
 			key := *n.Name
 			if typ, ok := typeMap[defaultTable][key]; ok {
-				a = append(a, Parameter{Number: ref.ref.Number, Name: argName(key), Type: typ})
+				a = append(a, Parameter{Number: ref.ref.Number, Name: argName(key), DataType: typ})
 			} else {
 				return nil, Error{
 					Code:    "42703",
@@ -970,7 +1325,7 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 				}
 			}
 		case nodes.ParamRef:
-			a = append(a, Parameter{Number: ref.ref.Number, Name: "_", Type: "interface{}"})
+			a = append(a, Parameter{Number: ref.ref.Number, Name: "_", DataType: "interface{}"})
 		default:
 			// return nil, fmt.Errorf("unsupported type: %T", n)
 		}
@@ -1171,8 +1526,8 @@ import (
 	{{- end}}
 )
 
-{{range .Schema.Enums}}
-type {{.GoName}} string
+{{range .Enums}}
+type {{.Name}} string
 
 const (
 	{{- range .Constants}}
@@ -1181,9 +1536,9 @@ const (
 )
 {{end}}
 
-{{range .Records}}
-type {{.GoName}} struct { {{- range .Columns}}
-  {{.GoName}} {{.GoType}} {{if $.EmitTags}}{{$.Q}}json:"{{.Name}}"{{$.Q}}{{end}}
+{{range .Structs}}
+type {{.Name}} struct { {{- range .Fields}}
+  {{.Name}} {{.Type}} {{if $.EmitJSONTags}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
   {{- end}}
 }
 {{end}}
@@ -1199,11 +1554,11 @@ func New(db dbtx) *Queries {
 	return &Queries{db: db}
 }
 
-{{if .PrepareSupport}}
+{{if .EmitPreparedQueries}}
 func Prepare(ctx context.Context, db dbtx) (*Queries, error) {
 	q := Queries{db: db}
-	var err error{{range .Queries}}
-	if q.{{.StmtName}}, err = db.PrepareContext(ctx, {{.QueryName}}); err != nil {
+	var err error{{range .GoQueries}}
+	if q.{{.FieldName}}, err = db.PrepareContext(ctx, {{.ConstantName}}); err != nil {
 		return nil, err
 	}
 	{{- end}}
@@ -1214,10 +1569,10 @@ func Prepare(ctx context.Context, db dbtx) (*Queries, error) {
 type Queries struct {
 	db dbtx
 
-    {{- if .PrepareSupport}}
+    {{- if .EmitPreparedQueries}}
 	tx         *sql.Tx
-	{{- range .Queries}}
-	{{.StmtName}}  *sql.Stmt
+	{{- range .GoQueries}}
+	{{.FieldName}}  *sql.Stmt
 	{{- end}}
 	{{- end}}
 }
@@ -1225,82 +1580,81 @@ type Queries struct {
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
 		db: tx,
-     	{{- if .PrepareSupport}}
+     	{{- if .EmitPreparedQueries}}
 		tx: tx,
-		{{- range .Queries}}
-		{{.StmtName}}: q.{{.StmtName}},
+		{{- range .GoQueries}}
+		{{.FieldName}}: q.{{.FieldName}},
 		{{- end}}
 		{{- end}}
 	}
 }
 
-{{range .Queries}}
-const {{.QueryName}} = {{$.Q}}{{.SQL}}
+{{range .GoQueries}}
+const {{.ConstantName}} = {{$.Q}}{{.SQL}}
 {{$.Q}}
 
-{{if .RowStruct}}
-type {{.MethodName}}Row struct { {{- range .Fields}}
-  {{.Name}} {{.Type}}
+{{if .Arg.EmitStruct}}
+type {{.Arg.Type}} struct { {{- range .Arg.Struct.Fields}}
+  {{.Name}} {{.Type}} {{if $.EmitJSONTags}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
   {{- end}}
 }
 {{end}}
 
-{{if eq .Type ":one"}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, {{range .Args}}{{.Name}} {{.Type}},{{end}}) ({{.ReturnType}}, error) {
-  	{{- if $.PrepareSupport}}
-	var row *sql.Row
-	switch {
-	case q.{{.StmtName}} != nil && q.tx != nil:
-		row = q.tx.StmtContext(ctx, q.{{.StmtName}}).QueryRowContext(ctx, {{range .Args}}{{.Name}},{{end}})
-	case q.{{.StmtName}} != nil:
-		row = q.{{.StmtName}}.QueryRowContext(ctx, {{range .Args}}{{.Name}},{{end}})
-	default:
-		row = q.db.QueryRowContext(ctx, {{.QueryName}}, {{range .Args}}{{.Name}},{{end}})
-	}
-	{{- else}}
-	row := q.db.QueryRowContext(ctx, {{.QueryName}}, {{range .Args}}{{.Name}},{{end}})
-	{{- end}}
-	var i {{.ReturnType}}
-	{{- if .ScanRecord}}
-	err := row.Scan({{range .Fields}}&i.{{.Name}},{{end}})
-	{{- else}}
-	err := row.Scan(&i)
-	{{- end}}
-	return i, err
+{{if .Ret.EmitStruct}}
+type {{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
+  {{.Name}} {{.Type}} {{if $.EmitJSONTags}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
+  {{- end}}
 }
 {{end}}
 
-{{if eq .Type ":many"}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, {{range .Args}}{{.Name}} {{.Type}},{{end}}) ([]{{.ReturnType}}, error) {
-  	{{- if $.PrepareSupport}}
+{{if eq .Cmd ":one"}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.Type}}, error) {
+  	{{- if $.EmitPreparedQueries}}
+	var row *sql.Row
+	switch {
+	case q.{{.FieldName}} != nil && q.tx != nil:
+		row = q.tx.StmtContext(ctx, q.{{.FieldName}}).QueryRowContext(ctx, {{.Arg.Params}})
+	case q.{{.FieldName}} != nil:
+		row = q.{{.FieldName}}.QueryRowContext(ctx, {{.Arg.Params}})
+	default:
+		row = q.db.QueryRowContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
+	}
+	{{- else}}
+	row := q.db.QueryRowContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
+	{{- end}}
+	var {{.Ret.Name}} {{.Ret.Type}}
+	err := row.Scan({{.Ret.Scan}})
+	return {{.Ret.Name}}, err
+}
+{{end}}
+
+{{if eq .Cmd ":many"}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.Type}}, error) {
+  	{{- if $.EmitPreparedQueries}}
 	var rows *sql.Rows
 	var err error
 	switch {
-	case q.{{.StmtName}} != nil && q.tx != nil:
-		rows, err = q.tx.StmtContext(ctx, q.{{.StmtName}}).QueryContext(ctx, {{range .Args}}{{.Name}},{{end}})
-	case q.{{.StmtName}} != nil:
-		rows, err = q.{{.StmtName}}.QueryContext(ctx, {{range .Args}}{{.Name}},{{end}})
+	case q.{{.FieldName}} != nil && q.tx != nil:
+		rows, err = q.tx.StmtContext(ctx, q.{{.FieldName}}).QueryContext(ctx, {{.Arg.Params}})
+	case q.{{.FieldName}} != nil:
+		rows, err = q.{{.FieldName}}.QueryContext(ctx, {{.Arg.Params}})
 	default:
-		rows, err = q.db.QueryContext(ctx, {{.QueryName}}, {{range .Args}}{{.Name}},{{end}})
+		rows, err = q.db.QueryContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
 	}
   	{{- else}}
-	rows, err := q.db.QueryContext(ctx, {{.QueryName}}, {{range .Args}}{{.Name}},{{end}})
+	rows, err := q.db.QueryContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
   	{{- end}}
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []{{.ReturnType}}{}
+	var items []{{.Ret.Type}}
 	for rows.Next() {
-		var i {{.ReturnType}}
-		{{- if .ScanRecord}}
-		if err := rows.Scan({{range .Fields}}&i.{{.Name}},{{end}}); err != nil {
-		{{- else}}
-		if err := rows.Scan(&i); err != nil {
-		{{- end}}
+		var {{.Ret.Name}} {{.Ret.Type}}
+		if err := rows.Scan({{.Ret.Scan}}); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, {{.Ret.Name}})
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -1312,48 +1666,47 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{range .Args}}{{.Name}} 
 }
 {{end}}
 
-{{if eq .Type ":exec"}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, {{range .Args}}{{.Name}} {{.Type}},{{end}}) error {
-  	{{- if $.PrepareSupport}}
+{{if eq .Cmd ":exec"}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) error {
+  	{{- if $.EmitPreparedQueries}}
 	var err error
 	switch {
-	case q.{{.StmtName}} != nil && q.tx != nil:
-		_, err = q.tx.StmtContext(ctx, q.{{.StmtName}}).ExecContext(ctx, {{range .Args}}{{.Name}},{{end}})
-	case q.{{.StmtName}} != nil:
-		_, err = q.{{.StmtName}}.ExecContext(ctx, {{range .Args}}{{.Name}},{{end}})
+	case q.{{.FieldName}} != nil && q.tx != nil:
+		_, err = q.tx.StmtContext(ctx, q.{{.FieldName}}).ExecContext(ctx, {{.Arg.Params}})
+	case q.{{.FieldName}} != nil:
+		_, err = q.{{.FieldName}}.ExecContext(ctx, {{.Arg.Params}})
 	default:
-		_, err = q.db.ExecContext(ctx, {{.QueryName}}, {{range .Args}}{{.Name}},{{end}})
+		_, err = q.db.ExecContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
 	}
   	{{- else}}
-	_, err := q.db.ExecContext(ctx, {{.QueryName}}, {{range .Args}}{{.Name}},{{end}})
+	_, err := q.db.ExecContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
   	{{- end}}
 	return err
 }
 {{end}}
 
-{{if eq .Type ":execrows"}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, {{range .Args}}{{.Name}} {{.Type}},{{end}}) (int64, error) {
-  	{{- if $.PrepareSupport}}
+{{if eq .Cmd ":execrows"}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, error) {
+  	{{- if $.EmitPreparedQueries}}
 	var result sql.Result
 	var err error
 	switch {
-	case q.{{.StmtName}} != nil && q.tx != nil:
-		result, err = q.tx.StmtContext(ctx, q.{{.StmtName}}).ExecContext(ctx, {{range .Args}}{{.Name}},{{end}})
-	case q.{{.StmtName}} != nil:
-		result, err = q.{{.StmtName}}.ExecContext(ctx, {{range .Args}}{{.Name}},{{end}})
+	case q.{{.FieldName}} != nil && q.tx != nil:
+		result, err = q.tx.StmtContext(ctx, q.{{.FieldName}}).ExecContext(ctx, {{.Arg.Params}})
+	case q.{{.FieldName}} != nil:
+		result, err = q.{{.FieldName}}.ExecContext(ctx, {{.Arg.Params}})
 	default:
-		result, err = q.db.ExecContext(ctx, {{.QueryName}}, {{range .Args}}{{.Name}},{{end}})
+		result, err = q.db.ExecContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
 	}
-	{{- else}}
-	result, err := q.db.ExecContext(ctx, {{.QueryName}}, {{range .Args}}{{.Name}},{{end}})
-	{{- end}}
+  	{{- else}}
+	result, err := q.db.ExecContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
+  	{{- end}}
 	if err != nil {
 		return 0, err
 	}
 	return result.RowsAffected()
 }
 {{end}}
-
 {{end}}
 `
 
@@ -1392,15 +1745,20 @@ func argName(name string) string {
 }
 
 type tmplCtx struct {
-	Q              string
-	Package        string
-	Queries        []Query
-	Schema         *postgres.Schema
-	Records        []postgres.Table
-	StdImports     []string
-	PkgImports     []string
-	PrepareSupport bool
-	EmitTags       bool
+	Q          string
+	Package    string
+	PkgImports []string
+	StdImports []string
+	Enums      []GoEnum
+	Structs    []GoStruct
+	GoQueries  []GoQuery
+
+	EmitJSONTags        bool
+	EmitPreparedQueries bool
+
+	// TODO: Deprecated
+	Queries []Query
+	Records []postgres.Table
 }
 
 func lowerTitle(s string) string {
@@ -1426,7 +1784,7 @@ type GenerateSettings struct {
 	Overrides           []TypeOverride `json:"overrides"`
 }
 
-func generate(r *Result, settings GenerateSettings) string {
+func generate(r *Result, settings GenerateSettings) (string, error) {
 	sort.Slice(r.Queries, func(i, j int) bool { return r.Queries[i].MethodName < r.Queries[j].MethodName })
 
 	funcMap := template.FuncMap{
@@ -1441,22 +1799,27 @@ func generate(r *Result, settings GenerateSettings) string {
 	fileTmpl := template.Must(template.New("table").Funcs(funcMap).Parse(hh))
 	var b bytes.Buffer
 	w := bufio.NewWriter(&b)
-	fileTmpl.Execute(w, tmplCtx{
-		PrepareSupport: settings.EmitPreparedQueries,
-		EmitTags:       settings.EmitTags,
-		Q:              "`",
-		Queries:        r.Queries,
-		Package:        pkg,
-		Schema:         r.Schema,
-		Records:        r.Records(),
-		StdImports:     r.StdImports(),
-		PkgImports:     r.PkgImports(settings),
+	err := fileTmpl.Execute(w, tmplCtx{
+		EmitPreparedQueries: settings.EmitPreparedQueries,
+		EmitJSONTags:        settings.EmitTags,
+		Q:                   "`",
+		Queries:             r.Queries,
+		GoQueries:           r.GoQueries(),
+		Package:             pkg,
+		Enums:               r.Enums(),
+		Structs:             r.Structs(),
+		Records:             r.Records(),
+		StdImports:          r.StdImports(),
+		PkgImports:          r.PkgImports(settings),
 	})
 	w.Flush()
+	if err != nil {
+		return "", err
+	}
 	code, err := format.Source(b.Bytes())
 	if err != nil {
 		fmt.Println(b.String())
 		panic(fmt.Errorf("source error: %s", err))
 	}
-	return string(code)
+	return string(code), nil
 }
