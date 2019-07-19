@@ -90,7 +90,7 @@ func TestParseSchema(t *testing.T) {
 	}
 
 	t.Run("default", func(t *testing.T) {
-		source, err := generate(q, GenerateSettings{
+		source, err := Generate(q, GenerateSettings{
 			Package: "ondeck",
 		})
 		if err != nil {
@@ -109,7 +109,7 @@ func TestParseSchema(t *testing.T) {
 	})
 
 	t.Run("prepared", func(t *testing.T) {
-		source, err := generate(q, GenerateSettings{
+		source, err := Generate(q, GenerateSettings{
 			Package:             "prepared",
 			EmitPreparedQueries: true,
 		})
