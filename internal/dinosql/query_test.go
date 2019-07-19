@@ -338,6 +338,18 @@ func TestQueries(t *testing.T) {
 				},
 			},
 		},
+		{
+			"as",
+			`
+			CREATE TABLE foo (name text not null);
+			SELECT name AS "other_name" FROM foo;
+			`,
+			Query{
+				Columns: []core.Column{
+					{Name: "other_name", DataType: "text", NotNull: true},
+				},
+			},
+		},
 	} {
 		test := tc
 		t.Run(test.name, func(t *testing.T) {

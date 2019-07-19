@@ -1,7 +1,9 @@
 > 🚨 
+>
 > DinoSQL is **very new** and is under rapid development. The command line
 > interface and generated code will change. There are currently no guarantees
 > around stability or compatibility.
+>
 > 🚨 
 
 # Dino: A SQL Compiler
@@ -231,6 +233,10 @@ in the directory where the `dinosql` command is run.
   - Directory of SQL queries stored in `.sql` files
 - `schema`:
   - Directory of SQL migrations, stored in `.sql` files
+
+## Downloads
+
+- [macOS](https://github.com/kyleconroy/dinosql/releases/download/v0.0.0-devel/dinosql.zip)
 
 ## Acknowledgements
 
