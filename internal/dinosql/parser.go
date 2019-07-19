@@ -359,9 +359,13 @@ func outputColumns(c core.Catalog, node nodes.Node) ([]core.Column, error) {
 		switch n := res.Val.(type) {
 
 		case nodes.A_Expr:
+			name := "_"
+			if res.Name != nil {
+				name = *res.Name
+			}
 			if postgres.IsComparisonOperator(join(n.Name, "")) {
 				// TODO: Generate a name for these operations
-				cols = append(cols, core.Column{Name: "_", DataType: "bool", NotNull: true})
+				cols = append(cols, core.Column{Name: name, DataType: "bool", NotNull: true})
 			}
 
 		case nodes.ColumnRef:
@@ -372,7 +376,15 @@ func outputColumns(c core.Catalog, node nodes.Node) ([]core.Column, error) {
 				// TODO: Disambiguate columns
 				for _, t := range tables {
 					for _, c := range t.Columns {
-						cols = append(cols, c)
+						cname := c.Name
+						if res.Name != nil {
+							cname = *res.Name
+						}
+						cols = append(cols, core.Column{
+							Name:     cname,
+							DataType: c.DataType,
+							NotNull:  c.NotNull,
+						})
 					}
 				}
 				continue
@@ -392,7 +404,15 @@ func outputColumns(c core.Catalog, node nodes.Node) ([]core.Column, error) {
 				for _, c := range t.Columns {
 					if c.Name == name {
 						found += 1
-						cols = append(cols, c)
+						cname := c.Name
+						if res.Name != nil {
+							cname = *res.Name
+						}
+						cols = append(cols, core.Column{
+							Name:     cname,
+							DataType: c.DataType,
+							NotNull:  c.NotNull,
+						})
 					}
 				}
 			}
@@ -410,65 +430,15 @@ func outputColumns(c core.Catalog, node nodes.Node) ([]core.Column, error) {
 			}
 
 		case nodes.FuncCall:
-			cols = append(cols, core.Column{Name: join(n.Funcname, "."), DataType: "integer"})
+			name := join(n.Funcname, ".")
+			if res.Name != nil {
+				name = *res.Name
+			}
+			cols = append(cols, core.Column{Name: name, DataType: "integer"})
 
 		}
 	}
 	return cols, nil
-}
-
-type outputRef struct {
-	ref  *nodes.ColumnRef
-	name string
-	typ  string
-}
-
-type outputSearch struct {
-	refs []outputRef
-}
-
-func (o *outputSearch) outs(list nodes.List) []outputRef {
-	var refs []outputRef
-	for _, node := range list.Items {
-		res, ok := node.(nodes.ResTarget)
-		if !ok {
-			continue
-		}
-		switch n := res.Val.(type) {
-		case nodes.A_Expr:
-			if postgres.IsComparisonOperator(join(n.Name, "")) {
-				// TODO: Generate a name for these operations
-				refs = append(refs, outputRef{name: "_", typ: "bool"})
-			}
-		case nodes.ColumnRef:
-			refs = append(refs, outputRef{ref: &n})
-		case nodes.FuncCall:
-			refs = append(refs, outputRef{name: join(n.Funcname, "."), typ: "int"})
-		}
-	}
-	return refs
-}
-
-func (o *outputSearch) Visit(node nodes.Node) Visitor {
-	switch n := node.(type) {
-	case nodes.InsertStmt:
-		o.refs = o.outs(n.ReturningList)
-		return nil
-	case nodes.SelectStmt:
-		o.refs = o.outs(n.TargetList)
-		return nil
-	case nodes.UpdateStmt:
-		o.refs = o.outs(n.ReturningList)
-		return nil
-	}
-	return o
-}
-
-func findOutputs(root nodes.Node) []outputRef {
-	// spew.Dump(root)
-	v := &outputSearch{}
-	Walk(v, root)
-	return v.refs
 }
 
 type paramRef struct {
