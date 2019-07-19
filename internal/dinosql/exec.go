@@ -26,6 +26,9 @@ func Exec(settingsPath string) error {
 		return err
 	}
 
-	source := generate(q, settings)
+	source, err := generate(q, settings)
+	if err != nil {
+		return err
+	}
 	return ioutil.WriteFile(settings.Out, []byte(source), 0644)
 }
