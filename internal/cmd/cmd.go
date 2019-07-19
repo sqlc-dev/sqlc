@@ -63,7 +63,7 @@ var initCmd = &cobra.Command{
 }
 
 var genCmd = &cobra.Command{
-	Use:   "gen",
+	Use:   "generate",
 	Short: "Generate Go code from SQL",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		blob, err := ioutil.ReadFile("dinosql.json")
@@ -96,7 +96,7 @@ var genCmd = &cobra.Command{
 }
 
 var checkCmd = &cobra.Command{
-	Use:   "check",
+	Use:   "compile",
 	Short: "Statically check SQL for syntax and type errors",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		blob, err := ioutil.ReadFile("dinosql.json")
