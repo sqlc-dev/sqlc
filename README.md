@@ -51,35 +51,35 @@ Into Go you'd have to write yourself:
 package db
 
 import (
-  "context"
-  "database/sql"
+	"context"
+	"database/sql"
 )
 
 type Author struct {
-  ID   int
-  Name string
-  Bio  sql.NullString
+	ID   int
+	Name string
+	Bio  sql.NullString
 }
 
 type dbtx interface {
-  ExecContext(context.Context, string, ...interface{}) (sql.Result, error)
-  PrepareContext(context.Context, string) (*sql.Stmt, error)
-  QueryContext(context.Context, string, ...interface{}) (*sql.Rows, error)
-  QueryRowContext(context.Context, string, ...interface{}) *sql.Row
+	ExecContext(context.Context, string, ...interface{}) (sql.Result, error)
+	PrepareContext(context.Context, string) (*sql.Stmt, error)
+	QueryContext(context.Context, string, ...interface{}) (*sql.Rows, error)
+	QueryRowContext(context.Context, string, ...interface{}) *sql.Row
 }
 
 func New(db dbtx) *Queries {
-  return &Queries{db: db}
+	return &Queries{db: db}
 }
 
 type Queries struct {
-  db dbtx
+	db dbtx
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
-  return &Queries{
-    db: tx,
-  }
+	return &Queries{
+		db: tx,
+	}
 }
 
 const createAuthor = `-- name: CreateAuthor :one
@@ -92,15 +92,15 @@ RETURNING id, name, bio
 `
 
 type CreateAuthorParams struct {
-  Name string
-  Bio  sql.NullString
+	Name string
+	Bio  sql.NullString
 }
 
 func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams) (Author, error) {
-  row := q.db.QueryRowContext(ctx, createAuthor, arg.Name, arg.Bio)
-  var i Author
-  err := row.Scan(&i.ID, &i.Name, &i.Bio)
-  return i, err
+	row := q.db.QueryRowContext(ctx, createAuthor, arg.Name, arg.Bio)
+	var i Author
+	err := row.Scan(&i.ID, &i.Name, &i.Bio)
+	return i, err
 }
 
 const deleteAuthor = `-- name: DeleteAuthor :exec
@@ -109,8 +109,8 @@ WHERE id = $1
 `
 
 func (q *Queries) DeleteAuthor(ctx context.Context, id int) error {
-  _, err := q.db.ExecContext(ctx, deleteAuthor, id)
-  return err
+	_, err := q.db.ExecContext(ctx, deleteAuthor, id)
+	return err
 }
 
 const getAuthor = `-- name: GetAuthor :one
@@ -119,10 +119,10 @@ WHERE id = $1
 `
 
 func (q *Queries) GetAuthor(ctx context.Context, id int) (Author, error) {
-  row := q.db.QueryRowContext(ctx, getAuthor, id)
-  var i Author
-  err := row.Scan(&i.ID, &i.Name, &i.Bio)
-  return i, err
+	row := q.db.QueryRowContext(ctx, getAuthor, id)
+	var i Author
+	err := row.Scan(&i.ID, &i.Name, &i.Bio)
+	return i, err
 }
 
 const listAuthors = `-- name: ListAuthors :many
@@ -131,26 +131,26 @@ ORDER BY name
 `
 
 func (q *Queries) ListAuthors(ctx context.Context) ([]Author, error) {
-  rows, err := q.db.QueryContext(ctx, listAuthors)
-  if err != nil {
-    return nil, err
-  }
-  defer rows.Close()
-  var items []Author
-  for rows.Next() {
-    var i Author
-    if err := rows.Scan(&i.ID, &i.Name, &i.Bio); err != nil {
-      return nil, err
-    }
-    items = append(items, i)
-  }
-  if err := rows.Close(); err != nil {
-    return nil, err
-  }
-  if err := rows.Err(); err != nil {
-    return nil, err
-  }
-  return items, nil
+	rows, err := q.db.QueryContext(ctx, listAuthors)
+	 if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Author
+	for rows.Next() {
+		var i Author
+		if err := rows.Scan(&i.ID, &i.Name, &i.Bio); err != nil {
+			 return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 ```
 
