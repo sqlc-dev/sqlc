@@ -74,22 +74,29 @@ func TestQueries(t *testing.T) {
 
 	ctx := context.Background()
 
-	city, err := q.CreateCity(ctx, "san-francisco", "San Francisco")
+	city, err := q.CreateCity(ctx, CreateCityParams{
+		Slug: "san-francisco",
+		Name: "San Francisco",
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	venueID, err := q.CreateVenue(ctx,
-		"the-fillmore",
-		"The Fillmore",
-		city.Slug,
-		"spotify:uri",
-		StatusOpen)
+	venueID, err := q.CreateVenue(ctx, CreateVenueParams{
+		Slug:            "the-fillmore",
+		Name:            "The Fillmore",
+		City:            city.Slug,
+		SpotifyPlaylist: "spotify:uri",
+		Status:          StatusOpen,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	venue, err := q.GetVenue(ctx, "the-fillmore", city.Slug)
+	venue, err := q.GetVenue(ctx, GetVenueParams{
+		Slug: "the-fillmore",
+		City: city.Slug,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -141,14 +148,20 @@ func TestQueries(t *testing.T) {
 	}
 
 	{
-		err := q.UpdateCityName(ctx, city.Slug, "SF")
+		err := q.UpdateCityName(ctx, UpdateCityNameParams{
+			Slug: city.Slug,
+			Name: "SF",
+		})
 		if err != nil {
 			t.Error(err)
 		}
 	}
 
 	{
-		count, err := q.UpdateVenueName(ctx, venue.Slug, "Fillmore")
+		count, err := q.UpdateVenueName(ctx, UpdateVenueNameParams{
+			Slug: venue.Slug,
+			Name: "Fillmore",
+		})
 		if err != nil {
 			t.Error(err)
 		}
@@ -192,22 +205,29 @@ func TestPrepared(t *testing.T) {
 
 	ctx := context.Background()
 
-	city, err := q.CreateCity(ctx, "san-francisco", "San Francisco")
+	city, err := q.CreateCity(ctx, prepared.CreateCityParams{
+		Slug: "san-francisco",
+		Name: "San Francisco",
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	venueID, err := q.CreateVenue(ctx,
-		"the-fillmore",
-		"The Fillmore",
-		city.Slug,
-		"spotify:uri",
-		prepared.StatusOpen)
+	venueID, err := q.CreateVenue(ctx, prepared.CreateVenueParams{
+		Slug:            "the-fillmore",
+		Name:            "The Fillmore",
+		City:            city.Slug,
+		SpotifyPlaylist: "spotify:uri",
+		Status:          prepared.StatusOpen,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	venue, err := q.GetVenue(ctx, "the-fillmore", city.Slug)
+	venue, err := q.GetVenue(ctx, prepared.GetVenueParams{
+		Slug: "the-fillmore",
+		City: city.Slug,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -259,14 +279,20 @@ func TestPrepared(t *testing.T) {
 	}
 
 	{
-		err := q.UpdateCityName(ctx, city.Slug, "SF")
+		err := q.UpdateCityName(ctx, prepared.UpdateCityNameParams{
+			Slug: city.Slug,
+			Name: "SF",
+		})
 		if err != nil {
 			t.Error(err)
 		}
 	}
 
 	{
-		count, err := q.UpdateVenueName(ctx, venue.Slug, "Fillmore")
+		count, err := q.UpdateVenueName(ctx, prepared.UpdateVenueNameParams{
+			Slug: venue.Slug,
+			Name: "Fillmore",
+		})
 		if err != nil {
 			t.Error(err)
 		}
