@@ -702,6 +702,7 @@ func Walk(f Visitor, node nodes.Node) {
 		if n.OnConflictClause != nil {
 			walkn(f, *n.OnConflictClause)
 		}
+		walkn(f, n.ReturningList)
 		if n.WithClause != nil {
 			walkn(f, *n.WithClause)
 		}

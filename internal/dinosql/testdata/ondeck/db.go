@@ -60,8 +60,13 @@ INSERT INTO city (
 ) RETURNING slug, name
 `
 
-func (q *Queries) CreateCity(ctx context.Context, name string, slug string) (City, error) {
-	row := q.db.QueryRowContext(ctx, createCity, name, slug)
+type CreateCityParams struct {
+	Name string
+	Slug string
+}
+
+func (q *Queries) CreateCity(ctx context.Context, arg CreateCityParams) (City, error) {
+	row := q.db.QueryRowContext(ctx, createCity, arg.Name, arg.Slug)
 	var i City
 	err := row.Scan(&i.Slug, &i.Name)
 	return i, err
@@ -85,11 +90,19 @@ INSERT INTO venue (
 ) RETURNING id
 `
 
-func (q *Queries) CreateVenue(ctx context.Context, slug string, name string, city string, spotifyPlaylist string, status Status) (int, error) {
-	row := q.db.QueryRowContext(ctx, createVenue, slug, name, city, spotifyPlaylist, status)
-	var i int
-	err := row.Scan(&i)
-	return i, err
+type CreateVenueParams struct {
+	Slug            string
+	Name            string
+	City            string
+	SpotifyPlaylist string
+	Status          Status
+}
+
+func (q *Queries) CreateVenue(ctx context.Context, arg CreateVenueParams) (int, error) {
+	row := q.db.QueryRowContext(ctx, createVenue, arg.Slug, arg.Name, arg.City, arg.SpotifyPlaylist, arg.Status)
+	var id int
+	err := row.Scan(&id)
+	return id, err
 }
 
 const deleteVenue = `-- name: DeleteVenue :exec
@@ -121,8 +134,13 @@ FROM venue
 WHERE slug = $1 AND city = $2
 `
 
-func (q *Queries) GetVenue(ctx context.Context, slug string, city string) (Venue, error) {
-	row := q.db.QueryRowContext(ctx, getVenue, slug, city)
+type GetVenueParams struct {
+	Slug string
+	City string
+}
+
+func (q *Queries) GetVenue(ctx context.Context, arg GetVenueParams) (Venue, error) {
+	row := q.db.QueryRowContext(ctx, getVenue, arg.Slug, arg.City)
 	var i Venue
 	err := row.Scan(&i.ID, &i.Status, &i.Slug, &i.Name, &i.City, &i.SpotifyPlaylist, &i.SongkickID, &i.CreatedAt)
 	return i, err
@@ -140,7 +158,7 @@ func (q *Queries) ListCities(ctx context.Context) ([]City, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []City{}
+	var items []City
 	for rows.Next() {
 		var i City
 		if err := rows.Scan(&i.Slug, &i.Name); err != nil {
@@ -170,7 +188,7 @@ func (q *Queries) ListVenues(ctx context.Context, city string) ([]Venue, error) 
 		return nil, err
 	}
 	defer rows.Close()
-	items := []Venue{}
+	var items []Venue
 	for rows.Next() {
 		var i Venue
 		if err := rows.Scan(&i.ID, &i.Status, &i.Slug, &i.Name, &i.City, &i.SpotifyPlaylist, &i.SongkickID, &i.CreatedAt); err != nil {
@@ -193,8 +211,13 @@ SET name = $2
 WHERE slug = $1
 `
 
-func (q *Queries) UpdateCityName(ctx context.Context, slug string, name string) error {
-	_, err := q.db.ExecContext(ctx, updateCityName, slug, name)
+type UpdateCityNameParams struct {
+	Slug string
+	Name string
+}
+
+func (q *Queries) UpdateCityName(ctx context.Context, arg UpdateCityNameParams) error {
+	_, err := q.db.ExecContext(ctx, updateCityName, arg.Slug, arg.Name)
 	return err
 }
 
@@ -205,11 +228,16 @@ WHERE slug = $1
 RETURNING id
 `
 
-func (q *Queries) UpdateVenueName(ctx context.Context, slug string, name string) (int, error) {
-	row := q.db.QueryRowContext(ctx, updateVenueName, slug, name)
-	var i int
-	err := row.Scan(&i)
-	return i, err
+type UpdateVenueNameParams struct {
+	Slug string
+	Name string
+}
+
+func (q *Queries) UpdateVenueName(ctx context.Context, arg UpdateVenueNameParams) (int, error) {
+	row := q.db.QueryRowContext(ctx, updateVenueName, arg.Slug, arg.Name)
+	var id int
+	err := row.Scan(&id)
+	return id, err
 }
 
 const venueCountByCity = `-- name: VenueCountByCity :many
@@ -232,7 +260,7 @@ func (q *Queries) VenueCountByCity(ctx context.Context) ([]VenueCountByCityRow, 
 		return nil, err
 	}
 	defer rows.Close()
-	items := []VenueCountByCityRow{}
+	var items []VenueCountByCityRow
 	for rows.Next() {
 		var i VenueCountByCityRow
 		if err := rows.Scan(&i.City, &i.Count); err != nil {

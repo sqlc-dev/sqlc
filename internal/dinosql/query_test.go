@@ -2,29 +2,32 @@ package dinosql
 
 import (
 	"fmt"
+	"strconv"
 	"testing"
 
+	"github.com/davecgh/go-spew/spew"
 	core "github.com/kyleconroy/dinosql/internal/pg"
 	pg "github.com/lfittl/pg_query_go"
 
 	"github.com/google/go-cmp/cmp"
 )
 
-func parseSQLTwo(in string) (QueryTwo, error) {
+func parseSQL(in string) (Query, error) {
 	tree, err := pg.Parse(in)
 	if err != nil {
-		return QueryTwo{}, err
+		return Query{}, err
 	}
 	c := core.NewCatalog()
 	if err := updateCatalog(&c, tree); err != nil {
-		return QueryTwo{}, err
+		return Query{}, err
 	}
 
 	q, err := parseQuery(c, tree.Statements[len(tree.Statements)-1], in)
 	if q == nil {
-		return QueryTwo{}, err
+		return Query{}, err
 	}
 	q.SQL = ""
+	q.NeedsEdit = false
 	return *q, err
 }
 
@@ -52,7 +55,7 @@ func TestQueries(t *testing.T) {
 	for _, tc := range []struct {
 		name  string
 		stmt  string
-		query QueryTwo
+		query Query
 	}{
 		{
 			"list_cities",
@@ -60,7 +63,7 @@ func TestQueries(t *testing.T) {
 			CREATE TABLE city (slug text primary key, name text not null);
 			SELECT * FROM city ORDER BY name;
 			`,
-			QueryTwo{
+			Query{
 				Columns: []core.Column{
 					{Name: "slug", DataType: "text", NotNull: true},
 					{Name: "name", DataType: "text", NotNull: true},
@@ -72,8 +75,10 @@ func TestQueries(t *testing.T) {
 			ondeckSchema + `
 			SELECT * FROM city WHERE slug = $1;
 			`,
-			QueryTwo{
-				Params: []Parameter{{Number: 1, Name: "slug", DataType: "text"}},
+			Query{
+				Params: []Parameter{
+					{Number: 1, Name: "slug", DataType: "text", NotNull: true},
+				},
 				Columns: []core.Column{
 					{Name: "slug", DataType: "text", NotNull: true},
 					{Name: "name", DataType: "text", NotNull: true},
@@ -91,10 +96,10 @@ func TestQueries(t *testing.T) {
 				$2
 			) RETURNING *;
 			`,
-			QueryTwo{
+			Query{
 				Params: []Parameter{
-					{Number: 1, Name: "name", DataType: "text"},
-					{Number: 2, Name: "slug", DataType: "text"},
+					{Number: 1, Name: "name", DataType: "text", NotNull: true},
+					{Number: 2, Name: "slug", DataType: "text", NotNull: true},
 				},
 				Columns: []core.Column{
 					{Name: "slug", DataType: "text", NotNull: true},
@@ -103,14 +108,14 @@ func TestQueries(t *testing.T) {
 			},
 		},
 		{
-			"create_city",
+			"update_city",
 			ondeckSchema + `
 			UPDATE city SET name = $2 WHERE slug = $1;
 			`,
-			QueryTwo{
+			Query{
 				Params: []Parameter{
-					{Number: 1, Name: "slug", DataType: "text"},
-					{Number: 2, Name: "name", DataType: "text"},
+					{Number: 1, Name: "slug", DataType: "text", NotNull: true},
+					{Number: 2, Name: "name", DataType: "text", NotNull: true},
 				},
 			},
 		},
@@ -122,7 +127,7 @@ func TestQueries(t *testing.T) {
 			WHERE city = $1
 			ORDER BY name;
 			`,
-			QueryTwo{
+			Query{
 				Columns: []core.Column{
 					{Name: "id", DataType: "serial", NotNull: true},
 					{Name: "create_at", DataType: "pg_catalog.timestamp", NotNull: true},
@@ -134,7 +139,7 @@ func TestQueries(t *testing.T) {
 					{Name: "songkick_id", DataType: "text"},
 				},
 				Params: []Parameter{
-					{Number: 1, Name: "city", DataType: "text"},
+					{Number: 1, Name: "city", DataType: "text", NotNull: true},
 				},
 			},
 		},
@@ -144,9 +149,9 @@ func TestQueries(t *testing.T) {
 			DELETE FROM venue
 			WHERE slug = $1 AND slug = $1;
 			`,
-			QueryTwo{
+			Query{
 				Params: []Parameter{
-					{Number: 1, Name: "slug", DataType: "text"},
+					{Number: 1, Name: "slug", DataType: "text", NotNull: true},
 				},
 			},
 		},
@@ -157,7 +162,7 @@ func TestQueries(t *testing.T) {
 			FROM venue
 			WHERE slug = $1 AND city = $2;
 			`,
-			QueryTwo{
+			Query{
 				Columns: []core.Column{
 					{Name: "id", DataType: "serial", NotNull: true},
 					{Name: "create_at", DataType: "pg_catalog.timestamp", NotNull: true},
@@ -169,8 +174,8 @@ func TestQueries(t *testing.T) {
 					{Name: "songkick_id", DataType: "text"},
 				},
 				Params: []Parameter{
-					{Number: 1, Name: "slug", DataType: "text"},
-					{Number: 2, Name: "city", DataType: "text"},
+					{Number: 1, Name: "slug", DataType: "text", NotNull: true},
+					{Number: 2, Name: "city", DataType: "text", NotNull: true},
 				},
 			},
 		},
@@ -193,16 +198,16 @@ func TestQueries(t *testing.T) {
 				$5
 			) RETURNING id;
 			`,
-			QueryTwo{
+			Query{
 				Columns: []core.Column{
 					{Name: "id", DataType: "serial", NotNull: true},
 				},
 				Params: []Parameter{
-					{Number: 1, DataType: "text", Name: "slug"},
-					{Number: 2, DataType: "pg_catalog.varchar", Name: "name"},
-					{Number: 3, DataType: "text", Name: "city"},
-					{Number: 4, DataType: "pg_catalog.varchar", Name: "spotifyPlaylist"},
-					{Number: 5, DataType: "status", Name: "status"},
+					{Number: 1, NotNull: true, DataType: "text", Name: "slug"},
+					{Number: 2, NotNull: true, DataType: "pg_catalog.varchar", Name: "name"},
+					{Number: 3, NotNull: true, DataType: "text", Name: "city"},
+					{Number: 4, NotNull: true, DataType: "pg_catalog.varchar", Name: "spotifyPlaylist"},
+					{Number: 5, NotNull: true, DataType: "status", Name: "status"},
 				},
 			},
 		},
@@ -214,13 +219,13 @@ func TestQueries(t *testing.T) {
 			WHERE slug = $1
 			RETURNING id;
 			`,
-			QueryTwo{
+			Query{
 				Columns: []core.Column{
 					{Name: "id", DataType: "serial", NotNull: true},
 				},
 				Params: []Parameter{
-					{Number: 1, DataType: "text", Name: "slug"},
-					{Number: 2, DataType: "pg_catalog.varchar", Name: "name"},
+					{Number: 1, DataType: "text", Name: "slug", NotNull: true},
+					{Number: 2, DataType: "pg_catalog.varchar", Name: "name", NotNull: true},
 				},
 			},
 		},
@@ -232,7 +237,7 @@ func TestQueries(t *testing.T) {
 			GROUP BY 1
 			ORDER BY 1;
 			`,
-			QueryTwo{
+			Query{
 				Columns: []core.Column{
 					{Name: "city", DataType: "text", NotNull: true},
 					{Name: "count", DataType: "integer"},
@@ -248,8 +253,8 @@ func TestQueries(t *testing.T) {
 			DELETE FROM foo f USING bar b
 			WHERE f.bar = b.id AND b.id = $1;
 			`,
-			QueryTwo{
-				Params: []Parameter{{Number: 1, Name: "id", DataType: "serial"}},
+			Query{
+				Params: []Parameter{{Number: 1, Name: "id", DataType: "serial", NotNull: true}},
 			},
 		},
 		{
@@ -259,7 +264,7 @@ func TestQueries(t *testing.T) {
 			CREATE TABLE foo (fid serial not null);
 			SELECT * FROM bar, foo;
 			`,
-			QueryTwo{
+			Query{
 				Columns: []core.Column{
 					{Name: "bid", DataType: "serial", NotNull: true},
 					{Name: "fid", DataType: "serial", NotNull: true},
@@ -278,7 +283,7 @@ func TestQueries(t *testing.T) {
 			SELECT all_count.count, ready_count.count
 			FROM all_count, ready_count;
 			`,
-			QueryTwo{
+			Query{
 				Columns: []core.Column{
 					{Name: "count", DataType: "integer", NotNull: false},
 					{Name: "count", DataType: "integer", NotNull: false},
@@ -295,12 +300,12 @@ func TestQueries(t *testing.T) {
 			SELECT filter_count.count
 			FROM filter_count;
 			`,
-			QueryTwo{
+			Query{
 				Params: []Parameter{
-					{Number: 1, Name: "ready", DataType: "bool"},
+					{Number: 1, Name: "ready", DataType: "bool", NotNull: true},
 				},
 				Columns: []core.Column{
-					{Name: "count", DataType: "integer", NotNull: false},
+					{Name: "count", DataType: "integer"},
 				},
 			},
 		},
@@ -310,10 +315,10 @@ func TestQueries(t *testing.T) {
 			CREATE TABLE foo (name text not null, slug text not null);
 			UPDATE foo SET name = $2 WHERE slug = $1;
 			`,
-			QueryTwo{
+			Query{
 				Params: []Parameter{
-					{Number: 1, Name: "slug", DataType: "text"},
-					{Number: 2, Name: "name", DataType: "text"},
+					{Number: 1, Name: "slug", DataType: "text", NotNull: true},
+					{Number: 2, Name: "name", DataType: "text", NotNull: true},
 				},
 			},
 		},
@@ -326,17 +331,17 @@ func TestQueries(t *testing.T) {
 			SELECT name, $1
 			FROM bar WHERE ready = $2;
 			`,
-			QueryTwo{
+			Query{
 				Params: []Parameter{
-					{Number: 1, Name: "meta", DataType: "text"},
-					{Number: 2, Name: "ready", DataType: "bool"},
+					{Number: 1, Name: "meta", DataType: "text", NotNull: true},
+					{Number: 2, Name: "ready", DataType: "bool", NotNull: true},
 				},
 			},
 		},
 	} {
 		test := tc
 		t.Run(test.name, func(t *testing.T) {
-			q, err := parseSQLTwo(test.stmt)
+			q, err := parseSQL(test.stmt)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -356,16 +361,69 @@ func TestComparisonOperators(t *testing.T) {
 	for _, op := range []string{">", "<", ">=", "<=", "<>", "!=", "="} {
 		o := op
 		t.Run(o, func(t *testing.T) {
-			q, err := parseSQLTwo(fmt.Sprintf(testComparisonSQL, o))
+			q, err := parseSQL(fmt.Sprintf(testComparisonSQL, o))
 			if err != nil {
 				t.Fatal(err)
 			}
-			expected := QueryTwo{
+			expected := Query{
 				Columns: []core.Column{
 					{Name: "_", DataType: "bool", NotNull: true},
 				},
 			}
 			if diff := cmp.Diff(expected, q); diff != "" {
+				t.Errorf("query mismatch: \n%s", diff)
+			}
+		})
+	}
+}
+
+func TestStarWalker(t *testing.T) {
+	for i, tc := range []struct {
+		stmt     string
+		expected bool
+	}{
+		{
+			`
+			SELECT * FROM city ORDER BY name;
+			`,
+			true,
+		},
+		{
+			`
+			INSERT INTO city (
+				name,
+				slug
+			) VALUES (
+				$1,
+				$2
+			) RETURNING *;
+			`,
+			true,
+		},
+		{
+			`
+			UPDATE city SET name = $2 WHERE slug = $1;
+			`,
+			false,
+		},
+		{
+			`
+			UPDATE venue
+			SET name = $2
+			WHERE slug = $1
+			RETURNING *;
+			`,
+			true,
+		},
+	} {
+		test := tc
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			tree, err := pg.Parse(test.stmt)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if diff := cmp.Diff(test.expected, needsEdit(tree.Statements[0])); diff != "" {
+				spew.Dump(tree.Statements[0])
 				t.Errorf("query mismatch: \n%s", diff)
 			}
 		})
