@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"os"
 	"os/exec"
 
 	"github.com/kyleconroy/dinosql/internal/dinosql"
@@ -14,7 +15,10 @@ import (
 
 // Do runs the command logic.
 func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int {
-	rootCmd := &cobra.Command{Use: "dinosql"}
+	rootCmd := &cobra.Command{
+		Use:          "dinosql",
+		SilenceUsage: true,
+	}
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(initCmd)
 	rootCmd.AddCommand(genCmd)
@@ -26,6 +30,9 @@ func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int 
 	rootCmd.SetErr(stderr)
 
 	err := rootCmd.Execute()
+	if err == nil {
+		return 0
+	}
 	if exitError, ok := err.(*exec.ExitError); ok {
 		return exitError.ExitCode()
 	}
@@ -43,57 +50,71 @@ var versionCmd = &cobra.Command{
 var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Create an empty dinosql.json settings file",
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("init")
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if _, err := os.Stat("dinosql.json"); !os.IsNotExist(err) {
+			return nil
+		}
+		blob, err := json.MarshalIndent(dinosql.GenerateSettings{}, "  ", "")
+		if err != nil {
+			return err
+		}
+		return ioutil.WriteFile("dinosql.json", blob, 0644)
 	},
 }
 
 var genCmd = &cobra.Command{
 	Use:   "gen",
 	Short: "Generate Go code from SQL",
-	Run: func(cmd *cobra.Command, args []string) {
-		blob, err := ioutil.ReadFile("settings.json")
+	RunE: func(cmd *cobra.Command, args []string) error {
+		blob, err := ioutil.ReadFile("dinosql.json")
 		if err != nil {
-			cmd.PrintErr(err)
-			return
+			return err
 		}
 
 		var settings dinosql.GenerateSettings
 		if err := json.Unmarshal(blob, &settings); err != nil {
-			cmd.PrintErr(err)
-			return
+			return err
 		}
 
 		c, err := dinosql.ParseCatalog(settings.SchemaDir, settings)
 		if err != nil {
-			cmd.PrintErr(err)
-			return
+			return err
 		}
 
 		q, err := dinosql.ParseQueries(c, settings)
 		if err != nil {
-			cmd.PrintErr(err)
-			return
+			return err
 		}
 
 		source, err := dinosql.Generate(q, settings)
 		if err != nil {
-			cmd.PrintErr(err)
-			return
+			return err
 		}
 
-		err = ioutil.WriteFile(settings.Out, []byte(source), 0644)
-		if err != nil {
-			cmd.PrintErr(err)
-			return
-		}
+		return ioutil.WriteFile(settings.Out, []byte(source), 0644)
 	},
 }
 
 var checkCmd = &cobra.Command{
 	Use:   "check",
 	Short: "Statically check SQL for syntax and type errors",
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("check")
+	RunE: func(cmd *cobra.Command, args []string) error {
+		blob, err := ioutil.ReadFile("dinosql.json")
+		if err != nil {
+			return err
+		}
+
+		var settings dinosql.GenerateSettings
+		if err := json.Unmarshal(blob, &settings); err != nil {
+			return err
+		}
+
+		c, err := dinosql.ParseCatalog(settings.SchemaDir, settings)
+		if err != nil {
+			return err
+		}
+
+		_, err = dinosql.ParseQueries(c, settings)
+		return err
 	},
 }
