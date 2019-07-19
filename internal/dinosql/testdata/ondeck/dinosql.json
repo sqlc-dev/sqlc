@@ -1,0 +1,6 @@
+{
+  "package": "ondeck",
+  "out": "db.go",
+  "queries": "./query",
+  "schema": "./schema"
+}
