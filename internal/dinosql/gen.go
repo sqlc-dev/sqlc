@@ -11,6 +11,8 @@ import (
 	"text/template"
 	"unicode"
 
+	core "github.com/kyleconroy/dinosql/internal/pg"
+
 	"github.com/jinzhu/inflection"
 )
 
@@ -316,6 +318,35 @@ func (r Result) goType(columnType string, notNull bool) string {
 	}
 }
 
+// It's possible that this method will generate duplicate JSON tag values
+//
+//   Columns: count, count,   count_2
+//    Fields: Count, Count_2, Count2
+// JSON tags: count, count_2, count_2
+//
+// This is unlikely to happen, so don't fix it yet
+func (r Result) columnsToStruct(name string, columns []core.Column) *GoStruct {
+	gs := GoStruct{
+		Name: name,
+	}
+	seen := map[string]int{}
+	for _, c := range columns {
+		tagName := c.Name
+		fieldName := structName(c.Name)
+		if v := seen[c.Name]; v > 0 {
+			tagName = fmt.Sprintf("%s_%d", tagName, v+1)
+			fieldName = fmt.Sprintf("%s_%d", fieldName, v+1)
+		}
+		gs.Fields = append(gs.Fields, GoField{
+			Name: fieldName,
+			Type: r.goType(c.DataType, c.NotNull),
+			Tags: map[string]string{"json": tagName},
+		})
+		seen[c.Name] += 1
+	}
+	return &gs
+}
+
 func (r Result) GoQueries() []GoQuery {
 	structs := r.Structs()
 
@@ -403,16 +434,7 @@ func (r Result) GoQueries() []GoQuery {
 			}
 
 			if gs == nil {
-				gs = &GoStruct{
-					Name: gq.MethodName + "Row",
-				}
-				for _, c := range query.Columns {
-					gs.Fields = append(gs.Fields, GoField{
-						Name: structName(c.Name),
-						Type: r.goType(c.DataType, c.NotNull),
-						Tags: map[string]string{"json": c.Name},
-					})
-				}
+				gs = r.columnsToStruct(gq.MethodName+"Row", query.Columns)
 				emit = true
 			}
 			gq.Ret = GoQueryValue{
