@@ -373,7 +373,7 @@ func (r Result) GoQueries() []GoQuery {
 		gq := GoQuery{
 			Cmd:          query.Cmd,
 			ConstantName: lowerTitle(query.Name),
-			FieldName:    lowerTitle(query.Name),
+			FieldName:    lowerTitle(query.Name) + "Stmt",
 			MethodName:   query.Name,
 			SQL:          code,
 		}
@@ -499,6 +499,39 @@ func Prepare(ctx context.Context, db dbtx) (*Queries, error) {
 	{{- end}}
 	return &q, nil
 }
+
+func (q *Queries) exec(ctx context.Context, stmt *sql.Stmt, query string, args ...interface{}) (sql.Result, error) {
+	switch {
+	case stmt != nil && q.tx != nil:
+		return q.tx.StmtContext(ctx, stmt).ExecContext(ctx, args...)
+	case stmt != nil:
+		return stmt.ExecContext(ctx, args...)
+	default:
+		return q.db.ExecContext(ctx, query, args...)
+	}
+}
+
+func (q *Queries) query(ctx context.Context, stmt *sql.Stmt, query string, args ...interface{}) (*sql.Rows, error) {
+	switch {
+	case stmt != nil && q.tx != nil:
+		return q.tx.StmtContext(ctx, stmt).QueryContext(ctx, args...)
+	case stmt != nil:
+		return stmt.QueryContext(ctx, args...)
+	default:
+		return q.db.QueryContext(ctx, query, args...)
+	}
+}
+
+func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, args ...interface{}) (*sql.Row) {
+	switch {
+	case stmt != nil && q.tx != nil:
+		return q.tx.StmtContext(ctx, stmt).QueryRowContext(ctx, args...)
+	case stmt != nil:
+		return stmt.QueryRowContext(ctx, args...)
+	default:
+		return q.db.QueryRowContext(ctx, query, args...)
+	}
+}
 {{end}}
 
 type Queries struct {
@@ -545,15 +578,7 @@ type {{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
 {{if eq .Cmd ":one"}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.Type}}, error) {
   	{{- if $.EmitPreparedQueries}}
-	var row *sql.Row
-	switch {
-	case q.{{.FieldName}} != nil && q.tx != nil:
-		row = q.tx.StmtContext(ctx, q.{{.FieldName}}).QueryRowContext(ctx, {{.Arg.Params}})
-	case q.{{.FieldName}} != nil:
-		row = q.{{.FieldName}}.QueryRowContext(ctx, {{.Arg.Params}})
-	default:
-		row = q.db.QueryRowContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
-	}
+	row := q.queryRow(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
 	{{- else}}
 	row := q.db.QueryRowContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
 	{{- end}}
@@ -566,16 +591,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.Ty
 {{if eq .Cmd ":many"}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.Type}}, error) {
   	{{- if $.EmitPreparedQueries}}
-	var rows *sql.Rows
-	var err error
-	switch {
-	case q.{{.FieldName}} != nil && q.tx != nil:
-		rows, err = q.tx.StmtContext(ctx, q.{{.FieldName}}).QueryContext(ctx, {{.Arg.Params}})
-	case q.{{.FieldName}} != nil:
-		rows, err = q.{{.FieldName}}.QueryContext(ctx, {{.Arg.Params}})
-	default:
-		rows, err = q.db.QueryContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
-	}
+	rows, err := q.query(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
   	{{- else}}
 	rows, err := q.db.QueryContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
   	{{- end}}
@@ -604,15 +620,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.
 {{if eq .Cmd ":exec"}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) error {
   	{{- if $.EmitPreparedQueries}}
-	var err error
-	switch {
-	case q.{{.FieldName}} != nil && q.tx != nil:
-		_, err = q.tx.StmtContext(ctx, q.{{.FieldName}}).ExecContext(ctx, {{.Arg.Params}})
-	case q.{{.FieldName}} != nil:
-		_, err = q.{{.FieldName}}.ExecContext(ctx, {{.Arg.Params}})
-	default:
-		_, err = q.db.ExecContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
-	}
+	_, err := q.exec(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
   	{{- else}}
 	_, err := q.db.ExecContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
   	{{- end}}
@@ -623,16 +631,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) error {
 {{if eq .Cmd ":execrows"}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, error) {
   	{{- if $.EmitPreparedQueries}}
-	var result sql.Result
-	var err error
-	switch {
-	case q.{{.FieldName}} != nil && q.tx != nil:
-		result, err = q.tx.StmtContext(ctx, q.{{.FieldName}}).ExecContext(ctx, {{.Arg.Params}})
-	case q.{{.FieldName}} != nil:
-		result, err = q.{{.FieldName}}.ExecContext(ctx, {{.Arg.Params}})
-	default:
-		result, err = q.db.ExecContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
-	}
+	result, err := q.exec(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
   	{{- else}}
 	result, err := q.db.ExecContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
   	{{- end}}
