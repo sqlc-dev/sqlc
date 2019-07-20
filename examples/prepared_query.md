@@ -37,23 +37,34 @@ func New(db dbtx) *Queries {
 func Prepare(ctx context.Context, db dbtx) (*Queries, error) {
 	q := Queries{db: db}
 	var err error
-	if q.getRecord, err = db.PrepareContext(ctx, getRecord); err != nil {
+	if q.getRecordStmt, err = db.PrepareContext(ctx, getRecord); err != nil {
 		return nil, err
 	}
 	return &q, nil
 }
 
+func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, args ...interface{}) (*sql.Row) {
+	switch {
+	case stmt != nil && q.tx != nil:
+		return q.tx.StmtContext(ctx, stmt).QueryRowContext(ctx, args...)
+	case stmt != nil:
+		return stmt.QueryRowContext(ctx, args...)
+	default:
+		return q.db.QueryRowContext(ctx, query, args...)
+	}
+}
+
 type Queries struct {
-	db        dbtx
-	tx        *sql.Tx
-	getRecord *sql.Stmt
+	db            dbtx
+	tx            *sql.Tx
+	getRecordStmt *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
-		db:        tx,
-		tx:        tx,
-		getRecord: q.getRecord,
+		db:            tx,
+		tx:            tx,
+		getRecordStmt: q.getRecordStmt,
 	}
 }
 
@@ -63,15 +74,7 @@ WHERE id = $1
 `
 
 func (q *Queries) GetRecord(ctx context.Context, id int) (Record, error) {
-	var row *sql.Row
-	switch {
-	case q.getRecord != nil && q.tx != nil:
-		row = q.tx.StmtContext(ctx, q.getRecord).QueryRowContext(ctx, id)
-	case q.getRecord != nil:
-		row = q.getRecord.QueryRowContext(ctx, id)
-	default:
-		row = q.db.QueryRowContext(ctx, getRecord, id)
-	}
+	row := q.queryRow(ctx, q.getRecordStmt, getRecord, id)
 	var i Record
 	err := row.Scan(&i.ID)
 	return i, err
