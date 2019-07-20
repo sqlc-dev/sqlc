@@ -333,7 +333,7 @@ func (r Result) columnsToStruct(name string, columns []core.Column) *GoStruct {
 	for _, c := range columns {
 		tagName := c.Name
 		fieldName := structName(c.Name)
-		if v := seen[name]; v > 0 {
+		if v := seen[c.Name]; v > 0 {
 			tagName = fmt.Sprintf("%s_%d", tagName, v+1)
 			fieldName = fmt.Sprintf("%s_%d", fieldName, v+1)
 		}
@@ -342,7 +342,7 @@ func (r Result) columnsToStruct(name string, columns []core.Column) *GoStruct {
 			Type: r.goType(c.DataType, c.NotNull),
 			Tags: map[string]string{"json": tagName},
 		})
-		seen[name] += 1
+		seen[c.Name] += 1
 	}
 	return &gs
 }

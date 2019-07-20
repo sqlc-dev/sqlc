@@ -9,6 +9,7 @@ import (
 
 func TestColumnsToStruct(t *testing.T) {
 	cols := []pg.Column{
+		{Name: "other", DataType: "text", NotNull: true},
 		{Name: "count", DataType: "integer", NotNull: true},
 		{Name: "count", DataType: "integer", NotNull: true},
 	}
@@ -18,6 +19,7 @@ func TestColumnsToStruct(t *testing.T) {
 	expected := &GoStruct{
 		Name: "Foo",
 		Fields: []GoField{
+			{Name: "Other", Type: "string", Tags: map[string]string{"json": "other"}},
 			{Name: "Count", Type: "int", Tags: map[string]string{"json": "count"}},
 			{Name: "Count_2", Type: "int", Tags: map[string]string{"json": "count_2"}},
 		},
