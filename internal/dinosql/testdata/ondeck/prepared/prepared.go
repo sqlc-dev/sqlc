@@ -43,68 +43,101 @@ func New(db dbtx) *Queries {
 func Prepare(ctx context.Context, db dbtx) (*Queries, error) {
 	q := Queries{db: db}
 	var err error
-	if q.createCity, err = db.PrepareContext(ctx, createCity); err != nil {
+	if q.createCityStmt, err = db.PrepareContext(ctx, createCity); err != nil {
 		return nil, err
 	}
-	if q.createVenue, err = db.PrepareContext(ctx, createVenue); err != nil {
+	if q.createVenueStmt, err = db.PrepareContext(ctx, createVenue); err != nil {
 		return nil, err
 	}
-	if q.deleteVenue, err = db.PrepareContext(ctx, deleteVenue); err != nil {
+	if q.deleteVenueStmt, err = db.PrepareContext(ctx, deleteVenue); err != nil {
 		return nil, err
 	}
-	if q.getCity, err = db.PrepareContext(ctx, getCity); err != nil {
+	if q.getCityStmt, err = db.PrepareContext(ctx, getCity); err != nil {
 		return nil, err
 	}
-	if q.getVenue, err = db.PrepareContext(ctx, getVenue); err != nil {
+	if q.getVenueStmt, err = db.PrepareContext(ctx, getVenue); err != nil {
 		return nil, err
 	}
-	if q.listCities, err = db.PrepareContext(ctx, listCities); err != nil {
+	if q.listCitiesStmt, err = db.PrepareContext(ctx, listCities); err != nil {
 		return nil, err
 	}
-	if q.listVenues, err = db.PrepareContext(ctx, listVenues); err != nil {
+	if q.listVenuesStmt, err = db.PrepareContext(ctx, listVenues); err != nil {
 		return nil, err
 	}
-	if q.updateCityName, err = db.PrepareContext(ctx, updateCityName); err != nil {
+	if q.updateCityNameStmt, err = db.PrepareContext(ctx, updateCityName); err != nil {
 		return nil, err
 	}
-	if q.updateVenueName, err = db.PrepareContext(ctx, updateVenueName); err != nil {
+	if q.updateVenueNameStmt, err = db.PrepareContext(ctx, updateVenueName); err != nil {
 		return nil, err
 	}
-	if q.venueCountByCity, err = db.PrepareContext(ctx, venueCountByCity); err != nil {
+	if q.venueCountByCityStmt, err = db.PrepareContext(ctx, venueCountByCity); err != nil {
 		return nil, err
 	}
 	return &q, nil
 }
 
+func (q *Queries) exec(ctx context.Context, stmt *sql.Stmt, query string, args ...interface{}) (sql.Result, error) {
+	switch {
+	case stmt != nil && q.tx != nil:
+		return q.tx.StmtContext(ctx, stmt).ExecContext(ctx, args...)
+	case stmt != nil:
+		return stmt.ExecContext(ctx, args...)
+	default:
+		return q.db.ExecContext(ctx, query, args...)
+	}
+}
+
+func (q *Queries) query(ctx context.Context, stmt *sql.Stmt, query string, args ...interface{}) (*sql.Rows, error) {
+	switch {
+	case stmt != nil && q.tx != nil:
+		return q.tx.StmtContext(ctx, stmt).QueryContext(ctx, args...)
+	case stmt != nil:
+		return stmt.QueryContext(ctx, args...)
+	default:
+		return q.db.QueryContext(ctx, query, args...)
+	}
+}
+
+func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, args ...interface{}) *sql.Row {
+	switch {
+	case stmt != nil && q.tx != nil:
+		return q.tx.StmtContext(ctx, stmt).QueryRowContext(ctx, args...)
+	case stmt != nil:
+		return stmt.QueryRowContext(ctx, args...)
+	default:
+		return q.db.QueryRowContext(ctx, query, args...)
+	}
+}
+
 type Queries struct {
-	db               dbtx
-	tx               *sql.Tx
-	createCity       *sql.Stmt
-	createVenue      *sql.Stmt
-	deleteVenue      *sql.Stmt
-	getCity          *sql.Stmt
-	getVenue         *sql.Stmt
-	listCities       *sql.Stmt
-	listVenues       *sql.Stmt
-	updateCityName   *sql.Stmt
-	updateVenueName  *sql.Stmt
-	venueCountByCity *sql.Stmt
+	db                   dbtx
+	tx                   *sql.Tx
+	createCityStmt       *sql.Stmt
+	createVenueStmt      *sql.Stmt
+	deleteVenueStmt      *sql.Stmt
+	getCityStmt          *sql.Stmt
+	getVenueStmt         *sql.Stmt
+	listCitiesStmt       *sql.Stmt
+	listVenuesStmt       *sql.Stmt
+	updateCityNameStmt   *sql.Stmt
+	updateVenueNameStmt  *sql.Stmt
+	venueCountByCityStmt *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
-		db:               tx,
-		tx:               tx,
-		createCity:       q.createCity,
-		createVenue:      q.createVenue,
-		deleteVenue:      q.deleteVenue,
-		getCity:          q.getCity,
-		getVenue:         q.getVenue,
-		listCities:       q.listCities,
-		listVenues:       q.listVenues,
-		updateCityName:   q.updateCityName,
-		updateVenueName:  q.updateVenueName,
-		venueCountByCity: q.venueCountByCity,
+		db:                   tx,
+		tx:                   tx,
+		createCityStmt:       q.createCityStmt,
+		createVenueStmt:      q.createVenueStmt,
+		deleteVenueStmt:      q.deleteVenueStmt,
+		getCityStmt:          q.getCityStmt,
+		getVenueStmt:         q.getVenueStmt,
+		listCitiesStmt:       q.listCitiesStmt,
+		listVenuesStmt:       q.listVenuesStmt,
+		updateCityNameStmt:   q.updateCityNameStmt,
+		updateVenueNameStmt:  q.updateVenueNameStmt,
+		venueCountByCityStmt: q.venueCountByCityStmt,
 	}
 }
 
@@ -124,15 +157,7 @@ type CreateCityParams struct {
 }
 
 func (q *Queries) CreateCity(ctx context.Context, arg CreateCityParams) (City, error) {
-	var row *sql.Row
-	switch {
-	case q.createCity != nil && q.tx != nil:
-		row = q.tx.StmtContext(ctx, q.createCity).QueryRowContext(ctx, arg.Name, arg.Slug)
-	case q.createCity != nil:
-		row = q.createCity.QueryRowContext(ctx, arg.Name, arg.Slug)
-	default:
-		row = q.db.QueryRowContext(ctx, createCity, arg.Name, arg.Slug)
-	}
+	row := q.queryRow(ctx, q.createCityStmt, createCity, arg.Name, arg.Slug)
 	var i City
 	err := row.Scan(&i.Slug, &i.Name)
 	return i, err
@@ -165,15 +190,7 @@ type CreateVenueParams struct {
 }
 
 func (q *Queries) CreateVenue(ctx context.Context, arg CreateVenueParams) (int, error) {
-	var row *sql.Row
-	switch {
-	case q.createVenue != nil && q.tx != nil:
-		row = q.tx.StmtContext(ctx, q.createVenue).QueryRowContext(ctx, arg.Slug, arg.Name, arg.City, arg.SpotifyPlaylist, arg.Status)
-	case q.createVenue != nil:
-		row = q.createVenue.QueryRowContext(ctx, arg.Slug, arg.Name, arg.City, arg.SpotifyPlaylist, arg.Status)
-	default:
-		row = q.db.QueryRowContext(ctx, createVenue, arg.Slug, arg.Name, arg.City, arg.SpotifyPlaylist, arg.Status)
-	}
+	row := q.queryRow(ctx, q.createVenueStmt, createVenue, arg.Slug, arg.Name, arg.City, arg.SpotifyPlaylist, arg.Status)
 	var id int
 	err := row.Scan(&id)
 	return id, err
@@ -185,15 +202,7 @@ WHERE slug = $1 AND slug = $1
 `
 
 func (q *Queries) DeleteVenue(ctx context.Context, slug string) error {
-	var err error
-	switch {
-	case q.deleteVenue != nil && q.tx != nil:
-		_, err = q.tx.StmtContext(ctx, q.deleteVenue).ExecContext(ctx, slug)
-	case q.deleteVenue != nil:
-		_, err = q.deleteVenue.ExecContext(ctx, slug)
-	default:
-		_, err = q.db.ExecContext(ctx, deleteVenue, slug)
-	}
+	_, err := q.exec(ctx, q.deleteVenueStmt, deleteVenue, slug)
 	return err
 }
 
@@ -204,15 +213,7 @@ WHERE slug = $1
 `
 
 func (q *Queries) GetCity(ctx context.Context, slug string) (City, error) {
-	var row *sql.Row
-	switch {
-	case q.getCity != nil && q.tx != nil:
-		row = q.tx.StmtContext(ctx, q.getCity).QueryRowContext(ctx, slug)
-	case q.getCity != nil:
-		row = q.getCity.QueryRowContext(ctx, slug)
-	default:
-		row = q.db.QueryRowContext(ctx, getCity, slug)
-	}
+	row := q.queryRow(ctx, q.getCityStmt, getCity, slug)
 	var i City
 	err := row.Scan(&i.Slug, &i.Name)
 	return i, err
@@ -230,15 +231,7 @@ type GetVenueParams struct {
 }
 
 func (q *Queries) GetVenue(ctx context.Context, arg GetVenueParams) (Venue, error) {
-	var row *sql.Row
-	switch {
-	case q.getVenue != nil && q.tx != nil:
-		row = q.tx.StmtContext(ctx, q.getVenue).QueryRowContext(ctx, arg.Slug, arg.City)
-	case q.getVenue != nil:
-		row = q.getVenue.QueryRowContext(ctx, arg.Slug, arg.City)
-	default:
-		row = q.db.QueryRowContext(ctx, getVenue, arg.Slug, arg.City)
-	}
+	row := q.queryRow(ctx, q.getVenueStmt, getVenue, arg.Slug, arg.City)
 	var i Venue
 	err := row.Scan(&i.ID, &i.Status, &i.Slug, &i.Name, &i.City, &i.SpotifyPlaylist, &i.SongkickID, &i.CreatedAt)
 	return i, err
@@ -251,16 +244,7 @@ ORDER BY name
 `
 
 func (q *Queries) ListCities(ctx context.Context) ([]City, error) {
-	var rows *sql.Rows
-	var err error
-	switch {
-	case q.listCities != nil && q.tx != nil:
-		rows, err = q.tx.StmtContext(ctx, q.listCities).QueryContext(ctx)
-	case q.listCities != nil:
-		rows, err = q.listCities.QueryContext(ctx)
-	default:
-		rows, err = q.db.QueryContext(ctx, listCities)
-	}
+	rows, err := q.query(ctx, q.listCitiesStmt, listCities)
 	if err != nil {
 		return nil, err
 	}
@@ -290,16 +274,7 @@ ORDER BY name
 `
 
 func (q *Queries) ListVenues(ctx context.Context, city string) ([]Venue, error) {
-	var rows *sql.Rows
-	var err error
-	switch {
-	case q.listVenues != nil && q.tx != nil:
-		rows, err = q.tx.StmtContext(ctx, q.listVenues).QueryContext(ctx, city)
-	case q.listVenues != nil:
-		rows, err = q.listVenues.QueryContext(ctx, city)
-	default:
-		rows, err = q.db.QueryContext(ctx, listVenues, city)
-	}
+	rows, err := q.query(ctx, q.listVenuesStmt, listVenues, city)
 	if err != nil {
 		return nil, err
 	}
@@ -333,15 +308,7 @@ type UpdateCityNameParams struct {
 }
 
 func (q *Queries) UpdateCityName(ctx context.Context, arg UpdateCityNameParams) error {
-	var err error
-	switch {
-	case q.updateCityName != nil && q.tx != nil:
-		_, err = q.tx.StmtContext(ctx, q.updateCityName).ExecContext(ctx, arg.Slug, arg.Name)
-	case q.updateCityName != nil:
-		_, err = q.updateCityName.ExecContext(ctx, arg.Slug, arg.Name)
-	default:
-		_, err = q.db.ExecContext(ctx, updateCityName, arg.Slug, arg.Name)
-	}
+	_, err := q.exec(ctx, q.updateCityNameStmt, updateCityName, arg.Slug, arg.Name)
 	return err
 }
 
@@ -358,15 +325,7 @@ type UpdateVenueNameParams struct {
 }
 
 func (q *Queries) UpdateVenueName(ctx context.Context, arg UpdateVenueNameParams) (int, error) {
-	var row *sql.Row
-	switch {
-	case q.updateVenueName != nil && q.tx != nil:
-		row = q.tx.StmtContext(ctx, q.updateVenueName).QueryRowContext(ctx, arg.Slug, arg.Name)
-	case q.updateVenueName != nil:
-		row = q.updateVenueName.QueryRowContext(ctx, arg.Slug, arg.Name)
-	default:
-		row = q.db.QueryRowContext(ctx, updateVenueName, arg.Slug, arg.Name)
-	}
+	row := q.queryRow(ctx, q.updateVenueNameStmt, updateVenueName, arg.Slug, arg.Name)
 	var id int
 	err := row.Scan(&id)
 	return id, err
@@ -387,16 +346,7 @@ type VenueCountByCityRow struct {
 }
 
 func (q *Queries) VenueCountByCity(ctx context.Context) ([]VenueCountByCityRow, error) {
-	var rows *sql.Rows
-	var err error
-	switch {
-	case q.venueCountByCity != nil && q.tx != nil:
-		rows, err = q.tx.StmtContext(ctx, q.venueCountByCity).QueryContext(ctx)
-	case q.venueCountByCity != nil:
-		rows, err = q.venueCountByCity.QueryContext(ctx)
-	default:
-		rows, err = q.db.QueryContext(ctx, venueCountByCity)
-	}
+	rows, err := q.query(ctx, q.venueCountByCityStmt, venueCountByCity)
 	if err != nil {
 		return nil, err
 	}
