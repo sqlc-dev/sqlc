@@ -114,8 +114,13 @@ func Update(c *pg.Catalog, stmt nodes.Node) error {
 			case nodes.AlterTableCmd:
 				idx := -1
 
-				// If cmd.Name is set, do a column lookup.
-				if cmd.Name != nil {
+				// Lookup column names for column-related commands
+				switch cmd.Subtype {
+				case nodes.AT_AlterColumnType,
+					nodes.AT_DropColumn,
+					nodes.AT_DropNotNull,
+					nodes.AT_SetNotNull:
+
 					for i, c := range table.Columns {
 						if c.Name == *cmd.Name {
 							idx = i
