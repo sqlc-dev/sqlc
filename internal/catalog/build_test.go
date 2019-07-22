@@ -285,6 +285,27 @@ func TestUpdate(t *testing.T) {
 			`,
 			pg.NewCatalog(),
 		},
+		{
+			`
+			CREATE TABLE venues (id SERIAL PRIMARY KEY);
+			ALTER TABLE venues DROP CONSTRAINT venues_id_pkey;
+			`,
+			pg.Catalog{
+				Schemas: map[string]pg.Schema{
+					"public": {
+						Enums: map[string]pg.Enum{},
+						Tables: map[string]pg.Table{
+							"venues": pg.Table{
+								Name: "venues",
+								Columns: []pg.Column{
+									{Name: "id", DataType: "serial", NotNull: true},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	} {
 		test := tc
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
