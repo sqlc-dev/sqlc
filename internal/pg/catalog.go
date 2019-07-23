@@ -40,6 +40,7 @@ type Column struct {
 	Name     string
 	DataType string
 	NotNull  bool
+	IsArray  bool
 }
 
 type Enum struct {

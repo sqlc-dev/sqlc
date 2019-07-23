@@ -149,11 +149,13 @@ func Update(c *pg.Catalog, stmt nodes.Node) error {
 						Name:     *d.Colname,
 						DataType: join(d.TypeName.Names, "."),
 						NotNull:  isNotNull(d),
+						IsArray:  isArray(d.TypeName),
 					})
 
 				case nodes.AT_AlterColumnType:
 					d := cmd.Def.(nodes.ColumnDef)
 					table.Columns[idx].DataType = join(d.TypeName.Names, ".")
+					table.Columns[idx].IsArray = isArray(d.TypeName)
 
 				case nodes.AT_DropColumn:
 					table.Columns = append(table.Columns[:idx], table.Columns[idx+1:]...)
@@ -193,6 +195,7 @@ func Update(c *pg.Catalog, stmt nodes.Node) error {
 					Name:     colName,
 					DataType: join(n.TypeName.Names, "."),
 					NotNull:  isNotNull(n),
+					IsArray:  isArray(n.TypeName),
 				})
 			}
 		}
@@ -350,6 +353,13 @@ func stringSlice(list nodes.List) []string {
 
 func join(list nodes.List, sep string) string {
 	return strings.Join(stringSlice(list), sep)
+}
+
+func isArray(n *nodes.TypeName) bool {
+	if n == nil {
+		return false
+	}
+	return len(n.ArrayBounds.Items) > 0
 }
 
 func isNotNull(n nodes.ColumnDef) bool {

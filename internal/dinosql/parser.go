@@ -384,6 +384,7 @@ func outputColumns(c core.Catalog, node nodes.Node) ([]core.Column, error) {
 							Name:     cname,
 							DataType: c.DataType,
 							NotNull:  c.NotNull,
+							IsArray:  c.IsArray,
 						})
 					}
 				}

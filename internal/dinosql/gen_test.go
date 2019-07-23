@@ -9,9 +9,27 @@ import (
 
 func TestColumnsToStruct(t *testing.T) {
 	cols := []pg.Column{
-		{Name: "other", DataType: "text", NotNull: true},
-		{Name: "count", DataType: "integer", NotNull: true},
-		{Name: "count", DataType: "integer", NotNull: true},
+		{
+			Name:     "other",
+			DataType: "text",
+			NotNull:  true,
+		},
+		{
+			Name:     "count",
+			DataType: "integer",
+			NotNull:  true,
+		},
+		{
+			Name:     "count",
+			DataType: "integer",
+			NotNull:  true,
+		},
+		{
+			Name:     "tags",
+			DataType: "text",
+			NotNull:  true,
+			IsArray:  true,
+		},
 	}
 
 	r := Result{}
@@ -22,6 +40,7 @@ func TestColumnsToStruct(t *testing.T) {
 			{Name: "Other", Type: "string", Tags: map[string]string{"json": "other"}},
 			{Name: "Count", Type: "int", Tags: map[string]string{"json": "count"}},
 			{Name: "Count_2", Type: "int", Tags: map[string]string{"json": "count_2"}},
+			{Name: "Tags", Type: "[]string", Tags: map[string]string{"json": "tags"}},
 		},
 	}
 	if diff := cmp.Diff(expected, actual); diff != "" {

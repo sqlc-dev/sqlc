@@ -350,6 +350,18 @@ func TestQueries(t *testing.T) {
 				},
 			},
 		},
+		{
+			"text_array",
+			`
+			CREATE TABLE bar (tags text[] not null);
+			SELECT * FROM bar;
+			`,
+			Query{
+				Columns: []core.Column{
+					{Name: "tags", DataType: "text", IsArray: true, NotNull: true},
+				},
+			},
+		},
 	} {
 		test := tc
 		t.Run(test.name, func(t *testing.T) {

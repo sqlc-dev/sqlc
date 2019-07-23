@@ -8,5 +8,6 @@ CREATE TABLE venues (
     name             varchar(255) not null,
     city             text         not null references city(slug),
     spotify_playlist varchar      not null,
-    songkick_id      text
+    songkick_id      text,
+    tags             text[]
 )

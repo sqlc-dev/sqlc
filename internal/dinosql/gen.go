@@ -120,10 +120,18 @@ func (v GoQueryValue) Params() string {
 func (v GoQueryValue) Scan() string {
 	var out []string
 	if v.Struct == nil {
-		out = append(out, "&"+v.Name)
+		if strings.HasPrefix(v.typ, "[]") {
+			out = append(out, "pq.Array(&"+v.Name+")")
+		} else {
+			out = append(out, "&"+v.Name)
+		}
 	} else {
 		for _, f := range v.Struct.Fields {
-			out = append(out, "&"+v.Name+"."+f.Name)
+			if strings.HasPrefix(f.Type, "[]") {
+				out = append(out, "pq.Array(&"+v.Name+"."+f.Name+")")
+			} else {
+				out = append(out, "&"+v.Name+"."+f.Name)
+			}
 		}
 	}
 	return strings.Join(out, ",")
@@ -151,6 +159,17 @@ func (r Result) UsesType(typ string) bool {
 	return false
 }
 
+func (r Result) UsesArrays() bool {
+	for _, strct := range r.Structs() {
+		for _, f := range strct.Fields {
+			if strings.HasPrefix(f.Type, "[]") {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func (r Result) StdImports() []string {
 	imports := []string{
 		"context",
@@ -169,6 +188,9 @@ func (r Result) PkgImports(settings GenerateSettings) []string {
 	imports := []string{}
 
 	if r.UsesType("pq.NullTime") {
+		imports = append(imports, "github.com/lib/pq")
+	}
+	if r.UsesArrays() {
 		imports = append(imports, "github.com/lib/pq")
 	}
 	if r.UsesType("uuid.UUID") {
@@ -231,7 +253,7 @@ func (r Result) Structs() []GoStruct {
 			for _, column := range table.Columns {
 				s.Fields = append(s.Fields, GoField{
 					Name: structName(column.Name),
-					Type: r.goType(column.DataType, column.NotNull),
+					Type: r.goType(column.DataType, column.NotNull, column.IsArray),
 					Tags: map[string]string{"json": column.Name},
 				})
 			}
@@ -244,7 +266,15 @@ func (r Result) Structs() []GoStruct {
 	return structs
 }
 
-func (r Result) goType(columnType string, notNull bool) string {
+func (r Result) goType(columnType string, notNull, isArray bool) string {
+	typ := r.goInnerType(columnType, notNull)
+	if isArray {
+		return "[]" + typ
+	}
+	return typ
+}
+
+func (r Result) goInnerType(columnType string, notNull bool) string {
 	for _, oride := range r.Settings.Overrides {
 		if oride.PostgresType == columnType && oride.Null != notNull {
 			return oride.GoType
@@ -339,7 +369,7 @@ func (r Result) columnsToStruct(name string, columns []core.Column) *GoStruct {
 		}
 		gs.Fields = append(gs.Fields, GoField{
 			Name: fieldName,
-			Type: r.goType(c.DataType, c.NotNull),
+			Type: r.goType(c.DataType, c.NotNull, c.IsArray),
 			Tags: map[string]string{"json": tagName},
 		})
 		seen[c.Name] += 1
@@ -382,7 +412,7 @@ func (r Result) GoQueries() []GoQuery {
 			p := query.Params[0]
 			gq.Arg = GoQueryValue{
 				Name: p.Name,
-				typ:  r.goType(p.DataType, p.NotNull),
+				typ:  r.goType(p.DataType, p.NotNull, false),
 			}
 		} else if len(query.Params) > 1 {
 			val := GoQueryValue{
@@ -395,7 +425,7 @@ func (r Result) GoQueries() []GoQuery {
 			for _, p := range query.Params {
 				val.Struct.Fields = append(val.Struct.Fields, GoField{
 					Name: structName(p.Name),
-					Type: r.goType(p.DataType, p.NotNull),
+					Type: r.goType(p.DataType, p.NotNull, false),
 					Tags: map[string]string{
 						"json": p.Name,
 					},
@@ -408,7 +438,7 @@ func (r Result) GoQueries() []GoQuery {
 			c := query.Columns[0]
 			gq.Ret = GoQueryValue{
 				Name: c.Name,
-				typ:  r.goType(c.DataType, c.NotNull),
+				typ:  r.goType(c.DataType, c.NotNull, c.IsArray),
 			}
 		} else if len(query.Columns) > 1 {
 			var gs *GoStruct
@@ -422,7 +452,7 @@ func (r Result) GoQueries() []GoQuery {
 				for i, f := range s.Fields {
 					c := query.Columns[i]
 					sameName := f.Name == structName(c.Name)
-					sameType := f.Type == r.goType(c.DataType, c.NotNull)
+					sameType := f.Type == r.goType(c.DataType, c.NotNull, c.IsArray)
 					if !sameName || !sameType {
 						same = false
 					}
