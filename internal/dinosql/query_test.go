@@ -77,7 +77,7 @@ func TestQueries(t *testing.T) {
 			`,
 			Query{
 				Params: []Parameter{
-					{Number: 1, Name: "slug", DataType: "text", NotNull: true},
+					{1, core.Column{Name: "slug", DataType: "text", NotNull: true}},
 				},
 				Columns: []core.Column{
 					{Name: "slug", DataType: "text", NotNull: true},
@@ -98,8 +98,8 @@ func TestQueries(t *testing.T) {
 			`,
 			Query{
 				Params: []Parameter{
-					{Number: 1, Name: "name", DataType: "text", NotNull: true},
-					{Number: 2, Name: "slug", DataType: "text", NotNull: true},
+					{1, core.Column{Name: "name", DataType: "text", NotNull: true}},
+					{2, core.Column{Name: "slug", DataType: "text", NotNull: true}},
 				},
 				Columns: []core.Column{
 					{Name: "slug", DataType: "text", NotNull: true},
@@ -114,8 +114,8 @@ func TestQueries(t *testing.T) {
 			`,
 			Query{
 				Params: []Parameter{
-					{Number: 1, Name: "slug", DataType: "text", NotNull: true},
-					{Number: 2, Name: "name", DataType: "text", NotNull: true},
+					{1, core.Column{Name: "slug", DataType: "text", NotNull: true}},
+					{2, core.Column{Name: "name", DataType: "text", NotNull: true}},
 				},
 			},
 		},
@@ -139,7 +139,7 @@ func TestQueries(t *testing.T) {
 					{Name: "songkick_id", DataType: "text"},
 				},
 				Params: []Parameter{
-					{Number: 1, Name: "city", DataType: "text", NotNull: true},
+					{1, core.Column{Name: "city", DataType: "text", NotNull: true}},
 				},
 			},
 		},
@@ -151,7 +151,7 @@ func TestQueries(t *testing.T) {
 			`,
 			Query{
 				Params: []Parameter{
-					{Number: 1, Name: "slug", DataType: "text", NotNull: true},
+					{1, core.Column{Name: "slug", DataType: "text", NotNull: true}},
 				},
 			},
 		},
@@ -174,8 +174,8 @@ func TestQueries(t *testing.T) {
 					{Name: "songkick_id", DataType: "text"},
 				},
 				Params: []Parameter{
-					{Number: 1, Name: "slug", DataType: "text", NotNull: true},
-					{Number: 2, Name: "city", DataType: "text", NotNull: true},
+					{1, core.Column{Name: "slug", DataType: "text", NotNull: true}},
+					{2, core.Column{Name: "city", DataType: "text", NotNull: true}},
 				},
 			},
 		},
@@ -203,11 +203,11 @@ func TestQueries(t *testing.T) {
 					{Name: "id", DataType: "serial", NotNull: true},
 				},
 				Params: []Parameter{
-					{Number: 1, NotNull: true, DataType: "text", Name: "slug"},
-					{Number: 2, NotNull: true, DataType: "pg_catalog.varchar", Name: "name"},
-					{Number: 3, NotNull: true, DataType: "text", Name: "city"},
-					{Number: 4, NotNull: true, DataType: "pg_catalog.varchar", Name: "spotifyPlaylist"},
-					{Number: 5, NotNull: true, DataType: "status", Name: "status"},
+					{1, core.Column{NotNull: true, DataType: "text", Name: "slug"}},
+					{2, core.Column{NotNull: true, DataType: "pg_catalog.varchar", Name: "name"}},
+					{3, core.Column{NotNull: true, DataType: "text", Name: "city"}},
+					{4, core.Column{NotNull: true, DataType: "pg_catalog.varchar", Name: "spotifyPlaylist"}},
+					{5, core.Column{NotNull: true, DataType: "status", Name: "status"}},
 				},
 			},
 		},
@@ -224,8 +224,8 @@ func TestQueries(t *testing.T) {
 					{Name: "id", DataType: "serial", NotNull: true},
 				},
 				Params: []Parameter{
-					{Number: 1, DataType: "text", Name: "slug", NotNull: true},
-					{Number: 2, DataType: "pg_catalog.varchar", Name: "name", NotNull: true},
+					{1, core.Column{DataType: "text", Name: "slug", NotNull: true}},
+					{2, core.Column{DataType: "pg_catalog.varchar", Name: "name", NotNull: true}},
 				},
 			},
 		},
@@ -254,7 +254,7 @@ func TestQueries(t *testing.T) {
 			WHERE f.bar = b.id AND b.id = $1;
 			`,
 			Query{
-				Params: []Parameter{{Number: 1, Name: "id", DataType: "serial", NotNull: true}},
+				Params: []Parameter{{1, core.Column{Name: "id", DataType: "serial", NotNull: true}}},
 			},
 		},
 		{
@@ -302,7 +302,7 @@ func TestQueries(t *testing.T) {
 			`,
 			Query{
 				Params: []Parameter{
-					{Number: 1, Name: "ready", DataType: "bool", NotNull: true},
+					{1, core.Column{Name: "ready", DataType: "bool", NotNull: true}},
 				},
 				Columns: []core.Column{
 					{Name: "count", DataType: "integer"},
@@ -317,8 +317,8 @@ func TestQueries(t *testing.T) {
 			`,
 			Query{
 				Params: []Parameter{
-					{Number: 1, Name: "slug", DataType: "text", NotNull: true},
-					{Number: 2, Name: "name", DataType: "text", NotNull: true},
+					{1, core.Column{Name: "slug", DataType: "text", NotNull: true}},
+					{2, core.Column{Name: "name", DataType: "text", NotNull: true}},
 				},
 			},
 		},
@@ -333,8 +333,8 @@ func TestQueries(t *testing.T) {
 			`,
 			Query{
 				Params: []Parameter{
-					{Number: 1, Name: "meta", DataType: "text", NotNull: true},
-					{Number: 2, Name: "ready", DataType: "bool", NotNull: true},
+					{1, core.Column{Name: "meta", DataType: "text", NotNull: true}},
+					{2, core.Column{Name: "ready", DataType: "bool", NotNull: true}},
 				},
 			},
 		},
@@ -347,6 +347,18 @@ func TestQueries(t *testing.T) {
 			Query{
 				Columns: []core.Column{
 					{Name: "other_name", DataType: "text", NotNull: true},
+				},
+			},
+		},
+		{
+			"text_array",
+			`
+			CREATE TABLE bar (tags text[] not null);
+			SELECT * FROM bar;
+			`,
+			Query{
+				Columns: []core.Column{
+					{Name: "tags", DataType: "text", IsArray: true, NotNull: true},
 				},
 			},
 		},

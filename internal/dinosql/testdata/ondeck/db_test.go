@@ -88,6 +88,7 @@ func TestQueries(t *testing.T) {
 		City:            city.Slug,
 		SpotifyPlaylist: "spotify:uri",
 		Status:          StatusOpen,
+		Tags:            []string{"rock", "punk"},
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -219,6 +220,7 @@ func TestPrepared(t *testing.T) {
 		City:            city.Slug,
 		SpotifyPlaylist: "spotify:uri",
 		Status:          prepared.StatusOpen,
+		Tags:            []string{"rock", "punk"},
 	})
 	if err != nil {
 		t.Fatal(err)
