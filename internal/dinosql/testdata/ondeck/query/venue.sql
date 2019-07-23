@@ -20,14 +20,16 @@ INSERT INTO venue (
     city,
     created_at,
     spotify_playlist,
-    status
+    status,
+    tags
 ) VALUES (
     $1,
     $2,
     $3,
     NOW(),
     $4,
-    $5
+    $5,
+    $6
 ) RETURNING id;
 
 -- name: UpdateVenueName :one

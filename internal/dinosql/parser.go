@@ -83,10 +83,8 @@ func stringSlice(list nodes.List) []string {
 }
 
 type Parameter struct {
-	Number   int
-	DataType string
-	Name     string // TODO: Relation?
-	NotNull  bool
+	Number int
+	Column core.Column
 }
 
 // Name and Cmd may be empty
@@ -592,10 +590,13 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 
 				if c, ok := typeMap[table][key]; ok {
 					a = append(a, Parameter{
-						Number:   ref.ref.Number,
-						Name:     argName(key),
-						DataType: c.DataType,
-						NotNull:  c.NotNull,
+						Number: ref.ref.Number,
+						Column: core.Column{
+							Name:     argName(key),
+							DataType: c.DataType,
+							NotNull:  c.NotNull,
+							IsArray:  c.IsArray,
+						},
 					})
 				} else {
 					return nil, Error{
@@ -611,10 +612,13 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 			key := *n.Name
 			if c, ok := typeMap[defaultTable][key]; ok {
 				a = append(a, Parameter{
-					Number:   ref.ref.Number,
-					Name:     argName(key),
-					DataType: c.DataType,
-					NotNull:  c.NotNull,
+					Number: ref.ref.Number,
+					Column: core.Column{
+						Name:     argName(key),
+						DataType: c.DataType,
+						NotNull:  c.NotNull,
+						IsArray:  c.IsArray,
+					},
 				})
 			} else {
 				return nil, Error{
@@ -623,7 +627,7 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 				}
 			}
 		case nodes.ParamRef:
-			a = append(a, Parameter{Number: ref.ref.Number, Name: "_", DataType: "interface{}"})
+			a = append(a, Parameter{Number: ref.ref.Number})
 		default:
 			// return nil, fmt.Errorf("unsupported type: %T", n)
 		}

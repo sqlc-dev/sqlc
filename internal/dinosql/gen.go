@@ -108,10 +108,18 @@ func (v GoQueryValue) Params() string {
 	}
 	var out []string
 	if v.Struct == nil {
-		out = append(out, v.Name)
+		if strings.HasPrefix(v.typ, "[]") {
+			out = append(out, "pq.Array("+v.Name+")")
+		} else {
+			out = append(out, v.Name)
+		}
 	} else {
 		for _, f := range v.Struct.Fields {
-			out = append(out, v.Name+"."+f.Name)
+			if strings.HasPrefix(f.Type, "[]") {
+				out = append(out, "pq.Array("+v.Name+"."+f.Name+")")
+			} else {
+				out = append(out, v.Name+"."+f.Name)
+			}
 		}
 	}
 	return strings.Join(out, ",")
@@ -253,7 +261,7 @@ func (r Result) Structs() []GoStruct {
 			for _, column := range table.Columns {
 				s.Fields = append(s.Fields, GoField{
 					Name: structName(column.Name),
-					Type: r.goType(column.DataType, column.NotNull, column.IsArray),
+					Type: r.goType(column),
 					Tags: map[string]string{"json": column.Name},
 				})
 			}
@@ -266,9 +274,9 @@ func (r Result) Structs() []GoStruct {
 	return structs
 }
 
-func (r Result) goType(columnType string, notNull, isArray bool) string {
-	typ := r.goInnerType(columnType, notNull)
-	if isArray {
+func (r Result) goType(col core.Column) string {
+	typ := r.goInnerType(col.DataType, col.NotNull || col.IsArray)
+	if col.IsArray {
 		return "[]" + typ
 	}
 	return typ
@@ -369,7 +377,7 @@ func (r Result) columnsToStruct(name string, columns []core.Column) *GoStruct {
 		}
 		gs.Fields = append(gs.Fields, GoField{
 			Name: fieldName,
-			Type: r.goType(c.DataType, c.NotNull, c.IsArray),
+			Type: r.goType(c),
 			Tags: map[string]string{"json": tagName},
 		})
 		seen[c.Name] += 1
@@ -411,8 +419,8 @@ func (r Result) GoQueries() []GoQuery {
 		if len(query.Params) == 1 {
 			p := query.Params[0]
 			gq.Arg = GoQueryValue{
-				Name: p.Name,
-				typ:  r.goType(p.DataType, p.NotNull, false),
+				Name: p.Column.Name,
+				typ:  r.goType(p.Column),
 			}
 		} else if len(query.Params) > 1 {
 			val := GoQueryValue{
@@ -424,10 +432,10 @@ func (r Result) GoQueries() []GoQuery {
 			}
 			for _, p := range query.Params {
 				val.Struct.Fields = append(val.Struct.Fields, GoField{
-					Name: structName(p.Name),
-					Type: r.goType(p.DataType, p.NotNull, false),
+					Name: structName(p.Column.Name),
+					Type: r.goType(p.Column),
 					Tags: map[string]string{
-						"json": p.Name,
+						"json": p.Column.Name,
 					},
 				})
 			}
@@ -438,7 +446,7 @@ func (r Result) GoQueries() []GoQuery {
 			c := query.Columns[0]
 			gq.Ret = GoQueryValue{
 				Name: c.Name,
-				typ:  r.goType(c.DataType, c.NotNull, c.IsArray),
+				typ:  r.goType(c),
 			}
 		} else if len(query.Columns) > 1 {
 			var gs *GoStruct
@@ -452,7 +460,7 @@ func (r Result) GoQueries() []GoQuery {
 				for i, f := range s.Fields {
 					c := query.Columns[i]
 					sameName := f.Name == structName(c.Name)
-					sameType := f.Type == r.goType(c.DataType, c.NotNull, c.IsArray)
+					sameType := f.Type == r.goType(c)
 					if !sameName || !sameType {
 						same = false
 					}

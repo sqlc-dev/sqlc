@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"time"
+
+	"github.com/lib/pq"
 )
 
 type Status string
@@ -26,6 +28,7 @@ type Venue struct {
 	City            string
 	SpotifyPlaylist string
 	SongkickID      sql.NullString
+	Tags            []string
 	CreatedAt       time.Time
 }
 
@@ -79,14 +82,16 @@ INSERT INTO venue (
     city,
     created_at,
     spotify_playlist,
-    status
+    status,
+    tags
 ) VALUES (
     $1,
     $2,
     $3,
     NOW(),
     $4,
-    $5
+    $5,
+    $6
 ) RETURNING id
 `
 
@@ -96,10 +101,11 @@ type CreateVenueParams struct {
 	City            string
 	SpotifyPlaylist string
 	Status          Status
+	Tags            []string
 }
 
 func (q *Queries) CreateVenue(ctx context.Context, arg CreateVenueParams) (int, error) {
-	row := q.db.QueryRowContext(ctx, createVenue, arg.Slug, arg.Name, arg.City, arg.SpotifyPlaylist, arg.Status)
+	row := q.db.QueryRowContext(ctx, createVenue, arg.Slug, arg.Name, arg.City, arg.SpotifyPlaylist, arg.Status, pq.Array(arg.Tags))
 	var id int
 	err := row.Scan(&id)
 	return id, err
@@ -129,7 +135,7 @@ func (q *Queries) GetCity(ctx context.Context, slug string) (City, error) {
 }
 
 const getVenue = `-- name: GetVenue :one
-SELECT id, status, slug, name, city, spotify_playlist, songkick_id, created_at
+SELECT id, status, slug, name, city, spotify_playlist, songkick_id, tags, created_at
 FROM venue
 WHERE slug = $1 AND city = $2
 `
@@ -142,7 +148,7 @@ type GetVenueParams struct {
 func (q *Queries) GetVenue(ctx context.Context, arg GetVenueParams) (Venue, error) {
 	row := q.db.QueryRowContext(ctx, getVenue, arg.Slug, arg.City)
 	var i Venue
-	err := row.Scan(&i.ID, &i.Status, &i.Slug, &i.Name, &i.City, &i.SpotifyPlaylist, &i.SongkickID, &i.CreatedAt)
+	err := row.Scan(&i.ID, &i.Status, &i.Slug, &i.Name, &i.City, &i.SpotifyPlaylist, &i.SongkickID, pq.Array(&i.Tags), &i.CreatedAt)
 	return i, err
 }
 
@@ -176,7 +182,7 @@ func (q *Queries) ListCities(ctx context.Context) ([]City, error) {
 }
 
 const listVenues = `-- name: ListVenues :many
-SELECT id, status, slug, name, city, spotify_playlist, songkick_id, created_at
+SELECT id, status, slug, name, city, spotify_playlist, songkick_id, tags, created_at
 FROM venue
 WHERE city = $1
 ORDER BY name
@@ -191,7 +197,7 @@ func (q *Queries) ListVenues(ctx context.Context, city string) ([]Venue, error) 
 	var items []Venue
 	for rows.Next() {
 		var i Venue
-		if err := rows.Scan(&i.ID, &i.Status, &i.Slug, &i.Name, &i.City, &i.SpotifyPlaylist, &i.SongkickID, &i.CreatedAt); err != nil {
+		if err := rows.Scan(&i.ID, &i.Status, &i.Slug, &i.Name, &i.City, &i.SpotifyPlaylist, &i.SongkickID, pq.Array(&i.Tags), &i.CreatedAt); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
