@@ -173,9 +173,10 @@ Your favorite PostgreSQL / Go features are supported:
   - [Transactions](./examples/transactions.md)
   - [Prepared queries](./examples/prepared_query.md)
 - PostgreSQL Types
-  - [enum](./examples/enums.md)
-  - [timestamp](./examples/time.md)
-  - [uuid](./examples/uuid.md)
+  - [Arrays](./examples/arrays.md)
+  - [Enums](./examples/enums.md)
+  - [Timestamps](./examples/time.md)
+  - [UUIDs](./examples/uuid.md)
 - DDL
   - [CREATE TABLE](./examples/table.md)
   - [ALTER TABLE](./examples/alter_table.md)
