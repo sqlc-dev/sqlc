@@ -16,12 +16,12 @@ func TestColumnsToStruct(t *testing.T) {
 		},
 		{
 			Name:     "count",
-			DataType: "integer",
+			DataType: "bigint",
 			NotNull:  true,
 		},
 		{
 			Name:     "count",
-			DataType: "integer",
+			DataType: "bigint",
 			NotNull:  true,
 		},
 		{
@@ -38,8 +38,8 @@ func TestColumnsToStruct(t *testing.T) {
 		Name: "Foo",
 		Fields: []GoField{
 			{Name: "Other", Type: "string", Tags: map[string]string{"json": "other"}},
-			{Name: "Count", Type: "int", Tags: map[string]string{"json": "count"}},
-			{Name: "Count_2", Type: "int", Tags: map[string]string{"json": "count_2"}},
+			{Name: "Count", Type: "int64", Tags: map[string]string{"json": "count"}},
+			{Name: "Count_2", Type: "int64", Tags: map[string]string{"json": "count_2"}},
 			{Name: "Tags", Type: "[]string", Tags: map[string]string{"json": "tags"}},
 		},
 	}

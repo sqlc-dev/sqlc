@@ -290,56 +290,52 @@ func (r Result) goInnerType(columnType string, notNull bool) string {
 	}
 
 	switch columnType {
-	case "text":
-		if notNull {
-			return "string"
-		} else {
-			return "sql.NullString"
-		}
-	case "serial":
-		return "int"
-	case "integer":
-		return "int"
-	case "bool":
+
+	case "serial", "pg_catalog.serial4":
+		return "int32"
+
+	case "bigserial", "pg_catalog.serial8":
+		return "int64"
+
+	case "smallserial", "pg_catalog.serial2":
+		return "int16"
+
+	case "integer", "int", "pg_catalog.int4":
+		return "int32"
+
+	case "bigint", "pg_catalog.int8":
+		return "int64"
+
+	case "smallint", "pg_catalog.int2":
+		return "int16"
+
+	case "bool", "pg_catalog.bool":
 		if notNull {
 			return "bool"
 		} else {
 			return "sql.NullBool"
 		}
+
 	case "jsonb":
 		return "json.RawMessage"
-	case "pg_catalog.bool":
-		if notNull {
-			return "bool"
-		} else {
-			return "sql.NullBool"
-		}
-	case "pg_catalog.int2":
-		return "uint8"
-	case "pg_catalog.int4":
-		return "int"
-	case "pg_catalog.int8":
-		return "int"
-	case "pg_catalog.timestamp":
+
+	case "pg_catalog.timestamp", "pg_catalog.timestamptz":
 		if notNull {
 			return "time.Time"
 		} else {
 			return "pq.NullTime"
 		}
-	case "pg_catalog.timestamptz":
-		if notNull {
-			return "time.Time"
-		} else {
-			return "pq.NullTime"
-		}
-	case "pg_catalog.varchar":
+
+	case "text", "pg_catalog.varchar":
 		if notNull {
 			return "string"
 		} else {
 			return "sql.NullString"
 		}
+
 	case "uuid":
 		return "uuid.UUID"
+
 	default:
 		for name, schema := range r.Catalog.Schemas {
 			if name != "public" {

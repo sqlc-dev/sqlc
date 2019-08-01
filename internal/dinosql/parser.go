@@ -430,11 +430,12 @@ func outputColumns(c core.Catalog, node nodes.Node) ([]core.Column, error) {
 			}
 
 		case nodes.FuncCall:
+			// TODO: Look up return type of functions
 			name := join(n.Funcname, ".")
 			if res.Name != nil {
 				name = *res.Name
 			}
-			cols = append(cols, core.Column{Name: name, DataType: "integer"})
+			cols = append(cols, core.Column{Name: name, DataType: "bigint"})
 
 		case nodes.TypeCast:
 			if n.TypeName == nil {
@@ -543,7 +544,6 @@ func (p *paramSearch) Visit(node nodes.Node) Visitor {
 		}
 
 		if offset, ok := p.limitOffset.(nodes.ParamRef); ok {
-			spew.Dump(offset)
 			if n.Number == offset.Number {
 				parent = limitOffset{}
 			}

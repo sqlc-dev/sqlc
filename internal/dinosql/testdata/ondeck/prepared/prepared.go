@@ -21,7 +21,7 @@ type City struct {
 }
 
 type Venue struct {
-	ID              int
+	ID              int32
 	Status          Status
 	Slug            string
 	Name            string
@@ -195,9 +195,9 @@ type CreateVenueParams struct {
 	Tags            []string
 }
 
-func (q *Queries) CreateVenue(ctx context.Context, arg CreateVenueParams) (int, error) {
+func (q *Queries) CreateVenue(ctx context.Context, arg CreateVenueParams) (int32, error) {
 	row := q.queryRow(ctx, q.createVenueStmt, createVenue, arg.Slug, arg.Name, arg.City, arg.SpotifyPlaylist, arg.Status, pq.Array(arg.Tags))
-	var id int
+	var id int32
 	err := row.Scan(&id)
 	return id, err
 }
@@ -330,9 +330,9 @@ type UpdateVenueNameParams struct {
 	Name string
 }
 
-func (q *Queries) UpdateVenueName(ctx context.Context, arg UpdateVenueNameParams) (int, error) {
+func (q *Queries) UpdateVenueName(ctx context.Context, arg UpdateVenueNameParams) (int32, error) {
 	row := q.queryRow(ctx, q.updateVenueNameStmt, updateVenueName, arg.Slug, arg.Name)
-	var id int
+	var id int32
 	err := row.Scan(&id)
 	return id, err
 }
@@ -348,7 +348,7 @@ ORDER BY 1
 
 type VenueCountByCityRow struct {
 	City  string
-	Count int
+	Count int64
 }
 
 func (q *Queries) VenueCountByCity(ctx context.Context) ([]VenueCountByCityRow, error) {
