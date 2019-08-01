@@ -388,6 +388,21 @@ func TestQueries(t *testing.T) {
 				},
 			},
 		},
+		{
+			"limit",
+			`
+			CREATE TABLE foo (bar bool not null);
+			SELECT bar FROM foo LIMIT $1;
+			`,
+			Query{
+				Columns: []core.Column{
+					{Name: "bar", DataType: "bool", NotNull: true},
+				},
+				Params: []Parameter{
+					{1, core.Column{Name: "limit", DataType: "integer", NotNull: true}},
+				},
+			},
+		},
 	} {
 		test := tc
 		t.Run(test.name, func(t *testing.T) {
