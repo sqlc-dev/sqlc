@@ -240,7 +240,7 @@ func TestQueries(t *testing.T) {
 			Query{
 				Columns: []core.Column{
 					{Name: "city", DataType: "text", NotNull: true},
-					{Name: "count", DataType: "integer"},
+					{Name: "count", DataType: "bigint"},
 				},
 			},
 		},
@@ -285,8 +285,8 @@ func TestQueries(t *testing.T) {
 			`,
 			Query{
 				Columns: []core.Column{
-					{Name: "count", DataType: "integer", NotNull: false},
-					{Name: "count", DataType: "integer", NotNull: false},
+					{Name: "count", DataType: "bigint", NotNull: false},
+					{Name: "count", DataType: "bigint", NotNull: false},
 				},
 			},
 		},
@@ -305,7 +305,7 @@ func TestQueries(t *testing.T) {
 					{1, core.Column{Name: "ready", DataType: "bool", NotNull: true}},
 				},
 				Columns: []core.Column{
-					{Name: "count", DataType: "integer"},
+					{Name: "count", DataType: "bigint"},
 				},
 			},
 		},

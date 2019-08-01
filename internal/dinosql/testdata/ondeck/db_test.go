@@ -159,14 +159,14 @@ func TestQueries(t *testing.T) {
 	}
 
 	{
-		count, err := q.UpdateVenueName(ctx, UpdateVenueNameParams{
+		id, err := q.UpdateVenueName(ctx, UpdateVenueNameParams{
 			Slug: venue.Slug,
 			Name: "Fillmore",
 		})
 		if err != nil {
 			t.Error(err)
 		}
-		if diff := cmp.Diff(count, 1); diff != "" {
+		if diff := cmp.Diff(id, venue.ID); diff != "" {
 			t.Errorf("update venue mismatch:\n%s", diff)
 		}
 	}
@@ -291,14 +291,14 @@ func TestPrepared(t *testing.T) {
 	}
 
 	{
-		count, err := q.UpdateVenueName(ctx, prepared.UpdateVenueNameParams{
+		id, err := q.UpdateVenueName(ctx, prepared.UpdateVenueNameParams{
 			Slug: venue.Slug,
 			Name: "Fillmore",
 		})
 		if err != nil {
 			t.Error(err)
 		}
-		if diff := cmp.Diff(count, 1); diff != "" {
+		if diff := cmp.Diff(id, venue.ID); diff != "" {
 			t.Errorf("update venue mismatch:\n%s", diff)
 		}
 	}
