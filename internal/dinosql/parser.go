@@ -736,11 +736,12 @@ type TypeOverride struct {
 }
 
 type GenerateSettings struct {
-	SchemaDir           string         `json:"schema"`
-	QueryDir            string         `json:"queries"`
-	Out                 string         `json:"out"`
-	Package             string         `json:"package"`
-	EmitPreparedQueries bool           `json:"emit_prepared_queries"`
-	EmitTags            bool           `json:"emit_tags"`
-	Overrides           []TypeOverride `json:"overrides"`
+	SchemaDir           string            `json:"schema"`
+	QueryDir            string            `json:"queries"`
+	Out                 string            `json:"out"`
+	Package             string            `json:"package"`
+	EmitPreparedQueries bool              `json:"emit_prepared_queries"`
+	EmitTags            bool              `json:"emit_tags"`
+	Overrides           []TypeOverride    `json:"overrides"`
+	Rename              map[string]string `json:"rename"`
 }
