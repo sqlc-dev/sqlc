@@ -22,6 +22,7 @@ DinoSQL generates **fully-type safe idiomatic Go code** from SQL. Here's how it 
 
 Seriously, it's that easy. You don't have to write any boilerplate SQL querying code ever again.
 
+## Preventing Errors
 But DinoSQL doesn't just make you more productive by generating boilerplate for you.
 DinoSQL **also prevents entire classes of common errors in SQL code**. Have you ever:
 
@@ -41,6 +42,7 @@ at compile time.
 Likewise, the methods that DinoSQL generates for you have a stricty arity and correct Go type definitions that match your columns. So if you
 change a query's arguments or a column's type but don't update your code, it will fail to compile.
 
+## Getting Started
 Okay, enough hype, let's see it in action.
 
 First you pass the following SQL to `dinosql generate`:
