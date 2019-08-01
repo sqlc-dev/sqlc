@@ -463,12 +463,37 @@ type paramSearch struct {
 	parent   nodes.Node
 	rangeVar *nodes.RangeVar
 	refs     map[int]paramRef
+
+	// XXX: Gross state hack for limit
+	limitCount  nodes.Node
+	limitOffset nodes.Node
+}
+
+type nodeImpl struct {
+}
+
+func (n nodeImpl) Deparse() string {
+	panic("does not deparse")
+}
+
+func (n nodeImpl) Fingerprint(nodes.FingerprintContext, nodes.Node, string) {
+	panic("does not fingerprint")
+}
+
+type limitCount struct {
+	nodeImpl
+}
+
+type limitOffset struct {
+	nodeImpl
 }
 
 func (p *paramSearch) Visit(node nodes.Node) Visitor {
 	switch n := node.(type) {
+
 	case nodes.A_Expr:
 		p.parent = node
+
 	case nodes.InsertStmt:
 		if s, ok := n.SelectStmt.(nodes.SelectStmt); ok {
 			for i, item := range s.TargetList.Items {
@@ -494,17 +519,41 @@ func (p *paramSearch) Visit(node nodes.Node) Visitor {
 				}
 			}
 		}
+
 	case nodes.RangeVar:
 		p.rangeVar = &n
+
 	case nodes.ResTarget:
 		p.parent = node
+
+	case nodes.SelectStmt:
+		p.limitCount = n.LimitCount
+		p.limitOffset = n.LimitOffset
+
 	case nodes.TypeCast:
 		p.parent = node
+
 	case nodes.ParamRef:
+		parent := p.parent
+
+		if count, ok := p.limitCount.(nodes.ParamRef); ok {
+			if n.Number == count.Number {
+				parent = limitCount{}
+			}
+		}
+
+		if offset, ok := p.limitOffset.(nodes.ParamRef); ok {
+			spew.Dump(offset)
+			if n.Number == offset.Number {
+				parent = limitOffset{}
+			}
+		}
+
 		if _, found := p.refs[n.Number]; !found {
-			p.refs[n.Number] = paramRef{parent: p.parent, ref: n, rv: p.rangeVar}
+			p.refs[n.Number] = paramRef{parent: parent, ref: n, rv: p.rangeVar}
 		}
 		return nil
+
 	}
 	return p
 }
@@ -580,6 +629,27 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 	var a []Parameter
 	for _, ref := range args {
 		switch n := ref.parent.(type) {
+
+		case limitOffset:
+			a = append(a, Parameter{
+				Number: ref.ref.Number,
+				Column: core.Column{
+					Name:     "offset",
+					DataType: "integer",
+					NotNull:  true,
+				},
+			})
+
+		case limitCount:
+			a = append(a, Parameter{
+				Number: ref.ref.Number,
+				Column: core.Column{
+					Name:     "limit",
+					DataType: "integer",
+					NotNull:  true,
+				},
+			})
+
 		case nodes.A_Expr:
 			switch n := n.Lexpr.(type) {
 			case nodes.ColumnRef:
@@ -666,11 +736,12 @@ type TypeOverride struct {
 }
 
 type GenerateSettings struct {
-	SchemaDir           string         `json:"schema"`
-	QueryDir            string         `json:"queries"`
-	Out                 string         `json:"out"`
-	Package             string         `json:"package"`
-	EmitPreparedQueries bool           `json:"emit_prepared_queries"`
-	EmitTags            bool           `json:"emit_tags"`
-	Overrides           []TypeOverride `json:"overrides"`
+	SchemaDir           string            `json:"schema"`
+	QueryDir            string            `json:"queries"`
+	Out                 string            `json:"out"`
+	Package             string            `json:"package"`
+	EmitPreparedQueries bool              `json:"emit_prepared_queries"`
+	EmitTags            bool              `json:"emit_tags"`
+	Overrides           []TypeOverride    `json:"overrides"`
+	Rename              map[string]string `json:"rename"`
 }

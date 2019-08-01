@@ -16,21 +16,6 @@ import (
 	"github.com/jinzhu/inflection"
 )
 
-func structName(name string) string {
-	// if strings.HasSuffix(name, "s") {
-	// 	name = name[:len(name)-1]
-	// }
-	out := ""
-	for _, p := range strings.Split(name, "_") {
-		if p == "id" {
-			out += "ID"
-		} else {
-			out += strings.Title(p)
-		}
-	}
-	return out
-}
-
 type GoConstant struct {
 	Name  string
 	Type  string
@@ -226,7 +211,7 @@ func (r Result) Enums() []GoEnum {
 		}
 		for _, enum := range schema.Enums {
 			e := GoEnum{
-				Name: structName(enum.Name),
+				Name: r.structName(enum.Name),
 			}
 			for _, v := range enum.Vals {
 				name := ""
@@ -248,6 +233,21 @@ func (r Result) Enums() []GoEnum {
 	return enums
 }
 
+func (r Result) structName(name string) string {
+	if rename, _ := r.Settings.Rename[name]; rename != "" {
+		return rename
+	}
+	out := ""
+	for _, p := range strings.Split(name, "_") {
+		if p == "id" {
+			out += "ID"
+		} else {
+			out += strings.Title(p)
+		}
+	}
+	return out
+}
+
 func (r Result) Structs() []GoStruct {
 	var structs []GoStruct
 	for name, schema := range r.Catalog.Schemas {
@@ -256,11 +256,11 @@ func (r Result) Structs() []GoStruct {
 		}
 		for _, table := range schema.Tables {
 			s := GoStruct{
-				Name: inflection.Singular(structName(table.Name)),
+				Name: inflection.Singular(r.structName(table.Name)),
 			}
 			for _, column := range table.Columns {
 				s.Fields = append(s.Fields, GoField{
-					Name: structName(column.Name),
+					Name: r.structName(column.Name),
 					Type: r.goType(column),
 					Tags: map[string]string{"json": column.Name},
 				})
@@ -347,7 +347,7 @@ func (r Result) goInnerType(columnType string, notNull bool) string {
 			}
 			for _, enum := range schema.Enums {
 				if columnType == enum.Name {
-					return structName(enum.Name)
+					return r.structName(enum.Name)
 				}
 			}
 		}
@@ -370,7 +370,7 @@ func (r Result) columnsToStruct(name string, columns []core.Column) *GoStruct {
 	seen := map[string]int{}
 	for i, c := range columns {
 		tagName := c.Name
-		fieldName := structName(columnName(c, i))
+		fieldName := r.structName(columnName(c, i))
 		if v := seen[c.Name]; v > 0 {
 			tagName = fmt.Sprintf("%s_%d", tagName, v+1)
 			fieldName = fmt.Sprintf("%s_%d", fieldName, v+1)
@@ -446,7 +446,7 @@ func (r Result) GoQueries() []GoQuery {
 			}
 			for _, p := range query.Params {
 				val.Struct.Fields = append(val.Struct.Fields, GoField{
-					Name: structName(paramName(p)),
+					Name: r.structName(paramName(p)),
 					Type: r.goType(p.Column),
 					Tags: map[string]string{
 						"json": p.Column.Name,
@@ -473,7 +473,7 @@ func (r Result) GoQueries() []GoQuery {
 				same := true
 				for i, f := range s.Fields {
 					c := query.Columns[i]
-					sameName := f.Name == structName(columnName(c, i))
+					sameName := f.Name == r.structName(columnName(c, i))
 					sameType := f.Type == r.goType(c)
 					if !sameName || !sameType {
 						same = false
