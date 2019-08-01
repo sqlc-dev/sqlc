@@ -362,6 +362,32 @@ func TestQueries(t *testing.T) {
 				},
 			},
 		},
+		{
+			"select text array",
+			`
+			SELECT $1::TEXT[];
+			`,
+			Query{
+				Columns: []core.Column{
+					{Name: "", DataType: "text", IsArray: true, NotNull: true},
+				},
+				Params: []Parameter{
+					{1, core.Column{Name: "", DataType: "text", NotNull: true, IsArray: true}},
+				},
+			},
+		},
+		{
+			"select column cast",
+			`
+			CREATE TABLE foo (bar bool not null);
+			SELECT bar::int FROM foo;
+			`,
+			Query{
+				Columns: []core.Column{
+					{Name: "bar", DataType: "pg_catalog.int4", NotNull: true},
+				},
+			},
+		},
 	} {
 		test := tc
 		t.Run(test.name, func(t *testing.T) {

@@ -379,3 +379,14 @@ func isNotNull(n nodes.ColumnDef) bool {
 	}
 	return false
 }
+
+func ToColumn(n *nodes.TypeName) pg.Column {
+	if n == nil {
+		panic("can't build column for nil type name")
+	}
+	return pg.Column{
+		DataType: join(n.Names, "."),
+		NotNull:  true, // XXX: How do we know if this should be null?
+		IsArray:  isArray(n),
+	}
+}

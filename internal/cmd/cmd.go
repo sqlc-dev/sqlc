@@ -10,19 +10,19 @@ import (
 
 	"github.com/kyleconroy/dinosql/internal/dinosql"
 
+	"github.com/davecgh/go-spew/spew"
+	pg "github.com/lfittl/pg_query_go"
 	"github.com/spf13/cobra"
 )
 
 // Do runs the command logic.
 func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int {
-	rootCmd := &cobra.Command{
-		Use:          "dinosql",
-		SilenceUsage: true,
-	}
-	rootCmd.AddCommand(versionCmd)
-	rootCmd.AddCommand(initCmd)
-	rootCmd.AddCommand(genCmd)
+	rootCmd := &cobra.Command{Use: "dinosql", SilenceUsage: true}
 	rootCmd.AddCommand(checkCmd)
+	rootCmd.AddCommand(genCmd)
+	rootCmd.AddCommand(initCmd)
+	rootCmd.AddCommand(parseCmd)
+	rootCmd.AddCommand(versionCmd)
 
 	rootCmd.SetArgs(args)
 	rootCmd.SetIn(stdin)
@@ -43,7 +43,26 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print the DinoSQL version number",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("v1.0.0")
+		fmt.Println("v0.0.1")
+	},
+}
+
+var parseCmd = &cobra.Command{
+	Use:   "parse",
+	Short: "Parse and print the AST for a SQL file",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		for _, filename := range args {
+			blob, err := ioutil.ReadFile(filename)
+			if err != nil {
+				return err
+			}
+			tree, err := pg.Parse(string(blob))
+			if err != nil {
+				return err
+			}
+			spew.Dump(tree)
+		}
+		return nil
 	},
 }
 

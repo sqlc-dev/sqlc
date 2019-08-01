@@ -1,6 +1,7 @@
 package dinosql
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
@@ -435,6 +436,18 @@ func outputColumns(c core.Catalog, node nodes.Node) ([]core.Column, error) {
 			}
 			cols = append(cols, core.Column{Name: name, DataType: "integer"})
 
+		case nodes.TypeCast:
+			if n.TypeName == nil {
+				return nil, errors.New("no type name type cast")
+			}
+			name := ""
+			if ref, ok := n.Arg.(nodes.ColumnRef); ok {
+				name = join(ref.Fields, "_")
+			}
+			// TODO Validate column names
+			col := catalog.ToColumn(n.TypeName)
+			col.Name = name
+			cols = append(cols, col)
 		}
 	}
 	return cols, nil
@@ -484,6 +497,8 @@ func (p *paramSearch) Visit(node nodes.Node) Visitor {
 	case nodes.RangeVar:
 		p.rangeVar = &n
 	case nodes.ResTarget:
+		p.parent = node
+	case nodes.TypeCast:
 		p.parent = node
 	case nodes.ParamRef:
 		if _, found := p.refs[n.Number]; !found {
@@ -626,6 +641,14 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 					Message: fmt.Sprintf("column \"%s\" does not exist", key),
 				}
 			}
+		case nodes.TypeCast:
+			if n.TypeName == nil {
+				return nil, fmt.Errorf("nodes.TypeCast has nil type name")
+			}
+			a = append(a, Parameter{
+				Number: ref.ref.Number,
+				Column: catalog.ToColumn(n.TypeName),
+			})
 		case nodes.ParamRef:
 			a = append(a, Parameter{Number: ref.ref.Number})
 		default:
