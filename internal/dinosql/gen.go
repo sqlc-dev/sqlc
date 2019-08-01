@@ -368,9 +368,9 @@ func (r Result) columnsToStruct(name string, columns []core.Column) *GoStruct {
 		Name: name,
 	}
 	seen := map[string]int{}
-	for _, c := range columns {
+	for i, c := range columns {
 		tagName := c.Name
-		fieldName := structName(c.Name)
+		fieldName := structName(columnName(c, i))
 		if v := seen[c.Name]; v > 0 {
 			tagName = fmt.Sprintf("%s_%d", tagName, v+1)
 			fieldName = fmt.Sprintf("%s_%d", fieldName, v+1)
@@ -383,6 +383,20 @@ func (r Result) columnsToStruct(name string, columns []core.Column) *GoStruct {
 		seen[c.Name] += 1
 	}
 	return &gs
+}
+
+func paramName(p Parameter) string {
+	if p.Column.Name != "" {
+		return p.Column.Name
+	}
+	return fmt.Sprintf("dollar_%d", p.Number)
+}
+
+func columnName(c core.Column, pos int) string {
+	if c.Name != "" {
+		return c.Name
+	}
+	return fmt.Sprintf("column_%d", pos+1)
 }
 
 func (r Result) GoQueries() []GoQuery {
@@ -419,7 +433,7 @@ func (r Result) GoQueries() []GoQuery {
 		if len(query.Params) == 1 {
 			p := query.Params[0]
 			gq.Arg = GoQueryValue{
-				Name: p.Column.Name,
+				Name: paramName(p),
 				typ:  r.goType(p.Column),
 			}
 		} else if len(query.Params) > 1 {
@@ -432,7 +446,7 @@ func (r Result) GoQueries() []GoQuery {
 			}
 			for _, p := range query.Params {
 				val.Struct.Fields = append(val.Struct.Fields, GoField{
-					Name: structName(p.Column.Name),
+					Name: structName(paramName(p)),
 					Type: r.goType(p.Column),
 					Tags: map[string]string{
 						"json": p.Column.Name,
@@ -445,7 +459,7 @@ func (r Result) GoQueries() []GoQuery {
 		if len(query.Columns) == 1 {
 			c := query.Columns[0]
 			gq.Ret = GoQueryValue{
-				Name: c.Name,
+				Name: columnName(c, 0),
 				typ:  r.goType(c),
 			}
 		} else if len(query.Columns) > 1 {
@@ -459,7 +473,7 @@ func (r Result) GoQueries() []GoQuery {
 				same := true
 				for i, f := range s.Fields {
 					c := query.Columns[i]
-					sameName := f.Name == structName(c.Name)
+					sameName := f.Name == structName(columnName(c, i))
 					sameType := f.Type == r.goType(c)
 					if !sameName || !sameType {
 						same = false
