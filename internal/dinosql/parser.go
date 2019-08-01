@@ -53,7 +53,7 @@ func ParseCatalog(dir string, settings GenerateSettings) (core.Catalog, error) {
 
 func updateCatalog(c *core.Catalog, tree pg.ParsetreeList) error {
 	for _, stmt := range tree.Statements {
-		if err := validateFuncCall(stmt); err != nil {
+		if err := validateFuncCall(c, stmt); err != nil {
 			return err
 		}
 		if err := catalog.Update(c, stmt); err != nil {
@@ -190,7 +190,7 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string) (*Query, error) 
 	default:
 		return nil, nil
 	}
-	if err := validateFuncCall(raw); err != nil {
+	if err := validateFuncCall(&c, raw); err != nil {
 		return nil, err
 	}
 	rawSQL, err := pluckQuery(source, raw)
@@ -430,12 +430,22 @@ func outputColumns(c core.Catalog, node nodes.Node) ([]core.Column, error) {
 			}
 
 		case nodes.FuncCall:
-			// TODO: Look up return type of functions
-			name := join(n.Funcname, ".")
+			fqn, err := catalog.ParseList(n.Funcname)
+			if err != nil {
+				return nil, err
+			}
+
+			name := fqn.Rel
 			if res.Name != nil {
 				name = *res.Name
 			}
-			cols = append(cols, core.Column{Name: name, DataType: "bigint"})
+
+			fun, err := c.LookupFunctionN(fqn, len(n.Args.Items))
+			if err == nil {
+				cols = append(cols, core.Column{Name: name, DataType: fun.ReturnType})
+			} else {
+				cols = append(cols, core.Column{Name: name, DataType: "any"})
+			}
 
 		case nodes.TypeCast:
 			if n.TypeName == nil {

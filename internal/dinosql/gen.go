@@ -336,6 +336,9 @@ func (r Result) goInnerType(columnType string, notNull bool) string {
 	case "uuid":
 		return "uuid.UUID"
 
+	case "any":
+		return "interface{}"
+
 	default:
 		for name, schema := range r.Catalog.Schemas {
 			if name != "public" {

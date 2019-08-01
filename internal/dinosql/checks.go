@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/kyleconroy/dinosql/internal/postgres"
+	"github.com/kyleconroy/dinosql/internal/catalog"
+	"github.com/kyleconroy/dinosql/internal/pg"
 	nodes "github.com/lfittl/pg_query_go/nodes"
 )
 
@@ -47,7 +48,8 @@ func validateParamRef(n nodes.Node) error {
 }
 
 type funcCallVisitor struct {
-	err error
+	catalog *pg.Catalog
+	err     error
 }
 
 func (v *funcCallVisitor) Visit(node nodes.Node) Visitor {
@@ -60,15 +62,23 @@ func (v *funcCallVisitor) Visit(node nodes.Node) Visitor {
 		return v
 	}
 
+	fqn, err := catalog.ParseList(funcCall.Funcname)
+	if err != nil {
+		v.err = err
+		return v
+	}
+
 	// Do not validate unknown functions
-	name := join(funcCall.Funcname, ".")
-	if _, ok := postgres.Functions[name]; !ok {
+	funs, err := v.catalog.LookupFunctions(fqn)
+	if err != nil {
 		return v
 	}
 
 	args := len(funcCall.Args.Items)
-	if _, ok := postgres.Functions[name][args]; ok {
-		return v
+	for _, fun := range funs {
+		if fun.ArgN == args {
+			return v
+		}
 	}
 
 	var sig []string
@@ -78,15 +88,15 @@ func (v *funcCallVisitor) Visit(node nodes.Node) Visitor {
 
 	v.err = Error{
 		Code:    "42883",
-		Message: fmt.Sprintf("function %s(%s) does not exist", name, strings.Join(sig, ", ")),
+		Message: fmt.Sprintf("function %s(%s) does not exist", fqn.Rel, strings.Join(sig, ", ")),
 		Hint:    "No function matches the given name and argument types. You might need to add explicit type casts.",
 	}
 
 	return nil
 }
 
-func validateFuncCall(n nodes.Node) error {
-	visitor := funcCallVisitor{}
+func validateFuncCall(c *pg.Catalog, n nodes.Node) error {
+	visitor := funcCallVisitor{catalog: c}
 	Walk(&visitor, n)
 	return visitor.err
 }
