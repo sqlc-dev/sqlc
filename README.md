@@ -1,8 +1,10 @@
 > 🚨 
 >
-> DinoSQL is **very new** and is under rapid development. The command line
-> interface and generated code will change. There are currently no guarantees
-> around stability or compatibility.
+> DinoSQL is **very new** and under rapid development.
+>
+> The code it generates is correct and safe for production use, but
+> there is currently no garantee of stability or backwards-compatibility of
+> the command line interface, configuration file format or generated code.
 >
 > 🚨 
 
@@ -12,10 +14,38 @@
 > 
 >   "SQL is actually pretty great"
 
-DinoSQL *generates idiomatic Go code from SQL*. Save yourself the pain of
-writing boilerplate `database/sql` code.
+DinoSQL generates **fully-type safe idiomatic Go code** from SQL. Here's how it works:
 
-A quick `dinosql generate` turns the following SQL:
+1. You write SQL queries
+1. You run the DinoSQL tool to generate Go code that presents type-safe interfaces to those queries
+1. You write application code that calls the methods DinoSQL generated.
+
+Seriously, it's that easy. You don't have to write any boilerplate SQL querying code ever again.
+
+## Preventing Errors
+But DinoSQL doesn't just make you more productive by generating boilerplate for you.
+DinoSQL **also prevents entire classes of common errors in SQL code**. Have you ever:
+
+- Mixed up the order of the arguments when invoking the query so they didn't match up with the SQL text
+- Updated the name of a column in one query both not another
+- Mistyped the name of a column in a query
+- Changed the number of arguments in a query but forgot to pass the additional values
+- Changed the type of a column but forgot to change the type in your code?
+
+All of these errors are *impossible* with DinoSQL. Wait, what? How?
+
+DinoSQL parses your all of your queries and the DDL (e.g. `CREATE TABLE`) statements during the code generation processes
+so that it knows the names and types of every column in your tables and every expression in your queries.
+If any of them do not match, DinoSQL *will fail to compile your queries*, preventing entire classes of runtime problems
+at compile time.
+
+Likewise, the methods that DinoSQL generates for you have a stricty arity and correct Go type definitions that match your columns. So if you
+change a query's arguments or a column's type but don't update your code, it will fail to compile.
+
+## Getting Started
+Okay, enough hype, let's see it in action.
+
+First you pass the following SQL to `dinosql generate`:
 
 ```sql
 CREATE TABLE authors (
@@ -45,7 +75,37 @@ DELETE FROM authors
 WHERE id = $1;
 ```
 
-Into Go you'd have to write yourself:
+And then in your application code you'd write:
+
+```go
+
+// list all authors
+authors, err := db.ListAuthors(ctx)
+if err != nil {
+    return err
+}
+fmt.Println(authors)
+
+// create an author
+insertedAuthor, err := db.CreateAuthor(ctx, &db.CreateAuthorParams{
+        Name: "Brian Kernighan",
+        Bio: "Co-author of The C Programming Language and The Go Programming Language",
+})
+if err != nil {
+        return err
+}
+fmt.Println(insertedAuthor)
+
+// get the author we just inserted
+fetchedAuthor, err = db.GetAuthor(ctx, author.ID)
+if err != nil {
+        return err
+}
+// prints true
+fmt.Println(reflect.DeepEqual(insertedAuthor, fetchedAuthor))
+```
+
+To make that possible, DinoSQL generates readable, **idiomatic** Go code that you otherwise would have had to write yourself. Take a look:
 
 ```go
 package db
@@ -154,11 +214,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 }
 ```
 
-## Limitations
-
-DinoSQL currently only supports PostgreSQL. There are no plans to add support
-for other databases.
-
 ## Examples
 
 Your favorite PostgreSQL / Go features are supported:
@@ -238,6 +293,14 @@ in the directory where the `dinosql` command is run.
 ## Downloads
 
 - [macOS](https://github.com/kyleconroy/dinosql/releases/download/v0.0.0-devel/dinosql.zip)
+
+## Other Database Engines
+
+DinoSQL currently only supports PostgreSQL. If you'd like to support another database, we'd welcome a contribution.
+
+## Other Language Backends
+
+DinoSQL currently only generates Go code, but if you'd like to build another language backend, we'd welcome a contribution.
 
 ## Acknowledgements
 
