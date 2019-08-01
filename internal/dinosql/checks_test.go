@@ -53,7 +53,7 @@ func TestParserErrors(t *testing.T) {
 			"SELECT position()",
 			Error{
 				Code:    "42883",
-				Message: "function pg_catalog.position() does not exist",
+				Message: "function position() does not exist",
 				Hint:    "No function matches the given name and argument types. You might need to add explicit type casts.",
 			},
 		},

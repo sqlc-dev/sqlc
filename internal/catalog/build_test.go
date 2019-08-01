@@ -333,6 +333,10 @@ func TestUpdate(t *testing.T) {
 				t.Log(test.stmt)
 				t.Fatal(err)
 			}
+
+			delete(c.Schemas, "pg_catalog")
+			delete(test.c.Schemas, "pg_catalog")
+
 			if diff := cmp.Diff(test.c, c, cmpopts.EquateEmpty()); diff != "" {
 				t.Log(test.stmt)
 				t.Errorf("catalog mismatch:\n%s", diff)
