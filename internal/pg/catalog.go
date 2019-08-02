@@ -13,6 +13,7 @@ func NewSchema() Schema {
 	return Schema{
 		Tables: map[string]Table{},
 		Enums:  map[string]Enum{},
+		Funcs:  map[string][]Function{},
 	}
 }
 
@@ -42,11 +43,7 @@ func (c Catalog) LookupFunctions(fqn FQN) ([]Function, error) {
 	var funs []Function
 	for _, s := range schemas {
 		// TODO: Efficient function search
-		for _, fun := range s.Funcs {
-			if fun.Name == fqn.Rel {
-				funs = append(funs, fun)
-			}
-		}
+		funs = append(funs, s.Funcs[fqn.Rel]...)
 	}
 
 	if len(funs) == 0 {
@@ -73,7 +70,7 @@ type Schema struct {
 	Name   string
 	Tables map[string]Table
 	Enums  map[string]Enum
-	Funcs  []Function
+	Funcs  map[string][]Function
 }
 
 type Table struct {

@@ -325,6 +325,32 @@ func TestUpdate(t *testing.T) {
 				},
 			},
 		},
+		{
+			`
+			CREATE FUNCTION foo(bar TEXT) RETURNS bool AS $$ SELECT true $$ LANGUAGE sql;
+			CREATE FUNCTION foo(bar TEXT, baz TEXT) RETURNS TEXT AS $$ SELECT "baz" $$ LANGUAGE sql;
+			`,
+			pg.Catalog{
+				Schemas: map[string]pg.Schema{
+					"public": {
+						Funcs: map[string][]pg.Function{
+							"foo": []pg.Function{
+								{
+									Name:       "foo",
+									ArgN:       1,
+									ReturnType: "bool",
+								},
+								{
+									Name:       "foo",
+									ArgN:       2,
+									ReturnType: "text",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	} {
 		test := tc
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
