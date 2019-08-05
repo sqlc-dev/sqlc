@@ -139,7 +139,7 @@ func TestCompile(t *testing.T) {
 		t.Run(f, func(t *testing.T) {
 			output, err := exec.Command("go", "build", f).CombinedOutput()
 			if err != nil {
-				t.Errorf("%s: %s:", err, string(output))
+				t.Errorf("%s: %s", err, string(output))
 			}
 		})
 	}

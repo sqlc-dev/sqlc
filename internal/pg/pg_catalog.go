@@ -11,7 +11,7 @@ func argN(name string, n int) Function {
 func pgCatalog() Schema {
 	s := NewSchema()
 	s.Name = "pg_catalog"
-	s.Funcs = []Function{
+	fs := []Function{
 
 		// Table 9.5. Mathematical Functions
 		// https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE
@@ -75,6 +75,10 @@ func pgCatalog() Schema {
 			ArgN:       1,
 			ReturnType: "bool",
 		},
+	}
+	s.Funcs = make(map[string][]Function, len(fs))
+	for _, f := range fs {
+		s.Funcs[f.Name] = append(s.Funcs[f.Name], f)
 	}
 	return s
 }
