@@ -10,9 +10,13 @@ import (
 )
 
 func TestFuncs(t *testing.T) {
-	_, err := ParseQueries(pg.NewCatalog(), GenerateSettings{
-		QueryDir: filepath.Join("testdata", "funcs"),
-	})
+	_, err := ParseQueries(
+		pg.NewCatalog(),
+		GenerateSettings{},
+		PackageSettings{
+			QueryDir: filepath.Join("testdata", "funcs"),
+		},
+	)
 	if err != nil {
 		t.Fatal(err)
 	}

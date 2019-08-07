@@ -137,6 +137,7 @@ type GoQuery struct {
 	FieldName    string
 	ConstantName string
 	SQL          string
+	SourceName   string
 	Ret          GoQueryValue
 	Arg          GoQueryValue
 }
@@ -144,7 +145,7 @@ type GoQuery struct {
 func (r Result) UsesType(typ string) bool {
 	for _, strct := range r.Structs() {
 		for _, f := range strct.Fields {
-			if f.Type == typ {
+			if strings.HasPrefix(f.Type, typ) {
 				return true
 			}
 		}
@@ -163,44 +164,166 @@ func (r Result) UsesArrays() bool {
 	return false
 }
 
-func (r Result) StdImports() []string {
-	imports := []string{
-		"context",
-		"database/sql",
+func (r Result) Imports(filename string) [][]string {
+	if filename == "db.go" {
+		return [][]string{
+			[]string{"context", "database/sql"},
+		}
 	}
-	if r.UsesType("json.RawMessage") {
-		imports = append(imports, "encoding/json")
+
+	if filename == "models.go" {
+		return r.ModelImports()
 	}
-	if r.UsesType("time.Time") {
-		imports = append(imports, "time")
-	}
-	return imports
+
+	return r.QueryImports(filename)
 }
 
-func (r Result) PkgImports(settings GenerateSettings) []string {
-	imports := []string{}
+func (r Result) ModelImports() [][]string {
 
-	if r.UsesType("pq.NullTime") {
-		imports = append(imports, "github.com/lib/pq")
+	var std []string
+	if r.UsesType("sql.Null") {
+		std = append(std, "database/sql")
 	}
-	if r.UsesArrays() {
-		imports = append(imports, "github.com/lib/pq")
+	if r.UsesType("json.RawMessage") {
+		std = append(std, "encoding/json")
+	}
+	if r.UsesType("time.Time") {
+		std = append(std, "time")
+	}
+
+	var pkg []string
+	if r.UsesType("pq.NullTime") {
+		pkg = append(pkg, "github.com/lib/pq")
 	}
 	if r.UsesType("uuid.UUID") {
-		imports = append(imports, "github.com/google/uuid")
+		pkg = append(pkg, "github.com/google/uuid")
 	}
 
 	// Custom imports
 	overrideTypes := map[string]string{}
-	for _, o := range settings.Overrides {
+	for _, o := range r.Settings.Overrides {
 		overrideTypes[o.GoType] = o.Package
 	}
 	for goType, importPath := range overrideTypes {
 		if r.UsesType(goType) {
-			imports = append(imports, importPath)
+			pkg = append(pkg, importPath)
 		}
 	}
-	return imports
+
+	return [][]string{std, pkg}
+}
+
+func (r Result) QueryImports(filename string) [][]string {
+	// for _, strct := range r.Structs() {
+	// 	for _, f := range strct.Fields {
+	// 		if strings.HasPrefix(f.Type, "[]") {
+	// 			return true
+	// 		}
+	// 	}
+	// }
+	var gq []GoQuery
+	for _, query := range r.GoQueries() {
+		if query.SourceName == filename {
+			gq = append(gq, query)
+		}
+	}
+
+	uses := func(name string) bool {
+		for _, q := range gq {
+			if !q.Ret.isEmpty() {
+				if q.Ret.EmitStruct() {
+					for _, f := range q.Ret.Struct.Fields {
+						if strings.HasPrefix(f.Type, name) {
+							return true
+						}
+					}
+				}
+				if strings.HasPrefix(q.Ret.Type(), name) {
+					return true
+				}
+			}
+			if !q.Arg.isEmpty() {
+				if q.Arg.EmitStruct() {
+					for _, f := range q.Arg.Struct.Fields {
+						if strings.HasPrefix(f.Type, name) {
+							return true
+						}
+					}
+				}
+				if strings.HasPrefix(q.Arg.Type(), name) {
+					return true
+				}
+			}
+		}
+		return false
+	}
+
+	sliceScan := func() bool {
+		for _, q := range gq {
+			if !q.Ret.isEmpty() {
+				if q.Ret.IsStruct() {
+					for _, f := range q.Ret.Struct.Fields {
+						if strings.HasPrefix(f.Type, "[]") {
+							return true
+						}
+					}
+				} else {
+					if strings.HasPrefix(q.Ret.Type(), "[]") {
+						return true
+					}
+				}
+			}
+			if !q.Arg.isEmpty() {
+				if q.Arg.IsStruct() {
+					for _, f := range q.Arg.Struct.Fields {
+						if strings.HasPrefix(f.Type, "[]") {
+							return true
+						}
+					}
+				} else {
+					if strings.HasPrefix(q.Arg.Type(), "[]") {
+						return true
+					}
+				}
+			}
+		}
+		return false
+	}
+
+	std := []string{"context"}
+	if uses("sql.Null") {
+		std = append(std, "database/sql")
+	}
+	if uses("json.RawMessage") {
+		std = append(std, "encoding/json")
+	}
+	if uses("time.Time") {
+		std = append(std, "time")
+	}
+
+	var pkg []string
+	if sliceScan() {
+		pkg = append(pkg, "github.com/lib/pq")
+	}
+	if uses("pq.NullTime") {
+		pkg = append(pkg, "github.com/lib/pq")
+	}
+	if uses("uuid.UUID") {
+		pkg = append(pkg, "github.com/google/uuid")
+	}
+
+	// Custom imports
+	overrideTypes := map[string]string{}
+	for _, o := range r.Settings.Overrides {
+		overrideTypes[o.GoType] = o.Package
+	}
+	for goType, importPath := range overrideTypes {
+		if uses(goType) {
+			pkg = append(pkg, importPath)
+		}
+	}
+
+	return [][]string{std, pkg}
 }
 
 func (r Result) Enums() []GoEnum {
@@ -426,6 +549,7 @@ func (r Result) GoQueries() []GoQuery {
 			ConstantName: lowerTitle(query.Name),
 			FieldName:    lowerTitle(query.Name) + "Stmt",
 			MethodName:   query.Name,
+			SourceName:   query.Filename,
 			SQL:          code,
 		}
 
@@ -501,33 +625,13 @@ func (r Result) GoQueries() []GoQuery {
 	return qs
 }
 
-var hh = `package {{.Package}}
+var dbTmpl = `package {{.Package}}
 import (
-	{{- range .StdImports}}
-	"{{.}}"
-	{{- end}}
-
-	{{range .PkgImports}}
-	"{{.}}"
-	{{- end}}
+	{{range imports .SourceName}}
+	{{range .}}"{{.}}"
+	{{end}}
+	{{end}}
 )
-
-{{range .Enums}}
-type {{.Name}} string
-
-const (
-	{{- range .Constants}}
-	{{.Name}} {{.Type}} = "{{.Value}}"
-	{{- end}}
-)
-{{end}}
-
-{{range .Structs}}
-type {{.Name}} struct { {{- range .Fields}}
-  {{.Name}} {{.Type}} {{if $.EmitJSONTags}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
-  {{- end}}
-}
-{{end}}
 
 type dbtx interface {
 	ExecContext(context.Context, string, ...interface{}) (sql.Result, error)
@@ -607,8 +711,43 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		{{- end}}
 	}
 }
+`
+var modelsTmpl = `package {{.Package}}
+import (
+	{{range imports .SourceName}}
+	{{range .}}"{{.}}"
+	{{end}}
+	{{end}}
+)
+
+{{range .Enums}}
+type {{.Name}} string
+
+const (
+	{{- range .Constants}}
+	{{.Name}} {{.Type}} = "{{.Value}}"
+	{{- end}}
+)
+{{end}}
+
+{{range .Structs}}
+type {{.Name}} struct { {{- range .Fields}}
+  {{.Name}} {{.Type}} {{if $.EmitJSONTags}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
+  {{- end}}
+}
+{{end}}
+`
+
+var sqlTmpl = `package {{.Package}}
+import (
+	{{range imports .SourceName}}
+	{{range .}}"{{.}}"
+	{{end}}
+	{{end}}
+)
 
 {{range .GoQueries}}
+{{if eq .SourceName $.SourceName}}
 const {{.ConstantName}} = {{$.Q}}{{.SQL}}
 {{$.Q}}
 
@@ -693,16 +832,19 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, er
 }
 {{end}}
 {{end}}
+{{end}}
 `
 
 type tmplCtx struct {
-	Q          string
-	Package    string
-	PkgImports []string
-	StdImports []string
-	Enums      []GoEnum
-	Structs    []GoStruct
-	GoQueries  []GoQuery
+	Q         string
+	Package   string
+	Enums     []GoEnum
+	Structs   []GoStruct
+	GoQueries []GoQuery
+	Settings  GenerateSettings
+
+	// TODO: Race conditions
+	SourceName string
 
 	EmitJSONTags        bool
 	EmitPreparedQueries bool
@@ -714,38 +856,71 @@ func lowerTitle(s string) string {
 	return string(a)
 }
 
-func Generate(r *Result, settings GenerateSettings) (string, error) {
+func Generate(r *Result, global GenerateSettings, settings PackageSettings) (map[string]string, error) {
 	funcMap := template.FuncMap{
 		"lowerTitle": lowerTitle,
+		"imports":    r.Imports,
 	}
 
-	pkg := "db"
-	if settings.Package != "" {
-		pkg = settings.Package
+	pkg := settings.Name
+	if pkg == "" {
+		return nil, fmt.Errorf("package must have a name")
 	}
 
-	fileTmpl := template.Must(template.New("table").Funcs(funcMap).Parse(hh))
-	var b bytes.Buffer
-	w := bufio.NewWriter(&b)
-	err := fileTmpl.Execute(w, tmplCtx{
+	dbFile := template.Must(template.New("table").Funcs(funcMap).Parse(dbTmpl))
+	modelsFile := template.Must(template.New("table").Funcs(funcMap).Parse(modelsTmpl))
+	sqlFile := template.Must(template.New("table").Funcs(funcMap).Parse(sqlTmpl))
+
+	tctx := tmplCtx{
+		Settings:            global,
 		EmitPreparedQueries: settings.EmitPreparedQueries,
 		EmitJSONTags:        settings.EmitTags,
 		Q:                   "`",
-		GoQueries:           r.GoQueries(),
 		Package:             pkg,
+		GoQueries:           r.GoQueries(),
 		Enums:               r.Enums(),
 		Structs:             r.Structs(),
-		StdImports:          r.StdImports(),
-		PkgImports:          r.PkgImports(settings),
-	})
-	w.Flush()
-	if err != nil {
-		return "", err
 	}
-	code, err := format.Source(b.Bytes())
-	if err != nil {
-		fmt.Println(b.String())
-		panic(fmt.Errorf("source error: %s", err))
+
+	output := map[string]string{}
+
+	execute := func(name string, t *template.Template) error {
+		var b bytes.Buffer
+		w := bufio.NewWriter(&b)
+		tctx.SourceName = name
+		err := t.Execute(w, tctx)
+		w.Flush()
+		if err != nil {
+			return err
+		}
+		code, err := format.Source(b.Bytes())
+		if err != nil {
+			fmt.Println(b.String())
+			return fmt.Errorf("source error: %s", err)
+		}
+		if !strings.HasSuffix(name, ".go") {
+			name += ".go"
+		}
+		output[name] = string(code)
+		return nil
 	}
-	return string(code), nil
+
+	if err := execute("db.go", dbFile); err != nil {
+		return nil, err
+	}
+	if err := execute("models.go", modelsFile); err != nil {
+		return nil, err
+	}
+
+	files := map[string]struct{}{}
+	for _, gq := range r.GoQueries() {
+		files[gq.SourceName] = struct{}{}
+	}
+
+	for source, _ := range files {
+		if err := execute(source, sqlFile); err != nil {
+			return nil, err
+		}
+	}
+	return output, nil
 }

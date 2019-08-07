@@ -268,23 +268,28 @@ in the directory where the `dinosql` command is run.
 
 ```json
 {
-  "package": "db",
-  "emit_json_tags": true,
-  "emit_prepared_queries": false,
-  "out": "internal/db/db.go",
-  "queries": "./sql/query/",
-  "schema": "./sql/schema/"
+  "packages": [
+    {
+      "name": "db",
+      "emit_json_tags": true,
+      "emit_prepared_queries": false,
+      "path": "internal/db",
+      "queries": "./sql/query/",
+      "schema": "./sql/schema/"
+    }
+  ]
 }
 ```
 
-- `package`:
+Each package document has the following keys:
+- `name`:
   - The package name to use for the generated code
 - `emit_json_tags`:
   - If true, add JSON tags to generated structs. Defaults to `false`.
 - `emit_prepared_queries`:
   - If true, include support for prepared queries. Defaults to `false`.
-- `out`:
-  - Filename for generated code
+- `path`:
+  - Output directory for generated code
 - `queries`:
   - Directory of SQL queries stored in `.sql` files
 - `schema`:
