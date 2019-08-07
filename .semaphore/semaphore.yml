@@ -6,6 +6,7 @@ agent:
   machine:
     type: e1-standard-2
     os_image: ubuntu1804
+
 blocks:
   - name: DinoSQL / Linux
     dependencies: []
@@ -38,3 +39,9 @@ blocks:
             - checkout
             - brew install go@1.12
             - go test -v ./...
+
+promotions:
+  - name: Deploy HEAD
+    pipeline_file: equinox.yml
+    auto_promote_on:
+      - result: passed
