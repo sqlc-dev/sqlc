@@ -99,6 +99,7 @@ type Query struct {
 
 	// XXX: Hack
 	NeedsEdit bool
+	Filename  string
 }
 
 type Result struct {
@@ -131,12 +132,13 @@ func ParseQueries(c core.Catalog, settings GenerateSettings, pkg PackageSettings
 			return nil, err
 		}
 		for _, stmt := range tree.Statements {
-			queryTwo, err := parseQuery(c, stmt, source)
+			query, err := parseQuery(c, stmt, source)
 			if err != nil {
 				return nil, err
 			}
-			if queryTwo != nil {
-				q = append(q, queryTwo)
+			query.Filename = f.Name()
+			if query != nil {
+				q = append(q, query)
 			}
 		}
 	}
