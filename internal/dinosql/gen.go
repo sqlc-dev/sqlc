@@ -230,16 +230,58 @@ func (r Result) QueryImports(filename string) [][]string {
 
 	uses := func(name string) bool {
 		for _, q := range gq {
-			if q.Ret.EmitStruct() {
-				for _, f := range q.Ret.Struct.Fields {
-					if strings.HasPrefix(f.Type, name) {
+			if !q.Ret.isEmpty() {
+				if q.Ret.EmitStruct() {
+					for _, f := range q.Ret.Struct.Fields {
+						if strings.HasPrefix(f.Type, name) {
+							return true
+						}
+					}
+				}
+				if strings.HasPrefix(q.Ret.Type(), name) {
+					return true
+				}
+			}
+			if !q.Arg.isEmpty() {
+				if q.Arg.EmitStruct() {
+					for _, f := range q.Arg.Struct.Fields {
+						if strings.HasPrefix(f.Type, name) {
+							return true
+						}
+					}
+				}
+				if strings.HasPrefix(q.Arg.Type(), name) {
+					return true
+				}
+			}
+		}
+		return false
+	}
+
+	sliceScan := func() bool {
+		for _, q := range gq {
+			if !q.Ret.isEmpty() {
+				if q.Ret.IsStruct() {
+					for _, f := range q.Ret.Struct.Fields {
+						if strings.HasPrefix(f.Type, "[]") {
+							return true
+						}
+					}
+				} else {
+					if strings.HasPrefix(q.Ret.Type(), "[]") {
 						return true
 					}
 				}
 			}
-			if q.Arg.EmitStruct() {
-				for _, f := range q.Arg.Struct.Fields {
-					if strings.HasPrefix(f.Type, name) {
+			if !q.Arg.isEmpty() {
+				if q.Arg.IsStruct() {
+					for _, f := range q.Arg.Struct.Fields {
+						if strings.HasPrefix(f.Type, "[]") {
+							return true
+						}
+					}
+				} else {
+					if strings.HasPrefix(q.Arg.Type(), "[]") {
 						return true
 					}
 				}
@@ -260,7 +302,7 @@ func (r Result) QueryImports(filename string) [][]string {
 	}
 
 	var pkg []string
-	if uses("[]") {
+	if sliceScan() {
 		pkg = append(pkg, "github.com/lib/pq")
 	}
 	if uses("pq.NullTime") {
