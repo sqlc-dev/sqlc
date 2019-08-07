@@ -36,5 +36,5 @@ blocks:
         - name: Test dinosql
           commands:
             - checkout
-            - sem-version go 1.12
+            - brew install go@1.12
             - go test -v ./...
