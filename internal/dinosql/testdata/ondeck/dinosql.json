@@ -1,6 +1,17 @@
 {
-  "package": "ondeck",
-  "out": "db.go",
-  "queries": "./query",
-  "schema": "./schema"
+  "packages": [
+    {
+      "name": "ondeck",
+      "path": ".",
+      "schema": "./schema",
+      "queries": "./query"
+    },
+    {
+      "name": "prepared",
+      "path": "prepared",
+      "schema": "./schema",
+      "queries": "./query",
+      "emit_prepared_queries": true
+    }
+  ]
 }
