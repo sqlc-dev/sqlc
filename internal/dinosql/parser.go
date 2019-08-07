@@ -22,7 +22,7 @@ func keepSpew() {
 	spew.Dump("hello world")
 }
 
-func ParseCatalog(dir string, settings GenerateSettings) (core.Catalog, error) {
+func ParseCatalog(dir string) (core.Catalog, error) {
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
 		return core.Catalog{}, err
@@ -107,8 +107,8 @@ type Result struct {
 	Catalog  core.Catalog
 }
 
-func ParseQueries(c core.Catalog, settings GenerateSettings) (*Result, error) {
-	files, err := ioutil.ReadDir(settings.QueryDir)
+func ParseQueries(c core.Catalog, settings GenerateSettings, pkg PackageSettings) (*Result, error) {
+	files, err := ioutil.ReadDir(pkg.QueryDir)
 	if err != nil {
 		return nil, err
 	}
@@ -121,7 +121,7 @@ func ParseQueries(c core.Catalog, settings GenerateSettings) (*Result, error) {
 		if strings.HasPrefix(f.Name(), ".") {
 			continue
 		}
-		blob, err := ioutil.ReadFile(filepath.Join(settings.QueryDir, f.Name()))
+		blob, err := ioutil.ReadFile(filepath.Join(pkg.QueryDir, f.Name()))
 		if err != nil {
 			return nil, err
 		}
@@ -745,13 +745,17 @@ type TypeOverride struct {
 	Null         bool   `json:"null"`
 }
 
+type PackageSettings struct {
+	Name                string `json:"name"`
+	Path                string `json:"path"`
+	MigrationDir        string `json:"migrations"`
+	QueryDir            string `json:"queries"`
+	EmitPreparedQueries bool   `json:"emit_prepared_queries"`
+	EmitTags            bool   `json:"emit_tags"`
+}
+
 type GenerateSettings struct {
-	SchemaDir           string            `json:"schema"`
-	QueryDir            string            `json:"queries"`
-	Out                 string            `json:"out"`
-	Package             string            `json:"package"`
-	EmitPreparedQueries bool              `json:"emit_prepared_queries"`
-	EmitTags            bool              `json:"emit_tags"`
-	Overrides           []TypeOverride    `json:"overrides"`
-	Rename              map[string]string `json:"rename"`
+	Packages  []PackageSettings `json:"packages"`
+	Overrides []TypeOverride    `json:"overrides"`
+	Rename    map[string]string `json:"rename"`
 }

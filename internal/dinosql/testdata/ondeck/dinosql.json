@@ -1,6 +1,8 @@
 {
-  "package": "ondeck",
-  "out": "db.go",
-  "queries": "./query",
-  "schema": "./schema"
+  "packages": [{
+    "name": "ondeck",
+    "path": "db.go",
+    "migrations": "./schema",
+    "queries": "./query"
+  }]
 }

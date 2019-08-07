@@ -714,14 +714,14 @@ func lowerTitle(s string) string {
 	return string(a)
 }
 
-func Generate(r *Result, settings GenerateSettings) (string, error) {
+func Generate(r *Result, global GenerateSettings, settings PackageSettings) (string, error) {
 	funcMap := template.FuncMap{
 		"lowerTitle": lowerTitle,
 	}
 
 	pkg := "db"
-	if settings.Package != "" {
-		pkg = settings.Package
+	if settings.Name != "" {
+		pkg = settings.Name
 	}
 
 	fileTmpl := template.Must(template.New("table").Funcs(funcMap).Parse(hh))
@@ -736,7 +736,7 @@ func Generate(r *Result, settings GenerateSettings) (string, error) {
 		Enums:               r.Enums(),
 		Structs:             r.Structs(),
 		StdImports:          r.StdImports(),
-		PkgImports:          r.PkgImports(settings),
+		PkgImports:          r.PkgImports(global),
 	})
 	w.Flush()
 	if err != nil {
