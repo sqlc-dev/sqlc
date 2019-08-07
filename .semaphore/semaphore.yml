@@ -2,13 +2,13 @@
 # https://docs.semaphoreci.com/article/86-language-golang
 version: v1.0
 name: DinoSQL
+agent:
+  machine:
+    type: e1-standard-2
+    os_image: ubuntu1804
 blocks:
   - name: DinoSQL / Linux
     task:
-      agent:
-        machine:
-          type: e1-standard-2
-          os_image: ubuntu1804
       jobs:
         - name: Test dinosql
           commands:
