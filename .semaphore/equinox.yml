@@ -1,0 +1,15 @@
+# .semaphore/production-deploy.yml
+version: v1.0
+name: Deploy to Equinox
+agent:
+  machine:
+    type: e1-standard-2
+    os_image: ubuntu1804
+
+blocks:
+  - name: Deploy
+    task:
+      jobs:
+        - name: 'Everything'
+          commands:
+            - echo 'Deploying to production!'
