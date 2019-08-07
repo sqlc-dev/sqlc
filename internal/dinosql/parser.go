@@ -750,7 +750,7 @@ type TypeOverride struct {
 type PackageSettings struct {
 	Name                string `json:"name"`
 	Path                string `json:"path"`
-	MigrationDir        string `json:"migrations"`
+	MigrationDir        string `json:"schema"`
 	QueryDir            string `json:"queries"`
 	EmitPreparedQueries bool   `json:"emit_prepared_queries"`
 	EmitTags            bool   `json:"emit_tags"`
