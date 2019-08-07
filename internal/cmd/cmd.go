@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path/filepath"
 
 	"github.com/kyleconroy/dinosql/internal/dinosql"
 
@@ -95,22 +96,30 @@ var genCmd = &cobra.Command{
 			return err
 		}
 
-		c, err := dinosql.ParseCatalog(settings.SchemaDir, settings)
-		if err != nil {
-			return err
+		for _, pkg := range settings.Packages {
+			c, err := dinosql.ParseCatalog(pkg.MigrationDir)
+			if err != nil {
+				return err
+			}
+
+			q, err := dinosql.ParseQueries(c, settings, pkg)
+			if err != nil {
+				return err
+			}
+
+			files, err := dinosql.Generate(q, settings, pkg)
+			if err != nil {
+				return err
+			}
+			for name, source := range files {
+				filename := filepath.Join(pkg.Path, name)
+				if err := ioutil.WriteFile(filename, []byte(source), 0644); err != nil {
+					return err
+				}
+			}
 		}
 
-		q, err := dinosql.ParseQueries(c, settings)
-		if err != nil {
-			return err
-		}
-
-		source, err := dinosql.Generate(q, settings)
-		if err != nil {
-			return err
-		}
-
-		return ioutil.WriteFile(settings.Out, []byte(source), 0644)
+		return nil
 	},
 }
 
@@ -128,12 +137,15 @@ var checkCmd = &cobra.Command{
 			return err
 		}
 
-		c, err := dinosql.ParseCatalog(settings.SchemaDir, settings)
-		if err != nil {
-			return err
+		for _, pkg := range settings.Packages {
+			c, err := dinosql.ParseCatalog(pkg.MigrationDir)
+			if err != nil {
+				return err
+			}
+			if _, err := dinosql.ParseQueries(c, settings, pkg); err != nil {
+				return err
+			}
 		}
-
-		_, err = dinosql.ParseQueries(c, settings)
-		return err
+		return nil
 	},
 }

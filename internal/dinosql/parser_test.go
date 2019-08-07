@@ -2,9 +2,9 @@ package dinosql
 
 import (
 	"io/ioutil"
-	"log"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -76,13 +76,54 @@ func TestExtractArgs(t *testing.T) {
 	}
 }
 
-func TestParseSchema(t *testing.T) {
-	c, err := ParseCatalog(filepath.Join("testdata", "ondeck", "schema"), GenerateSettings{})
+func cmpDirectory(t *testing.T, dir string, actual map[string]string) {
+	t.Helper()
+
+	files, err := ioutil.ReadDir(dir)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	q, err := ParseQueries(c, GenerateSettings{
+	expected := map[string]string{}
+
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+		if !strings.HasSuffix(file.Name(), ".go") {
+			continue
+		}
+		if strings.HasSuffix(file.Name(), "_test.go") {
+			continue
+		}
+		blob, err := ioutil.ReadFile(filepath.Join(dir, file.Name()))
+		if err != nil {
+			t.Fatal(err)
+		}
+		expected[file.Name()] = string(blob)
+	}
+
+	if !cmp.Equal(expected, actual) {
+		t.Errorf("%s contents differ", dir)
+		for name, contents := range expected {
+			if actual[name] == "" {
+				t.Errorf("%s is empty", name)
+				continue
+			}
+			if diff := cmp.Diff(contents, actual[name]); diff != "" {
+				t.Errorf("%s differed (-want +got):\n%s", name, diff)
+			}
+		}
+	}
+}
+
+func TestParseSchema(t *testing.T) {
+	c, err := ParseCatalog(filepath.Join("testdata", "ondeck", "schema"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	q, err := ParseQueries(c, GenerateSettings{}, PackageSettings{
 		QueryDir: filepath.Join("testdata", "ondeck", "query"),
 	})
 	if err != nil {
@@ -90,57 +131,34 @@ func TestParseSchema(t *testing.T) {
 	}
 
 	t.Run("default", func(t *testing.T) {
-		source, err := Generate(q, GenerateSettings{
-			Package: "ondeck",
+		output, err := Generate(q, GenerateSettings{}, PackageSettings{
+			Name: "ondeck",
 		})
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		blob, err := ioutil.ReadFile(filepath.Join("testdata", "ondeck", "db.go"))
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		if diff := cmp.Diff(source, string(blob)); diff != "" {
-			t.Errorf("genreated code differed (-want +got):\n%s", diff)
-			t.Log(source)
-		}
+		cmpDirectory(t, filepath.Join("testdata", "ondeck"), output)
 	})
 
 	t.Run("prepared", func(t *testing.T) {
-		source, err := Generate(q, GenerateSettings{
-			Package:             "prepared",
+		output, err := Generate(q, GenerateSettings{}, PackageSettings{
+			Name:                "prepared",
 			EmitPreparedQueries: true,
 		})
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		blob, err := ioutil.ReadFile(filepath.Join("testdata", "ondeck", "prepared", "prepared.go"))
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		if diff := cmp.Diff(source, string(blob)); diff != "" {
-			t.Errorf("genreated code differed (-want +got):\n%s", diff)
-			t.Log(source)
-		}
+		cmpDirectory(t, filepath.Join("testdata", "ondeck", "prepared"), output)
 	})
 }
 
 func TestCompile(t *testing.T) {
-	files := []string{
-		filepath.Join("testdata", "ondeck", "db.go"),
-		filepath.Join("testdata", "ondeck", "prepared", "prepared.go"),
-	}
-	for _, filename := range files {
-		f := filename
-		t.Run(f, func(t *testing.T) {
-			output, err := exec.Command("go", "build", f).CombinedOutput()
-			if err != nil {
-				t.Errorf("%s: %s", err, string(output))
-			}
-		})
+	cmd := exec.Command("go", "build", "-mod", "readonly", "./...")
+	cmd.Dir = filepath.Join("testdata", "ondeck")
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Errorf("%s: %s", err, string(output))
 	}
 }
