@@ -8,6 +8,7 @@ agent:
     os_image: ubuntu1804
 blocks:
   - name: DinoSQL / Linux
+    dependencies: []
     task:
       jobs:
         - name: Test dinosql
@@ -25,6 +26,7 @@ blocks:
             - cd internal/dinosql/testdata/ondeck
             - go test -v ./...
   - name: DinoSQL / macOS
+    dependencies: []
     task:
       agent:
         machine:
