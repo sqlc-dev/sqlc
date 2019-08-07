@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path/filepath"
 
 	"github.com/kyleconroy/dinosql/internal/dinosql"
 
@@ -106,12 +107,15 @@ var genCmd = &cobra.Command{
 				return err
 			}
 
-			source, err := dinosql.Generate(q, settings, pkg)
+			files, err := dinosql.Generate(q, settings, pkg)
 			if err != nil {
 				return err
 			}
-			if err := ioutil.WriteFile(pkg.Path, []byte(source), 0644); err != nil {
-				return err
+			for name, source := range files {
+				filename := filepath.Join(pkg.Path, name)
+				if err := ioutil.WriteFile(filename, []byte(source), 0644); err != nil {
+					return err
+				}
 			}
 		}
 

@@ -714,7 +714,7 @@ func lowerTitle(s string) string {
 	return string(a)
 }
 
-func Generate(r *Result, global GenerateSettings, settings PackageSettings) (string, error) {
+func Generate(r *Result, global GenerateSettings, settings PackageSettings) (map[string]string, error) {
 	funcMap := template.FuncMap{
 		"lowerTitle": lowerTitle,
 	}
@@ -740,12 +740,15 @@ func Generate(r *Result, global GenerateSettings, settings PackageSettings) (str
 	})
 	w.Flush()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	code, err := format.Source(b.Bytes())
 	if err != nil {
 		fmt.Println(b.String())
 		panic(fmt.Errorf("source error: %s", err))
 	}
-	return string(code), nil
+	output := map[string]string{
+		"db.go": string(code),
+	}
+	return output, nil
 }

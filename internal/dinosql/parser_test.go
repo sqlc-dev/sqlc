@@ -90,7 +90,7 @@ func TestParseSchema(t *testing.T) {
 	}
 
 	t.Run("default", func(t *testing.T) {
-		source, err := Generate(q, GenerateSettings{}, PackageSettings{
+		output, err := Generate(q, GenerateSettings{}, PackageSettings{
 			Name: "ondeck",
 		})
 		if err != nil {
@@ -102,14 +102,14 @@ func TestParseSchema(t *testing.T) {
 			log.Fatal(err)
 		}
 
-		if diff := cmp.Diff(source, string(blob)); diff != "" {
+		if diff := cmp.Diff(output["db.go"], string(blob)); diff != "" {
 			t.Errorf("genreated code differed (-want +got):\n%s", diff)
-			t.Log(source)
+			t.Log(output["db.go"])
 		}
 	})
 
 	t.Run("prepared", func(t *testing.T) {
-		source, err := Generate(q, GenerateSettings{}, PackageSettings{
+		output, err := Generate(q, GenerateSettings{}, PackageSettings{
 			Name:                "prepared",
 			EmitPreparedQueries: true,
 		})
@@ -122,9 +122,9 @@ func TestParseSchema(t *testing.T) {
 			log.Fatal(err)
 		}
 
-		if diff := cmp.Diff(source, string(blob)); diff != "" {
+		if diff := cmp.Diff(output["db.go"], string(blob)); diff != "" {
 			t.Errorf("genreated code differed (-want +got):\n%s", diff)
-			t.Log(source)
+			t.Log(output["db.go"])
 		}
 	})
 }
