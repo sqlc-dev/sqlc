@@ -32,7 +32,7 @@ blocks:
             - brew install go@1.12
             - brew install eqnxio/equinox/release-tool
             - equinox release --app app_eKoJWvzkR2N --channel devel --signing-key ~/equinox.key --draft --platforms darwin_amd64 --version $SEMAPHORE_GIT_SHA --token $EQUINOX_API_TOKEN ./cmd/dinosql
-            - equinox publish --token $EQUINOX_API_TOKEN --app app_eKoJWvzkR2N --channel devel --version $SEMAPHORE_GIT_SHA
+            - equinox publish --token $EQUINOX_API_TOKEN --app app_eKoJWvzkR2N --channel devel --release $SEMAPHORE_GIT_SHA
       secrets:
         - name: equinox
 
