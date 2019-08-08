@@ -297,7 +297,9 @@ Each package document has the following keys:
 
 ## Downloads
 
-- [macOS](https://github.com/kyleconroy/dinosql/releases/download/v0.0.0-devel/dinosql.zip)
+Each commit is deployed to the [`devel` channel on Equinox](https://dl.equinox.io/dinosql/dinosql/devel):
+- [Linux](https://bin.equinox.io/c/jUfda88XW4i/dinosql-devel-linux-amd64.tgz)
+- [macOS](https://bin.equinox.io/c/jUfda88XW4i/dinosql-devel-darwin-amd64.zip)
 
 ## Other Database Engines
 
