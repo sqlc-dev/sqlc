@@ -332,7 +332,6 @@ func IsStarRef(cf nodes.ColumnRef) bool {
 func outputColumns(c core.Catalog, node nodes.Node) ([]core.Column, error) {
 	tables, err := sourceTables(c, node)
 	if err != nil {
-		fmt.Println(tables)
 		return nil, err
 	}
 
@@ -624,11 +623,14 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 	}
 
 	aliasMap := map[string]string{}
+	// TODO: Deprecate defaultTable
 	defaultTable := ""
+	var tables []string
 	for _, rv := range rvs {
 		if rv.Relname == nil {
 			continue
 		}
+		tables = append(tables, *rv.Relname)
 		if defaultTable == "" {
 			defaultTable = *rv.Relname
 		}
@@ -677,28 +679,38 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 					panic("too many field items: " + strconv.Itoa(len(items)))
 				}
 
-				table := aliasMap[alias]
-				if table == "" && ref.rv != nil && ref.rv.Relname != nil {
-					table = *ref.rv.Relname
-				}
-				if table == "" {
-					table = defaultTable
+				var search []string
+				if table, ok := aliasMap[alias]; ok {
+					search = append(search, table)
+				} else {
+					search = tables
 				}
 
-				if c, ok := typeMap[table][key]; ok {
-					a = append(a, Parameter{
-						Number: ref.ref.Number,
-						Column: core.Column{
-							Name:     argName(key),
-							DataType: c.DataType,
-							NotNull:  c.NotNull,
-							IsArray:  c.IsArray,
-						},
-					})
-				} else {
+				var found int
+				for _, table := range search {
+					if c, ok := typeMap[table][key]; ok {
+						found += 1
+						a = append(a, Parameter{
+							Number: ref.ref.Number,
+							Column: core.Column{
+								Name:     argName(key),
+								DataType: c.DataType,
+								NotNull:  c.NotNull,
+								IsArray:  c.IsArray,
+							},
+						})
+					}
+				}
+				if found == 0 {
 					return nil, Error{
 						Code:    "42703",
 						Message: fmt.Sprintf("column \"%s\" does not exist", key),
+					}
+				}
+				if found > 1 {
+					return nil, Error{
+						Code:    "42703",
+						Message: fmt.Sprintf("column reference \"%s\" is ambiguous", key),
 					}
 				}
 			}
