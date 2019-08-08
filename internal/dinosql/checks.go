@@ -76,7 +76,11 @@ func (v *funcCallVisitor) Visit(node nodes.Node) Visitor {
 
 	args := len(funcCall.Args.Items)
 	for _, fun := range funs {
-		if fun.ArgN == args {
+		arity := fun.ArgN
+		if fun.Arguments != nil {
+			arity = len(fun.Arguments)
+		}
+		if arity == args {
 			return v
 		}
 	}

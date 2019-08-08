@@ -346,19 +346,21 @@ func Update(c *pg.Catalog, stmt nodes.Node) error {
 		if !exists {
 			return pg.ErrorSchemaDoesNotExist(fqn.Schema)
 		}
-		// TODO arity is not sufficent to identify a function, foo(x BOOL) and
-		// foo(y TEXT) are two different functions that can exist at the same time
 		arity := len(n.Parameters.Items)
-		if _, err := c.LookupFunctionN(fqn, arity); err == nil {
-			// we could check n.Replace, but we don't care for the function body,
-			// so do nothing
-			return nil
+		args := make([]pg.Argument, arity)
+		for i, item := range n.Parameters.Items {
+			arg := item.(nodes.FunctionParameter)
+			args[i] = pg.Argument{
+				Name:       *arg.Name,
+				DataType:   join(arg.ArgType.Names, "."),
+				HasDefault: arg.Defexpr != nil,
+			}
 		}
 		// TODO: support return parameter:
 		// CREATE FUNCTION foo(bar TEXT, OUT quz bool) AS $$ SELECT true $$ LANGUAGE sql;
 		schema.Funcs[fqn.Rel] = append(schema.Funcs[fqn.Rel], pg.Function{
 			Name:       fqn.Rel,
-			ArgN:       arity,
+			Arguments:  args,
 			ReturnType: join(n.ReturnType.Names, "."),
 		})
 	}

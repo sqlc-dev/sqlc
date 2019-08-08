@@ -325,7 +325,7 @@ func TestUpdate(t *testing.T) {
 				},
 			},
 		},
-		{
+		{ // same name, different arity
 			`
 			CREATE FUNCTION foo(bar TEXT) RETURNS bool AS $$ SELECT true $$ LANGUAGE sql;
 			CREATE FUNCTION foo(bar TEXT, baz TEXT) RETURNS TEXT AS $$ SELECT "baz" $$ LANGUAGE sql;
@@ -336,14 +336,94 @@ func TestUpdate(t *testing.T) {
 						Funcs: map[string][]pg.Function{
 							"foo": []pg.Function{
 								{
-									Name:       "foo",
-									ArgN:       1,
+									Name: "foo",
+									Arguments: []pg.Argument{
+										{
+											Name:     "bar",
+											DataType: "text",
+										},
+									},
 									ReturnType: "bool",
 								},
 								{
-									Name:       "foo",
-									ArgN:       2,
+									Name: "foo",
+									Arguments: []pg.Argument{
+										{
+											Name:     "bar",
+											DataType: "text",
+										},
+										{
+											Name:     "baz",
+											DataType: "text",
+										},
+									},
 									ReturnType: "text",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{ // same name and arity, different arg types
+			`
+			CREATE FUNCTION foo(bar TEXT) RETURNS bool AS $$ SELECT true $$ LANGUAGE sql;
+			CREATE FUNCTION foo(bar INTEGER) RETURNS TEXT AS $$ SELECT "baz" $$ LANGUAGE sql;
+			`,
+			pg.Catalog{
+				Schemas: map[string]pg.Schema{
+					"public": {
+						Funcs: map[string][]pg.Function{
+							"foo": []pg.Function{
+								{
+									Name: "foo",
+									Arguments: []pg.Argument{
+										{
+											Name:     "bar",
+											DataType: "text",
+										},
+									},
+									ReturnType: "bool",
+								},
+								{
+									Name: "foo",
+									Arguments: []pg.Argument{
+										{
+											Name:     "bar",
+											DataType: "pg_catalog.int4",
+										},
+									},
+									ReturnType: "text",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			`
+			CREATE FUNCTION foo(bar TEXT, baz TEXT="baz") RETURNS bool AS $$ SELECT true $$ LANGUAGE sql;
+			`,
+			pg.Catalog{
+				Schemas: map[string]pg.Schema{
+					"public": {
+						Funcs: map[string][]pg.Function{
+							"foo": []pg.Function{
+								{
+									Name: "foo",
+									Arguments: []pg.Argument{
+										{
+											Name:       "bar",
+											DataType:   "text",
+										},
+										{
+											Name:       "baz",
+											DataType:   "text",
+											HasDefault: true,
+										},
+									},
+									ReturnType: "bool",
 								},
 							},
 						},
