@@ -16,7 +16,7 @@ blocks:
             - sem-version go 1.12
             - curl -O https://bin.equinox.io/c/mBWdkfai63v/release-tool-stable-linux-amd64.tgz
             - tar -xvf release-tool-stable-linux-amd64.tgz 
-            - ./equinox release --config ./.equinox.yml --draft --version $SEMAPHORE_GIT_SHA --token $EQUINOX_API_TOKEN ./cmd/dinosql
+            - ./equinox release --app app_eKoJWvzkR2N --channel devel --signing-key ~/equinox.key --draft --platforms linux_amd64 --version $SEMAPHORE_GIT_SHA --token $EQUINOX_API_TOKEN ./cmd/dinosql
       secrets:
         - name: equinox
   - name: Release dinoSQL for macOS
@@ -31,8 +31,8 @@ blocks:
             - checkout
             - brew install go@1.12
             - brew install eqnxio/equinox/release-tool
-            - equinox release --config ./.equinox.yml --draft --version $SEMAPHORE_GIT_SHA --token $EQUINOX_API_TOKEN ./cmd/dinosql
-            - equinox publish --token xxx --app app_xxx --channel stable --version 0.1
+            - equinox release --app app_eKoJWvzkR2N --channel devel --signing-key ~/equinox.key --draft --platforms darwin_amd64 --version $SEMAPHORE_GIT_SHA --token $EQUINOX_API_TOKEN ./cmd/dinosql
+            - equinox publish --token $EQUINOX_API_TOKEN --app app_eKoJWvzkR2N --channel devel --version $SEMAPHORE_GIT_SHA
       secrets:
         - name: equinox
 
