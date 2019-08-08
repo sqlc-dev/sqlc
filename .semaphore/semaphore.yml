@@ -8,7 +8,7 @@ agent:
     os_image: ubuntu1804
 
 blocks:
-  - name: DinoSQL / Linux
+  - name: dinoSQL test suite
     dependencies: []
     task:
       jobs:

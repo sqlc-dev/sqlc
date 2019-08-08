@@ -14,7 +14,11 @@ blocks:
           commands:
             - checkout
             - sem-version go 1.12
-            - go build ./cmd/dinosql
+            - curl -O https://bin.equinox.io/c/mBWdkfai63v/release-tool-stable-linux-amd64.tgz
+            - tar -xvf release-tool-stable-linux-amd64.tgz 
+            - ./equinox release --config ./.equinox.yml --draft --version $SEMAPHORE_GIT_SHA --token $EQUINOX_API_TOKEN ./cmd/dinosql
+      secrets:
+        - name: equinox
   - name: Release dinoSQL for macOS
     task:
       agent:
@@ -26,4 +30,9 @@ blocks:
           commands:
             - checkout
             - brew install go@1.12
-            - go build ./cmd/dinosql
+            - brew install eqnxio/equinox/release-tool
+            - equinox release --config ./.equinox.yml --draft --version $SEMAPHORE_GIT_SHA --token $EQUINOX_API_TOKEN ./cmd/dinosql
+            - equinox publish --token xxx --app app_xxx --channel stable --version 0.1
+      secrets:
+        - name: equinox
+
