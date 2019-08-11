@@ -1,0 +1,17 @@
+name: dinosql test suite
+on: [push]
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+
+    - name: Set up Go 1.12
+      uses: actions/setup-go@v1
+      with:
+        version: 1.12
+
+    - name: Test dinosql
+      run: go test -v ./...
