@@ -396,6 +396,7 @@ func outputColumns(c core.Catalog, node nodes.Node) ([]core.Column, error) {
 						}
 						cols = append(cols, core.Column{
 							Name:     cname,
+							Scope:    scope,
 							DataType: c.DataType,
 							NotNull:  c.NotNull,
 							IsArray:  c.IsArray,

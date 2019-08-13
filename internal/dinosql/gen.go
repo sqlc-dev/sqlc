@@ -538,10 +538,18 @@ func (r Result) GoQueries() []GoQuery {
 		// TODO: Will horribly break sometimes
 		if query.NeedsEdit {
 			var cols []string
+			find := "*"
 			for _, c := range query.Columns {
-				cols = append(cols, c.Name)
+				if c.Scope != "" {
+					find = c.Scope + ".*"
+				}
+				name := c.Name
+				if c.Scope != "" {
+					name = c.Scope + "." + name
+				}
+				cols = append(cols, name)
 			}
-			code = strings.Replace(query.SQL, "*", strings.Join(cols, ", "), 1)
+			code = strings.Replace(query.SQL, find, strings.Join(cols, ", "), 1)
 		}
 
 		gq := GoQuery{

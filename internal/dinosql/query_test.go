@@ -442,7 +442,7 @@ func TestQueries(t *testing.T) {
 			`,
 			Query{
 				Columns: []core.Column{
-					{Name: "barid", DataType: "serial", NotNull: true},
+					{Name: "barid", DataType: "serial", NotNull: true, Scope: "foo"},
 				},
 				Params: []Parameter{
 					{1, core.Column{Name: "owner", DataType: "text", NotNull: true}},
