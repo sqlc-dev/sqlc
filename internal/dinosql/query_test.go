@@ -403,6 +403,34 @@ func TestQueries(t *testing.T) {
 				},
 			},
 		},
+		{
+			"multifrom",
+			`
+			CREATE TABLE foo (email text not null);
+			CREATE TABLE bar (login text not null);
+			SELECT email FROM bar, foo WHERE login = $1;
+			`,
+			Query{
+				Columns: []core.Column{
+					{Name: "email", DataType: "text", NotNull: true},
+				},
+				Params: []Parameter{
+					{1, core.Column{Name: "login", DataType: "text", NotNull: true}},
+				},
+			},
+		},
+		{
+			"column-as",
+			`
+			CREATE TABLE foo (email text not null);
+			SELECT email AS id FROM foo;
+			`,
+			Query{
+				Columns: []core.Column{
+					{Name: "id", DataType: "text", NotNull: true},
+				},
+			},
+		},
 	} {
 		test := tc
 		t.Run(test.name, func(t *testing.T) {
