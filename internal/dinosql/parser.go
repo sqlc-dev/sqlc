@@ -290,7 +290,15 @@ func sourceTables(c core.Catalog, node nodes.Node) ([]core.Table, error) {
 		}
 	case nodes.SelectStmt:
 		with = n.WithClause
-		list = n.FromClause
+		for _, from := range n.FromClause.Items {
+			switch n := from.(type) {
+			case nodes.JoinExpr:
+				list.Items = append(list.Items, n.Larg)
+				list.Items = append(list.Items, n.Rarg)
+			default:
+				list.Items = append(list.Items, n)
+			}
+		}
 	default:
 		return nil, fmt.Errorf("sourceTables: unsupported node type: %T", n)
 	}

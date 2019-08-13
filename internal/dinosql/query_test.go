@@ -431,6 +431,24 @@ func TestQueries(t *testing.T) {
 				},
 			},
 		},
+		{
+			"join where clause",
+			`
+			CREATE TABLE foo (barid serial not null);
+			CREATE TABLE bar (id serial not null, owner text not null);
+			SELECT owner FROM foo
+			JOIN bar ON bar.id = barid
+			WHERE owner = $1;
+			`,
+			Query{
+				Columns: []core.Column{
+					{Name: "owner", DataType: "text", NotNull: true},
+				},
+				Params: []Parameter{
+					{1, core.Column{Name: "owner", DataType: "text", NotNull: true}},
+				},
+			},
+		},
 	} {
 		test := tc
 		t.Run(test.name, func(t *testing.T) {
