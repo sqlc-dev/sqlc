@@ -370,7 +370,7 @@ func outputColumns(c core.Catalog, node nodes.Node) ([]core.Column, error) {
 		switch n := res.Val.(type) {
 
 		case nodes.A_Expr:
-			name := "_"
+			name := ""
 			if res.Name != nil {
 				name = *res.Name
 			}

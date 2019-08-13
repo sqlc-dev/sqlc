@@ -560,23 +560,15 @@ func (r Result) GoQueries() []GoQuery {
 				typ:  r.goType(p.Column),
 			}
 		} else if len(query.Params) > 1 {
-			val := GoQueryValue{
-				Emit: true,
-				Name: "arg",
-				Struct: &GoStruct{
-					Name: gq.MethodName + "Params",
-				},
-			}
+			var cols []core.Column
 			for _, p := range query.Params {
-				val.Struct.Fields = append(val.Struct.Fields, GoField{
-					Name: r.structName(paramName(p)),
-					Type: r.goType(p.Column),
-					Tags: map[string]string{
-						"json": p.Column.Name,
-					},
-				})
+				cols = append(cols, p.Column)
 			}
-			gq.Arg = val
+			gq.Arg = GoQueryValue{
+				Emit:   true,
+				Name:   "arg",
+				Struct: r.columnsToStruct(gq.MethodName+"Params", cols),
+			}
 		}
 
 		if len(query.Columns) == 1 {

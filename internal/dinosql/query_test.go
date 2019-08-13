@@ -478,7 +478,7 @@ func TestComparisonOperators(t *testing.T) {
 			}
 			expected := Query{
 				Columns: []core.Column{
-					{Name: "_", DataType: "bool", NotNull: true},
+					{Name: "", DataType: "bool", NotNull: true},
 				},
 			}
 			if diff := cmp.Diff(expected, q); diff != "" {
