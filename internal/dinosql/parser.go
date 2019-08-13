@@ -385,6 +385,7 @@ func outputColumns(c core.Catalog, node nodes.Node) ([]core.Column, error) {
 			switch {
 			case HasStarRef(n):
 				for _, t := range tables {
+					scope := join(n.Fields, ".")
 					if scope != "" && scope != t.Name {
 						continue
 					}
