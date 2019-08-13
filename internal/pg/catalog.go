@@ -59,7 +59,11 @@ func (c Catalog) LookupFunctionN(fqn FQN, argn int) (Function, error) {
 		return Function{}, err
 	}
 	for _, fun := range funs {
-		if fun.ArgN == argn {
+		arity := fun.ArgN
+		if fun.Arguments != nil {
+			arity = len(fun.Arguments)
+		}
+		if arity == argn {
 			return fun, nil
 		}
 	}
@@ -93,5 +97,12 @@ type Enum struct {
 type Function struct {
 	Name       string
 	ArgN       int
+	Arguments  []Argument // not recorded for builtins
 	ReturnType string
+}
+
+type Argument struct {
+	Name       string
+	DataType   string
+	HasDefault bool
 }
