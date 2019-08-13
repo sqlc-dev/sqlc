@@ -325,12 +325,13 @@ func sourceTables(c core.Catalog, node nodes.Node) ([]core.Table, error) {
 	return tables, nil
 }
 
-func IsStarRef(cf nodes.ColumnRef) bool {
-	if len(cf.Fields.Items) != 1 {
-		return false
+func HasStarRef(cf nodes.ColumnRef) bool {
+	for _, item := range cf.Fields.Items {
+		if _, ok := item.(nodes.A_Star); ok {
+			return true
+		}
 	}
-	_, aStar := cf.Fields.Items[0].(nodes.A_Star)
-	return aStar
+	return false
 }
 
 // Compute the output columns for a statement.
@@ -360,6 +361,8 @@ func outputColumns(c core.Catalog, node nodes.Node) ([]core.Column, error) {
 	var cols []core.Column
 
 	for _, target := range targets.Items {
+		// spew.Dump(target)
+
 		res, ok := target.(nodes.ResTarget)
 		if !ok {
 			continue
@@ -380,9 +383,11 @@ func outputColumns(c core.Catalog, node nodes.Node) ([]core.Column, error) {
 			parts := stringSlice(n.Fields)
 			var name, alias string
 			switch {
-			case IsStarRef(n):
-				// TODO: Disambiguate columns
+			case HasStarRef(n):
 				for _, t := range tables {
+					if scope != "" && scope != t.Name {
+						continue
+					}
 					for _, c := range t.Columns {
 						cname := c.Name
 						if res.Name != nil {
