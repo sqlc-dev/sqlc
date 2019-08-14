@@ -714,15 +714,16 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 					panic("too many field items: " + strconv.Itoa(len(items)))
 				}
 
-				var search []string
-				if table, ok := aliasMap[alias]; ok {
-					search = append(search, table)
-				} else {
-					search = tables
+				search := tables
+				if alias != "" {
+					search = []string{alias}
 				}
 
 				var found int
 				for _, table := range search {
+					if original, ok := aliasMap[table]; ok {
+						table = original
+					}
 					if c, ok := typeMap[table][key]; ok {
 						found += 1
 						a = append(a, Parameter{

@@ -258,6 +258,27 @@ func TestQueries(t *testing.T) {
 			},
 		},
 		{
+			"table-name",
+			`
+			CREATE TABLE bar (id serial not null);
+			CREATE TABLE foo (id serial not null, bar serial references bar(id));
+
+			SELECT foo.id
+			FROM foo
+			JOIN bar ON foo.bar = bar.id
+			WHERE bar.id = $1 AND foo.id = $2;
+			`,
+			Query{
+				Columns: []core.Column{
+					{Name: "id", DataType: "serial", NotNull: true},
+				},
+				Params: []Parameter{
+					{1, core.Column{Name: "id", DataType: "serial", NotNull: true}},
+					{2, core.Column{Name: "id", DataType: "serial", NotNull: true}},
+				},
+			},
+		},
+		{
 			"star",
 			`
 			CREATE TABLE bar (bid serial not null);
