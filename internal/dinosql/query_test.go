@@ -240,7 +240,7 @@ func TestQueries(t *testing.T) {
 			Query{
 				Columns: []core.Column{
 					{Name: "city", DataType: "text", NotNull: true},
-					{Name: "count", DataType: "bigint"},
+					{Name: "count", DataType: "bigint", NotNull: true},
 				},
 			},
 		},
@@ -285,8 +285,8 @@ func TestQueries(t *testing.T) {
 			`,
 			Query{
 				Columns: []core.Column{
-					{Name: "count", DataType: "bigint", NotNull: false},
-					{Name: "count", DataType: "bigint", NotNull: false},
+					{Name: "count", DataType: "bigint", NotNull: true},
+					{Name: "count", DataType: "bigint", NotNull: true},
 				},
 			},
 		},
@@ -305,7 +305,7 @@ func TestQueries(t *testing.T) {
 					{1, core.Column{Name: "ready", DataType: "bool", NotNull: true}},
 				},
 				Columns: []core.Column{
-					{Name: "count", DataType: "bigint"},
+					{Name: "count", DataType: "bigint", NotNull: true},
 				},
 			},
 		},
@@ -314,6 +314,19 @@ func TestQueries(t *testing.T) {
 			`
 			CREATE TABLE foo (name text not null, slug text not null);
 			UPDATE foo SET name = $2 WHERE slug = $1;
+			`,
+			Query{
+				Params: []Parameter{
+					{1, core.Column{Name: "slug", DataType: "text", NotNull: true}},
+					{2, core.Column{Name: "name", DataType: "text", NotNull: true}},
+				},
+			},
+		},
+		{
+			"update_set_multiple",
+			`
+			CREATE TABLE foo (name text not null, slug text not null);
+			UPDATE foo SET (name, slug) = ($2, $1);
 			`,
 			Query{
 				Params: []Parameter{
@@ -431,6 +444,24 @@ func TestQueries(t *testing.T) {
 				},
 			},
 		},
+		{
+			"join where clause",
+			`
+			CREATE TABLE foo (barid serial not null);
+			CREATE TABLE bar (id serial not null, owner text not null);
+			SELECT foo.* FROM foo
+			JOIN bar ON bar.id = barid
+			WHERE owner = $1;
+			`,
+			Query{
+				Columns: []core.Column{
+					{Name: "barid", DataType: "serial", NotNull: true, Scope: "foo"},
+				},
+				Params: []Parameter{
+					{1, core.Column{Name: "owner", DataType: "text", NotNull: true}},
+				},
+			},
+		},
 	} {
 		test := tc
 		t.Run(test.name, func(t *testing.T) {
@@ -460,7 +491,7 @@ func TestComparisonOperators(t *testing.T) {
 			}
 			expected := Query{
 				Columns: []core.Column{
-					{Name: "_", DataType: "bool", NotNull: true},
+					{Name: "", DataType: "bool", NotNull: true},
 				},
 			}
 			if diff := cmp.Diff(expected, q); diff != "" {

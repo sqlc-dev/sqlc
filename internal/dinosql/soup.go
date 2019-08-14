@@ -723,7 +723,9 @@ func Walk(f Visitor, node nodes.Node) {
 		walkn(f, n.Rarg)
 		walkn(f, n.UsingClause)
 		walkn(f, n.Quals)
-		walkn(f, n.Alias)
+		if n.Alias != nil {
+			walkn(f, *n.Alias)
+		}
 
 	case nodes.List:
 		for _, item := range n.Items {

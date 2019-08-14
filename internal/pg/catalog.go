@@ -87,6 +87,9 @@ type Column struct {
 	DataType string
 	NotNull  bool
 	IsArray  bool
+
+	// XXX: Figure out what PostgreSQL calls `foo.id`
+	Scope string
 }
 
 type Enum struct {

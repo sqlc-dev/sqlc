@@ -192,6 +192,7 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string) (*Query, error) 
 	default:
 		return nil, nil
 	}
+
 	if err := validateFuncCall(&c, raw); err != nil {
 		return nil, err
 	}
@@ -290,7 +291,15 @@ func sourceTables(c core.Catalog, node nodes.Node) ([]core.Table, error) {
 		}
 	case nodes.SelectStmt:
 		with = n.WithClause
-		list = n.FromClause
+		for _, from := range n.FromClause.Items {
+			switch n := from.(type) {
+			case nodes.JoinExpr:
+				list.Items = append(list.Items, n.Larg)
+				list.Items = append(list.Items, n.Rarg)
+			default:
+				list.Items = append(list.Items, n)
+			}
+		}
 	default:
 		return nil, fmt.Errorf("sourceTables: unsupported node type: %T", n)
 	}
@@ -317,12 +326,13 @@ func sourceTables(c core.Catalog, node nodes.Node) ([]core.Table, error) {
 	return tables, nil
 }
 
-func IsStarRef(cf nodes.ColumnRef) bool {
-	if len(cf.Fields.Items) != 1 {
-		return false
+func HasStarRef(cf nodes.ColumnRef) bool {
+	for _, item := range cf.Fields.Items {
+		if _, ok := item.(nodes.A_Star); ok {
+			return true
+		}
 	}
-	_, aStar := cf.Fields.Items[0].(nodes.A_Star)
-	return aStar
+	return false
 }
 
 // Compute the output columns for a statement.
@@ -352,6 +362,8 @@ func outputColumns(c core.Catalog, node nodes.Node) ([]core.Column, error) {
 	var cols []core.Column
 
 	for _, target := range targets.Items {
+		// spew.Dump(target)
+
 		res, ok := target.(nodes.ResTarget)
 		if !ok {
 			continue
@@ -359,7 +371,7 @@ func outputColumns(c core.Catalog, node nodes.Node) ([]core.Column, error) {
 		switch n := res.Val.(type) {
 
 		case nodes.A_Expr:
-			name := "_"
+			name := ""
 			if res.Name != nil {
 				name = *res.Name
 			}
@@ -372,9 +384,12 @@ func outputColumns(c core.Catalog, node nodes.Node) ([]core.Column, error) {
 			parts := stringSlice(n.Fields)
 			var name, alias string
 			switch {
-			case IsStarRef(n):
-				// TODO: Disambiguate columns
+			case HasStarRef(n):
 				for _, t := range tables {
+					scope := join(n.Fields, ".")
+					if scope != "" && scope != t.Name {
+						continue
+					}
 					for _, c := range t.Columns {
 						cname := c.Name
 						if res.Name != nil {
@@ -382,6 +397,7 @@ func outputColumns(c core.Catalog, node nodes.Node) ([]core.Column, error) {
 						}
 						cols = append(cols, core.Column{
 							Name:     cname,
+							Scope:    scope,
 							DataType: c.DataType,
 							NotNull:  c.NotNull,
 							IsArray:  c.IsArray,
@@ -443,7 +459,7 @@ func outputColumns(c core.Catalog, node nodes.Node) ([]core.Column, error) {
 
 			fun, err := c.LookupFunctionN(fqn, len(n.Args.Items))
 			if err == nil {
-				cols = append(cols, core.Column{Name: name, DataType: fun.ReturnType})
+				cols = append(cols, core.Column{Name: name, DataType: fun.ReturnType, NotNull: true})
 			} else {
 				cols = append(cols, core.Column{Name: name, DataType: "any"})
 			}
@@ -559,12 +575,31 @@ func (p *paramSearch) Visit(node nodes.Node) Visitor {
 				parent = limitOffset{}
 			}
 		}
+		if _, found := p.refs[n.Number]; found {
+			break
+		}
 
-		if _, found := p.refs[n.Number]; !found {
+		// Special, terrible case for nodes.MultiAssignRef
+		set := true
+		if res, ok := parent.(nodes.ResTarget); ok {
+			if multi, ok := res.Val.(nodes.MultiAssignRef); ok {
+				set = false
+				if row, ok := multi.Source.(nodes.RowExpr); ok {
+					for i, arg := range row.Args.Items {
+						if ref, ok := arg.(nodes.ParamRef); ok {
+							if multi.Colno == i+1 && ref.Number == n.Number {
+								set = true
+							}
+						}
+					}
+				}
+			}
+		}
+
+		if set {
 			p.refs[n.Number] = paramRef{parent: parent, ref: n, rv: p.rangeVar}
 		}
 		return nil
-
 	}
 	return p
 }
@@ -714,6 +749,7 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 					}
 				}
 			}
+
 		case nodes.ResTarget:
 			if n.Name == nil {
 				return nil, fmt.Errorf("nodes.ResTarget has nil name")
@@ -735,6 +771,7 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 					Message: fmt.Sprintf("column \"%s\" does not exist", key),
 				}
 			}
+
 		case nodes.TypeCast:
 			if n.TypeName == nil {
 				return nil, fmt.Errorf("nodes.TypeCast has nil type name")
@@ -743,8 +780,10 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 				Number: ref.ref.Number,
 				Column: catalog.ToColumn(n.TypeName),
 			})
+
 		case nodes.ParamRef:
 			a = append(a, Parameter{Number: ref.ref.Number})
+
 		default:
 			// return nil, fmt.Errorf("unsupported type: %T", n)
 		}

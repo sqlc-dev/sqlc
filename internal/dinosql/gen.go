@@ -418,7 +418,11 @@ func (r Result) goInnerType(columnType string, notNull bool) string {
 		return "int32"
 
 	case "bigserial", "pg_catalog.serial8":
-		return "int64"
+		if notNull {
+			return "int64"
+		} else {
+			return "sql.NullInt64"
+		}
 
 	case "smallserial", "pg_catalog.serial2":
 		return "int16"
@@ -427,7 +431,11 @@ func (r Result) goInnerType(columnType string, notNull bool) string {
 		return "int32"
 
 	case "bigint", "pg_catalog.int8":
-		return "int64"
+		if notNull {
+			return "int64"
+		} else {
+			return "sql.NullInt64"
+		}
 
 	case "smallint", "pg_catalog.int2":
 		return "int16"
@@ -538,10 +546,18 @@ func (r Result) GoQueries() []GoQuery {
 		// TODO: Will horribly break sometimes
 		if query.NeedsEdit {
 			var cols []string
+			find := "*"
 			for _, c := range query.Columns {
-				cols = append(cols, c.Name)
+				if c.Scope != "" {
+					find = c.Scope + ".*"
+				}
+				name := c.Name
+				if c.Scope != "" {
+					name = c.Scope + "." + name
+				}
+				cols = append(cols, name)
 			}
-			code = strings.Replace(query.SQL, "*", strings.Join(cols, ", "), 1)
+			code = strings.Replace(query.SQL, find, strings.Join(cols, ", "), 1)
 		}
 
 		gq := GoQuery{
@@ -560,23 +576,15 @@ func (r Result) GoQueries() []GoQuery {
 				typ:  r.goType(p.Column),
 			}
 		} else if len(query.Params) > 1 {
-			val := GoQueryValue{
-				Emit: true,
-				Name: "arg",
-				Struct: &GoStruct{
-					Name: gq.MethodName + "Params",
-				},
-			}
+			var cols []core.Column
 			for _, p := range query.Params {
-				val.Struct.Fields = append(val.Struct.Fields, GoField{
-					Name: r.structName(paramName(p)),
-					Type: r.goType(p.Column),
-					Tags: map[string]string{
-						"json": p.Column.Name,
-					},
-				})
+				cols = append(cols, p.Column)
 			}
-			gq.Arg = val
+			gq.Arg = GoQueryValue{
+				Emit:   true,
+				Name:   "arg",
+				Struct: r.columnsToStruct(gq.MethodName+"Params", cols),
+			}
 		}
 
 		if len(query.Columns) == 1 {
