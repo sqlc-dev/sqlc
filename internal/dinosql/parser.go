@@ -192,6 +192,7 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string) (*Query, error) 
 	default:
 		return nil, nil
 	}
+
 	if err := validateFuncCall(&c, raw); err != nil {
 		return nil, err
 	}
@@ -458,7 +459,7 @@ func outputColumns(c core.Catalog, node nodes.Node) ([]core.Column, error) {
 
 			fun, err := c.LookupFunctionN(fqn, len(n.Args.Items))
 			if err == nil {
-				cols = append(cols, core.Column{Name: name, DataType: fun.ReturnType})
+				cols = append(cols, core.Column{Name: name, DataType: fun.ReturnType, NotNull: true})
 			} else {
 				cols = append(cols, core.Column{Name: name, DataType: "any"})
 			}
@@ -574,12 +575,31 @@ func (p *paramSearch) Visit(node nodes.Node) Visitor {
 				parent = limitOffset{}
 			}
 		}
+		if _, found := p.refs[n.Number]; found {
+			break
+		}
 
-		if _, found := p.refs[n.Number]; !found {
+		// Special, terrible case for nodes.MultiAssignRef
+		set := true
+		if res, ok := parent.(nodes.ResTarget); ok {
+			if multi, ok := res.Val.(nodes.MultiAssignRef); ok {
+				set = false
+				if row, ok := multi.Source.(nodes.RowExpr); ok {
+					for i, arg := range row.Args.Items {
+						if ref, ok := arg.(nodes.ParamRef); ok {
+							if multi.Colno == i+1 && ref.Number == n.Number {
+								set = true
+							}
+						}
+					}
+				}
+			}
+		}
+
+		if set {
 			p.refs[n.Number] = paramRef{parent: parent, ref: n, rv: p.rangeVar}
 		}
 		return nil
-
 	}
 	return p
 }
@@ -729,6 +749,7 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 					}
 				}
 			}
+
 		case nodes.ResTarget:
 			if n.Name == nil {
 				return nil, fmt.Errorf("nodes.ResTarget has nil name")
@@ -750,6 +771,7 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 					Message: fmt.Sprintf("column \"%s\" does not exist", key),
 				}
 			}
+
 		case nodes.TypeCast:
 			if n.TypeName == nil {
 				return nil, fmt.Errorf("nodes.TypeCast has nil type name")
@@ -758,8 +780,10 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 				Number: ref.ref.Number,
 				Column: catalog.ToColumn(n.TypeName),
 			})
+
 		case nodes.ParamRef:
 			a = append(a, Parameter{Number: ref.ref.Number})
+
 		default:
 			// return nil, fmt.Errorf("unsupported type: %T", n)
 		}

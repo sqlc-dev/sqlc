@@ -418,7 +418,11 @@ func (r Result) goInnerType(columnType string, notNull bool) string {
 		return "int32"
 
 	case "bigserial", "pg_catalog.serial8":
-		return "int64"
+		if notNull {
+			return "int64"
+		} else {
+			return "sql.NullInt64"
+		}
 
 	case "smallserial", "pg_catalog.serial2":
 		return "int16"
@@ -427,7 +431,11 @@ func (r Result) goInnerType(columnType string, notNull bool) string {
 		return "int32"
 
 	case "bigint", "pg_catalog.int8":
-		return "int64"
+		if notNull {
+			return "int64"
+		} else {
+			return "sql.NullInt64"
+		}
 
 	case "smallint", "pg_catalog.int2":
 		return "int16"

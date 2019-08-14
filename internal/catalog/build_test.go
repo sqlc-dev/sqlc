@@ -151,6 +151,24 @@ func TestUpdate(t *testing.T) {
 		},
 		{
 			`
+			CREATE TABLE foo (bar text NOT NULL);
+			ALTER TABLE foo ALTER COLUMN bar DROP NOT NULL;
+			`,
+			pg.Catalog{
+				Schemas: map[string]pg.Schema{
+					"public": {
+						Tables: map[string]pg.Table{
+							"foo": pg.Table{
+								Name:    "foo",
+								Columns: []pg.Column{{Name: "bar", DataType: "text"}},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			`
 			CREATE TABLE foo (bar text);
 			ALTER TABLE foo RENAME bar TO baz;
 			`,
