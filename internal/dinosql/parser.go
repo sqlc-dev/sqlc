@@ -291,15 +291,10 @@ func sourceTables(c core.Catalog, node nodes.Node) ([]core.Table, error) {
 		}
 	case nodes.SelectStmt:
 		with = n.WithClause
-		for _, from := range n.FromClause.Items {
-			switch n := from.(type) {
-			case nodes.JoinExpr:
-				list.Items = append(list.Items, n.Larg)
-				list.Items = append(list.Items, n.Rarg)
-			default:
-				list.Items = append(list.Items, n)
-			}
-		}
+		list = search(n.FromClause, func(node nodes.Node) bool {
+			_, ok := node.(nodes.RangeVar)
+			return ok
+		})
 	default:
 		return nil, fmt.Errorf("sourceTables: unsupported node type: %T", n)
 	}
@@ -631,6 +626,24 @@ func needsEdit(root nodes.Node) bool {
 	v := &starWalker{}
 	Walk(v, root)
 	return v.found
+}
+
+type nodeSearch struct {
+	list  nodes.List
+	check func(nodes.Node) bool
+}
+
+func (s *nodeSearch) Visit(node nodes.Node) Visitor {
+	if s.check(node) {
+		s.list.Items = append(s.list.Items, node)
+	}
+	return s
+}
+
+func search(root nodes.Node, f func(nodes.Node) bool) nodes.List {
+	ns := &nodeSearch{check: f}
+	Walk(ns, root)
+	return ns.list
 }
 
 func argName(name string) string {
