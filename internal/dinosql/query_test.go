@@ -470,7 +470,9 @@ func TestQueries(t *testing.T) {
 			`
 			CREATE TABLE foo (barid serial not null);
 			CREATE TABLE bar (id serial not null, owner text not null);
-			SELECT foo.* FROM foo
+
+			SELECT foo.*
+			FROM foo
 			JOIN bar ON bar.id = barid
 			WHERE owner = $1;
 			`,
@@ -480,6 +482,25 @@ func TestQueries(t *testing.T) {
 				},
 				Params: []Parameter{
 					{1, core.Column{Name: "owner", DataType: "text", NotNull: true}},
+				},
+			},
+		},
+		{
+			"two joins",
+			`
+			CREATE TABLE foo (bar_id serial not null, baz_id serial not null);
+			CREATE TABLE bar (id serial not null);
+			CREATE TABLE baz (id serial not null);
+
+			SELECT foo.*
+			FROM foo
+			JOIN bar ON bar.id = bar_id
+			JOIN baz ON baz.id = baz_id;
+			`,
+			Query{
+				Columns: []core.Column{
+					{Name: "bar_id", DataType: "serial", NotNull: true, Scope: "foo"},
+					{Name: "baz_id", DataType: "serial", NotNull: true, Scope: "foo"},
 				},
 			},
 		},
