@@ -375,11 +375,22 @@ func outputColumns(c core.Catalog, node nodes.Node) ([]core.Column, error) {
 				cols = append(cols, core.Column{Name: name, DataType: "bool", NotNull: true})
 			}
 
+		case nodes.CoalesceExpr:
+			for _, arg := range n.Args.Items {
+				if ref, ok := arg.(nodes.ColumnRef); ok {
+					columns, err := outputColumnRefs(res, tables, ref)
+					if err != nil {
+						return nil, err
+					}
+					for _, c := range columns {
+						c.NotNull = true
+						cols = append(cols, c)
+					}
+				}
+			}
+
 		case nodes.ColumnRef:
-			parts := stringSlice(n.Fields)
-			var name, alias string
-			switch {
-			case HasStarRef(n):
+			if HasStarRef(n) {
 				for _, t := range tables {
 					scope := join(n.Fields, ".")
 					if scope != "" && scope != t.Name {
@@ -400,46 +411,13 @@ func outputColumns(c core.Catalog, node nodes.Node) ([]core.Column, error) {
 					}
 				}
 				continue
-			case len(parts) == 1:
-				name = parts[0]
-			case len(parts) == 2:
-				alias = parts[0]
-				name = parts[1]
-			default:
-				panic(fmt.Sprintf("unknown number of fields: %d", len(parts)))
 			}
-			var found int
-			for _, t := range tables {
-				if alias != "" && t.Name != alias {
-					continue
-				}
-				for _, c := range t.Columns {
-					if c.Name == name {
-						found += 1
-						cname := c.Name
-						if res.Name != nil {
-							cname = *res.Name
-						}
-						cols = append(cols, core.Column{
-							Name:     cname,
-							DataType: c.DataType,
-							NotNull:  c.NotNull,
-						})
-					}
-				}
+
+			columns, err := outputColumnRefs(res, tables, n)
+			if err != nil {
+				return nil, err
 			}
-			if found == 0 {
-				return nil, Error{
-					Code:    "42703",
-					Message: fmt.Sprintf("column \"%s\" does not exist", name),
-				}
-			}
-			if found > 1 {
-				return nil, Error{
-					Code:    "42703",
-					Message: fmt.Sprintf("column reference \"%s\" is ambiguous", name),
-				}
-			}
+			cols = append(cols, columns...)
 
 		case nodes.FuncCall:
 			fqn, err := catalog.ParseList(n.Funcname)
@@ -473,6 +451,56 @@ func outputColumns(c core.Catalog, node nodes.Node) ([]core.Column, error) {
 			cols = append(cols, col)
 		}
 	}
+	return cols, nil
+}
+
+func outputColumnRefs(res nodes.ResTarget, tables []core.Table, node nodes.ColumnRef) ([]core.Column, error) {
+	parts := stringSlice(node.Fields)
+	var name, alias string
+	switch {
+	case len(parts) == 1:
+		name = parts[0]
+	case len(parts) == 2:
+		alias = parts[0]
+		name = parts[1]
+	default:
+		return nil, fmt.Errorf("unknown number of fields: %d", len(parts))
+	}
+
+	var cols []core.Column
+	var found int
+	for _, t := range tables {
+		if alias != "" && t.Name != alias {
+			continue
+		}
+		for _, c := range t.Columns {
+			if c.Name == name {
+				found += 1
+				cname := c.Name
+				if res.Name != nil {
+					cname = *res.Name
+				}
+				cols = append(cols, core.Column{
+					Name:     cname,
+					DataType: c.DataType,
+					NotNull:  c.NotNull,
+				})
+			}
+		}
+	}
+	if found == 0 {
+		return nil, Error{
+			Code:    "42703",
+			Message: fmt.Sprintf("column \"%s\" does not exist", name),
+		}
+	}
+	if found > 1 {
+		return nil, Error{
+			Code:    "42703",
+			Message: fmt.Sprintf("column reference \"%s\" is ambiguous", name),
+		}
+	}
+
 	return cols, nil
 }
 
