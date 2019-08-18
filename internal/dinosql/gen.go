@@ -107,7 +107,11 @@ func (v GoQueryValue) Params() string {
 			}
 		}
 	}
-	return strings.Join(out, ",")
+	if len(out) <= 3 {
+		return strings.Join(out, ",")
+	}
+	out = append(out, "")
+	return "\n" + strings.Join(out, ",\n")
 }
 
 func (v GoQueryValue) Scan() string {
@@ -127,7 +131,11 @@ func (v GoQueryValue) Scan() string {
 			}
 		}
 	}
-	return strings.Join(out, ",")
+	if len(out) <= 3 {
+		return strings.Join(out, ",")
+	}
+	out = append(out, "")
+	return "\n" + strings.Join(out, ",\n")
 }
 
 // A struct used to generate methods and fields on the Queries struct
