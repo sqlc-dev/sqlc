@@ -39,7 +39,14 @@ type CreateVenueParams struct {
 }
 
 func (q *Queries) CreateVenue(ctx context.Context, arg CreateVenueParams) (int32, error) {
-	row := q.queryRow(ctx, q.createVenueStmt, createVenue, arg.Slug, arg.Name, arg.City, arg.SpotifyPlaylist, arg.Status, pq.Array(arg.Tags))
+	row := q.queryRow(ctx, q.createVenueStmt, createVenue,
+		arg.Slug,
+		arg.Name,
+		arg.City,
+		arg.SpotifyPlaylist,
+		arg.Status,
+		pq.Array(arg.Tags),
+	)
 	var id int32
 	err := row.Scan(&id)
 	return id, err
@@ -69,7 +76,17 @@ type GetVenueParams struct {
 func (q *Queries) GetVenue(ctx context.Context, arg GetVenueParams) (Venue, error) {
 	row := q.queryRow(ctx, q.getVenueStmt, getVenue, arg.Slug, arg.City)
 	var i Venue
-	err := row.Scan(&i.ID, &i.Status, &i.Slug, &i.Name, &i.City, &i.SpotifyPlaylist, &i.SongkickID, pq.Array(&i.Tags), &i.CreatedAt)
+	err := row.Scan(
+		&i.ID,
+		&i.Status,
+		&i.Slug,
+		&i.Name,
+		&i.City,
+		&i.SpotifyPlaylist,
+		&i.SongkickID,
+		pq.Array(&i.Tags),
+		&i.CreatedAt,
+	)
 	return i, err
 }
 
@@ -89,7 +106,17 @@ func (q *Queries) ListVenues(ctx context.Context, city string) ([]Venue, error) 
 	var items []Venue
 	for rows.Next() {
 		var i Venue
-		if err := rows.Scan(&i.ID, &i.Status, &i.Slug, &i.Name, &i.City, &i.SpotifyPlaylist, &i.SongkickID, pq.Array(&i.Tags), &i.CreatedAt); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.Status,
+			&i.Slug,
+			&i.Name,
+			&i.City,
+			&i.SpotifyPlaylist,
+			&i.SongkickID,
+			pq.Array(&i.Tags),
+			&i.CreatedAt,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
