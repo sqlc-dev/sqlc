@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -97,7 +98,7 @@ var genCmd = &cobra.Command{
 		}
 
 		for _, pkg := range settings.Packages {
-			c, err := dinosql.ParseCatalog(pkg.MigrationDir)
+			c, err := dinosql.ParseCatalog(pkg.Schema)
 			if err != nil {
 				return err
 			}
@@ -111,6 +112,13 @@ var genCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
+
+			if pkg.Path == "" {
+				return errors.New("package path must be set")
+			}
+
+			os.MkdirAll(pkg.Path, 0755)
+
 			for name, source := range files {
 				filename := filepath.Join(pkg.Path, name)
 				if err := ioutil.WriteFile(filename, []byte(source), 0644); err != nil {
@@ -138,7 +146,7 @@ var checkCmd = &cobra.Command{
 		}
 
 		for _, pkg := range settings.Packages {
-			c, err := dinosql.ParseCatalog(pkg.MigrationDir)
+			c, err := dinosql.ParseCatalog(pkg.Schema)
 			if err != nil {
 				return err
 			}

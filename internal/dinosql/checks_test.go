@@ -14,7 +14,7 @@ func TestFuncs(t *testing.T) {
 		pg.NewCatalog(),
 		GenerateSettings{},
 		PackageSettings{
-			QueryDir: filepath.Join("testdata", "funcs"),
+			Queries: filepath.Join("testdata", "funcs"),
 		},
 	)
 	if err != nil {

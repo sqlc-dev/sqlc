@@ -7,7 +7,6 @@
       "queries": "./query"
     },
     {
-      "name": "prepared",
       "path": "prepared",
       "schema": "./schema",
       "queries": "./query",
