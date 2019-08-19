@@ -23,6 +23,27 @@ func keepSpew() {
 	spew.Dump("hello world")
 }
 
+type FileErr struct {
+	Filename string
+	Err      error
+}
+
+type ParserErr struct {
+	Errs []FileErr
+}
+
+func (e *ParserErr) Add(filename string, err error) {
+	e.Errs = append(e.Errs, FileErr{filename, err})
+}
+
+func NewParserErr() *ParserErr {
+	return &ParserErr{}
+}
+
+func (e *ParserErr) Error() string {
+	return fmt.Sprintf("multiple errors: %d errors", len(e.Errs))
+}
+
 func ParseCatalog(schema string) (core.Catalog, error) {
 	f, err := os.Stat(schema)
 	if err != nil {
@@ -39,6 +60,7 @@ func ParseCatalog(schema string) (core.Catalog, error) {
 		files = append(files, f)
 	}
 
+	merr := NewParserErr()
 	c := core.NewCatalog()
 	for _, f := range files {
 		if !strings.HasSuffix(f.Name(), ".sql") {
@@ -47,18 +69,25 @@ func ParseCatalog(schema string) (core.Catalog, error) {
 		if strings.HasPrefix(f.Name(), ".") {
 			continue
 		}
-		blob, err := ioutil.ReadFile(filepath.Join(schema, f.Name()))
+		filename := filepath.Join(schema, f.Name())
+		blob, err := ioutil.ReadFile(filename)
 		if err != nil {
-			return c, err
+			merr.Add(filename, err)
+			continue
 		}
 		contents := RemoveGooseRollback(string(blob))
 		tree, err := pg.Parse(contents)
 		if err != nil {
-			return c, err
+			merr.Add(filename, err)
+			continue
 		}
 		if err := updateCatalog(&c, tree); err != nil {
-			return c, err
+			merr.Add(filename, err)
+			continue
 		}
+	}
+	if len(merr.Errs) > 0 {
+		return c, merr
 	}
 	return c, nil
 }
@@ -136,6 +165,7 @@ func ParseQueries(c core.Catalog, settings GenerateSettings, pkg PackageSettings
 		files = append(files, f)
 	}
 
+	merr := NewParserErr()
 	var q []*Query
 	for _, f := range files {
 		if !strings.HasSuffix(f.Name(), ".sql") {
@@ -144,19 +174,23 @@ func ParseQueries(c core.Catalog, settings GenerateSettings, pkg PackageSettings
 		if strings.HasPrefix(f.Name(), ".") {
 			continue
 		}
-		blob, err := ioutil.ReadFile(filepath.Join(pkg.Queries, f.Name()))
+		filename := filepath.Join(pkg.Queries, f.Name())
+		blob, err := ioutil.ReadFile(filename)
 		if err != nil {
-			return nil, err
+			merr.Add(filename, err)
+			continue
 		}
 		source := string(blob)
 		tree, err := pg.Parse(source)
 		if err != nil {
-			return nil, err
+			merr.Add(filename, err)
+			continue
 		}
 		for _, stmt := range tree.Statements {
 			query, err := parseQuery(c, stmt, source)
 			if err != nil {
-				return nil, err
+				merr.Add(filename, err)
+				continue
 			}
 			query.Filename = f.Name()
 			if query != nil {
@@ -164,6 +198,11 @@ func ParseQueries(c core.Catalog, settings GenerateSettings, pkg PackageSettings
 			}
 		}
 	}
+
+	if len(merr.Errs) > 0 {
+		return nil, merr
+	}
+
 	return &Result{Catalog: c, Queries: q, Settings: settings}, nil
 }
 
