@@ -3,8 +3,10 @@ package ondeck
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"io/ioutil"
 	"math/rand"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -22,8 +24,33 @@ func id() string {
 	return string(bytes)
 }
 
-func provision(t *testing.T, source string) (*sql.DB, func()) {
+func provision(t *testing.T) (*sql.DB, func()) {
 	t.Helper()
+
+	pgUser := os.Getenv("PG_USER")
+	pgHost := os.Getenv("PG_HOST")
+	pgPort := os.Getenv("PG_PORT")
+	pgPass := os.Getenv("PG_PASSWORD")
+	pgDB := os.Getenv("PG_DATABASE")
+
+	if pgUser == "" {
+		pgUser = "postgres"
+	}
+
+	if pgPort == "" {
+		pgPort = "5432"
+	}
+
+	if pgHost == "" {
+		pgHost = "127.0.0.1"
+	}
+
+	if pgDB == "" {
+		pgDB = "dinotest"
+	}
+
+	source := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", pgUser, pgPass, pgHost, pgPort, pgDB)
+	t.Logf("db: %s", source)
 
 	db, err := sql.Open("postgres", source)
 	if err != nil {
@@ -53,7 +80,7 @@ func provision(t *testing.T, source string) (*sql.DB, func()) {
 func TestQueries(t *testing.T) {
 	t.Parallel()
 
-	sdb, cleanup := provision(t, "postgres://postgres:@localhost/dinotest?sslmode=disable")
+	sdb, cleanup := provision(t)
 	defer cleanup()
 
 	files, err := ioutil.ReadDir("schema")
@@ -182,7 +209,7 @@ func TestQueries(t *testing.T) {
 func TestPrepared(t *testing.T) {
 	t.Parallel()
 
-	sdb, cleanup := provision(t, "postgres://postgres:@localhost/dinotest?sslmode=disable")
+	sdb, cleanup := provision(t)
 	defer cleanup()
 
 	files, err := ioutil.ReadDir("schema")

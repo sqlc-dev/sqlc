@@ -7,26 +7,6 @@ agent:
     type: e1-standard-2
     os_image: ubuntu1804
 
-blocks:
-  - name: dinoSQL test suite
-    dependencies: []
-    task:
-      jobs:
-        - name: Test dinosql
-          commands:
-            - checkout
-            - sem-version go 1.12
-            - go test -v ./...
-        - name: Test dinosql/ondeck
-          commands:
-            - sem-service start postgres
-            - sudo apt-get install -y -qq postgresql-client
-            - createdb -U postgres -h 0.0.0.0 dinotest
-            - checkout
-            - sem-version go 1.12
-            - cd internal/dinosql/testdata/ondeck
-            - go test -v ./...
-
 promotions:
   - name: Deploy HEAD
     pipeline_file: equinox.yml
