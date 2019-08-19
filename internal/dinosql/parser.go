@@ -9,11 +9,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/davecgh/go-spew/spew"
-	"github.com/kyleconroy/dinosql/internal/catalog"
-	core "github.com/kyleconroy/dinosql/internal/pg"
-	"github.com/kyleconroy/dinosql/internal/postgres"
+	"github.com/kyleconroy/sqlc/internal/catalog"
+	core "github.com/kyleconroy/sqlc/internal/pg"
+	"github.com/kyleconroy/sqlc/internal/postgres"
 
+	"github.com/davecgh/go-spew/spew"
 	pg "github.com/lfittl/pg_query_go"
 	nodes "github.com/lfittl/pg_query_go/nodes"
 )

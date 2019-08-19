@@ -9,7 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/kyleconroy/dinosql/internal/dinosql"
+	"github.com/kyleconroy/sqlc/internal/dinosql"
 
 	"github.com/davecgh/go-spew/spew"
 	pg "github.com/lfittl/pg_query_go"

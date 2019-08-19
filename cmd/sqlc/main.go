@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/kyleconroy/dinosql/internal/cmd"
+	"github.com/kyleconroy/sqlc/internal/cmd"
 )
 
 func main() {

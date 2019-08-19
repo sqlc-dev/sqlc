@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/kyleconroy/dinosql/internal/pg"
+	"github.com/kyleconroy/sqlc/internal/pg"
 
 	"github.com/google/go-cmp/cmp"
 )
