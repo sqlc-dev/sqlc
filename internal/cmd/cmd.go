@@ -111,6 +111,9 @@ var genCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
+
+			os.MkdirAll(pkg.Path, 0755)
+
 			for name, source := range files {
 				filename := filepath.Join(pkg.Path, name)
 				if err := ioutil.WriteFile(filename, []byte(source), 0644); err != nil {
