@@ -206,11 +206,28 @@ func ParseQueries(c core.Catalog, settings GenerateSettings, pkg PackageSettings
 	return &Result{Catalog: c, Queries: q, Settings: settings}, nil
 }
 
-func pluckQuery(source string, n nodes.RawStmt) (string, error) {
+func pluckQuery(source string, n nodes.RawStmt) (string, int, int, error) {
 	// TODO: Bounds checking
 	head := n.StmtLocation
 	tail := n.StmtLocation + n.StmtLen
-	return strings.TrimSpace(source[head:tail]), nil
+	text := strings.TrimSpace(source[head:tail])
+
+	// TODO: Remove
+	fmt.Println(text)
+
+	var l, c, loc int
+	for i, line := range strings.Split(source, "\n") {
+		l = i
+		c = head - loc
+		loc += len(line)
+		if loc > head {
+			break
+		}
+		if line == "" {
+			loc += 1
+		}
+	}
+	return text, l + 1, c + 1, nil
 }
 
 func rangeVars(root nodes.Node) []nodes.RangeVar {
@@ -253,12 +270,11 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string) (*Query, error) 
 	default:
 		return nil, nil
 	}
-
-	if err := validateFuncCall(&c, raw); err != nil {
+	rawSQL, _, _, err := pluckQuery(source, raw)
+	if err != nil {
 		return nil, err
 	}
-	rawSQL, err := pluckQuery(source, raw)
-	if err != nil {
+	if err := validateFuncCall(&c, raw); err != nil {
 		return nil, err
 	}
 	name, cmd, err := parseMetadata(rawSQL)
