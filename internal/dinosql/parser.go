@@ -35,7 +35,17 @@ type ParserErr struct {
 	Errs []FileErr
 }
 
-func (e *ParserErr) Add(filename string, line, column int, err error) {
+func (e *ParserErr) Add(filename, source string, loc int, err error) {
+	line := 1
+	column := 1
+	if lerr, ok := err.(core.Error); ok {
+		if lerr.Location != 0 {
+			loc = lerr.Location
+		}
+	}
+	if source != "" && loc != 0 {
+		line, column = lineno(source, loc)
+	}
 	e.Errs = append(e.Errs, FileErr{filename, line, column, err})
 }
 
@@ -75,23 +85,22 @@ func ParseCatalog(schema string) (core.Catalog, error) {
 		filename := filepath.Join(schema, f.Name())
 		blob, err := ioutil.ReadFile(filename)
 		if err != nil {
-			merr.Add(filename, 1, 1, err)
+			merr.Add(filename, "", 0, err)
 			continue
 		}
 		contents := RemoveGooseRollback(string(blob))
 		tree, err := pg.Parse(contents)
 		if err != nil {
-			merr.Add(filename, 1, 1, err)
+			merr.Add(filename, contents, 0, err)
 			continue
 		}
 		for _, stmt := range tree.Statements {
-			line, col := location(contents, stmt)
 			if err := validateFuncCall(&c, stmt); err != nil {
-				merr.Add(filename, line, col, err)
+				merr.Add(filename, contents, location(stmt), err)
 				continue
 			}
 			if err := catalog.Update(&c, stmt); err != nil {
-				merr.Add(filename, line, col, err)
+				merr.Add(filename, contents, location(stmt), err)
 				continue
 			}
 		}
@@ -187,20 +196,20 @@ func ParseQueries(c core.Catalog, settings GenerateSettings, pkg PackageSettings
 		filename := filepath.Join(pkg.Queries, f.Name())
 		blob, err := ioutil.ReadFile(filename)
 		if err != nil {
-			merr.Add(filename, 1, 1, err)
+			merr.Add(filename, "", 0, err)
 			continue
 		}
 		source := string(blob)
 		tree, err := pg.Parse(source)
 		if err != nil {
-			merr.Add(filename, 1, 1, err)
+			merr.Add(filename, source, 0, err)
 			continue
 		}
 		for _, stmt := range tree.Statements {
-			line, col := location(source, stmt)
+			// line, col := location(source, stmt)
 			query, err := parseQuery(c, stmt, source)
 			if err != nil {
-				merr.Add(filename, line, col, err)
+				merr.Add(filename, source, location(stmt), err)
 				continue
 			}
 			query.Filename = f.Name()
@@ -217,19 +226,17 @@ func ParseQueries(c core.Catalog, settings GenerateSettings, pkg PackageSettings
 	return &Result{Catalog: c, Queries: q, Settings: settings}, nil
 }
 
-func location(source string, n nodes.Node) (int, int) {
-	raw, ok := n.(nodes.RawStmt)
-	if !ok {
-		return 1, 1
+func location(node nodes.Node) int {
+	switch n := node.(type) {
+	case nodes.Query:
+		return n.StmtLocation
+	case nodes.RawStmt:
+		return n.StmtLocation
 	}
-	_, line, column, _ := pluckQuery(source, raw)
-	return line, column
+	return 0
 }
 
-func pluckQuery(source string, n nodes.RawStmt) (string, int, int, error) {
-	head := n.StmtLocation
-	tail := n.StmtLocation + n.StmtLen
-
+func lineno(source string, head int) (int, int) {
 	// Calculate the true line and column number for a query, ignoring spaces
 	var comment bool
 	var loc, line, col int
@@ -256,7 +263,13 @@ func pluckQuery(source string, n nodes.RawStmt) (string, int, int, error) {
 		}
 		break
 	}
-	return strings.TrimSpace(source[head:tail]), line + 1, col, nil
+	return line + 1, col
+}
+
+func pluckQuery(source string, n nodes.RawStmt) (string, error) {
+	head := n.StmtLocation
+	tail := n.StmtLocation + n.StmtLen
+	return strings.TrimSpace(source[head:tail]), nil
 }
 
 func rangeVars(root nodes.Node) []nodes.RangeVar {
@@ -299,7 +312,7 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string) (*Query, error) 
 	default:
 		return nil, nil
 	}
-	rawSQL, _, _, err := pluckQuery(source, raw)
+	rawSQL, err := pluckQuery(source, raw)
 	if err != nil {
 		return nil, err
 	}
@@ -357,18 +370,20 @@ func NewQueryCatalog(c core.Catalog, with *nodes.WithClause) QueryCatalog {
 	return QueryCatalog{catalog: c, ctes: ctes}
 }
 
-func (qc QueryCatalog) GetTable(fqn core.FQN) (core.Table, error) {
+func (qc QueryCatalog) GetTable(fqn core.FQN) (core.Table, *core.Error) {
 	cte, exists := qc.ctes[fqn.Rel]
 	if exists {
 		return cte, nil
 	}
 	schema, exists := qc.catalog.Schemas[fqn.Schema]
 	if !exists {
-		return core.Table{}, core.ErrorSchemaDoesNotExist(fqn.Schema)
+		err := core.ErrorSchemaDoesNotExist(fqn.Schema)
+		return core.Table{}, &err
 	}
 	table, exists := schema.Tables[fqn.Rel]
 	if !exists {
-		return core.Table{}, core.ErrorRelationDoesNotExist(fqn.Rel)
+		err := core.ErrorRelationDoesNotExist(fqn.Rel)
+		return core.Table{}, &err
 	}
 	return table, nil
 }
@@ -415,9 +430,10 @@ func sourceTables(c core.Catalog, node nodes.Node) ([]core.Table, error) {
 			if err != nil {
 				return nil, err
 			}
-			table, err := qc.GetTable(fqn)
-			if err != nil {
-				return nil, err
+			table, cerr := qc.GetTable(fqn)
+			if cerr != nil {
+				cerr.Location = n.Location
+				return nil, *cerr
 			}
 			tables = append(tables, table)
 		default:
@@ -598,15 +614,17 @@ func outputColumnRefs(res nodes.ResTarget, tables []core.Table, node nodes.Colum
 		}
 	}
 	if found == 0 {
-		return nil, Error{
-			Code:    "42703",
-			Message: fmt.Sprintf("column \"%s\" does not exist", name),
+		return nil, core.Error{
+			Code:     "42703",
+			Message:  fmt.Sprintf("column \"%s\" does not exist", name),
+			Location: res.Location,
 		}
 	}
 	if found > 1 {
-		return nil, Error{
-			Code:    "42703",
-			Message: fmt.Sprintf("column reference \"%s\" is ambiguous", name),
+		return nil, core.Error{
+			Code:     "42703",
+			Message:  fmt.Sprintf("column reference \"%s\" is ambiguous", name),
+			Location: res.Location,
 		}
 	}
 
@@ -888,15 +906,17 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 					}
 				}
 				if found == 0 {
-					return nil, Error{
-						Code:    "42703",
-						Message: fmt.Sprintf("column \"%s\" does not exist", key),
+					return nil, core.Error{
+						Code:     "42703",
+						Message:  fmt.Sprintf("column \"%s\" does not exist", key),
+						Location: n.Location,
 					}
 				}
 				if found > 1 {
-					return nil, Error{
-						Code:    "42703",
-						Message: fmt.Sprintf("column reference \"%s\" is ambiguous", key),
+					return nil, core.Error{
+						Code:     "42703",
+						Message:  fmt.Sprintf("column reference \"%s\" is ambiguous", key),
+						Location: n.Location,
 					}
 				}
 			}
@@ -917,9 +937,10 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 					},
 				})
 			} else {
-				return nil, Error{
-					Code:    "42703",
-					Message: fmt.Sprintf("column \"%s\" does not exist", key),
+				return nil, core.Error{
+					Code:     "42703",
+					Message:  fmt.Sprintf("column \"%s\" does not exist", key),
+					Location: n.Location,
 				}
 			}
 

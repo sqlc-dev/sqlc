@@ -35,7 +35,7 @@ func TestPluck(t *testing.T) {
 	for i, stmt := range tree.Statements {
 		switch n := stmt.(type) {
 		case nodes.RawStmt:
-			q, _, _, err := pluckQuery(pluck, n)
+			q, err := pluckQuery(pluck, n)
 			if err != nil {
 				t.Error(err)
 				continue
@@ -80,10 +80,7 @@ func TestLineColumn(t *testing.T) {
 		{tree.Statements[5], 10, 12},
 	} {
 		raw := test.node.(nodes.RawStmt)
-		_, line, column, err := pluckQuery(lineColumn, raw)
-		if err != nil {
-			t.Fatal(err)
-		}
+		line, column := lineno(lineColumn, raw.StmtLocation)
 		if line != test.line {
 			t.Errorf("expected stmt %d to be on line %d, not %d", i, test.line, line)
 		}

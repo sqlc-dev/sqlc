@@ -56,8 +56,9 @@ func ParseList(list nodes.List) (pg.FQN, error) {
 	return fqn, nil
 }
 
-// func getTable(c *pg.Catalog, fqn pg.FQN) (pg.Schema, pg.Table, error) {
-// }
+func wrap(e pg.Error, loc int) pg.Error {
+	return e
+}
 
 func Update(c *pg.Catalog, stmt nodes.Node) error {
 	if false {
@@ -79,15 +80,15 @@ func Update(c *pg.Catalog, stmt nodes.Node) error {
 			}
 			from, exists := c.Schemas[fqn.Schema]
 			if !exists {
-				return pg.ErrorSchemaDoesNotExist(fqn.Schema)
+				return wrap(pg.ErrorSchemaDoesNotExist(fqn.Schema), raw.StmtLocation)
 			}
 			table, exists := from.Tables[fqn.Rel]
 			if !exists {
-				return pg.ErrorRelationDoesNotExist(fqn.Rel)
+				return wrap(pg.ErrorRelationDoesNotExist(fqn.Rel), raw.StmtLocation)
 			}
 			to, exists := c.Schemas[*n.Newschema]
 			if !exists {
-				return pg.ErrorSchemaDoesNotExist(*n.Newschema)
+				return wrap(pg.ErrorSchemaDoesNotExist(*n.Newschema), raw.StmtLocation)
 			}
 			// Move the table
 			delete(from.Tables, fqn.Rel)
@@ -102,11 +103,11 @@ func Update(c *pg.Catalog, stmt nodes.Node) error {
 		}
 		schema, exists := c.Schemas[fqn.Schema]
 		if !exists {
-			return pg.ErrorSchemaDoesNotExist(fqn.Schema)
+			return wrap(pg.ErrorSchemaDoesNotExist(fqn.Schema), raw.StmtLocation)
 		}
 		table, exists := schema.Tables[fqn.Rel]
 		if !exists {
-			return pg.ErrorRelationDoesNotExist(fqn.Rel)
+			return wrap(pg.ErrorRelationDoesNotExist(fqn.Rel), raw.StmtLocation)
 		}
 
 		for _, cmd := range n.Cmds.Items {
@@ -128,7 +129,7 @@ func Update(c *pg.Catalog, stmt nodes.Node) error {
 						}
 					}
 					if idx < 0 && !cmd.MissingOk {
-						return pg.ErrorColumnDoesNotExist(table.Name, *cmd.Name)
+						return wrap(pg.ErrorColumnDoesNotExist(table.Name, *cmd.Name), raw.StmtLocation)
 					}
 					// If a missing column is allowed, skip this command
 					if idx < 0 && cmd.MissingOk {
@@ -142,7 +143,7 @@ func Update(c *pg.Catalog, stmt nodes.Node) error {
 					d := cmd.Def.(nodes.ColumnDef)
 					for _, c := range table.Columns {
 						if c.Name == *d.Colname {
-							return pg.ErrorColumnAlreadyExists(table.Name, *d.Colname)
+							return wrap(pg.ErrorColumnAlreadyExists(table.Name, *d.Colname), d.Location)
 						}
 					}
 					table.Columns = append(table.Columns, pg.Column{
@@ -179,10 +180,10 @@ func Update(c *pg.Catalog, stmt nodes.Node) error {
 		}
 		schema, exists := c.Schemas[fqn.Schema]
 		if !exists {
-			return pg.ErrorSchemaDoesNotExist(fqn.Schema)
+			return wrap(pg.ErrorSchemaDoesNotExist(fqn.Schema), raw.StmtLocation)
 		}
 		if _, exists := schema.Tables[fqn.Rel]; exists {
-			return pg.ErrorRelationAlreadyExists(fqn.Rel)
+			return wrap(pg.ErrorRelationAlreadyExists(fqn.Rel), raw.StmtLocation)
 		}
 		table := pg.Table{
 			Name: fqn.Rel,
@@ -208,10 +209,10 @@ func Update(c *pg.Catalog, stmt nodes.Node) error {
 		}
 		schema, exists := c.Schemas[fqn.Schema]
 		if !exists {
-			return pg.ErrorSchemaDoesNotExist(fqn.Schema)
+			return wrap(pg.ErrorSchemaDoesNotExist(fqn.Schema), raw.StmtLocation)
 		}
 		if _, exists := schema.Enums[fqn.Rel]; exists {
-			return pg.ErrorTypeAlreadyExists(fqn.Rel)
+			return wrap(pg.ErrorTypeAlreadyExists(fqn.Rel), raw.StmtLocation)
 		}
 		schema.Enums[fqn.Rel] = pg.Enum{
 			Name: fqn.Rel,
@@ -221,7 +222,7 @@ func Update(c *pg.Catalog, stmt nodes.Node) error {
 	case nodes.CreateSchemaStmt:
 		name := *n.Schemaname
 		if _, exists := c.Schemas[name]; exists {
-			return pg.ErrorSchemaAlreadyExists(name)
+			return wrap(pg.ErrorSchemaAlreadyExists(name), raw.StmtLocation)
 		}
 		c.Schemas[name] = pg.NewSchema()
 
@@ -253,14 +254,14 @@ func Update(c *pg.Catalog, stmt nodes.Node) error {
 					if _, exists := schema.Tables[fqn.Rel]; exists {
 						delete(schema.Tables, fqn.Rel)
 					} else if !n.MissingOk {
-						return pg.ErrorRelationDoesNotExist(fqn.Rel)
+						return wrap(pg.ErrorRelationDoesNotExist(fqn.Rel), raw.StmtLocation)
 					}
 
 				case nodes.OBJECT_TYPE:
 					if _, exists := schema.Enums[fqn.Rel]; exists {
 						delete(schema.Enums, fqn.Rel)
 					} else if !n.MissingOk {
-						return pg.ErrorTypeDoesNotExist(fqn.Rel)
+						return wrap(pg.ErrorTypeDoesNotExist(fqn.Rel), raw.StmtLocation)
 					}
 
 				}
@@ -278,7 +279,7 @@ func Update(c *pg.Catalog, stmt nodes.Node) error {
 				if _, exists := c.Schemas[name]; exists {
 					delete(c.Schemas, name)
 				} else if !n.MissingOk {
-					return pg.ErrorSchemaDoesNotExist(name)
+					return wrap(pg.ErrorSchemaDoesNotExist(name), raw.StmtLocation)
 				}
 			}
 		}
@@ -292,11 +293,11 @@ func Update(c *pg.Catalog, stmt nodes.Node) error {
 			}
 			schema, exists := c.Schemas[fqn.Schema]
 			if !exists {
-				return pg.ErrorSchemaDoesNotExist(fqn.Schema)
+				return wrap(pg.ErrorSchemaDoesNotExist(fqn.Schema), raw.StmtLocation)
 			}
 			table, exists := schema.Tables[fqn.Rel]
 			if !exists {
-				return pg.ErrorRelationDoesNotExist(fqn.Rel)
+				return wrap(pg.ErrorRelationDoesNotExist(fqn.Rel), raw.StmtLocation)
 			}
 			idx := -1
 			for i, c := range table.Columns {
@@ -304,11 +305,11 @@ func Update(c *pg.Catalog, stmt nodes.Node) error {
 					idx = i
 				}
 				if c.Name == *n.Newname {
-					return pg.ErrorColumnAlreadyExists(table.Name, c.Name)
+					return wrap(pg.ErrorColumnAlreadyExists(table.Name, c.Name), raw.StmtLocation)
 				}
 			}
 			if idx < 0 {
-				return pg.ErrorColumnDoesNotExist(table.Name, *n.Subname)
+				return wrap(pg.ErrorColumnDoesNotExist(table.Name, *n.Subname), raw.StmtLocation)
 			}
 			table.Columns[idx].Name = *n.Newname
 
@@ -319,14 +320,14 @@ func Update(c *pg.Catalog, stmt nodes.Node) error {
 			}
 			schema, exists := c.Schemas[fqn.Schema]
 			if !exists {
-				return pg.ErrorSchemaDoesNotExist(fqn.Schema)
+				return wrap(pg.ErrorSchemaDoesNotExist(fqn.Schema), raw.StmtLocation)
 			}
 			table, exists := schema.Tables[fqn.Rel]
 			if !exists {
-				return pg.ErrorRelationDoesNotExist(fqn.Rel)
+				return wrap(pg.ErrorRelationDoesNotExist(fqn.Rel), raw.StmtLocation)
 			}
 			if _, exists := schema.Tables[*n.Newname]; exists {
-				return pg.ErrorRelationAlreadyExists(*n.Newname)
+				return wrap(pg.ErrorRelationAlreadyExists(*n.Newname), raw.StmtLocation)
 			}
 
 			// Remove the table under the old name
@@ -344,7 +345,7 @@ func Update(c *pg.Catalog, stmt nodes.Node) error {
 		}
 		schema, exists := c.Schemas[fqn.Schema]
 		if !exists {
-			return pg.ErrorSchemaDoesNotExist(fqn.Schema)
+			return wrap(pg.ErrorSchemaDoesNotExist(fqn.Schema), raw.StmtLocation)
 		}
 		arity := len(n.Parameters.Items)
 		args := make([]pg.Argument, arity)

@@ -3,9 +3,10 @@ package pg
 import "fmt"
 
 type Error struct {
-	Message string
-	Code    string
-	Hint    string
+	Message  string
+	Code     string
+	Hint     string
+	Location int
 }
 
 func (e Error) Error() string {

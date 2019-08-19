@@ -26,15 +26,15 @@ func TestFuncs(t *testing.T) {
 func TestParserErrors(t *testing.T) {
 	for _, tc := range []struct {
 		query string
-		err   Error
+		err   pg.Error
 	}{
 		{
 			"SELECT foo FROM bar WHERE baz = $4;",
-			Error{Code: "42P18", Message: "could not determine data type of parameter $1"},
+			pg.Error{Code: "42P18", Message: "could not determine data type of parameter $1"},
 		},
 		{
 			"SELECT foo FROM bar WHERE baz = $1 AND baz = $3;",
-			Error{Code: "42P18", Message: "could not determine data type of parameter $2"},
+			pg.Error{Code: "42P18", Message: "could not determine data type of parameter $2"},
 		},
 		{
 			`
@@ -43,22 +43,28 @@ func TestParserErrors(t *testing.T) {
 			-- name: foo :one
 			SELECT foo FROM bar;
 			`,
-			Error{Code: "42703", Message: "column \"foo\" does not exist"},
+			pg.Error{
+				Code:     "42703",
+				Message:  "column \"foo\" does not exist",
+				Location: 75,
+			},
 		},
 		{
 			"SELECT random(1);",
-			Error{
-				Code:    "42883",
-				Message: "function random(unknown) does not exist",
-				Hint:    "No function matches the given name and argument types. You might need to add explicit type casts.",
+			pg.Error{
+				Code:     "42883",
+				Message:  "function random(unknown) does not exist",
+				Hint:     "No function matches the given name and argument types. You might need to add explicit type casts.",
+				Location: 7,
 			},
 		},
 		{
 			"SELECT position()",
-			Error{
-				Code:    "42883",
-				Message: "function position() does not exist",
-				Hint:    "No function matches the given name and argument types. You might need to add explicit type casts.",
+			pg.Error{
+				Code:     "42883",
+				Message:  "function position() does not exist",
+				Hint:     "No function matches the given name and argument types. You might need to add explicit type casts.",
+				Location: 7,
 			},
 		},
 	} {
@@ -66,9 +72,9 @@ func TestParserErrors(t *testing.T) {
 		t.Run(test.query, func(t *testing.T) {
 			_, err := parseSQL(test.query)
 
-			var actual Error
+			var actual pg.Error
 			if err != nil {
-				actual = err.(Error)
+				actual = err.(pg.Error)
 			}
 
 			if diff := cmp.Diff(test.err, actual); diff != "" {
