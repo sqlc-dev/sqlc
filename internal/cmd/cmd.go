@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -86,48 +85,95 @@ var initCmd = &cobra.Command{
 var genCmd = &cobra.Command{
 	Use:   "generate",
 	Short: "Generate Go code from SQL",
-	RunE: func(cmd *cobra.Command, args []string) error {
+	Run: func(cmd *cobra.Command, args []string) {
 		blob, err := ioutil.ReadFile("sqlc.json")
 		if err != nil {
-			return err
+			fmt.Fprintln(os.Stderr, "error parsing sqlc.json: file does not exist")
+			os.Exit(1)
 		}
 
 		var settings dinosql.GenerateSettings
 		if err := json.Unmarshal(blob, &settings); err != nil {
-			return err
+			switch err.(type) {
+			// TODO: Provide better error messages for sqlc.json parsing
+			// case *json.SyntaxError:
+			// case *json.InvalidUnmarshalError:
+			// case *json.UnmarshalFieldError:
+			// case *json.UnmarshalTypeError:
+			// case *json.UnsupportedTypeError:
+			// case *json.UnsupportedValueError:
+			default:
+				fmt.Fprintf(os.Stderr, "error parsing sqlc.json: %s\n", err)
+			}
+			os.Exit(1)
 		}
 
-		for _, pkg := range settings.Packages {
+		var errored bool
+
+		for i, pkg := range settings.Packages {
+			name := pkg.Name
+
+			if pkg.Path == "" {
+				fmt.Fprintf(os.Stderr, "package[%d]: path must be set\n", i)
+				errored = true
+				continue
+			}
+
+			if name == "" {
+				name = filepath.Base(pkg.Path)
+			}
+
 			c, err := dinosql.ParseCatalog(pkg.Schema)
 			if err != nil {
-				return err
+				fmt.Fprintf(os.Stderr, "# package %s\n", name)
+				if parserErr, ok := err.(*dinosql.ParserErr); ok {
+					for _, fileErr := range parserErr.Errs {
+						fmt.Fprintf(os.Stderr, "%s:1:1: %s\n", fileErr.Filename, fileErr.Err)
+					}
+				} else {
+					fmt.Fprintf(os.Stderr, "error parsing schema: %s\n", err)
+				}
+				errored = true
+				continue
 			}
 
 			q, err := dinosql.ParseQueries(c, settings, pkg)
 			if err != nil {
-				return err
+				fmt.Fprintf(os.Stderr, "# package %s\n", name)
+				if parserErr, ok := err.(*dinosql.ParserErr); ok {
+					for _, fileErr := range parserErr.Errs {
+						fmt.Fprintf(os.Stderr, "%s:1:1: %s\n", fileErr.Filename, fileErr.Err)
+					}
+				} else {
+					fmt.Fprintf(os.Stderr, "error parsing schema: %s\n", err)
+				}
+				errored = true
+				continue
 			}
 
 			files, err := dinosql.Generate(q, settings, pkg)
 			if err != nil {
-				return err
-			}
-
-			if pkg.Path == "" {
-				return errors.New("package path must be set")
+				fmt.Fprintf(os.Stderr, "# package %s\n", name)
+				fmt.Fprintf(os.Stderr, "error generating code: %s\n", err)
+				errored = true
+				continue
 			}
 
 			os.MkdirAll(pkg.Path, 0755)
 
-			for name, source := range files {
-				filename := filepath.Join(pkg.Path, name)
+			for n, source := range files {
+				filename := filepath.Join(pkg.Path, n)
 				if err := ioutil.WriteFile(filename, []byte(source), 0644); err != nil {
-					return err
+					fmt.Fprintf(os.Stderr, "# package %s\n", name)
+					fmt.Fprintf(os.Stderr, "%s: %s\n", filename, err)
+					os.Exit(1)
 				}
 			}
 		}
 
-		return nil
+		if errored {
+			os.Exit(1)
+		}
 	},
 }
 
