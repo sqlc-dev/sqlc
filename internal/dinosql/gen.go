@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"go/format"
 	"log"
+	"path/filepath"
 	"sort"
 	"strings"
 	"text/template"
@@ -890,7 +891,7 @@ func Generate(r *Result, global GenerateSettings, settings PackageSettings) (map
 
 	pkg := settings.Name
 	if pkg == "" {
-		return nil, fmt.Errorf("package must have a name")
+		pkg = filepath.Base(settings.Path)
 	}
 
 	dbFile := template.Must(template.New("table").Funcs(funcMap).Parse(dbTmpl))

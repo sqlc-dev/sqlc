@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -110,6 +111,10 @@ var genCmd = &cobra.Command{
 			files, err := dinosql.Generate(q, settings, pkg)
 			if err != nil {
 				return err
+			}
+
+			if pkg.Path == "" {
+				return errors.New("package path must be set")
 			}
 
 			os.MkdirAll(pkg.Path, 0755)
