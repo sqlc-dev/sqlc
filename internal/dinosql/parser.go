@@ -445,6 +445,9 @@ func outputColumns(c core.Catalog, node nodes.Node) ([]core.Column, error) {
 			if ref, ok := n.Arg.(nodes.ColumnRef); ok {
 				name = join(ref.Fields, "_")
 			}
+			if res.Name != nil {
+				name = *res.Name
+			}
 			// TODO Validate column names
 			col := catalog.ToColumn(n.TypeName)
 			col.Name = name
