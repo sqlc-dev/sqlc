@@ -1,4 +1,4 @@
-module github.com/kyleconroy/dinosql
+module github.com/kyleconroy/sqlc
 
 go 1.12
 

@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/kyleconroy/dinosql/internal/pg"
+	"github.com/kyleconroy/sqlc/internal/pg"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
@@ -432,8 +432,8 @@ func TestUpdate(t *testing.T) {
 									Name: "foo",
 									Arguments: []pg.Argument{
 										{
-											Name:       "bar",
-											DataType:   "text",
+											Name:     "bar",
+											DataType: "text",
 										},
 										{
 											Name:       "baz",

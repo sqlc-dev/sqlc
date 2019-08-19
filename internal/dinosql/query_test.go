@@ -5,11 +5,11 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/davecgh/go-spew/spew"
-	core "github.com/kyleconroy/dinosql/internal/pg"
-	pg "github.com/lfittl/pg_query_go"
+	core "github.com/kyleconroy/sqlc/internal/pg"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/google/go-cmp/cmp"
+	pg "github.com/lfittl/pg_query_go"
 )
 
 func parseSQL(in string) (Query, error) {
