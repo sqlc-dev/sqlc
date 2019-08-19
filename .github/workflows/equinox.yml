@@ -17,7 +17,7 @@ jobs:
       env:
         EQUINOX_API_TOKEN: ${{ secrets.EQUINOX_API_TOKEN }}
         EQUINOX_SIGNING_KEY: ${{ secrets.EQUINOX_SIGNING_KEY }}
-      run: equinox release --channel devel --version=$GITHUB_SHA --draft --platforms=darwin_amd64 --app=app_i4iCp1SuYfZ --token=$EQUINOX_API_TOKEN github.com/kyleconroy/sqlc
+      run: equinox release --channel devel --version=$GITHUB_SHA --draft --platforms=darwin_amd64 --app=app_i4iCp1SuYfZ --token=$EQUINOX_API_TOKEN ./cmd/sqlc
 
   linux:
     name: Build on Linux
@@ -31,6 +31,6 @@ jobs:
       env:
         EQUINOX_API_TOKEN: ${{ secrets.EQUINOX_API_TOKEN }}
         EQUINOX_SIGNING_KEY: ${{ secrets.EQUINOX_SIGNING_KEY }}
-      run: ./equinox release --channel devel --version=$GITHUB_SHA --platforms=linux_amd64 --app=app_i4iCp1SuYfZ --token=$EQUINOX_API_TOKEN github.com/kyleconroy/sqlc
+      run: ./equinox release --channel devel --version=$GITHUB_SHA --platforms=linux_amd64 --app=app_i4iCp1SuYfZ --token=$EQUINOX_API_TOKEN ./cmd/sqlc
 
 
