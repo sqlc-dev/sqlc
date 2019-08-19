@@ -128,7 +128,7 @@ var genCmd = &cobra.Command{
 				fmt.Fprintf(os.Stderr, "# package %s\n", name)
 				if parserErr, ok := err.(*dinosql.ParserErr); ok {
 					for _, fileErr := range parserErr.Errs {
-						fmt.Fprintf(os.Stderr, "%s:1:1: %s\n", fileErr.Filename, fileErr.Err)
+						fmt.Fprintf(os.Stderr, "%s:%d:%d: %s\n", fileErr.Filename, fileErr.Line, fileErr.Column, fileErr.Err)
 					}
 				} else {
 					fmt.Fprintf(os.Stderr, "error parsing schema: %s\n", err)
@@ -142,7 +142,7 @@ var genCmd = &cobra.Command{
 				fmt.Fprintf(os.Stderr, "# package %s\n", name)
 				if parserErr, ok := err.(*dinosql.ParserErr); ok {
 					for _, fileErr := range parserErr.Errs {
-						fmt.Fprintf(os.Stderr, "%s:1:1: %s\n", fileErr.Filename, fileErr.Err)
+						fmt.Fprintf(os.Stderr, "%s:%d:%d: %s\n", fileErr.Filename, fileErr.Line, fileErr.Column, fileErr.Err)
 					}
 				} else {
 					fmt.Fprintf(os.Stderr, "error parsing schema: %s\n", err)

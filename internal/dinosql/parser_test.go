@@ -35,7 +35,7 @@ func TestPluck(t *testing.T) {
 	for i, stmt := range tree.Statements {
 		switch n := stmt.(type) {
 		case nodes.RawStmt:
-			q, err := pluckQuery(pluck, n)
+			q, _, _, err := pluckQuery(pluck, n)
 			if err != nil {
 				t.Error(err)
 				continue
@@ -45,6 +45,50 @@ func TestPluck(t *testing.T) {
 			}
 		default:
 			t.Fatalf("wrong type; %T", n)
+		}
+	}
+}
+
+const lineColumn = `SELECT 1; SELECT * FROM venue WHERE slug = $1 AND city = $2;
+
+SELECT * FROM venue WHERE slug = $1;
+  SELECT * 
+FROM venue 
+LIMIT $1;
+
+-- comment here
+SELECT * FROM venue
+OFFSET $1; SELECT 1;
+`
+
+func TestLineColumn(t *testing.T) {
+	tree, err := pg.Parse(lineColumn)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for i, test := range []struct {
+		node   nodes.Node
+		line   int
+		column int
+	}{
+		{tree.Statements[0], 1, 1},
+		{tree.Statements[1], 1, 11},
+		{tree.Statements[2], 3, 1},
+		{tree.Statements[3], 4, 3},
+		{tree.Statements[4], 9, 1},
+		{tree.Statements[5], 10, 12},
+	} {
+		raw := test.node.(nodes.RawStmt)
+		_, line, column, err := pluckQuery(lineColumn, raw)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if line != test.line {
+			t.Errorf("expected stmt %d to be on line %d, not %d", i, test.line, line)
+		}
+		if column != test.column {
+			t.Errorf("expected stmt %d to be on column %d, not %d", i, test.column, column)
 		}
 	}
 }
