@@ -110,6 +110,8 @@ var genCmd = &cobra.Command{
 
 		var errored bool
 
+		output := map[string]string{}
+
 		for i, pkg := range settings.Packages {
 			name := pkg.Name
 
@@ -159,20 +161,22 @@ var genCmd = &cobra.Command{
 				continue
 			}
 
-			os.MkdirAll(pkg.Path, 0755)
-
 			for n, source := range files {
 				filename := filepath.Join(pkg.Path, n)
-				if err := ioutil.WriteFile(filename, []byte(source), 0644); err != nil {
-					fmt.Fprintf(os.Stderr, "# package %s\n", name)
-					fmt.Fprintf(os.Stderr, "%s: %s\n", filename, err)
-					os.Exit(1)
-				}
+				output[filename] = source
 			}
 		}
 
 		if errored {
 			os.Exit(1)
+		}
+
+		for filename, source := range output {
+			os.MkdirAll(filepath.Dir(filename), 0755)
+			if err := ioutil.WriteFile(filename, []byte(source), 0644); err != nil {
+				fmt.Fprintf(os.Stderr, "%s: %s\n", filename, err)
+				os.Exit(1)
+			}
 		}
 	},
 }
