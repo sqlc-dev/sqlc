@@ -1,4 +1,4 @@
-name: dinosql test suite
+name: sqlc test suite
 on: [push]
 jobs:
 
@@ -26,10 +26,10 @@ jobs:
       with:
         version: 1.12
 
-    - name: Test dinosql
+    - name: Test sqlc
       run: go test -v ./...
 
-    - name: Test dinosql/ondeck
+    - name: Test sqlc/ondeck
       run: go test -v ./...
       working-directory: internal/dinosql/testdata/ondeck
       env:

@@ -18,7 +18,7 @@ import (
 
 // Do runs the command logic.
 func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int {
-	rootCmd := &cobra.Command{Use: "dinosql", SilenceUsage: true}
+	rootCmd := &cobra.Command{Use: "sqlc", SilenceUsage: true}
 	rootCmd.AddCommand(checkCmd)
 	rootCmd.AddCommand(genCmd)
 	rootCmd.AddCommand(initCmd)
@@ -42,7 +42,7 @@ func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int 
 
 var versionCmd = &cobra.Command{
 	Use:   "version",
-	Short: "Print the DinoSQL version number",
+	Short: "Print the sqlc version number",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("v0.0.1")
 	},
@@ -69,16 +69,16 @@ var parseCmd = &cobra.Command{
 
 var initCmd = &cobra.Command{
 	Use:   "init",
-	Short: "Create an empty dinosql.json settings file",
+	Short: "Create an empty sqlc.json settings file",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if _, err := os.Stat("dinosql.json"); !os.IsNotExist(err) {
+		if _, err := os.Stat("sqlc.json"); !os.IsNotExist(err) {
 			return nil
 		}
 		blob, err := json.MarshalIndent(dinosql.GenerateSettings{}, "  ", "")
 		if err != nil {
 			return err
 		}
-		return ioutil.WriteFile("dinosql.json", blob, 0644)
+		return ioutil.WriteFile("sqlc.json", blob, 0644)
 	},
 }
 
@@ -86,7 +86,7 @@ var genCmd = &cobra.Command{
 	Use:   "generate",
 	Short: "Generate Go code from SQL",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		blob, err := ioutil.ReadFile("dinosql.json")
+		blob, err := ioutil.ReadFile("sqlc.json")
 		if err != nil {
 			return err
 		}
@@ -127,7 +127,7 @@ var checkCmd = &cobra.Command{
 	Use:   "compile",
 	Short: "Statically check SQL for syntax and type errors",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		blob, err := ioutil.ReadFile("dinosql.json")
+		blob, err := ioutil.ReadFile("sqlc.json")
 		if err != nil {
 			return err
 		}

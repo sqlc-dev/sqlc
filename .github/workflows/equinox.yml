@@ -1,0 +1,36 @@
+name: Publish to Equinox
+
+on:
+  push:
+    branches:
+    - master
+
+jobs:
+
+  macos:
+    name: Build on macOS
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@master
+    - run: brew install eqnxio/equinox/release-tool
+    - name: equinox release
+      env:
+        EQUINOX_API_TOKEN: ${{ secrets.EQUINOX_API_TOKEN }}
+        EQUINOX_SIGNING_KEY: ${{ secrets.EQUINOX_SIGNING_KEY }}
+      run: equinox release --channel devel --version=$GITHUB_SHA --draft --platforms=darwin_amd64 --app=app_i4iCp1SuYfZ --token=$EQUINOX_API_TOKEN github.com/kyleconroy/sqlc
+
+  linux:
+    name: Build on Linux
+    runs-on: ubuntu-latest
+    needs: [macos]
+    steps:
+    - uses: actions/checkout@master
+    - run: curl -O https://bin.equinox.io/c/mBWdkfai63v/release-tool-stable-linux-amd64.tgz
+    - run: tar -xzvf release-tool-stable-linux-amd64.tgz
+    - name: equinox release
+      env:
+        EQUINOX_API_TOKEN: ${{ secrets.EQUINOX_API_TOKEN }}
+        EQUINOX_SIGNING_KEY: ${{ secrets.EQUINOX_SIGNING_KEY }}
+      run: ./equinox release --channel devel --version=$GITHUB_SHA --platforms=linux_amd64 --app=app_i4iCp1SuYfZ --token=$EQUINOX_API_TOKEN github.com/kyleconroy/sqlc
+
+

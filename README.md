@@ -1,6 +1,6 @@
 > 🚨 
 >
-> DinoSQL is **very new** and under rapid development.
+> sqlc is **very new** and under rapid development.
 >
 > The code it generates is correct and safe for production use, but
 > there is currently no garantee of stability or backwards-compatibility of
@@ -8,23 +8,23 @@
 >
 > 🚨 
 
-# Dino: A SQL Compiler
+# sqlc: A SQL Compiler
 
 > And lo, the Great One looked down upon the people and proclaimed:
 > 
 >   "SQL is actually pretty great"
 
-DinoSQL generates **fully-type safe idiomatic Go code** from SQL. Here's how it works:
+sqlc generates **fully-type safe idiomatic Go code** from SQL. Here's how it works:
 
 1. You write SQL queries
-1. You run the DinoSQL tool to generate Go code that presents type-safe interfaces to those queries
-1. You write application code that calls the methods DinoSQL generated.
+1. You run sqlc to generate Go code that presents type-safe interfaces to those queries
+1. You write application code that calls the methods sqlc generated.
 
 Seriously, it's that easy. You don't have to write any boilerplate SQL querying code ever again.
 
 ## Preventing Errors
-But DinoSQL doesn't just make you more productive by generating boilerplate for you.
-DinoSQL **also prevents entire classes of common errors in SQL code**. Have you ever:
+But sqlc doesn't just make you more productive by generating boilerplate for you.
+sqlc **also prevents entire classes of common errors in SQL code**. Have you ever:
 
 - Mixed up the order of the arguments when invoking the query so they didn't match up with the SQL text
 - Updated the name of a column in one query both not another
@@ -32,20 +32,20 @@ DinoSQL **also prevents entire classes of common errors in SQL code**. Have you 
 - Changed the number of arguments in a query but forgot to pass the additional values
 - Changed the type of a column but forgot to change the type in your code?
 
-All of these errors are *impossible* with DinoSQL. Wait, what? How?
+All of these errors are *impossible* with sqlc. Wait, what? How?
 
-DinoSQL parses your all of your queries and the DDL (e.g. `CREATE TABLE`) statements during the code generation processes
+sqlc parses your all of your queries and the DDL (e.g. `CREATE TABLE`) statements during the code generation processes
 so that it knows the names and types of every column in your tables and every expression in your queries.
-If any of them do not match, DinoSQL *will fail to compile your queries*, preventing entire classes of runtime problems
+If any of them do not match, sqlc *will fail to compile your queries*, preventing entire classes of runtime problems
 at compile time.
 
-Likewise, the methods that DinoSQL generates for you have a stricty arity and correct Go type definitions that match your columns. So if you
+Likewise, the methods that sqlc generates for you have a stricty arity and correct Go type definitions that match your columns. So if you
 change a query's arguments or a column's type but don't update your code, it will fail to compile.
 
 ## Getting Started
 Okay, enough hype, let's see it in action.
 
-First you pass the following SQL to `dinosql generate`:
+First you pass the following SQL to `sqlc generate`:
 
 ```sql
 CREATE TABLE authors (
@@ -105,7 +105,7 @@ if err != nil {
 fmt.Println(reflect.DeepEqual(insertedAuthor, fetchedAuthor))
 ```
 
-To make that possible, DinoSQL generates readable, **idiomatic** Go code that you otherwise would have had to write yourself. Take a look:
+To make that possible, sqlc generates readable, **idiomatic** Go code that you otherwise would have had to write yourself. Take a look:
 
 ```go
 package db
@@ -240,31 +240,31 @@ Your favorite PostgreSQL / Go features are supported:
   - [Goose migrations](./examples/goose.md)
 
 A full, end-to-end example can be found in the sample
-[`ondeck`](./internal/dinosql/testdata/ondeck) package.
+[`ondeck`](./internal/sqlc/testdata/ondeck) package.
 
 ## Usage
 
 ```
 Usage:
-  dinosql [command]
+  sqlc [command]
 
 Available Commands:
   compile     Statically check SQL for syntax and type errors
   generate    Generate Go code from SQL
   help        Help about any command
-  init        Create an empty dinosql.json settings file
-  version     Print the DinoSQL version number
+  init        Create an empty sqlc.json settings file
+  version     Print the sqlc version number
 
 Flags:
-  -h, --help   help for dinosql
+  -h, --help   help for sqlc
 
-Use "dinosql [command] --help" for more information about a command.
+Use "sqlc [command] --help" for more information about a command.
 ```
 
 ## Settings
 
-The `dinosql` tool is configured via a `dinosql.json` file. This file must be
-in the directory where the `dinosql` command is run.
+The `sqlc` tool is configured via a `sqlc.json` file. This file must be
+in the directory where the `sqlc` command is run.
 
 ```json
 {
@@ -297,19 +297,19 @@ Each package document has the following keys:
 
 ## Downloads
 
-Each commit is deployed to the [`devel` channel on Equinox](https://dl.equinox.io/dinosql/dinosql/devel):
-- [Linux](https://bin.equinox.io/c/jUfda88XW4i/dinosql-devel-linux-amd64.tgz)
-- [macOS](https://bin.equinox.io/c/jUfda88XW4i/dinosql-devel-darwin-amd64.zip)
+Each commit is deployed to the [`devel` channel on Equinox](https://dl.equinox.io/sqlc/sqlc/devel):
+- [Linux](https://bin.equinox.io/c/jUfda88XW4i/sqlc-devel-linux-amd64.tgz)
+- [macOS](https://bin.equinox.io/c/jUfda88XW4i/sqlc-devel-darwin-amd64.zip)
 
 ## Other Database Engines
 
-DinoSQL currently only supports PostgreSQL. If you'd like to support another database, we'd welcome a contribution.
+sqlc currently only supports PostgreSQL. If you'd like to support another database, we'd welcome a contribution.
 
 ## Other Language Backends
 
-DinoSQL currently only generates Go code, but if you'd like to build another language backend, we'd welcome a contribution.
+sqlc currently only generates Go code, but if you'd like to build another language backend, we'd welcome a contribution.
 
 ## Acknowledgements
 
-DinoSQL was inspired by [PugSQL](https://pugsql.org/) and
+sqlc was inspired by [PugSQL](https://pugsql.org/) and
 [HugSQL](https://www.hugsql.org/).
