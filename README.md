@@ -298,8 +298,8 @@ Each package document has the following keys:
 ## Downloads
 
 Each commit is deployed to the [`devel` channel on Equinox](https://dl.equinox.io/sqlc/sqlc/devel):
-- [Linux](https://bin.equinox.io/c/jUfda88XW4i/sqlc-devel-linux-amd64.tgz)
-- [macOS](https://bin.equinox.io/c/jUfda88XW4i/sqlc-devel-darwin-amd64.zip)
+- [Linux](https://bin.equinox.io/c/gvM95th6ps1/sqlc-devel-linux-amd64.tgz)
+- [macOS](https://bin.equinox.io/c/gvM95th6ps1/sqlc-devel-darwin-amd64.zip)
 
 ## Other Database Engines
 
