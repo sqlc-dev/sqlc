@@ -73,11 +73,11 @@ func TestLineColumn(t *testing.T) {
 		column int
 	}{
 		{tree.Statements[0], 1, 1},
-		{tree.Statements[1], 1, 10},
+		{tree.Statements[1], 1, 11},
 		{tree.Statements[2], 3, 1},
 		{tree.Statements[3], 4, 3},
-		{tree.Statements[4], 8, 1},
-		{tree.Statements[5], 10, 11},
+		{tree.Statements[4], 9, 1},
+		{tree.Statements[5], 10, 12},
 	} {
 		raw := test.node.(nodes.RawStmt)
 		_, line, column, err := pluckQuery(lineColumn, raw)

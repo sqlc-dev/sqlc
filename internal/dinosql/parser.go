@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"unicode"
 
 	"github.com/kyleconroy/sqlc/internal/catalog"
 	core "github.com/kyleconroy/sqlc/internal/pg"
@@ -25,6 +26,8 @@ func keepSpew() {
 
 type FileErr struct {
 	Filename string
+	Line     int
+	Column   int
 	Err      error
 }
 
@@ -32,8 +35,8 @@ type ParserErr struct {
 	Errs []FileErr
 }
 
-func (e *ParserErr) Add(filename string, err error) {
-	e.Errs = append(e.Errs, FileErr{filename, err})
+func (e *ParserErr) Add(filename string, line, column int, err error) {
+	e.Errs = append(e.Errs, FileErr{filename, line, column, err})
 }
 
 func NewParserErr() *ParserErr {
@@ -72,18 +75,25 @@ func ParseCatalog(schema string) (core.Catalog, error) {
 		filename := filepath.Join(schema, f.Name())
 		blob, err := ioutil.ReadFile(filename)
 		if err != nil {
-			merr.Add(filename, err)
+			merr.Add(filename, 1, 1, err)
 			continue
 		}
 		contents := RemoveGooseRollback(string(blob))
 		tree, err := pg.Parse(contents)
 		if err != nil {
-			merr.Add(filename, err)
+			merr.Add(filename, 1, 1, err)
 			continue
 		}
-		if err := updateCatalog(&c, tree); err != nil {
-			merr.Add(filename, err)
-			continue
+		for _, stmt := range tree.Statements {
+			line, col := location(contents, stmt)
+			if err := validateFuncCall(&c, stmt); err != nil {
+				merr.Add(filename, line, col, err)
+				continue
+			}
+			if err := catalog.Update(&c, stmt); err != nil {
+				merr.Add(filename, line, col, err)
+				continue
+			}
 		}
 	}
 	if len(merr.Errs) > 0 {
@@ -177,19 +187,20 @@ func ParseQueries(c core.Catalog, settings GenerateSettings, pkg PackageSettings
 		filename := filepath.Join(pkg.Queries, f.Name())
 		blob, err := ioutil.ReadFile(filename)
 		if err != nil {
-			merr.Add(filename, err)
+			merr.Add(filename, 1, 1, err)
 			continue
 		}
 		source := string(blob)
 		tree, err := pg.Parse(source)
 		if err != nil {
-			merr.Add(filename, err)
+			merr.Add(filename, 1, 1, err)
 			continue
 		}
 		for _, stmt := range tree.Statements {
+			line, col := location(source, stmt)
 			query, err := parseQuery(c, stmt, source)
 			if err != nil {
-				merr.Add(filename, err)
+				merr.Add(filename, line, col, err)
 				continue
 			}
 			query.Filename = f.Name()
@@ -206,28 +217,46 @@ func ParseQueries(c core.Catalog, settings GenerateSettings, pkg PackageSettings
 	return &Result{Catalog: c, Queries: q, Settings: settings}, nil
 }
 
+func location(source string, n nodes.Node) (int, int) {
+	raw, ok := n.(nodes.RawStmt)
+	if !ok {
+		return 1, 1
+	}
+	_, line, column, _ := pluckQuery(source, raw)
+	return line, column
+}
+
 func pluckQuery(source string, n nodes.RawStmt) (string, int, int, error) {
-	// TODO: Bounds checking
 	head := n.StmtLocation
 	tail := n.StmtLocation + n.StmtLen
-	text := strings.TrimSpace(source[head:tail])
 
-	// TODO: Remove
-	fmt.Println(text)
-
-	var l, c, loc int
-	for i, line := range strings.Split(source, "\n") {
-		l = i
-		c = head - loc
-		loc += len(line)
-		if loc > head {
-			break
+	// Calculate the true line and column number for a query, ignoring spaces
+	var comment bool
+	var loc, line, col int
+	for i, char := range source {
+		loc += 1
+		col += 1
+		// TODO: Check bounds
+		if char == '-' && source[i+1] == '-' {
+			comment = true
 		}
-		if line == "" {
-			loc += 1
+		if char == '\n' {
+			comment = false
+			line += 1
+			col = 0
 		}
+		if loc <= head {
+			continue
+		}
+		if unicode.IsSpace(char) {
+			continue
+		}
+		if comment {
+			continue
+		}
+		break
 	}
-	return text, l + 1, c + 1, nil
+	return strings.TrimSpace(source[head:tail]), line + 1, col, nil
 }
 
 func rangeVars(root nodes.Node) []nodes.RangeVar {
