@@ -124,7 +124,7 @@ func TestParseSchema(t *testing.T) {
 	}
 
 	q, err := ParseQueries(c, GenerateSettings{}, PackageSettings{
-		QueryDir: filepath.Join("testdata", "ondeck", "query"),
+		Queries: filepath.Join("testdata", "ondeck", "query"),
 	})
 	if err != nil {
 		t.Fatal(err)

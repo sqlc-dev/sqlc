@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -22,11 +23,22 @@ func keepSpew() {
 	spew.Dump("hello world")
 }
 
-func ParseCatalog(dir string) (core.Catalog, error) {
-	files, err := ioutil.ReadDir(dir)
+func ParseCatalog(schema string) (core.Catalog, error) {
+	f, err := os.Stat(schema)
 	if err != nil {
-		return core.Catalog{}, err
+		return core.Catalog{}, fmt.Errorf("path %s does not exist", schema)
 	}
+
+	var files []os.FileInfo
+	if f.IsDir() {
+		files, err = ioutil.ReadDir(schema)
+		if err != nil {
+			return core.Catalog{}, err
+		}
+	} else {
+		files = append(files, f)
+	}
+
 	c := core.NewCatalog()
 	for _, f := range files {
 		if !strings.HasSuffix(f.Name(), ".sql") {
@@ -35,7 +47,7 @@ func ParseCatalog(dir string) (core.Catalog, error) {
 		if strings.HasPrefix(f.Name(), ".") {
 			continue
 		}
-		blob, err := ioutil.ReadFile(filepath.Join(dir, f.Name()))
+		blob, err := ioutil.ReadFile(filepath.Join(schema, f.Name()))
 		if err != nil {
 			return c, err
 		}
@@ -109,9 +121,19 @@ type Result struct {
 }
 
 func ParseQueries(c core.Catalog, settings GenerateSettings, pkg PackageSettings) (*Result, error) {
-	files, err := ioutil.ReadDir(pkg.QueryDir)
+	f, err := os.Stat(pkg.Queries)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("path %s does not exist", pkg.Queries)
+	}
+
+	var files []os.FileInfo
+	if f.IsDir() {
+		files, err = ioutil.ReadDir(pkg.Queries)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		files = append(files, f)
 	}
 
 	var q []*Query
@@ -122,7 +144,7 @@ func ParseQueries(c core.Catalog, settings GenerateSettings, pkg PackageSettings
 		if strings.HasPrefix(f.Name(), ".") {
 			continue
 		}
-		blob, err := ioutil.ReadFile(filepath.Join(pkg.QueryDir, f.Name()))
+		blob, err := ioutil.ReadFile(filepath.Join(pkg.Queries, f.Name()))
 		if err != nil {
 			return nil, err
 		}
@@ -846,8 +868,8 @@ type TypeOverride struct {
 type PackageSettings struct {
 	Name                string `json:"name"`
 	Path                string `json:"path"`
-	MigrationDir        string `json:"schema"`
-	QueryDir            string `json:"queries"`
+	Schema              string `json:"schema"`
+	Queries             string `json:"queries"`
 	EmitPreparedQueries bool   `json:"emit_prepared_queries"`
 	EmitTags            bool   `json:"emit_tags"`
 }

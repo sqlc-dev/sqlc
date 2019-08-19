@@ -98,7 +98,7 @@ var genCmd = &cobra.Command{
 		}
 
 		for _, pkg := range settings.Packages {
-			c, err := dinosql.ParseCatalog(pkg.MigrationDir)
+			c, err := dinosql.ParseCatalog(pkg.Schema)
 			if err != nil {
 				return err
 			}
@@ -146,7 +146,7 @@ var checkCmd = &cobra.Command{
 		}
 
 		for _, pkg := range settings.Packages {
-			c, err := dinosql.ParseCatalog(pkg.MigrationDir)
+			c, err := dinosql.ParseCatalog(pkg.Schema)
 			if err != nil {
 				return err
 			}

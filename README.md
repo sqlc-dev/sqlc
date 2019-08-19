@@ -283,7 +283,7 @@ in the directory where the `sqlc` command is run.
 
 Each package document has the following keys:
 - `name`:
-  - The package name to use for the generated code
+  - The package name to use for the generated code. Defaults to `path` basename
 - `emit_json_tags`:
   - If true, add JSON tags to generated structs. Defaults to `false`.
 - `emit_prepared_queries`:
@@ -291,9 +291,9 @@ Each package document has the following keys:
 - `path`:
   - Output directory for generated code
 - `queries`:
-  - Directory of SQL queries stored in `.sql` files
+  - Directory of SQL queries or path to single SQL file
 - `schema`:
-  - Directory of SQL migrations, stored in `.sql` files
+  - Directory of SQL migrations or path to single SQL file
 
 ## Downloads
 
