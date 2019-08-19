@@ -518,6 +518,20 @@ func TestQueries(t *testing.T) {
 				},
 			},
 		},
+		{
+			"cast coalesce",
+			`
+			CREATE TABLE foo (bar text);
+
+			SELECT coalesce(bar, '')::text as login
+			FROM foo;
+			`,
+			Query{
+				Columns: []core.Column{
+					{Name: "login", DataType: "text", NotNull: true},
+				},
+			},
+		},
 	} {
 		test := tc
 		t.Run(test.name, func(t *testing.T) {
