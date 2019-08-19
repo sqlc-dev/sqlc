@@ -9,16 +9,6 @@ import (
 	nodes "github.com/lfittl/pg_query_go/nodes"
 )
 
-type Error struct {
-	Message string
-	Code    string
-	Hint    string
-}
-
-func (e Error) Error() string {
-	return e.Message
-}
-
 func validateParamRef(n nodes.Node) error {
 	var allrefs []nodes.ParamRef
 
@@ -37,7 +27,7 @@ func validateParamRef(n nodes.Node) error {
 
 	for i := 1; i <= len(seen); i += 1 {
 		if _, ok := seen[i]; !ok {
-			return Error{
+			return pg.Error{
 				Code:    "42P18",
 				Message: fmt.Sprintf("could not determine data type of parameter $%d", i),
 			}
@@ -90,10 +80,11 @@ func (v *funcCallVisitor) Visit(node nodes.Node) Visitor {
 		sig = append(sig, "unknown")
 	}
 
-	v.err = Error{
-		Code:    "42883",
-		Message: fmt.Sprintf("function %s(%s) does not exist", fqn.Rel, strings.Join(sig, ", ")),
-		Hint:    "No function matches the given name and argument types. You might need to add explicit type casts.",
+	v.err = pg.Error{
+		Code:     "42883",
+		Message:  fmt.Sprintf("function %s(%s) does not exist", fqn.Rel, strings.Join(sig, ", ")),
+		Hint:     "No function matches the given name and argument types. You might need to add explicit type casts.",
+		Location: funcCall.Location,
 	}
 
 	return nil
