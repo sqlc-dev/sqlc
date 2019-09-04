@@ -1,4 +1,4 @@
-# Universally unique identifiers (UUIDs)
+# Arrays
 
 ```sql
 CREATE TABLE places (
