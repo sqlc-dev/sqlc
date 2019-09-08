@@ -532,6 +532,43 @@ func TestQueries(t *testing.T) {
 				},
 			},
 		},
+		{
+			"in",
+			`
+			CREATE TABLE bar (id serial not null);
+
+			SELECT *
+			FROM bar
+			WHERE id IN ($1, $2);
+			`,
+			Query{
+				Columns: []core.Column{
+					{Name: "id", DataType: "serial", NotNull: true},
+				},
+				Params: []Parameter{
+					{1, core.Column{Name: "id", DataType: "serial", NotNull: true}},
+					{2, core.Column{Name: "id", DataType: "serial", NotNull: true}},
+				},
+			},
+		},
+		{
+			"any",
+			`
+			CREATE TABLE bar (id bigserial not null);
+
+			SELECT id
+			FROM bar
+			WHERE foo = ANY($1::bigserial[]);
+			`,
+			Query{
+				Columns: []core.Column{
+					{Name: "id", DataType: "bigserial", NotNull: true},
+				},
+				Params: []Parameter{
+					{1, core.Column{Name: "", DataType: "bigserial", NotNull: true, IsArray: true}},
+				},
+			},
+		},
 	} {
 		test := tc
 		t.Run(test.name, func(t *testing.T) {
