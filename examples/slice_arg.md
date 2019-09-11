@@ -1,4 +1,4 @@
-# Accepting a slice of arguments
+# The ANY operator, A.K.A. Passing a slice argument to a query
 Sometimes, an application will need a function that filters one or more columns, using one or more arguments for each column, for a specific table.
 Although the previous statement is a bit wordy, the actual query is can be pretty simple, with the use of the ANY operator.
 
