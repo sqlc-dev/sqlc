@@ -1,8 +1,11 @@
-# The ANY operator, A.K.A. Passing a slice argument to a query
-Sometimes, an application will need a function that filters one or more columns, using one or more arguments for each column, for a specific table.
-Although the previous statement is a bit wordy, the actual query is can be pretty simple, with the use of the ANY operator.
+# ANY
 
-This SQL script:
+In PostgreSQL,
+[ANY](https://www.postgresql.org/docs/current/functions-comparisons.html#id-1.5.8.28.16)
+allows you to check if a value exists in an array expression. Queries using ANY
+with a single parameter will generate method signatures with slices as
+arguments. 
+
 ```sql
 CREATE TABLE authors (
   id         SERIAL PRIMARY KEY,
@@ -15,13 +18,16 @@ SELECT * FROM authors
 WHERE id = ANY($1::int[]);
 ```
 
-Will turn into this Go code:
+The above SQL will generate the following code:
+
 ```go
 package db
 
 import (
 	"context"
 	"database/sql"
+
+  "github.com/lib/pq"
 )
 
 type Author struct {
