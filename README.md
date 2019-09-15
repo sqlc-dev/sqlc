@@ -225,6 +225,7 @@ Your favorite PostgreSQL / Go features are supported:
   - [UPDATE](./examples/update.md)
   - [DELETE](./examples/delete.md)
   - [RETURNING](./examples/returning.md)
+  - [The ANY operator, A.K.A. Passing a slice argument to a query](./examples/slice_arg.md)
   - [Transactions](./examples/transactions.md)
   - [Prepared queries](./examples/prepared_query.md)
 - PostgreSQL Types
