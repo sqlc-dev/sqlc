@@ -569,6 +569,79 @@ func TestQueries(t *testing.T) {
 				},
 			},
 		},
+		{
+			"schema-scoped list",
+			`
+			CREATE SCHEMA foo;
+			CREATE TABLE foo.bar (id serial not null);
+			SELECT * FROM foo.bar;
+			`,
+			Query{
+				Columns: []core.Column{
+					{Name: "id", DataType: "serial", NotNull: true},
+				},
+			},
+		},
+		{
+			"schema-scoped filter",
+			`
+			CREATE SCHEMA foo;
+			CREATE TABLE foo.bar (id serial not null);
+			SELECT * FROM foo.bar WHERE id = $1;
+			`,
+			Query{
+				Columns: []core.Column{
+					{Name: "id", DataType: "serial", NotNull: true},
+				},
+				Params: []Parameter{
+					{1, core.Column{Name: "id", DataType: "serial", NotNull: true}},
+				},
+			},
+		},
+		{
+			"schema-scoped create",
+			`
+			CREATE SCHEMA foo;
+			CREATE TABLE foo.bar (id serial not null, name text not null);
+			INSERT INTO foo.bar (id, name) VALUES ($1, $2) RETURNING id;
+			`,
+			Query{
+				Columns: []core.Column{
+					{Name: "id", DataType: "serial", NotNull: true},
+				},
+				Params: []Parameter{
+					{1, core.Column{Name: "id", DataType: "serial", NotNull: true}},
+					{2, core.Column{Name: "name", DataType: "text", NotNull: true}},
+				},
+			},
+		},
+		{
+			"schema-scoped update",
+			`
+			CREATE SCHEMA foo;
+			CREATE TABLE foo.bar (id serial not null, name text not null);
+			UPDATE foo.bar SET name = $2 WHERE id = $1;
+			`,
+			Query{
+				Params: []Parameter{
+					{1, core.Column{Name: "id", DataType: "serial", NotNull: true}},
+					{2, core.Column{Name: "name", DataType: "text", NotNull: true}},
+				},
+			},
+		},
+		{
+			"schema-scoped delete",
+			`
+			CREATE SCHEMA foo;
+			CREATE TABLE foo.bar (id serial not null);
+			DELETE FROM foo.bar WHERE id = $1;
+			`,
+			Query{
+				Params: []Parameter{
+					{1, core.Column{Name: "id", DataType: "serial", NotNull: true}},
+				},
+			},
+		},
 	} {
 		test := tc
 		t.Run(test.name, func(t *testing.T) {
