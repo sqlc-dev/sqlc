@@ -448,7 +448,21 @@ func (r Result) goInnerType(columnType string, notNull bool) string {
 
 	case "smallint", "pg_catalog.int2":
 		return "int16"
-
+	
+	case "float", "double precision", "pg_catalog.float8":
+		if notNull {
+			return "float64"
+		} else {
+			return "sql.NullFloat64"
+		}
+	
+	case "real", "pg_catalog.float4":
+		if notNull {
+			return "float32"
+		} else {
+			return "sql.NullFloat64" //IMPORTANT: Change to sql.NullFloat32 after updating the go.mod file
+		}
+		
 	case "bool", "pg_catalog.bool":
 		if notNull {
 			return "bool"
@@ -466,7 +480,7 @@ func (r Result) goInnerType(columnType string, notNull bool) string {
 			return "pq.NullTime"
 		}
 
-	case "text", "pg_catalog.varchar":
+	case "text", "pg_catalog.varchar", "pg_catalog.bpchar":
 		if notNull {
 			return "string"
 		} else {
