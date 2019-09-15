@@ -816,31 +816,50 @@ func argName(name string) string {
 }
 
 func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) ([]Parameter, error) {
-	typeMap := map[string]map[string]core.Column{}
-	for _, t := range c.Schemas["public"].Tables {
-		typeMap[t.Name] = map[string]core.Column{}
-		for _, c := range t.Columns {
-			cc := c
-			typeMap[t.Name][c.Name] = cc
-		}
-	}
-
-	aliasMap := map[string]string{}
+	aliasMap := map[string]core.FQN{}
 	// TODO: Deprecate defaultTable
-	defaultTable := ""
-	var tables []string
+	var defaultTable *core.FQN
+	var tables []core.FQN
+
 	for _, rv := range rvs {
 		if rv.Relname == nil {
 			continue
 		}
-		tables = append(tables, *rv.Relname)
-		if defaultTable == "" {
-			defaultTable = *rv.Relname
+		fqn, err := catalog.ParseRange(&rv)
+		if err != nil {
+			return nil, err
+		}
+		tables = append(tables, fqn)
+		if defaultTable == nil {
+			defaultTable = &fqn
 		}
 		if rv.Alias == nil {
 			continue
 		}
-		aliasMap[*rv.Alias.Aliasname] = *rv.Relname
+		aliasMap[*rv.Alias.Aliasname] = fqn
+	}
+
+	typeMap := map[string]map[string]map[string]core.Column{}
+	for _, fqn := range tables {
+		schema, found := c.Schemas[fqn.Schema]
+		if !found {
+			continue
+		}
+
+		table, found := schema.Tables[fqn.Rel]
+		if !found {
+			continue
+		}
+
+		if _, exists := typeMap[fqn.Schema]; !exists {
+			typeMap[fqn.Schema] = map[string]map[string]core.Column{}
+		}
+
+		typeMap[fqn.Schema][fqn.Rel] = map[string]core.Column{}
+		for _, c := range table.Columns {
+			cc := c
+			typeMap[fqn.Schema][fqn.Rel][c.Name] = cc
+		}
 	}
 
 	var a []Parameter
@@ -884,15 +903,20 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 
 				search := tables
 				if alias != "" {
-					search = []string{alias}
+					if original, ok := aliasMap[alias]; ok {
+						search = []core.FQN{original}
+					} else {
+						for _, fqn := range tables {
+							if fqn.Rel == alias {
+								search = []core.FQN{fqn}
+							}
+						}
+					}
 				}
 
 				var found int
 				for _, table := range search {
-					if original, ok := aliasMap[table]; ok {
-						table = original
-					}
-					if c, ok := typeMap[table][key]; ok {
+					if c, ok := typeMap[table.Schema][table.Rel][key]; ok {
 						found += 1
 						a = append(a, Parameter{
 							Number: ref.ref.Number,
@@ -926,7 +950,7 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 				return nil, fmt.Errorf("nodes.ResTarget has nil name")
 			}
 			key := *n.Name
-			if c, ok := typeMap[defaultTable][key]; ok {
+			if c, ok := typeMap[defaultTable.Schema][defaultTable.Rel][key]; ok {
 				a = append(a, Parameter{
 					Number: ref.ref.Number,
 					Column: core.Column{
