@@ -394,7 +394,7 @@ func (r Result) Structs() []GoStruct {
 				s.Fields = append(s.Fields, GoField{
 					Name: r.structName(column.Name),
 					Type: r.goType(column),
-					Tags: map[string]string{"json": column.Name},
+					Tags: map[string]string{"json:": column.Name},
 				})
 			}
 			structs = append(structs, s)
@@ -429,9 +429,8 @@ func (r Result) goInnerType(columnType string, notNull bool) string {
 	case "bigserial", "pg_catalog.serial8":
 		if notNull {
 			return "int64"
-		} else {
-			return "sql.NullInt64"
 		}
+		return "sql.NullInt64" // unnecessay else
 
 	case "smallserial", "pg_catalog.serial2":
 		return "int16"
@@ -442,33 +441,29 @@ func (r Result) goInnerType(columnType string, notNull bool) string {
 	case "bigint", "pg_catalog.int8":
 		if notNull {
 			return "int64"
-		} else {
-			return "sql.NullInt64"
 		}
+		return "sql.NullInt64" // unnecessary else
 
 	case "smallint", "pg_catalog.int2":
 		return "int16"
-	
+
 	case "float", "double precision", "pg_catalog.float8":
 		if notNull {
 			return "float64"
-		} else {
-			return "sql.NullFloat64"
 		}
-	
+		return "sql.NullFloat64" // unnecessary else
+
 	case "real", "pg_catalog.float4":
 		if notNull {
 			return "float32"
-		} else {
-			return "sql.NullFloat64" //IMPORTANT: Change to sql.NullFloat32 after updating the go.mod file
-		}
-		
+		} // unnecessary else
+		return "sql.NullFloat64" //IMPORTANT: Change to sql.NullFloat32 after updating the go.mod file
+
 	case "bool", "pg_catalog.bool":
 		if notNull {
 			return "bool"
-		} else {
-			return "sql.NullBool"
 		}
+		return "sql.NullBool" // unnecessary else
 
 	case "jsonb":
 		return "json.RawMessage"
@@ -476,16 +471,14 @@ func (r Result) goInnerType(columnType string, notNull bool) string {
 	case "pg_catalog.timestamp", "pg_catalog.timestamptz":
 		if notNull {
 			return "time.Time"
-		} else {
-			return "pq.NullTime"
 		}
+		return "pq.NullTime" // unnecessary else
 
 	case "text", "pg_catalog.varchar", "pg_catalog.bpchar":
 		if notNull {
 			return "string"
-		} else {
-			return "sql.NullString"
 		}
+		return "sql.NullString" // unnecessary else
 
 	case "uuid":
 		return "uuid.UUID"
@@ -531,7 +524,7 @@ func (r Result) columnsToStruct(name string, columns []core.Column) *GoStruct {
 		gs.Fields = append(gs.Fields, GoField{
 			Name: fieldName,
 			Type: r.goType(c),
-			Tags: map[string]string{"json": tagName},
+			Tags: map[string]string{"json:": tagName},
 		})
 		seen[c.Name] += 1
 	}
@@ -915,7 +908,7 @@ func Generate(r *Result, global GenerateSettings, settings PackageSettings) (map
 	tctx := tmplCtx{
 		Settings:            global,
 		EmitPreparedQueries: settings.EmitPreparedQueries,
-		EmitJSONTags:        settings.EmitTags,
+		EmitJSONTags:        settings.EmitJSONTags,
 		Q:                   "`",
 		Package:             pkg,
 		GoQueries:           r.GoQueries(),

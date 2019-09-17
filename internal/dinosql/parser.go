@@ -1000,7 +1000,7 @@ type PackageSettings struct {
 	Schema              string `json:"schema"`
 	Queries             string `json:"queries"`
 	EmitPreparedQueries bool   `json:"emit_prepared_queries"`
-	EmitTags            bool   `json:"emit_tags"`
+	EmitJSONTags        bool   `json:"emit_json_tags"`
 }
 
 type GenerateSettings struct {

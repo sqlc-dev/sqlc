@@ -37,10 +37,10 @@ func TestColumnsToStruct(t *testing.T) {
 	expected := &GoStruct{
 		Name: "Foo",
 		Fields: []GoField{
-			{Name: "Other", Type: "string", Tags: map[string]string{"json": "other"}},
-			{Name: "Count", Type: "int64", Tags: map[string]string{"json": "count"}},
-			{Name: "Count_2", Type: "int64", Tags: map[string]string{"json": "count_2"}},
-			{Name: "Tags", Type: "[]string", Tags: map[string]string{"json": "tags"}},
+			{Name: "Other", Type: "string", Tags: map[string]string{"json:": "other"}},
+			{Name: "Count", Type: "int64", Tags: map[string]string{"json:": "count"}},
+			{Name: "Count_2", Type: "int64", Tags: map[string]string{"json:": "count_2"}},
+			{Name: "Tags", Type: "[]string", Tags: map[string]string{"json:": "tags"}},
 		},
 	}
 	if diff := cmp.Diff(expected, actual); diff != "" {
