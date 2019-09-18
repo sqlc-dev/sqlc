@@ -76,7 +76,7 @@ func (v *funcCallVisitor) Visit(node nodes.Node) Visitor {
 	}
 
 	var sig []string
-	for _, _ = range funcCall.Args.Items {
+	for range funcCall.Args.Items {
 		sig = append(sig, "unknown")
 	}
 
