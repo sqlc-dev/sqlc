@@ -3,7 +3,7 @@
 > sqlc is **very new** and under rapid development.
 >
 > The code it generates is correct and safe for production use, but
-> there is currently no garantee of stability or backwards-compatibility of
+> there is currently no guarantee of stability or backwards-compatibility of
 > the command line interface, configuration file format or generated code.
 >
 > 🚨 
@@ -225,7 +225,7 @@ Your favorite PostgreSQL / Go features are supported:
   - [UPDATE](./examples/update.md)
   - [DELETE](./examples/delete.md)
   - [RETURNING](./examples/returning.md)
-  - [The ANY operator, A.K.A. Passing a slice argument to a query](./examples/slice_arg.md)
+  - [ANY](./examples/any.md)
   - [Transactions](./examples/transactions.md)
   - [Prepared queries](./examples/prepared_query.md)
 - PostgreSQL Types
@@ -241,7 +241,7 @@ Your favorite PostgreSQL / Go features are supported:
   - [Goose migrations](./examples/goose.md)
 
 A full, end-to-end example can be found in the sample
-[`ondeck`](./internal/sqlc/testdata/ondeck) package.
+[`ondeck`](./internal/dinosql/testdata/ondeck) package.
 
 ## Usage
 
