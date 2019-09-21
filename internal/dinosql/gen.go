@@ -383,7 +383,7 @@ func (r Result) structName(name string) string {
 func (r Result) Structs() []GoStruct {
 	var structs []GoStruct
 	for name, schema := range r.Catalog.Schemas {
-		if name != "public" {
+		if name == "pg_catalog" {
 			continue
 		}
 		for _, table := range schema.Tables {
