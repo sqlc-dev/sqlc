@@ -338,12 +338,18 @@ func (r Result) QueryImports(filename string) [][]string {
 func (r Result) Enums() []GoEnum {
 	var enums []GoEnum
 	for name, schema := range r.Catalog.Schemas {
-		if name != "public" {
+		if name == "pg_catalog" {
 			continue
 		}
 		for _, enum := range schema.Enums {
+			var enumName string
+			if name == "public" {
+				enumName = enum.Name
+			} else {
+				enumName = name + "_" + enum.Name
+			}
 			e := GoEnum{
-				Name: r.structName(enum.Name),
+				Name: r.structName(enumName),
 			}
 			for _, v := range enum.Vals {
 				name := ""
@@ -387,9 +393,13 @@ func (r Result) Structs() []GoStruct {
 			continue
 		}
 		for _, table := range schema.Tables {
-			s := GoStruct{
-				Name: inflection.Singular(r.structName(table.Name)),
+			var tableName string
+			if name == "public" {
+				tableName = table.Name
+			} else {
+				tableName = name + "_" + table.Name
 			}
+			s := GoStruct{Name: inflection.Singular(r.structName(tableName))}
 			for _, column := range table.Columns {
 				s.Fields = append(s.Fields, GoField{
 					Name: r.structName(column.Name),
@@ -488,12 +498,16 @@ func (r Result) goInnerType(columnType string, notNull bool) string {
 
 	default:
 		for name, schema := range r.Catalog.Schemas {
-			if name != "public" {
+			if name == "pg_catalog" {
 				continue
 			}
 			for _, enum := range schema.Enums {
 				if columnType == enum.Name {
-					return r.structName(enum.Name)
+					if name == "public" {
+						return r.structName(enum.Name)
+					} else {
+						return r.structName(name + "_" + enum.Name)
+					}
 				}
 			}
 		}
