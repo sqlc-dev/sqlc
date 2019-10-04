@@ -688,7 +688,11 @@ func New(db dbtx) *Queries {
 {{if .EmitPreparedQueries}}
 func Prepare(ctx context.Context, db dbtx) (*Queries, error) {
 	q := Queries{db: db}
-	var err error{{range .GoQueries}}
+	var err error
+	{{- if eq (len .GoQueries) 0 }}
+	_ = err
+	{{- end }}
+	{{- range .GoQueries }}
 	if q.{{.FieldName}}, err = db.PrepareContext(ctx, {{.ConstantName}}); err != nil {
 		return nil, err
 	}
