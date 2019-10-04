@@ -200,19 +200,23 @@ func (r Result) ModelImports() [][]string {
 		std = append(std, "time")
 	}
 
-	var pkg []string
-	if r.UsesType("pq.NullTime") {
-		pkg = append(pkg, "github.com/lib/pq")
-	}
-	if r.UsesType("uuid.UUID") {
-		pkg = append(pkg, "github.com/google/uuid")
-	}
-
 	// Custom imports
+	var pkg []string
 	overrideTypes := map[string]string{}
 	for _, o := range r.Settings.Overrides {
 		overrideTypes[o.GoType] = o.Package
 	}
+
+	_, overrideNullTime := overrideTypes["pq.NullTime"]
+	if r.UsesType("pq.NullTime") && !overrideNullTime {
+		pkg = append(pkg, "github.com/lib/pq")
+	}
+
+	_, overrideUUID := overrideTypes["uuid.UUID"]
+	if r.UsesType("uuid.UUID") && !overrideUUID {
+		pkg = append(pkg, "github.com/google/uuid")
+	}
+
 	for goType, importPath := range overrideTypes {
 		if r.UsesType(goType) {
 			pkg = append(pkg, importPath)
