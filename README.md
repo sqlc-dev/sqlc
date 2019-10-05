@@ -1,4 +1,4 @@
-> 🚨 
+> 🚨
 >
 > sqlc is **very new** and under rapid development.
 >
@@ -6,12 +6,12 @@
 > there is currently no guarantee of stability or backwards-compatibility of
 > the command line interface, configuration file format or generated code.
 >
-> 🚨 
+> 🚨
 
 # sqlc: A SQL Compiler
 
 > And lo, the Great One looked down upon the people and proclaimed:
-> 
+>
 >   "SQL is actually pretty great"
 
 sqlc generates **fully-type safe idiomatic Go code** from SQL. Here's how it works:
@@ -56,7 +56,7 @@ CREATE TABLE authors (
 
 -- name: GetAuthor :one
 SELECT * FROM authors
-WHERE id = $1;
+WHERE id = $1 LIMIT 1;
 
 -- name: ListAuthors :many
 SELECT * FROM authors
@@ -154,7 +154,7 @@ func (q *Queries) DeleteAuthor(ctx context.Context, id int64) error {
 
 const getAuthor = `-- name: GetAuthor :one
 SELECT id, name, bio FROM authors
-WHERE id = $1
+WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetAuthor(ctx context.Context, id int64) (Author, error) {
