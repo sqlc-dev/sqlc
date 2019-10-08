@@ -887,9 +887,24 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 			})
 
 		case nodes.A_Expr:
-			switch n := n.Lexpr.(type) {
+			// TODO: While this works for a wide range of simple expressions,
+			// more complicated expressions will cause this logic to fail.
+			list := search(n.Lexpr, func(node nodes.Node) bool {
+				_, ok := node.(nodes.ColumnRef)
+				return ok
+			})
+
+			if len(list.Items) == 0 {
+				return nil, core.Error{
+					Code:     "XXXXX",
+					Message:  "no column reference found",
+					Location: n.Location,
+				}
+			}
+
+			switch left := list.Items[0].(type) {
 			case nodes.ColumnRef:
-				items := stringSlice(n.Fields)
+				items := stringSlice(left.Fields)
 				var key, alias string
 				switch len(items) {
 				case 1:
@@ -933,14 +948,14 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 					return nil, core.Error{
 						Code:     "42703",
 						Message:  fmt.Sprintf("column \"%s\" does not exist", key),
-						Location: n.Location,
+						Location: left.Location,
 					}
 				}
 				if found > 1 {
 					return nil, core.Error{
 						Code:     "42703",
 						Message:  fmt.Sprintf("column reference \"%s\" is ambiguous", key),
-						Location: n.Location,
+						Location: left.Location,
 					}
 				}
 			}
@@ -981,7 +996,7 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 			a = append(a, Parameter{Number: ref.ref.Number})
 
 		default:
-			// return nil, fmt.Errorf("unsupported type: %T", n)
+			fmt.Printf("unsupported reference type: %T", n)
 		}
 	}
 	return a, nil

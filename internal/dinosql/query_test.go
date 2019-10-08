@@ -642,6 +642,22 @@ func TestQueries(t *testing.T) {
 				},
 			},
 		},
+		{
+			"lower",
+			`
+			CREATE TABLE foo (bar text not null, bat text not null);
+			SELECT bar FROM foo WHERE bar = $1 AND LOWER(bat) = $2;
+			`,
+			Query{
+				Columns: []core.Column{
+					{Name: "bar", DataType: "text", NotNull: true},
+				},
+				Params: []Parameter{
+					{1, core.Column{Name: "bar", DataType: "text", NotNull: true}},
+					{2, core.Column{Name: "bat", DataType: "text", NotNull: true}},
+				},
+			},
+		},
 	} {
 		test := tc
 		t.Run(test.name, func(t *testing.T) {
