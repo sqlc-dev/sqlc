@@ -315,21 +315,24 @@ func (r Result) QueryImports(filename string) [][]string {
 	}
 
 	var pkg []string
-	if sliceScan() {
-		pkg = append(pkg, "github.com/lib/pq")
-	}
-	if uses("pq.NullTime") {
-		pkg = append(pkg, "github.com/lib/pq")
-	}
-	if uses("uuid.UUID") {
-		pkg = append(pkg, "github.com/google/uuid")
-	}
-
-	// Custom imports
 	overrideTypes := map[string]string{}
 	for _, o := range r.Settings.Overrides {
 		overrideTypes[o.GoType] = o.Package
 	}
+
+	if sliceScan() {
+		pkg = append(pkg, "github.com/lib/pq")
+	}
+	_, overrideNullTime := overrideTypes["pq.NullTime"]
+	if uses("pq.NullTime") && !overrideNullTime {
+		pkg = append(pkg, "github.com/lib/pq")
+	}
+	_, overrideUUID := overrideTypes["uuid.UUID"]
+	if uses("uuid.UUID") && !overrideUUID {
+		pkg = append(pkg, "github.com/google/uuid")
+	}
+
+	// Custom imports
 	for goType, importPath := range overrideTypes {
 		if uses(goType) {
 			pkg = append(pkg, importPath)
