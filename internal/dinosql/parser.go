@@ -385,6 +385,7 @@ func (qc QueryCatalog) GetTable(fqn core.FQN) (core.Table, *core.Error) {
 		err := core.ErrorRelationDoesNotExist(fqn.Rel)
 		return core.Table{}, &err
 	}
+	table.ID = fqn
 	return table, nil
 }
 
@@ -524,6 +525,7 @@ func outputColumns(c core.Catalog, node nodes.Node) ([]core.Column, error) {
 							cname = *res.Name
 						}
 						cols = append(cols, core.Column{
+							Table:    t.ID,
 							Name:     cname,
 							Scope:    scope,
 							DataType: c.DataType,
@@ -606,6 +608,7 @@ func outputColumnRefs(res nodes.ResTarget, tables []core.Table, node nodes.Colum
 					cname = *res.Name
 				}
 				cols = append(cols, core.Column{
+					Table:    t.ID,
 					Name:     cname,
 					DataType: c.DataType,
 					NotNull:  c.NotNull,

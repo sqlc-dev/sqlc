@@ -44,6 +44,7 @@ type Table struct {
 }
 
 type Column struct {
+	Table   string
 	GoName  string
 	GoType  string
 	Name    string

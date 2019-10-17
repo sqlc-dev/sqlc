@@ -51,6 +51,14 @@ CREATE TABLE venue (
 );
 `
 
+func public(rel string) core.FQN {
+	return core.FQN{
+		Catalog: "",
+		Schema:  "public",
+		Rel:     rel,
+	}
+}
+
 func TestQueries(t *testing.T) {
 	for _, tc := range []struct {
 		name  string
@@ -65,8 +73,8 @@ func TestQueries(t *testing.T) {
 			`,
 			Query{
 				Columns: []core.Column{
-					{Name: "slug", DataType: "text", NotNull: true},
-					{Name: "name", DataType: "text", NotNull: true},
+					{Table: public("city"), Name: "slug", DataType: "text", NotNull: true},
+					{Table: public("city"), Name: "name", DataType: "text", NotNull: true},
 				},
 			},
 		},
@@ -80,8 +88,8 @@ func TestQueries(t *testing.T) {
 					{1, core.Column{Name: "slug", DataType: "text", NotNull: true}},
 				},
 				Columns: []core.Column{
-					{Name: "slug", DataType: "text", NotNull: true},
-					{Name: "name", DataType: "text", NotNull: true},
+					{Table: public("city"), Name: "slug", DataType: "text", NotNull: true},
+					{Table: public("city"), Name: "name", DataType: "text", NotNull: true},
 				},
 			},
 		},
@@ -102,8 +110,8 @@ func TestQueries(t *testing.T) {
 					{2, core.Column{Name: "slug", DataType: "text", NotNull: true}},
 				},
 				Columns: []core.Column{
-					{Name: "slug", DataType: "text", NotNull: true},
-					{Name: "name", DataType: "text", NotNull: true},
+					{Table: public("city"), Name: "slug", DataType: "text", NotNull: true},
+					{Table: public("city"), Name: "name", DataType: "text", NotNull: true},
 				},
 			},
 		},
@@ -129,14 +137,14 @@ func TestQueries(t *testing.T) {
 			`,
 			Query{
 				Columns: []core.Column{
-					{Name: "id", DataType: "serial", NotNull: true},
-					{Name: "create_at", DataType: "pg_catalog.timestamp", NotNull: true},
-					{Name: "status", DataType: "status", NotNull: true},
-					{Name: "slug", DataType: "text", NotNull: true},
-					{Name: "name", DataType: "pg_catalog.varchar", NotNull: true},
-					{Name: "city", DataType: "text", NotNull: true},
-					{Name: "spotify_playlist", DataType: "pg_catalog.varchar", NotNull: true},
-					{Name: "songkick_id", DataType: "text"},
+					{Table: public("venue"), Name: "id", DataType: "serial", NotNull: true},
+					{Table: public("venue"), Name: "create_at", DataType: "pg_catalog.timestamp", NotNull: true},
+					{Table: public("venue"), Name: "status", DataType: "status", NotNull: true},
+					{Table: public("venue"), Name: "slug", DataType: "text", NotNull: true},
+					{Table: public("venue"), Name: "name", DataType: "pg_catalog.varchar", NotNull: true},
+					{Table: public("venue"), Name: "city", DataType: "text", NotNull: true},
+					{Table: public("venue"), Name: "spotify_playlist", DataType: "pg_catalog.varchar", NotNull: true},
+					{Table: public("venue"), Name: "songkick_id", DataType: "text"},
 				},
 				Params: []Parameter{
 					{1, core.Column{Name: "city", DataType: "text", NotNull: true}},
@@ -164,14 +172,14 @@ func TestQueries(t *testing.T) {
 			`,
 			Query{
 				Columns: []core.Column{
-					{Name: "id", DataType: "serial", NotNull: true},
-					{Name: "create_at", DataType: "pg_catalog.timestamp", NotNull: true},
-					{Name: "status", DataType: "status", NotNull: true},
-					{Name: "slug", DataType: "text", NotNull: true},
-					{Name: "name", DataType: "pg_catalog.varchar", NotNull: true},
-					{Name: "city", DataType: "text", NotNull: true},
-					{Name: "spotify_playlist", DataType: "pg_catalog.varchar", NotNull: true},
-					{Name: "songkick_id", DataType: "text"},
+					{Table: public("venue"), Name: "id", DataType: "serial", NotNull: true},
+					{Table: public("venue"), Name: "create_at", DataType: "pg_catalog.timestamp", NotNull: true},
+					{Table: public("venue"), Name: "status", DataType: "status", NotNull: true},
+					{Table: public("venue"), Name: "slug", DataType: "text", NotNull: true},
+					{Table: public("venue"), Name: "name", DataType: "pg_catalog.varchar", NotNull: true},
+					{Table: public("venue"), Name: "city", DataType: "text", NotNull: true},
+					{Table: public("venue"), Name: "spotify_playlist", DataType: "pg_catalog.varchar", NotNull: true},
+					{Table: public("venue"), Name: "songkick_id", DataType: "text"},
 				},
 				Params: []Parameter{
 					{1, core.Column{Name: "slug", DataType: "text", NotNull: true}},
@@ -200,7 +208,7 @@ func TestQueries(t *testing.T) {
 			`,
 			Query{
 				Columns: []core.Column{
-					{Name: "id", DataType: "serial", NotNull: true},
+					{Table: public("venue"), Name: "id", DataType: "serial", NotNull: true},
 				},
 				Params: []Parameter{
 					{1, core.Column{NotNull: true, DataType: "text", Name: "slug"}},
@@ -221,7 +229,7 @@ func TestQueries(t *testing.T) {
 			`,
 			Query{
 				Columns: []core.Column{
-					{Name: "id", DataType: "serial", NotNull: true},
+					{Table: public("venue"), Name: "id", DataType: "serial", NotNull: true},
 				},
 				Params: []Parameter{
 					{1, core.Column{DataType: "text", Name: "slug", NotNull: true}},
@@ -239,7 +247,7 @@ func TestQueries(t *testing.T) {
 			`,
 			Query{
 				Columns: []core.Column{
-					{Name: "city", DataType: "text", NotNull: true},
+					{Table: public("venue"), Name: "city", DataType: "text", NotNull: true},
 					{Name: "count", DataType: "bigint", NotNull: true},
 				},
 			},
@@ -270,7 +278,7 @@ func TestQueries(t *testing.T) {
 			`,
 			Query{
 				Columns: []core.Column{
-					{Name: "id", DataType: "serial", NotNull: true},
+					{Table: public("foo"), Name: "id", DataType: "serial", NotNull: true},
 				},
 				Params: []Parameter{
 					{1, core.Column{Name: "id", DataType: "serial", NotNull: true}},
@@ -287,8 +295,8 @@ func TestQueries(t *testing.T) {
 			`,
 			Query{
 				Columns: []core.Column{
-					{Name: "bid", DataType: "serial", NotNull: true},
-					{Name: "fid", DataType: "serial", NotNull: true},
+					{Table: public("bar"), Name: "bid", DataType: "serial", NotNull: true},
+					{Table: public("foo"), Name: "fid", DataType: "serial", NotNull: true},
 				},
 			},
 		},
@@ -380,7 +388,7 @@ func TestQueries(t *testing.T) {
 			`,
 			Query{
 				Columns: []core.Column{
-					{Name: "other_name", DataType: "text", NotNull: true},
+					{Table: public("foo"), Name: "other_name", DataType: "text", NotNull: true},
 				},
 			},
 		},
@@ -392,7 +400,7 @@ func TestQueries(t *testing.T) {
 			`,
 			Query{
 				Columns: []core.Column{
-					{Name: "tags", DataType: "text", IsArray: true, NotNull: true},
+					{Table: public("bar"), Name: "tags", DataType: "text", IsArray: true, NotNull: true},
 				},
 			},
 		},
@@ -430,7 +438,7 @@ func TestQueries(t *testing.T) {
 			`,
 			Query{
 				Columns: []core.Column{
-					{Name: "bar", DataType: "bool", NotNull: true},
+					{Table: public("foo"), Name: "bar", DataType: "bool", NotNull: true},
 				},
 				Params: []Parameter{
 					{1, core.Column{Name: "limit", DataType: "integer", NotNull: true}},
@@ -446,7 +454,7 @@ func TestQueries(t *testing.T) {
 			`,
 			Query{
 				Columns: []core.Column{
-					{Name: "email", DataType: "text", NotNull: true},
+					{Table: public("foo"), Name: "email", DataType: "text", NotNull: true},
 				},
 				Params: []Parameter{
 					{1, core.Column{Name: "login", DataType: "text", NotNull: true}},
@@ -461,7 +469,7 @@ func TestQueries(t *testing.T) {
 			`,
 			Query{
 				Columns: []core.Column{
-					{Name: "id", DataType: "text", NotNull: true},
+					{Table: public("foo"), Name: "id", DataType: "text", NotNull: true},
 				},
 			},
 		},
@@ -478,7 +486,7 @@ func TestQueries(t *testing.T) {
 			`,
 			Query{
 				Columns: []core.Column{
-					{Name: "barid", DataType: "serial", NotNull: true, Scope: "foo"},
+					{Table: public("foo"), Name: "barid", DataType: "serial", NotNull: true, Scope: "foo"},
 				},
 				Params: []Parameter{
 					{1, core.Column{Name: "owner", DataType: "text", NotNull: true}},
@@ -499,8 +507,8 @@ func TestQueries(t *testing.T) {
 			`,
 			Query{
 				Columns: []core.Column{
-					{Name: "bar_id", DataType: "serial", NotNull: true, Scope: "foo"},
-					{Name: "baz_id", DataType: "serial", NotNull: true, Scope: "foo"},
+					{Table: public("foo"), Name: "bar_id", DataType: "serial", NotNull: true, Scope: "foo"},
+					{Table: public("foo"), Name: "baz_id", DataType: "serial", NotNull: true, Scope: "foo"},
 				},
 			},
 		},
@@ -514,7 +522,7 @@ func TestQueries(t *testing.T) {
 			`,
 			Query{
 				Columns: []core.Column{
-					{Name: "login", DataType: "text", NotNull: true},
+					{Table: public("foo"), Name: "login", DataType: "text", NotNull: true},
 				},
 			},
 		},
@@ -543,7 +551,7 @@ func TestQueries(t *testing.T) {
 			`,
 			Query{
 				Columns: []core.Column{
-					{Name: "id", DataType: "serial", NotNull: true},
+					{Table: public("bar"), Name: "id", DataType: "serial", NotNull: true},
 				},
 				Params: []Parameter{
 					{1, core.Column{Name: "id", DataType: "serial", NotNull: true}},
@@ -562,7 +570,7 @@ func TestQueries(t *testing.T) {
 			`,
 			Query{
 				Columns: []core.Column{
-					{Name: "id", DataType: "bigserial", NotNull: true},
+					{Table: public("bar"), Name: "id", DataType: "bigserial", NotNull: true},
 				},
 				Params: []Parameter{
 					{1, core.Column{Name: "", DataType: "bigserial", NotNull: true, IsArray: true}},
@@ -578,7 +586,10 @@ func TestQueries(t *testing.T) {
 			`,
 			Query{
 				Columns: []core.Column{
-					{Name: "id", DataType: "serial", NotNull: true},
+					{
+						Table: core.FQN{Schema: "foo", Rel: "bar"},
+						Name:  "id", DataType: "serial", NotNull: true,
+					},
 				},
 			},
 		},
@@ -591,7 +602,12 @@ func TestQueries(t *testing.T) {
 			`,
 			Query{
 				Columns: []core.Column{
-					{Name: "id", DataType: "serial", NotNull: true},
+					{
+						Table:    core.FQN{Schema: "foo", Rel: "bar"},
+						Name:     "id",
+						DataType: "serial",
+						NotNull:  true,
+					},
 				},
 				Params: []Parameter{
 					{1, core.Column{Name: "id", DataType: "serial", NotNull: true}},
@@ -607,7 +623,10 @@ func TestQueries(t *testing.T) {
 			`,
 			Query{
 				Columns: []core.Column{
-					{Name: "id", DataType: "serial", NotNull: true},
+					{
+						Table: core.FQN{Schema: "foo", Rel: "bar"},
+						Name:  "id", DataType: "serial", NotNull: true,
+					},
 				},
 				Params: []Parameter{
 					{1, core.Column{Name: "id", DataType: "serial", NotNull: true}},
@@ -650,11 +669,24 @@ func TestQueries(t *testing.T) {
 			`,
 			Query{
 				Columns: []core.Column{
-					{Name: "bar", DataType: "text", NotNull: true},
+					{Table: public("foo"), Name: "bar", DataType: "text", NotNull: true},
 				},
 				Params: []Parameter{
 					{1, core.Column{Name: "bar", DataType: "text", NotNull: true}},
 					{2, core.Column{Name: "bat", DataType: "text", NotNull: true}},
+				},
+			},
+		},
+		{
+			"identical-tables",
+			`
+			CREATE TABLE foo (id text not null);
+			CREATE TABLE bar (id text not null);
+			SELECT * FROM foo;
+			`,
+			Query{
+				Columns: []core.Column{
+					{Table: public("foo"), Name: "id", DataType: "text", NotNull: true},
 				},
 			},
 		},
