@@ -89,6 +89,7 @@ type Schema struct {
 }
 
 type Table struct {
+	ID      FQN
 	Name    string
 	Columns []Column
 }
@@ -101,6 +102,7 @@ type Column struct {
 
 	// XXX: Figure out what PostgreSQL calls `foo.id`
 	Scope string
+	Table FQN
 }
 
 type Enum struct {

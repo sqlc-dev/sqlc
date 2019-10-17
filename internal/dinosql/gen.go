@@ -47,6 +47,7 @@ func (gf GoField) Tag() string {
 }
 
 type GoStruct struct {
+	Table  *core.FQN
 	Name   string
 	Fields []GoField
 }
@@ -406,7 +407,10 @@ func (r Result) Structs() []GoStruct {
 			} else {
 				tableName = name + "_" + table.Name
 			}
-			s := GoStruct{Name: inflection.Singular(r.structName(tableName))}
+			s := GoStruct{
+				Table: &core.FQN{Schema: name, Rel: table.Name},
+				Name:  inflection.Singular(r.structName(tableName)),
+			}
 			for _, column := range table.Columns {
 				s.Fields = append(s.Fields, GoField{
 					Name: r.structName(column.Name),
@@ -566,6 +570,16 @@ func columnName(c core.Column, pos int) string {
 	return fmt.Sprintf("column_%d", pos+1)
 }
 
+func compareFQN(a *core.FQN, b *core.FQN) bool {
+	if a == nil && b == nil {
+		return true
+	}
+	if a == nil || b == nil {
+		return false
+	}
+	return a.Catalog == b.Catalog && a.Schema == b.Schema && a.Rel == b.Rel
+}
+
 func (r Result) GoQueries() []GoQuery {
 	structs := r.Structs()
 
@@ -643,7 +657,8 @@ func (r Result) GoQueries() []GoQuery {
 					c := query.Columns[i]
 					sameName := f.Name == r.structName(columnName(c, i))
 					sameType := f.Type == r.goType(c)
-					if !sameName || !sameType {
+					sameFQN := compareFQN(s.Table, &c.Table)
+					if !sameName || !sameType || !sameFQN {
 						same = false
 					}
 				}
