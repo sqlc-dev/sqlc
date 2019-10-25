@@ -556,9 +556,23 @@ func (r Result) columnsToStruct(name string, columns []core.Column) *GoStruct {
 	return &gs
 }
 
+func argName(name string) string {
+	out := ""
+	for i, p := range strings.Split(name, "_") {
+		if i == 0 {
+			out += strings.ToLower(p)
+		} else if p == "id" {
+			out += "ID"
+		} else {
+			out += strings.Title(p)
+		}
+	}
+	return out
+}
+
 func paramName(p Parameter) string {
 	if p.Column.Name != "" {
-		return p.Column.Name
+		return argName(p.Column.Name)
 	}
 	return fmt.Sprintf("dollar_%d", p.Number)
 }

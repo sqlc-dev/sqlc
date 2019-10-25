@@ -18,8 +18,8 @@ INSERT INTO city (
 `
 
 type CreateCityParams struct {
-	Name string
-	Slug string
+	Name string `json:"name"`
+	Slug string `json:"slug"`
 }
 
 func (q *Queries) CreateCity(ctx context.Context, arg CreateCityParams) (City, error) {
@@ -78,8 +78,8 @@ WHERE slug = $1
 `
 
 type UpdateCityNameParams struct {
-	Slug string
-	Name string
+	Slug string `json:"slug"`
+	Name string `json:"name"`
 }
 
 func (q *Queries) UpdateCityName(ctx context.Context, arg UpdateCityNameParams) error {

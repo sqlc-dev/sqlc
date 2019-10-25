@@ -804,20 +804,6 @@ func search(root nodes.Node, f func(nodes.Node) bool) nodes.List {
 	return ns.list
 }
 
-func argName(name string) string {
-	out := ""
-	for i, p := range strings.Split(name, "_") {
-		if i == 0 {
-			out += strings.ToLower(p)
-		} else if p == "id" {
-			out += "ID"
-		} else {
-			out += strings.Title(p)
-		}
-	}
-	return out
-}
-
 func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) ([]Parameter, error) {
 	aliasMap := map[string]core.FQN{}
 	// TODO: Deprecate defaultTable
@@ -939,7 +925,7 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 						a = append(a, Parameter{
 							Number: ref.ref.Number,
 							Column: core.Column{
-								Name:     argName(key),
+								Name:     key,
 								DataType: c.DataType,
 								NotNull:  c.NotNull,
 								IsArray:  c.IsArray,
@@ -972,7 +958,7 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 				a = append(a, Parameter{
 					Number: ref.ref.Number,
 					Column: core.Column{
-						Name:     argName(key),
+						Name:     key,
 						DataType: c.DataType,
 						NotNull:  c.NotNull,
 						IsArray:  c.IsArray,
