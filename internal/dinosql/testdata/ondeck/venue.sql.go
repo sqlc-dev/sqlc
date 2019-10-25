@@ -30,12 +30,12 @@ INSERT INTO venue (
 `
 
 type CreateVenueParams struct {
-	Slug            string
-	Name            string
-	City            string
-	SpotifyPlaylist string
-	Status          Status
-	Tags            []string
+	Slug            string   `json:"slug"`
+	Name            string   `json:"name"`
+	City            string   `json:"city"`
+	SpotifyPlaylist string   `json:"spotify_playlist"`
+	Status          Status   `json:"status"`
+	Tags            []string `json:"tags"`
 }
 
 func (q *Queries) CreateVenue(ctx context.Context, arg CreateVenueParams) (int32, error) {
@@ -69,8 +69,8 @@ WHERE slug = $1 AND city = $2
 `
 
 type GetVenueParams struct {
-	Slug string
-	City string
+	Slug string `json:"slug"`
+	City string `json:"city"`
 }
 
 func (q *Queries) GetVenue(ctx context.Context, arg GetVenueParams) (Venue, error) {
@@ -138,8 +138,8 @@ RETURNING id
 `
 
 type UpdateVenueNameParams struct {
-	Slug string
-	Name string
+	Slug string `json:"slug"`
+	Name string `json:"name"`
 }
 
 func (q *Queries) UpdateVenueName(ctx context.Context, arg UpdateVenueNameParams) (int32, error) {
@@ -159,8 +159,8 @@ ORDER BY 1
 `
 
 type VenueCountByCityRow struct {
-	City  string
-	Count int64
+	City  string `json:"city"`
+	Count int64  `json:"count"`
 }
 
 func (q *Queries) VenueCountByCity(ctx context.Context) ([]VenueCountByCityRow, error) {

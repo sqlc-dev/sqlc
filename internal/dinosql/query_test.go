@@ -214,7 +214,7 @@ func TestQueries(t *testing.T) {
 					{1, core.Column{NotNull: true, DataType: "text", Name: "slug"}},
 					{2, core.Column{NotNull: true, DataType: "pg_catalog.varchar", Name: "name"}},
 					{3, core.Column{NotNull: true, DataType: "text", Name: "city"}},
-					{4, core.Column{NotNull: true, DataType: "pg_catalog.varchar", Name: "spotifyPlaylist"}},
+					{4, core.Column{NotNull: true, DataType: "pg_catalog.varchar", Name: "spotify_playlist"}},
 					{5, core.Column{NotNull: true, DataType: "status", Name: "status"}},
 				},
 			},

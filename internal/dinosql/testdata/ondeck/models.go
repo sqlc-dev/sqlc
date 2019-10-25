@@ -15,18 +15,18 @@ const (
 )
 
 type City struct {
-	Slug string
-	Name string
+	Slug string `json:"slug"`
+	Name string `json:"name"`
 }
 
 type Venue struct {
-	ID              int32
-	Status          Status
-	Slug            string
-	Name            string
-	City            string
-	SpotifyPlaylist string
-	SongkickID      sql.NullString
-	Tags            []string
-	CreatedAt       time.Time
+	ID              int32          `json:"id"`
+	Status          Status         `json:"status"`
+	Slug            string         `json:"slug"`
+	Name            string         `json:"name"`
+	City            string         `json:"city"`
+	SpotifyPlaylist string         `json:"spotify_playlist"`
+	SongkickID      sql.NullString `json:"songkick_id"`
+	Tags            []string       `json:"tags"`
+	CreatedAt       time.Time      `json:"created_at"`
 }
