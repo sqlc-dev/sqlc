@@ -269,6 +269,7 @@ in the directory where the `sqlc` command is run.
 
 ```json
 {
+  "version": "1",
   "packages": [
     {
       "name": "db",

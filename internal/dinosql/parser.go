@@ -997,18 +997,3 @@ type TypeOverride struct {
 	GoType       string `json:"go_type"`
 	Null         bool   `json:"null"`
 }
-
-type PackageSettings struct {
-	Name                string `json:"name"`
-	Path                string `json:"path"`
-	Schema              string `json:"schema"`
-	Queries             string `json:"queries"`
-	EmitPreparedQueries bool   `json:"emit_prepared_queries"`
-	EmitJSONTags        bool   `json:"emit_json_tags"`
-}
-
-type GenerateSettings struct {
-	Packages  []PackageSettings `json:"packages"`
-	Overrides []TypeOverride    `json:"overrides"`
-	Rename    map[string]string `json:"rename"`
-}
