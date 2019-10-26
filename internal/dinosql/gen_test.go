@@ -30,6 +30,11 @@ func TestColumnsToStruct(t *testing.T) {
 			NotNull:  true,
 			IsArray:  true,
 		},
+		{
+			Name:     "byte_seq",
+			DataType: "bytea",
+			NotNull:  true,
+		},
 	}
 
 	r := Result{}
@@ -41,6 +46,7 @@ func TestColumnsToStruct(t *testing.T) {
 			{Name: "Count", Type: "int64", Tags: map[string]string{"json:": "count"}},
 			{Name: "Count_2", Type: "int64", Tags: map[string]string{"json:": "count_2"}},
 			{Name: "Tags", Type: "[]string", Tags: map[string]string{"json:": "tags"}},
+			{Name: "ByteSeq", Type: "[]byte", Tags: map[string]string{"json:": "byte_seq"}},
 		},
 	}
 	if diff := cmp.Diff(expected, actual); diff != "" {

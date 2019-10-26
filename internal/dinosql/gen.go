@@ -489,6 +489,9 @@ func (r Result) goInnerType(columnType string, notNull bool) string {
 	case "jsonb":
 		return "json.RawMessage"
 
+	case "bytea", "pg_catalog.bytea":
+		return "[]byte"
+
 	case "pg_catalog.timestamp", "pg_catalog.timestamptz":
 		if notNull {
 			return "time.Time"
