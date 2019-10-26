@@ -781,3 +781,39 @@ func TestStarWalker(t *testing.T) {
 		})
 	}
 }
+
+func TestInvalidQueries(t *testing.T) {
+	for i, tc := range []struct {
+		stmt string
+	}{
+		{
+			`
+			CREATE TABLE foo (id text not null);
+			-- name: ListFoos
+			SELECT id FROM foo;
+			`,
+		},
+		{
+			`
+			CREATE TABLE foo (id text not null);
+			-- name: ListFoos :one :many
+			SELECT id FROM foo;
+			`,
+		},
+		{
+			`
+			CREATE TABLE foo (id text not null);
+			-- name: ListFoos :two
+			SELECT id FROM foo;
+			`,
+		},
+	} {
+		test := tc
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			_, err := parseSQL(test.stmt)
+			if err == nil {
+				t.Errorf("expected err, got nil")
+			}
+		})
+	}
+}
