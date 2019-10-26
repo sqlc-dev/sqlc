@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -82,6 +83,21 @@ var initCmd = &cobra.Command{
 	},
 }
 
+const errMessageNoVersion = `The configuration file must have a version number.
+Set the version to 1 at the top of sqlc.json:
+
+{
+  "version": "1"
+  ...
+}
+`
+
+const errMessageUnknownVersion = `The configuration file has an invalid version number.
+The only supported version is "1".
+`
+
+const errMessageNoPackages = `No packages are configured`
+
 var genCmd = &cobra.Command{
 	Use:   "generate",
 	Short: "Generate Go code from SQL",
@@ -92,19 +108,17 @@ var genCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		var settings dinosql.GenerateSettings
-		if err := json.Unmarshal(blob, &settings); err != nil {
-			switch err.(type) {
-			// TODO: Provide better error messages for sqlc.json parsing
-			// case *json.SyntaxError:
-			// case *json.InvalidUnmarshalError:
-			// case *json.UnmarshalFieldError:
-			// case *json.UnmarshalTypeError:
-			// case *json.UnsupportedTypeError:
-			// case *json.UnsupportedValueError:
-			default:
-				fmt.Fprintf(os.Stderr, "error parsing sqlc.json: %s\n", err)
+		settings, err := dinosql.ParseConfig(bytes.NewReader(blob))
+		if err != nil {
+			switch err {
+			case dinosql.ErrMissingVersion:
+				fmt.Fprintf(os.Stderr, errMessageNoVersion)
+			case dinosql.ErrUnknownVersion:
+				fmt.Fprintf(os.Stderr, errMessageUnknownVersion)
+			case dinosql.ErrNoPackages:
+				fmt.Fprintf(os.Stderr, errMessageNoPackages)
 			}
+			fmt.Fprintf(os.Stderr, "error parsing sqlc.json: %s\n", err)
 			os.Exit(1)
 		}
 
