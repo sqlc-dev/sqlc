@@ -291,6 +291,18 @@ func parseMetadata(t string) (string, string, error) {
 			continue
 		}
 		part := strings.Split(line, " ")
+		if len(part) == 2 {
+			return "", "", fmt.Errorf("missing query type [':one', ':many', ':exec', ':execrows']: %s", line)
+		}
+		if len(part) != 4 {
+			return "", "", fmt.Errorf("invalid query comment: %s", line)
+		}
+		queryType := strings.TrimSpace(part[3])
+		switch queryType {
+		case ":one", ":many", ":exec", ":execrows":
+		default:
+			return "", "", fmt.Errorf("invalid query type: %s", queryType)
+		}
 		return part[2], strings.TrimSpace(part[3]), nil
 	}
 	return "", "", nil
