@@ -12,6 +12,10 @@ jobs:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@master
+    - name: Set up Go 1.13
+      uses: actions/setup-go@v1
+      with:
+        go-version: '1.13'
     - run: brew install eqnxio/equinox/release-tool
     - name: equinox release
       env:
@@ -25,6 +29,10 @@ jobs:
     needs: [macos]
     steps:
     - uses: actions/checkout@master
+    - name: Set up Go 1.13
+      uses: actions/setup-go@v1
+      with:
+        go-version: '1.13'
     - run: curl -O https://bin.equinox.io/c/mBWdkfai63v/release-tool-stable-linux-amd64.tgz
     - run: tar -xzvf release-tool-stable-linux-amd64.tgz
     - name: equinox release
