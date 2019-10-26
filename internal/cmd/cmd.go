@@ -75,7 +75,7 @@ var initCmd = &cobra.Command{
 		if _, err := os.Stat("sqlc.json"); !os.IsNotExist(err) {
 			return nil
 		}
-		blob, err := json.MarshalIndent(dinosql.GenerateSettings{}, "  ", "")
+		blob, err := json.MarshalIndent(dinosql.GenerateSettings{Version: "1"}, "", "  ")
 		if err != nil {
 			return err
 		}

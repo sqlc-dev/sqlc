@@ -18,8 +18,8 @@ type PackageSettings struct {
 type GenerateSettings struct {
 	Version   string            `json:"version"`
 	Packages  []PackageSettings `json:"packages"`
-	Overrides []TypeOverride    `json:"overrides"`
-	Rename    map[string]string `json:"rename"`
+	Overrides []TypeOverride    `json:"overrides,omitempty"`
+	Rename    map[string]string `json:"rename,omitempty"`
 }
 
 var ErrMissingVersion = errors.New("no version number")
