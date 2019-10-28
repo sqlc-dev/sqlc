@@ -63,26 +63,28 @@ func ParseCatalog(schema string) (core.Catalog, error) {
 		return core.Catalog{}, fmt.Errorf("path %s does not exist", schema)
 	}
 
-	var files []os.FileInfo
+	var files []string
 	if f.IsDir() {
-		files, err = ioutil.ReadDir(schema)
+		listing, err := ioutil.ReadDir(schema)
 		if err != nil {
 			return core.Catalog{}, err
 		}
+		for _, f := range listing {
+			files = append(files, filepath.Join(schema, f.Name()))
+		}
 	} else {
-		files = append(files, f)
+		files = append(files, schema)
 	}
 
 	merr := NewParserErr()
 	c := core.NewCatalog()
-	for _, f := range files {
-		if !strings.HasSuffix(f.Name(), ".sql") {
+	for _, filename := range files {
+		if !strings.HasSuffix(filename, ".sql") {
 			continue
 		}
-		if strings.HasPrefix(f.Name(), ".") {
+		if strings.HasPrefix(filepath.Base(filename), ".") {
 			continue
 		}
-		filename := filepath.Join(schema, f.Name())
 		blob, err := ioutil.ReadFile(filename)
 		if err != nil {
 			merr.Add(filename, "", 0, err)
@@ -174,26 +176,28 @@ func ParseQueries(c core.Catalog, settings GenerateSettings, pkg PackageSettings
 		return nil, fmt.Errorf("path %s does not exist", pkg.Queries)
 	}
 
-	var files []os.FileInfo
+	var files []string
 	if f.IsDir() {
-		files, err = ioutil.ReadDir(pkg.Queries)
+		listing, err := ioutil.ReadDir(pkg.Queries)
 		if err != nil {
 			return nil, err
 		}
+		for _, f := range listing {
+			files = append(files, filepath.Join(pkg.Queries, f.Name()))
+		}
 	} else {
-		files = append(files, f)
+		files = append(files, pkg.Queries)
 	}
 
 	merr := NewParserErr()
 	var q []*Query
-	for _, f := range files {
-		if !strings.HasSuffix(f.Name(), ".sql") {
+	for _, filename := range files {
+		if !strings.HasSuffix(filename, ".sql") {
 			continue
 		}
-		if strings.HasPrefix(f.Name(), ".") {
+		if strings.HasPrefix(filepath.Base(filename), ".") {
 			continue
 		}
-		filename := filepath.Join(pkg.Queries, f.Name())
 		blob, err := ioutil.ReadFile(filename)
 		if err != nil {
 			merr.Add(filename, "", 0, err)
@@ -212,7 +216,7 @@ func ParseQueries(c core.Catalog, settings GenerateSettings, pkg PackageSettings
 				merr.Add(filename, source, location(stmt), err)
 				continue
 			}
-			query.Filename = f.Name()
+			query.Filename = filepath.Base(filename)
 			if query != nil {
 				q = append(q, query)
 			}
