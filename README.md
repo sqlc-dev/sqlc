@@ -1,10 +1,10 @@
 > 🚨
 >
-> sqlc is **very new** and under rapid development.
+> sqlc is **new** and under rapid development.
 >
-> The code it generates is correct and safe for production use, but
-> there is currently no guarantee of stability or backwards-compatibility of
-> the command line interface, configuration file format or generated code.
+> The code it generates is correct and safe for production use, but there is
+> currently no guarantee of stability or backwards-compatibility of the command
+> line interface, configuration file format or generated code.
 >
 > 🚨
 
@@ -14,33 +14,43 @@
 >
 >   "SQL is actually pretty great"
 
-sqlc generates **fully-type safe idiomatic Go code** from SQL. Here's how it works:
+sqlc generates **fully-type safe idiomatic Go code** from SQL. Here's how it
+works:
 
 1. You write SQL queries
-1. You run sqlc to generate Go code that presents type-safe interfaces to those queries
+1. You run sqlc to generate Go code that presents type-safe interfaces to those
+   queries
 1. You write application code that calls the methods sqlc generated.
 
-Seriously, it's that easy. You don't have to write any boilerplate SQL querying code ever again.
+Seriously, it's that easy. You don't have to write any boilerplate SQL querying
+code ever again.
 
 ## Preventing Errors
-But sqlc doesn't just make you more productive by generating boilerplate for you.
-sqlc **also prevents entire classes of common errors in SQL code**. Have you ever:
 
-- Mixed up the order of the arguments when invoking the query so they didn't match up with the SQL text
+But sqlc doesn't just make you more productive by generating boilerplate for
+you. sqlc **also prevents entire classes of common errors in SQL code**. Have
+you ever:
+
+- Mixed up the order of the arguments when invoking the query so they didn't
+  match up with the SQL text
 - Updated the name of a column in one query both not another
 - Mistyped the name of a column in a query
-- Changed the number of arguments in a query but forgot to pass the additional values
+- Changed the number of arguments in a query but forgot to pass the additional
+  values
 - Changed the type of a column but forgot to change the type in your code?
 
 All of these errors are *impossible* with sqlc. Wait, what? How?
 
-sqlc parses your all of your queries and the DDL (e.g. `CREATE TABLE`) statements during the code generation processes
-so that it knows the names and types of every column in your tables and every expression in your queries.
-If any of them do not match, sqlc *will fail to compile your queries*, preventing entire classes of runtime problems
-at compile time.
+sqlc parses your all of your queries and the DDL (e.g. `CREATE TABLE`)
+statements during the code generation processes so that it knows the names and
+types of every column in your tables and every expression in your queries.  If
+any of them do not match, sqlc *will fail to compile your queries*, preventing
+entire classes of runtime problems at compile time.
 
-Likewise, the methods that sqlc generates for you have a stricty arity and correct Go type definitions that match your columns. So if you
-change a query's arguments or a column's type but don't update your code, it will fail to compile.
+Likewise, the methods that sqlc generates for you have a strict arity and
+correct Go type definitions that match your columns. So if you change a query's
+arguments or a column's type but don't update your code, it will fail to
+compile.
 
 ## Getting Started
 Okay, enough hype, let's see it in action.
@@ -105,7 +115,8 @@ if err != nil {
 fmt.Println(reflect.DeepEqual(insertedAuthor, fetchedAuthor))
 ```
 
-To make that possible, sqlc generates readable, **idiomatic** Go code that you otherwise would have had to write yourself. Take a look:
+To make that possible, sqlc generates readable, **idiomatic** Go code that you
+otherwise would have had to write yourself. Take a look:
 
 ```go
 package db
@@ -296,6 +307,66 @@ Each package document has the following keys:
   - Directory of SQL queries or path to single SQL file
 - `schema`:
   - Directory of SQL migrations or path to single SQL file
+
+### Type Overrides
+
+The default mapping of PostgreSQL types to Go types only uses packages outside
+the standard library when it must.
+
+For example, the `uuid` PostgreSQL type is mapped to `github.com/google/uuid`.
+If a different Go package for UUIDs is required, specify the package in the
+`overrides` array. In this case, I'm going to use the `github.com/gofrs/uuid`
+instead.
+
+```
+{
+  "version": "1",
+  "packages": [...],
+  "overrides": [
+      {
+          "go_type": "uuid.UUID",
+          "package": "github.com/gofrs/uuid",
+          "postgres_type": "uuid"
+      }
+  ]
+}
+```
+
+Each override document has the following keys:
+- `postgres_type`:
+  - The PostgreSQL type to override. Find the full list of supported types in [gen.go](https://github.com/kyleconroy/sqlc/blob/master/internal/dinosql/gen.go#L438).
+- `go_type`:
+  - The Go type, with package name, to use in the generated code.
+- `package`:
+  - The full import path for the package.
+- `null`:
+  - If true, use this type when a column in nullable. Defaults to `false`.
+
+### Renaming Struct Fields
+
+Struct field names are generated from column names using a simple algorithm:
+split the column name on underscores and capitalize the first letter of each
+part.
+
+```
+account     -> Account
+spotify_url -> SpotifyUrl
+app_id      -> AppID
+```
+
+If you're not happy with a field's generated name, use the `rename` dictionary
+to pick a new name. The keys are column names and the values are the struct
+field name to use.
+
+```json
+{
+  "version": "1",
+  "packages": [...],
+  "rename": {
+    "spotify_url": "SpotifyURL"
+  }
+}
+```
 
 ## Downloads
 
