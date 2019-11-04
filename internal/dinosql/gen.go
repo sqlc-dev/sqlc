@@ -208,8 +208,8 @@ func (r Result) ModelImports() [][]string {
 	// Custom imports
 	var pkg []string
 	overrideTypes := map[string]string{}
-	for _, o := range r.Settings.Overrides {
-		overrideTypes[o.GoType] = o.Package
+	for _, o := range append(r.Settings.Overrides, r.packageSettings.Overrides...) {
+		overrideTypes[o.goTypeName] = o.goPackage
 	}
 
 	_, overrideNullTime := overrideTypes["pq.NullTime"]
@@ -321,8 +321,8 @@ func (r Result) QueryImports(filename string) [][]string {
 
 	var pkg []string
 	overrideTypes := map[string]string{}
-	for _, o := range r.Settings.Overrides {
-		overrideTypes[o.GoType] = o.Package
+	for _, o := range append(r.Settings.Overrides, r.packageSettings.Overrides...) {
+		overrideTypes[o.goTypeName] = o.goPackage
 	}
 
 	if sliceScan() {
@@ -432,17 +432,24 @@ func (r Result) Structs() []GoStruct {
 }
 
 func (r Result) goType(col core.Column) string {
-	typ := r.goInnerType(col.DataType, col.NotNull || col.IsArray)
+	typ := r.goInnerType(col)
 	if col.IsArray {
 		return "[]" + typ
 	}
 	return typ
 }
 
-func (r Result) goInnerType(columnType string, notNull bool) string {
-	for _, oride := range r.Settings.Overrides {
+func (r Result) goInnerType(col core.Column) string {
+	columnType := col.DataType
+	notNull := col.NotNull || col.IsArray
+
+	// package overrides have a higher precedence
+	for _, oride := range append(r.Settings.Overrides, r.packageSettings.Overrides...) {
 		if oride.PostgresType == columnType && oride.Null != notNull {
-			return oride.GoType
+			return oride.goTypeName
+		}
+		if oride.columnName == col.Name && oride.table == col.Table {
+			return oride.goTypeName
 		}
 	}
 
@@ -964,6 +971,7 @@ func lowerTitle(s string) string {
 }
 
 func Generate(r *Result, global GenerateSettings, settings PackageSettings) (map[string]string, error) {
+	r.packageSettings = settings
 	funcMap := template.FuncMap{
 		"lowerTitle": lowerTitle,
 		"imports":    r.Imports(settings),
