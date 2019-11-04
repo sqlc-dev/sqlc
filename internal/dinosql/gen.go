@@ -177,7 +177,7 @@ func (r Result) UsesArrays() bool {
 func (r Result) Imports(filename string) [][]string {
 	if filename == "db.go" {
 		return [][]string{
-			[]string{"context", "database/sql"},
+			[]string{"context", "database/sql", "fmt"},
 		}
 	}
 
@@ -733,7 +733,7 @@ func Prepare(ctx context.Context, db dbtx) (*Queries, error) {
 	{{- end }}
 	{{- range .GoQueries }}
 	if q.{{.FieldName}}, err = db.PrepareContext(ctx, {{.ConstantName}}); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error preparing query {{.MethodName}}: %w", err)
 	}
 	{{- end}}
 	return &q, nil
