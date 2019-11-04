@@ -342,6 +342,31 @@ Each override document has the following keys:
 - `null`:
   - If true, use this type when a column in nullable. Defaults to `false`.
 
+### Per-Column Type Overrides
+
+Sometimes you would like to override the Go type used in model or query generation for
+a specific field of a table and not on a type basis as described in the previous section.
+
+You may accomplish this by specifying the `overrides` field on any `package` object. In this
+example, just a specific column, `authors.id`, is mapped to `ksuid.KSUID` type:
+
+```
+{
+  "version": "1",
+  "packages": [
+    {
+      "overrides": [
+        {
+          "column": "authors.id",
+          "go_type": "github.com/segmentio/ksuid.KSUID"
+        }
+      ]
+      ...
+    }
+  ]
+}
+```
+
 ### Renaming Struct Fields
 
 Struct field names are generated from column names using a simple algorithm:

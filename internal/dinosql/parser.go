@@ -168,6 +168,11 @@ type Result struct {
 	Settings GenerateSettings
 	Queries  []*Query
 	Catalog  core.Catalog
+
+	// XXX: this is hack so that all of the functions used during Generate can access
+	// package settings during that process without threading them through every function
+	// call. we should probably have another type just for generation instead of reusing Result
+	packageSettings PackageSettings
 }
 
 func ParseQueries(c core.Catalog, settings GenerateSettings, pkg PackageSettings) (*Result, error) {
@@ -945,6 +950,7 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 								DataType: c.DataType,
 								NotNull:  c.NotNull,
 								IsArray:  c.IsArray,
+								Table:    c.Table,
 							},
 						})
 					}
@@ -978,6 +984,7 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 						DataType: c.DataType,
 						NotNull:  c.NotNull,
 						IsArray:  c.IsArray,
+						Table:    c.Table,
 					},
 				})
 			} else {
