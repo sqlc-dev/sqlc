@@ -288,7 +288,25 @@ func rangeVars(root nodes.Node) []nodes.RangeVar {
 	return vars
 }
 
-// TODO: Validate metadata
+// A query name must be a valid Go identifier
+//
+// https://golang.org/ref/spec#Identifiers
+func validateQueryName(name string) error {
+	if len(name) == 0 {
+		return fmt.Errorf("invalid query name: %q", name)
+	}
+	for i, c := range name {
+		isLetter := unicode.IsLetter(c) || c == '_'
+		isDigit := unicode.IsDigit(c)
+		if i == 0 && !isLetter {
+			return fmt.Errorf("invalid query name: %q", name)
+		} else if !(isLetter || isDigit) {
+			return fmt.Errorf("invalid query name: %q", name)
+		}
+	}
+	return nil
+}
+
 func parseMetadata(t string) (string, string, error) {
 	for _, line := range strings.Split(t, "\n") {
 		if !strings.HasPrefix(line, "-- name:") {
@@ -301,13 +319,17 @@ func parseMetadata(t string) (string, string, error) {
 		if len(part) != 4 {
 			return "", "", fmt.Errorf("invalid query comment: %s", line)
 		}
+		queryName := part[2]
 		queryType := strings.TrimSpace(part[3])
 		switch queryType {
 		case ":one", ":many", ":exec", ":execrows":
 		default:
 			return "", "", fmt.Errorf("invalid query type: %s", queryType)
 		}
-		return part[2], strings.TrimSpace(part[3]), nil
+		if err := validateQueryName(queryName); err != nil {
+			return "", "", err
+		}
+		return queryName, queryType, nil
 	}
 	return "", "", nil
 }
