@@ -5,7 +5,6 @@ package ondeck
 import (
 	"context"
 	"database/sql"
-	"fmt"
 )
 
 type dbtx interface {
