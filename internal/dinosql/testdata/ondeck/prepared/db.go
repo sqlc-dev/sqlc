@@ -5,6 +5,7 @@ package prepared
 import (
 	"context"
 	"database/sql"
+	"fmt"
 )
 
 type dbtx interface {
@@ -22,34 +23,34 @@ func Prepare(ctx context.Context, db dbtx) (*Queries, error) {
 	q := Queries{db: db}
 	var err error
 	if q.createCityStmt, err = db.PrepareContext(ctx, createCity); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error preparing query CreateCity: %w", err)
 	}
 	if q.createVenueStmt, err = db.PrepareContext(ctx, createVenue); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error preparing query CreateVenue: %w", err)
 	}
 	if q.deleteVenueStmt, err = db.PrepareContext(ctx, deleteVenue); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error preparing query DeleteVenue: %w", err)
 	}
 	if q.getCityStmt, err = db.PrepareContext(ctx, getCity); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error preparing query GetCity: %w", err)
 	}
 	if q.getVenueStmt, err = db.PrepareContext(ctx, getVenue); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error preparing query GetVenue: %w", err)
 	}
 	if q.listCitiesStmt, err = db.PrepareContext(ctx, listCities); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error preparing query ListCities: %w", err)
 	}
 	if q.listVenuesStmt, err = db.PrepareContext(ctx, listVenues); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error preparing query ListVenues: %w", err)
 	}
 	if q.updateCityNameStmt, err = db.PrepareContext(ctx, updateCityName); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error preparing query UpdateCityName: %w", err)
 	}
 	if q.updateVenueNameStmt, err = db.PrepareContext(ctx, updateVenueName); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error preparing query UpdateVenueName: %w", err)
 	}
 	if q.venueCountByCityStmt, err = db.PrepareContext(ctx, venueCountByCity); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error preparing query VenueCountByCity: %w", err)
 	}
 	return &q, nil
 }
