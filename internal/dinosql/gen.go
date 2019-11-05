@@ -743,6 +743,18 @@ func Prepare(ctx context.Context, db dbtx) (*Queries, error) {
 	return &q, nil
 }
 
+func (q *Queries) Close() error {
+	var err error
+	{{- range .GoQueries }}
+	if q.{{.FieldName}} != nil {
+		if cerr := q.{{.FieldName}}.Close(); cerr != nil {
+			err = fmt.Errorf("error closing {{.FieldName}}: %w", cerr)
+		}
+	}
+	{{- end}}
+	return err
+}
+
 func (q *Queries) exec(ctx context.Context, stmt *sql.Stmt, query string, args ...interface{}) (sql.Result, error) {
 	switch {
 	case stmt != nil && q.tx != nil:
