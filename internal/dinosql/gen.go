@@ -174,18 +174,22 @@ func (r Result) UsesArrays() bool {
 	return false
 }
 
-func (r Result) Imports(filename string) [][]string {
-	if filename == "db.go" {
-		return [][]string{
-			[]string{"context", "database/sql", "fmt"},
+func (r Result) Imports(settings PackageSettings) func(string) [][]string {
+	return func(filename string) [][]string {
+		if filename == "db.go" {
+			imps := []string{"context", "database/sql"}
+			if settings.EmitPreparedQueries {
+				imps = append(imps, "fmt")
+			}
+			return [][]string{imps}
 		}
-	}
 
-	if filename == "models.go" {
-		return r.ModelImports()
-	}
+		if filename == "models.go" {
+			return r.ModelImports()
+		}
 
-	return r.QueryImports(filename)
+		return r.QueryImports(filename)
+	}
 }
 
 func (r Result) ModelImports() [][]string {
@@ -950,7 +954,7 @@ func lowerTitle(s string) string {
 func Generate(r *Result, global GenerateSettings, settings PackageSettings) (map[string]string, error) {
 	funcMap := template.FuncMap{
 		"lowerTitle": lowerTitle,
-		"imports":    r.Imports,
+		"imports":    r.Imports(settings),
 	}
 
 	pkg := settings.Name
