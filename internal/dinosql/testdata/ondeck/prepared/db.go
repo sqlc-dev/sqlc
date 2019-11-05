@@ -55,6 +55,61 @@ func Prepare(ctx context.Context, db dbtx) (*Queries, error) {
 	return &q, nil
 }
 
+func (q *Queries) Close() error {
+	var err error
+	if q.createCityStmt != nil {
+		if cerr := q.createCityStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createCityStmt: %w", cerr)
+		}
+	}
+	if q.createVenueStmt != nil {
+		if cerr := q.createVenueStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createVenueStmt: %w", cerr)
+		}
+	}
+	if q.deleteVenueStmt != nil {
+		if cerr := q.deleteVenueStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteVenueStmt: %w", cerr)
+		}
+	}
+	if q.getCityStmt != nil {
+		if cerr := q.getCityStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getCityStmt: %w", cerr)
+		}
+	}
+	if q.getVenueStmt != nil {
+		if cerr := q.getVenueStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getVenueStmt: %w", cerr)
+		}
+	}
+	if q.listCitiesStmt != nil {
+		if cerr := q.listCitiesStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listCitiesStmt: %w", cerr)
+		}
+	}
+	if q.listVenuesStmt != nil {
+		if cerr := q.listVenuesStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listVenuesStmt: %w", cerr)
+		}
+	}
+	if q.updateCityNameStmt != nil {
+		if cerr := q.updateCityNameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateCityNameStmt: %w", cerr)
+		}
+	}
+	if q.updateVenueNameStmt != nil {
+		if cerr := q.updateVenueNameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateVenueNameStmt: %w", cerr)
+		}
+	}
+	if q.venueCountByCityStmt != nil {
+		if cerr := q.venueCountByCityStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing venueCountByCityStmt: %w", cerr)
+		}
+	}
+	return err
+}
+
 func (q *Queries) exec(ctx context.Context, stmt *sql.Stmt, query string, args ...interface{}) (sql.Result, error) {
 	switch {
 	case stmt != nil && q.tx != nil:
