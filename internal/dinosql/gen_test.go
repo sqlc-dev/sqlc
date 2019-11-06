@@ -35,9 +35,30 @@ func TestColumnsToStruct(t *testing.T) {
 			DataType: "bytea",
 			NotNull:  true,
 		},
+		{
+			Name:     "retyped",
+			DataType: "text",
+			NotNull:  true,
+		},
+	}
+
+	// all of the columns are on the 'foo' table
+	for i := range cols {
+		cols[i].Table = pg.FQN{Schema: "public", Rel: "foo"}
 	}
 
 	r := Result{}
+
+	// set up column-based override test
+	o := Override{
+		GoType: "example.com/pkg.CustomType",
+		Column: "foo.retyped",
+	}
+	o.Parse()
+	r.packageSettings = PackageSettings{
+		Overrides: []Override{o},
+	}
+
 	actual := r.columnsToStruct("Foo", cols)
 	expected := &GoStruct{
 		Name: "Foo",
@@ -47,6 +68,7 @@ func TestColumnsToStruct(t *testing.T) {
 			{Name: "Count_2", Type: "int64", Tags: map[string]string{"json:": "count_2"}},
 			{Name: "Tags", Type: "[]string", Tags: map[string]string{"json:": "tags"}},
 			{Name: "ByteSeq", Type: "[]byte", Tags: map[string]string{"json:": "byte_seq"}},
+			{Name: "Retyped", Type: "pkg.CustomType", Tags: map[string]string{"json:": "retyped"}},
 		},
 	}
 	if diff := cmp.Diff(expected, actual); diff != "" {
