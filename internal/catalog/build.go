@@ -151,6 +151,7 @@ func Update(c *pg.Catalog, stmt nodes.Node) error {
 						DataType: join(d.TypeName.Names, "."),
 						NotNull:  isNotNull(d),
 						IsArray:  isArray(d.TypeName),
+						Table:    fqn,
 					})
 
 				case nodes.AT_AlterColumnType:
@@ -197,6 +198,7 @@ func Update(c *pg.Catalog, stmt nodes.Node) error {
 					DataType: join(n.TypeName.Names, "."),
 					NotNull:  isNotNull(n),
 					IsArray:  isArray(n.TypeName),
+					Table:    fqn,
 				})
 			}
 		}

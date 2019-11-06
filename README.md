@@ -324,8 +324,7 @@ instead.
   "packages": [...],
   "overrides": [
       {
-          "go_type": "uuid.UUID",
-          "package": "github.com/gofrs/uuid",
+          "go_type": "github.com/gofrs/uuid.UUID",
           "postgres_type": "uuid"
       }
   ]
@@ -336,11 +335,49 @@ Each override document has the following keys:
 - `postgres_type`:
   - The PostgreSQL type to override. Find the full list of supported types in [gen.go](https://github.com/kyleconroy/sqlc/blob/master/internal/dinosql/gen.go#L438).
 - `go_type`:
-  - The Go type, with package name, to use in the generated code.
-- `package`:
-  - The full import path for the package.
+  - A fully qualified name to a Go type to use in the generated code.
 - `null`:
   - If true, use this type when a column in nullable. Defaults to `false`.
+
+### Per-Column Type Overrides
+
+Sometimes you would like to override the Go type used in model or query generation for
+a specific field of a table and not on a type basis as described in the previous section.
+
+This may be configured by specifying the `column` property in the override definition. `column`
+should be of the form `table.column` buy you may be even more specify by specifying `schema.table.column`
+or `catalog.schema.table.column`.
+
+```
+{
+  "version": "1",
+  "packages": [...],
+  "overrides": [
+    {
+      "column": "authors.id",
+      "go_type": "github.com/segmentio/ksuid.KSUID"
+    }
+  ]
+}
+```
+
+### Package Level Overrides
+
+Overrides can be configured globally, as demonstrated in the previous sections, or they can be configured on a per-package which
+scopes the override behavior to just a single package:
+
+```
+{
+  "version": "1",
+  "packages": [
+    {
+      ...
+      "overrides": [...]
+    }
+  ],
+}
+```
+
 
 ### Renaming Struct Fields
 

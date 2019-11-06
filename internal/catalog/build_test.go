@@ -105,7 +105,7 @@ func TestUpdate(t *testing.T) {
 						Tables: map[string]pg.Table{
 							"foo": pg.Table{
 								Name:    "foo",
-								Columns: []pg.Column{{Name: "bar", DataType: "text", NotNull: true}},
+								Columns: []pg.Column{{Name: "bar", DataType: "text", NotNull: true, Table: pg.FQN{Schema: "public", Rel: "foo"}}},
 							},
 						},
 					},
@@ -123,7 +123,7 @@ func TestUpdate(t *testing.T) {
 							"foo": pg.Table{
 								Name: "foo",
 								Columns: []pg.Column{
-									{Name: "bar", DataType: "text", IsArray: true, NotNull: true},
+									{Name: "bar", DataType: "text", IsArray: true, NotNull: true, Table: pg.FQN{Schema: "public", Rel: "foo"}},
 								},
 							},
 						},
@@ -142,7 +142,7 @@ func TestUpdate(t *testing.T) {
 						Tables: map[string]pg.Table{
 							"foo": pg.Table{
 								Name:    "foo",
-								Columns: []pg.Column{{Name: "bar", DataType: "text"}},
+								Columns: []pg.Column{{Name: "bar", DataType: "text", Table: pg.FQN{Schema: "public", Rel: "foo"}}},
 							},
 						},
 					},
@@ -160,7 +160,7 @@ func TestUpdate(t *testing.T) {
 						Tables: map[string]pg.Table{
 							"foo": pg.Table{
 								Name:    "foo",
-								Columns: []pg.Column{{Name: "bar", DataType: "text"}},
+								Columns: []pg.Column{{Name: "bar", DataType: "text", Table: pg.FQN{Schema: "public", Rel: "foo"}}},
 							},
 						},
 					},
@@ -178,7 +178,7 @@ func TestUpdate(t *testing.T) {
 						Tables: map[string]pg.Table{
 							"foo": pg.Table{
 								Name:    "foo",
-								Columns: []pg.Column{{Name: "baz", DataType: "text"}},
+								Columns: []pg.Column{{Name: "baz", DataType: "text", Table: pg.FQN{Schema: "public", Rel: "foo"}}},
 							},
 						},
 					},
@@ -196,7 +196,7 @@ func TestUpdate(t *testing.T) {
 						Tables: map[string]pg.Table{
 							"foo": pg.Table{
 								Name:    "foo",
-								Columns: []pg.Column{{Name: "bar", DataType: "bool"}},
+								Columns: []pg.Column{{Name: "bar", DataType: "bool", Table: pg.FQN{Schema: "public", Rel: "foo"}}},
 							},
 						},
 					},
@@ -335,7 +335,7 @@ func TestUpdate(t *testing.T) {
 							"venues": pg.Table{
 								Name: "venues",
 								Columns: []pg.Column{
-									{Name: "id", DataType: "serial", NotNull: true},
+									{Name: "id", DataType: "serial", NotNull: true, Table: pg.FQN{Schema: "public", Rel: "venues"}},
 								},
 							},
 						},
