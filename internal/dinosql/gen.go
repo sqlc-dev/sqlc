@@ -445,10 +445,10 @@ func (r Result) goInnerType(col core.Column) string {
 
 	// package overrides have a higher precedence
 	for _, oride := range append(r.Settings.Overrides, r.packageSettings.Overrides...) {
-		if oride.PostgresType == columnType && oride.Null != notNull {
+		if oride.PostgresType != "" && oride.PostgresType == columnType && oride.Null != notNull {
 			return oride.goTypeName
 		}
-		if oride.columnName == col.Name && oride.table == col.Table {
+		if oride.Column != "" && oride.columnName == col.Name && oride.table == col.Table {
 			return oride.goTypeName
 		}
 	}
