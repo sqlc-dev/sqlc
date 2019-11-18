@@ -690,6 +690,19 @@ func TestQueries(t *testing.T) {
 				},
 			},
 		},
+		{
+			"mathmatical-operator",
+			`
+			CREATE TABLE foo (num integer not null);
+			SELECT *, num / 1024 as division FROM foo;
+			`,
+			Query{
+				Columns: []core.Column{
+					{Name: "num", DataType: "pg_catalog.int4", NotNull: true, Table: public("foo")},
+					{Name: "division", DataType: "pg_catalog.int4", NotNull: true},
+				},
+			},
+		},
 	} {
 		test := tc
 		t.Run(test.name, func(t *testing.T) {

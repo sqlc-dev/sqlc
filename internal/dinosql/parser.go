@@ -379,6 +379,7 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string) (*Query, error) 
 	default:
 		return nil, nil
 	}
+
 	rawSQL, err := pluckQuery(source, raw)
 	if err != nil {
 		return nil, err
@@ -562,9 +563,15 @@ func outputColumns(c core.Catalog, node nodes.Node) ([]core.Column, error) {
 			if res.Name != nil {
 				name = *res.Name
 			}
-			if postgres.IsComparisonOperator(join(n.Name, "")) {
+			switch {
+			case postgres.IsComparisonOperator(join(n.Name, "")):
 				// TODO: Generate a name for these operations
 				cols = append(cols, core.Column{Name: name, DataType: "bool", NotNull: true})
+			case postgres.IsMathematicalOperator(join(n.Name, "")):
+				// TODO: Generate correct numeric type
+				cols = append(cols, core.Column{Name: name, DataType: "pg_catalog.int4", NotNull: true})
+			default:
+				cols = append(cols, core.Column{Name: name, DataType: "any", NotNull: false})
 			}
 
 		case nodes.CoalesceExpr:
