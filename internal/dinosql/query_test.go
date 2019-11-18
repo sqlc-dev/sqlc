@@ -807,6 +807,13 @@ func TestInvalidQueries(t *testing.T) {
 			SELECT id FROM foo;
 			`,
 		},
+		{
+			`
+			CREATE TABLE foo (id text not null);
+			-- name: DeleteFoo :one
+			DELETE FROM foo WHERE id = $1;
+			`,
+		},
 	} {
 		test := tc
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
