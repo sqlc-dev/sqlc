@@ -867,12 +867,26 @@ func TestInvalidQueries(t *testing.T) {
 			`,
 			`query "InsertFoo" specifies parameter ":one" without containing a RETURNING clause`,
 		},
+		{
+			`
+			CREATE TABLE foo (bar text not null, baz text not null);
+			INSERT INTO foo (bar, baz) VALUES ($1);
+			`,
+			`INSERT has more target columns than expressions`,
+		},
+		{
+			`
+			CREATE TABLE foo (bar text not null, baz text not null);
+			INSERT INTO foo (bar) VALUES ($1, $2);
+			`,
+			`INSERT has more expressions than target columns`,
+		},
 	} {
 		test := tc
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			_, err := parseSQL(test.stmt)
 			if err == nil {
-				t.Errorf("expected err, got nil")
+				t.Fatalf("expected err, got nil")
 			}
 			if diff := cmp.Diff(test.msg, err.Error()); diff != "" {
 				t.Errorf("error message differs: \n%s", diff)
