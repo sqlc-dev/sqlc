@@ -785,6 +785,7 @@ func TestStarWalker(t *testing.T) {
 func TestInvalidQueries(t *testing.T) {
 	for i, tc := range []struct {
 		stmt string
+		msg  string
 	}{
 		{
 			`
@@ -792,6 +793,7 @@ func TestInvalidQueries(t *testing.T) {
 			-- name: ListFoos
 			SELECT id FROM foo;
 			`,
+			"invalid query comment: -- name: ListFoos",
 		},
 		{
 			`
@@ -799,6 +801,7 @@ func TestInvalidQueries(t *testing.T) {
 			-- name: ListFoos :one :many
 			SELECT id FROM foo;
 			`,
+			"invalid query comment: -- name: ListFoos :one :many",
 		},
 		{
 			`
@@ -806,6 +809,31 @@ func TestInvalidQueries(t *testing.T) {
 			-- name: ListFoos :two
 			SELECT id FROM foo;
 			`,
+			"invalid query type: :two",
+		},
+		{
+			`
+			CREATE TABLE foo (id text not null);
+			-- name: DeleteFoo :one
+			DELETE FROM foo WHERE id = $1;
+			`,
+			`query "DeleteFoo" specifies parameter ":one" without containing a RETURNING clause`,
+		},
+		{
+			`
+			CREATE TABLE foo (id text not null);
+			-- name: UpdateFoo :one
+			UPDATE foo SET id = $2 WHERE id = $1;
+			`,
+			`query "UpdateFoo" specifies parameter ":one" without containing a RETURNING clause`,
+		},
+		{
+			`
+			CREATE TABLE foo (id text not null);
+			-- name: InsertFoo :one
+			INSERT INTO foo (id) VALUES ($1);
+			`,
+			`query "InsertFoo" specifies parameter ":one" without containing a RETURNING clause`,
 		},
 	} {
 		test := tc
@@ -813,6 +841,9 @@ func TestInvalidQueries(t *testing.T) {
 			_, err := parseSQL(test.stmt)
 			if err == nil {
 				t.Errorf("expected err, got nil")
+			}
+			if diff := cmp.Diff(test.msg, err.Error()); diff != "" {
+				t.Errorf("error message differs: \n%s", diff)
 			}
 		})
 	}

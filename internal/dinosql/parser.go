@@ -339,6 +339,30 @@ func parseMetadata(t string) (string, string, error) {
 	return "", "", nil
 }
 
+func validateCmd(n nodes.Node, name, cmd string) error {
+	// TODO: Convert cmd to an enum
+	if !(cmd == ":many" || cmd == ":one") {
+		return nil
+	}
+	var list nodes.List
+	switch stmt := n.(type) {
+	case nodes.SelectStmt:
+		return nil
+	case nodes.DeleteStmt:
+		list = stmt.ReturningList
+	case nodes.InsertStmt:
+		list = stmt.ReturningList
+	case nodes.UpdateStmt:
+		list = stmt.ReturningList
+	default:
+		return nil
+	}
+	if len(list.Items) == 0 {
+		return fmt.Errorf("query %q specifies parameter %q without containing a RETURNING clause", name, cmd)
+	}
+	return nil
+}
+
 func parseQuery(c core.Catalog, stmt nodes.Node, source string) (*Query, error) {
 	if err := validateParamRef(stmt); err != nil {
 		return nil, err
@@ -366,7 +390,9 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string) (*Query, error) 
 	if err != nil {
 		return nil, err
 	}
-
+	if err := validateCmd(raw.Stmt, name, cmd); err != nil {
+		return nil, err
+	}
 	rvs := rangeVars(raw.Stmt)
 	refs := findParameters(raw.Stmt)
 	params, err := resolveCatalogRefs(c, rvs, refs)
