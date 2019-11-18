@@ -574,6 +574,31 @@ func outputColumns(c core.Catalog, node nodes.Node) ([]core.Column, error) {
 				cols = append(cols, core.Column{Name: name, DataType: "any", NotNull: false})
 			}
 
+		case nodes.CaseExpr:
+			name := ""
+			if res.Name != nil {
+				name = *res.Name
+			}
+			// TODO: The TypeCase code has been copied from below. Instead, we need a recurse function to get the type of a node.
+			if tc, ok := n.Defresult.(nodes.TypeCast); ok {
+				if tc.TypeName == nil {
+					return nil, errors.New("no type name type cast")
+				}
+				name := ""
+				if ref, ok := tc.Arg.(nodes.ColumnRef); ok {
+					name = join(ref.Fields, "_")
+				}
+				if res.Name != nil {
+					name = *res.Name
+				}
+				// TODO Validate column names
+				col := catalog.ToColumn(tc.TypeName)
+				col.Name = name
+				cols = append(cols, col)
+			} else {
+				cols = append(cols, core.Column{Name: name, DataType: "any", NotNull: false})
+			}
+
 		case nodes.CoalesceExpr:
 			for _, arg := range n.Args.Items {
 				if ref, ok := arg.(nodes.ColumnRef); ok {
@@ -652,6 +677,14 @@ func outputColumns(c core.Catalog, node nodes.Node) ([]core.Column, error) {
 			col := catalog.ToColumn(n.TypeName)
 			col.Name = name
 			cols = append(cols, col)
+
+		default:
+			name := ""
+			if res.Name != nil {
+				name = *res.Name
+			}
+			cols = append(cols, core.Column{Name: name, DataType: "any", NotNull: false})
+
 		}
 	}
 	return cols, nil

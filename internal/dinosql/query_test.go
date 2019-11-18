@@ -703,6 +703,25 @@ func TestQueries(t *testing.T) {
 				},
 			},
 		},
+		{
+			"case-stmt-bool",
+			`
+			CREATE TABLE foo (id text not null);
+			SELECT CASE 
+			  WHEN id = $1 THEN true
+			  ELSE false
+			END is_one
+			FROM foo;
+			`,
+			Query{
+				Params: []Parameter{
+					{1, core.Column{Table: public("foo"), Name: "id", DataType: "text", NotNull: true}},
+				},
+				Columns: []core.Column{
+					{Name: "is_one", DataType: "pg_catalog.bool", NotNull: true},
+				},
+			},
+		},
 	} {
 		test := tc
 		t.Run(test.name, func(t *testing.T) {
