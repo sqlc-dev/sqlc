@@ -317,7 +317,7 @@ func parseMetadata(t string) (string, string, error) {
 		if !strings.HasPrefix(line, "-- name:") {
 			continue
 		}
-		part := strings.Split(line, " ")
+		part := strings.Split(strings.TrimSpace(line), " ")
 		if len(part) == 2 {
 			return "", "", fmt.Errorf("missing query type [':one', ':many', ':exec', ':execrows']: %s", line)
 		}
@@ -371,10 +371,13 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string) (*Query, error) 
 	if !ok {
 		return nil, nil
 	}
-	switch raw.Stmt.(type) {
+	switch n := raw.Stmt.(type) {
 	case nodes.SelectStmt:
 	case nodes.DeleteStmt:
 	case nodes.InsertStmt:
+		if err := validateInsertStmt(n); err != nil {
+			return nil, err
+		}
 	case nodes.UpdateStmt:
 	default:
 		return nil, nil
