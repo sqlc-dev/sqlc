@@ -22,6 +22,7 @@ type CreateCityParams struct {
 	Slug string `json:"slug"`
 }
 
+// Create a new city. The slug must be unique
 func (q *Queries) CreateCity(ctx context.Context, arg CreateCityParams) (City, error) {
 	row := q.db.QueryRowContext(ctx, createCity, arg.Name, arg.Slug)
 	var i City

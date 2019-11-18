@@ -9,6 +9,7 @@ FROM city
 WHERE slug = $1;
 
 -- name: CreateCity :one
+-- Create a new city. The slug must be unique
 INSERT INTO city (
     name,
     slug

@@ -143,6 +143,7 @@ func (v GoQueryValue) Scan() string {
 // A struct used to generate methods and fields on the Queries struct
 type GoQuery struct {
 	Cmd          string
+	Comments     []string
 	MethodName   string
 	FieldName    string
 	ConstantName string
@@ -646,6 +647,7 @@ func (r Result) GoQueries() []GoQuery {
 			MethodName:   query.Name,
 			SourceName:   query.Filename,
 			SQL:          code,
+			Comments:     query.Comments,
 		}
 
 		if len(query.Params) == 1 {
@@ -862,7 +864,8 @@ import (
 
 {{range .GoQueries}}
 {{if eq .SourceName $.SourceName}}
-const {{.ConstantName}} = {{$.Q}}{{.SQL}}
+const {{.ConstantName}} = {{$.Q}}-- name: {{.MethodName}} {{.Cmd}}
+{{.SQL}}
 {{$.Q}}
 
 {{if .Arg.EmitStruct}}
@@ -880,6 +883,7 @@ type {{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
 {{end}}
 
 {{if eq .Cmd ":one"}}
+{{range .Comments}}//{{.}}{{end}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.Type}}, error) {
   	{{- if $.EmitPreparedQueries}}
 	row := q.queryRow(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
@@ -893,6 +897,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.Ty
 {{end}}
 
 {{if eq .Cmd ":many"}}
+{{range .Comments}}//{{.}}{{end}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.Type}}, error) {
   	{{- if $.EmitPreparedQueries}}
 	rows, err := q.query(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
@@ -922,6 +927,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.
 {{end}}
 
 {{if eq .Cmd ":exec"}}
+{{range .Comments}}//{{.}}{{end}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) error {
   	{{- if $.EmitPreparedQueries}}
 	_, err := q.exec(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
@@ -933,6 +939,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) error {
 {{end}}
 
 {{if eq .Cmd ":execrows"}}
+{{range .Comments}}//{{.}}{{end}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, error) {
   	{{- if $.EmitPreparedQueries}}
 	result, err := q.exec(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
