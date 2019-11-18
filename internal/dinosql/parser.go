@@ -575,7 +575,6 @@ func outputColumns(c core.Catalog, node nodes.Node) ([]core.Column, error) {
 			}
 
 		case nodes.CaseExpr:
-			spew.Dump(n)
 			name := ""
 			if res.Name != nil {
 				name = *res.Name
