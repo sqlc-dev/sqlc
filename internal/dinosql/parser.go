@@ -1,6 +1,7 @@
 package dinosql
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -153,11 +154,12 @@ type Parameter struct {
 // Name and Cmd may be empty
 // Maybe I don't need the SQL string if I have the raw Stmt?
 type Query struct {
-	SQL     string
-	Columns []core.Column
-	Params  []Parameter
-	Name    string
-	Cmd     string // TODO: Pick a better name. One of: one, many, exec, execrows
+	SQL      string
+	Columns  []core.Column
+	Params   []Parameter
+	Name     string
+	Cmd      string // TODO: Pick a better name. One of: one, many, exec, execrows
+	Comments []string
 
 	// XXX: Hack
 	NeedsEdit bool
@@ -409,14 +411,36 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string) (*Query, error) 
 		return nil, err
 	}
 
+	trimmed, comments, err := stripComments(rawSQL)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Query{
 		Cmd:       cmd,
+		Comments:  comments,
 		Name:      name,
 		Params:    params,
 		Columns:   cols,
-		SQL:       rawSQL,
+		SQL:       trimmed,
 		NeedsEdit: needsEdit(stmt),
 	}, nil
+}
+
+func stripComments(sql string) (string, []string, error) {
+	s := bufio.NewScanner(strings.NewReader(sql))
+	var lines, comments []string
+	for s.Scan() {
+		if strings.HasPrefix(s.Text(), "-- name:") {
+			continue
+		}
+		if strings.HasPrefix(s.Text(), "--") {
+			comments = append(comments, strings.TrimPrefix(s.Text(), "--"))
+			continue
+		}
+		lines = append(lines, s.Text())
+	}
+	return strings.Join(lines, "\n"), comments, s.Err()
 }
 
 type QueryCatalog struct {
