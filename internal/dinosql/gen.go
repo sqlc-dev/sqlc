@@ -95,14 +95,14 @@ func (v GoQueryValue) Params() string {
 	}
 	var out []string
 	if v.Struct == nil {
-		if strings.HasPrefix(v.typ, "[]") {
+		if strings.HasPrefix(v.typ, "[]") && v.typ != "[]byte" {
 			out = append(out, "pq.Array("+v.Name+")")
 		} else {
 			out = append(out, v.Name)
 		}
 	} else {
 		for _, f := range v.Struct.Fields {
-			if strings.HasPrefix(f.Type, "[]") {
+			if strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" {
 				out = append(out, "pq.Array("+v.Name+"."+f.Name+")")
 			} else {
 				out = append(out, v.Name+"."+f.Name)
@@ -119,14 +119,14 @@ func (v GoQueryValue) Params() string {
 func (v GoQueryValue) Scan() string {
 	var out []string
 	if v.Struct == nil {
-		if strings.HasPrefix(v.typ, "[]") {
+		if strings.HasPrefix(v.typ, "[]") && v.typ != "[]byte" {
 			out = append(out, "pq.Array(&"+v.Name+")")
 		} else {
 			out = append(out, "&"+v.Name)
 		}
 	} else {
 		for _, f := range v.Struct.Fields {
-			if strings.HasPrefix(f.Type, "[]") {
+			if strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" {
 				out = append(out, "pq.Array(&"+v.Name+"."+f.Name+")")
 			} else {
 				out = append(out, "&"+v.Name+"."+f.Name)
@@ -282,12 +282,13 @@ func (r Result) QueryImports(filename string) [][]string {
 			if !q.Ret.isEmpty() {
 				if q.Ret.IsStruct() {
 					for _, f := range q.Ret.Struct.Fields {
-						if strings.HasPrefix(f.Type, "[]") {
+						if strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" {
 							return true
 						}
 					}
 				} else {
-					if strings.HasPrefix(q.Ret.Type(), "[]") {
+					if strings.HasPrefix(q.Ret.Type(), "[]") && q.Ret.Type() != "[]byte" {
+						log.Println(q.Ret.Type(), q.Ret.Name, q.Ret.typ)
 						return true
 					}
 				}
@@ -295,12 +296,14 @@ func (r Result) QueryImports(filename string) [][]string {
 			if !q.Arg.isEmpty() {
 				if q.Arg.IsStruct() {
 					for _, f := range q.Arg.Struct.Fields {
-						if strings.HasPrefix(f.Type, "[]") {
+						if strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" {
+							log.Println(f.Type, f.Name)
 							return true
 						}
 					}
 				} else {
-					if strings.HasPrefix(q.Arg.Type(), "[]") {
+					if strings.HasPrefix(q.Arg.Type(), "[]") && q.Arg.Type() != "[]byte" {
+						log.Println(q.Arg.Type(), q.Arg.Name, q.Arg.typ)
 						return true
 					}
 				}
@@ -435,6 +438,7 @@ func (r Result) Structs() []GoStruct {
 func (r Result) goType(col core.Column) string {
 	typ := r.goInnerType(col)
 	if col.IsArray {
+		log.Println(col.Name, col.DataType)
 		return "[]" + typ
 	}
 	return typ
