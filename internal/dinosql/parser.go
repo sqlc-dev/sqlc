@@ -748,6 +748,7 @@ func outputColumnRefs(res nodes.ResTarget, tables []core.Table, node nodes.Colum
 					Name:     cname,
 					DataType: c.DataType,
 					NotNull:  c.NotNull,
+					IsArray:  c.IsArray,
 				})
 			}
 		}
