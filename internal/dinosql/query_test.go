@@ -737,6 +737,21 @@ func TestQueries(t *testing.T) {
 				},
 			},
 		},
+		{
+			"left-join-text",
+			`
+			CREATE TABLE foo (id text not null, bar text not null);
+			CREATE TABLE bar (id text not null, info text not null);
+			SELECT bar.info
+			FROM foo
+			LFFT JOIN bar ON foo.bar = bar.id;
+			`,
+			Query{
+				Columns: []core.Column{
+					{Name: "info", DataType: "text", NotNull: false, IsArray: false, Table: public("bar")},
+				},
+			},
+		},
 	} {
 		test := tc
 		t.Run(test.name, func(t *testing.T) {
