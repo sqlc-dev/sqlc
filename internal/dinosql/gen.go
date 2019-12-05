@@ -35,7 +35,7 @@ type GoField struct {
 }
 
 func (gf GoField) Tag() string {
-	var tags []string
+	tags := make([]string, 0, len(gf.Tags))
 	for key, val := range gf.Tags {
 		tags = append(tags, fmt.Sprintf("%s\"%s\"", key, val))
 	}
@@ -156,7 +156,8 @@ type GoQuery struct {
 func (r Result) UsesType(typ string) bool {
 	for _, strct := range r.Structs() {
 		for _, f := range strct.Fields {
-			if strings.HasPrefix(f.Type, typ) {
+			fType := strings.TrimPrefix(f.Type, "[]")
+			if strings.HasPrefix(fType, typ) {
 				return true
 			}
 		}
@@ -194,7 +195,6 @@ func (r Result) Imports(settings PackageSettings) func(string) [][]string {
 }
 
 func (r Result) ModelImports() [][]string {
-
 	var std []string
 	if r.UsesType("sql.Null") {
 		std = append(std, "database/sql")
@@ -204,6 +204,9 @@ func (r Result) ModelImports() [][]string {
 	}
 	if r.UsesType("time.Time") {
 		std = append(std, "time")
+	}
+	if r.UsesType("net.IP") {
+		std = append(std, "net")
 	}
 
 	// Custom imports
@@ -252,7 +255,8 @@ func (r Result) QueryImports(filename string) [][]string {
 			if !q.Ret.isEmpty() {
 				if q.Ret.EmitStruct() {
 					for _, f := range q.Ret.Struct.Fields {
-						if strings.HasPrefix(f.Type, name) {
+						fType := strings.TrimPrefix(f.Type, "[]")
+						if strings.HasPrefix(fType, name) {
 							return true
 						}
 					}
@@ -264,7 +268,8 @@ func (r Result) QueryImports(filename string) [][]string {
 			if !q.Arg.isEmpty() {
 				if q.Arg.EmitStruct() {
 					for _, f := range q.Arg.Struct.Fields {
-						if strings.HasPrefix(f.Type, name) {
+						fType := strings.TrimPrefix(f.Type, "[]")
+						if strings.HasPrefix(fType, name) {
 							return true
 						}
 					}
@@ -318,6 +323,9 @@ func (r Result) QueryImports(filename string) [][]string {
 	}
 	if uses("time.Time") {
 		std = append(std, "time")
+	}
+	if uses("net.IP") {
+		std = append(std, "net")
 	}
 
 	var pkg []string
@@ -385,7 +393,7 @@ func (r Result) Enums() []GoEnum {
 }
 
 func (r Result) structName(name string) string {
-	if rename, _ := r.Settings.Rename[name]; rename != "" {
+	if rename := r.Settings.Rename[name]; rename != "" {
 		return rename
 	}
 	out := ""
@@ -455,7 +463,6 @@ func (r Result) goInnerType(col core.Column) string {
 	}
 
 	switch columnType {
-
 	case "serial", "pg_catalog.serial4":
 		return "int32"
 
@@ -490,7 +497,7 @@ func (r Result) goInnerType(col core.Column) string {
 		if notNull {
 			return "float32"
 		} // unnecessary else
-		return "sql.NullFloat64" //IMPORTANT: Change to sql.NullFloat32 after updating the go.mod file
+		return "sql.NullFloat64" // IMPORTANT: Change to sql.NullFloat32 after updating the go.mod file
 
 	case "bool", "pg_catalog.bool":
 		if notNull {
@@ -501,7 +508,7 @@ func (r Result) goInnerType(col core.Column) string {
 	case "jsonb":
 		return "json.RawMessage"
 
-	case "bytea", "pg_catalog.bytea":
+	case "bytea", "blob", "pg_catalog.bytea":
 		return "[]byte"
 
 	case "pg_catalog.timestamp", "pg_catalog.timestamptz":
@@ -519,6 +526,9 @@ func (r Result) goInnerType(col core.Column) string {
 	case "uuid":
 		return "uuid.UUID"
 
+	case "inet":
+		return "net.IP"
+
 	case "any":
 		return "interface{}"
 
@@ -531,9 +541,9 @@ func (r Result) goInnerType(col core.Column) string {
 				if columnType == enum.Name {
 					if name == "public" {
 						return r.structName(enum.Name)
-					} else {
-						return r.structName(name + "_" + enum.Name)
 					}
+
+					return r.structName(name + "_" + enum.Name)
 				}
 			}
 		}
@@ -566,7 +576,7 @@ func (r Result) columnsToStruct(name string, columns []core.Column) *GoStruct {
 			Type: r.goType(c),
 			Tags: map[string]string{"json:": tagName},
 		})
-		seen[c.Name] += 1
+		seen[c.Name]++
 	}
 	return &gs
 }
@@ -612,7 +622,7 @@ func compareFQN(a *core.FQN, b *core.FQN) bool {
 func (r Result) GoQueries() []GoQuery {
 	structs := r.Structs()
 
-	var qs []GoQuery
+	qs := make([]GoQuery, 0, len(r.Queries))
 	for _, query := range r.Queries {
 		if query.Name == "" {
 			continue
@@ -726,19 +736,19 @@ import (
 	{{end}}
 )
 
-type dbtx interface {
+type DBTX interface {
 	ExecContext(context.Context, string, ...interface{}) (sql.Result, error)
 	PrepareContext(context.Context, string) (*sql.Stmt, error)
 	QueryContext(context.Context, string, ...interface{}) (*sql.Rows, error)
 	QueryRowContext(context.Context, string, ...interface{}) *sql.Row
 }
 
-func New(db dbtx) *Queries {
+func New(db DBTX) *Queries {
 	return &Queries{db: db}
 }
 
 {{if .EmitPreparedQueries}}
-func Prepare(ctx context.Context, db dbtx) (*Queries, error) {
+func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	q := Queries{db: db}
 	var err error
 	{{- if eq (len .GoQueries) 0 }}
@@ -799,7 +809,7 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 {{end}}
 
 type Queries struct {
-	db dbtx
+	db DBTX
 
     {{- if .EmitPreparedQueries}}
 	tx         *sql.Tx
@@ -821,6 +831,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	}
 }
 `
+
 var modelsTmpl = `// Code generated by sqlc. DO NOT EDIT.
 
 package {{.Package}}
@@ -1039,7 +1050,7 @@ func Generate(r *Result, global GenerateSettings, settings PackageSettings) (map
 		files[gq.SourceName] = struct{}{}
 	}
 
-	for source, _ := range files {
+	for source := range files {
 		if err := execute(source, sqlFile); err != nil {
 			return nil, err
 		}

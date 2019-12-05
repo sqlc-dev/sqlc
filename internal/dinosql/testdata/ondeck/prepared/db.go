@@ -8,18 +8,18 @@ import (
 	"fmt"
 )
 
-type dbtx interface {
+type DBTX interface {
 	ExecContext(context.Context, string, ...interface{}) (sql.Result, error)
 	PrepareContext(context.Context, string) (*sql.Stmt, error)
 	QueryContext(context.Context, string, ...interface{}) (*sql.Rows, error)
 	QueryRowContext(context.Context, string, ...interface{}) *sql.Row
 }
 
-func New(db dbtx) *Queries {
+func New(db DBTX) *Queries {
 	return &Queries{db: db}
 }
 
-func Prepare(ctx context.Context, db dbtx) (*Queries, error) {
+func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	q := Queries{db: db}
 	var err error
 	if q.createCityStmt, err = db.PrepareContext(ctx, createCity); err != nil {
@@ -144,7 +144,7 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 }
 
 type Queries struct {
-	db                   dbtx
+	db                   DBTX
 	tx                   *sql.Tx
 	createCityStmt       *sql.Stmt
 	createVenueStmt      *sql.Stmt
