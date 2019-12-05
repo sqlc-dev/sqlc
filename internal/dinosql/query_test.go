@@ -722,6 +722,21 @@ func TestQueries(t *testing.T) {
 				},
 			},
 		},
+		{
+			"join-text-array",
+			`
+			CREATE TABLE foo (id text not null, bar text not null);
+			CREATE TABLE bar (id text not null, info text[] not null);
+			SELECT bar.info
+			FROM foo
+			JOIN bar ON foo.bar = bar.id;
+			`,
+			Query{
+				Columns: []core.Column{
+					{Name: "info", DataType: "text", NotNull: true, IsArray: true, Table: public("bar")},
+				},
+			},
+		},
 	} {
 		test := tc
 		t.Run(test.name, func(t *testing.T) {

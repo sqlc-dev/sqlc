@@ -53,17 +53,17 @@ type Author struct {
 	BirthYear int
 }
 
-type dbtx interface {
+type DBTX interface {
 	QueryContext(context.Context, string, ...interface{}) (*sql.Rows, error)
 	QueryRowContext(context.Context, string, ...interface{}) *sql.Row
 }
 
-func New(db dbtx) *Queries {
+func New(db DBTX) *Queries {
 	return &Queries{db: db}
 }
 
 type Queries struct {
-	db dbtx
+	db DBTX
 }
 
 const getAuthor = `-- name: GetAuthor :one
@@ -141,16 +141,16 @@ import (
 	"database/sql"
 )
 
-type dbtx interface {
+type DBTX interface {
 	QueryRowContext(context.Context, string, ...interface{}) *sql.Row
 }
 
-func New(db dbtx) *Queries {
+func New(db DBTX) *Queries {
 	return &Queries{db: db}
 }
 
 type Queries struct {
-	db dbtx
+	db DBTX
 }
 
 const getBioForAuthor = `-- name: GetBioForAuthor :one
