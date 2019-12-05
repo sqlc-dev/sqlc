@@ -25,16 +25,16 @@ type Record struct {
 	ID int
 }
 
-type dbtx interface {
+type DBTX interface {
 	PrepareContext(context.Context, string) (*sql.Stmt, error)
 	QueryRowContext(context.Context, string, ...interface{}) *sql.Row
 }
 
-func New(db dbtx) *Queries {
+func New(db DBTX) *Queries {
 	return &Queries{db: db}
 }
 
-func Prepare(ctx context.Context, db dbtx) (*Queries, error) {
+func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	q := Queries{db: db}
 	var err error
 	if q.getRecordStmt, err = db.PrepareContext(ctx, getRecord); err != nil {
@@ -55,7 +55,7 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 }
 
 type Queries struct {
-	db            dbtx
+	db            DBTX
 	tx            *sql.Tx
 	getRecordStmt *sql.Stmt
 }

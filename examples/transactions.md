@@ -24,16 +24,16 @@ type Record struct {
 	ID int
 }
 
-type dbtx interface {
+type DBTX interface {
 	QueryRowContext(context.Context, string, ...interface{}) *sql.Row
 }
 
-func New(db dbtx) *Queries {
+func New(db DBTX) *Queries {
 	return &Queries{db: db}
 }
 
 type Queries struct {
-	db dbtx
+	db DBTX
 }
 
 func (*Queries) WithTx(tx *sql.Tx) *Queries {

@@ -36,17 +36,17 @@ type Author struct {
 	Bio string
 }
 
-type dbtx interface {
+type DBTX interface {
 	ExecContext(context.Context, string, ...interface{}) error
 	QueryRowContext(context.Context, string, ...interface{}) error
 }
 
-func New(db dbtx) *Queries {
+func New(db DBTX) *Queries {
 	return &Queries{db: db}
 }
 
 type Queries struct {
-	db dbtx
+	db DBTX
 }
 
 const delete = `-- name: Delete :exec
