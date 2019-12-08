@@ -22,7 +22,9 @@ type CreateCityParams struct {
 	Slug string
 }
 
-// Create a new city. The slug must be unique
+// Create a new city. The slug must be unique.
+// This is the second line of the comment
+// This is the third line
 func (q *Queries) CreateCity(ctx context.Context, arg CreateCityParams) (City, error) {
 	row := q.queryRow(ctx, q.createCityStmt, createCity, arg.Name, arg.Slug)
 	var i City
