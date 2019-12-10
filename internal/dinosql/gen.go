@@ -446,7 +446,6 @@ func (r Result) Structs() []GoStruct {
 func (r Result) goType(col core.Column) string {
 	typ := r.goInnerType(col)
 	if col.IsArray {
-		log.Println(col.Name, col.DataType)
 		return "[]" + typ
 	}
 	return typ
