@@ -898,7 +898,8 @@ type {{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
 {{end}}
 
 {{if eq .Cmd ":one"}}
-{{range .Comments}}//{{.}}{{end}}
+{{range .Comments}}//{{.}}
+{{end -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.Type}}, error) {
   	{{- if $.EmitPreparedQueries}}
 	row := q.queryRow(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
@@ -912,7 +913,8 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.Ty
 {{end}}
 
 {{if eq .Cmd ":many"}}
-{{range .Comments}}//{{.}}{{end}}
+{{range .Comments}}//{{.}}
+{{end -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.Type}}, error) {
   	{{- if $.EmitPreparedQueries}}
 	rows, err := q.query(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
@@ -942,7 +944,8 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.
 {{end}}
 
 {{if eq .Cmd ":exec"}}
-{{range .Comments}}//{{.}}{{end}}
+{{range .Comments}}//{{.}}
+{{end -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) error {
   	{{- if $.EmitPreparedQueries}}
 	_, err := q.exec(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
@@ -954,7 +957,8 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) error {
 {{end}}
 
 {{if eq .Cmd ":execrows"}}
-{{range .Comments}}//{{.}}{{end}}
+{{range .Comments}}//{{.}}
+{{end -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, error) {
   	{{- if $.EmitPreparedQueries}}
 	result, err := q.exec(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
