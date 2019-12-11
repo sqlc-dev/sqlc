@@ -4,6 +4,7 @@ CREATE TABLE venues (
     id               SERIAL primary key,
     dropped          text,
     status           status       not null,
+    statuses         status[],
     slug             text         not null,
     name             varchar(255) not null,
     city             text         not null references city(slug),

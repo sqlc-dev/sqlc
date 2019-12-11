@@ -27,6 +27,7 @@ type City struct {
 type Venue struct {
 	ID              int32
 	Status          Status
+	Statuses        []Status
 	Slug            string
 	Name            string
 	City            string

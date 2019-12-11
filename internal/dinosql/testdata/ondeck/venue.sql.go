@@ -17,6 +17,7 @@ INSERT INTO venue (
     created_at,
     spotify_playlist,
     status,
+    statuses,
     tags
 ) VALUES (
     $1,
@@ -25,7 +26,8 @@ INSERT INTO venue (
     NOW(),
     $4,
     $5,
-    $6
+    $6,
+    $7
 ) RETURNING id
 `
 
@@ -35,6 +37,7 @@ type CreateVenueParams struct {
 	City            string   `json:"city"`
 	SpotifyPlaylist string   `json:"spotify_playlist"`
 	Status          Status   `json:"status"`
+	Statuses        []Status `json:"statuses"`
 	Tags            []string `json:"tags"`
 }
 
@@ -45,6 +48,7 @@ func (q *Queries) CreateVenue(ctx context.Context, arg CreateVenueParams) (int32
 		arg.City,
 		arg.SpotifyPlaylist,
 		arg.Status,
+		pq.Array(arg.Statuses),
 		pq.Array(arg.Tags),
 	)
 	var id int32
@@ -63,7 +67,7 @@ func (q *Queries) DeleteVenue(ctx context.Context, slug string) error {
 }
 
 const getVenue = `-- name: GetVenue :one
-SELECT id, status, slug, name, city, spotify_playlist, songkick_id, tags, created_at
+SELECT id, status, statuses, slug, name, city, spotify_playlist, songkick_id, tags, created_at
 FROM venue
 WHERE slug = $1 AND city = $2
 `
@@ -79,6 +83,7 @@ func (q *Queries) GetVenue(ctx context.Context, arg GetVenueParams) (Venue, erro
 	err := row.Scan(
 		&i.ID,
 		&i.Status,
+		pq.Array(&i.Statuses),
 		&i.Slug,
 		&i.Name,
 		&i.City,
@@ -91,7 +96,7 @@ func (q *Queries) GetVenue(ctx context.Context, arg GetVenueParams) (Venue, erro
 }
 
 const listVenues = `-- name: ListVenues :many
-SELECT id, status, slug, name, city, spotify_playlist, songkick_id, tags, created_at
+SELECT id, status, statuses, slug, name, city, spotify_playlist, songkick_id, tags, created_at
 FROM venue
 WHERE city = $1
 ORDER BY name
@@ -109,6 +114,7 @@ func (q *Queries) ListVenues(ctx context.Context, city string) ([]Venue, error) 
 		if err := rows.Scan(
 			&i.ID,
 			&i.Status,
+			pq.Array(&i.Statuses),
 			&i.Slug,
 			&i.Name,
 			&i.City,

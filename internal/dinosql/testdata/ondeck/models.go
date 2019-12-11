@@ -27,6 +27,7 @@ type City struct {
 type Venue struct {
 	ID              int32          `json:"id"`
 	Status          Status         `json:"status"`
+	Statuses        []Status       `json:"statuses"`
 	Slug            string         `json:"slug"`
 	Name            string         `json:"name"`
 	City            string         `json:"city"`
