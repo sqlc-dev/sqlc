@@ -7,7 +7,7 @@ CREATE TABLE authors (
 );
 ```
 
-DinoSQL can generate structs with JSON tags. The JSON name for a field matches
+sqlc can generate structs with JSON tags. The JSON name for a field matches
 the column name in the database.
 
 ```go

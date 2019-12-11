@@ -1,6 +1,6 @@
 # Returning values
 
-DinoSQL has full support for the `RETURNING` statement.
+sqlc has full support for the `RETURNING` statement.
 
 ```sql
 CREATE TABLE authors (
