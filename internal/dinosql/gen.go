@@ -293,7 +293,6 @@ func (r Result) QueryImports(filename string) [][]string {
 					}
 				} else {
 					if strings.HasPrefix(q.Ret.Type(), "[]") && q.Ret.Type() != "[]byte" {
-						log.Println(q.Ret.Type(), q.Ret.Name, q.Ret.typ)
 						return true
 					}
 				}
@@ -302,13 +301,11 @@ func (r Result) QueryImports(filename string) [][]string {
 				if q.Arg.IsStruct() {
 					for _, f := range q.Arg.Struct.Fields {
 						if strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" {
-							log.Println(f.Type, f.Name)
 							return true
 						}
 					}
 				} else {
 					if strings.HasPrefix(q.Arg.Type(), "[]") && q.Arg.Type() != "[]byte" {
-						log.Println(q.Arg.Type(), q.Arg.Name, q.Arg.typ)
 						return true
 					}
 				}
