@@ -95,14 +95,14 @@ func (v GoQueryValue) Params() string {
 	}
 	var out []string
 	if v.Struct == nil {
-		if strings.HasPrefix(v.typ, "[]") {
+		if v.typ != "[]byte" && strings.HasPrefix(v.typ, "[]") {
 			out = append(out, "pq.Array("+v.Name+")")
 		} else {
 			out = append(out, v.Name)
 		}
 	} else {
 		for _, f := range v.Struct.Fields {
-			if strings.HasPrefix(f.Type, "[]") {
+			if f.Type != "[]byte" && strings.HasPrefix(f.Type, "[]") {
 				out = append(out, "pq.Array("+v.Name+"."+f.Name+")")
 			} else {
 				out = append(out, v.Name+"."+f.Name)
@@ -119,14 +119,14 @@ func (v GoQueryValue) Params() string {
 func (v GoQueryValue) Scan() string {
 	var out []string
 	if v.Struct == nil {
-		if strings.HasPrefix(v.typ, "[]") {
+		if v.typ != "[]byte" && strings.HasPrefix(v.typ, "[]") {
 			out = append(out, "pq.Array(&"+v.Name+")")
 		} else {
 			out = append(out, "&"+v.Name)
 		}
 	} else {
 		for _, f := range v.Struct.Fields {
-			if strings.HasPrefix(f.Type, "[]") {
+			if f.Type != "[]byte" && strings.HasPrefix(f.Type, "[]") {
 				out = append(out, "pq.Array(&"+v.Name+"."+f.Name+")")
 			} else {
 				out = append(out, "&"+v.Name+"."+f.Name)
@@ -851,6 +851,11 @@ const (
 	{{.Name}} {{.Type}} = "{{.Value}}"
 	{{- end}}
 )
+
+func (e *{{.Name}}) Scan(src interface{}) error {
+	*e = {{.Name}}(src.([]byte))
+	return nil
+}
 {{end}}
 
 {{range .Structs}}
