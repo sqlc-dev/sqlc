@@ -851,6 +851,11 @@ const (
 	{{.Name}} {{.Type}} = "{{.Value}}"
 	{{- end}}
 )
+
+func (e *{{.Name}}) Scan(src interface{}) error {
+	*e = {{.Name}}(src.([]byte))
+	return nil
+}
 {{end}}
 
 {{range .Structs}}
