@@ -1,6 +1,6 @@
 # Schema modification
 
-DinoSQL understands `ALTER TABLE` statements when parsing SQL.
+sqlc understands `ALTER TABLE` statements when parsing SQL.
 
 ```sql
 CREATE TABLE authors (

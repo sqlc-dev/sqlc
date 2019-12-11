@@ -7,7 +7,7 @@ CREATE TABLE records (
 ```
 
 The Go standard library does not come with a `uuid` package. For UUID support,
-DinoSQL uses the excellent `github.com/google/uuid` package.
+sqlc uses the excellent `github.com/google/uuid` package.
 
 ```go
 package db
