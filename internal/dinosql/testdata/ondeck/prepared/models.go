@@ -14,6 +14,11 @@ const (
 	StatusClosed Status = "closed"
 )
 
+func (e *Status) Scan(src interface{}) error {
+	*e = Status(src.([]byte))
+	return nil
+}
+
 type City struct {
 	Slug string
 	Name string
@@ -22,6 +27,7 @@ type City struct {
 type Venue struct {
 	ID              int32
 	Status          Status
+	Statuses        []Status
 	Slug            string
 	Name            string
 	City            string
