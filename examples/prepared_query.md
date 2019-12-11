@@ -10,7 +10,7 @@ SELECT * FROM records
 WHERE id = $1;
 ```
 
-DinoSQL has an option to use perpared queries. These prepared queries also work
+sqlc has an option to use perpared queries. These prepared queries also work
 with transactions.
 
 ```go

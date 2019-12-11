@@ -1,6 +1,6 @@
 # Goose
 
-DinoSQL will ignore rollback statements when parsing
+sqlc will ignore rollback statements when parsing
 [Goose](https://github.com/pressly/goose) migrations.
 
 ```sql
