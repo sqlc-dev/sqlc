@@ -91,7 +91,7 @@ func ParseCatalog(schema string) (core.Catalog, error) {
 			merr.Add(filename, "", 0, err)
 			continue
 		}
-		contents := RemoveGooseRollback(string(blob))
+		contents := RemoveRollbackStatements(string(blob))
 		tree, err := pg.Parse(contents)
 		if err != nil {
 			merr.Add(filename, contents, 0, err)
