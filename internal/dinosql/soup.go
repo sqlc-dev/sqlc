@@ -854,19 +854,25 @@ func Walk(f Visitor, node nodes.Node) {
 
 	case nodes.RangeFunction:
 		walkn(f, n.Functions)
-		walkn(f, n.Alias)
+		if n.Alias != nil {
+			walkn(f, *n.Alias)
+		}
 		walkn(f, n.Coldeflist)
 
 	case nodes.RangeSubselect:
 		walkn(f, n.Subquery)
-		walkn(f, n.Alias)
+		if n.Alias != nil {
+			walkn(f, *n.Alias)
+		}
 
 	case nodes.RangeTableFunc:
 		walkn(f, n.Docexpr)
 		walkn(f, n.Rowexpr)
 		walkn(f, n.Namespaces)
 		walkn(f, n.Columns)
-		walkn(f, n.Alias)
+		if n.Alias != nil {
+			walkn(f, *n.Alias)
+		}
 
 	case nodes.RangeTableFuncCol:
 		if n.TypeName != nil {
@@ -889,7 +895,9 @@ func Walk(f Visitor, node nodes.Node) {
 		walkn(f, n.ValuesLists)
 		walkn(f, n.Coltypes)
 		walkn(f, n.Colcollations)
-		walkn(f, n.Alias)
+		if n.Alias != nil {
+			walkn(f, *n.Alias)
+		}
 		walkn(f, n.Eref)
 		walkn(f, n.SecurityQuals)
 
