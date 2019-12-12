@@ -249,7 +249,7 @@ Your favorite PostgreSQL / Go features are supported:
   - [ALTER TABLE](./examples/alter_table.md)
 - Go
   - [JSON struct tags](./examples/json_tags.md)
-  - [Goose migrations](./examples/goose.md)
+  - [Migration tools](./examples/migrations.md)
 
 A full, end-to-end example can be found in the sample
 [`ondeck`](./internal/dinosql/testdata/ondeck) package.
