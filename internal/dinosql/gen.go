@@ -242,6 +242,8 @@ func (r Result) ModelImports() [][]string {
 		stds = append(stds, s)
 	}
 
+	sort.Strings(stds)
+	sort.Strings(pkgs)
 	return [][]string{stds, pkgs}
 }
 
@@ -375,6 +377,8 @@ func (r Result) QueryImports(filename string) [][]string {
 		stds = append(stds, s)
 	}
 
+	sort.Strings(stds)
+	sort.Strings(pkgs)
 	return [][]string{stds, pkgs}
 }
 
