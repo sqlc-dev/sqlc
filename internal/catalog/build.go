@@ -353,8 +353,12 @@ func Update(c *pg.Catalog, stmt nodes.Node) error {
 		args := make([]pg.Argument, arity)
 		for i, item := range n.Parameters.Items {
 			arg := item.(nodes.FunctionParameter)
+			var name string
+			if arg.Name != nil {
+				name = *arg.Name
+			}
 			args[i] = pg.Argument{
-				Name:       *arg.Name,
+				Name:       name,
 				DataType:   join(arg.ArgType.Names, "."),
 				HasDefault: arg.Defexpr != nil,
 			}

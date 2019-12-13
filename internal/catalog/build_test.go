@@ -324,6 +324,13 @@ func TestUpdate(t *testing.T) {
 		},
 		{
 			`
+			DROP FUNCTION IF EXISTS bar(text);
+			DROP FUNCTION IF EXISTS bar(text) CASCADE;
+			`,
+			pg.NewCatalog(),
+		},
+		{
+			`
 			CREATE TABLE venues (id SERIAL PRIMARY KEY);
 			ALTER TABLE venues DROP CONSTRAINT venues_id_pkey;
 			`,
@@ -336,6 +343,31 @@ func TestUpdate(t *testing.T) {
 								Name: "venues",
 								Columns: []pg.Column{
 									{Name: "id", DataType: "serial", NotNull: true, Table: pg.FQN{Schema: "public", Rel: "venues"}},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{ // first argument has no name
+			`
+			CREATE FUNCTION foo(TEXT) RETURNS bool AS $$ SELECT true $$ LANGUAGE sql;
+			`,
+			pg.Catalog{
+				Schemas: map[string]pg.Schema{
+					"public": {
+						Funcs: map[string][]pg.Function{
+							"foo": []pg.Function{
+								{
+									Name: "foo",
+									Arguments: []pg.Argument{
+										{
+											Name:     "",
+											DataType: "text",
+										},
+									},
+									ReturnType: "bool",
 								},
 							},
 						},
