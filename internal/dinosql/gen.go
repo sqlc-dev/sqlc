@@ -195,22 +195,22 @@ func (r Result) Imports(settings PackageSettings) func(string) [][]string {
 }
 
 func (r Result) ModelImports() [][]string {
-	var std []string
+	std := make(map[string]struct{})
 	if r.UsesType("sql.Null") {
-		std = append(std, "database/sql")
+		std["database/sql"] = struct{}{}
 	}
 	if r.UsesType("json.RawMessage") {
-		std = append(std, "encoding/json")
+		std["encoding/json"] = struct{}{}
 	}
 	if r.UsesType("time.Time") {
-		std = append(std, "time")
+		std["time"] = struct{}{}
 	}
 	if r.UsesType("net.IP") {
-		std = append(std, "net")
+		std["net"] = struct{}{}
 	}
 
 	// Custom imports
-	var pkg []string
+	pkg := make(map[string]struct{})
 	overrideTypes := map[string]string{}
 	for _, o := range append(r.Settings.Overrides, r.packageSettings.Overrides...) {
 		overrideTypes[o.goTypeName] = o.goPackage
@@ -218,21 +218,31 @@ func (r Result) ModelImports() [][]string {
 
 	_, overrideNullTime := overrideTypes["pq.NullTime"]
 	if r.UsesType("pq.NullTime") && !overrideNullTime {
-		pkg = append(pkg, "github.com/lib/pq")
+		pkg["github.com/lib/pq"] = struct{}{}
 	}
 
 	_, overrideUUID := overrideTypes["uuid.UUID"]
 	if r.UsesType("uuid.UUID") && !overrideUUID {
-		pkg = append(pkg, "github.com/google/uuid")
+		pkg["github.com/google/uuid"] = struct{}{}
 	}
 
 	for goType, importPath := range overrideTypes {
-		if r.UsesType(goType) {
-			pkg = append(pkg, importPath)
+		if _, ok := std[importPath]; !ok && r.UsesType(goType) {
+			pkg[importPath] = struct{}{}
 		}
 	}
 
-	return [][]string{std, pkg}
+	pkgs := make([]string, 0, len(pkg))
+	for p, _ := range pkg {
+		pkgs = append(pkgs, p)
+	}
+
+	stds := make([]string, 0, len(std))
+	for s, _ := range std {
+		stds = append(stds, s)
+	}
+
+	return [][]string{stds, pkgs}
 }
 
 func (r Result) QueryImports(filename string) [][]string {
@@ -314,46 +324,58 @@ func (r Result) QueryImports(filename string) [][]string {
 		return false
 	}
 
-	std := []string{"context"}
+	std := map[string]struct{}{
+		"context": struct{}{},
+	}
 	if uses("sql.Null") {
-		std = append(std, "database/sql")
+		std["database/sql"] = struct{}{}
 	}
 	if uses("json.RawMessage") {
-		std = append(std, "encoding/json")
+		std["encoding/json"] = struct{}{}
 	}
 	if uses("time.Time") {
-		std = append(std, "time")
+		std["time"] = struct{}{}
 	}
 	if uses("net.IP") {
-		std = append(std, "net")
+		std["net"] = struct{}{}
 	}
 
-	var pkg []string
+	pkg := make(map[string]struct{})
 	overrideTypes := map[string]string{}
 	for _, o := range append(r.Settings.Overrides, r.packageSettings.Overrides...) {
 		overrideTypes[o.goTypeName] = o.goPackage
 	}
 
 	if sliceScan() {
-		pkg = append(pkg, "github.com/lib/pq")
+		pkg["github.com/lib/pq"] = struct{}{}
 	}
 	_, overrideNullTime := overrideTypes["pq.NullTime"]
 	if uses("pq.NullTime") && !overrideNullTime {
-		pkg = append(pkg, "github.com/lib/pq")
+		pkg["github.com/lib/pq"] = struct{}{}
 	}
 	_, overrideUUID := overrideTypes["uuid.UUID"]
 	if uses("uuid.UUID") && !overrideUUID {
-		pkg = append(pkg, "github.com/google/uuid")
+		pkg["github.com/google/uuid"] = struct{}{}
 	}
 
 	// Custom imports
 	for goType, importPath := range overrideTypes {
-		if uses(goType) {
-			pkg = append(pkg, importPath)
+		if _, ok := std[importPath]; !ok && uses(goType) {
+			pkg[importPath] = struct{}{}
 		}
 	}
 
-	return [][]string{std, pkg}
+	pkgs := make([]string, 0, len(pkg))
+	for p, _ := range pkg {
+		pkgs = append(pkgs, p)
+	}
+
+	stds := make([]string, 0, len(std))
+	for s, _ := range std {
+		stds = append(stds, s)
+	}
+
+	return [][]string{stds, pkgs}
 }
 
 func (r Result) Enums() []GoEnum {
