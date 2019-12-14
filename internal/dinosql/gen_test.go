@@ -75,3 +75,23 @@ func TestColumnsToStruct(t *testing.T) {
 		t.Errorf("struct mismatch: \n%s", diff)
 	}
 }
+
+func TestInnerType(t *testing.T) {
+	r := Result{}
+	for _, tc := range []struct {
+		col      pg.Column
+		expected string
+	}{
+		{
+			pg.Column{Name: "created", DataType: "timestamptz", NotNull: true},
+			"time.Time",
+		},
+	} {
+		tt := tc
+		t.Run(tt.col.Name+"-"+tt.col.DataType, func(t *testing.T) {
+			if diff := cmp.Diff(tt.expected, r.goType(tt.col)); diff != "" {
+				t.Errorf("struct mismatch: \n%s", diff)
+			}
+		})
+	}
+}

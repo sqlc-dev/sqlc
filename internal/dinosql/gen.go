@@ -537,7 +537,7 @@ func (r Result) goInnerType(col core.Column) string {
 	case "bytea", "blob", "pg_catalog.bytea":
 		return "[]byte"
 
-	case "pg_catalog.timestamp", "pg_catalog.timestamptz":
+	case "pg_catalog.timestamp", "pg_catalog.timestamptz", "timestamptz":
 		if notNull {
 			return "time.Time"
 		}
