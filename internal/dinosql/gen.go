@@ -467,6 +467,12 @@ func (r Result) Structs() []GoStruct {
 }
 
 func (r Result) goType(col core.Column) string {
+	// package overrides have a higher precedence
+	for _, oride := range append(r.Settings.Overrides, r.packageSettings.Overrides...) {
+		if oride.Column != "" && oride.columnName == col.Name && oride.table == col.Table {
+			return oride.goTypeName
+		}
+	}
 	typ := r.goInnerType(col)
 	if col.IsArray {
 		return "[]" + typ
@@ -481,9 +487,6 @@ func (r Result) goInnerType(col core.Column) string {
 	// package overrides have a higher precedence
 	for _, oride := range append(r.Settings.Overrides, r.packageSettings.Overrides...) {
 		if oride.PostgresType != "" && oride.PostgresType == columnType && oride.Null != notNull {
-			return oride.goTypeName
-		}
-		if oride.Column != "" && oride.columnName == col.Name && oride.table == col.Table {
 			return oride.goTypeName
 		}
 	}

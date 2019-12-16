@@ -40,6 +40,11 @@ func TestColumnsToStruct(t *testing.T) {
 			DataType: "text",
 			NotNull:  true,
 		},
+		{
+			Name:     "languages",
+			DataType: "text",
+			IsArray:  true,
+		},
 	}
 
 	// all of the columns are on the 'foo' table
@@ -55,8 +60,16 @@ func TestColumnsToStruct(t *testing.T) {
 		Column: "foo.retyped",
 	}
 	o.Parse()
+
+	// set up column-based array override test
+	oa := Override{
+		GoType: "github.com/lib/pq.StringArray",
+		Column: "foo.languages",
+	}
+	oa.Parse()
+
 	r.packageSettings = PackageSettings{
-		Overrides: []Override{o},
+		Overrides: []Override{o, oa},
 	}
 
 	actual := r.columnsToStruct("Foo", cols)
@@ -69,6 +82,7 @@ func TestColumnsToStruct(t *testing.T) {
 			{Name: "Tags", Type: "[]string", Tags: map[string]string{"json:": "tags"}},
 			{Name: "ByteSeq", Type: "[]byte", Tags: map[string]string{"json:": "byte_seq"}},
 			{Name: "Retyped", Type: "pkg.CustomType", Tags: map[string]string{"json:": "retyped"}},
+			{Name: "Languages", Type: "pq.StringArray", Tags: map[string]string{"json:": "languages"}},
 		},
 	}
 	if diff := cmp.Diff(expected, actual); diff != "" {
