@@ -78,19 +78,39 @@ func TestColumnsToStruct(t *testing.T) {
 
 func TestInnerType(t *testing.T) {
 	r := Result{}
-	for _, tc := range []struct {
-		col      pg.Column
-		expected string
-	}{
-		{
-			pg.Column{Name: "created", DataType: "timestamptz", NotNull: true},
-			"time.Time",
-		},
-	} {
-		tt := tc
-		t.Run(tt.col.Name+"-"+tt.col.DataType, func(t *testing.T) {
-			if diff := cmp.Diff(tt.expected, r.goType(tt.col)); diff != "" {
-				t.Errorf("struct mismatch: \n%s", diff)
+	types := map[string]string{
+		"timestamptz":     "time.Time",
+		"integer":         "int32",
+		"int":             "int32",
+		"pg_catalog.int4": "int32",
+	}
+	for k, v := range types {
+		dbType := k
+		goType := v
+		t.Run(k+"-"+v, func(t *testing.T) {
+			col := pg.Column{DataType: dbType, NotNull: true}
+			if goType != r.goType(col) {
+				t.Errorf("expected Go type for %s to be %s, not %s", dbType, goType, r.goType(col))
+			}
+		})
+	}
+}
+
+func TestNullInnerType(t *testing.T) {
+	r := Result{}
+	types := map[string]string{
+		"timestamptz":     "sql.NullTime",
+		"integer":         "sql.NullInt32",
+		"int":             "sql.NullInt32",
+		"pg_catalog.int4": "sql.NullInt32",
+	}
+	for k, v := range types {
+		dbType := k
+		goType := v
+		t.Run(k+"-"+v, func(t *testing.T) {
+			col := pg.Column{DataType: dbType, NotNull: false}
+			if goType != r.goType(col) {
+				t.Errorf("expected Go type for %s to be %s, not %s", dbType, goType, r.goType(col))
 			}
 		})
 	}
