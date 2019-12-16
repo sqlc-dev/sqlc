@@ -490,25 +490,31 @@ func (r Result) goInnerType(col core.Column) string {
 
 	switch columnType {
 	case "serial", "pg_catalog.serial4":
-		return "int32"
+		if notNull {
+			return "int32"
+		}
+		return "sql.NullInt32"
 
 	case "bigserial", "pg_catalog.serial8":
 		if notNull {
 			return "int64"
 		}
-		return "sql.NullInt64" // unnecessay else
+		return "sql.NullInt64"
 
 	case "smallserial", "pg_catalog.serial2":
 		return "int16"
 
 	case "integer", "int", "pg_catalog.int4":
-		return "int32"
+		if notNull {
+			return "int32"
+		}
+		return "sql.NullInt32"
 
 	case "bigint", "pg_catalog.int8":
 		if notNull {
 			return "int64"
 		}
-		return "sql.NullInt64" // unnecessary else
+		return "sql.NullInt64"
 
 	case "smallint", "pg_catalog.int2":
 		return "int16"
@@ -517,19 +523,19 @@ func (r Result) goInnerType(col core.Column) string {
 		if notNull {
 			return "float64"
 		}
-		return "sql.NullFloat64" // unnecessary else
+		return "sql.NullFloat64"
 
 	case "real", "pg_catalog.float4":
 		if notNull {
 			return "float32"
-		} // unnecessary else
-		return "sql.NullFloat64" // IMPORTANT: Change to sql.NullFloat32 after updating the go.mod file
+		}
+		return "sql.NullFloat64" // TODO: Change to sql.NullFloat32 after updating the go.mod file
 
 	case "bool", "pg_catalog.bool":
 		if notNull {
 			return "bool"
 		}
-		return "sql.NullBool" // unnecessary else
+		return "sql.NullBool"
 
 	case "jsonb":
 		return "json.RawMessage"
@@ -541,13 +547,13 @@ func (r Result) goInnerType(col core.Column) string {
 		if notNull {
 			return "time.Time"
 		}
-		return "pq.NullTime" // unnecessary else
+		return "sql.NullTime"
 
 	case "text", "pg_catalog.varchar", "pg_catalog.bpchar":
 		if notNull {
 			return "string"
 		}
-		return "sql.NullString" // unnecessary else
+		return "sql.NullString"
 
 	case "uuid":
 		return "uuid.UUID"
