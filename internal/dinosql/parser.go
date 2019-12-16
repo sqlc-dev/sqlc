@@ -371,7 +371,7 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string) (*Query, error) 
 	}
 	raw, ok := stmt.(nodes.RawStmt)
 	if !ok {
-		return nil, nil
+		return nil, errors.New("node is not a statement")
 	}
 	switch n := raw.Stmt.(type) {
 	case nodes.SelectStmt:
@@ -382,7 +382,7 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string) (*Query, error) 
 		}
 	case nodes.UpdateStmt:
 	default:
-		return nil, nil
+		return nil, fmt.Errorf("parseQuery: unsupported statement type: %T", n)
 	}
 
 	rawSQL, err := pluckQuery(source, raw)
