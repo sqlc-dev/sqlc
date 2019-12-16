@@ -127,11 +127,6 @@ var genCmd = &cobra.Command{
 		output := map[string]string{}
 
 		for i, pkg := range settings.Packages {
-			if pkg.Schema == pkg.Queries {
-				fmt.Fprintf(os.Stderr, "package[%d]: schema and query path must not be identical\n", i)
-				os.Exit(1)
-			}
-
 			name := pkg.Name
 
 			if pkg.Path == "" {
