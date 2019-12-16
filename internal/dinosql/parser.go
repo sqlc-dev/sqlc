@@ -108,6 +108,11 @@ func ParseCatalog(schema string) (core.Catalog, error) {
 			}
 		}
 	}
+
+	// The pg_temp schema is scoped to the current session. Remove it from the
+	// catalog so that other queries can not read from it.
+	delete(c.Schemas, "pg_temp")
+
 	if len(merr.Errs) > 0 {
 		return c, merr
 	}

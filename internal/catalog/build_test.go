@@ -481,6 +481,27 @@ func TestUpdate(t *testing.T) {
 				},
 			},
 		},
+		{
+			`
+			CREATE TABLE pg_temp.migrate (val INT);
+			INSERT INTO pg_temp.migrate (val) SELECT val FROM old;
+			INSERT INTO new (val) SELECT val FROM pg_temp.migrate;
+			`,
+			pg.Catalog{
+				Schemas: map[string]pg.Schema{
+					"pg_temp": {
+						Tables: map[string]pg.Table{
+							"migrate": pg.Table{
+								Name: "migrate",
+								Columns: []pg.Column{
+									{Name: "val", DataType: "pg_catalog.int4", NotNull: false, Table: pg.FQN{Schema: "pg_temp", Rel: "migrate"}},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	} {
 		test := tc
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
@@ -490,10 +511,12 @@ func TestUpdate(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			delete(c.Schemas, "pg_catalog")
-			delete(test.c.Schemas, "pg_catalog")
+			expected := pg.NewCatalog()
+			for name, schema := range test.c.Schemas {
+				expected.Schemas[name] = schema
+			}
 
-			if diff := cmp.Diff(test.c, c, cmpopts.EquateEmpty()); diff != "" {
+			if diff := cmp.Diff(expected, c, cmpopts.EquateEmpty()); diff != "" {
 				t.Log(test.stmt)
 				t.Errorf("catalog mismatch:\n%s", diff)
 			}
