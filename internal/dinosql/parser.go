@@ -219,6 +219,9 @@ func ParseQueries(c core.Catalog, settings GenerateSettings, pkg PackageSettings
 		for _, stmt := range tree.Statements {
 			// line, col := location(source, stmt)
 			query, err := parseQuery(c, stmt, source)
+			if err == errUnsupportedStatementType {
+				continue
+			}
 			if err != nil {
 				merr.Add(filename, source, location(stmt), err)
 				continue
@@ -229,11 +232,12 @@ func ParseQueries(c core.Catalog, settings GenerateSettings, pkg PackageSettings
 			}
 		}
 	}
-
+	if len(q) == 0 {
+		return nil, fmt.Errorf("path %s contains no queries", pkg.Queries)
+	}
 	if len(merr.Errs) > 0 {
 		return nil, merr
 	}
-
 	return &Result{Catalog: c, Queries: q, Settings: settings}, nil
 }
 
@@ -365,6 +369,8 @@ func validateCmd(n nodes.Node, name, cmd string) error {
 	return nil
 }
 
+var errUnsupportedStatementType = errors.New("parseQuery: unsupported statement type")
+
 func parseQuery(c core.Catalog, stmt nodes.Node, source string) (*Query, error) {
 	if err := validateParamRef(stmt); err != nil {
 		return nil, err
@@ -382,7 +388,7 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string) (*Query, error) 
 		}
 	case nodes.UpdateStmt:
 	default:
-		return nil, fmt.Errorf("parseQuery: unsupported statement type: %T", n)
+		return nil, errUnsupportedStatementType
 	}
 
 	rawSQL, err := pluckQuery(source, raw)
