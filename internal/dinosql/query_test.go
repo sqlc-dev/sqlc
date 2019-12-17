@@ -814,14 +814,28 @@ func TestQueries(t *testing.T) {
 			},
 		},
 		{
-			"date",
+			"datetimes",
 			`
-			CREATE TABLE users ( birthday DATE );
-			SELECT birthday FROM users;
+			CREATE TABLE users (
+				d       DATE,
+				t       TIME,
+				t_notz  TIME WITHOUT TIME ZONE,
+				t_tz    TIME WITH TIME ZONE,
+				ts      TIMESTAMP,
+				ts_notz TIMESTAMP WITHOUT TIME ZONE,
+				ts_tz   TIMESTAMP WITH TIME ZONE
+			);
+			SELECT * FROM users;
 			`,
 			Query{
 				Columns: []core.Column{
-					{Table: public("users"), Name: "birthday", DataType: "date"},
+					{Table: public("users"), Name: "d", DataType: "date"},
+					{Table: public("users"), Name: "t", DataType: "pg_catalog.time"},
+					{Table: public("users"), Name: "t_notz", DataType: "pg_catalog.time"},
+					{Table: public("users"), Name: "t_tz", DataType: "pg_catalog.timetz"},
+					{Table: public("users"), Name: "ts", DataType: "pg_catalog.timestamp"},
+					{Table: public("users"), Name: "ts_notz", DataType: "pg_catalog.timestamp"},
+					{Table: public("users"), Name: "ts_tz", DataType: "pg_catalog.timestamptz"},
 				},
 			},
 		},
