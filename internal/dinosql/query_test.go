@@ -7,7 +7,6 @@ import (
 
 	core "github.com/kyleconroy/sqlc/internal/pg"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/google/go-cmp/cmp"
 	pg "github.com/lfittl/pg_query_go"
 )
@@ -26,8 +25,6 @@ func parseSQL(in string) (Query, error) {
 	if q == nil {
 		return Query{}, err
 	}
-	q.SQL = ""
-	q.NeedsEdit = false
 	return *q, err
 }
 
@@ -737,12 +734,62 @@ func TestQueries(t *testing.T) {
 				},
 			},
 		},
+		{
+			"star-expansion",
+			`
+			CREATE TABLE foo (a text, b text);
+			SELECT *, *, foo.* FROM foo;
+			`,
+			Query{
+				Columns: []core.Column{
+					{Name: "a", DataType: "text", Table: public("foo")},
+					{Name: "b", DataType: "text", Table: public("foo")},
+					{Name: "a", DataType: "text", Table: public("foo")},
+					{Name: "b", DataType: "text", Table: public("foo")},
+					{Name: "a", DataType: "text", Scope: "foo", Table: public("foo")},
+					{Name: "b", DataType: "text", Scope: "foo", Table: public("foo")},
+				},
+				SQL: "SELECT a, b, a, b, foo.a, foo.b FROM foo",
+			},
+		},
+		{
+			"star-expansion-subquery",
+			`
+			CREATE TABLE foo (a text, b text);
+			SELECT * FROM foo WHERE EXISTS (SELECT * FROM foo);
+			`,
+			Query{
+				Columns: []core.Column{
+					{Name: "a", DataType: "text", Table: public("foo")},
+					{Name: "b", DataType: "text", Table: public("foo")},
+				},
+				SQL: "SELECT a, b FROM foo WHERE EXISTS (SELECT a, b FROM foo)",
+			},
+		},
+		{
+			"star-expansion-cte",
+			`
+			CREATE TABLE foo (a text, b text);
+			CREATE TABLE bar (c text, d text);
+			WITH cte AS (SELECT * FROM foo) SELECT * FROM bar;
+			`,
+			Query{
+				Columns: []core.Column{
+					{Name: "c", DataType: "text", Table: public("bar")},
+					{Name: "d", DataType: "text", Table: public("bar")},
+				},
+				SQL: "WITH cte AS (SELECT a, b FROM foo) SELECT c, d FROM bar",
+			},
+		},
 	} {
 		test := tc
 		t.Run(test.name, func(t *testing.T) {
 			q, err := parseSQL(test.stmt)
 			if err != nil {
 				t.Fatal(err)
+			}
+			if test.query.SQL == "" {
+				q.SQL = ""
 			}
 			if diff := cmp.Diff(test.query, q); diff != "" {
 				t.Errorf("query mismatch: \n%s", diff)
@@ -765,64 +812,12 @@ func TestComparisonOperators(t *testing.T) {
 				t.Fatal(err)
 			}
 			expected := Query{
+				SQL: q.SQL,
 				Columns: []core.Column{
 					{Name: "", DataType: "bool", NotNull: true},
 				},
 			}
 			if diff := cmp.Diff(expected, q); diff != "" {
-				t.Errorf("query mismatch: \n%s", diff)
-			}
-		})
-	}
-}
-
-func TestStarWalker(t *testing.T) {
-	for i, tc := range []struct {
-		stmt     string
-		expected bool
-	}{
-		{
-			`
-			SELECT * FROM city ORDER BY name;
-			`,
-			true,
-		},
-		{
-			`
-			INSERT INTO city (
-				name,
-				slug
-			) VALUES (
-				$1,
-				$2
-			) RETURNING *;
-			`,
-			true,
-		},
-		{
-			`
-			UPDATE city SET name = $2 WHERE slug = $1;
-			`,
-			false,
-		},
-		{
-			`
-			UPDATE venue
-			SET name = $2
-			WHERE slug = $1
-			RETURNING *;
-			`,
-			true,
-		},
-	} {
-		test := tc
-		t.Run(strconv.Itoa(i), func(t *testing.T) {
-			tree, err := pg.Parse(test.stmt)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if diff := cmp.Diff(test.expected, needsEdit(tree.Statements[0])); diff != "" {
-				spew.Dump(tree.Statements[0])
 				t.Errorf("query mismatch: \n%s", diff)
 			}
 		})

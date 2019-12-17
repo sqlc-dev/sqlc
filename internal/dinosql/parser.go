@@ -289,7 +289,7 @@ func lineno(source string, head int) (int, int) {
 func pluckQuery(source string, n nodes.RawStmt) (string, error) {
 	head := n.StmtLocation
 	tail := n.StmtLocation + n.StmtLen
-	return strings.TrimSpace(source[head:tail]), nil
+	return source[head:tail], nil
 }
 
 func rangeVars(root nodes.Node) []nodes.RangeVar {
@@ -403,7 +403,7 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string) (*Query, error) 
 	if err := validateFuncCall(&c, raw); err != nil {
 		return nil, err
 	}
-	name, cmd, err := parseMetadata(rawSQL)
+	name, cmd, err := parseMetadata(strings.TrimSpace(rawSQL))
 	if err != nil {
 		return nil, err
 	}
@@ -422,19 +422,28 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string) (*Query, error) 
 		return nil, err
 	}
 
-	trimmed, comments, err := stripComments(rawSQL)
+	// TODO: Limit calls to sourceTables
+	tables, err := sourceTables(c, raw.Stmt)
+	if err != nil {
+		return nil, err
+	}
+	expanded, err := expand(raw, tables, rawSQL)
+	if err != nil {
+		return nil, err
+	}
+
+	trimmed, comments, err := stripComments(strings.TrimSpace(expanded))
 	if err != nil {
 		return nil, err
 	}
 
 	return &Query{
-		Cmd:       cmd,
-		Comments:  comments,
-		Name:      name,
-		Params:    params,
-		Columns:   cols,
-		SQL:       trimmed,
-		NeedsEdit: needsEdit(stmt),
+		Cmd:      cmd,
+		Comments: comments,
+		Name:     name,
+		Params:   params,
+		Columns:  cols,
+		SQL:      trimmed,
 	}, nil
 }
 
@@ -452,6 +461,86 @@ func stripComments(sql string) (string, []string, error) {
 		lines = append(lines, s.Text())
 	}
 	return strings.Join(lines, "\n"), comments, s.Err()
+}
+
+type edit struct {
+	Location int
+	Old      string
+	New      string
+}
+
+func expand(raw nodes.RawStmt, tables []core.Table, sql string) (string, error) {
+	list := search(raw, func(node nodes.Node) bool {
+		res, ok := node.(nodes.ResTarget)
+		if !ok {
+			return false
+		}
+		ref, ok := res.Val.(nodes.ColumnRef)
+		if !ok {
+			return false
+		}
+		return HasStarRef(ref)
+	})
+	if len(list.Items) == 0 {
+		return sql, nil
+	}
+	var edits []edit
+	for _, item := range list.Items {
+		res := item.(nodes.ResTarget)
+		ref := res.Val.(nodes.ColumnRef)
+		var parts, cols []string
+		for _, f := range ref.Fields.Items {
+			switch field := f.(type) {
+			case nodes.String:
+				parts = append(parts, field.Str)
+			case nodes.A_Star:
+				parts = append(parts, "*")
+			default:
+				return "", fmt.Errorf("unknown field in ColumnRef: %T", f)
+			}
+		}
+		for _, t := range tables {
+			scope := join(ref.Fields, ".")
+			if scope != "" && scope != t.Name {
+				continue
+			}
+			for _, c := range t.Columns {
+				cname := c.Name
+				if res.Name != nil {
+					cname = *res.Name
+				}
+				if scope != "" {
+					cname = scope + "." + cname
+				}
+				cols = append(cols, cname)
+			}
+		}
+		edits = append(edits, edit{
+			Location: res.Location - raw.StmtLocation,
+			Old:      strings.Join(parts, "."),
+			New:      strings.Join(cols, ", "),
+		})
+	}
+	return editQuery(sql, edits)
+}
+
+func editQuery(raw string, a []edit) (string, error) {
+	sort.Slice(a, func(i, j int) bool { return a[i].Location > a[j].Location })
+	// TODO: Check bounds
+	s := raw
+	for _, edit := range a {
+		// fmt.Printf("edit q %q\n", s)
+		// fmt.Printf("edit e %q\n", edit)
+		start := edit.Location
+		stop := edit.Location + len(edit.Old) - 1 // Assumes edit.New is non-empty
+		if stop < len(s) {
+			s = s[:start] + edit.New + s[stop+1:]
+		} else {
+			s = s[:start] + edit.New
+		}
+	}
+	// fmt.Printf("edit fixed %q\n", s)
+	return s, nil
 }
 
 type QueryCatalog struct {
@@ -653,6 +742,7 @@ func outputColumns(c core.Catalog, node nodes.Node) ([]core.Column, error) {
 
 		case nodes.ColumnRef:
 			if HasStarRef(n) {
+				// TODO: This code is copied in func expand()
 				for _, t := range tables {
 					scope := join(n.Fields, ".")
 					if scope != "" && scope != t.Name {
@@ -914,24 +1004,6 @@ func findParameters(root nodes.Node) []paramRef {
 	}
 	sort.Slice(refs, func(i, j int) bool { return refs[i].ref.Number < refs[j].ref.Number })
 	return refs
-}
-
-type starWalker struct {
-	found bool
-}
-
-func (s *starWalker) Visit(node nodes.Node) Visitor {
-	if _, ok := node.(nodes.A_Star); ok {
-		s.found = true
-		return nil
-	}
-	return s
-}
-
-func needsEdit(root nodes.Node) bool {
-	v := &starWalker{}
-	Walk(v, root)
-	return v.found
 }
 
 type nodeSearch struct {
