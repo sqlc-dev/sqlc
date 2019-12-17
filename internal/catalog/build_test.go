@@ -502,6 +502,71 @@ func TestUpdate(t *testing.T) {
 				},
 			},
 		},
+		{
+			`
+			CREATE SCHEMA foo;
+			CREATE TABLE foo.bar (baz text);
+			CREATE TYPE foo.bat AS ENUM ('bat');
+			COMMENT ON SCHEMA foo IS 'Schema comment';
+			COMMENT ON TABLE foo.bar IS 'Table comment';
+			COMMENT ON COLUMN foo.bar.baz IS 'Column comment';
+			COMMENT ON TYPE foo.bat IS 'Enum comment';
+			`,
+			pg.Catalog{
+				Schemas: map[string]pg.Schema{
+					"foo": {
+						Comment: "Schema comment",
+						Tables: map[string]pg.Table{
+							"bar": {
+								Comment: "Table comment",
+								Name:    "bar",
+								Columns: []pg.Column{
+									{
+										Name:     "baz",
+										DataType: "text",
+										Table:    pg.FQN{Schema: "foo", Rel: "bar"},
+										Comment:  "Column comment",
+									},
+								},
+							},
+						},
+						Enums: map[string]pg.Enum{"bat": {Comment: "Enum comment", Name: "bat", Vals: []string{"bat"}}},
+						Funcs: map[string][]pg.Function{},
+					},
+				},
+			},
+		},
+		{
+			`
+			CREATE TABLE bar (baz text);
+			CREATE TYPE bat AS ENUM ('bat');
+			COMMENT ON TABLE bar IS 'Table comment';
+			COMMENT ON COLUMN bar.baz IS 'Column comment';
+			COMMENT ON TYPE bat IS 'Enum comment';
+			`,
+			pg.Catalog{
+				Schemas: map[string]pg.Schema{
+					"public": {
+						Tables: map[string]pg.Table{
+							"bar": {
+								Comment: "Table comment",
+								Name:    "bar",
+								Columns: []pg.Column{
+									{
+										Name:     "baz",
+										DataType: "text",
+										Table:    pg.FQN{Schema: "public", Rel: "bar"},
+										Comment:  "Column comment",
+									},
+								},
+							},
+						},
+						Enums: map[string]pg.Enum{"bat": {Comment: "Enum comment", Name: "bat", Vals: []string{"bat"}}},
+						Funcs: map[string][]pg.Function{},
+					},
+				},
+			},
+		},
 	} {
 		test := tc
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
