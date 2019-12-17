@@ -25,13 +25,15 @@ type GoConstant struct {
 
 type GoEnum struct {
 	Name      string
+	Comment   string
 	Constants []GoConstant
 }
 
 type GoField struct {
-	Name string
-	Type string
-	Tags map[string]string
+	Name    string
+	Type    string
+	Tags    map[string]string
+	Comment string
 }
 
 func (gf GoField) Tag() string {
@@ -47,9 +49,10 @@ func (gf GoField) Tag() string {
 }
 
 type GoStruct struct {
-	Table  *core.FQN
-	Name   string
-	Fields []GoField
+	Table   *core.FQN
+	Name    string
+	Fields  []GoField
+	Comment string
 }
 
 // TODO: Terrible name
@@ -396,7 +399,8 @@ func (r Result) Enums() []GoEnum {
 				enumName = name + "_" + enum.Name
 			}
 			e := GoEnum{
-				Name: r.structName(enumName),
+				Name:    r.structName(enumName),
+				Comment: enum.Comment,
 			}
 			for _, v := range enum.Vals {
 				name := ""
@@ -447,14 +451,16 @@ func (r Result) Structs() []GoStruct {
 				tableName = name + "_" + table.Name
 			}
 			s := GoStruct{
-				Table: &core.FQN{Schema: name, Rel: table.Name},
-				Name:  inflection.Singular(r.structName(tableName)),
+				Table:   &core.FQN{Schema: name, Rel: table.Name},
+				Name:    inflection.Singular(r.structName(tableName)),
+				Comment: table.Comment,
 			}
 			for _, column := range table.Columns {
 				s.Fields = append(s.Fields, GoField{
-					Name: r.structName(column.Name),
-					Type: r.goType(column),
-					Tags: map[string]string{"json:": column.Name},
+					Name:    r.structName(column.Name),
+					Type:    r.goType(column),
+					Tags:    map[string]string{"json:": column.Name},
+					Comment: column.Comment,
 				})
 			}
 			structs = append(structs, s)
@@ -860,6 +866,7 @@ import (
 )
 
 {{range .Enums}}
+{{if .Comment}}// {{.Comment}}{{end}}
 type {{.Name}} string
 
 const (
@@ -875,7 +882,11 @@ func (e *{{.Name}}) Scan(src interface{}) error {
 {{end}}
 
 {{range .Structs}}
+{{if .Comment}}// {{.Comment}}{{end}}
 type {{.Name}} struct { {{- range .Fields}}
+  {{- if .Comment}}
+  // {{.Comment}}{{else}}
+  {{- end}}
   {{.Name}} {{.Type}} {{if $.EmitJSONTags}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
   {{- end}}
 }

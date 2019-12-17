@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// Venues can be either open or closed
 type Status string
 
 const (
@@ -24,10 +25,12 @@ type City struct {
 	Name string `json:"name"`
 }
 
+// Venues are places where muisc happens
 type Venue struct {
-	ID              int32          `json:"id"`
-	Status          Status         `json:"status"`
-	Statuses        []Status       `json:"statuses"`
+	ID       int32    `json:"id"`
+	Status   Status   `json:"status"`
+	Statuses []Status `json:"statuses"`
+	// This value appears in public URLs
 	Slug            string         `json:"slug"`
 	Name            string         `json:"name"`
 	City            string         `json:"city"`
