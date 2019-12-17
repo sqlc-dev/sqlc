@@ -813,6 +813,18 @@ func TestQueries(t *testing.T) {
 				SQL: "SELECT a, b, c, d FROM foo, bar",
 			},
 		},
+		{
+			"date",
+			`
+			CREATE TABLE users ( birthday DATE );
+			SELECT birthday FROM users;
+			`,
+			Query{
+				Columns: []core.Column{
+					{Table: public("users"), Name: "birthday", DataType: "date"},
+				},
+			},
+		},
 	} {
 		test := tc
 		t.Run(test.name, func(t *testing.T) {

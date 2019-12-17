@@ -97,6 +97,7 @@ func TestInnerType(t *testing.T) {
 		"integer":         "int32",
 		"int":             "int32",
 		"pg_catalog.int4": "int32",
+		"date":            "time.Time",
 	}
 	for k, v := range types {
 		dbType := k
@@ -117,6 +118,7 @@ func TestNullInnerType(t *testing.T) {
 		"integer":         "sql.NullInt32",
 		"int":             "sql.NullInt32",
 		"pg_catalog.int4": "sql.NullInt32",
+		"date":            "sql.NullTime",
 	}
 	for k, v := range types {
 		dbType := k
