@@ -558,13 +558,22 @@ func expandStmt(c core.Catalog, raw nodes.RawStmt, node nodes.Node) ([]edit, err
 }
 
 func editQuery(raw string, a []edit) (string, error) {
+	if len(a) == 0 {
+		return raw, nil
+	}
 	sort.Slice(a, func(i, j int) bool { return a[i].Location > a[j].Location })
-	// TODO: Check bounds
 	s := raw
 	for _, edit := range a {
-		// fmt.Printf("edit q %q\n", s)
-		// fmt.Printf("edit e %q\n", edit)
 		start := edit.Location
+		if start > len(s) {
+			return "", fmt.Errorf("edit start location is out of bounds")
+		}
+		if len(edit.New) <= 0 {
+			return "", fmt.Errorf("empty edit contents")
+		}
+		if len(edit.Old) <= 0 {
+			return "", fmt.Errorf("empty edit contents")
+		}
 		stop := edit.Location + len(edit.Old) - 1 // Assumes edit.New is non-empty
 		if stop < len(s) {
 			s = s[:start] + edit.New + s[stop+1:]
@@ -572,7 +581,6 @@ func editQuery(raw string, a []edit) (string, error) {
 			s = s[:start] + edit.New
 		}
 	}
-	// fmt.Printf("edit fixed %q\n", s)
 	return s, nil
 }
 
