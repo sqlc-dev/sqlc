@@ -420,13 +420,7 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string) (*Query, error) 
 	if err != nil {
 		return nil, err
 	}
-
-	// TODO: Limit calls to sourceTables
-	tables, err := sourceTables(c, raw.Stmt)
-	if err != nil {
-		return nil, err
-	}
-	expanded, err := expand(raw, tables, rawSQL)
+	expanded, err := expand(c, raw, rawSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -468,25 +462,65 @@ type edit struct {
 	New      string
 }
 
-func expand(raw nodes.RawStmt, tables []core.Table, sql string) (string, error) {
+func expand(c core.Catalog, raw nodes.RawStmt, sql string) (string, error) {
 	list := search(raw, func(node nodes.Node) bool {
-		res, ok := node.(nodes.ResTarget)
-		if !ok {
+		switch node.(type) {
+		case nodes.DeleteStmt:
+		case nodes.InsertStmt:
+		case nodes.SelectStmt:
+		case nodes.UpdateStmt:
+		default:
 			return false
 		}
-		ref, ok := res.Val.(nodes.ColumnRef)
-		if !ok {
-			return false
-		}
-		return HasStarRef(ref)
+		return true
 	})
 	if len(list.Items) == 0 {
 		return sql, nil
 	}
 	var edits []edit
 	for _, item := range list.Items {
-		res := item.(nodes.ResTarget)
-		ref := res.Val.(nodes.ColumnRef)
+		edit, err := expandStmt(c, raw, item)
+		if err != nil {
+			return "", err
+		}
+		edits = append(edits, edit...)
+	}
+	return editQuery(sql, edits)
+}
+
+func expandStmt(c core.Catalog, raw nodes.RawStmt, node nodes.Node) ([]edit, error) {
+	tables, err := sourceTables(c, node)
+	if err != nil {
+		return nil, err
+	}
+
+	var targets nodes.List
+	switch n := node.(type) {
+	case nodes.DeleteStmt:
+		targets = n.ReturningList
+	case nodes.InsertStmt:
+		targets = n.ReturningList
+	case nodes.SelectStmt:
+		targets = n.TargetList
+	case nodes.UpdateStmt:
+		targets = n.ReturningList
+	default:
+		return nil, fmt.Errorf("outputColumns: unsupported node type: %T", n)
+	}
+
+	var edits []edit
+	for _, target := range targets.Items {
+		res, ok := target.(nodes.ResTarget)
+		if !ok {
+			continue
+		}
+		ref, ok := res.Val.(nodes.ColumnRef)
+		if !ok {
+			continue
+		}
+		if !HasStarRef(ref) {
+			continue
+		}
 		var parts, cols []string
 		for _, f := range ref.Fields.Items {
 			switch field := f.(type) {
@@ -495,7 +529,7 @@ func expand(raw nodes.RawStmt, tables []core.Table, sql string) (string, error) 
 			case nodes.A_Star:
 				parts = append(parts, "*")
 			default:
-				return "", fmt.Errorf("unknown field in ColumnRef: %T", f)
+				return nil, fmt.Errorf("unknown field in ColumnRef: %T", f)
 			}
 		}
 		for _, t := range tables {
@@ -520,7 +554,7 @@ func expand(raw nodes.RawStmt, tables []core.Table, sql string) (string, error) 
 			New:      strings.Join(cols, ", "),
 		})
 	}
-	return editQuery(sql, edits)
+	return edits, nil
 }
 
 func editQuery(raw string, a []edit) (string, error) {

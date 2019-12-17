@@ -781,6 +781,38 @@ func TestQueries(t *testing.T) {
 				SQL: "WITH cte AS (SELECT a, b FROM foo) SELECT c, d FROM bar",
 			},
 		},
+		{
+			"star-expansion-from-cte",
+			`
+			CREATE TABLE foo (a text, b text);
+			CREATE TABLE bar (c text, d text);
+			WITH cte AS (SELECT * FROM foo) SELECT * FROM cte;
+			`,
+			Query{
+				Columns: []core.Column{
+					{Name: "a", DataType: "text"},
+					{Name: "b", DataType: "text"},
+				},
+				SQL: "WITH cte AS (SELECT a, b FROM foo) SELECT a, b FROM cte",
+			},
+		},
+		{
+			"star-expansion-join",
+			`
+			CREATE TABLE foo (a text, b text);
+			CREATE TABLE bar (c text, d text);
+			SELECT * FROM foo, bar;
+			`,
+			Query{
+				Columns: []core.Column{
+					{Name: "a", DataType: "text", Table: public("foo")},
+					{Name: "b", DataType: "text", Table: public("foo")},
+					{Name: "c", DataType: "text", Table: public("bar")},
+					{Name: "d", DataType: "text", Table: public("bar")},
+				},
+				SQL: "SELECT a, b, c, d FROM foo, bar",
+			},
+		},
 	} {
 		test := tc
 		t.Run(test.name, func(t *testing.T) {
