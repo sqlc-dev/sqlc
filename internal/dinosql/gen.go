@@ -552,6 +552,18 @@ func (r Result) goInnerType(col core.Column) string {
 	case "bytea", "blob", "pg_catalog.bytea":
 		return "[]byte"
 
+	case "date":
+		if notNull {
+			return "time.Time"
+		}
+		return "sql.NullTime"
+
+	case "pg_catalog.time", "pg_catalog.timetz":
+		if notNull {
+			return "time.Time"
+		}
+		return "sql.NullTime"
+
 	case "pg_catalog.timestamp", "pg_catalog.timestamptz", "timestamptz":
 		if notNull {
 			return "time.Time"

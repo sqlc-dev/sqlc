@@ -93,10 +93,16 @@ func TestColumnsToStruct(t *testing.T) {
 func TestInnerType(t *testing.T) {
 	r := Result{}
 	types := map[string]string{
-		"timestamptz":     "time.Time",
 		"integer":         "int32",
 		"int":             "int32",
 		"pg_catalog.int4": "int32",
+		// Date/Time Types https://www.postgresql.org/docs/current/datatype-datetime.html
+		"date":                   "time.Time",
+		"pg_catalog.time":        "time.Time",
+		"pg_catalog.timetz":      "time.Time",
+		"pg_catalog.timestamp":   "time.Time",
+		"pg_catalog.timestamptz": "time.Time",
+		"timestamptz":            "time.Time",
 	}
 	for k, v := range types {
 		dbType := k
@@ -113,10 +119,16 @@ func TestInnerType(t *testing.T) {
 func TestNullInnerType(t *testing.T) {
 	r := Result{}
 	types := map[string]string{
-		"timestamptz":     "sql.NullTime",
 		"integer":         "sql.NullInt32",
 		"int":             "sql.NullInt32",
 		"pg_catalog.int4": "sql.NullInt32",
+		// Date/Time Types https://www.postgresql.org/docs/current/datatype-datetime.html
+		"date":                   "sql.NullTime",
+		"pg_catalog.time":        "sql.NullTime",
+		"pg_catalog.timetz":      "sql.NullTime",
+		"pg_catalog.timestamp":   "sql.NullTime",
+		"pg_catalog.timestamptz": "sql.NullTime",
+		"timestamptz":            "sql.NullTime",
 	}
 	for k, v := range types {
 		dbType := k

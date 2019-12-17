@@ -813,6 +813,32 @@ func TestQueries(t *testing.T) {
 				SQL: "SELECT a, b, c, d FROM foo, bar",
 			},
 		},
+		{
+			"datetimes",
+			`
+			CREATE TABLE users (
+				d       DATE,
+				t       TIME,
+				t_notz  TIME WITHOUT TIME ZONE,
+				t_tz    TIME WITH TIME ZONE,
+				ts      TIMESTAMP,
+				ts_notz TIMESTAMP WITHOUT TIME ZONE,
+				ts_tz   TIMESTAMP WITH TIME ZONE
+			);
+			SELECT * FROM users;
+			`,
+			Query{
+				Columns: []core.Column{
+					{Table: public("users"), Name: "d", DataType: "date"},
+					{Table: public("users"), Name: "t", DataType: "pg_catalog.time"},
+					{Table: public("users"), Name: "t_notz", DataType: "pg_catalog.time"},
+					{Table: public("users"), Name: "t_tz", DataType: "pg_catalog.timetz"},
+					{Table: public("users"), Name: "ts", DataType: "pg_catalog.timestamp"},
+					{Table: public("users"), Name: "ts_notz", DataType: "pg_catalog.timestamp"},
+					{Table: public("users"), Name: "ts_tz", DataType: "pg_catalog.timestamptz"},
+				},
+			},
+		},
 	} {
 		test := tc
 		t.Run(test.name, func(t *testing.T) {
