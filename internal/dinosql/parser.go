@@ -167,8 +167,7 @@ type Query struct {
 	Comments []string
 
 	// XXX: Hack
-	NeedsEdit bool
-	Filename  string
+	Filename string
 }
 
 type Result struct {
