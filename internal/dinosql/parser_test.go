@@ -26,10 +26,10 @@ func TestPluck(t *testing.T) {
 	}
 
 	expected := []string{
-		"SELECT * FROM venue WHERE slug = $1 AND city = $2",
-		"SELECT * FROM venue WHERE slug = $1",
-		"SELECT * FROM venue LIMIT $1",
-		"SELECT * FROM venue OFFSET $1",
+		"\nSELECT * FROM venue WHERE slug = $1 AND city = $2",
+		"\nSELECT * FROM venue WHERE slug = $1",
+		"\nSELECT * FROM venue LIMIT $1",
+		"\nSELECT * FROM venue OFFSET $1",
 	}
 
 	for i, stmt := range tree.Statements {
@@ -218,5 +218,23 @@ func TestParseMetadata(t *testing.T) {
 		if _, _, err := parseMetadata(query); err == nil {
 			t.Errorf("expected invalid metadata: %q", query)
 		}
+	}
+}
+
+func TestExpand(t *testing.T) {
+	// pretend that foo has two columns, a and b
+	raw := `SELECT *, *, foo.* FROM foo`
+	expected := `SELECT a, b, a, b, foo.a, foo.b FROM foo`
+	edits := []edit{
+		{7, "*", "a, b"},
+		{10, "*", "a, b"},
+		{13, "foo.*", "foo.a, foo.b"},
+	}
+	actual, err := editQuery(raw, edits)
+	if err != nil {
+		t.Error(err)
+	}
+	if expected != actual {
+		t.Errorf("mismatch:\nexpected: %s\n  acutal: %s", expected, actual)
 	}
 }

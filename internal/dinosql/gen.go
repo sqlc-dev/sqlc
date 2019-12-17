@@ -666,32 +666,13 @@ func (r Result) GoQueries() []GoQuery {
 			continue
 		}
 
-		code := query.SQL
-
-		// TODO: Will horribly break sometimes
-		if query.NeedsEdit {
-			var cols []string
-			find := "*"
-			for _, c := range query.Columns {
-				if c.Scope != "" {
-					find = c.Scope + ".*"
-				}
-				name := c.Name
-				if c.Scope != "" {
-					name = c.Scope + "." + name
-				}
-				cols = append(cols, name)
-			}
-			code = strings.Replace(query.SQL, find, strings.Join(cols, ", "), 1)
-		}
-
 		gq := GoQuery{
 			Cmd:          query.Cmd,
 			ConstantName: lowerTitle(query.Name),
 			FieldName:    lowerTitle(query.Name) + "Stmt",
 			MethodName:   query.Name,
 			SourceName:   query.Filename,
-			SQL:          code,
+			SQL:          query.SQL,
 			Comments:     query.Comments,
 		}
 
