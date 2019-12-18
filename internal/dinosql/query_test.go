@@ -814,6 +814,19 @@ func TestQueries(t *testing.T) {
 			},
 		},
 		{
+			"star-expansion-reserved",
+			`
+			CREATE TABLE foo ("group" text);
+			SELECT * FROM foo;
+			`,
+			Query{
+				Columns: []core.Column{
+					{Name: "group", DataType: "text", Table: public("foo")},
+				},
+				SQL: "SELECT \"group\" FROM foo",
+			},
+		},
+		{
 			"datetimes",
 			`
 			CREATE TABLE users (

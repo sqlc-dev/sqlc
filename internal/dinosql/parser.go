@@ -545,6 +545,9 @@ func expandStmt(c core.Catalog, raw nodes.RawStmt, node nodes.Node) ([]edit, err
 				if scope != "" {
 					cname = scope + "." + cname
 				}
+				if postgres.IsReservedKeyword(cname) {
+					cname = "\"" + cname + "\""
+				}
 				cols = append(cols, cname)
 			}
 		}
