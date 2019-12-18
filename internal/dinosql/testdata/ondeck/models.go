@@ -7,11 +7,12 @@ import (
 	"time"
 )
 
+// Venues can be either open or closed
 type Status string
 
 const (
-	StatusOpen   Status = "open"
-	StatusClosed Status = "closed"
+	StatusOpen   Status = "op!en"
+	StatusClosed Status = "clo@sed"
 )
 
 func (e *Status) Scan(src interface{}) error {
@@ -24,10 +25,12 @@ type City struct {
 	Name string `json:"name"`
 }
 
+// Venues are places where muisc happens
 type Venue struct {
-	ID              int32          `json:"id"`
-	Status          Status         `json:"status"`
-	Statuses        []Status       `json:"statuses"`
+	ID       int32    `json:"id"`
+	Status   Status   `json:"status"`
+	Statuses []Status `json:"statuses"`
+	// This value appears in public URLs
 	Slug            string         `json:"slug"`
 	Name            string         `json:"name"`
 	City            string         `json:"city"`

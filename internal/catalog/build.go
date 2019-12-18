@@ -370,6 +370,105 @@ func Update(c *pg.Catalog, stmt nodes.Node) error {
 			Arguments:  args,
 			ReturnType: join(n.ReturnType.Names, "."),
 		})
+
+	case nodes.CommentStmt:
+		switch n.Objtype {
+
+		case nodes.OBJECT_SCHEMA:
+			name := n.Object.(nodes.String).Str
+			schema, exists := c.Schemas[name]
+			if !exists {
+				return wrap(pg.ErrorSchemaDoesNotExist(name), raw.StmtLocation)
+			}
+			if n.Comment != nil {
+				schema.Comment = *n.Comment
+			} else {
+				schema.Comment = ""
+			}
+			c.Schemas[name] = schema
+
+		case nodes.OBJECT_TABLE:
+			fqn, err := ParseList(n.Object.(nodes.List))
+			if err != nil {
+				return err
+			}
+			schema, exists := c.Schemas[fqn.Schema]
+			if !exists {
+				return wrap(pg.ErrorSchemaDoesNotExist(fqn.Schema), raw.StmtLocation)
+			}
+			table, exists := schema.Tables[fqn.Rel]
+			if !exists {
+				return wrap(pg.ErrorRelationDoesNotExist(fqn.Rel), raw.StmtLocation)
+			}
+			if n.Comment != nil {
+				table.Comment = *n.Comment
+			} else {
+				table.Comment = ""
+			}
+			schema.Tables[fqn.Rel] = table
+
+		case nodes.OBJECT_COLUMN:
+			colParts := stringSlice(n.Object.(nodes.List))
+			var fqn pg.FQN
+			var col string
+			switch len(colParts) {
+			case 2:
+				col = colParts[1]
+				fqn = pg.FQN{Schema: "public", Rel: colParts[0]}
+			case 3:
+				col = colParts[2]
+				fqn = pg.FQN{Schema: colParts[0], Rel: colParts[1]}
+			case 4:
+				col = colParts[3]
+				fqn = pg.FQN{Catalog: colParts[0], Schema: colParts[1], Rel: colParts[2]}
+			default:
+				return fmt.Errorf("column specifier %q is not the proper format, expected '[catalog.][schema.]colname.tablename'", strings.Join(colParts, "."))
+			}
+			schema, exists := c.Schemas[fqn.Schema]
+			if !exists {
+				return wrap(pg.ErrorSchemaDoesNotExist(fqn.Schema), raw.StmtLocation)
+			}
+			table, exists := schema.Tables[fqn.Rel]
+			if !exists {
+				return wrap(pg.ErrorRelationDoesNotExist(fqn.Rel), raw.StmtLocation)
+			}
+			idx := -1
+			for i, c := range table.Columns {
+				if c.Name == col {
+					idx = i
+				}
+			}
+			if idx < 0 {
+				return wrap(pg.ErrorColumnDoesNotExist(table.Name, col), raw.StmtLocation)
+			}
+			if n.Comment != nil {
+				table.Columns[idx].Comment = *n.Comment
+			} else {
+				table.Columns[idx].Comment = ""
+			}
+
+		case nodes.OBJECT_TYPE:
+			fqn, err := ParseList(n.Object.(nodes.TypeName).Names)
+			if err != nil {
+				return err
+			}
+			schema, exists := c.Schemas[fqn.Schema]
+			if !exists {
+				return wrap(pg.ErrorSchemaDoesNotExist(fqn.Schema), raw.StmtLocation)
+			}
+			enum, exists := schema.Enums[fqn.Rel]
+			if !exists {
+				return wrap(pg.ErrorRelationDoesNotExist(fqn.Rel), raw.StmtLocation)
+			}
+			if n.Comment != nil {
+				enum.Comment = *n.Comment
+			} else {
+				enum.Comment = ""
+			}
+			schema.Enums[fqn.Rel] = enum
+
+		}
+
 	}
 	return nil
 }

@@ -5,6 +5,15 @@ func NewCatalog() Catalog {
 		Schemas: map[string]Schema{
 			"public":     NewSchema(),
 			"pg_catalog": pgCatalog(),
+			// Likewise, the current session's temporary-table schema, pg_temp_nnn, is
+			// always searched if it exists. It can be explicitly listed in the path by
+			// using the alias pg_temp. If it is not listed in the path then it is
+			// searched first (even before pg_catalog). However, the temporary schema is
+			// only searched for relation (table, view, sequence, etc) and data type
+			// names. It is never searched for function or operator names.
+			//
+			// https://www.postgresql.org/docs/current/runtime-config-client.html
+			"pg_temp": NewSchema(),
 		},
 	}
 }
@@ -82,16 +91,18 @@ func (c Catalog) LookupFunctionN(fqn FQN, argn int) (Function, error) {
 }
 
 type Schema struct {
-	Name   string
-	Tables map[string]Table
-	Enums  map[string]Enum
-	Funcs  map[string][]Function
+	Name    string
+	Tables  map[string]Table
+	Enums   map[string]Enum
+	Funcs   map[string][]Function
+	Comment string
 }
 
 type Table struct {
 	ID      FQN
 	Name    string
 	Columns []Column
+	Comment string
 }
 
 type Column struct {
@@ -99,6 +110,7 @@ type Column struct {
 	DataType string
 	NotNull  bool
 	IsArray  bool
+	Comment  string
 
 	// XXX: Figure out what PostgreSQL calls `foo.id`
 	Scope string
@@ -106,8 +118,9 @@ type Column struct {
 }
 
 type Enum struct {
-	Name string
-	Vals []string
+	Name    string
+	Vals    []string
+	Comment string
 }
 
 type Function struct {
@@ -115,6 +128,7 @@ type Function struct {
 	ArgN       int
 	Arguments  []Argument // not recorded for builtins
 	ReturnType string
+	Comment    string
 }
 
 type Argument struct {

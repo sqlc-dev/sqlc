@@ -7,6 +7,7 @@ import (
 	"go/format"
 	"log"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 	"text/template"
@@ -17,6 +18,8 @@ import (
 	"github.com/jinzhu/inflection"
 )
 
+var identPattern = regexp.MustCompile("[^a-zA-Z0-9]+")
+
 type GoConstant struct {
 	Name  string
 	Type  string
@@ -25,13 +28,15 @@ type GoConstant struct {
 
 type GoEnum struct {
 	Name      string
+	Comment   string
 	Constants []GoConstant
 }
 
 type GoField struct {
-	Name string
-	Type string
-	Tags map[string]string
+	Name    string
+	Type    string
+	Tags    map[string]string
+	Comment string
 }
 
 func (gf GoField) Tag() string {
@@ -47,9 +52,10 @@ func (gf GoField) Tag() string {
 }
 
 type GoStruct struct {
-	Table  *core.FQN
-	Name   string
-	Fields []GoField
+	Table   *core.FQN
+	Name    string
+	Fields  []GoField
+	Comment string
 }
 
 // TODO: Terrible name
@@ -396,11 +402,16 @@ func (r Result) Enums() []GoEnum {
 				enumName = name + "_" + enum.Name
 			}
 			e := GoEnum{
-				Name: r.structName(enumName),
+				Name:    r.structName(enumName),
+				Comment: enum.Comment,
 			}
 			for _, v := range enum.Vals {
 				name := ""
-				for _, part := range strings.Split(strings.Replace(v, "-", "_", -1), "_") {
+				id := strings.Replace(v, "-", "_", -1)
+				id = strings.Replace(id, ":", "_", -1)
+				id = strings.Replace(id, "/", "_", -1)
+				id = identPattern.ReplaceAllString(id, "")
+				for _, part := range strings.Split(id, "_") {
 					name += strings.Title(part)
 				}
 				e.Constants = append(e.Constants, GoConstant{
@@ -447,14 +458,16 @@ func (r Result) Structs() []GoStruct {
 				tableName = name + "_" + table.Name
 			}
 			s := GoStruct{
-				Table: &core.FQN{Schema: name, Rel: table.Name},
-				Name:  inflection.Singular(r.structName(tableName)),
+				Table:   &core.FQN{Schema: name, Rel: table.Name},
+				Name:    inflection.Singular(r.structName(tableName)),
+				Comment: table.Comment,
 			}
 			for _, column := range table.Columns {
 				s.Fields = append(s.Fields, GoField{
-					Name: r.structName(column.Name),
-					Type: r.goType(column),
-					Tags: map[string]string{"json:": column.Name},
+					Name:    r.structName(column.Name),
+					Type:    r.goType(column),
+					Tags:    map[string]string{"json:": column.Name},
+					Comment: column.Comment,
 				})
 			}
 			structs = append(structs, s)
@@ -467,6 +480,12 @@ func (r Result) Structs() []GoStruct {
 }
 
 func (r Result) goType(col core.Column) string {
+	// package overrides have a higher precedence
+	for _, oride := range append(r.Settings.Overrides, r.packageSettings.Overrides...) {
+		if oride.Column != "" && oride.columnName == col.Name && oride.table == col.Table {
+			return oride.goTypeName
+		}
+	}
 	typ := r.goInnerType(col)
 	if col.IsArray {
 		return "[]" + typ
@@ -483,32 +502,35 @@ func (r Result) goInnerType(col core.Column) string {
 		if oride.PostgresType != "" && oride.PostgresType == columnType && oride.Null != notNull {
 			return oride.goTypeName
 		}
-		if oride.Column != "" && oride.columnName == col.Name && oride.table == col.Table {
-			return oride.goTypeName
-		}
 	}
 
 	switch columnType {
 	case "serial", "pg_catalog.serial4":
-		return "int32"
+		if notNull {
+			return "int32"
+		}
+		return "sql.NullInt32"
 
 	case "bigserial", "pg_catalog.serial8":
 		if notNull {
 			return "int64"
 		}
-		return "sql.NullInt64" // unnecessay else
+		return "sql.NullInt64"
 
 	case "smallserial", "pg_catalog.serial2":
 		return "int16"
 
 	case "integer", "int", "pg_catalog.int4":
-		return "int32"
+		if notNull {
+			return "int32"
+		}
+		return "sql.NullInt32"
 
 	case "bigint", "pg_catalog.int8":
 		if notNull {
 			return "int64"
 		}
-		return "sql.NullInt64" // unnecessary else
+		return "sql.NullInt64"
 
 	case "smallint", "pg_catalog.int2":
 		return "int16"
@@ -517,19 +539,19 @@ func (r Result) goInnerType(col core.Column) string {
 		if notNull {
 			return "float64"
 		}
-		return "sql.NullFloat64" // unnecessary else
+		return "sql.NullFloat64"
 
 	case "real", "pg_catalog.float4":
 		if notNull {
 			return "float32"
-		} // unnecessary else
-		return "sql.NullFloat64" // IMPORTANT: Change to sql.NullFloat32 after updating the go.mod file
+		}
+		return "sql.NullFloat64" // TODO: Change to sql.NullFloat32 after updating the go.mod file
 
 	case "bool", "pg_catalog.bool":
 		if notNull {
 			return "bool"
 		}
-		return "sql.NullBool" // unnecessary else
+		return "sql.NullBool"
 
 	case "jsonb":
 		return "json.RawMessage"
@@ -537,17 +559,29 @@ func (r Result) goInnerType(col core.Column) string {
 	case "bytea", "blob", "pg_catalog.bytea":
 		return "[]byte"
 
+	case "date":
+		if notNull {
+			return "time.Time"
+		}
+		return "sql.NullTime"
+
+	case "pg_catalog.time", "pg_catalog.timetz":
+		if notNull {
+			return "time.Time"
+		}
+		return "sql.NullTime"
+
 	case "pg_catalog.timestamp", "pg_catalog.timestamptz", "timestamptz":
 		if notNull {
 			return "time.Time"
 		}
-		return "pq.NullTime" // unnecessary else
+		return "sql.NullTime"
 
 	case "text", "pg_catalog.varchar", "pg_catalog.bpchar":
 		if notNull {
 			return "string"
 		}
-		return "sql.NullString" // unnecessary else
+		return "sql.NullString"
 
 	case "uuid":
 		return "uuid.UUID"
@@ -657,32 +691,13 @@ func (r Result) GoQueries() []GoQuery {
 			continue
 		}
 
-		code := query.SQL
-
-		// TODO: Will horribly break sometimes
-		if query.NeedsEdit {
-			var cols []string
-			find := "*"
-			for _, c := range query.Columns {
-				if c.Scope != "" {
-					find = c.Scope + ".*"
-				}
-				name := c.Name
-				if c.Scope != "" {
-					name = c.Scope + "." + name
-				}
-				cols = append(cols, name)
-			}
-			code = strings.Replace(query.SQL, find, strings.Join(cols, ", "), 1)
-		}
-
 		gq := GoQuery{
 			Cmd:          query.Cmd,
 			ConstantName: lowerTitle(query.Name),
 			FieldName:    lowerTitle(query.Name) + "Stmt",
 			MethodName:   query.Name,
 			SourceName:   query.Filename,
-			SQL:          code,
+			SQL:          query.SQL,
 			Comments:     query.Comments,
 		}
 
@@ -870,6 +885,7 @@ import (
 )
 
 {{range .Enums}}
+{{if .Comment}}// {{.Comment}}{{end}}
 type {{.Name}} string
 
 const (
@@ -885,7 +901,11 @@ func (e *{{.Name}}) Scan(src interface{}) error {
 {{end}}
 
 {{range .Structs}}
+{{if .Comment}}// {{.Comment}}{{end}}
 type {{.Name}} struct { {{- range .Fields}}
+  {{- if .Comment}}
+  // {{.Comment}}{{else}}
+  {{- end}}
   {{.Name}} {{.Type}} {{if $.EmitJSONTags}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
   {{- end}}
 }
