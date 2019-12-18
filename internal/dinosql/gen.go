@@ -7,6 +7,7 @@ import (
 	"go/format"
 	"log"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 	"text/template"
@@ -16,6 +17,8 @@ import (
 
 	"github.com/jinzhu/inflection"
 )
+
+var identPattern = regexp.MustCompile("[^a-zA-Z0-9]+")
 
 type GoConstant struct {
 	Name  string
@@ -404,7 +407,11 @@ func (r Result) Enums() []GoEnum {
 			}
 			for _, v := range enum.Vals {
 				name := ""
-				for _, part := range strings.Split(strings.Replace(v, "-", "_", -1), "_") {
+				id := strings.Replace(v, "-", "_", -1)
+				id = strings.Replace(id, ":", "_", -1)
+				id = strings.Replace(id, "/", "_", -1)
+				id = identPattern.ReplaceAllString(id, "")
+				for _, part := range strings.Split(id, "_") {
 					name += strings.Title(part)
 				}
 				e.Constants = append(e.Constants, GoConstant{
