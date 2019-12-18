@@ -407,11 +407,11 @@ func (r Result) Enums() []GoEnum {
 			}
 			for _, v := range enum.Vals {
 				name := ""
-				v = strings.Replace(v, "-", "_", -1)
-				v = strings.Replace(v, ":", "_", -1)
-				v = strings.Replace(v, "/", "_", -1)
-				v = identPattern.ReplaceAllString(v, "")
-				for _, part := range strings.Split(v, "_") {
+				id := strings.Replace(v, "-", "_", -1)
+				id = strings.Replace(id, ":", "_", -1)
+				id = strings.Replace(id, "/", "_", -1)
+				id = identPattern.ReplaceAllString(id, "")
+				for _, part := range strings.Split(id, "_") {
 					name += strings.Title(part)
 				}
 				e.Constants = append(e.Constants, GoConstant{

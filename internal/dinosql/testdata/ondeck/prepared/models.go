@@ -11,8 +11,8 @@ import (
 type Status string
 
 const (
-	StatusOpen   Status = "open"
-	StatusClosed Status = "closed"
+	StatusOpen   Status = "op!en"
+	StatusClosed Status = "clo@sed"
 )
 
 func (e *Status) Scan(src interface{}) error {
