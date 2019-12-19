@@ -990,8 +990,12 @@ func (p *paramSearch) Visit(node nodes.Node) Visitor {
 		p.parent = node
 
 	case nodes.SelectStmt:
-		p.limitCount = n.LimitCount
-		p.limitOffset = n.LimitOffset
+		if n.LimitCount != nil {
+			p.limitCount = n.LimitCount
+		}
+		if n.LimitOffset != nil {
+			p.limitOffset = n.LimitOffset
+		}
 
 	case nodes.TypeCast:
 		p.parent = node
