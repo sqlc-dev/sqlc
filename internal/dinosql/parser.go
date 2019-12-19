@@ -236,11 +236,11 @@ func ParseQueries(c core.Catalog, settings GenerateSettings, pkg PackageSettings
 			}
 		}
 	}
-	if len(q) == 0 {
-		return nil, fmt.Errorf("path %s contains no queries", pkg.Queries)
-	}
 	if len(merr.Errs) > 0 {
 		return nil, merr
+	}
+	if len(q) == 0 {
+		return nil, fmt.Errorf("path %s contains no queries", pkg.Queries)
 	}
 	return &Result{Catalog: c, Queries: q, Settings: settings}, nil
 }

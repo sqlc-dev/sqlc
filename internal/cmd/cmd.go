@@ -161,7 +161,7 @@ var genCmd = &cobra.Command{
 						fmt.Fprintf(os.Stderr, "%s:%d:%d: %s\n", fileErr.Filename, fileErr.Line, fileErr.Column, fileErr.Err)
 					}
 				} else {
-					fmt.Fprintf(os.Stderr, "error parsing schema: %s\n", err)
+					fmt.Fprintf(os.Stderr, "error parsing queries: %s\n", err)
 				}
 				errored = true
 				continue
