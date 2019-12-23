@@ -589,6 +589,11 @@ func (r Result) goInnerType(col core.Column) string {
 	case "inet":
 		return "net.IP"
 
+	case "void":
+		// A void value always returns NULL. Since there is no built-in NULL
+		// value into the SQL package, we'll use sql.NullBool
+		return "sql.NullBool"
+
 	case "any":
 		return "interface{}"
 
