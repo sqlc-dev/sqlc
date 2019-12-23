@@ -852,6 +852,21 @@ func TestQueries(t *testing.T) {
 				},
 			},
 		},
+		{
+			"pg_advisory_xact_lock",
+			`
+			SELECT pg_advisory_xact_lock($1);
+			`,
+			Query{
+				Columns: []core.Column{
+					// TODO: NotNull should be false
+					{Name: "pg_advisory_xact_lock", DataType: "void", NotNull: true},
+				},
+				Params: []Parameter{
+					{1, core.Column{Name: "key", DataType: "bigint", NotNull: true}},
+				},
+			},
+		},
 	} {
 		test := tc
 		t.Run(test.name, func(t *testing.T) {

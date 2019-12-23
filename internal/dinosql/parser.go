@@ -951,10 +951,13 @@ type limitOffset struct {
 	nodeImpl
 }
 
-func (p *paramSearch) Visit(node nodes.Node) Visitor {
+func (p paramSearch) Visit(node nodes.Node) Visitor {
 	switch n := node.(type) {
 
 	case nodes.A_Expr:
+		p.parent = node
+
+	case nodes.FuncCall:
 		p.parent = node
 
 	case nodes.InsertStmt:
@@ -1044,7 +1047,7 @@ func (p *paramSearch) Visit(node nodes.Node) Visitor {
 }
 
 func findParameters(root nodes.Node) []paramRef {
-	v := &paramSearch{refs: map[int]paramRef{}}
+	v := paramSearch{refs: map[int]paramRef{}}
 	Walk(v, root)
 	refs := make([]paramRef, 0)
 	for _, r := range v.refs {
@@ -1216,6 +1219,45 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 						Location: left.Location,
 					}
 				}
+			}
+
+		case nodes.FuncCall:
+			fqn, err := catalog.ParseList(n.Funcname)
+			if err != nil {
+				return nil, err
+			}
+			fun, err := c.LookupFunctionN(fqn, len(n.Args.Items))
+			if err != nil {
+				return nil, err
+			}
+			for i, item := range n.Args.Items {
+				pr, ok := item.(nodes.ParamRef)
+				if !ok {
+					continue
+				}
+				if pr.Number != ref.ref.Number {
+					continue
+				}
+				if fun.Arguments == nil {
+					a = append(a, Parameter{
+						Number: ref.ref.Number,
+						Column: core.Column{
+							Name:     fun.Name,
+							DataType: "any",
+						},
+					})
+				}
+				if i >= len(fun.Arguments) {
+					return nil, fmt.Errorf("incorrect number of arguments to %s", fun.Name)
+				}
+				a = append(a, Parameter{
+					Number: ref.ref.Number,
+					Column: core.Column{
+						Name:     fun.Arguments[i].Name,
+						DataType: fun.Arguments[i].DataType,
+						NotNull:  true,
+					},
+				})
 			}
 
 		case nodes.ResTarget:

@@ -129,6 +129,7 @@ type Function struct {
 	Arguments  []Argument // not recorded for builtins
 	ReturnType string
 	Comment    string
+	Desc       string
 }
 
 type Argument struct {
