@@ -75,38 +75,10 @@ func pgCatalog() Schema {
 			ArgN:       1,
 			ReturnType: "bool",
 		},
-
-		// Table 9.95. Advisory Lock Functions
-		// https://www.postgresql.org/docs/current/functions-admin.html
-		{
-			Name:       "pg_advisory_xact_lock",
-			Desc:       "Obtain exclusive transaction level advisory lock",
-			ReturnType: "void",
-			ArgN:       1,
-			Arguments: []Argument{
-				{
-					Name:     "key",
-					DataType: "bigint",
-				},
-			},
-		},
-		{
-			Name:       "pg_advisory_xact_lock",
-			Desc:       "Obtain exclusive transaction level advisory lock",
-			ReturnType: "void",
-			ArgN:       2,
-			Arguments: []Argument{
-				{
-					Name:     "key1",
-					DataType: "int",
-				},
-				{
-					Name:     "key1",
-					DataType: "int",
-				},
-			},
-		},
 	}
+
+	fs = append(fs, advisoryLockFunctions()...)
+
 	s.Funcs = make(map[string][]Function, len(fs))
 	for _, f := range fs {
 		s.Funcs[f.Name] = append(s.Funcs[f.Name], f)
