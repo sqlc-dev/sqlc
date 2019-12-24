@@ -76,6 +76,9 @@ func pgCatalog() Schema {
 			ReturnType: "bool",
 		},
 	}
+
+	fs = append(fs, advisoryLockFunctions()...)
+
 	s.Funcs = make(map[string][]Function, len(fs))
 	for _, f := range fs {
 		s.Funcs[f.Name] = append(s.Funcs[f.Name], f)
