@@ -68,6 +68,7 @@ func Update(c *pg.Catalog, stmt nodes.Node) error {
 	if !ok {
 		return fmt.Errorf("expected RawStmt; got %T", stmt)
 	}
+
 	switch n := raw.Stmt.(type) {
 
 	case nodes.AlterObjectSchemaStmt:
@@ -97,6 +98,28 @@ func Update(c *pg.Catalog, stmt nodes.Node) error {
 		}
 
 	case nodes.AlterTableStmt:
+		var implemented bool
+		for _, item := range n.Cmds.Items {
+			switch cmd := item.(type) {
+			case nodes.AlterTableCmd:
+				switch cmd.Subtype {
+				case nodes.AT_AddColumn:
+					implemented = true
+				case nodes.AT_AlterColumnType:
+					implemented = true
+				case nodes.AT_DropColumn:
+					implemented = true
+				case nodes.AT_DropNotNull:
+					implemented = true
+				case nodes.AT_SetNotNull:
+					implemented = true
+				}
+			}
+		}
+
+		if !implemented {
+			return nil
+		}
 		fqn, err := ParseRange(n.Relation)
 		if err != nil {
 			return err
