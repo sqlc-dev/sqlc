@@ -675,6 +675,23 @@ func TestQueries(t *testing.T) {
 			},
 		},
 		{
+			"lower-switched-order",
+			`
+			CREATE TABLE foo (bar text not null, bat text not null);
+			SELECT bar FROM foo WHERE bar = $1 AND bat = LOWER($2);
+			`,
+			Query{
+				Columns: []core.Column{
+					{Table: public("foo"), Name: "bar", DataType: "text", NotNull: true},
+				},
+				Params: []Parameter{
+					{1, core.Column{Table: public("foo"), Name: "bar", DataType: "text", NotNull: true}},
+					{2, core.Column{Name: "lower", DataType: "string", NotNull: true}},
+				},
+			},
+		},
+
+		{
 			"identical-tables",
 			`
 			CREATE TABLE foo (id text not null);

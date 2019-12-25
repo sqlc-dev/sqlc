@@ -1246,15 +1246,21 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 							DataType: "any",
 						},
 					})
+					continue
 				}
 				if i >= len(fun.Arguments) {
 					return nil, fmt.Errorf("incorrect number of arguments to %s", fun.Name)
 				}
+				arg := fun.Arguments[i]
+				name := arg.Name
+				if name == "" {
+					name = fun.Name
+				}
 				a = append(a, Parameter{
 					Number: ref.ref.Number,
 					Column: core.Column{
-						Name:     fun.Arguments[i].Name,
-						DataType: fun.Arguments[i].DataType,
+						Name:     name,
+						DataType: arg.DataType,
 						NotNull:  true,
 					},
 				})

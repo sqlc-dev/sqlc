@@ -96,6 +96,7 @@ func TestInnerType(t *testing.T) {
 		"integer":         "int32",
 		"int":             "int32",
 		"pg_catalog.int4": "int32",
+		"string":          "string",
 		// Date/Time Types https://www.postgresql.org/docs/current/datatype-datetime.html
 		"date":                   "time.Time",
 		"pg_catalog.time":        "time.Time",
@@ -122,6 +123,7 @@ func TestNullInnerType(t *testing.T) {
 		"integer":         "sql.NullInt32",
 		"int":             "sql.NullInt32",
 		"pg_catalog.int4": "sql.NullInt32",
+		"string":          "sql.NullString",
 		// Date/Time Types https://www.postgresql.org/docs/current/datatype-datetime.html
 		"date":                   "sql.NullTime",
 		"pg_catalog.time":        "sql.NullTime",

@@ -577,7 +577,7 @@ func (r Result) goInnerType(col core.Column) string {
 		}
 		return "sql.NullTime"
 
-	case "text", "pg_catalog.varchar", "pg_catalog.bpchar":
+	case "text", "pg_catalog.varchar", "pg_catalog.bpchar", "string":
 		if notNull {
 			return "string"
 		}
