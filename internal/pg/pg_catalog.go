@@ -44,10 +44,6 @@ func pgCatalog() Schema {
 		// https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-RANDOM-TABLE
 		argN("random", 0),
 
-		// Table 9.8. SQL String Functions and Operators
-		// https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL
-		argN("position", 2),
-
 		// Table 9.52. General-Purpose Aggregate Functions
 		// https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE
 		{
@@ -77,6 +73,7 @@ func pgCatalog() Schema {
 		},
 	}
 
+	fs = append(fs, stringFunctions()...)
 	fs = append(fs, advisoryLockFunctions()...)
 
 	s.Funcs = make(map[string][]Function, len(fs))
