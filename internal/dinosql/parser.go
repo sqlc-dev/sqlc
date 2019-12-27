@@ -202,6 +202,7 @@ func ParseQueries(c core.Catalog, settings GenerateSettings, pkg PackageSettings
 
 	merr := NewParserErr()
 	var q []*Query
+	set := map[string]struct{}{}
 	for _, filename := range files {
 		if !strings.HasSuffix(filename, ".sql") {
 			continue
@@ -230,9 +231,14 @@ func ParseQueries(c core.Catalog, settings GenerateSettings, pkg PackageSettings
 				merr.Add(filename, source, location(stmt), err)
 				continue
 			}
+			if _, exists := set[query.Name]; exists {
+				merr.Add(filename, source, location(stmt), fmt.Errorf("duplicate query name: %s", query.Name))
+				continue
+			}
 			query.Filename = filepath.Base(filename)
 			if query != nil {
 				q = append(q, query)
+				set[query.Name] = struct{}{}
 			}
 		}
 	}
