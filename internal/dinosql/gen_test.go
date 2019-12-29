@@ -143,3 +143,27 @@ func TestNullInnerType(t *testing.T) {
 		})
 	}
 }
+
+func TestEnumValueName(t *testing.T) {
+	values := map[string]string{
+		// Valid separators
+		"foo-bar": "FooBar",
+		"foo_bar": "FooBar",
+		"foo:bar": "FooBar",
+		"foo/bar": "FooBar",
+		// Strip unknown characters
+		"foo@bar": "Foobar",
+		"foo+bar": "Foobar",
+		"foo!bar": "Foobar",
+	}
+	for k, v := range values {
+		input := k
+		expected := v
+		t.Run(k+"-"+v, func(t *testing.T) {
+			actual := enumValueName(k)
+			if actual != expected {
+				t.Errorf("expected name for %s to be %s, not %s", input, expected, actual)
+			}
+		})
+	}
+}
