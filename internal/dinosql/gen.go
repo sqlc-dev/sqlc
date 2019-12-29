@@ -18,7 +18,7 @@ import (
 	"github.com/jinzhu/inflection"
 )
 
-var identPattern = regexp.MustCompile("[^a-zA-Z0-9]+")
+var identPattern = regexp.MustCompile("[^a-zA-Z0-9_]+")
 
 type GoConstant struct {
 	Name  string
@@ -388,6 +388,18 @@ func (r Result) QueryImports(filename string) [][]string {
 	return [][]string{stds, pkgs}
 }
 
+func enumValueName(value string) string {
+	name := ""
+	id := strings.Replace(value, "-", "_", -1)
+	id = strings.Replace(id, ":", "_", -1)
+	id = strings.Replace(id, "/", "_", -1)
+	id = identPattern.ReplaceAllString(id, "")
+	for _, part := range strings.Split(id, "_") {
+		name += strings.Title(part)
+	}
+	return name
+}
+
 func (r Result) Enums() []GoEnum {
 	var enums []GoEnum
 	for name, schema := range r.Catalog.Schemas {
@@ -406,16 +418,8 @@ func (r Result) Enums() []GoEnum {
 				Comment: enum.Comment,
 			}
 			for _, v := range enum.Vals {
-				name := ""
-				id := strings.Replace(v, "-", "_", -1)
-				id = strings.Replace(id, ":", "_", -1)
-				id = strings.Replace(id, "/", "_", -1)
-				id = identPattern.ReplaceAllString(id, "")
-				for _, part := range strings.Split(id, "_") {
-					name += strings.Title(part)
-				}
 				e.Constants = append(e.Constants, GoConstant{
-					Name:  e.Name + name,
+					Name:  e.Name + enumValueName(v),
 					Value: v,
 					Type:  e.Name,
 				})
