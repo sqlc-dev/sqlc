@@ -8,6 +8,7 @@ import (
 )
 
 func TestColumnsToStruct(t *testing.T) {
+	pkgName := "db"
 	cols := []pg.Column{
 		{
 			Name:     "other",
@@ -52,7 +53,9 @@ func TestColumnsToStruct(t *testing.T) {
 		cols[i].Table = pg.FQN{Schema: "public", Rel: "foo"}
 	}
 
-	r := Result{}
+	r := Result{
+		packageName: pkgName,
+	}
 
 	// set up column-based override test
 	o := Override{
@@ -67,12 +70,11 @@ func TestColumnsToStruct(t *testing.T) {
 		Column: "foo.languages",
 	}
 	oa.Parse()
+	// pkgConfig := PackageSettings{
+	// 	Overrides: []Override{o, oa},
+	// }
 
-	r.packageSettings = PackageSettings{
-		Overrides: []Override{o, oa},
-	}
-
-	actual := r.columnsToStruct("Foo", cols)
+	actual := r.columnsToStruct("Foo", cols, mockSettings)
 	expected := &GoStruct{
 		Name: "Foo",
 		Fields: []GoField{
@@ -88,6 +90,21 @@ func TestColumnsToStruct(t *testing.T) {
 	if diff := cmp.Diff(expected, actual); diff != "" {
 		t.Errorf("struct mismatch: \n%s", diff)
 	}
+}
+
+var mockSettings GenerateSettings
+
+func init() {
+	mockSettings = GenerateSettings{
+		Version: "1",
+		Packages: []PackageSettings{
+			PackageSettings{
+				Name: "db",
+			},
+		},
+		Overrides: []Override{},
+	}
+	mockSettings.PopulatePkgMap()
 }
 
 func TestInnerType(t *testing.T) {
@@ -110,8 +127,8 @@ func TestInnerType(t *testing.T) {
 		goType := v
 		t.Run(k+"-"+v, func(t *testing.T) {
 			col := pg.Column{DataType: dbType, NotNull: true}
-			if goType != r.goType(col) {
-				t.Errorf("expected Go type for %s to be %s, not %s", dbType, goType, r.goType(col))
+			if goType != r.goType(col, mockSettings) {
+				t.Errorf("expected Go type for %s to be %s, not %s", dbType, goType, r.goType(col, mockSettings))
 			}
 		})
 	}
@@ -137,8 +154,8 @@ func TestNullInnerType(t *testing.T) {
 		goType := v
 		t.Run(k+"-"+v, func(t *testing.T) {
 			col := pg.Column{DataType: dbType, NotNull: false}
-			if goType != r.goType(col) {
-				t.Errorf("expected Go type for %s to be %s, not %s", dbType, goType, r.goType(col))
+			if goType != r.goType(col, mockSettings) {
+				t.Errorf("expected Go type for %s to be %s, not %s", dbType, goType, r.goType(col, mockSettings))
 			}
 		})
 	}

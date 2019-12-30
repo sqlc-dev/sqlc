@@ -51,7 +51,7 @@ func TestBadConfigs(t *testing.T) {
 	} {
 		tt := test
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := ParseConfig(strings.NewReader(tt.json))
+			_, err := ParseConfigFile(strings.NewReader(tt.json))
 			if err == nil {
 				t.Fatalf("expected err; got nil")
 			}
