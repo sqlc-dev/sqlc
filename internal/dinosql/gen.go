@@ -1044,6 +1044,7 @@ type tmplCtx struct {
 
 	EmitJSONTags        bool
 	EmitPreparedQueries bool
+	IgnoreUnknownFuncs  bool
 }
 
 func lowerTitle(s string) string {
@@ -1072,6 +1073,7 @@ func Generate(r *Result, global GenerateSettings, settings PackageSettings) (map
 		Settings:            global,
 		EmitPreparedQueries: settings.EmitPreparedQueries,
 		EmitJSONTags:        settings.EmitJSONTags,
+		IgnoreUnknownFuncs:  settings.IgnoreUnknownFuncs,
 		Q:                   "`",
 		Package:             pkg,
 		GoQueries:           r.GoQueries(),
