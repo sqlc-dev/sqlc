@@ -51,11 +51,6 @@ func (gf GoField) Tag() string {
 	return strings.Join(tags, ",")
 }
 
-// TODO: consider making this deep equality from stdlib?
-type Comparable interface {
-	EqualTo(b interface{}) bool
-}
-
 type GoStruct struct {
 	Table   Comparable
 	Name    string
@@ -63,7 +58,6 @@ type GoStruct struct {
 	Comment string
 }
 
-// TODO: Terrible name
 type GoQueryValue struct {
 	Emit   bool
 	Name   string
@@ -71,13 +65,18 @@ type GoQueryValue struct {
 	Typ    string
 }
 
+// TODO: consider making this deep equality from stdlib?
+type Comparable interface {
+	EqualTo(b interface{}) bool
+}
+
 type FQNAlias core.FQN
 
 // Check whether tables are equal
 func (a *FQNAlias) EqualTo(other interface{}) bool {
-	b, ok := other.(*FQNAlias)
+	b, ok := other.(*core.FQN)
 	if !ok {
-		return false
+		panic("Unknown ")
 	}
 	if a == nil && b == nil {
 		return true
@@ -188,11 +187,11 @@ type Generateable interface {
 	Enums(settings GenerateSettings) []GoEnum
 }
 
-func UsesType(r Generateable, Typ string, settings GenerateSettings) bool {
+func UsesType(r Generateable, typ string, settings GenerateSettings) bool {
 	for _, strct := range r.Structs(settings) {
 		for _, f := range strct.Fields {
 			fType := strings.TrimPrefix(f.Type, "[]")
-			if strings.HasPrefix(fType, Typ) {
+			if strings.HasPrefix(fType, typ) {
 				return true
 			}
 		}
@@ -519,11 +518,11 @@ func (r Result) goType(col core.Column, settings GenerateSettings) string {
 			return oride.goTypeName
 		}
 	}
-	Typ := r.goInnerType(col, settings)
+	typ := r.goInnerType(col, settings)
 	if col.IsArray {
-		return "[]" + Typ
+		return "[]" + typ
 	}
-	return Typ
+	return typ
 }
 
 func (r Result) goInnerType(col core.Column, settings GenerateSettings) string {
@@ -776,9 +775,10 @@ func (r Result) GoQueries(settings GenerateSettings) []GoQuery {
 					c := query.Columns[i]
 					sameName := f.Name == StructName(columnName(c, i), settings)
 					sameType := f.Type == r.goType(c, settings)
-					// TODO: consider making this deep equality from stdlib?
-					sameFQN := s.Table.EqualTo(&c.Table)
-					if !sameName || !sameType || !sameFQN {
+
+					// TODO: clean this up!!
+					sameTable := s.Table.EqualTo(&c.Table)
+					if !sameName || !sameType || !sameTable {
 						same = false
 					}
 				}

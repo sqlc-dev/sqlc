@@ -110,7 +110,7 @@ var genCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		settings, err := dinosql.ParseConfigFile(bytes.NewReader(blob))
+		settings, err := dinosql.ParseConfig(bytes.NewReader(blob))
 		if err != nil {
 			switch err {
 			case dinosql.ErrMissingVersion:

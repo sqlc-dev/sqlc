@@ -1,6 +1,7 @@
 package dinosql
 
 import (
+	"path/filepath"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -8,7 +9,6 @@ import (
 )
 
 func TestColumnsToStruct(t *testing.T) {
-	pkgName := "db"
 	cols := []pg.Column{
 		{
 			Name:     "other",
@@ -53,10 +53,6 @@ func TestColumnsToStruct(t *testing.T) {
 		cols[i].Table = pg.FQN{Schema: "public", Rel: "foo"}
 	}
 
-	r := Result{
-		packageName: pkgName,
-	}
-
 	// set up column-based override test
 	o := Override{
 		GoType: "example.com/pkg.CustomType",
@@ -70,9 +66,15 @@ func TestColumnsToStruct(t *testing.T) {
 		Column: "foo.languages",
 	}
 	oa.Parse()
-	// pkgConfig := PackageSettings{
-	// 	Overrides: []Override{o, oa},
-	// }
+
+	pkgName := "test_override"
+
+	r := Result{
+		packageName: pkgName,
+	}
+	mockSettings.PackageMap[pkgName] = PackageSettings{
+		Overrides: []Override{o, oa},
+	}
 
 	actual := r.columnsToStruct("Foo", cols, mockSettings)
 	expected := &GoStruct{
@@ -101,6 +103,16 @@ func init() {
 			PackageSettings{
 				Name: "db",
 			},
+			PackageSettings{
+				Name:                "prepared",
+				Queries:             filepath.Join("testdata", "ondeck", "query"),
+				EmitPreparedQueries: true,
+			},
+			PackageSettings{
+				Name:         "ondeck",
+				Queries:      filepath.Join("testdata", "ondeck", "query"),
+				EmitJSONTags: true,
+			},
 		},
 		Overrides: []Override{},
 	}
@@ -108,7 +120,7 @@ func init() {
 }
 
 func TestInnerType(t *testing.T) {
-	r := Result{}
+	r := Result{packageName: "db"}
 	types := map[string]string{
 		"integer":         "int32",
 		"int":             "int32",
@@ -135,7 +147,7 @@ func TestInnerType(t *testing.T) {
 }
 
 func TestNullInnerType(t *testing.T) {
-	r := Result{}
+	r := Result{packageName: "db"}
 	types := map[string]string{
 		"integer":         "sql.NullInt32",
 		"int":             "sql.NullInt32",

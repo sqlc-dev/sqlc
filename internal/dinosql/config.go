@@ -113,7 +113,7 @@ var ErrMissingVersion = errors.New("no version number")
 var ErrUnknownVersion = errors.New("invalid version number")
 var ErrNoPackages = errors.New("no packages")
 
-func ParseConfigFile(rd io.Reader) (GenerateSettings, error) {
+func ParseConfig(rd io.Reader) (GenerateSettings, error) {
 	dec := json.NewDecoder(rd)
 	dec.DisallowUnknownFields()
 	var config GenerateSettings
@@ -151,7 +151,7 @@ func (s *GenerateSettings) PopulatePkgMap() error {
 
 	for _, c := range s.Packages {
 		if c.Name == "" {
-			return errors.New("Package name must be specified in sqlc.json")
+			panic("Package name must be specified in sqlc.json")
 		}
 		packageMap[c.Name] = c
 	}
