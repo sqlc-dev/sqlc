@@ -70,7 +70,7 @@ func TestParserErrors(t *testing.T) {
 	} {
 		test := tc
 		t.Run(test.query, func(t *testing.T) {
-			_, err := parseSQL(test.query)
+			_, err := parseSQL(test.query, false)
 
 			var actual pg.Error
 			if err != nil {
