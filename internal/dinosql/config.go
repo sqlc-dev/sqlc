@@ -24,6 +24,7 @@ type PackageSettings struct {
 	Queries             string     `json:"queries"`
 	EmitPreparedQueries bool       `json:"emit_prepared_queries"`
 	EmitJSONTags        bool       `json:"emit_json_tags"`
+	IgnoreUnknownFuncs  bool       `json:"ignore_unknown_funcs"`
 	Overrides           []Override `json:"overrides"`
 }
 

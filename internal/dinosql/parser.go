@@ -222,7 +222,7 @@ func ParseQueries(c core.Catalog, settings GenerateSettings, pkg PackageSettings
 			continue
 		}
 		for _, stmt := range tree.Statements {
-			query, err := parseQuery(c, stmt, source)
+			query, err := parseQuery(c, pkg.IgnoreUnknownFuncs, stmt, source)
 			if err == errUnsupportedStatementType {
 				continue
 			}
@@ -382,7 +382,7 @@ func validateCmd(n nodes.Node, name, cmd string) error {
 
 var errUnsupportedStatementType = errors.New("parseQuery: unsupported statement type")
 
-func parseQuery(c core.Catalog, stmt nodes.Node, source string) (*Query, error) {
+func parseQuery(c core.Catalog, ignoreUnknownFuncs bool, stmt nodes.Node, source string) (*Query, error) {
 	if err := validateParamRef(stmt); err != nil {
 		return nil, err
 	}
@@ -418,7 +418,7 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string) (*Query, error) 
 	}
 	rvs := rangeVars(raw.Stmt)
 	refs := findParameters(raw.Stmt)
-	params, err := resolveCatalogRefs(c, rvs, refs)
+	params, err := resolveCatalogRefs(c, ignoreUnknownFuncs, rvs, refs)
 	if err != nil {
 		return nil, err
 	}
@@ -1082,7 +1082,9 @@ func search(root nodes.Node, f func(nodes.Node) bool) nodes.List {
 	return ns.list
 }
 
-func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) ([]Parameter, error) {
+func resolveCatalogRefs(c core.Catalog, ignoreUnknownFuncs bool,
+	rvs []nodes.RangeVar, args []paramRef) ([]Parameter, error) {
+
 	aliasMap := map[string]core.FQN{}
 	// TODO: Deprecate defaultTable
 	var defaultTable *core.FQN
@@ -1235,7 +1237,16 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 			}
 			fun, err := c.LookupFunctionN(fqn, len(n.Args.Items))
 			if err != nil {
-				return nil, err
+				if !ignoreUnknownFuncs {
+					return nil, err
+				}
+				// Synthesize an function on the fly to avoid returning with an error
+				fun = core.Function{
+					Name:       fqn.Rel,
+					ArgN:       len(n.Args.Items),
+					Arguments:  nil,
+					ReturnType: "any",
+				}
 			}
 			for i, item := range n.Args.Items {
 				pr, ok := item.(nodes.ParamRef)
