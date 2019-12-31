@@ -286,6 +286,7 @@ in the directory where the `sqlc` command is run.
       "name": "db",
       "emit_json_tags": true,
       "emit_prepared_queries": false,
+      "ignore_unknown_funcs": false,
       "path": "internal/db",
       "queries": "./sql/query/",
       "schema": "./sql/schema/"
@@ -301,6 +302,8 @@ Each package document has the following keys:
   - If true, add JSON tags to generated structs. Defaults to `false`.
 - `emit_prepared_queries`:
   - If true, include support for prepared queries. Defaults to `false`.
+- `ignore_unknown_funcs`:
+  - If true, sqlc will not complain about unknown functions. Useful for extension modules, like PostGIS.
 - `path`:
   - Output directory for generated code
 - `queries`:
