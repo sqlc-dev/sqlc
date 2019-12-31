@@ -927,6 +927,18 @@ func TestComparisonOperators(t *testing.T) {
 	}
 }
 
+func TestUnknownFunctions(t *testing.T) {
+	stmt :=  `
+		CREATE TABLE foo (id text not null);
+		-- name: ListFoos :one
+		SELECT id FROM foo WHERE id = frobnicate($1);
+		`
+	_, err := parseSQL(stmt)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestInvalidQueries(t *testing.T) {
 	for i, tc := range []struct {
 		stmt string
