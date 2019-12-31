@@ -553,7 +553,7 @@ func (r Result) goInnerType(col core.Column, settings GenerateSettings) string {
 	case "smallserial", "pg_catalog.serial2":
 		return "int16"
 
-	case "integer", "int", "pg_catalog.int4":
+	case "integer", "int", "int4", "pg_catalog.int4":
 		if notNull {
 			return "int32"
 		}
