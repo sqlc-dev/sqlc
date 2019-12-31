@@ -175,7 +175,7 @@ func TestParseSelect(t *testing.T) {
 				schema: mockSchema,
 			},
 			output: &Query{
-				SQL:     `select first_name, last_name from users where id = :v1`,
+				SQL:     `select first_name, last_name from users where id = ?`,
 				Columns: filterCols(mockSchema.tables["users"], map[string]struct{}{"first_name": struct{}{}, "last_name": struct{}{}}),
 				Params: []*Param{
 					&Param{
