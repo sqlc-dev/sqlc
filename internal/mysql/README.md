@@ -4,5 +4,5 @@
 
 ```
 $ cd ./example
-$ unstable__mysql generate
+$ sqlc unstable__mysql generate
 ```
