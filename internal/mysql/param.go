@@ -2,6 +2,7 @@ package mysql
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/kyleconroy/sqlc/internal/dinosql"
@@ -125,4 +126,15 @@ func paramName(col sqlparser.ColIdent, originalName string) string {
 	}
 	num := originalName[2]
 	return fmt.Sprintf("param%v", num)
+}
+
+func replaceParamStrs(query string, params []*Param) (string, error) {
+	for ix := range params {
+		re, err := regexp.Compile(fmt.Sprintf("(:v%d)", ix+1))
+		if err != nil {
+			return "", err
+		}
+		query = re.ReplaceAllString(query, "?")
+	}
+	return query, nil
 }

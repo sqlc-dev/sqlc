@@ -15,11 +15,11 @@ import (
 type Query struct {
 	SQL              string
 	Columns          []*sqlparser.ColumnDefinition
-	Params           []*Param
-	Name             string
-	Cmd              string // TODO: Pick a better name. One of: one, many, exec, execrows
-	defaultTableName string // for columns that are not qualified
-	schemaLookup     *Schema
+	Params           []*Param // "?" params in the query string
+	Name             string   // the Go function name
+	Cmd              string   // TODO: Pick a better name. One of: one, many, exec, execrows
+	defaultTableName string   // for columns that are not qualified
+	schemaLookup     *Schema  // for validating and conversion to Go types
 }
 
 func parseFile(filepath string, inPkg string, s *Schema, settings dinosql.GenerateSettings) (*Result, error) {
@@ -60,7 +60,7 @@ func parseQueryString(query string, s *Schema, settings dinosql.GenerateSettings
 	if err != nil {
 		return nil, err
 	}
-
+	var parsedQuery *Query
 	switch tree := tree.(type) {
 	case *sqlparser.Select:
 		defaultTableName := getDefaultTable(&tree.From)
@@ -68,27 +68,31 @@ func parseQueryString(query string, s *Schema, settings dinosql.GenerateSettings
 		if err != nil {
 			return nil, fmt.Errorf("Failed to parse SELECT query: %v", err)
 		}
-		return res, nil
+		parsedQuery = res
 	case *sqlparser.Insert:
 		insert, err := parseInsert(tree, query, s, settings)
 		if err != nil {
 			return nil, fmt.Errorf("Failed to parse INSERT query: %v", err)
 		}
-		return insert, nil
+		parsedQuery = insert
 	case *sqlparser.Update:
 		update, err := parseUpdate(tree, query, s, settings)
 		if err != nil {
 			return nil, fmt.Errorf("Failed to parse UPDATE query: %v", err)
 		}
-		return update, nil
+		parsedQuery = update
 	case *sqlparser.DDL:
 		s.Add(tree)
 		return nil, nil
 	default:
 		panic("Unsupported SQL statement type")
-		// return &Query{}, nil
 	}
-	return nil, fmt.Errorf("Failed to parse query statement: %v", query)
+	paramsReplacedQuery, err := replaceParamStrs(parsedQuery.SQL, parsedQuery.Params)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to replace param variables in query string: %v", err)
+	}
+	parsedQuery.SQL = paramsReplacedQuery
+	return parsedQuery, nil
 }
 
 func (q *Query) parseNameAndCmd() error {
