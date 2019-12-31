@@ -1,6 +1,8 @@
 package mysql
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"reflect"
 	"testing"
 
@@ -13,41 +15,8 @@ func init() {
 	initMockSchema()
 }
 
-const query = `
-/* name: GetAllStudents :many */
-SELECT school_id, id FROM students WHERE id = :id + ?
-`
-
-const create = `
-	CREATE TABLE students (
-		id int,
-		school_id VARCHAR(255),
-		school_lat VARCHAR(255),
-		PRIMARY KEY (ID)
-	);`
-
-const filename = "test.sql"
-
-func TestParseFile(t *testing.T) {
-	// s := NewSchema()
-	// _, err := parseFile(filename, s)
-	// keep(err)
-	tree, _ := sqlparser.Parse("SELECT id, first_name FROM users WHERE age < ?")
-	p := sqlparser.NewParsedQuery(tree)
-	// spew.Dump(p)
-	// for k, _ :=
-	result := sqlparser.GetBindvars(tree)
-	newVars := make(map[string]string)
-	for k := range result {
-		newVars[k] = "?"
-	}
-	// spew.Dump(newVars)
-	keep(p)
-	// p.GenerateQuery(newVars)
-	// r, _ := p.MarshalJSON()
-	// spew.Dump(string(r))
-	// spew.Dump(p.GenerateQuery())
-}
+const filename = "test_data/queries.sql"
+const configPath = "test_data/sqlc.json"
 
 var mockSettings = dinosql.GenerateSettings{
 	Version: "1",
@@ -59,20 +28,23 @@ var mockSettings = dinosql.GenerateSettings{
 	Overrides: []dinosql.Override{},
 }
 
-func TestGenerate(t *testing.T) {
-	// t.Skip()
-	s := NewSchema()
-	result, _ := parseFile(filename, "db", s, mockSettings)
-	output, err := dinosql.Generate(result, mockSettings)
+func TestParseConfig(t *testing.T) {
+	blob, err := ioutil.ReadFile(configPath)
 	if err != nil {
-		t.Errorf("Failed to generate output: %v", err)
+		t.Fatal(err)
 	}
-	keep(output)
-	// for k, v := range output {
-	// 	fmt.Println(k)
-	// 	fmt.Println(v)
-	// 	fmt.Println("")
-	// }
+
+	var settings dinosql.GenerateSettings
+	if err := json.Unmarshal(blob, &settings); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestGeneratePkg(t *testing.T) {
+	_, err := GeneratePkg(mockSettings.Packages[0].Name, filename, mockSettings)
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 func keep(interface{}) {}
@@ -90,7 +62,6 @@ func initMockSchema() {
 			Type: sqlparser.ColumnType{
 				Type:    "varchar",
 				NotNull: true,
-				// could add more here later if needed
 			},
 		},
 		&sqlparser.ColumnDefinition{
@@ -98,7 +69,6 @@ func initMockSchema() {
 			Type: sqlparser.ColumnType{
 				Type:    "varchar",
 				NotNull: false,
-				// could add more here later if needed
 			},
 		},
 		&sqlparser.ColumnDefinition{
@@ -107,7 +77,6 @@ func initMockSchema() {
 				Type:          "int",
 				NotNull:       true,
 				Autoincrement: true,
-				// could add more here later if needed
 			},
 		},
 		&sqlparser.ColumnDefinition{
@@ -115,7 +84,6 @@ func initMockSchema() {
 			Type: sqlparser.ColumnType{
 				Type:    "int",
 				NotNull: true,
-				// could add more here later if needed
 			},
 		},
 	}
@@ -126,7 +94,6 @@ func initMockSchema() {
 				Type:          "int",
 				NotNull:       true,
 				Autoincrement: true,
-				// could add more here later if needed
 			},
 		},
 		&sqlparser.ColumnDefinition{
@@ -135,7 +102,6 @@ func initMockSchema() {
 				Type:          "DECIMAL(13, 4)",
 				NotNull:       true,
 				Autoincrement: true,
-				// could add more here later if needed
 			},
 		},
 		&sqlparser.ColumnDefinition{
@@ -143,7 +109,6 @@ func initMockSchema() {
 			Type: sqlparser.ColumnType{
 				Type:    "int",
 				NotNull: true,
-				// could add more here later if needed
 			},
 		},
 	}
@@ -171,6 +136,38 @@ func TestParseSelect(t *testing.T) {
 	query2 := `/* name: GetAll :many */
 						SELECT * FROM users;`
 	tests := []testCase{
+		testCase{
+			input: expected{
+				query: `/* name: GetCount :one */
+				SELECT id my_id, COUNT(id) id_count FROM users WHERE id > 4`,
+				schema: mockSchema,
+			},
+			output: &Query{
+				SQL: "select id as my_id, COUNT(id) as id_count from users where id > 4",
+				Columns: []*sqlparser.ColumnDefinition{
+					&sqlparser.ColumnDefinition{
+						Name: sqlparser.NewColIdent("my_id"),
+						Type: sqlparser.ColumnType{
+							Type:          "int",
+							NotNull:       true,
+							Autoincrement: true,
+						},
+					},
+					&sqlparser.ColumnDefinition{
+						Name: sqlparser.NewColIdent("id_count"),
+						Type: sqlparser.ColumnType{
+							Type:    "int",
+							NotNull: true,
+						},
+					},
+				},
+				Params:           []*Param{},
+				Name:             "GetCount",
+				Cmd:              ":one",
+				defaultTableName: "users",
+				schemaLookup:     mockSchema,
+			},
+		},
 		testCase{
 			input: expected{
 				query: `/* name: GetNameByID :one */
@@ -212,16 +209,16 @@ func TestParseSelect(t *testing.T) {
 	for _, testCase := range tests {
 		q, err := parseQueryString(testCase.input.query, testCase.input.schema, mockSettings)
 		if err != nil {
-			t.Errorf("Parsing failed withe query: [%v]\n:schema: %v", query, spew.Sdump(testCase.input.schema))
+			t.Errorf("Parsing failed withe query: [%v]\n:schema: %v", testCase.input.query, spew.Sdump(testCase.input.schema))
 		}
 
 		err = q.parseNameAndCmd()
 		if err != nil {
-			t.Errorf("Parsing failed withe query: [%v]\n:schema: %v", query, spew.Sdump(testCase.input.schema))
+			t.Errorf("Parsing failed withe query: [%v]\n:schema: %v", testCase.input.query, spew.Sdump(testCase.input.schema))
 		}
 		if !reflect.DeepEqual(testCase.output, q) {
 			t.Errorf("Parsing query returned differently than expected.")
-			t.Logf("Expected: %v\nResult: %v\n", spew.Sdump(testCase.output), spew.Sdump(q))
+			// t.Logf("Expected: %v\nResult: %v\n", spew.Sdump(testCase.output), spew.Sdump(q))
 		}
 	}
 }
@@ -356,7 +353,7 @@ func TestParseInsert(t *testing.T) {
 
 		err = q.parseNameAndCmd()
 		if err != nil {
-			t.Errorf("Parsing failed with query index: %d: [%v]\n", ix, query)
+			t.Errorf("Parsing failed with query index: %d: [%v]\n", ix, testCase.input.query)
 		}
 		if !reflect.DeepEqual(testCase.output, q) {
 			t.Errorf("Parsing query returned differently than expected.")

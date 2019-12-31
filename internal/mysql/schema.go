@@ -19,11 +19,24 @@ type Schema struct {
 	tables map[string]([]*sqlparser.ColumnDefinition)
 }
 
+// returns a deep copy of the column definition for using as a query return type or param type
 func (s *Schema) getColType(col *sqlparser.ColName, defaultTableName string) (*sqlparser.ColumnDefinition, error) {
 	if !col.Qualifier.IsEmpty() {
-		return s.schemaLookup(col.Qualifier.Name.String(), col.Name.String())
+		colDfn, err := s.schemaLookup(col.Qualifier.Name.String(), col.Name.String())
+		if err != nil {
+			return nil, err
+		}
+		return &sqlparser.ColumnDefinition{
+			Name: colDfn.Name, Type: colDfn.Type,
+		}, nil
 	}
-	return s.schemaLookup(defaultTableName, col.Name.String())
+	colDfn, err := s.schemaLookup(defaultTableName, col.Name.String())
+	if err != nil {
+		return nil, err
+	}
+	return &sqlparser.ColumnDefinition{
+		Name: colDfn.Name, Type: colDfn.Type,
+	}, nil
 }
 
 // Add add a MySQL table definition to the schema map

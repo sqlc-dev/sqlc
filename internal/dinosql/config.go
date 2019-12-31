@@ -1,14 +1,10 @@
 package dinosql
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
-	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/kyleconroy/sqlc/internal/pg"
@@ -28,44 +24,6 @@ The only supported version is "1".
 `
 
 const errMessageNoPackages = `No packages are configured`
-
-// InitConfig initializes the global config objcet
-func InitConfig() (*GenerateSettings, error) {
-	fmt.Println("Config init func ran")
-	blob, err := ioutil.ReadFile("sqlc.json")
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "error parsing sqlc.json: file does not exist")
-		os.Exit(1)
-	}
-
-	settings, err := ParseConfigFile(bytes.NewReader(blob))
-	if err != nil {
-		switch err {
-		case ErrMissingVersion:
-			fmt.Fprintf(os.Stderr, errMessageNoVersion)
-		case ErrUnknownVersion:
-			fmt.Fprintf(os.Stderr, errMessageUnknownVersion)
-		case ErrNoPackages:
-			fmt.Fprintf(os.Stderr, errMessageNoPackages)
-		}
-		fmt.Fprintf(os.Stderr, "error parsing sqlc.json: %s\n", err)
-		os.Exit(1)
-	}
-
-	for i, pkg := range settings.Packages {
-		name := pkg.Name
-
-		if pkg.Path == "" {
-			fmt.Fprintf(os.Stderr, "package[%d]: path must be set\n", i)
-			continue
-		}
-
-		if name == "" {
-			name = filepath.Base(pkg.Path)
-		}
-	}
-	return &settings, nil
-}
 
 type GenerateSettings struct {
 	Version    string            `json:"version"`

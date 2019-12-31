@@ -118,15 +118,14 @@ func parseSelect(tree *sqlparser.Select, query string, s *Schema, defaultTableNa
 		}
 		tree.SelectExprs = colNames
 	}
+
 	parsedQuery := Query{
 		SQL:              query,
 		defaultTableName: defaultTableName,
 		schemaLookup:     s,
 	}
-	err := sqlparser.Walk(parsedQuery.visit, tree)
-	if err != nil {
-		return nil, err
-	}
+
+	parsedQuery.Columns = parseSelectAliasExpr(tree.SelectExprs, s, defaultTableName)
 
 	whereParams, err := paramsInWhereExpr(tree.Where, s, defaultTableName, settings)
 	if err != nil {
@@ -273,40 +272,52 @@ func (q *Query) parseLeadingComment(comment string) error {
 	}
 	return nil
 }
-func isExpr(exp sqlparser.Expr) {}
 
-func (q *Query) visit(node sqlparser.SQLNode) (bool, error) {
-	switch v := node.(type) {
-	case *sqlparser.AliasedExpr:
-		err := sqlparser.Walk(q.visitColNames, v)
-		if err != nil {
-			return false, err
+func parseSelectAliasExpr(exprs sqlparser.SelectExprs, s *Schema, defaultTable string) []*sqlparser.ColumnDefinition {
+	colDfns := []*sqlparser.ColumnDefinition{}
+	for _, col := range exprs {
+		switch expr := col.(type) {
+		case *sqlparser.AliasedExpr:
+			hasAlias := !expr.As.IsEmpty()
+
+			switch v := expr.Expr.(type) {
+			case *sqlparser.ColName:
+				res, err := s.getColType(v, defaultTable)
+				if err != nil {
+					panic(fmt.Sprintf("Column not found in schema: %v", err))
+				}
+				if hasAlias {
+					res.Name = expr.As // applys the alias
+				}
+				colDfns = append(colDfns, res)
+			case *sqlparser.FuncExpr:
+				funcName := v.Name.Lowered()
+				funcType := functionReturnType(funcName)
+
+				var returnVal sqlparser.ColIdent
+				if hasAlias {
+					returnVal = expr.As
+				} else {
+					returnVal = sqlparser.NewColIdent(funcName)
+				}
+
+				colDfn := &sqlparser.ColumnDefinition{
+					Name: returnVal,
+					Type: sqlparser.ColumnType{
+						Type:    funcType,
+						NotNull: true,
+					},
+				}
+				colDfns = append(colDfns, colDfn)
+			}
+		default:
+			panic(fmt.Sprintf("Failed to handle select expr of type : %T\n", expr))
 		}
-	case *sqlparser.StarExpr:
-		cols, ok := q.schemaLookup.tables[q.defaultTableName]
-		if !ok {
-			return false, fmt.Errorf("Failed to expand * expression into columns from schema, tableName: %v", q.defaultTableName)
-		}
-		q.Columns = cols
-		return false, nil
-	default:
-		// fmt.Printf("Did not handle %T\n", v)
 	}
-	return true, nil
+	return colDfns
 }
 
-func (q *Query) visitColNames(node sqlparser.SQLNode) (bool, error) {
-	switch v := node.(type) {
-	case *sqlparser.ColName:
-		colTyp, err := q.schemaLookup.getColType(v, q.defaultTableName)
-		if err != nil {
-			return false, fmt.Errorf("Failed to get column type for [%v]: %v", v.Name.String(), err)
-		}
-		q.Columns = append(q.Columns, colTyp)
-	}
-	return true, nil
-}
-
+// GeneratePkg is the main entry to mysql generator package
 func GeneratePkg(pkgName string, querysPath string, settings dinosql.GenerateSettings) (map[string]string, error) {
 	s := NewSchema()
 	result, err := parseFile(querysPath, pkgName, s, settings)
