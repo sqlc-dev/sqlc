@@ -20,21 +20,21 @@ type Schema struct {
 }
 
 // returns a deep copy of the column definition for using as a query return type or param type
-func (s *Schema) getColType(col *sqlparser.ColName, tableAliasMap map[string]string, defaultTableName string) (*sqlparser.ColumnDefinition, error) {
+func (s *Schema) getColType(col *sqlparser.ColName, tableAliasMap FromTables, defaultTableName string) (*sqlparser.ColumnDefinition, error) {
 	if !col.Qualifier.IsEmpty() {
-		var colDfn *sqlparser.ColumnDefinition
-		var err error
-		if realTableName, ok := tableAliasMap[col.Qualifier.Name.String()]; ok {
-			colDfn, err = s.schemaLookup(realTableName, col.Name.String())
-		} else {
-			colDfn, err = s.schemaLookup(col.Qualifier.Name.String(), col.Name.String())
-			if err != nil {
-				return nil, err
-			}
+		realTable, ok := tableAliasMap[col.Qualifier.Name.String()]
+		if !ok {
+			return nil, fmt.Errorf("Column qualifier [%v] not found in table alias map", col.Qualifier.Name.String())
 		}
-		return &sqlparser.ColumnDefinition{
-			Name: colDfn.Name, Type: colDfn.Type,
-		}, nil
+		colDfn, err := s.schemaLookup(realTable.TrueName, col.Name.String())
+		colDfnCopy := *colDfn
+		if err != nil {
+			return nil, err
+		}
+		if realTable.IsLeftJoined {
+			colDfnCopy.Type.NotNull = false
+		}
+		return &colDfnCopy, nil
 	}
 	if defaultTableName == "" {
 		return nil, fmt.Errorf("Column reference [%v] is ambiguous -- Add a qualifier", col.Name.String())

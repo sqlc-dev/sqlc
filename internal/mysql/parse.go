@@ -108,7 +108,7 @@ func (q *Query) parseNameAndCmd() error {
 }
 
 func parseSelect(tree *sqlparser.Select, query string, s *Schema, settings dinosql.GenerateSettings) (*Query, error) {
-	tableAliasMap, err := parseFrom(tree.From)
+	tableAliasMap, err := parseFrom(tree.From, false)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to parse table name alias's: %v", err)
 	}
@@ -160,8 +160,14 @@ func parseSelect(tree *sqlparser.Select, query string, s *Schema, settings dinos
 	return &parsedQuery, nil
 }
 
-func parseFrom(from sqlparser.TableExprs) (map[string]string, error) {
-	tables := make(map[string]string)
+type FromTable struct {
+	TrueName     string // the true table name as described in the schema
+	IsLeftJoined bool   // which could result in null columns
+}
+type FromTables map[string]FromTable
+
+func parseFrom(from sqlparser.TableExprs, isLeftJoined bool) (FromTables, error) {
+	tables := make(map[string]FromTable)
 	for _, expr := range from {
 		switch v := expr.(type) {
 		case *sqlparser.AliasedTableExpr:
@@ -169,13 +175,29 @@ func parseFrom(from sqlparser.TableExprs) (map[string]string, error) {
 			if !ok {
 				return nil, fmt.Errorf("Failed to parse AliasedTableExpr name: %v", spew.Sdump(v))
 			}
+			t := FromTable{
+				TrueName:     name.Name.String(),
+				IsLeftJoined: isLeftJoined,
+			}
 			if v.As.String() != "" {
-				tables[v.As.String()] = name.Name.String()
+				tables[v.As.String()] = t
 			} else {
-				tables[name.Name.String()] = name.Name.String()
+				tables[name.Name.String()] = t
 			}
 		case *sqlparser.JoinTableExpr:
-			return parseFrom([]sqlparser.TableExpr{v.LeftExpr, v.RightExpr})
+			left, err := parseFrom([]sqlparser.TableExpr{v.LeftExpr}, false)
+			if err != nil {
+				return nil, err
+			}
+			right, err := parseFrom([]sqlparser.TableExpr{v.RightExpr}, true)
+			if err != nil {
+				return nil, err
+			}
+			// merge the left and right maps
+			for k, v := range left {
+				right[k] = v
+			}
+			return right, nil
 		default:
 			return nil, fmt.Errorf("Failed to parse table expr: %v", spew.Sdump(v))
 		}
@@ -183,18 +205,18 @@ func parseFrom(from sqlparser.TableExprs) (map[string]string, error) {
 	return tables, nil
 }
 
-func getDefaultTable(tableAliasMap map[string]string) string {
+func getDefaultTable(tableAliasMap FromTables) string {
 	if len(tableAliasMap) != 1 {
 		return ""
 	}
 	for _, val := range tableAliasMap {
-		return val
+		return val.TrueName
 	}
 	panic("Should never be reached.")
 }
 
 func parseUpdate(node *sqlparser.Update, query string, s *Schema, settings dinosql.GenerateSettings) (*Query, error) {
-	tableAliasMap, err := parseFrom(node.TableExprs)
+	tableAliasMap, err := parseFrom(node.TableExprs, false)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to parse table name alias's: %v", err)
 	}
@@ -309,7 +331,7 @@ func (q *Query) parseLeadingComment(comment string) error {
 	return nil
 }
 
-func parseSelectAliasExpr(exprs sqlparser.SelectExprs, s *Schema, tableAliasMap map[string]string, defaultTable string) ([]*sqlparser.ColumnDefinition, error) {
+func parseSelectAliasExpr(exprs sqlparser.SelectExprs, s *Schema, tableAliasMap FromTables, defaultTable string) ([]*sqlparser.ColumnDefinition, error) {
 	colDfns := []*sqlparser.ColumnDefinition{}
 	for _, col := range exprs {
 		switch expr := col.(type) {

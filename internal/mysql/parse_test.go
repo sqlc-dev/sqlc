@@ -139,7 +139,7 @@ func TestParseSelect(t *testing.T) {
 		testCase{
 			input: expected{
 				query: `/* name: GetCount :one */
-				SELECT id my_id, COUNT(id) id_count FROM users WHERE id > 4`,
+					SELECT id my_id, COUNT(id) id_count FROM users WHERE id > 4`,
 				schema: mockSchema,
 			},
 			output: &Query{
@@ -171,7 +171,7 @@ func TestParseSelect(t *testing.T) {
 		testCase{
 			input: expected{
 				query: `/* name: GetNameByID :one */
-								SELECT first_name, last_name FROM users WHERE id = ?`,
+									SELECT first_name, last_name FROM users WHERE id = ?`,
 				schema: mockSchema,
 			},
 			output: &Query{
@@ -207,26 +207,26 @@ func TestParseSelect(t *testing.T) {
 		testCase{
 			input: expected{
 				query: `/* name: GetAllUsersOrders :many */
-				SELECT u.id, u.first_name, o.price, o.id order_id
+				SELECT u.id user_id, u.first_name, o.price, o.id order_id
 				FROM orders o LEFT JOIN users u ON u.id = o.user_id`,
 				schema: mockSchema,
 			},
 			output: &Query{
-				SQL: "select u.id, u.first_name, o.price, o.id as order_id from orders as o left join users as u on u.id = o.user_id",
+				SQL: "select u.id as user_id, u.first_name, o.price, o.id as order_id from orders as o left join users as u on u.id = o.user_id",
 				Columns: []*sqlparser.ColumnDefinition{
 					&sqlparser.ColumnDefinition{
-						Name: sqlparser.NewColIdent("id"),
+						Name: sqlparser.NewColIdent("user_id"),
 						Type: sqlparser.ColumnType{
 							Type:          "int",
 							Autoincrement: true,
-							NotNull:       true,
+							NotNull:       false, // beause of the left join
 						},
 					},
 					&sqlparser.ColumnDefinition{
 						Name: sqlparser.NewColIdent("first_name"),
 						Type: sqlparser.ColumnType{
 							Type:    "varchar",
-							NotNull: true,
+							NotNull: false, // because of left join
 						},
 					},
 					&sqlparser.ColumnDefinition{
