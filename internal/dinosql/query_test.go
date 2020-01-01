@@ -11,7 +11,7 @@ import (
 	pg "github.com/lfittl/pg_query_go"
 )
 
-func parseSQL(in string) (Query, error) {
+func parseSQL(in string, ignoreUnknown bool) (Query, error) {
 	tree, err := pg.Parse(in)
 	if err != nil {
 		return Query{}, err
@@ -21,7 +21,7 @@ func parseSQL(in string) (Query, error) {
 		return Query{}, err
 	}
 
-	q, err := parseQuery(c, tree.Statements[len(tree.Statements)-1], in)
+	q, err := parseQuery(c, ignoreUnknown, tree.Statements[len(tree.Statements)-1], in)
 	if q == nil {
 		return Query{}, err
 	}
@@ -887,7 +887,7 @@ func TestQueries(t *testing.T) {
 	} {
 		test := tc
 		t.Run(test.name, func(t *testing.T) {
-			q, err := parseSQL(test.stmt)
+			q, err := parseSQL(test.stmt, false)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -910,7 +910,7 @@ func TestComparisonOperators(t *testing.T) {
 	for _, op := range []string{">", "<", ">=", "<=", "<>", "!=", "="} {
 		o := op
 		t.Run(o, func(t *testing.T) {
-			q, err := parseSQL(fmt.Sprintf(testComparisonSQL, o))
+			q, err := parseSQL(fmt.Sprintf(testComparisonSQL, o), false)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -924,6 +924,22 @@ func TestComparisonOperators(t *testing.T) {
 				t.Errorf("query mismatch: \n%s", diff)
 			}
 		})
+	}
+}
+
+func TestUnknownFunctions(t *testing.T) {
+	stmt :=  `
+		CREATE TABLE foo (id text not null);
+		-- name: ListFoos :one
+		SELECT id FROM foo WHERE id = frobnicate($1);
+		`
+	_, err := parseSQL(stmt, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = parseSQL(stmt, false)
+	if err == nil {
+		t.Fatal("expected to fail with error")
 	}
 }
 
@@ -955,6 +971,14 @@ func TestInvalidQueries(t *testing.T) {
 			SELECT id FROM foo;
 			`,
 			"invalid query type: :two",
+		},
+		{
+			`
+			CREATE TABLE foo (id text not null);
+			-- name: ListFoos :one
+			SELECT id FROM foo WHERE id = frobnicate($1);
+			`,
+			`relation "frobnicate" does not exist`,
 		},
 		{
 			`
@@ -997,7 +1021,7 @@ func TestInvalidQueries(t *testing.T) {
 	} {
 		test := tc
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
-			_, err := parseSQL(test.stmt)
+			_, err := parseSQL(test.stmt, false)
 			if err == nil {
 				t.Fatalf("expected err, got nil")
 			}
