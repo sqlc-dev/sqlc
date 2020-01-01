@@ -1,5 +1,8 @@
 package mysql
 
+import "fmt"
+
+// converts MySQL function name to MySQL return type
 func functionReturnType(f string) string {
 	switch f {
 	case "avg", "count", "instr", "sum", "min", "max", "length", "char_length":
@@ -7,6 +10,6 @@ func functionReturnType(f string) string {
 	case "concat", "left", "replace", "substring", "trim", "find_in_set", "format":
 		return "varchar"
 	default:
-		panic("unknown mysql function type")
+		panic(fmt.Sprintf("unknown mysql function type [%v]", f))
 	}
 }

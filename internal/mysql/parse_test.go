@@ -204,21 +204,70 @@ func TestParseSelect(t *testing.T) {
 				schemaLookup:     mockSchema,
 			},
 		},
+		testCase{
+			input: expected{
+				query: `/* name: GetAllUsersOrders :many */
+				SELECT u.id, u.first_name, o.price, o.id order_id
+				FROM orders o LEFT JOIN users u ON u.id = o.user_id`,
+				schema: mockSchema,
+			},
+			output: &Query{
+				SQL: "select u.id, u.first_name, o.price, o.id as order_id from orders as o left join users as u on u.id = o.user_id",
+				Columns: []*sqlparser.ColumnDefinition{
+					&sqlparser.ColumnDefinition{
+						Name: sqlparser.NewColIdent("id"),
+						Type: sqlparser.ColumnType{
+							Type:          "int",
+							Autoincrement: true,
+							NotNull:       true,
+						},
+					},
+					&sqlparser.ColumnDefinition{
+						Name: sqlparser.NewColIdent("first_name"),
+						Type: sqlparser.ColumnType{
+							Type:    "varchar",
+							NotNull: true,
+						},
+					},
+					&sqlparser.ColumnDefinition{
+						Name: sqlparser.NewColIdent("price"),
+						Type: sqlparser.ColumnType{
+							Type:          "DECIMAL(13, 4)",
+							Autoincrement: true,
+							NotNull:       true,
+						},
+					},
+					&sqlparser.ColumnDefinition{
+						Name: sqlparser.NewColIdent("order_id"),
+						Type: sqlparser.ColumnType{
+							Type:          "int",
+							Autoincrement: true,
+							NotNull:       true,
+						},
+					},
+				},
+				Params:           []*Param{},
+				Name:             "GetAllUsersOrders",
+				Cmd:              ":many",
+				defaultTableName: "", // TODO: verify that this is desired behaviour
+				schemaLookup:     mockSchema,
+			},
+		},
 	}
 
-	for _, testCase := range tests {
+	for ix, testCase := range tests {
 		q, err := parseQueryString(testCase.input.query, testCase.input.schema, mockSettings)
 		if err != nil {
-			t.Errorf("Parsing failed withe query: [%v]\n:schema: %v", testCase.input.query, spew.Sdump(testCase.input.schema))
+			t.Errorf("Parsing failed with query: [%v]\n%v", testCase.input.query, err)
 		}
 
 		err = q.parseNameAndCmd()
 		if err != nil {
-			t.Errorf("Parsing failed withe query: [%v]\n:schema: %v", testCase.input.query, spew.Sdump(testCase.input.schema))
+			t.Errorf("Parsing failed with query: [%v]\n%v", testCase.input.query, err)
 		}
 		if !reflect.DeepEqual(testCase.output, q) {
-			t.Errorf("Parsing query returned differently than expected.")
-			// t.Logf("Expected: %v\nResult: %v\n", spew.Sdump(testCase.output), spew.Sdump(q))
+			t.Errorf("Parsing query returned differently than expected. Index: %v", ix)
+			t.Logf("Expected: %v\nResult: %v\n", spew.Sdump(testCase.output), spew.Sdump(q))
 		}
 	}
 }
@@ -266,7 +315,7 @@ func TestSchemaLookup(t *testing.T) {
 	}
 }
 
-func TestParseInsert(t *testing.T) {
+func TestParseInsertUpdate(t *testing.T) {
 	type expected struct {
 		query  string
 		schema *Schema

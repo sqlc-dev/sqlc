@@ -15,7 +15,7 @@ type Param struct {
 	typ          string
 }
 
-func paramsInLimitExpr(limit *sqlparser.Limit, s *Schema, settings dinosql.GenerateSettings) ([]*Param, error) {
+func paramsInLimitExpr(limit *sqlparser.Limit, s *Schema, tableAliasMap map[string]string, settings dinosql.GenerateSettings) ([]*Param, error) {
 	params := []*Param{}
 	if limit == nil {
 		return params, nil
@@ -40,16 +40,16 @@ func paramsInLimitExpr(limit *sqlparser.Limit, s *Schema, settings dinosql.Gener
 	return params, nil
 }
 
-func paramsInWhereExpr(e sqlparser.SQLNode, s *Schema, defaultTable string, settings dinosql.GenerateSettings) ([]*Param, error) {
+func paramsInWhereExpr(e sqlparser.SQLNode, s *Schema, tableAliasMap map[string]string, defaultTable string, settings dinosql.GenerateSettings) ([]*Param, error) {
 	params := []*Param{}
 	switch v := e.(type) {
 	case *sqlparser.Where:
 		if v == nil {
 			return params, nil
 		}
-		return paramsInWhereExpr(v.Expr, s, defaultTable, settings)
+		return paramsInWhereExpr(v.Expr, s, tableAliasMap, defaultTable, settings)
 	case *sqlparser.ComparisonExpr:
-		p, found, err := paramInComparison(v, s, defaultTable, settings)
+		p, found, err := paramInComparison(v, s, tableAliasMap, defaultTable, settings)
 		if err != nil {
 			return nil, err
 		}
@@ -57,23 +57,23 @@ func paramsInWhereExpr(e sqlparser.SQLNode, s *Schema, defaultTable string, sett
 			params = append(params, p)
 		}
 	case *sqlparser.AndExpr:
-		left, err := paramsInWhereExpr(v.Left, s, defaultTable, settings)
+		left, err := paramsInWhereExpr(v.Left, s, tableAliasMap, defaultTable, settings)
 		if err != nil {
 			return nil, err
 		}
 		params = append(params, left...)
-		right, err := paramsInWhereExpr(v.Right, s, defaultTable, settings)
+		right, err := paramsInWhereExpr(v.Right, s, tableAliasMap, defaultTable, settings)
 		if err != nil {
 			return nil, err
 		}
 		params = append(params, right...)
 	case *sqlparser.OrExpr:
-		left, err := paramsInWhereExpr(v.Left, s, defaultTable, settings)
+		left, err := paramsInWhereExpr(v.Left, s, tableAliasMap, defaultTable, settings)
 		if err != nil {
 			return nil, err
 		}
 		params = append(params, left...)
-		right, err := paramsInWhereExpr(v.Right, s, defaultTable, settings)
+		right, err := paramsInWhereExpr(v.Right, s, tableAliasMap, defaultTable, settings)
 		if err != nil {
 			return nil, err
 		}
@@ -85,13 +85,13 @@ func paramsInWhereExpr(e sqlparser.SQLNode, s *Schema, defaultTable string, sett
 	return params, nil
 }
 
-func paramInComparison(cond *sqlparser.ComparisonExpr, s *Schema, defaultTable string, settings dinosql.GenerateSettings) (*Param, bool, error) {
+func paramInComparison(cond *sqlparser.ComparisonExpr, s *Schema, tableAliasMap map[string]string, defaultTable string, settings dinosql.GenerateSettings) (*Param, bool, error) {
 	p := &Param{}
 	var colIdent sqlparser.ColIdent
 	walker := func(node sqlparser.SQLNode) (bool, error) {
 		switch v := node.(type) {
 		case *sqlparser.ColName:
-			colDfn, err := s.getColType(v, defaultTable)
+			colDfn, err := s.getColType(v, tableAliasMap, defaultTable)
 			if err != nil {
 				return false, err
 			}

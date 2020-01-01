@@ -7,19 +7,20 @@ import (
 	"os"
 	"strings"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/kyleconroy/sqlc/internal/dinosql"
 	"vitess.io/vitess/go/vt/sqlparser"
 )
 
 // Query holds the data for walking and validating mysql querys
 type Query struct {
-	SQL              string
-	Columns          []*sqlparser.ColumnDefinition
-	Params           []*Param // "?" params in the query string
-	Name             string   // the Go function name
-	Cmd              string   // TODO: Pick a better name. One of: one, many, exec, execrows
-	defaultTableName string   // for columns that are not qualified
-	schemaLookup     *Schema  // for validating and conversion to Go types
+	SQL              string                        // the string representation of the parsed query
+	Columns          []*sqlparser.ColumnDefinition // definitions for all columns returned by this query
+	Params           []*Param                      // "?" params in the query string
+	Name             string                        // the Go function name
+	Cmd              string                        // TODO: Pick a better name. One of: one, many, exec, execrows
+	defaultTableName string                        // for columns that are not qualified
+	schemaLookup     *Schema                       // for validation and conversion to Go types
 }
 
 func parseFile(filepath string, inPkg string, s *Schema, settings dinosql.GenerateSettings) (*Result, error) {
@@ -63,8 +64,7 @@ func parseQueryString(query string, s *Schema, settings dinosql.GenerateSettings
 	var parsedQuery *Query
 	switch tree := tree.(type) {
 	case *sqlparser.Select:
-		defaultTableName := getDefaultTable(&tree.From)
-		res, err := parseSelect(tree, query, s, defaultTableName, settings)
+		res, err := parseSelect(tree, query, s, settings)
 		if err != nil {
 			return nil, fmt.Errorf("Failed to parse SELECT query: %v", err)
 		}
@@ -107,7 +107,13 @@ func (q *Query) parseNameAndCmd() error {
 	return nil
 }
 
-func parseSelect(tree *sqlparser.Select, query string, s *Schema, defaultTableName string, settings dinosql.GenerateSettings) (*Query, error) {
+func parseSelect(tree *sqlparser.Select, query string, s *Schema, settings dinosql.GenerateSettings) (*Query, error) {
+	tableAliasMap, err := parseFrom(tree.From)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to parse table name alias's: %v", err)
+	}
+	defaultTableName := getDefaultTable(tableAliasMap)
+
 	// handle * expressions first by expanding all columns of the default table
 	_, ok := tree.SelectExprs[0].(*sqlparser.StarExpr)
 	if ok {
@@ -128,15 +134,18 @@ func parseSelect(tree *sqlparser.Select, query string, s *Schema, defaultTableNa
 		defaultTableName: defaultTableName,
 		schemaLookup:     s,
 	}
+	cols, err := parseSelectAliasExpr(tree.SelectExprs, s, tableAliasMap, defaultTableName)
+	if err != nil {
+		return nil, err
+	}
+	parsedQuery.Columns = cols
 
-	parsedQuery.Columns = parseSelectAliasExpr(tree.SelectExprs, s, defaultTableName)
-
-	whereParams, err := paramsInWhereExpr(tree.Where, s, defaultTableName, settings)
+	whereParams, err := paramsInWhereExpr(tree.Where, s, tableAliasMap, defaultTableName, settings)
 	if err != nil {
 		return nil, err
 	}
 
-	limitParams, err := paramsInLimitExpr(tree.Limit, s, settings)
+	limitParams, err := paramsInLimitExpr(tree.Limit, s, tableAliasMap, settings)
 	if err != nil {
 		return nil, err
 	}
@@ -151,25 +160,48 @@ func parseSelect(tree *sqlparser.Select, query string, s *Schema, defaultTableNa
 	return &parsedQuery, nil
 }
 
-func getDefaultTable(node *sqlparser.TableExprs) string {
-	// TODO: improve this
-	var tableName string
-	visit := func(node sqlparser.SQLNode) (bool, error) {
-		switch v := node.(type) {
-		case sqlparser.TableName:
-			if name := v.Name.String(); name != "" {
-				tableName = name
-				return false, nil
+func parseFrom(from sqlparser.TableExprs) (map[string]string, error) {
+	tables := make(map[string]string)
+	for _, expr := range from {
+		switch v := expr.(type) {
+		case *sqlparser.AliasedTableExpr:
+			name, ok := v.Expr.(sqlparser.TableName)
+			if !ok {
+				return nil, fmt.Errorf("Failed to parse AliasedTableExpr name: %v", spew.Sdump(v))
 			}
+			if v.As.String() != "" {
+				tables[v.As.String()] = name.Name.String()
+			} else {
+				tables[name.Name.String()] = name.Name.String()
+			}
+		case *sqlparser.JoinTableExpr:
+			return parseFrom([]sqlparser.TableExpr{v.LeftExpr, v.RightExpr})
+		default:
+			return nil, fmt.Errorf("Failed to parse table expr: %v", spew.Sdump(v))
 		}
-		return true, nil
 	}
-	sqlparser.Walk(visit, node)
-	return tableName
+	return tables, nil
+}
+
+func getDefaultTable(tableAliasMap map[string]string) string {
+	if len(tableAliasMap) != 1 {
+		return ""
+	}
+	for _, val := range tableAliasMap {
+		return val
+	}
+	panic("Should never be reached.")
 }
 
 func parseUpdate(node *sqlparser.Update, query string, s *Schema, settings dinosql.GenerateSettings) (*Query, error) {
-	defaultTable := getDefaultTable(&node.TableExprs)
+	tableAliasMap, err := parseFrom(node.TableExprs)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to parse table name alias's: %v", err)
+	}
+	defaultTable := getDefaultTable(tableAliasMap)
+	if err != nil {
+		return nil, err
+	}
 
 	params := []*Param{}
 	for _, updateExpr := range node.Exprs {
@@ -178,7 +210,7 @@ func parseUpdate(node *sqlparser.Update, query string, s *Schema, settings dinos
 		if !isParam {
 			continue
 		}
-		colDfn, err := s.getColType(col, defaultTable)
+		colDfn, err := s.getColType(col, tableAliasMap, defaultTable)
 		if err != nil {
 			return nil, fmt.Errorf("Failed to determine type of a parameter's column: %v", err)
 		}
@@ -191,7 +223,7 @@ func parseUpdate(node *sqlparser.Update, query string, s *Schema, settings dinos
 		params = append(params, &param)
 	}
 
-	whereParams, err := paramsInWhereExpr(node.Where.Expr, s, defaultTable, settings)
+	whereParams, err := paramsInWhereExpr(node.Where.Expr, s, tableAliasMap, defaultTable, settings)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to parse params from WHERE expression: %v", err)
 	}
@@ -277,7 +309,7 @@ func (q *Query) parseLeadingComment(comment string) error {
 	return nil
 }
 
-func parseSelectAliasExpr(exprs sqlparser.SelectExprs, s *Schema, defaultTable string) []*sqlparser.ColumnDefinition {
+func parseSelectAliasExpr(exprs sqlparser.SelectExprs, s *Schema, tableAliasMap map[string]string, defaultTable string) ([]*sqlparser.ColumnDefinition, error) {
 	colDfns := []*sqlparser.ColumnDefinition{}
 	for _, col := range exprs {
 		switch expr := col.(type) {
@@ -286,7 +318,7 @@ func parseSelectAliasExpr(exprs sqlparser.SelectExprs, s *Schema, defaultTable s
 
 			switch v := expr.Expr.(type) {
 			case *sqlparser.ColName:
-				res, err := s.getColType(v, defaultTable)
+				res, err := s.getColType(v, tableAliasMap, defaultTable)
 				if err != nil {
 					panic(fmt.Sprintf("Column not found in schema: %v", err))
 				}
@@ -315,10 +347,10 @@ func parseSelectAliasExpr(exprs sqlparser.SelectExprs, s *Schema, defaultTable s
 				colDfns = append(colDfns, colDfn)
 			}
 		default:
-			panic(fmt.Sprintf("Failed to handle select expr of type : %T\n", expr))
+			return nil, fmt.Errorf("Failed to handle select expr of type : %T", expr)
 		}
 	}
-	return colDfns
+	return colDfns, nil
 }
 
 // GeneratePkg is the main entry to mysql generator package

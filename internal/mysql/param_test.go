@@ -83,11 +83,16 @@ func TestSelectParamSearcher(t *testing.T) {
 		}
 		selectStm, ok := tree.(*sqlparser.Select)
 
-		limitParams, err := paramsInLimitExpr(selectStm.Limit, mockSchema, mockSettings)
+		tableAliasMap, err := parseFrom(selectStm.From)
+		if err != nil {
+			t.Errorf("Failed to parse table name alias's: %v", err)
+		}
+
+		limitParams, err := paramsInLimitExpr(selectStm.Limit, mockSchema, tableAliasMap, mockSettings)
 		if err != nil {
 			t.Errorf("Failed to parse limit expression params: %v", err)
 		}
-		whereParams, err := paramsInWhereExpr(selectStm.Where, mockSchema, "users", mockSettings)
+		whereParams, err := paramsInWhereExpr(selectStm.Where, mockSchema, tableAliasMap, "users", mockSettings)
 		if err != nil {
 			t.Errorf("Failed to parse where expression params: %v", err)
 		}
@@ -96,10 +101,6 @@ func TestSelectParamSearcher(t *testing.T) {
 		if !ok {
 			t.Errorf("Test case is not SELECT statement as expected")
 		}
-
-		// TODO: get this out of the unit test and/or deprecate defaultTable
-		defaultTable := getDefaultTable(&selectStm.From)
-		keep(defaultTable)
 
 		if !reflect.DeepEqual(params, tCase.output) {
 			t.Errorf("Param searcher returned unexpected result\nResult: %v\nExpected: %v",

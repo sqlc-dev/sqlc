@@ -20,15 +20,24 @@ type Schema struct {
 }
 
 // returns a deep copy of the column definition for using as a query return type or param type
-func (s *Schema) getColType(col *sqlparser.ColName, defaultTableName string) (*sqlparser.ColumnDefinition, error) {
+func (s *Schema) getColType(col *sqlparser.ColName, tableAliasMap map[string]string, defaultTableName string) (*sqlparser.ColumnDefinition, error) {
 	if !col.Qualifier.IsEmpty() {
-		colDfn, err := s.schemaLookup(col.Qualifier.Name.String(), col.Name.String())
-		if err != nil {
-			return nil, err
+		var colDfn *sqlparser.ColumnDefinition
+		var err error
+		if realTableName, ok := tableAliasMap[col.Qualifier.Name.String()]; ok {
+			colDfn, err = s.schemaLookup(realTableName, col.Name.String())
+		} else {
+			colDfn, err = s.schemaLookup(col.Qualifier.Name.String(), col.Name.String())
+			if err != nil {
+				return nil, err
+			}
 		}
 		return &sqlparser.ColumnDefinition{
 			Name: colDfn.Name, Type: colDfn.Type,
 		}, nil
+	}
+	if defaultTableName == "" {
+		return nil, fmt.Errorf("Column reference [%v] is ambiguous -- Add a qualifier", col.Name.String())
 	}
 	colDfn, err := s.schemaLookup(defaultTableName, col.Name.String())
 	if err != nil {
