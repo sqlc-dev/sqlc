@@ -185,11 +185,12 @@ func parseFrom(from sqlparser.TableExprs, isLeftJoined bool) (FromTables, error)
 				tables[name.Name.String()] = t
 			}
 		case *sqlparser.JoinTableExpr:
+			isLeftJoin := v.Join == "left join"
 			left, err := parseFrom([]sqlparser.TableExpr{v.LeftExpr}, false)
 			if err != nil {
 				return nil, err
 			}
-			right, err := parseFrom([]sqlparser.TableExpr{v.RightExpr}, true)
+			right, err := parseFrom([]sqlparser.TableExpr{v.RightExpr}, isLeftJoin)
 			if err != nil {
 				return nil, err
 			}
