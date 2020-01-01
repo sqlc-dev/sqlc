@@ -32,4 +32,4 @@ SELECT students.first_name, students.last_name, teachers.first_name teacherFirst
 teachers.id teacher_id
   FROM students 
   Left JOIN teachers on teachers.class_id = students.class_id
-  WHERE students.id = ?
+  WHERE students.id = :studentID

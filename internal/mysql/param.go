@@ -129,8 +129,8 @@ func paramName(col sqlparser.ColIdent, originalName string) string {
 }
 
 func replaceParamStrs(query string, params []*Param) (string, error) {
-	for ix := range params {
-		re, err := regexp.Compile(fmt.Sprintf("(:v%d)", ix+1))
+	for _, p := range params {
+		re, err := regexp.Compile(fmt.Sprintf("(%v)", p.originalName))
 		if err != nil {
 			return "", err
 		}
