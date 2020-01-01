@@ -164,19 +164,12 @@ func TestParseSchema(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	q, err := ParseQueries(c, GenerateSettings{}, PackageSettings{
-		Queries:      filepath.Join("testdata", "ondeck", "query"),
-		EmitJSONTags: true,
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	t.Run("default", func(t *testing.T) {
-		output, err := Generate(q, GenerateSettings{}, PackageSettings{
-			Name:         "ondeck",
-			EmitJSONTags: true,
-		})
+		q, err := ParseQueries(c, mockSettings.PackageMap["ondeck"])
+		if err != nil {
+			t.Fatal(err)
+		}
+		output, err := Generate(q, mockSettings)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -185,10 +178,11 @@ func TestParseSchema(t *testing.T) {
 	})
 
 	t.Run("prepared", func(t *testing.T) {
-		output, err := Generate(q, GenerateSettings{}, PackageSettings{
-			Name:                "prepared",
-			EmitPreparedQueries: true,
-		})
+		q, err := ParseQueries(c, mockSettings.PackageMap["prepared"])
+		if err != nil {
+			t.Fatal(err)
+		}
+		output, err := Generate(q, mockSettings)
 		if err != nil {
 			t.Fatal(err)
 		}
