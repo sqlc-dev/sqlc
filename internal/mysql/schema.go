@@ -27,10 +27,10 @@ func (s *Schema) getColType(col *sqlparser.ColName, tableAliasMap FromTables, de
 			return nil, fmt.Errorf("Column qualifier [%v] not found in table alias map", col.Qualifier.Name.String())
 		}
 		colDfn, err := s.schemaLookup(realTable.TrueName, col.Name.String())
-		colDfnCopy := *colDfn
 		if err != nil {
 			return nil, err
 		}
+		colDfnCopy := *colDfn
 		if realTable.IsLeftJoined {
 			colDfnCopy.Type.NotNull = false
 		}
@@ -51,6 +51,9 @@ func (s *Schema) getColType(col *sqlparser.ColName, tableAliasMap FromTables, de
 // Add add a MySQL table definition to the schema map
 func (s *Schema) Add(table *sqlparser.DDL) {
 	name := table.Table.Name.String()
+	if table.TableSpec == nil {
+		panic(fmt.Sprintf("Failed to parse table [%v] schema.", name))
+	}
 	s.tables[name] = table.TableSpec.Columns
 }
 

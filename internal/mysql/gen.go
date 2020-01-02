@@ -5,6 +5,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/jinzhu/inflection"
 	"github.com/kyleconroy/sqlc/internal/dinosql"
 	"vitess.io/vitess/go/vt/sqlparser"
@@ -235,9 +236,13 @@ func goTypeCol(col *sqlparser.ColumnDefinition, settings dinosql.GenerateSetting
 		return "sql.NullFloat64"
 	case "enum" == t:
 		return enumNameFromColDef(col, settings)
+	case "date" == t, "timestamp" == t:
+		return "time.Time"
+	case "boolean" == t:
+		return "bool"
 	default:
 		// TODO: remove panic here
-		panic(fmt.Sprintf("Handle this col type directly: %v\n", col.Type))
+		panic(fmt.Sprintf("Handle this col type directly: %v\n", spew.Sdump(col.Type)))
 		// return col.Type
 	}
 }

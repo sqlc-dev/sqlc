@@ -80,6 +80,9 @@ func paramsInWhereExpr(e sqlparser.SQLNode, s *Schema, tableAliasMap FromTables,
 			return nil, err
 		}
 		params = append(params, right...)
+	case *sqlparser.IsExpr:
+		// TODO: see if there is a use case for params in IS expressions
+		return []*Param{}, nil
 	default:
 		panic(fmt.Sprintf("Failed to handle %T in where", v))
 	}
