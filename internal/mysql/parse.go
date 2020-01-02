@@ -1,7 +1,6 @@
 package mysql
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -37,6 +36,9 @@ func parseFile(filepath string, inPkg string, s *Schema, settings dinosql.Genera
 	parsedQueries := []*Query{}
 
 	for _, query := range rawQueries {
+		if query == "" {
+			continue
+		}
 		result, err := parseQueryString(query, s, settings)
 		if err != nil {
 			return nil, fmt.Errorf("Failed to parse query in filepath [%v]: %v", filepath, err)
@@ -63,11 +65,11 @@ func parseQueryString(query string, s *Schema, settings dinosql.GenerateSettings
 	var parsedQuery *Query
 	switch tree := tree.(type) {
 	case *sqlparser.Select:
-		res, err := parseSelect(tree, query, s, settings)
+		selectQuery, err := parseSelect(tree, query, s, settings)
 		if err != nil {
 			return nil, fmt.Errorf("Failed to parse SELECT query: %v", err)
 		}
-		parsedQuery = res
+		parsedQuery = selectQuery
 	case *sqlparser.Insert:
 		insert, err := parseInsert(tree, query, s, settings)
 		if err != nil {
@@ -80,13 +82,21 @@ func parseQueryString(query string, s *Schema, settings dinosql.GenerateSettings
 			return nil, fmt.Errorf("Failed to parse UPDATE query: %v", err)
 		}
 		parsedQuery = update
+	case *sqlparser.Delete:
+		delete, err := parseDelete(tree, query, s, settings)
+		delete.schemaLookup = nil
+		spew.Dump(delete)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to parse DELETE query: %v", err)
+		}
+		parsedQuery = delete
 	case *sqlparser.DDL:
 		s.Add(tree)
 		return nil, nil
 	default:
 		panic("Unsupported SQL statement type")
 	}
-	paramsReplacedQuery, err := replaceParamStrs(parsedQuery.SQL, parsedQuery.Params)
+	paramsReplacedQuery, err := replaceParamStrs(sqlparser.String(tree), parsedQuery.Params)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to replace param variables in query string: %v", err)
 	}
@@ -96,7 +106,7 @@ func parseQueryString(query string, s *Schema, settings dinosql.GenerateSettings
 
 func (q *Query) parseNameAndCmd() error {
 	if q == nil {
-		return errors.New("Cannot parse name and cmd from null query")
+		return fmt.Errorf("Cannot parse name and cmd from null query")
 	}
 	_, comments := sqlparser.SplitMarginComments(q.SQL)
 	err := q.parseLeadingComment(comments.Leading)
@@ -154,7 +164,6 @@ func parseSelect(tree *sqlparser.Select, query string, s *Schema, settings dinos
 	if err != nil {
 		return nil, err
 	}
-	parsedQuery.SQL = sqlparser.String(tree)
 
 	return &parsedQuery, nil
 }
@@ -304,6 +313,40 @@ func parseInsert(node *sqlparser.Insert, query string, s *Schema, settings dinos
 		schemaLookup:     s,
 	}
 	parsedQuery.parseNameAndCmd()
+	return parsedQuery, nil
+}
+
+func parseDelete(node *sqlparser.Delete, query string, s *Schema, settings dinosql.GenerateSettings) (*Query, error) {
+	tableAliasMap, err := parseFrom(node.TableExprs, false)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to parse table name alias's: %v", err)
+	}
+	defaultTableName := getDefaultTable(tableAliasMap)
+	if err != nil {
+		return nil, err
+	}
+
+	whereParams, err := paramsInWhereExpr(node.Where, s, tableAliasMap, defaultTableName, settings)
+	if err != nil {
+		return nil, err
+	}
+
+	limitParams, err := paramsInLimitExpr(node.Limit, s, tableAliasMap, settings)
+	if err != nil {
+		return nil, err
+	}
+	parsedQuery := &Query{
+		SQL:              query,
+		Params:           append(whereParams, limitParams...),
+		Columns:          nil,
+		defaultTableName: defaultTableName,
+		schemaLookup:     s,
+	}
+	err = parsedQuery.parseNameAndCmd()
+	if err != nil {
+		return nil, err
+	}
+
 	return parsedQuery, nil
 }
 

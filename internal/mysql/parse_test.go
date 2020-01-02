@@ -133,8 +133,6 @@ func TestParseSelect(t *testing.T) {
 		input  expected
 		output *Query
 	}
-	query2 := `/* name: GetAll :many */
-						SELECT * FROM users;`
 	tests := []testCase{
 		testCase{
 			input: expected{
@@ -191,7 +189,8 @@ func TestParseSelect(t *testing.T) {
 		},
 		testCase{
 			input: expected{
-				query:  query2,
+				query: `/* name: GetAll :many */
+				SELECT * FROM users;`,
 				schema: mockSchema,
 			},
 			output: &Query{
@@ -324,10 +323,8 @@ func TestParseInsertUpdate(t *testing.T) {
 		input  expected
 		output *Query
 	}
-	query1 := `/* name: InsertNewUser :exec */
-	INSERT INTO users (first_name, last_name) VALUES (?, ?)`
-	query2 := `/* name: UpdateUserAt :exec */
-	UPDATE users SET first_name = ?, last_name = ? WHERE id > ? AND first_name = ? LIMIT 3`
+	query1 := "/* name: InsertNewUser :exec */\nINSERT INTO users (first_name, last_name) VALUES (?, ?)"
+	query2 := "/* name: UpdateUserAt :exec */\nUPDATE users SET first_name = ?, last_name = ? WHERE id > ? AND first_name = ? LIMIT 3"
 	tests := []testCase{
 		testCase{
 			input: expected{
@@ -335,7 +332,7 @@ func TestParseInsertUpdate(t *testing.T) {
 				schema: mockSchema,
 			},
 			output: &Query{
-				SQL:     query1,
+				SQL:     "insert into users(first_name, last_name) values (?, ?)",
 				Columns: nil,
 				Params: []*Param{
 					&Param{
@@ -361,7 +358,7 @@ func TestParseInsertUpdate(t *testing.T) {
 				schema: mockSchema,
 			},
 			output: &Query{
-				SQL:     query2,
+				SQL:     "update users set first_name = ?, last_name = ? where id > ? and first_name = ? limit 3",
 				Columns: nil,
 				Params: []*Param{
 					&Param{
