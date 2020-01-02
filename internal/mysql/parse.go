@@ -352,6 +352,14 @@ func parseSelectAliasExpr(exprs sqlparser.SelectExprs, s *Schema, tableAliasMap 
 					res.Name = expr.As // applys the alias
 				}
 				colDfns = append(colDfns, res)
+			case *sqlparser.GroupConcatExpr:
+				colDfns = append(colDfns, &sqlparser.ColumnDefinition{
+					Name: sqlparser.NewColIdent(expr.As.String()),
+					Type: sqlparser.ColumnType{
+						Type:    "varchar",
+						NotNull: true,
+					},
+				})
 			case *sqlparser.FuncExpr:
 				funcName := v.Name.Lowered()
 				funcType := functionReturnType(funcName)

@@ -219,7 +219,7 @@ func (r *Result) columnsToStruct(name string, items []structParams, settings din
 
 func goTypeCol(col *sqlparser.ColumnDefinition, settings dinosql.GenerateSettings) string {
 	switch t := col.Type.Type; {
-	case "varchar" == t:
+	case "varchar" == t, "text" == t:
 		if col.Type.NotNull {
 			return "string"
 		}
