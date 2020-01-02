@@ -1,0 +1,13 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "name": "teachersDB",
+      "emit_json_tags": true,
+      "emit_prepared_queries": false,
+      "path": "./",
+      "queries": "./queries.sql",
+      "schema": "./queries.sql"
+    }
+  ]
+}
