@@ -9,6 +9,8 @@ import (
 	"vitess.io/vitess/go/vt/sqlparser"
 )
 
+// Param describes a runtime query parameter with its
+// associated type. Example: "SELECT name FROM users id = ?"
 type Param struct {
 	originalName string
 	name         string

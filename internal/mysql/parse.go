@@ -47,12 +47,11 @@ func parseFile(filepath string, inPkg string, s *Schema, settings dinosql.Genera
 		parsedQueries = append(parsedQueries, result)
 	}
 
-	r := Result{
+	return &Result{
 		Queries:     parsedQueries,
 		Schema:      s,
 		packageName: inPkg,
-	}
-	return &r, nil
+	}, nil
 }
 
 func parseQueryString(query string, s *Schema, settings dinosql.GenerateSettings) (*Query, error) {
@@ -160,10 +159,14 @@ func parseSelect(tree *sqlparser.Select, query string, s *Schema, settings dinos
 	return &parsedQuery, nil
 }
 
+// FromTable describes a table reference in the "FROM" clause of a query.
 type FromTable struct {
 	TrueName     string // the true table name as described in the schema
 	IsLeftJoined bool   // which could result in null columns
 }
+
+// FromTables describes a map between table alias expressions and the
+// proper table name
 type FromTables map[string]FromTable
 
 func parseFrom(from sqlparser.TableExprs, isLeftJoined bool) (FromTables, error) {

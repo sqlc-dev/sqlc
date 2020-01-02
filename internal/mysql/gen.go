@@ -17,6 +17,7 @@ type Result struct {
 	packageName string
 }
 
+// PkgName exposes the result set's associated go package identifier as specified in the sqlc.json config.
 func (r *Result) PkgName() string {
 	return r.packageName
 }
