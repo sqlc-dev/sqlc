@@ -201,13 +201,13 @@ var checkCmd = &cobra.Command{
 	Use:   "compile",
 	Short: "Statically check SQL for syntax and type errors",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		blob, err := ioutil.ReadFile("sqlc.json")
+		file, err := os.Open("sqlc.json")
 		if err != nil {
 			return err
 		}
 
-		var settings dinosql.GenerateSettings
-		if err := json.Unmarshal(blob, &settings); err != nil {
+		settings, err := dinosql.ParseConfig(file)
+		if err != nil {
 			return err
 		}
 
@@ -228,13 +228,13 @@ var unstable__mysql = &cobra.Command{
 	Use:   "unstable__mysql generate",
 	Short: "Generate MySQL Queries into typesafe Go code",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		blob, err := ioutil.ReadFile("sqlc.json")
+		file, err := os.Open("sqlc.json")
 		if err != nil {
 			return err
 		}
 
-		var settings dinosql.GenerateSettings
-		if err := json.Unmarshal(blob, &settings); err != nil {
+		settings, err := dinosql.ParseConfig(file)
+		if err != nil {
 			return err
 		}
 
