@@ -85,7 +85,6 @@ func parseQueryString(query string, s *Schema, settings dinosql.GenerateSettings
 	case *sqlparser.Delete:
 		delete, err := parseDelete(tree, query, s, settings)
 		delete.schemaLookup = nil
-		spew.Dump(delete)
 		if err != nil {
 			return nil, fmt.Errorf("Failed to parse DELETE query: %v", err)
 		}
