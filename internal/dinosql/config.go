@@ -10,11 +10,27 @@ import (
 	"github.com/kyleconroy/sqlc/internal/pg"
 )
 
+const errMessageNoVersion = `The configuration file must have a version number.
+Set the version to 1 at the top of sqlc.json:
+
+{
+  "version": "1"
+  ...
+}
+`
+
+const errMessageUnknownVersion = `The configuration file has an invalid version number.
+The only supported version is "1".
+`
+
+const errMessageNoPackages = `No packages are configured`
+
 type GenerateSettings struct {
-	Version   string            `json:"version"`
-	Packages  []PackageSettings `json:"packages"`
-	Overrides []Override        `json:"overrides,omitempty"`
-	Rename    map[string]string `json:"rename,omitempty"`
+	Version    string            `json:"version"`
+	Packages   []PackageSettings `json:"packages"`
+	Overrides  []Override        `json:"overrides,omitempty"`
+	Rename     map[string]string `json:"rename,omitempty"`
+	PackageMap map[string]PackageSettings
 }
 
 type PackageSettings struct {
@@ -125,5 +141,21 @@ func ParseConfig(rd io.Reader) (GenerateSettings, error) {
 			}
 		}
 	}
-	return config, nil
+	err := config.PopulatePkgMap()
+
+	return config, err
+}
+
+func (s *GenerateSettings) PopulatePkgMap() error {
+	packageMap := make(map[string]PackageSettings)
+
+	for _, c := range s.Packages {
+		if c.Name == "" {
+			panic("Package name must be specified in sqlc.json")
+		}
+		packageMap[c.Name] = c
+	}
+	s.PackageMap = packageMap
+
+	return nil
 }

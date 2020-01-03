@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 
 	"github.com/kyleconroy/sqlc/internal/dinosql"
+	"github.com/kyleconroy/sqlc/internal/mysql"
 
 	"github.com/davecgh/go-spew/spew"
 	pg "github.com/lfittl/pg_query_go"
@@ -21,6 +22,7 @@ import (
 func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int {
 	rootCmd := &cobra.Command{Use: "sqlc", SilenceUsage: true}
 	rootCmd.AddCommand(checkCmd)
+	rootCmd.AddCommand(unstable__mysql)
 	rootCmd.AddCommand(genCmd)
 	rootCmd.AddCommand(initCmd)
 	rootCmd.AddCommand(parseCmd)
@@ -153,7 +155,7 @@ var genCmd = &cobra.Command{
 				continue
 			}
 
-			q, err := dinosql.ParseQueries(c, settings, pkg)
+			q, err := dinosql.ParseQueries(c, pkg)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "# package %s\n", name)
 				if parserErr, ok := err.(*dinosql.ParserErr); ok {
@@ -167,7 +169,7 @@ var genCmd = &cobra.Command{
 				continue
 			}
 
-			files, err := dinosql.Generate(q, settings, pkg)
+			files, err := dinosql.Generate(q, settings)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "# package %s\n", name)
 				fmt.Fprintf(os.Stderr, "error generating code: %s\n", err)
@@ -199,13 +201,13 @@ var checkCmd = &cobra.Command{
 	Use:   "compile",
 	Short: "Statically check SQL for syntax and type errors",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		blob, err := ioutil.ReadFile("sqlc.json")
+		file, err := os.Open("sqlc.json")
 		if err != nil {
 			return err
 		}
 
-		var settings dinosql.GenerateSettings
-		if err := json.Unmarshal(blob, &settings); err != nil {
+		settings, err := dinosql.ParseConfig(file)
+		if err != nil {
 			return err
 		}
 
@@ -214,8 +216,39 @@ var checkCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			if _, err := dinosql.ParseQueries(c, settings, pkg); err != nil {
+			if _, err := dinosql.ParseQueries(c, pkg); err != nil {
 				return err
+			}
+		}
+		return nil
+	},
+}
+
+var unstable__mysql = &cobra.Command{
+	Use:   "unstable__mysql generate",
+	Short: "Generate MySQL Queries into typesafe Go code",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		file, err := os.Open("sqlc.json")
+		if err != nil {
+			return err
+		}
+
+		settings, err := dinosql.ParseConfig(file)
+		if err != nil {
+			return err
+		}
+
+		for _, pkg := range settings.Packages {
+			res, err := mysql.GeneratePkg(pkg.Name, pkg.Queries, settings)
+			if err != nil {
+				return err
+			}
+			for filename, source := range res {
+				os.MkdirAll(filepath.Dir(filename), 0755)
+				if err := ioutil.WriteFile(filename, []byte(source), 0644); err != nil {
+					fmt.Fprintf(os.Stderr, "%s: %s\n", filename, err)
+					os.Exit(1)
+				}
 			}
 		}
 		return nil
