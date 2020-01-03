@@ -74,7 +74,7 @@ func (r *Result) Structs(settings dinosql.GenerateSettings) []dinosql.GoStruct {
 			s.Fields = append(s.Fields, dinosql.GoField{
 				Name:    dinosql.StructName(col.Name.String(), settings),
 				Type:    goTypeCol(col, settings),
-				Tags:    map[string]string{"json": col.Name.String()},
+				Tags:    map[string]string{"json:": col.Name.String()},
 				Comment: "",
 			})
 		}
