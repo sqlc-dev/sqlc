@@ -33,8 +33,16 @@ type GenerateSettings struct {
 	PackageMap map[string]PackageSettings
 }
 
+type Database string
+
+const (
+	DatabaseMySQL      Database = "mysql"
+	DatabasePostgreSQL Database = "postgresql"
+)
+
 type PackageSettings struct {
 	Name                string     `json:"name"`
+	Database            Database   `json:"database,omitempty"`
 	Path                string     `json:"path"`
 	Schema              string     `json:"schema"`
 	Queries             string     `json:"queries"`
@@ -139,6 +147,9 @@ func ParseConfig(rd io.Reader) (GenerateSettings, error) {
 			if err := config.Packages[j].Overrides[i].Parse(); err != nil {
 				return config, err
 			}
+		}
+		if config.Packages[j].Database == "" {
+			config.Packages[j].Database = DatabasePostgreSQL
 		}
 	}
 	err := config.PopulatePkgMap()

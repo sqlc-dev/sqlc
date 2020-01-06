@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/davecgh/go-spew/spew"
@@ -20,16 +21,18 @@ type Query struct {
 	Cmd              string                        // TODO: Pick a better name. One of: one, many, exec, execrows
 	defaultTableName string                        // for columns that are not qualified
 	schemaLookup     *Schema                       // for validation and conversion to Go types
+
+	Filename string
 }
 
-func parseFile(filepath string, inPkg string, s *Schema, settings dinosql.GenerateSettings) (*Result, error) {
-	file, err := os.Open(filepath)
+func parseFile(filename string, inPkg string, s *Schema, settings dinosql.GenerateSettings) (*Result, error) {
+	file, err := os.Open(filename)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to open file [%v]: %v", filepath, err)
+		return nil, fmt.Errorf("Failed to open file [%v]: %v", filename, err)
 	}
 	contents, err := ioutil.ReadAll(file)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to read contents of file [%v]: %v", filepath, err)
+		return nil, fmt.Errorf("Failed to read contents of file [%v]: %v", filename, err)
 	}
 	rawQueries := strings.Split(string(contents), "\n\n")
 
@@ -41,11 +44,12 @@ func parseFile(filepath string, inPkg string, s *Schema, settings dinosql.Genera
 		}
 		result, err := parseQueryString(query, s, settings)
 		if err != nil {
-			return nil, fmt.Errorf("Failed to parse query in filepath [%v]: %v", filepath, err)
+			return nil, fmt.Errorf("Failed to parse query in filepath [%v]: %v", filename, err)
 		}
 		if result == nil {
 			continue
 		}
+		result.Filename = filepath.Base(filename)
 		parsedQueries = append(parsedQueries, result)
 	}
 
@@ -430,16 +434,11 @@ func parseSelectAliasExpr(exprs sqlparser.SelectExprs, s *Schema, tableAliasMap 
 }
 
 // GeneratePkg is the main entry to mysql generator package
-func GeneratePkg(pkgName string, querysPath string, settings dinosql.GenerateSettings) (map[string]string, error) {
+func GeneratePkg(pkgName string, querysPath string, settings dinosql.GenerateSettings) (*Result, error) {
 	s := NewSchema()
 	result, err := parseFile(querysPath, pkgName, s, settings)
 	if err != nil {
 		return nil, err
 	}
-	output, err := dinosql.Generate(result, settings)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to generate output: %v", err)
-	}
-
-	return output, nil
+	return result, nil
 }

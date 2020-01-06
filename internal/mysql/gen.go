@@ -105,7 +105,7 @@ func (r *Result) GoQueries(settings dinosql.GenerateSettings) []dinosql.GoQuery 
 			ConstantName: dinosql.LowerTitle(query.Name),
 			FieldName:    dinosql.LowerTitle(query.Name) + "Stmt",
 			MethodName:   query.Name,
-			SourceName:   "queries", // query.Filename,
+			SourceName:   query.Filename,
 			SQL:          query.SQL,
 			// Comments:     query.Comments,
 		}

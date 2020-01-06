@@ -22,7 +22,6 @@ import (
 func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int {
 	rootCmd := &cobra.Command{Use: "sqlc", SilenceUsage: true}
 	rootCmd.AddCommand(checkCmd)
-	rootCmd.AddCommand(unstable__mysql)
 	rootCmd.AddCommand(genCmd)
 	rootCmd.AddCommand(initCmd)
 	rootCmd.AddCommand(parseCmd)
@@ -141,35 +140,54 @@ var genCmd = &cobra.Command{
 				name = filepath.Base(pkg.Path)
 			}
 
-			c, err := dinosql.ParseCatalog(pkg.Schema)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "# package %s\n", name)
-				if parserErr, ok := err.(*dinosql.ParserErr); ok {
-					for _, fileErr := range parserErr.Errs {
-						fmt.Fprintf(os.Stderr, "%s:%d:%d: %s\n", fileErr.Filename, fileErr.Line, fileErr.Column, fileErr.Err)
-					}
-				} else {
-					fmt.Fprintf(os.Stderr, "error parsing schema: %s\n", err)
+			var result dinosql.Generateable
+
+			switch pkg.Database {
+
+			case dinosql.DatabaseMySQL:
+				// Experimental MySQL support
+				q, err := mysql.GeneratePkg(pkg.Name, pkg.Queries, settings)
+				if err != nil {
+					fmt.Fprintf(os.Stderr, "# package %s\n", name)
+					fmt.Fprintf(os.Stderr, "error parsing file: %s\n", err)
+					errored = true
+					continue
 				}
-				errored = true
-				continue
+				result = q
+
+			case dinosql.DatabasePostgreSQL:
+				c, err := dinosql.ParseCatalog(pkg.Schema)
+				if err != nil {
+					fmt.Fprintf(os.Stderr, "# package %s\n", name)
+					if parserErr, ok := err.(*dinosql.ParserErr); ok {
+						for _, fileErr := range parserErr.Errs {
+							fmt.Fprintf(os.Stderr, "%s:%d:%d: %s\n", fileErr.Filename, fileErr.Line, fileErr.Column, fileErr.Err)
+						}
+					} else {
+						fmt.Fprintf(os.Stderr, "error parsing schema: %s\n", err)
+					}
+					errored = true
+					continue
+				}
+
+				q, err := dinosql.ParseQueries(c, pkg)
+				if err != nil {
+					fmt.Fprintf(os.Stderr, "# package %s\n", name)
+					if parserErr, ok := err.(*dinosql.ParserErr); ok {
+						for _, fileErr := range parserErr.Errs {
+							fmt.Fprintf(os.Stderr, "%s:%d:%d: %s\n", fileErr.Filename, fileErr.Line, fileErr.Column, fileErr.Err)
+						}
+					} else {
+						fmt.Fprintf(os.Stderr, "error parsing queries: %s\n", err)
+					}
+					errored = true
+					continue
+				}
+				result = q
+
 			}
 
-			q, err := dinosql.ParseQueries(c, pkg)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "# package %s\n", name)
-				if parserErr, ok := err.(*dinosql.ParserErr); ok {
-					for _, fileErr := range parserErr.Errs {
-						fmt.Fprintf(os.Stderr, "%s:%d:%d: %s\n", fileErr.Filename, fileErr.Line, fileErr.Column, fileErr.Err)
-					}
-				} else {
-					fmt.Fprintf(os.Stderr, "error parsing queries: %s\n", err)
-				}
-				errored = true
-				continue
-			}
-
-			files, err := dinosql.Generate(q, settings)
+			files, err := dinosql.Generate(result, settings)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "# package %s\n", name)
 				fmt.Fprintf(os.Stderr, "error generating code: %s\n", err)
@@ -218,37 +236,6 @@ var checkCmd = &cobra.Command{
 			}
 			if _, err := dinosql.ParseQueries(c, pkg); err != nil {
 				return err
-			}
-		}
-		return nil
-	},
-}
-
-var unstable__mysql = &cobra.Command{
-	Use:   "unstable__mysql generate",
-	Short: "Generate MySQL Queries into typesafe Go code",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		file, err := os.Open("sqlc.json")
-		if err != nil {
-			return err
-		}
-
-		settings, err := dinosql.ParseConfig(file)
-		if err != nil {
-			return err
-		}
-
-		for _, pkg := range settings.Packages {
-			res, err := mysql.GeneratePkg(pkg.Name, pkg.Queries, settings)
-			if err != nil {
-				return err
-			}
-			for filename, source := range res {
-				os.MkdirAll(filepath.Dir(filename), 0755)
-				if err := ioutil.WriteFile(filename, []byte(source), 0644); err != nil {
-					fmt.Fprintf(os.Stderr, "%s: %s\n", filename, err)
-					os.Exit(1)
-				}
 			}
 		}
 		return nil
