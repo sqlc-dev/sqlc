@@ -93,11 +93,19 @@ func TestColumnsToStruct(t *testing.T) {
 func TestInnerType(t *testing.T) {
 	r := Result{}
 	types := map[string]string{
-		"integer":         "int32",
-		"int":             "int32",
-		"pg_catalog.int4": "int32",
-		"string":          "string",
-		// Date/Time Types https://www.postgresql.org/docs/current/datatype-datetime.html
+		// Numeric Types
+		// https://www.postgresql.org/docs/current/datatype-numeric.html
+		"integer":            "int32",
+		"int":                "int32",
+		"pg_catalog.int4":    "int32",
+		"pg_catalog.numeric": "string",
+
+		// Character Types
+		// https://www.postgresql.org/docs/current/datatype-character.html
+		"string": "string",
+
+		// Date/Time Types
+		// https://www.postgresql.org/docs/current/datatype-datetime.html
 		"date":                   "time.Time",
 		"pg_catalog.time":        "time.Time",
 		"pg_catalog.timetz":      "time.Time",
@@ -120,11 +128,19 @@ func TestInnerType(t *testing.T) {
 func TestNullInnerType(t *testing.T) {
 	r := Result{}
 	types := map[string]string{
-		"integer":         "sql.NullInt32",
-		"int":             "sql.NullInt32",
-		"pg_catalog.int4": "sql.NullInt32",
-		"string":          "sql.NullString",
-		// Date/Time Types https://www.postgresql.org/docs/current/datatype-datetime.html
+		// Numeric Types
+		// https://www.postgresql.org/docs/current/datatype-numeric.html
+		"integer":            "sql.NullInt32",
+		"int":                "sql.NullInt32",
+		"pg_catalog.int4":    "sql.NullInt32",
+		"pg_catalog.numeric": "sql.NullString",
+
+		// Character Types
+		// https://www.postgresql.org/docs/current/datatype-character.html
+		"string": "sql.NullString",
+
+		// Date/Time Types
+		// https://www.postgresql.org/docs/current/datatype-datetime.html
 		"date":                   "sql.NullTime",
 		"pg_catalog.time":        "sql.NullTime",
 		"pg_catalog.timetz":      "sql.NullTime",
