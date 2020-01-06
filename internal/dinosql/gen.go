@@ -552,7 +552,9 @@ func (r Result) goInnerType(col core.Column) string {
 		return "sql.NullFloat64" // TODO: Change to sql.NullFloat32 after updating the go.mod file
 
 	case "pg_catalog.numeric":
-		// The Go standard library does not have a decimal type. lib/pq returns these types as ???
+		// Since the Go standard library does not have a decimal type, lib/pq
+		// returns numerics as strings.
+		//
 		// https://github.com/lib/pq/issues/648
 		if notNull {
 			return "string"
