@@ -58,27 +58,26 @@ func (e *ParserErr) Error() string {
 	return fmt.Sprintf("multiple errors: %d errors", len(e.Errs))
 }
 
-func ParseCatalog(schema string) (core.Catalog, error) {
-	f, err := os.Stat(schema)
+func ReadSQLFiles(path string) ([]string, error) {
+	f, err := os.Stat(path)
 	if err != nil {
-		return core.Catalog{}, fmt.Errorf("path %s does not exist", schema)
+		return nil, fmt.Errorf("path %s does not exist", path)
 	}
 
 	var files []string
 	if f.IsDir() {
-		listing, err := ioutil.ReadDir(schema)
+		listing, err := ioutil.ReadDir(path)
 		if err != nil {
-			return core.Catalog{}, err
+			return nil, err
 		}
 		for _, f := range listing {
-			files = append(files, filepath.Join(schema, f.Name()))
+			files = append(files, filepath.Join(path, f.Name()))
 		}
 	} else {
-		files = append(files, schema)
+		files = append(files, path)
 	}
 
-	merr := NewParserErr()
-	c := core.NewCatalog()
+	var sql []string
 	for _, filename := range files {
 		if !strings.HasSuffix(filename, ".sql") {
 			continue
@@ -86,6 +85,20 @@ func ParseCatalog(schema string) (core.Catalog, error) {
 		if strings.HasPrefix(filepath.Base(filename), ".") {
 			continue
 		}
+		sql = append(sql, filename)
+	}
+	return sql, nil
+}
+
+func ParseCatalog(schema string) (core.Catalog, error) {
+	files, err := ReadSQLFiles(schema)
+	if err != nil {
+		return core.Catalog{}, err
+	}
+
+	merr := NewParserErr()
+	c := core.NewCatalog()
+	for _, filename := range files {
 		blob, err := ioutil.ReadFile(filename)
 		if err != nil {
 			merr.Add(filename, "", 0, err)

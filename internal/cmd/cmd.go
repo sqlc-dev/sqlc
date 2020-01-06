@@ -146,7 +146,7 @@ var genCmd = &cobra.Command{
 
 			case dinosql.DatabaseMySQL:
 				// Experimental MySQL support
-				q, err := mysql.GeneratePkg(pkg.Name, pkg.Queries, settings)
+				q, err := mysql.GeneratePkg(pkg.Name, pkg.Schema, pkg.Queries, settings)
 				if err != nil {
 					fmt.Fprintf(os.Stderr, "# package %s\n", name)
 					fmt.Fprintf(os.Stderr, "error parsing file: %s\n", err)

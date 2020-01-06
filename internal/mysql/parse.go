@@ -25,32 +25,38 @@ type Query struct {
 	Filename string
 }
 
-func parseFile(filename string, inPkg string, s *Schema, settings dinosql.GenerateSettings) (*Result, error) {
-	file, err := os.Open(filename)
+func parsePath(sqlPath string, inPkg string, s *Schema, settings dinosql.GenerateSettings) (*Result, error) {
+	files, err := dinosql.ReadSQLFiles(sqlPath)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to open file [%v]: %v", filename, err)
+		return nil, err
 	}
-	contents, err := ioutil.ReadAll(file)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to read contents of file [%v]: %v", filename, err)
-	}
-	rawQueries := strings.Split(string(contents), "\n\n")
 
 	parsedQueries := []*Query{}
-
-	for _, query := range rawQueries {
-		if query == "" {
-			continue
-		}
-		result, err := parseQueryString(query, s, settings)
+	for _, filename := range files {
+		file, err := os.Open(filename)
 		if err != nil {
-			return nil, fmt.Errorf("Failed to parse query in filepath [%v]: %v", filename, err)
+			return nil, fmt.Errorf("Failed to open file [%v]: %v", filename, err)
 		}
-		if result == nil {
-			continue
+		contents, err := ioutil.ReadAll(file)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to read contents of file [%v]: %v", filename, err)
 		}
-		result.Filename = filepath.Base(filename)
-		parsedQueries = append(parsedQueries, result)
+		rawQueries := strings.Split(string(contents), "\n\n")
+		for _, query := range rawQueries {
+			fmt.Println(query)
+			if query == "" {
+				continue
+			}
+			result, err := parseQueryString(query, s, settings)
+			if err != nil {
+				return nil, fmt.Errorf("Failed to parse query in filepath [%v]: %v", filename, err)
+			}
+			if result == nil {
+				continue
+			}
+			result.Filename = filepath.Base(filename)
+			parsedQueries = append(parsedQueries, result)
+		}
 	}
 
 	return &Result{
@@ -434,9 +440,13 @@ func parseSelectAliasExpr(exprs sqlparser.SelectExprs, s *Schema, tableAliasMap 
 }
 
 // GeneratePkg is the main entry to mysql generator package
-func GeneratePkg(pkgName string, querysPath string, settings dinosql.GenerateSettings) (*Result, error) {
+func GeneratePkg(pkgName, schemaPath, querysPath string, settings dinosql.GenerateSettings) (*Result, error) {
 	s := NewSchema()
-	result, err := parseFile(querysPath, pkgName, s, settings)
+	_, err := parsePath(schemaPath, pkgName, s, settings)
+	if err != nil {
+		return nil, err
+	}
+	result, err := parsePath(querysPath, pkgName, s, settings)
 	if err != nil {
 		return nil, err
 	}

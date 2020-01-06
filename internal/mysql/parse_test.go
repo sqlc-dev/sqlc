@@ -41,7 +41,7 @@ func TestParseConfig(t *testing.T) {
 }
 
 func TestGeneratePkg(t *testing.T) {
-	_, err := GeneratePkg(mockSettings.Packages[0].Name, filename, mockSettings)
+	_, err := GeneratePkg(mockSettings.Packages[0].Name, filename, filename, mockSettings)
 	if err != nil {
 		t.Fatal(err)
 	}
