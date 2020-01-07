@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"path/filepath"
 	"strings"
 
 	"github.com/kyleconroy/sqlc/internal/pg"
@@ -33,16 +34,16 @@ type GenerateSettings struct {
 	PackageMap map[string]PackageSettings
 }
 
-type Database string
+type Engine string
 
 const (
-	DatabaseMySQL      Database = "mysql"
-	DatabasePostgreSQL Database = "postgresql"
+	EngineMySQL      Engine = "mysql"
+	EnginePostgreSQL Engine = "postgresql"
 )
 
 type PackageSettings struct {
 	Name                string     `json:"name"`
-	Database            Database   `json:"database,omitempty"`
+	Engine              Engine     `json:"engine,omitempty"`
 	Path                string     `json:"path"`
 	Schema              string     `json:"schema"`
 	Queries             string     `json:"queries"`
@@ -120,6 +121,8 @@ func (o *Override) Parse() error {
 var ErrMissingVersion = errors.New("no version number")
 var ErrUnknownVersion = errors.New("invalid version number")
 var ErrNoPackages = errors.New("no packages")
+var ErrNoPackageName = errors.New("missing package name")
+var ErrNoPackagePath = errors.New("missing package path")
 
 func ParseConfig(rd io.Reader) (GenerateSettings, error) {
 	dec := json.NewDecoder(rd)
@@ -143,13 +146,19 @@ func ParseConfig(rd io.Reader) (GenerateSettings, error) {
 		}
 	}
 	for j := range config.Packages {
+		if config.Packages[j].Path == "" {
+			return config, ErrNoPackagePath
+		}
 		for i := range config.Packages[j].Overrides {
 			if err := config.Packages[j].Overrides[i].Parse(); err != nil {
 				return config, err
 			}
 		}
-		if config.Packages[j].Database == "" {
-			config.Packages[j].Database = DatabasePostgreSQL
+		if config.Packages[j].Name == "" {
+			config.Packages[j].Name = filepath.Base(config.Packages[j].Path)
+		}
+		if config.Packages[j].Engine == "" {
+			config.Packages[j].Engine = EnginePostgreSQL
 		}
 	}
 	err := config.PopulatePkgMap()
@@ -162,7 +171,7 @@ func (s *GenerateSettings) PopulatePkgMap() error {
 
 	for _, c := range s.Packages {
 		if c.Name == "" {
-			panic("Package name must be specified in sqlc.json")
+			return ErrNoPackageName
 		}
 		packageMap[c.Name] = c
 	}
