@@ -654,7 +654,7 @@ func (r Result) goInnerType(col core.Column, settings GenerateSettings) string {
 				}
 			}
 		}
-		log.Printf("unknown Postgres type: %s\n", columnType)
+		log.Printf("unknown PostgreSQL type: %s\n", columnType)
 		return "interface{}"
 	}
 }

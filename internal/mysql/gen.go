@@ -2,10 +2,10 @@ package mysql
 
 import (
 	"fmt"
+	"log"
 	"sort"
 	"strings"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/jinzhu/inflection"
 	"github.com/kyleconroy/sqlc/internal/dinosql"
 	"vitess.io/vitess/go/vt/sqlparser"
@@ -224,7 +224,7 @@ func goTypeCol(col *sqlparser.ColumnDefinition, settings dinosql.GenerateSetting
 			return "string"
 		}
 		return "sql.NullString"
-	case "int" == t:
+	case "int" == t, "integer" == t:
 		if col.Type.NotNull {
 			return "int"
 		}
@@ -241,9 +241,8 @@ func goTypeCol(col *sqlparser.ColumnDefinition, settings dinosql.GenerateSetting
 	case "boolean" == t:
 		return "bool"
 	default:
-		// TODO: remove panic here
-		panic(fmt.Sprintf("Handle this col type directly: %v\n", spew.Sdump(col.Type)))
-		// return col.Type
+		log.Printf("unknown MySQL type: %s\n", t)
+		return "interface{}"
 	}
 }
 

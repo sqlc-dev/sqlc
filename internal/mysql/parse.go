@@ -61,7 +61,7 @@ func parseContents(filename, contents string, s *Schema, settings dinosql.Genera
 	var queries []*Query
 	var start int
 	for {
-		q, err := sqlparser.ParseNext(t)
+		q, err := sqlparser.ParseNextStrictDDL(t)
 		if err == io.EOF {
 			break
 		} else if err != nil {

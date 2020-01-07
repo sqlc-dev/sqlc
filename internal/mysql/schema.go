@@ -49,12 +49,15 @@ func (s *Schema) getColType(col *sqlparser.ColName, tableAliasMap FromTables, de
 }
 
 // Add add a MySQL table definition to the schema map
-func (s *Schema) Add(table *sqlparser.DDL) {
-	name := table.Table.Name.String()
-	if table.TableSpec == nil {
-		panic(fmt.Sprintf("Failed to parse table [%v] schema.", name))
+func (s *Schema) Add(ddl *sqlparser.DDL) {
+	switch ddl.Action {
+	case "create":
+		name := ddl.Table.Name.String()
+		if ddl.TableSpec == nil {
+			panic(fmt.Sprintf("Failed to parse table [%v] schema.", name))
+		}
+		s.tables[name] = ddl.TableSpec.Columns
 	}
-	s.tables[name] = table.TableSpec.Columns
 }
 
 func (s *Schema) schemaLookup(table string, col string) (*sqlparser.ColumnDefinition, error) {
