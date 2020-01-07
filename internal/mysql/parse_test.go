@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/davecgh/go-spew/spew"
+	"github.com/google/go-cmp/cmp"
 	"github.com/kyleconroy/sqlc/internal/dinosql"
 	"vitess.io/vitess/go/vt/sqlparser"
 )
@@ -130,11 +131,13 @@ func TestParseSelect(t *testing.T) {
 		schema *Schema
 	}
 	type testCase struct {
+		name   string
 		input  expected
 		output *Query
 	}
 	tests := []testCase{
 		testCase{
+			name: "get_count",
 			input: expected{
 				query: `/* name: GetCount :one */
 					SELECT id my_id, COUNT(id) id_count FROM users WHERE id > 4`,
@@ -162,11 +165,12 @@ func TestParseSelect(t *testing.T) {
 				Params:           []*Param{},
 				Name:             "GetCount",
 				Cmd:              ":one",
-				defaultTableName: "users",
-				schemaLookup:     mockSchema,
+				DefaultTableName: "users",
+				SchemaLookup:     mockSchema,
 			},
 		},
 		testCase{
+			name: "get_name_by_id",
 			input: expected{
 				query: `/* name: GetNameByID :one */
 									SELECT first_name, last_name FROM users WHERE id = ?`,
@@ -177,17 +181,18 @@ func TestParseSelect(t *testing.T) {
 				Columns: filterCols(mockSchema.tables["users"], map[string]struct{}{"first_name": struct{}{}, "last_name": struct{}{}}),
 				Params: []*Param{
 					&Param{
-						originalName: ":v1",
-						name:         "id",
-						typ:          "int",
+						OriginalName: ":v1",
+						Name:         "id",
+						Typ:          "int",
 					}},
 				Name:             "GetNameByID",
 				Cmd:              ":one",
-				defaultTableName: "users",
-				schemaLookup:     mockSchema,
+				DefaultTableName: "users",
+				SchemaLookup:     mockSchema,
 			},
 		},
 		testCase{
+			name: "get_all",
 			input: expected{
 				query: `/* name: GetAll :many */
 				SELECT * FROM users;`,
@@ -199,11 +204,12 @@ func TestParseSelect(t *testing.T) {
 				Params:           []*Param{},
 				Name:             "GetAll",
 				Cmd:              ":many",
-				defaultTableName: "users",
-				schemaLookup:     mockSchema,
+				DefaultTableName: "users",
+				SchemaLookup:     mockSchema,
 			},
 		},
 		testCase{
+			name: "get_all_users_orders",
 			input: expected{
 				query: `/* name: GetAllUsersOrders :many */
 				SELECT u.id user_id, u.first_name, o.price, o.id order_id
@@ -248,26 +254,30 @@ func TestParseSelect(t *testing.T) {
 				Params:           []*Param{},
 				Name:             "GetAllUsersOrders",
 				Cmd:              ":many",
-				defaultTableName: "", // TODO: verify that this is desired behaviour
-				schemaLookup:     mockSchema,
+				DefaultTableName: "", // TODO: verify that this is desired behaviour
+				SchemaLookup:     mockSchema,
 			},
 		},
 	}
 
-	for ix, testCase := range tests {
-		q, err := parseQueryString(testCase.input.query, testCase.input.schema, mockSettings)
-		if err != nil {
-			t.Errorf("Parsing failed with query: [%v]\n%v", testCase.input.query, err)
-		}
-
-		err = q.parseNameAndCmd()
-		if err != nil {
-			t.Errorf("Parsing failed with query: [%v]\n%v", testCase.input.query, err)
-		}
-		if !reflect.DeepEqual(testCase.output, q) {
-			t.Errorf("Parsing query returned differently than expected. Index: %v", ix)
-			t.Logf("Expected: %v\nResult: %v\n", spew.Sdump(testCase.output), spew.Sdump(q))
-		}
+	for _, tt := range tests {
+		testCase := tt
+		t.Run(tt.name, func(t *testing.T) {
+			qs, err := parseContents("example.sql", testCase.input.query, testCase.input.schema, mockSettings)
+			if err != nil {
+				t.Fatalf("Parsing failed with query: [%v]\n", err)
+			}
+			if len(qs) != 1 {
+				t.Fatalf("Expected one query, not %d", len(qs))
+			}
+			q := qs[0]
+			q.SchemaLookup = nil
+			q.Filename = ""
+			testCase.output.SchemaLookup = nil
+			if diff := cmp.Diff(testCase.output, q); diff != "" {
+				t.Errorf("parsed query differs: \n%s", diff)
+			}
+		})
 	}
 }
 
@@ -320,13 +330,18 @@ func TestParseInsertUpdate(t *testing.T) {
 		schema *Schema
 	}
 	type testCase struct {
+		name   string
 		input  expected
 		output *Query
 	}
-	query1 := "/* name: InsertNewUser :exec */\nINSERT INTO users (first_name, last_name) VALUES (?, ?)"
-	query2 := "/* name: UpdateUserAt :exec */\nUPDATE users SET first_name = ?, last_name = ? WHERE id > ? AND first_name = ? LIMIT 3"
+	query1 := `/* name: InsertNewUser :exec */
+INSERT INTO users (first_name, last_name) VALUES (?, ?)`
+	query2 := `/* name: UpdateUserAt :exec */
+UPDATE users SET first_name = ?, last_name = ? WHERE id > ? AND first_name = ? LIMIT 3`
+
 	tests := []testCase{
 		testCase{
+			name: "insert_users",
 			input: expected{
 				query:  query1,
 				schema: mockSchema,
@@ -336,23 +351,24 @@ func TestParseInsertUpdate(t *testing.T) {
 				Columns: nil,
 				Params: []*Param{
 					&Param{
-						originalName: ":v1",
-						name:         "first_name",
-						typ:          "string",
+						OriginalName: ":v1",
+						Name:         "first_name",
+						Typ:          "string",
 					},
 					&Param{
-						originalName: ":v2",
-						name:         "last_name",
-						typ:          "sql.NullString",
+						OriginalName: ":v2",
+						Name:         "last_name",
+						Typ:          "sql.NullString",
 					},
 				},
 				Name:             "InsertNewUser",
 				Cmd:              ":exec",
-				defaultTableName: "users",
-				schemaLookup:     mockSchema,
+				DefaultTableName: "users",
+				SchemaLookup:     mockSchema,
 			},
 		},
 		testCase{
+			name: "update_users",
 			input: expected{
 				query:  query2,
 				schema: mockSchema,
@@ -362,48 +378,51 @@ func TestParseInsertUpdate(t *testing.T) {
 				Columns: nil,
 				Params: []*Param{
 					&Param{
-						originalName: ":v1",
-						name:         "first_name",
-						typ:          "string",
+						OriginalName: ":v1",
+						Name:         "first_name",
+						Typ:          "string",
 					},
 					&Param{
-						originalName: ":v2",
-						name:         "last_name",
-						typ:          "sql.NullString",
+						OriginalName: ":v2",
+						Name:         "last_name",
+						Typ:          "sql.NullString",
 					},
 					&Param{
-						originalName: ":v3",
-						name:         "id",
-						typ:          "int",
+						OriginalName: ":v3",
+						Name:         "id",
+						Typ:          "int",
 					},
 					&Param{
-						originalName: ":v4",
-						name:         "first_name",
-						typ:          "string",
+						OriginalName: ":v4",
+						Name:         "first_name",
+						Typ:          "string",
 					},
 				},
 				Name:             "UpdateUserAt",
 				Cmd:              ":exec",
-				defaultTableName: "users",
-				schemaLookup:     mockSchema,
+				DefaultTableName: "users",
+				SchemaLookup:     mockSchema,
 			},
 		},
 	}
 
-	for ix, testCase := range tests {
-		q, err := parseQueryString(testCase.input.query, testCase.input.schema, mockSettings)
-		if err != nil {
-			t.Errorf("Parsing failed with query: [%v]\n", err)
-			continue
-		}
-
-		err = q.parseNameAndCmd()
-		if err != nil {
-			t.Errorf("Parsing failed with query index: %d: [%v]\n", ix, testCase.input.query)
-		}
-		if !reflect.DeepEqual(testCase.output, q) {
-			t.Errorf("Parsing query returned differently than expected.")
-			t.Logf("Expected: %v\nResult: %v\n", spew.Sdump(testCase.output), spew.Sdump(q))
-		}
+	for _, tt := range tests {
+		testCase := tt
+		t.Run(tt.name, func(t *testing.T) {
+			qs, err := parseContents("example.sql", testCase.input.query, testCase.input.schema, mockSettings)
+			if err != nil {
+				t.Fatalf("Parsing failed with query: [%v]\n", err)
+			}
+			if len(qs) != 1 {
+				t.Fatalf("Expected one query, not %d", len(qs))
+			}
+			q := qs[0]
+			testCase.output.SchemaLookup = nil
+			q.SchemaLookup = nil
+			q.Filename = ""
+			if diff := cmp.Diff(testCase.output, q); diff != "" {
+				t.Errorf("parsed query differs: \n%s", diff)
+			}
+		})
 	}
 }

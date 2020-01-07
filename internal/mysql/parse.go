@@ -2,6 +2,7 @@ package mysql
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -19,8 +20,8 @@ type Query struct {
 	Params           []*Param                      // "?" params in the query string
 	Name             string                        // the Go function name
 	Cmd              string                        // TODO: Pick a better name. One of: one, many, exec, execrows
-	defaultTableName string                        // for columns that are not qualified
-	schemaLookup     *Schema                       // for validation and conversion to Go types
+	DefaultTableName string                        // for columns that are not qualified
+	SchemaLookup     *Schema                       // for validation and conversion to Go types
 
 	Filename string
 }
@@ -41,22 +42,11 @@ func parsePath(sqlPath string, inPkg string, s *Schema, settings dinosql.Generat
 		if err != nil {
 			return nil, fmt.Errorf("Failed to read contents of file [%v]: %v", filename, err)
 		}
-		rawQueries := strings.Split(string(contents), "\n\n")
-		for _, query := range rawQueries {
-			fmt.Println(query)
-			if query == "" {
-				continue
-			}
-			result, err := parseQueryString(query, s, settings)
-			if err != nil {
-				return nil, fmt.Errorf("Failed to parse query in filepath [%v]: %v", filename, err)
-			}
-			if result == nil {
-				continue
-			}
-			result.Filename = filepath.Base(filename)
-			parsedQueries = append(parsedQueries, result)
+		queries, err := parseContents(filename, string(contents), s, settings)
+		if err != nil {
+			return nil, err
 		}
+		parsedQueries = append(parsedQueries, queries...)
 	}
 
 	return &Result{
@@ -66,12 +56,33 @@ func parsePath(sqlPath string, inPkg string, s *Schema, settings dinosql.Generat
 	}, nil
 }
 
-func parseQueryString(query string, s *Schema, settings dinosql.GenerateSettings) (*Query, error) {
-	tree, err := sqlparser.Parse(query)
-
-	if err != nil {
-		return nil, err
+func parseContents(filename, contents string, s *Schema, settings dinosql.GenerateSettings) ([]*Query, error) {
+	t := sqlparser.NewStringTokenizer(contents)
+	var queries []*Query
+	var start int
+	for {
+		q, err := sqlparser.ParseNext(t)
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			return nil, err
+		}
+		query := contents[start : t.Position-1]
+		result, err := parseQueryString(q, query, s, settings)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to parse query in filepath [%v]: %v", filename, err)
+		}
+		start = t.Position
+		if result == nil {
+			continue
+		}
+		result.Filename = filepath.Base(filename)
+		queries = append(queries, result)
 	}
+	return queries, nil
+}
+
+func parseQueryString(tree sqlparser.Statement, query string, s *Schema, settings dinosql.GenerateSettings) (*Query, error) {
 	var parsedQuery *Query
 	switch tree := tree.(type) {
 	case *sqlparser.Select:
@@ -94,7 +105,7 @@ func parseQueryString(query string, s *Schema, settings dinosql.GenerateSettings
 		parsedQuery = update
 	case *sqlparser.Delete:
 		delete, err := parseDelete(tree, query, s, settings)
-		delete.schemaLookup = nil
+		delete.SchemaLookup = nil
 		if err != nil {
 			return nil, fmt.Errorf("Failed to parse DELETE query: %v", err)
 		}
@@ -103,7 +114,8 @@ func parseQueryString(query string, s *Schema, settings dinosql.GenerateSettings
 		s.Add(tree)
 		return nil, nil
 	default:
-		panic("Unsupported SQL statement type")
+		// panic("Unsupported SQL statement type")
+		return nil, nil
 	}
 	paramsReplacedQuery, err := replaceParamStrs(sqlparser.String(tree), parsedQuery.Params)
 	if err != nil {
@@ -149,8 +161,8 @@ func parseSelect(tree *sqlparser.Select, query string, s *Schema, settings dinos
 
 	parsedQuery := Query{
 		SQL:              query,
-		defaultTableName: defaultTableName,
-		schemaLookup:     s,
+		DefaultTableName: defaultTableName,
+		SchemaLookup:     s,
 	}
 	cols, err := parseSelectAliasExpr(tree.SelectExprs, s, tableAliasMap, defaultTableName)
 	if err != nil {
@@ -260,9 +272,9 @@ func parseUpdate(node *sqlparser.Update, query string, s *Schema, settings dinos
 		}
 		originalParamName := string(newValue.Val)
 		param := Param{
-			originalName: originalParamName,
-			name:         paramName(colDfn.Name, originalParamName),
-			typ:          goTypeCol(colDfn, settings),
+			OriginalName: originalParamName,
+			Name:         paramName(colDfn.Name, originalParamName),
+			Typ:          goTypeCol(colDfn, settings),
 		}
 		params = append(params, &param)
 	}
@@ -276,8 +288,8 @@ func parseUpdate(node *sqlparser.Update, query string, s *Schema, settings dinos
 		SQL:              query,
 		Columns:          nil,
 		Params:           append(params, whereParams...),
-		defaultTableName: defaultTable,
-		schemaLookup:     s,
+		DefaultTableName: defaultTable,
+		SchemaLookup:     s,
 	}
 	parsedQuery.parseNameAndCmd()
 
@@ -303,9 +315,9 @@ func parseInsert(node *sqlparser.Insert, query string, s *Schema, settings dinos
 					colDfn, _ := s.schemaLookup(tableName, colName)
 					varName := string(v.Val)
 					p := &Param{
-						originalName: varName,
-						name:         paramName(colDfn.Name, varName),
-						typ:          goTypeCol(colDfn, settings),
+						OriginalName: varName,
+						Name:         paramName(colDfn.Name, varName),
+						Typ:          goTypeCol(colDfn, settings),
 					}
 					params = append(params, p)
 				}
@@ -318,8 +330,8 @@ func parseInsert(node *sqlparser.Insert, query string, s *Schema, settings dinos
 		SQL:              query,
 		Params:           params,
 		Columns:          nil,
-		defaultTableName: tableName,
-		schemaLookup:     s,
+		DefaultTableName: tableName,
+		SchemaLookup:     s,
 	}
 	parsedQuery.parseNameAndCmd()
 	return parsedQuery, nil
@@ -348,8 +360,8 @@ func parseDelete(node *sqlparser.Delete, query string, s *Schema, settings dinos
 		SQL:              query,
 		Params:           append(whereParams, limitParams...),
 		Columns:          nil,
-		defaultTableName: defaultTableName,
-		schemaLookup:     s,
+		DefaultTableName: defaultTableName,
+		SchemaLookup:     s,
 	}
 	err = parsedQuery.parseNameAndCmd()
 	if err != nil {
@@ -444,11 +456,11 @@ func GeneratePkg(pkgName, schemaPath, querysPath string, settings dinosql.Genera
 	s := NewSchema()
 	_, err := parsePath(schemaPath, pkgName, s, settings)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("schema failure: %w", err)
 	}
 	result, err := parsePath(querysPath, pkgName, s, settings)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("query failure: %w", err)
 	}
 	return result, nil
 }

@@ -12,9 +12,9 @@ import (
 // Param describes a runtime query parameter with its
 // associated type. Example: "SELECT name FROM users id = ?"
 type Param struct {
-	originalName string
-	name         string
-	typ          string
+	OriginalName string
+	Name         string
+	Typ          string
 }
 
 func paramsInLimitExpr(limit *sqlparser.Limit, s *Schema, tableAliasMap FromTables, settings dinosql.GenerateSettings) ([]*Param, error) {
@@ -28,9 +28,9 @@ func paramsInLimitExpr(limit *sqlparser.Limit, s *Schema, tableAliasMap FromTabl
 		case *sqlparser.SQLVal:
 			if v.Type == sqlparser.ValArg {
 				params = append(params, &Param{
-					originalName: string(v.Val),
-					name:         "limit",
-					typ:          "uint32",
+					OriginalName: string(v.Val),
+					Name:         "limit",
+					Typ:          "uint32",
 				})
 			}
 		}
@@ -100,12 +100,12 @@ func paramInComparison(cond *sqlparser.ComparisonExpr, s *Schema, tableAliasMap 
 			if err != nil {
 				return false, err
 			}
-			p.typ = goTypeCol(colDfn, settings)
+			p.Typ = goTypeCol(colDfn, settings)
 			colIdent = colDfn.Name
 
 		case *sqlparser.SQLVal:
 			if v.Type == sqlparser.ValArg {
-				p.originalName = string(v.Val)
+				p.OriginalName = string(v.Val)
 			}
 		}
 		return true, nil
@@ -114,8 +114,8 @@ func paramInComparison(cond *sqlparser.ComparisonExpr, s *Schema, tableAliasMap 
 	if err != nil {
 		return nil, false, err
 	}
-	if p.originalName != "" && p.typ != "" {
-		p.name = paramName(colIdent, p.originalName)
+	if p.OriginalName != "" && p.Typ != "" {
+		p.Name = paramName(colIdent, p.OriginalName)
 		return p, true, nil
 	}
 	return nil, false, nil
@@ -135,7 +135,7 @@ func paramName(col sqlparser.ColIdent, originalName string) string {
 
 func replaceParamStrs(query string, params []*Param) (string, error) {
 	for _, p := range params {
-		re, err := regexp.Compile(fmt.Sprintf("(%v)", p.originalName))
+		re, err := regexp.Compile(fmt.Sprintf("(%v)", p.OriginalName))
 		if err != nil {
 			return "", err
 		}

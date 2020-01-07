@@ -18,9 +18,9 @@ func TestSelectParamSearcher(t *testing.T) {
 		testCase{
 			input: "SELECT first_name, id, last_name FROM users WHERE id < ?",
 			output: []*Param{&Param{
-				originalName: ":v1",
-				name:         "id",
-				typ:          "int",
+				OriginalName: ":v1",
+				Name:         "id",
+				Typ:          "int",
 			},
 			},
 		},
@@ -35,18 +35,18 @@ func TestSelectParamSearcher(t *testing.T) {
 							WHERE orders.price > :minPrice`,
 			output: []*Param{
 				&Param{
-					originalName: ":minPrice",
-					name:         "minPrice",
-					typ:          "float64",
+					OriginalName: ":minPrice",
+					Name:         "minPrice",
+					Typ:          "float64",
 				},
 			},
 		},
 		testCase{
 			input: "SELECT first_name, id, last_name FROM users WHERE id = :targetID",
 			output: []*Param{&Param{
-				originalName: ":targetID",
-				name:         "targetID",
-				typ:          "int",
+				OriginalName: ":targetID",
+				Name:         "targetID",
+				Typ:          "int",
 			},
 			},
 		},
@@ -54,14 +54,14 @@ func TestSelectParamSearcher(t *testing.T) {
 			input: "SELECT first_name, last_name FROM users WHERE age < :maxAge AND last_name = :inFamily",
 			output: []*Param{
 				&Param{
-					originalName: ":maxAge",
-					name:         "maxAge",
-					typ:          "int",
+					OriginalName: ":maxAge",
+					Name:         "maxAge",
+					Typ:          "int",
 				},
 				&Param{
-					originalName: ":inFamily",
-					name:         "inFamily",
-					typ:          "sql.NullString",
+					OriginalName: ":inFamily",
+					Name:         "inFamily",
+					Typ:          "sql.NullString",
 				},
 			},
 		},
@@ -69,9 +69,9 @@ func TestSelectParamSearcher(t *testing.T) {
 			input: "SELECT first_name, last_name FROM users LIMIT ?",
 			output: []*Param{
 				&Param{
-					originalName: ":v1",
-					name:         "limit",
-					typ:          "uint32",
+					OriginalName: ":v1",
+					Name:         "limit",
+					Typ:          "uint32",
 				},
 			},
 		},
@@ -121,14 +121,14 @@ func TestInsertParamSearcher(t *testing.T) {
 			input: "INSERT INTO users (first_name, last_name) VALUES (?, ?)",
 			output: []*Param{
 				&Param{
-					originalName: ":v1",
-					name:         "first_name",
-					typ:          "string",
+					OriginalName: ":v1",
+					Name:         "first_name",
+					Typ:          "string",
 				},
 				&Param{
-					originalName: ":v2",
-					name:         "last_name",
-					typ:          "sql.NullString",
+					OriginalName: ":v2",
+					Name:         "last_name",
+					Typ:          "sql.NullString",
 				},
 			},
 			expectedNames: []string{"first_name", "last_name"},
@@ -156,9 +156,9 @@ func TestInsertParamSearcher(t *testing.T) {
 			t.Errorf("Insufficient test cases. Mismatch in length of expected param names and parsed params")
 		}
 		for ix, p := range result.Params {
-			if p.name != tCase.expectedNames[ix] {
+			if p.Name != tCase.expectedNames[ix] {
 				t.Errorf("Derived param does not match expected output.\nResult: %v\nExpected: %v",
-					p.name, tCase.expectedNames[ix])
+					p.Name, tCase.expectedNames[ix])
 			}
 		}
 	}

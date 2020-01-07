@@ -8,10 +8,10 @@ CREATE TABLE teachers (
 );
 
 /* name: GetTeachersByID :one */
-SELECT * FROM teachers WHERE id = ?
+SELECT * FROM teachers WHERE id = ?;
 
-/* name: GetSomeTeachers :one */
+-- name: GetSomeTeachers :one
 SELECT school_id, id FROM teachers WHERE school_lng > ? AND school_lat < ?;
 
-/* name: TeachersByID :one */
-SELECT id, school_lat FROM teachers WHERE id = ? LIMIT 10 
+-- name: TeachersByID :one
+SELECT id, school_lat FROM teachers WHERE id = ? LIMIT 10;
