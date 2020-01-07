@@ -312,12 +312,15 @@ func parseInsert(node *sqlparser.Insert, query string, s *Schema, settings dinos
 			case *sqlparser.SQLVal:
 				if v.Type == sqlparser.ValArg {
 					colName := cols[colIx].String()
-					colDfn, _ := s.schemaLookup(tableName, colName)
+					colDfn, err := s.schemaLookup(tableName, colName)
 					varName := string(v.Val)
-					p := &Param{
-						OriginalName: varName,
-						Name:         paramName(colDfn.Name, varName),
-						Typ:          goTypeCol(colDfn, settings),
+					p := &Param{OriginalName: varName}
+					if err == nil {
+						p.Name = paramName(colDfn.Name, varName)
+						p.Typ = goTypeCol(colDfn, settings)
+					} else {
+						p.Name = "Unknown"
+						p.Typ = "interface{}"
 					}
 					params = append(params, p)
 				}

@@ -236,8 +236,11 @@ func goTypeCol(col *sqlparser.ColumnDefinition, settings dinosql.GenerateSetting
 		return "sql.NullFloat64"
 	case "enum" == t:
 		return enumNameFromColDef(col, settings)
-	case "date" == t, "timestamp" == t:
-		return "time.Time"
+	case "date" == t, "timestamp" == t, "datetime" == t:
+		if col.Type.NotNull {
+			return "time.Time"
+		}
+		return "sql.NullTime"
 	case "boolean" == t:
 		return "bool"
 	default:
