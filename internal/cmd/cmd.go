@@ -29,7 +29,7 @@ func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int 
 
 	rootCmd.SetArgs(args)
 	rootCmd.SetIn(stdin)
-	rootCmd.SetErr(stderr)
+	rootCmd.SetOut(stdout)
 	rootCmd.SetErr(stderr)
 
 	err := rootCmd.Execute()
