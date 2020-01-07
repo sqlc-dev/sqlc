@@ -52,18 +52,39 @@ func (gf GoField) Tag() string {
 }
 
 type GoStruct struct {
-	Table   *core.FQN
+	Table   Comparable
 	Name    string
 	Fields  []GoField
 	Comment string
 }
 
-// TODO: Terrible name
 type GoQueryValue struct {
 	Emit   bool
 	Name   string
 	Struct *GoStruct
-	typ    string
+	Typ    string
+}
+
+// TODO: consider making this deep equality from stdlib?
+type Comparable interface {
+	EqualTo(b interface{}) bool
+}
+
+type FQNAlias core.FQN
+
+// Check whether tables are equal
+func (a *FQNAlias) EqualTo(other interface{}) bool {
+	b, ok := other.(*core.FQN)
+	if !ok {
+		panic("Unknown ")
+	}
+	if a == nil && b == nil {
+		return true
+	}
+	if a == nil || b == nil {
+		return false
+	}
+	return a.Catalog == b.Catalog && a.Schema == b.Schema && a.Rel == b.Rel
 }
 
 func (v GoQueryValue) EmitStruct() bool {
@@ -75,7 +96,7 @@ func (v GoQueryValue) IsStruct() bool {
 }
 
 func (v GoQueryValue) isEmpty() bool {
-	return v.typ == "" && v.Name == "" && v.Struct == nil
+	return v.Typ == "" && v.Name == "" && v.Struct == nil
 }
 
 func (v GoQueryValue) Pair() string {
@@ -86,8 +107,8 @@ func (v GoQueryValue) Pair() string {
 }
 
 func (v GoQueryValue) Type() string {
-	if v.typ != "" {
-		return v.typ
+	if v.Typ != "" {
+		return v.Typ
 	}
 	if v.Struct != nil {
 		return v.Struct.Name
@@ -101,7 +122,7 @@ func (v GoQueryValue) Params() string {
 	}
 	var out []string
 	if v.Struct == nil {
-		if strings.HasPrefix(v.typ, "[]") && v.typ != "[]byte" {
+		if strings.HasPrefix(v.Typ, "[]") && v.Typ != "[]byte" {
 			out = append(out, "pq.Array("+v.Name+")")
 		} else {
 			out = append(out, v.Name)
@@ -125,7 +146,7 @@ func (v GoQueryValue) Params() string {
 func (v GoQueryValue) Scan() string {
 	var out []string
 	if v.Struct == nil {
-		if strings.HasPrefix(v.typ, "[]") && v.typ != "[]byte" {
+		if strings.HasPrefix(v.Typ, "[]") && v.Typ != "[]byte" {
 			out = append(out, "pq.Array(&"+v.Name+")")
 		} else {
 			out = append(out, "&"+v.Name)
@@ -159,8 +180,15 @@ type GoQuery struct {
 	Arg          GoQueryValue
 }
 
-func (r Result) UsesType(typ string) bool {
-	for _, strct := range r.Structs() {
+type Generateable interface {
+	Structs(settings GenerateSettings) []GoStruct
+	PkgName() string
+	GoQueries(settings GenerateSettings) []GoQuery
+	Enums(settings GenerateSettings) []GoEnum
+}
+
+func UsesType(r Generateable, typ string, settings GenerateSettings) bool {
+	for _, strct := range r.Structs(settings) {
 		for _, f := range strct.Fields {
 			fType := strings.TrimPrefix(f.Type, "[]")
 			if strings.HasPrefix(fType, typ) {
@@ -171,8 +199,8 @@ func (r Result) UsesType(typ string) bool {
 	return false
 }
 
-func (r Result) UsesArrays() bool {
-	for _, strct := range r.Structs() {
+func UsesArrays(r Generateable, settings GenerateSettings) bool {
+	for _, strct := range r.Structs(settings) {
 		for _, f := range strct.Fields {
 			if strings.HasPrefix(f.Type, "[]") {
 				return true
@@ -182,58 +210,58 @@ func (r Result) UsesArrays() bool {
 	return false
 }
 
-func (r Result) Imports(settings PackageSettings) func(string) [][]string {
+func Imports(r Generateable, settings GenerateSettings) func(string) [][]string {
 	return func(filename string) [][]string {
 		if filename == "db.go" {
 			imps := []string{"context", "database/sql"}
-			if settings.EmitPreparedQueries {
+			if settings.PackageMap[r.PkgName()].EmitPreparedQueries {
 				imps = append(imps, "fmt")
 			}
 			return [][]string{imps}
 		}
 
 		if filename == "models.go" {
-			return r.ModelImports()
+			return ModelImports(r, settings)
 		}
 
-		return r.QueryImports(filename)
+		return QueryImports(r, settings, filename)
 	}
 }
 
-func (r Result) ModelImports() [][]string {
+func ModelImports(r Generateable, settings GenerateSettings) [][]string {
 	std := make(map[string]struct{})
-	if r.UsesType("sql.Null") {
+	if UsesType(r, "sql.Null", settings) {
 		std["database/sql"] = struct{}{}
 	}
-	if r.UsesType("json.RawMessage") {
+	if UsesType(r, "json.RawMessage", settings) {
 		std["encoding/json"] = struct{}{}
 	}
-	if r.UsesType("time.Time") {
+	if UsesType(r, "time.Time", settings) {
 		std["time"] = struct{}{}
 	}
-	if r.UsesType("net.IP") {
+	if UsesType(r, "net.IP", settings) {
 		std["net"] = struct{}{}
 	}
 
 	// Custom imports
 	pkg := make(map[string]struct{})
 	overrideTypes := map[string]string{}
-	for _, o := range append(r.Settings.Overrides, r.packageSettings.Overrides...) {
+	for _, o := range append(settings.Overrides, settings.PackageMap[r.PkgName()].Overrides...) {
 		overrideTypes[o.goTypeName] = o.goPackage
 	}
 
 	_, overrideNullTime := overrideTypes["pq.NullTime"]
-	if r.UsesType("pq.NullTime") && !overrideNullTime {
+	if UsesType(r, "pq.NullTime", settings) && !overrideNullTime {
 		pkg["github.com/lib/pq"] = struct{}{}
 	}
 
 	_, overrideUUID := overrideTypes["uuid.UUID"]
-	if r.UsesType("uuid.UUID") && !overrideUUID {
+	if UsesType(r, "uuid.UUID", settings) && !overrideUUID {
 		pkg["github.com/google/uuid"] = struct{}{}
 	}
 
 	for goType, importPath := range overrideTypes {
-		if _, ok := std[importPath]; !ok && r.UsesType(goType) {
+		if _, ok := std[importPath]; !ok && UsesType(r, goType, settings) {
 			pkg[importPath] = struct{}{}
 		}
 	}
@@ -253,7 +281,7 @@ func (r Result) ModelImports() [][]string {
 	return [][]string{stds, pkgs}
 }
 
-func (r Result) QueryImports(filename string) [][]string {
+func QueryImports(r Generateable, settings GenerateSettings, filename string) [][]string {
 	// for _, strct := range r.Structs() {
 	// 	for _, f := range strct.Fields {
 	// 		if strings.HasPrefix(f.Type, "[]") {
@@ -262,7 +290,7 @@ func (r Result) QueryImports(filename string) [][]string {
 	// 	}
 	// }
 	var gq []GoQuery
-	for _, query := range r.GoQueries() {
+	for _, query := range r.GoQueries(settings) {
 		if query.SourceName == filename {
 			gq = append(gq, query)
 		}
@@ -350,7 +378,7 @@ func (r Result) QueryImports(filename string) [][]string {
 
 	pkg := make(map[string]struct{})
 	overrideTypes := map[string]string{}
-	for _, o := range append(r.Settings.Overrides, r.packageSettings.Overrides...) {
+	for _, o := range append(settings.Overrides, settings.PackageMap[r.PkgName()].Overrides...) {
 		overrideTypes[o.goTypeName] = o.goPackage
 	}
 
@@ -400,7 +428,7 @@ func enumValueName(value string) string {
 	return name
 }
 
-func (r Result) Enums() []GoEnum {
+func (r Result) Enums(settings GenerateSettings) []GoEnum {
 	var enums []GoEnum
 	for name, schema := range r.Catalog.Schemas {
 		if name == "pg_catalog" {
@@ -414,7 +442,7 @@ func (r Result) Enums() []GoEnum {
 				enumName = name + "_" + enum.Name
 			}
 			e := GoEnum{
-				Name:    r.structName(enumName),
+				Name:    StructName(enumName, settings),
 				Comment: enum.Comment,
 			}
 			for _, v := range enum.Vals {
@@ -433,8 +461,8 @@ func (r Result) Enums() []GoEnum {
 	return enums
 }
 
-func (r Result) structName(name string) string {
-	if rename := r.Settings.Rename[name]; rename != "" {
+func StructName(name string, settings GenerateSettings) string {
+	if rename := settings.Rename[name]; rename != "" {
 		return rename
 	}
 	out := ""
@@ -448,7 +476,7 @@ func (r Result) structName(name string) string {
 	return out
 }
 
-func (r Result) Structs() []GoStruct {
+func (r Result) Structs(settings GenerateSettings) []GoStruct {
 	var structs []GoStruct
 	for name, schema := range r.Catalog.Schemas {
 		if name == "pg_catalog" {
@@ -462,14 +490,14 @@ func (r Result) Structs() []GoStruct {
 				tableName = name + "_" + table.Name
 			}
 			s := GoStruct{
-				Table:   &core.FQN{Schema: name, Rel: table.Name},
-				Name:    inflection.Singular(r.structName(tableName)),
+				Table:   &FQNAlias{Schema: name, Rel: table.Name},
+				Name:    inflection.Singular(StructName(tableName, settings)),
 				Comment: table.Comment,
 			}
 			for _, column := range table.Columns {
 				s.Fields = append(s.Fields, GoField{
-					Name:    r.structName(column.Name),
-					Type:    r.goType(column),
+					Name:    StructName(column.Name, settings),
+					Type:    r.goType(column, settings),
 					Tags:    map[string]string{"json:": column.Name},
 					Comment: column.Comment,
 				})
@@ -483,26 +511,26 @@ func (r Result) Structs() []GoStruct {
 	return structs
 }
 
-func (r Result) goType(col core.Column) string {
+func (r Result) goType(col core.Column, settings GenerateSettings) string {
 	// package overrides have a higher precedence
-	for _, oride := range append(r.Settings.Overrides, r.packageSettings.Overrides...) {
+	for _, oride := range append(settings.Overrides, settings.PackageMap[r.PkgName()].Overrides...) {
 		if oride.Column != "" && oride.columnName == col.Name && oride.table == col.Table {
 			return oride.goTypeName
 		}
 	}
-	typ := r.goInnerType(col)
+	typ := r.goInnerType(col, settings)
 	if col.IsArray {
 		return "[]" + typ
 	}
 	return typ
 }
 
-func (r Result) goInnerType(col core.Column) string {
+func (r Result) goInnerType(col core.Column, settings GenerateSettings) string {
 	columnType := col.DataType
 	notNull := col.NotNull || col.IsArray
 
 	// package overrides have a higher precedence
-	for _, oride := range append(r.Settings.Overrides, r.packageSettings.Overrides...) {
+	for _, oride := range append(settings.Overrides, settings.PackageMap[r.PkgName()].Overrides...) {
 		if oride.PostgresType != "" && oride.PostgresType == columnType && oride.Null != notNull {
 			return oride.goTypeName
 		}
@@ -619,14 +647,14 @@ func (r Result) goInnerType(col core.Column) string {
 			for _, enum := range schema.Enums {
 				if columnType == enum.Name {
 					if name == "public" {
-						return r.structName(enum.Name)
+						return StructName(enum.Name, settings)
 					}
 
-					return r.structName(name + "_" + enum.Name)
+					return StructName(name+"_"+enum.Name, settings)
 				}
 			}
 		}
-		log.Printf("unknown Postgres type: %s\n", columnType)
+		log.Printf("unknown PostgreSQL type: %s\n", columnType)
 		return "interface{}"
 	}
 }
@@ -638,21 +666,21 @@ func (r Result) goInnerType(col core.Column) string {
 // JSON tags: count, count_2, count_2
 //
 // This is unlikely to happen, so don't fix it yet
-func (r Result) columnsToStruct(name string, columns []core.Column) *GoStruct {
+func (r Result) columnsToStruct(name string, columns []core.Column, settings GenerateSettings) *GoStruct {
 	gs := GoStruct{
 		Name: name,
 	}
 	seen := map[string]int{}
 	for i, c := range columns {
 		tagName := c.Name
-		fieldName := r.structName(columnName(c, i))
+		fieldName := StructName(columnName(c, i), settings)
 		if v := seen[c.Name]; v > 0 {
 			tagName = fmt.Sprintf("%s_%d", tagName, v+1)
 			fieldName = fmt.Sprintf("%s_%d", fieldName, v+1)
 		}
 		gs.Fields = append(gs.Fields, GoField{
 			Name: fieldName,
-			Type: r.goType(c),
+			Type: r.goType(c, settings),
 			Tags: map[string]string{"json:": tagName},
 		})
 		seen[c.Name]++
@@ -698,8 +726,8 @@ func compareFQN(a *core.FQN, b *core.FQN) bool {
 	return a.Catalog == b.Catalog && a.Schema == b.Schema && a.Rel == b.Rel
 }
 
-func (r Result) GoQueries() []GoQuery {
-	structs := r.Structs()
+func (r Result) GoQueries(settings GenerateSettings) []GoQuery {
+	structs := r.Structs(settings)
 
 	qs := make([]GoQuery, 0, len(r.Queries))
 	for _, query := range r.Queries {
@@ -712,8 +740,8 @@ func (r Result) GoQueries() []GoQuery {
 
 		gq := GoQuery{
 			Cmd:          query.Cmd,
-			ConstantName: lowerTitle(query.Name),
-			FieldName:    lowerTitle(query.Name) + "Stmt",
+			ConstantName: LowerTitle(query.Name),
+			FieldName:    LowerTitle(query.Name) + "Stmt",
 			MethodName:   query.Name,
 			SourceName:   query.Filename,
 			SQL:          query.SQL,
@@ -724,7 +752,7 @@ func (r Result) GoQueries() []GoQuery {
 			p := query.Params[0]
 			gq.Arg = GoQueryValue{
 				Name: paramName(p),
-				typ:  r.goType(p.Column),
+				Typ:  r.goType(p.Column, settings),
 			}
 		} else if len(query.Params) > 1 {
 			var cols []core.Column
@@ -734,7 +762,7 @@ func (r Result) GoQueries() []GoQuery {
 			gq.Arg = GoQueryValue{
 				Emit:   true,
 				Name:   "arg",
-				Struct: r.columnsToStruct(gq.MethodName+"Params", cols),
+				Struct: r.columnsToStruct(gq.MethodName+"Params", cols, settings),
 			}
 		}
 
@@ -742,7 +770,7 @@ func (r Result) GoQueries() []GoQuery {
 			c := query.Columns[0]
 			gq.Ret = GoQueryValue{
 				Name: columnName(c, 0),
-				typ:  r.goType(c),
+				Typ:  r.goType(c, settings),
 			}
 		} else if len(query.Columns) > 1 {
 			var gs *GoStruct
@@ -755,10 +783,12 @@ func (r Result) GoQueries() []GoQuery {
 				same := true
 				for i, f := range s.Fields {
 					c := query.Columns[i]
-					sameName := f.Name == r.structName(columnName(c, i))
-					sameType := f.Type == r.goType(c)
-					sameFQN := compareFQN(s.Table, &c.Table)
-					if !sameName || !sameType || !sameFQN {
+					sameName := f.Name == StructName(columnName(c, i), settings)
+					sameType := f.Type == r.goType(c, settings)
+
+					// TODO: clean this up!!
+					sameTable := s.Table.EqualTo(&c.Table)
+					if !sameName || !sameType || !sameTable {
 						same = false
 					}
 				}
@@ -769,7 +799,7 @@ func (r Result) GoQueries() []GoQuery {
 			}
 
 			if gs == nil {
-				gs = r.columnsToStruct(gq.MethodName+"Row", query.Columns)
+				gs = r.columnsToStruct(gq.MethodName+"Row", query.Columns, settings)
 				emit = true
 			}
 			gq.Ret = GoQueryValue{
@@ -1056,22 +1086,22 @@ type tmplCtx struct {
 	EmitPreparedQueries bool
 }
 
-func lowerTitle(s string) string {
+func LowerTitle(s string) string {
 	a := []rune(s)
 	a[0] = unicode.ToLower(a[0])
 	return string(a)
 }
 
-func Generate(r *Result, global GenerateSettings, settings PackageSettings) (map[string]string, error) {
-	r.packageSettings = settings
+func Generate(r Generateable, settings GenerateSettings) (map[string]string, error) {
 	funcMap := template.FuncMap{
-		"lowerTitle": lowerTitle,
-		"imports":    r.Imports(settings),
+		"lowerTitle": LowerTitle,
+		"imports":    Imports(r, settings),
 	}
 
-	pkg := settings.Name
-	if pkg == "" {
-		pkg = filepath.Base(settings.Path)
+	pkgName := r.PkgName()
+	pkgConfig := settings.PackageMap[pkgName]
+	if pkgName == "" {
+		pkgName = filepath.Base(pkgConfig.Path)
 	}
 
 	dbFile := template.Must(template.New("table").Funcs(funcMap).Parse(dbTmpl))
@@ -1079,14 +1109,14 @@ func Generate(r *Result, global GenerateSettings, settings PackageSettings) (map
 	sqlFile := template.Must(template.New("table").Funcs(funcMap).Parse(sqlTmpl))
 
 	tctx := tmplCtx{
-		Settings:            global,
-		EmitPreparedQueries: settings.EmitPreparedQueries,
-		EmitJSONTags:        settings.EmitJSONTags,
+		Settings:            settings,
+		EmitPreparedQueries: pkgConfig.EmitPreparedQueries,
+		EmitJSONTags:        pkgConfig.EmitJSONTags,
 		Q:                   "`",
-		Package:             pkg,
-		GoQueries:           r.GoQueries(),
-		Enums:               r.Enums(),
-		Structs:             r.Structs(),
+		Package:             pkgName,
+		GoQueries:           r.GoQueries(settings),
+		Enums:               r.Enums(settings),
+		Structs:             r.Structs(settings),
 	}
 
 	output := map[string]string{}
@@ -1120,7 +1150,7 @@ func Generate(r *Result, global GenerateSettings, settings PackageSettings) (map
 	}
 
 	files := map[string]struct{}{}
-	for _, gq := range r.GoQueries() {
+	for _, gq := range r.GoQueries(settings) {
 		files[gq.SourceName] = struct{}{}
 	}
 

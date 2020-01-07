@@ -307,6 +307,8 @@ Each package document has the following keys:
   - Directory of SQL queries or path to single SQL file
 - `schema`:
   - Directory of SQL migrations or path to single SQL file
+- `engine`:
+  - Either `postgresql` or `mysql`. Defaults to `postgresql`. MySQL support is experimental
 
 ### Type Overrides
 
@@ -411,13 +413,17 @@ Each commit is deployed to the [`devel` channel on Equinox](https://dl.equinox.i
 - [Linux](https://bin.equinox.io/c/gvM95th6ps1/sqlc-devel-linux-amd64.tgz)
 - [macOS](https://bin.equinox.io/c/gvM95th6ps1/sqlc-devel-darwin-amd64.zip)
 
-## Other Database Engines
+## Other Databases and Languages
 
-sqlc currently only supports PostgreSQL. If you'd like to support another database, we'd welcome a contribution.
+sqlc currently only supports PostgreSQL / Go. MySQL support has been merged,
+but it's marked as experimental. SQLite and TypeScript support are planned.
 
-## Other Language Backends
+| Language     | PostgreSQL       | MySQL            | SQLite           |
+| ------------ |:----------------:|:----------------:|:----------------:|
+| Go           |:white_check_mark:|:warning:         |:timer_clock:     |
+| TypeScript   |:timer_clock:     |:timer_clock:     |:timer_clock:     |
 
-sqlc currently only generates Go code, but if you'd like to build another language backend, we'd welcome a contribution.
+If you'd like to add another database or language, we'd welcome a contribution.
 
 ## Acknowledgements
 
