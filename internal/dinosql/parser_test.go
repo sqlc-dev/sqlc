@@ -1,13 +1,8 @@
 package dinosql
 
 import (
-	"io/ioutil"
-	"os"
-	"path/filepath"
-	"strings"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
 	pg "github.com/lfittl/pg_query_go"
 	nodes "github.com/lfittl/pg_query_go/nodes"
 )
@@ -115,82 +110,6 @@ func TestExtractArgs(t *testing.T) {
 			}
 		}
 	}
-}
-
-func cmpDirectory(t *testing.T, dir string, actual map[string]string) {
-	t.Helper()
-
-	files, err := ioutil.ReadDir(dir)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	expected := map[string]string{}
-
-	for _, file := range files {
-		if file.IsDir() {
-			continue
-		}
-		if !strings.HasSuffix(file.Name(), ".go") {
-			continue
-		}
-		if strings.HasSuffix(file.Name(), "_test.go") {
-			continue
-		}
-		blob, err := ioutil.ReadFile(filepath.Join(dir, file.Name()))
-		if err != nil {
-			t.Fatal(err)
-		}
-		expected[file.Name()] = string(blob)
-	}
-
-	if !cmp.Equal(expected, actual) {
-		t.Errorf("%s contents differ", dir)
-		for name, contents := range expected {
-			if actual[name] == "" {
-				t.Errorf("%s is empty", name)
-				continue
-			}
-			if diff := cmp.Diff(contents, actual[name]); diff != "" {
-				t.Errorf("%s differed (-want +got):\n%s", name, diff)
-			}
-		}
-	}
-}
-
-func TestParseSchema(t *testing.T) {
-	// Change to the top-level directory of the project
-	os.Chdir(filepath.Join("..", ".."))
-
-	rd, err := os.Open("sqlc.json")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	conf, err := ParseConfig(rd)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	for pkg, s := range conf.PackageMap {
-		settings := s
-		t.Run(pkg, func(t *testing.T) {
-			c, err := ParseCatalog(settings.Schema)
-			if err != nil {
-				t.Fatal(err)
-			}
-			q, err := ParseQueries(c, settings)
-			if err != nil {
-				t.Fatal(err)
-			}
-			output, err := Generate(q, conf)
-			if err != nil {
-				t.Fatal(err)
-			}
-			cmpDirectory(t, settings.Path, output)
-		})
-	}
-
 }
 
 func TestParseMetadata(t *testing.T) {
