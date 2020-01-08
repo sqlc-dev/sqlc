@@ -229,30 +229,30 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 
 Your favorite PostgreSQL / Go features are supported:
 - SQL
-  - [SELECT](./examples/query_one.md)
-  - [NULL](./examples/null.md)
-  - [COUNT](./examples/query_count.md)
-  - [INSERT](./examples/insert.md)
-  - [UPDATE](./examples/update.md)
-  - [DELETE](./examples/delete.md)
-  - [RETURNING](./examples/returning.md)
-  - [ANY](./examples/any.md)
-  - [Transactions](./examples/transactions.md)
-  - [Prepared queries](./examples/prepared_query.md)
+  - [SELECT](./docs/query_one.md)
+  - [NULL](./docs/null.md)
+  - [COUNT](./docs/query_count.md)
+  - [INSERT](./docs/insert.md)
+  - [UPDATE](./docs/update.md)
+  - [DELETE](./docs/delete.md)
+  - [RETURNING](./docs/returning.md)
+  - [ANY](./docs/any.md)
+  - [Transactions](./docs/transactions.md)
+  - [Prepared queries](./docs/prepared_query.md)
 - PostgreSQL Types
-  - [Arrays](./examples/arrays.md)
-  - [Enums](./examples/enums.md)
-  - [Timestamps](./examples/time.md)
-  - [UUIDs](./examples/uuid.md)
+  - [Arrays](./docs/arrays.md)
+  - [Enums](./docs/enums.md)
+  - [Timestamps](./docs/time.md)
+  - [UUIDs](./docs/uuid.md)
 - DDL
-  - [CREATE TABLE](./examples/table.md)
-  - [ALTER TABLE](./examples/alter_table.md)
+  - [CREATE TABLE](./docs/table.md)
+  - [ALTER TABLE](./docs/alter_table.md)
 - Go
-  - [JSON struct tags](./examples/json_tags.md)
-  - [Migration tools](./examples/migrations.md)
+  - [JSON struct tags](./docs/json_tags.md)
+  - [Migration tools](./docs/migrations.md)
 
 A full, end-to-end example can be found in the sample
-[`ondeck`](./internal/dinosql/testdata/ondeck) package.
+[`ondeck`](./examples/ondeck) package.
 
 ## Usage
 

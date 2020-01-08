@@ -27,11 +27,7 @@ jobs:
         go-version: '1.13'
 
     - name: Test sqlc
-      run: go test -v ./...
-
-    - name: Test sqlc/ondeck
-      run: go test -v ./...
-      working-directory: internal/dinosql/testdata/ondeck
+      run: go test --tags=examples -v ./...
       env:
         PG_USER: postgres
         PG_HOST: localhost

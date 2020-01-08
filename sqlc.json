@@ -1,0 +1,13 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "name": "ondeck",
+      "path": "examples/ondeck",
+      "schema": "examples/ondeck/schema",
+      "queries": "examples/ondeck/query",
+      "emit_json_tags": true,
+      "emit_prepared_queries": true
+    }
+  ]
+}
