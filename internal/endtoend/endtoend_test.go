@@ -15,7 +15,7 @@ import (
 
 func TestCodeGeneration(t *testing.T) {
 	// Change to the top-level directory of the project
-	os.Chdir(filepath.Join("..", ".."))
+	os.Chdir(filepath.Join("..", "..", "examples"))
 
 	rd, err := os.Open("sqlc.json")
 	if err != nil {
