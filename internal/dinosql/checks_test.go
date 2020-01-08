@@ -12,7 +12,6 @@ import (
 func TestFuncs(t *testing.T) {
 	_, err := ParseQueries(
 		pg.NewCatalog(),
-		GenerateSettings{},
 		PackageSettings{
 			Queries: filepath.Join("testdata", "funcs"),
 		},

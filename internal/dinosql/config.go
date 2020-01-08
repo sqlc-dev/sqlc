@@ -5,20 +5,45 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"path/filepath"
 	"strings"
 
 	"github.com/kyleconroy/sqlc/internal/pg"
 )
 
-type GenerateSettings struct {
-	Version   string            `json:"version"`
-	Packages  []PackageSettings `json:"packages"`
-	Overrides []Override        `json:"overrides,omitempty"`
-	Rename    map[string]string `json:"rename,omitempty"`
+const errMessageNoVersion = `The configuration file must have a version number.
+Set the version to 1 at the top of sqlc.json:
+
+{
+  "version": "1"
+  ...
 }
+`
+
+const errMessageUnknownVersion = `The configuration file has an invalid version number.
+The only supported version is "1".
+`
+
+const errMessageNoPackages = `No packages are configured`
+
+type GenerateSettings struct {
+	Version    string            `json:"version"`
+	Packages   []PackageSettings `json:"packages"`
+	Overrides  []Override        `json:"overrides,omitempty"`
+	Rename     map[string]string `json:"rename,omitempty"`
+	PackageMap map[string]PackageSettings
+}
+
+type Engine string
+
+const (
+	EngineMySQL      Engine = "mysql"
+	EnginePostgreSQL Engine = "postgresql"
+)
 
 type PackageSettings struct {
 	Name                string     `json:"name"`
+	Engine              Engine     `json:"engine,omitempty"`
 	Path                string     `json:"path"`
 	Schema              string     `json:"schema"`
 	Queries             string     `json:"queries"`
@@ -96,6 +121,8 @@ func (o *Override) Parse() error {
 var ErrMissingVersion = errors.New("no version number")
 var ErrUnknownVersion = errors.New("invalid version number")
 var ErrNoPackages = errors.New("no packages")
+var ErrNoPackageName = errors.New("missing package name")
+var ErrNoPackagePath = errors.New("missing package path")
 
 func ParseConfig(rd io.Reader) (GenerateSettings, error) {
 	dec := json.NewDecoder(rd)
@@ -119,11 +146,36 @@ func ParseConfig(rd io.Reader) (GenerateSettings, error) {
 		}
 	}
 	for j := range config.Packages {
+		if config.Packages[j].Path == "" {
+			return config, ErrNoPackagePath
+		}
 		for i := range config.Packages[j].Overrides {
 			if err := config.Packages[j].Overrides[i].Parse(); err != nil {
 				return config, err
 			}
 		}
+		if config.Packages[j].Name == "" {
+			config.Packages[j].Name = filepath.Base(config.Packages[j].Path)
+		}
+		if config.Packages[j].Engine == "" {
+			config.Packages[j].Engine = EnginePostgreSQL
+		}
 	}
-	return config, nil
+	err := config.PopulatePkgMap()
+
+	return config, err
+}
+
+func (s *GenerateSettings) PopulatePkgMap() error {
+	packageMap := make(map[string]PackageSettings)
+
+	for _, c := range s.Packages {
+		if c.Name == "" {
+			return ErrNoPackageName
+		}
+		packageMap[c.Name] = c
+	}
+	s.PackageMap = packageMap
+
+	return nil
 }

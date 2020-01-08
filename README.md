@@ -229,30 +229,30 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 
 Your favorite PostgreSQL / Go features are supported:
 - SQL
-  - [SELECT](./examples/query_one.md)
-  - [NULL](./examples/null.md)
-  - [COUNT](./examples/query_count.md)
-  - [INSERT](./examples/insert.md)
-  - [UPDATE](./examples/update.md)
-  - [DELETE](./examples/delete.md)
-  - [RETURNING](./examples/returning.md)
-  - [ANY](./examples/any.md)
-  - [Transactions](./examples/transactions.md)
-  - [Prepared queries](./examples/prepared_query.md)
+  - [SELECT](./docs/query_one.md)
+  - [NULL](./docs/null.md)
+  - [COUNT](./docs/query_count.md)
+  - [INSERT](./docs/insert.md)
+  - [UPDATE](./docs/update.md)
+  - [DELETE](./docs/delete.md)
+  - [RETURNING](./docs/returning.md)
+  - [ANY](./docs/any.md)
+  - [Transactions](./docs/transactions.md)
+  - [Prepared queries](./docs/prepared_query.md)
 - PostgreSQL Types
-  - [Arrays](./examples/arrays.md)
-  - [Enums](./examples/enums.md)
-  - [Timestamps](./examples/time.md)
-  - [UUIDs](./examples/uuid.md)
+  - [Arrays](./docs/arrays.md)
+  - [Enums](./docs/enums.md)
+  - [Timestamps](./docs/time.md)
+  - [UUIDs](./docs/uuid.md)
 - DDL
-  - [CREATE TABLE](./examples/table.md)
-  - [ALTER TABLE](./examples/alter_table.md)
+  - [CREATE TABLE](./docs/table.md)
+  - [ALTER TABLE](./docs/alter_table.md)
 - Go
-  - [JSON struct tags](./examples/json_tags.md)
-  - [Migration tools](./examples/migrations.md)
+  - [JSON struct tags](./docs/json_tags.md)
+  - [Migration tools](./docs/migrations.md)
 
 A full, end-to-end example can be found in the sample
-[`ondeck`](./internal/dinosql/testdata/ondeck) package.
+[`ondeck`](./examples/ondeck) package.
 
 ## Usage
 
@@ -307,6 +307,8 @@ Each package document has the following keys:
   - Directory of SQL queries or path to single SQL file
 - `schema`:
   - Directory of SQL migrations or path to single SQL file
+- `engine`:
+  - Either `postgresql` or `mysql`. Defaults to `postgresql`. MySQL support is experimental
 
 ### Type Overrides
 
@@ -411,13 +413,17 @@ Each commit is deployed to the [`devel` channel on Equinox](https://dl.equinox.i
 - [Linux](https://bin.equinox.io/c/gvM95th6ps1/sqlc-devel-linux-amd64.tgz)
 - [macOS](https://bin.equinox.io/c/gvM95th6ps1/sqlc-devel-darwin-amd64.zip)
 
-## Other Database Engines
+## Other Databases and Languages
 
-sqlc currently only supports PostgreSQL. If you'd like to support another database, we'd welcome a contribution.
+sqlc currently only supports PostgreSQL / Go. MySQL support has been merged,
+but it's marked as experimental. SQLite and TypeScript support are planned.
 
-## Other Language Backends
+| Language     | PostgreSQL       | MySQL            | SQLite           |
+| ------------ |:----------------:|:----------------:|:----------------:|
+| Go           |:white_check_mark:|:warning:         |:timer_clock:     |
+| TypeScript   |:timer_clock:     |:timer_clock:     |:timer_clock:     |
 
-sqlc currently only generates Go code, but if you'd like to build another language backend, we'd welcome a contribution.
+If you'd like to add another database or language, we'd welcome a contribution.
 
 ## Acknowledgements
 

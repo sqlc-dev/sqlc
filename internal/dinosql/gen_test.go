@@ -1,6 +1,7 @@
 package dinosql
 
 import (
+	"path/filepath"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -52,8 +53,6 @@ func TestColumnsToStruct(t *testing.T) {
 		cols[i].Table = pg.FQN{Schema: "public", Rel: "foo"}
 	}
 
-	r := Result{}
-
 	// set up column-based override test
 	o := Override{
 		GoType: "example.com/pkg.CustomType",
@@ -68,11 +67,16 @@ func TestColumnsToStruct(t *testing.T) {
 	}
 	oa.Parse()
 
-	r.packageSettings = PackageSettings{
+	pkgName := "test_override"
+
+	r := Result{
+		packageName: pkgName,
+	}
+	mockSettings.PackageMap[pkgName] = PackageSettings{
 		Overrides: []Override{o, oa},
 	}
 
-	actual := r.columnsToStruct("Foo", cols)
+	actual := r.columnsToStruct("Foo", cols, mockSettings)
 	expected := &GoStruct{
 		Name: "Foo",
 		Fields: []GoField{
@@ -90,14 +94,47 @@ func TestColumnsToStruct(t *testing.T) {
 	}
 }
 
+var mockSettings GenerateSettings
+
+func init() {
+	mockSettings = GenerateSettings{
+		Version: "1",
+		Packages: []PackageSettings{
+			PackageSettings{
+				Name: "db",
+			},
+			PackageSettings{
+				Name:                "prepared",
+				Queries:             filepath.Join("testdata", "ondeck", "query"),
+				EmitPreparedQueries: true,
+			},
+			PackageSettings{
+				Name:         "ondeck",
+				Queries:      filepath.Join("testdata", "ondeck", "query"),
+				EmitJSONTags: true,
+			},
+		},
+		Overrides: []Override{},
+	}
+	mockSettings.PopulatePkgMap()
+}
+
 func TestInnerType(t *testing.T) {
-	r := Result{}
+	r := Result{packageName: "db"}
 	types := map[string]string{
-		"integer":         "int32",
-		"int":             "int32",
-		"pg_catalog.int4": "int32",
-		"string":          "string",
-		// Date/Time Types https://www.postgresql.org/docs/current/datatype-datetime.html
+		// Numeric Types
+		// https://www.postgresql.org/docs/current/datatype-numeric.html
+		"integer":            "int32",
+		"int":                "int32",
+		"pg_catalog.int4":    "int32",
+		"pg_catalog.numeric": "string",
+
+		// Character Types
+		// https://www.postgresql.org/docs/current/datatype-character.html
+		"string": "string",
+
+		// Date/Time Types
+		// https://www.postgresql.org/docs/current/datatype-datetime.html
 		"date":                   "time.Time",
 		"pg_catalog.time":        "time.Time",
 		"pg_catalog.timetz":      "time.Time",
@@ -110,21 +147,29 @@ func TestInnerType(t *testing.T) {
 		goType := v
 		t.Run(k+"-"+v, func(t *testing.T) {
 			col := pg.Column{DataType: dbType, NotNull: true}
-			if goType != r.goType(col) {
-				t.Errorf("expected Go type for %s to be %s, not %s", dbType, goType, r.goType(col))
+			if goType != r.goType(col, mockSettings) {
+				t.Errorf("expected Go type for %s to be %s, not %s", dbType, goType, r.goType(col, mockSettings))
 			}
 		})
 	}
 }
 
 func TestNullInnerType(t *testing.T) {
-	r := Result{}
+	r := Result{packageName: "db"}
 	types := map[string]string{
-		"integer":         "sql.NullInt32",
-		"int":             "sql.NullInt32",
-		"pg_catalog.int4": "sql.NullInt32",
-		"string":          "sql.NullString",
-		// Date/Time Types https://www.postgresql.org/docs/current/datatype-datetime.html
+		// Numeric Types
+		// https://www.postgresql.org/docs/current/datatype-numeric.html
+		"integer":            "sql.NullInt32",
+		"int":                "sql.NullInt32",
+		"pg_catalog.int4":    "sql.NullInt32",
+		"pg_catalog.numeric": "sql.NullString",
+
+		// Character Types
+		// https://www.postgresql.org/docs/current/datatype-character.html
+		"string": "sql.NullString",
+
+		// Date/Time Types
+		// https://www.postgresql.org/docs/current/datatype-datetime.html
 		"date":                   "sql.NullTime",
 		"pg_catalog.time":        "sql.NullTime",
 		"pg_catalog.timetz":      "sql.NullTime",
@@ -137,8 +182,8 @@ func TestNullInnerType(t *testing.T) {
 		goType := v
 		t.Run(k+"-"+v, func(t *testing.T) {
 			col := pg.Column{DataType: dbType, NotNull: false}
-			if goType != r.goType(col) {
-				t.Errorf("expected Go type for %s to be %s, not %s", dbType, goType, r.goType(col))
+			if goType != r.goType(col, mockSettings) {
+				t.Errorf("expected Go type for %s to be %s, not %s", dbType, goType, r.goType(col, mockSettings))
 			}
 		})
 	}
