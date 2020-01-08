@@ -252,7 +252,7 @@ Your favorite PostgreSQL / Go features are supported:
   - [Migration tools](./examples/migrations.md)
 
 A full, end-to-end example can be found in the sample
-[`ondeck`](./internal/dinosql/testdata/ondeck) package.
+[`ondeck`](./examples/ondeck) package.
 
 ## Usage
 

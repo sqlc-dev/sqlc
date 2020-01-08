@@ -7,6 +7,7 @@ require (
 	github.com/google/go-cmp v0.3.0
 	github.com/jinzhu/inflection v1.0.0
 	github.com/lfittl/pg_query_go v1.0.0
+	github.com/lib/pq v1.3.0
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.5 // indirect
 	golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553 // indirect

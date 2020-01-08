@@ -1,3 +1,5 @@
+// +build examples
+
 package ondeck
 
 import (
@@ -9,8 +11,6 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
-
-	"example.com/ondeck/prepared"
 
 	"github.com/google/go-cmp/cmp"
 	_ "github.com/lib/pq"
@@ -70,19 +70,6 @@ func provision(t *testing.T) (*sql.DB, func()) {
 		t.Fatal(err)
 	}
 
-	return sdb, func() {
-		if _, err := db.Exec("DROP SCHEMA " + schema + " CASCADE"); err != nil {
-			t.Fatal(err)
-		}
-	}
-}
-
-func TestQueries(t *testing.T) {
-	t.Parallel()
-
-	sdb, cleanup := provision(t)
-	defer cleanup()
-
 	files, err := ioutil.ReadDir("schema")
 	if err != nil {
 		t.Fatal(err)
@@ -97,8 +84,14 @@ func TestQueries(t *testing.T) {
 		}
 	}
 
-	q := New(sdb)
+	return sdb, func() {
+		if _, err := db.Exec("DROP SCHEMA " + schema + " CASCADE"); err != nil {
+			t.Fatal(err)
+		}
+	}
+}
 
+func runOnDeckQueries(t *testing.T, q *Queries) {
 	ctx := context.Background()
 
 	city, err := q.CreateCity(ctx, CreateCityParams{
@@ -213,128 +206,19 @@ func TestPrepared(t *testing.T) {
 	sdb, cleanup := provision(t)
 	defer cleanup()
 
-	files, err := ioutil.ReadDir("schema")
-	if err != nil {
-		t.Fatal(err)
-	}
-	for _, f := range files {
-		blob, err := ioutil.ReadFile(filepath.Join("schema", f.Name()))
-		if err != nil {
-			t.Fatal(err)
-		}
-		if _, err := sdb.Exec(string(blob)); err != nil {
-			t.Fatalf("%s: %s", f.Name(), err)
-		}
-	}
-
-	q, err := prepared.Prepare(context.Background(), sdb)
+	q, err := Prepare(context.Background(), sdb)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	ctx := context.Background()
+	runOnDeckQueries(t, q)
+}
 
-	city, err := q.CreateCity(ctx, prepared.CreateCityParams{
-		Slug: "san-francisco",
-		Name: "San Francisco",
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
+func TestQueries(t *testing.T) {
+	t.Parallel()
 
-	venueID, err := q.CreateVenue(ctx, prepared.CreateVenueParams{
-		Slug:            "the-fillmore",
-		Name:            "The Fillmore",
-		City:            city.Slug,
-		SpotifyPlaylist: "spotify:uri",
-		Status:          prepared.StatusOpen,
-		Tags:            []string{"rock", "punk"},
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
+	sdb, cleanup := provision(t)
+	defer cleanup()
 
-	venue, err := q.GetVenue(ctx, prepared.GetVenueParams{
-		Slug: "the-fillmore",
-		City: city.Slug,
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if diff := cmp.Diff(venue.ID, venueID); diff != "" {
-		t.Errorf("venue ID mismatch:\n%s", diff)
-	}
-
-	{
-		actual, err := q.GetCity(ctx, city.Slug)
-		if err != nil {
-			t.Error(err)
-		}
-		if diff := cmp.Diff(actual, city); diff != "" {
-			t.Errorf("get city mismatch:\n%s", diff)
-		}
-	}
-
-	{
-		actual, err := q.VenueCountByCity(ctx)
-		if err != nil {
-			t.Error(err)
-		}
-		if diff := cmp.Diff(actual, []prepared.VenueCountByCityRow{
-			{city.Slug, 1},
-		}); diff != "" {
-			t.Errorf("venue county mismatch:\n%s", diff)
-		}
-	}
-
-	{
-		actual, err := q.ListCities(ctx)
-		if err != nil {
-			t.Error(err)
-		}
-		if diff := cmp.Diff(actual, []prepared.City{city}); diff != "" {
-			t.Errorf("list city mismatch:\n%s", diff)
-		}
-	}
-
-	{
-		actual, err := q.ListVenues(ctx, city.Slug)
-		if err != nil {
-			t.Error(err)
-		}
-		if diff := cmp.Diff(actual, []prepared.Venue{venue}); diff != "" {
-			t.Errorf("list venue mismatch:\n%s", diff)
-		}
-	}
-
-	{
-		err := q.UpdateCityName(ctx, prepared.UpdateCityNameParams{
-			Slug: city.Slug,
-			Name: "SF",
-		})
-		if err != nil {
-			t.Error(err)
-		}
-	}
-
-	{
-		id, err := q.UpdateVenueName(ctx, prepared.UpdateVenueNameParams{
-			Slug: venue.Slug,
-			Name: "Fillmore",
-		})
-		if err != nil {
-			t.Error(err)
-		}
-		if diff := cmp.Diff(id, venue.ID); diff != "" {
-			t.Errorf("update venue mismatch:\n%s", diff)
-		}
-	}
-
-	{
-		err := q.DeleteVenue(ctx, venue.Slug)
-		if err != nil {
-			t.Error(err)
-		}
-	}
+	runOnDeckQueries(t, New(sdb))
 }

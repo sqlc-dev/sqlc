@@ -2,7 +2,7 @@ package dinosql
 
 import (
 	"io/ioutil"
-	"os/exec"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -159,45 +159,38 @@ func cmpDirectory(t *testing.T, dir string, actual map[string]string) {
 }
 
 func TestParseSchema(t *testing.T) {
-	c, err := ParseCatalog(filepath.Join("testdata", "ondeck", "schema"))
+	// Change to the top-level directory of the project
+	os.Chdir(filepath.Join("..", ".."))
+
+	rd, err := os.Open("sqlc.json")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	t.Run("default", func(t *testing.T) {
-		q, err := ParseQueries(c, mockSettings.PackageMap["ondeck"])
-		if err != nil {
-			t.Fatal(err)
-		}
-		output, err := Generate(q, mockSettings)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		cmpDirectory(t, filepath.Join("testdata", "ondeck"), output)
-	})
-
-	t.Run("prepared", func(t *testing.T) {
-		q, err := ParseQueries(c, mockSettings.PackageMap["prepared"])
-		if err != nil {
-			t.Fatal(err)
-		}
-		output, err := Generate(q, mockSettings)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		cmpDirectory(t, filepath.Join("testdata", "ondeck", "prepared"), output)
-	})
-}
-
-func TestCompile(t *testing.T) {
-	cmd := exec.Command("go", "build", "-mod", "readonly", "./...")
-	cmd.Dir = filepath.Join("testdata", "ondeck")
-	output, err := cmd.CombinedOutput()
+	conf, err := ParseConfig(rd)
 	if err != nil {
-		t.Errorf("%s: %s", err, string(output))
+		t.Fatal(err)
 	}
+
+	for pkg, s := range conf.PackageMap {
+		settings := s
+		t.Run(pkg, func(t *testing.T) {
+			c, err := ParseCatalog(settings.Schema)
+			if err != nil {
+				t.Fatal(err)
+			}
+			q, err := ParseQueries(c, settings)
+			if err != nil {
+				t.Fatal(err)
+			}
+			output, err := Generate(q, conf)
+			if err != nil {
+				t.Fatal(err)
+			}
+			cmpDirectory(t, settings.Path, output)
+		})
+	}
+
 }
 
 func TestParseMetadata(t *testing.T) {
