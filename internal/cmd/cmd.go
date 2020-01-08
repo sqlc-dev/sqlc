@@ -29,7 +29,7 @@ func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int 
 
 	rootCmd.SetArgs(args)
 	rootCmd.SetIn(stdin)
-	rootCmd.SetErr(stderr)
+	rootCmd.SetOut(stdout)
 	rootCmd.SetErr(stderr)
 
 	err := rootCmd.Execute()
@@ -127,26 +127,16 @@ var genCmd = &cobra.Command{
 
 		output := map[string]string{}
 
-		for i, pkg := range settings.Packages {
+		for _, pkg := range settings.Packages {
 			name := pkg.Name
-
-			if pkg.Path == "" {
-				fmt.Fprintf(os.Stderr, "package[%d]: path must be set\n", i)
-				errored = true
-				continue
-			}
-
-			if name == "" {
-				name = filepath.Base(pkg.Path)
-			}
 
 			var result dinosql.Generateable
 
-			switch pkg.Database {
+			switch pkg.Engine {
 
-			case dinosql.DatabaseMySQL:
+			case dinosql.EngineMySQL:
 				// Experimental MySQL support
-				q, err := mysql.GeneratePkg(pkg.Name, pkg.Schema, pkg.Queries, settings)
+				q, err := mysql.GeneratePkg(name, pkg.Schema, pkg.Queries, settings)
 				if err != nil {
 					fmt.Fprintf(os.Stderr, "# package %s\n", name)
 					fmt.Fprintf(os.Stderr, "error parsing file: %s\n", err)
@@ -155,7 +145,7 @@ var genCmd = &cobra.Command{
 				}
 				result = q
 
-			case dinosql.DatabasePostgreSQL:
+			case dinosql.EnginePostgreSQL:
 				c, err := dinosql.ParseCatalog(pkg.Schema)
 				if err != nil {
 					fmt.Fprintf(os.Stderr, "# package %s\n", name)
