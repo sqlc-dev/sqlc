@@ -223,17 +223,20 @@ func (r *Result) columnsToStruct(name string, items []structParams, settings din
 
 func goTypeCol(col *sqlparser.ColumnDefinition, settings dinosql.GenerateSettings) string {
 	switch t := col.Type.Type; {
-	case "varchar" == t, "text" == t, "char" == t:
+	case "varchar" == t, "text" == t, "char" == t,
+		"tinytext" == t, "mediumtext" == t, "longtext" == t:
 		if col.Type.NotNull {
 			return "string"
 		}
 		return "sql.NullString"
-	case "int" == t, "integer" == t, t == "smallint":
+	case "int" == t, "integer" == t, t == "smallint",
+		t == "tinyint", "mediumint" == t, "bigint" == t, "year" == t:
 		if col.Type.NotNull {
 			return "int"
 		}
 		return "sql.NullInt64"
-	case "blob" == t:
+	case "blob" == t, "binary" == t, "varbinary" == t, "tinyblob" == t,
+		"mediumblob" == t, "longblob" == t:
 		return "[]byte"
 	case "float" == t, strings.HasPrefix(strings.ToLower(t), "decimal"):
 		if col.Type.NotNull {
@@ -242,13 +245,16 @@ func goTypeCol(col *sqlparser.ColumnDefinition, settings dinosql.GenerateSetting
 		return "sql.NullFloat64"
 	case "enum" == t:
 		return enumNameFromColDef(col, settings)
-	case "date" == t, "timestamp" == t, "datetime" == t:
+	case "date" == t, "timestamp" == t, "datetime" == t, "time" == t:
 		if col.Type.NotNull {
 			return "time.Time"
 		}
 		return "sql.NullTime"
-	case "boolean" == t, "tinyint" == t:
-		return "bool"
+	case "boolean" == t:
+		if col.Type.NotNull {
+			return "bool"
+		}
+		return "sql.NullBool"
 	default:
 		log.Printf("unknown MySQL type: %s\n", t)
 		return "interface{}"
