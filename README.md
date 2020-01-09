@@ -97,7 +97,7 @@ if err != nil {
 fmt.Println(authors)
 
 // create an author
-insertedAuthor, err := db.CreateAuthor(ctx, &db.CreateAuthorParams{
+insertedAuthor, err := db.CreateAuthor(ctx, db.CreateAuthorParams{
         Name: "Brian Kernighan",
         Bio: "Co-author of The C Programming Language and The Go Programming Language",
 })
@@ -107,7 +107,7 @@ if err != nil {
 fmt.Println(insertedAuthor)
 
 // get the author we just inserted
-fetchedAuthor, err = db.GetAuthor(ctx, author.ID)
+fetchedAuthor, err := db.GetAuthor(ctx, insertedAuthor.ID)
 if err != nil {
         return err
 }
