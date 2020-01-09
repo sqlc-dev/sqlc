@@ -44,7 +44,7 @@ func parsePath(sqlPath string, inPkg string, s *Schema, settings dinosql.Generat
 		}
 		queries, err := parseContents(filename, string(contents), s, settings)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("Failed to parse contents of file [%v]: %s", filename, err)
 		}
 		parsedQueries = append(parsedQueries, queries...)
 	}
