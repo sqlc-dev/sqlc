@@ -42,15 +42,15 @@ const (
 )
 
 type PackageSettings struct {
-	Name                 string     `json:"name"`
-	Engine               Engine     `json:"engine,omitempty"`
-	Path                 string     `json:"path"`
-	Schema               string     `json:"schema"`
-	Queries              string     `json:"queries"`
-	EmitJSONTags         bool       `json:"emit_json_tags"`
-	EmitPreparedQueries  bool       `json:"emit_prepared_queries"`
-	EmitQueriesInterface bool       `json:"emit_queries_interface"`
-	Overrides            []Override `json:"overrides"`
+	Name                string     `json:"name"`
+	Engine              Engine     `json:"engine,omitempty"`
+	Path                string     `json:"path"`
+	Schema              string     `json:"schema"`
+	Queries             string     `json:"queries"`
+	EmitInterface       bool       `json:"emit_interface"`
+	EmitJSONTags        bool       `json:"emit_json_tags"`
+	EmitPreparedQueries bool       `json:"emit_prepared_queries"`
+	Overrides           []Override `json:"overrides"`
 }
 
 type Override struct {

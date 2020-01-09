@@ -921,7 +921,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	}
 }
 
-{{if .EmitQueriesInterface }}
+{{if .EmitInterface }}
 type Querier interface {
 	{{- range .GoQueries}}
 	{{- if eq .Cmd ":one"}}
@@ -1103,9 +1103,9 @@ type tmplCtx struct {
 	// TODO: Race conditions
 	SourceName string
 
-	EmitJSONTags         bool
-	EmitPreparedQueries  bool
-	EmitQueriesInterface bool
+	EmitJSONTags        bool
+	EmitPreparedQueries bool
+	EmitInterface       bool
 }
 
 func LowerTitle(s string) string {
@@ -1131,15 +1131,15 @@ func Generate(r Generateable, settings GenerateSettings) (map[string]string, err
 	sqlFile := template.Must(template.New("table").Funcs(funcMap).Parse(sqlTmpl))
 
 	tctx := tmplCtx{
-		Settings:             settings,
-		EmitJSONTags:         pkgConfig.EmitJSONTags,
-		EmitPreparedQueries:  pkgConfig.EmitPreparedQueries,
-		EmitQueriesInterface: pkgConfig.EmitQueriesInterface,
-		Q:                    "`",
-		Package:              pkgName,
-		GoQueries:            r.GoQueries(settings),
-		Enums:                r.Enums(settings),
-		Structs:              r.Structs(settings),
+		Settings:            settings,
+		EmitInterface:       pkgConfig.EmitInterface,
+		EmitJSONTags:        pkgConfig.EmitJSONTags,
+		EmitPreparedQueries: pkgConfig.EmitPreparedQueries,
+		Q:                   "`",
+		Package:             pkgName,
+		GoQueries:           r.GoQueries(settings),
+		Enums:               r.Enums(settings),
+		Structs:             r.Structs(settings),
 	}
 
 	output := map[string]string{}
