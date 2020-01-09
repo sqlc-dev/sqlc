@@ -15,15 +15,20 @@ import (
 
 // Query holds the data for walking and validating mysql querys
 type Query struct {
-	SQL              string                        // the string representation of the parsed query
-	Columns          []*sqlparser.ColumnDefinition // definitions for all columns returned by this query
-	Params           []*Param                      // "?" params in the query string
-	Name             string                        // the Go function name
-	Cmd              string                        // TODO: Pick a better name. One of: one, many, exec, execrows
-	DefaultTableName string                        // for columns that are not qualified
-	SchemaLookup     *Schema                       // for validation and conversion to Go types
+	SQL              string // the string representation of the parsed query
+	Columns          []Column
+	Params           []*Param // "?" params in the query string
+	Name             string   // the Go function name
+	Cmd              string   // TODO: Pick a better name. One of: one, many, exec, execrows
+	DefaultTableName string   // for columns that are not qualified
+	SchemaLookup     *Schema  // for validation and conversion to Go types
 
 	Filename string
+}
+
+type Column struct {
+	*sqlparser.ColumnDefinition
+	Table string
 }
 
 func parsePath(sqlPath string, inPkg string, s *Schema, settings dinosql.GenerateSettings) (*Result, error) {
@@ -402,8 +407,8 @@ func (q *Query) parseLeadingComment(comment string) error {
 	return nil
 }
 
-func parseSelectAliasExpr(exprs sqlparser.SelectExprs, s *Schema, tableAliasMap FromTables, defaultTable string) ([]*sqlparser.ColumnDefinition, error) {
-	colDfns := []*sqlparser.ColumnDefinition{}
+func parseSelectAliasExpr(exprs sqlparser.SelectExprs, s *Schema, tableAliasMap FromTables, defaultTable string) ([]Column, error) {
+	cols := []Column{}
 	for _, col := range exprs {
 		switch expr := col.(type) {
 		case *sqlparser.AliasedExpr:
@@ -418,15 +423,24 @@ func parseSelectAliasExpr(exprs sqlparser.SelectExprs, s *Schema, tableAliasMap 
 				if hasAlias {
 					res.Name = expr.As // applys the alias
 				}
-				colDfns = append(colDfns, res)
-			case *sqlparser.GroupConcatExpr:
-				colDfns = append(colDfns, &sqlparser.ColumnDefinition{
-					Name: sqlparser.NewColIdent(expr.As.String()),
-					Type: sqlparser.ColumnType{
-						Type:    "varchar",
-						NotNull: true,
-					},
+
+				fromTable, err := tableColReferences(v, defaultTable, tableAliasMap)
+				cols = append(cols, Column{
+					ColumnDefinition: res,
+					Table:            fromTable.TrueName,
 				})
+			case *sqlparser.GroupConcatExpr:
+				cols = append(cols, Column{
+					ColumnDefinition: &sqlparser.ColumnDefinition{
+						Name: sqlparser.NewColIdent(expr.As.String()),
+						Type: sqlparser.ColumnType{
+							Type:    "varchar",
+							NotNull: true,
+						},
+					},
+					Table: "", // group concat expressions don't originate from a table schema
+				},
+				)
 			case *sqlparser.FuncExpr:
 				funcName := v.Name.Lowered()
 				funcType := functionReturnType(funcName)
@@ -445,13 +459,13 @@ func parseSelectAliasExpr(exprs sqlparser.SelectExprs, s *Schema, tableAliasMap 
 						NotNull: true,
 					},
 				}
-				colDfns = append(colDfns, colDfn)
+				cols = append(cols, Column{colDfn, ""}) // func returns types don't originate from a table schema
 			}
 		default:
 			return nil, fmt.Errorf("Failed to handle select expr of type : %T", expr)
 		}
 	}
-	return colDfns, nil
+	return cols, nil
 }
 
 // GeneratePkg is the main entry to mysql generator package
