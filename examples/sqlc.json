@@ -2,6 +2,12 @@
   "version": "1",
   "packages": [
     {
+      "path": "authors",
+      "schema": "authors/schema.sql",
+      "queries": "authors/query.sql",
+      "engine": "postgresql"
+    },
+    {
       "path": "ondeck",
       "schema": "ondeck/schema",
       "queries": "ondeck/query",

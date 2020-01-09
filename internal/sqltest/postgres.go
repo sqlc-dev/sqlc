@@ -8,18 +8,25 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/kyleconroy/sqlc/internal/dinosql"
 
 	_ "github.com/lib/pq"
 )
 
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
+
+var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
 func id() string {
-	bytes := make([]byte, 10)
-	for i := 0; i < 10; i++ {
-		bytes[i] = byte(65 + rand.Intn(25)) // A=65 and Z = 65+25
+	b := make([]rune, 10)
+	for i := range b {
+		b[i] = letterRunes[rand.Intn(len(letterRunes))]
 	}
-	return string(bytes)
+	return string(b)
 }
 
 func PostgreSQL(t *testing.T, migrations string) (*sql.DB, func()) {
@@ -55,7 +62,7 @@ func PostgreSQL(t *testing.T, migrations string) (*sql.DB, func()) {
 		t.Fatal(err)
 	}
 
-	schema := "dinotest_" + id()
+	schema := "sqltest_" + id()
 
 	// For each test, pick a new schema name at random.
 	// `foo` is used here only as an example

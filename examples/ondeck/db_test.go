@@ -9,7 +9,6 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sqltest"
 
 	"github.com/google/go-cmp/cmp"
-	_ "github.com/lib/pq"
 )
 
 func runOnDeckQueries(t *testing.T, q *Queries) {
