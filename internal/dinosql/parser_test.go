@@ -1,13 +1,8 @@
 package dinosql
 
 import (
-	"io/ioutil"
-	"os/exec"
-	"path/filepath"
-	"strings"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
 	pg "github.com/lfittl/pg_query_go"
 	nodes "github.com/lfittl/pg_query_go/nodes"
 )
@@ -114,89 +109,6 @@ func TestExtractArgs(t *testing.T) {
 				t.Errorf("expected %d refs, got %d", q.count, len(refs))
 			}
 		}
-	}
-}
-
-func cmpDirectory(t *testing.T, dir string, actual map[string]string) {
-	t.Helper()
-
-	files, err := ioutil.ReadDir(dir)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	expected := map[string]string{}
-
-	for _, file := range files {
-		if file.IsDir() {
-			continue
-		}
-		if !strings.HasSuffix(file.Name(), ".go") {
-			continue
-		}
-		if strings.HasSuffix(file.Name(), "_test.go") {
-			continue
-		}
-		blob, err := ioutil.ReadFile(filepath.Join(dir, file.Name()))
-		if err != nil {
-			t.Fatal(err)
-		}
-		expected[file.Name()] = string(blob)
-	}
-
-	if !cmp.Equal(expected, actual) {
-		t.Errorf("%s contents differ", dir)
-		for name, contents := range expected {
-			if actual[name] == "" {
-				t.Errorf("%s is empty", name)
-				continue
-			}
-			if diff := cmp.Diff(contents, actual[name]); diff != "" {
-				t.Errorf("%s differed (-want +got):\n%s", name, diff)
-			}
-		}
-	}
-}
-
-func TestParseSchema(t *testing.T) {
-	c, err := ParseCatalog(filepath.Join("testdata", "ondeck", "schema"))
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	t.Run("default", func(t *testing.T) {
-		q, err := ParseQueries(c, mockSettings.PackageMap["ondeck"])
-		if err != nil {
-			t.Fatal(err)
-		}
-		output, err := Generate(q, mockSettings)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		cmpDirectory(t, filepath.Join("testdata", "ondeck"), output)
-	})
-
-	t.Run("prepared", func(t *testing.T) {
-		q, err := ParseQueries(c, mockSettings.PackageMap["prepared"])
-		if err != nil {
-			t.Fatal(err)
-		}
-		output, err := Generate(q, mockSettings)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		cmpDirectory(t, filepath.Join("testdata", "ondeck", "prepared"), output)
-	})
-}
-
-func TestCompile(t *testing.T) {
-	cmd := exec.Command("go", "build", "-mod", "readonly", "./...")
-	cmd.Dir = filepath.Join("testdata", "ondeck")
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		t.Errorf("%s: %s", err, string(output))
 	}
 }
 

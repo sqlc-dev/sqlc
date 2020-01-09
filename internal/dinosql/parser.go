@@ -1254,7 +1254,14 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 			}
 			fun, err := c.LookupFunctionN(fqn, len(n.Args.Items))
 			if err != nil {
-				return nil, err
+				// Synthesize a function on the fly to avoid returning with an error
+				// for an unknown Postgres function (e.g. defined in an extension)
+				fun = core.Function{
+					Name:       fqn.Rel,
+					ArgN:       len(n.Args.Items),
+					Arguments:  nil,
+					ReturnType: "any",
+				}
 			}
 			for i, item := range n.Args.Items {
 				pr, ok := item.(nodes.ParamRef)
