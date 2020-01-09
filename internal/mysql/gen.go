@@ -8,6 +8,7 @@ import (
 
 	"github.com/jinzhu/inflection"
 	"github.com/kyleconroy/sqlc/internal/dinosql"
+	core "github.com/kyleconroy/sqlc/internal/pg"
 	"vitess.io/vitess/go/vt/sqlparser"
 )
 
@@ -67,7 +68,8 @@ func (r *Result) Structs(settings dinosql.GenerateSettings) []dinosql.GoStruct {
 	var structs []dinosql.GoStruct
 	for tableName, cols := range r.Schema.tables {
 		s := dinosql.GoStruct{
-			Name: inflection.Singular(dinosql.StructName(tableName, settings)),
+			Name:  inflection.Singular(dinosql.StructName(tableName, settings)),
+			Table: core.FQN{tableName, "", ""}, // TODO: Complete hack. Only need for equality check to see if struct can be reused between queries
 		}
 
 		for _, col := range cols {
@@ -136,8 +138,8 @@ func (r *Result) GoQueries(settings dinosql.GenerateSettings) []dinosql.GoQuery 
 		if len(query.Columns) == 1 {
 			c := query.Columns[0]
 			gq.Ret = dinosql.GoQueryValue{
-				Name: columnName(c, 0),
-				Typ:  goTypeCol(c, settings),
+				Name: columnName(c.ColumnDefinition, 0),
+				Typ:  goTypeCol(c.ColumnDefinition, settings),
 			}
 		} else if len(query.Columns) > 1 {
 			var gs *dinosql.GoStruct
@@ -150,11 +152,13 @@ func (r *Result) GoQueries(settings dinosql.GenerateSettings) []dinosql.GoQuery 
 				same := true
 				for i, f := range s.Fields {
 					c := query.Columns[i]
-					sameName := f.Name == dinosql.StructName(columnName(c, i), settings)
-					sameType := f.Type == goTypeCol(c, settings)
-					// TODO: consider making this deep equality from stdlib?
-					// sameFQN := s.Table.EqualTo(&c.Table)
-					if !sameName || !sameType || true { // !sameFQN
+					sameName := f.Name == dinosql.StructName(columnName(c.ColumnDefinition, i), settings)
+					sameType := f.Type == goTypeCol(c.ColumnDefinition, settings)
+
+					hackedFQN := core.FQN{c.Table, "", ""} // TODO: only check needed here is equality to see if struct can be reused, this type should be removed or properly used
+					sameTable := s.Table.Catalog == hackedFQN.Catalog && s.Table.Schema == hackedFQN.Schema && s.Table.Rel == hackedFQN.Rel
+
+					if !sameName || !sameType || !sameTable {
 						same = false
 					}
 				}
@@ -169,7 +173,7 @@ func (r *Result) GoQueries(settings dinosql.GenerateSettings) []dinosql.GoQuery 
 				for i := range query.Columns {
 					structInfo[i] = structParams{
 						originalName: query.Columns[i].Name.String(),
-						goType:       goTypeCol(query.Columns[i], settings),
+						goType:       goTypeCol(query.Columns[i].ColumnDefinition, settings),
 					}
 				}
 				gs = r.columnsToStruct(gq.MethodName+"Row", structInfo, settings)
@@ -219,16 +223,21 @@ func (r *Result) columnsToStruct(name string, items []structParams, settings din
 
 func goTypeCol(col *sqlparser.ColumnDefinition, settings dinosql.GenerateSettings) string {
 	switch t := col.Type.Type; {
-	case "varchar" == t, "text" == t:
+	case "varchar" == t, "text" == t, "char" == t,
+		"tinytext" == t, "mediumtext" == t, "longtext" == t:
 		if col.Type.NotNull {
 			return "string"
 		}
 		return "sql.NullString"
-	case "int" == t, "integer" == t:
+	case "int" == t, "integer" == t, t == "smallint",
+		t == "tinyint", "mediumint" == t, "bigint" == t, "year" == t:
 		if col.Type.NotNull {
 			return "int"
 		}
 		return "sql.NullInt64"
+	case "blob" == t, "binary" == t, "varbinary" == t, "tinyblob" == t,
+		"mediumblob" == t, "longblob" == t:
+		return "[]byte"
 	case "float" == t, strings.HasPrefix(strings.ToLower(t), "decimal"):
 		if col.Type.NotNull {
 			return "float64"
@@ -236,13 +245,16 @@ func goTypeCol(col *sqlparser.ColumnDefinition, settings dinosql.GenerateSetting
 		return "sql.NullFloat64"
 	case "enum" == t:
 		return enumNameFromColDef(col, settings)
-	case "date" == t, "timestamp" == t, "datetime" == t:
+	case "date" == t, "timestamp" == t, "datetime" == t, "time" == t:
 		if col.Type.NotNull {
 			return "time.Time"
 		}
 		return "sql.NullTime"
 	case "boolean" == t:
-		return "bool"
+		if col.Type.NotNull {
+			return "bool"
+		}
+		return "sql.NullBool"
 	default:
 		log.Printf("unknown MySQL type: %s\n", t)
 		return "interface{}"
