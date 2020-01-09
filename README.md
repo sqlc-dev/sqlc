@@ -99,7 +99,7 @@ fmt.Println(authors)
 // create an author
 insertedAuthor, err := db.CreateAuthor(ctx, db.CreateAuthorParams{
         Name: "Brian Kernighan",
-        Bio: "Co-author of The C Programming Language and The Go Programming Language",
+        Bio:  sql.NullString{String: "Co-author of The C Programming Language and The Go Programming Language", Valid: true},
 })
 if err != nil {
         return err
