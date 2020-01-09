@@ -28,7 +28,7 @@ SELECT school_id, id FROM teachers WHERE school_lng > ? AND school_lat < ?;
 SELECT id, school_lat FROM teachers WHERE id = ? LIMIT 10;
 
 /* name: GetStudentsTeacher :one */
-SELECT students.first_name, students.last_name, teachers.first_name teacherFirstName,
+SELECT first_name, last_name, teachers.first_name teacher_first_name,
 teachers.id teacher_id
   FROM students 
   Left JOIN teachers on teachers.class_id = students.class_id
