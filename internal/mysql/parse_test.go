@@ -275,7 +275,7 @@ func TestParseSelect(t *testing.T) {
 				Params:           []*Param{},
 				Name:             "GetAllUsersOrders",
 				Cmd:              ":many",
-				DefaultTableName: "", // TODO: verify that this is desired behaviour
+				DefaultTableName: "orders",
 				SchemaLookup:     mockSchema,
 			},
 		},
