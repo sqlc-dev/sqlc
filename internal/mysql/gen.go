@@ -80,7 +80,7 @@ func (r *Result) Structs(settings dinosql.GenerateSettings) []dinosql.GoStruct {
 		}
 		structs = append(structs, s)
 	}
-
+	sort.Slice(structs, func(i, j int) bool { return structs[i].Name < structs[j].Name })
 	return structs
 }
 
