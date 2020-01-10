@@ -52,7 +52,7 @@ func (gf GoField) Tag() string {
 }
 
 type GoStruct struct {
-	Table   Comparable
+	Table   core.FQN
 	Name    string
 	Fields  []GoField
 	Comment string
@@ -63,28 +63,6 @@ type GoQueryValue struct {
 	Name   string
 	Struct *GoStruct
 	Typ    string
-}
-
-// TODO: consider making this deep equality from stdlib?
-type Comparable interface {
-	EqualTo(b interface{}) bool
-}
-
-type FQNAlias core.FQN
-
-// Check whether tables are equal
-func (a *FQNAlias) EqualTo(other interface{}) bool {
-	b, ok := other.(*core.FQN)
-	if !ok {
-		panic("Unknown ")
-	}
-	if a == nil && b == nil {
-		return true
-	}
-	if a == nil || b == nil {
-		return false
-	}
-	return a.Catalog == b.Catalog && a.Schema == b.Schema && a.Rel == b.Rel
 }
 
 func (v GoQueryValue) EmitStruct() bool {
@@ -490,7 +468,7 @@ func (r Result) Structs(settings GenerateSettings) []GoStruct {
 				tableName = name + "_" + table.Name
 			}
 			s := GoStruct{
-				Table:   &FQNAlias{Schema: name, Rel: table.Name},
+				Table:   core.FQN{Schema: name, Rel: table.Name},
 				Name:    inflection.Singular(StructName(tableName, settings)),
 				Comment: table.Comment,
 			}
@@ -785,9 +763,8 @@ func (r Result) GoQueries(settings GenerateSettings) []GoQuery {
 					c := query.Columns[i]
 					sameName := f.Name == StructName(columnName(c, i), settings)
 					sameType := f.Type == r.goType(c, settings)
+					sameTable := s.Table.Catalog == c.Table.Catalog && s.Table.Schema == c.Table.Schema && s.Table.Rel == c.Table.Rel
 
-					// TODO: clean this up!!
-					sameTable := s.Table.EqualTo(&c.Table)
 					if !sameName || !sameType || !sameTable {
 						same = false
 					}

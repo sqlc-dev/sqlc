@@ -115,14 +115,17 @@ func initMockSchema() {
 	}
 }
 
-func filterCols(allCols []*sqlparser.ColumnDefinition, tableNames map[string]struct{}) []*sqlparser.ColumnDefinition {
-	filteredCols := []*sqlparser.ColumnDefinition{}
+func filterCols(allCols []*sqlparser.ColumnDefinition, colNames map[string]string) []Column {
+	cols := []Column{}
 	for _, col := range allCols {
-		if _, ok := tableNames[col.Name.String()]; ok {
-			filteredCols = append(filteredCols, col)
+		if table, ok := colNames[col.Name.String()]; ok {
+			cols = append(cols, Column{
+				col,
+				table,
+			})
 		}
 	}
-	return filteredCols
+	return cols
 }
 
 func TestParseSelect(t *testing.T) {
@@ -145,21 +148,27 @@ func TestParseSelect(t *testing.T) {
 			},
 			output: &Query{
 				SQL: "select id as my_id, COUNT(id) as id_count from users where id > 4",
-				Columns: []*sqlparser.ColumnDefinition{
-					&sqlparser.ColumnDefinition{
-						Name: sqlparser.NewColIdent("my_id"),
-						Type: sqlparser.ColumnType{
-							Type:          "int",
-							NotNull:       true,
-							Autoincrement: true,
+				Columns: []Column{
+					Column{
+						&sqlparser.ColumnDefinition{
+							Name: sqlparser.NewColIdent("my_id"),
+							Type: sqlparser.ColumnType{
+								Type:          "int",
+								NotNull:       true,
+								Autoincrement: true,
+							},
 						},
+						"users",
 					},
-					&sqlparser.ColumnDefinition{
-						Name: sqlparser.NewColIdent("id_count"),
-						Type: sqlparser.ColumnType{
-							Type:    "int",
-							NotNull: true,
+					Column{
+						&sqlparser.ColumnDefinition{
+							Name: sqlparser.NewColIdent("id_count"),
+							Type: sqlparser.ColumnType{
+								Type:    "int",
+								NotNull: true,
+							},
 						},
+						"",
 					},
 				},
 				Params:           []*Param{},
@@ -178,7 +187,7 @@ func TestParseSelect(t *testing.T) {
 			},
 			output: &Query{
 				SQL:     `select first_name, last_name from users where id = ?`,
-				Columns: filterCols(mockSchema.tables["users"], map[string]struct{}{"first_name": struct{}{}, "last_name": struct{}{}}),
+				Columns: filterCols(mockSchema.tables["users"], map[string]string{"first_name": "users", "last_name": "users"}),
 				Params: []*Param{
 					&Param{
 						OriginalName: ":v1",
@@ -200,7 +209,7 @@ func TestParseSelect(t *testing.T) {
 			},
 			output: &Query{
 				SQL:              "select first_name, last_name, id, age from users",
-				Columns:          mockSchema.tables["users"],
+				Columns:          filterCols(mockSchema.tables["users"], map[string]string{"first_name": "users", "last_name": "users", "id": "users", "age": "users"}),
 				Params:           []*Param{},
 				Name:             "GetAll",
 				Cmd:              ":many",
@@ -218,43 +227,55 @@ func TestParseSelect(t *testing.T) {
 			},
 			output: &Query{
 				SQL: "select u.id as user_id, u.first_name, o.price, o.id as order_id from orders as o left join users as u on u.id = o.user_id",
-				Columns: []*sqlparser.ColumnDefinition{
-					&sqlparser.ColumnDefinition{
-						Name: sqlparser.NewColIdent("user_id"),
-						Type: sqlparser.ColumnType{
-							Type:          "int",
-							Autoincrement: true,
-							NotNull:       false, // beause of the left join
+				Columns: []Column{
+					Column{
+						&sqlparser.ColumnDefinition{
+							Name: sqlparser.NewColIdent("user_id"),
+							Type: sqlparser.ColumnType{
+								Type:          "int",
+								Autoincrement: true,
+								NotNull:       false, // beause of the left join
+							},
 						},
+						"users",
 					},
-					&sqlparser.ColumnDefinition{
-						Name: sqlparser.NewColIdent("first_name"),
-						Type: sqlparser.ColumnType{
-							Type:    "varchar",
-							NotNull: false, // because of left join
+					Column{
+						&sqlparser.ColumnDefinition{
+							Name: sqlparser.NewColIdent("first_name"),
+							Type: sqlparser.ColumnType{
+								Type:    "varchar",
+								NotNull: false, // because of left join
+							},
 						},
+						"users",
 					},
-					&sqlparser.ColumnDefinition{
-						Name: sqlparser.NewColIdent("price"),
-						Type: sqlparser.ColumnType{
-							Type:          "DECIMAL(13, 4)",
-							Autoincrement: true,
-							NotNull:       true,
+					Column{
+						&sqlparser.ColumnDefinition{
+							Name: sqlparser.NewColIdent("price"),
+							Type: sqlparser.ColumnType{
+								Type:          "DECIMAL(13, 4)",
+								Autoincrement: true,
+								NotNull:       true,
+							},
 						},
+						"orders",
 					},
-					&sqlparser.ColumnDefinition{
-						Name: sqlparser.NewColIdent("order_id"),
-						Type: sqlparser.ColumnType{
-							Type:          "int",
-							Autoincrement: true,
-							NotNull:       true,
+					Column{
+						&sqlparser.ColumnDefinition{
+							Name: sqlparser.NewColIdent("order_id"),
+							Type: sqlparser.ColumnType{
+								Type:          "int",
+								Autoincrement: true,
+								NotNull:       true,
+							},
 						},
+						"orders",
 					},
 				},
 				Params:           []*Param{},
 				Name:             "GetAllUsersOrders",
 				Cmd:              ":many",
-				DefaultTableName: "", // TODO: verify that this is desired behaviour
+				DefaultTableName: "orders",
 				SchemaLookup:     mockSchema,
 			},
 		},
@@ -318,8 +339,8 @@ func TestSchemaLookup(t *testing.T) {
 		t.Errorf("Failed to get column schema from mock schema: %v", err)
 	}
 
-	expected := filterCols(mockSchema.tables["users"], map[string]struct{}{"first_name": struct{}{}})
-	if !reflect.DeepEqual(firstNameColDfn, expected[0]) {
+	expected := filterCols(mockSchema.tables["users"], map[string]string{"first_name": "users"})
+	if !reflect.DeepEqual(Column{firstNameColDfn, "users"}, expected[0]) {
 		t.Errorf("Table schema lookup returned unexpected result")
 	}
 }
