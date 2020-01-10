@@ -47,8 +47,9 @@ type PackageSettings struct {
 	Path                string     `json:"path"`
 	Schema              string     `json:"schema"`
 	Queries             string     `json:"queries"`
-	EmitPreparedQueries bool       `json:"emit_prepared_queries"`
+	EmitInterface       bool       `json:"emit_interface"`
 	EmitJSONTags        bool       `json:"emit_json_tags"`
+	EmitPreparedQueries bool       `json:"emit_prepared_queries"`
 	Overrides           []Override `json:"overrides"`
 }
 
