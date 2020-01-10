@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 	"strings"
 
@@ -34,15 +33,15 @@ func parsePath(sqlPath string, inPkg string, s *Schema, settings dinosql.Generat
 
 	parsedQueries := []*Query{}
 	for _, filename := range files {
-		file, err := os.Open(filename)
+		blob, err := ioutil.ReadFile(filename)
 		if err != nil {
-			return nil, fmt.Errorf("Failed to open file [%v]: %v", filename, err)
+			return nil, fmt.Errorf("Failed to read file [%v]: %v", filename, err)
 		}
-		contents, err := ioutil.ReadAll(file)
+		contents := dinosql.RemoveRollbackStatements(string(blob))
 		if err != nil {
 			return nil, fmt.Errorf("Failed to read contents of file [%v]: %v", filename, err)
 		}
-		queries, err := parseContents(filename, string(contents), s, settings)
+		queries, err := parseContents(filename, contents, s, settings)
 		if err != nil {
 			return nil, err
 		}
