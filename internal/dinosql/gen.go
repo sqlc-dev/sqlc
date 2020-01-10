@@ -1156,7 +1156,7 @@ func Generate(r Generateable, settings GenerateSettings) (map[string]string, err
 		code, err := format.Source(b.Bytes())
 		if err != nil {
 			fmt.Println(b.String())
-			return fmt.Errorf("source error: %s", err)
+			return fmt.Errorf("source error: %w", err)
 		}
 		if !strings.HasSuffix(name, ".go") {
 			name += ".go"
