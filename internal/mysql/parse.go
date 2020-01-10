@@ -5,8 +5,6 @@ import (
 	"io"
 	"io/ioutil"
 	"path/filepath"
-	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/davecgh/go-spew/spew"
@@ -48,7 +46,7 @@ func parsePath(sqlPath string, inPkg string, s *Schema, settings dinosql.Generat
 		}
 		queries, err := parseContents(filename, contents, s, settings)
 		if err != nil {
-			if positionedErr, ok := err.(PositionedError); ok {
+			if positionedErr, ok := err.(PositionedErr); ok {
 				parseErrors.Add(filename, contents, positionedErr.Pos, err)
 			} else {
 				parseErrors.Add(filename, contents, 0, err)
@@ -69,33 +67,6 @@ func parsePath(sqlPath string, inPkg string, s *Schema, settings dinosql.Generat
 	}, nil
 }
 
-func locationFromErr(errMessage error) (int, error) {
-	matcher := regexp.MustCompile("position ([0-9]*)")
-	results := matcher.FindStringSubmatch(errMessage.Error())
-	if len(results) > 0 {
-		return strconv.Atoi(results[1])
-	}
-	return 0, fmt.Errorf("failed to find position integer in parser error message")
-}
-
-func nearFromErr(errMessage error) (string, error) {
-	matcher := regexp.MustCompile("near '(.*)'")
-	results := matcher.FindStringSubmatch(errMessage.Error())
-	if len(results) > 0 {
-		return results[1], nil
-	}
-	return "", fmt.Errorf("failed to find parser 'near' message")
-}
-
-type PositionedError struct {
-	Pos int
-	Err error
-}
-
-func (e PositionedError) Error() string {
-	return e.Err.Error()
-}
-
 func parseContents(filename, contents string, s *Schema, settings dinosql.GenerateSettings) ([]*Query, error) {
 	t := sqlparser.NewStringTokenizer(contents)
 	var queries []*Query
@@ -105,14 +76,20 @@ func parseContents(filename, contents string, s *Schema, settings dinosql.Genera
 		if err == io.EOF {
 			break
 		} else if err != nil {
-			parsedLoc, _ := locationFromErr(err)
-			near, _ := nearFromErr(err)
-			return nil, PositionedError{parsedLoc, fmt.Errorf("syntax error at or near '%s'", near)}
+			parsedLoc, locErr := locFromSyntaxErr(err)
+			if locErr != nil {
+				parsedLoc = start // next best guess of the error location
+			}
+			near, nearErr := nearStrFromSyntaxErr(err)
+			if nearErr != nil {
+				return nil, PositionedErr{parsedLoc, fmt.Errorf("syntax error")}
+			}
+			return nil, PositionedErr{parsedLoc, fmt.Errorf("syntax error at or near '%s'", near)}
 		}
 		query := contents[start : t.Position-1]
 		result, err := parseQueryString(q, query, s, settings)
 		if err != nil {
-			return nil, PositionedError{start, err}
+			return nil, PositionedErr{start, err}
 		}
 		start = t.Position
 		if result == nil {
