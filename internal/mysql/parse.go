@@ -147,7 +147,6 @@ func parseQueryString(tree sqlparser.Statement, query string, s *Schema, setting
 		parsedQuery = update
 	case *sqlparser.Delete:
 		delete, err := parseDelete(tree, query, s, settings)
-		delete.SchemaLookup = nil
 		if err != nil {
 			return nil, err
 		}
