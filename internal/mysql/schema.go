@@ -24,7 +24,7 @@ func (s *Schema) getColType(col *sqlparser.ColName, tableAliasMap FromTables, de
 	if !col.Qualifier.IsEmpty() {
 		realTable, ok := tableAliasMap[col.Qualifier.Name.String()]
 		if !ok {
-			return nil, fmt.Errorf("Column qualifier [%v] not found in table alias map", col.Qualifier.Name.String())
+			return nil, fmt.Errorf("column qualifier \"%v\" not found in query", col.Qualifier.Name.String())
 		}
 		colDfn, err := s.schemaLookup(realTable.TrueName, col.Name.String())
 		if err != nil {
@@ -37,7 +37,7 @@ func (s *Schema) getColType(col *sqlparser.ColName, tableAliasMap FromTables, de
 		return &colDfnCopy, nil
 	}
 	if defaultTableName == "" {
-		return nil, fmt.Errorf("Column reference [%v] is ambiguous -- Add a qualifier", col.Name.String())
+		return nil, fmt.Errorf("column reference \"%v\" is ambiguous, consider adding a qualifier", col.Name.String())
 	}
 	colDfn, err := s.schemaLookup(defaultTableName, col.Name.String())
 	if err != nil {
@@ -54,7 +54,7 @@ func (s *Schema) Add(ddl *sqlparser.DDL) {
 	case "create":
 		name := ddl.Table.Name.String()
 		if ddl.TableSpec == nil {
-			panic(fmt.Sprintf("Failed to parse table [%v] schema.", name))
+			panic(fmt.Sprintf("failed to parse table \"%s\" schema.", name))
 		}
 		s.tables[name] = ddl.TableSpec.Columns
 	}
@@ -63,7 +63,7 @@ func (s *Schema) Add(ddl *sqlparser.DDL) {
 func (s *Schema) schemaLookup(table string, col string) (*sqlparser.ColumnDefinition, error) {
 	cols, ok := s.tables[table]
 	if !ok {
-		return nil, fmt.Errorf("Table [%v] not found in Schema", table)
+		return nil, fmt.Errorf("table \"%s\" not found in schema", table)
 	}
 
 	for _, colDef := range cols {
@@ -72,5 +72,5 @@ func (s *Schema) schemaLookup(table string, col string) (*sqlparser.ColumnDefini
 		}
 	}
 
-	return nil, fmt.Errorf("Column [%v] not found in table [%v]", col, table)
+	return nil, fmt.Errorf("column \"%s\" not found in table \"%s\"", col, table)
 }
