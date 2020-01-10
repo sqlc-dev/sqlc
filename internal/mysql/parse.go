@@ -31,21 +31,33 @@ func parsePath(sqlPath string, inPkg string, s *Schema, settings dinosql.Generat
 		return nil, err
 	}
 
+	parseErrors := dinosql.ParserErr{}
+
 	parsedQueries := []*Query{}
 	for _, filename := range files {
 		blob, err := ioutil.ReadFile(filename)
 		if err != nil {
-			return nil, fmt.Errorf("Failed to read file [%v]: %v", filename, err)
+			parseErrors.Add(filename, "", 0, err)
 		}
 		contents := dinosql.RemoveRollbackStatements(string(blob))
 		if err != nil {
-			return nil, fmt.Errorf("Failed to read contents of file [%v]: %v", filename, err)
+			parseErrors.Add(filename, "", 0, err)
+			continue
 		}
 		queries, err := parseContents(filename, contents, s, settings)
 		if err != nil {
-			return nil, err
+			if positionedErr, ok := err.(PositionedErr); ok {
+				parseErrors.Add(filename, contents, positionedErr.Pos, err)
+			} else {
+				parseErrors.Add(filename, contents, 0, err)
+			}
+			continue
 		}
 		parsedQueries = append(parsedQueries, queries...)
+	}
+
+	if len(parseErrors.Errs) > 0 {
+		return nil, &parseErrors
 	}
 
 	return &Result{
@@ -64,12 +76,20 @@ func parseContents(filename, contents string, s *Schema, settings dinosql.Genera
 		if err == io.EOF {
 			break
 		} else if err != nil {
-			return nil, err
+			parsedLoc, locErr := locFromSyntaxErr(err)
+			if locErr != nil {
+				parsedLoc = start // next best guess of the error location
+			}
+			near, nearErr := nearStrFromSyntaxErr(err)
+			if nearErr != nil {
+				return nil, PositionedErr{parsedLoc, fmt.Errorf("syntax error")}
+			}
+			return nil, PositionedErr{parsedLoc, fmt.Errorf("syntax error at or near '%s'", near)}
 		}
 		query := contents[start : t.Position-1]
 		result, err := parseQueryString(q, query, s, settings)
 		if err != nil {
-			return nil, fmt.Errorf("Failed to parse query in filepath [%v]: %v", filename, err)
+			return nil, PositionedErr{start, err}
 		}
 		start = t.Position
 		if result == nil {
@@ -87,26 +107,25 @@ func parseQueryString(tree sqlparser.Statement, query string, s *Schema, setting
 	case *sqlparser.Select:
 		selectQuery, err := parseSelect(tree, query, s, settings)
 		if err != nil {
-			return nil, fmt.Errorf("Failed to parse SELECT query: %v", err)
+			return nil, err
 		}
 		parsedQuery = selectQuery
 	case *sqlparser.Insert:
 		insert, err := parseInsert(tree, query, s, settings)
 		if err != nil {
-			return nil, fmt.Errorf("Failed to parse INSERT query: %v", err)
+			return nil, err
 		}
 		parsedQuery = insert
 	case *sqlparser.Update:
 		update, err := parseUpdate(tree, query, s, settings)
 		if err != nil {
-			return nil, fmt.Errorf("Failed to parse UPDATE query: %v", err)
+			return nil, err
 		}
 		parsedQuery = update
 	case *sqlparser.Delete:
 		delete, err := parseDelete(tree, query, s, settings)
-		delete.SchemaLookup = nil
 		if err != nil {
-			return nil, fmt.Errorf("Failed to parse DELETE query: %v", err)
+			return nil, err
 		}
 		parsedQuery = delete
 	case *sqlparser.DDL:
@@ -118,7 +137,7 @@ func parseQueryString(tree sqlparser.Statement, query string, s *Schema, setting
 	}
 	paramsReplacedQuery, err := replaceParamStrs(sqlparser.String(tree), parsedQuery.Params)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to replace param variables in query string: %v", err)
+		return nil, fmt.Errorf("failed to replace param variables in query string: %v", err)
 	}
 	parsedQuery.SQL = paramsReplacedQuery
 	return parsedQuery, nil
@@ -126,12 +145,12 @@ func parseQueryString(tree sqlparser.Statement, query string, s *Schema, setting
 
 func (q *Query) parseNameAndCmd() error {
 	if q == nil {
-		return fmt.Errorf("Cannot parse name and cmd from null query")
+		return fmt.Errorf("cannot parse name and cmd from null query")
 	}
 	_, comments := sqlparser.SplitMarginComments(q.SQL)
 	err := q.parseLeadingComment(comments.Leading)
 	if err != nil {
-		return fmt.Errorf("Failed to parse leading comment %v", err)
+		return fmt.Errorf("failed to parse leading comment %v", err)
 	}
 	return nil
 }
@@ -139,7 +158,7 @@ func (q *Query) parseNameAndCmd() error {
 func parseSelect(tree *sqlparser.Select, query string, s *Schema, settings dinosql.GenerateSettings) (*Query, error) {
 	tableAliasMap, err := parseFrom(tree.From, false)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to parse table name alias's: %v", err)
+		return nil, fmt.Errorf("failed to parse table name alias's: %v", err)
 	}
 	defaultTableName := getDefaultTable(tableAliasMap)
 
@@ -412,7 +431,7 @@ func parseSelectAliasExpr(exprs sqlparser.SelectExprs, s *Schema, tableAliasMap 
 			case *sqlparser.ColName:
 				res, err := s.getColType(v, tableAliasMap, defaultTable)
 				if err != nil {
-					panic(fmt.Sprintf("Column not found in schema: %v", err))
+					return nil, err
 				}
 				if hasAlias {
 					res.Name = expr.As // applys the alias
@@ -458,11 +477,11 @@ func GeneratePkg(pkgName, schemaPath, querysPath string, settings dinosql.Genera
 	s := NewSchema()
 	_, err := parsePath(schemaPath, pkgName, s, settings)
 	if err != nil {
-		return nil, fmt.Errorf("schema failure: %w", err)
+		return nil, err
 	}
 	result, err := parsePath(querysPath, pkgName, s, settings)
 	if err != nil {
-		return nil, fmt.Errorf("query failure: %w", err)
+		return nil, err
 	}
 	return result, nil
 }
