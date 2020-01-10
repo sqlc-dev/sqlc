@@ -17,26 +17,15 @@ type BooksByTitleYearParams struct {
 	Yr    int
 }
 
-type BooksByTitleYearRow struct {
-	BookID    int
-	AuthorID  int
-	Isbn      string
-	BookType  BookTypeType
-	Title     string
-	Yr        int
-	Available time.Time
-	Tags      string
-}
-
-func (q *Queries) BooksByTitleYear(ctx context.Context, arg BooksByTitleYearParams) ([]BooksByTitleYearRow, error) {
+func (q *Queries) BooksByTitleYear(ctx context.Context, arg BooksByTitleYearParams) ([]Book, error) {
 	rows, err := q.db.QueryContext(ctx, booksByTitleYear, arg.Title, arg.Yr)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []BooksByTitleYearRow
+	var items []Book
 	for rows.Next() {
-		var i BooksByTitleYearRow
+		var i Book
 		if err := rows.Scan(
 			&i.BookID,
 			&i.AuthorID,
@@ -109,14 +98,9 @@ const getAuthor = `-- name: GetAuthor :one
 select author_id, name from authors where author_id = ?
 `
 
-type GetAuthorRow struct {
-	AuthorID int
-	Name     string
-}
-
-func (q *Queries) GetAuthor(ctx context.Context, author_id int) (GetAuthorRow, error) {
+func (q *Queries) GetAuthor(ctx context.Context, author_id int) (Author, error) {
 	row := q.db.QueryRowContext(ctx, getAuthor, author_id)
-	var i GetAuthorRow
+	var i Author
 	err := row.Scan(&i.AuthorID, &i.Name)
 	return i, err
 }
@@ -125,20 +109,9 @@ const getBook = `-- name: GetBook :one
 select book_id, author_id, isbn, book_type, title, yr, available, tags from books where book_id = ?
 `
 
-type GetBookRow struct {
-	BookID    int
-	AuthorID  int
-	Isbn      string
-	BookType  BookTypeType
-	Title     string
-	Yr        int
-	Available time.Time
-	Tags      string
-}
-
-func (q *Queries) GetBook(ctx context.Context, book_id int) (GetBookRow, error) {
+func (q *Queries) GetBook(ctx context.Context, book_id int) (Book, error) {
 	row := q.db.QueryRowContext(ctx, getBook, book_id)
-	var i GetBookRow
+	var i Book
 	err := row.Scan(
 		&i.BookID,
 		&i.AuthorID,
