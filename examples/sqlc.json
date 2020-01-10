@@ -13,7 +13,8 @@
       "queries": "ondeck/query",
       "engine": "postgresql",
       "emit_json_tags": true,
-      "emit_prepared_queries": true
+      "emit_prepared_queries": true,
+      "emit_interface": true
     },
     {
       "path": "jets",
