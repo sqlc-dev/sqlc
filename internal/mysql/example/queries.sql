@@ -18,7 +18,13 @@ CREATE TABLE students (
   first_name varchar(255),
   last_name varchar(255),
   PRIMARY KEY (id)
-)
+);
+
+-- +goose Down
+DROP TABLE students;
+
+-- +goose Down
+DROP TABLE teachers;
 
 /* name: GetTeachersByID :one */
 SELECT * FROM teachers WHERE id = ?
