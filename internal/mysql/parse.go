@@ -50,21 +50,8 @@ func parsePath(sqlPath string, inPkg string, s *Schema, settings dinosql.Generat
 		if err != nil {
 			if positionedErr, ok := err.(PositionedError); ok {
 				parseErrors.Add(filename, contents, positionedErr.Pos, err)
-				continue
-			}
-			location := 0
-			// the default format of the MySQL parse errors is as below
-			// err == "syntax error at position 331 near 'O'"
-			// to provide more context to sqlc users, this error should not be shown directly
-			parsedLoc, errParsingLoc := locationFromErr(err)
-			if errParsingLoc == nil {
-				location = parsedLoc
-			}
-			near, errParsingNear := nearFromErr(err)
-			if errParsingNear != nil {
-				parseErrors.Add(filename, contents, location, err)
 			} else {
-				parseErrors.Add(filename, contents, location, fmt.Errorf("syntax error at or near '%s'", near))
+				parseErrors.Add(filename, contents, 0, err)
 			}
 			continue
 		}
@@ -118,7 +105,9 @@ func parseContents(filename, contents string, s *Schema, settings dinosql.Genera
 		if err == io.EOF {
 			break
 		} else if err != nil {
-			return nil, err
+			parsedLoc, _ := locationFromErr(err)
+			near, _ := nearFromErr(err)
+			return nil, PositionedError{parsedLoc, fmt.Errorf("syntax error at or near '%s'", near)}
 		}
 		query := contents[start : t.Position-1]
 		result, err := parseQueryString(q, query, s, settings)
