@@ -83,7 +83,7 @@ func TestSelectParamSearcher(t *testing.T) {
 		}
 		selectStm, ok := tree.(*sqlparser.Select)
 
-		tableAliasMap, err := parseFrom(selectStm.From, false)
+		tableAliasMap, _, err := parseFrom(selectStm.From, false)
 		if err != nil {
 			t.Errorf("Failed to parse table name alias's: %v", err)
 		}
