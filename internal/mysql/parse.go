@@ -272,8 +272,10 @@ func parseUpdate(node *sqlparser.Update, query string, s *Schema, settings dinos
 	params := []*Param{}
 	for _, updateExpr := range node.Exprs {
 		col := updateExpr.Name
-		newValue, isParam := updateExpr.Expr.(*sqlparser.SQLVal)
-		if !isParam {
+		newValue, isValue := updateExpr.Expr.(*sqlparser.SQLVal)
+		if !isValue {
+			continue
+		} else if isParam := newValue.Type == sqlparser.ValArg; !isParam {
 			continue
 		}
 		colDfn, err := s.getColType(col, tableAliasMap, defaultTable)
@@ -289,7 +291,7 @@ func parseUpdate(node *sqlparser.Update, query string, s *Schema, settings dinos
 		params = append(params, &param)
 	}
 
-	whereParams, err := paramsInWhereExpr(node.Where.Expr, s, tableAliasMap, defaultTable, settings)
+	whereParams, err := paramsInWhereExpr(node.Where, s, tableAliasMap, defaultTable, settings)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse params from WHERE expression: %w", err)
 	}
