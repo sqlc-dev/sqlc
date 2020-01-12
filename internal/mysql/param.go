@@ -44,12 +44,20 @@ func paramsInLimitExpr(limit *sqlparser.Limit, s *Schema, tableAliasMap FromTabl
 
 func paramsInWhereExpr(e sqlparser.SQLNode, s *Schema, tableAliasMap FromTables, defaultTable string, settings dinosql.GenerateSettings) ([]*Param, error) {
 	params := []*Param{}
+	if e == nil {
+		return params, nil
+	} else if expr, ok := e.(*sqlparser.Where); ok {
+		if expr == nil {
+			return params, nil
+		}
+		e = expr.Expr
+	}
 	switch v := e.(type) {
 	case *sqlparser.Where:
 		if v == nil {
 			return params, nil
 		}
-		return paramsInWhereExpr(v.Expr, s, tableAliasMap, defaultTable, settings)
+		return paramsInWhereExpr(v, s, tableAliasMap, defaultTable, settings)
 	case *sqlparser.ComparisonExpr:
 		p, found, err := paramInComparison(v, s, tableAliasMap, defaultTable, settings)
 		if err != nil {

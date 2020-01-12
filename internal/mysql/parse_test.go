@@ -389,6 +389,22 @@ UPDATE users SET first_name = ?, last_name = ? WHERE id > ? AND first_name = ? L
 			},
 		},
 		testCase{
+			name: "update_without_where",
+			input: expected{
+				query:  "/* name: UpdateAllUsers :exec */ update users set first_name = 'Bob'",
+				schema: mockSchema,
+			},
+			output: &Query{
+				SQL:              "update users set first_name = 'Bob'",
+				Columns:          nil,
+				Params:           []*Param{},
+				Name:             "UpdateAllUsers",
+				Cmd:              ":exec",
+				DefaultTableName: "users",
+				SchemaLookup:     mockSchema,
+			},
+		},
+		testCase{
 			name: "update_users",
 			input: expected{
 				query:  query2,
