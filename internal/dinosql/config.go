@@ -102,13 +102,24 @@ func (o *Override) Parse() error {
 	// validate GoType
 	lastDot := strings.LastIndex(o.GoType, ".")
 	if lastDot == -1 {
-		return fmt.Errorf("Package override `go_type` specificier %q is not the proper format, expected 'package.type', e.g. 'github.com/segmentio/ksuid.KSUID'", o.GoType)
+		return fmt.Errorf("Package override `go_type` specifier %q is not the proper format, expected 'package.type', e.g. 'github.com/segmentio/ksuid.KSUID'", o.GoType)
 	}
 	lastSlash := strings.LastIndex(o.GoType, "/")
 	if lastSlash == -1 {
-		return fmt.Errorf("Package override `go_type` specificier %q is not the proper format, expected 'package.type', e.g. 'github.com/segmentio/ksuid.KSUID'", o.GoType)
+		return fmt.Errorf("Package override `go_type` specifier %q is not the proper format, expected 'package.type', e.g. 'github.com/segmentio/ksuid.KSUID'", o.GoType)
 	}
-	o.goTypeName = o.GoType[lastSlash+1:]
+	typename := o.GoType[lastSlash+1:]
+	if strings.HasPrefix(typename, "go-") {
+		// a package name beginning with "go-" will give syntax errors in
+		// generated code. We should do the right thing and get the actual
+		// import name, but in lieu of that, stripping the leading "go-" may get
+		// us what we want.
+		typename = typename[len("go-"):]
+	}
+	if strings.HasSuffix(typename, "-go") {
+		typename = typename[:len(typename)-len("-go")]
+	}
+	o.goTypeName = typename
 	o.goPackage = o.GoType[:lastDot]
 	isPointer := o.GoType[0] == '*'
 	if isPointer {
