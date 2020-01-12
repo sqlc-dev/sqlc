@@ -342,7 +342,7 @@ Each override document has the following keys:
 - `go_type`:
   - A fully qualified name to a Go type to use in the generated code.
 - `null`:
-  - If true, use this type when a column in nullable. Defaults to `false`.
+  - If true, use this type when a column is nullable. Defaults to `false`.
 
 ### Per-Column Type Overrides
 

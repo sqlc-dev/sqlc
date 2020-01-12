@@ -225,8 +225,10 @@ func ModelImports(r Generateable, settings GenerateSettings) [][]string {
 	pkg := make(map[string]struct{})
 	overrideTypes := map[string]string{}
 	for _, o := range append(settings.Overrides, settings.PackageMap[r.PkgName()].Overrides...) {
+		fmt.Println("override", o.goTypeName, o.goPackage)
 		overrideTypes[o.goTypeName] = o.goPackage
 	}
+	fmt.Printf("%#v\n", r.PkgName())
 
 	_, overrideNullTime := overrideTypes["pq.NullTime"]
 	if UsesType(r, "pq.NullTime", settings) && !overrideNullTime {
