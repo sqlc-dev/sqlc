@@ -355,16 +355,12 @@ func TestParseInsertUpdate(t *testing.T) {
 		input  expected
 		output *Query
 	}
-	query1 := `/* name: InsertNewUser :exec */
-INSERT INTO users (first_name, last_name) VALUES (?, ?)`
-	query2 := `/* name: UpdateUserAt :exec */
-UPDATE users SET first_name = ?, last_name = ? WHERE id > ? AND first_name = ? LIMIT 3`
 
 	tests := []testCase{
 		testCase{
 			name: "insert_users",
 			input: expected{
-				query:  query1,
+				query:  "/* name: InsertNewUser :exec */\nINSERT INTO users (first_name, last_name) VALUES (?, ?)",
 				schema: mockSchema,
 			},
 			output: &Query{
@@ -407,7 +403,7 @@ UPDATE users SET first_name = ?, last_name = ? WHERE id > ? AND first_name = ? L
 		testCase{
 			name: "update_users",
 			input: expected{
-				query:  query2,
+				query:  "/* name: UpdateUserAt :exec */\nUPDATE users SET first_name = ?, last_name = ? WHERE id > ? AND first_name = ? LIMIT 3",
 				schema: mockSchema,
 			},
 			output: &Query{
@@ -436,6 +432,28 @@ UPDATE users SET first_name = ?, last_name = ? WHERE id > ? AND first_name = ? L
 					},
 				},
 				Name:             "UpdateUserAt",
+				Cmd:              ":exec",
+				DefaultTableName: "users",
+				SchemaLookup:     mockSchema,
+			},
+		},
+		testCase{
+			name: "insert_users_from_orders",
+			input: expected{
+				query:  "/* name: InsertUsersFromOrders :exec */\ninsert into users ( first_name ) select user_id from orders where id = ?;",
+				schema: mockSchema,
+			},
+			output: &Query{
+				SQL:     "insert into users(first_name) select user_id from orders where id = ?",
+				Columns: nil,
+				Params: []*Param{
+					&Param{
+						OriginalName: ":v1",
+						Name:         "id",
+						Typ:          "int",
+					},
+				},
+				Name:             "InsertUsersFromOrders",
 				Cmd:              ":exec",
 				DefaultTableName: "users",
 				SchemaLookup:     mockSchema,
