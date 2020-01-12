@@ -309,38 +309,46 @@ func parseUpdate(node *sqlparser.Update, query string, s *Schema, settings dinos
 }
 
 func parseInsert(node *sqlparser.Insert, query string, s *Schema, settings dinosql.GenerateSettings) (*Query, error) {
+	params := []*Param{}
 	cols := node.Columns
 	tableName := node.Table.Name.String()
-	rows, ok := node.Rows.(sqlparser.Values)
-	if !ok {
+
+	switch rows := node.Rows.(type) {
+	case *sqlparser.Select:
+		selectQuery, err := parseSelect(rows, query, s, settings)
+		if err != nil {
+			return nil, err
+		}
+		params = append(params, selectQuery.Params...)
+	case sqlparser.Values:
+		for _, row := range rows {
+			for colIx, item := range row {
+				switch v := item.(type) {
+				case *sqlparser.SQLVal:
+					if v.Type == sqlparser.ValArg {
+						colName := cols[colIx].String()
+						colDfn, err := s.schemaLookup(tableName, colName)
+						varName := string(v.Val)
+						p := &Param{OriginalName: varName}
+						if err == nil {
+							p.Name = paramName(colDfn.Name, varName)
+							p.Typ = goTypeCol(colDfn, settings)
+						} else {
+							p.Name = "Unknown"
+							p.Typ = "interface{}"
+						}
+						params = append(params, p)
+					}
+
+				default:
+					panic("Error occurred in parsing INSERT statement")
+				}
+			}
+		}
+	default:
 		return nil, fmt.Errorf("Unknown insert row type of %T", node.Rows)
 	}
 
-	params := []*Param{}
-
-	for _, row := range rows {
-		for colIx, item := range row {
-			switch v := item.(type) {
-			case *sqlparser.SQLVal:
-				if v.Type == sqlparser.ValArg {
-					colName := cols[colIx].String()
-					colDfn, err := s.schemaLookup(tableName, colName)
-					varName := string(v.Val)
-					p := &Param{OriginalName: varName}
-					if err == nil {
-						p.Name = paramName(colDfn.Name, varName)
-						p.Typ = goTypeCol(colDfn, settings)
-					} else {
-						p.Name = "Unknown"
-						p.Typ = "interface{}"
-					}
-					params = append(params, p)
-				}
-			default:
-				panic("Error occurred in parsing INSERT statement")
-			}
-		}
-	}
 	parsedQuery := &Query{
 		SQL:              query,
 		Params:           params,
