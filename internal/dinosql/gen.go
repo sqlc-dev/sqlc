@@ -225,6 +225,9 @@ func ModelImports(r Generateable, settings GenerateSettings) [][]string {
 	pkg := make(map[string]struct{})
 	overrideTypes := map[string]string{}
 	for _, o := range append(settings.Overrides, settings.PackageMap[r.PkgName()].Overrides...) {
+		if o.goBasicType {
+			continue
+		}
 		overrideTypes[o.goTypeName] = o.goPackage
 	}
 
@@ -357,6 +360,9 @@ func QueryImports(r Generateable, settings GenerateSettings, filename string) []
 	pkg := make(map[string]struct{})
 	overrideTypes := map[string]string{}
 	for _, o := range append(settings.Overrides, settings.PackageMap[r.PkgName()].Overrides...) {
+		if o.goBasicType {
+			continue
+		}
 		overrideTypes[o.goTypeName] = o.goPackage
 	}
 
