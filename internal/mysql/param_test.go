@@ -118,7 +118,7 @@ func TestInsertParamSearcher(t *testing.T) {
 
 	tests := []testCase{
 		testCase{
-			input: "INSERT INTO users (first_name, last_name) VALUES (?, ?)",
+			input: "/* name: InsertNewUser :exec */\nINSERT INTO users (first_name, last_name) VALUES (?, ?)",
 			output: []*Param{
 				&Param{
 					OriginalName: ":v1",
