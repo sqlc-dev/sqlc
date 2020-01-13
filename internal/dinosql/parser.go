@@ -675,6 +675,7 @@ func sourceTables(c core.Catalog, node nodes.Node) ([]core.Table, error) {
 			Items: []nodes.Node{*n.Relation},
 		}
 	case nodes.UpdateStmt:
+		with = n.WithClause
 		list = nodes.List{
 			Items: append(n.FromClause.Items, *n.Relation),
 		}
