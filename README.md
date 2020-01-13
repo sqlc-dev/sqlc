@@ -229,6 +229,9 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 
 Your favorite PostgreSQL / Go features are supported:
 - SQL
+  - [Query annotations](./docs/annotations.md)
+  - [Transactions](./docs/transactions.md)
+  - [Prepared queries](./docs/prepared_query.md)
   - [SELECT](./docs/query_one.md)
   - [NULL](./docs/null.md)
   - [COUNT](./docs/query_count.md)
@@ -237,8 +240,6 @@ Your favorite PostgreSQL / Go features are supported:
   - [DELETE](./docs/delete.md)
   - [RETURNING](./docs/returning.md)
   - [ANY](./docs/any.md)
-  - [Transactions](./docs/transactions.md)
-  - [Prepared queries](./docs/prepared_query.md)
 - PostgreSQL Types
   - [Arrays](./docs/arrays.md)
   - [Enums](./docs/enums.md)
@@ -342,7 +343,7 @@ Each override document has the following keys:
 - `go_type`:
   - A fully qualified name to a Go type to use in the generated code.
 - `null`:
-  - If true, use this type when a column in nullable. Defaults to `false`.
+  - If true, use this type when a column is nullable. Defaults to `false`.
 
 ### Per-Column Type Overrides
 
