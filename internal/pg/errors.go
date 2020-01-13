@@ -1,6 +1,8 @@
 package pg
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type Error struct {
 	Message  string
