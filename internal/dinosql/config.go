@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"go/types"
 	"io"
 	"path/filepath"
 	"strings"
@@ -66,10 +67,11 @@ type Override struct {
 	// fully qualified name of the column, e.g. `accounts.id`
 	Column string `json:"column"`
 
-	columnName string
-	table      pg.FQN
-	goTypeName string
-	goPackage  string
+	columnName  string
+	table       pg.FQN
+	goTypeName  string
+	goPackage   string
+	goBasicType bool
 }
 
 func (o *Override) Parse() error {
@@ -101,26 +103,49 @@ func (o *Override) Parse() error {
 
 	// validate GoType
 	lastDot := strings.LastIndex(o.GoType, ".")
-	if lastDot == -1 {
-		return fmt.Errorf("Package override `go_type` specifier %q is not the proper format, expected 'package.type', e.g. 'github.com/segmentio/ksuid.KSUID'", o.GoType)
-	}
 	lastSlash := strings.LastIndex(o.GoType, "/")
-	if lastSlash == -1 {
-		return fmt.Errorf("Package override `go_type` specifier %q is not the proper format, expected 'package.type', e.g. 'github.com/segmentio/ksuid.KSUID'", o.GoType)
-	}
-	typename := o.GoType[lastSlash+1:]
-	if strings.HasPrefix(typename, "go-") {
-		// a package name beginning with "go-" will give syntax errors in
-		// generated code. We should do the right thing and get the actual
-		// import name, but in lieu of that, stripping the leading "go-" may get
-		// us what we want.
-		typename = typename[len("go-"):]
-	}
-	if strings.HasSuffix(typename, "-go") {
-		typename = typename[:len(typename)-len("-go")]
+	typename := o.GoType
+	if lastDot == -1 && lastSlash == -1 {
+		// if the type name has no slash and no dot, validate that the type is a basic Go type
+		var found bool
+		for _, typ := range types.Typ {
+			info := typ.Info()
+			if info == 0 {
+				continue
+			}
+			if info&types.IsUntyped != 0 {
+				continue
+			}
+			if typename == typ.Name() {
+				found = true
+			}
+		}
+		if !found {
+			return fmt.Errorf("Package override `go_type` specifier %q is not a Go basic type e.g. 'string'", o.GoType)
+		}
+		o.goBasicType = true
+	} else {
+		// assume the type lives in a Go package
+		if lastDot == -1 {
+			return fmt.Errorf("Package override `go_type` specifier %q is not the proper format, expected 'package.type', e.g. 'github.com/segmentio/ksuid.KSUID'", o.GoType)
+		}
+		if lastSlash == -1 {
+			return fmt.Errorf("Package override `go_type` specifier %q is not the proper format, expected 'package.type', e.g. 'github.com/segmentio/ksuid.KSUID'", o.GoType)
+		}
+		typename = o.GoType[lastSlash+1:]
+		if strings.HasPrefix(typename, "go-") {
+			// a package name beginning with "go-" will give syntax errors in
+			// generated code. We should do the right thing and get the actual
+			// import name, but in lieu of that, stripping the leading "go-" may get
+			// us what we want.
+			typename = typename[len("go-"):]
+		}
+		if strings.HasSuffix(typename, "-go") {
+			typename = typename[:len(typename)-len("-go")]
+		}
+		o.goPackage = o.GoType[:lastDot]
 	}
 	o.goTypeName = typename
-	o.goPackage = o.GoType[:lastDot]
 	isPointer := o.GoType[0] == '*'
 	if isPointer {
 		o.goPackage = o.goPackage[1:]

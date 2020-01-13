@@ -61,3 +61,88 @@ func TestBadConfigs(t *testing.T) {
 		})
 	}
 }
+
+func TestTypeOverrides(t *testing.T) {
+	for _, test := range []struct {
+		override Override
+		pkg      string
+		typeName string
+		basic    bool
+	}{
+		{
+			Override{
+				PostgresType: "uuid",
+				GoType:       "github.com/segmentio/ksuid.KSUID",
+			},
+			"github.com/segmentio/ksuid",
+			"ksuid.KSUID",
+			false,
+		},
+		// TODO: Add test for struct pointers
+		//
+		// {
+		// 	Override{
+		// 		PostgresType: "uuid",
+		// 		GoType:       "github.com/segmentio/*ksuid.KSUID",
+		// 	},
+		// 	"github.com/segmentio/ksuid",
+		// 	"*ksuid.KSUID",
+		// 	false,
+		// },
+		{
+			Override{
+				PostgresType: "citext",
+				GoType:       "string",
+			},
+			"",
+			"string",
+			true,
+		},
+	} {
+		tt := test
+		t.Run(tt.override.GoType, func(t *testing.T) {
+			if err := tt.override.Parse(); err != nil {
+				t.Fatalf("override parsing failed; %s", err)
+			}
+			if diff := cmp.Diff(tt.typeName, tt.override.goTypeName); diff != "" {
+				t.Errorf("type name mismatch;\n%s", diff)
+			}
+			if diff := cmp.Diff(tt.pkg, tt.override.goPackage); diff != "" {
+				t.Errorf("package mismatch;\n%s", diff)
+			}
+			if diff := cmp.Diff(tt.basic, tt.override.goBasicType); diff != "" {
+				t.Errorf("basic mismatch;\n%s", diff)
+			}
+		})
+	}
+	for _, test := range []struct {
+		override Override
+		err      string
+	}{
+		{
+			Override{
+				PostgresType: "uuid",
+				GoType:       "Pointer",
+			},
+			"Package override `go_type` specifier \"Pointer\" is not a Go basic type e.g. 'string'",
+		},
+		{
+			Override{
+				PostgresType: "uuid",
+				GoType:       "untyped rune",
+			},
+			"Package override `go_type` specifier \"untyped rune\" is not a Go basic type e.g. 'string'",
+		},
+	} {
+		tt := test
+		t.Run(tt.override.GoType, func(t *testing.T) {
+			err := tt.override.Parse()
+			if err == nil {
+				t.Fatalf("expected pars to fail; got nil")
+			}
+			if diff := cmp.Diff(tt.err, err.Error()); diff != "" {
+				t.Errorf("error mismatch;\n%s", diff)
+			}
+		})
+	}
+}
