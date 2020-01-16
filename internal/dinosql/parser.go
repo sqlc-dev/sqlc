@@ -231,6 +231,11 @@ func ParseQueries(c core.Catalog, pkg PackageSettings) (*Result, error) {
 			continue
 		}
 		source := string(blob)
+		// source, _, err := named.CompileNamedQuery(blob, named.DOLLAR)
+		// if err != nil {
+		// 	merr.Add(filename, "", 0, err)
+		// 	continue
+		// }
 		tree, err := pg.Parse(source)
 		if err != nil {
 			merr.Add(filename, source, 0, err)
@@ -420,6 +425,9 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string) (*Query, error) 
 	if err := validateParamRef(stmt); err != nil {
 		return nil, err
 	}
+	if err := validateParamStyle(stmt); err != nil {
+		return nil, err
+	}
 	raw, ok := stmt.(nodes.RawStmt)
 	if !ok {
 		return nil, errors.New("node is not a statement")
@@ -450,6 +458,13 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string) (*Query, error) 
 	if err := validateCmd(raw.Stmt, name, cmd); err != nil {
 		return nil, err
 	}
+
+	// Query manipulation
+	raw, err = rewriteNamedParameters(raw)
+	if err != nil {
+		return nil, err
+	}
+
 	rvs := rangeVars(raw.Stmt)
 	refs := findParameters(raw.Stmt)
 	params, err := resolveCatalogRefs(c, rvs, refs)
@@ -962,6 +977,9 @@ type paramRef struct {
 	parent nodes.Node
 	rv     *nodes.RangeVar
 	ref    nodes.ParamRef
+
+	// HACK
+	name string
 }
 
 type paramSearch struct {
@@ -997,6 +1015,11 @@ func (p paramSearch) Visit(node nodes.Node) Visitor {
 	switch n := node.(type) {
 
 	case nodes.A_Expr:
+		if join(n.Name, "-") == "@" && n.Lexpr == nil {
+			param := nodes.ParamRef{Number: 1}
+			p.refs[1] = paramRef{parent: p.parent, rv: p.rangeVar, name: "slug", ref: param}
+			return nil
+		}
 		p.parent = node
 
 	case nodes.FuncCall:
@@ -1235,6 +1258,9 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 				for _, table := range search {
 					if c, ok := typeMap[table.Schema][table.Rel][key]; ok {
 						found += 1
+						if ref.name != "" {
+							key = ref.name
+						}
 						a = append(a, Parameter{
 							Number: ref.ref.Number,
 							Column: core.Column{

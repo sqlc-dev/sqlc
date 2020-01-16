@@ -5,6 +5,7 @@ func NewCatalog() Catalog {
 		Schemas: map[string]Schema{
 			"public":     NewSchema(),
 			"pg_catalog": pgCatalog(),
+			"sqlc":       internalSchema(),
 			// Likewise, the current session's temporary-table schema, pg_temp_nnn, is
 			// always searched if it exists. It can be explicitly listed in the path by
 			// using the alias pg_temp. If it is not listed in the path then it is

@@ -884,6 +884,22 @@ func TestQueries(t *testing.T) {
 				},
 			},
 		},
+		{
+			"named_parameter",
+			`
+			CREATE TABLE foo (name text not null);
+			SELECT name FROM foo WHERE name = sqlc.arg(slug);
+			`,
+			Query{
+				SQL: "SELECT name FROM foo WHERE name = $1;",
+				Columns: []core.Column{
+					{Table: public("foo"), Name: "name", DataType: "text", NotNull: true},
+				},
+				Params: []Parameter{
+					{1, core.Column{Table: public("foo"), Name: "slug", DataType: "text", NotNull: true}},
+				},
+			},
+		},
 	} {
 		test := tc
 		t.Run(test.name, func(t *testing.T) {
@@ -928,7 +944,7 @@ func TestComparisonOperators(t *testing.T) {
 }
 
 func TestUnknownFunctions(t *testing.T) {
-	stmt :=  `
+	stmt := `
 		CREATE TABLE foo (id text not null);
 		-- name: ListFoos :one
 		SELECT id FROM foo WHERE id = frobnicate($1);

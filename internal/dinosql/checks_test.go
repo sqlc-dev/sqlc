@@ -66,6 +66,10 @@ func TestParserErrors(t *testing.T) {
 				Location: 7,
 			},
 		},
+		{
+			"SELECT foo FROM bar WHERE baz = $1 AND bat = sqlc.arg(named);",
+			pg.Error{Code: "", Message: "query mixes positional parameters ($1) and named parameters (sqlc.arg)"},
+		},
 	} {
 		test := tc
 		t.Run(test.query, func(t *testing.T) {
