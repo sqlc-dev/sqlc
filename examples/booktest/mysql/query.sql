@@ -43,6 +43,9 @@ WHERE book_id = ?;
 
 /* name: UpdateBookISBN :exec */
 UPDATE books
-SET title = ?, tags = ?, isbn = ?
+SET title = ?, tags = :book_tags, isbn = ?
 WHERE book_id = ?;
 
+/* name: DeleteAuthorBeforeYear :exec */
+DELETE FROM books
+WHERE yr < sqlc.arg(min_publish_year) AND author_id = ?;
