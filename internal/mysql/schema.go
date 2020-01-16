@@ -22,6 +22,9 @@ type Schema struct {
 // returns a deep copy of the column definition for using as a query return type or param type
 func (s *Schema) getColType(col *sqlparser.ColName, tableAliasMap FromTables, defaultTableName string) (*sqlparser.ColumnDefinition, error) {
 	realTable, err := tableColReferences(col, defaultTableName, tableAliasMap)
+	if err != nil {
+		return nil, err
+	}
 
 	colDfn, err := s.schemaLookup(realTable.TrueName, col.Name.String())
 	if err != nil {
@@ -38,13 +41,13 @@ func tableColReferences(col *sqlparser.ColName, defaultTable string, tableAliasM
 	var table FromTable
 	if col.Qualifier.IsEmpty() {
 		if defaultTable == "" {
-			return FromTable{}, fmt.Errorf("Column reference [%v] is ambiguous -- Add a qualifier", col.Name.String())
+			return FromTable{}, fmt.Errorf("column reference \"%s\" is ambiguous, add a qualifier", col.Name.String())
 		}
 		table = FromTable{defaultTable, false}
 	} else {
 		fromTable, ok := tableAliasMap[col.Qualifier.Name.String()]
 		if !ok {
-			return FromTable{}, fmt.Errorf("Column qualifier [%v] not found in table alias map", col.Qualifier.Name.String())
+			return FromTable{}, fmt.Errorf("column qualifier \"%s\" is not in schema or is an invalid alias", col.Qualifier.Name.String())
 		}
 		return fromTable, nil
 	}
