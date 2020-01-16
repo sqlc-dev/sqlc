@@ -340,20 +340,35 @@ func validateQueryName(name string) error {
 		isLetter := unicode.IsLetter(c) || c == '_'
 		isDigit := unicode.IsDigit(c)
 		if i == 0 && !isLetter {
-			return fmt.Errorf("invalid query name: %q", name)
+			return fmt.Errorf("invalid query name %q", name)
 		} else if !(isLetter || isDigit) {
-			return fmt.Errorf("invalid query name: %q", name)
+			return fmt.Errorf("invalid query name %q", name)
 		}
 	}
 	return nil
 }
 
-func parseMetadata(t string) (string, string, error) {
+type CommentSyntax int
+
+const (
+	CommentSyntaxDash CommentSyntax = iota
+	CommentSyntaxStar               // Note: this is the only style supported by the MySQL sqlparser
+	CommentSyntaxHash
+)
+
+func ParseMetadata(t string, commentStyle CommentSyntax) (string, string, error) {
 	for _, line := range strings.Split(t, "\n") {
-		if !strings.HasPrefix(line, "-- name:") {
+		if commentStyle == CommentSyntaxDash && !strings.HasPrefix(line, "-- name:") {
+			continue
+		}
+		if commentStyle == CommentSyntaxStar && !strings.HasPrefix(line, "/* name:") {
 			continue
 		}
 		part := strings.Split(strings.TrimSpace(line), " ")
+
+		if commentStyle == CommentSyntaxStar {
+			part = part[:len(part)-1] // removes the trailing "*/" element
+		}
 		if len(part) == 2 {
 			return "", "", fmt.Errorf("missing query type [':one', ':many', ':exec', ':execrows']: %s", line)
 		}
@@ -428,7 +443,7 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string) (*Query, error) 
 	if err := validateFuncCall(&c, raw); err != nil {
 		return nil, err
 	}
-	name, cmd, err := parseMetadata(strings.TrimSpace(rawSQL))
+	name, cmd, err := ParseMetadata(strings.TrimSpace(rawSQL), CommentSyntaxDash)
 	if err != nil {
 		return nil, err
 	}
