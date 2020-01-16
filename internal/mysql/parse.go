@@ -345,9 +345,30 @@ func parseInsert(node *sqlparser.Insert, query string, s *Schema, settings dinos
 						}
 						params = append(params, p)
 					}
+				case *sqlparser.FuncExpr:
+					name, raw, err := matchFuncExpr(v)
 
+					if err != nil {
+						return nil, err
+					}
+					if name == "" || raw == "" {
+						continue
+					}
+					colName := cols[colIx].String()
+					colDfn, err := s.schemaLookup(tableName, colName)
+					p := &Param{
+						OriginalName: raw,
+					}
+					if err == nil {
+						p.Name = name
+						p.Typ = goTypeCol(colDfn, settings)
+					} else {
+						p.Name = "Unknown"
+						p.Typ = "interface{}"
+					}
+					params = append(params, p)
 				default:
-					panic("Error occurred in parsing INSERT statement")
+					return nil, fmt.Errorf("failed to parse insert query value")
 				}
 			}
 		}

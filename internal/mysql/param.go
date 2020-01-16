@@ -23,7 +23,7 @@ func paramsInLimitExpr(limit *sqlparser.Limit, s *Schema, tableAliasMap FromTabl
 		return params, nil
 	}
 
-	parseLimitSubExp := func(node sqlparser.Expr) {
+	parseLimitSubExp := func(node sqlparser.Expr) error {
 		switch v := node.(type) {
 		case *sqlparser.SQLVal:
 			if v.Type == sqlparser.ValArg {
@@ -33,11 +33,30 @@ func paramsInLimitExpr(limit *sqlparser.Limit, s *Schema, tableAliasMap FromTabl
 					Typ:          "uint32",
 				})
 			}
+		case *sqlparser.FuncExpr:
+			name, raw, err := matchFuncExpr(v)
+			if err != nil {
+				return err
+			}
+			if name != "" && raw != "" {
+				params = append(params, &Param{
+					OriginalName: raw,
+					Name:         name,
+					Typ:          "uint32",
+				})
+			}
 		}
+		return nil
 	}
 
-	parseLimitSubExp(limit.Offset)
-	parseLimitSubExp(limit.Rowcount)
+	err := parseLimitSubExp(limit.Offset)
+	if err != nil {
+		return nil, err
+	}
+	err = parseLimitSubExp(limit.Rowcount)
+	if err != nil {
+		return nil, err
+	}
 
 	return params, nil
 }
@@ -115,12 +134,25 @@ func paramInComparison(cond *sqlparser.ComparisonExpr, s *Schema, tableAliasMap 
 			if v.Type == sqlparser.ValArg {
 				p.OriginalName = string(v.Val)
 			}
+		case *sqlparser.FuncExpr:
+			name, raw, err := matchFuncExpr(v)
+			if err != nil {
+				return false, err
+			}
+			if name != "" && raw != "" {
+				p.OriginalName = raw
+				p.Name = name
+			}
+			return false, nil
 		}
 		return true, nil
 	}
 	err := sqlparser.Walk(walker, cond)
 	if err != nil {
 		return nil, false, err
+	}
+	if p.Name != "" {
+		return p, true, nil
 	}
 	if p.OriginalName != "" && p.Typ != "" {
 		p.Name = paramName(colIdent, p.OriginalName)
@@ -143,11 +175,39 @@ func paramName(col sqlparser.ColIdent, originalName string) string {
 
 func replaceParamStrs(query string, params []*Param) (string, error) {
 	for _, p := range params {
-		re, err := regexp.Compile(fmt.Sprintf("(%v)", p.OriginalName))
+		re, err := regexp.Compile(fmt.Sprintf("(%v)", regexp.QuoteMeta(p.OriginalName)))
 		if err != nil {
 			return "", err
 		}
 		query = re.ReplaceAllString(query, "?")
 	}
 	return query, nil
+}
+
+func matchFuncExpr(v *sqlparser.FuncExpr) (name string, raw string, err error) {
+	namespace := "sqlc"
+	fakeFunc := "arg"
+	if v.Qualifier.String() == namespace {
+		if v.Name.String() == fakeFunc {
+			if expr, ok := v.Exprs[0].(*sqlparser.AliasedExpr); ok {
+				if colName, ok := expr.Expr.(*sqlparser.ColName); ok {
+					customName := colName.Name.String()
+					return customName, fmt.Sprintf("%s.%s(%s)", namespace, fakeFunc, customName), nil
+				}
+				return "", "", fmt.Errorf("invalid custom argument value \"%s.%s(%s)\"", namespace, fakeFunc, replaceVParamExprs(sqlparser.String(v.Exprs[0])))
+			}
+			return "", "", fmt.Errorf("invalid custom argument value \"%s.%s(%s)\"", namespace, fakeFunc, replaceVParamExprs(sqlparser.String(v.Exprs[0])))
+		}
+		return "", "", fmt.Errorf("invalid function call \"%s.%s\", did you mean \"%s.%s\"?", namespace, v.Name.String(), namespace, fakeFunc)
+	}
+	return "", "", nil
+}
+
+func replaceVParamExprs(sql string) string {
+	/*
+	   the sqlparser replaces "?" with ":v1"
+	   to display a helpful error message, these should be replaced back to "?"
+	*/
+	matcher := regexp.MustCompile(":v[0-9]*")
+	return matcher.ReplaceAllString(sql, "?")
 }
