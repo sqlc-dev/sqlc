@@ -6,7 +6,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/google/go-cmp/cmp"
 	"github.com/kyleconroy/sqlc/internal/dinosql"
 	"vitess.io/vitess/go/vt/sqlparser"
@@ -44,7 +43,13 @@ func TestParseConfig(t *testing.T) {
 func TestGeneratePkg(t *testing.T) {
 	_, err := GeneratePkg(mockSettings.Packages[0].Name, filename, filename, mockSettings)
 	if err != nil {
-		t.Fatal(err)
+		if pErr, ok := err.(*dinosql.ParserErr); ok {
+			for _, fileErr := range pErr.Errs {
+				t.Errorf("%s:%d:%d: %s\n", fileErr.Filename, fileErr.Line, fileErr.Column, fileErr.Err)
+			}
+		} else {
+			t.Errorf("failed to generate pkg %s", err)
+		}
 	}
 }
 
@@ -303,33 +308,28 @@ func TestParseSelect(t *testing.T) {
 }
 
 func TestParseLeadingComment(t *testing.T) {
-	type expected struct {
-		name string
-		cmd  string
+	type output struct {
+		Name string
+		Cmd  string
 	}
-	type testCase struct {
+	tests := []struct {
 		input  string
-		output expected
-	}
-
-	tests := []testCase{
-		testCase{
+		output output
+	}{
+		{
 			input:  "/* name: GetPeopleByID :many */",
-			output: expected{name: "GetPeopleByID", cmd: ":many"},
+			output: output{Name: "GetPeopleByID", Cmd: ":many"},
 		},
 	}
 
 	for _, tCase := range tests {
-		qu := &Query{}
-		err := qu.parseLeadingComment(tCase.input)
+		name, cmd, err := dinosql.ParseMetadata(tCase.input, dinosql.CommentSyntaxStar)
+		result := output{name, cmd}
 		if err != nil {
-			t.Errorf("Failed to parse leading comment %v", err)
+			t.Errorf("failed to parse leading comment: %w", err)
+		} else if diff := cmp.Diff(tCase.output, result); diff != "" {
+			t.Errorf("unexpectd result of query metadata parse: %s", diff)
 		}
-		if qu.Name != tCase.output.name || qu.Cmd != tCase.output.cmd {
-			t.Errorf("Leading comment parser returned unexpcted result: %v\n:\n Expected: [%v]\nRecieved:[%v]\n",
-				err, spew.Sdump(tCase.output), spew.Sdump(qu))
-		}
-
 	}
 }
 

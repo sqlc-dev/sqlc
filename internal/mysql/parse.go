@@ -5,7 +5,6 @@ import (
 	"io"
 	"io/ioutil"
 	"path/filepath"
-	"strings"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/kyleconroy/sqlc/internal/dinosql"
@@ -153,10 +152,14 @@ func (q *Query) parseNameAndCmd() error {
 		return fmt.Errorf("cannot parse name and cmd from null query")
 	}
 	_, comments := sqlparser.SplitMarginComments(q.SQL)
-	err := q.parseLeadingComment(comments.Leading)
+	name, cmd, err := dinosql.ParseMetadata(comments.Leading, dinosql.CommentSyntaxStar)
 	if err != nil {
-		return fmt.Errorf("failed to parse leading comment %w", err)
+		return err
+	} else if name == "" || cmd == "" {
+		return fmt.Errorf("failed to parse query leading comment")
 	}
+	q.Name = name
+	q.Cmd = cmd
 	return nil
 }
 
@@ -257,7 +260,7 @@ func parseFrom(from sqlparser.TableExprs, isLeftJoined bool) (FromTables, string
 			}
 			return right, leftMostTableName, nil
 		default:
-			return nil, "",  fmt.Errorf("failed to parse table expr: %v", spew.Sdump(v))
+			return nil, "", fmt.Errorf("failed to parse table expr: %v", spew.Sdump(v))
 		}
 	}
 	return tables, defaultTableName, nil
@@ -303,7 +306,10 @@ func parseUpdate(node *sqlparser.Update, query string, s *Schema, settings dinos
 		DefaultTableName: defaultTable,
 		SchemaLookup:     s,
 	}
-	parsedQuery.parseNameAndCmd()
+	err = parsedQuery.parseNameAndCmd()
+	if err != nil {
+		return nil, err
+	}
 
 	return &parsedQuery, nil
 }
@@ -356,7 +362,11 @@ func parseInsert(node *sqlparser.Insert, query string, s *Schema, settings dinos
 		DefaultTableName: tableName,
 		SchemaLookup:     s,
 	}
-	parsedQuery.parseNameAndCmd()
+
+	err := parsedQuery.parseNameAndCmd()
+	if err != nil {
+		return nil, err
+	}
 	return parsedQuery, nil
 }
 
@@ -388,34 +398,6 @@ func parseDelete(node *sqlparser.Delete, query string, s *Schema, settings dinos
 	}
 
 	return parsedQuery, nil
-}
-
-func (q *Query) parseLeadingComment(comment string) error {
-	for _, line := range strings.Split(comment, "\n") {
-		if !strings.HasPrefix(line, "/* name:") {
-			continue
-		}
-		part := strings.Split(strings.TrimSpace(line), " ")
-		if len(part) == 3 {
-			return fmt.Errorf("missing query type [':one', ':many', ':exec', ':execrows']: %s", line)
-		}
-		if len(part) != 5 {
-			return fmt.Errorf("invalid query comment: %s", line)
-		}
-		queryName := part[2]
-		queryType := strings.TrimSpace(part[3])
-		switch queryType {
-		case ":one", ":many", ":exec", ":execrows":
-		default:
-			return fmt.Errorf("invalid query type: %s", queryType)
-		}
-		// if err := validateQueryName(queryName); err != nil {
-		// 	return err
-		// }
-		q.Name = queryName
-		q.Cmd = queryType
-	}
-	return nil
 }
 
 func parseSelectAliasExpr(exprs sqlparser.SelectExprs, s *Schema, tableAliasMap FromTables, defaultTable string) ([]Column, error) {
