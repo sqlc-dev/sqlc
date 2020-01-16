@@ -85,6 +85,20 @@ func (q *Queries) CreateBook(ctx context.Context, arg CreateBookParams) error {
 	return err
 }
 
+const deleteAuthorBeforeYear = `-- name: DeleteAuthorBeforeYear :exec
+delete from books where yr < ? and author_id = ?
+`
+
+type DeleteAuthorBeforeYearParams struct {
+	MinPublishYear int
+	AuthorID       int
+}
+
+func (q *Queries) DeleteAuthorBeforeYear(ctx context.Context, arg DeleteAuthorBeforeYearParams) error {
+	_, err := q.db.ExecContext(ctx, deleteAuthorBeforeYear, arg.MinPublishYear, arg.AuthorID)
+	return err
+}
+
 const deleteBook = `-- name: DeleteBook :exec
 delete from books where book_id = ?
 `
@@ -145,16 +159,16 @@ update books set title = ?, tags = ?, isbn = ? where book_id = ?
 `
 
 type UpdateBookISBNParams struct {
-	Title  string
-	Tags   string
-	Isbn   string
-	BookID int
+	Title    string
+	BookTags string
+	Isbn     string
+	BookID   int
 }
 
 func (q *Queries) UpdateBookISBN(ctx context.Context, arg UpdateBookISBNParams) error {
 	_, err := q.db.ExecContext(ctx, updateBookISBN,
 		arg.Title,
-		arg.Tags,
+		arg.BookTags,
 		arg.Isbn,
 		arg.BookID,
 	)
