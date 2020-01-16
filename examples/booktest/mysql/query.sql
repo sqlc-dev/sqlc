@@ -46,3 +46,6 @@ UPDATE books
 SET title = ?, tags = ?, isbn = ?
 WHERE book_id = ?;
 
+/* name: DeleteAuthorBeforeYear :exec */
+DELETE FROM books
+WHERE yr < sqlc.arg(MinPublishYear) AND author_id = ? ;

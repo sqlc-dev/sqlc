@@ -85,6 +85,20 @@ func (q *Queries) CreateBook(ctx context.Context, arg CreateBookParams) error {
 	return err
 }
 
+const deleteAuthorBeforeYear = `-- name: DeleteAuthorBeforeYear :exec
+delete from books where yr < ? and author_id = ?
+`
+
+type DeleteAuthorBeforeYearParams struct {
+	MinPublishYear int
+	AuthorID       int
+}
+
+func (q *Queries) DeleteAuthorBeforeYear(ctx context.Context, arg DeleteAuthorBeforeYearParams) error {
+	_, err := q.db.ExecContext(ctx, deleteAuthorBeforeYear, arg.MinPublishYear, arg.AuthorID)
+	return err
+}
+
 const deleteBook = `-- name: DeleteBook :exec
 delete from books where book_id = ?
 `

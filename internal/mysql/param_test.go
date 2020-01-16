@@ -75,6 +75,16 @@ func TestSelectParamSearcher(t *testing.T) {
 				},
 			},
 		},
+		{
+			input: "select first_name, id FROM users LIMIT sqlc.arg(UsersLimit)",
+			output: []*Param{
+				&Param{
+					OriginalName: "sqlc.arg(UsersLimit)",
+					Name:         "UsersLimit",
+					Typ:          "uint32",
+				},
+			},
+		},
 	}
 	for _, tCase := range tests {
 		tree, err := sqlparser.Parse(tCase.input)
@@ -118,7 +128,7 @@ func TestInsertParamSearcher(t *testing.T) {
 
 	tests := []testCase{
 		testCase{
-			input: "INSERT INTO users (first_name, last_name) VALUES (?, ?)",
+			input: "INSERT INTO users (first_name, last_name) VALUES (?, sqlc.arg(UserLastName))",
 			output: []*Param{
 				&Param{
 					OriginalName: ":v1",
@@ -126,12 +136,12 @@ func TestInsertParamSearcher(t *testing.T) {
 					Typ:          "string",
 				},
 				&Param{
-					OriginalName: ":v2",
-					Name:         "last_name",
+					OriginalName: "sqlc.arg(UserLastName)",
+					Name:         "UserLastName",
 					Typ:          "sql.NullString",
 				},
 			},
-			expectedNames: []string{"first_name", "last_name"},
+			expectedNames: []string{"first_name", "UserLastName"},
 		},
 	}
 	for _, tCase := range tests {
