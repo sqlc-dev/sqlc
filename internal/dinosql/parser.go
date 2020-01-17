@@ -232,11 +232,6 @@ func ParseQueries(c core.Catalog, pkg PackageSettings) (*Result, error) {
 			continue
 		}
 		source := string(blob)
-		// source, _, err := named.CompileNamedQuery(blob, named.DOLLAR)
-		// if err != nil {
-		// 	merr.Add(filename, "", 0, err)
-		// 	continue
-		// }
 		tree, err := pg.Parse(source)
 		if err != nil {
 			merr.Add(filename, source, 0, err)
