@@ -1,4 +1,4 @@
-package dinosql
+package ast
 
 import (
 	"testing"
@@ -18,18 +18,20 @@ func TestApply(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// spew.Dump(input.Statements[0])
-
 	expect := output.Statements[0]
 	actual := Apply(input.Statements[0], func(cr *Cursor) bool {
 		fun, ok := cr.Node().(nodes.FuncCall)
 		if !ok {
 			return true
 		}
-		if join(fun.Funcname, ".") == "sqlc.arg" {
-			cr.Replace(nodes.ParamRef{Number: 1})
+		if Join(fun.Funcname, ".") == "sqlc.arg" {
+			cr.Replace(nodes.ParamRef{
+				Number:   1,
+				Location: fun.Location,
+			})
 			return false
 		}
+
 		return true
 	}, nil)
 

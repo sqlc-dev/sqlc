@@ -2,13 +2,15 @@ package dinosql
 
 import (
 	nodes "github.com/lfittl/pg_query_go/nodes"
+
+	"github.com/kyleconroy/sqlc/internal/postgresql/ast"
 )
 
 type stringWalker struct {
 	String string
 }
 
-func (s *stringWalker) Visit(node nodes.Node) Visitor {
+func (s *stringWalker) Visit(node nodes.Node) ast.Visitor {
 	if n, ok := node.(nodes.String); ok {
 		s.String += n.Str
 	}
@@ -17,7 +19,7 @@ func (s *stringWalker) Visit(node nodes.Node) Visitor {
 
 func flatten(root nodes.Node) string {
 	sw := &stringWalker{}
-	Walk(sw, root)
+	ast.Walk(sw, root)
 	return sw.String
 }
 

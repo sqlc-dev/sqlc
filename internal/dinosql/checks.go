@@ -4,16 +4,18 @@ import (
 	"fmt"
 	"strings"
 
+	nodes "github.com/lfittl/pg_query_go/nodes"
+
 	"github.com/kyleconroy/sqlc/internal/catalog"
 	"github.com/kyleconroy/sqlc/internal/pg"
-	nodes "github.com/lfittl/pg_query_go/nodes"
+	"github.com/kyleconroy/sqlc/internal/postgresql/ast"
 )
 
 func validateParamRef(n nodes.Node) error {
 	var allrefs []nodes.ParamRef
 
 	// Find all parameter references
-	Walk(VisitorFunc(func(node nodes.Node) {
+	ast.Walk(ast.VisitorFunc(func(node nodes.Node) {
 		switch n := node.(type) {
 		case nodes.ParamRef:
 			allrefs = append(allrefs, n)
@@ -41,7 +43,7 @@ type funcCallVisitor struct {
 	err     error
 }
 
-func (v *funcCallVisitor) Visit(node nodes.Node) Visitor {
+func (v *funcCallVisitor) Visit(node nodes.Node) ast.Visitor {
 	if v.err != nil {
 		return nil
 	}
@@ -91,7 +93,7 @@ func (v *funcCallVisitor) Visit(node nodes.Node) Visitor {
 
 func validateFuncCall(c *pg.Catalog, n nodes.Node) error {
 	visitor := funcCallVisitor{catalog: c}
-	Walk(&visitor, n)
+	ast.Walk(&visitor, n)
 	return visitor.err
 }
 
