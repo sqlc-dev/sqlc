@@ -130,10 +130,7 @@ func validateParamStyle(n nodes.Node) error {
 		_, ok := node.(nodes.ParamRef)
 		return ok
 	})
-	named := search(n, func(node nodes.Node) bool {
-		fun, ok := node.(nodes.FuncCall)
-		return ok && join(fun.Funcname, ".") == "sqlc.arg"
-	})
+	named := search(n, isNamedParamFunc)
 	if len(named.Items) > 0 && len(positional.Items) > 0 {
 		return pg.Error{
 			Code:    "", // TODO: Pick a new error code

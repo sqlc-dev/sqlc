@@ -26,11 +26,18 @@ func (s *stringWalker) Visit(node nodes.Node) ast.Visitor {
 	return s
 }
 
+func isNamedParamFunc(node nodes.Node) bool {
+	fun, ok := node.(nodes.FuncCall)
+	return ok && ast.Join(fun.Funcname, ".") == "sqlc.arg"
+}
+
+func isNamedParamSign(node nodes.Node) bool {
+	fun, ok := node.(nodes.FuncCall)
+	return ok && ast.Join(fun.Funcname, ".") == "sqlc.arg"
+}
+
 func rewriteNamedParameters(raw nodes.RawStmt) (nodes.RawStmt, map[int]string, []edit) {
-	found := search(raw, func(node nodes.Node) bool {
-		fun, ok := node.(nodes.FuncCall)
-		return ok && ast.Join(fun.Funcname, ".") == "sqlc.arg"
-	})
+	found := search(raw, isNamedParamFunc)
 	if len(found.Items) == 0 {
 		return raw, map[int]string{}, nil
 	}
@@ -39,11 +46,9 @@ func rewriteNamedParameters(raw nodes.RawStmt) (nodes.RawStmt, map[int]string, [
 	argn := 0
 	var edits []edit
 	node := ast.Apply(raw, func(cr *ast.Cursor) bool {
-		fun, ok := cr.Node().(nodes.FuncCall)
-		if !ok {
-			return true
-		}
-		if ast.Join(fun.Funcname, ".") == "sqlc.arg" {
+		node := cr.Node()
+		if isNamedParamFunc(node) {
+			fun := node.(nodes.FuncCall)
 			param := flatten(fun.Args)
 			if num, ok := args[param]; ok {
 				cr.Replace(nodes.ParamRef{
@@ -58,14 +63,12 @@ func rewriteNamedParameters(raw nodes.RawStmt) (nodes.RawStmt, map[int]string, [
 					Location: fun.Location,
 				})
 			}
-
 			// TODO: This code assumes that sqlc.arg(name) is on a single line
 			edits = append(edits, edit{
 				Location: fun.Location - raw.StmtLocation,
 				Old:      fmt.Sprintf("sqlc.arg(%s)", param),
 				New:      fmt.Sprintf("$%d", args[param]),
 			})
-
 			return false
 		}
 		return true
