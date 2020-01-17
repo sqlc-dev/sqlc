@@ -1103,7 +1103,8 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 
 	case nodes.RangeVar:
 		if n.Alias != nil {
-			a.apply(&n, "", nil, *n.Alias)
+			a.apply(&n, "Alias", nil, *n.Alias)
+			a.cursor.Replace(n)
 		}
 
 	case nodes.RawStmt:
@@ -1111,30 +1112,35 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 		a.cursor.Replace(n)
 
 	case nodes.ReassignOwnedStmt:
-		a.apply(&n, "", nil, n.Roles)
+		a.apply(&n, "Roles", nil, n.Roles)
 		if n.Newrole != nil {
-			a.apply(&n, "", nil, *n.Newrole)
+			a.apply(&n, "Newrole", nil, *n.Newrole)
 		}
+		a.cursor.Replace(n)
 
 	case nodes.RefreshMatViewStmt:
 		if n.Relation != nil {
-			a.apply(&n, "", nil, *n.Relation)
+			a.apply(&n, "Relation", nil, *n.Relation)
+			a.cursor.Replace(n)
 		}
 
 	case nodes.ReindexStmt:
 		if n.Relation != nil {
-			a.apply(&n, "", nil, *n.Relation)
+			a.apply(&n, "Relation", nil, *n.Relation)
+			a.cursor.Replace(n)
 		}
 
 	case nodes.RelabelType:
-		a.apply(&n, "", nil, n.Xpr)
-		a.apply(&n, "", nil, n.Arg)
+		a.apply(&n, "Xpr", nil, n.Xpr)
+		a.apply(&n, "Arg", nil, n.Arg)
+		a.cursor.Replace(n)
 
 	case nodes.RenameStmt:
 		if n.Relation != nil {
-			a.apply(&n, "", nil, *n.Relation)
+			a.apply(&n, "Relation", nil, *n.Relation)
 		}
-		a.apply(&n, "", nil, n.Object)
+		a.apply(&n, "Object", nil, n.Object)
+		a.cursor.Replace(n)
 
 	case nodes.ReplicaIdentityStmt:
 		// pass
@@ -1148,37 +1154,43 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 		// pass
 
 	case nodes.RowCompareExpr:
-		a.apply(&n, "", nil, n.Xpr)
-		a.apply(&n, "", nil, n.Opnos)
-		a.apply(&n, "", nil, n.Opfamilies)
-		a.apply(&n, "", nil, n.Inputcollids)
-		a.apply(&n, "", nil, n.Largs)
-		a.apply(&n, "", nil, n.Rargs)
+		a.apply(&n, "Xpr", nil, n.Xpr)
+		a.apply(&n, "Opnos", nil, n.Opnos)
+		a.apply(&n, "Opfamilies", nil, n.Opfamilies)
+		a.apply(&n, "Inputcollids", nil, n.Inputcollids)
+		a.apply(&n, "Largs", nil, n.Largs)
+		a.apply(&n, "Rargs", nil, n.Rargs)
+		a.cursor.Replace(n)
 
 	case nodes.RowExpr:
-		a.apply(&n, "", nil, n.Xpr)
-		a.apply(&n, "", nil, n.Args)
-		a.apply(&n, "", nil, n.Colnames)
+		a.apply(&n, "Xpr", nil, n.Xpr)
+		a.apply(&n, "Args", nil, n.Args)
+		a.apply(&n, "Colnames", nil, n.Colnames)
+		a.cursor.Replace(n)
 
 	case nodes.RowMarkClause:
 		// pass
 
 	case nodes.RuleStmt:
 		if n.Relation != nil {
-			a.apply(&n, "", nil, *n.Relation)
+			a.apply(&n, "Relation", nil, *n.Relation)
 		}
-		a.apply(&n, "", nil, n.WhereClause)
-		a.apply(&n, "", nil, n.Actions)
+		a.apply(&n, "WhereClause", nil, n.WhereClause)
+		a.apply(&n, "Actions", nil, n.Actions)
+		a.cursor.Replace(n)
 
 	case nodes.SQLValueFunction:
-		a.apply(&n, "", nil, n.Xpr)
+		a.apply(&n, "Xpr", nil, n.Xpr)
+		a.cursor.Replace(n)
 
 	case nodes.ScalarArrayOpExpr:
-		a.apply(&n, "", nil, n.Xpr)
-		a.apply(&n, "", nil, n.Args)
+		a.apply(&n, "Xpr", nil, n.Xpr)
+		a.apply(&n, "Args", nil, n.Args)
+		a.cursor.Replace(n)
 
 	case nodes.SecLabelStmt:
-		a.apply(&n, "", nil, n.Object)
+		a.apply(&n, "Object", nil, n.Object)
+		a.cursor.Replace(n)
 
 	case nodes.SelectStmt:
 		a.apply(&n, "DistinctClause", nil, n.DistinctClause)
@@ -1220,13 +1232,16 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 		a.apply(&n, "ColTypmods", nil, n.ColTypmods)
 		a.apply(&n, "ColCollations", nil, n.ColCollations)
 		a.apply(&n, "GroupClauses", nil, n.GroupClauses)
+		a.cursor.Replace(n)
 
 	case nodes.SetToDefault:
 		a.apply(&n, "Xpr", nil, n.Xpr)
+		a.cursor.Replace(n)
 
 	case nodes.SortBy:
 		a.apply(&n, "Node", nil, n.Node)
 		a.apply(&n, "UseOp", nil, n.UseOp)
+		a.cursor.Replace(n)
 
 	case nodes.SortGroupClause:
 		// pass
@@ -1239,6 +1254,7 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 		a.apply(&n, "Testexpr", nil, n.Testexpr)
 		a.apply(&n, "Opername", nil, n.OperName)
 		a.apply(&n, "Subselect", nil, n.Subselect)
+		a.cursor.Replace(n)
 
 	case nodes.SubPlan:
 		a.apply(&n, "Xpr", nil, n.Xpr)
@@ -1247,6 +1263,7 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 		a.apply(&n, "SetParam", nil, n.SetParam)
 		a.apply(&n, "ParParam", nil, n.ParParam)
 		a.apply(&n, "Args", nil, n.Args)
+		a.cursor.Replace(n)
 
 	case nodes.TableFunc:
 		a.apply(&n, "NsUris", nil, n.NsUris)
@@ -1259,6 +1276,7 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 		a.apply(&n, "Colcollations", nil, n.Colcollations)
 		a.apply(&n, "Colexprs", nil, n.Colexprs)
 		a.apply(&n, "Coldefexprs", nil, n.Coldefexprs)
+		a.cursor.Replace(n)
 
 	case nodes.TableLikeClause:
 		if n.Relation != nil {

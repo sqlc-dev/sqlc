@@ -27,6 +27,14 @@ func (s *stringWalker) Visit(node nodes.Node) ast.Visitor {
 }
 
 func rewriteNamedParameters(raw nodes.RawStmt) (nodes.RawStmt, map[int]string, []edit) {
+	found := search(raw, func(node nodes.Node) bool {
+		fun, ok := node.(nodes.FuncCall)
+		return ok && ast.Join(fun.Funcname, ".") == "sqlc.arg"
+	})
+	if len(found.Items) == 0 {
+		return raw, map[int]string{}, nil
+	}
+
 	args := map[string]int{}
 	argn := 0
 	var edits []edit
