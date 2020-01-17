@@ -112,6 +112,20 @@ func (c *Cursor) Replace(n nodes.Node) {
 	v.Set(reflect.ValueOf(n))
 }
 
+// Replace replaces the current Node with n.
+// The replacement node is not walked by Apply.
+func (c *Cursor) set(val nodes.Node, ptr nodes.Node) {
+	v := c.field()
+	if i := c.Index(); i >= 0 {
+		v = v.Index(i)
+	}
+	if v.Type().Kind() == reflect.Ptr {
+		v.Set(reflect.ValueOf(ptr))
+	} else {
+		v.Set(reflect.ValueOf(val))
+	}
+}
+
 // application carries all the shared data so we can pass it around cheaply.
 type application struct {
 	pre, post ApplyFunc
@@ -124,6 +138,9 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 	if v := reflect.ValueOf(node); v.Kind() == reflect.Ptr && v.IsNil() {
 		node = nil
 	}
+
+	// TODO: If node is a pointer, dereference it. This prevents us from having
+	// to have nil checks in the case statement
 
 	// avoid heap-allocating a new cursor for each apply call; reuse a.cursor instead
 	saved := a.cursor
@@ -145,34 +162,34 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 
 	case nodes.A_ArrayExpr:
 		a.apply(&n, "Elements", nil, n.Elements)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.A_Const:
 		a.apply(&n, "Val", nil, n.Val)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.A_Expr:
 		a.apply(&n, "Name", nil, n.Name)
 		a.apply(&n, "Lexpr", nil, n.Lexpr)
 		a.apply(&n, "Rexpr", nil, n.Rexpr)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.A_Indices:
 		a.apply(&n, "Lidx", nil, n.Lidx)
 		a.apply(&n, "Uidx", nil, n.Uidx)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.A_Indirection:
 		a.apply(&n, "Arg", nil, n.Arg)
 		a.apply(&n, "Indirection", nil, n.Indirection)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.A_Star:
 		// pass
 
 	case nodes.AccessPriv:
 		a.apply(&n, "Cols", nil, n.Cols)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.Aggref:
 		a.apply(&n, "Xpr", nil, n.Xpr)
@@ -182,68 +199,69 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 		a.apply(&n, "Aggorder", nil, n.Aggorder)
 		a.apply(&n, "Aggdistinct", nil, n.Aggdistinct)
 		a.apply(&n, "Aggfilter", nil, n.Aggfilter)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.Alias:
 		a.apply(&n, "Colnames", nil, n.Colnames)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.AlterCollationStmt:
 		a.apply(&n, "Collname", nil, n.Collname)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.AlterDatabaseSetStmt:
 		if n.Setstmt != nil {
 			a.apply(&n, "Setstmt", nil, *n.Setstmt)
-			a.cursor.Replace(n)
+			a.cursor.set(n, &n)
 		}
 
 	case nodes.AlterDatabaseStmt:
 		a.apply(&n, "Options", nil, n.Options)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.AlterDefaultPrivilegesStmt:
 		if n.Action != nil {
 			a.apply(&n, "Action", nil, *n.Action)
 		}
 		a.apply(&n, "Options", nil, n.Options)
-		a.cursor.Replace(n)
+		// TODOO: Take a pointer or not: a.cursor.set(n, &n, &n)
+		a.cursor.set(n, &n)
 
 	case nodes.AlterDomainStmt:
 		a.apply(&n, "TypeName", nil, n.TypeName)
 		a.apply(&n, "Def", nil, n.Def)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.AlterEnumStmt:
 		a.apply(&n, "TypeName", nil, n.TypeName)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.AlterEventTrigStmt:
 		// pass
 
 	case nodes.AlterExtensionContentsStmt:
 		a.apply(&n, "Object", nil, n.Object)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.AlterExtensionStmt:
 		a.apply(&n, "Options", nil, n.Options)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.AlterFdwStmt:
 		a.apply(&n, "FuncOptions", nil, n.FuncOptions)
 		a.apply(&n, "Options", nil, n.Options)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.AlterForeignServerStmt:
 		a.apply(&n, "Options", nil, n.Options)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.AlterFunctionStmt:
 		if n.Func != nil {
 			a.apply(&n, "Func", nil, n.Func)
 		}
 		a.apply(&n, "Actions", nil, n.Actions)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.AlterObjectDependsStmt:
 		if n.Relation != nil {
@@ -251,26 +269,26 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 		}
 		a.apply(&n, "Object", nil, n.Object)
 		a.apply(&n, "Extname", nil, n.Extname)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.AlterObjectSchemaStmt:
 		if n.Relation != nil {
 			a.apply(&n, "Relation", nil, *n.Relation)
 		}
 		a.apply(&n, "Object", nil, n.Object)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.AlterOpFamilyStmt:
 		a.apply(&n, "Opfamilyname", nil, n.Opfamilyname)
 		a.apply(&n, "Items", nil, n.Items)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.AlterOperatorStmt:
 		if n.Opername != nil {
 			a.apply(&n, "Opername", nil, *n.Opername)
 		}
 		a.apply(&n, "Options", nil, n.Options)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.AlterOwnerStmt:
 		if n.Relation != nil {
@@ -280,7 +298,7 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 		if n.Newowner != nil {
 			a.apply(&n, "Newowner", nil, *n.Newowner)
 		}
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.AlterPolicyStmt:
 		if n.Table != nil {
@@ -289,97 +307,97 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 		a.apply(&n, "Roles", nil, n.Roles)
 		a.apply(&n, "Qual", nil, n.Qual)
 		a.apply(&n, "WithCheck", nil, n.WithCheck)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.AlterPublicationStmt:
 		a.apply(&n, "Options", nil, n.Options)
 		a.apply(&n, "Table", nil, n.Tables)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.AlterRoleSetStmt:
 		if n.Role != nil {
 			a.apply(&n, "Role", nil, *n.Role)
 		}
 		a.apply(&n, "Setstmt", nil, n.Setstmt)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.AlterRoleStmt:
 		if n.Role != nil {
 			a.apply(&n, "Role", nil, *n.Role)
 		}
 		a.apply(&n, "Options", nil, n.Options)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.AlterSeqStmt:
 		if n.Sequence != nil {
 			a.apply(&n, "Sequence", nil, *n.Sequence)
 		}
 		a.apply(&n, "Options", nil, n.Options)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.AlterSubscriptionStmt:
 		a.apply(&n, "Publication", nil, n.Publication)
 		a.apply(&n, "Options", nil, n.Options)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.AlterSystemStmt:
 		a.apply(&n, "Setstmt", nil, n.Setstmt)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.AlterTSConfigurationStmt:
 		a.apply(&n, "Cfgname", nil, n.Cfgname)
 		a.apply(&n, "Tokentype", nil, n.Tokentype)
 		a.apply(&n, "Dicts", nil, n.Dicts)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.AlterTSDictionaryStmt:
 		a.apply(&n, "Dictname", nil, n.Dictname)
 		a.apply(&n, "Options", nil, n.Options)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.AlterTableCmd:
 		if n.Newowner != nil {
 			a.apply(&n, "Newowner", nil, *n.Newowner)
 		}
 		a.apply(&n, "Def", nil, n.Def)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.AlterTableMoveAllStmt:
 		a.apply(&n, "Roles", nil, n.Roles)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.AlterTableSpaceOptionsStmt:
 		a.apply(&n, "Options", nil, n.Options)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.AlterTableStmt:
 		if n.Relation != nil {
 			a.apply(&n, "Relation", nil, *n.Relation)
 		}
 		a.apply(&n, "Cmds", nil, n.Cmds)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.AlterUserMappingStmt:
 		if n.User != nil {
 			a.apply(&n, "User", nil, *n.User)
 		}
 		a.apply(&n, "Options", nil, n.Options)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.AlternativeSubPlan:
 		a.apply(&n, "Xpr", nil, n.Xpr)
 		a.apply(&n, "Subplans", nil, n.Subplans)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.ArrayCoerceExpr:
 		a.apply(&n, "Xpr", nil, n.Xpr)
 		a.apply(&n, "Arg", nil, n.Arg)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.ArrayExpr:
 		a.apply(&n, "Xpr", nil, n.Xpr)
 		a.apply(&n, "Elements", nil, n.Elements)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.ArrayRef:
 		a.apply(&n, "Xpr", nil, n.Xpr)
@@ -387,7 +405,7 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 		a.apply(&n, "Reflowerindexpr", nil, n.Reflowerindexpr)
 		a.apply(&n, "Refexpr", nil, n.Refexpr)
 		a.apply(&n, "Refassgnexpr", nil, n.Refassgnexpr)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.BitString:
 		// pass
@@ -398,29 +416,29 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 	case nodes.BoolExpr:
 		a.apply(&n, "Xpr", nil, n.Xpr)
 		a.apply(&n, "Args", nil, n.Args)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.BooleanTest:
 		a.apply(&n, "Xpr", nil, n.Xpr)
 		a.apply(&n, "Arg", nil, n.Arg)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.CaseExpr:
 		a.apply(&n, "Xpr", nil, n.Xpr)
 		a.apply(&n, "Arg", nil, n.Arg)
 		a.apply(&n, "Args", nil, n.Args)
 		a.apply(&n, "Defresult", nil, n.Defresult)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.CaseTestExpr:
 		a.apply(&n, "Xpr", nil, n.Xpr)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.CaseWhen:
 		a.apply(&n, "Xpr", nil, n.Xpr)
 		a.apply(&n, "Expr", nil, n.Expr)
 		a.apply(&n, "Result", nil, n.Result)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.CheckPointStmt:
 		// pass
@@ -431,36 +449,36 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 	case nodes.ClusterStmt:
 		if n.Relation != nil {
 			a.apply(&n, "Relation", nil, *n.Relation)
-			a.cursor.Replace(n)
+			a.cursor.set(n, &n)
 		}
 
 	case nodes.CoalesceExpr:
 		a.apply(&n, "Xpr", nil, n.Xpr)
 		a.apply(&n, "Args", nil, n.Args)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.CoerceToDomain:
 		a.apply(&n, "Xpr", nil, n.Xpr)
 		a.apply(&n, "Arg", nil, n.Arg)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.CoerceToDomainValue:
 		a.apply(&n, "Xpr", nil, n.Xpr)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.CoerceViaIO:
 		a.apply(&n, "Xpr", nil, n.Xpr)
 		a.apply(&n, "Arg", nil, n.Arg)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.CollateClause:
 		a.apply(&n, "Arg", nil, n.Arg)
 		a.apply(&n, "Collname", nil, n.Collname)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 	case nodes.CollateExpr:
 		a.apply(&n, "Xpr", nil, n.Xpr)
 		a.apply(&n, "Arg", nil, n.Arg)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.ColumnDef:
 		if n.TypeName != nil {
@@ -470,33 +488,33 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 		a.apply(&n, "CookedDefault", nil, n.CookedDefault)
 		a.apply(&n, "Constraints", nil, n.Constraints)
 		a.apply(&n, "Fdwoptions", nil, n.Fdwoptions)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.ColumnRef:
 		a.apply(&n, "Fields", nil, n.Fields)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.CommentStmt:
 		a.apply(&n, "Object", nil, n.Object)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.CommonTableExpr:
 		a.apply(&n, "Aliascolnames", nil, n.Aliascolnames)
 		a.apply(&n, "Ctequery", nil, n.Ctequery)
 		a.apply(&n, "Ctecolnames", nil, n.Ctecolnames)
 		a.apply(&n, "Ctecolcollations", nil, n.Ctecolcollations)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.CompositeTypeStmt:
 		if n.Typevar != nil {
 			a.apply(&n, "Typevar", nil, *n.Typevar)
 		}
 		a.apply(&n, "Coldeflist", nil, n.Coldeflist)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.Const:
 		a.apply(&n, "Xpr", nil, n.Xpr)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.Constraint:
 		a.apply(&n, "RawExpr", nil, n.RawExpr)
@@ -510,16 +528,16 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 		a.apply(&n, "FkAttrs", nil, n.FkAttrs)
 		a.apply(&n, "PkAttrs", nil, n.PkAttrs)
 		a.apply(&n, "OldConpfeqop", nil, n.OldConpfeqop)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.ConstraintsSetStmt:
 		a.apply(&n, "Constraints", nil, n.Constraints)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.ConvertRowtypeExpr:
 		a.apply(&n, "Xpr", nil, n.Xpr)
 		a.apply(&n, "Arg", nil, n.Arg)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.CopyStmt:
 		if n.Relation != nil {
@@ -528,11 +546,11 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 		a.apply(&n, "Query", nil, n.Query)
 		a.apply(&n, "Attlist", nil, n.Attlist)
 		a.apply(&n, "Options", nil, n.Options)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.CreateAmStmt:
 		a.apply(&n, "HandlerName", nil, n.HandlerName)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.CreateCastStmt:
 		if n.Sourcetype != nil {
@@ -542,12 +560,12 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 			a.apply(&n, "Targettype", nil, *n.Targettype)
 		}
 		a.apply(&n, "Func", nil, n.Func)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.CreateConversionStmt:
 		a.apply(&n, "ConversionName", nil, n.ConversionName)
 		a.apply(&n, "Funcname", nil, n.FuncName)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.CreateDomainStmt:
 		a.apply(&n, "Domainname", nil, n.Domainname)
@@ -558,12 +576,12 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 			a.apply(&n, "CollClause", nil, *n.CollClause)
 		}
 		a.apply(&n, "Constraints", nil, n.Constraints)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.CreateEnumStmt:
 		a.apply(&n, "TypeName", nil, n.TypeName)
 		a.apply(&n, "Vals", nil, n.Vals)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.CreateEventTrigStmt:
 		a.apply(&n, "", nil, n.Whenclause)
@@ -841,22 +859,22 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 		a.apply(&n, "", nil, n.Args)
 		a.apply(&n, "", nil, n.Refs)
 		a.apply(&n, "", nil, n.Cols)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.GroupingSet:
 		a.apply(&n, "Content", nil, n.Content)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.ImportForeignSchemaStmt:
 		a.apply(&n, "TableList", nil, n.TableList)
 		a.apply(&n, "Options", nil, n.Options)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.IndexElem:
 		a.apply(&n, "Expr", nil, n.Expr)
 		a.apply(&n, "Collation", nil, n.Collation)
 		a.apply(&n, "Opclass", nil, n.Opclass)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.IndexStmt:
 		if n.Relation != nil {
@@ -866,17 +884,17 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 		a.apply(&n, "Options", nil, n.Options)
 		a.apply(&n, "WhereClause", nil, n.WhereClause)
 		a.apply(&n, "ExcludeOpNames", nil, n.ExcludeOpNames)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.InferClause:
 		a.apply(&n, "IndexElems", nil, n.IndexElems)
 		a.apply(&n, "WhereClause", nil, n.WhereClause)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.InferenceElem:
 		a.apply(&n, "Xpr", nil, n.Xpr)
 		a.apply(&n, "Expr", nil, n.Expr)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.InlineCodeBlock:
 		// pass
@@ -894,7 +912,7 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 		if n.WithClause != nil {
 			a.apply(&n, "WithClause", nil, *n.WithClause)
 		}
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.Integer:
 		// pass
@@ -906,7 +924,7 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 		a.apply(&n, "ColNames", nil, n.ColNames)
 		a.apply(&n, "Options", nil, n.Options)
 		a.apply(&n, "ViewQuery", nil, n.ViewQuery)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.JoinExpr:
 		a.apply(&n, "Larg", nil, n.Larg)
@@ -916,11 +934,11 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 		if n.Alias != nil {
 			a.apply(&n, "Alias", nil, *n.Alias)
 		}
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.List:
 		a.applyList(&n, "Items")
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.ListenStmt:
 		// pass
@@ -1104,43 +1122,43 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 	case nodes.RangeVar:
 		if n.Alias != nil {
 			a.apply(&n, "Alias", nil, *n.Alias)
-			a.cursor.Replace(n)
+			a.cursor.set(n, &n)
 		}
 
 	case nodes.RawStmt:
 		a.apply(&n, "Stmt", nil, n.Stmt)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.ReassignOwnedStmt:
 		a.apply(&n, "Roles", nil, n.Roles)
 		if n.Newrole != nil {
 			a.apply(&n, "Newrole", nil, *n.Newrole)
 		}
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.RefreshMatViewStmt:
 		if n.Relation != nil {
 			a.apply(&n, "Relation", nil, *n.Relation)
-			a.cursor.Replace(n)
+			a.cursor.set(n, &n)
 		}
 
 	case nodes.ReindexStmt:
 		if n.Relation != nil {
 			a.apply(&n, "Relation", nil, *n.Relation)
-			a.cursor.Replace(n)
+			a.cursor.set(n, &n)
 		}
 
 	case nodes.RelabelType:
 		a.apply(&n, "Xpr", nil, n.Xpr)
 		a.apply(&n, "Arg", nil, n.Arg)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.RenameStmt:
 		if n.Relation != nil {
 			a.apply(&n, "Relation", nil, *n.Relation)
 		}
 		a.apply(&n, "Object", nil, n.Object)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.ReplicaIdentityStmt:
 		// pass
@@ -1148,7 +1166,7 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 	case nodes.ResTarget:
 		a.apply(&n, "Indirection", nil, n.Indirection)
 		a.apply(&n, "Val", nil, n.Val)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.RoleSpec:
 		// pass
@@ -1160,13 +1178,13 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 		a.apply(&n, "Inputcollids", nil, n.Inputcollids)
 		a.apply(&n, "Largs", nil, n.Largs)
 		a.apply(&n, "Rargs", nil, n.Rargs)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.RowExpr:
 		a.apply(&n, "Xpr", nil, n.Xpr)
 		a.apply(&n, "Args", nil, n.Args)
 		a.apply(&n, "Colnames", nil, n.Colnames)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.RowMarkClause:
 		// pass
@@ -1177,20 +1195,20 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 		}
 		a.apply(&n, "WhereClause", nil, n.WhereClause)
 		a.apply(&n, "Actions", nil, n.Actions)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.SQLValueFunction:
 		a.apply(&n, "Xpr", nil, n.Xpr)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.ScalarArrayOpExpr:
 		a.apply(&n, "Xpr", nil, n.Xpr)
 		a.apply(&n, "Args", nil, n.Args)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.SecLabelStmt:
 		a.apply(&n, "Object", nil, n.Object)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.SelectStmt:
 		a.apply(&n, "DistinctClause", nil, n.DistinctClause)
@@ -1223,7 +1241,7 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 		if n.Rarg != nil {
 			a.apply(&n, "Rarg", nil, *n.Rarg)
 		}
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.SetOperationStmt:
 		a.apply(&n, "Larg", nil, n.Larg)
@@ -1232,16 +1250,16 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 		a.apply(&n, "ColTypmods", nil, n.ColTypmods)
 		a.apply(&n, "ColCollations", nil, n.ColCollations)
 		a.apply(&n, "GroupClauses", nil, n.GroupClauses)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.SetToDefault:
 		a.apply(&n, "Xpr", nil, n.Xpr)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.SortBy:
 		a.apply(&n, "Node", nil, n.Node)
 		a.apply(&n, "UseOp", nil, n.UseOp)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.SortGroupClause:
 		// pass
@@ -1254,7 +1272,7 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 		a.apply(&n, "Testexpr", nil, n.Testexpr)
 		a.apply(&n, "Opername", nil, n.OperName)
 		a.apply(&n, "Subselect", nil, n.Subselect)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.SubPlan:
 		a.apply(&n, "Xpr", nil, n.Xpr)
@@ -1263,7 +1281,7 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 		a.apply(&n, "SetParam", nil, n.SetParam)
 		a.apply(&n, "ParParam", nil, n.ParParam)
 		a.apply(&n, "Args", nil, n.Args)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.TableFunc:
 		a.apply(&n, "NsUris", nil, n.NsUris)
@@ -1276,51 +1294,47 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 		a.apply(&n, "Colcollations", nil, n.Colcollations)
 		a.apply(&n, "Colexprs", nil, n.Colexprs)
 		a.apply(&n, "Coldefexprs", nil, n.Coldefexprs)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.TableLikeClause:
 		if n.Relation != nil {
 			a.apply(&n, "Relation", nil, *n.Relation)
-			a.cursor.Replace(n)
+			a.cursor.set(n, &n)
 		}
 
 	case nodes.TableSampleClause:
 		a.apply(&n, "Args", nil, n.Args)
 		a.apply(&n, "Repeatable", nil, n.Repeatable)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.TargetEntry:
 		a.apply(&n, "Xpr", nil, n.Xpr)
 		a.apply(&n, "Expr", nil, n.Expr)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.TransactionStmt:
 		a.apply(&n, "Options", nil, n.Options)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.TriggerTransition:
 		// pass
 
 	case nodes.TruncateStmt:
 		a.apply(&n, "Relations", nil, n.Relations)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.TypeCast:
 		a.apply(&n, "Arg", nil, n.Arg)
-		a.apply(&n, "TypeName", nil, n.TypeName)
-		a.cursor.Replace(n)
+		if n.TypeName != nil {
+			a.apply(&n, "TypeName", nil, *n.TypeName)
+		}
+		a.cursor.set(n, &n)
 
 	case nodes.TypeName:
 		a.apply(&n, "Names", nil, n.Names)
 		a.apply(&n, "Typmods", nil, n.Typmods)
 		a.apply(&n, "ArrayBounds", nil, n.ArrayBounds)
-		a.cursor.Replace(n)
-
-	case *nodes.TypeName:
-		a.apply(n, "Names", nil, n.Names)
-		a.apply(n, "Typmods", nil, n.Typmods)
-		a.apply(n, "ArrayBounds", nil, n.ArrayBounds)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.UnlistenStmt:
 		// pass
@@ -1336,22 +1350,22 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 		if n.WithClause != nil {
 			a.apply(&n, "WithClause", nil, *n.WithClause)
 		}
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.VacuumStmt:
 		if n.Relation != nil {
 			a.apply(&n, "Relation", nil, *n.Relation)
 		}
 		a.apply(&n, "VaCols", nil, n.VaCols)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.Var:
 		a.apply(&n, "Xpr", nil, n.Xpr)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.VariableSetStmt:
 		a.apply(&n, "Args", nil, n.Args)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.VariableShowStmt:
 		// pass
@@ -1363,49 +1377,49 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 		a.apply(&n, "Aliases", nil, n.Aliases)
 		a.apply(&n, "Query", nil, n.Query)
 		a.apply(&n, "Options", nil, n.Options)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.WindowClause:
 		a.apply(&n, "PartitionClause", nil, n.PartitionClause)
 		a.apply(&n, "OrderClause", nil, n.OrderClause)
 		a.apply(&n, "StartOffset", nil, n.StartOffset)
 		a.apply(&n, "EndOffset", nil, n.EndOffset)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.WindowDef:
 		a.apply(&n, "PartitionClause", nil, n.PartitionClause)
 		a.apply(&n, "OrderClause", nil, n.OrderClause)
 		a.apply(&n, "StartOffset", nil, n.StartOffset)
 		a.apply(&n, "EndOffset", nil, n.EndOffset)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.WindowFunc:
 		a.apply(&n, "Xpr", nil, n.Xpr)
 		a.apply(&n, "Args", nil, n.Args)
 		a.apply(&n, "Aggfilter", nil, n.Aggfilter)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.WithCheckOption:
 		a.apply(&n, "Qual", nil, n.Qual)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.WithClause:
 		a.apply(&n, "Ctes", nil, n.Ctes)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.XmlExpr:
 		a.apply(&n, "Xpr", nil, n.Xpr)
 		a.apply(&n, "NamedArgs", nil, n.NamedArgs)
 		a.apply(&n, "ArgNames", nil, n.ArgNames)
 		a.apply(&n, "Args", nil, n.Args)
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	case nodes.XmlSerialize:
 		a.apply(&n, "Expr", nil, n.Expr)
 		if n.TypeName != nil {
 			a.apply(&n, "TypeName", nil, *n.TypeName)
 		}
-		a.cursor.Replace(n)
+		a.cursor.set(n, &n)
 
 	default:
 		panic(fmt.Sprintf("Apply: unexpected node type %T", n))
