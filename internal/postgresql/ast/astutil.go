@@ -212,8 +212,8 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 	case nodes.AlterDatabaseSetStmt:
 		if n.Setstmt != nil {
 			a.apply(&n, "Setstmt", nil, *n.Setstmt)
-			a.cursor.set(n, &n)
 		}
+		a.cursor.set(n, &n)
 
 	case nodes.AlterDatabaseStmt:
 		a.apply(&n, "Options", nil, n.Options)
@@ -224,7 +224,6 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 			a.apply(&n, "Action", nil, *n.Action)
 		}
 		a.apply(&n, "Options", nil, n.Options)
-		// TODOO: Take a pointer or not: a.cursor.set(n, &n, &n)
 		a.cursor.set(n, &n)
 
 	case nodes.AlterDomainStmt:
@@ -449,8 +448,8 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 	case nodes.ClusterStmt:
 		if n.Relation != nil {
 			a.apply(&n, "Relation", nil, *n.Relation)
-			a.cursor.set(n, &n)
 		}
+		a.cursor.set(n, &n)
 
 	case nodes.CoalesceExpr:
 		a.apply(&n, "Xpr", nil, n.Xpr)
@@ -584,200 +583,234 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 		a.cursor.set(n, &n)
 
 	case nodes.CreateEventTrigStmt:
-		a.apply(&n, "", nil, n.Whenclause)
-		a.apply(&n, "", nil, n.Funcname)
+		a.apply(&n, "Whenclause", nil, n.Whenclause)
+		a.apply(&n, "Funcname", nil, n.Funcname)
+		a.cursor.set(n, &n)
 
 	case nodes.CreateExtensionStmt:
-		a.apply(&n, "", nil, n.Options)
+		a.apply(&n, "Options", nil, n.Options)
+		a.cursor.set(n, &n)
 
 	case nodes.CreateFdwStmt:
-		a.apply(&n, "", nil, n.FuncOptions)
-		a.apply(&n, "", nil, n.Options)
+		a.apply(&n, "FuncOptions", nil, n.FuncOptions)
+		a.apply(&n, "Options", nil, n.Options)
+		a.cursor.set(n, &n)
 
 	case nodes.CreateForeignServerStmt:
-		a.apply(&n, "", nil, n.Options)
+		a.apply(&n, "Options", nil, n.Options)
+		a.cursor.set(n, &n)
 
 	case nodes.CreateForeignTableStmt:
-		a.apply(&n, "", nil, n.Base)
-		a.apply(&n, "", nil, n.Options)
+		a.apply(&n, "Base", nil, n.Base)
+		a.apply(&n, "Options", nil, n.Options)
+		a.cursor.set(n, &n)
 
 	case nodes.CreateFunctionStmt:
-		a.apply(&n, "", nil, n.Funcname)
-		a.apply(&n, "", nil, n.Parameters)
+		a.apply(&n, "Funcname", nil, n.Funcname)
+		a.apply(&n, "Parameters", nil, n.Parameters)
 		if n.ReturnType != nil {
-			a.apply(&n, "", nil, *n.ReturnType)
+			a.apply(&n, "ReturnType", nil, *n.ReturnType)
 		}
-		a.apply(&n, "", nil, n.Options)
-		a.apply(&n, "", nil, n.WithClause)
+		a.apply(&n, "Options", nil, n.Options)
+		a.apply(&n, "WithClause", nil, n.WithClause)
+		a.cursor.set(n, &n)
 
 	case nodes.CreateOpClassItem:
-		a.apply(&n, "", nil, n.Name)
-		a.apply(&n, "", nil, n.OrderFamily)
-		a.apply(&n, "", nil, n.ClassArgs)
+		a.apply(&n, "Name", nil, n.Name)
+		a.apply(&n, "OrderFamily", nil, n.OrderFamily)
+		a.apply(&n, "ClassArgs", nil, n.ClassArgs)
 		if n.Storedtype != nil {
-			a.apply(&n, "", nil, *n.Storedtype)
+			a.apply(&n, "Storedtype", nil, *n.Storedtype)
 		}
+		a.cursor.set(n, &n)
 
 	case nodes.CreateOpClassStmt:
-		a.apply(&n, "", nil, n.Opclassname)
-		a.apply(&n, "", nil, n.Opfamilyname)
+		a.apply(&n, "Opclassname", nil, n.Opclassname)
+		a.apply(&n, "Opfamilyname", nil, n.Opfamilyname)
 		if n.Datatype != nil {
-			a.apply(&n, "", nil, *n.Datatype)
+			a.apply(&n, "Datatype", nil, *n.Datatype)
 		}
-		a.apply(&n, "", nil, n.Items)
+		a.apply(&n, "Items", nil, n.Items)
+		a.cursor.set(n, &n)
 
 	case nodes.CreateOpFamilyStmt:
-		a.apply(&n, "", nil, n.Opfamilyname)
+		a.apply(&n, "Opfamilyname", nil, n.Opfamilyname)
+		a.cursor.set(n, &n)
 
 	case nodes.CreatePLangStmt:
-		a.apply(&n, "", nil, n.Plhandler)
-		a.apply(&n, "", nil, n.Plinline)
-		a.apply(&n, "", nil, n.Plvalidator)
+		a.apply(&n, "Plhandler", nil, n.Plhandler)
+		a.apply(&n, "Plinline", nil, n.Plinline)
+		a.apply(&n, "Plvalidator", nil, n.Plvalidator)
+		a.cursor.set(n, &n)
 
 	case nodes.CreatePolicyStmt:
 		if n.Table != nil {
-			a.apply(&n, "", nil, *n.Table)
+			a.apply(&n, "Table", nil, *n.Table)
 		}
-		a.apply(&n, "", nil, n.Roles)
-		a.apply(&n, "", nil, n.Qual)
-		a.apply(&n, "", nil, n.WithCheck)
+		a.apply(&n, "Roles", nil, n.Roles)
+		a.apply(&n, "Qual", nil, n.Qual)
+		a.apply(&n, "WithCheck", nil, n.WithCheck)
+		a.cursor.set(n, &n)
 
 	case nodes.CreatePublicationStmt:
-		a.apply(&n, "", nil, n.Options)
-		a.apply(&n, "", nil, n.Tables)
+		a.apply(&n, "Options", nil, n.Options)
+		a.apply(&n, "Tables", nil, n.Tables)
+		a.cursor.set(n, &n)
 
 	case nodes.CreateRangeStmt:
-		a.apply(&n, "", nil, n.TypeName)
-		a.apply(&n, "", nil, n.Params)
+		a.apply(&n, "TypeName", nil, n.TypeName)
+		a.apply(&n, "Params", nil, n.Params)
+		a.cursor.set(n, &n)
 
 	case nodes.CreateRoleStmt:
-		a.apply(&n, "", nil, n.Options)
+		a.apply(&n, "Options", nil, n.Options)
+		a.cursor.set(n, &n)
 
 	case nodes.CreateSchemaStmt:
 		if n.Authrole != nil {
-			a.apply(&n, "", nil, *n.Authrole)
+			a.apply(&n, "Authrole", nil, *n.Authrole)
 		}
-		a.apply(&n, "", nil, n.SchemaElts)
+		a.apply(&n, "SchemaElts", nil, n.SchemaElts)
+		a.cursor.set(n, &n)
 
 	case nodes.CreateSeqStmt:
 		if n.Sequence != nil {
-			a.apply(&n, "", nil, *n.Sequence)
+			a.apply(&n, "Sequence", nil, *n.Sequence)
 		}
-		a.apply(&n, "", nil, n.Options)
+		a.apply(&n, "Options", nil, n.Options)
+		a.cursor.set(n, &n)
 
 	case nodes.CreateStatsStmt:
-		a.apply(&n, "", nil, n.Defnames)
-		a.apply(&n, "", nil, n.StatTypes)
-		a.apply(&n, "", nil, n.Exprs)
-		a.apply(&n, "", nil, n.Relations)
+		a.apply(&n, "Defnames", nil, n.Defnames)
+		a.apply(&n, "StatTypes", nil, n.StatTypes)
+		a.apply(&n, "Exprs", nil, n.Exprs)
+		a.apply(&n, "Relations", nil, n.Relations)
+		a.cursor.set(n, &n)
 
 	case nodes.CreateStmt:
 		if n.Relation != nil {
-			a.apply(&n, "", nil, *n.Relation)
+			a.apply(&n, "Relation", nil, *n.Relation)
 		}
-		a.apply(&n, "", nil, n.TableElts)
-		a.apply(&n, "", nil, n.InhRelations)
+		a.apply(&n, "TableElts", nil, n.TableElts)
+		a.apply(&n, "InhRelations", nil, n.InhRelations)
 		if n.Partbound != nil {
-			a.apply(&n, "", nil, *n.Partbound)
+			a.apply(&n, "Partbound", nil, *n.Partbound)
 		}
 		if n.Partspec != nil {
-			a.apply(&n, "", nil, *n.Partspec)
+			a.apply(&n, "Partspec", nil, *n.Partspec)
 		}
-		a.apply(&n, "", nil, n.Constraints)
-		a.apply(&n, "", nil, n.Options)
+		a.apply(&n, "Constraints", nil, n.Constraints)
+		a.apply(&n, "Options", nil, n.Options)
 		if n.OfTypename != nil {
-			a.apply(&n, "", nil, *n.OfTypename)
+			a.apply(&n, "OfTypename", nil, *n.OfTypename)
 		}
+		a.cursor.set(n, &n)
 
 	case nodes.CreateSubscriptionStmt:
-		a.apply(&n, "", nil, n.Publication)
-		a.apply(&n, "", nil, n.Options)
+		a.apply(&n, "Publication", nil, n.Publication)
+		a.apply(&n, "Options", nil, n.Options)
+		a.cursor.set(n, &n)
 
 	case nodes.CreateTableAsStmt:
-		a.apply(&n, "", nil, n.Query)
-		a.apply(&n, "", nil, n.Into)
+		a.apply(&n, "Query", nil, n.Query)
+		a.apply(&n, "Into", nil, n.Into)
+		a.cursor.set(n, &n)
 
 	case nodes.CreateTableSpaceStmt:
 		if n.Owner != nil {
-			a.apply(&n, "", nil, *n.Owner)
+			a.apply(&n, "Owner", nil, *n.Owner)
 		}
-		a.apply(&n, "", nil, n.Options)
+		a.apply(&n, "Options", nil, n.Options)
+		a.cursor.set(n, &n)
 
 	case nodes.CreateTransformStmt:
 		if n.TypeName != nil {
-			a.apply(&n, "", nil, *n.TypeName)
+			a.apply(&n, "TypeName", nil, *n.TypeName)
 		}
 		if n.Fromsql != nil {
-			a.apply(&n, "", nil, *n.Fromsql)
+			a.apply(&n, "Fromsql", nil, *n.Fromsql)
 		}
 		if n.Tosql != nil {
-			a.apply(&n, "", nil, *n.Tosql)
+			a.apply(&n, "Tosql", nil, *n.Tosql)
 		}
+		a.cursor.set(n, &n)
 
 	case nodes.CreateTrigStmt:
 		if n.Relation != nil {
-			a.apply(&n, "", nil, *n.Relation)
+			a.apply(&n, "Relation", nil, *n.Relation)
 		}
-		a.apply(&n, "", nil, n.Funcname)
-		a.apply(&n, "", nil, n.Args)
-		a.apply(&n, "", nil, n.Columns)
-		a.apply(&n, "", nil, n.WhenClause)
-		a.apply(&n, "", nil, n.TransitionRels)
+		a.apply(&n, "Funcname", nil, n.Funcname)
+		a.apply(&n, "Args", nil, n.Args)
+		a.apply(&n, "Columns", nil, n.Columns)
+		a.apply(&n, "WhenClause", nil, n.WhenClause)
+		a.apply(&n, "TransitionRels", nil, n.TransitionRels)
 		if n.Constrrel != nil {
-			a.apply(&n, "", nil, *n.Constrrel)
+			a.apply(&n, "Constrrel", nil, *n.Constrrel)
 		}
+		a.cursor.set(n, &n)
 
 	case nodes.CreateUserMappingStmt:
 		if n.User != nil {
-			a.apply(&n, "", nil, *n.User)
+			a.apply(&n, "User", nil, *n.User)
 		}
-		a.apply(&n, "", nil, n.Options)
+		a.apply(&n, "Options", nil, n.Options)
+		a.cursor.set(n, &n)
 
 	case nodes.CreatedbStmt:
-		a.apply(&n, "", nil, n.Options)
+		a.apply(&n, "Options", nil, n.Options)
+		a.cursor.set(n, &n)
 
 	case nodes.CurrentOfExpr:
-		a.apply(&n, "", nil, n.Xpr)
+		a.apply(&n, "Xpr", nil, n.Xpr)
+		a.cursor.set(n, &n)
 
 	case nodes.DeallocateStmt:
 		// pass
 
 	case nodes.DeclareCursorStmt:
-		a.apply(&n, "", nil, n.Query)
+		a.apply(&n, "Query", nil, n.Query)
+		a.cursor.set(n, &n)
 
 	case nodes.DefElem:
-		a.apply(&n, "", nil, n.Arg)
+		a.apply(&n, "Arg", nil, n.Arg)
+		a.cursor.set(n, &n)
 
 	case nodes.DefineStmt:
-		a.apply(&n, "", nil, n.Defnames)
-		a.apply(&n, "", nil, n.Args)
-		a.apply(&n, "", nil, n.Definition)
+		a.apply(&n, "Defnames", nil, n.Defnames)
+		a.apply(&n, "Args", nil, n.Args)
+		a.apply(&n, "Definition", nil, n.Definition)
+		a.cursor.set(n, &n)
 
 	case nodes.DeleteStmt:
 		if n.Relation != nil {
-			a.apply(&n, "", nil, *n.Relation)
+			a.apply(&n, "Relation", nil, *n.Relation)
 		}
-		a.apply(&n, "", nil, n.UsingClause)
-		a.apply(&n, "", nil, n.WhereClause)
-		a.apply(&n, "", nil, n.ReturningList)
+		a.apply(&n, "UsingClause", nil, n.UsingClause)
+		a.apply(&n, "WhereClause", nil, n.WhereClause)
+		a.apply(&n, "ReturningList", nil, n.ReturningList)
 		if n.WithClause != nil {
-			a.apply(&n, "", nil, *n.WithClause)
+			a.apply(&n, "WithClause", nil, *n.WithClause)
 		}
+		a.cursor.set(n, &n)
 
 	case nodes.DiscardStmt:
 		// pass
 
 	case nodes.DoStmt:
-		a.apply(&n, "", nil, n.Args)
+		a.apply(&n, "Args", nil, n.Args)
+		a.cursor.set(n, &n)
 
 	case nodes.DropOwnedStmt:
-		a.apply(&n, "", nil, n.Roles)
+		a.apply(&n, "Roles", nil, n.Roles)
+		a.cursor.set(n, &n)
 
 	case nodes.DropRoleStmt:
-		a.apply(&n, "", nil, n.Roles)
+		a.apply(&n, "Roles", nil, n.Roles)
+		a.cursor.set(n, &n)
 
 	case nodes.DropStmt:
-		a.apply(&n, "", nil, n.Objects)
+		a.apply(&n, "Objects", nil, n.Objects)
+		a.cursor.set(n, &n)
 
 	case nodes.DropSubscriptionStmt:
 		// pass
@@ -787,18 +820,21 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 
 	case nodes.DropUserMappingStmt:
 		if n.User != nil {
-			a.apply(&n, "", nil, *n.User)
+			a.apply(&n, "User", nil, *n.User)
 		}
+		a.cursor.set(n, &n)
 
 	case nodes.DropdbStmt:
 		// pass
 
 	case nodes.ExecuteStmt:
-		a.apply(&n, "", nil, n.Params)
+		a.apply(&n, "Params", nil, n.Params)
+		a.cursor.set(n, &n)
 
 	case nodes.ExplainStmt:
-		a.apply(&n, "", nil, n.Query)
-		a.apply(&n, "", nil, n.Options)
+		a.apply(&n, "Query", nil, n.Query)
+		a.apply(&n, "Options", nil, n.Options)
+		a.cursor.set(n, &n)
 
 	case nodes.Expr:
 		// pass
@@ -807,58 +843,66 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 		// pass
 
 	case nodes.FieldSelect:
-		a.apply(&n, "", nil, n.Xpr)
-		a.apply(&n, "", nil, n.Arg)
+		a.apply(&n, "Xpr", nil, n.Xpr)
+		a.apply(&n, "Arg", nil, n.Arg)
+		a.cursor.set(n, &n)
 
 	case nodes.FieldStore:
-		a.apply(&n, "", nil, n.Xpr)
-		a.apply(&n, "", nil, n.Arg)
-		a.apply(&n, "", nil, n.Newvals)
-		a.apply(&n, "", nil, n.Fieldnums)
+		a.apply(&n, "Xpr", nil, n.Xpr)
+		a.apply(&n, "Arg", nil, n.Arg)
+		a.apply(&n, "Newvals", nil, n.Newvals)
+		a.apply(&n, "Fieldnums", nil, n.Fieldnums)
+		a.cursor.set(n, &n)
 
 	case nodes.Float:
 		// pass
 
 	case nodes.FromExpr:
-		a.apply(&n, "", nil, n.Fromlist)
-		a.apply(&n, "", nil, n.Quals)
+		a.apply(&n, "Fromlist", nil, n.Fromlist)
+		a.apply(&n, "Quals", nil, n.Quals)
+		a.cursor.set(n, &n)
 
 	case nodes.FuncCall:
-		a.apply(&n, "", nil, n.Funcname)
-		a.apply(&n, "", nil, n.Args)
-		a.apply(&n, "", nil, n.AggOrder)
-		a.apply(&n, "", nil, n.AggFilter)
+		a.apply(&n, "Funcname", nil, n.Funcname)
+		a.apply(&n, "Args", nil, n.Args)
+		a.apply(&n, "AggOrder", nil, n.AggOrder)
+		a.apply(&n, "AggFilter", nil, n.AggFilter)
 		if n.Over != nil {
-			a.apply(&n, "", nil, *n.Over)
+			a.apply(&n, "Over", nil, *n.Over)
 		}
+		a.cursor.set(n, &n)
 
 	case nodes.FuncExpr:
-		a.apply(&n, "", nil, n.Xpr)
-		a.apply(&n, "", nil, n.Args)
+		a.apply(&n, "Xpr", nil, n.Xpr)
+		a.apply(&n, "Args", nil, n.Args)
+		a.cursor.set(n, &n)
 
 	case nodes.FunctionParameter:
 		if n.ArgType != nil {
-			a.apply(&n, "", nil, *n.ArgType)
+			a.apply(&n, "ArgType", nil, *n.ArgType)
 		}
-		a.apply(&n, "", nil, n.Defexpr)
+		a.apply(&n, "Defexpr", nil, n.Defexpr)
+		a.cursor.set(n, &n)
 
 	case nodes.GrantRoleStmt:
-		a.apply(&n, "", nil, n.GrantedRoles)
-		a.apply(&n, "", nil, n.GranteeRoles)
+		a.apply(&n, "GrantedRoles", nil, n.GrantedRoles)
+		a.apply(&n, "GranteeRoles", nil, n.GranteeRoles)
 		if n.Grantor != nil {
-			a.apply(&n, "", nil, *n.Grantor)
+			a.apply(&n, "Grantor", nil, *n.Grantor)
 		}
+		a.cursor.set(n, &n)
 
 	case nodes.GrantStmt:
-		a.apply(&n, "", nil, n.Objects)
-		a.apply(&n, "", nil, n.Privileges)
-		a.apply(&n, "", nil, n.Grantees)
+		a.apply(&n, "Objects", nil, n.Objects)
+		a.apply(&n, "Privileges", nil, n.Privileges)
+		a.apply(&n, "Grantees", nil, n.Grantees)
+		a.cursor.set(n, &n)
 
 	case nodes.GroupingFunc:
-		a.apply(&n, "", nil, n.Xpr)
-		a.apply(&n, "", nil, n.Args)
-		a.apply(&n, "", nil, n.Refs)
-		a.apply(&n, "", nil, n.Cols)
+		a.apply(&n, "Xpr", nil, n.Xpr)
+		a.apply(&n, "Args", nil, n.Args)
+		a.apply(&n, "Refs", nil, n.Refs)
+		a.apply(&n, "Cols", nil, n.Cols)
 		a.cursor.set(n, &n)
 
 	case nodes.GroupingSet:
