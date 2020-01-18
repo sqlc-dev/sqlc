@@ -981,8 +981,8 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 		a.cursor.set(n, &n)
 
 	case nodes.List:
+		// Since item is a slice
 		a.applyList(&n, "Items")
-		a.cursor.set(n, &n)
 
 	case nodes.ListenStmt:
 		// pass
@@ -992,23 +992,29 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 
 	case nodes.LockStmt:
 		a.apply(&n, "Relations", nil, n.Relations)
+		a.cursor.set(n, &n)
 
 	case nodes.LockingClause:
 		a.apply(&n, "LockedRels", nil, n.LockedRels)
+		a.cursor.set(n, &n)
 
 	case nodes.MinMaxExpr:
 		a.apply(&n, "Xpr", nil, n.Xpr)
 		a.apply(&n, "Args", nil, n.Args)
+		a.cursor.set(n, &n)
 
 	case nodes.MultiAssignRef:
 		a.apply(&n, "Source", nil, n.Source)
+		a.cursor.set(n, &n)
 
 	case nodes.NamedArgExpr:
 		a.apply(&n, "Xpr", nil, n.Xpr)
 		a.apply(&n, "Args", nil, n.Arg)
+		a.cursor.set(n, &n)
 
 	case nodes.NextValueExpr:
 		a.apply(&n, "Xpr", nil, n.Xpr)
+		a.cursor.set(n, &n)
 
 	case nodes.NotifyStmt:
 		// pass
@@ -1019,10 +1025,12 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 	case nodes.NullTest:
 		a.apply(&n, "Xpr", nil, n.Xpr)
 		a.apply(&n, "Arg", nil, n.Arg)
+		a.cursor.set(n, &n)
 
 	case nodes.ObjectWithArgs:
 		a.apply(&n, "Objname", nil, n.Objname)
 		a.apply(&n, "Objargs", nil, n.Objargs)
+		a.cursor.set(n, &n)
 
 	case nodes.OnConflictClause:
 		if n.Infer != nil {
@@ -1030,20 +1038,24 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 		}
 		a.apply(&n, "TargetList", nil, n.TargetList)
 		a.apply(&n, "WhereClause", nil, n.WhereClause)
+		a.cursor.set(n, &n)
 
 	case nodes.OnConflictExpr:
-		a.apply(&n, "", nil, n.ArbiterElems)
-		a.apply(&n, "", nil, n.ArbiterWhere)
-		a.apply(&n, "", nil, n.OnConflictSet)
-		a.apply(&n, "", nil, n.OnConflictWhere)
-		a.apply(&n, "", nil, n.ExclRelTlist)
+		a.apply(&n, "ArbiterElems", nil, n.ArbiterElems)
+		a.apply(&n, "ArbiterWhere", nil, n.ArbiterWhere)
+		a.apply(&n, "OnConflictSet", nil, n.OnConflictSet)
+		a.apply(&n, "OnConflictWhere", nil, n.OnConflictWhere)
+		a.apply(&n, "ExclRelTlist", nil, n.ExclRelTlist)
+		a.cursor.set(n, &n)
 
 	case nodes.OpExpr:
-		a.apply(&n, "", nil, n.Xpr)
-		a.apply(&n, "", nil, n.Args)
+		a.apply(&n, "Xpr", nil, n.Xpr)
+		a.apply(&n, "Args", nil, n.Args)
+		a.cursor.set(n, &n)
 
 	case nodes.Param:
-		a.apply(&n, "", nil, n.Xpr)
+		a.apply(&n, "Xpr", nil, n.Xpr)
+		a.cursor.set(n, &n)
 
 	case nodes.ParamExecData:
 		// pass
@@ -1058,107 +1070,121 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 		// pass
 
 	case nodes.PartitionBoundSpec:
-		a.apply(&n, "", nil, n.Listdatums)
-		a.apply(&n, "", nil, n.Lowerdatums)
-		a.apply(&n, "", nil, n.Upperdatums)
+		a.apply(&n, "Listdatums", nil, n.Listdatums)
+		a.apply(&n, "Lowerdatums", nil, n.Lowerdatums)
+		a.apply(&n, "Upperdatums", nil, n.Upperdatums)
+		a.cursor.set(n, &n)
 
 	case nodes.PartitionCmd:
 		if n.Name != nil {
-			a.apply(&n, "", nil, *n.Name)
+			a.apply(&n, "Name", nil, *n.Name)
 		}
 		if n.Bound != nil {
-			a.apply(&n, "", nil, *n.Bound)
+			a.apply(&n, "Bound", nil, *n.Bound)
 		}
+		a.cursor.set(n, &n)
 
 	case nodes.PartitionElem:
-		a.apply(&n, "", nil, n.Expr)
-		a.apply(&n, "", nil, n.Collation)
-		a.apply(&n, "", nil, n.Opclass)
+		a.apply(&n, "Expr", nil, n.Expr)
+		a.apply(&n, "Collation", nil, n.Collation)
+		a.apply(&n, "Opclass", nil, n.Opclass)
+		a.cursor.set(n, &n)
 
 	case nodes.PartitionRangeDatum:
-		a.apply(&n, "", nil, n.Value)
+		a.apply(&n, "Value", nil, n.Value)
+		a.cursor.set(n, &n)
 
 	case nodes.PartitionSpec:
-		a.apply(&n, "", nil, n.PartParams)
+		a.apply(&n, "PartParams", nil, n.PartParams)
+		a.cursor.set(n, &n)
 
 	case nodes.PrepareStmt:
-		a.apply(&n, "", nil, n.Argtypes)
-		a.apply(&n, "", nil, n.Query)
+		a.apply(&n, "Argtypes", nil, n.Argtypes)
+		a.apply(&n, "Query", nil, n.Query)
+		a.cursor.set(n, &n)
 
 	case nodes.Query:
-		a.apply(&n, "", nil, n.UtilityStmt)
-		a.apply(&n, "", nil, n.CteList)
-		a.apply(&n, "", nil, n.Jointree)
-		a.apply(&n, "", nil, n.TargetList)
-		a.apply(&n, "", nil, n.OnConflict)
-		a.apply(&n, "", nil, n.ReturningList)
-		a.apply(&n, "", nil, n.GroupClause)
-		a.apply(&n, "", nil, n.GroupingSets)
-		a.apply(&n, "", nil, n.HavingQual)
-		a.apply(&n, "", nil, n.WindowClause)
-		a.apply(&n, "", nil, n.DistinctClause)
-		a.apply(&n, "", nil, n.SortClause)
-		a.apply(&n, "", nil, n.LimitCount)
-		a.apply(&n, "", nil, n.RowMarks)
-		a.apply(&n, "", nil, n.SetOperations)
-		a.apply(&n, "", nil, n.ConstraintDeps)
-		a.apply(&n, "", nil, n.WithCheckOptions)
+		a.apply(&n, "UtilityStmt", nil, n.UtilityStmt)
+		a.apply(&n, "CteList", nil, n.CteList)
+		a.apply(&n, "Jointree", nil, n.Jointree)
+		a.apply(&n, "TargetList", nil, n.TargetList)
+		a.apply(&n, "OnConflict", nil, n.OnConflict)
+		a.apply(&n, "ReturningList", nil, n.ReturningList)
+		a.apply(&n, "GroupClause", nil, n.GroupClause)
+		a.apply(&n, "GroupingSets", nil, n.GroupingSets)
+		a.apply(&n, "HavingQual", nil, n.HavingQual)
+		a.apply(&n, "WindowClause", nil, n.WindowClause)
+		a.apply(&n, "DistinctClause", nil, n.DistinctClause)
+		a.apply(&n, "SortClause", nil, n.SortClause)
+		a.apply(&n, "LimitCount", nil, n.LimitCount)
+		a.apply(&n, "RowMarks", nil, n.RowMarks)
+		a.apply(&n, "SetOperations", nil, n.SetOperations)
+		a.apply(&n, "ConstraintDeps", nil, n.ConstraintDeps)
+		a.apply(&n, "WithCheckOptions", nil, n.WithCheckOptions)
+		a.cursor.set(n, &n)
 
 	case nodes.RangeFunction:
-		a.apply(&n, "", nil, n.Functions)
+		a.apply(&n, "Functions", nil, n.Functions)
 		if n.Alias != nil {
-			a.apply(&n, "", nil, *n.Alias)
+			a.apply(&n, "Alias", nil, *n.Alias)
 		}
-		a.apply(&n, "", nil, n.Coldeflist)
+		a.apply(&n, "Coldeflist", nil, n.Coldeflist)
+		a.cursor.set(n, &n)
 
 	case nodes.RangeSubselect:
-		a.apply(&n, "", nil, n.Subquery)
+		a.apply(&n, "Subquery", nil, n.Subquery)
 		if n.Alias != nil {
-			a.apply(&n, "", nil, *n.Alias)
+			a.apply(&n, "Alias", nil, *n.Alias)
 		}
+		a.cursor.set(n, &n)
 
 	case nodes.RangeTableFunc:
-		a.apply(&n, "", nil, n.Docexpr)
-		a.apply(&n, "", nil, n.Rowexpr)
-		a.apply(&n, "", nil, n.Namespaces)
-		a.apply(&n, "", nil, n.Columns)
+		a.apply(&n, "Docexpr", nil, n.Docexpr)
+		a.apply(&n, "Rowexpr", nil, n.Rowexpr)
+		a.apply(&n, "Namespaces", nil, n.Namespaces)
+		a.apply(&n, "Columns", nil, n.Columns)
 		if n.Alias != nil {
-			a.apply(&n, "", nil, *n.Alias)
+			a.apply(&n, "Alias", nil, *n.Alias)
 		}
+		a.cursor.set(n, &n)
 
 	case nodes.RangeTableFuncCol:
 		if n.TypeName != nil {
-			a.apply(&n, "", nil, *n.TypeName)
+			a.apply(&n, "TypeName", nil, *n.TypeName)
 		}
-		a.apply(&n, "", nil, n.Colexpr)
-		a.apply(&n, "", nil, n.Coldefexpr)
+		a.apply(&n, "Colexpr", nil, n.Colexpr)
+		a.apply(&n, "Coldefexpr", nil, n.Coldefexpr)
+		a.cursor.set(n, &n)
 
 	case nodes.RangeTableSample:
-		a.apply(&n, "", nil, n.Relation)
-		a.apply(&n, "", nil, n.Method)
-		a.apply(&n, "", nil, n.Args)
+		a.apply(&n, "Relation", nil, n.Relation)
+		a.apply(&n, "Method", nil, n.Method)
+		a.apply(&n, "Args", nil, n.Args)
+		a.cursor.set(n, &n)
 
 	case nodes.RangeTblEntry:
-		a.apply(&n, "", nil, n.Tablesample)
-		a.apply(&n, "", nil, n.Subquery)
-		a.apply(&n, "", nil, n.Joinaliasvars)
-		a.apply(&n, "", nil, n.Functions)
-		a.apply(&n, "", nil, n.Tablefunc)
-		a.apply(&n, "", nil, n.ValuesLists)
-		a.apply(&n, "", nil, n.Coltypes)
-		a.apply(&n, "", nil, n.Colcollations)
+		a.apply(&n, "Tablesample", nil, n.Tablesample)
+		a.apply(&n, "Subquery", nil, n.Subquery)
+		a.apply(&n, "Joinaliasvars", nil, n.Joinaliasvars)
+		a.apply(&n, "Functions", nil, n.Functions)
+		a.apply(&n, "Tablefund", nil, n.Tablefunc)
+		a.apply(&n, "ValuesLists", nil, n.ValuesLists)
+		a.apply(&n, "Coltypes", nil, n.Coltypes)
+		a.apply(&n, "Colcollations", nil, n.Colcollations)
 		if n.Alias != nil {
-			a.apply(&n, "", nil, *n.Alias)
+			a.apply(&n, "Alias", nil, *n.Alias)
 		}
-		a.apply(&n, "", nil, n.Eref)
-		a.apply(&n, "", nil, n.SecurityQuals)
+		a.apply(&n, "Eref", nil, n.Eref)
+		a.apply(&n, "SecurityQuals", nil, n.SecurityQuals)
+		a.cursor.set(n, &n)
 
 	case nodes.RangeTblFunction:
-		a.apply(&n, "", nil, n.Funcexpr)
-		a.apply(&n, "", nil, n.Funccolnames)
-		a.apply(&n, "", nil, n.Funccoltypes)
-		a.apply(&n, "", nil, n.Funccoltypmods)
-		a.apply(&n, "", nil, n.Funccolcollations)
+		a.apply(&n, "Funcexpr", nil, n.Funcexpr)
+		a.apply(&n, "Funccolnames", nil, n.Funccolnames)
+		a.apply(&n, "Funccoltypes", nil, n.Funccoltypes)
+		a.apply(&n, "Funccoltypmods", nil, n.Funccoltypmods)
+		a.apply(&n, "Funccolcollations", nil, n.Funccolcollations)
+		a.cursor.set(n, &n)
 
 	case nodes.RangeTblRef:
 		// pass
@@ -1166,8 +1192,8 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 	case nodes.RangeVar:
 		if n.Alias != nil {
 			a.apply(&n, "Alias", nil, *n.Alias)
-			a.cursor.set(n, &n)
 		}
+		a.cursor.set(n, &n)
 
 	case nodes.RawStmt:
 		a.apply(&n, "Stmt", nil, n.Stmt)
