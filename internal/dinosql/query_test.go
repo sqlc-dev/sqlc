@@ -901,6 +901,23 @@ func TestQueries(t *testing.T) {
 				},
 			},
 		},
+		{
+			"at_parameter",
+			`
+			CREATE TABLE foo (name text not null);
+			SELECT name FROM foo WHERE name = @slug AND @filter::bool;
+			`,
+			Query{
+				SQL: "SELECT name FROM foo WHERE name = $1 AND $2::bool",
+				Columns: []core.Column{
+					{Table: public("foo"), Name: "name", DataType: "text", NotNull: true},
+				},
+				Params: []Parameter{
+					{1, core.Column{Table: public("foo"), Name: "slug", DataType: "text", NotNull: true}},
+					{2, core.Column{Name: "filter", DataType: "bool", NotNull: true}},
+				},
+			},
+		},
 	} {
 		test := tc
 		t.Run(test.name, func(t *testing.T) {

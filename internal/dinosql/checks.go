@@ -123,18 +123,27 @@ func validateInsertStmt(stmt nodes.InsertStmt) error {
 	return nil
 }
 
-// A query can either use named parameters (sqlc.arg(param)) or positional
-// parameters ($1), but not both
+// A query can use one (and only one) of the following formats:
+// - positional parameters           $1
+// - named parameter operator        @param
+// - named parameter function calls  sqlc.arg(param)
 func validateParamStyle(n nodes.Node) error {
 	positional := search(n, func(node nodes.Node) bool {
 		_, ok := node.(nodes.ParamRef)
 		return ok
 	})
-	named := search(n, isNamedParamFunc)
-	if len(named.Items) > 0 && len(positional.Items) > 0 {
-		return pg.Error{
-			Code:    "", // TODO: Pick a new error code
-			Message: "query mixes positional parameters ($1) and named parameters (sqlc.arg)",
+	namedFunc := search(n, isNamedParamFunc)
+	namedSign := search(n, isNamedParamSign)
+	for _, check := range []bool{
+		len(positional.Items) > 0 && len(namedSign.Items)+len(namedFunc.Items) > 0,
+		len(namedFunc.Items) > 0 && len(namedSign.Items)+len(positional.Items) > 0,
+		len(namedSign.Items) > 0 && len(positional.Items)+len(namedFunc.Items) > 0,
+	} {
+		if check {
+			return pg.Error{
+				Code:    "", // TODO: Pick a new error code
+				Message: "query mixes positional parameters ($1) and named parameters (sqlc.arg or @arg)",
+			}
 		}
 	}
 	return nil

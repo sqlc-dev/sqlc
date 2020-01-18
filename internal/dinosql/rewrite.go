@@ -32,13 +32,23 @@ func isNamedParamFunc(node nodes.Node) bool {
 }
 
 func isNamedParamSign(node nodes.Node) bool {
-	fun, ok := node.(nodes.FuncCall)
-	return ok && ast.Join(fun.Funcname, ".") == "sqlc.arg"
+	expr, ok := node.(nodes.A_Expr)
+	return ok && ast.Join(expr.Name, ".") == "@"
+}
+
+func isNamedParamSignCast(node nodes.Node) bool {
+	expr, ok := node.(nodes.A_Expr)
+	if !ok {
+		return false
+	}
+	_, cast := expr.Rexpr.(nodes.TypeCast)
+	return ast.Join(expr.Name, ".") == "@" && cast
 }
 
 func rewriteNamedParameters(raw nodes.RawStmt) (nodes.RawStmt, map[int]string, []edit) {
-	found := search(raw, isNamedParamFunc)
-	if len(found.Items) == 0 {
+	foundFunc := search(raw, isNamedParamFunc)
+	foundSign := search(raw, isNamedParamSign)
+	if len(foundFunc.Items)+len(foundSign.Items) == 0 {
 		return raw, map[int]string{}, nil
 	}
 
@@ -47,7 +57,9 @@ func rewriteNamedParameters(raw nodes.RawStmt) (nodes.RawStmt, map[int]string, [
 	var edits []edit
 	node := ast.Apply(raw, func(cr *ast.Cursor) bool {
 		node := cr.Node()
-		if isNamedParamFunc(node) {
+		switch {
+
+		case isNamedParamFunc(node):
 			fun := node.(nodes.FuncCall)
 			param := flatten(fun.Args)
 			if num, ok := args[param]; ok {
@@ -70,8 +82,61 @@ func rewriteNamedParameters(raw nodes.RawStmt) (nodes.RawStmt, map[int]string, [
 				New:      fmt.Sprintf("$%d", args[param]),
 			})
 			return false
+
+		case isNamedParamSignCast(node):
+			expr := node.(nodes.A_Expr)
+			cast := expr.Rexpr.(nodes.TypeCast)
+			param := flatten(cast.Arg)
+			if num, ok := args[param]; ok {
+				cast.Arg = nodes.ParamRef{
+					Number:   num,
+					Location: expr.Location,
+				}
+				cr.Replace(cast)
+			} else {
+				argn += 1
+				args[param] = argn
+				cast.Arg = nodes.ParamRef{
+					Number:   argn,
+					Location: expr.Location,
+				}
+				cr.Replace(cast)
+			}
+			// TODO: This code assumes that @foo::bool is on a single line
+			edits = append(edits, edit{
+				Location: expr.Location - raw.StmtLocation,
+				Old:      fmt.Sprintf("@%s", param),
+				New:      fmt.Sprintf("$%d", args[param]),
+			})
+			return false
+
+		case isNamedParamSign(node):
+			expr := node.(nodes.A_Expr)
+			param := flatten(expr.Rexpr)
+			if num, ok := args[param]; ok {
+				cr.Replace(nodes.ParamRef{
+					Number:   num,
+					Location: expr.Location,
+				})
+			} else {
+				argn += 1
+				args[param] = argn
+				cr.Replace(nodes.ParamRef{
+					Number:   argn,
+					Location: expr.Location,
+				})
+			}
+			// TODO: This code assumes that @foo is on a single line
+			edits = append(edits, edit{
+				Location: expr.Location - raw.StmtLocation,
+				Old:      fmt.Sprintf("@%s", param),
+				New:      fmt.Sprintf("$%d", args[param]),
+			})
+			return false
+
+		default:
+			return true
 		}
-		return true
 	}, nil)
 
 	named := map[int]string{}
