@@ -23,7 +23,7 @@ WHERE tags && $1::varchar[]
 `
 
 type BooksByTagsRow struct {
-	BookID int32
+	BookID int64
 	Title  string
 	Name   string
 	Isbn   string
@@ -173,7 +173,7 @@ DELETE FROM books
 WHERE book_id = $1
 `
 
-func (q *Queries) DeleteBook(ctx context.Context, bookID int32) error {
+func (q *Queries) DeleteBook(ctx context.Context, bookID int64) error {
 	_, err := q.db.ExecContext(ctx, deleteBook, bookID)
 	return err
 }
@@ -195,7 +195,7 @@ SELECT book_id, author_id, isbn, booktype, title, year, available, tags FROM boo
 WHERE book_id = $1
 `
 
-func (q *Queries) GetBook(ctx context.Context, bookID int32) (Book, error) {
+func (q *Queries) GetBook(ctx context.Context, bookID int64) (Book, error) {
 	row := q.db.QueryRowContext(ctx, getBook, bookID)
 	var i Book
 	err := row.Scan(
@@ -220,7 +220,7 @@ WHERE book_id = $3
 type UpdateBookParams struct {
 	Title  string
 	Tags   []string
-	BookID int32
+	BookID int64
 }
 
 func (q *Queries) UpdateBook(ctx context.Context, arg UpdateBookParams) error {
@@ -237,7 +237,7 @@ WHERE book_id = $3
 type UpdateBookISBNParams struct {
 	Title  string
 	Tags   []string
-	BookID int32
+	BookID int64
 	Isbn   string
 }
 

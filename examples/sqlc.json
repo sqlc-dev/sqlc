@@ -34,7 +34,13 @@
       "path": "booktest/mysql",
       "schema": "booktest/mysql/schema.sql",
       "queries": "booktest/mysql/query.sql",
-      "engine": "mysql"
+      "engine": "mysql",
+      "overrides": [
+        {
+          "column": "books.book_id",
+          "go_type": "int64"
+        }
+      ]
     }
   ]
 }
