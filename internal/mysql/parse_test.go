@@ -92,6 +92,14 @@ func initMockSchema() {
 				NotNull: true,
 			},
 		},
+		&sqlparser.ColumnDefinition{
+			Name: sqlparser.NewColIdent("job_status"),
+			Type: sqlparser.ColumnType{
+				Type:       "enum",
+				NotNull:    true,
+				EnumValues: []string{"applied", "pending", "accepted", "rejected"},
+			},
+		},
 	}
 	schemaMap["orders"] = []*sqlparser.ColumnDefinition{
 		&sqlparser.ColumnDefinition{
@@ -213,8 +221,8 @@ func TestParseSelect(t *testing.T) {
 				schema: mockSchema,
 			},
 			output: &Query{
-				SQL:              "select first_name, last_name, id, age from users",
-				Columns:          filterCols(mockSchema.tables["users"], map[string]string{"first_name": "users", "last_name": "users", "id": "users", "age": "users"}),
+				SQL:              "select first_name, last_name, id, age, job_status from users",
+				Columns:          filterCols(mockSchema.tables["users"], map[string]string{"first_name": "users", "last_name": "users", "id": "users", "age": "users", "job_status": "users"}),
 				Params:           []*Param{},
 				Name:             "GetAll",
 				Cmd:              ":many",
