@@ -5,7 +5,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/kyleconroy/sqlc/internal/dinosql"
 	"vitess.io/vitess/go/vt/sqlparser"
 )
 
@@ -17,7 +16,7 @@ type Param struct {
 	Typ          string
 }
 
-func paramsInLimitExpr(limit *sqlparser.Limit, s *Schema, tableAliasMap FromTables, settings dinosql.GenerateSettings) ([]*Param, error) {
+func (p PackageGenerator) paramsInLimitExpr(limit *sqlparser.Limit, tableAliasMap FromTables) ([]*Param, error) {
 	params := []*Param{}
 	if limit == nil {
 		return params, nil
@@ -61,7 +60,7 @@ func paramsInLimitExpr(limit *sqlparser.Limit, s *Schema, tableAliasMap FromTabl
 	return params, nil
 }
 
-func paramsInWhereExpr(e sqlparser.SQLNode, s *Schema, tableAliasMap FromTables, defaultTable string, settings dinosql.GenerateSettings) ([]*Param, error) {
+func (p PackageGenerator) paramsInWhereExpr(e sqlparser.SQLNode, tableAliasMap FromTables, defaultTable string) ([]*Param, error) {
 	params := []*Param{}
 	if e == nil {
 		return params, nil
@@ -76,9 +75,9 @@ func paramsInWhereExpr(e sqlparser.SQLNode, s *Schema, tableAliasMap FromTables,
 		if v == nil {
 			return params, nil
 		}
-		return paramsInWhereExpr(v, s, tableAliasMap, defaultTable, settings)
+		return p.paramsInWhereExpr(v, tableAliasMap, defaultTable)
 	case *sqlparser.ComparisonExpr:
-		p, found, err := paramInComparison(v, s, tableAliasMap, defaultTable, settings)
+		p, found, err := p.paramInComparison(v, tableAliasMap, defaultTable)
 		if err != nil {
 			return nil, err
 		}
@@ -86,23 +85,23 @@ func paramsInWhereExpr(e sqlparser.SQLNode, s *Schema, tableAliasMap FromTables,
 			params = append(params, p)
 		}
 	case *sqlparser.AndExpr:
-		left, err := paramsInWhereExpr(v.Left, s, tableAliasMap, defaultTable, settings)
+		left, err := p.paramsInWhereExpr(v.Left, tableAliasMap, defaultTable)
 		if err != nil {
 			return nil, err
 		}
 		params = append(params, left...)
-		right, err := paramsInWhereExpr(v.Right, s, tableAliasMap, defaultTable, settings)
+		right, err := p.paramsInWhereExpr(v.Right, tableAliasMap, defaultTable)
 		if err != nil {
 			return nil, err
 		}
 		params = append(params, right...)
 	case *sqlparser.OrExpr:
-		left, err := paramsInWhereExpr(v.Left, s, tableAliasMap, defaultTable, settings)
+		left, err := p.paramsInWhereExpr(v.Left, tableAliasMap, defaultTable)
 		if err != nil {
 			return nil, err
 		}
 		params = append(params, left...)
-		right, err := paramsInWhereExpr(v.Right, s, tableAliasMap, defaultTable, settings)
+		right, err := p.paramsInWhereExpr(v.Right, tableAliasMap, defaultTable)
 		if err != nil {
 			return nil, err
 		}
@@ -117,22 +116,22 @@ func paramsInWhereExpr(e sqlparser.SQLNode, s *Schema, tableAliasMap FromTables,
 	return params, nil
 }
 
-func paramInComparison(cond *sqlparser.ComparisonExpr, s *Schema, tableAliasMap FromTables, defaultTable string, settings dinosql.GenerateSettings) (*Param, bool, error) {
-	p := &Param{}
+func (p PackageGenerator) paramInComparison(cond *sqlparser.ComparisonExpr, tableAliasMap FromTables, defaultTable string) (*Param, bool, error) {
+	param := &Param{}
 	var colIdent sqlparser.ColIdent
 	walker := func(node sqlparser.SQLNode) (bool, error) {
 		switch v := node.(type) {
 		case *sqlparser.ColName:
-			colDfn, err := s.getColType(v, tableAliasMap, defaultTable)
+			colDfn, err := p.getColType(v, tableAliasMap, defaultTable)
 			if err != nil {
 				return false, err
 			}
-			p.Typ = goTypeCol(colDfn, settings)
+			param.Typ = p.goTypeCol(colDfn)
 			colIdent = colDfn.Name
 
 		case *sqlparser.SQLVal:
 			if v.Type == sqlparser.ValArg {
-				p.OriginalName = string(v.Val)
+				param.OriginalName = string(v.Val)
 			}
 		case *sqlparser.FuncExpr:
 			name, raw, err := matchFuncExpr(v)
@@ -140,8 +139,8 @@ func paramInComparison(cond *sqlparser.ComparisonExpr, s *Schema, tableAliasMap 
 				return false, err
 			}
 			if name != "" && raw != "" {
-				p.OriginalName = raw
-				p.Name = name
+				param.OriginalName = raw
+				param.Name = name
 			}
 			return false, nil
 		}
@@ -151,12 +150,12 @@ func paramInComparison(cond *sqlparser.ComparisonExpr, s *Schema, tableAliasMap 
 	if err != nil {
 		return nil, false, err
 	}
-	if p.Name != "" {
-		return p, true, nil
+	if param.Name != "" {
+		return param, true, nil
 	}
-	if p.OriginalName != "" && p.Typ != "" {
-		p.Name = paramName(colIdent, p.OriginalName)
-		return p, true, nil
+	if param.OriginalName != "" && param.Typ != "" {
+		param.Name = paramName(colIdent, param.OriginalName)
+		return param, true, nil
 	}
 	return nil, false, nil
 }
