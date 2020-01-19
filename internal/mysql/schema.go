@@ -20,7 +20,7 @@ type Schema struct {
 }
 
 // returns a deep copy of the column definition for using as a query return type or param type
-func (s *Schema) getColType(col *sqlparser.ColName, tableAliasMap FromTables, defaultTableName string) (*sqlparser.ColumnDefinition, error) {
+func (s *Schema) getColType(col *sqlparser.ColName, tableAliasMap FromTables, defaultTableName string) (*Column, error) {
 	realTable, err := tableColReferences(col, defaultTableName, tableAliasMap)
 	if err != nil {
 		return nil, err
@@ -30,11 +30,11 @@ func (s *Schema) getColType(col *sqlparser.ColName, tableAliasMap FromTables, de
 	if err != nil {
 		return nil, err
 	}
-	colDfnCopy := *colDfn
+	colDfnCopy := *colDfn.ColumnDefinition
 	if realTable.IsLeftJoined {
 		colDfnCopy.Type.NotNull = false
 	}
-	return &colDfnCopy, nil
+	return &Column{&colDfnCopy, realTable.TrueName}, nil
 }
 
 func tableColReferences(col *sqlparser.ColName, defaultTable string, tableAliasMap FromTables) (FromTable, error) {
@@ -66,7 +66,7 @@ func (s *Schema) Add(ddl *sqlparser.DDL) {
 	}
 }
 
-func (s *Schema) schemaLookup(table string, col string) (*sqlparser.ColumnDefinition, error) {
+func (s *Schema) schemaLookup(table string, col string) (*Column, error) {
 	cols, ok := s.tables[table]
 	if !ok {
 		return nil, fmt.Errorf("table \"%s\" not found in schema", table)
@@ -74,7 +74,7 @@ func (s *Schema) schemaLookup(table string, col string) (*sqlparser.ColumnDefini
 
 	for _, colDef := range cols {
 		if colDef.Name.EqualString(col) {
-			return colDef, nil
+			return &Column{colDef, table}, nil
 		}
 	}
 

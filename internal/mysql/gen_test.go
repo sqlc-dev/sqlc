@@ -54,8 +54,9 @@ func TestEnumName(t *testing.T) {
 		},
 	}
 
+	generator := PackageGenerator{mockSchema, mockSettings, "db"}
 	for _, tc := range tcase {
-		enumName := enumNameFromColDef(&tc.input, mockSettings)
+		enumName := generator.enumNameFromColDef(&tc.input)
 		if diff := cmp.Diff(enumName, tc.output); diff != "" {
 			t.Errorf(diff)
 		}
@@ -63,12 +64,13 @@ func TestEnumName(t *testing.T) {
 }
 
 func TestEnums(t *testing.T) {
+	generator := PackageGenerator{mockSchema, mockSettings, "db"}
 	tcase := [...]struct {
 		input  Result
 		output []dinosql.GoEnum
 	}{
 		{
-			input: Result{Schema: mockSchema},
+			input: Result{PackageGenerator: generator},
 			output: []dinosql.GoEnum{
 				{
 					Name: "JobStatusType",
@@ -91,12 +93,13 @@ func TestEnums(t *testing.T) {
 }
 
 func TestStructs(t *testing.T) {
+	generator := PackageGenerator{mockSchema, mockSettings, "db"}
 	tcase := [...]struct {
 		input  Result
 		output []dinosql.GoStruct
 	}{
 		{
-			input: Result{Schema: mockSchema},
+			input: Result{PackageGenerator: generator},
 			output: []dinosql.GoStruct{
 				{
 					Table: pg.FQN{Catalog: "orders"},
