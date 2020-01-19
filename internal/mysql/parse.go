@@ -70,7 +70,7 @@ func parsePath(sqlPath string, generator PackageGenerator) (*Result, error) {
 	}, nil
 }
 
-func (p *PackageGenerator) parseContents(filename, contents string) ([]*Query, error) {
+func (pGen *PackageGenerator) parseContents(filename, contents string) ([]*Query, error) {
 	t := sqlparser.NewStringTokenizer(contents)
 	var queries []*Query
 	var start int
@@ -82,7 +82,7 @@ func (p *PackageGenerator) parseContents(filename, contents string) ([]*Query, e
 			return nil, err
 		}
 		query := contents[start : t.Position-1]
-		result, err := p.parseQueryString(q, query)
+		result, err := pGen.parseQueryString(q, query)
 		if err != nil {
 			return nil, sqlparser.PositionedErr{Err: err.Error(), Pos: start, Near: nil}
 		}
@@ -96,35 +96,35 @@ func (p *PackageGenerator) parseContents(filename, contents string) ([]*Query, e
 	return queries, nil
 }
 
-func (p PackageGenerator) parseQueryString(tree sqlparser.Statement, query string) (*Query, error) {
+func (pGen PackageGenerator) parseQueryString(tree sqlparser.Statement, query string) (*Query, error) {
 	var parsedQuery *Query
 	switch tree := tree.(type) {
 	case *sqlparser.Select:
-		selectQuery, err := p.parseSelect(tree, query)
+		selectQuery, err := pGen.parseSelect(tree, query)
 		if err != nil {
 			return nil, err
 		}
 		parsedQuery = selectQuery
 	case *sqlparser.Insert:
-		insert, err := p.parseInsert(tree, query)
+		insert, err := pGen.parseInsert(tree, query)
 		if err != nil {
 			return nil, err
 		}
 		parsedQuery = insert
 	case *sqlparser.Update:
-		update, err := p.parseUpdate(tree, query)
+		update, err := pGen.parseUpdate(tree, query)
 		if err != nil {
 			return nil, err
 		}
 		parsedQuery = update
 	case *sqlparser.Delete:
-		delete, err := p.parseDelete(tree, query)
+		delete, err := pGen.parseDelete(tree, query)
 		if err != nil {
 			return nil, err
 		}
 		parsedQuery = delete
 	case *sqlparser.DDL:
-		p.Schema.Add(tree)
+		pGen.Schema.Add(tree)
 		return nil, nil
 	default:
 		// panic("Unsupported SQL statement type")
@@ -154,7 +154,7 @@ func (q *Query) parseNameAndCmd() error {
 	return nil
 }
 
-func (p PackageGenerator) parseSelect(tree *sqlparser.Select, query string) (*Query, error) {
+func (pGen PackageGenerator) parseSelect(tree *sqlparser.Select, query string) (*Query, error) {
 	tableAliasMap, defaultTableName, err := parseFrom(tree.From, false)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse table name alias's: %w", err)
@@ -164,7 +164,7 @@ func (p PackageGenerator) parseSelect(tree *sqlparser.Select, query string) (*Qu
 	_, ok := tree.SelectExprs[0].(*sqlparser.StarExpr)
 	if ok {
 		colNames := []sqlparser.SelectExpr{}
-		colDfns := p.Schema.tables[defaultTableName]
+		colDfns := pGen.Schema.tables[defaultTableName]
 		for _, col := range colDfns {
 			colNames = append(colNames, &sqlparser.AliasedExpr{
 				Expr: &sqlparser.ColName{
@@ -179,18 +179,18 @@ func (p PackageGenerator) parseSelect(tree *sqlparser.Select, query string) (*Qu
 		SQL:              query,
 		DefaultTableName: defaultTableName,
 	}
-	cols, err := p.parseSelectAliasExpr(tree.SelectExprs, tableAliasMap, defaultTableName)
+	cols, err := pGen.parseSelectAliasExpr(tree.SelectExprs, tableAliasMap, defaultTableName)
 	if err != nil {
 		return nil, err
 	}
 	parsedQuery.Columns = cols
 
-	whereParams, err := p.paramsInWhereExpr(tree.Where, tableAliasMap, defaultTableName)
+	whereParams, err := pGen.paramsInWhereExpr(tree.Where, tableAliasMap, defaultTableName)
 	if err != nil {
 		return nil, err
 	}
 
-	limitParams, err := p.paramsInLimitExpr(tree.Limit, tableAliasMap)
+	limitParams, err := pGen.paramsInLimitExpr(tree.Limit, tableAliasMap)
 	if err != nil {
 		return nil, err
 	}
@@ -256,7 +256,7 @@ func parseFrom(from sqlparser.TableExprs, isLeftJoined bool) (FromTables, string
 	return tables, defaultTableName, nil
 }
 
-func (p PackageGenerator) parseUpdate(node *sqlparser.Update, query string) (*Query, error) {
+func (pGen PackageGenerator) parseUpdate(node *sqlparser.Update, query string) (*Query, error) {
 	tableAliasMap, defaultTable, err := parseFrom(node.TableExprs, false)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse table name alias's: %w", err)
@@ -264,27 +264,26 @@ func (p PackageGenerator) parseUpdate(node *sqlparser.Update, query string) (*Qu
 
 	params := []*Param{}
 	for _, updateExpr := range node.Exprs {
-		col := updateExpr.Name
 		newValue, isValue := updateExpr.Expr.(*sqlparser.SQLVal)
 		if !isValue {
 			continue
 		} else if isParam := newValue.Type == sqlparser.ValArg; !isParam {
 			continue
 		}
-		colDfn, err := p.getColType(col, tableAliasMap, defaultTable)
+		col, err := pGen.getColType(updateExpr.Name, tableAliasMap, defaultTable)
 		if err != nil {
 			return nil, fmt.Errorf("failed to determine type of a parameter's column: %w", err)
 		}
 		originalParamName := string(newValue.Val)
 		param := Param{
 			OriginalName: originalParamName,
-			Name:         paramName(colDfn.Name, originalParamName),
-			Typ:          p.goTypeCol(colDfn),
+			Name:         paramName(col.Name, originalParamName),
+			Typ:          pGen.goTypeCol(*col),
 		}
 		params = append(params, &param)
 	}
 
-	whereParams, err := p.paramsInWhereExpr(node.Where, tableAliasMap, defaultTable)
+	whereParams, err := pGen.paramsInWhereExpr(node.Where, tableAliasMap, defaultTable)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse params from WHERE expression: %w", err)
 	}
@@ -303,14 +302,14 @@ func (p PackageGenerator) parseUpdate(node *sqlparser.Update, query string) (*Qu
 	return &parsedQuery, nil
 }
 
-func (p PackageGenerator) parseInsert(node *sqlparser.Insert, query string) (*Query, error) {
+func (pGen PackageGenerator) parseInsert(node *sqlparser.Insert, query string) (*Query, error) {
 	params := []*Param{}
 	cols := node.Columns
 	tableName := node.Table.Name.String()
 
 	switch rows := node.Rows.(type) {
 	case *sqlparser.Select:
-		selectQuery, err := p.parseSelect(rows, query)
+		selectQuery, err := pGen.parseSelect(rows, query)
 		if err != nil {
 			return nil, err
 		}
@@ -322,12 +321,12 @@ func (p PackageGenerator) parseInsert(node *sqlparser.Insert, query string) (*Qu
 				case *sqlparser.SQLVal:
 					if v.Type == sqlparser.ValArg {
 						colName := cols[colIx].String()
-						colDfn, err := p.schemaLookup(tableName, colName)
+						col, err := pGen.schemaLookup(tableName, colName)
 						varName := string(v.Val)
 						param := &Param{OriginalName: varName}
 						if err == nil {
-							param.Name = paramName(colDfn.Name, varName)
-							param.Typ = p.goTypeCol(colDfn)
+							param.Name = paramName(col.Name, varName)
+							param.Typ = pGen.goTypeCol(*col)
 						} else {
 							param.Name = "Unknown"
 							param.Typ = "interface{}"
@@ -344,13 +343,13 @@ func (p PackageGenerator) parseInsert(node *sqlparser.Insert, query string) (*Qu
 						continue
 					}
 					colName := cols[colIx].String()
-					colDfn, err := p.schemaLookup(tableName, colName)
+					col, err := pGen.schemaLookup(tableName, colName)
 					param := &Param{
 						OriginalName: raw,
 					}
 					if err == nil {
 						param.Name = name
-						param.Typ = p.goTypeCol(colDfn)
+						param.Typ = pGen.goTypeCol(*col)
 					} else {
 						param.Name = "Unknown"
 						param.Typ = "interface{}"
@@ -379,18 +378,18 @@ func (p PackageGenerator) parseInsert(node *sqlparser.Insert, query string) (*Qu
 	return parsedQuery, nil
 }
 
-func (p PackageGenerator) parseDelete(node *sqlparser.Delete, query string) (*Query, error) {
+func (pGen PackageGenerator) parseDelete(node *sqlparser.Delete, query string) (*Query, error) {
 	tableAliasMap, defaultTableName, err := parseFrom(node.TableExprs, false)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse table name alias's: %w", err)
 	}
 
-	whereParams, err := p.paramsInWhereExpr(node.Where, tableAliasMap, defaultTableName)
+	whereParams, err := pGen.paramsInWhereExpr(node.Where, tableAliasMap, defaultTableName)
 	if err != nil {
 		return nil, err
 	}
 
-	limitParams, err := p.paramsInLimitExpr(node.Limit, tableAliasMap)
+	limitParams, err := pGen.paramsInLimitExpr(node.Limit, tableAliasMap)
 	if err != nil {
 		return nil, err
 	}
@@ -408,7 +407,7 @@ func (p PackageGenerator) parseDelete(node *sqlparser.Delete, query string) (*Qu
 	return parsedQuery, nil
 }
 
-func (p PackageGenerator) parseSelectAliasExpr(exprs sqlparser.SelectExprs, tableAliasMap FromTables, defaultTable string) ([]Column, error) {
+func (pGen PackageGenerator) parseSelectAliasExpr(exprs sqlparser.SelectExprs, tableAliasMap FromTables, defaultTable string) ([]Column, error) {
 	cols := []Column{}
 	for _, col := range exprs {
 		switch expr := col.(type) {
@@ -417,7 +416,7 @@ func (p PackageGenerator) parseSelectAliasExpr(exprs sqlparser.SelectExprs, tabl
 
 			switch v := expr.Expr.(type) {
 			case *sqlparser.ColName:
-				res, err := p.getColType(v, tableAliasMap, defaultTable)
+				res, err := pGen.getColType(v, tableAliasMap, defaultTable)
 				if err != nil {
 					return nil, err
 				}
@@ -425,11 +424,7 @@ func (p PackageGenerator) parseSelectAliasExpr(exprs sqlparser.SelectExprs, tabl
 					res.Name = expr.As // applys the alias
 				}
 
-				fromTable, err := tableColReferences(v, defaultTable, tableAliasMap)
-				cols = append(cols, Column{
-					ColumnDefinition: res,
-					Table:            fromTable.TrueName,
-				})
+				cols = append(cols, *res)
 			case *sqlparser.GroupConcatExpr:
 				cols = append(cols, Column{
 					ColumnDefinition: &sqlparser.ColumnDefinition{

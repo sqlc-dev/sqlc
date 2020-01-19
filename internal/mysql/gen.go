@@ -25,8 +25,8 @@ type Result struct {
 }
 
 // PkgName exposes the result set's associated go package identifier as specified in the sqlc.json config.
-func (p PackageGenerator) PkgName() string {
-	return p.packageName
+func (pGen PackageGenerator) PkgName() string {
+	return pGen.packageName
 }
 
 // Enums generates parser-agnostic GoEnum types
@@ -63,9 +63,9 @@ func stripInnerQuotes(identifier string) string {
 	return strings.Replace(identifier, "'", "", 2)
 }
 
-func (p PackageGenerator) enumNameFromColDef(col *sqlparser.ColumnDefinition) string {
+func (pGen PackageGenerator) enumNameFromColDef(col *sqlparser.ColumnDefinition) string {
 	return fmt.Sprintf("%sType",
-		dinosql.StructName(col.Name.String(), p.GenerateSettings))
+		dinosql.StructName(col.Name.String(), pGen.GenerateSettings))
 }
 
 // Structs marshels each query into a go struct for generation
@@ -80,7 +80,7 @@ func (r *Result) Structs(settings dinosql.GenerateSettings) []dinosql.GoStruct {
 		for _, col := range cols {
 			s.Fields = append(s.Fields, dinosql.GoField{
 				Name:    dinosql.StructName(col.Name.String(), settings),
-				Type:    r.goTypeCol(col),
+				Type:    r.goTypeCol(Column{col, tableName}),
 				Tags:    map[string]string{"json:": col.Name.String()},
 				Comment: "",
 			})
@@ -144,7 +144,7 @@ func (r *Result) GoQueries(settings dinosql.GenerateSettings) []dinosql.GoQuery 
 			c := query.Columns[0]
 			gq.Ret = dinosql.GoQueryValue{
 				Name: columnName(c.ColumnDefinition, 0),
-				Typ:  r.goTypeCol(c.ColumnDefinition),
+				Typ:  r.goTypeCol(c),
 			}
 		} else if len(query.Columns) > 1 {
 			var gs *dinosql.GoStruct
@@ -158,7 +158,7 @@ func (r *Result) GoQueries(settings dinosql.GenerateSettings) []dinosql.GoQuery 
 				for i, f := range s.Fields {
 					c := query.Columns[i]
 					sameName := f.Name == dinosql.StructName(columnName(c.ColumnDefinition, i), settings)
-					sameType := f.Type == r.goTypeCol(c.ColumnDefinition)
+					sameType := f.Type == r.goTypeCol(c)
 
 					hackedFQN := core.FQN{c.Table, "", ""} // TODO: only check needed here is equality to see if struct can be reused, this type should be removed or properly used
 					sameTable := s.Table.Catalog == hackedFQN.Catalog && s.Table.Schema == hackedFQN.Schema && s.Table.Rel == hackedFQN.Rel
@@ -178,7 +178,7 @@ func (r *Result) GoQueries(settings dinosql.GenerateSettings) []dinosql.GoQuery 
 				for i := range query.Columns {
 					structInfo[i] = structParams{
 						originalName: query.Columns[i].Name.String(),
-						goType:       r.goTypeCol(query.Columns[i].ColumnDefinition),
+						goType:       r.goTypeCol(query.Columns[i]),
 					}
 				}
 				gs = r.columnsToStruct(gq.MethodName+"Row", structInfo, settings)
@@ -226,8 +226,19 @@ func (r *Result) columnsToStruct(name string, items []structParams, settings din
 	return &gs
 }
 
-func (p PackageGenerator) goTypeCol(col *sqlparser.ColumnDefinition) string {
-	switch t := col.Type.Type; {
+func (pGen PackageGenerator) goTypeCol(col Column) string {
+	mySQLType := col.ColumnDefinition.Type.Type
+	notNull := bool(col.Type.NotNull)
+	colName := col.Name.String()
+
+	for _, oride := range append(pGen.GenerateSettings.Overrides, pGen.GenerateSettings.PackageMap[pGen.packageName].Overrides...) {
+		shouldOverride := (oride.DbType != "" && oride.DbType == mySQLType && oride.Null != notNull) ||
+			(oride.Column != "" && oride.Column == colName && oride.Table.Rel == col.Table)
+		if shouldOverride {
+			return oride.GoTypeName
+		}
+	}
+	switch t := mySQLType; {
 	case "varchar" == t, "text" == t, "char" == t,
 		"tinytext" == t, "mediumtext" == t, "longtext" == t:
 		if col.Type.NotNull {
@@ -249,7 +260,7 @@ func (p PackageGenerator) goTypeCol(col *sqlparser.ColumnDefinition) string {
 		}
 		return "sql.NullFloat64"
 	case "enum" == t:
-		return p.enumNameFromColDef(col)
+		return pGen.enumNameFromColDef(col.ColumnDefinition)
 	case "date" == t, "timestamp" == t, "datetime" == t, "time" == t:
 		if col.Type.NotNull {
 			return "time.Time"

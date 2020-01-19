@@ -339,7 +339,7 @@ func TestSchemaLookup(t *testing.T) {
 	}
 
 	expected := filterCols(mockSchema.tables["users"], map[string]string{"first_name": "users"})
-	if !reflect.DeepEqual(Column{firstNameColDfn, "users"}, expected[0]) {
+	if !reflect.DeepEqual(*firstNameColDfn, expected[0]) {
 		t.Errorf("Table schema lookup returned unexpected result")
 	}
 }
