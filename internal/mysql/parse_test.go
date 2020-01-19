@@ -15,8 +15,8 @@ func init() {
 	initMockSchema()
 }
 
-const filename = "test_data/queries.sql"
-const configPath = "test_data/sqlc.json"
+const mockFileName = "test_data/queries.sql"
+const mockConfigPath = "test_data/sqlc.json"
 
 var mockSettings = dinosql.GenerateSettings{
 	Version: "1",
@@ -29,7 +29,7 @@ var mockSettings = dinosql.GenerateSettings{
 }
 
 func TestParseConfig(t *testing.T) {
-	blob, err := ioutil.ReadFile(configPath)
+	blob, err := ioutil.ReadFile(mockConfigPath)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -41,7 +41,7 @@ func TestParseConfig(t *testing.T) {
 }
 
 func TestGeneratePkg(t *testing.T) {
-	_, err := GeneratePkg(mockSettings.Packages[0].Name, filename, filename, mockSettings)
+	_, err := GeneratePkg(mockSettings.Packages[0].Name, mockFileName, mockFileName, mockSettings)
 	if err != nil {
 		if pErr, ok := err.(*dinosql.ParserErr); ok {
 			for _, fileErr := range pErr.Errs {
@@ -90,6 +90,14 @@ func initMockSchema() {
 			Type: sqlparser.ColumnType{
 				Type:    "int",
 				NotNull: true,
+			},
+		},
+		&sqlparser.ColumnDefinition{
+			Name: sqlparser.NewColIdent("job_status"),
+			Type: sqlparser.ColumnType{
+				Type:       "enum",
+				NotNull:    true,
+				EnumValues: []string{"applied", "pending", "accepted", "rejected"},
 			},
 		},
 	}
@@ -213,8 +221,8 @@ func TestParseSelect(t *testing.T) {
 				schema: mockSchema,
 			},
 			output: &Query{
-				SQL:              "select first_name, last_name, id, age from users",
-				Columns:          filterCols(mockSchema.tables["users"], map[string]string{"first_name": "users", "last_name": "users", "id": "users", "age": "users"}),
+				SQL:              "select first_name, last_name, id, age, job_status from users",
+				Columns:          filterCols(mockSchema.tables["users"], map[string]string{"first_name": "users", "last_name": "users", "id": "users", "age": "users", "job_status": "users"}),
 				Params:           []*Param{},
 				Name:             "GetAll",
 				Cmd:              ":many",
