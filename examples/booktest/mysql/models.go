@@ -4,6 +4,8 @@ package booktest
 
 import (
 	"time"
+
+	"github.com/gofrs/uuid"
 )
 
 type BookTypeType string
@@ -25,6 +27,7 @@ type Author struct {
 
 type Book struct {
 	BookID    int
+	BookUUID  uuid.UUID
 	AuthorID  int
 	Isbn      string
 	BookType  BookTypeType
