@@ -15,8 +15,8 @@ func init() {
 	initMockSchema()
 }
 
-const filename = "test_data/queries.sql"
-const configPath = "test_data/sqlc.json"
+const mockFileName = "test_data/queries.sql"
+const mockConfigPath = "test_data/sqlc.json"
 
 var mockSettings = dinosql.GenerateSettings{
 	Version: "1",
@@ -29,7 +29,7 @@ var mockSettings = dinosql.GenerateSettings{
 }
 
 func TestParseConfig(t *testing.T) {
-	blob, err := ioutil.ReadFile(configPath)
+	blob, err := ioutil.ReadFile(mockConfigPath)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -41,7 +41,7 @@ func TestParseConfig(t *testing.T) {
 }
 
 func TestGeneratePkg(t *testing.T) {
-	_, err := GeneratePkg(mockSettings.Packages[0].Name, filename, filename, mockSettings)
+	_, err := GeneratePkg(mockSettings.Packages[0].Name, mockFileName, mockFileName, mockSettings)
 	if err != nil {
 		if pErr, ok := err.(*dinosql.ParserErr); ok {
 			for _, fileErr := range pErr.Errs {
