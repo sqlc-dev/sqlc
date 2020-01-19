@@ -16,7 +16,7 @@ type Param struct {
 	Typ          string
 }
 
-func (p PackageGenerator) paramsInLimitExpr(limit *sqlparser.Limit, tableAliasMap FromTables) ([]*Param, error) {
+func (pGen PackageGenerator) paramsInLimitExpr(limit *sqlparser.Limit, tableAliasMap FromTables) ([]*Param, error) {
 	params := []*Param{}
 	if limit == nil {
 		return params, nil
@@ -60,7 +60,7 @@ func (p PackageGenerator) paramsInLimitExpr(limit *sqlparser.Limit, tableAliasMa
 	return params, nil
 }
 
-func (p PackageGenerator) paramsInWhereExpr(e sqlparser.SQLNode, tableAliasMap FromTables, defaultTable string) ([]*Param, error) {
+func (pGen PackageGenerator) paramsInWhereExpr(e sqlparser.SQLNode, tableAliasMap FromTables, defaultTable string) ([]*Param, error) {
 	params := []*Param{}
 	if e == nil {
 		return params, nil
@@ -75,9 +75,9 @@ func (p PackageGenerator) paramsInWhereExpr(e sqlparser.SQLNode, tableAliasMap F
 		if v == nil {
 			return params, nil
 		}
-		return p.paramsInWhereExpr(v, tableAliasMap, defaultTable)
+		return pGen.paramsInWhereExpr(v, tableAliasMap, defaultTable)
 	case *sqlparser.ComparisonExpr:
-		p, found, err := p.paramInComparison(v, tableAliasMap, defaultTable)
+		p, found, err := pGen.paramInComparison(v, tableAliasMap, defaultTable)
 		if err != nil {
 			return nil, err
 		}
@@ -85,23 +85,23 @@ func (p PackageGenerator) paramsInWhereExpr(e sqlparser.SQLNode, tableAliasMap F
 			params = append(params, p)
 		}
 	case *sqlparser.AndExpr:
-		left, err := p.paramsInWhereExpr(v.Left, tableAliasMap, defaultTable)
+		left, err := pGen.paramsInWhereExpr(v.Left, tableAliasMap, defaultTable)
 		if err != nil {
 			return nil, err
 		}
 		params = append(params, left...)
-		right, err := p.paramsInWhereExpr(v.Right, tableAliasMap, defaultTable)
+		right, err := pGen.paramsInWhereExpr(v.Right, tableAliasMap, defaultTable)
 		if err != nil {
 			return nil, err
 		}
 		params = append(params, right...)
 	case *sqlparser.OrExpr:
-		left, err := p.paramsInWhereExpr(v.Left, tableAliasMap, defaultTable)
+		left, err := pGen.paramsInWhereExpr(v.Left, tableAliasMap, defaultTable)
 		if err != nil {
 			return nil, err
 		}
 		params = append(params, left...)
-		right, err := p.paramsInWhereExpr(v.Right, tableAliasMap, defaultTable)
+		right, err := pGen.paramsInWhereExpr(v.Right, tableAliasMap, defaultTable)
 		if err != nil {
 			return nil, err
 		}
@@ -116,18 +116,18 @@ func (p PackageGenerator) paramsInWhereExpr(e sqlparser.SQLNode, tableAliasMap F
 	return params, nil
 }
 
-func (p PackageGenerator) paramInComparison(cond *sqlparser.ComparisonExpr, tableAliasMap FromTables, defaultTable string) (*Param, bool, error) {
+func (pGen PackageGenerator) paramInComparison(cond *sqlparser.ComparisonExpr, tableAliasMap FromTables, defaultTable string) (*Param, bool, error) {
 	param := &Param{}
 	var colIdent sqlparser.ColIdent
 	walker := func(node sqlparser.SQLNode) (bool, error) {
 		switch v := node.(type) {
 		case *sqlparser.ColName:
-			colDfn, err := p.getColType(v, tableAliasMap, defaultTable)
+			col, err := pGen.getColType(v, tableAliasMap, defaultTable)
 			if err != nil {
 				return false, err
 			}
-			param.Typ = p.goTypeCol(colDfn)
-			colIdent = colDfn.Name
+			param.Typ = pGen.goTypeCol(*col)
+			colIdent = col.Name
 
 		case *sqlparser.SQLVal:
 			if v.Type == sqlparser.ValArg {

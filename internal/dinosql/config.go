@@ -59,7 +59,7 @@ type Override struct {
 	GoType string `json:"go_type"`
 
 	// fully qualified name of the Go type, e.g. `github.com/segmentio/ksuid.KSUID`
-	PostgresType string `json:"postgres_type"`
+	DbType string `json:"db_type"`
 
 	// True if the GoType should override if the maching postgres type is nullable
 	Null bool `json:"null"`
@@ -68,8 +68,8 @@ type Override struct {
 	Column string `json:"column"`
 
 	columnName  string
-	table       pg.FQN
-	goTypeName  string
+	Table       pg.FQN
+	GoTypeName  string
 	goPackage   string
 	goBasicType bool
 }
@@ -77,10 +77,10 @@ type Override struct {
 func (o *Override) Parse() error {
 	// validate option combinations
 	switch {
-	case o.Column != "" && o.PostgresType != "":
-		return fmt.Errorf("Override specifying both `column` (%q) and `postgres_type` (%q) is not valid.", o.Column, o.PostgresType)
-	case o.Column == "" && o.PostgresType == "":
-		return fmt.Errorf("Override must specify one of either `column` or `postgres_type`")
+	case o.Column != "" && o.DbType != "":
+		return fmt.Errorf("Override specifying both `column` (%q) and `db_type` (%q) is not valid.", o.Column, o.DbType)
+	case o.Column == "" && o.DbType == "":
+		return fmt.Errorf("Override must specify one of either `column` or `db_type`")
 	}
 
 	// validate Column
@@ -89,13 +89,13 @@ func (o *Override) Parse() error {
 		switch len(colParts) {
 		case 2:
 			o.columnName = colParts[1]
-			o.table = pg.FQN{Schema: "public", Rel: colParts[0]}
+			o.Table = pg.FQN{Schema: "public", Rel: colParts[0]}
 		case 3:
 			o.columnName = colParts[2]
-			o.table = pg.FQN{Schema: colParts[0], Rel: colParts[1]}
+			o.Table = pg.FQN{Schema: colParts[0], Rel: colParts[1]}
 		case 4:
 			o.columnName = colParts[3]
-			o.table = pg.FQN{Catalog: colParts[0], Schema: colParts[1], Rel: colParts[2]}
+			o.Table = pg.FQN{Catalog: colParts[0], Schema: colParts[1], Rel: colParts[2]}
 		default:
 			return fmt.Errorf("Override `column` specifier %q is not the proper format, expected '[catalog.][schema.]colname.tablename'", o.Column)
 		}
@@ -145,11 +145,11 @@ func (o *Override) Parse() error {
 		}
 		o.goPackage = o.GoType[:lastDot]
 	}
-	o.goTypeName = typename
+	o.GoTypeName = typename
 	isPointer := o.GoType[0] == '*'
 	if isPointer {
 		o.goPackage = o.goPackage[1:]
-		o.goTypeName = "*" + o.goTypeName
+		o.GoTypeName = "*" + o.GoTypeName
 	}
 
 	return nil
