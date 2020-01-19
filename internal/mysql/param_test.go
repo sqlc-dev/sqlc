@@ -87,6 +87,11 @@ func TestSelectParamSearcher(t *testing.T) {
 		},
 	}
 	for _, tCase := range tests {
+		generator := PackageGenerator{
+			Schema:           mockSchema,
+			GenerateSettings: mockSettings,
+			packageName:      "db",
+		}
 		tree, err := sqlparser.Parse(tCase.input)
 		if err != nil {
 			t.Errorf("Failed to parse input query")
@@ -98,11 +103,11 @@ func TestSelectParamSearcher(t *testing.T) {
 			t.Errorf("Failed to parse table name alias's: %v", err)
 		}
 
-		limitParams, err := paramsInLimitExpr(selectStm.Limit, mockSchema, tableAliasMap, mockSettings)
+		limitParams, err := generator.paramsInLimitExpr(selectStm.Limit, tableAliasMap)
 		if err != nil {
 			t.Errorf("Failed to parse limit expression params: %v", err)
 		}
-		whereParams, err := paramsInWhereExpr(selectStm.Where, mockSchema, tableAliasMap, "users", mockSettings)
+		whereParams, err := generator.paramsInWhereExpr(selectStm.Where, tableAliasMap, "users")
 		if err != nil {
 			t.Errorf("Failed to parse where expression params: %v", err)
 		}
@@ -145,6 +150,11 @@ func TestInsertParamSearcher(t *testing.T) {
 		},
 	}
 	for _, tCase := range tests {
+		generator := PackageGenerator{
+			Schema:           mockSchema,
+			GenerateSettings: mockSettings,
+			packageName:      "db",
+		}
 		tree, err := sqlparser.Parse(tCase.input)
 		if err != nil {
 			t.Errorf("Failed to parse input query")
@@ -153,7 +163,7 @@ func TestInsertParamSearcher(t *testing.T) {
 		if !ok {
 			t.Errorf("Test case is not SELECT statement as expected")
 		}
-		result, err := parseInsert(insertStm, tCase.input, mockSchema, mockSettings)
+		result, err := generator.parseInsert(insertStm, tCase.input)
 		if err != nil {
 			t.Errorf("Failed to parse insert statement.")
 		}

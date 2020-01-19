@@ -180,7 +180,6 @@ func TestParseSelect(t *testing.T) {
 				Name:             "GetCount",
 				Cmd:              ":one",
 				DefaultTableName: "users",
-				SchemaLookup:     mockSchema,
 			},
 		},
 		testCase{
@@ -202,7 +201,6 @@ func TestParseSelect(t *testing.T) {
 				Name:             "GetNameByID",
 				Cmd:              ":one",
 				DefaultTableName: "users",
-				SchemaLookup:     mockSchema,
 			},
 		},
 		testCase{
@@ -219,7 +217,6 @@ func TestParseSelect(t *testing.T) {
 				Name:             "GetAll",
 				Cmd:              ":many",
 				DefaultTableName: "users",
-				SchemaLookup:     mockSchema,
 			},
 		},
 		testCase{
@@ -281,15 +278,19 @@ func TestParseSelect(t *testing.T) {
 				Name:             "GetAllUsersOrders",
 				Cmd:              ":many",
 				DefaultTableName: "orders",
-				SchemaLookup:     mockSchema,
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		testCase := tt
+		generator := PackageGenerator{
+			Schema:           testCase.input.schema,
+			GenerateSettings: mockSettings,
+			packageName:      "db",
+		}
 		t.Run(tt.name, func(t *testing.T) {
-			qs, err := parseContents("example.sql", testCase.input.query, testCase.input.schema, mockSettings)
+			qs, err := generator.parseContents("example.sql", testCase.input.query)
 			if err != nil {
 				t.Fatalf("Parsing failed with query: [%v]\n", err)
 			}
@@ -297,9 +298,7 @@ func TestParseSelect(t *testing.T) {
 				t.Fatalf("Expected one query, not %d", len(qs))
 			}
 			q := qs[0]
-			q.SchemaLookup = nil
 			q.Filename = ""
-			testCase.output.SchemaLookup = nil
 			if diff := cmp.Diff(testCase.output, q); diff != "" {
 				t.Errorf("parsed query differs: \n%s", diff)
 			}
@@ -340,7 +339,7 @@ func TestSchemaLookup(t *testing.T) {
 	}
 
 	expected := filterCols(mockSchema.tables["users"], map[string]string{"first_name": "users"})
-	if !reflect.DeepEqual(Column{firstNameColDfn, "users"}, expected[0]) {
+	if !reflect.DeepEqual(*firstNameColDfn, expected[0]) {
 		t.Errorf("Table schema lookup returned unexpected result")
 	}
 }
@@ -381,7 +380,6 @@ func TestParseInsertUpdate(t *testing.T) {
 				Name:             "InsertNewUser",
 				Cmd:              ":exec",
 				DefaultTableName: "users",
-				SchemaLookup:     mockSchema,
 			},
 		},
 		testCase{
@@ -397,7 +395,6 @@ func TestParseInsertUpdate(t *testing.T) {
 				Name:             "UpdateAllUsers",
 				Cmd:              ":exec",
 				DefaultTableName: "users",
-				SchemaLookup:     mockSchema,
 			},
 		},
 		testCase{
@@ -434,7 +431,6 @@ func TestParseInsertUpdate(t *testing.T) {
 				Name:             "UpdateUserAt",
 				Cmd:              ":exec",
 				DefaultTableName: "users",
-				SchemaLookup:     mockSchema,
 			},
 		},
 		testCase{
@@ -456,7 +452,6 @@ func TestParseInsertUpdate(t *testing.T) {
 				Name:             "InsertUsersFromOrders",
 				Cmd:              ":exec",
 				DefaultTableName: "users",
-				SchemaLookup:     mockSchema,
 			},
 		},
 	}
@@ -464,7 +459,12 @@ func TestParseInsertUpdate(t *testing.T) {
 	for _, tt := range tests {
 		testCase := tt
 		t.Run(tt.name, func(t *testing.T) {
-			qs, err := parseContents("example.sql", testCase.input.query, testCase.input.schema, mockSettings)
+			generator := PackageGenerator{
+				Schema:           testCase.input.schema,
+				GenerateSettings: mockSettings,
+				packageName:      "db",
+			}
+			qs, err := generator.parseContents("example.sql", testCase.input.query)
 			if err != nil {
 				t.Fatalf("Parsing failed with query: [%v]\n", err)
 			}
@@ -472,8 +472,6 @@ func TestParseInsertUpdate(t *testing.T) {
 				t.Fatalf("Expected one query, not %d", len(qs))
 			}
 			q := qs[0]
-			testCase.output.SchemaLookup = nil
-			q.SchemaLookup = nil
 			q.Filename = ""
 			if diff := cmp.Diff(testCase.output, q); diff != "" {
 				t.Errorf("parsed query differs: \n%s", diff)
