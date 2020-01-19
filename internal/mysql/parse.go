@@ -50,8 +50,8 @@ func parsePath(sqlPath string, inPkg string, s *Schema, settings dinosql.Generat
 		}
 		queries, err := parseContents(filename, contents, s, settings)
 		if err != nil {
-			if positionedErr, ok := err.(PositionedErr); ok {
-				parseErrors.Add(filename, contents, positionedErr.Pos, err)
+			if posErr, ok := err.(sqlparser.PositionedErr); ok {
+				parseErrors.Add(filename, contents, posErr.Pos, fmt.Errorf("%s at or near \"%s\"", posErr.Err, posErr.Near))
 			} else {
 				parseErrors.Add(filename, contents, 0, err)
 			}
@@ -80,20 +80,12 @@ func parseContents(filename, contents string, s *Schema, settings dinosql.Genera
 		if err == io.EOF {
 			break
 		} else if err != nil {
-			parsedLoc, locErr := locFromSyntaxErr(err)
-			if locErr != nil {
-				parsedLoc = start // next best guess of the error location
-			}
-			near, nearErr := nearStrFromSyntaxErr(err)
-			if nearErr != nil {
-				return nil, PositionedErr{parsedLoc, fmt.Errorf("syntax error")}
-			}
-			return nil, PositionedErr{parsedLoc, fmt.Errorf("syntax error at or near '%s'", near)}
+			return nil, err
 		}
 		query := contents[start : t.Position-1]
 		result, err := parseQueryString(q, query, s, settings)
 		if err != nil {
-			return nil, PositionedErr{start, err}
+			return nil, sqlparser.PositionedErr{Err: err.Error(), Pos: start, Near: nil}
 		}
 		start = t.Position
 		if result == nil {
