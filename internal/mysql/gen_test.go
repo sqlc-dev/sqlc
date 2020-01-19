@@ -54,9 +54,9 @@ func TestEnumName(t *testing.T) {
 		},
 	}
 
-	settings := dinosql.Combine(mockSettings, mockSettings.Packages[0])
+	generator := PackageGenerator{mockSchema, dinosql.CombinedSettings{}, ""}
 	for _, tc := range tcase {
-		enumName := enumNameFromColDef(&tc.input, settings)
+		enumName := generator.enumNameFromColDef(&tc.input)
 		if diff := cmp.Diff(enumName, tc.output); diff != "" {
 			t.Errorf(diff)
 		}
@@ -64,12 +64,13 @@ func TestEnumName(t *testing.T) {
 }
 
 func TestEnums(t *testing.T) {
+	generator := PackageGenerator{mockSchema, dinosql.CombinedSettings{}, ""}
 	tcase := [...]struct {
 		input  Result
 		output []dinosql.GoEnum
 	}{
 		{
-			input: Result{Schema: mockSchema},
+			input: Result{PackageGenerator: generator},
 			output: []dinosql.GoEnum{
 				{
 					Name: "JobStatusType",
@@ -93,12 +94,14 @@ func TestEnums(t *testing.T) {
 }
 
 func TestStructs(t *testing.T) {
+	settings := dinosql.Combine(mockSettings, mockSettings.Packages[0])
+	generator := PackageGenerator{mockSchema, settings, "db"}
 	tcase := [...]struct {
 		input  Result
 		output []dinosql.GoStruct
 	}{
 		{
-			input: Result{Schema: mockSchema},
+			input: Result{PackageGenerator: generator},
 			output: []dinosql.GoStruct{
 				{
 					Table: pg.FQN{Catalog: "orders"},
@@ -123,7 +126,6 @@ func TestStructs(t *testing.T) {
 		},
 	}
 
-	settings := dinosql.Combine(mockSettings, mockSettings.Packages[0])
 	for _, tc := range tcase {
 		structs := tc.input.Structs(settings)
 		if diff := cmp.Diff(structs, tc.output); diff != "" {
