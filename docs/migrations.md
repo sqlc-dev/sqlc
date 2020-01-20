@@ -4,6 +4,7 @@ sqlc will ignore rollback statements when parsing migration SQL files. The follo
 
 - [goose](https://github.com/pressly/goose)
 - [sql-migrate](https://github.com/rubenv/sql-migrate)
+- [tern](https://github.com/jackc/tern)
 
 ## goose
 
@@ -48,5 +49,22 @@ package db
 
 type People struct {
 	ID    int32
+}
+```
+
+### tern
+
+```sql
+CREATE TABLE comment (id int NOT NULL, text text NOT NULL);
+---- create above / drop below ----
+DROP TABLE comment;
+```
+
+```go
+package db
+
+type Comment struct {
+	ID     int32 
+	Text   string 
 }
 ```
