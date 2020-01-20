@@ -37,10 +37,13 @@
       "engine": "mysql",
       "overrides": [
         {
-          "column": "books.book_id",
-          "go_type": "int64"
+          "column": "books.book_uuid",
+          "go_type": "github.com/gofrs/uuid.UUID"
         }
       ]
     }
-  ]
+  ],
+  "rename": {
+    "book_uuid": "BookUUID"
+  }
 }

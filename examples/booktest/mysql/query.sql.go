@@ -9,7 +9,7 @@ import (
 )
 
 const booksByTitleYear = `-- name: BooksByTitleYear :many
-select book_id, author_id, isbn, book_type, title, yr, available, tags from books where title = ? and yr = ?
+select book_id, book_uuid, author_id, isbn, book_type, title, yr, available, tags from books where title = ? and yr = ?
 `
 
 type BooksByTitleYearParams struct {
@@ -28,6 +28,7 @@ func (q *Queries) BooksByTitleYear(ctx context.Context, arg BooksByTitleYearPara
 		var i Book
 		if err := rows.Scan(
 			&i.BookID,
+			&i.BookUUID,
 			&i.AuthorID,
 			&i.Isbn,
 			&i.BookType,
@@ -120,7 +121,7 @@ func (q *Queries) GetAuthor(ctx context.Context, author_id int) (Author, error) 
 }
 
 const getBook = `-- name: GetBook :one
-select book_id, author_id, isbn, book_type, title, yr, available, tags from books where book_id = ?
+select book_id, book_uuid, author_id, isbn, book_type, title, yr, available, tags from books where book_id = ?
 `
 
 func (q *Queries) GetBook(ctx context.Context, book_id int) (Book, error) {
@@ -128,6 +129,7 @@ func (q *Queries) GetBook(ctx context.Context, book_id int) (Book, error) {
 	var i Book
 	err := row.Scan(
 		&i.BookID,
+		&i.BookUUID,
 		&i.AuthorID,
 		&i.Isbn,
 		&i.BookType,

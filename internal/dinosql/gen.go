@@ -498,7 +498,7 @@ func (r Result) Structs(settings GenerateSettings) []GoStruct {
 func (r Result) goType(col core.Column, settings GenerateSettings) string {
 	// package overrides have a higher precedence
 	for _, oride := range append(settings.Overrides, settings.PackageMap[r.PkgName()].Overrides...) {
-		if oride.Column != "" && oride.columnName == col.Name && oride.Table == col.Table {
+		if oride.Column != "" && oride.ColumnName == col.Name && oride.Table == col.Table {
 			return oride.GoTypeName
 		}
 	}
