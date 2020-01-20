@@ -67,7 +67,7 @@ type Override struct {
 	// fully qualified name of the column, e.g. `accounts.id`
 	Column string `json:"column"`
 
-	columnName  string
+	ColumnName  string
 	Table       pg.FQN
 	GoTypeName  string
 	goPackage   string
@@ -88,13 +88,13 @@ func (o *Override) Parse() error {
 		colParts := strings.Split(o.Column, ".")
 		switch len(colParts) {
 		case 2:
-			o.columnName = colParts[1]
+			o.ColumnName = colParts[1]
 			o.Table = pg.FQN{Schema: "public", Rel: colParts[0]}
 		case 3:
-			o.columnName = colParts[2]
+			o.ColumnName = colParts[2]
 			o.Table = pg.FQN{Schema: colParts[0], Rel: colParts[1]}
 		case 4:
-			o.columnName = colParts[3]
+			o.ColumnName = colParts[3]
 			o.Table = pg.FQN{Catalog: colParts[0], Schema: colParts[1], Rel: colParts[2]}
 		default:
 			return fmt.Errorf("Override `column` specifier %q is not the proper format, expected '[catalog.][schema.]colname.tablename'", o.Column)

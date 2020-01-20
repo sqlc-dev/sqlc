@@ -24,7 +24,7 @@ type Author struct {
 }
 
 type Book struct {
-	BookID    int64
+	BookID    int32
 	AuthorID  int32
 	Isbn      string
 	Booktype  BookType
