@@ -51,7 +51,11 @@ func parsePath(sqlPath string, inPkg string, s *Schema, settings dinosql.Generat
 		queries, err := parseContents(filename, contents, s, settings)
 		if err != nil {
 			if posErr, ok := err.(sqlparser.PositionedErr); ok {
-				parseErrors.Add(filename, contents, posErr.Pos, fmt.Errorf("%s at or near \"%s\"", posErr.Err, posErr.Near))
+				message := fmt.Errorf(posErr.Err)
+				if posErr.Near != nil {
+					message = fmt.Errorf("%s at or near \"%s\"", posErr.Err, posErr.Near)
+				}
+				parseErrors.Add(filename, contents, posErr.Pos, message)
 			} else {
 				parseErrors.Add(filename, contents, 0, err)
 			}
