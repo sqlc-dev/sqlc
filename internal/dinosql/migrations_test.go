@@ -44,8 +44,7 @@ ALTER TABLE todo RENAME COLUMN is_done TO done;
 
 const outputTern = `
 -- Write your migrate up statements here
-ALTER TABLE todo RENAME COLUMN done TO is_done;
-`
+ALTER TABLE todo RENAME COLUMN done TO is_done;`
 
 func TestRemoveRollback(t *testing.T) {
 	if diff := cmp.Diff(outputGoose, RemoveRollbackStatements(inputGoose)); diff != "" {
