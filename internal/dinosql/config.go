@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/fatih/color"
 	"github.com/kyleconroy/sqlc/internal/pg"
 )
 
@@ -59,7 +60,11 @@ type Override struct {
 	GoType string `json:"go_type"`
 
 	// fully qualified name of the Go type, e.g. `github.com/segmentio/ksuid.KSUID`
-	PostgresType string `json:"postgres_type"`
+	DBType                  string `json:"db_type"`
+	Deprecated_PostgresType string `json:"postgres_type"`
+
+	// for global overrides only when two different engines are in use
+	Engine Engine `json:"engine,omitempty"`
 
 	// True if the GoType should override if the maching postgres type is nullable
 	Null bool `json:"null"`
@@ -67,20 +72,63 @@ type Override struct {
 	// fully qualified name of the column, e.g. `accounts.id`
 	Column string `json:"column"`
 
-	columnName  string
-	table       pg.FQN
-	goTypeName  string
+	ColumnName  string
+	Table       pg.FQN
+	GoTypeName  string
 	goPackage   string
 	goBasicType bool
 }
 
+func (c *GenerateSettings) GatherEngines() map[Engine]struct{} {
+	engines := map[Engine]struct{}{}
+	for _, pkg := range c.Packages {
+		if _, ok := engines[pkg.Engine]; !ok {
+			engines[pkg.Engine] = struct{}{}
+		}
+	}
+	return engines
+}
+
+func JoinOverrides(packageOverrides, globalOverrides []Override, forEngine Engine) []Override {
+	joinedOrides := make([]Override, len(packageOverrides))
+	copy(joinedOrides, packageOverrides)
+
+	for _, oride := range globalOverrides {
+		if oride.Engine == forEngine {
+			joinedOrides = append(joinedOrides, oride)
+		}
+	}
+	return joinedOrides
+}
+
+func (c *GenerateSettings) ValidateGlobalOverrides() error {
+	engines := c.GatherEngines()
+	usesMultipleEngines := len(engines) > 1
+	for _, oride := range c.Overrides {
+		if usesMultipleEngines && oride.Engine == "" {
+			return fmt.Errorf(`the "engine" field is required for global type overrides because your configuration uses multiple database engines`)
+		}
+	}
+	return nil
+}
+
 func (o *Override) Parse() error {
+
+	// validate deprecated postgres_type field
+	if o.Deprecated_PostgresType != "" {
+		color.Yellow(`WARNING: "postgres_type" is deprecated. Instead, use "db_type" to specify a type override.`)
+		if o.DBType != "" {
+			return fmt.Errorf(`Type override configurations cannot have "db_type" and "postres_type" together. Use "db_type" alone`)
+		}
+		o.DBType = o.Deprecated_PostgresType
+	}
+
 	// validate option combinations
 	switch {
-	case o.Column != "" && o.PostgresType != "":
-		return fmt.Errorf("Override specifying both `column` (%q) and `postgres_type` (%q) is not valid.", o.Column, o.PostgresType)
-	case o.Column == "" && o.PostgresType == "":
-		return fmt.Errorf("Override must specify one of either `column` or `postgres_type`")
+	case o.Column != "" && o.DBType != "":
+		return fmt.Errorf("Override specifying both `column` (%q) and `db_type` (%q) is not valid.", o.Column, o.DBType)
+	case o.Column == "" && o.DBType == "":
+		return fmt.Errorf("Override must specify one of either `column` or `db_type`")
 	}
 
 	// validate Column
@@ -88,14 +136,14 @@ func (o *Override) Parse() error {
 		colParts := strings.Split(o.Column, ".")
 		switch len(colParts) {
 		case 2:
-			o.columnName = colParts[1]
-			o.table = pg.FQN{Schema: "public", Rel: colParts[0]}
+			o.ColumnName = colParts[1]
+			o.Table = pg.FQN{Schema: "public", Rel: colParts[0]}
 		case 3:
-			o.columnName = colParts[2]
-			o.table = pg.FQN{Schema: colParts[0], Rel: colParts[1]}
+			o.ColumnName = colParts[2]
+			o.Table = pg.FQN{Schema: colParts[0], Rel: colParts[1]}
 		case 4:
-			o.columnName = colParts[3]
-			o.table = pg.FQN{Catalog: colParts[0], Schema: colParts[1], Rel: colParts[2]}
+			o.ColumnName = colParts[3]
+			o.Table = pg.FQN{Catalog: colParts[0], Schema: colParts[1], Rel: colParts[2]}
 		default:
 			return fmt.Errorf("Override `column` specifier %q is not the proper format, expected '[catalog.][schema.]colname.tablename'", o.Column)
 		}
@@ -145,11 +193,11 @@ func (o *Override) Parse() error {
 		}
 		o.goPackage = o.GoType[:lastDot]
 	}
-	o.goTypeName = typename
+	o.GoTypeName = typename
 	isPointer := o.GoType[0] == '*'
 	if isPointer {
 		o.goPackage = o.goPackage[1:]
-		o.goTypeName = "*" + o.goTypeName
+		o.GoTypeName = "*" + o.GoTypeName
 	}
 
 	return nil
@@ -176,6 +224,9 @@ func ParseConfig(rd io.Reader) (GenerateSettings, error) {
 	}
 	if len(config.Packages) == 0 {
 		return config, ErrNoPackages
+	}
+	if err := config.ValidateGlobalOverrides(); err != nil {
+		return config, err
 	}
 	for i := range config.Overrides {
 		if err := config.Overrides[i].Parse(); err != nil {

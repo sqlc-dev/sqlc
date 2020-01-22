@@ -38,8 +38,9 @@ func TestCustomArgErr(t *testing.T) {
 		},
 	}
 
+	generator := PackageGenerator{mockSchema, mockSettings, "db"}
 	for _, tcase := range tests {
-		q, err := parseContents(mockFileName, tcase.input, mockSchema, mockSettings)
+		q, err := generator.parseContents(mockFileName, tcase.input)
 		if err == nil && len(q) > 0 {
 			t.Errorf("parse contents succeeded on an invalid query")
 		}
@@ -80,8 +81,9 @@ func TestPositionedErr(t *testing.T) {
 		},
 	}
 
+	generator := PackageGenerator{mockSchema, mockSettings, "db"}
 	for _, tcase := range tests {
-		q, err := parseContents(mockFileName, tcase.input, mockSchema, mockSettings)
+		q, err := generator.parseContents(mockFileName, tcase.input)
 		if err == nil && len(q) > 0 {
 			t.Errorf("parse contents succeeded on an invalid query")
 		}
