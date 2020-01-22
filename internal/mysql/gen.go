@@ -231,7 +231,7 @@ func (pGen PackageGenerator) goTypeCol(col Column) string {
 	colName := col.Name.String()
 
 	for _, oride := range pGen.Overrides {
-		shouldOverride := (oride.DbType != "" && oride.DbType == mySQLType && oride.Null != notNull) ||
+		shouldOverride := (oride.DBType != "" && oride.DBType == mySQLType && oride.Null != notNull) ||
 			(oride.Column != "" && oride.ColumnName == colName && oride.Table.Rel == col.Table)
 		if shouldOverride {
 			return oride.GoTypeName

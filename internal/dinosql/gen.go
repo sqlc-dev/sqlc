@@ -591,7 +591,7 @@ func (r Result) goInnerType(col core.Column, settings CombinedSettings) string {
 
 	// package overrides have a higher precedence
 	for _, oride := range settings.Overrides {
-		if oride.DbType != "" && oride.DbType == columnType && oride.Null != notNull {
+		if oride.DBType != "" && oride.DBType == columnType && oride.Null != notNull {
 			return oride.GoTypeName
 		}
 	}
