@@ -231,8 +231,8 @@ func (pGen PackageGenerator) goTypeCol(col Column) string {
 	notNull := bool(col.Type.NotNull)
 	colName := col.Name.String()
 
-	for _, oride := range append(pGen.GenerateSettings.Overrides, pGen.GenerateSettings.PackageMap[pGen.packageName].Overrides...) {
-		shouldOverride := (oride.DbType != "" && oride.DbType == mySQLType && oride.Null != notNull) ||
+	for _, oride := range dinosql.JoinOverrides(pGen.GenerateSettings.PackageMap[pGen.packageName].Overrides, pGen.GenerateSettings.Overrides, dinosql.EngineMySQL) {
+		shouldOverride := (oride.DBType != "" && oride.DBType == mySQLType && oride.Null != notNull) ||
 			(oride.Column != "" && oride.ColumnName == colName && oride.Table.Rel == col.Table)
 		if shouldOverride {
 			return oride.GoTypeName
