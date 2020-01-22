@@ -71,7 +71,7 @@ func TestTypeOverrides(t *testing.T) {
 	}{
 		{
 			Override{
-				DbType: "uuid",
+				DBType: "uuid",
 				GoType: "github.com/segmentio/ksuid.KSUID",
 			},
 			"github.com/segmentio/ksuid",
@@ -82,7 +82,7 @@ func TestTypeOverrides(t *testing.T) {
 		//
 		// {
 		// 	Override{
-		// 		DbType: "uuid",
+		// 		DBType: "uuid",
 		// 		GoType:       "github.com/segmentio/*ksuid.KSUID",
 		// 	},
 		// 	"github.com/segmentio/ksuid",
@@ -91,7 +91,7 @@ func TestTypeOverrides(t *testing.T) {
 		// },
 		{
 			Override{
-				DbType: "citext",
+				DBType: "citext",
 				GoType: "string",
 			},
 			"",
@@ -121,14 +121,14 @@ func TestTypeOverrides(t *testing.T) {
 	}{
 		{
 			Override{
-				DbType: "uuid",
+				DBType: "uuid",
 				GoType: "Pointer",
 			},
 			"Package override `go_type` specifier \"Pointer\" is not a Go basic type e.g. 'string'",
 		},
 		{
 			Override{
-				DbType: "uuid",
+				DBType: "uuid",
 				GoType: "untyped rune",
 			},
 			"Package override `go_type` specifier \"untyped rune\" is not a Go basic type e.g. 'string'",
