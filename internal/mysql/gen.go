@@ -230,7 +230,7 @@ func goTypeCol(col *sqlparser.ColumnDefinition, settings dinosql.GenerateSetting
 		}
 		return "sql.NullString"
 	case "int" == t, "integer" == t, t == "smallint",
-		t == "tinyint", "mediumint" == t, "bigint" == t, "year" == t:
+		"mediumint" == t, "bigint" == t, "year" == t:
 		if col.Type.NotNull {
 			return "int"
 		}
@@ -250,7 +250,7 @@ func goTypeCol(col *sqlparser.ColumnDefinition, settings dinosql.GenerateSetting
 			return "time.Time"
 		}
 		return "sql.NullTime"
-	case "boolean" == t:
+	case "boolean" == t, "bool" == t, "tinyint" == t:
 		if col.Type.NotNull {
 			return "bool"
 		}
