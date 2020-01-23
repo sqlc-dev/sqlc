@@ -25,13 +25,21 @@ INSERT INTO books (
     title,
     yr,
     available,
-    tags
+    tags,
+    is_hardcover,
+    rating,
+    front_cover_img,
+    back_cover_img
 ) VALUES (
     ?,
     ?,
     ?,
     ?,
     ?,
+    ?,
+    ?,
+    ?,
+    ?, 
     ?,
     ?
 );
