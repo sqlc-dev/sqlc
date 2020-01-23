@@ -19,7 +19,11 @@ CREATE TABLE books (
           title text NOT NULL DEFAULT '',
           yr integer NOT NULL DEFAULT 2000,
           available datetime NOT NULL DEFAULT NOW(),
-          tags text NOT NULL DEFAULT ''
+          tags text NOT NULL DEFAULT '',
+          is_hardcover BOOL NOT NULL DEFAULT 0,
+          rating decimal(13, 2),
+          front_cover_img varchar(255),
+          back_cover_img varchar(255)
           -- CONSTRAINT FOREIGN KEY (author_id) REFERENCES authors(author_id)
 ) ENGINE=InnoDB;
 
