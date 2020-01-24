@@ -28,11 +28,10 @@ The only supported version is "1".
 const errMessageNoPackages = `No packages are configured`
 
 type GenerateSettings struct {
-	Version    string            `json:"version"`
-	Packages   []PackageSettings `json:"packages"`
-	Overrides  []Override        `json:"overrides,omitempty"`
-	Rename     map[string]string `json:"rename,omitempty"`
-	PackageMap map[string]PackageSettings
+	Version   string            `json:"version"`
+	Packages  []PackageSettings `json:"packages"`
+	Overrides []Override        `json:"overrides,omitempty"`
+	Rename    map[string]string `json:"rename,omitempty"`
 }
 
 type Engine string
@@ -198,21 +197,19 @@ func ParseConfig(rd io.Reader) (GenerateSettings, error) {
 			config.Packages[j].Engine = EnginePostgreSQL
 		}
 	}
-	err := config.PopulatePkgMap()
-
-	return config, err
+	return config, nil
 }
 
-func (s *GenerateSettings) PopulatePkgMap() error {
-	packageMap := make(map[string]PackageSettings)
+type CombinedSettings struct {
+	Global    GenerateSettings
+	Package   PackageSettings
+	Overrides []Override
+}
 
-	for _, c := range s.Packages {
-		if c.Name == "" {
-			return ErrNoPackageName
-		}
-		packageMap[c.Name] = c
+func Combine(gen GenerateSettings, pkg PackageSettings) CombinedSettings {
+	return CombinedSettings{
+		Global:    gen,
+		Package:   pkg,
+		Overrides: append(gen.Overrides, pkg.Overrides...),
 	}
-	s.PackageMap = packageMap
-
-	return nil
 }

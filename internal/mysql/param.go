@@ -18,7 +18,7 @@ type Param struct {
 	Typ          string
 }
 
-func paramsInLimitExpr(limit *sqlparser.Limit, s *Schema, tableAliasMap FromTables, settings dinosql.GenerateSettings) ([]*Param, error) {
+func paramsInLimitExpr(limit *sqlparser.Limit, s *Schema, tableAliasMap FromTables, settings dinosql.CombinedSettings) ([]*Param, error) {
 	params := []*Param{}
 	if limit == nil {
 		return params, nil
@@ -62,7 +62,7 @@ func paramsInLimitExpr(limit *sqlparser.Limit, s *Schema, tableAliasMap FromTabl
 	return params, nil
 }
 
-func paramsInWhereExpr(e sqlparser.SQLNode, s *Schema, tableAliasMap FromTables, defaultTable string, settings dinosql.GenerateSettings) ([]*Param, error) {
+func paramsInWhereExpr(e sqlparser.SQLNode, s *Schema, tableAliasMap FromTables, defaultTable string, settings dinosql.CombinedSettings) ([]*Param, error) {
 	params := []*Param{}
 	if e == nil {
 		return params, nil
@@ -118,7 +118,7 @@ func paramsInWhereExpr(e sqlparser.SQLNode, s *Schema, tableAliasMap FromTables,
 	return params, nil
 }
 
-func paramInComparison(cond *sqlparser.ComparisonExpr, s *Schema, tableAliasMap FromTables, defaultTable string, settings dinosql.GenerateSettings) (*Param, bool, error) {
+func paramInComparison(cond *sqlparser.ComparisonExpr, s *Schema, tableAliasMap FromTables, defaultTable string, settings dinosql.CombinedSettings) (*Param, bool, error) {
 	p := &Param{}
 	var colIdent sqlparser.ColIdent
 	walker := func(node sqlparser.SQLNode) (bool, error) {

@@ -27,13 +27,14 @@ func TestCodeGeneration(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for n, s := range conf.PackageMap {
-		pkg := s
-		t.Run(n, func(t *testing.T) {
+	for _, p := range conf.Packages {
+		pkg := p
+		t.Run(pkg.Name, func(t *testing.T) {
+			combo := dinosql.Combine(conf, pkg)
 			var result dinosql.Generateable
 			switch pkg.Engine {
 			case dinosql.EngineMySQL:
-				q, err := mysql.GeneratePkg(pkg.Name, pkg.Schema, pkg.Queries, conf)
+				q, err := mysql.GeneratePkg(pkg.Name, pkg.Schema, pkg.Queries, combo)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -50,7 +51,7 @@ func TestCodeGeneration(t *testing.T) {
 				}
 				result = q
 			}
-			output, err := dinosql.Generate(result, conf)
+			output, err := dinosql.Generate(result, combo)
 			if err != nil {
 				t.Fatal(err)
 			}

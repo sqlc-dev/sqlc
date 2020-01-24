@@ -54,8 +54,9 @@ func TestEnumName(t *testing.T) {
 		},
 	}
 
+	settings := dinosql.Combine(mockSettings, mockSettings.Packages[0])
 	for _, tc := range tcase {
-		enumName := enumNameFromColDef(&tc.input, mockSettings)
+		enumName := enumNameFromColDef(&tc.input, settings)
 		if diff := cmp.Diff(enumName, tc.output); diff != "" {
 			t.Errorf(diff)
 		}
@@ -82,8 +83,9 @@ func TestEnums(t *testing.T) {
 			},
 		},
 	}
+	settings := dinosql.Combine(mockSettings, mockSettings.Packages[0])
 	for _, tc := range tcase {
-		enums := tc.input.Enums(mockSettings)
+		enums := tc.input.Enums(settings)
 		if diff := cmp.Diff(enums, tc.output); diff != "" {
 			t.Errorf(diff)
 		}
@@ -121,8 +123,9 @@ func TestStructs(t *testing.T) {
 		},
 	}
 
+	settings := dinosql.Combine(mockSettings, mockSettings.Packages[0])
 	for _, tc := range tcase {
-		structs := tc.input.Structs(mockSettings)
+		structs := tc.input.Structs(settings)
 		if diff := cmp.Diff(structs, tc.output); diff != "" {
 			t.Errorf(diff)
 		}
