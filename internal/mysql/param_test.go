@@ -87,8 +87,13 @@ func TestSelectParamSearcher(t *testing.T) {
 			},
 		},
 	}
-	settings := dinosql.Combine(mockSettings, mockSettings.Packages[0])
+	settings := dinosql.Combine(dinosql.GenerateSettings{}, dinosql.PackageSettings{})
 	for _, tCase := range tests {
+		generator := PackageGenerator{
+			Schema:           mockSchema,
+			CombinedSettings: settings,
+			packageName:      "db",
+		}
 		tree, err := sqlparser.Parse(tCase.input)
 		if err != nil {
 			t.Errorf("Failed to parse input query")
@@ -100,11 +105,11 @@ func TestSelectParamSearcher(t *testing.T) {
 			t.Errorf("Failed to parse table name alias's: %v", err)
 		}
 
-		limitParams, err := paramsInLimitExpr(selectStm.Limit, mockSchema, tableAliasMap, settings)
+		limitParams, err := generator.paramsInLimitExpr(selectStm.Limit, tableAliasMap)
 		if err != nil {
 			t.Errorf("Failed to parse limit expression params: %v", err)
 		}
-		whereParams, err := paramsInWhereExpr(selectStm.Where, mockSchema, tableAliasMap, "users", settings)
+		whereParams, err := generator.paramsInWhereExpr(selectStm.Where, tableAliasMap, "users")
 		if err != nil {
 			t.Errorf("Failed to parse where expression params: %v", err)
 		}
@@ -146,8 +151,13 @@ func TestInsertParamSearcher(t *testing.T) {
 			expectedNames: []string{"first_name", "user_last_name"},
 		},
 	}
-	settings := dinosql.Combine(mockSettings, mockSettings.Packages[0])
+	settings := dinosql.Combine(dinosql.GenerateSettings{}, dinosql.PackageSettings{})
 	for _, tCase := range tests {
+		generator := PackageGenerator{
+			Schema:           mockSchema,
+			CombinedSettings: settings,
+			packageName:      "db",
+		}
 		tree, err := sqlparser.Parse(tCase.input)
 		if err != nil {
 			t.Errorf("Failed to parse input query")
@@ -156,7 +166,8 @@ func TestInsertParamSearcher(t *testing.T) {
 		if !ok {
 			t.Errorf("Test case is not SELECT statement as expected")
 		}
-		result, err := parseInsert(insertStm, tCase.input, mockSchema, settings)
+		result, err := generator.parseInsert(insertStm, tCase.input)
+
 		if err != nil {
 			t.Errorf("Failed to parse insert statement.")
 		}
