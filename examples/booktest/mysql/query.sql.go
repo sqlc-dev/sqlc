@@ -5,11 +5,12 @@ package booktest
 
 import (
 	"context"
+	"database/sql"
 	"time"
 )
 
 const booksByTitleYear = `-- name: BooksByTitleYear :many
-select book_id, author_id, isbn, book_type, title, yr, available, tags from books where title = ? and yr = ?
+select book_id, author_id, isbn, book_type, title, yr, available, tags, is_hardcover, rating, front_cover_img, back_cover_img from books where title = ? and yr = ?
 `
 
 type BooksByTitleYearParams struct {
@@ -35,6 +36,10 @@ func (q *Queries) BooksByTitleYear(ctx context.Context, arg BooksByTitleYearPara
 			&i.Yr,
 			&i.Available,
 			&i.Tags,
+			&i.IsHardcover,
+			&i.Rating,
+			&i.FrontCoverImg,
+			&i.BackCoverImg,
 		); err != nil {
 			return nil, err
 		}
@@ -59,17 +64,21 @@ func (q *Queries) CreateAuthor(ctx context.Context, name string) error {
 }
 
 const createBook = `-- name: CreateBook :exec
-insert into books(author_id, isbn, booktype, title, yr, available, tags) values (?, ?, ?, ?, ?, ?, ?)
+insert into books(author_id, isbn, booktype, title, yr, available, tags, is_hardcover, rating, front_cover_img, back_cover_img) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `
 
 type CreateBookParams struct {
-	AuthorID  int
-	Isbn      string
-	Unknown   interface{}
-	Title     string
-	Yr        int
-	Available time.Time
-	Tags      string
+	AuthorID      int
+	Isbn          string
+	Unknown       interface{}
+	Title         string
+	Yr            int
+	Available     time.Time
+	Tags          string
+	IsHardcover   bool
+	Rating        sql.NullFloat64
+	FrontCoverImg sql.NullString
+	BackCoverImg  sql.NullString
 }
 
 func (q *Queries) CreateBook(ctx context.Context, arg CreateBookParams) error {
@@ -81,6 +90,10 @@ func (q *Queries) CreateBook(ctx context.Context, arg CreateBookParams) error {
 		arg.Yr,
 		arg.Available,
 		arg.Tags,
+		arg.IsHardcover,
+		arg.Rating,
+		arg.FrontCoverImg,
+		arg.BackCoverImg,
 	)
 	return err
 }
@@ -120,7 +133,7 @@ func (q *Queries) GetAuthor(ctx context.Context, author_id int) (Author, error) 
 }
 
 const getBook = `-- name: GetBook :one
-select book_id, author_id, isbn, book_type, title, yr, available, tags from books where book_id = ?
+select book_id, author_id, isbn, book_type, title, yr, available, tags, is_hardcover, rating, front_cover_img, back_cover_img from books where book_id = ?
 `
 
 func (q *Queries) GetBook(ctx context.Context, book_id int) (Book, error) {
@@ -135,6 +148,10 @@ func (q *Queries) GetBook(ctx context.Context, book_id int) (Book, error) {
 		&i.Yr,
 		&i.Available,
 		&i.Tags,
+		&i.IsHardcover,
+		&i.Rating,
+		&i.FrontCoverImg,
+		&i.BackCoverImg,
 	)
 	return i, err
 }

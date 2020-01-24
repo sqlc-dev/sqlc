@@ -3,6 +3,7 @@ package mysql
 import (
 	"fmt"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/kyleconroy/sqlc/internal/dinosql"
@@ -174,7 +175,18 @@ func paramName(col sqlparser.ColIdent, originalName string) string {
 }
 
 func replaceParamStrs(query string, params []*Param) (string, error) {
-	for _, p := range params {
+	/*
+		To ensure that ":v1" does not replace ":v12", we need to sort
+		the params in decending order by length of the string.
+		But, the original order of the params must be preserved.
+	*/
+	paramsCopy := make([]*Param, len(params))
+	copy(paramsCopy, params)
+	sort.Slice(paramsCopy, func(i, j int) bool {
+		return len(paramsCopy[i].OriginalName) > len(paramsCopy[j].OriginalName)
+	})
+
+	for _, p := range paramsCopy {
 		re, err := regexp.Compile(fmt.Sprintf("(%v)", regexp.QuoteMeta(p.OriginalName)))
 		if err != nil {
 			return "", err
