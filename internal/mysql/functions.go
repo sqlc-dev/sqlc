@@ -15,6 +15,6 @@ func functionReturnType(f string) string {
 	case "abs", "round", "truncate":
 		return "decimal"
 	default:
-		panic(fmt.Sprintf("unknown mysql function type [%v]", f))
+		panic(fmt.Sprintf("unknown mysql function type \"%v\"", f))
 	}
 }

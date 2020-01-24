@@ -133,3 +133,57 @@ func TestStructs(t *testing.T) {
 		}
 	}
 }
+
+func TestTypeOverride(t *testing.T) {
+	tests := [...]struct {
+		overrides      []dinosql.Override
+		col            Column
+		expectedGoType string
+	}{
+		{
+			overrides: []dinosql.Override{
+				{
+					DBType:     "uuid",
+					GoTypeName: "KSUID", // this is populated by the dinosql.Parse
+				},
+			},
+			col: Column{
+				ColumnDefinition: &sqlparser.ColumnDefinition{
+					Type: sqlparser.ColumnType{
+						Type:    "uuid",
+						NotNull: true,
+					},
+				},
+			},
+			expectedGoType: "KSUID",
+		},
+		{
+			overrides: []dinosql.Override{
+				{
+					ColumnName: "user_id", // this is populated by dinosql.Parse
+					GoTypeName: "uuid",    // this is populated by dinosql.Parse
+				},
+			},
+			col: Column{
+				ColumnDefinition: &sqlparser.ColumnDefinition{
+					Name: sqlparser.NewColIdent("user_id"),
+					Type: sqlparser.ColumnType{
+						Type:    "varchar",
+						NotNull: true,
+					},
+				},
+			},
+			expectedGoType: "uuid",
+		},
+	}
+
+	for _, tcase := range tests {
+		settings := dinosql.Combine(dinosql.GenerateSettings{}, dinosql.PackageSettings{Overrides: tcase.overrides})
+		gen := PackageGenerator{mockSchema, settings, "db"}
+		goType := gen.goTypeCol(tcase.col)
+
+		if diff := cmp.Diff(tcase.expectedGoType, goType); diff != "" {
+			t.Errorf(diff)
+		}
+	}
+}
