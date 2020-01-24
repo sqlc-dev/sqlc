@@ -129,14 +129,14 @@ var genCmd = &cobra.Command{
 
 		for _, pkg := range settings.Packages {
 			name := pkg.Name
-
+			combo := dinosql.Combine(settings, pkg)
 			var result dinosql.Generateable
 
 			switch pkg.Engine {
 
 			case dinosql.EngineMySQL:
 				// Experimental MySQL support
-				q, err := mysql.GeneratePkg(name, pkg.Schema, pkg.Queries, settings)
+				q, err := mysql.GeneratePkg(name, pkg.Schema, pkg.Queries, combo)
 				if err != nil {
 					fmt.Fprintf(os.Stderr, "# package %s\n", name)
 					if parserErr, ok := err.(*dinosql.ParserErr); ok {
@@ -183,7 +183,7 @@ var genCmd = &cobra.Command{
 
 			}
 
-			files, err := dinosql.Generate(result, settings)
+			files, err := dinosql.Generate(result, combo)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "# package %s\n", name)
 				fmt.Fprintf(os.Stderr, "error generating code: %s\n", err)

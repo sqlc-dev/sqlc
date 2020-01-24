@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/kyleconroy/sqlc/internal/dinosql"
 	"vitess.io/vitess/go/vt/sqlparser"
 )
 
@@ -37,9 +38,9 @@ func TestCustomArgErr(t *testing.T) {
 			},
 		},
 	}
-
+	settings := dinosql.Combine(mockSettings, mockSettings.Packages[0])
 	for _, tcase := range tests {
-		q, err := parseContents(mockFileName, tcase.input, mockSchema, mockSettings)
+		q, err := parseContents(mockFileName, tcase.input, mockSchema, settings)
 		if err == nil && len(q) > 0 {
 			t.Errorf("parse contents succeeded on an invalid query")
 		}
@@ -79,9 +80,9 @@ func TestPositionedErr(t *testing.T) {
 			},
 		},
 	}
-
+	settings := dinosql.Combine(mockSettings, mockSettings.Packages[0])
 	for _, tcase := range tests {
-		q, err := parseContents(mockFileName, tcase.input, mockSchema, mockSettings)
+		q, err := parseContents(mockFileName, tcase.input, mockSchema, settings)
 		if err == nil && len(q) > 0 {
 			t.Errorf("parse contents succeeded on an invalid query")
 		}

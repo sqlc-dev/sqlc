@@ -1,7 +1,6 @@
 package dinosql
 
 import (
-	"path/filepath"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -67,16 +66,9 @@ func TestColumnsToStruct(t *testing.T) {
 	}
 	oa.Parse()
 
-	pkgName := "test_override"
-
-	r := Result{
-		packageName: pkgName,
-	}
-	mockSettings.PackageMap[pkgName] = PackageSettings{
-		Overrides: []Override{o, oa},
-	}
-
-	actual := r.columnsToStruct("Foo", cols, mockSettings)
+	r := Result{}
+	settings := Combine(GenerateSettings{Overrides: []Override{o, oa}}, PackageSettings{})
+	actual := r.columnsToStruct("Foo", cols, settings)
 	expected := &GoStruct{
 		Name: "Foo",
 		Fields: []GoField{
@@ -94,33 +86,8 @@ func TestColumnsToStruct(t *testing.T) {
 	}
 }
 
-var mockSettings GenerateSettings
-
-func init() {
-	mockSettings = GenerateSettings{
-		Version: "1",
-		Packages: []PackageSettings{
-			PackageSettings{
-				Name: "db",
-			},
-			PackageSettings{
-				Name:                "prepared",
-				Queries:             filepath.Join("testdata", "ondeck", "query"),
-				EmitPreparedQueries: true,
-			},
-			PackageSettings{
-				Name:         "ondeck",
-				Queries:      filepath.Join("testdata", "ondeck", "query"),
-				EmitJSONTags: true,
-			},
-		},
-		Overrides: []Override{},
-	}
-	mockSettings.PopulatePkgMap()
-}
-
 func TestInnerType(t *testing.T) {
-	r := Result{packageName: "db"}
+	r := Result{}
 	types := map[string]string{
 		// Numeric Types
 		// https://www.postgresql.org/docs/current/datatype-numeric.html
@@ -142,20 +109,21 @@ func TestInnerType(t *testing.T) {
 		"pg_catalog.timestamptz": "time.Time",
 		"timestamptz":            "time.Time",
 	}
+	settings := Combine(GenerateSettings{}, PackageSettings{})
 	for k, v := range types {
 		dbType := k
 		goType := v
 		t.Run(k+"-"+v, func(t *testing.T) {
 			col := pg.Column{DataType: dbType, NotNull: true}
-			if goType != r.goType(col, mockSettings) {
-				t.Errorf("expected Go type for %s to be %s, not %s", dbType, goType, r.goType(col, mockSettings))
+			if goType != r.goType(col, settings) {
+				t.Errorf("expected Go type for %s to be %s, not %s", dbType, goType, r.goType(col, settings))
 			}
 		})
 	}
 }
 
 func TestNullInnerType(t *testing.T) {
-	r := Result{packageName: "db"}
+	r := Result{}
 	types := map[string]string{
 		// Numeric Types
 		// https://www.postgresql.org/docs/current/datatype-numeric.html
@@ -177,13 +145,14 @@ func TestNullInnerType(t *testing.T) {
 		"pg_catalog.timestamptz": "sql.NullTime",
 		"timestamptz":            "sql.NullTime",
 	}
+	settings := Combine(GenerateSettings{}, PackageSettings{})
 	for k, v := range types {
 		dbType := k
 		goType := v
 		t.Run(k+"-"+v, func(t *testing.T) {
 			col := pg.Column{DataType: dbType, NotNull: false}
-			if goType != r.goType(col, mockSettings) {
-				t.Errorf("expected Go type for %s to be %s, not %s", dbType, goType, r.goType(col, mockSettings))
+			if goType != r.goType(col, settings) {
+				t.Errorf("expected Go type for %s to be %s, not %s", dbType, goType, r.goType(col, settings))
 			}
 		})
 	}

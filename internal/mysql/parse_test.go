@@ -41,7 +41,8 @@ func TestParseConfig(t *testing.T) {
 }
 
 func TestGeneratePkg(t *testing.T) {
-	_, err := GeneratePkg(mockSettings.Packages[0].Name, mockFileName, mockFileName, mockSettings)
+	settings := dinosql.Combine(mockSettings, mockSettings.Packages[0])
+	_, err := GeneratePkg(mockSettings.Packages[0].Name, mockFileName, mockFileName, settings)
 	if err != nil {
 		if pErr, ok := err.(*dinosql.ParserErr); ok {
 			for _, fileErr := range pErr.Errs {
@@ -294,10 +295,11 @@ func TestParseSelect(t *testing.T) {
 		},
 	}
 
+	settings := dinosql.Combine(mockSettings, mockSettings.Packages[0])
 	for _, tt := range tests {
 		testCase := tt
 		t.Run(tt.name, func(t *testing.T) {
-			qs, err := parseContents("example.sql", testCase.input.query, testCase.input.schema, mockSettings)
+			qs, err := parseContents("example.sql", testCase.input.query, testCase.input.schema, settings)
 			if err != nil {
 				t.Fatalf("Parsing failed with query: [%v]\n", err)
 			}
@@ -469,10 +471,11 @@ func TestParseInsertUpdate(t *testing.T) {
 		},
 	}
 
+	settings := dinosql.Combine(mockSettings, mockSettings.Packages[0])
 	for _, tt := range tests {
 		testCase := tt
 		t.Run(tt.name, func(t *testing.T) {
-			qs, err := parseContents("example.sql", testCase.input.query, testCase.input.schema, mockSettings)
+			qs, err := parseContents("example.sql", testCase.input.query, testCase.input.schema, settings)
 			if err != nil {
 				t.Fatalf("Parsing failed with query: [%v]\n", err)
 			}
