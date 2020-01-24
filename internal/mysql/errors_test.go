@@ -38,9 +38,10 @@ func TestCustomArgErr(t *testing.T) {
 			},
 		},
 	}
-	settings := dinosql.Combine(mockSettings, mockSettings.Packages[0])
+	settings := dinosql.Combine(dinosql.GenerateSettings{}, dinosql.PackageSettings{})
+	generator := PackageGenerator{mockSchema, settings, "db"}
 	for _, tcase := range tests {
-		q, err := parseContents(mockFileName, tcase.input, mockSchema, settings)
+		q, err := generator.parseContents("queries.sql", tcase.input)
 		if err == nil && len(q) > 0 {
 			t.Errorf("parse contents succeeded on an invalid query")
 		}
@@ -80,9 +81,11 @@ func TestPositionedErr(t *testing.T) {
 			},
 		},
 	}
-	settings := dinosql.Combine(mockSettings, mockSettings.Packages[0])
+
+	settings := dinosql.Combine(dinosql.GenerateSettings{}, dinosql.PackageSettings{})
 	for _, tcase := range tests {
-		q, err := parseContents(mockFileName, tcase.input, mockSchema, settings)
+		generator := PackageGenerator{mockSchema, settings, "db"}
+		q, err := generator.parseContents("queries.sql", tcase.input)
 		if err == nil && len(q) > 0 {
 			t.Errorf("parse contents succeeded on an invalid query")
 		}

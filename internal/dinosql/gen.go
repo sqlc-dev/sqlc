@@ -248,7 +248,7 @@ func InterfaceImports(r Generateable, settings CombinedSettings) [][]string {
 		if o.goBasicType {
 			continue
 		}
-		overrideTypes[o.goTypeName] = o.goPackage
+		overrideTypes[o.GoTypeName] = o.goPackage
 	}
 
 	_, overrideNullTime := overrideTypes["pq.NullTime"]
@@ -304,7 +304,7 @@ func ModelImports(r Generateable, settings CombinedSettings) [][]string {
 		if o.goBasicType {
 			continue
 		}
-		overrideTypes[o.goTypeName] = o.goPackage
+		overrideTypes[o.GoTypeName] = o.goPackage
 	}
 
 	_, overrideNullTime := overrideTypes["pq.NullTime"]
@@ -439,7 +439,7 @@ func QueryImports(r Generateable, settings CombinedSettings, filename string) []
 		if o.goBasicType {
 			continue
 		}
-		overrideTypes[o.goTypeName] = o.goPackage
+		overrideTypes[o.GoTypeName] = o.goPackage
 	}
 
 	if sliceScan() {
@@ -574,8 +574,8 @@ func (r Result) Structs(settings CombinedSettings) []GoStruct {
 func (r Result) goType(col core.Column, settings CombinedSettings) string {
 	// package overrides have a higher precedence
 	for _, oride := range settings.Overrides {
-		if oride.Column != "" && oride.columnName == col.Name && oride.table == col.Table {
-			return oride.goTypeName
+		if oride.Column != "" && oride.ColumnName == col.Name && oride.Table == col.Table {
+			return oride.GoTypeName
 		}
 	}
 	typ := r.goInnerType(col, settings)
@@ -591,8 +591,8 @@ func (r Result) goInnerType(col core.Column, settings CombinedSettings) string {
 
 	// package overrides have a higher precedence
 	for _, oride := range settings.Overrides {
-		if oride.PostgresType != "" && oride.PostgresType == columnType && oride.Null != notNull {
-			return oride.goTypeName
+		if oride.DBType != "" && oride.DBType == columnType && oride.Null != notNull {
+			return oride.GoTypeName
 		}
 	}
 

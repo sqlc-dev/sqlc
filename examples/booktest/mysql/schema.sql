@@ -13,6 +13,7 @@ CREATE INDEX authors_name_idx ON authors(name(255));
 
 CREATE TABLE books (
           book_id integer NOT NULL AUTO_INCREMENT PRIMARY KEY,
+          book_uuid varchar(36),
           author_id integer NOT NULL,
           isbn varchar(255) NOT NULL DEFAULT '' UNIQUE,
           book_type ENUM('FICTION', 'NONFICTION') NOT NULL DEFAULT 'FICTION',
