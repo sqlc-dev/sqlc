@@ -2,7 +2,6 @@ package mysql
 
 import (
 	"fmt"
-	"log"
 	"sort"
 	"strings"
 
@@ -227,7 +226,7 @@ func (pGen PackageGenerator) goTypeCol(col Column) string {
 
 	for _, oride := range pGen.Overrides {
 		shouldOverride := (oride.DBType != "" && oride.DBType == mySQLType && oride.Null != notNull) ||
-			(oride.Column != "" && oride.ColumnName == colName && oride.Table.Rel == col.Table)
+			(oride.ColumnName != "" && oride.ColumnName == colName && oride.Table.Rel == col.Table)
 		if shouldOverride {
 			return oride.GoTypeName
 		}
@@ -266,7 +265,7 @@ func (pGen PackageGenerator) goTypeCol(col Column) string {
 		}
 		return "sql.NullBool"
 	default:
-		log.Printf("unknown MySQL type: %s\n", t)
+		fmt.Printf("unknown MySQL type: %s\n", t)
 		return "interface{}"
 	}
 }
