@@ -29,7 +29,7 @@ type Column struct {
 	Table string
 }
 
-func parsePath(sqlPath string, inPkg string, s *Schema, settings dinosql.GenerateSettings) (*Result, error) {
+func parsePath(sqlPath string, inPkg string, s *Schema, settings dinosql.CombinedSettings) (*Result, error) {
 	files, err := dinosql.ReadSQLFiles(sqlPath)
 	if err != nil {
 		return nil, err
@@ -69,13 +69,12 @@ func parsePath(sqlPath string, inPkg string, s *Schema, settings dinosql.Generat
 	}
 
 	return &Result{
-		Queries:     parsedQueries,
-		Schema:      s,
-		packageName: inPkg,
+		Queries: parsedQueries,
+		Schema:  s,
 	}, nil
 }
 
-func parseContents(filename, contents string, s *Schema, settings dinosql.GenerateSettings) ([]*Query, error) {
+func parseContents(filename, contents string, s *Schema, settings dinosql.CombinedSettings) ([]*Query, error) {
 	t := sqlparser.NewStringTokenizer(contents)
 	var queries []*Query
 	var start int
@@ -101,7 +100,7 @@ func parseContents(filename, contents string, s *Schema, settings dinosql.Genera
 	return queries, nil
 }
 
-func parseQueryString(tree sqlparser.Statement, query string, s *Schema, settings dinosql.GenerateSettings) (*Query, error) {
+func parseQueryString(tree sqlparser.Statement, query string, s *Schema, settings dinosql.CombinedSettings) (*Query, error) {
 	var parsedQuery *Query
 	switch tree := tree.(type) {
 	case *sqlparser.Select:
@@ -159,7 +158,7 @@ func (q *Query) parseNameAndCmd() error {
 	return nil
 }
 
-func parseSelect(tree *sqlparser.Select, query string, s *Schema, settings dinosql.GenerateSettings) (*Query, error) {
+func parseSelect(tree *sqlparser.Select, query string, s *Schema, settings dinosql.CombinedSettings) (*Query, error) {
 	tableAliasMap, defaultTableName, err := parseFrom(tree.From, false)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse table name alias's: %w", err)
@@ -262,7 +261,7 @@ func parseFrom(from sqlparser.TableExprs, isLeftJoined bool) (FromTables, string
 	return tables, defaultTableName, nil
 }
 
-func parseUpdate(node *sqlparser.Update, query string, s *Schema, settings dinosql.GenerateSettings) (*Query, error) {
+func parseUpdate(node *sqlparser.Update, query string, s *Schema, settings dinosql.CombinedSettings) (*Query, error) {
 	tableAliasMap, defaultTable, err := parseFrom(node.TableExprs, false)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse table name alias's: %w", err)
@@ -310,7 +309,7 @@ func parseUpdate(node *sqlparser.Update, query string, s *Schema, settings dinos
 	return &parsedQuery, nil
 }
 
-func parseInsert(node *sqlparser.Insert, query string, s *Schema, settings dinosql.GenerateSettings) (*Query, error) {
+func parseInsert(node *sqlparser.Insert, query string, s *Schema, settings dinosql.CombinedSettings) (*Query, error) {
 	params := []*Param{}
 	cols := node.Columns
 	tableName := node.Table.Name.String()
@@ -387,7 +386,7 @@ func parseInsert(node *sqlparser.Insert, query string, s *Schema, settings dinos
 	return parsedQuery, nil
 }
 
-func parseDelete(node *sqlparser.Delete, query string, s *Schema, settings dinosql.GenerateSettings) (*Query, error) {
+func parseDelete(node *sqlparser.Delete, query string, s *Schema, settings dinosql.CombinedSettings) (*Query, error) {
 	tableAliasMap, defaultTableName, err := parseFrom(node.TableExprs, false)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse table name alias's: %w", err)
@@ -479,7 +478,7 @@ func parseSelectAliasExpr(exprs sqlparser.SelectExprs, s *Schema, tableAliasMap 
 }
 
 // GeneratePkg is the main entry to mysql generator package
-func GeneratePkg(pkgName, schemaPath, querysPath string, settings dinosql.GenerateSettings) (*Result, error) {
+func GeneratePkg(pkgName, schemaPath, querysPath string, settings dinosql.CombinedSettings) (*Result, error) {
 	s := NewSchema()
 	_, err := parsePath(schemaPath, pkgName, s, settings)
 	if err != nil {

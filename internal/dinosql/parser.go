@@ -184,16 +184,8 @@ type Query struct {
 }
 
 type Result struct {
-	Queries     []*Query
-	Catalog     core.Catalog
-	packageName string
-}
-
-func (r Result) PkgName() string {
-	if r.packageName == "" {
-		panic("Package name is empty")
-	}
-	return r.packageName
+	Queries []*Query
+	Catalog core.Catalog
 }
 
 func ParseQueries(c core.Catalog, pkg PackageSettings) (*Result, error) {
@@ -265,9 +257,8 @@ func ParseQueries(c core.Catalog, pkg PackageSettings) (*Result, error) {
 		return nil, fmt.Errorf("path %s contains no queries", pkg.Queries)
 	}
 	return &Result{
-		Catalog:     c,
-		Queries:     q,
-		packageName: pkg.Name,
+		Catalog: c,
+		Queries: q,
 	}, nil
 }
 

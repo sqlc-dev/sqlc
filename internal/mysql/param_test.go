@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/davecgh/go-spew/spew"
+	"github.com/kyleconroy/sqlc/internal/dinosql"
 	"vitess.io/vitess/go/vt/sqlparser"
 )
 
@@ -86,6 +87,7 @@ func TestSelectParamSearcher(t *testing.T) {
 			},
 		},
 	}
+	settings := dinosql.Combine(mockSettings, mockSettings.Packages[0])
 	for _, tCase := range tests {
 		tree, err := sqlparser.Parse(tCase.input)
 		if err != nil {
@@ -98,11 +100,11 @@ func TestSelectParamSearcher(t *testing.T) {
 			t.Errorf("Failed to parse table name alias's: %v", err)
 		}
 
-		limitParams, err := paramsInLimitExpr(selectStm.Limit, mockSchema, tableAliasMap, mockSettings)
+		limitParams, err := paramsInLimitExpr(selectStm.Limit, mockSchema, tableAliasMap, settings)
 		if err != nil {
 			t.Errorf("Failed to parse limit expression params: %v", err)
 		}
-		whereParams, err := paramsInWhereExpr(selectStm.Where, mockSchema, tableAliasMap, "users", mockSettings)
+		whereParams, err := paramsInWhereExpr(selectStm.Where, mockSchema, tableAliasMap, "users", settings)
 		if err != nil {
 			t.Errorf("Failed to parse where expression params: %v", err)
 		}
@@ -144,6 +146,7 @@ func TestInsertParamSearcher(t *testing.T) {
 			expectedNames: []string{"first_name", "user_last_name"},
 		},
 	}
+	settings := dinosql.Combine(mockSettings, mockSettings.Packages[0])
 	for _, tCase := range tests {
 		tree, err := sqlparser.Parse(tCase.input)
 		if err != nil {
@@ -153,7 +156,7 @@ func TestInsertParamSearcher(t *testing.T) {
 		if !ok {
 			t.Errorf("Test case is not SELECT statement as expected")
 		}
-		result, err := parseInsert(insertStm, tCase.input, mockSchema, mockSettings)
+		result, err := parseInsert(insertStm, tCase.input, mockSchema, settings)
 		if err != nil {
 			t.Errorf("Failed to parse insert statement.")
 		}

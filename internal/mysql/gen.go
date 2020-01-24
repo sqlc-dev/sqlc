@@ -14,18 +14,12 @@ import (
 
 // Result holds the mysql validated queries schema
 type Result struct {
-	Queries     []*Query
-	Schema      *Schema
-	packageName string
-}
-
-// PkgName exposes the result set's associated go package identifier as specified in the sqlc.json config.
-func (r *Result) PkgName() string {
-	return r.packageName
+	Queries []*Query
+	Schema  *Schema
 }
 
 // Enums generates parser-agnostic GoEnum types
-func (r *Result) Enums(settings dinosql.GenerateSettings) []dinosql.GoEnum {
+func (r *Result) Enums(settings dinosql.CombinedSettings) []dinosql.GoEnum {
 	var enums []dinosql.GoEnum
 	for _, table := range r.Schema.tables {
 		for _, col := range table {
@@ -58,13 +52,13 @@ func stripInnerQuotes(identifier string) string {
 	return strings.Replace(identifier, "'", "", 2)
 }
 
-func enumNameFromColDef(col *sqlparser.ColumnDefinition, settings dinosql.GenerateSettings) string {
+func enumNameFromColDef(col *sqlparser.ColumnDefinition, settings dinosql.CombinedSettings) string {
 	return fmt.Sprintf("%sType",
 		dinosql.StructName(col.Name.String(), settings))
 }
 
 // Structs marshels each query into a go struct for generation
-func (r *Result) Structs(settings dinosql.GenerateSettings) []dinosql.GoStruct {
+func (r *Result) Structs(settings dinosql.CombinedSettings) []dinosql.GoStruct {
 	var structs []dinosql.GoStruct
 	for tableName, cols := range r.Schema.tables {
 		s := dinosql.GoStruct{
@@ -87,7 +81,7 @@ func (r *Result) Structs(settings dinosql.GenerateSettings) []dinosql.GoStruct {
 }
 
 // GoQueries generates parser-agnostic query information for code generation
-func (r *Result) GoQueries(settings dinosql.GenerateSettings) []dinosql.GoQuery {
+func (r *Result) GoQueries(settings dinosql.CombinedSettings) []dinosql.GoQuery {
 	structs := r.Structs(settings)
 
 	qs := make([]dinosql.GoQuery, 0, len(r.Queries))
@@ -197,7 +191,7 @@ type structParams struct {
 	goType       string
 }
 
-func (r *Result) columnsToStruct(name string, items []structParams, settings dinosql.GenerateSettings) *dinosql.GoStruct {
+func (r *Result) columnsToStruct(name string, items []structParams, settings dinosql.CombinedSettings) *dinosql.GoStruct {
 	gs := dinosql.GoStruct{
 		Name: name,
 	}
@@ -221,7 +215,7 @@ func (r *Result) columnsToStruct(name string, items []structParams, settings din
 	return &gs
 }
 
-func goTypeCol(col *sqlparser.ColumnDefinition, settings dinosql.GenerateSettings) string {
+func goTypeCol(col *sqlparser.ColumnDefinition, settings dinosql.CombinedSettings) string {
 	switch t := col.Type.Type; {
 	case "varchar" == t, "text" == t, "char" == t,
 		"tinytext" == t, "mediumtext" == t, "longtext" == t:
