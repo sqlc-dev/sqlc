@@ -88,18 +88,6 @@ func (c *GenerateSettings) GatherEngines() map[Engine]struct{} {
 	return engines
 }
 
-func JoinOverrides(packageOverrides, globalOverrides []Override, forEngine Engine) []Override {
-	joinedOrides := make([]Override, len(packageOverrides))
-	copy(joinedOrides, packageOverrides)
-
-	for _, oride := range globalOverrides {
-		if oride.Engine == forEngine {
-			joinedOrides = append(joinedOrides, oride)
-		}
-	}
-	return joinedOrides
-}
-
 func (c *GenerateSettings) ValidateGlobalOverrides() error {
 	engines := c.GatherEngines()
 	usesMultipleEngines := len(engines) > 1

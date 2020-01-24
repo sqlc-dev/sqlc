@@ -87,7 +87,7 @@ func TestSelectParamSearcher(t *testing.T) {
 			},
 		},
 	}
-	settings := dinosql.Combine(mockSettings, mockSettings.Packages[0])
+	settings := dinosql.Combine(dinosql.GenerateSettings{}, dinosql.PackageSettings{})
 	for _, tCase := range tests {
 		generator := PackageGenerator{
 			Schema:           mockSchema,
@@ -151,7 +151,7 @@ func TestInsertParamSearcher(t *testing.T) {
 			expectedNames: []string{"first_name", "user_last_name"},
 		},
 	}
-	settings := dinosql.Combine(mockSettings, mockSettings.Packages[0])
+	settings := dinosql.Combine(dinosql.GenerateSettings{}, dinosql.PackageSettings{})
 	for _, tCase := range tests {
 		generator := PackageGenerator{
 			Schema:           mockSchema,
