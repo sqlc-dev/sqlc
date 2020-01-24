@@ -1,8 +1,6 @@
 package mysql
 
 import (
-	"encoding/json"
-	"io/ioutil"
 	"reflect"
 	"testing"
 
@@ -14,47 +12,6 @@ import (
 func init() {
 	initMockSchema()
 }
-
-const mockFileName = "test_data/queries.sql"
-const mockConfigPath = "test_data/sqlc.json"
-
-var mockSettings = dinosql.GenerateSettings{
-	Version: "1",
-	Packages: []dinosql.PackageSettings{
-		dinosql.PackageSettings{
-			Name: "db",
-		},
-	},
-	Overrides: []dinosql.Override{},
-}
-
-func TestParseConfig(t *testing.T) {
-	blob, err := ioutil.ReadFile(mockConfigPath)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	var settings dinosql.GenerateSettings
-	if err := json.Unmarshal(blob, &settings); err != nil {
-		t.Fatal(err)
-	}
-}
-
-func TestGeneratePkg(t *testing.T) {
-	settings := dinosql.Combine(mockSettings, mockSettings.Packages[0])
-	_, err := GeneratePkg(mockSettings.Packages[0].Name, mockFileName, mockFileName, settings)
-	if err != nil {
-		if pErr, ok := err.(*dinosql.ParserErr); ok {
-			for _, fileErr := range pErr.Errs {
-				t.Errorf("%s:%d:%d: %s\n", fileErr.Filename, fileErr.Line, fileErr.Column, fileErr.Err)
-			}
-		} else {
-			t.Errorf("failed to generate pkg %s", err)
-		}
-	}
-}
-
-func keep(interface{}) {}
 
 var mockSchema *Schema
 
@@ -291,7 +248,7 @@ func TestParseSelect(t *testing.T) {
 		},
 	}
 
-	settings := dinosql.Combine(mockSettings, mockSettings.Packages[0])
+	settings := dinosql.Combine(dinosql.GenerateSettings{}, dinosql.PackageSettings{})
 	for _, tt := range tests {
 		testCase := tt
 		generator := PackageGenerator{
@@ -466,7 +423,7 @@ func TestParseInsertUpdate(t *testing.T) {
 		},
 	}
 
-	settings := dinosql.Combine(mockSettings, mockSettings.Packages[0])
+	settings := dinosql.Combine(dinosql.GenerateSettings{}, dinosql.PackageSettings{})
 	for _, tt := range tests {
 		testCase := tt
 		t.Run(tt.name, func(t *testing.T) {

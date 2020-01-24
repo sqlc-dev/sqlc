@@ -23,11 +23,6 @@ type Result struct {
 	Queries []*Query
 }
 
-// PkgName exposes the result set's associated go package identifier as specified in the sqlc.json config.
-func (pGen PackageGenerator) PkgName() string {
-	return pGen.packageName
-}
-
 // Enums generates parser-agnostic GoEnum types
 func (r *Result) Enums(settings dinosql.CombinedSettings) []dinosql.GoEnum {
 	var enums []dinosql.GoEnum

@@ -84,7 +84,7 @@ func TestEnums(t *testing.T) {
 			},
 		},
 	}
-	settings := dinosql.Combine(mockSettings, mockSettings.Packages[0])
+	settings := dinosql.Combine(dinosql.GenerateSettings{}, dinosql.PackageSettings{})
 	for _, tc := range tcase {
 		enums := tc.input.Enums(settings)
 		if diff := cmp.Diff(enums, tc.output); diff != "" {
@@ -94,7 +94,7 @@ func TestEnums(t *testing.T) {
 }
 
 func TestStructs(t *testing.T) {
-	settings := dinosql.Combine(mockSettings, mockSettings.Packages[0])
+	settings := dinosql.Combine(dinosql.GenerateSettings{}, dinosql.PackageSettings{})
 	generator := PackageGenerator{mockSchema, settings, "db"}
 	tcase := [...]struct {
 		input  Result
