@@ -19,7 +19,6 @@ type Query struct {
 	Name             string   // the Go function name
 	Cmd              string   // TODO: Pick a better name. One of: one, many, exec, execrows
 	DefaultTableName string   // for columns that are not qualified
-	// SchemaLookup     *Schema  // for validation and conversion to Go types
 
 	Filename string
 }
