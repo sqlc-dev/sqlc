@@ -110,7 +110,18 @@ func Generate(dir string, stderr io.Writer) (map[string]string, error) {
 
 		}
 
-		files, err := dinosql.Generate(result, combo)
+		var files map[string]string
+		switch pkg.Language {
+		case dinosql.LanguageGo:
+			files, err = dinosql.Generate(result, combo)
+		case dinosql.LanguageKotlin:
+			ktRes, ok := result.(dinosql.KtGenerateable)
+			if !ok {
+				err = fmt.Errorf("Kotlin not supported")
+				break
+			}
+			files, err = dinosql.KtGenerate(ktRes, combo)
+		}
 		if err != nil {
 			fmt.Fprintf(stderr, "# package %s\n", name)
 			fmt.Fprintf(stderr, "error generating code: %s\n", err)
