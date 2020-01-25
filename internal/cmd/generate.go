@@ -55,6 +55,10 @@ func Generate(dir string, stderr io.Writer) (map[string]string, error) {
 		combo := dinosql.Combine(settings, pkg)
 		var result dinosql.Generateable
 
+		// TODO: This feels like a hack that will bite us later
+		pkg.Schema = filepath.Join(dir, pkg.Schema)
+		pkg.Queries = filepath.Join(dir, pkg.Queries)
+
 		switch pkg.Engine {
 
 		case dinosql.EngineMySQL:
@@ -115,7 +119,7 @@ func Generate(dir string, stderr io.Writer) (map[string]string, error) {
 		}
 
 		for n, source := range files {
-			filename := filepath.Join(pkg.Path, n)
+			filename := filepath.Join(dir, pkg.Path, n)
 			output[filename] = source
 		}
 	}

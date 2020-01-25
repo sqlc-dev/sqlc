@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"bytes"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -9,83 +9,50 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/kyleconroy/sqlc/internal/dinosql"
-	"github.com/kyleconroy/sqlc/internal/mysql"
+	"github.com/kyleconroy/sqlc/internal/cmd"
 )
 
 func TestCodeGeneration(t *testing.T) {
 	// Change to the top-level directory of the project
-	os.Chdir(filepath.Join("..", "..", "examples"))
+	examples, _ := filepath.Abs(filepath.Join("..", "..", "examples"))
+	var stderr bytes.Buffer
 
-	rd, err := os.Open("sqlc.json")
+	output, err := cmd.Generate(examples, &stderr)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("%s", stderr.String())
 	}
 
-	conf, err := dinosql.ParseConfig(rd)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	for _, p := range conf.Packages {
-		pkg := p
-		t.Run(pkg.Name, func(t *testing.T) {
-			combo := dinosql.Combine(conf, pkg)
-			var result dinosql.Generateable
-			switch pkg.Engine {
-			case dinosql.EngineMySQL:
-				q, err := mysql.GeneratePkg(pkg.Name, pkg.Schema, pkg.Queries, combo)
-				if err != nil {
-					t.Fatal(err)
-				}
-				result = q
-			case dinosql.EnginePostgreSQL:
-				c, err := dinosql.ParseCatalog(pkg.Schema)
-				if err != nil {
-					fmt.Printf("%#v\n", err)
-					t.Fatal(err)
-				}
-				q, err := dinosql.ParseQueries(c, pkg)
-				if err != nil {
-					t.Fatal(err)
-				}
-				result = q
-			}
-			output, err := dinosql.Generate(result, combo)
-			if err != nil {
-				t.Fatal(err)
-			}
-			cmpDirectory(t, pkg.Path, output)
-		})
-	}
-
+	cmpDirectory(t, examples, output)
 }
 
 func cmpDirectory(t *testing.T, dir string, actual map[string]string) {
-	t.Helper()
-
-	files, err := ioutil.ReadDir(dir)
-	if err != nil {
-		t.Fatalf("error reading dir %s: %s", dir, err)
+	expected := map[string]string{}
+	var ff = func(path string, file os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if file.IsDir() {
+			return nil
+		}
+		if !strings.HasSuffix(path, ".go") {
+			return nil
+		}
+		if strings.HasSuffix(path, "_test.go") {
+			return nil
+		}
+		blob, err := ioutil.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		expected[path] = string(blob)
+		return nil
+	}
+	if err := filepath.Walk(dir, ff); err != nil {
+		t.Fatal(err)
 	}
 
-	expected := map[string]string{}
-
-	for _, file := range files {
-		if file.IsDir() {
-			continue
-		}
-		if !strings.HasSuffix(file.Name(), ".go") {
-			continue
-		}
-		if strings.HasSuffix(file.Name(), "_test.go") {
-			continue
-		}
-		blob, err := ioutil.ReadFile(filepath.Join(dir, file.Name()))
-		if err != nil {
-			t.Fatal(err)
-		}
-		expected[file.Name()] = string(blob)
+	if len(expected) == 0 {
+		t.Fatalf("expected output is empty: %s", expected)
 	}
 
 	if !cmp.Equal(expected, actual) {
@@ -98,6 +65,9 @@ func cmpDirectory(t *testing.T, dir string, actual map[string]string) {
 			if diff := cmp.Diff(contents, actual[name]); diff != "" {
 				t.Errorf("%s differed (-want +got):\n%s", name, diff)
 			}
+		}
+		for name, _ := range actual {
+			t.Log(name)
 		}
 	}
 }
