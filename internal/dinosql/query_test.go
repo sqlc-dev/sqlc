@@ -1,7 +1,6 @@
 package dinosql
 
 import (
-	"fmt"
 	"strconv"
 	"testing"
 
@@ -26,40 +25,6 @@ func parseSQL(in string) (Query, error) {
 		return Query{}, err
 	}
 	return *q, err
-}
-
-func public(rel string) core.FQN {
-	return core.FQN{
-		Catalog: "",
-		Schema:  "public",
-		Rel:     rel,
-	}
-}
-
-const testComparisonSQL = `
-CREATE TABLE bar (id serial not null);
-SELECT count(*) %s 0 FROM bar;
-`
-
-func TestComparisonOperators(t *testing.T) {
-	for _, op := range []string{">", "<", ">=", "<=", "<>", "!=", "="} {
-		o := op
-		t.Run(o, func(t *testing.T) {
-			q, err := parseSQL(fmt.Sprintf(testComparisonSQL, o))
-			if err != nil {
-				t.Fatal(err)
-			}
-			expected := Query{
-				SQL: q.SQL,
-				Columns: []core.Column{
-					{Name: "", DataType: "bool", NotNull: true},
-				},
-			}
-			if diff := cmp.Diff(expected, q); diff != "" {
-				t.Errorf("query mismatch: \n%s", diff)
-			}
-		})
-	}
 }
 
 func TestUnknownFunctions(t *testing.T) {
