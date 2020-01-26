@@ -77,18 +77,14 @@ type Override struct {
 	goBasicType bool
 }
 
-func (c *GenerateSettings) GatherEngines() map[Engine]struct{} {
+func (c *GenerateSettings) ValidateGlobalOverrides() error {
 	engines := map[Engine]struct{}{}
 	for _, pkg := range c.Packages {
 		if _, ok := engines[pkg.Engine]; !ok {
 			engines[pkg.Engine] = struct{}{}
 		}
 	}
-	return engines
-}
 
-func (c *GenerateSettings) ValidateGlobalOverrides() error {
-	engines := c.GatherEngines()
 	usesMultipleEngines := len(engines) > 1
 	for _, oride := range c.Overrides {
 		if usesMultipleEngines && oride.Engine == "" {
