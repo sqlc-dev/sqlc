@@ -331,14 +331,14 @@ instead.
   "overrides": [
       {
           "go_type": "github.com/gofrs/uuid.UUID",
-          "postgres_type": "uuid"
+          "db_type": "uuid"
       }
   ]
 }
 ```
 
 Each override document has the following keys:
-- `postgres_type`:
+- `db_type`:
   - The PostgreSQL type to override. Find the full list of supported types in [gen.go](https://github.com/kyleconroy/sqlc/blob/master/internal/dinosql/gen.go#L438).
 - `go_type`:
   - A fully qualified name to a Go type to use in the generated code.
