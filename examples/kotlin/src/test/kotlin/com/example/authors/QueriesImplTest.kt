@@ -18,10 +18,10 @@ class QueriesImplTest {
     @BeforeEach
     fun setup() {
         val user = System.getenv("PG_USER") ?: "postgres"
-        val port = System.getenv("PG_PORT") ?: "5432"
+        val pass = System.getenv("PG_PASSWORD") ?: "mysecretpassword"
         val host = System.getenv("PG_HOST") ?: "127.0.0.1"
-        val db = System.getenv("PG_DB") ?: "postgres"
-        val pass = System.getenv("PG_PASS") ?: "postgres"
+        val port = System.getenv("PG_PORT") ?: "5432"
+        val db = System.getenv("PG_DATABASE") ?: "dinotest"
         val url = "jdbc:postgresql://$host:$port/$db?user=$user&password=$pass&sslmode=disable"
         println("db: $url")
 

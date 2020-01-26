@@ -58,10 +58,10 @@ func cmpDirectory(t *testing.T, dir string, actual map[string]string) {
 		if file.IsDir() {
 			return nil
 		}
-		if !strings.HasSuffix(path, ".go") {
+		if !strings.HasSuffix(path, ".go") && !strings.HasSuffix(path, ".kt") {
 			return nil
 		}
-		if strings.HasSuffix(path, "_test.go") {
+		if strings.HasSuffix(path, "_test.go") || strings.Contains(path, "src/test/") {
 			return nil
 		}
 		blob, err := ioutil.ReadFile(path)

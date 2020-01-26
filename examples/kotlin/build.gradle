@@ -26,3 +26,5 @@ compileKotlin {
 compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
+
+buildScan { termsOfServiceUrl = "https://gradle.com/terms-of-service"; termsOfServiceAgree = "yes" }
