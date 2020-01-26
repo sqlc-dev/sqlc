@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"io/ioutil"
 	"os"
@@ -9,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/kyleconroy/sqlc/internal/cmd"
 )
 
@@ -40,11 +42,15 @@ func TestReplay(t *testing.T) {
 			t.Parallel()
 			path, _ := filepath.Abs(filepath.Join("testdata", tc))
 			var stderr bytes.Buffer
+			expected := expectedStderr(t, path)
 			output, err := cmd.Generate(path, &stderr)
-			if err != nil {
-				t.Fatalf("%s", stderr.String())
+			if len(expected) == 0 && err != nil {
+				t.Fatalf("sqlc generate failed: %s", stderr.String())
 			}
 			cmpDirectory(t, path, output)
+			if diff := cmp.Diff(expected, stderr.String()); diff != "" {
+				t.Errorf("stderr differed (-want +got):\n%s", diff)
+			}
 		})
 	}
 }
@@ -75,18 +81,15 @@ func cmpDirectory(t *testing.T, dir string, actual map[string]string) {
 		t.Fatal(err)
 	}
 
-	if len(expected) == 0 {
-		t.Fatalf("expected output is empty: %s", expected)
-	}
-
-	if !cmp.Equal(expected, actual) {
+	if !cmp.Equal(expected, actual, cmpopts.EquateEmpty()) {
 		t.Errorf("%s contents differ", dir)
 		for name, contents := range expected {
 			name := name
 			tn := strings.Replace(name, dir+"/", "", -1)
 			t.Run(tn, func(t *testing.T) {
 				if actual[name] == "" {
-					t.Fatalf("%s is empty", name)
+					t.Errorf("%s is empty", name)
+					return
 				}
 				if diff := cmp.Diff(contents, actual[name]); diff != "" {
 					t.Errorf("%s differed (-want +got):\n%s", name, diff)
@@ -94,4 +97,41 @@ func cmpDirectory(t *testing.T, dir string, actual map[string]string) {
 			})
 		}
 	}
+}
+
+func expectedStderr(t *testing.T, dir string) string {
+	t.Helper()
+	files, err := ioutil.ReadDir(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	stderr := ""
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+		if !strings.HasSuffix(file.Name(), ".sql") {
+			continue
+		}
+		rd, err := os.Open(filepath.Join(dir, file.Name()))
+		if err != nil {
+			t.Fatalf("could not open %s: %w", file.Name(), err)
+		}
+		scanner := bufio.NewScanner(rd)
+		capture := false
+		for scanner.Scan() {
+			text := scanner.Text()
+			if text == "-- stderr" {
+				capture = true
+				continue
+			}
+			if capture == true && strings.HasPrefix(text, "--") {
+				stderr += strings.TrimPrefix(text, "-- ") + "\n"
+			}
+		}
+		if err := scanner.Err(); err != nil {
+			t.Fatal(err)
+		}
+	}
+	return stderr
 }
