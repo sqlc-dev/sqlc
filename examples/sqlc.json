@@ -34,16 +34,5 @@
       "path": "booktest/mysql",
       "schema": "booktest/mysql/schema.sql",
       "queries": "booktest/mysql/query.sql",
-      "engine": "mysql",
-      "overrides": [
-        {
-          "column": "books.book_uuid",
-          "go_type": "github.com/gofrs/uuid.UUID"
-        }
-      ]
-    }
-  ],
-  "rename": {
-    "book_uuid": "BookUUID"
-  }
+      "engine": "mysql"
 }

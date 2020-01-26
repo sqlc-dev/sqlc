@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"go/types"
 	"io"
+	"os"
 	"path/filepath"
 	"strings"
 
-	"github.com/fatih/color"
 	"github.com/kyleconroy/sqlc/internal/pg"
 )
 
@@ -78,18 +78,14 @@ type Override struct {
 	goBasicType bool
 }
 
-func (c *GenerateSettings) GatherEngines() map[Engine]struct{} {
+func (c *GenerateSettings) ValidateGlobalOverrides() error {
 	engines := map[Engine]struct{}{}
 	for _, pkg := range c.Packages {
 		if _, ok := engines[pkg.Engine]; !ok {
 			engines[pkg.Engine] = struct{}{}
 		}
 	}
-	return engines
-}
 
-func (c *GenerateSettings) ValidateGlobalOverrides() error {
-	engines := c.GatherEngines()
 	usesMultipleEngines := len(engines) > 1
 	for _, oride := range c.Overrides {
 		if usesMultipleEngines && oride.Engine == "" {
@@ -103,7 +99,7 @@ func (o *Override) Parse() error {
 
 	// validate deprecated postgres_type field
 	if o.Deprecated_PostgresType != "" {
-		color.Yellow(`WARNING: "postgres_type" is deprecated. Instead, use "db_type" to specify a type override.`)
+		fmt.Fprintf(os.Stderr, "WARNING: \"postgres_type\" is deprecated. Instead, use \"db_type\" to specify a type override.\n")
 		if o.DBType != "" {
 			return fmt.Errorf(`Type override configurations cannot have "db_type" and "postres_type" together. Use "db_type" alone`)
 		}
