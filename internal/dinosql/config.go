@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"go/types"
 	"io"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -98,7 +99,7 @@ func (o *Override) Parse() error {
 
 	// validate deprecated postgres_type field
 	if o.Deprecated_PostgresType != "" {
-		fmt.Println(`WARNING: "postgres_type" is deprecated. Instead, use "db_type" to specify a type override.`)
+		fmt.Fprintf(os.Stderr, "WARNING: \"postgres_type\" is deprecated. Instead, use \"db_type\" to specify a type override.\n")
 		if o.DBType != "" {
 			return fmt.Errorf(`Type override configurations cannot have "db_type" and "postres_type" together. Use "db_type" alone`)
 		}
