@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/kyleconroy/sqlc/internal/dinosql"
+	"github.com/kyleconroy/sqlc/internal/dinosql/kotlin"
 	"github.com/kyleconroy/sqlc/internal/mysql"
 )
 
@@ -106,7 +107,7 @@ func Generate(dir string, stderr io.Writer) (map[string]string, error) {
 				errored = true
 				continue
 			}
-			result = q
+			result = &kotlin.Result{Result: q}
 
 		}
 
@@ -115,12 +116,12 @@ func Generate(dir string, stderr io.Writer) (map[string]string, error) {
 		case dinosql.LanguageGo:
 			files, err = dinosql.Generate(result, combo)
 		case dinosql.LanguageKotlin:
-			ktRes, ok := result.(dinosql.KtGenerateable)
+			ktRes, ok := result.(kotlin.KtGenerateable)
 			if !ok {
 				err = fmt.Errorf("kotlin not supported for engine %s", pkg.Engine)
 				break
 			}
-			files, err = dinosql.KtGenerate(ktRes, combo)
+			files, err = kotlin.KtGenerate(ktRes, combo)
 		}
 		if err != nil {
 			fmt.Fprintf(stderr, "# package %s\n", name)
