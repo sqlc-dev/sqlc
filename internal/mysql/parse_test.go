@@ -1,8 +1,6 @@
 package mysql
 
 import (
-	"encoding/json"
-	"io/ioutil"
 	"reflect"
 	"testing"
 
@@ -14,47 +12,6 @@ import (
 func init() {
 	initMockSchema()
 }
-
-const mockFileName = "test_data/queries.sql"
-const mockConfigPath = "test_data/sqlc.json"
-
-var mockSettings = dinosql.GenerateSettings{
-	Version: "1",
-	Packages: []dinosql.PackageSettings{
-		dinosql.PackageSettings{
-			Name: "db",
-		},
-	},
-	Overrides: []dinosql.Override{},
-}
-
-func TestParseConfig(t *testing.T) {
-	blob, err := ioutil.ReadFile(mockConfigPath)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	var settings dinosql.GenerateSettings
-	if err := json.Unmarshal(blob, &settings); err != nil {
-		t.Fatal(err)
-	}
-}
-
-func TestGeneratePkg(t *testing.T) {
-	settings := dinosql.Combine(mockSettings, mockSettings.Packages[0])
-	_, err := GeneratePkg(mockSettings.Packages[0].Name, mockFileName, mockFileName, settings)
-	if err != nil {
-		if pErr, ok := err.(*dinosql.ParserErr); ok {
-			for _, fileErr := range pErr.Errs {
-				t.Errorf("%s:%d:%d: %s\n", fileErr.Filename, fileErr.Line, fileErr.Column, fileErr.Err)
-			}
-		} else {
-			t.Errorf("failed to generate pkg %s", err)
-		}
-	}
-}
-
-func keep(interface{}) {}
 
 var mockSchema *Schema
 
@@ -189,7 +146,6 @@ func TestParseSelect(t *testing.T) {
 				Name:             "GetCount",
 				Cmd:              ":one",
 				DefaultTableName: "users",
-				SchemaLookup:     mockSchema,
 			},
 		},
 		testCase{
@@ -211,7 +167,6 @@ func TestParseSelect(t *testing.T) {
 				Name:             "GetNameByID",
 				Cmd:              ":one",
 				DefaultTableName: "users",
-				SchemaLookup:     mockSchema,
 			},
 		},
 		testCase{
@@ -228,7 +183,6 @@ func TestParseSelect(t *testing.T) {
 				Name:             "GetAll",
 				Cmd:              ":many",
 				DefaultTableName: "users",
-				SchemaLookup:     mockSchema,
 			},
 		},
 		testCase{
@@ -290,16 +244,20 @@ func TestParseSelect(t *testing.T) {
 				Name:             "GetAllUsersOrders",
 				Cmd:              ":many",
 				DefaultTableName: "orders",
-				SchemaLookup:     mockSchema,
 			},
 		},
 	}
 
-	settings := dinosql.Combine(mockSettings, mockSettings.Packages[0])
+	settings := dinosql.Combine(dinosql.GenerateSettings{}, dinosql.PackageSettings{})
 	for _, tt := range tests {
 		testCase := tt
+		generator := PackageGenerator{
+			Schema:           testCase.input.schema,
+			CombinedSettings: settings,
+			packageName:      "db",
+		}
 		t.Run(tt.name, func(t *testing.T) {
-			qs, err := parseContents("example.sql", testCase.input.query, testCase.input.schema, settings)
+			qs, err := generator.parseContents("example.sql", testCase.input.query)
 			if err != nil {
 				t.Fatalf("Parsing failed with query: [%v]\n", err)
 			}
@@ -307,9 +265,7 @@ func TestParseSelect(t *testing.T) {
 				t.Fatalf("Expected one query, not %d", len(qs))
 			}
 			q := qs[0]
-			q.SchemaLookup = nil
 			q.Filename = ""
-			testCase.output.SchemaLookup = nil
 			if diff := cmp.Diff(testCase.output, q); diff != "" {
 				t.Errorf("parsed query differs: \n%s", diff)
 			}
@@ -350,7 +306,7 @@ func TestSchemaLookup(t *testing.T) {
 	}
 
 	expected := filterCols(mockSchema.tables["users"], map[string]string{"first_name": "users"})
-	if !reflect.DeepEqual(Column{firstNameColDfn, "users"}, expected[0]) {
+	if !reflect.DeepEqual(*firstNameColDfn, expected[0]) {
 		t.Errorf("Table schema lookup returned unexpected result")
 	}
 }
@@ -391,7 +347,6 @@ func TestParseInsertUpdate(t *testing.T) {
 				Name:             "InsertNewUser",
 				Cmd:              ":exec",
 				DefaultTableName: "users",
-				SchemaLookup:     mockSchema,
 			},
 		},
 		testCase{
@@ -407,7 +362,6 @@ func TestParseInsertUpdate(t *testing.T) {
 				Name:             "UpdateAllUsers",
 				Cmd:              ":exec",
 				DefaultTableName: "users",
-				SchemaLookup:     mockSchema,
 			},
 		},
 		testCase{
@@ -444,7 +398,6 @@ func TestParseInsertUpdate(t *testing.T) {
 				Name:             "UpdateUserAt",
 				Cmd:              ":exec",
 				DefaultTableName: "users",
-				SchemaLookup:     mockSchema,
 			},
 		},
 		testCase{
@@ -466,16 +419,20 @@ func TestParseInsertUpdate(t *testing.T) {
 				Name:             "InsertUsersFromOrders",
 				Cmd:              ":exec",
 				DefaultTableName: "users",
-				SchemaLookup:     mockSchema,
 			},
 		},
 	}
 
-	settings := dinosql.Combine(mockSettings, mockSettings.Packages[0])
+	settings := dinosql.Combine(dinosql.GenerateSettings{}, dinosql.PackageSettings{})
 	for _, tt := range tests {
 		testCase := tt
 		t.Run(tt.name, func(t *testing.T) {
-			qs, err := parseContents("example.sql", testCase.input.query, testCase.input.schema, settings)
+			generator := PackageGenerator{
+				Schema:           testCase.input.schema,
+				CombinedSettings: settings,
+				packageName:      "db",
+			}
+			qs, err := generator.parseContents("example.sql", testCase.input.query)
 			if err != nil {
 				t.Fatalf("Parsing failed with query: [%v]\n", err)
 			}
@@ -483,8 +440,6 @@ func TestParseInsertUpdate(t *testing.T) {
 				t.Fatalf("Expected one query, not %d", len(qs))
 			}
 			q := qs[0]
-			testCase.output.SchemaLookup = nil
-			q.SchemaLookup = nil
 			q.Filename = ""
 			if diff := cmp.Diff(testCase.output, q); diff != "" {
 				t.Errorf("parsed query differs: \n%s", diff)
