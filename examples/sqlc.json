@@ -35,4 +35,6 @@
       "schema": "booktest/mysql/schema.sql",
       "queries": "booktest/mysql/query.sql",
       "engine": "mysql"
+    }
+  ]
 }
