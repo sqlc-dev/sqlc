@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "packages": [{
+    "path": "go",
+    "name": "datatype",
+    "schema": "sql/",
+    "queries": "sql/"
+  }]
+}
