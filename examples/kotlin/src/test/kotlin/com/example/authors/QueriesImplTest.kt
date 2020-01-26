@@ -1,41 +1,15 @@
 package com.example.authors
 
-import org.junit.jupiter.api.AfterEach
+import com.example.dbtest.DbTestExtension
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.nio.file.Files
-import java.nio.file.Paths
+import org.junit.jupiter.api.extension.RegisterExtension
 import java.sql.Connection
-import java.sql.DriverManager
 
-const val schema = "dinosql_test"
+class QueriesImplTest(private val conn: Connection) {
 
-class QueriesImplTest {
-    lateinit var schemaConn: Connection
-    lateinit var conn: Connection
-
-    @BeforeEach
-    fun setup() {
-        val user = System.getenv("PG_USER") ?: "postgres"
-        val pass = System.getenv("PG_PASSWORD") ?: "mysecretpassword"
-        val host = System.getenv("PG_HOST") ?: "127.0.0.1"
-        val port = System.getenv("PG_PORT") ?: "5432"
-        val db = System.getenv("PG_DATABASE") ?: "dinotest"
-        val url = "jdbc:postgresql://$host:$port/$db?user=$user&password=$pass&sslmode=disable"
-        println("db: $url")
-
-        schemaConn = DriverManager.getConnection(url)
-        schemaConn.createStatement().execute("CREATE SCHEMA $schema")
-
-        conn = DriverManager.getConnection("$url&currentSchema=$schema")
-        val stmt = Files.readString(Paths.get("src/main/resources/schema.sql"))
-        conn.createStatement().execute(stmt)
-    }
-
-    @AfterEach
-    fun teardown() {
-        schemaConn.createStatement().execute("DROP SCHEMA $schema CASCADE")
+    companion object {
+        @JvmField @RegisterExtension val db = DbTestExtension("src/main/resources/schema.sql")
     }
 
     @Test
