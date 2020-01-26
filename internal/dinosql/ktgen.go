@@ -31,7 +31,7 @@ type KtEnum struct {
 
 type KtField struct {
 	Name    string
-	Type    string
+	Type    ktType
 	Comment string
 }
 
@@ -46,7 +46,7 @@ type KtQueryValue struct {
 	Emit   bool
 	Name   string
 	Struct *KtStruct
-	Typ    string
+	Typ    ktType
 }
 
 func (v KtQueryValue) EmitStruct() bool {
@@ -58,7 +58,7 @@ func (v KtQueryValue) IsStruct() bool {
 }
 
 func (v KtQueryValue) isEmpty() bool {
-	return v.Typ == "" && v.Name == "" && v.Struct == nil
+	return v.Typ == (ktType{}) && v.Name == "" && v.Struct == nil
 }
 
 func (v KtQueryValue) Pair() string {
@@ -69,8 +69,8 @@ func (v KtQueryValue) Pair() string {
 }
 
 func (v KtQueryValue) Type() string {
-	if v.Typ != "" {
-		return v.Typ
+	if v.Typ != (ktType{}) {
+		return v.Typ.String()
 	}
 	if v.Struct != nil {
 		return v.Struct.Name
@@ -78,64 +78,35 @@ func (v KtQueryValue) Type() string {
 	panic("no type for KtQueryValue: " + v.Name)
 }
 
-func (v KtQueryValue) Params() []KtQueryParam {
+func (v KtQueryValue) Params() string {
 	if v.isEmpty() {
-		return nil
+		return ""
 	}
-	var out []KtQueryParam
-	if v.Struct == nil {
-		if strings.HasPrefix(v.Typ, "[]") && v.Typ != "[]byte" {
-			// TODO: this won't compile
-			out = append(out, KtQueryParam{
-				Name: "pq.Array(" + v.Name + ")",
-				Typ:  v.Typ,
-			})
-		} else {
-			out = append(out, KtQueryParam{
-				Name: v.Name,
-				Typ:  v.Typ,
-			})
-		}
-	} else {
-		for _, f := range v.Struct.Fields {
-			if strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" {
-				out = append(out, KtQueryParam{
-					Name: "pq.Array(" + v.Name + "." + f.Name + ")",
-					Typ:  f.Type,
-				})
-			} else {
-				out = append(out, KtQueryParam{
-					Name: v.Name + "." + f.Name,
-					Typ:  f.Type,
-				})
-			}
-		}
-	}
-	return out
-}
-
-func (v KtQueryValue) Scan() string {
 	var out []string
 	if v.Struct == nil {
-		if strings.HasPrefix(v.Typ, "[]") && v.Typ != "[]byte" {
-			out = append(out, "pq.Array(&"+v.Name+")")
-		} else {
-			out = append(out, "&"+v.Name)
-		}
+		out = append(out, fmt.Sprintf("stmt.%s(%d, %s)", v.Typ.jdbcSetter(), 1, v.Typ.jdbcValue(v.Name)))
 	} else {
-		for _, f := range v.Struct.Fields {
-			if strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" {
-				out = append(out, "pq.Array(&"+v.Name+"."+f.Name+")")
-			} else {
-				out = append(out, "&"+v.Name+"."+f.Name)
-			}
+		for i, f := range v.Struct.Fields {
+			out = append(out, fmt.Sprintf("stmt.%s(%d, %s)", f.Type.jdbcSetter(), i+1, f.Type.jdbcValue(v.Name+"."+f.Name)))
 		}
 	}
-	if len(out) <= 3 {
-		return strings.Join(out, ",")
+	return strings.Join(out, "\n    ")
+}
+
+func (v KtQueryValue) ResultSet() string {
+	var out []string
+	if v.Struct == nil {
+		out = append(out, v.Typ.fromJDBCValue(fmt.Sprintf("%s.%s(%d)", v.Name, v.Typ.jdbcGetter(), 1)))
+	} else {
+		for i, f := range v.Struct.Fields {
+			out = append(out, f.Type.fromJDBCValue(fmt.Sprintf("%s.%s(%d)", v.Name, f.Type.jdbcGetter(), i+1)))
+		}
 	}
-	out = append(out, "")
-	return "\n" + strings.Join(out, ",\n")
+	ret := strings.Join(out, ",\n      ")
+	if v.Struct != nil {
+		ret = v.Struct.Name + "(" + "\n      " + ret + "\n    )"
+	}
+	return ret
 }
 
 type KtQueryParam struct {
@@ -174,8 +145,7 @@ type KtGenerateable interface {
 func KtUsesType(r KtGenerateable, typ string, settings CombinedSettings) bool {
 	for _, strct := range r.KtDataClasses(settings) {
 		for _, f := range strct.Fields {
-			fType := strings.TrimPrefix(f.Type, "[]")
-			if strings.HasPrefix(fType, typ) {
+			if f.Type.Name == typ {
 				return true
 			}
 		}
@@ -219,17 +189,17 @@ func InterfaceKtImports(r KtGenerateable, settings CombinedSettings) [][]string 
 		"java.sql.Connection":   {},
 		"java.sql.SQLException": {},
 	}
-	if uses("sql.Null") {
-		std["database/sql"] = struct{}{}
+	if uses("LocalDate") {
+		std["java.time.LocalDate"] = struct{}{}
 	}
-	if uses("json.RawMessage") {
-		std["encoding/json"] = struct{}{}
+	if uses("LocalTime") {
+		std["java.time.LocalTime"] = struct{}{}
 	}
-	if uses("time.Time") {
-		std["time"] = struct{}{}
+	if uses("LocalDateTime") {
+		std["java.time.LocalDateTime"] = struct{}{}
 	}
-	if uses("net.IP") {
-		std["net"] = struct{}{}
+	if uses("OffsetDateTime") {
+		std["java.time.OffsetDateTime"] = struct{}{}
 	}
 
 	stds := make([]string, 0, len(std))
@@ -243,17 +213,17 @@ func InterfaceKtImports(r KtGenerateable, settings CombinedSettings) [][]string 
 
 func ModelKtImports(r KtGenerateable, settings CombinedSettings) [][]string {
 	std := make(map[string]struct{})
-	if KtUsesType(r, "sql.Null", settings) {
-		std["database/sql"] = struct{}{}
+	if KtUsesType(r, "LocalDate", settings) {
+		std["java.time.LocalDate"] = struct{}{}
 	}
-	if KtUsesType(r, "json.RawMessage", settings) {
-		std["encoding/json"] = struct{}{}
+	if KtUsesType(r, "LocalTime", settings) {
+		std["java.time.LocalTime"] = struct{}{}
 	}
-	if KtUsesType(r, "time.Time", settings) {
-		std["time"] = struct{}{}
+	if KtUsesType(r, "LocalDateTime", settings) {
+		std["java.time.LocalDateTime"] = struct{}{}
 	}
-	if KtUsesType(r, "net.IP", settings) {
-		std["net"] = struct{}{}
+	if KtUsesType(r, "OffsetDateTime", settings) {
+		std["java.time.OffsetDateTime"] = struct{}{}
 	}
 
 	stds := make([]string, 0, len(std))
@@ -275,69 +245,33 @@ func QueryKtImports(r KtGenerateable, settings CombinedSettings, filename string
 	// }
 	var gq []KtQuery
 	for _, query := range r.KtQueries(settings) {
-		if query.SourceName == filename {
-			gq = append(gq, query)
-		}
+		gq = append(gq, query)
 	}
 
 	uses := func(name string) bool {
 		for _, q := range gq {
 			if !q.Ret.isEmpty() {
-				if q.Ret.EmitStruct() {
+				if q.Ret.Struct != nil {
 					for _, f := range q.Ret.Struct.Fields {
-						fType := strings.TrimPrefix(f.Type, "[]")
-						if strings.HasPrefix(fType, name) {
+						if f.Type.Name == name {
 							return true
 						}
 					}
 				}
-				if strings.HasPrefix(q.Ret.Type(), name) {
+				if q.Ret.Type() == name {
 					return true
 				}
 			}
 			if !q.Arg.isEmpty() {
 				if q.Arg.EmitStruct() {
 					for _, f := range q.Arg.Struct.Fields {
-						fType := strings.TrimPrefix(f.Type, "[]")
-						if strings.HasPrefix(fType, name) {
+						if f.Type.Name == name {
 							return true
 						}
 					}
 				}
-				if strings.HasPrefix(q.Arg.Type(), name) {
+				if q.Arg.Type() == name {
 					return true
-				}
-			}
-		}
-		return false
-	}
-
-	sliceScan := func() bool {
-		for _, q := range gq {
-			if !q.Ret.isEmpty() {
-				if q.Ret.IsStruct() {
-					for _, f := range q.Ret.Struct.Fields {
-						if strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" {
-							return true
-						}
-					}
-				} else {
-					if strings.HasPrefix(q.Ret.Type(), "[]") && q.Ret.Type() != "[]byte" {
-						return true
-					}
-				}
-			}
-			if !q.Arg.isEmpty() {
-				if q.Arg.IsStruct() {
-					for _, f := range q.Arg.Struct.Fields {
-						if strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" {
-							return true
-						}
-					}
-				} else {
-					if strings.HasPrefix(q.Arg.Type(), "[]") && q.Arg.Type() != "[]byte" {
-						return true
-					}
 				}
 			}
 		}
@@ -348,24 +282,20 @@ func QueryKtImports(r KtGenerateable, settings CombinedSettings, filename string
 		"java.sql.Connection":   {},
 		"java.sql.SQLException": {},
 	}
-	if uses("sql.Null") {
-		std["database/sql"] = struct{}{}
+	if uses("LocalDate") {
+		std["java.time.LocalDate"] = struct{}{}
 	}
-	if uses("json.RawMessage") {
-		std["encoding/json"] = struct{}{}
+	if uses("LocalTime") {
+		std["java.time.LocalTime"] = struct{}{}
 	}
-	if uses("time.Time") {
-		std["time"] = struct{}{}
+	if uses("LocalDateTime") {
+		std["java.time.LocalDateTime"] = struct{}{}
 	}
-	if uses("net.IP") {
-		std["net"] = struct{}{}
+	if uses("OffsetDateTime") {
+		std["java.time.OffsetDateTime"] = struct{}{}
 	}
 
 	pkg := make(map[string]struct{})
-
-	if sliceScan() {
-		pkg["github.com/lib/pq"] = struct{}{}
-	}
 
 	pkgs := make([]string, 0, len(pkg))
 	for p, _ := range pkg {
@@ -472,124 +402,165 @@ func (r Result) KtDataClasses(settings CombinedSettings) []KtStruct {
 	return structs
 }
 
-func (r Result) ktType(col core.Column, settings CombinedSettings) string {
-	typ := r.ktInnerType(col, settings)
-	if col.IsArray {
-		return fmt.Sprintf("Array<%s>", typ)
-	}
-	return typ
+type ktType struct {
+	Name     string
+	IsEnum   bool
+	IsArray  bool
+	IsNull   bool
+	DataType string
 }
 
-func (r Result) ktInnerType(col core.Column, settings CombinedSettings) string {
+func (t ktType) String() string {
+	v := t.Name
+	if t.IsArray {
+		v = fmt.Sprintf("Array<%s>", v)
+	} else if t.IsNull {
+		v += "?"
+	}
+	return v
+}
+
+func (t ktType) jdbcSetter() string {
+	return "set" + t.jdbcType()
+}
+
+func (t ktType) jdbcGetter() string {
+	return "get" + t.jdbcType()
+}
+
+func (t ktType) jdbcType() string {
+	if t.IsArray {
+		return "Array"
+	}
+	if t.IsEnum {
+		return "String"
+	}
+	if t.IsTime() {
+		return "Object"
+	}
+	return t.Name
+}
+
+func (t ktType) IsTime() bool {
+	return t.Name == "LocalDate" || t.Name == "LocalDateTime" || t.Name == "LocalTime" || t.Name == "OffsetDateTime"
+}
+
+func (t ktType) jdbcValue(name string) string {
+	if t.IsEnum && t.IsArray {
+		return fmt.Sprintf(`conn.createArrayOf("%s", %s.map { v -> v.value }.toTypedArray())`, t.DataType, name)
+	}
+	if t.IsEnum {
+		return name + ".value"
+	}
+	if t.IsArray {
+		return fmt.Sprintf(`conn.createArrayOf("%s", %s)`, t.DataType, name)
+	}
+	return name
+}
+
+func (t ktType) fromJDBCValue(expr string) string {
+	if t.IsEnum && t.IsArray {
+		return fmt.Sprintf(`(%s.array as Array<String>).map { v -> %s.valueOf(v) }.toTypedArray()`, expr, t.Name)
+	}
+	if t.IsEnum {
+		return fmt.Sprintf("%s.valueOf(%s)", t.Name, expr)
+	}
+	if t.IsArray {
+		return fmt.Sprintf(`%s.array as Array<%s>`, expr, t.Name)
+	}
+	if t.IsTime() {
+		expr = strings.TrimSuffix(expr, ")")
+		return fmt.Sprintf(`%s, %s::class.java)`, expr, t.Name)
+	}
+	return expr
+}
+
+func (r Result) ktType(col core.Column, settings CombinedSettings) ktType {
+	typ, isEnum := r.ktInnerType(col, settings)
+	return ktType{
+		Name:     typ,
+		IsEnum:   isEnum,
+		IsArray:  col.IsArray,
+		IsNull:   !col.NotNull,
+		DataType: col.DataType,
+	}
+}
+
+func (r Result) ktInnerType(col core.Column, settings CombinedSettings) (string, bool) {
 	columnType := col.DataType
-	notNull := col.NotNull || col.IsArray
 
 	switch columnType {
 	case "serial", "pg_catalog.serial4":
-		if notNull {
-			return "Int"
-		}
-		return "Int?"
+		return "Int", false
 
 	case "bigserial", "pg_catalog.serial8":
-		if notNull {
-			return "Long"
-		}
-		return "Long?"
+		return "Long", false
 
 	case "smallserial", "pg_catalog.serial2":
-		return "Short"
+		return "Short", false
 
 	case "integer", "int", "int4", "pg_catalog.int4":
-		if notNull {
-			return "Int"
-		}
-		return "Int?"
+		return "Int", false
 
 	case "bigint", "pg_catalog.int8":
-		if notNull {
-			return "Long"
-		}
-		return "Long?"
+		return "Long", false
 
 	case "smallint", "pg_catalog.int2":
-		return "Short"
+		return "Short", false
 
 	case "float", "double precision", "pg_catalog.float8":
-		if notNull {
-			return "Double"
-		}
-		return "Double?"
+		return "Double", false
 
 	case "real", "pg_catalog.float4":
-		if notNull {
-			return "Float"
-		}
-		return "Float?"
+		return "Float", false
 
 	case "pg_catalog.numeric":
-		if notNull {
-			return "java.math.BigDecimal"
-		}
-		return "java.math.BigDecimal?"
+		return "java.math.BigDecimal", false
 
 	case "bool", "pg_catalog.bool":
-		if notNull {
-			return "Boolean"
-		}
-		return "Boolean?"
+		return "Boolean", false
 
 	case "jsonb":
 		// TODO: support json and byte types
-		return "String"
+		return "String", false
 
 	case "bytea", "blob", "pg_catalog.bytea":
-		return "String"
+		return "String", false
 
 	case "date":
-		// TODO
-		if notNull {
-			return "time.Time"
-		}
-		return "sql.NullTime"
+		// Date and time mappings from https://jdbc.postgresql.org/documentation/head/java8-date-time.html
+		return "LocalDate", false
 
 	case "pg_catalog.time", "pg_catalog.timetz":
-		// TODO
-		if notNull {
-			return "time.Time"
-		}
-		return "sql.NullTime"
+		return "LocalTime", false
 
-	case "pg_catalog.timestamp", "pg_catalog.timestamptz", "timestamptz":
+	case "pg_catalog.timestamp":
+		return "LocalDateTime", false
+
+	case "pg_catalog.timestamptz", "timestamptz":
 		// TODO
-		if notNull {
-			return "time.Time"
-		}
-		return "sql.NullTime"
+		return "OffsetDateTime", false
 
 	case "text", "pg_catalog.varchar", "pg_catalog.bpchar", "string":
-		if notNull {
-			return "String"
-		}
-		return "String?"
+		return "String", false
 
 	case "uuid":
 		// TODO
-		return "uuid.UUID"
+		return "uuid.UUID", false
 
 	case "inet":
 		// TODO
-		return "net.IP"
+		return "net.IP", false
 
 	case "void":
 		// TODO
 		// A void value always returns NULL. Since there is no built-in NULL
 		// value into the SQL package, we'll use sql.NullBool
-		return "sql.NullBool"
+		return "sql.NullBool", false
 
 	case "any":
 		// TODO
-		return "Any"
+		return "Any", false
 
 	default:
 		for name, schema := range r.Catalog.Schemas {
@@ -599,25 +570,18 @@ func (r Result) ktInnerType(col core.Column, settings CombinedSettings) string {
 			for _, enum := range schema.Enums {
 				if columnType == enum.Name {
 					if name == "public" {
-						return KtDataClassName(enum.Name, settings)
+						return KtDataClassName(enum.Name, settings), true
 					}
 
-					return KtDataClassName(name+"_"+enum.Name, settings)
+					return KtDataClassName(name+"_"+enum.Name, settings), true
 				}
 			}
 		}
 		log.Printf("unknown PostgreSQL type: %s\n", columnType)
-		return "interface{}"
+		return "interface{}", false
 	}
 }
 
-// It's possible that this method will generate duplicate JSON tag values
-//
-//   Columns: count, count,   count_2
-//    Fields: Count, Count_2, Count2
-// JSON tags: count, count_2, count_2
-//
-// This is unlikely to happen, so don't fix it yet
 func (r Result) ktColumnsToStruct(name string, columns []core.Column, settings CombinedSettings) *KtStruct {
 	gs := KtStruct{
 		Name: name,
@@ -642,8 +606,6 @@ func ktArgName(name string) string {
 	for i, p := range strings.Split(name, "_") {
 		if i == 0 {
 			out += strings.ToLower(p)
-		} else if p == "id" {
-			out += "ID"
 		} else {
 			out += strings.Title(p)
 		}
@@ -718,7 +680,7 @@ func (r Result) KtQueries(settings CombinedSettings) []KtQuery {
 		if len(query.Columns) == 1 {
 			c := query.Columns[0]
 			gq.Ret = KtQueryValue{
-				Name: ktColumnName(c, 0),
+				Name: "results",
 				Typ:  r.ktType(c, settings),
 			}
 		} else if len(query.Columns) > 1 {
@@ -752,7 +714,7 @@ func (r Result) KtQueries(settings CombinedSettings) []KtQuery {
 			}
 			gq.Ret = KtQueryValue{
 				Emit:   emit,
-				Name:   "i",
+				Name:   "results",
 				Struct: gs,
 			}
 		}
@@ -772,21 +734,22 @@ package {{.Package}}
 {{end}}
 {{end}}
 
-interface Querier {
-	{{- range .KtQueries}}
-	{{- if eq .Cmd ":one"}}
-	{{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.Type}}, error)
-	{{- end}}
-	{{- if eq .Cmd ":many"}}
-	{{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.Type}}, error)
-	{{- end}}
-	{{- if eq .Cmd ":exec"}}
-	{{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) error
-	{{- end}}
-	{{- if eq .Cmd ":execrows"}}
-	{{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, error)
-	{{- end}}
-	{{- end}}
+interface Queries {
+  {{- range .KtQueries}}
+  @Throws(SQLException::class)
+  {{- if eq .Cmd ":one"}}
+  fun {{.MethodName}}({{.Arg.Pair}}): {{.Ret.Type}}
+  {{- end}}
+  {{- if eq .Cmd ":many"}}
+  fun {{.MethodName}}({{.Arg.Pair}}): List<{{.Ret.Type}}>
+  {{- end}}
+  {{- if eq .Cmd ":exec"}}
+  fun {{.MethodName}}({{.Arg.Pair}})
+  {{- end}}
+  {{- if eq .Cmd ":execrows"}}
+  fun {{.MethodName}}({{.Arg.Pair}}): Int
+  {{- end}}
+  {{end}}
 }
 `
 
@@ -853,34 +816,27 @@ data class {{.Ret.Type}} ( {{- range $i, $e := .Ret.Struct.Fields}}
 {{end}}
 {{end}}
 
-class Queries(private val conn: Connection) {
+class QueriesImpl(private val conn: Connection){{ if .EmitInterface }} : Queries{{end}} {
 {{range .KtQueries}}
 {{if eq .Cmd ":one"}}
 {{range .Comments}}//{{.}}
 {{end}}
   @Throws(SQLException::class)
+  {{ if $.EmitInterface }}override {{ end -}}
   fun {{.MethodName}}({{.Arg.Pair}}): {{.Ret.Type}} {
-    val stmt = conn.prepareStatement({{.ConstantName}}) {{- range $i, $e := .Arg.Params }}
-    stmt.{{.Setter}}({{offset $i}}, {{.Name}})
-    {{- end}}
+    val stmt = conn.prepareStatement({{.ConstantName}})
+    {{.Arg.Params}}
 
-    val results = stmt.executeQuery()
-    if (!results.next()) {
-      throw SQLException("no rows in result set")
+    return stmt.executeQuery().use { results ->
+      if (!results.next()) {
+        throw SQLException("no rows in result set")
+      }
+      val ret = {{.Ret.ResultSet}}
+      if (results.next()) {
+          throw SQLException("expected one row in result set, but got many")
+      }
+      ret
     }
-    {{ if .Ret.IsStruct }}
-    val ret = {{.Ret.Type}}( {{- range $i, $e := .Ret.Params }}
-      {{- if $i }},{{end}}
-      results.{{.Getter}}({{offset $i}})
-    {{- end -}}
-    )
-    {{ else }}
-    val ret = results.{{(index .Ret.Params 0).Getter}}(1)
-    {{ end }}
-    if (results.next()) {
-        throw SQLException("expected one row in result set, but got many")
-    }
-    return ret
   }
 {{end}}
 
@@ -888,25 +844,18 @@ class Queries(private val conn: Connection) {
 {{range .Comments}}//{{.}}
 {{end}}
   @Throws(SQLException::class)
+  {{ if $.EmitInterface }}override {{ end -}}
   fun {{.MethodName}}({{.Arg.Pair}}): List<{{.Ret.Type}}> {
-    val stmt = conn.prepareStatement({{.ConstantName}}) {{- range $i, $e := .Arg.Params }}
-    stmt.{{.Setter}}({{offset $i}}, {{.Name}})
-    {{- end}}
+    val stmt = conn.prepareStatement({{.ConstantName}})
+    {{.Arg.Params}}
 
-    val results = stmt.executeQuery()
-    val ret = mutableListOf<{{.Ret.Type}}>()
-    while (results.next()) {
-    {{ if .Ret.IsStruct }}
-        ret.add({{.Ret.Type}}( {{- range $i, $e := .Ret.Params }}
-          {{- if $i }},{{end}}
-          results.{{.Getter}}({{offset $i}})
-          {{- end -}}
-        ))
-    {{ else }}
-        ret.add(results.{{(index .Ret.Params 0).Getter}}(1)
-    {{ end }}
+    return stmt.executeQuery().use { results ->
+      val ret = mutableListOf<{{.Ret.Type}}>()
+      while (results.next()) {
+          ret.add({{.Ret.ResultSet}})
+      }
+      ret
     }
-    return ret
   }
 {{end}}
 
@@ -914,29 +863,30 @@ class Queries(private val conn: Connection) {
 {{range .Comments}}//{{.}}
 {{end}}
   @Throws(SQLException::class)
+  {{ if $.EmitInterface }}override {{ end -}}
   fun {{.MethodName}}({{.Arg.Pair}}) {
-    val stmt = conn.prepareStatement({{.ConstantName}}) {{- range $i, $e := .Arg.Params }}
-    stmt.{{.Setter}}({{offset $i}}, {{.Name}})
-    {{- end}}
+    val stmt = conn.prepareStatement({{.ConstantName}})
+    {{ .Arg.Params }}
 
     stmt.execute()
+    stmt.close()
   }
 {{end}}
 
 {{if eq .Cmd ":execrows"}}
 {{range .Comments}}//{{.}}
 {{end}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, error) {
-  	{{- if $.EmitPreparedQueries}}
-	result, err := q.exec(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
-  	{{- else}}
-	result, err := q.db.ExecContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
-  	{{- end}}
-	if err != nil {
-		return 0, err
-	}
-	return result.RowsAffected()
-}
+  @Throws(SQLException::class)
+  {{ if $.EmitInterface }}override {{ end -}}
+  fun {{.MethodName}}({{.Arg.Pair}}): Int {
+    val stmt = conn.prepareStatement({{.ConstantName}})
+    {{ .Arg.Params }}
+
+    stmt.execute()
+    val count = stmt.updateCount
+    stmt.close()
+    return count
+  }
 {{end}}
 {{end}}
 }
@@ -1024,11 +974,11 @@ func KtGenerate(r KtGenerateable, settings CombinedSettings) (map[string]string,
 		return nil, err
 	}
 	if pkg.EmitInterface {
-		if err := execute("Querier.kt", ifaceFile); err != nil {
+		if err := execute("Queries.kt", ifaceFile); err != nil {
 			return nil, err
 		}
 	}
-	if err := execute("Queries.kt", sqlFile); err != nil {
+	if err := execute("QueriesImpl.kt", sqlFile); err != nil {
 		return nil, err
 	}
 
