@@ -3,10 +3,7 @@
 package booktest
 
 import (
-	"database/sql"
 	"time"
-
-	"github.com/gofrs/uuid"
 )
 
 type BookTypeType string
@@ -27,17 +24,12 @@ type Author struct {
 }
 
 type Book struct {
-	BookID        int
-	BookUUID      uuid.UUID
-	AuthorID      int
-	Isbn          string
-	BookType      BookTypeType
-	Title         string
-	Yr            int
-	Available     time.Time
-	Tags          string
-	IsHardcover   bool
-	Rating        sql.NullFloat64
-	FrontCoverImg sql.NullString
-	BackCoverImg  sql.NullString
+	BookID    int
+	AuthorID  int
+	Isbn      string
+	BookType  BookTypeType
+	Title     string
+	Yr        int
+	Available time.Time
+	Tags      string
 }
