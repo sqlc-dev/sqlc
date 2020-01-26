@@ -4,7 +4,6 @@ go 1.13
 
 require (
 	github.com/davecgh/go-spew v1.1.1
-	github.com/fatih/color v1.9.0 // indirect
 	github.com/google/go-cmp v0.3.0
 	github.com/jinzhu/inflection v1.0.0
 	github.com/lfittl/pg_query_go v1.0.0

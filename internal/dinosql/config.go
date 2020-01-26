@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/fatih/color"
 	"github.com/kyleconroy/sqlc/internal/pg"
 )
 
@@ -103,7 +102,7 @@ func (o *Override) Parse() error {
 
 	// validate deprecated postgres_type field
 	if o.Deprecated_PostgresType != "" {
-		color.Yellow(`WARNING: "postgres_type" is deprecated. Instead, use "db_type" to specify a type override.`)
+		fmt.Println(`WARNING: "postgres_type" is deprecated. Instead, use "db_type" to specify a type override.`)
 		if o.DBType != "" {
 			return fmt.Errorf(`Type override configurations cannot have "db_type" and "postres_type" together. Use "db_type" alone`)
 		}
