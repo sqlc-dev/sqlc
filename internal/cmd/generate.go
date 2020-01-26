@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 	"path/filepath"
+	"strings"
 
 	"github.com/kyleconroy/sqlc/internal/dinosql"
 	"github.com/kyleconroy/sqlc/internal/mysql"
@@ -25,6 +26,11 @@ The only supported version is "1".
 `
 
 const errMessageNoPackages = `No packages are configured`
+
+func printFileErr(stderr io.Writer, dir string, fileErr dinosql.FileErr) {
+	filename := strings.TrimPrefix(fileErr.Filename, dir+"/")
+	fmt.Fprintf(stderr, "%s:%d:%d: %s\n", filename, fileErr.Line, fileErr.Column, fileErr.Err)
+}
 
 func Generate(dir string, stderr io.Writer) (map[string]string, error) {
 	blob, err := ioutil.ReadFile(filepath.Join(dir, "sqlc.json"))
@@ -68,7 +74,7 @@ func Generate(dir string, stderr io.Writer) (map[string]string, error) {
 				fmt.Fprintf(stderr, "# package %s\n", name)
 				if parserErr, ok := err.(*dinosql.ParserErr); ok {
 					for _, fileErr := range parserErr.Errs {
-						fmt.Fprintf(stderr, "%s:%d:%d: %s\n", fileErr.Filename, fileErr.Line, fileErr.Column, fileErr.Err)
+						printFileErr(stderr, dir, fileErr)
 					}
 				} else {
 					fmt.Fprintf(stderr, "error parsing schema: %s\n", err)
@@ -84,7 +90,7 @@ func Generate(dir string, stderr io.Writer) (map[string]string, error) {
 				fmt.Fprintf(stderr, "# package %s\n", name)
 				if parserErr, ok := err.(*dinosql.ParserErr); ok {
 					for _, fileErr := range parserErr.Errs {
-						fmt.Fprintf(stderr, "%s:%d:%d: %s\n", fileErr.Filename, fileErr.Line, fileErr.Column, fileErr.Err)
+						printFileErr(stderr, dir, fileErr)
 					}
 				} else {
 					fmt.Fprintf(stderr, "error parsing schema: %s\n", err)
@@ -98,7 +104,7 @@ func Generate(dir string, stderr io.Writer) (map[string]string, error) {
 				fmt.Fprintf(stderr, "# package %s\n", name)
 				if parserErr, ok := err.(*dinosql.ParserErr); ok {
 					for _, fileErr := range parserErr.Errs {
-						fmt.Fprintf(stderr, "%s:%d:%d: %s\n", fileErr.Filename, fileErr.Line, fileErr.Column, fileErr.Err)
+						printFileErr(stderr, dir, fileErr)
 					}
 				} else {
 					fmt.Fprintf(stderr, "error parsing queries: %s\n", err)
