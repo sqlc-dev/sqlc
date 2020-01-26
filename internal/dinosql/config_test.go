@@ -71,8 +71,8 @@ func TestTypeOverrides(t *testing.T) {
 	}{
 		{
 			Override{
-				PostgresType: "uuid",
-				GoType:       "github.com/segmentio/ksuid.KSUID",
+				DBType: "uuid",
+				GoType: "github.com/segmentio/ksuid.KSUID",
 			},
 			"github.com/segmentio/ksuid",
 			"ksuid.KSUID",
@@ -82,7 +82,7 @@ func TestTypeOverrides(t *testing.T) {
 		//
 		// {
 		// 	Override{
-		// 		PostgresType: "uuid",
+		// 		DBType: "uuid",
 		// 		GoType:       "github.com/segmentio/*ksuid.KSUID",
 		// 	},
 		// 	"github.com/segmentio/ksuid",
@@ -91,8 +91,8 @@ func TestTypeOverrides(t *testing.T) {
 		// },
 		{
 			Override{
-				PostgresType: "citext",
-				GoType:       "string",
+				DBType: "citext",
+				GoType: "string",
 			},
 			"",
 			"string",
@@ -104,7 +104,7 @@ func TestTypeOverrides(t *testing.T) {
 			if err := tt.override.Parse(); err != nil {
 				t.Fatalf("override parsing failed; %s", err)
 			}
-			if diff := cmp.Diff(tt.typeName, tt.override.goTypeName); diff != "" {
+			if diff := cmp.Diff(tt.typeName, tt.override.GoTypeName); diff != "" {
 				t.Errorf("type name mismatch;\n%s", diff)
 			}
 			if diff := cmp.Diff(tt.pkg, tt.override.goPackage); diff != "" {
@@ -121,15 +121,15 @@ func TestTypeOverrides(t *testing.T) {
 	}{
 		{
 			Override{
-				PostgresType: "uuid",
-				GoType:       "Pointer",
+				DBType: "uuid",
+				GoType: "Pointer",
 			},
 			"Package override `go_type` specifier \"Pointer\" is not a Go basic type e.g. 'string'",
 		},
 		{
 			Override{
-				PostgresType: "uuid",
-				GoType:       "untyped rune",
+				DBType: "uuid",
+				GoType: "untyped rune",
 			},
 			"Package override `go_type` specifier \"untyped rune\" is not a Go basic type e.g. 'string'",
 		},
