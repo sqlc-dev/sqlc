@@ -83,7 +83,6 @@ func cmpDirectory(t *testing.T, dir string, actual map[string]string) {
 
 	if !cmp.Equal(expected, actual, cmpopts.EquateEmpty()) {
 		t.Errorf("%s contents differ", dir)
-		t.Errorf("%s %s", expected, actual)
 		for name, contents := range expected {
 			name := name
 			tn := strings.Replace(name, dir+"/", "", -1)
