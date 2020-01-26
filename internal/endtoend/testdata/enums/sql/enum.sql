@@ -1,11 +1,11 @@
 CREATE TYPE foobar AS ENUM (
-	-- Valid separators
+    -- Valid separators
     'foo-a',
     'foo_b',
     'foo:c',
     'foo/d',
-	-- Strip unknown characters
+    -- Strip unknown characters
     'foo@e',
-	'foo+f',
-	'foo!g'
+    'foo+f',
+    'foo!g'
 );
