@@ -2,7 +2,6 @@ package mysql
 
 import (
 	"fmt"
-	"log"
 	"sort"
 	"strings"
 
@@ -12,10 +11,15 @@ import (
 	"vitess.io/vitess/go/vt/sqlparser"
 )
 
-// Result holds the mysql validated queries schema
+type PackageGenerator struct {
+	*Schema
+	dinosql.CombinedSettings
+	packageName string
+}
+
 type Result struct {
+	PackageGenerator
 	Queries []*Query
-	Schema  *Schema
 }
 
 // Enums generates parser-agnostic GoEnum types
@@ -25,7 +29,7 @@ func (r *Result) Enums(settings dinosql.CombinedSettings) []dinosql.GoEnum {
 		for _, col := range table {
 			if col.Type.Type == "enum" {
 				constants := []dinosql.GoConstant{}
-				enumName := enumNameFromColDef(col, settings)
+				enumName := r.enumNameFromColDef(col)
 				for _, c := range col.Type.EnumValues {
 					stripped := stripInnerQuotes(c)
 					constants = append(constants, dinosql.GoConstant{
@@ -52,9 +56,9 @@ func stripInnerQuotes(identifier string) string {
 	return strings.Replace(identifier, "'", "", 2)
 }
 
-func enumNameFromColDef(col *sqlparser.ColumnDefinition, settings dinosql.CombinedSettings) string {
+func (pGen PackageGenerator) enumNameFromColDef(col *sqlparser.ColumnDefinition) string {
 	return fmt.Sprintf("%sType",
-		dinosql.StructName(col.Name.String(), settings))
+		dinosql.StructName(col.Name.String(), pGen.CombinedSettings))
 }
 
 // Structs marshels each query into a go struct for generation
@@ -69,7 +73,7 @@ func (r *Result) Structs(settings dinosql.CombinedSettings) []dinosql.GoStruct {
 		for _, col := range cols {
 			s.Fields = append(s.Fields, dinosql.GoField{
 				Name:    dinosql.StructName(col.Name.String(), settings),
-				Type:    goTypeCol(col, settings),
+				Type:    r.goTypeCol(Column{col, tableName}),
 				Tags:    map[string]string{"json:": col.Name.String()},
 				Comment: "",
 			})
@@ -133,7 +137,7 @@ func (r *Result) GoQueries(settings dinosql.CombinedSettings) []dinosql.GoQuery 
 			c := query.Columns[0]
 			gq.Ret = dinosql.GoQueryValue{
 				Name: columnName(c.ColumnDefinition, 0),
-				Typ:  goTypeCol(c.ColumnDefinition, settings),
+				Typ:  r.goTypeCol(c),
 			}
 		} else if len(query.Columns) > 1 {
 			var gs *dinosql.GoStruct
@@ -147,7 +151,7 @@ func (r *Result) GoQueries(settings dinosql.CombinedSettings) []dinosql.GoQuery 
 				for i, f := range s.Fields {
 					c := query.Columns[i]
 					sameName := f.Name == dinosql.StructName(columnName(c.ColumnDefinition, i), settings)
-					sameType := f.Type == goTypeCol(c.ColumnDefinition, settings)
+					sameType := f.Type == r.goTypeCol(c)
 
 					hackedFQN := core.FQN{c.Table, "", ""} // TODO: only check needed here is equality to see if struct can be reused, this type should be removed or properly used
 					sameTable := s.Table.Catalog == hackedFQN.Catalog && s.Table.Schema == hackedFQN.Schema && s.Table.Rel == hackedFQN.Rel
@@ -167,7 +171,7 @@ func (r *Result) GoQueries(settings dinosql.CombinedSettings) []dinosql.GoQuery 
 				for i := range query.Columns {
 					structInfo[i] = structParams{
 						originalName: query.Columns[i].Name.String(),
-						goType:       goTypeCol(query.Columns[i].ColumnDefinition, settings),
+						goType:       r.goTypeCol(query.Columns[i]),
 					}
 				}
 				gs = r.columnsToStruct(gq.MethodName+"Row", structInfo, settings)
@@ -215,8 +219,19 @@ func (r *Result) columnsToStruct(name string, items []structParams, settings din
 	return &gs
 }
 
-func goTypeCol(col *sqlparser.ColumnDefinition, settings dinosql.CombinedSettings) string {
-	switch t := col.Type.Type; {
+func (pGen PackageGenerator) goTypeCol(col Column) string {
+	mySQLType := col.ColumnDefinition.Type.Type
+	notNull := bool(col.Type.NotNull)
+	colName := col.Name.String()
+
+	for _, oride := range pGen.Overrides {
+		shouldOverride := (oride.DBType != "" && oride.DBType == mySQLType && oride.Null != notNull) ||
+			(oride.ColumnName != "" && oride.ColumnName == colName && oride.Table.Rel == col.Table)
+		if shouldOverride {
+			return oride.GoTypeName
+		}
+	}
+	switch t := mySQLType; {
 	case "varchar" == t, "text" == t, "char" == t,
 		"tinytext" == t, "mediumtext" == t, "longtext" == t:
 		if col.Type.NotNull {
@@ -238,7 +253,7 @@ func goTypeCol(col *sqlparser.ColumnDefinition, settings dinosql.CombinedSetting
 		}
 		return "sql.NullFloat64"
 	case "enum" == t:
-		return enumNameFromColDef(col, settings)
+		return pGen.enumNameFromColDef(col.ColumnDefinition)
 	case "date" == t, "timestamp" == t, "datetime" == t, "time" == t:
 		if col.Type.NotNull {
 			return "time.Time"
@@ -250,7 +265,7 @@ func goTypeCol(col *sqlparser.ColumnDefinition, settings dinosql.CombinedSetting
 		}
 		return "sql.NullBool"
 	default:
-		log.Printf("unknown MySQL type: %s\n", t)
+		fmt.Printf("unknown MySQL type: %s\n", t)
 		return "interface{}"
 	}
 }

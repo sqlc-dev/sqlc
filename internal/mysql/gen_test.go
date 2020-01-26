@@ -54,9 +54,9 @@ func TestEnumName(t *testing.T) {
 		},
 	}
 
-	settings := dinosql.Combine(mockSettings, mockSettings.Packages[0])
+	generator := PackageGenerator{mockSchema, dinosql.CombinedSettings{}, ""}
 	for _, tc := range tcase {
-		enumName := enumNameFromColDef(&tc.input, settings)
+		enumName := generator.enumNameFromColDef(&tc.input)
 		if diff := cmp.Diff(enumName, tc.output); diff != "" {
 			t.Errorf(diff)
 		}
@@ -64,12 +64,13 @@ func TestEnumName(t *testing.T) {
 }
 
 func TestEnums(t *testing.T) {
+	generator := PackageGenerator{mockSchema, dinosql.CombinedSettings{}, ""}
 	tcase := [...]struct {
 		input  Result
 		output []dinosql.GoEnum
 	}{
 		{
-			input: Result{Schema: mockSchema},
+			input: Result{PackageGenerator: generator},
 			output: []dinosql.GoEnum{
 				{
 					Name: "JobStatusType",
@@ -83,7 +84,7 @@ func TestEnums(t *testing.T) {
 			},
 		},
 	}
-	settings := dinosql.Combine(mockSettings, mockSettings.Packages[0])
+	settings := dinosql.Combine(dinosql.GenerateSettings{}, dinosql.PackageSettings{})
 	for _, tc := range tcase {
 		enums := tc.input.Enums(settings)
 		if diff := cmp.Diff(enums, tc.output); diff != "" {
@@ -93,12 +94,14 @@ func TestEnums(t *testing.T) {
 }
 
 func TestStructs(t *testing.T) {
+	settings := dinosql.Combine(dinosql.GenerateSettings{}, dinosql.PackageSettings{})
+	generator := PackageGenerator{mockSchema, settings, "db"}
 	tcase := [...]struct {
 		input  Result
 		output []dinosql.GoStruct
 	}{
 		{
-			input: Result{Schema: mockSchema},
+			input: Result{PackageGenerator: generator},
 			output: []dinosql.GoStruct{
 				{
 					Table: pg.FQN{Catalog: "orders"},
@@ -123,10 +126,63 @@ func TestStructs(t *testing.T) {
 		},
 	}
 
-	settings := dinosql.Combine(mockSettings, mockSettings.Packages[0])
 	for _, tc := range tcase {
 		structs := tc.input.Structs(settings)
 		if diff := cmp.Diff(structs, tc.output); diff != "" {
+			t.Errorf(diff)
+		}
+	}
+}
+
+func TestTypeOverride(t *testing.T) {
+	tests := [...]struct {
+		overrides      []dinosql.Override
+		col            Column
+		expectedGoType string
+	}{
+		{
+			overrides: []dinosql.Override{
+				{
+					DBType:     "uuid",
+					GoTypeName: "KSUID", // this is populated by the dinosql.Parse
+				},
+			},
+			col: Column{
+				ColumnDefinition: &sqlparser.ColumnDefinition{
+					Type: sqlparser.ColumnType{
+						Type:    "uuid",
+						NotNull: true,
+					},
+				},
+			},
+			expectedGoType: "KSUID",
+		},
+		{
+			overrides: []dinosql.Override{
+				{
+					ColumnName: "user_id", // this is populated by dinosql.Parse
+					GoTypeName: "uuid",    // this is populated by dinosql.Parse
+				},
+			},
+			col: Column{
+				ColumnDefinition: &sqlparser.ColumnDefinition{
+					Name: sqlparser.NewColIdent("user_id"),
+					Type: sqlparser.ColumnType{
+						Type:    "varchar",
+						NotNull: true,
+					},
+				},
+			},
+			expectedGoType: "uuid",
+		},
+	}
+
+	for _, tcase := range tests {
+		settings := dinosql.Combine(dinosql.GenerateSettings{}, dinosql.PackageSettings{Overrides: tcase.overrides})
+		gen := PackageGenerator{mockSchema, settings, "db"}
+		goType := gen.goTypeCol(tcase.col)
+
+		if diff := cmp.Diff(tcase.expectedGoType, goType); diff != "" {
 			t.Errorf(diff)
 		}
 	}
