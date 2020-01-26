@@ -9,11 +9,11 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/kyleconroy/sqlc/internal/dinosql"
-
 	"github.com/davecgh/go-spew/spew"
 	pg "github.com/lfittl/pg_query_go"
 	"github.com/spf13/cobra"
+
+	"github.com/kyleconroy/sqlc/internal/dinosql"
 )
 
 // Do runs the command logic.

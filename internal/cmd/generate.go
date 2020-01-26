@@ -117,7 +117,7 @@ func Generate(dir string, stderr io.Writer) (map[string]string, error) {
 		case dinosql.LanguageKotlin:
 			ktRes, ok := result.(dinosql.KtGenerateable)
 			if !ok {
-				err = fmt.Errorf("Kotlin not supported")
+				err = fmt.Errorf("kotlin not supported for engine %s", pkg.Engine)
 				break
 			}
 			files, err = dinosql.KtGenerate(ktRes, combo)
