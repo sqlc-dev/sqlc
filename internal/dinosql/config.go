@@ -41,9 +41,17 @@ const (
 	EnginePostgreSQL Engine = "postgresql"
 )
 
+type Language string
+
+const (
+	LanguageGo     Language = "go"
+	LanguageKotlin Language = "kotlin"
+)
+
 type PackageSettings struct {
 	Name                string     `json:"name"`
 	Engine              Engine     `json:"engine,omitempty"`
+	Language            Language   `json:"language,omitempty"`
 	Path                string     `json:"path"`
 	Schema              string     `json:"schema"`
 	Queries             string     `json:"queries"`
@@ -195,6 +203,9 @@ func ParseConfig(rd io.Reader) (GenerateSettings, error) {
 		}
 		if config.Packages[j].Engine == "" {
 			config.Packages[j].Engine = EnginePostgreSQL
+		}
+		if config.Packages[j].Language == "" {
+			config.Packages[j].Language = LanguageGo
 		}
 	}
 	return config, nil
