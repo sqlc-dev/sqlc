@@ -12,8 +12,9 @@ import (
 	"github.com/kyleconroy/sqlc/internal/cmd"
 )
 
-func TestCodeGeneration(t *testing.T) {
-	// Change to the top-level directory of the project
+func TestExamples(t *testing.T) {
+	t.Parallel()
+
 	examples, _ := filepath.Abs(filepath.Join("..", "..", "examples"))
 	var stderr bytes.Buffer
 
@@ -23,6 +24,29 @@ func TestCodeGeneration(t *testing.T) {
 	}
 
 	cmpDirectory(t, examples, output)
+}
+
+func TestReplay(t *testing.T) {
+	t.Parallel()
+
+	files, err := ioutil.ReadDir("testdata")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, replay := range files {
+		tc := replay.Name()
+		t.Run(tc, func(t *testing.T) {
+			t.Parallel()
+			path, _ := filepath.Abs(filepath.Join("testdata", tc))
+			var stderr bytes.Buffer
+			output, err := cmd.Generate(path, &stderr)
+			if err != nil {
+				t.Fatalf("%s", stderr.String())
+			}
+			cmpDirectory(t, path, output)
+		})
+	}
 }
 
 func cmpDirectory(t *testing.T, dir string, actual map[string]string) {
@@ -58,16 +82,16 @@ func cmpDirectory(t *testing.T, dir string, actual map[string]string) {
 	if !cmp.Equal(expected, actual) {
 		t.Errorf("%s contents differ", dir)
 		for name, contents := range expected {
-			if actual[name] == "" {
-				t.Errorf("%s is empty", name)
-				continue
-			}
-			if diff := cmp.Diff(contents, actual[name]); diff != "" {
-				t.Errorf("%s differed (-want +got):\n%s", name, diff)
-			}
-		}
-		for name, _ := range actual {
-			t.Log(name)
+			name := name
+			tn := strings.Replace(name, dir+"/", "", -1)
+			t.Run(tn, func(t *testing.T) {
+				if actual[name] == "" {
+					t.Fatalf("%s is empty", name)
+				}
+				if diff := cmp.Diff(contents, actual[name]); diff != "" {
+					t.Errorf("%s differed (-want +got):\n%s", name, diff)
+				}
+			})
 		}
 	}
 }
