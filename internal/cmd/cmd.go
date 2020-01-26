@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,7 +10,6 @@ import (
 	"path/filepath"
 
 	"github.com/kyleconroy/sqlc/internal/dinosql"
-	"github.com/kyleconroy/sqlc/internal/mysql"
 
 	"github.com/davecgh/go-spew/spew"
 	pg "github.com/lfittl/pg_query_go"
@@ -84,127 +82,26 @@ var initCmd = &cobra.Command{
 	},
 }
 
-const errMessageNoVersion = `The configuration file must have a version number.
-Set the version to 1 at the top of sqlc.json:
-
-{
-  "version": "1"
-  ...
-}
-`
-
-const errMessageUnknownVersion = `The configuration file has an invalid version number.
-The only supported version is "1".
-`
-
-const errMessageNoPackages = `No packages are configured`
-
 var genCmd = &cobra.Command{
 	Use:   "generate",
 	Short: "Generate Go code from SQL",
 	Run: func(cmd *cobra.Command, args []string) {
-		blob, err := ioutil.ReadFile("sqlc.json")
+		stderr := cmd.ErrOrStderr()
+		dir, err := os.Getwd()
 		if err != nil {
-			fmt.Fprintln(os.Stderr, "error parsing sqlc.json: file does not exist")
+			fmt.Fprintln(stderr, "error parsing sqlc.json: file does not exist")
 			os.Exit(1)
 		}
 
-		settings, err := dinosql.ParseConfig(bytes.NewReader(blob))
+		output, err := Generate(dir, stderr)
 		if err != nil {
-			switch err {
-			case dinosql.ErrMissingVersion:
-				fmt.Fprintf(os.Stderr, errMessageNoVersion)
-			case dinosql.ErrUnknownVersion:
-				fmt.Fprintf(os.Stderr, errMessageUnknownVersion)
-			case dinosql.ErrNoPackages:
-				fmt.Fprintf(os.Stderr, errMessageNoPackages)
-			}
-			fmt.Fprintf(os.Stderr, "error parsing sqlc.json: %s\n", err)
-			os.Exit(1)
-		}
-
-		var errored bool
-
-		output := map[string]string{}
-
-		for _, pkg := range settings.Packages {
-			name := pkg.Name
-			combo := dinosql.Combine(settings, pkg)
-			var result dinosql.Generateable
-
-			switch pkg.Engine {
-
-			case dinosql.EngineMySQL:
-				// Experimental MySQL support
-				q, err := mysql.GeneratePkg(name, pkg.Schema, pkg.Queries, combo)
-				if err != nil {
-					fmt.Fprintf(os.Stderr, "# package %s\n", name)
-					if parserErr, ok := err.(*dinosql.ParserErr); ok {
-						for _, fileErr := range parserErr.Errs {
-							fmt.Fprintf(os.Stderr, "%s:%d:%d: %s\n", fileErr.Filename, fileErr.Line, fileErr.Column, fileErr.Err)
-						}
-					} else {
-						fmt.Fprintf(os.Stderr, "error parsing schema: %s\n", err)
-					}
-					errored = true
-					continue
-				}
-				result = q
-
-			case dinosql.EnginePostgreSQL:
-				c, err := dinosql.ParseCatalog(pkg.Schema)
-				if err != nil {
-					fmt.Fprintf(os.Stderr, "# package %s\n", name)
-					if parserErr, ok := err.(*dinosql.ParserErr); ok {
-						for _, fileErr := range parserErr.Errs {
-							fmt.Fprintf(os.Stderr, "%s:%d:%d: %s\n", fileErr.Filename, fileErr.Line, fileErr.Column, fileErr.Err)
-						}
-					} else {
-						fmt.Fprintf(os.Stderr, "error parsing schema: %s\n", err)
-					}
-					errored = true
-					continue
-				}
-
-				q, err := dinosql.ParseQueries(c, pkg)
-				if err != nil {
-					fmt.Fprintf(os.Stderr, "# package %s\n", name)
-					if parserErr, ok := err.(*dinosql.ParserErr); ok {
-						for _, fileErr := range parserErr.Errs {
-							fmt.Fprintf(os.Stderr, "%s:%d:%d: %s\n", fileErr.Filename, fileErr.Line, fileErr.Column, fileErr.Err)
-						}
-					} else {
-						fmt.Fprintf(os.Stderr, "error parsing queries: %s\n", err)
-					}
-					errored = true
-					continue
-				}
-				result = q
-
-			}
-
-			files, err := dinosql.Generate(result, combo)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "# package %s\n", name)
-				fmt.Fprintf(os.Stderr, "error generating code: %s\n", err)
-				errored = true
-				continue
-			}
-
-			for n, source := range files {
-				filename := filepath.Join(pkg.Path, n)
-				output[filename] = source
-			}
-		}
-
-		if errored {
 			os.Exit(1)
 		}
 
 		for filename, source := range output {
 			os.MkdirAll(filepath.Dir(filename), 0755)
 			if err := ioutil.WriteFile(filename, []byte(source), 0644); err != nil {
-				fmt.Fprintf(os.Stderr, "%s: %s\n", filename, err)
+				fmt.Fprintf(stderr, "%s: %s\n", filename, err)
 				os.Exit(1)
 			}
 		}
