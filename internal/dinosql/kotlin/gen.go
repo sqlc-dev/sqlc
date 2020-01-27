@@ -79,28 +79,60 @@ func (v KtQueryValue) Type() string {
 	panic("no type for KtQueryValue: " + v.Name)
 }
 
+func jdbcSet(t ktType, idx int, name string) string {
+	if t.IsEnum && t.IsArray {
+		return fmt.Sprintf(`stmt.setArray(%d, conn.createArrayOf("%s", %s.map { v -> v.value }.toTypedArray()))`, idx, t.DataType, name)
+	}
+	if t.IsEnum {
+		return fmt.Sprintf("stmt.setObject(%d, %s.value, %s)", idx, name, "Types.OTHER")
+	}
+	if t.IsArray {
+		return fmt.Sprintf(`stmt.setArray(%d, conn.createArrayOf("%s", %s.toTypedArray()))`, idx, t.DataType, name)
+	}
+	if t.IsTime() {
+		return fmt.Sprintf("stmt.setObject(%d, %s)", idx, name)
+	}
+	return fmt.Sprintf("stmt.set%s(%d, %s)", t.Name, idx, name)
+}
+
 func (v KtQueryValue) Params() string {
 	if v.isEmpty() {
 		return ""
 	}
 	var out []string
 	if v.Struct == nil {
-		out = append(out, fmt.Sprintf("stmt.%s(%d, %s)", v.Typ.jdbcSetter(), 1, v.Typ.jdbcValue(v.Name)))
+		out = append(out, jdbcSet(v.Typ, 1, v.Name))
 	} else {
 		for i, f := range v.Struct.Fields {
-			out = append(out, fmt.Sprintf("stmt.%s(%d, %s)", f.Type.jdbcSetter(), i+1, f.Type.jdbcValue(v.Name+"."+f.Name)))
+			out = append(out, jdbcSet(f.Type, i+1, v.Name+"."+f.Name))
 		}
 	}
 	return strings.Join(out, "\n    ")
 }
 
+func jdbcGet(t ktType, idx int) string {
+	if t.IsEnum && t.IsArray {
+		return fmt.Sprintf(`(results.getArray(%d).array as Array<String>).map { v -> %s.lookup(v)!! }.toList()`, idx, t.Name)
+	}
+	if t.IsEnum {
+		return fmt.Sprintf("%s.lookup(results.getString(%d))!!", t.Name, idx)
+	}
+	if t.IsArray {
+		return fmt.Sprintf(`(results.getArray(%d).array as Array<%s>).toList()`, idx, t.Name)
+	}
+	if t.IsTime() {
+		return fmt.Sprintf(`results.getObject(%d, %s::class.java)`, idx, t.Name)
+	}
+	return fmt.Sprintf(`results.get%s(%d)`, t.Name, idx)
+}
+
 func (v KtQueryValue) ResultSet() string {
 	var out []string
 	if v.Struct == nil {
-		out = append(out, v.Typ.fromJDBCValue(fmt.Sprintf("%s.%s(%d)", v.Name, v.Typ.jdbcGetter(), 1)))
+		out = append(out, jdbcGet(v.Typ, 1))
 	} else {
 		for i, f := range v.Struct.Fields {
-			out = append(out, f.Type.fromJDBCValue(fmt.Sprintf("%s.%s(%d)", v.Name, f.Type.jdbcGetter(), i+1)))
+			out = append(out, jdbcGet(f.Type, i+1))
 		}
 	}
 	ret := strings.Join(out, ",\n      ")
@@ -108,19 +140,6 @@ func (v KtQueryValue) ResultSet() string {
 		ret = v.Struct.Name + "(" + "\n      " + ret + "\n    )"
 	}
 	return ret
-}
-
-type KtQueryParam struct {
-	Name string
-	Typ  string
-}
-
-func (p KtQueryParam) Getter() string {
-	return "get" + strings.TrimSuffix(p.Typ, "?")
-}
-
-func (p KtQueryParam) Setter() string {
-	return "set" + strings.TrimSuffix(p.Typ, "?")
 }
 
 // A struct used to generate methods and fields on the Queries struct
@@ -279,6 +298,25 @@ func QueryKtImports(r KtGenerateable, settings dinosql.CombinedSettings, filenam
 		return false
 	}
 
+	hasEnum := func() bool {
+		for _, q := range gq {
+			if !q.Arg.isEmpty() {
+				if q.Arg.IsStruct() {
+					for _, f := range q.Arg.Struct.Fields {
+						if f.Type.IsEnum {
+							return true
+						}
+					}
+				} else {
+					if q.Arg.Typ.IsEnum {
+						return true
+					}
+				}
+			}
+		}
+		return false
+	}
+
 	std := map[string]struct{}{
 		"java.sql.Connection":   {},
 		"java.sql.SQLException": {},
@@ -294,6 +332,9 @@ func QueryKtImports(r KtGenerateable, settings dinosql.CombinedSettings, filenam
 	}
 	if uses("OffsetDateTime") {
 		std["java.time.OffsetDateTime"] = struct{}{}
+	}
+	if hasEnum() {
+		std["java.sql.Types"] = struct{}{}
 	}
 
 	pkg := make(map[string]struct{})
@@ -422,7 +463,7 @@ type ktType struct {
 func (t ktType) String() string {
 	v := t.Name
 	if t.IsArray {
-		v = fmt.Sprintf("Array<%s>", v)
+		v = fmt.Sprintf("List<%s>", v)
 	} else if t.IsNull {
 		v += "?"
 	}
@@ -433,18 +474,11 @@ func (t ktType) jdbcSetter() string {
 	return "set" + t.jdbcType()
 }
 
-func (t ktType) jdbcGetter() string {
-	return "get" + t.jdbcType()
-}
-
 func (t ktType) jdbcType() string {
 	if t.IsArray {
 		return "Array"
 	}
-	if t.IsEnum {
-		return "String"
-	}
-	if t.IsTime() {
+	if t.IsEnum || t.IsTime() {
 		return "Object"
 	}
 	return t.Name
@@ -452,36 +486,6 @@ func (t ktType) jdbcType() string {
 
 func (t ktType) IsTime() bool {
 	return t.Name == "LocalDate" || t.Name == "LocalDateTime" || t.Name == "LocalTime" || t.Name == "OffsetDateTime"
-}
-
-func (t ktType) jdbcValue(name string) string {
-	if t.IsEnum && t.IsArray {
-		return fmt.Sprintf(`conn.createArrayOf("%s", %s.map { v -> v.value }.toTypedArray())`, t.DataType, name)
-	}
-	if t.IsEnum {
-		return name + ".value"
-	}
-	if t.IsArray {
-		return fmt.Sprintf(`conn.createArrayOf("%s", %s)`, t.DataType, name)
-	}
-	return name
-}
-
-func (t ktType) fromJDBCValue(expr string) string {
-	if t.IsEnum && t.IsArray {
-		return fmt.Sprintf(`(%s.array as Array<String>).map { v -> %s.valueOf(v) }.toTypedArray()`, expr, t.Name)
-	}
-	if t.IsEnum {
-		return fmt.Sprintf("%s.valueOf(%s)", t.Name, expr)
-	}
-	if t.IsArray {
-		return fmt.Sprintf(`%s.array as Array<%s>`, expr, t.Name)
-	}
-	if t.IsTime() {
-		expr = strings.TrimSuffix(expr, ")")
-		return fmt.Sprintf(`%s, %s::class.java)`, expr, t.Name)
-	}
-	return expr
 }
 
 func (r Result) ktType(col core.Column, settings dinosql.CombinedSettings) ktType {
@@ -777,7 +781,12 @@ enum class {{.Name}}(val value: String) {
   {{- range $i, $e := .Constants}}
   {{- if $i }},{{end}}
   {{.Name}}("{{.Value}}")
-  {{- end}}
+  {{- end}};
+
+  companion object {
+    private val map = {{.Name}}.values().associateBy({{.Name}}::value)
+    fun lookup(value: String) = map[value]
+  }
 }
 {{end}}
 
