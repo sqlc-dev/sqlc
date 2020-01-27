@@ -4,6 +4,7 @@ package com.example.booktest.postgresql
 
 import java.sql.Connection
 import java.sql.SQLException
+import java.sql.Types
 import java.time.OffsetDateTime
 
 const val booksByTags = """-- name: booksByTags :many
@@ -23,7 +24,7 @@ data class BooksByTagsRow (
   val title: String,
   val name: String,
   val isbn: String,
-  val tags: Array<String>
+  val tags: List<String>
 )
 
 const val booksByTitleYear = """-- name: booksByTitleYear :many
@@ -69,7 +70,7 @@ data class CreateBookParams (
   val title: String,
   val year: Int,
   val available: OffsetDateTime,
-  val tags: Array<String>
+  val tags: List<String>
 )
 
 const val deleteBook = """-- name: deleteBook :exec
@@ -95,7 +96,7 @@ WHERE book_id = ?
 
 data class UpdateBookParams (
   val title: String,
-  val tags: Array<String>,
+  val tags: List<String>,
   val bookId: Int
 )
 
@@ -107,7 +108,7 @@ WHERE book_id = ?
 
 data class UpdateBookISBNParams (
   val title: String,
-  val tags: Array<String>,
+  val tags: List<String>,
   val bookId: Int,
   val isbn: String
 )
@@ -115,9 +116,9 @@ data class UpdateBookISBNParams (
 class QueriesImpl(private val conn: Connection) {
 
   @Throws(SQLException::class)
-  fun booksByTags(dollar_1: Array<String>): List<BooksByTagsRow> {
+  fun booksByTags(dollar_1: List<String>): List<BooksByTagsRow> {
     val stmt = conn.prepareStatement(booksByTags)
-    stmt.setArray(1, conn.createArrayOf("pg_catalog.varchar", dollar_1))
+    stmt.setArray(1, conn.createArrayOf("pg_catalog.varchar", dollar_1.toTypedArray()))
 
     return stmt.executeQuery().use { results ->
       val ret = mutableListOf<BooksByTagsRow>()
@@ -127,7 +128,7 @@ class QueriesImpl(private val conn: Connection) {
       results.getString(2),
       results.getString(3),
       results.getString(4),
-      results.getArray(5).array as Array<String>
+      (results.getArray(5).array as Array<String>).toList()
     ))
       }
       ret
@@ -147,11 +148,11 @@ class QueriesImpl(private val conn: Connection) {
       results.getInt(1),
       results.getInt(2),
       results.getString(3),
-      BookType.valueOf(results.getString(4)),
+      BookType.lookup(results.getString(4))!!,
       results.getString(5),
       results.getInt(6),
       results.getObject(7, OffsetDateTime::class.java),
-      results.getArray(8).array as Array<String>
+      (results.getArray(8).array as Array<String>).toList()
     ))
       }
       ret
@@ -183,11 +184,11 @@ class QueriesImpl(private val conn: Connection) {
     val stmt = conn.prepareStatement(createBook)
     stmt.setInt(1, arg.authorId)
     stmt.setString(2, arg.isbn)
-    stmt.setString(3, arg.booktype.value)
+    stmt.setObject(3, arg.booktype.value, Types.OTHER)
     stmt.setString(4, arg.title)
     stmt.setInt(5, arg.year)
     stmt.setObject(6, arg.available)
-    stmt.setArray(7, conn.createArrayOf("pg_catalog.varchar", arg.tags))
+    stmt.setArray(7, conn.createArrayOf("pg_catalog.varchar", arg.tags.toTypedArray()))
 
     return stmt.executeQuery().use { results ->
       if (!results.next()) {
@@ -197,11 +198,11 @@ class QueriesImpl(private val conn: Connection) {
       results.getInt(1),
       results.getInt(2),
       results.getString(3),
-      BookType.valueOf(results.getString(4)),
+      BookType.lookup(results.getString(4))!!,
       results.getString(5),
       results.getInt(6),
       results.getObject(7, OffsetDateTime::class.java),
-      results.getArray(8).array as Array<String>
+      (results.getArray(8).array as Array<String>).toList()
     )
       if (results.next()) {
           throw SQLException("expected one row in result set, but got many")
@@ -252,11 +253,11 @@ class QueriesImpl(private val conn: Connection) {
       results.getInt(1),
       results.getInt(2),
       results.getString(3),
-      BookType.valueOf(results.getString(4)),
+      BookType.lookup(results.getString(4))!!,
       results.getString(5),
       results.getInt(6),
       results.getObject(7, OffsetDateTime::class.java),
-      results.getArray(8).array as Array<String>
+      (results.getArray(8).array as Array<String>).toList()
     )
       if (results.next()) {
           throw SQLException("expected one row in result set, but got many")
@@ -269,7 +270,7 @@ class QueriesImpl(private val conn: Connection) {
   fun updateBook(arg: UpdateBookParams) {
     val stmt = conn.prepareStatement(updateBook)
     stmt.setString(1, arg.title)
-    stmt.setArray(2, conn.createArrayOf("pg_catalog.varchar", arg.tags))
+    stmt.setArray(2, conn.createArrayOf("pg_catalog.varchar", arg.tags.toTypedArray()))
     stmt.setInt(3, arg.bookId)
 
     stmt.execute()
@@ -280,7 +281,7 @@ class QueriesImpl(private val conn: Connection) {
   fun updateBookISBN(arg: UpdateBookISBNParams) {
     val stmt = conn.prepareStatement(updateBookISBN)
     stmt.setString(1, arg.title)
-    stmt.setArray(2, conn.createArrayOf("pg_catalog.varchar", arg.tags))
+    stmt.setArray(2, conn.createArrayOf("pg_catalog.varchar", arg.tags.toTypedArray()))
     stmt.setInt(3, arg.bookId)
     stmt.setString(4, arg.isbn)
 

@@ -4,6 +4,7 @@ package com.example.ondeck
 
 import java.sql.Connection
 import java.sql.SQLException
+import java.sql.Types
 import java.time.LocalDateTime
 
 const val createCity = """-- name: createCity :one
@@ -49,8 +50,8 @@ data class CreateVenueParams (
   val city: String,
   val spotifyPlaylist: String,
   val status: Status,
-  val statuses: Array<Status>,
-  val tags: Array<String>
+  val statuses: List<Status>,
+  val tags: List<String>
 )
 
 const val deleteVenue = """-- name: deleteVenue :exec
@@ -159,9 +160,9 @@ class QueriesImpl(private val conn: Connection) : Queries {
     stmt.setString(2, arg.name)
     stmt.setString(3, arg.city)
     stmt.setString(4, arg.spotifyPlaylist)
-    stmt.setString(5, arg.status.value)
+    stmt.setObject(5, arg.status.value, Types.OTHER)
     stmt.setArray(6, conn.createArrayOf("status", arg.statuses.map { v -> v.value }.toTypedArray()))
-    stmt.setArray(7, conn.createArrayOf("text", arg.tags))
+    stmt.setArray(7, conn.createArrayOf("text", arg.tags.toTypedArray()))
 
     return stmt.executeQuery().use { results ->
       if (!results.next()) {
@@ -216,14 +217,14 @@ class QueriesImpl(private val conn: Connection) : Queries {
       }
       val ret = Venue(
       results.getInt(1),
-      Status.valueOf(results.getString(2)),
-      (results.getArray(3).array as Array<String>).map { v -> Status.valueOf(v) }.toTypedArray(),
+      Status.lookup(results.getString(2))!!,
+      (results.getArray(3).array as Array<String>).map { v -> Status.lookup(v)!! }.toList(),
       results.getString(4),
       results.getString(5),
       results.getString(6),
       results.getString(7),
       results.getString(8),
-      results.getArray(9).array as Array<String>,
+      (results.getArray(9).array as Array<String>).toList(),
       results.getObject(10, LocalDateTime::class.java)
     )
       if (results.next()) {
@@ -259,14 +260,14 @@ class QueriesImpl(private val conn: Connection) : Queries {
       while (results.next()) {
           ret.add(Venue(
       results.getInt(1),
-      Status.valueOf(results.getString(2)),
-      (results.getArray(3).array as Array<String>).map { v -> Status.valueOf(v) }.toTypedArray(),
+      Status.lookup(results.getString(2))!!,
+      (results.getArray(3).array as Array<String>).map { v -> Status.lookup(v)!! }.toList(),
       results.getString(4),
       results.getString(5),
       results.getString(6),
       results.getString(7),
       results.getString(8),
-      results.getArray(9).array as Array<String>,
+      (results.getArray(9).array as Array<String>).toList(),
       results.getObject(10, LocalDateTime::class.java)
     ))
       }

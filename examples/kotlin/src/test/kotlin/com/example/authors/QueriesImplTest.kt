@@ -6,15 +6,15 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
 import java.sql.Connection
 
-class QueriesImplTest(private val conn: Connection) {
+class QueriesImplTest() {
 
     companion object {
-        @JvmField @RegisterExtension val db = DbTestExtension("src/main/resources/schema.sql")
+        @JvmField @RegisterExtension val dbtest = DbTestExtension("src/main/resources/authors/schema.sql")
     }
 
     @Test
     fun testCreateAuthor() {
-        val db = QueriesImpl(conn)
+        val db = QueriesImpl(dbtest.getConnection())
 
         val initialAuthors = db.listAuthors()
         assert(initialAuthors.isEmpty())
@@ -37,7 +37,7 @@ class QueriesImplTest(private val conn: Connection) {
 
     @Test
     fun testNull() {
-        val db = QueriesImpl(conn)
+        val db = QueriesImpl(dbtest.getConnection())
 
         val initialAuthors = db.listAuthors()
         assert(initialAuthors.isEmpty())

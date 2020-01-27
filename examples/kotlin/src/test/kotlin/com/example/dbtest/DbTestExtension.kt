@@ -3,16 +3,15 @@ package com.example.dbtest
 import org.junit.jupiter.api.extension.AfterEachCallback
 import org.junit.jupiter.api.extension.BeforeEachCallback
 import org.junit.jupiter.api.extension.ExtensionContext
-import org.junit.jupiter.api.extension.ParameterContext
-import org.junit.jupiter.api.extension.ParameterResolver
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.sql.Connection
 import java.sql.DriverManager
+import kotlin.streams.toList
 
 const val schema = "dinosql_test"
 
-class DbTestExtension(private val migrationsPath: String) : BeforeEachCallback, AfterEachCallback, ParameterResolver {
+class DbTestExtension(private val migrationsPath: String) : BeforeEachCallback, AfterEachCallback {
     private val schemaConn: Connection
     private val url: String
 
@@ -29,23 +28,22 @@ class DbTestExtension(private val migrationsPath: String) : BeforeEachCallback, 
 
     override fun beforeEach(context: ExtensionContext) {
         schemaConn.createStatement().execute("CREATE SCHEMA $schema")
-        val stmt = Files.readString(Paths.get(migrationsPath))
-        getConnection().createStatement().execute(stmt)
+        val path = Paths.get(migrationsPath)
+        val migrations = if (Files.isDirectory(path)) {
+            Files.list(path).filter{ it.toString().endsWith(".sql")}.sorted().map { Files.readString(it) }.toList()
+        } else {
+            listOf(Files.readString(path))
+        }
+        migrations.forEach {
+            getConnection().createStatement().execute(it)
+        }
     }
 
     override fun afterEach(context: ExtensionContext) {
         schemaConn.createStatement().execute("DROP SCHEMA $schema CASCADE")
     }
 
-    private fun getConnection(): Connection {
+    fun getConnection(): Connection {
         return DriverManager.getConnection("$url&currentSchema=$schema")
-    }
-
-    override fun supportsParameter(parameterContext: ParameterContext, extensionContext: ExtensionContext): Boolean {
-        return parameterContext.parameter.type == Connection::class.java
-    }
-
-    override fun resolveParameter(parameterContext: ParameterContext, extensionContext: ExtensionContext): Any {
-        return getConnection()
     }
 }

@@ -6,7 +6,12 @@ import java.time.OffsetDateTime
 
 enum class BookType(val value: String) {
   FICTION("FICTION"),
-  NONFICTION("NONFICTION")
+  NONFICTION("NONFICTION");
+
+  companion object {
+    private val map = BookType.values().associateBy(BookType::value)
+    fun lookup(value: String) = map[value]
+  }
 }
 
 data class Author (
@@ -22,6 +27,6 @@ data class Book (
   val title: String,
   val year: Int,
   val available: OffsetDateTime,
-  val tags: Array<String>
+  val tags: List<String>
 )
 

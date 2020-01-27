@@ -4,6 +4,7 @@ package com.example.ondeck
 
 import java.sql.Connection
 import java.sql.SQLException
+import java.sql.Types
 import java.time.LocalDateTime
 
 interface Queries {

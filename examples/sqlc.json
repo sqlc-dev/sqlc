@@ -39,8 +39,8 @@
     {
       "name": "com.example.authors",
       "path": "kotlin/src/main/kotlin/com/example/authors",
-      "schema": "kotlin/src/main/resources/schema.sql",
-      "queries": "kotlin/src/main/resources/query.sql",
+      "schema": "kotlin/src/main/resources/authors/schema.sql",
+      "queries": "kotlin/src/main/resources/authors/query.sql",
       "engine": "postgresql",
       "language": "kotlin"
     },
@@ -64,8 +64,8 @@
     {
       "name": "com.example.booktest.postgresql",
       "path": "kotlin/src/main/kotlin/com/example/booktest/postgresql",
-      "schema": "booktest/postgresql/schema.sql",
-      "queries": "booktest/postgresql/query.sql",
+      "schema": "kotlin/src/main/resources/booktest/postgresql/schema.sql",
+      "queries": "kotlin/src/main/resources/booktest/postgresql/query.sql",
       "engine": "postgresql",
       "language": "kotlin"
     }
