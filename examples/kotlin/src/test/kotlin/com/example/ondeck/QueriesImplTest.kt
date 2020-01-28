@@ -43,9 +43,10 @@ class QueriesImplTest {
         assertEquals(listOf(city), q.listCities())
         assertEquals(listOf(venue), q.listVenues(city.slug))
 
-        // These updates fail because parameters are not in sequential order. After changing $N to ?, ordering is lost,
-        // and the parameters are filled into the wrong slots.
-//        q.updateCityName(UpdateCityNameParams(slug = city.slug, name = "SF"))
-//        q.updateVenueName(UpdateVenueNameParams(slug = venue.slug, name = "Fillmore"))
+        q.updateCityName(UpdateCityNameParams(slug = city.slug, name = "SF"))
+        val id = q.updateVenueName(UpdateVenueNameParams(slug = venue.slug, name = "Fillmore"))
+        assertEquals(venue.id, id)
+
+        q.deleteVenue(venue.slug)
     }
 }

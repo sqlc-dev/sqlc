@@ -96,8 +96,8 @@ WHERE slug = ?
 """
 
 data class UpdateCityNameParams (
-  val slug: String,
-  val name: String
+  val name: String,
+  val slug: String
 )
 
 const val updateVenueName = """-- name: updateVenueName :one
@@ -108,8 +108,8 @@ RETURNING id
 """
 
 data class UpdateVenueNameParams (
-  val slug: String,
-  val name: String
+  val name: String,
+  val slug: String
 )
 
 const val venueCountByCity = """-- name: venueCountByCity :many
@@ -180,6 +180,7 @@ class QueriesImpl(private val conn: Connection) : Queries {
   override fun deleteVenue(slug: String) {
     val stmt = conn.prepareStatement(deleteVenue)
     stmt.setString(1, slug)
+    stmt.setString(2, slug)
 
     stmt.execute()
     stmt.close()
@@ -278,8 +279,8 @@ class QueriesImpl(private val conn: Connection) : Queries {
   @Throws(SQLException::class)
   override fun updateCityName(arg: UpdateCityNameParams) {
     val stmt = conn.prepareStatement(updateCityName)
-    stmt.setString(1, arg.slug)
-    stmt.setString(2, arg.name)
+    stmt.setString(1, arg.name)
+    stmt.setString(2, arg.slug)
 
     stmt.execute()
     stmt.close()
@@ -288,8 +289,8 @@ class QueriesImpl(private val conn: Connection) : Queries {
   @Throws(SQLException::class)
   override fun updateVenueName(arg: UpdateVenueNameParams): Int {
     val stmt = conn.prepareStatement(updateVenueName)
-    stmt.setString(1, arg.slug)
-    stmt.setString(2, arg.name)
+    stmt.setString(1, arg.name)
+    stmt.setString(2, arg.slug)
 
     return stmt.executeQuery().use { results ->
       if (!results.next()) {

@@ -208,6 +208,8 @@ func ParseConfig(rd io.Reader) (GenerateSettings, error) {
 		}
 		if config.Packages[j].Language == "" {
 			config.Packages[j].Language = LanguageGo
+		} else if config.Packages[j].Language == "kotlin" {
+			config.Packages[j].rewriteParams = true
 		}
 	}
 	return config, nil

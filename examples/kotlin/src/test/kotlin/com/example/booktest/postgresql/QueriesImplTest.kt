@@ -81,14 +81,14 @@ class QueriesImplTest {
 
         // ISBN update fails because parameters are not in sequential order. After changing $N to ?, ordering is lost,
         // and the parameters are filled into the wrong slots.
-//        db.updateBookISBN(
-//            UpdateBookISBNParams(
-//                bookId = b3.bookId,
-//                isbn = "NEW ISBN",
-//                title = "never ever gonna finish, a quatrain",
-//                tags = listOf("someother")
-//            )
-//        )
+        db.updateBookISBN(
+            UpdateBookISBNParams(
+                bookId = b3.bookId,
+                isbn = "NEW ISBN",
+                title = "never ever gonna finish, a quatrain",
+                tags = listOf("someother")
+            )
+        )
 
         val books0 = db.booksByTitleYear(BooksByTitleYearParams("my book title", 2016))
 

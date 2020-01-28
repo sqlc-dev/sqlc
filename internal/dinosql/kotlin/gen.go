@@ -37,17 +37,19 @@ type KtField struct {
 }
 
 type KtStruct struct {
-	Table   core.FQN
-	Name    string
-	Fields  []KtField
-	Comment string
+	Table             core.FQN
+	Name              string
+	Fields            []KtField
+	JDBCParamBindings []KtField
+	Comment           string
 }
 
 type KtQueryValue struct {
-	Emit   bool
-	Name   string
-	Struct *KtStruct
-	Typ    ktType
+	Emit               bool
+	Name               string
+	Struct             *KtStruct
+	Typ                ktType
+	JDBCParamBindCount int
 }
 
 func (v KtQueryValue) EmitStruct() bool {
@@ -101,9 +103,15 @@ func (v KtQueryValue) Params() string {
 	}
 	var out []string
 	if v.Struct == nil {
-		out = append(out, jdbcSet(v.Typ, 1, v.Name))
+		repeat := 1
+		if v.JDBCParamBindCount > 0 {
+			repeat = v.JDBCParamBindCount
+		}
+		for i := 1; i <= repeat; i++ {
+			out = append(out, jdbcSet(v.Typ, i, v.Name))
+		}
 	} else {
-		for i, f := range v.Struct.Fields {
+		for i, f := range v.Struct.JDBCParamBindings {
 			out = append(out, jdbcSet(f.Type, i+1, v.Name+"."+f.Name))
 		}
 	}
@@ -595,21 +603,34 @@ func (r Result) ktInnerType(col core.Column, settings dinosql.CombinedSettings) 
 	}
 }
 
-func (r Result) ktColumnsToStruct(name string, columns []core.Column, settings dinosql.CombinedSettings) *KtStruct {
+type goColumn struct {
+	id int
+	core.Column
+}
+
+func (r Result) ktColumnsToStruct(name string, columns []goColumn, settings dinosql.CombinedSettings) *KtStruct {
 	gs := KtStruct{
 		Name: name,
 	}
-	seen := map[string]int{}
+	idSeen := map[int]KtField{}
+	nameSeen := map[string]int{}
 	for i, c := range columns {
-		fieldName := KtMemberName(ktColumnName(c, i), settings)
-		if v := seen[c.Name]; v > 0 {
+		if binding, ok := idSeen[c.id]; ok {
+			gs.JDBCParamBindings = append(gs.JDBCParamBindings, binding)
+			continue
+		}
+		fieldName := KtMemberName(ktColumnName(c.Column, i), settings)
+		if v := nameSeen[c.Name]; v > 0 {
 			fieldName = fmt.Sprintf("%s_%d", fieldName, v+1)
 		}
-		gs.Fields = append(gs.Fields, KtField{
+		field := KtField{
 			Name: fieldName,
-			Type: r.ktType(c, settings),
-		})
-		seen[c.Name]++
+			Type: r.ktType(c.Column, settings),
+		}
+		gs.Fields = append(gs.Fields, field)
+		gs.JDBCParamBindings = append(gs.JDBCParamBindings, field)
+		nameSeen[c.Name]++
+		idSeen[c.id] = field
 	}
 	return &gs
 }
@@ -672,21 +693,26 @@ func (r Result) KtQueries(settings dinosql.CombinedSettings) []KtQuery {
 			Comments:     query.Comments,
 		}
 
-		if len(query.Params) == 1 {
+		var cols []goColumn
+		for _, p := range query.Params {
+			cols = append(cols, goColumn{
+				id:     p.Number,
+				Column: p.Column,
+			})
+		}
+		params := r.ktColumnsToStruct(gq.ClassName+"Params", cols, settings)
+		if len(params.Fields) == 1 {
 			p := query.Params[0]
 			gq.Arg = KtQueryValue{
-				Name: ktParamName(p),
-				Typ:  r.ktType(p.Column, settings),
+				Name:               ktParamName(p),
+				Typ:                r.ktType(p.Column, settings),
+				JDBCParamBindCount: len(params.JDBCParamBindings),
 			}
-		} else if len(query.Params) > 1 {
-			var cols []core.Column
-			for _, p := range query.Params {
-				cols = append(cols, p.Column)
-			}
+		} else if len(params.Fields) > 1 {
 			gq.Arg = KtQueryValue{
 				Emit:   true,
 				Name:   "arg",
-				Struct: r.ktColumnsToStruct(gq.ClassName+"Params", cols, settings),
+				Struct: params,
 			}
 		}
 
@@ -722,7 +748,14 @@ func (r Result) KtQueries(settings dinosql.CombinedSettings) []KtQuery {
 			}
 
 			if gs == nil {
-				gs = r.ktColumnsToStruct(gq.ClassName+"Row", query.Columns, settings)
+				var columns []goColumn
+				for i, c := range query.Columns {
+					columns = append(columns, goColumn{
+						id:     i,
+						Column: c,
+					})
+				}
+				gs = r.ktColumnsToStruct(gq.ClassName+"Row", columns, settings)
 				emit = true
 			}
 			gq.Ret = KtQueryValue{

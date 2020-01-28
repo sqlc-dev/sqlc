@@ -109,8 +109,8 @@ WHERE book_id = ?
 data class UpdateBookISBNParams (
   val title: String,
   val tags: List<String>,
-  val bookId: Int,
-  val isbn: String
+  val isbn: String,
+  val bookId: Int
 )
 
 class QueriesImpl(private val conn: Connection) {
@@ -282,8 +282,8 @@ class QueriesImpl(private val conn: Connection) {
     val stmt = conn.prepareStatement(updateBookISBN)
     stmt.setString(1, arg.title)
     stmt.setArray(2, conn.createArrayOf("pg_catalog.varchar", arg.tags.toTypedArray()))
-    stmt.setInt(3, arg.bookId)
-    stmt.setString(4, arg.isbn)
+    stmt.setString(3, arg.isbn)
+    stmt.setInt(4, arg.bookId)
 
     stmt.execute()
     stmt.close()
