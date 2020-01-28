@@ -59,6 +59,8 @@ type PackageSettings struct {
 	EmitJSONTags        bool       `json:"emit_json_tags"`
 	EmitPreparedQueries bool       `json:"emit_prepared_queries"`
 	Overrides           []Override `json:"overrides"`
+	// HACK: this is only set in tests, only here till Kotlin support can be merged.
+	rewriteParams       bool
 }
 
 type Override struct {

@@ -21,7 +21,7 @@ func parseSQL(in string) (Query, error) {
 		return Query{}, err
 	}
 
-	q, err := parseQuery(c, tree.Statements[len(tree.Statements)-1], in)
+	q, err := parseQuery(c, tree.Statements[len(tree.Statements)-1], in, false)
 	if q == nil {
 		return Query{}, err
 	}
