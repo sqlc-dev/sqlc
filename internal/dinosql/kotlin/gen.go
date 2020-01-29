@@ -115,7 +115,7 @@ func (v KtQueryValue) Params() string {
 			out = append(out, jdbcSet(f.Type, i+1, v.Name+"."+f.Name))
 		}
 	}
-	return strings.Join(out, "\n    ")
+	return indent(strings.Join(out, "\n"), 6, 0)
 }
 
 func jdbcGet(t ktType, idx int) string {
@@ -137,17 +137,33 @@ func jdbcGet(t ktType, idx int) string {
 func (v KtQueryValue) ResultSet() string {
 	var out []string
 	if v.Struct == nil {
-		out = append(out, jdbcGet(v.Typ, 1))
-	} else {
-		for i, f := range v.Struct.Fields {
-			out = append(out, jdbcGet(f.Type, i+1))
-		}
+		return jdbcGet(v.Typ, 1)
 	}
-	ret := strings.Join(out, ",\n      ")
-	if v.Struct != nil {
-		ret = v.Struct.Name + "(" + "\n      " + ret + "\n    )"
+	for i, f := range v.Struct.Fields {
+		out = append(out, jdbcGet(f.Type, i+1))
 	}
+	ret := indent(strings.Join(out, ",\n"), 4, -1)
+	ret = indent(v.Struct.Name + "(\n" + ret + "\n)", 8, 0)
 	return ret
+}
+
+func indent(s string, n int, firstIndent int) string {
+	lines := strings.Split(s, "\n")
+	buf := bytes.NewBuffer(nil)
+	for i, l := range lines {
+		indent := n
+		if i == 0 && firstIndent != -1 {
+			indent = firstIndent
+		}
+		if i != 0 {
+			buf.WriteRune('\n')
+		}
+		for i := 0; i < indent; i++ {
+			buf.WriteRune(' ')
+		}
+		buf.WriteString(l)
+	}
+	return buf.String()
 }
 
 // A struct used to generate methods and fields on the Queries struct
@@ -875,10 +891,10 @@ class QueriesImpl(private val conn: Connection){{ if .EmitInterface }} : Queries
   @Throws(SQLException::class)
   {{ if $.EmitInterface }}override {{ end -}}
   fun {{.MethodName}}({{.Arg.Pair}}): {{.Ret.Type}} {
-    val stmt = conn.prepareStatement({{.ConstantName}})
-    {{.Arg.Params}}
+    return conn.prepareStatement({{.ConstantName}}).use { stmt ->
+      {{.Arg.Params}}
 
-    return stmt.executeQuery().use { results ->
+      val results = stmt.executeQuery()
       if (!results.next()) {
         throw SQLException("no rows in result set")
       }
@@ -897,10 +913,10 @@ class QueriesImpl(private val conn: Connection){{ if .EmitInterface }} : Queries
   @Throws(SQLException::class)
   {{ if $.EmitInterface }}override {{ end -}}
   fun {{.MethodName}}({{.Arg.Pair}}): List<{{.Ret.Type}}> {
-    val stmt = conn.prepareStatement({{.ConstantName}})
-    {{.Arg.Params}}
+    return conn.prepareStatement({{.ConstantName}}).use { stmt ->
+      {{.Arg.Params}}
 
-    return stmt.executeQuery().use { results ->
+      val results = stmt.executeQuery()
       val ret = mutableListOf<{{.Ret.Type}}>()
       while (results.next()) {
           ret.add({{.Ret.ResultSet}})
@@ -916,11 +932,11 @@ class QueriesImpl(private val conn: Connection){{ if .EmitInterface }} : Queries
   @Throws(SQLException::class)
   {{ if $.EmitInterface }}override {{ end -}}
   fun {{.MethodName}}({{.Arg.Pair}}) {
-    val stmt = conn.prepareStatement({{.ConstantName}})
-    {{ .Arg.Params }}
+    conn.prepareStatement({{.ConstantName}}).use { stmt ->
+      {{ .Arg.Params }}
 
-    stmt.execute()
-    stmt.close()
+      stmt.execute()
+    }
   }
 {{end}}
 
@@ -930,13 +946,12 @@ class QueriesImpl(private val conn: Connection){{ if .EmitInterface }} : Queries
   @Throws(SQLException::class)
   {{ if $.EmitInterface }}override {{ end -}}
   fun {{.MethodName}}({{.Arg.Pair}}): Int {
-    val stmt = conn.prepareStatement({{.ConstantName}})
-    {{ .Arg.Params }}
+    return conn.prepareStatement({{.ConstantName}}).use { stmt ->
+      {{ .Arg.Params }}
 
-    stmt.execute()
-    val count = stmt.updateCount
-    stmt.close()
-    return count
+      stmt.execute()
+      stmt.updateCount
+    }
   }
 {{end}}
 {{end}}

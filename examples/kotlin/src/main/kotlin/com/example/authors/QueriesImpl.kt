@@ -38,19 +38,19 @@ class QueriesImpl(private val conn: Connection) {
 
   @Throws(SQLException::class)
   fun createAuthor(arg: CreateAuthorParams): Author {
-    val stmt = conn.prepareStatement(createAuthor)
-    stmt.setString(1, arg.name)
-    stmt.setString(2, arg.bio)
+    return conn.prepareStatement(createAuthor).use { stmt ->
+      stmt.setString(1, arg.name)
+      stmt.setString(2, arg.bio)
 
-    return stmt.executeQuery().use { results ->
+      val results = stmt.executeQuery()
       if (!results.next()) {
         throw SQLException("no rows in result set")
       }
       val ret = Author(
-      results.getLong(1),
-      results.getString(2),
-      results.getString(3)
-    )
+            results.getLong(1),
+            results.getString(2),
+            results.getString(3)
+        )
       if (results.next()) {
           throw SQLException("expected one row in result set, but got many")
       }
@@ -60,27 +60,27 @@ class QueriesImpl(private val conn: Connection) {
 
   @Throws(SQLException::class)
   fun deleteAuthor(id: Long) {
-    val stmt = conn.prepareStatement(deleteAuthor)
-    stmt.setLong(1, id)
+    conn.prepareStatement(deleteAuthor).use { stmt ->
+      stmt.setLong(1, id)
 
-    stmt.execute()
-    stmt.close()
+      stmt.execute()
+    }
   }
 
   @Throws(SQLException::class)
   fun getAuthor(id: Long): Author {
-    val stmt = conn.prepareStatement(getAuthor)
-    stmt.setLong(1, id)
+    return conn.prepareStatement(getAuthor).use { stmt ->
+      stmt.setLong(1, id)
 
-    return stmt.executeQuery().use { results ->
+      val results = stmt.executeQuery()
       if (!results.next()) {
         throw SQLException("no rows in result set")
       }
       val ret = Author(
-      results.getLong(1),
-      results.getString(2),
-      results.getString(3)
-    )
+            results.getLong(1),
+            results.getString(2),
+            results.getString(3)
+        )
       if (results.next()) {
           throw SQLException("expected one row in result set, but got many")
       }
@@ -90,16 +90,16 @@ class QueriesImpl(private val conn: Connection) {
 
   @Throws(SQLException::class)
   fun listAuthors(): List<Author> {
-    val stmt = conn.prepareStatement(listAuthors)
-    
-    return stmt.executeQuery().use { results ->
+    return conn.prepareStatement(listAuthors).use { stmt ->
+      
+      val results = stmt.executeQuery()
       val ret = mutableListOf<Author>()
       while (results.next()) {
           ret.add(Author(
-      results.getLong(1),
-      results.getString(2),
-      results.getString(3)
-    ))
+            results.getLong(1),
+            results.getString(2),
+            results.getString(3)
+        ))
       }
       ret
     }

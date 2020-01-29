@@ -117,19 +117,19 @@ class QueriesImpl(private val conn: Connection) {
 
   @Throws(SQLException::class)
   fun booksByTags(dollar_1: List<String>): List<BooksByTagsRow> {
-    val stmt = conn.prepareStatement(booksByTags)
-    stmt.setArray(1, conn.createArrayOf("pg_catalog.varchar", dollar_1.toTypedArray()))
+    return conn.prepareStatement(booksByTags).use { stmt ->
+      stmt.setArray(1, conn.createArrayOf("pg_catalog.varchar", dollar_1.toTypedArray()))
 
-    return stmt.executeQuery().use { results ->
+      val results = stmt.executeQuery()
       val ret = mutableListOf<BooksByTagsRow>()
       while (results.next()) {
           ret.add(BooksByTagsRow(
-      results.getInt(1),
-      results.getString(2),
-      results.getString(3),
-      results.getString(4),
-      (results.getArray(5).array as Array<String>).toList()
-    ))
+            results.getInt(1),
+            results.getString(2),
+            results.getString(3),
+            results.getString(4),
+            (results.getArray(5).array as Array<String>).toList()
+        ))
       }
       ret
     }
@@ -137,23 +137,23 @@ class QueriesImpl(private val conn: Connection) {
 
   @Throws(SQLException::class)
   fun booksByTitleYear(arg: BooksByTitleYearParams): List<Book> {
-    val stmt = conn.prepareStatement(booksByTitleYear)
-    stmt.setString(1, arg.title)
-    stmt.setInt(2, arg.year)
+    return conn.prepareStatement(booksByTitleYear).use { stmt ->
+      stmt.setString(1, arg.title)
+      stmt.setInt(2, arg.year)
 
-    return stmt.executeQuery().use { results ->
+      val results = stmt.executeQuery()
       val ret = mutableListOf<Book>()
       while (results.next()) {
           ret.add(Book(
-      results.getInt(1),
-      results.getInt(2),
-      results.getString(3),
-      BookType.lookup(results.getString(4))!!,
-      results.getString(5),
-      results.getInt(6),
-      results.getObject(7, OffsetDateTime::class.java),
-      (results.getArray(8).array as Array<String>).toList()
-    ))
+            results.getInt(1),
+            results.getInt(2),
+            results.getString(3),
+            BookType.lookup(results.getString(4))!!,
+            results.getString(5),
+            results.getInt(6),
+            results.getObject(7, OffsetDateTime::class.java),
+            (results.getArray(8).array as Array<String>).toList()
+        ))
       }
       ret
     }
@@ -161,17 +161,17 @@ class QueriesImpl(private val conn: Connection) {
 
   @Throws(SQLException::class)
   fun createAuthor(name: String): Author {
-    val stmt = conn.prepareStatement(createAuthor)
-    stmt.setString(1, name)
+    return conn.prepareStatement(createAuthor).use { stmt ->
+      stmt.setString(1, name)
 
-    return stmt.executeQuery().use { results ->
+      val results = stmt.executeQuery()
       if (!results.next()) {
         throw SQLException("no rows in result set")
       }
       val ret = Author(
-      results.getInt(1),
-      results.getString(2)
-    )
+            results.getInt(1),
+            results.getString(2)
+        )
       if (results.next()) {
           throw SQLException("expected one row in result set, but got many")
       }
@@ -181,29 +181,29 @@ class QueriesImpl(private val conn: Connection) {
 
   @Throws(SQLException::class)
   fun createBook(arg: CreateBookParams): Book {
-    val stmt = conn.prepareStatement(createBook)
-    stmt.setInt(1, arg.authorId)
-    stmt.setString(2, arg.isbn)
-    stmt.setObject(3, arg.booktype.value, Types.OTHER)
-    stmt.setString(4, arg.title)
-    stmt.setInt(5, arg.year)
-    stmt.setObject(6, arg.available)
-    stmt.setArray(7, conn.createArrayOf("pg_catalog.varchar", arg.tags.toTypedArray()))
+    return conn.prepareStatement(createBook).use { stmt ->
+      stmt.setInt(1, arg.authorId)
+      stmt.setString(2, arg.isbn)
+      stmt.setObject(3, arg.booktype.value, Types.OTHER)
+      stmt.setString(4, arg.title)
+      stmt.setInt(5, arg.year)
+      stmt.setObject(6, arg.available)
+      stmt.setArray(7, conn.createArrayOf("pg_catalog.varchar", arg.tags.toTypedArray()))
 
-    return stmt.executeQuery().use { results ->
+      val results = stmt.executeQuery()
       if (!results.next()) {
         throw SQLException("no rows in result set")
       }
       val ret = Book(
-      results.getInt(1),
-      results.getInt(2),
-      results.getString(3),
-      BookType.lookup(results.getString(4))!!,
-      results.getString(5),
-      results.getInt(6),
-      results.getObject(7, OffsetDateTime::class.java),
-      (results.getArray(8).array as Array<String>).toList()
-    )
+            results.getInt(1),
+            results.getInt(2),
+            results.getString(3),
+            BookType.lookup(results.getString(4))!!,
+            results.getString(5),
+            results.getInt(6),
+            results.getObject(7, OffsetDateTime::class.java),
+            (results.getArray(8).array as Array<String>).toList()
+        )
       if (results.next()) {
           throw SQLException("expected one row in result set, but got many")
       }
@@ -213,26 +213,26 @@ class QueriesImpl(private val conn: Connection) {
 
   @Throws(SQLException::class)
   fun deleteBook(bookId: Int) {
-    val stmt = conn.prepareStatement(deleteBook)
-    stmt.setInt(1, bookId)
+    conn.prepareStatement(deleteBook).use { stmt ->
+      stmt.setInt(1, bookId)
 
-    stmt.execute()
-    stmt.close()
+      stmt.execute()
+    }
   }
 
   @Throws(SQLException::class)
   fun getAuthor(authorId: Int): Author {
-    val stmt = conn.prepareStatement(getAuthor)
-    stmt.setInt(1, authorId)
+    return conn.prepareStatement(getAuthor).use { stmt ->
+      stmt.setInt(1, authorId)
 
-    return stmt.executeQuery().use { results ->
+      val results = stmt.executeQuery()
       if (!results.next()) {
         throw SQLException("no rows in result set")
       }
       val ret = Author(
-      results.getInt(1),
-      results.getString(2)
-    )
+            results.getInt(1),
+            results.getString(2)
+        )
       if (results.next()) {
           throw SQLException("expected one row in result set, but got many")
       }
@@ -242,23 +242,23 @@ class QueriesImpl(private val conn: Connection) {
 
   @Throws(SQLException::class)
   fun getBook(bookId: Int): Book {
-    val stmt = conn.prepareStatement(getBook)
-    stmt.setInt(1, bookId)
+    return conn.prepareStatement(getBook).use { stmt ->
+      stmt.setInt(1, bookId)
 
-    return stmt.executeQuery().use { results ->
+      val results = stmt.executeQuery()
       if (!results.next()) {
         throw SQLException("no rows in result set")
       }
       val ret = Book(
-      results.getInt(1),
-      results.getInt(2),
-      results.getString(3),
-      BookType.lookup(results.getString(4))!!,
-      results.getString(5),
-      results.getInt(6),
-      results.getObject(7, OffsetDateTime::class.java),
-      (results.getArray(8).array as Array<String>).toList()
-    )
+            results.getInt(1),
+            results.getInt(2),
+            results.getString(3),
+            BookType.lookup(results.getString(4))!!,
+            results.getString(5),
+            results.getInt(6),
+            results.getObject(7, OffsetDateTime::class.java),
+            (results.getArray(8).array as Array<String>).toList()
+        )
       if (results.next()) {
           throw SQLException("expected one row in result set, but got many")
       }
@@ -268,25 +268,25 @@ class QueriesImpl(private val conn: Connection) {
 
   @Throws(SQLException::class)
   fun updateBook(arg: UpdateBookParams) {
-    val stmt = conn.prepareStatement(updateBook)
-    stmt.setString(1, arg.title)
-    stmt.setArray(2, conn.createArrayOf("pg_catalog.varchar", arg.tags.toTypedArray()))
-    stmt.setInt(3, arg.bookId)
+    conn.prepareStatement(updateBook).use { stmt ->
+      stmt.setString(1, arg.title)
+      stmt.setArray(2, conn.createArrayOf("pg_catalog.varchar", arg.tags.toTypedArray()))
+      stmt.setInt(3, arg.bookId)
 
-    stmt.execute()
-    stmt.close()
+      stmt.execute()
+    }
   }
 
   @Throws(SQLException::class)
   fun updateBookISBN(arg: UpdateBookISBNParams) {
-    val stmt = conn.prepareStatement(updateBookISBN)
-    stmt.setString(1, arg.title)
-    stmt.setArray(2, conn.createArrayOf("pg_catalog.varchar", arg.tags.toTypedArray()))
-    stmt.setString(3, arg.isbn)
-    stmt.setInt(4, arg.bookId)
+    conn.prepareStatement(updateBookISBN).use { stmt ->
+      stmt.setString(1, arg.title)
+      stmt.setArray(2, conn.createArrayOf("pg_catalog.varchar", arg.tags.toTypedArray()))
+      stmt.setString(3, arg.isbn)
+      stmt.setInt(4, arg.bookId)
 
-    stmt.execute()
-    stmt.close()
+      stmt.execute()
+    }
   }
 
 }

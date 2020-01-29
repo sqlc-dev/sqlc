@@ -21,9 +21,9 @@ class QueriesImpl(private val conn: Connection) {
 
   @Throws(SQLException::class)
   fun countPilots(): Long {
-    val stmt = conn.prepareStatement(countPilots)
-    
-    return stmt.executeQuery().use { results ->
+    return conn.prepareStatement(countPilots).use { stmt ->
+      
+      val results = stmt.executeQuery()
       if (!results.next()) {
         throw SQLException("no rows in result set")
       }
@@ -37,24 +37,24 @@ class QueriesImpl(private val conn: Connection) {
 
   @Throws(SQLException::class)
   fun deletePilot(id: Int) {
-    val stmt = conn.prepareStatement(deletePilot)
-    stmt.setInt(1, id)
+    conn.prepareStatement(deletePilot).use { stmt ->
+      stmt.setInt(1, id)
 
-    stmt.execute()
-    stmt.close()
+      stmt.execute()
+    }
   }
 
   @Throws(SQLException::class)
   fun listPilots(): List<Pilot> {
-    val stmt = conn.prepareStatement(listPilots)
-    
-    return stmt.executeQuery().use { results ->
+    return conn.prepareStatement(listPilots).use { stmt ->
+      
+      val results = stmt.executeQuery()
       val ret = mutableListOf<Pilot>()
       while (results.next()) {
           ret.add(Pilot(
-      results.getInt(1),
-      results.getString(2)
-    ))
+            results.getInt(1),
+            results.getString(2)
+        ))
       }
       ret
     }
