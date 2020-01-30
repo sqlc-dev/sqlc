@@ -7,8 +7,10 @@ import (
 	"path/filepath"
 
 	"github.com/davecgh/go-spew/spew"
-	"github.com/kyleconroy/sqlc/internal/dinosql"
 	"vitess.io/vitess/go/vt/sqlparser"
+
+	"github.com/kyleconroy/sqlc/internal/config"
+	"github.com/kyleconroy/sqlc/internal/dinosql"
 )
 
 // Query holds the data for walking and validating mysql querys
@@ -468,7 +470,7 @@ func (pGen PackageGenerator) parseSelectAliasExpr(exprs sqlparser.SelectExprs, t
 }
 
 // GeneratePkg is the main entry to mysql generator package
-func GeneratePkg(pkgName, schemaPath, querysPath string, settings dinosql.CombinedSettings) (*Result, error) {
+func GeneratePkg(pkgName, schemaPath, querysPath string, settings config.CombinedSettings) (*Result, error) {
 	s := NewSchema()
 	generator := PackageGenerator{
 		Schema:           s,

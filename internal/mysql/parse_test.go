@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/dinosql"
 	"vitess.io/vitess/go/vt/sqlparser"
 )
@@ -248,7 +249,7 @@ func TestParseSelect(t *testing.T) {
 		},
 	}
 
-	settings := dinosql.Combine(dinosql.GenerateSettings{}, dinosql.PackageSettings{})
+	settings := config.Combine(config.GenerateSettings{}, config.PackageSettings{})
 	for _, tt := range tests {
 		testCase := tt
 		generator := PackageGenerator{
@@ -423,7 +424,7 @@ func TestParseInsertUpdate(t *testing.T) {
 		},
 	}
 
-	settings := dinosql.Combine(dinosql.GenerateSettings{}, dinosql.PackageSettings{})
+	settings := config.Combine(config.GenerateSettings{}, config.PackageSettings{})
 	for _, tt := range tests {
 		testCase := tt
 		t.Run(tt.name, func(t *testing.T) {

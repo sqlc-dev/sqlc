@@ -5,8 +5,9 @@ import (
 	"testing"
 
 	"github.com/davecgh/go-spew/spew"
-	"github.com/kyleconroy/sqlc/internal/dinosql"
 	"vitess.io/vitess/go/vt/sqlparser"
+
+	"github.com/kyleconroy/sqlc/internal/config"
 )
 
 func TestSelectParamSearcher(t *testing.T) {
@@ -87,7 +88,7 @@ func TestSelectParamSearcher(t *testing.T) {
 			},
 		},
 	}
-	settings := dinosql.Combine(dinosql.GenerateSettings{}, dinosql.PackageSettings{})
+	settings := config.Combine(config.GenerateSettings{}, config.PackageSettings{})
 	for _, tCase := range tests {
 		generator := PackageGenerator{
 			Schema:           mockSchema,
@@ -151,7 +152,7 @@ func TestInsertParamSearcher(t *testing.T) {
 			expectedNames: []string{"first_name", "user_last_name"},
 		},
 	}
-	settings := dinosql.Combine(dinosql.GenerateSettings{}, dinosql.PackageSettings{})
+	settings := config.Combine(config.GenerateSettings{}, config.PackageSettings{})
 	for _, tCase := range tests {
 		generator := PackageGenerator{
 			Schema:           mockSchema,

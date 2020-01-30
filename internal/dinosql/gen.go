@@ -13,6 +13,7 @@ import (
 	"unicode"
 
 	"github.com/kyleconroy/sqlc/internal/catalog"
+	"github.com/kyleconroy/sqlc/internal/config"
 	core "github.com/kyleconroy/sqlc/internal/pg"
 
 	"github.com/jinzhu/inflection"
@@ -159,12 +160,12 @@ type GoQuery struct {
 }
 
 type Generateable interface {
-	Structs(settings CombinedSettings) []GoStruct
-	GoQueries(settings CombinedSettings) []GoQuery
-	Enums(settings CombinedSettings) []GoEnum
+	Structs(settings config.CombinedSettings) []GoStruct
+	GoQueries(settings config.CombinedSettings) []GoQuery
+	Enums(settings config.CombinedSettings) []GoEnum
 }
 
-func UsesType(r Generateable, typ string, settings CombinedSettings) bool {
+func UsesType(r Generateable, typ string, settings config.CombinedSettings) bool {
 	for _, strct := range r.Structs(settings) {
 		for _, f := range strct.Fields {
 			fType := strings.TrimPrefix(f.Type, "[]")
@@ -176,7 +177,7 @@ func UsesType(r Generateable, typ string, settings CombinedSettings) bool {
 	return false
 }
 
-func UsesArrays(r Generateable, settings CombinedSettings) bool {
+func UsesArrays(r Generateable, settings config.CombinedSettings) bool {
 	for _, strct := range r.Structs(settings) {
 		for _, f := range strct.Fields {
 			if strings.HasPrefix(f.Type, "[]") {
@@ -187,7 +188,7 @@ func UsesArrays(r Generateable, settings CombinedSettings) bool {
 	return false
 }
 
-func Imports(r Generateable, settings CombinedSettings) func(string) [][]string {
+func Imports(r Generateable, settings config.CombinedSettings) func(string) [][]string {
 	return func(filename string) [][]string {
 		if filename == "db.go" {
 			imps := []string{"context", "database/sql"}
@@ -209,7 +210,7 @@ func Imports(r Generateable, settings CombinedSettings) func(string) [][]string 
 	}
 }
 
-func InterfaceImports(r Generateable, settings CombinedSettings) [][]string {
+func InterfaceImports(r Generateable, settings config.CombinedSettings) [][]string {
 	gq := r.GoQueries(settings)
 	uses := func(name string) bool {
 		for _, q := range gq {
@@ -246,10 +247,10 @@ func InterfaceImports(r Generateable, settings CombinedSettings) [][]string {
 	pkg := make(map[string]struct{})
 	overrideTypes := map[string]string{}
 	for _, o := range settings.Overrides {
-		if o.goBasicType {
+		if o.GoBasicType {
 			continue
 		}
-		overrideTypes[o.GoTypeName] = o.goPackage
+		overrideTypes[o.GoTypeName] = o.GoPackage
 	}
 
 	_, overrideNullTime := overrideTypes["pq.NullTime"]
@@ -283,7 +284,7 @@ func InterfaceImports(r Generateable, settings CombinedSettings) [][]string {
 	return [][]string{stds, pkgs}
 }
 
-func ModelImports(r Generateable, settings CombinedSettings) [][]string {
+func ModelImports(r Generateable, settings config.CombinedSettings) [][]string {
 	std := make(map[string]struct{})
 	if UsesType(r, "sql.Null", settings) {
 		std["database/sql"] = struct{}{}
@@ -302,10 +303,10 @@ func ModelImports(r Generateable, settings CombinedSettings) [][]string {
 	pkg := make(map[string]struct{})
 	overrideTypes := map[string]string{}
 	for _, o := range settings.Overrides {
-		if o.goBasicType {
+		if o.GoBasicType {
 			continue
 		}
-		overrideTypes[o.GoTypeName] = o.goPackage
+		overrideTypes[o.GoTypeName] = o.GoPackage
 	}
 
 	_, overrideNullTime := overrideTypes["pq.NullTime"]
@@ -339,7 +340,7 @@ func ModelImports(r Generateable, settings CombinedSettings) [][]string {
 	return [][]string{stds, pkgs}
 }
 
-func QueryImports(r Generateable, settings CombinedSettings, filename string) [][]string {
+func QueryImports(r Generateable, settings config.CombinedSettings, filename string) [][]string {
 	// for _, strct := range r.Structs() {
 	// 	for _, f := range strct.Fields {
 	// 		if strings.HasPrefix(f.Type, "[]") {
@@ -437,10 +438,10 @@ func QueryImports(r Generateable, settings CombinedSettings, filename string) []
 	pkg := make(map[string]struct{})
 	overrideTypes := map[string]string{}
 	for _, o := range settings.Overrides {
-		if o.goBasicType {
+		if o.GoBasicType {
 			continue
 		}
-		overrideTypes[o.GoTypeName] = o.goPackage
+		overrideTypes[o.GoTypeName] = o.GoPackage
 	}
 
 	if sliceScan() {
@@ -489,7 +490,7 @@ func enumValueName(value string) string {
 	return name
 }
 
-func (r Result) Enums(settings CombinedSettings) []GoEnum {
+func (r Result) Enums(settings config.CombinedSettings) []GoEnum {
 	var enums []GoEnum
 	for name, schema := range r.Catalog.Schemas {
 		if name == "pg_catalog" {
@@ -522,7 +523,7 @@ func (r Result) Enums(settings CombinedSettings) []GoEnum {
 	return enums
 }
 
-func StructName(name string, settings CombinedSettings) string {
+func StructName(name string, settings config.CombinedSettings) string {
 	if rename := settings.Global.Rename[name]; rename != "" {
 		return rename
 	}
@@ -537,7 +538,7 @@ func StructName(name string, settings CombinedSettings) string {
 	return out
 }
 
-func (r Result) Structs(settings CombinedSettings) []GoStruct {
+func (r Result) Structs(settings config.CombinedSettings) []GoStruct {
 	var structs []GoStruct
 	for name, schema := range r.Catalog.Schemas {
 		if name == "pg_catalog" {
@@ -572,7 +573,7 @@ func (r Result) Structs(settings CombinedSettings) []GoStruct {
 	return structs
 }
 
-func (r Result) goType(col core.Column, settings CombinedSettings) string {
+func (r Result) goType(col core.Column, settings config.CombinedSettings) string {
 	// package overrides have a higher precedence
 	for _, oride := range settings.Overrides {
 		if oride.Column != "" && oride.ColumnName == col.Name && oride.Table == col.Table {
@@ -586,7 +587,7 @@ func (r Result) goType(col core.Column, settings CombinedSettings) string {
 	return typ
 }
 
-func (r Result) goInnerType(col core.Column, settings CombinedSettings) string {
+func (r Result) goInnerType(col core.Column, settings config.CombinedSettings) string {
 	columnType := col.DataType
 	notNull := col.NotNull || col.IsArray
 
@@ -741,7 +742,7 @@ func (r Result) goInnerType(col core.Column, settings CombinedSettings) string {
 // JSON tags: count, count_2, count_2
 //
 // This is unlikely to happen, so don't fix it yet
-func (r Result) columnsToStruct(name string, columns []core.Column, settings CombinedSettings) *GoStruct {
+func (r Result) columnsToStruct(name string, columns []core.Column, settings config.CombinedSettings) *GoStruct {
 	gs := GoStruct{
 		Name: name,
 	}
@@ -801,7 +802,7 @@ func compareFQN(a *core.FQN, b *core.FQN) bool {
 	return a.Catalog == b.Catalog && a.Schema == b.Schema && a.Rel == b.Rel
 }
 
-func (r Result) GoQueries(settings CombinedSettings) []GoQuery {
+func (r Result) GoQueries(settings config.CombinedSettings) []GoQuery {
 	structs := r.Structs(settings)
 
 	qs := make([]GoQuery, 0, len(r.Queries))
@@ -1182,7 +1183,7 @@ type tmplCtx struct {
 	Enums     []GoEnum
 	Structs   []GoStruct
 	GoQueries []GoQuery
-	Settings  GenerateSettings
+	Settings  config.GenerateSettings
 
 	// TODO: Race conditions
 	SourceName string
@@ -1198,7 +1199,7 @@ func LowerTitle(s string) string {
 	return string(a)
 }
 
-func Generate(r Generateable, settings CombinedSettings) (map[string]string, error) {
+func Generate(r Generateable, settings config.CombinedSettings) (map[string]string, error) {
 	funcMap := template.FuncMap{
 		"lowerTitle": LowerTitle,
 		"imports":    Imports(r, settings),

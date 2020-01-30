@@ -6,14 +6,16 @@ import (
 	"strings"
 
 	"github.com/jinzhu/inflection"
+	"vitess.io/vitess/go/vt/sqlparser"
+
+	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/dinosql"
 	core "github.com/kyleconroy/sqlc/internal/pg"
-	"vitess.io/vitess/go/vt/sqlparser"
 )
 
 type PackageGenerator struct {
 	*Schema
-	dinosql.CombinedSettings
+	config.CombinedSettings
 	packageName string
 }
 
@@ -23,7 +25,7 @@ type Result struct {
 }
 
 // Enums generates parser-agnostic GoEnum types
-func (r *Result) Enums(settings dinosql.CombinedSettings) []dinosql.GoEnum {
+func (r *Result) Enums(settings config.CombinedSettings) []dinosql.GoEnum {
 	var enums []dinosql.GoEnum
 	for _, table := range r.Schema.tables {
 		for _, col := range table {
@@ -62,7 +64,7 @@ func (pGen PackageGenerator) enumNameFromColDef(col *sqlparser.ColumnDefinition)
 }
 
 // Structs marshels each query into a go struct for generation
-func (r *Result) Structs(settings dinosql.CombinedSettings) []dinosql.GoStruct {
+func (r *Result) Structs(settings config.CombinedSettings) []dinosql.GoStruct {
 	var structs []dinosql.GoStruct
 	for tableName, cols := range r.Schema.tables {
 		s := dinosql.GoStruct{
@@ -85,7 +87,7 @@ func (r *Result) Structs(settings dinosql.CombinedSettings) []dinosql.GoStruct {
 }
 
 // GoQueries generates parser-agnostic query information for code generation
-func (r *Result) GoQueries(settings dinosql.CombinedSettings) []dinosql.GoQuery {
+func (r *Result) GoQueries(settings config.CombinedSettings) []dinosql.GoQuery {
 	structs := r.Structs(settings)
 
 	qs := make([]dinosql.GoQuery, 0, len(r.Queries))
@@ -195,7 +197,7 @@ type structParams struct {
 	goType       string
 }
 
-func (r *Result) columnsToStruct(name string, items []structParams, settings dinosql.CombinedSettings) *dinosql.GoStruct {
+func (r *Result) columnsToStruct(name string, items []structParams, settings config.CombinedSettings) *dinosql.GoStruct {
 	gs := dinosql.GoStruct{
 		Name: name,
 	}

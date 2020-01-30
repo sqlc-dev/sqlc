@@ -4,8 +4,9 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/kyleconroy/sqlc/internal/dinosql"
 	"vitess.io/vitess/go/vt/sqlparser"
+
+	"github.com/kyleconroy/sqlc/internal/config"
 )
 
 func TestCustomArgErr(t *testing.T) {
@@ -38,7 +39,7 @@ func TestCustomArgErr(t *testing.T) {
 			},
 		},
 	}
-	settings := dinosql.Combine(dinosql.GenerateSettings{}, dinosql.PackageSettings{})
+	settings := config.Combine(config.GenerateSettings{}, config.PackageSettings{})
 	generator := PackageGenerator{mockSchema, settings, "db"}
 	for _, tcase := range tests {
 		q, err := generator.parseContents("queries.sql", tcase.input)
@@ -82,7 +83,7 @@ func TestPositionedErr(t *testing.T) {
 		},
 	}
 
-	settings := dinosql.Combine(dinosql.GenerateSettings{}, dinosql.PackageSettings{})
+	settings := config.Combine(config.GenerateSettings{}, config.PackageSettings{})
 	for _, tcase := range tests {
 		generator := PackageGenerator{mockSchema, settings, "db"}
 		q, err := generator.parseContents("queries.sql", tcase.input)

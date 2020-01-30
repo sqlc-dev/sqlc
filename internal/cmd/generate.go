@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/dinosql"
 	"github.com/kyleconroy/sqlc/internal/mysql"
 )
@@ -39,14 +40,14 @@ func Generate(dir string, stderr io.Writer) (map[string]string, error) {
 		return nil, err
 	}
 
-	settings, err := dinosql.ParseConfig(bytes.NewReader(blob))
+	settings, err := config.ParseConfig(bytes.NewReader(blob))
 	if err != nil {
 		switch err {
-		case dinosql.ErrMissingVersion:
+		case config.ErrMissingVersion:
 			fmt.Fprintf(stderr, errMessageNoVersion)
-		case dinosql.ErrUnknownVersion:
+		case config.ErrUnknownVersion:
 			fmt.Fprintf(stderr, errMessageUnknownVersion)
-		case dinosql.ErrNoPackages:
+		case config.ErrNoPackages:
 			fmt.Fprintf(stderr, errMessageNoPackages)
 		}
 		fmt.Fprintf(stderr, "error parsing sqlc.json: %s\n", err)
@@ -58,7 +59,7 @@ func Generate(dir string, stderr io.Writer) (map[string]string, error) {
 
 	for _, pkg := range settings.Packages {
 		name := pkg.Name
-		combo := dinosql.Combine(settings, pkg)
+		combo := config.Combine(settings, pkg)
 		var result dinosql.Generateable
 
 		// TODO: This feels like a hack that will bite us later
@@ -67,7 +68,7 @@ func Generate(dir string, stderr io.Writer) (map[string]string, error) {
 
 		switch pkg.Engine {
 
-		case dinosql.EngineMySQL:
+		case config.EngineMySQL:
 			// Experimental MySQL support
 			q, err := mysql.GeneratePkg(name, pkg.Schema, pkg.Queries, combo)
 			if err != nil {
@@ -84,7 +85,7 @@ func Generate(dir string, stderr io.Writer) (map[string]string, error) {
 			}
 			result = q
 
-		case dinosql.EnginePostgreSQL:
+		case config.EnginePostgreSQL:
 			c, err := dinosql.ParseCatalog(pkg.Schema)
 			if err != nil {
 				fmt.Fprintf(stderr, "# package %s\n", name)

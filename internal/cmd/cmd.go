@@ -9,11 +9,12 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/kyleconroy/sqlc/internal/dinosql"
-
 	"github.com/davecgh/go-spew/spew"
 	pg "github.com/lfittl/pg_query_go"
 	"github.com/spf13/cobra"
+
+	"github.com/kyleconroy/sqlc/internal/config"
+	"github.com/kyleconroy/sqlc/internal/dinosql"
 )
 
 // Do runs the command logic.
@@ -74,7 +75,7 @@ var initCmd = &cobra.Command{
 		if _, err := os.Stat("sqlc.json"); !os.IsNotExist(err) {
 			return nil
 		}
-		blob, err := json.MarshalIndent(dinosql.GenerateSettings{Version: "1"}, "", "  ")
+		blob, err := json.MarshalIndent(config.GenerateSettings{Version: "1"}, "", "  ")
 		if err != nil {
 			return err
 		}
@@ -117,7 +118,7 @@ var checkCmd = &cobra.Command{
 			return err
 		}
 
-		settings, err := dinosql.ParseConfig(file)
+		settings, err := config.ParseConfig(file)
 		if err != nil {
 			return err
 		}
