@@ -56,6 +56,34 @@ func ParseList(list nodes.List) (pg.FQN, error) {
 	return fqn, nil
 }
 
+func ParseString(name string) (pg.FQN, error) {
+	parts := strings.Split(name, ".")
+	var fqn pg.FQN
+	switch len(parts) {
+	case 1:
+		fqn = pg.FQN{
+			Catalog: "",
+			Schema:  "public",
+			Rel:     parts[0],
+		}
+	case 2:
+		fqn = pg.FQN{
+			Catalog: "",
+			Schema:  parts[0],
+			Rel:     parts[1],
+		}
+	case 3:
+		fqn = pg.FQN{
+			Catalog: parts[0],
+			Schema:  parts[1],
+			Rel:     parts[2],
+		}
+	default:
+		return fqn, fmt.Errorf("Invalid FQN: %s", name)
+	}
+	return fqn, nil
+}
+
 func wrap(e pg.Error, loc int) pg.Error {
 	return e
 }

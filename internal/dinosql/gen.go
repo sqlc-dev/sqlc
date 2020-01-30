@@ -12,6 +12,7 @@ import (
 	"text/template"
 	"unicode"
 
+	"github.com/kyleconroy/sqlc/internal/catalog"
 	core "github.com/kyleconroy/sqlc/internal/pg"
 
 	"github.com/jinzhu/inflection"
@@ -700,20 +701,26 @@ func (r Result) goInnerType(col core.Column, settings CombinedSettings) string {
 		return "interface{}"
 
 	default:
+		fqn, err := catalog.ParseString(columnType)
+		if err != nil {
+			// TODO: Should this actually return an error here?
+			return "interface{}"
+		}
+
 		for name, schema := range r.Catalog.Schemas {
 			if name == "pg_catalog" {
 				continue
 			}
 			for _, enum := range schema.Enums {
-				if columnType == enum.Name {
+				if fqn.Rel == enum.Name && fqn.Schema == name {
 					if name == "public" {
 						return StructName(enum.Name, settings)
 					}
-
 					return StructName(name+"_"+enum.Name, settings)
 				}
 			}
 		}
+
 		log.Printf("unknown PostgreSQL type: %s\n", columnType)
 		return "interface{}"
 	}
