@@ -35,7 +35,7 @@ func TestUpdate(t *testing.T) {
 			pg.Catalog{
 				Schemas: map[string]pg.Schema{
 					"public": {
-						Enums: map[string]pg.Enum{
+						Types: map[string]pg.Type{
 							"status": pg.Enum{
 								Name: "status",
 								Vals: []string{"open", "closed"},
@@ -229,7 +229,7 @@ func TestUpdate(t *testing.T) {
 			pg.Catalog{
 				Schemas: map[string]pg.Schema{
 					"public": {
-						Enums: map[string]pg.Enum{
+						Types: map[string]pg.Type{
 							"status": pg.Enum{
 								Name: "status",
 								Vals: []string{"open", "closed"},
@@ -263,7 +263,7 @@ func TestUpdate(t *testing.T) {
 			pg.Catalog{
 				Schemas: map[string]pg.Schema{
 					"public": {
-						Enums: map[string]pg.Enum{},
+						Types: map[string]pg.Type{},
 						Tables: map[string]pg.Table{
 							"arenas": pg.Table{
 								Name: "arenas",
@@ -337,7 +337,7 @@ func TestUpdate(t *testing.T) {
 			pg.Catalog{
 				Schemas: map[string]pg.Schema{
 					"public": {
-						Enums: map[string]pg.Enum{},
+						Types: map[string]pg.Type{},
 						Tables: map[string]pg.Table{
 							"venues": pg.Table{
 								Name: "venues",
@@ -530,7 +530,7 @@ func TestUpdate(t *testing.T) {
 								},
 							},
 						},
-						Enums: map[string]pg.Enum{"bat": {Comment: "Enum comment", Name: "bat", Vals: []string{"bat"}}},
+						Types: map[string]pg.Type{"bat": pg.Enum{Comment: "Enum comment", Name: "bat", Vals: []string{"bat"}}},
 						Funcs: map[string][]pg.Function{},
 					},
 				},
@@ -561,7 +561,7 @@ func TestUpdate(t *testing.T) {
 								},
 							},
 						},
-						Enums: map[string]pg.Enum{"bat": {Comment: "Enum comment", Name: "bat", Vals: []string{"bat"}}},
+						Types: map[string]pg.Type{"bat": pg.Enum{Comment: "Enum comment", Name: "bat", Vals: []string{"bat"}}},
 						Funcs: map[string][]pg.Function{},
 					},
 				},
