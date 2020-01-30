@@ -1,4 +1,4 @@
-package dinosql
+package config
 
 import (
 	"strings"
@@ -107,10 +107,10 @@ func TestTypeOverrides(t *testing.T) {
 			if diff := cmp.Diff(tt.typeName, tt.override.GoTypeName); diff != "" {
 				t.Errorf("type name mismatch;\n%s", diff)
 			}
-			if diff := cmp.Diff(tt.pkg, tt.override.goPackage); diff != "" {
+			if diff := cmp.Diff(tt.pkg, tt.override.GoPackage); diff != "" {
 				t.Errorf("package mismatch;\n%s", diff)
 			}
-			if diff := cmp.Diff(tt.basic, tt.override.goBasicType); diff != "" {
+			if diff := cmp.Diff(tt.basic, tt.override.GoBasicType); diff != "" {
 				t.Errorf("basic mismatch;\n%s", diff)
 			}
 		})

@@ -4,9 +4,11 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"vitess.io/vitess/go/vt/sqlparser"
+
+	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/dinosql"
 	"github.com/kyleconroy/sqlc/internal/pg"
-	"vitess.io/vitess/go/vt/sqlparser"
 )
 
 func TestArgName(t *testing.T) {
@@ -54,7 +56,7 @@ func TestEnumName(t *testing.T) {
 		},
 	}
 
-	generator := PackageGenerator{mockSchema, dinosql.CombinedSettings{}, ""}
+	generator := PackageGenerator{mockSchema, config.CombinedSettings{}, ""}
 	for _, tc := range tcase {
 		enumName := generator.enumNameFromColDef(&tc.input)
 		if diff := cmp.Diff(enumName, tc.output); diff != "" {
@@ -64,7 +66,7 @@ func TestEnumName(t *testing.T) {
 }
 
 func TestEnums(t *testing.T) {
-	generator := PackageGenerator{mockSchema, dinosql.CombinedSettings{}, ""}
+	generator := PackageGenerator{mockSchema, config.CombinedSettings{}, ""}
 	tcase := [...]struct {
 		input  Result
 		output []dinosql.GoEnum
@@ -84,7 +86,7 @@ func TestEnums(t *testing.T) {
 			},
 		},
 	}
-	settings := dinosql.Combine(dinosql.GenerateSettings{}, dinosql.PackageSettings{})
+	settings := config.Combine(config.GenerateSettings{}, config.PackageSettings{})
 	for _, tc := range tcase {
 		enums := tc.input.Enums(settings)
 		if diff := cmp.Diff(enums, tc.output); diff != "" {
@@ -94,7 +96,7 @@ func TestEnums(t *testing.T) {
 }
 
 func TestStructs(t *testing.T) {
-	settings := dinosql.Combine(dinosql.GenerateSettings{}, dinosql.PackageSettings{})
+	settings := config.Combine(config.GenerateSettings{}, config.PackageSettings{})
 	generator := PackageGenerator{mockSchema, settings, "db"}
 	tcase := [...]struct {
 		input  Result
@@ -136,12 +138,12 @@ func TestStructs(t *testing.T) {
 
 func TestTypeOverride(t *testing.T) {
 	tests := [...]struct {
-		overrides      []dinosql.Override
+		overrides      []config.Override
 		col            Column
 		expectedGoType string
 	}{
 		{
-			overrides: []dinosql.Override{
+			overrides: []config.Override{
 				{
 					DBType:     "uuid",
 					GoTypeName: "KSUID", // this is populated by the dinosql.Parse
@@ -158,7 +160,7 @@ func TestTypeOverride(t *testing.T) {
 			expectedGoType: "KSUID",
 		},
 		{
-			overrides: []dinosql.Override{
+			overrides: []config.Override{
 				{
 					ColumnName: "user_id", // this is populated by dinosql.Parse
 					GoTypeName: "uuid",    // this is populated by dinosql.Parse
@@ -178,7 +180,7 @@ func TestTypeOverride(t *testing.T) {
 	}
 
 	for _, tcase := range tests {
-		settings := dinosql.Combine(dinosql.GenerateSettings{}, dinosql.PackageSettings{Overrides: tcase.overrides})
+		settings := config.Combine(config.GenerateSettings{}, config.PackageSettings{Overrides: tcase.overrides})
 		gen := PackageGenerator{mockSchema, settings, "db"}
 		goType := gen.goTypeCol(tcase.col)
 

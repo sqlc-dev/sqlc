@@ -1,4 +1,4 @@
-package dinosql
+package config
 
 import (
 	"encoding/json"
@@ -74,8 +74,8 @@ type Override struct {
 	ColumnName  string
 	Table       pg.FQN
 	GoTypeName  string
-	goPackage   string
-	goBasicType bool
+	GoPackage   string
+	GoBasicType bool
 }
 
 func (c *GenerateSettings) ValidateGlobalOverrides() error {
@@ -154,7 +154,7 @@ func (o *Override) Parse() error {
 		if !found {
 			return fmt.Errorf("Package override `go_type` specifier %q is not a Go basic type e.g. 'string'", o.GoType)
 		}
-		o.goBasicType = true
+		o.GoBasicType = true
 	} else {
 		// assume the type lives in a Go package
 		if lastDot == -1 {
@@ -174,12 +174,12 @@ func (o *Override) Parse() error {
 		if strings.HasSuffix(typename, "-go") {
 			typename = typename[:len(typename)-len("-go")]
 		}
-		o.goPackage = o.GoType[:lastDot]
+		o.GoPackage = o.GoType[:lastDot]
 	}
 	o.GoTypeName = typename
 	isPointer := o.GoType[0] == '*'
 	if isPointer {
-		o.goPackage = o.goPackage[1:]
+		o.GoPackage = o.GoPackage[1:]
 		o.GoTypeName = "*" + o.GoTypeName
 	}
 

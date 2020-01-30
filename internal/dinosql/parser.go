@@ -13,6 +13,7 @@ import (
 	"unicode"
 
 	"github.com/kyleconroy/sqlc/internal/catalog"
+	"github.com/kyleconroy/sqlc/internal/config"
 	core "github.com/kyleconroy/sqlc/internal/pg"
 	"github.com/kyleconroy/sqlc/internal/postgres"
 
@@ -188,7 +189,7 @@ type Result struct {
 	Catalog core.Catalog
 }
 
-func ParseQueries(c core.Catalog, pkg PackageSettings) (*Result, error) {
+func ParseQueries(c core.Catalog, pkg config.PackageSettings) (*Result, error) {
 	f, err := os.Stat(pkg.Queries)
 	if err != nil {
 		return nil, fmt.Errorf("path %s does not exist", pkg.Queries)
