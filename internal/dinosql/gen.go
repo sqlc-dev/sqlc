@@ -495,7 +495,7 @@ func (r Result) Enums(settings CombinedSettings) []GoEnum {
 		if name == "pg_catalog" {
 			continue
 		}
-		for _, enum := range schema.Enums {
+		for _, enum := range schema.Enums() {
 			var enumName string
 			if name == "public" {
 				enumName = enum.Name
@@ -711,12 +711,20 @@ func (r Result) goInnerType(col core.Column, settings CombinedSettings) string {
 			if name == "pg_catalog" {
 				continue
 			}
-			for _, enum := range schema.Enums {
-				if fqn.Rel == enum.Name && fqn.Schema == name {
-					if name == "public" {
-						return StructName(enum.Name, settings)
+			for _, typ := range schema.Types {
+				switch t := typ.(type) {
+				case core.Enum:
+					if fqn.Rel == t.Name && fqn.Schema == name {
+						if name == "public" {
+							return StructName(t.Name, settings)
+						}
+						return StructName(name+"_"+t.Name, settings)
 					}
-					return StructName(name+"_"+enum.Name, settings)
+				case core.CompositeType:
+					if notNull {
+						return "string"
+					}
+					return "sql.NullString"
 				}
 			}
 		}
