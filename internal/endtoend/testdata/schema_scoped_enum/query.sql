@@ -6,4 +6,5 @@ CREATE TABLE foo.users (
     role foo.type_user_role
 );
 
+-- name: ListUsersByRole :many
 SELECT * FROM foo.users WHERE role = $1;
