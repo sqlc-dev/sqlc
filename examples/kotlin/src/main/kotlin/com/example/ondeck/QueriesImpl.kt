@@ -17,11 +17,6 @@ INSERT INTO city (
 ) RETURNING slug, name
 """
 
-data class CreateCityParams (
-  val name: String,
-  val slug: String
-)
-
 const val createVenue = """-- name: createVenue :one
 INSERT INTO venue (
     slug,
@@ -44,16 +39,6 @@ INSERT INTO venue (
 ) RETURNING id
 """
 
-data class CreateVenueParams (
-  val slug: String,
-  val name: String,
-  val city: String,
-  val spotifyPlaylist: String,
-  val status: Status,
-  val statuses: List<Status>,
-  val tags: List<String>
-)
-
 const val deleteVenue = """-- name: deleteVenue :exec
 DELETE FROM venue
 WHERE slug = ? AND slug = ?
@@ -70,11 +55,6 @@ SELECT id, status, statuses, slug, name, city, spotify_playlist, songkick_id, ta
 FROM venue
 WHERE slug = ? AND city = ?
 """
-
-data class GetVenueParams (
-  val slug: String,
-  val city: String
-)
 
 const val listCities = """-- name: listCities :many
 SELECT slug, name
@@ -95,22 +75,12 @@ SET name = ?
 WHERE slug = ?
 """
 
-data class UpdateCityNameParams (
-  val name: String,
-  val slug: String
-)
-
 const val updateVenueName = """-- name: updateVenueName :one
 UPDATE venue
 SET name = ?
 WHERE slug = ?
 RETURNING id
 """
-
-data class UpdateVenueNameParams (
-  val name: String,
-  val slug: String
-)
 
 const val venueCountByCity = """-- name: venueCountByCity :many
 SELECT
@@ -133,10 +103,10 @@ class QueriesImpl(private val conn: Connection) : Queries {
 // This is the third line
 
   @Throws(SQLException::class)
-  override fun createCity(arg: CreateCityParams): City {
+  override fun createCity(name: String, slug: String): City {
     return conn.prepareStatement(createCity).use { stmt ->
-      stmt.setString(1, arg.name)
-      stmt.setString(2, arg.slug)
+      stmt.setString(1, name)
+      stmt.setString(2, slug)
 
       val results = stmt.executeQuery()
       if (!results.next()) {
@@ -154,15 +124,22 @@ class QueriesImpl(private val conn: Connection) : Queries {
   }
 
   @Throws(SQLException::class)
-  override fun createVenue(arg: CreateVenueParams): Int {
+  override fun createVenue(
+      slug: String,
+      name: String,
+      city: String,
+      spotifyPlaylist: String,
+      status: Status,
+      statuses: List<Status>,
+      tags: List<String>): Int {
     return conn.prepareStatement(createVenue).use { stmt ->
-      stmt.setString(1, arg.slug)
-      stmt.setString(2, arg.name)
-      stmt.setString(3, arg.city)
-      stmt.setString(4, arg.spotifyPlaylist)
-      stmt.setObject(5, arg.status.value, Types.OTHER)
-      stmt.setArray(6, conn.createArrayOf("status", arg.statuses.map { v -> v.value }.toTypedArray()))
-      stmt.setArray(7, conn.createArrayOf("text", arg.tags.toTypedArray()))
+      stmt.setString(1, slug)
+      stmt.setString(2, name)
+      stmt.setString(3, city)
+      stmt.setString(4, spotifyPlaylist)
+      stmt.setObject(5, status.value, Types.OTHER)
+      stmt.setArray(6, conn.createArrayOf("status", statuses.map { v -> v.value }.toTypedArray()))
+      stmt.setArray(7, conn.createArrayOf("text", tags.toTypedArray()))
 
       val results = stmt.executeQuery()
       if (!results.next()) {
@@ -207,10 +184,10 @@ class QueriesImpl(private val conn: Connection) : Queries {
   }
 
   @Throws(SQLException::class)
-  override fun getVenue(arg: GetVenueParams): Venue {
+  override fun getVenue(slug: String, city: String): Venue {
     return conn.prepareStatement(getVenue).use { stmt ->
-      stmt.setString(1, arg.slug)
-      stmt.setString(2, arg.city)
+      stmt.setString(1, slug)
+      stmt.setString(2, city)
 
       val results = stmt.executeQuery()
       if (!results.next()) {
@@ -277,20 +254,20 @@ class QueriesImpl(private val conn: Connection) : Queries {
   }
 
   @Throws(SQLException::class)
-  override fun updateCityName(arg: UpdateCityNameParams) {
+  override fun updateCityName(name: String, slug: String) {
     conn.prepareStatement(updateCityName).use { stmt ->
-      stmt.setString(1, arg.name)
-      stmt.setString(2, arg.slug)
+      stmt.setString(1, name)
+      stmt.setString(2, slug)
 
       stmt.execute()
     }
   }
 
   @Throws(SQLException::class)
-  override fun updateVenueName(arg: UpdateVenueNameParams): Int {
+  override fun updateVenueName(name: String, slug: String): Int {
     return conn.prepareStatement(updateVenueName).use { stmt ->
-      stmt.setString(1, arg.name)
-      stmt.setString(2, arg.slug)
+      stmt.setString(1, name)
+      stmt.setString(2, slug)
 
       val results = stmt.executeQuery()
       if (!results.next()) {

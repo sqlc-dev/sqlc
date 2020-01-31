@@ -4,12 +4,13 @@ import com.example.dbtest.DbTestExtension
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
-import java.sql.Connection
 
 class QueriesImplTest() {
 
     companion object {
-        @JvmField @RegisterExtension val dbtest = DbTestExtension("src/main/resources/authors/schema.sql")
+        @JvmField
+        @RegisterExtension
+        val dbtest = DbTestExtension("src/main/resources/authors/schema.sql")
     }
 
     @Test
@@ -19,12 +20,13 @@ class QueriesImplTest() {
         val initialAuthors = db.listAuthors()
         assert(initialAuthors.isEmpty())
 
-        val params = CreateAuthorParams(
-            name = "Brian Kernighan",
-            bio = "Co-author of The C Programming Language and The Go Programming Language"
+        val name = "Brian Kernighan"
+        val bio = "Co-author of The C Programming Language and The Go Programming Language"
+        val insertedAuthor = db.createAuthor(
+            name = name,
+            bio = bio
         )
-        val insertedAuthor = db.createAuthor(params)
-        val expectedAuthor = Author(insertedAuthor.id, params.name, params.bio)
+        val expectedAuthor = Author(insertedAuthor.id, name, bio)
         assertEquals(expectedAuthor, insertedAuthor)
 
         val fetchedAuthor = db.getAuthor(insertedAuthor.id)
@@ -42,12 +44,10 @@ class QueriesImplTest() {
         val initialAuthors = db.listAuthors()
         assert(initialAuthors.isEmpty())
 
-        val params = CreateAuthorParams(
-            name = "Brian Kernighan",
-            bio = null
-        )
-        val insertedAuthor = db.createAuthor(params)
-        val expectedAuthor = Author(insertedAuthor.id, params.name, params.bio)
+        val name = "Brian Kernighan"
+        val bio = null
+        val insertedAuthor = db.createAuthor(name, bio)
+        val expectedAuthor = Author(insertedAuthor.id, name, bio)
         assertEquals(expectedAuthor, insertedAuthor)
 
         val fetchedAuthor = db.getAuthor(insertedAuthor.id)

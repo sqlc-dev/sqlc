@@ -32,11 +32,6 @@ SELECT book_id, author_id, isbn, booktype, title, year, available, tags FROM boo
 WHERE title = ? AND year = ?
 """
 
-data class BooksByTitleYearParams (
-  val title: String,
-  val year: Int
-)
-
 const val createAuthor = """-- name: createAuthor :one
 INSERT INTO authors (name) VALUES (?)
 RETURNING author_id, name
@@ -63,16 +58,6 @@ INSERT INTO books (
 RETURNING book_id, author_id, isbn, booktype, title, year, available, tags
 """
 
-data class CreateBookParams (
-  val authorId: Int,
-  val isbn: String,
-  val booktype: BookType,
-  val title: String,
-  val year: Int,
-  val available: OffsetDateTime,
-  val tags: List<String>
-)
-
 const val deleteBook = """-- name: deleteBook :exec
 DELETE FROM books
 WHERE book_id = ?
@@ -94,31 +79,18 @@ SET title = ?, tags = ?
 WHERE book_id = ?
 """
 
-data class UpdateBookParams (
-  val title: String,
-  val tags: List<String>,
-  val bookId: Int
-)
-
 const val updateBookISBN = """-- name: updateBookISBN :exec
 UPDATE books
 SET title = ?, tags = ?, isbn = ?
 WHERE book_id = ?
 """
 
-data class UpdateBookISBNParams (
-  val title: String,
-  val tags: List<String>,
-  val isbn: String,
-  val bookId: Int
-)
-
 class QueriesImpl(private val conn: Connection) {
 
   @Throws(SQLException::class)
-  fun booksByTags(dollar_1: List<String>): List<BooksByTagsRow> {
+  fun booksByTags(dollar1: List<String>): List<BooksByTagsRow> {
     return conn.prepareStatement(booksByTags).use { stmt ->
-      stmt.setArray(1, conn.createArrayOf("pg_catalog.varchar", dollar_1.toTypedArray()))
+      stmt.setArray(1, conn.createArrayOf("pg_catalog.varchar", dollar1.toTypedArray()))
 
       val results = stmt.executeQuery()
       val ret = mutableListOf<BooksByTagsRow>()
@@ -136,10 +108,10 @@ class QueriesImpl(private val conn: Connection) {
   }
 
   @Throws(SQLException::class)
-  fun booksByTitleYear(arg: BooksByTitleYearParams): List<Book> {
+  fun booksByTitleYear(title: String, year: Int): List<Book> {
     return conn.prepareStatement(booksByTitleYear).use { stmt ->
-      stmt.setString(1, arg.title)
-      stmt.setInt(2, arg.year)
+      stmt.setString(1, title)
+      stmt.setInt(2, year)
 
       val results = stmt.executeQuery()
       val ret = mutableListOf<Book>()
@@ -180,15 +152,22 @@ class QueriesImpl(private val conn: Connection) {
   }
 
   @Throws(SQLException::class)
-  fun createBook(arg: CreateBookParams): Book {
+  fun createBook(
+      authorId: Int,
+      isbn: String,
+      booktype: BookType,
+      title: String,
+      year: Int,
+      available: OffsetDateTime,
+      tags: List<String>): Book {
     return conn.prepareStatement(createBook).use { stmt ->
-      stmt.setInt(1, arg.authorId)
-      stmt.setString(2, arg.isbn)
-      stmt.setObject(3, arg.booktype.value, Types.OTHER)
-      stmt.setString(4, arg.title)
-      stmt.setInt(5, arg.year)
-      stmt.setObject(6, arg.available)
-      stmt.setArray(7, conn.createArrayOf("pg_catalog.varchar", arg.tags.toTypedArray()))
+      stmt.setInt(1, authorId)
+      stmt.setString(2, isbn)
+      stmt.setObject(3, booktype.value, Types.OTHER)
+      stmt.setString(4, title)
+      stmt.setInt(5, year)
+      stmt.setObject(6, available)
+      stmt.setArray(7, conn.createArrayOf("pg_catalog.varchar", tags.toTypedArray()))
 
       val results = stmt.executeQuery()
       if (!results.next()) {
@@ -267,23 +246,30 @@ class QueriesImpl(private val conn: Connection) {
   }
 
   @Throws(SQLException::class)
-  fun updateBook(arg: UpdateBookParams) {
+  fun updateBook(
+      title: String,
+      tags: List<String>,
+      bookId: Int) {
     conn.prepareStatement(updateBook).use { stmt ->
-      stmt.setString(1, arg.title)
-      stmt.setArray(2, conn.createArrayOf("pg_catalog.varchar", arg.tags.toTypedArray()))
-      stmt.setInt(3, arg.bookId)
+      stmt.setString(1, title)
+      stmt.setArray(2, conn.createArrayOf("pg_catalog.varchar", tags.toTypedArray()))
+      stmt.setInt(3, bookId)
 
       stmt.execute()
     }
   }
 
   @Throws(SQLException::class)
-  fun updateBookISBN(arg: UpdateBookISBNParams) {
+  fun updateBookISBN(
+      title: String,
+      tags: List<String>,
+      isbn: String,
+      bookId: Int) {
     conn.prepareStatement(updateBookISBN).use { stmt ->
-      stmt.setString(1, arg.title)
-      stmt.setArray(2, conn.createArrayOf("pg_catalog.varchar", arg.tags.toTypedArray()))
-      stmt.setString(3, arg.isbn)
-      stmt.setInt(4, arg.bookId)
+      stmt.setString(1, title)
+      stmt.setArray(2, conn.createArrayOf("pg_catalog.varchar", tags.toTypedArray()))
+      stmt.setString(3, isbn)
+      stmt.setInt(4, bookId)
 
       stmt.execute()
     }

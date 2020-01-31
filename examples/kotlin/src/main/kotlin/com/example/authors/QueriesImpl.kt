@@ -14,11 +14,6 @@ INSERT INTO authors (
 RETURNING id, name, bio
 """
 
-data class CreateAuthorParams (
-  val name: String,
-  val bio: String?
-)
-
 const val deleteAuthor = """-- name: deleteAuthor :exec
 DELETE FROM authors
 WHERE id = ?
@@ -37,10 +32,10 @@ ORDER BY name
 class QueriesImpl(private val conn: Connection) {
 
   @Throws(SQLException::class)
-  fun createAuthor(arg: CreateAuthorParams): Author {
+  fun createAuthor(name: String, bio: String?): Author {
     return conn.prepareStatement(createAuthor).use { stmt ->
-      stmt.setString(1, arg.name)
-      stmt.setString(2, arg.bio)
+      stmt.setString(1, name)
+      stmt.setString(2, bio)
 
       val results = stmt.executeQuery()
       if (!results.next()) {

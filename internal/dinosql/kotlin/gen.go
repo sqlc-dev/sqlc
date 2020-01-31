@@ -64,13 +64,6 @@ func (v KtQueryValue) isEmpty() bool {
 	return v.Typ == (ktType{}) && v.Name == "" && v.Struct == nil
 }
 
-func (v KtQueryValue) Pair() string {
-	if v.isEmpty() {
-		return ""
-	}
-	return v.Name + ": " + v.Type()
-}
-
 func (v KtQueryValue) Type() string {
 	if v.Typ != (ktType{}) {
 		return v.Typ.String()
@@ -97,23 +90,35 @@ func jdbcSet(t ktType, idx int, name string) string {
 	return fmt.Sprintf("stmt.set%s(%d, %s)", t.Name, idx, name)
 }
 
-func (v KtQueryValue) Params() string {
+type KtParams struct {
+	Struct *KtStruct
+}
+
+func (v KtParams) isEmpty() bool {
+	return len(v.Struct.Fields) == 0
+}
+
+func (v KtParams) Args() string {
 	if v.isEmpty() {
 		return ""
 	}
 	var out []string
-	if v.Struct == nil {
-		repeat := 1
-		if v.JDBCParamBindCount > 0 {
-			repeat = v.JDBCParamBindCount
-		}
-		for i := 1; i <= repeat; i++ {
-			out = append(out, jdbcSet(v.Typ, i, v.Name))
-		}
-	} else {
-		for i, f := range v.Struct.JDBCParamBindings {
-			out = append(out, jdbcSet(f.Type, i+1, v.Name+"."+f.Name))
-		}
+	for _, f := range v.Struct.Fields {
+		out = append(out, f.Name+": "+f.Type.String())
+	}
+	if len(out) < 3 {
+		return strings.Join(out, ", ")
+	}
+	return "\n" + indent(strings.Join(out, ",\n"), 6, -1)
+}
+
+func (v KtParams) Bindings() string {
+	if v.isEmpty() {
+		return ""
+	}
+	var out []string
+	for i, f := range v.Struct.JDBCParamBindings {
+		out = append(out, jdbcSet(f.Type, i+1, f.Name))
 	}
 	return indent(strings.Join(out, "\n"), 6, 0)
 }
@@ -143,7 +148,7 @@ func (v KtQueryValue) ResultSet() string {
 		out = append(out, jdbcGet(f.Type, i+1))
 	}
 	ret := indent(strings.Join(out, ",\n"), 4, -1)
-	ret = indent(v.Struct.Name + "(\n" + ret + "\n)", 8, 0)
+	ret = indent(v.Struct.Name+"(\n"+ret+"\n)", 8, 0)
 	return ret
 }
 
@@ -177,7 +182,7 @@ type KtQuery struct {
 	SQL          string
 	SourceName   string
 	Ret          KtQueryValue
-	Arg          KtQueryValue
+	Arg          KtParams
 }
 
 type KtGenerateable interface {
@@ -221,8 +226,10 @@ func InterfaceKtImports(r KtGenerateable, settings dinosql.CombinedSettings) [][
 				}
 			}
 			if !q.Arg.isEmpty() {
-				if strings.HasPrefix(q.Arg.Type(), name) {
-					return true
+				for _, f := range q.Arg.Struct.Fields {
+					if strings.HasPrefix(f.Type.Name, name) {
+						return true
+					}
 				}
 			}
 		}
@@ -307,15 +314,10 @@ func QueryKtImports(r KtGenerateable, settings dinosql.CombinedSettings, filenam
 				}
 			}
 			if !q.Arg.isEmpty() {
-				if q.Arg.EmitStruct() {
-					for _, f := range q.Arg.Struct.Fields {
-						if f.Type.Name == name {
-							return true
-						}
+				for _, f := range q.Arg.Struct.Fields {
+					if f.Type.Name == name {
+						return true
 					}
-				}
-				if q.Arg.Type() == name {
-					return true
 				}
 			}
 		}
@@ -325,14 +327,8 @@ func QueryKtImports(r KtGenerateable, settings dinosql.CombinedSettings, filenam
 	hasEnum := func() bool {
 		for _, q := range gq {
 			if !q.Arg.isEmpty() {
-				if q.Arg.IsStruct() {
-					for _, f := range q.Arg.Struct.Fields {
-						if f.Type.IsEnum {
-							return true
-						}
-					}
-				} else {
-					if q.Arg.Typ.IsEnum {
+				for _, f := range q.Arg.Struct.Fields {
+					if f.Type.IsEnum {
 						return true
 					}
 				}
@@ -624,18 +620,18 @@ type goColumn struct {
 	core.Column
 }
 
-func (r Result) ktColumnsToStruct(name string, columns []goColumn, settings dinosql.CombinedSettings) *KtStruct {
+func (r Result) ktColumnsToStruct(name string, columns []goColumn, settings dinosql.CombinedSettings, namer func(core.Column, int) string) *KtStruct {
 	gs := KtStruct{
 		Name: name,
 	}
 	idSeen := map[int]KtField{}
 	nameSeen := map[string]int{}
-	for i, c := range columns {
+	for _, c := range columns {
 		if binding, ok := idSeen[c.id]; ok {
 			gs.JDBCParamBindings = append(gs.JDBCParamBindings, binding)
 			continue
 		}
-		fieldName := KtMemberName(ktColumnName(c.Column, i), settings)
+		fieldName := KtMemberName(namer(c.Column, c.id), settings)
 		if v := nameSeen[c.Name]; v > 0 {
 			fieldName = fmt.Sprintf("%s_%d", fieldName, v+1)
 		}
@@ -663,12 +659,13 @@ func ktArgName(name string) string {
 	return out
 }
 
-func ktParamName(p dinosql.Parameter) string {
-	if p.Column.Name != "" {
-		return ktArgName(p.Column.Name)
+func ktParamName(c core.Column, number int) string {
+	if c.Name != "" {
+		return ktArgName(c.Name)
 	}
-	return fmt.Sprintf("dollar_%d", p.Number)
+	return fmt.Sprintf("dollar_%d", number)
 }
+
 
 func ktColumnName(c core.Column, pos int) string {
 	if c.Name != "" {
@@ -716,20 +713,9 @@ func (r Result) KtQueries(settings dinosql.CombinedSettings) []KtQuery {
 				Column: p.Column,
 			})
 		}
-		params := r.ktColumnsToStruct(gq.ClassName+"Params", cols, settings)
-		if len(params.Fields) == 1 {
-			p := query.Params[0]
-			gq.Arg = KtQueryValue{
-				Name:               ktParamName(p),
-				Typ:                r.ktType(p.Column, settings),
-				JDBCParamBindCount: len(params.JDBCParamBindings),
-			}
-		} else if len(params.Fields) > 1 {
-			gq.Arg = KtQueryValue{
-				Emit:   true,
-				Name:   "arg",
-				Struct: params,
-			}
+		params := r.ktColumnsToStruct(gq.ClassName+"Bindings", cols, settings, ktParamName)
+		gq.Arg = KtParams{
+			Struct: params,
 		}
 
 		if len(query.Columns) == 1 {
@@ -771,7 +757,7 @@ func (r Result) KtQueries(settings dinosql.CombinedSettings) []KtQuery {
 						Column: c,
 					})
 				}
-				gs = r.ktColumnsToStruct(gq.ClassName+"Row", columns, settings)
+				gs = r.ktColumnsToStruct(gq.ClassName+"Row", columns, settings, ktColumnName)
 				emit = true
 			}
 			gq.Ret = KtQueryValue{
@@ -800,16 +786,16 @@ interface Queries {
   {{- range .KtQueries}}
   @Throws(SQLException::class)
   {{- if eq .Cmd ":one"}}
-  fun {{.MethodName}}({{.Arg.Pair}}): {{.Ret.Type}}
+  fun {{.MethodName}}({{.Arg.Args}}): {{.Ret.Type}}
   {{- end}}
   {{- if eq .Cmd ":many"}}
-  fun {{.MethodName}}({{.Arg.Pair}}): List<{{.Ret.Type}}>
+  fun {{.MethodName}}({{.Arg.Args}}): List<{{.Ret.Type}}>
   {{- end}}
   {{- if eq .Cmd ":exec"}}
-  fun {{.MethodName}}({{.Arg.Pair}})
+  fun {{.MethodName}}({{.Arg.Args}})
   {{- end}}
   {{- if eq .Cmd ":execrows"}}
-  fun {{.MethodName}}({{.Arg.Pair}}): Int
+  fun {{.MethodName}}({{.Arg.Args}}): Int
   {{- end}}
   {{end}}
 }
@@ -866,14 +852,6 @@ const val {{.ConstantName}} = {{$.Q}}-- name: {{.MethodName}} {{.Cmd}}
 {{.SQL}}
 {{$.Q}}
 
-{{if .Arg.EmitStruct}}
-data class {{.Arg.Type}} ( {{- range $i, $e := .Arg.Struct.Fields}}
-  {{- if $i }},{{end}}
-  val {{.Name}}: {{.Type}}
-  {{- end}}
-)
-{{end}}
-
 {{if .Ret.EmitStruct}}
 data class {{.Ret.Type}} ( {{- range $i, $e := .Ret.Struct.Fields}}
   {{- if $i }},{{end}}
@@ -890,9 +868,9 @@ class QueriesImpl(private val conn: Connection){{ if .EmitInterface }} : Queries
 {{end}}
   @Throws(SQLException::class)
   {{ if $.EmitInterface }}override {{ end -}}
-  fun {{.MethodName}}({{.Arg.Pair}}): {{.Ret.Type}} {
+  fun {{.MethodName}}({{.Arg.Args}}): {{.Ret.Type}} {
     return conn.prepareStatement({{.ConstantName}}).use { stmt ->
-      {{.Arg.Params}}
+      {{.Arg.Bindings}}
 
       val results = stmt.executeQuery()
       if (!results.next()) {
@@ -912,9 +890,9 @@ class QueriesImpl(private val conn: Connection){{ if .EmitInterface }} : Queries
 {{end}}
   @Throws(SQLException::class)
   {{ if $.EmitInterface }}override {{ end -}}
-  fun {{.MethodName}}({{.Arg.Pair}}): List<{{.Ret.Type}}> {
+  fun {{.MethodName}}({{.Arg.Args}}): List<{{.Ret.Type}}> {
     return conn.prepareStatement({{.ConstantName}}).use { stmt ->
-      {{.Arg.Params}}
+      {{.Arg.Bindings}}
 
       val results = stmt.executeQuery()
       val ret = mutableListOf<{{.Ret.Type}}>()
@@ -931,9 +909,9 @@ class QueriesImpl(private val conn: Connection){{ if .EmitInterface }} : Queries
 {{end}}
   @Throws(SQLException::class)
   {{ if $.EmitInterface }}override {{ end -}}
-  fun {{.MethodName}}({{.Arg.Pair}}) {
+  fun {{.MethodName}}({{.Arg.Args}}) {
     conn.prepareStatement({{.ConstantName}}).use { stmt ->
-      {{ .Arg.Params }}
+      {{ .Arg.Bindings }}
 
       stmt.execute()
     }
@@ -945,9 +923,9 @@ class QueriesImpl(private val conn: Connection){{ if .EmitInterface }} : Queries
 {{end}}
   @Throws(SQLException::class)
   {{ if $.EmitInterface }}override {{ end -}}
-  fun {{.MethodName}}({{.Arg.Pair}}): Int {
+  fun {{.MethodName}}({{.Arg.Args}}): Int {
     return conn.prepareStatement({{.ConstantName}}).use { stmt ->
-      {{ .Arg.Params }}
+      {{ .Arg.Bindings }}
 
       stmt.execute()
       stmt.updateCount
