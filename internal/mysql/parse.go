@@ -49,20 +49,39 @@ func parsePath(sqlPath string, generator PackageGenerator) (*Result, error) {
 			parseErrors.Add(filename, "", 0, err)
 			continue
 		}
-		queries, err := generator.parseContents(filename, contents)
-		if err != nil {
-			if posErr, ok := err.(sqlparser.PositionedErr); ok {
-				message := fmt.Errorf(posErr.Err)
-				if posErr.Near != nil {
-					message = fmt.Errorf("%s at or near \"%s\"", posErr.Err, posErr.Near)
+
+		t := sqlparser.NewStringTokenizer(contents)
+		var start int
+		for {
+			q, err := sqlparser.ParseNextStrictDDL(t)
+			if err == io.EOF {
+				break
+			} else if err != nil {
+				if posErr, ok := err.(sqlparser.PositionedErr); ok {
+					message := fmt.Errorf(posErr.Err)
+					if posErr.Near != nil {
+						message = fmt.Errorf("%s at or near \"%s\"", posErr.Err, posErr.Near)
+					}
+					parseErrors.Add(filename, contents, posErr.Pos, message)
+				} else {
+					parseErrors.Add(filename, contents, start, err)
 				}
-				parseErrors.Add(filename, contents, posErr.Pos, message)
-			} else {
-				parseErrors.Add(filename, contents, 0, err)
+				continue
 			}
-			continue
+			query := contents[start : t.Position-1]
+			result, err := generator.parseQueryString(q, query)
+			if err != nil {
+				parseErrors.Add(filename, contents, start, err)
+				start = t.Position
+				continue
+			}
+			start = t.Position
+			if result == nil {
+				continue
+			}
+			result.Filename = filepath.Base(filename)
+			parsedQueries = append(parsedQueries, result)
 		}
-		parsedQueries = append(parsedQueries, queries...)
 	}
 
 	if len(parseErrors.Errs) > 0 {
@@ -73,32 +92,6 @@ func parsePath(sqlPath string, generator PackageGenerator) (*Result, error) {
 		Queries:          parsedQueries,
 		PackageGenerator: generator,
 	}, nil
-}
-
-func (pGen *PackageGenerator) parseContents(filename, contents string) ([]*Query, error) {
-	t := sqlparser.NewStringTokenizer(contents)
-	var queries []*Query
-	var start int
-	for {
-		q, err := sqlparser.ParseNextStrictDDL(t)
-		if err == io.EOF {
-			break
-		} else if err != nil {
-			return nil, err
-		}
-		query := contents[start : t.Position-1]
-		result, err := pGen.parseQueryString(q, query)
-		if err != nil {
-			return nil, sqlparser.PositionedErr{Err: err.Error(), Pos: start, Near: nil}
-		}
-		start = t.Position
-		if result == nil {
-			continue
-		}
-		result.Filename = filepath.Base(filename)
-		queries = append(queries, result)
-	}
-	return queries, nil
 }
 
 func (pGen PackageGenerator) parseQueryString(tree sqlparser.Statement, query string) (*Query, error) {
