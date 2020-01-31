@@ -14,7 +14,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/kyleconroy/sqlc/internal/config"
-	"github.com/kyleconroy/sqlc/internal/dinosql"
 )
 
 // Do runs the command logic.
@@ -75,7 +74,7 @@ var initCmd = &cobra.Command{
 		if _, err := os.Stat("sqlc.json"); !os.IsNotExist(err) {
 			return nil
 		}
-		blob, err := json.MarshalIndent(config.GenerateSettings{Version: "1"}, "", "  ")
+		blob, err := json.MarshalIndent(config.Config{Version: "2"}, "", "  ")
 		if err != nil {
 			return err
 		}
@@ -113,24 +112,14 @@ var checkCmd = &cobra.Command{
 	Use:   "compile",
 	Short: "Statically check SQL for syntax and type errors",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		file, err := os.Open("sqlc.json")
+		stderr := cmd.ErrOrStderr()
+		dir, err := os.Getwd()
 		if err != nil {
-			return err
+			fmt.Fprintln(stderr, "error parsing sqlc.json: file does not exist")
+			os.Exit(1)
 		}
-
-		settings, err := config.ParseConfig(file)
-		if err != nil {
-			return err
-		}
-
-		for _, pkg := range settings.Packages {
-			c, err := dinosql.ParseCatalog(pkg.Schema)
-			if err != nil {
-				return err
-			}
-			if _, err := dinosql.ParseQueries(c, pkg); err != nil {
-				return err
-			}
+		if _, err := Generate(dir, stderr); err != nil {
+			os.Exit(1)
 		}
 		return nil
 	},

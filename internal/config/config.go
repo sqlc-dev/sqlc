@@ -1,13 +1,13 @@
 package config
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"go/types"
 	"io"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/kyleconroy/sqlc/internal/pg"
@@ -28,11 +28,8 @@ The only supported version is "1".
 
 const errMessageNoPackages = `No packages are configured`
 
-type GenerateSettings struct {
-	Version   string            `json:"version"`
-	Packages  []PackageSettings `json:"packages"`
-	Overrides []Override        `json:"overrides,omitempty"`
-	Rename    map[string]string `json:"rename,omitempty"`
+type versionSetting struct {
+	Number string `json:"version"`
 }
 
 type Engine string
@@ -42,16 +39,40 @@ const (
 	EnginePostgreSQL Engine = "postgresql"
 )
 
-type PackageSettings struct {
-	Name                string     `json:"name"`
-	Engine              Engine     `json:"engine,omitempty"`
-	Path                string     `json:"path"`
-	Schema              string     `json:"schema"`
-	Queries             string     `json:"queries"`
-	EmitInterface       bool       `json:"emit_interface"`
-	EmitJSONTags        bool       `json:"emit_json_tags"`
-	EmitPreparedQueries bool       `json:"emit_prepared_queries"`
-	Overrides           []Override `json:"overrides"`
+type Config struct {
+	Version string `json:"version"`
+	SQL     []SQL  `json:"sql"`
+	Gen     Gen    `json:"overrides,omitempty"`
+}
+
+type Gen struct {
+	Go *GenGo `json:"go,omitempty"`
+}
+
+type GenGo struct {
+	Overrides []Override        `json:"overrides,omitempty"`
+	Rename    map[string]string `json:"rename,omitempty"`
+}
+
+type SQL struct {
+	Engine  Engine `json:"engine,omitempty"`
+	Schema  string `json:"schema"`
+	Queries string `json:"queries"`
+	Gen     SQLGen `json:"gen"`
+}
+
+type SQLGen struct {
+	Go *SQLGo `json:"go,omitempty"`
+}
+
+type SQLGo struct {
+	EmitInterface       bool              `json:"emit_interface"`
+	EmitJSONTags        bool              `json:"emit_json_tags"`
+	EmitPreparedQueries bool              `json:"emit_prepared_queries"`
+	Package             string            `json:"package"`
+	Out                 string            `json:"out"`
+	Overrides           []Override        `json:"overrides,omitempty"`
+	Rename              map[string]string `json:"rename,omitempty"`
 }
 
 type Override struct {
@@ -76,23 +97,6 @@ type Override struct {
 	GoTypeName  string
 	GoPackage   string
 	GoBasicType bool
-}
-
-func (c *GenerateSettings) ValidateGlobalOverrides() error {
-	engines := map[Engine]struct{}{}
-	for _, pkg := range c.Packages {
-		if _, ok := engines[pkg.Engine]; !ok {
-			engines[pkg.Engine] = struct{}{}
-		}
-	}
-
-	usesMultipleEngines := len(engines) > 1
-	for _, oride := range c.Overrides {
-		if usesMultipleEngines && oride.Engine == "" {
-			return fmt.Errorf(`the "engine" field is required for global type overrides because your configuration uses multiple database engines`)
-		}
-	}
-	return nil
 }
 
 func (o *Override) Parse() error {
@@ -192,59 +196,46 @@ var ErrNoPackages = errors.New("no packages")
 var ErrNoPackageName = errors.New("missing package name")
 var ErrNoPackagePath = errors.New("missing package path")
 
-func ParseConfig(rd io.Reader) (GenerateSettings, error) {
-	dec := json.NewDecoder(rd)
-	dec.DisallowUnknownFields()
-	var config GenerateSettings
-	if err := dec.Decode(&config); err != nil {
+func ParseConfig(rd io.Reader) (Config, error) {
+	var buf bytes.Buffer
+	var config Config
+	var version versionSetting
+	ver := io.TeeReader(rd, &buf)
+	dec := json.NewDecoder(ver)
+	if err := dec.Decode(&version); err != nil {
 		return config, err
 	}
-	if config.Version == "" {
+	if version.Number == "" {
 		return config, ErrMissingVersion
 	}
-	if config.Version != "1" {
+	switch version.Number {
+	case "1":
+		return v1ParseConfig(&buf)
+	// case "2":
+	default:
 		return config, ErrUnknownVersion
 	}
-	if len(config.Packages) == 0 {
-		return config, ErrNoPackages
-	}
-	if err := config.ValidateGlobalOverrides(); err != nil {
-		return config, err
-	}
-	for i := range config.Overrides {
-		if err := config.Overrides[i].Parse(); err != nil {
-			return config, err
-		}
-	}
-	for j := range config.Packages {
-		if config.Packages[j].Path == "" {
-			return config, ErrNoPackagePath
-		}
-		for i := range config.Packages[j].Overrides {
-			if err := config.Packages[j].Overrides[i].Parse(); err != nil {
-				return config, err
-			}
-		}
-		if config.Packages[j].Name == "" {
-			config.Packages[j].Name = filepath.Base(config.Packages[j].Path)
-		}
-		if config.Packages[j].Engine == "" {
-			config.Packages[j].Engine = EnginePostgreSQL
-		}
-	}
-	return config, nil
 }
 
 type CombinedSettings struct {
-	Global    GenerateSettings
-	Package   PackageSettings
+	Global    Config
+	Package   SQL
+	Go        SQLGo
+	Rename    map[string]string
 	Overrides []Override
 }
 
-func Combine(gen GenerateSettings, pkg PackageSettings) CombinedSettings {
-	return CombinedSettings{
-		Global:    gen,
-		Package:   pkg,
-		Overrides: append(gen.Overrides, pkg.Overrides...),
+func Combine(conf Config, pkg SQL) CombinedSettings {
+	cs := CombinedSettings{
+		Global:  conf,
+		Package: pkg,
 	}
+	if conf.Gen.Go != nil {
+		cs.Rename = conf.Gen.Go.Rename
+		cs.Overrides = append(cs.Overrides, conf.Gen.Go.Overrides...)
+	}
+	if pkg.Gen.Go != nil {
+		cs.Go = *pkg.Gen.Go
+	}
+	return cs
 }

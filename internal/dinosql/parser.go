@@ -189,7 +189,7 @@ type Result struct {
 	Catalog core.Catalog
 }
 
-func ParseQueries(c core.Catalog, pkg config.PackageSettings) (*Result, error) {
+func ParseQueries(c core.Catalog, pkg config.SQL) (*Result, error) {
 	f, err := os.Stat(pkg.Queries)
 	if err != nil {
 		return nil, fmt.Errorf("path %s does not exist", pkg.Queries)

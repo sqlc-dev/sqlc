@@ -40,7 +40,7 @@ func Generate(dir string, stderr io.Writer) (map[string]string, error) {
 		return nil, err
 	}
 
-	settings, err := config.ParseConfig(bytes.NewReader(blob))
+	conf, err := config.ParseConfig(bytes.NewReader(blob))
 	if err != nil {
 		switch err {
 		case config.ErrMissingVersion:
@@ -57,20 +57,19 @@ func Generate(dir string, stderr io.Writer) (map[string]string, error) {
 	output := map[string]string{}
 	errored := false
 
-	for _, pkg := range settings.Packages {
-		name := pkg.Name
-		combo := config.Combine(settings, pkg)
+	for _, sql := range conf.SQL {
+		combo := config.Combine(conf, sql)
+		name := combo.Go.Package
 		var result dinosql.Generateable
 
 		// TODO: This feels like a hack that will bite us later
-		pkg.Schema = filepath.Join(dir, pkg.Schema)
-		pkg.Queries = filepath.Join(dir, pkg.Queries)
+		sql.Schema = filepath.Join(dir, sql.Schema)
+		sql.Queries = filepath.Join(dir, sql.Queries)
 
-		switch pkg.Engine {
-
+		switch sql.Engine {
 		case config.EngineMySQL:
 			// Experimental MySQL support
-			q, err := mysql.GeneratePkg(name, pkg.Schema, pkg.Queries, combo)
+			q, err := mysql.GeneratePkg(name, sql.Schema, sql.Queries, combo)
 			if err != nil {
 				fmt.Fprintf(stderr, "# package %s\n", name)
 				if parserErr, ok := err.(*dinosql.ParserErr); ok {
@@ -86,7 +85,7 @@ func Generate(dir string, stderr io.Writer) (map[string]string, error) {
 			result = q
 
 		case config.EnginePostgreSQL:
-			c, err := dinosql.ParseCatalog(pkg.Schema)
+			c, err := dinosql.ParseCatalog(sql.Schema)
 			if err != nil {
 				fmt.Fprintf(stderr, "# package %s\n", name)
 				if parserErr, ok := err.(*dinosql.ParserErr); ok {
@@ -100,7 +99,7 @@ func Generate(dir string, stderr io.Writer) (map[string]string, error) {
 				continue
 			}
 
-			q, err := dinosql.ParseQueries(c, pkg)
+			q, err := dinosql.ParseQueries(c, sql)
 			if err != nil {
 				fmt.Fprintf(stderr, "# package %s\n", name)
 				if parserErr, ok := err.(*dinosql.ParserErr); ok {
@@ -126,7 +125,7 @@ func Generate(dir string, stderr io.Writer) (map[string]string, error) {
 		}
 
 		for n, source := range files {
-			filename := filepath.Join(dir, pkg.Path, n)
+			filename := filepath.Join(dir, combo.Go.Out, n)
 			output[filename] = source
 		}
 	}

@@ -192,7 +192,7 @@ func Imports(r Generateable, settings config.CombinedSettings) func(string) [][]
 	return func(filename string) [][]string {
 		if filename == "db.go" {
 			imps := []string{"context", "database/sql"}
-			if settings.Package.EmitPreparedQueries {
+			if settings.Go.EmitPreparedQueries {
 				imps = append(imps, "fmt")
 			}
 			return [][]string{imps}
@@ -524,7 +524,7 @@ func (r Result) Enums(settings config.CombinedSettings) []GoEnum {
 }
 
 func StructName(name string, settings config.CombinedSettings) string {
-	if rename := settings.Global.Rename[name]; rename != "" {
+	if rename := settings.Rename[name]; rename != "" {
 		return rename
 	}
 	out := ""
@@ -1183,7 +1183,7 @@ type tmplCtx struct {
 	Enums     []GoEnum
 	Structs   []GoStruct
 	GoQueries []GoQuery
-	Settings  config.GenerateSettings
+	Settings  config.Config
 
 	// TODO: Race conditions
 	SourceName string
@@ -1210,14 +1210,14 @@ func Generate(r Generateable, settings config.CombinedSettings) (map[string]stri
 	sqlFile := template.Must(template.New("table").Funcs(funcMap).Parse(sqlTmpl))
 	ifaceFile := template.Must(template.New("table").Funcs(funcMap).Parse(ifaceTmpl))
 
-	pkg := settings.Package
+	golang := settings.Go
 	tctx := tmplCtx{
 		Settings:            settings.Global,
-		EmitInterface:       pkg.EmitInterface,
-		EmitJSONTags:        pkg.EmitJSONTags,
-		EmitPreparedQueries: pkg.EmitPreparedQueries,
+		EmitInterface:       golang.EmitInterface,
+		EmitJSONTags:        golang.EmitJSONTags,
+		EmitPreparedQueries: golang.EmitPreparedQueries,
 		Q:                   "`",
-		Package:             pkg.Name,
+		Package:             golang.Package,
 		GoQueries:           r.GoQueries(settings),
 		Enums:               r.Enums(settings),
 		Structs:             r.Structs(settings),
@@ -1252,7 +1252,7 @@ func Generate(r Generateable, settings config.CombinedSettings) (map[string]stri
 	if err := execute("models.go", modelsFile); err != nil {
 		return nil, err
 	}
-	if pkg.EmitInterface {
+	if golang.EmitInterface {
 		if err := execute("querier.go", ifaceFile); err != nil {
 			return nil, err
 		}
