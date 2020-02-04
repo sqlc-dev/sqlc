@@ -1,0 +1,23 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "name": "querytest",
+      "path": "go",
+      "schema": "schema.sql",
+      "queries": "query.sql",
+      "engine": "mysql",
+      "overrides": [{
+        "go_type": "example.com/mysql.ID",
+        "column": "users.id"
+      }, {
+        "go_type": "example.com/mysql.ID",
+        "column": "orders.id"
+      }]
+    }
+  ],
+  "overrides": [{
+    "go_type": "example.com/mysql.Timestamp",
+    "db_type": "timestamp"
+  }]
+}
