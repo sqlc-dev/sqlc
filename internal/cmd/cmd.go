@@ -74,7 +74,7 @@ var initCmd = &cobra.Command{
 		if _, err := os.Stat("sqlc.json"); !os.IsNotExist(err) {
 			return nil
 		}
-		blob, err := json.MarshalIndent(config.Config{Version: "2"}, "", "  ")
+		blob, err := json.MarshalIndent(config.Config{Version: "1"}, "", "  ")
 		if err != nil {
 			return err
 		}
