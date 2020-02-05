@@ -1,3 +1,5 @@
+// +build examples
+
 package authors
 
 import (
