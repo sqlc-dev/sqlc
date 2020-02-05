@@ -236,6 +236,7 @@ func Combine(conf Config, pkg SQL) CombinedSettings {
 	}
 	if pkg.Gen.Go != nil {
 		cs.Go = *pkg.Gen.Go
+		cs.Overrides = append(cs.Overrides, pkg.Gen.Go.Overrides...)
 	}
 	return cs
 }
