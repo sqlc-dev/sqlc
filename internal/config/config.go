@@ -192,6 +192,8 @@ func (o *Override) Parse() error {
 
 var ErrMissingVersion = errors.New("no version number")
 var ErrUnknownVersion = errors.New("invalid version number")
+var ErrMissingEngine = errors.New("unknown engine")
+var ErrUnknownEngine = errors.New("invalid engine")
 var ErrNoPackages = errors.New("no packages")
 var ErrNoPackageName = errors.New("missing package name")
 var ErrNoPackagePath = errors.New("missing package path")
@@ -211,7 +213,8 @@ func ParseConfig(rd io.Reader) (Config, error) {
 	switch version.Number {
 	case "1":
 		return v1ParseConfig(&buf)
-	// case "2":
+	case "2":
+		return v2ParseConfig(&buf)
 	default:
 		return config, ErrUnknownVersion
 	}
