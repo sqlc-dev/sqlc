@@ -5,6 +5,7 @@ sqlc will ignore rollback statements when parsing migration SQL files. The follo
 - [goose](https://github.com/pressly/goose)
 - [sql-migrate](https://github.com/rubenv/sql-migrate)
 - [tern](https://github.com/jackc/tern)
+- [golang-migrate](https://github.com/golang-migrate/migrate)
 
 ## goose
 
@@ -66,5 +67,33 @@ package db
 type Comment struct {
 	ID     int32 
 	Text   string 
+}
+```
+
+## golang-migrate
+
+In `20060102.up.sql`:
+
+```sql
+CREATE TABLE post (
+    id    int NOT NULL,
+    title text,
+    body  text,
+    PRIMARY KEY(id)
+);
+```
+
+In `20060102.down.sql`:
+```sql
+DROP TABLE post;
+```
+
+```go
+package db
+
+type Post struct {
+	ID    int
+	Title sql.NullString
+	Body  sql.NullString
 }
 ```
