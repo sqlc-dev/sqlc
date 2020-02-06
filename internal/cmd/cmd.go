@@ -9,8 +9,6 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/davecgh/go-spew/spew"
-	pg "github.com/lfittl/pg_query_go"
 	"github.com/spf13/cobra"
 
 	"github.com/kyleconroy/sqlc/internal/config"
@@ -23,7 +21,6 @@ func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int 
 	rootCmd.AddCommand(checkCmd)
 	rootCmd.AddCommand(genCmd)
 	rootCmd.AddCommand(initCmd)
-	rootCmd.AddCommand(parseCmd)
 	rootCmd.AddCommand(versionCmd)
 
 	rootCmd.SetArgs(args)
@@ -46,25 +43,6 @@ var versionCmd = &cobra.Command{
 	Short: "Print the sqlc version number",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("v0.0.1")
-	},
-}
-
-var parseCmd = &cobra.Command{
-	Use:   "parse",
-	Short: "Parse and print the AST for a SQL file",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		for _, filename := range args {
-			blob, err := ioutil.ReadFile(filename)
-			if err != nil {
-				return err
-			}
-			tree, err := pg.Parse(string(blob))
-			if err != nil {
-				return err
-			}
-			spew.Dump(tree)
-		}
-		return nil
 	},
 }
 
