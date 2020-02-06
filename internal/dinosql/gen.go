@@ -12,6 +12,8 @@ import (
 	"text/template"
 	"unicode"
 
+	"github.com/kyleconroy/sqlc/internal/catalog"
+	"github.com/kyleconroy/sqlc/internal/config"
 	core "github.com/kyleconroy/sqlc/internal/pg"
 
 	"github.com/jinzhu/inflection"
@@ -158,12 +160,12 @@ type GoQuery struct {
 }
 
 type Generateable interface {
-	Structs(settings CombinedSettings) []GoStruct
-	GoQueries(settings CombinedSettings) []GoQuery
-	Enums(settings CombinedSettings) []GoEnum
+	Structs(settings config.CombinedSettings) []GoStruct
+	GoQueries(settings config.CombinedSettings) []GoQuery
+	Enums(settings config.CombinedSettings) []GoEnum
 }
 
-func UsesType(r Generateable, typ string, settings CombinedSettings) bool {
+func UsesType(r Generateable, typ string, settings config.CombinedSettings) bool {
 	for _, strct := range r.Structs(settings) {
 		for _, f := range strct.Fields {
 			fType := strings.TrimPrefix(f.Type, "[]")
@@ -175,7 +177,7 @@ func UsesType(r Generateable, typ string, settings CombinedSettings) bool {
 	return false
 }
 
-func UsesArrays(r Generateable, settings CombinedSettings) bool {
+func UsesArrays(r Generateable, settings config.CombinedSettings) bool {
 	for _, strct := range r.Structs(settings) {
 		for _, f := range strct.Fields {
 			if strings.HasPrefix(f.Type, "[]") {
@@ -186,11 +188,11 @@ func UsesArrays(r Generateable, settings CombinedSettings) bool {
 	return false
 }
 
-func Imports(r Generateable, settings CombinedSettings) func(string) [][]string {
+func Imports(r Generateable, settings config.CombinedSettings) func(string) [][]string {
 	return func(filename string) [][]string {
 		if filename == "db.go" {
 			imps := []string{"context", "database/sql"}
-			if settings.Package.EmitPreparedQueries {
+			if settings.Go.EmitPreparedQueries {
 				imps = append(imps, "fmt")
 			}
 			return [][]string{imps}
@@ -208,7 +210,7 @@ func Imports(r Generateable, settings CombinedSettings) func(string) [][]string 
 	}
 }
 
-func InterfaceImports(r Generateable, settings CombinedSettings) [][]string {
+func InterfaceImports(r Generateable, settings config.CombinedSettings) [][]string {
 	gq := r.GoQueries(settings)
 	uses := func(name string) bool {
 		for _, q := range gq {
@@ -245,10 +247,10 @@ func InterfaceImports(r Generateable, settings CombinedSettings) [][]string {
 	pkg := make(map[string]struct{})
 	overrideTypes := map[string]string{}
 	for _, o := range settings.Overrides {
-		if o.goBasicType {
+		if o.GoBasicType {
 			continue
 		}
-		overrideTypes[o.goTypeName] = o.goPackage
+		overrideTypes[o.GoTypeName] = o.GoPackage
 	}
 
 	_, overrideNullTime := overrideTypes["pq.NullTime"]
@@ -282,7 +284,7 @@ func InterfaceImports(r Generateable, settings CombinedSettings) [][]string {
 	return [][]string{stds, pkgs}
 }
 
-func ModelImports(r Generateable, settings CombinedSettings) [][]string {
+func ModelImports(r Generateable, settings config.CombinedSettings) [][]string {
 	std := make(map[string]struct{})
 	if UsesType(r, "sql.Null", settings) {
 		std["database/sql"] = struct{}{}
@@ -301,10 +303,10 @@ func ModelImports(r Generateable, settings CombinedSettings) [][]string {
 	pkg := make(map[string]struct{})
 	overrideTypes := map[string]string{}
 	for _, o := range settings.Overrides {
-		if o.goBasicType {
+		if o.GoBasicType {
 			continue
 		}
-		overrideTypes[o.goTypeName] = o.goPackage
+		overrideTypes[o.GoTypeName] = o.GoPackage
 	}
 
 	_, overrideNullTime := overrideTypes["pq.NullTime"]
@@ -338,7 +340,7 @@ func ModelImports(r Generateable, settings CombinedSettings) [][]string {
 	return [][]string{stds, pkgs}
 }
 
-func QueryImports(r Generateable, settings CombinedSettings, filename string) [][]string {
+func QueryImports(r Generateable, settings config.CombinedSettings, filename string) [][]string {
 	// for _, strct := range r.Structs() {
 	// 	for _, f := range strct.Fields {
 	// 		if strings.HasPrefix(f.Type, "[]") {
@@ -436,10 +438,10 @@ func QueryImports(r Generateable, settings CombinedSettings, filename string) []
 	pkg := make(map[string]struct{})
 	overrideTypes := map[string]string{}
 	for _, o := range settings.Overrides {
-		if o.goBasicType {
+		if o.GoBasicType {
 			continue
 		}
-		overrideTypes[o.goTypeName] = o.goPackage
+		overrideTypes[o.GoTypeName] = o.GoPackage
 	}
 
 	if sliceScan() {
@@ -488,13 +490,13 @@ func enumValueName(value string) string {
 	return name
 }
 
-func (r Result) Enums(settings CombinedSettings) []GoEnum {
+func (r Result) Enums(settings config.CombinedSettings) []GoEnum {
 	var enums []GoEnum
 	for name, schema := range r.Catalog.Schemas {
 		if name == "pg_catalog" {
 			continue
 		}
-		for _, enum := range schema.Enums {
+		for _, enum := range schema.Enums() {
 			var enumName string
 			if name == "public" {
 				enumName = enum.Name
@@ -521,8 +523,8 @@ func (r Result) Enums(settings CombinedSettings) []GoEnum {
 	return enums
 }
 
-func StructName(name string, settings CombinedSettings) string {
-	if rename := settings.Global.Rename[name]; rename != "" {
+func StructName(name string, settings config.CombinedSettings) string {
+	if rename := settings.Rename[name]; rename != "" {
 		return rename
 	}
 	out := ""
@@ -536,7 +538,7 @@ func StructName(name string, settings CombinedSettings) string {
 	return out
 }
 
-func (r Result) Structs(settings CombinedSettings) []GoStruct {
+func (r Result) Structs(settings config.CombinedSettings) []GoStruct {
 	var structs []GoStruct
 	for name, schema := range r.Catalog.Schemas {
 		if name == "pg_catalog" {
@@ -571,11 +573,11 @@ func (r Result) Structs(settings CombinedSettings) []GoStruct {
 	return structs
 }
 
-func (r Result) goType(col core.Column, settings CombinedSettings) string {
+func (r Result) goType(col core.Column, settings config.CombinedSettings) string {
 	// package overrides have a higher precedence
 	for _, oride := range settings.Overrides {
-		if oride.Column != "" && oride.columnName == col.Name && oride.table == col.Table {
-			return oride.goTypeName
+		if oride.Column != "" && oride.ColumnName == col.Name && oride.Table == col.Table {
+			return oride.GoTypeName
 		}
 	}
 	typ := r.goInnerType(col, settings)
@@ -585,14 +587,14 @@ func (r Result) goType(col core.Column, settings CombinedSettings) string {
 	return typ
 }
 
-func (r Result) goInnerType(col core.Column, settings CombinedSettings) string {
+func (r Result) goInnerType(col core.Column, settings config.CombinedSettings) string {
 	columnType := col.DataType
 	notNull := col.NotNull || col.IsArray
 
 	// package overrides have a higher precedence
 	for _, oride := range settings.Overrides {
-		if oride.PostgresType != "" && oride.PostgresType == columnType && oride.Null != notNull {
-			return oride.goTypeName
+		if oride.DBType != "" && oride.DBType == columnType && oride.Null != notNull {
+			return oride.GoTypeName
 		}
 	}
 
@@ -700,20 +702,34 @@ func (r Result) goInnerType(col core.Column, settings CombinedSettings) string {
 		return "interface{}"
 
 	default:
+		fqn, err := catalog.ParseString(columnType)
+		if err != nil {
+			// TODO: Should this actually return an error here?
+			return "interface{}"
+		}
+
 		for name, schema := range r.Catalog.Schemas {
 			if name == "pg_catalog" {
 				continue
 			}
-			for _, enum := range schema.Enums {
-				if columnType == enum.Name {
-					if name == "public" {
-						return StructName(enum.Name, settings)
+			for _, typ := range schema.Types {
+				switch t := typ.(type) {
+				case core.Enum:
+					if fqn.Rel == t.Name && fqn.Schema == name {
+						if name == "public" {
+							return StructName(t.Name, settings)
+						}
+						return StructName(name+"_"+t.Name, settings)
 					}
-
-					return StructName(name+"_"+enum.Name, settings)
+				case core.CompositeType:
+					if notNull {
+						return "string"
+					}
+					return "sql.NullString"
 				}
 			}
 		}
+
 		log.Printf("unknown PostgreSQL type: %s\n", columnType)
 		return "interface{}"
 	}
@@ -731,7 +747,7 @@ type goColumn struct {
 // JSON tags: count, count_2, count_2
 //
 // This is unlikely to happen, so don't fix it yet
-func (r Result) columnsToStruct(name string, columns []goColumn, settings CombinedSettings) *GoStruct {
+func (r Result) columnsToStruct(name string, columns []goColumn, settings config.CombinedSettings) *GoStruct {
 	gs := GoStruct{
 		Name: name,
 	}
@@ -801,7 +817,7 @@ func compareFQN(a *core.FQN, b *core.FQN) bool {
 	return a.Catalog == b.Catalog && a.Schema == b.Schema && a.Rel == b.Rel
 }
 
-func (r Result) GoQueries(settings CombinedSettings) []GoQuery {
+func (r Result) GoQueries(settings config.CombinedSettings) []GoQuery {
 	structs := r.Structs(settings)
 
 	qs := make([]GoQuery, 0, len(r.Queries))
@@ -1192,7 +1208,7 @@ type tmplCtx struct {
 	Enums     []GoEnum
 	Structs   []GoStruct
 	GoQueries []GoQuery
-	Settings  GenerateSettings
+	Settings  config.Config
 
 	// TODO: Race conditions
 	SourceName string
@@ -1208,7 +1224,7 @@ func LowerTitle(s string) string {
 	return string(a)
 }
 
-func Generate(r Generateable, settings CombinedSettings) (map[string]string, error) {
+func Generate(r Generateable, settings config.CombinedSettings) (map[string]string, error) {
 	funcMap := template.FuncMap{
 		"lowerTitle": LowerTitle,
 		"imports":    Imports(r, settings),
@@ -1219,14 +1235,14 @@ func Generate(r Generateable, settings CombinedSettings) (map[string]string, err
 	sqlFile := template.Must(template.New("table").Funcs(funcMap).Parse(sqlTmpl))
 	ifaceFile := template.Must(template.New("table").Funcs(funcMap).Parse(ifaceTmpl))
 
-	pkg := settings.Package
+	golang := settings.Go
 	tctx := tmplCtx{
 		Settings:            settings.Global,
-		EmitInterface:       pkg.EmitInterface,
-		EmitJSONTags:        pkg.EmitJSONTags,
-		EmitPreparedQueries: pkg.EmitPreparedQueries,
+		EmitInterface:       golang.EmitInterface,
+		EmitJSONTags:        golang.EmitJSONTags,
+		EmitPreparedQueries: golang.EmitPreparedQueries,
 		Q:                   "`",
-		Package:             pkg.Name,
+		Package:             golang.Package,
 		GoQueries:           r.GoQueries(settings),
 		Enums:               r.Enums(settings),
 		Structs:             r.Structs(settings),
@@ -1261,7 +1277,7 @@ func Generate(r Generateable, settings CombinedSettings) (map[string]string, err
 	if err := execute("models.go", modelsFile); err != nil {
 		return nil, err
 	}
-	if pkg.EmitInterface {
+	if golang.EmitInterface {
 		if err := execute("querier.go", ifaceFile); err != nil {
 			return nil, err
 		}

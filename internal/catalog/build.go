@@ -56,6 +56,34 @@ func ParseList(list nodes.List) (pg.FQN, error) {
 	return fqn, nil
 }
 
+func ParseString(name string) (pg.FQN, error) {
+	parts := strings.Split(name, ".")
+	var fqn pg.FQN
+	switch len(parts) {
+	case 1:
+		fqn = pg.FQN{
+			Catalog: "",
+			Schema:  "public",
+			Rel:     parts[0],
+		}
+	case 2:
+		fqn = pg.FQN{
+			Catalog: "",
+			Schema:  parts[0],
+			Rel:     parts[1],
+		}
+	case 3:
+		fqn = pg.FQN{
+			Catalog: parts[0],
+			Schema:  parts[1],
+			Rel:     parts[2],
+		}
+	default:
+		return fqn, fmt.Errorf("Invalid FQN: %s", name)
+	}
+	return fqn, nil
+}
+
 func wrap(e pg.Error, loc int) pg.Error {
 	return e
 }
@@ -197,6 +225,29 @@ func Update(c *pg.Catalog, stmt nodes.Node) error {
 			}
 		}
 
+	case nodes.CompositeTypeStmt:
+		fqn, err := ParseRange(n.Typevar)
+		if err != nil {
+			return err
+		}
+		schema, exists := c.Schemas[fqn.Schema]
+		if !exists {
+			return wrap(pg.ErrorSchemaDoesNotExist(fqn.Schema), raw.StmtLocation)
+		}
+		// Because tables have associated data types, the type name must also
+		// be distinct from the name of any existing table in the same
+		// schema.
+		// https://www.postgresql.org/docs/current/sql-createtype.html
+		if _, exists := schema.Tables[fqn.Rel]; exists {
+			return wrap(pg.ErrorRelationAlreadyExists(fqn.Rel), raw.StmtLocation)
+		}
+		if _, exists := schema.Types[fqn.Rel]; exists {
+			return wrap(pg.ErrorRelationAlreadyExists(fqn.Rel), raw.StmtLocation)
+		}
+		schema.Types[fqn.Rel] = pg.CompositeType{
+			Name: fqn.Rel,
+		}
+
 	case nodes.CreateStmt:
 		fqn, err := ParseRange(n.Relation)
 		if err != nil {
@@ -236,10 +287,17 @@ func Update(c *pg.Catalog, stmt nodes.Node) error {
 		if !exists {
 			return wrap(pg.ErrorSchemaDoesNotExist(fqn.Schema), raw.StmtLocation)
 		}
-		if _, exists := schema.Enums[fqn.Rel]; exists {
+		// Because tables have associated data types, the type name must also
+		// be distinct from the name of any existing table in the same
+		// schema.
+		// https://www.postgresql.org/docs/current/sql-createtype.html
+		if _, exists := schema.Tables[fqn.Rel]; exists {
+			return wrap(pg.ErrorRelationAlreadyExists(fqn.Rel), raw.StmtLocation)
+		}
+		if _, exists := schema.Types[fqn.Rel]; exists {
 			return wrap(pg.ErrorTypeAlreadyExists(fqn.Rel), raw.StmtLocation)
 		}
-		schema.Enums[fqn.Rel] = pg.Enum{
+		schema.Types[fqn.Rel] = pg.Enum{
 			Name: fqn.Rel,
 			Vals: stringSlice(n.Vals),
 		}
@@ -283,8 +341,8 @@ func Update(c *pg.Catalog, stmt nodes.Node) error {
 					}
 
 				case nodes.OBJECT_TYPE:
-					if _, exists := schema.Enums[fqn.Rel]; exists {
-						delete(schema.Enums, fqn.Rel)
+					if _, exists := schema.Types[fqn.Rel]; exists {
+						delete(schema.Types, fqn.Rel)
 					} else if !n.MissingOk {
 						return wrap(pg.ErrorTypeDoesNotExist(fqn.Rel), raw.StmtLocation)
 					}
@@ -479,16 +537,19 @@ func Update(c *pg.Catalog, stmt nodes.Node) error {
 			if !exists {
 				return wrap(pg.ErrorSchemaDoesNotExist(fqn.Schema), raw.StmtLocation)
 			}
-			enum, exists := schema.Enums[fqn.Rel]
+			typ, exists := schema.Types[fqn.Rel]
 			if !exists {
 				return wrap(pg.ErrorRelationDoesNotExist(fqn.Rel), raw.StmtLocation)
 			}
-			if n.Comment != nil {
-				enum.Comment = *n.Comment
-			} else {
-				enum.Comment = ""
+			switch t := typ.(type) {
+			case pg.Enum:
+				if n.Comment != nil {
+					t.Comment = *n.Comment
+				} else {
+					t.Comment = ""
+				}
+				schema.Types[fqn.Rel] = t
 			}
-			schema.Enums[fqn.Rel] = enum
 
 		}
 

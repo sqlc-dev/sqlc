@@ -6,7 +6,9 @@ import (
 	"io"
 	"io/ioutil"
 	"path/filepath"
+	"strings"
 
+	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/dinosql"
 	"github.com/kyleconroy/sqlc/internal/dinosql/kotlin"
 	"github.com/kyleconroy/sqlc/internal/mysql"
@@ -27,6 +29,11 @@ The only supported version is "1".
 
 const errMessageNoPackages = `No packages are configured`
 
+func printFileErr(stderr io.Writer, dir string, fileErr dinosql.FileErr) {
+	filename := strings.TrimPrefix(fileErr.Filename, dir+"/")
+	fmt.Fprintf(stderr, "%s:%d:%d: %s\n", filename, fileErr.Line, fileErr.Column, fileErr.Err)
+}
+
 func Generate(dir string, stderr io.Writer) (map[string]string, error) {
 	blob, err := ioutil.ReadFile(filepath.Join(dir, "sqlc.json"))
 	if err != nil {
@@ -34,14 +41,14 @@ func Generate(dir string, stderr io.Writer) (map[string]string, error) {
 		return nil, err
 	}
 
-	settings, err := dinosql.ParseConfig(bytes.NewReader(blob))
+	conf, err := config.ParseConfig(bytes.NewReader(blob))
 	if err != nil {
 		switch err {
-		case dinosql.ErrMissingVersion:
+		case config.ErrMissingVersion:
 			fmt.Fprintf(stderr, errMessageNoVersion)
-		case dinosql.ErrUnknownVersion:
+		case config.ErrUnknownVersion:
 			fmt.Fprintf(stderr, errMessageUnknownVersion)
-		case dinosql.ErrNoPackages:
+		case config.ErrNoPackages:
 			fmt.Fprintf(stderr, errMessageNoPackages)
 		}
 		fmt.Fprintf(stderr, "error parsing sqlc.json: %s\n", err)
@@ -51,25 +58,24 @@ func Generate(dir string, stderr io.Writer) (map[string]string, error) {
 	output := map[string]string{}
 	errored := false
 
-	for _, pkg := range settings.Packages {
-		name := pkg.Name
-		combo := dinosql.Combine(settings, pkg)
+	for _, sql := range conf.SQL {
+		combo := config.Combine(conf, sql)
+		name := combo.Go.Package
 		var result dinosql.Generateable
 
 		// TODO: This feels like a hack that will bite us later
-		pkg.Schema = filepath.Join(dir, pkg.Schema)
-		pkg.Queries = filepath.Join(dir, pkg.Queries)
+		sql.Schema = filepath.Join(dir, sql.Schema)
+		sql.Queries = filepath.Join(dir, sql.Queries)
 
-		switch pkg.Engine {
-
-		case dinosql.EngineMySQL:
+		switch sql.Engine {
+		case config.EngineMySQL:
 			// Experimental MySQL support
-			q, err := mysql.GeneratePkg(name, pkg.Schema, pkg.Queries, combo)
+			q, err := mysql.GeneratePkg(name, sql.Schema, sql.Queries, combo)
 			if err != nil {
 				fmt.Fprintf(stderr, "# package %s\n", name)
 				if parserErr, ok := err.(*dinosql.ParserErr); ok {
 					for _, fileErr := range parserErr.Errs {
-						fmt.Fprintf(stderr, "%s:%d:%d: %s\n", fileErr.Filename, fileErr.Line, fileErr.Column, fileErr.Err)
+						printFileErr(stderr, dir, fileErr)
 					}
 				} else {
 					fmt.Fprintf(stderr, "error parsing schema: %s\n", err)
@@ -79,13 +85,13 @@ func Generate(dir string, stderr io.Writer) (map[string]string, error) {
 			}
 			result = q
 
-		case dinosql.EnginePostgreSQL:
-			c, err := dinosql.ParseCatalog(pkg.Schema)
+		case config.EnginePostgreSQL:
+			c, err := dinosql.ParseCatalog(sql.Schema)
 			if err != nil {
 				fmt.Fprintf(stderr, "# package %s\n", name)
 				if parserErr, ok := err.(*dinosql.ParserErr); ok {
 					for _, fileErr := range parserErr.Errs {
-						fmt.Fprintf(stderr, "%s:%d:%d: %s\n", fileErr.Filename, fileErr.Line, fileErr.Column, fileErr.Err)
+						printFileErr(stderr, dir, fileErr)
 					}
 				} else {
 					fmt.Fprintf(stderr, "error parsing schema: %s\n", err)
@@ -94,12 +100,12 @@ func Generate(dir string, stderr io.Writer) (map[string]string, error) {
 				continue
 			}
 
-			q, err := dinosql.ParseQueries(c, pkg)
+			q, err := dinosql.ParseQueries(c, sql)
 			if err != nil {
 				fmt.Fprintf(stderr, "# package %s\n", name)
 				if parserErr, ok := err.(*dinosql.ParserErr); ok {
 					for _, fileErr := range parserErr.Errs {
-						fmt.Fprintf(stderr, "%s:%d:%d: %s\n", fileErr.Filename, fileErr.Line, fileErr.Column, fileErr.Err)
+						printFileErr(stderr, dir, fileErr)
 					}
 				} else {
 					fmt.Fprintf(stderr, "error parsing queries: %s\n", err)
@@ -131,7 +137,7 @@ func Generate(dir string, stderr io.Writer) (map[string]string, error) {
 		}
 
 		for n, source := range files {
-			filename := filepath.Join(dir, pkg.Path, n)
+			filename := filepath.Join(dir, combo.Go.Out, n)
 			output[filename] = source
 		}
 	}

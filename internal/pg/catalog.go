@@ -21,7 +21,7 @@ func NewCatalog() Catalog {
 func NewSchema() Schema {
 	return Schema{
 		Tables: map[string]Table{},
-		Enums:  map[string]Enum{},
+		Types:  map[string]Type{},
 		Funcs:  map[string][]Function{},
 	}
 }
@@ -93,9 +93,19 @@ func (c Catalog) LookupFunctionN(fqn FQN, argn int) (Function, error) {
 type Schema struct {
 	Name    string
 	Tables  map[string]Table
-	Enums   map[string]Enum
+	Types   map[string]Type
 	Funcs   map[string][]Function
 	Comment string
+}
+
+func (s Schema) Enums() []Enum {
+	var enums []Enum
+	for _, typ := range s.Types {
+		if enum, ok := typ.(Enum); ok {
+			enums = append(enums, enum)
+		}
+	}
+	return enums
 }
 
 type Table struct {
@@ -117,10 +127,24 @@ type Column struct {
 	Table FQN
 }
 
+type Type interface {
+	isType()
+}
+
 type Enum struct {
 	Name    string
 	Vals    []string
 	Comment string
+}
+
+func (e Enum) isType() {
+}
+
+type CompositeType struct {
+	Name string
+}
+
+func (e CompositeType) isType() {
 }
 
 type Function struct {

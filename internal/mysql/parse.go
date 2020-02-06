@@ -7,8 +7,10 @@ import (
 	"path/filepath"
 
 	"github.com/davecgh/go-spew/spew"
-	"github.com/kyleconroy/sqlc/internal/dinosql"
 	"vitess.io/vitess/go/vt/sqlparser"
+
+	"github.com/kyleconroy/sqlc/internal/config"
+	"github.com/kyleconroy/sqlc/internal/dinosql"
 )
 
 // Query holds the data for walking and validating mysql querys
@@ -19,7 +21,6 @@ type Query struct {
 	Name             string   // the Go function name
 	Cmd              string   // TODO: Pick a better name. One of: one, many, exec, execrows
 	DefaultTableName string   // for columns that are not qualified
-	SchemaLookup     *Schema  // for validation and conversion to Go types
 
 	Filename string
 }
@@ -29,7 +30,7 @@ type Column struct {
 	Table string
 }
 
-func parsePath(sqlPath string, inPkg string, s *Schema, settings dinosql.CombinedSettings) (*Result, error) {
+func parsePath(sqlPath string, generator PackageGenerator) (*Result, error) {
 	files, err := dinosql.ReadSQLFiles(sqlPath)
 	if err != nil {
 		return nil, err
@@ -48,20 +49,39 @@ func parsePath(sqlPath string, inPkg string, s *Schema, settings dinosql.Combine
 			parseErrors.Add(filename, "", 0, err)
 			continue
 		}
-		queries, err := parseContents(filename, contents, s, settings)
-		if err != nil {
-			if posErr, ok := err.(sqlparser.PositionedErr); ok {
-				message := fmt.Errorf(posErr.Err)
-				if posErr.Near != nil {
-					message = fmt.Errorf("%s at or near \"%s\"", posErr.Err, posErr.Near)
+
+		t := sqlparser.NewStringTokenizer(contents)
+		var start int
+		for {
+			q, err := sqlparser.ParseNextStrictDDL(t)
+			if err == io.EOF {
+				break
+			} else if err != nil {
+				if posErr, ok := err.(sqlparser.PositionedErr); ok {
+					message := fmt.Errorf(posErr.Err)
+					if posErr.Near != nil {
+						message = fmt.Errorf("%s at or near \"%s\"", posErr.Err, posErr.Near)
+					}
+					parseErrors.Add(filename, contents, posErr.Pos, message)
+				} else {
+					parseErrors.Add(filename, contents, start, err)
 				}
-				parseErrors.Add(filename, contents, posErr.Pos, message)
-			} else {
-				parseErrors.Add(filename, contents, 0, err)
+				continue
 			}
-			continue
+			query := contents[start : t.Position-1]
+			result, err := generator.parseQueryString(q, query)
+			if err != nil {
+				parseErrors.Add(filename, contents, start, err)
+				start = t.Position
+				continue
+			}
+			start = t.Position
+			if result == nil {
+				continue
+			}
+			result.Filename = filepath.Base(filename)
+			parsedQueries = append(parsedQueries, result)
 		}
-		parsedQueries = append(parsedQueries, queries...)
 	}
 
 	if len(parseErrors.Errs) > 0 {
@@ -69,66 +89,40 @@ func parsePath(sqlPath string, inPkg string, s *Schema, settings dinosql.Combine
 	}
 
 	return &Result{
-		Queries: parsedQueries,
-		Schema:  s,
+		Queries:          parsedQueries,
+		PackageGenerator: generator,
 	}, nil
 }
 
-func parseContents(filename, contents string, s *Schema, settings dinosql.CombinedSettings) ([]*Query, error) {
-	t := sqlparser.NewStringTokenizer(contents)
-	var queries []*Query
-	var start int
-	for {
-		q, err := sqlparser.ParseNextStrictDDL(t)
-		if err == io.EOF {
-			break
-		} else if err != nil {
-			return nil, err
-		}
-		query := contents[start : t.Position-1]
-		result, err := parseQueryString(q, query, s, settings)
-		if err != nil {
-			return nil, sqlparser.PositionedErr{Err: err.Error(), Pos: start, Near: nil}
-		}
-		start = t.Position
-		if result == nil {
-			continue
-		}
-		result.Filename = filepath.Base(filename)
-		queries = append(queries, result)
-	}
-	return queries, nil
-}
-
-func parseQueryString(tree sqlparser.Statement, query string, s *Schema, settings dinosql.CombinedSettings) (*Query, error) {
+func (pGen PackageGenerator) parseQueryString(tree sqlparser.Statement, query string) (*Query, error) {
 	var parsedQuery *Query
 	switch tree := tree.(type) {
 	case *sqlparser.Select:
-		selectQuery, err := parseSelect(tree, query, s, settings)
+		selectQuery, err := pGen.parseSelect(tree, query)
 		if err != nil {
 			return nil, err
 		}
 		parsedQuery = selectQuery
 	case *sqlparser.Insert:
-		insert, err := parseInsert(tree, query, s, settings)
+		insert, err := pGen.parseInsert(tree, query)
 		if err != nil {
 			return nil, err
 		}
 		parsedQuery = insert
 	case *sqlparser.Update:
-		update, err := parseUpdate(tree, query, s, settings)
+		update, err := pGen.parseUpdate(tree, query)
 		if err != nil {
 			return nil, err
 		}
 		parsedQuery = update
 	case *sqlparser.Delete:
-		delete, err := parseDelete(tree, query, s, settings)
+		delete, err := pGen.parseDelete(tree, query)
 		if err != nil {
 			return nil, err
 		}
 		parsedQuery = delete
 	case *sqlparser.DDL:
-		s.Add(tree)
+		pGen.Schema.Add(tree)
 		return nil, nil
 	default:
 		// panic("Unsupported SQL statement type")
@@ -158,7 +152,7 @@ func (q *Query) parseNameAndCmd() error {
 	return nil
 }
 
-func parseSelect(tree *sqlparser.Select, query string, s *Schema, settings dinosql.CombinedSettings) (*Query, error) {
+func (pGen PackageGenerator) parseSelect(tree *sqlparser.Select, query string) (*Query, error) {
 	tableAliasMap, defaultTableName, err := parseFrom(tree.From, false)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse table name alias's: %w", err)
@@ -168,7 +162,7 @@ func parseSelect(tree *sqlparser.Select, query string, s *Schema, settings dinos
 	_, ok := tree.SelectExprs[0].(*sqlparser.StarExpr)
 	if ok {
 		colNames := []sqlparser.SelectExpr{}
-		colDfns := s.tables[defaultTableName]
+		colDfns := pGen.Schema.tables[defaultTableName]
 		for _, col := range colDfns {
 			colNames = append(colNames, &sqlparser.AliasedExpr{
 				Expr: &sqlparser.ColName{
@@ -182,20 +176,19 @@ func parseSelect(tree *sqlparser.Select, query string, s *Schema, settings dinos
 	parsedQuery := Query{
 		SQL:              query,
 		DefaultTableName: defaultTableName,
-		SchemaLookup:     s,
 	}
-	cols, err := parseSelectAliasExpr(tree.SelectExprs, s, tableAliasMap, defaultTableName)
+	cols, err := pGen.parseSelectAliasExpr(tree.SelectExprs, tableAliasMap, defaultTableName)
 	if err != nil {
 		return nil, err
 	}
 	parsedQuery.Columns = cols
 
-	whereParams, err := paramsInWhereExpr(tree.Where, s, tableAliasMap, defaultTableName, settings)
+	whereParams, err := pGen.paramsInWhereExpr(tree.Where, tableAliasMap, defaultTableName)
 	if err != nil {
 		return nil, err
 	}
 
-	limitParams, err := paramsInLimitExpr(tree.Limit, s, tableAliasMap, settings)
+	limitParams, err := pGen.paramsInLimitExpr(tree.Limit, tableAliasMap)
 	if err != nil {
 		return nil, err
 	}
@@ -261,7 +254,7 @@ func parseFrom(from sqlparser.TableExprs, isLeftJoined bool) (FromTables, string
 	return tables, defaultTableName, nil
 }
 
-func parseUpdate(node *sqlparser.Update, query string, s *Schema, settings dinosql.CombinedSettings) (*Query, error) {
+func (pGen PackageGenerator) parseUpdate(node *sqlparser.Update, query string) (*Query, error) {
 	tableAliasMap, defaultTable, err := parseFrom(node.TableExprs, false)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse table name alias's: %w", err)
@@ -269,27 +262,26 @@ func parseUpdate(node *sqlparser.Update, query string, s *Schema, settings dinos
 
 	params := []*Param{}
 	for _, updateExpr := range node.Exprs {
-		col := updateExpr.Name
 		newValue, isValue := updateExpr.Expr.(*sqlparser.SQLVal)
 		if !isValue {
 			continue
 		} else if isParam := newValue.Type == sqlparser.ValArg; !isParam {
 			continue
 		}
-		colDfn, err := s.getColType(col, tableAliasMap, defaultTable)
+		col, err := pGen.getColType(updateExpr.Name, tableAliasMap, defaultTable)
 		if err != nil {
 			return nil, fmt.Errorf("failed to determine type of a parameter's column: %w", err)
 		}
 		originalParamName := string(newValue.Val)
 		param := Param{
 			OriginalName: originalParamName,
-			Name:         paramName(colDfn.Name, originalParamName),
-			Typ:          goTypeCol(colDfn, settings),
+			Name:         paramName(col.Name, originalParamName),
+			Typ:          pGen.goTypeCol(*col),
 		}
 		params = append(params, &param)
 	}
 
-	whereParams, err := paramsInWhereExpr(node.Where, s, tableAliasMap, defaultTable, settings)
+	whereParams, err := pGen.paramsInWhereExpr(node.Where, tableAliasMap, defaultTable)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse params from WHERE expression: %w", err)
 	}
@@ -299,7 +291,6 @@ func parseUpdate(node *sqlparser.Update, query string, s *Schema, settings dinos
 		Columns:          nil,
 		Params:           append(params, whereParams...),
 		DefaultTableName: defaultTable,
-		SchemaLookup:     s,
 	}
 	err = parsedQuery.parseNameAndCmd()
 	if err != nil {
@@ -309,14 +300,14 @@ func parseUpdate(node *sqlparser.Update, query string, s *Schema, settings dinos
 	return &parsedQuery, nil
 }
 
-func parseInsert(node *sqlparser.Insert, query string, s *Schema, settings dinosql.CombinedSettings) (*Query, error) {
+func (pGen PackageGenerator) parseInsert(node *sqlparser.Insert, query string) (*Query, error) {
 	params := []*Param{}
 	cols := node.Columns
 	tableName := node.Table.Name.String()
 
 	switch rows := node.Rows.(type) {
 	case *sqlparser.Select:
-		selectQuery, err := parseSelect(rows, query, s, settings)
+		selectQuery, err := pGen.parseSelect(rows, query)
 		if err != nil {
 			return nil, err
 		}
@@ -328,17 +319,17 @@ func parseInsert(node *sqlparser.Insert, query string, s *Schema, settings dinos
 				case *sqlparser.SQLVal:
 					if v.Type == sqlparser.ValArg {
 						colName := cols[colIx].String()
-						colDfn, err := s.schemaLookup(tableName, colName)
+						col, err := pGen.schemaLookup(tableName, colName)
 						varName := string(v.Val)
-						p := &Param{OriginalName: varName}
+						param := &Param{OriginalName: varName}
 						if err == nil {
-							p.Name = paramName(colDfn.Name, varName)
-							p.Typ = goTypeCol(colDfn, settings)
+							param.Name = paramName(col.Name, varName)
+							param.Typ = pGen.goTypeCol(*col)
 						} else {
-							p.Name = "Unknown"
-							p.Typ = "interface{}"
+							param.Name = "Unknown"
+							param.Typ = "interface{}"
 						}
-						params = append(params, p)
+						params = append(params, param)
 					}
 				case *sqlparser.FuncExpr:
 					name, raw, err := matchFuncExpr(v)
@@ -350,18 +341,18 @@ func parseInsert(node *sqlparser.Insert, query string, s *Schema, settings dinos
 						continue
 					}
 					colName := cols[colIx].String()
-					colDfn, err := s.schemaLookup(tableName, colName)
-					p := &Param{
+					col, err := pGen.schemaLookup(tableName, colName)
+					param := &Param{
 						OriginalName: raw,
 					}
 					if err == nil {
-						p.Name = name
-						p.Typ = goTypeCol(colDfn, settings)
+						param.Name = name
+						param.Typ = pGen.goTypeCol(*col)
 					} else {
-						p.Name = "Unknown"
-						p.Typ = "interface{}"
+						param.Name = "Unknown"
+						param.Typ = "interface{}"
 					}
-					params = append(params, p)
+					params = append(params, param)
 				default:
 					return nil, fmt.Errorf("failed to parse insert query value")
 				}
@@ -376,7 +367,6 @@ func parseInsert(node *sqlparser.Insert, query string, s *Schema, settings dinos
 		Params:           params,
 		Columns:          nil,
 		DefaultTableName: tableName,
-		SchemaLookup:     s,
 	}
 
 	err := parsedQuery.parseNameAndCmd()
@@ -386,18 +376,18 @@ func parseInsert(node *sqlparser.Insert, query string, s *Schema, settings dinos
 	return parsedQuery, nil
 }
 
-func parseDelete(node *sqlparser.Delete, query string, s *Schema, settings dinosql.CombinedSettings) (*Query, error) {
+func (pGen PackageGenerator) parseDelete(node *sqlparser.Delete, query string) (*Query, error) {
 	tableAliasMap, defaultTableName, err := parseFrom(node.TableExprs, false)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse table name alias's: %w", err)
 	}
 
-	whereParams, err := paramsInWhereExpr(node.Where, s, tableAliasMap, defaultTableName, settings)
+	whereParams, err := pGen.paramsInWhereExpr(node.Where, tableAliasMap, defaultTableName)
 	if err != nil {
 		return nil, err
 	}
 
-	limitParams, err := paramsInLimitExpr(node.Limit, s, tableAliasMap, settings)
+	limitParams, err := pGen.paramsInLimitExpr(node.Limit, tableAliasMap)
 	if err != nil {
 		return nil, err
 	}
@@ -406,7 +396,6 @@ func parseDelete(node *sqlparser.Delete, query string, s *Schema, settings dinos
 		Params:           append(whereParams, limitParams...),
 		Columns:          nil,
 		DefaultTableName: defaultTableName,
-		SchemaLookup:     s,
 	}
 	err = parsedQuery.parseNameAndCmd()
 	if err != nil {
@@ -416,7 +405,7 @@ func parseDelete(node *sqlparser.Delete, query string, s *Schema, settings dinos
 	return parsedQuery, nil
 }
 
-func parseSelectAliasExpr(exprs sqlparser.SelectExprs, s *Schema, tableAliasMap FromTables, defaultTable string) ([]Column, error) {
+func (pGen PackageGenerator) parseSelectAliasExpr(exprs sqlparser.SelectExprs, tableAliasMap FromTables, defaultTable string) ([]Column, error) {
 	cols := []Column{}
 	for _, col := range exprs {
 		switch expr := col.(type) {
@@ -425,7 +414,7 @@ func parseSelectAliasExpr(exprs sqlparser.SelectExprs, s *Schema, tableAliasMap 
 
 			switch v := expr.Expr.(type) {
 			case *sqlparser.ColName:
-				res, err := s.getColType(v, tableAliasMap, defaultTable)
+				res, err := pGen.getColType(v, tableAliasMap, defaultTable)
 				if err != nil {
 					return nil, err
 				}
@@ -433,11 +422,7 @@ func parseSelectAliasExpr(exprs sqlparser.SelectExprs, s *Schema, tableAliasMap 
 					res.Name = expr.As // applys the alias
 				}
 
-				fromTable, err := tableColReferences(v, defaultTable, tableAliasMap)
-				cols = append(cols, Column{
-					ColumnDefinition: res,
-					Table:            fromTable.TrueName,
-				})
+				cols = append(cols, *res)
 			case *sqlparser.GroupConcatExpr:
 				cols = append(cols, Column{
 					ColumnDefinition: &sqlparser.ColumnDefinition{
@@ -478,13 +463,18 @@ func parseSelectAliasExpr(exprs sqlparser.SelectExprs, s *Schema, tableAliasMap 
 }
 
 // GeneratePkg is the main entry to mysql generator package
-func GeneratePkg(pkgName, schemaPath, querysPath string, settings dinosql.CombinedSettings) (*Result, error) {
+func GeneratePkg(pkgName, schemaPath, querysPath string, settings config.CombinedSettings) (*Result, error) {
 	s := NewSchema()
-	_, err := parsePath(schemaPath, pkgName, s, settings)
+	generator := PackageGenerator{
+		Schema:           s,
+		CombinedSettings: settings,
+		packageName:      pkgName,
+	}
+	_, err := parsePath(schemaPath, generator)
 	if err != nil {
 		return nil, err
 	}
-	result, err := parsePath(querysPath, pkgName, s, settings)
+	result, err := parsePath(querysPath, generator)
 	if err != nil {
 		return nil, err
 	}
