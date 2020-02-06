@@ -86,6 +86,10 @@ func ReadSQLFiles(path string) ([]string, error) {
 		if strings.HasPrefix(filepath.Base(filename), ".") {
 			continue
 		}
+		// Remove golang-migrate rollback files.
+		if strings.HasSuffix(filename, ".down.sql") {
+			continue
+		}
 		sql = append(sql, filename)
 	}
 	return sql, nil
