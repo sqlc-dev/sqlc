@@ -85,10 +85,10 @@ SET title = ?, tags = ?, isbn = ?
 WHERE book_id = ?
 """
 
-class QueriesImpl(private val conn: Connection) {
+class QueriesImpl(private val conn: Connection) : Queries {
 
   @Throws(SQLException::class)
-  fun booksByTags(dollar1: List<String>): List<BooksByTagsRow> {
+  override fun booksByTags(dollar1: List<String>): List<BooksByTagsRow> {
     return conn.prepareStatement(booksByTags).use { stmt ->
       stmt.setArray(1, conn.createArrayOf("pg_catalog.varchar", dollar1.toTypedArray()))
 
@@ -108,7 +108,7 @@ class QueriesImpl(private val conn: Connection) {
   }
 
   @Throws(SQLException::class)
-  fun booksByTitleYear(title: String, year: Int): List<Book> {
+  override fun booksByTitleYear(title: String, year: Int): List<Book> {
     return conn.prepareStatement(booksByTitleYear).use { stmt ->
       stmt.setString(1, title)
       stmt.setInt(2, year)
@@ -132,7 +132,7 @@ class QueriesImpl(private val conn: Connection) {
   }
 
   @Throws(SQLException::class)
-  fun createAuthor(name: String): Author {
+  override fun createAuthor(name: String): Author {
     return conn.prepareStatement(createAuthor).use { stmt ->
       stmt.setString(1, name)
 
@@ -152,7 +152,7 @@ class QueriesImpl(private val conn: Connection) {
   }
 
   @Throws(SQLException::class)
-  fun createBook(
+  override fun createBook(
       authorId: Int,
       isbn: String,
       booktype: BookType,
@@ -191,7 +191,7 @@ class QueriesImpl(private val conn: Connection) {
   }
 
   @Throws(SQLException::class)
-  fun deleteBook(bookId: Int) {
+  override fun deleteBook(bookId: Int) {
     conn.prepareStatement(deleteBook).use { stmt ->
       stmt.setInt(1, bookId)
 
@@ -200,7 +200,7 @@ class QueriesImpl(private val conn: Connection) {
   }
 
   @Throws(SQLException::class)
-  fun getAuthor(authorId: Int): Author {
+  override fun getAuthor(authorId: Int): Author {
     return conn.prepareStatement(getAuthor).use { stmt ->
       stmt.setInt(1, authorId)
 
@@ -220,7 +220,7 @@ class QueriesImpl(private val conn: Connection) {
   }
 
   @Throws(SQLException::class)
-  fun getBook(bookId: Int): Book {
+  override fun getBook(bookId: Int): Book {
     return conn.prepareStatement(getBook).use { stmt ->
       stmt.setInt(1, bookId)
 
@@ -246,7 +246,7 @@ class QueriesImpl(private val conn: Connection) {
   }
 
   @Throws(SQLException::class)
-  fun updateBook(
+  override fun updateBook(
       title: String,
       tags: List<String>,
       bookId: Int) {
@@ -260,7 +260,7 @@ class QueriesImpl(private val conn: Connection) {
   }
 
   @Throws(SQLException::class)
-  fun updateBookISBN(
+  override fun updateBookISBN(
       title: String,
       tags: List<String>,
       isbn: String,

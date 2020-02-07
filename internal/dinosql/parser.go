@@ -13,7 +13,6 @@ import (
 	"unicode"
 
 	"github.com/kyleconroy/sqlc/internal/catalog"
-	"github.com/kyleconroy/sqlc/internal/config"
 	core "github.com/kyleconroy/sqlc/internal/pg"
 	"github.com/kyleconroy/sqlc/internal/postgres"
 
@@ -189,23 +188,27 @@ type Result struct {
 	Catalog core.Catalog
 }
 
-func ParseQueries(c core.Catalog, pkg config.SQL) (*Result, error) {
-	f, err := os.Stat(pkg.Queries)
+type ParserOpts struct {
+	UsePositionalParameters bool
+}
+
+func ParseQueries(c core.Catalog, queries string, opts ParserOpts) (*Result, error) {
+	f, err := os.Stat(queries)
 	if err != nil {
-		return nil, fmt.Errorf("path %s does not exist", pkg.Queries)
+		return nil, fmt.Errorf("path %s does not exist", queries)
 	}
 
 	var files []string
 	if f.IsDir() {
-		listing, err := ioutil.ReadDir(pkg.Queries)
+		listing, err := ioutil.ReadDir(queries)
 		if err != nil {
 			return nil, err
 		}
 		for _, f := range listing {
-			files = append(files, filepath.Join(pkg.Queries, f.Name()))
+			files = append(files, filepath.Join(queries, f.Name()))
 		}
 	} else {
-		files = append(files, pkg.Queries)
+		files = append(files, queries)
 	}
 
 	merr := NewParserErr()
@@ -230,8 +233,7 @@ func ParseQueries(c core.Catalog, pkg config.SQL) (*Result, error) {
 			continue
 		}
 		for _, stmt := range tree.Statements {
-			rewriteParameters := pkg.rewriteParams
-			query, err := parseQuery(c, stmt, source, rewriteParameters)
+			query, err := parseQuery(c, stmt, source, opts.UsePositionalParameters)
 			if err == errUnsupportedStatementType {
 				continue
 			}
@@ -256,7 +258,7 @@ func ParseQueries(c core.Catalog, pkg config.SQL) (*Result, error) {
 		return nil, merr
 	}
 	if len(q) == 0 {
-		return nil, fmt.Errorf("path %s contains no queries", pkg.Queries)
+		return nil, fmt.Errorf("path %s contains no queries", queries)
 	}
 	return &Result{
 		Catalog: c,
