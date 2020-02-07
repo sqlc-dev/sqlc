@@ -29,10 +29,10 @@ SELECT id, name, bio FROM authors
 ORDER BY name
 """
 
-class QueriesImpl(private val conn: Connection) {
+class QueriesImpl(private val conn: Connection) : Queries {
 
   @Throws(SQLException::class)
-  fun createAuthor(name: String, bio: String?): Author {
+  override fun createAuthor(name: String, bio: String?): Author {
     return conn.prepareStatement(createAuthor).use { stmt ->
       stmt.setString(1, name)
       stmt.setString(2, bio)
@@ -54,7 +54,7 @@ class QueriesImpl(private val conn: Connection) {
   }
 
   @Throws(SQLException::class)
-  fun deleteAuthor(id: Long) {
+  override fun deleteAuthor(id: Long) {
     conn.prepareStatement(deleteAuthor).use { stmt ->
       stmt.setLong(1, id)
 
@@ -63,7 +63,7 @@ class QueriesImpl(private val conn: Connection) {
   }
 
   @Throws(SQLException::class)
-  fun getAuthor(id: Long): Author {
+  override fun getAuthor(id: Long): Author {
     return conn.prepareStatement(getAuthor).use { stmt ->
       stmt.setLong(1, id)
 
@@ -84,7 +84,7 @@ class QueriesImpl(private val conn: Connection) {
   }
 
   @Throws(SQLException::class)
-  fun listAuthors(): List<Author> {
+  override fun listAuthors(): List<Author> {
     return conn.prepareStatement(listAuthors).use { stmt ->
       
       val results = stmt.executeQuery()

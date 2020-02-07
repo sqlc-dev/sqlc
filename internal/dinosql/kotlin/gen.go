@@ -10,6 +10,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/dinosql"
 	core "github.com/kyleconroy/sqlc/internal/pg"
 
@@ -186,12 +187,12 @@ type KtQuery struct {
 }
 
 type KtGenerateable interface {
-	KtDataClasses(settings dinosql.CombinedSettings) []KtStruct
-	KtQueries(settings dinosql.CombinedSettings) []KtQuery
-	KtEnums(settings dinosql.CombinedSettings) []KtEnum
+	KtDataClasses(settings config.CombinedSettings) []KtStruct
+	KtQueries(settings config.CombinedSettings) []KtQuery
+	KtEnums(settings config.CombinedSettings) []KtEnum
 }
 
-func KtUsesType(r KtGenerateable, typ string, settings dinosql.CombinedSettings) bool {
+func KtUsesType(r KtGenerateable, typ string, settings config.CombinedSettings) bool {
 	for _, strct := range r.KtDataClasses(settings) {
 		for _, f := range strct.Fields {
 			if f.Type.Name == typ {
@@ -202,7 +203,7 @@ func KtUsesType(r KtGenerateable, typ string, settings dinosql.CombinedSettings)
 	return false
 }
 
-func KtImports(r KtGenerateable, settings dinosql.CombinedSettings) func(string) [][]string {
+func KtImports(r KtGenerateable, settings config.CombinedSettings) func(string) [][]string {
 	return func(filename string) [][]string {
 		if filename == "Models.kt" {
 			return ModelKtImports(r, settings)
@@ -216,7 +217,7 @@ func KtImports(r KtGenerateable, settings dinosql.CombinedSettings) func(string)
 	}
 }
 
-func InterfaceKtImports(r KtGenerateable, settings dinosql.CombinedSettings) [][]string {
+func InterfaceKtImports(r KtGenerateable, settings config.CombinedSettings) [][]string {
 	gq := r.KtQueries(settings)
 	uses := func(name string) bool {
 		for _, q := range gq {
@@ -262,7 +263,7 @@ func InterfaceKtImports(r KtGenerateable, settings dinosql.CombinedSettings) [][
 	return [][]string{stds}
 }
 
-func ModelKtImports(r KtGenerateable, settings dinosql.CombinedSettings) [][]string {
+func ModelKtImports(r KtGenerateable, settings config.CombinedSettings) [][]string {
 	std := make(map[string]struct{})
 	if KtUsesType(r, "LocalDate", settings) {
 		std["java.time.LocalDate"] = struct{}{}
@@ -286,7 +287,7 @@ func ModelKtImports(r KtGenerateable, settings dinosql.CombinedSettings) [][]str
 	return [][]string{stds}
 }
 
-func QueryKtImports(r KtGenerateable, settings dinosql.CombinedSettings, filename string) [][]string {
+func QueryKtImports(r KtGenerateable, settings config.CombinedSettings, filename string) [][]string {
 	// for _, strct := range r.KtDataClasses() {
 	// 	for _, f := range strct.Fields {
 	// 		if strings.HasPrefix(f.Type, "[]") {
@@ -390,13 +391,13 @@ type Result struct {
 	*dinosql.Result
 }
 
-func (r Result) KtEnums(settings dinosql.CombinedSettings) []KtEnum {
+func (r Result) KtEnums(settings config.CombinedSettings) []KtEnum {
 	var enums []KtEnum
 	for name, schema := range r.Catalog.Schemas {
 		if name == "pg_catalog" {
 			continue
 		}
-		for _, enum := range schema.Enums {
+		for _, enum := range schema.Enums() {
 			var enumName string
 			if name == "public" {
 				enumName = enum.Name
@@ -423,8 +424,8 @@ func (r Result) KtEnums(settings dinosql.CombinedSettings) []KtEnum {
 	return enums
 }
 
-func KtDataClassName(name string, settings dinosql.CombinedSettings) string {
-	if rename := settings.Global.Rename[name]; rename != "" {
+func KtDataClassName(name string, settings config.CombinedSettings) string {
+	if rename := settings.Rename[name]; rename != "" {
 		return rename
 	}
 	out := ""
@@ -434,11 +435,11 @@ func KtDataClassName(name string, settings dinosql.CombinedSettings) string {
 	return out
 }
 
-func KtMemberName(name string, settings dinosql.CombinedSettings) string {
+func KtMemberName(name string, settings config.CombinedSettings) string {
 	return dinosql.LowerTitle(KtDataClassName(name, settings))
 }
 
-func (r Result) KtDataClasses(settings dinosql.CombinedSettings) []KtStruct {
+func (r Result) KtDataClasses(settings config.CombinedSettings) []KtStruct {
 	var structs []KtStruct
 	for name, schema := range r.Catalog.Schemas {
 		if name == "pg_catalog" {
@@ -508,7 +509,7 @@ func (t ktType) IsTime() bool {
 	return t.Name == "LocalDate" || t.Name == "LocalDateTime" || t.Name == "LocalTime" || t.Name == "OffsetDateTime"
 }
 
-func (r Result) ktType(col core.Column, settings dinosql.CombinedSettings) ktType {
+func (r Result) ktType(col core.Column, settings config.CombinedSettings) ktType {
 	typ, isEnum := r.ktInnerType(col, settings)
 	return ktType{
 		Name:     typ,
@@ -519,7 +520,7 @@ func (r Result) ktType(col core.Column, settings dinosql.CombinedSettings) ktTyp
 	}
 }
 
-func (r Result) ktInnerType(col core.Column, settings dinosql.CombinedSettings) (string, bool) {
+func (r Result) ktInnerType(col core.Column, settings config.CombinedSettings) (string, bool) {
 	columnType := col.DataType
 
 	switch columnType {
@@ -600,7 +601,7 @@ func (r Result) ktInnerType(col core.Column, settings dinosql.CombinedSettings) 
 			if name == "pg_catalog" {
 				continue
 			}
-			for _, enum := range schema.Enums {
+			for _, enum := range schema.Enums() {
 				if columnType == enum.Name {
 					if name == "public" {
 						return KtDataClassName(enum.Name, settings), true
@@ -620,7 +621,7 @@ type goColumn struct {
 	core.Column
 }
 
-func (r Result) ktColumnsToStruct(name string, columns []goColumn, settings dinosql.CombinedSettings, namer func(core.Column, int) string) *KtStruct {
+func (r Result) ktColumnsToStruct(name string, columns []goColumn, settings config.CombinedSettings, namer func(core.Column, int) string) *KtStruct {
 	gs := KtStruct{
 		Name: name,
 	}
@@ -683,7 +684,7 @@ func jdbcSQL(s string) string {
 	return jdbcSQLRe.ReplaceAllString(s, "?")
 }
 
-func (r Result) KtQueries(settings dinosql.CombinedSettings) []KtQuery {
+func (r Result) KtQueries(settings config.CombinedSettings) []KtQuery {
 	structs := r.KtDataClasses(settings)
 
 	qs := make([]KtQuery, 0, len(r.Queries))
@@ -861,14 +862,13 @@ data class {{.Ret.Type}} ( {{- range $i, $e := .Ret.Struct.Fields}}
 {{end}}
 {{end}}
 
-class QueriesImpl(private val conn: Connection){{ if .EmitInterface }} : Queries{{end}} {
+class QueriesImpl(private val conn: Connection) : Queries {
 {{range .KtQueries}}
 {{if eq .Cmd ":one"}}
 {{range .Comments}}//{{.}}
 {{end}}
   @Throws(SQLException::class)
-  {{ if $.EmitInterface }}override {{ end -}}
-  fun {{.MethodName}}({{.Arg.Args}}): {{.Ret.Type}} {
+  override fun {{.MethodName}}({{.Arg.Args}}): {{.Ret.Type}} {
     return conn.prepareStatement({{.ConstantName}}).use { stmt ->
       {{.Arg.Bindings}}
 
@@ -889,8 +889,7 @@ class QueriesImpl(private val conn: Connection){{ if .EmitInterface }} : Queries
 {{range .Comments}}//{{.}}
 {{end}}
   @Throws(SQLException::class)
-  {{ if $.EmitInterface }}override {{ end -}}
-  fun {{.MethodName}}({{.Arg.Args}}): List<{{.Ret.Type}}> {
+  override fun {{.MethodName}}({{.Arg.Args}}): List<{{.Ret.Type}}> {
     return conn.prepareStatement({{.ConstantName}}).use { stmt ->
       {{.Arg.Bindings}}
 
@@ -909,7 +908,7 @@ class QueriesImpl(private val conn: Connection){{ if .EmitInterface }} : Queries
 {{end}}
   @Throws(SQLException::class)
   {{ if $.EmitInterface }}override {{ end -}}
-  fun {{.MethodName}}({{.Arg.Args}}) {
+  override fun {{.MethodName}}({{.Arg.Args}}) {
     conn.prepareStatement({{.ConstantName}}).use { stmt ->
       {{ .Arg.Bindings }}
 
@@ -923,7 +922,7 @@ class QueriesImpl(private val conn: Connection){{ if .EmitInterface }} : Queries
 {{end}}
   @Throws(SQLException::class)
   {{ if $.EmitInterface }}override {{ end -}}
-  fun {{.MethodName}}({{.Arg.Args}}): Int {
+  override fun {{.MethodName}}({{.Arg.Args}}): Int {
     return conn.prepareStatement({{.ConstantName}}).use { stmt ->
       {{ .Arg.Bindings }}
 
@@ -942,7 +941,7 @@ type ktTmplCtx struct {
 	Enums         []KtEnum
 	KtDataClasses []KtStruct
 	KtQueries     []KtQuery
-	Settings      dinosql.GenerateSettings
+	Settings      config.Config
 
 	// TODO: Race conditions
 	SourceName string
@@ -972,7 +971,7 @@ func ktFormat(s string) string {
 	return o
 }
 
-func KtGenerate(r KtGenerateable, settings dinosql.CombinedSettings) (map[string]string, error) {
+func KtGenerate(r KtGenerateable, settings config.CombinedSettings) (map[string]string, error) {
 	funcMap := template.FuncMap{
 		"lowerTitle": dinosql.LowerTitle,
 		"imports":    KtImports(r, settings),
@@ -986,11 +985,8 @@ func KtGenerate(r KtGenerateable, settings dinosql.CombinedSettings) (map[string
 	pkg := settings.Package
 	tctx := ktTmplCtx{
 		Settings:            settings.Global,
-		EmitInterface:       pkg.EmitInterface,
-		EmitJSONTags:        pkg.EmitJSONTags,
-		EmitPreparedQueries: pkg.EmitPreparedQueries,
 		Q:                   `"""`,
-		Package:             pkg.Name,
+		Package:             pkg.Gen.Kotlin.Package,
 		KtQueries:           r.KtQueries(settings),
 		Enums:               r.KtEnums(settings),
 		KtDataClasses:       r.KtDataClasses(settings),
@@ -1017,11 +1013,9 @@ func KtGenerate(r KtGenerateable, settings dinosql.CombinedSettings) (map[string
 	if err := execute("Models.kt", modelsFile); err != nil {
 		return nil, err
 	}
-	if pkg.EmitInterface {
-		if err := execute("Queries.kt", ifaceFile); err != nil {
+	if err := execute("Queries.kt", ifaceFile); err != nil {
 			return nil, err
 		}
-	}
 	if err := execute("QueriesImpl.kt", sqlFile); err != nil {
 		return nil, err
 	}

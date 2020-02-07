@@ -17,10 +17,10 @@ const val listPilots = """-- name: listPilots :many
 SELECT id, name FROM pilots LIMIT 5
 """
 
-class QueriesImpl(private val conn: Connection) {
+class QueriesImpl(private val conn: Connection) : Queries {
 
   @Throws(SQLException::class)
-  fun countPilots(): Long {
+  override fun countPilots(): Long {
     return conn.prepareStatement(countPilots).use { stmt ->
       
       val results = stmt.executeQuery()
@@ -36,7 +36,7 @@ class QueriesImpl(private val conn: Connection) {
   }
 
   @Throws(SQLException::class)
-  fun deletePilot(id: Int) {
+  override fun deletePilot(id: Int) {
     conn.prepareStatement(deletePilot).use { stmt ->
       stmt.setInt(1, id)
 
@@ -45,7 +45,7 @@ class QueriesImpl(private val conn: Connection) {
   }
 
   @Throws(SQLException::class)
-  fun listPilots(): List<Pilot> {
+  override fun listPilots(): List<Pilot> {
     return conn.prepareStatement(listPilots).use { stmt ->
       
       val results = stmt.executeQuery()
