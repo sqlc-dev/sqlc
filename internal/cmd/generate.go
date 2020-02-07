@@ -10,6 +10,7 @@ import (
 
 	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/dinosql"
+	"github.com/kyleconroy/sqlc/internal/dinosql/kotlin"
 	"github.com/kyleconroy/sqlc/internal/mysql"
 )
 
@@ -33,6 +34,11 @@ func printFileErr(stderr io.Writer, dir string, fileErr dinosql.FileErr) {
 	fmt.Fprintf(stderr, "%s:%d:%d: %s\n", filename, fileErr.Line, fileErr.Column, fileErr.Err)
 }
 
+type outPair struct {
+	Gen config.SQLGen
+	config.SQL
+}
+
 func Generate(dir string, stderr io.Writer) (map[string]string, error) {
 	blob, err := ioutil.ReadFile(filepath.Join(dir, "sqlc.json"))
 	if err != nil {
@@ -40,7 +46,7 @@ func Generate(dir string, stderr io.Writer) (map[string]string, error) {
 		return nil, err
 	}
 
-	settings, err := config.ParseConfig(bytes.NewReader(blob))
+	conf, err := config.ParseConfig(bytes.NewReader(blob))
 	if err != nil {
 		switch err {
 		case config.ErrMissingVersion:
@@ -57,67 +63,58 @@ func Generate(dir string, stderr io.Writer) (map[string]string, error) {
 	output := map[string]string{}
 	errored := false
 
-	for _, pkg := range settings.Packages {
-		name := pkg.Name
-		combo := config.Combine(settings, pkg)
+	var pairs []outPair
+	for _, sql := range conf.SQL {
+		if sql.Gen.Go != nil {
+			pairs = append(pairs, outPair{
+				SQL: sql,
+				Gen: config.SQLGen{Go: sql.Gen.Go},
+			})
+		}
+		if sql.Gen.Kotlin != nil {
+			pairs = append(pairs, outPair{
+				SQL: sql,
+				Gen: config.SQLGen{Kotlin: sql.Gen.Kotlin},
+			})
+		}
+	}
+
+	for _, sql := range pairs {
+		combo := config.Combine(conf, sql.SQL)
 		var result dinosql.Generateable
 
 		// TODO: This feels like a hack that will bite us later
-		pkg.Schema = filepath.Join(dir, pkg.Schema)
-		pkg.Queries = filepath.Join(dir, pkg.Queries)
+		sql.Schema = filepath.Join(dir, sql.Schema)
+		sql.Queries = filepath.Join(dir, sql.Queries)
 
-		switch pkg.Engine {
-
-		case config.EngineMySQL:
-			// Experimental MySQL support
-			q, err := mysql.GeneratePkg(name, pkg.Schema, pkg.Queries, combo)
-			if err != nil {
-				fmt.Fprintf(stderr, "# package %s\n", name)
-				if parserErr, ok := err.(*dinosql.ParserErr); ok {
-					for _, fileErr := range parserErr.Errs {
-						printFileErr(stderr, dir, fileErr)
-					}
-				} else {
-					fmt.Fprintf(stderr, "error parsing schema: %s\n", err)
-				}
-				errored = true
-				continue
-			}
-			result = q
-
-		case config.EnginePostgreSQL:
-			c, err := dinosql.ParseCatalog(pkg.Schema)
-			if err != nil {
-				fmt.Fprintf(stderr, "# package %s\n", name)
-				if parserErr, ok := err.(*dinosql.ParserErr); ok {
-					for _, fileErr := range parserErr.Errs {
-						printFileErr(stderr, dir, fileErr)
-					}
-				} else {
-					fmt.Fprintf(stderr, "error parsing schema: %s\n", err)
-				}
-				errored = true
-				continue
-			}
-
-			q, err := dinosql.ParseQueries(c, pkg)
-			if err != nil {
-				fmt.Fprintf(stderr, "# package %s\n", name)
-				if parserErr, ok := err.(*dinosql.ParserErr); ok {
-					for _, fileErr := range parserErr.Errs {
-						printFileErr(stderr, dir, fileErr)
-					}
-				} else {
-					fmt.Fprintf(stderr, "error parsing queries: %s\n", err)
-				}
-				errored = true
-				continue
-			}
-			result = q
-
+		var name string
+		parseOpts := dinosql.Opts{}
+		if sql.Gen.Go != nil {
+			name = combo.Go.Package
+		} else if sql.Gen.Kotlin != nil {
+			parseOpts.UsePositionalParameters = true
+			name = combo.Kotlin.Package
 		}
 
-		files, err := dinosql.Generate(result, combo)
+		result, errored = parse(name, dir, sql.SQL, combo, parseOpts, stderr)
+		if errored {
+			break
+		}
+
+		var files map[string]string
+		var out string
+		if sql.Gen.Go != nil {
+			out = combo.Go.Out
+			files, err = dinosql.Generate(result, combo)
+		} else if sql.Gen.Kotlin != nil {
+			out = combo.Kotlin.Out
+			ktRes, ok := result.(kotlin.KtGenerateable)
+			if !ok {
+				err = fmt.Errorf("kotlin not supported for engine %s", combo.Package.Engine)
+				break
+			}
+			files, err = kotlin.KtGenerate(ktRes, combo)
+		}
 		if err != nil {
 			fmt.Fprintf(stderr, "# package %s\n", name)
 			fmt.Fprintf(stderr, "error generating code: %s\n", err)
@@ -126,7 +123,7 @@ func Generate(dir string, stderr io.Writer) (map[string]string, error) {
 		}
 
 		for n, source := range files {
-			filename := filepath.Join(dir, pkg.Path, n)
+			filename := filepath.Join(dir, out, n)
 			output[filename] = source
 		}
 	}
@@ -135,4 +132,54 @@ func Generate(dir string, stderr io.Writer) (map[string]string, error) {
 		return nil, fmt.Errorf("errored")
 	}
 	return output, nil
+}
+
+func parse(name, dir string, sql config.SQL, combo config.CombinedSettings, parserOpts dinosql.Opts, stderr io.Writer) (dinosql.Generateable, bool) {
+	switch sql.Engine {
+	case config.EngineMySQL:
+		// Experimental MySQL support
+		q, err := mysql.GeneratePkg(name, sql.Schema, sql.Queries, combo)
+		if err != nil {
+			fmt.Fprintf(stderr, "# package %s\n", name)
+			if parserErr, ok := err.(*dinosql.ParserErr); ok {
+				for _, fileErr := range parserErr.Errs {
+					printFileErr(stderr, dir, fileErr)
+				}
+			} else {
+				fmt.Fprintf(stderr, "error parsing schema: %s\n", err)
+			}
+			return nil, true
+		}
+		return q, false
+
+	case config.EnginePostgreSQL:
+		c, err := dinosql.ParseCatalog(sql.Schema)
+		if err != nil {
+			fmt.Fprintf(stderr, "# package %s\n", name)
+			if parserErr, ok := err.(*dinosql.ParserErr); ok {
+				for _, fileErr := range parserErr.Errs {
+					printFileErr(stderr, dir, fileErr)
+				}
+			} else {
+				fmt.Fprintf(stderr, "error parsing schema: %s\n", err)
+			}
+			return nil, true
+		}
+
+		q, err := dinosql.ParseQueries(c, sql.Queries, parserOpts)
+		if err != nil {
+			fmt.Fprintf(stderr, "# package %s\n", name)
+			if parserErr, ok := err.(*dinosql.ParserErr); ok {
+				for _, fileErr := range parserErr.Errs {
+					printFileErr(stderr, dir, fileErr)
+				}
+			} else {
+				fmt.Fprintf(stderr, "error parsing queries: %s\n", err)
+			}
+			return nil, true
+		}
+		return &kotlin.Result{Result: q}, false
+	default:
+		panic("invalid engine")
+	}
 }

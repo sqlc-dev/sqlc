@@ -192,7 +192,7 @@ func Imports(r Generateable, settings config.CombinedSettings) func(string) [][]
 	return func(filename string) [][]string {
 		if filename == "db.go" {
 			imps := []string{"context", "database/sql"}
-			if settings.Package.EmitPreparedQueries {
+			if settings.Go.EmitPreparedQueries {
 				imps = append(imps, "fmt")
 			}
 			return [][]string{imps}
@@ -524,7 +524,7 @@ func (r Result) Enums(settings config.CombinedSettings) []GoEnum {
 }
 
 func StructName(name string, settings config.CombinedSettings) string {
-	if rename := settings.Global.Rename[name]; rename != "" {
+	if rename := settings.Rename[name]; rename != "" {
 		return rename
 	}
 	out := ""
@@ -735,6 +735,11 @@ func (r Result) goInnerType(col core.Column, settings config.CombinedSettings) s
 	}
 }
 
+type goColumn struct {
+	id int
+	core.Column
+}
+
 // It's possible that this method will generate duplicate JSON tag values
 //
 //   Columns: count, count,   count_2
@@ -742,21 +747,31 @@ func (r Result) goInnerType(col core.Column, settings config.CombinedSettings) s
 // JSON tags: count, count_2, count_2
 //
 // This is unlikely to happen, so don't fix it yet
-func (r Result) columnsToStruct(name string, columns []core.Column, settings config.CombinedSettings) *GoStruct {
+func (r Result) columnsToStruct(name string, columns []goColumn, settings config.CombinedSettings) *GoStruct {
 	gs := GoStruct{
 		Name: name,
 	}
 	seen := map[string]int{}
+	suffixes := map[int]int{}
 	for i, c := range columns {
 		tagName := c.Name
-		fieldName := StructName(columnName(c, i), settings)
-		if v := seen[c.Name]; v > 0 {
-			tagName = fmt.Sprintf("%s_%d", tagName, v+1)
-			fieldName = fmt.Sprintf("%s_%d", fieldName, v+1)
+		fieldName := StructName(columnName(c.Column, i), settings)
+		// Track suffixes by the ID of the column, so that columns referring to the same numbered parameter can be
+		// reused.
+		suffix := 0
+		if o, ok := suffixes[c.id]; ok {
+			suffix = o
+		} else if v := seen[c.Name]; v > 0 {
+			suffix = v+1
+		}
+		suffixes[c.id] = suffix
+		if suffix > 0 {
+			tagName = fmt.Sprintf("%s_%d", tagName, suffix)
+			fieldName = fmt.Sprintf("%s_%d", fieldName, suffix)
 		}
 		gs.Fields = append(gs.Fields, GoField{
 			Name: fieldName,
-			Type: r.goType(c, settings),
+			Type: r.goType(c.Column, settings),
 			Tags: map[string]string{"json:": tagName},
 		})
 		seen[c.Name]++
@@ -831,9 +846,12 @@ func (r Result) GoQueries(settings config.CombinedSettings) []GoQuery {
 				Typ:  r.goType(p.Column, settings),
 			}
 		} else if len(query.Params) > 1 {
-			var cols []core.Column
+			var cols []goColumn
 			for _, p := range query.Params {
-				cols = append(cols, p.Column)
+				cols = append(cols, goColumn{
+					id:     p.Number,
+					Column: p.Column,
+				})
 			}
 			gq.Arg = GoQueryValue{
 				Emit:   true,
@@ -874,7 +892,14 @@ func (r Result) GoQueries(settings config.CombinedSettings) []GoQuery {
 			}
 
 			if gs == nil {
-				gs = r.columnsToStruct(gq.MethodName+"Row", query.Columns, settings)
+				var columns []goColumn
+				for i, c := range query.Columns {
+					columns = append(columns, goColumn{
+						id:     i,
+						Column: c,
+					})
+				}
+				gs = r.columnsToStruct(gq.MethodName+"Row", columns, settings)
 				emit = true
 			}
 			gq.Ret = GoQueryValue{
@@ -1183,7 +1208,7 @@ type tmplCtx struct {
 	Enums     []GoEnum
 	Structs   []GoStruct
 	GoQueries []GoQuery
-	Settings  config.GenerateSettings
+	Settings  config.Config
 
 	// TODO: Race conditions
 	SourceName string
@@ -1210,14 +1235,14 @@ func Generate(r Generateable, settings config.CombinedSettings) (map[string]stri
 	sqlFile := template.Must(template.New("table").Funcs(funcMap).Parse(sqlTmpl))
 	ifaceFile := template.Must(template.New("table").Funcs(funcMap).Parse(ifaceTmpl))
 
-	pkg := settings.Package
+	golang := settings.Go
 	tctx := tmplCtx{
 		Settings:            settings.Global,
-		EmitInterface:       pkg.EmitInterface,
-		EmitJSONTags:        pkg.EmitJSONTags,
-		EmitPreparedQueries: pkg.EmitPreparedQueries,
+		EmitInterface:       golang.EmitInterface,
+		EmitJSONTags:        golang.EmitJSONTags,
+		EmitPreparedQueries: golang.EmitPreparedQueries,
 		Q:                   "`",
-		Package:             pkg.Name,
+		Package:             golang.Package,
 		GoQueries:           r.GoQueries(settings),
 		Enums:               r.Enums(settings),
 		Structs:             r.Structs(settings),
@@ -1252,7 +1277,7 @@ func Generate(r Generateable, settings config.CombinedSettings) (map[string]stri
 	if err := execute("models.go", modelsFile); err != nil {
 		return nil, err
 	}
-	if pkg.EmitInterface {
+	if golang.EmitInterface {
 		if err := execute("querier.go", ifaceFile); err != nil {
 			return nil, err
 		}

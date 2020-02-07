@@ -3,6 +3,7 @@ package dinosql
 import (
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	pg "github.com/lfittl/pg_query_go"
 	nodes "github.com/lfittl/pg_query_go/nodes"
 )
@@ -87,13 +88,14 @@ func TestLineColumn(t *testing.T) {
 
 func TestExtractArgs(t *testing.T) {
 	queries := []struct {
-		query string
-		count int
+		query       string
+		bindNumbers []int
 	}{
-		{"SELECT * FROM venue WHERE slug = $1 AND city = $2", 2},
-		{"SELECT * FROM venue WHERE slug = $1", 1},
-		{"SELECT * FROM venue LIMIT $1", 1},
-		{"SELECT * FROM venue OFFSET $1", 1},
+		{"SELECT * FROM venue WHERE slug = $1 AND city = $2", []int{1, 2}},
+		{"SELECT * FROM venue WHERE slug = $1 AND region = $2 AND city = $3 AND country = $2", []int{1, 2, 3, 2}},
+		{"SELECT * FROM venue WHERE slug = $1", []int{1}},
+		{"SELECT * FROM venue LIMIT $1", []int{1}},
+		{"SELECT * FROM venue OFFSET $1", []int{1}},
 	}
 	for _, q := range queries {
 		tree, err := pg.Parse(q.query)
@@ -105,8 +107,46 @@ func TestExtractArgs(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-			if len(refs) != q.count {
-				t.Errorf("expected %d refs, got %d", q.count, len(refs))
+			nums := make([]int, len(refs))
+			for i, n := range refs {
+				nums[i] = n.ref.Number
+			}
+			if diff := cmp.Diff(q.bindNumbers, nums); diff != "" {
+				t.Errorf("expected bindings %v, got %v", q.bindNumbers, nums)
+			}
+		}
+	}
+}
+
+func TestRewriteParameters(t *testing.T) {
+	queries := []struct {
+		orig string
+		new  string
+	}{
+		{"SELECT * FROM venue WHERE slug = $1 AND city = $3 AND bar = $2", "SELECT * FROM venue WHERE slug = ? AND city = ? AND bar = ?"},
+		{"DELETE FROM venue WHERE slug = $1 AND slug = $1", "DELETE FROM venue WHERE slug = ? AND slug = ?"},
+		{"SELECT * FROM venue LIMIT $1", "SELECT * FROM venue LIMIT ?"},
+	}
+	for _, q := range queries {
+		tree, err := pg.Parse(q.orig)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, stmt := range tree.Statements {
+			refs := findParameters(stmt)
+			if err != nil {
+				t.Error(err)
+			}
+			edits, err := rewriteNumberedParameters(refs, stmt.(nodes.RawStmt), q.orig)
+			if err != nil {
+				t.Error(err)
+			}
+			rewritten, err := editQuery(q.orig, edits)
+			if err != nil {
+				t.Error(err)
+			}
+			if rewritten != q.new {
+				t.Errorf("expected %q, got %q", q.new, rewritten)
 			}
 		}
 	}
