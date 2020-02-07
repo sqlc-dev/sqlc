@@ -46,12 +46,17 @@ type Config struct {
 }
 
 type Gen struct {
-	Go *GenGo `json:"go,omitempty"`
+	Go     *GenGo     `json:"go,omitempty"`
+	Kotlin *GenKotlin `json:"kotlin,omitempty"`
 }
 
 type GenGo struct {
 	Overrides []Override        `json:"overrides,omitempty"`
 	Rename    map[string]string `json:"rename,omitempty"`
+}
+
+type GenKotlin struct {
+	Rename map[string]string `json:"rename,omitempty"`
 }
 
 type SQL struct {
@@ -62,7 +67,8 @@ type SQL struct {
 }
 
 type SQLGen struct {
-	Go *SQLGo `json:"go,omitempty"`
+	Go     *SQLGo     `json:"go,omitempty"`
+	Kotlin *SQLKotlin `json:"kotlin,omitempty"`
 }
 
 type SQLGo struct {
@@ -73,6 +79,11 @@ type SQLGo struct {
 	Out                 string            `json:"out"`
 	Overrides           []Override        `json:"overrides,omitempty"`
 	Rename              map[string]string `json:"rename,omitempty"`
+}
+
+type SQLKotlin struct {
+	Package string `json:"package"`
+	Out     string `json:"out"`
 }
 
 type Override struct {
@@ -197,6 +208,7 @@ var ErrUnknownEngine = errors.New("invalid engine")
 var ErrNoPackages = errors.New("no packages")
 var ErrNoPackageName = errors.New("missing package name")
 var ErrNoPackagePath = errors.New("missing package path")
+var ErrKotlinNoOutPath = errors.New("no output path")
 
 func ParseConfig(rd io.Reader) (Config, error) {
 	var buf bytes.Buffer
@@ -224,6 +236,7 @@ type CombinedSettings struct {
 	Global    Config
 	Package   SQL
 	Go        SQLGo
+	Kotlin    SQLKotlin
 	Rename    map[string]string
 	Overrides []Override
 }
@@ -237,9 +250,15 @@ func Combine(conf Config, pkg SQL) CombinedSettings {
 		cs.Rename = conf.Gen.Go.Rename
 		cs.Overrides = append(cs.Overrides, conf.Gen.Go.Overrides...)
 	}
+	if conf.Gen.Kotlin != nil {
+		cs.Rename = conf.Gen.Kotlin.Rename
+	}
 	if pkg.Gen.Go != nil {
 		cs.Go = *pkg.Gen.Go
 		cs.Overrides = append(cs.Overrides, pkg.Gen.Go.Overrides...)
+	}
+	if pkg.Gen.Kotlin != nil {
+		cs.Kotlin = *pkg.Gen.Kotlin
 	}
 	return cs
 }
