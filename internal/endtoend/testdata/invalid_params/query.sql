@@ -10,12 +10,11 @@ SELECT foo FROM bar WHERE baz = $1 AND baz = $3;
 SELECT foo FROM bar;
 
 -- name: Named :many
-SELECT foo FROM bar WHERE baz = $1 AND bat = sqlc.arg(named);
+SELECT id FROM bar WHERE id = $1 AND sqlc.arg(named) = true;
 
 -- stderr
 -- # package querytest
 -- query.sql:4:1: could not determine data type of parameter $1
 -- query.sql:7:1: could not determine data type of parameter $2
 -- query.sql:10:8: column "foo" does not exist
--- query.sql:x:x: query mixes positional parameters ($1) and named parameters (sqlc.arg)
-
+-- query.sql:13:1: query mixes positional parameters ($1) and named parameters (sqlc.arg or @arg)
