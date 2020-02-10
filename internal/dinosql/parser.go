@@ -590,7 +590,6 @@ func expandStmt(qc *QueryCatalog, raw nodes.RawStmt, node nodes.Node) ([]edit, e
 				continue
 			}
 			for _, c := range t.Columns {
-				fmt.Println(c.Name)
 				cname := c.Name
 				if res.Name != nil {
 					cname = *res.Name
