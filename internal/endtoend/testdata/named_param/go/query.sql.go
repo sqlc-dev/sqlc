@@ -70,3 +70,25 @@ func (q *Queries) FuncParams(ctx context.Context, arg FuncParamsParams) ([]strin
 	}
 	return items, nil
 }
+
+const update = `-- name: Update :one
+UPDATE foo
+SET
+  name = CASE WHEN $1::bool
+    THEN $2::text
+    ELSE name
+    END
+RETURNING name, bio
+`
+
+type UpdateParams struct {
+	SetName bool
+	Name    string
+}
+
+func (q *Queries) Update(ctx context.Context, arg UpdateParams) (Foo, error) {
+	row := q.db.QueryRowContext(ctx, update, arg.SetName, arg.Name)
+	var i Foo
+	err := row.Scan(&i.Name, &i.Bio)
+	return i, err
+}
