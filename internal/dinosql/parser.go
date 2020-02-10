@@ -453,11 +453,15 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string) (*Query, error) 
 		return nil, err
 	}
 
-	cols, err := outputColumns(c, raw.Stmt)
+	qc, err := buildQueryCatalog(c, raw.Stmt)
 	if err != nil {
 		return nil, err
 	}
-	expanded, err := expand(c, raw, rawSQL)
+	cols, err := outputColumns(qc, raw.Stmt)
+	if err != nil {
+		return nil, err
+	}
+	expanded, err := expand(qc, raw, rawSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -499,7 +503,7 @@ type edit struct {
 	New      string
 }
 
-func expand(c core.Catalog, raw nodes.RawStmt, sql string) (string, error) {
+func expand(qc *QueryCatalog, raw nodes.RawStmt, sql string) (string, error) {
 	list := search(raw, func(node nodes.Node) bool {
 		switch node.(type) {
 		case nodes.DeleteStmt:
@@ -516,7 +520,7 @@ func expand(c core.Catalog, raw nodes.RawStmt, sql string) (string, error) {
 	}
 	var edits []edit
 	for _, item := range list.Items {
-		edit, err := expandStmt(c, raw, item)
+		edit, err := expandStmt(qc, raw, item)
 		if err != nil {
 			return "", err
 		}
@@ -525,8 +529,8 @@ func expand(c core.Catalog, raw nodes.RawStmt, sql string) (string, error) {
 	return editQuery(sql, edits)
 }
 
-func expandStmt(c core.Catalog, raw nodes.RawStmt, node nodes.Node) ([]edit, error) {
-	tables, err := sourceTables(c, node)
+func expandStmt(qc *QueryCatalog, raw nodes.RawStmt, node nodes.Node) ([]edit, error) {
+	tables, err := sourceTables(qc, node)
 	if err != nil {
 		return nil, err
 	}
@@ -629,23 +633,32 @@ type QueryCatalog struct {
 	ctes    map[string]core.Table
 }
 
-func NewQueryCatalog(c core.Catalog, with *nodes.WithClause) QueryCatalog {
-	ctes := map[string]core.Table{}
+func buildQueryCatalog(c core.Catalog, node nodes.Node) (*QueryCatalog, error) {
+	var with *nodes.WithClause
+	switch n := node.(type) {
+	case nodes.UpdateStmt:
+		with = n.WithClause
+	case nodes.SelectStmt:
+		with = n.WithClause
+	default:
+		with = nil
+	}
+	qc := &QueryCatalog{catalog: c, ctes: map[string]core.Table{}}
 	if with != nil {
 		for _, item := range with.Ctes.Items {
 			if cte, ok := item.(nodes.CommonTableExpr); ok {
-				cols, err := outputColumns(c, cte.Ctequery)
+				cols, err := outputColumns(qc, cte.Ctequery)
 				if err != nil {
-					panic(err.Error())
+					return nil, err
 				}
-				ctes[*cte.Ctename] = core.Table{
+				qc.ctes[*cte.Ctename] = core.Table{
 					Name:    *cte.Ctename,
 					Columns: cols,
 				}
 			}
 		}
 	}
-	return QueryCatalog{catalog: c, ctes: ctes}
+	return qc, nil
 }
 
 func (qc QueryCatalog) GetTable(fqn core.FQN) (core.Table, *core.Error) {
@@ -673,9 +686,8 @@ func (qc QueryCatalog) GetTable(fqn core.FQN) (core.Table, *core.Error) {
 // Return an error if column references don't exist
 // Return an error if a table is referenced twice
 // Return an error if an unknown column is referenced
-func sourceTables(c core.Catalog, node nodes.Node) ([]core.Table, error) {
+func sourceTables(qc *QueryCatalog, node nodes.Node) ([]core.Table, error) {
 	var list nodes.List
-	var with *nodes.WithClause
 	switch n := node.(type) {
 	case nodes.DeleteStmt:
 		list = nodes.List{
@@ -686,12 +698,10 @@ func sourceTables(c core.Catalog, node nodes.Node) ([]core.Table, error) {
 			Items: []nodes.Node{*n.Relation},
 		}
 	case nodes.UpdateStmt:
-		with = n.WithClause
 		list = nodes.List{
 			Items: append(n.FromClause.Items, *n.Relation),
 		}
 	case nodes.SelectStmt:
-		with = n.WithClause
 		list = search(n.FromClause, func(node nodes.Node) bool {
 			_, ok := node.(nodes.RangeVar)
 			return ok
@@ -699,8 +709,6 @@ func sourceTables(c core.Catalog, node nodes.Node) ([]core.Table, error) {
 	default:
 		return nil, fmt.Errorf("sourceTables: unsupported node type: %T", n)
 	}
-
-	qc := NewQueryCatalog(c, with)
 
 	var tables []core.Table
 	for _, item := range list.Items {
@@ -736,8 +744,8 @@ func HasStarRef(cf nodes.ColumnRef) bool {
 //
 // Return an error if column references are ambiguous
 // Return an error if column references don't exist
-func outputColumns(c core.Catalog, node nodes.Node) ([]core.Column, error) {
-	tables, err := sourceTables(c, node)
+func outputColumns(qc *QueryCatalog, node nodes.Node) ([]core.Column, error) {
+	tables, err := sourceTables(qc, node)
 	if err != nil {
 		return nil, err
 	}
@@ -865,7 +873,7 @@ func outputColumns(c core.Catalog, node nodes.Node) ([]core.Column, error) {
 				name = *res.Name
 			}
 
-			fun, err := c.LookupFunctionN(fqn, len(n.Args.Items))
+			fun, err := qc.catalog.LookupFunctionN(fqn, len(n.Args.Items))
 			if err == nil {
 				cols = append(cols, core.Column{Name: name, DataType: fun.ReturnType, NotNull: true})
 			} else {
