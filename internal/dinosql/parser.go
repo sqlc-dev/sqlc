@@ -16,6 +16,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/config"
 	core "github.com/kyleconroy/sqlc/internal/pg"
 	"github.com/kyleconroy/sqlc/internal/postgres"
+	"github.com/kyleconroy/sqlc/internal/postgresql/ast"
 
 	"github.com/davecgh/go-spew/spew"
 	pg "github.com/lfittl/pg_query_go"
@@ -315,13 +316,13 @@ func pluckQuery(source string, n nodes.RawStmt) (string, error) {
 
 func rangeVars(root nodes.Node) []nodes.RangeVar {
 	var vars []nodes.RangeVar
-	find := VisitorFunc(func(node nodes.Node) {
+	find := ast.VisitorFunc(func(node nodes.Node) {
 		switch n := node.(type) {
 		case nodes.RangeVar:
 			vars = append(vars, n)
 		}
 	})
-	Walk(find, root)
+	ast.Walk(find, root)
 	return vars
 }
 
@@ -416,6 +417,9 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string) (*Query, error) 
 	if err := validateParamRef(stmt); err != nil {
 		return nil, err
 	}
+	if err := validateParamStyle(stmt); err != nil {
+		return nil, err
+	}
 	raw, ok := stmt.(nodes.RawStmt)
 	if !ok {
 		return nil, errors.New("node is not a statement")
@@ -449,9 +453,12 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string) (*Query, error) 
 	if err := validateCmd(raw.Stmt, name, cmd); err != nil {
 		return nil, err
 	}
+
+	// Re-write query AST
+	raw, namedParams, edits := rewriteNamedParameters(raw)
 	rvs := rangeVars(raw.Stmt)
 	refs := findParameters(raw.Stmt)
-	params, err := resolveCatalogRefs(c, rvs, refs)
+	params, err := resolveCatalogRefs(c, rvs, refs, namedParams)
 	if err != nil {
 		return nil, err
 	}
@@ -464,9 +471,22 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string) (*Query, error) 
 	if err != nil {
 		return nil, err
 	}
-	expanded, err := expand(qc, raw, rawSQL)
+
+	expandEdits, err := expand(qc, raw)
 	if err != nil {
 		return nil, err
+	}
+	edits = append(edits, expandEdits...)
+	expanded, err := editQuery(rawSQL, edits)
+	if err != nil {
+		return nil, err
+	}
+
+	// If the query string was edited, make sure the syntax is valid
+	if expanded != rawSQL {
+		if _, err := pg.Parse(expanded); err != nil {
+			return nil, fmt.Errorf("edited query syntax is invalid: %w", err)
+		}
 	}
 
 	trimmed, comments, err := stripComments(strings.TrimSpace(expanded))
@@ -506,7 +526,7 @@ type edit struct {
 	New      string
 }
 
-func expand(qc *QueryCatalog, raw nodes.RawStmt, sql string) (string, error) {
+func expand(qc *QueryCatalog, raw nodes.RawStmt) ([]edit, error) {
 	list := search(raw, func(node nodes.Node) bool {
 		switch node.(type) {
 		case nodes.DeleteStmt:
@@ -519,17 +539,17 @@ func expand(qc *QueryCatalog, raw nodes.RawStmt, sql string) (string, error) {
 		return true
 	})
 	if len(list.Items) == 0 {
-		return sql, nil
+		return nil, nil
 	}
 	var edits []edit
 	for _, item := range list.Items {
 		edit, err := expandStmt(qc, raw, item)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 		edits = append(edits, edit...)
 	}
-	return editQuery(sql, edits)
+	return edits, nil
 }
 
 func expandStmt(qc *QueryCatalog, raw nodes.RawStmt, node nodes.Node) ([]edit, error) {
@@ -983,6 +1003,7 @@ type paramRef struct {
 	parent nodes.Node
 	rv     *nodes.RangeVar
 	ref    nodes.ParamRef
+	name   string // Named parameter support
 }
 
 type paramSearch struct {
@@ -1014,10 +1035,16 @@ type limitOffset struct {
 	nodeImpl
 }
 
-func (p paramSearch) Visit(node nodes.Node) Visitor {
+func (p paramSearch) Visit(node nodes.Node) ast.Visitor {
 	switch n := node.(type) {
 
 	case nodes.A_Expr:
+		if join(n.Name, "-") == "@" && n.Lexpr == nil {
+			param := nodes.ParamRef{Number: 1}
+			// TODO: Remove hard-coded slug
+			p.refs[1] = paramRef{parent: p.parent, rv: p.rangeVar, name: "slug", ref: param}
+			return nil
+		}
 		p.parent = node
 
 	case nodes.FuncCall:
@@ -1111,7 +1138,7 @@ func (p paramSearch) Visit(node nodes.Node) Visitor {
 
 func findParameters(root nodes.Node) []paramRef {
 	v := paramSearch{refs: map[int]paramRef{}}
-	Walk(v, root)
+	ast.Walk(v, root)
 	refs := make([]paramRef, 0)
 	for _, r := range v.refs {
 		refs = append(refs, r)
@@ -1125,7 +1152,7 @@ type nodeSearch struct {
 	check func(nodes.Node) bool
 }
 
-func (s *nodeSearch) Visit(node nodes.Node) Visitor {
+func (s *nodeSearch) Visit(node nodes.Node) ast.Visitor {
 	if s.check(node) {
 		s.list.Items = append(s.list.Items, node)
 	}
@@ -1134,15 +1161,22 @@ func (s *nodeSearch) Visit(node nodes.Node) Visitor {
 
 func search(root nodes.Node, f func(nodes.Node) bool) nodes.List {
 	ns := &nodeSearch{check: f}
-	Walk(ns, root)
+	ast.Walk(ns, root)
 	return ns.list
 }
 
-func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) ([]Parameter, error) {
+func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef, names map[int]string) ([]Parameter, error) {
 	aliasMap := map[string]core.FQN{}
 	// TODO: Deprecate defaultTable
 	var defaultTable *core.FQN
 	var tables []core.FQN
+
+	parameterName := func(n int, defaultName string) string {
+		if n, ok := names[n]; ok {
+			return n
+		}
+		return defaultName
+	}
 
 	for _, rv := range rvs {
 		if rv.Relname == nil {
@@ -1193,7 +1227,7 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 			a = append(a, Parameter{
 				Number: ref.ref.Number,
 				Column: core.Column{
-					Name:     "offset",
+					Name:     parameterName(ref.ref.Number, "offset"),
 					DataType: "integer",
 					NotNull:  true,
 				},
@@ -1203,7 +1237,7 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 			a = append(a, Parameter{
 				Number: ref.ref.Number,
 				Column: core.Column{
-					Name:     "limit",
+					Name:     parameterName(ref.ref.Number, "limit"),
 					DataType: "integer",
 					NotNull:  true,
 				},
@@ -1256,10 +1290,13 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 				for _, table := range search {
 					if c, ok := typeMap[table.Schema][table.Rel][key]; ok {
 						found += 1
+						if ref.name != "" {
+							key = ref.name
+						}
 						a = append(a, Parameter{
 							Number: ref.ref.Number,
 							Column: core.Column{
-								Name:     key,
+								Name:     parameterName(ref.ref.Number, key),
 								DataType: c.DataType,
 								NotNull:  c.NotNull,
 								IsArray:  c.IsArray,
@@ -1312,7 +1349,7 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 					a = append(a, Parameter{
 						Number: ref.ref.Number,
 						Column: core.Column{
-							Name:     fun.Name,
+							Name:     parameterName(ref.ref.Number, fun.Name),
 							DataType: "any",
 						},
 					})
@@ -1329,7 +1366,7 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 				a = append(a, Parameter{
 					Number: ref.ref.Number,
 					Column: core.Column{
-						Name:     name,
+						Name:     parameterName(ref.ref.Number, name),
 						DataType: arg.DataType,
 						NotNull:  true,
 					},
@@ -1345,7 +1382,7 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 				a = append(a, Parameter{
 					Number: ref.ref.Number,
 					Column: core.Column{
-						Name:     key,
+						Name:     parameterName(ref.ref.Number, key),
 						DataType: c.DataType,
 						NotNull:  c.NotNull,
 						IsArray:  c.IsArray,
@@ -1364,9 +1401,11 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 			if n.TypeName == nil {
 				return nil, fmt.Errorf("nodes.TypeCast has nil type name")
 			}
+			col := catalog.ToColumn(n.TypeName)
+			col.Name = parameterName(ref.ref.Number, col.Name)
 			a = append(a, Parameter{
 				Number: ref.ref.Number,
-				Column: catalog.ToColumn(n.TypeName),
+				Column: col,
 			})
 
 		case nodes.ParamRef:
