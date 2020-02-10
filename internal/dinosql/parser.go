@@ -16,6 +16,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/config"
 	core "github.com/kyleconroy/sqlc/internal/pg"
 	"github.com/kyleconroy/sqlc/internal/postgres"
+	"github.com/kyleconroy/sqlc/internal/postgresql/ast"
 
 	"github.com/davecgh/go-spew/spew"
 	pg "github.com/lfittl/pg_query_go"
@@ -315,13 +316,13 @@ func pluckQuery(source string, n nodes.RawStmt) (string, error) {
 
 func rangeVars(root nodes.Node) []nodes.RangeVar {
 	var vars []nodes.RangeVar
-	find := VisitorFunc(func(node nodes.Node) {
+	find := ast.VisitorFunc(func(node nodes.Node) {
 		switch n := node.(type) {
 		case nodes.RangeVar:
 			vars = append(vars, n)
 		}
 	})
-	Walk(find, root)
+	ast.Walk(find, root)
 	return vars
 }
 
@@ -1014,7 +1015,7 @@ type limitOffset struct {
 	nodeImpl
 }
 
-func (p paramSearch) Visit(node nodes.Node) Visitor {
+func (p paramSearch) Visit(node nodes.Node) ast.Visitor {
 	switch n := node.(type) {
 
 	case nodes.A_Expr:
@@ -1111,7 +1112,7 @@ func (p paramSearch) Visit(node nodes.Node) Visitor {
 
 func findParameters(root nodes.Node) []paramRef {
 	v := paramSearch{refs: map[int]paramRef{}}
-	Walk(v, root)
+	ast.Walk(v, root)
 	refs := make([]paramRef, 0)
 	for _, r := range v.refs {
 		refs = append(refs, r)
@@ -1125,7 +1126,7 @@ type nodeSearch struct {
 	check func(nodes.Node) bool
 }
 
-func (s *nodeSearch) Visit(node nodes.Node) Visitor {
+func (s *nodeSearch) Visit(node nodes.Node) ast.Visitor {
 	if s.check(node) {
 		s.list.Items = append(s.list.Items, node)
 	}
@@ -1134,7 +1135,7 @@ func (s *nodeSearch) Visit(node nodes.Node) Visitor {
 
 func search(root nodes.Node, f func(nodes.Node) bool) nodes.List {
 	ns := &nodeSearch{check: f}
-	Walk(ns, root)
+	ast.Walk(ns, root)
 	return ns.list
 }
 
