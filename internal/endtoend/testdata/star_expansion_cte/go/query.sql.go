@@ -5,6 +5,7 @@ package querytest
 
 import (
 	"context"
+	"database/sql"
 )
 
 const starExpansionCTE = `-- name: StarExpansionCTE :many
@@ -21,6 +22,42 @@ func (q *Queries) StarExpansionCTE(ctx context.Context) ([]Bar, error) {
 	for rows.Next() {
 		var i Bar
 		if err := rows.Scan(&i.C, &i.D); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const starExpansionTwoCTE = `-- name: StarExpansionTwoCTE :many
+WITH 
+  a AS (SELECT a, b FROM foo),
+  b AS (SELECT 1::int as bar, a, b FROM a)
+SELECT bar, a, b FROM b
+`
+
+type StarExpansionTwoCTERow struct {
+	Bar int32
+	A   sql.NullString
+	B   sql.NullString
+}
+
+func (q *Queries) StarExpansionTwoCTE(ctx context.Context) ([]StarExpansionTwoCTERow, error) {
+	rows, err := q.db.QueryContext(ctx, starExpansionTwoCTE)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []StarExpansionTwoCTERow
+	for rows.Next() {
+		var i StarExpansionTwoCTERow
+		if err := rows.Scan(&i.Bar, &i.A, &i.B); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
