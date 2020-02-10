@@ -1,0 +1,15 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "path": ".",
+      "name": "ondeck",
+      "schema": "schema",
+      "queries": "query",
+      "engine": "postgresql",
+      "emit_json_tags": true,
+      "emit_prepared_queries": true,
+      "emit_interface": true
+    }
+  ]
+}

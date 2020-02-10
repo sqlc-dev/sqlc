@@ -19,6 +19,7 @@ const unknownVersion = `{
 }`
 
 const unknownFields = `{
+  "version": "1",
   "foo": "bar"
 }`
 

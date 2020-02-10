@@ -16,16 +16,32 @@ import (
 
 func TestExamples(t *testing.T) {
 	t.Parallel()
-
-	examples, _ := filepath.Abs(filepath.Join("..", "..", "examples"))
-	var stderr bytes.Buffer
-
-	output, err := cmd.Generate(examples, &stderr)
+	examples, err := filepath.Abs(filepath.Join("..", "..", "examples"))
 	if err != nil {
-		t.Fatalf("%s", stderr.String())
+		t.Fatal(err)
 	}
 
-	cmpDirectory(t, examples, output)
+	files, err := ioutil.ReadDir(examples)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, replay := range files {
+		if !replay.IsDir() {
+			continue
+		}
+		tc := replay.Name()
+		t.Run(tc, func(t *testing.T) {
+			t.Parallel()
+			path := filepath.Join(examples, tc)
+			var stderr bytes.Buffer
+			output, err := cmd.Generate(path, &stderr)
+			if err != nil {
+				t.Fatalf("sqlc generate failed: %s", stderr.String())
+			}
+			cmpDirectory(t, path, output)
+		})
+	}
 }
 
 func TestReplay(t *testing.T) {
@@ -37,6 +53,9 @@ func TestReplay(t *testing.T) {
 	}
 
 	for _, replay := range files {
+		if !replay.IsDir() {
+			continue
+		}
 		tc := replay.Name()
 		t.Run(tc, func(t *testing.T) {
 			t.Parallel()
