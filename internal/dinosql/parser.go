@@ -576,18 +576,30 @@ func expandStmt(qc *QueryCatalog, raw nodes.RawStmt, node nodes.Node) ([]edit, e
 				return nil, fmt.Errorf("unknown field in ColumnRef: %T", f)
 			}
 		}
+		scope := join(ref.Fields, ".")
+		counts := map[string]int{}
+		if scope == "" {
+			for _, t := range tables {
+				for _, c := range t.Columns {
+					counts[c.Name] += 1
+				}
+			}
+		}
 		for _, t := range tables {
-			scope := join(ref.Fields, ".")
 			if scope != "" && scope != t.Name {
 				continue
 			}
 			for _, c := range t.Columns {
+				fmt.Println(c.Name)
 				cname := c.Name
 				if res.Name != nil {
 					cname = *res.Name
 				}
 				if scope != "" {
 					cname = scope + "." + cname
+				}
+				if counts[cname] > 1 {
+					cname = t.Name + "." + cname
 				}
 				if postgres.IsReservedKeyword(cname) {
 					cname = "\"" + cname + "\""
@@ -725,6 +737,9 @@ func sourceTables(qc *QueryCatalog, node nodes.Node) ([]core.Table, error) {
 			if cerr != nil {
 				cerr.Location = n.Location
 				return nil, *cerr
+			}
+			if n.Alias != nil {
+				table.Name = *n.Alias.Aliasname
 			}
 			tables = append(tables, table)
 		default:
