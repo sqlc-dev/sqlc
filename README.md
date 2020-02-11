@@ -1,13 +1,3 @@
-> 🚨
->
-> sqlc is **new** and under rapid development.
->
-> The code it generates is correct and safe for production use, but there is
-> currently no guarantee of stability or backwards-compatibility of the command
-> line interface, configuration file format or generated code.
->
-> 🚨
-
 # sqlc: A SQL Compiler
 
 > And lo, the Great One looked down upon the people and proclaimed:
@@ -232,6 +222,7 @@ Your favorite PostgreSQL / Go features are supported:
   - [Query annotations](./docs/annotations.md)
   - [Transactions](./docs/transactions.md)
   - [Prepared queries](./docs/prepared_query.md)
+  - [Named parameters](./docs/named_parameters.md)
   - [SELECT](./docs/query_one.md)
   - [NULL](./docs/null.md)
   - [COUNT](./docs/query_count.md)
@@ -420,7 +411,8 @@ Each commit is deployed to the [`devel` channel on Equinox](https://dl.equinox.i
 ## Other Databases and Languages
 
 sqlc currently only supports PostgreSQL / Go. MySQL support has been merged,
-but it's marked as experimental. SQLite and TypeScript support are planned.
+but it's marked as experimental. SQLite, TypeScript, and Kotlin support are
+planned.
 
 | Language     | PostgreSQL       | MySQL            | SQLite           |
 | ------------ |:----------------:|:----------------:|:----------------:|
