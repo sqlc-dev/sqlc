@@ -421,6 +421,21 @@ planned.
 
 If you'd like to add another database or language, we'd welcome a contribution.
 
+## Sponsors
+
+sqlc development is funded by our generous sponsors.
+
+- Companies
+  - [Meter](https://meter.com)
+  - [ngrok](https://ngrok.com)
+- Individuals
+  - [CyberAx](https://github.com/Cyberax)
+
+If you use sqlc at your company, please consider [becoming a
+sponsor](https://github.com/sponsors/kyleconroy) today.
+
+Sponsors receive priority support via the sqlc Slack organization.
+
 ## Acknowledgements
 
 sqlc was inspired by [PugSQL](https://pugsql.org/) and
