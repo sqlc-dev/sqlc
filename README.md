@@ -222,6 +222,7 @@ Your favorite PostgreSQL / Go features are supported:
   - [Query annotations](./docs/annotations.md)
   - [Transactions](./docs/transactions.md)
   - [Prepared queries](./docs/prepared_query.md)
+  - [Named parameters](./docs/named_parameters.md)
   - [SELECT](./docs/query_one.md)
   - [NULL](./docs/null.md)
   - [COUNT](./docs/query_count.md)
