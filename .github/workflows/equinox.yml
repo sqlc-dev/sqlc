@@ -22,7 +22,7 @@ jobs:
       env:
         EQUINOX_API_TOKEN: ${{ secrets.EQUINOX_API_TOKEN }}
         EQUINOX_SIGNING_KEY: ${{ secrets.EQUINOX_SIGNING_KEY }}
-      run: go run scripts/release.go devel darwin_amd64
+      run: go run scripts/release.go -draft devel darwin_amd64
 
   linux:
     name: Build on Linux

@@ -10,6 +10,7 @@ import (
 )
 
 func main() {
+	draft := flag.Bool("draft", false, "create a draft release")
 	flag.Parse()
 
 	sha := os.Getenv("GITHUB_SHA")
@@ -33,15 +34,24 @@ func main() {
 		xname = "equinox"
 	}
 
-	cmd = exec.Command(xname, "release",
+	args := []string{"release",
 		"--channel", flag.Arg(0),
 		"--version", version,
+	}
+
+	if *draft {
+		args = append(args, "--draft")
+	}
+
+	args = append(args, []string{
 		"--platforms", flag.Arg(1),
 		"--app", "app_i4iCp1SuYfZ",
 		"--token", os.Getenv("EQUINOX_API_TOKEN"),
 		"--",
 		"-ldflags", x, "./cmd/sqlc",
-	)
+	}...)
+
+	cmd = exec.Command(xname, args...)
 	cmd.Env = os.Environ()
 	out, err = cmd.CombinedOutput()
 	log.Println(strings.TrimSpace(string(out)))
