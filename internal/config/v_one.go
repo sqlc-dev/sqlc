@@ -1,35 +1,36 @@
 package config
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"path/filepath"
+
+	yaml "gopkg.in/yaml.v3"
 )
 
-type v1GenerateSettings struct {
-	Version   string              `json:"version"`
-	Packages  []v1PackageSettings `json:"packages"`
-	Overrides []Override          `json:"overrides,omitempty"`
-	Rename    map[string]string   `json:"rename,omitempty"`
+type V1GenerateSettings struct {
+	Version   string              `json:"version" yaml:"version"`
+	Packages  []v1PackageSettings `json:"packages" yaml:"packages"`
+	Overrides []Override          `json:"overrides,omitempty" yaml:"overrides,omitempty"`
+	Rename    map[string]string   `json:"rename,omitempty" yaml:"rename,omitempty"`
 }
 
 type v1PackageSettings struct {
-	Name                string     `json:"name"`
-	Engine              Engine     `json:"engine,omitempty"`
-	Path                string     `json:"path"`
-	Schema              string     `json:"schema"`
-	Queries             string     `json:"queries"`
-	EmitInterface       bool       `json:"emit_interface"`
-	EmitJSONTags        bool       `json:"emit_json_tags"`
-	EmitPreparedQueries bool       `json:"emit_prepared_queries"`
-	Overrides           []Override `json:"overrides"`
+	Name                string     `json:"name" yaml:"name"`
+	Engine              Engine     `json:"engine,omitempty" yaml:"engine"`
+	Path                string     `json:"path" yaml:"path"`
+	Schema              string     `json:"schema" yaml:"schema"`
+	Queries             string     `json:"queries" yaml:"queries"`
+	EmitInterface       bool       `json:"emit_interface" yaml:"emit_interface"`
+	EmitJSONTags        bool       `json:"emit_json_tags" yaml:"emit_json_tags"`
+	EmitPreparedQueries bool       `json:"emit_prepared_queries" yaml:"emit_prepared_queries"`
+	Overrides           []Override `json:"overrides" yaml:"overrides"`
 }
 
 func v1ParseConfig(rd io.Reader) (Config, error) {
-	dec := json.NewDecoder(rd)
-	dec.DisallowUnknownFields()
-	var settings v1GenerateSettings
+	dec := yaml.NewDecoder(rd)
+	dec.KnownFields(true)
+	var settings V1GenerateSettings
 	var config Config
 	if err := dec.Decode(&settings); err != nil {
 		return config, err
@@ -70,7 +71,7 @@ func v1ParseConfig(rd io.Reader) (Config, error) {
 	return settings.Translate(), nil
 }
 
-func (c *v1GenerateSettings) ValidateGlobalOverrides() error {
+func (c *V1GenerateSettings) ValidateGlobalOverrides() error {
 	engines := map[Engine]struct{}{}
 	for _, pkg := range c.Packages {
 		if _, ok := engines[pkg.Engine]; !ok {
@@ -87,7 +88,7 @@ func (c *v1GenerateSettings) ValidateGlobalOverrides() error {
 	return nil
 }
 
-func (c *v1GenerateSettings) Translate() Config {
+func (c *V1GenerateSettings) Translate() Config {
 	conf := Config{
 		Version: c.Version,
 	}

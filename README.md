@@ -1,13 +1,3 @@
-> 🚨
->
-> sqlc is **new** and under rapid development.
->
-> The code it generates is correct and safe for production use, but there is
-> currently no guarantee of stability or backwards-compatibility of the command
-> line interface, configuration file format or generated code.
->
-> 🚨
-
 # sqlc: A SQL Compiler
 
 > And lo, the Great One looked down upon the people and proclaimed:
@@ -232,6 +222,7 @@ Your favorite PostgreSQL / Go features are supported:
   - [Query annotations](./docs/annotations.md)
   - [Transactions](./docs/transactions.md)
   - [Prepared queries](./docs/prepared_query.md)
+  - [Named parameters](./docs/named_parameters.md)
   - [SELECT](./docs/query_one.md)
   - [NULL](./docs/null.md)
   - [COUNT](./docs/query_count.md)
@@ -265,7 +256,7 @@ Available Commands:
   compile     Statically check SQL for syntax and type errors
   generate    Generate Go code from SQL
   help        Help about any command
-  init        Create an empty sqlc.json settings file
+  init        Create an empty sqlc.yaml settings file
   version     Print the sqlc version number
 
 Flags:
@@ -276,24 +267,19 @@ Use "sqlc [command] --help" for more information about a command.
 
 ## Settings
 
-The `sqlc` tool is configured via a `sqlc.json` file. This file must be
+The `sqlc` tool is configured via a `sqlc.yaml` file. This file must be
 in the directory where the `sqlc` command is run.
 
-```json
-{
-  "version": "1",
-  "packages": [
-    {
-      "name": "db",
-      "emit_json_tags": true,
-      "emit_prepared_queries": false,
-      "emit_interface": true,
-      "path": "internal/db",
-      "queries": "./sql/query/",
-      "schema": "./sql/schema/"
-    }
-  ]
-}
+```yaml
+version: "1"
+packages:
+  - name: "db",
+    emit_json_tags: true
+    emit_prepared_queries: false
+    emit_interface: true
+    path: "internal/db"
+    queries: "./sql/query/"
+    schema: "./sql/schema/"
 ```
 
 Each package document has the following keys:
@@ -324,17 +310,12 @@ If a different Go package for UUIDs is required, specify the package in the
 `overrides` array. In this case, I'm going to use the `github.com/gofrs/uuid`
 instead.
 
-```
-{
-  "version": "1",
-  "packages": [...],
-  "overrides": [
-      {
-          "go_type": "github.com/gofrs/uuid.UUID",
-          "db_type": "uuid"
-      }
-  ]
-}
+```yaml
+version: "1"
+packages: [...]
+overrides:
+  - go_type: "github.com/gofrs/uuid.UUID"
+    db_type: "uuid"
 ```
 
 Each override document has the following keys:
@@ -354,17 +335,12 @@ This may be configured by specifying the `column` property in the override defin
 should be of the form `table.column` buy you may be even more specify by specifying `schema.table.column`
 or `catalog.schema.table.column`.
 
-```
-{
-  "version": "1",
-  "packages": [...],
-  "overrides": [
-    {
-      "column": "authors.id",
-      "go_type": "github.com/segmentio/ksuid.KSUID"
-    }
-  ]
-}
+```yaml
+version: "1"
+packages: [...]
+overrides:
+  - column: "authors.id"
+    go_type: "github.com/segmentio/ksuid.KSUID"
 ```
 
 ### Package Level Overrides
@@ -372,18 +348,11 @@ or `catalog.schema.table.column`.
 Overrides can be configured globally, as demonstrated in the previous sections, or they can be configured on a per-package which
 scopes the override behavior to just a single package:
 
+```yaml
+version: "1"
+packages: 
+  - overrides: [...]
 ```
-{
-  "version": "1",
-  "packages": [
-    {
-      ...
-      "overrides": [...]
-    }
-  ],
-}
-```
-
 
 ### Renaming Struct Fields
 
@@ -401,14 +370,11 @@ If you're not happy with a field's generated name, use the `rename` dictionary
 to pick a new name. The keys are column names and the values are the struct
 field name to use.
 
-```json
-{
-  "version": "1",
-  "packages": [...],
-  "rename": {
-    "spotify_url": "SpotifyURL"
-  }
-}
+```yaml
+version: "1"
+packages: [...]
+rename:
+  spotify_url: "SpotifyURL"
 ```
 
 ## Downloads
@@ -420,7 +386,8 @@ Each commit is deployed to the [`devel` channel on Equinox](https://dl.equinox.i
 ## Other Databases and Languages
 
 sqlc currently only supports PostgreSQL / Go. MySQL support has been merged,
-but it's marked as experimental. SQLite and TypeScript support are planned.
+but it's marked as experimental. SQLite, TypeScript, and Kotlin support are
+planned.
 
 | Language     | PostgreSQL       | MySQL            | SQLite           |
 | ------------ |:----------------:|:----------------:|:----------------:|
@@ -428,6 +395,21 @@ but it's marked as experimental. SQLite and TypeScript support are planned.
 | TypeScript   |:timer_clock:     |:timer_clock:     |:timer_clock:     |
 
 If you'd like to add another database or language, we'd welcome a contribution.
+
+## Sponsors
+
+sqlc development is funded by our generous sponsors.
+
+- Companies
+  - [Meter](https://meter.com)
+  - [ngrok](https://ngrok.com)
+- Individuals
+  - [CyberAx](https://github.com/Cyberax)
+
+If you use sqlc at your company, please consider [becoming a
+sponsor](https://github.com/sponsors/kyleconroy) today.
+
+Sponsors receive priority support via the sqlc Slack organization.
 
 ## Acknowledgements
 

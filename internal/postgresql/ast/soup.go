@@ -1,4 +1,4 @@
-package dinosql
+package ast
 
 import (
 	"fmt"
