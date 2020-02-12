@@ -51,6 +51,14 @@ func v2ParseConfig(rd io.Reader) (Config, error) {
 				}
 			}
 		}
+		if conf.SQL[j].Gen.Kotlin != nil {
+			if conf.SQL[j].Gen.Kotlin.Out == "" {
+				return conf, ErrKotlinNoOutPath
+			}
+			if conf.SQL[j].Gen.Kotlin.Package == "" {
+				return conf, ErrNoPackageName
+			}
+		}
 	}
 	return conf, nil
 }

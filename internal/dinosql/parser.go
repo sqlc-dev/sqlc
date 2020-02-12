@@ -13,7 +13,6 @@ import (
 	"unicode"
 
 	"github.com/kyleconroy/sqlc/internal/catalog"
-	"github.com/kyleconroy/sqlc/internal/config"
 	core "github.com/kyleconroy/sqlc/internal/pg"
 	"github.com/kyleconroy/sqlc/internal/postgres"
 	"github.com/kyleconroy/sqlc/internal/postgresql/ast"
@@ -194,23 +193,27 @@ type Result struct {
 	Catalog core.Catalog
 }
 
-func ParseQueries(c core.Catalog, pkg config.SQL) (*Result, error) {
-	f, err := os.Stat(pkg.Queries)
+type ParserOpts struct {
+	UsePositionalParameters bool
+}
+
+func ParseQueries(c core.Catalog, queries string, opts ParserOpts) (*Result, error) {
+	f, err := os.Stat(queries)
 	if err != nil {
-		return nil, fmt.Errorf("path %s does not exist", pkg.Queries)
+		return nil, fmt.Errorf("path %s does not exist", queries)
 	}
 
 	var files []string
 	if f.IsDir() {
-		listing, err := ioutil.ReadDir(pkg.Queries)
+		listing, err := ioutil.ReadDir(queries)
 		if err != nil {
 			return nil, err
 		}
 		for _, f := range listing {
-			files = append(files, filepath.Join(pkg.Queries, f.Name()))
+			files = append(files, filepath.Join(queries, f.Name()))
 		}
 	} else {
-		files = append(files, pkg.Queries)
+		files = append(files, queries)
 	}
 
 	merr := NewParserErr()
@@ -235,7 +238,7 @@ func ParseQueries(c core.Catalog, pkg config.SQL) (*Result, error) {
 			continue
 		}
 		for _, stmt := range tree.Statements {
-			query, err := parseQuery(c, stmt, source)
+			query, err := parseQuery(c, stmt, source, opts.UsePositionalParameters)
 			if err == errUnsupportedStatementType {
 				continue
 			}
@@ -260,7 +263,7 @@ func ParseQueries(c core.Catalog, pkg config.SQL) (*Result, error) {
 		return nil, merr
 	}
 	if len(q) == 0 {
-		return nil, fmt.Errorf("path %s contains no queries", pkg.Queries)
+		return nil, fmt.Errorf("path %s contains no queries", queries)
 	}
 	return &Result{
 		Catalog: c,
@@ -413,7 +416,7 @@ func validateCmd(n nodes.Node, name, cmd string) error {
 
 var errUnsupportedStatementType = errors.New("parseQuery: unsupported statement type")
 
-func parseQuery(c core.Catalog, stmt nodes.Node, source string) (*Query, error) {
+func parseQuery(c core.Catalog, stmt nodes.Node, source string, rewriteParameters bool) (*Query, error) {
 	if err := validateParamRef(stmt); err != nil {
 		return nil, err
 	}
@@ -458,6 +461,15 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string) (*Query, error) 
 	raw, namedParams, edits := rewriteNamedParameters(raw)
 	rvs := rangeVars(raw.Stmt)
 	refs := findParameters(raw.Stmt)
+	if rewriteParameters {
+		edits, err = rewriteNumberedParameters(refs, raw, rawSQL)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		refs = uniqueParamRefs(refs)
+		sort.Slice(refs, func(i, j int) bool { return refs[i].ref.Number < refs[j].ref.Number })
+	}
 	params, err := resolveCatalogRefs(c, rvs, refs, namedParams)
 	if err != nil {
 		return nil, err
@@ -477,6 +489,7 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string) (*Query, error) 
 		return nil, err
 	}
 	edits = append(edits, expandEdits...)
+
 	expanded, err := editQuery(rawSQL, edits)
 	if err != nil {
 		return nil, err
@@ -502,6 +515,18 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string) (*Query, error) 
 		Columns:  cols,
 		SQL:      trimmed,
 	}, nil
+}
+
+func rewriteNumberedParameters(refs []paramRef, raw nodes.RawStmt, sql string) ([]edit, error) {
+	edits := make([]edit, len(refs))
+	for i, ref := range refs {
+		edits[i] = edit{
+			Location: ref.ref.Location - raw.StmtLocation,
+			Old:      fmt.Sprintf("$%d", ref.ref.Number),
+			New:      "?",
+		}
+	}
+	return edits, nil
 }
 
 func stripComments(sql string) (string, []string, error) {
@@ -1009,7 +1034,8 @@ type paramRef struct {
 type paramSearch struct {
 	parent   nodes.Node
 	rangeVar *nodes.RangeVar
-	refs     map[int]paramRef
+	refs     *[]paramRef
+	seen     map[int]struct{}
 
 	// XXX: Gross state hack for limit
 	limitCount  nodes.Node
@@ -1042,7 +1068,7 @@ func (p paramSearch) Visit(node nodes.Node) ast.Visitor {
 		if join(n.Name, "-") == "@" && n.Lexpr == nil {
 			param := nodes.ParamRef{Number: 1}
 			// TODO: Remove hard-coded slug
-			p.refs[1] = paramRef{parent: p.parent, rv: p.rangeVar, name: "slug", ref: param}
+			*p.refs = append(*p.refs, paramRef{parent: p.parent, rv: p.rangeVar, name: "slug", ref: param})
 			return nil
 		}
 		p.parent = node
@@ -1062,7 +1088,8 @@ func (p paramSearch) Visit(node nodes.Node) ast.Visitor {
 					continue
 				}
 				// TODO: Out-of-bounds panic
-				p.refs[ref.Number] = paramRef{parent: n.Cols.Items[i], ref: ref, rv: p.rangeVar}
+				*p.refs = append(*p.refs, paramRef{parent: n.Cols.Items[i], ref: ref, rv: p.rangeVar})
+				p.seen[ref.Location] = struct{}{}
 			}
 			for _, vl := range s.ValuesLists {
 				for i, v := range vl {
@@ -1071,7 +1098,8 @@ func (p paramSearch) Visit(node nodes.Node) ast.Visitor {
 						continue
 					}
 					// TODO: Out-of-bounds panic
-					p.refs[ref.Number] = paramRef{parent: n.Cols.Items[i], ref: ref, rv: p.rangeVar}
+					*p.refs = append(*p.refs, paramRef{parent: n.Cols.Items[i], ref: ref, rv: p.rangeVar})
+					p.seen[ref.Location] = struct{}{}
 				}
 			}
 		}
@@ -1107,7 +1135,7 @@ func (p paramSearch) Visit(node nodes.Node) ast.Visitor {
 				parent = limitOffset{}
 			}
 		}
-		if _, found := p.refs[n.Number]; found {
+		if _, found := p.seen[n.Location]; found {
 			break
 		}
 
@@ -1129,7 +1157,8 @@ func (p paramSearch) Visit(node nodes.Node) ast.Visitor {
 		}
 
 		if set {
-			p.refs[n.Number] = paramRef{parent: parent, ref: n, rv: p.rangeVar}
+			*p.refs = append(*p.refs, paramRef{parent: parent, ref: n, rv: p.rangeVar})
+			p.seen[n.Location] = struct{}{}
 		}
 		return nil
 	}
@@ -1137,13 +1166,9 @@ func (p paramSearch) Visit(node nodes.Node) ast.Visitor {
 }
 
 func findParameters(root nodes.Node) []paramRef {
-	v := paramSearch{refs: map[int]paramRef{}}
-	ast.Walk(v, root)
 	refs := make([]paramRef, 0)
-	for _, r := range v.refs {
-		refs = append(refs, r)
-	}
-	sort.Slice(refs, func(i, j int) bool { return refs[i].ref.Number < refs[j].ref.Number })
+	v := paramSearch{seen: make(map[int]struct{}), refs: &refs}
+	ast.Walk(v, root)
 	return refs
 }
 
@@ -1416,4 +1441,16 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef, n
 		}
 	}
 	return a, nil
+}
+
+func uniqueParamRefs(in []paramRef) []paramRef {
+	m := make(map[int]struct{}, len(in))
+	o := make([]paramRef, 0, len(in))
+	for _, v := range in {
+		if _, ok := m[v.ref.Number]; !ok {
+			m[v.ref.Number] = struct{}{}
+			o = append(o, v)
+		}
+	}
+	return o
 }

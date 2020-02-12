@@ -1,0 +1,49 @@
+{
+  "version": "2",
+  "sql": [
+    {
+      "schema": "src/main/resources/authors/schema.sql",
+      "queries": "src/main/resources/authors/query.sql",
+      "engine": "postgresql",
+      "gen": {
+        "kotlin": {
+          "out": "src/main/kotlin/com/example/authors",
+          "package": "com.example.authors"
+        }
+      }
+    },
+    {
+      "schema": "src/main/resources/ondeck/schema",
+      "queries": "src/main/resources/ondeck/query",
+      "engine": "postgresql",
+      "gen": {
+        "kotlin": {
+          "out": "src/main/kotlin/com/example/ondeck",
+          "package": "com.example.ondeck"
+        }
+      }
+    },
+    {
+      "schema": "src/main/resources/jets/schema.sql",
+      "queries": "src/main/resources/jets/query-building.sql",
+      "engine": "postgresql",
+      "gen": {
+        "kotlin": {
+          "out": "src/main/kotlin/com/example/jets",
+          "package": "com.example.jets"
+        }
+      }
+    },
+    {
+      "schema": "src/main/resources/booktest/postgresql/schema.sql",
+      "queries": "src/main/resources/booktest/postgresql/query.sql",
+      "engine": "postgresql",
+      "gen": {
+        "kotlin": {
+          "out": "src/main/kotlin/com/example/booktest/postgresql",
+          "package": "com.example.booktest.postgresql"
+        }
+      }
+    }
+  ]
+}
