@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
 const inputGoose = `
@@ -55,5 +56,25 @@ func TestRemoveRollback(t *testing.T) {
 	}
 	if diff := cmp.Diff(outputTern, RemoveRollbackStatements(inputTern)); diff != "" {
 		t.Errorf("tern migration mismatch:\n%s", diff)
+	}
+}
+
+func TestRemoveGolangMigrateRollback(t *testing.T) {
+	want := []string{
+		// make sure we let through golang-migrate files that aren't rollbacks
+		"testdata/migrations/1.up.sql",
+		// make sure we let through other sql files
+		"testdata/migrations/2.sql",
+		"testdata/migrations/foo.sql",
+	}
+
+	got, err := ReadSQLFiles("./testdata/migrations")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	less := func(a, b string) bool { return a < b }
+	if diff := cmp.Diff(want, got, cmpopts.SortSlices(less)); diff != "" {
+		t.Errorf("golang-migrate filtering mismatch: \n %s", diff)
 	}
 }

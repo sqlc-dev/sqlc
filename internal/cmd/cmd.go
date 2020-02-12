@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -9,9 +8,8 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/davecgh/go-spew/spew"
-	pg "github.com/lfittl/pg_query_go"
 	"github.com/spf13/cobra"
+	yaml "gopkg.in/yaml.v3"
 
 	"github.com/kyleconroy/sqlc/internal/config"
 )
@@ -22,7 +20,6 @@ func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int 
 	rootCmd.AddCommand(checkCmd)
 	rootCmd.AddCommand(genCmd)
 	rootCmd.AddCommand(initCmd)
-	rootCmd.AddCommand(parseCmd)
 	rootCmd.AddCommand(versionCmd)
 
 	rootCmd.SetArgs(args)
@@ -40,45 +37,32 @@ func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int 
 	return 1
 }
 
+var version string
+
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print the sqlc version number",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("v0.0.1")
-	},
-}
-
-var parseCmd = &cobra.Command{
-	Use:   "parse",
-	Short: "Parse and print the AST for a SQL file",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		for _, filename := range args {
-			blob, err := ioutil.ReadFile(filename)
-			if err != nil {
-				return err
-			}
-			tree, err := pg.Parse(string(blob))
-			if err != nil {
-				return err
-			}
-			spew.Dump(tree)
+		if version == "" {
+			fmt.Printf("%s\n", "SNAPSHOT")
+		} else {
+			fmt.Printf("%s\n", version)
 		}
-		return nil
 	},
 }
 
 var initCmd = &cobra.Command{
 	Use:   "init",
-	Short: "Create an empty sqlc.json settings file",
+	Short: "Create an empty sqlc.yaml settings file",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if _, err := os.Stat("sqlc.json"); !os.IsNotExist(err) {
+		if _, err := os.Stat("sqlc.yaml"); !os.IsNotExist(err) {
 			return nil
 		}
-		blob, err := json.MarshalIndent(config.Config{Version: "1"}, "", "  ")
+		blob, err := yaml.Marshal(config.V1GenerateSettings{Version: "1"})
 		if err != nil {
 			return err
 		}
-		return ioutil.WriteFile("sqlc.json", blob, 0644)
+		return ioutil.WriteFile("sqlc.yaml", blob, 0644)
 	},
 }
 

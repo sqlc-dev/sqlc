@@ -2,9 +2,11 @@ package cmd
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -40,7 +42,33 @@ type outPair struct {
 }
 
 func Generate(dir string, stderr io.Writer) (map[string]string, error) {
-	blob, err := ioutil.ReadFile(filepath.Join(dir, "sqlc.json"))
+	var yamlMissing, jsonMissing bool
+	yamlPath := filepath.Join(dir, "sqlc.yaml")
+	jsonPath := filepath.Join(dir, "sqlc.json")
+
+	if _, err := os.Stat(yamlPath); os.IsNotExist(err) {
+		yamlMissing = true
+	}
+	if _, err := os.Stat(jsonPath); os.IsNotExist(err) {
+		jsonMissing = true
+	}
+
+	if yamlMissing && jsonMissing {
+		fmt.Fprintln(stderr, "error parsing sqlc.json: file does not exist")
+		return nil, errors.New("config file missing")
+	}
+
+	if !yamlMissing && !jsonMissing {
+		fmt.Fprintln(stderr, "error parsing sqlc.json: both files present")
+		return nil, errors.New("sqlc.json and sqlc.yaml present")
+	}
+
+	configPath := yamlPath
+	if yamlMissing {
+		configPath = jsonPath
+	}
+
+	blob, err := ioutil.ReadFile(configPath)
 	if err != nil {
 		fmt.Fprintln(stderr, "error parsing sqlc.json: file does not exist")
 		return nil, err

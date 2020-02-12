@@ -15,6 +15,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/catalog"
 	core "github.com/kyleconroy/sqlc/internal/pg"
 	"github.com/kyleconroy/sqlc/internal/postgres"
+	"github.com/kyleconroy/sqlc/internal/postgresql/ast"
 
 	"github.com/davecgh/go-spew/spew"
 	pg "github.com/lfittl/pg_query_go"
@@ -83,6 +84,10 @@ func ReadSQLFiles(path string) ([]string, error) {
 			continue
 		}
 		if strings.HasPrefix(filepath.Base(filename), ".") {
+			continue
+		}
+		// Remove golang-migrate rollback files.
+		if strings.HasSuffix(filename, ".down.sql") {
 			continue
 		}
 		sql = append(sql, filename)
@@ -314,13 +319,13 @@ func pluckQuery(source string, n nodes.RawStmt) (string, error) {
 
 func rangeVars(root nodes.Node) []nodes.RangeVar {
 	var vars []nodes.RangeVar
-	find := VisitorFunc(func(node nodes.Node) {
+	find := ast.VisitorFunc(func(node nodes.Node) {
 		switch n := node.(type) {
 		case nodes.RangeVar:
 			vars = append(vars, n)
 		}
 	})
-	Walk(find, root)
+	ast.Walk(find, root)
 	return vars
 }
 
@@ -415,6 +420,9 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string, rewriteParameter
 	if err := validateParamRef(stmt); err != nil {
 		return nil, err
 	}
+	if err := validateParamStyle(stmt); err != nil {
+		return nil, err
+	}
 	raw, ok := stmt.(nodes.RawStmt)
 	if !ok {
 		return nil, errors.New("node is not a statement")
@@ -435,6 +443,9 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string, rewriteParameter
 	if err != nil {
 		return nil, err
 	}
+	if rawSQL == "" {
+		return nil, errors.New("missing semicolon at end of file")
+	}
 	if err := validateFuncCall(&c, raw); err != nil {
 		return nil, err
 	}
@@ -445,9 +456,11 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string, rewriteParameter
 	if err := validateCmd(raw.Stmt, name, cmd); err != nil {
 		return nil, err
 	}
+
+	// Re-write query AST
+	raw, namedParams, edits := rewriteNamedParameters(raw)
 	rvs := rangeVars(raw.Stmt)
 	refs := findParameters(raw.Stmt)
-	var edits []edit
 	if rewriteParameters {
 		edits, err = rewriteNumberedParameters(refs, raw, rawSQL)
 		if err != nil {
@@ -457,16 +470,21 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string, rewriteParameter
 		refs = uniqueParamRefs(refs)
 		sort.Slice(refs, func(i, j int) bool { return refs[i].ref.Number < refs[j].ref.Number })
 	}
-	params, err := resolveCatalogRefs(c, rvs, refs)
+	params, err := resolveCatalogRefs(c, rvs, refs, namedParams)
 	if err != nil {
 		return nil, err
 	}
 
-	cols, err := outputColumns(c, raw.Stmt)
+	qc, err := buildQueryCatalog(c, raw.Stmt)
 	if err != nil {
 		return nil, err
 	}
-	expandEdits, err := expand(c, raw, rawSQL)
+	cols, err := outputColumns(qc, raw.Stmt)
+	if err != nil {
+		return nil, err
+	}
+
+	expandEdits, err := expand(qc, raw)
 	if err != nil {
 		return nil, err
 	}
@@ -475,6 +493,13 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string, rewriteParameter
 	expanded, err := editQuery(rawSQL, edits)
 	if err != nil {
 		return nil, err
+	}
+
+	// If the query string was edited, make sure the syntax is valid
+	if expanded != rawSQL {
+		if _, err := pg.Parse(expanded); err != nil {
+			return nil, fmt.Errorf("edited query syntax is invalid: %w", err)
+		}
 	}
 
 	trimmed, comments, err := stripComments(strings.TrimSpace(expanded))
@@ -526,7 +551,7 @@ type edit struct {
 	New      string
 }
 
-func expand(c core.Catalog, raw nodes.RawStmt, sql string) ([]edit, error) {
+func expand(qc *QueryCatalog, raw nodes.RawStmt) ([]edit, error) {
 	list := search(raw, func(node nodes.Node) bool {
 		switch node.(type) {
 		case nodes.DeleteStmt:
@@ -543,7 +568,7 @@ func expand(c core.Catalog, raw nodes.RawStmt, sql string) ([]edit, error) {
 	}
 	var edits []edit
 	for _, item := range list.Items {
-		edit, err := expandStmt(c, raw, item)
+		edit, err := expandStmt(qc, raw, item)
 		if err != nil {
 			return nil, err
 		}
@@ -552,8 +577,8 @@ func expand(c core.Catalog, raw nodes.RawStmt, sql string) ([]edit, error) {
 	return edits, nil
 }
 
-func expandStmt(c core.Catalog, raw nodes.RawStmt, node nodes.Node) ([]edit, error) {
-	tables, err := sourceTables(c, node)
+func expandStmt(qc *QueryCatalog, raw nodes.RawStmt, node nodes.Node) ([]edit, error) {
+	tables, err := sourceTables(qc, node)
 	if err != nil {
 		return nil, err
 	}
@@ -596,8 +621,16 @@ func expandStmt(c core.Catalog, raw nodes.RawStmt, node nodes.Node) ([]edit, err
 				return nil, fmt.Errorf("unknown field in ColumnRef: %T", f)
 			}
 		}
+		scope := join(ref.Fields, ".")
+		counts := map[string]int{}
+		if scope == "" {
+			for _, t := range tables {
+				for _, c := range t.Columns {
+					counts[c.Name] += 1
+				}
+			}
+		}
 		for _, t := range tables {
-			scope := join(ref.Fields, ".")
 			if scope != "" && scope != t.Name {
 				continue
 			}
@@ -608,6 +641,9 @@ func expandStmt(c core.Catalog, raw nodes.RawStmt, node nodes.Node) ([]edit, err
 				}
 				if scope != "" {
 					cname = scope + "." + cname
+				}
+				if counts[cname] > 1 {
+					cname = t.Name + "." + cname
 				}
 				if postgres.IsReservedKeyword(cname) {
 					cname = "\"" + cname + "\""
@@ -656,23 +692,32 @@ type QueryCatalog struct {
 	ctes    map[string]core.Table
 }
 
-func NewQueryCatalog(c core.Catalog, with *nodes.WithClause) QueryCatalog {
-	ctes := map[string]core.Table{}
+func buildQueryCatalog(c core.Catalog, node nodes.Node) (*QueryCatalog, error) {
+	var with *nodes.WithClause
+	switch n := node.(type) {
+	case nodes.UpdateStmt:
+		with = n.WithClause
+	case nodes.SelectStmt:
+		with = n.WithClause
+	default:
+		with = nil
+	}
+	qc := &QueryCatalog{catalog: c, ctes: map[string]core.Table{}}
 	if with != nil {
 		for _, item := range with.Ctes.Items {
 			if cte, ok := item.(nodes.CommonTableExpr); ok {
-				cols, err := outputColumns(c, cte.Ctequery)
+				cols, err := outputColumns(qc, cte.Ctequery)
 				if err != nil {
-					panic(err.Error())
+					return nil, err
 				}
-				ctes[*cte.Ctename] = core.Table{
+				qc.ctes[*cte.Ctename] = core.Table{
 					Name:    *cte.Ctename,
 					Columns: cols,
 				}
 			}
 		}
 	}
-	return QueryCatalog{catalog: c, ctes: ctes}
+	return qc, nil
 }
 
 func (qc QueryCatalog) GetTable(fqn core.FQN) (core.Table, *core.Error) {
@@ -700,9 +745,8 @@ func (qc QueryCatalog) GetTable(fqn core.FQN) (core.Table, *core.Error) {
 // Return an error if column references don't exist
 // Return an error if a table is referenced twice
 // Return an error if an unknown column is referenced
-func sourceTables(c core.Catalog, node nodes.Node) ([]core.Table, error) {
+func sourceTables(qc *QueryCatalog, node nodes.Node) ([]core.Table, error) {
 	var list nodes.List
-	var with *nodes.WithClause
 	switch n := node.(type) {
 	case nodes.DeleteStmt:
 		list = nodes.List{
@@ -713,12 +757,10 @@ func sourceTables(c core.Catalog, node nodes.Node) ([]core.Table, error) {
 			Items: []nodes.Node{*n.Relation},
 		}
 	case nodes.UpdateStmt:
-		with = n.WithClause
 		list = nodes.List{
 			Items: append(n.FromClause.Items, *n.Relation),
 		}
 	case nodes.SelectStmt:
-		with = n.WithClause
 		list = search(n.FromClause, func(node nodes.Node) bool {
 			_, ok := node.(nodes.RangeVar)
 			return ok
@@ -726,8 +768,6 @@ func sourceTables(c core.Catalog, node nodes.Node) ([]core.Table, error) {
 	default:
 		return nil, fmt.Errorf("sourceTables: unsupported node type: %T", n)
 	}
-
-	qc := NewQueryCatalog(c, with)
 
 	var tables []core.Table
 	for _, item := range list.Items {
@@ -741,6 +781,9 @@ func sourceTables(c core.Catalog, node nodes.Node) ([]core.Table, error) {
 			if cerr != nil {
 				cerr.Location = n.Location
 				return nil, *cerr
+			}
+			if n.Alias != nil {
+				table.Name = *n.Alias.Aliasname
 			}
 			tables = append(tables, table)
 		default:
@@ -763,8 +806,8 @@ func HasStarRef(cf nodes.ColumnRef) bool {
 //
 // Return an error if column references are ambiguous
 // Return an error if column references don't exist
-func outputColumns(c core.Catalog, node nodes.Node) ([]core.Column, error) {
-	tables, err := sourceTables(c, node)
+func outputColumns(qc *QueryCatalog, node nodes.Node) ([]core.Column, error) {
+	tables, err := sourceTables(qc, node)
 	if err != nil {
 		return nil, err
 	}
@@ -892,7 +935,7 @@ func outputColumns(c core.Catalog, node nodes.Node) ([]core.Column, error) {
 				name = *res.Name
 			}
 
-			fun, err := c.LookupFunctionN(fqn, len(n.Args.Items))
+			fun, err := qc.catalog.LookupFunctionN(fqn, len(n.Args.Items))
 			if err == nil {
 				cols = append(cols, core.Column{Name: name, DataType: fun.ReturnType, NotNull: true})
 			} else {
@@ -985,6 +1028,7 @@ type paramRef struct {
 	parent nodes.Node
 	rv     *nodes.RangeVar
 	ref    nodes.ParamRef
+	name   string // Named parameter support
 }
 
 type paramSearch struct {
@@ -1017,10 +1061,16 @@ type limitOffset struct {
 	nodeImpl
 }
 
-func (p paramSearch) Visit(node nodes.Node) Visitor {
+func (p paramSearch) Visit(node nodes.Node) ast.Visitor {
 	switch n := node.(type) {
 
 	case nodes.A_Expr:
+		if join(n.Name, "-") == "@" && n.Lexpr == nil {
+			param := nodes.ParamRef{Number: 1}
+			// TODO: Remove hard-coded slug
+			*p.refs = append(*p.refs, paramRef{parent: p.parent, rv: p.rangeVar, name: "slug", ref: param})
+			return nil
+		}
 		p.parent = node
 
 	case nodes.FuncCall:
@@ -1118,7 +1168,7 @@ func (p paramSearch) Visit(node nodes.Node) Visitor {
 func findParameters(root nodes.Node) []paramRef {
 	refs := make([]paramRef, 0)
 	v := paramSearch{seen: make(map[int]struct{}), refs: &refs}
-	Walk(v, root)
+	ast.Walk(v, root)
 	return refs
 }
 
@@ -1127,7 +1177,7 @@ type nodeSearch struct {
 	check func(nodes.Node) bool
 }
 
-func (s *nodeSearch) Visit(node nodes.Node) Visitor {
+func (s *nodeSearch) Visit(node nodes.Node) ast.Visitor {
 	if s.check(node) {
 		s.list.Items = append(s.list.Items, node)
 	}
@@ -1136,15 +1186,22 @@ func (s *nodeSearch) Visit(node nodes.Node) Visitor {
 
 func search(root nodes.Node, f func(nodes.Node) bool) nodes.List {
 	ns := &nodeSearch{check: f}
-	Walk(ns, root)
+	ast.Walk(ns, root)
 	return ns.list
 }
 
-func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) ([]Parameter, error) {
+func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef, names map[int]string) ([]Parameter, error) {
 	aliasMap := map[string]core.FQN{}
 	// TODO: Deprecate defaultTable
 	var defaultTable *core.FQN
 	var tables []core.FQN
+
+	parameterName := func(n int, defaultName string) string {
+		if n, ok := names[n]; ok {
+			return n
+		}
+		return defaultName
+	}
 
 	for _, rv := range rvs {
 		if rv.Relname == nil {
@@ -1195,7 +1252,7 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 			a = append(a, Parameter{
 				Number: ref.ref.Number,
 				Column: core.Column{
-					Name:     "offset",
+					Name:     parameterName(ref.ref.Number, "offset"),
 					DataType: "integer",
 					NotNull:  true,
 				},
@@ -1205,7 +1262,7 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 			a = append(a, Parameter{
 				Number: ref.ref.Number,
 				Column: core.Column{
-					Name:     "limit",
+					Name:     parameterName(ref.ref.Number, "limit"),
 					DataType: "integer",
 					NotNull:  true,
 				},
@@ -1258,10 +1315,13 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 				for _, table := range search {
 					if c, ok := typeMap[table.Schema][table.Rel][key]; ok {
 						found += 1
+						if ref.name != "" {
+							key = ref.name
+						}
 						a = append(a, Parameter{
 							Number: ref.ref.Number,
 							Column: core.Column{
-								Name:     key,
+								Name:     parameterName(ref.ref.Number, key),
 								DataType: c.DataType,
 								NotNull:  c.NotNull,
 								IsArray:  c.IsArray,
@@ -1314,7 +1374,7 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 					a = append(a, Parameter{
 						Number: ref.ref.Number,
 						Column: core.Column{
-							Name:     fun.Name,
+							Name:     parameterName(ref.ref.Number, fun.Name),
 							DataType: "any",
 						},
 					})
@@ -1331,7 +1391,7 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 				a = append(a, Parameter{
 					Number: ref.ref.Number,
 					Column: core.Column{
-						Name:     name,
+						Name:     parameterName(ref.ref.Number, name),
 						DataType: arg.DataType,
 						NotNull:  true,
 					},
@@ -1347,7 +1407,7 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 				a = append(a, Parameter{
 					Number: ref.ref.Number,
 					Column: core.Column{
-						Name:     key,
+						Name:     parameterName(ref.ref.Number, key),
 						DataType: c.DataType,
 						NotNull:  c.NotNull,
 						IsArray:  c.IsArray,
@@ -1366,9 +1426,11 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef) (
 			if n.TypeName == nil {
 				return nil, fmt.Errorf("nodes.TypeCast has nil type name")
 			}
+			col := catalog.ToColumn(n.TypeName)
+			col.Name = parameterName(ref.ref.Number, col.Name)
 			a = append(a, Parameter{
 				Number: ref.ref.Number,
-				Column: catalog.ToColumn(n.TypeName),
+				Column: col,
 			})
 
 		case nodes.ParamRef:
