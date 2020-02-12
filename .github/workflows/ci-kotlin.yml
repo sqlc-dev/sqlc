@@ -1,0 +1,36 @@
+name: sqlc kotlin test suite
+on: [push, pull_request]
+jobs:
+
+  build:
+    name: Build And Test
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:11
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        # needed because the postgres container does not provide a healthcheck
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+      - uses: actions/checkout@master
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - uses: eskatos/gradle-command-action@v1
+        env:
+          PG_USER: postgres
+          PG_HOST: localhost
+          PG_DATABASE: postgres
+          PG_PASSWORD: postgres
+          PG_PORT: ${{ job.services.postgres.ports['5432'] }}
+        with:
+          build-root-directory: examples/kotlin
+          wrapper-directory: examples/kotlin
+          arguments: test --scan

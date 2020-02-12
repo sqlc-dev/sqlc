@@ -48,11 +48,16 @@ type Config struct {
 
 type Gen struct {
 	Go *GenGo `json:"go,omitempty" yaml:"go"`
+	Kotlin *GenKotlin `json:"kotlin,omitempty" yaml:"kotlin"`
 }
 
 type GenGo struct {
 	Overrides []Override        `json:"overrides,omitempty" yaml:"overrides"`
 	Rename    map[string]string `json:"rename,omitempty" yaml:"rename"`
+}
+
+type GenKotlin struct {
+	Rename map[string]string `json:"rename,omitempty" yaml:"rename"`
 }
 
 type SQL struct {
@@ -64,6 +69,7 @@ type SQL struct {
 
 type SQLGen struct {
 	Go *SQLGo `json:"go,omitempty" yaml:"go"`
+	Kotlin *SQLKotlin `json:"kotlin,omitempty" yaml:"kotlin"`
 }
 
 type SQLGo struct {
@@ -74,6 +80,11 @@ type SQLGo struct {
 	Out                 string            `json:"out" yaml:"out"`
 	Overrides           []Override        `json:"overrides,omitempty" yaml:"overrides"`
 	Rename              map[string]string `json:"rename,omitempty" yaml:"rename"`
+}
+
+type SQLKotlin struct {
+	Package string `json:"package" yaml:"package"`
+	Out     string `json:"out" yaml:"out"`
 }
 
 type Override struct {
@@ -198,6 +209,7 @@ var ErrUnknownEngine = errors.New("invalid engine")
 var ErrNoPackages = errors.New("no packages")
 var ErrNoPackageName = errors.New("missing package name")
 var ErrNoPackagePath = errors.New("missing package path")
+var ErrKotlinNoOutPath = errors.New("no output path")
 
 func ParseConfig(rd io.Reader) (Config, error) {
 	var buf bytes.Buffer
@@ -226,6 +238,7 @@ type CombinedSettings struct {
 	Global    Config
 	Package   SQL
 	Go        SQLGo
+	Kotlin    SQLKotlin
 	Rename    map[string]string
 	Overrides []Override
 }
@@ -239,9 +252,15 @@ func Combine(conf Config, pkg SQL) CombinedSettings {
 		cs.Rename = conf.Gen.Go.Rename
 		cs.Overrides = append(cs.Overrides, conf.Gen.Go.Overrides...)
 	}
+	if conf.Gen.Kotlin != nil {
+		cs.Rename = conf.Gen.Kotlin.Rename
+	}
 	if pkg.Gen.Go != nil {
 		cs.Go = *pkg.Gen.Go
 		cs.Overrides = append(cs.Overrides, pkg.Gen.Go.Overrides...)
+	}
+	if pkg.Gen.Kotlin != nil {
+		cs.Kotlin = *pkg.Gen.Kotlin
 	}
 	return cs
 }
