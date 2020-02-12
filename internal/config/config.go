@@ -2,7 +2,6 @@ package config
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"go/types"
@@ -11,6 +10,8 @@ import (
 	"strings"
 
 	"github.com/kyleconroy/sqlc/internal/pg"
+
+	yaml "gopkg.in/yaml.v3"
 )
 
 const errMessageNoVersion = `The configuration file must have a version number.
@@ -29,7 +30,7 @@ The only supported version is "1".
 const errMessageNoPackages = `No packages are configured`
 
 type versionSetting struct {
-	Number string `json:"version"`
+	Number string `json:"version" yaml:"version"`
 }
 
 type Engine string
@@ -40,57 +41,57 @@ const (
 )
 
 type Config struct {
-	Version string `json:"version"`
-	SQL     []SQL  `json:"sql"`
-	Gen     Gen    `json:"overrides,omitempty"`
+	Version string `json:"version" yaml:"version"`
+	SQL     []SQL  `json:"sql" yaml:"sql"`
+	Gen     Gen    `json:"overrides,omitempty" yaml:"overrides"`
 }
 
 type Gen struct {
-	Go *GenGo `json:"go,omitempty"`
+	Go *GenGo `json:"go,omitempty" yaml:"go"`
 }
 
 type GenGo struct {
-	Overrides []Override        `json:"overrides,omitempty"`
-	Rename    map[string]string `json:"rename,omitempty"`
+	Overrides []Override        `json:"overrides,omitempty" yaml:"overrides"`
+	Rename    map[string]string `json:"rename,omitempty" yaml:"rename"`
 }
 
 type SQL struct {
-	Engine  Engine `json:"engine,omitempty"`
-	Schema  string `json:"schema"`
-	Queries string `json:"queries"`
-	Gen     SQLGen `json:"gen"`
+	Engine  Engine `json:"engine,omitempty" yaml:"engine"`
+	Schema  string `json:"schema" yaml:"schema"`
+	Queries string `json:"queries" yaml:"queries"`
+	Gen     SQLGen `json:"gen" yaml:"gen"`
 }
 
 type SQLGen struct {
-	Go *SQLGo `json:"go,omitempty"`
+	Go *SQLGo `json:"go,omitempty" yaml:"go"`
 }
 
 type SQLGo struct {
-	EmitInterface       bool              `json:"emit_interface"`
-	EmitJSONTags        bool              `json:"emit_json_tags"`
-	EmitPreparedQueries bool              `json:"emit_prepared_queries"`
-	Package             string            `json:"package"`
-	Out                 string            `json:"out"`
-	Overrides           []Override        `json:"overrides,omitempty"`
-	Rename              map[string]string `json:"rename,omitempty"`
+	EmitInterface       bool              `json:"emit_interface" yaml:"emit_interface"`
+	EmitJSONTags        bool              `json:"emit_json_tags" yaml:"emit_json_tags"`
+	EmitPreparedQueries bool              `json:"emit_prepared_queries" yaml:"emit_prepared_queries":`
+	Package             string            `json:"package" yaml:"package"`
+	Out                 string            `json:"out" yaml:"out"`
+	Overrides           []Override        `json:"overrides,omitempty" yaml:"overrides"`
+	Rename              map[string]string `json:"rename,omitempty" yaml:"rename"`
 }
 
 type Override struct {
 	// name of the golang type to use, e.g. `github.com/segmentio/ksuid.KSUID`
-	GoType string `json:"go_type"`
+	GoType string `json:"go_type" yaml:"go_type"`
 
 	// fully qualified name of the Go type, e.g. `github.com/segmentio/ksuid.KSUID`
-	DBType                  string `json:"db_type"`
-	Deprecated_PostgresType string `json:"postgres_type"`
+	DBType                  string `json:"db_type" yaml:"db_type"`
+	Deprecated_PostgresType string `json:"postgres_type" yaml:"postgres_type"`
 
 	// for global overrides only when two different engines are in use
-	Engine Engine `json:"engine,omitempty"`
+	Engine Engine `json:"engine,omitempty" yaml:"engine"`
 
 	// True if the GoType should override if the maching postgres type is nullable
-	Null bool `json:"null"`
+	Null bool `json:"null" yaml:"null"`
 
 	// fully qualified name of the column, e.g. `accounts.id`
-	Column string `json:"column"`
+	Column string `json:"column" yaml:"column"`
 
 	ColumnName  string
 	Table       pg.FQN
@@ -202,8 +203,9 @@ func ParseConfig(rd io.Reader) (Config, error) {
 	var buf bytes.Buffer
 	var config Config
 	var version versionSetting
+
 	ver := io.TeeReader(rd, &buf)
-	dec := json.NewDecoder(ver)
+	dec := yaml.NewDecoder(ver)
 	if err := dec.Decode(&version); err != nil {
 		return config, err
 	}

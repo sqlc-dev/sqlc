@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -10,6 +9,7 @@ import (
 	"path/filepath"
 
 	"github.com/spf13/cobra"
+	yaml "gopkg.in/yaml.v3"
 
 	"github.com/kyleconroy/sqlc/internal/config"
 )
@@ -47,16 +47,16 @@ var versionCmd = &cobra.Command{
 
 var initCmd = &cobra.Command{
 	Use:   "init",
-	Short: "Create an empty sqlc.json settings file",
+	Short: "Create an empty sqlc.yaml settings file",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if _, err := os.Stat("sqlc.json"); !os.IsNotExist(err) {
+		if _, err := os.Stat("sqlc.yaml"); !os.IsNotExist(err) {
 			return nil
 		}
-		blob, err := json.MarshalIndent(config.Config{Version: "1"}, "", "  ")
+		blob, err := yaml.Marshal(config.V1GenerateSettings{Version: "1"})
 		if err != nil {
 			return err
 		}
-		return ioutil.WriteFile("sqlc.json", blob, 0644)
+		return ioutil.WriteFile("sqlc.yaml", blob, 0644)
 	},
 }
 

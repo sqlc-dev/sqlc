@@ -46,7 +46,8 @@ func TestBadConfigs(t *testing.T) {
 		},
 		{
 			"unknown fields",
-			"json: unknown field \"foo\"",
+			`yaml: unmarshal errors:
+  line 3: field foo not found in type config.V1GenerateSettings`,
 			unknownFields,
 		},
 	} {

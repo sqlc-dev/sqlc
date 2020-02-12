@@ -256,7 +256,7 @@ Available Commands:
   compile     Statically check SQL for syntax and type errors
   generate    Generate Go code from SQL
   help        Help about any command
-  init        Create an empty sqlc.json settings file
+  init        Create an empty sqlc.yaml settings file
   version     Print the sqlc version number
 
 Flags:
@@ -267,24 +267,19 @@ Use "sqlc [command] --help" for more information about a command.
 
 ## Settings
 
-The `sqlc` tool is configured via a `sqlc.json` file. This file must be
+The `sqlc` tool is configured via a `sqlc.yaml` file. This file must be
 in the directory where the `sqlc` command is run.
 
-```json
-{
-  "version": "1",
-  "packages": [
-    {
-      "name": "db",
-      "emit_json_tags": true,
-      "emit_prepared_queries": false,
-      "emit_interface": true,
-      "path": "internal/db",
-      "queries": "./sql/query/",
-      "schema": "./sql/schema/"
-    }
-  ]
-}
+```yaml
+version: "1"
+packages:
+  - name: "db",
+    emit_json_tags: true
+    emit_prepared_queries: false
+    emit_interface: true
+    path: "internal/db"
+    queries: "./sql/query/"
+    schema: "./sql/schema/"
 ```
 
 Each package document has the following keys:
@@ -315,17 +310,12 @@ If a different Go package for UUIDs is required, specify the package in the
 `overrides` array. In this case, I'm going to use the `github.com/gofrs/uuid`
 instead.
 
-```
-{
-  "version": "1",
-  "packages": [...],
-  "overrides": [
-      {
-          "go_type": "github.com/gofrs/uuid.UUID",
-          "db_type": "uuid"
-      }
-  ]
-}
+```yaml
+version: "1"
+packages: [...]
+overrides:
+  - go_type: "github.com/gofrs/uuid.UUID"
+    db_type: "uuid"
 ```
 
 Each override document has the following keys:
@@ -345,17 +335,12 @@ This may be configured by specifying the `column` property in the override defin
 should be of the form `table.column` buy you may be even more specify by specifying `schema.table.column`
 or `catalog.schema.table.column`.
 
-```
-{
-  "version": "1",
-  "packages": [...],
-  "overrides": [
-    {
-      "column": "authors.id",
-      "go_type": "github.com/segmentio/ksuid.KSUID"
-    }
-  ]
-}
+```yaml
+version: "1"
+packages: [...]
+overrides:
+  - column: "authors.id"
+    go_type: "github.com/segmentio/ksuid.KSUID"
 ```
 
 ### Package Level Overrides
@@ -363,18 +348,11 @@ or `catalog.schema.table.column`.
 Overrides can be configured globally, as demonstrated in the previous sections, or they can be configured on a per-package which
 scopes the override behavior to just a single package:
 
+```yaml
+version: "1"
+packages: 
+  - overrides: [...]
 ```
-{
-  "version": "1",
-  "packages": [
-    {
-      ...
-      "overrides": [...]
-    }
-  ],
-}
-```
-
 
 ### Renaming Struct Fields
 
@@ -392,14 +370,11 @@ If you're not happy with a field's generated name, use the `rename` dictionary
 to pick a new name. The keys are column names and the values are the struct
 field name to use.
 
-```json
-{
-  "version": "1",
-  "packages": [...],
-  "rename": {
-    "spotify_url": "SpotifyURL"
-  }
-}
+```yaml
+version: "1"
+packages: [...]
+rename:
+  spotify_url: "SpotifyURL"
 ```
 
 ## Downloads
