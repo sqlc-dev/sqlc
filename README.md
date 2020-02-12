@@ -385,13 +385,14 @@ Each commit is deployed to the [`devel` channel on Equinox](https://dl.equinox.i
 
 ## Other Databases and Languages
 
-sqlc currently only supports PostgreSQL / Go. MySQL support has been merged,
-but it's marked as experimental. SQLite, TypeScript, and Kotlin support are
-planned.
+sqlc currently only supports PostgreSQL / Go. MySQL and Kotlin support have
+been merged, but both are marked as experimental. SQLite and TypeScript support
+are planned.
 
 | Language     | PostgreSQL       | MySQL            | SQLite           |
 | ------------ |:----------------:|:----------------:|:----------------:|
 | Go           |:white_check_mark:|:warning:         |:timer_clock:     |
+| Kotlin       |:warning:         |:timer_clock:     |:timer_clock:     |
 | TypeScript   |:timer_clock:     |:timer_clock:     |:timer_clock:     |
 
 If you'd like to add another database or language, we'd welcome a contribution.
