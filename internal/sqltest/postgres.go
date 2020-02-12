@@ -42,6 +42,10 @@ func PostgreSQL(t *testing.T, migrations string) (*sql.DB, func()) {
 		pgUser = "postgres"
 	}
 
+	if pgPass == "" {
+		pgPass = "mysecretpassword"
+	}
+
 	if pgPort == "" {
 		pgPort = "5432"
 	}
