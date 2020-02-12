@@ -27,7 +27,13 @@ func main() {
 
 	x := "-X github.com/kyleconroy/sqlc/internal/cmd.version=" + version
 	log.Printf("Releasing %s on channel %s", flag.Arg(1), flag.Arg(0))
-	cmd = exec.Command("./equinox", "release",
+
+	xname := "./equinox"
+	if _, err := os.Stat("./equinox"); os.IsNotExist(err) {
+		xname = "equinox"
+	}
+
+	cmd = exec.Command(xname, "release",
 		"--channel", flag.Arg(0),
 		"--version", version,
 		"--platforms", flag.Arg(1),
@@ -38,8 +44,8 @@ func main() {
 	)
 	cmd.Env = os.Environ()
 	out, err = cmd.CombinedOutput()
+	log.Println(strings.TrimSpace(string(out)))
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println(out)
 }
