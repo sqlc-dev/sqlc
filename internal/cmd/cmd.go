@@ -37,11 +37,17 @@ func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int 
 	return 1
 }
 
+var version string
+
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print the sqlc version number",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("v0.0.1")
+		if version == "" {
+			fmt.Printf("%s\n", "SNAPSHOT")
+		} else {
+			fmt.Printf("%s\n", version)
+		}
 	},
 }
 
