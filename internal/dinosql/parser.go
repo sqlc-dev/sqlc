@@ -1065,12 +1065,6 @@ func (p paramSearch) Visit(node nodes.Node) ast.Visitor {
 	switch n := node.(type) {
 
 	case nodes.A_Expr:
-		if join(n.Name, "-") == "@" && n.Lexpr == nil {
-			param := nodes.ParamRef{Number: 1}
-			// TODO: Remove hard-coded slug
-			*p.refs = append(*p.refs, paramRef{parent: p.parent, rv: p.rangeVar, name: "slug", ref: param})
-			return nil
-		}
 		p.parent = node
 
 	case nodes.FuncCall:
