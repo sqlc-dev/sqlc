@@ -273,7 +273,7 @@ in the directory where the `sqlc` command is run.
 ```yaml
 version: "1"
 packages:
-  - name: "db",
+  - name: "db"
     emit_json_tags: true
     emit_prepared_queries: false
     emit_interface: true
