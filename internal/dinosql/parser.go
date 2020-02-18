@@ -1410,7 +1410,6 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef, n
 			if ref.rv != nil {
 				fqn, err := catalog.ParseRange(ref.rv)
 				if err != nil {
-					fmt.Println("fo no", err)
 					return nil, err
 				}
 				schema = fqn.Schema
