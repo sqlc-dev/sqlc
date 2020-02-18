@@ -762,7 +762,7 @@ func (r Result) columnsToStruct(name string, columns []goColumn, settings config
 		if o, ok := suffixes[c.id]; ok {
 			suffix = o
 		} else if v := seen[c.Name]; v > 0 {
-			suffix = v+1
+			suffix = v + 1
 		}
 		suffixes[c.id] = suffix
 		if suffix > 0 {
@@ -1065,7 +1065,7 @@ import (
 )
 
 {{range .Enums}}
-{{if .Comment}}// {{.Comment}}{{end}}
+{{if .Comment}}{{comment .Comment}}{{end}}
 type {{.Name}} string
 
 const (
@@ -1081,7 +1081,7 @@ func (e *{{.Name}}) Scan(src interface{}) error {
 {{end}}
 
 {{range .Structs}}
-{{if .Comment}}// {{.Comment}}{{end}}
+{{if .Comment}}{{comment .Comment}}{{end}}
 type {{.Name}} struct { {{- range .Fields}}
   {{- if .Comment}}
   // {{.Comment}}{{else}}
@@ -1224,9 +1224,14 @@ func LowerTitle(s string) string {
 	return string(a)
 }
 
+func DoubleSlashComment(s string) string {
+	return "// " + strings.ReplaceAll(s, "\n", "\n// ")
+}
+
 func Generate(r Generateable, settings config.CombinedSettings) (map[string]string, error) {
 	funcMap := template.FuncMap{
 		"lowerTitle": LowerTitle,
+		"comment":    DoubleSlashComment,
 		"imports":    Imports(r, settings),
 	}
 
