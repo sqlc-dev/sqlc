@@ -4,6 +4,8 @@ on:
   push:
     branches:
     - master
+    tags:
+    - '*'
 
 jobs:
 
@@ -21,7 +23,7 @@ jobs:
       env:
         EQUINOX_API_TOKEN: ${{ secrets.EQUINOX_API_TOKEN }}
         EQUINOX_SIGNING_KEY: ${{ secrets.EQUINOX_SIGNING_KEY }}
-      run: go run scripts/release.go -draft devel darwin_amd64
+      run: go run scripts/release.go -draft darwin_amd64
 
   linux:
     name: Build on Linux
@@ -39,6 +41,6 @@ jobs:
       env:
         EQUINOX_API_TOKEN: ${{ secrets.EQUINOX_API_TOKEN }}
         EQUINOX_SIGNING_KEY: ${{ secrets.EQUINOX_SIGNING_KEY }}
-      run: go run scripts/release.go devel linux_amd64
+      run: go run scripts/release.go linux_amd64
 
 
