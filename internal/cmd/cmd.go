@@ -44,9 +44,9 @@ var versionCmd = &cobra.Command{
 	Short: "Print the sqlc version number",
 	Run: func(cmd *cobra.Command, args []string) {
 		if version == "" {
-			// TODO: When no version is set, return the next bug fix version
+			// When no version is set, return the next bug fix version
 			// after the most recent tag
-			fmt.Printf("%s\n", "v1.0.0")
+			fmt.Printf("%s\n", "v1.0.1")
 		} else {
 			fmt.Printf("%s\n", version)
 		}
