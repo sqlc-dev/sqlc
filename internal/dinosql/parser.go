@@ -695,6 +695,8 @@ type QueryCatalog struct {
 func buildQueryCatalog(c core.Catalog, node nodes.Node) (*QueryCatalog, error) {
 	var with *nodes.WithClause
 	switch n := node.(type) {
+	case nodes.InsertStmt:
+		with = n.WithClause
 	case nodes.UpdateStmt:
 		with = n.WithClause
 	case nodes.SelectStmt:
@@ -829,8 +831,6 @@ func outputColumns(qc *QueryCatalog, node nodes.Node) ([]core.Column, error) {
 	var cols []core.Column
 
 	for _, target := range targets.Items {
-		// spew.Dump(target)
-
 		res, ok := target.(nodes.ResTarget)
 		if !ok {
 			continue
@@ -1088,7 +1088,7 @@ func (p paramSearch) Visit(node nodes.Node) ast.Visitor {
 					continue
 				}
 				// TODO: Out-of-bounds panic
-				*p.refs = append(*p.refs, paramRef{parent: n.Cols.Items[i], ref: ref, rv: p.rangeVar})
+				*p.refs = append(*p.refs, paramRef{parent: n.Cols.Items[i], ref: ref, rv: n.Relation})
 				p.seen[ref.Location] = struct{}{}
 			}
 			for _, vl := range s.ValuesLists {
@@ -1098,7 +1098,7 @@ func (p paramSearch) Visit(node nodes.Node) ast.Visitor {
 						continue
 					}
 					// TODO: Out-of-bounds panic
-					*p.refs = append(*p.refs, paramRef{parent: n.Cols.Items[i], ref: ref, rv: p.rangeVar})
+					*p.refs = append(*p.refs, paramRef{parent: n.Cols.Items[i], ref: ref, rv: n.Relation})
 					p.seen[ref.Location] = struct{}{}
 				}
 			}
@@ -1403,7 +1403,19 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef, n
 				return nil, fmt.Errorf("nodes.ResTarget has nil name")
 			}
 			key := *n.Name
-			if c, ok := typeMap[defaultTable.Schema][defaultTable.Rel][key]; ok {
+
+			// TODO: Deprecate defaultTable
+			schema := defaultTable.Schema
+			rel := defaultTable.Rel
+			if ref.rv != nil {
+				fqn, err := catalog.ParseRange(ref.rv)
+				if err != nil {
+					return nil, err
+				}
+				schema = fqn.Schema
+				rel = fqn.Rel
+			}
+			if c, ok := typeMap[schema][rel][key]; ok {
 				a = append(a, Parameter{
 					Number: ref.ref.Number,
 					Column: core.Column{
