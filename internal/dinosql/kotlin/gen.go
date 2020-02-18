@@ -667,7 +667,6 @@ func ktParamName(c core.Column, number int) string {
 	return fmt.Sprintf("dollar_%d", number)
 }
 
-
 func ktColumnName(c core.Column, pos int) string {
 	if c.Name != "" {
 		return c.Name
@@ -812,7 +811,7 @@ package {{.Package}}
 {{end}}
 
 {{range .Enums}}
-{{if .Comment}}// {{.Comment}}{{end}}
+{{if .Comment}}{{comment .Comment}}{{end}}
 enum class {{.Name}}(val value: String) {
   {{- range $i, $e := .Constants}}
   {{- if $i }},{{end}}
@@ -827,7 +826,7 @@ enum class {{.Name}}(val value: String) {
 {{end}}
 
 {{range .KtDataClasses}}
-{{if .Comment}}// {{.Comment}}{{end}}
+{{if .Comment}}{{comment .Comment}}{{end}}
 data class {{.Name}} ( {{- range $i, $e := .Fields}}
   {{- if $i }},{{end}}
   {{- if .Comment}}
@@ -974,6 +973,7 @@ func ktFormat(s string) string {
 func KtGenerate(r KtGenerateable, settings config.CombinedSettings) (map[string]string, error) {
 	funcMap := template.FuncMap{
 		"lowerTitle": dinosql.LowerTitle,
+		"comment":    dinosql.DoubleSlashComment,
 		"imports":    KtImports(r, settings),
 		"offset":     Offset,
 	}
@@ -984,12 +984,12 @@ func KtGenerate(r KtGenerateable, settings config.CombinedSettings) (map[string]
 
 	pkg := settings.Package
 	tctx := ktTmplCtx{
-		Settings:            settings.Global,
-		Q:                   `"""`,
-		Package:             pkg.Gen.Kotlin.Package,
-		KtQueries:           r.KtQueries(settings),
-		Enums:               r.KtEnums(settings),
-		KtDataClasses:       r.KtDataClasses(settings),
+		Settings:      settings.Global,
+		Q:             `"""`,
+		Package:       pkg.Gen.Kotlin.Package,
+		KtQueries:     r.KtQueries(settings),
+		Enums:         r.KtEnums(settings),
+		KtDataClasses: r.KtDataClasses(settings),
 	}
 
 	output := map[string]string{}
@@ -1014,8 +1014,8 @@ func KtGenerate(r KtGenerateable, settings config.CombinedSettings) (map[string]
 		return nil, err
 	}
 	if err := execute("Queries.kt", ifaceFile); err != nil {
-			return nil, err
-		}
+		return nil, err
+	}
 	if err := execute("QueriesImpl.kt", sqlFile); err != nil {
 		return nil, err
 	}
