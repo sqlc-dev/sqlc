@@ -377,7 +377,33 @@ rename:
   spotify_url: "SpotifyURL"
 ```
 
-## Downloads
+## Installation
+
+### macOS
+
+```
+brew install kyleconroy/sqlc/sqlc
+```
+
+### Ubuntu
+
+```
+sudo snap install sqlc
+```
+
+### go get
+
+```
+go get github.com/kyleconroy/sqlc/cmd/sqlc
+```
+
+### Downloads
+
+Binaries for a given release can be downloaded from the [stable channel on
+Equinox](https://dl.equinox.io/sqlc/sqlc/stable) or the latest [GitHub
+release](https://github.com/kyleconroy/sqlc/releases).
+
+### Tip Releases
 
 Each commit is deployed to the [`devel` channel on Equinox](https://dl.equinox.io/sqlc/sqlc/devel):
 - [Linux](https://bin.equinox.io/c/gvM95th6ps1/sqlc-devel-linux-amd64.tgz)
