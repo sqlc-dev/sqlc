@@ -304,7 +304,9 @@ func Update(c *pg.Catalog, stmt nodes.Node) error {
 
 	case nodes.CreateSchemaStmt:
 		name := *n.Schemaname
-		if _, exists := c.Schemas[name]; exists {
+		// It's possible for the sqlc-internal scheme to be created by the user
+		// explicitly to allow static analysis of code with named params.
+		if _, exists := c.Schemas[name]; exists && name != "sqlc" {
 			return wrap(pg.ErrorSchemaAlreadyExists(name), raw.StmtLocation)
 		}
 		c.Schemas[name] = pg.NewSchema()
