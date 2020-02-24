@@ -1,8 +1,6 @@
 package sqlite
 
 import (
-	"fmt"
-
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sqlite/parser"
 )
@@ -25,7 +23,6 @@ func (l *listener) busy() bool {
 }
 
 func (l *listener) EnterSql_stmt(c *parser.Sql_stmtContext) {
-	fmt.Printf("%#v", c)
 	l.stmt = nil
 }
 
@@ -90,24 +87,55 @@ func (l *listener) EnterDrop_table_stmt(c *parser.Drop_table_stmtContext) {
 	l.stmt = &ast.RawStmt{Stmt: drop}
 }
 
-func (l *listener) EnterSelect_stmt(c *parser.Select_stmtContext) {
-	panic("EnterSelect_stmt")
-
+func (l *listener) EnterFactored_select_stmt(c *parser.Factored_select_stmtContext) {
 	if l.busy() {
 		return
 	}
 
-	sel := &ast.SelectStmt{}
-	l.stmt = &ast.RawStmt{Stmt: sel}
-}
-
-func (l *listener) EnterSimple_select_stmt(c *parser.Simple_select_stmtContext) {
-	panic("EnterSimple_select_stmt")
-
-	if l.busy() {
-		return
+	var tables []ast.Node
+	var cols []ast.Node
+	for _, icore := range c.AllSelect_core() {
+		core, ok := icore.(*parser.Select_coreContext)
+		if !ok {
+			continue
+		}
+		for _, icol := range core.AllResult_column() {
+			col, ok := icol.(*parser.Result_columnContext)
+			if !ok {
+				continue
+			}
+			iexpr := col.Expr()
+			if iexpr == nil {
+				continue
+			}
+			expr, ok := iexpr.(*parser.ExprContext)
+			if !ok {
+				continue
+			}
+			cols = append(cols, &ast.ResTarget{
+				Val: &ast.ColumnRef{
+					Name: expr.Column_name().GetText(),
+				},
+			})
+		}
+		for _, ifrom := range core.AllTable_or_subquery() {
+			from, ok := ifrom.(*parser.Table_or_subqueryContext)
+			if !ok {
+				continue
+			}
+			name := ast.TableName{
+				Name: from.Table_name().GetText(),
+			}
+			if from.Schema_name() != nil {
+				name.Schema = from.Schema_name().GetText()
+			}
+			tables = append(tables, &name)
+		}
 	}
 
-	sel := &ast.SelectStmt{}
+	sel := &ast.SelectStmt{
+		From:   &ast.List{Items: tables},
+		Fields: &ast.List{Items: cols},
+	}
 	l.stmt = &ast.RawStmt{Stmt: sel}
 }
