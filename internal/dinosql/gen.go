@@ -693,6 +693,9 @@ func (r Result) goInnerType(col core.Column, settings config.CombinedSettings) s
 	case "inet":
 		return "net.IP"
 
+	case "macaddr", "macaddr8":
+		return "net.HardwareAddr"
+
 	case "void":
 		// A void value always returns NULL. Since there is no built-in NULL
 		// value into the SQL package, we'll use sql.NullBool
