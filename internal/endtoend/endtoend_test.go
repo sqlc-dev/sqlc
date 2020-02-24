@@ -134,7 +134,7 @@ func expectedStderr(t *testing.T, dir string) string {
 		}
 		rd, err := os.Open(filepath.Join(dir, file.Name()))
 		if err != nil {
-			t.Fatalf("could not open %s: %w", file.Name(), err)
+			t.Fatalf("could not open %s: %v", file.Name(), err)
 		}
 		scanner := bufio.NewScanner(rd)
 		capture := false
