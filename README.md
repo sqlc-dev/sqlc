@@ -440,6 +440,14 @@ Sponsors receive priority support via the sqlc Slack organization.
 
 ## Development
 
+### Building
+
+For local development, install `sqlc` under an alias. We suggest `sqlc-dev`.
+
+```
+go build -o ~/go/bin/sqlc-dev ./cmd/sqlc
+```
+
 ### Running Tests
 
 To run the tests, include the `exp` tag. Without this tag, a few tests will
@@ -465,6 +473,16 @@ PG_DATABASE  dinotest
 
 ```
 go test --tags=examples,exp ./...
+```
+
+### Regenerate exepected test output
+
+If you need to update a large number of expexted test output in the
+`internal/endtoend/testdata` directory, run the `regenerate.sh` script.
+
+```
+cd internal/endtoend
+./regenerate.sh
 ```
 
 ## Acknowledgements
