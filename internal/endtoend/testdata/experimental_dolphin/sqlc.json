@@ -5,8 +5,8 @@
       "path": "go",
       "name": "querytest",
       "engine": "_dolphin",
-      "schema": "query.sql",
-      "queries": "query.sql"
+      "schema": "../experimental.sql",
+      "queries": "../experimental.sql"
     }
   ]
 }
