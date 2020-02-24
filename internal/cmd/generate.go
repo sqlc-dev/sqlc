@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/kyleconroy/sqlc/internal/compiler"
 	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/dinosql"
 	"github.com/kyleconroy/sqlc/internal/dinosql/kotlin"
@@ -207,6 +208,16 @@ func parse(name, dir string, sql config.SQL, combo config.CombinedSettings, pars
 			return nil, true
 		}
 		return &kotlin.Result{Result: q}, false
+
+	case config.EngineXLemon, config.EngineXDolphin, config.EngineXElephant:
+		r, err := compiler.Run(sql, combo)
+		if err != nil {
+			fmt.Fprintf(stderr, "# package %s\n", name)
+			fmt.Fprintf(stderr, "error: %s\n", err)
+			return nil, true
+		}
+		return r, false
+
 	default:
 		panic("invalid engine")
 	}
