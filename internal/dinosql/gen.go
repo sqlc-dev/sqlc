@@ -243,6 +243,9 @@ func InterfaceImports(r Generateable, settings config.CombinedSettings) [][]stri
 	if uses("net.IP") {
 		std["net"] = struct{}{}
 	}
+	if uses("net.HardwareAddr") {
+		std["net"] = struct{}{}
+	}
 
 	pkg := make(map[string]struct{})
 	overrideTypes := map[string]string{}
@@ -296,6 +299,9 @@ func ModelImports(r Generateable, settings config.CombinedSettings) [][]string {
 		std["time"] = struct{}{}
 	}
 	if UsesType(r, "net.IP", settings) {
+		std["net"] = struct{}{}
+	}
+	if UsesType(r, "net.HardwareAddr", settings) {
 		std["net"] = struct{}{}
 	}
 
@@ -692,6 +698,9 @@ func (r Result) goInnerType(col core.Column, settings config.CombinedSettings) s
 
 	case "inet":
 		return "net.IP"
+
+	case "macaddr", "macaddr8":
+		return "net.HardwareAddr"
 
 	case "void":
 		// A void value always returns NULL. Since there is no built-in NULL
