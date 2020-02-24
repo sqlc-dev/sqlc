@@ -90,7 +90,7 @@ func (q *Queries) GetCity(ctx context.Context, slug string) (City, error) {
 }
 
 const getVenue = `-- name: GetVenue :one
-SELECT id, create_at, status, slug, name, city, spotify_playlist, songkick_id
+SELECT id, create_at, status, slug, name, city, spotify_playlist, songkick_id, venue_ip, mac
 FROM venue
 WHERE slug = $1 AND city = $2
 `
@@ -112,6 +112,8 @@ func (q *Queries) GetVenue(ctx context.Context, arg GetVenueParams) (Venue, erro
 		&i.City,
 		&i.SpotifyPlaylist,
 		&i.SongkickID,
+		&i.VenueIp,
+		&i.Mac,
 	)
 	return i, err
 }
@@ -144,7 +146,7 @@ func (q *Queries) ListCityByName(ctx context.Context) ([]City, error) {
 }
 
 const listVenues = `-- name: ListVenues :many
-SELECT id, create_at, status, slug, name, city, spotify_playlist, songkick_id
+SELECT id, create_at, status, slug, name, city, spotify_playlist, songkick_id, venue_ip, mac
 FROM venue
 WHERE city = $1
 ORDER BY name
@@ -168,6 +170,8 @@ func (q *Queries) ListVenues(ctx context.Context, city string) ([]Venue, error) 
 			&i.City,
 			&i.SpotifyPlaylist,
 			&i.SongkickID,
+			&i.VenueIp,
+			&i.Mac,
 		); err != nil {
 			return nil, err
 		}
