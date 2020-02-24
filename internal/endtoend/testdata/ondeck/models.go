@@ -4,6 +4,7 @@ package ondeck
 
 import (
 	"database/sql"
+	"net"
 	"time"
 )
 
@@ -33,4 +34,6 @@ type Venue struct {
 	City            string
 	SpotifyPlaylist string
 	SongkickID      sql.NullString
+	VenueIp         net.IP
+	Mac             net.HardwareAddr
 }
