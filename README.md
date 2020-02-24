@@ -438,6 +438,35 @@ sponsor](https://github.com/sponsors/kyleconroy) today.
 
 Sponsors receive priority support via the sqlc Slack organization.
 
+## Development
+
+### Running Tests
+
+To run the tests, include the `exp` tag. Without this tag, a few tests will
+fail. 
+
+```
+go test --tags=exp ./...
+```
+
+To run the tests in the examples folder, a running PostgreSQL instance is
+required. The tests use the following environment variables to connect to the
+database:
+
+```
+Variable     Default Value
+-------------------------
+PG_HOST      127.0.0.1
+PG_PORT      5432
+PG_USER      postgres
+PG_PASSWORD  mysecretpassword
+PG_DATABASE  dinotest
+```
+
+```
+go test --tags=examples,exp ./...
+```
+
 ## Acknowledgements
 
 sqlc was inspired by [PugSQL](https://pugsql.org/) and
