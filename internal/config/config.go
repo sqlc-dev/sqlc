@@ -38,6 +38,11 @@ type Engine string
 const (
 	EngineMySQL      Engine = "mysql"
 	EnginePostgreSQL Engine = "postgresql"
+
+	// Experimental engines
+	EngineXLemon    Engine = "_lemon"
+	EngineXDolphin  Engine = "_dolphin"
+	EngineXElephant Engine = "_elephant"
 )
 
 type Config struct {
@@ -47,7 +52,7 @@ type Config struct {
 }
 
 type Gen struct {
-	Go *GenGo `json:"go,omitempty" yaml:"go"`
+	Go     *GenGo     `json:"go,omitempty" yaml:"go"`
 	Kotlin *GenKotlin `json:"kotlin,omitempty" yaml:"kotlin"`
 }
 
@@ -68,7 +73,7 @@ type SQL struct {
 }
 
 type SQLGen struct {
-	Go *SQLGo `json:"go,omitempty" yaml:"go"`
+	Go     *SQLGo     `json:"go,omitempty" yaml:"go"`
 	Kotlin *SQLKotlin `json:"kotlin,omitempty" yaml:"kotlin"`
 }
 

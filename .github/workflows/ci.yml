@@ -27,7 +27,7 @@ jobs:
         go-version: '1.13'
 
     - name: Test sqlc
-      run: go test --tags=examples -v ./...
+      run: go test --tags=examples,exp -v ./...
       env:
         PG_USER: postgres
         PG_HOST: localhost
