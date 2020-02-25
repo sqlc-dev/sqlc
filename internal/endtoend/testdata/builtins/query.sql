@@ -22,3 +22,4 @@ SELECT trunc(42.8);
 SELECT trunc(42.4382, 2);
 SELECT width_bucket(5.35, 0.024, 10.06, 5);
 SELECT width_bucket(now(), array['yesterday', 'today', 'tomorrow']::timestamptz[]);
+create schema if not exists sqlc;
