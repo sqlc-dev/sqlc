@@ -7,6 +7,8 @@ package ast
 import (
 	"fmt"
 	"reflect"
+	"strconv"
+	"strings"
 
 	nodes "github.com/lfittl/pg_query_go/nodes"
 )
@@ -105,6 +107,24 @@ func (c *Cursor) field() reflect.Value {
 // Replace replaces the current Node with n.
 // The replacement node is not walked by Apply.
 func (c *Cursor) Replace(n nodes.Node) {
+	// Parse name to see if it includes the slice index
+	if strings.Contains(c.name, "#") {
+		// We're replacing an element of a slice (likely a ValuesClause)
+		// these expressions have the form of 'ValuesClause#1#2'.
+		parts := strings.Split(c.name, "#")
+		field := reflect.Indirect(reflect.ValueOf(c.parent)).FieldByName(parts[0])
+		// So walk the slices to get the pointer to the target element
+		for _, p := range parts[1:] {
+			idx, err := strconv.ParseInt(p, 10, 32)
+			if err != nil {
+				panic("failed to parse slice navigation expression: "+c.name)
+			}
+			field = field.Index(int(idx))
+		}
+		field.Set(reflect.ValueOf(n))
+		return
+	}
+
 	v := c.field()
 	if i := c.Index(); i >= 0 {
 		v = v.Index(i)
@@ -1291,13 +1311,12 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 		a.apply(&n, "GroupClause", nil, n.GroupClause)
 		a.apply(&n, "HavingClause", nil, n.HavingClause)
 		a.apply(&n, "WindowClause", nil, n.WindowClause)
-		// TODO: Not sure how to handle a slice of a slice
-		//
-		// for _, vs := range n.ValuesLists {
-		// 	for _, v := range vs {
-		// 		a.apply(&n, "", nil, v)
-		// 	}
-		// }
+		for vlIdx, vs := range n.ValuesLists {
+			for valIdx, v := range vs {
+				name = fmt.Sprintf("ValuesLists#%d#%d", vlIdx, valIdx)
+				a.apply(&n, name, nil, v)
+			}
+		}
 		a.apply(&n, "SortClause", nil, n.SortClause)
 		a.apply(&n, "LimitOffset", nil, n.LimitOffset)
 		a.apply(&n, "LimitCount", nil, n.LimitCount)

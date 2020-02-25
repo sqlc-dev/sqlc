@@ -71,6 +71,22 @@ func (q *Queries) FuncParams(ctx context.Context, arg FuncParamsParams) ([]strin
 	return items, nil
 }
 
+const insertParams = `-- name: InsertParams :one
+INSERT INTO foo(name, bio) values ($1, $2) returning name
+`
+
+type InsertParamsParams struct {
+	Name string
+	Bio  string
+}
+
+func (q *Queries) InsertParams(ctx context.Context, arg InsertParamsParams) (string, error) {
+	row := q.db.QueryRowContext(ctx, insertParams, arg.Name, arg.Bio)
+	var name string
+	err := row.Scan(&name)
+	return name, err
+}
+
 const update = `-- name: Update :one
 UPDATE foo
 SET
