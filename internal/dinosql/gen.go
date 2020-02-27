@@ -401,7 +401,7 @@ func queryImports(r Generateable, settings config.CombinedSettings, filename str
 	// }
 	var gq []GoQuery
 	for _, query := range r.GoQueries(settings) {
-		if query.SourceName == filename || filename == "all.go" {
+		if query.SourceName == filename || settings.Go.EmitSingleFile {
 			gq = append(gq, query)
 		}
 	}
