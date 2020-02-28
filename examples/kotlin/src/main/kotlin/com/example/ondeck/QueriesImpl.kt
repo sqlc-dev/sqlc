@@ -7,6 +7,10 @@ import java.sql.SQLException
 import java.sql.Types
 import java.time.LocalDateTime
 
+import sqlc.runtime.ExecuteQuery
+import sqlc.runtime.ListQuery
+import sqlc.runtime.RowQuery
+
 const val createCity = """-- name: createCity :one
 INSERT INTO city (
     name,
@@ -103,23 +107,28 @@ class QueriesImpl(private val conn: Connection) : Queries {
 // This is the third line
 
   @Throws(SQLException::class)
-  override fun createCity(name: String, slug: String): City {
-    return conn.prepareStatement(createCity).use { stmt ->
-      stmt.setString(1, name)
-      stmt.setString(2, slug)
+  override fun createCity(name: String, slug: String): RowQuery<City> {
+    return object : RowQuery<City>() {
+      override fun execute(): City {
+        return conn.prepareStatement(createCity).use { stmt ->
+          this.statement = stmt
+          stmt.setString(1, name)
+          stmt.setString(2, slug)
 
-      val results = stmt.executeQuery()
-      if (!results.next()) {
-        throw SQLException("no rows in result set")
+          val results = stmt.executeQuery()
+          if (!results.next()) {
+            throw SQLException("no rows in result set")
+          }
+          val ret = City(
+                results.getString(1),
+                results.getString(2)
+            )
+          if (results.next()) {
+              throw SQLException("expected one row in result set, but got many")
+          }
+          ret
+        }
       }
-      val ret = City(
-            results.getString(1),
-            results.getString(2)
-        )
-      if (results.next()) {
-          throw SQLException("expected one row in result set, but got many")
-      }
-      ret
     }
   }
 
@@ -131,169 +140,214 @@ class QueriesImpl(private val conn: Connection) : Queries {
       spotifyPlaylist: String,
       status: Status,
       statuses: List<Status>,
-      tags: List<String>): Int {
-    return conn.prepareStatement(createVenue).use { stmt ->
-      stmt.setString(1, slug)
-      stmt.setString(2, name)
-      stmt.setString(3, city)
-      stmt.setString(4, spotifyPlaylist)
-      stmt.setObject(5, status.value, Types.OTHER)
-      stmt.setArray(6, conn.createArrayOf("status", statuses.map { v -> v.value }.toTypedArray()))
-      stmt.setArray(7, conn.createArrayOf("text", tags.toTypedArray()))
+      tags: List<String>): RowQuery<Int> {
+    return object : RowQuery<Int>() {
+      override fun execute(): Int {
+        return conn.prepareStatement(createVenue).use { stmt ->
+          this.statement = stmt
+          stmt.setString(1, slug)
+          stmt.setString(2, name)
+          stmt.setString(3, city)
+          stmt.setString(4, spotifyPlaylist)
+          stmt.setObject(5, status.value, Types.OTHER)
+          stmt.setArray(6, conn.createArrayOf("status", statuses.map { v -> v.value }.toTypedArray()))
+          stmt.setArray(7, conn.createArrayOf("text", tags.toTypedArray()))
 
-      val results = stmt.executeQuery()
-      if (!results.next()) {
-        throw SQLException("no rows in result set")
+          val results = stmt.executeQuery()
+          if (!results.next()) {
+            throw SQLException("no rows in result set")
+          }
+          val ret = results.getInt(1)
+          if (results.next()) {
+              throw SQLException("expected one row in result set, but got many")
+          }
+          ret
+        }
       }
-      val ret = results.getInt(1)
-      if (results.next()) {
-          throw SQLException("expected one row in result set, but got many")
-      }
-      ret
     }
   }
 
   @Throws(SQLException::class)
-  override fun deleteVenue(slug: String) {
-    conn.prepareStatement(deleteVenue).use { stmt ->
-      stmt.setString(1, slug)
-      stmt.setString(2, slug)
+  override fun deleteVenue(slug: String): ExecuteQuery {
+    return object : ExecuteQuery() {
+      override fun execute() {
+        conn.prepareStatement(deleteVenue).use { stmt ->
+          this.statement = stmt
+          stmt.setString(1, slug)
+          stmt.setString(2, slug)
 
-      stmt.execute()
+          stmt.execute()
+        }
+      }
     }
   }
 
   @Throws(SQLException::class)
-  override fun getCity(slug: String): City {
-    return conn.prepareStatement(getCity).use { stmt ->
-      stmt.setString(1, slug)
+  override fun getCity(slug: String): RowQuery<City> {
+    return object : RowQuery<City>() {
+      override fun execute(): City {
+        return conn.prepareStatement(getCity).use { stmt ->
+          this.statement = stmt
+          stmt.setString(1, slug)
 
-      val results = stmt.executeQuery()
-      if (!results.next()) {
-        throw SQLException("no rows in result set")
+          val results = stmt.executeQuery()
+          if (!results.next()) {
+            throw SQLException("no rows in result set")
+          }
+          val ret = City(
+                results.getString(1),
+                results.getString(2)
+            )
+          if (results.next()) {
+              throw SQLException("expected one row in result set, but got many")
+          }
+          ret
+        }
       }
-      val ret = City(
-            results.getString(1),
-            results.getString(2)
-        )
-      if (results.next()) {
-          throw SQLException("expected one row in result set, but got many")
-      }
-      ret
     }
   }
 
   @Throws(SQLException::class)
-  override fun getVenue(slug: String, city: String): Venue {
-    return conn.prepareStatement(getVenue).use { stmt ->
-      stmt.setString(1, slug)
-      stmt.setString(2, city)
+  override fun getVenue(slug: String, city: String): RowQuery<Venue> {
+    return object : RowQuery<Venue>() {
+      override fun execute(): Venue {
+        return conn.prepareStatement(getVenue).use { stmt ->
+          this.statement = stmt
+          stmt.setString(1, slug)
+          stmt.setString(2, city)
 
-      val results = stmt.executeQuery()
-      if (!results.next()) {
-        throw SQLException("no rows in result set")
+          val results = stmt.executeQuery()
+          if (!results.next()) {
+            throw SQLException("no rows in result set")
+          }
+          val ret = Venue(
+                results.getInt(1),
+                Status.lookup(results.getString(2))!!,
+                (results.getArray(3).array as Array<String>).map { v -> Status.lookup(v)!! }.toList(),
+                results.getString(4),
+                results.getString(5),
+                results.getString(6),
+                results.getString(7),
+                results.getString(8),
+                (results.getArray(9).array as Array<String>).toList(),
+                results.getObject(10, LocalDateTime::class.java)
+            )
+          if (results.next()) {
+              throw SQLException("expected one row in result set, but got many")
+          }
+          ret
+        }
       }
-      val ret = Venue(
-            results.getInt(1),
-            Status.lookup(results.getString(2))!!,
-            (results.getArray(3).array as Array<String>).map { v -> Status.lookup(v)!! }.toList(),
-            results.getString(4),
-            results.getString(5),
-            results.getString(6),
-            results.getString(7),
-            results.getString(8),
-            (results.getArray(9).array as Array<String>).toList(),
-            results.getObject(10, LocalDateTime::class.java)
-        )
-      if (results.next()) {
-          throw SQLException("expected one row in result set, but got many")
-      }
-      ret
     }
   }
 
   @Throws(SQLException::class)
-  override fun listCities(): List<City> {
-    return conn.prepareStatement(listCities).use { stmt ->
-      
-      val results = stmt.executeQuery()
-      val ret = mutableListOf<City>()
-      while (results.next()) {
-          ret.add(City(
-            results.getString(1),
-            results.getString(2)
-        ))
+  override fun listCities(): ListQuery<City> {
+    return object : ListQuery<City>() {
+      override fun execute(): List<City> {
+        return conn.prepareStatement(listCities).use { stmt ->
+          this.statement = stmt
+          
+          val results = stmt.executeQuery()
+          val ret = mutableListOf<City>()
+          while (results.next()) {
+              ret.add(City(
+                results.getString(1),
+                results.getString(2)
+            ))
+          }
+          ret
+        }
       }
-      ret
     }
   }
 
   @Throws(SQLException::class)
-  override fun listVenues(city: String): List<Venue> {
-    return conn.prepareStatement(listVenues).use { stmt ->
-      stmt.setString(1, city)
+  override fun listVenues(city: String): ListQuery<Venue> {
+    return object : ListQuery<Venue>() {
+      override fun execute(): List<Venue> {
+        return conn.prepareStatement(listVenues).use { stmt ->
+          this.statement = stmt
+          stmt.setString(1, city)
 
-      val results = stmt.executeQuery()
-      val ret = mutableListOf<Venue>()
-      while (results.next()) {
-          ret.add(Venue(
-            results.getInt(1),
-            Status.lookup(results.getString(2))!!,
-            (results.getArray(3).array as Array<String>).map { v -> Status.lookup(v)!! }.toList(),
-            results.getString(4),
-            results.getString(5),
-            results.getString(6),
-            results.getString(7),
-            results.getString(8),
-            (results.getArray(9).array as Array<String>).toList(),
-            results.getObject(10, LocalDateTime::class.java)
-        ))
+          val results = stmt.executeQuery()
+          val ret = mutableListOf<Venue>()
+          while (results.next()) {
+              ret.add(Venue(
+                results.getInt(1),
+                Status.lookup(results.getString(2))!!,
+                (results.getArray(3).array as Array<String>).map { v -> Status.lookup(v)!! }.toList(),
+                results.getString(4),
+                results.getString(5),
+                results.getString(6),
+                results.getString(7),
+                results.getString(8),
+                (results.getArray(9).array as Array<String>).toList(),
+                results.getObject(10, LocalDateTime::class.java)
+            ))
+          }
+          ret
+        }
       }
-      ret
     }
   }
 
   @Throws(SQLException::class)
-  override fun updateCityName(name: String, slug: String) {
-    conn.prepareStatement(updateCityName).use { stmt ->
-      stmt.setString(1, name)
-      stmt.setString(2, slug)
+  override fun updateCityName(name: String, slug: String): ExecuteQuery {
+    return object : ExecuteQuery() {
+      override fun execute() {
+        conn.prepareStatement(updateCityName).use { stmt ->
+          this.statement = stmt
+          stmt.setString(1, name)
+          stmt.setString(2, slug)
 
-      stmt.execute()
+          stmt.execute()
+        }
+      }
     }
   }
 
   @Throws(SQLException::class)
-  override fun updateVenueName(name: String, slug: String): Int {
-    return conn.prepareStatement(updateVenueName).use { stmt ->
-      stmt.setString(1, name)
-      stmt.setString(2, slug)
+  override fun updateVenueName(name: String, slug: String): RowQuery<Int> {
+    return object : RowQuery<Int>() {
+      override fun execute(): Int {
+        return conn.prepareStatement(updateVenueName).use { stmt ->
+          this.statement = stmt
+          stmt.setString(1, name)
+          stmt.setString(2, slug)
 
-      val results = stmt.executeQuery()
-      if (!results.next()) {
-        throw SQLException("no rows in result set")
+          val results = stmt.executeQuery()
+          if (!results.next()) {
+            throw SQLException("no rows in result set")
+          }
+          val ret = results.getInt(1)
+          if (results.next()) {
+              throw SQLException("expected one row in result set, but got many")
+          }
+          ret
+        }
       }
-      val ret = results.getInt(1)
-      if (results.next()) {
-          throw SQLException("expected one row in result set, but got many")
-      }
-      ret
     }
   }
 
   @Throws(SQLException::class)
-  override fun venueCountByCity(): List<VenueCountByCityRow> {
-    return conn.prepareStatement(venueCountByCity).use { stmt ->
-      
-      val results = stmt.executeQuery()
-      val ret = mutableListOf<VenueCountByCityRow>()
-      while (results.next()) {
-          ret.add(VenueCountByCityRow(
-            results.getString(1),
-            results.getLong(2)
-        ))
+  override fun venueCountByCity(): ListQuery<VenueCountByCityRow> {
+    return object : ListQuery<VenueCountByCityRow>() {
+      override fun execute(): List<VenueCountByCityRow> {
+        return conn.prepareStatement(venueCountByCity).use { stmt ->
+          this.statement = stmt
+          
+          val results = stmt.executeQuery()
+          val ret = mutableListOf<VenueCountByCityRow>()
+          while (results.next()) {
+              ret.add(VenueCountByCityRow(
+                results.getString(1),
+                results.getLong(2)
+            ))
+          }
+          ret
+        }
       }
-      ret
     }
   }
 
