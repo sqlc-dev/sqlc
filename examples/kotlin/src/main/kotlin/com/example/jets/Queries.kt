@@ -5,15 +5,19 @@ package com.example.jets
 import java.sql.Connection
 import java.sql.SQLException
 
+import sqlc.runtime.ExecuteQuery
+import sqlc.runtime.ListQuery
+import sqlc.runtime.RowQuery
+
 interface Queries {
   @Throws(SQLException::class)
-  fun countPilots(): Long
+  fun countPilots(): RowQuery<Long>
   
   @Throws(SQLException::class)
-  fun deletePilot(id: Int)
+  fun deletePilot(id: Int): ExecuteQuery
   
   @Throws(SQLException::class)
-  fun listPilots(): List<Pilot>
+  fun listPilots(): ListQuery<Pilot>
   
 }
 

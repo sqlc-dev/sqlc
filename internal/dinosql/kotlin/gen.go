@@ -121,7 +121,7 @@ func (v KtParams) Bindings() string {
 	for i, f := range v.Struct.JDBCParamBindings {
 		out = append(out, jdbcSet(f.Type, i+1, f.Name))
 	}
-	return indent(strings.Join(out, "\n"), 6, 0)
+	return indent(strings.Join(out, "\n"), 10, 0)
 }
 
 func jdbcGet(t ktType, idx int) string {
@@ -149,7 +149,7 @@ func (v KtQueryValue) ResultSet() string {
 		out = append(out, jdbcGet(f.Type, i+1))
 	}
 	ret := indent(strings.Join(out, ",\n"), 4, -1)
-	ret = indent(v.Struct.Name+"(\n"+ret+"\n)", 8, 0)
+	ret = indent(v.Struct.Name+"(\n"+ret+"\n)", 12, 0)
 	return ret
 }
 
@@ -218,9 +218,9 @@ func KtImports(r KtGenerateable, settings config.CombinedSettings) func(string) 
 }
 
 func InterfaceKtImports(r KtGenerateable, settings config.CombinedSettings) [][]string {
-	gq := r.KtQueries(settings)
+	kq := r.KtQueries(settings)
 	uses := func(name string) bool {
-		for _, q := range gq {
+		for _, q := range kq {
 			if !q.Ret.isEmpty() {
 				if strings.HasPrefix(q.Ret.Type(), name) {
 					return true
@@ -237,30 +237,14 @@ func InterfaceKtImports(r KtGenerateable, settings config.CombinedSettings) [][]
 		return false
 	}
 
-	std := map[string]struct{}{
-		"java.sql.Connection":   {},
-		"java.sql.SQLException": {},
-	}
-	if uses("LocalDate") {
-		std["java.time.LocalDate"] = struct{}{}
-	}
-	if uses("LocalTime") {
-		std["java.time.LocalTime"] = struct{}{}
-	}
-	if uses("LocalDateTime") {
-		std["java.time.LocalDateTime"] = struct{}{}
-	}
-	if uses("OffsetDateTime") {
-		std["java.time.OffsetDateTime"] = struct{}{}
-	}
-
+	std := stdImports(uses)
 	stds := make([]string, 0, len(std))
 	for s, _ := range std {
 		stds = append(stds, s)
 	}
 
 	sort.Strings(stds)
-	return [][]string{stds}
+	return [][]string{stds, runtimeImports(kq)}
 }
 
 func ModelKtImports(r KtGenerateable, settings config.CombinedSettings) [][]string {
@@ -287,21 +271,53 @@ func ModelKtImports(r KtGenerateable, settings config.CombinedSettings) [][]stri
 	return [][]string{stds}
 }
 
-func QueryKtImports(r KtGenerateable, settings config.CombinedSettings, filename string) [][]string {
-	// for _, strct := range r.KtDataClasses() {
-	// 	for _, f := range strct.Fields {
-	// 		if strings.HasPrefix(f.Type, "[]") {
-	// 			return true
-	// 		}
-	// 	}
-	// }
-	var gq []KtQuery
-	for _, query := range r.KtQueries(settings) {
-		gq = append(gq, query)
+func stdImports(uses func(name string) bool) map[string]struct{} {
+	std := map[string]struct{}{
+		"java.sql.SQLException": {},
 	}
+	if uses("LocalDate") {
+		std["java.time.LocalDate"] = struct{}{}
+	}
+	if uses("LocalTime") {
+		std["java.time.LocalTime"] = struct{}{}
+	}
+	if uses("LocalDateTime") {
+		std["java.time.LocalDateTime"] = struct{}{}
+	}
+	if uses("OffsetDateTime") {
+		std["java.time.OffsetDateTime"] = struct{}{}
+	}
+	return std
+}
 
+func runtimeImports(kq []KtQuery) []string {
+	rt := map[string]struct{}{}
+	for _, q := range kq {
+		switch q.Cmd {
+		case ":one":
+			rt["sqlc.runtime.RowQuery"] = struct{}{}
+		case ":many":
+			rt["sqlc.runtime.ListQuery"] = struct{}{}
+		case ":exec":
+			rt["sqlc.runtime.ExecuteQuery"] = struct{}{}
+		case ":execUpdate":
+			rt["sqlc.runtime.ExecuteUpdateQuery"] = struct{}{}
+		default:
+			panic(fmt.Sprintf("invalid command %q", q.Cmd))
+		}
+	}
+	rts := make([]string, 0, len(rt))
+	for s, _ := range rt {
+		rts = append(rts, s)
+	}
+	sort.Strings(rts)
+	return rts
+}
+
+func QueryKtImports(r KtGenerateable, settings config.CombinedSettings, filename string) [][]string {
+	kq := r.KtQueries(settings)
 	uses := func(name string) bool {
-		for _, q := range gq {
+		for _, q := range kq {
 			if !q.Ret.isEmpty() {
 				if q.Ret.Struct != nil {
 					for _, f := range q.Ret.Struct.Fields {
@@ -326,7 +342,7 @@ func QueryKtImports(r KtGenerateable, settings config.CombinedSettings, filename
 	}
 
 	hasEnum := func() bool {
-		for _, q := range gq {
+		for _, q := range kq {
 			if !q.Arg.isEmpty() {
 				for _, f := range q.Arg.Struct.Fields {
 					if f.Type.IsEnum {
@@ -338,31 +354,10 @@ func QueryKtImports(r KtGenerateable, settings config.CombinedSettings, filename
 		return false
 	}
 
-	std := map[string]struct{}{
-		"java.sql.Connection":   {},
-		"java.sql.SQLException": {},
-	}
-	if uses("LocalDate") {
-		std["java.time.LocalDate"] = struct{}{}
-	}
-	if uses("LocalTime") {
-		std["java.time.LocalTime"] = struct{}{}
-	}
-	if uses("LocalDateTime") {
-		std["java.time.LocalDateTime"] = struct{}{}
-	}
-	if uses("OffsetDateTime") {
-		std["java.time.OffsetDateTime"] = struct{}{}
-	}
+	std := stdImports(uses)
+	std["java.sql.Connection"] = struct{}{}
 	if hasEnum() {
 		std["java.sql.Types"] = struct{}{}
-	}
-
-	pkg := make(map[string]struct{})
-
-	pkgs := make([]string, 0, len(pkg))
-	for p, _ := range pkg {
-		pkgs = append(pkgs, p)
 	}
 
 	stds := make([]string, 0, len(std))
@@ -371,8 +366,7 @@ func QueryKtImports(r KtGenerateable, settings config.CombinedSettings, filename
 	}
 
 	sort.Strings(stds)
-	sort.Strings(pkgs)
-	return [][]string{stds, pkgs}
+	return [][]string{stds, runtimeImports(kq)}
 }
 
 func ktEnumValueName(value string) string {
@@ -786,16 +780,16 @@ interface Queries {
   {{- range .KtQueries}}
   @Throws(SQLException::class)
   {{- if eq .Cmd ":one"}}
-  fun {{.MethodName}}({{.Arg.Args}}): {{.Ret.Type}}
+  fun {{.MethodName}}({{.Arg.Args}}): RowQuery<{{.Ret.Type}}>
   {{- end}}
   {{- if eq .Cmd ":many"}}
-  fun {{.MethodName}}({{.Arg.Args}}): List<{{.Ret.Type}}>
+  fun {{.MethodName}}({{.Arg.Args}}): ListQuery<{{.Ret.Type}}>
   {{- end}}
   {{- if eq .Cmd ":exec"}}
-  fun {{.MethodName}}({{.Arg.Args}})
+  fun {{.MethodName}}({{.Arg.Args}}): ExecuteQuery
   {{- end}}
   {{- if eq .Cmd ":execrows"}}
-  fun {{.MethodName}}({{.Arg.Args}}): Int
+  fun {{.MethodName}}({{.Arg.Args}}): ExecuteUpdateQuery
   {{- end}}
   {{end}}
 }
@@ -867,19 +861,24 @@ class QueriesImpl(private val conn: Connection) : Queries {
 {{range .Comments}}//{{.}}
 {{end}}
   @Throws(SQLException::class)
-  override fun {{.MethodName}}({{.Arg.Args}}): {{.Ret.Type}} {
-    return conn.prepareStatement({{.ConstantName}}).use { stmt ->
-      {{.Arg.Bindings}}
+  override fun {{.MethodName}}({{.Arg.Args}}): RowQuery<{{.Ret.Type}}> {
+    return object : RowQuery<{{.Ret.Type}}>() {
+      override fun execute(): {{.Ret.Type}} {
+        return conn.prepareStatement({{.ConstantName}}).use { stmt ->
+          this.statement = stmt
+          {{.Arg.Bindings}}
 
-      val results = stmt.executeQuery()
-      if (!results.next()) {
-        throw SQLException("no rows in result set")
+          val results = stmt.executeQuery()
+          if (!results.next()) {
+            throw SQLException("no rows in result set")
+          }
+          val ret = {{.Ret.ResultSet}}
+          if (results.next()) {
+              throw SQLException("expected one row in result set, but got many")
+          }
+          ret
+        }
       }
-      val ret = {{.Ret.ResultSet}}
-      if (results.next()) {
-          throw SQLException("expected one row in result set, but got many")
-      }
-      ret
     }
   }
 {{end}}
@@ -888,16 +887,21 @@ class QueriesImpl(private val conn: Connection) : Queries {
 {{range .Comments}}//{{.}}
 {{end}}
   @Throws(SQLException::class)
-  override fun {{.MethodName}}({{.Arg.Args}}): List<{{.Ret.Type}}> {
-    return conn.prepareStatement({{.ConstantName}}).use { stmt ->
-      {{.Arg.Bindings}}
+  override fun {{.MethodName}}({{.Arg.Args}}): ListQuery<{{.Ret.Type}}> {
+    return object : ListQuery<{{.Ret.Type}}>() {
+      override fun execute(): List<{{.Ret.Type}}> {
+        return conn.prepareStatement({{.ConstantName}}).use { stmt ->
+          this.statement = stmt
+          {{.Arg.Bindings}}
 
-      val results = stmt.executeQuery()
-      val ret = mutableListOf<{{.Ret.Type}}>()
-      while (results.next()) {
-          ret.add({{.Ret.ResultSet}})
+          val results = stmt.executeQuery()
+          val ret = mutableListOf<{{.Ret.Type}}>()
+          while (results.next()) {
+              ret.add({{.Ret.ResultSet}})
+          }
+          ret
+        }
       }
-      ret
     }
   }
 {{end}}
@@ -907,11 +911,16 @@ class QueriesImpl(private val conn: Connection) : Queries {
 {{end}}
   @Throws(SQLException::class)
   {{ if $.EmitInterface }}override {{ end -}}
-  override fun {{.MethodName}}({{.Arg.Args}}) {
-    conn.prepareStatement({{.ConstantName}}).use { stmt ->
-      {{ .Arg.Bindings }}
+  override fun {{.MethodName}}({{.Arg.Args}}): ExecuteQuery {
+    return object : ExecuteQuery() {
+      override fun execute() {
+        conn.prepareStatement({{.ConstantName}}).use { stmt ->
+          this.statement = stmt
+          {{ .Arg.Bindings }}
 
-      stmt.execute()
+          stmt.execute()
+        }
+      }
     }
   }
 {{end}}
@@ -921,12 +930,17 @@ class QueriesImpl(private val conn: Connection) : Queries {
 {{end}}
   @Throws(SQLException::class)
   {{ if $.EmitInterface }}override {{ end -}}
-  override fun {{.MethodName}}({{.Arg.Args}}): Int {
-    return conn.prepareStatement({{.ConstantName}}).use { stmt ->
-      {{ .Arg.Bindings }}
+  override fun {{.MethodName}}({{.Arg.Args}}): ExecuteUpdateQuery {
+    return object : ExecUpdateQuery() {
+      override fun execute(): Int {
+        return conn.prepareStatement({{.ConstantName}}).use { stmt ->
+          this.statement = stmt
+          {{ .Arg.Bindings }}
 
-      stmt.execute()
-      stmt.updateCount
+          stmt.execute()
+          stmt.updateCount
+        }
+      }
     }
   }
 {{end}}
