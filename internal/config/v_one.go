@@ -24,7 +24,6 @@ type v1PackageSettings struct {
 	EmitInterface       bool       `json:"emit_interface" yaml:"emit_interface"`
 	EmitJSONTags        bool       `json:"emit_json_tags" yaml:"emit_json_tags"`
 	EmitPreparedQueries bool       `json:"emit_prepared_queries" yaml:"emit_prepared_queries"`
-	EmitSingleFile      bool       `json:"emit_single_file" yaml:"emit_single_file"`
 	Overrides           []Override `json:"overrides" yaml:"overrides"`
 }
 
@@ -104,7 +103,6 @@ func (c *V1GenerateSettings) Translate() Config {
 					EmitInterface:       pkg.EmitInterface,
 					EmitJSONTags:        pkg.EmitJSONTags,
 					EmitPreparedQueries: pkg.EmitPreparedQueries,
-					EmitSingleFile:      pkg.EmitSingleFile,
 					Package:             pkg.Name,
 					Out:                 pkg.Path,
 					Overrides:           pkg.Overrides,
