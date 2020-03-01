@@ -31,7 +31,7 @@ you ever:
 
 All of these errors are *impossible* with sqlc. Wait, what? How?
 
-sqlc parses your all of your queries and the DDL (e.g. `CREATE TABLE`)
+sqlc parses all of your queries and the DDL (e.g. `CREATE TABLE`)
 statements during the code generation processes so that it knows the names and
 types of every column in your tables and every expression in your queries.  If
 any of them do not match, sqlc *will fail to compile your queries*, preventing
