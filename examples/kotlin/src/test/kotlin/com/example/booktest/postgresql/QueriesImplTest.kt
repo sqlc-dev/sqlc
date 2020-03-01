@@ -15,7 +15,7 @@ class QueriesImplTest {
     fun testQueries() {
         val conn = dbtest.getConnection()
         val db = QueriesImpl(conn)
-        val author = db.createAuthor("Unknown Master")
+        val author = db.createAuthor("Unknown Master").execute()
 
         // Start a transaction
         conn.autoCommit = false
@@ -27,7 +27,7 @@ class QueriesImplTest {
                 year = 2016,
                 available = OffsetDateTime.now(),
                 tags = listOf()
-        )
+        ).execute()
 
         val b1 = db.createBook(
                 authorId = author.authorId,
@@ -37,13 +37,13 @@ class QueriesImplTest {
                 year = 2016,
                 available = OffsetDateTime.now(),
                 tags = listOf("cool", "unique")
-        )
+        ).execute()
 
         db.updateBook(
                 bookId = b1.bookId,
                 title = "changed second title",
                 tags = listOf("cool", "disastor")
-        )
+        ).execute()
 
         val b3 = db.createBook(
                 authorId = author.authorId,
@@ -53,7 +53,7 @@ class QueriesImplTest {
                 year = 2001,
                 available = OffsetDateTime.now(),
                 tags = listOf("cool")
-        )
+        ).execute()
 
         db.createBook(
                 authorId = author.authorId,
@@ -63,7 +63,7 @@ class QueriesImplTest {
                 year = 2011,
                 available = OffsetDateTime.now(),
                 tags = listOf("other")
-        )
+        ).execute()
 
         // Commit transaction
         conn.commit()
@@ -76,20 +76,20 @@ class QueriesImplTest {
                 isbn = "NEW ISBN",
                 title = "never ever gonna finish, a quatrain",
                 tags = listOf("someother")
-        )
+        ).execute()
 
-        val books0 = db.booksByTitleYear("my book title", 2016)
+        val books0 = db.booksByTitleYear("my book title", 2016).execute()
 
         val formatter = DateTimeFormatter.ISO_DATE_TIME
         for (book in books0) {
             println("Book ${book.bookId} (${book.booktype}): ${book.title} available: ${book.available.format(formatter)}")
-            val author = db.getAuthor(book.authorId)
-            println("Book ${book.bookId} author: ${author.name}")
+            val author2 = db.getAuthor(book.authorId).execute()
+            println("Book ${book.bookId} author: ${author2.name}")
         }
 
         // find a book with either "cool" or "other" tag
         println("---------\\nTag search results:\\n")
-        val res = db.booksByTags(listOf("cool", "other", "someother"))
+        val res = db.booksByTags(listOf("cool", "other", "someother")).execute()
         for (ab in res) {
             println("Book ${ab.bookId}: '${ab.title}', Author: '${ab.name}', ISBN: '${ab.isbn}' Tags: '${ab.tags.toList()}'")
         }
