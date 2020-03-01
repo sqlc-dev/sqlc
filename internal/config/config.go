@@ -81,7 +81,6 @@ type SQLGo struct {
 	EmitInterface       bool              `json:"emit_interface" yaml:"emit_interface"`
 	EmitJSONTags        bool              `json:"emit_json_tags" yaml:"emit_json_tags"`
 	EmitPreparedQueries bool              `json:"emit_prepared_queries" yaml:"emit_prepared_queries":`
-	EmitSingleFile      bool              `json:"emit_single_file" yaml:"emit_single_file":`
 	Package             string            `json:"package" yaml:"package"`
 	Out                 string            `json:"out" yaml:"out"`
 	Overrides           []Override        `json:"overrides,omitempty" yaml:"overrides"`
