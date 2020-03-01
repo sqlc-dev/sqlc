@@ -7,15 +7,19 @@ import java.sql.SQLException
 import java.sql.Types
 import java.time.OffsetDateTime
 
+import sqlc.runtime.ExecuteQuery
+import sqlc.runtime.ListQuery
+import sqlc.runtime.RowQuery
+
 interface Queries {
   @Throws(SQLException::class)
-  fun booksByTags(dollar1: List<String>): List<BooksByTagsRow>
+  fun booksByTags(dollar1: List<String>): ListQuery<BooksByTagsRow>
   
   @Throws(SQLException::class)
-  fun booksByTitleYear(title: String, year: Int): List<Book>
+  fun booksByTitleYear(title: String, year: Int): ListQuery<Book>
   
   @Throws(SQLException::class)
-  fun createAuthor(name: String): Author
+  fun createAuthor(name: String): RowQuery<Author>
   
   @Throws(SQLException::class)
   fun createBook(
@@ -25,29 +29,29 @@ interface Queries {
       title: String,
       year: Int,
       available: OffsetDateTime,
-      tags: List<String>): Book
+      tags: List<String>): RowQuery<Book>
   
   @Throws(SQLException::class)
-  fun deleteBook(bookId: Int)
+  fun deleteBook(bookId: Int): ExecuteQuery
   
   @Throws(SQLException::class)
-  fun getAuthor(authorId: Int): Author
+  fun getAuthor(authorId: Int): RowQuery<Author>
   
   @Throws(SQLException::class)
-  fun getBook(bookId: Int): Book
+  fun getBook(bookId: Int): RowQuery<Book>
   
   @Throws(SQLException::class)
   fun updateBook(
       title: String,
       tags: List<String>,
-      bookId: Int)
+      bookId: Int): ExecuteQuery
   
   @Throws(SQLException::class)
   fun updateBookISBN(
       title: String,
       tags: List<String>,
       isbn: String,
-      bookId: Int)
+      bookId: Int): ExecuteQuery
   
 }
 
