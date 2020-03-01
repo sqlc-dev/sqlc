@@ -16,7 +16,7 @@ class QueriesImplTest {
         val city = q.createCity(
                 slug = "san-francisco",
                 name = "San Francisco"
-        )
+        ).execute()
         val venueId = q.createVenue(
                 slug = "the-fillmore",
                 name = "The Fillmore",
@@ -25,22 +25,22 @@ class QueriesImplTest {
                 status = Status.OPEN,
                 statuses = listOf(Status.OPEN, Status.CLOSED),
                 tags = listOf("rock", "punk")
-        )
+        ).execute()
         val venue = q.getVenue(
                 slug = "the-fillmore",
                 city = city.slug
-        )
+        ).execute()
         assertEquals(venueId, venue.id)
 
-        assertEquals(city, q.getCity(city.slug))
-        assertEquals(listOf(VenueCountByCityRow(city.slug, 1)), q.venueCountByCity())
-        assertEquals(listOf(city), q.listCities())
-        assertEquals(listOf(venue), q.listVenues(city.slug))
+        assertEquals(city, q.getCity(city.slug).execute())
+        assertEquals(listOf(VenueCountByCityRow(city.slug, 1)), q.venueCountByCity().execute())
+        assertEquals(listOf(city), q.listCities().execute())
+        assertEquals(listOf(venue), q.listVenues(city.slug).execute())
 
-        q.updateCityName(slug = city.slug, name = "SF")
-        val id = q.updateVenueName(slug = venue.slug, name = "Fillmore")
+        q.updateCityName(slug = city.slug, name = "SF").execute()
+        val id = q.updateVenueName(slug = venue.slug, name = "Fillmore").execute()
         assertEquals(venue.id, id)
 
-        q.deleteVenue(venue.slug)
+        q.deleteVenue(venue.slug).execute()
     }
 }

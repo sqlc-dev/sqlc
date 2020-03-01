@@ -5,6 +5,7 @@ This is a Kotlin gradle project configured to compile and test all examples. Cur
 To run tests:
 
 ```shell script
+docker run --name dinosql-postgres -d -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=mysecretpassword -e POSTGRES_DB=postgres -p 5432:5432 postgres:11
 ./gradlew clean test
 ```
 
