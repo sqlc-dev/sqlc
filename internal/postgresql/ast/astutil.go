@@ -133,6 +133,17 @@ type application struct {
 	iter      iterator
 }
 
+type dummyNode struct {
+	Node nodes.Node
+}
+
+func (node dummyNode) Deparse() string {
+	panic("Not Implemented")
+}
+
+func (node dummyNode) Fingerprint(ctx nodes.FingerprintContext, parentNode nodes.Node, parentFieldName string) {
+}
+
 func (a *application) apply(parent nodes.Node, name string, iter *iterator, node nodes.Node) {
 	// convert typed nil into untyped nil
 	if v := reflect.ValueOf(node); v.Kind() == reflect.Ptr && v.IsNil() {
@@ -1291,13 +1302,20 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 		a.apply(&n, "GroupClause", nil, n.GroupClause)
 		a.apply(&n, "HavingClause", nil, n.HavingClause)
 		a.apply(&n, "WindowClause", nil, n.WindowClause)
-		// TODO: Not sure how to handle a slice of a slice
-		//
-		// for _, vs := range n.ValuesLists {
-		// 	for _, v := range vs {
-		// 		a.apply(&n, "", nil, v)
-		// 	}
-		// }
+
+		// ValuesLists is a slice of Node slices, which does not implement the
+		// Node interface For each Node in the list, pass a dummy node to apply
+		// and then updated the ValuesList if it was set.
+		for i := range n.ValuesLists {
+			for j := range n.ValuesLists[i] {
+				dn := dummyNode{}
+				a.apply(&dn, "Node", nil, n.ValuesLists[i][j])
+				if dn.Node != nil {
+					n.ValuesLists[i][j] = dn.Node
+				}
+			}
+		}
+
 		a.apply(&n, "SortClause", nil, n.SortClause)
 		a.apply(&n, "LimitOffset", nil, n.LimitOffset)
 		a.apply(&n, "LimitCount", nil, n.LimitCount)
