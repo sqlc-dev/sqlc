@@ -7,9 +7,13 @@ import java.sql.SQLException
 import java.sql.Types
 import java.time.LocalDateTime
 
+import sqlc.runtime.ExecuteQuery
+import sqlc.runtime.ListQuery
+import sqlc.runtime.RowQuery
+
 interface Queries {
   @Throws(SQLException::class)
-  fun createCity(name: String, slug: String): City
+  fun createCity(name: String, slug: String): RowQuery<City>
   
   @Throws(SQLException::class)
   fun createVenue(
@@ -19,31 +23,31 @@ interface Queries {
       spotifyPlaylist: String,
       status: Status,
       statuses: List<Status>,
-      tags: List<String>): Int
+      tags: List<String>): RowQuery<Int>
   
   @Throws(SQLException::class)
-  fun deleteVenue(slug: String)
+  fun deleteVenue(slug: String): ExecuteQuery
   
   @Throws(SQLException::class)
-  fun getCity(slug: String): City
+  fun getCity(slug: String): RowQuery<City>
   
   @Throws(SQLException::class)
-  fun getVenue(slug: String, city: String): Venue
+  fun getVenue(slug: String, city: String): RowQuery<Venue>
   
   @Throws(SQLException::class)
-  fun listCities(): List<City>
+  fun listCities(): ListQuery<City>
   
   @Throws(SQLException::class)
-  fun listVenues(city: String): List<Venue>
+  fun listVenues(city: String): ListQuery<Venue>
   
   @Throws(SQLException::class)
-  fun updateCityName(name: String, slug: String)
+  fun updateCityName(name: String, slug: String): ExecuteQuery
   
   @Throws(SQLException::class)
-  fun updateVenueName(name: String, slug: String): Int
+  fun updateVenueName(name: String, slug: String): RowQuery<Int>
   
   @Throws(SQLException::class)
-  fun venueCountByCity(): List<VenueCountByCityRow>
+  fun venueCountByCity(): ListQuery<VenueCountByCityRow>
   
 }
 
