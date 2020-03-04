@@ -19,6 +19,8 @@ func Build(stmts []ast.Statement) (*Catalog, error) {
 		}
 		var err error
 		switch n := stmts[i].Raw.Stmt.(type) {
+		case *ast.AlterTableStmt:
+			err = c.alterTable(n)
 		case *ast.CreateTableStmt:
 			err = c.createTable(n)
 		case *ast.DropTableStmt:
@@ -31,8 +33,11 @@ func Build(stmts []ast.Statement) (*Catalog, error) {
 	return c, nil
 }
 
+// TODO: This need to be rich error types
 var ErrRelationNotFound = errors.New("relation not found")
 var ErrSchemaNotFound = errors.New("schema not found")
+var ErrColumnNotFound = errors.New("column not found")
+var ErrColumnExists = errors.New("column already exists")
 
 func (c *Catalog) getSchema(name string) (*Schema, error) {
 	for i := range c.Schemas {
@@ -41,6 +46,117 @@ func (c *Catalog) getSchema(name string) (*Schema, error) {
 		}
 	}
 	return nil, ErrSchemaNotFound
+}
+
+func (c *Catalog) getTable(name *ast.TableName) (*Schema, *Table, error) {
+	ns := name.Schema
+	if ns == "" {
+		ns = c.DefaultSchema
+	}
+	var s *Schema
+	for i := range c.Schemas {
+		if c.Schemas[i].Name == ns {
+			s = c.Schemas[i]
+			break
+		}
+	}
+	if s == nil {
+		return nil, nil, ErrSchemaNotFound
+	}
+	t, _, err := s.getTable(name)
+	if err != nil {
+		return nil, nil, err
+	}
+	return s, t, nil
+}
+
+func (c *Catalog) alterTable(stmt *ast.AlterTableStmt) error {
+	var implemented bool
+	for _, item := range stmt.Cmds.Items {
+		switch cmd := item.(type) {
+		case *ast.AlterTableCmd:
+			switch cmd.Subtype {
+			case ast.AT_AddColumn:
+				implemented = true
+			case ast.AT_AlterColumnType:
+				implemented = true
+			case ast.AT_DropColumn:
+				implemented = true
+			case ast.AT_DropNotNull:
+				implemented = true
+			case ast.AT_SetNotNull:
+				implemented = true
+			}
+		}
+	}
+	if !implemented {
+		return nil
+	}
+	_, table, err := c.getTable(stmt.Table)
+	if err != nil {
+		return err
+	}
+
+	for _, cmd := range stmt.Cmds.Items {
+		switch cmd := cmd.(type) {
+		case *ast.AlterTableCmd:
+			idx := -1
+
+			// Lookup column names for column-related commands
+			switch cmd.Subtype {
+			case ast.AT_AlterColumnType,
+				ast.AT_DropColumn,
+				ast.AT_DropNotNull,
+				ast.AT_SetNotNull:
+				for i, c := range table.Columns {
+					if c.Name == *cmd.Name {
+						idx = i
+						break
+					}
+				}
+				if idx < 0 && !cmd.MissingOk {
+					// return wrap(pg.ErrorColumnDoesNotExist(table.Name, *cmd.Name), raw.StmtLocation)
+					return ErrColumnNotFound
+				}
+				// If a missing column is allowed, skip this command
+				if idx < 0 && cmd.MissingOk {
+					continue
+				}
+			}
+
+			switch cmd.Subtype {
+
+			case ast.AT_AddColumn:
+				for _, c := range table.Columns {
+					if c.Name == cmd.Def.Colname {
+						// return wrap(pg.ErrorColumnAlreadyExists(table.Name, *d.Colname), d.Location)
+						return ErrColumnExists
+					}
+				}
+				table.Columns = append(table.Columns, &Column{
+					Name:      cmd.Def.Colname,
+					Type:      *cmd.Def.TypeName,
+					IsNotNull: cmd.Def.IsNotNull,
+				})
+
+			case ast.AT_AlterColumnType:
+				table.Columns[idx].Type = *cmd.Def.TypeName
+				// table.Columns[idx].IsArray = isArray(d.TypeName)
+
+			case ast.AT_DropColumn:
+				table.Columns = append(table.Columns[:idx], table.Columns[idx+1:]...)
+
+			case ast.AT_DropNotNull:
+				table.Columns[idx].IsNotNull = false
+
+			case ast.AT_SetNotNull:
+				table.Columns[idx].IsNotNull = true
+
+			}
+		}
+	}
+
+	return nil
 }
 
 func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
@@ -62,8 +178,9 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 	tbl := Table{Rel: stmt.Name}
 	for _, col := range stmt.Cols {
 		tbl.Columns = append(tbl.Columns, &Column{
-			Name: col.Colname,
-			Type: *col.TypeName,
+			Name:      col.Colname,
+			Type:      *col.TypeName,
+			IsNotNull: col.IsNotNull,
 		})
 	}
 	schema.Tables = append(schema.Tables, &tbl)
@@ -124,7 +241,9 @@ type Table struct {
 	Comment string
 }
 
+// TODO: Should this just be ast Nodes?
 type Column struct {
-	Name string
-	Type ast.TypeName
+	Name      string
+	Type      ast.TypeName
+	IsNotNull bool
 }

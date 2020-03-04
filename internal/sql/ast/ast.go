@@ -26,6 +26,37 @@ func (n *TableName) Pos() int {
 	return 0
 }
 
+type AlterTableStmt struct {
+	Table *TableName
+	Cmds  *List
+	// MissingOk bool
+}
+
+func (n *AlterTableStmt) Pos() int {
+	return 0
+}
+
+type AlterTableType int
+
+const (
+	AT_AddColumn AlterTableType = iota
+	AT_AlterColumnType
+	AT_DropColumn
+	AT_DropNotNull
+	AT_SetNotNull
+)
+
+type AlterTableCmd struct {
+	Subtype   AlterTableType
+	Name      *string
+	Def       *ColumnDef
+	MissingOk bool
+}
+
+func (n *AlterTableCmd) Pos() int {
+	return 0
+}
+
 type CreateTableStmt struct {
 	IfNotExists bool
 	Name        *TableName
@@ -45,9 +76,11 @@ func (n *DropTableStmt) Pos() int {
 	return 0
 }
 
+// TODO: Support array types
 type ColumnDef struct {
-	Colname  string
-	TypeName *TypeName
+	Colname   string
+	TypeName  *TypeName
+	IsNotNull bool
 }
 
 func (n *ColumnDef) Pos() int {
