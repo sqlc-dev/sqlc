@@ -2,7 +2,6 @@ package catalog
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 )
@@ -117,7 +116,6 @@ func (c *Catalog) alterTable(stmt *ast.AlterTableStmt) error {
 				}
 				if idx < 0 && !cmd.MissingOk {
 					// return wrap(pg.ErrorColumnDoesNotExist(table.Name, *cmd.Name), raw.StmtLocation)
-					fmt.Println(table.Rel.Name, *cmd.Name)
 					return ErrColumnNotFound
 				}
 				// If a missing column is allowed, skip this command
