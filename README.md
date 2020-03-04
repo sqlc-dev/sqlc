@@ -440,6 +440,11 @@ Sponsors receive priority support via the sqlc Slack organization.
 
 ## Development
 
+Try it in Gitpod!
+
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/kyleconroy/sqlc)
+
+
 ### Building
 
 For local development, install `sqlc` under an alias. We suggest `sqlc-dev`.

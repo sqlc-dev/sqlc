@@ -1,0 +1,13 @@
+image: gitpod/workspace-postgres
+tasks:
+  - init: go build -o ~/go/bin/sqlc-dev ./cmd/sqlc
+    name: build
+  - init: |
+      cd internal/endtoend
+      ./regenerate.sh
+      go test --tags=exp ./...
+    name: test
+    openMode: split-right
+vscode:
+  extensions:
+    - premparihar.gotestexplorer@0.1.10:jvUM8akrQ67vQxfjaxCgCg==
