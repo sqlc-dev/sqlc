@@ -430,6 +430,7 @@ sqlc development is funded by our generous sponsors.
 - Companies
   - [Meter](https://meter.com)
   - [ngrok](https://ngrok.com)
+  - [Weave](https://www.getweave.com/)
 - Individuals
   - [CyberAx](https://github.com/Cyberax)
 
