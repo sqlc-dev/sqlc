@@ -738,6 +738,17 @@ func (r Result) goInnerType(col core.Column, settings config.CombinedSettings) s
 	case "macaddr", "macaddr8":
 		return "net.HardwareAddr"
 
+	case "ltree", "lquery", "ltxtquery":
+		// This module implements a data type ltree for representing labels
+		// of data stored in a hierarchical tree-like structure. Extensive
+		// facilities for searching through label trees are provided.
+		//
+		// https://www.postgresql.org/docs/current/ltree.html
+		if notNull {
+			return "string"
+		}
+		return "sql.NullString"
+
 	case "void":
 		// A void value always returns NULL. Since there is no built-in NULL
 		// value into the SQL package, we'll use sql.NullBool
