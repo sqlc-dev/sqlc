@@ -66,6 +66,15 @@ func (n *CreateEnumStmt) Pos() int {
 	return 0
 }
 
+type CreateSchemaStmt struct {
+	Name        *string
+	IfNotExists bool
+}
+
+func (n *CreateSchemaStmt) Pos() int {
+	return 0
+}
+
 type CreateTableStmt struct {
 	IfNotExists bool
 	Name        *TableName
@@ -73,6 +82,15 @@ type CreateTableStmt struct {
 }
 
 func (n *CreateTableStmt) Pos() int {
+	return 0
+}
+
+type DropSchemaStmt struct {
+	Schemas   []*String
+	MissingOk bool
+}
+
+func (n *DropSchemaStmt) Pos() int {
 	return 0
 }
 

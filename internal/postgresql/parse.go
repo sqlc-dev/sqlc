@@ -223,20 +223,43 @@ func translate(node nodes.Node) (ast.Node, error) {
 		}
 		return stmt, nil
 
+	case nodes.CreateSchemaStmt:
+		return &ast.CreateSchemaStmt{
+			Name:        n.Schemaname,
+			IfNotExists: n.IfNotExists,
+		}, nil
+
 	case nodes.DropStmt:
-		drop := &ast.DropTableStmt{
-			IfExists: n.MissingOk,
-		}
-		for _, obj := range n.Objects.Items {
-			if n.RemoveType == nodes.OBJECT_TABLE {
+		switch n.RemoveType {
+
+		case nodes.OBJECT_SCHEMA:
+			drop := &ast.DropSchemaStmt{
+				MissingOk: n.MissingOk,
+			}
+			for _, obj := range n.Objects.Items {
+				val, ok := obj.(nodes.String)
+				if !ok {
+					return nil, fmt.Errorf("nodes.DropStmt: unknown type in objects list: %T", obj)
+				}
+				drop.Schemas = append(drop.Schemas, &ast.String{Str: val.Str})
+			}
+			return drop, nil
+
+		case nodes.OBJECT_TABLE:
+			drop := &ast.DropTableStmt{
+				IfExists: n.MissingOk,
+			}
+			for _, obj := range n.Objects.Items {
 				name, err := parseTableName(obj)
 				if err != nil {
 					return nil, err
 				}
 				drop.Tables = append(drop.Tables, name)
 			}
+			return drop, nil
+
 		}
-		return drop, nil
+		return nil, nil
 
 	default:
 		return nil, nil
