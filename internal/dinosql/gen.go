@@ -340,6 +340,9 @@ func modelImports(r Generateable, settings config.CombinedSettings) fileImports 
 	if UsesType(r, "net.HardwareAddr", settings) {
 		std["net"] = struct{}{}
 	}
+	if len(r.Enums(settings)) > 0 {
+		std["fmt"] = struct{}{}
+	}
 
 	// Custom imports
 	pkg := make(map[string]struct{})
@@ -1070,7 +1073,27 @@ type Queries struct {
 	{{- end}}
 }
 
-func (q *Queries) WithTx(tx *sql.Tx) *Queries {
+type Querier interface {
+	{{- range .GoQueries}}
+	{{- if eq .Cmd ":one"}}
+	{{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.Type}}, error)
+	{{- end}}
+	{{- if eq .Cmd ":many"}}
+	{{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.Type}}, error)
+	{{- end}}
+	{{- if eq .Cmd ":exec"}}
+	{{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) error
+	{{- end}}
+	{{- if eq .Cmd ":execrows"}}
+	{{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, error)
+	{{- end}}
+	{{- end}}
+	WithTx(*sql.Tx) Querier
+}
+
+var _ Querier = (*Queries)(nil)
+
+func (q *Queries) WithTx(tx *sql.Tx) Querier {
 	return &Queries{
 		db: tx,
      	{{- if .EmitPreparedQueries}}
@@ -1144,7 +1167,14 @@ const (
 )
 
 func (e *{{.Name}}) Scan(src interface{}) error {
-	*e = {{.Name}}(src.([]byte))
+	switch s := src.(type) {
+	case []byte:
+		*e = {{.Name}}(s)
+	case string:
+		*e = {{.Name}}(s)
+	default:
+		return fmt.Errorf("unsupported scan type for {{.Name}}: %T", src)
+	}
 	return nil
 }
 {{end}}
@@ -1357,11 +1387,11 @@ func Generate(r Generateable, settings config.CombinedSettings) (map[string]stri
 	if err := execute("models.go", "modelsFile"); err != nil {
 		return nil, err
 	}
-	if golang.EmitInterface {
-		if err := execute("querier.go", "interfaceFile"); err != nil {
-			return nil, err
-		}
-	}
+	// if golang.EmitInterface {
+	// 	if err := execute("querier.go", "interfaceFile"); err != nil {
+	// 		return nil, err
+	// 	}
+	// }
 
 	files := map[string]struct{}{}
 	for _, gq := range r.GoQueries(settings) {
