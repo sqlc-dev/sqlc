@@ -6,6 +6,7 @@ import (
 )
 
 type Result struct {
+	enums   []dinosql.GoEnum
 	structs []dinosql.GoStruct
 	queries []dinosql.GoQuery
 }
@@ -19,5 +20,5 @@ func (r *Result) GoQueries(settings config.CombinedSettings) []dinosql.GoQuery {
 }
 
 func (r *Result) Enums(settings config.CombinedSettings) []dinosql.GoEnum {
-	return nil
+	return r.enums
 }

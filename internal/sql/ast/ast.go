@@ -57,6 +57,15 @@ func (n *AlterTableCmd) Pos() int {
 	return 0
 }
 
+type CreateEnumStmt struct {
+	TypeName *TypeName
+	Vals     *List
+}
+
+func (n *CreateEnumStmt) Pos() int {
+	return 0
+}
+
 type CreateTableStmt struct {
 	IfNotExists bool
 	Name        *TableName
@@ -88,7 +97,8 @@ func (n *ColumnDef) Pos() int {
 }
 
 type TypeName struct {
-	Name string
+	Schema string
+	Name   string
 }
 
 func (n *TypeName) Pos() int {
@@ -125,5 +135,13 @@ type ColumnRef struct {
 }
 
 func (n *ColumnRef) Pos() int {
+	return 0
+}
+
+type String struct {
+	Str string
+}
+
+func (n *String) Pos() int {
 	return 0
 }
