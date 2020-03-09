@@ -2,7 +2,9 @@
 
 package enum
 
-import ()
+import (
+	"fmt"
+)
 
 type Foobar string
 
@@ -17,6 +19,13 @@ const (
 )
 
 func (e *Foobar) Scan(src interface{}) error {
-	*e = Foobar(src.([]byte))
+	switch s := src.(type) {
+	case []byte:
+		*e = Foobar(s)
+	case string:
+		*e = Foobar(s)
+	default:
+		return fmt.Errorf("unsupported scan type for Foobar: %T", src)
+	}
 	return nil
 }

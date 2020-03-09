@@ -482,8 +482,7 @@ If you need to update a large number of expexted test output in the
 `internal/endtoend/testdata` directory, run the `regenerate.sh` script.
 
 ```
-cd internal/endtoend
-./regenerate.sh
+./scripts/regenerate.sh
 ```
 
 ## Acknowledgements

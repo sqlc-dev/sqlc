@@ -4,6 +4,7 @@ package ondeck
 
 import (
 	"database/sql"
+	"fmt"
 	"time"
 )
 
@@ -16,7 +17,14 @@ const (
 )
 
 func (e *Status) Scan(src interface{}) error {
-	*e = Status(src.([]byte))
+	switch s := src.(type) {
+	case []byte:
+		*e = Status(s)
+	case string:
+		*e = Status(s)
+	default:
+		return fmt.Errorf("unsupported scan type for Status: %T", src)
+	}
 	return nil
 }
 

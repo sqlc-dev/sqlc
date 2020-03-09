@@ -340,6 +340,9 @@ func modelImports(r Generateable, settings config.CombinedSettings) fileImports 
 	if UsesType(r, "net.HardwareAddr", settings) {
 		std["net"] = struct{}{}
 	}
+	if len(r.Enums(settings)) > 0 {
+		std["fmt"] = struct{}{}
+	}
 
 	// Custom imports
 	pkg := make(map[string]struct{})
@@ -1144,7 +1147,14 @@ const (
 )
 
 func (e *{{.Name}}) Scan(src interface{}) error {
-	*e = {{.Name}}(src.([]byte))
+	switch s := src.(type) {
+	case []byte:
+		*e = {{.Name}}(s)
+	case string:
+		*e = {{.Name}}(s)
+	default:
+		return fmt.Errorf("unsupported scan type for {{.Name}}: %T", src)
+	}
 	return nil
 }
 {{end}}
