@@ -15,3 +15,22 @@ type Foo struct {
 	Retyped pkg.CustomType
 	Langs   pq.StringArray
 }
+
+func (t *Foo) GetOther() string {
+	return t.Other
+}
+func (t *Foo) GetTotal() int64 {
+	return t.Total
+}
+func (t *Foo) GetTags() []string {
+	return t.Tags
+}
+func (t *Foo) GetByteSeq() []byte {
+	return t.ByteSeq
+}
+func (t *Foo) GetRetyped() pkg.CustomType {
+	return t.Retyped
+}
+func (t *Foo) GetLangs() pq.StringArray {
+	return t.Langs
+}

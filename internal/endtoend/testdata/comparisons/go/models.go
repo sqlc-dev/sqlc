@@ -7,3 +7,7 @@ import ()
 type Bar struct {
 	ID int32
 }
+
+func (t *Bar) GetID() int32 {
+	return t.ID
+}

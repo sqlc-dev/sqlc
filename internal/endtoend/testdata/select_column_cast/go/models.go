@@ -7,3 +7,7 @@ import ()
 type Foo struct {
 	Bar bool
 }
+
+func (t *Foo) GetBar() bool {
+	return t.Bar
+}

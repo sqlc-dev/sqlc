@@ -32,6 +32,13 @@ type City struct {
 	Name string
 }
 
+func (t *City) GetSlug() string {
+	return t.Slug
+}
+func (t *City) GetName() string {
+	return t.Name
+}
+
 type Venue struct {
 	ID              int32
 	CreateAt        time.Time
@@ -41,4 +48,29 @@ type Venue struct {
 	City            string
 	SpotifyPlaylist string
 	SongkickID      sql.NullString
+}
+
+func (t *Venue) GetID() int32 {
+	return t.ID
+}
+func (t *Venue) GetCreateAt() time.Time {
+	return t.CreateAt
+}
+func (t *Venue) GetStatus() Status {
+	return t.Status
+}
+func (t *Venue) GetSlug() string {
+	return t.Slug
+}
+func (t *Venue) GetName() string {
+	return t.Name
+}
+func (t *Venue) GetCity() string {
+	return t.City
+}
+func (t *Venue) GetSpotifyPlaylist() string {
+	return t.SpotifyPlaylist
+}
+func (t *Venue) GetSongkickID() sql.NullString {
+	return t.SongkickID
 }
