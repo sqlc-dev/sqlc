@@ -18,6 +18,31 @@ type Td3Code struct {
 	IsPrivate sql.NullBool
 }
 
+func (t *Td3Code) GetID() int32 {
+	return t.ID
+}
+func (t *Td3Code) GetTsCreated() time.Time {
+	return t.TsCreated
+}
+func (t *Td3Code) GetTsUpdated() time.Time {
+	return t.TsUpdated
+}
+func (t *Td3Code) GetCreatedBy() string {
+	return t.CreatedBy
+}
+func (t *Td3Code) GetUpdatedBy() string {
+	return t.UpdatedBy
+}
+func (t *Td3Code) GetCode() sql.NullString {
+	return t.Code
+}
+func (t *Td3Code) GetHash() sql.NullString {
+	return t.Hash
+}
+func (t *Td3Code) GetIsPrivate() sql.NullBool {
+	return t.IsPrivate
+}
+
 type Td3TestCode struct {
 	ID        int32
 	TsCreated time.Time
@@ -26,4 +51,26 @@ type Td3TestCode struct {
 	UpdatedBy string
 	TestID    int32
 	CodeHash  string
+}
+
+func (t *Td3TestCode) GetID() int32 {
+	return t.ID
+}
+func (t *Td3TestCode) GetTsCreated() time.Time {
+	return t.TsCreated
+}
+func (t *Td3TestCode) GetTsUpdated() time.Time {
+	return t.TsUpdated
+}
+func (t *Td3TestCode) GetCreatedBy() string {
+	return t.CreatedBy
+}
+func (t *Td3TestCode) GetUpdatedBy() string {
+	return t.UpdatedBy
+}
+func (t *Td3TestCode) GetTestID() int32 {
+	return t.TestID
+}
+func (t *Td3TestCode) GetCodeHash() string {
+	return t.CodeHash
 }

@@ -31,6 +31,13 @@ type Author struct {
 	Name     string
 }
 
+func (t *Author) GetAuthorID() int {
+	return t.AuthorID
+}
+func (t *Author) GetName() string {
+	return t.Name
+}
+
 type Book struct {
 	BookID    int
 	AuthorID  int
@@ -40,4 +47,29 @@ type Book struct {
 	Yr        int
 	Available time.Time
 	Tags      string
+}
+
+func (t *Book) GetBookID() int {
+	return t.BookID
+}
+func (t *Book) GetAuthorID() int {
+	return t.AuthorID
+}
+func (t *Book) GetIsbn() string {
+	return t.Isbn
+}
+func (t *Book) GetBookType() BookTypeType {
+	return t.BookType
+}
+func (t *Book) GetTitle() string {
+	return t.Title
+}
+func (t *Book) GetYr() int {
+	return t.Yr
+}
+func (t *Book) GetAvailable() time.Time {
+	return t.Available
+}
+func (t *Book) GetTags() string {
+	return t.Tags
 }

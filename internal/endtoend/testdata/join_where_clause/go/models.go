@@ -9,6 +9,17 @@ type Bar struct {
 	Owner string
 }
 
+func (t *Bar) GetID() int32 {
+	return t.ID
+}
+func (t *Bar) GetOwner() string {
+	return t.Owner
+}
+
 type Foo struct {
 	Barid int32
+}
+
+func (t *Foo) GetBarid() int32 {
+	return t.Barid
 }

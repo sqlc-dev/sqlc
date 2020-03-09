@@ -8,3 +8,10 @@ type Foo struct {
 	Bar string
 	Bat string
 }
+
+func (t *Foo) GetBar() string {
+	return t.Bar
+}
+func (t *Foo) GetBat() string {
+	return t.Bat
+}

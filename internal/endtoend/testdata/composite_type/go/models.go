@@ -10,3 +10,10 @@ type FooPath struct {
 	PointOne sql.NullString
 	PointTwo sql.NullString
 }
+
+func (t *FooPath) GetPointOne() sql.NullString {
+	return t.PointOne
+}
+func (t *FooPath) GetPointTwo() sql.NullString {
+	return t.PointTwo
+}

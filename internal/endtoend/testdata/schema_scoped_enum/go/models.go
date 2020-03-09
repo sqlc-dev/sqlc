@@ -28,3 +28,7 @@ func (e *FooTypeUserRole) Scan(src interface{}) error {
 type FooUser struct {
 	Role FooTypeUserRole
 }
+
+func (t *FooUser) GetRole() FooTypeUserRole {
+	return t.Role
+}

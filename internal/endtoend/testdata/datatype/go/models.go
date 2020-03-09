@@ -15,12 +15,44 @@ type DtCharacter struct {
 	E sql.NullString
 }
 
+func (t *DtCharacter) GetA() sql.NullString {
+	return t.A
+}
+func (t *DtCharacter) GetB() sql.NullString {
+	return t.B
+}
+func (t *DtCharacter) GetC() sql.NullString {
+	return t.C
+}
+func (t *DtCharacter) GetD() sql.NullString {
+	return t.D
+}
+func (t *DtCharacter) GetE() sql.NullString {
+	return t.E
+}
+
 type DtCharacterNotNull struct {
 	A string
 	B string
 	C string
 	D string
 	E string
+}
+
+func (t *DtCharacterNotNull) GetA() string {
+	return t.A
+}
+func (t *DtCharacterNotNull) GetB() string {
+	return t.B
+}
+func (t *DtCharacterNotNull) GetC() string {
+	return t.C
+}
+func (t *DtCharacterNotNull) GetD() string {
+	return t.D
+}
+func (t *DtCharacterNotNull) GetE() string {
+	return t.E
 }
 
 type DtDatetime struct {
@@ -34,6 +66,31 @@ type DtDatetime struct {
 	H sql.NullTime
 }
 
+func (t *DtDatetime) GetA() sql.NullTime {
+	return t.A
+}
+func (t *DtDatetime) GetB() sql.NullTime {
+	return t.B
+}
+func (t *DtDatetime) GetC() sql.NullTime {
+	return t.C
+}
+func (t *DtDatetime) GetD() sql.NullTime {
+	return t.D
+}
+func (t *DtDatetime) GetE() sql.NullTime {
+	return t.E
+}
+func (t *DtDatetime) GetF() sql.NullTime {
+	return t.F
+}
+func (t *DtDatetime) GetG() sql.NullTime {
+	return t.G
+}
+func (t *DtDatetime) GetH() sql.NullTime {
+	return t.H
+}
+
 type DtDatetimeNotNull struct {
 	A time.Time
 	B time.Time
@@ -43,6 +100,31 @@ type DtDatetimeNotNull struct {
 	F time.Time
 	G time.Time
 	H time.Time
+}
+
+func (t *DtDatetimeNotNull) GetA() time.Time {
+	return t.A
+}
+func (t *DtDatetimeNotNull) GetB() time.Time {
+	return t.B
+}
+func (t *DtDatetimeNotNull) GetC() time.Time {
+	return t.C
+}
+func (t *DtDatetimeNotNull) GetD() time.Time {
+	return t.D
+}
+func (t *DtDatetimeNotNull) GetE() time.Time {
+	return t.E
+}
+func (t *DtDatetimeNotNull) GetF() time.Time {
+	return t.F
+}
+func (t *DtDatetimeNotNull) GetG() time.Time {
+	return t.G
+}
+func (t *DtDatetimeNotNull) GetH() time.Time {
+	return t.H
 }
 
 type DtNumeric struct {
@@ -58,6 +140,37 @@ type DtNumeric struct {
 	J sql.NullInt64
 }
 
+func (t *DtNumeric) GetA() int16 {
+	return t.A
+}
+func (t *DtNumeric) GetB() sql.NullInt32 {
+	return t.B
+}
+func (t *DtNumeric) GetC() sql.NullInt64 {
+	return t.C
+}
+func (t *DtNumeric) GetD() sql.NullString {
+	return t.D
+}
+func (t *DtNumeric) GetE() sql.NullString {
+	return t.E
+}
+func (t *DtNumeric) GetF() sql.NullFloat64 {
+	return t.F
+}
+func (t *DtNumeric) GetG() sql.NullFloat64 {
+	return t.G
+}
+func (t *DtNumeric) GetH() int16 {
+	return t.H
+}
+func (t *DtNumeric) GetI() sql.NullInt32 {
+	return t.I
+}
+func (t *DtNumeric) GetJ() sql.NullInt64 {
+	return t.J
+}
+
 type DtNumericNotNull struct {
 	A int16
 	B int32
@@ -69,4 +182,35 @@ type DtNumericNotNull struct {
 	H int16
 	I int32
 	J int64
+}
+
+func (t *DtNumericNotNull) GetA() int16 {
+	return t.A
+}
+func (t *DtNumericNotNull) GetB() int32 {
+	return t.B
+}
+func (t *DtNumericNotNull) GetC() int64 {
+	return t.C
+}
+func (t *DtNumericNotNull) GetD() string {
+	return t.D
+}
+func (t *DtNumericNotNull) GetE() string {
+	return t.E
+}
+func (t *DtNumericNotNull) GetF() float32 {
+	return t.F
+}
+func (t *DtNumericNotNull) GetG() float64 {
+	return t.G
+}
+func (t *DtNumericNotNull) GetH() int16 {
+	return t.H
+}
+func (t *DtNumericNotNull) GetI() int32 {
+	return t.I
+}
+func (t *DtNumericNotNull) GetJ() int64 {
+	return t.J
 }

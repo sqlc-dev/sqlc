@@ -7,3 +7,7 @@ import ()
 type Foo struct {
 	ID string
 }
+
+func (t *Foo) GetID() string {
+	return t.ID
+}

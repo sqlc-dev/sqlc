@@ -1159,7 +1159,7 @@ func (e *{{.Name}}) Scan(src interface{}) error {
 }
 {{end}}
 
-{{range .Structs}}
+{{range $s := .Structs}}
 {{if .Comment}}{{comment .Comment}}{{end}}
 type {{.Name}} struct { {{- range .Fields}}
   {{- if .Comment}}
@@ -1168,6 +1168,17 @@ type {{.Name}} struct { {{- range .Fields}}
   {{.Name}} {{.Type}} {{if $.EmitJSONTags}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
   {{- end}}
 }
+
+{{- range $f := .Fields}}
+{{- if $f.Comment}}
+// {{$f.Comment}}{{else}}
+{{- end}}
+func (t *{{$s.Name}}) Get{{$f.Name}}() {{$f.Type}} {
+  return t.{{$f.Name}}
+}
+
+{{- end}}
+
 {{end}}
 {{end}}
 

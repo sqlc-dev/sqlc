@@ -9,3 +9,7 @@ import (
 type Foo struct {
 	Group sql.NullString
 }
+
+func (t *Foo) GetGroup() sql.NullString {
+	return t.Group
+}

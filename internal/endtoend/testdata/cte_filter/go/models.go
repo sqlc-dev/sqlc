@@ -7,3 +7,7 @@ import ()
 type Bar struct {
 	Ready bool
 }
+
+func (t *Bar) GetReady() bool {
+	return t.Ready
+}

@@ -11,6 +11,17 @@ type Bar struct {
 	Title sql.NullString
 }
 
+func (t *Bar) GetID() int32 {
+	return t.ID
+}
+func (t *Bar) GetTitle() sql.NullString {
+	return t.Title
+}
+
 type Foo struct {
 	ID int32
+}
+
+func (t *Foo) GetID() int32 {
+	return t.ID
 }
