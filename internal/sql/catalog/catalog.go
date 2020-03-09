@@ -21,6 +21,8 @@ func Build(stmts []ast.Statement) (*Catalog, error) {
 		switch n := stmts[i].Raw.Stmt.(type) {
 		case *ast.AlterTableStmt:
 			err = c.alterTable(n)
+		case *ast.CreateEnumStmt:
+			err = c.createEnum(n)
 		case *ast.CreateTableStmt:
 			err = c.createTable(n)
 		case *ast.DropTableStmt:
@@ -33,8 +35,19 @@ func Build(stmts []ast.Statement) (*Catalog, error) {
 	return c, nil
 }
 
+func stringSlice(list *ast.List) []string {
+	items := []string{}
+	for _, item := range list.Items {
+		if n, ok := item.(*ast.String); ok {
+			items = append(items, n.Str)
+		}
+	}
+	return items
+}
+
 // TODO: This need to be rich error types
 var ErrRelationNotFound = errors.New("relation not found")
+var ErrRelationAlreadyExists = errors.New("relation already exists")
 var ErrSchemaNotFound = errors.New("schema not found")
 var ErrColumnNotFound = errors.New("column not found")
 var ErrColumnExists = errors.New("column already exists")
@@ -159,6 +172,37 @@ func (c *Catalog) alterTable(stmt *ast.AlterTableStmt) error {
 	return nil
 }
 
+func (c *Catalog) createEnum(stmt *ast.CreateEnumStmt) error {
+	ns := stmt.TypeName.Schema
+	if ns == "" {
+		ns = c.DefaultSchema
+	}
+	schema, err := c.getSchema(ns)
+	if err != nil {
+		return err
+	}
+	// Because tables have associated data types, the type name must also
+	// be distinct from the name of any existing table in the same
+	// schema.
+	// https://www.postgresql.org/docs/current/sql-createtype.html
+	tbl := &ast.TableName{
+		Name: stmt.TypeName.Name,
+	}
+	if _, _, err := schema.getTable(tbl); err == nil {
+		// return wrap(pg.ErrorRelationAlreadyExists(fqn.Rel), raw.StmtLocation)
+		return ErrRelationAlreadyExists
+	}
+	if _, err := schema.getType(stmt.TypeName); err == nil {
+		// return wrap(pg.ErrorTypeAlreadyExists(fqn.Rel), raw.StmtLocation)
+		return ErrRelationAlreadyExists
+	}
+	schema.Types = append(schema.Types, Enum{
+		Name: stmt.TypeName.Name,
+		Vals: stringSlice(stmt.Vals),
+	})
+	return nil
+}
+
 func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 	ns := stmt.Name.Schema
 	if ns == "" {
@@ -223,7 +267,20 @@ type Catalog struct {
 type Schema struct {
 	Name    string
 	Tables  []*Table
+	Types   []Type
 	Comment string
+}
+
+func (s *Schema) getType(rel *ast.TypeName) (Type, error) {
+	for i := range s.Types {
+		switch typ := s.Types[i].(type) {
+		case Enum:
+			if typ.Name == rel.Name {
+				return s.Types[i], nil
+			}
+		}
+	}
+	return nil, ErrRelationNotFound
 }
 
 func (s *Schema) getTable(rel *ast.TableName) (*Table, int, error) {
@@ -246,4 +303,17 @@ type Column struct {
 	Name      string
 	Type      ast.TypeName
 	IsNotNull bool
+}
+
+type Type interface {
+	isType()
+}
+
+type Enum struct {
+	Name    string
+	Vals    []string
+	Comment string
+}
+
+func (e Enum) isType() {
 }

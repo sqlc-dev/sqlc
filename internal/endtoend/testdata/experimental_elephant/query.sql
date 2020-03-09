@@ -6,6 +6,8 @@ CREATE TABLE bar (
         baz text NOT NULL 
 );
 
+CREATE TYPE mood AS ENUM ('sad', 'ok', 'happy');
+
 SELECT bar FROM foo;
 
 DROP TABLE bar;

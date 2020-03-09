@@ -22,6 +22,30 @@ func stringSlice(list nodes.List) []string {
 	return items
 }
 
+func parseTypeName(node nodes.Node) (*ast.TypeName, error) {
+	switch n := node.(type) {
+
+	case nodes.List:
+		parts := stringSlice(n)
+		switch len(parts) {
+		case 1:
+			return &ast.TypeName{
+				Name: parts[0],
+			}, nil
+		case 2:
+			return &ast.TypeName{
+				Schema: parts[0],
+				Name:   parts[1],
+			}, nil
+		default:
+			return nil, fmt.Errorf("invalid type name: %s", join(n, "."))
+		}
+
+	default:
+		return nil, fmt.Errorf("unexpected node type: %T", n)
+	}
+}
+
 func parseTableName(node nodes.Node) (*ast.TableName, error) {
 	switch n := node.(type) {
 
@@ -179,6 +203,25 @@ func translate(node nodes.Node) (ast.Node, error) {
 			}
 		}
 		return create, nil
+
+	case nodes.CreateEnumStmt:
+		name, err := parseTypeName(n.TypeName)
+		if err != nil {
+			return nil, err
+		}
+		stmt := &ast.CreateEnumStmt{
+			TypeName: name,
+			Vals:     &ast.List{},
+		}
+		for _, val := range n.Vals.Items {
+			switch v := val.(type) {
+			case nodes.String:
+				stmt.Vals.Items = append(stmt.Vals.Items, &ast.String{
+					Str: v.Str,
+				})
+			}
+		}
+		return stmt, nil
 
 	case nodes.DropStmt:
 		drop := &ast.DropTableStmt{
