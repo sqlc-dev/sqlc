@@ -1073,26 +1073,6 @@ type Queries struct {
 	{{- end}}
 }
 
-type Querier interface {
-	{{- range .GoQueries}}
-	{{- if eq .Cmd ":one"}}
-	{{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.Type}}, error)
-	{{- end}}
-	{{- if eq .Cmd ":many"}}
-	{{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.Type}}, error)
-	{{- end}}
-	{{- if eq .Cmd ":exec"}}
-	{{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) error
-	{{- end}}
-	{{- if eq .Cmd ":execrows"}}
-	{{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, error)
-	{{- end}}
-	{{- end}}
-	WithTx(*sql.Tx) Querier
-}
-
-var _ Querier = (*Queries)(nil)
-
 func (q *Queries) WithTx(tx *sql.Tx) Querier {
 	return &Queries{
 		db: tx,
@@ -1387,11 +1367,11 @@ func Generate(r Generateable, settings config.CombinedSettings) (map[string]stri
 	if err := execute("models.go", "modelsFile"); err != nil {
 		return nil, err
 	}
-	// if golang.EmitInterface {
-	// 	if err := execute("querier.go", "interfaceFile"); err != nil {
-	// 		return nil, err
-	// 	}
-	// }
+	if golang.EmitInterface {
+		if err := execute("querier.go", "interfaceFile"); err != nil {
+			return nil, err
+		}
+	}
 
 	files := map[string]struct{}{}
 	for _, gq := range r.GoQueries(settings) {

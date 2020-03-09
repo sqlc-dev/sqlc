@@ -22,13 +22,6 @@ type Queries struct {
 	db DBTX
 }
 
-type Querier interface {
-	ListFoos(ctx context.Context, frobnicate interface{}) (string, error)
-	WithTx(*sql.Tx) Querier
-}
-
-var _ Querier = (*Queries)(nil)
-
 func (q *Queries) WithTx(tx *sql.Tx) Querier {
 	return &Queries{
 		db: tx,

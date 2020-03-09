@@ -22,13 +22,6 @@ type Queries struct {
 	db DBTX
 }
 
-type Querier interface {
-	StarExpansionSubquery(ctx context.Context) ([]Foo, error)
-	WithTx(*sql.Tx) Querier
-}
-
-var _ Querier = (*Queries)(nil)
-
 func (q *Queries) WithTx(tx *sql.Tx) Querier {
 	return &Queries{
 		db: tx,

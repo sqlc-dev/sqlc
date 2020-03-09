@@ -22,19 +22,6 @@ type Queries struct {
 	db DBTX
 }
 
-type Querier interface {
-	AlsoNotEqual(ctx context.Context) ([]bool, error)
-	Equal(ctx context.Context) ([]bool, error)
-	GreaterThan(ctx context.Context) ([]bool, error)
-	GreaterThanOrEqual(ctx context.Context) ([]bool, error)
-	LessThan(ctx context.Context) ([]bool, error)
-	LessThanOrEqual(ctx context.Context) ([]bool, error)
-	NotEqual(ctx context.Context) ([]bool, error)
-	WithTx(*sql.Tx) Querier
-}
-
-var _ Querier = (*Queries)(nil)
-
 func (q *Queries) WithTx(tx *sql.Tx) Querier {
 	return &Queries{
 		db: tx,

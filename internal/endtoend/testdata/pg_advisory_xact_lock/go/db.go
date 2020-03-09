@@ -22,13 +22,6 @@ type Queries struct {
 	db DBTX
 }
 
-type Querier interface {
-	AdvisoryLock(ctx context.Context, key int64) ([]sql.NullBool, error)
-	WithTx(*sql.Tx) Querier
-}
-
-var _ Querier = (*Queries)(nil)
-
 func (q *Queries) WithTx(tx *sql.Tx) Querier {
 	return &Queries{
 		db: tx,

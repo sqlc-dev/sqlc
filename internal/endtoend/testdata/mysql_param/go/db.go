@@ -22,19 +22,6 @@ type Queries struct {
 	db DBTX
 }
 
-type Querier interface {
-	GetUserByID(ctx context.Context, targetID int) (GetUserByIDRow, error)
-	InsertNewUser(ctx context.Context, arg InsertNewUserParams) error
-	LimitSQLCArg(ctx context.Context, UsersLimit uint32) ([]LimitSQLCArgRow, error)
-	ListUserOrders(ctx context.Context, minPrice float64) ([]ListUserOrdersRow, error)
-	ListUsersByFamily(ctx context.Context, arg ListUsersByFamilyParams) ([]ListUsersByFamilyRow, error)
-	ListUsersByID(ctx context.Context, id int) ([]ListUsersByIDRow, error)
-	ListUsersWithLimit(ctx context.Context, limit uint32) ([]ListUsersWithLimitRow, error)
-	WithTx(*sql.Tx) Querier
-}
-
-var _ Querier = (*Queries)(nil)
-
 func (q *Queries) WithTx(tx *sql.Tx) Querier {
 	return &Queries{
 		db: tx,

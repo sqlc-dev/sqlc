@@ -22,13 +22,6 @@ type Queries struct {
 	db DBTX
 }
 
-type Querier interface {
-	SchemaScopedUpdate(ctx context.Context, arg SchemaScopedUpdateParams) error
-	WithTx(*sql.Tx) Querier
-}
-
-var _ Querier = (*Queries)(nil)
-
 func (q *Queries) WithTx(tx *sql.Tx) Querier {
 	return &Queries{
 		db: tx,

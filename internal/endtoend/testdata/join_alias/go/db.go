@@ -22,14 +22,6 @@ type Queries struct {
 	db DBTX
 }
 
-type Querier interface {
-	AliasExpand(ctx context.Context, id int32) ([]AliasExpandRow, error)
-	AliasJoin(ctx context.Context, id int32) ([]AliasJoinRow, error)
-	WithTx(*sql.Tx) Querier
-}
-
-var _ Querier = (*Queries)(nil)
-
 func (q *Queries) WithTx(tx *sql.Tx) Querier {
 	return &Queries{
 		db: tx,
