@@ -22,7 +22,14 @@ type Queries struct {
 	db DBTX
 }
 
-func (q *Queries) WithTx(tx *sql.Tx) *Queries {
+type Querier interface {
+	JoinWhereClause(ctx context.Context, owner string) ([]int32, error)
+	WithTx(*sql.Tx) Querier
+}
+
+var _ Querier = (*Queries)(nil)
+
+func (q *Queries) WithTx(tx *sql.Tx) Querier {
 	return &Queries{
 		db: tx,
 	}

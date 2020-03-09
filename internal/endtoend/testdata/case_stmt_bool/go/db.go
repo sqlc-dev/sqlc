@@ -22,7 +22,14 @@ type Queries struct {
 	db DBTX
 }
 
-func (q *Queries) WithTx(tx *sql.Tx) *Queries {
+type Querier interface {
+	CaseStatementBoolean(ctx context.Context, id string) ([]bool, error)
+	WithTx(*sql.Tx) Querier
+}
+
+var _ Querier = (*Queries)(nil)
+
+func (q *Queries) WithTx(tx *sql.Tx) Querier {
 	return &Queries{
 		db: tx,
 	}

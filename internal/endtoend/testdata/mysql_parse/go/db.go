@@ -22,7 +22,21 @@ type Queries struct {
 	db DBTX
 }
 
-func (q *Queries) WithTx(tx *sql.Tx) *Queries {
+type Querier interface {
+	GetAll(ctx context.Context) ([]User, error)
+	GetAllUsersOrders(ctx context.Context) ([]GetAllUsersOrdersRow, error)
+	GetCount(ctx context.Context) (GetCountRow, error)
+	GetNameByID(ctx context.Context, id int) (GetNameByIDRow, error)
+	InsertNewUser(ctx context.Context, arg InsertNewUserParams) error
+	InsertUsersFromOrders(ctx context.Context, id int) error
+	UpdateAllUsers(ctx context.Context) error
+	UpdateUserAt(ctx context.Context, arg UpdateUserAtParams) error
+	WithTx(*sql.Tx) Querier
+}
+
+var _ Querier = (*Queries)(nil)
+
+func (q *Queries) WithTx(tx *sql.Tx) Querier {
 	return &Queries{
 		db: tx,
 	}

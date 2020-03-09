@@ -22,7 +22,18 @@ type Queries struct {
 	db DBTX
 }
 
-func (q *Queries) WithTx(tx *sql.Tx) *Queries {
+type Querier interface {
+	AtParams(ctx context.Context, arg AtParamsParams) ([]string, error)
+	FuncParams(ctx context.Context, arg FuncParamsParams) ([]string, error)
+	InsertAtParams(ctx context.Context, arg InsertAtParamsParams) (string, error)
+	InsertFuncParams(ctx context.Context, arg InsertFuncParamsParams) (string, error)
+	Update(ctx context.Context, arg UpdateParams) (Foo, error)
+	WithTx(*sql.Tx) Querier
+}
+
+var _ Querier = (*Queries)(nil)
+
+func (q *Queries) WithTx(tx *sql.Tx) Querier {
 	return &Queries{
 		db: tx,
 	}

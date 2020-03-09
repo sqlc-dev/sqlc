@@ -22,7 +22,23 @@ type Queries struct {
 	db DBTX
 }
 
-func (q *Queries) WithTx(tx *sql.Tx) *Queries {
+type Querier interface {
+	CreateCity(ctx context.Context, arg CreateCityParams) (City, error)
+	CreateVenue(ctx context.Context, arg CreateVenueParams) (int32, error)
+	DeleteVenue(ctx context.Context, slug string) error
+	GetCity(ctx context.Context, slug string) (City, error)
+	GetVenue(ctx context.Context, arg GetVenueParams) (Venue, error)
+	ListCityByName(ctx context.Context) ([]City, error)
+	ListVenues(ctx context.Context, city string) ([]Venue, error)
+	UpdateCity(ctx context.Context, arg UpdateCityParams) error
+	UpdateVenueName(ctx context.Context, arg UpdateVenueNameParams) (int32, error)
+	VenueCountByCity(ctx context.Context) ([]VenueCountByCityRow, error)
+	WithTx(*sql.Tx) Querier
+}
+
+var _ Querier = (*Queries)(nil)
+
+func (q *Queries) WithTx(tx *sql.Tx) Querier {
 	return &Queries{
 		db: tx,
 	}

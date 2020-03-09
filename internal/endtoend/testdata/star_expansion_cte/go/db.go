@@ -22,7 +22,15 @@ type Queries struct {
 	db DBTX
 }
 
-func (q *Queries) WithTx(tx *sql.Tx) *Queries {
+type Querier interface {
+	StarExpansionCTE(ctx context.Context) ([]Bar, error)
+	StarExpansionTwoCTE(ctx context.Context) ([]StarExpansionTwoCTERow, error)
+	WithTx(*sql.Tx) Querier
+}
+
+var _ Querier = (*Queries)(nil)
+
+func (q *Queries) WithTx(tx *sql.Tx) Querier {
 	return &Queries{
 		db: tx,
 	}

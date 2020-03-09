@@ -2,7 +2,9 @@
 
 package querytest
 
-import ()
+import (
+	"fmt"
+)
 
 type FooTypeUserRole string
 
@@ -12,7 +14,14 @@ const (
 )
 
 func (e *FooTypeUserRole) Scan(src interface{}) error {
-	*e = FooTypeUserRole(src.([]byte))
+	switch s := src.(type) {
+	case []byte:
+		*e = FooTypeUserRole(s)
+	case string:
+		*e = FooTypeUserRole(s)
+	default:
+		return fmt.Errorf("unsupported scan type for FooTypeUserRole: %T", src)
+	}
 	return nil
 }
 
