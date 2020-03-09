@@ -10,7 +10,18 @@ type Bar struct {
 	ID int32
 }
 
+func (t *Bar) GetID() int32 {
+	return t.ID
+}
+
 type Foo struct {
 	ID  int32
 	Bar sql.NullInt32
+}
+
+func (t *Foo) GetID() int32 {
+	return t.ID
+}
+func (t *Foo) GetBar() sql.NullInt32 {
+	return t.Bar
 }

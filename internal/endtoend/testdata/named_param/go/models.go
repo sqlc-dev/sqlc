@@ -8,3 +8,10 @@ type Foo struct {
 	Name string
 	Bio  string
 }
+
+func (t *Foo) GetName() string {
+	return t.Name
+}
+func (t *Foo) GetBio() string {
+	return t.Bio
+}

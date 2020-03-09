@@ -68,3 +68,13 @@ type Example struct {
 	UserID    UserIDType
 	LastName  LastNameType
 }
+
+func (t *Example) GetFirstName() FirstNameType {
+	return t.FirstName
+}
+func (t *Example) GetUserID() UserIDType {
+	return t.UserID
+}
+func (t *Example) GetLastName() LastNameType {
+	return t.LastName
+}

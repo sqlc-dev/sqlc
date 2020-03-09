@@ -34,10 +34,36 @@ type Order struct {
 	UserID int     `json:"user_id"`
 }
 
+func (t *Order) GetID() int {
+	return t.ID
+}
+func (t *Order) GetPrice() float64 {
+	return t.Price
+}
+func (t *Order) GetUserID() int {
+	return t.UserID
+}
+
 type User struct {
 	ID        int            `json:"id"`
 	FirstName string         `json:"first_name"`
 	LastName  sql.NullString `json:"last_name"`
 	Age       int            `json:"age"`
 	JobStatus JobStatusType  `json:"job_status"`
+}
+
+func (t *User) GetID() int {
+	return t.ID
+}
+func (t *User) GetFirstName() string {
+	return t.FirstName
+}
+func (t *User) GetLastName() sql.NullString {
+	return t.LastName
+}
+func (t *User) GetAge() int {
+	return t.Age
+}
+func (t *User) GetJobStatus() JobStatusType {
+	return t.JobStatus
 }

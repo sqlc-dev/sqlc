@@ -8,6 +8,14 @@ type Bar struct {
 	ID string
 }
 
+func (t *Bar) GetID() string {
+	return t.ID
+}
+
 type Foo struct {
 	ID string
+}
+
+func (t *Foo) GetID() string {
+	return t.ID
 }
