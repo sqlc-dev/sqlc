@@ -1073,7 +1073,7 @@ type Queries struct {
 	{{- end}}
 }
 
-func (q *Queries) WithTx(tx *sql.Tx) Querier {
+func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
 		db: tx,
      	{{- if .EmitPreparedQueries}}
