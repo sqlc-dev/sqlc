@@ -2,6 +2,7 @@ package catalog
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 )
@@ -23,8 +24,12 @@ func Build(stmts []ast.Statement) (*Catalog, error) {
 			err = c.alterTable(n)
 		case *ast.CreateEnumStmt:
 			err = c.createEnum(n)
+		case *ast.CreateSchemaStmt:
+			err = c.createSchema(n)
 		case *ast.CreateTableStmt:
 			err = c.createTable(n)
+		case *ast.DropSchemaStmt:
+			err = c.dropSchema(n)
 		case *ast.DropTableStmt:
 			err = c.dropTable(n)
 		}
@@ -203,6 +208,20 @@ func (c *Catalog) createEnum(stmt *ast.CreateEnumStmt) error {
 	return nil
 }
 
+func (c *Catalog) createSchema(stmt *ast.CreateSchemaStmt) error {
+	if stmt.Name == nil {
+		return fmt.Errorf("create schema: empty name")
+	}
+	if _, err := c.getSchema(*stmt.Name); err == nil {
+		if !stmt.IfNotExists {
+			// return wrap(pg.ErrorSchemaAlreadyExists(name), raw.StmtLocation)
+			return ErrRelationAlreadyExists
+		}
+	}
+	c.Schemas = append(c.Schemas, &Schema{Name: *stmt.Name})
+	return nil
+}
+
 func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 	ns := stmt.Name.Schema
 	if ns == "" {
@@ -228,6 +247,26 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 		})
 	}
 	schema.Tables = append(schema.Tables, &tbl)
+	return nil
+}
+
+func (c *Catalog) dropSchema(stmt *ast.DropSchemaStmt) error {
+	// TODO: n^2 in the worst-case
+	for _, name := range stmt.Schemas {
+		idx := -1
+		for i := range c.Schemas {
+			if c.Schemas[i].Name == name.Str {
+				idx = i
+			}
+		}
+		if idx == -1 {
+			if stmt.MissingOk {
+				continue
+			}
+			return ErrSchemaNotFound
+		}
+		c.Schemas = append(c.Schemas[:idx], c.Schemas[idx+1:]...)
+	}
 	return nil
 }
 
