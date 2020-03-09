@@ -12,9 +12,32 @@ type Jet struct {
 	Color   string
 }
 
+func (t *Jet) GetID() int32 {
+	return t.ID
+}
+func (t *Jet) GetPilotID() int32 {
+	return t.PilotID
+}
+func (t *Jet) GetAge() int32 {
+	return t.Age
+}
+func (t *Jet) GetName() string {
+	return t.Name
+}
+func (t *Jet) GetColor() string {
+	return t.Color
+}
+
 type Language struct {
 	ID       int32
 	Language string
+}
+
+func (t *Language) GetID() int32 {
+	return t.ID
+}
+func (t *Language) GetLanguage() string {
+	return t.Language
 }
 
 type Pilot struct {
@@ -22,7 +45,21 @@ type Pilot struct {
 	Name string
 }
 
+func (t *Pilot) GetID() int32 {
+	return t.ID
+}
+func (t *Pilot) GetName() string {
+	return t.Name
+}
+
 type PilotLanguage struct {
 	PilotID    int32
 	LanguageID int32
+}
+
+func (t *PilotLanguage) GetPilotID() int32 {
+	return t.PilotID
+}
+func (t *PilotLanguage) GetLanguageID() int32 {
+	return t.LanguageID
 }

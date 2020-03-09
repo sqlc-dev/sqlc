@@ -11,3 +11,13 @@ type Author struct {
 	Name string
 	Bio  sql.NullString
 }
+
+func (t *Author) GetID() int64 {
+	return t.ID
+}
+func (t *Author) GetName() string {
+	return t.Name
+}
+func (t *Author) GetBio() sql.NullString {
+	return t.Bio
+}

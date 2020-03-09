@@ -9,3 +9,7 @@ import (
 type Foo struct {
 	Bar sql.NullString
 }
+
+func (t *Foo) GetBar() sql.NullString {
+	return t.Bar
+}

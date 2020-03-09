@@ -10,6 +10,26 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sqltest"
 )
 
+// An example of an application-level structure
+type AppAuthor struct {
+	ID   int64
+	Name string
+	Bio  string
+}
+
+// A mapper that uses a face interface
+func MapToAuthor(a interface {
+	GetID() int64
+	GetName() string
+	GetBio() sql.NullString
+}) AppAuthor {
+	return AppAuthor{
+		ID:   a.GetID(),
+		Name: a.GetName(),
+		Bio:  a.GetBio().String,
+	}
+}
+
 func TestAuthors(t *testing.T) {
 	sdb, cleanup := sqltest.PostgreSQL(t, "schema.sql")
 	defer cleanup()
@@ -40,4 +60,5 @@ func TestAuthors(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Log(fetchedAuthor)
+	t.Log(MapToAuthor(&fetchedAuthor))
 }

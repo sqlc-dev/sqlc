@@ -7,3 +7,7 @@ import ()
 type Foo struct {
 	Email string
 }
+
+func (t *Foo) GetEmail() string {
+	return t.Email
+}

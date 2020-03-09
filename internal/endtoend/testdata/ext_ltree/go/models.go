@@ -11,3 +11,13 @@ type Foo struct {
 	NameQuery     sql.NullString
 	FtsNameQuery  sql.NullString
 }
+
+func (t *Foo) GetQualifiedName() sql.NullString {
+	return t.QualifiedName
+}
+func (t *Foo) GetNameQuery() sql.NullString {
+	return t.NameQuery
+}
+func (t *Foo) GetFtsNameQuery() sql.NullString {
+	return t.FtsNameQuery
+}

@@ -8,6 +8,14 @@ type Bar struct {
 	Bid int32
 }
 
+func (t *Bar) GetBid() int32 {
+	return t.Bid
+}
+
 type Foo struct {
 	Fid int32
+}
+
+func (t *Foo) GetFid() int32 {
+	return t.Fid
 }
