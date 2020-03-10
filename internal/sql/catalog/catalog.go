@@ -140,7 +140,7 @@ func (c *Catalog) alterTable(stmt *ast.AlterTableStmt) error {
 			case ast.AT_AddColumn:
 				for _, c := range table.Columns {
 					if c.Name == cmd.Def.Colname {
-						return sqlerr.ColumnAlreadyExists(table.Rel.Name, c.Name)
+						return sqlerr.ColumnExists(table.Rel.Name, c.Name)
 					}
 				}
 				table.Columns = append(table.Columns, &Column{
@@ -186,10 +186,10 @@ func (c *Catalog) createEnum(stmt *ast.CreateEnumStmt) error {
 		Name: stmt.TypeName.Name,
 	}
 	if _, _, err := schema.getTable(tbl); err == nil {
-		return sqlerr.RelationAlreadyExists(tbl.Name)
+		return sqlerr.RelationExists(tbl.Name)
 	}
 	if _, err := schema.getType(stmt.TypeName); err == nil {
-		return sqlerr.TypeAlreadyExists(tbl.Name)
+		return sqlerr.TypeExists(tbl.Name)
 	}
 	schema.Types = append(schema.Types, Enum{
 		Name: stmt.TypeName.Name,
@@ -204,7 +204,7 @@ func (c *Catalog) createSchema(stmt *ast.CreateSchemaStmt) error {
 	}
 	if _, err := c.getSchema(*stmt.Name); err == nil {
 		if !stmt.IfNotExists {
-			return sqlerr.SchemaAlreadyExists(*stmt.Name)
+			return sqlerr.SchemaExists(*stmt.Name)
 		}
 	}
 	c.Schemas = append(c.Schemas, &Schema{Name: *stmt.Name})

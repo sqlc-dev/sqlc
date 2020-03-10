@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-var AlreadyExists = errors.New("already exists")
+var Exists = errors.New("already exists")
 var NotFound = errors.New("does not exist")
 
 type Error struct {
@@ -24,9 +24,9 @@ func (e *Error) Error() string {
 	return fmt.Sprintf("%s %s", e.Message, e.Err.Error())
 }
 
-func ColumnAlreadyExists(rel, col string) *Error {
+func ColumnExists(rel, col string) *Error {
 	return &Error{
-		Err:     AlreadyExists,
+		Err:     Exists,
 		Code:    "42701",
 		Message: fmt.Sprintf("column \"%s\" of relation \"%s\"", col, rel),
 	}
@@ -40,9 +40,9 @@ func ColumnNotFound(rel, col string) *Error {
 	}
 }
 
-func RelationAlreadyExists(rel string) *Error {
+func RelationExists(rel string) *Error {
 	return &Error{
-		Err:     AlreadyExists,
+		Err:     Exists,
 		Code:    "42P07",
 		Message: fmt.Sprintf("relation \"%s\"", rel),
 	}
@@ -56,9 +56,9 @@ func RelationNotFound(rel string) *Error {
 	}
 }
 
-func SchemaAlreadyExists(name string) *Error {
+func SchemaExists(name string) *Error {
 	return &Error{
-		Err:     AlreadyExists,
+		Err:     Exists,
 		Code:    "42P06",
 		Message: fmt.Sprintf("schema \"%s\"", name),
 	}
@@ -72,9 +72,9 @@ func SchemaNotFound(sch string) *Error {
 	}
 }
 
-func TypeAlreadyExists(typ string) *Error {
+func TypeExists(typ string) *Error {
 	return &Error{
-		Err:     AlreadyExists,
+		Err:     Exists,
 		Code:    "42710",
 		Message: fmt.Sprintf("type \"%s\"", typ),
 	}
