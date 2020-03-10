@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
+	sqlerr "github.com/kyleconroy/sqlc/internal/sql/errors"
 )
 
 func Build(stmts []ast.Statement) (*Catalog, error) {
@@ -50,20 +51,13 @@ func stringSlice(list *ast.List) []string {
 	return items
 }
 
-// TODO: This need to be rich error types
-var ErrRelationNotFound = errors.New("relation not found")
-var ErrRelationAlreadyExists = errors.New("relation already exists")
-var ErrSchemaNotFound = errors.New("schema not found")
-var ErrColumnNotFound = errors.New("column not found")
-var ErrColumnExists = errors.New("column already exists")
-
 func (c *Catalog) getSchema(name string) (*Schema, error) {
 	for i := range c.Schemas {
 		if c.Schemas[i].Name == name {
 			return c.Schemas[i], nil
 		}
 	}
-	return nil, ErrSchemaNotFound
+	return nil, sqlerr.SchemaNotFound(name)
 }
 
 func (c *Catalog) getTable(name *ast.TableName) (*Schema, *Table, error) {
@@ -79,7 +73,7 @@ func (c *Catalog) getTable(name *ast.TableName) (*Schema, *Table, error) {
 		}
 	}
 	if s == nil {
-		return nil, nil, ErrSchemaNotFound
+		return nil, nil, sqlerr.SchemaNotFound(ns)
 	}
 	t, _, err := s.getTable(name)
 	if err != nil {
@@ -133,8 +127,7 @@ func (c *Catalog) alterTable(stmt *ast.AlterTableStmt) error {
 					}
 				}
 				if idx < 0 && !cmd.MissingOk {
-					// return wrap(pg.ErrorColumnDoesNotExist(table.Name, *cmd.Name), raw.StmtLocation)
-					return ErrColumnNotFound
+					return sqlerr.ColumnNotFound(table.Rel.Name, *cmd.Name)
 				}
 				// If a missing column is allowed, skip this command
 				if idx < 0 && cmd.MissingOk {
@@ -147,8 +140,7 @@ func (c *Catalog) alterTable(stmt *ast.AlterTableStmt) error {
 			case ast.AT_AddColumn:
 				for _, c := range table.Columns {
 					if c.Name == cmd.Def.Colname {
-						// return wrap(pg.ErrorColumnAlreadyExists(table.Name, *d.Colname), d.Location)
-						return ErrColumnExists
+						return sqlerr.ColumnExists(table.Rel.Name, c.Name)
 					}
 				}
 				table.Columns = append(table.Columns, &Column{
@@ -194,12 +186,10 @@ func (c *Catalog) createEnum(stmt *ast.CreateEnumStmt) error {
 		Name: stmt.TypeName.Name,
 	}
 	if _, _, err := schema.getTable(tbl); err == nil {
-		// return wrap(pg.ErrorRelationAlreadyExists(fqn.Rel), raw.StmtLocation)
-		return ErrRelationAlreadyExists
+		return sqlerr.RelationExists(tbl.Name)
 	}
 	if _, err := schema.getType(stmt.TypeName); err == nil {
-		// return wrap(pg.ErrorTypeAlreadyExists(fqn.Rel), raw.StmtLocation)
-		return ErrRelationAlreadyExists
+		return sqlerr.TypeExists(tbl.Name)
 	}
 	schema.Types = append(schema.Types, Enum{
 		Name: stmt.TypeName.Name,
@@ -214,8 +204,7 @@ func (c *Catalog) createSchema(stmt *ast.CreateSchemaStmt) error {
 	}
 	if _, err := c.getSchema(*stmt.Name); err == nil {
 		if !stmt.IfNotExists {
-			// return wrap(pg.ErrorSchemaAlreadyExists(name), raw.StmtLocation)
-			return ErrRelationAlreadyExists
+			return sqlerr.SchemaExists(*stmt.Name)
 		}
 	}
 	c.Schemas = append(c.Schemas, &Schema{Name: *stmt.Name})
@@ -232,7 +221,7 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 		return err
 	}
 	if _, _, err := schema.getTable(stmt.Name); err != nil {
-		if !errors.Is(err, ErrRelationNotFound) {
+		if !errors.Is(err, sqlerr.NotFound) {
 			return err
 		}
 	} else if stmt.IfNotExists {
@@ -263,7 +252,7 @@ func (c *Catalog) dropSchema(stmt *ast.DropSchemaStmt) error {
 			if stmt.MissingOk {
 				continue
 			}
-			return ErrSchemaNotFound
+			return sqlerr.SchemaNotFound(name.Str)
 		}
 		c.Schemas = append(c.Schemas[:idx], c.Schemas[idx+1:]...)
 	}
@@ -277,14 +266,14 @@ func (c *Catalog) dropTable(stmt *ast.DropTableStmt) error {
 			ns = c.DefaultSchema
 		}
 		schema, err := c.getSchema(ns)
-		if errors.Is(err, ErrSchemaNotFound) && stmt.IfExists {
+		if errors.Is(err, sqlerr.NotFound) && stmt.IfExists {
 			continue
 		} else if err != nil {
 			return err
 		}
 
 		_, idx, err := schema.getTable(name)
-		if errors.Is(err, ErrRelationNotFound) && stmt.IfExists {
+		if errors.Is(err, sqlerr.NotFound) && stmt.IfExists {
 			continue
 		} else if err != nil {
 			return err
@@ -319,7 +308,7 @@ func (s *Schema) getType(rel *ast.TypeName) (Type, error) {
 			}
 		}
 	}
-	return nil, ErrRelationNotFound
+	return nil, sqlerr.TypeNotFound(rel.Name)
 }
 
 func (s *Schema) getTable(rel *ast.TableName) (*Table, int, error) {
@@ -328,7 +317,7 @@ func (s *Schema) getTable(rel *ast.TableName) (*Table, int, error) {
 			return s.Tables[i], i, nil
 		}
 	}
-	return nil, 0, ErrRelationNotFound
+	return nil, 0, sqlerr.RelationNotFound(rel.Name)
 }
 
 type Table struct {
