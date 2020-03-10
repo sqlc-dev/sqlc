@@ -1,6 +1,7 @@
 package postgresql
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -25,6 +26,9 @@ func stringSlice(list nodes.List) []string {
 func parseTypeName(node nodes.Node) (*ast.TypeName, error) {
 	switch n := node.(type) {
 
+	case nodes.TypeName:
+		return parseTypeName(n.Names)
+
 	case nodes.List:
 		parts := stringSlice(n)
 		switch len(parts) {
@@ -42,7 +46,7 @@ func parseTypeName(node nodes.Node) (*ast.TypeName, error) {
 		}
 
 	default:
-		return nil, fmt.Errorf("unexpected node type: %T", n)
+		return nil, fmt.Errorf("parseTypeName: unexpected node type: %T", n)
 	}
 }
 
@@ -85,7 +89,32 @@ func parseTableName(node nodes.Node) (*ast.TableName, error) {
 		return &name, nil
 
 	default:
-		return nil, fmt.Errorf("unexpected node type: %T", n)
+		return nil, fmt.Errorf("parseTableName: unexpected node type: %T", n)
+	}
+}
+
+func parseColName(node nodes.Node) (*ast.ColumnRef, *ast.TableName, error) {
+	switch n := node.(type) {
+	case nodes.List:
+		parts := stringSlice(n)
+		var tbl *ast.TableName
+		var ref *ast.ColumnRef
+		switch len(parts) {
+		case 2:
+			tbl = &ast.TableName{Name: parts[0]}
+			ref = &ast.ColumnRef{Name: parts[1]}
+		case 3:
+			tbl = &ast.TableName{Schema: parts[0], Name: parts[1]}
+			ref = &ast.ColumnRef{Name: parts[2]}
+		case 4:
+			tbl = &ast.TableName{Catalog: parts[0], Schema: parts[1], Name: parts[2]}
+			ref = &ast.ColumnRef{Name: parts[3]}
+		default:
+			return nil, nil, fmt.Errorf("column specifier %q is not the proper format, expected '[catalog.][schema.]colname.tablename'", strings.Join(parts, "."))
+		}
+		return ref, tbl, nil
+	default:
+		return nil, nil, fmt.Errorf("parseColName: unexpected node type: %T", n)
 	}
 }
 
@@ -99,6 +128,8 @@ func NewParser() *Parser {
 
 type Parser struct {
 }
+
+var errSkip = errors.New("skip stmt")
 
 func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 	contents, err := ioutil.ReadAll(r)
@@ -117,14 +148,18 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 			return nil, fmt.Errorf("expected RawStmt; got %T", stmt)
 		}
 		n, err := translate(raw.Stmt)
+		if err == errSkip {
+			continue
+		}
 		if err != nil {
 			return nil, err
 		}
-		if n != nil {
-			stmts = append(stmts, ast.Statement{
-				Raw: &ast.RawStmt{Stmt: n},
-			})
+		if n == nil {
+			return nil, fmt.Errorf("unexpected nil node")
 		}
+		stmts = append(stmts, ast.Statement{
+			Raw: &ast.RawStmt{Stmt: n},
+		})
 	}
 	return stmts, nil
 }
@@ -182,6 +217,54 @@ func translate(node nodes.Node) (ast.Node, error) {
 			}
 		}
 		return at, nil
+
+	case nodes.CommentStmt:
+		switch n.Objtype {
+
+		case nodes.OBJECT_COLUMN:
+			col, tbl, err := parseColName(n.Object)
+			if err != nil {
+				return nil, fmt.Errorf("COMMENT ON COLUMN: %w", err)
+			}
+			return &ast.CommentOnColumnStmt{
+				Col:     col,
+				Table:   tbl,
+				Comment: n.Comment,
+			}, nil
+
+		case nodes.OBJECT_SCHEMA:
+			o, ok := n.Object.(nodes.String)
+			if !ok {
+				return nil, fmt.Errorf("COMMENT ON SCHEMA: unexpected node type: %T", n.Object)
+			}
+			return &ast.CommentOnSchemaStmt{
+				Schema:  &ast.String{Str: o.Str},
+				Comment: n.Comment,
+			}, nil
+
+		case nodes.OBJECT_TABLE:
+			name, err := parseTableName(n.Object)
+			if err != nil {
+				return nil, fmt.Errorf("COMMENT ON TABLE: %w", err)
+			}
+			return &ast.CommentOnTableStmt{
+				Table:   name,
+				Comment: n.Comment,
+			}, nil
+
+		case nodes.OBJECT_TYPE:
+			name, err := parseTypeName(n.Object)
+			if err != nil {
+				return nil, err
+			}
+			return &ast.CommentOnTypeStmt{
+				Type:    name,
+				Comment: n.Comment,
+			}, nil
+
+		}
+
+		return nil, errSkip
 
 	case nodes.CreateStmt:
 		name, err := parseTableName(*n.Relation)
@@ -259,9 +342,9 @@ func translate(node nodes.Node) (ast.Node, error) {
 			return drop, nil
 
 		}
-		return nil, nil
+		return nil, errSkip
 
 	default:
-		return nil, nil
+		return nil, errSkip
 	}
 }

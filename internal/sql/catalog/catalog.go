@@ -23,6 +23,14 @@ func Build(stmts []ast.Statement) (*Catalog, error) {
 		switch n := stmts[i].Raw.Stmt.(type) {
 		case *ast.AlterTableStmt:
 			err = c.alterTable(n)
+		case *ast.CommentOnColumnStmt:
+			err = c.commentOnColumn(n)
+		case *ast.CommentOnSchemaStmt:
+			err = c.commentOnSchema(n)
+		case *ast.CommentOnTableStmt:
+			err = c.commentOnTable(n)
+		case *ast.CommentOnTypeStmt:
+			err = c.commentOnType(n)
 		case *ast.CreateEnumStmt:
 			err = c.createEnum(n)
 		case *ast.CreateSchemaStmt:
@@ -80,6 +88,18 @@ func (c *Catalog) getTable(name *ast.TableName) (*Schema, *Table, error) {
 		return nil, nil, err
 	}
 	return s, t, nil
+}
+
+func (c *Catalog) getType(rel *ast.TypeName) (Type, error) {
+	ns := rel.Schema
+	if ns == "" {
+		ns = c.DefaultSchema
+	}
+	s, err := c.getSchema(ns)
+	if err != nil {
+		return nil, err
+	}
+	return s.getType(rel)
 }
 
 func (c *Catalog) alterTable(stmt *ast.AlterTableStmt) error {
@@ -191,7 +211,7 @@ func (c *Catalog) createEnum(stmt *ast.CreateEnumStmt) error {
 	if _, err := schema.getType(stmt.TypeName); err == nil {
 		return sqlerr.TypeExists(tbl.Name)
 	}
-	schema.Types = append(schema.Types, Enum{
+	schema.Types = append(schema.Types, &Enum{
 		Name: stmt.TypeName.Name,
 		Vals: stringSlice(stmt.Vals),
 	})
@@ -302,7 +322,7 @@ type Schema struct {
 func (s *Schema) getType(rel *ast.TypeName) (Type, error) {
 	for i := range s.Types {
 		switch typ := s.Types[i].(type) {
-		case Enum:
+		case *Enum:
 			if typ.Name == rel.Name {
 				return s.Types[i], nil
 			}
@@ -331,10 +351,13 @@ type Column struct {
 	Name      string
 	Type      ast.TypeName
 	IsNotNull bool
+	Comment   string
 }
 
 type Type interface {
 	isType()
+
+	SetComment(string)
 }
 
 type Enum struct {
@@ -343,5 +366,9 @@ type Enum struct {
 	Comment string
 }
 
-func (e Enum) isType() {
+func (e *Enum) SetComment(c string) {
+	e.Comment = c
+}
+
+func (e *Enum) isType() {
 }

@@ -163,3 +163,40 @@ type String struct {
 func (n *String) Pos() int {
 	return 0
 }
+
+type CommentOnSchemaStmt struct {
+	Schema  *String
+	Comment *string
+}
+
+func (n *CommentOnSchemaStmt) Pos() int {
+	return 0
+}
+
+type CommentOnTableStmt struct {
+	Table   *TableName
+	Comment *string
+}
+
+func (n *CommentOnTableStmt) Pos() int {
+	return 0
+}
+
+type CommentOnTypeStmt struct {
+	Type    *TypeName
+	Comment *string
+}
+
+func (n *CommentOnTypeStmt) Pos() int {
+	return 0
+}
+
+type CommentOnColumnStmt struct {
+	Table   *TableName
+	Col     *ColumnRef
+	Comment *string
+}
+
+func (n *CommentOnColumnStmt) Pos() int {
+	return 0
+}
