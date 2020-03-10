@@ -824,7 +824,7 @@ enum class {{.Name}}(val value: String) {
 data class {{.Name}} ( {{- range $i, $e := .Fields}}
   {{- if $i }},{{end}}
   {{- if .Comment}}
-  // {{.Comment}}{{else}}
+  {{comment .Comment}}{{else}}
   {{- end}}
   val {{.Name}}: {{.Type}}
   {{- end}}
