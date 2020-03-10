@@ -87,21 +87,23 @@ func Run(conf config.SQL, combo config.CombinedSettings) (*Result, error) {
 	for _, schema := range c.Schemas {
 		for _, table := range schema.Tables {
 			s := dinosql.GoStruct{
-				Table: pg.FQN{Schema: schema.Name, Rel: table.Rel.Name},
-				Name:  strings.Title(table.Rel.Name),
+				Table:   pg.FQN{Schema: schema.Name, Rel: table.Rel.Name},
+				Name:    strings.Title(table.Rel.Name),
+				Comment: table.Comment,
 			}
 			for _, col := range table.Columns {
 				s.Fields = append(s.Fields, dinosql.GoField{
-					Name: structName(col.Name),
-					Type: "string",
-					Tags: map[string]string{"json:": col.Name},
+					Name:    structName(col.Name),
+					Type:    "string",
+					Tags:    map[string]string{"json:": col.Name},
+					Comment: col.Comment,
 				})
 			}
 			structs = append(structs, s)
 		}
 		for _, typ := range schema.Types {
 			switch t := typ.(type) {
-			case catalog.Enum:
+			case *catalog.Enum:
 				var name string
 				// TODO: This name should be public, not main
 				if schema.Name == "main" {
@@ -110,7 +112,8 @@ func Run(conf config.SQL, combo config.CombinedSettings) (*Result, error) {
 					name = schema.Name + "_" + t.Name
 				}
 				e := dinosql.GoEnum{
-					Name: structName(name),
+					Name:    structName(name),
+					Comment: t.Comment,
 				}
 				for _, v := range t.Vals {
 					e.Constants = append(e.Constants, dinosql.GoConstant{
