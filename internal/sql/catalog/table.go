@@ -145,3 +145,14 @@ func (c *Catalog) dropTable(stmt *ast.DropTableStmt) error {
 	}
 	return nil
 }
+
+func (c *Catalog) renameTable(stmt *ast.RenameTableStmt) error {
+	_, tbl, err := c.getTable(stmt.Table)
+	if err != nil {
+		return err
+	}
+	if stmt.NewName != nil {
+		tbl.Rel.Name = *stmt.NewName
+	}
+	return nil
+}

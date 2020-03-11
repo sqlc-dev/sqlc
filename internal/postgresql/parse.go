@@ -365,6 +365,22 @@ func translate(node nodes.Node) (ast.Node, error) {
 		}
 		return nil, errSkip
 
+	case nodes.RenameStmt:
+		switch n.RenameType {
+
+		case nodes.OBJECT_TABLE:
+			tbl, err := parseTableName(*n.Relation)
+			if err != nil {
+				return nil, err
+			}
+			return &ast.RenameTableStmt{
+				Table:   tbl,
+				NewName: n.Newname,
+			}, nil
+
+		}
+		return nil, errSkip
+
 	default:
 		return nil, errSkip
 	}
