@@ -50,7 +50,7 @@ func (c *Catalog) commentOnTable(stmt *ast.CommentOnTableStmt) error {
 }
 
 func (c *Catalog) commentOnType(stmt *ast.CommentOnTypeStmt) error {
-	t, err := c.getType(stmt.Type)
+	t, _, err := c.getType(stmt.Type)
 	if err != nil {
 		return err
 	}

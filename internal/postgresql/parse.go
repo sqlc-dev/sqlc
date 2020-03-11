@@ -193,9 +193,17 @@ func translate(node nodes.Node) (ast.Node, error) {
 
 				case nodes.AT_AlterColumnType:
 					d := cmd.Def.(nodes.ColumnDef)
+					col := ""
+					if cmd.Name != nil {
+						col = *cmd.Name
+					} else if d.Colname != nil {
+						col = *d.Colname
+					} else {
+						return nil, fmt.Errorf("unknown name for alter column type")
+					}
 					item.Subtype = ast.AT_AlterColumnType
 					item.Def = &ast.ColumnDef{
-						Colname:   *d.Colname,
+						Colname:   col,
 						TypeName:  &ast.TypeName{Name: join(d.TypeName.Names, ".")},
 						IsNotNull: isNotNull(d),
 					}
@@ -338,6 +346,19 @@ func translate(node nodes.Node) (ast.Node, error) {
 					return nil, err
 				}
 				drop.Tables = append(drop.Tables, name)
+			}
+			return drop, nil
+
+		case nodes.OBJECT_TYPE:
+			drop := &ast.DropTypeStmt{
+				IfExists: n.MissingOk,
+			}
+			for _, obj := range n.Objects.Items {
+				name, err := parseTypeName(obj)
+				if err != nil {
+					return nil, err
+				}
+				drop.Types = append(drop.Types, name)
 			}
 			return drop, nil
 

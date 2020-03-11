@@ -103,6 +103,15 @@ func (n *DropTableStmt) Pos() int {
 	return 0
 }
 
+type DropTypeStmt struct {
+	IfExists bool
+	Types    []*TypeName
+}
+
+func (n *DropTypeStmt) Pos() int {
+	return 0
+}
+
 // TODO: Support array types
 type ColumnDef struct {
 	Colname   string
