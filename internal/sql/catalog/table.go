@@ -93,6 +93,32 @@ func (c *Catalog) alterTable(stmt *ast.AlterTableStmt) error {
 
 	return nil
 }
+
+func (c *Catalog) alterTableSetSchema(stmt *ast.AlterTableSetSchemaStmt) error {
+	ns := stmt.Table.Schema
+	if ns == "" {
+		ns = c.DefaultSchema
+	}
+	oldSchema, err := c.getSchema(ns)
+	if err != nil {
+		return err
+	}
+	tbl, idx, err := oldSchema.getTable(stmt.Table)
+	if err != nil {
+		return err
+	}
+	newSchema, err := c.getSchema(*stmt.NewSchema)
+	if err != nil {
+		return err
+	}
+	if _, _, err := newSchema.getTable(stmt.Table); err == nil {
+		return sqlerr.RelationExists(stmt.Table.Name)
+	}
+	oldSchema.Tables = append(oldSchema.Tables[:idx], oldSchema.Tables[idx+1:]...)
+	newSchema.Tables = append(newSchema.Tables, tbl)
+	return nil
+}
+
 func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 	ns := stmt.Name.Schema
 	if ns == "" {

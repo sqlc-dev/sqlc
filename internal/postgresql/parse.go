@@ -167,6 +167,21 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 func translate(node nodes.Node) (ast.Node, error) {
 	switch n := node.(type) {
 
+	case nodes.AlterObjectSchemaStmt:
+		switch n.ObjectType {
+
+		case nodes.OBJECT_TABLE:
+			tbl, err := parseTableName(*n.Relation)
+			if err != nil {
+				return nil, err
+			}
+			return &ast.AlterTableSetSchemaStmt{
+				Table:     tbl,
+				NewSchema: n.Newschema,
+			}, nil
+		}
+		return nil, errSkip
+
 	case nodes.AlterTableStmt:
 		name, err := parseTableName(*n.Relation)
 		if err != nil {
@@ -271,7 +286,6 @@ func translate(node nodes.Node) (ast.Node, error) {
 			}, nil
 
 		}
-
 		return nil, errSkip
 
 	case nodes.CreateStmt:
