@@ -209,3 +209,12 @@ type CommentOnColumnStmt struct {
 func (n *CommentOnColumnStmt) Pos() int {
 	return 0
 }
+
+type RenameTableStmt struct {
+	Table   *TableName
+	NewName *string
+}
+
+func (n *RenameTableStmt) Pos() int {
+	return 0
+}

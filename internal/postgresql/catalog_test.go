@@ -231,26 +231,20 @@ func TestUpdate(t *testing.T) {
 			`,
 			nil,
 		},
-		/*
-			{
-				`
-				CREATE TABLE venues ();
-				ALTER TABLE venues RENAME TO arenas;
-				`,
-				pg.Catalog{
-					Schemas: map[string]pg.Schema{
-						"public": {
-							Types: map[string]pg.Type{},
-							Tables: map[string]pg.Table{
-								"arenas": pg.Table{
-									Name: "arenas",
-								},
-							},
-						},
+		{
+			`
+			CREATE TABLE venues ();
+			ALTER TABLE venues RENAME TO arenas;
+			`,
+			&catalog.Schema{
+				Name: "public",
+				Tables: []*catalog.Table{
+					{
+						Rel: &ast.TableName{Name: "arenas"},
 					},
 				},
 			},
-		*/
+		},
 		{
 			`
 			CREATE TYPE status AS ENUM ('open', 'closed');
@@ -273,15 +267,13 @@ func TestUpdate(t *testing.T) {
 			`,
 			nil,
 		},
-		/*
-			{
-				`
-				CREATE TYPE status AS ENUM ('open', 'closed');
-				DROP TYPE public.status;
-				`,
-				catalog.New("public"),
-			},
-		*/
+		{
+			`
+			CREATE TYPE status AS ENUM ('open', 'closed');
+			DROP TYPE public.status;
+			`,
+			nil,
+		},
 		{
 			`
 			CREATE SCHEMA foo;
