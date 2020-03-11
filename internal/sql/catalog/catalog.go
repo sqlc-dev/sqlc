@@ -145,6 +145,8 @@ func (c *Catalog) Build(stmts []ast.Statement) error {
 		switch n := stmts[i].Raw.Stmt.(type) {
 		case *ast.AlterTableStmt:
 			err = c.alterTable(n)
+		case *ast.AlterTableSetSchemaStmt:
+			err = c.alterTableSetSchema(n)
 		case *ast.CommentOnColumnStmt:
 			err = c.commentOnColumn(n)
 		case *ast.CommentOnSchemaStmt:

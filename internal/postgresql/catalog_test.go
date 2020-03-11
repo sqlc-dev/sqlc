@@ -193,29 +193,21 @@ func TestUpdate(t *testing.T) {
 				},
 			},
 		},
-		/*
-			{
-				`
-				CREATE SCHEMA foo;
-				CREATE SCHEMA bar;
-				CREATE TABLE foo.baz ();
-				ALTER TABLE foo.baz SET SCHEMA bar;
-				`,
-				pg.Catalog{
-					Schemas: map[string]pg.Schema{
-						"public": {},
-						"foo":    {},
-						"bar": {
-							Tables: map[string]pg.Table{
-								"baz": pg.Table{
-									Name: "baz",
-								},
-							},
-						},
+		{
+			`
+			CREATE SCHEMA foo;
+			CREATE TABLE bar ();
+			ALTER TABLE bar SET SCHEMA foo;
+			`,
+			&catalog.Schema{
+				Name: "foo",
+				Tables: []*catalog.Table{
+					{
+						Rel: &ast.TableName{Name: "bar"},
 					},
 				},
 			},
-		*/
+		},
 		{
 			`
 			CREATE TABLE venues ();

@@ -57,6 +57,15 @@ func (n *AlterTableCmd) Pos() int {
 	return 0
 }
 
+type AlterTableSetSchemaStmt struct {
+	Table     *TableName
+	NewSchema *string
+}
+
+func (n *AlterTableSetSchemaStmt) Pos() int {
+	return 0
+}
+
 type CreateEnumStmt struct {
 	TypeName *TypeName
 	Vals     *List
