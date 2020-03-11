@@ -153,26 +153,26 @@ func TestUpdate(t *testing.T) {
 				},
 			},
 		},
-		/*
-			{
-				`
-				CREATE TABLE foo (bar text);
-				ALTER TABLE foo RENAME bar TO baz;
-				`,
-				pg.Catalog{
-					Schemas: map[string]pg.Schema{
-						"public": {
-							Tables: map[string]pg.Table{
-								"foo": pg.Table{
-									Name:    "foo",
-									Columns: []pg.Column{{Name: "baz", DataType: "text", Table: pg.FQN{Schema: "public", Rel: "foo"}}},
-								},
+		{
+			`
+			CREATE TABLE foo (bar text);
+			ALTER TABLE foo RENAME bar TO baz;
+			`,
+			&catalog.Schema{
+				Name: "public",
+				Tables: []*catalog.Table{
+					{
+						Rel: &ast.TableName{Name: "foo"},
+						Columns: []*catalog.Column{
+							{
+								Name: "baz",
+								Type: ast.TypeName{Name: "text"},
 							},
 						},
 					},
 				},
 			},
-		*/
+		},
 		{
 			`
 			CREATE TABLE foo (bar text);
