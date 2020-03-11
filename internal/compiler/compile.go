@@ -54,15 +54,19 @@ func enumValueName(value string) string {
 // end copypasta
 
 func Run(conf config.SQL, combo config.CombinedSettings) (*Result, error) {
+	var c *catalog.Catalog
 	var p Parser
 
 	switch conf.Engine {
 	case config.EngineXLemon:
 		p = sqlite.NewParser()
+		c = catalog.New("main")
 	case config.EngineXDolphin:
 		p = dolphin.NewParser()
+		c = catalog.New("public") // TODO: What is the default database for MySQL?
 	case config.EngineXElephant:
 		p = postgresql.NewParser()
+		c = postgresql.NewCatalog()
 	default:
 		return nil, fmt.Errorf("unknown engine: %s", conf.Engine)
 	}
@@ -77,8 +81,7 @@ func Run(conf config.SQL, combo config.CombinedSettings) (*Result, error) {
 		return nil, err
 	}
 
-	c, err := catalog.Build(stmts)
-	if err != nil {
+	if err := c.Build(stmts); err != nil {
 		return nil, err
 	}
 
@@ -105,8 +108,7 @@ func Run(conf config.SQL, combo config.CombinedSettings) (*Result, error) {
 			switch t := typ.(type) {
 			case *catalog.Enum:
 				var name string
-				// TODO: This name should be public, not main
-				if schema.Name == "main" {
+				if schema.Name == c.DefaultSchema {
 					name = t.Name
 				} else {
 					name = schema.Name + "_" + t.Name
