@@ -210,6 +210,16 @@ func (n *CommentOnColumnStmt) Pos() int {
 	return 0
 }
 
+type RenameColumnStmt struct {
+	Table   *TableName
+	Col     *ColumnRef
+	NewName *string
+}
+
+func (n *RenameColumnStmt) Pos() int {
+	return 0
+}
+
 type RenameTableStmt struct {
 	Table   *TableName
 	NewName *string

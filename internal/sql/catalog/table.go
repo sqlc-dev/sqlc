@@ -146,6 +146,27 @@ func (c *Catalog) dropTable(stmt *ast.DropTableStmt) error {
 	return nil
 }
 
+func (c *Catalog) renameColumn(stmt *ast.RenameColumnStmt) error {
+	_, tbl, err := c.getTable(stmt.Table)
+	if err != nil {
+		return err
+	}
+	idx := -1
+	for i := range tbl.Columns {
+		if tbl.Columns[i].Name == stmt.Col.Name {
+			idx = i
+		}
+		if tbl.Columns[i].Name == *stmt.NewName {
+			return sqlerr.ColumnExists(tbl.Rel.Name, *stmt.NewName)
+		}
+	}
+	if idx == -1 {
+		return sqlerr.ColumnNotFound(tbl.Rel.Name, stmt.Col.Name)
+	}
+	tbl.Columns[idx].Name = *stmt.NewName
+	return nil
+}
+
 func (c *Catalog) renameTable(stmt *ast.RenameTableStmt) error {
 	_, tbl, err := c.getTable(stmt.Table)
 	if err != nil {

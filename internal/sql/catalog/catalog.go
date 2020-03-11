@@ -165,6 +165,8 @@ func (c *Catalog) Build(stmts []ast.Statement) error {
 			err = c.dropTable(n)
 		case *ast.DropTypeStmt:
 			err = c.dropType(n)
+		case *ast.RenameColumnStmt:
+			err = c.renameColumn(n)
 		case *ast.RenameTableStmt:
 			err = c.renameTable(n)
 		}
