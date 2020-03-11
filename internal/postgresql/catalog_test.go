@@ -441,28 +441,28 @@ func TestUpdate(t *testing.T) {
 					},
 				},
 			},
-			{
-				`
-				CREATE TABLE pg_temp.migrate (val INT);
-				INSERT INTO pg_temp.migrate (val) SELECT val FROM old;
-				INSERT INTO new (val) SELECT val FROM pg_temp.migrate;
-				`,
-				pg.Catalog{
-					Schemas: map[string]pg.Schema{
-						"pg_temp": {
-							Tables: map[string]pg.Table{
-								"migrate": pg.Table{
-									Name: "migrate",
-									Columns: []pg.Column{
-										{Name: "val", DataType: "pg_catalog.int4", NotNull: false, Table: pg.FQN{Schema: "pg_temp", Rel: "migrate"}},
-									},
-								},
+		*/
+		{
+			`
+			CREATE TABLE pg_temp.migrate (val SERIAL);
+			INSERT INTO pg_temp.migrate (val) SELECT val FROM old;
+			INSERT INTO new (val) SELECT val FROM pg_temp.migrate;
+			`,
+			&catalog.Schema{
+				Name: "pg_temp",
+				Tables: []*catalog.Table{
+					{
+						Rel: &ast.TableName{Schema: "pg_temp", Name: "migrate"},
+						Columns: []*catalog.Column{
+							{
+								Name: "val",
+								Type: ast.TypeName{Name: "serial"},
 							},
 						},
 					},
 				},
 			},
-		*/
+		},
 		{
 			`
 			CREATE SCHEMA foo;
