@@ -133,8 +133,9 @@ func (n *ColumnDef) Pos() int {
 }
 
 type TypeName struct {
-	Schema string
-	Name   string
+	Catalog string
+	Schema  string
+	Name    string
 }
 
 func (n *TypeName) Pos() int {
@@ -235,5 +236,62 @@ type RenameTableStmt struct {
 }
 
 func (n *RenameTableStmt) Pos() int {
+	return 0
+}
+
+type FuncName struct {
+	Catalog string
+	Schema  string
+	Name    string
+}
+
+func (n *FuncName) Pos() int {
+	return 0
+}
+
+type CreateFunctionStmt struct {
+	Replace    bool
+	Params     []*FuncParam
+	ReturnType *TypeName
+	Func       *FuncName
+}
+
+func (n *CreateFunctionStmt) Pos() int {
+	return 0
+}
+
+type DropFunctionStmt struct {
+	Funcs     []*FuncSpec
+	MissingOk bool
+}
+
+func (n *DropFunctionStmt) Pos() int {
+	return 0
+}
+
+type FuncSpec struct {
+	Name    *FuncName
+	Args    []*TypeName
+	HasArgs bool
+}
+
+func (n *FuncSpec) Pos() int {
+	return 0
+}
+
+type FuncParam struct {
+	Name    *string
+	Type    *TypeName
+	DefExpr Node // Will always be &ast.TODO
+}
+
+func (n *FuncParam) Pos() int {
+	return 0
+}
+
+type TODO struct {
+}
+
+func (n *TODO) Pos() int {
 	return 0
 }

@@ -9,6 +9,7 @@ import (
 
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 
+	"github.com/davecgh/go-spew/spew"
 	pg "github.com/lfittl/pg_query_go"
 	nodes "github.com/lfittl/pg_query_go/nodes"
 )
@@ -23,60 +24,75 @@ func stringSlice(list nodes.List) []string {
 	return items
 }
 
-func parseTypeName(node nodes.Node) (*ast.TypeName, error) {
-	switch n := node.(type) {
+type relation struct {
+	Catalog string
+	Schema  string
+	Name    string
+}
 
-	case nodes.TypeName:
-		return parseTypeName(n.Names)
-
-	case nodes.List:
-		parts := stringSlice(n)
-		switch len(parts) {
-		case 1:
-			return &ast.TypeName{
-				Name: parts[0],
-			}, nil
-		case 2:
-			return &ast.TypeName{
-				Schema: parts[0],
-				Name:   parts[1],
-			}, nil
-		default:
-			return nil, fmt.Errorf("invalid type name: %s", join(n, "."))
-		}
-
-	default:
-		return nil, fmt.Errorf("parseTypeName: unexpected node type: %T", n)
+func parseFuncName(node nodes.Node) (*ast.FuncName, error) {
+	rel, err := parseRelation(node)
+	if err != nil {
+		return nil, fmt.Errorf("parse func name: %w", err)
 	}
+	return &ast.FuncName{
+		Catalog: rel.Catalog,
+		Schema:  rel.Schema,
+		Name:    rel.Name,
+	}, nil
+}
+
+func parseTypeName(node nodes.Node) (*ast.TypeName, error) {
+	rel, err := parseRelation(node)
+	if err != nil {
+		return nil, fmt.Errorf("parse type name: %w", err)
+	}
+	return &ast.TypeName{
+		Catalog: rel.Catalog,
+		Schema:  rel.Schema,
+		Name:    rel.Name,
+	}, nil
 }
 
 func parseTableName(node nodes.Node) (*ast.TableName, error) {
+	rel, err := parseRelation(node)
+	if err != nil {
+		return nil, fmt.Errorf("parse table name: %w", err)
+	}
+	return &ast.TableName{
+		Catalog: rel.Catalog,
+		Schema:  rel.Schema,
+		Name:    rel.Name,
+	}, nil
+}
+
+func parseRelation(node nodes.Node) (*relation, error) {
 	switch n := node.(type) {
 
 	case nodes.List:
 		parts := stringSlice(n)
 		switch len(parts) {
 		case 1:
-			return &ast.TableName{
+			return &relation{
 				Name: parts[0],
 			}, nil
 		case 2:
-			return &ast.TableName{
+			return &relation{
 				Schema: parts[0],
 				Name:   parts[1],
 			}, nil
 		case 3:
-			return &ast.TableName{
+			return &relation{
 				Catalog: parts[0],
 				Schema:  parts[1],
 				Name:    parts[2],
 			}, nil
 		default:
-			return nil, fmt.Errorf("invalid table name: %s", join(n, "."))
+			return nil, fmt.Errorf("invalid name: %s", join(n, "."))
 		}
 
 	case nodes.RangeVar:
-		name := ast.TableName{}
+		name := relation{}
 		if n.Catalogname != nil {
 			name.Catalog = *n.Catalogname
 		}
@@ -88,8 +104,14 @@ func parseTableName(node nodes.Node) (*ast.TableName, error) {
 		}
 		return &name, nil
 
+	case nodes.TypeName:
+		return parseRelation(n.Names)
+
+	case *nodes.TypeName:
+		return parseRelation(n.Names)
+
 	default:
-		return nil, fmt.Errorf("parseTableName: unexpected node type: %T", n)
+		return nil, fmt.Errorf("unexpected node type: %T", n)
 	}
 }
 
@@ -199,10 +221,14 @@ func translate(node nodes.Node) (ast.Node, error) {
 				switch cmd.Subtype {
 				case nodes.AT_AddColumn:
 					d := cmd.Def.(nodes.ColumnDef)
+					tn, err := parseTypeName(d.TypeName)
+					if err != nil {
+						return nil, err
+					}
 					item.Subtype = ast.AT_AddColumn
 					item.Def = &ast.ColumnDef{
 						Colname:   *d.Colname,
-						TypeName:  &ast.TypeName{Name: join(d.TypeName.Names, ".")},
+						TypeName:  tn,
 						IsNotNull: isNotNull(d),
 					}
 
@@ -216,10 +242,14 @@ func translate(node nodes.Node) (ast.Node, error) {
 					} else {
 						return nil, fmt.Errorf("unknown name for alter column type")
 					}
+					tn, err := parseTypeName(d.TypeName)
+					if err != nil {
+						return nil, err
+					}
 					item.Subtype = ast.AT_AlterColumnType
 					item.Def = &ast.ColumnDef{
 						Colname:   col,
-						TypeName:  &ast.TypeName{Name: join(d.TypeName.Names, ".")},
+						TypeName:  tn,
 						IsNotNull: isNotNull(d),
 					}
 
@@ -300,9 +330,13 @@ func translate(node nodes.Node) (ast.Node, error) {
 		for _, elt := range n.TableElts.Items {
 			switch n := elt.(type) {
 			case nodes.ColumnDef:
+				tn, err := parseTypeName(n.TypeName)
+				if err != nil {
+					return nil, err
+				}
 				create.Cols = append(create.Cols, &ast.ColumnDef{
 					Colname:   *n.Colname,
-					TypeName:  &ast.TypeName{Name: join(n.TypeName.Names, ".")},
+					TypeName:  tn,
 					IsNotNull: isNotNull(n),
 				})
 			}
@@ -328,6 +362,37 @@ func translate(node nodes.Node) (ast.Node, error) {
 		}
 		return stmt, nil
 
+	case nodes.CreateFunctionStmt:
+		fn, err := parseFuncName(n.Funcname)
+		if err != nil {
+			return nil, err
+		}
+		rt, err := parseTypeName(n.ReturnType)
+		if err != nil {
+			return nil, err
+		}
+		stmt := &ast.CreateFunctionStmt{
+			Func:       fn,
+			ReturnType: rt,
+			Replace:    n.Replace,
+		}
+		for _, item := range n.Parameters.Items {
+			arg := item.(nodes.FunctionParameter)
+			tn, err := parseTypeName(arg.ArgType)
+			if err != nil {
+				return nil, err
+			}
+			fp := &ast.FuncParam{
+				Name: arg.Name,
+				Type: tn,
+			}
+			if arg.Defexpr != nil {
+				fp.DefExpr = &ast.TODO{}
+			}
+			stmt.Params = append(stmt.Params, fp)
+		}
+		return stmt, nil
+
 	case nodes.CreateSchemaStmt:
 		return &ast.CreateSchemaStmt{
 			Name:        n.Schemaname,
@@ -337,6 +402,40 @@ func translate(node nodes.Node) (ast.Node, error) {
 	case nodes.DropStmt:
 		switch n.RemoveType {
 
+		case nodes.OBJECT_FUNCTION:
+			spew.Dump(n)
+			drop := &ast.DropFunctionStmt{
+				MissingOk: n.MissingOk,
+			}
+			for _, obj := range n.Objects.Items {
+				owa, ok := obj.(nodes.ObjectWithArgs)
+				if !ok {
+					return nil, fmt.Errorf("nodes.DropStmt: FUNCTION: unknown type in objects list: %T", obj)
+				}
+				fn, err := parseFuncName(owa.Objname)
+				if err != nil {
+					return nil, fmt.Errorf("nodes.DropStmt: FUNCTION: %w", err)
+				}
+				args := make([]*ast.TypeName, len(owa.Objargs.Items))
+				for i, objarg := range owa.Objargs.Items {
+					tn, ok := objarg.(nodes.TypeName)
+					if !ok {
+						return nil, fmt.Errorf("nodes.DropStmt: FUNCTION: unknown type in objargs list: %T", objarg)
+					}
+					at, err := parseTypeName(tn)
+					if err != nil {
+						return nil, fmt.Errorf("nodes.DropStmt: FUNCTION: %w", err)
+					}
+					args[i] = at
+				}
+				drop.Funcs = append(drop.Funcs, &ast.FuncSpec{
+					Name:    fn,
+					Args:    args,
+					HasArgs: !owa.ArgsUnspecified,
+				})
+			}
+			return drop, nil
+
 		case nodes.OBJECT_SCHEMA:
 			drop := &ast.DropSchemaStmt{
 				MissingOk: n.MissingOk,
@@ -344,7 +443,7 @@ func translate(node nodes.Node) (ast.Node, error) {
 			for _, obj := range n.Objects.Items {
 				val, ok := obj.(nodes.String)
 				if !ok {
-					return nil, fmt.Errorf("nodes.DropStmt: unknown type in objects list: %T", obj)
+					return nil, fmt.Errorf("nodes.DropStmt: SCHEMA: unknown type in objects list: %T", obj)
 				}
 				drop.Schemas = append(drop.Schemas, &ast.String{Str: val.Str})
 			}
@@ -357,7 +456,7 @@ func translate(node nodes.Node) (ast.Node, error) {
 			for _, obj := range n.Objects.Items {
 				name, err := parseTableName(obj)
 				if err != nil {
-					return nil, err
+					return nil, fmt.Errorf("nodes.DropStmt: TABLE: %w", err)
 				}
 				drop.Tables = append(drop.Tables, name)
 			}
@@ -370,7 +469,7 @@ func translate(node nodes.Node) (ast.Node, error) {
 			for _, obj := range n.Objects.Items {
 				name, err := parseTypeName(obj)
 				if err != nil {
-					return nil, err
+					return nil, fmt.Errorf("nodes.DropStmt: TYPE: %w", err)
 				}
 				drop.Types = append(drop.Types, name)
 			}
@@ -385,7 +484,7 @@ func translate(node nodes.Node) (ast.Node, error) {
 		case nodes.OBJECT_COLUMN:
 			tbl, err := parseTableName(*n.Relation)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("nodes.RenameType: COLUMN: %w", err)
 			}
 			return &ast.RenameColumnStmt{
 				Table:   tbl,
@@ -396,7 +495,7 @@ func translate(node nodes.Node) (ast.Node, error) {
 		case nodes.OBJECT_TABLE:
 			tbl, err := parseTableName(*n.Relation)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("nodes.RenameType: TABLE: %w", err)
 			}
 			return &ast.RenameTableStmt{
 				Table:   tbl,

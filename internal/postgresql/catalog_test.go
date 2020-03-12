@@ -279,15 +279,13 @@ func TestUpdate(t *testing.T) {
 			`,
 			nil,
 		},
-		/*
-			{
-				`
-				DROP FUNCTION IF EXISTS bar(text);
-				DROP FUNCTION IF EXISTS bar(text) CASCADE;
-				`,
-				pg.NewCatalog(),
-			},
-		*/
+		{
+			`
+			DROP FUNCTION IF EXISTS bar;
+			DROP FUNCTION IF EXISTS bar();
+			`,
+			nil,
+		},
 		{
 			`
 			CREATE TABLE venues (id SERIAL PRIMARY KEY);
@@ -309,160 +307,154 @@ func TestUpdate(t *testing.T) {
 				},
 			},
 		},
-		/*
-			{ // first argument has no name
-				`
-				CREATE FUNCTION foo(TEXT) RETURNS bool AS $$ SELECT true $$ LANGUAGE sql;
-				`,
-				pg.Catalog{
-					Schemas: map[string]pg.Schema{
-						"public": {
-							Funcs: map[string][]pg.Function{
-								"foo": []pg.Function{
-									{
-										Name: "foo",
-										Arguments: []pg.Argument{
-											{
-												Name:     "",
-												DataType: "text",
-											},
-										},
-										ReturnType: "bool",
-									},
-								},
+		{
+			`
+			CREATE FUNCTION foo(TEXT) RETURNS bool AS $$ SELECT true $$ LANGUAGE sql;
+			`,
+			&catalog.Schema{
+				Name: "public",
+				Funcs: []*catalog.Function{
+					{
+						Name: "foo",
+						Args: []*catalog.Argument{
+							{
+								Type: &ast.TypeName{Name: "text"},
+							},
+						},
+						ReturnType: &ast.TypeName{Name: "bool"},
+					},
+				},
+			},
+		},
+		{
+			`
+			CREATE FUNCTION foo(bar TEXT) RETURNS bool AS $$ SELECT true $$ LANGUAGE sql;
+			CREATE FUNCTION foo(bar TEXT, baz TEXT) RETURNS TEXT AS $$ SELECT "baz" $$ LANGUAGE sql;
+			`,
+			&catalog.Schema{
+				Name: "public",
+				Funcs: []*catalog.Function{
+					{
+						Name: "foo",
+						Args: []*catalog.Argument{
+							{
+								Name: "bar",
+								Type: &ast.TypeName{Name: "text"},
+							},
+						},
+						ReturnType: &ast.TypeName{Name: "bool"},
+					},
+					{
+						Name: "foo",
+						Args: []*catalog.Argument{
+							{
+								Name: "bar",
+								Type: &ast.TypeName{Name: "text"},
+							},
+							{
+								Name: "baz",
+								Type: &ast.TypeName{Name: "text"},
+							},
+						},
+						ReturnType: &ast.TypeName{Name: "text"},
+					},
+				},
+			},
+		},
+		{
+			`
+			CREATE FUNCTION foo(bar TEXT) RETURNS bool AS $$ SELECT true $$ LANGUAGE sql;
+			CREATE FUNCTION foo(bar INTEGER) RETURNS TEXT AS $$ SELECT "baz" $$ LANGUAGE sql;
+			`,
+			&catalog.Schema{
+				Name: "public",
+				Funcs: []*catalog.Function{
+					{
+						Name: "foo",
+						Args: []*catalog.Argument{
+							{
+								Name: "bar",
+								Type: &ast.TypeName{Name: "text"},
+							},
+						},
+						ReturnType: &ast.TypeName{Name: "bool"},
+					},
+					{
+						Name: "foo",
+						Args: []*catalog.Argument{
+							{
+								Name: "bar",
+								Type: &ast.TypeName{Schema: "pg_catalog", Name: "int4"},
+							},
+						},
+						ReturnType: &ast.TypeName{Name: "text"},
+					},
+				},
+			},
+		},
+		{
+			`
+			CREATE FUNCTION foo(bar TEXT, baz TEXT="baz") RETURNS bool AS $$ SELECT true $$ LANGUAGE sql;
+			`,
+			&catalog.Schema{
+				Name: "public",
+				Funcs: []*catalog.Function{
+					{
+						Name: "foo",
+						Args: []*catalog.Argument{
+							{
+								Name: "bar",
+								Type: &ast.TypeName{Name: "text"},
+							},
+							{
+								Name:       "baz",
+								Type:       &ast.TypeName{Name: "text"},
+								HasDefault: true,
+							},
+						},
+						ReturnType: &ast.TypeName{Name: "bool"},
+					},
+				},
+			},
+		},
+		{
+			`
+			CREATE FUNCTION foo(bar text) RETURNS bool AS $$ SELECT true $$ LANGUAGE sql;
+			DROP FUNCTION foo(text);
+			`,
+			nil,
+		},
+		{
+			`
+			CREATE FUNCTION foo(bar text) RETURNS bool AS $$ SELECT true $$ LANGUAGE sql;
+			DROP FUNCTION foo;
+			`,
+			nil,
+		},
+		// CREATE FUNCTION foo(bar text) RETURNS bool AS $$ SELECT true $$ LANGUAGE sql;
+		// CREATE FUNCTION foo() RETURNS bool AS $$ SELECT true $$ LANGUAGE sql;
+		// DROP FUNCTION foo -- FAIL
+		{
+			`
+			CREATE TABLE pg_temp.migrate (val SERIAL);
+			INSERT INTO pg_temp.migrate (val) SELECT val FROM old;
+			INSERT INTO new (val) SELECT val FROM pg_temp.migrate;
+			`,
+			&catalog.Schema{
+				Name: "pg_temp",
+				Tables: []*catalog.Table{
+					{
+						Rel: &ast.TableName{Schema: "pg_temp", Name: "migrate"},
+						Columns: []*catalog.Column{
+							{
+								Name: "val",
+								Type: ast.TypeName{Name: "serial"},
 							},
 						},
 					},
 				},
 			},
-			{ // same name, different arity
-				`
-				CREATE FUNCTION foo(bar TEXT) RETURNS bool AS $$ SELECT true $$ LANGUAGE sql;
-				CREATE FUNCTION foo(bar TEXT, baz TEXT) RETURNS TEXT AS $$ SELECT "baz" $$ LANGUAGE sql;
-				`,
-				pg.Catalog{
-					Schemas: map[string]pg.Schema{
-						"public": {
-							Funcs: map[string][]pg.Function{
-								"foo": []pg.Function{
-									{
-										Name: "foo",
-										Arguments: []pg.Argument{
-											{
-												Name:     "bar",
-												DataType: "text",
-											},
-										},
-										ReturnType: "bool",
-									},
-									{
-										Name: "foo",
-										Arguments: []pg.Argument{
-											{
-												Name:     "bar",
-												DataType: "text",
-											},
-											{
-												Name:     "baz",
-												DataType: "text",
-											},
-										},
-										ReturnType: "text",
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-			{ // same name and arity, different arg types
-				`
-				CREATE FUNCTION foo(bar TEXT) RETURNS bool AS $$ SELECT true $$ LANGUAGE sql;
-				CREATE FUNCTION foo(bar INTEGER) RETURNS TEXT AS $$ SELECT "baz" $$ LANGUAGE sql;
-				`,
-				pg.Catalog{
-					Schemas: map[string]pg.Schema{
-						"public": {
-							Funcs: map[string][]pg.Function{
-								"foo": []pg.Function{
-									{
-										Name: "foo",
-										Arguments: []pg.Argument{
-											{
-												Name:     "bar",
-												DataType: "text",
-											},
-										},
-										ReturnType: "bool",
-									},
-									{
-										Name: "foo",
-										Arguments: []pg.Argument{
-											{
-												Name:     "bar",
-												DataType: "pg_catalog.int4",
-											},
-										},
-										ReturnType: "text",
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-			{
-				`
-				CREATE FUNCTION foo(bar TEXT, baz TEXT="baz") RETURNS bool AS $$ SELECT true $$ LANGUAGE sql;
-				`,
-				pg.Catalog{
-					Schemas: map[string]pg.Schema{
-						"public": {
-							Funcs: map[string][]pg.Function{
-								"foo": []pg.Function{
-									{
-										Name: "foo",
-										Arguments: []pg.Argument{
-											{
-												Name:     "bar",
-												DataType: "text",
-											},
-											{
-												Name:       "baz",
-												DataType:   "text",
-												HasDefault: true,
-											},
-										},
-										ReturnType: "bool",
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-			{
-				`
-				CREATE TABLE pg_temp.migrate (val INT);
-				INSERT INTO pg_temp.migrate (val) SELECT val FROM old;
-				INSERT INTO new (val) SELECT val FROM pg_temp.migrate;
-				`,
-				pg.Catalog{
-					Schemas: map[string]pg.Schema{
-						"pg_temp": {
-							Tables: map[string]pg.Table{
-								"migrate": pg.Table{
-									Name: "migrate",
-									Columns: []pg.Column{
-										{Name: "val", DataType: "pg_catalog.int4", NotNull: false, Table: pg.FQN{Schema: "pg_temp", Rel: "migrate"}},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		*/
+		},
 		{
 			`
 			CREATE SCHEMA foo;

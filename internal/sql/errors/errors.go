@@ -7,6 +7,7 @@ import (
 
 var Exists = errors.New("already exists")
 var NotFound = errors.New("does not exist")
+var NotUnique = errors.New("is not unique")
 
 type Error struct {
 	Err      error
@@ -85,5 +86,12 @@ func TypeNotFound(typ string) *Error {
 		Err:     NotFound,
 		Code:    "42704",
 		Message: fmt.Sprintf("type \"%s\"", typ),
+	}
+}
+
+func FunctionNotUnique(fn string) *Error {
+	return &Error{
+		Err:     NotUnique,
+		Message: fmt.Sprintf("function name \"%s\"", fn),
 	}
 }
