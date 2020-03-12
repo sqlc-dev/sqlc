@@ -1,4 +1,4 @@
-package errors
+package sqlerr
 
 import (
 	"errors"

@@ -9,7 +9,6 @@ import (
 
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 
-	"github.com/davecgh/go-spew/spew"
 	pg "github.com/lfittl/pg_query_go"
 	nodes "github.com/lfittl/pg_query_go/nodes"
 )
@@ -403,7 +402,6 @@ func translate(node nodes.Node) (ast.Node, error) {
 		switch n.RemoveType {
 
 		case nodes.OBJECT_FUNCTION:
-			spew.Dump(n)
 			drop := &ast.DropFunctionStmt{
 				MissingOk: n.MissingOk,
 			}
