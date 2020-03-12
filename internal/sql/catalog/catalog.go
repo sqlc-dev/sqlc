@@ -32,6 +32,18 @@ func (c *Catalog) getSchema(name string) (*Schema, error) {
 	return nil, sqlerr.SchemaNotFound(name)
 }
 
+func (c *Catalog) getFunc(rel *ast.FuncName, tns []*ast.TypeName) (*Function, int, error) {
+	ns := rel.Schema
+	if ns == "" {
+		ns = c.DefaultSchema
+	}
+	s, err := c.getSchema(ns)
+	if err != nil {
+		return nil, -1, err
+	}
+	return s.getFunc(rel, tns)
+}
+
 func (c *Catalog) getTable(name *ast.TableName) (*Schema, *Table, error) {
 	ns := name.Schema
 	if ns == "" {
@@ -61,16 +73,79 @@ func (c *Catalog) getType(rel *ast.TypeName) (Type, int, error) {
 	}
 	s, err := c.getSchema(ns)
 	if err != nil {
-		return nil, 0, err
+		return nil, -1, err
 	}
 	return s.getType(rel)
 }
 
 type Schema struct {
-	Name    string
-	Tables  []*Table
-	Types   []Type
+	Name   string
+	Tables []*Table
+	Types  []Type
+	Funcs  []*Function
+
 	Comment string
+}
+
+func sameType(a, b *ast.TypeName) bool {
+	if a.Catalog != b.Catalog {
+		return false
+	}
+	if a.Schema != b.Schema {
+		return false
+	}
+	if a.Name != b.Name {
+		return false
+	}
+	return true
+}
+
+func (s *Schema) getFunc(rel *ast.FuncName, tns []*ast.TypeName) (*Function, int, error) {
+	for i := range s.Funcs {
+		if s.Funcs[i].Name != rel.Name {
+			continue
+		}
+		if len(s.Funcs[i].Args) != len(tns) {
+			continue
+		}
+		found := true
+		for j := range s.Funcs[i].Args {
+			if !sameType(s.Funcs[i].Args[j].Type, tns[j]) {
+				found = false
+				break
+			}
+		}
+		if !found {
+			continue
+		}
+		return s.Funcs[i], i, nil
+	}
+	return nil, -1, sqlerr.RelationNotFound(rel.Name)
+}
+
+func (s *Schema) getFuncByName(rel *ast.FuncName) (*Function, int, error) {
+	idx := -1
+	for i := range s.Funcs {
+		if s.Funcs[i].Name == rel.Name && idx >= 0 {
+			return nil, -1, sqlerr.FunctionNotUnique(rel.Name)
+		}
+		if s.Funcs[i].Name == rel.Name {
+			idx = i
+		}
+	}
+	if idx < 0 {
+		return nil, -1, sqlerr.RelationNotFound(rel.Name)
+	}
+	return s.Funcs[idx], idx, nil
+}
+
+func (s *Schema) getTable(rel *ast.TableName) (*Table, int, error) {
+	for i := range s.Tables {
+		if s.Tables[i].Rel.Name == rel.Name {
+			return s.Tables[i], i, nil
+		}
+	}
+	return nil, -1, sqlerr.RelationNotFound(rel.Name)
 }
 
 func (s *Schema) getType(rel *ast.TypeName) (Type, int, error) {
@@ -82,16 +157,7 @@ func (s *Schema) getType(rel *ast.TypeName) (Type, int, error) {
 			}
 		}
 	}
-	return nil, 0, sqlerr.TypeNotFound(rel.Name)
-}
-
-func (s *Schema) getTable(rel *ast.TableName) (*Table, int, error) {
-	for i := range s.Tables {
-		if s.Tables[i].Rel.Name == rel.Name {
-			return s.Tables[i], i, nil
-		}
-	}
-	return nil, 0, sqlerr.RelationNotFound(rel.Name)
+	return nil, -1, sqlerr.TypeNotFound(rel.Name)
 }
 
 type Table struct {
@@ -127,6 +193,19 @@ func (e *Enum) SetComment(c string) {
 func (e *Enum) isType() {
 }
 
+type Function struct {
+	Name       string
+	Args       []*Argument
+	ReturnType *ast.TypeName
+	Comment    string
+}
+
+type Argument struct {
+	Name       string
+	Type       *ast.TypeName
+	HasDefault bool
+}
+
 func New(def string) *Catalog {
 	return &Catalog{
 		DefaultSchema: def,
@@ -157,10 +236,14 @@ func (c *Catalog) Build(stmts []ast.Statement) error {
 			err = c.commentOnType(n)
 		case *ast.CreateEnumStmt:
 			err = c.createEnum(n)
+		case *ast.CreateFunctionStmt:
+			err = c.createFunction(n)
 		case *ast.CreateSchemaStmt:
 			err = c.createSchema(n)
 		case *ast.CreateTableStmt:
 			err = c.createTable(n)
+		case *ast.DropFunctionStmt:
+			err = c.dropFunction(n)
 		case *ast.DropSchemaStmt:
 			err = c.dropSchema(n)
 		case *ast.DropTableStmt:
