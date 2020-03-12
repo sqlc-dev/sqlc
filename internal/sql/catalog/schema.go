@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	sqlerr "github.com/kyleconroy/sqlc/internal/sql/errors"
+	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
 )
 
 func (c *Catalog) createSchema(stmt *ast.CreateSchemaStmt) error {

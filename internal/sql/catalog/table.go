@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	sqlerr "github.com/kyleconroy/sqlc/internal/sql/errors"
+	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
 )
 
 func (c *Catalog) alterTable(stmt *ast.AlterTableStmt) error {
@@ -128,12 +128,11 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 	if err != nil {
 		return err
 	}
-	if _, _, err := schema.getTable(stmt.Name); err != nil {
-		if !errors.Is(err, sqlerr.NotFound) {
-			return err
-		}
-	} else if stmt.IfNotExists {
+	_, _, err = schema.getTable(stmt.Name)
+	if err == nil && stmt.IfNotExists {
 		return nil
+	} else if err == nil {
+		return sqlerr.RelationExists(stmt.Name.Name)
 	}
 	tbl := Table{Rel: stmt.Name}
 	for _, col := range stmt.Cols {
@@ -194,9 +193,12 @@ func (c *Catalog) renameColumn(stmt *ast.RenameColumnStmt) error {
 }
 
 func (c *Catalog) renameTable(stmt *ast.RenameTableStmt) error {
-	_, tbl, err := c.getTable(stmt.Table)
+	sch, tbl, err := c.getTable(stmt.Table)
 	if err != nil {
 		return err
+	}
+	if _, _, err := sch.getTable(&ast.TableName{Name: *stmt.NewName}); err == nil {
+		return sqlerr.RelationExists(*stmt.NewName)
 	}
 	if stmt.NewName != nil {
 		tbl.Rel.Name = *stmt.NewName

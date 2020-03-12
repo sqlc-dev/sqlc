@@ -2,7 +2,7 @@ package catalog
 
 import (
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	sqlerr "github.com/kyleconroy/sqlc/internal/sql/errors"
+	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
 )
 
 func stringSlice(list *ast.List) []string {

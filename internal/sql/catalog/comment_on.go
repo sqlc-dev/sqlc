@@ -2,7 +2,7 @@ package catalog
 
 import (
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/errors"
+	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
 )
 
 func (c *Catalog) commentOnColumn(stmt *ast.CommentOnColumnStmt) error {
@@ -20,7 +20,7 @@ func (c *Catalog) commentOnColumn(stmt *ast.CommentOnColumnStmt) error {
 			return nil
 		}
 	}
-	return errors.ColumnNotFound(stmt.Table.Name, stmt.Col.Name)
+	return sqlerr.ColumnNotFound(stmt.Table.Name, stmt.Col.Name)
 }
 
 func (c *Catalog) commentOnSchema(stmt *ast.CommentOnSchemaStmt) error {
