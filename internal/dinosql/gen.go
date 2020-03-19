@@ -340,6 +340,9 @@ func modelImports(r Generateable, settings config.CombinedSettings) fileImports 
 	if UsesType(r, "net.HardwareAddr", settings) {
 		std["net"] = struct{}{}
 	}
+	if len(r.Enums(settings)) > 0 {
+		std["fmt"] = struct{}{}
+	}
 
 	// Custom imports
 	pkg := make(map[string]struct{})
@@ -738,6 +741,17 @@ func (r Result) goInnerType(col core.Column, settings config.CombinedSettings) s
 	case "macaddr", "macaddr8":
 		return "net.HardwareAddr"
 
+	case "ltree", "lquery", "ltxtquery":
+		// This module implements a data type ltree for representing labels
+		// of data stored in a hierarchical tree-like structure. Extensive
+		// facilities for searching through label trees are provided.
+		//
+		// https://www.postgresql.org/docs/current/ltree.html
+		if notNull {
+			return "string"
+		}
+		return "sql.NullString"
+
 	case "void":
 		// A void value always returns NULL. Since there is no built-in NULL
 		// value into the SQL package, we'll use sql.NullBool
@@ -1133,7 +1147,14 @@ const (
 )
 
 func (e *{{.Name}}) Scan(src interface{}) error {
-	*e = {{.Name}}(src.([]byte))
+	switch s := src.(type) {
+	case []byte:
+		*e = {{.Name}}(s)
+	case string:
+		*e = {{.Name}}(s)
+	default:
+		return fmt.Errorf("unsupported scan type for {{.Name}}: %T", src)
+	}
 	return nil
 }
 {{end}}
@@ -1142,7 +1163,7 @@ func (e *{{.Name}}) Scan(src interface{}) error {
 {{if .Comment}}{{comment .Comment}}{{end}}
 type {{.Name}} struct { {{- range .Fields}}
   {{- if .Comment}}
-  // {{.Comment}}{{else}}
+  {{comment .Comment}}{{else}}
   {{- end}}
   {{.Name}} {{.Type}} {{if $.EmitJSONTags}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
   {{- end}}

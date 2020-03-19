@@ -9,4 +9,9 @@ CREATE TABLE bar (
 SELECT bar FROM foo;
 
 DROP TABLE bar;
+DROP TABLE IF EXISTS bar;
 DROP TABLE IF EXISTS baz;
+
+
+CREATE TABLE baz (name text);
+ALTER TABLE baz ADD COLUMN email text;

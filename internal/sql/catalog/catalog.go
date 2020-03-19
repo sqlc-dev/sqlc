@@ -1,98 +1,18 @@
 package catalog
 
 import (
-	"errors"
-
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
+	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
 )
 
-func Build(stmts []ast.Statement) (*Catalog, error) {
-	c := &Catalog{
-		DefaultSchema: "main", // TODO: Needs to be public for PostgreSQL
-		Schemas: []*Schema{
-			&Schema{Name: "main"},
-		},
-	}
-	for i := range stmts {
-		if stmts[i].Raw == nil {
-			continue
-		}
-		var err error
-		switch n := stmts[i].Raw.Stmt.(type) {
-		case *ast.CreateTableStmt:
-			err = c.createTable(n)
-		case *ast.DropTableStmt:
-			err = c.dropTable(n)
-		}
-		if err != nil {
-			return nil, err
+func stringSlice(list *ast.List) []string {
+	items := []string{}
+	for _, item := range list.Items {
+		if n, ok := item.(*ast.String); ok {
+			items = append(items, n.Str)
 		}
 	}
-	return c, nil
-}
-
-var ErrRelationNotFound = errors.New("relation not found")
-var ErrSchemaNotFound = errors.New("schema not found")
-
-func (c *Catalog) getSchema(name string) (*Schema, error) {
-	for i := range c.Schemas {
-		if c.Schemas[i].Name == name {
-			return c.Schemas[i], nil
-		}
-	}
-	return nil, ErrSchemaNotFound
-}
-
-func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
-	ns := stmt.Name.Schema
-	if ns == "" {
-		ns = c.DefaultSchema
-	}
-	schema, err := c.getSchema(ns)
-	if err != nil {
-		return err
-	}
-	if _, _, err := schema.getTable(stmt.Name); err != nil {
-		if !errors.Is(err, ErrRelationNotFound) {
-			return err
-		}
-	} else if stmt.IfNotExists {
-		return nil
-	}
-	tbl := Table{Rel: stmt.Name}
-	for _, col := range stmt.Cols {
-		tbl.Columns = append(tbl.Columns, &Column{
-			Name: col.Colname,
-			Type: *col.TypeName,
-		})
-	}
-	schema.Tables = append(schema.Tables, &tbl)
-	return nil
-}
-
-func (c *Catalog) dropTable(stmt *ast.DropTableStmt) error {
-	for _, name := range stmt.Tables {
-		ns := name.Schema
-		if ns == "" {
-			ns = c.DefaultSchema
-		}
-		schema, err := c.getSchema(ns)
-		if errors.Is(err, ErrSchemaNotFound) && stmt.IfExists {
-			continue
-		} else if err != nil {
-			return err
-		}
-
-		_, idx, err := schema.getTable(name)
-		if errors.Is(err, ErrRelationNotFound) && stmt.IfExists {
-			continue
-		} else if err != nil {
-			return err
-		}
-
-		schema.Tables = append(schema.Tables[:idx], schema.Tables[idx+1:]...)
-	}
-	return nil
+	return items
 }
 
 type Catalog struct {
@@ -103,10 +23,120 @@ type Catalog struct {
 	DefaultSchema string
 }
 
+func (c *Catalog) getSchema(name string) (*Schema, error) {
+	for i := range c.Schemas {
+		if c.Schemas[i].Name == name {
+			return c.Schemas[i], nil
+		}
+	}
+	return nil, sqlerr.SchemaNotFound(name)
+}
+
+func (c *Catalog) getFunc(rel *ast.FuncName, tns []*ast.TypeName) (*Function, int, error) {
+	ns := rel.Schema
+	if ns == "" {
+		ns = c.DefaultSchema
+	}
+	s, err := c.getSchema(ns)
+	if err != nil {
+		return nil, -1, err
+	}
+	return s.getFunc(rel, tns)
+}
+
+func (c *Catalog) getTable(name *ast.TableName) (*Schema, *Table, error) {
+	ns := name.Schema
+	if ns == "" {
+		ns = c.DefaultSchema
+	}
+	var s *Schema
+	for i := range c.Schemas {
+		if c.Schemas[i].Name == ns {
+			s = c.Schemas[i]
+			break
+		}
+	}
+	if s == nil {
+		return nil, nil, sqlerr.SchemaNotFound(ns)
+	}
+	t, _, err := s.getTable(name)
+	if err != nil {
+		return nil, nil, err
+	}
+	return s, t, nil
+}
+
+func (c *Catalog) getType(rel *ast.TypeName) (Type, int, error) {
+	ns := rel.Schema
+	if ns == "" {
+		ns = c.DefaultSchema
+	}
+	s, err := c.getSchema(ns)
+	if err != nil {
+		return nil, -1, err
+	}
+	return s.getType(rel)
+}
+
 type Schema struct {
-	Name    string
-	Tables  []*Table
+	Name   string
+	Tables []*Table
+	Types  []Type
+	Funcs  []*Function
+
 	Comment string
+}
+
+func sameType(a, b *ast.TypeName) bool {
+	if a.Catalog != b.Catalog {
+		return false
+	}
+	if a.Schema != b.Schema {
+		return false
+	}
+	if a.Name != b.Name {
+		return false
+	}
+	return true
+}
+
+func (s *Schema) getFunc(rel *ast.FuncName, tns []*ast.TypeName) (*Function, int, error) {
+	for i := range s.Funcs {
+		if s.Funcs[i].Name != rel.Name {
+			continue
+		}
+		if len(s.Funcs[i].Args) != len(tns) {
+			continue
+		}
+		found := true
+		for j := range s.Funcs[i].Args {
+			if !sameType(s.Funcs[i].Args[j].Type, tns[j]) {
+				found = false
+				break
+			}
+		}
+		if !found {
+			continue
+		}
+		return s.Funcs[i], i, nil
+	}
+	return nil, -1, sqlerr.RelationNotFound(rel.Name)
+}
+
+func (s *Schema) getFuncByName(rel *ast.FuncName) (*Function, int, error) {
+	idx := -1
+	for i := range s.Funcs {
+		if s.Funcs[i].Name == rel.Name && idx >= 0 {
+			return nil, -1, sqlerr.FunctionNotUnique(rel.Name)
+		}
+		if s.Funcs[i].Name == rel.Name {
+			idx = i
+		}
+	}
+	if idx < 0 {
+		return nil, -1, sqlerr.RelationNotFound(rel.Name)
+	}
+	return s.Funcs[idx], idx, nil
 }
 
 func (s *Schema) getTable(rel *ast.TableName) (*Table, int, error) {
@@ -115,7 +145,19 @@ func (s *Schema) getTable(rel *ast.TableName) (*Table, int, error) {
 			return s.Tables[i], i, nil
 		}
 	}
-	return nil, 0, ErrRelationNotFound
+	return nil, -1, sqlerr.RelationNotFound(rel.Name)
+}
+
+func (s *Schema) getType(rel *ast.TypeName) (Type, int, error) {
+	for i := range s.Types {
+		switch typ := s.Types[i].(type) {
+		case *Enum:
+			if typ.Name == rel.Name {
+				return s.Types[i], i, nil
+			}
+		}
+	}
+	return nil, -1, sqlerr.TypeNotFound(rel.Name)
 }
 
 type Table struct {
@@ -124,7 +166,98 @@ type Table struct {
 	Comment string
 }
 
+// TODO: Should this just be ast Nodes?
 type Column struct {
-	Name string
-	Type ast.TypeName
+	Name      string
+	Type      ast.TypeName
+	IsNotNull bool
+	Comment   string
+}
+
+type Type interface {
+	isType()
+
+	SetComment(string)
+}
+
+type Enum struct {
+	Name    string
+	Vals    []string
+	Comment string
+}
+
+func (e *Enum) SetComment(c string) {
+	e.Comment = c
+}
+
+func (e *Enum) isType() {
+}
+
+type Function struct {
+	Name       string
+	Args       []*Argument
+	ReturnType *ast.TypeName
+	Comment    string
+}
+
+type Argument struct {
+	Name       string
+	Type       *ast.TypeName
+	HasDefault bool
+}
+
+func New(def string) *Catalog {
+	return &Catalog{
+		DefaultSchema: def,
+		Schemas: []*Schema{
+			&Schema{Name: def},
+		},
+	}
+}
+
+func (c *Catalog) Build(stmts []ast.Statement) error {
+	for i := range stmts {
+		if stmts[i].Raw == nil {
+			continue
+		}
+		var err error
+		switch n := stmts[i].Raw.Stmt.(type) {
+		case *ast.AlterTableStmt:
+			err = c.alterTable(n)
+		case *ast.AlterTableSetSchemaStmt:
+			err = c.alterTableSetSchema(n)
+		case *ast.CommentOnColumnStmt:
+			err = c.commentOnColumn(n)
+		case *ast.CommentOnSchemaStmt:
+			err = c.commentOnSchema(n)
+		case *ast.CommentOnTableStmt:
+			err = c.commentOnTable(n)
+		case *ast.CommentOnTypeStmt:
+			err = c.commentOnType(n)
+		case *ast.CreateEnumStmt:
+			err = c.createEnum(n)
+		case *ast.CreateFunctionStmt:
+			err = c.createFunction(n)
+		case *ast.CreateSchemaStmt:
+			err = c.createSchema(n)
+		case *ast.CreateTableStmt:
+			err = c.createTable(n)
+		case *ast.DropFunctionStmt:
+			err = c.dropFunction(n)
+		case *ast.DropSchemaStmt:
+			err = c.dropSchema(n)
+		case *ast.DropTableStmt:
+			err = c.dropTable(n)
+		case *ast.DropTypeStmt:
+			err = c.dropType(n)
+		case *ast.RenameColumnStmt:
+			err = c.renameColumn(n)
+		case *ast.RenameTableStmt:
+			err = c.renameTable(n)
+		}
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

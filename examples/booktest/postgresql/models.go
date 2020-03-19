@@ -3,6 +3,7 @@
 package booktest
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -14,7 +15,14 @@ const (
 )
 
 func (e *BookType) Scan(src interface{}) error {
-	*e = BookType(src.([]byte))
+	switch s := src.(type) {
+	case []byte:
+		*e = BookType(s)
+	case string:
+		*e = BookType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for BookType: %T", src)
+	}
 	return nil
 }
 

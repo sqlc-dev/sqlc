@@ -311,6 +311,7 @@ func Update(c *pg.Catalog, stmt nodes.Node) error {
 		} else {
 			c.Schemas[name] = pg.NewSchema()
 		}
+
 	case nodes.DropStmt:
 		for _, obj := range n.Objects.Items {
 			if n.RemoveType == nodes.OBJECT_TABLE || n.RemoveType == nodes.OBJECT_TYPE {

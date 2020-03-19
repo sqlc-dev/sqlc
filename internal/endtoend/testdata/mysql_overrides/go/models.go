@@ -4,6 +4,7 @@ package querytest
 
 import (
 	"database/sql"
+	"fmt"
 
 	"example.com/mysql"
 )
@@ -18,7 +19,14 @@ const (
 )
 
 func (e *JobStatusType) Scan(src interface{}) error {
-	*e = JobStatusType(src.([]byte))
+	switch s := src.(type) {
+	case []byte:
+		*e = JobStatusType(s)
+	case string:
+		*e = JobStatusType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for JobStatusType: %T", src)
+	}
 	return nil
 }
 

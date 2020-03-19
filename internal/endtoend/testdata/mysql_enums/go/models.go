@@ -2,7 +2,9 @@
 
 package querytest
 
-import ()
+import (
+	"fmt"
+)
 
 type FirstNameType string
 
@@ -12,7 +14,14 @@ const (
 )
 
 func (e *FirstNameType) Scan(src interface{}) error {
-	*e = FirstNameType(src.([]byte))
+	switch s := src.(type) {
+	case []byte:
+		*e = FirstNameType(s)
+	case string:
+		*e = FirstNameType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for FirstNameType: %T", src)
+	}
 	return nil
 }
 
@@ -24,7 +33,14 @@ const (
 )
 
 func (e *UserIDType) Scan(src interface{}) error {
-	*e = UserIDType(src.([]byte))
+	switch s := src.(type) {
+	case []byte:
+		*e = UserIDType(s)
+	case string:
+		*e = UserIDType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for UserIDType: %T", src)
+	}
 	return nil
 }
 
@@ -36,7 +52,14 @@ const (
 )
 
 func (e *LastNameType) Scan(src interface{}) error {
-	*e = LastNameType(src.([]byte))
+	switch s := src.(type) {
+	case []byte:
+		*e = LastNameType(s)
+	case string:
+		*e = LastNameType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for LastNameType: %T", src)
+	}
 	return nil
 }
 

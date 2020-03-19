@@ -4,6 +4,11 @@ package querytest
 
 import ()
 
+type Baz struct {
+	Name  string
+	Email string
+}
+
 type Foo struct {
 	Bar string
 }

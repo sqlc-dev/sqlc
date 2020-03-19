@@ -34,21 +34,41 @@ func (l *listener) ExitSql_stmt(c *parser.Sql_stmtContext) {
 	}
 }
 
+func (l *listener) EnterAlter_table_stmt(c *parser.Alter_table_stmtContext) {
+	if l.busy() {
+		return
+	}
+
+	stmt := &ast.AlterTableStmt{
+		Table: parseTableName(c),
+		Cmds:  &ast.List{},
+	}
+
+	if def, ok := c.Column_def().(*parser.Column_defContext); ok {
+		name := def.Column_name().GetText()
+		stmt.Cmds.Items = append(stmt.Cmds.Items, &ast.AlterTableCmd{
+			Name:    &name,
+			Subtype: ast.AT_AddColumn,
+			Def: &ast.ColumnDef{
+				Colname: name,
+				TypeName: &ast.TypeName{
+					Name: def.Type_name().GetText(),
+				},
+			},
+		})
+	}
+
+	l.stmt = &ast.RawStmt{Stmt: stmt}
+
+}
+
 func (l *listener) EnterCreate_table_stmt(c *parser.Create_table_stmtContext) {
 	if l.busy() {
 		return
 	}
 
-	name := ast.TableName{
-		Name: c.Table_name().GetText(),
-	}
-
-	if c.Database_name() != nil {
-		name.Schema = c.Database_name().GetText()
-	}
-
 	stmt := &ast.CreateTableStmt{
-		Name:        &name,
+		Name:        parseTableName(c),
 		IfNotExists: c.K_EXISTS() != nil,
 	}
 
@@ -70,20 +90,10 @@ func (l *listener) EnterDrop_table_stmt(c *parser.Drop_table_stmtContext) {
 	if l.busy() {
 		return
 	}
-
 	drop := &ast.DropTableStmt{
 		IfExists: c.K_EXISTS() != nil,
+		Tables:   []*ast.TableName{parseTableName(c)},
 	}
-
-	name := ast.TableName{
-		Name: c.Table_name().GetText(),
-	}
-
-	if c.Database_name() != nil {
-		name.Schema = c.Database_name().GetText()
-	}
-
-	drop.Tables = append(drop.Tables, &name)
 	l.stmt = &ast.RawStmt{Stmt: drop}
 }
 

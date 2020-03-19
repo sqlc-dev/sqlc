@@ -5,8 +5,8 @@
       "path": "go",
       "name": "querytest",
       "engine": "_lemon",
-      "schema": "../experimental.sql",
-      "queries": "../experimental.sql"
+      "schema": "query.sql",
+      "queries": "query.sql"
     }
   ]
 }
