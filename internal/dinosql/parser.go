@@ -439,6 +439,8 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string, rewriteParameter
 		return nil, errUnsupportedStatementType
 	}
 
+	// spew.Dump(stmt)
+
 	rawSQL, err := pluckQuery(source, raw)
 	if err != nil {
 		return nil, err
@@ -940,6 +942,18 @@ func outputColumns(qc *QueryCatalog, node nodes.Node) ([]core.Column, error) {
 				cols = append(cols, core.Column{Name: name, DataType: fun.ReturnType, NotNull: true})
 			} else {
 				cols = append(cols, core.Column{Name: name, DataType: "any"})
+			}
+
+		case nodes.SubLink:
+			name := "exists"
+			if res.Name != nil {
+				name = *res.Name
+			}
+			switch n.SubLinkType {
+			case nodes.EXISTS_SUBLINK:
+				cols = append(cols, core.Column{Name: name, DataType: "bool", NotNull: true})
+			default:
+				cols = append(cols, core.Column{Name: name, DataType: "any", NotNull: false})
 			}
 
 		case nodes.TypeCast:
