@@ -476,9 +476,9 @@ PG_DATABASE  dinotest
 go test --tags=examples,exp ./...
 ```
 
-### Regenerate exepected test output
+### Regenerate expected test output
 
-If you need to update a large number of expexted test output in the
+If you need to update a large number of expected test output in the
 `internal/endtoend/testdata` directory, run the `regenerate.sh` script.
 
 ```
