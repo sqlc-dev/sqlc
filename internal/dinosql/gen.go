@@ -1189,9 +1189,9 @@ import (
 {{define "queryCode"}}
 {{range .GoQueries}}
 {{if $.OutputQuery .SourceName}}
-const {{.ConstantName}} = {{$.Q}}-- name: {{.MethodName}} {{.Cmd}}
-{{.SQL}}
-{{$.Q}}
+const {{.ConstantName}} = "-- name: {{.MethodName}} {{.Cmd}}"+
+"{{.SQL}}"
+
 
 {{if .Arg.EmitStruct}}
 type {{.Arg.Type}} struct { {{- range .Arg.Struct.Fields}}
