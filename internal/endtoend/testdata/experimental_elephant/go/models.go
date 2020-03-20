@@ -2,7 +2,29 @@
 
 package querytest
 
-import ()
+import (
+	"fmt"
+)
+
+type Mood string
+
+const (
+	MoodSad   Mood = "sad"
+	MoodOk    Mood = "ok"
+	MoodHappy Mood = "happy"
+)
+
+func (e *Mood) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = Mood(s)
+	case string:
+		*e = Mood(s)
+	default:
+		return fmt.Errorf("unsupported scan type for Mood: %T", src)
+	}
+	return nil
+}
 
 type Baz struct {
 	Name  string

@@ -1,6 +1,7 @@
 package postgresql
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -22,33 +23,75 @@ func stringSlice(list nodes.List) []string {
 	return items
 }
 
+type relation struct {
+	Catalog string
+	Schema  string
+	Name    string
+}
+
+func parseFuncName(node nodes.Node) (*ast.FuncName, error) {
+	rel, err := parseRelation(node)
+	if err != nil {
+		return nil, fmt.Errorf("parse func name: %w", err)
+	}
+	return &ast.FuncName{
+		Catalog: rel.Catalog,
+		Schema:  rel.Schema,
+		Name:    rel.Name,
+	}, nil
+}
+
+func parseTypeName(node nodes.Node) (*ast.TypeName, error) {
+	rel, err := parseRelation(node)
+	if err != nil {
+		return nil, fmt.Errorf("parse type name: %w", err)
+	}
+	return &ast.TypeName{
+		Catalog: rel.Catalog,
+		Schema:  rel.Schema,
+		Name:    rel.Name,
+	}, nil
+}
+
 func parseTableName(node nodes.Node) (*ast.TableName, error) {
+	rel, err := parseRelation(node)
+	if err != nil {
+		return nil, fmt.Errorf("parse table name: %w", err)
+	}
+	return &ast.TableName{
+		Catalog: rel.Catalog,
+		Schema:  rel.Schema,
+		Name:    rel.Name,
+	}, nil
+}
+
+func parseRelation(node nodes.Node) (*relation, error) {
 	switch n := node.(type) {
 
 	case nodes.List:
 		parts := stringSlice(n)
 		switch len(parts) {
 		case 1:
-			return &ast.TableName{
+			return &relation{
 				Name: parts[0],
 			}, nil
 		case 2:
-			return &ast.TableName{
+			return &relation{
 				Schema: parts[0],
 				Name:   parts[1],
 			}, nil
 		case 3:
-			return &ast.TableName{
+			return &relation{
 				Catalog: parts[0],
 				Schema:  parts[1],
 				Name:    parts[2],
 			}, nil
 		default:
-			return nil, fmt.Errorf("invalid table name: %s", join(n, "."))
+			return nil, fmt.Errorf("invalid name: %s", join(n, "."))
 		}
 
 	case nodes.RangeVar:
-		name := ast.TableName{}
+		name := relation{}
 		if n.Catalogname != nil {
 			name.Catalog = *n.Catalogname
 		}
@@ -60,8 +103,39 @@ func parseTableName(node nodes.Node) (*ast.TableName, error) {
 		}
 		return &name, nil
 
+	case nodes.TypeName:
+		return parseRelation(n.Names)
+
+	case *nodes.TypeName:
+		return parseRelation(n.Names)
+
 	default:
 		return nil, fmt.Errorf("unexpected node type: %T", n)
+	}
+}
+
+func parseColName(node nodes.Node) (*ast.ColumnRef, *ast.TableName, error) {
+	switch n := node.(type) {
+	case nodes.List:
+		parts := stringSlice(n)
+		var tbl *ast.TableName
+		var ref *ast.ColumnRef
+		switch len(parts) {
+		case 2:
+			tbl = &ast.TableName{Name: parts[0]}
+			ref = &ast.ColumnRef{Name: parts[1]}
+		case 3:
+			tbl = &ast.TableName{Schema: parts[0], Name: parts[1]}
+			ref = &ast.ColumnRef{Name: parts[2]}
+		case 4:
+			tbl = &ast.TableName{Catalog: parts[0], Schema: parts[1], Name: parts[2]}
+			ref = &ast.ColumnRef{Name: parts[3]}
+		default:
+			return nil, nil, fmt.Errorf("column specifier %q is not the proper format, expected '[catalog.][schema.]colname.tablename'", strings.Join(parts, "."))
+		}
+		return ref, tbl, nil
+	default:
+		return nil, nil, fmt.Errorf("parseColName: unexpected node type: %T", n)
 	}
 }
 
@@ -75,6 +149,8 @@ func NewParser() *Parser {
 
 type Parser struct {
 }
+
+var errSkip = errors.New("skip stmt")
 
 func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 	contents, err := ioutil.ReadAll(r)
@@ -93,20 +169,39 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 			return nil, fmt.Errorf("expected RawStmt; got %T", stmt)
 		}
 		n, err := translate(raw.Stmt)
+		if err == errSkip {
+			continue
+		}
 		if err != nil {
 			return nil, err
 		}
-		if n != nil {
-			stmts = append(stmts, ast.Statement{
-				Raw: &ast.RawStmt{Stmt: n},
-			})
+		if n == nil {
+			return nil, fmt.Errorf("unexpected nil node")
 		}
+		stmts = append(stmts, ast.Statement{
+			Raw: &ast.RawStmt{Stmt: n},
+		})
 	}
 	return stmts, nil
 }
 
 func translate(node nodes.Node) (ast.Node, error) {
 	switch n := node.(type) {
+
+	case nodes.AlterObjectSchemaStmt:
+		switch n.ObjectType {
+
+		case nodes.OBJECT_TABLE:
+			tbl, err := parseTableName(*n.Relation)
+			if err != nil {
+				return nil, err
+			}
+			return &ast.AlterTableSetSchemaStmt{
+				Table:     tbl,
+				NewSchema: n.Newschema,
+			}, nil
+		}
+		return nil, errSkip
 
 	case nodes.AlterTableStmt:
 		name, err := parseTableName(*n.Relation)
@@ -125,19 +220,35 @@ func translate(node nodes.Node) (ast.Node, error) {
 				switch cmd.Subtype {
 				case nodes.AT_AddColumn:
 					d := cmd.Def.(nodes.ColumnDef)
+					tn, err := parseTypeName(d.TypeName)
+					if err != nil {
+						return nil, err
+					}
 					item.Subtype = ast.AT_AddColumn
 					item.Def = &ast.ColumnDef{
 						Colname:   *d.Colname,
-						TypeName:  &ast.TypeName{Name: join(d.TypeName.Names, ".")},
+						TypeName:  tn,
 						IsNotNull: isNotNull(d),
 					}
 
 				case nodes.AT_AlterColumnType:
 					d := cmd.Def.(nodes.ColumnDef)
+					col := ""
+					if cmd.Name != nil {
+						col = *cmd.Name
+					} else if d.Colname != nil {
+						col = *d.Colname
+					} else {
+						return nil, fmt.Errorf("unknown name for alter column type")
+					}
+					tn, err := parseTypeName(d.TypeName)
+					if err != nil {
+						return nil, err
+					}
 					item.Subtype = ast.AT_AlterColumnType
 					item.Def = &ast.ColumnDef{
-						Colname:   *d.Colname,
-						TypeName:  &ast.TypeName{Name: join(d.TypeName.Names, ".")},
+						Colname:   col,
+						TypeName:  tn,
 						IsNotNull: isNotNull(d),
 					}
 
@@ -159,6 +270,53 @@ func translate(node nodes.Node) (ast.Node, error) {
 		}
 		return at, nil
 
+	case nodes.CommentStmt:
+		switch n.Objtype {
+
+		case nodes.OBJECT_COLUMN:
+			col, tbl, err := parseColName(n.Object)
+			if err != nil {
+				return nil, fmt.Errorf("COMMENT ON COLUMN: %w", err)
+			}
+			return &ast.CommentOnColumnStmt{
+				Col:     col,
+				Table:   tbl,
+				Comment: n.Comment,
+			}, nil
+
+		case nodes.OBJECT_SCHEMA:
+			o, ok := n.Object.(nodes.String)
+			if !ok {
+				return nil, fmt.Errorf("COMMENT ON SCHEMA: unexpected node type: %T", n.Object)
+			}
+			return &ast.CommentOnSchemaStmt{
+				Schema:  &ast.String{Str: o.Str},
+				Comment: n.Comment,
+			}, nil
+
+		case nodes.OBJECT_TABLE:
+			name, err := parseTableName(n.Object)
+			if err != nil {
+				return nil, fmt.Errorf("COMMENT ON TABLE: %w", err)
+			}
+			return &ast.CommentOnTableStmt{
+				Table:   name,
+				Comment: n.Comment,
+			}, nil
+
+		case nodes.OBJECT_TYPE:
+			name, err := parseTypeName(n.Object)
+			if err != nil {
+				return nil, err
+			}
+			return &ast.CommentOnTypeStmt{
+				Type:    name,
+				Comment: n.Comment,
+			}, nil
+
+		}
+		return nil, errSkip
+
 	case nodes.CreateStmt:
 		name, err := parseTableName(*n.Relation)
 		if err != nil {
@@ -171,31 +329,181 @@ func translate(node nodes.Node) (ast.Node, error) {
 		for _, elt := range n.TableElts.Items {
 			switch n := elt.(type) {
 			case nodes.ColumnDef:
+				tn, err := parseTypeName(n.TypeName)
+				if err != nil {
+					return nil, err
+				}
 				create.Cols = append(create.Cols, &ast.ColumnDef{
 					Colname:   *n.Colname,
-					TypeName:  &ast.TypeName{Name: join(n.TypeName.Names, ".")},
+					TypeName:  tn,
 					IsNotNull: isNotNull(n),
 				})
 			}
 		}
 		return create, nil
 
-	case nodes.DropStmt:
-		drop := &ast.DropTableStmt{
-			IfExists: n.MissingOk,
+	case nodes.CreateEnumStmt:
+		name, err := parseTypeName(n.TypeName)
+		if err != nil {
+			return nil, err
 		}
-		for _, obj := range n.Objects.Items {
-			if n.RemoveType == nodes.OBJECT_TABLE {
+		stmt := &ast.CreateEnumStmt{
+			TypeName: name,
+			Vals:     &ast.List{},
+		}
+		for _, val := range n.Vals.Items {
+			switch v := val.(type) {
+			case nodes.String:
+				stmt.Vals.Items = append(stmt.Vals.Items, &ast.String{
+					Str: v.Str,
+				})
+			}
+		}
+		return stmt, nil
+
+	case nodes.CreateFunctionStmt:
+		fn, err := parseFuncName(n.Funcname)
+		if err != nil {
+			return nil, err
+		}
+		rt, err := parseTypeName(n.ReturnType)
+		if err != nil {
+			return nil, err
+		}
+		stmt := &ast.CreateFunctionStmt{
+			Func:       fn,
+			ReturnType: rt,
+			Replace:    n.Replace,
+		}
+		for _, item := range n.Parameters.Items {
+			arg := item.(nodes.FunctionParameter)
+			tn, err := parseTypeName(arg.ArgType)
+			if err != nil {
+				return nil, err
+			}
+			fp := &ast.FuncParam{
+				Name: arg.Name,
+				Type: tn,
+			}
+			if arg.Defexpr != nil {
+				fp.DefExpr = &ast.TODO{}
+			}
+			stmt.Params = append(stmt.Params, fp)
+		}
+		return stmt, nil
+
+	case nodes.CreateSchemaStmt:
+		return &ast.CreateSchemaStmt{
+			Name:        n.Schemaname,
+			IfNotExists: n.IfNotExists,
+		}, nil
+
+	case nodes.DropStmt:
+		switch n.RemoveType {
+
+		case nodes.OBJECT_FUNCTION:
+			drop := &ast.DropFunctionStmt{
+				MissingOk: n.MissingOk,
+			}
+			for _, obj := range n.Objects.Items {
+				owa, ok := obj.(nodes.ObjectWithArgs)
+				if !ok {
+					return nil, fmt.Errorf("nodes.DropStmt: FUNCTION: unknown type in objects list: %T", obj)
+				}
+				fn, err := parseFuncName(owa.Objname)
+				if err != nil {
+					return nil, fmt.Errorf("nodes.DropStmt: FUNCTION: %w", err)
+				}
+				args := make([]*ast.TypeName, len(owa.Objargs.Items))
+				for i, objarg := range owa.Objargs.Items {
+					tn, ok := objarg.(nodes.TypeName)
+					if !ok {
+						return nil, fmt.Errorf("nodes.DropStmt: FUNCTION: unknown type in objargs list: %T", objarg)
+					}
+					at, err := parseTypeName(tn)
+					if err != nil {
+						return nil, fmt.Errorf("nodes.DropStmt: FUNCTION: %w", err)
+					}
+					args[i] = at
+				}
+				drop.Funcs = append(drop.Funcs, &ast.FuncSpec{
+					Name:    fn,
+					Args:    args,
+					HasArgs: !owa.ArgsUnspecified,
+				})
+			}
+			return drop, nil
+
+		case nodes.OBJECT_SCHEMA:
+			drop := &ast.DropSchemaStmt{
+				MissingOk: n.MissingOk,
+			}
+			for _, obj := range n.Objects.Items {
+				val, ok := obj.(nodes.String)
+				if !ok {
+					return nil, fmt.Errorf("nodes.DropStmt: SCHEMA: unknown type in objects list: %T", obj)
+				}
+				drop.Schemas = append(drop.Schemas, &ast.String{Str: val.Str})
+			}
+			return drop, nil
+
+		case nodes.OBJECT_TABLE:
+			drop := &ast.DropTableStmt{
+				IfExists: n.MissingOk,
+			}
+			for _, obj := range n.Objects.Items {
 				name, err := parseTableName(obj)
 				if err != nil {
-					return nil, err
+					return nil, fmt.Errorf("nodes.DropStmt: TABLE: %w", err)
 				}
 				drop.Tables = append(drop.Tables, name)
 			}
+			return drop, nil
+
+		case nodes.OBJECT_TYPE:
+			drop := &ast.DropTypeStmt{
+				IfExists: n.MissingOk,
+			}
+			for _, obj := range n.Objects.Items {
+				name, err := parseTypeName(obj)
+				if err != nil {
+					return nil, fmt.Errorf("nodes.DropStmt: TYPE: %w", err)
+				}
+				drop.Types = append(drop.Types, name)
+			}
+			return drop, nil
+
 		}
-		return drop, nil
+		return nil, errSkip
+
+	case nodes.RenameStmt:
+		switch n.RenameType {
+
+		case nodes.OBJECT_COLUMN:
+			tbl, err := parseTableName(*n.Relation)
+			if err != nil {
+				return nil, fmt.Errorf("nodes.RenameType: COLUMN: %w", err)
+			}
+			return &ast.RenameColumnStmt{
+				Table:   tbl,
+				Col:     &ast.ColumnRef{Name: *n.Subname},
+				NewName: n.Newname,
+			}, nil
+
+		case nodes.OBJECT_TABLE:
+			tbl, err := parseTableName(*n.Relation)
+			if err != nil {
+				return nil, fmt.Errorf("nodes.RenameType: TABLE: %w", err)
+			}
+			return &ast.RenameTableStmt{
+				Table:   tbl,
+				NewName: n.Newname,
+			}, nil
+
+		}
+		return nil, errSkip
 
 	default:
-		return nil, nil
+		return nil, errSkip
 	}
 }

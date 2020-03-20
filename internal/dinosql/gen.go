@@ -1163,7 +1163,7 @@ func (e *{{.Name}}) Scan(src interface{}) error {
 {{if .Comment}}{{comment .Comment}}{{end}}
 type {{.Name}} struct { {{- range .Fields}}
   {{- if .Comment}}
-  // {{.Comment}}{{else}}
+  {{comment .Comment}}{{else}}
   {{- end}}
   {{.Name}} {{.Type}} {{if $.EmitJSONTags}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
   {{- end}}
