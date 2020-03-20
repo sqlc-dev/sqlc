@@ -7,3 +7,7 @@ import ()
 type Foo struct {
 	Num int32
 }
+
+func (t *Foo) GetNum() int32 {
+	return t.Num
+}

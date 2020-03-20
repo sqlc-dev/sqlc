@@ -9,7 +9,21 @@ type Bar struct {
 	Ready bool
 }
 
+func (t *Bar) GetName() string {
+	return t.Name
+}
+func (t *Bar) GetReady() bool {
+	return t.Ready
+}
+
 type Foo struct {
 	Name string
 	Meta string
+}
+
+func (t *Foo) GetName() string {
+	return t.Name
+}
+func (t *Foo) GetMeta() string {
+	return t.Meta
 }

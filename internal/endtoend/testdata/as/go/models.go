@@ -7,3 +7,7 @@ import ()
 type Foo struct {
 	Name string
 }
+
+func (t *Foo) GetName() string {
+	return t.Name
+}

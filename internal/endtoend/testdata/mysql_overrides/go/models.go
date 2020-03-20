@@ -36,6 +36,16 @@ type Order struct {
 	UserID int
 }
 
+func (t *Order) GetID() mysql.ID {
+	return t.ID
+}
+func (t *Order) GetPrice() float64 {
+	return t.Price
+}
+func (t *Order) GetUserID() int {
+	return t.UserID
+}
+
 type User struct {
 	ID        mysql.ID
 	FirstName string
@@ -43,4 +53,23 @@ type User struct {
 	Age       int
 	JobStatus JobStatusType
 	Created   mysql.Timestamp
+}
+
+func (t *User) GetID() mysql.ID {
+	return t.ID
+}
+func (t *User) GetFirstName() string {
+	return t.FirstName
+}
+func (t *User) GetLastName() sql.NullString {
+	return t.LastName
+}
+func (t *User) GetAge() int {
+	return t.Age
+}
+func (t *User) GetJobStatus() JobStatusType {
+	return t.JobStatus
+}
+func (t *User) GetCreated() mysql.Timestamp {
+	return t.Created
 }

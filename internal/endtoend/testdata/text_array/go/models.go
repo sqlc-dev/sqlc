@@ -7,3 +7,7 @@ import ()
 type Bar struct {
 	Tags []string
 }
+
+func (t *Bar) GetTags() []string {
+	return t.Tags
+}

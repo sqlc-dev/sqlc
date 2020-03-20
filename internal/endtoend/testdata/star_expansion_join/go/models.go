@@ -11,7 +11,21 @@ type Bar struct {
 	D sql.NullString
 }
 
+func (t *Bar) GetC() sql.NullString {
+	return t.C
+}
+func (t *Bar) GetD() sql.NullString {
+	return t.D
+}
+
 type Foo struct {
 	A sql.NullString
 	B sql.NullString
+}
+
+func (t *Foo) GetA() sql.NullString {
+	return t.A
+}
+func (t *Foo) GetB() sql.NullString {
+	return t.B
 }

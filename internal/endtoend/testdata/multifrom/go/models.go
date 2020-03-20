@@ -8,6 +8,14 @@ type Bar struct {
 	Login string
 }
 
+func (t *Bar) GetLogin() string {
+	return t.Login
+}
+
 type Foo struct {
 	Email string
+}
+
+func (t *Foo) GetEmail() string {
+	return t.Email
 }

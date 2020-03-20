@@ -31,6 +31,17 @@ type Baz struct {
 	Email string
 }
 
+func (t *Baz) GetName() string {
+	return t.Name
+}
+func (t *Baz) GetEmail() string {
+	return t.Email
+}
+
 type Foo struct {
 	Bar string
+}
+
+func (t *Foo) GetBar() string {
+	return t.Bar
 }

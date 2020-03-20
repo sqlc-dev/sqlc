@@ -33,6 +33,13 @@ type City struct {
 	Name string `json:"name"`
 }
 
+func (t *City) GetSlug() string {
+	return t.Slug
+}
+func (t *City) GetName() string {
+	return t.Name
+}
+
 // Venues are places where muisc happens
 type Venue struct {
 	ID       int32    `json:"id"`
@@ -46,4 +53,37 @@ type Venue struct {
 	SongkickID      sql.NullString `json:"songkick_id"`
 	Tags            []string       `json:"tags"`
 	CreatedAt       time.Time      `json:"created_at"`
+}
+
+func (t *Venue) GetID() int32 {
+	return t.ID
+}
+func (t *Venue) GetStatus() Status {
+	return t.Status
+}
+func (t *Venue) GetStatuses() []Status {
+	return t.Statuses
+}
+
+// This value appears in public URLs
+func (t *Venue) GetSlug() string {
+	return t.Slug
+}
+func (t *Venue) GetName() string {
+	return t.Name
+}
+func (t *Venue) GetCity() string {
+	return t.City
+}
+func (t *Venue) GetSpotifyPlaylist() string {
+	return t.SpotifyPlaylist
+}
+func (t *Venue) GetSongkickID() sql.NullString {
+	return t.SongkickID
+}
+func (t *Venue) GetTags() []string {
+	return t.Tags
+}
+func (t *Venue) GetCreatedAt() time.Time {
+	return t.CreatedAt
 }

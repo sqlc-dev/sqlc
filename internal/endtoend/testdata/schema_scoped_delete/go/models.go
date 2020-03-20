@@ -7,3 +7,7 @@ import ()
 type FooBar struct {
 	ID int32
 }
+
+func (t *FooBar) GetID() int32 {
+	return t.ID
+}
