@@ -447,6 +447,12 @@ func (s *BaseSQLiteListener) EnterColumn_name(ctx *Column_nameContext) {}
 // ExitColumn_name is called when production column_name is exited.
 func (s *BaseSQLiteListener) ExitColumn_name(ctx *Column_nameContext) {}
 
+// EnterNew_column_name is called when production new_column_name is entered.
+func (s *BaseSQLiteListener) EnterNew_column_name(ctx *New_column_nameContext) {}
+
+// ExitNew_column_name is called when production new_column_name is exited.
+func (s *BaseSQLiteListener) ExitNew_column_name(ctx *New_column_nameContext) {}
+
 // EnterCollation_name is called when production collation_name is entered.
 func (s *BaseSQLiteListener) EnterCollation_name(ctx *Collation_nameContext) {}
 

@@ -2,18 +2,13 @@
 
 package parser // SQLite
 
-import (
-	"fmt"
-
-	"github.com/antlr/antlr4/runtime/Go/antlr"
-)
+import "github.com/antlr/antlr4/runtime/Go/antlr"
 
 type BaseSQLiteVisitor struct {
 	*antlr.BaseParseTreeVisitor
 }
 
 func (v *BaseSQLiteVisitor) VisitParse(ctx *ParseContext) interface{} {
-	fmt.Println(ctx)
 	return v.VisitChildren(ctx)
 }
 
@@ -294,6 +289,10 @@ func (v *BaseSQLiteVisitor) VisitNew_table_name(ctx *New_table_nameContext) inte
 }
 
 func (v *BaseSQLiteVisitor) VisitColumn_name(ctx *Column_nameContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseSQLiteVisitor) VisitNew_column_name(ctx *New_column_nameContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 

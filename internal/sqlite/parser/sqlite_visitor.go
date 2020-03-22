@@ -221,6 +221,9 @@ type SQLiteVisitor interface {
 	// Visit a parse tree produced by SQLiteParser#column_name.
 	VisitColumn_name(ctx *Column_nameContext) interface{}
 
+	// Visit a parse tree produced by SQLiteParser#new_column_name.
+	VisitNew_column_name(ctx *New_column_nameContext) interface{}
+
 	// Visit a parse tree produced by SQLiteParser#collation_name.
 	VisitCollation_name(ctx *Collation_nameContext) interface{}
 
