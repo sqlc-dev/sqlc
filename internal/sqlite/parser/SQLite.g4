@@ -74,6 +74,7 @@ sql_stmt
 alter_table_stmt
  : K_ALTER K_TABLE ( database_name '.' )? table_name
    ( K_RENAME K_TO new_table_name
+   | K_RENAME K_COLUMN? column_name K_TO new_column_name
    | K_ADD K_COLUMN? column_def
    )
  ;
@@ -630,6 +631,10 @@ new_table_name
  ;
 
 column_name 
+ : any_name
+ ;
+
+new_column_name 
  : any_name
  ;
 

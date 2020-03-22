@@ -221,6 +221,9 @@ type SQLiteListener interface {
 	// EnterColumn_name is called when entering the column_name production.
 	EnterColumn_name(c *Column_nameContext)
 
+	// EnterNew_column_name is called when entering the new_column_name production.
+	EnterNew_column_name(c *New_column_nameContext)
+
 	// EnterCollation_name is called when entering the collation_name production.
 	EnterCollation_name(c *Collation_nameContext)
 
@@ -466,6 +469,9 @@ type SQLiteListener interface {
 
 	// ExitColumn_name is called when exiting the column_name production.
 	ExitColumn_name(c *Column_nameContext)
+
+	// ExitNew_column_name is called when exiting the new_column_name production.
+	ExitNew_column_name(c *New_column_nameContext)
 
 	// ExitCollation_name is called when exiting the collation_name production.
 	ExitCollation_name(c *Collation_nameContext)
