@@ -39,12 +39,34 @@ func (l *listener) EnterAlter_table_stmt(c *parser.Alter_table_stmtContext) {
 		return
 	}
 
-	stmt := &ast.AlterTableStmt{
-		Table: parseTableName(c),
-		Cmds:  &ast.List{},
+	if newTable, ok := c.New_table_name().(*parser.New_table_nameContext); ok {
+		name := newTable.Any_name().GetText()
+		stmt := &ast.RenameTableStmt{
+			Table:   parseTableName(c),
+			NewName: &name,
+		}
+		l.stmt = &ast.RawStmt{Stmt: stmt}
+		return
+	}
+
+	if newCol, ok := c.New_column_name().(*parser.New_column_nameContext); ok {
+		name := newCol.Any_name().GetText()
+		stmt := &ast.RenameColumnStmt{
+			Table: parseTableName(c),
+			Col: &ast.ColumnRef{
+				Name: c.Column_name().GetText(),
+			},
+			NewName: &name,
+		}
+		l.stmt = &ast.RawStmt{Stmt: stmt}
+		return
 	}
 
 	if def, ok := c.Column_def().(*parser.Column_defContext); ok {
+		stmt := &ast.AlterTableStmt{
+			Table: parseTableName(c),
+			Cmds:  &ast.List{},
+		}
 		name := def.Column_name().GetText()
 		stmt.Cmds.Items = append(stmt.Cmds.Items, &ast.AlterTableCmd{
 			Name:    &name,
@@ -56,10 +78,23 @@ func (l *listener) EnterAlter_table_stmt(c *parser.Alter_table_stmtContext) {
 				},
 			},
 		})
+		l.stmt = &ast.RawStmt{Stmt: stmt}
+		return
+	}
+
+}
+
+func (l *listener) EnterAttach_stmt(c *parser.Attach_stmtContext) {
+	if l.busy() {
+		return
+	}
+
+	name := c.Database_name().GetText()
+	stmt := &ast.CreateSchemaStmt{
+		Name: &name,
 	}
 
 	l.stmt = &ast.RawStmt{Stmt: stmt}
-
 }
 
 func (l *listener) EnterCreate_table_stmt(c *parser.Create_table_stmtContext) {
@@ -149,3 +184,5 @@ func (l *listener) EnterFactored_select_stmt(c *parser.Factored_select_stmtConte
 	}
 	l.stmt = &ast.RawStmt{Stmt: sel}
 }
+
+var _ parser.SQLiteListener = (*listener)(nil)
