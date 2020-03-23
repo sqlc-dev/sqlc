@@ -16,7 +16,7 @@ func flatten(root nodes.Node) (string, bool) {
 }
 
 type stringWalker struct {
-	String string
+	String  string
 	IsConst bool
 }
 
