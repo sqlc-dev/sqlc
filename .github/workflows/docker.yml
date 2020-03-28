@@ -14,7 +14,7 @@ jobs:
     - uses: actions/checkout@master
     - uses: docker/build-push-action@v1
       with:
-        username: ${{ secrets.DOCKER_USERNAME }}
+        username: kjconroy
         password: ${{ secrets.DOCKER_PASSWORD }}
         build_args: github_ref=${{ github.ref }},github_sha=${{ github.sha }}
         repository: kjconroy/sqlc
