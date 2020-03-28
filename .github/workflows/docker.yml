@@ -1,14 +1,14 @@
-name: Docker
+name: docker
 
-on: [push]
-#  push:
-#    branches:
-#    - master
+on:
+  push:
+    branches:
+    - master
 
 jobs:
 
   docker:
-    name: Publish to Hub
+    name: push kjconroy/sqlc:devel
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
