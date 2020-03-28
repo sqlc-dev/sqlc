@@ -1,0 +1,22 @@
+name: docker
+
+on:
+  push:
+    branches:
+    - master
+
+jobs:
+
+  docker:
+    name: push kjconroy/sqlc:devel
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - uses: docker/build-push-action@v1
+      with:
+        username: kjconroy
+        password: ${{ secrets.DOCKER_PASSWORD }}
+        build_args: github_ref=${{ github.ref }},github_sha=${{ github.sha }}
+        repository: kjconroy/sqlc
+        add_git_labels: true
+        tags: devel

@@ -1,4 +1,4 @@
-name: Publish to Equinox
+name: equinox
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
 jobs:
 
   macos:
-    name: Build on macOS
+    name: release --platforms darwin
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@master
@@ -26,7 +26,7 @@ jobs:
       run: go run scripts/release.go -draft darwin_amd64
 
   linux:
-    name: Build on Linux
+    name: release --platforms linux
     runs-on: ubuntu-latest
     needs: [macos]
     steps:

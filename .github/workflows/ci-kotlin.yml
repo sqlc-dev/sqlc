@@ -1,9 +1,9 @@
-name: sqlc kotlin test suite
+name: gradle
 on: [push, pull_request]
 jobs:
 
   build:
-    name: Build And Test
+    name: test
     runs-on: ubuntu-latest
 
     services:

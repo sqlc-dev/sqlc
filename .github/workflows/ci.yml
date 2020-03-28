@@ -1,9 +1,9 @@
-name: sqlc test suite
+name: go
 on: [push, pull_request]
 jobs:
 
   build:
-    name: Build
+    name: test
     runs-on: ubuntu-latest
 
     services:
