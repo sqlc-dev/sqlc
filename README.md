@@ -406,7 +406,7 @@ docker pull kjconroy/sqlc
 Run `sqlc` using `docker run`:
 
 ```
-docker run --rm -v $(pwd):/src -w /src kyleconroy/sqlc generate
+docker run --rm -v $(pwd):/src -w /src kjconroy/sqlc generate
 ```
 
 ### Downloads
