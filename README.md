@@ -1,4 +1,4 @@
-# sqlc: A SQL Compiler
+fooo : A SQL Compiler
 
 > And lo, the Great One looked down upon the people and proclaimed:
 >
