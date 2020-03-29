@@ -397,6 +397,18 @@ sudo snap install sqlc
 go get github.com/kyleconroy/sqlc/cmd/sqlc
 ```
 
+### Docker
+
+```
+docker pull kjconroy/sqlc
+```
+
+Run `sqlc` using `docker run`:
+
+```
+docker run --rm -v $(pwd):/src -w /src kjconroy/sqlc generate
+```
+
 ### Downloads
 
 Binaries for a given release can be downloaded from the [stable channel on
