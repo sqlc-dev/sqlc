@@ -68,7 +68,7 @@ func TestRemoveGolangMigrateRollback(t *testing.T) {
 		"testdata/migrations/foo.sql",
 	}
 
-	got, err := ReadSQLFiles("./testdata/migrations")
+	got, err := ReadSQLFiles([]string{"./testdata/migrations"})
 	if err != nil {
 		t.Fatal(err)
 	}

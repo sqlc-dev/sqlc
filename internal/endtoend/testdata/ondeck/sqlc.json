@@ -4,8 +4,8 @@
     {
       "path": ".",
       "name": "ondeck",
-      "schema": "schema.sql",
-      "queries": "query.sql"
+      "schema": ["schema.sql"],
+      "queries": ["query.sql"]
     }
   ]
 }

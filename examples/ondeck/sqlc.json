@@ -4,8 +4,8 @@
     {
       "path": ".",
       "name": "ondeck",
-      "schema": "schema",
-      "queries": "query",
+      "schema": ["schema"],
+      "queries": ["query"],
       "engine": "postgresql",
       "emit_json_tags": true,
       "emit_prepared_queries": true,

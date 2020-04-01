@@ -3,7 +3,7 @@
   "packages": [{
     "path": "go",
     "name": "datatype",
-    "schema": "sql/",
-    "queries": "sql/"
+   "schema": ["sql/"],
+    "queries": ["sql/"]
   }]
 }
