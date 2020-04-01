@@ -113,8 +113,17 @@ func Generate(dir string, stderr io.Writer) (map[string]string, error) {
 		var result dinosql.Generateable
 
 		// TODO: This feels like a hack that will bite us later
-		sql.Schema = filepath.Join(dir, sql.Schema)
-		sql.Queries = filepath.Join(dir, sql.Queries)
+		joined := make([]string, 0, len(sql.Schema))
+		for _, s := range sql.Schema {
+			joined = append(joined, filepath.Join(dir, s))
+		}
+		sql.Schema = joined
+
+		joined = make([]string, 0, len(sql.Queries))
+		for _, q := range sql.Queries {
+			joined = append(joined, filepath.Join(dir, q))
+		}
+		sql.Queries = joined
 
 		var name string
 		parseOpts := dinosql.ParserOpts{}
