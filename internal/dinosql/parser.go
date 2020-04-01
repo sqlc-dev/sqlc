@@ -59,44 +59,46 @@ func (e *ParserErr) Error() string {
 	return fmt.Sprintf("multiple errors: %d errors", len(e.Errs))
 }
 
-func ReadSQLFiles(path string) ([]string, error) {
-	f, err := os.Stat(path)
-	if err != nil {
-		return nil, fmt.Errorf("path %s does not exist", path)
-	}
-
-	var files []string
-	if f.IsDir() {
-		listing, err := ioutil.ReadDir(path)
-		if err != nil {
-			return nil, err
-		}
-		for _, f := range listing {
-			files = append(files, filepath.Join(path, f.Name()))
-		}
-	} else {
-		files = append(files, path)
-	}
-
+func ReadSQLFiles(paths []string) ([]string, error) {
 	var sql []string
-	for _, filename := range files {
-		if !strings.HasSuffix(filename, ".sql") {
-			continue
+	for _, path := range paths {
+		f, err := os.Stat(path)
+		if err != nil {
+			return nil, fmt.Errorf("path %s does not exist", path)
 		}
-		if strings.HasPrefix(filepath.Base(filename), ".") {
-			continue
+
+		var files []string
+		if f.IsDir() {
+			listing, err := ioutil.ReadDir(path)
+			if err != nil {
+				return nil, err
+			}
+			for _, f := range listing {
+				files = append(files, filepath.Join(path, f.Name()))
+			}
+		} else {
+			files = append(files, path)
 		}
-		// Remove golang-migrate rollback files.
-		if strings.HasSuffix(filename, ".down.sql") {
-			continue
+
+		for _, filename := range files {
+			if !strings.HasSuffix(filename, ".sql") {
+				continue
+			}
+			if strings.HasPrefix(filepath.Base(filename), ".") {
+				continue
+			}
+			// Remove golang-migrate rollback files.
+			if strings.HasSuffix(filename, ".down.sql") {
+				continue
+			}
+			sql = append(sql, filename)
 		}
-		sql = append(sql, filename)
 	}
 	return sql, nil
 }
 
-func ParseCatalog(schema string) (core.Catalog, error) {
-	files, err := ReadSQLFiles(schema)
+func ParseCatalog(schemas []string) (core.Catalog, error) {
+	files, err := ReadSQLFiles(schemas)
 	if err != nil {
 		return core.Catalog{}, err
 	}
@@ -197,65 +199,67 @@ type ParserOpts struct {
 	UsePositionalParameters bool
 }
 
-func ParseQueries(c core.Catalog, queries string, opts ParserOpts) (*Result, error) {
-	f, err := os.Stat(queries)
-	if err != nil {
-		return nil, fmt.Errorf("path %s does not exist", queries)
-	}
-
-	var files []string
-	if f.IsDir() {
-		listing, err := ioutil.ReadDir(queries)
-		if err != nil {
-			return nil, err
-		}
-		for _, f := range listing {
-			files = append(files, filepath.Join(queries, f.Name()))
-		}
-	} else {
-		files = append(files, queries)
-	}
-
+func ParseQueries(c core.Catalog, queriesPaths []string, opts ParserOpts) (*Result, error) {
 	merr := NewParserErr()
 	var q []*Query
-	set := map[string]struct{}{}
-	for _, filename := range files {
-		if !strings.HasSuffix(filename, ".sql") {
-			continue
-		}
-		if strings.HasPrefix(filepath.Base(filename), ".") {
-			continue
-		}
-		blob, err := ioutil.ReadFile(filename)
+	for _, queries := range queriesPaths {
+		f, err := os.Stat(queries)
 		if err != nil {
-			merr.Add(filename, "", 0, err)
-			continue
+			return nil, fmt.Errorf("path %s does not exist", queries)
 		}
-		source := string(blob)
-		tree, err := pg.Parse(source)
-		if err != nil {
-			merr.Add(filename, source, 0, err)
-			continue
-		}
-		for _, stmt := range tree.Statements {
-			query, err := parseQuery(c, stmt, source, opts.UsePositionalParameters)
-			if err == errUnsupportedStatementType {
-				continue
-			}
+
+		var files []string
+		if f.IsDir() {
+			listing, err := ioutil.ReadDir(queries)
 			if err != nil {
-				merr.Add(filename, source, location(stmt), err)
+				return nil, err
+			}
+			for _, f := range listing {
+				files = append(files, filepath.Join(queries, f.Name()))
+			}
+		} else {
+			files = append(files, queries)
+		}
+
+		set := map[string]struct{}{}
+		for _, filename := range files {
+			if !strings.HasSuffix(filename, ".sql") {
 				continue
 			}
-			if query.Name != "" {
-				if _, exists := set[query.Name]; exists {
-					merr.Add(filename, source, location(stmt), fmt.Errorf("duplicate query name: %s", query.Name))
+			if strings.HasPrefix(filepath.Base(filename), ".") {
+				continue
+			}
+			blob, err := ioutil.ReadFile(filename)
+			if err != nil {
+				merr.Add(filename, "", 0, err)
+				continue
+			}
+			source := string(blob)
+			tree, err := pg.Parse(source)
+			if err != nil {
+				merr.Add(filename, source, 0, err)
+				continue
+			}
+			for _, stmt := range tree.Statements {
+				query, err := parseQuery(c, stmt, source, opts.UsePositionalParameters)
+				if err == errUnsupportedStatementType {
 					continue
 				}
-				set[query.Name] = struct{}{}
-			}
-			query.Filename = filepath.Base(filename)
-			if query != nil {
-				q = append(q, query)
+				if err != nil {
+					merr.Add(filename, source, location(stmt), err)
+					continue
+				}
+				if query.Name != "" {
+					if _, exists := set[query.Name]; exists {
+						merr.Add(filename, source, location(stmt), fmt.Errorf("duplicate query name: %s", query.Name))
+						continue
+					}
+					set[query.Name] = struct{}{}
+				}
+				query.Filename = filepath.Base(filename)
+				if query != nil {
+					q = append(q, query)
+				}
 			}
 		}
 	}
@@ -263,7 +267,7 @@ func ParseQueries(c core.Catalog, queries string, opts ParserOpts) (*Result, err
 		return nil, merr
 	}
 	if len(q) == 0 {
-		return nil, fmt.Errorf("path %s contains no queries", queries)
+		return nil, fmt.Errorf("no queries contained in paths %s", strings.Join(queriesPaths, ","))
 	}
 	return &Result{
 		Catalog: c,

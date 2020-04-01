@@ -2,6 +2,7 @@ package config
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"go/types"
@@ -35,6 +36,41 @@ type versionSetting struct {
 
 type Engine string
 
+type Paths []string
+
+func (p *Paths) UnmarshalJSON(data []byte) error {
+	if string(data[0]) == `[` {
+		var out []string
+		if err := json.Unmarshal(data, &out); err != nil {
+			return nil
+		}
+		*p = Paths(out)
+		return nil
+	}
+	var out string
+	if err := json.Unmarshal(data, &out); err != nil {
+		return nil
+	}
+	*p = Paths([]string{out})
+	return nil
+}
+
+func (p *Paths) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	out := []string{}
+	println("hey gang")
+	if sliceErr := unmarshal(&out); sliceErr != nil {
+		println("hey gang 2")
+		var ele string
+		if strErr := unmarshal(&ele); strErr != nil {
+			return strErr
+		}
+		out = []string{ele}
+	}
+
+	*p = Paths(out)
+	return nil
+}
+
 const (
 	EngineMySQL      Engine = "mysql"
 	EnginePostgreSQL Engine = "postgresql"
@@ -67,8 +103,8 @@ type GenKotlin struct {
 
 type SQL struct {
 	Engine  Engine `json:"engine,omitempty" yaml:"engine"`
-	Schema  string `json:"schema" yaml:"schema"`
-	Queries string `json:"queries" yaml:"queries"`
+	Schema  Paths  `json:"schema" yaml:"schema"`
+	Queries Paths  `json:"queries" yaml:"queries"`
 	Gen     SQLGen `json:"gen" yaml:"gen"`
 }
 
