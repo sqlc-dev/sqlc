@@ -31,7 +31,7 @@ type Column struct {
 	Table string
 }
 
-func parsePath(sqlPath string, generator PackageGenerator) (*Result, error) {
+func parsePath(sqlPath []string, generator PackageGenerator) (*Result, error) {
 	files, err := dinosql.ReadSQLFiles(sqlPath)
 	if err != nil {
 		return nil, err
@@ -464,7 +464,7 @@ func (pGen PackageGenerator) parseSelectAliasExpr(exprs sqlparser.SelectExprs, t
 }
 
 // GeneratePkg is the main entry to mysql generator package
-func GeneratePkg(pkgName, schemaPath, querysPath string, settings config.CombinedSettings) (*Result, error) {
+func GeneratePkg(pkgName string, schemaPath, querysPath []string, settings config.CombinedSettings) (*Result, error) {
 	s := NewSchema()
 	generator := PackageGenerator{
 		Schema:           s,
