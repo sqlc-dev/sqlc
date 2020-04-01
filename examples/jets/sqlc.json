@@ -4,8 +4,8 @@
     {
       "path": ".",
       "name": "jets",
-      "schema": "schema.sql",
-      "queries": "query-building.sql",
+      "schema": ["schema.sql"],
+      "queries": ["query-building.sql"],
       "engine": "postgresql"
     }
   ]

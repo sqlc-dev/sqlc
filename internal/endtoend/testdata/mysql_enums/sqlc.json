@@ -4,8 +4,8 @@
     {
       "name": "querytest",
       "path": "go",
-      "schema": "schema.sql",
-      "queries": "schema.sql",
+      "schema": ["schema.sql"],
+      "queries": ["schema.sql"],
       "engine": "mysql"
     }
   ]

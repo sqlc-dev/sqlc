@@ -4,15 +4,15 @@
     {
       "name": "booktest",
       "path": "postgresql",
-      "schema": "postgresql/schema.sql",
-      "queries": "postgresql/query.sql",
+      "schema": ["postgresql/schema.sql"],
+      "queries": ["postgresql/query.sql"],
       "engine": "postgresql"
     },
     {
       "name": "booktest",
       "path": "mysql",
-      "schema": "mysql/schema.sql",
-      "queries": "mysql/query.sql",
+      "schema": ["mysql/schema.sql"],
+      "queries": ["mysql/query.sql"],
       "engine": "mysql"
     }
   ]

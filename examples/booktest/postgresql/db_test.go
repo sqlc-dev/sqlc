@@ -12,7 +12,7 @@ import (
 )
 
 func TestBooks(t *testing.T) {
-	db, cleanup := sqltest.PostgreSQL(t, filepath.Join("schema.sql"))
+	db, cleanup := sqltest.PostgreSQL(t, []string{filepath.Join("schema.sql")})
 	defer cleanup()
 
 	ctx := context.Background()

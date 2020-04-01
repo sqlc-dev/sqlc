@@ -2,8 +2,8 @@
   "version": "2",
   "sql": [
     {
-      "schema": "src/main/resources/authors/schema.sql",
-      "queries": "src/main/resources/authors/query.sql",
+      "schema": ["src/main/resources/authors/schema.sql"],
+      "queries": ["src/main/resources/authors/query.sql"],
       "engine": "postgresql",
       "gen": {
         "kotlin": {
@@ -13,8 +13,8 @@
       }
     },
     {
-      "schema": "src/main/resources/ondeck/schema",
-      "queries": "src/main/resources/ondeck/query",
+      "schema": ["src/main/resources/ondeck/schema"],
+      "queries": ["src/main/resources/ondeck/query"],
       "engine": "postgresql",
       "gen": {
         "kotlin": {
@@ -24,8 +24,8 @@
       }
     },
     {
-      "schema": "src/main/resources/jets/schema.sql",
-      "queries": "src/main/resources/jets/query-building.sql",
+      "schema": ["src/main/resources/jets/schema.sql"],
+      "queries": ["src/main/resources/jets/query-building.sql"],
       "engine": "postgresql",
       "gen": {
         "kotlin": {
@@ -35,8 +35,8 @@
       }
     },
     {
-      "schema": "src/main/resources/booktest/postgresql/schema.sql",
-      "queries": "src/main/resources/booktest/postgresql/query.sql",
+      "schema": ["src/main/resources/booktest/postgresql/schema.sql"],
+      "queries": ["src/main/resources/booktest/postgresql/query.sql"],
       "engine": "postgresql",
       "gen": {
         "kotlin": {

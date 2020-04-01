@@ -66,10 +66,10 @@ type GenKotlin struct {
 }
 
 type SQL struct {
-	Engine  Engine `json:"engine,omitempty" yaml:"engine"`
-	Schema  string `json:"schema" yaml:"schema"`
-	Queries string `json:"queries" yaml:"queries"`
-	Gen     SQLGen `json:"gen" yaml:"gen"`
+	Engine  Engine   `json:"engine,omitempty" yaml:"engine"`
+	Schema  []string `json:"schema" yaml:"schema"`
+	Queries []string `json:"queries" yaml:"queries"`
+	Gen     SQLGen   `json:"gen" yaml:"gen"`
 }
 
 type SQLGen struct {

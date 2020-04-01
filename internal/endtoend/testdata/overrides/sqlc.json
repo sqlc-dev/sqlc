@@ -4,8 +4,8 @@
     {
       "path": "go",
       "name": "override",
-      "schema": "sql/",
-      "queries": "sql/",
+      "schema": ["sql/"],
+      "queries": ["sql/"],
       "overrides": [
         {
           "go_type": "example.com/pkg.CustomType",
