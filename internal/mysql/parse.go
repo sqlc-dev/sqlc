@@ -11,6 +11,7 @@ import (
 
 	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/dinosql"
+	"github.com/kyleconroy/sqlc/internal/migrations"
 )
 
 // Query holds the data for walking and validating mysql querys
@@ -44,7 +45,7 @@ func parsePath(sqlPath string, generator PackageGenerator) (*Result, error) {
 		if err != nil {
 			parseErrors.Add(filename, "", 0, err)
 		}
-		contents := dinosql.RemoveRollbackStatements(string(blob))
+		contents := migrations.RemoveRollbackStatements(string(blob))
 		if err != nil {
 			parseErrors.Add(filename, "", 0, err)
 			continue
