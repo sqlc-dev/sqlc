@@ -13,6 +13,7 @@ import (
 	"unicode"
 
 	"github.com/kyleconroy/sqlc/internal/catalog"
+	"github.com/kyleconroy/sqlc/internal/migrations"
 	core "github.com/kyleconroy/sqlc/internal/pg"
 	"github.com/kyleconroy/sqlc/internal/postgres"
 	"github.com/kyleconroy/sqlc/internal/postgresql/ast"
@@ -86,8 +87,7 @@ func ReadSQLFiles(path string) ([]string, error) {
 		if strings.HasPrefix(filepath.Base(filename), ".") {
 			continue
 		}
-		// Remove golang-migrate rollback files.
-		if strings.HasSuffix(filename, ".down.sql") {
+		if migrations.IsDown(filename) {
 			continue
 		}
 		sql = append(sql, filename)
@@ -109,7 +109,7 @@ func ParseCatalog(schema string) (core.Catalog, error) {
 			merr.Add(filename, "", 0, err)
 			continue
 		}
-		contents := RemoveRollbackStatements(string(blob))
+		contents := migrations.RemoveRollbackStatements(string(blob))
 		tree, err := pg.Parse(contents)
 		if err != nil {
 			merr.Add(filename, contents, 0, err)

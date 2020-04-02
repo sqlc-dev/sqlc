@@ -1,4 +1,4 @@
-package dinosql
+package migrations
 
 import (
 	"bufio"
@@ -26,4 +26,9 @@ func RemoveRollbackStatements(contents string) string {
 		lines = append(lines, s.Text())
 	}
 	return strings.Join(lines, "\n")
+}
+
+func IsDown(filename string) bool {
+	// Remove golang-migrate rollback files.
+	return strings.HasSuffix(filename, ".down.sql")
 }

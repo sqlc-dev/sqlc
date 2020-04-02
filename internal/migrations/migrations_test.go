@@ -1,10 +1,9 @@
-package dinosql
+package migrations
 
 import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
 const inputGoose = `
@@ -60,21 +59,19 @@ func TestRemoveRollback(t *testing.T) {
 }
 
 func TestRemoveGolangMigrateRollback(t *testing.T) {
-	want := []string{
+	filenames := map[string]bool{
 		// make sure we let through golang-migrate files that aren't rollbacks
-		"testdata/migrations/1.up.sql",
+		"migrations/1.up.sql": false,
 		// make sure we let through other sql files
-		"testdata/migrations/2.sql",
-		"testdata/migrations/foo.sql",
+		"migrations/2.sql":      false,
+		"migrations/foo.sql":    false,
+		"migrations/1.down.sql": true,
 	}
 
-	got, err := ReadSQLFiles("./testdata/migrations")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	less := func(a, b string) bool { return a < b }
-	if diff := cmp.Diff(want, got, cmpopts.SortSlices(less)); diff != "" {
-		t.Errorf("golang-migrate filtering mismatch: \n %s", diff)
+	for filename, want := range filenames {
+		got := IsDown(filename)
+		if diff := cmp.Diff(want, got); diff != "" {
+			t.Errorf("IsDown mismatch: %s\n %s", filename, diff)
+		}
 	}
 }
