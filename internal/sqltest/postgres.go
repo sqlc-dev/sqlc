@@ -29,7 +29,7 @@ func id() string {
 	return string(b)
 }
 
-func PostgreSQL(t *testing.T, migrations string) (*sql.DB, func()) {
+func PostgreSQL(t *testing.T, migrations []string) (*sql.DB, func()) {
 	t.Helper()
 
 	pgUser := os.Getenv("PG_USER")
