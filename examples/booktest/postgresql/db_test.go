@@ -4,7 +4,6 @@ package booktest
 
 import (
 	"context"
-	"path/filepath"
 	"testing"
 	"time"
 
@@ -12,7 +11,7 @@ import (
 )
 
 func TestBooks(t *testing.T) {
-	db, cleanup := sqltest.PostgreSQL(t, filepath.Join("schema.sql"))
+	db, cleanup := sqltest.PostgreSQL(t, []string{"schema.sql"})
 	defer cleanup()
 
 	ctx := context.Background()
