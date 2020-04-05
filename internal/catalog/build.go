@@ -99,6 +99,56 @@ func Update(c *pg.Catalog, stmt nodes.Node) error {
 
 	switch n := raw.Stmt.(type) {
 
+	case nodes.AlterEnumStmt:
+		fqn, err := ParseList(n.TypeName)
+		if err != nil {
+			return err
+		}
+		schema, exists := c.Schemas[fqn.Schema]
+		if !exists {
+			return wrap(pg.ErrorSchemaDoesNotExist(fqn.Schema), raw.StmtLocation)
+		}
+		typ, exists := schema.Types[fqn.Rel]
+		if !exists {
+			return wrap(pg.ErrorRelationDoesNotExist(fqn.Rel), raw.StmtLocation)
+		}
+		enum, ok := typ.(pg.Enum)
+		if !ok {
+			return wrap(pg.ErrorRelationDoesNotExist(fqn.Rel), raw.StmtLocation)
+		}
+		oldIndex := -1
+		newIndex := -1
+		for i, val := range enum.Vals {
+			if n.OldVal != nil && val == *n.OldVal {
+				oldIndex = i
+			}
+			if n.NewVal != nil && val == *n.NewVal {
+				newIndex = i
+			}
+		}
+		if n.OldVal != nil {
+			// RENAME TYPE
+			if oldIndex < 0 {
+				return fmt.Errorf("type %s does not have value %s", fqn.Rel, *n.OldVal)
+			}
+			if newIndex >= 0 {
+				return fmt.Errorf("type %s already has value %s", fqn.Rel, *n.NewVal)
+			}
+			enum.Vals[oldIndex] = *n.NewVal
+			schema.Types[fqn.Rel] = enum
+		} else {
+			// ADD VALUE
+			if newIndex >= 0 {
+				if !n.SkipIfNewValExists {
+					return fmt.Errorf("type %s already has value %s", fqn.Rel, *n.NewVal)
+				} else {
+					return nil
+				}
+			}
+			enum.Vals = append(enum.Vals, *n.NewVal)
+			schema.Types[fqn.Rel] = enum
+		}
+
 	case nodes.AlterObjectSchemaStmt:
 		switch n.ObjectType {
 
