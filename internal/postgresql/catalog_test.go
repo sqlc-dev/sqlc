@@ -17,11 +17,13 @@ import (
 func TestUpdate(t *testing.T) {
 	p := NewParser()
 
-	for i, tc := range []struct {
+	for _, tc := range []struct {
+		name string
 		stmt string
 		s    *catalog.Schema
 	}{
 		{
+			"create-enum",
 			"CREATE TYPE status AS ENUM ('open', 'closed');",
 			&catalog.Schema{
 				Name: "public",
@@ -34,6 +36,40 @@ func TestUpdate(t *testing.T) {
 			},
 		},
 		{
+			"alter-type-rename-value",
+			`
+			CREATE TYPE status AS ENUM ('open', 'closed');
+			ALTER TYPE status RENAME VALUE 'closed' TO 'shut';
+			`,
+			&catalog.Schema{
+				Name: "public",
+				Types: []catalog.Type{
+					&catalog.Enum{
+						Name: "status",
+						Vals: []string{"open", "shut"},
+					},
+				},
+			},
+		},
+		{
+			"alter-type-add-value",
+			`
+			CREATE TYPE status AS ENUM ('open', 'closed');
+			ALTER TYPE status ADD VALUE 'unknown';
+			ALTER TYPE status ADD VALUE IF NOT EXISTS 'unknown';
+			`,
+			&catalog.Schema{
+				Name: "public",
+				Types: []catalog.Type{
+					&catalog.Enum{
+						Name: "status",
+						Vals: []string{"open", "closed", "unknown"},
+					},
+				},
+			},
+		},
+		{
+			"create-table",
 			"CREATE TABLE venues ();",
 			&catalog.Schema{
 				Name: "public",
@@ -45,6 +81,7 @@ func TestUpdate(t *testing.T) {
 			},
 		},
 		{
+			"alter-table-drop-column",
 			`
 			CREATE TABLE foo ();
 			ALTER TABLE foo ADD COLUMN bar text;
@@ -60,6 +97,7 @@ func TestUpdate(t *testing.T) {
 			},
 		},
 		{
+			"alter-table-drop-column-if-exists",
 			`
 			CREATE TABLE foo ();
 			ALTER TABLE foo DROP COLUMN IF EXISTS bar;
@@ -74,6 +112,7 @@ func TestUpdate(t *testing.T) {
 			},
 		},
 		{
+			"alter-table-set-not-null",
 			`
 			CREATE TABLE foo (bar text);
 			ALTER TABLE foo ALTER bar SET NOT NULL;
@@ -116,6 +155,7 @@ func TestUpdate(t *testing.T) {
 			},
 		*/
 		{
+			"alter-table-drop-not-null",
 			`
 			CREATE TABLE foo (bar text NOT NULL);
 			ALTER TABLE foo ALTER bar DROP NOT NULL;
@@ -136,6 +176,7 @@ func TestUpdate(t *testing.T) {
 			},
 		},
 		{
+			"alter-table-column-drop-not-null",
 			`
 			CREATE TABLE foo (bar text NOT NULL);
 			ALTER TABLE foo ALTER COLUMN bar DROP NOT NULL;
@@ -156,6 +197,7 @@ func TestUpdate(t *testing.T) {
 			},
 		},
 		{
+			"alter-table-rename-column",
 			`
 			CREATE TABLE foo (bar text);
 			ALTER TABLE foo RENAME bar TO baz;
@@ -176,6 +218,7 @@ func TestUpdate(t *testing.T) {
 			},
 		},
 		{
+			"alter-table-set-data-type",
 			`
 			CREATE TABLE foo (bar text);
 			ALTER TABLE foo ALTER bar SET DATA TYPE bool;
@@ -196,6 +239,7 @@ func TestUpdate(t *testing.T) {
 			},
 		},
 		{
+			"alter-table-set-schema",
 			`
 			CREATE SCHEMA foo;
 			CREATE TABLE bar ();
@@ -211,6 +255,7 @@ func TestUpdate(t *testing.T) {
 			},
 		},
 		{
+			"drop-table",
 			`
 			CREATE TABLE venues ();
 			DROP TABLE venues;
@@ -218,6 +263,7 @@ func TestUpdate(t *testing.T) {
 			nil,
 		},
 		{
+			"drop-table-if-exists",
 			`
 			CREATE TABLE venues ();
 			DROP TABLE IF EXISTS venues;
@@ -226,6 +272,7 @@ func TestUpdate(t *testing.T) {
 			nil,
 		},
 		{
+			"alter-table-rename",
 			`
 			CREATE TABLE venues ();
 			ALTER TABLE venues RENAME TO arenas;
@@ -240,6 +287,7 @@ func TestUpdate(t *testing.T) {
 			},
 		},
 		{
+			"drop-type",
 			`
 			CREATE TYPE status AS ENUM ('open', 'closed');
 			DROP TYPE status;
@@ -247,6 +295,7 @@ func TestUpdate(t *testing.T) {
 			nil,
 		},
 		{
+			"drop-type-if-exists",
 			`
 			CREATE TYPE status AS ENUM ('open', 'closed');
 			DROP TYPE IF EXISTS status;
@@ -255,6 +304,7 @@ func TestUpdate(t *testing.T) {
 			nil,
 		},
 		{
+			"drop-table-in-schema",
 			`
 			CREATE TABLE venues ();
 			DROP TABLE public.venues;
@@ -262,6 +312,7 @@ func TestUpdate(t *testing.T) {
 			nil,
 		},
 		{
+			"drop-type-in-schema",
 			`
 			CREATE TYPE status AS ENUM ('open', 'closed');
 			DROP TYPE public.status;
@@ -269,6 +320,7 @@ func TestUpdate(t *testing.T) {
 			nil,
 		},
 		{
+			"drop-schema",
 			`
 			CREATE SCHEMA foo;
 			DROP SCHEMA foo;
@@ -276,12 +328,14 @@ func TestUpdate(t *testing.T) {
 			nil,
 		},
 		{
+			"drop-schema-if-exists",
 			`
 			DROP SCHEMA IF EXISTS foo;
 			`,
 			nil,
 		},
 		{
+			"drop-function-if-exists",
 			`
 			DROP FUNCTION IF EXISTS bar;
 			DROP FUNCTION IF EXISTS bar();
@@ -289,6 +343,7 @@ func TestUpdate(t *testing.T) {
 			nil,
 		},
 		{
+			"alter-table-drop-constraint",
 			`
 			CREATE TABLE venues (id SERIAL PRIMARY KEY);
 			ALTER TABLE venues DROP CONSTRAINT venues_id_pkey;
@@ -310,6 +365,7 @@ func TestUpdate(t *testing.T) {
 			},
 		},
 		{
+			"create-function",
 			`
 			CREATE FUNCTION foo(TEXT) RETURNS bool AS $$ SELECT true $$ LANGUAGE sql;
 			`,
@@ -329,6 +385,7 @@ func TestUpdate(t *testing.T) {
 			},
 		},
 		{
+			"create-function-args",
 			`
 			CREATE FUNCTION foo(bar TEXT) RETURNS bool AS $$ SELECT true $$ LANGUAGE sql;
 			CREATE FUNCTION foo(bar TEXT, baz TEXT) RETURNS TEXT AS $$ SELECT "baz" $$ LANGUAGE sql;
@@ -364,6 +421,7 @@ func TestUpdate(t *testing.T) {
 			},
 		},
 		{
+			"create-function-types",
 			`
 			CREATE FUNCTION foo(bar TEXT) RETURNS bool AS $$ SELECT true $$ LANGUAGE sql;
 			CREATE FUNCTION foo(bar INTEGER) RETURNS TEXT AS $$ SELECT "baz" $$ LANGUAGE sql;
@@ -395,6 +453,7 @@ func TestUpdate(t *testing.T) {
 			},
 		},
 		{
+			"create-function-return",
 			`
 			CREATE FUNCTION foo(bar TEXT, baz TEXT="baz") RETURNS bool AS $$ SELECT true $$ LANGUAGE sql;
 			`,
@@ -420,6 +479,7 @@ func TestUpdate(t *testing.T) {
 			},
 		},
 		{
+			"drop-function-args",
 			`
 			CREATE FUNCTION foo(bar text) RETURNS bool AS $$ SELECT true $$ LANGUAGE sql;
 			DROP FUNCTION foo(text);
@@ -427,6 +487,7 @@ func TestUpdate(t *testing.T) {
 			nil,
 		},
 		{
+			"drop-function",
 			`
 			CREATE FUNCTION foo(bar text) RETURNS bool AS $$ SELECT true $$ LANGUAGE sql;
 			DROP FUNCTION foo;
@@ -437,6 +498,7 @@ func TestUpdate(t *testing.T) {
 		// CREATE FUNCTION foo() RETURNS bool AS $$ SELECT true $$ LANGUAGE sql;
 		// DROP FUNCTION foo -- FAIL
 		{
+			"pg_temp",
 			`
 			CREATE TABLE pg_temp.migrate (val SERIAL);
 			INSERT INTO pg_temp.migrate (val) SELECT val FROM old;
@@ -458,6 +520,7 @@ func TestUpdate(t *testing.T) {
 			},
 		},
 		{
+			"comment",
 			`
 			CREATE SCHEMA foo;
 			CREATE TABLE foo.bar (baz text);
@@ -494,7 +557,7 @@ func TestUpdate(t *testing.T) {
 		},
 	} {
 		test := tc
-		t.Run(strconv.Itoa(i), func(t *testing.T) {
+		t.Run(test.name, func(t *testing.T) {
 			stmts, err := p.Parse(strings.NewReader(test.stmt))
 			if err != nil {
 				t.Log(test.stmt)

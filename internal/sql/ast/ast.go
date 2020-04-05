@@ -230,6 +230,26 @@ func (n *RenameColumnStmt) Pos() int {
 	return 0
 }
 
+type AlterTypeRenameValueStmt struct {
+	Type     *TypeName
+	OldValue *string
+	NewValue *string
+}
+
+func (n *AlterTypeRenameValueStmt) Pos() int {
+	return 0
+}
+
+type AlterTypeAddValueStmt struct {
+	Type               *TypeName
+	NewValue           *string
+	SkipIfNewValExists bool
+}
+
+func (n *AlterTypeAddValueStmt) Pos() int {
+	return 0
+}
+
 type RenameTableStmt struct {
 	Table   *TableName
 	NewName *string

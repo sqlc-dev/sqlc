@@ -226,6 +226,10 @@ func (c *Catalog) Build(stmts []ast.Statement) error {
 			err = c.alterTable(n)
 		case *ast.AlterTableSetSchemaStmt:
 			err = c.alterTableSetSchema(n)
+		case *ast.AlterTypeAddValueStmt:
+			err = c.alterTypeAddValue(n)
+		case *ast.AlterTypeRenameValueStmt:
+			err = c.alterTypeRenameValue(n)
 		case *ast.CommentOnColumnStmt:
 			err = c.commentOnColumn(n)
 		case *ast.CommentOnSchemaStmt:

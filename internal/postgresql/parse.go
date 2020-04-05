@@ -188,6 +188,25 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 func translate(node nodes.Node) (ast.Node, error) {
 	switch n := node.(type) {
 
+	case nodes.AlterEnumStmt:
+		name, err := parseTypeName(n.TypeName)
+		if err != nil {
+			return nil, err
+		}
+		if n.OldVal != nil {
+			return &ast.AlterTypeRenameValueStmt{
+				Type:     name,
+				OldValue: n.OldVal,
+				NewValue: n.NewVal,
+			}, nil
+		} else {
+			return &ast.AlterTypeAddValueStmt{
+				Type:               name,
+				NewValue:           n.NewVal,
+				SkipIfNewValExists: n.SkipIfNewValExists,
+			}, nil
+		}
+
 	case nodes.AlterObjectSchemaStmt:
 		switch n.ObjectType {
 
