@@ -572,6 +572,13 @@ func expand(qc *QueryCatalog, raw nodes.RawStmt) ([]edit, error) {
 	return edits, nil
 }
 
+func quoteIdent(ident string) string {
+	if postgres.IsReservedKeyword(ident) {
+		return "\"" + ident + "\""
+	}
+	return ident
+}
+
 func expandStmt(qc *QueryCatalog, raw nodes.RawStmt, node nodes.Node) ([]edit, error) {
 	tables, err := sourceTables(qc, node)
 	if err != nil {
@@ -629,26 +636,30 @@ func expandStmt(qc *QueryCatalog, raw nodes.RawStmt, node nodes.Node) ([]edit, e
 			if scope != "" && scope != t.Name {
 				continue
 			}
+			tableName := quoteIdent(t.Name)
+			scopeName := quoteIdent(scope)
 			for _, c := range t.Columns {
 				cname := c.Name
 				if res.Name != nil {
 					cname = *res.Name
 				}
+				cname = quoteIdent(cname)
 				if scope != "" {
-					cname = scope + "." + cname
+					cname = scopeName + "." + cname
 				}
 				if counts[cname] > 1 {
-					cname = t.Name + "." + cname
-				}
-				if postgres.IsReservedKeyword(cname) {
-					cname = "\"" + cname + "\""
+					cname = tableName + "." + cname
 				}
 				cols = append(cols, cname)
 			}
 		}
+		var old []string
+		for _, p := range parts {
+			old = append(old, quoteIdent(p))
+		}
 		edits = append(edits, edit{
 			Location: res.Location - raw.StmtLocation,
-			Old:      strings.Join(parts, "."),
+			Old:      strings.Join(old, "."),
 			New:      strings.Join(cols, ", "),
 		})
 	}
