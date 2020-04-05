@@ -46,6 +46,43 @@ func TestUpdate(t *testing.T) {
 			},
 		},
 		{
+			`
+			CREATE TYPE status AS ENUM ('open', 'closed');
+			ALTER TYPE status RENAME VALUE 'closed' TO 'shut';
+			`,
+			pg.Catalog{
+				Schemas: map[string]pg.Schema{
+					"public": {
+						Types: map[string]pg.Type{
+							"status": pg.Enum{
+								Name: "status",
+								Vals: []string{"open", "shut"},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			`
+			CREATE TYPE status AS ENUM ('open', 'closed');
+			ALTER TYPE status ADD VALUE 'unknown';
+			ALTER TYPE status ADD VALUE IF NOT EXISTS 'unknown';
+			`,
+			pg.Catalog{
+				Schemas: map[string]pg.Schema{
+					"public": {
+						Types: map[string]pg.Type{
+							"status": pg.Enum{
+								Name: "status",
+								Vals: []string{"open", "closed", "unknown"},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
 			"CREATE TABLE venues ();",
 			pg.Catalog{
 				Schemas: map[string]pg.Schema{
@@ -240,6 +277,27 @@ func TestUpdate(t *testing.T) {
 				},
 			},
 		},
+		/*
+			{
+				`
+				CREATE TYPE status AS ENUM ('open', 'closed');
+				ALTER TYPE status RENAME VALUE 'closed' TO 'shut';
+				`,
+				pg.Catalog{
+					Schemas: map[string]pg.Schema{
+						"public": {
+							Types: map[string]pg.Type{
+								"status": pg.Enum{
+									Name: "status",
+									Vals: []string{"open", "shut"},
+								},
+							},
+							Tables: map[string]pg.Table{},
+						},
+					},
+				},
+			},
+		*/
 		{
 			`
 			CREATE TABLE venues ();
