@@ -14,9 +14,8 @@ import (
 
 	"github.com/kyleconroy/sqlc/internal/catalog"
 	"github.com/kyleconroy/sqlc/internal/config"
+	"github.com/kyleconroy/sqlc/internal/inflection"
 	core "github.com/kyleconroy/sqlc/internal/pg"
-
-	"github.com/jinzhu/inflection"
 )
 
 var identPattern = regexp.MustCompile("[^a-zA-Z0-9_]+")
@@ -598,7 +597,7 @@ func (r Result) Structs(settings config.CombinedSettings) []GoStruct {
 			}
 			s := GoStruct{
 				Table:   core.FQN{Schema: name, Rel: table.Name},
-				Name:    inflection.Singular(StructName(tableName, settings)),
+				Name:    StructName(inflection.Singular(tableName), settings),
 				Comment: table.Comment,
 			}
 			for _, column := range table.Columns {
