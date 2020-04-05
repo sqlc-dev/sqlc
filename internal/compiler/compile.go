@@ -71,10 +71,15 @@ func Run(conf config.SQL, combo config.CombinedSettings) (*Result, error) {
 		return nil, fmt.Errorf("unknown engine: %s", conf.Engine)
 	}
 
-	rd, err := os.Open(conf.Schema)
-	if err != nil {
-		return nil, err
+	blobs := make([]io.Reader, 0, len(conf.Schema))
+	for _, s := range conf.Schema {
+		b, err := os.Open(s)
+		if err != nil {
+			return nil, err
+		}
+		blobs = append(blobs, b)
 	}
+	rd := io.MultiReader(blobs...)
 
 	stmts, err := p.Parse(rd)
 	if err != nil {

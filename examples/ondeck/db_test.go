@@ -123,7 +123,7 @@ func runOnDeckQueries(t *testing.T, q *Queries) {
 func TestPrepared(t *testing.T) {
 	t.Parallel()
 
-	sdb, cleanup := sqltest.PostgreSQL(t, "schema")
+	sdb, cleanup := sqltest.PostgreSQL(t, []string{"schema"})
 	defer cleanup()
 
 	q, err := Prepare(context.Background(), sdb)
@@ -137,7 +137,7 @@ func TestPrepared(t *testing.T) {
 func TestQueries(t *testing.T) {
 	t.Parallel()
 
-	sdb, cleanup := sqltest.PostgreSQL(t, "schema")
+	sdb, cleanup := sqltest.PostgreSQL(t, []string{"schema"})
 	defer cleanup()
 
 	runOnDeckQueries(t, New(sdb))

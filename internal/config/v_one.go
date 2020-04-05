@@ -19,8 +19,8 @@ type v1PackageSettings struct {
 	Name                string     `json:"name" yaml:"name"`
 	Engine              Engine     `json:"engine,omitempty" yaml:"engine"`
 	Path                string     `json:"path" yaml:"path"`
-	Schema              string     `json:"schema" yaml:"schema"`
-	Queries             string     `json:"queries" yaml:"queries"`
+	Schema              Paths      `json:"schema" yaml:"schema"`
+	Queries             Paths      `json:"queries" yaml:"queries"`
 	EmitInterface       bool       `json:"emit_interface" yaml:"emit_interface"`
 	EmitJSONTags        bool       `json:"emit_json_tags" yaml:"emit_json_tags"`
 	EmitPreparedQueries bool       `json:"emit_prepared_queries" yaml:"emit_prepared_queries"`
