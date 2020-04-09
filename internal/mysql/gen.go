@@ -63,7 +63,7 @@ func (pGen PackageGenerator) enumNameFromColDef(col *sqlparser.ColumnDefinition)
 		dinosql.StructName(col.Name.String(), pGen.CombinedSettings))
 }
 
-// Structs marshels each query into a go struct for generation
+// Structs marshals each query into a go struct for generation
 func (r *Result) Structs(settings config.CombinedSettings) []dinosql.GoStruct {
 	var structs []dinosql.GoStruct
 	for tableName, cols := range r.Schema.tables {
