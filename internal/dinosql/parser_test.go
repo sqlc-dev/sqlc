@@ -1,6 +1,9 @@
 package dinosql
 
 import (
+	"io/ioutil"
+	"os"
+	"path"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -182,5 +185,61 @@ func TestExpand(t *testing.T) {
 	}
 	if expected != actual {
 		t.Errorf("mismatch:\nexpected: %s\n  acutal: %s", expected, actual)
+	}
+}
+
+func TestReadFiles(t *testing.T) {
+	dir, err := ioutil.TempDir("", "sqlc-test-read-files")
+	if err != nil {
+		t.Error(err)
+	}
+	defer os.RemoveAll(dir)
+
+	subdir1 := path.Join(dir, "subdir1")
+	if err := os.Mkdir(subdir1, 0777); err != nil {
+		t.Error(err)
+	}
+
+	subdir2 := path.Join(dir, "subdir2")
+	if err := os.Mkdir(subdir2, 0777); err != nil {
+		t.Error(err)
+	}
+
+	files := []string{
+		path.Join(subdir1, "include-me.sql"),
+		path.Join(subdir1, "include-me.up.sql"),
+		path.Join(subdir1, "not-me.down.sql"),
+		path.Join(subdir2, "include-me.sql"),
+		path.Join(subdir2, "include-me.up.sql"),
+		path.Join(subdir2, "not-me.down.sql"),
+	}
+	for _, filename := range files {
+		fd, err := os.Create(filename)
+		if err != nil {
+			t.Error(err)
+		}
+		defer fd.Close()
+	}
+
+	input := []string{
+		subdir1,
+		path.Join(subdir2, "include-me.sql"),
+		path.Join(subdir2, "include-me.up.sql"),
+		path.Join(subdir2, "not-me.down.sql"),
+	}
+
+	expectedFiles := []string{
+		path.Join(subdir1, "include-me.sql"),
+		path.Join(subdir1, "include-me.up.sql"),
+		path.Join(subdir2, "include-me.sql"),
+		path.Join(subdir2, "include-me.up.sql"),
+	}
+
+	filesRead, err := ReadSQLFiles(input)
+	if err != nil {
+		t.Error(err)
+	}
+	if !cmp.Equal(expectedFiles, filesRead) {
+		t.Errorf("unexpected files: %s", cmp.Diff(expectedFiles, filesRead))
 	}
 }
