@@ -16,6 +16,13 @@ const (
 	REJECTED JobStatusType = "REJECTED"
 )
 
+var everyJobStatusType = map[JobStatusType]bool{
+	APPLIED:  true,
+	PENDING:  true,
+	ACCEPTED: true,
+	REJECTED: true,
+}
+
 func (e *JobStatusType) Scan(src interface{}) error {
 	switch s := src.(type) {
 	case []byte:
