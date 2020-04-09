@@ -350,7 +350,7 @@ scopes the override behavior to just a single package:
 
 ```yaml
 version: "1"
-packages: 
+packages:
   - overrides: [...]
 ```
 
@@ -464,7 +464,7 @@ go build -o ~/go/bin/sqlc-dev ./cmd/sqlc
 ### Running Tests
 
 To run the tests, include the `exp` tag. Without this tag, a few tests will
-fail. 
+fail.
 
 ```
 go test --tags=exp ./...
@@ -494,8 +494,11 @@ If you need to update a large number of expected test output in the
 `internal/endtoend/testdata` directory, run the `regenerate.sh` script.
 
 ```
-./scripts/regenerate.sh
+make regen
 ```
+
+Note that this uses the `sqlc-dev` binary, not `sqlc` so make sure you have an
+up to date `sqlc-dev` binary.
 
 ## Acknowledgements
 
