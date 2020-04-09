@@ -429,6 +429,7 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string, rewriteParameter
 		if err := validateInsertStmt(n); err != nil {
 			return nil, err
 		}
+	case nodes.TruncateStmt:
 	case nodes.UpdateStmt:
 	default:
 		return nil, errUnsupportedStatementType
@@ -766,15 +767,20 @@ func sourceTables(qc *QueryCatalog, node nodes.Node) ([]core.Table, error) {
 		list = nodes.List{
 			Items: []nodes.Node{*n.Relation},
 		}
-	case nodes.UpdateStmt:
-		list = nodes.List{
-			Items: append(n.FromClause.Items, *n.Relation),
-		}
 	case nodes.SelectStmt:
 		list = search(n.FromClause, func(node nodes.Node) bool {
 			_, ok := node.(nodes.RangeVar)
 			return ok
 		})
+	case nodes.TruncateStmt:
+		list = search(n.Relations, func(node nodes.Node) bool {
+			_, ok := node.(nodes.RangeVar)
+			return ok
+		})
+	case nodes.UpdateStmt:
+		list = nodes.List{
+			Items: append(n.FromClause.Items, *n.Relation),
+		}
 	default:
 		return nil, fmt.Errorf("sourceTables: unsupported node type: %T", n)
 	}
@@ -830,6 +836,8 @@ func outputColumns(qc *QueryCatalog, node nodes.Node) ([]core.Column, error) {
 		targets = n.ReturningList
 	case nodes.SelectStmt:
 		targets = n.TargetList
+	case nodes.TruncateStmt:
+		targets = nodes.List{}
 	case nodes.UpdateStmt:
 		targets = n.ReturningList
 	default:
