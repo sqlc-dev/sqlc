@@ -16,6 +16,11 @@ const (
 	StatusClosed Status = "clo@sed"
 )
 
+var everyStatus = map[Status]bool{
+	StatusOpen:   true,
+	StatusClosed: true,
+}
+
 func (e *Status) Scan(src interface{}) error {
 	switch s := src.(type) {
 	case []byte:

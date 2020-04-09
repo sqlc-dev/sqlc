@@ -13,6 +13,11 @@ const (
 	albert FirstNameType = "albert"
 )
 
+var everyFirstNameType = map[FirstNameType]bool{
+	john:   true,
+	albert: true,
+}
+
 func (e *FirstNameType) Scan(src interface{}) error {
 	switch s := src.(type) {
 	case []byte:
@@ -32,6 +37,11 @@ const (
 	two UserIDType = "two"
 )
 
+var everyUserIDType = map[UserIDType]bool{
+	one: true,
+	two: true,
+}
+
 func (e *UserIDType) Scan(src interface{}) error {
 	switch s := src.(type) {
 	case []byte:
@@ -50,6 +60,11 @@ const (
 	smith LastNameType = "smith"
 	frank LastNameType = "frank"
 )
+
+var everyLastNameType = map[LastNameType]bool{
+	smith: true,
+	frank: true,
+}
 
 func (e *LastNameType) Scan(src interface{}) error {
 	switch s := src.(type) {
