@@ -1145,6 +1145,14 @@ const (
 	{{- end}}
 )
 
+{{ if $.EmitEnumMapping }}
+var Every{{.Name}} = map[{{.Name}}]bool{
+	{{ range .Constants -}}
+	{{.Name}}: true,
+	{{ end -}}
+}
+{{ end -}}
+
 func (e *{{.Name}}) Scan(src interface{}) error {
 	switch s := src.(type) {
 	case []byte:
@@ -1299,6 +1307,7 @@ type tmplCtx struct {
 	EmitJSONTags        bool
 	EmitPreparedQueries bool
 	EmitInterface       bool
+	EmitEnumMapping     bool
 }
 
 func (t *tmplCtx) OutputQuery(sourceName string) bool {
@@ -1330,6 +1339,7 @@ func Generate(r Generateable, settings config.CombinedSettings) (map[string]stri
 		EmitInterface:       golang.EmitInterface,
 		EmitJSONTags:        golang.EmitJSONTags,
 		EmitPreparedQueries: golang.EmitPreparedQueries,
+		EmitEnumMapping:     golang.EmitEnumMapping,
 		Q:                   "`",
 		Package:             golang.Package,
 		GoQueries:           r.GoQueries(settings),

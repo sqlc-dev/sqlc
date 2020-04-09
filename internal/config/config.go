@@ -114,7 +114,8 @@ type SQLGen struct {
 type SQLGo struct {
 	EmitInterface       bool              `json:"emit_interface" yaml:"emit_interface"`
 	EmitJSONTags        bool              `json:"emit_json_tags" yaml:"emit_json_tags"`
-	EmitPreparedQueries bool              `json:"emit_prepared_queries" yaml:"emit_prepared_queries":`
+	EmitPreparedQueries bool              `json:"emit_prepared_queries" yaml:"emit_prepared_queries"`
+	EmitEnumMapping     bool              `json:"emit_enum_mapping" yaml:"emit_enum_mapping"`
 	Package             string            `json:"package" yaml:"package"`
 	Out                 string            `json:"out" yaml:"out"`
 	Overrides           []Override        `json:"overrides,omitempty" yaml:"overrides"`

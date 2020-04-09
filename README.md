@@ -291,6 +291,9 @@ Each package document has the following keys:
   - If true, include support for prepared queries. Defaults to `false`.
 - `emit_interface`:
   - If true, output a `Querier` interface in the generated package. Defaults to `false`.
+- `emit_enum_mapping`:
+  - If true, output a map containing all members of an enum, which can be used
+    to easily test for membership.
 - `path`:
   - Output directory for generated code
 - `queries`:
