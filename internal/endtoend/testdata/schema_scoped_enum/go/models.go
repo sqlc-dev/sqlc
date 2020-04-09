@@ -13,6 +13,11 @@ const (
 	FooTypeUserRoleUser  FooTypeUserRole = "user"
 )
 
+var everyFooTypeUserRole = map[FooTypeUserRole]bool{
+	FooTypeUserRoleAdmin: true,
+	FooTypeUserRoleUser:  true,
+}
+
 func (e *FooTypeUserRole) Scan(src interface{}) error {
 	switch s := src.(type) {
 	case []byte:

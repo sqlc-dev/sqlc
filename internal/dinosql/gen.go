@@ -1145,6 +1145,12 @@ const (
 	{{- end}}
 )
 
+var every{{.Name}} = map[{{.Name}}]bool{
+	{{ range .Constants -}}
+	{{.Name}}: true,
+	{{ end -}}
+}
+
 func (e *{{.Name}}) Scan(src interface{}) error {
 	switch s := src.(type) {
 	case []byte:

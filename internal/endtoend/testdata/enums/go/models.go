@@ -18,6 +18,16 @@ const (
 	FoobarFoog Foobar = "foo!g"
 )
 
+var everyFoobar = map[Foobar]bool{
+	FoobarFooA: true,
+	FoobarFooB: true,
+	FoobarFooC: true,
+	FoobarFooD: true,
+	FoobarFooe: true,
+	FoobarFoof: true,
+	FoobarFoog: true,
+}
+
 func (e *Foobar) Scan(src interface{}) error {
 	switch s := src.(type) {
 	case []byte:
