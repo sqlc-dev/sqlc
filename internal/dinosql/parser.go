@@ -60,13 +60,6 @@ func (e *ParserErr) Error() string {
 	return fmt.Sprintf("multiple errors: %d errors", len(e.Errs))
 }
 
-func addFile(files []string, newFile string) []string {
-	if migrations.IsDown(newFile) {
-		return files
-	}
-	return append(files, newFile)
-}
-
 func ReadSQLFiles(paths []string) ([]string, error) {
 	var files []string
 	for _, path := range paths {
@@ -81,10 +74,15 @@ func ReadSQLFiles(paths []string) ([]string, error) {
 				return nil, err
 			}
 			for _, f := range listing {
-				files = addFile(files, filepath.Join(path, f.Name()))
+				if migrations.IsDown(f.Name()) {
+					continue
+				}
+				files = append(files, filepath.Join(path, f.Name()))
 			}
 		} else {
-			files = addFile(files, path)
+			if !migrations.IsDown(path) {
+				files = append(files, path)
+			}
 		}
 	}
 	return files, nil
