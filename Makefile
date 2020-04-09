@@ -7,5 +7,5 @@ test:
 sqlc-dev:
 	go build -o ~/bin/sqlc-dev --tags=exp ./cmd/sqlc/
 
-regen:
+regen: sqlc-dev
 	./scripts/regenerate.sh
