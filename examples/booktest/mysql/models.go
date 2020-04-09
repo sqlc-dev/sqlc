@@ -14,6 +14,11 @@ const (
 	NONFICTION BookTypeType = "NONFICTION"
 )
 
+var everyBookTypeType = map[BookTypeType]bool{
+	FICTION:    true,
+	NONFICTION: true,
+}
+
 func (e *BookTypeType) Scan(src interface{}) error {
 	switch s := src.(type) {
 	case []byte:

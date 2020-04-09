@@ -14,6 +14,12 @@ const (
 	MoodHappy Mood = "happy"
 )
 
+var everyMood = map[Mood]bool{
+	MoodSad:   true,
+	MoodOk:    true,
+	MoodHappy: true,
+}
+
 func (e *Mood) Scan(src interface{}) error {
 	switch s := src.(type) {
 	case []byte:
