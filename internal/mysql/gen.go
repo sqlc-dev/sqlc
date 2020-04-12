@@ -240,12 +240,34 @@ func (pGen PackageGenerator) goTypeCol(col Column) string {
 			return "string"
 		}
 		return "sql.NullString"
-	case "int" == t, "integer" == t, t == "smallint",
-		"mediumint" == t, "bigint" == t, "year" == t:
+	case t == "smallint":
 		if col.Type.NotNull {
+			if col.Type.Autoincrement {
+				return "uint16"
+			}
+			return "int16"
+		}
+		return "sql.NullInt32"
+	case "int" == t, "integer" == t, "mediumint" == t, "year" == t:
+
+		if col.Type.NotNull {
+			if col.Type.Autoincrement {
+				return "uint32"
+			}
 			return "int"
 		}
-		return "sql.NullInt64"
+		if col.Type.Autoincrement {
+			return "sql.NullInt64" // sql.NullInt32 won't fit the full zero sign range
+		}
+		return "sql.NullInt32"
+	case t == "bigint":
+		if col.Type.NotNull {
+			if col.Type.Autoincrement {
+				return "uint64"
+			}
+			return "int64"
+		}
+		return "sql.NullInt64" // TODO won't fit the full range zero sign range
 	case "blob" == t, "binary" == t, "varbinary" == t, "tinyblob" == t,
 		"mediumblob" == t, "longblob" == t:
 		return "[]byte"
