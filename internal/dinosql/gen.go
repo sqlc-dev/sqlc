@@ -701,7 +701,7 @@ func (r Result) goInnerType(col core.Column, settings config.CombinedSettings) s
 		}
 		return "sql.NullBool"
 
-	case "jsonb":
+	case "json", "jsonb":
 		return "json.RawMessage"
 
 	case "bytea", "blob", "pg_catalog.bytea":
