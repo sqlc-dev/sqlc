@@ -110,6 +110,16 @@ func TestTypeOverrides(t *testing.T) {
 			"zero.String",
 			false,
 		},
+		{
+			// See #462 and #255
+			Override{
+				DBType: "string",
+				GoType: "gopkg.in/guregu/null.v3.String",
+			},
+			"gopkg.in/guregu/null.v3",
+			"null.String",
+			false,
+		},
 	} {
 		tt := test
 		t.Run(tt.override.GoType, func(t *testing.T) {
