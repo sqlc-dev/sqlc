@@ -8,6 +8,7 @@ import (
 	"go/types"
 	"io"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/kyleconroy/sqlc/internal/pg"
@@ -218,7 +219,20 @@ func (o *Override) Parse() error {
 		if lastSlash == -1 {
 			return fmt.Errorf("Package override `go_type` specifier %q is not the proper format, expected 'package.type', e.g. 'github.com/segmentio/ksuid.KSUID'", o.GoType)
 		}
-		typename = o.GoType[lastSlash+1:]
+
+		// Upstream typename assignment
+		// typename = o.GoType[lastSlash+1:]
+
+		// Regex to match the type name and the package name
+		typeNameRegex := regexp.MustCompile(`.+\/(?P<typeName>.+?)$`)
+
+		// Is there a regex match for the type name?
+		if ok := typeNameRegex.MatchString(o.GoType); ok {
+			typename = typeNameRegex.FindStringSubmatch(o.GoType)[1]
+		} else {
+			return fmt.Errorf("Type regex match not found")
+		}
+
 		if strings.HasPrefix(typename, "go-") {
 			// a package name beginning with "go-" will give syntax errors in
 			// generated code. We should do the right thing and get the actual
@@ -229,7 +243,18 @@ func (o *Override) Parse() error {
 		if strings.HasSuffix(typename, "-go") {
 			typename = typename[:len(typename)-len("-go")]
 		}
-		o.GoPackage = o.GoType[:lastDot]
+		// Upstream package name assignment
+		//o.GoPackage = o.GoType[:lastDot]
+
+		pkgNameRegex := regexp.MustCompile(`(?P<pkgName>.+)\..+$`)
+
+		// Is there a regex match for the package name?
+		if ok := pkgNameRegex.MatchString(o.GoType); ok {
+			o.GoPackage = pkgNameRegex.FindStringSubmatch(o.GoType)[1]
+		} else {
+			return fmt.Errorf("Package regex match not found")
+		}
+
 	}
 	o.GoTypeName = typename
 	isPointer := o.GoType[0] == '*'
