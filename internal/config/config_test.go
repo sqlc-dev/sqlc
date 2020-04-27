@@ -100,6 +100,16 @@ func TestTypeOverrides(t *testing.T) {
 			"string",
 			true,
 		},
+		{
+			// Attempt to debug the gopkg.in/guregu/null.v3/zero failed fetchin, upstream code do not throw any error and needs to be investigated
+			Override{
+				DBType: "string",
+				GoType: "gopkg.in/guregu/null.v3/zero",
+			},
+			"gopkg.in/guregu/null.v3/zero",
+			"zero.String",
+			false,
+		},
 	} {
 		tt := test
 		t.Run(tt.override.GoType, func(t *testing.T) {
