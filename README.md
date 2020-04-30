@@ -444,7 +444,8 @@ sqlc development is funded by our generous sponsors.
   - [ngrok](https://ngrok.com)
   - [Weave](https://www.getweave.com/)
 - Individuals
-  - [CyberAx](https://github.com/Cyberax)
+  - [Alex Besogonov](https://github.com/Cyberax)
+  - [Myles McDonnell](https://github.com/myles-mcdonnell)
 
 If you use sqlc at your company, please consider [becoming a
 sponsor](https://github.com/sponsors/kyleconroy) today.
