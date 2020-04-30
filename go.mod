@@ -8,7 +8,7 @@ require (
 	github.com/google/go-cmp v0.3.0
 	github.com/jinzhu/inflection v1.0.0
 	github.com/lfittl/pg_query_go v1.0.0
-	github.com/lib/pq v1.3.0
+	github.com/lib/pq v1.4.0
 	github.com/pingcap/parser v0.0.0-20200218113622-517beb2e39c2
 	github.com/pingcap/tidb v1.1.0-beta.0.20200219045929-1344d6ddd9e7
 	github.com/spf13/cobra v0.0.5
