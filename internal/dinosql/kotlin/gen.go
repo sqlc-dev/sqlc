@@ -446,9 +446,13 @@ func (r Result) KtDataClasses(settings config.CombinedSettings) []KtStruct {
 			} else {
 				tableName = name + "_" + table.Name
 			}
+			structName := KtDataClassName(tableName, settings)
+			if !settings.Go.EmitExactTableNames {
+				structName = inflection.Singular(structName)
+			}
 			s := KtStruct{
 				Table:   core.FQN{Schema: name, Rel: table.Name},
-				Name:    inflection.Singular(KtDataClassName(tableName, settings)),
+				Name:    structName,
 				Comment: table.Comment,
 			}
 			for _, column := range table.Columns {
