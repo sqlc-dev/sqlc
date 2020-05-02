@@ -114,7 +114,8 @@ type SQLGen struct {
 type SQLGo struct {
 	EmitInterface       bool              `json:"emit_interface" yaml:"emit_interface"`
 	EmitJSONTags        bool              `json:"emit_json_tags" yaml:"emit_json_tags"`
-	EmitPreparedQueries bool              `json:"emit_prepared_queries" yaml:"emit_prepared_queries":`
+	EmitPreparedQueries bool              `json:"emit_prepared_queries" yaml:"emit_prepared_queries"`
+	LeavePlural         bool              `json:"leave_plural,omitempty" yaml:"leave_plural"`
 	Package             string            `json:"package" yaml:"package"`
 	Out                 string            `json:"out" yaml:"out"`
 	Overrides           []Override        `json:"overrides,omitempty" yaml:"overrides"`
@@ -122,8 +123,9 @@ type SQLGo struct {
 }
 
 type SQLKotlin struct {
-	Package string `json:"package" yaml:"package"`
-	Out     string `json:"out" yaml:"out"`
+	LeavePlural bool   `json:"leave_plural,omitempty" yaml:"leave_plural"`
+	Package     string `json:"package" yaml:"package"`
+	Out         string `json:"out" yaml:"out"`
 }
 
 type Override struct {
