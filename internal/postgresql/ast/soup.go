@@ -496,7 +496,9 @@ func Walk(f Visitor, node nodes.Node) {
 
 	case nodes.CreateTableAsStmt:
 		walkn(f, n.Query)
-		walkn(f, n.Into)
+		if n.Into != nil {
+			walkn(f, *n.Into)
+		}
 
 	case nodes.CreateTableSpaceStmt:
 		if n.Owner != nil {
