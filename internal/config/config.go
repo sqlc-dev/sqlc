@@ -146,7 +146,7 @@ type Override struct {
 	ColumnName string
 	Table      pg.FQN
 
-	GoType      string
+	// FIXME The whole sqlc package could be rewritten to fetch these values from the new type GoTypeParams, however, to not mess around too much I left them here. Otherwise it would be needed to refactor in too many places around the codebase. I know for certain that the rest of the code will search these values here hence, I'm leeaving them as such. -- maxiride
 	GoTypeName  string
 	GoPackage   string
 	GoBasicType bool
