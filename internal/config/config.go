@@ -249,6 +249,7 @@ func (o *Override) Parse() error {
 		o.GoPackage = o.GoTypeParam.PackageName
 
 	}
+
 	if len(o.GoTypeParam.ImportPath) > 0 {
 		o.GoTypeName = o.GoTypeParam.PackageName + "." + o.GoTypeParam.TypeName
 	} else {
@@ -258,6 +259,7 @@ func (o *Override) Parse() error {
 	if len(o.GoTypeParam.ImportPath) > 0 {
 		isPointer := o.GoTypeParam.ImportPath[0] == '*'
 		if isPointer {
+			// FIXME unsure how to handle this, didn't fully understood it yet
 			o.GoPackage = o.GoPackage[1:]
 			o.GoTypeName = "*" + o.GoTypeName
 		}
