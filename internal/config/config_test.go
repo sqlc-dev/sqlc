@@ -74,9 +74,13 @@ func TestTypeOverrides(t *testing.T) {
 		{
 			Override{
 				DBType: "uuid",
-				GoType: "github.com/segmentio/ksuid.KSUID",
+				GoTypeParam: GoTypeParams{
+					ImportPath:  "github.com/segmentio/ksuid",
+					PackageName: "ksuid",
+					TypeName:    "KSUID",
+				},
 			},
-			"github.com/segmentio/ksuid",
+			"ksuid",
 			"ksuid.KSUID",
 			false,
 		},
@@ -94,15 +98,45 @@ func TestTypeOverrides(t *testing.T) {
 		{
 			Override{
 				DBType: "citext",
-				GoType: "string",
+				GoTypeParam: GoTypeParams{
+					ImportPath:  "",
+					PackageName: "",
+					TypeName:    "string",
+				},
 			},
 			"",
 			"string",
 			true,
 		},
+		{
+			Override{
+				DBType: "string",
+				GoTypeParam: GoTypeParams{
+					ImportPath:  "gopkg.in/guregu/null.v3/zero.String",
+					PackageName: "zero",
+					TypeName:    "String",
+				},
+			},
+			"zero",
+			"zero.String",
+			false,
+		},
+		{
+			Override{
+				DBType: "string",
+				GoTypeParam: GoTypeParams{
+					ImportPath:  "gopkg.in/guregu/null.v3",
+					PackageName: "null",
+					TypeName:    "String",
+				},
+			},
+			"null",
+			"null.String",
+			false,
+		},
 	} {
 		tt := test
-		t.Run(tt.override.GoType, func(t *testing.T) {
+		t.Run(tt.override.GoTypeParam.ImportPath, func(t *testing.T) {
 			if err := tt.override.Parse(); err != nil {
 				t.Fatalf("override parsing failed; %s", err)
 			}
@@ -117,6 +151,7 @@ func TestTypeOverrides(t *testing.T) {
 			}
 		})
 	}
+
 	for _, test := range []struct {
 		override Override
 		err      string
@@ -124,20 +159,28 @@ func TestTypeOverrides(t *testing.T) {
 		{
 			Override{
 				DBType: "uuid",
-				GoType: "Pointer",
+				GoTypeParam: GoTypeParams{
+					ImportPath:  "",
+					PackageName: "",
+					TypeName:    "Pointer",
+				},
 			},
 			"Package override `go_type` specifier \"Pointer\" is not a Go basic type e.g. 'string'",
 		},
 		{
 			Override{
 				DBType: "uuid",
-				GoType: "untyped rune",
+				GoTypeParam: GoTypeParams{
+					ImportPath:  "",
+					PackageName: "",
+					TypeName:    "untyped rune",
+				},
 			},
 			"Package override `go_type` specifier \"untyped rune\" is not a Go basic type e.g. 'string'",
 		},
 	} {
 		tt := test
-		t.Run(tt.override.GoType, func(t *testing.T) {
+		t.Run(tt.override.GoTypeParam.TypeName, func(t *testing.T) {
 			err := tt.override.Parse()
 			if err == nil {
 				t.Fatalf("expected pars to fail; got nil")
