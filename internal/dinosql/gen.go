@@ -288,7 +288,7 @@ func interfaceImports(r Generateable, settings config.CombinedSettings) fileImpo
 		if o.GoBasicType {
 			continue
 		}
-		overrideTypes[o.GoTypeName] = o.GoPackage
+		overrideTypes[o.GoImportPath] = o.GoTypeParam.ImportPath
 	}
 
 	_, overrideNullTime := overrideTypes["pq.NullTime"]
@@ -350,7 +350,7 @@ func modelImports(r Generateable, settings config.CombinedSettings) fileImports 
 		if o.GoBasicType {
 			continue
 		}
-		overrideTypes[o.GoTypeName] = o.GoPackage
+		overrideTypes[o.GoImportPath] = o.GoTypeParam.ImportPath
 	}
 
 	_, overrideNullTime := overrideTypes["pq.NullTime"]
@@ -485,7 +485,7 @@ func queryImports(r Generateable, settings config.CombinedSettings, filename str
 		if o.GoBasicType {
 			continue
 		}
-		overrideTypes[o.GoTypeName] = o.GoPackage
+		overrideTypes[o.GoImportPath] = o.GoTypeParam.ImportPath
 	}
 
 	if sliceScan() {
@@ -621,7 +621,7 @@ func (r Result) goType(col core.Column, settings config.CombinedSettings) string
 	// package overrides have a higher precedence
 	for _, oride := range settings.Overrides {
 		if oride.Column != "" && oride.ColumnName == col.Name && oride.Table == col.Table {
-			return oride.GoTypeName
+			return oride.GoImportPath
 		}
 	}
 	typ := r.goInnerType(col, settings)
@@ -638,7 +638,7 @@ func (r Result) goInnerType(col core.Column, settings config.CombinedSettings) s
 	// package overrides have a higher precedence
 	for _, oride := range settings.Overrides {
 		if oride.DBType != "" && oride.DBType == columnType && oride.Null != notNull {
-			return oride.GoTypeName
+			return oride.GoImportPath
 		}
 	}
 
