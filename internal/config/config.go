@@ -128,7 +128,7 @@ type SQLKotlin struct {
 
 type Override struct {
 	// Import path, package name and type name as you would type them in the IDE
-	GoTypeParam GoTypeParams `json:"go_type" yaml:"go_type"`
+	GoTypeParam *GoTypeParams `json:"go_type" yaml:"go_type"`
 
 	// The database type to override
 	DBType                  string `json:"db_type" yaml:"db_type"`
