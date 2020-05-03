@@ -6,12 +6,12 @@ packages:
     queries: "sql/"
     overrides:
       - go_type:
-          import: "example.com/pkg.CustomType"
+          import: "example.com/pkg"
           package: "pkg"
           type: "CustomType"
         column: "foo.retyped"
       - go_type:
-          import: "github.com/lib/pq.StringArray"
+          import: "github.com/lib/pq"
           package: "pq"
           type: "StringArray"
         column: "foo.langs"
