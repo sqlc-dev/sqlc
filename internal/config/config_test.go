@@ -112,7 +112,7 @@ func TestTypeOverrides(t *testing.T) {
 			Override{
 				DBType: "string",
 				GoTypeParam: GoTypeParams{
-					ImportPath:  "gopkg.in/guregu/null.v3/zero.String",
+					ImportPath:  "gopkg.in/guregu/null.v3/zero",
 					PackageName: "zero",
 					TypeName:    "String",
 				},
