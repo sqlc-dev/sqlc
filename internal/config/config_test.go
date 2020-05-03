@@ -136,7 +136,7 @@ func TestTypeOverrides(t *testing.T) {
 		},
 	} {
 		tt := test
-		t.Run(tt.override.GoType, func(t *testing.T) {
+		t.Run(tt.override.GoTypeParam.ImportPath, func(t *testing.T) {
 			if err := tt.override.Parse(); err != nil {
 				t.Fatalf("override parsing failed; %s", err)
 			}
