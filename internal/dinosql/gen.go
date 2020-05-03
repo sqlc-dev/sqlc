@@ -288,7 +288,7 @@ func interfaceImports(r Generateable, settings config.CombinedSettings) fileImpo
 		if o.GoBasicType {
 			continue
 		}
-		overrideTypes[o.GoTypeName] = o.GoPackage
+		overrideTypes[o.GoTypeName] = o.GoTypeParam.ImportPath
 	}
 
 	_, overrideNullTime := overrideTypes["pq.NullTime"]
@@ -350,7 +350,7 @@ func modelImports(r Generateable, settings config.CombinedSettings) fileImports 
 		if o.GoBasicType {
 			continue
 		}
-		overrideTypes[o.GoTypeName] = o.GoPackage
+		overrideTypes[o.GoTypeName] = o.GoTypeParam.ImportPath
 	}
 
 	_, overrideNullTime := overrideTypes["pq.NullTime"]
@@ -485,7 +485,7 @@ func queryImports(r Generateable, settings config.CombinedSettings, filename str
 		if o.GoBasicType {
 			continue
 		}
-		overrideTypes[o.GoTypeName] = o.GoPackage
+		overrideTypes[o.GoTypeName] = o.GoTypeParam.ImportPath
 	}
 
 	if sliceScan() {
