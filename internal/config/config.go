@@ -128,10 +128,10 @@ type SQLKotlin struct {
 }
 
 type Override struct {
-	// name of the golang type to use, e.g. `github.com/segmentio/ksuid.KSUID`
+	// Fully qualified name of the Go type to use, e.g. `github.com/segmentio/ksuid.KSUID`
 	GoType string `json:"go_type" yaml:"go_type"`
 
-	// fully qualified name of the Go type, e.g. `github.com/segmentio/ksuid.KSUID`
+	// The database type to override
 	DBType                  string `json:"db_type" yaml:"db_type"`
 	Deprecated_PostgresType string `json:"postgres_type" yaml:"postgres_type"`
 
