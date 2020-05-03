@@ -8,10 +8,18 @@
       "queries": "query.sql",
       "engine": "mysql",
       "overrides": [{
-        "go_type": "example.com/mysql.ID",
+        "go_type": {
+          "import": "example.com/mysql.ID",
+          "package": "mysql",
+          "type": "ID"
+        },
         "column": "users.id"
       }, {
-        "go_type": "example.com/mysql.ID",
+        "go_type":{
+          "import": "example.com/mysql.ID",
+          "package": "mysql",
+          "type": "ID"
+        },
         "column": "orders.id"
       }]
     }
