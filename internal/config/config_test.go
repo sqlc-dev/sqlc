@@ -176,18 +176,11 @@ func TestTypeOverrides(t *testing.T) {
 					TypeName:    "untyped rune",
 				},
 			},
-			"Package override `go_type` specifier \"Pointer\" is not a Go basic type e.g. 'string'",
-		},
-		{
-			Override{
-				DBType: "uuid",
-				GoType: "untyped rune",
-			},
 			"Package override `go_type` specifier \"untyped rune\" is not a Go basic type e.g. 'string'",
 		},
 	} {
 		tt := test
-		t.Run(tt.override.GoType, func(t *testing.T) {
+		t.Run(tt.override.GoTypeParam.TypeName, func(t *testing.T) {
 			err := tt.override.Parse()
 			if err == nil {
 				t.Fatalf("expected pars to fail; got nil")
