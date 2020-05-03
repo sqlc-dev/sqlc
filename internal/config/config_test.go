@@ -140,10 +140,10 @@ func TestTypeOverrides(t *testing.T) {
 			if err := tt.override.Parse(); err != nil {
 				t.Fatalf("override parsing failed; %s", err)
 			}
-			if diff := cmp.Diff(tt.typeName, tt.override.GoTypeName); diff != "" {
+			if diff := cmp.Diff(tt.typeName, tt.override.GoImportPath); diff != "" {
 				t.Errorf("type name mismatch;\n%s", diff)
 			}
-			if diff := cmp.Diff(tt.pkg, tt.override.GoPackage); diff != "" {
+			if diff := cmp.Diff(tt.pkg, tt.override.GoPackageName); diff != "" {
 				t.Errorf("package mismatch;\n%s", diff)
 			}
 			if diff := cmp.Diff(tt.basic, tt.override.GoBasicType); diff != "" {

@@ -147,9 +147,9 @@ type Override struct {
 	Table      pg.FQN
 
 	// FIXME The whole sqlc package could be rewritten to fetch these values from the new type GoTypeParams, however, to not mess around too much I left them here. Otherwise it would be needed to refactor in too many places around the codebase. I know for certain that the rest of the code will search these values here hence, I'm leeaving them as such. -- maxiride
-	GoTypeName  string
-	GoPackage   string
-	GoBasicType bool
+	GoImportPath  string
+	GoPackageName string
+	GoBasicType   bool
 }
 
 type GoTypeParams struct {
@@ -246,22 +246,22 @@ func (o *Override) Parse() error {
 			o.GoTypeParam.PackageName = o.GoTypeParam.PackageName[:len(o.GoTypeParam.PackageName)-len("-go")]
 		}
 
-		o.GoPackage = o.GoTypeParam.PackageName
+		o.GoPackageName = o.GoTypeParam.PackageName
 
 	}
 
 	if len(o.GoTypeParam.ImportPath) > 0 {
-		o.GoTypeName = o.GoTypeParam.PackageName + "." + o.GoTypeParam.TypeName
+		o.GoImportPath = o.GoTypeParam.PackageName + "." + o.GoTypeParam.TypeName
 	} else {
-		o.GoTypeName = o.GoTypeParam.TypeName
+		o.GoImportPath = o.GoTypeParam.TypeName
 	}
 
 	if len(o.GoTypeParam.ImportPath) > 0 {
 		isPointer := o.GoTypeParam.ImportPath[0] == '*'
 		if isPointer {
 			// FIXME unsure how to handle this, didn't fully understood it yet
-			o.GoPackage = o.GoPackage[1:]
-			o.GoTypeName = "*" + o.GoTypeName
+			o.GoPackageName = o.GoPackageName[1:]
+			o.GoImportPath = "*" + o.GoImportPath
 		}
 	}
 
