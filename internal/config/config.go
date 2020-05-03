@@ -139,7 +139,7 @@ type Override struct {
 	Engine Engine `json:"engine,omitempty" yaml:"engine"`
 
 	// True if the GoType should override if the maching postgres type is nullable
-	Null bool `json:"null" yaml:"null"`
+	Null bool `json:"is_null" yaml:"is_null"`
 
 	// fully qualified name of the column, e.g. `accounts.id`
 	Column string `json:"column" yaml:"column"`
