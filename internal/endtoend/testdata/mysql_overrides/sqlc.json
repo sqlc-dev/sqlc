@@ -7,17 +7,34 @@
       "schema": "schema.sql",
       "queries": "query.sql",
       "engine": "mysql",
-      "overrides": [{
-        "go_type": "example.com/mysql.ID",
-        "column": "users.id"
-      }, {
-        "go_type": "example.com/mysql.ID",
-        "column": "orders.id"
-      }]
+      "overrides": [
+        {
+          "go_type": {
+            "import": "example.com/mysql",
+            "package": "mysql",
+            "type": "ID"
+          },
+          "column": "users.id"
+        },
+        {
+          "go_type": {
+            "import": "example.com/mysql",
+            "package": "mysql",
+            "type": "ID"
+          },
+          "column": "orders.id"
+        }
+      ]
     }
   ],
-  "overrides": [{
-    "go_type": "example.com/mysql.Timestamp",
-    "db_type": "timestamp"
-  }]
+  "overrides": [
+    {
+      "go_type": {
+        "import": "example.com/mysql",
+        "package": "mysql",
+        "type": "Timestamp"
+      },
+      "db_type": "timestamp"
+    }
+  ]
 }

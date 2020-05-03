@@ -5,7 +5,13 @@ packages:
     schema: "sql/"
     queries: "sql/"
     overrides:
-      - go_type: "example.com/pkg.CustomType"
+      - go_type:
+          import: "example.com/pkg"
+          package: "pkg"
+          type: "CustomType"
         column: "foo.retyped"
-      - go_type: "github.com/lib/pq.StringArray"
+      - go_type:
+          import: "github.com/lib/pq"
+          package: "pq"
+          type: "StringArray"
         column: "foo.langs"
