@@ -74,9 +74,13 @@ func TestTypeOverrides(t *testing.T) {
 		{
 			Override{
 				DBType: "uuid",
-				GoType: "github.com/segmentio/ksuid.KSUID",
+				GoTypeParam: GoTypeParams{
+					ImportPath:  "github.com/segmentio/ksuid",
+					PackageName: "ksuid",
+					TypeName:    "KSUID",
+				},
 			},
-			"github.com/segmentio/ksuid",
+			"ksuid",
 			"ksuid.KSUID",
 			false,
 		},
@@ -94,29 +98,39 @@ func TestTypeOverrides(t *testing.T) {
 		{
 			Override{
 				DBType: "citext",
-				GoType: "string",
+				GoTypeParam: GoTypeParams{
+					ImportPath:  "",
+					PackageName: "",
+					TypeName:    "string",
+				},
 			},
 			"",
 			"string",
 			true,
 		},
 		{
-			// Attempt to debug the gopkg.in/guregu/null.v3/zero failed fetching, upstream code do not throw any error when issuing generate and needs to be investigated. See #462 and #255
 			Override{
 				DBType: "string",
-				GoType: "gopkg.in/guregu/null.v3/zero.String",
+				GoTypeParam: GoTypeParams{
+					ImportPath:  "gopkg.in/guregu/null.v3/zero.String",
+					PackageName: "zero",
+					TypeName:    "String",
+				},
 			},
-			"gopkg.in/guregu/null.v3/zero",
+			"zero",
 			"zero.String",
 			false,
 		},
 		{
-			// See #462 and #255
 			Override{
 				DBType: "string",
-				GoType: "gopkg.in/guregu/null.v3.String",
+				GoTypeParam: GoTypeParams{
+					ImportPath:  "gopkg.in/guregu/null.v3",
+					PackageName: "null",
+					TypeName:    "String",
+				},
 			},
-			"gopkg.in/guregu/null.v3",
+			"null",
 			"null.String",
 			false,
 		},
@@ -137,6 +151,7 @@ func TestTypeOverrides(t *testing.T) {
 			}
 		})
 	}
+
 	for _, test := range []struct {
 		override Override
 		err      string
@@ -144,7 +159,22 @@ func TestTypeOverrides(t *testing.T) {
 		{
 			Override{
 				DBType: "uuid",
-				GoType: "Pointer",
+				GoTypeParam: GoTypeParams{
+					ImportPath:  "",
+					PackageName: "",
+					TypeName:    "Pointer",
+				},
+			},
+			"Package override `go_type` specifier \"Pointer\" is not a Go basic type e.g. 'string'",
+		},
+		{
+			Override{
+				DBType: "uuid",
+				GoTypeParam: GoTypeParams{
+					ImportPath:  "",
+					PackageName: "",
+					TypeName:    "untyped rune",
+				},
 			},
 			"Package override `go_type` specifier \"Pointer\" is not a Go basic type e.g. 'string'",
 		},
