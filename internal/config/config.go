@@ -8,7 +8,6 @@ import (
 	"go/types"
 	"io"
 	"os"
-	"regexp"
 	"strings"
 
 	"github.com/kyleconroy/sqlc/internal/pg"
@@ -128,8 +127,8 @@ type SQLKotlin struct {
 }
 
 type Override struct {
-	// Fully qualified name of the Go type to use, e.g. `github.com/segmentio/ksuid.KSUID`
-	GoType string `json:"go_type" yaml:"go_type"`
+	// Import path, package name and type name as you would type them in the IDE
+	GoTypeParam GoTypeParams `json:"go_type" yaml:"go_type"`
 
 	// The database type to override
 	DBType                  string `json:"db_type" yaml:"db_type"`
@@ -144,11 +143,24 @@ type Override struct {
 	// fully qualified name of the column, e.g. `accounts.id`
 	Column string `json:"column" yaml:"column"`
 
-	ColumnName  string
-	Table       pg.FQN
+	ColumnName string
+	Table      pg.FQN
+
+	GoType      string
 	GoTypeName  string
 	GoPackage   string
 	GoBasicType bool
+}
+
+type GoTypeParams struct {
+	// Eg. package "github.com/segmentio/ksuid" which usage is ksuid.KSUID would have:
+	// ImportPath "github.com/segmentio/ksuid"
+	// Package name ksuid
+	// Type name KSUID
+
+	ImportPath  string `json:"import" yaml:"import"`
+	PackageName string `json:"package" yaml:"package"`
+	TypeName    string `json:"type" yaml:"type"`
 }
 
 func (o *Override) Parse() error {
@@ -189,9 +201,9 @@ func (o *Override) Parse() error {
 	}
 
 	// validate GoType
-	lastDot := strings.LastIndex(o.GoType, ".")
-	lastSlash := strings.LastIndex(o.GoType, "/")
-	typename := o.GoType
+	lastDot := strings.LastIndex(o.GoTypeParam.ImportPath, ".")
+	lastSlash := strings.LastIndex(o.GoTypeParam.ImportPath, "/")
+	typename := o.GoTypeParam.TypeName
 	if lastDot == -1 && lastSlash == -1 {
 		// if the type name has no slash and no dot, validate that the type is a basic Go type
 		var found bool
@@ -208,59 +220,47 @@ func (o *Override) Parse() error {
 			}
 		}
 		if !found {
-			return fmt.Errorf("Package override `go_type` specifier %q is not a Go basic type e.g. 'string'", o.GoType)
+			return fmt.Errorf("Package override `go_type` specifier %q is not a Go basic type e.g. 'string'", o.GoTypeParam.TypeName)
 		}
 		o.GoBasicType = true
 	} else {
-		// assume the type lives in a Go package
-		if lastDot == -1 {
-			return fmt.Errorf("Package override `go_type` specifier %q is not the proper format, expected 'package.type', e.g. 'github.com/segmentio/ksuid.KSUID'", o.GoType)
-		}
-		if lastSlash == -1 {
-			return fmt.Errorf("Package override `go_type` specifier %q is not the proper format, expected 'package.type', e.g. 'github.com/segmentio/ksuid.KSUID'", o.GoType)
-		}
+		// TODO need to implement checks for #177, is an import path is set, the package is external otherwise it doesn't need to be imported
+		/*		This checks shouldn't be needed anymore, proper Go type definition responsibility is to the end user given the explicitly set fields.
+				// assume the type lives in a Go package
+				if lastDot == -1 {
+					return fmt.Errorf("Package override `go_type` specifier %q is not the proper format, expected 'package.type', e.g. 'github.com/segmentio/ksuid.KSUID'", o.GoType)
+				}
+				if lastSlash == -1 {
+					return fmt.Errorf("Package override `go_type` specifier %q is not the proper format, expected 'package.type', e.g. 'github.com/segmentio/ksuid.KSUID'", o.GoType)
+				}
+		*/
 
-		// Upstream typename assignment
-		// typename = o.GoType[lastSlash+1:]
-
-		// Regex to match the type name and the package name
-		typeNameRegex := regexp.MustCompile(`.+\/(?P<typeName>.+?)$`)
-
-		// Is there a regex match for the type name?
-		if ok := typeNameRegex.MatchString(o.GoType); ok {
-			typename = typeNameRegex.FindStringSubmatch(o.GoType)[1]
-		} else {
-			return fmt.Errorf("Type regex match not found")
-		}
-
-		if strings.HasPrefix(typename, "go-") {
+		if strings.HasPrefix(o.GoTypeParam.PackageName, "go-") {
 			// a package name beginning with "go-" will give syntax errors in
 			// generated code. We should do the right thing and get the actual
 			// import name, but in lieu of that, stripping the leading "go-" may get
 			// us what we want.
-			typename = typename[len("go-"):]
+			o.GoTypeParam.PackageName = o.GoTypeParam.PackageName[len("go-"):]
 		}
-		if strings.HasSuffix(typename, "-go") {
-			typename = typename[:len(typename)-len("-go")]
+		if strings.HasSuffix(o.GoTypeParam.PackageName, "-go") {
+			o.GoTypeParam.PackageName = o.GoTypeParam.PackageName[:len(o.GoTypeParam.PackageName)-len("-go")]
 		}
-		// Upstream package name assignment
-		//o.GoPackage = o.GoType[:lastDot]
 
-		pkgNameRegex := regexp.MustCompile(`(?P<pkgName>.+)\..+$`)
-
-		// Is there a regex match for the package name?
-		if ok := pkgNameRegex.MatchString(o.GoType); ok {
-			o.GoPackage = pkgNameRegex.FindStringSubmatch(o.GoType)[1]
-		} else {
-			return fmt.Errorf("Package regex match not found")
-		}
+		o.GoPackage = o.GoTypeParam.PackageName
 
 	}
-	o.GoTypeName = typename
-	isPointer := o.GoType[0] == '*'
-	if isPointer {
-		o.GoPackage = o.GoPackage[1:]
-		o.GoTypeName = "*" + o.GoTypeName
+	if len(o.GoTypeParam.ImportPath) > 0 {
+		o.GoTypeName = o.GoTypeParam.PackageName + "." + o.GoTypeParam.TypeName
+	} else {
+		o.GoTypeName = o.GoTypeParam.TypeName
+	}
+
+	if len(o.GoTypeParam.ImportPath) > 0 {
+		isPointer := o.GoTypeParam.ImportPath[0] == '*'
+		if isPointer {
+			o.GoPackage = o.GoPackage[1:]
+			o.GoTypeName = "*" + o.GoTypeName
+		}
 	}
 
 	return nil
