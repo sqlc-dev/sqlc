@@ -234,7 +234,7 @@ func (pGen PackageGenerator) goTypeCol(col Column) string {
 		shouldOverride := (oride.DBType != "" && oride.DBType == mySQLType && oride.Null != notNull) ||
 			(oride.ColumnName != "" && oride.ColumnName == colName && oride.Table.Rel == col.Table)
 		if shouldOverride {
-			return oride.GoTypeName
+			return oride.GoImportPath
 		}
 	}
 	switch t := mySQLType; {
