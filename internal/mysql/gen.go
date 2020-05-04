@@ -68,7 +68,7 @@ func (r *Result) Structs(settings config.CombinedSettings) []dinosql.GoStruct {
 	var structs []dinosql.GoStruct
 	for tableName, cols := range r.Schema.tables {
 		structName := dinosql.StructName(tableName, settings)
-		if !settings.Pkg.EmitExactTableNames {
+		if !(settings.Go.EmitExactTableNames || settings.Kotlin.EmitExactTableNames) {
 			structName = inflection.Singular(structName)
 		}
 		s := dinosql.GoStruct{
