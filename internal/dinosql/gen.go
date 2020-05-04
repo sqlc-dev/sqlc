@@ -595,9 +595,13 @@ func (r Result) Structs(settings config.CombinedSettings) []GoStruct {
 			} else {
 				tableName = name + "_" + table.Name
 			}
+			structName := tableName
+			if !settings.Go.EmitExactTableNames {
+				structName = inflection.Singular(structName)
+			}
 			s := GoStruct{
 				Table:   core.FQN{Schema: name, Rel: table.Name},
-				Name:    StructName(inflection.Singular(tableName), settings),
+				Name:    StructName(structName, settings),
 				Comment: table.Comment,
 			}
 			for _, column := range table.Columns {
