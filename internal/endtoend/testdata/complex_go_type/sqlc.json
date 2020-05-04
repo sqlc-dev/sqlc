@@ -2,7 +2,7 @@
   "version": "1",
   "packages": [
   {
-    "name": "querytest",
+    "name": "db",
     "path": "go",
     "queries": "query.sql",
     "schema": "schema.sql"
