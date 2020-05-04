@@ -1,0 +1,17 @@
+version: "1"
+packages:
+  - name: "db"
+    emit_json_tags: true
+    emit_prepared_queries: false
+    emit_interface: false
+    path: "."
+    queries: "./query.sql"
+    schema: "./schema.sql"
+overrides:
+  - go_type:
+      import: "gopkg.in/guregu/null.v3/zero"
+      package: "zero"
+      type: "String"
+    is_null: true
+    db_type: "text"
+
