@@ -203,7 +203,13 @@ func (o *Override) Parse() error {
 	// validate GoType
 	lastDot := strings.LastIndex(o.GoTypeParam.ImportPath, ".")
 	lastSlash := strings.LastIndex(o.GoTypeParam.ImportPath, "/")
-	typename := o.GoTypeParam.TypeName
+
+
+	// If the overriding type is "local" (see #177) the config will have the 'import' tag null\zeroed,
+	// lastDot ==-1 && lasSlash == -1 would return TRUE and we would attempt to find a builtin type, which will not be found.
+	// FIXME Need to think on how to differentiate from a "local" type and builtin type when the import path is not set.
+	// As of now the test passes because there is no test for such scenario.
+	// Possibile fix: check that first letter is uppercase with unicode.IsUpper(o.GoTypeParam.ImportPath[0]) && unicode.IsLetter(o.GoTypeParam.ImportPath[0])
 	if lastDot == -1 && lastSlash == -1 {
 		// if the type name has no slash and no dot, validate that the type is a basic Go type
 		var found bool
@@ -215,7 +221,7 @@ func (o *Override) Parse() error {
 			if info&types.IsUntyped != 0 {
 				continue
 			}
-			if typename == typ.Name() {
+			if o.GoTypeParam.TypeName == typ.Name() {
 				found = true
 			}
 		}

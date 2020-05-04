@@ -95,6 +95,21 @@ func TestTypeOverrides(t *testing.T) {
 		// 	"*ksuid.KSUID",
 		// 	false,
 		// },
+		//
+		// TODO Add test for config where the import path is not set but the type declared isn't a builtin one but a custom one
+		//{
+		//	Override{
+		//		DBType: "string",
+		//		GoTypeParam: GoTypeParams{
+		//			ImportPath:  "",
+		//			PackageName: "",
+		//			TypeName:    "CustomType",
+		//		},
+		//	},
+		//	"",
+		//	"CustomType",
+		//	false,
+		//},
 		{
 			Override{
 				DBType: "citext",
