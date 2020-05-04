@@ -129,27 +129,40 @@ type SQLKotlin struct {
 }
 
 type Override struct {
-	// name of the golang type to use, e.g. `github.com/segmentio/ksuid.KSUID`
-	GoType string `json:"go_type" yaml:"go_type"`
+	// Import path, package name and type name as you would type them in the IDE
+	GoTypeParam GoTypeParams `json:"go_type" yaml:"go_type"`
 
-	// fully qualified name of the Go type, e.g. `github.com/segmentio/ksuid.KSUID`
+	// The database type to override
 	DBType                  string `json:"db_type" yaml:"db_type"`
 	Deprecated_PostgresType string `json:"postgres_type" yaml:"postgres_type"`
 
 	// for global overrides only when two different engines are in use
 	Engine Engine `json:"engine,omitempty" yaml:"engine"`
 
-	// True if the GoType should override if the maching postgres type is nullable
-	Null bool `json:"null" yaml:"null"`
+	// True if the GoType should override if the matching postgres type is nullable
+	Null bool `json:"is_null" yaml:"is_null"`
 
 	// fully qualified name of the column, e.g. `accounts.id`
 	Column string `json:"column" yaml:"column"`
 
-	ColumnName  string
-	Table       pg.FQN
-	GoTypeName  string
-	GoPackage   string
-	GoBasicType bool
+	ColumnName string
+	Table      pg.FQN
+
+	// FIXME The whole sqlc package could be rewritten to fetch these values from the new type GoTypeParams, however, to not mess around too much I left them here. Otherwise it would be needed to refactor in too many places around the codebase. I know for certain that the rest of the code will search these values here hence, I'm leeaving them as such. -- maxiride
+	GoImportPath  string
+	GoPackageName string
+	GoBasicType   bool
+}
+
+type GoTypeParams struct {
+	// Eg. package "github.com/segmentio/ksuid" which usage is ksuid.KSUID would have:
+	// ImportPath "github.com/segmentio/ksuid"
+	// Package name ksuid
+	// Type name KSUID
+
+	ImportPath  string `json:"import" yaml:"import"`
+	PackageName string `json:"package" yaml:"package"`
+	TypeName    string `json:"type" yaml:"type"`
 }
 
 func (o *Override) Parse() error {
@@ -190,9 +203,15 @@ func (o *Override) Parse() error {
 	}
 
 	// validate GoType
-	lastDot := strings.LastIndex(o.GoType, ".")
-	lastSlash := strings.LastIndex(o.GoType, "/")
-	typename := o.GoType
+	lastDot := strings.LastIndex(o.GoTypeParam.ImportPath, ".")
+	lastSlash := strings.LastIndex(o.GoTypeParam.ImportPath, "/")
+
+
+	// If the overriding type is "local" (see #177) the config will have the 'import' tag null\zeroed,
+	// lastDot ==-1 && lasSlash == -1 would return TRUE and we would attempt to find a builtin type, which will not be found.
+	// FIXME Need to think on how to differentiate from a "local" type and builtin type when the import path is not set.
+	// As of now the test passes because there is no test for such scenario.
+	// Possibile fix: check that first letter is uppercase with unicode.IsUpper(o.GoTypeParam.ImportPath[0]) && unicode.IsLetter(o.GoTypeParam.ImportPath[0])
 	if lastDot == -1 && lastSlash == -1 {
 		// if the type name has no slash and no dot, validate that the type is a basic Go type
 		var found bool
@@ -204,40 +223,58 @@ func (o *Override) Parse() error {
 			if info&types.IsUntyped != 0 {
 				continue
 			}
-			if typename == typ.Name() {
+			if o.GoTypeParam.TypeName == typ.Name() {
 				found = true
 			}
 		}
 		if !found {
-			return fmt.Errorf("Package override `go_type` specifier %q is not a Go basic type e.g. 'string'", o.GoType)
+			return fmt.Errorf("Package override `go_type` specifier %q is not a Go basic type e.g. 'string'", o.GoTypeParam.TypeName)
 		}
 		o.GoBasicType = true
 	} else {
-		// assume the type lives in a Go package
-		if lastDot == -1 {
-			return fmt.Errorf("Package override `go_type` specifier %q is not the proper format, expected 'package.type', e.g. 'github.com/segmentio/ksuid.KSUID'", o.GoType)
-		}
-		if lastSlash == -1 {
-			return fmt.Errorf("Package override `go_type` specifier %q is not the proper format, expected 'package.type', e.g. 'github.com/segmentio/ksuid.KSUID'", o.GoType)
-		}
-		typename = o.GoType[lastSlash+1:]
-		if strings.HasPrefix(typename, "go-") {
+		// As pointed out, for backwards compatibility this check needs to be performed, however in the current status of the
+		// PR these checks will always fail with the new config because, if used, the 'import' tag won't have any dot
+		// except for the niche of complex_go_types
+		// FIXME, need to implement a check to ensure whether the "legacy" or "new" config structure is used
+		// Possible quick and dirty fix: check if o.GoTypeParam.TypeName && o.GoTypeParam.PackageName are set
+		/*
+				// assume the type lives in a Go package
+				if lastDot == -1 {
+					return fmt.Errorf("Package override `go_type` specifier %q is not the proper format, expected 'package.type', e.g. 'github.com/segmentio/ksuid.KSUID'", o.GoType)
+				}
+				if lastSlash == -1 {
+					return fmt.Errorf("Package override `go_type` specifier %q is not the proper format, expected 'package.type', e.g. 'github.com/segmentio/ksuid.KSUID'", o.GoType)
+				}
+		*/
+
+		if strings.HasPrefix(o.GoTypeParam.PackageName, "go-") {
 			// a package name beginning with "go-" will give syntax errors in
 			// generated code. We should do the right thing and get the actual
 			// import name, but in lieu of that, stripping the leading "go-" may get
 			// us what we want.
-			typename = typename[len("go-"):]
+			o.GoTypeParam.PackageName = o.GoTypeParam.PackageName[len("go-"):]
 		}
-		if strings.HasSuffix(typename, "-go") {
-			typename = typename[:len(typename)-len("-go")]
+		if strings.HasSuffix(o.GoTypeParam.PackageName, "-go") {
+			o.GoTypeParam.PackageName = o.GoTypeParam.PackageName[:len(o.GoTypeParam.PackageName)-len("-go")]
 		}
-		o.GoPackage = o.GoType[:lastDot]
+
+		o.GoPackageName = o.GoTypeParam.PackageName
+
 	}
-	o.GoTypeName = typename
-	isPointer := o.GoType[0] == '*'
-	if isPointer {
-		o.GoPackage = o.GoPackage[1:]
-		o.GoTypeName = "*" + o.GoTypeName
+
+	if len(o.GoTypeParam.ImportPath) > 0 {
+		o.GoImportPath = o.GoTypeParam.PackageName + "." + o.GoTypeParam.TypeName
+	} else {
+		o.GoImportPath = o.GoTypeParam.TypeName
+	}
+
+	if len(o.GoTypeParam.ImportPath) > 0 {
+		isPointer := o.GoTypeParam.ImportPath[0] == '*'
+		if isPointer {
+			// FIXME unsure how to handle this, didn't fully understood it yet
+			o.GoPackageName = o.GoPackageName[1:]
+			o.GoImportPath = "*" + o.GoImportPath
+		}
 	}
 
 	return nil
