@@ -1,0 +1,22 @@
+{
+  "version": "1",
+  "packages": [
+  {
+    "name": "querytest",
+    "path": "go",
+    "queries": "query.sql",
+    "schema": "schema.sql"
+  }
+  ],
+  "overrides": [
+  {
+    "go_type": {
+      "import": "gopkg.in/guregu/null.v3/zero",
+      "package": "zero",
+      "type": "String"
+    },
+    "is_null": true,
+    "db_type": "text"
+  }
+  ]
+}
