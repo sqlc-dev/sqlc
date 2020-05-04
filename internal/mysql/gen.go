@@ -67,8 +67,12 @@ func (pGen PackageGenerator) enumNameFromColDef(col *sqlparser.ColumnDefinition)
 func (r *Result) Structs(settings config.CombinedSettings) []dinosql.GoStruct {
 	var structs []dinosql.GoStruct
 	for tableName, cols := range r.Schema.tables {
+		structName := dinosql.StructName(tableName, settings)
+		if !(settings.Go.EmitExactTableNames || settings.Kotlin.EmitExactTableNames) {
+			structName = inflection.Singular(structName)
+		}
 		s := dinosql.GoStruct{
-			Name:  inflection.Singular(dinosql.StructName(tableName, settings)),
+			Name:  structName,
 			Table: core.FQN{tableName, "", ""}, // TODO: Complete hack. Only need for equality check to see if struct can be reused between queries
 		}
 
