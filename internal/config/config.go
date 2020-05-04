@@ -137,7 +137,7 @@ type Override struct {
 	// for global overrides only when two different engines are in use
 	Engine Engine `json:"engine,omitempty" yaml:"engine"`
 
-	// True if the GoType should override if the maching postgres type is nullable
+	// True if the GoType should override if the matching postgres type is nullable
 	Null bool `json:"is_null" yaml:"is_null"`
 
 	// fully qualified name of the column, e.g. `accounts.id`
@@ -230,8 +230,12 @@ func (o *Override) Parse() error {
 		}
 		o.GoBasicType = true
 	} else {
-		// TODO need to implement checks for #177, is an import path is set, the package is external otherwise it doesn't need to be imported
-		/*		This checks shouldn't be needed anymore, proper Go type definition responsibility is to the end user given the explicitly set fields.
+		// As pointed out, for backwards compatibility this check needs to be performed, however in the current status of the
+		// PR these checks will always fail with the new config because, if used, the 'import' tag won't have any dot
+		// except for the niche of complex_go_types
+		// FIXME, need to implement a check to ensure whether the "legacy" or "new" config structure is used
+		// Possible quick and dirty fix: check if o.GoTypeParam.TypeName && o.GoTypeParam.PackageName are set
+		/*
 				// assume the type lives in a Go package
 				if lastDot == -1 {
 					return fmt.Errorf("Package override `go_type` specifier %q is not the proper format, expected 'package.type', e.g. 'github.com/segmentio/ksuid.KSUID'", o.GoType)
