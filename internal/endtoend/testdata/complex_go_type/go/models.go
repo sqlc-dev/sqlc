@@ -7,7 +7,7 @@ import (
 )
 
 type Author struct {
-	ID   int64       `json:"id"`
-	Name string      `json:"name"`
-	Bio  zero.String `json:"bio"`
+	ID   int64
+	Name string
+	Bio  zero.String
 }

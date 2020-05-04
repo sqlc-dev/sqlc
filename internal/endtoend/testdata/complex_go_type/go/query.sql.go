@@ -19,8 +19,8 @@ RETURNING id, name, bio
 `
 
 type CreateAuthorParams struct {
-	Name string      `json:"name"`
-	Bio  zero.String `json:"bio"`
+	Name string
+	Bio  zero.String
 }
 
 func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams) (Author, error) {
