@@ -6,8 +6,10 @@ WORKDIR /workspace
 
 ARG github_ref
 ARG github_sha
+ARG version
 ENV GITHUB_REF=$github_ref
 ENV GITHUB_SHA=$github_sha
+ENV VERSION=$version
 RUN go run scripts/release.go -docker
 
 # STEP 2: Build a tiny image
