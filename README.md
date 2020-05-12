@@ -274,23 +274,19 @@ in the directory where the `sqlc` command is run.
 version: "1"
 packages:
   - name: "db"
-    emit_json_tags: true
-    emit_prepared_queries: false
-    emit_interface: true
     path: "internal/db"
     queries: "./sql/query/"
     schema: "./sql/schema/"
+    engine: "postgresql"
+    emit_json_tags: true
+    emit_prepared_queries: true
+    emit_interface: false
+    emit_exact_table_names: false
 ```
 
 Each package document has the following keys:
 - `name`:
   - The package name to use for the generated code. Defaults to `path` basename
-- `emit_json_tags`:
-  - If true, add JSON tags to generated structs. Defaults to `false`.
-- `emit_prepared_queries`:
-  - If true, include support for prepared queries. Defaults to `false`.
-- `emit_interface`:
-  - If true, output a `Querier` interface in the generated package. Defaults to `false`.
 - `path`:
   - Output directory for generated code
 - `queries`:
@@ -299,6 +295,14 @@ Each package document has the following keys:
   - Directory of SQL migrations or path to single SQL file
 - `engine`:
   - Either `postgresql` or `mysql`. Defaults to `postgresql`. MySQL support is experimental
+- `emit_json_tags`:
+  - If true, add JSON tags to generated structs. Defaults to `false`.
+- `emit_prepared_queries`:
+  - If true, include support for prepared queries. Defaults to `false`.
+- `emit_interface`:
+  - If true, output a `Querier` interface in the generated package. Defaults to `false`.
+- `emit_exact_table_names`:
+  - If true, struct names will mirror table names. Otherwise, sqlc attempts to singularize plural table names. Defaults to `false`.
 
 ### Type Overrides
 
