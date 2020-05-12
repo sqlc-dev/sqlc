@@ -7,12 +7,12 @@ import (
 	"context"
 )
 
-const limit = `-- name: Limit :many
+const limitMe = `-- name: LimitMe :many
 SELECT bar FROM foo LIMIT $1
 `
 
-func (q *Queries) Limit(ctx context.Context, limit int32) ([]bool, error) {
-	rows, err := q.db.QueryContext(ctx, limit, limit)
+func (q *Queries) LimitMe(ctx context.Context, limit int32) ([]bool, error) {
+	rows, err := q.db.QueryContext(ctx, limitMe, limit)
 	if err != nil {
 		return nil, err
 	}

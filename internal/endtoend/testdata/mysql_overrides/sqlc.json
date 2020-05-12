@@ -8,16 +8,16 @@
       "queries": "query.sql",
       "engine": "mysql",
       "overrides": [{
-        "go_type": "example.com/mysql.ID",
+        "go_type": "github.com/kyleconroy/sqlc-testdata/mysql.ID",
         "column": "users.id"
       }, {
-        "go_type": "example.com/mysql.ID",
+        "go_type": "github.com/kyleconroy/sqlc-testdata/mysql.ID",
         "column": "orders.id"
       }]
     }
   ],
   "overrides": [{
-    "go_type": "example.com/mysql.Timestamp",
+    "go_type": "github.com/kyleconroy/sqlc-testdata/mysql.Timestamp",
     "db_type": "timestamp"
   }]
 }
