@@ -6,7 +6,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"example.com/mysql"
+	"github.com/kyleconroy/sqlc-testdata/mysql"
 )
 
 type JobStatusType string

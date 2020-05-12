@@ -7,7 +7,7 @@ import (
 	"context"
 	"database/sql"
 
-	"example.com/mysql"
+	"github.com/kyleconroy/sqlc-testdata/mysql"
 )
 
 const getAll = `-- name: GetAll :many

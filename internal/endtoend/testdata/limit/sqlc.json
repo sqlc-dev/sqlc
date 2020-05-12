@@ -2,8 +2,8 @@
   "version": "1",
   "packages": [{
     "path": "go",
-	"name": "querytest",
-	"schema": "query.sql",
-	"queries": "query.sql"
+	  "name": "querytest",
+	  "schema": "query.sql",
+	  "queries": "query.sql"
   }]
 }

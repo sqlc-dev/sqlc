@@ -26,6 +26,9 @@ jobs:
       with:
         go-version: '1.13'
 
+    - run: go build ./...
+      working-directory: internal/endtoend/testdata
+
     - name: Test sqlc
       run: go test --tags=examples,exp -v ./...
       env:
