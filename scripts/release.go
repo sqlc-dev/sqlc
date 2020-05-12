@@ -14,20 +14,24 @@ func main() {
 	docker := flag.Bool("docker", false, "create a docker release")
 	flag.Parse()
 
+	version := os.Getenv("VERSION")
 	sha := os.Getenv("GITHUB_SHA")
 	ref := os.Getenv("GITHUB_REF")
-	cmd := exec.Command("git", "show", "--no-patch", "--no-notes", "--pretty=%ci", sha)
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Println(strings.TrimSpace(string(out)))
-		log.Fatal(err)
-	}
 
-	var date string
-	parts := strings.Split(string(out), " ")
-	date = strings.Replace(parts[0]+parts[1], "-", "", -1)
-	date = strings.Replace(date, ":", "", -1)
-	version := fmt.Sprintf("v0.0.0-%s-%s", date, sha[:12])
+	if version == "" {
+		cmd := exec.Command("git", "show", "--no-patch", "--no-notes", "--pretty=%ci", sha)
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			log.Println(strings.TrimSpace(string(out)))
+			log.Fatal(err)
+		}
+
+		var date string
+		parts := strings.Split(string(out), " ")
+		date = strings.Replace(parts[0]+parts[1], "-", "", -1)
+		date = strings.Replace(date, ":", "", -1)
+		version = fmt.Sprintf("v0.0.0-%s-%s", date, sha[:12])
+	}
 
 	if *docker {
 		x := "-extldflags \"-static\" -X github.com/kyleconroy/sqlc/internal/cmd.version=" + version
@@ -38,9 +42,9 @@ func main() {
 			"-o", "/workspace/sqlc",
 			"./cmd/sqlc",
 		}
-		cmd = exec.Command("go", args...)
+		cmd := exec.Command("go", args...)
 		cmd.Env = os.Environ()
-		out, err = cmd.CombinedOutput()
+		out, err := cmd.CombinedOutput()
 		if err != nil {
 			log.Println(strings.TrimSpace(string(out)))
 			log.Fatal(err)
@@ -83,9 +87,9 @@ func main() {
 	}...)
 
 	log.Printf("Releasing %s on channel %s", flag.Arg(0), channel)
-	cmd = exec.Command(xname, args...)
+	cmd := exec.Command(xname, args...)
 	cmd.Env = os.Environ()
-	out, err = cmd.CombinedOutput()
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Println(strings.TrimSpace(string(out)))
 		log.Fatal(err)
