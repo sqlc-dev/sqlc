@@ -67,25 +67,32 @@ func ReadSQLFiles(paths []string) ([]string, error) {
 		if err != nil {
 			return nil, fmt.Errorf("path %s does not exist", path)
 		}
-
 		if f.IsDir() {
 			listing, err := ioutil.ReadDir(path)
 			if err != nil {
 				return nil, err
 			}
 			for _, f := range listing {
-				if migrations.IsDown(f.Name()) {
-					continue
-				}
 				files = append(files, filepath.Join(path, f.Name()))
 			}
 		} else {
-			if !migrations.IsDown(path) {
-				files = append(files, path)
-			}
+			files = append(files, path)
 		}
 	}
-	return files, nil
+	var sqlFiles []string
+	for _, file := range files {
+		if !strings.HasSuffix(file, ".sql") {
+			continue
+		}
+		if strings.HasPrefix(filepath.Base(file), ".") {
+			continue
+		}
+		if migrations.IsDown(filepath.Base(file)) {
+			continue
+		}
+		sqlFiles = append(sqlFiles, file)
+	}
+	return sqlFiles, nil
 }
 
 func ParseCatalog(schemas []string) (core.Catalog, error) {
@@ -193,64 +200,43 @@ type ParserOpts struct {
 func ParseQueries(c core.Catalog, queriesPaths []string, opts ParserOpts) (*Result, error) {
 	merr := NewParserErr()
 	var q []*Query
-	for _, queries := range queriesPaths {
-		f, err := os.Stat(queries)
+
+	set := map[string]struct{}{}
+	files, err := ReadSQLFiles(queriesPaths)
+	if err != nil {
+		return nil, err
+	}
+	for _, filename := range files {
+		blob, err := ioutil.ReadFile(filename)
 		if err != nil {
-			return nil, fmt.Errorf("path %s does not exist", queries)
+			merr.Add(filename, "", 0, err)
+			continue
 		}
-
-		var files []string
-		if f.IsDir() {
-			listing, err := ioutil.ReadDir(queries)
-			if err != nil {
-				return nil, err
-			}
-			for _, f := range listing {
-				files = append(files, filepath.Join(queries, f.Name()))
-			}
-		} else {
-			files = append(files, queries)
+		source := string(blob)
+		tree, err := pg.Parse(source)
+		if err != nil {
+			merr.Add(filename, source, 0, err)
+			continue
 		}
-
-		set := map[string]struct{}{}
-		for _, filename := range files {
-			if !strings.HasSuffix(filename, ".sql") {
+		for _, stmt := range tree.Statements {
+			query, err := parseQuery(c, stmt, source, opts.UsePositionalParameters)
+			if err == errUnsupportedStatementType {
 				continue
 			}
-			if strings.HasPrefix(filepath.Base(filename), ".") {
-				continue
-			}
-			blob, err := ioutil.ReadFile(filename)
 			if err != nil {
-				merr.Add(filename, "", 0, err)
+				merr.Add(filename, source, location(stmt), err)
 				continue
 			}
-			source := string(blob)
-			tree, err := pg.Parse(source)
-			if err != nil {
-				merr.Add(filename, source, 0, err)
-				continue
-			}
-			for _, stmt := range tree.Statements {
-				query, err := parseQuery(c, stmt, source, opts.UsePositionalParameters)
-				if err == errUnsupportedStatementType {
+			if query.Name != "" {
+				if _, exists := set[query.Name]; exists {
+					merr.Add(filename, source, location(stmt), fmt.Errorf("duplicate query name: %s", query.Name))
 					continue
 				}
-				if err != nil {
-					merr.Add(filename, source, location(stmt), err)
-					continue
-				}
-				if query.Name != "" {
-					if _, exists := set[query.Name]; exists {
-						merr.Add(filename, source, location(stmt), fmt.Errorf("duplicate query name: %s", query.Name))
-						continue
-					}
-					set[query.Name] = struct{}{}
-				}
-				query.Filename = filepath.Base(filename)
-				if query != nil {
-					q = append(q, query)
-				}
+				set[query.Name] = struct{}{}
+			}
+			query.Filename = filepath.Base(filename)
+			if query != nil {
+				q = append(q, query)
 			}
 		}
 	}
