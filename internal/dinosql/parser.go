@@ -398,10 +398,10 @@ func validateCmd(n nodes.Node, name, cmd string) error {
 var errUnsupportedStatementType = errors.New("parseQuery: unsupported statement type")
 
 func parseQuery(c core.Catalog, stmt nodes.Node, source string, rewriteParameters bool) (*Query, error) {
-	if err := validateParamRef(stmt); err != nil {
+	if err := validateParamStyle(stmt); err != nil {
 		return nil, err
 	}
-	if err := validateParamStyle(stmt); err != nil {
+	if err := validateParamRef(stmt); err != nil {
 		return nil, err
 	}
 	raw, ok := stmt.(nodes.RawStmt)
