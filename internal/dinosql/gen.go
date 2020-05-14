@@ -816,14 +816,15 @@ func (r Result) columnsToStruct(name string, columns []goColumn, settings config
 	seen := map[string]int{}
 	suffixes := map[int]int{}
 	for i, c := range columns {
-		tagName := c.Name
-		fieldName := StructName(columnName(c.Column, i), settings)
+		colName := columnName(c.Column, i)
+		tagName := colName
+		fieldName := StructName(colName, settings)
 		// Track suffixes by the ID of the column, so that columns referring to the same numbered parameter can be
 		// reused.
 		suffix := 0
 		if o, ok := suffixes[c.id]; ok {
 			suffix = o
-		} else if v := seen[c.Name]; v > 0 {
+		} else if v := seen[colName]; v > 0 {
 			suffix = v + 1
 		}
 		suffixes[c.id] = suffix
@@ -836,7 +837,7 @@ func (r Result) columnsToStruct(name string, columns []goColumn, settings config
 			Type: r.goType(c.Column, settings),
 			Tags: map[string]string{"json:": tagName},
 		})
-		seen[c.Name]++
+		seen[colName]++
 	}
 	return &gs
 }
