@@ -39,3 +39,19 @@ func (q *Queries) MakeIntervalSecs(ctx context.Context, secs interface{}) (inter
 	err := row.Scan(&make_interval)
 	return make_interval, err
 }
+
+const plus = `-- name: Plus :one
+SELECT plus(b => $2, a => $1)
+`
+
+type PlusParams struct {
+	B int32
+	A int32
+}
+
+func (q *Queries) Plus(ctx context.Context, arg PlusParams) (int32, error) {
+	row := q.db.QueryRowContext(ctx, plus, arg.B, arg.A)
+	var plus int32
+	err := row.Scan(&plus)
+	return plus, err
+}
