@@ -421,8 +421,6 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string, rewriteParameter
 		return nil, errUnsupportedStatementType
 	}
 
-	// spew.Dump(stmt)
-
 	rawSQL, err := pluckQuery(source, raw)
 	if err != nil {
 		return nil, err
@@ -1385,30 +1383,43 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef, n
 				}
 			}
 			for i, item := range n.Args.Items {
-				pr, ok := item.(nodes.ParamRef)
-				if !ok {
-					continue
+				defaultName := fun.Name
+				switch inode := item.(type) {
+				case nodes.ParamRef:
+					if inode.Number != ref.ref.Number {
+						continue
+					}
+				case nodes.NamedArgExpr:
+					pr, ok := inode.Arg.(nodes.ParamRef)
+					if !ok {
+						continue
+					}
+					if pr.Number != ref.ref.Number {
+						continue
+					}
+					if inode.Name != nil {
+						defaultName = *inode.Name
+					}
 				}
-				if pr.Number != ref.ref.Number {
-					continue
-				}
+
 				if fun.Arguments == nil {
 					a = append(a, Parameter{
 						Number: ref.ref.Number,
 						Column: core.Column{
-							Name:     parameterName(ref.ref.Number, fun.Name),
+							Name:     parameterName(ref.ref.Number, defaultName),
 							DataType: "any",
 						},
 					})
 					continue
 				}
+
 				if i >= len(fun.Arguments) {
 					return nil, fmt.Errorf("incorrect number of arguments to %s", fun.Name)
 				}
 				arg := fun.Arguments[i]
 				name := arg.Name
 				if name == "" {
-					name = fun.Name
+					name = defaultName
 				}
 				a = append(a, Parameter{
 					Number: ref.ref.Number,
