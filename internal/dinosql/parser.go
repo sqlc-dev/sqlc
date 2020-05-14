@@ -755,8 +755,12 @@ func sourceTables(qc *QueryCatalog, node nodes.Node) ([]core.Table, error) {
 		}
 	case nodes.SelectStmt:
 		list = search(n.FromClause, func(node nodes.Node) bool {
-			_, ok := node.(nodes.RangeVar)
-			return ok
+			switch node.(type) {
+			case nodes.RangeVar, nodes.RangeSubselect:
+				return true
+			default:
+				return false
+			}
 		})
 	case nodes.TruncateStmt:
 		list = search(n.Relations, func(node nodes.Node) bool {
@@ -774,6 +778,16 @@ func sourceTables(qc *QueryCatalog, node nodes.Node) ([]core.Table, error) {
 	var tables []core.Table
 	for _, item := range list.Items {
 		switch n := item.(type) {
+		case nodes.RangeSubselect:
+			cols, err := outputColumns(qc, n.Subquery)
+			if err != nil {
+				return nil, err
+			}
+			tables = append(tables, core.Table{
+				Name:    *n.Alias.Aliasname,
+				Columns: cols,
+			})
+
 		case nodes.RangeVar:
 			fqn, err := catalog.ParseRange(&n)
 			if err != nil {
