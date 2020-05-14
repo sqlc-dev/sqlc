@@ -1020,7 +1020,7 @@ func (a *application) apply(parent nodes.Node, name string, iter *iterator, node
 
 	case nodes.NamedArgExpr:
 		a.apply(&n, "Xpr", nil, n.Xpr)
-		a.apply(&n, "Args", nil, n.Arg)
+		a.apply(&n, "Arg", nil, n.Arg)
 		a.cursor.set(n, &n)
 
 	case nodes.NextValueExpr:
