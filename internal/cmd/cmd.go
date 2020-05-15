@@ -68,6 +68,16 @@ var initCmd = &cobra.Command{
 	},
 }
 
+type Env struct {
+	ExperimentalParser bool
+}
+
+func ParseEnv() Env {
+	return Env{
+		ExperimentalParser: os.Getenv("SQLC_EXPERIMENTAL_PARSER") == "on",
+	}
+}
+
 var genCmd = &cobra.Command{
 	Use:   "generate",
 	Short: "Generate Go code from SQL",
@@ -79,7 +89,7 @@ var genCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		output, err := Generate(dir, stderr)
+		output, err := Generate(Env{}, dir, stderr)
 		if err != nil {
 			os.Exit(1)
 		}
@@ -104,7 +114,7 @@ var checkCmd = &cobra.Command{
 			fmt.Fprintln(stderr, "error parsing sqlc.json: file does not exist")
 			os.Exit(1)
 		}
-		if _, err := Generate(dir, stderr); err != nil {
+		if _, err := Generate(Env{}, dir, stderr); err != nil {
 			os.Exit(1)
 		}
 		return nil
