@@ -6,6 +6,7 @@ import (
 	"path"
 	"testing"
 
+	"github.com/kyleconroy/sqlc/internal/source"
 	"github.com/kyleconroy/sqlc/internal/sql/sqlpath"
 
 	"github.com/google/go-cmp/cmp"
@@ -81,7 +82,7 @@ func TestLineColumn(t *testing.T) {
 		{tree.Statements[5], 10, 12},
 	} {
 		raw := test.node.(nodes.RawStmt)
-		line, column := lineno(lineColumn, raw.StmtLocation)
+		line, column := source.LineNumber(lineColumn, raw.StmtLocation)
 		if line != test.line {
 			t.Errorf("expected stmt %d to be on line %d, not %d", i, test.line, line)
 		}

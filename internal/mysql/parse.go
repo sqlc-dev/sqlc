@@ -12,6 +12,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/dinosql"
 	"github.com/kyleconroy/sqlc/internal/migrations"
+	"github.com/kyleconroy/sqlc/internal/multierr"
 	"github.com/kyleconroy/sqlc/internal/sql/sqlpath"
 )
 
@@ -38,8 +39,7 @@ func parsePath(sqlPath []string, generator PackageGenerator) (*Result, error) {
 		return nil, err
 	}
 
-	parseErrors := dinosql.ParserErr{}
-
+	parseErrors := multierr.New()
 	parsedQueries := []*Query{}
 	for _, filename := range files {
 		blob, err := ioutil.ReadFile(filename)
@@ -86,8 +86,8 @@ func parsePath(sqlPath []string, generator PackageGenerator) (*Result, error) {
 		}
 	}
 
-	if len(parseErrors.Errs) > 0 {
-		return nil, &parseErrors
+	if len(parseErrors.Errs()) > 0 {
+		return nil, parseErrors
 	}
 
 	return &Result{
