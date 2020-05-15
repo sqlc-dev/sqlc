@@ -217,51 +217,55 @@ func New(def string) *Catalog {
 
 func (c *Catalog) Build(stmts []ast.Statement) error {
 	for i := range stmts {
-		if stmts[i].Raw == nil {
-			continue
-		}
-		var err error
-		switch n := stmts[i].Raw.Stmt.(type) {
-		case *ast.AlterTableStmt:
-			err = c.alterTable(n)
-		case *ast.AlterTableSetSchemaStmt:
-			err = c.alterTableSetSchema(n)
-		case *ast.AlterTypeAddValueStmt:
-			err = c.alterTypeAddValue(n)
-		case *ast.AlterTypeRenameValueStmt:
-			err = c.alterTypeRenameValue(n)
-		case *ast.CommentOnColumnStmt:
-			err = c.commentOnColumn(n)
-		case *ast.CommentOnSchemaStmt:
-			err = c.commentOnSchema(n)
-		case *ast.CommentOnTableStmt:
-			err = c.commentOnTable(n)
-		case *ast.CommentOnTypeStmt:
-			err = c.commentOnType(n)
-		case *ast.CreateEnumStmt:
-			err = c.createEnum(n)
-		case *ast.CreateFunctionStmt:
-			err = c.createFunction(n)
-		case *ast.CreateSchemaStmt:
-			err = c.createSchema(n)
-		case *ast.CreateTableStmt:
-			err = c.createTable(n)
-		case *ast.DropFunctionStmt:
-			err = c.dropFunction(n)
-		case *ast.DropSchemaStmt:
-			err = c.dropSchema(n)
-		case *ast.DropTableStmt:
-			err = c.dropTable(n)
-		case *ast.DropTypeStmt:
-			err = c.dropType(n)
-		case *ast.RenameColumnStmt:
-			err = c.renameColumn(n)
-		case *ast.RenameTableStmt:
-			err = c.renameTable(n)
-		}
-		if err != nil {
+		if err := c.Update(stmts[i]); err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+func (c *Catalog) Update(stmt ast.Statement) error {
+	if stmt.Raw == nil {
+		return nil
+	}
+	var err error
+	switch n := stmt.Raw.Stmt.(type) {
+	case *ast.AlterTableStmt:
+		err = c.alterTable(n)
+	case *ast.AlterTableSetSchemaStmt:
+		err = c.alterTableSetSchema(n)
+	case *ast.AlterTypeAddValueStmt:
+		err = c.alterTypeAddValue(n)
+	case *ast.AlterTypeRenameValueStmt:
+		err = c.alterTypeRenameValue(n)
+	case *ast.CommentOnColumnStmt:
+		err = c.commentOnColumn(n)
+	case *ast.CommentOnSchemaStmt:
+		err = c.commentOnSchema(n)
+	case *ast.CommentOnTableStmt:
+		err = c.commentOnTable(n)
+	case *ast.CommentOnTypeStmt:
+		err = c.commentOnType(n)
+	case *ast.CreateEnumStmt:
+		err = c.createEnum(n)
+	case *ast.CreateFunctionStmt:
+		err = c.createFunction(n)
+	case *ast.CreateSchemaStmt:
+		err = c.createSchema(n)
+	case *ast.CreateTableStmt:
+		err = c.createTable(n)
+	case *ast.DropFunctionStmt:
+		err = c.dropFunction(n)
+	case *ast.DropSchemaStmt:
+		err = c.dropSchema(n)
+	case *ast.DropTableStmt:
+		err = c.dropTable(n)
+	case *ast.DropTypeStmt:
+		err = c.dropType(n)
+	case *ast.RenameColumnStmt:
+		err = c.renameColumn(n)
+	case *ast.RenameTableStmt:
+		err = c.renameTable(n)
+	}
+	return err
 }

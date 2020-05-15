@@ -6,6 +6,8 @@ import (
 	"path"
 	"testing"
 
+	"github.com/kyleconroy/sqlc/internal/sql/sqlpath"
+
 	"github.com/google/go-cmp/cmp"
 	pg "github.com/lfittl/pg_query_go"
 	nodes "github.com/lfittl/pg_query_go/nodes"
@@ -235,7 +237,7 @@ func TestReadFiles(t *testing.T) {
 		path.Join(subdir2, "include-me.up.sql"),
 	}
 
-	filesRead, err := ReadSQLFiles(input)
+	filesRead, err := sqlpath.Glob(input)
 	if err != nil {
 		t.Error(err)
 	}
