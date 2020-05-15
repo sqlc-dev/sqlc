@@ -523,6 +523,6 @@ func translate(node nodes.Node) (ast.Node, error) {
 		return nil, errSkip
 
 	default:
-		return nil, errSkip
+		return convert(n)
 	}
 }

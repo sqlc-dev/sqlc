@@ -5,7 +5,7 @@ package compiler
 import (
 	"fmt"
 	"io"
-	"os"
+	"io/ioutil"
 	"regexp"
 	"sort"
 	"strings"
@@ -13,10 +13,12 @@ import (
 	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/dinosql"
 	"github.com/kyleconroy/sqlc/internal/dolphin"
+	"github.com/kyleconroy/sqlc/internal/migrations"
 	"github.com/kyleconroy/sqlc/internal/pg"
 	"github.com/kyleconroy/sqlc/internal/postgresql"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
+	"github.com/kyleconroy/sqlc/internal/sql/sqlpath"
 	"github.com/kyleconroy/sqlc/internal/sqlite"
 )
 
@@ -71,23 +73,29 @@ func Run(conf config.SQL, combo config.CombinedSettings) (*Result, error) {
 		return nil, fmt.Errorf("unknown engine: %s", conf.Engine)
 	}
 
-	blobs := make([]io.Reader, 0, len(conf.Schema))
-	for _, s := range conf.Schema {
-		b, err := os.Open(s)
-		if err != nil {
-			return nil, err
-		}
-		blobs = append(blobs, b)
-	}
-	rd := io.MultiReader(blobs...)
-
-	stmts, err := p.Parse(rd)
+	files, err := sqlpath.Glob(conf.Schema)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := c.Build(stmts); err != nil {
-		return nil, err
+	for _, filename := range files {
+		blob, err := ioutil.ReadFile(filename)
+		if err != nil {
+			// merr.Add(filename, "", 0, err)
+			return nil, err
+		}
+		contents := migrations.RemoveRollbackStatements(string(blob))
+		stmts, err := p.Parse(strings.NewReader(contents))
+		if err != nil {
+			// merr.Add(filename, , 0, err)
+			return nil, err
+		}
+		for i := range stmts {
+			if err := c.Update(stmts[i]); err != nil {
+				// merr.Add(filename, contents, location(stmt), err)
+				return nil, err
+			}
+		}
 	}
 
 	var structs []dinosql.GoStruct
