@@ -5,6 +5,7 @@ import (
 
 	nodes "github.com/lfittl/pg_query_go/nodes"
 
+	"github.com/kyleconroy/sqlc/internal/postgresql"
 	"github.com/kyleconroy/sqlc/internal/postgresql/ast"
 )
 
@@ -16,7 +17,7 @@ func flatten(root nodes.Node) (string, bool) {
 }
 
 type stringWalker struct {
-	String string
+	String  string
 	IsConst bool
 }
 
@@ -30,16 +31,6 @@ func (s *stringWalker) Visit(node nodes.Node) ast.Visitor {
 	return s
 }
 
-func isNamedParamFunc(node nodes.Node) bool {
-	fun, ok := node.(nodes.FuncCall)
-	return ok && ast.Join(fun.Funcname, ".") == "sqlc.arg"
-}
-
-func isNamedParamSign(node nodes.Node) bool {
-	expr, ok := node.(nodes.A_Expr)
-	return ok && ast.Join(expr.Name, ".") == "@"
-}
-
 func isNamedParamSignCast(node nodes.Node) bool {
 	expr, ok := node.(nodes.A_Expr)
 	if !ok {
@@ -50,8 +41,8 @@ func isNamedParamSignCast(node nodes.Node) bool {
 }
 
 func rewriteNamedParameters(raw nodes.RawStmt) (nodes.RawStmt, map[int]string, []edit) {
-	foundFunc := search(raw, isNamedParamFunc)
-	foundSign := search(raw, isNamedParamSign)
+	foundFunc := ast.Search(raw, postgresql.IsNamedParamFunc)
+	foundSign := ast.Search(raw, postgresql.IsNamedParamSign)
 	if len(foundFunc.Items)+len(foundSign.Items) == 0 {
 		return raw, map[int]string{}, nil
 	}
@@ -63,7 +54,7 @@ func rewriteNamedParameters(raw nodes.RawStmt) (nodes.RawStmt, map[int]string, [
 		node := cr.Node()
 		switch {
 
-		case isNamedParamFunc(node):
+		case postgresql.IsNamedParamFunc(node):
 			fun := node.(nodes.FuncCall)
 			param, isConst := flatten(fun.Args)
 			if num, ok := args[param]; ok {
@@ -120,7 +111,7 @@ func rewriteNamedParameters(raw nodes.RawStmt) (nodes.RawStmt, map[int]string, [
 			})
 			return false
 
-		case isNamedParamSign(node):
+		case postgresql.IsNamedParamSign(node):
 			expr := node.(nodes.A_Expr)
 			param, _ := flatten(expr.Rexpr)
 			if num, ok := args[param]; ok {
