@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -17,6 +16,7 @@ import (
 	core "github.com/kyleconroy/sqlc/internal/pg"
 	"github.com/kyleconroy/sqlc/internal/postgres"
 	"github.com/kyleconroy/sqlc/internal/postgresql/ast"
+	"github.com/kyleconroy/sqlc/internal/sql/sqlpath"
 
 	"github.com/davecgh/go-spew/spew"
 	pg "github.com/lfittl/pg_query_go"
@@ -60,43 +60,8 @@ func (e *ParserErr) Error() string {
 	return fmt.Sprintf("multiple errors: %d errors", len(e.Errs))
 }
 
-func ReadSQLFiles(paths []string) ([]string, error) {
-	var files []string
-	for _, path := range paths {
-		f, err := os.Stat(path)
-		if err != nil {
-			return nil, fmt.Errorf("path %s does not exist", path)
-		}
-		if f.IsDir() {
-			listing, err := ioutil.ReadDir(path)
-			if err != nil {
-				return nil, err
-			}
-			for _, f := range listing {
-				files = append(files, filepath.Join(path, f.Name()))
-			}
-		} else {
-			files = append(files, path)
-		}
-	}
-	var sqlFiles []string
-	for _, file := range files {
-		if !strings.HasSuffix(file, ".sql") {
-			continue
-		}
-		if strings.HasPrefix(filepath.Base(file), ".") {
-			continue
-		}
-		if migrations.IsDown(filepath.Base(file)) {
-			continue
-		}
-		sqlFiles = append(sqlFiles, file)
-	}
-	return sqlFiles, nil
-}
-
 func ParseCatalog(schemas []string) (core.Catalog, error) {
-	files, err := ReadSQLFiles(schemas)
+	files, err := sqlpath.Glob(schemas)
 	if err != nil {
 		return core.Catalog{}, err
 	}
@@ -202,7 +167,7 @@ func ParseQueries(c core.Catalog, queriesPaths []string, opts ParserOpts) (*Resu
 	var q []*Query
 
 	set := map[string]struct{}{}
-	files, err := ReadSQLFiles(queriesPaths)
+	files, err := sqlpath.Glob(queriesPaths)
 	if err != nil {
 		return nil, err
 	}

@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/kyleconroy/sqlc/internal/dinosql"
+	"github.com/kyleconroy/sqlc/internal/sql/sqlpath"
 
 	_ "github.com/lib/pq"
 )
@@ -79,7 +79,7 @@ func PostgreSQL(t *testing.T, migrations []string) (*sql.DB, func()) {
 		t.Fatal(err)
 	}
 
-	files, err := dinosql.ReadSQLFiles(migrations)
+	files, err := sqlpath.Glob(migrations)
 	if err != nil {
 		t.Fatal(err)
 	}

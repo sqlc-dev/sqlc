@@ -12,6 +12,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/dinosql"
 	"github.com/kyleconroy/sqlc/internal/migrations"
+	"github.com/kyleconroy/sqlc/internal/sql/sqlpath"
 )
 
 // Query holds the data for walking and validating mysql querys
@@ -32,7 +33,7 @@ type Column struct {
 }
 
 func parsePath(sqlPath []string, generator PackageGenerator) (*Result, error) {
-	files, err := dinosql.ReadSQLFiles(sqlPath)
+	files, err := sqlpath.Glob(sqlPath)
 	if err != nil {
 		return nil, err
 	}
