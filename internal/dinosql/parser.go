@@ -17,6 +17,7 @@ import (
 	core "github.com/kyleconroy/sqlc/internal/pg"
 	"github.com/kyleconroy/sqlc/internal/postgres"
 	"github.com/kyleconroy/sqlc/internal/postgresql/ast"
+	"github.com/kyleconroy/sqlc/internal/postgresql/validate"
 	"github.com/kyleconroy/sqlc/internal/sql/sqlpath"
 
 	"github.com/davecgh/go-spew/spew"
@@ -49,7 +50,7 @@ func ParseCatalog(schemas []string) (core.Catalog, error) {
 			continue
 		}
 		for _, stmt := range tree.Statements {
-			if err := validateFuncCall(&c, stmt); err != nil {
+			if err := validate.FuncCall(&c, stmt); err != nil {
 				merr.Add(filename, contents, location(stmt), err)
 				continue
 			}
@@ -72,7 +73,7 @@ func ParseCatalog(schemas []string) (core.Catalog, error) {
 
 func updateCatalog(c *core.Catalog, tree pg.ParsetreeList) error {
 	for _, stmt := range tree.Statements {
-		if err := validateFuncCall(c, stmt); err != nil {
+		if err := validate.FuncCall(c, stmt); err != nil {
 			return err
 		}
 		if err := catalog.Update(c, stmt); err != nil {
@@ -301,10 +302,10 @@ func validateCmd(n nodes.Node, name, cmd string) error {
 var errUnsupportedStatementType = errors.New("parseQuery: unsupported statement type")
 
 func parseQuery(c core.Catalog, stmt nodes.Node, source string, rewriteParameters bool) (*Query, error) {
-	if err := validateParamStyle(stmt); err != nil {
+	if err := validate.ParamStyle(stmt); err != nil {
 		return nil, err
 	}
-	if err := validateParamRef(stmt); err != nil {
+	if err := validate.ParamRef(stmt); err != nil {
 		return nil, err
 	}
 	raw, ok := stmt.(nodes.RawStmt)
@@ -315,7 +316,7 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string, rewriteParameter
 	case nodes.SelectStmt:
 	case nodes.DeleteStmt:
 	case nodes.InsertStmt:
-		if err := validateInsertStmt(n); err != nil {
+		if err := validate.InsertStmt(n); err != nil {
 			return nil, err
 		}
 	case nodes.TruncateStmt:
@@ -331,7 +332,7 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string, rewriteParameter
 	if rawSQL == "" {
 		return nil, errors.New("missing semicolon at end of file")
 	}
-	if err := validateFuncCall(&c, raw); err != nil {
+	if err := validate.FuncCall(&c, raw); err != nil {
 		return nil, err
 	}
 	name, cmd, err := ParseMetadata(strings.TrimSpace(rawSQL), CommentSyntaxDash)
@@ -437,7 +438,7 @@ type edit struct {
 }
 
 func expand(qc *QueryCatalog, raw nodes.RawStmt) ([]edit, error) {
-	list := search(raw, func(node nodes.Node) bool {
+	list := ast.Search(raw, func(node nodes.Node) bool {
 		switch node.(type) {
 		case nodes.DeleteStmt:
 		case nodes.InsertStmt:
@@ -655,7 +656,7 @@ func sourceTables(qc *QueryCatalog, node nodes.Node) ([]core.Table, error) {
 			Items: []nodes.Node{*n.Relation},
 		}
 	case nodes.SelectStmt:
-		list = search(n.FromClause, func(node nodes.Node) bool {
+		list = ast.Search(n.FromClause, func(node nodes.Node) bool {
 			switch node.(type) {
 			case nodes.RangeVar, nodes.RangeSubselect:
 				return true
@@ -664,7 +665,7 @@ func sourceTables(qc *QueryCatalog, node nodes.Node) ([]core.Table, error) {
 			}
 		})
 	case nodes.TruncateStmt:
-		list = search(n.Relations, func(node nodes.Node) bool {
+		list = ast.Search(n.Relations, func(node nodes.Node) bool {
 			_, ok := node.(nodes.RangeVar)
 			return ok
 		})
@@ -1095,24 +1096,6 @@ func findParameters(root nodes.Node) []paramRef {
 	return refs
 }
 
-type nodeSearch struct {
-	list  nodes.List
-	check func(nodes.Node) bool
-}
-
-func (s *nodeSearch) Visit(node nodes.Node) ast.Visitor {
-	if s.check(node) {
-		s.list.Items = append(s.list.Items, node)
-	}
-	return s
-}
-
-func search(root nodes.Node, f func(nodes.Node) bool) nodes.List {
-	ns := &nodeSearch{check: f}
-	ast.Walk(ns, root)
-	return ns.list
-}
-
 func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef, names map[int]string) ([]Parameter, error) {
 	aliasMap := map[string]core.FQN{}
 	// TODO: Deprecate defaultTable
@@ -1194,7 +1177,7 @@ func resolveCatalogRefs(c core.Catalog, rvs []nodes.RangeVar, args []paramRef, n
 		case nodes.A_Expr:
 			// TODO: While this works for a wide range of simple expressions,
 			// more complicated expressions will cause this logic to fail.
-			list := search(n.Lexpr, func(node nodes.Node) bool {
+			list := ast.Search(n.Lexpr, func(node nodes.Node) bool {
 				_, ok := node.(nodes.ColumnRef)
 				return ok
 			})
