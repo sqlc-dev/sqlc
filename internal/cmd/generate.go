@@ -14,6 +14,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/dinosql"
 	"github.com/kyleconroy/sqlc/internal/dinosql/kotlin"
+	"github.com/kyleconroy/sqlc/internal/multierr"
 	"github.com/kyleconroy/sqlc/internal/mysql"
 )
 
@@ -32,7 +33,7 @@ The only supported version is "1".
 
 const errMessageNoPackages = `No packages are configured`
 
-func printFileErr(stderr io.Writer, dir string, fileErr dinosql.FileErr) {
+func printFileErr(stderr io.Writer, dir string, fileErr *multierr.FileError) {
 	filename := strings.TrimPrefix(fileErr.Filename, dir+"/")
 	fmt.Fprintf(stderr, "%s:%d:%d: %s\n", filename, fileErr.Line, fileErr.Column, fileErr.Err)
 }
@@ -179,8 +180,8 @@ func parse(name, dir string, sql config.SQL, combo config.CombinedSettings, pars
 		q, err := mysql.GeneratePkg(name, sql.Schema, sql.Queries, combo)
 		if err != nil {
 			fmt.Fprintf(stderr, "# package %s\n", name)
-			if parserErr, ok := err.(*dinosql.ParserErr); ok {
-				for _, fileErr := range parserErr.Errs {
+			if parserErr, ok := err.(*multierr.Error); ok {
+				for _, fileErr := range parserErr.Errs() {
 					printFileErr(stderr, dir, fileErr)
 				}
 			} else {
@@ -194,8 +195,8 @@ func parse(name, dir string, sql config.SQL, combo config.CombinedSettings, pars
 		c, err := dinosql.ParseCatalog(sql.Schema)
 		if err != nil {
 			fmt.Fprintf(stderr, "# package %s\n", name)
-			if parserErr, ok := err.(*dinosql.ParserErr); ok {
-				for _, fileErr := range parserErr.Errs {
+			if parserErr, ok := err.(*multierr.Error); ok {
+				for _, fileErr := range parserErr.Errs() {
 					printFileErr(stderr, dir, fileErr)
 				}
 			} else {
@@ -207,8 +208,8 @@ func parse(name, dir string, sql config.SQL, combo config.CombinedSettings, pars
 		q, err := dinosql.ParseQueries(c, sql.Queries, parserOpts)
 		if err != nil {
 			fmt.Fprintf(stderr, "# package %s\n", name)
-			if parserErr, ok := err.(*dinosql.ParserErr); ok {
-				for _, fileErr := range parserErr.Errs {
+			if parserErr, ok := err.(*multierr.Error); ok {
+				for _, fileErr := range parserErr.Errs() {
 					printFileErr(stderr, dir, fileErr)
 				}
 			} else {

@@ -13,6 +13,7 @@ import (
 
 	"github.com/kyleconroy/sqlc/internal/catalog"
 	"github.com/kyleconroy/sqlc/internal/migrations"
+	"github.com/kyleconroy/sqlc/internal/multierr"
 	core "github.com/kyleconroy/sqlc/internal/pg"
 	"github.com/kyleconroy/sqlc/internal/postgres"
 	"github.com/kyleconroy/sqlc/internal/postgresql/ast"
@@ -27,46 +28,13 @@ func keepSpew() {
 	spew.Dump("hello world")
 }
 
-type FileErr struct {
-	Filename string
-	Line     int
-	Column   int
-	Err      error
-}
-
-type ParserErr struct {
-	Errs []FileErr
-}
-
-func (e *ParserErr) Add(filename, source string, loc int, err error) {
-	line := 1
-	column := 1
-	if lerr, ok := err.(core.Error); ok {
-		if lerr.Location != 0 {
-			loc = lerr.Location
-		}
-	}
-	if source != "" && loc != 0 {
-		line, column = lineno(source, loc)
-	}
-	e.Errs = append(e.Errs, FileErr{filename, line, column, err})
-}
-
-func NewParserErr() *ParserErr {
-	return &ParserErr{}
-}
-
-func (e *ParserErr) Error() string {
-	return fmt.Sprintf("multiple errors: %d errors", len(e.Errs))
-}
-
 func ParseCatalog(schemas []string) (core.Catalog, error) {
 	files, err := sqlpath.Glob(schemas)
 	if err != nil {
 		return core.Catalog{}, err
 	}
 
-	merr := NewParserErr()
+	merr := multierr.New()
 	c := core.NewCatalog()
 	for _, filename := range files {
 		blob, err := ioutil.ReadFile(filename)
@@ -96,7 +64,7 @@ func ParseCatalog(schemas []string) (core.Catalog, error) {
 	// catalog so that other queries can not read from it.
 	delete(c.Schemas, "pg_temp")
 
-	if len(merr.Errs) > 0 {
+	if len(merr.Errs()) > 0 {
 		return c, merr
 	}
 	return c, nil
@@ -163,7 +131,7 @@ type ParserOpts struct {
 }
 
 func ParseQueries(c core.Catalog, queriesPaths []string, opts ParserOpts) (*Result, error) {
-	merr := NewParserErr()
+	merr := multierr.New()
 	var q []*Query
 
 	set := map[string]struct{}{}
@@ -205,7 +173,7 @@ func ParseQueries(c core.Catalog, queriesPaths []string, opts ParserOpts) (*Resu
 			}
 		}
 	}
-	if len(merr.Errs) > 0 {
+	if len(merr.Errs()) > 0 {
 		return nil, merr
 	}
 	if len(q) == 0 {
@@ -225,36 +193,6 @@ func location(node nodes.Node) int {
 		return n.StmtLocation
 	}
 	return 0
-}
-
-func lineno(source string, head int) (int, int) {
-	// Calculate the true line and column number for a query, ignoring spaces
-	var comment bool
-	var loc, line, col int
-	for i, char := range source {
-		loc += 1
-		col += 1
-		// TODO: Check bounds
-		if char == '-' && source[i+1] == '-' {
-			comment = true
-		}
-		if char == '\n' {
-			comment = false
-			line += 1
-			col = 0
-		}
-		if loc <= head {
-			continue
-		}
-		if unicode.IsSpace(char) {
-			continue
-		}
-		if comment {
-			continue
-		}
-		break
-	}
-	return line + 1, col
 }
 
 func pluckQuery(source string, n nodes.RawStmt) (string, error) {
