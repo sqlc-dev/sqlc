@@ -2,6 +2,12 @@ package source
 
 import "unicode"
 
+type Edit struct {
+	Location int
+	Old      string
+	New      string
+}
+
 func LineNumber(source string, head int) (int, int) {
 	// Calculate the true line and column number for a query, ignoring spaces
 	var comment bool

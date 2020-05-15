@@ -1,4 +1,4 @@
-package dinosql
+package rewrite
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/kyleconroy/sqlc/internal/postgresql"
 	"github.com/kyleconroy/sqlc/internal/postgresql/ast"
+	"github.com/kyleconroy/sqlc/internal/source"
 )
 
 // Given an AST node, return the string representation of names
@@ -40,7 +41,7 @@ func isNamedParamSignCast(node nodes.Node) bool {
 	return ast.Join(expr.Name, ".") == "@" && cast
 }
 
-func rewriteNamedParameters(raw nodes.RawStmt) (nodes.RawStmt, map[int]string, []edit) {
+func NamedParameters(raw nodes.RawStmt) (nodes.RawStmt, map[int]string, []source.Edit) {
 	foundFunc := ast.Search(raw, postgresql.IsNamedParamFunc)
 	foundSign := ast.Search(raw, postgresql.IsNamedParamSign)
 	if len(foundFunc.Items)+len(foundSign.Items) == 0 {
@@ -49,7 +50,7 @@ func rewriteNamedParameters(raw nodes.RawStmt) (nodes.RawStmt, map[int]string, [
 
 	args := map[string]int{}
 	argn := 0
-	var edits []edit
+	var edits []source.Edit
 	node := ast.Apply(raw, func(cr *ast.Cursor) bool {
 		node := cr.Node()
 		switch {
@@ -77,7 +78,7 @@ func rewriteNamedParameters(raw nodes.RawStmt) (nodes.RawStmt, map[int]string, [
 			} else {
 				old = fmt.Sprintf("sqlc.arg(%s)", param)
 			}
-			edits = append(edits, edit{
+			edits = append(edits, source.Edit{
 				Location: fun.Location - raw.StmtLocation,
 				Old:      old,
 				New:      fmt.Sprintf("$%d", args[param]),
@@ -104,7 +105,7 @@ func rewriteNamedParameters(raw nodes.RawStmt) (nodes.RawStmt, map[int]string, [
 				cr.Replace(cast)
 			}
 			// TODO: This code assumes that @foo::bool is on a single line
-			edits = append(edits, edit{
+			edits = append(edits, source.Edit{
 				Location: expr.Location - raw.StmtLocation,
 				Old:      fmt.Sprintf("@%s", param),
 				New:      fmt.Sprintf("$%d", args[param]),
@@ -128,7 +129,7 @@ func rewriteNamedParameters(raw nodes.RawStmt) (nodes.RawStmt, map[int]string, [
 				})
 			}
 			// TODO: This code assumes that @foo is on a single line
-			edits = append(edits, edit{
+			edits = append(edits, source.Edit{
 				Location: expr.Location - raw.StmtLocation,
 				Old:      fmt.Sprintf("@%s", param),
 				New:      fmt.Sprintf("$%d", args[param]),

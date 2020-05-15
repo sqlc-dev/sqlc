@@ -11,18 +11,20 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/davecgh/go-spew/spew"
+	pg "github.com/lfittl/pg_query_go"
+	nodes "github.com/lfittl/pg_query_go/nodes"
+
 	"github.com/kyleconroy/sqlc/internal/catalog"
 	"github.com/kyleconroy/sqlc/internal/migrations"
 	"github.com/kyleconroy/sqlc/internal/multierr"
 	core "github.com/kyleconroy/sqlc/internal/pg"
 	"github.com/kyleconroy/sqlc/internal/postgres"
 	"github.com/kyleconroy/sqlc/internal/postgresql/ast"
+	"github.com/kyleconroy/sqlc/internal/postgresql/rewrite"
 	"github.com/kyleconroy/sqlc/internal/postgresql/validate"
+	"github.com/kyleconroy/sqlc/internal/source"
 	"github.com/kyleconroy/sqlc/internal/sql/sqlpath"
-
-	"github.com/davecgh/go-spew/spew"
-	pg "github.com/lfittl/pg_query_go"
-	nodes "github.com/lfittl/pg_query_go/nodes"
 )
 
 func keepSpew() {
@@ -344,7 +346,7 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string, rewriteParameter
 	}
 
 	// Re-write query AST
-	raw, namedParams, edits := rewriteNamedParameters(raw)
+	raw, namedParams, edits := rewrite.NamedParameters(raw)
 	rvs := rangeVars(raw.Stmt)
 	refs := findParameters(raw.Stmt)
 	if rewriteParameters {
@@ -403,10 +405,10 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string, rewriteParameter
 	}, nil
 }
 
-func rewriteNumberedParameters(refs []paramRef, raw nodes.RawStmt, sql string) ([]edit, error) {
-	edits := make([]edit, len(refs))
+func rewriteNumberedParameters(refs []paramRef, raw nodes.RawStmt, sql string) ([]source.Edit, error) {
+	edits := make([]source.Edit, len(refs))
 	for i, ref := range refs {
-		edits[i] = edit{
+		edits[i] = source.Edit{
 			Location: ref.ref.Location - raw.StmtLocation,
 			Old:      fmt.Sprintf("$%d", ref.ref.Number),
 			New:      "?",
@@ -431,13 +433,7 @@ func stripComments(sql string) (string, []string, error) {
 	return strings.Join(lines, "\n"), comments, s.Err()
 }
 
-type edit struct {
-	Location int
-	Old      string
-	New      string
-}
-
-func expand(qc *QueryCatalog, raw nodes.RawStmt) ([]edit, error) {
+func expand(qc *QueryCatalog, raw nodes.RawStmt) ([]source.Edit, error) {
 	list := ast.Search(raw, func(node nodes.Node) bool {
 		switch node.(type) {
 		case nodes.DeleteStmt:
@@ -452,7 +448,7 @@ func expand(qc *QueryCatalog, raw nodes.RawStmt) ([]edit, error) {
 	if len(list.Items) == 0 {
 		return nil, nil
 	}
-	var edits []edit
+	var edits []source.Edit
 	for _, item := range list.Items {
 		edit, err := expandStmt(qc, raw, item)
 		if err != nil {
@@ -470,7 +466,7 @@ func quoteIdent(ident string) string {
 	return ident
 }
 
-func expandStmt(qc *QueryCatalog, raw nodes.RawStmt, node nodes.Node) ([]edit, error) {
+func expandStmt(qc *QueryCatalog, raw nodes.RawStmt, node nodes.Node) ([]source.Edit, error) {
 	tables, err := sourceTables(qc, node)
 	if err != nil {
 		return nil, err
@@ -490,7 +486,7 @@ func expandStmt(qc *QueryCatalog, raw nodes.RawStmt, node nodes.Node) ([]edit, e
 		return nil, fmt.Errorf("outputColumns: unsupported node type: %T", n)
 	}
 
-	var edits []edit
+	var edits []source.Edit
 	for _, target := range targets.Items {
 		res, ok := target.(nodes.ResTarget)
 		if !ok {
@@ -548,7 +544,7 @@ func expandStmt(qc *QueryCatalog, raw nodes.RawStmt, node nodes.Node) ([]edit, e
 		for _, p := range parts {
 			old = append(old, quoteIdent(p))
 		}
-		edits = append(edits, edit{
+		edits = append(edits, source.Edit{
 			Location: res.Location - raw.StmtLocation,
 			Old:      strings.Join(old, "."),
 			New:      strings.Join(cols, ", "),
@@ -557,7 +553,7 @@ func expandStmt(qc *QueryCatalog, raw nodes.RawStmt, node nodes.Node) ([]edit, e
 	return edits, nil
 }
 
-func editQuery(raw string, a []edit) (string, error) {
+func editQuery(raw string, a []source.Edit) (string, error) {
 	if len(a) == 0 {
 		return raw, nil
 	}

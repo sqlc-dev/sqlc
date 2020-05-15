@@ -6,12 +6,12 @@ import (
 	"path"
 	"testing"
 
-	"github.com/kyleconroy/sqlc/internal/source"
-	"github.com/kyleconroy/sqlc/internal/sql/sqlpath"
-
 	"github.com/google/go-cmp/cmp"
 	pg "github.com/lfittl/pg_query_go"
 	nodes "github.com/lfittl/pg_query_go/nodes"
+
+	"github.com/kyleconroy/sqlc/internal/source"
+	"github.com/kyleconroy/sqlc/internal/sql/sqlpath"
 )
 
 const pluck = `
@@ -177,7 +177,7 @@ func TestExpand(t *testing.T) {
 	// pretend that foo has two columns, a and b
 	raw := `SELECT *, *, foo.* FROM foo`
 	expected := `SELECT a, b, a, b, foo.a, foo.b FROM foo`
-	edits := []edit{
+	edits := []source.Edit{
 		{7, "*", "a, b"},
 		{10, "*", "a, b"},
 		{13, "foo.*", "foo.a, foo.b"},
