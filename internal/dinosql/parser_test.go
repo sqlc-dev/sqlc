@@ -158,21 +158,6 @@ func TestRewriteParameters(t *testing.T) {
 	}
 }
 
-func TestParseMetadata(t *testing.T) {
-	for _, query := range []string{
-		`-- name: CreateFoo, :one`,
-		`-- name: 9Foo_, :one`,
-		`-- name: CreateFoo :two`,
-		`-- name: CreateFoo`,
-		`-- name: CreateFoo :one something`,
-		`-- name: `,
-	} {
-		if _, _, err := ParseMetadata(query, CommentSyntaxDash); err == nil {
-			t.Errorf("expected invalid metadata: %q", query)
-		}
-	}
-}
-
 func TestExpand(t *testing.T) {
 	// pretend that foo has two columns, a and b
 	raw := `SELECT *, *, foo.* FROM foo`
