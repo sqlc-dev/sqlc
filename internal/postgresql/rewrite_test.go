@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sql/ast/pg"
 	"github.com/kyleconroy/sqlc/internal/sql/astutils"
 
@@ -24,7 +25,7 @@ func TestApply(t *testing.T) {
 
 	expect := &output[0]
 	actual := astutils.Apply(&input[0], func(cr *astutils.Cursor) bool {
-		fun, ok := cr.Node().(*pg.FuncCall)
+		fun, ok := cr.Node().(*ast.FuncCall)
 		if !ok {
 			return true
 		}

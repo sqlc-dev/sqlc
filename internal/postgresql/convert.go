@@ -1538,11 +1538,17 @@ func convertFromExpr(n *nodes.FromExpr) *pg.FromExpr {
 	}
 }
 
-func convertFuncCall(n *nodes.FuncCall) *pg.FuncCall {
+func convertFuncCall(n *nodes.FuncCall) *ast.FuncCall {
 	if n == nil {
 		return nil
 	}
-	return &pg.FuncCall{
+	fn, err := parseFuncName(n.Funcname)
+	if err != nil {
+		// TODO: How should we handle errors?
+		panic(err)
+	}
+	return &ast.FuncCall{
+		Func:           fn,
 		Funcname:       convertList(n.Funcname),
 		Args:           convertList(n.Args),
 		AggOrder:       convertList(n.AggOrder),
@@ -2839,11 +2845,11 @@ func convertWindowClause(n *nodes.WindowClause) *pg.WindowClause {
 	}
 }
 
-func convertWindowDef(n *nodes.WindowDef) *pg.WindowDef {
+func convertWindowDef(n *nodes.WindowDef) *ast.WindowDef {
 	if n == nil {
 		return nil
 	}
-	return &pg.WindowDef{
+	return &ast.WindowDef{
 		Name:            n.Name,
 		Refname:         n.Refname,
 		PartitionClause: convertList(n.PartitionClause),

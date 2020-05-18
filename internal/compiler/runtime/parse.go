@@ -46,6 +46,9 @@ func parseQuery(c *catalog.Catalog, stmt ast.Node, src string, rewriteParameters
 	if rawSQL == "" {
 		return nil, errors.New("missing semicolon at end of file")
 	}
+	if err := validate.FuncCall(c, raw); err != nil {
+		return nil, err
+	}
 
 	return &Query{}, nil
 }
