@@ -11,7 +11,7 @@ jobs:
     name: push kjconroy/sqlc:devel
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
+    - uses: actions/checkout@v2
     - uses: docker/build-push-action@v1
       with:
         username: kjconroy
