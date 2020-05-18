@@ -1,4 +1,4 @@
-package runtime
+package compiler
 
 import (
 	"errors"
@@ -17,7 +17,7 @@ type Query struct {
 
 var ErrUnsupportedStatementType = errors.New("parseQuery: unsupported statement type")
 
-func parseQuery(c *catalog.Catalog, stmt ast.Node, src string, rewriteParameters bool) (*Query, error) {
+func parseQuery(p Parser, c *catalog.Catalog, stmt ast.Node, src string, rewriteParameters bool) (*Query, error) {
 	if err := validate.ParamStyle(stmt); err != nil {
 		return nil, err
 	}
