@@ -7,8 +7,14 @@ import (
 )
 
 func IsParamFunc(node ast.Node) bool {
-	fun, ok := node.(*pg.FuncCall)
-	return ok && astutils.Join(fun.Funcname, ".") == "sqlc.arg"
+	call, ok := node.(*ast.FuncCall)
+	if !ok {
+		return false
+	}
+	if call.Func == nil {
+		return false
+	}
+	return call.Func.Schema == "sqlc" && call.Func.Name == "arg"
 }
 
 func IsParamSign(node ast.Node) bool {

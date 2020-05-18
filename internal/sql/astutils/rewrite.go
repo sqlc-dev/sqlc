@@ -760,7 +760,8 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.apply(n, "Fromlist", nil, n.Fromlist)
 		a.apply(n, "Quals", nil, n.Quals)
 
-	case *pg.FuncCall:
+	case *ast.FuncCall:
+		a.apply(n, "Func", nil, n.Func)
 		a.apply(n, "Funcname", nil, n.Funcname)
 		a.apply(n, "Args", nil, n.Args)
 		a.apply(n, "AggOrder", nil, n.AggOrder)
@@ -1206,7 +1207,7 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.apply(n, "StartOffset", nil, n.StartOffset)
 		a.apply(n, "EndOffset", nil, n.EndOffset)
 
-	case *pg.WindowDef:
+	case *ast.WindowDef:
 		a.apply(n, "PartitionClause", nil, n.PartitionClause)
 		a.apply(n, "OrderClause", nil, n.OrderClause)
 		a.apply(n, "StartOffset", nil, n.StartOffset)

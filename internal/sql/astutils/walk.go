@@ -645,7 +645,8 @@ func Walk(f Visitor, node ast.Node) {
 		walkn(f, n.Fromlist)
 		walkn(f, n.Quals)
 
-	case *pg.FuncCall:
+	case *ast.FuncCall:
+		walkn(f, n.Func)
 		walkn(f, n.Funcname)
 		walkn(f, n.Args)
 		walkn(f, n.AggOrder)
@@ -1091,7 +1092,7 @@ func Walk(f Visitor, node ast.Node) {
 		walkn(f, n.StartOffset)
 		walkn(f, n.EndOffset)
 
-	case *pg.WindowDef:
+	case *ast.WindowDef:
 		walkn(f, n.PartitionClause)
 		walkn(f, n.OrderClause)
 		walkn(f, n.StartOffset)
