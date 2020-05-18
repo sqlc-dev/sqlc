@@ -1,4 +1,4 @@
-package sqlc
+package ast
 
 type ResTarget struct {
 	Val Node
@@ -7,5 +7,3 @@ type ResTarget struct {
 func (n *ResTarget) Pos() int {
 	return 0
 }
-
-

@@ -1,4 +1,4 @@
-package sqlc
+package ast
 
 type CreateEnumStmt struct {
 	TypeName *TypeName
@@ -8,5 +8,3 @@ type CreateEnumStmt struct {
 func (n *CreateEnumStmt) Pos() int {
 	return 0
 }
-
-

@@ -1,4 +1,4 @@
-package sqlc
+package ast
 
 type AlterTableSetSchemaStmt struct {
 	Table     *TableName
@@ -8,5 +8,3 @@ type AlterTableSetSchemaStmt struct {
 func (n *AlterTableSetSchemaStmt) Pos() int {
 	return 0
 }
-
-

@@ -1,4 +1,4 @@
-package sqlc
+package ast
 
 type RenameColumnStmt struct {
 	Table   *TableName
@@ -9,5 +9,3 @@ type RenameColumnStmt struct {
 func (n *RenameColumnStmt) Pos() int {
 	return 0
 }
-
-

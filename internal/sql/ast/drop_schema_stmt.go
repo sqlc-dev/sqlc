@@ -1,4 +1,4 @@
-package sqlc
+package ast
 
 type DropSchemaStmt struct {
 	Schemas   []*String
@@ -8,5 +8,3 @@ type DropSchemaStmt struct {
 func (n *DropSchemaStmt) Pos() int {
 	return 0
 }
-
-

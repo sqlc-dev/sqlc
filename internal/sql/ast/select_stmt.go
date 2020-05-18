@@ -1,4 +1,4 @@
-package sqlc
+package ast
 
 type SelectStmt struct {
 	Fields *List
@@ -8,5 +8,3 @@ type SelectStmt struct {
 func (n *SelectStmt) Pos() int {
 	return 0
 }
-
-

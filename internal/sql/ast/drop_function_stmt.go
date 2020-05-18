@@ -1,4 +1,4 @@
-package sqlc
+package ast
 
 type DropFunctionStmt struct {
 	Funcs     []*FuncSpec

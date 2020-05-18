@@ -1,4 +1,4 @@
-package sqlc
+package ast
 
 type ColumnRef struct {
 	Name string

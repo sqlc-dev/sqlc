@@ -1,4 +1,4 @@
-package sqlc
+package ast
 
 type DropTypeStmt struct {
 	IfExists bool
@@ -8,5 +8,3 @@ type DropTypeStmt struct {
 func (n *DropTypeStmt) Pos() int {
 	return 0
 }
-
-

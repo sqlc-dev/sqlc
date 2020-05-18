@@ -1,4 +1,4 @@
-package sqlc
+package ast
 
 type FuncSpec struct {
 	Name    *FuncName

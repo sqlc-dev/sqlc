@@ -1,4 +1,4 @@
-package sqlc
+package ast
 
 type TypeName struct {
 	Catalog string
@@ -9,5 +9,3 @@ type TypeName struct {
 func (n *TypeName) Pos() int {
 	return 0
 }
-
-

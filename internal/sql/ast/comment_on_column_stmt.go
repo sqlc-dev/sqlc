@@ -1,4 +1,4 @@
-package sqlc
+package ast
 
 type CommentOnColumnStmt struct {
 	Table   *TableName
@@ -9,5 +9,3 @@ type CommentOnColumnStmt struct {
 func (n *CommentOnColumnStmt) Pos() int {
 	return 0
 }
-
-

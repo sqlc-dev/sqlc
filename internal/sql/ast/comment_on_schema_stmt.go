@@ -1,4 +1,4 @@
-package sqlc
+package ast
 
 type CommentOnSchemaStmt struct {
 	Schema  *String
@@ -8,5 +8,3 @@ type CommentOnSchemaStmt struct {
 func (n *CommentOnSchemaStmt) Pos() int {
 	return 0
 }
-
-

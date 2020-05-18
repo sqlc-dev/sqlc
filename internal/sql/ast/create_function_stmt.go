@@ -1,4 +1,4 @@
-package sqlc
+package ast
 
 type CreateFunctionStmt struct {
 	Replace    bool
@@ -10,5 +10,3 @@ type CreateFunctionStmt struct {
 func (n *CreateFunctionStmt) Pos() int {
 	return 0
 }
-
-

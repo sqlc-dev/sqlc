@@ -1,4 +1,4 @@
-package sqlc
+package ast
 
 type CreateTableStmt struct {
 	IfNotExists bool
@@ -9,5 +9,3 @@ type CreateTableStmt struct {
 func (n *CreateTableStmt) Pos() int {
 	return 0
 }
-
-

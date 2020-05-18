@@ -1,4 +1,4 @@
-package sqlc
+package ast
 
 // TODO: Support array types
 type ColumnDef struct {
@@ -10,5 +10,3 @@ type ColumnDef struct {
 func (n *ColumnDef) Pos() int {
 	return 0
 }
-
-

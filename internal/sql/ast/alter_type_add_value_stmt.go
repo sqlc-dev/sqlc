@@ -1,4 +1,4 @@
-package sqlc
+package ast
 
 type AlterTypeAddValueStmt struct {
 	Type               *TypeName
@@ -9,5 +9,3 @@ type AlterTypeAddValueStmt struct {
 func (n *AlterTypeAddValueStmt) Pos() int {
 	return 0
 }
-
-
