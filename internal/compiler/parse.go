@@ -2,6 +2,7 @@ package compiler
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/kyleconroy/sqlc/internal/metadata"
@@ -13,6 +14,10 @@ import (
 )
 
 type Query struct {
+	SQL      string
+	Name     string
+	Cmd      string // TODO: Pick a better name. One of: one, many, exec, execrows
+	Comments []string
 }
 
 var ErrUnsupportedStatementType = errors.New("parseQuery: unsupported statement type")
@@ -59,5 +64,30 @@ func parseQuery(p Parser, c *catalog.Catalog, stmt ast.Node, src string, rewrite
 		return nil, err
 	}
 
-	return &Query{}, nil
+	// TODO: Then a miracle occurs
+
+	var edits []source.Edit
+	expanded, err := source.Mutate(rawSQL, edits)
+	if err != nil {
+		return nil, err
+	}
+
+	// If the query string was edited, make sure the syntax is valid
+	if expanded != rawSQL {
+		if _, err := p.Parse(strings.NewReader(expanded)); err != nil {
+			return nil, fmt.Errorf("edited query syntax is invalid: %w", err)
+		}
+	}
+
+	trimmed, comments, err := source.StripComments(expanded)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Query{
+		Cmd:      cmd,
+		Comments: comments,
+		Name:     name,
+		SQL:      trimmed,
+	}, nil
 }

@@ -1,7 +1,6 @@
 package dinosql
 
 import (
-	"bufio"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -311,7 +310,7 @@ func parseQuery(c core.Catalog, stmt nodes.Node, src string, rewriteParameters b
 	}
 	edits = append(edits, expandEdits...)
 
-	expanded, err := editQuery(rawSQL, edits)
+	expanded, err := source.Mutate(rawSQL, edits)
 	if err != nil {
 		return nil, err
 	}
@@ -323,7 +322,7 @@ func parseQuery(c core.Catalog, stmt nodes.Node, src string, rewriteParameters b
 		}
 	}
 
-	trimmed, comments, err := stripComments(strings.TrimSpace(expanded))
+	trimmed, comments, err := source.StripComments(expanded)
 	if err != nil {
 		return nil, err
 	}
@@ -348,22 +347,6 @@ func rewriteNumberedParameters(refs []paramRef, raw nodes.RawStmt, sql string) (
 		}
 	}
 	return edits, nil
-}
-
-func stripComments(sql string) (string, []string, error) {
-	s := bufio.NewScanner(strings.NewReader(sql))
-	var lines, comments []string
-	for s.Scan() {
-		if strings.HasPrefix(s.Text(), "-- name:") {
-			continue
-		}
-		if strings.HasPrefix(s.Text(), "--") {
-			comments = append(comments, strings.TrimPrefix(s.Text(), "--"))
-			continue
-		}
-		lines = append(lines, s.Text())
-	}
-	return strings.Join(lines, "\n"), comments, s.Err()
 }
 
 func expand(qc *QueryCatalog, raw nodes.RawStmt) ([]source.Edit, error) {
@@ -484,33 +467,6 @@ func expandStmt(qc *QueryCatalog, raw nodes.RawStmt, node nodes.Node) ([]source.
 		})
 	}
 	return edits, nil
-}
-
-func editQuery(raw string, a []source.Edit) (string, error) {
-	if len(a) == 0 {
-		return raw, nil
-	}
-	sort.Slice(a, func(i, j int) bool { return a[i].Location > a[j].Location })
-	s := raw
-	for _, edit := range a {
-		start := edit.Location
-		if start > len(s) {
-			return "", fmt.Errorf("edit start location is out of bounds")
-		}
-		if len(edit.New) <= 0 {
-			return "", fmt.Errorf("empty edit contents")
-		}
-		if len(edit.Old) <= 0 {
-			return "", fmt.Errorf("empty edit contents")
-		}
-		stop := edit.Location + len(edit.Old) - 1 // Assumes edit.New is non-empty
-		if stop < len(s) {
-			s = s[:start] + edit.New + s[stop+1:]
-		} else {
-			s = s[:start] + edit.New
-		}
-	}
-	return s, nil
 }
 
 type QueryCatalog struct {

@@ -147,7 +147,7 @@ func TestRewriteParameters(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-			rewritten, err := editQuery(q.orig, edits)
+			rewritten, err := source.Mutate(q.orig, edits)
 			if err != nil {
 				t.Error(err)
 			}
@@ -167,7 +167,7 @@ func TestExpand(t *testing.T) {
 		{10, "*", "a, b"},
 		{13, "foo.*", "foo.a, foo.b"},
 	}
-	actual, err := editQuery(raw, edits)
+	actual, err := source.Mutate(raw, edits)
 	if err != nil {
 		t.Error(err)
 	}
