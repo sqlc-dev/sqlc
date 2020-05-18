@@ -16,6 +16,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/dinosql/kotlin"
 	"github.com/kyleconroy/sqlc/internal/multierr"
 	"github.com/kyleconroy/sqlc/internal/mysql"
+	"github.com/kyleconroy/sqlc/internal/pg"
 )
 
 const errMessageNoVersion = `The configuration file must have a version number.
@@ -43,7 +44,7 @@ type outPair struct {
 	config.SQL
 }
 
-func Generate(dir string, stderr io.Writer) (map[string]string, error) {
+func Generate(e Env, dir string, stderr io.Writer) (map[string]string, error) {
 	var yamlMissing, jsonMissing bool
 	yamlPath := filepath.Join(dir, "sqlc.yaml")
 	jsonPath := filepath.Join(dir, "sqlc.json")
@@ -135,7 +136,7 @@ func Generate(dir string, stderr io.Writer) (map[string]string, error) {
 			name = combo.Kotlin.Package
 		}
 
-		result, errored = parse(name, dir, sql.SQL, combo, parseOpts, stderr)
+		result, errored = parse(e, name, dir, sql.SQL, combo, parseOpts, stderr)
 		if errored {
 			break
 		}
@@ -173,7 +174,40 @@ func Generate(dir string, stderr io.Writer) (map[string]string, error) {
 	return output, nil
 }
 
-func parse(name, dir string, sql config.SQL, combo config.CombinedSettings, parserOpts dinosql.ParserOpts, stderr io.Writer) (dinosql.Generateable, bool) {
+type postgreEngine interface {
+	ParseCatalog([]string) error
+	ParseQueries([]string, dinosql.ParserOpts) error
+	Result() dinosql.Generateable
+}
+
+type dinosqlEngine struct {
+	catalog pg.Catalog
+	result  *dinosql.Result
+}
+
+func (d *dinosqlEngine) ParseCatalog(schema []string) error {
+	c, err := dinosql.ParseCatalog(schema)
+	if err != nil {
+		return err
+	}
+	d.catalog = c
+	return nil
+}
+
+func (d *dinosqlEngine) ParseQueries(queries []string, opts dinosql.ParserOpts) error {
+	q, err := dinosql.ParseQueries(d.catalog, queries, opts)
+	if err != nil {
+		return err
+	}
+	d.result = q
+	return nil
+}
+
+func (d *dinosqlEngine) Result() dinosql.Generateable {
+	return &kotlin.Result{Result: d.result}
+}
+
+func parse(e Env, name, dir string, sql config.SQL, combo config.CombinedSettings, parserOpts dinosql.ParserOpts, stderr io.Writer) (dinosql.Generateable, bool) {
 	switch sql.Engine {
 	case config.EngineMySQL:
 		// Experimental MySQL support
@@ -192,8 +226,13 @@ func parse(name, dir string, sql config.SQL, combo config.CombinedSettings, pars
 		return q, false
 
 	case config.EnginePostgreSQL:
-		c, err := dinosql.ParseCatalog(sql.Schema)
-		if err != nil {
+		var eng postgreEngine
+		if e.ExperimentalParser {
+			eng = compiler.NewEngine(sql, combo)
+		} else {
+			eng = &dinosqlEngine{}
+		}
+		if err := eng.ParseCatalog(sql.Schema); err != nil {
 			fmt.Fprintf(stderr, "# package %s\n", name)
 			if parserErr, ok := err.(*multierr.Error); ok {
 				for _, fileErr := range parserErr.Errs() {
@@ -204,9 +243,7 @@ func parse(name, dir string, sql config.SQL, combo config.CombinedSettings, pars
 			}
 			return nil, true
 		}
-
-		q, err := dinosql.ParseQueries(c, sql.Queries, parserOpts)
-		if err != nil {
+		if err := eng.ParseQueries(sql.Queries, parserOpts); err != nil {
 			fmt.Fprintf(stderr, "# package %s\n", name)
 			if parserErr, ok := err.(*multierr.Error); ok {
 				for _, fileErr := range parserErr.Errs() {
@@ -217,7 +254,7 @@ func parse(name, dir string, sql config.SQL, combo config.CombinedSettings, pars
 			}
 			return nil, true
 		}
-		return &kotlin.Result{Result: q}, false
+		return eng.Result(), false
 
 	case config.EngineXLemon, config.EngineXDolphin, config.EngineXElephant:
 		r, err := compiler.Run(sql, combo)

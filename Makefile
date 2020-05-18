@@ -4,6 +4,9 @@ build:
 test:
 	go test --tags=exp ./...
 
+exp:
+	SQLC_EXPERIMENTAL_PARSER=on go test --tags=exp ./...
+
 sqlc-dev:
 	go build -o ~/bin/sqlc-dev --tags=exp ./cmd/sqlc/
 

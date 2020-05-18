@@ -14,6 +14,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/dinosql"
 	"github.com/kyleconroy/sqlc/internal/dolphin"
 	"github.com/kyleconroy/sqlc/internal/migrations"
+	"github.com/kyleconroy/sqlc/internal/multierr"
 	"github.com/kyleconroy/sqlc/internal/pg"
 	"github.com/kyleconroy/sqlc/internal/postgresql"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
@@ -54,50 +55,38 @@ func enumValueName(value string) string {
 }
 
 // end copypasta
-
-func Run(conf config.SQL, combo config.CombinedSettings) (*Result, error) {
-	var c *catalog.Catalog
-	var p Parser
-
-	switch conf.Engine {
-	case config.EngineXLemon:
-		p = sqlite.NewParser()
-		c = catalog.New("main")
-	case config.EngineXDolphin:
-		p = dolphin.NewParser()
-		c = catalog.New("public") // TODO: What is the default database for MySQL?
-	case config.EngineXElephant:
-		p = postgresql.NewParser()
-		c = postgresql.NewCatalog()
-	default:
-		return nil, fmt.Errorf("unknown engine: %s", conf.Engine)
-	}
-
-	files, err := sqlpath.Glob(conf.Schema)
+func parseCatalog(p Parser, c *catalog.Catalog, schema []string) error {
+	files, err := sqlpath.Glob(schema)
 	if err != nil {
-		return nil, err
+		return err
 	}
-
+	merr := multierr.New()
 	for _, filename := range files {
 		blob, err := ioutil.ReadFile(filename)
 		if err != nil {
-			// merr.Add(filename, "", 0, err)
-			return nil, err
+			merr.Add(filename, "", 0, err)
+			continue
 		}
 		contents := migrations.RemoveRollbackStatements(string(blob))
 		stmts, err := p.Parse(strings.NewReader(contents))
 		if err != nil {
-			// merr.Add(filename, , 0, err)
-			return nil, err
+			merr.Add(filename, contents, 0, err)
+			continue
 		}
 		for i := range stmts {
 			if err := c.Update(stmts[i]); err != nil {
-				// merr.Add(filename, contents, location(stmt), err)
-				return nil, err
+				merr.Add(filename, contents, stmts[i].Pos(), err)
+				continue
 			}
 		}
 	}
+	if len(merr.Errs()) > 0 {
+		return merr
+	}
+	return nil
+}
 
+func buildResult(c *catalog.Catalog) (*Result, error) {
 	var structs []dinosql.GoStruct
 	var enums []dinosql.GoEnum
 	for _, schema := range c.Schemas {
@@ -149,4 +138,29 @@ func Run(conf config.SQL, combo config.CombinedSettings) (*Result, error) {
 		sort.Slice(enums, func(i, j int) bool { return enums[i].Name < enums[j].Name })
 	}
 	return &Result{structs: structs, enums: enums}, nil
+}
+
+func Run(conf config.SQL, combo config.CombinedSettings) (*Result, error) {
+	var c *catalog.Catalog
+	var p Parser
+
+	switch conf.Engine {
+	case config.EngineXLemon:
+		p = sqlite.NewParser()
+		c = catalog.New("main")
+	case config.EngineXDolphin:
+		p = dolphin.NewParser()
+		c = catalog.New("public") // TODO: What is the default database for MySQL?
+	case config.EngineXElephant:
+		p = postgresql.NewParser()
+		c = postgresql.NewCatalog()
+	default:
+		return nil, fmt.Errorf("unknown engine: %s", conf.Engine)
+	}
+
+	if err := parseCatalog(p, c, conf.Schema); err != nil {
+		return nil, err
+	}
+
+	return buildResult(c)
 }
