@@ -55,8 +55,8 @@ func enumValueName(value string) string {
 }
 
 // end copypasta
-func parseCatalog(p Parser, c *catalog.Catalog, schema []string) error {
-	files, err := sqlpath.Glob(schema)
+func parseCatalog(p Parser, c *catalog.Catalog, schemas []string) error {
+	files, err := sqlpath.Glob(schemas)
 	if err != nil {
 		return err
 	}
@@ -84,6 +84,34 @@ func parseCatalog(p Parser, c *catalog.Catalog, schema []string) error {
 		return merr
 	}
 	return nil
+}
+
+func parseQueries(p Parser, c *catalog.Catalog, queries []string) (*Result, error) {
+	merr := multierr.New()
+	files, err := sqlpath.Glob(queries)
+	if err != nil {
+		return nil, err
+	}
+	for _, filename := range files {
+		blob, err := ioutil.ReadFile(filename)
+		if err != nil {
+			merr.Add(filename, "", 0, err)
+			continue
+		}
+		source := string(blob)
+		stmts, err := p.Parse(strings.NewReader(source))
+		if err != nil {
+			merr.Add(filename, source, 0, err)
+			continue
+		}
+		for _, stmt := range stmts {
+			fmt.Println(stmt)
+		}
+	}
+	if len(merr.Errs()) > 0 {
+		return nil, merr
+	}
+	return &Result{}, nil
 }
 
 func buildResult(c *catalog.Catalog) (*Result, error) {
@@ -130,7 +158,6 @@ func buildResult(c *catalog.Catalog) (*Result, error) {
 			}
 		}
 	}
-
 	if len(structs) > 0 {
 		sort.Slice(structs, func(i, j int) bool { return structs[i].Name < structs[j].Name })
 	}

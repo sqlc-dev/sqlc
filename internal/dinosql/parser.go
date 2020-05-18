@@ -148,24 +148,24 @@ func ParseQueries(c core.Catalog, queriesPaths []string, opts ParserOpts) (*Resu
 			merr.Add(filename, "", 0, err)
 			continue
 		}
-		source := string(blob)
-		tree, err := pg.Parse(source)
+		src := string(blob)
+		tree, err := pg.Parse(src)
 		if err != nil {
-			merr.Add(filename, source, 0, err)
+			merr.Add(filename, src, 0, err)
 			continue
 		}
 		for _, stmt := range tree.Statements {
-			query, err := parseQuery(c, stmt, source, opts.UsePositionalParameters)
+			query, err := parseQuery(c, stmt, src, opts.UsePositionalParameters)
 			if err == errUnsupportedStatementType {
 				continue
 			}
 			if err != nil {
-				merr.Add(filename, source, location(stmt), err)
+				merr.Add(filename, src, location(stmt), err)
 				continue
 			}
 			if query.Name != "" {
 				if _, exists := set[query.Name]; exists {
-					merr.Add(filename, source, location(stmt), fmt.Errorf("duplicate query name: %s", query.Name))
+					merr.Add(filename, src, location(stmt), fmt.Errorf("duplicate query name: %s", query.Name))
 					continue
 				}
 				set[query.Name] = struct{}{}
@@ -196,12 +196,6 @@ func location(node nodes.Node) int {
 		return n.StmtLocation
 	}
 	return 0
-}
-
-func pluckQuery(source string, n nodes.RawStmt) (string, error) {
-	head := n.StmtLocation
-	tail := n.StmtLocation + n.StmtLen
-	return source[head:tail], nil
 }
 
 func rangeVars(root nodes.Node) []nodes.RangeVar {
@@ -303,7 +297,7 @@ func validateCmd(n nodes.Node, name, cmd string) error {
 
 var errUnsupportedStatementType = errors.New("parseQuery: unsupported statement type")
 
-func parseQuery(c core.Catalog, stmt nodes.Node, source string, rewriteParameters bool) (*Query, error) {
+func parseQuery(c core.Catalog, stmt nodes.Node, src string, rewriteParameters bool) (*Query, error) {
 	if err := validate.ParamStyle(stmt); err != nil {
 		return nil, err
 	}
@@ -327,7 +321,7 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string, rewriteParameter
 		return nil, errUnsupportedStatementType
 	}
 
-	rawSQL, err := pluckQuery(source, raw)
+	rawSQL, err := source.Pluck(src, raw.StmtLocation, raw.StmtLen)
 	if err != nil {
 		return nil, err
 	}

@@ -37,7 +37,7 @@ func TestPluck(t *testing.T) {
 	for i, stmt := range tree.Statements {
 		switch n := stmt.(type) {
 		case nodes.RawStmt:
-			q, err := pluckQuery(pluck, n)
+			q, err := source.Pluck(pluck, n.StmtLocation, n.StmtLen)
 			if err != nil {
 				t.Error(err)
 				continue

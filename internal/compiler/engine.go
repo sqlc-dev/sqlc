@@ -44,7 +44,7 @@ func (e *Engine) ParseCatalog(schema []string) error {
 }
 
 func (e *Engine) ParseQueries(queries []string, opts dinosql.ParserOpts) error {
-	r, err := buildResult(e.catalog)
+	r, err := parseQueries(e.parser, e.catalog, e.conf.Queries)
 	if err != nil {
 		return err
 	}
