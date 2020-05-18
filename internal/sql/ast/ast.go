@@ -13,11 +13,13 @@ func (n *Statement) Pos() int {
 }
 
 type RawStmt struct {
-	Stmt Node
+	Stmt         Node
+	StmtLocation int
+	StmtLen      int
 }
 
 func (n *RawStmt) Pos() int {
-	return 0
+	return n.StmtLocation
 }
 
 type TableName struct {

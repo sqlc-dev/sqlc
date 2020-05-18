@@ -37,3 +37,9 @@ func LineNumber(source string, head int) (int, int) {
 	}
 	return line + 1, col
 }
+
+func Pluck(source string, location, length int) (string, error) {
+	head := location
+	tail := location + length
+	return source[head:tail], nil
+}
