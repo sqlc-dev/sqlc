@@ -2,7 +2,9 @@ package runtime
 
 import (
 	"errors"
+	"strings"
 
+	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/source"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sql/ast/pg"
@@ -47,6 +49,13 @@ func parseQuery(c *catalog.Catalog, stmt ast.Node, src string, rewriteParameters
 		return nil, errors.New("missing semicolon at end of file")
 	}
 	if err := validate.FuncCall(c, raw); err != nil {
+		return nil, err
+	}
+	name, cmd, err := metadata.Parse(strings.TrimSpace(rawSQL), metadata.CommentSyntaxDash)
+	if err != nil {
+		return nil, err
+	}
+	if err := validate.Cmd(raw.Stmt, name, cmd); err != nil {
 		return nil, err
 	}
 
