@@ -96,14 +96,18 @@ func parseQueries(p Parser, c *catalog.Catalog, queries []string) (*Result, erro
 			merr.Add(filename, "", 0, err)
 			continue
 		}
-		source := string(blob)
-		stmts, err := p.Parse(strings.NewReader(source))
+		src := string(blob)
+		stmts, err := p.Parse(strings.NewReader(src))
 		if err != nil {
-			merr.Add(filename, source, 0, err)
+			merr.Add(filename, src, 0, err)
 			continue
 		}
 		for _, stmt := range stmts {
-			fmt.Println(stmt)
+			_, err := parseQuery(p, c, stmt.Raw, src, false)
+			if err != nil {
+				merr.Add(filename, src, stmt.Raw.Pos(), err)
+				continue
+			}
 		}
 	}
 	if len(merr.Errs()) > 0 {
@@ -112,6 +116,7 @@ func parseQueries(p Parser, c *catalog.Catalog, queries []string) (*Result, erro
 	return &Result{}, nil
 }
 
+// Deprecated.
 func buildResult(c *catalog.Catalog) (*Result, error) {
 	var structs []dinosql.GoStruct
 	var enums []dinosql.GoEnum
