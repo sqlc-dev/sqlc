@@ -1,5 +1,3 @@
-// +build exp
-
 package compiler
 
 import (

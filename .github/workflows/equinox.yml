@@ -13,11 +13,11 @@ jobs:
     name: release --platforms darwin
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@master
-    - name: Set up Go 1.13
-      uses: actions/setup-go@v1
+    - uses: actions/checkout@v2
+    - name: Set up Go 1.14
+      uses: actions/setup-go@v2
       with:
-        go-version: '1.13'
+        go-version: '1.14'
     - run: brew install eqnxio/equinox/release-tool
     - name: equinox release
       env:
@@ -30,11 +30,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: [macos]
     steps:
-    - uses: actions/checkout@master
-    - name: Set up Go 1.13
-      uses: actions/setup-go@v1
+    - uses: actions/checkout@v2
+    - name: Set up Go 1.14
+      uses: actions/setup-go@v2
       with:
-        go-version: '1.13'
+        go-version: '1.14'
     - run: curl -O https://bin.equinox.io/c/mBWdkfai63v/release-tool-stable-linux-amd64.tgz
     - run: tar -xzvf release-tool-stable-linux-amd64.tgz
     - name: equinox release
