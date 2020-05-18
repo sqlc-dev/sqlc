@@ -10,7 +10,7 @@ import (
 	"vitess.io/vitess/go/vt/sqlparser"
 
 	"github.com/kyleconroy/sqlc/internal/config"
-	"github.com/kyleconroy/sqlc/internal/dinosql"
+	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/migrations"
 	"github.com/kyleconroy/sqlc/internal/multierr"
 	"github.com/kyleconroy/sqlc/internal/sql/sqlpath"
@@ -143,7 +143,7 @@ func (q *Query) parseNameAndCmd() error {
 		return fmt.Errorf("cannot parse name and cmd from null query")
 	}
 	_, comments := sqlparser.SplitMarginComments(q.SQL)
-	name, cmd, err := dinosql.ParseMetadata(comments.Leading, dinosql.CommentSyntaxStar)
+	name, cmd, err := metadata.Parse(comments.Leading, metadata.CommentSyntaxStar)
 	if err != nil {
 		return err
 	} else if name == "" || cmd == "" {
