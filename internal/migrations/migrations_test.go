@@ -46,6 +46,16 @@ const outputTern = `
 -- Write your migrate up statements here
 ALTER TABLE todo RENAME COLUMN done TO is_done;`
 
+const inputDbmate = `
+-- migrate:up
+CREATE TABLE foo (bar int);
+-- migrate:down
+DROP TABLE foo;`
+
+const outputDbmate = `
+-- migrate:up
+CREATE TABLE foo (bar int);`
+
 func TestRemoveRollback(t *testing.T) {
 	if diff := cmp.Diff(outputGoose, RemoveRollbackStatements(inputGoose)); diff != "" {
 		t.Errorf("goose migration mismatch:\n%s", diff)
@@ -55,6 +65,9 @@ func TestRemoveRollback(t *testing.T) {
 	}
 	if diff := cmp.Diff(outputTern, RemoveRollbackStatements(inputTern)); diff != "" {
 		t.Errorf("tern migration mismatch:\n%s", diff)
+	}
+	if diff := cmp.Diff(outputDbmate, RemoveRollbackStatements(inputDbmate)); diff != "" {
+		t.Errorf("dbmate migration mismatch:\n%s", diff)
 	}
 }
 
