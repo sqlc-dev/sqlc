@@ -8,6 +8,8 @@ import (
 	"github.com/jinzhu/inflection"
 	"vitess.io/vitess/go/vt/sqlparser"
 
+	"github.com/kyleconroy/sqlc/internal/codegen"
+	"github.com/kyleconroy/sqlc/internal/codegen/golang"
 	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/dinosql"
 	core "github.com/kyleconroy/sqlc/internal/pg"
@@ -25,16 +27,16 @@ type Result struct {
 }
 
 // Enums generates parser-agnostic GoEnum types
-func (r *Result) Enums(settings config.CombinedSettings) []dinosql.GoEnum {
-	var enums []dinosql.GoEnum
+func (r *Result) Enums(settings config.CombinedSettings) []golang.Enum {
+	var enums []golang.Enum
 	for _, table := range r.Schema.tables {
 		for _, col := range table {
 			if col.Type.Type == "enum" {
-				constants := []dinosql.GoConstant{}
+				constants := []golang.Constant{}
 				enumName := r.enumNameFromColDef(col)
 				for _, c := range col.Type.EnumValues {
 					stripped := stripInnerQuotes(c)
-					constants = append(constants, dinosql.GoConstant{
+					constants = append(constants, golang.Constant{
 						// TODO: maybe add the struct name call to capitalize the name here
 						Name:  stripped,
 						Value: stripped,
@@ -42,7 +44,7 @@ func (r *Result) Enums(settings config.CombinedSettings) []dinosql.GoEnum {
 					})
 				}
 
-				goEnum := dinosql.GoEnum{
+				goEnum := golang.Enum{
 					Name:      enumName,
 					Comment:   "",
 					Constants: constants,
@@ -64,20 +66,20 @@ func (pGen PackageGenerator) enumNameFromColDef(col *sqlparser.ColumnDefinition)
 }
 
 // Structs marshels each query into a go struct for generation
-func (r *Result) Structs(settings config.CombinedSettings) []dinosql.GoStruct {
-	var structs []dinosql.GoStruct
+func (r *Result) Structs(settings config.CombinedSettings) []golang.Struct {
+	var structs []golang.Struct
 	for tableName, cols := range r.Schema.tables {
 		structName := dinosql.StructName(tableName, settings)
 		if !(settings.Go.EmitExactTableNames || settings.Kotlin.EmitExactTableNames) {
 			structName = inflection.Singular(structName)
 		}
-		s := dinosql.GoStruct{
+		s := golang.Struct{
 			Name:  structName,
 			Table: core.FQN{tableName, "", ""}, // TODO: Complete hack. Only need for equality check to see if struct can be reused between queries
 		}
 
 		for _, col := range cols {
-			s.Fields = append(s.Fields, dinosql.GoField{
+			s.Fields = append(s.Fields, golang.Field{
 				Name:    dinosql.StructName(col.Name.String(), settings),
 				Type:    r.goTypeCol(Column{col, tableName}),
 				Tags:    map[string]string{"json:": col.Name.String()},
@@ -91,10 +93,10 @@ func (r *Result) Structs(settings config.CombinedSettings) []dinosql.GoStruct {
 }
 
 // GoQueries generates parser-agnostic query information for code generation
-func (r *Result) GoQueries(settings config.CombinedSettings) []dinosql.GoQuery {
+func (r *Result) GoQueries(settings config.CombinedSettings) []golang.Query {
 	structs := r.Structs(settings)
 
-	qs := make([]dinosql.GoQuery, 0, len(r.Queries))
+	qs := make([]golang.Query, 0, len(r.Queries))
 	for ix, query := range r.Queries {
 		if query == nil {
 			panic(fmt.Sprintf("query is nil on index: %v, len: %v", ix, len(r.Queries)))
@@ -106,10 +108,10 @@ func (r *Result) GoQueries(settings config.CombinedSettings) []dinosql.GoQuery {
 			continue
 		}
 
-		gq := dinosql.GoQuery{
+		gq := golang.Query{
 			Cmd:          query.Cmd,
-			ConstantName: dinosql.LowerTitle(query.Name),
-			FieldName:    dinosql.LowerTitle(query.Name) + "Stmt",
+			ConstantName: codegen.LowerTitle(query.Name),
+			FieldName:    codegen.LowerTitle(query.Name) + "Stmt",
 			MethodName:   query.Name,
 			SourceName:   query.Filename,
 			SQL:          query.SQL,
@@ -118,7 +120,7 @@ func (r *Result) GoQueries(settings config.CombinedSettings) []dinosql.GoQuery {
 
 		if len(query.Params) == 1 {
 			p := query.Params[0]
-			gq.Arg = dinosql.GoQueryValue{
+			gq.Arg = golang.QueryValue{
 				Name: p.Name,
 				Typ:  p.Typ,
 			}
@@ -132,7 +134,7 @@ func (r *Result) GoQueries(settings config.CombinedSettings) []dinosql.GoQuery {
 				}
 			}
 
-			gq.Arg = dinosql.GoQueryValue{
+			gq.Arg = golang.QueryValue{
 				Emit:   true,
 				Name:   "arg",
 				Struct: r.columnsToStruct(gq.MethodName+"Params", structInfo, settings),
@@ -141,12 +143,12 @@ func (r *Result) GoQueries(settings config.CombinedSettings) []dinosql.GoQuery {
 
 		if len(query.Columns) == 1 {
 			c := query.Columns[0]
-			gq.Ret = dinosql.GoQueryValue{
+			gq.Ret = golang.QueryValue{
 				Name: columnName(c.ColumnDefinition, 0),
 				Typ:  r.goTypeCol(c),
 			}
 		} else if len(query.Columns) > 1 {
-			var gs *dinosql.GoStruct
+			var gs *golang.Struct
 			var emit bool
 
 			for _, s := range structs {
@@ -183,7 +185,7 @@ func (r *Result) GoQueries(settings config.CombinedSettings) []dinosql.GoQuery {
 				gs = r.columnsToStruct(gq.MethodName+"Row", structInfo, settings)
 				emit = true
 			}
-			gq.Ret = dinosql.GoQueryValue{
+			gq.Ret = golang.QueryValue{
 				Emit:   emit,
 				Name:   "i",
 				Struct: gs,
@@ -201,8 +203,8 @@ type structParams struct {
 	goType       string
 }
 
-func (r *Result) columnsToStruct(name string, items []structParams, settings config.CombinedSettings) *dinosql.GoStruct {
-	gs := dinosql.GoStruct{
+func (r *Result) columnsToStruct(name string, items []structParams, settings config.CombinedSettings) *golang.Struct {
+	gs := golang.Struct{
 		Name: name,
 	}
 	seen := map[string]int{}
@@ -215,7 +217,7 @@ func (r *Result) columnsToStruct(name string, items []structParams, settings con
 			tagName = fmt.Sprintf("%s_%d", tagName, v+1)
 			fieldName = fmt.Sprintf("%s_%d", fieldName, v+1)
 		}
-		gs.Fields = append(gs.Fields, dinosql.GoField{
+		gs.Fields = append(gs.Fields, golang.Field{
 			Name: fieldName,
 			Type: typ,
 			Tags: map[string]string{"json:": tagName},
