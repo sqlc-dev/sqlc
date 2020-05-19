@@ -3,6 +3,7 @@ package compiler
 import (
 	"fmt"
 
+	"github.com/kyleconroy/sqlc/internal/codegen/golang"
 	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/dinosql"
 	"github.com/kyleconroy/sqlc/internal/dolphin"
@@ -52,6 +53,6 @@ func (e *Engine) ParseQueries(queries []string, opts dinosql.ParserOpts) error {
 	return nil
 }
 
-func (e *Engine) Result() dinosql.Generateable {
+func (e *Engine) Result() golang.Generateable {
 	return e.result
 }

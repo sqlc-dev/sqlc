@@ -10,6 +10,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/kyleconroy/sqlc/internal/codegen"
 	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/dinosql"
 	core "github.com/kyleconroy/sqlc/internal/pg"
@@ -430,7 +431,7 @@ func KtDataClassName(name string, settings config.CombinedSettings) string {
 }
 
 func KtMemberName(name string, settings config.CombinedSettings) string {
-	return dinosql.LowerTitle(KtDataClassName(name, settings))
+	return codegen.LowerTitle(KtDataClassName(name, settings))
 }
 
 func (r Result) KtDataClasses(settings config.CombinedSettings) []KtStruct {
@@ -696,9 +697,9 @@ func (r Result) KtQueries(settings config.CombinedSettings) []KtQuery {
 		gq := KtQuery{
 			Cmd:          query.Cmd,
 			ClassName:    strings.Title(query.Name),
-			ConstantName: dinosql.LowerTitle(query.Name),
-			FieldName:    dinosql.LowerTitle(query.Name) + "Stmt",
-			MethodName:   dinosql.LowerTitle(query.Name),
+			ConstantName: codegen.LowerTitle(query.Name),
+			FieldName:    codegen.LowerTitle(query.Name) + "Stmt",
+			MethodName:   codegen.LowerTitle(query.Name),
 			SourceName:   query.Filename,
 			SQL:          jdbcSQL(query.SQL),
 			Comments:     query.Comments,
@@ -990,8 +991,8 @@ func ktFormat(s string) string {
 
 func KtGenerate(r KtGenerateable, settings config.CombinedSettings) (map[string]string, error) {
 	funcMap := template.FuncMap{
-		"lowerTitle": dinosql.LowerTitle,
-		"comment":    dinosql.DoubleSlashComment,
+		"lowerTitle": codegen.LowerTitle,
+		"comment":    codegen.DoubleSlashComment,
 		"imports":    KtImports(r, settings),
 		"offset":     Offset,
 	}

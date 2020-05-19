@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/kyleconroy/sqlc/internal/codegen/golang"
 	"github.com/kyleconroy/sqlc/internal/compiler"
 	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/dinosql"
@@ -112,7 +113,7 @@ func Generate(e Env, dir string, stderr io.Writer) (map[string]string, error) {
 
 	for _, sql := range pairs {
 		combo := config.Combine(conf, sql.SQL)
-		var result dinosql.Generateable
+		var result golang.Generateable
 
 		// TODO: This feels like a hack that will bite us later
 		joined := make([]string, 0, len(sql.Schema))
@@ -145,7 +146,7 @@ func Generate(e Env, dir string, stderr io.Writer) (map[string]string, error) {
 		var out string
 		if sql.Gen.Go != nil {
 			out = combo.Go.Out
-			files, err = dinosql.Generate(result, combo)
+			files, err = golang.Generate(result, combo)
 		} else if sql.Gen.Kotlin != nil {
 			out = combo.Kotlin.Out
 			ktRes, ok := result.(kotlin.KtGenerateable)
@@ -177,7 +178,7 @@ func Generate(e Env, dir string, stderr io.Writer) (map[string]string, error) {
 type postgreEngine interface {
 	ParseCatalog([]string) error
 	ParseQueries([]string, dinosql.ParserOpts) error
-	Result() dinosql.Generateable
+	Result() golang.Generateable
 }
 
 type dinosqlEngine struct {
@@ -203,11 +204,11 @@ func (d *dinosqlEngine) ParseQueries(queries []string, opts dinosql.ParserOpts) 
 	return nil
 }
 
-func (d *dinosqlEngine) Result() dinosql.Generateable {
+func (d *dinosqlEngine) Result() golang.Generateable {
 	return &kotlin.Result{Result: d.result}
 }
 
-func parse(e Env, name, dir string, sql config.SQL, combo config.CombinedSettings, parserOpts dinosql.ParserOpts, stderr io.Writer) (dinosql.Generateable, bool) {
+func parse(e Env, name, dir string, sql config.SQL, combo config.CombinedSettings, parserOpts dinosql.ParserOpts, stderr io.Writer) (golang.Generateable, bool) {
 	switch sql.Engine {
 	case config.EngineMySQL:
 		// Experimental MySQL support

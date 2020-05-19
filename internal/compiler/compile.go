@@ -8,8 +8,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/kyleconroy/sqlc/internal/codegen/golang"
 	"github.com/kyleconroy/sqlc/internal/config"
-	"github.com/kyleconroy/sqlc/internal/dinosql"
 	"github.com/kyleconroy/sqlc/internal/dolphin"
 	"github.com/kyleconroy/sqlc/internal/migrations"
 	"github.com/kyleconroy/sqlc/internal/multierr"
@@ -118,17 +118,17 @@ func parseQueries(p Parser, c *catalog.Catalog, queries []string) (*Result, erro
 
 // Deprecated.
 func buildResult(c *catalog.Catalog) (*Result, error) {
-	var structs []dinosql.GoStruct
-	var enums []dinosql.GoEnum
+	var structs []golang.Struct
+	var enums []golang.Enum
 	for _, schema := range c.Schemas {
 		for _, table := range schema.Tables {
-			s := dinosql.GoStruct{
+			s := golang.Struct{
 				Table:   pg.FQN{Schema: schema.Name, Rel: table.Rel.Name},
 				Name:    strings.Title(table.Rel.Name),
 				Comment: table.Comment,
 			}
 			for _, col := range table.Columns {
-				s.Fields = append(s.Fields, dinosql.GoField{
+				s.Fields = append(s.Fields, golang.Field{
 					Name:    structName(col.Name),
 					Type:    "string",
 					Tags:    map[string]string{"json:": col.Name},
@@ -146,12 +146,12 @@ func buildResult(c *catalog.Catalog) (*Result, error) {
 				} else {
 					name = schema.Name + "_" + t.Name
 				}
-				e := dinosql.GoEnum{
+				e := golang.Enum{
 					Name:    structName(name),
 					Comment: t.Comment,
 				}
 				for _, v := range t.Vals {
-					e.Constants = append(e.Constants, dinosql.GoConstant{
+					e.Constants = append(e.Constants, golang.Constant{
 						Name:  e.Name + enumValueName(v),
 						Value: v,
 						Type:  e.Name,
