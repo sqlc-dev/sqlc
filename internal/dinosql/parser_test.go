@@ -37,7 +37,7 @@ func TestPluck(t *testing.T) {
 	for i, stmt := range tree.Statements {
 		switch n := stmt.(type) {
 		case nodes.RawStmt:
-			q, err := pluckQuery(pluck, n)
+			q, err := source.Pluck(pluck, n.StmtLocation, n.StmtLen)
 			if err != nil {
 				t.Error(err)
 				continue
@@ -147,28 +147,13 @@ func TestRewriteParameters(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-			rewritten, err := editQuery(q.orig, edits)
+			rewritten, err := source.Mutate(q.orig, edits)
 			if err != nil {
 				t.Error(err)
 			}
 			if rewritten != q.new {
 				t.Errorf("expected %q, got %q", q.new, rewritten)
 			}
-		}
-	}
-}
-
-func TestParseMetadata(t *testing.T) {
-	for _, query := range []string{
-		`-- name: CreateFoo, :one`,
-		`-- name: 9Foo_, :one`,
-		`-- name: CreateFoo :two`,
-		`-- name: CreateFoo`,
-		`-- name: CreateFoo :one something`,
-		`-- name: `,
-	} {
-		if _, _, err := ParseMetadata(query, CommentSyntaxDash); err == nil {
-			t.Errorf("expected invalid metadata: %q", query)
 		}
 	}
 }
@@ -182,7 +167,7 @@ func TestExpand(t *testing.T) {
 		{10, "*", "a, b"},
 		{13, "foo.*", "foo.a, foo.b"},
 	}
-	actual, err := editQuery(raw, edits)
+	actual, err := source.Mutate(raw, edits)
 	if err != nil {
 		t.Error(err)
 	}

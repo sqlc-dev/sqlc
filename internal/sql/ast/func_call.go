@@ -1,14 +1,11 @@
-package pg
-
-import (
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
-)
+package ast
 
 type FuncCall struct {
-	Funcname       *ast.List
-	Args           *ast.List
-	AggOrder       *ast.List
-	AggFilter      ast.Node
+	Func           *FuncName
+	Funcname       *List
+	Args           *List
+	AggOrder       *List
+	AggFilter      Node
 	AggWithinGroup bool
 	AggStar        bool
 	AggDistinct    bool

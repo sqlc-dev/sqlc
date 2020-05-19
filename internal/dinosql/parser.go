@@ -1,7 +1,6 @@
 package dinosql
 
 import (
-	"bufio"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -9,13 +8,13 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"unicode"
 
 	"github.com/davecgh/go-spew/spew"
 	pg "github.com/lfittl/pg_query_go"
 	nodes "github.com/lfittl/pg_query_go/nodes"
 
 	"github.com/kyleconroy/sqlc/internal/catalog"
+	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/migrations"
 	"github.com/kyleconroy/sqlc/internal/multierr"
 	core "github.com/kyleconroy/sqlc/internal/pg"
@@ -148,24 +147,24 @@ func ParseQueries(c core.Catalog, queriesPaths []string, opts ParserOpts) (*Resu
 			merr.Add(filename, "", 0, err)
 			continue
 		}
-		source := string(blob)
-		tree, err := pg.Parse(source)
+		src := string(blob)
+		tree, err := pg.Parse(src)
 		if err != nil {
-			merr.Add(filename, source, 0, err)
+			merr.Add(filename, src, 0, err)
 			continue
 		}
 		for _, stmt := range tree.Statements {
-			query, err := parseQuery(c, stmt, source, opts.UsePositionalParameters)
+			query, err := parseQuery(c, stmt, src, opts.UsePositionalParameters)
 			if err == errUnsupportedStatementType {
 				continue
 			}
 			if err != nil {
-				merr.Add(filename, source, location(stmt), err)
+				merr.Add(filename, src, location(stmt), err)
 				continue
 			}
 			if query.Name != "" {
 				if _, exists := set[query.Name]; exists {
-					merr.Add(filename, source, location(stmt), fmt.Errorf("duplicate query name: %s", query.Name))
+					merr.Add(filename, src, location(stmt), fmt.Errorf("duplicate query name: %s", query.Name))
 					continue
 				}
 				set[query.Name] = struct{}{}
@@ -198,12 +197,6 @@ func location(node nodes.Node) int {
 	return 0
 }
 
-func pluckQuery(source string, n nodes.RawStmt) (string, error) {
-	head := n.StmtLocation
-	tail := n.StmtLocation + n.StmtLen
-	return source[head:tail], nil
-}
-
 func rangeVars(root nodes.Node) []nodes.RangeVar {
 	var vars []nodes.RangeVar
 	find := ast.VisitorFunc(func(node nodes.Node) {
@@ -214,67 +207,6 @@ func rangeVars(root nodes.Node) []nodes.RangeVar {
 	})
 	ast.Walk(find, root)
 	return vars
-}
-
-// A query name must be a valid Go identifier
-//
-// https://golang.org/ref/spec#Identifiers
-func validateQueryName(name string) error {
-	if len(name) == 0 {
-		return fmt.Errorf("invalid query name: %q", name)
-	}
-	for i, c := range name {
-		isLetter := unicode.IsLetter(c) || c == '_'
-		isDigit := unicode.IsDigit(c)
-		if i == 0 && !isLetter {
-			return fmt.Errorf("invalid query name %q", name)
-		} else if !(isLetter || isDigit) {
-			return fmt.Errorf("invalid query name %q", name)
-		}
-	}
-	return nil
-}
-
-type CommentSyntax int
-
-const (
-	CommentSyntaxDash CommentSyntax = iota
-	CommentSyntaxStar               // Note: this is the only style supported by the MySQL sqlparser
-	CommentSyntaxHash
-)
-
-func ParseMetadata(t string, commentStyle CommentSyntax) (string, string, error) {
-	for _, line := range strings.Split(t, "\n") {
-		if commentStyle == CommentSyntaxDash && !strings.HasPrefix(line, "-- name:") {
-			continue
-		}
-		if commentStyle == CommentSyntaxStar && !strings.HasPrefix(line, "/* name:") {
-			continue
-		}
-		part := strings.Split(strings.TrimSpace(line), " ")
-
-		if commentStyle == CommentSyntaxStar {
-			part = part[:len(part)-1] // removes the trailing "*/" element
-		}
-		if len(part) == 2 {
-			return "", "", fmt.Errorf("missing query type [':one', ':many', ':exec', ':execrows']: %s", line)
-		}
-		if len(part) != 4 {
-			return "", "", fmt.Errorf("invalid query comment: %s", line)
-		}
-		queryName := part[2]
-		queryType := strings.TrimSpace(part[3])
-		switch queryType {
-		case ":one", ":many", ":exec", ":execrows":
-		default:
-			return "", "", fmt.Errorf("invalid query type: %s", queryType)
-		}
-		if err := validateQueryName(queryName); err != nil {
-			return "", "", err
-		}
-		return queryName, queryType, nil
-	}
-	return "", "", nil
 }
 
 func validateCmd(n nodes.Node, name, cmd string) error {
@@ -303,7 +235,7 @@ func validateCmd(n nodes.Node, name, cmd string) error {
 
 var errUnsupportedStatementType = errors.New("parseQuery: unsupported statement type")
 
-func parseQuery(c core.Catalog, stmt nodes.Node, source string, rewriteParameters bool) (*Query, error) {
+func parseQuery(c core.Catalog, stmt nodes.Node, src string, rewriteParameters bool) (*Query, error) {
 	if err := validate.ParamStyle(stmt); err != nil {
 		return nil, err
 	}
@@ -327,7 +259,7 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string, rewriteParameter
 		return nil, errUnsupportedStatementType
 	}
 
-	rawSQL, err := pluckQuery(source, raw)
+	rawSQL, err := source.Pluck(src, raw.StmtLocation, raw.StmtLen)
 	if err != nil {
 		return nil, err
 	}
@@ -337,7 +269,7 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string, rewriteParameter
 	if err := validate.FuncCall(&c, raw); err != nil {
 		return nil, err
 	}
-	name, cmd, err := ParseMetadata(strings.TrimSpace(rawSQL), CommentSyntaxDash)
+	name, cmd, err := metadata.Parse(strings.TrimSpace(rawSQL), metadata.CommentSyntaxDash)
 	if err != nil {
 		return nil, err
 	}
@@ -378,7 +310,7 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string, rewriteParameter
 	}
 	edits = append(edits, expandEdits...)
 
-	expanded, err := editQuery(rawSQL, edits)
+	expanded, err := source.Mutate(rawSQL, edits)
 	if err != nil {
 		return nil, err
 	}
@@ -390,7 +322,7 @@ func parseQuery(c core.Catalog, stmt nodes.Node, source string, rewriteParameter
 		}
 	}
 
-	trimmed, comments, err := stripComments(strings.TrimSpace(expanded))
+	trimmed, comments, err := source.StripComments(expanded)
 	if err != nil {
 		return nil, err
 	}
@@ -415,22 +347,6 @@ func rewriteNumberedParameters(refs []paramRef, raw nodes.RawStmt, sql string) (
 		}
 	}
 	return edits, nil
-}
-
-func stripComments(sql string) (string, []string, error) {
-	s := bufio.NewScanner(strings.NewReader(sql))
-	var lines, comments []string
-	for s.Scan() {
-		if strings.HasPrefix(s.Text(), "-- name:") {
-			continue
-		}
-		if strings.HasPrefix(s.Text(), "--") {
-			comments = append(comments, strings.TrimPrefix(s.Text(), "--"))
-			continue
-		}
-		lines = append(lines, s.Text())
-	}
-	return strings.Join(lines, "\n"), comments, s.Err()
 }
 
 func expand(qc *QueryCatalog, raw nodes.RawStmt) ([]source.Edit, error) {
@@ -551,33 +467,6 @@ func expandStmt(qc *QueryCatalog, raw nodes.RawStmt, node nodes.Node) ([]source.
 		})
 	}
 	return edits, nil
-}
-
-func editQuery(raw string, a []source.Edit) (string, error) {
-	if len(a) == 0 {
-		return raw, nil
-	}
-	sort.Slice(a, func(i, j int) bool { return a[i].Location > a[j].Location })
-	s := raw
-	for _, edit := range a {
-		start := edit.Location
-		if start > len(s) {
-			return "", fmt.Errorf("edit start location is out of bounds")
-		}
-		if len(edit.New) <= 0 {
-			return "", fmt.Errorf("empty edit contents")
-		}
-		if len(edit.Old) <= 0 {
-			return "", fmt.Errorf("empty edit contents")
-		}
-		stop := edit.Location + len(edit.Old) - 1 // Assumes edit.New is non-empty
-		if stop < len(s) {
-			s = s[:start] + edit.New + s[stop+1:]
-		} else {
-			s = s[:start] + edit.New
-		}
-	}
-	return s, nil
 }
 
 type QueryCatalog struct {
