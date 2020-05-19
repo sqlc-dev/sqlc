@@ -6,6 +6,7 @@ sqlc will ignore rollback statements when parsing migration SQL files. The follo
 - [sql-migrate](https://github.com/rubenv/sql-migrate)
 - [tern](https://github.com/jackc/tern)
 - [golang-migrate](https://github.com/golang-migrate/migrate)
+- [dbmate](https://github.com/amacneil/dbmate)
 
 ## goose
 
