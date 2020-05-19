@@ -9,7 +9,8 @@ import (
 //
 // goose:       -- +goose Down
 // sql-migrate: -- +migrate Down
-// tern: ---- create above / drop below ----
+// tern:        ---- create above / drop below ----
+// dbmate:      -- migrate:down
 func RemoveRollbackStatements(contents string) string {
 	s := bufio.NewScanner(strings.NewReader(contents))
 	var lines []string
@@ -21,6 +22,9 @@ func RemoveRollbackStatements(contents string) string {
 			break
 		}
 		if strings.HasPrefix(s.Text(), "---- create above / drop below ----") {
+			break
+		}
+		if strings.HasPrefix(s.Text(), "-- migrate:down") {
 			break
 		}
 		lines = append(lines, s.Text())
