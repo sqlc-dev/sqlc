@@ -3,12 +3,14 @@ package compiler
 import (
 	"errors"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/source"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sql/ast/pg"
+	"github.com/kyleconroy/sqlc/internal/sql/astutils"
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 	"github.com/kyleconroy/sqlc/internal/sql/rewrite"
 	"github.com/kyleconroy/sqlc/internal/sql/validate"
@@ -67,7 +69,20 @@ func parseQuery(p Parser, c *catalog.Catalog, stmt ast.Node, src string, rewrite
 
 	// TODO: Then a miracle occurs
 	raw, namedParams, edits := rewrite.NamedParameters(raw)
-	fmt.Println(raw, namedParams)
+	rvs := rangeVars(raw.Stmt)
+	refs := findParameters(raw.Stmt)
+	if rewriteParameters {
+		// TODO
+		// edits, err = rewriteNumberedParameters(refs, raw, rawSQL)
+		// if err != nil {
+		// 	return nil, err
+		// }
+	} else {
+		refs = uniqueParamRefs(refs)
+		sort.Slice(refs, func(i, j int) bool { return refs[i].ref.Number < refs[j].ref.Number })
+	}
+
+	fmt.Println(raw, namedParams, rvs, refs)
 
 	expanded, err := source.Mutate(rawSQL, edits)
 	if err != nil {
@@ -92,4 +107,28 @@ func parseQuery(p Parser, c *catalog.Catalog, stmt ast.Node, src string, rewrite
 		Name:     name,
 		SQL:      trimmed,
 	}, nil
+}
+
+func rangeVars(root ast.Node) []*pg.RangeVar {
+	var vars []*pg.RangeVar
+	find := astutils.VisitorFunc(func(node ast.Node) {
+		switch n := node.(type) {
+		case *pg.RangeVar:
+			vars = append(vars, n)
+		}
+	})
+	astutils.Walk(find, root)
+	return vars
+}
+
+func uniqueParamRefs(in []paramRef) []paramRef {
+	m := make(map[int]struct{}, len(in))
+	o := make([]paramRef, 0, len(in))
+	for _, v := range in {
+		if _, ok := m[v.ref.Number]; !ok {
+			m[v.ref.Number] = struct{}{}
+			o = append(o, v)
+		}
+	}
+	return o
 }
