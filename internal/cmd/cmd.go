@@ -89,7 +89,7 @@ var genCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		output, err := Generate(Env{}, dir, stderr)
+		output, err := Generate(ParseEnv(), dir, stderr)
 		if err != nil {
 			os.Exit(1)
 		}

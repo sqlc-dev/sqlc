@@ -3,9 +3,13 @@ package compiler
 import (
 	"github.com/kyleconroy/sqlc/internal/codegen/golang"
 	"github.com/kyleconroy/sqlc/internal/config"
+	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 )
 
 type Result struct {
+	Catalog *catalog.Catalog
+	Queries []*Query
+
 	enums   []golang.Enum
 	structs []golang.Struct
 	queries []golang.Query

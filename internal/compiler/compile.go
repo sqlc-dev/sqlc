@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
@@ -85,7 +86,9 @@ func parseCatalog(p Parser, c *catalog.Catalog, schemas []string) error {
 }
 
 func parseQueries(p Parser, c *catalog.Catalog, queries []string) (*Result, error) {
+	var q []*Query
 	merr := multierr.New()
+	set := map[string]struct{}{}
 	files, err := sqlpath.Glob(queries)
 	if err != nil {
 		return nil, err
@@ -103,17 +106,37 @@ func parseQueries(p Parser, c *catalog.Catalog, queries []string) (*Result, erro
 			continue
 		}
 		for _, stmt := range stmts {
-			_, err := parseQuery(p, c, stmt.Raw, src, false)
+			query, err := parseQuery(p, c, stmt.Raw, src, false)
+			if err == ErrUnsupportedStatementType {
+				continue
+			}
 			if err != nil {
 				merr.Add(filename, src, stmt.Raw.Pos(), err)
 				continue
+			}
+			if query.Name != "" {
+				if _, exists := set[query.Name]; exists {
+					merr.Add(filename, src, 0, fmt.Errorf("duplicate query name: %s", query.Name))
+					continue
+				}
+				set[query.Name] = struct{}{}
+			}
+			query.Filename = filepath.Base(filename)
+			if query != nil {
+				q = append(q, query)
 			}
 		}
 	}
 	if len(merr.Errs()) > 0 {
 		return nil, merr
 	}
-	return &Result{}, nil
+	if len(q) == 0 {
+		return nil, fmt.Errorf("no queries contained in paths %s", strings.Join(queries, ","))
+	}
+	return &Result{
+		Catalog: c,
+		Queries: q,
+	}, nil
 }
 
 // Deprecated.

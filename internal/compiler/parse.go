@@ -6,6 +6,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/davecgh/go-spew/spew"
+
 	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/source"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
@@ -15,13 +17,6 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/rewrite"
 	"github.com/kyleconroy/sqlc/internal/sql/validate"
 )
-
-type Query struct {
-	SQL      string
-	Name     string
-	Cmd      string // TODO: Pick a better name. One of: one, many, exec, execrows
-	Comments []string
-}
 
 var ErrUnsupportedStatementType = errors.New("parseQuery: unsupported statement type")
 
@@ -67,7 +62,6 @@ func parseQuery(p Parser, c *catalog.Catalog, stmt ast.Node, src string, rewrite
 		return nil, err
 	}
 
-	// TODO: Then a miracle occurs
 	raw, namedParams, edits := rewrite.NamedParameters(raw)
 	rvs := rangeVars(raw.Stmt)
 	refs := findParameters(raw.Stmt)
@@ -81,8 +75,26 @@ func parseQuery(p Parser, c *catalog.Catalog, stmt ast.Node, src string, rewrite
 		refs = uniqueParamRefs(refs)
 		sort.Slice(refs, func(i, j int) bool { return refs[i].ref.Number < refs[j].ref.Number })
 	}
+	params, err := resolveCatalogRefs(c, rvs, refs, namedParams)
+	if err != nil {
+		spew.Dump(raw)
+		return nil, err
+	}
 
-	fmt.Println(raw, namedParams, rvs, refs)
+	qc, err := buildQueryCatalog(c, raw.Stmt)
+	if err != nil {
+		return nil, err
+	}
+	cols, err := outputColumns(qc, raw.Stmt)
+	if err != nil {
+		return nil, err
+	}
+
+	expandEdits, err := expand(qc, raw)
+	if err != nil {
+		return nil, err
+	}
+	edits = append(edits, expandEdits...)
 
 	expanded, err := source.Mutate(rawSQL, edits)
 	if err != nil {
@@ -105,6 +117,8 @@ func parseQuery(p Parser, c *catalog.Catalog, stmt ast.Node, src string, rewrite
 		Cmd:      cmd,
 		Comments: comments,
 		Name:     name,
+		Params:   params,
+		Columns:  cols,
 		SQL:      trimmed,
 	}, nil
 }

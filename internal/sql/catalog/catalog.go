@@ -171,6 +171,7 @@ type Column struct {
 	Name      string
 	Type      ast.TypeName
 	IsNotNull bool
+	IsArray   bool
 	Comment   string
 }
 
