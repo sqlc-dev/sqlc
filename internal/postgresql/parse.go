@@ -179,7 +179,11 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 			return nil, fmt.Errorf("unexpected nil node")
 		}
 		stmts = append(stmts, ast.Statement{
-			Raw: &ast.RawStmt{Stmt: n},
+			Raw: &ast.RawStmt{
+				Stmt:         n,
+				StmtLocation: raw.StmtLocation,
+				StmtLen:      raw.StmtLen,
+			},
 		})
 	}
 	return stmts, nil
