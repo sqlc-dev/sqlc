@@ -10,6 +10,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sql/ast/pg"
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
+	"github.com/kyleconroy/sqlc/internal/sql/rewrite"
 	"github.com/kyleconroy/sqlc/internal/sql/validate"
 )
 
@@ -65,8 +66,9 @@ func parseQuery(p Parser, c *catalog.Catalog, stmt ast.Node, src string, rewrite
 	}
 
 	// TODO: Then a miracle occurs
+	raw, namedParams, edits := rewrite.NamedParameters(raw)
+	fmt.Println(raw, namedParams)
 
-	var edits []source.Edit
 	expanded, err := source.Mutate(rawSQL, edits)
 	if err != nil {
 		return nil, err
