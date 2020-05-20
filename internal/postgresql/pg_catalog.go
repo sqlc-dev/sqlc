@@ -10,7 +10,7 @@ func pgTemp() *catalog.Schema {
 }
 
 func typeName(name string) *ast.TypeName {
-	return &ast.TypeName{Name: "bigint"}
+	return &ast.TypeName{Name: name}
 }
 
 func argN(name string, n int) *catalog.Function {
@@ -258,7 +258,7 @@ func pgCatalog() *catalog.Schema {
 			},
 		},
 		{
-			Name:       "pg_advisory_xact_lock",
+			Name:       "pg_advisory_xact_lock_shared",
 			Desc:       "Obtain exclusive transaction level advisory lock",
 			ReturnType: typeName("void"),
 			Args: []*catalog.Argument{
@@ -269,7 +269,7 @@ func pgCatalog() *catalog.Schema {
 			},
 		},
 		{
-			Name:       "pg_advisory_xact_lock",
+			Name:       "pg_advisory_xact_lock_shared",
 			Desc:       "Obtain exclusive transaction level advisory lock",
 			ReturnType: typeName("void"),
 			Args: []*catalog.Argument{
