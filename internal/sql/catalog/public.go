@@ -5,41 +5,42 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
 )
 
-// TODO: Decide on a real, exported interface
-func (c *Catalog) ListFuncsByName(rel *ast.FuncName) ([]Function, error) {
-	var funcs []Function
-
-	ns := rel.Schema
+func (c *Catalog) schemasToSearch(ns string) []string {
 	if ns == "" {
 		ns = c.DefaultSchema
 	}
-	s, err := c.getSchema(ns)
-	if err != nil {
-		return nil, err
-	}
-	for i := range s.Funcs {
-		if s.Funcs[i].Name == rel.Name {
-			funcs = append(funcs, *s.Funcs[i])
+	return append(c.SearchPath, ns)
+}
+
+func (c *Catalog) ListFuncsByName(rel *ast.FuncName) ([]Function, error) {
+	var funcs []Function
+	for _, ns := range c.schemasToSearch(rel.Schema) {
+		s, err := c.getSchema(ns)
+		if err != nil {
+			return nil, err
+		}
+		for i := range s.Funcs {
+			if s.Funcs[i].Name == rel.Name {
+				funcs = append(funcs, *s.Funcs[i])
+			}
 		}
 	}
 	return funcs, nil
 }
 
 func (c *Catalog) GetFuncN(rel *ast.FuncName, n int) (Function, error) {
-	ns := rel.Schema
-	if ns == "" {
-		ns = c.DefaultSchema
-	}
-	s, err := c.getSchema(ns)
-	if err != nil {
-		return Function{}, err
-	}
-	for i := range s.Funcs {
-		if s.Funcs[i].Name != rel.Name {
-			continue
+	for _, ns := range c.schemasToSearch(rel.Schema) {
+		s, err := c.getSchema(ns)
+		if err != nil {
+			return Function{}, err
 		}
-		if len(s.Funcs[i].Args) == n {
-			return *s.Funcs[i], nil
+		for i := range s.Funcs {
+			if s.Funcs[i].Name != rel.Name {
+				continue
+			}
+			if len(s.Funcs[i].Args) == n {
+				return *s.Funcs[i], nil
+			}
 		}
 	}
 	return Function{}, sqlerr.RelationNotFound(rel.Name)
@@ -47,5 +48,9 @@ func (c *Catalog) GetFuncN(rel *ast.FuncName, n int) (Function, error) {
 
 func (c *Catalog) GetTable(rel *ast.TableName) (Table, error) {
 	_, table, err := c.getTable(rel)
-	return *table, err
+	if table == nil {
+		return Table{}, err
+	} else {
+		return *table, err
+	}
 }

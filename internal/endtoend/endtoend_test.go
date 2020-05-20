@@ -47,17 +47,10 @@ func TestExamples(t *testing.T) {
 
 func TestReplay(t *testing.T) {
 	t.Parallel()
-
-	experimental := map[string]bool{
-		"ondeck": true,
-	}
-	env := cmd.ParseEnv()
-
 	files, err := ioutil.ReadDir("testdata")
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	for _, replay := range files {
 		if !replay.IsDir() {
 			continue
@@ -76,15 +69,19 @@ func TestReplay(t *testing.T) {
 			if diff := cmp.Diff(expected, stderr.String()); diff != "" {
 				t.Errorf("stderr differed (-want +got):\n%s", diff)
 			}
-			if env.ExperimentalParser && experimental[tc] {
-				output, err := cmd.Generate(env, path, &stderr)
-				if len(expected) == 0 && err != nil {
-					t.Fatalf("EXPERIMENTAL sqlc generate failed: %s", stderr.String())
-				}
-				cmpDirectory(t, path, output)
-				if diff := cmp.Diff(expected, stderr.String()); diff != "" {
-					t.Errorf("EXPERIMENTAL stderr differed (-want +got):\n%s", diff)
-				}
+		})
+		t.Run(tc+"/experimental", func(t *testing.T) {
+			t.Parallel()
+			path, _ := filepath.Abs(filepath.Join("testdata", tc))
+			var stderr bytes.Buffer
+			expected := expectedStderr(t, path)
+			output, err := cmd.Generate(cmd.Env{ExperimentalParser: true}, path, &stderr)
+			if len(expected) == 0 && err != nil {
+				t.Fatalf("sqlc generate failed: %s", stderr.String())
+			}
+			cmpDirectory(t, path, output)
+			if diff := cmp.Diff(expected, stderr.String()); diff != "" {
+				t.Errorf("stderr differed (-want +got):\n%s", diff)
 			}
 		})
 	}

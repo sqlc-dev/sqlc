@@ -32,6 +32,7 @@ jobs:
     - name: Test sqlc
       run: go test --tags=examples -v ./...
       env:
+        SQLC_EXPERIMENTAL_PARSER: on
         PG_USER: postgres
         PG_HOST: localhost
         PG_DATABASE: postgres

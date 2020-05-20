@@ -13,7 +13,7 @@ type SelectStmt struct {
 	GroupClause    *ast.List
 	HavingClause   ast.Node
 	WindowClause   *ast.List
-	ValuesLists    [][]ast.Node
+	ValuesLists    *ast.List
 	SortClause     *ast.List
 	LimitOffset    ast.Node
 	LimitCount     ast.Node

@@ -1,2 +1,2 @@
 -- name: AdvisoryLock :many
-SELECT pg_advisory_xact_lock($1);
+SELECT pg_advisory_unlock($1);

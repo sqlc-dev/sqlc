@@ -83,6 +83,11 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Type)
 		}
 
+	case *ast.CompositeTypeStmt:
+		if n.TypeName != nil {
+			Walk(f, n.TypeName)
+		}
+
 	case *ast.CreateEnumStmt:
 		if n.TypeName != nil {
 			Walk(f, n.TypeName)
@@ -1869,6 +1874,9 @@ func Walk(f Visitor, node ast.Node) {
 		}
 		if n.WindowClause != nil {
 			Walk(f, n.WindowClause)
+		}
+		if n.ValuesLists != nil {
+			Walk(f, n.ValuesLists)
 		}
 		if n.SortClause != nil {
 			Walk(f, n.SortClause)

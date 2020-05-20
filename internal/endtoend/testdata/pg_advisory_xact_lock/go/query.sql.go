@@ -5,26 +5,25 @@ package querytest
 
 import (
 	"context"
-	"database/sql"
 )
 
 const advisoryLock = `-- name: AdvisoryLock :many
-SELECT pg_advisory_xact_lock($1)
+SELECT pg_advisory_unlock($1)
 `
 
-func (q *Queries) AdvisoryLock(ctx context.Context, key int64) ([]sql.NullBool, error) {
+func (q *Queries) AdvisoryLock(ctx context.Context, key int64) ([]bool, error) {
 	rows, err := q.db.QueryContext(ctx, advisoryLock, key)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []sql.NullBool
+	var items []bool
 	for rows.Next() {
-		var pg_advisory_xact_lock sql.NullBool
-		if err := rows.Scan(&pg_advisory_xact_lock); err != nil {
+		var pg_advisory_unlock bool
+		if err := rows.Scan(&pg_advisory_unlock); err != nil {
 			return nil, err
 		}
-		items = append(items, pg_advisory_xact_lock)
+		items = append(items, pg_advisory_unlock)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err

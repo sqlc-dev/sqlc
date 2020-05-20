@@ -69,8 +69,12 @@ func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 				*p.refs = append(*p.refs, paramRef{parent: n.Cols.Items[i], ref: ref, rv: n.Relation})
 				p.seen[ref.Location] = struct{}{}
 			}
-			for _, vl := range s.ValuesLists {
-				for i, v := range vl {
+			for _, item := range s.ValuesLists.Items {
+				vl, ok := item.(*ast.List)
+				if !ok {
+					continue
+				}
+				for i, v := range vl.Items {
 					ref, ok := v.(*pg.ParamRef)
 					if !ok {
 						continue

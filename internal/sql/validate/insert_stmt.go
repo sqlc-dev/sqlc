@@ -1,6 +1,7 @@
 package validate
 
 import (
+	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sql/ast/pg"
 	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
 )
@@ -10,12 +11,19 @@ func InsertStmt(stmt *pg.InsertStmt) error {
 	if !ok {
 		return nil
 	}
-	if len(sel.ValuesLists) != 1 {
+	if sel.ValuesLists == nil {
+		return nil
+	}
+	if len(sel.ValuesLists.Items) != 1 {
+		return nil
+	}
+	sublist, ok := sel.ValuesLists.Items[0].(*ast.List)
+	if !ok {
 		return nil
 	}
 
 	colsLen := len(stmt.Cols.Items)
-	valsLen := len(sel.ValuesLists[0])
+	valsLen := len(sublist.Items)
 	switch {
 	case colsLen > valsLen:
 		return &sqlerr.Error{

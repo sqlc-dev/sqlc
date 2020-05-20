@@ -1087,6 +1087,7 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.apply(n, "GroupClause", nil, n.GroupClause)
 		a.apply(n, "HavingClause", nil, n.HavingClause)
 		a.apply(n, "WindowClause", nil, n.WindowClause)
+		a.apply(n, "ValuesLists", nil, n.ValuesLists)
 		a.apply(n, "SortClause", nil, n.SortClause)
 		a.apply(n, "LimitOffset", nil, n.LimitOffset)
 		a.apply(n, "LimitCount", nil, n.LimitCount)

@@ -146,7 +146,7 @@ func advisoryLockFunctions() []Function {
 			},
 		},
 		{
-			Name:       "pg_advisory_xact_lock",
+			Name:       "pg_advisory_xact_lock_shared",
 			Desc:       "Obtain exclusive transaction level advisory lock",
 			ReturnType: "void",
 			Arguments: []Argument{
@@ -157,7 +157,7 @@ func advisoryLockFunctions() []Function {
 			},
 		},
 		{
-			Name:       "pg_advisory_xact_lock",
+			Name:       "pg_advisory_xact_lock_shared",
 			Desc:       "Obtain exclusive transaction level advisory lock",
 			ReturnType: "void",
 			Arguments: []Argument{
