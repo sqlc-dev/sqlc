@@ -126,6 +126,7 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 						cols = append(cols, &Column{
 							Name:     cname,
 							Type:     c.Type,
+							Scope:    scope,
 							Table:    c.Table,
 							DataType: c.DataType,
 							NotNull:  c.NotNull,
@@ -262,7 +263,11 @@ func sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, error) {
 				return nil, cerr
 			}
 			if n.Alias != nil {
-				table.Rel.Name = *n.Alias.Aliasname
+				table.Rel = &ast.TableName{
+					Catalog: table.Rel.Catalog,
+					Schema:  table.Rel.Schema,
+					Name:    *n.Alias.Aliasname,
+				}
 			}
 			tables = append(tables, table)
 		default:
