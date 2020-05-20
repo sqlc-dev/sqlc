@@ -1875,6 +1875,9 @@ func Walk(f Visitor, node ast.Node) {
 		if n.WindowClause != nil {
 			Walk(f, n.WindowClause)
 		}
+		if n.ValuesLists != nil {
+			Walk(f, n.ValuesLists)
+		}
 		if n.SortClause != nil {
 			Walk(f, n.SortClause)
 		}

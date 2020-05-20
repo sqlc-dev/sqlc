@@ -15,14 +15,14 @@ func convertList(l nodes.List) *ast.List {
 	return out
 }
 
-func convertValuesList(l [][]nodes.Node) [][]ast.Node {
-	out := [][]ast.Node{}
+func convertValuesList(l [][]nodes.Node) *ast.List {
+	out := &ast.List{}
 	for _, outer := range l {
-		o := []ast.Node{}
+		o := &ast.List{}
 		for _, inner := range outer {
-			o = append(o, convertNode(inner))
+			o.Items = append(o.Items, convertNode(inner))
 		}
-		out = append(out, o)
+		out.Items = append(out.Items, o)
 	}
 	return out
 }
@@ -3356,6 +3356,9 @@ func convertNode(node nodes.Node) ast.Node {
 
 	case nodes.JoinExpr:
 		return convertJoinExpr(&n)
+
+	case nodes.List:
+		return convertList(n)
 
 	case nodes.ListenStmt:
 		return convertListenStmt(&n)

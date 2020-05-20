@@ -6,8 +6,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/davecgh/go-spew/spew"
-
 	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/source"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
@@ -77,7 +75,6 @@ func parseQuery(p Parser, c *catalog.Catalog, stmt ast.Node, src string, rewrite
 	}
 	params, err := resolveCatalogRefs(c, rvs, refs, namedParams)
 	if err != nil {
-		spew.Dump(raw)
 		return nil, err
 	}
 

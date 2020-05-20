@@ -161,8 +161,8 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 				name = *res.Name
 			}
 			switch n.SubLinkType {
-			// TODO: case nodes.EXISTS_SUBLINK:
-			// 	cols = append(cols, core.Column{Name: name, DataType: "bool", NotNull: true})
+			case pg.EXISTS_SUBLINK:
+				cols = append(cols, &Column{Name: name, DataType: "bool", NotNull: true})
 			default:
 				cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
 			}
