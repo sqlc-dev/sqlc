@@ -20,6 +20,7 @@ type Catalog struct {
 	Schemas []*Schema
 	Comment string
 
+	SearchPath    []string
 	DefaultSchema string
 }
 

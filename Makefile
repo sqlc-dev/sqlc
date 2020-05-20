@@ -2,9 +2,6 @@ build:
 	go build ./...
 
 test:
-	go test ./...
-
-exp:
 	SQLC_EXPERIMENTAL_PARSER=on go test ./...
 
 sqlc-dev:
