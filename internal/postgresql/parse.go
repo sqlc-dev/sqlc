@@ -103,6 +103,19 @@ func parseRelation(node nodes.Node) (*relation, error) {
 		}
 		return &name, nil
 
+	case *nodes.RangeVar:
+		name := relation{}
+		if n.Catalogname != nil {
+			name.Catalog = *n.Catalogname
+		}
+		if n.Schemaname != nil {
+			name.Schema = *n.Schemaname
+		}
+		if n.Relname != nil {
+			name.Name = *n.Relname
+		}
+		return &name, nil
+
 	case nodes.TypeName:
 		return parseRelation(n.Names)
 
