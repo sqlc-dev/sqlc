@@ -22,7 +22,11 @@ func (e *Error) Unwrap() error {
 }
 
 func (e *Error) Error() string {
-	return fmt.Sprintf("%s %s", e.Message, e.Err.Error())
+	if e.Err != nil {
+		return fmt.Sprintf("%s %s", e.Message, e.Err.Error())
+	} else {
+		return e.Message
+	}
 }
 
 func ColumnExists(rel, col string) *Error {

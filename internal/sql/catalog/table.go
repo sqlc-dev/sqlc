@@ -140,6 +140,7 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 			Name:      col.Colname,
 			Type:      *col.TypeName,
 			IsNotNull: col.IsNotNull,
+			// TODO: Array support
 		})
 	}
 	schema.Tables = append(schema.Tables, &tbl)

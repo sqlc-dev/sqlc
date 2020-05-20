@@ -11,7 +11,6 @@ import (
 	"github.com/kyleconroy/sqlc/internal/codegen"
 	"github.com/kyleconroy/sqlc/internal/codegen/golang"
 	"github.com/kyleconroy/sqlc/internal/config"
-	"github.com/kyleconroy/sqlc/internal/dinosql"
 	core "github.com/kyleconroy/sqlc/internal/pg"
 )
 
@@ -62,14 +61,14 @@ func stripInnerQuotes(identifier string) string {
 
 func (pGen PackageGenerator) enumNameFromColDef(col *sqlparser.ColumnDefinition) string {
 	return fmt.Sprintf("%sType",
-		dinosql.StructName(col.Name.String(), pGen.CombinedSettings))
+		golang.StructName(col.Name.String(), pGen.CombinedSettings))
 }
 
 // Structs marshels each query into a go struct for generation
 func (r *Result) Structs(settings config.CombinedSettings) []golang.Struct {
 	var structs []golang.Struct
 	for tableName, cols := range r.Schema.tables {
-		structName := dinosql.StructName(tableName, settings)
+		structName := golang.StructName(tableName, settings)
 		if !(settings.Go.EmitExactTableNames || settings.Kotlin.EmitExactTableNames) {
 			structName = inflection.Singular(structName)
 		}
@@ -80,7 +79,7 @@ func (r *Result) Structs(settings config.CombinedSettings) []golang.Struct {
 
 		for _, col := range cols {
 			s.Fields = append(s.Fields, golang.Field{
-				Name:    dinosql.StructName(col.Name.String(), settings),
+				Name:    golang.StructName(col.Name.String(), settings),
 				Type:    r.goTypeCol(Column{col, tableName}),
 				Tags:    map[string]string{"json:": col.Name.String()},
 				Comment: "",
@@ -158,7 +157,7 @@ func (r *Result) GoQueries(settings config.CombinedSettings) []golang.Query {
 				same := true
 				for i, f := range s.Fields {
 					c := query.Columns[i]
-					sameName := f.Name == dinosql.StructName(columnName(c.ColumnDefinition, i), settings)
+					sameName := f.Name == golang.StructName(columnName(c.ColumnDefinition, i), settings)
 					sameType := f.Type == r.goTypeCol(c)
 
 					hackedFQN := core.FQN{c.Table, "", ""} // TODO: only check needed here is equality to see if struct can be reused, this type should be removed or properly used
@@ -212,7 +211,7 @@ func (r *Result) columnsToStruct(name string, items []structParams, settings con
 		name := item.originalName
 		typ := item.goType
 		tagName := name
-		fieldName := dinosql.StructName(name, settings)
+		fieldName := golang.StructName(name, settings)
 		if v := seen[name]; v > 0 {
 			tagName = fmt.Sprintf("%s_%d", tagName, v+1)
 			fieldName = fmt.Sprintf("%s_%d", fieldName, v+1)

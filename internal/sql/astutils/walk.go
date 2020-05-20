@@ -136,7 +136,9 @@ func Walk(f Visitor, node ast.Node) {
 		}
 
 	case *ast.List:
-		// pass
+		for _, item := range n.Items {
+			Walk(f, item)
+		}
 
 	case *ast.RawStmt:
 		if n.Stmt != nil {

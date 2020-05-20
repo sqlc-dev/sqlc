@@ -19,21 +19,6 @@ type goColumn struct {
 	core.Column
 }
 
-func StructName(name string, settings config.CombinedSettings) string {
-	if rename := settings.Rename[name]; rename != "" {
-		return rename
-	}
-	out := ""
-	for _, p := range strings.Split(name, "_") {
-		if p == "id" {
-			out += "ID"
-		} else {
-			out += strings.Title(p)
-		}
-	}
-	return out
-}
-
 func argName(name string) string {
 	out := ""
 	for i, p := range strings.Split(name, "_") {
@@ -46,18 +31,6 @@ func argName(name string) string {
 		}
 	}
 	return out
-}
-
-func enumValueName(value string) string {
-	name := ""
-	id := strings.Replace(value, "-", "_", -1)
-	id = strings.Replace(id, ":", "_", -1)
-	id = strings.Replace(id, "/", "_", -1)
-	id = golang.IdentPattern.ReplaceAllString(id, "")
-	for _, part := range strings.Split(id, "_") {
-		name += strings.Title(part)
-	}
-	return name
 }
 
 func columnName(c core.Column, pos int) string {
@@ -88,12 +61,12 @@ func (r Result) Enums(settings config.CombinedSettings) []golang.Enum {
 				enumName = name + "_" + enum.Name
 			}
 			e := golang.Enum{
-				Name:    StructName(enumName, settings),
+				Name:    golang.StructName(enumName, settings),
 				Comment: enum.Comment,
 			}
 			for _, v := range enum.Vals {
 				e.Constants = append(e.Constants, golang.Constant{
-					Name:  e.Name + enumValueName(v),
+					Name:  e.Name + golang.EnumValueName(v),
 					Value: v,
 					Type:  e.Name,
 				})
@@ -126,12 +99,12 @@ func (r Result) Structs(settings config.CombinedSettings) []golang.Struct {
 			}
 			s := golang.Struct{
 				Table:   core.FQN{Schema: name, Rel: table.Name},
-				Name:    StructName(structName, settings),
+				Name:    golang.StructName(structName, settings),
 				Comment: table.Comment,
 			}
 			for _, column := range table.Columns {
 				s.Fields = append(s.Fields, golang.Field{
-					Name:    StructName(column.Name, settings),
+					Name:    golang.StructName(column.Name, settings),
 					Type:    r.goType(column, settings),
 					Tags:    map[string]string{"json:": column.Name},
 					Comment: column.Comment,
@@ -290,9 +263,9 @@ func (r Result) goInnerType(col core.Column, settings config.CombinedSettings) s
 				case core.Enum:
 					if fqn.Rel == t.Name && fqn.Schema == name {
 						if name == "public" {
-							return StructName(t.Name, settings)
+							return golang.StructName(t.Name, settings)
 						}
-						return StructName(name+"_"+t.Name, settings)
+						return golang.StructName(name+"_"+t.Name, settings)
 					}
 				case core.CompositeType:
 					if notNull {
@@ -368,7 +341,7 @@ func (r Result) GoQueries(settings config.CombinedSettings) []golang.Query {
 				same := true
 				for i, f := range s.Fields {
 					c := query.Columns[i]
-					sameName := f.Name == StructName(columnName(c, i), settings)
+					sameName := f.Name == golang.StructName(columnName(c, i), settings)
 					sameType := f.Type == r.goType(c, settings)
 					sameTable := s.Table.Catalog == c.Table.Catalog && s.Table.Schema == c.Table.Schema && s.Table.Rel == c.Table.Rel
 
@@ -436,7 +409,7 @@ func (r Result) columnsToStruct(name string, columns []goColumn, settings config
 	for i, c := range columns {
 		colName := columnName(c.Column, i)
 		tagName := colName
-		fieldName := StructName(colName, settings)
+		fieldName := golang.StructName(colName, settings)
 		// Track suffixes by the ID of the column, so that columns referring to the same numbered parameter can be
 		// reused.
 		suffix := 0
