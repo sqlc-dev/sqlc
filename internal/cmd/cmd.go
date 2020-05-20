@@ -74,7 +74,7 @@ type Env struct {
 
 func ParseEnv() Env {
 	return Env{
-		ExperimentalParser: os.Getenv("SQLC_EXPERIMENTAL_PARSER") == "on",
+		ExperimentalParser: os.Getenv("SQLC_EXPERIMENTAL_PARSER") != "off",
 	}
 }
 
