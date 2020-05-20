@@ -1,6 +1,7 @@
 package compiler
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -18,6 +19,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/postgresql"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
+	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
 	"github.com/kyleconroy/sqlc/internal/sql/sqlpath"
 	"github.com/kyleconroy/sqlc/internal/sqlite"
 )
@@ -111,12 +113,17 @@ func parseQueries(p Parser, c *catalog.Catalog, queries []string) (*Result, erro
 				continue
 			}
 			if err != nil {
-				merr.Add(filename, src, stmt.Raw.Pos(), err)
+				var e *sqlerr.Error
+				loc := stmt.Raw.Pos()
+				if errors.As(err, &e) && e.Location != 0 {
+					loc = e.Location
+				}
+				merr.Add(filename, src, loc, err)
 				continue
 			}
 			if query.Name != "" {
 				if _, exists := set[query.Name]; exists {
-					merr.Add(filename, src, 0, fmt.Errorf("duplicate query name: %s", query.Name))
+					merr.Add(filename, src, stmt.Raw.Pos(), fmt.Errorf("duplicate query name: %s", query.Name))
 					continue
 				}
 				set[query.Name] = struct{}{}
