@@ -252,6 +252,7 @@ func translate(node nodes.Node) (ast.Node, error) {
 						Colname:   *d.Colname,
 						TypeName:  tn,
 						IsNotNull: isNotNull(d),
+						IsArray:   isArray(d.TypeName),
 					}
 
 				case nodes.AT_AlterColumnType:
@@ -273,6 +274,7 @@ func translate(node nodes.Node) (ast.Node, error) {
 						Colname:   col,
 						TypeName:  tn,
 						IsNotNull: isNotNull(d),
+						IsArray:   isArray(d.TypeName),
 					}
 
 				case nodes.AT_DropColumn:
@@ -340,6 +342,15 @@ func translate(node nodes.Node) (ast.Node, error) {
 		}
 		return nil, errSkip
 
+	case nodes.CompositeTypeStmt:
+		name, err := parseTypeName(n.Typevar)
+		if err != nil {
+			return nil, err
+		}
+		return &ast.CompositeTypeStmt{
+			TypeName: name,
+		}, nil
+
 	case nodes.CreateStmt:
 		name, err := parseTableName(*n.Relation)
 		if err != nil {
@@ -360,6 +371,7 @@ func translate(node nodes.Node) (ast.Node, error) {
 					Colname:   *n.Colname,
 					TypeName:  tn,
 					IsNotNull: isNotNull(n),
+					IsArray:   isArray(n.TypeName),
 				})
 			}
 		}

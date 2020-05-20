@@ -48,5 +48,9 @@ func (c *Catalog) GetFuncN(rel *ast.FuncName, n int) (Function, error) {
 
 func (c *Catalog) GetTable(rel *ast.TableName) (Table, error) {
 	_, table, err := c.getTable(rel)
-	return *table, err
+	if table == nil {
+		return Table{}, err
+	} else {
+		return *table, err
+	}
 }

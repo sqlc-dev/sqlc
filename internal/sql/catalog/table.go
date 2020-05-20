@@ -72,6 +72,7 @@ func (c *Catalog) alterTable(stmt *ast.AlterTableStmt) error {
 					Name:      cmd.Def.Colname,
 					Type:      *cmd.Def.TypeName,
 					IsNotNull: cmd.Def.IsNotNull,
+					IsArray:   cmd.Def.IsArray,
 				})
 
 			case ast.AT_AlterColumnType:
@@ -140,7 +141,7 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 			Name:      col.Colname,
 			Type:      *col.TypeName,
 			IsNotNull: col.IsNotNull,
-			// TODO: Array support
+			IsArray:   col.IsArray,
 		})
 	}
 	schema.Tables = append(schema.Tables, &tbl)

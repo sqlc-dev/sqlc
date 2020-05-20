@@ -196,6 +196,7 @@ func (e *Enum) isType() {
 }
 
 type CompositeType struct {
+	Name    string
 	Comment string
 }
 
@@ -211,6 +212,7 @@ type Function struct {
 	Args       []*Argument
 	ReturnType *ast.TypeName
 	Comment    string
+	Desc       string
 }
 
 type Argument struct {
@@ -259,6 +261,8 @@ func (c *Catalog) Update(stmt ast.Statement) error {
 		err = c.commentOnTable(n)
 	case *ast.CommentOnTypeStmt:
 		err = c.commentOnType(n)
+	case *ast.CompositeTypeStmt:
+		err = c.createCompositeType(n)
 	case *ast.CreateEnumStmt:
 		err = c.createEnum(n)
 	case *ast.CreateFunctionStmt:
