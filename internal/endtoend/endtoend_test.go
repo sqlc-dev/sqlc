@@ -61,7 +61,7 @@ func TestReplay(t *testing.T) {
 			path, _ := filepath.Abs(filepath.Join("testdata", tc))
 			var stderr bytes.Buffer
 			expected := expectedStderr(t, path)
-			output, err := cmd.Generate(cmd.Env{}, path, &stderr)
+			output, err := cmd.Generate(cmd.Env{ExperimentalParser: true}, path, &stderr)
 			if len(expected) == 0 && err != nil {
 				t.Fatalf("sqlc generate failed: %s", stderr.String())
 			}
@@ -70,12 +70,12 @@ func TestReplay(t *testing.T) {
 				t.Errorf("stderr differed (-want +got):\n%s", diff)
 			}
 		})
-		t.Run(tc+"/experimental", func(t *testing.T) {
+		t.Run(tc+"/deprecated-parser", func(t *testing.T) {
 			t.Parallel()
 			path, _ := filepath.Abs(filepath.Join("testdata", tc))
 			var stderr bytes.Buffer
 			expected := expectedStderr(t, path)
-			output, err := cmd.Generate(cmd.Env{ExperimentalParser: true}, path, &stderr)
+			output, err := cmd.Generate(cmd.Env{ExperimentalParser: false}, path, &stderr)
 			if len(expected) == 0 && err != nil {
 				t.Fatalf("sqlc generate failed: %s", stderr.String())
 			}
