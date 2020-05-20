@@ -47,7 +47,7 @@ func (r *Result) Structs(settings config.CombinedSettings) []golang.Struct {
 		}
 		for _, table := range schema.Tables {
 			var tableName string
-			if schema.Name == "public" {
+			if schema.Name == r.Catalog.DefaultSchema {
 				tableName = table.Rel.Name
 			} else {
 				tableName = schema.Name + "_" + table.Rel.Name
@@ -90,7 +90,7 @@ func (r *Result) Enums(settings config.CombinedSettings) []golang.Enum {
 				continue
 			}
 			var enumName string
-			if schema.Name == "public" {
+			if schema.Name == r.Catalog.DefaultSchema {
 				enumName = enum.Name
 			} else {
 				enumName = schema.Name + "_" + enum.Name
