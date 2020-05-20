@@ -125,6 +125,7 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 						}
 						cols = append(cols, &Column{
 							Name:     cname,
+							Type:     c.Type,
 							Table:    c.Table,
 							DataType: c.DataType,
 							NotNull:  c.NotNull,
@@ -298,6 +299,7 @@ func outputColumnRefs(res *pg.ResTarget, tables []*Table, node *pg.ColumnRef) ([
 				}
 				cols = append(cols, &Column{
 					Name:     cname,
+					Type:     c.Type,
 					Table:    c.Table,
 					DataType: c.DataType,
 					NotNull:  c.NotNull,

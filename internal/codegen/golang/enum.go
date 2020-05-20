@@ -1,6 +1,9 @@
 package golang
 
-import "regexp"
+import (
+	"regexp"
+	"strings"
+)
 
 var IdentPattern = regexp.MustCompile("[^a-zA-Z0-9_]+")
 
@@ -14,4 +17,16 @@ type Enum struct {
 	Name      string
 	Comment   string
 	Constants []Constant
+}
+
+func EnumValueName(value string) string {
+	name := ""
+	id := strings.Replace(value, "-", "_", -1)
+	id = strings.Replace(id, ":", "_", -1)
+	id = strings.Replace(id, "/", "_", -1)
+	id = IdentPattern.ReplaceAllString(id, "")
+	for _, part := range strings.Split(id, "_") {
+		name += strings.Title(part)
+	}
+	return name
 }

@@ -194,6 +194,17 @@ func (e *Enum) SetComment(c string) {
 func (e *Enum) isType() {
 }
 
+type CompositeType struct {
+	Comment string
+}
+
+func (ct *CompositeType) isType() {
+}
+
+func (ct *CompositeType) SetComment(c string) {
+	ct.Comment = c
+}
+
 type Function struct {
 	Name       string
 	Args       []*Argument

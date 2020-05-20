@@ -140,7 +140,7 @@ func parseQueries(p Parser, c *catalog.Catalog, queries []string) (*Result, erro
 }
 
 // Deprecated.
-func buildResult(c *catalog.Catalog) (*Result, error) {
+func buildResult(c *catalog.Catalog) (*BuildResult, error) {
 	var structs []golang.Struct
 	var enums []golang.Enum
 	for _, schema := range c.Schemas {
@@ -190,10 +190,10 @@ func buildResult(c *catalog.Catalog) (*Result, error) {
 	if len(enums) > 0 {
 		sort.Slice(enums, func(i, j int) bool { return enums[i].Name < enums[j].Name })
 	}
-	return &Result{structs: structs, enums: enums}, nil
+	return &BuildResult{structs: structs, enums: enums}, nil
 }
 
-func Run(conf config.SQL, combo config.CombinedSettings) (*Result, error) {
+func Run(conf config.SQL, combo config.CombinedSettings) (*BuildResult, error) {
 	var c *catalog.Catalog
 	var p Parser
 

@@ -43,6 +43,17 @@ func buildQueryCatalog(c *catalog.Catalog, node ast.Node) (*QueryCatalog, error)
 	return qc, nil
 }
 
+func convertColumn(rel *ast.TableName, c *catalog.Column) *Column {
+	return &Column{
+		Table:    rel,
+		Name:     c.Name,
+		DataType: dataType(&c.Type),
+		NotNull:  c.IsNotNull,
+		IsArray:  c.IsArray,
+		Type:     &c.Type,
+	}
+}
+
 func (qc QueryCatalog) GetTable(rel *ast.TableName) (*Table, error) {
 	cte, exists := qc.ctes[rel.Name]
 	if exists {
@@ -54,13 +65,7 @@ func (qc QueryCatalog) GetTable(rel *ast.TableName) (*Table, error) {
 	}
 	var cols []*Column
 	for _, c := range src.Columns {
-		cols = append(cols, &Column{
-			Table:    rel,
-			Name:     c.Name,
-			DataType: dataType(&c.Type),
-			NotNull:  c.IsNotNull,
-			IsArray:  c.IsArray,
-		})
+		cols = append(cols, convertColumn(rel, c))
 	}
 	return &Table{Rel: rel, Columns: cols}, nil
 }

@@ -17,6 +17,7 @@ type Column struct {
 	// XXX: Figure out what PostgreSQL calls `foo.id`
 	Scope string
 	Table *ast.TableName
+	Type  *ast.TypeName
 }
 
 type Query struct {

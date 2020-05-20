@@ -12,7 +12,11 @@ import (
 )
 
 func dataType(n *ast.TypeName) string {
-	return n.Schema + "." + n.Name
+	if n.Schema != "" {
+		return n.Schema + "." + n.Name
+	} else {
+		return n.Name
+	}
 }
 
 func resolveCatalogRefs(c *catalog.Catalog, rvs []*pg.RangeVar, args []paramRef, names map[int]string) ([]Parameter, error) {
