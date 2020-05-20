@@ -226,9 +226,9 @@ func parse(e Env, name, dir string, sql config.SQL, combo config.CombinedSetting
 		}
 		return q, false
 
-	case config.EnginePostgreSQL:
+	case config.EnginePostgreSQL, config.EngineXLemon:
 		var eng postgreEngine
-		if e.ExperimentalParser {
+		if e.ExperimentalParser || sql.Engine == config.EngineXLemon {
 			eng = compiler.NewEngine(sql, combo)
 		} else {
 			eng = &dinosqlEngine{}
@@ -257,7 +257,7 @@ func parse(e Env, name, dir string, sql config.SQL, combo config.CombinedSetting
 		}
 		return eng.Result(), false
 
-	case config.EngineXLemon, config.EngineXDolphin, config.EngineXElephant:
+	case config.EngineXDolphin, config.EngineXElephant:
 		r, err := compiler.Run(sql, combo)
 		if err != nil {
 			fmt.Fprintf(stderr, "# package %s\n", name)

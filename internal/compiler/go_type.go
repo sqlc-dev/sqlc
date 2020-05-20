@@ -157,7 +157,7 @@ func (r *Result) goInnerType(col *Column, settings config.CombinedSettings) stri
 			return "interface{}"
 		}
 		if rel.Schema == "" {
-			rel.Schema = "public"
+			rel.Schema = r.Catalog.DefaultSchema
 		}
 
 		for _, schema := range r.Catalog.Schemas {
@@ -168,7 +168,7 @@ func (r *Result) goInnerType(col *Column, settings config.CombinedSettings) stri
 				switch t := typ.(type) {
 				case *catalog.Enum:
 					if rel.Name == t.Name && rel.Schema == schema.Name {
-						if schema.Name == "public" {
+						if schema.Name == r.Catalog.DefaultSchema {
 							return golang.StructName(t.Name, settings)
 						}
 						return golang.StructName(schema.Name+"_"+t.Name, settings)

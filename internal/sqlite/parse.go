@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 
@@ -46,7 +47,6 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 	lexer := parser.NewSQLiteLexer(input)
 	stream := antlr.NewCommonTokenStream(lexer, 0)
 	pp := parser.NewSQLiteParser(stream)
-	l := &listener{}
 	el := &errorListener{}
 	pp.AddErrorListener(el)
 	// pp.BuildParseTrees = true
@@ -54,6 +54,30 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 	if el.err != "" {
 		return nil, errors.New(el.err)
 	}
-	antlr.ParseTreeWalkerDefault.Walk(l, tree)
-	return l.stmts, nil
+	pctx, ok := tree.(*parser.ParseContext)
+	if !ok {
+		return nil, fmt.Errorf("expected ParserContext; got %T\n", tree)
+	}
+	var stmts []ast.Statement
+	for _, istmt := range pctx.AllSql_stmt_list() {
+		list, ok := istmt.(*parser.Sql_stmt_listContext)
+		if !ok {
+			return nil, fmt.Errorf("expected Sql_stmt_listContext; got %T\n", istmt)
+		}
+		for _, stmt := range list.AllSql_stmt() {
+			out := convert(stmt)
+			if _, ok := out.(*ast.TODO); ok {
+				continue
+			}
+			stmts = append(stmts, ast.Statement{
+				Raw: &ast.RawStmt{
+					Stmt:         out,
+					StmtLocation: stmt.GetStart().GetStart(),
+					// TODO: Understand why we need to add one
+					StmtLen: stmt.GetStop().GetStop() - stmt.GetStart().GetStart() + 1,
+				},
+			})
+		}
+	}
+	return stmts, nil
 }

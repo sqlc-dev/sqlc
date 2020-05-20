@@ -2,13 +2,19 @@
 
 package querytest
 
-import ()
+import (
+	"database/sql"
+)
+
+type Bar struct {
+	Baz sql.NullString
+}
 
 type Baz struct {
-	Name  string
-	Email string
+	Name  sql.NullString
+	Email sql.NullString
 }
 
 type Foo struct {
-	Bar string
+	Bar sql.NullString
 }
