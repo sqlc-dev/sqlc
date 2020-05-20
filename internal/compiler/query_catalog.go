@@ -31,10 +31,12 @@ func buildQueryCatalog(c *catalog.Catalog, node ast.Node) (*QueryCatalog, error)
 				if err != nil {
 					return nil, err
 				}
+				rel := &ast.TableName{Name: *cte.Ctename}
+				for i := range cols {
+					cols[i].Table = rel
+				}
 				qc.ctes[*cte.Ctename] = &Table{
-					Rel: &ast.TableName{
-						Name: *cte.Ctename,
-					},
+					Rel:     rel,
 					Columns: cols,
 				}
 			}
