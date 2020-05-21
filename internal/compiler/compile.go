@@ -7,13 +7,10 @@ import (
 	"io/ioutil"
 	"path/filepath"
 	"regexp"
-	"sort"
 	"strings"
 
-	"github.com/kyleconroy/sqlc/internal/codegen/golang"
 	"github.com/kyleconroy/sqlc/internal/migrations"
 	"github.com/kyleconroy/sqlc/internal/multierr"
-	"github.com/kyleconroy/sqlc/internal/pg"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
@@ -140,58 +137,4 @@ func parseQueries(p Parser, c *catalog.Catalog, queries []string) (*Result, erro
 		Catalog: c,
 		Queries: q,
 	}, nil
-}
-
-// Deprecated.
-func buildResult(c *catalog.Catalog) (*BuildResult, error) {
-	var structs []golang.Struct
-	var enums []golang.Enum
-	for _, schema := range c.Schemas {
-		for _, table := range schema.Tables {
-			s := golang.Struct{
-				Table:   pg.FQN{Schema: schema.Name, Rel: table.Rel.Name},
-				Name:    strings.Title(table.Rel.Name),
-				Comment: table.Comment,
-			}
-			for _, col := range table.Columns {
-				s.Fields = append(s.Fields, golang.Field{
-					Name:    structName(col.Name),
-					Type:    "string",
-					Tags:    map[string]string{"json:": col.Name},
-					Comment: col.Comment,
-				})
-			}
-			structs = append(structs, s)
-		}
-		for _, typ := range schema.Types {
-			switch t := typ.(type) {
-			case *catalog.Enum:
-				var name string
-				if schema.Name == c.DefaultSchema {
-					name = t.Name
-				} else {
-					name = schema.Name + "_" + t.Name
-				}
-				e := golang.Enum{
-					Name:    structName(name),
-					Comment: t.Comment,
-				}
-				for _, v := range t.Vals {
-					e.Constants = append(e.Constants, golang.Constant{
-						Name:  e.Name + enumValueName(v),
-						Value: v,
-						Type:  e.Name,
-					})
-				}
-				enums = append(enums, e)
-			}
-		}
-	}
-	if len(structs) > 0 {
-		sort.Slice(structs, func(i, j int) bool { return structs[i].Name < structs[j].Name })
-	}
-	if len(enums) > 0 {
-		sort.Slice(enums, func(i, j int) bool { return enums[i].Name < enums[j].Name })
-	}
-	return &BuildResult{structs: structs, enums: enums}, nil
 }
