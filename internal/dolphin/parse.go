@@ -4,11 +4,11 @@ import (
 	"io"
 	"io/ioutil"
 
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
-
 	"github.com/pingcap/parser"
 	pcast "github.com/pingcap/parser/ast"
 	_ "github.com/pingcap/tidb/types/parser_driver"
+
+	"github.com/kyleconroy/sqlc/internal/sql/ast"
 )
 
 func NewParser() *Parser {
