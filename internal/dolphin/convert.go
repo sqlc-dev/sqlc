@@ -2,8 +2,10 @@ package dolphin
 
 import (
 	pcast "github.com/pingcap/parser/ast"
+	"github.com/pingcap/parser/types"
 
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
+	"github.com/kyleconroy/sqlc/internal/sql/ast/pg"
 )
 
 func convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
@@ -20,9 +22,9 @@ func convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 					Name:    &name,
 					Subtype: ast.AT_AddColumn,
 					Def: &ast.ColumnDef{
-						Colname: def.Name.String(),
-						// TODO: Use def.Tp to generate type name
-						TypeName: &ast.TypeName{Name: "text"},
+						Colname:   def.Name.String(),
+						TypeName:  &ast.TypeName{Name: types.TypeStr(def.Tp.Tp)},
+						IsNotNull: isNotNull(def),
 					},
 				})
 			}
@@ -61,9 +63,9 @@ func convertCreateTableStmt(n *pcast.CreateTableStmt) ast.Node {
 	}
 	for _, def := range n.Cols {
 		create.Cols = append(create.Cols, &ast.ColumnDef{
-			Colname: def.Name.String(),
-			// TODO: Use n.Tp to generate type name
-			TypeName: &ast.TypeName{Name: "text"},
+			Colname:   def.Name.String(),
+			TypeName:  &ast.TypeName{Name: types.TypeStr(def.Tp.Tp)},
+			IsNotNull: isNotNull(def),
 		})
 	}
 	return create
@@ -78,7 +80,6 @@ func convertDropTableStmt(n *pcast.DropTableStmt) ast.Node {
 }
 
 func convertSelectStmt(n *pcast.SelectStmt) ast.Node {
-	sel := &ast.SelectStmt{}
 	var tables []ast.Node
 	visit(n.From, func(n pcast.Node) {
 		name, ok := n.(*pcast.TableName)
@@ -99,9 +100,10 @@ func convertSelectStmt(n *pcast.SelectStmt) ast.Node {
 			},
 		})
 	})
-	sel.From = &ast.List{Items: tables}
-	sel.Fields = &ast.List{Items: cols}
-	return sel
+	return &pg.SelectStmt{
+		FromClause: &ast.List{Items: tables},
+		TargetList: &ast.List{Items: cols},
+	}
 }
 
 func convert(node pcast.Node) ast.Node {

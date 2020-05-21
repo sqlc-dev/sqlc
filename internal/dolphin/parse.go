@@ -3,6 +3,7 @@ package dolphin
 import (
 	"io"
 	"io/ioutil"
+	"strings"
 
 	"github.com/pingcap/parser"
 	_ "github.com/pingcap/tidb/types/parser_driver"
@@ -33,10 +34,17 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 		if _, ok := out.(*ast.TODO); ok {
 			continue
 		}
+
+		// TODO: Attach the text directly to the ast.Statement node
+		text := stmtNodes[i].Text()
+		loc := strings.Index(string(blob), text)
+
 		stmts = append(stmts, ast.Statement{
-			Raw: &ast.RawStmt{Stmt: out},
-			// TODO: StmtLocation
-			// TODO: StmtLen
+			Raw: &ast.RawStmt{
+				Stmt:         out,
+				StmtLocation: loc,
+				StmtLen:      len(text),
+			},
 		})
 	}
 	return stmts, nil

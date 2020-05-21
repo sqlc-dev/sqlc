@@ -70,3 +70,12 @@ func parseTableName(n *pcast.TableName) *ast.TableName {
 		Name:   n.Name.String(),
 	}
 }
+
+func isNotNull(n *pcast.ColumnDef) bool {
+	for i := range n.Options {
+		if n.Options[i].Tp == pcast.ColumnOptionNotNull {
+			return true
+		}
+	}
+	return false
+}
