@@ -28,7 +28,7 @@ func (e *FooMood) Scan(src interface{}) error {
 }
 
 // this is the bar table
-type Bar struct {
+type FooBar struct {
 	// this is the baz column
 	Baz string
 }

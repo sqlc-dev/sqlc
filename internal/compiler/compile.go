@@ -11,17 +11,13 @@ import (
 	"strings"
 
 	"github.com/kyleconroy/sqlc/internal/codegen/golang"
-	"github.com/kyleconroy/sqlc/internal/config"
-	"github.com/kyleconroy/sqlc/internal/dolphin"
 	"github.com/kyleconroy/sqlc/internal/migrations"
 	"github.com/kyleconroy/sqlc/internal/multierr"
 	"github.com/kyleconroy/sqlc/internal/pg"
-	"github.com/kyleconroy/sqlc/internal/postgresql"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
 	"github.com/kyleconroy/sqlc/internal/sql/sqlpath"
-	"github.com/kyleconroy/sqlc/internal/sqlite"
 )
 
 type Parser interface {
@@ -198,29 +194,4 @@ func buildResult(c *catalog.Catalog) (*BuildResult, error) {
 		sort.Slice(enums, func(i, j int) bool { return enums[i].Name < enums[j].Name })
 	}
 	return &BuildResult{structs: structs, enums: enums}, nil
-}
-
-func Run(conf config.SQL, combo config.CombinedSettings) (*BuildResult, error) {
-	var c *catalog.Catalog
-	var p Parser
-
-	switch conf.Engine {
-	case config.EngineXLemon:
-		p = sqlite.NewParser()
-		c = catalog.New("main")
-	case config.EngineXDolphin:
-		p = dolphin.NewParser()
-		c = catalog.New("public") // TODO: What is the default database for MySQL?
-	case config.EngineXElephant:
-		p = postgresql.NewParser()
-		c = postgresql.NewCatalog()
-	default:
-		return nil, fmt.Errorf("unknown engine: %s", conf.Engine)
-	}
-
-	if err := parseCatalog(p, c, conf.Schema); err != nil {
-		return nil, err
-	}
-
-	return buildResult(c)
 }
