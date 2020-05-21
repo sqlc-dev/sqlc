@@ -7,7 +7,6 @@ require (
 	github.com/davecgh/go-spew v1.1.1
 	github.com/google/go-cmp v0.3.0
 	github.com/jinzhu/inflection v1.0.0
-	github.com/kyleconroy/sqlc-testdata v0.0.0-20200512000015-15313bc43553
 	github.com/lfittl/pg_query_go v1.0.0
 	github.com/lib/pq v1.4.0
 	github.com/pingcap/parser v3.1.1+incompatible
