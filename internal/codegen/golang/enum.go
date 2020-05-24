@@ -19,6 +19,13 @@ type Enum struct {
 	Constants []Constant
 }
 
+func EnumReplace(value string) string {
+	id := strings.Replace(value, "-", "_", -1)
+	id = strings.Replace(id, ":", "_", -1)
+	id = strings.Replace(id, "/", "_", -1)
+	return IdentPattern.ReplaceAllString(id, "")
+}
+
 func EnumValueName(value string) string {
 	name := ""
 	id := strings.Replace(value, "-", "_", -1)

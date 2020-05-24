@@ -101,7 +101,7 @@ func (r *Result) Enums(settings config.CombinedSettings) []golang.Enum {
 			}
 			for _, v := range enum.Vals {
 				e.Constants = append(e.Constants, golang.Constant{
-					Name:  e.Name + golang.EnumValueName(v),
+					Name:  golang.StructName(enumName+"_"+golang.EnumReplace(v), settings),
 					Value: v,
 					Type:  e.Name,
 				})
