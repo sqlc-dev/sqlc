@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"encoding/json"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -45,6 +46,10 @@ func TestExamples(t *testing.T) {
 	}
 }
 
+type testConfig struct {
+	ExperimentalParserOnly bool `json:"experimental_parser_only"`
+}
+
 func TestReplay(t *testing.T) {
 	t.Parallel()
 	files, err := ioutil.ReadDir("testdata")
@@ -73,6 +78,21 @@ func TestReplay(t *testing.T) {
 		t.Run(tc+"/deprecated-parser", func(t *testing.T) {
 			t.Parallel()
 			path, _ := filepath.Abs(filepath.Join("testdata", tc))
+			// TODO: Extract test configuration into a method
+			confPath := filepath.Join(path, "endtoend.json")
+			if _, err := os.Stat(confPath); !os.IsNotExist(err) {
+				blob, err := ioutil.ReadFile(confPath)
+				if err != nil {
+					t.Fatal(err)
+				}
+				var conf testConfig
+				if err := json.Unmarshal(blob, &conf); err != nil {
+					t.Fatal(err)
+				}
+				if conf.ExperimentalParserOnly {
+					t.Skip("experimental parser only")
+				}
+			}
 			var stderr bytes.Buffer
 			expected := expectedStderr(t, path)
 			output, err := cmd.Generate(cmd.Env{ExperimentalParser: false}, path, &stderr)
