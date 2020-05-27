@@ -638,7 +638,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.
 		return nil, err
 	}
 	defer rows.Close()
-	var items []{{.Ret.Type}}
+	items := make([]{{.Ret.Type}}, 0)
 	for rows.Next() {
 		var {{.Ret.Name}} {{.Ret.Type}}
 		if err := rows.Scan({{.Ret.Scan}}); err != nil {
