@@ -5,7 +5,3 @@ SELECT * FROM foo;
 
 -- name: SecondQuery :many
 SELECT * FROM foo WHERE email = $1
-
--- stderr
--- # package querytest
--- query.sql:7:1: missing semicolon at end of file
