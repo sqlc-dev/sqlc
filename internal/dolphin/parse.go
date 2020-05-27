@@ -1,16 +1,19 @@
 package dolphin
 
 import (
+	"errors"
 	"io"
 	"io/ioutil"
+	"regexp"
+	"strconv"
 	"strings"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/pingcap/parser"
 	_ "github.com/pingcap/tidb/types/parser_driver"
 
 	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
+	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
 )
 
 func NewParser() *Parser {
@@ -21,6 +24,31 @@ type Parser struct {
 	pingcap *parser.Parser
 }
 
+var lineColumn = regexp.MustCompile(`^line (\d+) column (\d+) (.*)`)
+
+func normalizeErr(err error) error {
+	if err == nil {
+		return err
+	}
+	parts := strings.Split(err.Error(), "\n")
+	msg := strings.TrimSpace(parts[0] + "\"")
+	out := lineColumn.FindStringSubmatch(msg)
+	if len(out) == 4 {
+		line, lineErr := strconv.Atoi(out[1])
+		col, colErr := strconv.Atoi(out[2])
+		if lineErr != nil || colErr != nil {
+			return errors.New(msg)
+		}
+		return &sqlerr.Error{
+			Message: "syntax error",
+			Err:     errors.New(out[3]),
+			Line:    line,
+			Column:  col,
+		}
+	}
+	return errors.New(msg)
+}
+
 func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 	blob, err := ioutil.ReadAll(r)
 	if err != nil {
@@ -28,8 +56,7 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 	}
 	stmtNodes, _, err := p.pingcap.Parse(string(blob), "", "")
 	if err != nil {
-		spew.Dump(err)
-		return nil, err
+		return nil, normalizeErr(err)
 	}
 	var stmts []ast.Statement
 	for i := range stmtNodes {

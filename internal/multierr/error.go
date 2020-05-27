@@ -5,6 +5,7 @@ import (
 
 	"github.com/kyleconroy/sqlc/internal/pg"
 	"github.com/kyleconroy/sqlc/internal/source"
+	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
 )
 
 type FileError struct {
@@ -28,6 +29,14 @@ func (e *Error) Add(filename, in string, loc int, err error) {
 	if lerr, ok := err.(pg.Error); ok {
 		if lerr.Location != 0 {
 			loc = lerr.Location
+		}
+	}
+	if lerr, ok := err.(*sqlerr.Error); ok {
+		if lerr.Location != 0 {
+			loc = lerr.Location
+		} else if lerr.Line != 0 && lerr.Column != 0 {
+			line = lerr.Line
+			column = lerr.Column
 		}
 	}
 	if in != "" && loc != 0 {

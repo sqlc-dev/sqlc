@@ -14,6 +14,8 @@ type Error struct {
 	Code     string
 	Message  string
 	Location int
+	Line     int
+	Column   int
 	// Hint     string
 }
 
