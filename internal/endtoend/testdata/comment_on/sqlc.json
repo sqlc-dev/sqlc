@@ -4,7 +4,7 @@
     {
       "path": "go",
       "name": "querytest",
-      "engine": "_elephant",
+      "engine": "postgresql",
       "schema": "query.sql",
       "queries": "query.sql"
     }

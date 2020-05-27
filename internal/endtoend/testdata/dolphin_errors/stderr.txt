@@ -1,0 +1,4 @@
+# package querytest
+query/from.sql:2:38: syntax error near "from where id = ?;"
+query/select.sql:2:34: syntax error near "select id;"
+query/typo.sql:2:8: syntax error near "selectt id, first_name from users;"
