@@ -209,8 +209,7 @@ func (d *dinosqlEngine) Result() golang.Generateable {
 }
 
 func parse(e Env, name, dir string, sql config.SQL, combo config.CombinedSettings, parserOpts dinosql.ParserOpts, stderr io.Writer) (golang.Generateable, bool) {
-	switch sql.Engine {
-	case config.EngineMySQL:
+	if sql.Engine == config.EngineMySQL {
 		// Experimental MySQL support
 		q, err := mysql.GeneratePkg(name, sql.Schema, sql.Queries, combo)
 		if err != nil {
@@ -225,48 +224,36 @@ func parse(e Env, name, dir string, sql config.SQL, combo config.CombinedSetting
 			return nil, true
 		}
 		return q, false
-
-	case config.EnginePostgreSQL, config.EngineXLemon:
-		var eng postgreEngine
-		if e.ExperimentalParser || sql.Engine == config.EngineXLemon {
-			eng = compiler.NewEngine(sql, combo)
-		} else {
-			eng = &dinosqlEngine{}
-		}
-		if err := eng.ParseCatalog(sql.Schema); err != nil {
-			fmt.Fprintf(stderr, "# package %s\n", name)
-			if parserErr, ok := err.(*multierr.Error); ok {
-				for _, fileErr := range parserErr.Errs() {
-					printFileErr(stderr, dir, fileErr)
-				}
-			} else {
-				fmt.Fprintf(stderr, "error parsing schema: %s\n", err)
-			}
-			return nil, true
-		}
-		if err := eng.ParseQueries(sql.Queries, parserOpts); err != nil {
-			fmt.Fprintf(stderr, "# package %s\n", name)
-			if parserErr, ok := err.(*multierr.Error); ok {
-				for _, fileErr := range parserErr.Errs() {
-					printFileErr(stderr, dir, fileErr)
-				}
-			} else {
-				fmt.Fprintf(stderr, "error parsing queries: %s\n", err)
-			}
-			return nil, true
-		}
-		return eng.Result(), false
-
-	case config.EngineXDolphin, config.EngineXElephant:
-		r, err := compiler.Run(sql, combo)
-		if err != nil {
-			fmt.Fprintf(stderr, "# package %s\n", name)
-			fmt.Fprintf(stderr, "error: %s\n", err)
-			return nil, true
-		}
-		return r, false
-
-	default:
-		panic("invalid engine")
 	}
+
+	var eng postgreEngine
+	if sql.Engine == config.EnginePostgreSQL && !e.ExperimentalParser {
+		eng = &dinosqlEngine{}
+	} else {
+		eng = compiler.NewEngine(sql, combo)
+	}
+
+	if err := eng.ParseCatalog(sql.Schema); err != nil {
+		fmt.Fprintf(stderr, "# package %s\n", name)
+		if parserErr, ok := err.(*multierr.Error); ok {
+			for _, fileErr := range parserErr.Errs() {
+				printFileErr(stderr, dir, fileErr)
+			}
+		} else {
+			fmt.Fprintf(stderr, "error parsing schema: %s\n", err)
+		}
+		return nil, true
+	}
+	if err := eng.ParseQueries(sql.Queries, parserOpts); err != nil {
+		fmt.Fprintf(stderr, "# package %s\n", name)
+		if parserErr, ok := err.(*multierr.Error); ok {
+			for _, fileErr := range parserErr.Errs() {
+				printFileErr(stderr, dir, fileErr)
+			}
+		} else {
+			fmt.Fprintf(stderr, "error parsing queries: %s\n", err)
+		}
+		return nil, true
+	}
+	return eng.Result(), false
 }

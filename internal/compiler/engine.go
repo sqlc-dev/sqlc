@@ -28,10 +28,10 @@ func NewEngine(conf config.SQL, combo config.CombinedSettings) *Engine {
 	case config.EngineXLemon:
 		e.parser = sqlite.NewParser()
 		e.catalog = catalog.New("main")
-	case config.EngineXDolphin:
+	case config.EngineMySQL, config.EngineXDolphin:
 		e.parser = dolphin.NewParser()
 		e.catalog = catalog.New("public") // TODO: What is the default database for MySQL?
-	case config.EngineXElephant, config.EnginePostgreSQL:
+	case config.EnginePostgreSQL:
 		e.parser = postgresql.NewParser()
 		e.catalog = postgresql.NewCatalog()
 	default:
