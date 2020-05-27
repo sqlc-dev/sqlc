@@ -23,7 +23,7 @@ func (q *Queries) GenerateSeries(ctx context.Context, arg GenerateSeriesParams) 
 		return nil, err
 	}
 	defer rows.Close()
-	var items []interface{}
+	items := make([]interface{}, 0)
 	for rows.Next() {
 		var generate_series interface{}
 		if err := rows.Scan(&generate_series); err != nil {

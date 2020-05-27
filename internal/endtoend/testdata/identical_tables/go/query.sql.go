@@ -17,7 +17,7 @@ func (q *Queries) IdenticalTable(ctx context.Context) ([]string, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []string
+	items := make([]string, 0)
 	for rows.Next() {
 		var id string
 		if err := rows.Scan(&id); err != nil {

@@ -21,7 +21,7 @@ func (q *Queries) CaseStatementBoolean(ctx context.Context, id string) ([]bool, 
 		return nil, err
 	}
 	defer rows.Close()
-	var items []bool
+	items := make([]bool, 0)
 	for rows.Next() {
 		var is_one bool
 		if err := rows.Scan(&is_one); err != nil {

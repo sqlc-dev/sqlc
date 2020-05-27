@@ -21,7 +21,7 @@ func (q *Queries) JoinTextArray(ctx context.Context) ([][]string, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	var items [][]string
+	items := make([][]string, 0)
 	for rows.Next() {
 		var info []string
 		if err := rows.Scan(pq.Array(&info)); err != nil {

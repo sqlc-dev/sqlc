@@ -23,7 +23,7 @@ func (q *Queries) StarExpansionCTE(ctx context.Context) ([]StarExpansionCTERow, 
 		return nil, err
 	}
 	defer rows.Close()
-	var items []StarExpansionCTERow
+	items := make([]StarExpansionCTERow, 0)
 	for rows.Next() {
 		var i StarExpansionCTERow
 		if err := rows.Scan(&i.A, &i.B); err != nil {

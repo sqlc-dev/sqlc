@@ -22,7 +22,7 @@ func (q *Queries) As(ctx context.Context) ([]AsRow, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []AsRow
+	items := make([]AsRow, 0)
 	for rows.Next() {
 		var i AsRow
 		if err := rows.Scan(&i.Name, &i.OtherName); err != nil {

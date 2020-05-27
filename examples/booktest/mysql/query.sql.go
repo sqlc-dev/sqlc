@@ -23,7 +23,7 @@ func (q *Queries) BooksByTitleYear(ctx context.Context, arg BooksByTitleYearPara
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Book
+	items := make([]Book, 0)
 	for rows.Next() {
 		var i Book
 		if err := rows.Scan(

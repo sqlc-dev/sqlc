@@ -17,7 +17,7 @@ func (q *Queries) ListUsersByRole(ctx context.Context, role FooTypeUserRole) ([]
 		return nil, err
 	}
 	defer rows.Close()
-	var items []FooTypeUserRole
+	items := make([]FooTypeUserRole, 0)
 	for rows.Next() {
 		var role FooTypeUserRole
 		if err := rows.Scan(&role); err != nil {

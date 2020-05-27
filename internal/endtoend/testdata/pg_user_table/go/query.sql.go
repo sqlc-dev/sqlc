@@ -17,7 +17,7 @@ func (q *Queries) User(ctx context.Context) ([]int64, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []int64
+	items := make([]int64, 0)
 	for rows.Next() {
 		var id int64
 		if err := rows.Scan(&id); err != nil {
