@@ -74,7 +74,8 @@ const (
 	EnginePostgreSQL Engine = "postgresql"
 
 	// Experimental engines
-	EngineXLemon Engine = "_lemon"
+	EngineXLemon   Engine = "_lemon"
+	EngineXDolphin Engine = "_dolphin"
 )
 
 type Config struct {

@@ -5,9 +5,11 @@ import (
 	"io/ioutil"
 	"strings"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/pingcap/parser"
 	_ "github.com/pingcap/tidb/types/parser_driver"
 
+	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 )
 
@@ -26,6 +28,7 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 	}
 	stmtNodes, _, err := p.pingcap.Parse(string(blob), "", "")
 	if err != nil {
+		spew.Dump(err)
 		return nil, err
 	}
 	var stmts []ast.Statement
@@ -48,4 +51,8 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 		})
 	}
 	return stmts, nil
+}
+
+func (p *Parser) CommentSyntax() metadata.CommentSyntax {
+	return metadata.CommentSyntaxStar
 }

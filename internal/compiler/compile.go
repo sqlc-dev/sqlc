@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/migrations"
 	"github.com/kyleconroy/sqlc/internal/multierr"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
@@ -19,6 +20,7 @@ import (
 
 type Parser interface {
 	Parse(io.Reader) ([]ast.Statement, error)
+	CommentSyntax() metadata.CommentSyntax
 }
 
 // copied over from gen.go

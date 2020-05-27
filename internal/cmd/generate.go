@@ -209,7 +209,7 @@ func (d *dinosqlEngine) Result() golang.Generateable {
 }
 
 func parse(e Env, name, dir string, sql config.SQL, combo config.CombinedSettings, parserOpts dinosql.ParserOpts, stderr io.Writer) (golang.Generateable, bool) {
-	if sql.Engine == config.EngineMySQL && !e.ExperimentalParser {
+	if sql.Engine == config.EngineMySQL {
 		// Experimental MySQL support
 		q, err := mysql.GeneratePkg(name, sql.Schema, sql.Queries, combo)
 		if err != nil {
