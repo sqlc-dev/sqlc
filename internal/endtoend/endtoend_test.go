@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
@@ -157,37 +156,13 @@ func cmpDirectory(t *testing.T, dir string, actual map[string]string) {
 
 func expectedStderr(t *testing.T, dir string) string {
 	t.Helper()
-	files, err := ioutil.ReadDir(dir)
-	if err != nil {
-		t.Fatal(err)
-	}
-	stderr := ""
-	for _, file := range files {
-		if file.IsDir() {
-			continue
-		}
-		if !strings.HasSuffix(file.Name(), ".sql") {
-			continue
-		}
-		rd, err := os.Open(filepath.Join(dir, file.Name()))
+	path := filepath.Join(dir, "stderr.txt")
+	if _, err := os.Stat(path); !os.IsNotExist(err) {
+		blob, err := ioutil.ReadFile(path)
 		if err != nil {
-			t.Fatalf("could not open %s: %v", file.Name(), err)
-		}
-		scanner := bufio.NewScanner(rd)
-		capture := false
-		for scanner.Scan() {
-			text := scanner.Text()
-			if text == "-- stderr" {
-				capture = true
-				continue
-			}
-			if capture == true && strings.HasPrefix(text, "--") {
-				stderr += strings.TrimPrefix(text, "-- ") + "\n"
-			}
-		}
-		if err := scanner.Err(); err != nil {
 			t.Fatal(err)
 		}
+		return string(blob)
 	}
-	return stderr
+	return ""
 }
