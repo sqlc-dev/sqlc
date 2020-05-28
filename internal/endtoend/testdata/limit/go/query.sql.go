@@ -17,7 +17,7 @@ func (q *Queries) LimitMe(ctx context.Context, limit int32) ([]bool, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []bool
+	items := make([]bool, 0)
 	for rows.Next() {
 		var bar bool
 		if err := rows.Scan(&bar); err != nil {

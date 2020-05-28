@@ -57,7 +57,7 @@ func (q *Queries) ListCities(ctx context.Context) ([]City, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []City
+	items := make([]City, 0)
 	for rows.Next() {
 		var i City
 		if err := rows.Scan(&i.Slug, &i.Name); err != nil {

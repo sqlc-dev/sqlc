@@ -20,7 +20,7 @@ func (q *Queries) TwoJoins(ctx context.Context) ([]Foo, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Foo
+	items := make([]Foo, 0)
 	for rows.Next() {
 		var i Foo
 		if err := rows.Scan(&i.BarID, &i.BazID); err != nil {

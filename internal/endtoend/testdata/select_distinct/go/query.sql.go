@@ -18,7 +18,7 @@ func (q *Queries) GetBars(ctx context.Context) ([]Bar, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Bar
+	items := make([]Bar, 0)
 	for rows.Next() {
 		var i Bar
 		if err := rows.Scan(&i.ID, &i.Name); err != nil {

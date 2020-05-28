@@ -27,7 +27,7 @@ func (q *Queries) AliasExpand(ctx context.Context, id int32) ([]AliasExpandRow, 
 		return nil, err
 	}
 	defer rows.Close()
-	var items []AliasExpandRow
+	items := make([]AliasExpandRow, 0)
 	for rows.Next() {
 		var i AliasExpandRow
 		if err := rows.Scan(&i.ID, &i.ID_2, &i.Title); err != nil {
@@ -62,7 +62,7 @@ func (q *Queries) AliasJoin(ctx context.Context, id int32) ([]AliasJoinRow, erro
 		return nil, err
 	}
 	defer rows.Close()
-	var items []AliasJoinRow
+	items := make([]AliasJoinRow, 0)
 	for rows.Next() {
 		var i AliasJoinRow
 		if err := rows.Scan(&i.ID, &i.Title); err != nil {

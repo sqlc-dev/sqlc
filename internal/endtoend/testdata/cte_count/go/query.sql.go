@@ -28,7 +28,7 @@ func (q *Queries) CTECount(ctx context.Context) ([]CTECountRow, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []CTECountRow
+	items := make([]CTECountRow, 0)
 	for rows.Next() {
 		var i CTECountRow
 		if err := rows.Scan(&i.Count, &i.Count_2); err != nil {

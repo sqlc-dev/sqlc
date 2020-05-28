@@ -18,7 +18,7 @@ func (q *Queries) GetAll(ctx context.Context) ([]User, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []User
+	items := make([]User, 0)
 	for rows.Next() {
 		var i User
 		if err := rows.Scan(
@@ -58,7 +58,7 @@ func (q *Queries) GetAllUsersOrders(ctx context.Context) ([]GetAllUsersOrdersRow
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetAllUsersOrdersRow
+	items := make([]GetAllUsersOrdersRow, 0)
 	for rows.Next() {
 		var i GetAllUsersOrdersRow
 		if err := rows.Scan(

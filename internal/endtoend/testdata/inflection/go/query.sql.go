@@ -17,7 +17,7 @@ func (q *Queries) ListCampus(ctx context.Context) ([]int32, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []int32
+	items := make([]int32, 0)
 	for rows.Next() {
 		var id int32
 		if err := rows.Scan(&id); err != nil {

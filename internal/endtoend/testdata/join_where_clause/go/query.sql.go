@@ -20,7 +20,7 @@ func (q *Queries) JoinWhereClause(ctx context.Context, owner string) ([]int32, e
 		return nil, err
 	}
 	defer rows.Close()
-	var items []int32
+	items := make([]int32, 0)
 	for rows.Next() {
 		var barid int32
 		if err := rows.Scan(&barid); err != nil {

@@ -19,7 +19,7 @@ func (q *Queries) TextArray(ctx context.Context) ([][]string, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	var items [][]string
+	items := make([][]string, 0)
 	for rows.Next() {
 		var tags []string
 		if err := rows.Scan(pq.Array(&tags)); err != nil {

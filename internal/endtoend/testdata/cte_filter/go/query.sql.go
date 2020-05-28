@@ -21,7 +21,7 @@ func (q *Queries) CTEFilter(ctx context.Context, ready bool) ([]int64, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []int64
+	items := make([]int64, 0)
 	for rows.Next() {
 		var count int64
 		if err := rows.Scan(&count); err != nil {
