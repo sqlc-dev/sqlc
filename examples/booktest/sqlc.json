@@ -17,7 +17,7 @@
       "engine": "mysql"
     },
     {
-      "name": "jsonemptyarraystest",
+      "name": "jsonemptyarrays",
       "path": "postgresql/jsonemptyarrays",
       "schema": "postgresql/schema.sql",
       "queries": "postgresql/query.sql",

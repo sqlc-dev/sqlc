@@ -4,6 +4,7 @@ package booktest
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
 	"time"
 
@@ -154,7 +155,7 @@ func TestBooks(t *testing.T) {
 	}
 
 	// lookup empty books result
-	books, err = dq.BooksByTitleYear(ctx, BooksByTitleYearParams{
+	books, err := dq.BooksByTitleYear(ctx, BooksByTitleYearParams{
 		Title: "Unpublished Book",
 		Year:  -1,
 	})

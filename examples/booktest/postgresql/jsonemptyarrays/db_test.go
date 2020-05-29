@@ -1,23 +1,24 @@
 // +build examples
 
-package jsonemptyarraystest
+package jsonemptyarrays_test
 
 import (
 	"context"
 	"encoding/json"
+	"github.com/kyleconroy/sqlc/examples/booktest/postgresql/jsonemptyarrays"
 	"github.com/kyleconroy/sqlc/internal/sqltest"
 	"testing"
 )
 
 func TestBooks(t *testing.T) {
-	db, cleanup := sqltest.PostgreSQL(t, []string{"schema.sql"})
+	db, cleanup := sqltest.PostgreSQL(t, []string{"../schema.sql"})
 	defer cleanup()
 
 	ctx := context.Background()
-	dq := New(db)
+	dq := jsonemptyarrays.New(db)
 
 	// lookup books with no results
-	books, err := dq.BooksByTitleYear(ctx, BooksByTitleYearParams{
+	books, err := dq.BooksByTitleYear(ctx, jsonemptyarrays.BooksByTitleYearParams{
 		Title: "my book title",
 		Year:  2016,
 	})
