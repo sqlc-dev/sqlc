@@ -17,7 +17,7 @@ func (q *Queries) Get(ctx context.Context, limit int32) ([]Foo, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	items := make([]Foo, 0)
+	var items []Foo
 	for rows.Next() {
 		var i Foo
 		if err := rows.Scan(&i.Bar, &i.Addr); err != nil {

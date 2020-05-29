@@ -17,7 +17,7 @@ func (q *Queries) MultiFrom(ctx context.Context, login string) ([]string, error)
 		return nil, err
 	}
 	defer rows.Close()
-	items := make([]string, 0)
+	var items []string
 	for rows.Next() {
 		var email string
 		if err := rows.Scan(&email); err != nil {

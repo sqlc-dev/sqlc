@@ -22,7 +22,7 @@ func (q *Queries) Star(ctx context.Context) ([]StarRow, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	items := make([]StarRow, 0)
+	var items []StarRow
 	for rows.Next() {
 		var i StarRow
 		if err := rows.Scan(&i.Bid, &i.Fid); err != nil {

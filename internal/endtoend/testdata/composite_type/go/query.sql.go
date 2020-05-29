@@ -17,7 +17,7 @@ func (q *Queries) ListPaths(ctx context.Context) ([]FooPath, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	items := make([]FooPath, 0)
+	var items []FooPath
 	for rows.Next() {
 		var i FooPath
 		if err := rows.Scan(&i.PointOne, &i.PointTwo); err != nil {

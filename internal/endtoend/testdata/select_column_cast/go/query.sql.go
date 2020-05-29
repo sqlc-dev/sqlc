@@ -17,7 +17,7 @@ func (q *Queries) SelectColumnCast(ctx context.Context) ([]int32, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	items := make([]int32, 0)
+	var items []int32
 	for rows.Next() {
 		var bar int32
 		if err := rows.Scan(&bar); err != nil {

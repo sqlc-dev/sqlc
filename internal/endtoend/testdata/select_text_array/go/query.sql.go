@@ -19,7 +19,7 @@ func (q *Queries) SelectTextArray(ctx context.Context, dollar_1 []string) ([][]s
 		return nil, err
 	}
 	defer rows.Close()
-	items := make([][]string, 0)
+	var items [][]string
 	for rows.Next() {
 		var column_1 []string
 		if err := rows.Scan(pq.Array(&column_1)); err != nil {

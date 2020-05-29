@@ -17,7 +17,7 @@ func (q *Queries) AlsoNotEqual(ctx context.Context) ([]bool, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	items := make([]bool, 0)
+	var items []bool
 	for rows.Next() {
 		var column_1 bool
 		if err := rows.Scan(&column_1); err != nil {
@@ -44,7 +44,7 @@ func (q *Queries) Equal(ctx context.Context) ([]bool, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	items := make([]bool, 0)
+	var items []bool
 	for rows.Next() {
 		var column_1 bool
 		if err := rows.Scan(&column_1); err != nil {
@@ -71,7 +71,7 @@ func (q *Queries) GreaterThan(ctx context.Context) ([]bool, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	items := make([]bool, 0)
+	var items []bool
 	for rows.Next() {
 		var column_1 bool
 		if err := rows.Scan(&column_1); err != nil {
@@ -98,7 +98,7 @@ func (q *Queries) GreaterThanOrEqual(ctx context.Context) ([]bool, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	items := make([]bool, 0)
+	var items []bool
 	for rows.Next() {
 		var column_1 bool
 		if err := rows.Scan(&column_1); err != nil {
@@ -125,7 +125,7 @@ func (q *Queries) LessThan(ctx context.Context) ([]bool, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	items := make([]bool, 0)
+	var items []bool
 	for rows.Next() {
 		var column_1 bool
 		if err := rows.Scan(&column_1); err != nil {
@@ -152,7 +152,7 @@ func (q *Queries) LessThanOrEqual(ctx context.Context) ([]bool, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	items := make([]bool, 0)
+	var items []bool
 	for rows.Next() {
 		var column_1 bool
 		if err := rows.Scan(&column_1); err != nil {
@@ -179,7 +179,7 @@ func (q *Queries) NotEqual(ctx context.Context) ([]bool, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	items := make([]bool, 0)
+	var items []bool
 	for rows.Next() {
 		var column_1 bool
 		if err := rows.Scan(&column_1); err != nil {

@@ -17,7 +17,7 @@ func (q *Queries) ListBar(ctx context.Context) ([]int32, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	items := make([]int32, 0)
+	var items []int32
 	for rows.Next() {
 		var id int32
 		if err := rows.Scan(&id); err != nil {
@@ -44,7 +44,7 @@ func (q *Queries) ListFoo(ctx context.Context) ([]Foo, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	items := make([]Foo, 0)
+	var items []Foo
 	for rows.Next() {
 		var i Foo
 		if err := rows.Scan(&i.ID, &i.Bar); err != nil {

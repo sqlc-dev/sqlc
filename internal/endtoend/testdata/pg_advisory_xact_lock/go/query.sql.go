@@ -17,7 +17,7 @@ func (q *Queries) AdvisoryLock(ctx context.Context, key int64) ([]bool, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	items := make([]bool, 0)
+	var items []bool
 	for rows.Next() {
 		var pg_advisory_unlock bool
 		if err := rows.Scan(&pg_advisory_unlock); err != nil {

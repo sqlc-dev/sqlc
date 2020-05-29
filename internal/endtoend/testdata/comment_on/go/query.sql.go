@@ -17,7 +17,7 @@ func (q *Queries) ListBar(ctx context.Context) ([]string, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	items := make([]string, 0)
+	var items []string
 	for rows.Next() {
 		var baz string
 		if err := rows.Scan(&baz); err != nil {

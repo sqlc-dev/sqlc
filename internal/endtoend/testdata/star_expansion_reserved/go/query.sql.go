@@ -18,7 +18,7 @@ func (q *Queries) StarExpansionReserved(ctx context.Context) ([]sql.NullString, 
 		return nil, err
 	}
 	defer rows.Close()
-	items := make([]sql.NullString, 0)
+	var items []sql.NullString
 	for rows.Next() {
 		var group sql.NullString
 		if err := rows.Scan(&group); err != nil {

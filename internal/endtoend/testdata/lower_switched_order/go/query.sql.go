@@ -22,7 +22,7 @@ func (q *Queries) LowerSwitchedOrder(ctx context.Context, arg LowerSwitchedOrder
 		return nil, err
 	}
 	defer rows.Close()
-	items := make([]string, 0)
+	var items []string
 	for rows.Next() {
 		var bar string
 		if err := rows.Scan(&bar); err != nil {

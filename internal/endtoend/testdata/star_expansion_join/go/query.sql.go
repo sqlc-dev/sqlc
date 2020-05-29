@@ -25,7 +25,7 @@ func (q *Queries) StarExpansionJoin(ctx context.Context) ([]StarExpansionJoinRow
 		return nil, err
 	}
 	defer rows.Close()
-	items := make([]StarExpansionJoinRow, 0)
+	var items []StarExpansionJoinRow
 	for rows.Next() {
 		var i StarExpansionJoinRow
 		if err := rows.Scan(

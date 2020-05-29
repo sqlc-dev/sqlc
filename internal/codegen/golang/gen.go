@@ -638,7 +638,11 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.
 		return nil, err
 	}
 	defer rows.Close()
+	{{- if $.EmitEmptyJSONArrays}}
 	items := make([]{{.Ret.Type}}, 0)
+	{{- else}}
+	var items []{{.Ret.Type}}
+	{{- end}}
 	for rows.Next() {
 		var {{.Ret.Name}} {{.Ret.Type}}
 		if err := rows.Scan({{.Ret.Scan}}); err != nil {
@@ -701,6 +705,7 @@ type tmplCtx struct {
 	SourceName string
 
 	EmitJSONTags        bool
+	EmitEmptyJSONArrays bool
 	EmitPreparedQueries bool
 	EmitInterface       bool
 }
@@ -723,6 +728,7 @@ func Generate(r Generateable, settings config.CombinedSettings) (map[string]stri
 		Settings:            settings.Global,
 		EmitInterface:       golang.EmitInterface,
 		EmitJSONTags:        golang.EmitJSONTags,
+		EmitEmptyJSONArrays: golang.EmitEmptyJSONArrays,
 		EmitPreparedQueries: golang.EmitPreparedQueries,
 		Q:                   "`",
 		Package:             golang.Package,

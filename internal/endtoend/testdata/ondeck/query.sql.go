@@ -126,7 +126,7 @@ func (q *Queries) ListCityByName(ctx context.Context) ([]City, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	items := make([]City, 0)
+	var items []City
 	for rows.Next() {
 		var i City
 		if err := rows.Scan(&i.Slug, &i.Name); err != nil {
@@ -156,7 +156,7 @@ func (q *Queries) ListVenues(ctx context.Context, city string) ([]Venue, error) 
 		return nil, err
 	}
 	defer rows.Close()
-	items := make([]Venue, 0)
+	var items []Venue
 	for rows.Next() {
 		var i Venue
 		if err := rows.Scan(
@@ -233,7 +233,7 @@ func (q *Queries) VenueCountByCity(ctx context.Context) ([]VenueCountByCityRow, 
 		return nil, err
 	}
 	defer rows.Close()
-	items := make([]VenueCountByCityRow, 0)
+	var items []VenueCountByCityRow
 	for rows.Next() {
 		var i VenueCountByCityRow
 		if err := rows.Scan(&i.City, &i.Count); err != nil {

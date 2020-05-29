@@ -17,7 +17,7 @@ func (q *Queries) ListBar(ctx context.Context) ([]BarNew, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	items := make([]BarNew, 0)
+	var items []BarNew
 	for rows.Next() {
 		var i BarNew
 		if err := rows.Scan(&i.IDNew, &i.IpOld); err != nil {
@@ -56,7 +56,7 @@ func (q *Queries) ListFoo(ctx context.Context, arg ListFooParams) ([]ListFooRow,
 		return nil, err
 	}
 	defer rows.Close()
-	items := make([]ListFooRow, 0)
+	var items []ListFooRow
 	for rows.Next() {
 		var i ListFooRow
 		if err := rows.Scan(&i.FooNew, &i.BazOld); err != nil {

@@ -22,7 +22,7 @@ func (q *Queries) Math(ctx context.Context) ([]MathRow, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	items := make([]MathRow, 0)
+	var items []MathRow
 	for rows.Next() {
 		var i MathRow
 		if err := rows.Scan(&i.Num, &i.Division); err != nil {

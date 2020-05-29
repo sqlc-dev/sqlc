@@ -18,7 +18,7 @@ func (q *Queries) Coalesce(ctx context.Context) ([]string, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	items := make([]string, 0)
+	var items []string
 	for rows.Next() {
 		var login string
 		if err := rows.Scan(&login); err != nil {

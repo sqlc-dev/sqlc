@@ -22,7 +22,7 @@ func (q *Queries) AtParams(ctx context.Context, arg AtParamsParams) ([]string, e
 		return nil, err
 	}
 	defer rows.Close()
-	items := make([]string, 0)
+	var items []string
 	for rows.Next() {
 		var name string
 		if err := rows.Scan(&name); err != nil {
@@ -54,7 +54,7 @@ func (q *Queries) FuncParams(ctx context.Context, arg FuncParamsParams) ([]strin
 		return nil, err
 	}
 	defer rows.Close()
-	items := make([]string, 0)
+	var items []string
 	for rows.Next() {
 		var name string
 		if err := rows.Scan(&name); err != nil {

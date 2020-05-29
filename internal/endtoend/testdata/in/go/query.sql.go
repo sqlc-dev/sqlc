@@ -24,7 +24,7 @@ func (q *Queries) In(ctx context.Context, arg InParams) ([]int32, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	items := make([]int32, 0)
+	var items []int32
 	for rows.Next() {
 		var id int32
 		if err := rows.Scan(&id); err != nil {

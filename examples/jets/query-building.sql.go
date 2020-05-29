@@ -37,7 +37,7 @@ func (q *Queries) ListPilots(ctx context.Context) ([]Pilot, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	items := make([]Pilot, 0)
+	var items []Pilot
 	for rows.Next() {
 		var i Pilot
 		if err := rows.Scan(&i.ID, &i.Name); err != nil {

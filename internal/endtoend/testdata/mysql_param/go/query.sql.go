@@ -54,7 +54,7 @@ func (q *Queries) LimitSQLCArg(ctx context.Context, UsersLimit uint32) ([]LimitS
 		return nil, err
 	}
 	defer rows.Close()
-	items := make([]LimitSQLCArgRow, 0)
+	var items []LimitSQLCArgRow
 	for rows.Next() {
 		var i LimitSQLCArgRow
 		if err := rows.Scan(&i.FirstName, &i.ID); err != nil {
@@ -87,7 +87,7 @@ func (q *Queries) ListUserOrders(ctx context.Context, minPrice float64) ([]ListU
 		return nil, err
 	}
 	defer rows.Close()
-	items := make([]ListUserOrdersRow, 0)
+	var items []ListUserOrdersRow
 	for rows.Next() {
 		var i ListUserOrdersRow
 		if err := rows.Scan(&i.ID, &i.FirstName, &i.Price); err != nil {
@@ -124,7 +124,7 @@ func (q *Queries) ListUsersByFamily(ctx context.Context, arg ListUsersByFamilyPa
 		return nil, err
 	}
 	defer rows.Close()
-	items := make([]ListUsersByFamilyRow, 0)
+	var items []ListUsersByFamilyRow
 	for rows.Next() {
 		var i ListUsersByFamilyRow
 		if err := rows.Scan(&i.FirstName, &i.LastName); err != nil {
@@ -157,7 +157,7 @@ func (q *Queries) ListUsersByID(ctx context.Context, id int) ([]ListUsersByIDRow
 		return nil, err
 	}
 	defer rows.Close()
-	items := make([]ListUsersByIDRow, 0)
+	var items []ListUsersByIDRow
 	for rows.Next() {
 		var i ListUsersByIDRow
 		if err := rows.Scan(&i.FirstName, &i.ID, &i.LastName); err != nil {
@@ -189,7 +189,7 @@ func (q *Queries) ListUsersWithLimit(ctx context.Context, limit uint32) ([]ListU
 		return nil, err
 	}
 	defer rows.Close()
-	items := make([]ListUsersWithLimitRow, 0)
+	var items []ListUsersWithLimitRow
 	for rows.Next() {
 		var i ListUsersWithLimitRow
 		if err := rows.Scan(&i.FirstName, &i.LastName); err != nil {
