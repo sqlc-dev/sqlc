@@ -73,7 +73,7 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 			Raw: &ast.RawStmt{
 				Stmt:         out,
 				StmtLocation: loc,
-				StmtLen:      len(text),
+				StmtLen:      len(text) - 1, // Subtract one to remove semicolon
 			},
 		})
 	}
