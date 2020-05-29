@@ -60,7 +60,7 @@ func (q *Queries) ListAuthorsByIDs(ctx context.Context, ids []int) ([]Author, er
     return nil, err
   }
   defer rows.Close()
-  var items []Author
+  items := make([]Author, 0)
   for rows.Next() {
     var i Author
     if err := rows.Scan(&i.ID, &i.Bio, &i.BirthYear); err != nil {

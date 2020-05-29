@@ -153,4 +153,24 @@ func TestBooks(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	// lookup empty books result
+	books, err = dq.BooksByTitleYear(ctx, BooksByTitleYearParams{
+		Title: "Unpublished Book",
+		Year:  -1,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(books) != 0 {
+		t.Fatal("books should be empty")
+	}
+
+	// check correct encoding type
+	data, err := json.Marshal(&books)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(data) != "null" {
+		t.Fatalf("json.Marshal should encode null got: %s", string(data))
+	}
 }
