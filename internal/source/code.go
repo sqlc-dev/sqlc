@@ -81,14 +81,24 @@ func StripComments(sql string) (string, []string, error) {
 	s := bufio.NewScanner(strings.NewReader(strings.TrimSpace(sql)))
 	var lines, comments []string
 	for s.Scan() {
-		if strings.HasPrefix(s.Text(), "-- name:") {
+		t := s.Text()
+		if strings.HasPrefix(t, "-- name:") {
 			continue
 		}
-		if strings.HasPrefix(s.Text(), "--") {
-			comments = append(comments, strings.TrimPrefix(s.Text(), "--"))
+		if strings.HasPrefix(t, "/* name:") && strings.HasSuffix(t, "*/") {
 			continue
 		}
-		lines = append(lines, s.Text())
+		if strings.HasPrefix(t, "--") {
+			comments = append(comments, strings.TrimPrefix(t, "--"))
+			continue
+		}
+		if strings.HasPrefix(t, "/*") && strings.HasSuffix(t, "*/") {
+			t = strings.TrimPrefix(t, "/*")
+			t = strings.TrimSuffix(t, "*/")
+			comments = append(comments, t)
+			continue
+		}
+		lines = append(lines, t)
 	}
 	return strings.Join(lines, "\n"), comments, s.Err()
 }

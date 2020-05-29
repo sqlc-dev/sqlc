@@ -62,6 +62,15 @@ func convertCreateTableStmt(n *pcast.CreateTableStmt) ast.Node {
 		IfNotExists: n.IfNotExists,
 	}
 	for _, def := range n.Cols {
+		var vals *ast.List
+		if len(def.Tp.Elems) > 0 {
+			vals = &ast.List{}
+			for i := range def.Tp.Elems {
+				vals.Items = append(vals.Items, &ast.String{
+					Str: def.Tp.Elems[i],
+				})
+			}
+		}
 		create.Cols = append(create.Cols, &ast.ColumnDef{
 			Colname:   def.Name.String(),
 			TypeName:  &ast.TypeName{Name: types.TypeStr(def.Tp.Tp)},
@@ -79,30 +88,64 @@ func convertDropTableStmt(n *pcast.DropTableStmt) ast.Node {
 	return drop
 }
 
-func convertSelectStmt(n *pcast.SelectStmt) ast.Node {
+func convertFieldList(n *pcast.FieldList) *ast.List {
+	fields := make([]ast.Node, len(n.Fields))
+	for i := range n.Fields {
+		fields[i] = convertSelectField(n.Fields[i])
+	}
+	return &ast.List{Items: fields}
+}
+
+func convertSelectField(n *pcast.SelectField) *pg.ResTarget {
+	var val ast.Node
+	if n.WildCard != nil {
+		val = convertWildCardField(n.WildCard)
+	} else {
+		val = convert(n.Expr)
+	}
+	var name *string
+	if n.AsName.O != "" {
+		name = &n.AsName.O
+	}
+	return &pg.ResTarget{
+		// TODO: Populate Indirection field
+		Name:     name,
+		Val:      val,
+		Location: n.Offset,
+	}
+}
+
+func convertSelectStmt(n *pcast.SelectStmt) *pg.SelectStmt {
+	return &pg.SelectStmt{
+		TargetList: convertFieldList(n.Fields),
+		FromClause: convertTableRefsClause(n.From),
+	}
+}
+
+func convertTableRefsClause(n *pcast.TableRefsClause) *ast.List {
 	var tables []ast.Node
-	visit(n.From, func(n pcast.Node) {
+	visit(n, func(n pcast.Node) {
 		name, ok := n.(*pcast.TableName)
 		if !ok {
 			return
 		}
-		tables = append(tables, parseTableName(name))
-	})
-	var cols []ast.Node
-	visit(n.Fields, func(n pcast.Node) {
-		col, ok := n.(*pcast.ColumnName)
-		if !ok {
-			return
-		}
-		cols = append(cols, &ast.ResTarget{
-			Val: &ast.ColumnRef{
-				Name: col.Name.String(),
-			},
+		schema := name.Schema.String()
+		rel := name.Name.String()
+		tables = append(tables, &pg.RangeVar{
+			Schemaname: &schema,
+			Relname:    &rel,
 		})
 	})
-	return &pg.SelectStmt{
-		FromClause: &ast.List{Items: tables},
-		TargetList: &ast.List{Items: cols},
+	return &ast.List{Items: tables}
+}
+
+func convertWildCardField(n *pcast.WildCardField) *pg.ColumnRef {
+	return &pg.ColumnRef{
+		Fields: &ast.List{
+			Items: []ast.Node{
+				&pg.A_Star{},
+			},
+		},
 	}
 }
 

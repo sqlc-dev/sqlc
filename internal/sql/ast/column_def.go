@@ -5,6 +5,7 @@ type ColumnDef struct {
 	TypeName  *TypeName
 	IsNotNull bool
 	IsArray   bool
+	Vals      *List
 }
 
 func (n *ColumnDef) Pos() int {
