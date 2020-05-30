@@ -10,7 +10,6 @@ import (
 	pg "github.com/lfittl/pg_query_go"
 	nodes "github.com/lfittl/pg_query_go/nodes"
 
-	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 )
 
@@ -201,10 +200,6 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 		})
 	}
 	return stmts, nil
-}
-
-func (p *Parser) CommentSyntax() metadata.CommentSyntax {
-	return metadata.CommentSyntaxDash
 }
 
 func translate(node nodes.Node) (ast.Node, error) {

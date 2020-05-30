@@ -33,17 +33,20 @@ func validateQueryName(name string) error {
 	return nil
 }
 
-func Parse(t string, commentStyle CommentSyntax) (string, string, error) {
+func Parse(t string) (string, string, error) {
 	for _, line := range strings.Split(t, "\n") {
-		if commentStyle == CommentSyntaxDash && !strings.HasPrefix(line, "-- name:") {
-			continue
-		}
-		if commentStyle == CommentSyntaxStar && !strings.HasPrefix(line, "/* name:") {
+		var syntax CommentSyntax
+		switch {
+		case strings.HasPrefix(line, "-- name:"):
+			syntax = CommentSyntaxDash
+		case strings.HasPrefix(line, "/* name:"):
+			syntax = CommentSyntaxStar
+		default:
 			continue
 		}
 		part := strings.Split(strings.TrimSpace(line), " ")
 
-		if commentStyle == CommentSyntaxStar {
+		if syntax == CommentSyntaxStar {
 			part = part[:len(part)-1] // removes the trailing "*/" element
 		}
 		if len(part) == 2 {

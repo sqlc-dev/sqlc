@@ -8,7 +8,6 @@ import (
 
 	"github.com/antlr/antlr4/runtime/Go/antlr"
 
-	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sqlite/parser"
 )
@@ -81,8 +80,4 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 		}
 	}
 	return stmts, nil
-}
-
-func (p *Parser) CommentSyntax() metadata.CommentSyntax {
-	return metadata.CommentSyntaxDash
 }

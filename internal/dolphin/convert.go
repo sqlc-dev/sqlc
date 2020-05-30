@@ -56,6 +56,17 @@ func convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 	return alt
 }
 
+func convertColumnNameExpr(n *pcast.ColumnNameExpr) *pg.ColumnRef {
+	return &pg.ColumnRef{
+		Fields: &ast.List{
+			Items: []ast.Node{
+				&pg.String{n.Name.Table.String()},
+				&pg.String{n.Name.Name.String()},
+			},
+		},
+	}
+}
+
 func convertCreateTableStmt(n *pcast.CreateTableStmt) ast.Node {
 	create := &ast.CreateTableStmt{
 		Name:        parseTableName(n.Table),
@@ -154,6 +165,9 @@ func convert(node pcast.Node) ast.Node {
 
 	case *pcast.AlterTableStmt:
 		return convertAlterTableStmt(n)
+
+	case *pcast.ColumnNameExpr:
+		return convertColumnNameExpr(n)
 
 	case *pcast.CreateTableStmt:
 		return convertCreateTableStmt(n)

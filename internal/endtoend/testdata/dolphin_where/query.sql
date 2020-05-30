@@ -4,3 +4,6 @@ CREATE TABLE users (
     last_name varchar(255),
     age integer NOT NULL
 ) ENGINE=InnoDB;
+
+-- name: GetNameByID :one
+SELECT first_name, last_name FROM users WHERE id = ?;

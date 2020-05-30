@@ -269,7 +269,7 @@ func parseQuery(c core.Catalog, stmt nodes.Node, src string, rewriteParameters b
 	if err := validate.FuncCall(&c, raw); err != nil {
 		return nil, err
 	}
-	name, cmd, err := metadata.Parse(strings.TrimSpace(rawSQL), metadata.CommentSyntaxDash)
+	name, cmd, err := metadata.Parse(strings.TrimSpace(rawSQL))
 	if err != nil {
 		return nil, err
 	}

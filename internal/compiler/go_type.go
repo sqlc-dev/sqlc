@@ -259,6 +259,10 @@ func (r *Result) mysqlType(col *Column, settings config.CombinedSettings) string
 		}
 		return "sql.NullBool"
 
+	case "any":
+		// TODO: Proper Enum support
+		return "interface{}"
+
 	default:
 		log.Printf("unknown MySQL type: %s\n", columnType)
 		return "interface{}"
