@@ -104,6 +104,44 @@ func (q *Queries) ListUserOrders(ctx context.Context, minPrice float64) ([]ListU
 	return items, nil
 }
 
+const listUserParenExpr = `-- name: ListUserParenExpr :many
+select id, first_name, last_name, age, job_status from users where (job_status = 'APPLIED' or job_status = 'PENDING') and id > ? order by id asc limit ?
+`
+
+type ListUserParenExprParams struct {
+	LastID int
+	Limit  uint32
+}
+
+func (q *Queries) ListUserParenExpr(ctx context.Context, arg ListUserParenExprParams) ([]User, error) {
+	rows, err := q.db.QueryContext(ctx, listUserParenExpr, arg.LastID, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.FirstName,
+			&i.LastName,
+			&i.Age,
+			&i.JobStatus,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listUsersByFamily = `-- name: ListUsersByFamily :many
 select first_name, last_name from users where age < ? and last_name = ?
 `
