@@ -38,7 +38,9 @@ func (c *Catalog) GetFuncN(rel *ast.FuncName, n int) (Function, error) {
 			if s.Funcs[i].Name != rel.Name {
 				continue
 			}
-			if len(s.Funcs[i].Args) == n {
+
+			args := s.Funcs[i].InArgs()
+			if len(args) == n {
 				return *s.Funcs[i], nil
 			}
 		}

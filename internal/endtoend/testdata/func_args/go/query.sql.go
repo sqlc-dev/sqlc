@@ -55,3 +55,14 @@ func (q *Queries) Plus(ctx context.Context, arg PlusParams) (int32, error) {
 	err := row.Scan(&plus)
 	return plus, err
 }
+
+const tableArgs = `-- name: TableArgs :one
+SELECT table_args(x => $1)
+`
+
+func (q *Queries) TableArgs(ctx context.Context, x int32) (int32, error) {
+	row := q.db.QueryRowContext(ctx, tableArgs, x)
+	var table_args int32
+	err := row.Scan(&table_args)
+	return table_args, err
+}
