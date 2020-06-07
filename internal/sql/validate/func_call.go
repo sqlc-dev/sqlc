@@ -39,7 +39,7 @@ func (v *funcCallVisitor) Visit(node ast.Node) astutils.Visitor {
 		args = len(call.Args.Items)
 	}
 	for _, fun := range funs {
-		if len(fun.Args) == args {
+		if len(fun.InArgs()) == args {
 			return v
 		}
 	}

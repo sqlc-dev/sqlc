@@ -106,11 +106,13 @@ func (s *Schema) getFunc(rel *ast.FuncName, tns []*ast.TypeName) (*Function, int
 		if s.Funcs[i].Name != rel.Name {
 			continue
 		}
-		if len(s.Funcs[i].Args) != len(tns) {
+
+		args := s.Funcs[i].InArgs()
+		if len(args) != len(tns) {
 			continue
 		}
 		found := true
-		for j := range s.Funcs[i].Args {
+		for j := range args {
 			if !sameType(s.Funcs[i].Args[j].Type, tns[j]) {
 				found = false
 				break
@@ -215,10 +217,24 @@ type Function struct {
 	Desc       string
 }
 
+func (f *Function) InArgs() []*Argument {
+	var args []*Argument
+	for _, a := range f.Args {
+		switch a.Mode {
+		case ast.FuncParamTable, ast.FuncParamOut:
+			continue
+		default:
+			args = append(args, a)
+		}
+	}
+	return args
+}
+
 type Argument struct {
 	Name       string
 	Type       *ast.TypeName
 	HasDefault bool
+	Mode       ast.FuncParamMode
 }
 
 func New(def string) *Catalog {
