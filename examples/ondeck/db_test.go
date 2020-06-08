@@ -78,7 +78,6 @@ func runOnDeckQueries(t *testing.T, q *Queries) {
 			t.Errorf("list city mismatch:\n%s", diff)
 		}
 	}
-
 	{
 		actual, err := q.ListVenues(ctx, city.Slug)
 		if err != nil {
