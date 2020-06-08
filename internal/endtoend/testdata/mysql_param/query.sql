@@ -25,3 +25,9 @@ select first_name, id FROM users LIMIT sqlc.arg(UsersLimit);
 
 /* name: InsertNewUser :exec */
 INSERT INTO users (first_name, last_name) VALUES (?, sqlc.arg(user_last_name));
+
+/* name: ListUserParenExpr :many */
+SELECT * FROM users WHERE (job_status = 'APPLIED' OR job_status = 'PENDING')
+AND id > :lastID
+ORDER BY id
+LIMIT :usersLimit;
