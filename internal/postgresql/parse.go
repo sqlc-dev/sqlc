@@ -42,6 +42,23 @@ func parseFuncName(node nodes.Node) (*ast.FuncName, error) {
 	}, nil
 }
 
+func parseFuncParamMode(m nodes.FunctionParameterMode) (ast.FuncParamMode, error) {
+	switch m {
+	case 'i':
+		return ast.FuncParamIn, nil
+	case 'o':
+		return ast.FuncParamOut, nil
+	case 'b':
+		return ast.FuncParamInOut, nil
+	case 'v':
+		return ast.FuncParamVariadic, nil
+	case 't':
+		return ast.FuncParamTable, nil
+	default:
+		return -1, fmt.Errorf("parse func param: invalid mode %v", m)
+	}
+}
+
 func parseTypeName(node nodes.Node) (*ast.TypeName, error) {
 	rel, err := parseRelation(node)
 	if err != nil {
@@ -434,9 +451,14 @@ func translate(node nodes.Node) (ast.Node, error) {
 			if err != nil {
 				return nil, err
 			}
+			mode, err := parseFuncParamMode(arg.Mode)
+			if err != nil {
+				return nil, err
+			}
 			fp := &ast.FuncParam{
 				Name: arg.Name,
 				Type: tn,
+				Mode: mode,
 			}
 			if arg.Defexpr != nil {
 				fp.DefExpr = &ast.TODO{}

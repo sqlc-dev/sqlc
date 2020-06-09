@@ -30,6 +30,7 @@ func (c *Catalog) createFunction(stmt *ast.CreateFunctionStmt) error {
 		fn.Args[i] = &Argument{
 			Name:       name,
 			Type:       arg.Type,
+			Mode:       arg.Mode,
 			HasDefault: arg.DefExpr != nil,
 		}
 		types[i] = arg.Type
