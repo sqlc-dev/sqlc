@@ -11,6 +11,7 @@ import (
 
 	"github.com/kyleconroy/sqlc/internal/codegen"
 	"github.com/kyleconroy/sqlc/internal/config"
+	"github.com/kyleconroy/sqlc/internal/metadata"
 )
 
 type Generateable interface {
@@ -123,6 +124,11 @@ func interfaceImports(r Generateable, settings config.CombinedSettings) fileImpo
 	}
 	if uses("sql.Null") {
 		std["database/sql"] = struct{}{}
+	}
+	for _, q := range gq {
+		if q.Cmd == metadata.CmdExecResult {
+			std["database/sql"] = struct{}{}
+		}
 	}
 	if uses("json.RawMessage") {
 		std["encoding/json"] = struct{}{}
@@ -324,6 +330,11 @@ func queryImports(r Generateable, settings config.CombinedSettings, filename str
 	if uses("sql.Null") {
 		std["database/sql"] = struct{}{}
 	}
+	for _, q := range gq {
+		if q.Cmd == metadata.CmdExecResult {
+			std["database/sql"] = struct{}{}
+		}
+	}
 	if uses("json.RawMessage") {
 		std["encoding/json"] = struct{}{}
 	}
@@ -518,6 +529,9 @@ type Querier interface {
 	{{- if eq .Cmd ":execrows"}}
 	{{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, error)
 	{{- end}}
+	{{- if eq .Cmd ":execresult"}}
+	{{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (sql.Result, error)
+	{{- end}}
 	{{- end}}
 }
 
@@ -682,6 +696,18 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, er
 		return 0, err
 	}
 	return result.RowsAffected()
+}
+{{end}}
+
+{{if eq .Cmd ":execresult"}}
+{{range .Comments}}//{{.}}
+{{end -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (sql.Result, error) {
+  	{{- if $.EmitPreparedQueries}}
+	return := q.exec(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
+  	{{- else}}
+	return q.db.ExecContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
+  	{{- end}}
 }
 {{end}}
 {{end}}

@@ -14,6 +14,14 @@ const (
 	CommentSyntaxHash
 )
 
+const (
+	CmdExec       = ":exec"
+	CmdExecResult = ":execresult"
+	CmdExecRows   = ":execrows"
+	CmdMany       = ":many"
+	CmdOne        = ":one"
+)
+
 // A query name must be a valid Go identifier
 //
 // https://golang.org/ref/spec#Identifiers
@@ -47,7 +55,7 @@ func Parse(t string, commentStyle CommentSyntax) (string, string, error) {
 			part = part[:len(part)-1] // removes the trailing "*/" element
 		}
 		if len(part) == 2 {
-			return "", "", fmt.Errorf("missing query type [':one', ':many', ':exec', ':execrows']: %s", line)
+			return "", "", fmt.Errorf("missing query type [':one', ':many', ':exec', ':execrows', ':execresult']: %s", line)
 		}
 		if len(part) != 4 {
 			return "", "", fmt.Errorf("invalid query comment: %s", line)
@@ -55,7 +63,7 @@ func Parse(t string, commentStyle CommentSyntax) (string, string, error) {
 		queryName := part[2]
 		queryType := strings.TrimSpace(part[3])
 		switch queryType {
-		case ":one", ":many", ":exec", ":execrows":
+		case CmdOne, CmdMany, CmdExec, CmdExecResult, CmdExecRows:
 		default:
 			return "", "", fmt.Errorf("invalid query type: %s", queryType)
 		}

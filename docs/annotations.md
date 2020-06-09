@@ -65,6 +65,22 @@ func (q *Queries) DeleteAuthor(ctx context.Context, id int64) error {
 }
 ```
 
+### `:execresult`
+
+The generated method will return the [sql.Result](https://golang.org/pkg/database/sql/#Result) returned by
+[ExecContext](https://golang.org/pkg/database/sql/#DB.ExecContext).
+
+```sql
+-- name: DeleteAllAuthors :execresult
+DELETE FROM authors;
+```
+
+```go
+func (q *Queries) DeleteAllAuthors(ctx context.Context) (sql.Result, error) {
+  return q.db.ExecContext(ctx, deleteAllAuthors)
+}
+```
+
 ### `:execrows`
 
 The generated method will return the number of affected rows from the
