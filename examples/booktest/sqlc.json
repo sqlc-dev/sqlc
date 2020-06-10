@@ -6,7 +6,8 @@
       "path": "postgresql",
       "schema": "postgresql/schema.sql",
       "queries": "postgresql/query.sql",
-      "engine": "postgresql"
+      "engine": "postgresql",
+      "emit_empty_json_arrays": false
     },
     {
       "name": "booktest",
@@ -14,6 +15,14 @@
       "schema": "mysql/schema.sql",
       "queries": "mysql/query.sql",
       "engine": "mysql"
+    },
+    {
+      "name": "jsonemptyarrays",
+      "path": "postgresql/jsonemptyarrays",
+      "schema": "postgresql/schema.sql",
+      "queries": "postgresql/query.sql",
+      "engine": "postgresql",
+      "emit_empty_json_arrays": true
     }
   ]
 }
