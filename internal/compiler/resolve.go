@@ -193,6 +193,14 @@ func resolveCatalogRefs(c *catalog.Catalog, rvs []*pg.RangeVar, args []paramRef,
 					if inode.Number != ref.ref.Number {
 						continue
 					}
+				case *pg.TypeCast:
+					pr, ok := inode.Arg.(*pg.ParamRef)
+					if !ok {
+						continue
+					}
+					if pr.Number != ref.ref.Number {
+						continue
+					}
 				case *pg.NamedArgExpr:
 					pr, ok := inode.Arg.(*pg.ParamRef)
 					if !ok {
