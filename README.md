@@ -282,6 +282,7 @@ packages:
     emit_prepared_queries: true
     emit_interface: false
     emit_exact_table_names: false
+    emit_emptly_slices: false
 ```
 
 Each package document has the following keys:
@@ -303,6 +304,8 @@ Each package document has the following keys:
   - If true, output a `Querier` interface in the generated package. Defaults to `false`.
 - `emit_exact_table_names`:
   - If true, struct names will mirror table names. Otherwise, sqlc attempts to singularize plural table names. Defaults to `false`.
+- `emit_empty_slices`:
+  - If true, slices returned by `:many` queries will be empty instead of `nil`. Defaults to `false`.
 
 ### Type Overrides
 
