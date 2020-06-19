@@ -226,13 +226,7 @@ func parse(e Env, name, dir string, sql config.SQL, combo config.CombinedSetting
 		return q, false
 	}
 
-	var eng postgreEngine
-	if sql.Engine == config.EnginePostgreSQL && !e.ExperimentalParser {
-		eng = &dinosqlEngine{}
-	} else {
-		eng = compiler.NewEngine(sql, combo)
-	}
-
+	eng := compiler.NewEngine(sql, combo)
 	if err := eng.ParseCatalog(sql.Schema); err != nil {
 		fmt.Fprintf(stderr, "# package %s\n", name)
 		if parserErr, ok := err.(*multierr.Error); ok {
