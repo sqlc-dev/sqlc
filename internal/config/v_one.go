@@ -25,6 +25,7 @@ type v1PackageSettings struct {
 	EmitJSONTags        bool       `json:"emit_json_tags" yaml:"emit_json_tags"`
 	EmitPreparedQueries bool       `json:"emit_prepared_queries" yaml:"emit_prepared_queries"`
 	EmitExactTableNames bool       `json:"emit_exact_table_names,omitempty" yaml:"emit_exact_table_names"`
+	EmitEmptySlices     bool       `json:"emit_empty_slices,omitempty" yaml:"emit_empty_slices"`
 	Overrides           []Override `json:"overrides" yaml:"overrides"`
 }
 
@@ -105,6 +106,7 @@ func (c *V1GenerateSettings) Translate() Config {
 					EmitJSONTags:        pkg.EmitJSONTags,
 					EmitPreparedQueries: pkg.EmitPreparedQueries,
 					EmitExactTableNames: pkg.EmitExactTableNames,
+					EmitEmptySlices:     pkg.EmitEmptySlices,
 					Package:             pkg.Name,
 					Out:                 pkg.Path,
 					Overrides:           pkg.Overrides,
