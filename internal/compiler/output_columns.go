@@ -251,7 +251,7 @@ func sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, error) {
 			})
 
 		case *pg.RangeVar:
-			fqn, err := parseTableName(n)
+			fqn, err := ParseTableName(n)
 			if err != nil {
 				return nil, err
 			}

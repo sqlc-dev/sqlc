@@ -18,7 +18,7 @@ func toColumn(n *pg.TypeName) *Column {
 	if n == nil {
 		panic("can't build column for nil type name")
 	}
-	typ, err := parseTypeName(n)
+	typ, err := ParseTypeName(n)
 	if err != nil {
 		panic("toColumn: " + err.Error())
 	}

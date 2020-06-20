@@ -5,387 +5,18 @@ import (
 	"bytes"
 	"fmt"
 	"go/format"
-	"sort"
 	"strings"
 	"text/template"
 
 	"github.com/kyleconroy/sqlc/internal/codegen"
+	"github.com/kyleconroy/sqlc/internal/compiler"
 	"github.com/kyleconroy/sqlc/internal/config"
-	"github.com/kyleconroy/sqlc/internal/metadata"
 )
 
 type Generateable interface {
 	Structs(settings config.CombinedSettings) []Struct
 	GoQueries(settings config.CombinedSettings) []Query
 	Enums(settings config.CombinedSettings) []Enum
-}
-
-func UsesType(r Generateable, typ string, settings config.CombinedSettings) bool {
-	for _, strct := range r.Structs(settings) {
-		for _, f := range strct.Fields {
-			fType := strings.TrimPrefix(f.Type, "[]")
-			if strings.HasPrefix(fType, typ) {
-				return true
-			}
-		}
-	}
-	return false
-}
-
-func UsesArrays(r Generateable, settings config.CombinedSettings) bool {
-	for _, strct := range r.Structs(settings) {
-		for _, f := range strct.Fields {
-			if strings.HasPrefix(f.Type, "[]") {
-				return true
-			}
-		}
-	}
-	return false
-}
-
-type fileImports struct {
-	Std []string
-	Dep []string
-}
-
-func mergeImports(imps ...fileImports) [][]string {
-	if len(imps) == 1 {
-		return [][]string{imps[0].Std, imps[0].Dep}
-	}
-
-	var stds, pkgs []string
-	seenStd := map[string]struct{}{}
-	seenPkg := map[string]struct{}{}
-	for i := range imps {
-		for _, std := range imps[i].Std {
-			if _, ok := seenStd[std]; ok {
-				continue
-			}
-			stds = append(stds, std)
-			seenStd[std] = struct{}{}
-		}
-		for _, pkg := range imps[i].Dep {
-			if _, ok := seenPkg[pkg]; ok {
-				continue
-			}
-			pkgs = append(pkgs, pkg)
-			seenPkg[pkg] = struct{}{}
-		}
-	}
-	return [][]string{stds, pkgs}
-}
-
-func Imports(r Generateable, settings config.CombinedSettings) func(string) [][]string {
-	return func(filename string) [][]string {
-		if filename == "db.go" {
-			return mergeImports(dbImports(r, settings))
-		}
-
-		if filename == "models.go" {
-			return mergeImports(modelImports(r, settings))
-		}
-
-		if filename == "querier.go" {
-			return mergeImports(interfaceImports(r, settings))
-		}
-
-		return mergeImports(queryImports(r, settings, filename))
-	}
-}
-
-func dbImports(r Generateable, settings config.CombinedSettings) fileImports {
-	std := []string{"context", "database/sql"}
-	if settings.Go.EmitPreparedQueries {
-		std = append(std, "fmt")
-	}
-	return fileImports{Std: std}
-}
-
-func interfaceImports(r Generateable, settings config.CombinedSettings) fileImports {
-	gq := r.GoQueries(settings)
-	uses := func(name string) bool {
-		for _, q := range gq {
-			if !q.Ret.isEmpty() {
-				if strings.HasPrefix(q.Ret.Type(), name) {
-					return true
-				}
-			}
-			if !q.Arg.isEmpty() {
-				if strings.HasPrefix(q.Arg.Type(), name) {
-					return true
-				}
-			}
-		}
-		return false
-	}
-
-	std := map[string]struct{}{
-		"context": struct{}{},
-	}
-	if uses("sql.Null") {
-		std["database/sql"] = struct{}{}
-	}
-	for _, q := range gq {
-		if q.Cmd == metadata.CmdExecResult {
-			std["database/sql"] = struct{}{}
-		}
-	}
-	if uses("json.RawMessage") {
-		std["encoding/json"] = struct{}{}
-	}
-	if uses("time.Time") {
-		std["time"] = struct{}{}
-	}
-	if uses("net.IP") {
-		std["net"] = struct{}{}
-	}
-	if uses("net.HardwareAddr") {
-		std["net"] = struct{}{}
-	}
-
-	pkg := make(map[string]struct{})
-	overrideTypes := map[string]string{}
-	for _, o := range settings.Overrides {
-		if o.GoBasicType {
-			continue
-		}
-		overrideTypes[o.GoTypeName] = o.GoPackage
-	}
-
-	_, overrideNullTime := overrideTypes["pq.NullTime"]
-	if uses("pq.NullTime") && !overrideNullTime {
-		pkg["github.com/lib/pq"] = struct{}{}
-	}
-	_, overrideUUID := overrideTypes["uuid.UUID"]
-	if uses("uuid.UUID") && !overrideUUID {
-		pkg["github.com/google/uuid"] = struct{}{}
-	}
-
-	// Custom imports
-	for goType, importPath := range overrideTypes {
-		if _, ok := std[importPath]; !ok && uses(goType) {
-			pkg[importPath] = struct{}{}
-		}
-	}
-
-	pkgs := make([]string, 0, len(pkg))
-	for p, _ := range pkg {
-		pkgs = append(pkgs, p)
-	}
-
-	stds := make([]string, 0, len(std))
-	for s, _ := range std {
-		stds = append(stds, s)
-	}
-
-	sort.Strings(stds)
-	sort.Strings(pkgs)
-	return fileImports{stds, pkgs}
-}
-
-func modelImports(r Generateable, settings config.CombinedSettings) fileImports {
-	std := make(map[string]struct{})
-	if UsesType(r, "sql.Null", settings) {
-		std["database/sql"] = struct{}{}
-	}
-	if UsesType(r, "json.RawMessage", settings) {
-		std["encoding/json"] = struct{}{}
-	}
-	if UsesType(r, "time.Time", settings) {
-		std["time"] = struct{}{}
-	}
-	if UsesType(r, "net.IP", settings) {
-		std["net"] = struct{}{}
-	}
-	if UsesType(r, "net.HardwareAddr", settings) {
-		std["net"] = struct{}{}
-	}
-	if len(r.Enums(settings)) > 0 {
-		std["fmt"] = struct{}{}
-	}
-
-	// Custom imports
-	pkg := make(map[string]struct{})
-	overrideTypes := map[string]string{}
-	for _, o := range settings.Overrides {
-		if o.GoBasicType {
-			continue
-		}
-		overrideTypes[o.GoTypeName] = o.GoPackage
-	}
-
-	_, overrideNullTime := overrideTypes["pq.NullTime"]
-	if UsesType(r, "pq.NullTime", settings) && !overrideNullTime {
-		pkg["github.com/lib/pq"] = struct{}{}
-	}
-
-	_, overrideUUID := overrideTypes["uuid.UUID"]
-	if UsesType(r, "uuid.UUID", settings) && !overrideUUID {
-		pkg["github.com/google/uuid"] = struct{}{}
-	}
-
-	for goType, importPath := range overrideTypes {
-		if _, ok := std[importPath]; !ok && UsesType(r, goType, settings) {
-			pkg[importPath] = struct{}{}
-		}
-	}
-
-	pkgs := make([]string, 0, len(pkg))
-	for p, _ := range pkg {
-		pkgs = append(pkgs, p)
-	}
-
-	stds := make([]string, 0, len(std))
-	for s, _ := range std {
-		stds = append(stds, s)
-	}
-
-	sort.Strings(stds)
-	sort.Strings(pkgs)
-	return fileImports{stds, pkgs}
-}
-
-func queryImports(r Generateable, settings config.CombinedSettings, filename string) fileImports {
-	// for _, strct := range r.Structs() {
-	// 	for _, f := range strct.Fields {
-	// 		if strings.HasPrefix(f.Type, "[]") {
-	// 			return true
-	// 		}
-	// 	}
-	// }
-	var gq []Query
-	for _, query := range r.GoQueries(settings) {
-		if query.SourceName == filename {
-			gq = append(gq, query)
-		}
-	}
-
-	uses := func(name string) bool {
-		for _, q := range gq {
-			if !q.Ret.isEmpty() {
-				if q.Ret.EmitStruct() {
-					for _, f := range q.Ret.Struct.Fields {
-						fType := strings.TrimPrefix(f.Type, "[]")
-						if strings.HasPrefix(fType, name) {
-							return true
-						}
-					}
-				}
-				if strings.HasPrefix(q.Ret.Type(), name) {
-					return true
-				}
-			}
-			if !q.Arg.isEmpty() {
-				if q.Arg.EmitStruct() {
-					for _, f := range q.Arg.Struct.Fields {
-						fType := strings.TrimPrefix(f.Type, "[]")
-						if strings.HasPrefix(fType, name) {
-							return true
-						}
-					}
-				}
-				if strings.HasPrefix(q.Arg.Type(), name) {
-					return true
-				}
-			}
-		}
-		return false
-	}
-
-	sliceScan := func() bool {
-		for _, q := range gq {
-			if !q.Ret.isEmpty() {
-				if q.Ret.IsStruct() {
-					for _, f := range q.Ret.Struct.Fields {
-						if strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" {
-							return true
-						}
-					}
-				} else {
-					if strings.HasPrefix(q.Ret.Type(), "[]") && q.Ret.Type() != "[]byte" {
-						return true
-					}
-				}
-			}
-			if !q.Arg.isEmpty() {
-				if q.Arg.IsStruct() {
-					for _, f := range q.Arg.Struct.Fields {
-						if strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" {
-							return true
-						}
-					}
-				} else {
-					if strings.HasPrefix(q.Arg.Type(), "[]") && q.Arg.Type() != "[]byte" {
-						return true
-					}
-				}
-			}
-		}
-		return false
-	}
-
-	std := map[string]struct{}{
-		"context": struct{}{},
-	}
-	if uses("sql.Null") {
-		std["database/sql"] = struct{}{}
-	}
-	for _, q := range gq {
-		if q.Cmd == metadata.CmdExecResult {
-			std["database/sql"] = struct{}{}
-		}
-	}
-	if uses("json.RawMessage") {
-		std["encoding/json"] = struct{}{}
-	}
-	if uses("time.Time") {
-		std["time"] = struct{}{}
-	}
-	if uses("net.IP") {
-		std["net"] = struct{}{}
-	}
-
-	pkg := make(map[string]struct{})
-	overrideTypes := map[string]string{}
-	for _, o := range settings.Overrides {
-		if o.GoBasicType {
-			continue
-		}
-		overrideTypes[o.GoTypeName] = o.GoPackage
-	}
-
-	if sliceScan() {
-		pkg["github.com/lib/pq"] = struct{}{}
-	}
-	_, overrideNullTime := overrideTypes["pq.NullTime"]
-	if uses("pq.NullTime") && !overrideNullTime {
-		pkg["github.com/lib/pq"] = struct{}{}
-	}
-	_, overrideUUID := overrideTypes["uuid.UUID"]
-	if uses("uuid.UUID") && !overrideUUID {
-		pkg["github.com/google/uuid"] = struct{}{}
-	}
-
-	// Custom imports
-	for goType, importPath := range overrideTypes {
-		if _, ok := std[importPath]; !ok && uses(goType) {
-			pkg[importPath] = struct{}{}
-		}
-	}
-
-	pkgs := make([]string, 0, len(pkg))
-	for p, _ := range pkg {
-		pkgs = append(pkgs, p)
-	}
-
-	stds := make([]string, 0, len(std))
-	for s, _ := range std {
-		stds = append(stds, s)
-	}
-
-	sort.Strings(stds)
-	sort.Strings(pkgs)
-	return fileImports{stds, pkgs}
 }
 
 var templateSet = `
@@ -740,11 +371,29 @@ func (t *tmplCtx) OutputQuery(sourceName string) bool {
 	return t.SourceName == sourceName
 }
 
-func Generate(r Generateable, settings config.CombinedSettings) (map[string]string, error) {
+func DeprecatedGenerate(r Generateable, settings config.CombinedSettings) (map[string]string, error) {
+	return generate(settings, r.Enums(settings), r.Structs(settings), r.GoQueries(settings))
+}
+
+func Generate(r *compiler.Result, settings config.CombinedSettings) (map[string]string, error) {
+	enums := buildEnums(r, settings)
+	structs := buildStructs(r, settings)
+	queries := buildQueries(r, settings, structs)
+	return generate(settings, enums, structs, queries)
+}
+
+func generate(settings config.CombinedSettings, enums []Enum, structs []Struct, queries []Query) (map[string]string, error) {
+	i := &importer{
+		Settings: settings,
+		Queries:  queries,
+		Enums:    enums,
+		Structs:  structs,
+	}
+
 	funcMap := template.FuncMap{
 		"lowerTitle": codegen.LowerTitle,
 		"comment":    codegen.DoubleSlashComment,
-		"imports":    Imports(r, settings),
+		"imports":    i.Imports,
 	}
 
 	tmpl := template.Must(template.New("table").Funcs(funcMap).Parse(templateSet))
@@ -758,9 +407,9 @@ func Generate(r Generateable, settings config.CombinedSettings) (map[string]stri
 		EmitEmptySlices:     golang.EmitEmptySlices,
 		Q:                   "`",
 		Package:             golang.Package,
-		GoQueries:           r.GoQueries(settings),
-		Enums:               r.Enums(settings),
-		Structs:             r.Structs(settings),
+		GoQueries:           queries,
+		Enums:               enums,
+		Structs:             structs,
 	}
 
 	output := map[string]string{}
@@ -799,7 +448,7 @@ func Generate(r Generateable, settings config.CombinedSettings) (map[string]stri
 	}
 
 	files := map[string]struct{}{}
-	for _, gq := range r.GoQueries(settings) {
+	for _, gq := range queries {
 		files[gq.SourceName] = struct{}{}
 	}
 

@@ -1,28 +1,28 @@
-package compiler
+package golang
 
 import (
 	"log"
 
-	"github.com/kyleconroy/sqlc/internal/codegen/golang"
+	"github.com/kyleconroy/sqlc/internal/compiler"
 	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 )
 
-func (r *Result) goType(col *Column, settings config.CombinedSettings) string {
+func goType(r *compiler.Result, col *compiler.Column, settings config.CombinedSettings) string {
 	// package overrides have a higher precedence
 	for _, oride := range settings.Overrides {
 		if oride.Column != "" && oride.ColumnName == col.Name && sameTableName(col.Table, oride.Table) {
 			return oride.GoTypeName
 		}
 	}
-	typ := r.goInnerType(col, settings)
+	typ := goInnerType(r, col, settings)
 	if col.IsArray {
 		return "[]" + typ
 	}
 	return typ
 }
 
-func (r *Result) goInnerType(col *Column, settings config.CombinedSettings) string {
+func goInnerType(r *compiler.Result, col *compiler.Column, settings config.CombinedSettings) string {
 	columnType := col.DataType
 	notNull := col.NotNull || col.IsArray
 
@@ -36,17 +36,17 @@ func (r *Result) goInnerType(col *Column, settings config.CombinedSettings) stri
 	// TODO: Extend the engine interface to handle types
 	switch settings.Package.Engine {
 	case config.EngineMySQL, config.EngineXDolphin:
-		return r.mysqlType(col, settings)
+		return mysqlType(r, col, settings)
 	case config.EnginePostgreSQL:
-		return r.postgresType(col, settings)
+		return postgresType(r, col, settings)
 	case config.EngineXLemon:
-		return r.postgresType(col, settings)
+		return postgresType(r, col, settings)
 	default:
 		return "interface{}"
 	}
 }
 
-func (r *Result) postgresType(col *Column, settings config.CombinedSettings) string {
+func postgresType(r *compiler.Result, col *compiler.Column, settings config.CombinedSettings) string {
 	columnType := col.DataType
 	notNull := col.NotNull || col.IsArray
 
@@ -168,7 +168,7 @@ func (r *Result) postgresType(col *Column, settings config.CombinedSettings) str
 		return "interface{}"
 
 	default:
-		rel, err := parseRelationString(columnType)
+		rel, err := compiler.ParseRelationString(columnType)
 		if err != nil {
 			// TODO: Should this actually return an error here?
 			return "interface{}"
@@ -186,9 +186,9 @@ func (r *Result) postgresType(col *Column, settings config.CombinedSettings) str
 				case *catalog.Enum:
 					if rel.Name == t.Name && rel.Schema == schema.Name {
 						if schema.Name == r.Catalog.DefaultSchema {
-							return golang.StructName(t.Name, settings)
+							return StructName(t.Name, settings)
 						}
-						return golang.StructName(schema.Name+"_"+t.Name, settings)
+						return StructName(schema.Name+"_"+t.Name, settings)
 					}
 				case *catalog.CompositeType:
 					if notNull {
@@ -204,7 +204,7 @@ func (r *Result) postgresType(col *Column, settings config.CombinedSettings) str
 	}
 }
 
-func (r *Result) mysqlType(col *Column, settings config.CombinedSettings) string {
+func mysqlType(r *compiler.Result, col *compiler.Column, settings config.CombinedSettings) string {
 	columnType := col.DataType
 	notNull := col.NotNull || col.IsArray
 

@@ -13,11 +13,9 @@ import (
 	"github.com/kyleconroy/sqlc/internal/codegen/golang"
 	"github.com/kyleconroy/sqlc/internal/compiler"
 	"github.com/kyleconroy/sqlc/internal/config"
-	"github.com/kyleconroy/sqlc/internal/dinosql"
-	"github.com/kyleconroy/sqlc/internal/dinosql/kotlin"
 	"github.com/kyleconroy/sqlc/internal/multierr"
 	"github.com/kyleconroy/sqlc/internal/mysql"
-	"github.com/kyleconroy/sqlc/internal/pg"
+	"github.com/kyleconroy/sqlc/internal/opts"
 )
 
 const errMessageNoVersion = `The configuration file must have a version number.
@@ -113,7 +111,6 @@ func Generate(e Env, dir string, stderr io.Writer) (map[string]string, error) {
 
 	for _, sql := range pairs {
 		combo := config.Combine(conf, sql.SQL)
-		var result golang.Generateable
 
 		// TODO: This feels like a hack that will bite us later
 		joined := make([]string, 0, len(sql.Schema))
@@ -129,7 +126,7 @@ func Generate(e Env, dir string, stderr io.Writer) (map[string]string, error) {
 		sql.Queries = joined
 
 		var name string
-		parseOpts := dinosql.ParserOpts{}
+		parseOpts := opts.Parser{}
 		if sql.Gen.Go != nil {
 			name = combo.Go.Package
 		} else if sql.Gen.Kotlin != nil {
@@ -137,32 +134,42 @@ func Generate(e Env, dir string, stderr io.Writer) (map[string]string, error) {
 			name = combo.Kotlin.Package
 		}
 
-		result, errored = parse(e, name, dir, sql.SQL, combo, parseOpts, stderr)
-		if errored {
-			break
-		}
-
 		var files map[string]string
 		var out string
-		if sql.Gen.Go != nil {
-			out = combo.Go.Out
-			files, err = golang.Generate(result, combo)
-		} else if sql.Gen.Kotlin != nil {
-			out = combo.Kotlin.Out
-			ktRes, ok := result.(kotlin.KtGenerateable)
-			if !ok {
-				err = fmt.Errorf("kotlin not supported for engine %s", combo.Package.Engine)
+
+		// TODO: Note about how this will be going away
+		if sql.Engine == config.EngineMySQL {
+			result, errored := parseMySQL(e, name, dir, sql.SQL, combo, parseOpts, stderr)
+			if errored {
 				break
 			}
-			files, err = kotlin.KtGenerate(ktRes, combo)
+			out = combo.Go.Out
+			files, err = golang.DeprecatedGenerate(result, combo)
+		} else {
+			result, errored := parse(e, name, dir, sql.SQL, combo, parseOpts, stderr)
+			if errored {
+				break
+			}
+			if sql.Gen.Go != nil {
+				out = combo.Go.Out
+				files, err = golang.Generate(result, combo)
+			} else if sql.Gen.Kotlin != nil {
+				// out = combo.Kotlin.Out
+				// ktRes, ok := result.(kotlin.KtGenerateable)
+				if true { // !ok {
+					err = fmt.Errorf("kotlin not supported for engine %s", combo.Package.Engine)
+					break
+				}
+				// files, err = kotlin.KtGenerate(ktRes, combo)
+			}
 		}
+
 		if err != nil {
 			fmt.Fprintf(stderr, "# package %s\n", name)
 			fmt.Fprintf(stderr, "error generating code: %s\n", err)
 			errored = true
 			continue
 		}
-
 		for n, source := range files {
 			filename := filepath.Join(dir, out, n)
 			output[filename] = source
@@ -177,55 +184,28 @@ func Generate(e Env, dir string, stderr io.Writer) (map[string]string, error) {
 
 type postgreEngine interface {
 	ParseCatalog([]string) error
-	ParseQueries([]string, dinosql.ParserOpts) error
-	Result() golang.Generateable
+	ParseQueries([]string, opts.Parser) error
+	Result() *compiler.Result
 }
 
-type dinosqlEngine struct {
-	catalog pg.Catalog
-	result  *dinosql.Result
-}
-
-func (d *dinosqlEngine) ParseCatalog(schema []string) error {
-	c, err := dinosql.ParseCatalog(schema)
+// Experimental MySQL support
+func parseMySQL(e Env, name, dir string, sql config.SQL, combo config.CombinedSettings, parserOpts opts.Parser, stderr io.Writer) (golang.Generateable, bool) {
+	q, err := mysql.GeneratePkg(name, sql.Schema, sql.Queries, combo)
 	if err != nil {
-		return err
-	}
-	d.catalog = c
-	return nil
-}
-
-func (d *dinosqlEngine) ParseQueries(queries []string, opts dinosql.ParserOpts) error {
-	q, err := dinosql.ParseQueries(d.catalog, queries, opts)
-	if err != nil {
-		return err
-	}
-	d.result = q
-	return nil
-}
-
-func (d *dinosqlEngine) Result() golang.Generateable {
-	return &kotlin.Result{Result: d.result}
-}
-
-func parse(e Env, name, dir string, sql config.SQL, combo config.CombinedSettings, parserOpts dinosql.ParserOpts, stderr io.Writer) (golang.Generateable, bool) {
-	if sql.Engine == config.EngineMySQL {
-		// Experimental MySQL support
-		q, err := mysql.GeneratePkg(name, sql.Schema, sql.Queries, combo)
-		if err != nil {
-			fmt.Fprintf(stderr, "# package %s\n", name)
-			if parserErr, ok := err.(*multierr.Error); ok {
-				for _, fileErr := range parserErr.Errs() {
-					printFileErr(stderr, dir, fileErr)
-				}
-			} else {
-				fmt.Fprintf(stderr, "error parsing schema: %s\n", err)
+		fmt.Fprintf(stderr, "# package %s\n", name)
+		if parserErr, ok := err.(*multierr.Error); ok {
+			for _, fileErr := range parserErr.Errs() {
+				printFileErr(stderr, dir, fileErr)
 			}
-			return nil, true
+		} else {
+			fmt.Fprintf(stderr, "error parsing schema: %s\n", err)
 		}
-		return q, false
+		return nil, true
 	}
+	return q, false
+}
 
+func parse(e Env, name, dir string, sql config.SQL, combo config.CombinedSettings, parserOpts opts.Parser, stderr io.Writer) (*compiler.Result, bool) {
 	eng := compiler.NewEngine(sql, combo)
 	if err := eng.ParseCatalog(sql.Schema); err != nil {
 		fmt.Fprintf(stderr, "# package %s\n", name)

@@ -45,7 +45,7 @@ func buildQueryCatalog(c *catalog.Catalog, node ast.Node) (*QueryCatalog, error)
 	return qc, nil
 }
 
-func convertColumn(rel *ast.TableName, c *catalog.Column) *Column {
+func ConvertColumn(rel *ast.TableName, c *catalog.Column) *Column {
 	return &Column{
 		Table:    rel,
 		Name:     c.Name,
@@ -67,7 +67,7 @@ func (qc QueryCatalog) GetTable(rel *ast.TableName) (*Table, error) {
 	}
 	var cols []*Column
 	for _, c := range src.Columns {
-		cols = append(cols, convertColumn(rel, c))
+		cols = append(cols, ConvertColumn(rel, c))
 	}
 	return &Table{Rel: rel, Columns: cols}, nil
 }
