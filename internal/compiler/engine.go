@@ -43,8 +43,8 @@ func (e *Engine) ParseCatalog(schema []string) error {
 	return parseCatalog(e.parser, e.catalog, schema)
 }
 
-func (e *Engine) ParseQueries(queries []string, _ opts.Parser) error {
-	r, err := parseQueries(e.parser, e.catalog, e.conf.Queries)
+func (e *Engine) ParseQueries(queries []string, o opts.Parser) error {
+	r, err := parseQueries(e.parser, e.catalog, e.conf.Queries, o)
 	if err != nil {
 		return err
 	}

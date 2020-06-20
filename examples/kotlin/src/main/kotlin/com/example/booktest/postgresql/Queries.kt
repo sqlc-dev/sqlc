@@ -50,8 +50,8 @@ interface Queries {
   fun updateBookISBN(
       title: String,
       tags: List<String>,
-      bookId: Int,
-      isbn: String): ExecuteQuery
+      isbn: String,
+      bookId: Int): ExecuteQuery
   
 }
 

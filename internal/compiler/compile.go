@@ -12,6 +12,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/migrations"
 	"github.com/kyleconroy/sqlc/internal/multierr"
+	"github.com/kyleconroy/sqlc/internal/opts"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
@@ -82,7 +83,7 @@ func parseCatalog(p Parser, c *catalog.Catalog, schemas []string) error {
 	return nil
 }
 
-func parseQueries(p Parser, c *catalog.Catalog, queries []string) (*Result, error) {
+func parseQueries(p Parser, c *catalog.Catalog, queries []string, o opts.Parser) (*Result, error) {
 	var q []*Query
 	merr := multierr.New()
 	set := map[string]struct{}{}
@@ -103,7 +104,7 @@ func parseQueries(p Parser, c *catalog.Catalog, queries []string) (*Result, erro
 			continue
 		}
 		for _, stmt := range stmts {
-			query, err := parseQuery(p, c, stmt.Raw, src, false)
+			query, err := parseQuery(p, c, stmt.Raw, src, o.UsePositionalParameters)
 			if err == ErrUnsupportedStatementType {
 				continue
 			}

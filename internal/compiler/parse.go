@@ -18,6 +18,18 @@ import (
 
 var ErrUnsupportedStatementType = errors.New("parseQuery: unsupported statement type")
 
+func rewriteNumberedParameters(refs []paramRef, raw *ast.RawStmt, sql string) ([]source.Edit, error) {
+	edits := make([]source.Edit, len(refs))
+	for i, ref := range refs {
+		edits[i] = source.Edit{
+			Location: ref.ref.Location - raw.StmtLocation,
+			Old:      fmt.Sprintf("$%d", ref.ref.Number),
+			New:      "?",
+		}
+	}
+	return edits, nil
+}
+
 func parseQuery(p Parser, c *catalog.Catalog, stmt ast.Node, src string, rewriteParameters bool) (*Query, error) {
 	if err := validate.ParamStyle(stmt); err != nil {
 		return nil, err
@@ -64,11 +76,10 @@ func parseQuery(p Parser, c *catalog.Catalog, stmt ast.Node, src string, rewrite
 	rvs := rangeVars(raw.Stmt)
 	refs := findParameters(raw.Stmt)
 	if rewriteParameters {
-		// TODO
-		// edits, err = rewriteNumberedParameters(refs, raw, rawSQL)
-		// if err != nil {
-		// 	return nil, err
-		// }
+		edits, err = rewriteNumberedParameters(refs, raw, rawSQL)
+		if err != nil {
+			return nil, err
+		}
 	} else {
 		refs = uniqueParamRefs(refs)
 		sort.Slice(refs, func(i, j int) bool { return refs[i].ref.Number < refs[j].ref.Number })

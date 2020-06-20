@@ -41,10 +41,10 @@ interface Queries {
   fun listVenues(city: String): ListQuery<Venue>
   
   @Throws(SQLException::class)
-  fun updateCityName(slug: String, name: String): ExecuteQuery
+  fun updateCityName(name: String, slug: String): ExecuteQuery
   
   @Throws(SQLException::class)
-  fun updateVenueName(slug: String, name: String): RowQuery<Int>
+  fun updateVenueName(name: String, slug: String): RowQuery<Int>
   
   @Throws(SQLException::class)
   fun venueCountByCity(): ListQuery<VenueCountByCityRow>

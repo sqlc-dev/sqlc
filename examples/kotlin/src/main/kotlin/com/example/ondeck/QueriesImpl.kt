@@ -174,6 +174,7 @@ class QueriesImpl(private val conn: Connection) : Queries {
         conn.prepareStatement(deleteVenue).use { stmt ->
           this.statement = stmt
           stmt.setString(1, slug)
+          stmt.setString(2, slug)
 
           stmt.execute()
         }
@@ -292,13 +293,13 @@ class QueriesImpl(private val conn: Connection) : Queries {
   }
 
   @Throws(SQLException::class)
-  override fun updateCityName(slug: String, name: String): ExecuteQuery {
+  override fun updateCityName(name: String, slug: String): ExecuteQuery {
     return object : ExecuteQuery() {
       override fun execute() {
         conn.prepareStatement(updateCityName).use { stmt ->
           this.statement = stmt
-          stmt.setString(1, slug)
-          stmt.setString(2, name)
+          stmt.setString(1, name)
+          stmt.setString(2, slug)
 
           stmt.execute()
         }
@@ -307,13 +308,13 @@ class QueriesImpl(private val conn: Connection) : Queries {
   }
 
   @Throws(SQLException::class)
-  override fun updateVenueName(slug: String, name: String): RowQuery<Int> {
+  override fun updateVenueName(name: String, slug: String): RowQuery<Int> {
     return object : RowQuery<Int>() {
       override fun execute(): Int {
         return conn.prepareStatement(updateVenueName).use { stmt ->
           this.statement = stmt
-          stmt.setString(1, slug)
-          stmt.setString(2, name)
+          stmt.setString(1, name)
+          stmt.setString(2, slug)
 
           val results = stmt.executeQuery()
           if (!results.next()) {
