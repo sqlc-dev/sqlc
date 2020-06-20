@@ -4,11 +4,11 @@ import (
 	"fmt"
 
 	"github.com/kyleconroy/sqlc/internal/config"
-	"github.com/kyleconroy/sqlc/internal/dolphin"
+	"github.com/kyleconroy/sqlc/internal/engine/dolphin"
+	"github.com/kyleconroy/sqlc/internal/engine/postgresql"
+	"github.com/kyleconroy/sqlc/internal/engine/sqlite"
 	"github.com/kyleconroy/sqlc/internal/opts"
-	"github.com/kyleconroy/sqlc/internal/postgresql"
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
-	"github.com/kyleconroy/sqlc/internal/sqlite"
 )
 
 // The Engine type only exists as a compatibility shim between the old dinosql
