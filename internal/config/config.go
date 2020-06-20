@@ -10,9 +10,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/kyleconroy/sqlc/internal/pg"
-
 	yaml "gopkg.in/yaml.v3"
+
+	"github.com/kyleconroy/sqlc/internal/core"
 )
 
 const errMessageNoVersion = `The configuration file must have a version number.
@@ -146,7 +146,7 @@ type Override struct {
 	Column string `json:"column" yaml:"column"`
 
 	ColumnName  string
-	Table       pg.FQN
+	Table       core.FQN
 	GoTypeName  string
 	GoPackage   string
 	GoBasicType bool
@@ -177,13 +177,13 @@ func (o *Override) Parse() error {
 		switch len(colParts) {
 		case 2:
 			o.ColumnName = colParts[1]
-			o.Table = pg.FQN{Schema: "public", Rel: colParts[0]}
+			o.Table = core.FQN{Schema: "public", Rel: colParts[0]}
 		case 3:
 			o.ColumnName = colParts[2]
-			o.Table = pg.FQN{Schema: colParts[0], Rel: colParts[1]}
+			o.Table = core.FQN{Schema: colParts[0], Rel: colParts[1]}
 		case 4:
 			o.ColumnName = colParts[3]
-			o.Table = pg.FQN{Catalog: colParts[0], Schema: colParts[1], Rel: colParts[2]}
+			o.Table = core.FQN{Catalog: colParts[0], Schema: colParts[1], Rel: colParts[2]}
 		default:
 			return fmt.Errorf("Override `column` specifier %q is not the proper format, expected '[catalog.][schema.]colname.tablename'", o.Column)
 		}
