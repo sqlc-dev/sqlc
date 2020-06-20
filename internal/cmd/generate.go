@@ -181,12 +181,6 @@ func Generate(e Env, dir string, stderr io.Writer) (map[string]string, error) {
 	return output, nil
 }
 
-type postgreEngine interface {
-	ParseCatalog([]string) error
-	ParseQueries([]string, opts.Parser) error
-	Result() *compiler.Result
-}
-
 // Experimental MySQL support
 func parseMySQL(e Env, name, dir string, sql config.SQL, combo config.CombinedSettings, parserOpts opts.Parser, stderr io.Writer) (golang.Generateable, bool) {
 	q, err := mysql.GeneratePkg(name, sql.Schema, sql.Queries, combo)

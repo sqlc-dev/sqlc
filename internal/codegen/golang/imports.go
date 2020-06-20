@@ -13,31 +13,6 @@ type fileImports struct {
 	Dep []string
 }
 
-// TODO: Remove
-func UsesType(r Generateable, typ string, settings config.CombinedSettings) bool {
-	for _, strct := range r.Structs(settings) {
-		for _, f := range strct.Fields {
-			fType := strings.TrimPrefix(f.Type, "[]")
-			if strings.HasPrefix(fType, typ) {
-				return true
-			}
-		}
-	}
-	return false
-}
-
-// TODO: Remove
-func UsesArrays(r Generateable, settings config.CombinedSettings) bool {
-	for _, strct := range r.Structs(settings) {
-		for _, f := range strct.Fields {
-			if strings.HasPrefix(f.Type, "[]") {
-				return true
-			}
-		}
-	}
-	return false
-}
-
 func mergeImports(imps ...fileImports) [][]string {
 	if len(imps) == 1 {
 		return [][]string{imps[0].Std, imps[0].Dep}
