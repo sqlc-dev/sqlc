@@ -307,16 +307,16 @@ class QueriesImpl(private val conn: Connection) : Queries {
   override fun updateBookISBN(
       title: String,
       tags: List<String>,
-      isbn: String,
-      bookId: Int): ExecuteQuery {
+      bookId: Int,
+      isbn: String): ExecuteQuery {
     return object : ExecuteQuery() {
       override fun execute() {
         conn.prepareStatement(updateBookISBN).use { stmt ->
           this.statement = stmt
           stmt.setString(1, title)
           stmt.setArray(2, conn.createArrayOf("pg_catalog.varchar", tags.toTypedArray()))
-          stmt.setString(3, isbn)
-          stmt.setInt(4, bookId)
+          stmt.setInt(3, bookId)
+          stmt.setString(4, isbn)
 
           stmt.execute()
         }
