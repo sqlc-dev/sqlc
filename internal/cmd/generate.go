@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/kyleconroy/sqlc/internal/codegen/golang"
+	"github.com/kyleconroy/sqlc/internal/codegen/kotlin"
 	"github.com/kyleconroy/sqlc/internal/compiler"
 	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/multierr"
@@ -150,17 +151,15 @@ func Generate(e Env, dir string, stderr io.Writer) (map[string]string, error) {
 			if errored {
 				break
 			}
-			if sql.Gen.Go != nil {
+			switch {
+			case sql.Gen.Go != nil:
 				out = combo.Go.Out
 				files, err = golang.Generate(result, combo)
-			} else if sql.Gen.Kotlin != nil {
-				// out = combo.Kotlin.Out
-				// ktRes, ok := result.(kotlin.KtGenerateable)
-				if true { // !ok {
-					err = fmt.Errorf("kotlin not supported for engine %s", combo.Package.Engine)
-					break
-				}
-				// files, err = kotlin.KtGenerate(ktRes, combo)
+			case sql.Gen.Kotlin != nil:
+				out = combo.Kotlin.Out
+				files, err = kotlin.Generate(result, combo)
+			default:
+				panic("missing language backend")
 			}
 		}
 

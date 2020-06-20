@@ -11,69 +11,81 @@ import (
 	"text/template"
 
 	"github.com/kyleconroy/sqlc/internal/codegen"
+	"github.com/kyleconroy/sqlc/internal/compiler"
 	"github.com/kyleconroy/sqlc/internal/config"
-	"github.com/kyleconroy/sqlc/internal/dinosql"
+	"github.com/kyleconroy/sqlc/internal/inflection"
 	core "github.com/kyleconroy/sqlc/internal/pg"
-
-	"github.com/jinzhu/inflection"
+	"github.com/kyleconroy/sqlc/internal/sql/ast"
+	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 )
+
+func sameTableName(n *ast.TableName, f core.FQN) bool {
+	if n == nil {
+		return false
+	}
+	schema := n.Schema
+	if n.Schema == "" {
+		schema = "public"
+	}
+	return n.Catalog == n.Catalog && schema == f.Schema && n.Name == f.Rel
+}
 
 var ktIdentPattern = regexp.MustCompile("[^a-zA-Z0-9_]+")
 
-type KtConstant struct {
+type Constant struct {
 	Name  string
 	Type  string
 	Value string
 }
 
-type KtEnum struct {
+type Enum struct {
 	Name      string
 	Comment   string
-	Constants []KtConstant
+	Constants []Constant
 }
 
-type KtField struct {
+type Field struct {
 	Name    string
 	Type    ktType
 	Comment string
 }
 
-type KtStruct struct {
+type Struct struct {
 	Table             core.FQN
 	Name              string
-	Fields            []KtField
-	JDBCParamBindings []KtField
+	Fields            []Field
+	JDBCParamBindings []Field
 	Comment           string
 }
 
-type KtQueryValue struct {
+type QueryValue struct {
 	Emit               bool
 	Name               string
-	Struct             *KtStruct
+	Struct             *Struct
 	Typ                ktType
 	JDBCParamBindCount int
 }
 
-func (v KtQueryValue) EmitStruct() bool {
+func (v QueryValue) EmitStruct() bool {
 	return v.Emit
 }
 
-func (v KtQueryValue) IsStruct() bool {
+func (v QueryValue) IsStruct() bool {
 	return v.Struct != nil
 }
 
-func (v KtQueryValue) isEmpty() bool {
+func (v QueryValue) isEmpty() bool {
 	return v.Typ == (ktType{}) && v.Name == "" && v.Struct == nil
 }
 
-func (v KtQueryValue) Type() string {
+func (v QueryValue) Type() string {
 	if v.Typ != (ktType{}) {
 		return v.Typ.String()
 	}
 	if v.Struct != nil {
 		return v.Struct.Name
 	}
-	panic("no type for KtQueryValue: " + v.Name)
+	panic("no type for QueryValue: " + v.Name)
 }
 
 func jdbcSet(t ktType, idx int, name string) string {
@@ -92,15 +104,15 @@ func jdbcSet(t ktType, idx int, name string) string {
 	return fmt.Sprintf("stmt.set%s(%d, %s)", t.Name, idx, name)
 }
 
-type KtParams struct {
-	Struct *KtStruct
+type Params struct {
+	Struct *Struct
 }
 
-func (v KtParams) isEmpty() bool {
+func (v Params) isEmpty() bool {
 	return len(v.Struct.Fields) == 0
 }
 
-func (v KtParams) Args() string {
+func (v Params) Args() string {
 	if v.isEmpty() {
 		return ""
 	}
@@ -114,7 +126,7 @@ func (v KtParams) Args() string {
 	return "\n" + indent(strings.Join(out, ",\n"), 6, -1)
 }
 
-func (v KtParams) Bindings() string {
+func (v Params) Bindings() string {
 	if v.isEmpty() {
 		return ""
 	}
@@ -141,7 +153,7 @@ func jdbcGet(t ktType, idx int) string {
 	return fmt.Sprintf(`results.get%s(%d)`, t.Name, idx)
 }
 
-func (v KtQueryValue) ResultSet() string {
+func (v QueryValue) ResultSet() string {
 	var out []string
 	if v.Struct == nil {
 		return jdbcGet(v.Typ, 1)
@@ -174,7 +186,7 @@ func indent(s string, n int, firstIndent int) string {
 }
 
 // A struct used to generate methods and fields on the Queries struct
-type KtQuery struct {
+type Query struct {
 	ClassName    string
 	Cmd          string
 	Comments     []string
@@ -183,191 +195,8 @@ type KtQuery struct {
 	ConstantName string
 	SQL          string
 	SourceName   string
-	Ret          KtQueryValue
-	Arg          KtParams
-}
-
-type KtGenerateable interface {
-	KtDataClasses(settings config.CombinedSettings) []KtStruct
-	KtQueries(settings config.CombinedSettings) []KtQuery
-	KtEnums(settings config.CombinedSettings) []KtEnum
-}
-
-func KtUsesType(r KtGenerateable, typ string, settings config.CombinedSettings) bool {
-	for _, strct := range r.KtDataClasses(settings) {
-		for _, f := range strct.Fields {
-			if f.Type.Name == typ {
-				return true
-			}
-		}
-	}
-	return false
-}
-
-func KtImports(r KtGenerateable, settings config.CombinedSettings) func(string) [][]string {
-	return func(filename string) [][]string {
-		if filename == "Models.kt" {
-			return ModelKtImports(r, settings)
-		}
-
-		if filename == "Querier.kt" {
-			return InterfaceKtImports(r, settings)
-		}
-
-		return QueryKtImports(r, settings, filename)
-	}
-}
-
-func InterfaceKtImports(r KtGenerateable, settings config.CombinedSettings) [][]string {
-	kq := r.KtQueries(settings)
-	uses := func(name string) bool {
-		for _, q := range kq {
-			if !q.Ret.isEmpty() {
-				if strings.HasPrefix(q.Ret.Type(), name) {
-					return true
-				}
-			}
-			if !q.Arg.isEmpty() {
-				for _, f := range q.Arg.Struct.Fields {
-					if strings.HasPrefix(f.Type.Name, name) {
-						return true
-					}
-				}
-			}
-		}
-		return false
-	}
-
-	std := stdImports(uses)
-	stds := make([]string, 0, len(std))
-	for s, _ := range std {
-		stds = append(stds, s)
-	}
-
-	sort.Strings(stds)
-	return [][]string{stds, runtimeImports(kq)}
-}
-
-func ModelKtImports(r KtGenerateable, settings config.CombinedSettings) [][]string {
-	std := make(map[string]struct{})
-	if KtUsesType(r, "LocalDate", settings) {
-		std["java.time.LocalDate"] = struct{}{}
-	}
-	if KtUsesType(r, "LocalTime", settings) {
-		std["java.time.LocalTime"] = struct{}{}
-	}
-	if KtUsesType(r, "LocalDateTime", settings) {
-		std["java.time.LocalDateTime"] = struct{}{}
-	}
-	if KtUsesType(r, "OffsetDateTime", settings) {
-		std["java.time.OffsetDateTime"] = struct{}{}
-	}
-
-	stds := make([]string, 0, len(std))
-	for s, _ := range std {
-		stds = append(stds, s)
-	}
-
-	sort.Strings(stds)
-	return [][]string{stds}
-}
-
-func stdImports(uses func(name string) bool) map[string]struct{} {
-	std := map[string]struct{}{
-		"java.sql.SQLException": {},
-	}
-	if uses("LocalDate") {
-		std["java.time.LocalDate"] = struct{}{}
-	}
-	if uses("LocalTime") {
-		std["java.time.LocalTime"] = struct{}{}
-	}
-	if uses("LocalDateTime") {
-		std["java.time.LocalDateTime"] = struct{}{}
-	}
-	if uses("OffsetDateTime") {
-		std["java.time.OffsetDateTime"] = struct{}{}
-	}
-	return std
-}
-
-func runtimeImports(kq []KtQuery) []string {
-	rt := map[string]struct{}{}
-	for _, q := range kq {
-		switch q.Cmd {
-		case ":one":
-			rt["sqlc.runtime.RowQuery"] = struct{}{}
-		case ":many":
-			rt["sqlc.runtime.ListQuery"] = struct{}{}
-		case ":exec":
-			rt["sqlc.runtime.ExecuteQuery"] = struct{}{}
-		case ":execUpdate":
-			rt["sqlc.runtime.ExecuteUpdateQuery"] = struct{}{}
-		default:
-			panic(fmt.Sprintf("invalid command %q", q.Cmd))
-		}
-	}
-	rts := make([]string, 0, len(rt))
-	for s, _ := range rt {
-		rts = append(rts, s)
-	}
-	sort.Strings(rts)
-	return rts
-}
-
-func QueryKtImports(r KtGenerateable, settings config.CombinedSettings, filename string) [][]string {
-	kq := r.KtQueries(settings)
-	uses := func(name string) bool {
-		for _, q := range kq {
-			if !q.Ret.isEmpty() {
-				if q.Ret.Struct != nil {
-					for _, f := range q.Ret.Struct.Fields {
-						if f.Type.Name == name {
-							return true
-						}
-					}
-				}
-				if q.Ret.Type() == name {
-					return true
-				}
-			}
-			if !q.Arg.isEmpty() {
-				for _, f := range q.Arg.Struct.Fields {
-					if f.Type.Name == name {
-						return true
-					}
-				}
-			}
-		}
-		return false
-	}
-
-	hasEnum := func() bool {
-		for _, q := range kq {
-			if !q.Arg.isEmpty() {
-				for _, f := range q.Arg.Struct.Fields {
-					if f.Type.IsEnum {
-						return true
-					}
-				}
-			}
-		}
-		return false
-	}
-
-	std := stdImports(uses)
-	std["java.sql.Connection"] = struct{}{}
-	if hasEnum() {
-		std["java.sql.Types"] = struct{}{}
-	}
-
-	stds := make([]string, 0, len(std))
-	for s, _ := range std {
-		stds = append(stds, s)
-	}
-
-	sort.Strings(stds)
-	return [][]string{stds, runtimeImports(kq)}
+	Ret          QueryValue
+	Arg          Params
 }
 
 func ktEnumValueName(value string) string {
@@ -378,33 +207,29 @@ func ktEnumValueName(value string) string {
 	return strings.ToUpper(id)
 }
 
-// Result is a wrapper around *dinosql.Result that extends it with Kotlin support.
-// It can be used to generate both Go and Kotlin code.
-// TODO: This is a temporary hack to ensure minimal chance of merge conflicts while Kotlin support is forked.
-// Once it is merged upstream, we can factor split out Go support from the core dinosql.Result.
-type Result struct {
-	*dinosql.Result
-}
-
-func (r Result) KtEnums(settings config.CombinedSettings) []KtEnum {
-	var enums []KtEnum
-	for name, schema := range r.Catalog.Schemas {
-		if name == "pg_catalog" {
+func buildEnums(r *compiler.Result, settings config.CombinedSettings) []Enum {
+	var enums []Enum
+	for _, schema := range r.Catalog.Schemas {
+		if schema.Name == "pg_catalog" {
 			continue
 		}
-		for _, enum := range schema.Enums() {
+		for _, typ := range schema.Types {
+			enum, ok := typ.(*catalog.Enum)
+			if !ok {
+				continue
+			}
 			var enumName string
-			if name == "public" {
+			if schema.Name == r.Catalog.DefaultSchema {
 				enumName = enum.Name
 			} else {
-				enumName = name + "_" + enum.Name
+				enumName = schema.Name + "_" + enum.Name
 			}
-			e := KtEnum{
-				Name:    KtDataClassName(enumName, settings),
+			e := Enum{
+				Name:    DataClassName(enumName, settings),
 				Comment: enum.Comment,
 			}
 			for _, v := range enum.Vals {
-				e.Constants = append(e.Constants, KtConstant{
+				e.Constants = append(e.Constants, Constant{
 					Name:  ktEnumValueName(v),
 					Value: v,
 					Type:  e.Name,
@@ -419,7 +244,7 @@ func (r Result) KtEnums(settings config.CombinedSettings) []KtEnum {
 	return enums
 }
 
-func KtDataClassName(name string, settings config.CombinedSettings) string {
+func DataClassName(name string, settings config.CombinedSettings) string {
 	if rename := settings.Rename[name]; rename != "" {
 		return rename
 	}
@@ -430,36 +255,36 @@ func KtDataClassName(name string, settings config.CombinedSettings) string {
 	return out
 }
 
-func KtMemberName(name string, settings config.CombinedSettings) string {
-	return codegen.LowerTitle(KtDataClassName(name, settings))
+func MemberName(name string, settings config.CombinedSettings) string {
+	return codegen.LowerTitle(DataClassName(name, settings))
 }
 
-func (r Result) KtDataClasses(settings config.CombinedSettings) []KtStruct {
-	var structs []KtStruct
-	for name, schema := range r.Catalog.Schemas {
-		if name == "pg_catalog" {
+func buildDataClasses(r *compiler.Result, settings config.CombinedSettings) []Struct {
+	var structs []Struct
+	for _, schema := range r.Catalog.Schemas {
+		if schema.Name == "pg_catalog" {
 			continue
 		}
 		for _, table := range schema.Tables {
 			var tableName string
-			if name == "public" {
-				tableName = table.Name
+			if schema.Name == r.Catalog.DefaultSchema {
+				tableName = table.Rel.Name
 			} else {
-				tableName = name + "_" + table.Name
+				tableName = schema.Name + "_" + table.Rel.Name
 			}
-			structName := KtDataClassName(tableName, settings)
+			structName := DataClassName(tableName, settings)
 			if !settings.Go.EmitExactTableNames {
 				structName = inflection.Singular(structName)
 			}
-			s := KtStruct{
-				Table:   core.FQN{Schema: name, Rel: table.Name},
+			s := Struct{
+				Table:   core.FQN{Schema: schema.Name, Rel: table.Rel.Name},
 				Name:    structName,
 				Comment: table.Comment,
 			}
 			for _, column := range table.Columns {
-				s.Fields = append(s.Fields, KtField{
-					Name:    KtMemberName(column.Name, settings),
-					Type:    r.ktType(column, settings),
+				s.Fields = append(s.Fields, Field{
+					Name:    MemberName(column.Name, settings),
+					Type:    makeType(r, compiler.ConvertColumn(table.Rel, column), settings),
 					Comment: column.Comment,
 				})
 			}
@@ -508,8 +333,8 @@ func (t ktType) IsTime() bool {
 	return t.Name == "LocalDate" || t.Name == "LocalDateTime" || t.Name == "LocalTime" || t.Name == "OffsetDateTime"
 }
 
-func (r Result) ktType(col core.Column, settings config.CombinedSettings) ktType {
-	typ, isEnum := r.ktInnerType(col, settings)
+func makeType(r *compiler.Result, col *compiler.Column, settings config.CombinedSettings) ktType {
+	typ, isEnum := ktInnerType(r, col, settings)
 	return ktType{
 		Name:     typ,
 		IsEnum:   isEnum,
@@ -519,7 +344,7 @@ func (r Result) ktType(col core.Column, settings config.CombinedSettings) ktType
 	}
 }
 
-func (r Result) ktInnerType(col core.Column, settings config.CombinedSettings) (string, bool) {
+func ktInnerType(r *compiler.Result, col *compiler.Column, settings config.CombinedSettings) (string, bool) {
 	columnType := col.DataType
 
 	switch columnType {
@@ -596,17 +421,20 @@ func (r Result) ktInnerType(col core.Column, settings config.CombinedSettings) (
 		return "Any", false
 
 	default:
-		for name, schema := range r.Catalog.Schemas {
-			if name == "pg_catalog" {
+		for _, schema := range r.Catalog.Schemas {
+			if schema.Name == "pg_catalog" {
 				continue
 			}
-			for _, enum := range schema.Enums() {
+			for _, typ := range schema.Types {
+				enum, ok := typ.(*catalog.Enum)
+				if !ok {
+					continue
+				}
 				if columnType == enum.Name {
-					if name == "public" {
-						return KtDataClassName(enum.Name, settings), true
+					if schema.Name == r.Catalog.DefaultSchema {
+						return DataClassName(enum.Name, settings), true
 					}
-
-					return KtDataClassName(name+"_"+enum.Name, settings), true
+					return DataClassName(schema.Name+"_"+enum.Name, settings), true
 				}
 			}
 		}
@@ -617,27 +445,27 @@ func (r Result) ktInnerType(col core.Column, settings config.CombinedSettings) (
 
 type goColumn struct {
 	id int
-	core.Column
+	*compiler.Column
 }
 
-func (r Result) ktColumnsToStruct(name string, columns []goColumn, settings config.CombinedSettings, namer func(core.Column, int) string) *KtStruct {
-	gs := KtStruct{
+func ktColumnsToStruct(r *compiler.Result, name string, columns []goColumn, settings config.CombinedSettings, namer func(*compiler.Column, int) string) *Struct {
+	gs := Struct{
 		Name: name,
 	}
-	idSeen := map[int]KtField{}
+	idSeen := map[int]Field{}
 	nameSeen := map[string]int{}
 	for _, c := range columns {
 		if binding, ok := idSeen[c.id]; ok {
 			gs.JDBCParamBindings = append(gs.JDBCParamBindings, binding)
 			continue
 		}
-		fieldName := KtMemberName(namer(c.Column, c.id), settings)
+		fieldName := MemberName(namer(c.Column, c.id), settings)
 		if v := nameSeen[c.Name]; v > 0 {
 			fieldName = fmt.Sprintf("%s_%d", fieldName, v+1)
 		}
-		field := KtField{
+		field := Field{
 			Name: fieldName,
-			Type: r.ktType(c.Column, settings),
+			Type: makeType(r, c.Column, settings),
 		}
 		gs.Fields = append(gs.Fields, field)
 		gs.JDBCParamBindings = append(gs.JDBCParamBindings, field)
@@ -659,14 +487,14 @@ func ktArgName(name string) string {
 	return out
 }
 
-func ktParamName(c core.Column, number int) string {
+func ktParamName(c *compiler.Column, number int) string {
 	if c.Name != "" {
 		return ktArgName(c.Name)
 	}
 	return fmt.Sprintf("dollar_%d", number)
 }
 
-func ktColumnName(c core.Column, pos int) string {
+func ktColumnName(c *compiler.Column, pos int) string {
 	if c.Name != "" {
 		return c.Name
 	}
@@ -682,10 +510,8 @@ func jdbcSQL(s string) string {
 	return jdbcSQLRe.ReplaceAllString(s, "?")
 }
 
-func (r Result) KtQueries(settings config.CombinedSettings) []KtQuery {
-	structs := r.KtDataClasses(settings)
-
-	qs := make([]KtQuery, 0, len(r.Queries))
+func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs []Struct) []Query {
+	qs := make([]Query, 0, len(r.Queries))
 	for _, query := range r.Queries {
 		if query.Name == "" {
 			continue
@@ -694,7 +520,7 @@ func (r Result) KtQueries(settings config.CombinedSettings) []KtQuery {
 			continue
 		}
 
-		gq := KtQuery{
+		gq := Query{
 			Cmd:          query.Cmd,
 			ClassName:    strings.Title(query.Name),
 			ConstantName: codegen.LowerTitle(query.Name),
@@ -712,19 +538,19 @@ func (r Result) KtQueries(settings config.CombinedSettings) []KtQuery {
 				Column: p.Column,
 			})
 		}
-		params := r.ktColumnsToStruct(gq.ClassName+"Bindings", cols, settings, ktParamName)
-		gq.Arg = KtParams{
+		params := ktColumnsToStruct(r, gq.ClassName+"Bindings", cols, settings, ktParamName)
+		gq.Arg = Params{
 			Struct: params,
 		}
 
 		if len(query.Columns) == 1 {
 			c := query.Columns[0]
-			gq.Ret = KtQueryValue{
+			gq.Ret = QueryValue{
 				Name: "results",
-				Typ:  r.ktType(c, settings),
+				Typ:  makeType(r, c, settings),
 			}
 		} else if len(query.Columns) > 1 {
-			var gs *KtStruct
+			var gs *Struct
 			var emit bool
 
 			for _, s := range structs {
@@ -734,9 +560,9 @@ func (r Result) KtQueries(settings config.CombinedSettings) []KtQuery {
 				same := true
 				for i, f := range s.Fields {
 					c := query.Columns[i]
-					sameName := f.Name == KtMemberName(ktColumnName(c, i), settings)
-					sameType := f.Type == r.ktType(c, settings)
-					sameTable := s.Table.Catalog == c.Table.Catalog && s.Table.Schema == c.Table.Schema && s.Table.Rel == c.Table.Rel
+					sameName := f.Name == MemberName(ktColumnName(c, i), settings)
+					sameType := f.Type == makeType(r, c, settings)
+					sameTable := sameTableName(c.Table, s.Table)
 
 					if !sameName || !sameType || !sameTable {
 						same = false
@@ -756,10 +582,10 @@ func (r Result) KtQueries(settings config.CombinedSettings) []KtQuery {
 						Column: c,
 					})
 				}
-				gs = r.ktColumnsToStruct(gq.ClassName+"Row", columns, settings, ktColumnName)
+				gs = ktColumnsToStruct(r, gq.ClassName+"Row", columns, settings, ktColumnName)
 				emit = true
 			}
-			gq.Ret = KtQueryValue{
+			gq.Ret = QueryValue{
 				Emit:   emit,
 				Name:   "results",
 				Struct: gs,
@@ -782,7 +608,7 @@ package {{.Package}}
 {{end}}
 
 interface Queries {
-  {{- range .KtQueries}}
+  {{- range .Queries}}
   @Throws(SQLException::class)
   {{- if eq .Cmd ":one"}}
   fun {{.MethodName}}({{.Arg.Args}}): RowQuery<{{.Ret.Type}}>
@@ -824,7 +650,7 @@ enum class {{.Name}}(val value: String) {
 }
 {{end}}
 
-{{range .KtDataClasses}}
+{{range .DataClasses}}
 {{if .Comment}}{{comment .Comment}}{{end}}
 data class {{.Name}} ( {{- range $i, $e := .Fields}}
   {{- if $i }},{{end}}
@@ -846,7 +672,7 @@ package {{.Package}}
 {{end}}
 {{end}}
 
-{{range .KtQueries}}
+{{range .Queries}}
 const val {{.ConstantName}} = {{$.Q}}-- name: {{.MethodName}} {{.Cmd}}
 {{.SQL}}
 {{$.Q}}
@@ -861,7 +687,7 @@ data class {{.Ret.Type}} ( {{- range $i, $e := .Ret.Struct.Fields}}
 {{end}}
 
 class QueriesImpl(private val conn: Connection) : Queries {
-{{range .KtQueries}}
+{{range .Queries}}
 {{if eq .Cmd ":one"}}
 {{range .Comments}}//{{.}}
 {{end}}
@@ -954,12 +780,12 @@ class QueriesImpl(private val conn: Connection) : Queries {
 `
 
 type ktTmplCtx struct {
-	Q             string
-	Package       string
-	Enums         []KtEnum
-	KtDataClasses []KtStruct
-	KtQueries     []KtQuery
-	Settings      config.Config
+	Q           string
+	Package     string
+	Enums       []Enum
+	DataClasses []Struct
+	Queries     []Query
+	Settings    config.Config
 
 	// TODO: Race conditions
 	SourceName string
@@ -989,11 +815,22 @@ func ktFormat(s string) string {
 	return o
 }
 
-func KtGenerate(r KtGenerateable, settings config.CombinedSettings) (map[string]string, error) {
+func Generate(r *compiler.Result, settings config.CombinedSettings) (map[string]string, error) {
+	enums := buildEnums(r, settings)
+	structs := buildDataClasses(r, settings)
+	queries := buildQueries(r, settings, structs)
+
+	i := &importer{
+		Settings:    settings,
+		Enums:       enums,
+		DataClasses: structs,
+		Queries:     queries,
+	}
+
 	funcMap := template.FuncMap{
 		"lowerTitle": codegen.LowerTitle,
 		"comment":    codegen.DoubleSlashComment,
-		"imports":    KtImports(r, settings),
+		"imports":    i.Imports,
 		"offset":     Offset,
 	}
 
@@ -1003,12 +840,12 @@ func KtGenerate(r KtGenerateable, settings config.CombinedSettings) (map[string]
 
 	pkg := settings.Package
 	tctx := ktTmplCtx{
-		Settings:      settings.Global,
-		Q:             `"""`,
-		Package:       pkg.Gen.Kotlin.Package,
-		KtQueries:     r.KtQueries(settings),
-		Enums:         r.KtEnums(settings),
-		KtDataClasses: r.KtDataClasses(settings),
+		Settings:    settings.Global,
+		Q:           `"""`,
+		Package:     pkg.Gen.Kotlin.Package,
+		Queries:     queries,
+		Enums:       enums,
+		DataClasses: structs,
 	}
 
 	output := map[string]string{}
