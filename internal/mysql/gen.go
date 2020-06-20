@@ -11,7 +11,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/codegen"
 	"github.com/kyleconroy/sqlc/internal/codegen/golang"
 	"github.com/kyleconroy/sqlc/internal/config"
-	core "github.com/kyleconroy/sqlc/internal/pg"
+	"github.com/kyleconroy/sqlc/internal/core"
 )
 
 type PackageGenerator struct {

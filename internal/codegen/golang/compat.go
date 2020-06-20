@@ -1,7 +1,7 @@
 package golang
 
 import (
-	core "github.com/kyleconroy/sqlc/internal/pg"
+	"github.com/kyleconroy/sqlc/internal/core"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 )
 

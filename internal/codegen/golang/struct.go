@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/kyleconroy/sqlc/internal/config"
-	core "github.com/kyleconroy/sqlc/internal/pg"
+	"github.com/kyleconroy/sqlc/internal/core"
 )
 
 type Struct struct {

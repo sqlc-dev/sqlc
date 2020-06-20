@@ -2,8 +2,6 @@ package postgresql
 
 import (
 	nodes "github.com/lfittl/pg_query_go/nodes"
-
-	"github.com/kyleconroy/sqlc/internal/postgresql/ast"
 )
 
 func isArray(n *nodes.TypeName) bool {
@@ -33,10 +31,10 @@ func isNotNull(n nodes.ColumnDef) bool {
 
 func IsNamedParamFunc(node nodes.Node) bool {
 	fun, ok := node.(nodes.FuncCall)
-	return ok && ast.Join(fun.Funcname, ".") == "sqlc.arg"
+	return ok && join(fun.Funcname, ".") == "sqlc.arg"
 }
 
 func IsNamedParamSign(node nodes.Node) bool {
 	expr, ok := node.(nodes.A_Expr)
-	return ok && ast.Join(expr.Name, ".") == "@"
+	return ok && join(expr.Name, ".") == "@"
 }

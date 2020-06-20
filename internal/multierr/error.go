@@ -3,7 +3,6 @@ package multierr
 import (
 	"fmt"
 
-	"github.com/kyleconroy/sqlc/internal/pg"
 	"github.com/kyleconroy/sqlc/internal/source"
 	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
 )
@@ -26,11 +25,6 @@ type Error struct {
 func (e *Error) Add(filename, in string, loc int, err error) {
 	line := 1
 	column := 1
-	if lerr, ok := err.(pg.Error); ok {
-		if lerr.Location != 0 {
-			loc = lerr.Location
-		}
-	}
 	if lerr, ok := err.(*sqlerr.Error); ok {
 		if lerr.Location != 0 {
 			loc = lerr.Location
