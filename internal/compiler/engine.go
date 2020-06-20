@@ -3,10 +3,9 @@ package compiler
 import (
 	"fmt"
 
-	"github.com/kyleconroy/sqlc/internal/codegen/golang"
 	"github.com/kyleconroy/sqlc/internal/config"
-	"github.com/kyleconroy/sqlc/internal/dinosql"
 	"github.com/kyleconroy/sqlc/internal/dolphin"
+	"github.com/kyleconroy/sqlc/internal/opts"
 	"github.com/kyleconroy/sqlc/internal/postgresql"
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 	"github.com/kyleconroy/sqlc/internal/sqlite"
@@ -44,8 +43,8 @@ func (e *Engine) ParseCatalog(schema []string) error {
 	return parseCatalog(e.parser, e.catalog, schema)
 }
 
-func (e *Engine) ParseQueries(queries []string, opts dinosql.ParserOpts) error {
-	r, err := parseQueries(e.parser, e.catalog, e.conf.Queries)
+func (e *Engine) ParseQueries(queries []string, o opts.Parser) error {
+	r, err := parseQueries(e.parser, e.catalog, e.conf.Queries, o)
 	if err != nil {
 		return err
 	}
@@ -53,6 +52,6 @@ func (e *Engine) ParseQueries(queries []string, opts dinosql.ParserOpts) error {
 	return nil
 }
 
-func (e *Engine) Result() golang.Generateable {
+func (e *Engine) Result() *Result {
 	return e.result
 }

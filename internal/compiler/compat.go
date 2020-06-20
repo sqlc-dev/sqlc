@@ -4,22 +4,10 @@ import (
 	"fmt"
 	"strings"
 
-	core "github.com/kyleconroy/sqlc/internal/pg"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sql/ast/pg"
 	"github.com/kyleconroy/sqlc/internal/sql/astutils"
 )
-
-func sameTableName(n *ast.TableName, f core.FQN) bool {
-	if n == nil {
-		return false
-	}
-	schema := n.Schema
-	if n.Schema == "" {
-		schema = "public"
-	}
-	return n.Catalog == n.Catalog && schema == f.Schema && n.Name == f.Rel
-}
 
 // This is mainly copy-pasted from internal/postgresql/parse.go
 func stringSlice(list *ast.List) []string {
@@ -37,29 +25,29 @@ func stringSlice(list *ast.List) []string {
 	return items
 }
 
-type relation struct {
+type Relation struct {
 	Catalog string
 	Schema  string
 	Name    string
 }
 
-func parseRelation(node ast.Node) (*relation, error) {
+func parseRelation(node ast.Node) (*Relation, error) {
 	switch n := node.(type) {
 
 	case *ast.List:
 		parts := stringSlice(n)
 		switch len(parts) {
 		case 1:
-			return &relation{
+			return &Relation{
 				Name: parts[0],
 			}, nil
 		case 2:
-			return &relation{
+			return &Relation{
 				Schema: parts[0],
 				Name:   parts[1],
 			}, nil
 		case 3:
-			return &relation{
+			return &Relation{
 				Catalog: parts[0],
 				Schema:  parts[1],
 				Name:    parts[2],
@@ -69,7 +57,7 @@ func parseRelation(node ast.Node) (*relation, error) {
 		}
 
 	case *pg.RangeVar:
-		name := relation{}
+		name := Relation{}
 		if n.Catalogname != nil {
 			name.Catalog = *n.Catalogname
 		}
@@ -89,7 +77,7 @@ func parseRelation(node ast.Node) (*relation, error) {
 	}
 }
 
-func parseTableName(node ast.Node) (*ast.TableName, error) {
+func ParseTableName(node ast.Node) (*ast.TableName, error) {
 	rel, err := parseRelation(node)
 	if err != nil {
 		return nil, fmt.Errorf("parse table name: %w", err)
@@ -101,7 +89,7 @@ func parseTableName(node ast.Node) (*ast.TableName, error) {
 	}, nil
 }
 
-func parseTypeName(node ast.Node) (*ast.TypeName, error) {
+func ParseTypeName(node ast.Node) (*ast.TypeName, error) {
 	rel, err := parseRelation(node)
 	if err != nil {
 		return nil, fmt.Errorf("parse table name: %w", err)
@@ -113,20 +101,20 @@ func parseTypeName(node ast.Node) (*ast.TypeName, error) {
 	}, nil
 }
 
-func parseRelationString(name string) (*relation, error) {
+func ParseRelationString(name string) (*Relation, error) {
 	parts := strings.Split(name, ".")
 	switch len(parts) {
 	case 1:
-		return &relation{
+		return &Relation{
 			Name: parts[0],
 		}, nil
 	case 2:
-		return &relation{
+		return &Relation{
 			Schema: parts[0],
 			Name:   parts[1],
 		}, nil
 	case 3:
-		return &relation{
+		return &Relation{
 			Catalog: parts[0],
 			Schema:  parts[1],
 			Name:    parts[2],

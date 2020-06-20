@@ -17,6 +17,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/migrations"
 	"github.com/kyleconroy/sqlc/internal/multierr"
+	"github.com/kyleconroy/sqlc/internal/opts"
 	core "github.com/kyleconroy/sqlc/internal/pg"
 	"github.com/kyleconroy/sqlc/internal/postgres"
 	"github.com/kyleconroy/sqlc/internal/postgresql/ast"
@@ -128,11 +129,7 @@ type Result struct {
 	Catalog core.Catalog
 }
 
-type ParserOpts struct {
-	UsePositionalParameters bool
-}
-
-func ParseQueries(c core.Catalog, queriesPaths []string, opts ParserOpts) (*Result, error) {
+func ParseQueries(c core.Catalog, queriesPaths []string, o opts.Parser) (*Result, error) {
 	merr := multierr.New()
 	var q []*Query
 
@@ -154,7 +151,7 @@ func ParseQueries(c core.Catalog, queriesPaths []string, opts ParserOpts) (*Resu
 			continue
 		}
 		for _, stmt := range tree.Statements {
-			query, err := parseQuery(c, stmt, src, opts.UsePositionalParameters)
+			query, err := parseQuery(c, stmt, src, o.UsePositionalParameters)
 			if err == errUnsupportedStatementType {
 				continue
 			}

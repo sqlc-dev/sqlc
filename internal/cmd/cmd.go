@@ -69,13 +69,10 @@ var initCmd = &cobra.Command{
 }
 
 type Env struct {
-	ExperimentalParser bool
 }
 
 func ParseEnv() Env {
-	return Env{
-		ExperimentalParser: os.Getenv("SQLC_EXPERIMENTAL_PARSER") != "off",
-	}
+	return Env{}
 }
 
 var genCmd = &cobra.Command{

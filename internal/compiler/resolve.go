@@ -36,7 +36,7 @@ func resolveCatalogRefs(c *catalog.Catalog, rvs []*pg.RangeVar, args []paramRef,
 		if rv.Relname == nil {
 			continue
 		}
-		fqn, err := parseTableName(rv)
+		fqn, err := ParseTableName(rv)
 		if err != nil {
 			return nil, err
 		}
@@ -253,7 +253,7 @@ func resolveCatalogRefs(c *catalog.Catalog, rvs []*pg.RangeVar, args []paramRef,
 			schema := defaultTable.Schema
 			rel := defaultTable.Name
 			if ref.rv != nil {
-				fqn, err := parseTableName(ref.rv)
+				fqn, err := ParseTableName(ref.rv)
 				if err != nil {
 					return nil, err
 				}
