@@ -259,7 +259,7 @@ func (pGen PackageGenerator) goTypeCol(col Column) string {
 			return "float64"
 		}
 		return "sql.NullFloat64"
-	case "enum" == t, "ENUM" == t:
+	case "enum" == t:
 		return pGen.enumNameFromColDef(col.ColumnDefinition)
 	case "date" == t, "timestamp" == t, "datetime" == t, "time" == t:
 		if col.Type.NotNull {
