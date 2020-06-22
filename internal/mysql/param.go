@@ -110,12 +110,6 @@ func (pGen PackageGenerator) paramsInWhereExpr(e sqlparser.SQLNode, tableAliasMa
 	case *sqlparser.IsExpr:
 		// TODO: see if there is a use case for params in IS expressions
 		return []*Param{}, nil
-	case *sqlparser.ParenExpr:
-		expr, err := pGen.paramsInWhereExpr(v.Expr, tableAliasMap, defaultTable)
-		if err != nil {
-			return nil, err
-		}
-		params = append(params, expr...)
 	default:
 		panic(fmt.Sprintf("Failed to handle %T in where", v))
 	}
