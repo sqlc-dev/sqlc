@@ -30,7 +30,7 @@ func (r *Result) Enums(settings config.CombinedSettings) []golang.Enum {
 	var enums []golang.Enum
 	for _, table := range r.Schema.tables {
 		for _, col := range table {
-			if col.Type.Type == "enum" {
+			if strings.ToLower(col.Type.Type) == "enum" {
 				constants := []golang.Constant{}
 				enumName := r.enumNameFromColDef(col)
 				for _, c := range col.Type.EnumValues {
@@ -227,7 +227,7 @@ func (r *Result) columnsToStruct(name string, items []structParams, settings con
 }
 
 func (pGen PackageGenerator) goTypeCol(col Column) string {
-	mySQLType := col.ColumnDefinition.Type.Type
+	mySQLType := strings.ToLower(col.ColumnDefinition.Type.Type)
 	notNull := bool(col.Type.NotNull)
 	colName := col.Name.String()
 
@@ -259,7 +259,7 @@ func (pGen PackageGenerator) goTypeCol(col Column) string {
 			return "float64"
 		}
 		return "sql.NullFloat64"
-	case "enum" == t:
+	case "enum" == t, "ENUM" == t:
 		return pGen.enumNameFromColDef(col.ColumnDefinition)
 	case "date" == t, "timestamp" == t, "datetime" == t, "time" == t:
 		if col.Type.NotNull {
