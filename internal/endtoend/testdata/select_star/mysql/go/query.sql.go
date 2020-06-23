@@ -8,7 +8,7 @@ import (
 )
 
 const getAll = `-- name: GetAll :many
-select id, first_name, last_name, age from users
+SELECT id, first_name, last_name, age FROM users
 `
 
 func (q *Queries) GetAll(ctx context.Context) ([]User, error) {

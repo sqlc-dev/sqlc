@@ -7,8 +7,8 @@ import (
 )
 
 type User struct {
-	ID        int
+	ID        int32
 	FirstName string
 	LastName  sql.NullString
-	Age       int
+	Age       int32
 }
