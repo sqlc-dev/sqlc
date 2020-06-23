@@ -5,5 +5,9 @@ package querytest
 import ()
 
 type Campus struct {
-	ID int32
+	ID string
+}
+
+type Student struct {
+	ID string
 }

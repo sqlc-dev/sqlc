@@ -4,6 +4,10 @@ package querytest
 
 import ()
 
-type Foo struct {
-	Name string
+type Campus struct {
+	ID string
+}
+
+type Student struct {
+	ID string
 }
