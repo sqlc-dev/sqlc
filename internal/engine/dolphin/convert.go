@@ -1,6 +1,8 @@
 package dolphin
 
 import (
+	"fmt"
+
 	pcast "github.com/pingcap/parser/ast"
 	"github.com/pingcap/parser/types"
 
@@ -80,6 +82,16 @@ func convertCreateTableStmt(n *pcast.CreateTableStmt) ast.Node {
 	return create
 }
 
+func convertColumnNameExpr(n *pcast.ColumnNameExpr) *pg.ColumnRef {
+	return &pg.ColumnRef{
+		Fields: &ast.List{
+			Items: []ast.Node{
+				&pg.String{Str: n.Name.Name.String()},
+			},
+		},
+	}
+}
+
 func convertDropTableStmt(n *pcast.DropTableStmt) ast.Node {
 	drop := &ast.DropTableStmt{IfExists: n.IfExists}
 	for _, name := range n.Tables {
@@ -155,6 +167,9 @@ func convert(node pcast.Node) ast.Node {
 	case *pcast.AlterTableStmt:
 		return convertAlterTableStmt(n)
 
+	case *pcast.ColumnNameExpr:
+		return convertColumnNameExpr(n)
+
 	case *pcast.CreateTableStmt:
 		return convertCreateTableStmt(n)
 
@@ -165,6 +180,7 @@ func convert(node pcast.Node) ast.Node {
 		return convertSelectStmt(n)
 
 	default:
+		fmt.Printf("%T\n", n)
 		return &ast.TODO{}
 	}
 }
