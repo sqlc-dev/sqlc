@@ -76,6 +76,7 @@ const (
 	// Experimental engines
 	EngineXLemon   Engine = "_lemon"
 	EngineXDolphin Engine = "_dolphin"
+	EngineXVitess  Engine = "_vitess"
 )
 
 type Config struct {

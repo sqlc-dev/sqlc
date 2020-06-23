@@ -6,6 +6,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/davecgh/go-spew/spew"
+
 	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/source"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
@@ -53,6 +55,8 @@ func parseQuery(p Parser, c *catalog.Catalog, stmt ast.Node, src string, rewrite
 	default:
 		return nil, ErrUnsupportedStatementType
 	}
+
+	spew.Dump(raw)
 
 	rawSQL, err := source.Pluck(src, raw.StmtLocation, raw.StmtLen)
 	if err != nil {
@@ -111,6 +115,7 @@ func parseQuery(p Parser, c *catalog.Catalog, stmt ast.Node, src string, rewrite
 
 	// If the query string was edited, make sure the syntax is valid
 	if expanded != rawSQL {
+		fmt.Println("expanded", expanded)
 		if _, err := p.Parse(strings.NewReader(expanded)); err != nil {
 			return nil, fmt.Errorf("edited query syntax is invalid: %w", err)
 		}

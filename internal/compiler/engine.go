@@ -7,6 +7,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/engine/dolphin"
 	"github.com/kyleconroy/sqlc/internal/engine/postgresql"
 	"github.com/kyleconroy/sqlc/internal/engine/sqlite"
+	"github.com/kyleconroy/sqlc/internal/engine/vitess"
 	"github.com/kyleconroy/sqlc/internal/opts"
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 )
@@ -27,7 +28,10 @@ func NewEngine(conf config.SQL, combo config.CombinedSettings) *Engine {
 	case config.EngineXLemon:
 		e.parser = sqlite.NewParser()
 		e.catalog = catalog.New("main")
-	case config.EngineMySQL, config.EngineXDolphin:
+	case config.EngineXVitess:
+		e.parser = vitess.NewParser()
+		e.catalog = catalog.New("public") // TODO: What is the default database for MySQL?
+	case config.EngineXDolphin:
 		e.parser = dolphin.NewParser()
 		e.catalog = catalog.New("public") // TODO: What is the default database for MySQL?
 	case config.EnginePostgreSQL:
