@@ -46,18 +46,25 @@ func TestExamples(t *testing.T) {
 
 func TestReplay(t *testing.T) {
 	t.Parallel()
-	files, err := ioutil.ReadDir("testdata")
+	var dirs []string
+	err := filepath.Walk("testdata", func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.Name() == "sqlc.json" || info.Name() == "sqlc.yaml" {
+			dirs = append(dirs, filepath.Dir(path))
+			return filepath.SkipDir
+		}
+		return nil
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, replay := range files {
-		if !replay.IsDir() {
-			continue
-		}
-		tc := replay.Name()
+	for _, replay := range dirs {
+		tc := replay
 		t.Run(tc, func(t *testing.T) {
 			t.Parallel()
-			path, _ := filepath.Abs(filepath.Join("testdata", tc))
+			path, _ := filepath.Abs(tc)
 			var stderr bytes.Buffer
 			expected := expectedStderr(t, path)
 			output, err := cmd.Generate(cmd.Env{}, path, &stderr)
