@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"path/filepath"
 
-	"github.com/davecgh/go-spew/spew"
 	"vitess.io/vitess/go/vt/sqlparser"
 
 	"github.com/kyleconroy/sqlc/internal/config"
@@ -222,7 +221,7 @@ func parseFrom(from sqlparser.TableExprs, isLeftJoined bool) (FromTables, string
 		case *sqlparser.AliasedTableExpr:
 			name, ok := v.Expr.(sqlparser.TableName)
 			if !ok {
-				return nil, "", fmt.Errorf("failed to parse AliasedTableExpr name: %v", spew.Sdump(v))
+				return nil, "", fmt.Errorf("failed to parse AliasedTableExpr name: %v", v)
 			}
 			t := FromTable{
 				TrueName:     name.Name.String(),
@@ -250,7 +249,7 @@ func parseFrom(from sqlparser.TableExprs, isLeftJoined bool) (FromTables, string
 			}
 			return right, leftMostTableName, nil
 		default:
-			return nil, "", fmt.Errorf("failed to parse table expr: %v", spew.Sdump(v))
+			return nil, "", fmt.Errorf("failed to parse table expr: %v", v)
 		}
 	}
 	return tables, defaultTableName, nil
