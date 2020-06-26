@@ -28,7 +28,7 @@ func goInnerType(r *compiler.Result, col *compiler.Column, settings config.Combi
 
 	// package overrides have a higher precedence
 	for _, oride := range settings.Overrides {
-		if oride.DBType != "" && oride.DBType == columnType && oride.Null != notNull {
+		if oride.DBType != "" && oride.DBType == columnType && oride.Nullable != notNull {
 			return oride.GoTypeName
 		}
 	}
