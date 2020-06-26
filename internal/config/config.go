@@ -140,7 +140,9 @@ type Override struct {
 	Engine Engine `json:"engine,omitempty" yaml:"engine"`
 
 	// True if the GoType should override if the maching postgres type is nullable
-	Null bool `json:"null" yaml:"null"`
+	Nullable bool `json:"nullable" yaml:"nullable"`
+	// Deprecated. Use the `nullable` property instead
+	Deprecated_Null bool `json:"null" yaml:"null"`
 
 	// fully qualified name of the column, e.g. `accounts.id`
 	Column string `json:"column" yaml:"column"`
@@ -161,6 +163,12 @@ func (o *Override) Parse() error {
 			return fmt.Errorf(`Type override configurations cannot have "db_type" and "postres_type" together. Use "db_type" alone`)
 		}
 		o.DBType = o.Deprecated_PostgresType
+	}
+
+	// validate deprecated null field
+	if o.Deprecated_Null {
+		fmt.Fprintf(os.Stderr, "WARNING: \"null\" is deprecated. Instead, use the \"nullable\" field.\n")
+		o.Nullable = true
 	}
 
 	// validate option combinations
