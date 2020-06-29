@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	github.com/antlr/antlr4 v0.0.0-20200209180723-1177c0b58d07
+	github.com/davecgh/go-spew v1.1.1
 	github.com/google/go-cmp v0.4.0
 	github.com/jinzhu/inflection v1.0.0
 	github.com/lfittl/pg_query_go v1.0.0

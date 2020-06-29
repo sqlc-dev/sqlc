@@ -91,6 +91,12 @@ func Generate(e Env, dir string, stderr io.Writer) (map[string]string, error) {
 		return nil, err
 	}
 
+	debug, err := opts.DebugFromEnv()
+	if err != nil {
+		fmt.Fprintf(stderr, "error parsing SQLCDEBUG: %s\n", err)
+		return nil, err
+	}
+
 	output := map[string]string{}
 	errored := false
 
@@ -127,7 +133,9 @@ func Generate(e Env, dir string, stderr io.Writer) (map[string]string, error) {
 		sql.Queries = joined
 
 		var name string
-		parseOpts := opts.Parser{}
+		parseOpts := opts.Parser{
+			Debug: debug,
+		}
 		if sql.Gen.Go != nil {
 			name = combo.Go.Package
 		} else if sql.Gen.Kotlin != nil {

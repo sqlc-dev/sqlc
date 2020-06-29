@@ -104,7 +104,7 @@ func parseQueries(p Parser, c *catalog.Catalog, queries []string, o opts.Parser)
 			continue
 		}
 		for _, stmt := range stmts {
-			query, err := parseQuery(p, c, stmt.Raw, src, o.UsePositionalParameters)
+			query, err := parseQuery(p, c, stmt.Raw, src, o)
 			if err == ErrUnsupportedStatementType {
 				continue
 			}

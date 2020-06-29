@@ -6,7 +6,9 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/kyleconroy/sqlc/internal/debug"
 	"github.com/kyleconroy/sqlc/internal/metadata"
+	"github.com/kyleconroy/sqlc/internal/opts"
 	"github.com/kyleconroy/sqlc/internal/source"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sql/ast/pg"
@@ -30,7 +32,10 @@ func rewriteNumberedParameters(refs []paramRef, raw *ast.RawStmt, sql string) ([
 	return edits, nil
 }
 
-func parseQuery(p Parser, c *catalog.Catalog, stmt ast.Node, src string, rewriteParameters bool) (*Query, error) {
+func parseQuery(p Parser, c *catalog.Catalog, stmt ast.Node, src string, o opts.Parser) (*Query, error) {
+	if o.Debug.DumpAST {
+		debug.Dump(stmt)
+	}
 	if err := validate.ParamStyle(stmt); err != nil {
 		return nil, err
 	}
@@ -75,7 +80,7 @@ func parseQuery(p Parser, c *catalog.Catalog, stmt ast.Node, src string, rewrite
 	raw, namedParams, edits := rewrite.NamedParameters(raw)
 	rvs := rangeVars(raw.Stmt)
 	refs := findParameters(raw.Stmt)
-	if rewriteParameters {
+	if o.UsePositionalParameters {
 		edits, err = rewriteNumberedParameters(refs, raw, rawSQL)
 		if err != nil {
 			return nil, err
