@@ -19,3 +19,19 @@ func parseTableName(c tableNamer) *ast.TableName {
 	}
 	return &name
 }
+
+func hasNotNullConstraint(checks []parser.IColumn_constraintContext) bool {
+	for i := range checks {
+		constraint, ok := checks[i].(*parser.Column_constraintContext)
+		if !ok {
+			continue
+		}
+		if constraint.K_PRIMARY() != nil && constraint.K_KEY() != nil {
+			return true
+		}
+		if constraint.K_NOT() != nil && constraint.K_NULL() != nil {
+			return true
+		}
+	}
+	return false
+}

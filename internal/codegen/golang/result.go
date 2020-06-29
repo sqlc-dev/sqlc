@@ -182,8 +182,7 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 					c := query.Columns[i]
 					sameName := f.Name == StructName(columnName(c, i), settings)
 					sameType := f.Type == goType(r, c, settings)
-					sameTable := sameTableName(c.Table, s.Table)
-
+					sameTable := sameTableName(c.Table, s.Table, r.Catalog.DefaultSchema)
 					if !sameName || !sameType || !sameTable {
 						same = false
 					}

@@ -14,6 +14,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/codegen/kotlin"
 	"github.com/kyleconroy/sqlc/internal/compiler"
 	"github.com/kyleconroy/sqlc/internal/config"
+	"github.com/kyleconroy/sqlc/internal/debug"
 	"github.com/kyleconroy/sqlc/internal/multierr"
 	"github.com/kyleconroy/sqlc/internal/mysql"
 	"github.com/kyleconroy/sqlc/internal/opts"
@@ -218,6 +219,9 @@ func parse(e Env, name, dir string, sql config.SQL, combo config.CombinedSetting
 			fmt.Fprintf(stderr, "error parsing schema: %s\n", err)
 		}
 		return nil, true
+	}
+	if parserOpts.Debug.DumpCatalog {
+		debug.Dump(eng.Catalog())
 	}
 	if err := eng.ParseQueries(sql.Queries, parserOpts); err != nil {
 		fmt.Fprintf(stderr, "# package %s\n", name)

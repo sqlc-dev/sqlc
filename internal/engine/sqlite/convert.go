@@ -69,10 +69,9 @@ func convertCreate_table_stmtContext(c *parser.Create_table_stmtContext) ast.Nod
 	for _, idef := range c.AllColumn_def() {
 		if def, ok := idef.(*parser.Column_defContext); ok {
 			stmt.Cols = append(stmt.Cols, &ast.ColumnDef{
-				Colname: def.Column_name().GetText(),
-				TypeName: &ast.TypeName{
-					Name: def.Type_name().GetText(),
-				},
+				Colname:   def.Column_name().GetText(),
+				IsNotNull: hasNotNullConstraint(def.AllColumn_constraint()),
+				TypeName:  &ast.TypeName{Name: def.Type_name().GetText()},
 			})
 		}
 	}
@@ -84,6 +83,10 @@ func convertDrop_table_stmtContext(c *parser.Drop_table_stmtContext) ast.Node {
 		IfExists: c.K_EXISTS() != nil,
 		Tables:   []*ast.TableName{parseTableName(c)},
 	}
+}
+
+func convertExprContext(c *parser.ExprContext) ast.Node {
+	return &ast.TODO{}
 }
 
 func convertFactored_select_stmtContext(c *parser.Factored_select_stmtContext) ast.Node {
@@ -99,18 +102,27 @@ func convertFactored_select_stmtContext(c *parser.Factored_select_stmtContext) a
 			if !ok {
 				continue
 			}
+			var val ast.Node
 			iexpr := col.Expr()
-			if iexpr == nil {
+			switch {
+			case col.STAR() != nil:
+				val = &pg.ColumnRef{
+					Fields: &ast.List{
+						Items: []ast.Node{
+							&pg.A_Star{},
+						},
+					},
+					Location: col.GetStart().GetStart(),
+				}
+			case iexpr != nil:
+				val = convert(iexpr)
+			}
+			if val == nil {
 				continue
 			}
-			expr, ok := iexpr.(*parser.ExprContext)
-			if !ok {
-				continue
-			}
-			cols = append(cols, &ast.ResTarget{
-				Val: &ast.ColumnRef{
-					Name: expr.Column_name().GetText(),
-				},
+			cols = append(cols, &pg.ResTarget{
+				Val:      val,
+				Location: col.GetStart().GetStart(),
 			})
 		}
 		for _, ifrom := range core.AllTable_or_subquery() {
@@ -118,11 +130,14 @@ func convertFactored_select_stmtContext(c *parser.Factored_select_stmtContext) a
 			if !ok {
 				continue
 			}
-			name := ast.TableName{
-				Name: from.Table_name().GetText(),
+			rel := from.Table_name().GetText()
+			name := pg.RangeVar{
+				Relname:  &rel,
+				Location: from.GetStart().GetStart(),
 			}
 			if from.Schema_name() != nil {
-				name.Schema = from.Schema_name().GetText()
+				text := from.Schema_name().GetText()
+				name.Schemaname = &text
 			}
 			tables = append(tables, &name)
 		}
@@ -241,6 +256,9 @@ func convert(node node) ast.Node {
 
 	case *parser.Drop_table_stmtContext:
 		return convertDrop_table_stmtContext(n)
+
+	case *parser.ExprContext:
+		return convertExprContext(n)
 
 	case *parser.Factored_select_stmtContext:
 		return convertFactored_select_stmtContext(n)

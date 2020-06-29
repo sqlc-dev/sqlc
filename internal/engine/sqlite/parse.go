@@ -65,6 +65,7 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 		if !ok {
 			return nil, fmt.Errorf("expected Sql_stmt_listContext; got %T\n", istmt)
 		}
+		loc := 0
 		for _, stmt := range list.AllSql_stmt() {
 			out := convert(stmt)
 			if _, ok := out.(*ast.TODO); ok {
@@ -73,11 +74,11 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 			stmts = append(stmts, ast.Statement{
 				Raw: &ast.RawStmt{
 					Stmt:         out,
-					StmtLocation: stmt.GetStart().GetStart(),
-					// TODO: Understand why we need to add one
-					StmtLen: stmt.GetStop().GetStop() - stmt.GetStart().GetStart() + 1,
+					StmtLocation: loc,
+					StmtLen:      stmt.GetStop().GetStop() - loc + 1,
 				},
 			})
+			loc = stmt.GetStop().GetStop() - loc
 		}
 	}
 	return stmts, nil
