@@ -69,10 +69,9 @@ func convertCreate_table_stmtContext(c *parser.Create_table_stmtContext) ast.Nod
 	for _, idef := range c.AllColumn_def() {
 		if def, ok := idef.(*parser.Column_defContext); ok {
 			stmt.Cols = append(stmt.Cols, &ast.ColumnDef{
-				Colname: def.Column_name().GetText(),
-				TypeName: &ast.TypeName{
-					Name: def.Type_name().GetText(),
-				},
+				Colname:   def.Column_name().GetText(),
+				IsNotNull: hasNotNullConstraint(def.AllColumn_constraint()),
+				TypeName:  &ast.TypeName{Name: def.Type_name().GetText()},
 			})
 		}
 	}
