@@ -39,6 +39,10 @@ func NewEngine(conf config.SQL, combo config.CombinedSettings) *Engine {
 	return e
 }
 
+func (e *Engine) Catalog() *catalog.Catalog {
+	return e.catalog
+}
+
 func (e *Engine) ParseCatalog(schema []string) error {
 	return parseCatalog(e.parser, e.catalog, schema)
 }

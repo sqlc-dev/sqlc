@@ -8,7 +8,8 @@ import (
 func goType(r *compiler.Result, col *compiler.Column, settings config.CombinedSettings) string {
 	// package overrides have a higher precedence
 	for _, oride := range settings.Overrides {
-		if oride.Column != "" && oride.ColumnName == col.Name && sameTableName(col.Table, oride.Table) {
+		sameTable := sameTableName(col.Table, oride.Table, r.Catalog.DefaultSchema)
+		if oride.Column != "" && oride.ColumnName == col.Name && sameTable {
 			return oride.GoTypeName
 		}
 	}
