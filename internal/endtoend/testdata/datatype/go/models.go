@@ -56,6 +56,9 @@ type DtNumeric struct {
 	H int16
 	I sql.NullInt32
 	J sql.NullInt64
+	K int16
+	L sql.NullInt32
+	M sql.NullInt64
 }
 
 type DtNumericNotNull struct {
@@ -69,4 +72,7 @@ type DtNumericNotNull struct {
 	H int16
 	I int32
 	J int64
+	K int16
+	L int32
+	M int64
 }
