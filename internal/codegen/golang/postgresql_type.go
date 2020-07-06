@@ -34,13 +34,13 @@ func postgresType(r *compiler.Result, col *compiler.Column, settings config.Comb
 		}
 		return "sql.NullInt32"
 
-	case "bigint", "pg_catalog.int8":
+	case "bigint", "int8", "pg_catalog.int8":
 		if notNull {
 			return "int64"
 		}
 		return "sql.NullInt64"
 
-	case "smallint", "pg_catalog.int2":
+	case "smallint", "int2", "pg_catalog.int2":
 		return "int16"
 
 	case "float", "double precision", "pg_catalog.float8":
