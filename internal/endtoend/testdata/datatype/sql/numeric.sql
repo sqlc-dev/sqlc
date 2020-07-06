@@ -12,7 +12,11 @@ CREATE TABLE dt_numeric (
     -- TODO: this maps incorrectly to int16, not NullInt16
     h smallserial,
     i serial,
-    j bigserial
+    j bigserial,
+    -- TODO: this maps incorrectly to int16, not NullInt16
+    k int2,
+    l int4,
+    m int8
 );
 
 CREATE TABLE dt_numeric_not_null (
@@ -25,5 +29,8 @@ CREATE TABLE dt_numeric_not_null (
     g double precision NOT NULL,
     h smallserial NOT NULL,
     i serial NOT NULL,
-    j bigserial NOT NULL
+    j bigserial NOT NULL,
+    k int2 NOT NULL,
+    l int4 NOT NULL,
+    m int8 NOT NULL
 );
