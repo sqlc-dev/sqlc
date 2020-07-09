@@ -18,7 +18,7 @@ jobs:
       uses: actions/setup-go@v2
       with:
         go-version: '1.14'
-    - run: brew install eqnxio/equinox/release-tool
+    - uses: equinox-io/setup@master
     - name: equinox release
       env:
         EQUINOX_API_TOKEN: ${{ secrets.EQUINOX_API_TOKEN }}
@@ -35,8 +35,7 @@ jobs:
       uses: actions/setup-go@v2
       with:
         go-version: '1.14'
-    - run: curl -O https://bin.equinox.io/c/mBWdkfai63v/release-tool-stable-linux-amd64.tgz
-    - run: tar -xzvf release-tool-stable-linux-amd64.tgz
+    - uses: equinox-io/setup@master
     - name: equinox release
       env:
         EQUINOX_API_TOKEN: ${{ secrets.EQUINOX_API_TOKEN }}
