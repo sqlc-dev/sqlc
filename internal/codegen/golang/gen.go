@@ -339,7 +339,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, er
 {{end -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (sql.Result, error) {
   	{{- if $.EmitPreparedQueries}}
-	return := q.exec(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
+	return q.exec(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
   	{{- else}}
 	return q.db.ExecContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
   	{{- end}}
