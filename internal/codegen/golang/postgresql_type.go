@@ -104,7 +104,7 @@ func postgresType(r *compiler.Result, col *compiler.Column, settings config.Comb
 	case "uuid":
 		return "uuid.UUID"
 
-	case "inet":
+	case "inet", "cidr":
 		return "net.IP"
 
 	case "macaddr", "macaddr8":
@@ -120,6 +120,12 @@ func postgresType(r *compiler.Result, col *compiler.Column, settings config.Comb
 			return "string"
 		}
 		return "sql.NullString"
+
+	case "pg_catalog.interval":
+		if notNull {
+			return "int64"
+		}
+		return "sql.NullInt64"
 
 	case "void":
 		// A void value always returns NULL. Since there is no built-in NULL
