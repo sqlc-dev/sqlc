@@ -44,6 +44,30 @@ func TestExamples(t *testing.T) {
 	}
 }
 
+func BenchmarkExamples(b *testing.B) {
+	examples, err := filepath.Abs(filepath.Join("..", "..", "examples"))
+	if err != nil {
+		b.Fatal(err)
+	}
+	files, err := ioutil.ReadDir(examples)
+	if err != nil {
+		b.Fatal(err)
+	}
+	for _, replay := range files {
+		if !replay.IsDir() {
+			continue
+		}
+		tc := replay.Name()
+		b.Run(tc, func(b *testing.B) {
+			path := filepath.Join(examples, tc)
+			var stderr bytes.Buffer
+			for i := 0; i < b.N; i++ {
+				cmd.Generate(cmd.Env{}, path, &stderr)
+			}
+		})
+	}
+}
+
 func TestReplay(t *testing.T) {
 	t.Parallel()
 	var dirs []string
@@ -138,4 +162,31 @@ func expectedStderr(t *testing.T, dir string) string {
 		return string(blob)
 	}
 	return ""
+}
+
+func BenchmarkReplay(b *testing.B) {
+	var dirs []string
+	err := filepath.Walk("testdata", func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.Name() == "sqlc.json" || info.Name() == "sqlc.yaml" {
+			dirs = append(dirs, filepath.Dir(path))
+			return filepath.SkipDir
+		}
+		return nil
+	})
+	if err != nil {
+		b.Fatal(err)
+	}
+	for _, replay := range dirs {
+		tc := replay
+		b.Run(tc, func(b *testing.B) {
+			path, _ := filepath.Abs(tc)
+			var stderr bytes.Buffer
+			for i := 0; i < b.N; i++ {
+				cmd.Generate(cmd.Env{}, path, &stderr)
+			}
+		})
+	}
 }
