@@ -60,8 +60,8 @@ func BenchmarkExamples(b *testing.B) {
 		tc := replay.Name()
 		b.Run(tc, func(b *testing.B) {
 			path := filepath.Join(examples, tc)
-			var stderr bytes.Buffer
 			for i := 0; i < b.N; i++ {
+				var stderr bytes.Buffer
 				cmd.Generate(cmd.Env{}, path, &stderr)
 			}
 		})
@@ -183,8 +183,8 @@ func BenchmarkReplay(b *testing.B) {
 		tc := replay
 		b.Run(tc, func(b *testing.B) {
 			path, _ := filepath.Abs(tc)
-			var stderr bytes.Buffer
 			for i := 0; i < b.N; i++ {
+				var stderr bytes.Buffer
 				cmd.Generate(cmd.Env{}, path, &stderr)
 			}
 		})
