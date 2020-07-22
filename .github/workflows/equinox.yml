@@ -9,6 +9,17 @@ on:
 
 jobs:
 
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Go 1.14
+      uses: actions/setup-go@v2
+      with:
+        go-version: '1.14'
+    - uses: equinox-io/setup@master
+    - run: go test -bench . -json -benchmem -run=XXX ./...
+
   macos:
     name: release --platforms darwin
     runs-on: macos-latest
@@ -28,7 +39,7 @@ jobs:
   linux:
     name: release --platforms linux
     runs-on: ubuntu-latest
-    needs: [macos]
+    needs: [macos, benchmark]
     steps:
     - uses: actions/checkout@v2
     - name: Set up Go 1.14
