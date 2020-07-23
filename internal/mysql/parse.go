@@ -451,7 +451,7 @@ func (pGen PackageGenerator) parseSelectAliasExpr(exprs sqlparser.SelectExprs, t
 					Name: returnVal,
 					Type: sqlparser.ColumnType{
 						Type:    funcType,
-						NotNull: false,
+						NotNull: sqlparser.BoolVal(!functionIsNullable(funcName)),
 					},
 				}
 				cols = append(cols, Column{colDfn, ""}) // func returns types don't originate from a table schema
