@@ -123,8 +123,7 @@ func (pGen PackageGenerator) parseQueryString(tree sqlparser.Statement, query st
 		}
 		parsedQuery = delete
 	case *sqlparser.DDL:
-		pGen.Schema.Add(tree)
-		return nil, nil
+		return nil, pGen.Schema.Add(tree)
 	default:
 		// panic("Unsupported SQL statement type")
 		return nil, nil

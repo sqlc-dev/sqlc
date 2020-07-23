@@ -127,6 +127,20 @@ func (r *Result) GoQueries(settings config.CombinedSettings) []golang.Query {
 
 			structInfo := make([]structParams, len(query.Params))
 			for i := range query.Params {
+				qp := query.Params[i]
+				if qp.Typ == "" {
+					// if the param doesn't have a type, check to see if there is
+					// another param with the same name that does have a type.
+					// Because of the way params are parsed and named this only works for sqlc.arg(x) named params, not :x or ?
+					func(ps []*Param) {
+						for j := range ps {
+							if ps[j].OriginalName == qp.OriginalName &&
+								ps[j].Typ != "" {
+								query.Params[i].Typ = ps[j].Typ
+							}
+						}
+					}(query.Params)
+				}
 				structInfo[i] = structParams{
 					originalName: query.Params[i].Name,
 					goType:       query.Params[i].Typ,
