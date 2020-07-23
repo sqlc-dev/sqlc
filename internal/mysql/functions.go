@@ -18,3 +18,15 @@ func functionReturnType(f string) string {
 		panic(fmt.Sprintf("unknown mysql function type \"%v\"", f))
 	}
 }
+
+// returns true if MySQL function can return null.
+// See: https://dev.mysql.com/doc/refman/8.0/en/function-reference.html
+func functionIsNullable(f string) bool {
+	switch f {
+	case "avg", "sum", "min", "max", "mod",
+		"concat", "left", "find_in_set", "group_concat":
+		return true
+	default:
+		return false
+	}
+}
