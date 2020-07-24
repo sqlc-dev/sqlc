@@ -152,11 +152,15 @@ func convertTableRefsClause(n *pcast.TableRefsClause) *ast.List {
 }
 
 func convertWildCardField(n *pcast.WildCardField) *pg.ColumnRef {
+	items := []ast.Node{}
+	if t := n.Table.String(); t != "" {
+		items = append(items, &pg.String{Str: t})
+	}
+	items = append(items, &pg.A_Star{})
+
 	return &pg.ColumnRef{
 		Fields: &ast.List{
-			Items: []ast.Node{
-				&pg.A_Star{},
-			},
+			Items: items,
 		},
 	}
 }

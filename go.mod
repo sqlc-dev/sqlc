@@ -16,3 +16,5 @@ require (
 	gopkg.in/yaml.v3 v3.0.0-20200121175148-a6ecf24a6d71
 	vitess.io/vitess v0.0.0-20200617014457-5ba6549015c0
 )
+
+replace github.com/pingcap/parser => github.com/kyleconroy/parser v3.1.2+incompatible
