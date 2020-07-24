@@ -13,7 +13,6 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sql/ast/pg"
 	"github.com/kyleconroy/sqlc/internal/sql/astutils"
-	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 	"github.com/kyleconroy/sqlc/internal/sql/rewrite"
 	"github.com/kyleconroy/sqlc/internal/sql/validate"
 )
@@ -32,7 +31,7 @@ func rewriteNumberedParameters(refs []paramRef, raw *ast.RawStmt, sql string) ([
 	return edits, nil
 }
 
-func parseQuery(p Parser, c *catalog.Catalog, stmt ast.Node, src string, o opts.Parser) (*Query, error) {
+func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query, error) {
 	if o.Debug.DumpAST {
 		debug.Dump(stmt)
 	}
@@ -66,10 +65,10 @@ func parseQuery(p Parser, c *catalog.Catalog, stmt ast.Node, src string, o opts.
 	if rawSQL == "" {
 		return nil, errors.New("missing semicolon at end of file")
 	}
-	if err := validate.FuncCall(c, raw); err != nil {
+	if err := validate.FuncCall(c.catalog, raw); err != nil {
 		return nil, err
 	}
-	name, cmd, err := metadata.Parse(strings.TrimSpace(rawSQL), p.CommentSyntax())
+	name, cmd, err := metadata.Parse(strings.TrimSpace(rawSQL), c.parser.CommentSyntax())
 	if err != nil {
 		return nil, err
 	}
@@ -89,12 +88,12 @@ func parseQuery(p Parser, c *catalog.Catalog, stmt ast.Node, src string, o opts.
 		refs = uniqueParamRefs(refs)
 		sort.Slice(refs, func(i, j int) bool { return refs[i].ref.Number < refs[j].ref.Number })
 	}
-	params, err := resolveCatalogRefs(c, rvs, refs, namedParams)
+	params, err := resolveCatalogRefs(c.catalog, rvs, refs, namedParams)
 	if err != nil {
 		return nil, err
 	}
 
-	qc, err := buildQueryCatalog(c, raw.Stmt)
+	qc, err := buildQueryCatalog(c.catalog, raw.Stmt)
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +102,7 @@ func parseQuery(p Parser, c *catalog.Catalog, stmt ast.Node, src string, o opts.
 		return nil, err
 	}
 
-	expandEdits, err := expand(qc, raw)
+	expandEdits, err := c.expand(qc, raw)
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +115,7 @@ func parseQuery(p Parser, c *catalog.Catalog, stmt ast.Node, src string, o opts.
 
 	// If the query string was edited, make sure the syntax is valid
 	if expanded != rawSQL {
-		if _, err := p.Parse(strings.NewReader(expanded)); err != nil {
+		if _, err := c.parser.Parse(strings.NewReader(expanded)); err != nil {
 			return nil, fmt.Errorf("edited query syntax is invalid: %w", err)
 		}
 	}

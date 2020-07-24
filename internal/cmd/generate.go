@@ -208,8 +208,8 @@ func parseMySQL(e Env, name, dir string, sql config.SQL, combo config.CombinedSe
 }
 
 func parse(e Env, name, dir string, sql config.SQL, combo config.CombinedSettings, parserOpts opts.Parser, stderr io.Writer) (*compiler.Result, bool) {
-	eng := compiler.NewEngine(sql, combo)
-	if err := eng.ParseCatalog(sql.Schema); err != nil {
+	c := compiler.NewCompiler(sql, combo)
+	if err := c.ParseCatalog(sql.Schema); err != nil {
 		fmt.Fprintf(stderr, "# package %s\n", name)
 		if parserErr, ok := err.(*multierr.Error); ok {
 			for _, fileErr := range parserErr.Errs() {
@@ -221,9 +221,9 @@ func parse(e Env, name, dir string, sql config.SQL, combo config.CombinedSetting
 		return nil, true
 	}
 	if parserOpts.Debug.DumpCatalog {
-		debug.Dump(eng.Catalog())
+		debug.Dump(c.Catalog())
 	}
-	if err := eng.ParseQueries(sql.Queries, parserOpts); err != nil {
+	if err := c.ParseQueries(sql.Queries, parserOpts); err != nil {
 		fmt.Fprintf(stderr, "# package %s\n", name)
 		if parserErr, ok := err.(*multierr.Error); ok {
 			for _, fileErr := range parserErr.Errs() {
@@ -234,5 +234,5 @@ func parse(e Env, name, dir string, sql config.SQL, combo config.CombinedSetting
 		}
 		return nil, true
 	}
-	return eng.Result(), false
+	return c.Result(), false
 }

@@ -2,6 +2,7 @@ package dolphin
 
 import (
 	"fmt"
+	"os"
 
 	pcast "github.com/pingcap/parser/ast"
 	"github.com/pingcap/parser/types"
@@ -209,8 +210,9 @@ func convert(node pcast.Node) ast.Node {
 		return nil
 
 	default:
-		// TODO: Handle nil
-		fmt.Printf("%T\n", n)
+		if os.Getenv("SQLCDEBUG") != "" {
+			fmt.Printf("dolphin.convert: Unknown node type %T\n", n)
+		}
 		return &ast.TODO{}
 	}
 }
