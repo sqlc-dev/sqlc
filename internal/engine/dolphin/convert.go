@@ -100,6 +100,14 @@ func convertDropTableStmt(n *pcast.DropTableStmt) ast.Node {
 	return drop
 }
 
+func convertExistsSubqueryExpr(n *pcast.ExistsSubqueryExpr) *pg.SubLink {
+	sublink := &pg.SubLink{}
+	if ss, ok := convert(n.Sel).(*pg.SelectStmt); ok {
+		sublink.Subselect = ss
+	}
+	return sublink
+}
+
 func convertFieldList(n *pcast.FieldList) *ast.List {
 	fields := make([]ast.Node, len(n.Fields))
 	for i := range n.Fields {
@@ -129,9 +137,14 @@ func convertSelectField(n *pcast.SelectField) *pg.ResTarget {
 
 func convertSelectStmt(n *pcast.SelectStmt) *pg.SelectStmt {
 	return &pg.SelectStmt{
-		TargetList: convertFieldList(n.Fields),
-		FromClause: convertTableRefsClause(n.From),
+		TargetList:  convertFieldList(n.Fields),
+		FromClause:  convertTableRefsClause(n.From),
+		WhereClause: convert(n.Where),
 	}
+}
+
+func convertSubqueryExpr(n *pcast.SubqueryExpr) ast.Node {
+	return convert(n.Query)
 }
 
 func convertTableRefsClause(n *pcast.TableRefsClause) *ast.List {
@@ -171,6 +184,9 @@ func convert(node pcast.Node) ast.Node {
 	case *pcast.AlterTableStmt:
 		return convertAlterTableStmt(n)
 
+	case *pcast.BinaryOperationExpr:
+		return &ast.TODO{}
+
 	case *pcast.ColumnNameExpr:
 		return convertColumnNameExpr(n)
 
@@ -180,10 +196,20 @@ func convert(node pcast.Node) ast.Node {
 	case *pcast.DropTableStmt:
 		return convertDropTableStmt(n)
 
+	case *pcast.ExistsSubqueryExpr:
+		return convertExistsSubqueryExpr(n)
+
 	case *pcast.SelectStmt:
 		return convertSelectStmt(n)
 
+	case *pcast.SubqueryExpr:
+		return convertSubqueryExpr(n)
+
+	case nil:
+		return nil
+
 	default:
+		// TODO: Handle nil
 		fmt.Printf("%T\n", n)
 		return &ast.TODO{}
 	}
