@@ -63,6 +63,18 @@ func (s *Schema) Add(ddl *sqlparser.DDL) error {
 			return fmt.Errorf("failed to parse table \"%s\" schema", name)
 		}
 		s.tables[name] = ddl.TableSpec.Columns
+	case "rename":
+		if len(ddl.FromTables) != 1 || len(ddl.ToTables) != 1 {
+			return fmt.Errorf("rename without one 'from' table and one 'to' table: %#v", ddl)
+		}
+		from := ddl.FromTables[0].Name.String()
+		to := ddl.ToTables[0].Name.String()
+		cols, ok := s.tables[from]
+		if !ok {
+			return fmt.Errorf("unknown existing table %q", from)
+		}
+		delete(s.tables, from)
+		s.tables[to] = cols
 	}
 	return nil
 }
