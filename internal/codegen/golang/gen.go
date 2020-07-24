@@ -238,7 +238,7 @@ import (
 {{range .GoQueries}}
 {{if $.OutputQuery .SourceName}}
 const {{.ConstantName}} = {{$.Q}}-- name: {{.MethodName}} {{.Cmd}}
-{{.SQL}}
+{{escape .SQL}}
 {{$.Q}}
 
 {{if .Arg.EmitStruct}}
@@ -393,6 +393,7 @@ func generate(settings config.CombinedSettings, enums []Enum, structs []Struct, 
 	funcMap := template.FuncMap{
 		"lowerTitle": codegen.LowerTitle,
 		"comment":    codegen.DoubleSlashComment,
+		"escape":     codegen.EscapeBacktick,
 		"imports":    i.Imports,
 	}
 

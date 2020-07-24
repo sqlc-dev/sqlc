@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/source"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sql/ast/pg"
@@ -11,7 +12,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/lang"
 )
 
-func expand(qc *QueryCatalog, raw *ast.RawStmt) ([]source.Edit, error) {
+func (c *Compiler) expand(qc *QueryCatalog, raw *ast.RawStmt) ([]source.Edit, error) {
 	list := astutils.Search(raw, func(node ast.Node) bool {
 		switch node.(type) {
 		case *pg.DeleteStmt:
@@ -28,7 +29,7 @@ func expand(qc *QueryCatalog, raw *ast.RawStmt) ([]source.Edit, error) {
 	}
 	var edits []source.Edit
 	for _, item := range list.Items {
-		edit, err := expandStmt(qc, raw, item)
+		edit, err := c.expandStmt(qc, raw, item)
 		if err != nil {
 			return nil, err
 		}
@@ -37,14 +38,20 @@ func expand(qc *QueryCatalog, raw *ast.RawStmt) ([]source.Edit, error) {
 	return edits, nil
 }
 
-func quoteIdent(ident string) string {
+func (c *Compiler) quoteIdent(ident string) string {
+	// TODO: Add a method to the parser / engine for this instead
 	if lang.IsReservedKeyword(ident) {
-		return "\"" + ident + "\""
+		switch c.conf.Engine {
+		case config.EngineMySQL, config.EngineXDolphin:
+			return "`" + ident + "`"
+		default:
+			return "\"" + ident + "\""
+		}
 	}
 	return ident
 }
 
-func expandStmt(qc *QueryCatalog, raw *ast.RawStmt, node ast.Node) ([]source.Edit, error) {
+func (c *Compiler) expandStmt(qc *QueryCatalog, raw *ast.RawStmt, node ast.Node) ([]source.Edit, error) {
 	tables, err := sourceTables(qc, node)
 	if err != nil {
 		return nil, err
@@ -103,14 +110,14 @@ func expandStmt(qc *QueryCatalog, raw *ast.RawStmt, node ast.Node) ([]source.Edi
 			if scope != "" && scope != t.Rel.Name {
 				continue
 			}
-			tableName := quoteIdent(t.Rel.Name)
-			scopeName := quoteIdent(scope)
-			for _, c := range t.Columns {
-				cname := c.Name
+			tableName := c.quoteIdent(t.Rel.Name)
+			scopeName := c.quoteIdent(scope)
+			for _, column := range t.Columns {
+				cname := column.Name
 				if res.Name != nil {
 					cname = *res.Name
 				}
-				cname = quoteIdent(cname)
+				cname = c.quoteIdent(cname)
 				if scope != "" {
 					cname = scopeName + "." + cname
 				}
@@ -122,7 +129,7 @@ func expandStmt(qc *QueryCatalog, raw *ast.RawStmt, node ast.Node) ([]source.Edi
 		}
 		var old []string
 		for _, p := range parts {
-			old = append(old, quoteIdent(p))
+			old = append(old, c.quoteIdent(p))
 		}
 		edits = append(edits, source.Edit{
 			Location: res.Location - raw.StmtLocation,

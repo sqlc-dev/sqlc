@@ -83,11 +83,11 @@ func parseCatalog(p Parser, c *catalog.Catalog, schemas []string) error {
 	return nil
 }
 
-func parseQueries(p Parser, c *catalog.Catalog, queries []string, o opts.Parser) (*Result, error) {
+func (c *Compiler) parseQueries(o opts.Parser) (*Result, error) {
 	var q []*Query
 	merr := multierr.New()
 	set := map[string]struct{}{}
-	files, err := sqlpath.Glob(queries)
+	files, err := sqlpath.Glob(c.conf.Queries)
 	if err != nil {
 		return nil, err
 	}
@@ -98,13 +98,13 @@ func parseQueries(p Parser, c *catalog.Catalog, queries []string, o opts.Parser)
 			continue
 		}
 		src := string(blob)
-		stmts, err := p.Parse(strings.NewReader(src))
+		stmts, err := c.parser.Parse(strings.NewReader(src))
 		if err != nil {
 			merr.Add(filename, src, 0, err)
 			continue
 		}
 		for _, stmt := range stmts {
-			query, err := parseQuery(p, c, stmt.Raw, src, o)
+			query, err := c.parseQuery(stmt.Raw, src, o)
 			if err == ErrUnsupportedStatementType {
 				continue
 			}
@@ -134,10 +134,10 @@ func parseQueries(p Parser, c *catalog.Catalog, queries []string, o opts.Parser)
 		return nil, merr
 	}
 	if len(q) == 0 {
-		return nil, fmt.Errorf("no queries contained in paths %s", strings.Join(queries, ","))
+		return nil, fmt.Errorf("no queries contained in paths %s", strings.Join(c.conf.Queries, ","))
 	}
 	return &Result{
-		Catalog: c,
+		Catalog: c.catalog,
 		Queries: q,
 	}, nil
 }

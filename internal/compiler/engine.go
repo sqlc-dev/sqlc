@@ -11,9 +11,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 )
 
-// The Engine type only exists as a compatibility shim between the old dinosql
-// package and the new compiler package.
-type Engine struct {
+type Compiler struct {
 	conf    config.SQL
 	combo   config.CombinedSettings
 	catalog *catalog.Catalog
@@ -21,41 +19,41 @@ type Engine struct {
 	result  *Result
 }
 
-func NewEngine(conf config.SQL, combo config.CombinedSettings) *Engine {
-	e := &Engine{conf: conf, combo: combo}
+func NewCompiler(conf config.SQL, combo config.CombinedSettings) *Compiler {
+	c := &Compiler{conf: conf, combo: combo}
 	switch conf.Engine {
 	case config.EngineXLemon:
-		e.parser = sqlite.NewParser()
-		e.catalog = catalog.New("main")
+		c.parser = sqlite.NewParser()
+		c.catalog = catalog.New("main")
 	case config.EngineMySQL, config.EngineXDolphin:
-		e.parser = dolphin.NewParser()
-		e.catalog = catalog.New("public") // TODO: What is the default database for MySQL?
+		c.parser = dolphin.NewParser()
+		c.catalog = catalog.New("public") // TODO: What is the default database for MySQL?
 	case config.EnginePostgreSQL:
-		e.parser = postgresql.NewParser()
-		e.catalog = postgresql.NewCatalog()
+		c.parser = postgresql.NewParser()
+		c.catalog = postgresql.NewCatalog()
 	default:
 		panic(fmt.Sprintf("unknown engine: %s", conf.Engine))
 	}
-	return e
+	return c
 }
 
-func (e *Engine) Catalog() *catalog.Catalog {
-	return e.catalog
+func (c *Compiler) Catalog() *catalog.Catalog {
+	return c.catalog
 }
 
-func (e *Engine) ParseCatalog(schema []string) error {
-	return parseCatalog(e.parser, e.catalog, schema)
+func (c *Compiler) ParseCatalog(schema []string) error {
+	return parseCatalog(c.parser, c.catalog, schema)
 }
 
-func (e *Engine) ParseQueries(queries []string, o opts.Parser) error {
-	r, err := parseQueries(e.parser, e.catalog, e.conf.Queries, o)
+func (c *Compiler) ParseQueries(queries []string, o opts.Parser) error {
+	r, err := c.parseQueries(o)
 	if err != nil {
 		return err
 	}
-	e.result = r
+	c.result = r
 	return nil
 }
 
-func (e *Engine) Result() *Result {
-	return e.result
+func (c *Compiler) Result() *Result {
+	return c.result
 }
