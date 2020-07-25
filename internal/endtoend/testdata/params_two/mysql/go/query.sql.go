@@ -13,8 +13,13 @@ SELECT a, b FROM foo
 WHERE a = ? and b = ?
 `
 
-func (q *Queries) FooByAandB(ctx context.Context, a sql.NullString) ([]Foo, error) {
-	rows, err := q.db.QueryContext(ctx, fooByAandB, a)
+type FooByAandBParams struct {
+	A sql.NullString
+	B sql.NullString
+}
+
+func (q *Queries) FooByAandB(ctx context.Context, arg FooByAandBParams) ([]Foo, error) {
+	rows, err := q.db.QueryContext(ctx, fooByAandB, arg.A, arg.B)
 	if err != nil {
 		return nil, err
 	}

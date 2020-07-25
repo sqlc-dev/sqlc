@@ -6,10 +6,14 @@ import (
 	"github.com/davecgh/go-spew/spew"
 )
 
-func Active() bool {
-	return os.Getenv("SQLCDEBUG") != ""
+var Active bool
+
+func init() {
+	Active = os.Getenv("SQLCDEBUG") != ""
 }
 
 func Dump(n interface{}) {
-	spew.Dump(n)
+	if Active {
+		spew.Dump(n)
+	}
 }

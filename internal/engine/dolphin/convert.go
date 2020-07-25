@@ -160,7 +160,8 @@ func (c *cc) convertParamMarkerExpr(n *driver.ParamMarkerExpr) *pg.ParamRef {
 	// Parameter numbers start at one
 	c.paramCount += 1
 	return &pg.ParamRef{
-		Number: c.paramCount,
+		Number:   c.paramCount,
+		Location: n.Offset,
 	}
 }
 
@@ -260,7 +261,7 @@ func (c *cc) convert(node pcast.Node) ast.Node {
 		return nil
 
 	default:
-		if debug.Active() {
+		if debug.Active {
 			fmt.Printf("dolphin.convert: Unknown node type %T\n", n)
 		}
 		return &ast.TODO{}
