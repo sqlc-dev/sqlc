@@ -185,11 +185,16 @@ func (c *cc) convertSelectField(n *pcast.SelectField) *pg.ResTarget {
 }
 
 func (c *cc) convertSelectStmt(n *pcast.SelectStmt) *pg.SelectStmt {
-	return &pg.SelectStmt{
+	stmt := &pg.SelectStmt{
 		TargetList:  c.convertFieldList(n.Fields),
 		FromClause:  c.convertTableRefsClause(n.From),
 		WhereClause: c.convert(n.Where),
 	}
+	if n.Limit != nil {
+		stmt.LimitCount = c.convert(n.Limit.Count)
+		stmt.LimitOffset = c.convert(n.Limit.Offset)
+	}
+	return stmt
 }
 
 func (c *cc) convertSubqueryExpr(n *pcast.SubqueryExpr) ast.Node {
