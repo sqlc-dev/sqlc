@@ -132,6 +132,17 @@ func (c *cc) convertColumnNameExpr(n *pcast.ColumnNameExpr) *pg.ColumnRef {
 	}
 }
 
+func (c *cc) convertColumnNames(cols []*pcast.ColumnName) *ast.List {
+	list := &ast.List{Items: []ast.Node{}}
+	for i := range cols {
+		name := cols[i].Name.String()
+		list.Items = append(list.Items, &pg.ResTarget{
+			Name: &name,
+		})
+	}
+	return list
+}
+
 func (c *cc) convertDropTableStmt(n *pcast.DropTableStmt) ast.Node {
 	drop := &ast.DropTableStmt{IfExists: n.IfExists}
 	for _, name := range n.Tables {
@@ -154,6 +165,43 @@ func (c *cc) convertFieldList(n *pcast.FieldList) *ast.List {
 		fields[i] = c.convertSelectField(n.Fields[i])
 	}
 	return &ast.List{Items: fields}
+}
+
+func (c *cc) convertInsertStmt(n *pcast.InsertStmt) *pg.InsertStmt {
+	debug.Dump(n)
+
+	rels := c.convertTableRefsClause(n.Table)
+	if len(rels.Items) != 1 {
+		panic("expected one range var")
+	}
+	rel := rels.Items[0]
+	rangeVar, ok := rel.(*pg.RangeVar)
+	if !ok {
+		panic("expected range var")
+	}
+
+	return &pg.InsertStmt{
+		Relation:      rangeVar,
+		Cols:          c.convertColumnNames(n.Columns),
+		ReturningList: &ast.List{Items: []ast.Node{}},
+		SelectStmt: &pg.SelectStmt{
+			FromClause:  &ast.List{Items: []ast.Node{}},
+			TargetList:  &ast.List{Items: []ast.Node{}},
+			ValuesLists: c.convertLists(n.Lists),
+		},
+	}
+}
+
+func (c *cc) convertLists(lists [][]pcast.ExprNode) *ast.List {
+	list := &ast.List{Items: []ast.Node{}}
+	for _, exprs := range lists {
+		inner := &ast.List{Items: []ast.Node{}}
+		for _, expr := range exprs {
+			inner.Items = append(inner.Items, c.convert(expr))
+		}
+		list.Items = append(list.Items, inner)
+	}
+	return list
 }
 
 func (c *cc) convertParamMarkerExpr(n *driver.ParamMarkerExpr) *pg.ParamRef {
@@ -255,6 +303,9 @@ func (c *cc) convert(node pcast.Node) ast.Node {
 
 	case *pcast.ExistsSubqueryExpr:
 		return c.convertExistsSubqueryExpr(n)
+
+	case *pcast.InsertStmt:
+		return c.convertInsertStmt(n)
 
 	case *pcast.SelectStmt:
 		return c.convertSelectStmt(n)
