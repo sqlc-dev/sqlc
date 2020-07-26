@@ -143,6 +143,24 @@ func (c *cc) convertColumnNames(cols []*pcast.ColumnName) *ast.List {
 	return list
 }
 
+func (c *cc) convertDeleteStmt(n *pcast.DeleteStmt) *pg.DeleteStmt {
+	rels := c.convertTableRefsClause(n.TableRefs)
+	if len(rels.Items) != 1 {
+		panic("expected one range var")
+	}
+	rel := rels.Items[0]
+	rangeVar, ok := rel.(*pg.RangeVar)
+	if !ok {
+		panic("expected range var")
+	}
+
+	return &pg.DeleteStmt{
+		Relation:      rangeVar,
+		WhereClause:   c.convert(n.Where),
+		ReturningList: &ast.List{},
+	}
+}
+
 func (c *cc) convertDropTableStmt(n *pcast.DropTableStmt) ast.Node {
 	drop := &ast.DropTableStmt{IfExists: n.IfExists}
 	for _, name := range n.Tables {
@@ -168,8 +186,6 @@ func (c *cc) convertFieldList(n *pcast.FieldList) *ast.List {
 }
 
 func (c *cc) convertInsertStmt(n *pcast.InsertStmt) *pg.InsertStmt {
-	debug.Dump(n)
-
 	rels := c.convertTableRefsClause(n.Table)
 	if len(rels.Items) != 1 {
 		panic("expected one range var")
@@ -183,10 +199,10 @@ func (c *cc) convertInsertStmt(n *pcast.InsertStmt) *pg.InsertStmt {
 	return &pg.InsertStmt{
 		Relation:      rangeVar,
 		Cols:          c.convertColumnNames(n.Columns),
-		ReturningList: &ast.List{Items: []ast.Node{}},
+		ReturningList: &ast.List{},
 		SelectStmt: &pg.SelectStmt{
-			FromClause:  &ast.List{Items: []ast.Node{}},
-			TargetList:  &ast.List{Items: []ast.Node{}},
+			FromClause:  &ast.List{},
+			TargetList:  &ast.List{},
 			ValuesLists: c.convertLists(n.Lists),
 		},
 	}
@@ -297,6 +313,9 @@ func (c *cc) convert(node pcast.Node) ast.Node {
 
 	case *pcast.CreateTableStmt:
 		return c.convertCreateTableStmt(n)
+
+	case *pcast.DeleteStmt:
+		return c.convertDeleteStmt(n)
 
 	case *pcast.DropTableStmt:
 		return c.convertDropTableStmt(n)
