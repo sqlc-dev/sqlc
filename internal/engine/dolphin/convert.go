@@ -204,16 +204,23 @@ func (c *cc) convertInsertStmt(n *pcast.InsertStmt) *pg.InsertStmt {
 		panic("expected range var")
 	}
 
-	return &pg.InsertStmt{
+	// debug.Dump(n)
+	insert := &pg.InsertStmt{
 		Relation:      rangeVar,
 		Cols:          c.convertColumnNames(n.Columns),
 		ReturningList: &ast.List{},
-		SelectStmt: &pg.SelectStmt{
+	}
+	if ss, ok := c.convert(n.Select).(*pg.SelectStmt); ok {
+		ss.ValuesLists = c.convertLists(n.Lists)
+		insert.SelectStmt = ss
+	} else {
+		insert.SelectStmt = &pg.SelectStmt{
 			FromClause:  &ast.List{},
 			TargetList:  &ast.List{},
 			ValuesLists: c.convertLists(n.Lists),
-		},
+		}
 	}
+	return insert
 }
 
 func (c *cc) convertLists(lists [][]pcast.ExprNode) *ast.List {
