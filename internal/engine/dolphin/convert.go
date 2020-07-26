@@ -65,6 +65,14 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 	return alt
 }
 
+func (c *cc) convertAssignment(n *pcast.Assignment) *pg.ResTarget {
+	name := n.Column.Name.String()
+	return &pg.ResTarget{
+		Name: &name,
+		Val:  c.convert(n.Expr),
+	}
+}
+
 func opToName(o opcode.Op) string {
 	switch o {
 	case opcode.EQ:
@@ -282,6 +290,31 @@ func (c *cc) convertTableRefsClause(n *pcast.TableRefsClause) *ast.List {
 	return &ast.List{Items: tables}
 }
 
+func (c *cc) convertUpdateStmt(n *pcast.UpdateStmt) *pg.UpdateStmt {
+	// Relation
+	rels := c.convertTableRefsClause(n.TableRefs)
+	if len(rels.Items) != 1 {
+		panic("expected one range var")
+	}
+	rel := rels.Items[0]
+	rangeVar, ok := rel.(*pg.RangeVar)
+	if !ok {
+		panic("expected range var")
+	}
+	// TargetList
+	list := &ast.List{}
+	for _, a := range n.List {
+		list.Items = append(list.Items, c.convertAssignment(a))
+	}
+	return &pg.UpdateStmt{
+		Relation:      rangeVar,
+		TargetList:    list,
+		WhereClause:   c.convert(n.Where),
+		FromClause:    &ast.List{},
+		ReturningList: &ast.List{},
+	}
+}
+
 func (c *cc) convertWildCardField(n *pcast.WildCardField) *pg.ColumnRef {
 	items := []ast.Node{}
 	if t := n.Table.String(); t != "" {
@@ -331,6 +364,9 @@ func (c *cc) convert(node pcast.Node) ast.Node {
 
 	case *pcast.SubqueryExpr:
 		return c.convertSubqueryExpr(n)
+
+	case *pcast.UpdateStmt:
+		return c.convertUpdateStmt(n)
 
 	case nil:
 		return nil
