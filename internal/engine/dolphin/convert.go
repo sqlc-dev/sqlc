@@ -2,16 +2,22 @@ package dolphin
 
 import (
 	"fmt"
-	"os"
 
 	pcast "github.com/pingcap/parser/ast"
+	"github.com/pingcap/parser/opcode"
 	"github.com/pingcap/parser/types"
+	driver "github.com/pingcap/tidb/types/parser_driver"
 
+	"github.com/kyleconroy/sqlc/internal/debug"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sql/ast/pg"
 )
 
-func convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
+type cc struct {
+	paramCount int
+}
+
+func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 	alt := &ast.AlterTableStmt{
 		Table: parseTableName(n.Table),
 		Cmds:  &ast.List{},
@@ -59,7 +65,40 @@ func convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 	return alt
 }
 
-func convertCreateTableStmt(n *pcast.CreateTableStmt) ast.Node {
+func opToName(o opcode.Op) string {
+	switch o {
+	case opcode.EQ:
+		return "="
+	}
+	return o.String()
+}
+
+func (c *cc) convertBinaryOperationExpr(n *pcast.BinaryOperationExpr) ast.Node {
+	if n.Op == opcode.LogicAnd || n.Op == opcode.LogicOr {
+		return &pg.BoolExpr{
+			// TODO: Set op
+			Args: &ast.List{
+				Items: []ast.Node{
+					c.convert(n.L),
+					c.convert(n.R),
+				},
+			},
+		}
+	} else {
+		return &pg.A_Expr{
+			// TODO: Set kind
+			Name: &ast.List{
+				Items: []ast.Node{
+					&pg.String{Str: opToName(n.Op)},
+				},
+			},
+			Lexpr: c.convert(n.L),
+			Rexpr: c.convert(n.R),
+		}
+	}
+}
+
+func (c *cc) convertCreateTableStmt(n *pcast.CreateTableStmt) ast.Node {
 	create := &ast.CreateTableStmt{
 		Name:        parseTableName(n.Table),
 		IfNotExists: n.IfNotExists,
@@ -83,7 +122,7 @@ func convertCreateTableStmt(n *pcast.CreateTableStmt) ast.Node {
 	return create
 }
 
-func convertColumnNameExpr(n *pcast.ColumnNameExpr) *pg.ColumnRef {
+func (c *cc) convertColumnNameExpr(n *pcast.ColumnNameExpr) *pg.ColumnRef {
 	return &pg.ColumnRef{
 		Fields: &ast.List{
 			Items: []ast.Node{
@@ -93,7 +132,7 @@ func convertColumnNameExpr(n *pcast.ColumnNameExpr) *pg.ColumnRef {
 	}
 }
 
-func convertDropTableStmt(n *pcast.DropTableStmt) ast.Node {
+func (c *cc) convertDropTableStmt(n *pcast.DropTableStmt) ast.Node {
 	drop := &ast.DropTableStmt{IfExists: n.IfExists}
 	for _, name := range n.Tables {
 		drop.Tables = append(drop.Tables, parseTableName(name))
@@ -101,28 +140,37 @@ func convertDropTableStmt(n *pcast.DropTableStmt) ast.Node {
 	return drop
 }
 
-func convertExistsSubqueryExpr(n *pcast.ExistsSubqueryExpr) *pg.SubLink {
+func (c *cc) convertExistsSubqueryExpr(n *pcast.ExistsSubqueryExpr) *pg.SubLink {
 	sublink := &pg.SubLink{}
-	if ss, ok := convert(n.Sel).(*pg.SelectStmt); ok {
+	if ss, ok := c.convert(n.Sel).(*pg.SelectStmt); ok {
 		sublink.Subselect = ss
 	}
 	return sublink
 }
 
-func convertFieldList(n *pcast.FieldList) *ast.List {
+func (c *cc) convertFieldList(n *pcast.FieldList) *ast.List {
 	fields := make([]ast.Node, len(n.Fields))
 	for i := range n.Fields {
-		fields[i] = convertSelectField(n.Fields[i])
+		fields[i] = c.convertSelectField(n.Fields[i])
 	}
 	return &ast.List{Items: fields}
 }
 
-func convertSelectField(n *pcast.SelectField) *pg.ResTarget {
+func (c *cc) convertParamMarkerExpr(n *driver.ParamMarkerExpr) *pg.ParamRef {
+	// Parameter numbers start at one
+	c.paramCount += 1
+	return &pg.ParamRef{
+		Number:   c.paramCount,
+		Location: n.Offset,
+	}
+}
+
+func (c *cc) convertSelectField(n *pcast.SelectField) *pg.ResTarget {
 	var val ast.Node
 	if n.WildCard != nil {
-		val = convertWildCardField(n.WildCard)
+		val = c.convertWildCardField(n.WildCard)
 	} else {
-		val = convert(n.Expr)
+		val = c.convert(n.Expr)
 	}
 	var name *string
 	if n.AsName.O != "" {
@@ -136,19 +184,19 @@ func convertSelectField(n *pcast.SelectField) *pg.ResTarget {
 	}
 }
 
-func convertSelectStmt(n *pcast.SelectStmt) *pg.SelectStmt {
+func (c *cc) convertSelectStmt(n *pcast.SelectStmt) *pg.SelectStmt {
 	return &pg.SelectStmt{
-		TargetList:  convertFieldList(n.Fields),
-		FromClause:  convertTableRefsClause(n.From),
-		WhereClause: convert(n.Where),
+		TargetList:  c.convertFieldList(n.Fields),
+		FromClause:  c.convertTableRefsClause(n.From),
+		WhereClause: c.convert(n.Where),
 	}
 }
 
-func convertSubqueryExpr(n *pcast.SubqueryExpr) ast.Node {
-	return convert(n.Query)
+func (c *cc) convertSubqueryExpr(n *pcast.SubqueryExpr) ast.Node {
+	return c.convert(n.Query)
 }
 
-func convertTableRefsClause(n *pcast.TableRefsClause) *ast.List {
+func (c *cc) convertTableRefsClause(n *pcast.TableRefsClause) *ast.List {
 	var tables []ast.Node
 	visit(n, func(n pcast.Node) {
 		name, ok := n.(*pcast.TableName)
@@ -165,7 +213,7 @@ func convertTableRefsClause(n *pcast.TableRefsClause) *ast.List {
 	return &ast.List{Items: tables}
 }
 
-func convertWildCardField(n *pcast.WildCardField) *pg.ColumnRef {
+func (c *cc) convertWildCardField(n *pcast.WildCardField) *pg.ColumnRef {
 	items := []ast.Node{}
 	if t := n.Table.String(); t != "" {
 		items = append(items, &pg.String{Str: t})
@@ -179,38 +227,41 @@ func convertWildCardField(n *pcast.WildCardField) *pg.ColumnRef {
 	}
 }
 
-func convert(node pcast.Node) ast.Node {
+func (c *cc) convert(node pcast.Node) ast.Node {
 	switch n := node.(type) {
 
+	case *driver.ParamMarkerExpr:
+		return c.convertParamMarkerExpr(n)
+
 	case *pcast.AlterTableStmt:
-		return convertAlterTableStmt(n)
+		return c.convertAlterTableStmt(n)
 
 	case *pcast.BinaryOperationExpr:
-		return &ast.TODO{}
+		return c.convertBinaryOperationExpr(n)
 
 	case *pcast.ColumnNameExpr:
-		return convertColumnNameExpr(n)
+		return c.convertColumnNameExpr(n)
 
 	case *pcast.CreateTableStmt:
-		return convertCreateTableStmt(n)
+		return c.convertCreateTableStmt(n)
 
 	case *pcast.DropTableStmt:
-		return convertDropTableStmt(n)
+		return c.convertDropTableStmt(n)
 
 	case *pcast.ExistsSubqueryExpr:
-		return convertExistsSubqueryExpr(n)
+		return c.convertExistsSubqueryExpr(n)
 
 	case *pcast.SelectStmt:
-		return convertSelectStmt(n)
+		return c.convertSelectStmt(n)
 
 	case *pcast.SubqueryExpr:
-		return convertSubqueryExpr(n)
+		return c.convertSubqueryExpr(n)
 
 	case nil:
 		return nil
 
 	default:
-		if os.Getenv("SQLCDEBUG") != "" {
+		if debug.Active {
 			fmt.Printf("dolphin.convert: Unknown node type %T\n", n)
 		}
 		return &ast.TODO{}

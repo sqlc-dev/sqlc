@@ -60,7 +60,8 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 	}
 	var stmts []ast.Statement
 	for i := range stmtNodes {
-		out := convert(stmtNodes[i])
+		converter := &cc{}
+		out := converter.convert(stmtNodes[i])
 		if _, ok := out.(*ast.TODO); ok {
 			continue
 		}
