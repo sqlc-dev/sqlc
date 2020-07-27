@@ -1,8 +1,3 @@
-DROP TABLE IF EXISTS books CASCADE;
-DROP TYPE IF EXISTS book_type CASCADE;
-DROP TABLE IF EXISTS authors CASCADE;
-DROP FUNCTION IF EXISTS say_hello(text) CASCADE;
-
 CREATE TABLE authors (
           author_id SERIAL PRIMARY KEY,
           name text NOT NULL DEFAULT ''
