@@ -35,7 +35,7 @@ type Book struct {
 	BookID    int32
 	AuthorID  int32
 	Isbn      string
-	Booktype  BookType
+	BookType  BookType
 	Title     string
 	Year      int32
 	Available time.Time

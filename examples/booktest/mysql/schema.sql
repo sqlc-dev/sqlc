@@ -1,12 +1,6 @@
-SET FOREIGN_KEY_CHECKS=0;
-DROP TABLE IF EXISTS authors;
-DROP TABLE IF EXISTS books;
--- DROP FUNCTION IF EXISTS say_hello;
-SET FOREIGN_KEY_CHECKS=1;
-
 CREATE TABLE authors (
           author_id integer NOT NULL AUTO_INCREMENT PRIMARY KEY,
-          name text NOT NULL DEFAULT ''
+          name text NOT NULL
 ) ENGINE=InnoDB;
 
 CREATE INDEX authors_name_idx ON authors(name(255));
@@ -16,10 +10,10 @@ CREATE TABLE books (
           author_id integer NOT NULL,
           isbn varchar(255) NOT NULL DEFAULT '' UNIQUE,
           book_type ENUM('FICTION', 'NONFICTION') NOT NULL DEFAULT 'FICTION',
-          title text NOT NULL DEFAULT '',
+          title text NOT NULL,
           yr integer NOT NULL DEFAULT 2000,
           available datetime NOT NULL DEFAULT NOW(),
-          tags text NOT NULL DEFAULT ''
+          tags text NOT NULL
           -- CONSTRAINT FOREIGN KEY (author_id) REFERENCES authors(author_id)
 ) ENGINE=InnoDB;
 

@@ -11,14 +11,18 @@ import (
 )
 
 func TestBooks(t *testing.T) {
-	db, cleanup := sqltest.PostgreSQL(t, []string{"schema.sql"})
+	db, cleanup := sqltest.MySQL(t, []string{"schema.sql"})
 	defer cleanup()
 
 	ctx := context.Background()
 	dq := New(db)
 
 	// create an author
-	a, err := dq.CreateAuthor(ctx, "Unknown Master")
+	result, err := dq.CreateAuthor(ctx, "Unknown Master")
+	if err != nil {
+		t.Fatal(err)
+	}
+	authorID, err := result.LastInsertId()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -34,37 +38,40 @@ func TestBooks(t *testing.T) {
 	// save first book
 	now := time.Now()
 	_, err = tq.CreateBook(ctx, CreateBookParams{
-		AuthorID:  a.AuthorID,
+		AuthorID:  int32(authorID),
 		Isbn:      "1",
 		Title:     "my book title",
-		BookType:  BookTypeFICTION,
-		Year:      2016,
+		BookType:  "FICTION",
+		Yr:        2016,
 		Available: now,
-		Tags:      []string{},
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// save second book
-	b1, err := tq.CreateBook(ctx, CreateBookParams{
-		AuthorID:  a.AuthorID,
+	result, err = tq.CreateBook(ctx, CreateBookParams{
+		AuthorID:  int32(authorID),
 		Isbn:      "2",
 		Title:     "the second book",
-		BookType:  BookTypeFICTION,
-		Year:      2016,
+		BookType:  "FICTION",
+		Yr:        2016,
 		Available: now,
-		Tags:      []string{"cool", "unique"},
+		Tags:      "cool,unique",
 	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	bookOneID, err := result.LastInsertId()
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// update the title and tags
 	err = tq.UpdateBook(ctx, UpdateBookParams{
-		BookID: b1.BookID,
+		BookID: int32(bookOneID),
 		Title:  "changed second title",
-		Tags:   []string{"cool", "disastor"},
+		Tags:   "cool,disastor",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -72,28 +79,32 @@ func TestBooks(t *testing.T) {
 
 	// save third book
 	_, err = tq.CreateBook(ctx, CreateBookParams{
-		AuthorID:  a.AuthorID,
+		AuthorID:  int32(authorID),
 		Isbn:      "3",
 		Title:     "the third book",
-		BookType:  BookTypeFICTION,
-		Year:      2001,
+		BookType:  "FICTION",
+		Yr:        2001,
 		Available: now,
-		Tags:      []string{"cool"},
+		Tags:      "cool",
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// save fourth book
-	b3, err := tq.CreateBook(ctx, CreateBookParams{
-		AuthorID:  a.AuthorID,
+	result, err = tq.CreateBook(ctx, CreateBookParams{
+		AuthorID:  int32(authorID),
 		Isbn:      "4",
 		Title:     "4th place finisher",
-		BookType:  BookTypeNONFICTION,
-		Year:      2011,
+		BookType:  "NONFICTION",
+		Yr:        2011,
 		Available: now,
-		Tags:      []string{"other"},
+		Tags:      "other",
 	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	bookThreeID, err := result.LastInsertId()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -106,10 +117,10 @@ func TestBooks(t *testing.T) {
 
 	// upsert, changing ISBN and title
 	err = dq.UpdateBookISBN(ctx, UpdateBookISBNParams{
-		BookID: b3.BookID,
+		BookID: int32(bookThreeID),
 		Isbn:   "NEW ISBN",
 		Title:  "never ever gonna finish, a quatrain",
-		Tags:   []string{"someother"},
+		Tags:   "someother",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -118,7 +129,7 @@ func TestBooks(t *testing.T) {
 	// retrieve first book
 	books0, err := dq.BooksByTitleYear(ctx, BooksByTitleYearParams{
 		Title: "my book title",
-		Year:  2016,
+		Yr:    2016,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -134,7 +145,7 @@ func TestBooks(t *testing.T) {
 
 	// find a book with either "cool" or "other" tag
 	t.Logf("---------\nTag search results:\n")
-	res, err := dq.BooksByTags(ctx, []string{"cool", "other", "someother"})
+	res, err := dq.BooksByTags(ctx, "cool")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -145,7 +156,7 @@ func TestBooks(t *testing.T) {
 	// TODO: call say_hello(varchar)
 
 	// get book 4 and delete
-	b5, err := dq.GetBook(ctx, b3.BookID)
+	b5, err := dq.GetBook(ctx, int32(bookThreeID))
 	if err != nil {
 		t.Fatal(err)
 	}
