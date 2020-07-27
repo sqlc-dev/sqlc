@@ -60,7 +60,7 @@ func (q *Queries) BooksByTags(ctx context.Context, dollar_1 []string) ([]BooksBy
 }
 
 const booksByTitleYear = `-- name: BooksByTitleYear :many
-SELECT book_id, author_id, isbn, booktype, title, year, available, tags FROM books
+SELECT book_id, author_id, isbn, book_type, title, year, available, tags FROM books
 WHERE title = $1 AND year = $2
 `
 
@@ -82,7 +82,7 @@ func (q *Queries) BooksByTitleYear(ctx context.Context, arg BooksByTitleYearPara
 			&i.BookID,
 			&i.AuthorID,
 			&i.Isbn,
-			&i.Booktype,
+			&i.BookType,
 			&i.Title,
 			&i.Year,
 			&i.Available,
@@ -117,7 +117,7 @@ const createBook = `-- name: CreateBook :one
 INSERT INTO books (
     author_id,
     isbn,
-    booktype,
+    book_type,
     title,
     year,
     available,
@@ -131,13 +131,13 @@ INSERT INTO books (
     $6,
     $7
 )
-RETURNING book_id, author_id, isbn, booktype, title, year, available, tags
+RETURNING book_id, author_id, isbn, book_type, title, year, available, tags
 `
 
 type CreateBookParams struct {
 	AuthorID  int32
 	Isbn      string
-	Booktype  BookType
+	BookType  BookType
 	Title     string
 	Year      int32
 	Available time.Time
@@ -148,7 +148,7 @@ func (q *Queries) CreateBook(ctx context.Context, arg CreateBookParams) (Book, e
 	row := q.db.QueryRowContext(ctx, createBook,
 		arg.AuthorID,
 		arg.Isbn,
-		arg.Booktype,
+		arg.BookType,
 		arg.Title,
 		arg.Year,
 		arg.Available,
@@ -159,7 +159,7 @@ func (q *Queries) CreateBook(ctx context.Context, arg CreateBookParams) (Book, e
 		&i.BookID,
 		&i.AuthorID,
 		&i.Isbn,
-		&i.Booktype,
+		&i.BookType,
 		&i.Title,
 		&i.Year,
 		&i.Available,
@@ -191,7 +191,7 @@ func (q *Queries) GetAuthor(ctx context.Context, authorID int32) (Author, error)
 }
 
 const getBook = `-- name: GetBook :one
-SELECT book_id, author_id, isbn, booktype, title, year, available, tags FROM books
+SELECT book_id, author_id, isbn, book_type, title, year, available, tags FROM books
 WHERE book_id = $1
 `
 
@@ -202,7 +202,7 @@ func (q *Queries) GetBook(ctx context.Context, bookID int32) (Book, error) {
 		&i.BookID,
 		&i.AuthorID,
 		&i.Isbn,
-		&i.Booktype,
+		&i.BookType,
 		&i.Title,
 		&i.Year,
 		&i.Available,

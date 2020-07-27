@@ -33,7 +33,7 @@ RETURNING *;
 INSERT INTO books (
     author_id,
     isbn,
-    booktype,
+    book_type,
     title,
     year,
     available,

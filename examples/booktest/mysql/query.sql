@@ -14,19 +14,31 @@ WHERE book_id = ?;
 SELECT * FROM books
 WHERE title = ? AND yr = ?;
 
-/* name: CreateAuthor :exec */
+/* name: BooksByTags :many */
+SELECT
+  book_id,
+  title,
+  name,
+  isbn,
+  tags
+FROM books
+LEFT JOIN authors ON books.author_id = authors.author_id
+WHERE tags = ?;
+
+/* name: CreateAuthor :execresult */
 INSERT INTO authors (name) VALUES (?);
 
-/* name: CreateBook :exec */
+/* name: CreateBook :execresult */
 INSERT INTO books (
     author_id,
     isbn,
-    booktype,
+    book_type,
     title,
     yr,
     available,
     tags
 ) VALUES (
+    ?,
     ?,
     ?,
     ?,
@@ -42,9 +54,10 @@ WHERE book_id = ?;
 
 /* name: UpdateBookISBN :exec */
 UPDATE books
-SET title = ?, tags = :book_tags, isbn = ?
+SET title = ?, tags = ?, isbn = ?
 WHERE book_id = ?;
 
 /* name: DeleteAuthorBeforeYear :exec */
 DELETE FROM books
-WHERE yr < sqlc.arg(min_publish_year) AND author_id = ?;
+WHERE yr < ? AND author_id = ?;
+-- WHERE yr < sqlc.arg(min_publish_year) AND author_id = ?;
