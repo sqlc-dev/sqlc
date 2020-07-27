@@ -42,7 +42,7 @@ func MySQL(t *testing.T, migrations []string) (*sql.DB, func()) {
 		data = "dinotest"
 	}
 
-	source := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", user, pass, host, port, data)
+	source := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?multiStatements=true", user, pass, host, port, data)
 	t.Logf("db: %s", source)
 
 	db, err := sql.Open("mysql", source)
