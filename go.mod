@@ -16,4 +16,4 @@ require (
 	vitess.io/vitess v0.0.0-20200617014457-5ba6549015c0
 )
 
-replace github.com/pingcap/parser => github.com/kyleconroy/parser v0.0.0-20200727200926-0e04da0a60a6
+replace github.com/pingcap/parser => github.com/kyleconroy/parser v0.0.0-20200728181224-b006e3bf3ed9
