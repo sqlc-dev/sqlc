@@ -193,6 +193,34 @@ func (c *cc) convertFieldList(n *pcast.FieldList) *ast.List {
 	return &ast.List{Items: fields}
 }
 
+func (c *cc) convertFuncCallExpr(n *pcast.FuncCallExpr) *ast.FuncCall {
+	schema := n.Schema.String()
+	name := n.FnName.String()
+
+	// TODO: Deprecate the usage of Funcname
+	items := []ast.Node{}
+	if schema != "" {
+		items = append(items, &pg.String{Str: schema})
+	}
+	items = append(items, &pg.String{Str: name})
+
+	fn := &ast.FuncCall{
+		Args: &ast.List{},
+		Func: &ast.FuncName{
+			Schema: schema,
+			Name:   name,
+		},
+		Funcname: &ast.List{
+			Items: items,
+		},
+		Location: n.Offset,
+	}
+	for _, arg := range n.Args {
+		fn.Args.Items = append(fn.Args.Items, c.convert(arg))
+	}
+	return fn
+}
+
 func (c *cc) convertInsertStmt(n *pcast.InsertStmt) *pg.InsertStmt {
 	rels := c.convertTableRefsClause(n.Table)
 	if len(rels.Items) != 1 {
@@ -322,6 +350,14 @@ func (c *cc) convertUpdateStmt(n *pcast.UpdateStmt) *pg.UpdateStmt {
 	}
 }
 
+func (c *cc) convertValueExpr(n *driver.ValueExpr) *pg.A_Const {
+	return &pg.A_Const{
+		Val: &pg.String{
+			Str: n.Datum.GetString(),
+		},
+	}
+}
+
 func (c *cc) convertWildCardField(n *pcast.WildCardField) *pg.ColumnRef {
 	items := []ast.Node{}
 	if t := n.Table.String(); t != "" {
@@ -341,6 +377,9 @@ func (c *cc) convert(node pcast.Node) ast.Node {
 
 	case *driver.ParamMarkerExpr:
 		return c.convertParamMarkerExpr(n)
+
+	case *driver.ValueExpr:
+		return c.convertValueExpr(n)
 
 	case *pcast.AlterTableStmt:
 		return c.convertAlterTableStmt(n)
@@ -362,6 +401,9 @@ func (c *cc) convert(node pcast.Node) ast.Node {
 
 	case *pcast.ExistsSubqueryExpr:
 		return c.convertExistsSubqueryExpr(n)
+
+	case *pcast.FuncCallExpr:
+		return c.convertFuncCallExpr(n)
 
 	case *pcast.InsertStmt:
 		return c.convertInsertStmt(n)
