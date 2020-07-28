@@ -282,7 +282,7 @@ packages:
     emit_prepared_queries: true
     emit_interface: false
     emit_exact_table_names: false
-    emit_emptly_slices: false
+    emit_empty_slices: false
 ```
 
 Each package document has the following keys:
