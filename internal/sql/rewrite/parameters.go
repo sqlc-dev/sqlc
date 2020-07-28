@@ -3,6 +3,7 @@ package rewrite
 import (
 	"fmt"
 
+	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/source"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sql/ast/pg"
@@ -41,7 +42,7 @@ func isNamedParamSignCast(node ast.Node) bool {
 	return astutils.Join(expr.Name, ".") == "@" && cast
 }
 
-func NamedParameters(raw *ast.RawStmt) (*ast.RawStmt, map[int]string, []source.Edit) {
+func NamedParameters(engine config.Engine, raw *ast.RawStmt) (*ast.RawStmt, map[int]string, []source.Edit) {
 	foundFunc := astutils.Search(raw, named.IsParamFunc)
 	foundSign := astutils.Search(raw, named.IsParamSign)
 	if len(foundFunc.Items)+len(foundSign.Items) == 0 {
@@ -72,16 +73,21 @@ func NamedParameters(raw *ast.RawStmt) (*ast.RawStmt, map[int]string, []source.E
 				})
 			}
 			// TODO: This code assumes that sqlc.arg(name) is on a single line
-			var old string
+			var old, replace string
 			if isConst {
 				old = fmt.Sprintf("sqlc.arg('%s')", param)
 			} else {
 				old = fmt.Sprintf("sqlc.arg(%s)", param)
 			}
+			if engine == config.EngineMySQL || engine == config.EngineXDolphin {
+				replace = "?"
+			} else {
+				replace = fmt.Sprintf("$%d", args[param])
+			}
 			edits = append(edits, source.Edit{
 				Location: fun.Location - raw.StmtLocation,
 				Old:      old,
-				New:      fmt.Sprintf("$%d", args[param]),
+				New:      replace,
 			})
 			return false
 

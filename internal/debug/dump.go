@@ -12,7 +12,7 @@ func init() {
 	Active = os.Getenv("SQLCDEBUG") != ""
 }
 
-func Dump(n interface{}) {
+func Dump(n ...interface{}) {
 	if Active {
 		spew.Dump(n)
 	}

@@ -6,6 +6,8 @@ import (
 	"sort"
 	"strings"
 	"unicode"
+
+	"github.com/kyleconroy/sqlc/internal/debug"
 )
 
 type Edit struct {
@@ -68,6 +70,7 @@ func Mutate(raw string, a []Edit) (string, error) {
 			return "", fmt.Errorf("empty edit contents")
 		}
 		stop := edit.Location + len(edit.Old) - 1 // Assumes edit.New is non-empty
+		debug.Dump(edit)
 		if stop < len(s) {
 			s = s[:start] + edit.New + s[stop+1:]
 		} else {
