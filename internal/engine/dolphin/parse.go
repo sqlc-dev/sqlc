@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/pingcap/parser"
-	_ "github.com/pingcap/tidb/types/parser_driver"
+	_ "github.com/pingcap/parser/test_driver"
 
 	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
