@@ -5,8 +5,8 @@ import (
 
 	pcast "github.com/pingcap/parser/ast"
 	"github.com/pingcap/parser/opcode"
+	driver "github.com/pingcap/parser/test_driver"
 	"github.com/pingcap/parser/types"
-	driver "github.com/pingcap/tidb/types/parser_driver"
 
 	"github.com/kyleconroy/sqlc/internal/debug"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
