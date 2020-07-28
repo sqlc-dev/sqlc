@@ -77,8 +77,6 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 	}
 
 	raw, namedParams, edits := rewrite.NamedParameters(c.conf.Engine, raw)
-	// debug.Dump(raw, edits)
-
 	rvs := rangeVars(raw.Stmt)
 	refs := findParameters(raw.Stmt)
 	if o.UsePositionalParameters {
