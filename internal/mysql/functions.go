@@ -8,7 +8,7 @@ import (
 func functionReturnType(f string) string {
 	switch f {
 	case "avg", "count", "instr", "sum", "min", "max", "length", "char_length",
-		"ceil", "floor", "mod":
+		"ceil", "floor", "mod", "isnull":
 		return "int"
 	case "concat", "left", "replace", "substring", "trim", "find_in_set", "format", "group_concat":
 		return "varchar"
