@@ -564,13 +564,13 @@ func TestUpdate(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			c := NewCatalog()
+			c := newTestCatalog()
 			if err := c.Build(stmts); err != nil {
 				t.Log(test.stmt)
 				t.Fatal(err)
 			}
 
-			e := NewCatalog()
+			e := newTestCatalog()
 			if test.s != nil {
 				var replaced bool
 				for i := range e.Schemas {
