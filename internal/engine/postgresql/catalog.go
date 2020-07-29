@@ -9,3 +9,11 @@ func NewCatalog() *catalog.Catalog {
 	c.SearchPath = []string{"pg_catalog"}
 	return c
 }
+
+// The generated pg_catalog is very slow to compare because it has so
+// many entries. For testing, don't include it.
+func newTestCatalog() *catalog.Catalog {
+	c := catalog.New("public")
+	c.Schemas = append(c.Schemas, pgTemp())
+	return c
+}
