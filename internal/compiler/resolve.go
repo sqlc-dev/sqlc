@@ -213,6 +213,8 @@ func resolveCatalogRefs(c *catalog.Catalog, rvs []*pg.RangeVar, args []paramRef,
 					if inode.Name != nil {
 						argName = *inode.Name
 					}
+				default:
+					continue
 				}
 
 				if fun.Args == nil {
