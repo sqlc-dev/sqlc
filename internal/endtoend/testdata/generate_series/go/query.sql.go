@@ -17,15 +17,15 @@ type GenerateSeriesParams struct {
 	Column2 time.Time `json:"column_2"`
 }
 
-func (q *Queries) GenerateSeries(ctx context.Context, arg GenerateSeriesParams) ([]interface{}, error) {
+func (q *Queries) GenerateSeries(ctx context.Context, arg GenerateSeriesParams) ([]string, error) {
 	rows, err := q.db.QueryContext(ctx, generateSeries, arg.Column1, arg.Column2)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []interface{}
+	var items []string
 	for rows.Next() {
-		var generate_series interface{}
+		var generate_series string
 		if err := rows.Scan(&generate_series); err != nil {
 			return nil, err
 		}

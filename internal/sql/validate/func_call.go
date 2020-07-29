@@ -1,8 +1,7 @@
 package validate
 
 import (
-	"fmt"
-	"strings"
+	"errors"
 
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sql/astutils"
@@ -28,34 +27,12 @@ func (v *funcCallVisitor) Visit(node ast.Node) astutils.Visitor {
 		return v
 	}
 
-	// Do not validate unknown functions
-	funs, err := v.catalog.ListFuncsByName(call.Func)
-	if err != nil || len(funs) == 0 {
+	fun, err := v.catalog.ResolveFuncCall(call)
+	if fun != nil || errors.Is(err, sqlerr.NotFound) {
 		return v
 	}
 
-	var args int
-	if call.Args != nil {
-		args = len(call.Args.Items)
-	}
-	for _, fun := range funs {
-		if len(fun.InArgs()) == args {
-			return v
-		}
-	}
-
-	var sig []string
-	for range call.Args.Items {
-		sig = append(sig, "unknown")
-	}
-
-	v.err = &sqlerr.Error{
-		Code:     "42883",
-		Message:  fmt.Sprintf("function %s(%s) does not exist", call.Func.Name, strings.Join(sig, ", ")),
-		Location: call.Pos(),
-		// Hint: "No function matches the given name and argument types. You might need to add explicit type casts.",
-	}
-
+	v.err = err
 	return nil
 }
 

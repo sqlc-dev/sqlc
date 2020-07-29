@@ -13,19 +13,19 @@ func postgresType(r *compiler.Result, col *compiler.Column, settings config.Comb
 	notNull := col.NotNull || col.IsArray
 
 	switch columnType {
-	case "serial", "pg_catalog.serial4":
+	case "serial", "serial4", "pg_catalog.serial4":
 		if notNull {
 			return "int32"
 		}
 		return "sql.NullInt32"
 
-	case "bigserial", "pg_catalog.serial8":
+	case "bigserial", "serial8", "pg_catalog.serial8":
 		if notNull {
 			return "int64"
 		}
 		return "sql.NullInt64"
 
-	case "smallserial", "pg_catalog.serial2":
+	case "smallserial", "serial2", "pg_catalog.serial2":
 		return "int16"
 
 	case "integer", "int", "int4", "pg_catalog.int4":
@@ -43,19 +43,19 @@ func postgresType(r *compiler.Result, col *compiler.Column, settings config.Comb
 	case "smallint", "int2", "pg_catalog.int2":
 		return "int16"
 
-	case "float", "double precision", "pg_catalog.float8":
+	case "float", "double precision", "float8", "pg_catalog.float8":
 		if notNull {
 			return "float64"
 		}
 		return "sql.NullFloat64"
 
-	case "real", "pg_catalog.float4":
+	case "real", "float4", "pg_catalog.float4":
 		if notNull {
 			return "float32"
 		}
 		return "sql.NullFloat64" // TODO: Change to sql.NullFloat32 after updating the go.mod file
 
-	case "pg_catalog.numeric", "money":
+	case "numeric", "pg_catalog.numeric", "money":
 		// Since the Go standard library does not have a decimal type, lib/pq
 		// returns numerics as strings.
 		//
@@ -121,7 +121,7 @@ func postgresType(r *compiler.Result, col *compiler.Column, settings config.Comb
 		}
 		return "sql.NullString"
 
-	case "pg_catalog.interval":
+	case "interval", "pg_catalog.interval":
 		if notNull {
 			return "int64"
 		}

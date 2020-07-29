@@ -170,24 +170,25 @@ func resolveCatalogRefs(c *catalog.Catalog, rvs []*pg.RangeVar, args []paramRef,
 			}
 
 		case *ast.FuncCall:
-			fun, err := c.GetFuncN(n.Func, len(n.Args.Items))
+			fun, err := c.ResolveFuncCall(n)
 			if err != nil {
+				// Synthesize a function on the fly to avoid returning with an error
+				// for an unknown Postgres function (e.g. defined in an extension)
 				var args []*catalog.Argument
 				for range n.Args.Items {
 					args = append(args, &catalog.Argument{
 						Type: &ast.TypeName{Name: "any"},
 					})
 				}
-				// Synthesize a function on the fly to avoid returning with an error
-				// for an unknown Postgres function (e.g. defined in an extension)
-				fun = catalog.Function{
+				fun = &catalog.Function{
 					Name:       n.Func.Name,
 					Args:       args,
 					ReturnType: &ast.TypeName{Name: "any"},
 				}
 			}
 			for i, item := range n.Args.Items {
-				defaultName := fun.Name
+				funcName := fun.Name
+				var argName string
 				switch inode := item.(type) {
 				case *pg.ParamRef:
 					if inode.Number != ref.ref.Number {
@@ -210,11 +211,15 @@ func resolveCatalogRefs(c *catalog.Catalog, rvs []*pg.RangeVar, args []paramRef,
 						continue
 					}
 					if inode.Name != nil {
-						defaultName = *inode.Name
+						argName = *inode.Name
 					}
 				}
 
 				if fun.Args == nil {
+					defaultName := funcName
+					if argName != "" {
+						defaultName = argName
+					}
 					a = append(a, Parameter{
 						Number: ref.ref.Number,
 						Column: &Column{
@@ -225,19 +230,31 @@ func resolveCatalogRefs(c *catalog.Catalog, rvs []*pg.RangeVar, args []paramRef,
 					continue
 				}
 
-				if i >= len(fun.Args) {
-					return nil, fmt.Errorf("incorrect number of arguments to %s", fun.Name)
+				var paramName string
+				var paramType *ast.TypeName
+				if argName == "" {
+					paramName = fun.Args[i].Name
+					paramType = fun.Args[i].Type
+				} else {
+					paramName = argName
+					for _, arg := range fun.Args {
+						if arg.Name == argName {
+							paramType = arg.Type
+						}
+					}
+					if paramType == nil {
+						panic(fmt.Sprintf("named argument %s has no type", paramName))
+					}
 				}
-				arg := fun.Args[i]
-				name := arg.Name
-				if name == "" {
-					name = defaultName
+				if paramName == "" {
+					paramName = funcName
 				}
+
 				a = append(a, Parameter{
 					Number: ref.ref.Number,
 					Column: &Column{
-						Name:     parameterName(ref.ref.Number, name),
-						DataType: dataType(arg.Type),
+						Name:     parameterName(ref.ref.Number, paramName),
+						DataType: dataType(paramType),
 						NotNull:  true,
 					},
 				})

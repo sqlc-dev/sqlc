@@ -11,8 +11,8 @@ const advisoryLock = `-- name: AdvisoryLock :many
 SELECT pg_advisory_unlock($1)
 `
 
-func (q *Queries) AdvisoryLock(ctx context.Context, key int64) ([]bool, error) {
-	rows, err := q.db.QueryContext(ctx, advisoryLock, key)
+func (q *Queries) AdvisoryLock(ctx context.Context, pgAdvisoryUnlock int64) ([]bool, error) {
+	rows, err := q.db.QueryContext(ctx, advisoryLock, pgAdvisoryUnlock)
 	if err != nil {
 		return nil, err
 	}

@@ -95,6 +95,14 @@ func TypeNotFound(typ string) *Error {
 	}
 }
 
+func FunctionNotFound(fun string) *Error {
+	return &Error{
+		Err:     NotFound,
+		Code:    "42704",
+		Message: fmt.Sprintf("function \"%s\"", fun),
+	}
+}
+
 func FunctionNotUnique(fn string) *Error {
 	return &Error{
 		Err:     NotUnique,
