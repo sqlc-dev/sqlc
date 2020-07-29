@@ -11,9 +11,9 @@ const makeIntervalDays = `-- name: MakeIntervalDays :one
 SELECT make_interval(days => $1::int)
 `
 
-func (q *Queries) MakeIntervalDays(ctx context.Context, dollar_1 int32) (interface{}, error) {
+func (q *Queries) MakeIntervalDays(ctx context.Context, dollar_1 int32) (int64, error) {
 	row := q.db.QueryRowContext(ctx, makeIntervalDays, dollar_1)
-	var make_interval interface{}
+	var make_interval int64
 	err := row.Scan(&make_interval)
 	return make_interval, err
 }
@@ -22,9 +22,9 @@ const makeIntervalMonths = `-- name: MakeIntervalMonths :one
 SELECT make_interval(months => $1::int)
 `
 
-func (q *Queries) MakeIntervalMonths(ctx context.Context, months int32) (interface{}, error) {
+func (q *Queries) MakeIntervalMonths(ctx context.Context, months int32) (int64, error) {
 	row := q.db.QueryRowContext(ctx, makeIntervalMonths, months)
-	var make_interval interface{}
+	var make_interval int64
 	err := row.Scan(&make_interval)
 	return make_interval, err
 }
@@ -33,9 +33,9 @@ const makeIntervalSecs = `-- name: MakeIntervalSecs :one
 SELECT make_interval(secs => $1)
 `
 
-func (q *Queries) MakeIntervalSecs(ctx context.Context, secs interface{}) (interface{}, error) {
+func (q *Queries) MakeIntervalSecs(ctx context.Context, secs float64) (int64, error) {
 	row := q.db.QueryRowContext(ctx, makeIntervalSecs, secs)
-	var make_interval interface{}
+	var make_interval int64
 	err := row.Scan(&make_interval)
 	return make_interval, err
 }
@@ -45,12 +45,12 @@ SELECT plus(b => $2, a => $1)
 `
 
 type PlusParams struct {
-	B int32
 	A int32
+	B int32
 }
 
 func (q *Queries) Plus(ctx context.Context, arg PlusParams) (int32, error) {
-	row := q.db.QueryRowContext(ctx, plus, arg.B, arg.A)
+	row := q.db.QueryRowContext(ctx, plus, arg.A, arg.B)
 	var plus int32
 	err := row.Scan(&plus)
 	return plus, err

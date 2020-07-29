@@ -1,7 +1,11 @@
 package catalog
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
+	"github.com/kyleconroy/sqlc/internal/sql/ast/pg"
 	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
 )
 
@@ -28,23 +32,83 @@ func (c *Catalog) ListFuncsByName(rel *ast.FuncName) ([]Function, error) {
 	return funcs, nil
 }
 
-func (c *Catalog) GetFuncN(rel *ast.FuncName, n int) (Function, error) {
-	for _, ns := range c.schemasToSearch(rel.Schema) {
-		s, err := c.getSchema(ns)
-		if err != nil {
-			return Function{}, err
-		}
-		for i := range s.Funcs {
-			if s.Funcs[i].Name != rel.Name {
-				continue
-			}
-			args := s.Funcs[i].InArgs()
-			if len(args) == n {
-				return *s.Funcs[i], nil
+func (c *Catalog) ResolveFuncCall(call *ast.FuncCall) (*Function, error) {
+	// Do not validate unknown functions
+	funs, err := c.ListFuncsByName(call.Func)
+	if err != nil || len(funs) == 0 {
+		return nil, sqlerr.FunctionNotFound(call.Func.Name)
+	}
+
+	// https://www.postgresql.org/docs/current/sql-syntax-calling-funcs.html
+	var positional []ast.Node
+	var named []*pg.NamedArgExpr
+
+	if call.Args != nil {
+		for _, arg := range call.Args.Items {
+			if narg, ok := arg.(*pg.NamedArgExpr); ok {
+				named = append(named, narg)
+			} else {
+				// The mixed notation combines positional and named notation.
+				// However, as already mentioned, named arguments cannot precede
+				// positional arguments.
+				if len(named) > 0 {
+					return nil, &sqlerr.Error{
+						Code:     "",
+						Message:  "positional argument cannot follow named argument",
+						Location: call.Pos(),
+					}
+				}
+				positional = append(positional, arg)
 			}
 		}
 	}
-	return Function{}, sqlerr.RelationNotFound(rel.Name)
+
+	for _, fun := range funs {
+		args := fun.InArgs()
+		var defaults int
+		known := map[string]struct{}{}
+		for _, arg := range args {
+			if arg.HasDefault {
+				defaults += 1
+			}
+			if arg.Name != "" {
+				known[arg.Name] = struct{}{}
+			}
+		}
+		if (len(named) + len(positional)) > len(args) {
+			continue
+		}
+		if (len(named) + len(positional)) < (len(args) - defaults) {
+			continue
+		}
+
+		// Validate that the provided named arguments exist in the function
+		var unknownArgName bool
+		for _, expr := range named {
+			if expr.Name != nil {
+				if _, found := known[*expr.Name]; !found {
+					unknownArgName = true
+				}
+			}
+		}
+		if unknownArgName {
+			continue
+		}
+
+		return &fun, nil
+	}
+
+	var sig []string
+	for range call.Args.Items {
+		sig = append(sig, "unknown")
+	}
+
+	return nil, &sqlerr.Error{
+		Code:     "42883",
+		Message:  fmt.Sprintf("function %s(%s) does not exist", call.Func.Name, strings.Join(sig, ", ")),
+		Location: call.Pos(),
+		// Hint: "No function matches the given name and argument types. You might need to add explicit type casts.",
+	}
 }
 
 func (c *Catalog) GetTable(rel *ast.TableName) (Table, error) {
