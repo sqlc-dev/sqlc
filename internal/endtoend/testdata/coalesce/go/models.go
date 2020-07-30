@@ -8,4 +8,5 @@ import (
 
 type Foo struct {
 	Bar sql.NullString
+	Bat string
 }
