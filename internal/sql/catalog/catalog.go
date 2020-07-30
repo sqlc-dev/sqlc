@@ -2,6 +2,7 @@ package catalog
 
 import (
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
+	"github.com/kyleconroy/sqlc/internal/sql/ast/pg"
 	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
 )
 
@@ -16,12 +17,15 @@ func stringSlice(list *ast.List) []string {
 }
 
 type Catalog struct {
-	Name    string
-	Schemas []*Schema
-	Comment string
-
-	SearchPath    []string
+	Comment       string
 	DefaultSchema string
+	Name          string
+	Schemas       []*Schema
+	SearchPath    []string
+	LoadExtension func(string) *Schema
+
+	// TODO: un-export
+	Extensions map[string]struct{}
 }
 
 func (c *Catalog) getSchema(name string) (*Schema, error) {
@@ -253,6 +257,7 @@ func New(def string) *Catalog {
 		Schemas: []*Schema{
 			&Schema{Name: def},
 		},
+		Extensions: map[string]struct{}{},
 	}
 }
 
@@ -273,42 +278,64 @@ func (c *Catalog) Update(stmt ast.Statement) error {
 	switch n := stmt.Raw.Stmt.(type) {
 	case *ast.AlterTableStmt:
 		err = c.alterTable(n)
+
 	case *ast.AlterTableSetSchemaStmt:
 		err = c.alterTableSetSchema(n)
+
 	case *ast.AlterTypeAddValueStmt:
 		err = c.alterTypeAddValue(n)
+
 	case *ast.AlterTypeRenameValueStmt:
 		err = c.alterTypeRenameValue(n)
+
 	case *ast.CommentOnColumnStmt:
 		err = c.commentOnColumn(n)
+
 	case *ast.CommentOnSchemaStmt:
 		err = c.commentOnSchema(n)
+
 	case *ast.CommentOnTableStmt:
 		err = c.commentOnTable(n)
+
 	case *ast.CommentOnTypeStmt:
 		err = c.commentOnType(n)
+
 	case *ast.CompositeTypeStmt:
 		err = c.createCompositeType(n)
+
 	case *ast.CreateEnumStmt:
 		err = c.createEnum(n)
+
+	case *pg.CreateExtensionStmt:
+		err = c.createExtension(n)
+
 	case *ast.CreateFunctionStmt:
 		err = c.createFunction(n)
+
 	case *ast.CreateSchemaStmt:
 		err = c.createSchema(n)
+
 	case *ast.CreateTableStmt:
 		err = c.createTable(n)
+
 	case *ast.DropFunctionStmt:
 		err = c.dropFunction(n)
+
 	case *ast.DropSchemaStmt:
 		err = c.dropSchema(n)
+
 	case *ast.DropTableStmt:
 		err = c.dropTable(n)
+
 	case *ast.DropTypeStmt:
 		err = c.dropType(n)
+
 	case *ast.RenameColumnStmt:
 		err = c.renameColumn(n)
+
 	case *ast.RenameTableStmt:
 		err = c.renameTable(n)
+
 	}
 	return err
 }
