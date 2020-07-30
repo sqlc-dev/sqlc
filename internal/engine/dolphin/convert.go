@@ -106,6 +106,18 @@ func (c *cc) convertBinaryOperationExpr(n *pcast.BinaryOperationExpr) ast.Node {
 	}
 }
 
+func (c *cc) convertCaseExpr(n *pcast.CaseExpr) *pg.CaseExpr {
+	args := &ast.List{}
+	for _, when := range n.WhenClauses {
+		args.Items = append(args.Items, c.convert(when))
+	}
+	return &pg.CaseExpr{
+		Xpr:       c.convert(n.Value),
+		Args:      args,
+		Defresult: c.convert(n.ElseClause),
+	}
+}
+
 func (c *cc) convertCreateTableStmt(n *pcast.CreateTableStmt) ast.Node {
 	create := &ast.CreateTableStmt{
 		Name:        parseTableName(n.Table),
@@ -358,6 +370,13 @@ func (c *cc) convertValueExpr(n *driver.ValueExpr) *pg.A_Const {
 	}
 }
 
+func (c *cc) convertWhenClause(n *pcast.WhenClause) *pg.CaseWhen {
+	return &pg.CaseWhen{
+		Expr:   c.convert(n.Expr),
+		Result: c.convert(n.Result),
+	}
+}
+
 func (c *cc) convertWildCardField(n *pcast.WildCardField) *pg.ColumnRef {
 	items := []ast.Node{}
 	if t := n.Table.String(); t != "" {
@@ -386,6 +405,9 @@ func (c *cc) convert(node pcast.Node) ast.Node {
 
 	case *pcast.BinaryOperationExpr:
 		return c.convertBinaryOperationExpr(n)
+
+	case *pcast.CaseExpr:
+		return c.convertCaseExpr(n)
 
 	case *pcast.ColumnNameExpr:
 		return c.convertColumnNameExpr(n)
@@ -416,6 +438,9 @@ func (c *cc) convert(node pcast.Node) ast.Node {
 
 	case *pcast.UpdateStmt:
 		return c.convertUpdateStmt(n)
+
+	case *pcast.WhenClause:
+		return c.convertWhenClause(n)
 
 	case nil:
 		return nil
