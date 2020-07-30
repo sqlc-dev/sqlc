@@ -585,7 +585,7 @@ func TestUpdate(t *testing.T) {
 				}
 			}
 
-			if diff := cmp.Diff(e, c, cmpopts.EquateEmpty()); diff != "" {
+			if diff := cmp.Diff(e.Schemas, c.Schemas, cmpopts.EquateEmpty()); diff != "" {
 				t.Log(test.stmt)
 				t.Errorf("catalog mismatch:\n%s", diff)
 			}
