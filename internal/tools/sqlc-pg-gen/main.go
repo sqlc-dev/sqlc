@@ -5,8 +5,10 @@ import (
 	"context"
 	"fmt"
 	"go/format"
+	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 	"text/template"
 
@@ -31,6 +33,31 @@ WHERE n.nspname OPERATOR(pg_catalog.~) '^(pg_catalog)$'
 ORDER BY 1;
 `
 
+// https://dba.stackexchange.com/questions/255412/how-to-select-functions-that-belong-in-a-given-extension-in-postgresql
+//
+// Extension functions are added to the public schema
+const extensionFuncs = `
+WITH extension_funcs AS (
+  SELECT p.oid
+  FROM pg_catalog.pg_extension AS e
+      INNER JOIN pg_catalog.pg_depend AS d ON (d.refobjid = e.oid)
+      INNER JOIN pg_catalog.pg_proc AS p ON (p.oid = d.objid)
+      INNER JOIN pg_catalog.pg_namespace AS ne ON (ne.oid = e.extnamespace)
+      INNER JOIN pg_catalog.pg_namespace AS np ON (np.oid = p.pronamespace)
+  WHERE d.deptype = 'e' AND e.extname = $1
+)
+SELECT p.proname as name,
+  format_type(p.prorettype, NULL),
+  array(select format_type(unnest(p.proargtypes), NULL)),
+  p.proargnames,
+  p.proargnames[p.pronargs-p.pronargdefaults+1:p.pronargs]
+FROM pg_catalog.pg_proc p
+JOIN extension_funcs ef ON ef.oid = p.oid
+WHERE p.proargmodes IS NULL
+  AND pg_function_is_visible(p.oid)
+ORDER BY 1;
+`
+
 const catalogTmpl = `
 package postgresql
 
@@ -39,10 +66,10 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 )
 
-func genPGCatalog() *catalog.Schema {
+func gen{{.Name}}() *catalog.Schema {
 	s := &catalog.Schema{Name: "pg_catalog"}
 	s.Funcs = []*catalog.Function{
-	    {{- range .}}
+	    {{- range .Funcs}}
 		{
 			Name: "{{.Name}}",
 			Args: []*catalog.Argument{
@@ -64,6 +91,11 @@ func genPGCatalog() *catalog.Schema {
 	return s
 }
 `
+
+type tmplCtx struct {
+	Name  string
+	Funcs []catalog.Function
+}
 
 func main() {
 	if err := run(context.Background()); err != nil {
@@ -118,29 +150,13 @@ func (p Proc) Args() []*catalog.Argument {
 	return args
 }
 
-func run(ctx context.Context) error {
-	tmpl, err := template.New("").Parse(catalogTmpl)
-	if err != nil {
-		return err
-	}
-	conn, err := pgx.Connect(ctx, os.Getenv("DATABASE_URL"))
-	if err != nil {
-		return err
-	}
-	defer conn.Close(ctx)
-
-	rows, err := conn.Query(ctx, catalogFuncs)
-	if err != nil {
-		return err
-	}
-
+func scanFuncs(rows pgx.Rows) ([]catalog.Function, error) {
 	defer rows.Close()
-
 	// Iterate through the result set
 	var funcs []catalog.Function
 	for rows.Next() {
 		var p Proc
-		err = rows.Scan(
+		err := rows.Scan(
 			&p.Name,
 			&p.ReturnType,
 			&p.ArgTypes,
@@ -148,7 +164,7 @@ func run(ctx context.Context) error {
 			&p.HasDefault,
 		)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		// TODO: Filter these out in SQL
@@ -165,27 +181,87 @@ func run(ctx context.Context) error {
 		// to return internal unless it has at least one internal argument
 		//
 		// https://www.postgresql.org/docs/current/datatype-pseudo.html
+		var skip bool
 		for i := range p.ArgTypes {
 			if p.ArgTypes[i] == "internal" {
-				continue
+				skip = true
 			}
+		}
+		if skip {
+			continue
+		}
+		if p.ReturnType == "internal" {
+			continue
 		}
 
 		funcs = append(funcs, p.Func())
 	}
+	return funcs, rows.Err()
+}
 
-	if rows.Err() != nil {
+func run(ctx context.Context) error {
+	tmpl, err := template.New("").Parse(catalogTmpl)
+	if err != nil {
 		return err
 	}
+	conn, err := pgx.Connect(ctx, os.Getenv("DATABASE_URL"))
+	if err != nil {
+		return err
+	}
+	defer conn.Close(ctx)
 
+	// Generate internal/engine/postgresql/pg_catalog.gen.go
+	rows, err := conn.Query(ctx, catalogFuncs)
+	if err != nil {
+		return err
+	}
+	funcs, err := scanFuncs(rows)
+	if err != nil {
+		return err
+	}
 	out := bytes.NewBuffer([]byte{})
-	if err := tmpl.Execute(out, funcs); err != nil {
+	if err := tmpl.Execute(out, tmplCtx{Name: "PGCatalog", Funcs: funcs}); err != nil {
 		return err
 	}
 	code, err := format.Source(out.Bytes())
 	if err != nil {
 		return err
 	}
-	_, err = fmt.Fprintf(os.Stdout, string(code))
-	return err
+	err = ioutil.WriteFile(filepath.Join("internal", "engine", "postgresql", "pg_catalog.gen.go"), code, 0644)
+	if err != nil {
+		return err
+	}
+
+	// https://www.postgresql.org/docs/current/contrib.html
+	extensions := map[string]string{
+		"citext":    "CIText",
+		"pg_trgm":   "PGTrigram",
+		"pgcrypto":  "PGCrypto",
+		"uuid-ossp": "UUIDOSSP",
+	}
+
+	for extension, name := range extensions {
+		_, err := conn.Exec(ctx, fmt.Sprintf("CREATE EXTENSION IF NOT EXISTS \"%s\"", extension))
+		if err != nil {
+			return err
+		}
+		rows, err := conn.Query(ctx, extensionFuncs, extension)
+		funcs, err := scanFuncs(rows)
+		if err != nil {
+			return err
+		}
+		out := bytes.NewBuffer([]byte{})
+		if err := tmpl.Execute(out, tmplCtx{Name: name, Funcs: funcs}); err != nil {
+			return err
+		}
+		code, err := format.Source(out.Bytes())
+		if err != nil {
+			return err
+		}
+		err = ioutil.WriteFile(filepath.Join("internal", "engine", "postgresql", "extension_"+strings.Replace(extension, "-", "_", -1)+".gen.go"), code, 0644)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
