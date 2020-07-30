@@ -19,17 +19,3 @@ func newTestCatalog() *catalog.Catalog {
 	c.LoadExtension = loadExtension
 	return c
 }
-
-func loadExtension(name string) *catalog.Schema {
-	switch name {
-	case "citext":
-		return genCIText()
-	case "pg_trgm":
-		return genPGTrigram()
-	case "pgcrypto":
-		return genPGCrypto()
-	case "uuid-ossp":
-		return genUUIDOSSP()
-	}
-	return nil
-}
