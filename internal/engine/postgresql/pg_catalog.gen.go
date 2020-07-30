@@ -342,15 +342,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "cstring"},
 		},
 		{
-			Name: "anyarray_recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "anyarray"},
-		},
-		{
 			Name: "anyarray_send",
 			Args: []*catalog.Argument{
 				{
@@ -477,45 +468,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
-			Name: "areajoinsel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "areasel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
 			Name: "array_agg",
 			Args: []*catalog.Argument{
 				{
@@ -532,54 +484,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "anyarray"},
-		},
-		{
-			Name: "array_agg_array_finalfn",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "anyarray"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "anyarray"},
-		},
-		{
-			Name: "array_agg_array_transfn",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "anyarray"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "array_agg_finalfn",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "anynonarray"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "anyarray"},
-		},
-		{
-			Name: "array_agg_transfn",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "anynonarray"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
 		},
 		{
 			Name: "array_append",
@@ -834,21 +738,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "anyarray"},
 		},
 		{
-			Name: "array_recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "anyarray"},
-		},
-		{
 			Name: "array_remove",
 			Args: []*catalog.Argument{
 				{
@@ -954,24 +843,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "tsvector"},
 		},
 		{
-			Name: "array_typanalyze",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "array_unnest_support",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
 			Name: "array_upper",
 			Args: []*catalog.Argument{
 				{
@@ -1008,45 +879,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
-			Name: "arraycontjoinsel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "arraycontsel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
 			Name: "arrayoverlap",
 			Args: []*catalog.Argument{
 				{
@@ -1066,48 +898,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "integer"},
-		},
-		{
-			Name: "ascii_to_mic",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "ascii_to_utf8",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
 		},
 		{
 			Name: "asin",
@@ -1249,78 +1039,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "numeric"},
-		},
-		{
-			Name: "bernoulli",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "tsm_handler"},
-		},
-		{
-			Name: "big5_to_euc_tw",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "big5_to_mic",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "big5_to_utf8",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
 		},
 		{
 			Name: "binary_upgrade_create_empty_extension",
@@ -1608,21 +1326,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "cstring"},
 		},
 		{
-			Name: "bit_recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "bit"},
-		},
-		{
 			Name: "bit_send",
 			Args: []*catalog.Argument{
 				{
@@ -1833,52 +1536,10 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
-			Name: "bool_accum",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "boolean"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "bool_accum_inv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "boolean"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "bool_alltrue",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
 			Name: "bool_and",
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "boolean"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "bool_anytrue",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -2005,15 +1666,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "cstring"},
-		},
-		{
-			Name: "boolrecv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
 			Name: "boolsend",
@@ -2379,15 +2031,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
-			Name: "box_recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "box"},
-		},
-		{
 			Name: "box_right",
 			Args: []*catalog.Argument{
 				{
@@ -2536,15 +2179,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "character"},
-		},
-		{
-			Name: "bpchar_sortsupport",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
 		},
 		{
 			Name: "bpcharcmp",
@@ -2727,21 +2361,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "cstring"},
 		},
 		{
-			Name: "bpcharrecv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "character"},
-		},
-		{
 			Name: "bpcharregexeq",
 			Args: []*catalog.Argument{
 				{
@@ -2805,120 +2424,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "void"},
 		},
 		{
-			Name: "brin_inclusion_add_value",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "brin_inclusion_consistent",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "brin_inclusion_opcinfo",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "brin_inclusion_union",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "brin_minmax_add_value",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "brin_minmax_consistent",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "brin_minmax_opcinfo",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "brin_minmax_union",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
 			Name: "brin_summarize_new_values",
 			Args: []*catalog.Argument{
 				{
@@ -2938,15 +2443,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "integer"},
-		},
-		{
-			Name: "brinhandler",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "index_am_handler"},
 		},
 		{
 			Name: "broadcast",
@@ -2994,15 +2490,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "integer"},
 		},
 		{
-			Name: "btbpchar_pattern_sortsupport",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
 			Name: "btcharcmp",
 			Args: []*catalog.Argument{
 				{
@@ -3039,15 +2526,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "integer"},
 		},
 		{
-			Name: "btfloat4sortsupport",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
 			Name: "btfloat84cmp",
 			Args: []*catalog.Argument{
 				{
@@ -3070,24 +2548,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "integer"},
-		},
-		{
-			Name: "btfloat8sortsupport",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "bthandler",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "index_am_handler"},
 		},
 		{
 			Name: "btint24cmp",
@@ -3126,15 +2586,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "integer"},
 		},
 		{
-			Name: "btint2sortsupport",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
 			Name: "btint42cmp",
 			Args: []*catalog.Argument{
 				{
@@ -3169,15 +2620,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "integer"},
-		},
-		{
-			Name: "btint4sortsupport",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
 		},
 		{
 			Name: "btint82cmp",
@@ -3216,15 +2658,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "integer"},
 		},
 		{
-			Name: "btint8sortsupport",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
 			Name: "btnamecmp",
 			Args: []*catalog.Argument{
 				{
@@ -3235,15 +2668,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "integer"},
-		},
-		{
-			Name: "btnamesortsupport",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
 		},
 		{
 			Name: "btnametextcmp",
@@ -3268,15 +2692,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "integer"},
-		},
-		{
-			Name: "btoidsortsupport",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
 		},
 		{
 			Name: "btoidvectorcmp",
@@ -3360,15 +2775,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "integer"},
 		},
 		{
-			Name: "bttext_pattern_sortsupport",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
 			Name: "bttextcmp",
 			Args: []*catalog.Argument{
 				{
@@ -3393,15 +2799,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "integer"},
 		},
 		{
-			Name: "bttextsortsupport",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
 			Name: "bttidcmp",
 			Args: []*catalog.Argument{
 				{
@@ -3412,39 +2809,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "integer"},
-		},
-		{
-			Name: "bytea_sortsupport",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "bytea_string_agg_finalfn",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "bytea"},
-		},
-		{
-			Name: "bytea_string_agg_transfn",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "bytea"},
-				},
-				{
-					Type: &ast.TypeName{Name: "bytea"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
 		},
 		{
 			Name: "byteacat",
@@ -3583,15 +2947,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "cstring"},
-		},
-		{
-			Name: "bytearecv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "bytea"},
 		},
 		{
 			Name: "byteasend",
@@ -3870,15 +3225,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "money"},
 		},
 		{
-			Name: "cash_recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "money"},
-		},
-		{
 			Name: "cash_send",
 			Args: []*catalog.Argument{
 				{
@@ -4128,15 +3474,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "cstring"},
 		},
 		{
-			Name: "charrecv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "char"},
-		},
-		{
 			Name: "charsend",
 			Args: []*catalog.Argument{
 				{
@@ -4212,15 +3549,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "cstring"},
 		},
 		{
-			Name: "cidr_recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "cidr"},
-		},
-		{
 			Name: "cidr_send",
 			Args: []*catalog.Argument{
 				{
@@ -4228,15 +3556,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "bytea"},
-		},
-		{
-			Name: "cidrecv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "cid"},
 		},
 		{
 			Name: "cidsend",
@@ -4557,15 +3876,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
-			Name: "circle_recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "circle"},
-		},
-		{
 			Name: "circle_right",
 			Args: []*catalog.Argument{
 				{
@@ -4724,45 +4034,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
-			Name: "contjoinsel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "contsel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
 			Name: "convert",
 			Args: []*catalog.Argument{
 				{
@@ -4910,15 +4181,6 @@ func genPGCatalog() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "cstring"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "cstring"},
-		},
-		{
-			Name: "cstring_recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "cstring"},
@@ -5555,15 +4817,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "date"},
 		},
 		{
-			Name: "date_recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "date"},
-		},
-		{
 			Name: "date_send",
 			Args: []*catalog.Argument{
 				{
@@ -5583,15 +4836,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "date"},
-		},
-		{
-			Name: "date_sortsupport",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
 		},
 		{
 			Name: "date_trunc",
@@ -5777,33 +5021,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "dispell_init",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "dispell_lexize",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
 		},
 		{
 			Name: "dist_cpoint",
@@ -5995,21 +5212,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "domain_recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
 			Name: "dpow",
 			Args: []*catalog.Argument{
 				{
@@ -6031,60 +5233,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
-			Name: "dsimple_init",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "dsimple_lexize",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "dsnowball_init",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "dsnowball_lexize",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
 			Name: "dsqrt",
 			Args: []*catalog.Argument{
 				{
@@ -6092,33 +5240,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "dsynonym_init",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "dsynonym_lexize",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
 		},
 		{
 			Name: "dtrunc",
@@ -6310,18 +5431,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "anyarray"},
 		},
 		{
-			Name: "enum_recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "anyenum"},
-		},
-		{
 			Name: "enum_send",
 			Args: []*catalog.Argument{
 				{
@@ -6341,297 +5450,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "anyenum"},
-		},
-		{
-			Name: "eqjoinsel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "eqsel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "euc_cn_to_mic",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "euc_cn_to_utf8",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "euc_jis_2004_to_shift_jis_2004",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "euc_jis_2004_to_utf8",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "euc_jp_to_mic",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "euc_jp_to_sjis",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "euc_jp_to_utf8",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "euc_kr_to_mic",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "euc_kr_to_utf8",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "euc_tw_to_big5",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "euc_tw_to_mic",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "euc_tw_to_utf8",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
 		},
 		{
 			Name: "event_trigger_in",
@@ -7064,15 +5882,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 				{
 					Type: &ast.TypeName{Name: "real"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "real"},
-		},
-		{
-			Name: "float4recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "real"},
@@ -7645,15 +6454,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
-			Name: "float8recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
 			Name: "float8send",
 			Args: []*catalog.Argument{
 				{
@@ -7783,48 +6583,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
-			Name: "gb18030_to_utf8",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "gbk_to_utf8",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
 			Name: "generate_series",
 			Args: []*catalog.Argument{
 				{
@@ -7936,24 +6694,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
-			Name: "generate_series_int4_support",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "generate_series_int8_support",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
 			Name: "generate_subscripts",
 			Args: []*catalog.Argument{
 				{
@@ -8041,24 +6781,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "bigint"},
 		},
 		{
-			Name: "gin_cmp_prefix",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "integer"},
-		},
-		{
 			Name: "gin_cmp_tslexeme",
 			Args: []*catalog.Argument{
 				{
@@ -8081,1002 +6803,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "integer"},
-		},
-		{
-			Name: "gin_consistent_jsonb",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "jsonb"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "gin_consistent_jsonb_path",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "jsonb"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "gin_extract_jsonb",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "jsonb"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "gin_extract_jsonb_path",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "jsonb"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "gin_extract_jsonb_query",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "jsonb"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "gin_extract_jsonb_query_path",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "jsonb"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "gin_extract_tsquery",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "tsvector"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "gin_extract_tsquery",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "tsquery"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "gin_extract_tsquery",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "tsquery"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "gin_extract_tsvector",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "tsvector"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "gin_extract_tsvector",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "tsvector"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "gin_triconsistent_jsonb",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "jsonb"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "char"},
-		},
-		{
-			Name: "gin_triconsistent_jsonb_path",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "jsonb"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "char"},
-		},
-		{
-			Name: "gin_tsquery_consistent",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "tsvector"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "gin_tsquery_consistent",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "tsquery"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "gin_tsquery_consistent",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "tsquery"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "gin_tsquery_triconsistent",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "tsvector"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "char"},
-		},
-		{
-			Name: "ginarrayconsistent",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "anyarray"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "ginarrayextract",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "anyarray"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "ginarrayextract",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "anyarray"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "ginarraytriconsistent",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "anyarray"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "char"},
-		},
-		{
-			Name: "ginhandler",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "index_am_handler"},
-		},
-		{
-			Name: "ginqueryarrayextract",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "anyarray"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "gist_box_consistent",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "box"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "gist_box_penalty",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "gist_box_picksplit",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "gist_box_same",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "box"},
-				},
-				{
-					Type: &ast.TypeName{Name: "box"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "gist_box_union",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "box"},
-		},
-		{
-			Name: "gist_circle_compress",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "gist_circle_consistent",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "circle"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "gist_circle_distance",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "circle"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "gist_point_compress",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "gist_point_consistent",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "point"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "gist_point_distance",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "point"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "gist_point_fetch",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "gist_poly_compress",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "gist_poly_consistent",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "polygon"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "gist_poly_distance",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "polygon"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "gisthandler",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "index_am_handler"},
-		},
-		{
-			Name: "gtsquery_compress",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "gtsquery_consistent",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "tsquery"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "gtsquery_consistent",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "gtsquery_penalty",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "gtsquery_picksplit",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "gtsquery_same",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "gtsquery_union",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "bigint"},
-		},
-		{
-			Name: "gtsvector_compress",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "gtsvector_consistent",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "tsvector"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "gtsvector_consistent",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "gtsvector"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "gtsvector_decompress",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "gtsvector_penalty",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "gtsvector_picksplit",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "gtsvector_same",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "gtsvector"},
-				},
-				{
-					Type: &ast.TypeName{Name: "gtsvector"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "gtsvector_union",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "gtsvector"},
 		},
 		{
 			Name: "gtsvectorin",
@@ -10414,15 +8140,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "bigint"},
 		},
 		{
-			Name: "hashhandler",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "index_am_handler"},
-		},
-		{
 			Name: "hashinet",
 			Args: []*catalog.Argument{
 				{
@@ -10654,36 +8371,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "bigint"},
 		},
 		{
-			Name: "hashvarlena",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "integer"},
-		},
-		{
-			Name: "hashvarlenaextended",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "bigint"},
-		},
-		{
-			Name: "heap_tableam_handler",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "table_am_handler"},
-		},
-		{
 			Name: "height",
 			Args: []*catalog.Argument{
 				{
@@ -10709,162 +8396,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "inet"},
-		},
-		{
-			Name: "iclikejoinsel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "iclikesel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "icnlikejoinsel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "icnlikesel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "icregexeqjoinsel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "icregexeqsel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "icregexnejoinsel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "icregexnesel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
 			Name: "in_range",
@@ -11231,99 +8762,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "integer"},
 		},
 		{
-			Name: "inet_gist_compress",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "inet_gist_consistent",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "inet"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "inet_gist_fetch",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "inet_gist_penalty",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "inet_gist_picksplit",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "inet_gist_same",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "inet"},
-				},
-				{
-					Type: &ast.TypeName{Name: "inet"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "inet_gist_union",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "inet"},
-		},
-		{
 			Name: "inet_in",
 			Args: []*catalog.Argument{
 				{
@@ -11352,15 +8790,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "cstring"},
-		},
-		{
-			Name: "inet_recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "inet"},
 		},
 		{
 			Name: "inet_same_family",
@@ -11392,66 +8821,6 @@ func genPGCatalog() *catalog.Schema {
 			Name:       "inet_server_port",
 			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "integer"},
-		},
-		{
-			Name: "inet_spg_choose",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "inet_spg_config",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "inet_spg_inner_consistent",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "inet_spg_leaf_consistent",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "inet_spg_picksplit",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
 		},
 		{
 			Name: "inetand",
@@ -11826,30 +9195,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "bigint"},
 		},
 		{
-			Name: "int2_accum",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "int2_accum_inv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
 			Name: "int2_avg_accum",
 			Args: []*catalog.Argument{
 				{
@@ -12111,15 +9456,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "smallint"},
 		},
 		{
-			Name: "int2recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "smallint"},
-		},
-		{
 			Name: "int2send",
 			Args: []*catalog.Argument{
 				{
@@ -12199,15 +9535,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "cstring"},
-		},
-		{
-			Name: "int2vectorrecv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "int2vector"},
 		},
 		{
 			Name: "int2vectorsend",
@@ -12552,30 +9879,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "bigint"},
 		},
 		{
-			Name: "int4_accum",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "int4_accum_inv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
 			Name: "int4_avg_accum",
 			Args: []*catalog.Argument{
 				{
@@ -12895,15 +10198,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "int4recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "integer"},
 		},
 		{
 			Name: "int4send",
@@ -13293,30 +10587,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "bigint"},
 		},
 		{
-			Name: "int8_accum",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "int8_accum_inv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
 			Name: "int8_avg",
 			Args: []*catalog.Argument{
 				{
@@ -13324,63 +10594,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "numeric"},
-		},
-		{
-			Name: "int8_avg_accum",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "int8_avg_accum_inv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "int8_avg_combine",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "int8_avg_deserialize",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "bytea"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "int8_avg_serialize",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "bytea"},
 		},
 		{
 			Name: "int8_mul_cash",
@@ -13728,15 +10941,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
-			Name: "int8recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "bigint"},
-		},
-		{
 			Name: "int8send",
 			Args: []*catalog.Argument{
 				{
@@ -13858,24 +11062,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "internal_in",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "internal_out",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "cstring"},
 		},
 		{
 			Name: "interval",
@@ -14193,21 +11379,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "time with time zone"},
 		},
 		{
-			Name: "interval_recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "interval"},
-		},
-		{
 			Name: "interval_send",
 			Args: []*catalog.Argument{
 				{
@@ -14227,15 +11398,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "interval"},
-		},
-		{
-			Name: "interval_support",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
 		},
 		{
 			Name: "interval_um",
@@ -14349,132 +11511,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
-			Name: "iso8859_1_to_utf8",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "iso8859_to_utf8",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "iso_to_koi8r",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "iso_to_mic",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "iso_to_win1251",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "iso_to_win866",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
 			Name: "isopen",
 			Args: []*catalog.Argument{
 				{
@@ -14562,27 +11598,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
-			Name: "johab_to_utf8",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
 			Name: "json_agg",
 			Args: []*catalog.Argument{
 				{
@@ -14590,27 +11605,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "json"},
-		},
-		{
-			Name: "json_agg_finalfn",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "json"},
-		},
-		{
-			Name: "json_agg_transfn",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "anyelement"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
 		},
 		{
 			Name: "json_array_element",
@@ -14702,30 +11696,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "json"},
 		},
 		{
-			Name: "json_object_agg_finalfn",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "json"},
-		},
-		{
-			Name: "json_object_agg_transfn",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "any"},
-				},
-				{
-					Type: &ast.TypeName{Name: "any"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
 			Name: "json_object_field",
 			Args: []*catalog.Argument{
 				{
@@ -14810,15 +11780,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "anyelement"},
 		},
 		{
-			Name: "json_recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "json"},
-		},
-		{
 			Name: "json_send",
 			Args: []*catalog.Argument{
 				{
@@ -14898,27 +11859,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "jsonb"},
-		},
-		{
-			Name: "jsonb_agg_finalfn",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "jsonb"},
-		},
-		{
-			Name: "jsonb_agg_transfn",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "anyelement"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
 		},
 		{
 			Name: "jsonb_array_element",
@@ -15246,30 +12186,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "jsonb"},
 		},
 		{
-			Name: "jsonb_object_agg_finalfn",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "jsonb"},
-		},
-		{
-			Name: "jsonb_object_agg_transfn",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "any"},
-				},
-				{
-					Type: &ast.TypeName{Name: "any"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
 			Name: "jsonb_object_field",
 			Args: []*catalog.Argument{
 				{
@@ -15493,15 +12409,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
-			Name: "jsonb_recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "jsonb"},
-		},
-		{
 			Name: "jsonb_send",
 			Args: []*catalog.Argument{
 				{
@@ -15615,15 +12522,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "cstring"},
 		},
 		{
-			Name: "jsonpath_recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "jsonpath"},
-		},
-		{
 			Name: "jsonpath_send",
 			Args: []*catalog.Argument{
 				{
@@ -15658,132 +12556,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "interval"},
-		},
-		{
-			Name: "koi8r_to_iso",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "koi8r_to_mic",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "koi8r_to_utf8",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "koi8r_to_win1251",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "koi8r_to_win866",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "koi8u_to_utf8",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
 		},
 		{
 			Name: "lag",
@@ -15852,111 +12624,6 @@ func genPGCatalog() *catalog.Schema {
 			Name:       "lastval",
 			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "bigint"},
-		},
-		{
-			Name: "latin1_to_mic",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "latin2_to_mic",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "latin2_to_win1250",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "latin3_to_mic",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "latin4_to_mic",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
 		},
 		{
 			Name: "lead",
@@ -16142,45 +12809,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
-			Name: "likejoinsel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "likesel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
 			Name: "line",
 			Args: []*catalog.Argument{
 				{
@@ -16290,15 +12918,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "line_recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "line"},
 		},
 		{
 			Name: "line_send",
@@ -16874,15 +13493,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
-			Name: "lseg_recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "lseg"},
-		},
-		{
 			Name: "lseg_send",
 			Args: []*catalog.Argument{
 				{
@@ -17075,15 +13685,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "cstring"},
 		},
 		{
-			Name: "macaddr8_recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "macaddr8"},
-		},
-		{
 			Name: "macaddr8_send",
 			Args: []*catalog.Argument{
 				{
@@ -17237,15 +13838,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "cstring"},
 		},
 		{
-			Name: "macaddr_recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "macaddr"},
-		},
-		{
 			Name: "macaddr_send",
 			Args: []*catalog.Argument{
 				{
@@ -17253,15 +13845,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "bytea"},
-		},
-		{
-			Name: "macaddr_sortsupport",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
 		},
 		{
 			Name: "make_date",
@@ -17660,342 +14243,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
-			Name: "mic_to_ascii",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "mic_to_big5",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "mic_to_euc_cn",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "mic_to_euc_jp",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "mic_to_euc_kr",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "mic_to_euc_tw",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "mic_to_iso",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "mic_to_koi8r",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "mic_to_latin1",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "mic_to_latin2",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "mic_to_latin3",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "mic_to_latin4",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "mic_to_sjis",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "mic_to_win1250",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "mic_to_win1251",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "mic_to_win866",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
 			Name: "min",
 			Args: []*catalog.Argument{
 				{
@@ -18226,18 +14473,6 @@ func genPGCatalog() *catalog.Schema {
 		{
 			Name: "mode",
 			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "anyelement"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "anyelement"},
-		},
-		{
-			Name: "mode_final",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
 				{
 					Type: &ast.TypeName{Name: "anyelement"},
 				},
@@ -18566,15 +14801,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "cstring"},
 		},
 		{
-			Name: "namerecv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "name"},
-		},
-		{
 			Name: "nameregexeq",
 			Args: []*catalog.Argument{
 				{
@@ -18606,45 +14832,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "bytea"},
-		},
-		{
-			Name: "neqjoinsel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "neqsel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
 			Name: "netmask",
@@ -18809,15 +14996,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
-			Name: "network_subset_support",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
 			Name: "network_sup",
 			Args: []*catalog.Argument{
 				{
@@ -18842,45 +15020,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
-			Name: "networkjoinsel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "networksel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
 			Name: "nextval",
 			Args: []*catalog.Argument{
 				{
@@ -18888,45 +15027,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "bigint"},
-		},
-		{
-			Name: "nlikejoinsel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "nlikesel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
 			Name: "notlike",
@@ -19093,30 +15193,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
-			Name: "numeric_accum",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "numeric"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "numeric_accum_inv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "numeric"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
 			Name: "numeric_add",
 			Args: []*catalog.Argument{
 				{
@@ -19129,60 +15205,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
-			Name: "numeric_avg",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "numeric"},
-		},
-		{
-			Name: "numeric_avg_accum",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "numeric"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "numeric_avg_combine",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "numeric_avg_deserialize",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "bytea"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "numeric_avg_serialize",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "bytea"},
-		},
-		{
 			Name: "numeric_cmp",
 			Args: []*catalog.Argument{
 				{
@@ -19193,30 +15215,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "integer"},
-		},
-		{
-			Name: "numeric_combine",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "numeric_deserialize",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "bytea"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
 		},
 		{
 			Name: "numeric_div",
@@ -19423,93 +15421,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "cstring"},
 		},
 		{
-			Name: "numeric_poly_avg",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "numeric"},
-		},
-		{
-			Name: "numeric_poly_combine",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "numeric_poly_deserialize",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "bytea"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "numeric_poly_serialize",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "bytea"},
-		},
-		{
-			Name: "numeric_poly_stddev_pop",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "numeric"},
-		},
-		{
-			Name: "numeric_poly_stddev_samp",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "numeric"},
-		},
-		{
-			Name: "numeric_poly_sum",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "numeric"},
-		},
-		{
-			Name: "numeric_poly_var_pop",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "numeric"},
-		},
-		{
-			Name: "numeric_poly_var_samp",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "numeric"},
-		},
-		{
 			Name: "numeric_power",
 			Args: []*catalog.Argument{
 				{
@@ -19522,34 +15433,10 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
-			Name: "numeric_recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "numeric"},
-		},
-		{
 			Name: "numeric_send",
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "numeric"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "bytea"},
-		},
-		{
-			Name: "numeric_serialize",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "bytea"},
@@ -19567,37 +15454,10 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
-			Name: "numeric_sortsupport",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
 			Name: "numeric_sqrt",
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "numeric"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "numeric"},
-		},
-		{
-			Name: "numeric_stddev_pop",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "numeric"},
-		},
-		{
-			Name: "numeric_stddev_samp",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "numeric"},
@@ -19615,24 +15475,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
-			Name: "numeric_sum",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "numeric"},
-		},
-		{
-			Name: "numeric_support",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
 			Name: "numeric_uminus",
 			Args: []*catalog.Argument{
 				{
@@ -19646,24 +15488,6 @@ func genPGCatalog() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "numeric"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "numeric"},
-		},
-		{
-			Name: "numeric_var_pop",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "numeric"},
-		},
-		{
-			Name: "numeric_var_samp",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "numeric"},
@@ -19903,15 +15727,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "cstring"},
 		},
 		{
-			Name: "oidrecv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "oid"},
-		},
-		{
 			Name: "oidsend",
 			Args: []*catalog.Argument{
 				{
@@ -20023,15 +15838,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "cstring"},
 		},
 		{
-			Name: "oidvectorrecv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "oidvector"},
-		},
-		{
 			Name: "oidvectorsend",
 			Args: []*catalog.Argument{
 				{
@@ -20138,18 +15944,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "cstring"},
-		},
-		{
-			Name: "ordered_set_transition",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "any"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
 		},
 		{
 			Name: "overlaps",
@@ -20698,15 +16492,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "cstring"},
 		},
 		{
-			Name: "path_recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "path"},
-		},
-		{
 			Name: "path_send",
 			Args: []*catalog.Argument{
 				{
@@ -20790,54 +16575,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "interval[]"},
 		},
 		{
-			Name: "percentile_cont_float8_final",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "percentile_cont_float8_multi_final",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "double precision[]"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision[]"},
-		},
-		{
-			Name: "percentile_cont_interval_final",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "interval"},
-		},
-		{
-			Name: "percentile_cont_interval_multi_final",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "double precision[]"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "interval[]"},
-		},
-		{
 			Name: "percentile_disc",
 			Args: []*catalog.Argument{
 				{
@@ -20860,36 +16597,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "anyelement"},
-		},
-		{
-			Name: "percentile_disc_final",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-				{
-					Type: &ast.TypeName{Name: "anyelement"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "anyelement"},
-		},
-		{
-			Name: "percentile_disc_multi_final",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "double precision[]"},
-				},
-				{
-					Type: &ast.TypeName{Name: "anyelement"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "anyarray"},
 		},
 		{
 			Name: "pg_advisory_lock",
@@ -21204,15 +16911,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "cstring"},
 		},
 		{
-			Name: "pg_ddl_command_recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "pg_ddl_command"},
-		},
-		{
 			Name: "pg_ddl_command_send",
 			Args: []*catalog.Argument{
 				{
@@ -21238,15 +16936,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "cstring"},
-		},
-		{
-			Name: "pg_dependencies_recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "pg_dependencies"},
 		},
 		{
 			Name: "pg_dependencies_send",
@@ -22019,15 +17708,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "cstring"},
 		},
 		{
-			Name: "pg_lsn_recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "pg_lsn"},
-		},
-		{
 			Name: "pg_lsn_send",
 			Args: []*catalog.Argument{
 				{
@@ -22053,15 +17733,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "cstring"},
-		},
-		{
-			Name: "pg_mcv_list_recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "pg_mcv_list"},
 		},
 		{
 			Name: "pg_mcv_list_send",
@@ -22094,15 +17765,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "cstring"},
-		},
-		{
-			Name: "pg_ndistinct_recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "pg_ndistinct"},
 		},
 		{
 			Name: "pg_ndistinct_send",
@@ -22145,15 +17807,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "cstring"},
-		},
-		{
-			Name: "pg_node_tree_recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "pg_node_tree"},
 		},
 		{
 			Name: "pg_node_tree_send",
@@ -23659,15 +19312,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "language_handler"},
 		},
 		{
-			Name: "plpgsql_inline_handler",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
 			Name: "plpgsql_validator",
 			Args: []*catalog.Argument{
 				{
@@ -23870,15 +19514,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "cstring"},
-		},
-		{
-			Name: "point_recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "point"},
 		},
 		{
 			Name: "point_right",
@@ -24106,15 +19741,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
-			Name: "poly_recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "polygon"},
-		},
-		{
 			Name: "poly_right",
 			Args: []*catalog.Argument{
 				{
@@ -24232,45 +19858,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "integer"},
 		},
 		{
-			Name: "positionjoinsel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "positionsel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
 			Name: "postgresql_fdw_validator",
 			Args: []*catalog.Argument{
 				{
@@ -24329,105 +19916,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "prefixjoinsel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "prefixsel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "prsd_end",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "prsd_headline",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "tsquery"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "prsd_lextype",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "prsd_nexttoken",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "prsd_start",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
 		},
 		{
 			Name: "pt_contained_circle",
@@ -24705,81 +20193,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
-			Name: "range_gist_consistent",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "anyrange"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "range_gist_penalty",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "range_gist_picksplit",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "range_gist_same",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "anyrange"},
-				},
-				{
-					Type: &ast.TypeName{Name: "anyrange"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "range_gist_union",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "anyrange"},
-		},
-		{
 			Name: "range_gt",
 			Args: []*catalog.Argument{
 				{
@@ -24924,21 +20337,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
-			Name: "range_recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "anyrange"},
-		},
-		{
 			Name: "range_send",
 			Args: []*catalog.Argument{
 				{
@@ -24946,15 +20344,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "bytea"},
-		},
-		{
-			Name: "range_typanalyze",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
 			Name: "range_union",
@@ -24967,24 +20356,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "anyrange"},
-		},
-		{
-			Name: "rangesel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
 			Name:       "rank",
@@ -25160,21 +20531,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "cstring"},
 		},
 		{
-			Name: "record_recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "record"},
-		},
-		{
 			Name: "record_send",
 			Args: []*catalog.Argument{
 				{
@@ -25211,15 +20567,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "cstring"},
 		},
 		{
-			Name: "regclassrecv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "regclass"},
-		},
-		{
 			Name: "regclasssend",
 			Args: []*catalog.Argument{
 				{
@@ -25245,15 +20592,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "cstring"},
-		},
-		{
-			Name: "regconfigrecv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "regconfig"},
 		},
 		{
 			Name: "regconfigsend",
@@ -25283,15 +20621,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "cstring"},
 		},
 		{
-			Name: "regdictionaryrecv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "regdictionary"},
-		},
-		{
 			Name: "regdictionarysend",
 			Args: []*catalog.Argument{
 				{
@@ -25299,84 +20628,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "bytea"},
-		},
-		{
-			Name: "regexeqjoinsel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "regexeqsel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "regexnejoinsel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "regexnesel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
 			Name: "regexp_match",
@@ -25538,15 +20789,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "cstring"},
 		},
 		{
-			Name: "regnamespacerecv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "regnamespace"},
-		},
-		{
 			Name: "regnamespacesend",
 			Args: []*catalog.Argument{
 				{
@@ -25572,15 +20814,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "cstring"},
-		},
-		{
-			Name: "regoperatorrecv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "regoperator"},
 		},
 		{
 			Name: "regoperatorsend",
@@ -25610,15 +20843,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "cstring"},
 		},
 		{
-			Name: "regoperrecv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "regoper"},
-		},
-		{
 			Name: "regopersend",
 			Args: []*catalog.Argument{
 				{
@@ -25646,15 +20870,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "cstring"},
 		},
 		{
-			Name: "regprocedurerecv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "regprocedure"},
-		},
-		{
 			Name: "regproceduresend",
 			Args: []*catalog.Argument{
 				{
@@ -25680,15 +20895,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "cstring"},
-		},
-		{
-			Name: "regprocrecv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "regproc"},
 		},
 		{
 			Name: "regprocsend",
@@ -25826,15 +21032,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "cstring"},
 		},
 		{
-			Name: "regrolerecv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "regrole"},
-		},
-		{
 			Name: "regrolesend",
 			Args: []*catalog.Argument{
 				{
@@ -25860,15 +21057,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "cstring"},
-		},
-		{
-			Name: "regtyperecv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "regtype"},
 		},
 		{
 			Name: "regtypesend",
@@ -26048,162 +21236,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},
-		},
-		{
-			Name: "scalargejoinsel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "scalargesel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "scalargtjoinsel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "scalargtsel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "scalarlejoinsel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "scalarlesel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "scalarltjoinsel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "scalarltsel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
 			Name: "scale",
@@ -26487,48 +21519,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "cstring"},
 		},
 		{
-			Name: "shift_jis_2004_to_euc_jis_2004",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "shift_jis_2004_to_utf8",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
 			Name: "shobj_description",
 			Args: []*catalog.Argument{
 				{
@@ -26598,69 +21588,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
-			Name: "sjis_to_euc_jp",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "sjis_to_mic",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "sjis_to_utf8",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
 			Name: "slope",
 			Args: []*catalog.Argument{
 				{
@@ -26673,126 +21600,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
-			Name: "spg_bbox_quad_config",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "spg_box_quad_choose",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "spg_box_quad_config",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "spg_box_quad_inner_consistent",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "spg_box_quad_leaf_consistent",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "spg_box_quad_picksplit",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "spg_kd_choose",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "spg_kd_config",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "spg_kd_inner_consistent",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "spg_kd_picksplit",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
 			Name: "spg_poly_quad_compress",
 			Args: []*catalog.Argument{
 				{
@@ -26800,195 +21607,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "box"},
-		},
-		{
-			Name: "spg_quad_choose",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "spg_quad_config",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "spg_quad_inner_consistent",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "spg_quad_leaf_consistent",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "spg_quad_picksplit",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "spg_range_quad_choose",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "spg_range_quad_config",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "spg_range_quad_inner_consistent",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "spg_range_quad_leaf_consistent",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "spg_range_quad_picksplit",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "spg_text_choose",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "spg_text_config",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "spg_text_inner_consistent",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "spg_text_leaf_consistent",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "spg_text_picksplit",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "spghandler",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "index_am_handler"},
 		},
 		{
 			Name: "split_part",
@@ -27225,30 +21843,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},
-		},
-		{
-			Name: "string_agg_finalfn",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "text"},
-		},
-		{
-			Name: "string_agg_transfn",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
 		},
 		{
 			Name: "string_to_array",
@@ -27536,15 +22130,6 @@ func genPGCatalog() *catalog.Schema {
 			Name:       "suppress_redundant_updates_trigger",
 			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "trigger"},
-		},
-		{
-			Name: "system",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "tsm_handler"},
 		},
 		{
 			Name: "table_am_handler_in",
@@ -27916,15 +22501,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
-			Name: "texticlike_support",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
 			Name: "texticnlike",
 			Args: []*catalog.Argument{
 				{
@@ -27947,15 +22523,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "texticregexeq_support",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
 		},
 		{
 			Name: "texticregexne",
@@ -28010,15 +22577,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "textlike_support",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
 		},
 		{
 			Name: "textltname",
@@ -28078,15 +22636,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "cstring"},
 		},
 		{
-			Name: "textrecv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "text"},
-		},
-		{
 			Name: "textregexeq",
 			Args: []*catalog.Argument{
 				{
@@ -28097,15 +22646,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "textregexeq_support",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
 		},
 		{
 			Name: "textregexne",
@@ -28127,33 +22667,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "bytea"},
-		},
-		{
-			Name: "thesaurus_init",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
-			Name: "thesaurus_lexize",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
 		},
 		{
 			Name: "tideq",
@@ -28256,15 +22769,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "cstring"},
-		},
-		{
-			Name: "tidrecv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "tid"},
 		},
 		{
 			Name: "tidsend",
@@ -28513,21 +23017,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "time without time zone"},
 		},
 		{
-			Name: "time_recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "time without time zone"},
-		},
-		{
 			Name: "time_send",
 			Args: []*catalog.Argument{
 				{
@@ -28547,15 +23036,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "time without time zone"},
-		},
-		{
-			Name: "time_support",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
 		},
 		{
 			Name: "timedate_pl",
@@ -28962,21 +23442,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "timestamp without time zone"},
 		},
 		{
-			Name: "timestamp_recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "timestamp without time zone"},
-		},
-		{
 			Name: "timestamp_send",
 			Args: []*catalog.Argument{
 				{
@@ -28996,24 +23461,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "timestamp without time zone"},
-		},
-		{
-			Name: "timestamp_sortsupport",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "timestamp_support",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
 		},
 		{
 			Name: "timestamptypmodin",
@@ -29412,21 +23859,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "timestamp with time zone"},
 		},
 		{
-			Name: "timestamptz_recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "timestamp with time zone"},
-		},
-		{
 			Name: "timestamptz_send",
 			Args: []*catalog.Argument{
 				{
@@ -29674,21 +24106,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 				{
 					Type: &ast.TypeName{Name: "interval"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "time with time zone"},
-		},
-		{
-			Name: "timetz_recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "time with time zone"},
@@ -30692,15 +25109,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "tsquery"},
 		},
 		{
-			Name: "ts_typanalyze",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
 			Name: "tsm_handler_in",
 			Args: []*catalog.Argument{
 				{
@@ -30717,45 +25125,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "cstring"},
-		},
-		{
-			Name: "tsmatchjoinsel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "tsmatchsel",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
 			Name: "tsq_mcontained",
@@ -30942,15 +25311,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "cstring"},
-		},
-		{
-			Name: "tsqueryrecv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "tsquery"},
 		},
 		{
 			Name: "tsquerysend",
@@ -31173,15 +25533,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "cstring"},
 		},
 		{
-			Name: "tsvectorrecv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "tsvector"},
-		},
-		{
 			Name: "tsvectorsend",
 			Args: []*catalog.Argument{
 				{
@@ -31222,15 +25573,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "cstring"},
-		},
-		{
-			Name: "txid_snapshot_recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "txid_snapshot"},
 		},
 		{
 			Name: "txid_snapshot_send",
@@ -31290,27 +25632,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
-			Name: "uhc_to_utf8",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
 			Name:       "unique_key_recheck",
 			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "trigger"},
@@ -31332,15 +25653,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "cstring"},
-		},
-		{
-			Name: "unknownrecv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "unknown"},
 		},
 		{
 			Name: "unknownsend",
@@ -31395,384 +25707,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "utf8_to_ascii",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "utf8_to_big5",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "utf8_to_euc_cn",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "utf8_to_euc_jis_2004",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "utf8_to_euc_jp",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "utf8_to_euc_kr",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "utf8_to_euc_tw",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "utf8_to_gb18030",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "utf8_to_gbk",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "utf8_to_iso8859",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "utf8_to_iso8859_1",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "utf8_to_johab",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "utf8_to_koi8r",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "utf8_to_koi8u",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "utf8_to_shift_jis_2004",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "utf8_to_sjis",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "utf8_to_uhc",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "utf8_to_win",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
 		},
 		{
 			Name: "uuid_cmp",
@@ -31898,15 +25832,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "cstring"},
 		},
 		{
-			Name: "uuid_recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "uuid"},
-		},
-		{
 			Name: "uuid_send",
 			Args: []*catalog.Argument{
 				{
@@ -31914,15 +25839,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "bytea"},
-		},
-		{
-			Name: "uuid_sortsupport",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
 		},
 		{
 			Name: "var_pop",
@@ -32072,21 +25988,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "cstring"},
 		},
 		{
-			Name: "varbit_recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "bit varying"},
-		},
-		{
 			Name: "varbit_send",
 			Args: []*catalog.Argument{
 				{
@@ -32094,15 +25995,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "bytea"},
-		},
-		{
-			Name: "varbit_support",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
 		},
 		{
 			Name: "varbitcmp",
@@ -32231,15 +26123,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "character varying"},
 		},
 		{
-			Name: "varchar_support",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "internal"},
-		},
-		{
 			Name: "varcharin",
 			Args: []*catalog.Argument{
 				{
@@ -32262,21 +26145,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "cstring"},
-		},
-		{
-			Name: "varcharrecv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "character varying"},
 		},
 		{
 			Name: "varcharsend",
@@ -32383,15 +26251,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "cstring"},
 		},
 		{
-			Name: "void_recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
 			Name: "void_send",
 			Args: []*catalog.Argument{
 				{
@@ -32479,237 +26338,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "integer"},
 		},
 		{
-			Name: "win1250_to_latin2",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "win1250_to_mic",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "win1251_to_iso",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "win1251_to_koi8r",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "win1251_to_mic",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "win1251_to_win866",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "win866_to_iso",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "win866_to_koi8r",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "win866_to_mic",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "win866_to_win1251",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "win_to_utf8",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "cstring"},
-				},
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
 			Name: "xideq",
 			Args: []*catalog.Argument{
 				{
@@ -32776,15 +26404,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "cstring"},
 		},
 		{
-			Name: "xidrecv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "xid"},
-		},
-		{
 			Name: "xidsend",
 			Args: []*catalog.Argument{
 				{
@@ -32846,15 +26465,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "cstring"},
-		},
-		{
-			Name: "xml_recv",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "internal"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "xml"},
 		},
 		{
 			Name: "xml_send",
