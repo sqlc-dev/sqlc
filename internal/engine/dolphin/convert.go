@@ -363,11 +363,20 @@ func (c *cc) convertUpdateStmt(n *pcast.UpdateStmt) *pg.UpdateStmt {
 }
 
 func (c *cc) convertValueExpr(n *driver.ValueExpr) *pg.A_Const {
-	return &pg.A_Const{
-		Val: &pg.String{
+	var val ast.Node
+	switch n.Kind() {
+	case driver.KindInt64:
+		val = &pg.Integer{
+			Ival: n.Datum.GetInt64(),
+		}
+	case driver.KindString:
+		val = &pg.String{
 			Str: n.Datum.GetString(),
-		},
+		}
+	default:
+		val = &ast.TODO{}
 	}
+	return &pg.A_Const{Val: val}
 }
 
 func (c *cc) convertWhenClause(n *pcast.WhenClause) *pg.CaseWhen {
