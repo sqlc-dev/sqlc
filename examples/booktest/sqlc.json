@@ -13,7 +13,7 @@
       "path": "mysql",
       "schema": "mysql/schema.sql",
       "queries": "mysql/query.sql",
-      "engine": "_dolphin"
+      "engine": "mysql:beta"
     }
   ]
 }

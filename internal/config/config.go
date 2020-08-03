@@ -71,11 +71,11 @@ func (p *Paths) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 const (
 	EngineMySQL      Engine = "mysql"
+	EngineMySQLBeta  Engine = "mysql:beta"
 	EnginePostgreSQL Engine = "postgresql"
 
 	// Experimental engines
-	EngineXLemon   Engine = "_lemon"
-	EngineXDolphin Engine = "_dolphin"
+	EngineXLemon Engine = "_lemon"
 )
 
 type Config struct {

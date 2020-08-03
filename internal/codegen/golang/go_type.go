@@ -33,7 +33,7 @@ func goInnerType(r *compiler.Result, col *compiler.Column, settings config.Combi
 
 	// TODO: Extend the engine interface to handle types
 	switch settings.Package.Engine {
-	case config.EngineMySQL, config.EngineXDolphin:
+	case config.EngineMySQL, config.EngineMySQLBeta:
 		return mysqlType(r, col, settings)
 	case config.EnginePostgreSQL:
 		return postgresType(r, col, settings)
