@@ -42,7 +42,7 @@ func (c *Compiler) quoteIdent(ident string) string {
 	// TODO: Add a method to the parser / engine for this instead
 	if lang.IsReservedKeyword(ident) {
 		switch c.conf.Engine {
-		case config.EngineMySQL, config.EngineXDolphin:
+		case config.EngineMySQL, config.EngineMySQLBeta:
 			return "`" + ident + "`"
 		default:
 			return "\"" + ident + "\""

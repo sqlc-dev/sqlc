@@ -25,7 +25,7 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings) *Compiler {
 	case config.EngineXLemon:
 		c.parser = sqlite.NewParser()
 		c.catalog = catalog.New("main")
-	case config.EngineMySQL, config.EngineXDolphin:
+	case config.EngineMySQL, config.EngineMySQLBeta:
 		c.parser = dolphin.NewParser()
 		c.catalog = catalog.New("public") // TODO: What is the default database for MySQL?
 	case config.EnginePostgreSQL:
