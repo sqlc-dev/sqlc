@@ -23,6 +23,7 @@ type v1PackageSettings struct {
 	Queries             Paths      `json:"queries" yaml:"queries"`
 	EmitInterface       bool       `json:"emit_interface" yaml:"emit_interface"`
 	EmitJSONTags        bool       `json:"emit_json_tags" yaml:"emit_json_tags"`
+	EmitDBTags          bool       `json:"emit_db_tags" yaml:"emit_db_tags"`
 	EmitPreparedQueries bool       `json:"emit_prepared_queries" yaml:"emit_prepared_queries"`
 	EmitExactTableNames bool       `json:"emit_exact_table_names,omitempty" yaml:"emit_exact_table_names"`
 	EmitEmptySlices     bool       `json:"emit_empty_slices,omitempty" yaml:"emit_empty_slices"`
@@ -104,6 +105,7 @@ func (c *V1GenerateSettings) Translate() Config {
 				Go: &SQLGo{
 					EmitInterface:       pkg.EmitInterface,
 					EmitJSONTags:        pkg.EmitJSONTags,
+					EmitDBTags:          pkg.EmitDBTags,
 					EmitPreparedQueries: pkg.EmitPreparedQueries,
 					EmitExactTableNames: pkg.EmitExactTableNames,
 					EmitEmptySlices:     pkg.EmitEmptySlices,
