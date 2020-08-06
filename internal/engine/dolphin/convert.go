@@ -170,6 +170,10 @@ func (c *cc) convertDeleteStmt(n *pcast.DeleteStmt) *pg.DeleteStmt {
 }
 
 func (c *cc) convertDropTableStmt(n *pcast.DropTableStmt) ast.Node {
+	// TODO: Remove once views are supported.
+	if n.IsView {
+		return &ast.TODO{}
+	}
 	drop := &ast.DropTableStmt{IfExists: n.IfExists}
 	for _, name := range n.Tables {
 		drop.Tables = append(drop.Tables, parseTableName(name))
