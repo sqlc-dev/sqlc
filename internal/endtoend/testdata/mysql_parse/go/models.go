@@ -29,15 +29,15 @@ func (e *JobStatusType) Scan(src interface{}) error {
 }
 
 type Order struct {
-	ID     int     `json:"id"`
-	Price  float64 `json:"price"`
-	UserID int     `json:"user_id"`
+	ID     int     `db:"id",json:"id"`
+	Price  float64 `db:"price",json:"price"`
+	UserID int     `db:"user_id",json:"user_id"`
 }
 
 type User struct {
-	ID        int            `json:"id"`
-	FirstName string         `json:"first_name"`
-	LastName  sql.NullString `json:"last_name"`
-	Age       int            `json:"age"`
-	JobStatus JobStatusType  `json:"job_status"`
+	ID        int            `db:"id",json:"id"`
+	FirstName string         `db:"first_name",json:"first_name"`
+	LastName  sql.NullString `db:"last_name",json:"last_name"`
+	Age       int            `db:"age",json:"age"`
+	JobStatus JobStatusType  `db:"job_status",json:"job_status"`
 }
