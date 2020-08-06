@@ -177,6 +177,13 @@ func (c *cc) convertDropTableStmt(n *pcast.DropTableStmt) ast.Node {
 	return drop
 }
 
+func (c *cc) convertRenameTableStmt(n *pcast.RenameTableStmt) ast.Node {
+	return &ast.RenameTableStmt{
+		Table:   parseTableName(n.OldTable),
+		NewName: &parseTableName(n.NewTable).Name,
+	}
+}
+
 func (c *cc) convertExistsSubqueryExpr(n *pcast.ExistsSubqueryExpr) *pg.SubLink {
 	sublink := &pg.SubLink{}
 	if ss, ok := c.convert(n.Sel).(*pg.SelectStmt); ok {
@@ -398,6 +405,9 @@ func (c *cc) convert(node pcast.Node) ast.Node {
 
 	case *pcast.DropTableStmt:
 		return c.convertDropTableStmt(n)
+
+	case *pcast.RenameTableStmt:
+		return c.convertRenameTableStmt(n)
 
 	case *pcast.ExistsSubqueryExpr:
 		return c.convertExistsSubqueryExpr(n)
