@@ -62,6 +62,9 @@ func mysqlType(r *compiler.Result, col *compiler.Column, settings config.Combine
 		}
 		return "sql.NullBool"
 
+	case "json":
+		return "json.RawMessage"
+
 	default:
 		log.Printf("unknown MySQL type: %s\n", columnType)
 		return "interface{}"
