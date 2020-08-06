@@ -81,7 +81,7 @@ func (r *Result) Structs(settings config.CombinedSettings) []golang.Struct {
 			s.Fields = append(s.Fields, golang.Field{
 				Name:    golang.StructName(col.Name.String(), settings),
 				Type:    r.goTypeCol(Column{col, tableName}),
-				Tags:    map[string]string{"json:": col.Name.String()},
+				Tags:    map[string]string{"json:": col.Name.String(), "db:": col.Name.String()},
 				Comment: "",
 			})
 		}
@@ -230,10 +230,17 @@ func (r *Result) columnsToStruct(name string, items []structParams, settings con
 			tagName = fmt.Sprintf("%s_%d", tagName, v+1)
 			fieldName = fmt.Sprintf("%s_%d", fieldName, v+1)
 		}
+		tags := map[string]string{}
+		if settings.Go.EmitDBTags {
+			tags["db:"] = tagName
+		}
+		if settings.Go.EmitJSONTags {
+			tags["json:"] = tagName
+		}
 		gs.Fields = append(gs.Fields, golang.Field{
 			Name: fieldName,
 			Type: typ,
-			Tags: map[string]string{"json:": tagName},
+			Tags: tags,
 		})
 		seen[name]++
 	}
