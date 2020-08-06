@@ -213,7 +213,7 @@ type {{.Name}} struct { {{- range .Fields}}
   {{- if .Comment}}
   {{comment .Comment}}{{else}}
   {{- end}}
-  {{.Name}} {{.Type}} {{if $.EmitJSONTags}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
+  {{.Name}} {{.Type}} {{if or ($.EmitJSONTags) ($.EmitDBTags)}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
   {{- end}}
 }
 {{end}}
@@ -243,14 +243,14 @@ const {{.ConstantName}} = {{$.Q}}-- name: {{.MethodName}} {{.Cmd}}
 
 {{if .Arg.EmitStruct}}
 type {{.Arg.Type}} struct { {{- range .Arg.Struct.Fields}}
-  {{.Name}} {{.Type}} {{if $.EmitJSONTags}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
+  {{.Name}} {{.Type}} {{if or ($.EmitJSONTags) ($.EmitDBTags)}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
   {{- end}}
 }
 {{end}}
 
 {{if .Ret.EmitStruct}}
 type {{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
-  {{.Name}} {{.Type}} {{if $.EmitJSONTags}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
+  {{.Name}} {{.Type}} {{if or ($.EmitJSONTags) ($.EmitDBTags)}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
   {{- end}}
 }
 {{end}}
@@ -362,6 +362,7 @@ type tmplCtx struct {
 	SourceName string
 
 	EmitJSONTags        bool
+	EmitDBTags          bool
 	EmitPreparedQueries bool
 	EmitInterface       bool
 	EmitEmptySlices     bool
@@ -404,6 +405,7 @@ func generate(settings config.CombinedSettings, enums []Enum, structs []Struct, 
 		Settings:            settings.Global,
 		EmitInterface:       golang.EmitInterface,
 		EmitJSONTags:        golang.EmitJSONTags,
+		EmitDBTags:          golang.EmitDBTags,
 		EmitPreparedQueries: golang.EmitPreparedQueries,
 		EmitEmptySlices:     golang.EmitEmptySlices,
 		Q:                   "`",
