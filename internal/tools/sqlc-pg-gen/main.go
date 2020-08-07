@@ -14,6 +14,7 @@ import (
 
 	pgx "github.com/jackc/pgx/v4"
 
+	"github.com/kyleconroy/sqlc/internal/engine/postgresql/contrib"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 )
@@ -258,7 +259,7 @@ func run(ctx context.Context) error {
 
 	loaded := []extensionPair{}
 
-	for _, extension := range extensions {
+	for _, extension := range contrib.SuppliedModules {
 		name := strings.Replace(extension, "-", "_", -1)
 
 		var funcName string
@@ -325,53 +326,4 @@ func run(ctx context.Context) error {
 type extensionPair struct {
 	Name string
 	Func string
-}
-
-// https://www.postgresql.org/docs/current/contrib.html
-var extensions = []string{
-	"adminpack",
-	"amcheck",
-	"auth_delay",
-	"auto_explain",
-	"bloom",
-	"btree_gin",
-	"btree_gist",
-	"citext",
-	"cube",
-	"dblink",
-	"dict_int",
-	"dict_xsyn",
-	"earthdistance",
-	"file_fdw",
-	"fuzzystrmatch",
-	"hstore",
-	"intagg",
-	"intarray",
-	"isn",
-	"lo",
-	"ltree",
-	"pageinspect",
-	"passwordcheck",
-	"pg_buffercache",
-	"pgcrypto",
-	"pg_freespacemap",
-	"pg_prewarm",
-	"pgrowlocks",
-	"pg_stat_statements",
-	"pgstattuple",
-	"pg_trgm",
-	"pg_visibility",
-	"postgres_fdw",
-	"seg",
-	"sepgsql",
-	"spi",
-	"sslinfo",
-	"tablefunc",
-	"tcn",
-	"test_decoding",
-	"tsm_system_rows",
-	"tsm_system_time",
-	"unaccent",
-	"uuid-ossp",
-	"xml2",
 }
