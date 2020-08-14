@@ -111,6 +111,9 @@ func (c *cc) convertCreateTableStmt(n *pcast.CreateTableStmt) ast.Node {
 		Name:        parseTableName(n.Table),
 		IfNotExists: n.IfNotExists,
 	}
+	if n.ReferTable != nil {
+		create.ReferTable = parseTableName(n.ReferTable)
+	}
 	for _, def := range n.Cols {
 		var vals *ast.List
 		if len(def.Tp.Elems) > 0 {
