@@ -135,14 +135,29 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 	} else if err == nil {
 		return sqlerr.RelationExists(stmt.Name.Name)
 	}
+
 	tbl := Table{Rel: stmt.Name}
-	for _, col := range stmt.Cols {
-		tbl.Columns = append(tbl.Columns, &Column{
-			Name:      col.Colname,
-			Type:      *col.TypeName,
-			IsNotNull: col.IsNotNull,
-			IsArray:   col.IsArray,
-		})
+
+	if stmt.ReferTable != nil && len(stmt.Cols) != 0 {
+		return errors.New("create table node cannot have both a ReferTable and Cols")
+	}
+
+	if stmt.ReferTable != nil {
+		_, original, err := c.getTable(stmt.ReferTable)
+		if err != nil {
+			return err
+		}
+		tbl.Columns = make([]*Column, len(original.Columns))
+		copy(tbl.Columns, original.Columns)
+	} else {
+		for _, col := range stmt.Cols {
+			tbl.Columns = append(tbl.Columns, &Column{
+				Name:      col.Colname,
+				Type:      *col.TypeName,
+				IsNotNull: col.IsNotNull,
+				IsArray:   col.IsArray,
+			})
+		}
 	}
 	schema.Tables = append(schema.Tables, &tbl)
 	return nil
