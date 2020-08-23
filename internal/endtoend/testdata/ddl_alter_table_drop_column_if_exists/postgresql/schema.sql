@@ -1,0 +1,4 @@
+
+			CREATE TABLE foo ();
+			ALTER TABLE foo DROP COLUMN IF EXISTS bar;
+			

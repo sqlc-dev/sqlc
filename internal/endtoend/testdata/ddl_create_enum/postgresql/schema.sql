@@ -1,0 +1,1 @@
+CREATE TYPE status AS ENUM ('open', 'closed');

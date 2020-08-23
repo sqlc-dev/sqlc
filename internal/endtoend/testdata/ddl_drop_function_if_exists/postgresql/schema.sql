@@ -1,0 +1,4 @@
+
+			DROP FUNCTION IF EXISTS bar;
+			DROP FUNCTION IF EXISTS bar();
+			

@@ -1,0 +1,4 @@
+
+			CREATE TABLE foo (bar text NOT NULL);
+			ALTER TABLE foo ALTER COLUMN bar DROP NOT NULL;
+			
