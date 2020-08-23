@@ -11,4 +11,4 @@ sqlc-pg-gen:
 	go build -o ~/bin/sqlc-pg-gen ./internal/tools/sqlc-pg-gen
 
 regen: sqlc-dev
-	./scripts/regenerate.sh
+	go run ./scripts/regenerate/
