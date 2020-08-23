@@ -1,4 +1,2 @@
-
-			CREATE TABLE venues ();
-			ALTER TABLE venues RENAME TO arenas;
-			
+CREATE TABLE venues ();
+ALTER TABLE venues RENAME TO arenas;

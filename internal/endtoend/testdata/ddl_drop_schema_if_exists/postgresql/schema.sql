@@ -1,3 +1,1 @@
-
-			DROP SCHEMA IF EXISTS foo;
-			
+DROP SCHEMA IF EXISTS foo;

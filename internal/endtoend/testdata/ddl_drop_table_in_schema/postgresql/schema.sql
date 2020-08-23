@@ -1,4 +1,2 @@
-
-			CREATE TABLE venues ();
-			DROP TABLE public.venues;
-			
+CREATE TABLE venues ();
+DROP TABLE public.venues;

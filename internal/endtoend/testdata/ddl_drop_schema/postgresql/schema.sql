@@ -1,4 +1,2 @@
-
-			CREATE SCHEMA foo;
-			DROP SCHEMA foo;
-			
+CREATE SCHEMA foo;
+DROP SCHEMA foo;

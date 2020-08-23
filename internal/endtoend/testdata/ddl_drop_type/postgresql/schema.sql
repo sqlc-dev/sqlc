@@ -1,4 +1,2 @@
-
-			CREATE TYPE status AS ENUM ('open', 'closed');
-			DROP TYPE status;
-			
+CREATE TYPE status AS ENUM ('open', 'closed');
+DROP TYPE status;
