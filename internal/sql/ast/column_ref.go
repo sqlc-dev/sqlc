@@ -2,8 +2,12 @@ package ast
 
 type ColumnRef struct {
 	Name string
+
+	// From pg.ColumnRef
+	Fields   *List
+	Location int
 }
 
 func (n *ColumnRef) Pos() int {
-	return 0
+	return n.Location
 }
