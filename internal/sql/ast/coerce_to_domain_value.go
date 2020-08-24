@@ -1,8 +1,6 @@
 package ast
 
-import (
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
-)
+import ()
 
 type CoerceToDomainValue struct {
 	Xpr       Node
