@@ -5,6 +5,9 @@ type CreateFunctionStmt struct {
 	Params     []*FuncParam
 	ReturnType *TypeName
 	Func       *FuncName
+	// TODO: Undertand these two fields
+	Options    *List
+	WithClause *List
 }
 
 func (n *CreateFunctionStmt) Pos() int {
