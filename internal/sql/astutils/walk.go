@@ -167,14 +167,6 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Val)
 		}
 
-	case *ast.SelectStmt:
-		if n.Fields != nil {
-			Walk(f, n.Fields)
-		}
-		if n.From != nil {
-			Walk(f, n.From)
-		}
-
 	case *ast.Statement:
 		if n.Raw != nil {
 			Walk(f, n.Raw)
