@@ -1,4 +1,4 @@
-package pg
+package ast
 
 type AlterSystemStmt struct {
 	Setstmt *VariableSetStmt

@@ -1,4 +1,4 @@
-package pg
+package ast
 
 type NotifyStmt struct {
 	Conditionname *string

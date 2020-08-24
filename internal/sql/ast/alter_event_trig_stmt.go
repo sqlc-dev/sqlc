@@ -1,4 +1,4 @@
-package pg
+package ast
 
 type AlterEventTrigStmt struct {
 	Trigname  *string

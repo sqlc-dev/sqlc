@@ -1,4 +1,4 @@
-package pg
+package ast
 
 type String struct {
 	Str string

@@ -1,4 +1,4 @@
-package pg
+package ast
 
 type BlockIdData struct {
 	BiHi uint16

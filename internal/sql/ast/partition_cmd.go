@@ -1,4 +1,4 @@
-package pg
+package ast
 
 type PartitionCmd struct {
 	Name  *RangeVar

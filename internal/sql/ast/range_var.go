@@ -1,4 +1,4 @@
-package pg
+package ast
 
 type RangeVar struct {
 	Catalogname    *string

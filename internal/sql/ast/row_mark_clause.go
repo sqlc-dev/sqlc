@@ -1,4 +1,4 @@
-package pg
+package ast
 
 type RowMarkClause struct {
 	Rti        Index

@@ -1,4 +1,4 @@
-package pg
+package ast
 
 type DropTableSpaceStmt struct {
 	Tablespacename *string

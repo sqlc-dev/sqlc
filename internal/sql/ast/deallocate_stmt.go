@@ -1,4 +1,4 @@
-package pg
+package ast
 
 type DeallocateStmt struct {
 	Name *string

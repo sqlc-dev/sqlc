@@ -1,4 +1,4 @@
-package pg
+package ast
 
 type FetchStmt struct {
 	Direction  FetchDirection

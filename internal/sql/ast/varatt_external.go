@@ -1,4 +1,4 @@
-package pg
+package ast
 
 type varatt_external struct {
 	VaRawsize    int32

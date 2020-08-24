@@ -1,4 +1,4 @@
-package pg
+package ast
 
 type RangeTblRef struct {
 	Rtindex int
