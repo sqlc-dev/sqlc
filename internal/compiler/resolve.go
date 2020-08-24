@@ -18,7 +18,7 @@ func dataType(n *ast.TypeName) string {
 	}
 }
 
-func resolveCatalogRefs(c *catalog.Catalog, rvs []*pg.RangeVar, args []paramRef, names map[int]string) ([]Parameter, error) {
+func resolveCatalogRefs(c *catalog.Catalog, rvs []*ast.RangeVar, args []paramRef, names map[int]string) ([]Parameter, error) {
 	aliasMap := map[string]*ast.TableName{}
 	// TODO: Deprecate defaultTable
 	var defaultTable *ast.TableName
@@ -89,11 +89,11 @@ func resolveCatalogRefs(c *catalog.Catalog, rvs []*pg.RangeVar, args []paramRef,
 				},
 			})
 
-		case *pg.A_Expr:
+		case *ast.A_Expr:
 			// TODO: While this works for a wide range of simple expressions,
 			// more complicated expressions will cause this logic to fail.
 			list := astutils.Search(n.Lexpr, func(node ast.Node) bool {
-				_, ok := node.(*pg.ColumnRef)
+				_, ok := node.(*ast.ColumnRef)
 				return ok
 			})
 
@@ -106,7 +106,7 @@ func resolveCatalogRefs(c *catalog.Catalog, rvs []*pg.RangeVar, args []paramRef,
 			}
 
 			switch left := list.Items[0].(type) {
-			case *pg.ColumnRef:
+			case *ast.ColumnRef:
 				items := stringSlice(left.Fields)
 				var key, alias string
 				switch len(items) {
@@ -189,20 +189,20 @@ func resolveCatalogRefs(c *catalog.Catalog, rvs []*pg.RangeVar, args []paramRef,
 				funcName := fun.Name
 				var argName string
 				switch inode := item.(type) {
-				case *pg.ParamRef:
+				case *ast.ParamRef:
 					if inode.Number != ref.ref.Number {
 						continue
 					}
-				case *pg.TypeCast:
-					pr, ok := inode.Arg.(*pg.ParamRef)
+				case *ast.TypeCast:
+					pr, ok := inode.Arg.(*ast.ParamRef)
 					if !ok {
 						continue
 					}
 					if pr.Number != ref.ref.Number {
 						continue
 					}
-				case *pg.NamedArgExpr:
-					pr, ok := inode.Arg.(*pg.ParamRef)
+				case *ast.NamedArgExpr:
+					pr, ok := inode.Arg.(*ast.ParamRef)
 					if !ok {
 						continue
 					}
@@ -261,9 +261,9 @@ func resolveCatalogRefs(c *catalog.Catalog, rvs []*pg.RangeVar, args []paramRef,
 				})
 			}
 
-		case *pg.ResTarget:
+		case *ast.ResTarget:
 			if n.Name == nil {
-				return nil, fmt.Errorf("*pg.ResTarget has nil name")
+				return nil, fmt.Errorf("*ast.ResTarget has nil name")
 			}
 			key := *n.Name
 
@@ -297,9 +297,9 @@ func resolveCatalogRefs(c *catalog.Catalog, rvs []*pg.RangeVar, args []paramRef,
 				}
 			}
 
-		case *pg.TypeCast:
+		case *ast.TypeCast:
 			if n.TypeName == nil {
-				return nil, fmt.Errorf("*pg.TypeCast has nil type name")
+				return nil, fmt.Errorf("*ast.TypeCast has nil type name")
 			}
 			col := toColumn(n.TypeName)
 			col.Name = parameterName(ref.ref.Number, col.Name)
@@ -308,7 +308,7 @@ func resolveCatalogRefs(c *catalog.Catalog, rvs []*pg.RangeVar, args []paramRef,
 				Column: col,
 			})
 
-		case *pg.ParamRef:
+		case *ast.ParamRef:
 			a = append(a, Parameter{Number: ref.ref.Number})
 
 		default:

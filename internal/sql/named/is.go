@@ -17,6 +17,6 @@ func IsParamFunc(node ast.Node) bool {
 }
 
 func IsParamSign(node ast.Node) bool {
-	expr, ok := node.(*pg.A_Expr)
+	expr, ok := node.(*ast.A_Expr)
 	return ok && astutils.Join(expr.Name, ".") == "@"
 }

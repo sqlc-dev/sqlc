@@ -105,10 +105,10 @@ func convertFactored_select_stmtContext(c *parser.Factored_select_stmtContext) a
 			iexpr := col.Expr()
 			switch {
 			case col.STAR() != nil:
-				val = &pg.ColumnRef{
+				val = &ast.ColumnRef{
 					Fields: &ast.List{
 						Items: []ast.Node{
-							&pg.A_Star{},
+							&ast.A_Star{},
 						},
 					},
 					Location: col.GetStart().GetStart(),
@@ -119,7 +119,7 @@ func convertFactored_select_stmtContext(c *parser.Factored_select_stmtContext) a
 			if val == nil {
 				continue
 			}
-			cols = append(cols, &pg.ResTarget{
+			cols = append(cols, &ast.ResTarget{
 				Val:      val,
 				Location: col.GetStart().GetStart(),
 			})
@@ -141,7 +141,7 @@ func convertFactored_select_stmtContext(c *parser.Factored_select_stmtContext) a
 			tables = append(tables, &name)
 		}
 	}
-	return &pg.SelectStmt{
+	return &ast.SelectStmt{
 		FromClause: &ast.List{Items: tables},
 		TargetList: &ast.List{Items: cols},
 	}

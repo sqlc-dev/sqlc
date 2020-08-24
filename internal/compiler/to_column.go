@@ -7,14 +7,14 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/astutils"
 )
 
-func isArray(n *pg.TypeName) bool {
+func isArray(n *ast.TypeName) bool {
 	if n == nil {
 		return false
 	}
 	return len(n.ArrayBounds.Items) > 0
 }
 
-func toColumn(n *pg.TypeName) *Column {
+func toColumn(n *ast.TypeName) *Column {
 	if n == nil {
 		panic("can't build column for nil type name")
 	}

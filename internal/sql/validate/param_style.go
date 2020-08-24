@@ -13,7 +13,7 @@ import (
 // - named parameter function calls  sqlc.arg(param)
 func ParamStyle(n ast.Node) error {
 	positional := astutils.Search(n, func(node ast.Node) bool {
-		_, ok := node.(*pg.ParamRef)
+		_, ok := node.(*ast.ParamRef)
 		return ok
 	})
 	namedFunc := astutils.Search(n, named.IsParamFunc)

@@ -29,7 +29,7 @@ func TestApply(t *testing.T) {
 			return true
 		}
 		if astutils.Join(fun.Funcname, ".") == "sqlc.arg" {
-			cr.Replace(&pg.ParamRef{
+			cr.Replace(&ast.ParamRef{
 				Number:   1,
 				Location: fun.Location,
 			})

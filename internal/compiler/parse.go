@@ -45,14 +45,14 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 		return nil, errors.New("node is not a statement")
 	}
 	switch n := raw.Stmt.(type) {
-	case *pg.SelectStmt:
-	case *pg.DeleteStmt:
-	case *pg.InsertStmt:
+	case *ast.SelectStmt:
+	case *ast.DeleteStmt:
+	case *ast.InsertStmt:
 		if err := validate.InsertStmt(n); err != nil {
 			return nil, err
 		}
-	case *pg.TruncateStmt:
-	case *pg.UpdateStmt:
+	case *ast.TruncateStmt:
+	case *ast.UpdateStmt:
 	default:
 		return nil, ErrUnsupportedStatementType
 	}
@@ -134,11 +134,11 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 	}, nil
 }
 
-func rangeVars(root ast.Node) []*pg.RangeVar {
-	var vars []*pg.RangeVar
+func rangeVars(root ast.Node) []*ast.RangeVar {
+	var vars []*ast.RangeVar
 	find := astutils.VisitorFunc(func(node ast.Node) {
 		switch n := node.(type) {
-		case *pg.RangeVar:
+		case *ast.RangeVar:
 			vars = append(vars, n)
 		}
 	})

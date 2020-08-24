@@ -5,8 +5,8 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
 )
 
-func InsertStmt(stmt *pg.InsertStmt) error {
-	sel, ok := stmt.SelectStmt.(*pg.SelectStmt)
+func InsertStmt(stmt *ast.InsertStmt) error {
+	sel, ok := stmt.SelectStmt.(*ast.SelectStmt)
 	if !ok {
 		return nil
 	}

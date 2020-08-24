@@ -305,7 +305,7 @@ func (c *Catalog) Update(stmt ast.Statement) error {
 	case *ast.CreateEnumStmt:
 		err = c.createEnum(n)
 
-	case *pg.CreateExtensionStmt:
+	case *ast.CreateExtensionStmt:
 		err = c.createExtension(n)
 
 	case *ast.CreateFunctionStmt:

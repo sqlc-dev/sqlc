@@ -9,12 +9,12 @@ import (
 )
 
 func ParamRef(n ast.Node) error {
-	var allrefs []*pg.ParamRef
+	var allrefs []*ast.ParamRef
 
 	// Find all parameter references
 	astutils.Walk(astutils.VisitorFunc(func(node ast.Node) {
 		switch n := node.(type) {
-		case *pg.ParamRef:
+		case *ast.ParamRef:
 			allrefs = append(allrefs, n)
 		}
 	}), n)
