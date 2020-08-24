@@ -10,7 +10,6 @@ import (
 
 	"github.com/kyleconroy/sqlc/internal/debug"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/ast/pg"
 )
 
 type cc struct {

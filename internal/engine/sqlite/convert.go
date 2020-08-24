@@ -5,7 +5,6 @@ import (
 
 	"github.com/kyleconroy/sqlc/internal/engine/sqlite/parser"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/ast/pg"
 )
 
 type node interface {

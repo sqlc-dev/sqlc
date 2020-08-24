@@ -4,7 +4,6 @@ import (
 	nodes "github.com/lfittl/pg_query_go/nodes"
 
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/ast/pg"
 )
 
 func convertList(l nodes.List) *ast.List {

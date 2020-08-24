@@ -11,7 +11,6 @@ import (
 	"github.com/kyleconroy/sqlc/internal/opts"
 	"github.com/kyleconroy/sqlc/internal/source"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/ast/pg"
 	"github.com/kyleconroy/sqlc/internal/sql/astutils"
 	"github.com/kyleconroy/sqlc/internal/sql/rewrite"
 	"github.com/kyleconroy/sqlc/internal/sql/validate"

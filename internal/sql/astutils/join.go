@@ -4,7 +4,6 @@ import (
 	"strings"
 
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/ast/pg"
 )
 
 func Join(list *ast.List, sep string) string {

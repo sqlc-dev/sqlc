@@ -6,7 +6,6 @@ import (
 	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/source"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/ast/pg"
 	"github.com/kyleconroy/sqlc/internal/sql/astutils"
 	"github.com/kyleconroy/sqlc/internal/sql/named"
 )

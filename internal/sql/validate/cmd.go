@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/ast/pg"
 )
 
 func Cmd(n ast.Node, name, cmd string) error {

@@ -9,7 +9,6 @@ import (
 	"reflect"
 
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/ast/pg"
 )
 
 // An ApplyFunc is invoked by Apply for each node n, even if n is nil,

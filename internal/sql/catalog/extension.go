@@ -1,7 +1,7 @@
 package catalog
 
 import (
-	"github.com/kyleconroy/sqlc/internal/sql/ast/pg"
+	"github.com/kyleconroy/sqlc/internal/sql/ast"
 )
 
 func (c *Catalog) createExtension(stmt *pg.CreateExtensionStmt) error {
