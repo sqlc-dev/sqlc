@@ -5,7 +5,7 @@ import (
 )
 
 type SortBy struct {
-	Node        ast.Node
+	Node        Node
 	SortbyDir   SortByDir
 	SortbyNulls SortByNulls
 	UseOp       *List

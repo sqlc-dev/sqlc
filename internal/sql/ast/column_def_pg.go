@@ -13,8 +13,8 @@ type ColumnDef struct {
 	IsFromType    bool
 	IsFromParent  bool
 	Storage       byte
-	RawDefault    ast.Node
-	CookedDefault ast.Node
+	RawDefault    Node
+	CookedDefault Node
 	Identity      byte
 	CollClause    *CollateClause
 	CollOid       Oid

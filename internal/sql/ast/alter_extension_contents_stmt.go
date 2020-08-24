@@ -8,7 +8,7 @@ type AlterExtensionContentsStmt struct {
 	Extname *string
 	Action  int
 	Objtype ObjectType
-	Object  ast.Node
+	Object  Node
 }
 
 func (n *AlterExtensionContentsStmt) Pos() int {

@@ -7,10 +7,10 @@ import (
 type JoinExpr struct {
 	Jointype    JoinType
 	IsNatural   bool
-	Larg        ast.Node
-	Rarg        ast.Node
+	Larg        Node
+	Rarg        Node
 	UsingClause *List
-	Quals       ast.Node
+	Quals       Node
 	Alias       *Alias
 	Rtindex     int
 }

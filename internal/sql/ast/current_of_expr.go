@@ -5,7 +5,7 @@ import (
 )
 
 type CurrentOfExpr struct {
-	Xpr         ast.Node
+	Xpr         Node
 	Cvarno      Index
 	CursorName  *string
 	CursorParam int

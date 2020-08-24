@@ -5,8 +5,8 @@ import (
 )
 
 type BooleanTest struct {
-	Xpr          ast.Node
-	Arg          ast.Node
+	Xpr          Node
+	Arg          Node
 	Booltesttype BoolTestType
 	Location     int
 }

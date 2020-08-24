@@ -7,7 +7,7 @@ import (
 type ViewStmt struct {
 	View            *RangeVar
 	Aliases         *List
-	Query           ast.Node
+	Query           Node
 	Replace         bool
 	Options         *List
 	WithCheckOption ViewCheckOption

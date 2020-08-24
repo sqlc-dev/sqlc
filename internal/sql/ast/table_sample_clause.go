@@ -7,7 +7,7 @@ import (
 type TableSampleClause struct {
 	Tsmhandler Oid
 	Args       *List
-	Repeatable ast.Node
+	Repeatable Node
 }
 
 func (n *TableSampleClause) Pos() int {

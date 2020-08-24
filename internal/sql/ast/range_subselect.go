@@ -6,7 +6,7 @@ import (
 
 type RangeSubselect struct {
 	Lateral  bool
-	Subquery ast.Node
+	Subquery Node
 	Alias    *Alias
 }
 

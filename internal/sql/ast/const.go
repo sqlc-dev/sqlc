@@ -5,7 +5,7 @@ import (
 )
 
 type Const struct {
-	Xpr         ast.Node
+	Xpr         Node
 	Consttype   Oid
 	Consttypmod int32
 	Constcollid Oid

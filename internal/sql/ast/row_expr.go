@@ -5,7 +5,7 @@ import (
 )
 
 type RowExpr struct {
-	Xpr       ast.Node
+	Xpr       Node
 	Args      *List
 	RowTypeid Oid
 	RowFormat CoercionForm

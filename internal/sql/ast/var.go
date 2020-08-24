@@ -5,7 +5,7 @@ import (
 )
 
 type Var struct {
-	Xpr         ast.Node
+	Xpr         Node
 	Varno       Index
 	Varattno    AttrNumber
 	Vartype     Oid

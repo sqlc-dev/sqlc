@@ -8,7 +8,7 @@ type OnConflictClause struct {
 	Action      OnConflictAction
 	Infer       *InferClause
 	TargetList  *List
-	WhereClause ast.Node
+	WhereClause Node
 	Location    int
 }
 

@@ -5,8 +5,8 @@ import (
 )
 
 type CollateExpr struct {
-	Xpr      ast.Node
-	Arg      ast.Node
+	Xpr      Node
+	Arg      Node
 	CollOid  Oid
 	Location int
 }

@@ -8,8 +8,8 @@ type AlterPolicyStmt struct {
 	PolicyName *string
 	Table      *RangeVar
 	Roles      *List
-	Qual       ast.Node
-	WithCheck  ast.Node
+	Qual       Node
+	WithCheck  Node
 }
 
 func (n *AlterPolicyStmt) Pos() int {

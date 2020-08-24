@@ -5,13 +5,13 @@ import (
 )
 
 type WindowFunc struct {
-	Xpr         ast.Node
+	Xpr         Node
 	Winfnoid    Oid
 	Wintype     Oid
 	Wincollid   Oid
 	Inputcollid Oid
 	Args        *List
-	Aggfilter   ast.Node
+	Aggfilter   Node
 	Winref      Index
 	Winstar     bool
 	Winagg      bool

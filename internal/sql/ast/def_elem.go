@@ -7,7 +7,7 @@ import (
 type DefElem struct {
 	Defnamespace *string
 	Defname      *string
-	Arg          ast.Node
+	Arg          Node
 	Defaction    DefElemAction
 	Location     int
 }

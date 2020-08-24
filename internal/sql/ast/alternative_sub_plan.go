@@ -5,7 +5,7 @@ import (
 )
 
 type AlternativeSubPlan struct {
-	Xpr      ast.Node
+	Xpr      Node
 	Subplans *List
 }
 

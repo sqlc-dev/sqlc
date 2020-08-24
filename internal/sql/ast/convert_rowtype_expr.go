@@ -5,8 +5,8 @@ import (
 )
 
 type ConvertRowtypeExpr struct {
-	Xpr           ast.Node
-	Arg           ast.Node
+	Xpr           Node
+	Arg           Node
 	Resulttype    Oid
 	Convertformat CoercionForm
 	Location      int

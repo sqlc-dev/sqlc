@@ -5,8 +5,8 @@ import (
 )
 
 type FieldSelect struct {
-	Xpr          ast.Node
-	Arg          ast.Node
+	Xpr          Node
+	Arg          Node
 	Fieldnum     AttrNumber
 	Resulttype   Oid
 	Resulttypmod int32

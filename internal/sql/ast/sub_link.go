@@ -18,12 +18,12 @@ const (
 )
 
 type SubLink struct {
-	Xpr         ast.Node
+	Xpr         Node
 	SubLinkType SubLinkType
 	SubLinkId   int
-	Testexpr    ast.Node
+	Testexpr    Node
 	OperName    *List
-	Subselect   ast.Node
+	Subselect   Node
 	Location    int
 }
 

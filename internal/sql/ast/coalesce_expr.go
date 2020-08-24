@@ -5,7 +5,7 @@ import (
 )
 
 type CoalesceExpr struct {
-	Xpr            ast.Node
+	Xpr            Node
 	Coalescetype   Oid
 	Coalescecollid Oid
 	Args           *List

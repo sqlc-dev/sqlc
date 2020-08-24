@@ -5,7 +5,7 @@ import (
 )
 
 type CreateTableAsStmt struct {
-	Query        ast.Node
+	Query        Node
 	Into         *IntoClause
 	Relkind      ObjectType
 	IsSelectInto bool

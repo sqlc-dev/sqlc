@@ -5,8 +5,8 @@ import (
 )
 
 type InferenceElem struct {
-	Xpr          ast.Node
-	Expr         ast.Node
+	Xpr          Node
+	Expr         Node
 	Infercollid  Oid
 	Inferopclass Oid
 }

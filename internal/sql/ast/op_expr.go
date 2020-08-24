@@ -5,7 +5,7 @@ import (
 )
 
 type OpExpr struct {
-	Xpr          ast.Node
+	Xpr          Node
 	Opno         Oid
 	Opfuncid     Oid
 	Opresulttype Oid

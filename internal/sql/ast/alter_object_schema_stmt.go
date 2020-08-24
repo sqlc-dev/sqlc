@@ -7,7 +7,7 @@ import (
 type AlterObjectSchemaStmt struct {
 	ObjectType ObjectType
 	Relation   *RangeVar
-	Object     ast.Node
+	Object     Node
 	Newschema  *string
 	MissingOk  bool
 }

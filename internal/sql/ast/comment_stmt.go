@@ -6,7 +6,7 @@ import (
 
 type CommentStmt struct {
 	Objtype ObjectType
-	Object  ast.Node
+	Object  Node
 	Comment *string
 }
 

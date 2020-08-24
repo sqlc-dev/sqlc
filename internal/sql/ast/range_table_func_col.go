@@ -9,8 +9,8 @@ type RangeTableFuncCol struct {
 	TypeName      *TypeName
 	ForOrdinality bool
 	IsNotNull     bool
-	Colexpr       ast.Node
-	Coldefexpr    ast.Node
+	Colexpr       Node
+	Coldefexpr    Node
 	Location      int
 }
 

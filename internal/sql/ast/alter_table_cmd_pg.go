@@ -8,7 +8,7 @@ type AlterTableCmd struct {
 	Subtype   AlterTableType
 	Name      *string
 	Newowner  *RoleSpec
-	Def       ast.Node
+	Def       Node
 	Behavior  DropBehavior
 	MissingOk bool
 }

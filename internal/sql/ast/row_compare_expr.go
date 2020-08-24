@@ -5,7 +5,7 @@ import (
 )
 
 type RowCompareExpr struct {
-	Xpr          ast.Node
+	Xpr          Node
 	Rctype       RowCompareType
 	Opnos        *List
 	Opfamilies   *List

@@ -7,8 +7,8 @@ import (
 type TableFunc struct {
 	NsUris        *List
 	NsNames       *List
-	Docexpr       ast.Node
-	Rowexpr       ast.Node
+	Docexpr       Node
+	Rowexpr       Node
 	Colnames      *List
 	Coltypes      *List
 	Coltypmods    *List

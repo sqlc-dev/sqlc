@@ -7,7 +7,7 @@ import (
 type ResTarget struct {
 	Name        *string
 	Indirection *List
-	Val         ast.Node
+	Val         Node
 	Location    int
 }
 

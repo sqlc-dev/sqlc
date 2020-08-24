@@ -5,7 +5,7 @@ import (
 )
 
 type A_Indirection struct {
-	Arg         ast.Node
+	Arg         Node
 	Indirection *List
 }
 

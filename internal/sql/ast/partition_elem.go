@@ -6,7 +6,7 @@ import (
 
 type PartitionElem struct {
 	Name      *string
-	Expr      ast.Node
+	Expr      Node
 	Collation *List
 	Opclass   *List
 	Location  int

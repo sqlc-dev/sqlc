@@ -6,7 +6,7 @@ import (
 
 type SecLabelStmt struct {
 	Objtype  ObjectType
-	Object   ast.Node
+	Object   Node
 	Provider *string
 	Label    *string
 }

@@ -5,8 +5,8 @@ import (
 )
 
 type ArrayCoerceExpr struct {
-	Xpr          ast.Node
-	Arg          ast.Node
+	Xpr          Node
+	Arg          Node
 	Elemfuncid   Oid
 	Resulttype   Oid
 	Resulttypmod int32

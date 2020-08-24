@@ -8,7 +8,7 @@ type AlterDomainStmt struct {
 	Subtype   byte
 	TypeName  *List
 	Name      *string
-	Def       ast.Node
+	Def       Node
 	Behavior  DropBehavior
 	MissingOk bool
 }

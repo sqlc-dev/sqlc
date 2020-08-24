@@ -6,7 +6,7 @@ import (
 
 type PartitionRangeDatum struct {
 	Kind     PartitionRangeDatumKind
-	Value    ast.Node
+	Value    Node
 	Location int
 }
 

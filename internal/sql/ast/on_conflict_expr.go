@@ -7,10 +7,10 @@ import (
 type OnConflictExpr struct {
 	Action          OnConflictAction
 	ArbiterElems    *List
-	ArbiterWhere    ast.Node
+	ArbiterWhere    Node
 	Constraint      Oid
 	OnConflictSet   *List
-	OnConflictWhere ast.Node
+	OnConflictWhere Node
 	ExclRelIndex    int
 	ExclRelTlist    *List
 }

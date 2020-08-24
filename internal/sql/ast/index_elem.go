@@ -6,7 +6,7 @@ import (
 
 type IndexElem struct {
 	Name          *string
-	Expr          ast.Node
+	Expr          Node
 	Indexcolname  *string
 	Collation     *List
 	Opclass       *List

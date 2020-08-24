@@ -5,7 +5,7 @@ import (
 )
 
 type NextValueExpr struct {
-	Xpr    ast.Node
+	Xpr    Node
 	Seqid  Oid
 	TypeId Oid
 }

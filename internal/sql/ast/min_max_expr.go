@@ -5,7 +5,7 @@ import (
 )
 
 type MinMaxExpr struct {
-	Xpr          ast.Node
+	Xpr          Node
 	Minmaxtype   Oid
 	Minmaxcollid Oid
 	Inputcollid  Oid

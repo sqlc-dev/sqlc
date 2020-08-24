@@ -5,8 +5,8 @@ import (
 )
 
 type NamedArgExpr struct {
-	Xpr       ast.Node
-	Arg       ast.Node
+	Xpr       Node
+	Arg       Node
 	Name      *string
 	Argnumber int
 	Location  int

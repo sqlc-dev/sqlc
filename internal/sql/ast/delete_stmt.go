@@ -7,7 +7,7 @@ import (
 type DeleteStmt struct {
 	Relation      *RangeVar
 	UsingClause   *List
-	WhereClause   ast.Node
+	WhereClause   Node
 	ReturningList *List
 	WithClause    *WithClause
 }

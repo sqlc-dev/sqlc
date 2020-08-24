@@ -5,7 +5,7 @@ import (
 )
 
 type SQLValueFunction struct {
-	Xpr      ast.Node
+	Xpr      Node
 	Op       SQLValueFunctionOp
 	Type     Oid
 	Typmod   int32

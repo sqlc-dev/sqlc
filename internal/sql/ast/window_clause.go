@@ -10,8 +10,8 @@ type WindowClause struct {
 	PartitionClause *List
 	OrderClause     *List
 	FrameOptions    int
-	StartOffset     ast.Node
-	EndOffset       ast.Node
+	StartOffset     Node
+	EndOffset       Node
 	Winref          Index
 	CopiedOrder     bool
 }

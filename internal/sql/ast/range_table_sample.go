@@ -5,10 +5,10 @@ import (
 )
 
 type RangeTableSample struct {
-	Relation   ast.Node
+	Relation   Node
 	Method     *List
 	Args       *List
-	Repeatable ast.Node
+	Repeatable Node
 	Location   int
 }
 

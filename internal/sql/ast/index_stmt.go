@@ -11,7 +11,7 @@ type IndexStmt struct {
 	TableSpace     *string
 	IndexParams    *List
 	Options        *List
-	WhereClause    ast.Node
+	WhereClause    Node
 	ExcludeOpNames *List
 	Idxcomment     *string
 	IndexOid       Oid

@@ -5,7 +5,7 @@ import (
 )
 
 type Param struct {
-	Xpr         ast.Node
+	Xpr         Node
 	Paramkind   ParamKind
 	Paramid     int
 	Paramtype   Oid

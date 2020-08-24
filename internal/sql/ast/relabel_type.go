@@ -5,8 +5,8 @@ import (
 )
 
 type RelabelType struct {
-	Xpr           ast.Node
-	Arg           ast.Node
+	Xpr           Node
+	Arg           Node
 	Resulttype    Oid
 	Resulttypmod  int32
 	Resultcollid  Oid

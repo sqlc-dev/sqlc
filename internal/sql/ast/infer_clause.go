@@ -6,7 +6,7 @@ import (
 
 type InferClause struct {
 	IndexElems  *List
-	WhereClause ast.Node
+	WhereClause Node
 	Conname     *string
 	Location    int
 }

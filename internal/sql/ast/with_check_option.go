@@ -8,7 +8,7 @@ type WithCheckOption struct {
 	Kind     WCOKind
 	Relname  *string
 	Polname  *string
-	Qual     ast.Node
+	Qual     Node
 	Cascaded bool
 }
 

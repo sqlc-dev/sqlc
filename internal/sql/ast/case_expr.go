@@ -5,12 +5,12 @@ import (
 )
 
 type CaseExpr struct {
-	Xpr        ast.Node
+	Xpr        Node
 	Casetype   Oid
 	Casecollid Oid
-	Arg        ast.Node
+	Arg        Node
 	Args       *List
-	Defresult  ast.Node
+	Defresult  Node
 	Location   int
 }
 

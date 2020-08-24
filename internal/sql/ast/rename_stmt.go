@@ -8,7 +8,7 @@ type RenameStmt struct {
 	RenameType   ObjectType
 	RelationType ObjectType
 	Relation     *RangeVar
-	Object       ast.Node
+	Object       Node
 	Subname      *string
 	Newname      *string
 	Behavior     DropBehavior

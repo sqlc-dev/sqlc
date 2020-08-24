@@ -5,7 +5,7 @@ import (
 )
 
 type A_Const struct {
-	Val      ast.Node
+	Val      Node
 	Location int
 }
 

@@ -6,7 +6,7 @@ import (
 
 type CopyStmt struct {
 	Relation  *RangeVar
-	Query     ast.Node
+	Query     Node
 	Attlist   *List
 	IsFrom    bool
 	IsProgram bool

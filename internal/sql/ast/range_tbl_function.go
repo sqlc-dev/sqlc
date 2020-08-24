@@ -5,7 +5,7 @@ import (
 )
 
 type RangeTblFunction struct {
-	Funcexpr          ast.Node
+	Funcexpr          Node
 	Funccolcount      int
 	Funccolnames      *List
 	Funccoltypes      *List

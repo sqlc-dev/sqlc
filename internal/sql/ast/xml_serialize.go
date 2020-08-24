@@ -6,7 +6,7 @@ import (
 
 type XmlSerialize struct {
 	Xmloption XmlOptionType
-	Expr      ast.Node
+	Expr      Node
 	TypeName  *TypeName
 	Location  int
 }

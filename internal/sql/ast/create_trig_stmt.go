@@ -13,7 +13,7 @@ type CreateTrigStmt struct {
 	Timing         int16
 	Events         int16
 	Columns        *List
-	WhenClause     ast.Node
+	WhenClause     Node
 	Isconstraint   bool
 	TransitionRels *List
 	Deferrable     bool

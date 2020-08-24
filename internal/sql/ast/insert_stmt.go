@@ -7,7 +7,7 @@ import (
 type InsertStmt struct {
 	Relation         *RangeVar
 	Cols             *List
-	SelectStmt       ast.Node
+	SelectStmt       Node
 	OnConflictClause *OnConflictClause
 	ReturningList    *List
 	WithClause       *WithClause

@@ -5,7 +5,7 @@ import (
 )
 
 type TypeCast struct {
-	Arg      ast.Node
+	Arg      Node
 	TypeName *TypeName
 	Location int
 }

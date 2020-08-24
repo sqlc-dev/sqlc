@@ -7,7 +7,7 @@ import (
 type CommonTableExpr struct {
 	Ctename          *string
 	Aliascolnames    *List
-	Ctequery         ast.Node
+	Ctequery         Node
 	Location         int
 	Cterecursive     bool
 	Cterefcount      int

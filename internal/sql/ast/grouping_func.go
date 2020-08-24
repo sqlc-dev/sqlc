@@ -5,7 +5,7 @@ import (
 )
 
 type GroupingFunc struct {
-	Xpr         ast.Node
+	Xpr         Node
 	Args        *List
 	Refs        *List
 	Cols        *List

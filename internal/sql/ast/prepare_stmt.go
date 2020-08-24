@@ -7,7 +7,7 @@ import (
 type PrepareStmt struct {
 	Name     *string
 	Argtypes *List
-	Query    ast.Node
+	Query    Node
 }
 
 func (n *PrepareStmt) Pos() int {

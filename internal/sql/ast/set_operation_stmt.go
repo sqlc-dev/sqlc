@@ -7,8 +7,8 @@ import (
 type SetOperationStmt struct {
 	Op            SetOperation
 	All           bool
-	Larg          ast.Node
-	Rarg          ast.Node
+	Larg          Node
+	Rarg          Node
 	ColTypes      *List
 	ColTypmods    *List
 	ColCollations *List

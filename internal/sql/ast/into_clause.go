@@ -10,7 +10,7 @@ type IntoClause struct {
 	Options        *List
 	OnCommit       OnCommitAction
 	TableSpaceName *string
-	ViewQuery      ast.Node
+	ViewQuery      Node
 	SkipData       bool
 }
 

@@ -9,7 +9,7 @@ type Query struct {
 	QuerySource      QuerySource
 	QueryId          uint32
 	CanSetTag        bool
-	UtilityStmt      ast.Node
+	UtilityStmt      Node
 	ResultRelation   int
 	HasAggs          bool
 	HasWindowFuncs   bool
@@ -29,14 +29,14 @@ type Query struct {
 	ReturningList    *List
 	GroupClause      *List
 	GroupingSets     *List
-	HavingQual       ast.Node
+	HavingQual       Node
 	WindowClause     *List
 	DistinctClause   *List
 	SortClause       *List
-	LimitOffset      ast.Node
-	LimitCount       ast.Node
+	LimitOffset      Node
+	LimitCount       Node
 	RowMarks         *List
-	SetOperations    ast.Node
+	SetOperations    Node
 	ConstraintDeps   *List
 	WithCheckOptions *List
 	StmtLocation     int

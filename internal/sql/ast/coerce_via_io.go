@@ -5,8 +5,8 @@ import (
 )
 
 type CoerceViaIO struct {
-	Xpr          ast.Node
-	Arg          ast.Node
+	Xpr          Node
+	Arg          Node
 	Resulttype   Oid
 	Resultcollid Oid
 	Coerceformat CoercionForm

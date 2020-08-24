@@ -9,14 +9,14 @@ type SelectStmt struct {
 	IntoClause     *IntoClause
 	TargetList     *List
 	FromClause     *List
-	WhereClause    ast.Node
+	WhereClause    Node
 	GroupClause    *List
-	HavingClause   ast.Node
+	HavingClause   Node
 	WindowClause   *List
 	ValuesLists    *List
 	SortClause     *List
-	LimitOffset    ast.Node
-	LimitCount     ast.Node
+	LimitOffset    Node
+	LimitCount     Node
 	LockingClause  *List
 	WithClause     *WithClause
 	Op             SetOperation

@@ -8,7 +8,7 @@ type FunctionParameter struct {
 	Name    *string
 	ArgType *TypeName
 	Mode    FunctionParameterMode
-	Defexpr ast.Node
+	Defexpr Node
 }
 
 func (n *FunctionParameter) Pos() int {

@@ -7,7 +7,7 @@ import (
 type AlterOwnerStmt struct {
 	ObjectType ObjectType
 	Relation   *RangeVar
-	Object     ast.Node
+	Object     Node
 	Newowner   *RoleSpec
 }
 

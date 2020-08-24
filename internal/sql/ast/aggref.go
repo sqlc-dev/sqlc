@@ -5,7 +5,7 @@ import (
 )
 
 type Aggref struct {
-	Xpr           ast.Node
+	Xpr           Node
 	Aggfnoid      Oid
 	Aggtype       Oid
 	Aggcollid     Oid
@@ -16,7 +16,7 @@ type Aggref struct {
 	Args          *List
 	Aggorder      *List
 	Aggdistinct   *List
-	Aggfilter     ast.Node
+	Aggfilter     Node
 	Aggstar       bool
 	Aggvariadic   bool
 	Aggkind       byte

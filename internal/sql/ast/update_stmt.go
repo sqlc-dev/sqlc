@@ -7,7 +7,7 @@ import (
 type UpdateStmt struct {
 	Relation      *RangeVar
 	TargetList    *List
-	WhereClause   ast.Node
+	WhereClause   Node
 	FromClause    *List
 	ReturningList *List
 	WithClause    *WithClause

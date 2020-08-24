@@ -5,7 +5,7 @@ import (
 )
 
 type ExplainStmt struct {
-	Query   ast.Node
+	Query   Node
 	Options *List
 }
 

@@ -6,8 +6,8 @@ import (
 
 type RangeTableFunc struct {
 	Lateral    bool
-	Docexpr    ast.Node
-	Rowexpr    ast.Node
+	Docexpr    Node
+	Rowexpr    Node
 	Namespaces *List
 	Columns    *List
 	Alias      *Alias

@@ -5,7 +5,7 @@ import (
 )
 
 type CollateClause struct {
-	Arg      ast.Node
+	Arg      Node
 	Collname *List
 	Location int
 }

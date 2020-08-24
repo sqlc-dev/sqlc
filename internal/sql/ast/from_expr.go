@@ -6,7 +6,7 @@ import (
 
 type FromExpr struct {
 	Fromlist *List
-	Quals    ast.Node
+	Quals    Node
 }
 
 func (n *FromExpr) Pos() int {

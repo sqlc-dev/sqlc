@@ -11,7 +11,7 @@ type Constraint struct {
 	Initdeferred   bool
 	Location       int
 	IsNoInherit    bool
-	RawExpr        ast.Node
+	RawExpr        Node
 	CookedExpr     *string
 	GeneratedWhen  byte
 	Keys           *List
@@ -20,7 +20,7 @@ type Constraint struct {
 	Indexname      *string
 	Indexspace     *string
 	AccessMethod   *string
-	WhereClause    ast.Node
+	WhereClause    Node
 	Pktable        *RangeVar
 	FkAttrs        *List
 	PkAttrs        *List

@@ -5,9 +5,9 @@ import (
 )
 
 type SubPlan struct {
-	Xpr               ast.Node
+	Xpr               Node
 	SubLinkType       SubLinkType
-	Testexpr          ast.Node
+	Testexpr          Node
 	ParamIds          *List
 	PlanId            int
 	PlanName          *string

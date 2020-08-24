@@ -7,7 +7,7 @@ import (
 type DeclareCursorStmt struct {
 	Portalname *string
 	Options    int
-	Query      ast.Node
+	Query      Node
 }
 
 func (n *DeclareCursorStmt) Pos() int {

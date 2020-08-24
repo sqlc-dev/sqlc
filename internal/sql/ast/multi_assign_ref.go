@@ -5,7 +5,7 @@ import (
 )
 
 type MultiAssignRef struct {
-	Source   ast.Node
+	Source   Node
 	Colno    int
 	Ncolumns int
 }

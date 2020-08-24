@@ -5,7 +5,7 @@ import (
 )
 
 type CaseTestExpr struct {
-	Xpr       ast.Node
+	Xpr       Node
 	TypeId    Oid
 	TypeMod   int32
 	Collation Oid

@@ -7,7 +7,7 @@ import (
 type RuleStmt struct {
 	Relation    *RangeVar
 	Rulename    *string
-	WhereClause ast.Node
+	WhereClause Node
 	Event       CmdType
 	Instead     bool
 	Actions     *List

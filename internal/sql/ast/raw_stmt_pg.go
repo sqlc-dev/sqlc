@@ -5,7 +5,7 @@ import (
 )
 
 type RawStmt struct {
-	Stmt         ast.Node
+	Stmt         Node
 	StmtLocation int
 	StmtLen      int
 }

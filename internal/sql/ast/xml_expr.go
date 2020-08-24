@@ -5,7 +5,7 @@ import (
 )
 
 type XmlExpr struct {
-	Xpr       ast.Node
+	Xpr       Node
 	Op        XmlExprOp
 	Name      *string
 	NamedArgs *List

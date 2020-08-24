@@ -5,9 +5,9 @@ import (
 )
 
 type CaseWhen struct {
-	Xpr      ast.Node
-	Expr     ast.Node
-	Result   ast.Node
+	Xpr      Node
+	Expr     Node
+	Result   Node
 	Location int
 }
 

@@ -5,8 +5,8 @@ import (
 )
 
 type NullTest struct {
-	Xpr          ast.Node
-	Arg          ast.Node
+	Xpr          Node
+	Arg          Node
 	Nulltesttype NullTestType
 	Argisrow     bool
 	Location     int

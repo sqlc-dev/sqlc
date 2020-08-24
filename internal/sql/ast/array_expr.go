@@ -5,7 +5,7 @@ import (
 )
 
 type ArrayExpr struct {
-	Xpr           ast.Node
+	Xpr           Node
 	ArrayTypeid   Oid
 	ArrayCollid   Oid
 	ElementTypeid Oid

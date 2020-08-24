@@ -5,7 +5,7 @@ import (
 )
 
 type FuncExpr struct {
-	Xpr            ast.Node
+	Xpr            Node
 	Funcid         Oid
 	Funcresulttype Oid
 	Funcretset     bool

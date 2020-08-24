@@ -5,8 +5,8 @@ import (
 )
 
 type TargetEntry struct {
-	Xpr             ast.Node
-	Expr            ast.Node
+	Xpr             Node
+	Expr            Node
 	Resno           AttrNumber
 	Resname         *string
 	Ressortgroupref Index

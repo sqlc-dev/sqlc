@@ -10,8 +10,8 @@ type CreatePolicyStmt struct {
 	CmdName    *string
 	Permissive bool
 	Roles      *List
-	Qual       ast.Node
-	WithCheck  ast.Node
+	Qual       Node
+	WithCheck  Node
 }
 
 func (n *CreatePolicyStmt) Pos() int {
