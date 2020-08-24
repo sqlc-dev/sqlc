@@ -439,11 +439,13 @@ func convertAlterTableCmd(n *nodes.AlterTableCmd) *ast.AlterTableCmd {
 	if n == nil {
 		return nil
 	}
+	def := convertNode(n.Def)
+	columnDef := def.(*ast.ColumnDef)
 	return &ast.AlterTableCmd{
 		Subtype:   ast.AlterTableType(n.Subtype),
 		Name:      n.Name,
 		Newowner:  convertRoleSpec(n.Newowner),
-		Def:       convertNode(n.Def),
+		Def:       columnDef,
 		Behavior:  ast.DropBehavior(n.Behavior),
 		MissingOk: n.MissingOk,
 	}
@@ -746,8 +748,12 @@ func convertColumnDef(n *nodes.ColumnDef) *ast.ColumnDef {
 	if n == nil {
 		return nil
 	}
+	colname := ""
+	if n.Colname != nil {
+		colname = *n.Colname
+	}
 	return &ast.ColumnDef{
-		Colname:       n.Colname,
+		Colname:       colname,
 		TypeName:      convertTypeName(n.TypeName),
 		Inhcount:      n.Inhcount,
 		IsLocal:       n.IsLocal,
@@ -810,8 +816,8 @@ func convertCompositeTypeStmt(n *nodes.CompositeTypeStmt) *ast.CompositeTypeStmt
 		return nil
 	}
 	return &ast.CompositeTypeStmt{
-		Typevar:    convertRangeVar(n.Typevar),
-		Coldeflist: convertList(n.Coldeflist),
+	// Typevar:    convertRangeVar(n.Typevar),
+	// Coldeflist: convertList(n.Coldeflist),
 	}
 }
 
@@ -958,8 +964,8 @@ func convertCreateEnumStmt(n *nodes.CreateEnumStmt) *ast.CreateEnumStmt {
 		return nil
 	}
 	return &ast.CreateEnumStmt{
-		TypeName: convertList(n.TypeName),
-		Vals:     convertList(n.Vals),
+		// TypeName: convertList(n.TypeName),
+		Vals: convertList(n.Vals),
 	}
 }
 
@@ -1027,9 +1033,9 @@ func convertCreateFunctionStmt(n *nodes.CreateFunctionStmt) *ast.CreateFunctionS
 		return nil
 	}
 	return &ast.CreateFunctionStmt{
-		Replace:    n.Replace,
-		Funcname:   convertList(n.Funcname),
-		Parameters: convertList(n.Parameters),
+		Replace: n.Replace,
+		// Func:       convertList(n.Funcname),
+		Params:     convertList(n.Parameters),
 		ReturnType: convertTypeName(n.ReturnType),
 		Options:    convertList(n.Options),
 		WithClause: convertList(n.WithClause),
@@ -1141,7 +1147,7 @@ func convertCreateSchemaStmt(n *nodes.CreateSchemaStmt) *ast.CreateSchemaStmt {
 		return nil
 	}
 	return &ast.CreateSchemaStmt{
-		Schemaname:  n.Schemaname,
+		Name:        n.Schemaname,
 		Authrole:    convertRoleSpec(n.Authrole),
 		SchemaElts:  convertList(n.SchemaElts),
 		IfNotExists: n.IfNotExists,

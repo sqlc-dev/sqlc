@@ -463,7 +463,7 @@ func translate(node nodes.Node) (ast.Node, error) {
 			if arg.Defexpr != nil {
 				fp.DefExpr = &ast.TODO{}
 			}
-			stmt.Params = append(stmt.Params, fp)
+			stmt.Params.Items = append(stmt.Params.Items, fp)
 		}
 		return stmt, nil
 

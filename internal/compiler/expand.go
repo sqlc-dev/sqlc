@@ -88,8 +88,6 @@ func (c *Compiler) expandStmt(qc *QueryCatalog, raw *ast.RawStmt, node ast.Node)
 			switch field := f.(type) {
 			case *ast.String:
 				parts = append(parts, field.Str)
-			case *ast.String:
-				parts = append(parts, field.Str)
 			case *ast.A_Star:
 				parts = append(parts, "*")
 			default:
