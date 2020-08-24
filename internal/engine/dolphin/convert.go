@@ -10,7 +10,6 @@ import (
 
 	"github.com/kyleconroy/sqlc/internal/debug"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/ast/pg"
 )
 
 type cc struct {
@@ -65,9 +64,9 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 	return alt
 }
 
-func (c *cc) convertAssignment(n *pcast.Assignment) *pg.ResTarget {
+func (c *cc) convertAssignment(n *pcast.Assignment) *ast.ResTarget {
 	name := n.Column.Name.String()
-	return &pg.ResTarget{
+	return &ast.ResTarget{
 		Name: &name,
 		Val:  c.convert(n.Expr),
 	}
@@ -83,7 +82,7 @@ func opToName(o opcode.Op) string {
 
 func (c *cc) convertBinaryOperationExpr(n *pcast.BinaryOperationExpr) ast.Node {
 	if n.Op == opcode.LogicAnd || n.Op == opcode.LogicOr {
-		return &pg.BoolExpr{
+		return &ast.BoolExpr{
 			// TODO: Set op
 			Args: &ast.List{
 				Items: []ast.Node{
@@ -93,11 +92,11 @@ func (c *cc) convertBinaryOperationExpr(n *pcast.BinaryOperationExpr) ast.Node {
 			},
 		}
 	} else {
-		return &pg.A_Expr{
+		return &ast.A_Expr{
 			// TODO: Set kind
 			Name: &ast.List{
 				Items: []ast.Node{
-					&pg.String{Str: opToName(n.Op)},
+					&ast.String{Str: opToName(n.Op)},
 				},
 			},
 			Lexpr: c.convert(n.L),
@@ -133,11 +132,11 @@ func (c *cc) convertCreateTableStmt(n *pcast.CreateTableStmt) ast.Node {
 	return create
 }
 
-func (c *cc) convertColumnNameExpr(n *pcast.ColumnNameExpr) *pg.ColumnRef {
-	return &pg.ColumnRef{
+func (c *cc) convertColumnNameExpr(n *pcast.ColumnNameExpr) *ast.ColumnRef {
+	return &ast.ColumnRef{
 		Fields: &ast.List{
 			Items: []ast.Node{
-				&pg.String{Str: n.Name.Name.String()},
+				&ast.String{Str: n.Name.Name.String()},
 			},
 		},
 	}
@@ -147,25 +146,25 @@ func (c *cc) convertColumnNames(cols []*pcast.ColumnName) *ast.List {
 	list := &ast.List{Items: []ast.Node{}}
 	for i := range cols {
 		name := cols[i].Name.String()
-		list.Items = append(list.Items, &pg.ResTarget{
+		list.Items = append(list.Items, &ast.ResTarget{
 			Name: &name,
 		})
 	}
 	return list
 }
 
-func (c *cc) convertDeleteStmt(n *pcast.DeleteStmt) *pg.DeleteStmt {
+func (c *cc) convertDeleteStmt(n *pcast.DeleteStmt) *ast.DeleteStmt {
 	rels := c.convertTableRefsClause(n.TableRefs)
 	if len(rels.Items) != 1 {
 		panic("expected one range var")
 	}
 	rel := rels.Items[0]
-	rangeVar, ok := rel.(*pg.RangeVar)
+	rangeVar, ok := rel.(*ast.RangeVar)
 	if !ok {
 		panic("expected range var")
 	}
 
-	return &pg.DeleteStmt{
+	return &ast.DeleteStmt{
 		Relation:      rangeVar,
 		WhereClause:   c.convert(n.Where),
 		ReturningList: &ast.List{},
@@ -191,9 +190,9 @@ func (c *cc) convertRenameTableStmt(n *pcast.RenameTableStmt) ast.Node {
 	}
 }
 
-func (c *cc) convertExistsSubqueryExpr(n *pcast.ExistsSubqueryExpr) *pg.SubLink {
-	sublink := &pg.SubLink{}
-	if ss, ok := c.convert(n.Sel).(*pg.SelectStmt); ok {
+func (c *cc) convertExistsSubqueryExpr(n *pcast.ExistsSubqueryExpr) *ast.SubLink {
+	sublink := &ast.SubLink{}
+	if ss, ok := c.convert(n.Sel).(*ast.SelectStmt); ok {
 		sublink.Subselect = ss
 	}
 	return sublink
@@ -214,9 +213,9 @@ func (c *cc) convertFuncCallExpr(n *pcast.FuncCallExpr) *ast.FuncCall {
 	// TODO: Deprecate the usage of Funcname
 	items := []ast.Node{}
 	if schema != "" {
-		items = append(items, &pg.String{Str: schema})
+		items = append(items, &ast.String{Str: schema})
 	}
-	items = append(items, &pg.String{Str: name})
+	items = append(items, &ast.String{Str: name})
 
 	fn := &ast.FuncCall{
 		Args: &ast.List{},
@@ -235,28 +234,28 @@ func (c *cc) convertFuncCallExpr(n *pcast.FuncCallExpr) *ast.FuncCall {
 	return fn
 }
 
-func (c *cc) convertInsertStmt(n *pcast.InsertStmt) *pg.InsertStmt {
+func (c *cc) convertInsertStmt(n *pcast.InsertStmt) *ast.InsertStmt {
 	rels := c.convertTableRefsClause(n.Table)
 	if len(rels.Items) != 1 {
 		panic("expected one range var")
 	}
 	rel := rels.Items[0]
-	rangeVar, ok := rel.(*pg.RangeVar)
+	rangeVar, ok := rel.(*ast.RangeVar)
 	if !ok {
 		panic("expected range var")
 	}
 
 	// debug.Dump(n)
-	insert := &pg.InsertStmt{
+	insert := &ast.InsertStmt{
 		Relation:      rangeVar,
 		Cols:          c.convertColumnNames(n.Columns),
 		ReturningList: &ast.List{},
 	}
-	if ss, ok := c.convert(n.Select).(*pg.SelectStmt); ok {
+	if ss, ok := c.convert(n.Select).(*ast.SelectStmt); ok {
 		ss.ValuesLists = c.convertLists(n.Lists)
 		insert.SelectStmt = ss
 	} else {
-		insert.SelectStmt = &pg.SelectStmt{
+		insert.SelectStmt = &ast.SelectStmt{
 			FromClause:  &ast.List{},
 			TargetList:  &ast.List{},
 			ValuesLists: c.convertLists(n.Lists),
@@ -277,16 +276,16 @@ func (c *cc) convertLists(lists [][]pcast.ExprNode) *ast.List {
 	return list
 }
 
-func (c *cc) convertParamMarkerExpr(n *driver.ParamMarkerExpr) *pg.ParamRef {
+func (c *cc) convertParamMarkerExpr(n *driver.ParamMarkerExpr) *ast.ParamRef {
 	// Parameter numbers start at one
 	c.paramCount += 1
-	return &pg.ParamRef{
+	return &ast.ParamRef{
 		Number:   c.paramCount,
 		Location: n.Offset,
 	}
 }
 
-func (c *cc) convertSelectField(n *pcast.SelectField) *pg.ResTarget {
+func (c *cc) convertSelectField(n *pcast.SelectField) *ast.ResTarget {
 	var val ast.Node
 	if n.WildCard != nil {
 		val = c.convertWildCardField(n.WildCard)
@@ -297,7 +296,7 @@ func (c *cc) convertSelectField(n *pcast.SelectField) *pg.ResTarget {
 	if n.AsName.O != "" {
 		name = &n.AsName.O
 	}
-	return &pg.ResTarget{
+	return &ast.ResTarget{
 		// TODO: Populate Indirection field
 		Name:     name,
 		Val:      val,
@@ -305,8 +304,8 @@ func (c *cc) convertSelectField(n *pcast.SelectField) *pg.ResTarget {
 	}
 }
 
-func (c *cc) convertSelectStmt(n *pcast.SelectStmt) *pg.SelectStmt {
-	stmt := &pg.SelectStmt{
+func (c *cc) convertSelectStmt(n *pcast.SelectStmt) *ast.SelectStmt {
+	stmt := &ast.SelectStmt{
 		TargetList:  c.convertFieldList(n.Fields),
 		FromClause:  c.convertTableRefsClause(n.From),
 		WhereClause: c.convert(n.Where),
@@ -331,7 +330,7 @@ func (c *cc) convertTableRefsClause(n *pcast.TableRefsClause) *ast.List {
 		}
 		schema := name.Schema.String()
 		rel := name.Name.String()
-		tables = append(tables, &pg.RangeVar{
+		tables = append(tables, &ast.RangeVar{
 			Schemaname: &schema,
 			Relname:    &rel,
 		})
@@ -339,14 +338,14 @@ func (c *cc) convertTableRefsClause(n *pcast.TableRefsClause) *ast.List {
 	return &ast.List{Items: tables}
 }
 
-func (c *cc) convertUpdateStmt(n *pcast.UpdateStmt) *pg.UpdateStmt {
+func (c *cc) convertUpdateStmt(n *pcast.UpdateStmt) *ast.UpdateStmt {
 	// Relation
 	rels := c.convertTableRefsClause(n.TableRefs)
 	if len(rels.Items) != 1 {
 		panic("expected one range var")
 	}
 	rel := rels.Items[0]
-	rangeVar, ok := rel.(*pg.RangeVar)
+	rangeVar, ok := rel.(*ast.RangeVar)
 	if !ok {
 		panic("expected range var")
 	}
@@ -355,7 +354,7 @@ func (c *cc) convertUpdateStmt(n *pcast.UpdateStmt) *pg.UpdateStmt {
 	for _, a := range n.List {
 		list.Items = append(list.Items, c.convertAssignment(a))
 	}
-	return &pg.UpdateStmt{
+	return &ast.UpdateStmt{
 		Relation:      rangeVar,
 		TargetList:    list,
 		WhereClause:   c.convert(n.Where),
@@ -364,22 +363,22 @@ func (c *cc) convertUpdateStmt(n *pcast.UpdateStmt) *pg.UpdateStmt {
 	}
 }
 
-func (c *cc) convertValueExpr(n *driver.ValueExpr) *pg.A_Const {
-	return &pg.A_Const{
-		Val: &pg.String{
+func (c *cc) convertValueExpr(n *driver.ValueExpr) *ast.A_Const {
+	return &ast.A_Const{
+		Val: &ast.String{
 			Str: n.Datum.GetString(),
 		},
 	}
 }
 
-func (c *cc) convertWildCardField(n *pcast.WildCardField) *pg.ColumnRef {
+func (c *cc) convertWildCardField(n *pcast.WildCardField) *ast.ColumnRef {
 	items := []ast.Node{}
 	if t := n.Table.String(); t != "" {
-		items = append(items, &pg.String{Str: t})
+		items = append(items, &ast.String{Str: t})
 	}
-	items = append(items, &pg.A_Star{})
+	items = append(items, &ast.A_Star{})
 
-	return &pg.ColumnRef{
+	return &ast.ColumnRef{
 		Fields: &ast.List{
 			Items: items,
 		},

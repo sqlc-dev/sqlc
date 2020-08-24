@@ -148,7 +148,7 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 			return err
 		}
 		for _, col := range original.Columns {
-			newCol := *col  // make a copy, so changes to the ReferTable don't propagate
+			newCol := *col // make a copy, so changes to the ReferTable don't propagate
 			tbl.Columns = append(tbl.Columns, &newCol)
 		}
 	} else {

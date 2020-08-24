@@ -7,7 +7,6 @@ import (
 	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/source"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/ast/pg"
 	"github.com/kyleconroy/sqlc/internal/sql/astutils"
 	"github.com/kyleconroy/sqlc/internal/sql/lang"
 )
@@ -15,10 +14,10 @@ import (
 func (c *Compiler) expand(qc *QueryCatalog, raw *ast.RawStmt) ([]source.Edit, error) {
 	list := astutils.Search(raw, func(node ast.Node) bool {
 		switch node.(type) {
-		case *pg.DeleteStmt:
-		case *pg.InsertStmt:
-		case *pg.SelectStmt:
-		case *pg.UpdateStmt:
+		case *ast.DeleteStmt:
+		case *ast.InsertStmt:
+		case *ast.SelectStmt:
+		case *ast.UpdateStmt:
 		default:
 			return false
 		}
@@ -59,13 +58,13 @@ func (c *Compiler) expandStmt(qc *QueryCatalog, raw *ast.RawStmt, node ast.Node)
 
 	var targets *ast.List
 	switch n := node.(type) {
-	case *pg.DeleteStmt:
+	case *ast.DeleteStmt:
 		targets = n.ReturningList
-	case *pg.InsertStmt:
+	case *ast.InsertStmt:
 		targets = n.ReturningList
-	case *pg.SelectStmt:
+	case *ast.SelectStmt:
 		targets = n.TargetList
-	case *pg.UpdateStmt:
+	case *ast.UpdateStmt:
 		targets = n.ReturningList
 	default:
 		return nil, fmt.Errorf("outputColumns: unsupported node type: %T", n)
@@ -73,11 +72,11 @@ func (c *Compiler) expandStmt(qc *QueryCatalog, raw *ast.RawStmt, node ast.Node)
 
 	var edits []source.Edit
 	for _, target := range targets.Items {
-		res, ok := target.(*pg.ResTarget)
+		res, ok := target.(*ast.ResTarget)
 		if !ok {
 			continue
 		}
-		ref, ok := res.Val.(*pg.ColumnRef)
+		ref, ok := res.Val.(*ast.ColumnRef)
 		if !ok {
 			continue
 		}
@@ -89,9 +88,7 @@ func (c *Compiler) expandStmt(qc *QueryCatalog, raw *ast.RawStmt, node ast.Node)
 			switch field := f.(type) {
 			case *ast.String:
 				parts = append(parts, field.Str)
-			case *pg.String:
-				parts = append(parts, field.Str)
-			case *pg.A_Star:
+			case *ast.A_Star:
 				parts = append(parts, "*")
 			default:
 				return nil, fmt.Errorf("unknown field in ColumnRef: %T", f)

@@ -1,10 +1,10 @@
 package catalog
 
 import (
-	"github.com/kyleconroy/sqlc/internal/sql/ast/pg"
+	"github.com/kyleconroy/sqlc/internal/sql/ast"
 )
 
-func (c *Catalog) createExtension(stmt *pg.CreateExtensionStmt) error {
+func (c *Catalog) createExtension(stmt *ast.CreateExtensionStmt) error {
 	if stmt.Extname == nil {
 		return nil
 	}

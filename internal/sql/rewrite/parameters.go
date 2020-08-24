@@ -6,7 +6,6 @@ import (
 	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/source"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/ast/pg"
 	"github.com/kyleconroy/sqlc/internal/sql/astutils"
 	"github.com/kyleconroy/sqlc/internal/sql/named"
 )
@@ -24,21 +23,21 @@ type stringWalker struct {
 }
 
 func (s *stringWalker) Visit(node ast.Node) astutils.Visitor {
-	if _, ok := node.(*pg.A_Const); ok {
+	if _, ok := node.(*ast.A_Const); ok {
 		s.IsConst = true
 	}
-	if n, ok := node.(*pg.String); ok {
+	if n, ok := node.(*ast.String); ok {
 		s.String += n.Str
 	}
 	return s
 }
 
 func isNamedParamSignCast(node ast.Node) bool {
-	expr, ok := node.(*pg.A_Expr)
+	expr, ok := node.(*ast.A_Expr)
 	if !ok {
 		return false
 	}
-	_, cast := expr.Rexpr.(*pg.TypeCast)
+	_, cast := expr.Rexpr.(*ast.TypeCast)
 	return astutils.Join(expr.Name, ".") == "@" && cast
 }
 
@@ -60,14 +59,14 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt) (*ast.RawStmt, map[
 			fun := node.(*ast.FuncCall)
 			param, isConst := flatten(fun.Args)
 			if num, ok := args[param]; ok {
-				cr.Replace(&pg.ParamRef{
+				cr.Replace(&ast.ParamRef{
 					Number:   num,
 					Location: fun.Location,
 				})
 			} else {
 				argn += 1
 				args[param] = argn
-				cr.Replace(&pg.ParamRef{
+				cr.Replace(&ast.ParamRef{
 					Number:   argn,
 					Location: fun.Location,
 				})
@@ -92,11 +91,11 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt) (*ast.RawStmt, map[
 			return false
 
 		case isNamedParamSignCast(node):
-			expr := node.(*pg.A_Expr)
-			cast := expr.Rexpr.(*pg.TypeCast)
+			expr := node.(*ast.A_Expr)
+			cast := expr.Rexpr.(*ast.TypeCast)
 			param, _ := flatten(cast.Arg)
 			if num, ok := args[param]; ok {
-				cast.Arg = &pg.ParamRef{
+				cast.Arg = &ast.ParamRef{
 					Number:   num,
 					Location: expr.Location,
 				}
@@ -104,7 +103,7 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt) (*ast.RawStmt, map[
 			} else {
 				argn += 1
 				args[param] = argn
-				cast.Arg = &pg.ParamRef{
+				cast.Arg = &ast.ParamRef{
 					Number:   argn,
 					Location: expr.Location,
 				}
@@ -119,17 +118,17 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt) (*ast.RawStmt, map[
 			return false
 
 		case named.IsParamSign(node):
-			expr := node.(*pg.A_Expr)
+			expr := node.(*ast.A_Expr)
 			param, _ := flatten(expr.Rexpr)
 			if num, ok := args[param]; ok {
-				cr.Replace(&pg.ParamRef{
+				cr.Replace(&ast.ParamRef{
 					Number:   num,
 					Location: expr.Location,
 				})
 			} else {
 				argn += 1
 				args[param] = argn
-				cr.Replace(&pg.ParamRef{
+				cr.Replace(&ast.ParamRef{
 					Number:   argn,
 					Location: expr.Location,
 				})

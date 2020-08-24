@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/ast/pg"
 	"github.com/kyleconroy/sqlc/internal/sql/astutils"
 )
 
@@ -13,7 +12,7 @@ import (
 func stringSlice(list *ast.List) []string {
 	items := []string{}
 	for _, item := range list.Items {
-		if n, ok := item.(*pg.String); ok {
+		if n, ok := item.(*ast.String); ok {
 			items = append(items, n.Str)
 			continue
 		}
@@ -56,7 +55,7 @@ func parseRelation(node ast.Node) (*Relation, error) {
 			return nil, fmt.Errorf("invalid name: %s", astutils.Join(n, "."))
 		}
 
-	case *pg.RangeVar:
+	case *ast.RangeVar:
 		name := Relation{}
 		if n.Catalogname != nil {
 			name.Catalog = *n.Catalogname
@@ -69,7 +68,7 @@ func parseRelation(node ast.Node) (*Relation, error) {
 		}
 		return &name, nil
 
-	case *pg.TypeName:
+	case *ast.TypeName:
 		return parseRelation(n.Names)
 
 	default:

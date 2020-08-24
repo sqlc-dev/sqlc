@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/ast/pg"
 )
 
 func Cmd(n ast.Node, name, cmd string) error {
@@ -14,13 +13,13 @@ func Cmd(n ast.Node, name, cmd string) error {
 	}
 	var list *ast.List
 	switch stmt := n.(type) {
-	case *pg.SelectStmt:
+	case *ast.SelectStmt:
 		return nil
-	case *pg.DeleteStmt:
+	case *ast.DeleteStmt:
 		list = stmt.ReturningList
-	case *pg.InsertStmt:
+	case *ast.InsertStmt:
 		list = stmt.ReturningList
-	case *pg.UpdateStmt:
+	case *ast.UpdateStmt:
 		list = stmt.ReturningList
 	default:
 		return nil

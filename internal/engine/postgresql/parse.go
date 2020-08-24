@@ -444,6 +444,7 @@ func translate(node nodes.Node) (ast.Node, error) {
 			Func:       fn,
 			ReturnType: rt,
 			Replace:    n.Replace,
+			Params:     &ast.List{},
 		}
 		for _, item := range n.Parameters.Items {
 			arg := item.(nodes.FunctionParameter)
@@ -463,7 +464,7 @@ func translate(node nodes.Node) (ast.Node, error) {
 			if arg.Defexpr != nil {
 				fp.DefExpr = &ast.TODO{}
 			}
-			stmt.Params = append(stmt.Params, fp)
+			stmt.Params.Items = append(stmt.Params.Items, fp)
 		}
 		return stmt, nil
 

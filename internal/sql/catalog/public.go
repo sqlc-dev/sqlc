@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/ast/pg"
 	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
 )
 
@@ -41,11 +40,11 @@ func (c *Catalog) ResolveFuncCall(call *ast.FuncCall) (*Function, error) {
 
 	// https://www.postgresql.org/docs/current/sql-syntax-calling-funcs.html
 	var positional []ast.Node
-	var named []*pg.NamedArgExpr
+	var named []*ast.NamedArgExpr
 
 	if call.Args != nil {
 		for _, arg := range call.Args.Items {
-			if narg, ok := arg.(*pg.NamedArgExpr); ok {
+			if narg, ok := arg.(*ast.NamedArgExpr); ok {
 				named = append(named, narg)
 			} else {
 				// The mixed notation combines positional and named notation.

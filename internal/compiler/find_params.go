@@ -2,7 +2,6 @@ package compiler
 
 import (
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/ast/pg"
 	"github.com/kyleconroy/sqlc/internal/sql/astutils"
 )
 
@@ -15,14 +14,14 @@ func findParameters(root ast.Node) []paramRef {
 
 type paramRef struct {
 	parent ast.Node
-	rv     *pg.RangeVar
-	ref    *pg.ParamRef
+	rv     *ast.RangeVar
+	ref    *ast.ParamRef
 	name   string // Named parameter support
 }
 
 type paramSearch struct {
 	parent   ast.Node
-	rangeVar *pg.RangeVar
+	rangeVar *ast.RangeVar
 	refs     *[]paramRef
 	seen     map[int]struct{}
 
@@ -48,20 +47,20 @@ func (l *limitOffset) Pos() int {
 func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 	switch n := node.(type) {
 
-	case *pg.A_Expr:
+	case *ast.A_Expr:
 		p.parent = node
 
 	case *ast.FuncCall:
 		p.parent = node
 
-	case *pg.InsertStmt:
-		if s, ok := n.SelectStmt.(*pg.SelectStmt); ok {
+	case *ast.InsertStmt:
+		if s, ok := n.SelectStmt.(*ast.SelectStmt); ok {
 			for i, item := range s.TargetList.Items {
-				target, ok := item.(*pg.ResTarget)
+				target, ok := item.(*ast.ResTarget)
 				if !ok {
 					continue
 				}
-				ref, ok := target.Val.(*pg.ParamRef)
+				ref, ok := target.Val.(*ast.ParamRef)
 				if !ok {
 					continue
 				}
@@ -75,7 +74,7 @@ func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 					continue
 				}
 				for i, v := range vl.Items {
-					ref, ok := v.(*pg.ParamRef)
+					ref, ok := v.(*ast.ParamRef)
 					if !ok {
 						continue
 					}
@@ -86,13 +85,13 @@ func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 			}
 		}
 
-	case *pg.RangeVar:
+	case *ast.RangeVar:
 		p.rangeVar = n
 
-	case *pg.ResTarget:
+	case *ast.ResTarget:
 		p.parent = node
 
-	case *pg.SelectStmt:
+	case *ast.SelectStmt:
 		if n.LimitCount != nil {
 			p.limitCount = n.LimitCount
 		}
@@ -100,19 +99,19 @@ func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 			p.limitOffset = n.LimitOffset
 		}
 
-	case *pg.TypeCast:
+	case *ast.TypeCast:
 		p.parent = node
 
-	case *pg.ParamRef:
+	case *ast.ParamRef:
 		parent := p.parent
 
-		if count, ok := p.limitCount.(*pg.ParamRef); ok {
+		if count, ok := p.limitCount.(*ast.ParamRef); ok {
 			if n.Number == count.Number {
 				parent = &limitCount{}
 			}
 		}
 
-		if offset, ok := p.limitOffset.(*pg.ParamRef); ok {
+		if offset, ok := p.limitOffset.(*ast.ParamRef); ok {
 			if n.Number == offset.Number {
 				parent = &limitOffset{}
 			}
@@ -121,14 +120,14 @@ func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 			break
 		}
 
-		// Special, terrible case for *pg.MultiAssignRef
+		// Special, terrible case for *ast.MultiAssignRef
 		set := true
-		if res, ok := parent.(*pg.ResTarget); ok {
-			if multi, ok := res.Val.(*pg.MultiAssignRef); ok {
+		if res, ok := parent.(*ast.ResTarget); ok {
+			if multi, ok := res.Val.(*ast.MultiAssignRef); ok {
 				set = false
-				if row, ok := multi.Source.(*pg.RowExpr); ok {
+				if row, ok := multi.Source.(*ast.RowExpr); ok {
 					for i, arg := range row.Args.Items {
-						if ref, ok := arg.(*pg.ParamRef); ok {
+						if ref, ok := arg.(*ast.ParamRef); ok {
 							if multi.Colno == i+1 && ref.Number == n.Number {
 								set = true
 							}

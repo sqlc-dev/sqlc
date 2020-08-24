@@ -4,18 +4,17 @@ import (
 	"fmt"
 
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/ast/pg"
 	"github.com/kyleconroy/sqlc/internal/sql/astutils"
 	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
 )
 
 func ParamRef(n ast.Node) error {
-	var allrefs []*pg.ParamRef
+	var allrefs []*ast.ParamRef
 
 	// Find all parameter references
 	astutils.Walk(astutils.VisitorFunc(func(node ast.Node) {
 		switch n := node.(type) {
-		case *pg.ParamRef:
+		case *ast.ParamRef:
 			allrefs = append(allrefs, n)
 		}
 	}), n)

@@ -1,9 +1,12 @@
 package ast
 
 type ResTarget struct {
-	Val Node
+	Name        *string
+	Indirection *List
+	Val         Node
+	Location    int
 }
 
 func (n *ResTarget) Pos() int {
-	return 0
+	return n.Location
 }

@@ -2,7 +2,6 @@ package compiler
 
 import (
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/ast/pg"
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 )
 
@@ -12,13 +11,13 @@ type QueryCatalog struct {
 }
 
 func buildQueryCatalog(c *catalog.Catalog, node ast.Node) (*QueryCatalog, error) {
-	var with *pg.WithClause
+	var with *ast.WithClause
 	switch n := node.(type) {
-	case *pg.InsertStmt:
+	case *ast.InsertStmt:
 		with = n.WithClause
-	case *pg.UpdateStmt:
+	case *ast.UpdateStmt:
 		with = n.WithClause
-	case *pg.SelectStmt:
+	case *ast.SelectStmt:
 		with = n.WithClause
 	default:
 		with = nil
@@ -26,7 +25,7 @@ func buildQueryCatalog(c *catalog.Catalog, node ast.Node) (*QueryCatalog, error)
 	qc := &QueryCatalog{catalog: c, ctes: map[string]*Table{}}
 	if with != nil {
 		for _, item := range with.Ctes.Items {
-			if cte, ok := item.(*pg.CommonTableExpr); ok {
+			if cte, ok := item.(*ast.CommonTableExpr); ok {
 				cols, err := outputColumns(qc, cte.Ctequery)
 				if err != nil {
 					return nil, err

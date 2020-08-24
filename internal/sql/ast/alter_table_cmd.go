@@ -14,6 +14,8 @@ type AlterTableCmd struct {
 	Subtype   AlterTableType
 	Name      *string
 	Def       *ColumnDef
+	Newowner  *RoleSpec
+	Behavior  DropBehavior
 	MissingOk bool
 }
 

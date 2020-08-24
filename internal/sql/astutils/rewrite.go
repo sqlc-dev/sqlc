@@ -9,7 +9,6 @@ import (
 	"reflect"
 
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/ast/pg"
 )
 
 // An ApplyFunc is invoked by Apply for each node n, even if n is nil,
@@ -144,27 +143,14 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 	case nil:
 		// nothing to do
 
-	case *ast.AlterTableCmd:
-		a.apply(n, "Def", nil, n.Def)
-
 	case *ast.AlterTableSetSchemaStmt:
 		a.apply(n, "Table", nil, n.Table)
-
-	case *ast.AlterTableStmt:
-		a.apply(n, "Table", nil, n.Table)
-		a.apply(n, "Cmds", nil, n.Cmds)
 
 	case *ast.AlterTypeAddValueStmt:
 		a.apply(n, "Type", nil, n.Type)
 
 	case *ast.AlterTypeRenameValueStmt:
 		a.apply(n, "Type", nil, n.Type)
-
-	case *ast.ColumnDef:
-		a.apply(n, "TypeName", nil, n.TypeName)
-
-	case *ast.ColumnRef:
-		// pass
 
 	case *ast.CommentOnColumnStmt:
 		a.apply(n, "Table", nil, n.Table)
@@ -178,17 +164,6 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 
 	case *ast.CommentOnTypeStmt:
 		a.apply(n, "Type", nil, n.Type)
-
-	case *ast.CreateEnumStmt:
-		a.apply(n, "TypeName", nil, n.TypeName)
-		a.apply(n, "Vals", nil, n.Vals)
-
-	case *ast.CreateFunctionStmt:
-		a.apply(n, "ReturnType", nil, n.ReturnType)
-		a.apply(n, "Func", nil, n.Func)
-
-	case *ast.CreateSchemaStmt:
-		// pass
 
 	case *ast.CreateTableStmt:
 		a.apply(n, "Name", nil, n.Name)
@@ -229,13 +204,6 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 	case *ast.RenameTableStmt:
 		a.apply(n, "Table", nil, n.Table)
 
-	case *ast.ResTarget:
-		a.apply(n, "Val", nil, n.Val)
-
-	case *ast.SelectStmt:
-		a.apply(n, "Fields", nil, n.Fields)
-		a.apply(n, "From", nil, n.From)
-
 	case *ast.Statement:
 		a.apply(n, "Raw", nil, n.Raw)
 
@@ -248,35 +216,32 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 	case *ast.TableName:
 		// pass
 
-	case *ast.TypeName:
-		// pass
-
-	case *pg.A_ArrayExpr:
+	case *ast.A_ArrayExpr:
 		a.apply(n, "Elements", nil, n.Elements)
 
-	case *pg.A_Const:
+	case *ast.A_Const:
 		a.apply(n, "Val", nil, n.Val)
 
-	case *pg.A_Expr:
+	case *ast.A_Expr:
 		a.apply(n, "Name", nil, n.Name)
 		a.apply(n, "Lexpr", nil, n.Lexpr)
 		a.apply(n, "Rexpr", nil, n.Rexpr)
 
-	case *pg.A_Indices:
+	case *ast.A_Indices:
 		a.apply(n, "Lidx", nil, n.Lidx)
 		a.apply(n, "Uidx", nil, n.Uidx)
 
-	case *pg.A_Indirection:
+	case *ast.A_Indirection:
 		a.apply(n, "Arg", nil, n.Arg)
 		a.apply(n, "Indirection", nil, n.Indirection)
 
-	case *pg.A_Star:
+	case *ast.A_Star:
 		// pass
 
-	case *pg.AccessPriv:
+	case *ast.AccessPriv:
 		a.apply(n, "Cols", nil, n.Cols)
 
-	case *pg.Aggref:
+	case *ast.Aggref:
 		a.apply(n, "Xpr", nil, n.Xpr)
 		a.apply(n, "Aggargtypes", nil, n.Aggargtypes)
 		a.apply(n, "Aggdirectargs", nil, n.Aggdirectargs)
@@ -285,207 +250,208 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.apply(n, "Aggdistinct", nil, n.Aggdistinct)
 		a.apply(n, "Aggfilter", nil, n.Aggfilter)
 
-	case *pg.Alias:
+	case *ast.Alias:
 		a.apply(n, "Colnames", nil, n.Colnames)
 
-	case *pg.AlterCollationStmt:
+	case *ast.AlterCollationStmt:
 		a.apply(n, "Collname", nil, n.Collname)
 
-	case *pg.AlterDatabaseSetStmt:
+	case *ast.AlterDatabaseSetStmt:
 		a.apply(n, "Setstmt", nil, n.Setstmt)
 
-	case *pg.AlterDatabaseStmt:
+	case *ast.AlterDatabaseStmt:
 		a.apply(n, "Options", nil, n.Options)
 
-	case *pg.AlterDefaultPrivilegesStmt:
+	case *ast.AlterDefaultPrivilegesStmt:
 		a.apply(n, "Options", nil, n.Options)
 		a.apply(n, "Action", nil, n.Action)
 
-	case *pg.AlterDomainStmt:
+	case *ast.AlterDomainStmt:
 		a.apply(n, "TypeName", nil, n.TypeName)
 		a.apply(n, "Def", nil, n.Def)
 
-	case *pg.AlterEnumStmt:
+	case *ast.AlterEnumStmt:
 		a.apply(n, "TypeName", nil, n.TypeName)
 
-	case *pg.AlterEventTrigStmt:
+	case *ast.AlterEventTrigStmt:
 		// pass
 
-	case *pg.AlterExtensionContentsStmt:
+	case *ast.AlterExtensionContentsStmt:
 		a.apply(n, "Object", nil, n.Object)
 
-	case *pg.AlterExtensionStmt:
+	case *ast.AlterExtensionStmt:
 		a.apply(n, "Options", nil, n.Options)
 
-	case *pg.AlterFdwStmt:
+	case *ast.AlterFdwStmt:
 		a.apply(n, "FuncOptions", nil, n.FuncOptions)
 		a.apply(n, "Options", nil, n.Options)
 
-	case *pg.AlterForeignServerStmt:
+	case *ast.AlterForeignServerStmt:
 		a.apply(n, "Options", nil, n.Options)
 
-	case *pg.AlterFunctionStmt:
+	case *ast.AlterFunctionStmt:
 		a.apply(n, "Func", nil, n.Func)
 		a.apply(n, "Actions", nil, n.Actions)
 
-	case *pg.AlterObjectDependsStmt:
+	case *ast.AlterObjectDependsStmt:
 		a.apply(n, "Relation", nil, n.Relation)
 		a.apply(n, "Object", nil, n.Object)
 		a.apply(n, "Extname", nil, n.Extname)
 
-	case *pg.AlterObjectSchemaStmt:
+	case *ast.AlterObjectSchemaStmt:
 		a.apply(n, "Relation", nil, n.Relation)
 		a.apply(n, "Object", nil, n.Object)
 
-	case *pg.AlterOpFamilyStmt:
+	case *ast.AlterOpFamilyStmt:
 		a.apply(n, "Opfamilyname", nil, n.Opfamilyname)
 		a.apply(n, "Items", nil, n.Items)
 
-	case *pg.AlterOperatorStmt:
+	case *ast.AlterOperatorStmt:
 		a.apply(n, "Opername", nil, n.Opername)
 		a.apply(n, "Options", nil, n.Options)
 
-	case *pg.AlterOwnerStmt:
+	case *ast.AlterOwnerStmt:
 		a.apply(n, "Relation", nil, n.Relation)
 		a.apply(n, "Object", nil, n.Object)
 		a.apply(n, "Newowner", nil, n.Newowner)
 
-	case *pg.AlterPolicyStmt:
+	case *ast.AlterPolicyStmt:
 		a.apply(n, "Table", nil, n.Table)
 		a.apply(n, "Roles", nil, n.Roles)
 		a.apply(n, "Qual", nil, n.Qual)
 		a.apply(n, "WithCheck", nil, n.WithCheck)
 
-	case *pg.AlterPublicationStmt:
+	case *ast.AlterPublicationStmt:
 		a.apply(n, "Options", nil, n.Options)
 		a.apply(n, "Tables", nil, n.Tables)
 
-	case *pg.AlterRoleSetStmt:
+	case *ast.AlterRoleSetStmt:
 		a.apply(n, "Role", nil, n.Role)
 		a.apply(n, "Setstmt", nil, n.Setstmt)
 
-	case *pg.AlterRoleStmt:
+	case *ast.AlterRoleStmt:
 		a.apply(n, "Role", nil, n.Role)
 		a.apply(n, "Options", nil, n.Options)
 
-	case *pg.AlterSeqStmt:
+	case *ast.AlterSeqStmt:
 		a.apply(n, "Sequence", nil, n.Sequence)
 		a.apply(n, "Options", nil, n.Options)
 
-	case *pg.AlterSubscriptionStmt:
+	case *ast.AlterSubscriptionStmt:
 		a.apply(n, "Publication", nil, n.Publication)
 		a.apply(n, "Options", nil, n.Options)
 
-	case *pg.AlterSystemStmt:
+	case *ast.AlterSystemStmt:
 		a.apply(n, "Setstmt", nil, n.Setstmt)
 
-	case *pg.AlterTSConfigurationStmt:
+	case *ast.AlterTSConfigurationStmt:
 		a.apply(n, "Cfgname", nil, n.Cfgname)
 		a.apply(n, "Tokentype", nil, n.Tokentype)
 		a.apply(n, "Dicts", nil, n.Dicts)
 
-	case *pg.AlterTSDictionaryStmt:
+	case *ast.AlterTSDictionaryStmt:
 		a.apply(n, "Dictname", nil, n.Dictname)
 		a.apply(n, "Options", nil, n.Options)
 
-	case *pg.AlterTableCmd:
+	case *ast.AlterTableCmd:
 		a.apply(n, "Newowner", nil, n.Newowner)
 		a.apply(n, "Def", nil, n.Def)
 
-	case *pg.AlterTableMoveAllStmt:
+	case *ast.AlterTableMoveAllStmt:
 		a.apply(n, "Roles", nil, n.Roles)
 
-	case *pg.AlterTableSpaceOptionsStmt:
+	case *ast.AlterTableSpaceOptionsStmt:
 		a.apply(n, "Options", nil, n.Options)
 
-	case *pg.AlterTableStmt:
+	case *ast.AlterTableStmt:
 		a.apply(n, "Relation", nil, n.Relation)
+		a.apply(n, "Table", nil, n.Table)
 		a.apply(n, "Cmds", nil, n.Cmds)
 
-	case *pg.AlterUserMappingStmt:
+	case *ast.AlterUserMappingStmt:
 		a.apply(n, "User", nil, n.User)
 		a.apply(n, "Options", nil, n.Options)
 
-	case *pg.AlternativeSubPlan:
+	case *ast.AlternativeSubPlan:
 		a.apply(n, "Xpr", nil, n.Xpr)
 		a.apply(n, "Subplans", nil, n.Subplans)
 
-	case *pg.ArrayCoerceExpr:
+	case *ast.ArrayCoerceExpr:
 		a.apply(n, "Xpr", nil, n.Xpr)
 		a.apply(n, "Arg", nil, n.Arg)
 
-	case *pg.ArrayExpr:
+	case *ast.ArrayExpr:
 		a.apply(n, "Xpr", nil, n.Xpr)
 		a.apply(n, "Elements", nil, n.Elements)
 
-	case *pg.ArrayRef:
+	case *ast.ArrayRef:
 		a.apply(n, "Xpr", nil, n.Xpr)
 		a.apply(n, "Refupperindexpr", nil, n.Refupperindexpr)
 		a.apply(n, "Reflowerindexpr", nil, n.Reflowerindexpr)
 		a.apply(n, "Refexpr", nil, n.Refexpr)
 		a.apply(n, "Refassgnexpr", nil, n.Refassgnexpr)
 
-	case *pg.BitString:
+	case *ast.BitString:
 		// pass
 
-	case *pg.BlockIdData:
+	case *ast.BlockIdData:
 		// pass
 
-	case *pg.BoolExpr:
+	case *ast.BoolExpr:
 		a.apply(n, "Xpr", nil, n.Xpr)
 		a.apply(n, "Args", nil, n.Args)
 
-	case *pg.BooleanTest:
+	case *ast.BooleanTest:
 		a.apply(n, "Xpr", nil, n.Xpr)
 		a.apply(n, "Arg", nil, n.Arg)
 
-	case *pg.CaseExpr:
+	case *ast.CaseExpr:
 		a.apply(n, "Xpr", nil, n.Xpr)
 		a.apply(n, "Arg", nil, n.Arg)
 		a.apply(n, "Args", nil, n.Args)
 		a.apply(n, "Defresult", nil, n.Defresult)
 
-	case *pg.CaseTestExpr:
+	case *ast.CaseTestExpr:
 		a.apply(n, "Xpr", nil, n.Xpr)
 
-	case *pg.CaseWhen:
+	case *ast.CaseWhen:
 		a.apply(n, "Xpr", nil, n.Xpr)
 		a.apply(n, "Expr", nil, n.Expr)
 		a.apply(n, "Result", nil, n.Result)
 
-	case *pg.CheckPointStmt:
+	case *ast.CheckPointStmt:
 		// pass
 
-	case *pg.ClosePortalStmt:
+	case *ast.ClosePortalStmt:
 		// pass
 
-	case *pg.ClusterStmt:
+	case *ast.ClusterStmt:
 		a.apply(n, "Relation", nil, n.Relation)
 
-	case *pg.CoalesceExpr:
+	case *ast.CoalesceExpr:
 		a.apply(n, "Xpr", nil, n.Xpr)
 		a.apply(n, "Args", nil, n.Args)
 
-	case *pg.CoerceToDomain:
+	case *ast.CoerceToDomain:
 		a.apply(n, "Xpr", nil, n.Xpr)
 		a.apply(n, "Arg", nil, n.Arg)
 
-	case *pg.CoerceToDomainValue:
+	case *ast.CoerceToDomainValue:
 		a.apply(n, "Xpr", nil, n.Xpr)
 
-	case *pg.CoerceViaIO:
+	case *ast.CoerceViaIO:
 		a.apply(n, "Xpr", nil, n.Xpr)
 		a.apply(n, "Arg", nil, n.Arg)
 
-	case *pg.CollateClause:
+	case *ast.CollateClause:
 		a.apply(n, "Arg", nil, n.Arg)
 		a.apply(n, "Collname", nil, n.Collname)
 
-	case *pg.CollateExpr:
+	case *ast.CollateExpr:
 		a.apply(n, "Xpr", nil, n.Xpr)
 		a.apply(n, "Arg", nil, n.Arg)
 
-	case *pg.ColumnDef:
+	case *ast.ColumnDef:
 		a.apply(n, "TypeName", nil, n.TypeName)
 		a.apply(n, "RawDefault", nil, n.RawDefault)
 		a.apply(n, "CookedDefault", nil, n.CookedDefault)
@@ -493,13 +459,13 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.apply(n, "Constraints", nil, n.Constraints)
 		a.apply(n, "Fdwoptions", nil, n.Fdwoptions)
 
-	case *pg.ColumnRef:
+	case *ast.ColumnRef:
 		a.apply(n, "Fields", nil, n.Fields)
 
-	case *pg.CommentStmt:
+	case *ast.CommentStmt:
 		a.apply(n, "Object", nil, n.Object)
 
-	case *pg.CommonTableExpr:
+	case *ast.CommonTableExpr:
 		a.apply(n, "Aliascolnames", nil, n.Aliascolnames)
 		a.apply(n, "Ctequery", nil, n.Ctequery)
 		a.apply(n, "Ctecolnames", nil, n.Ctecolnames)
@@ -507,14 +473,13 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.apply(n, "Ctecoltypmods", nil, n.Ctecoltypmods)
 		a.apply(n, "Ctecolcollations", nil, n.Ctecolcollations)
 
-	case *pg.CompositeTypeStmt:
-		a.apply(n, "Typevar", nil, n.Typevar)
-		a.apply(n, "Coldeflist", nil, n.Coldeflist)
+	case *ast.CompositeTypeStmt:
+		a.apply(n, "TypeName", nil, n.TypeName)
 
-	case *pg.Const:
+	case *ast.Const:
 		a.apply(n, "Xpr", nil, n.Xpr)
 
-	case *pg.Constraint:
+	case *ast.Constraint:
 		a.apply(n, "RawExpr", nil, n.RawExpr)
 		a.apply(n, "Keys", nil, n.Keys)
 		a.apply(n, "Exclusions", nil, n.Exclusions)
@@ -525,118 +490,118 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.apply(n, "PkAttrs", nil, n.PkAttrs)
 		a.apply(n, "OldConpfeqop", nil, n.OldConpfeqop)
 
-	case *pg.ConstraintsSetStmt:
+	case *ast.ConstraintsSetStmt:
 		a.apply(n, "Constraints", nil, n.Constraints)
 
-	case *pg.ConvertRowtypeExpr:
+	case *ast.ConvertRowtypeExpr:
 		a.apply(n, "Xpr", nil, n.Xpr)
 		a.apply(n, "Arg", nil, n.Arg)
 
-	case *pg.CopyStmt:
+	case *ast.CopyStmt:
 		a.apply(n, "Relation", nil, n.Relation)
 		a.apply(n, "Query", nil, n.Query)
 		a.apply(n, "Attlist", nil, n.Attlist)
 		a.apply(n, "Options", nil, n.Options)
 
-	case *pg.CreateAmStmt:
+	case *ast.CreateAmStmt:
 		a.apply(n, "HandlerName", nil, n.HandlerName)
 
-	case *pg.CreateCastStmt:
+	case *ast.CreateCastStmt:
 		a.apply(n, "Sourcetype", nil, n.Sourcetype)
 		a.apply(n, "Targettype", nil, n.Targettype)
 		a.apply(n, "Func", nil, n.Func)
 
-	case *pg.CreateConversionStmt:
+	case *ast.CreateConversionStmt:
 		a.apply(n, "ConversionName", nil, n.ConversionName)
 		a.apply(n, "FuncName", nil, n.FuncName)
 
-	case *pg.CreateDomainStmt:
+	case *ast.CreateDomainStmt:
 		a.apply(n, "Domainname", nil, n.Domainname)
 		a.apply(n, "TypeName", nil, n.TypeName)
 		a.apply(n, "CollClause", nil, n.CollClause)
 		a.apply(n, "Constraints", nil, n.Constraints)
 
-	case *pg.CreateEnumStmt:
+	case *ast.CreateEnumStmt:
 		a.apply(n, "TypeName", nil, n.TypeName)
 		a.apply(n, "Vals", nil, n.Vals)
 
-	case *pg.CreateEventTrigStmt:
+	case *ast.CreateEventTrigStmt:
 		a.apply(n, "Whenclause", nil, n.Whenclause)
 		a.apply(n, "Funcname", nil, n.Funcname)
 
-	case *pg.CreateExtensionStmt:
+	case *ast.CreateExtensionStmt:
 		a.apply(n, "Options", nil, n.Options)
 
-	case *pg.CreateFdwStmt:
+	case *ast.CreateFdwStmt:
 		a.apply(n, "FuncOptions", nil, n.FuncOptions)
 		a.apply(n, "Options", nil, n.Options)
 
-	case *pg.CreateForeignServerStmt:
+	case *ast.CreateForeignServerStmt:
 		a.apply(n, "Options", nil, n.Options)
 
-	case *pg.CreateForeignTableStmt:
+	case *ast.CreateForeignTableStmt:
 		a.apply(n, "Base", nil, n.Base)
 		a.apply(n, "Options", nil, n.Options)
 
-	case *pg.CreateFunctionStmt:
-		a.apply(n, "Funcname", nil, n.Funcname)
-		a.apply(n, "Parameters", nil, n.Parameters)
+	case *ast.CreateFunctionStmt:
+		a.apply(n, "Func", nil, n.Func)
+		a.applyList(n, "Params")
 		a.apply(n, "ReturnType", nil, n.ReturnType)
 		a.apply(n, "Options", nil, n.Options)
 		a.apply(n, "WithClause", nil, n.WithClause)
 
-	case *pg.CreateOpClassItem:
+	case *ast.CreateOpClassItem:
 		a.apply(n, "Name", nil, n.Name)
 		a.apply(n, "OrderFamily", nil, n.OrderFamily)
 		a.apply(n, "ClassArgs", nil, n.ClassArgs)
 		a.apply(n, "Storedtype", nil, n.Storedtype)
 
-	case *pg.CreateOpClassStmt:
+	case *ast.CreateOpClassStmt:
 		a.apply(n, "Opclassname", nil, n.Opclassname)
 		a.apply(n, "Opfamilyname", nil, n.Opfamilyname)
 		a.apply(n, "Datatype", nil, n.Datatype)
 		a.apply(n, "Items", nil, n.Items)
 
-	case *pg.CreateOpFamilyStmt:
+	case *ast.CreateOpFamilyStmt:
 		a.apply(n, "Opfamilyname", nil, n.Opfamilyname)
 
-	case *pg.CreatePLangStmt:
+	case *ast.CreatePLangStmt:
 		a.apply(n, "Plhandler", nil, n.Plhandler)
 		a.apply(n, "Plinline", nil, n.Plinline)
 		a.apply(n, "Plvalidator", nil, n.Plvalidator)
 
-	case *pg.CreatePolicyStmt:
+	case *ast.CreatePolicyStmt:
 		a.apply(n, "Table", nil, n.Table)
 		a.apply(n, "Roles", nil, n.Roles)
 		a.apply(n, "Qual", nil, n.Qual)
 		a.apply(n, "WithCheck", nil, n.WithCheck)
 
-	case *pg.CreatePublicationStmt:
+	case *ast.CreatePublicationStmt:
 		a.apply(n, "Options", nil, n.Options)
 		a.apply(n, "Tables", nil, n.Tables)
 
-	case *pg.CreateRangeStmt:
+	case *ast.CreateRangeStmt:
 		a.apply(n, "TypeName", nil, n.TypeName)
 		a.apply(n, "Params", nil, n.Params)
 
-	case *pg.CreateRoleStmt:
+	case *ast.CreateRoleStmt:
 		a.apply(n, "Options", nil, n.Options)
 
-	case *pg.CreateSchemaStmt:
+	case *ast.CreateSchemaStmt:
 		a.apply(n, "Authrole", nil, n.Authrole)
 		a.apply(n, "SchemaElts", nil, n.SchemaElts)
 
-	case *pg.CreateSeqStmt:
+	case *ast.CreateSeqStmt:
 		a.apply(n, "Sequence", nil, n.Sequence)
 		a.apply(n, "Options", nil, n.Options)
 
-	case *pg.CreateStatsStmt:
+	case *ast.CreateStatsStmt:
 		a.apply(n, "Defnames", nil, n.Defnames)
 		a.apply(n, "StatTypes", nil, n.StatTypes)
 		a.apply(n, "Exprs", nil, n.Exprs)
 		a.apply(n, "Relations", nil, n.Relations)
 
-	case *pg.CreateStmt:
+	case *ast.CreateStmt:
 		a.apply(n, "Relation", nil, n.Relation)
 		a.apply(n, "TableElts", nil, n.TableElts)
 		a.apply(n, "InhRelations", nil, n.InhRelations)
@@ -646,24 +611,24 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.apply(n, "Constraints", nil, n.Constraints)
 		a.apply(n, "Options", nil, n.Options)
 
-	case *pg.CreateSubscriptionStmt:
+	case *ast.CreateSubscriptionStmt:
 		a.apply(n, "Publication", nil, n.Publication)
 		a.apply(n, "Options", nil, n.Options)
 
-	case *pg.CreateTableAsStmt:
+	case *ast.CreateTableAsStmt:
 		a.apply(n, "Query", nil, n.Query)
 		a.apply(n, "Into", nil, n.Into)
 
-	case *pg.CreateTableSpaceStmt:
+	case *ast.CreateTableSpaceStmt:
 		a.apply(n, "Owner", nil, n.Owner)
 		a.apply(n, "Options", nil, n.Options)
 
-	case *pg.CreateTransformStmt:
+	case *ast.CreateTransformStmt:
 		a.apply(n, "TypeName", nil, n.TypeName)
 		a.apply(n, "Fromsql", nil, n.Fromsql)
 		a.apply(n, "Tosql", nil, n.Tosql)
 
-	case *pg.CreateTrigStmt:
+	case *ast.CreateTrigStmt:
 		a.apply(n, "Relation", nil, n.Relation)
 		a.apply(n, "Funcname", nil, n.Funcname)
 		a.apply(n, "Args", nil, n.Args)
@@ -672,91 +637,91 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.apply(n, "TransitionRels", nil, n.TransitionRels)
 		a.apply(n, "Constrrel", nil, n.Constrrel)
 
-	case *pg.CreateUserMappingStmt:
+	case *ast.CreateUserMappingStmt:
 		a.apply(n, "User", nil, n.User)
 		a.apply(n, "Options", nil, n.Options)
 
-	case *pg.CreatedbStmt:
+	case *ast.CreatedbStmt:
 		a.apply(n, "Options", nil, n.Options)
 
-	case *pg.CurrentOfExpr:
+	case *ast.CurrentOfExpr:
 		a.apply(n, "Xpr", nil, n.Xpr)
 
-	case *pg.DeallocateStmt:
+	case *ast.DeallocateStmt:
 		// pass
 
-	case *pg.DeclareCursorStmt:
+	case *ast.DeclareCursorStmt:
 		a.apply(n, "Query", nil, n.Query)
 
-	case *pg.DefElem:
+	case *ast.DefElem:
 		a.apply(n, "Arg", nil, n.Arg)
 
-	case *pg.DefineStmt:
+	case *ast.DefineStmt:
 		a.apply(n, "Defnames", nil, n.Defnames)
 		a.apply(n, "Args", nil, n.Args)
 		a.apply(n, "Definition", nil, n.Definition)
 
-	case *pg.DeleteStmt:
+	case *ast.DeleteStmt:
 		a.apply(n, "Relation", nil, n.Relation)
 		a.apply(n, "UsingClause", nil, n.UsingClause)
 		a.apply(n, "WhereClause", nil, n.WhereClause)
 		a.apply(n, "ReturningList", nil, n.ReturningList)
 		a.apply(n, "WithClause", nil, n.WithClause)
 
-	case *pg.DiscardStmt:
+	case *ast.DiscardStmt:
 		// pass
 
-	case *pg.DoStmt:
+	case *ast.DoStmt:
 		a.apply(n, "Args", nil, n.Args)
 
-	case *pg.DropOwnedStmt:
+	case *ast.DropOwnedStmt:
 		a.apply(n, "Roles", nil, n.Roles)
 
-	case *pg.DropRoleStmt:
+	case *ast.DropRoleStmt:
 		a.apply(n, "Roles", nil, n.Roles)
 
-	case *pg.DropStmt:
+	case *ast.DropStmt:
 		a.apply(n, "Objects", nil, n.Objects)
 
-	case *pg.DropSubscriptionStmt:
+	case *ast.DropSubscriptionStmt:
 		// pass
 
-	case *pg.DropTableSpaceStmt:
+	case *ast.DropTableSpaceStmt:
 		// pass
 
-	case *pg.DropUserMappingStmt:
+	case *ast.DropUserMappingStmt:
 		a.apply(n, "User", nil, n.User)
 
-	case *pg.DropdbStmt:
+	case *ast.DropdbStmt:
 		// pass
 
-	case *pg.ExecuteStmt:
+	case *ast.ExecuteStmt:
 		a.apply(n, "Params", nil, n.Params)
 
-	case *pg.ExplainStmt:
+	case *ast.ExplainStmt:
 		a.apply(n, "Query", nil, n.Query)
 		a.apply(n, "Options", nil, n.Options)
 
-	case *pg.Expr:
+	case *ast.Expr:
 		// pass
 
-	case *pg.FetchStmt:
+	case *ast.FetchStmt:
 		// pass
 
-	case *pg.FieldSelect:
+	case *ast.FieldSelect:
 		a.apply(n, "Xpr", nil, n.Xpr)
 		a.apply(n, "Arg", nil, n.Arg)
 
-	case *pg.FieldStore:
+	case *ast.FieldStore:
 		a.apply(n, "Xpr", nil, n.Xpr)
 		a.apply(n, "Arg", nil, n.Arg)
 		a.apply(n, "Newvals", nil, n.Newvals)
 		a.apply(n, "Fieldnums", nil, n.Fieldnums)
 
-	case *pg.Float:
+	case *ast.Float:
 		// pass
 
-	case *pg.FromExpr:
+	case *ast.FromExpr:
 		a.apply(n, "Fromlist", nil, n.Fromlist)
 		a.apply(n, "Quals", nil, n.Quals)
 
@@ -768,61 +733,61 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.apply(n, "AggFilter", nil, n.AggFilter)
 		a.apply(n, "Over", nil, n.Over)
 
-	case *pg.FuncExpr:
+	case *ast.FuncExpr:
 		a.apply(n, "Xpr", nil, n.Xpr)
 		a.apply(n, "Args", nil, n.Args)
 
-	case *pg.FunctionParameter:
+	case *ast.FunctionParameter:
 		a.apply(n, "ArgType", nil, n.ArgType)
 		a.apply(n, "Defexpr", nil, n.Defexpr)
 
-	case *pg.GrantRoleStmt:
+	case *ast.GrantRoleStmt:
 		a.apply(n, "GrantedRoles", nil, n.GrantedRoles)
 		a.apply(n, "GranteeRoles", nil, n.GranteeRoles)
 		a.apply(n, "Grantor", nil, n.Grantor)
 
-	case *pg.GrantStmt:
+	case *ast.GrantStmt:
 		a.apply(n, "Objects", nil, n.Objects)
 		a.apply(n, "Privileges", nil, n.Privileges)
 		a.apply(n, "Grantees", nil, n.Grantees)
 
-	case *pg.GroupingFunc:
+	case *ast.GroupingFunc:
 		a.apply(n, "Xpr", nil, n.Xpr)
 		a.apply(n, "Args", nil, n.Args)
 		a.apply(n, "Refs", nil, n.Refs)
 		a.apply(n, "Cols", nil, n.Cols)
 
-	case *pg.GroupingSet:
+	case *ast.GroupingSet:
 		a.apply(n, "Content", nil, n.Content)
 
-	case *pg.ImportForeignSchemaStmt:
+	case *ast.ImportForeignSchemaStmt:
 		a.apply(n, "TableList", nil, n.TableList)
 		a.apply(n, "Options", nil, n.Options)
 
-	case *pg.IndexElem:
+	case *ast.IndexElem:
 		a.apply(n, "Expr", nil, n.Expr)
 		a.apply(n, "Collation", nil, n.Collation)
 		a.apply(n, "Opclass", nil, n.Opclass)
 
-	case *pg.IndexStmt:
+	case *ast.IndexStmt:
 		a.apply(n, "Relation", nil, n.Relation)
 		a.apply(n, "IndexParams", nil, n.IndexParams)
 		a.apply(n, "Options", nil, n.Options)
 		a.apply(n, "WhereClause", nil, n.WhereClause)
 		a.apply(n, "ExcludeOpNames", nil, n.ExcludeOpNames)
 
-	case *pg.InferClause:
+	case *ast.InferClause:
 		a.apply(n, "IndexElems", nil, n.IndexElems)
 		a.apply(n, "WhereClause", nil, n.WhereClause)
 
-	case *pg.InferenceElem:
+	case *ast.InferenceElem:
 		a.apply(n, "Xpr", nil, n.Xpr)
 		a.apply(n, "Expr", nil, n.Expr)
 
-	case *pg.InlineCodeBlock:
+	case *ast.InlineCodeBlock:
 		// pass
 
-	case *pg.InsertStmt:
+	case *ast.InsertStmt:
 		a.apply(n, "Relation", nil, n.Relation)
 		a.apply(n, "Cols", nil, n.Cols)
 		a.apply(n, "SelectStmt", nil, n.SelectStmt)
@@ -830,118 +795,118 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.apply(n, "ReturningList", nil, n.ReturningList)
 		a.apply(n, "WithClause", nil, n.WithClause)
 
-	case *pg.Integer:
+	case *ast.Integer:
 		// pass
 
-	case *pg.IntoClause:
+	case *ast.IntoClause:
 		a.apply(n, "Rel", nil, n.Rel)
 		a.apply(n, "ColNames", nil, n.ColNames)
 		a.apply(n, "Options", nil, n.Options)
 		a.apply(n, "ViewQuery", nil, n.ViewQuery)
 
-	case *pg.JoinExpr:
+	case *ast.JoinExpr:
 		a.apply(n, "Larg", nil, n.Larg)
 		a.apply(n, "Rarg", nil, n.Rarg)
 		a.apply(n, "UsingClause", nil, n.UsingClause)
 		a.apply(n, "Quals", nil, n.Quals)
 		a.apply(n, "Alias", nil, n.Alias)
 
-	case *pg.ListenStmt:
+	case *ast.ListenStmt:
 		// pass
 
-	case *pg.LoadStmt:
+	case *ast.LoadStmt:
 		// pass
 
-	case *pg.LockStmt:
+	case *ast.LockStmt:
 		a.apply(n, "Relations", nil, n.Relations)
 
-	case *pg.LockingClause:
+	case *ast.LockingClause:
 		a.apply(n, "LockedRels", nil, n.LockedRels)
 
-	case *pg.MinMaxExpr:
+	case *ast.MinMaxExpr:
 		a.apply(n, "Xpr", nil, n.Xpr)
 		a.apply(n, "Args", nil, n.Args)
 
-	case *pg.MultiAssignRef:
+	case *ast.MultiAssignRef:
 		a.apply(n, "Source", nil, n.Source)
 
-	case *pg.NamedArgExpr:
+	case *ast.NamedArgExpr:
 		a.apply(n, "Xpr", nil, n.Xpr)
 		a.apply(n, "Arg", nil, n.Arg)
 
-	case *pg.NextValueExpr:
+	case *ast.NextValueExpr:
 		a.apply(n, "Xpr", nil, n.Xpr)
 
-	case *pg.NotifyStmt:
+	case *ast.NotifyStmt:
 		// pass
 
-	case *pg.Null:
+	case *ast.Null:
 		// pass
 
-	case *pg.NullTest:
+	case *ast.NullTest:
 		a.apply(n, "Xpr", nil, n.Xpr)
 		a.apply(n, "Arg", nil, n.Arg)
 
-	case *pg.ObjectWithArgs:
+	case *ast.ObjectWithArgs:
 		a.apply(n, "Objname", nil, n.Objname)
 		a.apply(n, "Objargs", nil, n.Objargs)
 
-	case *pg.OnConflictClause:
+	case *ast.OnConflictClause:
 		a.apply(n, "Infer", nil, n.Infer)
 		a.apply(n, "TargetList", nil, n.TargetList)
 		a.apply(n, "WhereClause", nil, n.WhereClause)
 
-	case *pg.OnConflictExpr:
+	case *ast.OnConflictExpr:
 		a.apply(n, "ArbiterElems", nil, n.ArbiterElems)
 		a.apply(n, "ArbiterWhere", nil, n.ArbiterWhere)
 		a.apply(n, "OnConflictSet", nil, n.OnConflictSet)
 		a.apply(n, "OnConflictWhere", nil, n.OnConflictWhere)
 		a.apply(n, "ExclRelTlist", nil, n.ExclRelTlist)
 
-	case *pg.OpExpr:
+	case *ast.OpExpr:
 		a.apply(n, "Xpr", nil, n.Xpr)
 		a.apply(n, "Args", nil, n.Args)
 
-	case *pg.Param:
+	case *ast.Param:
 		a.apply(n, "Xpr", nil, n.Xpr)
 
-	case *pg.ParamExecData:
+	case *ast.ParamExecData:
 		// pass
 
-	case *pg.ParamExternData:
+	case *ast.ParamExternData:
 		// pass
 
-	case *pg.ParamListInfoData:
+	case *ast.ParamListInfoData:
 		// pass
 
-	case *pg.ParamRef:
+	case *ast.ParamRef:
 		// pass
 
-	case *pg.PartitionBoundSpec:
+	case *ast.PartitionBoundSpec:
 		a.apply(n, "Listdatums", nil, n.Listdatums)
 		a.apply(n, "Lowerdatums", nil, n.Lowerdatums)
 		a.apply(n, "Upperdatums", nil, n.Upperdatums)
 
-	case *pg.PartitionCmd:
+	case *ast.PartitionCmd:
 		a.apply(n, "Name", nil, n.Name)
 		a.apply(n, "Bound", nil, n.Bound)
 
-	case *pg.PartitionElem:
+	case *ast.PartitionElem:
 		a.apply(n, "Expr", nil, n.Expr)
 		a.apply(n, "Collation", nil, n.Collation)
 		a.apply(n, "Opclass", nil, n.Opclass)
 
-	case *pg.PartitionRangeDatum:
+	case *ast.PartitionRangeDatum:
 		a.apply(n, "Value", nil, n.Value)
 
-	case *pg.PartitionSpec:
+	case *ast.PartitionSpec:
 		a.apply(n, "PartParams", nil, n.PartParams)
 
-	case *pg.PrepareStmt:
+	case *ast.PrepareStmt:
 		a.apply(n, "Argtypes", nil, n.Argtypes)
 		a.apply(n, "Query", nil, n.Query)
 
-	case *pg.Query:
+	case *ast.Query:
 		a.apply(n, "UtilityStmt", nil, n.UtilityStmt)
 		a.apply(n, "CteList", nil, n.CteList)
 		a.apply(n, "Rtable", nil, n.Rtable)
@@ -962,34 +927,34 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.apply(n, "ConstraintDeps", nil, n.ConstraintDeps)
 		a.apply(n, "WithCheckOptions", nil, n.WithCheckOptions)
 
-	case *pg.RangeFunction:
+	case *ast.RangeFunction:
 		a.apply(n, "Functions", nil, n.Functions)
 		a.apply(n, "Alias", nil, n.Alias)
 		a.apply(n, "Coldeflist", nil, n.Coldeflist)
 
-	case *pg.RangeSubselect:
+	case *ast.RangeSubselect:
 		a.apply(n, "Subquery", nil, n.Subquery)
 		a.apply(n, "Alias", nil, n.Alias)
 
-	case *pg.RangeTableFunc:
+	case *ast.RangeTableFunc:
 		a.apply(n, "Docexpr", nil, n.Docexpr)
 		a.apply(n, "Rowexpr", nil, n.Rowexpr)
 		a.apply(n, "Namespaces", nil, n.Namespaces)
 		a.apply(n, "Columns", nil, n.Columns)
 		a.apply(n, "Alias", nil, n.Alias)
 
-	case *pg.RangeTableFuncCol:
+	case *ast.RangeTableFuncCol:
 		a.apply(n, "TypeName", nil, n.TypeName)
 		a.apply(n, "Colexpr", nil, n.Colexpr)
 		a.apply(n, "Coldefexpr", nil, n.Coldefexpr)
 
-	case *pg.RangeTableSample:
+	case *ast.RangeTableSample:
 		a.apply(n, "Relation", nil, n.Relation)
 		a.apply(n, "Method", nil, n.Method)
 		a.apply(n, "Args", nil, n.Args)
 		a.apply(n, "Repeatable", nil, n.Repeatable)
 
-	case *pg.RangeTblEntry:
+	case *ast.RangeTblEntry:
 		a.apply(n, "Tablesample", nil, n.Tablesample)
 		a.apply(n, "Subquery", nil, n.Subquery)
 		a.apply(n, "Joinaliasvars", nil, n.Joinaliasvars)
@@ -1003,51 +968,48 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.apply(n, "Eref", nil, n.Eref)
 		a.apply(n, "SecurityQuals", nil, n.SecurityQuals)
 
-	case *pg.RangeTblFunction:
+	case *ast.RangeTblFunction:
 		a.apply(n, "Funcexpr", nil, n.Funcexpr)
 		a.apply(n, "Funccolnames", nil, n.Funccolnames)
 		a.apply(n, "Funccoltypes", nil, n.Funccoltypes)
 		a.apply(n, "Funccoltypmods", nil, n.Funccoltypmods)
 		a.apply(n, "Funccolcollations", nil, n.Funccolcollations)
 
-	case *pg.RangeTblRef:
+	case *ast.RangeTblRef:
 		// pass
 
-	case *pg.RangeVar:
+	case *ast.RangeVar:
 		a.apply(n, "Alias", nil, n.Alias)
 
-	case *pg.RawStmt:
-		a.apply(n, "Stmt", nil, n.Stmt)
-
-	case *pg.ReassignOwnedStmt:
+	case *ast.ReassignOwnedStmt:
 		a.apply(n, "Roles", nil, n.Roles)
 		a.apply(n, "Newrole", nil, n.Newrole)
 
-	case *pg.RefreshMatViewStmt:
+	case *ast.RefreshMatViewStmt:
 		a.apply(n, "Relation", nil, n.Relation)
 
-	case *pg.ReindexStmt:
+	case *ast.ReindexStmt:
 		a.apply(n, "Relation", nil, n.Relation)
 
-	case *pg.RelabelType:
+	case *ast.RelabelType:
 		a.apply(n, "Xpr", nil, n.Xpr)
 		a.apply(n, "Arg", nil, n.Arg)
 
-	case *pg.RenameStmt:
+	case *ast.RenameStmt:
 		a.apply(n, "Relation", nil, n.Relation)
 		a.apply(n, "Object", nil, n.Object)
 
-	case *pg.ReplicaIdentityStmt:
+	case *ast.ReplicaIdentityStmt:
 		// pass
 
-	case *pg.ResTarget:
+	case *ast.ResTarget:
 		a.apply(n, "Indirection", nil, n.Indirection)
 		a.apply(n, "Val", nil, n.Val)
 
-	case *pg.RoleSpec:
+	case *ast.RoleSpec:
 		// pass
 
-	case *pg.RowCompareExpr:
+	case *ast.RowCompareExpr:
 		a.apply(n, "Xpr", nil, n.Xpr)
 		a.apply(n, "Opnos", nil, n.Opnos)
 		a.apply(n, "Opfamilies", nil, n.Opfamilies)
@@ -1055,30 +1017,30 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.apply(n, "Largs", nil, n.Largs)
 		a.apply(n, "Rargs", nil, n.Rargs)
 
-	case *pg.RowExpr:
+	case *ast.RowExpr:
 		a.apply(n, "Xpr", nil, n.Xpr)
 		a.apply(n, "Args", nil, n.Args)
 		a.apply(n, "Colnames", nil, n.Colnames)
 
-	case *pg.RowMarkClause:
+	case *ast.RowMarkClause:
 		// pass
 
-	case *pg.RuleStmt:
+	case *ast.RuleStmt:
 		a.apply(n, "Relation", nil, n.Relation)
 		a.apply(n, "WhereClause", nil, n.WhereClause)
 		a.apply(n, "Actions", nil, n.Actions)
 
-	case *pg.SQLValueFunction:
+	case *ast.SQLValueFunction:
 		a.apply(n, "Xpr", nil, n.Xpr)
 
-	case *pg.ScalarArrayOpExpr:
+	case *ast.ScalarArrayOpExpr:
 		a.apply(n, "Xpr", nil, n.Xpr)
 		a.apply(n, "Args", nil, n.Args)
 
-	case *pg.SecLabelStmt:
+	case *ast.SecLabelStmt:
 		a.apply(n, "Object", nil, n.Object)
 
-	case *pg.SelectStmt:
+	case *ast.SelectStmt:
 		a.apply(n, "DistinctClause", nil, n.DistinctClause)
 		a.apply(n, "IntoClause", nil, n.IntoClause)
 		a.apply(n, "TargetList", nil, n.TargetList)
@@ -1096,7 +1058,7 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.apply(n, "Larg", nil, n.Larg)
 		a.apply(n, "Rarg", nil, n.Rarg)
 
-	case *pg.SetOperationStmt:
+	case *ast.SetOperationStmt:
 		a.apply(n, "Larg", nil, n.Larg)
 		a.apply(n, "Rarg", nil, n.Rarg)
 		a.apply(n, "ColTypes", nil, n.ColTypes)
@@ -1104,26 +1066,23 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.apply(n, "ColCollations", nil, n.ColCollations)
 		a.apply(n, "GroupClauses", nil, n.GroupClauses)
 
-	case *pg.SetToDefault:
+	case *ast.SetToDefault:
 		a.apply(n, "Xpr", nil, n.Xpr)
 
-	case *pg.SortBy:
+	case *ast.SortBy:
 		a.apply(n, "Node", nil, n.Node)
 		a.apply(n, "UseOp", nil, n.UseOp)
 
-	case *pg.SortGroupClause:
+	case *ast.SortGroupClause:
 		// pass
 
-	case *pg.String:
-		// pass
-
-	case *pg.SubLink:
+	case *ast.SubLink:
 		a.apply(n, "Xpr", nil, n.Xpr)
 		a.apply(n, "Testexpr", nil, n.Testexpr)
 		a.apply(n, "OperName", nil, n.OperName)
 		a.apply(n, "Subselect", nil, n.Subselect)
 
-	case *pg.SubPlan:
+	case *ast.SubPlan:
 		a.apply(n, "Xpr", nil, n.Xpr)
 		a.apply(n, "Testexpr", nil, n.Testexpr)
 		a.apply(n, "ParamIds", nil, n.ParamIds)
@@ -1131,7 +1090,7 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.apply(n, "ParParam", nil, n.ParParam)
 		a.apply(n, "Args", nil, n.Args)
 
-	case *pg.TableFunc:
+	case *ast.TableFunc:
 		a.apply(n, "NsUris", nil, n.NsUris)
 		a.apply(n, "NsNames", nil, n.NsNames)
 		a.apply(n, "Docexpr", nil, n.Docexpr)
@@ -1143,39 +1102,39 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.apply(n, "Colexprs", nil, n.Colexprs)
 		a.apply(n, "Coldefexprs", nil, n.Coldefexprs)
 
-	case *pg.TableLikeClause:
+	case *ast.TableLikeClause:
 		a.apply(n, "Relation", nil, n.Relation)
 
-	case *pg.TableSampleClause:
+	case *ast.TableSampleClause:
 		a.apply(n, "Args", nil, n.Args)
 		a.apply(n, "Repeatable", nil, n.Repeatable)
 
-	case *pg.TargetEntry:
+	case *ast.TargetEntry:
 		a.apply(n, "Xpr", nil, n.Xpr)
 		a.apply(n, "Expr", nil, n.Expr)
 
-	case *pg.TransactionStmt:
+	case *ast.TransactionStmt:
 		a.apply(n, "Options", nil, n.Options)
 
-	case *pg.TriggerTransition:
+	case *ast.TriggerTransition:
 		// pass
 
-	case *pg.TruncateStmt:
+	case *ast.TruncateStmt:
 		a.apply(n, "Relations", nil, n.Relations)
 
-	case *pg.TypeCast:
+	case *ast.TypeCast:
 		a.apply(n, "Arg", nil, n.Arg)
 		a.apply(n, "TypeName", nil, n.TypeName)
 
-	case *pg.TypeName:
+	case *ast.TypeName:
 		a.apply(n, "Names", nil, n.Names)
 		a.apply(n, "Typmods", nil, n.Typmods)
 		a.apply(n, "ArrayBounds", nil, n.ArrayBounds)
 
-	case *pg.UnlistenStmt:
+	case *ast.UnlistenStmt:
 		// pass
 
-	case *pg.UpdateStmt:
+	case *ast.UpdateStmt:
 		a.apply(n, "Relation", nil, n.Relation)
 		a.apply(n, "TargetList", nil, n.TargetList)
 		a.apply(n, "WhereClause", nil, n.WhereClause)
@@ -1183,26 +1142,26 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.apply(n, "ReturningList", nil, n.ReturningList)
 		a.apply(n, "WithClause", nil, n.WithClause)
 
-	case *pg.VacuumStmt:
+	case *ast.VacuumStmt:
 		a.apply(n, "Relation", nil, n.Relation)
 		a.apply(n, "VaCols", nil, n.VaCols)
 
-	case *pg.Var:
+	case *ast.Var:
 		a.apply(n, "Xpr", nil, n.Xpr)
 
-	case *pg.VariableSetStmt:
+	case *ast.VariableSetStmt:
 		a.apply(n, "Args", nil, n.Args)
 
-	case *pg.VariableShowStmt:
+	case *ast.VariableShowStmt:
 		// pass
 
-	case *pg.ViewStmt:
+	case *ast.ViewStmt:
 		a.apply(n, "View", nil, n.View)
 		a.apply(n, "Aliases", nil, n.Aliases)
 		a.apply(n, "Query", nil, n.Query)
 		a.apply(n, "Options", nil, n.Options)
 
-	case *pg.WindowClause:
+	case *ast.WindowClause:
 		a.apply(n, "PartitionClause", nil, n.PartitionClause)
 		a.apply(n, "OrderClause", nil, n.OrderClause)
 		a.apply(n, "StartOffset", nil, n.StartOffset)
@@ -1214,24 +1173,24 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.apply(n, "StartOffset", nil, n.StartOffset)
 		a.apply(n, "EndOffset", nil, n.EndOffset)
 
-	case *pg.WindowFunc:
+	case *ast.WindowFunc:
 		a.apply(n, "Xpr", nil, n.Xpr)
 		a.apply(n, "Args", nil, n.Args)
 		a.apply(n, "Aggfilter", nil, n.Aggfilter)
 
-	case *pg.WithCheckOption:
+	case *ast.WithCheckOption:
 		a.apply(n, "Qual", nil, n.Qual)
 
-	case *pg.WithClause:
+	case *ast.WithClause:
 		a.apply(n, "Ctes", nil, n.Ctes)
 
-	case *pg.XmlExpr:
+	case *ast.XmlExpr:
 		a.apply(n, "Xpr", nil, n.Xpr)
 		a.apply(n, "NamedArgs", nil, n.NamedArgs)
 		a.apply(n, "ArgNames", nil, n.ArgNames)
 		a.apply(n, "Args", nil, n.Args)
 
-	case *pg.XmlSerialize:
+	case *ast.XmlSerialize:
 		a.apply(n, "Expr", nil, n.Expr)
 		a.apply(n, "TypeName", nil, n.TypeName)
 

@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/ast/pg"
 	"github.com/kyleconroy/sqlc/internal/sql/astutils"
 
 	"github.com/google/go-cmp/cmp"
@@ -30,13 +29,12 @@ func TestApply(t *testing.T) {
 			return true
 		}
 		if astutils.Join(fun.Funcname, ".") == "sqlc.arg" {
-			cr.Replace(&pg.ParamRef{
+			cr.Replace(&ast.ParamRef{
 				Number:   1,
 				Location: fun.Location,
 			})
 			return false
 		}
-
 		return true
 	}, nil)
 

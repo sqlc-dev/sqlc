@@ -4,7 +4,6 @@ import (
 	nodes "github.com/lfittl/pg_query_go/nodes"
 
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/ast/pg"
 )
 
 func convertList(l nodes.List) *ast.List {
@@ -31,32 +30,32 @@ func convert(node nodes.Node) (ast.Node, error) {
 	return convertNode(node), nil
 }
 
-func convertA_ArrayExpr(n *nodes.A_ArrayExpr) *pg.A_ArrayExpr {
+func convertA_ArrayExpr(n *nodes.A_ArrayExpr) *ast.A_ArrayExpr {
 	if n == nil {
 		return nil
 	}
-	return &pg.A_ArrayExpr{
+	return &ast.A_ArrayExpr{
 		Elements: convertList(n.Elements),
 		Location: n.Location,
 	}
 }
 
-func convertA_Const(n *nodes.A_Const) *pg.A_Const {
+func convertA_Const(n *nodes.A_Const) *ast.A_Const {
 	if n == nil {
 		return nil
 	}
-	return &pg.A_Const{
+	return &ast.A_Const{
 		Val:      convertNode(n.Val),
 		Location: n.Location,
 	}
 }
 
-func convertA_Expr(n *nodes.A_Expr) *pg.A_Expr {
+func convertA_Expr(n *nodes.A_Expr) *ast.A_Expr {
 	if n == nil {
 		return nil
 	}
-	return &pg.A_Expr{
-		Kind:     pg.A_Expr_Kind(n.Kind),
+	return &ast.A_Expr{
+		Kind:     ast.A_Expr_Kind(n.Kind),
 		Name:     convertList(n.Name),
 		Lexpr:    convertNode(n.Lexpr),
 		Rexpr:    convertNode(n.Rexpr),
@@ -64,55 +63,55 @@ func convertA_Expr(n *nodes.A_Expr) *pg.A_Expr {
 	}
 }
 
-func convertA_Indices(n *nodes.A_Indices) *pg.A_Indices {
+func convertA_Indices(n *nodes.A_Indices) *ast.A_Indices {
 	if n == nil {
 		return nil
 	}
-	return &pg.A_Indices{
+	return &ast.A_Indices{
 		IsSlice: n.IsSlice,
 		Lidx:    convertNode(n.Lidx),
 		Uidx:    convertNode(n.Uidx),
 	}
 }
 
-func convertA_Indirection(n *nodes.A_Indirection) *pg.A_Indirection {
+func convertA_Indirection(n *nodes.A_Indirection) *ast.A_Indirection {
 	if n == nil {
 		return nil
 	}
-	return &pg.A_Indirection{
+	return &ast.A_Indirection{
 		Arg:         convertNode(n.Arg),
 		Indirection: convertList(n.Indirection),
 	}
 }
 
-func convertA_Star(n *nodes.A_Star) *pg.A_Star {
+func convertA_Star(n *nodes.A_Star) *ast.A_Star {
 	if n == nil {
 		return nil
 	}
-	return &pg.A_Star{}
+	return &ast.A_Star{}
 }
 
-func convertAccessPriv(n *nodes.AccessPriv) *pg.AccessPriv {
+func convertAccessPriv(n *nodes.AccessPriv) *ast.AccessPriv {
 	if n == nil {
 		return nil
 	}
-	return &pg.AccessPriv{
+	return &ast.AccessPriv{
 		PrivName: n.PrivName,
 		Cols:     convertList(n.Cols),
 	}
 }
 
-func convertAggref(n *nodes.Aggref) *pg.Aggref {
+func convertAggref(n *nodes.Aggref) *ast.Aggref {
 	if n == nil {
 		return nil
 	}
-	return &pg.Aggref{
+	return &ast.Aggref{
 		Xpr:           convertNode(n.Xpr),
-		Aggfnoid:      pg.Oid(n.Aggfnoid),
-		Aggtype:       pg.Oid(n.Aggtype),
-		Aggcollid:     pg.Oid(n.Aggcollid),
-		Inputcollid:   pg.Oid(n.Inputcollid),
-		Aggtranstype:  pg.Oid(n.Aggtranstype),
+		Aggfnoid:      ast.Oid(n.Aggfnoid),
+		Aggtype:       ast.Oid(n.Aggtype),
+		Aggcollid:     ast.Oid(n.Aggcollid),
+		Inputcollid:   ast.Oid(n.Inputcollid),
+		Aggtranstype:  ast.Oid(n.Aggtranstype),
 		Aggargtypes:   convertList(n.Aggargtypes),
 		Aggdirectargs: convertList(n.Aggdirectargs),
 		Args:          convertList(n.Args),
@@ -122,80 +121,80 @@ func convertAggref(n *nodes.Aggref) *pg.Aggref {
 		Aggstar:       n.Aggstar,
 		Aggvariadic:   n.Aggvariadic,
 		Aggkind:       n.Aggkind,
-		Agglevelsup:   pg.Index(n.Agglevelsup),
-		Aggsplit:      pg.AggSplit(n.Aggsplit),
+		Agglevelsup:   ast.Index(n.Agglevelsup),
+		Aggsplit:      ast.AggSplit(n.Aggsplit),
 		Location:      n.Location,
 	}
 }
 
-func convertAlias(n *nodes.Alias) *pg.Alias {
+func convertAlias(n *nodes.Alias) *ast.Alias {
 	if n == nil {
 		return nil
 	}
-	return &pg.Alias{
+	return &ast.Alias{
 		Aliasname: n.Aliasname,
 		Colnames:  convertList(n.Colnames),
 	}
 }
 
-func convertAlterCollationStmt(n *nodes.AlterCollationStmt) *pg.AlterCollationStmt {
+func convertAlterCollationStmt(n *nodes.AlterCollationStmt) *ast.AlterCollationStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.AlterCollationStmt{
+	return &ast.AlterCollationStmt{
 		Collname: convertList(n.Collname),
 	}
 }
 
-func convertAlterDatabaseSetStmt(n *nodes.AlterDatabaseSetStmt) *pg.AlterDatabaseSetStmt {
+func convertAlterDatabaseSetStmt(n *nodes.AlterDatabaseSetStmt) *ast.AlterDatabaseSetStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.AlterDatabaseSetStmt{
+	return &ast.AlterDatabaseSetStmt{
 		Dbname:  n.Dbname,
 		Setstmt: convertVariableSetStmt(n.Setstmt),
 	}
 }
 
-func convertAlterDatabaseStmt(n *nodes.AlterDatabaseStmt) *pg.AlterDatabaseStmt {
+func convertAlterDatabaseStmt(n *nodes.AlterDatabaseStmt) *ast.AlterDatabaseStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.AlterDatabaseStmt{
+	return &ast.AlterDatabaseStmt{
 		Dbname:  n.Dbname,
 		Options: convertList(n.Options),
 	}
 }
 
-func convertAlterDefaultPrivilegesStmt(n *nodes.AlterDefaultPrivilegesStmt) *pg.AlterDefaultPrivilegesStmt {
+func convertAlterDefaultPrivilegesStmt(n *nodes.AlterDefaultPrivilegesStmt) *ast.AlterDefaultPrivilegesStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.AlterDefaultPrivilegesStmt{
+	return &ast.AlterDefaultPrivilegesStmt{
 		Options: convertList(n.Options),
 		Action:  convertGrantStmt(n.Action),
 	}
 }
 
-func convertAlterDomainStmt(n *nodes.AlterDomainStmt) *pg.AlterDomainStmt {
+func convertAlterDomainStmt(n *nodes.AlterDomainStmt) *ast.AlterDomainStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.AlterDomainStmt{
+	return &ast.AlterDomainStmt{
 		Subtype:   n.Subtype,
 		TypeName:  convertList(n.TypeName),
 		Name:      n.Name,
 		Def:       convertNode(n.Def),
-		Behavior:  pg.DropBehavior(n.Behavior),
+		Behavior:  ast.DropBehavior(n.Behavior),
 		MissingOk: n.MissingOk,
 	}
 }
 
-func convertAlterEnumStmt(n *nodes.AlterEnumStmt) *pg.AlterEnumStmt {
+func convertAlterEnumStmt(n *nodes.AlterEnumStmt) *ast.AlterEnumStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.AlterEnumStmt{
+	return &ast.AlterEnumStmt{
 		TypeName:           convertList(n.TypeName),
 		OldVal:             n.OldVal,
 		NewVal:             n.NewVal,
@@ -205,54 +204,54 @@ func convertAlterEnumStmt(n *nodes.AlterEnumStmt) *pg.AlterEnumStmt {
 	}
 }
 
-func convertAlterEventTrigStmt(n *nodes.AlterEventTrigStmt) *pg.AlterEventTrigStmt {
+func convertAlterEventTrigStmt(n *nodes.AlterEventTrigStmt) *ast.AlterEventTrigStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.AlterEventTrigStmt{
+	return &ast.AlterEventTrigStmt{
 		Trigname:  n.Trigname,
 		Tgenabled: n.Tgenabled,
 	}
 }
 
-func convertAlterExtensionContentsStmt(n *nodes.AlterExtensionContentsStmt) *pg.AlterExtensionContentsStmt {
+func convertAlterExtensionContentsStmt(n *nodes.AlterExtensionContentsStmt) *ast.AlterExtensionContentsStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.AlterExtensionContentsStmt{
+	return &ast.AlterExtensionContentsStmt{
 		Extname: n.Extname,
 		Action:  n.Action,
-		Objtype: pg.ObjectType(n.Objtype),
+		Objtype: ast.ObjectType(n.Objtype),
 		Object:  convertNode(n.Object),
 	}
 }
 
-func convertAlterExtensionStmt(n *nodes.AlterExtensionStmt) *pg.AlterExtensionStmt {
+func convertAlterExtensionStmt(n *nodes.AlterExtensionStmt) *ast.AlterExtensionStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.AlterExtensionStmt{
+	return &ast.AlterExtensionStmt{
 		Extname: n.Extname,
 		Options: convertList(n.Options),
 	}
 }
 
-func convertAlterFdwStmt(n *nodes.AlterFdwStmt) *pg.AlterFdwStmt {
+func convertAlterFdwStmt(n *nodes.AlterFdwStmt) *ast.AlterFdwStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.AlterFdwStmt{
+	return &ast.AlterFdwStmt{
 		Fdwname:     n.Fdwname,
 		FuncOptions: convertList(n.FuncOptions),
 		Options:     convertList(n.Options),
 	}
 }
 
-func convertAlterForeignServerStmt(n *nodes.AlterForeignServerStmt) *pg.AlterForeignServerStmt {
+func convertAlterForeignServerStmt(n *nodes.AlterForeignServerStmt) *ast.AlterForeignServerStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.AlterForeignServerStmt{
+	return &ast.AlterForeignServerStmt{
 		Servername: n.Servername,
 		Version:    n.Version,
 		Options:    convertList(n.Options),
@@ -260,34 +259,34 @@ func convertAlterForeignServerStmt(n *nodes.AlterForeignServerStmt) *pg.AlterFor
 	}
 }
 
-func convertAlterFunctionStmt(n *nodes.AlterFunctionStmt) *pg.AlterFunctionStmt {
+func convertAlterFunctionStmt(n *nodes.AlterFunctionStmt) *ast.AlterFunctionStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.AlterFunctionStmt{
+	return &ast.AlterFunctionStmt{
 		Func:    convertObjectWithArgs(n.Func),
 		Actions: convertList(n.Actions),
 	}
 }
 
-func convertAlterObjectDependsStmt(n *nodes.AlterObjectDependsStmt) *pg.AlterObjectDependsStmt {
+func convertAlterObjectDependsStmt(n *nodes.AlterObjectDependsStmt) *ast.AlterObjectDependsStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.AlterObjectDependsStmt{
-		ObjectType: pg.ObjectType(n.ObjectType),
+	return &ast.AlterObjectDependsStmt{
+		ObjectType: ast.ObjectType(n.ObjectType),
 		Relation:   convertRangeVar(n.Relation),
 		Object:     convertNode(n.Object),
 		Extname:    convertNode(n.Extname),
 	}
 }
 
-func convertAlterObjectSchemaStmt(n *nodes.AlterObjectSchemaStmt) *pg.AlterObjectSchemaStmt {
+func convertAlterObjectSchemaStmt(n *nodes.AlterObjectSchemaStmt) *ast.AlterObjectSchemaStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.AlterObjectSchemaStmt{
-		ObjectType: pg.ObjectType(n.ObjectType),
+	return &ast.AlterObjectSchemaStmt{
+		ObjectType: ast.ObjectType(n.ObjectType),
 		Relation:   convertRangeVar(n.Relation),
 		Object:     convertNode(n.Object),
 		Newschema:  n.Newschema,
@@ -295,11 +294,11 @@ func convertAlterObjectSchemaStmt(n *nodes.AlterObjectSchemaStmt) *pg.AlterObjec
 	}
 }
 
-func convertAlterOpFamilyStmt(n *nodes.AlterOpFamilyStmt) *pg.AlterOpFamilyStmt {
+func convertAlterOpFamilyStmt(n *nodes.AlterOpFamilyStmt) *ast.AlterOpFamilyStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.AlterOpFamilyStmt{
+	return &ast.AlterOpFamilyStmt{
 		Opfamilyname: convertList(n.Opfamilyname),
 		Amname:       n.Amname,
 		IsDrop:       n.IsDrop,
@@ -307,33 +306,33 @@ func convertAlterOpFamilyStmt(n *nodes.AlterOpFamilyStmt) *pg.AlterOpFamilyStmt 
 	}
 }
 
-func convertAlterOperatorStmt(n *nodes.AlterOperatorStmt) *pg.AlterOperatorStmt {
+func convertAlterOperatorStmt(n *nodes.AlterOperatorStmt) *ast.AlterOperatorStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.AlterOperatorStmt{
+	return &ast.AlterOperatorStmt{
 		Opername: convertObjectWithArgs(n.Opername),
 		Options:  convertList(n.Options),
 	}
 }
 
-func convertAlterOwnerStmt(n *nodes.AlterOwnerStmt) *pg.AlterOwnerStmt {
+func convertAlterOwnerStmt(n *nodes.AlterOwnerStmt) *ast.AlterOwnerStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.AlterOwnerStmt{
-		ObjectType: pg.ObjectType(n.ObjectType),
+	return &ast.AlterOwnerStmt{
+		ObjectType: ast.ObjectType(n.ObjectType),
 		Relation:   convertRangeVar(n.Relation),
 		Object:     convertNode(n.Object),
 		Newowner:   convertRoleSpec(n.Newowner),
 	}
 }
 
-func convertAlterPolicyStmt(n *nodes.AlterPolicyStmt) *pg.AlterPolicyStmt {
+func convertAlterPolicyStmt(n *nodes.AlterPolicyStmt) *ast.AlterPolicyStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.AlterPolicyStmt{
+	return &ast.AlterPolicyStmt{
 		PolicyName: n.PolicyName,
 		Table:      convertRangeVar(n.Table),
 		Roles:      convertList(n.Roles),
@@ -342,46 +341,46 @@ func convertAlterPolicyStmt(n *nodes.AlterPolicyStmt) *pg.AlterPolicyStmt {
 	}
 }
 
-func convertAlterPublicationStmt(n *nodes.AlterPublicationStmt) *pg.AlterPublicationStmt {
+func convertAlterPublicationStmt(n *nodes.AlterPublicationStmt) *ast.AlterPublicationStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.AlterPublicationStmt{
+	return &ast.AlterPublicationStmt{
 		Pubname:      n.Pubname,
 		Options:      convertList(n.Options),
 		Tables:       convertList(n.Tables),
 		ForAllTables: n.ForAllTables,
-		TableAction:  pg.DefElemAction(n.TableAction),
+		TableAction:  ast.DefElemAction(n.TableAction),
 	}
 }
 
-func convertAlterRoleSetStmt(n *nodes.AlterRoleSetStmt) *pg.AlterRoleSetStmt {
+func convertAlterRoleSetStmt(n *nodes.AlterRoleSetStmt) *ast.AlterRoleSetStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.AlterRoleSetStmt{
+	return &ast.AlterRoleSetStmt{
 		Role:     convertRoleSpec(n.Role),
 		Database: n.Database,
 		Setstmt:  convertVariableSetStmt(n.Setstmt),
 	}
 }
 
-func convertAlterRoleStmt(n *nodes.AlterRoleStmt) *pg.AlterRoleStmt {
+func convertAlterRoleStmt(n *nodes.AlterRoleStmt) *ast.AlterRoleStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.AlterRoleStmt{
+	return &ast.AlterRoleStmt{
 		Role:    convertRoleSpec(n.Role),
 		Options: convertList(n.Options),
 		Action:  n.Action,
 	}
 }
 
-func convertAlterSeqStmt(n *nodes.AlterSeqStmt) *pg.AlterSeqStmt {
+func convertAlterSeqStmt(n *nodes.AlterSeqStmt) *ast.AlterSeqStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.AlterSeqStmt{
+	return &ast.AlterSeqStmt{
 		Sequence:    convertRangeVar(n.Sequence),
 		Options:     convertList(n.Options),
 		ForIdentity: n.ForIdentity,
@@ -389,12 +388,12 @@ func convertAlterSeqStmt(n *nodes.AlterSeqStmt) *pg.AlterSeqStmt {
 	}
 }
 
-func convertAlterSubscriptionStmt(n *nodes.AlterSubscriptionStmt) *pg.AlterSubscriptionStmt {
+func convertAlterSubscriptionStmt(n *nodes.AlterSubscriptionStmt) *ast.AlterSubscriptionStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.AlterSubscriptionStmt{
-		Kind:        pg.AlterSubscriptionType(n.Kind),
+	return &ast.AlterSubscriptionStmt{
+		Kind:        ast.AlterSubscriptionType(n.Kind),
 		Subname:     n.Subname,
 		Conninfo:    n.Conninfo,
 		Publication: convertList(n.Publication),
@@ -402,21 +401,21 @@ func convertAlterSubscriptionStmt(n *nodes.AlterSubscriptionStmt) *pg.AlterSubsc
 	}
 }
 
-func convertAlterSystemStmt(n *nodes.AlterSystemStmt) *pg.AlterSystemStmt {
+func convertAlterSystemStmt(n *nodes.AlterSystemStmt) *ast.AlterSystemStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.AlterSystemStmt{
+	return &ast.AlterSystemStmt{
 		Setstmt: convertVariableSetStmt(n.Setstmt),
 	}
 }
 
-func convertAlterTSConfigurationStmt(n *nodes.AlterTSConfigurationStmt) *pg.AlterTSConfigurationStmt {
+func convertAlterTSConfigurationStmt(n *nodes.AlterTSConfigurationStmt) *ast.AlterTSConfigurationStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.AlterTSConfigurationStmt{
-		Kind:      pg.AlterTSConfigType(n.Kind),
+	return &ast.AlterTSConfigurationStmt{
+		Kind:      ast.AlterTSConfigType(n.Kind),
 		Cfgname:   convertList(n.Cfgname),
 		Tokentype: convertList(n.Tokentype),
 		Dicts:     convertList(n.Dicts),
@@ -426,129 +425,131 @@ func convertAlterTSConfigurationStmt(n *nodes.AlterTSConfigurationStmt) *pg.Alte
 	}
 }
 
-func convertAlterTSDictionaryStmt(n *nodes.AlterTSDictionaryStmt) *pg.AlterTSDictionaryStmt {
+func convertAlterTSDictionaryStmt(n *nodes.AlterTSDictionaryStmt) *ast.AlterTSDictionaryStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.AlterTSDictionaryStmt{
+	return &ast.AlterTSDictionaryStmt{
 		Dictname: convertList(n.Dictname),
 		Options:  convertList(n.Options),
 	}
 }
 
-func convertAlterTableCmd(n *nodes.AlterTableCmd) *pg.AlterTableCmd {
+func convertAlterTableCmd(n *nodes.AlterTableCmd) *ast.AlterTableCmd {
 	if n == nil {
 		return nil
 	}
-	return &pg.AlterTableCmd{
-		Subtype:   pg.AlterTableType(n.Subtype),
+	def := convertNode(n.Def)
+	columnDef := def.(*ast.ColumnDef)
+	return &ast.AlterTableCmd{
+		Subtype:   ast.AlterTableType(n.Subtype),
 		Name:      n.Name,
 		Newowner:  convertRoleSpec(n.Newowner),
-		Def:       convertNode(n.Def),
-		Behavior:  pg.DropBehavior(n.Behavior),
+		Def:       columnDef,
+		Behavior:  ast.DropBehavior(n.Behavior),
 		MissingOk: n.MissingOk,
 	}
 }
 
-func convertAlterTableMoveAllStmt(n *nodes.AlterTableMoveAllStmt) *pg.AlterTableMoveAllStmt {
+func convertAlterTableMoveAllStmt(n *nodes.AlterTableMoveAllStmt) *ast.AlterTableMoveAllStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.AlterTableMoveAllStmt{
+	return &ast.AlterTableMoveAllStmt{
 		OrigTablespacename: n.OrigTablespacename,
-		Objtype:            pg.ObjectType(n.Objtype),
+		Objtype:            ast.ObjectType(n.Objtype),
 		Roles:              convertList(n.Roles),
 		NewTablespacename:  n.NewTablespacename,
 		Nowait:             n.Nowait,
 	}
 }
 
-func convertAlterTableSpaceOptionsStmt(n *nodes.AlterTableSpaceOptionsStmt) *pg.AlterTableSpaceOptionsStmt {
+func convertAlterTableSpaceOptionsStmt(n *nodes.AlterTableSpaceOptionsStmt) *ast.AlterTableSpaceOptionsStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.AlterTableSpaceOptionsStmt{
+	return &ast.AlterTableSpaceOptionsStmt{
 		Tablespacename: n.Tablespacename,
 		Options:        convertList(n.Options),
 		IsReset:        n.IsReset,
 	}
 }
 
-func convertAlterTableStmt(n *nodes.AlterTableStmt) *pg.AlterTableStmt {
+func convertAlterTableStmt(n *nodes.AlterTableStmt) *ast.AlterTableStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.AlterTableStmt{
+	return &ast.AlterTableStmt{
 		Relation:  convertRangeVar(n.Relation),
 		Cmds:      convertList(n.Cmds),
-		Relkind:   pg.ObjectType(n.Relkind),
+		Relkind:   ast.ObjectType(n.Relkind),
 		MissingOk: n.MissingOk,
 	}
 }
 
-func convertAlterUserMappingStmt(n *nodes.AlterUserMappingStmt) *pg.AlterUserMappingStmt {
+func convertAlterUserMappingStmt(n *nodes.AlterUserMappingStmt) *ast.AlterUserMappingStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.AlterUserMappingStmt{
+	return &ast.AlterUserMappingStmt{
 		User:       convertRoleSpec(n.User),
 		Servername: n.Servername,
 		Options:    convertList(n.Options),
 	}
 }
 
-func convertAlternativeSubPlan(n *nodes.AlternativeSubPlan) *pg.AlternativeSubPlan {
+func convertAlternativeSubPlan(n *nodes.AlternativeSubPlan) *ast.AlternativeSubPlan {
 	if n == nil {
 		return nil
 	}
-	return &pg.AlternativeSubPlan{
+	return &ast.AlternativeSubPlan{
 		Xpr:      convertNode(n.Xpr),
 		Subplans: convertList(n.Subplans),
 	}
 }
 
-func convertArrayCoerceExpr(n *nodes.ArrayCoerceExpr) *pg.ArrayCoerceExpr {
+func convertArrayCoerceExpr(n *nodes.ArrayCoerceExpr) *ast.ArrayCoerceExpr {
 	if n == nil {
 		return nil
 	}
-	return &pg.ArrayCoerceExpr{
+	return &ast.ArrayCoerceExpr{
 		Xpr:          convertNode(n.Xpr),
 		Arg:          convertNode(n.Arg),
-		Elemfuncid:   pg.Oid(n.Elemfuncid),
-		Resulttype:   pg.Oid(n.Resulttype),
+		Elemfuncid:   ast.Oid(n.Elemfuncid),
+		Resulttype:   ast.Oid(n.Resulttype),
 		Resulttypmod: n.Resulttypmod,
-		Resultcollid: pg.Oid(n.Resultcollid),
+		Resultcollid: ast.Oid(n.Resultcollid),
 		IsExplicit:   n.IsExplicit,
-		Coerceformat: pg.CoercionForm(n.Coerceformat),
+		Coerceformat: ast.CoercionForm(n.Coerceformat),
 		Location:     n.Location,
 	}
 }
 
-func convertArrayExpr(n *nodes.ArrayExpr) *pg.ArrayExpr {
+func convertArrayExpr(n *nodes.ArrayExpr) *ast.ArrayExpr {
 	if n == nil {
 		return nil
 	}
-	return &pg.ArrayExpr{
+	return &ast.ArrayExpr{
 		Xpr:           convertNode(n.Xpr),
-		ArrayTypeid:   pg.Oid(n.ArrayTypeid),
-		ArrayCollid:   pg.Oid(n.ArrayCollid),
-		ElementTypeid: pg.Oid(n.ElementTypeid),
+		ArrayTypeid:   ast.Oid(n.ArrayTypeid),
+		ArrayCollid:   ast.Oid(n.ArrayCollid),
+		ElementTypeid: ast.Oid(n.ElementTypeid),
 		Elements:      convertList(n.Elements),
 		Multidims:     n.Multidims,
 		Location:      n.Location,
 	}
 }
 
-func convertArrayRef(n *nodes.ArrayRef) *pg.ArrayRef {
+func convertArrayRef(n *nodes.ArrayRef) *ast.ArrayRef {
 	if n == nil {
 		return nil
 	}
-	return &pg.ArrayRef{
+	return &ast.ArrayRef{
 		Xpr:             convertNode(n.Xpr),
-		Refarraytype:    pg.Oid(n.Refarraytype),
-		Refelemtype:     pg.Oid(n.Refelemtype),
+		Refarraytype:    ast.Oid(n.Refarraytype),
+		Refelemtype:     ast.Oid(n.Refelemtype),
 		Reftypmod:       n.Reftypmod,
-		Refcollid:       pg.Oid(n.Refcollid),
+		Refcollid:       ast.Oid(n.Refcollid),
 		Refupperindexpr: convertList(n.Refupperindexpr),
 		Reflowerindexpr: convertList(n.Reflowerindexpr),
 		Refexpr:         convertNode(n.Refexpr),
@@ -556,57 +557,57 @@ func convertArrayRef(n *nodes.ArrayRef) *pg.ArrayRef {
 	}
 }
 
-func convertBitString(n *nodes.BitString) *pg.BitString {
+func convertBitString(n *nodes.BitString) *ast.BitString {
 	if n == nil {
 		return nil
 	}
-	return &pg.BitString{
+	return &ast.BitString{
 		Str: n.Str,
 	}
 }
 
-func convertBlockIdData(n *nodes.BlockIdData) *pg.BlockIdData {
+func convertBlockIdData(n *nodes.BlockIdData) *ast.BlockIdData {
 	if n == nil {
 		return nil
 	}
-	return &pg.BlockIdData{
+	return &ast.BlockIdData{
 		BiHi: n.BiHi,
 		BiLo: n.BiLo,
 	}
 }
 
-func convertBoolExpr(n *nodes.BoolExpr) *pg.BoolExpr {
+func convertBoolExpr(n *nodes.BoolExpr) *ast.BoolExpr {
 	if n == nil {
 		return nil
 	}
-	return &pg.BoolExpr{
+	return &ast.BoolExpr{
 		Xpr:      convertNode(n.Xpr),
-		Boolop:   pg.BoolExprType(n.Boolop),
+		Boolop:   ast.BoolExprType(n.Boolop),
 		Args:     convertList(n.Args),
 		Location: n.Location,
 	}
 }
 
-func convertBooleanTest(n *nodes.BooleanTest) *pg.BooleanTest {
+func convertBooleanTest(n *nodes.BooleanTest) *ast.BooleanTest {
 	if n == nil {
 		return nil
 	}
-	return &pg.BooleanTest{
+	return &ast.BooleanTest{
 		Xpr:          convertNode(n.Xpr),
 		Arg:          convertNode(n.Arg),
-		Booltesttype: pg.BoolTestType(n.Booltesttype),
+		Booltesttype: ast.BoolTestType(n.Booltesttype),
 		Location:     n.Location,
 	}
 }
 
-func convertCaseExpr(n *nodes.CaseExpr) *pg.CaseExpr {
+func convertCaseExpr(n *nodes.CaseExpr) *ast.CaseExpr {
 	if n == nil {
 		return nil
 	}
-	return &pg.CaseExpr{
+	return &ast.CaseExpr{
 		Xpr:        convertNode(n.Xpr),
-		Casetype:   pg.Oid(n.Casetype),
-		Casecollid: pg.Oid(n.Casecollid),
+		Casetype:   ast.Oid(n.Casetype),
+		Casecollid: ast.Oid(n.Casecollid),
 		Arg:        convertNode(n.Arg),
 		Args:       convertList(n.Args),
 		Defresult:  convertNode(n.Defresult),
@@ -614,23 +615,23 @@ func convertCaseExpr(n *nodes.CaseExpr) *pg.CaseExpr {
 	}
 }
 
-func convertCaseTestExpr(n *nodes.CaseTestExpr) *pg.CaseTestExpr {
+func convertCaseTestExpr(n *nodes.CaseTestExpr) *ast.CaseTestExpr {
 	if n == nil {
 		return nil
 	}
-	return &pg.CaseTestExpr{
+	return &ast.CaseTestExpr{
 		Xpr:       convertNode(n.Xpr),
-		TypeId:    pg.Oid(n.TypeId),
+		TypeId:    ast.Oid(n.TypeId),
 		TypeMod:   n.TypeMod,
-		Collation: pg.Oid(n.Collation),
+		Collation: ast.Oid(n.Collation),
 	}
 }
 
-func convertCaseWhen(n *nodes.CaseWhen) *pg.CaseWhen {
+func convertCaseWhen(n *nodes.CaseWhen) *ast.CaseWhen {
 	if n == nil {
 		return nil
 	}
-	return &pg.CaseWhen{
+	return &ast.CaseWhen{
 		Xpr:      convertNode(n.Xpr),
 		Expr:     convertNode(n.Expr),
 		Result:   convertNode(n.Result),
@@ -638,117 +639,121 @@ func convertCaseWhen(n *nodes.CaseWhen) *pg.CaseWhen {
 	}
 }
 
-func convertCheckPointStmt(n *nodes.CheckPointStmt) *pg.CheckPointStmt {
+func convertCheckPointStmt(n *nodes.CheckPointStmt) *ast.CheckPointStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.CheckPointStmt{}
+	return &ast.CheckPointStmt{}
 }
 
-func convertClosePortalStmt(n *nodes.ClosePortalStmt) *pg.ClosePortalStmt {
+func convertClosePortalStmt(n *nodes.ClosePortalStmt) *ast.ClosePortalStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.ClosePortalStmt{
+	return &ast.ClosePortalStmt{
 		Portalname: n.Portalname,
 	}
 }
 
-func convertClusterStmt(n *nodes.ClusterStmt) *pg.ClusterStmt {
+func convertClusterStmt(n *nodes.ClusterStmt) *ast.ClusterStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.ClusterStmt{
+	return &ast.ClusterStmt{
 		Relation:  convertRangeVar(n.Relation),
 		Indexname: n.Indexname,
 		Verbose:   n.Verbose,
 	}
 }
 
-func convertCoalesceExpr(n *nodes.CoalesceExpr) *pg.CoalesceExpr {
+func convertCoalesceExpr(n *nodes.CoalesceExpr) *ast.CoalesceExpr {
 	if n == nil {
 		return nil
 	}
-	return &pg.CoalesceExpr{
+	return &ast.CoalesceExpr{
 		Xpr:            convertNode(n.Xpr),
-		Coalescetype:   pg.Oid(n.Coalescetype),
-		Coalescecollid: pg.Oid(n.Coalescecollid),
+		Coalescetype:   ast.Oid(n.Coalescetype),
+		Coalescecollid: ast.Oid(n.Coalescecollid),
 		Args:           convertList(n.Args),
 		Location:       n.Location,
 	}
 }
 
-func convertCoerceToDomain(n *nodes.CoerceToDomain) *pg.CoerceToDomain {
+func convertCoerceToDomain(n *nodes.CoerceToDomain) *ast.CoerceToDomain {
 	if n == nil {
 		return nil
 	}
-	return &pg.CoerceToDomain{
+	return &ast.CoerceToDomain{
 		Xpr:            convertNode(n.Xpr),
 		Arg:            convertNode(n.Arg),
-		Resulttype:     pg.Oid(n.Resulttype),
+		Resulttype:     ast.Oid(n.Resulttype),
 		Resulttypmod:   n.Resulttypmod,
-		Resultcollid:   pg.Oid(n.Resultcollid),
-		Coercionformat: pg.CoercionForm(n.Coercionformat),
+		Resultcollid:   ast.Oid(n.Resultcollid),
+		Coercionformat: ast.CoercionForm(n.Coercionformat),
 		Location:       n.Location,
 	}
 }
 
-func convertCoerceToDomainValue(n *nodes.CoerceToDomainValue) *pg.CoerceToDomainValue {
+func convertCoerceToDomainValue(n *nodes.CoerceToDomainValue) *ast.CoerceToDomainValue {
 	if n == nil {
 		return nil
 	}
-	return &pg.CoerceToDomainValue{
+	return &ast.CoerceToDomainValue{
 		Xpr:       convertNode(n.Xpr),
-		TypeId:    pg.Oid(n.TypeId),
+		TypeId:    ast.Oid(n.TypeId),
 		TypeMod:   n.TypeMod,
-		Collation: pg.Oid(n.Collation),
+		Collation: ast.Oid(n.Collation),
 		Location:  n.Location,
 	}
 }
 
-func convertCoerceViaIO(n *nodes.CoerceViaIO) *pg.CoerceViaIO {
+func convertCoerceViaIO(n *nodes.CoerceViaIO) *ast.CoerceViaIO {
 	if n == nil {
 		return nil
 	}
-	return &pg.CoerceViaIO{
+	return &ast.CoerceViaIO{
 		Xpr:          convertNode(n.Xpr),
 		Arg:          convertNode(n.Arg),
-		Resulttype:   pg.Oid(n.Resulttype),
-		Resultcollid: pg.Oid(n.Resultcollid),
-		Coerceformat: pg.CoercionForm(n.Coerceformat),
+		Resulttype:   ast.Oid(n.Resulttype),
+		Resultcollid: ast.Oid(n.Resultcollid),
+		Coerceformat: ast.CoercionForm(n.Coerceformat),
 		Location:     n.Location,
 	}
 }
 
-func convertCollateClause(n *nodes.CollateClause) *pg.CollateClause {
+func convertCollateClause(n *nodes.CollateClause) *ast.CollateClause {
 	if n == nil {
 		return nil
 	}
-	return &pg.CollateClause{
+	return &ast.CollateClause{
 		Arg:      convertNode(n.Arg),
 		Collname: convertList(n.Collname),
 		Location: n.Location,
 	}
 }
 
-func convertCollateExpr(n *nodes.CollateExpr) *pg.CollateExpr {
+func convertCollateExpr(n *nodes.CollateExpr) *ast.CollateExpr {
 	if n == nil {
 		return nil
 	}
-	return &pg.CollateExpr{
+	return &ast.CollateExpr{
 		Xpr:      convertNode(n.Xpr),
 		Arg:      convertNode(n.Arg),
-		CollOid:  pg.Oid(n.CollOid),
+		CollOid:  ast.Oid(n.CollOid),
 		Location: n.Location,
 	}
 }
 
-func convertColumnDef(n *nodes.ColumnDef) *pg.ColumnDef {
+func convertColumnDef(n *nodes.ColumnDef) *ast.ColumnDef {
 	if n == nil {
 		return nil
 	}
-	return &pg.ColumnDef{
-		Colname:       n.Colname,
+	colname := ""
+	if n.Colname != nil {
+		colname = *n.Colname
+	}
+	return &ast.ColumnDef{
+		Colname:       colname,
 		TypeName:      convertTypeName(n.TypeName),
 		Inhcount:      n.Inhcount,
 		IsLocal:       n.IsLocal,
@@ -760,39 +765,39 @@ func convertColumnDef(n *nodes.ColumnDef) *pg.ColumnDef {
 		CookedDefault: convertNode(n.CookedDefault),
 		Identity:      n.Identity,
 		CollClause:    convertCollateClause(n.CollClause),
-		CollOid:       pg.Oid(n.CollOid),
+		CollOid:       ast.Oid(n.CollOid),
 		Constraints:   convertList(n.Constraints),
 		Fdwoptions:    convertList(n.Fdwoptions),
 		Location:      n.Location,
 	}
 }
 
-func convertColumnRef(n *nodes.ColumnRef) *pg.ColumnRef {
+func convertColumnRef(n *nodes.ColumnRef) *ast.ColumnRef {
 	if n == nil {
 		return nil
 	}
-	return &pg.ColumnRef{
+	return &ast.ColumnRef{
 		Fields:   convertList(n.Fields),
 		Location: n.Location,
 	}
 }
 
-func convertCommentStmt(n *nodes.CommentStmt) *pg.CommentStmt {
+func convertCommentStmt(n *nodes.CommentStmt) *ast.CommentStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.CommentStmt{
-		Objtype: pg.ObjectType(n.Objtype),
+	return &ast.CommentStmt{
+		Objtype: ast.ObjectType(n.Objtype),
 		Object:  convertNode(n.Object),
 		Comment: n.Comment,
 	}
 }
 
-func convertCommonTableExpr(n *nodes.CommonTableExpr) *pg.CommonTableExpr {
+func convertCommonTableExpr(n *nodes.CommonTableExpr) *ast.CommonTableExpr {
 	if n == nil {
 		return nil
 	}
-	return &pg.CommonTableExpr{
+	return &ast.CommonTableExpr{
 		Ctename:          n.Ctename,
 		Aliascolnames:    convertList(n.Aliascolnames),
 		Ctequery:         convertNode(n.Ctequery),
@@ -806,39 +811,42 @@ func convertCommonTableExpr(n *nodes.CommonTableExpr) *pg.CommonTableExpr {
 	}
 }
 
-func convertCompositeTypeStmt(n *nodes.CompositeTypeStmt) *pg.CompositeTypeStmt {
+func convertCompositeTypeStmt(n *nodes.CompositeTypeStmt) *ast.CompositeTypeStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.CompositeTypeStmt{
-		Typevar:    convertRangeVar(n.Typevar),
-		Coldeflist: convertList(n.Coldeflist),
+	tn, err := parseTypeName(n.Typevar)
+	if err != nil {
+		panic(err)
+	}
+	return &ast.CompositeTypeStmt{
+		TypeName: tn,
 	}
 }
 
-func convertConst(n *nodes.Const) *pg.Const {
+func convertConst(n *nodes.Const) *ast.Const {
 	if n == nil {
 		return nil
 	}
-	return &pg.Const{
+	return &ast.Const{
 		Xpr:         convertNode(n.Xpr),
-		Consttype:   pg.Oid(n.Consttype),
+		Consttype:   ast.Oid(n.Consttype),
 		Consttypmod: n.Consttypmod,
-		Constcollid: pg.Oid(n.Constcollid),
+		Constcollid: ast.Oid(n.Constcollid),
 		Constlen:    n.Constlen,
-		Constvalue:  pg.Datum(n.Constvalue),
+		Constvalue:  ast.Datum(n.Constvalue),
 		Constisnull: n.Constisnull,
 		Constbyval:  n.Constbyval,
 		Location:    n.Location,
 	}
 }
 
-func convertConstraint(n *nodes.Constraint) *pg.Constraint {
+func convertConstraint(n *nodes.Constraint) *ast.Constraint {
 	if n == nil {
 		return nil
 	}
-	return &pg.Constraint{
-		Contype:        pg.ConstrType(n.Contype),
+	return &ast.Constraint{
+		Contype:        ast.ConstrType(n.Contype),
 		Conname:        n.Conname,
 		Deferrable:     n.Deferrable,
 		Initdeferred:   n.Initdeferred,
@@ -861,40 +869,40 @@ func convertConstraint(n *nodes.Constraint) *pg.Constraint {
 		FkUpdAction:    n.FkUpdAction,
 		FkDelAction:    n.FkDelAction,
 		OldConpfeqop:   convertList(n.OldConpfeqop),
-		OldPktableOid:  pg.Oid(n.OldPktableOid),
+		OldPktableOid:  ast.Oid(n.OldPktableOid),
 		SkipValidation: n.SkipValidation,
 		InitiallyValid: n.InitiallyValid,
 	}
 }
 
-func convertConstraintsSetStmt(n *nodes.ConstraintsSetStmt) *pg.ConstraintsSetStmt {
+func convertConstraintsSetStmt(n *nodes.ConstraintsSetStmt) *ast.ConstraintsSetStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.ConstraintsSetStmt{
+	return &ast.ConstraintsSetStmt{
 		Constraints: convertList(n.Constraints),
 		Deferred:    n.Deferred,
 	}
 }
 
-func convertConvertRowtypeExpr(n *nodes.ConvertRowtypeExpr) *pg.ConvertRowtypeExpr {
+func convertConvertRowtypeExpr(n *nodes.ConvertRowtypeExpr) *ast.ConvertRowtypeExpr {
 	if n == nil {
 		return nil
 	}
-	return &pg.ConvertRowtypeExpr{
+	return &ast.ConvertRowtypeExpr{
 		Xpr:           convertNode(n.Xpr),
 		Arg:           convertNode(n.Arg),
-		Resulttype:    pg.Oid(n.Resulttype),
-		Convertformat: pg.CoercionForm(n.Convertformat),
+		Resulttype:    ast.Oid(n.Resulttype),
+		Convertformat: ast.CoercionForm(n.Convertformat),
 		Location:      n.Location,
 	}
 }
 
-func convertCopyStmt(n *nodes.CopyStmt) *pg.CopyStmt {
+func convertCopyStmt(n *nodes.CopyStmt) *ast.CopyStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.CopyStmt{
+	return &ast.CopyStmt{
 		Relation:  convertRangeVar(n.Relation),
 		Query:     convertNode(n.Query),
 		Attlist:   convertList(n.Attlist),
@@ -905,35 +913,35 @@ func convertCopyStmt(n *nodes.CopyStmt) *pg.CopyStmt {
 	}
 }
 
-func convertCreateAmStmt(n *nodes.CreateAmStmt) *pg.CreateAmStmt {
+func convertCreateAmStmt(n *nodes.CreateAmStmt) *ast.CreateAmStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.CreateAmStmt{
+	return &ast.CreateAmStmt{
 		Amname:      n.Amname,
 		HandlerName: convertList(n.HandlerName),
 		Amtype:      n.Amtype,
 	}
 }
 
-func convertCreateCastStmt(n *nodes.CreateCastStmt) *pg.CreateCastStmt {
+func convertCreateCastStmt(n *nodes.CreateCastStmt) *ast.CreateCastStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.CreateCastStmt{
+	return &ast.CreateCastStmt{
 		Sourcetype: convertTypeName(n.Sourcetype),
 		Targettype: convertTypeName(n.Targettype),
 		Func:       convertObjectWithArgs(n.Func),
-		Context:    pg.CoercionContext(n.Context),
+		Context:    ast.CoercionContext(n.Context),
 		Inout:      n.Inout,
 	}
 }
 
-func convertCreateConversionStmt(n *nodes.CreateConversionStmt) *pg.CreateConversionStmt {
+func convertCreateConversionStmt(n *nodes.CreateConversionStmt) *ast.CreateConversionStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.CreateConversionStmt{
+	return &ast.CreateConversionStmt{
 		ConversionName:  convertList(n.ConversionName),
 		ForEncodingName: n.ForEncodingName,
 		ToEncodingName:  n.ToEncodingName,
@@ -942,11 +950,11 @@ func convertCreateConversionStmt(n *nodes.CreateConversionStmt) *pg.CreateConver
 	}
 }
 
-func convertCreateDomainStmt(n *nodes.CreateDomainStmt) *pg.CreateDomainStmt {
+func convertCreateDomainStmt(n *nodes.CreateDomainStmt) *ast.CreateDomainStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.CreateDomainStmt{
+	return &ast.CreateDomainStmt{
 		Domainname:  convertList(n.Domainname),
 		TypeName:    convertTypeName(n.TypeName),
 		CollClause:  convertCollateClause(n.CollClause),
@@ -954,21 +962,25 @@ func convertCreateDomainStmt(n *nodes.CreateDomainStmt) *pg.CreateDomainStmt {
 	}
 }
 
-func convertCreateEnumStmt(n *nodes.CreateEnumStmt) *pg.CreateEnumStmt {
+func convertCreateEnumStmt(n *nodes.CreateEnumStmt) *ast.CreateEnumStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.CreateEnumStmt{
-		TypeName: convertList(n.TypeName),
+	tn, err := parseTypeName(n.TypeName)
+	if err != nil {
+		panic(err)
+	}
+	return &ast.CreateEnumStmt{
+		TypeName: tn,
 		Vals:     convertList(n.Vals),
 	}
 }
 
-func convertCreateEventTrigStmt(n *nodes.CreateEventTrigStmt) *pg.CreateEventTrigStmt {
+func convertCreateEventTrigStmt(n *nodes.CreateEventTrigStmt) *ast.CreateEventTrigStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.CreateEventTrigStmt{
+	return &ast.CreateEventTrigStmt{
 		Trigname:   n.Trigname,
 		Eventname:  n.Eventname,
 		Whenclause: convertList(n.Whenclause),
@@ -976,33 +988,33 @@ func convertCreateEventTrigStmt(n *nodes.CreateEventTrigStmt) *pg.CreateEventTri
 	}
 }
 
-func convertCreateExtensionStmt(n *nodes.CreateExtensionStmt) *pg.CreateExtensionStmt {
+func convertCreateExtensionStmt(n *nodes.CreateExtensionStmt) *ast.CreateExtensionStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.CreateExtensionStmt{
+	return &ast.CreateExtensionStmt{
 		Extname:     n.Extname,
 		IfNotExists: n.IfNotExists,
 		Options:     convertList(n.Options),
 	}
 }
 
-func convertCreateFdwStmt(n *nodes.CreateFdwStmt) *pg.CreateFdwStmt {
+func convertCreateFdwStmt(n *nodes.CreateFdwStmt) *ast.CreateFdwStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.CreateFdwStmt{
+	return &ast.CreateFdwStmt{
 		Fdwname:     n.Fdwname,
 		FuncOptions: convertList(n.FuncOptions),
 		Options:     convertList(n.Options),
 	}
 }
 
-func convertCreateForeignServerStmt(n *nodes.CreateForeignServerStmt) *pg.CreateForeignServerStmt {
+func convertCreateForeignServerStmt(n *nodes.CreateForeignServerStmt) *ast.CreateForeignServerStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.CreateForeignServerStmt{
+	return &ast.CreateForeignServerStmt{
 		Servername:  n.Servername,
 		Servertype:  n.Servertype,
 		Version:     n.Version,
@@ -1012,36 +1024,40 @@ func convertCreateForeignServerStmt(n *nodes.CreateForeignServerStmt) *pg.Create
 	}
 }
 
-func convertCreateForeignTableStmt(n *nodes.CreateForeignTableStmt) *pg.CreateForeignTableStmt {
+func convertCreateForeignTableStmt(n *nodes.CreateForeignTableStmt) *ast.CreateForeignTableStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.CreateForeignTableStmt{
+	return &ast.CreateForeignTableStmt{
 		Base:       convertCreateStmt(&n.Base),
 		Servername: n.Servername,
 		Options:    convertList(n.Options),
 	}
 }
 
-func convertCreateFunctionStmt(n *nodes.CreateFunctionStmt) *pg.CreateFunctionStmt {
+func convertCreateFunctionStmt(n *nodes.CreateFunctionStmt) *ast.CreateFunctionStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.CreateFunctionStmt{
+	fn, err := parseFuncName(n.Funcname)
+	if err != nil {
+		panic(err)
+	}
+	return &ast.CreateFunctionStmt{
 		Replace:    n.Replace,
-		Funcname:   convertList(n.Funcname),
-		Parameters: convertList(n.Parameters),
+		Func:       fn,
+		Params:     convertList(n.Parameters),
 		ReturnType: convertTypeName(n.ReturnType),
 		Options:    convertList(n.Options),
 		WithClause: convertList(n.WithClause),
 	}
 }
 
-func convertCreateOpClassItem(n *nodes.CreateOpClassItem) *pg.CreateOpClassItem {
+func convertCreateOpClassItem(n *nodes.CreateOpClassItem) *ast.CreateOpClassItem {
 	if n == nil {
 		return nil
 	}
-	return &pg.CreateOpClassItem{
+	return &ast.CreateOpClassItem{
 		Itemtype:    n.Itemtype,
 		Name:        convertObjectWithArgs(n.Name),
 		Number:      n.Number,
@@ -1051,11 +1067,11 @@ func convertCreateOpClassItem(n *nodes.CreateOpClassItem) *pg.CreateOpClassItem 
 	}
 }
 
-func convertCreateOpClassStmt(n *nodes.CreateOpClassStmt) *pg.CreateOpClassStmt {
+func convertCreateOpClassStmt(n *nodes.CreateOpClassStmt) *ast.CreateOpClassStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.CreateOpClassStmt{
+	return &ast.CreateOpClassStmt{
 		Opclassname:  convertList(n.Opclassname),
 		Opfamilyname: convertList(n.Opfamilyname),
 		Amname:       n.Amname,
@@ -1065,21 +1081,21 @@ func convertCreateOpClassStmt(n *nodes.CreateOpClassStmt) *pg.CreateOpClassStmt 
 	}
 }
 
-func convertCreateOpFamilyStmt(n *nodes.CreateOpFamilyStmt) *pg.CreateOpFamilyStmt {
+func convertCreateOpFamilyStmt(n *nodes.CreateOpFamilyStmt) *ast.CreateOpFamilyStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.CreateOpFamilyStmt{
+	return &ast.CreateOpFamilyStmt{
 		Opfamilyname: convertList(n.Opfamilyname),
 		Amname:       n.Amname,
 	}
 }
 
-func convertCreatePLangStmt(n *nodes.CreatePLangStmt) *pg.CreatePLangStmt {
+func convertCreatePLangStmt(n *nodes.CreatePLangStmt) *ast.CreatePLangStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.CreatePLangStmt{
+	return &ast.CreatePLangStmt{
 		Replace:     n.Replace,
 		Plname:      n.Plname,
 		Plhandler:   convertList(n.Plhandler),
@@ -1089,11 +1105,11 @@ func convertCreatePLangStmt(n *nodes.CreatePLangStmt) *pg.CreatePLangStmt {
 	}
 }
 
-func convertCreatePolicyStmt(n *nodes.CreatePolicyStmt) *pg.CreatePolicyStmt {
+func convertCreatePolicyStmt(n *nodes.CreatePolicyStmt) *ast.CreatePolicyStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.CreatePolicyStmt{
+	return &ast.CreatePolicyStmt{
 		PolicyName: n.PolicyName,
 		Table:      convertRangeVar(n.Table),
 		CmdName:    n.CmdName,
@@ -1104,11 +1120,11 @@ func convertCreatePolicyStmt(n *nodes.CreatePolicyStmt) *pg.CreatePolicyStmt {
 	}
 }
 
-func convertCreatePublicationStmt(n *nodes.CreatePublicationStmt) *pg.CreatePublicationStmt {
+func convertCreatePublicationStmt(n *nodes.CreatePublicationStmt) *ast.CreatePublicationStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.CreatePublicationStmt{
+	return &ast.CreatePublicationStmt{
 		Pubname:      n.Pubname,
 		Options:      convertList(n.Options),
 		Tables:       convertList(n.Tables),
@@ -1116,57 +1132,57 @@ func convertCreatePublicationStmt(n *nodes.CreatePublicationStmt) *pg.CreatePubl
 	}
 }
 
-func convertCreateRangeStmt(n *nodes.CreateRangeStmt) *pg.CreateRangeStmt {
+func convertCreateRangeStmt(n *nodes.CreateRangeStmt) *ast.CreateRangeStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.CreateRangeStmt{
+	return &ast.CreateRangeStmt{
 		TypeName: convertList(n.TypeName),
 		Params:   convertList(n.Params),
 	}
 }
 
-func convertCreateRoleStmt(n *nodes.CreateRoleStmt) *pg.CreateRoleStmt {
+func convertCreateRoleStmt(n *nodes.CreateRoleStmt) *ast.CreateRoleStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.CreateRoleStmt{
-		StmtType: pg.RoleStmtType(n.StmtType),
+	return &ast.CreateRoleStmt{
+		StmtType: ast.RoleStmtType(n.StmtType),
 		Role:     n.Role,
 		Options:  convertList(n.Options),
 	}
 }
 
-func convertCreateSchemaStmt(n *nodes.CreateSchemaStmt) *pg.CreateSchemaStmt {
+func convertCreateSchemaStmt(n *nodes.CreateSchemaStmt) *ast.CreateSchemaStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.CreateSchemaStmt{
-		Schemaname:  n.Schemaname,
+	return &ast.CreateSchemaStmt{
+		Name:        n.Schemaname,
 		Authrole:    convertRoleSpec(n.Authrole),
 		SchemaElts:  convertList(n.SchemaElts),
 		IfNotExists: n.IfNotExists,
 	}
 }
 
-func convertCreateSeqStmt(n *nodes.CreateSeqStmt) *pg.CreateSeqStmt {
+func convertCreateSeqStmt(n *nodes.CreateSeqStmt) *ast.CreateSeqStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.CreateSeqStmt{
+	return &ast.CreateSeqStmt{
 		Sequence:    convertRangeVar(n.Sequence),
 		Options:     convertList(n.Options),
-		OwnerId:     pg.Oid(n.OwnerId),
+		OwnerId:     ast.Oid(n.OwnerId),
 		ForIdentity: n.ForIdentity,
 		IfNotExists: n.IfNotExists,
 	}
 }
 
-func convertCreateStatsStmt(n *nodes.CreateStatsStmt) *pg.CreateStatsStmt {
+func convertCreateStatsStmt(n *nodes.CreateStatsStmt) *ast.CreateStatsStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.CreateStatsStmt{
+	return &ast.CreateStatsStmt{
 		Defnames:    convertList(n.Defnames),
 		StatTypes:   convertList(n.StatTypes),
 		Exprs:       convertList(n.Exprs),
@@ -1175,11 +1191,11 @@ func convertCreateStatsStmt(n *nodes.CreateStatsStmt) *pg.CreateStatsStmt {
 	}
 }
 
-func convertCreateStmt(n *nodes.CreateStmt) *pg.CreateStmt {
+func convertCreateStmt(n *nodes.CreateStmt) *ast.CreateStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.CreateStmt{
+	return &ast.CreateStmt{
 		Relation:       convertRangeVar(n.Relation),
 		TableElts:      convertList(n.TableElts),
 		InhRelations:   convertList(n.InhRelations),
@@ -1188,17 +1204,17 @@ func convertCreateStmt(n *nodes.CreateStmt) *pg.CreateStmt {
 		OfTypename:     convertTypeName(n.OfTypename),
 		Constraints:    convertList(n.Constraints),
 		Options:        convertList(n.Options),
-		Oncommit:       pg.OnCommitAction(n.Oncommit),
+		Oncommit:       ast.OnCommitAction(n.Oncommit),
 		Tablespacename: n.Tablespacename,
 		IfNotExists:    n.IfNotExists,
 	}
 }
 
-func convertCreateSubscriptionStmt(n *nodes.CreateSubscriptionStmt) *pg.CreateSubscriptionStmt {
+func convertCreateSubscriptionStmt(n *nodes.CreateSubscriptionStmt) *ast.CreateSubscriptionStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.CreateSubscriptionStmt{
+	return &ast.CreateSubscriptionStmt{
 		Subname:     n.Subname,
 		Conninfo:    n.Conninfo,
 		Publication: convertList(n.Publication),
@@ -1206,24 +1222,24 @@ func convertCreateSubscriptionStmt(n *nodes.CreateSubscriptionStmt) *pg.CreateSu
 	}
 }
 
-func convertCreateTableAsStmt(n *nodes.CreateTableAsStmt) *pg.CreateTableAsStmt {
+func convertCreateTableAsStmt(n *nodes.CreateTableAsStmt) *ast.CreateTableAsStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.CreateTableAsStmt{
+	return &ast.CreateTableAsStmt{
 		Query:        convertNode(n.Query),
 		Into:         convertIntoClause(n.Into),
-		Relkind:      pg.ObjectType(n.Relkind),
+		Relkind:      ast.ObjectType(n.Relkind),
 		IsSelectInto: n.IsSelectInto,
 		IfNotExists:  n.IfNotExists,
 	}
 }
 
-func convertCreateTableSpaceStmt(n *nodes.CreateTableSpaceStmt) *pg.CreateTableSpaceStmt {
+func convertCreateTableSpaceStmt(n *nodes.CreateTableSpaceStmt) *ast.CreateTableSpaceStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.CreateTableSpaceStmt{
+	return &ast.CreateTableSpaceStmt{
 		Tablespacename: n.Tablespacename,
 		Owner:          convertRoleSpec(n.Owner),
 		Location:       n.Location,
@@ -1231,11 +1247,11 @@ func convertCreateTableSpaceStmt(n *nodes.CreateTableSpaceStmt) *pg.CreateTableS
 	}
 }
 
-func convertCreateTransformStmt(n *nodes.CreateTransformStmt) *pg.CreateTransformStmt {
+func convertCreateTransformStmt(n *nodes.CreateTransformStmt) *ast.CreateTransformStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.CreateTransformStmt{
+	return &ast.CreateTransformStmt{
 		Replace:  n.Replace,
 		TypeName: convertTypeName(n.TypeName),
 		Lang:     n.Lang,
@@ -1244,11 +1260,11 @@ func convertCreateTransformStmt(n *nodes.CreateTransformStmt) *pg.CreateTransfor
 	}
 }
 
-func convertCreateTrigStmt(n *nodes.CreateTrigStmt) *pg.CreateTrigStmt {
+func convertCreateTrigStmt(n *nodes.CreateTrigStmt) *ast.CreateTrigStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.CreateTrigStmt{
+	return &ast.CreateTrigStmt{
 		Trigname:       n.Trigname,
 		Relation:       convertRangeVar(n.Relation),
 		Funcname:       convertList(n.Funcname),
@@ -1266,11 +1282,11 @@ func convertCreateTrigStmt(n *nodes.CreateTrigStmt) *pg.CreateTrigStmt {
 	}
 }
 
-func convertCreateUserMappingStmt(n *nodes.CreateUserMappingStmt) *pg.CreateUserMappingStmt {
+func convertCreateUserMappingStmt(n *nodes.CreateUserMappingStmt) *ast.CreateUserMappingStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.CreateUserMappingStmt{
+	return &ast.CreateUserMappingStmt{
 		User:        convertRoleSpec(n.User),
 		Servername:  n.Servername,
 		IfNotExists: n.IfNotExists,
@@ -1278,67 +1294,67 @@ func convertCreateUserMappingStmt(n *nodes.CreateUserMappingStmt) *pg.CreateUser
 	}
 }
 
-func convertCreatedbStmt(n *nodes.CreatedbStmt) *pg.CreatedbStmt {
+func convertCreatedbStmt(n *nodes.CreatedbStmt) *ast.CreatedbStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.CreatedbStmt{
+	return &ast.CreatedbStmt{
 		Dbname:  n.Dbname,
 		Options: convertList(n.Options),
 	}
 }
 
-func convertCurrentOfExpr(n *nodes.CurrentOfExpr) *pg.CurrentOfExpr {
+func convertCurrentOfExpr(n *nodes.CurrentOfExpr) *ast.CurrentOfExpr {
 	if n == nil {
 		return nil
 	}
-	return &pg.CurrentOfExpr{
+	return &ast.CurrentOfExpr{
 		Xpr:         convertNode(n.Xpr),
-		Cvarno:      pg.Index(n.Cvarno),
+		Cvarno:      ast.Index(n.Cvarno),
 		CursorName:  n.CursorName,
 		CursorParam: n.CursorParam,
 	}
 }
 
-func convertDeallocateStmt(n *nodes.DeallocateStmt) *pg.DeallocateStmt {
+func convertDeallocateStmt(n *nodes.DeallocateStmt) *ast.DeallocateStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.DeallocateStmt{
+	return &ast.DeallocateStmt{
 		Name: n.Name,
 	}
 }
 
-func convertDeclareCursorStmt(n *nodes.DeclareCursorStmt) *pg.DeclareCursorStmt {
+func convertDeclareCursorStmt(n *nodes.DeclareCursorStmt) *ast.DeclareCursorStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.DeclareCursorStmt{
+	return &ast.DeclareCursorStmt{
 		Portalname: n.Portalname,
 		Options:    n.Options,
 		Query:      convertNode(n.Query),
 	}
 }
 
-func convertDefElem(n *nodes.DefElem) *pg.DefElem {
+func convertDefElem(n *nodes.DefElem) *ast.DefElem {
 	if n == nil {
 		return nil
 	}
-	return &pg.DefElem{
+	return &ast.DefElem{
 		Defnamespace: n.Defnamespace,
 		Defname:      n.Defname,
 		Arg:          convertNode(n.Arg),
-		Defaction:    pg.DefElemAction(n.Defaction),
+		Defaction:    ast.DefElemAction(n.Defaction),
 		Location:     n.Location,
 	}
 }
 
-func convertDefineStmt(n *nodes.DefineStmt) *pg.DefineStmt {
+func convertDefineStmt(n *nodes.DefineStmt) *ast.DefineStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.DefineStmt{
-		Kind:        pg.ObjectType(n.Kind),
+	return &ast.DefineStmt{
+		Kind:        ast.ObjectType(n.Kind),
 		Oldstyle:    n.Oldstyle,
 		Defnames:    convertList(n.Defnames),
 		Args:        convertList(n.Args),
@@ -1347,11 +1363,11 @@ func convertDefineStmt(n *nodes.DefineStmt) *pg.DefineStmt {
 	}
 }
 
-func convertDeleteStmt(n *nodes.DeleteStmt) *pg.DeleteStmt {
+func convertDeleteStmt(n *nodes.DeleteStmt) *ast.DeleteStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.DeleteStmt{
+	return &ast.DeleteStmt{
 		Relation:      convertRangeVar(n.Relation),
 		UsingClause:   convertList(n.UsingClause),
 		WhereClause:   convertNode(n.WhereClause),
@@ -1360,179 +1376,179 @@ func convertDeleteStmt(n *nodes.DeleteStmt) *pg.DeleteStmt {
 	}
 }
 
-func convertDiscardStmt(n *nodes.DiscardStmt) *pg.DiscardStmt {
+func convertDiscardStmt(n *nodes.DiscardStmt) *ast.DiscardStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.DiscardStmt{
-		Target: pg.DiscardMode(n.Target),
+	return &ast.DiscardStmt{
+		Target: ast.DiscardMode(n.Target),
 	}
 }
 
-func convertDoStmt(n *nodes.DoStmt) *pg.DoStmt {
+func convertDoStmt(n *nodes.DoStmt) *ast.DoStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.DoStmt{
+	return &ast.DoStmt{
 		Args: convertList(n.Args),
 	}
 }
 
-func convertDropOwnedStmt(n *nodes.DropOwnedStmt) *pg.DropOwnedStmt {
+func convertDropOwnedStmt(n *nodes.DropOwnedStmt) *ast.DropOwnedStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.DropOwnedStmt{
+	return &ast.DropOwnedStmt{
 		Roles:    convertList(n.Roles),
-		Behavior: pg.DropBehavior(n.Behavior),
+		Behavior: ast.DropBehavior(n.Behavior),
 	}
 }
 
-func convertDropRoleStmt(n *nodes.DropRoleStmt) *pg.DropRoleStmt {
+func convertDropRoleStmt(n *nodes.DropRoleStmt) *ast.DropRoleStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.DropRoleStmt{
+	return &ast.DropRoleStmt{
 		Roles:     convertList(n.Roles),
 		MissingOk: n.MissingOk,
 	}
 }
 
-func convertDropStmt(n *nodes.DropStmt) *pg.DropStmt {
+func convertDropStmt(n *nodes.DropStmt) *ast.DropStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.DropStmt{
+	return &ast.DropStmt{
 		Objects:    convertList(n.Objects),
-		RemoveType: pg.ObjectType(n.RemoveType),
-		Behavior:   pg.DropBehavior(n.Behavior),
+		RemoveType: ast.ObjectType(n.RemoveType),
+		Behavior:   ast.DropBehavior(n.Behavior),
 		MissingOk:  n.MissingOk,
 		Concurrent: n.Concurrent,
 	}
 }
 
-func convertDropSubscriptionStmt(n *nodes.DropSubscriptionStmt) *pg.DropSubscriptionStmt {
+func convertDropSubscriptionStmt(n *nodes.DropSubscriptionStmt) *ast.DropSubscriptionStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.DropSubscriptionStmt{
+	return &ast.DropSubscriptionStmt{
 		Subname:   n.Subname,
 		MissingOk: n.MissingOk,
-		Behavior:  pg.DropBehavior(n.Behavior),
+		Behavior:  ast.DropBehavior(n.Behavior),
 	}
 }
 
-func convertDropTableSpaceStmt(n *nodes.DropTableSpaceStmt) *pg.DropTableSpaceStmt {
+func convertDropTableSpaceStmt(n *nodes.DropTableSpaceStmt) *ast.DropTableSpaceStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.DropTableSpaceStmt{
+	return &ast.DropTableSpaceStmt{
 		Tablespacename: n.Tablespacename,
 		MissingOk:      n.MissingOk,
 	}
 }
 
-func convertDropUserMappingStmt(n *nodes.DropUserMappingStmt) *pg.DropUserMappingStmt {
+func convertDropUserMappingStmt(n *nodes.DropUserMappingStmt) *ast.DropUserMappingStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.DropUserMappingStmt{
+	return &ast.DropUserMappingStmt{
 		User:       convertRoleSpec(n.User),
 		Servername: n.Servername,
 		MissingOk:  n.MissingOk,
 	}
 }
 
-func convertDropdbStmt(n *nodes.DropdbStmt) *pg.DropdbStmt {
+func convertDropdbStmt(n *nodes.DropdbStmt) *ast.DropdbStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.DropdbStmt{
+	return &ast.DropdbStmt{
 		Dbname:    n.Dbname,
 		MissingOk: n.MissingOk,
 	}
 }
 
-func convertExecuteStmt(n *nodes.ExecuteStmt) *pg.ExecuteStmt {
+func convertExecuteStmt(n *nodes.ExecuteStmt) *ast.ExecuteStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.ExecuteStmt{
+	return &ast.ExecuteStmt{
 		Name:   n.Name,
 		Params: convertList(n.Params),
 	}
 }
 
-func convertExplainStmt(n *nodes.ExplainStmt) *pg.ExplainStmt {
+func convertExplainStmt(n *nodes.ExplainStmt) *ast.ExplainStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.ExplainStmt{
+	return &ast.ExplainStmt{
 		Query:   convertNode(n.Query),
 		Options: convertList(n.Options),
 	}
 }
 
-func convertExpr(n *nodes.Expr) *pg.Expr {
+func convertExpr(n *nodes.Expr) *ast.Expr {
 	if n == nil {
 		return nil
 	}
-	return &pg.Expr{}
+	return &ast.Expr{}
 }
 
-func convertFetchStmt(n *nodes.FetchStmt) *pg.FetchStmt {
+func convertFetchStmt(n *nodes.FetchStmt) *ast.FetchStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.FetchStmt{
-		Direction:  pg.FetchDirection(n.Direction),
+	return &ast.FetchStmt{
+		Direction:  ast.FetchDirection(n.Direction),
 		HowMany:    n.HowMany,
 		Portalname: n.Portalname,
 		Ismove:     n.Ismove,
 	}
 }
 
-func convertFieldSelect(n *nodes.FieldSelect) *pg.FieldSelect {
+func convertFieldSelect(n *nodes.FieldSelect) *ast.FieldSelect {
 	if n == nil {
 		return nil
 	}
-	return &pg.FieldSelect{
+	return &ast.FieldSelect{
 		Xpr:          convertNode(n.Xpr),
 		Arg:          convertNode(n.Arg),
-		Fieldnum:     pg.AttrNumber(n.Fieldnum),
-		Resulttype:   pg.Oid(n.Resulttype),
+		Fieldnum:     ast.AttrNumber(n.Fieldnum),
+		Resulttype:   ast.Oid(n.Resulttype),
 		Resulttypmod: n.Resulttypmod,
-		Resultcollid: pg.Oid(n.Resultcollid),
+		Resultcollid: ast.Oid(n.Resultcollid),
 	}
 }
 
-func convertFieldStore(n *nodes.FieldStore) *pg.FieldStore {
+func convertFieldStore(n *nodes.FieldStore) *ast.FieldStore {
 	if n == nil {
 		return nil
 	}
-	return &pg.FieldStore{
+	return &ast.FieldStore{
 		Xpr:        convertNode(n.Xpr),
 		Arg:        convertNode(n.Arg),
 		Newvals:    convertList(n.Newvals),
 		Fieldnums:  convertList(n.Fieldnums),
-		Resulttype: pg.Oid(n.Resulttype),
+		Resulttype: ast.Oid(n.Resulttype),
 	}
 }
 
-func convertFloat(n *nodes.Float) *pg.Float {
+func convertFloat(n *nodes.Float) *ast.Float {
 	if n == nil {
 		return nil
 	}
-	return &pg.Float{
+	return &ast.Float{
 		Str: n.Str,
 	}
 }
 
-func convertFromExpr(n *nodes.FromExpr) *pg.FromExpr {
+func convertFromExpr(n *nodes.FromExpr) *ast.FromExpr {
 	if n == nil {
 		return nil
 	}
-	return &pg.FromExpr{
+	return &ast.FromExpr{
 		Fromlist: convertList(n.Fromlist),
 		Quals:    convertNode(n.Quals),
 	}
@@ -1562,125 +1578,125 @@ func convertFuncCall(n *nodes.FuncCall) *ast.FuncCall {
 	}
 }
 
-func convertFuncExpr(n *nodes.FuncExpr) *pg.FuncExpr {
+func convertFuncExpr(n *nodes.FuncExpr) *ast.FuncExpr {
 	if n == nil {
 		return nil
 	}
-	return &pg.FuncExpr{
+	return &ast.FuncExpr{
 		Xpr:            convertNode(n.Xpr),
-		Funcid:         pg.Oid(n.Funcid),
-		Funcresulttype: pg.Oid(n.Funcresulttype),
+		Funcid:         ast.Oid(n.Funcid),
+		Funcresulttype: ast.Oid(n.Funcresulttype),
 		Funcretset:     n.Funcretset,
 		Funcvariadic:   n.Funcvariadic,
-		Funcformat:     pg.CoercionForm(n.Funcformat),
-		Funccollid:     pg.Oid(n.Funccollid),
-		Inputcollid:    pg.Oid(n.Inputcollid),
+		Funcformat:     ast.CoercionForm(n.Funcformat),
+		Funccollid:     ast.Oid(n.Funccollid),
+		Inputcollid:    ast.Oid(n.Inputcollid),
 		Args:           convertList(n.Args),
 		Location:       n.Location,
 	}
 }
 
-func convertFunctionParameter(n *nodes.FunctionParameter) *pg.FunctionParameter {
+func convertFunctionParameter(n *nodes.FunctionParameter) *ast.FunctionParameter {
 	if n == nil {
 		return nil
 	}
-	return &pg.FunctionParameter{
+	return &ast.FunctionParameter{
 		Name:    n.Name,
 		ArgType: convertTypeName(n.ArgType),
-		Mode:    pg.FunctionParameterMode(n.Mode),
+		Mode:    ast.FunctionParameterMode(n.Mode),
 		Defexpr: convertNode(n.Defexpr),
 	}
 }
 
-func convertGrantRoleStmt(n *nodes.GrantRoleStmt) *pg.GrantRoleStmt {
+func convertGrantRoleStmt(n *nodes.GrantRoleStmt) *ast.GrantRoleStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.GrantRoleStmt{
+	return &ast.GrantRoleStmt{
 		GrantedRoles: convertList(n.GrantedRoles),
 		GranteeRoles: convertList(n.GranteeRoles),
 		IsGrant:      n.IsGrant,
 		AdminOpt:     n.AdminOpt,
 		Grantor:      convertRoleSpec(n.Grantor),
-		Behavior:     pg.DropBehavior(n.Behavior),
+		Behavior:     ast.DropBehavior(n.Behavior),
 	}
 }
 
-func convertGrantStmt(n *nodes.GrantStmt) *pg.GrantStmt {
+func convertGrantStmt(n *nodes.GrantStmt) *ast.GrantStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.GrantStmt{
+	return &ast.GrantStmt{
 		IsGrant:     n.IsGrant,
-		Targtype:    pg.GrantTargetType(n.Targtype),
-		Objtype:     pg.GrantObjectType(n.Objtype),
+		Targtype:    ast.GrantTargetType(n.Targtype),
+		Objtype:     ast.GrantObjectType(n.Objtype),
 		Objects:     convertList(n.Objects),
 		Privileges:  convertList(n.Privileges),
 		Grantees:    convertList(n.Grantees),
 		GrantOption: n.GrantOption,
-		Behavior:    pg.DropBehavior(n.Behavior),
+		Behavior:    ast.DropBehavior(n.Behavior),
 	}
 }
 
-func convertGroupingFunc(n *nodes.GroupingFunc) *pg.GroupingFunc {
+func convertGroupingFunc(n *nodes.GroupingFunc) *ast.GroupingFunc {
 	if n == nil {
 		return nil
 	}
-	return &pg.GroupingFunc{
+	return &ast.GroupingFunc{
 		Xpr:         convertNode(n.Xpr),
 		Args:        convertList(n.Args),
 		Refs:        convertList(n.Refs),
 		Cols:        convertList(n.Cols),
-		Agglevelsup: pg.Index(n.Agglevelsup),
+		Agglevelsup: ast.Index(n.Agglevelsup),
 		Location:    n.Location,
 	}
 }
 
-func convertGroupingSet(n *nodes.GroupingSet) *pg.GroupingSet {
+func convertGroupingSet(n *nodes.GroupingSet) *ast.GroupingSet {
 	if n == nil {
 		return nil
 	}
-	return &pg.GroupingSet{
-		Kind:     pg.GroupingSetKind(n.Kind),
+	return &ast.GroupingSet{
+		Kind:     ast.GroupingSetKind(n.Kind),
 		Content:  convertList(n.Content),
 		Location: n.Location,
 	}
 }
 
-func convertImportForeignSchemaStmt(n *nodes.ImportForeignSchemaStmt) *pg.ImportForeignSchemaStmt {
+func convertImportForeignSchemaStmt(n *nodes.ImportForeignSchemaStmt) *ast.ImportForeignSchemaStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.ImportForeignSchemaStmt{
+	return &ast.ImportForeignSchemaStmt{
 		ServerName:   n.ServerName,
 		RemoteSchema: n.RemoteSchema,
 		LocalSchema:  n.LocalSchema,
-		ListType:     pg.ImportForeignSchemaType(n.ListType),
+		ListType:     ast.ImportForeignSchemaType(n.ListType),
 		TableList:    convertList(n.TableList),
 		Options:      convertList(n.Options),
 	}
 }
 
-func convertIndexElem(n *nodes.IndexElem) *pg.IndexElem {
+func convertIndexElem(n *nodes.IndexElem) *ast.IndexElem {
 	if n == nil {
 		return nil
 	}
-	return &pg.IndexElem{
+	return &ast.IndexElem{
 		Name:          n.Name,
 		Expr:          convertNode(n.Expr),
 		Indexcolname:  n.Indexcolname,
 		Collation:     convertList(n.Collation),
 		Opclass:       convertList(n.Opclass),
-		Ordering:      pg.SortByDir(n.Ordering),
-		NullsOrdering: pg.SortByNulls(n.NullsOrdering),
+		Ordering:      ast.SortByDir(n.Ordering),
+		NullsOrdering: ast.SortByNulls(n.NullsOrdering),
 	}
 }
 
-func convertIndexStmt(n *nodes.IndexStmt) *pg.IndexStmt {
+func convertIndexStmt(n *nodes.IndexStmt) *ast.IndexStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.IndexStmt{
+	return &ast.IndexStmt{
 		Idxname:        n.Idxname,
 		Relation:       convertRangeVar(n.Relation),
 		AccessMethod:   n.AccessMethod,
@@ -1690,8 +1706,8 @@ func convertIndexStmt(n *nodes.IndexStmt) *pg.IndexStmt {
 		WhereClause:    convertNode(n.WhereClause),
 		ExcludeOpNames: convertList(n.ExcludeOpNames),
 		Idxcomment:     n.Idxcomment,
-		IndexOid:       pg.Oid(n.IndexOid),
-		OldNode:        pg.Oid(n.OldNode),
+		IndexOid:       ast.Oid(n.IndexOid),
+		OldNode:        ast.Oid(n.OldNode),
 		Unique:         n.Unique,
 		Primary:        n.Primary,
 		Isconstraint:   n.Isconstraint,
@@ -1703,11 +1719,11 @@ func convertIndexStmt(n *nodes.IndexStmt) *pg.IndexStmt {
 	}
 }
 
-func convertInferClause(n *nodes.InferClause) *pg.InferClause {
+func convertInferClause(n *nodes.InferClause) *ast.InferClause {
 	if n == nil {
 		return nil
 	}
-	return &pg.InferClause{
+	return &ast.InferClause{
 		IndexElems:  convertList(n.IndexElems),
 		WhereClause: convertNode(n.WhereClause),
 		Conname:     n.Conname,
@@ -1715,74 +1731,74 @@ func convertInferClause(n *nodes.InferClause) *pg.InferClause {
 	}
 }
 
-func convertInferenceElem(n *nodes.InferenceElem) *pg.InferenceElem {
+func convertInferenceElem(n *nodes.InferenceElem) *ast.InferenceElem {
 	if n == nil {
 		return nil
 	}
-	return &pg.InferenceElem{
+	return &ast.InferenceElem{
 		Xpr:          convertNode(n.Xpr),
 		Expr:         convertNode(n.Expr),
-		Infercollid:  pg.Oid(n.Infercollid),
-		Inferopclass: pg.Oid(n.Inferopclass),
+		Infercollid:  ast.Oid(n.Infercollid),
+		Inferopclass: ast.Oid(n.Inferopclass),
 	}
 }
 
-func convertInlineCodeBlock(n *nodes.InlineCodeBlock) *pg.InlineCodeBlock {
+func convertInlineCodeBlock(n *nodes.InlineCodeBlock) *ast.InlineCodeBlock {
 	if n == nil {
 		return nil
 	}
-	return &pg.InlineCodeBlock{
+	return &ast.InlineCodeBlock{
 		SourceText:    n.SourceText,
-		LangOid:       pg.Oid(n.LangOid),
+		LangOid:       ast.Oid(n.LangOid),
 		LangIsTrusted: n.LangIsTrusted,
 	}
 }
 
-func convertInsertStmt(n *nodes.InsertStmt) *pg.InsertStmt {
+func convertInsertStmt(n *nodes.InsertStmt) *ast.InsertStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.InsertStmt{
+	return &ast.InsertStmt{
 		Relation:         convertRangeVar(n.Relation),
 		Cols:             convertList(n.Cols),
 		SelectStmt:       convertNode(n.SelectStmt),
 		OnConflictClause: convertOnConflictClause(n.OnConflictClause),
 		ReturningList:    convertList(n.ReturningList),
 		WithClause:       convertWithClause(n.WithClause),
-		Override:         pg.OverridingKind(n.Override),
+		Override:         ast.OverridingKind(n.Override),
 	}
 }
 
-func convertInteger(n *nodes.Integer) *pg.Integer {
+func convertInteger(n *nodes.Integer) *ast.Integer {
 	if n == nil {
 		return nil
 	}
-	return &pg.Integer{
+	return &ast.Integer{
 		Ival: n.Ival,
 	}
 }
 
-func convertIntoClause(n *nodes.IntoClause) *pg.IntoClause {
+func convertIntoClause(n *nodes.IntoClause) *ast.IntoClause {
 	if n == nil {
 		return nil
 	}
-	return &pg.IntoClause{
+	return &ast.IntoClause{
 		Rel:            convertRangeVar(n.Rel),
 		ColNames:       convertList(n.ColNames),
 		Options:        convertList(n.Options),
-		OnCommit:       pg.OnCommitAction(n.OnCommit),
+		OnCommit:       ast.OnCommitAction(n.OnCommit),
 		TableSpaceName: n.TableSpaceName,
 		ViewQuery:      convertNode(n.ViewQuery),
 		SkipData:       n.SkipData,
 	}
 }
 
-func convertJoinExpr(n *nodes.JoinExpr) *pg.JoinExpr {
+func convertJoinExpr(n *nodes.JoinExpr) *ast.JoinExpr {
 	if n == nil {
 		return nil
 	}
-	return &pg.JoinExpr{
-		Jointype:    pg.JoinType(n.Jointype),
+	return &ast.JoinExpr{
+		Jointype:    ast.JoinType(n.Jointype),
 		IsNatural:   n.IsNatural,
 		Larg:        convertNode(n.Larg),
 		Rarg:        convertNode(n.Rarg),
@@ -1793,77 +1809,77 @@ func convertJoinExpr(n *nodes.JoinExpr) *pg.JoinExpr {
 	}
 }
 
-func convertListenStmt(n *nodes.ListenStmt) *pg.ListenStmt {
+func convertListenStmt(n *nodes.ListenStmt) *ast.ListenStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.ListenStmt{
+	return &ast.ListenStmt{
 		Conditionname: n.Conditionname,
 	}
 }
 
-func convertLoadStmt(n *nodes.LoadStmt) *pg.LoadStmt {
+func convertLoadStmt(n *nodes.LoadStmt) *ast.LoadStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.LoadStmt{
+	return &ast.LoadStmt{
 		Filename: n.Filename,
 	}
 }
 
-func convertLockStmt(n *nodes.LockStmt) *pg.LockStmt {
+func convertLockStmt(n *nodes.LockStmt) *ast.LockStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.LockStmt{
+	return &ast.LockStmt{
 		Relations: convertList(n.Relations),
 		Mode:      n.Mode,
 		Nowait:    n.Nowait,
 	}
 }
 
-func convertLockingClause(n *nodes.LockingClause) *pg.LockingClause {
+func convertLockingClause(n *nodes.LockingClause) *ast.LockingClause {
 	if n == nil {
 		return nil
 	}
-	return &pg.LockingClause{
+	return &ast.LockingClause{
 		LockedRels: convertList(n.LockedRels),
-		Strength:   pg.LockClauseStrength(n.Strength),
-		WaitPolicy: pg.LockWaitPolicy(n.WaitPolicy),
+		Strength:   ast.LockClauseStrength(n.Strength),
+		WaitPolicy: ast.LockWaitPolicy(n.WaitPolicy),
 	}
 }
 
-func convertMinMaxExpr(n *nodes.MinMaxExpr) *pg.MinMaxExpr {
+func convertMinMaxExpr(n *nodes.MinMaxExpr) *ast.MinMaxExpr {
 	if n == nil {
 		return nil
 	}
-	return &pg.MinMaxExpr{
+	return &ast.MinMaxExpr{
 		Xpr:          convertNode(n.Xpr),
-		Minmaxtype:   pg.Oid(n.Minmaxtype),
-		Minmaxcollid: pg.Oid(n.Minmaxcollid),
-		Inputcollid:  pg.Oid(n.Inputcollid),
-		Op:           pg.MinMaxOp(n.Op),
+		Minmaxtype:   ast.Oid(n.Minmaxtype),
+		Minmaxcollid: ast.Oid(n.Minmaxcollid),
+		Inputcollid:  ast.Oid(n.Inputcollid),
+		Op:           ast.MinMaxOp(n.Op),
 		Args:         convertList(n.Args),
 		Location:     n.Location,
 	}
 }
 
-func convertMultiAssignRef(n *nodes.MultiAssignRef) *pg.MultiAssignRef {
+func convertMultiAssignRef(n *nodes.MultiAssignRef) *ast.MultiAssignRef {
 	if n == nil {
 		return nil
 	}
-	return &pg.MultiAssignRef{
+	return &ast.MultiAssignRef{
 		Source:   convertNode(n.Source),
 		Colno:    n.Colno,
 		Ncolumns: n.Ncolumns,
 	}
 }
 
-func convertNamedArgExpr(n *nodes.NamedArgExpr) *pg.NamedArgExpr {
+func convertNamedArgExpr(n *nodes.NamedArgExpr) *ast.NamedArgExpr {
 	if n == nil {
 		return nil
 	}
-	return &pg.NamedArgExpr{
+	return &ast.NamedArgExpr{
 		Xpr:       convertNode(n.Xpr),
 		Arg:       convertNode(n.Arg),
 		Name:      n.Name,
@@ -1872,64 +1888,64 @@ func convertNamedArgExpr(n *nodes.NamedArgExpr) *pg.NamedArgExpr {
 	}
 }
 
-func convertNextValueExpr(n *nodes.NextValueExpr) *pg.NextValueExpr {
+func convertNextValueExpr(n *nodes.NextValueExpr) *ast.NextValueExpr {
 	if n == nil {
 		return nil
 	}
-	return &pg.NextValueExpr{
+	return &ast.NextValueExpr{
 		Xpr:    convertNode(n.Xpr),
-		Seqid:  pg.Oid(n.Seqid),
-		TypeId: pg.Oid(n.TypeId),
+		Seqid:  ast.Oid(n.Seqid),
+		TypeId: ast.Oid(n.TypeId),
 	}
 }
 
-func convertNotifyStmt(n *nodes.NotifyStmt) *pg.NotifyStmt {
+func convertNotifyStmt(n *nodes.NotifyStmt) *ast.NotifyStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.NotifyStmt{
+	return &ast.NotifyStmt{
 		Conditionname: n.Conditionname,
 		Payload:       n.Payload,
 	}
 }
 
-func convertNull(n *nodes.Null) *pg.Null {
+func convertNull(n *nodes.Null) *ast.Null {
 	if n == nil {
 		return nil
 	}
-	return &pg.Null{}
+	return &ast.Null{}
 }
 
-func convertNullTest(n *nodes.NullTest) *pg.NullTest {
+func convertNullTest(n *nodes.NullTest) *ast.NullTest {
 	if n == nil {
 		return nil
 	}
-	return &pg.NullTest{
+	return &ast.NullTest{
 		Xpr:          convertNode(n.Xpr),
 		Arg:          convertNode(n.Arg),
-		Nulltesttype: pg.NullTestType(n.Nulltesttype),
+		Nulltesttype: ast.NullTestType(n.Nulltesttype),
 		Argisrow:     n.Argisrow,
 		Location:     n.Location,
 	}
 }
 
-func convertObjectWithArgs(n *nodes.ObjectWithArgs) *pg.ObjectWithArgs {
+func convertObjectWithArgs(n *nodes.ObjectWithArgs) *ast.ObjectWithArgs {
 	if n == nil {
 		return nil
 	}
-	return &pg.ObjectWithArgs{
+	return &ast.ObjectWithArgs{
 		Objname:         convertList(n.Objname),
 		Objargs:         convertList(n.Objargs),
 		ArgsUnspecified: n.ArgsUnspecified,
 	}
 }
 
-func convertOnConflictClause(n *nodes.OnConflictClause) *pg.OnConflictClause {
+func convertOnConflictClause(n *nodes.OnConflictClause) *ast.OnConflictClause {
 	if n == nil {
 		return nil
 	}
-	return &pg.OnConflictClause{
-		Action:      pg.OnConflictAction(n.Action),
+	return &ast.OnConflictClause{
+		Action:      ast.OnConflictAction(n.Action),
 		Infer:       convertInferClause(n.Infer),
 		TargetList:  convertList(n.TargetList),
 		WhereClause: convertNode(n.WhereClause),
@@ -1937,15 +1953,15 @@ func convertOnConflictClause(n *nodes.OnConflictClause) *pg.OnConflictClause {
 	}
 }
 
-func convertOnConflictExpr(n *nodes.OnConflictExpr) *pg.OnConflictExpr {
+func convertOnConflictExpr(n *nodes.OnConflictExpr) *ast.OnConflictExpr {
 	if n == nil {
 		return nil
 	}
-	return &pg.OnConflictExpr{
-		Action:          pg.OnConflictAction(n.Action),
+	return &ast.OnConflictExpr{
+		Action:          ast.OnConflictAction(n.Action),
 		ArbiterElems:    convertList(n.ArbiterElems),
 		ArbiterWhere:    convertNode(n.ArbiterWhere),
-		Constraint:      pg.Oid(n.Constraint),
+		Constraint:      ast.Oid(n.Constraint),
 		OnConflictSet:   convertList(n.OnConflictSet),
 		OnConflictWhere: convertNode(n.OnConflictWhere),
 		ExclRelIndex:    n.ExclRelIndex,
@@ -1953,66 +1969,66 @@ func convertOnConflictExpr(n *nodes.OnConflictExpr) *pg.OnConflictExpr {
 	}
 }
 
-func convertOpExpr(n *nodes.OpExpr) *pg.OpExpr {
+func convertOpExpr(n *nodes.OpExpr) *ast.OpExpr {
 	if n == nil {
 		return nil
 	}
-	return &pg.OpExpr{
+	return &ast.OpExpr{
 		Xpr:          convertNode(n.Xpr),
-		Opno:         pg.Oid(n.Opno),
-		Opfuncid:     pg.Oid(n.Opfuncid),
-		Opresulttype: pg.Oid(n.Opresulttype),
+		Opno:         ast.Oid(n.Opno),
+		Opfuncid:     ast.Oid(n.Opfuncid),
+		Opresulttype: ast.Oid(n.Opresulttype),
 		Opretset:     n.Opretset,
-		Opcollid:     pg.Oid(n.Opcollid),
-		Inputcollid:  pg.Oid(n.Inputcollid),
+		Opcollid:     ast.Oid(n.Opcollid),
+		Inputcollid:  ast.Oid(n.Inputcollid),
 		Args:         convertList(n.Args),
 		Location:     n.Location,
 	}
 }
 
-func convertParam(n *nodes.Param) *pg.Param {
+func convertParam(n *nodes.Param) *ast.Param {
 	if n == nil {
 		return nil
 	}
-	return &pg.Param{
+	return &ast.Param{
 		Xpr:         convertNode(n.Xpr),
-		Paramkind:   pg.ParamKind(n.Paramkind),
+		Paramkind:   ast.ParamKind(n.Paramkind),
 		Paramid:     n.Paramid,
-		Paramtype:   pg.Oid(n.Paramtype),
+		Paramtype:   ast.Oid(n.Paramtype),
 		Paramtypmod: n.Paramtypmod,
-		Paramcollid: pg.Oid(n.Paramcollid),
+		Paramcollid: ast.Oid(n.Paramcollid),
 		Location:    n.Location,
 	}
 }
 
-func convertParamExecData(n *nodes.ParamExecData) *pg.ParamExecData {
+func convertParamExecData(n *nodes.ParamExecData) *ast.ParamExecData {
 	if n == nil {
 		return nil
 	}
-	return &pg.ParamExecData{
+	return &ast.ParamExecData{
 		ExecPlan: &ast.TODO{},
-		Value:    pg.Datum(n.Value),
+		Value:    ast.Datum(n.Value),
 		Isnull:   n.Isnull,
 	}
 }
 
-func convertParamExternData(n *nodes.ParamExternData) *pg.ParamExternData {
+func convertParamExternData(n *nodes.ParamExternData) *ast.ParamExternData {
 	if n == nil {
 		return nil
 	}
-	return &pg.ParamExternData{
-		Value:  pg.Datum(n.Value),
+	return &ast.ParamExternData{
+		Value:  ast.Datum(n.Value),
 		Isnull: n.Isnull,
 		Pflags: n.Pflags,
-		Ptype:  pg.Oid(n.Ptype),
+		Ptype:  ast.Oid(n.Ptype),
 	}
 }
 
-func convertParamListInfoData(n *nodes.ParamListInfoData) *pg.ParamListInfoData {
+func convertParamListInfoData(n *nodes.ParamListInfoData) *ast.ParamListInfoData {
 	if n == nil {
 		return nil
 	}
-	return &pg.ParamListInfoData{
+	return &ast.ParamListInfoData{
 		ParamFetchArg:  &ast.TODO{},
 		ParserSetupArg: &ast.TODO{},
 		NumParams:      n.NumParams,
@@ -2020,21 +2036,21 @@ func convertParamListInfoData(n *nodes.ParamListInfoData) *pg.ParamListInfoData 
 	}
 }
 
-func convertParamRef(n *nodes.ParamRef) *pg.ParamRef {
+func convertParamRef(n *nodes.ParamRef) *ast.ParamRef {
 	if n == nil {
 		return nil
 	}
-	return &pg.ParamRef{
+	return &ast.ParamRef{
 		Number:   n.Number,
 		Location: n.Location,
 	}
 }
 
-func convertPartitionBoundSpec(n *nodes.PartitionBoundSpec) *pg.PartitionBoundSpec {
+func convertPartitionBoundSpec(n *nodes.PartitionBoundSpec) *ast.PartitionBoundSpec {
 	if n == nil {
 		return nil
 	}
-	return &pg.PartitionBoundSpec{
+	return &ast.PartitionBoundSpec{
 		Strategy:    n.Strategy,
 		Listdatums:  convertList(n.Listdatums),
 		Lowerdatums: convertList(n.Lowerdatums),
@@ -2043,21 +2059,21 @@ func convertPartitionBoundSpec(n *nodes.PartitionBoundSpec) *pg.PartitionBoundSp
 	}
 }
 
-func convertPartitionCmd(n *nodes.PartitionCmd) *pg.PartitionCmd {
+func convertPartitionCmd(n *nodes.PartitionCmd) *ast.PartitionCmd {
 	if n == nil {
 		return nil
 	}
-	return &pg.PartitionCmd{
+	return &ast.PartitionCmd{
 		Name:  convertRangeVar(n.Name),
 		Bound: convertPartitionBoundSpec(n.Bound),
 	}
 }
 
-func convertPartitionElem(n *nodes.PartitionElem) *pg.PartitionElem {
+func convertPartitionElem(n *nodes.PartitionElem) *ast.PartitionElem {
 	if n == nil {
 		return nil
 	}
-	return &pg.PartitionElem{
+	return &ast.PartitionElem{
 		Name:      n.Name,
 		Expr:      convertNode(n.Expr),
 		Collation: convertList(n.Collation),
@@ -2066,46 +2082,46 @@ func convertPartitionElem(n *nodes.PartitionElem) *pg.PartitionElem {
 	}
 }
 
-func convertPartitionRangeDatum(n *nodes.PartitionRangeDatum) *pg.PartitionRangeDatum {
+func convertPartitionRangeDatum(n *nodes.PartitionRangeDatum) *ast.PartitionRangeDatum {
 	if n == nil {
 		return nil
 	}
-	return &pg.PartitionRangeDatum{
-		Kind:     pg.PartitionRangeDatumKind(n.Kind),
+	return &ast.PartitionRangeDatum{
+		Kind:     ast.PartitionRangeDatumKind(n.Kind),
 		Value:    convertNode(n.Value),
 		Location: n.Location,
 	}
 }
 
-func convertPartitionSpec(n *nodes.PartitionSpec) *pg.PartitionSpec {
+func convertPartitionSpec(n *nodes.PartitionSpec) *ast.PartitionSpec {
 	if n == nil {
 		return nil
 	}
-	return &pg.PartitionSpec{
+	return &ast.PartitionSpec{
 		Strategy:   n.Strategy,
 		PartParams: convertList(n.PartParams),
 		Location:   n.Location,
 	}
 }
 
-func convertPrepareStmt(n *nodes.PrepareStmt) *pg.PrepareStmt {
+func convertPrepareStmt(n *nodes.PrepareStmt) *ast.PrepareStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.PrepareStmt{
+	return &ast.PrepareStmt{
 		Name:     n.Name,
 		Argtypes: convertList(n.Argtypes),
 		Query:    convertNode(n.Query),
 	}
 }
 
-func convertQuery(n *nodes.Query) *pg.Query {
+func convertQuery(n *nodes.Query) *ast.Query {
 	if n == nil {
 		return nil
 	}
-	return &pg.Query{
-		CommandType:      pg.CmdType(n.CommandType),
-		QuerySource:      pg.QuerySource(n.QuerySource),
+	return &ast.Query{
+		CommandType:      ast.CmdType(n.CommandType),
+		QuerySource:      ast.QuerySource(n.QuerySource),
 		QueryId:          n.QueryId,
 		CanSetTag:        n.CanSetTag,
 		UtilityStmt:      convertNode(n.UtilityStmt),
@@ -2123,7 +2139,7 @@ func convertQuery(n *nodes.Query) *pg.Query {
 		Rtable:           convertList(n.Rtable),
 		Jointree:         convertFromExpr(n.Jointree),
 		TargetList:       convertList(n.TargetList),
-		Override:         pg.OverridingKind(n.Override),
+		Override:         ast.OverridingKind(n.Override),
 		OnConflict:       convertOnConflictExpr(n.OnConflict),
 		ReturningList:    convertList(n.ReturningList),
 		GroupClause:      convertList(n.GroupClause),
@@ -2143,11 +2159,11 @@ func convertQuery(n *nodes.Query) *pg.Query {
 	}
 }
 
-func convertRangeFunction(n *nodes.RangeFunction) *pg.RangeFunction {
+func convertRangeFunction(n *nodes.RangeFunction) *ast.RangeFunction {
 	if n == nil {
 		return nil
 	}
-	return &pg.RangeFunction{
+	return &ast.RangeFunction{
 		Lateral:    n.Lateral,
 		Ordinality: n.Ordinality,
 		IsRowsfrom: n.IsRowsfrom,
@@ -2157,22 +2173,22 @@ func convertRangeFunction(n *nodes.RangeFunction) *pg.RangeFunction {
 	}
 }
 
-func convertRangeSubselect(n *nodes.RangeSubselect) *pg.RangeSubselect {
+func convertRangeSubselect(n *nodes.RangeSubselect) *ast.RangeSubselect {
 	if n == nil {
 		return nil
 	}
-	return &pg.RangeSubselect{
+	return &ast.RangeSubselect{
 		Lateral:  n.Lateral,
 		Subquery: convertNode(n.Subquery),
 		Alias:    convertAlias(n.Alias),
 	}
 }
 
-func convertRangeTableFunc(n *nodes.RangeTableFunc) *pg.RangeTableFunc {
+func convertRangeTableFunc(n *nodes.RangeTableFunc) *ast.RangeTableFunc {
 	if n == nil {
 		return nil
 	}
-	return &pg.RangeTableFunc{
+	return &ast.RangeTableFunc{
 		Lateral:    n.Lateral,
 		Docexpr:    convertNode(n.Docexpr),
 		Rowexpr:    convertNode(n.Rowexpr),
@@ -2183,11 +2199,11 @@ func convertRangeTableFunc(n *nodes.RangeTableFunc) *pg.RangeTableFunc {
 	}
 }
 
-func convertRangeTableFuncCol(n *nodes.RangeTableFuncCol) *pg.RangeTableFuncCol {
+func convertRangeTableFuncCol(n *nodes.RangeTableFuncCol) *ast.RangeTableFuncCol {
 	if n == nil {
 		return nil
 	}
-	return &pg.RangeTableFuncCol{
+	return &ast.RangeTableFuncCol{
 		Colname:       n.Colname,
 		TypeName:      convertTypeName(n.TypeName),
 		ForOrdinality: n.ForOrdinality,
@@ -2198,11 +2214,11 @@ func convertRangeTableFuncCol(n *nodes.RangeTableFuncCol) *pg.RangeTableFuncCol 
 	}
 }
 
-func convertRangeTableSample(n *nodes.RangeTableSample) *pg.RangeTableSample {
+func convertRangeTableSample(n *nodes.RangeTableSample) *ast.RangeTableSample {
 	if n == nil {
 		return nil
 	}
-	return &pg.RangeTableSample{
+	return &ast.RangeTableSample{
 		Relation:   convertNode(n.Relation),
 		Method:     convertList(n.Method),
 		Args:       convertList(n.Args),
@@ -2211,25 +2227,25 @@ func convertRangeTableSample(n *nodes.RangeTableSample) *pg.RangeTableSample {
 	}
 }
 
-func convertRangeTblEntry(n *nodes.RangeTblEntry) *pg.RangeTblEntry {
+func convertRangeTblEntry(n *nodes.RangeTblEntry) *ast.RangeTblEntry {
 	if n == nil {
 		return nil
 	}
-	return &pg.RangeTblEntry{
-		Rtekind:         pg.RTEKind(n.Rtekind),
-		Relid:           pg.Oid(n.Relid),
+	return &ast.RangeTblEntry{
+		Rtekind:         ast.RTEKind(n.Rtekind),
+		Relid:           ast.Oid(n.Relid),
 		Relkind:         n.Relkind,
 		Tablesample:     convertTableSampleClause(n.Tablesample),
 		Subquery:        convertQuery(n.Subquery),
 		SecurityBarrier: n.SecurityBarrier,
-		Jointype:        pg.JoinType(n.Jointype),
+		Jointype:        ast.JoinType(n.Jointype),
 		Joinaliasvars:   convertList(n.Joinaliasvars),
 		Functions:       convertList(n.Functions),
 		Funcordinality:  n.Funcordinality,
 		Tablefunc:       convertTableFunc(n.Tablefunc),
 		ValuesLists:     convertList(n.ValuesLists),
 		Ctename:         n.Ctename,
-		Ctelevelsup:     pg.Index(n.Ctelevelsup),
+		Ctelevelsup:     ast.Index(n.Ctelevelsup),
 		SelfReference:   n.SelfReference,
 		Coltypes:        convertList(n.Coltypes),
 		Coltypmods:      convertList(n.Coltypmods),
@@ -2241,8 +2257,8 @@ func convertRangeTblEntry(n *nodes.RangeTblEntry) *pg.RangeTblEntry {
 		Lateral:         n.Lateral,
 		Inh:             n.Inh,
 		InFromCl:        n.InFromCl,
-		RequiredPerms:   pg.AclMode(n.RequiredPerms),
-		CheckAsUser:     pg.Oid(n.CheckAsUser),
+		RequiredPerms:   ast.AclMode(n.RequiredPerms),
+		CheckAsUser:     ast.Oid(n.CheckAsUser),
 		SelectedCols:    n.SelectedCols,
 		InsertedCols:    n.InsertedCols,
 		UpdatedCols:     n.UpdatedCols,
@@ -2250,11 +2266,11 @@ func convertRangeTblEntry(n *nodes.RangeTblEntry) *pg.RangeTblEntry {
 	}
 }
 
-func convertRangeTblFunction(n *nodes.RangeTblFunction) *pg.RangeTblFunction {
+func convertRangeTblFunction(n *nodes.RangeTblFunction) *ast.RangeTblFunction {
 	if n == nil {
 		return nil
 	}
-	return &pg.RangeTblFunction{
+	return &ast.RangeTblFunction{
 		Funcexpr:          convertNode(n.Funcexpr),
 		Funccolcount:      n.Funccolcount,
 		Funccolnames:      convertList(n.Funccolnames),
@@ -2265,20 +2281,20 @@ func convertRangeTblFunction(n *nodes.RangeTblFunction) *pg.RangeTblFunction {
 	}
 }
 
-func convertRangeTblRef(n *nodes.RangeTblRef) *pg.RangeTblRef {
+func convertRangeTblRef(n *nodes.RangeTblRef) *ast.RangeTblRef {
 	if n == nil {
 		return nil
 	}
-	return &pg.RangeTblRef{
+	return &ast.RangeTblRef{
 		Rtindex: n.Rtindex,
 	}
 }
 
-func convertRangeVar(n *nodes.RangeVar) *pg.RangeVar {
+func convertRangeVar(n *nodes.RangeVar) *ast.RangeVar {
 	if n == nil {
 		return nil
 	}
-	return &pg.RangeVar{
+	return &ast.RangeVar{
 		Catalogname:    n.Catalogname,
 		Schemaname:     n.Schemaname,
 		Relname:        n.Relname,
@@ -2289,96 +2305,96 @@ func convertRangeVar(n *nodes.RangeVar) *pg.RangeVar {
 	}
 }
 
-func convertRawStmt(n *nodes.RawStmt) *pg.RawStmt {
+func convertRawStmt(n *nodes.RawStmt) *ast.RawStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.RawStmt{
+	return &ast.RawStmt{
 		Stmt:         convertNode(n.Stmt),
 		StmtLocation: n.StmtLocation,
 		StmtLen:      n.StmtLen,
 	}
 }
 
-func convertReassignOwnedStmt(n *nodes.ReassignOwnedStmt) *pg.ReassignOwnedStmt {
+func convertReassignOwnedStmt(n *nodes.ReassignOwnedStmt) *ast.ReassignOwnedStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.ReassignOwnedStmt{
+	return &ast.ReassignOwnedStmt{
 		Roles:   convertList(n.Roles),
 		Newrole: convertRoleSpec(n.Newrole),
 	}
 }
 
-func convertRefreshMatViewStmt(n *nodes.RefreshMatViewStmt) *pg.RefreshMatViewStmt {
+func convertRefreshMatViewStmt(n *nodes.RefreshMatViewStmt) *ast.RefreshMatViewStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.RefreshMatViewStmt{
+	return &ast.RefreshMatViewStmt{
 		Concurrent: n.Concurrent,
 		SkipData:   n.SkipData,
 		Relation:   convertRangeVar(n.Relation),
 	}
 }
 
-func convertReindexStmt(n *nodes.ReindexStmt) *pg.ReindexStmt {
+func convertReindexStmt(n *nodes.ReindexStmt) *ast.ReindexStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.ReindexStmt{
-		Kind:     pg.ReindexObjectType(n.Kind),
+	return &ast.ReindexStmt{
+		Kind:     ast.ReindexObjectType(n.Kind),
 		Relation: convertRangeVar(n.Relation),
 		Name:     n.Name,
 		Options:  n.Options,
 	}
 }
 
-func convertRelabelType(n *nodes.RelabelType) *pg.RelabelType {
+func convertRelabelType(n *nodes.RelabelType) *ast.RelabelType {
 	if n == nil {
 		return nil
 	}
-	return &pg.RelabelType{
+	return &ast.RelabelType{
 		Xpr:           convertNode(n.Xpr),
 		Arg:           convertNode(n.Arg),
-		Resulttype:    pg.Oid(n.Resulttype),
+		Resulttype:    ast.Oid(n.Resulttype),
 		Resulttypmod:  n.Resulttypmod,
-		Resultcollid:  pg.Oid(n.Resultcollid),
-		Relabelformat: pg.CoercionForm(n.Relabelformat),
+		Resultcollid:  ast.Oid(n.Resultcollid),
+		Relabelformat: ast.CoercionForm(n.Relabelformat),
 		Location:      n.Location,
 	}
 }
 
-func convertRenameStmt(n *nodes.RenameStmt) *pg.RenameStmt {
+func convertRenameStmt(n *nodes.RenameStmt) *ast.RenameStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.RenameStmt{
-		RenameType:   pg.ObjectType(n.RenameType),
-		RelationType: pg.ObjectType(n.RelationType),
+	return &ast.RenameStmt{
+		RenameType:   ast.ObjectType(n.RenameType),
+		RelationType: ast.ObjectType(n.RelationType),
 		Relation:     convertRangeVar(n.Relation),
 		Object:       convertNode(n.Object),
 		Subname:      n.Subname,
 		Newname:      n.Newname,
-		Behavior:     pg.DropBehavior(n.Behavior),
+		Behavior:     ast.DropBehavior(n.Behavior),
 		MissingOk:    n.MissingOk,
 	}
 }
 
-func convertReplicaIdentityStmt(n *nodes.ReplicaIdentityStmt) *pg.ReplicaIdentityStmt {
+func convertReplicaIdentityStmt(n *nodes.ReplicaIdentityStmt) *ast.ReplicaIdentityStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.ReplicaIdentityStmt{
+	return &ast.ReplicaIdentityStmt{
 		IdentityType: n.IdentityType,
 		Name:         n.Name,
 	}
 }
 
-func convertResTarget(n *nodes.ResTarget) *pg.ResTarget {
+func convertResTarget(n *nodes.ResTarget) *ast.ResTarget {
 	if n == nil {
 		return nil
 	}
-	return &pg.ResTarget{
+	return &ast.ResTarget{
 		Name:        n.Name,
 		Indirection: convertList(n.Indirection),
 		Val:         convertNode(n.Val),
@@ -2386,24 +2402,24 @@ func convertResTarget(n *nodes.ResTarget) *pg.ResTarget {
 	}
 }
 
-func convertRoleSpec(n *nodes.RoleSpec) *pg.RoleSpec {
+func convertRoleSpec(n *nodes.RoleSpec) *ast.RoleSpec {
 	if n == nil {
 		return nil
 	}
-	return &pg.RoleSpec{
-		Roletype: pg.RoleSpecType(n.Roletype),
+	return &ast.RoleSpec{
+		Roletype: ast.RoleSpecType(n.Roletype),
 		Rolename: n.Rolename,
 		Location: n.Location,
 	}
 }
 
-func convertRowCompareExpr(n *nodes.RowCompareExpr) *pg.RowCompareExpr {
+func convertRowCompareExpr(n *nodes.RowCompareExpr) *ast.RowCompareExpr {
 	if n == nil {
 		return nil
 	}
-	return &pg.RowCompareExpr{
+	return &ast.RowCompareExpr{
 		Xpr:          convertNode(n.Xpr),
-		Rctype:       pg.RowCompareType(n.Rctype),
+		Rctype:       ast.RowCompareType(n.Rctype),
 		Opnos:        convertList(n.Opnos),
 		Opfamilies:   convertList(n.Opfamilies),
 		Inputcollids: convertList(n.Inputcollids),
@@ -2412,92 +2428,92 @@ func convertRowCompareExpr(n *nodes.RowCompareExpr) *pg.RowCompareExpr {
 	}
 }
 
-func convertRowExpr(n *nodes.RowExpr) *pg.RowExpr {
+func convertRowExpr(n *nodes.RowExpr) *ast.RowExpr {
 	if n == nil {
 		return nil
 	}
-	return &pg.RowExpr{
+	return &ast.RowExpr{
 		Xpr:       convertNode(n.Xpr),
 		Args:      convertList(n.Args),
-		RowTypeid: pg.Oid(n.RowTypeid),
-		RowFormat: pg.CoercionForm(n.RowFormat),
+		RowTypeid: ast.Oid(n.RowTypeid),
+		RowFormat: ast.CoercionForm(n.RowFormat),
 		Colnames:  convertList(n.Colnames),
 		Location:  n.Location,
 	}
 }
 
-func convertRowMarkClause(n *nodes.RowMarkClause) *pg.RowMarkClause {
+func convertRowMarkClause(n *nodes.RowMarkClause) *ast.RowMarkClause {
 	if n == nil {
 		return nil
 	}
-	return &pg.RowMarkClause{
-		Rti:        pg.Index(n.Rti),
-		Strength:   pg.LockClauseStrength(n.Strength),
-		WaitPolicy: pg.LockWaitPolicy(n.WaitPolicy),
+	return &ast.RowMarkClause{
+		Rti:        ast.Index(n.Rti),
+		Strength:   ast.LockClauseStrength(n.Strength),
+		WaitPolicy: ast.LockWaitPolicy(n.WaitPolicy),
 		PushedDown: n.PushedDown,
 	}
 }
 
-func convertRuleStmt(n *nodes.RuleStmt) *pg.RuleStmt {
+func convertRuleStmt(n *nodes.RuleStmt) *ast.RuleStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.RuleStmt{
+	return &ast.RuleStmt{
 		Relation:    convertRangeVar(n.Relation),
 		Rulename:    n.Rulename,
 		WhereClause: convertNode(n.WhereClause),
-		Event:       pg.CmdType(n.Event),
+		Event:       ast.CmdType(n.Event),
 		Instead:     n.Instead,
 		Actions:     convertList(n.Actions),
 		Replace:     n.Replace,
 	}
 }
 
-func convertSQLValueFunction(n *nodes.SQLValueFunction) *pg.SQLValueFunction {
+func convertSQLValueFunction(n *nodes.SQLValueFunction) *ast.SQLValueFunction {
 	if n == nil {
 		return nil
 	}
-	return &pg.SQLValueFunction{
+	return &ast.SQLValueFunction{
 		Xpr:      convertNode(n.Xpr),
-		Op:       pg.SQLValueFunctionOp(n.Op),
-		Type:     pg.Oid(n.Type),
+		Op:       ast.SQLValueFunctionOp(n.Op),
+		Type:     ast.Oid(n.Type),
 		Typmod:   n.Typmod,
 		Location: n.Location,
 	}
 }
 
-func convertScalarArrayOpExpr(n *nodes.ScalarArrayOpExpr) *pg.ScalarArrayOpExpr {
+func convertScalarArrayOpExpr(n *nodes.ScalarArrayOpExpr) *ast.ScalarArrayOpExpr {
 	if n == nil {
 		return nil
 	}
-	return &pg.ScalarArrayOpExpr{
+	return &ast.ScalarArrayOpExpr{
 		Xpr:         convertNode(n.Xpr),
-		Opno:        pg.Oid(n.Opno),
-		Opfuncid:    pg.Oid(n.Opfuncid),
+		Opno:        ast.Oid(n.Opno),
+		Opfuncid:    ast.Oid(n.Opfuncid),
 		UseOr:       n.UseOr,
-		Inputcollid: pg.Oid(n.Inputcollid),
+		Inputcollid: ast.Oid(n.Inputcollid),
 		Args:        convertList(n.Args),
 		Location:    n.Location,
 	}
 }
 
-func convertSecLabelStmt(n *nodes.SecLabelStmt) *pg.SecLabelStmt {
+func convertSecLabelStmt(n *nodes.SecLabelStmt) *ast.SecLabelStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.SecLabelStmt{
-		Objtype:  pg.ObjectType(n.Objtype),
+	return &ast.SecLabelStmt{
+		Objtype:  ast.ObjectType(n.Objtype),
 		Object:   convertNode(n.Object),
 		Provider: n.Provider,
 		Label:    n.Label,
 	}
 }
 
-func convertSelectStmt(n *nodes.SelectStmt) *pg.SelectStmt {
+func convertSelectStmt(n *nodes.SelectStmt) *ast.SelectStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.SelectStmt{
+	return &ast.SelectStmt{
 		DistinctClause: convertList(n.DistinctClause),
 		IntoClause:     convertIntoClause(n.IntoClause),
 		TargetList:     convertList(n.TargetList),
@@ -2512,19 +2528,19 @@ func convertSelectStmt(n *nodes.SelectStmt) *pg.SelectStmt {
 		LimitCount:     convertNode(n.LimitCount),
 		LockingClause:  convertList(n.LockingClause),
 		WithClause:     convertWithClause(n.WithClause),
-		Op:             pg.SetOperation(n.Op),
+		Op:             ast.SetOperation(n.Op),
 		All:            n.All,
 		Larg:           convertSelectStmt(n.Larg),
 		Rarg:           convertSelectStmt(n.Rarg),
 	}
 }
 
-func convertSetOperationStmt(n *nodes.SetOperationStmt) *pg.SetOperationStmt {
+func convertSetOperationStmt(n *nodes.SetOperationStmt) *ast.SetOperationStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.SetOperationStmt{
-		Op:            pg.SetOperation(n.Op),
+	return &ast.SetOperationStmt{
+		Op:            ast.SetOperation(n.Op),
 		All:           n.All,
 		Larg:          convertNode(n.Larg),
 		Rarg:          convertNode(n.Rarg),
@@ -2535,61 +2551,61 @@ func convertSetOperationStmt(n *nodes.SetOperationStmt) *pg.SetOperationStmt {
 	}
 }
 
-func convertSetToDefault(n *nodes.SetToDefault) *pg.SetToDefault {
+func convertSetToDefault(n *nodes.SetToDefault) *ast.SetToDefault {
 	if n == nil {
 		return nil
 	}
-	return &pg.SetToDefault{
+	return &ast.SetToDefault{
 		Xpr:       convertNode(n.Xpr),
-		TypeId:    pg.Oid(n.TypeId),
+		TypeId:    ast.Oid(n.TypeId),
 		TypeMod:   n.TypeMod,
-		Collation: pg.Oid(n.Collation),
+		Collation: ast.Oid(n.Collation),
 		Location:  n.Location,
 	}
 }
 
-func convertSortBy(n *nodes.SortBy) *pg.SortBy {
+func convertSortBy(n *nodes.SortBy) *ast.SortBy {
 	if n == nil {
 		return nil
 	}
-	return &pg.SortBy{
+	return &ast.SortBy{
 		Node:        convertNode(n.Node),
-		SortbyDir:   pg.SortByDir(n.SortbyDir),
-		SortbyNulls: pg.SortByNulls(n.SortbyNulls),
+		SortbyDir:   ast.SortByDir(n.SortbyDir),
+		SortbyNulls: ast.SortByNulls(n.SortbyNulls),
 		UseOp:       convertList(n.UseOp),
 		Location:    n.Location,
 	}
 }
 
-func convertSortGroupClause(n *nodes.SortGroupClause) *pg.SortGroupClause {
+func convertSortGroupClause(n *nodes.SortGroupClause) *ast.SortGroupClause {
 	if n == nil {
 		return nil
 	}
-	return &pg.SortGroupClause{
-		TleSortGroupRef: pg.Index(n.TleSortGroupRef),
-		Eqop:            pg.Oid(n.Eqop),
-		Sortop:          pg.Oid(n.Sortop),
+	return &ast.SortGroupClause{
+		TleSortGroupRef: ast.Index(n.TleSortGroupRef),
+		Eqop:            ast.Oid(n.Eqop),
+		Sortop:          ast.Oid(n.Sortop),
 		NullsFirst:      n.NullsFirst,
 		Hashable:        n.Hashable,
 	}
 }
 
-func convertString(n *nodes.String) *pg.String {
+func convertString(n *nodes.String) *ast.String {
 	if n == nil {
 		return nil
 	}
-	return &pg.String{
+	return &ast.String{
 		Str: n.Str,
 	}
 }
 
-func convertSubLink(n *nodes.SubLink) *pg.SubLink {
+func convertSubLink(n *nodes.SubLink) *ast.SubLink {
 	if n == nil {
 		return nil
 	}
-	return &pg.SubLink{
+	return &ast.SubLink{
 		Xpr:         convertNode(n.Xpr),
-		SubLinkType: pg.SubLinkType(n.SubLinkType),
+		SubLinkType: ast.SubLinkType(n.SubLinkType),
 		SubLinkId:   n.SubLinkId,
 		Testexpr:    convertNode(n.Testexpr),
 		OperName:    convertList(n.OperName),
@@ -2598,36 +2614,36 @@ func convertSubLink(n *nodes.SubLink) *pg.SubLink {
 	}
 }
 
-func convertSubPlan(n *nodes.SubPlan) *pg.SubPlan {
+func convertSubPlan(n *nodes.SubPlan) *ast.SubPlan {
 	if n == nil {
 		return nil
 	}
-	return &pg.SubPlan{
+	return &ast.SubPlan{
 		Xpr:               convertNode(n.Xpr),
-		SubLinkType:       pg.SubLinkType(n.SubLinkType),
+		SubLinkType:       ast.SubLinkType(n.SubLinkType),
 		Testexpr:          convertNode(n.Testexpr),
 		ParamIds:          convertList(n.ParamIds),
 		PlanId:            n.PlanId,
 		PlanName:          n.PlanName,
-		FirstColType:      pg.Oid(n.FirstColType),
+		FirstColType:      ast.Oid(n.FirstColType),
 		FirstColTypmod:    n.FirstColTypmod,
-		FirstColCollation: pg.Oid(n.FirstColCollation),
+		FirstColCollation: ast.Oid(n.FirstColCollation),
 		UseHashTable:      n.UseHashTable,
 		UnknownEqFalse:    n.UnknownEqFalse,
 		ParallelSafe:      n.ParallelSafe,
 		SetParam:          convertList(n.SetParam),
 		ParParam:          convertList(n.ParParam),
 		Args:              convertList(n.Args),
-		StartupCost:       pg.Cost(n.StartupCost),
-		PerCallCost:       pg.Cost(n.PerCallCost),
+		StartupCost:       ast.Cost(n.StartupCost),
+		PerCallCost:       ast.Cost(n.PerCallCost),
 	}
 }
 
-func convertTableFunc(n *nodes.TableFunc) *pg.TableFunc {
+func convertTableFunc(n *nodes.TableFunc) *ast.TableFunc {
 	if n == nil {
 		return nil
 	}
-	return &pg.TableFunc{
+	return &ast.TableFunc{
 		NsUris:        convertList(n.NsUris),
 		NsNames:       convertList(n.NsNames),
 		Docexpr:       convertNode(n.Docexpr),
@@ -2644,94 +2660,94 @@ func convertTableFunc(n *nodes.TableFunc) *pg.TableFunc {
 	}
 }
 
-func convertTableLikeClause(n *nodes.TableLikeClause) *pg.TableLikeClause {
+func convertTableLikeClause(n *nodes.TableLikeClause) *ast.TableLikeClause {
 	if n == nil {
 		return nil
 	}
-	return &pg.TableLikeClause{
+	return &ast.TableLikeClause{
 		Relation: convertRangeVar(n.Relation),
 		Options:  n.Options,
 	}
 }
 
-func convertTableSampleClause(n *nodes.TableSampleClause) *pg.TableSampleClause {
+func convertTableSampleClause(n *nodes.TableSampleClause) *ast.TableSampleClause {
 	if n == nil {
 		return nil
 	}
-	return &pg.TableSampleClause{
-		Tsmhandler: pg.Oid(n.Tsmhandler),
+	return &ast.TableSampleClause{
+		Tsmhandler: ast.Oid(n.Tsmhandler),
 		Args:       convertList(n.Args),
 		Repeatable: convertNode(n.Repeatable),
 	}
 }
 
-func convertTargetEntry(n *nodes.TargetEntry) *pg.TargetEntry {
+func convertTargetEntry(n *nodes.TargetEntry) *ast.TargetEntry {
 	if n == nil {
 		return nil
 	}
-	return &pg.TargetEntry{
+	return &ast.TargetEntry{
 		Xpr:             convertNode(n.Xpr),
 		Expr:            convertNode(n.Expr),
-		Resno:           pg.AttrNumber(n.Resno),
+		Resno:           ast.AttrNumber(n.Resno),
 		Resname:         n.Resname,
-		Ressortgroupref: pg.Index(n.Ressortgroupref),
-		Resorigtbl:      pg.Oid(n.Resorigtbl),
-		Resorigcol:      pg.AttrNumber(n.Resorigcol),
+		Ressortgroupref: ast.Index(n.Ressortgroupref),
+		Resorigtbl:      ast.Oid(n.Resorigtbl),
+		Resorigcol:      ast.AttrNumber(n.Resorigcol),
 		Resjunk:         n.Resjunk,
 	}
 }
 
-func convertTransactionStmt(n *nodes.TransactionStmt) *pg.TransactionStmt {
+func convertTransactionStmt(n *nodes.TransactionStmt) *ast.TransactionStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.TransactionStmt{
-		Kind:    pg.TransactionStmtKind(n.Kind),
+	return &ast.TransactionStmt{
+		Kind:    ast.TransactionStmtKind(n.Kind),
 		Options: convertList(n.Options),
 		Gid:     n.Gid,
 	}
 }
 
-func convertTriggerTransition(n *nodes.TriggerTransition) *pg.TriggerTransition {
+func convertTriggerTransition(n *nodes.TriggerTransition) *ast.TriggerTransition {
 	if n == nil {
 		return nil
 	}
-	return &pg.TriggerTransition{
+	return &ast.TriggerTransition{
 		Name:    n.Name,
 		IsNew:   n.IsNew,
 		IsTable: n.IsTable,
 	}
 }
 
-func convertTruncateStmt(n *nodes.TruncateStmt) *pg.TruncateStmt {
+func convertTruncateStmt(n *nodes.TruncateStmt) *ast.TruncateStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.TruncateStmt{
+	return &ast.TruncateStmt{
 		Relations:   convertList(n.Relations),
 		RestartSeqs: n.RestartSeqs,
-		Behavior:    pg.DropBehavior(n.Behavior),
+		Behavior:    ast.DropBehavior(n.Behavior),
 	}
 }
 
-func convertTypeCast(n *nodes.TypeCast) *pg.TypeCast {
+func convertTypeCast(n *nodes.TypeCast) *ast.TypeCast {
 	if n == nil {
 		return nil
 	}
-	return &pg.TypeCast{
+	return &ast.TypeCast{
 		Arg:      convertNode(n.Arg),
 		TypeName: convertTypeName(n.TypeName),
 		Location: n.Location,
 	}
 }
 
-func convertTypeName(n *nodes.TypeName) *pg.TypeName {
+func convertTypeName(n *nodes.TypeName) *ast.TypeName {
 	if n == nil {
 		return nil
 	}
-	return &pg.TypeName{
+	return &ast.TypeName{
 		Names:       convertList(n.Names),
-		TypeOid:     pg.Oid(n.TypeOid),
+		TypeOid:     ast.Oid(n.TypeOid),
 		Setof:       n.Setof,
 		PctType:     n.PctType,
 		Typmods:     convertList(n.Typmods),
@@ -2741,20 +2757,20 @@ func convertTypeName(n *nodes.TypeName) *pg.TypeName {
 	}
 }
 
-func convertUnlistenStmt(n *nodes.UnlistenStmt) *pg.UnlistenStmt {
+func convertUnlistenStmt(n *nodes.UnlistenStmt) *ast.UnlistenStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.UnlistenStmt{
+	return &ast.UnlistenStmt{
 		Conditionname: n.Conditionname,
 	}
 }
 
-func convertUpdateStmt(n *nodes.UpdateStmt) *pg.UpdateStmt {
+func convertUpdateStmt(n *nodes.UpdateStmt) *ast.UpdateStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.UpdateStmt{
+	return &ast.UpdateStmt{
 		Relation:      convertRangeVar(n.Relation),
 		TargetList:    convertList(n.TargetList),
 		WhereClause:   convertNode(n.WhereClause),
@@ -2764,75 +2780,75 @@ func convertUpdateStmt(n *nodes.UpdateStmt) *pg.UpdateStmt {
 	}
 }
 
-func convertVacuumStmt(n *nodes.VacuumStmt) *pg.VacuumStmt {
+func convertVacuumStmt(n *nodes.VacuumStmt) *ast.VacuumStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.VacuumStmt{
+	return &ast.VacuumStmt{
 		Options:  n.Options,
 		Relation: convertRangeVar(n.Relation),
 		VaCols:   convertList(n.VaCols),
 	}
 }
 
-func convertVar(n *nodes.Var) *pg.Var {
+func convertVar(n *nodes.Var) *ast.Var {
 	if n == nil {
 		return nil
 	}
-	return &pg.Var{
+	return &ast.Var{
 		Xpr:         convertNode(n.Xpr),
-		Varno:       pg.Index(n.Varno),
-		Varattno:    pg.AttrNumber(n.Varattno),
-		Vartype:     pg.Oid(n.Vartype),
+		Varno:       ast.Index(n.Varno),
+		Varattno:    ast.AttrNumber(n.Varattno),
+		Vartype:     ast.Oid(n.Vartype),
 		Vartypmod:   n.Vartypmod,
-		Varcollid:   pg.Oid(n.Varcollid),
-		Varlevelsup: pg.Index(n.Varlevelsup),
-		Varnoold:    pg.Index(n.Varnoold),
-		Varoattno:   pg.AttrNumber(n.Varoattno),
+		Varcollid:   ast.Oid(n.Varcollid),
+		Varlevelsup: ast.Index(n.Varlevelsup),
+		Varnoold:    ast.Index(n.Varnoold),
+		Varoattno:   ast.AttrNumber(n.Varoattno),
 		Location:    n.Location,
 	}
 }
 
-func convertVariableSetStmt(n *nodes.VariableSetStmt) *pg.VariableSetStmt {
+func convertVariableSetStmt(n *nodes.VariableSetStmt) *ast.VariableSetStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.VariableSetStmt{
-		Kind:    pg.VariableSetKind(n.Kind),
+	return &ast.VariableSetStmt{
+		Kind:    ast.VariableSetKind(n.Kind),
 		Name:    n.Name,
 		Args:    convertList(n.Args),
 		IsLocal: n.IsLocal,
 	}
 }
 
-func convertVariableShowStmt(n *nodes.VariableShowStmt) *pg.VariableShowStmt {
+func convertVariableShowStmt(n *nodes.VariableShowStmt) *ast.VariableShowStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.VariableShowStmt{
+	return &ast.VariableShowStmt{
 		Name: n.Name,
 	}
 }
 
-func convertViewStmt(n *nodes.ViewStmt) *pg.ViewStmt {
+func convertViewStmt(n *nodes.ViewStmt) *ast.ViewStmt {
 	if n == nil {
 		return nil
 	}
-	return &pg.ViewStmt{
+	return &ast.ViewStmt{
 		View:            convertRangeVar(n.View),
 		Aliases:         convertList(n.Aliases),
 		Query:           convertNode(n.Query),
 		Replace:         n.Replace,
 		Options:         convertList(n.Options),
-		WithCheckOption: pg.ViewCheckOption(n.WithCheckOption),
+		WithCheckOption: ast.ViewCheckOption(n.WithCheckOption),
 	}
 }
 
-func convertWindowClause(n *nodes.WindowClause) *pg.WindowClause {
+func convertWindowClause(n *nodes.WindowClause) *ast.WindowClause {
 	if n == nil {
 		return nil
 	}
-	return &pg.WindowClause{
+	return &ast.WindowClause{
 		Name:            n.Name,
 		Refname:         n.Refname,
 		PartitionClause: convertList(n.PartitionClause),
@@ -2840,7 +2856,7 @@ func convertWindowClause(n *nodes.WindowClause) *pg.WindowClause {
 		FrameOptions:    n.FrameOptions,
 		StartOffset:     convertNode(n.StartOffset),
 		EndOffset:       convertNode(n.EndOffset),
-		Winref:          pg.Index(n.Winref),
+		Winref:          ast.Index(n.Winref),
 		CopiedOrder:     n.CopiedOrder,
 	}
 }
@@ -2861,31 +2877,31 @@ func convertWindowDef(n *nodes.WindowDef) *ast.WindowDef {
 	}
 }
 
-func convertWindowFunc(n *nodes.WindowFunc) *pg.WindowFunc {
+func convertWindowFunc(n *nodes.WindowFunc) *ast.WindowFunc {
 	if n == nil {
 		return nil
 	}
-	return &pg.WindowFunc{
+	return &ast.WindowFunc{
 		Xpr:         convertNode(n.Xpr),
-		Winfnoid:    pg.Oid(n.Winfnoid),
-		Wintype:     pg.Oid(n.Wintype),
-		Wincollid:   pg.Oid(n.Wincollid),
-		Inputcollid: pg.Oid(n.Inputcollid),
+		Winfnoid:    ast.Oid(n.Winfnoid),
+		Wintype:     ast.Oid(n.Wintype),
+		Wincollid:   ast.Oid(n.Wincollid),
+		Inputcollid: ast.Oid(n.Inputcollid),
 		Args:        convertList(n.Args),
 		Aggfilter:   convertNode(n.Aggfilter),
-		Winref:      pg.Index(n.Winref),
+		Winref:      ast.Index(n.Winref),
 		Winstar:     n.Winstar,
 		Winagg:      n.Winagg,
 		Location:    n.Location,
 	}
 }
 
-func convertWithCheckOption(n *nodes.WithCheckOption) *pg.WithCheckOption {
+func convertWithCheckOption(n *nodes.WithCheckOption) *ast.WithCheckOption {
 	if n == nil {
 		return nil
 	}
-	return &pg.WithCheckOption{
-		Kind:     pg.WCOKind(n.Kind),
+	return &ast.WithCheckOption{
+		Kind:     ast.WCOKind(n.Kind),
 		Relname:  n.Relname,
 		Polname:  n.Polname,
 		Qual:     convertNode(n.Qual),
@@ -2893,41 +2909,41 @@ func convertWithCheckOption(n *nodes.WithCheckOption) *pg.WithCheckOption {
 	}
 }
 
-func convertWithClause(n *nodes.WithClause) *pg.WithClause {
+func convertWithClause(n *nodes.WithClause) *ast.WithClause {
 	if n == nil {
 		return nil
 	}
-	return &pg.WithClause{
+	return &ast.WithClause{
 		Ctes:      convertList(n.Ctes),
 		Recursive: n.Recursive,
 		Location:  n.Location,
 	}
 }
 
-func convertXmlExpr(n *nodes.XmlExpr) *pg.XmlExpr {
+func convertXmlExpr(n *nodes.XmlExpr) *ast.XmlExpr {
 	if n == nil {
 		return nil
 	}
-	return &pg.XmlExpr{
+	return &ast.XmlExpr{
 		Xpr:       convertNode(n.Xpr),
-		Op:        pg.XmlExprOp(n.Op),
+		Op:        ast.XmlExprOp(n.Op),
 		Name:      n.Name,
 		NamedArgs: convertList(n.NamedArgs),
 		ArgNames:  convertList(n.ArgNames),
 		Args:      convertList(n.Args),
-		Xmloption: pg.XmlOptionType(n.Xmloption),
-		Type:      pg.Oid(n.Type),
+		Xmloption: ast.XmlOptionType(n.Xmloption),
+		Type:      ast.Oid(n.Type),
 		Typmod:    n.Typmod,
 		Location:  n.Location,
 	}
 }
 
-func convertXmlSerialize(n *nodes.XmlSerialize) *pg.XmlSerialize {
+func convertXmlSerialize(n *nodes.XmlSerialize) *ast.XmlSerialize {
 	if n == nil {
 		return nil
 	}
-	return &pg.XmlSerialize{
-		Xmloption: pg.XmlOptionType(n.Xmloption),
+	return &ast.XmlSerialize{
+		Xmloption: ast.XmlOptionType(n.Xmloption),
 		Expr:      convertNode(n.Expr),
 		TypeName:  convertTypeName(n.TypeName),
 		Location:  n.Location,

@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/ast/pg"
 )
 
 type Visitor interface {
@@ -24,17 +23,15 @@ func Walk(f Visitor, node ast.Node) {
 	}
 	switch n := node.(type) {
 
-	case *ast.AlterTableCmd:
-		if n.Def != nil {
-			Walk(f, n.Def)
-		}
-
 	case *ast.AlterTableSetSchemaStmt:
 		if n.Table != nil {
 			Walk(f, n.Table)
 		}
 
 	case *ast.AlterTableStmt:
+		if n.Relation != nil {
+			Walk(f, n.Relation)
+		}
 		if n.Table != nil {
 			Walk(f, n.Table)
 		}
@@ -51,14 +48,6 @@ func Walk(f Visitor, node ast.Node) {
 		if n.Type != nil {
 			Walk(f, n.Type)
 		}
-
-	case *ast.ColumnDef:
-		if n.TypeName != nil {
-			Walk(f, n.TypeName)
-		}
-
-	case *ast.ColumnRef:
-		// pass
 
 	case *ast.CommentOnColumnStmt:
 		if n.Table != nil {
@@ -87,25 +76,6 @@ func Walk(f Visitor, node ast.Node) {
 		if n.TypeName != nil {
 			Walk(f, n.TypeName)
 		}
-
-	case *ast.CreateEnumStmt:
-		if n.TypeName != nil {
-			Walk(f, n.TypeName)
-		}
-		if n.Vals != nil {
-			Walk(f, n.Vals)
-		}
-
-	case *ast.CreateFunctionStmt:
-		if n.ReturnType != nil {
-			Walk(f, n.ReturnType)
-		}
-		if n.Func != nil {
-			Walk(f, n.Func)
-		}
-
-	case *ast.CreateSchemaStmt:
-		// pass
 
 	case *ast.CreateTableStmt:
 		if n.Name != nil {
@@ -145,11 +115,6 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, item)
 		}
 
-	case *ast.RawStmt:
-		if n.Stmt != nil {
-			Walk(f, n.Stmt)
-		}
-
 	case *ast.RenameColumnStmt:
 		if n.Table != nil {
 			Walk(f, n.Table)
@@ -163,26 +128,10 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Table)
 		}
 
-	case *ast.ResTarget:
-		if n.Val != nil {
-			Walk(f, n.Val)
-		}
-
-	case *ast.SelectStmt:
-		if n.Fields != nil {
-			Walk(f, n.Fields)
-		}
-		if n.From != nil {
-			Walk(f, n.From)
-		}
-
 	case *ast.Statement:
 		if n.Raw != nil {
 			Walk(f, n.Raw)
 		}
-
-	case *ast.String:
-		// pass
 
 	case *ast.TODO:
 		// pass
@@ -190,20 +139,17 @@ func Walk(f Visitor, node ast.Node) {
 	case *ast.TableName:
 		// pass
 
-	case *ast.TypeName:
-		// pass
-
-	case *pg.A_ArrayExpr:
+	case *ast.A_ArrayExpr:
 		if n.Elements != nil {
 			Walk(f, n.Elements)
 		}
 
-	case *pg.A_Const:
+	case *ast.A_Const:
 		if n.Val != nil {
 			Walk(f, n.Val)
 		}
 
-	case *pg.A_Expr:
+	case *ast.A_Expr:
 		if n.Name != nil {
 			Walk(f, n.Name)
 		}
@@ -214,7 +160,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Rexpr)
 		}
 
-	case *pg.A_Indices:
+	case *ast.A_Indices:
 		if n.Lidx != nil {
 			Walk(f, n.Lidx)
 		}
@@ -222,7 +168,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Uidx)
 		}
 
-	case *pg.A_Indirection:
+	case *ast.A_Indirection:
 		if n.Arg != nil {
 			Walk(f, n.Arg)
 		}
@@ -230,15 +176,15 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Indirection)
 		}
 
-	case *pg.A_Star:
+	case *ast.A_Star:
 		// pass
 
-	case *pg.AccessPriv:
+	case *ast.AccessPriv:
 		if n.Cols != nil {
 			Walk(f, n.Cols)
 		}
 
-	case *pg.Aggref:
+	case *ast.Aggref:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}
@@ -261,27 +207,27 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Aggfilter)
 		}
 
-	case *pg.Alias:
+	case *ast.Alias:
 		if n.Colnames != nil {
 			Walk(f, n.Colnames)
 		}
 
-	case *pg.AlterCollationStmt:
+	case *ast.AlterCollationStmt:
 		if n.Collname != nil {
 			Walk(f, n.Collname)
 		}
 
-	case *pg.AlterDatabaseSetStmt:
+	case *ast.AlterDatabaseSetStmt:
 		if n.Setstmt != nil {
 			Walk(f, n.Setstmt)
 		}
 
-	case *pg.AlterDatabaseStmt:
+	case *ast.AlterDatabaseStmt:
 		if n.Options != nil {
 			Walk(f, n.Options)
 		}
 
-	case *pg.AlterDefaultPrivilegesStmt:
+	case *ast.AlterDefaultPrivilegesStmt:
 		if n.Options != nil {
 			Walk(f, n.Options)
 		}
@@ -289,7 +235,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Action)
 		}
 
-	case *pg.AlterDomainStmt:
+	case *ast.AlterDomainStmt:
 		if n.TypeName != nil {
 			Walk(f, n.TypeName)
 		}
@@ -297,25 +243,25 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Def)
 		}
 
-	case *pg.AlterEnumStmt:
+	case *ast.AlterEnumStmt:
 		if n.TypeName != nil {
 			Walk(f, n.TypeName)
 		}
 
-	case *pg.AlterEventTrigStmt:
+	case *ast.AlterEventTrigStmt:
 		// pass
 
-	case *pg.AlterExtensionContentsStmt:
+	case *ast.AlterExtensionContentsStmt:
 		if n.Object != nil {
 			Walk(f, n.Object)
 		}
 
-	case *pg.AlterExtensionStmt:
+	case *ast.AlterExtensionStmt:
 		if n.Options != nil {
 			Walk(f, n.Options)
 		}
 
-	case *pg.AlterFdwStmt:
+	case *ast.AlterFdwStmt:
 		if n.FuncOptions != nil {
 			Walk(f, n.FuncOptions)
 		}
@@ -323,12 +269,12 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Options)
 		}
 
-	case *pg.AlterForeignServerStmt:
+	case *ast.AlterForeignServerStmt:
 		if n.Options != nil {
 			Walk(f, n.Options)
 		}
 
-	case *pg.AlterFunctionStmt:
+	case *ast.AlterFunctionStmt:
 		if n.Func != nil {
 			Walk(f, n.Func)
 		}
@@ -336,7 +282,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Actions)
 		}
 
-	case *pg.AlterObjectDependsStmt:
+	case *ast.AlterObjectDependsStmt:
 		if n.Relation != nil {
 			Walk(f, n.Relation)
 		}
@@ -347,7 +293,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Extname)
 		}
 
-	case *pg.AlterObjectSchemaStmt:
+	case *ast.AlterObjectSchemaStmt:
 		if n.Relation != nil {
 			Walk(f, n.Relation)
 		}
@@ -355,7 +301,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Object)
 		}
 
-	case *pg.AlterOpFamilyStmt:
+	case *ast.AlterOpFamilyStmt:
 		if n.Opfamilyname != nil {
 			Walk(f, n.Opfamilyname)
 		}
@@ -363,7 +309,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Items)
 		}
 
-	case *pg.AlterOperatorStmt:
+	case *ast.AlterOperatorStmt:
 		if n.Opername != nil {
 			Walk(f, n.Opername)
 		}
@@ -371,7 +317,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Options)
 		}
 
-	case *pg.AlterOwnerStmt:
+	case *ast.AlterOwnerStmt:
 		if n.Relation != nil {
 			Walk(f, n.Relation)
 		}
@@ -382,7 +328,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Newowner)
 		}
 
-	case *pg.AlterPolicyStmt:
+	case *ast.AlterPolicyStmt:
 		if n.Table != nil {
 			Walk(f, n.Table)
 		}
@@ -396,7 +342,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.WithCheck)
 		}
 
-	case *pg.AlterPublicationStmt:
+	case *ast.AlterPublicationStmt:
 		if n.Options != nil {
 			Walk(f, n.Options)
 		}
@@ -404,7 +350,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Tables)
 		}
 
-	case *pg.AlterRoleSetStmt:
+	case *ast.AlterRoleSetStmt:
 		if n.Role != nil {
 			Walk(f, n.Role)
 		}
@@ -412,7 +358,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Setstmt)
 		}
 
-	case *pg.AlterRoleStmt:
+	case *ast.AlterRoleStmt:
 		if n.Role != nil {
 			Walk(f, n.Role)
 		}
@@ -420,7 +366,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Options)
 		}
 
-	case *pg.AlterSeqStmt:
+	case *ast.AlterSeqStmt:
 		if n.Sequence != nil {
 			Walk(f, n.Sequence)
 		}
@@ -428,7 +374,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Options)
 		}
 
-	case *pg.AlterSubscriptionStmt:
+	case *ast.AlterSubscriptionStmt:
 		if n.Publication != nil {
 			Walk(f, n.Publication)
 		}
@@ -436,12 +382,12 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Options)
 		}
 
-	case *pg.AlterSystemStmt:
+	case *ast.AlterSystemStmt:
 		if n.Setstmt != nil {
 			Walk(f, n.Setstmt)
 		}
 
-	case *pg.AlterTSConfigurationStmt:
+	case *ast.AlterTSConfigurationStmt:
 		if n.Cfgname != nil {
 			Walk(f, n.Cfgname)
 		}
@@ -452,7 +398,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Dicts)
 		}
 
-	case *pg.AlterTSDictionaryStmt:
+	case *ast.AlterTSDictionaryStmt:
 		if n.Dictname != nil {
 			Walk(f, n.Dictname)
 		}
@@ -460,7 +406,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Options)
 		}
 
-	case *pg.AlterTableCmd:
+	case *ast.AlterTableCmd:
 		if n.Newowner != nil {
 			Walk(f, n.Newowner)
 		}
@@ -468,25 +414,17 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Def)
 		}
 
-	case *pg.AlterTableMoveAllStmt:
+	case *ast.AlterTableMoveAllStmt:
 		if n.Roles != nil {
 			Walk(f, n.Roles)
 		}
 
-	case *pg.AlterTableSpaceOptionsStmt:
+	case *ast.AlterTableSpaceOptionsStmt:
 		if n.Options != nil {
 			Walk(f, n.Options)
 		}
 
-	case *pg.AlterTableStmt:
-		if n.Relation != nil {
-			Walk(f, n.Relation)
-		}
-		if n.Cmds != nil {
-			Walk(f, n.Cmds)
-		}
-
-	case *pg.AlterUserMappingStmt:
+	case *ast.AlterUserMappingStmt:
 		if n.User != nil {
 			Walk(f, n.User)
 		}
@@ -494,7 +432,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Options)
 		}
 
-	case *pg.AlternativeSubPlan:
+	case *ast.AlternativeSubPlan:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}
@@ -502,7 +440,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Subplans)
 		}
 
-	case *pg.ArrayCoerceExpr:
+	case *ast.ArrayCoerceExpr:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}
@@ -510,7 +448,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Arg)
 		}
 
-	case *pg.ArrayExpr:
+	case *ast.ArrayExpr:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}
@@ -518,7 +456,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Elements)
 		}
 
-	case *pg.ArrayRef:
+	case *ast.ArrayRef:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}
@@ -535,13 +473,13 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Refassgnexpr)
 		}
 
-	case *pg.BitString:
+	case *ast.BitString:
 		// pass
 
-	case *pg.BlockIdData:
+	case *ast.BlockIdData:
 		// pass
 
-	case *pg.BoolExpr:
+	case *ast.BoolExpr:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}
@@ -549,7 +487,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Args)
 		}
 
-	case *pg.BooleanTest:
+	case *ast.BooleanTest:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}
@@ -557,7 +495,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Arg)
 		}
 
-	case *pg.CaseExpr:
+	case *ast.CaseExpr:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}
@@ -571,12 +509,12 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Defresult)
 		}
 
-	case *pg.CaseTestExpr:
+	case *ast.CaseTestExpr:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}
 
-	case *pg.CaseWhen:
+	case *ast.CaseWhen:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}
@@ -587,18 +525,18 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Result)
 		}
 
-	case *pg.CheckPointStmt:
+	case *ast.CheckPointStmt:
 		// pass
 
-	case *pg.ClosePortalStmt:
+	case *ast.ClosePortalStmt:
 		// pass
 
-	case *pg.ClusterStmt:
+	case *ast.ClusterStmt:
 		if n.Relation != nil {
 			Walk(f, n.Relation)
 		}
 
-	case *pg.CoalesceExpr:
+	case *ast.CoalesceExpr:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}
@@ -606,7 +544,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Args)
 		}
 
-	case *pg.CoerceToDomain:
+	case *ast.CoerceToDomain:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}
@@ -614,12 +552,12 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Arg)
 		}
 
-	case *pg.CoerceToDomainValue:
+	case *ast.CoerceToDomainValue:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}
 
-	case *pg.CoerceViaIO:
+	case *ast.CoerceViaIO:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}
@@ -627,7 +565,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Arg)
 		}
 
-	case *pg.CollateClause:
+	case *ast.CollateClause:
 		if n.Arg != nil {
 			Walk(f, n.Arg)
 		}
@@ -635,7 +573,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Collname)
 		}
 
-	case *pg.CollateExpr:
+	case *ast.CollateExpr:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}
@@ -643,7 +581,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Arg)
 		}
 
-	case *pg.ColumnDef:
+	case *ast.ColumnDef:
 		if n.TypeName != nil {
 			Walk(f, n.TypeName)
 		}
@@ -663,17 +601,17 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Fdwoptions)
 		}
 
-	case *pg.ColumnRef:
+	case *ast.ColumnRef:
 		if n.Fields != nil {
 			Walk(f, n.Fields)
 		}
 
-	case *pg.CommentStmt:
+	case *ast.CommentStmt:
 		if n.Object != nil {
 			Walk(f, n.Object)
 		}
 
-	case *pg.CommonTableExpr:
+	case *ast.CommonTableExpr:
 		if n.Aliascolnames != nil {
 			Walk(f, n.Aliascolnames)
 		}
@@ -693,20 +631,12 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Ctecolcollations)
 		}
 
-	case *pg.CompositeTypeStmt:
-		if n.Typevar != nil {
-			Walk(f, n.Typevar)
-		}
-		if n.Coldeflist != nil {
-			Walk(f, n.Coldeflist)
-		}
-
-	case *pg.Const:
+	case *ast.Const:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}
 
-	case *pg.Constraint:
+	case *ast.Constraint:
 		if n.RawExpr != nil {
 			Walk(f, n.RawExpr)
 		}
@@ -735,12 +665,12 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.OldConpfeqop)
 		}
 
-	case *pg.ConstraintsSetStmt:
+	case *ast.ConstraintsSetStmt:
 		if n.Constraints != nil {
 			Walk(f, n.Constraints)
 		}
 
-	case *pg.ConvertRowtypeExpr:
+	case *ast.ConvertRowtypeExpr:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}
@@ -748,7 +678,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Arg)
 		}
 
-	case *pg.CopyStmt:
+	case *ast.CopyStmt:
 		if n.Relation != nil {
 			Walk(f, n.Relation)
 		}
@@ -762,12 +692,12 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Options)
 		}
 
-	case *pg.CreateAmStmt:
+	case *ast.CreateAmStmt:
 		if n.HandlerName != nil {
 			Walk(f, n.HandlerName)
 		}
 
-	case *pg.CreateCastStmt:
+	case *ast.CreateCastStmt:
 		if n.Sourcetype != nil {
 			Walk(f, n.Sourcetype)
 		}
@@ -778,7 +708,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Func)
 		}
 
-	case *pg.CreateConversionStmt:
+	case *ast.CreateConversionStmt:
 		if n.ConversionName != nil {
 			Walk(f, n.ConversionName)
 		}
@@ -786,7 +716,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.FuncName)
 		}
 
-	case *pg.CreateDomainStmt:
+	case *ast.CreateDomainStmt:
 		if n.Domainname != nil {
 			Walk(f, n.Domainname)
 		}
@@ -800,7 +730,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Constraints)
 		}
 
-	case *pg.CreateEnumStmt:
+	case *ast.CreateEnumStmt:
 		if n.TypeName != nil {
 			Walk(f, n.TypeName)
 		}
@@ -808,7 +738,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Vals)
 		}
 
-	case *pg.CreateEventTrigStmt:
+	case *ast.CreateEventTrigStmt:
 		if n.Whenclause != nil {
 			Walk(f, n.Whenclause)
 		}
@@ -816,12 +746,12 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Funcname)
 		}
 
-	case *pg.CreateExtensionStmt:
+	case *ast.CreateExtensionStmt:
 		if n.Options != nil {
 			Walk(f, n.Options)
 		}
 
-	case *pg.CreateFdwStmt:
+	case *ast.CreateFdwStmt:
 		if n.FuncOptions != nil {
 			Walk(f, n.FuncOptions)
 		}
@@ -829,12 +759,12 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Options)
 		}
 
-	case *pg.CreateForeignServerStmt:
+	case *ast.CreateForeignServerStmt:
 		if n.Options != nil {
 			Walk(f, n.Options)
 		}
 
-	case *pg.CreateForeignTableStmt:
+	case *ast.CreateForeignTableStmt:
 		if n.Base != nil {
 			Walk(f, n.Base)
 		}
@@ -842,12 +772,12 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Options)
 		}
 
-	case *pg.CreateFunctionStmt:
-		if n.Funcname != nil {
-			Walk(f, n.Funcname)
+	case *ast.CreateFunctionStmt:
+		if n.Func != nil {
+			Walk(f, n.Func)
 		}
-		if n.Parameters != nil {
-			Walk(f, n.Parameters)
+		if n.Params != nil {
+			Walk(f, n.Params)
 		}
 		if n.ReturnType != nil {
 			Walk(f, n.ReturnType)
@@ -859,7 +789,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.WithClause)
 		}
 
-	case *pg.CreateOpClassItem:
+	case *ast.CreateOpClassItem:
 		if n.Name != nil {
 			Walk(f, n.Name)
 		}
@@ -873,7 +803,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Storedtype)
 		}
 
-	case *pg.CreateOpClassStmt:
+	case *ast.CreateOpClassStmt:
 		if n.Opclassname != nil {
 			Walk(f, n.Opclassname)
 		}
@@ -887,12 +817,12 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Items)
 		}
 
-	case *pg.CreateOpFamilyStmt:
+	case *ast.CreateOpFamilyStmt:
 		if n.Opfamilyname != nil {
 			Walk(f, n.Opfamilyname)
 		}
 
-	case *pg.CreatePLangStmt:
+	case *ast.CreatePLangStmt:
 		if n.Plhandler != nil {
 			Walk(f, n.Plhandler)
 		}
@@ -903,7 +833,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Plvalidator)
 		}
 
-	case *pg.CreatePolicyStmt:
+	case *ast.CreatePolicyStmt:
 		if n.Table != nil {
 			Walk(f, n.Table)
 		}
@@ -917,7 +847,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.WithCheck)
 		}
 
-	case *pg.CreatePublicationStmt:
+	case *ast.CreatePublicationStmt:
 		if n.Options != nil {
 			Walk(f, n.Options)
 		}
@@ -925,7 +855,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Tables)
 		}
 
-	case *pg.CreateRangeStmt:
+	case *ast.CreateRangeStmt:
 		if n.TypeName != nil {
 			Walk(f, n.TypeName)
 		}
@@ -933,12 +863,12 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Params)
 		}
 
-	case *pg.CreateRoleStmt:
+	case *ast.CreateRoleStmt:
 		if n.Options != nil {
 			Walk(f, n.Options)
 		}
 
-	case *pg.CreateSchemaStmt:
+	case *ast.CreateSchemaStmt:
 		if n.Authrole != nil {
 			Walk(f, n.Authrole)
 		}
@@ -946,7 +876,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.SchemaElts)
 		}
 
-	case *pg.CreateSeqStmt:
+	case *ast.CreateSeqStmt:
 		if n.Sequence != nil {
 			Walk(f, n.Sequence)
 		}
@@ -954,7 +884,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Options)
 		}
 
-	case *pg.CreateStatsStmt:
+	case *ast.CreateStatsStmt:
 		if n.Defnames != nil {
 			Walk(f, n.Defnames)
 		}
@@ -968,7 +898,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Relations)
 		}
 
-	case *pg.CreateStmt:
+	case *ast.CreateStmt:
 		if n.Relation != nil {
 			Walk(f, n.Relation)
 		}
@@ -994,7 +924,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Options)
 		}
 
-	case *pg.CreateSubscriptionStmt:
+	case *ast.CreateSubscriptionStmt:
 		if n.Publication != nil {
 			Walk(f, n.Publication)
 		}
@@ -1002,7 +932,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Options)
 		}
 
-	case *pg.CreateTableAsStmt:
+	case *ast.CreateTableAsStmt:
 		if n.Query != nil {
 			Walk(f, n.Query)
 		}
@@ -1010,7 +940,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Into)
 		}
 
-	case *pg.CreateTableSpaceStmt:
+	case *ast.CreateTableSpaceStmt:
 		if n.Owner != nil {
 			Walk(f, n.Owner)
 		}
@@ -1018,7 +948,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Options)
 		}
 
-	case *pg.CreateTransformStmt:
+	case *ast.CreateTransformStmt:
 		if n.TypeName != nil {
 			Walk(f, n.TypeName)
 		}
@@ -1029,7 +959,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Tosql)
 		}
 
-	case *pg.CreateTrigStmt:
+	case *ast.CreateTrigStmt:
 		if n.Relation != nil {
 			Walk(f, n.Relation)
 		}
@@ -1052,7 +982,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Constrrel)
 		}
 
-	case *pg.CreateUserMappingStmt:
+	case *ast.CreateUserMappingStmt:
 		if n.User != nil {
 			Walk(f, n.User)
 		}
@@ -1060,30 +990,30 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Options)
 		}
 
-	case *pg.CreatedbStmt:
+	case *ast.CreatedbStmt:
 		if n.Options != nil {
 			Walk(f, n.Options)
 		}
 
-	case *pg.CurrentOfExpr:
+	case *ast.CurrentOfExpr:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}
 
-	case *pg.DeallocateStmt:
+	case *ast.DeallocateStmt:
 		// pass
 
-	case *pg.DeclareCursorStmt:
+	case *ast.DeclareCursorStmt:
 		if n.Query != nil {
 			Walk(f, n.Query)
 		}
 
-	case *pg.DefElem:
+	case *ast.DefElem:
 		if n.Arg != nil {
 			Walk(f, n.Arg)
 		}
 
-	case *pg.DefineStmt:
+	case *ast.DefineStmt:
 		if n.Defnames != nil {
 			Walk(f, n.Defnames)
 		}
@@ -1094,7 +1024,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Definition)
 		}
 
-	case *pg.DeleteStmt:
+	case *ast.DeleteStmt:
 		if n.Relation != nil {
 			Walk(f, n.Relation)
 		}
@@ -1111,49 +1041,49 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.WithClause)
 		}
 
-	case *pg.DiscardStmt:
+	case *ast.DiscardStmt:
 		// pass
 
-	case *pg.DoStmt:
+	case *ast.DoStmt:
 		if n.Args != nil {
 			Walk(f, n.Args)
 		}
 
-	case *pg.DropOwnedStmt:
+	case *ast.DropOwnedStmt:
 		if n.Roles != nil {
 			Walk(f, n.Roles)
 		}
 
-	case *pg.DropRoleStmt:
+	case *ast.DropRoleStmt:
 		if n.Roles != nil {
 			Walk(f, n.Roles)
 		}
 
-	case *pg.DropStmt:
+	case *ast.DropStmt:
 		if n.Objects != nil {
 			Walk(f, n.Objects)
 		}
 
-	case *pg.DropSubscriptionStmt:
+	case *ast.DropSubscriptionStmt:
 		// pass
 
-	case *pg.DropTableSpaceStmt:
+	case *ast.DropTableSpaceStmt:
 		// pass
 
-	case *pg.DropUserMappingStmt:
+	case *ast.DropUserMappingStmt:
 		if n.User != nil {
 			Walk(f, n.User)
 		}
 
-	case *pg.DropdbStmt:
+	case *ast.DropdbStmt:
 		// pass
 
-	case *pg.ExecuteStmt:
+	case *ast.ExecuteStmt:
 		if n.Params != nil {
 			Walk(f, n.Params)
 		}
 
-	case *pg.ExplainStmt:
+	case *ast.ExplainStmt:
 		if n.Query != nil {
 			Walk(f, n.Query)
 		}
@@ -1161,13 +1091,13 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Options)
 		}
 
-	case *pg.Expr:
+	case *ast.Expr:
 		// pass
 
-	case *pg.FetchStmt:
+	case *ast.FetchStmt:
 		// pass
 
-	case *pg.FieldSelect:
+	case *ast.FieldSelect:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}
@@ -1175,7 +1105,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Arg)
 		}
 
-	case *pg.FieldStore:
+	case *ast.FieldStore:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}
@@ -1189,10 +1119,10 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Fieldnums)
 		}
 
-	case *pg.Float:
+	case *ast.Float:
 		// pass
 
-	case *pg.FromExpr:
+	case *ast.FromExpr:
 		if n.Fromlist != nil {
 			Walk(f, n.Fromlist)
 		}
@@ -1220,7 +1150,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Over)
 		}
 
-	case *pg.FuncExpr:
+	case *ast.FuncExpr:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}
@@ -1228,7 +1158,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Args)
 		}
 
-	case *pg.FunctionParameter:
+	case *ast.FunctionParameter:
 		if n.ArgType != nil {
 			Walk(f, n.ArgType)
 		}
@@ -1236,7 +1166,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Defexpr)
 		}
 
-	case *pg.GrantRoleStmt:
+	case *ast.GrantRoleStmt:
 		if n.GrantedRoles != nil {
 			Walk(f, n.GrantedRoles)
 		}
@@ -1247,7 +1177,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Grantor)
 		}
 
-	case *pg.GrantStmt:
+	case *ast.GrantStmt:
 		if n.Objects != nil {
 			Walk(f, n.Objects)
 		}
@@ -1258,7 +1188,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Grantees)
 		}
 
-	case *pg.GroupingFunc:
+	case *ast.GroupingFunc:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}
@@ -1272,12 +1202,12 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Cols)
 		}
 
-	case *pg.GroupingSet:
+	case *ast.GroupingSet:
 		if n.Content != nil {
 			Walk(f, n.Content)
 		}
 
-	case *pg.ImportForeignSchemaStmt:
+	case *ast.ImportForeignSchemaStmt:
 		if n.TableList != nil {
 			Walk(f, n.TableList)
 		}
@@ -1285,7 +1215,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Options)
 		}
 
-	case *pg.IndexElem:
+	case *ast.IndexElem:
 		if n.Expr != nil {
 			Walk(f, n.Expr)
 		}
@@ -1296,7 +1226,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Opclass)
 		}
 
-	case *pg.IndexStmt:
+	case *ast.IndexStmt:
 		if n.Relation != nil {
 			Walk(f, n.Relation)
 		}
@@ -1313,7 +1243,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.ExcludeOpNames)
 		}
 
-	case *pg.InferClause:
+	case *ast.InferClause:
 		if n.IndexElems != nil {
 			Walk(f, n.IndexElems)
 		}
@@ -1321,7 +1251,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.WhereClause)
 		}
 
-	case *pg.InferenceElem:
+	case *ast.InferenceElem:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}
@@ -1329,10 +1259,10 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Expr)
 		}
 
-	case *pg.InlineCodeBlock:
+	case *ast.InlineCodeBlock:
 		// pass
 
-	case *pg.InsertStmt:
+	case *ast.InsertStmt:
 		if n.Relation != nil {
 			Walk(f, n.Relation)
 		}
@@ -1352,10 +1282,10 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.WithClause)
 		}
 
-	case *pg.Integer:
+	case *ast.Integer:
 		// pass
 
-	case *pg.IntoClause:
+	case *ast.IntoClause:
 		if n.Rel != nil {
 			Walk(f, n.Rel)
 		}
@@ -1369,7 +1299,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.ViewQuery)
 		}
 
-	case *pg.JoinExpr:
+	case *ast.JoinExpr:
 		if n.Larg != nil {
 			Walk(f, n.Larg)
 		}
@@ -1386,23 +1316,23 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Alias)
 		}
 
-	case *pg.ListenStmt:
+	case *ast.ListenStmt:
 		// pass
 
-	case *pg.LoadStmt:
+	case *ast.LoadStmt:
 		// pass
 
-	case *pg.LockStmt:
+	case *ast.LockStmt:
 		if n.Relations != nil {
 			Walk(f, n.Relations)
 		}
 
-	case *pg.LockingClause:
+	case *ast.LockingClause:
 		if n.LockedRels != nil {
 			Walk(f, n.LockedRels)
 		}
 
-	case *pg.MinMaxExpr:
+	case *ast.MinMaxExpr:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}
@@ -1410,12 +1340,12 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Args)
 		}
 
-	case *pg.MultiAssignRef:
+	case *ast.MultiAssignRef:
 		if n.Source != nil {
 			Walk(f, n.Source)
 		}
 
-	case *pg.NamedArgExpr:
+	case *ast.NamedArgExpr:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}
@@ -1423,18 +1353,18 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Arg)
 		}
 
-	case *pg.NextValueExpr:
+	case *ast.NextValueExpr:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}
 
-	case *pg.NotifyStmt:
+	case *ast.NotifyStmt:
 		// pass
 
-	case *pg.Null:
+	case *ast.Null:
 		// pass
 
-	case *pg.NullTest:
+	case *ast.NullTest:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}
@@ -1442,7 +1372,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Arg)
 		}
 
-	case *pg.ObjectWithArgs:
+	case *ast.ObjectWithArgs:
 		if n.Objname != nil {
 			Walk(f, n.Objname)
 		}
@@ -1450,7 +1380,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Objargs)
 		}
 
-	case *pg.OnConflictClause:
+	case *ast.OnConflictClause:
 		if n.Infer != nil {
 			Walk(f, n.Infer)
 		}
@@ -1461,7 +1391,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.WhereClause)
 		}
 
-	case *pg.OnConflictExpr:
+	case *ast.OnConflictExpr:
 		if n.ArbiterElems != nil {
 			Walk(f, n.ArbiterElems)
 		}
@@ -1478,7 +1408,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.ExclRelTlist)
 		}
 
-	case *pg.OpExpr:
+	case *ast.OpExpr:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}
@@ -1486,24 +1416,24 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Args)
 		}
 
-	case *pg.Param:
+	case *ast.Param:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}
 
-	case *pg.ParamExecData:
+	case *ast.ParamExecData:
 		// pass
 
-	case *pg.ParamExternData:
+	case *ast.ParamExternData:
 		// pass
 
-	case *pg.ParamListInfoData:
+	case *ast.ParamListInfoData:
 		// pass
 
-	case *pg.ParamRef:
+	case *ast.ParamRef:
 		// pass
 
-	case *pg.PartitionBoundSpec:
+	case *ast.PartitionBoundSpec:
 		if n.Listdatums != nil {
 			Walk(f, n.Listdatums)
 		}
@@ -1514,7 +1444,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Upperdatums)
 		}
 
-	case *pg.PartitionCmd:
+	case *ast.PartitionCmd:
 		if n.Name != nil {
 			Walk(f, n.Name)
 		}
@@ -1522,7 +1452,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Bound)
 		}
 
-	case *pg.PartitionElem:
+	case *ast.PartitionElem:
 		if n.Expr != nil {
 			Walk(f, n.Expr)
 		}
@@ -1533,17 +1463,17 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Opclass)
 		}
 
-	case *pg.PartitionRangeDatum:
+	case *ast.PartitionRangeDatum:
 		if n.Value != nil {
 			Walk(f, n.Value)
 		}
 
-	case *pg.PartitionSpec:
+	case *ast.PartitionSpec:
 		if n.PartParams != nil {
 			Walk(f, n.PartParams)
 		}
 
-	case *pg.PrepareStmt:
+	case *ast.PrepareStmt:
 		if n.Argtypes != nil {
 			Walk(f, n.Argtypes)
 		}
@@ -1551,7 +1481,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Query)
 		}
 
-	case *pg.Query:
+	case *ast.Query:
 		if n.UtilityStmt != nil {
 			Walk(f, n.UtilityStmt)
 		}
@@ -1610,7 +1540,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.WithCheckOptions)
 		}
 
-	case *pg.RangeFunction:
+	case *ast.RangeFunction:
 		if n.Functions != nil {
 			Walk(f, n.Functions)
 		}
@@ -1621,7 +1551,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Coldeflist)
 		}
 
-	case *pg.RangeSubselect:
+	case *ast.RangeSubselect:
 		if n.Subquery != nil {
 			Walk(f, n.Subquery)
 		}
@@ -1629,7 +1559,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Alias)
 		}
 
-	case *pg.RangeTableFunc:
+	case *ast.RangeTableFunc:
 		if n.Docexpr != nil {
 			Walk(f, n.Docexpr)
 		}
@@ -1646,7 +1576,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Alias)
 		}
 
-	case *pg.RangeTableFuncCol:
+	case *ast.RangeTableFuncCol:
 		if n.TypeName != nil {
 			Walk(f, n.TypeName)
 		}
@@ -1657,7 +1587,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Coldefexpr)
 		}
 
-	case *pg.RangeTableSample:
+	case *ast.RangeTableSample:
 		if n.Relation != nil {
 			Walk(f, n.Relation)
 		}
@@ -1671,7 +1601,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Repeatable)
 		}
 
-	case *pg.RangeTblEntry:
+	case *ast.RangeTblEntry:
 		if n.Tablesample != nil {
 			Walk(f, n.Tablesample)
 		}
@@ -1709,7 +1639,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.SecurityQuals)
 		}
 
-	case *pg.RangeTblFunction:
+	case *ast.RangeTblFunction:
 		if n.Funcexpr != nil {
 			Walk(f, n.Funcexpr)
 		}
@@ -1726,20 +1656,20 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Funccolcollations)
 		}
 
-	case *pg.RangeTblRef:
+	case *ast.RangeTblRef:
 		// pass
 
-	case *pg.RangeVar:
+	case *ast.RangeVar:
 		if n.Alias != nil {
 			Walk(f, n.Alias)
 		}
 
-	case *pg.RawStmt:
+	case *ast.RawStmt:
 		if n.Stmt != nil {
 			Walk(f, n.Stmt)
 		}
 
-	case *pg.ReassignOwnedStmt:
+	case *ast.ReassignOwnedStmt:
 		if n.Roles != nil {
 			Walk(f, n.Roles)
 		}
@@ -1747,17 +1677,17 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Newrole)
 		}
 
-	case *pg.RefreshMatViewStmt:
+	case *ast.RefreshMatViewStmt:
 		if n.Relation != nil {
 			Walk(f, n.Relation)
 		}
 
-	case *pg.ReindexStmt:
+	case *ast.ReindexStmt:
 		if n.Relation != nil {
 			Walk(f, n.Relation)
 		}
 
-	case *pg.RelabelType:
+	case *ast.RelabelType:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}
@@ -1765,7 +1695,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Arg)
 		}
 
-	case *pg.RenameStmt:
+	case *ast.RenameStmt:
 		if n.Relation != nil {
 			Walk(f, n.Relation)
 		}
@@ -1773,10 +1703,10 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Object)
 		}
 
-	case *pg.ReplicaIdentityStmt:
+	case *ast.ReplicaIdentityStmt:
 		// pass
 
-	case *pg.ResTarget:
+	case *ast.ResTarget:
 		if n.Indirection != nil {
 			Walk(f, n.Indirection)
 		}
@@ -1784,10 +1714,10 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Val)
 		}
 
-	case *pg.RoleSpec:
+	case *ast.RoleSpec:
 		// pass
 
-	case *pg.RowCompareExpr:
+	case *ast.RowCompareExpr:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}
@@ -1807,7 +1737,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Rargs)
 		}
 
-	case *pg.RowExpr:
+	case *ast.RowExpr:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}
@@ -1818,10 +1748,10 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Colnames)
 		}
 
-	case *pg.RowMarkClause:
+	case *ast.RowMarkClause:
 		// pass
 
-	case *pg.RuleStmt:
+	case *ast.RuleStmt:
 		if n.Relation != nil {
 			Walk(f, n.Relation)
 		}
@@ -1832,12 +1762,12 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Actions)
 		}
 
-	case *pg.SQLValueFunction:
+	case *ast.SQLValueFunction:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}
 
-	case *pg.ScalarArrayOpExpr:
+	case *ast.ScalarArrayOpExpr:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}
@@ -1845,12 +1775,12 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Args)
 		}
 
-	case *pg.SecLabelStmt:
+	case *ast.SecLabelStmt:
 		if n.Object != nil {
 			Walk(f, n.Object)
 		}
 
-	case *pg.SelectStmt:
+	case *ast.SelectStmt:
 		if n.DistinctClause != nil {
 			Walk(f, n.DistinctClause)
 		}
@@ -1900,7 +1830,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Rarg)
 		}
 
-	case *pg.SetOperationStmt:
+	case *ast.SetOperationStmt:
 		if n.Larg != nil {
 			Walk(f, n.Larg)
 		}
@@ -1920,12 +1850,12 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.GroupClauses)
 		}
 
-	case *pg.SetToDefault:
+	case *ast.SetToDefault:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}
 
-	case *pg.SortBy:
+	case *ast.SortBy:
 		if n.Node != nil {
 			Walk(f, n.Node)
 		}
@@ -1933,13 +1863,13 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.UseOp)
 		}
 
-	case *pg.SortGroupClause:
+	case *ast.SortGroupClause:
 		// pass
 
-	case *pg.String:
+	case *ast.String:
 		// pass
 
-	case *pg.SubLink:
+	case *ast.SubLink:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}
@@ -1953,7 +1883,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Subselect)
 		}
 
-	case *pg.SubPlan:
+	case *ast.SubPlan:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}
@@ -1973,7 +1903,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Args)
 		}
 
-	case *pg.TableFunc:
+	case *ast.TableFunc:
 		if n.NsUris != nil {
 			Walk(f, n.NsUris)
 		}
@@ -2005,12 +1935,12 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Coldefexprs)
 		}
 
-	case *pg.TableLikeClause:
+	case *ast.TableLikeClause:
 		if n.Relation != nil {
 			Walk(f, n.Relation)
 		}
 
-	case *pg.TableSampleClause:
+	case *ast.TableSampleClause:
 		if n.Args != nil {
 			Walk(f, n.Args)
 		}
@@ -2018,7 +1948,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Repeatable)
 		}
 
-	case *pg.TargetEntry:
+	case *ast.TargetEntry:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}
@@ -2026,20 +1956,20 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Expr)
 		}
 
-	case *pg.TransactionStmt:
+	case *ast.TransactionStmt:
 		if n.Options != nil {
 			Walk(f, n.Options)
 		}
 
-	case *pg.TriggerTransition:
+	case *ast.TriggerTransition:
 		// pass
 
-	case *pg.TruncateStmt:
+	case *ast.TruncateStmt:
 		if n.Relations != nil {
 			Walk(f, n.Relations)
 		}
 
-	case *pg.TypeCast:
+	case *ast.TypeCast:
 		if n.Arg != nil {
 			Walk(f, n.Arg)
 		}
@@ -2047,7 +1977,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.TypeName)
 		}
 
-	case *pg.TypeName:
+	case *ast.TypeName:
 		if n.Names != nil {
 			Walk(f, n.Names)
 		}
@@ -2058,10 +1988,10 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.ArrayBounds)
 		}
 
-	case *pg.UnlistenStmt:
+	case *ast.UnlistenStmt:
 		// pass
 
-	case *pg.UpdateStmt:
+	case *ast.UpdateStmt:
 		if n.Relation != nil {
 			Walk(f, n.Relation)
 		}
@@ -2081,7 +2011,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.WithClause)
 		}
 
-	case *pg.VacuumStmt:
+	case *ast.VacuumStmt:
 		if n.Relation != nil {
 			Walk(f, n.Relation)
 		}
@@ -2089,20 +2019,20 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.VaCols)
 		}
 
-	case *pg.Var:
+	case *ast.Var:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}
 
-	case *pg.VariableSetStmt:
+	case *ast.VariableSetStmt:
 		if n.Args != nil {
 			Walk(f, n.Args)
 		}
 
-	case *pg.VariableShowStmt:
+	case *ast.VariableShowStmt:
 		// pass
 
-	case *pg.ViewStmt:
+	case *ast.ViewStmt:
 		if n.View != nil {
 			Walk(f, n.View)
 		}
@@ -2116,7 +2046,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Options)
 		}
 
-	case *pg.WindowClause:
+	case *ast.WindowClause:
 		if n.PartitionClause != nil {
 			Walk(f, n.PartitionClause)
 		}
@@ -2144,7 +2074,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.EndOffset)
 		}
 
-	case *pg.WindowFunc:
+	case *ast.WindowFunc:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}
@@ -2155,17 +2085,17 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Aggfilter)
 		}
 
-	case *pg.WithCheckOption:
+	case *ast.WithCheckOption:
 		if n.Qual != nil {
 			Walk(f, n.Qual)
 		}
 
-	case *pg.WithClause:
+	case *ast.WithClause:
 		if n.Ctes != nil {
 			Walk(f, n.Ctes)
 		}
 
-	case *pg.XmlExpr:
+	case *ast.XmlExpr:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}
@@ -2179,7 +2109,7 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Args)
 		}
 
-	case *pg.XmlSerialize:
+	case *ast.XmlSerialize:
 		if n.Expr != nil {
 			Walk(f, n.Expr)
 		}

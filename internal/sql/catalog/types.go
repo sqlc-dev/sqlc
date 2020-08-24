@@ -80,7 +80,7 @@ func (c *Catalog) alterTypeRenameValue(stmt *ast.AlterTypeRenameValueStmt) error
 	}
 	enum, ok := typ.(*Enum)
 	if !ok {
-		return fmt.Errorf("type is not an enum: %s", stmt.Type)
+		return fmt.Errorf("type is not an enum: %T", stmt.Type)
 	}
 
 	oldIndex := -1
@@ -94,10 +94,10 @@ func (c *Catalog) alterTypeRenameValue(stmt *ast.AlterTypeRenameValueStmt) error
 		}
 	}
 	if oldIndex < 0 {
-		return fmt.Errorf("type %s does not have value %s", stmt.Type, *stmt.OldValue)
+		return fmt.Errorf("type %T does not have value %s", stmt.Type, *stmt.OldValue)
 	}
 	if newIndex >= 0 {
-		return fmt.Errorf("type %s already has value %s", stmt.Type, *stmt.NewValue)
+		return fmt.Errorf("type %T already has value %s", stmt.Type, *stmt.NewValue)
 	}
 	enum.Vals[oldIndex] = *stmt.NewValue
 	return nil
@@ -118,7 +118,7 @@ func (c *Catalog) alterTypeAddValue(stmt *ast.AlterTypeAddValueStmt) error {
 	}
 	enum, ok := typ.(*Enum)
 	if !ok {
-		return fmt.Errorf("type is not an enum: %s", stmt.Type)
+		return fmt.Errorf("type is not an enum: %T", stmt.Type)
 	}
 
 	newIndex := -1
@@ -129,7 +129,7 @@ func (c *Catalog) alterTypeAddValue(stmt *ast.AlterTypeAddValueStmt) error {
 	}
 	if newIndex >= 0 {
 		if !stmt.SkipIfNewValExists {
-			return fmt.Errorf("type %s already has value %s", stmt.Type, *stmt.NewValue)
+			return fmt.Errorf("type %T already has value %s", stmt.Type, *stmt.NewValue)
 		} else {
 			return nil
 		}
