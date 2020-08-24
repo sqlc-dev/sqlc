@@ -6,8 +6,8 @@ import (
 
 type AlterFdwStmt struct {
 	Fdwname     *string
-	FuncOptions *ast.List
-	Options     *ast.List
+	FuncOptions *List
+	Options     *List
 }
 
 func (n *AlterFdwStmt) Pos() int {

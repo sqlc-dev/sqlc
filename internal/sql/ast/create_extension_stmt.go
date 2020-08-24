@@ -7,7 +7,7 @@ import (
 type CreateExtensionStmt struct {
 	Extname     *string
 	IfNotExists bool
-	Options     *ast.List
+	Options     *List
 }
 
 func (n *CreateExtensionStmt) Pos() int {

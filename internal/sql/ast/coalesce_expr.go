@@ -8,7 +8,7 @@ type CoalesceExpr struct {
 	Xpr            ast.Node
 	Coalescetype   Oid
 	Coalescecollid Oid
-	Args           *ast.List
+	Args           *List
 	Location       int
 }
 

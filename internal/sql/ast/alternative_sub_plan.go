@@ -6,7 +6,7 @@ import (
 
 type AlternativeSubPlan struct {
 	Xpr      ast.Node
-	Subplans *ast.List
+	Subplans *List
 }
 
 func (n *AlternativeSubPlan) Pos() int {

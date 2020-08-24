@@ -6,7 +6,7 @@ import (
 
 type TableSampleClause struct {
 	Tsmhandler Oid
-	Args       *ast.List
+	Args       *List
 	Repeatable ast.Node
 }
 

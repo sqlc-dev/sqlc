@@ -18,8 +18,8 @@ type ColumnDef struct {
 	Identity      byte
 	CollClause    *CollateClause
 	CollOid       Oid
-	Constraints   *ast.List
-	Fdwoptions    *ast.List
+	Constraints   *List
+	Fdwoptions    *List
 	Location      int
 }
 

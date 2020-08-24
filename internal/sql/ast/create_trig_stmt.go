@@ -7,15 +7,15 @@ import (
 type CreateTrigStmt struct {
 	Trigname       *string
 	Relation       *RangeVar
-	Funcname       *ast.List
-	Args           *ast.List
+	Funcname       *List
+	Args           *List
 	Row            bool
 	Timing         int16
 	Events         int16
-	Columns        *ast.List
+	Columns        *List
 	WhenClause     ast.Node
 	Isconstraint   bool
-	TransitionRels *ast.List
+	TransitionRels *List
 	Deferrable     bool
 	Initdeferred   bool
 	Constrrel      *RangeVar

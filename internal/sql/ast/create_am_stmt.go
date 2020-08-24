@@ -6,7 +6,7 @@ import (
 
 type CreateAmStmt struct {
 	Amname      *string
-	HandlerName *ast.List
+	HandlerName *List
 	Amtype      byte
 }
 

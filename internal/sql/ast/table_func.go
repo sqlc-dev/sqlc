@@ -5,16 +5,16 @@ import (
 )
 
 type TableFunc struct {
-	NsUris        *ast.List
-	NsNames       *ast.List
+	NsUris        *List
+	NsNames       *List
 	Docexpr       ast.Node
 	Rowexpr       ast.Node
-	Colnames      *ast.List
-	Coltypes      *ast.List
-	Coltypmods    *ast.List
-	Colcollations *ast.List
-	Colexprs      *ast.List
-	Coldefexprs   *ast.List
+	Colnames      *List
+	Coltypes      *List
+	Coltypmods    *List
+	Colcollations *List
+	Colexprs      *List
+	Coldefexprs   *List
 	Notnulls      []uint32
 	Ordinalitycol int
 	Location      int

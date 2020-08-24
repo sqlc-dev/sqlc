@@ -6,7 +6,7 @@ import (
 
 type CreateSeqStmt struct {
 	Sequence    *RangeVar
-	Options     *ast.List
+	Options     *List
 	OwnerId     Oid
 	ForIdentity bool
 	IfNotExists bool

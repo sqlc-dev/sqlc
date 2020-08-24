@@ -5,7 +5,7 @@ import (
 )
 
 type CreateOpFamilyStmt struct {
-	Opfamilyname *ast.List
+	Opfamilyname *List
 	Amname       *string
 }
 

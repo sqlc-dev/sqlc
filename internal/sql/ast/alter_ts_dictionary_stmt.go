@@ -5,8 +5,8 @@ import (
 )
 
 type AlterTSDictionaryStmt struct {
-	Dictname *ast.List
-	Options  *ast.List
+	Dictname *List
+	Options  *List
 }
 
 func (n *AlterTSDictionaryStmt) Pos() int {

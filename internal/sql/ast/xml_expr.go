@@ -8,9 +8,9 @@ type XmlExpr struct {
 	Xpr       ast.Node
 	Op        XmlExprOp
 	Name      *string
-	NamedArgs *ast.List
-	ArgNames  *ast.List
-	Args      *ast.List
+	NamedArgs *List
+	ArgNames  *List
+	Args      *List
 	Xmloption XmlOptionType
 	Type      Oid
 	Typmod    int32

@@ -6,8 +6,8 @@ import (
 
 type IntoClause struct {
 	Rel            *RangeVar
-	ColNames       *ast.List
-	Options        *ast.List
+	ColNames       *List
+	Options        *List
 	OnCommit       OnCommitAction
 	TableSpaceName *string
 	ViewQuery      ast.Node

@@ -10,7 +10,7 @@ type ScalarArrayOpExpr struct {
 	Opfuncid    Oid
 	UseOr       bool
 	Inputcollid Oid
-	Args        *ast.List
+	Args        *List
 	Location    int
 }
 

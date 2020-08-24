@@ -8,7 +8,7 @@ type CreateTableSpaceStmt struct {
 	Tablespacename *string
 	Owner          *RoleSpec
 	Location       *string
-	Options        *ast.List
+	Options        *List
 }
 
 func (n *CreateTableSpaceStmt) Pos() int {

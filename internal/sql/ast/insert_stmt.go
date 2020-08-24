@@ -6,10 +6,10 @@ import (
 
 type InsertStmt struct {
 	Relation         *RangeVar
-	Cols             *ast.List
+	Cols             *List
 	SelectStmt       ast.Node
 	OnConflictClause *OnConflictClause
-	ReturningList    *ast.List
+	ReturningList    *List
 	WithClause       *WithClause
 	Override         OverridingKind
 }

@@ -10,7 +10,7 @@ type MinMaxExpr struct {
 	Minmaxcollid Oid
 	Inputcollid  Oid
 	Op           MinMaxOp
-	Args         *ast.List
+	Args         *List
 	Location     int
 }
 

@@ -6,10 +6,10 @@ import (
 
 type ViewStmt struct {
 	View            *RangeVar
-	Aliases         *ast.List
+	Aliases         *List
 	Query           ast.Node
 	Replace         bool
-	Options         *ast.List
+	Options         *List
 	WithCheckOption ViewCheckOption
 }
 

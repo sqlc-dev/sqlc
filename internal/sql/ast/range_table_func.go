@@ -8,8 +8,8 @@ type RangeTableFunc struct {
 	Lateral    bool
 	Docexpr    ast.Node
 	Rowexpr    ast.Node
-	Namespaces *ast.List
-	Columns    *ast.List
+	Namespaces *List
+	Columns    *List
 	Alias      *Alias
 	Location   int
 }

@@ -9,10 +9,10 @@ type SetOperationStmt struct {
 	All           bool
 	Larg          ast.Node
 	Rarg          ast.Node
-	ColTypes      *ast.List
-	ColTypmods    *ast.List
-	ColCollations *ast.List
-	GroupClauses  *ast.List
+	ColTypes      *List
+	ColTypmods    *List
+	ColCollations *List
+	GroupClauses  *List
 }
 
 func (n *SetOperationStmt) Pos() int {

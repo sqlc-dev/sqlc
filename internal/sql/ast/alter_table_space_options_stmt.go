@@ -6,7 +6,7 @@ import (
 
 type AlterTableSpaceOptionsStmt struct {
 	Tablespacename *string
-	Options        *ast.List
+	Options        *List
 	IsReset        bool
 }
 

@@ -6,9 +6,9 @@ import (
 
 type PartitionBoundSpec struct {
 	Strategy    byte
-	Listdatums  *ast.List
-	Lowerdatums *ast.List
-	Upperdatums *ast.List
+	Listdatums  *List
+	Lowerdatums *List
+	Upperdatums *List
 	Location    int
 }
 

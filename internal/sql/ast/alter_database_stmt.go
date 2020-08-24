@@ -6,7 +6,7 @@ import (
 
 type AlterDatabaseStmt struct {
 	Dbname  *string
-	Options *ast.List
+	Options *List
 }
 
 func (n *AlterDatabaseStmt) Pos() int {

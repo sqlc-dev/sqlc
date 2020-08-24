@@ -6,15 +6,15 @@ import (
 
 type CommonTableExpr struct {
 	Ctename          *string
-	Aliascolnames    *ast.List
+	Aliascolnames    *List
 	Ctequery         ast.Node
 	Location         int
 	Cterecursive     bool
 	Cterefcount      int
-	Ctecolnames      *ast.List
-	Ctecoltypes      *ast.List
-	Ctecoltypmods    *ast.List
-	Ctecolcollations *ast.List
+	Ctecolnames      *List
+	Ctecoltypes      *List
+	Ctecoltypmods    *List
+	Ctecolcollations *List
 }
 
 func (n *CommonTableExpr) Pos() int {

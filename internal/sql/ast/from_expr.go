@@ -5,7 +5,7 @@ import (
 )
 
 type FromExpr struct {
-	Fromlist *ast.List
+	Fromlist *List
 	Quals    ast.Node
 }
 

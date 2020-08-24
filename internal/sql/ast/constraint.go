@@ -14,20 +14,20 @@ type Constraint struct {
 	RawExpr        ast.Node
 	CookedExpr     *string
 	GeneratedWhen  byte
-	Keys           *ast.List
-	Exclusions     *ast.List
-	Options        *ast.List
+	Keys           *List
+	Exclusions     *List
+	Options        *List
 	Indexname      *string
 	Indexspace     *string
 	AccessMethod   *string
 	WhereClause    ast.Node
 	Pktable        *RangeVar
-	FkAttrs        *ast.List
-	PkAttrs        *ast.List
+	FkAttrs        *List
+	PkAttrs        *List
 	FkMatchtype    byte
 	FkUpdAction    byte
 	FkDelAction    byte
-	OldConpfeqop   *ast.List
+	OldConpfeqop   *List
 	OldPktableOid  Oid
 	SkipValidation bool
 	InitiallyValid bool

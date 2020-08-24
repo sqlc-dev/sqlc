@@ -13,7 +13,7 @@ type FuncExpr struct {
 	Funcformat     CoercionForm
 	Funccollid     Oid
 	Inputcollid    Oid
-	Args           *ast.List
+	Args           *List
 	Location       int
 }
 

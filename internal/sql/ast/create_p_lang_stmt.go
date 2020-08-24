@@ -7,9 +7,9 @@ import (
 type CreatePLangStmt struct {
 	Replace     bool
 	Plname      *string
-	Plhandler   *ast.List
-	Plinline    *ast.List
-	Plvalidator *ast.List
+	Plhandler   *List
+	Plinline    *List
+	Plvalidator *List
 	Pltrusted   bool
 }
 

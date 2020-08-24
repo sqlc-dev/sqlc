@@ -9,10 +9,10 @@ type IndexStmt struct {
 	Relation       *RangeVar
 	AccessMethod   *string
 	TableSpace     *string
-	IndexParams    *ast.List
-	Options        *ast.List
+	IndexParams    *List
+	Options        *List
 	WhereClause    ast.Node
-	ExcludeOpNames *ast.List
+	ExcludeOpNames *List
 	Idxcomment     *string
 	IndexOid       Oid
 	OldNode        Oid

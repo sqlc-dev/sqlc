@@ -5,7 +5,7 @@ import (
 )
 
 type DoStmt struct {
-	Args *ast.List
+	Args *List
 }
 
 func (n *DoStmt) Pos() int {

@@ -6,11 +6,11 @@ import (
 
 type CreateFunctionStmt struct {
 	Replace    bool
-	Funcname   *ast.List
-	Parameters *ast.List
+	Funcname   *List
+	Parameters *List
 	ReturnType *TypeName
-	Options    *ast.List
-	WithClause *ast.List
+	Options    *List
+	WithClause *List
 }
 
 func (n *CreateFunctionStmt) Pos() int {

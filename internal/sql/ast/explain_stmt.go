@@ -6,7 +6,7 @@ import (
 
 type ExplainStmt struct {
 	Query   ast.Node
-	Options *ast.List
+	Options *List
 }
 
 func (n *ExplainStmt) Pos() int {

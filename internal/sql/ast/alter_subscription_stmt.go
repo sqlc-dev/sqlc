@@ -8,8 +8,8 @@ type AlterSubscriptionStmt struct {
 	Kind        AlterSubscriptionType
 	Subname     *string
 	Conninfo    *string
-	Publication *ast.List
-	Options     *ast.List
+	Publication *List
+	Options     *List
 }
 
 func (n *AlterSubscriptionStmt) Pos() int {

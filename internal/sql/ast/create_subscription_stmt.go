@@ -7,8 +7,8 @@ import (
 type CreateSubscriptionStmt struct {
 	Subname     *string
 	Conninfo    *string
-	Publication *ast.List
-	Options     *ast.List
+	Publication *List
+	Options     *List
 }
 
 func (n *CreateSubscriptionStmt) Pos() int {

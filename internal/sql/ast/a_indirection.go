@@ -6,7 +6,7 @@ import (
 
 type A_Indirection struct {
 	Arg         ast.Node
-	Indirection *ast.List
+	Indirection *List
 }
 
 func (n *A_Indirection) Pos() int {

@@ -6,8 +6,8 @@ import (
 
 type RangeTableSample struct {
 	Relation   ast.Node
-	Method     *ast.List
-	Args       *ast.List
+	Method     *List
+	Args       *List
 	Repeatable ast.Node
 	Location   int
 }

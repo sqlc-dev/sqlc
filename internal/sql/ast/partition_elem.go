@@ -7,8 +7,8 @@ import (
 type PartitionElem struct {
 	Name      *string
 	Expr      ast.Node
-	Collation *ast.List
-	Opclass   *ast.List
+	Collation *List
+	Opclass   *List
 	Location  int
 }
 

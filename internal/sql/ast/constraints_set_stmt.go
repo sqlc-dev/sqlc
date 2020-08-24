@@ -5,7 +5,7 @@ import (
 )
 
 type ConstraintsSetStmt struct {
-	Constraints *ast.List
+	Constraints *List
 	Deferred    bool
 }
 

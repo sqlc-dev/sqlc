@@ -6,9 +6,9 @@ import (
 
 type AlterTSConfigurationStmt struct {
 	Kind      AlterTSConfigType
-	Cfgname   *ast.List
-	Tokentype *ast.List
-	Dicts     *ast.List
+	Cfgname   *List
+	Tokentype *List
+	Dicts     *List
 	Override  bool
 	Replace   bool
 	MissingOk bool

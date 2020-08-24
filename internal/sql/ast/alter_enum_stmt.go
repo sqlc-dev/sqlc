@@ -5,7 +5,7 @@ import (
 )
 
 type AlterEnumStmt struct {
-	TypeName           *ast.List
+	TypeName           *List
 	OldVal             *string
 	NewVal             *string
 	NewValNeighbor     *string

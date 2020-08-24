@@ -6,7 +6,7 @@ import (
 
 type AlterRoleStmt struct {
 	Role    *RoleSpec
-	Options *ast.List
+	Options *List
 	Action  int
 }
 

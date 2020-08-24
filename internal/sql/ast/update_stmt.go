@@ -6,10 +6,10 @@ import (
 
 type UpdateStmt struct {
 	Relation      *RangeVar
-	TargetList    *ast.List
+	TargetList    *List
 	WhereClause   ast.Node
-	FromClause    *ast.List
-	ReturningList *ast.List
+	FromClause    *List
+	ReturningList *List
 	WithClause    *WithClause
 }
 

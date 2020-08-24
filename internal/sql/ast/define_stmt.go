@@ -7,9 +7,9 @@ import (
 type DefineStmt struct {
 	Kind        ObjectType
 	Oldstyle    bool
-	Defnames    *ast.List
-	Args        *ast.List
-	Definition  *ast.List
+	Defnames    *List
+	Args        *List
+	Definition  *List
 	IfNotExists bool
 }
 

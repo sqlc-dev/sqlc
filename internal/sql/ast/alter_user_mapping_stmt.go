@@ -7,7 +7,7 @@ import (
 type AlterUserMappingStmt struct {
 	User       *RoleSpec
 	Servername *string
-	Options    *ast.List
+	Options    *List
 }
 
 func (n *AlterUserMappingStmt) Pos() int {

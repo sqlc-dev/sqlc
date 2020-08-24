@@ -7,7 +7,7 @@ import (
 type CreateForeignTableStmt struct {
 	Base       *CreateStmt
 	Servername *string
-	Options    *ast.List
+	Options    *List
 }
 
 func (n *CreateForeignTableStmt) Pos() int {

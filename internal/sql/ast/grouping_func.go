@@ -6,9 +6,9 @@ import (
 
 type GroupingFunc struct {
 	Xpr         ast.Node
-	Args        *ast.List
-	Refs        *ast.List
-	Cols        *ast.List
+	Args        *List
+	Refs        *List
+	Cols        *List
 	Agglevelsup Index
 	Location    int
 }

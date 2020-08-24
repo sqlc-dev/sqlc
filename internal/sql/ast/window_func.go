@@ -10,7 +10,7 @@ type WindowFunc struct {
 	Wintype     Oid
 	Wincollid   Oid
 	Inputcollid Oid
-	Args        *ast.List
+	Args        *List
 	Aggfilter   ast.Node
 	Winref      Index
 	Winstar     bool

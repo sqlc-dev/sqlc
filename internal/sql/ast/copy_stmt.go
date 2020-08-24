@@ -7,11 +7,11 @@ import (
 type CopyStmt struct {
 	Relation  *RangeVar
 	Query     ast.Node
-	Attlist   *ast.List
+	Attlist   *List
 	IsFrom    bool
 	IsProgram bool
 	Filename  *string
-	Options   *ast.List
+	Options   *List
 }
 
 func (n *CopyStmt) Pos() int {

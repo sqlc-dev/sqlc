@@ -7,7 +7,7 @@ import (
 type AlterForeignServerStmt struct {
 	Servername *string
 	Version    *string
-	Options    *ast.List
+	Options    *List
 	HasVersion bool
 }
 

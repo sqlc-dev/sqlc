@@ -7,11 +7,11 @@ import (
 type RowCompareExpr struct {
 	Xpr          ast.Node
 	Rctype       RowCompareType
-	Opnos        *ast.List
-	Opfamilies   *ast.List
-	Inputcollids *ast.List
-	Largs        *ast.List
-	Rargs        *ast.List
+	Opnos        *List
+	Opfamilies   *List
+	Inputcollids *List
+	Largs        *List
+	Rargs        *List
 }
 
 func (n *RowCompareExpr) Pos() int {

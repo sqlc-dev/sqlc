@@ -5,11 +5,11 @@ import (
 )
 
 type CreateOpClassStmt struct {
-	Opclassname  *ast.List
-	Opfamilyname *ast.List
+	Opclassname  *List
+	Opfamilyname *List
 	Amname       *string
 	Datatype     *TypeName
-	Items        *ast.List
+	Items        *List
 	IsDefault    bool
 }
 

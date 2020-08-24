@@ -8,8 +8,8 @@ type IndexElem struct {
 	Name          *string
 	Expr          ast.Node
 	Indexcolname  *string
-	Collation     *ast.List
-	Opclass       *ast.List
+	Collation     *List
+	Opclass       *List
 	Ordering      SortByDir
 	NullsOrdering SortByNulls
 }

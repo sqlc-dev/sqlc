@@ -5,7 +5,7 @@ import (
 )
 
 type A_ArrayExpr struct {
-	Elements *ast.List
+	Elements *List
 	Location int
 }
 

@@ -6,7 +6,7 @@ import (
 
 type Alias struct {
 	Aliasname *string
-	Colnames  *ast.List
+	Colnames  *List
 }
 
 func (n *Alias) Pos() int {

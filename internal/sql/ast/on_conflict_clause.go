@@ -7,7 +7,7 @@ import (
 type OnConflictClause struct {
 	Action      OnConflictAction
 	Infer       *InferClause
-	TargetList  *ast.List
+	TargetList  *List
 	WhereClause ast.Node
 	Location    int
 }

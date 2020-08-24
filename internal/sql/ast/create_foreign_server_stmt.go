@@ -10,7 +10,7 @@ type CreateForeignServerStmt struct {
 	Version     *string
 	Fdwname     *string
 	IfNotExists bool
-	Options     *ast.List
+	Options     *List
 }
 
 func (n *CreateForeignServerStmt) Pos() int {

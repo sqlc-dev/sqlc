@@ -6,7 +6,7 @@ import (
 
 type A_Expr struct {
 	Kind     A_Expr_Kind
-	Name     *ast.List
+	Name     *List
 	Lexpr    ast.Node
 	Rexpr    ast.Node
 	Location int

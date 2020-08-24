@@ -5,7 +5,7 @@ import (
 )
 
 type LockingClause struct {
-	LockedRels *ast.List
+	LockedRels *List
 	Strength   LockClauseStrength
 	WaitPolicy LockWaitPolicy
 }

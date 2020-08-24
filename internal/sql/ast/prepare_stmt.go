@@ -6,7 +6,7 @@ import (
 
 type PrepareStmt struct {
 	Name     *string
-	Argtypes *ast.List
+	Argtypes *List
 	Query    ast.Node
 }
 

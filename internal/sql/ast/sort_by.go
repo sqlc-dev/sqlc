@@ -8,7 +8,7 @@ type SortBy struct {
 	Node        ast.Node
 	SortbyDir   SortByDir
 	SortbyNulls SortByNulls
-	UseOp       *ast.List
+	UseOp       *List
 	Location    int
 }
 

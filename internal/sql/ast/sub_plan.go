@@ -8,7 +8,7 @@ type SubPlan struct {
 	Xpr               ast.Node
 	SubLinkType       SubLinkType
 	Testexpr          ast.Node
-	ParamIds          *ast.List
+	ParamIds          *List
 	PlanId            int
 	PlanName          *string
 	FirstColType      Oid
@@ -17,9 +17,9 @@ type SubPlan struct {
 	UseHashTable      bool
 	UnknownEqFalse    bool
 	ParallelSafe      bool
-	SetParam          *ast.List
-	ParParam          *ast.List
-	Args              *ast.List
+	SetParam          *List
+	ParParam          *List
+	Args              *List
 	StartupCost       Cost
 	PerCallCost       Cost
 }

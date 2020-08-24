@@ -7,8 +7,8 @@ import (
 type WindowClause struct {
 	Name            *string
 	Refname         *string
-	PartitionClause *ast.List
-	OrderClause     *ast.List
+	PartitionClause *List
+	OrderClause     *List
 	FrameOptions    int
 	StartOffset     ast.Node
 	EndOffset       ast.Node

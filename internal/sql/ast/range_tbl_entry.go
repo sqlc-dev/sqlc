@@ -12,17 +12,17 @@ type RangeTblEntry struct {
 	Subquery        *Query
 	SecurityBarrier bool
 	Jointype        JoinType
-	Joinaliasvars   *ast.List
-	Functions       *ast.List
+	Joinaliasvars   *List
+	Functions       *List
 	Funcordinality  bool
 	Tablefunc       *TableFunc
-	ValuesLists     *ast.List
+	ValuesLists     *List
 	Ctename         *string
 	Ctelevelsup     Index
 	SelfReference   bool
-	Coltypes        *ast.List
-	Coltypmods      *ast.List
-	Colcollations   *ast.List
+	Coltypes        *List
+	Coltypmods      *List
+	Colcollations   *List
 	Enrname         *string
 	Enrtuples       float64
 	Alias           *Alias
@@ -35,7 +35,7 @@ type RangeTblEntry struct {
 	SelectedCols    []uint32
 	InsertedCols    []uint32
 	UpdatedCols     []uint32
-	SecurityQuals   *ast.List
+	SecurityQuals   *List
 }
 
 func (n *RangeTblEntry) Pos() int {

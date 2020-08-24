@@ -5,13 +5,13 @@ import (
 )
 
 type TypeName struct {
-	Names       *ast.List
+	Names       *List
 	TypeOid     Oid
 	Setof       bool
 	PctType     bool
-	Typmods     *ast.List
+	Typmods     *List
 	Typemod     int32
-	ArrayBounds *ast.List
+	ArrayBounds *List
 	Location    int
 }
 

@@ -5,10 +5,10 @@ import (
 )
 
 type AlterOpFamilyStmt struct {
-	Opfamilyname *ast.List
+	Opfamilyname *List
 	Amname       *string
 	IsDrop       bool
-	Items        *ast.List
+	Items        *List
 }
 
 func (n *AlterOpFamilyStmt) Pos() int {

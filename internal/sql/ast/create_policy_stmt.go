@@ -9,7 +9,7 @@ type CreatePolicyStmt struct {
 	Table      *RangeVar
 	CmdName    *string
 	Permissive bool
-	Roles      *ast.List
+	Roles      *List
 	Qual       ast.Node
 	WithCheck  ast.Node
 }

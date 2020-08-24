@@ -5,7 +5,7 @@ import (
 )
 
 type WithClause struct {
-	Ctes      *ast.List
+	Ctes      *List
 	Recursive bool
 	Location  int
 }

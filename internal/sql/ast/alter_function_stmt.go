@@ -6,7 +6,7 @@ import (
 
 type AlterFunctionStmt struct {
 	Func    *ObjectWithArgs
-	Actions *ast.List
+	Actions *List
 }
 
 func (n *AlterFunctionStmt) Pos() int {

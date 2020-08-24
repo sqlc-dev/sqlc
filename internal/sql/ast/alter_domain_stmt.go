@@ -6,7 +6,7 @@ import (
 
 type AlterDomainStmt struct {
 	Subtype   byte
-	TypeName  *ast.List
+	TypeName  *List
 	Name      *string
 	Def       ast.Node
 	Behavior  DropBehavior

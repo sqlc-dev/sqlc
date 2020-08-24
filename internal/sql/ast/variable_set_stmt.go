@@ -7,7 +7,7 @@ import (
 type VariableSetStmt struct {
 	Kind    VariableSetKind
 	Name    *string
-	Args    *ast.List
+	Args    *List
 	IsLocal bool
 }
 

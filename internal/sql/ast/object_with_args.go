@@ -5,8 +5,8 @@ import (
 )
 
 type ObjectWithArgs struct {
-	Objname         *ast.List
-	Objargs         *ast.List
+	Objname         *List
+	Objargs         *List
 	ArgsUnspecified bool
 }
 

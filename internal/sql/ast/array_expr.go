@@ -9,7 +9,7 @@ type ArrayExpr struct {
 	ArrayTypeid   Oid
 	ArrayCollid   Oid
 	ElementTypeid Oid
-	Elements      *ast.List
+	Elements      *List
 	Multidims     bool
 	Location      int
 }

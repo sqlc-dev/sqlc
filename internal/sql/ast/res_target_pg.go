@@ -6,7 +6,7 @@ import (
 
 type ResTarget struct {
 	Name        *string
-	Indirection *ast.List
+	Indirection *List
 	Val         ast.Node
 	Location    int
 }

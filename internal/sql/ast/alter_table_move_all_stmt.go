@@ -7,7 +7,7 @@ import (
 type AlterTableMoveAllStmt struct {
 	OrigTablespacename *string
 	Objtype            ObjectType
-	Roles              *ast.List
+	Roles              *List
 	NewTablespacename  *string
 	Nowait             bool
 }

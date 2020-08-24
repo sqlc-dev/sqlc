@@ -5,8 +5,8 @@ import (
 )
 
 type CreateRangeStmt struct {
-	TypeName *ast.List
-	Params   *ast.List
+	TypeName *List
+	Params   *List
 }
 
 func (n *CreateRangeStmt) Pos() int {

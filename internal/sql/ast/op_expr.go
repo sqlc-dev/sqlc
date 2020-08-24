@@ -12,7 +12,7 @@ type OpExpr struct {
 	Opretset     bool
 	Opcollid     Oid
 	Inputcollid  Oid
-	Args         *ast.List
+	Args         *List
 	Location     int
 }
 

@@ -7,8 +7,8 @@ import (
 type FieldStore struct {
 	Xpr        ast.Node
 	Arg        ast.Node
-	Newvals    *ast.List
-	Fieldnums  *ast.List
+	Newvals    *List
+	Fieldnums  *List
 	Resulttype Oid
 }
 

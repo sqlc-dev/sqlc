@@ -22,7 +22,7 @@ type SubLink struct {
 	SubLinkType SubLinkType
 	SubLinkId   int
 	Testexpr    ast.Node
-	OperName    *ast.List
+	OperName    *List
 	Subselect   ast.Node
 	Location    int
 }

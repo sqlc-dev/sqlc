@@ -9,7 +9,7 @@ type CaseExpr struct {
 	Casetype   Oid
 	Casecollid Oid
 	Arg        ast.Node
-	Args       *ast.List
+	Args       *List
 	Defresult  ast.Node
 	Location   int
 }

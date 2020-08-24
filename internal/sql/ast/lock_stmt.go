@@ -5,7 +5,7 @@ import (
 )
 
 type LockStmt struct {
-	Relations *ast.List
+	Relations *List
 	Mode      int
 	Nowait    bool
 }

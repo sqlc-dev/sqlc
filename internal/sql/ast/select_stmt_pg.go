@@ -5,19 +5,19 @@ import (
 )
 
 type SelectStmt struct {
-	DistinctClause *ast.List
+	DistinctClause *List
 	IntoClause     *IntoClause
-	TargetList     *ast.List
-	FromClause     *ast.List
+	TargetList     *List
+	FromClause     *List
 	WhereClause    ast.Node
-	GroupClause    *ast.List
+	GroupClause    *List
 	HavingClause   ast.Node
-	WindowClause   *ast.List
-	ValuesLists    *ast.List
-	SortClause     *ast.List
+	WindowClause   *List
+	ValuesLists    *List
+	SortClause     *List
 	LimitOffset    ast.Node
 	LimitCount     ast.Node
-	LockingClause  *ast.List
+	LockingClause  *List
 	WithClause     *WithClause
 	Op             SetOperation
 	All            bool

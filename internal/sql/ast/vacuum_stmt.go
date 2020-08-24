@@ -7,7 +7,7 @@ import (
 type VacuumStmt struct {
 	Options  int
 	Relation *RangeVar
-	VaCols   *ast.List
+	VaCols   *List
 }
 
 func (n *VacuumStmt) Pos() int {

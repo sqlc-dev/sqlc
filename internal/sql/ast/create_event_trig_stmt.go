@@ -7,8 +7,8 @@ import (
 type CreateEventTrigStmt struct {
 	Trigname   *string
 	Eventname  *string
-	Whenclause *ast.List
-	Funcname   *ast.List
+	Whenclause *List
+	Funcname   *List
 }
 
 func (n *CreateEventTrigStmt) Pos() int {

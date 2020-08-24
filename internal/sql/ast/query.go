@@ -20,25 +20,25 @@ type Query struct {
 	HasModifyingCte  bool
 	HasForUpdate     bool
 	HasRowSecurity   bool
-	CteList          *ast.List
-	Rtable           *ast.List
+	CteList          *List
+	Rtable           *List
 	Jointree         *FromExpr
-	TargetList       *ast.List
+	TargetList       *List
 	Override         OverridingKind
 	OnConflict       *OnConflictExpr
-	ReturningList    *ast.List
-	GroupClause      *ast.List
-	GroupingSets     *ast.List
+	ReturningList    *List
+	GroupClause      *List
+	GroupingSets     *List
 	HavingQual       ast.Node
-	WindowClause     *ast.List
-	DistinctClause   *ast.List
-	SortClause       *ast.List
+	WindowClause     *List
+	DistinctClause   *List
+	SortClause       *List
 	LimitOffset      ast.Node
 	LimitCount       ast.Node
-	RowMarks         *ast.List
+	RowMarks         *List
 	SetOperations    ast.Node
-	ConstraintDeps   *ast.List
-	WithCheckOptions *ast.List
+	ConstraintDeps   *List
+	WithCheckOptions *List
 	StmtLocation     int
 	StmtLen          int
 }

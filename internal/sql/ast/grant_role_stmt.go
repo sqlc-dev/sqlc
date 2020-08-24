@@ -5,8 +5,8 @@ import (
 )
 
 type GrantRoleStmt struct {
-	GrantedRoles *ast.List
-	GranteeRoles *ast.List
+	GrantedRoles *List
+	GranteeRoles *List
 	IsGrant      bool
 	AdminOpt     bool
 	Grantor      *RoleSpec

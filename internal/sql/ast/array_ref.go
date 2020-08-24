@@ -10,8 +10,8 @@ type ArrayRef struct {
 	Refelemtype     Oid
 	Reftypmod       int32
 	Refcollid       Oid
-	Refupperindexpr *ast.List
-	Reflowerindexpr *ast.List
+	Refupperindexpr *List
+	Reflowerindexpr *List
 	Refexpr         ast.Node
 	Refassgnexpr    ast.Node
 }

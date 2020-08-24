@@ -8,7 +8,7 @@ type CreateUserMappingStmt struct {
 	User        *RoleSpec
 	Servername  *string
 	IfNotExists bool
-	Options     *ast.List
+	Options     *List
 }
 
 func (n *CreateUserMappingStmt) Pos() int {

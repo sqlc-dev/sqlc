@@ -7,7 +7,7 @@ import (
 type BoolExpr struct {
 	Xpr      ast.Node
 	Boolop   BoolExprType
-	Args     *ast.List
+	Args     *List
 	Location int
 }
 

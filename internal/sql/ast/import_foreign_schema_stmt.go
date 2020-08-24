@@ -9,8 +9,8 @@ type ImportForeignSchemaStmt struct {
 	RemoteSchema *string
 	LocalSchema  *string
 	ListType     ImportForeignSchemaType
-	TableList    *ast.List
-	Options      *ast.List
+	TableList    *List
+	Options      *List
 }
 
 func (n *ImportForeignSchemaStmt) Pos() int {

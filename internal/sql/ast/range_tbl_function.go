@@ -7,10 +7,10 @@ import (
 type RangeTblFunction struct {
 	Funcexpr          ast.Node
 	Funccolcount      int
-	Funccolnames      *ast.List
-	Funccoltypes      *ast.List
-	Funccoltypmods    *ast.List
-	Funccolcollations *ast.List
+	Funccolnames      *List
+	Funccoltypes      *List
+	Funccoltypmods    *List
+	Funccolcollations *List
 	Funcparams        []uint32
 }
 

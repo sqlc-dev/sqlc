@@ -5,7 +5,7 @@ import (
 )
 
 type ColumnRef struct {
-	Fields   *ast.List
+	Fields   *List
 	Location int
 }
 

@@ -6,7 +6,7 @@ import (
 
 type ExecuteStmt struct {
 	Name   *string
-	Params *ast.List
+	Params *List
 }
 
 func (n *ExecuteStmt) Pos() int {

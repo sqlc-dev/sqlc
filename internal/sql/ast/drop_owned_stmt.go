@@ -5,7 +5,7 @@ import (
 )
 
 type DropOwnedStmt struct {
-	Roles    *ast.List
+	Roles    *List
 	Behavior DropBehavior
 }
 

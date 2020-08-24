@@ -6,13 +6,13 @@ import (
 
 type OnConflictExpr struct {
 	Action          OnConflictAction
-	ArbiterElems    *ast.List
+	ArbiterElems    *List
 	ArbiterWhere    ast.Node
 	Constraint      Oid
-	OnConflictSet   *ast.List
+	OnConflictSet   *List
 	OnConflictWhere ast.Node
 	ExclRelIndex    int
-	ExclRelTlist    *ast.List
+	ExclRelTlist    *List
 }
 
 func (n *OnConflictExpr) Pos() int {

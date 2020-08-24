@@ -10,7 +10,7 @@ type RuleStmt struct {
 	WhereClause ast.Node
 	Event       CmdType
 	Instead     bool
-	Actions     *ast.List
+	Actions     *List
 	Replace     bool
 }
 

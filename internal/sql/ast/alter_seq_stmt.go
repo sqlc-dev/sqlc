@@ -6,7 +6,7 @@ import (
 
 type AlterSeqStmt struct {
 	Sequence    *RangeVar
-	Options     *ast.List
+	Options     *List
 	ForIdentity bool
 	MissingOk   bool
 }

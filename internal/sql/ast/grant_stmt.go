@@ -8,9 +8,9 @@ type GrantStmt struct {
 	IsGrant     bool
 	Targtype    GrantTargetType
 	Objtype     GrantObjectType
-	Objects     *ast.List
-	Privileges  *ast.List
-	Grantees    *ast.List
+	Objects     *List
+	Privileges  *List
+	Grantees    *List
 	GrantOption bool
 	Behavior    DropBehavior
 }

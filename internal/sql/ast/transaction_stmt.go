@@ -6,7 +6,7 @@ import (
 
 type TransactionStmt struct {
 	Kind    TransactionStmtKind
-	Options *ast.List
+	Options *List
 	Gid     *string
 }
 

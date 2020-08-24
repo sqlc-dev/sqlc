@@ -6,10 +6,10 @@ import (
 
 type RowExpr struct {
 	Xpr       ast.Node
-	Args      *ast.List
+	Args      *List
 	RowTypeid Oid
 	RowFormat CoercionForm
-	Colnames  *ast.List
+	Colnames  *List
 	Location  int
 }
 

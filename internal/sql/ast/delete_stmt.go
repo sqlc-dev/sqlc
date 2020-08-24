@@ -6,9 +6,9 @@ import (
 
 type DeleteStmt struct {
 	Relation      *RangeVar
-	UsingClause   *ast.List
+	UsingClause   *List
 	WhereClause   ast.Node
-	ReturningList *ast.List
+	ReturningList *List
 	WithClause    *WithClause
 }
 

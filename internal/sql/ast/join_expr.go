@@ -9,7 +9,7 @@ type JoinExpr struct {
 	IsNatural   bool
 	Larg        ast.Node
 	Rarg        ast.Node
-	UsingClause *ast.List
+	UsingClause *List
 	Quals       ast.Node
 	Alias       *Alias
 	Rtindex     int

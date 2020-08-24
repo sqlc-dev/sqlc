@@ -5,7 +5,7 @@ import (
 )
 
 type ReassignOwnedStmt struct {
-	Roles   *ast.List
+	Roles   *List
 	Newrole *RoleSpec
 }
 

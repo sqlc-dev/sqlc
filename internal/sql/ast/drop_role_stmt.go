@@ -5,7 +5,7 @@ import (
 )
 
 type DropRoleStmt struct {
-	Roles     *ast.List
+	Roles     *List
 	MissingOk bool
 }
 

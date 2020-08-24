@@ -8,8 +8,8 @@ type CreateOpClassItem struct {
 	Itemtype    int
 	Name        *ObjectWithArgs
 	Number      int
-	OrderFamily *ast.List
-	ClassArgs   *ast.List
+	OrderFamily *List
+	ClassArgs   *List
 	Storedtype  *TypeName
 }
 

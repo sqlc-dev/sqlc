@@ -6,7 +6,7 @@ import (
 
 type AlterOperatorStmt struct {
 	Opername *ObjectWithArgs
-	Options  *ast.List
+	Options  *List
 }
 
 func (n *AlterOperatorStmt) Pos() int {

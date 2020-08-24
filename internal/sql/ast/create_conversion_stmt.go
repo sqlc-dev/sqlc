@@ -5,10 +5,10 @@ import (
 )
 
 type CreateConversionStmt struct {
-	ConversionName  *ast.List
+	ConversionName  *List
 	ForEncodingName *string
 	ToEncodingName  *string
-	FuncName        *ast.List
+	FuncName        *List
 	Def             bool
 }
 

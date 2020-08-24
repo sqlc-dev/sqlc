@@ -5,7 +5,7 @@ import (
 )
 
 type DropStmt struct {
-	Objects    *ast.List
+	Objects    *List
 	RemoveType ObjectType
 	Behavior   DropBehavior
 	MissingOk  bool

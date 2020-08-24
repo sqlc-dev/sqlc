@@ -5,10 +5,10 @@ import (
 )
 
 type CreateDomainStmt struct {
-	Domainname  *ast.List
+	Domainname  *List
 	TypeName    *TypeName
 	CollClause  *CollateClause
-	Constraints *ast.List
+	Constraints *List
 }
 
 func (n *CreateDomainStmt) Pos() int {

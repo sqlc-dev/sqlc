@@ -6,7 +6,7 @@ import (
 
 type PartitionSpec struct {
 	Strategy   *string
-	PartParams *ast.List
+	PartParams *List
 	Location   int
 }
 

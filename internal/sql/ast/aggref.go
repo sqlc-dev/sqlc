@@ -11,11 +11,11 @@ type Aggref struct {
 	Aggcollid     Oid
 	Inputcollid   Oid
 	Aggtranstype  Oid
-	Aggargtypes   *ast.List
-	Aggdirectargs *ast.List
-	Args          *ast.List
-	Aggorder      *ast.List
-	Aggdistinct   *ast.List
+	Aggargtypes   *List
+	Aggdirectargs *List
+	Args          *List
+	Aggorder      *List
+	Aggdistinct   *List
 	Aggfilter     ast.Node
 	Aggstar       bool
 	Aggvariadic   bool

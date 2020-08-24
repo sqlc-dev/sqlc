@@ -5,7 +5,7 @@ import (
 )
 
 type AlterDefaultPrivilegesStmt struct {
-	Options *ast.List
+	Options *List
 	Action  *GrantStmt
 }
 

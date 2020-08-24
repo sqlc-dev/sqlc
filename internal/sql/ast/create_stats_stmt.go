@@ -5,10 +5,10 @@ import (
 )
 
 type CreateStatsStmt struct {
-	Defnames    *ast.List
-	StatTypes   *ast.List
-	Exprs       *ast.List
-	Relations   *ast.List
+	Defnames    *List
+	StatTypes   *List
+	Exprs       *List
+	Relations   *List
 	IfNotExists bool
 }
 

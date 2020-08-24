@@ -6,7 +6,7 @@ import (
 
 type AlterTableStmt struct {
 	Relation  *RangeVar
-	Cmds      *ast.List
+	Cmds      *List
 	Relkind   ObjectType
 	MissingOk bool
 }

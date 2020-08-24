@@ -6,8 +6,8 @@ import (
 
 type CreatePublicationStmt struct {
 	Pubname      *string
-	Options      *ast.List
-	Tables       *ast.List
+	Options      *List
+	Tables       *List
 	ForAllTables bool
 }
 

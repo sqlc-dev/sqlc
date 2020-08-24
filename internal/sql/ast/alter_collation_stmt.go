@@ -5,7 +5,7 @@ import (
 )
 
 type AlterCollationStmt struct {
-	Collname *ast.List
+	Collname *List
 }
 
 func (n *AlterCollationStmt) Pos() int {

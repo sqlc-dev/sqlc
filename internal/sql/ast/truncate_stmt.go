@@ -5,7 +5,7 @@ import (
 )
 
 type TruncateStmt struct {
-	Relations   *ast.List
+	Relations   *List
 	RestartSeqs bool
 	Behavior    DropBehavior
 }

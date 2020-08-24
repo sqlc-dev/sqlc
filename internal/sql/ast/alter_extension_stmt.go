@@ -6,7 +6,7 @@ import (
 
 type AlterExtensionStmt struct {
 	Extname *string
-	Options *ast.List
+	Options *List
 }
 
 func (n *AlterExtensionStmt) Pos() int {

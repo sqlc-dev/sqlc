@@ -6,7 +6,7 @@ import (
 
 type CreatedbStmt struct {
 	Dbname  *string
-	Options *ast.List
+	Options *List
 }
 
 func (n *CreatedbStmt) Pos() int {

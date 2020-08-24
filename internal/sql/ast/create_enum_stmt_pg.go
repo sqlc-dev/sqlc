@@ -5,8 +5,8 @@ import (
 )
 
 type CreateEnumStmt struct {
-	TypeName *ast.List
-	Vals     *ast.List
+	TypeName *List
+	Vals     *List
 }
 
 func (n *CreateEnumStmt) Pos() int {

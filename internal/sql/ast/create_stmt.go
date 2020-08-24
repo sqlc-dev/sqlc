@@ -6,13 +6,13 @@ import (
 
 type CreateStmt struct {
 	Relation       *RangeVar
-	TableElts      *ast.List
-	InhRelations   *ast.List
+	TableElts      *List
+	InhRelations   *List
 	Partbound      *PartitionBoundSpec
 	Partspec       *PartitionSpec
 	OfTypename     *TypeName
-	Constraints    *ast.List
-	Options        *ast.List
+	Constraints    *List
+	Options        *List
 	Oncommit       OnCommitAction
 	Tablespacename *string
 	IfNotExists    bool

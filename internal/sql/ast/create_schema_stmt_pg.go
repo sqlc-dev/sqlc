@@ -7,7 +7,7 @@ import (
 type CreateSchemaStmt struct {
 	Schemaname  *string
 	Authrole    *RoleSpec
-	SchemaElts  *ast.List
+	SchemaElts  *List
 	IfNotExists bool
 }
 
