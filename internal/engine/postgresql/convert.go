@@ -815,9 +815,12 @@ func convertCompositeTypeStmt(n *nodes.CompositeTypeStmt) *ast.CompositeTypeStmt
 	if n == nil {
 		return nil
 	}
+	tn, err := parseTypeName(n.Typevar)
+	if err != nil {
+		panic(err)
+	}
 	return &ast.CompositeTypeStmt{
-	// Typevar:    convertRangeVar(n.Typevar),
-	// Coldeflist: convertList(n.Coldeflist),
+		TypeName: tn,
 	}
 }
 
@@ -963,9 +966,13 @@ func convertCreateEnumStmt(n *nodes.CreateEnumStmt) *ast.CreateEnumStmt {
 	if n == nil {
 		return nil
 	}
+	tn, err := parseTypeName(n.TypeName)
+	if err != nil {
+		panic(err)
+	}
 	return &ast.CreateEnumStmt{
-		// TypeName: convertList(n.TypeName),
-		Vals: convertList(n.Vals),
+		TypeName: tn,
+		Vals:     convertList(n.Vals),
 	}
 }
 
@@ -1032,9 +1039,13 @@ func convertCreateFunctionStmt(n *nodes.CreateFunctionStmt) *ast.CreateFunctionS
 	if n == nil {
 		return nil
 	}
+	fn, err := parseFuncName(n.Funcname)
+	if err != nil {
+		panic(err)
+	}
 	return &ast.CreateFunctionStmt{
-		Replace: n.Replace,
-		// Func:       convertList(n.Funcname),
+		Replace:    n.Replace,
+		Func:       fn,
 		Params:     convertList(n.Parameters),
 		ReturnType: convertTypeName(n.ReturnType),
 		Options:    convertList(n.Options),

@@ -12,9 +12,6 @@ func Join(list *ast.List, sep string) string {
 		if n, ok := item.(*ast.String); ok {
 			items = append(items, n.Str)
 		}
-		if n, ok := item.(*ast.String); ok {
-			items = append(items, n.Str)
-		}
 	}
 	return strings.Join(items, sep)
 }

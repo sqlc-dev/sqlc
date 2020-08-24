@@ -35,7 +35,6 @@ func TestApply(t *testing.T) {
 			})
 			return false
 		}
-
 		return true
 	}, nil)
 

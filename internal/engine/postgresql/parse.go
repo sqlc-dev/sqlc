@@ -444,6 +444,7 @@ func translate(node nodes.Node) (ast.Node, error) {
 			Func:       fn,
 			ReturnType: rt,
 			Replace:    n.Replace,
+			Params:     &ast.List{},
 		}
 		for _, item := range n.Parameters.Items {
 			arg := item.(nodes.FunctionParameter)
