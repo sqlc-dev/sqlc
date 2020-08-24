@@ -130,7 +130,7 @@ func convertFactored_select_stmtContext(c *parser.Factored_select_stmtContext) a
 				continue
 			}
 			rel := from.Table_name().GetText()
-			name := pg.RangeVar{
+			name := ast.RangeVar{
 				Relname:  &rel,
 				Location: from.GetStart().GetStart(),
 			}

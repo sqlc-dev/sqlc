@@ -13,7 +13,7 @@ const (
 type AlterTableCmd struct {
 	Subtype   AlterTableType
 	Name      *string
-	Def       Node
+	Def       *ColumnDef
 	Newowner  *RoleSpec
 	Behavior  DropBehavior
 	MissingOk bool
