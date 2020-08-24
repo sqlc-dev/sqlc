@@ -23,17 +23,15 @@ func Walk(f Visitor, node ast.Node) {
 	}
 	switch n := node.(type) {
 
-	case *ast.AlterTableCmd:
-		if n.Def != nil {
-			Walk(f, n.Def)
-		}
-
 	case *ast.AlterTableSetSchemaStmt:
 		if n.Table != nil {
 			Walk(f, n.Table)
 		}
 
 	case *ast.AlterTableStmt:
+		if n.Relation != nil {
+			Walk(f, n.Relation)
+		}
 		if n.Table != nil {
 			Walk(f, n.Table)
 		}
@@ -50,14 +48,6 @@ func Walk(f Visitor, node ast.Node) {
 		if n.Type != nil {
 			Walk(f, n.Type)
 		}
-
-	case *ast.ColumnDef:
-		if n.TypeName != nil {
-			Walk(f, n.TypeName)
-		}
-
-	case *ast.ColumnRef:
-		// pass
 
 	case *ast.CommentOnColumnStmt:
 		if n.Table != nil {
@@ -86,25 +76,6 @@ func Walk(f Visitor, node ast.Node) {
 		if n.TypeName != nil {
 			Walk(f, n.TypeName)
 		}
-
-	case *ast.CreateEnumStmt:
-		if n.TypeName != nil {
-			Walk(f, n.TypeName)
-		}
-		if n.Vals != nil {
-			Walk(f, n.Vals)
-		}
-
-	case *ast.CreateFunctionStmt:
-		if n.ReturnType != nil {
-			Walk(f, n.ReturnType)
-		}
-		if n.Func != nil {
-			Walk(f, n.Func)
-		}
-
-	case *ast.CreateSchemaStmt:
-		// pass
 
 	case *ast.CreateTableStmt:
 		if n.Name != nil {
@@ -144,11 +115,6 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, item)
 		}
 
-	case *ast.RawStmt:
-		if n.Stmt != nil {
-			Walk(f, n.Stmt)
-		}
-
 	case *ast.RenameColumnStmt:
 		if n.Table != nil {
 			Walk(f, n.Table)
@@ -162,26 +128,15 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Table)
 		}
 
-	case *ast.ResTarget:
-		if n.Val != nil {
-			Walk(f, n.Val)
-		}
-
 	case *ast.Statement:
 		if n.Raw != nil {
 			Walk(f, n.Raw)
 		}
 
-	case *ast.String:
-		// pass
-
 	case *ast.TODO:
 		// pass
 
 	case *ast.TableName:
-		// pass
-
-	case *ast.TypeName:
 		// pass
 
 	case *ast.A_ArrayExpr:
@@ -469,14 +424,6 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Options)
 		}
 
-	case *ast.AlterTableStmt:
-		if n.Relation != nil {
-			Walk(f, n.Relation)
-		}
-		if n.Cmds != nil {
-			Walk(f, n.Cmds)
-		}
-
 	case *ast.AlterUserMappingStmt:
 		if n.User != nil {
 			Walk(f, n.User)
@@ -684,14 +631,6 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Ctecolcollations)
 		}
 
-	case *ast.CompositeTypeStmt:
-		if n.Typevar != nil {
-			Walk(f, n.Typevar)
-		}
-		if n.Coldeflist != nil {
-			Walk(f, n.Coldeflist)
-		}
-
 	case *ast.Const:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
@@ -834,11 +773,11 @@ func Walk(f Visitor, node ast.Node) {
 		}
 
 	case *ast.CreateFunctionStmt:
-		if n.Funcname != nil {
-			Walk(f, n.Funcname)
+		if n.Func != nil {
+			Walk(f, n.Func)
 		}
-		if n.Parameters != nil {
-			Walk(f, n.Parameters)
+		if n.Params != nil {
+			Walk(f, n.Params)
 		}
 		if n.ReturnType != nil {
 			Walk(f, n.ReturnType)

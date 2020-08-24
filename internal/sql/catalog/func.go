@@ -18,11 +18,12 @@ func (c *Catalog) createFunction(stmt *ast.CreateFunctionStmt) error {
 	}
 	fn := &Function{
 		Name:       stmt.Func.Name,
-		Args:       make([]*Argument, len(stmt.Params)),
+		Args:       make([]*Argument, len(stmt.Params.Items)),
 		ReturnType: stmt.ReturnType,
 	}
-	types := make([]*ast.TypeName, len(stmt.Params))
-	for i, arg := range stmt.Params {
+	types := make([]*ast.TypeName, len(stmt.Params.Items))
+	for i, item := range stmt.Params.Items {
+		arg := item.(*ast.FuncParam)
 		var name string
 		if arg.Name != nil {
 			name = *arg.Name
