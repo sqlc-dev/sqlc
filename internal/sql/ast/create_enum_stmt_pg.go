@@ -1,12 +1,10 @@
 package ast
 
-import ()
-
-type CreateEnumStmt struct {
+type CreateEnumStmt_PG struct {
 	TypeName *List
 	Vals     *List
 }
 
-func (n *CreateEnumStmt) Pos() int {
+func (n *CreateEnumStmt_PG) Pos() int {
 	return 0
 }

@@ -1,7 +1,7 @@
 package ast
 
-type AlterTableType uint
+type AlterTableType_PG uint
 
-func (n *AlterTableType) Pos() int {
+func (n *AlterTableType_PG) Pos() int {
 	return 0
 }

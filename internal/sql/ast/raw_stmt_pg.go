@@ -1,13 +1,11 @@
 package ast
 
-import ()
-
-type RawStmt struct {
+type RawStmt_PG struct {
 	Stmt         Node
 	StmtLocation int
 	StmtLen      int
 }
 
-func (n *RawStmt) Pos() int {
+func (n *RawStmt_PG) Pos() int {
 	return 0
 }

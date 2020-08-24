@@ -1,14 +1,12 @@
 package ast
 
-import ()
-
-type ResTarget struct {
+type ResTarget_PG struct {
 	Name        *string
 	Indirection *List
 	Val         Node
 	Location    int
 }
 
-func (n *ResTarget) Pos() int {
+func (n *ResTarget_PG) Pos() int {
 	return n.Location
 }

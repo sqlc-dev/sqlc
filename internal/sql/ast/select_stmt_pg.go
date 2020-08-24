@@ -1,8 +1,6 @@
 package ast
 
-import ()
-
-type SelectStmt struct {
+type SelectStmt_PG struct {
 	DistinctClause *List
 	IntoClause     *IntoClause
 	TargetList     *List
@@ -23,6 +21,6 @@ type SelectStmt struct {
 	Rarg           *SelectStmt
 }
 
-func (n *SelectStmt) Pos() int {
+func (n *SelectStmt_PG) Pos() int {
 	return 0
 }

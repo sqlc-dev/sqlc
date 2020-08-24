@@ -1,8 +1,6 @@
 package ast
 
-import ()
-
-type AlterTableCmd struct {
+type AlterTableCmd_PG struct {
 	Subtype   AlterTableType
 	Name      *string
 	Newowner  *RoleSpec
@@ -11,6 +9,6 @@ type AlterTableCmd struct {
 	MissingOk bool
 }
 
-func (n *AlterTableCmd) Pos() int {
+func (n *AlterTableCmd_PG) Pos() int {
 	return 0
 }

@@ -1,8 +1,6 @@
 package ast
 
-import ()
-
-type CreateFunctionStmt struct {
+type CreateFunctionStmt_PG struct {
 	Replace    bool
 	Funcname   *List
 	Parameters *List
@@ -11,6 +9,6 @@ type CreateFunctionStmt struct {
 	WithClause *List
 }
 
-func (n *CreateFunctionStmt) Pos() int {
+func (n *CreateFunctionStmt_PG) Pos() int {
 	return 0
 }

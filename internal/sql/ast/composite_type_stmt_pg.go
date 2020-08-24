@@ -1,12 +1,10 @@
 package ast
 
-import ()
-
-type CompositeTypeStmt struct {
+type CompositeTypeStmt_PG struct {
 	Typevar    *RangeVar
 	Coldeflist *List
 }
 
-func (n *CompositeTypeStmt) Pos() int {
+func (n *CompositeTypeStmt_PG) Pos() int {
 	return 0
 }

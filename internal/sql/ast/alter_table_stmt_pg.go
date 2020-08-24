@@ -1,14 +1,12 @@
 package ast
 
-import ()
-
-type AlterTableStmt struct {
+type AlterTableStmt_PG struct {
 	Relation  *RangeVar
 	Cmds      *List
 	Relkind   ObjectType
 	MissingOk bool
 }
 
-func (n *AlterTableStmt) Pos() int {
+func (n *AlterTableStmt_PG) Pos() int {
 	return 0
 }

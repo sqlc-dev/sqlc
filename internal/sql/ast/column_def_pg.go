@@ -1,8 +1,6 @@
 package ast
 
-import ()
-
-type ColumnDef struct {
+type ColumnDef_PG struct {
 	Colname       *string
 	TypeName      *TypeName
 	Inhcount      int
@@ -21,6 +19,6 @@ type ColumnDef struct {
 	Location      int
 }
 
-func (n *ColumnDef) Pos() int {
+func (n *ColumnDef_PG) Pos() int {
 	return n.Location
 }

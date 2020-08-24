@@ -1,9 +1,9 @@
 package ast
 
-type String struct {
+type String_PG struct {
 	Str string
 }
 
-func (n *String) Pos() int {
+func (n *String_PG) Pos() int {
 	return 0
 }

@@ -1,8 +1,6 @@
 package ast
 
-import ()
-
-type TypeName struct {
+type TypeName_PG struct {
 	Names       *List
 	TypeOid     Oid
 	Setof       bool
@@ -13,6 +11,6 @@ type TypeName struct {
 	Location    int
 }
 
-func (n *TypeName) Pos() int {
+func (n *TypeName_PG) Pos() int {
 	return n.Location
 }

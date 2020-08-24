@@ -1,14 +1,12 @@
 package ast
 
-import ()
-
-type CreateSchemaStmt struct {
+type CreateSchemaStmt_PG struct {
 	Schemaname  *string
 	Authrole    *RoleSpec
 	SchemaElts  *List
 	IfNotExists bool
 }
 
-func (n *CreateSchemaStmt) Pos() int {
+func (n *CreateSchemaStmt_PG) Pos() int {
 	return 0
 }
