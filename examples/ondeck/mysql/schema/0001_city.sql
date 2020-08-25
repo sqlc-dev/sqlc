@@ -1,4 +1,4 @@
 CREATE TABLE city (
-    slug text PRIMARY KEY,
+    slug varchar(255) PRIMARY KEY,
     name text NOT NULL
 )
