@@ -323,6 +323,9 @@ func (c *cc) convertSubqueryExpr(n *pcast.SubqueryExpr) ast.Node {
 
 func (c *cc) convertTableRefsClause(n *pcast.TableRefsClause) *ast.List {
 	var tables []ast.Node
+	if n == nil {
+		return &ast.List{Items: tables}
+	}
 	visit(n, func(n pcast.Node) {
 		name, ok := n.(*pcast.TableName)
 		if !ok {
