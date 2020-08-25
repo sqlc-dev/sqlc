@@ -1,3 +1,2 @@
-CREATE TABLE foo ();
-ALTER TABLE foo ADD COLUMN bar text;
+CREATE TABLE foo (bar text, baz text);
 ALTER TABLE foo DROP COLUMN bar;
