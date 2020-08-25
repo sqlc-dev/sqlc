@@ -72,6 +72,16 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 		case pcast.AlterTableAddConstraint:
 			// 	spew.Dump("add const", spec)
 
+		case pcast.AlterTableRenameColumn:
+			// TODO: Returning here may be incorrect if there are multiple specs
+			oldName := spec.OldColumnName.String()
+			newName := spec.NewColumnName.String()
+			return &ast.RenameColumnStmt{
+				Table:   parseTableName(n.Table),
+				Col:     &ast.ColumnRef{Name: oldName},
+				NewName: &newName,
+			}
+
 		case pcast.AlterTableRenameTable:
 			// TODO: Returning here may be incorrect if there are multiple specs
 			return &ast.RenameTableStmt{
@@ -81,7 +91,7 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 
 		default:
 			if debug.Active {
-				fmt.Printf("dolphin.convert: Unknown alter table cmd %s\n", spec.Tp)
+				fmt.Printf("dolphin.convert: Unknown alter table cmd %v\n", spec.Tp)
 			}
 			continue
 		}
