@@ -2,10 +2,7 @@
 
 package querytest
 
-import (
-	"database/sql"
-)
+import ()
 
 type Foo struct {
-	Bar sql.NullString
 }

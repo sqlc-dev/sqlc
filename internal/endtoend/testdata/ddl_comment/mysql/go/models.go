@@ -6,6 +6,8 @@ import (
 	"database/sql"
 )
 
-type Arena struct {
-	Name sql.NullString
+// Table comment
+type Bar struct {
+	// Column comment
+	Baz sql.NullString
 }

@@ -40,16 +40,31 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 		case pcast.AlterTableDropColumn:
 			name := spec.OldColumnName.String()
 			alt.Cmds.Items = append(alt.Cmds.Items, &ast.AlterTableCmd{
-				Name:    &name,
-				Subtype: ast.AT_DropColumn,
-				// MissingOk: spec.IfExists,
+				Name:      &name,
+				Subtype:   ast.AT_DropColumn,
+				MissingOk: spec.IfExists,
 			})
 
 		case pcast.AlterTableChangeColumn:
 			// 	spew.Dump("change column", spec)
 
 		case pcast.AlterTableModifyColumn:
-			// 	spew.Dump("modify column", spec)
+			for _, def := range spec.NewColumns {
+				name := def.Name.String()
+				alt.Cmds.Items = append(alt.Cmds.Items, &ast.AlterTableCmd{
+					Name:    &name,
+					Subtype: ast.AT_DropColumn,
+				})
+				alt.Cmds.Items = append(alt.Cmds.Items, &ast.AlterTableCmd{
+					Name:    &name,
+					Subtype: ast.AT_AddColumn,
+					Def: &ast.ColumnDef{
+						Colname:   def.Name.String(),
+						TypeName:  &ast.TypeName{Name: types.TypeStr(def.Tp.Tp)},
+						IsNotNull: isNotNull(def),
+					},
+				})
+			}
 
 		case pcast.AlterTableAlterColumn:
 			// 	spew.Dump("alter column", spec)
@@ -57,7 +72,27 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 		case pcast.AlterTableAddConstraint:
 			// 	spew.Dump("add const", spec)
 
+		case pcast.AlterTableRenameColumn:
+			// TODO: Returning here may be incorrect if there are multiple specs
+			oldName := spec.OldColumnName.String()
+			newName := spec.NewColumnName.String()
+			return &ast.RenameColumnStmt{
+				Table:   parseTableName(n.Table),
+				Col:     &ast.ColumnRef{Name: oldName},
+				NewName: &newName,
+			}
+
+		case pcast.AlterTableRenameTable:
+			// TODO: Returning here may be incorrect if there are multiple specs
+			return &ast.RenameTableStmt{
+				Table:   parseTableName(n.Table),
+				NewName: &parseTableName(spec.NewTable).Name,
+			}
+
 		default:
+			if debug.Active {
+				fmt.Printf("dolphin.convert: Unknown alter table cmd %v\n", spec.Tp)
+			}
 			continue
 		}
 	}
@@ -123,11 +158,27 @@ func (c *cc) convertCreateTableStmt(n *pcast.CreateTableStmt) ast.Node {
 				})
 			}
 		}
+		comment := ""
+		for _, opt := range def.Options {
+			switch opt.Tp {
+			case pcast.ColumnOptionComment:
+				if value, ok := opt.Expr.(*driver.ValueExpr); ok {
+					comment = value.GetString()
+				}
+			}
+		}
 		create.Cols = append(create.Cols, &ast.ColumnDef{
 			Colname:   def.Name.String(),
 			TypeName:  &ast.TypeName{Name: types.TypeStr(def.Tp.Tp)},
 			IsNotNull: isNotNull(def),
+			Comment:   comment,
 		})
+	}
+	for _, opt := range n.Options {
+		switch opt.Tp {
+		case pcast.TableOptionComment:
+			create.Comment = opt.StrValue
+		}
 	}
 	return create
 }
@@ -323,6 +374,9 @@ func (c *cc) convertSubqueryExpr(n *pcast.SubqueryExpr) ast.Node {
 
 func (c *cc) convertTableRefsClause(n *pcast.TableRefsClause) *ast.List {
 	var tables []ast.Node
+	if n == nil {
+		return &ast.List{Items: tables}
+	}
 	visit(n, func(n pcast.Node) {
 		name, ok := n.(*pcast.TableName)
 		if !ok {

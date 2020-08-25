@@ -5,6 +5,7 @@ type CreateTableStmt struct {
 	Name        *TableName
 	Cols        []*ColumnDef
 	ReferTable  *TableName
+	Comment     string
 }
 
 func (n *CreateTableStmt) Pos() int {

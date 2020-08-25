@@ -6,8 +6,10 @@ import (
 	"database/sql"
 )
 
-type Writer struct {
-	ID   sql.NullInt64
-	Name string
-	Bio  sql.NullString
+type Arena struct {
+	Name sql.NullString
+}
+
+type Location struct {
+	Name sql.NullString
 }

@@ -3,7 +3,7 @@
   "packages": [
     {
       "path": "go",
-      "engine": "postgresql",
+      "engine": "mysql:beta",
       "name": "querytest",
       "schema": "schema.sql",
       "queries": "query.sql"

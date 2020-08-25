@@ -6,6 +6,6 @@ import (
 	"database/sql"
 )
 
-type Arena struct {
-	Name sql.NullString
+type Foo struct {
+	Bar sql.NullInt32
 }
