@@ -76,6 +76,9 @@ func isNotNull(n *pcast.ColumnDef) bool {
 		if n.Options[i].Tp == pcast.ColumnOptionNotNull {
 			return true
 		}
+		if n.Options[i].Tp == pcast.ColumnOptionPrimaryKey {
+			return true
+		}
 	}
 	return false
 }
