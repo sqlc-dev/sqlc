@@ -40,9 +40,9 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 		case pcast.AlterTableDropColumn:
 			name := spec.OldColumnName.String()
 			alt.Cmds.Items = append(alt.Cmds.Items, &ast.AlterTableCmd{
-				Name:    &name,
-				Subtype: ast.AT_DropColumn,
-				// MissingOk: spec.IfExists,
+				Name:      &name,
+				Subtype:   ast.AT_DropColumn,
+				MissingOk: spec.IfExists,
 			})
 
 		case pcast.AlterTableChangeColumn:
