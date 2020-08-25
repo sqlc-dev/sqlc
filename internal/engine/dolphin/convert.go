@@ -49,7 +49,22 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 			// 	spew.Dump("change column", spec)
 
 		case pcast.AlterTableModifyColumn:
-			// 	spew.Dump("modify column", spec)
+			for _, def := range spec.NewColumns {
+				name := def.Name.String()
+				alt.Cmds.Items = append(alt.Cmds.Items, &ast.AlterTableCmd{
+					Name:    &name,
+					Subtype: ast.AT_DropColumn,
+				})
+				alt.Cmds.Items = append(alt.Cmds.Items, &ast.AlterTableCmd{
+					Name:    &name,
+					Subtype: ast.AT_AddColumn,
+					Def: &ast.ColumnDef{
+						Colname:   def.Name.String(),
+						TypeName:  &ast.TypeName{Name: types.TypeStr(def.Tp.Tp)},
+						IsNotNull: isNotNull(def),
+					},
+				})
+			}
 
 		case pcast.AlterTableAlterColumn:
 			// 	spew.Dump("alter column", spec)
