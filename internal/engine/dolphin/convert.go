@@ -158,11 +158,27 @@ func (c *cc) convertCreateTableStmt(n *pcast.CreateTableStmt) ast.Node {
 				})
 			}
 		}
+		comment := ""
+		for _, opt := range def.Options {
+			switch opt.Tp {
+			case pcast.ColumnOptionComment:
+				if value, ok := opt.Expr.(*driver.ValueExpr); ok {
+					comment = value.GetString()
+				}
+			}
+		}
 		create.Cols = append(create.Cols, &ast.ColumnDef{
 			Colname:   def.Name.String(),
 			TypeName:  &ast.TypeName{Name: types.TypeStr(def.Tp.Tp)},
 			IsNotNull: isNotNull(def),
+			Comment:   comment,
 		})
+	}
+	for _, opt := range n.Options {
+		switch opt.Tp {
+		case pcast.TableOptionComment:
+			create.Comment = opt.StrValue
+		}
 	}
 	return create
 }

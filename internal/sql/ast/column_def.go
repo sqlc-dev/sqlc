@@ -21,6 +21,7 @@ type ColumnDef struct {
 	Constraints   *List
 	Fdwoptions    *List
 	Location      int
+	Comment       string
 }
 
 func (n *ColumnDef) Pos() int {
