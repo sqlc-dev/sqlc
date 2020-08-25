@@ -5,26 +5,25 @@ package querytest
 
 import (
 	"context"
-	"database/sql"
 )
 
 const starExpansionReserved = `-- name: StarExpansionReserved :many
-SELECT "group" FROM foo
+SELECT "group", key FROM foo
 `
 
-func (q *Queries) StarExpansionReserved(ctx context.Context) ([]sql.NullString, error) {
+func (q *Queries) StarExpansionReserved(ctx context.Context) ([]Foo, error) {
 	rows, err := q.db.QueryContext(ctx, starExpansionReserved)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []sql.NullString
+	var items []Foo
 	for rows.Next() {
-		var group sql.NullString
-		if err := rows.Scan(&group); err != nil {
+		var i Foo
+		if err := rows.Scan(&i.Group, &i.Key); err != nil {
 			return nil, err
 		}
-		items = append(items, group)
+		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err

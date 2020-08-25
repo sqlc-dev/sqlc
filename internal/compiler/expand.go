@@ -8,7 +8,6 @@ import (
 	"github.com/kyleconroy/sqlc/internal/source"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sql/astutils"
-	"github.com/kyleconroy/sqlc/internal/sql/lang"
 )
 
 func (c *Compiler) expand(qc *QueryCatalog, raw *ast.RawStmt) ([]source.Edit, error) {
@@ -38,8 +37,7 @@ func (c *Compiler) expand(qc *QueryCatalog, raw *ast.RawStmt) ([]source.Edit, er
 }
 
 func (c *Compiler) quoteIdent(ident string) string {
-	// TODO: Add a method to the parser / engine for this instead
-	if lang.IsReservedKeyword(ident) {
+	if c.parser.IsReservedKeyword(ident) {
 		switch c.conf.Engine {
 		case config.EngineMySQL, config.EngineMySQLBeta:
 			return "`" + ident + "`"
