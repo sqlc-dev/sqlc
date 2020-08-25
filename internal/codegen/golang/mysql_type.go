@@ -1,8 +1,11 @@
 package golang
 
 import (
+	"log"
+
 	"github.com/kyleconroy/sqlc/internal/compiler"
 	"github.com/kyleconroy/sqlc/internal/config"
+	"github.com/kyleconroy/sqlc/internal/debug"
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 )
 
@@ -80,6 +83,9 @@ func mysqlType(r *compiler.Result, col *compiler.Column, settings config.Combine
 					}
 				}
 			}
+		}
+		if debug.Active {
+			log.Printf("Unknown MySQL type: %s\n", columnType)
 		}
 		return "interface{}"
 
