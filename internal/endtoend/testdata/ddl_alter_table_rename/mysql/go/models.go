@@ -9,3 +9,7 @@ import (
 type Arena struct {
 	Name sql.NullString
 }
+
+type Location struct {
+	Name sql.NullString
+}
