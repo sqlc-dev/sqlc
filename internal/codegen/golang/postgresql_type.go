@@ -5,6 +5,7 @@ import (
 
 	"github.com/kyleconroy/sqlc/internal/compiler"
 	"github.com/kyleconroy/sqlc/internal/config"
+	"github.com/kyleconroy/sqlc/internal/debug"
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 )
 
@@ -166,8 +167,9 @@ func postgresType(r *compiler.Result, col *compiler.Column, settings config.Comb
 				}
 			}
 		}
-
-		log.Printf("unknown PostgreSQL type: %s\n", columnType)
+		if debug.Active {
+			log.Printf("unknown PostgreSQL type: %s\n", columnType)
+		}
 		return "interface{}"
 	}
 }

@@ -131,7 +131,7 @@ INSERT INTO books (
 type CreateBookParams struct {
 	AuthorID  int32
 	Isbn      string
-	BookType  string
+	BookType  BookType
 	Title     string
 	Yr        int32
 	Available time.Time

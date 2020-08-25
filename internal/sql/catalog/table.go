@@ -153,13 +153,24 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 		}
 	} else {
 		for _, col := range stmt.Cols {
-			tbl.Columns = append(tbl.Columns, &Column{
+			tc := &Column{
 				Name:      col.Colname,
 				Type:      *col.TypeName,
 				IsNotNull: col.IsNotNull,
 				IsArray:   col.IsArray,
 				Comment:   col.Comment,
-			})
+			}
+			if col.Vals != nil {
+				typeName := ast.TypeName{
+					Name: col.Colname,
+				}
+				s := &ast.CreateEnumStmt{TypeName: &typeName, Vals: col.Vals}
+				if err := c.createEnum(s); err != nil {
+					return err
+				}
+				tc.Type = typeName
+			}
+			tbl.Columns = append(tbl.Columns, tc)
 		}
 	}
 	schema.Tables = append(schema.Tables, &tbl)

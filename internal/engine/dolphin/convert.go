@@ -2,6 +2,7 @@ package dolphin
 
 import (
 	"fmt"
+	"log"
 
 	pcast "github.com/pingcap/parser/ast"
 	"github.com/pingcap/parser/opcode"
@@ -172,6 +173,7 @@ func (c *cc) convertCreateTableStmt(n *pcast.CreateTableStmt) ast.Node {
 			TypeName:  &ast.TypeName{Name: types.TypeStr(def.Tp.Tp)},
 			IsNotNull: isNotNull(def),
 			Comment:   comment,
+			Vals:      vals,
 		})
 	}
 	for _, opt := range n.Options {
@@ -492,7 +494,7 @@ func (c *cc) convert(node pcast.Node) ast.Node {
 
 	default:
 		if debug.Active {
-			fmt.Printf("dolphin.convert: Unknown node type %T\n", n)
+			log.Printf("dolphin.convert: Unknown node type %T\n", n)
 		}
 		return &ast.TODO{}
 	}
