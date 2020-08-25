@@ -162,7 +162,7 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 			}
 			if col.Vals != nil {
 				typeName := ast.TypeName{
-					Name: tbl.Rel.Name + "_" + col.Colname + "_enum",
+					Name: col.Colname,
 				}
 				s := &ast.CreateEnumStmt{TypeName: &typeName, Vals: col.Vals}
 				if err := c.createEnum(s); err != nil {

@@ -6,30 +6,30 @@ import (
 	"fmt"
 )
 
-type FooValEnum string
+type Foobar string
 
 const (
-	FooValEnumFooA FooValEnum = "foo-a"
-	FooValEnumFooB FooValEnum = "foo_b"
-	FooValEnumFooC FooValEnum = "foo:c"
-	FooValEnumFooD FooValEnum = "foo/d"
-	FooValEnumFooe FooValEnum = "foo@e"
-	FooValEnumFoof FooValEnum = "foo+f"
-	FooValEnumFoog FooValEnum = "foo!g"
+	FoobarFooA Foobar = "foo-a"
+	FoobarFooB Foobar = "foo_b"
+	FoobarFooC Foobar = "foo:c"
+	FoobarFooD Foobar = "foo/d"
+	FoobarFooe Foobar = "foo@e"
+	FoobarFoof Foobar = "foo+f"
+	FoobarFoog Foobar = "foo!g"
 )
 
-func (e *FooValEnum) Scan(src interface{}) error {
+func (e *Foobar) Scan(src interface{}) error {
 	switch s := src.(type) {
 	case []byte:
-		*e = FooValEnum(s)
+		*e = Foobar(s)
 	case string:
-		*e = FooValEnum(s)
+		*e = Foobar(s)
 	default:
-		return fmt.Errorf("unsupported scan type for FooValEnum: %T", src)
+		return fmt.Errorf("unsupported scan type for Foobar: %T", src)
 	}
 	return nil
 }
 
 type Foo struct {
-	Val FooValEnum
+	Foobar Foobar
 }

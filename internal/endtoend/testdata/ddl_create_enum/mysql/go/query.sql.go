@@ -8,22 +8,22 @@ import (
 )
 
 const listFoo = `-- name: ListFoo :many
-SELECT val FROM foo
+SELECT foobar FROM foo
 `
 
-func (q *Queries) ListFoo(ctx context.Context) ([]FooValEnum, error) {
+func (q *Queries) ListFoo(ctx context.Context) ([]Foobar, error) {
 	rows, err := q.db.QueryContext(ctx, listFoo)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []FooValEnum
+	var items []Foobar
 	for rows.Next() {
-		var val FooValEnum
-		if err := rows.Scan(&val); err != nil {
+		var foobar Foobar
+		if err := rows.Scan(&foobar); err != nil {
 			return nil, err
 		}
-		items = append(items, val)
+		items = append(items, foobar)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
