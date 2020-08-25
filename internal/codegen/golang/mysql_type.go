@@ -1,10 +1,9 @@
 package golang
 
 import (
-	"log"
-
 	"github.com/kyleconroy/sqlc/internal/compiler"
 	"github.com/kyleconroy/sqlc/internal/config"
+	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 )
 
 func mysqlType(r *compiler.Result, col *compiler.Column, settings config.CombinedSettings) string {
@@ -69,7 +68,19 @@ func mysqlType(r *compiler.Result, col *compiler.Column, settings config.Combine
 		return "interface{}"
 
 	default:
-		log.Printf("unknown MySQL type: %s\n", columnType)
+		for _, schema := range r.Catalog.Schemas {
+			for _, typ := range schema.Types {
+				switch t := typ.(type) {
+				case *catalog.Enum:
+					if t.Name == columnType {
+						if schema.Name == r.Catalog.DefaultSchema {
+							return StructName(t.Name, settings)
+						}
+						return StructName(schema.Name+"_"+t.Name, settings)
+					}
+				}
+			}
+		}
 		return "interface{}"
 
 	}

@@ -1,2 +1,2 @@
--- name: Placeholder :exec
-SELECT 1;
+-- name: ListFoo :many
+SELECT * FROM foo;
