@@ -19,9 +19,11 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/sqlpath"
 )
 
+// TODO: Rename this interface Engine
 type Parser interface {
 	Parse(io.Reader) ([]ast.Statement, error)
 	CommentSyntax() metadata.CommentSyntax
+	IsReservedKeyword(string) bool
 }
 
 // copied over from gen.go

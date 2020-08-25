@@ -8,4 +8,5 @@ import (
 
 type Foo struct {
 	Group sql.NullString
+	Key   sql.NullString
 }
