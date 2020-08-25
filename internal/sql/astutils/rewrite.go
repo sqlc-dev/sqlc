@@ -545,7 +545,7 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 
 	case *ast.CreateFunctionStmt:
 		a.apply(n, "Func", nil, n.Func)
-		a.applyList(n, "Params")
+		a.apply(n, "Params", nil, n.Params)
 		a.apply(n, "ReturnType", nil, n.ReturnType)
 		a.apply(n, "Options", nil, n.Options)
 		a.apply(n, "WithClause", nil, n.WithClause)
