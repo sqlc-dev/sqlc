@@ -445,8 +445,22 @@ func (c *cc) convertAdminStmt(n *pcast.AdminStmt) ast.Node {
 	return &ast.TODO{}
 }
 
-func (c *cc) convertAggregateFuncExpr(n *pcast.AggregateFuncExpr) ast.Node {
-	return &ast.TODO{}
+func (c *cc) convertAggregateFuncExpr(n *pcast.AggregateFuncExpr) *ast.FuncCall {
+	return &ast.FuncCall{
+		Func: &ast.FuncName{
+			Name: "count",
+		},
+		Funcname: &ast.List{
+			Items: []ast.Node{
+				&ast.String{
+					Str: "count",
+				},
+			},
+		},
+		Args:     &ast.List{},
+		AggOrder: &ast.List{},
+		AggStar:  true,
+	}
 }
 
 func (c *cc) convertAlterDatabaseStmt(n *pcast.AlterDatabaseStmt) ast.Node {
