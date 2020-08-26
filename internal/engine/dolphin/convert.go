@@ -441,6 +441,462 @@ func (c *cc) convertWildCardField(n *pcast.WildCardField) *ast.ColumnRef {
 	}
 }
 
+func (c *cc) convertAdminStmt(n *pcast.AdminStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertAggregateFuncExpr(n *pcast.AggregateFuncExpr) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertAlterDatabaseStmt(n *pcast.AlterDatabaseStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertAlterInstanceStmt(n *pcast.AlterInstanceStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertAlterTableSpec(n *pcast.AlterTableSpec) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertAlterUserStmt(n *pcast.AlterUserStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertAnalyzeTableStmt(n *pcast.AnalyzeTableStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertBRIEStmt(n *pcast.BRIEStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertBeginStmt(n *pcast.BeginStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertBetweenExpr(n *pcast.BetweenExpr) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertBinlogStmt(n *pcast.BinlogStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertByItem(n *pcast.ByItem) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertCaseExpr(n *pcast.CaseExpr) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertChangeStmt(n *pcast.ChangeStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertCleanupTableLockStmt(n *pcast.CleanupTableLockStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertColumnDef(n *pcast.ColumnDef) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertColumnName(n *pcast.ColumnName) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertColumnPosition(n *pcast.ColumnPosition) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertCommitStmt(n *pcast.CommitStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertCompareSubqueryExpr(n *pcast.CompareSubqueryExpr) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertConstraint(n *pcast.Constraint) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertCreateBindingStmt(n *pcast.CreateBindingStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertCreateDatabaseStmt(n *pcast.CreateDatabaseStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertCreateIndexStmt(n *pcast.CreateIndexStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertCreateSequenceStmt(n *pcast.CreateSequenceStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertCreateStatisticsStmt(n *pcast.CreateStatisticsStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertCreateUserStmt(n *pcast.CreateUserStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertCreateViewStmt(n *pcast.CreateViewStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertDeallocateStmt(n *pcast.DeallocateStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertDefaultExpr(n *pcast.DefaultExpr) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertDeleteTableList(n *pcast.DeleteTableList) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertDoStmt(n *pcast.DoStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertDropBindingStmt(n *pcast.DropBindingStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertDropDatabaseStmt(n *pcast.DropDatabaseStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertDropIndexStmt(n *pcast.DropIndexStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertDropSequenceStmt(n *pcast.DropSequenceStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertDropStatisticsStmt(n *pcast.DropStatisticsStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertDropStatsStmt(n *pcast.DropStatsStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertDropUserStmt(n *pcast.DropUserStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertExecuteStmt(n *pcast.ExecuteStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertExplainForStmt(n *pcast.ExplainForStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertExplainStmt(n *pcast.ExplainStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertFlashBackTableStmt(n *pcast.FlashBackTableStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertFlushStmt(n *pcast.FlushStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertFrameBound(n *pcast.FrameBound) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertFrameClause(n *pcast.FrameClause) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertFuncCastExpr(n *pcast.FuncCastExpr) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertGetFormatSelectorExpr(n *pcast.GetFormatSelectorExpr) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertGrantRoleStmt(n *pcast.GrantRoleStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertGrantStmt(n *pcast.GrantStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertGroupByClause(n *pcast.GroupByClause) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertHavingClause(n *pcast.HavingClause) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertIndexAdviseStmt(n *pcast.IndexAdviseStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertIndexLockAndAlgorithm(n *pcast.IndexLockAndAlgorithm) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertIndexPartSpecification(n *pcast.IndexPartSpecification) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertIsNullExpr(n *pcast.IsNullExpr) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertIsTruthExpr(n *pcast.IsTruthExpr) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertJoin(n *pcast.Join) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertKillStmt(n *pcast.KillStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertLimit(n *pcast.Limit) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertLoadDataStmt(n *pcast.LoadDataStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertLoadStatsStmt(n *pcast.LoadStatsStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertLockTablesStmt(n *pcast.LockTablesStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertMatchAgainst(n *pcast.MatchAgainst) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertMaxValueExpr(n *pcast.MaxValueExpr) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertOnCondition(n *pcast.OnCondition) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertOnDeleteOpt(n *pcast.OnDeleteOpt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertOnUpdateOpt(n *pcast.OnUpdateOpt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertOrderByClause(n *pcast.OrderByClause) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertParenthesesExpr(n *pcast.ParenthesesExpr) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertPartitionByClause(n *pcast.PartitionByClause) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertPatternInExpr(n *pcast.PatternInExpr) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertPatternLikeExpr(n *pcast.PatternLikeExpr) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertPatternRegexpExpr(n *pcast.PatternRegexpExpr) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertPlacementSpec(n *pcast.PlacementSpec) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertPositionExpr(n *pcast.PositionExpr) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertPrepareStmt(n *pcast.PrepareStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertPrivElem(n *pcast.PrivElem) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertRecoverTableStmt(n *pcast.RecoverTableStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertReferenceDef(n *pcast.ReferenceDef) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertRepairTableStmt(n *pcast.RepairTableStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertRevokeRoleStmt(n *pcast.RevokeRoleStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertRevokeStmt(n *pcast.RevokeStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertRollbackStmt(n *pcast.RollbackStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertRowExpr(n *pcast.RowExpr) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertSetCollationExpr(n *pcast.SetCollationExpr) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertSetConfigStmt(n *pcast.SetConfigStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertSetDefaultRoleStmt(n *pcast.SetDefaultRoleStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertSetOprSelectList(n *pcast.SetOprSelectList) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertSetOprStmt(n *pcast.SetOprStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertSetPwdStmt(n *pcast.SetPwdStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertSetRoleStmt(n *pcast.SetRoleStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertSetStmt(n *pcast.SetStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertShowStmt(n *pcast.ShowStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertShutdownStmt(n *pcast.ShutdownStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertSplitRegionStmt(n *pcast.SplitRegionStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertTableName(n *pcast.TableName) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertTableNameExpr(n *pcast.TableNameExpr) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertTableOptimizerHint(n *pcast.TableOptimizerHint) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertTableSource(n *pcast.TableSource) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertTableToTable(n *pcast.TableToTable) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertTimeUnitExpr(n *pcast.TimeUnitExpr) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertTraceStmt(n *pcast.TraceStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertTrimDirectionExpr(n *pcast.TrimDirectionExpr) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertTruncateTableStmt(n *pcast.TruncateTableStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertUnaryOperationExpr(n *pcast.UnaryOperationExpr) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertUnlockTablesStmt(n *pcast.UnlockTablesStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertUseStmt(n *pcast.UseStmt) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertValuesExpr(n *pcast.ValuesExpr) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertVariableAssignment(n *pcast.VariableAssignment) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertVariableExpr(n *pcast.VariableExpr) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertWhenClause(n *pcast.WhenClause) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertWindowFuncExpr(n *pcast.WindowFuncExpr) ast.Node {
+	return &ast.TODO{}
+}
+
+func (c *cc) convertWindowSpec(n *pcast.WindowSpec) ast.Node {
+	return &ast.TODO{}
+}
+
 func (c *cc) convert(node pcast.Node) ast.Node {
 	switch n := node.(type) {
 
@@ -450,44 +906,401 @@ func (c *cc) convert(node pcast.Node) ast.Node {
 	case *driver.ValueExpr:
 		return c.convertValueExpr(n)
 
+	case *pcast.AdminStmt:
+		return c.convertAdminStmt(n)
+
+	case *pcast.AggregateFuncExpr:
+		return c.convertAggregateFuncExpr(n)
+
+	case *pcast.AlterDatabaseStmt:
+		return c.convertAlterDatabaseStmt(n)
+
+	case *pcast.AlterInstanceStmt:
+		return c.convertAlterInstanceStmt(n)
+
+	case *pcast.AlterTableSpec:
+		return c.convertAlterTableSpec(n)
+
 	case *pcast.AlterTableStmt:
 		return c.convertAlterTableStmt(n)
+
+	case *pcast.AlterUserStmt:
+		return c.convertAlterUserStmt(n)
+
+	case *pcast.AnalyzeTableStmt:
+		return c.convertAnalyzeTableStmt(n)
+
+	case *pcast.Assignment:
+		return c.convertAssignment(n)
+
+	case *pcast.BRIEStmt:
+		return c.convertBRIEStmt(n)
+
+	case *pcast.BeginStmt:
+		return c.convertBeginStmt(n)
+
+	case *pcast.BetweenExpr:
+		return c.convertBetweenExpr(n)
 
 	case *pcast.BinaryOperationExpr:
 		return c.convertBinaryOperationExpr(n)
 
+	case *pcast.BinlogStmt:
+		return c.convertBinlogStmt(n)
+
+	case *pcast.ByItem:
+		return c.convertByItem(n)
+
+	case *pcast.CaseExpr:
+		return c.convertCaseExpr(n)
+
+	case *pcast.ChangeStmt:
+		return c.convertChangeStmt(n)
+
+	case *pcast.CleanupTableLockStmt:
+		return c.convertCleanupTableLockStmt(n)
+
+	case *pcast.ColumnDef:
+		return c.convertColumnDef(n)
+
+	case *pcast.ColumnName:
+		return c.convertColumnName(n)
+
 	case *pcast.ColumnNameExpr:
 		return c.convertColumnNameExpr(n)
+
+	case *pcast.ColumnPosition:
+		return c.convertColumnPosition(n)
+
+	case *pcast.CommitStmt:
+		return c.convertCommitStmt(n)
+
+	case *pcast.CompareSubqueryExpr:
+		return c.convertCompareSubqueryExpr(n)
+
+	case *pcast.Constraint:
+		return c.convertConstraint(n)
+
+	case *pcast.CreateBindingStmt:
+		return c.convertCreateBindingStmt(n)
+
+	case *pcast.CreateDatabaseStmt:
+		return c.convertCreateDatabaseStmt(n)
+
+	case *pcast.CreateIndexStmt:
+		return c.convertCreateIndexStmt(n)
+
+	case *pcast.CreateSequenceStmt:
+		return c.convertCreateSequenceStmt(n)
+
+	case *pcast.CreateStatisticsStmt:
+		return c.convertCreateStatisticsStmt(n)
 
 	case *pcast.CreateTableStmt:
 		return c.convertCreateTableStmt(n)
 
+	case *pcast.CreateUserStmt:
+		return c.convertCreateUserStmt(n)
+
+	case *pcast.CreateViewStmt:
+		return c.convertCreateViewStmt(n)
+
+	case *pcast.DeallocateStmt:
+		return c.convertDeallocateStmt(n)
+
+	case *pcast.DefaultExpr:
+		return c.convertDefaultExpr(n)
+
 	case *pcast.DeleteStmt:
 		return c.convertDeleteStmt(n)
+
+	case *pcast.DeleteTableList:
+		return c.convertDeleteTableList(n)
+
+	case *pcast.DoStmt:
+		return c.convertDoStmt(n)
+
+	case *pcast.DropBindingStmt:
+		return c.convertDropBindingStmt(n)
+
+	case *pcast.DropDatabaseStmt:
+		return c.convertDropDatabaseStmt(n)
+
+	case *pcast.DropIndexStmt:
+		return c.convertDropIndexStmt(n)
+
+	case *pcast.DropSequenceStmt:
+		return c.convertDropSequenceStmt(n)
+
+	case *pcast.DropStatisticsStmt:
+		return c.convertDropStatisticsStmt(n)
+
+	case *pcast.DropStatsStmt:
+		return c.convertDropStatsStmt(n)
 
 	case *pcast.DropTableStmt:
 		return c.convertDropTableStmt(n)
 
-	case *pcast.RenameTableStmt:
-		return c.convertRenameTableStmt(n)
+	case *pcast.DropUserStmt:
+		return c.convertDropUserStmt(n)
+
+	case *pcast.ExecuteStmt:
+		return c.convertExecuteStmt(n)
 
 	case *pcast.ExistsSubqueryExpr:
 		return c.convertExistsSubqueryExpr(n)
 
+	case *pcast.ExplainForStmt:
+		return c.convertExplainForStmt(n)
+
+	case *pcast.ExplainStmt:
+		return c.convertExplainStmt(n)
+
+	case *pcast.FieldList:
+		return c.convertFieldList(n)
+
+	case *pcast.FlashBackTableStmt:
+		return c.convertFlashBackTableStmt(n)
+
+	case *pcast.FlushStmt:
+		return c.convertFlushStmt(n)
+
+	case *pcast.FrameBound:
+		return c.convertFrameBound(n)
+
+	case *pcast.FrameClause:
+		return c.convertFrameClause(n)
+
 	case *pcast.FuncCallExpr:
 		return c.convertFuncCallExpr(n)
+
+	case *pcast.FuncCastExpr:
+		return c.convertFuncCastExpr(n)
+
+	case *pcast.GetFormatSelectorExpr:
+		return c.convertGetFormatSelectorExpr(n)
+
+	case *pcast.GrantRoleStmt:
+		return c.convertGrantRoleStmt(n)
+
+	case *pcast.GrantStmt:
+		return c.convertGrantStmt(n)
+
+	case *pcast.GroupByClause:
+		return c.convertGroupByClause(n)
+
+	case *pcast.HavingClause:
+		return c.convertHavingClause(n)
+
+	case *pcast.IndexAdviseStmt:
+		return c.convertIndexAdviseStmt(n)
+
+	case *pcast.IndexLockAndAlgorithm:
+		return c.convertIndexLockAndAlgorithm(n)
+
+	case *pcast.IndexPartSpecification:
+		return c.convertIndexPartSpecification(n)
 
 	case *pcast.InsertStmt:
 		return c.convertInsertStmt(n)
 
+	case *pcast.IsNullExpr:
+		return c.convertIsNullExpr(n)
+
+	case *pcast.IsTruthExpr:
+		return c.convertIsTruthExpr(n)
+
+	case *pcast.Join:
+		return c.convertJoin(n)
+
+	case *pcast.KillStmt:
+		return c.convertKillStmt(n)
+
+	case *pcast.Limit:
+		return c.convertLimit(n)
+
+	case *pcast.LoadDataStmt:
+		return c.convertLoadDataStmt(n)
+
+	case *pcast.LoadStatsStmt:
+		return c.convertLoadStatsStmt(n)
+
+	case *pcast.LockTablesStmt:
+		return c.convertLockTablesStmt(n)
+
+	case *pcast.MatchAgainst:
+		return c.convertMatchAgainst(n)
+
+	case *pcast.MaxValueExpr:
+		return c.convertMaxValueExpr(n)
+
+	case *pcast.OnCondition:
+		return c.convertOnCondition(n)
+
+	case *pcast.OnDeleteOpt:
+		return c.convertOnDeleteOpt(n)
+
+	case *pcast.OnUpdateOpt:
+		return c.convertOnUpdateOpt(n)
+
+	case *pcast.OrderByClause:
+		return c.convertOrderByClause(n)
+
+	case *pcast.ParenthesesExpr:
+		return c.convertParenthesesExpr(n)
+
+	case *pcast.PartitionByClause:
+		return c.convertPartitionByClause(n)
+
+	case *pcast.PatternInExpr:
+		return c.convertPatternInExpr(n)
+
+	case *pcast.PatternLikeExpr:
+		return c.convertPatternLikeExpr(n)
+
+	case *pcast.PatternRegexpExpr:
+		return c.convertPatternRegexpExpr(n)
+
+	case *pcast.PlacementSpec:
+		return c.convertPlacementSpec(n)
+
+	case *pcast.PositionExpr:
+		return c.convertPositionExpr(n)
+
+	case *pcast.PrepareStmt:
+		return c.convertPrepareStmt(n)
+
+	case *pcast.PrivElem:
+		return c.convertPrivElem(n)
+
+	case *pcast.RecoverTableStmt:
+		return c.convertRecoverTableStmt(n)
+
+	case *pcast.ReferenceDef:
+		return c.convertReferenceDef(n)
+
+	case *pcast.RenameTableStmt:
+		return c.convertRenameTableStmt(n)
+
+	case *pcast.RepairTableStmt:
+		return c.convertRepairTableStmt(n)
+
+	case *pcast.RevokeRoleStmt:
+		return c.convertRevokeRoleStmt(n)
+
+	case *pcast.RevokeStmt:
+		return c.convertRevokeStmt(n)
+
+	case *pcast.RollbackStmt:
+		return c.convertRollbackStmt(n)
+
+	case *pcast.RowExpr:
+		return c.convertRowExpr(n)
+
+	case *pcast.SelectField:
+		return c.convertSelectField(n)
+
 	case *pcast.SelectStmt:
 		return c.convertSelectStmt(n)
+
+	case *pcast.SetCollationExpr:
+		return c.convertSetCollationExpr(n)
+
+	case *pcast.SetConfigStmt:
+		return c.convertSetConfigStmt(n)
+
+	case *pcast.SetDefaultRoleStmt:
+		return c.convertSetDefaultRoleStmt(n)
+
+	case *pcast.SetOprSelectList:
+		return c.convertSetOprSelectList(n)
+
+	case *pcast.SetOprStmt:
+		return c.convertSetOprStmt(n)
+
+	case *pcast.SetPwdStmt:
+		return c.convertSetPwdStmt(n)
+
+	case *pcast.SetRoleStmt:
+		return c.convertSetRoleStmt(n)
+
+	case *pcast.SetStmt:
+		return c.convertSetStmt(n)
+
+	case *pcast.ShowStmt:
+		return c.convertShowStmt(n)
+
+	case *pcast.ShutdownStmt:
+		return c.convertShutdownStmt(n)
+
+	case *pcast.SplitRegionStmt:
+		return c.convertSplitRegionStmt(n)
 
 	case *pcast.SubqueryExpr:
 		return c.convertSubqueryExpr(n)
 
+	case *pcast.TableName:
+		return c.convertTableName(n)
+
+	case *pcast.TableNameExpr:
+		return c.convertTableNameExpr(n)
+
+	case *pcast.TableOptimizerHint:
+		return c.convertTableOptimizerHint(n)
+
+	case *pcast.TableRefsClause:
+		return c.convertTableRefsClause(n)
+
+	case *pcast.TableSource:
+		return c.convertTableSource(n)
+
+	case *pcast.TableToTable:
+		return c.convertTableToTable(n)
+
+	case *pcast.TimeUnitExpr:
+		return c.convertTimeUnitExpr(n)
+
+	case *pcast.TraceStmt:
+		return c.convertTraceStmt(n)
+
+	case *pcast.TrimDirectionExpr:
+		return c.convertTrimDirectionExpr(n)
+
+	case *pcast.TruncateTableStmt:
+		return c.convertTruncateTableStmt(n)
+
+	case *pcast.UnaryOperationExpr:
+		return c.convertUnaryOperationExpr(n)
+
+	case *pcast.UnlockTablesStmt:
+		return c.convertUnlockTablesStmt(n)
+
 	case *pcast.UpdateStmt:
 		return c.convertUpdateStmt(n)
+
+	case *pcast.UseStmt:
+		return c.convertUseStmt(n)
+
+	case *pcast.ValuesExpr:
+		return c.convertValuesExpr(n)
+
+	case *pcast.VariableAssignment:
+		return c.convertVariableAssignment(n)
+
+	case *pcast.VariableExpr:
+		return c.convertVariableExpr(n)
+
+	case *pcast.WhenClause:
+		return c.convertWhenClause(n)
+
+	case *pcast.WildCardField:
+		return c.convertWildCardField(n)
+
+	case *pcast.WindowFuncExpr:
+		return c.convertWindowFuncExpr(n)
+
+	case *pcast.WindowSpec:
+		return c.convertWindowSpec(n)
 
 	case nil:
 		return nil
