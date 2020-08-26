@@ -123,7 +123,7 @@ func runOnDeckQueries(t *testing.T, q *Queries) {
 			Slug: venue.Slug,
 			City: city.Slug,
 		})
-		if diff := cmp.Diff(expected, fresh.Slug); diff != "" {
+		if diff := cmp.Diff(expected, fresh.Name); diff != "" {
 			t.Errorf("update venue mismatch:\n%s", diff)
 		}
 	}
