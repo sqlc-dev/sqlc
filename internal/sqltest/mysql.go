@@ -52,7 +52,7 @@ func MySQL(t *testing.T, migrations []string) (*sql.DB, func()) {
 
 	// For each test, pick a new database name at random.
 	dbName := "sqltest_mysql_" + id()
-	if _, err := db.Exec("CREATE DATABSE " + dbName); err != nil {
+	if _, err := db.Exec("CREATE DATABASE " + dbName); err != nil {
 		t.Fatal(err)
 	}
 
