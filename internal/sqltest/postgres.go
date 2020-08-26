@@ -66,10 +66,8 @@ func PostgreSQL(t *testing.T, migrations []string) (*sql.DB, func()) {
 		t.Fatal(err)
 	}
 
-	schema := "sqltest_" + id()
-
 	// For each test, pick a new schema name at random.
-	// `foo` is used here only as an example
+	schema := "sqltest_postgresql_" + id()
 	if _, err := db.Exec("CREATE SCHEMA " + schema); err != nil {
 		t.Fatal(err)
 	}

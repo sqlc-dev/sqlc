@@ -2,11 +2,21 @@
   "version": "1",
   "packages": [
     {
-      "path": ".",
+      "path": "postgresql",
       "name": "ondeck",
-      "schema": "schema",
-      "queries": "query",
+      "schema": "postgresql/schema",
+      "queries": "postgresql/query",
       "engine": "postgresql",
+      "emit_json_tags": true,
+      "emit_prepared_queries": true,
+      "emit_interface": true
+    },
+    {
+      "path": "mysql",
+      "name": "ondeck",
+      "schema": "mysql/schema",
+      "queries": "mysql/query",
+      "engine": "mysql:beta",
       "emit_json_tags": true,
       "emit_prepared_queries": true,
       "emit_interface": true

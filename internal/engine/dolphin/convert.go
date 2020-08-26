@@ -445,8 +445,34 @@ func (c *cc) convertAdminStmt(n *pcast.AdminStmt) ast.Node {
 	return &ast.TODO{}
 }
 
-func (c *cc) convertAggregateFuncExpr(n *pcast.AggregateFuncExpr) ast.Node {
-	return &ast.TODO{}
+func (c *cc) convertAggregateFuncExpr(n *pcast.AggregateFuncExpr) *ast.FuncCall {
+	fn := &ast.FuncCall{
+		Func: &ast.FuncName{
+			Name: n.F,
+		},
+		Funcname: &ast.List{
+			Items: []ast.Node{
+				&ast.String{
+					Str: n.F,
+				},
+			},
+		},
+		Args:     &ast.List{},
+		AggOrder: &ast.List{},
+	}
+	for _, a := range n.Args {
+		if value, ok := a.(*driver.ValueExpr); ok {
+			if value.GetInt64() == int64(1) {
+				fn.AggStar = true
+				continue
+			}
+		}
+		fn.Args.Items = append(fn.Args.Items, c.convert(a))
+	}
+	if n.Distinct {
+		fn.AggDistinct = true
+	}
+	return fn
 }
 
 func (c *cc) convertAlterDatabaseStmt(n *pcast.AlterDatabaseStmt) ast.Node {

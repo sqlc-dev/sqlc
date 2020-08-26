@@ -27,7 +27,7 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings) *Compiler {
 		c.catalog = catalog.New("main")
 	case config.EngineMySQL, config.EngineMySQLBeta:
 		c.parser = dolphin.NewParser()
-		c.catalog = catalog.New("public") // TODO: What is the default database for MySQL?
+		c.catalog = dolphin.NewCatalog()
 	case config.EnginePostgreSQL:
 		c.parser = postgresql.NewParser()
 		c.catalog = postgresql.NewCatalog()
