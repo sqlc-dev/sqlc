@@ -2,13 +2,24 @@
   "version": "2",
   "sql": [
     {
-      "schema": "schema.sql",
-      "queries": "query.sql",
+      "schema": "postgresql/schema.sql",
+      "queries": "postgresql/query.sql",
       "engine": "postgresql",
       "gen": {
         "go": {
           "package": "authors",
-          "out": "."
+          "out": "postgresql"
+        }
+      }
+    },
+    {
+      "schema": "mysql/schema.sql",
+      "queries": "mysql/query.sql",
+      "engine": "mysql:beta",
+      "gen": {
+        "go": {
+          "package": "authors",
+          "out": "mysql"
         }
       }
     }

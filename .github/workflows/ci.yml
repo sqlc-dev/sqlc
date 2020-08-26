@@ -37,7 +37,7 @@ jobs:
       working-directory: internal/endtoend/testdata
 
     - name: Test sqlc
-      run: go test --tags=examples -v ./...
+      run: go test --tags=examples ./...
       env:
         PG_USER: postgres
         PG_HOST: localhost
