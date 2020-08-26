@@ -163,8 +163,8 @@ ORDER BY 1
 `
 
 type VenueCountByCityRow struct {
-	City    string      `json:"city"`
-	Column2 interface{} `json:"column_2"`
+	City  string `json:"city"`
+	Count int64  `json:"count"`
 }
 
 func (q *Queries) VenueCountByCity(ctx context.Context) ([]VenueCountByCityRow, error) {
@@ -176,7 +176,7 @@ func (q *Queries) VenueCountByCity(ctx context.Context) ([]VenueCountByCityRow, 
 	var items []VenueCountByCityRow
 	for rows.Next() {
 		var i VenueCountByCityRow
-		if err := rows.Scan(&i.City, &i.Column2); err != nil {
+		if err := rows.Scan(&i.City, &i.Count); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
