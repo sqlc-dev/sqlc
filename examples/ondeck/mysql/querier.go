@@ -16,7 +16,7 @@ type Querier interface {
 	ListCities(ctx context.Context) ([]City, error)
 	ListVenues(ctx context.Context, city string) ([]Venue, error)
 	UpdateCityName(ctx context.Context, arg UpdateCityNameParams) error
-	UpdateVenueName(ctx context.Context, arg UpdateVenueNameParams) (sql.Result, error)
+	UpdateVenueName(ctx context.Context, arg UpdateVenueNameParams) error
 	VenueCountByCity(ctx context.Context) ([]VenueCountByCityRow, error)
 }
 

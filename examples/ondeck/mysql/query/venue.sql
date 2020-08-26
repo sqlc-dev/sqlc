@@ -34,7 +34,7 @@ INSERT INTO venue (
     ?
 );
 
-/* name: UpdateVenueName :execresult */
+/* name: UpdateVenueName :exec */
 UPDATE venue
 SET name = ?
 WHERE slug = ?;

@@ -137,7 +137,7 @@ func (q *Queries) ListVenues(ctx context.Context, city string) ([]Venue, error) 
 	return items, nil
 }
 
-const updateVenueName = `-- name: UpdateVenueName :execresult
+const updateVenueName = `-- name: UpdateVenueName :exec
 UPDATE venue
 SET name = ?
 WHERE slug = ?
@@ -148,8 +148,9 @@ type UpdateVenueNameParams struct {
 	Slug string `json:"slug"`
 }
 
-func (q *Queries) UpdateVenueName(ctx context.Context, arg UpdateVenueNameParams) (sql.Result, error) {
-	return q.exec(ctx, q.updateVenueNameStmt, updateVenueName, arg.Name, arg.Slug)
+func (q *Queries) UpdateVenueName(ctx context.Context, arg UpdateVenueNameParams) error {
+	_, err := q.exec(ctx, q.updateVenueNameStmt, updateVenueName, arg.Name, arg.Slug)
+	return err
 }
 
 const venueCountByCity = `-- name: VenueCountByCity :many

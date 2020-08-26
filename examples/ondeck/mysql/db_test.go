@@ -74,9 +74,9 @@ func runOnDeckQueries(t *testing.T, q *Queries) {
 			t.Error(err)
 		}
 		if diff := cmp.Diff(actual, []VenueCountByCityRow{
-			{city.Slug, 1},
+			{city.Slug, int64(1)},
 		}); diff != "" {
-			t.Errorf("venue county mismatch:\n%s", diff)
+			t.Errorf("venue count mismatch:\n%s", diff)
 		}
 	}
 
@@ -111,14 +111,19 @@ func runOnDeckQueries(t *testing.T, q *Queries) {
 	}
 
 	{
-		id, err := q.UpdateVenueName(ctx, UpdateVenueNameParams{
+		expected := "Fillmore"
+		err := q.UpdateVenueName(ctx, UpdateVenueNameParams{
 			Slug: venue.Slug,
-			Name: "Fillmore",
+			Name: expected,
 		})
 		if err != nil {
 			t.Error(err)
 		}
-		if diff := cmp.Diff(id, venue.ID); diff != "" {
+		fresh, err := q.GetVenue(ctx, GetVenueParams{
+			Slug: venue.Slug,
+			City: city.Slug,
+		})
+		if diff := cmp.Diff(expected, fresh.Slug); diff != "" {
 			t.Errorf("update venue mismatch:\n%s", diff)
 		}
 	}
