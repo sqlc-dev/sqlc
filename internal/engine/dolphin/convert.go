@@ -556,7 +556,10 @@ func (c *cc) convertCreateBindingStmt(n *pcast.CreateBindingStmt) ast.Node {
 }
 
 func (c *cc) convertCreateDatabaseStmt(n *pcast.CreateDatabaseStmt) ast.Node {
-	return &ast.TODO{}
+	return &ast.CreateSchemaStmt{
+		Name:        &n.Name,
+		IfNotExists: n.IfNotExists,
+	}
 }
 
 func (c *cc) convertCreateIndexStmt(n *pcast.CreateIndexStmt) ast.Node {
@@ -600,7 +603,12 @@ func (c *cc) convertDropBindingStmt(n *pcast.DropBindingStmt) ast.Node {
 }
 
 func (c *cc) convertDropDatabaseStmt(n *pcast.DropDatabaseStmt) ast.Node {
-	return &ast.TODO{}
+	return &ast.DropSchemaStmt{
+		MissingOk: !n.IfExists,
+		Schemas: []*ast.String{
+			{Str: n.Name},
+		},
+	}
 }
 
 func (c *cc) convertDropIndexStmt(n *pcast.DropIndexStmt) ast.Node {
