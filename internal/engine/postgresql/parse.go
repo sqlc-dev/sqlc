@@ -220,8 +220,12 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 	return stmts, nil
 }
 
+// https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-COMMENTS
 func (p *Parser) CommentSyntax() metadata.CommentSyntax {
-	return metadata.CommentSyntaxDash
+	return metadata.CommentSyntax{
+		Dash:      true,
+		SlashStar: true,
+	}
 }
 
 func translate(node nodes.Node) (ast.Node, error) {

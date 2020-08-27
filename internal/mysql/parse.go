@@ -141,7 +141,7 @@ func (q *Query) parseNameAndCmd() error {
 		return fmt.Errorf("cannot parse name and cmd from null query")
 	}
 	_, comments := sqlparser.SplitMarginComments(q.SQL)
-	name, cmd, err := metadata.Parse(comments.Leading, metadata.CommentSyntaxStar)
+	name, cmd, err := metadata.Parse(comments.Leading, metadata.CommentSyntax{SlashStar: true})
 	if err != nil {
 		return err
 	} else if name == "" || cmd == "" {
