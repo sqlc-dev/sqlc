@@ -556,7 +556,10 @@ func (c *cc) convertCreateBindingStmt(n *pcast.CreateBindingStmt) ast.Node {
 }
 
 func (c *cc) convertCreateDatabaseStmt(n *pcast.CreateDatabaseStmt) ast.Node {
-	return &ast.TODO{}
+	return &ast.CreateSchemaStmt{
+		Name:        &n.Name,
+		IfNotExists: n.IfNotExists,
+	}
 }
 
 func (c *cc) convertCreateIndexStmt(n *pcast.CreateIndexStmt) ast.Node {
