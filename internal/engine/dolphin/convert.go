@@ -603,7 +603,12 @@ func (c *cc) convertDropBindingStmt(n *pcast.DropBindingStmt) ast.Node {
 }
 
 func (c *cc) convertDropDatabaseStmt(n *pcast.DropDatabaseStmt) ast.Node {
-	return &ast.TODO{}
+	return &ast.DropSchemaStmt{
+		MissingOk: !n.IfExists,
+		Schemas: []*ast.String{
+			{Str: n.Name},
+		},
+	}
 }
 
 func (c *cc) convertDropIndexStmt(n *pcast.DropIndexStmt) ast.Node {
