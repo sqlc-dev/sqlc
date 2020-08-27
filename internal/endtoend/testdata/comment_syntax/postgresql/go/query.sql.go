@@ -9,22 +9,22 @@ import (
 )
 
 const doubleDash = `-- name: DoubleDash :one
-SELECT bar FROM foo WHERE bar = $1
+SELECT bar FROM foo LIMIT 1
 `
 
-func (q *Queries) DoubleDash(ctx context.Context, bar sql.NullString) (sql.NullString, error) {
-	row := q.db.QueryRowContext(ctx, doubleDash, bar)
+func (q *Queries) DoubleDash(ctx context.Context) (sql.NullString, error) {
+	row := q.db.QueryRowContext(ctx, doubleDash)
 	var bar sql.NullString
 	err := row.Scan(&bar)
 	return bar, err
 }
 
 const slashStar = `-- name: SlashStar :one
-SELECT bar FROM foo WHERE bar = $1
+SELECT bar FROM foo LIMIT 1
 `
 
-func (q *Queries) SlashStar(ctx context.Context, bar sql.NullString) (sql.NullString, error) {
-	row := q.db.QueryRowContext(ctx, slashStar, bar)
+func (q *Queries) SlashStar(ctx context.Context) (sql.NullString, error) {
+	row := q.db.QueryRowContext(ctx, slashStar)
 	var bar sql.NullString
 	err := row.Scan(&bar)
 	return bar, err

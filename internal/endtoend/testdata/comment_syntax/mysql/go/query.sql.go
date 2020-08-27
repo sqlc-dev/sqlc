@@ -9,7 +9,7 @@ import (
 )
 
 const doubleDash = `-- name: DoubleDash :one
-SELECT bar FROM foo WHERE bar = $1
+SELECT bar FROM foo LIMIT 1
 `
 
 func (q *Queries) DoubleDash(ctx context.Context) (sql.NullString, error) {
@@ -21,7 +21,7 @@ func (q *Queries) DoubleDash(ctx context.Context) (sql.NullString, error) {
 
 const hash = `-- name: Hash :one
 # name: Hash :one
-SELECT bar FROM foo WHERE bar = $1
+SELECT bar FROM foo LIMIT 1
 `
 
 func (q *Queries) Hash(ctx context.Context) (sql.NullString, error) {
@@ -32,7 +32,7 @@ func (q *Queries) Hash(ctx context.Context) (sql.NullString, error) {
 }
 
 const slashStar = `-- name: SlashStar :one
-SELECT bar FROM foo WHERE bar = $1
+SELECT bar FROM foo LIMIT 1
 `
 
 func (q *Queries) SlashStar(ctx context.Context) (sql.NullString, error) {
