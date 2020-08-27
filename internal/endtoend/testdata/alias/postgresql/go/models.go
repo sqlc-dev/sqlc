@@ -2,15 +2,8 @@
 
 package querytest
 
-import (
-	"database/sql"
-)
+import ()
 
 type Bar struct {
 	ID int32
-}
-
-type Foo struct {
-	ID  int32
-	Bar sql.NullInt32
 }
