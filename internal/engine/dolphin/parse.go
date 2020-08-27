@@ -81,6 +81,11 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 	return stmts, nil
 }
 
+// https://dev.mysql.com/doc/refman/8.0/en/comments.html
 func (p *Parser) CommentSyntax() metadata.CommentSyntax {
-	return metadata.CommentSyntaxStar
+	return metadata.CommentSyntax{
+		Dash:      true,
+		SlashStar: true,
+		Hash:      true,
+	}
 }

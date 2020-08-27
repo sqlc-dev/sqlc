@@ -11,7 +11,7 @@ func TestParseMetadata(t *testing.T) {
 		`-- name: CreateFoo :one something`,
 		`-- name: `,
 	} {
-		if _, _, err := Parse(query, CommentSyntaxDash); err == nil {
+		if _, _, err := Parse(query, CommentSyntax{Dash: true}); err == nil {
 			t.Errorf("expected invalid metadata: %q", query)
 		}
 	}

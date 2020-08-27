@@ -6,13 +6,11 @@ import (
 	"unicode"
 )
 
-type CommentSyntax int
-
-const (
-	CommentSyntaxDash CommentSyntax = iota
-	CommentSyntaxStar               // Note: this is the only style supported by the MySQL sqlparser
-	CommentSyntaxHash
-)
+type CommentSyntax struct {
+	Dash      bool
+	Hash      bool
+	SlashStar bool
+}
 
 const (
 	CmdExec       = ":exec"
@@ -43,15 +41,34 @@ func validateQueryName(name string) error {
 
 func Parse(t string, commentStyle CommentSyntax) (string, string, error) {
 	for _, line := range strings.Split(t, "\n") {
-		if commentStyle == CommentSyntaxDash && !strings.HasPrefix(line, "-- name:") {
+		var prefix string
+		if strings.HasPrefix(line, "--") {
+			if !commentStyle.Dash {
+				continue
+			}
+			prefix = "-- name:"
+		}
+		if strings.HasPrefix(line, "/*") {
+			if !commentStyle.SlashStar {
+				continue
+			}
+			prefix = "/* name:"
+		}
+		if strings.HasPrefix(line, "#") {
+			if !commentStyle.Hash {
+				continue
+			}
+			prefix = "# name:"
+		}
+		if prefix == "" {
 			continue
 		}
-		if commentStyle == CommentSyntaxStar && !strings.HasPrefix(line, "/* name:") {
+		if !strings.HasPrefix(line, prefix) {
 			continue
 		}
-		part := strings.Split(strings.TrimSpace(line), " ")
 
-		if commentStyle == CommentSyntaxStar {
+		part := strings.Split(strings.TrimSpace(line), " ")
+		if strings.HasPrefix(line, "/*") {
 			part = part[:len(part)-1] // removes the trailing "*/" element
 		}
 		if len(part) == 2 {
