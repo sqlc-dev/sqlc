@@ -186,11 +186,17 @@ func (c *cc) convertCreateTableStmt(n *pcast.CreateTableStmt) ast.Node {
 }
 
 func (c *cc) convertColumnNameExpr(n *pcast.ColumnNameExpr) *ast.ColumnRef {
+	var items []ast.Node
+	if schema := n.Name.Schema.String(); schema != "" {
+		items = append(items, &ast.String{Str: schema})
+	}
+	if table := n.Name.Table.String(); table != "" {
+		items = append(items, &ast.String{Str: table})
+	}
+	items = append(items, &ast.String{Str: n.Name.Name.String()})
 	return &ast.ColumnRef{
 		Fields: &ast.List{
-			Items: []ast.Node{
-				&ast.String{Str: n.Name.Name.String()},
-			},
+			Items: items,
 		},
 	}
 }
@@ -358,6 +364,7 @@ func (c *cc) convertSelectField(n *pcast.SelectField) *ast.ResTarget {
 }
 
 func (c *cc) convertSelectStmt(n *pcast.SelectStmt) *ast.SelectStmt {
+	debug.Dump(n)
 	stmt := &ast.SelectStmt{
 		TargetList:  c.convertFieldList(n.Fields),
 		FromClause:  c.convertTableRefsClause(n.From),
@@ -375,22 +382,25 @@ func (c *cc) convertSubqueryExpr(n *pcast.SubqueryExpr) ast.Node {
 }
 
 func (c *cc) convertTableRefsClause(n *pcast.TableRefsClause) *ast.List {
-	var tables []ast.Node
-	if n == nil {
-		return &ast.List{Items: tables}
+	if n == nil || n.TableRefs == nil {
+		return &ast.List{}
 	}
-	visit(n, func(n pcast.Node) {
-		name, ok := n.(*pcast.TableName)
-		if !ok {
-			return
+	if n.TableRefs.Right != nil && n.TableRefs.Left != nil {
+		return &ast.List{
+			Items: []ast.Node{&ast.JoinExpr{
+				Larg:  c.convert(n.TableRefs.Left),
+				Rarg:  c.convert(n.TableRefs.Right),
+				Quals: c.convert(n.TableRefs.On),
+			}},
 		}
-		schema := name.Schema.String()
-		rel := name.Name.String()
-		tables = append(tables, &ast.RangeVar{
-			Schemaname: &schema,
-			Relname:    &rel,
-		})
-	})
+	}
+	var tables []ast.Node
+	if n.TableRefs.Right != nil {
+		tables = append(tables, c.convert(n.TableRefs.Right))
+	}
+	if n.TableRefs.Left != nil {
+		tables = append(tables, c.convert(n.TableRefs.Left))
+	}
 	return &ast.List{Items: tables}
 }
 
@@ -736,7 +746,10 @@ func (c *cc) convertMaxValueExpr(n *pcast.MaxValueExpr) ast.Node {
 }
 
 func (c *cc) convertOnCondition(n *pcast.OnCondition) ast.Node {
-	return &ast.TODO{}
+	if c == nil {
+		return nil
+	}
+	return c.convert(n.Expr)
 }
 
 func (c *cc) convertOnDeleteOpt(n *pcast.OnDeleteOpt) ast.Node {
@@ -872,7 +885,23 @@ func (c *cc) convertTableOptimizerHint(n *pcast.TableOptimizerHint) ast.Node {
 }
 
 func (c *cc) convertTableSource(n *pcast.TableSource) ast.Node {
-	return &ast.TODO{}
+	if n == nil {
+		return &ast.TODO{}
+	}
+	name, ok := n.Source.(*pcast.TableName)
+	if !ok {
+		return &ast.TODO{}
+	}
+	schema := name.Schema.String()
+	rel := name.Name.String()
+	rv := &ast.RangeVar{
+		Schemaname: &schema,
+		Relname:    &rel,
+	}
+	if alias := n.AsName.String(); alias != "" {
+		rv.Alias = &ast.Alias{Aliasname: &alias}
+	}
+	return rv
 }
 
 func (c *cc) convertTableToTable(n *pcast.TableToTable) ast.Node {
