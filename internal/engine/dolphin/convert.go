@@ -364,7 +364,6 @@ func (c *cc) convertSelectField(n *pcast.SelectField) *ast.ResTarget {
 }
 
 func (c *cc) convertSelectStmt(n *pcast.SelectStmt) *ast.SelectStmt {
-	debug.Dump(n)
 	stmt := &ast.SelectStmt{
 		TargetList:  c.convertFieldList(n.Fields),
 		FromClause:  c.convertTableRefsClause(n.From),
@@ -382,26 +381,10 @@ func (c *cc) convertSubqueryExpr(n *pcast.SubqueryExpr) ast.Node {
 }
 
 func (c *cc) convertTableRefsClause(n *pcast.TableRefsClause) *ast.List {
-	if n == nil || n.TableRefs == nil {
+	if n == nil {
 		return &ast.List{}
 	}
-	if n.TableRefs.Right != nil && n.TableRefs.Left != nil {
-		return &ast.List{
-			Items: []ast.Node{&ast.JoinExpr{
-				Larg:  c.convert(n.TableRefs.Left),
-				Rarg:  c.convert(n.TableRefs.Right),
-				Quals: c.convert(n.TableRefs.On),
-			}},
-		}
-	}
-	var tables []ast.Node
-	if n.TableRefs.Right != nil {
-		tables = append(tables, c.convert(n.TableRefs.Right))
-	}
-	if n.TableRefs.Left != nil {
-		tables = append(tables, c.convert(n.TableRefs.Left))
-	}
-	return &ast.List{Items: tables}
+	return c.convertJoin(n.TableRefs)
 }
 
 func (c *cc) convertUpdateStmt(n *pcast.UpdateStmt) *ast.UpdateStmt {
@@ -713,8 +696,27 @@ func (c *cc) convertIsTruthExpr(n *pcast.IsTruthExpr) ast.Node {
 	return &ast.TODO{}
 }
 
-func (c *cc) convertJoin(n *pcast.Join) ast.Node {
-	return &ast.TODO{}
+func (c *cc) convertJoin(n *pcast.Join) *ast.List {
+	if n == nil {
+		return &ast.List{}
+	}
+	if n.Right != nil && n.Left != nil {
+		return &ast.List{
+			Items: []ast.Node{&ast.JoinExpr{
+				Larg:  c.convert(n.Left),
+				Rarg:  c.convert(n.Right),
+				Quals: c.convert(n.On),
+			}},
+		}
+	}
+	var tables []ast.Node
+	if n.Right != nil {
+		tables = append(tables, c.convert(n.Right))
+	}
+	if n.Left != nil {
+		tables = append(tables, c.convert(n.Left))
+	}
+	return &ast.List{Items: tables}
 }
 
 func (c *cc) convertKillStmt(n *pcast.KillStmt) ast.Node {
@@ -746,7 +748,7 @@ func (c *cc) convertMaxValueExpr(n *pcast.MaxValueExpr) ast.Node {
 }
 
 func (c *cc) convertOnCondition(n *pcast.OnCondition) ast.Node {
-	if c == nil {
+	if n == nil {
 		return nil
 	}
 	return c.convert(n.Expr)
