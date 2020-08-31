@@ -71,6 +71,20 @@ func parseTableName(n *pcast.TableName) *ast.TableName {
 	}
 }
 
+func toList(node pcast.Node) *ast.List {
+	var items []ast.Node
+	switch n := node.(type) {
+	case *pcast.TableName:
+		if schema := n.Schema.String(); schema != "" {
+			items = append(items, &ast.String{Str: schema})
+		}
+		items = append(items, &ast.String{Str: n.Name.String()})
+	default:
+		return nil
+	}
+	return &ast.List{Items: items}
+}
+
 func isNotNull(n *pcast.ColumnDef) bool {
 	for i := range n.Options {
 		if n.Options[i].Tp == pcast.ColumnOptionNotNull {
