@@ -108,12 +108,60 @@ func (c *cc) convertAssignment(n *pcast.Assignment) *ast.ResTarget {
 	}
 }
 
+// TODO: These codes should be defined in the sql/lang package
 func opToName(o opcode.Op) string {
 	switch o {
+	// case opcode.And:
+	// case opcode.BitNeg:
+	// case opcode.Case:
+	// case opcode.Div:
 	case opcode.EQ:
 		return "="
+	case opcode.GE:
+		return ">="
+	case opcode.GT:
+		return ">"
+		// case opcode.In:
+	case opcode.IntDiv:
+		return "/"
+	// case opcode.IsFalsity:
+	// case opcode.IsNull:
+	// case opcode.IsTruth:
+	case opcode.LE:
+		return "<="
+	case opcode.LT:
+		return "<"
+	case opcode.LeftShift:
+		return "<<"
+		// case opcode.Like:
+	case opcode.LogicAnd:
+		return "&"
+	case opcode.LogicOr:
+		return "|"
+	// case opcode.LogicXor:
+	case opcode.Minus:
+		return "-"
+	case opcode.Mod:
+		return "%"
+	case opcode.Mul:
+		return "*"
+	case opcode.NE:
+		return "!="
+	case opcode.Not:
+		return "!"
+	// case opcode.NullEQ:
+	// case opcode.Or:
+	case opcode.Plus:
+		return "+"
+	case opcode.Regexp:
+		return "~"
+	case opcode.RightShift:
+		return ">>"
+	case opcode.Xor:
+		return "#"
+	default:
+		return o.String()
 	}
-	return o.String()
 }
 
 func (c *cc) convertBinaryOperationExpr(n *pcast.BinaryOperationExpr) ast.Node {
@@ -874,8 +922,13 @@ func (c *cc) convertSplitRegionStmt(n *pcast.SplitRegionStmt) ast.Node {
 	return &ast.TODO{}
 }
 
-func (c *cc) convertTableName(n *pcast.TableName) ast.Node {
-	return &ast.TODO{}
+func (c *cc) convertTableName(n *pcast.TableName) *ast.RangeVar {
+	schema := n.Schema.String()
+	rel := n.Name.String()
+	return &ast.RangeVar{
+		Schemaname: &schema,
+		Relname:    &rel,
+	}
 }
 
 func (c *cc) convertTableNameExpr(n *pcast.TableNameExpr) ast.Node {
@@ -886,24 +939,32 @@ func (c *cc) convertTableOptimizerHint(n *pcast.TableOptimizerHint) ast.Node {
 	return &ast.TODO{}
 }
 
-func (c *cc) convertTableSource(n *pcast.TableSource) ast.Node {
-	if n == nil {
+func (c *cc) convertTableSource(node *pcast.TableSource) ast.Node {
+	if node == nil {
 		return &ast.TODO{}
 	}
-	name, ok := n.Source.(*pcast.TableName)
-	if !ok {
+	alias := node.AsName.String()
+	switch n := node.Source.(type) {
+
+	case *pcast.SelectStmt:
+		rs := &ast.RangeSubselect{
+			Subquery: c.convert(n),
+		}
+		if alias != "" {
+			rs.Alias = &ast.Alias{Aliasname: &alias}
+		}
+		return rs
+
+	case *pcast.TableName:
+		rv := c.convertTableName(n)
+		if alias != "" {
+			rv.Alias = &ast.Alias{Aliasname: &alias}
+		}
+		return rv
+
+	default:
 		return &ast.TODO{}
 	}
-	schema := name.Schema.String()
-	rel := name.Name.String()
-	rv := &ast.RangeVar{
-		Schemaname: &schema,
-		Relname:    &rel,
-	}
-	if alias := n.AsName.String(); alias != "" {
-		rv.Alias = &ast.Alias{Aliasname: &alias}
-	}
-	return rv
 }
 
 func (c *cc) convertTableToTable(n *pcast.TableToTable) ast.Node {
