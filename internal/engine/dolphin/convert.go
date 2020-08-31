@@ -108,6 +108,7 @@ func (c *cc) convertAssignment(n *pcast.Assignment) *ast.ResTarget {
 	}
 }
 
+// TODO: These codes should be defined in the sql/lang package
 func opToName(o opcode.Op) string {
 	switch o {
 	// case opcode.And:
@@ -116,33 +117,48 @@ func opToName(o opcode.Op) string {
 	// case opcode.Div:
 	case opcode.EQ:
 		return "="
-	// case opcode.GE:
-	// case opcode.GT:
-	// case opcode.In:
-	// case opcode.IntDiv:
+	case opcode.GE:
+		return ">="
+	case opcode.GT:
+		return ">"
+		// case opcode.In:
+	case opcode.IntDiv:
+		return "/"
 	// case opcode.IsFalsity:
 	// case opcode.IsNull:
 	// case opcode.IsTruth:
-	// case opcode.LE:
-	// case opcode.LT:
-	// case opcode.LeftShift:
-	// case opcode.Like:
-	// case opcode.LogicAnd:
-	// case opcode.LogicOr:
+	case opcode.LE:
+		return "<="
+	case opcode.LT:
+		return "<"
+	case opcode.LeftShift:
+		return "<<"
+		// case opcode.Like:
+	case opcode.LogicAnd:
+		return "&"
+	case opcode.LogicOr:
+		return "|"
 	// case opcode.LogicXor:
 	case opcode.Minus:
 		return "-"
-	// case opcode.Mod:
-	// case opcode.Mul:
-	// case opcode.NE:
-	// case opcode.Not:
+	case opcode.Mod:
+		return "%"
+	case opcode.Mul:
+		return "*"
+	case opcode.NE:
+		return "!="
+	case opcode.Not:
+		return "!"
 	// case opcode.NullEQ:
 	// case opcode.Or:
 	case opcode.Plus:
 		return "+"
-		// case opcode.Regexp:
-		// case opcode.RightShift:
-		// case opcode.Xor:
+	case opcode.Regexp:
+		return "~"
+	case opcode.RightShift:
+		return ">>"
+	case opcode.Xor:
+		return "#"
 	default:
 		return o.String()
 	}

@@ -11,15 +11,15 @@ const subqueryCalcColumn = `-- name: SubqueryCalcColumn :many
 SELECT sum FROM (SELECT a + b AS sum FROM foo) AS f
 `
 
-func (q *Queries) SubqueryCalcColumn(ctx context.Context) ([]interface{}, error) {
+func (q *Queries) SubqueryCalcColumn(ctx context.Context) ([]int32, error) {
 	rows, err := q.db.QueryContext(ctx, subqueryCalcColumn)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []interface{}
+	var items []int32
 	for rows.Next() {
-		var sum interface{}
+		var sum int32
 		if err := rows.Scan(&sum); err != nil {
 			return nil, err
 		}

@@ -64,8 +64,7 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 				// TODO: Generate a name for these operations
 				cols = append(cols, &Column{Name: name, DataType: "bool", NotNull: true})
 			case lang.IsMathematicalOperator(astutils.Join(n.Name, "")):
-				// TODO: Generate correct numeric type
-				cols = append(cols, &Column{Name: name, DataType: "pg_catalog.int4", NotNull: true})
+				cols = append(cols, &Column{Name: name, DataType: "int", NotNull: true})
 			default:
 				cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
 			}
