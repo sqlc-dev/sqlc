@@ -434,11 +434,11 @@ sqlc currently only supports PostgreSQL / Go. MySQL and Kotlin support have
 been merged, but both are marked as experimental. SQLite and TypeScript support
 are planned.
 
-| Language     | PostgreSQL       | MySQL            | SQLite           |
-| ------------ |:----------------:|:----------------:|:----------------:|
-| Go           |:white_check_mark:|:warning:         |:timer_clock:     |
-| Kotlin       |:warning:         |:timer_clock:     |:timer_clock:     |
-| TypeScript   |:timer_clock:     |:timer_clock:     |:timer_clock:     |
+| Language     | PostgreSQL       | MySQL            |
+| ------------ |:----------------:|:----------------:|
+| Go           | :white_check_mark: - Stable | :bug: - Beta |
+| TypeScript   | :timer_clock: - Planned | :timer_clock: - Planned |
+| Kotlin       | :warning: - Experimental | |
 
 If you'd like to add another database or language, we'd welcome a contribution.
 
