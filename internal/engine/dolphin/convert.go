@@ -922,8 +922,10 @@ func (c *cc) convertTrimDirectionExpr(n *pcast.TrimDirectionExpr) ast.Node {
 	return &ast.TODO{}
 }
 
-func (c *cc) convertTruncateTableStmt(n *pcast.TruncateTableStmt) ast.Node {
-	return &ast.TODO{}
+func (c *cc) convertTruncateTableStmt(n *pcast.TruncateTableStmt) *ast.TruncateStmt {
+	return &ast.TruncateStmt{
+		Relations: toList(n.Table),
+	}
 }
 
 func (c *cc) convertUnaryOperationExpr(n *pcast.UnaryOperationExpr) ast.Node {
