@@ -98,11 +98,19 @@ func resolveCatalogRefs(c *catalog.Catalog, rvs []*ast.RangeVar, args []paramRef
 			})
 
 			if len(list.Items) == 0 {
-				return nil, &sqlerr.Error{
-					Code:     "XXXXX",
-					Message:  "no column reference found",
-					Location: n.Location,
+				// TODO: Move this to database-specific engine package
+				dataType := "any"
+				if astutils.Join(n.Name, ".") == "||" {
+					dataType = "string"
 				}
+				a = append(a, Parameter{
+					Number: ref.ref.Number,
+					Column: &Column{
+						Name:     parameterName(ref.ref.Number, ""),
+						DataType: dataType,
+					},
+				})
+				continue
 			}
 
 			switch left := list.Items[0].(type) {
