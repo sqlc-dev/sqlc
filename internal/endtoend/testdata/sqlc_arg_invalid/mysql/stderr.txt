@@ -1,0 +1,5 @@
+# package querytest
+query.sql:7:1: function "sqlc.argh" does not exist
+query.sql:10:45: expected 1 parameter to sqlc.arg; got 2
+query.sql:13:45: expected parameter to sqlc.arg to be string or reference; got *ast.FuncCall
+query.sql:16:1: query mixes positional parameters ($1) and named parameters (sqlc.arg or @arg)

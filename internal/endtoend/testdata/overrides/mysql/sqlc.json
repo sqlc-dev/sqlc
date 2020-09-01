@@ -1,0 +1,18 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "path": "go",
+      "name": "override",
+      "engine": "mysql:beta",
+      "schema": "schema.sql",
+      "queries": "query.sql",
+      "overrides": [
+        {
+          "go_type": "github.com/kyleconroy/sqlc-testdata/pkg.CustomType",
+          "column": "foo.retyped"
+        }
+      ]
+    }
+  ]
+}

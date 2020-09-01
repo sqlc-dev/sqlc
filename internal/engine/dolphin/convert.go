@@ -17,6 +17,13 @@ type cc struct {
 	paramCount int
 }
 
+func todo(n pcast.Node) *ast.TODO {
+	if debug.Active {
+		log.Printf("dolphin.convert: Unknown node type %T\n", n)
+	}
+	return &ast.TODO{}
+}
+
 func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 	alt := &ast.AlterTableStmt{
 		Table: parseTableName(n.Table),
@@ -281,7 +288,7 @@ func (c *cc) convertDeleteStmt(n *pcast.DeleteStmt) *ast.DeleteStmt {
 func (c *cc) convertDropTableStmt(n *pcast.DropTableStmt) ast.Node {
 	// TODO: Remove once views are supported.
 	if n.IsView {
-		return &ast.TODO{}
+		return todo(n)
 	}
 	drop := &ast.DropTableStmt{IfExists: n.IfExists}
 	for _, name := range n.Tables {
@@ -483,7 +490,7 @@ func (c *cc) convertWildCardField(n *pcast.WildCardField) *ast.ColumnRef {
 }
 
 func (c *cc) convertAdminStmt(n *pcast.AdminStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertAggregateFuncExpr(n *pcast.AggregateFuncExpr) *ast.FuncCall {
@@ -517,83 +524,83 @@ func (c *cc) convertAggregateFuncExpr(n *pcast.AggregateFuncExpr) *ast.FuncCall 
 }
 
 func (c *cc) convertAlterDatabaseStmt(n *pcast.AlterDatabaseStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertAlterInstanceStmt(n *pcast.AlterInstanceStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertAlterTableSpec(n *pcast.AlterTableSpec) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertAlterUserStmt(n *pcast.AlterUserStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertAnalyzeTableStmt(n *pcast.AnalyzeTableStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertBRIEStmt(n *pcast.BRIEStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertBeginStmt(n *pcast.BeginStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertBetweenExpr(n *pcast.BetweenExpr) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertBinlogStmt(n *pcast.BinlogStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertByItem(n *pcast.ByItem) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertCaseExpr(n *pcast.CaseExpr) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertChangeStmt(n *pcast.ChangeStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertCleanupTableLockStmt(n *pcast.CleanupTableLockStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertColumnDef(n *pcast.ColumnDef) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertColumnName(n *pcast.ColumnName) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertColumnPosition(n *pcast.ColumnPosition) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertCommitStmt(n *pcast.CommitStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertCompareSubqueryExpr(n *pcast.CompareSubqueryExpr) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertConstraint(n *pcast.Constraint) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertCreateBindingStmt(n *pcast.CreateBindingStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertCreateDatabaseStmt(n *pcast.CreateDatabaseStmt) ast.Node {
@@ -604,43 +611,43 @@ func (c *cc) convertCreateDatabaseStmt(n *pcast.CreateDatabaseStmt) ast.Node {
 }
 
 func (c *cc) convertCreateIndexStmt(n *pcast.CreateIndexStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertCreateSequenceStmt(n *pcast.CreateSequenceStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertCreateStatisticsStmt(n *pcast.CreateStatisticsStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertCreateUserStmt(n *pcast.CreateUserStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertCreateViewStmt(n *pcast.CreateViewStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertDeallocateStmt(n *pcast.DeallocateStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertDefaultExpr(n *pcast.DefaultExpr) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertDeleteTableList(n *pcast.DeleteTableList) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertDoStmt(n *pcast.DoStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertDropBindingStmt(n *pcast.DropBindingStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertDropDatabaseStmt(n *pcast.DropDatabaseStmt) ast.Node {
@@ -653,95 +660,95 @@ func (c *cc) convertDropDatabaseStmt(n *pcast.DropDatabaseStmt) ast.Node {
 }
 
 func (c *cc) convertDropIndexStmt(n *pcast.DropIndexStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertDropSequenceStmt(n *pcast.DropSequenceStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertDropStatisticsStmt(n *pcast.DropStatisticsStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertDropStatsStmt(n *pcast.DropStatsStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertDropUserStmt(n *pcast.DropUserStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertExecuteStmt(n *pcast.ExecuteStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertExplainForStmt(n *pcast.ExplainForStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertExplainStmt(n *pcast.ExplainStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertFlashBackTableStmt(n *pcast.FlashBackTableStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertFlushStmt(n *pcast.FlushStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertFrameBound(n *pcast.FrameBound) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertFrameClause(n *pcast.FrameClause) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertFuncCastExpr(n *pcast.FuncCastExpr) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertGetFormatSelectorExpr(n *pcast.GetFormatSelectorExpr) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertGrantRoleStmt(n *pcast.GrantRoleStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertGrantStmt(n *pcast.GrantStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertGroupByClause(n *pcast.GroupByClause) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertHavingClause(n *pcast.HavingClause) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertIndexAdviseStmt(n *pcast.IndexAdviseStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertIndexLockAndAlgorithm(n *pcast.IndexLockAndAlgorithm) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertIndexPartSpecification(n *pcast.IndexPartSpecification) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertIsNullExpr(n *pcast.IsNullExpr) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertIsTruthExpr(n *pcast.IsTruthExpr) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertJoin(n *pcast.Join) *ast.List {
@@ -768,31 +775,31 @@ func (c *cc) convertJoin(n *pcast.Join) *ast.List {
 }
 
 func (c *cc) convertKillStmt(n *pcast.KillStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertLimit(n *pcast.Limit) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertLoadDataStmt(n *pcast.LoadDataStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertLoadStatsStmt(n *pcast.LoadStatsStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertLockTablesStmt(n *pcast.LockTablesStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertMatchAgainst(n *pcast.MatchAgainst) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertMaxValueExpr(n *pcast.MaxValueExpr) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertOnCondition(n *pcast.OnCondition) ast.Node {
@@ -803,123 +810,126 @@ func (c *cc) convertOnCondition(n *pcast.OnCondition) ast.Node {
 }
 
 func (c *cc) convertOnDeleteOpt(n *pcast.OnDeleteOpt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertOnUpdateOpt(n *pcast.OnUpdateOpt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertOrderByClause(n *pcast.OrderByClause) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertParenthesesExpr(n *pcast.ParenthesesExpr) ast.Node {
-	return &ast.TODO{}
+	if n == nil {
+		return nil
+	}
+	return c.convert(n.Expr)
 }
 
 func (c *cc) convertPartitionByClause(n *pcast.PartitionByClause) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertPatternInExpr(n *pcast.PatternInExpr) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertPatternLikeExpr(n *pcast.PatternLikeExpr) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertPatternRegexpExpr(n *pcast.PatternRegexpExpr) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertPlacementSpec(n *pcast.PlacementSpec) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertPositionExpr(n *pcast.PositionExpr) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertPrepareStmt(n *pcast.PrepareStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertPrivElem(n *pcast.PrivElem) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertRecoverTableStmt(n *pcast.RecoverTableStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertReferenceDef(n *pcast.ReferenceDef) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertRepairTableStmt(n *pcast.RepairTableStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertRevokeRoleStmt(n *pcast.RevokeRoleStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertRevokeStmt(n *pcast.RevokeStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertRollbackStmt(n *pcast.RollbackStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertRowExpr(n *pcast.RowExpr) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertSetCollationExpr(n *pcast.SetCollationExpr) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertSetConfigStmt(n *pcast.SetConfigStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertSetDefaultRoleStmt(n *pcast.SetDefaultRoleStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertSetOprSelectList(n *pcast.SetOprSelectList) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertSetOprStmt(n *pcast.SetOprStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertSetPwdStmt(n *pcast.SetPwdStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertSetRoleStmt(n *pcast.SetRoleStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertSetStmt(n *pcast.SetStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertShowStmt(n *pcast.ShowStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertShutdownStmt(n *pcast.ShutdownStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertSplitRegionStmt(n *pcast.SplitRegionStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertTableName(n *pcast.TableName) *ast.RangeVar {
@@ -932,16 +942,16 @@ func (c *cc) convertTableName(n *pcast.TableName) *ast.RangeVar {
 }
 
 func (c *cc) convertTableNameExpr(n *pcast.TableNameExpr) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertTableOptimizerHint(n *pcast.TableOptimizerHint) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertTableSource(node *pcast.TableSource) ast.Node {
 	if node == nil {
-		return &ast.TODO{}
+		return nil
 	}
 	alias := node.AsName.String()
 	switch n := node.Source.(type) {
@@ -963,24 +973,24 @@ func (c *cc) convertTableSource(node *pcast.TableSource) ast.Node {
 		return rv
 
 	default:
-		return &ast.TODO{}
+		return todo(n)
 	}
 }
 
 func (c *cc) convertTableToTable(n *pcast.TableToTable) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertTimeUnitExpr(n *pcast.TimeUnitExpr) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertTraceStmt(n *pcast.TraceStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertTrimDirectionExpr(n *pcast.TrimDirectionExpr) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertTruncateTableStmt(n *pcast.TruncateTableStmt) *ast.TruncateStmt {
@@ -990,39 +1000,39 @@ func (c *cc) convertTruncateTableStmt(n *pcast.TruncateTableStmt) *ast.TruncateS
 }
 
 func (c *cc) convertUnaryOperationExpr(n *pcast.UnaryOperationExpr) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertUnlockTablesStmt(n *pcast.UnlockTablesStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertUseStmt(n *pcast.UseStmt) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertValuesExpr(n *pcast.ValuesExpr) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertVariableAssignment(n *pcast.VariableAssignment) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertVariableExpr(n *pcast.VariableExpr) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertWhenClause(n *pcast.WhenClause) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertWindowFuncExpr(n *pcast.WindowFuncExpr) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convertWindowSpec(n *pcast.WindowSpec) ast.Node {
-	return &ast.TODO{}
+	return todo(n)
 }
 
 func (c *cc) convert(node pcast.Node) ast.Node {
@@ -1434,9 +1444,6 @@ func (c *cc) convert(node pcast.Node) ast.Node {
 		return nil
 
 	default:
-		if debug.Active {
-			log.Printf("dolphin.convert: Unknown node type %T\n", n)
-		}
-		return &ast.TODO{}
+		return todo(n)
 	}
 }
