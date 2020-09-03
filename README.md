@@ -23,7 +23,7 @@ you ever:
 
 - Mixed up the order of the arguments when invoking the query so they didn't
   match up with the SQL text
-- Updated the name of a column in one query both not another
+- Updated the name of a column in one query but not another
 - Mistyped the name of a column in a query
 - Changed the number of arguments in a query but forgot to pass the additional
   values
