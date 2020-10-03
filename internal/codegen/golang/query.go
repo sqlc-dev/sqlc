@@ -101,3 +101,7 @@ type Query struct {
 	Ret          QueryValue
 	Arg          QueryValue
 }
+
+func (q Query) hasRetType() bool {
+	return q.Cmd != ":exec" && !q.Ret.isEmpty()
+}
