@@ -12,24 +12,28 @@ import (
 func mysqlType(r *compiler.Result, col *compiler.Column, settings config.CombinedSettings) string {
 	columnType := col.DataType
 	notNull := col.NotNull || col.IsArray
+	pointer := ""
+	if !notNull && settings.Go.UsePointers {
+		pointer = "*"
+	}
 
 	switch columnType {
 
 	case "varchar", "text", "char", "tinytext", "mediumtext", "longtext":
-		if notNull {
-			return "string"
+		if notNull || pointer != "" {
+			return pointer + "string"
 		}
 		return "sql.NullString"
 
 	case "int", "integer", "smallint", "mediumint", "year":
-		if notNull {
-			return "int32"
+		if notNull || pointer != "" {
+			return pointer + "int32"
 		}
 		return "sql.NullInt32"
 
 	case "bigint":
-		if notNull {
-			return "int64"
+		if notNull || pointer != "" {
+			return pointer + "int64"
 		}
 		return "sql.NullInt64"
 
@@ -37,14 +41,14 @@ func mysqlType(r *compiler.Result, col *compiler.Column, settings config.Combine
 		return "[]byte"
 
 	case "double", "double precision", "real":
-		if notNull {
-			return "float64"
+		if notNull || pointer != "" {
+			return pointer + "float64"
 		}
 		return "sql.NullFloat64"
 
 	case "decimal", "dec", "fixed":
-		if notNull {
-			return "string"
+		if notNull || pointer != "" {
+			return pointer + "string"
 		}
 		return "sql.NullString"
 
@@ -53,14 +57,14 @@ func mysqlType(r *compiler.Result, col *compiler.Column, settings config.Combine
 		return "string"
 
 	case "date", "timestamp", "datetime", "time":
-		if notNull {
-			return "time.Time"
+		if notNull || pointer != "" {
+			return pointer + "time.Time"
 		}
 		return "sql.NullTime"
 
 	case "boolean", "bool", "tinyint":
-		if notNull {
-			return "bool"
+		if notNull || pointer != "" {
+			return pointer + "bool"
 		}
 		return "sql.NullBool"
 

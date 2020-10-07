@@ -12,47 +12,51 @@ import (
 func postgresType(r *compiler.Result, col *compiler.Column, settings config.CombinedSettings) string {
 	columnType := col.DataType
 	notNull := col.NotNull || col.IsArray
+	pointer := ""
+	if !notNull && settings.Go.UsePointers {
+		pointer = "*"
+	}
 
 	switch columnType {
 	case "serial", "serial4", "pg_catalog.serial4":
-		if notNull {
-			return "int32"
+		if notNull || pointer != "" {
+			return pointer + "int32"
 		}
 		return "sql.NullInt32"
 
 	case "bigserial", "serial8", "pg_catalog.serial8":
-		if notNull {
-			return "int64"
+		if notNull || pointer != "" {
+			return pointer + "int64"
 		}
 		return "sql.NullInt64"
 
 	case "smallserial", "serial2", "pg_catalog.serial2":
-		return "int16"
+		return pointer + "int16"
 
 	case "integer", "int", "int4", "pg_catalog.int4":
-		if notNull {
-			return "int32"
+		if notNull || pointer != "" {
+			return pointer + "int32"
 		}
 		return "sql.NullInt32"
 
 	case "bigint", "int8", "pg_catalog.int8":
-		if notNull {
-			return "int64"
+		if notNull || pointer != "" {
+			return pointer + "int64"
 		}
 		return "sql.NullInt64"
 
 	case "smallint", "int2", "pg_catalog.int2":
-		return "int16"
+		return pointer + "int16"
 
 	case "float", "double precision", "float8", "pg_catalog.float8":
-		if notNull {
-			return "float64"
+		if notNull || pointer != "" {
+			return pointer + "float64"
 		}
 		return "sql.NullFloat64"
 
 	case "real", "float4", "pg_catalog.float4":
-		if notNull {
-			return "float32"
+		if notNull || pointer != "" {
+			return pointer + "float32"
 		}
 		return "sql.NullFloat64" // TODO: Change to sql.NullFloat32 after updating the go.mod file
 
@@ -61,14 +65,14 @@ func postgresType(r *compiler.Result, col *compiler.Column, settings config.Comb
 		// returns numerics as strings.
 		//
 		// https://github.com/lib/pq/issues/648
-		if notNull {
-			return "string"
+		if notNull || pointer != "" {
+			return pointer + "string"
 		}
 		return "sql.NullString"
 
 	case "boolean", "bool", "pg_catalog.bool":
-		if notNull {
-			return "bool"
+		if notNull || pointer != "" {
+			return pointer + "bool"
 		}
 		return "sql.NullBool"
 
@@ -79,37 +83,37 @@ func postgresType(r *compiler.Result, col *compiler.Column, settings config.Comb
 		return "[]byte"
 
 	case "date":
-		if notNull {
-			return "time.Time"
+		if notNull || pointer != "" {
+			return pointer + "time.Time"
 		}
 		return "sql.NullTime"
 
 	case "pg_catalog.time", "pg_catalog.timetz":
-		if notNull {
-			return "time.Time"
+		if notNull || pointer != "" {
+			return pointer + "time.Time"
 		}
 		return "sql.NullTime"
 
 	case "pg_catalog.timestamp", "pg_catalog.timestamptz", "timestamptz":
-		if notNull {
-			return "time.Time"
+		if notNull || pointer != "" {
+			return pointer + "time.Time"
 		}
 		return "sql.NullTime"
 
 	case "text", "pg_catalog.varchar", "pg_catalog.bpchar", "string":
-		if notNull {
-			return "string"
+		if notNull || pointer != "" {
+			return pointer + "string"
 		}
 		return "sql.NullString"
 
 	case "uuid":
-		return "uuid.UUID"
+		return pointer + "uuid.UUID"
 
 	case "inet", "cidr":
-		return "net.IP"
+		return pointer + "net.IP"
 
 	case "macaddr", "macaddr8":
-		return "net.HardwareAddr"
+		return pointer + "net.HardwareAddr"
 
 	case "ltree", "lquery", "ltxtquery":
 		// This module implements a data type ltree for representing labels
@@ -117,18 +121,21 @@ func postgresType(r *compiler.Result, col *compiler.Column, settings config.Comb
 		// facilities for searching through label trees are provided.
 		//
 		// https://www.postgresql.org/docs/current/ltree.html
-		if notNull {
-			return "string"
+		if notNull || pointer != "" {
+			return pointer + "string"
 		}
 		return "sql.NullString"
 
 	case "interval", "pg_catalog.interval":
-		if notNull {
-			return "int64"
+		if notNull || pointer != "" {
+			return pointer + "int64"
 		}
 		return "sql.NullInt64"
 
 	case "void":
+		if pointer != "" {
+			return "*bool"
+		}
 		// A void value always returns NULL. Since there is no built-in NULL
 		// value into the SQL package, we'll use sql.NullBool
 		return "sql.NullBool"
@@ -160,8 +167,8 @@ func postgresType(r *compiler.Result, col *compiler.Column, settings config.Comb
 						return StructName(schema.Name+"_"+t.Name, settings)
 					}
 				case *catalog.CompositeType:
-					if notNull {
-						return "string"
+					if notNull || pointer != "" {
+						return pointer + "string"
 					}
 					return "sql.NullString"
 				}
