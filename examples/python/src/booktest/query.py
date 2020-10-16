@@ -27,7 +27,7 @@ WHERE tags && :p1\\:\\:varchar[]
 class BooksByTagsRow:
     book_id: int
     title: str
-    name: str
+    name: Optional[str]
     isbn: str
     tags: List[str]
 
