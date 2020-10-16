@@ -220,14 +220,6 @@ func primaryRangeVarJoin(node ast.Node) *ast.RangeVar {
 	if n, ok := node.(*ast.SelectStmt); ok {
 		for _, fi := range n.FromClause.Items {
 			if j, ok := fi.(*ast.JoinExpr); ok {
-				if !isNullableJoinType(j) {
-					// there may be a nullable join expr on larg
-					if je, ok := j.Larg.(*ast.JoinExpr); ok {
-						return primaryRangeVar(je)
-					}
-					return nil
-				}
-
 				return primaryRangeVar(j)
 			}
 		}
@@ -239,8 +231,14 @@ func primaryRangeVarJoin(node ast.Node) *ast.RangeVar {
 // Return the primary range var from a from clause, e.g. RangeVar of "foo" in:
 // SELECT f.id, b.id FROM foo f LEFT JOIN bar b ON b.foo_id = f.id
 func primaryRangeVar(j *ast.JoinExpr) *ast.RangeVar {
-	if rangeVar, ok := j.Larg.(*ast.RangeVar); ok {
+	if rangeVar, ok := j.Larg.(*ast.RangeVar); ok && isNullableJoinType(j) {
 		return rangeVar
+	} else if !isNullableJoinType(j) {
+		// there may be a nullable join expr on larg
+		if je, ok := j.Larg.(*ast.JoinExpr); ok {
+			return primaryRangeVar(je)
+		}
+		return nil
 	}
 
 	l, _ := j.Larg.(*ast.JoinExpr)
