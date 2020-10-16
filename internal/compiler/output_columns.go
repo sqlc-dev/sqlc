@@ -3,6 +3,7 @@ package compiler
 import (
 	"errors"
 	"fmt"
+	"github.com/lfittl/pg_query_go/nodes"
 
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sql/astutils"
@@ -199,7 +200,64 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 
 		}
 	}
+
+	// On certain join types (e.g. JOIN_LEFT, JOIN_FULL, JOIN_RIGHT)
+	// the referred joins may be null, thus we may have to adapt the appropriate
+	// join items to be nullable.
+	// See: https://github.com/kyleconroy/sqlc/issues/604
+	if rangeVarJoin := primaryRangeVarJoin(node); rangeVarJoin != nil {
+		for _, col := range cols {
+			col.NotNull = col.NotNull && col.Table.Name == *rangeVarJoin.Relname
+		}
+	}
+
 	return cols, nil
+}
+
+// Return the primary range var from a from clause, e.g. RangeVar of "foo" in:
+// SELECT f.id, b.id FROM foo f LEFT JOIN bar b ON b.foo_id = f.id
+func primaryRangeVarJoin(node ast.Node) *ast.RangeVar {
+	if n, ok := node.(*ast.SelectStmt); ok {
+		for _, fi := range n.FromClause.Items {
+			if j, ok := fi.(*ast.JoinExpr); ok {
+				if !isNullableJoinType(j) {
+					// there may be a nullable join expr on larg
+					if je, ok := j.Larg.(*ast.JoinExpr); ok {
+						return primaryRangeVar(je)
+					}
+					return nil
+				}
+
+				return primaryRangeVar(j)
+			}
+		}
+	}
+
+	return nil
+}
+
+// Return the primary range var from a from clause, e.g. RangeVar of "foo" in:
+// SELECT f.id, b.id FROM foo f LEFT JOIN bar b ON b.foo_id = f.id
+func primaryRangeVar(j *ast.JoinExpr) *ast.RangeVar {
+	if rangeVar, ok := j.Larg.(*ast.RangeVar); ok {
+		return rangeVar
+	}
+
+	l, _ := j.Larg.(*ast.JoinExpr)
+	return primaryRangeVar(l)
+}
+
+// Return true, if JoinExpr is a nullable join expression
+func isNullableJoinType(j *ast.JoinExpr) bool {
+	nullableJoinTypes := []pg_query.JoinType{pg_query.JOIN_LEFT, pg_query.JOIN_FULL, pg_query.JOIN_RIGHT}
+
+	for _, nj := range nullableJoinTypes {
+		if uint(j.Jointype) == uint(nj) {
+			return true
+		}
+	}
+
+	return false
 }
 
 // Compute the output columns for a statement.
