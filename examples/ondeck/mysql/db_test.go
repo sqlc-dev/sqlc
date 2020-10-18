@@ -29,6 +29,12 @@ func runOnDeckQueries(t *testing.T, q *Queries) {
 	_, err := q.CreateCity(ctx, CreateCityParams{
 		Slug: "san-francisco",
 		Name: "San Francisco",
+		Data: []byte(`
+				{
+					"key": "value",
+					"key2": "value2"
+				}
+		`),
 	})
 	if err != nil {
 		t.Fatal(err)
