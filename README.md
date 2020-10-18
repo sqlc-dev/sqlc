@@ -480,7 +480,9 @@ go test --tags=exp ./...
 
 To run the tests in the examples folder, a running PostgreSQL instance is
 required. The tests use the following environment variables to connect to the
-database:
+database
+
+#### For PostgreSQL
 
 ```
 Variable     Default Value
@@ -490,6 +492,18 @@ PG_PORT      5432
 PG_USER      postgres
 PG_PASSWORD  mysecretpassword
 PG_DATABASE  dinotest
+```
+
+#### For MySQL
+
+```
+Variable     Default Value
+-------------------------
+MYSQL_HOST      127.0.0.1
+MYSQL_PORT      3306
+MYSQL_USER      root
+MYSQL_ROOT_PASSWORD  mysecretpassword
+MYSQL_DATABASE  dinotest
 ```
 
 ```
