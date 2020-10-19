@@ -44,7 +44,7 @@ func runOnDeckQueries(t *testing.T, q *Queries) {
 		Name:            "The Fillmore",
 		City:            city.Slug,
 		SpotifyPlaylist: "spotify:uri",
-		Status:          StatusOpen,
+		Status:          VenuesStatusOpen,
 		Statuses:        join(string(StatusOpen), string(StatusClosed)),
 		Tags:            join("rock", "punk"),
 	})

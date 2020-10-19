@@ -35,7 +35,7 @@ type CreateVenueParams struct {
 	Name            string         `json:"name"`
 	City            string         `json:"city"`
 	SpotifyPlaylist string         `json:"spotify_playlist"`
-	Status          Status         `json:"status"`
+	Status          VenuesStatus   `json:"status"`
 	Statuses        sql.NullString `json:"statuses"`
 	Tags            sql.NullString `json:"tags"`
 }
