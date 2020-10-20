@@ -2,6 +2,7 @@ package catalog
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
@@ -162,7 +163,7 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 			}
 			if col.Vals != nil {
 				typeName := ast.TypeName{
-					Name: col.Colname,
+					Name: fmt.Sprintf("%s_%s", stmt.Name.Name, col.Colname),
 				}
 				s := &ast.CreateEnumStmt{TypeName: &typeName, Vals: col.Vals}
 				if err := c.createEnum(s); err != nil {
