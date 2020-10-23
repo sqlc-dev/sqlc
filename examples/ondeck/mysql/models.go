@@ -8,21 +8,21 @@ import (
 	"time"
 )
 
-type Status string
+type VenuesStatus string
 
 const (
-	StatusOpen   Status = "open"
-	StatusClosed Status = "closed"
+	VenuesStatusOpen   VenuesStatus = "open"
+	VenuesStatusClosed VenuesStatus = "closed"
 )
 
-func (e *Status) Scan(src interface{}) error {
+func (e *VenuesStatus) Scan(src interface{}) error {
 	switch s := src.(type) {
 	case []byte:
-		*e = Status(s)
+		*e = VenuesStatus(s)
 	case string:
-		*e = Status(s)
+		*e = VenuesStatus(s)
 	default:
-		return fmt.Errorf("unsupported scan type for Status: %T", src)
+		return fmt.Errorf("unsupported scan type for VenuesStatus: %T", src)
 	}
 	return nil
 }
@@ -36,7 +36,7 @@ type City struct {
 type Venue struct {
 	ID int64 `json:"id"`
 	// Venues can be either open or closed
-	Status   Status         `json:"status"`
+	Status   VenuesStatus   `json:"status"`
 	Statuses sql.NullString `json:"statuses"`
 	// This value appears in public URLs
 	Slug            string         `json:"slug"`
