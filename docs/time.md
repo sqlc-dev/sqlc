@@ -9,22 +9,20 @@ CREATE TABLE authors (
 ```
 
 All PostgreSQL time and date types are returned as `time.Time` structs. For
-null time or date values, the `NullTime` type is used from the
-`github.com/lib/pq` package.
+null time or date values, the `NullTime` type from `database/sql` is used.
 
 ```go
 package db
 
 import (
 	"time"
-
-	"github.com/lib/pq"
+	"database/sql"
 )
 
 type Author struct {
 	ID        int
 	CreatedAt time.Time
-	UpdatedAt pq.NullTime
+	UpdatedAt sql.NullTime
 }
 ```
 
