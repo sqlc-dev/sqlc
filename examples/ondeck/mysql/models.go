@@ -4,6 +4,7 @@ package ondeck
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"time"
 )
@@ -28,8 +29,9 @@ func (e *Status) Scan(src interface{}) error {
 }
 
 type City struct {
-	Slug string `json:"slug"`
-	Name string `json:"name"`
+	Slug string          `json:"slug"`
+	Name string          `json:"name"`
+	Data json.RawMessage `json:"data"`
 }
 
 // Venues are places where muisc happens

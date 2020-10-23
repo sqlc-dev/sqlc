@@ -6,29 +6,33 @@ package ondeck
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 )
 
 const createCity = `-- name: CreateCity :execresult
 INSERT INTO city (
     name,
-    slug
+    slug,
+    data
 ) VALUES (
     ?,
-    ? 
+    ?,
+    ?
 )
 `
 
 type CreateCityParams struct {
-	Name string `json:"name"`
-	Slug string `json:"slug"`
+	Name string          `json:"name"`
+	Slug string          `json:"slug"`
+	Data json.RawMessage `json:"data"`
 }
 
 func (q *Queries) CreateCity(ctx context.Context, arg CreateCityParams) (sql.Result, error) {
-	return q.exec(ctx, q.createCityStmt, createCity, arg.Name, arg.Slug)
+	return q.exec(ctx, q.createCityStmt, createCity, arg.Name, arg.Slug, arg.Data)
 }
 
 const getCity = `-- name: GetCity :one
-SELECT slug, name
+SELECT slug, name, data
 FROM city
 WHERE slug = ?
 `
@@ -36,12 +40,12 @@ WHERE slug = ?
 func (q *Queries) GetCity(ctx context.Context, slug string) (City, error) {
 	row := q.queryRow(ctx, q.getCityStmt, getCity, slug)
 	var i City
-	err := row.Scan(&i.Slug, &i.Name)
+	err := row.Scan(&i.Slug, &i.Name, &i.Data)
 	return i, err
 }
 
 const listCities = `-- name: ListCities :many
-SELECT slug, name
+SELECT slug, name, data
 FROM city
 ORDER BY name
 `
@@ -55,7 +59,7 @@ func (q *Queries) ListCities(ctx context.Context) ([]City, error) {
 	var items []City
 	for rows.Next() {
 		var i City
-		if err := rows.Scan(&i.Slug, &i.Name); err != nil {
+		if err := rows.Scan(&i.Slug, &i.Name, &i.Data); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

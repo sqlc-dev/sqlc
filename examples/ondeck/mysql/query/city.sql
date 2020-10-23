@@ -11,10 +11,12 @@ WHERE slug = ?;
 /* name: CreateCity :execresult */
 INSERT INTO city (
     name,
-    slug
+    slug,
+    data
 ) VALUES (
     ?,
-    ? 
+    ?,
+    ?
 ); 
 
 /* name: UpdateCityName :exec */

@@ -76,5 +76,10 @@ func MySQL(t *testing.T, migrations []string) (*sql.DB, func()) {
 		}
 	}
 
-	return sdb, func() {}
+	return sdb, func() {
+		// Drop the test db after test runs
+		if _, err := db.Exec("DROP DATABASE " + dbName); err != nil {
+			t.Fatal(err)
+		}
+	}
 }
