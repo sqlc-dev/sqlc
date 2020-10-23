@@ -11,15 +11,15 @@ const listFoo = `-- name: ListFoo :many
 SELECT foobar FROM foo
 `
 
-func (q *Queries) ListFoo(ctx context.Context) ([]Foobar, error) {
+func (q *Queries) ListFoo(ctx context.Context) ([]FooFoobar, error) {
 	rows, err := q.db.QueryContext(ctx, listFoo)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Foobar
+	var items []FooFoobar
 	for rows.Next() {
-		var foobar Foobar
+		var foobar FooFoobar
 		if err := rows.Scan(&foobar); err != nil {
 			return nil, err
 		}

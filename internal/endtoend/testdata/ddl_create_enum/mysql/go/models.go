@@ -6,30 +6,30 @@ import (
 	"fmt"
 )
 
-type Foobar string
+type FooFoobar string
 
 const (
-	FoobarFooA Foobar = "foo-a"
-	FoobarFooB Foobar = "foo_b"
-	FoobarFooC Foobar = "foo:c"
-	FoobarFooD Foobar = "foo/d"
-	FoobarFooe Foobar = "foo@e"
-	FoobarFoof Foobar = "foo+f"
-	FoobarFoog Foobar = "foo!g"
+	FooFoobarFooA FooFoobar = "foo-a"
+	FooFoobarFooB FooFoobar = "foo_b"
+	FooFoobarFooC FooFoobar = "foo:c"
+	FooFoobarFooD FooFoobar = "foo/d"
+	FooFoobarFooe FooFoobar = "foo@e"
+	FooFoobarFoof FooFoobar = "foo+f"
+	FooFoobarFoog FooFoobar = "foo!g"
 )
 
-func (e *Foobar) Scan(src interface{}) error {
+func (e *FooFoobar) Scan(src interface{}) error {
 	switch s := src.(type) {
 	case []byte:
-		*e = Foobar(s)
+		*e = FooFoobar(s)
 	case string:
-		*e = Foobar(s)
+		*e = FooFoobar(s)
 	default:
-		return fmt.Errorf("unsupported scan type for Foobar: %T", src)
+		return fmt.Errorf("unsupported scan type for FooFoobar: %T", src)
 	}
 	return nil
 }
 
 type Foo struct {
-	Foobar Foobar
+	Foobar FooFoobar
 }

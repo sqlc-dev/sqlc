@@ -94,7 +94,7 @@ func (i *importer) dbImports() fileImports {
 func (i *importer) interfaceImports() fileImports {
 	uses := func(name string) bool {
 		for _, q := range i.Queries {
-			if !q.Ret.isEmpty() {
+			if q.hasRetType() {
 				if strings.HasPrefix(q.Ret.Type(), name) {
 					return true
 				}
@@ -244,7 +244,7 @@ func (i *importer) queryImports(filename string) fileImports {
 
 	uses := func(name string) bool {
 		for _, q := range gq {
-			if !q.Ret.isEmpty() {
+			if q.hasRetType() {
 				if q.Ret.EmitStruct() {
 					for _, f := range q.Ret.Struct.Fields {
 						fType := strings.TrimPrefix(f.Type, "[]")
@@ -276,7 +276,7 @@ func (i *importer) queryImports(filename string) fileImports {
 
 	sliceScan := func() bool {
 		for _, q := range gq {
-			if !q.Ret.isEmpty() {
+			if q.hasRetType() {
 				if q.Ret.IsStruct() {
 					for _, f := range q.Ret.Struct.Fields {
 						if strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" {
