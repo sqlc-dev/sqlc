@@ -11,10 +11,8 @@ require (
 	github.com/jinzhu/inflection v1.0.0
 	github.com/lfittl/pg_query_go v1.0.0
 	github.com/lib/pq v1.4.0
-	github.com/pingcap/parser v0.0.0-20200623164729-3a18f1e5dceb
+	github.com/pingcap/parser v0.0.0-20201024025010-3b2fb4b41d73
 	github.com/spf13/cobra v1.0.0
 	gopkg.in/yaml.v3 v3.0.0-20200121175148-a6ecf24a6d71
 	vitess.io/vitess v0.0.0-20200617014457-5ba6549015c0
 )
-
-replace github.com/pingcap/parser => github.com/kyleconroy/parser v0.0.0-20200819185651-2caf0f596c0c
