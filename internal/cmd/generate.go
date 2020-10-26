@@ -63,7 +63,7 @@ func Generate(e Env, dir string, stderr io.Writer) (map[string]string, error) {
 	}
 
 	if !yamlMissing && !jsonMissing {
-		fmt.Fprintln(stderr, "error parsing sqlc.json: both files present")
+		fmt.Fprintln(stderr, "error: both sqlc.json and sqlc.yaml files present")
 		return nil, errors.New("sqlc.json and sqlc.yaml present")
 	}
 
@@ -71,10 +71,11 @@ func Generate(e Env, dir string, stderr io.Writer) (map[string]string, error) {
 	if yamlMissing {
 		configPath = jsonPath
 	}
+	base := filepath.Base(configPath)
 
 	blob, err := ioutil.ReadFile(configPath)
 	if err != nil {
-		fmt.Fprintln(stderr, "error parsing sqlc.json: file does not exist")
+		fmt.Fprintf(stderr, "error parsing %s: file does not exist\n", base)
 		return nil, err
 	}
 
@@ -88,7 +89,7 @@ func Generate(e Env, dir string, stderr io.Writer) (map[string]string, error) {
 		case config.ErrNoPackages:
 			fmt.Fprintf(stderr, errMessageNoPackages)
 		}
-		fmt.Fprintf(stderr, "error parsing sqlc.json: %s\n", err)
+		fmt.Fprintf(stderr, "error parsing %s: %s\n", base, err)
 		return nil, err
 	}
 
