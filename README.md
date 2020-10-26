@@ -267,7 +267,7 @@ Use "sqlc [command] --help" for more information about a command.
 
 ## Settings
 
-The `sqlc` tool is configured via a `sqlc.yaml` file. This file must be
+The `sqlc` tool is configured via a `sqlc.yaml` or `sqlc.json` file. This file must be
 in the directory where the `sqlc` command is run.
 
 ```yaml
@@ -291,9 +291,9 @@ Each package document has the following keys:
 - `path`:
   - Output directory for generated code
 - `queries`:
-  - Directory of SQL queries or path to single SQL file
+  - Directory of SQL queries or path to single SQL file; or a list of paths
 - `schema`:
-  - Directory of SQL migrations or path to single SQL file
+  - Directory of SQL migrations or path to single SQL file; or a list of paths
 - `engine`:
   - Either `postgresql` or `mysql`. Defaults to `postgresql`. MySQL support is experimental
 - `emit_json_tags`:
@@ -480,7 +480,9 @@ go test --tags=exp ./...
 
 To run the tests in the examples folder, a running PostgreSQL instance is
 required. The tests use the following environment variables to connect to the
-database:
+database
+
+#### For PostgreSQL
 
 ```
 Variable     Default Value
@@ -490,6 +492,18 @@ PG_PORT      5432
 PG_USER      postgres
 PG_PASSWORD  mysecretpassword
 PG_DATABASE  dinotest
+```
+
+#### For MySQL
+
+```
+Variable     Default Value
+-------------------------
+MYSQL_HOST      127.0.0.1
+MYSQL_PORT      3306
+MYSQL_USER      root
+MYSQL_ROOT_PASSWORD  mysecretpassword
+MYSQL_DATABASE  dinotest
 ```
 
 ```
