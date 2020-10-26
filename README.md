@@ -267,7 +267,7 @@ Use "sqlc [command] --help" for more information about a command.
 
 ## Settings
 
-The `sqlc` tool is configured via a `sqlc.yaml` file. This file must be
+The `sqlc` tool is configured via a `sqlc.yaml` or `sqlc.json` file. This file must be
 in the directory where the `sqlc` command is run.
 
 ```yaml
@@ -291,9 +291,9 @@ Each package document has the following keys:
 - `path`:
   - Output directory for generated code
 - `queries`:
-  - Directory of SQL queries or path to single SQL file
+  - Directory of SQL queries or path to single SQL file; or a list of paths
 - `schema`:
-  - Directory of SQL migrations or path to single SQL file
+  - Directory of SQL migrations or path to single SQL file; or a list of paths
 - `engine`:
   - Either `postgresql` or `mysql`. Defaults to `postgresql`. MySQL support is experimental
 - `emit_json_tags`:
