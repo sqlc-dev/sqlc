@@ -340,7 +340,7 @@ func (c *cc) convertFuncCallExpr(n *pcast.FuncCallExpr) *ast.FuncCall {
 		Funcname: &ast.List{
 			Items: items,
 		},
-		Location: n.Offset,
+		Location: n.OriginTextPosition(),
 	}
 	for _, arg := range n.Args {
 		fn.Args.Items = append(fn.Args.Items, c.convert(arg))
