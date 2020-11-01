@@ -4,5 +4,7 @@ CREATE TABLE foo (
     tags      text[] NOT NULL,
     byte_seq  bytea NOT NULL,
     retyped   text NOT NULL,
-    langs     text[]
+    langs     text[],
+    bar       text,
+    baz       uuid
 );

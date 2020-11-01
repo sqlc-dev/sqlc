@@ -11,6 +11,11 @@
         {
           "go_type": "github.com/kyleconroy/sqlc-testdata/pkg.CustomType",
           "column": "foo.retyped"
+        },
+        {
+          "go_type": "*string",
+          "db_type": "text",
+          "nullable": true
         }
       ]
     }
