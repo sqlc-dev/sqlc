@@ -10,4 +10,5 @@ type Foo struct {
 	Other   string
 	Total   int64
 	Retyped pkg.CustomType
+	Bar     *string
 }

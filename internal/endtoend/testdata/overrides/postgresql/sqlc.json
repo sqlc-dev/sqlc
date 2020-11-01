@@ -15,6 +15,16 @@
         {
           "go_type": "github.com/lib/pq.StringArray",
           "column": "foo.langs"
+        },
+        {
+          "go_type": "gopkg.in/guregu/null.v4.String",
+          "db_type": "text",
+          "nullable": true
+
+        },{
+          "db_type":"uuid",
+          "go_type": "github.com/segmentio/*ksuid.KSUID",
+          "nullable": true
         }
       ]
     }
