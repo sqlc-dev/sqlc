@@ -11,8 +11,7 @@ import (
 )
 
 func TestAuthors(t *testing.T) {
-	sdb, cleanup := sqltest.MySQL(t, []string{"schema.sql"})
-	defer cleanup()
+	sdb := sqltest.MySQL(t, []string{"schema.sql"})
 
 	ctx := context.Background()
 	db := New(sdb)

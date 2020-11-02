@@ -11,8 +11,7 @@ import (
 )
 
 func TestBooks(t *testing.T) {
-	db, cleanup := sqltest.MySQL(t, []string{"schema.sql"})
-	defer cleanup()
+	db := sqltest.MySQL(t, []string{"schema.sql"})
 
 	ctx := context.Background()
 	dq := New(db)
@@ -54,7 +53,7 @@ func TestBooks(t *testing.T) {
 		AuthorID:  int32(authorID),
 		Isbn:      "2",
 		Title:     "the second book",
-		BookType: BooksBookTypeFICTION ,
+		BookType:  BooksBookTypeFICTION,
 		Yr:        2016,
 		Available: now,
 		Tags:      "cool,unique",
