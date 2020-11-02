@@ -11,8 +11,6 @@ import (
 )
 
 func TestAuthors(t *testing.T) {
-	t.Parallel()
-
 	sdb := sqltest.MySQL(t, []string{"schema.sql"})
 
 	ctx := context.Background()
