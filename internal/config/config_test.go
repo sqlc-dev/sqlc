@@ -80,17 +80,24 @@ func TestTypeOverrides(t *testing.T) {
 			"ksuid.KSUID",
 			false,
 		},
-		// TODO: Add test for struct pointers
-		//
-		// {
-		// 	Override{
-		// 		DBType: "uuid",
-		// 		GoType:       "github.com/segmentio/*ksuid.KSUID",
-		// 	},
-		// 	"github.com/segmentio/ksuid",
-		// 	"*ksuid.KSUID",
-		// 	false,
-		// },
+		{
+			Override{
+				DBType: "uuid",
+				GoType: "github.com/segmentio/*ksuid.KSUID",
+			},
+			"github.com/segmentio/ksuid",
+			"*ksuid.KSUID",
+			false,
+		},
+		{
+			Override{
+				DBType: "citext",
+				GoType: "*string",
+			},
+			"",
+			"*string",
+			true,
+		},
 		{
 			Override{
 				DBType: "citext",
@@ -99,6 +106,24 @@ func TestTypeOverrides(t *testing.T) {
 			"",
 			"string",
 			true,
+		},
+		{
+			Override{
+				DBType: "varchar",
+				GoType: "gopkg.in/guregu/null.v4.String",
+			},
+			"gopkg.in/guregu/null.v4",
+			"null.String",
+			false,
+		},
+		{
+			Override{
+				DBType: "varchar",
+				GoType: "gopkg.in/guregu/null.v4/zero.String",
+			},
+			"gopkg.in/guregu/null.v4/zero",
+			"zero.String",
+			false,
 		},
 	} {
 		tt := test

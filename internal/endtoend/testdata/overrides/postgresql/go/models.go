@@ -5,6 +5,8 @@ package override
 import (
 	"github.com/kyleconroy/sqlc-testdata/pkg"
 	"github.com/lib/pq"
+	"github.com/segmentio/ksuid"
+	"gopkg.in/guregu/null.v4"
 )
 
 type Foo struct {
@@ -14,4 +16,6 @@ type Foo struct {
 	ByteSeq []byte
 	Retyped pkg.CustomType
 	Langs   pq.StringArray
+	Bar     null.String
+	Baz     *ksuid.KSUID
 }

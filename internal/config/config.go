@@ -10,6 +10,7 @@ import (
 	"os"
 	"strings"
 
+	"golang.org/x/tools/go/packages"
 	yaml "gopkg.in/yaml.v3"
 
 	"github.com/kyleconroy/sqlc/internal/core"
@@ -198,29 +199,23 @@ func (o *Override) Parse() error {
 		}
 	}
 
-	// validate GoType
+	// Validate Go Type
+
+	isPointer := strings.Contains(o.GoType, "*")
+	if isPointer {
+		o.GoType = strings.ReplaceAll(o.GoType, "*", "")
+	}
+
 	lastDot := strings.LastIndex(o.GoType, ".")
 	lastSlash := strings.LastIndex(o.GoType, "/")
-	typename := o.GoType
 	if lastDot == -1 && lastSlash == -1 {
 		// if the type name has no slash and no dot, validate that the type is a basic Go type
-		var found bool
-		for _, typ := range types.Typ {
-			info := typ.Info()
-			if info == 0 {
-				continue
-			}
-			if info&types.IsUntyped != 0 {
-				continue
-			}
-			if typename == typ.Name() {
-				found = true
-			}
-		}
-		if !found {
+		if t := types.Universe.Lookup(o.GoType); t != nil {
+			o.GoTypeName = t.Name()
+			o.GoBasicType = true
+		} else {
 			return fmt.Errorf("Package override `go_type` specifier %q is not a Go basic type e.g. 'string'", o.GoType)
 		}
-		o.GoBasicType = true
 	} else {
 		// assume the type lives in a Go package
 		if lastDot == -1 {
@@ -229,26 +224,23 @@ func (o *Override) Parse() error {
 		if lastSlash == -1 {
 			return fmt.Errorf("Package override `go_type` specifier %q is not the proper format, expected 'package.type', e.g. 'github.com/segmentio/ksuid.KSUID'", o.GoType)
 		}
-		typename = o.GoType[lastSlash+1:]
-		if strings.HasPrefix(typename, "go-") {
-			// a package name beginning with "go-" will give syntax errors in
-			// generated code. We should do the right thing and get the actual
-			// import name, but in lieu of that, stripping the leading "go-" may get
-			// us what we want.
-			typename = typename[len("go-"):]
+
+		importpath := o.GoType[:lastDot]
+		typename := o.GoType[lastDot+1:]
+
+		// Load given import path to ensure validity
+		p, err := packages.Load(&packages.Config{Mode: packages.NeedName}, importpath)
+		if err != nil {
+			return fmt.Errorf("Package override `go_type` import package %q could not be found, expected 'package.type' with 'package' being a valid go import path, e.g. 'gopkg.in/guregu/null.v4.String", o.GoType)
 		}
-		if strings.HasSuffix(typename, "-go") {
-			typename = typename[:len(typename)-len("-go")]
-		}
-		o.GoPackage = o.GoType[:lastDot]
+		packages.Visit(p, func(b *packages.Package) bool { return false }, func(b *packages.Package) {
+			o.GoPackage = b.PkgPath
+			o.GoTypeName = b.Name + "." + typename
+		})
 	}
-	o.GoTypeName = typename
-	isPointer := o.GoType[0] == '*'
 	if isPointer {
-		o.GoPackage = o.GoPackage[1:]
 		o.GoTypeName = "*" + o.GoTypeName
 	}
-
 	return nil
 }
 
