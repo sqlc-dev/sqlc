@@ -11,8 +11,6 @@ import (
 )
 
 func TestBooks(t *testing.T) {
-	t.Parallel()
-
 	db := sqltest.MySQL(t, []string{"schema.sql"})
 
 	ctx := context.Background()

@@ -88,7 +88,7 @@ func MySQL(t *testing.T, migrations []string) *sql.DB {
 			t.Fatalf("new pool: Could not connect to docker: %s", err)
 		}
 
-		resource, err := pool.RunWithOptions(&dockertest.RunOptions{Repository: "mysql", Tag: "8", Env: []string{
+		resource, err := pool.RunWithOptions(&dockertest.RunOptions{Repository: "mariadb", Tag: "10", Env: []string{
 			fmt.Sprintf("MYSQL_USER=%s", user),
 			fmt.Sprintf("MYSQL_ROOT_PASSWORD=%s", password),
 			fmt.Sprintf("MYSQL_DATABASE=%s", database),
