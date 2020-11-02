@@ -11,8 +11,7 @@ import (
 )
 
 func TestBooks(t *testing.T) {
-	db, cleanup := sqltest.PostgreSQL(t, []string{"schema.sql"})
-	defer cleanup()
+	db := sqltest.PostgreSQL(t, []string{"schema.sql"})
 
 	ctx := context.Background()
 	dq := New(db)
