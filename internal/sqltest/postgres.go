@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/kyleconroy/sqlc/internal/sql/sqlpath"
+	"github.com/ory/dockertest/v3"
 
 	_ "github.com/lib/pq"
 )
@@ -29,71 +30,125 @@ func id() string {
 	return string(b)
 }
 
-func PostgreSQL(t *testing.T, migrations []string) (*sql.DB, func()) {
+func PostgreSQL(t *testing.T, migrations []string) *sql.DB {
 	t.Helper()
 
-	pgUser := os.Getenv("PG_USER")
-	pgHost := os.Getenv("PG_HOST")
-	pgPort := os.Getenv("PG_PORT")
-	pgPass := os.Getenv("PG_PASSWORD")
-	pgDB := os.Getenv("PG_DATABASE")
+	user := os.Getenv("PG_USER")
+	password := os.Getenv("PG_PASSWORD")
+	database := os.Getenv("PG_DATABASE")
 
-	if pgUser == "" {
-		pgUser = "postgres"
+	if user == "" {
+		user = "postgres"
 	}
 
-	if pgPass == "" {
-		pgPass = "mysecretpassword"
+	if password == "" {
+		password = "mysecretpassword"
 	}
 
-	if pgPort == "" {
-		pgPort = "5432"
+	if database == "" {
+		database = "dinotest"
 	}
 
-	if pgHost == "" {
-		pgHost = "127.0.0.1"
-	}
+	var db *sql.DB
 
-	if pgDB == "" {
-		pgDB = "dinotest"
-	}
+	disabled := os.Getenv("DOCKERTEST_DISABLED") != ""
+	switch {
+	case disabled:
+		host := os.Getenv("PG_HOST")
+		port := os.Getenv("PG_PORT")
 
-	source := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", pgUser, pgPass, pgHost, pgPort, pgDB)
-	t.Logf("db: %s", source)
+		if host == "" {
+			host = "127.0.0.1"
+		}
 
-	db, err := sql.Open("postgres", source)
-	if err != nil {
-		t.Fatal(err)
-	}
+		if port == "" {
+			port = "5432"
+		}
 
-	// For each test, pick a new schema name at random.
-	schema := "sqltest_postgresql_" + id()
-	if _, err := db.Exec("CREATE SCHEMA " + schema); err != nil {
-		t.Fatal(err)
-	}
+		source := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", user, password, host, port, database)
 
-	sdb, err := sql.Open("postgres", source+"&search_path="+schema)
-	if err != nil {
-		t.Fatal(err)
+		var err error
+		db, err = sql.Open("postgres", source)
+		if err != nil {
+			t.Fatalf("Could not connect to database: %s", err)
+		}
+
+		// For each test, pick a new schema name at random.
+		schema := "sqltest_postgresql_" + id()
+		if _, err := db.Exec("CREATE SCHEMA " + schema); err != nil {
+			t.Fatal(err)
+		}
+
+		db, err = sql.Open("postgres", source+"&search_path="+schema)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		t.Cleanup(func() {
+			if _, err := db.Exec("DROP SCHEMA " + schema + " CASCADE"); err != nil {
+				t.Fatal(err)
+			}
+		})
+	default:
+		pool, err := dockertest.NewPool("")
+		if err != nil {
+			t.Fatalf("new pool: Could not connect to docker: %s", err)
+		}
+
+		resource, err := pool.RunWithOptions(&dockertest.RunOptions{
+			Name:       containerName(t, "postgres"),
+			Repository: "postgres",
+			Tag:        "13",
+			Env: []string{
+				fmt.Sprintf("POSTGRES_USER=%s", user),
+				fmt.Sprintf("POSTGRES_PASSWORD=%s", password),
+				fmt.Sprintf("POSTGRES_DB=%s", database),
+			},
+		})
+		if err != nil {
+			t.Fatalf("Could not start postgres: %s", err)
+		}
+
+		if err := pool.Retry(func() error {
+			source := fmt.Sprintf("postgres://%s:%s@:%s/%s?sslmode=disable", user, password, resource.GetPort("5432/tcp"), database)
+
+			var err error
+			db, err = sql.Open("postgres", source)
+			if err != nil {
+				return err
+			}
+
+			return db.Ping()
+		}); err != nil {
+			t.Fatalf("Could not connect to database: %s", err)
+		}
+
+		retain := os.Getenv("DOCKERTEST_RETAIN") != ""
+		t.Cleanup(func() {
+			if retain && t.Failed() {
+				return
+			}
+
+			if err := pool.Purge(resource); err != nil {
+				t.Fatalf("Could not purge resource: %s", err)
+			}
+		})
 	}
 
 	files, err := sqlpath.Glob(migrations)
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	for _, f := range files {
 		blob, err := ioutil.ReadFile(f)
 		if err != nil {
 			t.Fatal(err)
 		}
-		if _, err := sdb.Exec(string(blob)); err != nil {
+		if _, err := db.Exec(string(blob)); err != nil {
 			t.Fatalf("%s: %s", filepath.Base(f), err)
 		}
 	}
 
-	return sdb, func() {
-		if _, err := db.Exec("DROP SCHEMA " + schema + " CASCADE"); err != nil {
-			t.Fatal(err)
-		}
-	}
+	return db
 }
