@@ -88,12 +88,17 @@ func MySQL(t *testing.T, migrations []string) *sql.DB {
 			t.Fatalf("new pool: Could not connect to docker: %s", err)
 		}
 
-		resource, err := pool.RunWithOptions(&dockertest.RunOptions{Repository: "mysql", Tag: "8", Env: []string{
-			fmt.Sprintf("MYSQL_USER=%s", user),
-			fmt.Sprintf("MYSQL_ROOT_PASSWORD=%s", password),
-			fmt.Sprintf("MYSQL_DATABASE=%s", database),
-			"MYSQL_INITDB_SKIP_TZINFO=yes",
-		}}, func(c *docker.HostConfig) {
+		resource, err := pool.RunWithOptions(&dockertest.RunOptions{
+			Name:       containerName(t, "mysql"),
+			Repository: "mysql",
+			Tag:        "8",
+			Env: []string{
+				fmt.Sprintf("MYSQL_USER=%s", user),
+				fmt.Sprintf("MYSQL_ROOT_PASSWORD=%s", password),
+				fmt.Sprintf("MYSQL_DATABASE=%s", database),
+				"MYSQL_INITDB_SKIP_TZINFO=yes",
+			},
+		}, func(c *docker.HostConfig) {
 			c.Tmpfs = map[string]string{
 				"/var/lib/mysql": "rw,exec",
 			}
@@ -116,7 +121,12 @@ func MySQL(t *testing.T, migrations []string) *sql.DB {
 			t.Fatalf("Could not connect to database: %s", err)
 		}
 
+		retain := os.Getenv("DOCKERTEST_RETAIN") != ""
 		t.Cleanup(func() {
+			if retain && t.Failed() {
+				return
+			}
+
 			if err := pool.Purge(resource); err != nil {
 				t.Fatalf("Could not purge resource: %s", err)
 			}

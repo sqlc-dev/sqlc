@@ -51,9 +51,9 @@ func PostgreSQL(t *testing.T, migrations []string) *sql.DB {
 
 	var db *sql.DB
 
-	disabled := os.Getenv("DOCKERTEST_DISABLED")
+	disabled := os.Getenv("DOCKERTEST_DISABLED") != ""
 	switch {
-	case disabled != "":
+	case disabled:
 		host := os.Getenv("PG_HOST")
 		port := os.Getenv("PG_PORT")
 
@@ -95,10 +95,15 @@ func PostgreSQL(t *testing.T, migrations []string) *sql.DB {
 			t.Fatalf("new pool: Could not connect to docker: %s", err)
 		}
 
-		resource, err := pool.Run("postgres", "13", []string{
-			fmt.Sprintf("POSTGRES_USER=%s", user),
-			fmt.Sprintf("POSTGRES_PASSWORD=%s", password),
-			fmt.Sprintf("POSTGRES_DB=%s", database),
+		resource, err := pool.RunWithOptions(&dockertest.RunOptions{
+			Name:       containerName(t, "postgres"),
+			Repository: "postgres",
+			Tag:        "13",
+			Env: []string{
+				fmt.Sprintf("POSTGRES_USER=%s", user),
+				fmt.Sprintf("POSTGRES_PASSWORD=%s", password),
+				fmt.Sprintf("POSTGRES_DB=%s", database),
+			},
 		})
 		if err != nil {
 			t.Fatalf("Could not start postgres: %s", err)
@@ -118,7 +123,12 @@ func PostgreSQL(t *testing.T, migrations []string) *sql.DB {
 			t.Fatalf("Could not connect to database: %s", err)
 		}
 
+		retain := os.Getenv("DOCKERTEST_RETAIN") != ""
 		t.Cleanup(func() {
+			if retain && t.Failed() {
+				return
+			}
+
 			if err := pool.Purge(resource); err != nil {
 				t.Fatalf("Could not purge resource: %s", err)
 			}
