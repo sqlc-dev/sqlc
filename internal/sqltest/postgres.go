@@ -95,10 +95,15 @@ func PostgreSQL(t *testing.T, migrations []string) *sql.DB {
 			t.Fatalf("new pool: Could not connect to docker: %s", err)
 		}
 
-		resource, err := pool.Run("postgres", "13", []string{
-			fmt.Sprintf("POSTGRES_USER=%s", user),
-			fmt.Sprintf("POSTGRES_PASSWORD=%s", password),
-			fmt.Sprintf("POSTGRES_DB=%s", database),
+		resource, err := pool.RunWithOptions(&dockertest.RunOptions{
+			Name:       containerName(t, "postgres"),
+			Repository: "postgres",
+			Tag:        "13",
+			Env: []string{
+				fmt.Sprintf("POSTGRES_USER=%s", user),
+				fmt.Sprintf("POSTGRES_PASSWORD=%s", password),
+				fmt.Sprintf("POSTGRES_DB=%s", database),
+			},
 		})
 		if err != nil {
 			t.Fatalf("Could not start postgres: %s", err)
@@ -116,6 +121,11 @@ func PostgreSQL(t *testing.T, migrations []string) *sql.DB {
 			return db.Ping()
 		}); err != nil {
 			t.Fatalf("Could not connect to database: %s", err)
+		}
+
+		retain := os.Getenv("DOCKERTEST_RETAIN")
+		if retain != "" {
+			break
 		}
 
 		t.Cleanup(func() {

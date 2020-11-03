@@ -486,6 +486,18 @@ To run the tests in the examples folder, use the `examples` tag.
 go test --tags=examples ./...
 ```
 
+To run the tests in the examples folder against locally running postgres:
+
+```
+DOCKERTEST_DISABLED=1 go test --tags=examples ./...
+```
+
+To retain created database containers:
+
+```
+DOCKERTEST_RETAIN=1 go test --tags=examples ./...
+```
+
 These tests require [Docker](https://www.docker.com/get-started) installed.
 
 The tests use the following environment variables to connect to the
