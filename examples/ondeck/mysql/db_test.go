@@ -142,8 +142,7 @@ func runOnDeckQueries(t *testing.T, q *Queries) {
 func TestPrepared(t *testing.T) {
 	t.Parallel()
 
-	sdb, cleanup := sqltest.MySQL(t, []string{"schema"})
-	defer cleanup()
+	sdb := sqltest.MySQL(t, []string{"schema"})
 
 	q, err := Prepare(context.Background(), sdb)
 	if err != nil {
@@ -156,8 +155,7 @@ func TestPrepared(t *testing.T) {
 func TestQueries(t *testing.T) {
 	t.Parallel()
 
-	sdb, cleanup := sqltest.MySQL(t, []string{"schema"})
-	defer cleanup()
+	sdb := sqltest.MySQL(t, []string{"schema"})
 
 	runOnDeckQueries(t, New(sdb))
 }
