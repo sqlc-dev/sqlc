@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: docker/build-push-action@v1
+    - uses: docker/build-push-action@v2.1.0
       with:
         username: kjconroy
         password: ${{ secrets.DOCKER_PASSWORD }}
