@@ -2,7 +2,7 @@
 
 > And lo, the Great One looked down upon the people and proclaimed:
 >
->   "SQL is actually pretty great"
+> "SQL is actually pretty great"
 
 sqlc generates **fully type-safe idiomatic Go code** from SQL. Here's how it
 works:
@@ -29,12 +29,12 @@ you ever:
   values
 - Changed the type of a column but forgot to change the type in your code?
 
-All of these errors are *impossible* with sqlc. Wait, what? How?
+All of these errors are _impossible_ with sqlc. Wait, what? How?
 
 sqlc parses all of your queries and the DDL (e.g. `CREATE TABLE`)
 statements during the code generation processes so that it knows the names and
-types of every column in your tables and every expression in your queries.  If
-any of them do not match, sqlc *will fail to compile your queries*, preventing
+types of every column in your tables and every expression in your queries. If
+any of them do not match, sqlc _will fail to compile your queries_, preventing
 entire classes of runtime problems at compile time.
 
 Likewise, the methods that sqlc generates for you have a strict arity and
@@ -43,6 +43,7 @@ arguments or a column's type but don't update your code, it will fail to
 compile.
 
 ## Getting Started
+
 Okay, enough hype, let's see it in action.
 
 First you pass the following SQL to `sqlc generate`:
@@ -218,6 +219,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 ## Examples
 
 Your favorite PostgreSQL / Go features are supported:
+
 - SQL
   - [Query annotations](./docs/annotations.md)
   - [Transactions](./docs/transactions.md)
@@ -286,6 +288,7 @@ packages:
 ```
 
 Each package document has the following keys:
+
 - `name`:
   - The package name to use for the generated code. Defaults to `path` basename
 - `path`:
@@ -326,6 +329,7 @@ overrides:
 ```
 
 Each override document has the following keys:
+
 - `db_type`:
   - The PostgreSQL type to override. Find the full list of supported types in [gen.go](https://github.com/kyleconroy/sqlc/blob/master/internal/dinosql/gen.go#L438).
 - `go_type`:
@@ -425,6 +429,7 @@ release](https://github.com/kyleconroy/sqlc/releases).
 ### Tip Releases
 
 Each commit is deployed to the [`devel` channel on Equinox](https://dl.equinox.io/sqlc/sqlc/devel):
+
 - [Linux](https://bin.equinox.io/c/gvM95th6ps1/sqlc-devel-linux-amd64.tgz)
 - [macOS](https://bin.equinox.io/c/gvM95th6ps1/sqlc-devel-darwin-amd64.zip)
 
@@ -434,11 +439,11 @@ sqlc currently only supports PostgreSQL / Go. MySQL and Kotlin support have
 been merged, but both are marked as experimental. SQLite and TypeScript support
 are planned.
 
-| Language     | PostgreSQL        | MySQL             |
-| ------------ | :---------------- | :---------------- |
-| Go           | :white_check_mark: - Stable | :bug: - Beta |
-| TypeScript   | :timer_clock: - Planned | :timer_clock: - Planned |
-| Kotlin       | :warning: - Experimental | |
+| Language   | PostgreSQL                  | MySQL                   |
+| ---------- | :-------------------------- | :---------------------- |
+| Go         | :white_check_mark: - Stable | :bug: - Beta            |
+| TypeScript | :timer_clock: - Planned     | :timer_clock: - Planned |
+| Kotlin     | :warning: - Experimental    |                         |
 
 If you'd like to add another database or language, we'd welcome a contribution.
 
@@ -481,12 +486,19 @@ To run the tests in the examples folder, use the `examples` tag.
 go test --tags=examples ./...
 ```
 
-These tests require locally-running database instances. Run these databases
-using [Docker Compose](https://docs.docker.com/compose/).
+To run the tests in the examples folder against locally running postgres:
 
 ```
-docker-compose up -d
+DOCKERTEST_DISABLED=1 go test --tags=examples ./...
 ```
+
+To retain created database containers for failed tests:
+
+```
+DOCKERTEST_RETAIN=1 go test --tags=examples ./...
+```
+
+These tests require [Docker](https://www.docker.com/get-started) installed.
 
 The tests use the following environment variables to connect to the
 database
