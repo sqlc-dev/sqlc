@@ -92,6 +92,7 @@ func (i *importer) modelImports() [][]string {
 func stdImports(uses func(name string) bool) map[string]struct{} {
 	std := map[string]struct{}{
 		"java.sql.SQLException": {},
+		"java.sql.Statement": {},
 	}
 	if uses("LocalDate") {
 		std["java.time.LocalDate"] = struct{}{}

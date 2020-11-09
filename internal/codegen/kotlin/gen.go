@@ -622,6 +622,9 @@ interface Queries {
   {{- if eq .Cmd ":execrows"}}
   fun {{.MethodName}}({{.Arg.Args}}): Int
   {{- end}}
+  {{- if eq .Cmd ":execresult"}}
+  fun {{.MethodName}}({{.Arg.Args}}): Long
+  {{- end}}
   {{end}}
 }
 `
@@ -752,6 +755,26 @@ class QueriesImpl(private val conn: Connection) : Queries {
 
       stmt.execute()
       stmt.updateCount
+    }
+  }
+{{end}}
+
+{{if eq .Cmd ":execresult"}}
+{{range .Comments}}//{{.}}
+{{end}}
+  @Throws(SQLException::class)
+  {{ if $.EmitInterface }}override {{ end -}}
+  override fun {{.MethodName}}({{.Arg.Args}}): Long {
+    return conn.prepareStatement({{.ConstantName}}, Statement.RETURN_GENERATED_KEYS).use { stmt ->
+      {{ .Arg.Bindings }}
+
+      stmt.execute()
+
+      val results = stmt.generatedKeys
+      if (!results.next()) {
+          throw SQLException("no generated key returned")
+      }
+	  results.getLong(1)
     }
   }
 {{end}}
