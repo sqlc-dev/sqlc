@@ -17,7 +17,7 @@ class QueriesImplTest() {
     fun testCreateAuthor() {
         val db = QueriesImpl(dbtest.getConnection())
 
-        val initialAuthors = db.listAuthors().execute()
+        val initialAuthors = db.listAuthors()
         assert(initialAuthors.isEmpty())
 
         val name = "Brian Kernighan"
@@ -25,14 +25,14 @@ class QueriesImplTest() {
         val insertedAuthor = db.createAuthor(
             name = name,
             bio = bio
-        ).execute()
+        )
         val expectedAuthor = Author(insertedAuthor.id, name, bio)
         assertEquals(expectedAuthor, insertedAuthor)
 
-        val fetchedAuthor = db.getAuthor(insertedAuthor.id).execute()
+        val fetchedAuthor = db.getAuthor(insertedAuthor.id)
         assertEquals(expectedAuthor, fetchedAuthor)
 
-        val listedAuthors = db.listAuthors().execute()
+        val listedAuthors = db.listAuthors()
         assertEquals(1, listedAuthors.size)
         assertEquals(expectedAuthor, listedAuthors[0])
     }
@@ -41,19 +41,19 @@ class QueriesImplTest() {
     fun testNull() {
         val db = QueriesImpl(dbtest.getConnection())
 
-        val initialAuthors = db.listAuthors().execute()
+        val initialAuthors = db.listAuthors()
         assert(initialAuthors.isEmpty())
 
         val name = "Brian Kernighan"
         val bio = null
-        val insertedAuthor = db.createAuthor(name, bio).execute()
+        val insertedAuthor = db.createAuthor(name, bio)
         val expectedAuthor = Author(insertedAuthor.id, name, bio)
         assertEquals(expectedAuthor, insertedAuthor)
 
-        val fetchedAuthor = db.getAuthor(insertedAuthor.id).execute()
+        val fetchedAuthor = db.getAuthor(insertedAuthor.id)
         assertEquals(expectedAuthor, fetchedAuthor)
 
-        val listedAuthors = db.listAuthors().execute()
+        val listedAuthors = db.listAuthors()
         assertEquals(1, listedAuthors.size)
         assertEquals(expectedAuthor, listedAuthors[0])
     }
