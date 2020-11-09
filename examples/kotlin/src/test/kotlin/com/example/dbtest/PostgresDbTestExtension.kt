@@ -9,11 +9,13 @@ import java.sql.Connection
 import java.sql.DriverManager
 import kotlin.streams.toList
 
-const val schema = "dinosql_test"
-
-class DbTestExtension(private val migrationsPath: String) : BeforeEachCallback, AfterEachCallback {
+class PostgresDbTestExtension(private val migrationsPath: String) : BeforeEachCallback, AfterEachCallback {
     private val schemaConn: Connection
     private val url: String
+
+    companion object {
+        const val schema = "dinosql_test"
+    }
 
     init {
         val user = System.getenv("PG_USER") ?: "postgres"

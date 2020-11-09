@@ -23,7 +23,7 @@ data class Book (
   val bookId: Int,
   val authorId: Int,
   val isbn: String,
-  val booktype: BookType,
+  val bookType: BookType,
   val title: String,
   val year: Int,
   val available: OffsetDateTime,
