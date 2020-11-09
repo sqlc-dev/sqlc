@@ -2,8 +2,8 @@
   "version": "2",
   "sql": [
     {
-      "schema": "src/main/resources/authors/schema.sql",
-      "queries": "src/main/resources/authors/query.sql",
+      "schema": "src/main/resources/authors/postgresql/schema.sql",
+      "queries": "src/main/resources/authors/postgresql/query.sql",
       "engine": "postgresql",
       "gen": {
         "kotlin": {
@@ -13,13 +13,13 @@
       }
     },
     {
-      "schema": "src/main/resources/ondeck/schema",
-      "queries": "src/main/resources/ondeck/query",
+      "schema": "src/main/resources/ondeck/postgresql/schema",
+      "queries": "src/main/resources/ondeck/postgresql/query",
       "engine": "postgresql",
       "gen": {
         "kotlin": {
-          "out": "src/main/kotlin/com/example/ondeck",
-          "package": "com.example.ondeck"
+          "out": "src/main/kotlin/com/example/ondeck/postgresql",
+          "package": "com.example.ondeck.postgresql"
         }
       }
     },
@@ -42,6 +42,17 @@
         "kotlin": {
           "out": "src/main/kotlin/com/example/booktest/postgresql",
           "package": "com.example.booktest.postgresql"
+        }
+      }
+    },
+    {
+      "schema": "src/main/resources/authors/mysql/schema.sql",
+      "queries": "src/main/resources/authors/mysql/query.sql",
+      "engine": "mysql:beta",
+      "gen": {
+        "kotlin": {
+          "out": "src/main/kotlin/com/example/authors/mysql",
+          "package": "com.example.authors.mysql"
         }
       }
     }

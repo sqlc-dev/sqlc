@@ -611,16 +611,19 @@ interface Queries {
   {{- range .Queries}}
   @Throws(SQLException::class)
   {{- if eq .Cmd ":one"}}
-  fun {{.MethodName}}({{.Arg.Args}}): RowQuery<{{.Ret.Type}}>
+  fun {{.MethodName}}({{.Arg.Args}}): {{.Ret.Type}}
   {{- end}}
   {{- if eq .Cmd ":many"}}
-  fun {{.MethodName}}({{.Arg.Args}}): ListQuery<{{.Ret.Type}}>
+  fun {{.MethodName}}({{.Arg.Args}}): List<{{.Ret.Type}}>
   {{- end}}
   {{- if eq .Cmd ":exec"}}
-  fun {{.MethodName}}({{.Arg.Args}}): ExecuteQuery
+  fun {{.MethodName}}({{.Arg.Args}})
   {{- end}}
   {{- if eq .Cmd ":execrows"}}
-  fun {{.MethodName}}({{.Arg.Args}}): ExecuteUpdateQuery
+  fun {{.MethodName}}({{.Arg.Args}}): Int
+  {{- end}}
+  {{- if eq .Cmd ":execresult"}}
+  fun {{.MethodName}}({{.Arg.Args}}): Long
   {{- end}}
   {{end}}
 }
@@ -692,24 +695,19 @@ class QueriesImpl(private val conn: Connection) : Queries {
 {{range .Comments}}//{{.}}
 {{end}}
   @Throws(SQLException::class)
-  override fun {{.MethodName}}({{.Arg.Args}}): RowQuery<{{.Ret.Type}}> {
-    return object : RowQuery<{{.Ret.Type}}>() {
-      override fun execute(): {{.Ret.Type}} {
-        return conn.prepareStatement({{.ConstantName}}).use { stmt ->
-          this.statement = stmt
-          {{.Arg.Bindings}}
+  override fun {{.MethodName}}({{.Arg.Args}}): {{.Ret.Type}} {
+    return conn.prepareStatement({{.ConstantName}}).use { stmt ->
+      {{.Arg.Bindings}}
 
-          val results = stmt.executeQuery()
-          if (!results.next()) {
-            throw SQLException("no rows in result set")
-          }
-          val ret = {{.Ret.ResultSet}}
-          if (results.next()) {
-              throw SQLException("expected one row in result set, but got many")
-          }
-          ret
-        }
+      val results = stmt.executeQuery()
+      if (!results.next()) {
+        throw SQLException("no rows in result set")
       }
+      val ret = {{.Ret.ResultSet}}
+      if (results.next()) {
+          throw SQLException("expected one row in result set, but got many")
+      }
+      ret
     }
   }
 {{end}}
@@ -718,21 +716,16 @@ class QueriesImpl(private val conn: Connection) : Queries {
 {{range .Comments}}//{{.}}
 {{end}}
   @Throws(SQLException::class)
-  override fun {{.MethodName}}({{.Arg.Args}}): ListQuery<{{.Ret.Type}}> {
-    return object : ListQuery<{{.Ret.Type}}>() {
-      override fun execute(): List<{{.Ret.Type}}> {
-        return conn.prepareStatement({{.ConstantName}}).use { stmt ->
-          this.statement = stmt
-          {{.Arg.Bindings}}
+  override fun {{.MethodName}}({{.Arg.Args}}): List<{{.Ret.Type}}> {
+    return conn.prepareStatement({{.ConstantName}}).use { stmt ->
+      {{.Arg.Bindings}}
 
-          val results = stmt.executeQuery()
-          val ret = mutableListOf<{{.Ret.Type}}>()
-          while (results.next()) {
-              ret.add({{.Ret.ResultSet}})
-          }
-          ret
-        }
+      val results = stmt.executeQuery()
+      val ret = mutableListOf<{{.Ret.Type}}>()
+      while (results.next()) {
+          ret.add({{.Ret.ResultSet}})
       }
+      ret
     }
   }
 {{end}}
@@ -742,16 +735,11 @@ class QueriesImpl(private val conn: Connection) : Queries {
 {{end}}
   @Throws(SQLException::class)
   {{ if $.EmitInterface }}override {{ end -}}
-  override fun {{.MethodName}}({{.Arg.Args}}): ExecuteQuery {
-    return object : ExecuteQuery() {
-      override fun execute() {
-        conn.prepareStatement({{.ConstantName}}).use { stmt ->
-          this.statement = stmt
-          {{ .Arg.Bindings }}
+  override fun {{.MethodName}}({{.Arg.Args}}) {
+    conn.prepareStatement({{.ConstantName}}).use { stmt ->
+      {{ .Arg.Bindings }}
 
-          stmt.execute()
-        }
-      }
+      stmt.execute()
     }
   }
 {{end}}
@@ -761,17 +749,32 @@ class QueriesImpl(private val conn: Connection) : Queries {
 {{end}}
   @Throws(SQLException::class)
   {{ if $.EmitInterface }}override {{ end -}}
-  override fun {{.MethodName}}({{.Arg.Args}}): ExecuteUpdateQuery {
-    return object : ExecUpdateQuery() {
-      override fun execute(): Int {
-        return conn.prepareStatement({{.ConstantName}}).use { stmt ->
-          this.statement = stmt
-          {{ .Arg.Bindings }}
+  override fun {{.MethodName}}({{.Arg.Args}}): Int {
+    return conn.prepareStatement({{.ConstantName}}).use { stmt ->
+      {{ .Arg.Bindings }}
 
-          stmt.execute()
-          stmt.updateCount
-        }
+      stmt.execute()
+      stmt.updateCount
+    }
+  }
+{{end}}
+
+{{if eq .Cmd ":execresult"}}
+{{range .Comments}}//{{.}}
+{{end}}
+  @Throws(SQLException::class)
+  {{ if $.EmitInterface }}override {{ end -}}
+  override fun {{.MethodName}}({{.Arg.Args}}): Long {
+    return conn.prepareStatement({{.ConstantName}}, Statement.RETURN_GENERATED_KEYS).use { stmt ->
+      {{ .Arg.Bindings }}
+
+      stmt.execute()
+
+      val results = stmt.generatedKeys
+      if (!results.next()) {
+          throw SQLException("no generated key returned")
       }
+	  results.getLong(1)
     }
   }
 {{end}}
