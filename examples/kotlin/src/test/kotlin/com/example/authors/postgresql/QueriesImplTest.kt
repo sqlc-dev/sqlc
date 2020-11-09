@@ -1,7 +1,9 @@
-package com.example.authors
+package com.example.authors.postgresql
 
-import com.example.dbtest.DbTestExtension
-import org.junit.jupiter.api.Assertions.assertEquals
+import com.example.authors.Author
+import com.example.authors.QueriesImpl
+import com.example.dbtest.PostgresDbTestExtension
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
 
@@ -10,7 +12,7 @@ class QueriesImplTest() {
     companion object {
         @JvmField
         @RegisterExtension
-        val dbtest = DbTestExtension("src/main/resources/authors/schema.sql")
+        val dbtest = PostgresDbTestExtension("src/main/resources/authors/postgresql/schema.sql")
     }
 
     @Test
@@ -27,14 +29,14 @@ class QueriesImplTest() {
             bio = bio
         )
         val expectedAuthor = Author(insertedAuthor.id, name, bio)
-        assertEquals(expectedAuthor, insertedAuthor)
+        Assertions.assertEquals(expectedAuthor, insertedAuthor)
 
         val fetchedAuthor = db.getAuthor(insertedAuthor.id)
-        assertEquals(expectedAuthor, fetchedAuthor)
+        Assertions.assertEquals(expectedAuthor, fetchedAuthor)
 
         val listedAuthors = db.listAuthors()
-        assertEquals(1, listedAuthors.size)
-        assertEquals(expectedAuthor, listedAuthors[0])
+        Assertions.assertEquals(1, listedAuthors.size)
+        Assertions.assertEquals(expectedAuthor, listedAuthors[0])
     }
 
     @Test
@@ -48,13 +50,13 @@ class QueriesImplTest() {
         val bio = null
         val insertedAuthor = db.createAuthor(name, bio)
         val expectedAuthor = Author(insertedAuthor.id, name, bio)
-        assertEquals(expectedAuthor, insertedAuthor)
+        Assertions.assertEquals(expectedAuthor, insertedAuthor)
 
         val fetchedAuthor = db.getAuthor(insertedAuthor.id)
-        assertEquals(expectedAuthor, fetchedAuthor)
+        Assertions.assertEquals(expectedAuthor, fetchedAuthor)
 
         val listedAuthors = db.listAuthors()
-        assertEquals(1, listedAuthors.size)
-        assertEquals(expectedAuthor, listedAuthors[0])
+        Assertions.assertEquals(1, listedAuthors.size)
+        Assertions.assertEquals(expectedAuthor, listedAuthors[0])
     }
 }

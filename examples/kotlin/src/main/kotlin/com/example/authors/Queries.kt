@@ -4,6 +4,7 @@ package com.example.authors
 
 import java.sql.Connection
 import java.sql.SQLException
+import java.sql.Statement
 
 interface Queries {
   @Throws(SQLException::class)

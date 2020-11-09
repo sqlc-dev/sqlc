@@ -1,6 +1,6 @@
 package com.example.booktest.postgresql
 
-import com.example.dbtest.DbTestExtension
+import com.example.dbtest.PostgresDbTestExtension
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
 import java.time.OffsetDateTime
@@ -8,7 +8,7 @@ import java.time.format.DateTimeFormatter
 
 class QueriesImplTest {
     companion object {
-        @JvmField @RegisterExtension val dbtest = DbTestExtension("src/main/resources/booktest/postgresql/schema.sql")
+        @JvmField @RegisterExtension val dbtest = PostgresDbTestExtension("src/main/resources/booktest/postgresql/schema.sql")
     }
 
     @Test
@@ -23,7 +23,7 @@ class QueriesImplTest {
                 authorId = author.authorId,
                 isbn = "1",
                 title = "my book title",
-                booktype = BookType.NONFICTION,
+                bookType = BookType.NONFICTION,
                 year = 2016,
                 available = OffsetDateTime.now(),
                 tags = listOf()
@@ -33,7 +33,7 @@ class QueriesImplTest {
                 authorId = author.authorId,
                 isbn = "2",
                 title = "the second book",
-                booktype = BookType.NONFICTION,
+                bookType = BookType.NONFICTION,
                 year = 2016,
                 available = OffsetDateTime.now(),
                 tags = listOf("cool", "unique")
@@ -49,7 +49,7 @@ class QueriesImplTest {
                 authorId = author.authorId,
                 isbn = "3",
                 title = "the third book",
-                booktype = BookType.NONFICTION,
+                bookType = BookType.NONFICTION,
                 year = 2001,
                 available = OffsetDateTime.now(),
                 tags = listOf("cool")
@@ -59,7 +59,7 @@ class QueriesImplTest {
                 authorId = author.authorId,
                 isbn = "4",
                 title = "4th place finisher",
-                booktype = BookType.NONFICTION,
+                bookType = BookType.NONFICTION,
                 year = 2011,
                 available = OffsetDateTime.now(),
                 tags = listOf("other")
@@ -82,7 +82,7 @@ class QueriesImplTest {
 
         val formatter = DateTimeFormatter.ISO_DATE_TIME
         for (book in books0) {
-            println("Book ${book.bookId} (${book.booktype}): ${book.title} available: ${book.available.format(formatter)}")
+            println("Book ${book.bookId} (${book.bookType}): ${book.title} available: ${book.available.format(formatter)}")
             val author2 = db.getAuthor(book.authorId)
             println("Book ${book.bookId} author: ${author2.name}")
         }
