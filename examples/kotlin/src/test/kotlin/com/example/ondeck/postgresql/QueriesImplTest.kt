@@ -1,13 +1,13 @@
-package com.example.ondeck
+package com.example.ondeck.postgresql
 
-import com.example.dbtest.DbTestExtension
+import com.example.dbtest.PostgresDbTestExtension
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
 
 class QueriesImplTest {
     companion object {
-        @JvmField @RegisterExtension val dbtest = DbTestExtension("src/main/resources/ondeck/schema")
+        @JvmField @RegisterExtension val dbtest = PostgresDbTestExtension("src/main/resources/ondeck/postgresql/schema")
     }
 
     @Test

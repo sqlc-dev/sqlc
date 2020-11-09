@@ -4,6 +4,7 @@ package com.example.booktest.postgresql
 
 import java.sql.Connection
 import java.sql.SQLException
+import java.sql.Statement
 import java.sql.Types
 import java.time.OffsetDateTime
 
@@ -21,7 +22,7 @@ interface Queries {
   fun createBook(
       authorId: Int,
       isbn: String,
-      booktype: BookType,
+      bookType: BookType,
       title: String,
       year: Int,
       available: OffsetDateTime,

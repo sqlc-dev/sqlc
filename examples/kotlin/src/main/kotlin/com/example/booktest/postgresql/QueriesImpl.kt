@@ -4,6 +4,7 @@ package com.example.booktest.postgresql
 
 import java.sql.Connection
 import java.sql.SQLException
+import java.sql.Statement
 import java.sql.Types
 import java.time.OffsetDateTime
 
@@ -28,7 +29,7 @@ data class BooksByTagsRow (
 )
 
 const val booksByTitleYear = """-- name: booksByTitleYear :many
-SELECT book_id, author_id, isbn, booktype, title, year, available, tags FROM books
+SELECT book_id, author_id, isbn, book_type, title, year, available, tags FROM books
 WHERE title = ? AND year = ?
 """
 
@@ -41,7 +42,7 @@ const val createBook = """-- name: createBook :one
 INSERT INTO books (
     author_id,
     isbn,
-    booktype,
+    book_type,
     title,
     year,
     available,
@@ -55,7 +56,7 @@ INSERT INTO books (
     ?,
     ?
 )
-RETURNING book_id, author_id, isbn, booktype, title, year, available, tags
+RETURNING book_id, author_id, isbn, book_type, title, year, available, tags
 """
 
 const val deleteBook = """-- name: deleteBook :exec
@@ -69,7 +70,7 @@ WHERE author_id = ?
 """
 
 const val getBook = """-- name: getBook :one
-SELECT book_id, author_id, isbn, booktype, title, year, available, tags FROM books
+SELECT book_id, author_id, isbn, book_type, title, year, available, tags FROM books
 WHERE book_id = ?
 """
 
@@ -155,7 +156,7 @@ class QueriesImpl(private val conn: Connection) : Queries {
   override fun createBook(
       authorId: Int,
       isbn: String,
-      booktype: BookType,
+      bookType: BookType,
       title: String,
       year: Int,
       available: OffsetDateTime,
@@ -163,7 +164,7 @@ class QueriesImpl(private val conn: Connection) : Queries {
     return conn.prepareStatement(createBook).use { stmt ->
       stmt.setInt(1, authorId)
           stmt.setString(2, isbn)
-          stmt.setObject(3, booktype.value, Types.OTHER)
+          stmt.setObject(3, bookType.value, Types.OTHER)
           stmt.setString(4, title)
           stmt.setInt(5, year)
           stmt.setObject(6, available)

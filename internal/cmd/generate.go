@@ -141,7 +141,9 @@ func Generate(e Env, dir string, stderr io.Writer) (map[string]string, error) {
 		if sql.Gen.Go != nil {
 			name = combo.Go.Package
 		} else if sql.Gen.Kotlin != nil {
-			parseOpts.UsePositionalParameters = true
+			if sql.Engine == config.EnginePostgreSQL {
+				parseOpts.UsePositionalParameters = true
+			}
 			name = combo.Kotlin.Package
 		}
 

@@ -4,6 +4,7 @@ package com.example.jets
 
 import java.sql.Connection
 import java.sql.SQLException
+import java.sql.Statement
 
 const val countPilots = """-- name: countPilots :one
 SELECT COUNT(*) FROM pilots
