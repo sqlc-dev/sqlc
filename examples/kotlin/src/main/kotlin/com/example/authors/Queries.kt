@@ -5,22 +5,18 @@ package com.example.authors
 import java.sql.Connection
 import java.sql.SQLException
 
-import sqlc.runtime.ExecuteQuery
-import sqlc.runtime.ListQuery
-import sqlc.runtime.RowQuery
-
 interface Queries {
   @Throws(SQLException::class)
-  fun createAuthor(name: String, bio: String?): RowQuery<Author>
+  fun createAuthor(name: String, bio: String?): Author
   
   @Throws(SQLException::class)
-  fun deleteAuthor(id: Long): ExecuteQuery
+  fun deleteAuthor(id: Long)
   
   @Throws(SQLException::class)
-  fun getAuthor(id: Long): RowQuery<Author>
+  fun getAuthor(id: Long): Author
   
   @Throws(SQLException::class)
-  fun listAuthors(): ListQuery<Author>
+  fun listAuthors(): List<Author>
   
 }
 
