@@ -1,7 +1,5 @@
 package com.example.authors.postgresql
 
-import com.example.authors.Author
-import com.example.authors.QueriesImpl
 import com.example.dbtest.PostgresDbTestExtension
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test

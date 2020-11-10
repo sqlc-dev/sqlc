@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"log"
 	"regexp"
 	"sort"
 	"strings"
@@ -93,13 +92,20 @@ func jdbcSet(t ktType, idx int, name string) string {
 		return fmt.Sprintf(`stmt.setArray(%d, conn.createArrayOf("%s", %s.map { v -> v.value }.toTypedArray()))`, idx, t.DataType, name)
 	}
 	if t.IsEnum {
-		return fmt.Sprintf("stmt.setObject(%d, %s.value, %s)", idx, name, "Types.OTHER")
+		if t.Engine == config.EnginePostgreSQL {
+			return fmt.Sprintf("stmt.setObject(%d, %s.value, %s)", idx, name, "Types.OTHER")
+		} else {
+			return fmt.Sprintf("stmt.setString(%d, %s.value)", idx, name)
+		}
 	}
 	if t.IsArray {
 		return fmt.Sprintf(`stmt.setArray(%d, conn.createArrayOf("%s", %s.toTypedArray()))`, idx, t.DataType, name)
 	}
 	if t.IsTime() {
 		return fmt.Sprintf("stmt.setObject(%d, %s)", idx, name)
+	}
+	if t.IsInstant() {
+		return fmt.Sprintf("stmt.setTimestamp(%d, Timestamp.from(%s))", idx, name)
 	}
 	return fmt.Sprintf("stmt.set%s(%d, %s)", t.Name, idx, name)
 }
@@ -149,6 +155,9 @@ func jdbcGet(t ktType, idx int) string {
 	}
 	if t.IsTime() {
 		return fmt.Sprintf(`results.getObject(%d, %s::class.java)`, idx, t.Name)
+	}
+	if t.IsInstant() {
+		return fmt.Sprintf(`results.getTimestamp(%d).toInstant()`, idx)
 	}
 	return fmt.Sprintf(`results.get%s(%d)`, t.Name, idx)
 }
@@ -303,6 +312,7 @@ type ktType struct {
 	IsArray  bool
 	IsNull   bool
 	DataType string
+	Engine   config.Engine
 }
 
 func (t ktType) String() string {
@@ -326,11 +336,18 @@ func (t ktType) jdbcType() string {
 	if t.IsEnum || t.IsTime() {
 		return "Object"
 	}
+	if t.IsInstant() {
+		return "Timestamp"
+	}
 	return t.Name
 }
 
 func (t ktType) IsTime() bool {
 	return t.Name == "LocalDate" || t.Name == "LocalDateTime" || t.Name == "LocalTime" || t.Name == "OffsetDateTime"
+}
+
+func (t ktType) IsInstant() bool {
+	return t.Name == "Instant"
 }
 
 func makeType(r *compiler.Result, col *compiler.Column, settings config.CombinedSettings) ktType {
@@ -341,105 +358,19 @@ func makeType(r *compiler.Result, col *compiler.Column, settings config.Combined
 		IsArray:  col.IsArray,
 		IsNull:   !col.NotNull,
 		DataType: col.DataType,
+		Engine:   settings.Package.Engine,
 	}
 }
 
 func ktInnerType(r *compiler.Result, col *compiler.Column, settings config.CombinedSettings) (string, bool) {
-	columnType := col.DataType
-
-	switch columnType {
-	case "serial", "pg_catalog.serial4":
-		return "Int", false
-
-	case "bigserial", "pg_catalog.serial8":
-		return "Long", false
-
-	case "smallserial", "pg_catalog.serial2":
-		return "Short", false
-
-	case "integer", "int", "int4", "pg_catalog.int4":
-		return "Int", false
-
-	case "bigint", "pg_catalog.int8":
-		return "Long", false
-
-	case "smallint", "pg_catalog.int2":
-		return "Short", false
-
-	case "float", "double precision", "pg_catalog.float8":
-		return "Double", false
-
-	case "real", "pg_catalog.float4":
-		return "Float", false
-
-	case "pg_catalog.numeric":
-		return "java.math.BigDecimal", false
-
-	case "bool", "pg_catalog.bool":
-		return "Boolean", false
-
-	case "jsonb":
-		// TODO: support json and byte types
-		return "String", false
-
-	case "bytea", "blob", "pg_catalog.bytea":
-		return "String", false
-
-	case "date":
-		// Date and time mappings from https://jdbc.postgresql.org/documentation/head/java8-date-time.html
-		return "LocalDate", false
-
-	case "pg_catalog.time", "pg_catalog.timetz":
-		return "LocalTime", false
-
-	case "pg_catalog.timestamp":
-		return "LocalDateTime", false
-
-	case "pg_catalog.timestamptz", "timestamptz":
-		// TODO
-		return "OffsetDateTime", false
-
-	case "text", "pg_catalog.varchar", "pg_catalog.bpchar", "string":
-		return "String", false
-
-	case "uuid":
-		// TODO
-		return "uuid.UUID", false
-
-	case "inet":
-		// TODO
-		return "net.IP", false
-
-	case "void":
-		// TODO
-		// A void value always returns NULL. Since there is no built-in NULL
-		// value into the SQL package, we'll use sql.NullBool
-		return "sql.NullBool", false
-
-	case "any":
-		// TODO
-		return "Any", false
-
+	// TODO: Extend the engine interface to handle types
+	switch settings.Package.Engine {
+	case config.EngineMySQL, config.EngineMySQLBeta:
+		return mysqlType(r, col, settings)
+	case config.EnginePostgreSQL:
+		return postgresType(r, col, settings)
 	default:
-		for _, schema := range r.Catalog.Schemas {
-			if schema.Name == "pg_catalog" {
-				continue
-			}
-			for _, typ := range schema.Types {
-				enum, ok := typ.(*catalog.Enum)
-				if !ok {
-					continue
-				}
-				if columnType == enum.Name {
-					if schema.Name == r.Catalog.DefaultSchema {
-						return DataClassName(enum.Name, settings), true
-					}
-					return DataClassName(schema.Name+"_"+enum.Name, settings), true
-				}
-			}
-		}
-		log.Printf("unknown PostgreSQL type: %s\n", columnType)
-		return "interface{}", false
+		return "Any", false
 	}
 }
 

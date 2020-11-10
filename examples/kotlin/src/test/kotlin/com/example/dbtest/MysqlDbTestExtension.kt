@@ -36,7 +36,7 @@ class MysqlDbTestExtension(private val migrationsPath: String) : BeforeEachCallb
     }
 
     private fun getConnection(db: String): Connection {
-        val url = "jdbc:mysql://$host:$port/$db?user=$user&password=$pass&sslmode=disable"
+        val url = "jdbc:mysql://$host:$port/$db?user=$user&password=$pass&allowMultiQueries=true"
         return DriverManager.getConnection(url)
     }
 
