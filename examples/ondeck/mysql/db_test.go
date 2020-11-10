@@ -26,7 +26,7 @@ func join(vals ...string) sql.NullString {
 func runOnDeckQueries(t *testing.T, q *Queries) {
 	ctx := context.Background()
 
-	_, err := q.CreateCity(ctx, CreateCityParams{
+	err := q.CreateCity(ctx, CreateCityParams{
 		Slug: "san-francisco",
 		Name: "San Francisco",
 	})
