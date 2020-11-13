@@ -8,7 +8,7 @@ SELECT *
 FROM city
 WHERE slug = ?;
 
-/* name: CreateCity :execresult */
+/* name: CreateCity :exec */
 INSERT INTO city (
     name,
     slug
