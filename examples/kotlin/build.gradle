@@ -10,6 +10,7 @@ repositories {
 }
 
 dependencies {
+    implementation 'mysql:mysql-connector-java:8.0.22'
     implementation 'org.postgresql:postgresql:42.2.9'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'

@@ -8,7 +8,7 @@ import (
 )
 
 type Querier interface {
-	CreateCity(ctx context.Context, arg CreateCityParams) (sql.Result, error)
+	CreateCity(ctx context.Context, arg CreateCityParams) error
 	CreateVenue(ctx context.Context, arg CreateVenueParams) (sql.Result, error)
 	DeleteVenue(ctx context.Context, arg DeleteVenueParams) error
 	GetCity(ctx context.Context, slug string) (City, error)

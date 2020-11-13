@@ -1,21 +1,24 @@
-package com.example.booktest.postgresql
+package com.example.booktest.mysql
 
+import com.example.dbtest.MysqlDbTestExtension
 import com.example.dbtest.PostgresDbTestExtension
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
+import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
 class QueriesImplTest {
     companion object {
-        @JvmField @RegisterExtension val dbtest = PostgresDbTestExtension("src/main/resources/booktest/postgresql/schema.sql")
+        @JvmField @RegisterExtension val dbtest = MysqlDbTestExtension("src/main/resources/booktest/mysql/schema.sql")
     }
 
     @Test
     fun testQueries() {
         val conn = dbtest.getConnection()
         val db = QueriesImpl(conn)
-        val author = db.createAuthor("Unknown Master")!!
+        val authorId = db.createAuthor("Unknown Master")
+        val author = db.getAuthor(authorId.toInt())!!
 
         // Start a transaction
         conn.autoCommit = false
@@ -23,59 +26,57 @@ class QueriesImplTest {
                 authorId = author.authorId,
                 isbn = "1",
                 title = "my book title",
-                bookType = BookType.NONFICTION,
-                year = 2016,
-                available = OffsetDateTime.now(),
-                tags = listOf()
+                bookType = BooksBookType.NONFICTION,
+                yr = 2016,
+                available = LocalDateTime.now(),
+                tags = ""
         )
 
-        val b1 = db.createBook(
+        val b1Id = db.createBook(
                 authorId = author.authorId,
                 isbn = "2",
                 title = "the second book",
-                bookType = BookType.NONFICTION,
-                year = 2016,
-                available = OffsetDateTime.now(),
-                tags = listOf("cool", "unique")
-        )!!
-
-        db.updateBook(
-                bookId = b1.bookId,
-                title = "changed second title",
-                tags = listOf("cool", "disastor")
+                bookType = BooksBookType.NONFICTION,
+                yr = 2016,
+                available = LocalDateTime.now(),
+                tags = listOf("cool", "unique").joinToString(",")
         )
 
-        val b3 = db.createBook(
+        db.updateBook(
+                bookId = b1Id.toInt(),
+                title = "changed second title",
+                tags = listOf("cool", "disastor").joinToString(",")
+        )
+
+        val b3Id = db.createBook(
                 authorId = author.authorId,
                 isbn = "3",
                 title = "the third book",
-                bookType = BookType.NONFICTION,
-                year = 2001,
-                available = OffsetDateTime.now(),
-                tags = listOf("cool")
-        )!!
+                bookType = BooksBookType.NONFICTION,
+                yr = 2001,
+                available = LocalDateTime.now(),
+                tags = listOf("cool").joinToString(",")
+        )
 
         db.createBook(
                 authorId = author.authorId,
                 isbn = "4",
                 title = "4th place finisher",
-                bookType = BookType.NONFICTION,
-                year = 2011,
-                available = OffsetDateTime.now(),
-                tags = listOf("other")
+                bookType = BooksBookType.NONFICTION,
+                yr = 2011,
+                available = LocalDateTime.now(),
+                tags = listOf("other").joinToString(",")
         )
 
         // Commit transaction
         conn.commit()
         conn.autoCommit = true
 
-        // ISBN update fails because parameters are not in sequential order. After changing $N to ?, ordering is lost,
-        // and the parameters are filled into the wrong slots.
         db.updateBookISBN(
-                bookId = b3.bookId,
+                bookId = b3Id.toInt(),
                 isbn = "NEW ISBN",
                 title = "never ever gonna finish, a quatrain",
-                tags = listOf("someother")
+                tags = listOf("someother").joinToString(",")
         )
 
         val books0 = db.booksByTitleYear("my book title", 2016)
@@ -89,7 +90,7 @@ class QueriesImplTest {
 
         // find a book with either "cool" or "other" tag
         println("---------\\nTag search results:\\n")
-        val res = db.booksByTags(listOf("cool", "other", "someother"))
+        val res = db.booksByTags(listOf("cool", "other", "someother").joinToString(","))
         for (ab in res) {
             println("Book ${ab.bookId}: '${ab.title}', Author: '${ab.name}', ISBN: '${ab.isbn}' Tags: '${ab.tags.toList()}'")
         }
