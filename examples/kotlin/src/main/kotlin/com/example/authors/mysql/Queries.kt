@@ -14,7 +14,7 @@ interface Queries {
   fun deleteAuthor(id: Long)
   
   @Throws(SQLException::class)
-  fun getAuthor(id: Long): Author
+  fun getAuthor(id: Long): Author?
   
   @Throws(SQLException::class)
   fun listAuthors(): List<Author>

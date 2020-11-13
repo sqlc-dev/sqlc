@@ -8,7 +8,7 @@ import java.sql.Statement
 
 interface Queries {
   @Throws(SQLException::class)
-  fun countPilots(): Long
+  fun countPilots(): Long?
   
   @Throws(SQLException::class)
   fun deletePilot(id: Int)

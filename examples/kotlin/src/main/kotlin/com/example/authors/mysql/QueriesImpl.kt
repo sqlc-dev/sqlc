@@ -57,13 +57,13 @@ class QueriesImpl(private val conn: Connection) : Queries {
   }
 
   @Throws(SQLException::class)
-  override fun getAuthor(id: Long): Author {
+  override fun getAuthor(id: Long): Author? {
     return conn.prepareStatement(getAuthor).use { stmt ->
       stmt.setLong(1, id)
 
       val results = stmt.executeQuery()
       if (!results.next()) {
-        throw SQLException("no rows in result set")
+        return null
       }
       val ret = Author(
                 results.getLong(1),

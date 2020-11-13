@@ -10,7 +10,7 @@ import java.time.LocalDateTime
 
 interface Queries {
   @Throws(SQLException::class)
-  fun createCity(name: String, slug: String): City
+  fun createCity(name: String, slug: String): City?
   
   @Throws(SQLException::class)
   fun createVenue(
@@ -20,16 +20,16 @@ interface Queries {
       spotifyPlaylist: String,
       status: Status,
       statuses: List<Status>,
-      tags: List<String>): Int
+      tags: List<String>): Int?
   
   @Throws(SQLException::class)
   fun deleteVenue(slug: String)
   
   @Throws(SQLException::class)
-  fun getCity(slug: String): City
+  fun getCity(slug: String): City?
   
   @Throws(SQLException::class)
-  fun getVenue(slug: String, city: String): Venue
+  fun getVenue(slug: String, city: String): Venue?
   
   @Throws(SQLException::class)
   fun listCities(): List<City>
@@ -41,7 +41,7 @@ interface Queries {
   fun updateCityName(name: String, slug: String)
   
   @Throws(SQLException::class)
-  fun updateVenueName(name: String, slug: String): Int
+  fun updateVenueName(name: String, slug: String): Int?
   
   @Throws(SQLException::class)
   fun venueCountByCity(): List<VenueCountByCityRow>

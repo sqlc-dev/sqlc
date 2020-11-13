@@ -18,7 +18,7 @@ class QueriesImplTest {
         val conn = dbtest.getConnection()
         val db = QueriesImpl(conn)
         val authorId = db.createAuthor("Unknown Master")
-        val author = db.getAuthor(authorId.toInt())
+        val author = db.getAuthor(authorId.toInt())!!
 
         // Start a transaction
         conn.autoCommit = false
@@ -84,7 +84,7 @@ class QueriesImplTest {
         val formatter = DateTimeFormatter.ISO_DATE_TIME
         for (book in books0) {
             println("Book ${book.bookId} (${book.bookType}): ${book.title} available: ${book.available.format(formatter)}")
-            val author2 = db.getAuthor(book.authorId)
+            val author2 = db.getAuthor(book.authorId)!!
             println("Book ${book.bookId} author: ${author2.name}")
         }
 

@@ -25,7 +25,7 @@ class QueriesImplTest() {
         val insertedAuthor = db.createAuthor(
             name = name,
             bio = bio
-        )
+        )!!
         val expectedAuthor = Author(insertedAuthor.id, name, bio)
         Assertions.assertEquals(expectedAuthor, insertedAuthor)
 
@@ -46,7 +46,7 @@ class QueriesImplTest() {
 
         val name = "Brian Kernighan"
         val bio = null
-        val insertedAuthor = db.createAuthor(name, bio)
+        val insertedAuthor = db.createAuthor(name, bio)!!
         val expectedAuthor = Author(insertedAuthor.id, name, bio)
         Assertions.assertEquals(expectedAuthor, insertedAuthor)
 
