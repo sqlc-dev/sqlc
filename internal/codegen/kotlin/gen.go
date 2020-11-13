@@ -545,7 +545,7 @@ interface Queries {
   {{- range .Queries}}
   @Throws(SQLException::class)
   {{- if eq .Cmd ":one"}}
-  fun {{.MethodName}}({{.Arg.Args}}): {{.Ret.Type}}
+  fun {{.MethodName}}({{.Arg.Args}}): {{.Ret.Type}}?
   {{- end}}
   {{- if eq .Cmd ":many"}}
   fun {{.MethodName}}({{.Arg.Args}}): List<{{.Ret.Type}}>
@@ -629,7 +629,7 @@ class QueriesImpl(private val conn: Connection) : Queries {
 {{range .Comments}}//{{.}}
 {{end}}
   @Throws(SQLException::class)
-  override fun {{.MethodName}}({{.Arg.Args}}): {{.Ret.Type}} {
+  override fun {{.MethodName}}({{.Arg.Args}}): {{.Ret.Type}}? {
     return conn.prepareStatement({{.ConstantName}}).use { stmt ->
       {{.Arg.Bindings}}
 

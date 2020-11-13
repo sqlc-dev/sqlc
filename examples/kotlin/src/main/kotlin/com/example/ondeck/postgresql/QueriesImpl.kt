@@ -104,7 +104,7 @@ class QueriesImpl(private val conn: Connection) : Queries {
 // This is the third line
 
   @Throws(SQLException::class)
-  override fun createCity(name: String, slug: String): City {
+  override fun createCity(name: String, slug: String): City? {
     return conn.prepareStatement(createCity).use { stmt ->
       stmt.setString(1, name)
           stmt.setString(2, slug)
@@ -132,7 +132,7 @@ class QueriesImpl(private val conn: Connection) : Queries {
       spotifyPlaylist: String,
       status: Status,
       statuses: List<Status>,
-      tags: List<String>): Int {
+      tags: List<String>): Int? {
     return conn.prepareStatement(createVenue).use { stmt ->
       stmt.setString(1, slug)
           stmt.setString(2, name)
@@ -165,7 +165,7 @@ class QueriesImpl(private val conn: Connection) : Queries {
   }
 
   @Throws(SQLException::class)
-  override fun getCity(slug: String): City {
+  override fun getCity(slug: String): City? {
     return conn.prepareStatement(getCity).use { stmt ->
       stmt.setString(1, slug)
 
@@ -185,7 +185,7 @@ class QueriesImpl(private val conn: Connection) : Queries {
   }
 
   @Throws(SQLException::class)
-  override fun getVenue(slug: String, city: String): Venue {
+  override fun getVenue(slug: String, city: String): Venue? {
     return conn.prepareStatement(getVenue).use { stmt ->
       stmt.setString(1, slug)
           stmt.setString(2, city)
@@ -265,7 +265,7 @@ class QueriesImpl(private val conn: Connection) : Queries {
   }
 
   @Throws(SQLException::class)
-  override fun updateVenueName(name: String, slug: String): Int {
+  override fun updateVenueName(name: String, slug: String): Int? {
     return conn.prepareStatement(updateVenueName).use { stmt ->
       stmt.setString(1, name)
           stmt.setString(2, slug)

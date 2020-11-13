@@ -21,7 +21,7 @@ SELECT id, name FROM pilots LIMIT 5
 class QueriesImpl(private val conn: Connection) : Queries {
 
   @Throws(SQLException::class)
-  override fun countPilots(): Long {
+  override fun countPilots(): Long? {
     return conn.prepareStatement(countPilots).use { stmt ->
       
       val results = stmt.executeQuery()

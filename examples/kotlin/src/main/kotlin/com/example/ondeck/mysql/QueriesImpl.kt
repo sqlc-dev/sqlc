@@ -147,7 +147,7 @@ class QueriesImpl(private val conn: Connection) : Queries {
   }
 
   @Throws(SQLException::class)
-  override fun getCity(slug: String): City {
+  override fun getCity(slug: String): City? {
     return conn.prepareStatement(getCity).use { stmt ->
       stmt.setString(1, slug)
 
@@ -167,7 +167,7 @@ class QueriesImpl(private val conn: Connection) : Queries {
   }
 
   @Throws(SQLException::class)
-  override fun getVenue(slug: String, city: String): Venue {
+  override fun getVenue(slug: String, city: String): Venue? {
     return conn.prepareStatement(getVenue).use { stmt ->
       stmt.setString(1, slug)
           stmt.setString(2, city)

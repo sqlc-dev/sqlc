@@ -8,13 +8,13 @@ import java.sql.Statement
 
 interface Queries {
   @Throws(SQLException::class)
-  fun createAuthor(name: String, bio: String?): Author
+  fun createAuthor(name: String, bio: String?): Author?
   
   @Throws(SQLException::class)
   fun deleteAuthor(id: Long)
   
   @Throws(SQLException::class)
-  fun getAuthor(id: Long): Author
+  fun getAuthor(id: Long): Author?
   
   @Throws(SQLException::class)
   fun listAuthors(): List<Author>

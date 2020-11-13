@@ -34,10 +34,10 @@ interface Queries {
   fun deleteBook(bookId: Int)
   
   @Throws(SQLException::class)
-  fun getAuthor(authorId: Int): Author
+  fun getAuthor(authorId: Int): Author?
   
   @Throws(SQLException::class)
-  fun getBook(bookId: Int): Book
+  fun getBook(bookId: Int): Book?
   
   @Throws(SQLException::class)
   fun updateBook(

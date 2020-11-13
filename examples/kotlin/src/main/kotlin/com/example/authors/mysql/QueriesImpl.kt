@@ -57,7 +57,7 @@ class QueriesImpl(private val conn: Connection) : Queries {
   }
 
   @Throws(SQLException::class)
-  override fun getAuthor(id: Long): Author {
+  override fun getAuthor(id: Long): Author? {
     return conn.prepareStatement(getAuthor).use { stmt ->
       stmt.setLong(1, id)
 
