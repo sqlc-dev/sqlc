@@ -197,13 +197,13 @@ class QueriesImpl(private val conn: Connection) : Queries {
   }
 
   @Throws(SQLException::class)
-  override fun getAuthor(authorId: Int): Author {
+  override fun getAuthor(authorId: Int): Author? {
     return conn.prepareStatement(getAuthor).use { stmt ->
       stmt.setInt(1, authorId)
 
       val results = stmt.executeQuery()
       if (!results.next()) {
-        throw SQLException("no rows in result set")
+        return null
       }
       val ret = Author(
                 results.getInt(1),
@@ -217,13 +217,13 @@ class QueriesImpl(private val conn: Connection) : Queries {
   }
 
   @Throws(SQLException::class)
-  override fun getBook(bookId: Int): Book {
+  override fun getBook(bookId: Int): Book? {
     return conn.prepareStatement(getBook).use { stmt ->
       stmt.setInt(1, bookId)
 
       val results = stmt.executeQuery()
       if (!results.next()) {
-        throw SQLException("no rows in result set")
+        return null
       }
       val ret = Book(
                 results.getInt(1),

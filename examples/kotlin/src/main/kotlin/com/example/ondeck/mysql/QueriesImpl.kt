@@ -147,13 +147,13 @@ class QueriesImpl(private val conn: Connection) : Queries {
   }
 
   @Throws(SQLException::class)
-  override fun getCity(slug: String): City {
+  override fun getCity(slug: String): City? {
     return conn.prepareStatement(getCity).use { stmt ->
       stmt.setString(1, slug)
 
       val results = stmt.executeQuery()
       if (!results.next()) {
-        throw SQLException("no rows in result set")
+        return null
       }
       val ret = City(
                 results.getString(1),
@@ -167,14 +167,14 @@ class QueriesImpl(private val conn: Connection) : Queries {
   }
 
   @Throws(SQLException::class)
-  override fun getVenue(slug: String, city: String): Venue {
+  override fun getVenue(slug: String, city: String): Venue? {
     return conn.prepareStatement(getVenue).use { stmt ->
       stmt.setString(1, slug)
           stmt.setString(2, city)
 
       val results = stmt.executeQuery()
       if (!results.next()) {
-        throw SQLException("no rows in result set")
+        return null
       }
       val ret = Venue(
                 results.getLong(1),

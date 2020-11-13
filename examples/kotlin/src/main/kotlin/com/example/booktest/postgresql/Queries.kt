@@ -16,7 +16,7 @@ interface Queries {
   fun booksByTitleYear(title: String, year: Int): List<Book>
   
   @Throws(SQLException::class)
-  fun createAuthor(name: String): Author
+  fun createAuthor(name: String): Author?
   
   @Throws(SQLException::class)
   fun createBook(
@@ -26,16 +26,16 @@ interface Queries {
       title: String,
       year: Int,
       available: OffsetDateTime,
-      tags: List<String>): Book
+      tags: List<String>): Book?
   
   @Throws(SQLException::class)
   fun deleteBook(bookId: Int)
   
   @Throws(SQLException::class)
-  fun getAuthor(authorId: Int): Author
+  fun getAuthor(authorId: Int): Author?
   
   @Throws(SQLException::class)
-  fun getBook(bookId: Int): Book
+  fun getBook(bookId: Int): Book?
   
   @Throws(SQLException::class)
   fun updateBook(

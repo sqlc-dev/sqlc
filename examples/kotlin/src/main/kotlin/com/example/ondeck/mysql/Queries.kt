@@ -26,10 +26,10 @@ interface Queries {
   fun deleteVenue(slug: String, slug_2: String)
   
   @Throws(SQLException::class)
-  fun getCity(slug: String): City
+  fun getCity(slug: String): City?
   
   @Throws(SQLException::class)
-  fun getVenue(slug: String, city: String): Venue
+  fun getVenue(slug: String, city: String): Venue?
   
   @Throws(SQLException::class)
   fun listCities(): List<City>

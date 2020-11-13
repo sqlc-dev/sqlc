@@ -16,7 +16,7 @@ class QueriesImplTest {
         val city = q.createCity(
                 slug = "san-francisco",
                 name = "San Francisco"
-        )
+        )!!
         val venueId = q.createVenue(
                 slug = "the-fillmore",
                 name = "The Fillmore",
@@ -29,7 +29,7 @@ class QueriesImplTest {
         val venue = q.getVenue(
                 slug = "the-fillmore",
                 city = city.slug
-        )
+        )!!
         assertEquals(venueId, venue.id)
 
         assertEquals(city, q.getCity(city.slug))
