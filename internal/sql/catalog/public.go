@@ -61,12 +61,15 @@ func (c *Catalog) ResolveFuncCall(call *ast.FuncCall) (*Function, error) {
 			}
 		}
 	}
-
+	hasVariadic := false
 	for _, fun := range funs {
 		args := fun.InArgs()
 		var defaults int
 		known := map[string]struct{}{}
 		for _, arg := range args {
+			if arg.Mode == ast.FuncParamVariadic {
+				hasVariadic = true
+			}
 			if arg.HasDefault {
 				defaults += 1
 			}
@@ -74,11 +77,13 @@ func (c *Catalog) ResolveFuncCall(call *ast.FuncCall) (*Function, error) {
 				known[arg.Name] = struct{}{}
 			}
 		}
-		if (len(named) + len(positional)) > len(args) {
-			continue
-		}
-		if (len(named) + len(positional)) < (len(args) - defaults) {
-			continue
+		if !hasVariadic {
+			if (len(named) + len(positional)) > len(args) {
+				continue
+			}
+			if (len(named) + len(positional)) < (len(args) - defaults) {
+				continue
+			}
 		}
 
 		// Validate that the provided named arguments exist in the function
