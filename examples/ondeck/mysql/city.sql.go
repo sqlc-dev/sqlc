@@ -5,10 +5,9 @@ package ondeck
 
 import (
 	"context"
-	"database/sql"
 )
 
-const createCity = `-- name: CreateCity :execresult
+const createCity = `-- name: CreateCity :exec
 INSERT INTO city (
     name,
     slug
@@ -23,8 +22,9 @@ type CreateCityParams struct {
 	Slug string `json:"slug"`
 }
 
-func (q *Queries) CreateCity(ctx context.Context, arg CreateCityParams) (sql.Result, error) {
-	return q.exec(ctx, q.createCityStmt, createCity, arg.Name, arg.Slug)
+func (q *Queries) CreateCity(ctx context.Context, arg CreateCityParams) error {
+	_, err := q.exec(ctx, q.createCityStmt, createCity, arg.Name, arg.Slug)
+	return err
 }
 
 const getCity = `-- name: GetCity :one

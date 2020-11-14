@@ -4,6 +4,7 @@ package com.example.jets
 
 import java.sql.Connection
 import java.sql.SQLException
+import java.sql.Statement
 
 const val countPilots = """-- name: countPilots :one
 SELECT COUNT(*) FROM pilots
@@ -20,12 +21,12 @@ SELECT id, name FROM pilots LIMIT 5
 class QueriesImpl(private val conn: Connection) : Queries {
 
   @Throws(SQLException::class)
-  override fun countPilots(): Long {
+  override fun countPilots(): Long? {
     return conn.prepareStatement(countPilots).use { stmt ->
       
       val results = stmt.executeQuery()
       if (!results.next()) {
-        throw SQLException("no rows in result set")
+        return null
       }
       val ret = results.getLong(1)
       if (results.next()) {
