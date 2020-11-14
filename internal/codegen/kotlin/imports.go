@@ -67,6 +67,10 @@ func (i *importer) interfaceImports() [][]string {
 
 func (i *importer) modelImports() [][]string {
 	std := make(map[string]struct{})
+	if i.usesType("Instant") {
+		std["java.time.Instant"] = struct{}{}
+		std["java.sql.Timestamp"] = struct{}{}
+	}
 	if i.usesType("LocalDate") {
 		std["java.time.LocalDate"] = struct{}{}
 	}
@@ -92,6 +96,11 @@ func (i *importer) modelImports() [][]string {
 func stdImports(uses func(name string) bool) map[string]struct{} {
 	std := map[string]struct{}{
 		"java.sql.SQLException": {},
+		"java.sql.Statement":    {},
+	}
+	if uses("Instant") {
+		std["java.time.Instant"] = struct{}{}
+		std["java.sql.Timestamp"] = struct{}{}
 	}
 	if uses("LocalDate") {
 		std["java.time.LocalDate"] = struct{}{}
@@ -149,7 +158,7 @@ func (i *importer) queryImports(filename string) [][]string {
 
 	std := stdImports(uses)
 	std["java.sql.Connection"] = struct{}{}
-	if hasEnum() {
+	if hasEnum() && i.Settings.Package.Engine == config.EnginePostgreSQL {
 		std["java.sql.Types"] = struct{}{}
 	}
 
