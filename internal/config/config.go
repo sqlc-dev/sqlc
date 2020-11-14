@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"go/types"
 	"io"
 	"os"
 	"strings"
@@ -199,55 +198,14 @@ func (o *Override) Parse() error {
 	}
 
 	// validate GoType
-	lastDot := strings.LastIndex(o.GoType, ".")
-	lastSlash := strings.LastIndex(o.GoType, "/")
-	typename := o.GoType
-	if lastDot == -1 && lastSlash == -1 {
-		// if the type name has no slash and no dot, validate that the type is a basic Go type
-		var found bool
-		for _, typ := range types.Typ {
-			info := typ.Info()
-			if info == 0 {
-				continue
-			}
-			if info&types.IsUntyped != 0 {
-				continue
-			}
-			if typename == typ.Name() {
-				found = true
-			}
-		}
-		if !found {
-			return fmt.Errorf("Package override `go_type` specifier %q is not a Go basic type e.g. 'string'", o.GoType)
-		}
-		o.GoBasicType = true
-	} else {
-		// assume the type lives in a Go package
-		if lastDot == -1 {
-			return fmt.Errorf("Package override `go_type` specifier %q is not the proper format, expected 'package.type', e.g. 'github.com/segmentio/ksuid.KSUID'", o.GoType)
-		}
-		if lastSlash == -1 {
-			return fmt.Errorf("Package override `go_type` specifier %q is not the proper format, expected 'package.type', e.g. 'github.com/segmentio/ksuid.KSUID'", o.GoType)
-		}
-		typename = o.GoType[lastSlash+1:]
-		if strings.HasPrefix(typename, "go-") {
-			// a package name beginning with "go-" will give syntax errors in
-			// generated code. We should do the right thing and get the actual
-			// import name, but in lieu of that, stripping the leading "go-" may get
-			// us what we want.
-			typename = typename[len("go-"):]
-		}
-		if strings.HasSuffix(typename, "-go") {
-			typename = typename[:len(typename)-len("-go")]
-		}
-		o.GoPackage = o.GoType[:lastDot]
+	goType, err := ParseGoType(o.GoType)
+	if err != nil {
+		return err
 	}
-	o.GoTypeName = typename
-	isPointer := o.GoType[0] == '*'
-	if isPointer {
-		o.GoPackage = o.GoPackage[1:]
-		o.GoTypeName = "*" + o.GoTypeName
-	}
+
+	o.GoBasicType = goType.BuiltIn
+	o.GoPackage = goType.Path
+	o.GoTypeName = goType.Name
 
 	return nil
 }
