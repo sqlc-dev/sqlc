@@ -1,25 +1,87 @@
 package config
 
 import (
+	"encoding/json"
 	"fmt"
 	"go/types"
 	"strings"
 )
 
 type GoType struct {
-	Path    string
-	Package string
-	Name    string
-	Pointer bool
+	Path    string `json:"import" yaml:"import"`
+	Package string `json:"package" yaml:"package"`
+	Name    string `json:"type" yaml:"type"`
+	Pointer bool   `json:"pointer" yaml:"pointer"`
+	Spec    string
 	BuiltIn bool
 }
 
-func ParseGoType(input string) (*GoType, error) {
-	// validate GoType
+type ParsedGoType struct {
+	ImportPath string
+	Package    string
+	TypeName   string
+	BasicType  bool
+}
+
+func (o *GoType) UnmarshalJSON(data []byte) error {
+	var spec string
+	if err := json.Unmarshal(data, &spec); err == nil {
+		*o = GoType{Spec: spec}
+		return nil
+	}
+	type alias GoType
+	var a alias
+	if err := json.Unmarshal(data, &a); err != nil {
+		return err
+	}
+	*o = GoType(a)
+	return nil
+}
+
+func (o *GoType) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var spec string
+	if err := unmarshal(&spec); err == nil {
+		*o = GoType{Spec: spec}
+		return nil
+	}
+	type alias GoType
+	var a alias
+	if err := unmarshal(&a); err != nil {
+		return err
+	}
+	*o = GoType(a)
+	return nil
+}
+
+// validate GoType
+func (gt GoType) Parse() (*ParsedGoType, error) {
+	var o ParsedGoType
+
+	if gt.Spec == "" {
+		// TODO: Validation
+		if gt.Path != "" && gt.Package == "" {
+			return nil, fmt.Errorf("Package override `go_type`: package name required when using an import path")
+		}
+		if gt.Path == "" && gt.Package != "" {
+			return nil, fmt.Errorf("Package override `go_type`: package name requires an import path")
+		}
+		o.ImportPath = gt.Path
+		o.Package = gt.Package
+		o.TypeName = gt.Name
+		o.BasicType = gt.Path == "" && gt.Package == ""
+		if gt.Package != "" {
+			o.TypeName = gt.Package + "." + o.TypeName
+		}
+		if gt.Pointer {
+			o.TypeName = "*" + o.TypeName
+		}
+		return &o, nil
+	}
+
+	input := gt.Spec
 	lastDot := strings.LastIndex(input, ".")
 	lastSlash := strings.LastIndex(input, "/")
 	typename := input
-	var o GoType
 	if lastDot == -1 && lastSlash == -1 {
 		// if the type name has no slash and no dot, validate that the type is a basic Go type
 		var found bool
@@ -38,7 +100,7 @@ func ParseGoType(input string) (*GoType, error) {
 		if !found {
 			return nil, fmt.Errorf("Package override `go_type` specifier %q is not a Go basic type e.g. 'string'", input)
 		}
-		o.BuiltIn = true
+		o.BasicType = true
 	} else {
 		// assume the type lives in a Go package
 		if lastDot == -1 {
@@ -58,13 +120,13 @@ func ParseGoType(input string) (*GoType, error) {
 		if strings.HasSuffix(typename, "-go") {
 			typename = typename[:len(typename)-len("-go")]
 		}
-		o.Path = input[:lastDot]
+		o.ImportPath = input[:lastDot]
 	}
-	o.Name = typename
+	o.TypeName = typename
 	isPointer := input[0] == '*'
 	if isPointer {
-		o.Path = o.Path[1:]
-		o.Name = "*" + o.Name
+		o.ImportPath = o.ImportPath[1:]
+		o.TypeName = "*" + o.TypeName
 	}
 	return &o, nil
 }

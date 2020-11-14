@@ -130,7 +130,7 @@ type SQLKotlin struct {
 
 type Override struct {
 	// name of the golang type to use, e.g. `github.com/segmentio/ksuid.KSUID`
-	GoType string `json:"go_type" yaml:"go_type"`
+	GoType GoType `json:"go_type" yaml:"go_type"`
 
 	// fully qualified name of the Go type, e.g. `github.com/segmentio/ksuid.KSUID`
 	DBType                  string `json:"db_type" yaml:"db_type"`
@@ -147,11 +147,12 @@ type Override struct {
 	// fully qualified name of the column, e.g. `accounts.id`
 	Column string `json:"column" yaml:"column"`
 
-	ColumnName  string
-	Table       core.FQN
-	GoTypeName  string
-	GoPackage   string
-	GoBasicType bool
+	ColumnName   string
+	Table        core.FQN
+	GoImportPath string
+	GoPackage    string
+	GoTypeName   string
+	GoBasicType  bool
 }
 
 func (o *Override) Parse() error {
@@ -198,14 +199,14 @@ func (o *Override) Parse() error {
 	}
 
 	// validate GoType
-	goType, err := ParseGoType(o.GoType)
+	parsed, err := o.GoType.Parse()
 	if err != nil {
 		return err
 	}
-
-	o.GoBasicType = goType.BuiltIn
-	o.GoPackage = goType.Path
-	o.GoTypeName = goType.Name
+	o.GoImportPath = parsed.ImportPath
+	o.GoPackage = parsed.Package
+	o.GoTypeName = parsed.TypeName
+	o.GoBasicType = parsed.BasicType
 
 	return nil
 }

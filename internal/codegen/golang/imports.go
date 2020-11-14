@@ -138,7 +138,7 @@ func (i *importer) interfaceImports() fileImports {
 		if o.GoBasicType {
 			continue
 		}
-		overrideTypes[o.GoTypeName] = o.GoPackage
+		overrideTypes[o.GoTypeName] = o.GoImportPath
 	}
 
 	_, overrideNullTime := overrideTypes["pq.NullTime"]
@@ -200,7 +200,7 @@ func (i *importer) modelImports() fileImports {
 		if o.GoBasicType {
 			continue
 		}
-		overrideTypes[o.GoTypeName] = o.GoPackage
+		overrideTypes[o.GoTypeName] = o.GoImportPath
 	}
 
 	_, overrideNullTime := overrideTypes["pq.NullTime"]
@@ -333,7 +333,7 @@ func (i *importer) queryImports(filename string) fileImports {
 		if o.GoBasicType {
 			continue
 		}
-		overrideTypes[o.GoTypeName] = o.GoPackage
+		overrideTypes[o.GoTypeName] = o.GoImportPath
 	}
 
 	if sliceScan() {

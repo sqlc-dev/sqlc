@@ -1,0 +1,30 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "path": "go",
+      "name": "override",
+      "engine": "postgresql",
+      "schema": "schema.sql",
+      "queries": "query.sql",
+      "overrides": [
+        {
+          "db_type": "uuid",
+          "go_type": {
+            "import": "github.com/gofrs/uuid",
+            "package": "uuid",
+            "type": "UUID"
+          },
+        },
+        {
+          "nullable": true,
+          "db_type": "text",
+          "go_type": {
+            "type": "string",
+            "pointer": true
+          }
+        }
+      ]
+    }
+  ]
+}
