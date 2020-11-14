@@ -118,10 +118,6 @@ func cmpDirectory(t *testing.T, dir string, actual map[string]string) {
 		if strings.HasSuffix(path, "_test.go") || strings.Contains(path, "src/test/") {
 			return nil
 		}
-		// TODO(mightyguava): Remove this after sqlc-kotlin-runtime is published to Maven.
-		if strings.HasSuffix(path, "Query.kt") {
-			return nil
-		}
 		blob, err := ioutil.ReadFile(path)
 		if err != nil {
 			return err
