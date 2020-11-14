@@ -115,6 +115,9 @@ func cmpDirectory(t *testing.T, dir string, actual map[string]string) {
 		if !strings.HasSuffix(path, ".go") && !strings.HasSuffix(path, ".kt") {
 			return nil
 		}
+		if strings.Contains(path, "/kotlin/build") {
+			return nil
+		}
 		if strings.HasSuffix(path, "_test.go") || strings.Contains(path, "src/test/") {
 			return nil
 		}
