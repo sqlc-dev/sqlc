@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"go/types"
 	"io"
 	"os"
 	"strings"
@@ -131,7 +130,7 @@ type SQLKotlin struct {
 
 type Override struct {
 	// name of the golang type to use, e.g. `github.com/segmentio/ksuid.KSUID`
-	GoType string `json:"go_type" yaml:"go_type"`
+	GoType GoType `json:"go_type" yaml:"go_type"`
 
 	// fully qualified name of the Go type, e.g. `github.com/segmentio/ksuid.KSUID`
 	DBType                  string `json:"db_type" yaml:"db_type"`
@@ -148,11 +147,12 @@ type Override struct {
 	// fully qualified name of the column, e.g. `accounts.id`
 	Column string `json:"column" yaml:"column"`
 
-	ColumnName  string
-	Table       core.FQN
-	GoTypeName  string
-	GoPackage   string
-	GoBasicType bool
+	ColumnName   string
+	Table        core.FQN
+	GoImportPath string
+	GoPackage    string
+	GoTypeName   string
+	GoBasicType  bool
 }
 
 func (o *Override) Parse() error {
@@ -199,55 +199,14 @@ func (o *Override) Parse() error {
 	}
 
 	// validate GoType
-	lastDot := strings.LastIndex(o.GoType, ".")
-	lastSlash := strings.LastIndex(o.GoType, "/")
-	typename := o.GoType
-	if lastDot == -1 && lastSlash == -1 {
-		// if the type name has no slash and no dot, validate that the type is a basic Go type
-		var found bool
-		for _, typ := range types.Typ {
-			info := typ.Info()
-			if info == 0 {
-				continue
-			}
-			if info&types.IsUntyped != 0 {
-				continue
-			}
-			if typename == typ.Name() {
-				found = true
-			}
-		}
-		if !found {
-			return fmt.Errorf("Package override `go_type` specifier %q is not a Go basic type e.g. 'string'", o.GoType)
-		}
-		o.GoBasicType = true
-	} else {
-		// assume the type lives in a Go package
-		if lastDot == -1 {
-			return fmt.Errorf("Package override `go_type` specifier %q is not the proper format, expected 'package.type', e.g. 'github.com/segmentio/ksuid.KSUID'", o.GoType)
-		}
-		if lastSlash == -1 {
-			return fmt.Errorf("Package override `go_type` specifier %q is not the proper format, expected 'package.type', e.g. 'github.com/segmentio/ksuid.KSUID'", o.GoType)
-		}
-		typename = o.GoType[lastSlash+1:]
-		if strings.HasPrefix(typename, "go-") {
-			// a package name beginning with "go-" will give syntax errors in
-			// generated code. We should do the right thing and get the actual
-			// import name, but in lieu of that, stripping the leading "go-" may get
-			// us what we want.
-			typename = typename[len("go-"):]
-		}
-		if strings.HasSuffix(typename, "-go") {
-			typename = typename[:len(typename)-len("-go")]
-		}
-		o.GoPackage = o.GoType[:lastDot]
+	parsed, err := o.GoType.Parse()
+	if err != nil {
+		return err
 	}
-	o.GoTypeName = typename
-	isPointer := o.GoType[0] == '*'
-	if isPointer {
-		o.GoPackage = o.GoPackage[1:]
-		o.GoTypeName = "*" + o.GoTypeName
-	}
+	o.GoImportPath = parsed.ImportPath
+	o.GoPackage = parsed.Package
+	o.GoTypeName = parsed.TypeName
+	o.GoBasicType = parsed.BasicType
 
 	return nil
 }
