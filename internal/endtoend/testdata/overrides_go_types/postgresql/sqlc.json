@@ -9,14 +9,14 @@
       "queries": "query.sql",
       "overrides": [
         {
-          "column": "new_style.id",
+          "column": "foo.id",
           "go_type": {
             "import": "github.com/gofrs/uuid",
             "type": "UUID"
           },
         },
         {
-          "column": "new_style.other_id",
+          "column": "foo.other_id",
           "go_type": {
             "import": "github.com/gofrs/uuid",
             "package": "fuid",
@@ -24,7 +24,7 @@
           },
         },
         {
-          "column": "new_style.age",
+          "column": "foo.age",
           "nullable": true,
           "go_type": {
             "import": "database/sql",
@@ -33,15 +33,15 @@
           },
         },
         {
-          "column": "new_style.balance",
+          "column": "foo.balance",
           "nullable": true,
           "go_type": {
-            "import": "github.com/guregu/null/v4",
-            "type": "Float"
+            "import": "github.com/volatiletech/null/v8",
+            "type": "Float32"
           },
         },
         {
-          "column": "new_style.bio",
+          "column": "foo.bio",
           "nullable": true,
           "go_type": {
             "import": "gopkg.in/guregu/null.v4",
@@ -49,17 +49,13 @@
           },
         },
         {
-          "column": "new_style.about",
+          "column": "foo.about",
           "nullable": true,
           "go_type": {
             "type": "string",
             "pointer": true
           }
-        },
-        {
-          "column": "old_style.id",
-          "go_type": "github.com/gofrs/uuid.UUID",
-        },
+        }
       ]
     }
   ]
