@@ -26,7 +26,7 @@ package {{.Package}}
 
 import (
 	{{range imports .SourceName}}
-	{{range .}}"{{.}}"
+	{{range .}}{{.}}
 	{{end}}
 	{{end}}
 )
@@ -137,7 +137,7 @@ package {{.Package}}
 
 import (
 	{{range imports .SourceName}}
-	{{range .}}"{{.}}"
+	{{range .}}{{.}}
 	{{end}}
 	{{end}}
 )
@@ -175,7 +175,7 @@ package {{.Package}}
 
 import (
 	{{range imports .SourceName}}
-	{{range .}}"{{.}}"
+	{{range .}}{{.}}
 	{{end}}
 	{{end}}
 )
@@ -226,7 +226,7 @@ package {{.Package}}
 
 import (
 	{{range imports .SourceName}}
-	{{range .}}"{{.}}"
+	{{range .}}{{.}}
 	{{end}}
 	{{end}}
 )

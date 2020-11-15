@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"go/types"
+	"regexp"
 	"strings"
 )
 
@@ -53,17 +54,36 @@ func (o *GoType) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
+var validIdentifier = regexp.MustCompile(`^[a-zA-Z0-9_]+$`)
+var versionNumber = regexp.MustCompile(`^v[0-9]+$`)
+var invalidIdentifier = regexp.MustCompile(`[^a-zA-Z0-9_]`)
+
+func generatePackageID(importPath string) string {
+	parts := strings.Split(importPath, "/")
+	name := parts[len(parts)-1]
+	fmt.Println("parts", parts)
+	// If the last part of the import path is a valid identifier, assume that's the package name
+	if versionNumber.MatchString(name) && len(parts) >= 2 {
+		name = parts[len(parts)-2]
+		return invalidIdentifier.ReplaceAllString(strings.ToLower(name), "_")
+	}
+	if validIdentifier.MatchString(name) {
+		return ""
+	}
+	return invalidIdentifier.ReplaceAllString(strings.ToLower(name), "_")
+}
+
 // validate GoType
 func (gt GoType) Parse() (*ParsedGoType, error) {
 	var o ParsedGoType
 
 	if gt.Spec == "" {
 		// TODO: Validation
-		if gt.Path != "" && gt.Package == "" {
-			return nil, fmt.Errorf("Package override `go_type`: package name required when using an import path")
-		}
 		if gt.Path == "" && gt.Package != "" {
 			return nil, fmt.Errorf("Package override `go_type`: package name requires an import path")
+		}
+		if gt.Package == "" && gt.Path != "" {
+			gt.Package = generatePackageID(gt.Path)
 		}
 		o.ImportPath = gt.Path
 		o.Package = gt.Package

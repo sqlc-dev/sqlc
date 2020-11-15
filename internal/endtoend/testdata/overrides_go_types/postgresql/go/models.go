@@ -3,10 +3,25 @@
 package override
 
 import (
+	"database/sql"
+
+	orm "database/sql"
 	"github.com/gofrs/uuid"
+	fuid "github.com/gofrs/uuid"
+	null "github.com/guregu/null/v4"
+	null_v4 "gopkg.in/guregu/null.v4"
 )
 
-type Foo struct {
+type NewStyle struct {
+	ID      UUID
+	OtherID fuid.UUID
+	Age     orm.NullInt32
+	Balance null.Float
+	Bio     null_v4.String
+	About   *string
+}
+
+type OldStyle struct {
 	ID    uuid.UUID
-	About *string
+	About sql.NullString
 }

@@ -9,21 +9,57 @@
       "queries": "query.sql",
       "overrides": [
         {
-          "db_type": "uuid",
+          "column": "new_style.id",
           "go_type": {
             "import": "github.com/gofrs/uuid",
-            "package": "uuid",
             "type": "UUID"
           },
         },
         {
+          "column": "new_style.other_id",
+          "go_type": {
+            "import": "github.com/gofrs/uuid",
+            "package": "fuid",
+            "type": "UUID"
+          },
+        },
+        {
+          "column": "new_style.age",
           "nullable": true,
-          "db_type": "text",
+          "go_type": {
+            "import": "database/sql",
+            "package": "orm",
+            "type": "NullInt32"
+          },
+        },
+        {
+          "column": "new_style.balance",
+          "nullable": true,
+          "go_type": {
+            "import": "github.com/guregu/null/v4",
+            "type": "Float"
+          },
+        },
+        {
+          "column": "new_style.bio",
+          "nullable": true,
+          "go_type": {
+            "import": "gopkg.in/guregu/null.v4",
+            "type": "String"
+          },
+        },
+        {
+          "column": "new_style.about",
+          "nullable": true,
           "go_type": {
             "type": "string",
             "pointer": true
           }
-        }
+        },
+        {
+          "column": "old_style.id",
+          "go_type": "github.com/gofrs/uuid.UUID",
+        },
       ]
     }
   ]

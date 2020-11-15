@@ -9,19 +9,53 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-const loadFoo = `-- name: LoadFoo :many
-SELECT id, about FROM foo WHERE id = $1
+const loadNewStyle = `-- name: LoadNewStyle :many
+SELECT id, other_id, age, balance, bio, about FROM new_style WHERE id = $1
 `
 
-func (q *Queries) LoadFoo(ctx context.Context, id uuid.UUID) ([]Foo, error) {
-	rows, err := q.db.QueryContext(ctx, loadFoo, id)
+func (q *Queries) LoadNewStyle(ctx context.Context, id UUID) ([]NewStyle, error) {
+	rows, err := q.db.QueryContext(ctx, loadNewStyle, id)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Foo
+	var items []NewStyle
 	for rows.Next() {
-		var i Foo
+		var i NewStyle
+		if err := rows.Scan(
+			&i.ID,
+			&i.OtherID,
+			&i.Age,
+			&i.Balance,
+			&i.Bio,
+			&i.About,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const loadOldStyle = `-- name: LoadOldStyle :many
+SELECT id, about FROM old_style WHERE id = $1
+`
+
+func (q *Queries) LoadOldStyle(ctx context.Context, id uuid.UUID) ([]OldStyle, error) {
+	rows, err := q.db.QueryContext(ctx, loadOldStyle, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []OldStyle
+	for rows.Next() {
+		var i OldStyle
 		if err := rows.Scan(&i.ID, &i.About); err != nil {
 			return nil, err
 		}
