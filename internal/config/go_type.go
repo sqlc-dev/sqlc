@@ -61,7 +61,6 @@ var invalidIdentifier = regexp.MustCompile(`[^a-zA-Z0-9_]`)
 func generatePackageID(importPath string) string {
 	parts := strings.Split(importPath, "/")
 	name := parts[len(parts)-1]
-	fmt.Println("parts", parts)
 	// If the last part of the import path is a valid identifier, assume that's the package name
 	if versionNumber.MatchString(name) && len(parts) >= 2 {
 		name = parts[len(parts)-2]
