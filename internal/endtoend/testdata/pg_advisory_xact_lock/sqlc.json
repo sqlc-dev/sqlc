@@ -5,7 +5,7 @@
       "path": "go",
       "name": "querytest",
       "schema": "query.sql",
-      "queries": "query.sql"
+      "queries": ["query.sql", "exec.sql"]
     }
   ]
 }

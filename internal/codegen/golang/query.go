@@ -1,6 +1,10 @@
 package golang
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/kyleconroy/sqlc/internal/metadata"
+)
 
 type QueryValue struct {
 	Emit   bool
@@ -103,5 +107,6 @@ type Query struct {
 }
 
 func (q Query) hasRetType() bool {
-	return q.Cmd != ":exec" && !q.Ret.isEmpty()
+	scanned := q.Cmd == metadata.CmdOne || q.Cmd == metadata.CmdMany
+	return scanned && !q.Ret.isEmpty()
 }
