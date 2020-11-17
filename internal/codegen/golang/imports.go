@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/kyleconroy/sqlc/internal/config"
-	"github.com/kyleconroy/sqlc/internal/debug"
 	"github.com/kyleconroy/sqlc/internal/metadata"
 )
 
@@ -341,7 +340,6 @@ func (i *importer) queryImports(filename string) fileImports {
 		"context": struct{}{},
 	}
 	if uses("sql.Null") {
-		debug.Dump(gq)
 		std["database/sql"] = struct{}{}
 	}
 	for _, q := range gq {
