@@ -11646,14 +11646,32 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "integer"},
 		},
 		{
-			Name:       "json_build_array",
-			Args:       []*catalog.Argument{},
+			Name: "json_build_array",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}, HasDefault: true, Mode: ast.FuncParamVariadic},
+			},
 			ReturnType: &ast.TypeName{Name: "json"},
 		},
 		{
 			Name: "json_build_object",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}, HasDefault: true, Mode: ast.FuncParamVariadic},
+			},
+			ReturnType: &ast.TypeName{Name: "json"},
+		},
+		{
+			Name: "json_extract_path",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "json"}},
+				{Type: &ast.TypeName{Name: "any"}, Mode: ast.FuncParamVariadic},
+			},
+			ReturnType: &ast.TypeName{Name: "json"},
+		},
+		{
+			Name: "json_extract_path_text",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "json"}},
+				{Type: &ast.TypeName{Name: "any"}, Mode: ast.FuncParamVariadic},
 			},
 			ReturnType: &ast.TypeName{Name: "json"},
 		},
