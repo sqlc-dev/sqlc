@@ -251,6 +251,7 @@ type Argument struct {
 	Name       string
 	Type       *ast.TypeName
 	HasDefault bool
+	Variadic   bool
 	Mode       ast.FuncParamMode
 }
 
