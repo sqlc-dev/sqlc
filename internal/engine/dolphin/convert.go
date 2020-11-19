@@ -3,6 +3,7 @@ package dolphin
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	pcast "github.com/pingcap/parser/ast"
 	"github.com/pingcap/parser/opcode"
@@ -322,7 +323,7 @@ func (c *cc) convertFieldList(n *pcast.FieldList) *ast.List {
 
 func (c *cc) convertFuncCallExpr(n *pcast.FuncCallExpr) *ast.FuncCall {
 	schema := n.Schema.String()
-	name := n.FnName.String()
+	name := strings.ToLower(n.FnName.String())
 
 	// TODO: Deprecate the usage of Funcname
 	items := []ast.Node{}
@@ -494,14 +495,15 @@ func (c *cc) convertAdminStmt(n *pcast.AdminStmt) ast.Node {
 }
 
 func (c *cc) convertAggregateFuncExpr(n *pcast.AggregateFuncExpr) *ast.FuncCall {
+	name := strings.ToLower(n.F)
 	fn := &ast.FuncCall{
 		Func: &ast.FuncName{
-			Name: n.F,
+			Name: name,
 		},
 		Funcname: &ast.List{
 			Items: []ast.Node{
 				&ast.String{
-					Str: n.F,
+					Str: name,
 				},
 			},
 		},

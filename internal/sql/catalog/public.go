@@ -17,13 +17,14 @@ func (c *Catalog) schemasToSearch(ns string) []string {
 
 func (c *Catalog) ListFuncsByName(rel *ast.FuncName) ([]Function, error) {
 	var funcs []Function
+	lowered := strings.ToLower(rel.Name)
 	for _, ns := range c.schemasToSearch(rel.Schema) {
 		s, err := c.getSchema(ns)
 		if err != nil {
 			return nil, err
 		}
 		for i := range s.Funcs {
-			if s.Funcs[i].Name == rel.Name {
+			if strings.ToLower(s.Funcs[i].Name) == lowered {
 				funcs = append(funcs, *s.Funcs[i])
 			}
 		}
