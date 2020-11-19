@@ -564,9 +564,25 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "FROM_UNIXTIME",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "FROM_UNIXTIME",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "bigint"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
+			Name: "FROM_UNIXTIME",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "bigint"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
 			Name:       "GEOMCOLLECTION",
