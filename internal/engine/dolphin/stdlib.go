@@ -645,13 +645,30 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "IF",
-			Args:       []*catalog.Argument{},
+			Name: "IF",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "IFNULL",
-			Args:       []*catalog.Argument{},
+			Name: "IFNULL",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
@@ -1150,8 +1167,15 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "NULLIF",
-			Args:       []*catalog.Argument{},
+			Name: "NULLIF",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
