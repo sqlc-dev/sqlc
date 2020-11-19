@@ -16,7 +16,6 @@ import (
 	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/debug"
 	"github.com/kyleconroy/sqlc/internal/multierr"
-	"github.com/kyleconroy/sqlc/internal/mysql"
 	"github.com/kyleconroy/sqlc/internal/opts"
 )
 
@@ -147,32 +146,22 @@ func Generate(e Env, dir string, stderr io.Writer) (map[string]string, error) {
 			name = combo.Kotlin.Package
 		}
 
+		result, errored := parse(e, name, dir, sql.SQL, combo, parseOpts, stderr)
+		if errored {
+			break
+		}
+
 		var files map[string]string
 		var out string
-
-		// TODO: Note about how this will be going away
-		if sql.Engine == config.EngineMySQL {
-			result, errored := parseMySQL(e, name, dir, sql.SQL, combo, parseOpts, stderr)
-			if errored {
-				break
-			}
+		switch {
+		case sql.Gen.Go != nil:
 			out = combo.Go.Out
-			files, err = golang.DeprecatedGenerate(result, combo)
-		} else {
-			result, errored := parse(e, name, dir, sql.SQL, combo, parseOpts, stderr)
-			if errored {
-				break
-			}
-			switch {
-			case sql.Gen.Go != nil:
-				out = combo.Go.Out
-				files, err = golang.Generate(result, combo)
-			case sql.Gen.Kotlin != nil:
-				out = combo.Kotlin.Out
-				files, err = kotlin.Generate(result, combo)
-			default:
-				panic("missing language backend")
-			}
+			files, err = golang.Generate(result, combo)
+		case sql.Gen.Kotlin != nil:
+			out = combo.Kotlin.Out
+			files, err = kotlin.Generate(result, combo)
+		default:
+			panic("missing language backend")
 		}
 
 		if err != nil {
@@ -191,23 +180,6 @@ func Generate(e Env, dir string, stderr io.Writer) (map[string]string, error) {
 		return nil, fmt.Errorf("errored")
 	}
 	return output, nil
-}
-
-// Experimental MySQL support
-func parseMySQL(e Env, name, dir string, sql config.SQL, combo config.CombinedSettings, parserOpts opts.Parser, stderr io.Writer) (golang.Generateable, bool) {
-	q, err := mysql.GeneratePkg(name, sql.Schema, sql.Queries, combo)
-	if err != nil {
-		fmt.Fprintf(stderr, "# package %s\n", name)
-		if parserErr, ok := err.(*multierr.Error); ok {
-			for _, fileErr := range parserErr.Errs() {
-				printFileErr(stderr, dir, fileErr)
-			}
-		} else {
-			fmt.Fprintf(stderr, "error parsing schema: %s\n", err)
-		}
-		return nil, true
-	}
-	return q, false
 }
 
 func parse(e Env, name, dir string, sql config.SQL, combo config.CombinedSettings, parserOpts opts.Parser, stderr io.Writer) (*compiler.Result, bool) {
