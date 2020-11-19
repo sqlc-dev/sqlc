@@ -16,7 +16,7 @@
       "name": "ondeck",
       "schema": "mysql/schema",
       "queries": "mysql/query",
-      "engine": "mysql:beta",
+      "engine": "mysql",
       "emit_json_tags": true,
       "emit_prepared_queries": true,
       "emit_interface": true
