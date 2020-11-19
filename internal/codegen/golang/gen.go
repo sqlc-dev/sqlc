@@ -372,10 +372,6 @@ func (t *tmplCtx) OutputQuery(sourceName string) bool {
 	return t.SourceName == sourceName
 }
 
-func DeprecatedGenerate(r Generateable, settings config.CombinedSettings) (map[string]string, error) {
-	return generate(settings, r.Enums(settings), r.Structs(settings), r.GoQueries(settings))
-}
-
 func Generate(r *compiler.Result, settings config.CombinedSettings) (map[string]string, error) {
 	enums := buildEnums(r, settings)
 	structs := buildStructs(r, settings)

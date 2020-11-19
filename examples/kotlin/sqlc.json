@@ -48,7 +48,7 @@
     {
       "schema": "src/main/resources/authors/mysql/schema.sql",
       "queries": "src/main/resources/authors/mysql/query.sql",
-      "engine": "mysql:beta",
+      "engine": "mysql",
       "gen": {
         "kotlin": {
           "out": "src/main/kotlin/com/example/authors/mysql",
@@ -59,7 +59,7 @@
     {
       "schema": "src/main/resources/booktest/mysql/schema.sql",
       "queries": "src/main/resources/booktest/mysql/query.sql",
-      "engine": "mysql:beta",
+      "engine": "mysql",
       "gen": {
         "kotlin": {
           "out": "src/main/kotlin/com/example/booktest/mysql",
@@ -70,7 +70,7 @@
     {
       "schema": "src/main/resources/ondeck/mysql/schema",
       "queries": "src/main/resources/ondeck/mysql/query",
-      "engine": "mysql:beta",
+      "engine": "mysql",
       "gen": {
         "kotlin": {
           "out": "src/main/kotlin/com/example/ondeck/mysql",

@@ -78,7 +78,7 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt) (*ast.RawStmt, map[
 			} else {
 				old = fmt.Sprintf("sqlc.arg(%s)", param)
 			}
-			if engine == config.EngineMySQL || engine == config.EngineMySQLBeta {
+			if engine == config.EngineMySQL {
 				replace = "?"
 			} else {
 				replace = fmt.Sprintf("$%d", args[param])
