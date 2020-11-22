@@ -1043,14 +1043,28 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "GTID_SUBSET",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "GTID_SUBSET",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bool"},
 		},
 		{
-			Name:       "GTID_SUBTRACT",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "GTID_SUBTRACT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
 			Name: "HEX",
@@ -3420,11 +3434,6 @@ func defaultSchema(name string) *catalog.Schema {
 		{
 			Name:       "SYSDATE",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "SYSDATE",
-			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "datetime"},
 		},
 		{
@@ -3778,14 +3787,34 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
-			Name:       "WAIT_FOR_EXECUTED_GTID_SET",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "WAIT_FOR_EXECUTED_GTID_SET",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type:       &ast.TypeName{Name: "int"},
+					HasDefault: true,
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bool"},
 		},
 		{
-			Name:       "WAIT_UNTIL_SQL_THREAD_AFTER_GTIDS",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "WAIT_UNTIL_SQL_THREAD_AFTER_GTIDS",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type:       &ast.TypeName{Name: "int"},
+					HasDefault: true,
+				},
+				{
+					Type:       &ast.TypeName{Name: "text"},
+					HasDefault: true,
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bool"},
 		},
 		{
 			Name: "WEEK",
