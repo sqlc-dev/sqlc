@@ -2462,24 +2462,99 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
-			Name:       "REGEXP_INSTR",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "REGEXP_INSTR",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type:       &ast.TypeName{Name: "int"},
+					HasDefault: true,
+				},
+				{
+					Type:       &ast.TypeName{Name: "int"},
+					HasDefault: true,
+				},
+				{
+					Type:       &ast.TypeName{Name: "int"},
+					HasDefault: true,
+				},
+				{
+					Type:       &ast.TypeName{Name: "text"},
+					HasDefault: true,
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
-			Name:       "REGEXP_LIKE",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "REGEXP_LIKE",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type:       &ast.TypeName{Name: "text"},
+					HasDefault: true,
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bool"},
 		},
 		{
-			Name:       "REGEXP_REPLACE",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "REGEXP_REPLACE",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type:       &ast.TypeName{Name: "int"},
+					HasDefault: true,
+				},
+				{
+					Type:       &ast.TypeName{Name: "int"},
+					HasDefault: true,
+				},
+				{
+					Type:       &ast.TypeName{Name: "text"},
+					HasDefault: true,
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
-			Name:       "REGEXP_SUBSTR",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "REGEXP_SUBSTR",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type:       &ast.TypeName{Name: "int"},
+					HasDefault: true,
+				},
+				{
+					Type:       &ast.TypeName{Name: "int"},
+					HasDefault: true,
+				},
+				{
+					Type:       &ast.TypeName{Name: "text"},
+					HasDefault: true,
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
 			Name:       "RELEASE_ALL_LOCKS",
