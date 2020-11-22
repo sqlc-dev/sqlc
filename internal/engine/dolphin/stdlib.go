@@ -505,9 +505,13 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "EXP",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "EXP",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
 			Name:       "EXPORT_SET",
@@ -545,14 +549,25 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "FLOOR",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "FLOOR",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
-			Name:       "FORMAT",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "FORMAT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
 			Name:       "FORMAT_BYTES",
@@ -650,9 +665,22 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "HEX",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "HEX",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
+			Name: "HEX",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
 			Name:       "HOUR",
@@ -1292,9 +1320,13 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "LN",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "LN",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
 			Name:       "LOAD_FILE",
@@ -1317,19 +1349,43 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "LOG",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "LOG",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
-			Name:       "LOG10",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "LOG",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
-			Name:       "LOG2",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "LOG10",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
+		},
+		{
+			Name: "LOG2",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
 			Name:       "LOWER",
@@ -1450,9 +1506,16 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "MOD",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "MOD",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
 			Name:       "MONTH",
@@ -1549,7 +1612,7 @@ func defaultSchema(name string) *catalog.Schema {
 		{
 			Name:       "PI",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
 			Name:       "POINT",
@@ -1572,14 +1635,28 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "POW",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "POW",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
-			Name:       "POWER",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "POWER",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
 			Name:       "PS_CURRENT_THREAD_ID",
@@ -1602,14 +1679,27 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "RADIANS",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "RADIANS",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
 			Name:       "RAND",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			ReturnType: &ast.TypeName{Name: "double precision"},
+		},
+		{
+			Name: "RAND",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
 			Name:       "RANDOM_BYTES",
@@ -1682,9 +1772,25 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "ROUND",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "ROUND",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
+		},
+		{
+			Name: "ROUND",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
 			Name:       "ROW_COUNT",
@@ -1742,14 +1848,22 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "SIGN",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "SIGN",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
-			Name:       "SIN",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "SIN",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
 			Name:       "SLEEP",
@@ -1767,9 +1881,13 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "SQRT",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "SQRT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
 			Name:       "STATEMENT_DIGEST",
@@ -2334,9 +2452,13 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "TAN",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "TAN",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
 			Name:       "TIME",
@@ -2399,9 +2521,16 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "TRUNCATE",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "TRUNCATE",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
 			Name:       "UCASE",
