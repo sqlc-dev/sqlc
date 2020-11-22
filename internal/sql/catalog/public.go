@@ -72,8 +72,9 @@ func (c *Catalog) ResolveFuncCall(call *ast.FuncCall) (*Function, error) {
 			if arg.HasDefault {
 				defaults += 1
 			}
-			if arg.Variadic {
+			if arg.Mode == ast.FuncParamVariadic {
 				variadic = true
+				defaults += 1
 			}
 			if arg.Name != "" {
 				known[arg.Name] = struct{}{}
@@ -81,8 +82,7 @@ func (c *Catalog) ResolveFuncCall(call *ast.FuncCall) (*Function, error) {
 		}
 
 		if variadic {
-			// For now, assume variadic fucntions can't also have defaults
-			if (len(named) + len(positional)) < len(args) {
+			if (len(named) + len(positional)) < (len(args) - defaults) {
 				continue
 			}
 		} else {
