@@ -986,9 +986,16 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
-			Name:       "GET_LOCK",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "GET_LOCK",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bool"},
 		},
 		{
 			Name: "GREATEST",
@@ -1189,9 +1196,13 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "bool"},
 		},
 		{
-			Name:       "IS_FREE_LOCK",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "IS_FREE_LOCK",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bool"},
 		},
 		{
 			Name: "IS_IPV4",
@@ -1230,9 +1241,13 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "bool"},
 		},
 		{
-			Name:       "IS_USED_LOCK",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "IS_USED_LOCK",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bool"},
 		},
 		{
 			Name: "IS_UUID",
@@ -2383,8 +2398,12 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
-			Name:       "PS_THREAD_ID",
-			Args:       []*catalog.Argument{},
+			Name: "PS_THREAD_ID",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
@@ -2465,12 +2484,16 @@ func defaultSchema(name string) *catalog.Schema {
 		{
 			Name:       "RELEASE_ALL_LOCKS",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
-			Name:       "RELEASE_LOCK",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "RELEASE_LOCK",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bool"},
 		},
 		{
 			Name: "REPEAT",
