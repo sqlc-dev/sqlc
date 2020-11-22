@@ -213,9 +213,16 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "BENCHMARK",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "BENCHMARK",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
 			Name: "BIN",
@@ -352,9 +359,13 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
-			Name:       "CHARSET",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "CHARSET",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
 			Name: "CHAR_LENGTH",
@@ -366,14 +377,22 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
-			Name:       "COERCIBILITY",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "COERCIBILITY",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
-			Name:       "COLLATION",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "COLLATION",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
 			Name: "COMPRESS",
@@ -416,7 +435,7 @@ func defaultSchema(name string) *catalog.Schema {
 		{
 			Name:       "CONNECTION_ID",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
 			Name: "CONV",
@@ -512,7 +531,7 @@ func defaultSchema(name string) *catalog.Schema {
 		{
 			Name:       "CURRENT_ROLE",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
 			Name:       "CURRENT_TIME",
@@ -545,7 +564,7 @@ func defaultSchema(name string) *catalog.Schema {
 		{
 			Name:       "CURRENT_USER",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
 			Name:       "CURTIME",
@@ -564,7 +583,7 @@ func defaultSchema(name string) *catalog.Schema {
 		{
 			Name:       "DATABASE",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
 			Name: "DATE",
@@ -880,7 +899,7 @@ func defaultSchema(name string) *catalog.Schema {
 		{
 			Name:       "FOUND_ROWS",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
 			Name: "FROM_BASE64",
@@ -1026,7 +1045,7 @@ func defaultSchema(name string) *catalog.Schema {
 		{
 			Name:       "ICU_VERSION",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
 			Name: "IF",
@@ -1679,7 +1698,7 @@ func defaultSchema(name string) *catalog.Schema {
 		{
 			Name:       "LAST_INSERT_ID",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			ReturnType: &ast.TypeName{Name: "bigint"},
 		},
 		{
 			Name:       "LAST_VALUE",
@@ -2442,7 +2461,7 @@ func defaultSchema(name string) *catalog.Schema {
 		{
 			Name:       "ROLES_GRAPHML",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
 			Name: "ROUND",
@@ -2468,7 +2487,7 @@ func defaultSchema(name string) *catalog.Schema {
 		{
 			Name:       "ROW_COUNT",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			ReturnType: &ast.TypeName{Name: "bigint"},
 		},
 		{
 			Name:       "ROW_NUMBER",
@@ -2502,7 +2521,7 @@ func defaultSchema(name string) *catalog.Schema {
 		{
 			Name:       "SCHEMA",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
 			Name: "SECOND",
@@ -2525,7 +2544,7 @@ func defaultSchema(name string) *catalog.Schema {
 		{
 			Name:       "SESSION_USER",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
 			Name: "SHA",
@@ -3253,7 +3272,7 @@ func defaultSchema(name string) *catalog.Schema {
 		{
 			Name:       "SYSTEM_USER",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
 			Name: "TAN",
@@ -3483,7 +3502,7 @@ func defaultSchema(name string) *catalog.Schema {
 		{
 			Name:       "USER",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
 			Name:       "UTC_DATE",
@@ -3579,7 +3598,7 @@ func defaultSchema(name string) *catalog.Schema {
 		{
 			Name:       "VERSION",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
 			Name:       "WAIT_FOR_EXECUTED_GTID_SET",
