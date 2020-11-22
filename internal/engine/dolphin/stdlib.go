@@ -81,14 +81,28 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
-			Name:       "ADDDATE",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "ADDDATE",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "date"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "date"},
 		},
 		{
-			Name:       "ADDTIME",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "ADDTIME",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "time"},
+				},
+				{
+					Type: &ast.TypeName{Name: "time"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "time"},
 		},
 		{
 			Name:       "AES_DECRYPT",
@@ -362,9 +376,19 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "CONVERT_TZ",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "CONVERT_TZ",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "datetime"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "datetime"},
 		},
 		{
 			Name: "COS",
@@ -415,17 +439,12 @@ func defaultSchema(name string) *catalog.Schema {
 		{
 			Name:       "CURDATE",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "CURDATE",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			ReturnType: &ast.TypeName{Name: "date"},
 		},
 		{
 			Name:       "CURRENT_DATE",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			ReturnType: &ast.TypeName{Name: "date"},
 		},
 		{
 			Name:       "CURRENT_ROLE",
@@ -435,12 +454,30 @@ func defaultSchema(name string) *catalog.Schema {
 		{
 			Name:       "CURRENT_TIME",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			ReturnType: &ast.TypeName{Name: "time"},
+		},
+		{
+			Name: "CURRENT_TIME",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "time"},
 		},
 		{
 			Name:       "CURRENT_TIMESTAMP",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			ReturnType: &ast.TypeName{Name: "datetime"},
+		},
+		{
+			Name: "CURRENT_TIMESTAMP",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "datetime"},
 		},
 		{
 			Name:       "CURRENT_USER",
@@ -450,12 +487,16 @@ func defaultSchema(name string) *catalog.Schema {
 		{
 			Name:       "CURTIME",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			ReturnType: &ast.TypeName{Name: "time"},
 		},
 		{
-			Name:       "CURTIME",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "CURTIME",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "time"},
 		},
 		{
 			Name:       "DATABASE",
@@ -463,64 +504,130 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "DATE",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "DATE",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "datetime"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "date"},
 		},
 		{
-			Name:       "DATEDIFF",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "DATEDIFF",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "datetime"},
+				},
+				{
+					Type: &ast.TypeName{Name: "datetime"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
-			Name:       "DATE_ADD",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "DATE_ADD",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "date"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "date"},
 		},
 		{
-			Name:       "DATE_ADD_INTERVAL",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "DATE_ADD_INTERVAL",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "date"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "date"},
 		},
 		{
-			Name:       "DATE_FORMAT",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "DATE_FORMAT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "date"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
-			Name:       "DATE_SUB",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "DATE_SUB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "date"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "date"},
 		},
 		{
-			Name:       "DATE_SUB_INTERVAL",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "DATE_SUB_INTERVAL",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "date"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "date"},
 		},
 		{
-			Name:       "DAY",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "DAY",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "date"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
-			Name:       "DAYNAME",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "DAYNAME",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "date"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
-			Name:       "DAYOFMONTH",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "DAYOFMONTH",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "date"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
-			Name:       "DAYOFWEEK",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "DAYOFWEEK",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "date"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
-			Name:       "DAYOFYEAR",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "DAYOFYEAR",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "date"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
 			Name:       "DEFAULT",
@@ -623,9 +730,16 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
-			Name:       "EXTRACT",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "EXTRACT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "date"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
 			Name:       "EXTRACTVALUE",
@@ -711,9 +825,13 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
-			Name:       "FROM_DAYS",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "FROM_DAYS",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "date"},
 		},
 		{
 			Name: "FROM_UNIXTIME",
@@ -747,9 +865,16 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "GET_FORMAT",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "GET_FORMAT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
 			Name:       "GET_LOCK",
@@ -804,9 +929,13 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
-			Name:       "HOUR",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "HOUR",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "time"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
 			Name:       "ICU_VERSION",
@@ -1406,9 +1535,13 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "LAST_DAY",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "LAST_DAY",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "date"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "date"},
 		},
 		{
 			Name:       "LAST_INSERT_ID",
@@ -1496,12 +1629,31 @@ func defaultSchema(name string) *catalog.Schema {
 		{
 			Name:       "LOCALTIME",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			ReturnType: &ast.TypeName{Name: "datetime"},
 		},
+		{
+			Name: "LOCALTIME",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "datetime"},
+		},
+
 		{
 			Name:       "LOCALTIMESTAMP",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			ReturnType: &ast.TypeName{Name: "datetime"},
+		},
+		{
+			Name: "LOCALTIMESTAMP",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "datetime"},
 		},
 		{
 			Name: "LOCATE",
@@ -1603,14 +1755,31 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
-			Name:       "MAKEDATE",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "MAKEDATE",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "date"},
 		},
 		{
-			Name:       "MAKETIME",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "MAKETIME",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "time"},
 		},
 		{
 			Name: "MAKE_SET",
@@ -1693,9 +1862,13 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "MICROSECOND",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "MICROSECOND",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "time"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
 			Name: "MID",
@@ -1722,9 +1895,13 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "MINUTE",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "MINUTE",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "time"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
 			Name: "MOD",
@@ -1739,14 +1916,22 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
-			Name:       "MONTH",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "MONTH",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "date"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
-			Name:       "MONTHNAME",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "MONTHNAME",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "date"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
 			Name:       "MULTILINESTRING",
@@ -1771,7 +1956,16 @@ func defaultSchema(name string) *catalog.Schema {
 		{
 			Name:       "NOW",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			ReturnType: &ast.TypeName{Name: "datetime"},
+		},
+		{
+			Name: "NOW",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "datetime"},
 		},
 		{
 			Name:       "NTH_VALUE",
@@ -1833,14 +2027,28 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "PERIOD_ADD",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "PERIOD_ADD",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
-			Name:       "PERIOD_DIFF",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "PERIOD_DIFF",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
 			Name:       "PI",
@@ -1904,9 +2112,13 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "QUARTER",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "QUARTER",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "date"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
 			Name: "QUOTE",
@@ -2094,14 +2306,22 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "SECOND",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "SECOND",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "time"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
-			Name:       "SEC_TO_TIME",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "SEC_TO_TIME",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "time"},
 		},
 		{
 			Name:       "SESSION_USER",
@@ -2232,9 +2452,16 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "tinyint"},
 		},
 		{
-			Name:       "STR_TO_DATE",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "STR_TO_DATE",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "datetime"},
 		},
 		{
 			Name:       "ST_AREA",
@@ -2677,14 +2904,16 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "SUBDATE",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "SUBDATE",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "SUBDATE",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "date"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "date"},
 		},
 		{
 			Name: "SUBSTR",
@@ -2756,9 +2985,16 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
-			Name:       "SUBTIME",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "SUBTIME",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "time"},
+				},
+				{
+					Type: &ast.TypeName{Name: "time"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "time"},
 		},
 		{
 			Name: "SUM",
@@ -2777,7 +3013,16 @@ func defaultSchema(name string) *catalog.Schema {
 		{
 			Name:       "SYSDATE",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			ReturnType: &ast.TypeName{Name: "datetime"},
+		},
+		{
+			Name: "SYSDATE",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "datetime"},
 		},
 		{
 			Name:       "SYSTEM_USER",
@@ -2794,39 +3039,97 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
-			Name:       "TIME",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "TIME",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "datetime"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "time"},
 		},
 		{
-			Name:       "TIMEDIFF",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "TIMEDIFF",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "time"},
+				},
+				{
+					Type: &ast.TypeName{Name: "time"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "time"},
 		},
 		{
-			Name:       "TIMESTAMP",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "TIMESTAMP",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "datetime"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "datetime"},
 		},
 		{
-			Name:       "TIMESTAMPADD",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "TIMESTAMP",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "datetime"},
+				},
+				{
+					Type: &ast.TypeName{Name: "datetime"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "datetime"},
 		},
 		{
-			Name:       "TIMESTAMPDIFF",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "TIMESTAMPADD",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "datetime"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "datetime"},
 		},
 		{
-			Name:       "TIME_FORMAT",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "TIMESTAMPDIFF",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "datetime"},
+				},
+				{
+					Type: &ast.TypeName{Name: "datetime"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "datetime"},
 		},
 		{
-			Name:       "TIME_TO_SEC",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "TIME_FORMAT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "time"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
+			Name: "TIME_TO_SEC",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "time"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
 			Name: "TO_BASE64",
@@ -2838,14 +3141,22 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
-			Name:       "TO_DAYS",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "TO_DAYS",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "date"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
-			Name:       "TO_SECONDS",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "TO_SECONDS",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "datetime"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bigint"},
 		},
 		{
 			Name: "TRIM",
@@ -2910,7 +3221,16 @@ func defaultSchema(name string) *catalog.Schema {
 		{
 			Name:       "UNIX_TIMESTAMP",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			ReturnType: &ast.TypeName{Name: "bigint"},
+		},
+		{
+			Name: "UNIX_TIMESTAMP",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "datetime"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bigint"},
 		},
 		{
 			Name:       "UPDATEXML",
@@ -2934,17 +3254,17 @@ func defaultSchema(name string) *catalog.Schema {
 		{
 			Name:       "UTC_DATE",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			ReturnType: &ast.TypeName{Name: "date"},
 		},
 		{
 			Name:       "UTC_TIME",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			ReturnType: &ast.TypeName{Name: "time"},
 		},
 		{
 			Name:       "UTC_TIMESTAMP",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			ReturnType: &ast.TypeName{Name: "datetime"},
 		},
 		{
 			Name:       "UUID",
@@ -3014,19 +3334,43 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "WEEK",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "WEEK",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "date"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
-			Name:       "WEEKDAY",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "WEEK",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "date"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
-			Name:       "WEEKOFYEAR",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "WEEKDAY",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "date"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
+		},
+		{
+			Name: "WEEKOFYEAR",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "date"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
 			Name: "WEIGHT_STRING",
@@ -3038,14 +3382,22 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "YEAR",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "YEAR",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "date"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
-			Name:       "YEARWEEK",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "YEARWEEK",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "date"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 	}
 	return s
