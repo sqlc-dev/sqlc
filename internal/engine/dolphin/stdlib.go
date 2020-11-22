@@ -902,14 +902,22 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
-			Name:       "FORMAT_BYTES",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "FORMAT_BYTES",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
-			Name:       "FORMAT_PICO_TIME",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "FORMAT_PICO_TIME",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "time"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
 			Name:       "FOUND_ROWS",
@@ -2372,12 +2380,12 @@ func defaultSchema(name string) *catalog.Schema {
 		{
 			Name:       "PS_CURRENT_THREAD_ID",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
 			Name:       "PS_THREAD_ID",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
 			Name: "QUARTER",
