@@ -11649,8 +11649,8 @@ func genPGCatalog() *catalog.Schema {
 			Name: "json_build_array",
 			Args: []*catalog.Argument{
 				{
-					Type:     &ast.TypeName{Name: "any"},
-					Variadic: true,
+					Type: &ast.TypeName{Name: "any"},
+					Mode: ast.FuncParamVariadic,
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "json"},
@@ -11659,8 +11659,8 @@ func genPGCatalog() *catalog.Schema {
 			Name: "json_build_object",
 			Args: []*catalog.Argument{
 				{
-					Type:     &ast.TypeName{Name: "any"},
-					Variadic: true,
+					Type: &ast.TypeName{Name: "any"},
+					Mode: ast.FuncParamVariadic,
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "json"},

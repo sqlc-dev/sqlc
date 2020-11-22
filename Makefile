@@ -1,4 +1,4 @@
-.PHONY: build test test-examples regen
+.PHONY: build test test-examples regen start psql mysqlsh
 
 build:
 	go build ./...
@@ -17,3 +17,12 @@ sqlc-dev:
 
 sqlc-pg-gen:
 	go build -o ~/bin/sqlc-pg-gen ./internal/tools/sqlc-pg-gen
+
+start:
+	docker-compose up -d
+
+psql:
+	PGPASSWORD=mysecretpassword psql --host=127.0.0.1 --port=5432 --username=postgres dinotest
+
+mysqlsh:
+	mysqlsh --sql --user root --password mysecretpassword --database dinotest 127.0.0.1:3306
