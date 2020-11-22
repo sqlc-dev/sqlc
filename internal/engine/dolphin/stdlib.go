@@ -302,11 +302,6 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
-			Name:       "COALESCE",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
 			Name:       "COERCIBILITY",
 			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "any"},
@@ -882,8 +877,19 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "GREATEST",
-			Args:       []*catalog.Argument{},
+			Name: "GREATEST",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
@@ -1020,8 +1026,19 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
-			Name:       "INTERVAL",
-			Args:       []*catalog.Argument{},
+			Name: "INTERVAL",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
@@ -1568,8 +1585,19 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "LEAST",
-			Args:       []*catalog.Argument{},
+			Name: "LEAST",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
