@@ -159,8 +159,12 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "binary"},
 		},
 		{
-			Name:       "ANY_VALUE",
-			Args:       []*catalog.Argument{},
+			Name: "ANY_VALUE",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
@@ -223,9 +227,25 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
-			Name:       "BIN_TO_UUID",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "BIN_TO_UUID",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
+			Name: "BIN_TO_UUID",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+				{
+					Type: &ast.TypeName{Name: "tinyint"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
 			Name: "BIT_AND",
@@ -673,8 +693,12 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
-			Name:       "DEFAULT",
-			Args:       []*catalog.Argument{},
+			Name: "DEFAULT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
@@ -941,8 +965,16 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "GROUPING",
-			Args:       []*catalog.Argument{},
+			Name: "GROUPING",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
@@ -1024,24 +1056,40 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "INET6_ATON",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "INET6_ATON",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "binary"},
 		},
 		{
-			Name:       "INET6_NTOA",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "INET6_NTOA",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
-			Name:       "INET_ATON",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "INET_ATON",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
-			Name:       "INET_NTOA",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "INET_NTOA",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
 			Name: "INSERT",
@@ -1104,24 +1152,40 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "IS_IPV4",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "IS_IPV4",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bool"},
 		},
 		{
-			Name:       "IS_IPV4_COMPAT",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "IS_IPV4_COMPAT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bool"},
 		},
 		{
-			Name:       "IS_IPV4_MAPPED",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "IS_IPV4_MAPPED",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bool"},
 		},
 		{
-			Name:       "IS_IPV6",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "IS_IPV6",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bool"},
 		},
 		{
 			Name:       "IS_USED_LOCK",
@@ -1129,9 +1193,13 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "IS_UUID",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "IS_UUID",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bool"},
 		},
 		{
 			Name: "JSON_ARRAY",
@@ -1874,9 +1942,49 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
-			Name:       "MASTER_POS_WAIT",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "MASTER_POS_WAIT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
+		},
+		{
+			Name: "MASTER_POS_WAIT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
+		},
+		{
+			Name: "MASTER_POS_WAIT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
 			Name: "MAX",
@@ -2029,8 +2137,15 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "NAME_CONST",
-			Args:       []*catalog.Argument{},
+			Name: "NAME_CONST",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
@@ -2461,9 +2576,13 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
-			Name:       "SLEEP",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "SLEEP",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
 			Name: "SOUNDEX",
@@ -3384,17 +3503,33 @@ func defaultSchema(name string) *catalog.Schema {
 		{
 			Name:       "UUID",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
 			Name:       "UUID_SHORT",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			ReturnType: &ast.TypeName{Name: "bigint"},
 		},
 		{
-			Name:       "UUID_TO_BIN",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "UUID_TO_BIN",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "binary"},
+		},
+		{
+			Name: "UUID_TO_BIN",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "tinyint"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "binary"},
 		},
 		{
 			Name: "VALIDATE_PASSWORD_STRENGTH",
@@ -3406,8 +3541,12 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
-			Name:       "VALUES",
-			Args:       []*catalog.Argument{},
+			Name: "VALUES",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
