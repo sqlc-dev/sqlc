@@ -296,8 +296,12 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "CAST",
-			Args:       []*catalog.Argument{},
+			Name: "CAST",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
@@ -453,8 +457,15 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
-			Name:       "CONVERT",
-			Args:       []*catalog.Argument{},
+			Name: "CONVERT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
@@ -516,7 +527,7 @@ func defaultSchema(name string) *catalog.Schema {
 		{
 			Name:       "CUME_DIST",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
 			Name:       "CURDATE",
@@ -732,7 +743,7 @@ func defaultSchema(name string) *catalog.Schema {
 		{
 			Name:       "DENSE_RANK",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
 			Name:       "DISTINCT",
@@ -861,8 +872,12 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
-			Name:       "FIRST_VALUE",
-			Args:       []*catalog.Argument{},
+			Name: "FIRST_VALUE",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
@@ -1682,8 +1697,20 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "LAG",
-			Args:       []*catalog.Argument{},
+			Name: "LAG",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type:       &ast.TypeName{Name: "int"},
+					HasDefault: true,
+				},
+				{
+					Type:       &ast.TypeName{Name: "any"},
+					HasDefault: true,
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
@@ -1701,8 +1728,12 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "bigint"},
 		},
 		{
-			Name:       "LAST_VALUE",
-			Args:       []*catalog.Argument{},
+			Name: "LAST_VALUE",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
@@ -1715,8 +1746,20 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
-			Name:       "LEAD",
-			Args:       []*catalog.Argument{},
+			Name: "LEAD",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type:       &ast.TypeName{Name: "int"},
+					HasDefault: true,
+				},
+				{
+					Type:       &ast.TypeName{Name: "any"},
+					HasDefault: true,
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
@@ -2182,14 +2225,25 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "datetime"},
 		},
 		{
-			Name:       "NTH_VALUE",
-			Args:       []*catalog.Argument{},
+			Name: "NTH_VALUE",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "NTILE",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "NTILE",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
 			Name: "NULLIF",
@@ -2238,7 +2292,7 @@ func defaultSchema(name string) *catalog.Schema {
 		{
 			Name:       "PERCENT_RANK",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
 			Name: "PERIOD_ADD",
@@ -2378,7 +2432,7 @@ func defaultSchema(name string) *catalog.Schema {
 		{
 			Name:       "RANK",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
 			Name:       "REGEXP_INSTR",
@@ -2492,7 +2546,7 @@ func defaultSchema(name string) *catalog.Schema {
 		{
 			Name:       "ROW_NUMBER",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
 			Name: "RPAD",
