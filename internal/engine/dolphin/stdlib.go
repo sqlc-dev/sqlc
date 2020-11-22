@@ -1868,16 +1868,6 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
-			Name:       "LIKE_RANGE_MAX",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "LIKE_RANGE_MIN",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
 			Name: "LINESTRING",
 			Args: []*catalog.Argument{
 				{
