@@ -138,8 +138,12 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
-			Name:       "AVG",
-			Args:       []*catalog.Argument{},
+			Name: "AVG",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
@@ -158,8 +162,12 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "BIT_AND",
-			Args:       []*catalog.Argument{},
+			Name: "BIT_AND",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
@@ -173,13 +181,21 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "BIT_OR",
-			Args:       []*catalog.Argument{},
+			Name: "BIT_OR",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "BIT_XOR",
-			Args:       []*catalog.Argument{},
+			Name: "BIT_XOR",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
@@ -615,8 +631,12 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "GROUP_CONCAT",
-			Args:       []*catalog.Argument{},
+			Name: "GROUP_CONCAT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
@@ -756,9 +776,13 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "JSON_ARRAYAGG",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "JSON_ARRAYAGG",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "json"},
 		},
 		{
 			Name:       "JSON_ARRAY_APPEND",
@@ -826,9 +850,16 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "JSON_OBJECTAGG",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "JSON_OBJECTAGG",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "json"},
 		},
 		{
 			Name:       "JSON_OVERLAPS",
@@ -1046,8 +1077,12 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "MAX",
-			Args:       []*catalog.Argument{},
+			Name: "MAX",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
@@ -1111,8 +1146,12 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "MIN",
-			Args:       []*catalog.Argument{},
+			Name: "MIN",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
@@ -1453,23 +1492,39 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "STD",
-			Args:       []*catalog.Argument{},
+			Name: "STD",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "STDDEV",
-			Args:       []*catalog.Argument{},
+			Name: "STDDEV",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "STDDEV_POP",
-			Args:       []*catalog.Argument{},
+			Name: "STDDEV_POP",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "STDDEV_SAMP",
-			Args:       []*catalog.Argument{},
+			Name: "STDDEV_SAMP",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
@@ -1965,8 +2020,12 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "SUM",
-			Args:       []*catalog.Argument{},
+			Name: "SUM",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
@@ -2135,18 +2194,30 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "VARIANCE",
-			Args:       []*catalog.Argument{},
+			Name: "VARIANCE",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "VAR_POP",
-			Args:       []*catalog.Argument{},
+			Name: "VAR_POP",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "VAR_SAMP",
-			Args:       []*catalog.Argument{},
+			Name: "VAR_SAMP",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
