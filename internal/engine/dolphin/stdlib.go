@@ -264,9 +264,13 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "BIT_COUNT",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "BIT_COUNT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "bigint"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bigint"},
 		},
 		{
 			Name: "BIT_LENGTH",
@@ -746,8 +750,12 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
-			Name:       "DISTINCT",
-			Args:       []*catalog.Argument{},
+			Name: "DISTINCT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
@@ -2327,11 +2335,6 @@ func defaultSchema(name string) *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "int"},
-		},
-		{
-			Name:       "PASSWORD",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
 			Name:       "PERCENT_RANK",
