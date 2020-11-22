@@ -979,13 +979,29 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
-			Name:       "GEOMCOLLECTION",
-			Args:       []*catalog.Argument{},
+			Name: "GEOMCOLLECTION",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "GEOMETRYCOLLECTION",
-			Args:       []*catalog.Argument{},
+			Name: "GEOMETRYCOLLECTION",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
@@ -1862,8 +1878,16 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "LINESTRING",
-			Args:       []*catalog.Argument{},
+			Name: "LINESTRING",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
@@ -2110,49 +2134,112 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "MBRCONTAINS",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "MBRCONTAINS",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bool"},
 		},
 		{
-			Name:       "MBRCOVEREDBY",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "MBRCOVEREDBY",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bool"},
 		},
 		{
-			Name:       "MBRCOVERS",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "MBRCOVERS",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bool"},
 		},
 		{
-			Name:       "MBRDISJOINT",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "MBRDISJOINT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bool"},
 		},
 		{
-			Name:       "MBREQUALS",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "MBREQUALS",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bool"},
 		},
 		{
-			Name:       "MBRINTERSECTS",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "MBRINTERSECTS",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bool"},
 		},
 		{
-			Name:       "MBROVERLAPS",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "MBROVERLAPS",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bool"},
 		},
 		{
-			Name:       "MBRTOUCHES",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "MBRTOUCHES",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bool"},
 		},
 		{
-			Name:       "MBRWITHIN",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
+			Name: "MBRWITHIN",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bool"},
 		},
 		{
 			Name: "MD5",
@@ -2236,18 +2323,42 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
-			Name:       "MULTILINESTRING",
-			Args:       []*catalog.Argument{},
+			Name: "MULTILINESTRING",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "MULTIPOINT",
-			Args:       []*catalog.Argument{},
+			Name: "MULTIPOINT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "MULTIPOLYGON",
-			Args:       []*catalog.Argument{},
+			Name: "MULTIPOLYGON",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
@@ -2371,13 +2482,28 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
-			Name:       "POINT",
-			Args:       []*catalog.Argument{},
+			Name: "POINT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "POLYGON",
-			Args:       []*catalog.Argument{},
+			Name: "POLYGON",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
@@ -2893,443 +3019,2077 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "datetime"},
 		},
 		{
-			Name:       "ST_AREA",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_ASBINARY",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_ASGEOJSON",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_ASTEXT",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_ASWKB",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_ASWKT",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_BUFFER",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_BUFFER_STRATEGY",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_CENTROID",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_CONTAINS",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_CONVEXHULL",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_CROSSES",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_DIFFERENCE",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_DIMENSION",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_DISJOINT",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_DISTANCE",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_DISTANCE_SPHERE",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_ENDPOINT",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_ENVELOPE",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_EQUALS",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_EXTERIORRING",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_GEOHASH",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_GEOMCOLLFROMTEXT",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_GEOMCOLLFROMTXT",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_GEOMCOLLFROMWKB",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_GEOMETRYCOLLECTIONFROMTEXT",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_GEOMETRYCOLLECTIONFROMWKB",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_GEOMETRYFROMTEXT",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_GEOMETRYFROMWKB",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_GEOMETRYN",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_GEOMETRYTYPE",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_GEOMFROMGEOJSON",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_GEOMFROMTEXT",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_GEOMFROMWKB",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_INTERIORRINGN",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_INTERSECTION",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_INTERSECTS",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_ISCLOSED",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_ISEMPTY",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_ISSIMPLE",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_ISVALID",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_LATFROMGEOHASH",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_LATITUDE",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_LENGTH",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_LINEFROMTEXT",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_LINEFROMWKB",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_LINESTRINGFROMTEXT",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_LINESTRINGFROMWKB",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_LONGFROMGEOHASH",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_LONGITUDE",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_MAKEENVELOPE",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_MLINEFROMTEXT",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_MLINEFROMWKB",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_MPOINTFROMTEXT",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_MPOINTFROMWKB",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_MPOLYFROMTEXT",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_MPOLYFROMWKB",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_MULTILINESTRINGFROMTEXT",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_MULTILINESTRINGFROMWKB",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_MULTIPOINTFROMTEXT",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_MULTIPOINTFROMWKB",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_MULTIPOLYGONFROMTEXT",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_MULTIPOLYGONFROMWKB",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_NUMGEOMETRIES",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_NUMINTERIORRING",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_NUMINTERIORRINGS",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_NUMPOINTS",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_OVERLAPS",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_POINTFROMGEOHASH",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_POINTFROMTEXT",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_POINTFROMWKB",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_POINTN",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_POLYFROMTEXT",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_POLYFROMWKB",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_POLYGONFROMTEXT",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_POLYGONFROMWKB",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_SIMPLIFY",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_SRID",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_STARTPOINT",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_SWAPXY",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_SYMDIFFERENCE",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_TOUCHES",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_TRANSFORM",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_UNION",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_VALIDATE",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_WITHIN",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_X",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name:       "ST_Y",
-			Args:       []*catalog.Argument{},
+			Name: "ST_AREA",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
+		},
+		{
+			Name: "ST_ASBINARY",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "binary"},
+		},
+		{
+			Name: "ST_ASBINARY",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "binary"},
+		},
+		{
+			Name: "ST_ASGEOJSON",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "json"},
+		},
+		{
+			Name: "ST_ASGEOJSON",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "json"},
+		},
+		{
+			Name: "ST_ASGEOJSON",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "tinyint"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "json"},
+		},
+		{
+			Name: "ST_ASTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
+			Name: "ST_ASTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
+			Name: "ST_ASWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "binary"},
+		},
+		{
+			Name: "ST_ASWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "binary"},
+		},
+		{
+			Name: "ST_ASWKT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
+			Name: "ST_ASWKT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
+			Name: "ST_BUFFER",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_BUFFER",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_BUFFER",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_BUFFER",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_BUFFER_STRATEGY",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "binary"},
+		},
+		{
+			Name: "ST_BUFFER_STRATEGY",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "binary"},
+		},
+		{
+			Name: "ST_CENTROID",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_CONTAINS",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bool"},
+		},
+		{
+			Name: "ST_CONVEXHULL",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_CROSSES",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bool"},
+		},
+		{
+			Name: "ST_DIFFERENCE",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_DIMENSION",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "tinyint"},
+		},
+		{
+			Name: "ST_DISJOINT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bool"},
+		},
+		{
+			Name: "ST_DISTANCE",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
+		},
+		{
+			Name: "ST_DISTANCE",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
+		},
+		{
+			Name: "ST_DISTANCE_SPHERE",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
+		},
+		{
+			Name: "ST_DISTANCE_SPHERE",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
+		},
+		{
+			Name: "ST_ENDPOINT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_ENVELOPE",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_EQUALS",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bool"},
+		},
+		{
+			Name: "ST_EXTERIORRING",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_FRECHET_DISTANCE",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
+		},
+		{
+			Name: "ST_FRECHET_DISTANCE",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
+		},
+		{
+			Name: "ST_GEOHASH",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
+			Name: "ST_GEOHASH",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
+			Name: "ST_GEOMCOLLFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_GEOMCOLLFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_GEOMCOLLFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_GEOMCOLLFROMTXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_GEOMCOLLFROMTXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_GEOMCOLLFROMTXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_GEOMCOLLFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_GEOMCOLLFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_GEOMCOLLFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_GEOMETRYCOLLECTIONFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_GEOMETRYCOLLECTIONFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_GEOMETRYCOLLECTIONFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_GEOMETRYCOLLECTIONFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_GEOMETRYCOLLECTIONFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_GEOMETRYCOLLECTIONFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_GEOMETRYFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_GEOMETRYFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_GEOMETRYFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_GEOMETRYFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_GEOMETRYFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_GEOMETRYFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_GEOMETRYN",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_GEOMETRYTYPE",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
+			Name: "ST_GEOMFROMGEOJSON",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_GEOMFROMGEOJSON",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "tinyint"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_GEOMFROMGEOJSON",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "tinyint"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_GEOMFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_GEOMFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_GEOMFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_GEOMFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_GEOMFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_GEOMFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_HAUSDORFF_DISTANCE",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
+		},
+		{
+			Name: "ST_HAUSDORFF_DISTANCE",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
+		},
+
+		{
+			Name: "ST_INTERIORRINGN",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_INTERSECTION",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_INTERSECTS",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bool"},
+		},
+		{
+			Name: "ST_ISCLOSED",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bool"},
+		},
+		{
+			Name: "ST_ISEMPTY",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bool"},
+		},
+		{
+			Name: "ST_ISSIMPLE",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bool"},
+		},
+		{
+			Name: "ST_ISVALID",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bool"},
+		},
+		{
+			Name: "ST_LATFROMGEOHASH",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
+		},
+		{
+			Name: "ST_LATITUDE",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
+		},
+		{
+			Name: "ST_LATITUDE",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_LENGTH",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
+		},
+		{
+			Name: "ST_LENGTH",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
+		},
+		{
+			Name: "ST_LINEFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_LINEFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_LINEFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_LINEFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_LINEFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_LINEFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_LINEINTERPOLATEPOINT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_LINEINTERPOLATEPOINTS",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_LINESTRINGFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_LINESTRINGFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_LINESTRINGFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_LINESTRINGFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_LINESTRINGFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_LINESTRINGFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_LONGFROMGEOHASH",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
+		},
+		{
+			Name: "ST_LONGITUDE",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
+		},
+		{
+			Name: "ST_LONGITUDE",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_MAKEENVELOPE",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_MLINEFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_MLINEFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_MLINEFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_MLINEFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_MLINEFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_MLINEFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_MPOINTFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_MPOINTFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_MPOINTFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_MPOINTFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_MPOINTFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_MPOINTFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_MPOLYFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_MPOLYFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_MPOLYFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_MPOLYFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_MPOLYFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_MPOLYFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_MULTILINESTRINGFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_MULTILINESTRINGFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_MULTILINESTRINGFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_MULTILINESTRINGFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_MULTILINESTRINGFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_MULTILINESTRINGFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_MULTIPOINTFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_MULTIPOINTFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_MULTIPOINTFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_MULTIPOINTFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_MULTIPOINTFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_MULTIPOINTFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_MULTIPOLYGONFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_MULTIPOLYGONFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_MULTIPOLYGONFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_MULTIPOLYGONFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_MULTIPOLYGONFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_MULTIPOLYGONFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_NUMGEOMETRIES",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bigint"},
+		},
+		{
+			Name: "ST_NUMINTERIORRING",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
+		},
+		{
+			Name: "ST_NUMINTERIORRINGS",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
+		},
+		{
+			Name: "ST_NUMPOINTS",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bigint"},
+		},
+		{
+			Name: "ST_OVERLAPS",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bool"},
+		},
+		{
+			Name: "ST_POINTATDISTANCE",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_POINTFROMGEOHASH",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_POINTFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_POINTFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_POINTFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_POINTFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_POINTFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_POINTFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_POINTN",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_POLYFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_POLYFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_POLYFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_POLYFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_POLYFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_POLYFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_POLYGONFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_POLYGONFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_POLYGONFROMTEXT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_POLYGONFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_POLYGONFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_POLYGONFROMWKB",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "binary"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_SIMPLIFY",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_SRID",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
+		},
+		{
+			Name: "ST_SRID",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
+		},
+		{
+			Name: "ST_STARTPOINT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_SWAPXY",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_SYMDIFFERENCE",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_TOUCHES",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bool"},
+		},
+		{
+			Name: "ST_TRANSFORM",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_UNION",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_VALIDATE",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_WITHIN",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bool"},
+		},
+		{
+			Name: "ST_X",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
+		},
+		{
+			Name: "ST_X",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "ST_Y",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
+		},
+		{
+			Name: "ST_Y",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
