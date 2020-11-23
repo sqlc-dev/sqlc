@@ -48,6 +48,8 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt) (*ast.RawStmt, map[
 		return raw, map[int]string{}, nil
 	}
 
+	hasNamedParameterSupport := engine != config.EngineMySQL
+
 	args := map[string]int{}
 	argn := 0
 	var edits []source.Edit
@@ -58,7 +60,7 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt) (*ast.RawStmt, map[
 		case named.IsParamFunc(node):
 			fun := node.(*ast.FuncCall)
 			param, isConst := flatten(fun.Args)
-			if num, ok := args[param]; ok {
+			if num, ok := args[param]; ok && hasNamedParameterSupport {
 				cr.Replace(&ast.ParamRef{
 					Number:   num,
 					Location: fun.Location,

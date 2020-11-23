@@ -8,6 +8,6 @@ import (
 
 type User struct {
 	ID        int32
-	FirstName string
+	FirstName sql.NullString
 	LastName  sql.NullString
 }

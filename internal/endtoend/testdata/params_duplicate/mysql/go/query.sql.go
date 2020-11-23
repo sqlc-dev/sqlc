@@ -5,22 +5,63 @@ package querytest
 
 import (
 	"context"
+	"database/sql"
 )
 
-const selectUserArg = `-- name: SelectUserArg :many
+const selectUserByID = `-- name: SelectUserByID :many
 SELECT first_name from
 users where (? = id OR ? = 0)
 `
 
-func (q *Queries) SelectUserArg(ctx context.Context, id interface{}) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, selectUserArg, id)
+type SelectUserByIDParams struct {
+	Column1 interface{}
+	ID      interface{}
+}
+
+func (q *Queries) SelectUserByID(ctx context.Context, arg SelectUserByIDParams) ([]sql.NullString, error) {
+	rows, err := q.db.QueryContext(ctx, selectUserByID, arg.Column1, arg.ID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []string
+	var items []sql.NullString
 	for rows.Next() {
-		var first_name string
+		var first_name sql.NullString
+		if err := rows.Scan(&first_name); err != nil {
+			return nil, err
+		}
+		items = append(items, first_name)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const selectUserByName = `-- name: SelectUserByName :many
+SELECT first_name
+FROM users
+WHERE first_name = ?
+   OR last_name = ?
+`
+
+type SelectUserByNameParams struct {
+	FirstName sql.NullString
+	Name      sql.NullString
+}
+
+func (q *Queries) SelectUserByName(ctx context.Context, arg SelectUserByNameParams) ([]sql.NullString, error) {
+	rows, err := q.db.QueryContext(ctx, selectUserByName, arg.FirstName, arg.Name)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []sql.NullString
+	for rows.Next() {
+		var first_name sql.NullString
 		if err := rows.Scan(&first_name); err != nil {
 			return nil, err
 		}
@@ -45,15 +86,15 @@ type SelectUserQuestionParams struct {
 	Column2 interface{}
 }
 
-func (q *Queries) SelectUserQuestion(ctx context.Context, arg SelectUserQuestionParams) ([]string, error) {
+func (q *Queries) SelectUserQuestion(ctx context.Context, arg SelectUserQuestionParams) ([]sql.NullString, error) {
 	rows, err := q.db.QueryContext(ctx, selectUserQuestion, arg.Column1, arg.Column2)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []string
+	var items []sql.NullString
 	for rows.Next() {
-		var first_name string
+		var first_name sql.NullString
 		if err := rows.Scan(&first_name); err != nil {
 			return nil, err
 		}
