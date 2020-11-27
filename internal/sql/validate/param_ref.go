@@ -8,7 +8,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
 )
 
-func ParamRef(n ast.Node) error {
+func ParamRef(n ast.Node) (int, error) {
 	var allrefs []*ast.ParamRef
 
 	// Find all parameter references
@@ -23,14 +23,17 @@ func ParamRef(n ast.Node) error {
 	for _, r := range allrefs {
 		seen[r.Number] = struct{}{}
 	}
-
+	var max int
 	for i := 1; i <= len(seen); i += 1 {
+		if i > max {
+			max = i
+		}
 		if _, ok := seen[i]; !ok {
-			return &sqlerr.Error{
+			return 0, &sqlerr.Error{
 				Code:    "42P18",
 				Message: fmt.Sprintf("could not determine data type of parameter $%d", i),
 			}
 		}
 	}
-	return nil
+	return max, nil
 }

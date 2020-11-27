@@ -41,7 +41,7 @@ func isNamedParamSignCast(node ast.Node) bool {
 	return astutils.Join(expr.Name, ".") == "@" && cast
 }
 
-func NamedParameters(engine config.Engine, raw *ast.RawStmt) (*ast.RawStmt, map[int]string, []source.Edit) {
+func NamedParameters(engine config.Engine, raw *ast.RawStmt, argn int) (*ast.RawStmt, map[int]string, []source.Edit) {
 	foundFunc := astutils.Search(raw, named.IsParamFunc)
 	foundSign := astutils.Search(raw, named.IsParamSign)
 	if len(foundFunc.Items)+len(foundSign.Items) == 0 {
@@ -51,7 +51,6 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt) (*ast.RawStmt, map[
 	hasNamedParameterSupport := engine != config.EngineMySQL
 
 	args := map[string]int{}
-	argn := 0
 	var edits []source.Edit
 	node := astutils.Apply(raw, func(cr *astutils.Cursor) bool {
 		node := cr.Node()
