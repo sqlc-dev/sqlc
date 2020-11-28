@@ -1,6 +1,6 @@
 module github.com/kyleconroy/sqlc
 
-go 1.14
+go 1.15
 
 require (
 	github.com/antlr/antlr4 v0.0.0-20200209180723-1177c0b58d07
@@ -13,6 +13,7 @@ require (
 	github.com/lib/pq v1.8.0
 	github.com/pingcap/parser v0.0.0-20201024025010-3b2fb4b41d73
 	github.com/spf13/cobra v1.1.1
+	golang.org/x/tools v0.0.0-20191219041853-979b82bfef62 // indirect
+	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200121175148-a6ecf24a6d71
-	vitess.io/vitess v0.0.0-20200617014457-5ba6549015c0
 )

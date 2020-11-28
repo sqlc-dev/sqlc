@@ -365,7 +365,7 @@ func makeType(r *compiler.Result, col *compiler.Column, settings config.Combined
 func ktInnerType(r *compiler.Result, col *compiler.Column, settings config.CombinedSettings) (string, bool) {
 	// TODO: Extend the engine interface to handle types
 	switch settings.Package.Engine {
-	case config.EngineMySQL, config.EngineMySQLBeta:
+	case config.EngineMySQL:
 		return mysqlType(r, col, settings)
 	case config.EnginePostgreSQL:
 		return postgresType(r, col, settings)

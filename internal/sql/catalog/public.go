@@ -17,13 +17,14 @@ func (c *Catalog) schemasToSearch(ns string) []string {
 
 func (c *Catalog) ListFuncsByName(rel *ast.FuncName) ([]Function, error) {
 	var funcs []Function
+	lowered := strings.ToLower(rel.Name)
 	for _, ns := range c.schemasToSearch(rel.Schema) {
 		s, err := c.getSchema(ns)
 		if err != nil {
 			return nil, err
 		}
 		for i := range s.Funcs {
-			if s.Funcs[i].Name == rel.Name {
+			if strings.ToLower(s.Funcs[i].Name) == lowered {
 				funcs = append(funcs, *s.Funcs[i])
 			}
 		}
@@ -65,20 +66,32 @@ func (c *Catalog) ResolveFuncCall(call *ast.FuncCall) (*Function, error) {
 	for _, fun := range funs {
 		args := fun.InArgs()
 		var defaults int
+		var variadic bool
 		known := map[string]struct{}{}
 		for _, arg := range args {
 			if arg.HasDefault {
+				defaults += 1
+			}
+			if arg.Mode == ast.FuncParamVariadic {
+				variadic = true
 				defaults += 1
 			}
 			if arg.Name != "" {
 				known[arg.Name] = struct{}{}
 			}
 		}
-		if (len(named) + len(positional)) > len(args) {
-			continue
-		}
-		if (len(named) + len(positional)) < (len(args) - defaults) {
-			continue
+
+		if variadic {
+			if (len(named) + len(positional)) < (len(args) - defaults) {
+				continue
+			}
+		} else {
+			if (len(named) + len(positional)) > len(args) {
+				continue
+			}
+			if (len(named) + len(positional)) < (len(args) - defaults) {
+				continue
+			}
 		}
 
 		// Validate that the provided named arguments exist in the function

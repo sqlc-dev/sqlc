@@ -21,7 +21,7 @@ func mysqlType(r *compiler.Result, col *compiler.Column, settings config.Combine
 		}
 		return "sql.NullString"
 
-	case "int", "integer", "smallint", "mediumint", "year":
+	case "int", "integer", "tinyint", "smallint", "mediumint", "year":
 		if notNull {
 			return "int32"
 		}
@@ -58,7 +58,7 @@ func mysqlType(r *compiler.Result, col *compiler.Column, settings config.Combine
 		}
 		return "sql.NullTime"
 
-	case "boolean", "bool", "tinyint":
+	case "boolean", "bool":
 		if notNull {
 			return "bool"
 		}

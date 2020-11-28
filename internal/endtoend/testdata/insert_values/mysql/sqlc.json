@@ -2,7 +2,7 @@
   "version": "1",
   "packages": [
     {
-      "engine": "mysql:beta",
+      "engine": "mysql",
       "path": "go",
       "name": "querytest",
       "schema": "query.sql",
