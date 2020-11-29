@@ -78,7 +78,7 @@ func (c *Catalog) alterTable(stmt *ast.AlterTableStmt) error {
 
 			case ast.AT_AlterColumnType:
 				table.Columns[idx].Type = *cmd.Def.TypeName
-				// table.Columns[idx].IsArray = isArray(d.TypeName)
+				table.Columns[idx].IsArray = cmd.Def.IsArray
 
 			case ast.AT_DropColumn:
 				table.Columns = append(table.Columns[:idx], table.Columns[idx+1:]...)
