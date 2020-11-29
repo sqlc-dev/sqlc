@@ -5,7 +5,8 @@
       "path": "go",
       "name": "querytest",
       "schema": "test.sql",
-      "queries": "test.sql"
+      "queries": "test.sql",
+      "engine": "postgresql"
     }
   ]
 }
