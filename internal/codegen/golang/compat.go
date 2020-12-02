@@ -13,5 +13,5 @@ func sameTableName(n *ast.TableName, f core.FQN, defaultSchema string) bool {
 	if n.Schema == "" {
 		schema = defaultSchema
 	}
-	return n.Catalog == n.Catalog && schema == f.Schema && n.Name == f.Rel
+	return n.Catalog == f.Catalog && schema == f.Schema && n.Name == f.Rel
 }
