@@ -44,10 +44,21 @@ type outPair struct {
 	config.SQL
 }
 
-func Generate(e Env, dir string, stderr io.Writer) (map[string]string, error) {
+func Generate(e Env, dir string, configFlag string, stderr io.Writer) (map[string]string, error) {
 	var yamlMissing, jsonMissing bool
-	yamlPath := filepath.Join(dir, "sqlc.yaml")
-	jsonPath := filepath.Join(dir, "sqlc.json")
+	var yamlPath, jsonPath string
+	if strings.HasSuffix(configFlag, ".yaml") {
+		yamlPath = configFlag
+		jsonPath = ""
+		dir = filepath.Dir(configFlag)
+	} else if strings.HasSuffix(configFlag, ".json") {
+		yamlPath = ""
+		jsonPath = configFlag
+		dir = filepath.Dir(configFlag)
+	} else {
+		yamlPath = filepath.Join(dir, "sqlc.yaml")
+		jsonPath = filepath.Join(dir, "sqlc.json")
+	}
 
 	if _, err := os.Stat(yamlPath); os.IsNotExist(err) {
 		yamlMissing = true

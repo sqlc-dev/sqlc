@@ -17,6 +17,7 @@ import (
 // Do runs the command logic.
 func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int {
 	rootCmd := &cobra.Command{Use: "sqlc", SilenceUsage: true}
+	rootCmd.PersistentFlags().String("config", "", "Path to config file to use (e.g. sqlc.yaml or sqlc.json)")
 	rootCmd.AddCommand(checkCmd)
 	rootCmd.AddCommand(genCmd)
 	rootCmd.AddCommand(initCmd)
@@ -86,7 +87,12 @@ var genCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		output, err := Generate(ParseEnv(), dir, stderr)
+		configFlag, err := cmd.Flags().GetString("config")
+		if err != nil {
+			configFlag = ""
+		}
+
+		output, err := Generate(ParseEnv(), dir, configFlag, stderr)
 		if err != nil {
 			os.Exit(1)
 		}
@@ -111,7 +117,12 @@ var checkCmd = &cobra.Command{
 			fmt.Fprintln(stderr, "error parsing sqlc.json: file does not exist")
 			os.Exit(1)
 		}
-		if _, err := Generate(Env{}, dir, stderr); err != nil {
+		configFlag, err := cmd.Flags().GetString("config")
+		if err != nil {
+			configFlag = ""
+		}
+
+		if _, err := Generate(Env{}, dir, configFlag, stderr); err != nil {
 			os.Exit(1)
 		}
 		return nil
