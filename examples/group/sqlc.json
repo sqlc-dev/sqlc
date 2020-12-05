@@ -1,0 +1,85 @@
+{
+    "version": "1",
+    "packages": [
+        {
+            "name": "mygroup",
+            "path": "mysql/mygroup",
+            "schema": "mysql/sql/schema/",
+            "queries": "mysql/sql/query/",
+            "engine": "mysql",
+            "emit_group_by_file": true,
+            "emit_empty_slices": true
+        },
+        {
+            "name": "mygroupiface",
+            "path": "mysql/mygroupiface",
+            "schema": "mysql/sql/schema/",
+            "queries": "mysql/sql/query/",
+            "engine": "mysql",
+            "emit_group_by_file": true,
+            "emit_empty_slices": true,
+            "emit_interface": true
+        },
+        {
+            "name": "mygroupstmt",
+            "path": "mysql/mygroupstmt",
+            "schema": "mysql/sql/schema/",
+            "queries": "mysql/sql/query/",
+            "engine": "mysql",
+            "emit_group_by_file": true,
+            "emit_empty_slices": true,
+            "emit_prepared_queries": true
+        },
+        {
+            "name": "mygroupstmtiface",
+            "path": "mysql/mygroupstmtiface",
+            "schema": "mysql/sql/schema/",
+            "queries": "mysql/sql/query/",
+            "engine": "mysql",
+            "emit_group_by_file": true,
+            "emit_empty_slices": true,
+            "emit_prepared_queries": true,
+            "emit_interface": true
+        },
+        {
+            "name": "pggroup",
+            "path": "postgresql/pggroup",
+            "schema": "postgresql/sql/schema/",
+            "queries": "postgresql/sql/query/",
+            "engine": "postgresql",
+            "emit_group_by_file": true,
+            "emit_empty_slices": true
+        },
+        {
+            "name": "pggroupiface",
+            "path": "postgresql/pggroupiface",
+            "schema": "postgresql/sql/schema/",
+            "queries": "postgresql/sql/query/",
+            "engine": "postgresql",
+            "emit_group_by_file": true,
+            "emit_empty_slices": true,
+            "emit_interface": true
+        },
+        {
+            "name": "pggroupstmt",
+            "path": "postgresql/pggroupstmt",
+            "schema": "postgresql/sql/schema/",
+            "queries": "postgresql/sql/query/",
+            "engine": "postgresql",
+            "emit_group_by_file": true,
+            "emit_empty_slices": true,
+            "emit_prepared_queries": true
+        },
+        {
+            "name": "pggroupstmtiface",
+            "path": "postgresql/pggroupstmtiface",
+            "schema": "postgresql/sql/schema/",
+            "queries": "postgresql/sql/query/",
+            "engine": "postgresql",
+            "emit_group_by_file": true,
+            "emit_empty_slices": true,
+            "emit_prepared_queries": true,
+            "emit_interface": true
+        }
+    ]
+}

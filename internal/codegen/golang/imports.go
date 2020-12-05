@@ -105,7 +105,7 @@ func (i *importer) dbImports() fileImports {
 		{Path: "context"},
 		{Path: "database/sql"},
 	}
-	if i.Settings.Go.EmitPreparedQueries {
+	if !i.Settings.Go.EmitGroupByFile && i.Settings.Go.EmitPreparedQueries {
 		std = append(std, ImportSpec{Path: "fmt"})
 	}
 	return fileImports{Std: std}
@@ -339,12 +339,16 @@ func (i *importer) queryImports(filename string) fileImports {
 	std := map[string]struct{}{
 		"context": struct{}{},
 	}
-	if uses("sql.Null") {
+	if i.Settings.Go.EmitGroupByFile && i.Settings.Go.EmitPreparedQueries {
 		std["database/sql"] = struct{}{}
-	}
-	for _, q := range gq {
-		if q.Cmd == metadata.CmdExecResult {
-			std["database/sql"] = struct{}{}
+	} else if uses("sql.Null") {
+		std["database/sql"] = struct{}{}
+	} else {
+		for _, q := range gq {
+			if q.Cmd == metadata.CmdExecResult {
+				std["database/sql"] = struct{}{}
+				break
+			}
 		}
 	}
 	if uses("json.RawMessage") {

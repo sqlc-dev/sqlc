@@ -102,6 +102,7 @@ type Query struct {
 	ConstantName string
 	SQL          string
 	SourceName   string
+	StructName   string
 	Ret          QueryValue
 	Arg          QueryValue
 }

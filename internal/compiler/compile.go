@@ -131,6 +131,9 @@ func (c *Compiler) parseQueries(o opts.Parser) (*Result, error) {
 				q = append(q, query)
 			}
 		}
+		if c.conf.Gen.Go != nil && c.conf.Gen.Go.EmitGroupByFile {
+			set = map[string]struct{}{}
+		}
 	}
 	if len(merr.Errs()) > 0 {
 		return nil, merr
