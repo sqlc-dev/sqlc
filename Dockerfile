@@ -1,5 +1,5 @@
 # STEP 1: Build sqlc
-FROM golang:1.15.5 AS builder
+FROM golang:1.15.6 AS builder
 
 COPY . /workspace
 WORKDIR /workspace
