@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"log"
 	"regexp"
 	"sort"
 	"strings"
@@ -93,13 +92,20 @@ func jdbcSet(t ktType, idx int, name string) string {
 		return fmt.Sprintf(`stmt.setArray(%d, conn.createArrayOf("%s", %s.map { v -> v.value }.toTypedArray()))`, idx, t.DataType, name)
 	}
 	if t.IsEnum {
-		return fmt.Sprintf("stmt.setObject(%d, %s.value, %s)", idx, name, "Types.OTHER")
+		if t.Engine == config.EnginePostgreSQL {
+			return fmt.Sprintf("stmt.setObject(%d, %s.value, %s)", idx, name, "Types.OTHER")
+		} else {
+			return fmt.Sprintf("stmt.setString(%d, %s.value)", idx, name)
+		}
 	}
 	if t.IsArray {
 		return fmt.Sprintf(`stmt.setArray(%d, conn.createArrayOf("%s", %s.toTypedArray()))`, idx, t.DataType, name)
 	}
 	if t.IsTime() {
 		return fmt.Sprintf("stmt.setObject(%d, %s)", idx, name)
+	}
+	if t.IsInstant() {
+		return fmt.Sprintf("stmt.setTimestamp(%d, Timestamp.from(%s))", idx, name)
 	}
 	return fmt.Sprintf("stmt.set%s(%d, %s)", t.Name, idx, name)
 }
@@ -149,6 +155,9 @@ func jdbcGet(t ktType, idx int) string {
 	}
 	if t.IsTime() {
 		return fmt.Sprintf(`results.getObject(%d, %s::class.java)`, idx, t.Name)
+	}
+	if t.IsInstant() {
+		return fmt.Sprintf(`results.getTimestamp(%d).toInstant()`, idx)
 	}
 	return fmt.Sprintf(`results.get%s(%d)`, t.Name, idx)
 }
@@ -303,6 +312,7 @@ type ktType struct {
 	IsArray  bool
 	IsNull   bool
 	DataType string
+	Engine   config.Engine
 }
 
 func (t ktType) String() string {
@@ -326,11 +336,18 @@ func (t ktType) jdbcType() string {
 	if t.IsEnum || t.IsTime() {
 		return "Object"
 	}
+	if t.IsInstant() {
+		return "Timestamp"
+	}
 	return t.Name
 }
 
 func (t ktType) IsTime() bool {
 	return t.Name == "LocalDate" || t.Name == "LocalDateTime" || t.Name == "LocalTime" || t.Name == "OffsetDateTime"
+}
+
+func (t ktType) IsInstant() bool {
+	return t.Name == "Instant"
 }
 
 func makeType(r *compiler.Result, col *compiler.Column, settings config.CombinedSettings) ktType {
@@ -341,105 +358,19 @@ func makeType(r *compiler.Result, col *compiler.Column, settings config.Combined
 		IsArray:  col.IsArray,
 		IsNull:   !col.NotNull,
 		DataType: col.DataType,
+		Engine:   settings.Package.Engine,
 	}
 }
 
 func ktInnerType(r *compiler.Result, col *compiler.Column, settings config.CombinedSettings) (string, bool) {
-	columnType := col.DataType
-
-	switch columnType {
-	case "serial", "pg_catalog.serial4":
-		return "Int", false
-
-	case "bigserial", "pg_catalog.serial8":
-		return "Long", false
-
-	case "smallserial", "pg_catalog.serial2":
-		return "Short", false
-
-	case "integer", "int", "int4", "pg_catalog.int4":
-		return "Int", false
-
-	case "bigint", "pg_catalog.int8":
-		return "Long", false
-
-	case "smallint", "pg_catalog.int2":
-		return "Short", false
-
-	case "float", "double precision", "pg_catalog.float8":
-		return "Double", false
-
-	case "real", "pg_catalog.float4":
-		return "Float", false
-
-	case "pg_catalog.numeric":
-		return "java.math.BigDecimal", false
-
-	case "bool", "pg_catalog.bool":
-		return "Boolean", false
-
-	case "jsonb":
-		// TODO: support json and byte types
-		return "String", false
-
-	case "bytea", "blob", "pg_catalog.bytea":
-		return "String", false
-
-	case "date":
-		// Date and time mappings from https://jdbc.postgresql.org/documentation/head/java8-date-time.html
-		return "LocalDate", false
-
-	case "pg_catalog.time", "pg_catalog.timetz":
-		return "LocalTime", false
-
-	case "pg_catalog.timestamp":
-		return "LocalDateTime", false
-
-	case "pg_catalog.timestamptz", "timestamptz":
-		// TODO
-		return "OffsetDateTime", false
-
-	case "text", "pg_catalog.varchar", "pg_catalog.bpchar", "string":
-		return "String", false
-
-	case "uuid":
-		// TODO
-		return "uuid.UUID", false
-
-	case "inet":
-		// TODO
-		return "net.IP", false
-
-	case "void":
-		// TODO
-		// A void value always returns NULL. Since there is no built-in NULL
-		// value into the SQL package, we'll use sql.NullBool
-		return "sql.NullBool", false
-
-	case "any":
-		// TODO
-		return "Any", false
-
+	// TODO: Extend the engine interface to handle types
+	switch settings.Package.Engine {
+	case config.EngineMySQL:
+		return mysqlType(r, col, settings)
+	case config.EnginePostgreSQL:
+		return postgresType(r, col, settings)
 	default:
-		for _, schema := range r.Catalog.Schemas {
-			if schema.Name == "pg_catalog" {
-				continue
-			}
-			for _, typ := range schema.Types {
-				enum, ok := typ.(*catalog.Enum)
-				if !ok {
-					continue
-				}
-				if columnType == enum.Name {
-					if schema.Name == r.Catalog.DefaultSchema {
-						return DataClassName(enum.Name, settings), true
-					}
-					return DataClassName(schema.Name+"_"+enum.Name, settings), true
-				}
-			}
-		}
-		log.Printf("unknown PostgreSQL type: %s\n", columnType)
-		return "interface{}", false
+		return "Any", false
 	}
 }
 
@@ -501,13 +432,16 @@ func ktColumnName(c *compiler.Column, pos int) string {
 	return fmt.Sprintf("column_%d", pos+1)
 }
 
-var jdbcSQLRe = regexp.MustCompile(`\B\$\d+\b`)
+var postgresPlaceholderRegexp = regexp.MustCompile(`\B\$\d+\b`)
 
 // HACK: jdbc doesn't support numbered parameters, so we need to transform them to question marks...
 // But there's no access to the SQL parser here, so we just do a dumb regexp replace instead. This won't work if
 // the literal strings contain matching values, but good enough for a prototype.
-func jdbcSQL(s string) string {
-	return jdbcSQLRe.ReplaceAllString(s, "?")
+func jdbcSQL(s string, engine config.Engine) string {
+	if engine == config.EnginePostgreSQL {
+		return postgresPlaceholderRegexp.ReplaceAllString(s, "?")
+	}
+	return s
 }
 
 func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs []Struct) []Query {
@@ -527,7 +461,7 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 			FieldName:    codegen.LowerTitle(query.Name) + "Stmt",
 			MethodName:   codegen.LowerTitle(query.Name),
 			SourceName:   query.Filename,
-			SQL:          jdbcSQL(query.SQL),
+			SQL:          jdbcSQL(query.SQL, settings.Package.Engine),
 			Comments:     query.Comments,
 		}
 
@@ -611,16 +545,19 @@ interface Queries {
   {{- range .Queries}}
   @Throws(SQLException::class)
   {{- if eq .Cmd ":one"}}
-  fun {{.MethodName}}({{.Arg.Args}}): RowQuery<{{.Ret.Type}}>
+  fun {{.MethodName}}({{.Arg.Args}}): {{.Ret.Type}}?
   {{- end}}
   {{- if eq .Cmd ":many"}}
-  fun {{.MethodName}}({{.Arg.Args}}): ListQuery<{{.Ret.Type}}>
+  fun {{.MethodName}}({{.Arg.Args}}): List<{{.Ret.Type}}>
   {{- end}}
   {{- if eq .Cmd ":exec"}}
-  fun {{.MethodName}}({{.Arg.Args}}): ExecuteQuery
+  fun {{.MethodName}}({{.Arg.Args}})
   {{- end}}
   {{- if eq .Cmd ":execrows"}}
-  fun {{.MethodName}}({{.Arg.Args}}): ExecuteUpdateQuery
+  fun {{.MethodName}}({{.Arg.Args}}): Int
+  {{- end}}
+  {{- if eq .Cmd ":execresult"}}
+  fun {{.MethodName}}({{.Arg.Args}}): Long
   {{- end}}
   {{end}}
 }
@@ -692,24 +629,19 @@ class QueriesImpl(private val conn: Connection) : Queries {
 {{range .Comments}}//{{.}}
 {{end}}
   @Throws(SQLException::class)
-  override fun {{.MethodName}}({{.Arg.Args}}): RowQuery<{{.Ret.Type}}> {
-    return object : RowQuery<{{.Ret.Type}}>() {
-      override fun execute(): {{.Ret.Type}} {
-        return conn.prepareStatement({{.ConstantName}}).use { stmt ->
-          this.statement = stmt
-          {{.Arg.Bindings}}
+  override fun {{.MethodName}}({{.Arg.Args}}): {{.Ret.Type}}? {
+    return conn.prepareStatement({{.ConstantName}}).use { stmt ->
+      {{.Arg.Bindings}}
 
-          val results = stmt.executeQuery()
-          if (!results.next()) {
-            throw SQLException("no rows in result set")
-          }
-          val ret = {{.Ret.ResultSet}}
-          if (results.next()) {
-              throw SQLException("expected one row in result set, but got many")
-          }
-          ret
-        }
+      val results = stmt.executeQuery()
+      if (!results.next()) {
+        return null
       }
+      val ret = {{.Ret.ResultSet}}
+      if (results.next()) {
+          throw SQLException("expected one row in result set, but got many")
+      }
+      ret
     }
   }
 {{end}}
@@ -718,21 +650,16 @@ class QueriesImpl(private val conn: Connection) : Queries {
 {{range .Comments}}//{{.}}
 {{end}}
   @Throws(SQLException::class)
-  override fun {{.MethodName}}({{.Arg.Args}}): ListQuery<{{.Ret.Type}}> {
-    return object : ListQuery<{{.Ret.Type}}>() {
-      override fun execute(): List<{{.Ret.Type}}> {
-        return conn.prepareStatement({{.ConstantName}}).use { stmt ->
-          this.statement = stmt
-          {{.Arg.Bindings}}
+  override fun {{.MethodName}}({{.Arg.Args}}): List<{{.Ret.Type}}> {
+    return conn.prepareStatement({{.ConstantName}}).use { stmt ->
+      {{.Arg.Bindings}}
 
-          val results = stmt.executeQuery()
-          val ret = mutableListOf<{{.Ret.Type}}>()
-          while (results.next()) {
-              ret.add({{.Ret.ResultSet}})
-          }
-          ret
-        }
+      val results = stmt.executeQuery()
+      val ret = mutableListOf<{{.Ret.Type}}>()
+      while (results.next()) {
+          ret.add({{.Ret.ResultSet}})
       }
+      ret
     }
   }
 {{end}}
@@ -742,16 +669,11 @@ class QueriesImpl(private val conn: Connection) : Queries {
 {{end}}
   @Throws(SQLException::class)
   {{ if $.EmitInterface }}override {{ end -}}
-  override fun {{.MethodName}}({{.Arg.Args}}): ExecuteQuery {
-    return object : ExecuteQuery() {
-      override fun execute() {
-        conn.prepareStatement({{.ConstantName}}).use { stmt ->
-          this.statement = stmt
-          {{ .Arg.Bindings }}
+  override fun {{.MethodName}}({{.Arg.Args}}) {
+    conn.prepareStatement({{.ConstantName}}).use { stmt ->
+      {{ .Arg.Bindings }}
 
-          stmt.execute()
-        }
-      }
+      stmt.execute()
     }
   }
 {{end}}
@@ -761,17 +683,32 @@ class QueriesImpl(private val conn: Connection) : Queries {
 {{end}}
   @Throws(SQLException::class)
   {{ if $.EmitInterface }}override {{ end -}}
-  override fun {{.MethodName}}({{.Arg.Args}}): ExecuteUpdateQuery {
-    return object : ExecUpdateQuery() {
-      override fun execute(): Int {
-        return conn.prepareStatement({{.ConstantName}}).use { stmt ->
-          this.statement = stmt
-          {{ .Arg.Bindings }}
+  override fun {{.MethodName}}({{.Arg.Args}}): Int {
+    return conn.prepareStatement({{.ConstantName}}).use { stmt ->
+      {{ .Arg.Bindings }}
 
-          stmt.execute()
-          stmt.updateCount
-        }
+      stmt.execute()
+      stmt.updateCount
+    }
+  }
+{{end}}
+
+{{if eq .Cmd ":execresult"}}
+{{range .Comments}}//{{.}}
+{{end}}
+  @Throws(SQLException::class)
+  {{ if $.EmitInterface }}override {{ end -}}
+  override fun {{.MethodName}}({{.Arg.Args}}): Long {
+    return conn.prepareStatement({{.ConstantName}}, Statement.RETURN_GENERATED_KEYS).use { stmt ->
+      {{ .Arg.Bindings }}
+
+      stmt.execute()
+
+      val results = stmt.generatedKeys
+      if (!results.next()) {
+          throw SQLException("no generated key returned")
       }
+	  results.getLong(1)
     }
   }
 {{end}}

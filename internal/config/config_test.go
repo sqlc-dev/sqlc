@@ -74,7 +74,7 @@ func TestTypeOverrides(t *testing.T) {
 		{
 			Override{
 				DBType: "uuid",
-				GoType: "github.com/segmentio/ksuid.KSUID",
+				GoType: GoType{Spec: "github.com/segmentio/ksuid.KSUID"},
 			},
 			"github.com/segmentio/ksuid",
 			"ksuid.KSUID",
@@ -94,7 +94,7 @@ func TestTypeOverrides(t *testing.T) {
 		{
 			Override{
 				DBType: "citext",
-				GoType: "string",
+				GoType: GoType{Spec: "string"},
 			},
 			"",
 			"string",
@@ -102,15 +102,15 @@ func TestTypeOverrides(t *testing.T) {
 		},
 	} {
 		tt := test
-		t.Run(tt.override.GoType, func(t *testing.T) {
+		t.Run(tt.override.GoType.Spec, func(t *testing.T) {
 			if err := tt.override.Parse(); err != nil {
 				t.Fatalf("override parsing failed; %s", err)
 			}
+			if diff := cmp.Diff(tt.pkg, tt.override.GoImportPath); diff != "" {
+				t.Errorf("package mismatch;\n%s", diff)
+			}
 			if diff := cmp.Diff(tt.typeName, tt.override.GoTypeName); diff != "" {
 				t.Errorf("type name mismatch;\n%s", diff)
-			}
-			if diff := cmp.Diff(tt.pkg, tt.override.GoPackage); diff != "" {
-				t.Errorf("package mismatch;\n%s", diff)
 			}
 			if diff := cmp.Diff(tt.basic, tt.override.GoBasicType); diff != "" {
 				t.Errorf("basic mismatch;\n%s", diff)
@@ -124,20 +124,20 @@ func TestTypeOverrides(t *testing.T) {
 		{
 			Override{
 				DBType: "uuid",
-				GoType: "Pointer",
+				GoType: GoType{Spec: "Pointer"},
 			},
 			"Package override `go_type` specifier \"Pointer\" is not a Go basic type e.g. 'string'",
 		},
 		{
 			Override{
 				DBType: "uuid",
-				GoType: "untyped rune",
+				GoType: GoType{Spec: "untyped rune"},
 			},
 			"Package override `go_type` specifier \"untyped rune\" is not a Go basic type e.g. 'string'",
 		},
 	} {
 		tt := test
-		t.Run(tt.override.GoType, func(t *testing.T) {
+		t.Run(tt.override.GoType.Spec, func(t *testing.T) {
 			err := tt.override.Parse()
 			if err == nil {
 				t.Fatalf("expected pars to fail; got nil")

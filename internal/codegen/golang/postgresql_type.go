@@ -129,9 +129,8 @@ func postgresType(r *compiler.Result, col *compiler.Column, settings config.Comb
 		return "sql.NullInt64"
 
 	case "void":
-		// A void value always returns NULL. Since there is no built-in NULL
-		// value into the SQL package, we'll use sql.NullBool
-		return "sql.NullBool"
+		// A void value can only be scanned into an empty interface.
+		return "interface{}"
 
 	case "any":
 		return "interface{}"

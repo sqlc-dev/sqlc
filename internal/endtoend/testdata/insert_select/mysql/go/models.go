@@ -6,7 +6,7 @@ import ()
 
 type Bar struct {
 	Name  string
-	Ready bool
+	Ready int32
 }
 
 type Foo struct {

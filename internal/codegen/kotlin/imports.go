@@ -1,7 +1,6 @@
 package kotlin
 
 import (
-	"fmt"
 	"sort"
 	"strings"
 
@@ -63,11 +62,15 @@ func (i *importer) interfaceImports() [][]string {
 	}
 
 	sort.Strings(stds)
-	return [][]string{stds, runtimeImports(i.Queries)}
+	return [][]string{stds}
 }
 
 func (i *importer) modelImports() [][]string {
 	std := make(map[string]struct{})
+	if i.usesType("Instant") {
+		std["java.time.Instant"] = struct{}{}
+		std["java.sql.Timestamp"] = struct{}{}
+	}
 	if i.usesType("LocalDate") {
 		std["java.time.LocalDate"] = struct{}{}
 	}
@@ -93,6 +96,11 @@ func (i *importer) modelImports() [][]string {
 func stdImports(uses func(name string) bool) map[string]struct{} {
 	std := map[string]struct{}{
 		"java.sql.SQLException": {},
+		"java.sql.Statement":    {},
+	}
+	if uses("Instant") {
+		std["java.time.Instant"] = struct{}{}
+		std["java.sql.Timestamp"] = struct{}{}
 	}
 	if uses("LocalDate") {
 		std["java.time.LocalDate"] = struct{}{}
@@ -107,30 +115,6 @@ func stdImports(uses func(name string) bool) map[string]struct{} {
 		std["java.time.OffsetDateTime"] = struct{}{}
 	}
 	return std
-}
-
-func runtimeImports(kq []Query) []string {
-	rt := map[string]struct{}{}
-	for _, q := range kq {
-		switch q.Cmd {
-		case ":one":
-			rt["sqlc.runtime.RowQuery"] = struct{}{}
-		case ":many":
-			rt["sqlc.runtime.ListQuery"] = struct{}{}
-		case ":exec":
-			rt["sqlc.runtime.ExecuteQuery"] = struct{}{}
-		case ":execUpdate":
-			rt["sqlc.runtime.ExecuteUpdateQuery"] = struct{}{}
-		default:
-			panic(fmt.Sprintf("invalid command %q", q.Cmd))
-		}
-	}
-	rts := make([]string, 0, len(rt))
-	for s, _ := range rt {
-		rts = append(rts, s)
-	}
-	sort.Strings(rts)
-	return rts
 }
 
 func (i *importer) queryImports(filename string) [][]string {
@@ -174,7 +158,7 @@ func (i *importer) queryImports(filename string) [][]string {
 
 	std := stdImports(uses)
 	std["java.sql.Connection"] = struct{}{}
-	if hasEnum() {
+	if hasEnum() && i.Settings.Package.Engine == config.EnginePostgreSQL {
 		std["java.sql.Types"] = struct{}{}
 	}
 
@@ -184,5 +168,5 @@ func (i *importer) queryImports(filename string) [][]string {
 	}
 
 	sort.Strings(stds)
-	return [][]string{stds, runtimeImports(i.Queries)}
+	return [][]string{stds}
 }

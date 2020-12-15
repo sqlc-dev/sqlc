@@ -3,6 +3,7 @@ package dolphin
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	pcast "github.com/pingcap/parser/ast"
 	"github.com/pingcap/parser/opcode"
@@ -320,9 +321,9 @@ func (c *cc) convertFieldList(n *pcast.FieldList) *ast.List {
 	return &ast.List{Items: fields}
 }
 
-func (c *cc) convertFuncCallExpr(n *pcast.FuncCallExpr) *ast.FuncCall {
+func (c *cc) convertFuncCallExpr(n *pcast.FuncCallExpr) ast.Node {
 	schema := n.Schema.String()
-	name := n.FnName.String()
+	name := strings.ToLower(n.FnName.String())
 
 	// TODO: Deprecate the usage of Funcname
 	items := []ast.Node{}
@@ -331,21 +332,28 @@ func (c *cc) convertFuncCallExpr(n *pcast.FuncCallExpr) *ast.FuncCall {
 	}
 	items = append(items, &ast.String{Str: name})
 
-	fn := &ast.FuncCall{
-		Args: &ast.List{},
-		Func: &ast.FuncName{
-			Schema: schema,
-			Name:   name,
-		},
-		Funcname: &ast.List{
-			Items: items,
-		},
-		Location: n.OriginTextPosition(),
-	}
+	args := &ast.List{}
 	for _, arg := range n.Args {
-		fn.Args.Items = append(fn.Args.Items, c.convert(arg))
+		args.Items = append(args.Items, c.convert(arg))
 	}
-	return fn
+
+	if schema == "" && name == "coalesce" {
+		return &ast.CoalesceExpr{
+			Args: args,
+		}
+	} else {
+		return &ast.FuncCall{
+			Args: args,
+			Func: &ast.FuncName{
+				Schema: schema,
+				Name:   name,
+			},
+			Funcname: &ast.List{
+				Items: items,
+			},
+			Location: n.OriginTextPosition(),
+		}
+	}
 }
 
 func (c *cc) convertInsertStmt(n *pcast.InsertStmt) *ast.InsertStmt {
@@ -494,14 +502,15 @@ func (c *cc) convertAdminStmt(n *pcast.AdminStmt) ast.Node {
 }
 
 func (c *cc) convertAggregateFuncExpr(n *pcast.AggregateFuncExpr) *ast.FuncCall {
+	name := strings.ToLower(n.F)
 	fn := &ast.FuncCall{
 		Func: &ast.FuncName{
-			Name: n.F,
+			Name: name,
 		},
 		Funcname: &ast.List{
 			Items: []ast.Node{
 				&ast.String{
-					Str: n.F,
+					Str: name,
 				},
 			},
 		},

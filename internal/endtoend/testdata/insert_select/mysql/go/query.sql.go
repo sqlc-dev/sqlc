@@ -15,7 +15,7 @@ FROM bar WHERE ready = ?
 
 type InsertSelectParams struct {
 	Meta  string
-	Ready bool
+	Ready int32
 }
 
 func (q *Queries) InsertSelect(ctx context.Context, arg InsertSelectParams) error {

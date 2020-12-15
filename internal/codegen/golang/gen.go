@@ -26,7 +26,7 @@ package {{.Package}}
 
 import (
 	{{range imports .SourceName}}
-	{{range .}}"{{.}}"
+	{{range .}}{{.}}
 	{{end}}
 	{{end}}
 )
@@ -137,7 +137,7 @@ package {{.Package}}
 
 import (
 	{{range imports .SourceName}}
-	{{range .}}"{{.}}"
+	{{range .}}{{.}}
 	{{end}}
 	{{end}}
 )
@@ -175,7 +175,7 @@ package {{.Package}}
 
 import (
 	{{range imports .SourceName}}
-	{{range .}}"{{.}}"
+	{{range .}}{{.}}
 	{{end}}
 	{{end}}
 )
@@ -226,7 +226,7 @@ package {{.Package}}
 
 import (
 	{{range imports .SourceName}}
-	{{range .}}"{{.}}"
+	{{range .}}{{.}}
 	{{end}}
 	{{end}}
 )
@@ -370,10 +370,6 @@ type tmplCtx struct {
 
 func (t *tmplCtx) OutputQuery(sourceName string) bool {
 	return t.SourceName == sourceName
-}
-
-func DeprecatedGenerate(r Generateable, settings config.CombinedSettings) (map[string]string, error) {
-	return generate(settings, r.Enums(settings), r.Structs(settings), r.GoQueries(settings))
 }
 
 func Generate(r *compiler.Result, settings config.CombinedSettings) (map[string]string, error) {

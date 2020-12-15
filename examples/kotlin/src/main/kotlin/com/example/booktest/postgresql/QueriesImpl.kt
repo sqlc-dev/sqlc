@@ -4,12 +4,9 @@ package com.example.booktest.postgresql
 
 import java.sql.Connection
 import java.sql.SQLException
+import java.sql.Statement
 import java.sql.Types
 import java.time.OffsetDateTime
-
-import sqlc.runtime.ExecuteQuery
-import sqlc.runtime.ListQuery
-import sqlc.runtime.RowQuery
 
 const val booksByTags = """-- name: booksByTags :many
 SELECT 
@@ -32,7 +29,7 @@ data class BooksByTagsRow (
 )
 
 const val booksByTitleYear = """-- name: booksByTitleYear :many
-SELECT book_id, author_id, isbn, booktype, title, year, available, tags FROM books
+SELECT book_id, author_id, isbn, book_type, title, year, available, tags FROM books
 WHERE title = ? AND year = ?
 """
 
@@ -45,7 +42,7 @@ const val createBook = """-- name: createBook :one
 INSERT INTO books (
     author_id,
     isbn,
-    booktype,
+    book_type,
     title,
     year,
     available,
@@ -59,7 +56,7 @@ INSERT INTO books (
     ?,
     ?
 )
-RETURNING book_id, author_id, isbn, booktype, title, year, available, tags
+RETURNING book_id, author_id, isbn, book_type, title, year, available, tags
 """
 
 const val deleteBook = """-- name: deleteBook :exec
@@ -73,7 +70,7 @@ WHERE author_id = ?
 """
 
 const val getBook = """-- name: getBook :one
-SELECT book_id, author_id, isbn, booktype, title, year, available, tags FROM books
+SELECT book_id, author_id, isbn, book_type, title, year, available, tags FROM books
 WHERE book_id = ?
 """
 
@@ -92,43 +89,35 @@ WHERE book_id = ?
 class QueriesImpl(private val conn: Connection) : Queries {
 
   @Throws(SQLException::class)
-  override fun booksByTags(dollar1: List<String>): ListQuery<BooksByTagsRow> {
-    return object : ListQuery<BooksByTagsRow>() {
-      override fun execute(): List<BooksByTagsRow> {
-        return conn.prepareStatement(booksByTags).use { stmt ->
-          this.statement = stmt
-          stmt.setArray(1, conn.createArrayOf("pg_catalog.varchar", dollar1.toTypedArray()))
+  override fun booksByTags(dollar1: List<String>): List<BooksByTagsRow> {
+    return conn.prepareStatement(booksByTags).use { stmt ->
+      stmt.setArray(1, conn.createArrayOf("pg_catalog.varchar", dollar1.toTypedArray()))
 
-          val results = stmt.executeQuery()
-          val ret = mutableListOf<BooksByTagsRow>()
-          while (results.next()) {
-              ret.add(BooksByTagsRow(
+      val results = stmt.executeQuery()
+      val ret = mutableListOf<BooksByTagsRow>()
+      while (results.next()) {
+          ret.add(BooksByTagsRow(
                 results.getInt(1),
                 results.getString(2),
                 results.getString(3),
                 results.getString(4),
                 (results.getArray(5).array as Array<String>).toList()
             ))
-          }
-          ret
-        }
       }
+      ret
     }
   }
 
   @Throws(SQLException::class)
-  override fun booksByTitleYear(title: String, year: Int): ListQuery<Book> {
-    return object : ListQuery<Book>() {
-      override fun execute(): List<Book> {
-        return conn.prepareStatement(booksByTitleYear).use { stmt ->
-          this.statement = stmt
-          stmt.setString(1, title)
+  override fun booksByTitleYear(title: String, year: Int): List<Book> {
+    return conn.prepareStatement(booksByTitleYear).use { stmt ->
+      stmt.setString(1, title)
           stmt.setInt(2, year)
 
-          val results = stmt.executeQuery()
-          val ret = mutableListOf<Book>()
-          while (results.next()) {
-              ret.add(Book(
+      val results = stmt.executeQuery()
+      val ret = mutableListOf<Book>()
+      while (results.next()) {
+          ret.add(Book(
                 results.getInt(1),
                 results.getInt(2),
                 results.getString(3),
@@ -138,35 +127,28 @@ class QueriesImpl(private val conn: Connection) : Queries {
                 results.getObject(7, OffsetDateTime::class.java),
                 (results.getArray(8).array as Array<String>).toList()
             ))
-          }
-          ret
-        }
       }
+      ret
     }
   }
 
   @Throws(SQLException::class)
-  override fun createAuthor(name: String): RowQuery<Author> {
-    return object : RowQuery<Author>() {
-      override fun execute(): Author {
-        return conn.prepareStatement(createAuthor).use { stmt ->
-          this.statement = stmt
-          stmt.setString(1, name)
+  override fun createAuthor(name: String): Author? {
+    return conn.prepareStatement(createAuthor).use { stmt ->
+      stmt.setString(1, name)
 
-          val results = stmt.executeQuery()
-          if (!results.next()) {
-            throw SQLException("no rows in result set")
-          }
-          val ret = Author(
+      val results = stmt.executeQuery()
+      if (!results.next()) {
+        return null
+      }
+      val ret = Author(
                 results.getInt(1),
                 results.getString(2)
             )
-          if (results.next()) {
-              throw SQLException("expected one row in result set, but got many")
-          }
-          ret
-        }
+      if (results.next()) {
+          throw SQLException("expected one row in result set, but got many")
       }
+      ret
     }
   }
 
@@ -174,28 +156,25 @@ class QueriesImpl(private val conn: Connection) : Queries {
   override fun createBook(
       authorId: Int,
       isbn: String,
-      booktype: BookType,
+      bookType: BookType,
       title: String,
       year: Int,
       available: OffsetDateTime,
-      tags: List<String>): RowQuery<Book> {
-    return object : RowQuery<Book>() {
-      override fun execute(): Book {
-        return conn.prepareStatement(createBook).use { stmt ->
-          this.statement = stmt
-          stmt.setInt(1, authorId)
+      tags: List<String>): Book? {
+    return conn.prepareStatement(createBook).use { stmt ->
+      stmt.setInt(1, authorId)
           stmt.setString(2, isbn)
-          stmt.setObject(3, booktype.value, Types.OTHER)
+          stmt.setObject(3, bookType.value, Types.OTHER)
           stmt.setString(4, title)
           stmt.setInt(5, year)
           stmt.setObject(6, available)
           stmt.setArray(7, conn.createArrayOf("pg_catalog.varchar", tags.toTypedArray()))
 
-          val results = stmt.executeQuery()
-          if (!results.next()) {
-            throw SQLException("no rows in result set")
-          }
-          val ret = Book(
+      val results = stmt.executeQuery()
+      if (!results.next()) {
+        return null
+      }
+      val ret = Book(
                 results.getInt(1),
                 results.getInt(2),
                 results.getString(3),
@@ -205,67 +184,52 @@ class QueriesImpl(private val conn: Connection) : Queries {
                 results.getObject(7, OffsetDateTime::class.java),
                 (results.getArray(8).array as Array<String>).toList()
             )
-          if (results.next()) {
-              throw SQLException("expected one row in result set, but got many")
-          }
-          ret
-        }
+      if (results.next()) {
+          throw SQLException("expected one row in result set, but got many")
       }
+      ret
     }
   }
 
   @Throws(SQLException::class)
-  override fun deleteBook(bookId: Int): ExecuteQuery {
-    return object : ExecuteQuery() {
-      override fun execute() {
-        conn.prepareStatement(deleteBook).use { stmt ->
-          this.statement = stmt
-          stmt.setInt(1, bookId)
+  override fun deleteBook(bookId: Int) {
+    conn.prepareStatement(deleteBook).use { stmt ->
+      stmt.setInt(1, bookId)
 
-          stmt.execute()
-        }
-      }
+      stmt.execute()
     }
   }
 
   @Throws(SQLException::class)
-  override fun getAuthor(authorId: Int): RowQuery<Author> {
-    return object : RowQuery<Author>() {
-      override fun execute(): Author {
-        return conn.prepareStatement(getAuthor).use { stmt ->
-          this.statement = stmt
-          stmt.setInt(1, authorId)
+  override fun getAuthor(authorId: Int): Author? {
+    return conn.prepareStatement(getAuthor).use { stmt ->
+      stmt.setInt(1, authorId)
 
-          val results = stmt.executeQuery()
-          if (!results.next()) {
-            throw SQLException("no rows in result set")
-          }
-          val ret = Author(
+      val results = stmt.executeQuery()
+      if (!results.next()) {
+        return null
+      }
+      val ret = Author(
                 results.getInt(1),
                 results.getString(2)
             )
-          if (results.next()) {
-              throw SQLException("expected one row in result set, but got many")
-          }
-          ret
-        }
+      if (results.next()) {
+          throw SQLException("expected one row in result set, but got many")
       }
+      ret
     }
   }
 
   @Throws(SQLException::class)
-  override fun getBook(bookId: Int): RowQuery<Book> {
-    return object : RowQuery<Book>() {
-      override fun execute(): Book {
-        return conn.prepareStatement(getBook).use { stmt ->
-          this.statement = stmt
-          stmt.setInt(1, bookId)
+  override fun getBook(bookId: Int): Book? {
+    return conn.prepareStatement(getBook).use { stmt ->
+      stmt.setInt(1, bookId)
 
-          val results = stmt.executeQuery()
-          if (!results.next()) {
-            throw SQLException("no rows in result set")
-          }
-          val ret = Book(
+      val results = stmt.executeQuery()
+      if (!results.next()) {
+        return null
+      }
+      val ret = Book(
                 results.getInt(1),
                 results.getInt(2),
                 results.getString(3),
@@ -275,12 +239,10 @@ class QueriesImpl(private val conn: Connection) : Queries {
                 results.getObject(7, OffsetDateTime::class.java),
                 (results.getArray(8).array as Array<String>).toList()
             )
-          if (results.next()) {
-              throw SQLException("expected one row in result set, but got many")
-          }
-          ret
-        }
+      if (results.next()) {
+          throw SQLException("expected one row in result set, but got many")
       }
+      ret
     }
   }
 
@@ -288,18 +250,13 @@ class QueriesImpl(private val conn: Connection) : Queries {
   override fun updateBook(
       title: String,
       tags: List<String>,
-      bookId: Int): ExecuteQuery {
-    return object : ExecuteQuery() {
-      override fun execute() {
-        conn.prepareStatement(updateBook).use { stmt ->
-          this.statement = stmt
-          stmt.setString(1, title)
+      bookId: Int) {
+    conn.prepareStatement(updateBook).use { stmt ->
+      stmt.setString(1, title)
           stmt.setArray(2, conn.createArrayOf("pg_catalog.varchar", tags.toTypedArray()))
           stmt.setInt(3, bookId)
 
-          stmt.execute()
-        }
-      }
+      stmt.execute()
     }
   }
 
@@ -308,19 +265,14 @@ class QueriesImpl(private val conn: Connection) : Queries {
       title: String,
       tags: List<String>,
       isbn: String,
-      bookId: Int): ExecuteQuery {
-    return object : ExecuteQuery() {
-      override fun execute() {
-        conn.prepareStatement(updateBookISBN).use { stmt ->
-          this.statement = stmt
-          stmt.setString(1, title)
+      bookId: Int) {
+    conn.prepareStatement(updateBookISBN).use { stmt ->
+      stmt.setString(1, title)
           stmt.setArray(2, conn.createArrayOf("pg_catalog.varchar", tags.toTypedArray()))
           stmt.setString(3, isbn)
           stmt.setInt(4, bookId)
 
-          stmt.execute()
-        }
-      }
+      stmt.execute()
     }
   }
 

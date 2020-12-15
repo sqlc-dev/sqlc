@@ -39,7 +39,7 @@ func (c *Compiler) expand(qc *QueryCatalog, raw *ast.RawStmt) ([]source.Edit, er
 func (c *Compiler) quoteIdent(ident string) string {
 	if c.parser.IsReservedKeyword(ident) {
 		switch c.conf.Engine {
-		case config.EngineMySQL, config.EngineMySQLBeta:
+		case config.EngineMySQL:
 			return "`" + ident + "`"
 		default:
 			return "\"" + ident + "\""

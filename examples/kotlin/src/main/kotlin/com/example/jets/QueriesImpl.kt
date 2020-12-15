@@ -4,10 +4,7 @@ package com.example.jets
 
 import java.sql.Connection
 import java.sql.SQLException
-
-import sqlc.runtime.ExecuteQuery
-import sqlc.runtime.ListQuery
-import sqlc.runtime.RowQuery
+import java.sql.Statement
 
 const val countPilots = """-- name: countPilots :one
 SELECT COUNT(*) FROM pilots
@@ -24,58 +21,43 @@ SELECT id, name FROM pilots LIMIT 5
 class QueriesImpl(private val conn: Connection) : Queries {
 
   @Throws(SQLException::class)
-  override fun countPilots(): RowQuery<Long> {
-    return object : RowQuery<Long>() {
-      override fun execute(): Long {
-        return conn.prepareStatement(countPilots).use { stmt ->
-          this.statement = stmt
-          
-          val results = stmt.executeQuery()
-          if (!results.next()) {
-            throw SQLException("no rows in result set")
-          }
-          val ret = results.getLong(1)
-          if (results.next()) {
-              throw SQLException("expected one row in result set, but got many")
-          }
-          ret
-        }
+  override fun countPilots(): Long? {
+    return conn.prepareStatement(countPilots).use { stmt ->
+      
+      val results = stmt.executeQuery()
+      if (!results.next()) {
+        return null
       }
+      val ret = results.getLong(1)
+      if (results.next()) {
+          throw SQLException("expected one row in result set, but got many")
+      }
+      ret
     }
   }
 
   @Throws(SQLException::class)
-  override fun deletePilot(id: Int): ExecuteQuery {
-    return object : ExecuteQuery() {
-      override fun execute() {
-        conn.prepareStatement(deletePilot).use { stmt ->
-          this.statement = stmt
-          stmt.setInt(1, id)
+  override fun deletePilot(id: Int) {
+    conn.prepareStatement(deletePilot).use { stmt ->
+      stmt.setInt(1, id)
 
-          stmt.execute()
-        }
-      }
+      stmt.execute()
     }
   }
 
   @Throws(SQLException::class)
-  override fun listPilots(): ListQuery<Pilot> {
-    return object : ListQuery<Pilot>() {
-      override fun execute(): List<Pilot> {
-        return conn.prepareStatement(listPilots).use { stmt ->
-          this.statement = stmt
-          
-          val results = stmt.executeQuery()
-          val ret = mutableListOf<Pilot>()
-          while (results.next()) {
-              ret.add(Pilot(
+  override fun listPilots(): List<Pilot> {
+    return conn.prepareStatement(listPilots).use { stmt ->
+      
+      val results = stmt.executeQuery()
+      val ret = mutableListOf<Pilot>()
+      while (results.next()) {
+          ret.add(Pilot(
                 results.getInt(1),
                 results.getString(2)
             ))
-          }
-          ret
-        }
       }
+      ret
     }
   }
 

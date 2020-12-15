@@ -46,6 +46,6 @@ jobs:
         PG_PORT: ${{ job.services.postgres.ports['5432'] }}
         MYSQL_DATABASE: mysql
         MYSQL_HOST: localhost
-        MYSQL_PORT: ${{ job.services.mysql.ports['5432'] }}
+        MYSQL_PORT: ${{ job.services.mysql.ports['3306'] }}
         MYSQL_ROOT_PASSWORD: mysecretpassword
 

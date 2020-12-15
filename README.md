@@ -327,7 +327,7 @@ overrides:
 
 Each override document has the following keys:
 - `db_type`:
-  - The PostgreSQL type to override. Find the full list of supported types in [gen.go](https://github.com/kyleconroy/sqlc/blob/master/internal/dinosql/gen.go#L438).
+  - The PostgreSQL type to override. Find the full list of supported types in [postgresql_type.go](https://github.com/kyleconroy/sqlc/blob/master/internal/codegen/golang/postgresql_type.go#L12).
 - `go_type`:
   - A fully qualified name to a Go type to use in the generated code.
 - `nullable`:
@@ -471,15 +471,24 @@ go build -o ~/go/bin/sqlc-dev ./cmd/sqlc
 
 ### Running Tests
 
-To run the tests, include the `exp` tag. Without this tag, a few tests will
-fail.
-
 ```
-go test --tags=exp ./...
+go test ./...
 ```
 
-To run the tests in the examples folder, a running PostgreSQL instance is
-required. The tests use the following environment variables to connect to the
+To run the tests in the examples folder, use the `examples` tag.
+
+```
+go test --tags=examples ./...
+```
+
+These tests require locally-running database instances. Run these databases
+using [Docker Compose](https://docs.docker.com/compose/).
+
+```
+docker-compose up -d
+```
+
+The tests use the following environment variables to connect to the
 database
 
 #### For PostgreSQL
@@ -504,10 +513,6 @@ MYSQL_PORT      3306
 MYSQL_USER      root
 MYSQL_ROOT_PASSWORD  mysecretpassword
 MYSQL_DATABASE  dinotest
-```
-
-```
-go test --tags=examples,exp ./...
 ```
 
 ### Regenerate expected test output

@@ -15,7 +15,7 @@
     {
       "schema": "mysql/schema.sql",
       "queries": "mysql/query.sql",
-      "engine": "mysql:beta",
+      "engine": "mysql",
       "gen": {
         "go": {
           "package": "authors",

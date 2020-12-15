@@ -4,54 +4,51 @@ package com.example.booktest.postgresql
 
 import java.sql.Connection
 import java.sql.SQLException
+import java.sql.Statement
 import java.sql.Types
 import java.time.OffsetDateTime
 
-import sqlc.runtime.ExecuteQuery
-import sqlc.runtime.ListQuery
-import sqlc.runtime.RowQuery
-
 interface Queries {
   @Throws(SQLException::class)
-  fun booksByTags(dollar1: List<String>): ListQuery<BooksByTagsRow>
+  fun booksByTags(dollar1: List<String>): List<BooksByTagsRow>
   
   @Throws(SQLException::class)
-  fun booksByTitleYear(title: String, year: Int): ListQuery<Book>
+  fun booksByTitleYear(title: String, year: Int): List<Book>
   
   @Throws(SQLException::class)
-  fun createAuthor(name: String): RowQuery<Author>
+  fun createAuthor(name: String): Author?
   
   @Throws(SQLException::class)
   fun createBook(
       authorId: Int,
       isbn: String,
-      booktype: BookType,
+      bookType: BookType,
       title: String,
       year: Int,
       available: OffsetDateTime,
-      tags: List<String>): RowQuery<Book>
+      tags: List<String>): Book?
   
   @Throws(SQLException::class)
-  fun deleteBook(bookId: Int): ExecuteQuery
+  fun deleteBook(bookId: Int)
   
   @Throws(SQLException::class)
-  fun getAuthor(authorId: Int): RowQuery<Author>
+  fun getAuthor(authorId: Int): Author?
   
   @Throws(SQLException::class)
-  fun getBook(bookId: Int): RowQuery<Book>
+  fun getBook(bookId: Int): Book?
   
   @Throws(SQLException::class)
   fun updateBook(
       title: String,
       tags: List<String>,
-      bookId: Int): ExecuteQuery
+      bookId: Int)
   
   @Throws(SQLException::class)
   fun updateBookISBN(
       title: String,
       tags: List<String>,
       isbn: String,
-      bookId: Int): ExecuteQuery
+      bookId: Int)
   
 }
 

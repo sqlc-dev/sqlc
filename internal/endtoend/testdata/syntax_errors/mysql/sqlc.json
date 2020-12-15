@@ -6,7 +6,7 @@
       "path": "go",
       "schema": "schema.sql",
       "queries": "query",
-      "engine": "mysql:beta"
+      "engine": "mysql"
     }
   ]
 }
