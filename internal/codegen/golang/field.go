@@ -22,5 +22,5 @@ func (gf Field) Tag() string {
 		return ""
 	}
 	sort.Strings(tags)
-	return strings.Join(tags, ",")
+	return strings.Join(tags, " ")
 }
