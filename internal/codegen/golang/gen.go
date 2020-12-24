@@ -42,21 +42,14 @@ type DBTX interface {
 	Query(ctx context.Context, sql string, args ...interface{}) (pgx.Rows, error)
 	QueryRow(ctx context.Context, sql string, args ...interface{}) pgx.Row
 	Exec(ctx context.Context, sql string, arguments ...interface{}) (pgconn.CommandTag, error)
-	Close()
 }
 
 func New(db DBTX) *Queries {
 	return &Queries{db: db}
 }
 
-func (q *Queries) Close() error {
-	q.db.Close()
-	return nil
-}
-
 func (q *Queries) exec(ctx context.Context, query string, args ...interface{}) (pgconn.CommandTag, error) {
 	return q.db.Exec(ctx, query, args...)
-	
 }
 
 func (q *Queries) query(ctx context.Context, query string, args ...interface{}) (pgx.Rows, error) {
@@ -276,107 +269,214 @@ import (
 
 {{define "queryCode"}}
 
-{{if eq .SQLLibrary "pgx/v4a"}}
+{{if eq .SQLLibrary "pgx/v4"}}
+	
+{{range .GoQueries}}
+{{if $.OutputQuery .SourceName}}
+const {{.ConstantName}} = {{$.Q}}-- name: {{.MethodName}} {{.Cmd}}
+{{escape .SQL}}
+{{$.Q}}
+
+{{if .Arg.EmitStruct}}
+type {{.Arg.Type}} struct { {{- range .Arg.Struct.Fields}}
+  {{.Name}} {{.Type}} {{if or ($.EmitJSONTags) ($.EmitDBTags)}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
+  {{- end}}
+}
+{{end}}
+
+{{if .Ret.EmitStruct}}
+type {{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
+  {{.Name}} {{.Type}} {{if or ($.EmitJSONTags) ($.EmitDBTags)}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
+  {{- end}}
+}
+{{end}}
+
+{{if eq .Cmd ":one"}}
+{{range .Comments}}//{{.}}
+{{end -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.Type}}, error) {
+	row := q.db.QueryRow(ctx, {{.ConstantName}}, {{.Arg.Params}})
+	var {{.Ret.Name}} {{.Ret.Type}}
+	err := row.Scan({{.Ret.Scan}})
+	return {{.Ret.Name}}, err
+}
+{{end}}
+
+{{if eq .Cmd ":many"}}
+{{range .Comments}}//{{.}}
+{{end -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.Type}}, error) {
+	rows, err := q.db.Query(ctx, {{.ConstantName}}, {{.Arg.Params}})
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	{{- if $.EmitEmptySlices}}
+	items := []{{.Ret.Type}}{}
+	{{else}}
+	var items []{{.Ret.Type}}
+	{{end -}}
+	for rows.Next() {
+		var {{.Ret.Name}} {{.Ret.Type}}
+		if err := rows.Scan({{.Ret.Scan}}); err != nil {
+			return nil, err
+		}
+		items = append(items, {{.Ret.Name}})
+	}
+	rows.Close()
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+{{end}}
+
+{{if eq .Cmd ":exec"}}
+{{range .Comments}}//{{.}}
+{{end -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) error {
+	_, err := q.db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
+	return err
+}
+{{end}}
+
+{{if eq .Cmd ":execrows"}}
+{{range .Comments}}//{{.}}
+{{end -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, error) {
+	{{- if $.EmitPreparedQueries}}
+	result, err := q.exec(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
+	{{- else}}
+	result, err := q.db.ExecContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
+	{{- end}}
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+{{end}}
+
+{{if eq .Cmd ":execresult"}}
+{{range .Comments}}//{{.}}
+{{end -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (sql.Result, error) {
+	{{- if $.EmitPreparedQueries}}
+	return q.exec(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
+	{{- else}}
+	return q.db.ExecContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
+	{{- end}}
+}
+{{end}}
+{{end}}
+{{end}}
 
 {{else}}
-	{{range .GoQueries}}
-	{{if $.OutputQuery .SourceName}}
-	const {{.ConstantName}} = {{$.Q}}-- name: {{.MethodName}} {{.Cmd}}
-	{{escape .SQL}}
-	{{$.Q}}
-	
-	{{if .Arg.EmitStruct}}
-	type {{.Arg.Type}} struct { {{- range .Arg.Struct.Fields}}
-	  {{.Name}} {{.Type}} {{if or ($.EmitJSONTags) ($.EmitDBTags)}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
-	  {{- end}}
+
+{{range .GoQueries}}
+{{if $.OutputQuery .SourceName}}
+const {{.ConstantName}} = {{$.Q}}-- name: {{.MethodName}} {{.Cmd}}
+{{escape .SQL}}
+{{$.Q}}
+{{if .Arg.EmitStruct}}
+type {{.Arg.Type}} struct { {{- range .Arg.Struct.Fields}}
+  {{.Name}} {{.Type}} {{if or ($.EmitJSONTags) ($.EmitDBTags)}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
+  {{- end}}
+}
+{{end}}
+{{if .Ret.EmitStruct}}
+type {{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
+  {{.Name}} {{.Type}} {{if or ($.EmitJSONTags) ($.EmitDBTags)}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
+  {{- end}}
+}
+{{end}}
+{{if eq .Cmd ":one"}}
+{{range .Comments}}//{{.}}
+{{end -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.Type}}, error) {
+  	{{- if $.EmitPreparedQueries}}
+	row := q.queryRow(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
+	{{- else}}
+	row := q.db.QueryRowContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
+	{{- end}}
+	var {{.Ret.Name}} {{.Ret.Type}}
+	err := row.Scan({{.Ret.Scan}})
+	return {{.Ret.Name}}, err
+}
+{{end}}
+{{if eq .Cmd ":many"}}
+{{range .Comments}}//{{.}}
+{{end -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.Type}}, error) {
+  	{{- if $.EmitPreparedQueries}}
+	rows, err := q.query(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
+  	{{- else}}
+	rows, err := q.db.QueryContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
+  	{{- end}}
+	if err != nil {
+		return nil, err
 	}
-	{{end}}
-	
-	{{if .Ret.EmitStruct}}
-	type {{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
-	  {{.Name}} {{.Type}} {{if or ($.EmitJSONTags) ($.EmitDBTags)}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
-	  {{- end}}
-	}
-	{{end}}
-	
-	{{if eq .Cmd ":one"}}
-	{{range .Comments}}//{{.}}
+	defer rows.Close()
+	{{- if $.EmitEmptySlices}}
+	items := []{{.Ret.Type}}{}
+	{{else}}
+	var items []{{.Ret.Type}}
 	{{end -}}
-	func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.Type}}, error) {
-		row := q.db.QueryRow(ctx, {{.ConstantName}}, {{.Arg.Params}})
+	for rows.Next() {
 		var {{.Ret.Name}} {{.Ret.Type}}
-		err := row.Scan({{.Ret.Scan}})
-		return {{.Ret.Name}}, err
-	}
-	{{end}}
-	
-	{{if eq .Cmd ":many"}}
-	{{range .Comments}}//{{.}}
-	{{end -}}
-	func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.Type}}, error) {
-		rows, err := q.db.Query(ctx, {{.ConstantName}}, {{.Arg.Params}})
-		if err != nil {
+		if err := rows.Scan({{.Ret.Scan}}); err != nil {
 			return nil, err
 		}
-		defer rows.Close()
-		{{- if $.EmitEmptySlices}}
-		items := []{{.Ret.Type}}{}
-		{{else}}
-		var items []{{.Ret.Type}}
-		{{end -}}
-		for rows.Next() {
-			var {{.Ret.Name}} {{.Ret.Type}}
-			if err := rows.Scan({{.Ret.Scan}}); err != nil {
-				return nil, err
-			}
-			items = append(items, {{.Ret.Name}})
-		}
-		rows.Close()
-		if err := rows.Err(); err != nil {
-			return nil, err
-		}
-		return items, nil
+		items = append(items, {{.Ret.Name}})
 	}
-	{{end}}
-	
-	{{if eq .Cmd ":exec"}}
-	{{range .Comments}}//{{.}}
-	{{end -}}
-	func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) error {
-		_, err := q.db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
-		return err
+	if err := rows.Close(); err != nil {
+		return nil, err
 	}
-	{{end}}
-	
-	{{if eq .Cmd ":execrows"}}
-	{{range .Comments}}//{{.}}
-	{{end -}}
-	func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, error) {
-		{{- if $.EmitPreparedQueries}}
-		result, err := q.exec(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
-		{{- else}}
-		result, err := q.db.ExecContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
-		{{- end}}
-		if err != nil {
-			return 0, err
-		}
-		return result.RowsAffected()
+	if err := rows.Err(); err != nil {
+		return nil, err
 	}
-	{{end}}
-	
-	{{if eq .Cmd ":execresult"}}
-	{{range .Comments}}//{{.}}
-	{{end -}}
-	func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (sql.Result, error) {
-		{{- if $.EmitPreparedQueries}}
-		return q.exec(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
-		{{- else}}
-		return q.db.ExecContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
-		{{- end}}
+	return items, nil
+}
+{{end}}
+{{if eq .Cmd ":exec"}}
+{{range .Comments}}//{{.}}
+{{end -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) error {
+  	{{- if $.EmitPreparedQueries}}
+	_, err := q.exec(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
+  	{{- else}}
+	_, err := q.db.ExecContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
+  	{{- end}}
+	return err
+}
+{{end}}
+{{if eq .Cmd ":execrows"}}
+{{range .Comments}}//{{.}}
+{{end -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, error) {
+  	{{- if $.EmitPreparedQueries}}
+	result, err := q.exec(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
+  	{{- else}}
+	result, err := q.db.ExecContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
+  	{{- end}}
+	if err != nil {
+		return 0, err
 	}
-	{{end}}
-	{{end}}
-	{{end}}
+	return result.RowsAffected()
+}
+{{end}}
+{{if eq .Cmd ":execresult"}}
+{{range .Comments}}//{{.}}
+{{end -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (sql.Result, error) {
+  	{{- if $.EmitPreparedQueries}}
+	return q.exec(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
+  	{{- else}}
+	return q.db.ExecContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
+  	{{- end}}
+}
+{{end}}
+{{end}}
+{{end}}
 {{end}}
 
 {{end}}
