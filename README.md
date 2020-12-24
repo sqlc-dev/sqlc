@@ -278,6 +278,7 @@ packages:
     queries: "./sql/query/"
     schema: "./sql/schema/"
     engine: "postgresql"
+    sql_library: "pgx/v4"
     emit_json_tags: true
     emit_prepared_queries: true
     emit_interface: false
@@ -296,6 +297,8 @@ Each package document has the following keys:
   - Directory of SQL migrations or path to single SQL file; or a list of paths
 - `engine`:
   - Either `postgresql` or `mysql`. Defaults to `postgresql`. MySQL support is experimental
+- `sql_library`:
+  - Either `pgx/v4` or empty, which defaults to using the `database/sql` package 
 - `emit_json_tags`:
   - If true, add JSON tags to generated structs. Defaults to `false`.
 - `emit_prepared_queries`:

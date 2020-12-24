@@ -103,10 +103,17 @@ func (i *importer) Imports(filename string) [][]ImportSpec {
 func (i *importer) dbImports() fileImports {
 	std := []ImportSpec{
 		{Path: "context"},
-		{Path: "database/sql"},
 	}
-	if i.Settings.Go.EmitPreparedQueries {
-		std = append(std, ImportSpec{Path: "fmt"})
+
+	switch i.Settings.Go.SQLLibrary {
+	case "pgx/v4":
+		std = append(std, ImportSpec{Path: "github.com/jackc/pgconn"})
+		std = append(std, ImportSpec{Path: "github.com/jackc/pgx/v4"})
+	default:
+		if i.Settings.Go.EmitPreparedQueries {
+			std = append(std, ImportSpec{Path: "fmt"})
+		}
+		std = append(std, ImportSpec{Path: "database/sql"})
 	}
 	return fileImports{Std: std}
 }

@@ -21,6 +21,7 @@ type v1PackageSettings struct {
 	Path                string     `json:"path" yaml:"path"`
 	Schema              Paths      `json:"schema" yaml:"schema"`
 	Queries             Paths      `json:"queries" yaml:"queries"`
+	SQLLibrary          string     `json:"sql_library" yaml:"sql_library"`
 	EmitInterface       bool       `json:"emit_interface" yaml:"emit_interface"`
 	EmitJSONTags        bool       `json:"emit_json_tags" yaml:"emit_json_tags"`
 	EmitDBTags          bool       `json:"emit_db_tags" yaml:"emit_db_tags"`
@@ -109,6 +110,7 @@ func (c *V1GenerateSettings) Translate() Config {
 					EmitPreparedQueries: pkg.EmitPreparedQueries,
 					EmitExactTableNames: pkg.EmitExactTableNames,
 					EmitEmptySlices:     pkg.EmitEmptySlices,
+					SQLLibrary:          pkg.SQLLibrary,
 					Package:             pkg.Name,
 					Out:                 pkg.Path,
 					Overrides:           pkg.Overrides,
