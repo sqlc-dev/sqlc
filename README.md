@@ -389,7 +389,7 @@ rename:
 ### macOS
 
 ```
-brew install kyleconroy/sqlc/sqlc
+brew install sqlc
 ```
 
 ### Ubuntu
