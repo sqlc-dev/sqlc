@@ -8,7 +8,6 @@ import (
 	pcast "github.com/pingcap/parser/ast"
 	"github.com/pingcap/parser/opcode"
 	driver "github.com/pingcap/parser/test_driver"
-	"github.com/pingcap/parser/types"
 
 	"github.com/kyleconroy/sqlc/internal/debug"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
@@ -40,7 +39,7 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 					Subtype: ast.AT_AddColumn,
 					Def: &ast.ColumnDef{
 						Colname:   def.Name.String(),
-						TypeName:  &ast.TypeName{Name: types.TypeStr(def.Tp.Tp)},
+						TypeName:  parseTypeName(def),
 						IsNotNull: isNotNull(def),
 					},
 				})
@@ -69,7 +68,7 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 					Subtype: ast.AT_AddColumn,
 					Def: &ast.ColumnDef{
 						Colname:   def.Name.String(),
-						TypeName:  &ast.TypeName{Name: types.TypeStr(def.Tp.Tp)},
+						TypeName:  parseTypeName(def),
 						IsNotNull: isNotNull(def),
 					},
 				})
@@ -226,7 +225,7 @@ func (c *cc) convertCreateTableStmt(n *pcast.CreateTableStmt) ast.Node {
 		}
 		create.Cols = append(create.Cols, &ast.ColumnDef{
 			Colname:   def.Name.String(),
-			TypeName:  &ast.TypeName{Name: types.TypeStr(def.Tp.Tp)},
+			TypeName:  parseTypeName(def),
 			IsNotNull: isNotNull(def),
 			Comment:   comment,
 			Vals:      vals,

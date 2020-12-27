@@ -2,6 +2,7 @@ package dolphin
 
 import (
 	pcast "github.com/pingcap/parser/ast"
+	"github.com/pingcap/parser/types"
 
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 )
@@ -69,6 +70,14 @@ func parseTableName(n *pcast.TableName) *ast.TableName {
 		Schema: n.Schema.String(),
 		Name:   n.Name.String(),
 	}
+}
+
+func parseTypeName(def *pcast.ColumnDef) *ast.TypeName {
+	name := types.TypeStr(def.Tp.Tp)
+	if name == "tinyint" && def.Tp.Flen == 1 {
+		name = "bool"
+	}
+	return &ast.TypeName{Name: name}
 }
 
 func toList(node pcast.Node) *ast.List {
