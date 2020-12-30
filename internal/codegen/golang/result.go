@@ -130,6 +130,18 @@ func argName(name string) string {
 }
 
 func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs []Struct) []Query {
+	internalName := func(structName, variableName string) string {
+		if settings.Go.EmitGroupByFile {
+			return codegen.LowerTitle(structName) + variableName
+		}
+		return codegen.LowerTitle(variableName)
+	}
+	publicName := func(structName, variableName string) string {
+		if settings.Go.EmitGroupByFile {
+			return structName + variableName
+		}
+		return variableName
+	}
 	qs := make([]Query, 0, len(r.Queries))
 	for _, query := range r.Queries {
 		if query.Name == "" {
@@ -139,12 +151,15 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 			continue
 		}
 
+		structName := StructName(codegen.InitialComponent(query.Filename), settings)
+
 		gq := Query{
 			Cmd:          query.Cmd,
-			ConstantName: codegen.LowerTitle(query.Name),
+			ConstantName: internalName(structName, query.Name),
 			FieldName:    codegen.LowerTitle(query.Name) + "Stmt",
 			MethodName:   query.Name,
 			SourceName:   query.Filename,
+			StructName:   structName,
 			SQL:          query.SQL,
 			Comments:     query.Comments,
 		}
@@ -166,7 +181,7 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 			gq.Arg = QueryValue{
 				Emit:   true,
 				Name:   "arg",
-				Struct: columnsToStruct(r, gq.MethodName+"Params", cols, settings),
+				Struct: columnsToStruct(r, publicName(structName, gq.MethodName+"Params"), cols, settings),
 			}
 		}
 
@@ -208,7 +223,7 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 						Column: c,
 					})
 				}
-				gs = columnsToStruct(r, gq.MethodName+"Row", columns, settings)
+				gs = columnsToStruct(r, publicName(structName, gq.MethodName+"Row"), columns, settings)
 				emit = true
 			}
 			gq.Ret = QueryValue{

@@ -11,6 +11,14 @@ func LowerTitle(s string) string {
 	return string(a)
 }
 
+func InitialComponent(s string) string {
+	index := strings.Index(s, ".")
+	if index < 0 {
+		return s
+	}
+	return s[:index]
+}
+
 // Go string literals cannot contain backtick. If a string contains
 // a backtick, replace it the following way:
 //
