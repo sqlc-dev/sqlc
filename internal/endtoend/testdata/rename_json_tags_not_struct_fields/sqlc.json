@@ -1,0 +1,23 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "path": "go",
+      "name": "querytest",
+      "schema": "query.sql",
+      "queries": "query.sql",
+      "emit_json_tags": true,
+      "rename_json_tags": true,
+      "skip_struct_rename": true
+    }
+  ],
+  "rename": {
+    "id_old": "idNew",
+    "ip_old": "ipNew",
+    "bar_old": "BarNew",
+    "foo_old": "fooNew",
+    "ip_protocol": "IPProtocol",
+    "ip_protocol_tcp": "IPProtocolTCP"
+  }
+}
+
