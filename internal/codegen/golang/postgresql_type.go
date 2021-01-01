@@ -6,6 +6,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/compiler"
 	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/debug"
+	"github.com/kyleconroy/sqlc/internal/inflection"
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 )
 
@@ -148,6 +149,18 @@ func postgresType(r *compiler.Result, col *compiler.Column, settings config.Comb
 		for _, schema := range r.Catalog.Schemas {
 			if schema.Name == "pg_catalog" {
 				continue
+			}
+			for _, tb := range schema.Tables {
+				if rel.Name == tb.Rel.Name && rel.Schema == schema.Name {
+					name := rel.Name
+					if !settings.Go.EmitExactTableNames {
+						name = inflection.Singular(name)
+					}
+					if rel.Schema == r.Catalog.DefaultSchema {
+						return StructName(name, settings)
+					}
+					return StructName(schema.Name+"_"+name, settings)
+				}
 			}
 			for _, typ := range schema.Types {
 				switch t := typ.(type) {
