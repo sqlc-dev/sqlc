@@ -9,7 +9,7 @@ command. The format of this comment is as follows:
 
 ## Commands
 
-sqlc supports four types of query commands.
+sqlc supports five types of query commands.
 
 ### `:many`
 
