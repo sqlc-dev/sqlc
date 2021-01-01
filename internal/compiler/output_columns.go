@@ -222,7 +222,7 @@ func sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, error) {
 	case *ast.SelectStmt:
 		list = astutils.Search(n.FromClause, func(node ast.Node) bool {
 			switch node.(type) {
-			case *ast.RangeVar, *ast.RangeSubselect:
+			case *ast.RangeVar, *ast.RangeSubselect, *ast.FuncName:
 				return true
 			default:
 				return false
@@ -244,6 +244,20 @@ func sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, error) {
 	var tables []*Table
 	for _, item := range list.Items {
 		switch n := item.(type) {
+		case *ast.FuncName:
+			fn, err := qc.GetFunc(n)
+			if err != nil {
+				return nil, err
+			}
+			table, err := qc.GetTable(&ast.TableName{
+				Catalog: fn.ReturnType.Catalog,
+				Schema:  fn.ReturnType.Schema,
+				Name:    fn.ReturnType.Name,
+			})
+			if err != nil {
+				return nil, fmt.Errorf("sourceTables: selecting on a function with an unsupported return type: %T", fn.ReturnType)
+			}
+			tables = append(tables, table)
 		case *ast.RangeSubselect:
 			cols, err := outputColumns(qc, n.Subquery)
 			if err != nil {
