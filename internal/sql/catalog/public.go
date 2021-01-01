@@ -131,3 +131,20 @@ func (c *Catalog) GetTable(rel *ast.TableName) (Table, error) {
 		return *table, err
 	}
 }
+
+func (c *Catalog) GetFunc(rel *ast.FuncName) (Function, error) {
+	ns := rel.Schema
+	if ns == "" {
+		ns = c.DefaultSchema
+	}
+	schema, err := c.getSchema(ns)
+	if err != nil {
+		return Function{}, err
+	}
+	fn, _, err := schema.getFuncByName(rel)
+	if fn == nil {
+		return Function{}, err
+	} else {
+		return *fn, err
+	}
+}

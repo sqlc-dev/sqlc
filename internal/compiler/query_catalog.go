@@ -70,3 +70,14 @@ func (qc QueryCatalog) GetTable(rel *ast.TableName) (*Table, error) {
 	}
 	return &Table{Rel: rel, Columns: cols}, nil
 }
+
+func (qc QueryCatalog) GetFunc(rel *ast.FuncName) (*Function, error) {
+	src, err := qc.catalog.GetFunc(rel)
+	if err != nil {
+		return nil, err
+	}
+	return &Function{
+		Rel:        rel,
+		ReturnType: src.ReturnType,
+	}, nil
+}

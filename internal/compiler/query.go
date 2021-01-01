@@ -7,6 +7,11 @@ type Table struct {
 	Columns []*Column
 }
 
+type Function struct {
+	Rel        *ast.FuncName
+	ReturnType *ast.TypeName
+}
+
 type Column struct {
 	Name     string
 	DataType string
