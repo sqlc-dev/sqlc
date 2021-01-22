@@ -298,6 +298,8 @@ Each package document has the following keys:
   - Either `postgresql` or `mysql`. Defaults to `postgresql`. MySQL support is experimental
 - `emit_json_tags`:
   - If true, add JSON tags to generated structs. Defaults to `false`.
+- `emit_db_tags`:
+  - If true, add DB tags to generated structs. Defaults to `false`.
 - `emit_prepared_queries`:
   - If true, include support for prepared queries. Defaults to `false`.
 - `emit_interface`:
