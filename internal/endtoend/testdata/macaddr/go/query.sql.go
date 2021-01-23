@@ -5,6 +5,7 @@ package querytest
 
 import (
 	"context"
+	"net"
 )
 
 const get = `-- name: Get :many
@@ -24,6 +25,33 @@ func (q *Queries) Get(ctx context.Context, limit int32) ([]Foo, error) {
 			return nil, err
 		}
 		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAddr = `-- name: GetAddr :many
+SELECT addr FROM foo LIMIT $1
+`
+
+func (q *Queries) GetAddr(ctx context.Context, limit int32) ([]net.HardwareAddr, error) {
+	rows, err := q.db.QueryContext(ctx, getAddr, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []net.HardwareAddr
+	for rows.Next() {
+		var addr net.HardwareAddr
+		if err := rows.Scan(&addr); err != nil {
+			return nil, err
+		}
+		items = append(items, addr)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
