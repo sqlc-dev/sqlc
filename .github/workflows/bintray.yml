@@ -17,17 +17,12 @@ jobs:
     - run: jfrog --version
     - run: go run scripts/build/main.go
     - run: zip -X -j sqlc-devel-darwin-amd64.zip ./sqlc
-    # - uses: bpicode/github-action-upload-bintray@master
-    #   with:
-    #     file: sqlc-devel-darwin-amd64.zip
-    #     api_user: kyleconroy
-    #     api_key: ${{ secrets.BINTRAY_API_KEY }}
-    #     repository_user: sqlc
-    #     repository: devel
-    #     package: sqlc
-    #     version: ${{ github.sha }}
-    #     publish: 0
-    #     calculate_metadata: true
+    - run: jfrog bt upload \
+        --user kyleconroy \
+        --key "${{ secrets.BINTARY_API_KEY }}" \
+        --publish \
+        --vcs-url 'https://github.com/kyleconroy/sqlc' \
+        sqlc-devel-darwin-amd64.zip sqlc/devel/sqlc/$GITHUB_SHA
 
   linux:
     name: release --platforms linux
