@@ -26,6 +26,8 @@ func main() {
 		version = fmt.Sprintf("v0.0.0-%s-%s", date, sha[:12])
 	}
 
+	fmt.Printf("::set-output name=version::%s\n", version)
+
 	x := "-X github.com/kyleconroy/sqlc/internal/cmd.version=" + version
 	args := []string{
 		"build",
