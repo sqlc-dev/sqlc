@@ -14,7 +14,7 @@ jobs:
       with:
         go-version: '1.15'
     - run: go run scripts/build/main.go
-    - run: zip -X -j sqlc-devel-darwin-amd64.zip /workspace/sqlc
+    - run: zip -X -j sqlc-devel-darwin-amd64.zip ./sqlc
     - uses: bpicode/github-action-upload-bintray@master
       with:
         file: sqlc-devel-darwin-amd64.zip

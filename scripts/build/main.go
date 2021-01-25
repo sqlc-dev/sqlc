@@ -30,7 +30,7 @@ func main() {
 	args := []string{
 		"build",
 		"-ldflags", x,
-		"-o", "/workspace/sqlc",
+		"-o", "./sqlc",
 		"./cmd/sqlc",
 	}
 	cmd := exec.Command("go", args...)
