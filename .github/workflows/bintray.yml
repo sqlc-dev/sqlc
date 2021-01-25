@@ -13,19 +13,21 @@ jobs:
       uses: actions/setup-go@v2
       with:
         go-version: '1.15'
+    - uses: jfrog/setup-jfrog-cli@v1
+    - run: jfrog --version
     - run: go run scripts/build/main.go
     - run: zip -X -j sqlc-devel-darwin-amd64.zip ./sqlc
-    - uses: bpicode/github-action-upload-bintray@master
-      with:
-        file: sqlc-devel-darwin-amd64.zip
-        api_user: kyleconroy
-        api_key: ${{ secrets.BINTRAY_API_KEY }}
-        repository_user: sqlc
-        repository: devel
-        package: sqlc
-        version: ${{ github.sha }}
-        publish: 0
-        calculate_metadata: true
+    # - uses: bpicode/github-action-upload-bintray@master
+    #   with:
+    #     file: sqlc-devel-darwin-amd64.zip
+    #     api_user: kyleconroy
+    #     api_key: ${{ secrets.BINTRAY_API_KEY }}
+    #     repository_user: sqlc
+    #     repository: devel
+    #     package: sqlc
+    #     version: ${{ github.sha }}
+    #     publish: 0
+    #     calculate_metadata: true
 
   linux:
     name: release --platforms linux
@@ -37,15 +39,17 @@ jobs:
       uses: actions/setup-go@v2
       with:
         go-version: '1.15'
+    - uses: jfrog/setup-jfrog-cli@v1
+    - run: jfrog --version
     - run: go run scripts/build/main.go
-    - uses: bpicode/github-action-upload-bintray@master
-      with:
-        file: /workspace/sqlc
-        api_user: kyleconroy
-        api_key: ${{ secrets.BINTRAY_API_KEY }}
-        repository_user: sqlc
-        repository: devel
-        package: sqlc
-        version: ${{ github.sha }}
-        publish: 1
-        calculate_metadata: true
+    # - uses: bpicode/github-action-upload-bintray@master
+    #   with:
+    #     file: /workspace/sqlc
+    #     api_user: kyleconroy
+    #     api_key: ${{ secrets.BINTRAY_API_KEY }}
+    #     repository_user: sqlc
+    #     repository: devel
+    #     package: sqlc
+    #     version: ${{ github.sha }}
+    #     publish: 1
+    #     calculate_metadata: true
