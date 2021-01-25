@@ -26,10 +26,9 @@ func main() {
 		version = fmt.Sprintf("v0.0.0-%s-%s", date, sha[:12])
 	}
 
-	x := "-extldflags \"-static\" -X github.com/kyleconroy/sqlc/internal/cmd.version=" + version
+	x := "-X github.com/kyleconroy/sqlc/internal/cmd.version=" + version
 	args := []string{
 		"build",
-		"-a",
 		"-ldflags", x,
 		"-o", "/workspace/sqlc",
 		"./cmd/sqlc",
