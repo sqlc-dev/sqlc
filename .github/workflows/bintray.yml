@@ -17,12 +17,9 @@ jobs:
     - run: jfrog --version
     - run: go run scripts/build/main.go
     - run: zip -X -j sqlc-devel-darwin-amd64.zip ./sqlc
-    - run: jfrog bt upload \
-        --user kyleconroy \
-        --key "${{ secrets.BINTARY_API_KEY }}" \
-        --publish \
-        --vcs-url 'https://github.com/kyleconroy/sqlc' \
-        sqlc-devel-darwin-amd64.zip sqlc/devel/sqlc/$GITHUB_SHA
+    - run: jfrog bt upload --user kyleconroy --key "$BINTARY_API_KEY" --publish --vcs-url 'https://github.com/kyleconroy/sqlc' sqlc-devel-darwin-amd64.zip sqlc/devel/sqlc/"$GITHUB_SHA"
+      env:
+        BINTRAY_API_KEY: ${{ secrets.BINTRAY_API_KEY }}
 
   linux:
     name: release --platforms linux
