@@ -399,6 +399,17 @@ func translate(node nodes.Node) (ast.Node, error) {
 			Name:        name,
 			IfNotExists: n.IfNotExists,
 		}
+		primaryKey := make(map[string]bool)
+		for _, elt := range n.TableElts.Items {
+			switch n := elt.(type) {
+			case nodes.Constraint:
+				if n.Contype == nodes.CONSTR_PRIMARY {
+					for _, item := range n.Keys.Items {
+						primaryKey[item.(nodes.String).Str] = true
+					}
+				}
+			}
+		}
 		for _, elt := range n.TableElts.Items {
 			switch n := elt.(type) {
 			case nodes.ColumnDef:
@@ -409,7 +420,7 @@ func translate(node nodes.Node) (ast.Node, error) {
 				create.Cols = append(create.Cols, &ast.ColumnDef{
 					Colname:   *n.Colname,
 					TypeName:  tn,
-					IsNotNull: isNotNull(n),
+					IsNotNull: isNotNull(n) || primaryKey[*n.Colname],
 					IsArray:   isArray(n.TypeName),
 				})
 			}
