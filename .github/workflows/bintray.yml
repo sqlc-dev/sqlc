@@ -1,0 +1,50 @@
+name: bintray
+
+on: [push]
+
+jobs:
+
+  macos:
+    name: release --platforms darwin
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: '1.15'
+    - run: go run scripts/build.go
+    - uses: bpicode/github-action-upload-bintray@master
+      with:
+        file: /workspace/sqlc
+        api_user: kyleconroy
+        api_key: ${{ secrets.BINTRAY_API_KEY }}
+        repository_user: sqlc
+        repository: devel
+        package: sqlc
+        version: ${{ github.sha }}
+        publish: 0
+        calculate_metadata: true
+
+  linux:
+    name: release --platforms linux
+    runs-on: ubuntu-latest
+    needs: [macos]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: '1.15'
+    - run: go run scripts/build.go
+    - uses: bpicode/github-action-upload-bintray@master
+      with:
+        file: /workspace/sqlc
+        api_user: kyleconroy
+        api_key: ${{ secrets.BINTRAY_API_KEY }}
+        repository_user: sqlc
+        repository: devel
+        package: sqlc
+        version: ${{ github.sha }}
+        publish: 1
+        calculate_metadata: true
