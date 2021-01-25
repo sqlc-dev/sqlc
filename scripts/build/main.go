@@ -11,7 +11,6 @@ import (
 func main() {
 	version := os.Getenv("VERSION")
 	sha := os.Getenv("GITHUB_SHA")
-	ref := os.Getenv("GITHUB_REF")
 
 	if version == "" {
 		cmd := exec.Command("git", "show", "--no-patch", "--no-notes", "--pretty=%ci", sha)

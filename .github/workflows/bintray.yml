@@ -14,9 +14,10 @@ jobs:
       with:
         go-version: '1.15'
     - run: go run scripts/build/main.go
+    - run: zip -X -j sqlc-devel-darwin-amd64.zip /workspace/sqlc
     - uses: bpicode/github-action-upload-bintray@master
       with:
-        file: /workspace/sqlc
+        file: sqlc-devel-darwin-amd64.zip
         api_user: kyleconroy
         api_key: ${{ secrets.BINTRAY_API_KEY }}
         repository_user: sqlc
