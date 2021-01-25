@@ -22,7 +22,8 @@ jobs:
     - run: echo ${{steps.gobuild.outputs.version}}
     - run: zip -X -j sqlc-devel-darwin-amd64.zip ./sqlc
     - run: tar -zcvf sqlc-devel-darwin-amd64.tar.gz ./sqlc
-    - run: jfrog bt upload --user kyleconroy --key "$BINTRAY_API_KEY" --publish --override "sqlc-devel-darwin-amd64.*" sqlc/devel/sqlc/"$GITHUB_SHA" "$GITHUB_SHA"/
+    - run: jfrog bt upload --user kyleconroy --key "$BINTRAY_API_KEY" --publish --override "sqlc-devel-darwin-amd64.*" sqlc/devel/sqlc/${{steps.gobuild.outputs.version}} ${{steps.gobuild.outputs.version}}/
+
       env:
         BINTRAY_API_KEY: ${{ secrets.BINTRAY_API_KEY }}
 
@@ -41,6 +42,6 @@ jobs:
     - run: echo ${{steps.gobuild.outputs.version}}
     - run: zip -X -j sqlc-devel-linux-amd64.zip ./sqlc
     - run: tar -zcvf sqlc-devel-linux-amd64.tar.gz ./sqlc
-    - run: jfrog bt upload --user kyleconroy --key "$BINTRAY_API_KEY" --publish --override "sqlc-devel-linux-amd64.*" sqlc/devel/sqlc/"$GITHUB_SHA" "$GITHUB_SHA"/
+    - run: jfrog bt upload --user kyleconroy --key "$BINTRAY_API_KEY" --publish --override "sqlc-devel-linux-amd64.*" sqlc/devel/sqlc/${{steps.gobuild.outputs.version}} ${{steps.gobuild.outputs.version}}/
       env:
         BINTRAY_API_KEY: ${{ secrets.BINTRAY_API_KEY }}
