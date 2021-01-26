@@ -44,34 +44,39 @@ type outPair struct {
 	config.SQL
 }
 
-func Generate(e Env, dir string, stderr io.Writer) (map[string]string, error) {
-	var yamlMissing, jsonMissing bool
-	yamlPath := filepath.Join(dir, "sqlc.yaml")
-	jsonPath := filepath.Join(dir, "sqlc.json")
+func Generate(e Env, dir, filename string, stderr io.Writer) (map[string]string, error) {
+	configPath := ""
+	if filename != "" {
+		configPath = filepath.Join(dir, filename)
+	} else {
+		var yamlMissing, jsonMissing bool
+		yamlPath := filepath.Join(dir, "sqlc.yaml")
+		jsonPath := filepath.Join(dir, "sqlc.json")
 
-	if _, err := os.Stat(yamlPath); os.IsNotExist(err) {
-		yamlMissing = true
-	}
-	if _, err := os.Stat(jsonPath); os.IsNotExist(err) {
-		jsonMissing = true
+		if _, err := os.Stat(yamlPath); os.IsNotExist(err) {
+			yamlMissing = true
+		}
+		if _, err := os.Stat(jsonPath); os.IsNotExist(err) {
+			jsonMissing = true
+		}
+
+		if yamlMissing && jsonMissing {
+			fmt.Fprintln(stderr, "error parsing sqlc.json: file does not exist")
+			return nil, errors.New("config file missing")
+		}
+
+		if !yamlMissing && !jsonMissing {
+			fmt.Fprintln(stderr, "error: both sqlc.json and sqlc.yaml files present")
+			return nil, errors.New("sqlc.json and sqlc.yaml present")
+		}
+
+		configPath = yamlPath
+		if yamlMissing {
+			configPath = jsonPath
+		}
 	}
 
-	if yamlMissing && jsonMissing {
-		fmt.Fprintln(stderr, "error parsing sqlc.json: file does not exist")
-		return nil, errors.New("config file missing")
-	}
-
-	if !yamlMissing && !jsonMissing {
-		fmt.Fprintln(stderr, "error: both sqlc.json and sqlc.yaml files present")
-		return nil, errors.New("sqlc.json and sqlc.yaml present")
-	}
-
-	configPath := yamlPath
-	if yamlMissing {
-		configPath = jsonPath
-	}
 	base := filepath.Base(configPath)
-
 	blob, err := ioutil.ReadFile(configPath)
 	if err != nil {
 		fmt.Fprintf(stderr, "error parsing %s: file does not exist\n", base)
