@@ -9,14 +9,3 @@ type FQN struct {
 	Schema  glob.Glob
 	Rel     glob.Glob
 }
-
-func (f FQN) String() string {
-	s := f.Rel
-	if f.Schema != "" {
-		s = f.Schema + "." + s
-	}
-	if f.Catalog != "" {
-		s = f.Catalog + "." + s
-	}
-	return s
-}
