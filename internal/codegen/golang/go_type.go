@@ -9,7 +9,7 @@ func goType(r *compiler.Result, col *compiler.Column, settings config.CombinedSe
 	// package overrides have a higher precedence
 	for _, oride := range settings.Overrides {
 		sameTable := sameTableName(col.Table, oride.Table, r.Catalog.DefaultSchema)
-		if oride.Column != "" && oride.ColumnName == col.Name && sameTable {
+		if oride.Column != "" && oride.ColumnName.Match(col.Name) && sameTable {
 			return oride.GoTypeName
 		}
 	}

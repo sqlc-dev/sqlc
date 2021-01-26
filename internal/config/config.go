@@ -11,6 +11,8 @@ import (
 
 	yaml "gopkg.in/yaml.v3"
 
+	"github.com/gobwas/glob"
+
 	"github.com/kyleconroy/sqlc/internal/core"
 )
 
@@ -146,7 +148,7 @@ type Override struct {
 	// fully qualified name of the column, e.g. `accounts.id`
 	Column string `json:"column" yaml:"column"`
 
-	ColumnName   string
+	ColumnName   glob.Glob
 	Table        core.FQN
 	GoImportPath string
 	GoPackage    string
@@ -184,16 +186,16 @@ func (o *Override) Parse() error {
 		colParts := strings.Split(o.Column, ".")
 		switch len(colParts) {
 		case 2:
-			o.ColumnName = colParts[1]
-			o.Table = core.FQN{Schema: "public", Rel: colParts[0]}
+			o.ColumnName = glob.MustCompile(colParts[1])
+			o.Table = core.FQN{Schema: glob.MustCompile("public"), Rel: glob.MustCompile(colParts[0])}
 		case 3:
-			o.ColumnName = colParts[2]
-			o.Table = core.FQN{Schema: colParts[0], Rel: colParts[1]}
+			o.ColumnName = glob.MustCompile(colParts[2])
+			o.Table = core.FQN{Schema: glob.MustCompile(colParts[0]), Rel: glob.MustCompile(colParts[1])}
 		case 4:
-			o.ColumnName = colParts[3]
-			o.Table = core.FQN{Catalog: colParts[0], Schema: colParts[1], Rel: colParts[2]}
+			o.ColumnName = glob.MustCompile(colParts[3])
+			o.Table = core.FQN{Catalog: colParts[0], Schema: glob.MustCompile(colParts[1]), Rel: glob.MustCompile(colParts[2])}
 		default:
-			return fmt.Errorf("Override `column` specifier %q is not the proper format, expected '[catalog.][schema.]colname.tablename'", o.Column)
+			return fmt.Errorf("Override `column` specifier %q is not the proper format, expected '[catalog.][schema.]tablename.colname'", o.Column)
 		}
 	}
 
