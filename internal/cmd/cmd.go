@@ -83,7 +83,7 @@ func ParseEnv() Env {
 }
 
 func getConfigPath(stderr io.Writer, f *pflag.Flag) (string, string) {
-	if f != nil {
+	if f != nil && f.Changed {
 		file := f.Value.String()
 		if file == "" {
 			fmt.Fprintln(stderr, "error parsing config: file argument is empty")
