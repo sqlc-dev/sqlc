@@ -77,12 +77,17 @@ func buildStructs(r *compiler.Result, settings config.CombinedSettings) []Struct
 				if settings.Go.EmitDBTags {
 					tags["db:"] = column.Name
 				}
+				t := goType(r, compiler.ConvertColumn(table.Rel, column), settings)
 				if settings.Go.EmitJSONTags {
-					tags["json:"] = column.Name
+					if t == "int64" && settings.Go.Int64ToStringTags {
+						tags["json:"] = column.Name + ",string"
+					} else {
+						tags["json:"] = column.Name
+					}
 				}
 				s.Fields = append(s.Fields, Field{
 					Name:    StructName(column.Name, settings),
-					Type:    goType(r, compiler.ConvertColumn(table.Rel, column), settings),
+					Type:    t,
 					Tags:    tags,
 					Comment: column.Comment,
 				})
@@ -258,12 +263,17 @@ func columnsToStruct(r *compiler.Result, name string, columns []goColumn, settin
 		if settings.Go.EmitDBTags {
 			tags["db:"] = tagName
 		}
+		t := goType(r, c.Column, settings)
 		if settings.Go.EmitJSONTags {
-			tags["json:"] = tagName
+			if t == "int64" && settings.Go.Int64ToStringTags {
+				tags["json:"] = tagName + ",string"
+			} else {
+				tags["json:"] = tagName
+			}
 		}
 		gs.Fields = append(gs.Fields, Field{
 			Name: fieldName,
-			Type: goType(r, c.Column, settings),
+			Type: t,
 			Tags: tags,
 		})
 		seen[colName]++

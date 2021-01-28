@@ -362,6 +362,7 @@ type tmplCtx struct {
 	SourceName string
 
 	EmitJSONTags        bool
+	Int64ToStringTags   bool
 	EmitDBTags          bool
 	EmitPreparedQueries bool
 	EmitInterface       bool
@@ -401,6 +402,7 @@ func generate(settings config.CombinedSettings, enums []Enum, structs []Struct, 
 		Settings:            settings.Global,
 		EmitInterface:       golang.EmitInterface,
 		EmitJSONTags:        golang.EmitJSONTags,
+		Int64ToStringTags:   golang.Int64ToStringTags,
 		EmitDBTags:          golang.EmitDBTags,
 		EmitPreparedQueries: golang.EmitPreparedQueries,
 		EmitEmptySlices:     golang.EmitEmptySlices,
