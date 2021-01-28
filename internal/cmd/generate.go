@@ -151,8 +151,9 @@ func Generate(e Env, dir, filename string, stderr io.Writer) (map[string]string,
 			name = combo.Kotlin.Package
 		}
 
-		result, errored := parse(e, name, dir, sql.SQL, combo, parseOpts, stderr)
-		if errored {
+		result, failed := parse(e, name, dir, sql.SQL, combo, parseOpts, stderr)
+		if failed {
+			errored = true
 			break
 		}
 
