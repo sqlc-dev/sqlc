@@ -728,6 +728,7 @@ type ktTmplCtx struct {
 	SourceName string
 
 	EmitJSONTags        bool
+	Int64ToStringTags   bool
 	EmitPreparedQueries bool
 	EmitInterface       bool
 }
