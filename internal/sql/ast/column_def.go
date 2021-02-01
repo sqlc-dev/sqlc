@@ -6,6 +6,7 @@ type ColumnDef struct {
 	IsNotNull bool
 	IsArray   bool
 	Vals      *List
+	Length    *int
 
 	// From pg.ColumnDef
 	Inhcount      int

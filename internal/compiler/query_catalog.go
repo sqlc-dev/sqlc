@@ -52,6 +52,7 @@ func ConvertColumn(rel *ast.TableName, c *catalog.Column) *Column {
 		NotNull:  c.IsNotNull,
 		IsArray:  c.IsArray,
 		Type:     &c.Type,
+		Length:   c.Length,
 	}
 }
 

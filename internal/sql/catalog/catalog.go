@@ -193,6 +193,7 @@ type Column struct {
 	IsNotNull bool
 	IsArray   bool
 	Comment   string
+	Length    *int
 }
 
 type Type interface {
