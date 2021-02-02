@@ -31,6 +31,7 @@ release = '1.6.0'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    'recommonmark',
     'sphinx_rtd_theme',
 ]
 
