@@ -10,11 +10,25 @@ Welcome to sqlc's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   README.md
+   alter_table.md
+   annotations.md
+   any.md
+   arrays.md
+   delete.md
+   enums.md
+   insert.md
+   json_tags.md
+   migrations.md
+   named_parameters.md
+   null.md
+   prepared_query.md
+   privacy.md
+   query_count.md
+   query_one.md
+   returning.md
+   table.md
+   time.md
+   transactions.md
+   update.md
+   uuid.md
