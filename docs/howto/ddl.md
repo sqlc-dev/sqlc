@@ -1,14 +1,39 @@
-# Migrations
+# Modifying the database schema
 
-sqlc will ignore rollback statements when parsing migration SQL files. The following tools are current supported:
+sqlc understands `ALTER TABLE` statements when parsing SQL.
 
+```sql
+CREATE TABLE authors (
+  id          SERIAL PRIMARY KEY,
+  birth_year  int    NOT NULL
+);
+
+ALTER TABLE authors ADD COLUMN bio text NOT NULL;
+ALTER TABLE authors DROP COLUMN birth_year;
+ALTER TABLE authors RENAME TO writers;
+```
+
+```go
+package db
+
+type Writer struct {
+	ID  int
+	Bio string
+}
+```
+
+## Handling SQL migrations
+
+sqlc will ignore rollback statements when parsing migration SQL files. The
+following tools are current supported:
+
+- [dbmate](https://github.com/amacneil/dbmate)
+- [golang-migrate](https://github.com/golang-migrate/migrate)
 - [goose](https://github.com/pressly/goose)
 - [sql-migrate](https://github.com/rubenv/sql-migrate)
 - [tern](https://github.com/jackc/tern)
-- [golang-migrate](https://github.com/golang-migrate/migrate)
-- [dbmate](https://github.com/amacneil/dbmate)
 
-## goose
+### goose
 
 ```sql
 -- +goose Up
@@ -71,7 +96,7 @@ type Comment struct {
 }
 ```
 
-## golang-migrate
+### golang-migrate
 
 In `20060102.up.sql`:
 
@@ -100,7 +125,7 @@ type Post struct {
 }
 ```
 
-## dbmate
+### dbmate
 
 ```sql
 -- migrate:up

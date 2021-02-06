@@ -1,4 +1,4 @@
-# Prepared Queries
+# Preparing queries
 
 ```sql
 CREATE TABLE records (

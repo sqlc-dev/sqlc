@@ -1,4 +1,4 @@
-# Privacy and Data Collection
+# Privacy and data collection
 
 These days, it feels like every piece of software is tracking you. From your
 browser, to your phone, to your terminal, programs collect as much data about

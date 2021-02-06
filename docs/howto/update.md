@@ -1,4 +1,4 @@
-# Updating records
+# Updating rows
 
 ```sql
 CREATE TABLE authors (
