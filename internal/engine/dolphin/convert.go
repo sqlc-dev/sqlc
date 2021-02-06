@@ -466,16 +466,29 @@ func (c *cc) convertTableRefsClause(n *pcast.TableRefsClause) *ast.List {
 }
 
 func (c *cc) convertUpdateStmt(n *pcast.UpdateStmt) *ast.UpdateStmt {
-	// Relation
 	rels := c.convertTableRefsClause(n.TableRefs)
 	if len(rels.Items) != 1 {
 		panic("expected one range var")
 	}
-	rel := rels.Items[0]
-	rangeVar, ok := rel.(*ast.RangeVar)
-	if !ok {
+
+	var rangeVar *ast.RangeVar
+	switch rel := rels.Items[0].(type) {
+
+	// Special case for joins in updates
+	case *ast.JoinExpr:
+		left, ok := rel.Larg.(*ast.RangeVar)
+		if !ok {
+			panic("expected range var")
+		}
+		rangeVar = left
+
+	case *ast.RangeVar:
+		rangeVar = rel
+
+	default:
 		panic("expected range var")
 	}
+
 	// TargetList
 	list := &ast.List{}
 	for _, a := range n.List {
