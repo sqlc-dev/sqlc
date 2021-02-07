@@ -1,4 +1,4 @@
-# Deleting records
+# Deleting rows
 
 ```sql
 CREATE TABLE authors (

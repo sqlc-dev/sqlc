@@ -1,4 +1,4 @@
-# Getting Started
+# Getting started
 
 Okay, enough hype, let's see it in action.
 

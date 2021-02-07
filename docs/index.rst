@@ -22,56 +22,49 @@ code ever again.
 
 .. toctree::
    :maxdepth: 2
-   :caption: Overview:
+   :caption: Overview
    :hidden:
 
    overview/install.md
 
 .. toctree::
    :maxdepth: 2
-   :caption: Tutorials:
+   :caption: Tutorials
    :hidden:
 
    tutorials/getting-started.md
 
 .. toctree::
    :maxdepth: 2
-   :caption: How-to Guides:
+   :caption: How-to Guides
    :hidden:
 
-   howto/alter_table.md
-   howto/annotations.md
-   howto/any.md
-   howto/arrays.md
-   howto/delete.md
-   howto/enums.md
-   howto/insert.md
-   howto/json_tags.md
-   howto/migrations.md
-   howto/named_parameters.md
-   howto/null.md
-   howto/prepared_query.md
-   howto/privacy.md
+   howto/select.md
    howto/query_count.md
-   howto/query_one.md
-   howto/returning.md
-   howto/table.md
-   howto/time.md
-   howto/transactions.md
+   howto/insert.md
    howto/update.md
-   howto/uuid.md
+   howto/delete.md
+
+   howto/prepared_query.md
+   howto/transactions.md
+   howto/named_parameters.md
+
+   howto/ddl.md
+   howto/structs.md
 
 .. toctree::
    :maxdepth: 2
-   :caption: Reference:
+   :caption: Reference
    :hidden:
 
    reference/cli.md
    reference/config.md
+   reference/datatypes.md
+   reference/query-annotations.md
 
 .. toctree::
    :maxdepth: 2
-   :caption: Conceptual Guides:
+   :caption: Conceptual Guides
    :hidden:
 
    guides/development.md

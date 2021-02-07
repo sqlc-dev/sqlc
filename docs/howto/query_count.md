@@ -1,4 +1,4 @@
-# Counting records
+# Counting rows
 
 ```sql
 CREATE TABLE authors (

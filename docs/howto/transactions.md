@@ -1,4 +1,4 @@
-# Transactions
+# Using transactions
 
 ```sql
 CREATE TABLE records (
