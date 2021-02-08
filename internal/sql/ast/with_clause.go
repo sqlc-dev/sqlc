@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type WithClause struct {
 	Ctes      *List
 	Recursive bool

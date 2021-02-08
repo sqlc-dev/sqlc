@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type DropRoleStmt struct {
 	Roles     *List
 	MissingOk bool

@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type AlterDatabaseStmt struct {
 	Dbname  *string
 	Options *List

@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type A_ArrayExpr struct {
 	Elements *List
 	Location int

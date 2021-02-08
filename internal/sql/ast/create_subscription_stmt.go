@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type CreateSubscriptionStmt struct {
 	Subname     *string
 	Conninfo    *string

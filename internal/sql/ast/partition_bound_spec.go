@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type PartitionBoundSpec struct {
 	Strategy    byte
 	Listdatums  *List

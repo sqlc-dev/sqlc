@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type CreateDomainStmt struct {
 	Domainname  *List
 	TypeName    *TypeName

@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type CurrentOfExpr struct {
 	Xpr         Node
 	Cvarno      Index

@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type CreateEventTrigStmt struct {
 	Trigname   *string
 	Eventname  *string

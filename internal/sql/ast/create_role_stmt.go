@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type CreateRoleStmt struct {
 	StmtType RoleStmtType
 	Role     *string

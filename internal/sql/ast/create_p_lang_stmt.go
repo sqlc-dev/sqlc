@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type CreatePLangStmt struct {
 	Replace     bool
 	Plname      *string

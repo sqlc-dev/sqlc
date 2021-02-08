@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type InsertStmt struct {
 	Relation         *RangeVar
 	Cols             *List

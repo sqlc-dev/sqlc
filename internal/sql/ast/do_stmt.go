@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type DoStmt struct {
 	Args *List
 }

@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type GrantStmt struct {
 	IsGrant     bool
 	Targtype    GrantTargetType

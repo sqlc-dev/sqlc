@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type CopyStmt struct {
 	Relation  *RangeVar
 	Query     Node

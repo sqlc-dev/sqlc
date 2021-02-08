@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type UpdateStmt struct {
 	Relation      *RangeVar
 	TargetList    *List

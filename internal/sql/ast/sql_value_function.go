@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type SQLValueFunction struct {
 	Xpr      Node
 	Op       SQLValueFunctionOp

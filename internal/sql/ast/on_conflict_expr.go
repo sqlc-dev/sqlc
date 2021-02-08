@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type OnConflictExpr struct {
 	Action          OnConflictAction
 	ArbiterElems    *List

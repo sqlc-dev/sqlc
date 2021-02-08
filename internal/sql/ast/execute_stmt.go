@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type ExecuteStmt struct {
 	Name   *string
 	Params *List

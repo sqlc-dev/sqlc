@@ -57,7 +57,7 @@ func (i *importer) interfaceImports() [][]string {
 
 	std := stdImports(uses)
 	stds := make([]string, 0, len(std))
-	for s, _ := range std {
+	for s := range std {
 		stds = append(stds, s)
 	}
 
@@ -85,7 +85,7 @@ func (i *importer) modelImports() [][]string {
 	}
 
 	stds := make([]string, 0, len(std))
-	for s, _ := range std {
+	for s := range std {
 		stds = append(stds, s)
 	}
 
@@ -163,7 +163,7 @@ func (i *importer) queryImports(filename string) [][]string {
 	}
 
 	stds := make([]string, 0, len(std))
-	for s, _ := range std {
+	for s := range std {
 		stds = append(stds, s)
 	}
 

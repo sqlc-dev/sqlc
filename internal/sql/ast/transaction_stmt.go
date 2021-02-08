@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type TransactionStmt struct {
 	Kind    TransactionStmtKind
 	Options *List

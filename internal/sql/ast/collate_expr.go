@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type CollateExpr struct {
 	Xpr      Node
 	Arg      Node

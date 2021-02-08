@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type AlterFunctionStmt struct {
 	Func    *ObjectWithArgs
 	Actions *List

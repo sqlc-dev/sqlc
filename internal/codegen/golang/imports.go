@@ -136,7 +136,7 @@ func (i *importer) interfaceImports() fileImports {
 	}
 
 	std := map[string]struct{}{
-		"context": struct{}{},
+		"context": {},
 	}
 	if uses("sql.Null") {
 		std["database/sql"] = struct{}{}
@@ -183,12 +183,12 @@ func (i *importer) interfaceImports() fileImports {
 	}
 
 	pkgs := make([]ImportSpec, 0, len(pkg))
-	for spec, _ := range pkg {
+	for spec := range pkg {
 		pkgs = append(pkgs, spec)
 	}
 
 	stds := make([]ImportSpec, 0, len(std))
-	for path, _ := range std {
+	for path := range std {
 		stds = append(stds, ImportSpec{Path: path})
 	}
 
@@ -243,12 +243,12 @@ func (i *importer) modelImports() fileImports {
 	}
 
 	pkgs := make([]ImportSpec, 0, len(pkg))
-	for spec, _ := range pkg {
+	for spec := range pkg {
 		pkgs = append(pkgs, spec)
 	}
 
 	stds := make([]ImportSpec, 0, len(std))
-	for path, _ := range std {
+	for path := range std {
 		stds = append(stds, ImportSpec{Path: path})
 	}
 
@@ -330,7 +330,7 @@ func (i *importer) queryImports(filename string) fileImports {
 	}
 
 	std := map[string]struct{}{
-		"context": struct{}{},
+		"context": {},
 	}
 	if uses("sql.Null") {
 		std["database/sql"] = struct{}{}
@@ -380,12 +380,12 @@ func (i *importer) queryImports(filename string) fileImports {
 	}
 
 	pkgs := make([]ImportSpec, 0, len(pkg))
-	for spec, _ := range pkg {
+	for spec := range pkg {
 		pkgs = append(pkgs, spec)
 	}
 
 	stds := make([]ImportSpec, 0, len(std))
-	for path, _ := range std {
+	for path := range std {
 		stds = append(stds, ImportSpec{Path: path})
 	}
 

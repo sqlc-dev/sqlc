@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type RelabelType struct {
 	Xpr           Node
 	Arg           Node
