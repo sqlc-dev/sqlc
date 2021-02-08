@@ -41,5 +41,7 @@ release](https://github.com/kyleconroy/sqlc/releases).
 ## Tip Releases
 
 Each commit is deployed to the [`devel` channel on Equinox](https://dl.equinox.io/sqlc/sqlc/devel):
+
 - [Linux](https://bin.equinox.io/c/gvM95th6ps1/sqlc-devel-linux-amd64.tgz)
 - [macOS](https://bin.equinox.io/c/gvM95th6ps1/sqlc-devel-darwin-amd64.zip)
+- [Windows](https://bin.equinox.io/c/gvM95th6ps1/sqlc-devel-windows-amd64.zip)
