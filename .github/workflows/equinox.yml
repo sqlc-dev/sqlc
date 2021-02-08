@@ -11,10 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Go 1.14
-      uses: actions/setup-go@v2
+    - uses: actions/setup-go@v2
       with:
-        go-version: '1.14'
+        go-version: '1.15'
     - uses: equinox-io/setup@master
     - run: go test -bench . -json -benchmem -run=XXX ./...
 
@@ -23,10 +22,9 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Go 1.14
-      uses: actions/setup-go@v2
+    - uses: actions/setup-go@v2
       with:
-        go-version: '1.14'
+        go-version: '1.15'
     - uses: equinox-io/setup-release-tool@v1.1.0
     - name: equinox release
       env:
@@ -39,10 +37,9 @@ jobs:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Go 1.14
-      uses: actions/setup-go@v2
+    - uses: actions/setup-go@v2
       with:
-        go-version: '1.14'
+        go-version: '1.15'
     - uses: equinox-io/setup-release-tool@v1.1.0
     - name: equinox release
       env:
@@ -56,10 +53,9 @@ jobs:
     needs: [macos, windows, benchmark]
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Go 1.14
-      uses: actions/setup-go@v2
+    - uses: actions/setup-go@v2
       with:
-        go-version: '1.14'
+        go-version: '1.15'
     - uses: equinox-io/setup-release-tool@v1.1.0
     - name: equinox release
       env:
