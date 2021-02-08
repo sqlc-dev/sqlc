@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type CoerceToDomainValue struct {
 	Xpr       Node
 	TypeId    Oid

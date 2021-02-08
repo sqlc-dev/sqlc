@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type CreateFdwStmt struct {
 	Fdwname     *string
 	FuncOptions *List

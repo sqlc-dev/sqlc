@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type SubPlan struct {
 	Xpr               Node
 	SubLinkType       SubLinkType

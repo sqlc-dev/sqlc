@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type LockingClause struct {
 	LockedRels *List
 	Strength   LockClauseStrength

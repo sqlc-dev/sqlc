@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type ArrayRef struct {
 	Xpr             Node
 	Refarraytype    Oid

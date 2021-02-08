@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type ArrayExpr struct {
 	Xpr           Node
 	ArrayTypeid   Oid

@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type FunctionParameter struct {
 	Name    *string
 	ArgType *TypeName

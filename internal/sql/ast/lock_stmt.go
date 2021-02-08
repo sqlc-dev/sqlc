@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type LockStmt struct {
 	Relations *List
 	Mode      int

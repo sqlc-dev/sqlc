@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type AlterOperatorStmt struct {
 	Opername *ObjectWithArgs
 	Options  *List

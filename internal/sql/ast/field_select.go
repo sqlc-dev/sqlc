@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type FieldSelect struct {
 	Xpr          Node
 	Arg          Node

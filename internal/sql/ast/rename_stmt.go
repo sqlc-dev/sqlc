@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type RenameStmt struct {
 	RenameType   ObjectType
 	RelationType ObjectType

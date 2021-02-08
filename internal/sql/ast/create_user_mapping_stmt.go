@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type CreateUserMappingStmt struct {
 	User        *RoleSpec
 	Servername  *string

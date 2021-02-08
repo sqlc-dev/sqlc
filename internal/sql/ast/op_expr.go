@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type OpExpr struct {
 	Xpr          Node
 	Opno         Oid

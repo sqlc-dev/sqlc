@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type Const struct {
 	Xpr         Node
 	Consttype   Oid

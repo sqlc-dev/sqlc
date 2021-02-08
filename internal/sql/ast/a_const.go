@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type A_Const struct {
 	Val      Node
 	Location int

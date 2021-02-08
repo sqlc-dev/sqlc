@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type NullTest struct {
 	Xpr          Node
 	Arg          Node

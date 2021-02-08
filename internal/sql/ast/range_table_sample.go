@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type RangeTableSample struct {
 	Relation   Node
 	Method     *List

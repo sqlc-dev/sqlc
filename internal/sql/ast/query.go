@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type Query struct {
 	CommandType      CmdType
 	QuerySource      QuerySource

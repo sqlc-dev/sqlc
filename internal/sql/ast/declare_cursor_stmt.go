@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type DeclareCursorStmt struct {
 	Portalname *string
 	Options    int

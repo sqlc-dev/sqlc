@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type ConstraintsSetStmt struct {
 	Constraints *List
 	Deferred    bool

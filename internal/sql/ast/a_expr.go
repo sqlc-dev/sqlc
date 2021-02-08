@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type A_Expr struct {
 	Kind     A_Expr_Kind
 	Name     *List

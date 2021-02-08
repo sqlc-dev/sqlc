@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type CreateTableSpaceStmt struct {
 	Tablespacename *string
 	Owner          *RoleSpec

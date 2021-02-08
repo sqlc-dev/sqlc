@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type TableFunc struct {
 	NsUris        *List
 	NsNames       *List

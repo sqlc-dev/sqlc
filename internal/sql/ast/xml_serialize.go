@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type XmlSerialize struct {
 	Xmloption XmlOptionType
 	Expr      Node

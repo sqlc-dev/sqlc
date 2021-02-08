@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type Param struct {
 	Xpr         Node
 	Paramkind   ParamKind

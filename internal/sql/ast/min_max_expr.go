@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type MinMaxExpr struct {
 	Xpr          Node
 	Minmaxtype   Oid

@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type CreateOpClassStmt struct {
 	Opclassname  *List
 	Opfamilyname *List

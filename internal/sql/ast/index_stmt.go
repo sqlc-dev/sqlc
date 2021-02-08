@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type IndexStmt struct {
 	Idxname        *string
 	Relation       *RangeVar

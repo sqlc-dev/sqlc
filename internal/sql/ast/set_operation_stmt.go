@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type SetOperationStmt struct {
 	Op            SetOperation
 	All           bool

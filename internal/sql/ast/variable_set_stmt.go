@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type VariableSetStmt struct {
 	Kind    VariableSetKind
 	Name    *string

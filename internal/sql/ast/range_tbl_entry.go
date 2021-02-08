@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type RangeTblEntry struct {
 	Rtekind         RTEKind
 	Relid           Oid

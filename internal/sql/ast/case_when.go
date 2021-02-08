@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type CaseWhen struct {
 	Xpr      Node
 	Expr     Node

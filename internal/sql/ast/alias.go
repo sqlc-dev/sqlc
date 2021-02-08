@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type Alias struct {
 	Aliasname *string
 	Colnames  *List

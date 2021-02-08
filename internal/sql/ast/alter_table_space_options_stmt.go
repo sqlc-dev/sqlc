@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type AlterTableSpaceOptionsStmt struct {
 	Tablespacename *string
 	Options        *List

@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type ImportForeignSchemaStmt struct {
 	ServerName   *string
 	RemoteSchema *string
