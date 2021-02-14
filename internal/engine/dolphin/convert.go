@@ -442,10 +442,13 @@ func (c *cc) convertSelectField(n *pcast.SelectField) *ast.ResTarget {
 }
 
 func (c *cc) convertSelectStmt(n *pcast.SelectStmt) *ast.SelectStmt {
+	op, all := c.convertSetOprType(n.AfterSetOperator)
 	stmt := &ast.SelectStmt{
 		TargetList:  c.convertFieldList(n.Fields),
 		FromClause:  c.convertTableRefsClause(n.From),
 		WhereClause: c.convert(n.Where),
+		Op:          op,
+		All:         all,
 	}
 	if n.Limit != nil {
 		stmt.LimitCount = c.convert(n.Limit.Count)
@@ -937,11 +940,97 @@ func (c *cc) convertSetDefaultRoleStmt(n *pcast.SetDefaultRoleStmt) ast.Node {
 	return todo(n)
 }
 
+func (c *cc) convertSetOprType(n *pcast.SetOprType) (op ast.SetOperation, all bool) {
+	if n == nil {
+		return
+	}
+
+	switch *n {
+	case pcast.Union:
+		op = ast.Union
+	case pcast.UnionAll:
+		op = ast.Union
+		all = true
+	case pcast.Intersect:
+		op = ast.Intersect
+	case pcast.IntersectAll:
+		op = ast.Intersect
+		all = true
+	case pcast.Except:
+		op = ast.Except
+	case pcast.ExceptAll:
+		op = ast.Except
+		all = true
+	}
+	return
+}
+
+// convertSetOprSelectList converts a list of SELECT from the Pingcap parser
+// into a tree. It is called for UNION, INTERSECT or EXCLUDE operation.
+//
+// Given an union with the following nodes:
+//     [Select{1}, Select{2}, Select{3}, Select{4}]
+//
+// The function will return:
+//     Select{
+//         Larg: Select{
+//             Larg: Select{
+//                 Larg: Select{1},
+//                 Rarg: Select{2},
+//                 Op: Union
+//             },
+//             Rarg: Select{3},
+//             Op: Union,
+//         },
+//         Rarg: Select{4},
+//         Op: Union,
+//     }
 func (c *cc) convertSetOprSelectList(n *pcast.SetOprSelectList) ast.Node {
-	return todo(n)
+	selectStmts := make([]*ast.SelectStmt, len(n.Selects))
+	for i, node := range n.Selects {
+		selectStmts[i] = c.convertSelectStmt(node.(*pcast.SelectStmt))
+	}
+
+	op, all := c.convertSetOprType(n.AfterSetOperator)
+	tree := &ast.SelectStmt{
+		TargetList:  &ast.List{},
+		FromClause:  &ast.List{},
+		WhereClause: nil,
+		Op:          op,
+		All:         all,
+	}
+	for _, stmt := range selectStmts {
+		// We move Op and All from the child to the parent.
+		op, all := stmt.Op, stmt.All
+		stmt.Op, stmt.All = ast.None, false
+
+		switch {
+		case tree.Larg == nil:
+			tree.Larg = stmt
+		case tree.Rarg == nil:
+			tree.Rarg = stmt
+			tree.Op = op
+			tree.All = all
+		default:
+			tree = &ast.SelectStmt{
+				TargetList:  &ast.List{},
+				FromClause:  &ast.List{},
+				WhereClause: nil,
+				Larg:        tree,
+				Rarg:        stmt,
+				Op:          op,
+				All:         all,
+			}
+		}
+	}
+
+	return tree
 }
 
 func (c *cc) convertSetOprStmt(n *pcast.SetOprStmt) ast.Node {
+	if n.SelectList != nil {
+		return c.convertSetOprSelectList(n.SelectList)
+	}
 	return todo(n)
 }
 
