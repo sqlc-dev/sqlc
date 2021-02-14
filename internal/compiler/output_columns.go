@@ -37,6 +37,11 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 		targets = n.ReturningList
 	case *ast.SelectStmt:
 		targets = n.TargetList
+		// For UNION queries, targets is empty and we need to look for the
+		// columns in Largs.
+		if len(targets.Items) == 0 && n.Larg != nil {
+			return outputColumns(qc, n.Larg)
+		}
 	case *ast.TruncateStmt:
 		targets = &ast.List{}
 	case *ast.UpdateStmt:
@@ -199,6 +204,7 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 
 		}
 	}
+
 	return cols, nil
 }
 
