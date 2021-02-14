@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type RangeTableFunc struct {
 	Lateral    bool
 	Docexpr    Node

@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type AlterOwnerStmt struct {
 	ObjectType ObjectType
 	Relation   *RangeVar

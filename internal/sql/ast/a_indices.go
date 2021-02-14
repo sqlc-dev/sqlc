@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type A_Indices struct {
 	IsSlice bool
 	Lidx    Node

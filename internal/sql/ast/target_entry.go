@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type TargetEntry struct {
 	Xpr             Node
 	Expr            Node

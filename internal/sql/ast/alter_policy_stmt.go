@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type AlterPolicyStmt struct {
 	PolicyName *string
 	Table      *RangeVar

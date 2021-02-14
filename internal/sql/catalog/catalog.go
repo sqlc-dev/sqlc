@@ -193,6 +193,7 @@ type Column struct {
 	IsNotNull bool
 	IsArray   bool
 	Comment   string
+	Length    *int
 }
 
 type Type interface {
@@ -258,7 +259,7 @@ func New(def string) *Catalog {
 	return &Catalog{
 		DefaultSchema: def,
 		Schemas: []*Schema{
-			&Schema{Name: def},
+			{Name: def},
 		},
 		Extensions: map[string]struct{}{},
 	}

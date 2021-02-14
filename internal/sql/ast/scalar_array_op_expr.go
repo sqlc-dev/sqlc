@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type ScalarArrayOpExpr struct {
 	Xpr         Node
 	Opno        Oid

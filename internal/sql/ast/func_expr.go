@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type FuncExpr struct {
 	Xpr            Node
 	Funcid         Oid

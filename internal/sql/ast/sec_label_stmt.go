@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type SecLabelStmt struct {
 	Objtype  ObjectType
 	Object   Node

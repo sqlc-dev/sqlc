@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type CreateAmStmt struct {
 	Amname      *string
 	HandlerName *List

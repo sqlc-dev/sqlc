@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type RangeSubselect struct {
 	Lateral  bool
 	Subquery Node

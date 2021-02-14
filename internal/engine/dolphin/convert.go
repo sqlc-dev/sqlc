@@ -35,14 +35,19 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 		case pcast.AlterTableAddColumns:
 			for _, def := range spec.NewColumns {
 				name := def.Name.String()
+				columnDef := ast.ColumnDef{
+					Colname:   def.Name.String(),
+					TypeName:  &ast.TypeName{Name: types.TypeStr(def.Tp.Tp)},
+					IsNotNull: isNotNull(def),
+				}
+				if def.Tp.Flen >= 0 {
+					length := def.Tp.Flen
+					columnDef.Length = &length
+				}
 				alt.Cmds.Items = append(alt.Cmds.Items, &ast.AlterTableCmd{
 					Name:    &name,
 					Subtype: ast.AT_AddColumn,
-					Def: &ast.ColumnDef{
-						Colname:   def.Name.String(),
-						TypeName:  &ast.TypeName{Name: types.TypeStr(def.Tp.Tp)},
-						IsNotNull: isNotNull(def),
-					},
+					Def:     &columnDef,
 				})
 			}
 
@@ -60,6 +65,15 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 		case pcast.AlterTableModifyColumn:
 			for _, def := range spec.NewColumns {
 				name := def.Name.String()
+				columnDef := ast.ColumnDef{
+					Colname:   def.Name.String(),
+					TypeName:  &ast.TypeName{Name: types.TypeStr(def.Tp.Tp)},
+					IsNotNull: isNotNull(def),
+				}
+				if def.Tp.Flen >= 0 {
+					length := def.Tp.Flen
+					columnDef.Length = &length
+				}
 				alt.Cmds.Items = append(alt.Cmds.Items, &ast.AlterTableCmd{
 					Name:    &name,
 					Subtype: ast.AT_DropColumn,
@@ -67,11 +81,7 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 				alt.Cmds.Items = append(alt.Cmds.Items, &ast.AlterTableCmd{
 					Name:    &name,
 					Subtype: ast.AT_AddColumn,
-					Def: &ast.ColumnDef{
-						Colname:   def.Name.String(),
-						TypeName:  &ast.TypeName{Name: types.TypeStr(def.Tp.Tp)},
-						IsNotNull: isNotNull(def),
-					},
+					Def:     &columnDef,
 				})
 			}
 
@@ -224,13 +234,18 @@ func (c *cc) convertCreateTableStmt(n *pcast.CreateTableStmt) ast.Node {
 				}
 			}
 		}
-		create.Cols = append(create.Cols, &ast.ColumnDef{
+		columnDef := ast.ColumnDef{
 			Colname:   def.Name.String(),
 			TypeName:  &ast.TypeName{Name: types.TypeStr(def.Tp.Tp)},
 			IsNotNull: isNotNull(def),
 			Comment:   comment,
 			Vals:      vals,
-		})
+		}
+		if def.Tp.Flen >= 0 {
+			length := def.Tp.Flen
+			columnDef.Length = &length
+		}
+		create.Cols = append(create.Cols, &columnDef)
 	}
 	for _, opt := range n.Options {
 		switch opt.Tp {
@@ -451,16 +466,29 @@ func (c *cc) convertTableRefsClause(n *pcast.TableRefsClause) *ast.List {
 }
 
 func (c *cc) convertUpdateStmt(n *pcast.UpdateStmt) *ast.UpdateStmt {
-	// Relation
 	rels := c.convertTableRefsClause(n.TableRefs)
 	if len(rels.Items) != 1 {
 		panic("expected one range var")
 	}
-	rel := rels.Items[0]
-	rangeVar, ok := rel.(*ast.RangeVar)
-	if !ok {
+
+	var rangeVar *ast.RangeVar
+	switch rel := rels.Items[0].(type) {
+
+	// Special case for joins in updates
+	case *ast.JoinExpr:
+		left, ok := rel.Larg.(*ast.RangeVar)
+		if !ok {
+			panic("expected range var")
+		}
+		rangeVar = left
+
+	case *ast.RangeVar:
+		rangeVar = rel
+
+	default:
 		panic("expected range var")
 	}
+
 	// TargetList
 	list := &ast.List{}
 	for _, a := range n.List {

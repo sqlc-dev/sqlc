@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type XmlExpr struct {
 	Xpr       Node
 	Op        XmlExprOp

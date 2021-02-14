@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type RowExpr struct {
 	Xpr       Node
 	Args      *List

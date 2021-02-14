@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type AlterExtensionStmt struct {
 	Extname *string
 	Options *List

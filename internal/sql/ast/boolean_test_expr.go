@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type BooleanTest struct {
 	Xpr          Node
 	Arg          Node

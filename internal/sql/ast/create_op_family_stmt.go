@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type CreateOpFamilyStmt struct {
 	Opfamilyname *List
 	Amname       *string

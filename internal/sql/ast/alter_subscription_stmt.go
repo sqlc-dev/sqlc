@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type AlterSubscriptionStmt struct {
 	Kind        AlterSubscriptionType
 	Subname     *string

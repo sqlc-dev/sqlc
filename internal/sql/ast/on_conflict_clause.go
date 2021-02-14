@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type OnConflictClause struct {
 	Action      OnConflictAction
 	Infer       *InferClause

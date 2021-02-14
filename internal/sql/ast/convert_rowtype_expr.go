@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type ConvertRowtypeExpr struct {
 	Xpr           Node
 	Arg           Node

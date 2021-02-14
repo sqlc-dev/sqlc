@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type AlterTSDictionaryStmt struct {
 	Dictname *List
 	Options  *List

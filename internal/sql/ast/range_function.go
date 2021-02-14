@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type RangeFunction struct {
 	Lateral    bool
 	Ordinality bool

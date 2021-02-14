@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type AlterDomainStmt struct {
 	Subtype   byte
 	TypeName  *List

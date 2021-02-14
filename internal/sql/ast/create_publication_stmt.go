@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type CreatePublicationStmt struct {
 	Pubname      *string
 	Options      *List

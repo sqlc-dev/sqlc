@@ -74,11 +74,12 @@ func (c *Catalog) alterTable(stmt *ast.AlterTableStmt) error {
 					Type:      *cmd.Def.TypeName,
 					IsNotNull: cmd.Def.IsNotNull,
 					IsArray:   cmd.Def.IsArray,
+					Length:    cmd.Def.Length,
 				})
 
 			case ast.AT_AlterColumnType:
 				table.Columns[idx].Type = *cmd.Def.TypeName
-				// table.Columns[idx].IsArray = isArray(d.TypeName)
+				table.Columns[idx].IsArray = cmd.Def.IsArray
 
 			case ast.AT_DropColumn:
 				table.Columns = append(table.Columns[:idx], table.Columns[idx+1:]...)
@@ -160,6 +161,7 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 				IsNotNull: col.IsNotNull,
 				IsArray:   col.IsArray,
 				Comment:   col.Comment,
+				Length:    col.Length,
 			}
 			if col.Vals != nil {
 				typeName := ast.TypeName{

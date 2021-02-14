@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type SortBy struct {
 	Node        Node
 	SortbyDir   SortByDir

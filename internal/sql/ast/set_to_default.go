@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type SetToDefault struct {
 	Xpr       Node
 	TypeId    Oid

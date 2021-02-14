@@ -111,6 +111,13 @@ func (i *importer) dbImports() fileImports {
 	return fileImports{Std: std}
 }
 
+var stdlibTypes = map[string]string{
+	"json.RawMessage":  "encoding/json",
+	"time.Time":        "time",
+	"net.IP":           "net",
+	"net.HardwareAddr": "net",
+}
+
 func (i *importer) interfaceImports() fileImports {
 	uses := func(name string) bool {
 		for _, q := range i.Queries {
@@ -129,7 +136,7 @@ func (i *importer) interfaceImports() fileImports {
 	}
 
 	std := map[string]struct{}{
-		"context": struct{}{},
+		"context": {},
 	}
 	if uses("sql.Null") {
 		std["database/sql"] = struct{}{}
@@ -139,17 +146,10 @@ func (i *importer) interfaceImports() fileImports {
 			std["database/sql"] = struct{}{}
 		}
 	}
-	if uses("json.RawMessage") {
-		std["encoding/json"] = struct{}{}
-	}
-	if uses("time.Time") {
-		std["time"] = struct{}{}
-	}
-	if uses("net.IP") {
-		std["net"] = struct{}{}
-	}
-	if uses("net.HardwareAddr") {
-		std["net"] = struct{}{}
+	for typeName, pkg := range stdlibTypes {
+		if uses(typeName) {
+			std[pkg] = struct{}{}
+		}
 	}
 
 	pkg := make(map[ImportSpec]struct{})
@@ -183,12 +183,12 @@ func (i *importer) interfaceImports() fileImports {
 	}
 
 	pkgs := make([]ImportSpec, 0, len(pkg))
-	for spec, _ := range pkg {
+	for spec := range pkg {
 		pkgs = append(pkgs, spec)
 	}
 
 	stds := make([]ImportSpec, 0, len(std))
-	for path, _ := range std {
+	for path := range std {
 		stds = append(stds, ImportSpec{Path: path})
 	}
 
@@ -202,17 +202,10 @@ func (i *importer) modelImports() fileImports {
 	if i.usesType("sql.Null") {
 		std["database/sql"] = struct{}{}
 	}
-	if i.usesType("json.RawMessage") {
-		std["encoding/json"] = struct{}{}
-	}
-	if i.usesType("time.Time") {
-		std["time"] = struct{}{}
-	}
-	if i.usesType("net.IP") {
-		std["net"] = struct{}{}
-	}
-	if i.usesType("net.HardwareAddr") {
-		std["net"] = struct{}{}
+	for typeName, pkg := range stdlibTypes {
+		if i.usesType(typeName) {
+			std[pkg] = struct{}{}
+		}
 	}
 	if len(i.Enums) > 0 {
 		std["fmt"] = struct{}{}
@@ -250,12 +243,12 @@ func (i *importer) modelImports() fileImports {
 	}
 
 	pkgs := make([]ImportSpec, 0, len(pkg))
-	for spec, _ := range pkg {
+	for spec := range pkg {
 		pkgs = append(pkgs, spec)
 	}
 
 	stds := make([]ImportSpec, 0, len(std))
-	for path, _ := range std {
+	for path := range std {
 		stds = append(stds, ImportSpec{Path: path})
 	}
 
@@ -337,7 +330,7 @@ func (i *importer) queryImports(filename string) fileImports {
 	}
 
 	std := map[string]struct{}{
-		"context": struct{}{},
+		"context": {},
 	}
 	if uses("sql.Null") {
 		std["database/sql"] = struct{}{}
@@ -347,14 +340,10 @@ func (i *importer) queryImports(filename string) fileImports {
 			std["database/sql"] = struct{}{}
 		}
 	}
-	if uses("json.RawMessage") {
-		std["encoding/json"] = struct{}{}
-	}
-	if uses("time.Time") {
-		std["time"] = struct{}{}
-	}
-	if uses("net.IP") {
-		std["net"] = struct{}{}
+	for typeName, pkg := range stdlibTypes {
+		if uses(typeName) {
+			std[pkg] = struct{}{}
+		}
 	}
 
 	pkg := make(map[ImportSpec]struct{})
@@ -391,12 +380,12 @@ func (i *importer) queryImports(filename string) fileImports {
 	}
 
 	pkgs := make([]ImportSpec, 0, len(pkg))
-	for spec, _ := range pkg {
+	for spec := range pkg {
 		pkgs = append(pkgs, spec)
 	}
 
 	stds := make([]ImportSpec, 0, len(std))
-	for path, _ := range std {
+	for path := range std {
 		stds = append(stds, ImportSpec{Path: path})
 	}
 

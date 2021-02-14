@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type AlterRoleStmt struct {
 	Role    *RoleSpec
 	Options *List

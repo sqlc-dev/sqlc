@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type CreateOpClassItem struct {
 	Itemtype    int
 	Name        *ObjectWithArgs

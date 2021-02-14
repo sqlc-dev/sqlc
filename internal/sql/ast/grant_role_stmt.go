@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type GrantRoleStmt struct {
 	GrantedRoles *List
 	GranteeRoles *List

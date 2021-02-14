@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type PrepareStmt struct {
 	Name     *string
 	Argtypes *List
