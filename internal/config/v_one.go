@@ -27,6 +27,7 @@ type v1PackageSettings struct {
 	EmitPreparedQueries bool       `json:"emit_prepared_queries" yaml:"emit_prepared_queries"`
 	EmitExactTableNames bool       `json:"emit_exact_table_names,omitempty" yaml:"emit_exact_table_names"`
 	EmitEmptySlices     bool       `json:"emit_empty_slices,omitempty" yaml:"emit_empty_slices"`
+	JSONTagsCaseStyle   string     `json:"json_tags_case_style,omitempty" yaml:"json_tags_case_style"`
 	Overrides           []Override `json:"overrides" yaml:"overrides"`
 }
 
@@ -70,6 +71,9 @@ func v1ParseConfig(rd io.Reader) (Config, error) {
 		if settings.Packages[j].Engine == "" {
 			settings.Packages[j].Engine = EnginePostgreSQL
 		}
+		if settings.Packages[j].JSONTagsCaseStyle == "" {
+			settings.Packages[j].JSONTagsCaseStyle = "snake"
+		}
 	}
 	return settings.Translate(), nil
 }
@@ -112,6 +116,7 @@ func (c *V1GenerateSettings) Translate() Config {
 					Package:             pkg.Name,
 					Out:                 pkg.Path,
 					Overrides:           pkg.Overrides,
+					JSONTagsCaseStyle:   pkg.JSONTagsCaseStyle,
 				},
 			},
 		})
