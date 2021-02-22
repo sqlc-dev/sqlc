@@ -33,7 +33,7 @@ func Glob(paths []string) ([]string, error) {
 	}
 	var sqlFiles []string
 	for _, file := range files {
-		if !strings.HasSuffix(file, ".sql") {
+		if !strings.HasSuffix(file, ".sql") && !strings.HasSuffix(file, ".pgsql") {
 			continue
 		}
 		if strings.HasPrefix(filepath.Base(file), ".") {
