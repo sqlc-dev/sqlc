@@ -10,7 +10,7 @@ SELECT * FROM records
 WHERE id = $1;
 ```
 
-sqlc has an option to use perpared queries. These prepared queries also work
+sqlc has an option to use prepared queries. These prepared queries also work
 with transactions.
 
 ```go
