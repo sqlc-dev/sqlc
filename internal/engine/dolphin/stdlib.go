@@ -5282,7 +5282,7 @@ func defaultSchema(name string) *catalog.Schema {
 					Type: &ast.TypeName{Name: "datetime"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "datetime"},
+			ReturnType: &ast.TypeName{Name: "int"},
 		},
 		{
 			Name: "TIME_FORMAT",
