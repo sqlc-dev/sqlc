@@ -49,7 +49,7 @@ var versionCmd = &cobra.Command{
 		if version == "" {
 			// When no version is set, return the next bug fix version
 			// after the most recent tag
-			fmt.Printf("%s\n", "v1.6.1-devel")
+			fmt.Printf("%s\n", "v1.7.0")
 		} else {
 			fmt.Printf("%s\n", version)
 		}
