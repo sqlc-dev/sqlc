@@ -34,9 +34,15 @@ docker run --rm -v $(pwd):/src -w /src kjconroy/sqlc generate
 
 ## Downloads
 
-Binaries for a given release can be downloaded from the [stable channel on
-Equinox](https://dl.equinox.io/sqlc/sqlc/stable) or the latest [GitHub
-release](https://github.com/kyleconroy/sqlc/releases).
+Get pre-built binaries for *v1.7.0*:
+
+- [Linux](https://github.com/kyleconroy/sqlc/releases/download/v1.7.0/sqlc-v1.7.0-linux-amd64.tar.gz)
+- [macOS](https://github.com/kyleconroy/sqlc/releases/download/v1.7.0/sqlc-v1.7.0-darwin-amd64.zip)
+- [Windows (MySQL only)](https://github.com/kyleconroy/sqlc/releases/download/v1.7.0/sqlc-v1.7.0-windows-amd64.zip)
+
+Binaries for a specific release can be downloaded on
+[GitHub](https://github.com/kyleconroy/sqlc/releases).
+
 
 ## Tip Releases
 
@@ -44,4 +50,4 @@ Each commit is deployed to the [`devel` channel on Equinox](https://dl.equinox.i
 
 - [Linux](https://bin.equinox.io/c/gvM95th6ps1/sqlc-devel-linux-amd64.tgz)
 - [macOS](https://bin.equinox.io/c/gvM95th6ps1/sqlc-devel-darwin-amd64.zip)
-- [Windows](https://bin.equinox.io/c/gvM95th6ps1/sqlc-devel-windows-amd64.zip)
+- [Windows (MySQL only)](https://bin.equinox.io/c/gvM95th6ps1/sqlc-devel-windows-amd64.zip)
