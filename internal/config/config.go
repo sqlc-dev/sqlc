@@ -106,6 +106,7 @@ type SQL struct {
 type SQLGen struct {
 	Go     *SQLGo     `json:"go,omitempty" yaml:"go"`
 	Kotlin *SQLKotlin `json:"kotlin,omitempty" yaml:"kotlin"`
+	Python *SQLPython `json:"python,omitempty" yaml:"python"`
 }
 
 type SQLGo struct {
@@ -127,9 +128,19 @@ type SQLKotlin struct {
 	Out                 string `json:"out" yaml:"out"`
 }
 
+type SQLPython struct {
+	EmitExactTableNames bool `json:"emit_exact_table_names" yaml:"emit_exact_table_names"`
+	Package   string     `json:"package" yaml:"package"`
+	Out       string     `json:"out" yaml:"out"`
+	Overrides []Override `json:"overrides,omitempty" yaml:"overrides"`
+}
+
 type Override struct {
 	// name of the golang type to use, e.g. `github.com/segmentio/ksuid.KSUID`
 	GoType GoType `json:"go_type" yaml:"go_type"`
+
+	// name of the python type to use, e.g. `mymodule.TypeName`
+	PythonType PythonType `json:"python_type" yaml:"python_type"`
 
 	// fully qualified name of the Go type, e.g. `github.com/segmentio/ksuid.KSUID`
 	DBType                  string `json:"db_type" yaml:"db_type"`
@@ -247,6 +258,7 @@ type CombinedSettings struct {
 	Package   SQL
 	Go        SQLGo
 	Kotlin    SQLKotlin
+	Python    SQLPython
 	Rename    map[string]string
 	Overrides []Override
 }
@@ -269,6 +281,10 @@ func Combine(conf Config, pkg SQL) CombinedSettings {
 	}
 	if pkg.Gen.Kotlin != nil {
 		cs.Kotlin = *pkg.Gen.Kotlin
+	}
+	if pkg.Gen.Python != nil {
+		cs.Python = *pkg.Gen.Python
+		cs.Overrides = append(cs.Overrides, pkg.Gen.Python.Overrides...)
 	}
 	return cs
 }

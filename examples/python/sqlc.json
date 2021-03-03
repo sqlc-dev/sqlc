@@ -1,0 +1,49 @@
+{
+  "version": "2",
+  "sql": [
+    {
+      "schema": "../authors/postgresql/schema.sql",
+      "queries": "../authors/postgresql/query.sql",
+      "engine": "postgresql",
+      "gen": {
+        "python": {
+          "out": "src/authors",
+          "package": "authors"
+        }
+      }
+    },
+    {
+      "schema": "../booktest/postgresql/schema.sql",
+      "queries": "../booktest/postgresql/query.sql",
+      "engine": "postgresql",
+      "gen": {
+        "python": {
+          "out": "src/booktest",
+          "package": "booktest"
+        }
+      }
+    },
+    {
+      "schema": "../jets/schema.sql",
+      "queries": "../jets/query-building.sql",
+      "engine": "postgresql",
+      "gen": {
+        "python": {
+          "out": "src/jets",
+          "package": "jets"
+        }
+      }
+    },
+    {
+      "schema": "../ondeck/postgresql/schema",
+      "queries": "../ondeck/postgresql/query",
+      "engine": "postgresql",
+      "gen": {
+        "python": {
+          "out": "src/ondeck",
+          "package": "ondeck"
+        }
+      }
+    }
+  ]
+}
