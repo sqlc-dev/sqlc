@@ -1,4 +1,4 @@
-name: kotlin
+name: python
 on:
   push:
     branches:
@@ -21,31 +21,24 @@ jobs:
           - 5432:5432
         # needed because the postgres container does not provide a healthcheck
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-      mysql:
-        image: mysql:8
-        env:
-          MYSQL_ROOT_PASSWORD: mysecretpassword
-          MYSQL_DATABASE: mysql
-        ports:
-          - 3306:3306
 
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-java@v1
+      - uses: actions/setup-python@v2
         with:
-          java-version: 11
-      - uses: eskatos/gradle-command-action@v1
+          python-version: 3.9
+      - name: Install python dependencies
+        working-directory: ./examples/python
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+      - name: Test python code
+        working-directory: ./examples/python
         env:
           PG_USER: postgres
           PG_HOST: localhost
           PG_DATABASE: postgres
           PG_PASSWORD: postgres
           PG_PORT: ${{ job.services.postgres.ports['5432'] }}
-          MYSQL_DATABASE: mysql
-          MYSQL_HOST: localhost
-          MYSQL_PORT: ${{ job.services.mysql.ports['3306'] }}
-          MYSQL_ROOT_PASSWORD: mysecretpassword
-        with:
-          build-root-directory: examples/kotlin
-          wrapper-directory: examples/kotlin
-          arguments: test --scan
+        run: |
+          pytest src/tests

@@ -59,6 +59,13 @@ func v2ParseConfig(rd io.Reader) (Config, error) {
 				return conf, ErrNoPackageName
 			}
 		}
+		if conf.SQL[j].Gen.Python != nil {
+			for i := range conf.SQL[j].Gen.Python.Overrides {
+				if err := conf.SQL[j].Gen.Python.Overrides[i].Parse(); err != nil {
+					return conf, err
+				}
+			}
+		}
 	}
 	return conf, nil
 }
