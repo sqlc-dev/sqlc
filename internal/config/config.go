@@ -116,6 +116,7 @@ type SQLGo struct {
 	EmitPreparedQueries bool              `json:"emit_prepared_queries" yaml:"emit_prepared_queries"`
 	EmitExactTableNames bool              `json:"emit_exact_table_names,omitempty" yaml:"emit_exact_table_names"`
 	EmitEmptySlices     bool              `json:"emit_empty_slices,omitempty" yaml:"emit_empty_slices"`
+	JSONTagsCaseStyle   string            `json:"json_tags_case_style,omitempty" yaml:"json_tags_case_style"`
 	Package             string            `json:"package" yaml:"package"`
 	Out                 string            `json:"out" yaml:"out"`
 	Overrides           []Override        `json:"overrides,omitempty" yaml:"overrides"`
