@@ -155,7 +155,7 @@ func (i *importer) interfaceImports() fileImports {
 	pkg := make(map[ImportSpec]struct{})
 	overrideTypes := map[string]string{}
 	for _, o := range i.Settings.Overrides {
-		if o.GoBasicType {
+		if o.GoBasicType || o.GoTypeName == "" {
 			continue
 		}
 		overrideTypes[o.GoTypeName] = o.GoImportPath
@@ -172,7 +172,7 @@ func (i *importer) interfaceImports() fileImports {
 
 	// Custom imports
 	for _, o := range i.Settings.Overrides {
-		if o.GoBasicType {
+		if o.GoBasicType || o.GoTypeName == "" {
 			continue
 		}
 		_, alreadyImported := std[o.GoImportPath]
@@ -215,7 +215,7 @@ func (i *importer) modelImports() fileImports {
 	pkg := make(map[ImportSpec]struct{})
 	overrideTypes := map[string]string{}
 	for _, o := range i.Settings.Overrides {
-		if o.GoBasicType {
+		if o.GoBasicType || o.GoTypeName == "" {
 			continue
 		}
 		overrideTypes[o.GoTypeName] = o.GoImportPath
@@ -232,7 +232,7 @@ func (i *importer) modelImports() fileImports {
 	}
 
 	for _, o := range i.Settings.Overrides {
-		if o.GoBasicType {
+		if o.GoBasicType || o.GoTypeName == "" {
 			continue
 		}
 		_, alreadyImported := std[o.GoImportPath]
@@ -349,7 +349,7 @@ func (i *importer) queryImports(filename string) fileImports {
 	pkg := make(map[ImportSpec]struct{})
 	overrideTypes := map[string]string{}
 	for _, o := range i.Settings.Overrides {
-		if o.GoBasicType {
+		if o.GoBasicType || o.GoTypeName == "" {
 			continue
 		}
 		overrideTypes[o.GoTypeName] = o.GoImportPath
@@ -369,7 +369,7 @@ func (i *importer) queryImports(filename string) fileImports {
 
 	// Custom imports
 	for _, o := range i.Settings.Overrides {
-		if o.GoBasicType {
+		if o.GoBasicType || o.GoTypeName == "" {
 			continue
 		}
 		_, alreadyImported := std[o.GoImportPath]

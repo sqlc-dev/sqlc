@@ -112,13 +112,17 @@ func cmpDirectory(t *testing.T, dir string, actual map[string]string) {
 		if file.IsDir() {
 			return nil
 		}
-		if !strings.HasSuffix(path, ".go") && !strings.HasSuffix(path, ".kt") {
+		if !strings.HasSuffix(path, ".go") && !strings.HasSuffix(path, ".kt") && !strings.HasSuffix(path, ".py") {
 			return nil
 		}
 		if strings.Contains(path, "/kotlin/build") {
 			return nil
 		}
 		if strings.HasSuffix(path, "_test.go") || strings.Contains(path, "src/test/") {
+			return nil
+		}
+		if strings.Contains(path, "/python/.venv") || strings.Contains(path, "/python/src/tests/") ||
+			strings.HasSuffix(path, "__init__.py") || strings.Contains(path, "/python/src/dbtest/") {
 			return nil
 		}
 		blob, err := ioutil.ReadFile(path)
