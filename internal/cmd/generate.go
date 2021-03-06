@@ -122,6 +122,10 @@ func Generate(e Env, dir, filename string, stderr io.Writer) (map[string]string,
 			})
 		}
 		if sql.Gen.Python != nil {
+			if !e.ExperimentalFeatures {
+				fmt.Fprintf(stderr, "error parsing %s: unknown target langauge \"python\"\n", base)
+				return nil, fmt.Errorf("unknown target language \"python\"")
+			}
 			pairs = append(pairs, outPair{
 				SQL: sql,
 				Gen: config.SQLGen{Python: sql.Gen.Python},
