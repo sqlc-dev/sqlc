@@ -19,7 +19,7 @@ import (
 func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int {
 	rootCmd := &cobra.Command{Use: "sqlc", SilenceUsage: true}
 	rootCmd.PersistentFlags().StringP("file", "f", "", "specify an alternate config file (default: sqlc.yaml)")
-	rootCmd.PersistentFlags().BoolP("experimental", "x", false, "enabled experimental features (efault: false)")
+	rootCmd.PersistentFlags().BoolP("experimental", "x", false, "enable experimental features (default: false)")
 
 	rootCmd.AddCommand(checkCmd)
 	rootCmd.AddCommand(genCmd)
