@@ -8,16 +8,17 @@ import (
 )
 
 const countOne = `-- name: CountOne :one
-SELECT count(1) FROM bar WHERE id = $2 AND name <> $1
+SELECT count(1) FROM bar WHERE id = $2 AND name <> $1 LIMIT $3
 `
 
 type CountOneParams struct {
-	Name string
-	ID   int32
+	Name  string
+	ID    int32
+	Limit int32
 }
 
 func (q *Queries) CountOne(ctx context.Context, arg CountOneParams) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countOne, arg.Name, arg.ID)
+	row := q.db.QueryRowContext(ctx, countOne, arg.Name, arg.ID, arg.Limit)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
