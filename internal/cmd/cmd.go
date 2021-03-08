@@ -19,6 +19,7 @@ import (
 func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int {
 	rootCmd := &cobra.Command{Use: "sqlc", SilenceUsage: true}
 	rootCmd.PersistentFlags().StringP("file", "f", "", "specify an alternate config file (default: sqlc.yaml)")
+	rootCmd.PersistentFlags().BoolP("experimental", "x", false, "enable experimental features (default: false)")
 
 	rootCmd.AddCommand(checkCmd)
 	rootCmd.AddCommand(genCmd)
@@ -76,10 +77,12 @@ var initCmd = &cobra.Command{
 }
 
 type Env struct {
+	ExperimentalFeatures bool
 }
 
-func ParseEnv() Env {
-	return Env{}
+func ParseEnv(c *cobra.Command) Env {
+	x := c.Flag("experimental")
+	return Env{ExperimentalFeatures: x != nil && x.Changed}
 }
 
 func getConfigPath(stderr io.Writer, f *pflag.Flag) (string, string) {
@@ -111,7 +114,7 @@ var genCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		stderr := cmd.ErrOrStderr()
 		dir, name := getConfigPath(stderr, cmd.Flag("file"))
-		output, err := Generate(ParseEnv(), dir, name, stderr)
+		output, err := Generate(ParseEnv(cmd), dir, name, stderr)
 		if err != nil {
 			os.Exit(1)
 		}
@@ -131,7 +134,7 @@ var checkCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		stderr := cmd.ErrOrStderr()
 		dir, name := getConfigPath(stderr, cmd.Flag("file"))
-		if _, err := Generate(Env{}, dir, name, stderr); err != nil {
+		if _, err := Generate(ParseEnv(cmd), dir, name, stderr); err != nil {
 			os.Exit(1)
 		}
 		return nil
