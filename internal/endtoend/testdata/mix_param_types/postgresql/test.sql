@@ -5,7 +5,7 @@ CREATE TABLE bar (
 );
 
 -- name: CountOne :one
-SELECT count(1) FROM bar WHERE id = sqlc.arg(id) AND name <> $1;
+SELECT count(1) FROM bar WHERE id = sqlc.arg(id) AND name <> $1 LIMIT sqlc.arg('limit');
 
 -- name: CountTwo :one
 SELECT count(1) FROM bar WHERE id = $1 AND name <> sqlc.arg(name);
