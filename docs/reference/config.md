@@ -11,11 +11,12 @@ packages:
     queries: "./sql/query/"
     schema: "./sql/schema/"
     engine: "postgresql"
-    emit_json_tags: true
     emit_prepared_queries: true
     emit_interface: false
     emit_exact_table_names: false
     emit_empty_slices: false
+    emit_json_tags: true
+    json_tags_case_style: "camel"
 ```
 
 Each package document has the following keys:
@@ -29,8 +30,6 @@ Each package document has the following keys:
   - Directory of SQL migrations or path to single SQL file; or a list of paths
 - `engine`:
   - Either `postgresql` or `mysql`. Defaults to `postgresql`. MySQL support is experimental
-- `emit_json_tags`:
-  - If true, add JSON tags to generated structs. Defaults to `false`.
 - `emit_db_tags`:
   - If true, add DB tags to generated structs. Defaults to `false`.
 - `emit_prepared_queries`:
@@ -41,6 +40,10 @@ Each package document has the following keys:
   - If true, struct names will mirror table names. Otherwise, sqlc attempts to singularize plural table names. Defaults to `false`.
 - `emit_empty_slices`:
   - If true, slices returned by `:many` queries will be empty instead of `nil`. Defaults to `false`.
+- `emit_json_tags`:
+  - If true, add JSON tags to generated structs. Defaults to `false`.
+- `json_tags_case_style`:
+  - `camel` for camelCase, `pascal` for PascalCase, `snake` for snake_case or `none` to use the column name in the DB. Defaults to `none`.
 
 ## Type Overrides
 
@@ -118,5 +121,3 @@ packages: [...]
 rename:
   spotify_url: "SpotifyURL"
 ```
-
-
