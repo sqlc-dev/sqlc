@@ -3,6 +3,7 @@ package golang
 import (
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/kyleconroy/sqlc/internal/codegen"
@@ -34,12 +35,22 @@ func buildEnums(r *compiler.Result, settings config.CombinedSettings) []Enum {
 				Name:    StructName(enumName, settings),
 				Comment: enum.Comment,
 			}
+			valueMap := make(map[string]bool, len(enum.Vals))
 			for _, v := range enum.Vals {
+				count := 2
+				ev := EnumReplace(v)
+				eName := ev
+				for valueMap[eName] {
+					eName = ev + strconv.Itoa(count)
+					count++
+				}
+				fmt.Printf("EV: %s, eName: %s ", ev, eName)
 				e.Constants = append(e.Constants, Constant{
-					Name:  StructName(enumName+"_"+EnumReplace(v), settings),
+					Name:  StructName(enumName+"_"+eName, settings),
 					Value: v,
 					Type:  e.Name,
 				})
+				valueMap[eName] = true
 			}
 			enums = append(enums, e)
 		}
