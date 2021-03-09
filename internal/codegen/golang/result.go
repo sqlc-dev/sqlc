@@ -40,11 +40,10 @@ func buildEnums(r *compiler.Result, settings config.CombinedSettings) []Enum {
 				count := 2
 				ev := EnumReplace(v)
 				eName := ev
-				for valueMap[eName] {
+				for valueMap[eName] || eName == "" {
 					eName = ev + strconv.Itoa(count)
 					count++
 				}
-				fmt.Printf("EV: %s, eName: %s ", ev, eName)
 				e.Constants = append(e.Constants, Constant{
 					Name:  StructName(enumName+"_"+eName, settings),
 					Value: v,
