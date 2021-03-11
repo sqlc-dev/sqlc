@@ -58,7 +58,6 @@ def postgres_connection(postgres_uri) -> psycopg2.extensions.connection:
 @pytest.fixture()
 def postgres_db(postgres_connection) -> psycopg2.extensions.connection:
     schema_name = f"sqltest_{random.randint(0, 1000)}"
-    # schema_name = "sqltest_1"
     cur = postgres_connection.cursor()
     cur.execute(f"CREATE SCHEMA {schema_name}")
     cur.execute(f"SET search_path TO {schema_name}")
