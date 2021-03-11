@@ -6,6 +6,8 @@ import asyncpg
 import psycopg2
 import psycopg2.extensions
 import pytest
+import sqlalchemy
+import sqlalchemy.ext.asyncio
 
 
 @pytest.fixture(scope="session")
@@ -16,7 +18,34 @@ def postgres_uri() -> str:
     pg_password = os.environ.get("PG_PASSWORD", "mysecretpassword")
     pg_db = os.environ.get("PG_DATABASE", "dinotest")
 
-    return f"postgres://{pg_user}:{pg_password}@{pg_host}:{pg_port}/{pg_db}?sslmode=disable"
+    return f"postgresql://{pg_user}:{pg_password}@{pg_host}:{pg_port}/{pg_db}"
+
+
+@pytest.fixture(scope="session")
+def sqlalchemy_connection(postgres_uri) -> sqlalchemy.engine.Connection:
+    schema_name = f"sqltest_{random.randint(0, 1000)}"
+    engine = sqlalchemy.create_engine(postgres_uri)
+    with engine.connect() as conn:
+        conn.execute(f"CREATE SCHEMA {schema_name}")
+        conn.execute(f"SET search_path TO {schema_name}")
+        yield conn
+        conn.execute(f"DROP SCHEMA {schema_name} CASCADE")
+        conn.execute("SET search_path TO public")
+
+
+@pytest.fixture(scope="session")
+async def async_sqlalchemy_connection(postgres_uri) -> sqlalchemy.ext.asyncio.AsyncConnection:
+    postgres_uri = postgres_uri.replace("postgresql", "postgresql+asyncpg")
+    schema_name = f"sqltest_{random.randint(0, 1000)}"
+    engine = sqlalchemy.ext.asyncio.create_async_engine(postgres_uri)
+    async with engine.connect() as conn:
+        await conn.execute(sqlalchemy.text(f"CREATE SCHEMA {schema_name}"))
+        await conn.execute(sqlalchemy.text(f"SET search_path TO {schema_name}"))
+        await conn.commit()
+        yield conn
+        await conn.rollback()
+        await conn.execute(sqlalchemy.text(f"DROP SCHEMA {schema_name} CASCADE"))
+        await conn.execute(sqlalchemy.text("SET search_path TO public"))
 
 
 @pytest.fixture(scope="session")

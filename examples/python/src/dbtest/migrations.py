@@ -1,29 +1,26 @@
 import os
 from typing import List
 
-import asyncpg
-import psycopg2.extensions
+import sqlalchemy
+import sqlalchemy.ext.asyncio
 
 
-def apply_migrations(db: psycopg2.extensions.connection, paths: List[str]):
+def apply_migrations(conn: sqlalchemy.engine.Connection, paths: List[str]):
     files = _find_sql_files(paths)
 
     for file in files:
         with open(file, "r") as fd:
             blob = fd.read()
-        cur = db.cursor()
-        cur.execute(blob)
-        cur.close()
-        db.commit()
+        conn.execute(blob)
 
 
-async def apply_migrations_async(db: asyncpg.Connection, paths: List[str]):
+async def apply_migrations_async(conn: sqlalchemy.ext.asyncio.AsyncConnection, paths: List[str]):
     files = _find_sql_files(paths)
 
     for file in files:
         with open(file, "r") as fd:
             blob = fd.read()
-        await db.execute(blob)
+        await conn.execute(sqlalchemy.text(blob))
 
 
 def _find_sql_files(paths: List[str]) -> List[str]:

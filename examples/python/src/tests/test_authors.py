@@ -1,59 +1,56 @@
 import os
 
-import asyncpg
-import psycopg2.extensions
 import pytest
-from sqlc_runtime.psycopg2 import build_psycopg2_connection
-from sqlc_runtime.asyncpg import build_asyncpg_connection
+import sqlalchemy.ext.asyncio
 
 from authors import query
 from dbtest.migrations import apply_migrations, apply_migrations_async
 
 
-def test_authors(postgres_db: psycopg2.extensions.connection):
-    apply_migrations(postgres_db, [os.path.dirname(__file__) + "/../../../authors/postgresql/schema.sql"])
+def test_authors(sqlalchemy_connection: sqlalchemy.engine.Connection):
+    apply_migrations(sqlalchemy_connection, [os.path.dirname(__file__) + "/../../../authors/postgresql/schema.sql"])
 
-    db = build_psycopg2_connection(postgres_db)
+    db = query.Query(sqlalchemy_connection)
 
-    authors = list(query.list_authors(db))
+    authors = list(db.list_authors())
     assert authors == []
 
     author_name = "Brian Kernighan"
     author_bio = "Co-author of The C Programming Language and The Go Programming Language"
-    new_author = query.create_author(db, name=author_name, bio=author_bio)
+    new_author = db.create_author(name=author_name, bio=author_bio)
     assert new_author.id > 0
     assert new_author.name == author_name
     assert new_author.bio == author_bio
 
-    db_author = query.get_author(db, new_author.id)
+    db_author = db.get_author(new_author.id)
     assert db_author == new_author
 
-    author_list = list(query.list_authors(db))
+    author_list = list(db.list_authors())
     assert len(author_list) == 1
     assert author_list[0] == new_author
 
 
 @pytest.mark.asyncio
-async def test_authors_async(async_postgres_db: asyncpg.Connection):
-    await apply_migrations_async(async_postgres_db, [os.path.dirname(__file__) + "/../../../authors/postgresql/schema.sql"])
+async def test_authors_async(async_sqlalchemy_connection: sqlalchemy.ext.asyncio.AsyncConnection):
+    await apply_migrations_async(async_sqlalchemy_connection, [os.path.dirname(__file__) + "/../../../authors/postgresql/schema.sql"])
 
-    db = build_asyncpg_connection(async_postgres_db)
+    db = query.AsyncQuery(async_sqlalchemy_connection)
 
-    async for _ in query.list_authors(db):
+    async for _ in db.list_authors():
         assert False, "No authors should exist"
 
     author_name = "Brian Kernighan"
     author_bio = "Co-author of The C Programming Language and The Go Programming Language"
-    new_author = await query.create_author(db, name=author_name, bio=author_bio)
+    new_author = await db.create_author(name=author_name, bio=author_bio)
     assert new_author.id > 0
     assert new_author.name == author_name
     assert new_author.bio == author_bio
 
-    db_author = await query.get_author(db, new_author.id)
+    db_author = await db.get_author(new_author.id)
     assert db_author == new_author
 
     author_list = []
-    async for author in query.list_authors(db):
+    async for author in db.list_authors():
         author_list.append(author)
     assert len(author_list) == 1
     assert author_list[0] == new_author
