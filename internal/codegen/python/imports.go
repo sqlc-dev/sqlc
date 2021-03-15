@@ -92,7 +92,7 @@ func (i *importer) modelImports() []string {
 	}
 
 	pkg := make(map[string]importSpec)
-	pkg["pydantic"] = importSpec{Module: "pydantic"}
+	pkg["dataclasses"] = importSpec{Module: "dataclasses"}
 
 	for _, o := range i.Settings.Overrides {
 		if o.PythonType.IsSet() && o.PythonType.Module != "" {
@@ -129,11 +129,12 @@ func (i *importer) queryImports(fileName string) []string {
 	}
 
 	std := stdImports(queryUses)
-	std["typing.overload"] = importSpec{Module: "typing", Name: "overload"}
-	std["typing.Awaitable"] = importSpec{Module: "typing", Name: "Awaitable"}
 
 	pkg := make(map[string]importSpec)
-	pkg["sqlc_runtime"] = importSpec{Module: "sqlc_runtime", Alias: "sqlc"}
+	pkg["sqlalchemy"] = importSpec{Module: "sqlalchemy"}
+	if i.Settings.Python.EmitAsyncQuerier {
+		pkg["sqlalchemy.ext.asyncio"] = importSpec{Module: "sqlalchemy.ext.asyncio"}
+	}
 
 	for _, o := range i.Settings.Overrides {
 		if o.PythonType.IsSet() && o.PythonType.Module != "" {
@@ -145,7 +146,7 @@ func (i *importer) queryImports(fileName string) []string {
 
 	queryValueModelImports := func(qv QueryValue) {
 		if qv.IsStruct() && qv.EmitStruct() {
-			pkg["pydantic"] = importSpec{Module: "pydantic"}
+			pkg["dataclasses"] = importSpec{Module: "dataclasses"}
 		}
 	}
 
@@ -157,8 +158,12 @@ func (i *importer) queryImports(fileName string) []string {
 			std["typing.Optional"] = importSpec{Module: "typing", Name: "Optional"}
 		}
 		if q.Cmd == ":many" {
-			std["typing.Iterator"] = importSpec{Module: "typing", Name: "Iterator"}
-			std["typing.AsyncIterator"] = importSpec{Module: "typing", Name: "AsyncIterator"}
+			if i.Settings.Python.EmitSyncQuerier {
+				std["typing.Iterator"] = importSpec{Module: "typing", Name: "Iterator"}
+			}
+			if i.Settings.Python.EmitAsyncQuerier {
+				std["typing.AsyncIterator"] = importSpec{Module: "typing", Name: "AsyncIterator"}
+			}
 		}
 		queryValueModelImports(q.Ret)
 		for _, qv := range q.Args {
