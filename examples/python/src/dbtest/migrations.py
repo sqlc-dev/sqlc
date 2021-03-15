@@ -11,7 +11,10 @@ def apply_migrations(conn: sqlalchemy.engine.Connection, paths: List[str]):
     for file in files:
         with open(file, "r") as fd:
             blob = fd.read()
-        conn.execute(blob)
+        stmts = blob.split(";")
+        for stmt in stmts:
+            if stmt.strip():
+                conn.execute(sqlalchemy.text(stmt))
 
 
 async def apply_migrations_async(conn: sqlalchemy.ext.asyncio.AsyncConnection, paths: List[str]):
@@ -20,7 +23,9 @@ async def apply_migrations_async(conn: sqlalchemy.ext.asyncio.AsyncConnection, p
     for file in files:
         with open(file, "r") as fd:
             blob = fd.read()
-        await conn.execute(sqlalchemy.text(blob))
+        raw_conn = await conn.get_raw_connection()
+        # The asyncpg sqlalchemy adapter uses a prepared statement cache which can't handle the migration statements
+        await raw_conn._connection.execute(blob)
 
 
 def _find_sql_files(paths: List[str]) -> List[str]:

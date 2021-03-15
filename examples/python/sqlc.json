@@ -8,7 +8,9 @@
       "gen": {
         "python": {
           "out": "src/authors",
-          "package": "authors"
+          "package": "authors",
+          "emit_sync_querier": true,
+          "emit_async_querier": true
         }
       }
     },
@@ -19,7 +21,8 @@
       "gen": {
         "python": {
           "out": "src/booktest",
-          "package": "booktest"
+          "package": "booktest",
+          "emit_async_querier": true
         }
       }
     },
@@ -30,7 +33,8 @@
       "gen": {
         "python": {
           "out": "src/jets",
-          "package": "jets"
+          "package": "jets",
+          "emit_async_querier": true
         }
       }
     },
@@ -41,7 +45,8 @@
       "gen": {
         "python": {
           "out": "src/ondeck",
-          "package": "ondeck"
+          "package": "ondeck",
+          "emit_async_querier": true
         }
       }
     }
