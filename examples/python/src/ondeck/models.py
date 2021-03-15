@@ -3,22 +3,24 @@ from typing import List, Optional
 import datetime
 import enum
 
-import pydantic
+import dataclasses
 
 
-# Enums# Venues can be either open or closed
+# Venues can be either open or closed
 class Status(str, enum.Enum):
     OPEN = "op!en"
     CLOSED = "clo@sed"
 
 
-# Models
-class City(pydantic.BaseModel):
+@dataclasses.dataclass()
+class City:
     slug: str
     name: str
 
+
 # Venues are places where muisc happens
-class Venue(pydantic.BaseModel):
+@dataclasses.dataclass()
+class Venue:
     id: int
     status: Status
     statuses: Optional[List[Status]]
