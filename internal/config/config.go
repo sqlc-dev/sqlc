@@ -130,10 +130,12 @@ type SQLKotlin struct {
 }
 
 type SQLPython struct {
-	EmitExactTableNames bool `json:"emit_exact_table_names" yaml:"emit_exact_table_names"`
-	Package   string     `json:"package" yaml:"package"`
-	Out       string     `json:"out" yaml:"out"`
-	Overrides []Override `json:"overrides,omitempty" yaml:"overrides"`
+	EmitExactTableNames bool       `json:"emit_exact_table_names" yaml:"emit_exact_table_names"`
+	EmitSyncQuerier     bool       `json:"emit_sync_querier" yaml:"emit_sync_querier"`
+	EmitAsyncQuerier    bool       `json:"emit_async_querier" yaml:"emit_async_querier"`
+	Package             string     `json:"package" yaml:"package"`
+	Out                 string     `json:"out" yaml:"out"`
+	Overrides           []Override `json:"overrides,omitempty" yaml:"overrides"`
 }
 
 type Override struct {
@@ -229,7 +231,8 @@ var ErrUnknownEngine = errors.New("invalid engine")
 var ErrNoPackages = errors.New("no packages")
 var ErrNoPackageName = errors.New("missing package name")
 var ErrNoPackagePath = errors.New("missing package path")
-var ErrKotlinNoOutPath = errors.New("no output path")
+var ErrNoOutPath = errors.New("no output path")
+var ErrNoQuerierType = errors.New("no querier emit type enabled")
 
 func ParseConfig(rd io.Reader) (Config, error) {
 	var buf bytes.Buffer
