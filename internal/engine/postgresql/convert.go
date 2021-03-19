@@ -2948,37 +2948,37 @@ func convertNode(node *pg.Node) ast.Node {
 		return convertAlterOwnerStmt(n.AlterOwnerStmt)
 
 	case *pg.Node_AlterPolicyStmt:
-		return convertAlterPolicyStmt(&n)
+		return convertAlterPolicyStmt(n.AlterPolicyStmt)
 
 	case *pg.Node_AlterPublicationStmt:
-		return convertAlterPublicationStmt(&n)
+		return convertAlterPublicationStmt(n.AlterPublicationStmt)
 
 	case *pg.Node_AlterRoleSetStmt:
-		return convertAlterRoleSetStmt(&n)
+		return convertAlterRoleSetStmt(n.AlterRoleSetStmt)
 
 	case *pg.Node_AlterRoleStmt:
-		return convertAlterRoleStmt(&n)
+		return convertAlterRoleStmt(n.AlterRoleStmt)
 
 	case *pg.Node_AlterSeqStmt:
-		return convertAlterSeqStmt(&n)
+		return convertAlterSeqStmt(n.AlterSeqStmt)
 
 	case *pg.Node_AlterSubscriptionStmt:
-		return convertAlterSubscriptionStmt(&n)
+		return convertAlterSubscriptionStmt(n.AlterSubscriptionStmt)
 
 	case *pg.Node_AlterSystemStmt:
-		return convertAlterSystemStmt(&n)
+		return convertAlterSystemStmt(n.AlterSystemStmt)
 
-	case *pg.Node_AlterTSConfigurationStmt:
-		return convertAlterTSConfigurationStmt(&n)
+	case *pg.Node_AlterTsconfigurationStmt:
+		return convertAlterTSConfigurationStmt(n.AlterTsconfigurationStmt)
 
-	case *pg.Node_AlterTSDictionaryStmt:
-		return convertAlterTSDictionaryStmt(&n)
+	case *pg.Node_AlterTsdictionaryStmt:
+		return convertAlterTSDictionaryStmt(n.AlterTsdictionaryStmt)
 
 	case *pg.Node_AlterTableCmd:
-		return convertAlterTableCmd(&n)
+		return convertAlterTableCmd(n.AlterTableCmd)
 
 	case *pg.Node_AlterTableMoveAllStmt:
-		return convertAlterTableMoveAllStmt(&n)
+		return convertAlterTableMoveAllStmt(n.AlterTableMoveAllStmt)
 
 	case *pg.Node_AlterTableSpaceOptionsStmt:
 		return convertAlterTableSpaceOptionsStmt(&n)
