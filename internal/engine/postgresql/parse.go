@@ -67,15 +67,15 @@ func (r relation) FuncName() *ast.FuncName {
 
 func parseFuncParamMode(m nodes.FunctionParameterMode) (ast.FuncParamMode, error) {
 	switch m {
-	case 'i':
+	case nodes.FunctionParameterMode_FUNC_PARAM_IN:
 		return ast.FuncParamIn, nil
-	case 'o':
+	case nodes.FunctionParameterMode_FUNC_PARAM_OUT:
 		return ast.FuncParamOut, nil
-	case 'b':
+	case nodes.FunctionParameterMode_FUNC_PARAM_INOUT:
 		return ast.FuncParamInOut, nil
-	case 'v':
+	case nodes.FunctionParameterMode_FUNC_PARAM_VARIADIC:
 		return ast.FuncParamVariadic, nil
-	case 't':
+	case nodes.FunctionParameterMode_FUNC_PARAM_TABLE:
 		return ast.FuncParamTable, nil
 	default:
 		return -1, fmt.Errorf("parse func param: invalid mode %v", m)
