@@ -13,7 +13,7 @@ func isArray(n *nodes.TypeName) bool {
 	return len(n.ArrayBounds.Items) > 0
 }
 
-func isNotNull(n nodes.ColumnDef) bool {
+func isNotNull(n *nodes.ColumnDef) bool {
 	if n.IsNotNull {
 		return true
 	}
