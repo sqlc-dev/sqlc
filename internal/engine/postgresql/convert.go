@@ -2912,40 +2912,40 @@ func convertNode(node *pg.Node) ast.Node {
 		return convertAlterDomainStmt(n.AlterDomainStmt)
 
 	case *pg.Node_AlterEnumStmt:
-		return convertAlterEnumStmt(&n)
+		return convertAlterEnumStmt(n.AlterEnumStmt)
 
 	case *pg.Node_AlterEventTrigStmt:
-		return convertAlterEventTrigStmt(&n)
+		return convertAlterEventTrigStmt(n.AlterEventTrigStmt)
 
 	case *pg.Node_AlterExtensionContentsStmt:
-		return convertAlterExtensionContentsStmt(&n)
+		return convertAlterExtensionContentsStmt(n.AlterExtensionContentsStmt)
 
 	case *pg.Node_AlterExtensionStmt:
-		return convertAlterExtensionStmt(&n)
+		return convertAlterExtensionStmt(n.AlterExtensionStmt)
 
 	case *pg.Node_AlterFdwStmt:
-		return convertAlterFdwStmt(&n)
+		return convertAlterFdwStmt(n.AlterFdwStmt)
 
 	case *pg.Node_AlterForeignServerStmt:
-		return convertAlterForeignServerStmt(&n)
+		return convertAlterForeignServerStmt(n.AlterForeignServerStmt)
 
 	case *pg.Node_AlterFunctionStmt:
-		return convertAlterFunctionStmt(&n)
+		return convertAlterFunctionStmt(n.AlterFunctionStmt)
 
 	case *pg.Node_AlterObjectDependsStmt:
-		return convertAlterObjectDependsStmt(&n)
+		return convertAlterObjectDependsStmt(n.AlterObjectDependsStmt)
 
 	case *pg.Node_AlterObjectSchemaStmt:
-		return convertAlterObjectSchemaStmt(&n)
+		return convertAlterObjectSchemaStmt(n.AlterObjectSchemaStmt)
 
 	case *pg.Node_AlterOpFamilyStmt:
-		return convertAlterOpFamilyStmt(&n)
+		return convertAlterOpFamilyStmt(n.AlterOpFamilyStmt)
 
 	case *pg.Node_AlterOperatorStmt:
-		return convertAlterOperatorStmt(&n)
+		return convertAlterOperatorStmt(n.AlterOperatorStmt)
 
 	case *pg.Node_AlterOwnerStmt:
-		return convertAlterOwnerStmt(&n)
+		return convertAlterOwnerStmt(n.AlterOwnerStmt)
 
 	case *pg.Node_AlterPolicyStmt:
 		return convertAlterPolicyStmt(&n)
