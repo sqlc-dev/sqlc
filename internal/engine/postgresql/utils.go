@@ -56,3 +56,10 @@ func makeUint32Slice(in []uint64) []uint32 {
 	}
 	return out
 }
+
+func makeString(s string) *string {
+	if s == "" {
+		return nil
+	}
+	return &s
+}

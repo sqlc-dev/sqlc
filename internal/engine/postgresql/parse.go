@@ -221,13 +221,13 @@ func translate(node *nodes.Node) (ast.Node, error) {
 		if n.OldVal != "" {
 			return &ast.AlterTypeRenameValueStmt{
 				Type:     rel.TypeName(),
-				OldValue: &n.OldVal,
-				NewValue: &n.NewVal,
+				OldValue: makeString(n.OldVal),
+				NewValue: makeString(n.NewVal),
 			}, nil
 		} else {
 			return &ast.AlterTypeAddValueStmt{
 				Type:               rel.TypeName(),
-				NewValue:           &n.NewVal,
+				NewValue:           makeString(n.NewVal),
 				SkipIfNewValExists: n.SkipIfNewValExists,
 			}, nil
 		}
@@ -240,7 +240,7 @@ func translate(node *nodes.Node) (ast.Node, error) {
 			rel := parseRelationFromRangeVar(n.Relation)
 			return &ast.AlterTableSetSchemaStmt{
 				Table:     rel.TableName(),
-				NewSchema: &n.Newschema,
+				NewSchema: makeString(n.Newschema),
 			}, nil
 		}
 		return nil, errSkip
@@ -332,7 +332,7 @@ func translate(node *nodes.Node) (ast.Node, error) {
 			return &ast.CommentOnColumnStmt{
 				Col:     col,
 				Table:   tbl,
-				Comment: &n.Comment,
+				Comment: makeString(n.Comment),
 			}, nil
 
 		case nodes.ObjectType_OBJECT_SCHEMA:
@@ -342,7 +342,7 @@ func translate(node *nodes.Node) (ast.Node, error) {
 			}
 			return &ast.CommentOnSchemaStmt{
 				Schema:  &ast.String{Str: o.String_.Str},
-				Comment: &n.Comment,
+				Comment: makeString(n.Comment),
 			}, nil
 
 		case nodes.ObjectType_OBJECT_TABLE:
@@ -352,7 +352,7 @@ func translate(node *nodes.Node) (ast.Node, error) {
 			}
 			return &ast.CommentOnTableStmt{
 				Table:   rel.TableName(),
-				Comment: &n.Comment,
+				Comment: makeString(n.Comment),
 			}, nil
 
 		case nodes.ObjectType_OBJECT_TYPE:
@@ -362,7 +362,7 @@ func translate(node *nodes.Node) (ast.Node, error) {
 			}
 			return &ast.CommentOnTypeStmt{
 				Type:    rel.TypeName(),
-				Comment: &n.Comment,
+				Comment: makeString(n.Comment),
 			}, nil
 
 		}
@@ -472,7 +472,7 @@ func translate(node *nodes.Node) (ast.Node, error) {
 	case *nodes.Node_CreateSchemaStmt:
 		n := inner.CreateSchemaStmt
 		return &ast.CreateSchemaStmt{
-			Name:        &n.Schemaname,
+			Name:        makeString(n.Schemaname),
 			IfNotExists: n.IfNotExists,
 		}, nil
 
@@ -565,14 +565,14 @@ func translate(node *nodes.Node) (ast.Node, error) {
 			return &ast.RenameColumnStmt{
 				Table:   rel.TableName(),
 				Col:     &ast.ColumnRef{Name: n.Subname},
-				NewName: &n.Newname,
+				NewName: makeString(n.Newname),
 			}, nil
 
 		case nodes.ObjectType_OBJECT_TABLE:
 			rel := parseRelationFromRangeVar(n.Relation)
 			return &ast.RenameTableStmt{
 				Table:   rel.TableName(),
-				NewName: &n.Newname,
+				NewName: makeString(n.Newname),
 			}, nil
 
 		}

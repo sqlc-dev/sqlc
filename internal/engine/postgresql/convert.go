@@ -106,7 +106,7 @@ func convertAccessPriv(n *pg.AccessPriv) *ast.AccessPriv {
 		return nil
 	}
 	return &ast.AccessPriv{
-		PrivName: &n.PrivName,
+		PrivName: makeString(n.PrivName),
 		Cols:     convertSlice(n.Cols),
 	}
 }
@@ -142,7 +142,7 @@ func convertAlias(n *pg.Alias) *ast.Alias {
 		return nil
 	}
 	return &ast.Alias{
-		Aliasname: &n.Aliasname,
+		Aliasname: makeString(n.Aliasname),
 		Colnames:  convertSlice(n.Colnames),
 	}
 }
@@ -161,7 +161,7 @@ func convertAlterDatabaseSetStmt(n *pg.AlterDatabaseSetStmt) *ast.AlterDatabaseS
 		return nil
 	}
 	return &ast.AlterDatabaseSetStmt{
-		Dbname:  &n.Dbname,
+		Dbname:  makeString(n.Dbname),
 		Setstmt: convertVariableSetStmt(n.Setstmt),
 	}
 }
@@ -171,7 +171,7 @@ func convertAlterDatabaseStmt(n *pg.AlterDatabaseStmt) *ast.AlterDatabaseStmt {
 		return nil
 	}
 	return &ast.AlterDatabaseStmt{
-		Dbname:  &n.Dbname,
+		Dbname:  makeString(n.Dbname),
 		Options: convertSlice(n.Options),
 	}
 }
@@ -193,7 +193,7 @@ func convertAlterDomainStmt(n *pg.AlterDomainStmt) *ast.AlterDomainStmt {
 	return &ast.AlterDomainStmt{
 		Subtype:   makeByte(n.Subtype),
 		TypeName:  convertSlice(n.TypeName),
-		Name:      &n.Name,
+		Name:      makeString(n.Name),
 		Def:       convertNode(n.Def),
 		Behavior:  ast.DropBehavior(n.Behavior),
 		MissingOk: n.MissingOk,
@@ -206,9 +206,9 @@ func convertAlterEnumStmt(n *pg.AlterEnumStmt) *ast.AlterEnumStmt {
 	}
 	return &ast.AlterEnumStmt{
 		TypeName:           convertSlice(n.TypeName),
-		OldVal:             &n.OldVal,
-		NewVal:             &n.NewVal,
-		NewValNeighbor:     &n.NewValNeighbor,
+		OldVal:             makeString(n.OldVal),
+		NewVal:             makeString(n.NewVal),
+		NewValNeighbor:     makeString(n.NewValNeighbor),
 		NewValIsAfter:      n.NewValIsAfter,
 		SkipIfNewValExists: n.SkipIfNewValExists,
 	}
@@ -219,7 +219,7 @@ func convertAlterEventTrigStmt(n *pg.AlterEventTrigStmt) *ast.AlterEventTrigStmt
 		return nil
 	}
 	return &ast.AlterEventTrigStmt{
-		Trigname:  &n.Trigname,
+		Trigname:  makeString(n.Trigname),
 		Tgenabled: makeByte(n.Tgenabled),
 	}
 }
@@ -229,7 +229,7 @@ func convertAlterExtensionContentsStmt(n *pg.AlterExtensionContentsStmt) *ast.Al
 		return nil
 	}
 	return &ast.AlterExtensionContentsStmt{
-		Extname: &n.Extname,
+		Extname: makeString(n.Extname),
 		Action:  int(n.Action),
 		Objtype: ast.ObjectType(n.Objtype),
 		Object:  convertNode(n.Object),
@@ -241,7 +241,7 @@ func convertAlterExtensionStmt(n *pg.AlterExtensionStmt) *ast.AlterExtensionStmt
 		return nil
 	}
 	return &ast.AlterExtensionStmt{
-		Extname: &n.Extname,
+		Extname: makeString(n.Extname),
 		Options: convertSlice(n.Options),
 	}
 }
@@ -251,7 +251,7 @@ func convertAlterFdwStmt(n *pg.AlterFdwStmt) *ast.AlterFdwStmt {
 		return nil
 	}
 	return &ast.AlterFdwStmt{
-		Fdwname:     &n.Fdwname,
+		Fdwname:     makeString(n.Fdwname),
 		FuncOptions: convertSlice(n.FuncOptions),
 		Options:     convertSlice(n.Options),
 	}
@@ -262,8 +262,8 @@ func convertAlterForeignServerStmt(n *pg.AlterForeignServerStmt) *ast.AlterForei
 		return nil
 	}
 	return &ast.AlterForeignServerStmt{
-		Servername: &n.Servername,
-		Version:    &n.Version,
+		Servername: makeString(n.Servername),
+		Version:    makeString(n.Version),
 		Options:    convertSlice(n.Options),
 		HasVersion: n.HasVersion,
 	}
@@ -299,7 +299,7 @@ func convertAlterObjectSchemaStmt(n *pg.AlterObjectSchemaStmt) *ast.AlterObjectS
 		ObjectType: ast.ObjectType(n.ObjectType),
 		Relation:   convertRangeVar(n.Relation),
 		Object:     convertNode(n.Object),
-		Newschema:  &n.Newschema,
+		Newschema:  makeString(n.Newschema),
 		MissingOk:  n.MissingOk,
 	}
 }
@@ -310,7 +310,7 @@ func convertAlterOpFamilyStmt(n *pg.AlterOpFamilyStmt) *ast.AlterOpFamilyStmt {
 	}
 	return &ast.AlterOpFamilyStmt{
 		Opfamilyname: convertSlice(n.Opfamilyname),
-		Amname:       &n.Amname,
+		Amname:       makeString(n.Amname),
 		IsDrop:       n.IsDrop,
 		Items:        convertSlice(n.Items),
 	}
@@ -343,7 +343,7 @@ func convertAlterPolicyStmt(n *pg.AlterPolicyStmt) *ast.AlterPolicyStmt {
 		return nil
 	}
 	return &ast.AlterPolicyStmt{
-		PolicyName: &n.PolicyName,
+		PolicyName: makeString(n.PolicyName),
 		Table:      convertRangeVar(n.Table),
 		Roles:      convertSlice(n.Roles),
 		Qual:       convertNode(n.Qual),
@@ -356,7 +356,7 @@ func convertAlterPublicationStmt(n *pg.AlterPublicationStmt) *ast.AlterPublicati
 		return nil
 	}
 	return &ast.AlterPublicationStmt{
-		Pubname:      &n.Pubname,
+		Pubname:      makeString(n.Pubname),
 		Options:      convertSlice(n.Options),
 		Tables:       convertSlice(n.Tables),
 		ForAllTables: n.ForAllTables,
@@ -370,7 +370,7 @@ func convertAlterRoleSetStmt(n *pg.AlterRoleSetStmt) *ast.AlterRoleSetStmt {
 	}
 	return &ast.AlterRoleSetStmt{
 		Role:     convertRoleSpec(n.Role),
-		Database: &n.Database,
+		Database: makeString(n.Database),
 		Setstmt:  convertVariableSetStmt(n.Setstmt),
 	}
 }
@@ -404,8 +404,8 @@ func convertAlterSubscriptionStmt(n *pg.AlterSubscriptionStmt) *ast.AlterSubscri
 	}
 	return &ast.AlterSubscriptionStmt{
 		Kind:        ast.AlterSubscriptionType(n.Kind),
-		Subname:     &n.Subname,
-		Conninfo:    &n.Conninfo,
+		Subname:     makeString(n.Subname),
+		Conninfo:    makeString(n.Conninfo),
 		Publication: convertSlice(n.Publication),
 		Options:     convertSlice(n.Options),
 	}
@@ -453,7 +453,7 @@ func convertAlterTableCmd(n *pg.AlterTableCmd) *ast.AlterTableCmd {
 	columnDef := def.(*ast.ColumnDef)
 	return &ast.AlterTableCmd{
 		Subtype:   ast.AlterTableType(n.Subtype),
-		Name:      &n.Name,
+		Name:      makeString(n.Name),
 		Newowner:  convertRoleSpec(n.Newowner),
 		Def:       columnDef,
 		Behavior:  ast.DropBehavior(n.Behavior),
@@ -466,10 +466,10 @@ func convertAlterTableMoveAllStmt(n *pg.AlterTableMoveAllStmt) *ast.AlterTableMo
 		return nil
 	}
 	return &ast.AlterTableMoveAllStmt{
-		OrigTablespacename: &n.OrigTablespacename,
+		OrigTablespacename: makeString(n.OrigTablespacename),
 		Objtype:            ast.ObjectType(n.Objtype),
 		Roles:              convertSlice(n.Roles),
-		NewTablespacename:  &n.NewTablespacename,
+		NewTablespacename:  makeString(n.NewTablespacename),
 		Nowait:             n.Nowait,
 	}
 }
@@ -479,7 +479,7 @@ func convertAlterTableSpaceOptionsStmt(n *pg.AlterTableSpaceOptionsStmt) *ast.Al
 		return nil
 	}
 	return &ast.AlterTableSpaceOptionsStmt{
-		Tablespacename: &n.Tablespacename,
+		Tablespacename: makeString(n.Tablespacename),
 		Options:        convertSlice(n.Options),
 		IsReset:        n.IsReset,
 	}
@@ -503,7 +503,7 @@ func convertAlterUserMappingStmt(n *pg.AlterUserMappingStmt) *ast.AlterUserMappi
 	}
 	return &ast.AlterUserMappingStmt{
 		User:       convertRoleSpec(n.User),
-		Servername: &n.Servername,
+		Servername: makeString(n.Servername),
 		Options:    convertSlice(n.Options),
 	}
 }
@@ -632,7 +632,7 @@ func convertClosePortalStmt(n *pg.ClosePortalStmt) *ast.ClosePortalStmt {
 		return nil
 	}
 	return &ast.ClosePortalStmt{
-		Portalname: &n.Portalname,
+		Portalname: makeString(n.Portalname),
 	}
 }
 
@@ -642,7 +642,7 @@ func convertClusterStmt(n *pg.ClusterStmt) *ast.ClusterStmt {
 	}
 	return &ast.ClusterStmt{
 		Relation:  convertRangeVar(n.Relation),
-		Indexname: &n.Indexname,
+		Indexname: makeString(n.Indexname),
 	}
 }
 
@@ -764,7 +764,7 @@ func convertCommentStmt(n *pg.CommentStmt) *ast.CommentStmt {
 	return &ast.CommentStmt{
 		Objtype: ast.ObjectType(n.Objtype),
 		Object:  convertNode(n.Object),
-		Comment: &n.Comment,
+		Comment: makeString(n.Comment),
 	}
 }
 
@@ -773,7 +773,7 @@ func convertCommonTableExpr(n *pg.CommonTableExpr) *ast.CommonTableExpr {
 		return nil
 	}
 	return &ast.CommonTableExpr{
-		Ctename:          &n.Ctename,
+		Ctename:          makeString(n.Ctename),
 		Aliascolnames:    convertSlice(n.Aliascolnames),
 		Ctequery:         convertNode(n.Ctequery),
 		Location:         int(n.Location),
@@ -802,20 +802,20 @@ func convertConstraint(n *pg.Constraint) *ast.Constraint {
 	}
 	return &ast.Constraint{
 		Contype:        ast.ConstrType(n.Contype),
-		Conname:        &n.Conname,
+		Conname:        makeString(n.Conname),
 		Deferrable:     n.Deferrable,
 		Initdeferred:   n.Initdeferred,
 		Location:       int(n.Location),
 		IsNoInherit:    n.IsNoInherit,
 		RawExpr:        convertNode(n.RawExpr),
-		CookedExpr:     &n.CookedExpr,
+		CookedExpr:     makeString(n.CookedExpr),
 		GeneratedWhen:  makeByte(n.GeneratedWhen),
 		Keys:           convertSlice(n.Keys),
 		Exclusions:     convertSlice(n.Exclusions),
 		Options:        convertSlice(n.Options),
-		Indexname:      &n.Indexname,
-		Indexspace:     &n.Indexspace,
-		AccessMethod:   &n.AccessMethod,
+		Indexname:      makeString(n.Indexname),
+		Indexspace:     makeString(n.Indexspace),
+		AccessMethod:   makeString(n.AccessMethod),
 		WhereClause:    convertNode(n.WhereClause),
 		Pktable:        convertRangeVar(n.Pktable),
 		FkAttrs:        convertSlice(n.FkAttrs),
@@ -863,7 +863,7 @@ func convertCopyStmt(n *pg.CopyStmt) *ast.CopyStmt {
 		Attlist:   convertSlice(n.Attlist),
 		IsFrom:    n.IsFrom,
 		IsProgram: n.IsProgram,
-		Filename:  &n.Filename,
+		Filename:  makeString(n.Filename),
 		Options:   convertSlice(n.Options),
 	}
 }
@@ -873,7 +873,7 @@ func convertCreateAmStmt(n *pg.CreateAmStmt) *ast.CreateAmStmt {
 		return nil
 	}
 	return &ast.CreateAmStmt{
-		Amname:      &n.Amname,
+		Amname:      makeString(n.Amname),
 		HandlerName: convertSlice(n.HandlerName),
 		Amtype:      makeByte(n.Amtype),
 	}
@@ -898,8 +898,8 @@ func convertCreateConversionStmt(n *pg.CreateConversionStmt) *ast.CreateConversi
 	}
 	return &ast.CreateConversionStmt{
 		ConversionName:  convertSlice(n.ConversionName),
-		ForEncodingName: &n.ForEncodingName,
-		ToEncodingName:  &n.ToEncodingName,
+		ForEncodingName: makeString(n.ForEncodingName),
+		ToEncodingName:  makeString(n.ToEncodingName),
 		FuncName:        convertSlice(n.FuncName),
 		Def:             n.Def,
 	}
@@ -936,8 +936,8 @@ func convertCreateEventTrigStmt(n *pg.CreateEventTrigStmt) *ast.CreateEventTrigS
 		return nil
 	}
 	return &ast.CreateEventTrigStmt{
-		Trigname:   &n.Trigname,
-		Eventname:  &n.Eventname,
+		Trigname:   makeString(n.Trigname),
+		Eventname:  makeString(n.Eventname),
 		Whenclause: convertSlice(n.Whenclause),
 		Funcname:   convertSlice(n.Funcname),
 	}
@@ -948,7 +948,7 @@ func convertCreateExtensionStmt(n *pg.CreateExtensionStmt) *ast.CreateExtensionS
 		return nil
 	}
 	return &ast.CreateExtensionStmt{
-		Extname:     &n.Extname,
+		Extname:     makeString(n.Extname),
 		IfNotExists: n.IfNotExists,
 		Options:     convertSlice(n.Options),
 	}
@@ -959,7 +959,7 @@ func convertCreateFdwStmt(n *pg.CreateFdwStmt) *ast.CreateFdwStmt {
 		return nil
 	}
 	return &ast.CreateFdwStmt{
-		Fdwname:     &n.Fdwname,
+		Fdwname:     makeString(n.Fdwname),
 		FuncOptions: convertSlice(n.FuncOptions),
 		Options:     convertSlice(n.Options),
 	}
@@ -970,10 +970,10 @@ func convertCreateForeignServerStmt(n *pg.CreateForeignServerStmt) *ast.CreateFo
 		return nil
 	}
 	return &ast.CreateForeignServerStmt{
-		Servername:  &n.Servername,
-		Servertype:  &n.Servertype,
-		Version:     &n.Version,
-		Fdwname:     &n.Fdwname,
+		Servername:  makeString(n.Servername),
+		Servertype:  makeString(n.Servertype),
+		Version:     makeString(n.Version),
+		Fdwname:     makeString(n.Fdwname),
 		IfNotExists: n.IfNotExists,
 		Options:     convertSlice(n.Options),
 	}
@@ -984,7 +984,7 @@ func convertCreateForeignTableStmt(n *pg.CreateForeignTableStmt) *ast.CreateFore
 		return nil
 	}
 	return &ast.CreateForeignTableStmt{
-		Servername: &n.Servername,
+		Servername: makeString(n.Servername),
 		Options:    convertSlice(n.Options),
 	}
 }
@@ -1027,7 +1027,7 @@ func convertCreateOpClassStmt(n *pg.CreateOpClassStmt) *ast.CreateOpClassStmt {
 	return &ast.CreateOpClassStmt{
 		Opclassname:  convertSlice(n.Opclassname),
 		Opfamilyname: convertSlice(n.Opfamilyname),
-		Amname:       &n.Amname,
+		Amname:       makeString(n.Amname),
 		Datatype:     convertTypeName(n.Datatype),
 		Items:        convertSlice(n.Items),
 		IsDefault:    n.IsDefault,
@@ -1040,7 +1040,7 @@ func convertCreateOpFamilyStmt(n *pg.CreateOpFamilyStmt) *ast.CreateOpFamilyStmt
 	}
 	return &ast.CreateOpFamilyStmt{
 		Opfamilyname: convertSlice(n.Opfamilyname),
-		Amname:       &n.Amname,
+		Amname:       makeString(n.Amname),
 	}
 }
 
@@ -1050,7 +1050,7 @@ func convertCreatePLangStmt(n *pg.CreatePLangStmt) *ast.CreatePLangStmt {
 	}
 	return &ast.CreatePLangStmt{
 		Replace:     n.Replace,
-		Plname:      &n.Plname,
+		Plname:      makeString(n.Plname),
 		Plhandler:   convertSlice(n.Plhandler),
 		Plinline:    convertSlice(n.Plinline),
 		Plvalidator: convertSlice(n.Plvalidator),
@@ -1063,9 +1063,9 @@ func convertCreatePolicyStmt(n *pg.CreatePolicyStmt) *ast.CreatePolicyStmt {
 		return nil
 	}
 	return &ast.CreatePolicyStmt{
-		PolicyName: &n.PolicyName,
+		PolicyName: makeString(n.PolicyName),
 		Table:      convertRangeVar(n.Table),
-		CmdName:    &n.CmdName,
+		CmdName:    makeString(n.CmdName),
 		Permissive: n.Permissive,
 		Roles:      convertSlice(n.Roles),
 		Qual:       convertNode(n.Qual),
@@ -1078,7 +1078,7 @@ func convertCreatePublicationStmt(n *pg.CreatePublicationStmt) *ast.CreatePublic
 		return nil
 	}
 	return &ast.CreatePublicationStmt{
-		Pubname:      &n.Pubname,
+		Pubname:      makeString(n.Pubname),
 		Options:      convertSlice(n.Options),
 		Tables:       convertSlice(n.Tables),
 		ForAllTables: n.ForAllTables,
@@ -1101,7 +1101,7 @@ func convertCreateRoleStmt(n *pg.CreateRoleStmt) *ast.CreateRoleStmt {
 	}
 	return &ast.CreateRoleStmt{
 		StmtType: ast.RoleStmtType(n.StmtType),
-		Role:     &n.Role,
+		Role:     makeString(n.Role),
 		Options:  convertSlice(n.Options),
 	}
 }
@@ -1111,7 +1111,7 @@ func convertCreateSchemaStmt(n *pg.CreateSchemaStmt) *ast.CreateSchemaStmt {
 		return nil
 	}
 	return &ast.CreateSchemaStmt{
-		Name:        &n.Schemaname,
+		Name:        makeString(n.Schemaname),
 		Authrole:    convertRoleSpec(n.Authrole),
 		SchemaElts:  convertSlice(n.SchemaElts),
 		IfNotExists: n.IfNotExists,
@@ -1158,7 +1158,7 @@ func convertCreateStmt(n *pg.CreateStmt) *ast.CreateStmt {
 		Constraints:    convertSlice(n.Constraints),
 		Options:        convertSlice(n.Options),
 		Oncommit:       ast.OnCommitAction(n.Oncommit),
-		Tablespacename: &n.Tablespacename,
+		Tablespacename: makeString(n.Tablespacename),
 		IfNotExists:    n.IfNotExists,
 	}
 }
@@ -1168,8 +1168,8 @@ func convertCreateSubscriptionStmt(n *pg.CreateSubscriptionStmt) *ast.CreateSubs
 		return nil
 	}
 	return &ast.CreateSubscriptionStmt{
-		Subname:     &n.Subname,
-		Conninfo:    &n.Conninfo,
+		Subname:     makeString(n.Subname),
+		Conninfo:    makeString(n.Conninfo),
 		Publication: convertSlice(n.Publication),
 		Options:     convertSlice(n.Options),
 	}
@@ -1193,9 +1193,9 @@ func convertCreateTableSpaceStmt(n *pg.CreateTableSpaceStmt) *ast.CreateTableSpa
 		return nil
 	}
 	return &ast.CreateTableSpaceStmt{
-		Tablespacename: &n.Tablespacename,
+		Tablespacename: makeString(n.Tablespacename),
 		Owner:          convertRoleSpec(n.Owner),
-		Location:       &n.Location,
+		Location:       makeString(n.Location),
 		Options:        convertSlice(n.Options),
 	}
 }
@@ -1207,7 +1207,7 @@ func convertCreateTransformStmt(n *pg.CreateTransformStmt) *ast.CreateTransformS
 	return &ast.CreateTransformStmt{
 		Replace:  n.Replace,
 		TypeName: convertTypeName(n.TypeName),
-		Lang:     &n.Lang,
+		Lang:     makeString(n.Lang),
 		Fromsql:  convertObjectWithArgs(n.Fromsql),
 		Tosql:    convertObjectWithArgs(n.Tosql),
 	}
@@ -1218,7 +1218,7 @@ func convertCreateTrigStmt(n *pg.CreateTrigStmt) *ast.CreateTrigStmt {
 		return nil
 	}
 	return &ast.CreateTrigStmt{
-		Trigname:       &n.Trigname,
+		Trigname:       makeString(n.Trigname),
 		Relation:       convertRangeVar(n.Relation),
 		Funcname:       convertSlice(n.Funcname),
 		Args:           convertSlice(n.Args),
@@ -1241,7 +1241,7 @@ func convertCreateUserMappingStmt(n *pg.CreateUserMappingStmt) *ast.CreateUserMa
 	}
 	return &ast.CreateUserMappingStmt{
 		User:        convertRoleSpec(n.User),
-		Servername:  &n.Servername,
+		Servername:  makeString(n.Servername),
 		IfNotExists: n.IfNotExists,
 		Options:     convertSlice(n.Options),
 	}
@@ -1252,7 +1252,7 @@ func convertCreatedbStmt(n *pg.CreatedbStmt) *ast.CreatedbStmt {
 		return nil
 	}
 	return &ast.CreatedbStmt{
-		Dbname:  &n.Dbname,
+		Dbname:  makeString(n.Dbname),
 		Options: convertSlice(n.Options),
 	}
 }
@@ -1264,7 +1264,7 @@ func convertCurrentOfExpr(n *pg.CurrentOfExpr) *ast.CurrentOfExpr {
 	return &ast.CurrentOfExpr{
 		Xpr:         convertNode(n.Xpr),
 		Cvarno:      ast.Index(n.Cvarno),
-		CursorName:  &n.CursorName,
+		CursorName:  makeString(n.CursorName),
 		CursorParam: int(n.CursorParam),
 	}
 }
@@ -1274,7 +1274,7 @@ func convertDeallocateStmt(n *pg.DeallocateStmt) *ast.DeallocateStmt {
 		return nil
 	}
 	return &ast.DeallocateStmt{
-		Name: &n.Name,
+		Name: makeString(n.Name),
 	}
 }
 
@@ -1283,7 +1283,7 @@ func convertDeclareCursorStmt(n *pg.DeclareCursorStmt) *ast.DeclareCursorStmt {
 		return nil
 	}
 	return &ast.DeclareCursorStmt{
-		Portalname: &n.Portalname,
+		Portalname: makeString(n.Portalname),
 		Options:    int(n.Options),
 		Query:      convertNode(n.Query),
 	}
@@ -1294,8 +1294,8 @@ func convertDefElem(n *pg.DefElem) *ast.DefElem {
 		return nil
 	}
 	return &ast.DefElem{
-		Defnamespace: &n.Defnamespace,
-		Defname:      &n.Defname,
+		Defnamespace: makeString(n.Defnamespace),
+		Defname:      makeString(n.Defname),
 		Arg:          convertNode(n.Arg),
 		Defaction:    ast.DefElemAction(n.Defaction),
 		Location:     int(n.Location),
@@ -1385,7 +1385,7 @@ func convertDropSubscriptionStmt(n *pg.DropSubscriptionStmt) *ast.DropSubscripti
 		return nil
 	}
 	return &ast.DropSubscriptionStmt{
-		Subname:   &n.Subname,
+		Subname:   makeString(n.Subname),
 		MissingOk: n.MissingOk,
 		Behavior:  ast.DropBehavior(n.Behavior),
 	}
@@ -1396,7 +1396,7 @@ func convertDropTableSpaceStmt(n *pg.DropTableSpaceStmt) *ast.DropTableSpaceStmt
 		return nil
 	}
 	return &ast.DropTableSpaceStmt{
-		Tablespacename: &n.Tablespacename,
+		Tablespacename: makeString(n.Tablespacename),
 		MissingOk:      n.MissingOk,
 	}
 }
@@ -1407,7 +1407,7 @@ func convertDropUserMappingStmt(n *pg.DropUserMappingStmt) *ast.DropUserMappingS
 	}
 	return &ast.DropUserMappingStmt{
 		User:       convertRoleSpec(n.User),
-		Servername: &n.Servername,
+		Servername: makeString(n.Servername),
 		MissingOk:  n.MissingOk,
 	}
 }
@@ -1417,7 +1417,7 @@ func convertDropdbStmt(n *pg.DropdbStmt) *ast.DropdbStmt {
 		return nil
 	}
 	return &ast.DropdbStmt{
-		Dbname:    &n.Dbname,
+		Dbname:    makeString(n.Dbname),
 		MissingOk: n.MissingOk,
 	}
 }
@@ -1427,7 +1427,7 @@ func convertExecuteStmt(n *pg.ExecuteStmt) *ast.ExecuteStmt {
 		return nil
 	}
 	return &ast.ExecuteStmt{
-		Name:   &n.Name,
+		Name:   makeString(n.Name),
 		Params: convertSlice(n.Params),
 	}
 }
@@ -1456,7 +1456,7 @@ func convertFetchStmt(n *pg.FetchStmt) *ast.FetchStmt {
 	return &ast.FetchStmt{
 		Direction:  ast.FetchDirection(n.Direction),
 		HowMany:    n.HowMany,
-		Portalname: &n.Portalname,
+		Portalname: makeString(n.Portalname),
 		Ismove:     n.Ismove,
 	}
 }
@@ -1554,7 +1554,7 @@ func convertFunctionParameter(n *pg.FunctionParameter) *ast.FunctionParameter {
 		return nil
 	}
 	return &ast.FunctionParameter{
-		Name:    &n.Name,
+		Name:    makeString(n.Name),
 		ArgType: convertTypeName(n.ArgType),
 		Mode:    ast.FunctionParameterMode(n.Mode),
 		Defexpr: convertNode(n.Defexpr),
@@ -1621,9 +1621,9 @@ func convertImportForeignSchemaStmt(n *pg.ImportForeignSchemaStmt) *ast.ImportFo
 		return nil
 	}
 	return &ast.ImportForeignSchemaStmt{
-		ServerName:   &n.ServerName,
-		RemoteSchema: &n.RemoteSchema,
-		LocalSchema:  &n.LocalSchema,
+		ServerName:   makeString(n.ServerName),
+		RemoteSchema: makeString(n.RemoteSchema),
+		LocalSchema:  makeString(n.LocalSchema),
 		ListType:     ast.ImportForeignSchemaType(n.ListType),
 		TableList:    convertSlice(n.TableList),
 		Options:      convertSlice(n.Options),
@@ -1635,9 +1635,9 @@ func convertIndexElem(n *pg.IndexElem) *ast.IndexElem {
 		return nil
 	}
 	return &ast.IndexElem{
-		Name:          &n.Name,
+		Name:          makeString(n.Name),
 		Expr:          convertNode(n.Expr),
-		Indexcolname:  &n.Indexcolname,
+		Indexcolname:  makeString(n.Indexcolname),
 		Collation:     convertSlice(n.Collation),
 		Opclass:       convertSlice(n.Opclass),
 		Ordering:      ast.SortByDir(n.Ordering),
@@ -1650,15 +1650,15 @@ func convertIndexStmt(n *pg.IndexStmt) *ast.IndexStmt {
 		return nil
 	}
 	return &ast.IndexStmt{
-		Idxname:        &n.Idxname,
+		Idxname:        makeString(n.Idxname),
 		Relation:       convertRangeVar(n.Relation),
-		AccessMethod:   &n.AccessMethod,
-		TableSpace:     &n.TableSpace,
+		AccessMethod:   makeString(n.AccessMethod),
+		TableSpace:     makeString(n.TableSpace),
 		IndexParams:    convertSlice(n.IndexParams),
 		Options:        convertSlice(n.Options),
 		WhereClause:    convertNode(n.WhereClause),
 		ExcludeOpNames: convertSlice(n.ExcludeOpNames),
-		Idxcomment:     &n.Idxcomment,
+		Idxcomment:     makeString(n.Idxcomment),
 		IndexOid:       ast.Oid(n.IndexOid),
 		OldNode:        ast.Oid(n.OldNode),
 		Unique:         n.Unique,
@@ -1679,7 +1679,7 @@ func convertInferClause(n *pg.InferClause) *ast.InferClause {
 	return &ast.InferClause{
 		IndexElems:  convertSlice(n.IndexElems),
 		WhereClause: convertNode(n.WhereClause),
-		Conname:     &n.Conname,
+		Conname:     makeString(n.Conname),
 		Location:    int(n.Location),
 	}
 }
@@ -1701,7 +1701,7 @@ func convertInlineCodeBlock(n *pg.InlineCodeBlock) *ast.InlineCodeBlock {
 		return nil
 	}
 	return &ast.InlineCodeBlock{
-		SourceText:    &n.SourceText,
+		SourceText:    makeString(n.SourceText),
 		LangOid:       ast.Oid(n.LangOid),
 		LangIsTrusted: n.LangIsTrusted,
 	}
@@ -1740,7 +1740,7 @@ func convertIntoClause(n *pg.IntoClause) *ast.IntoClause {
 		ColNames:       convertSlice(n.ColNames),
 		Options:        convertSlice(n.Options),
 		OnCommit:       ast.OnCommitAction(n.OnCommit),
-		TableSpaceName: &n.TableSpaceName,
+		TableSpaceName: makeString(n.TableSpaceName),
 		ViewQuery:      convertNode(n.ViewQuery),
 		SkipData:       n.SkipData,
 	}
@@ -1767,7 +1767,7 @@ func convertListenStmt(n *pg.ListenStmt) *ast.ListenStmt {
 		return nil
 	}
 	return &ast.ListenStmt{
-		Conditionname: &n.Conditionname,
+		Conditionname: makeString(n.Conditionname),
 	}
 }
 
@@ -1776,7 +1776,7 @@ func convertLoadStmt(n *pg.LoadStmt) *ast.LoadStmt {
 		return nil
 	}
 	return &ast.LoadStmt{
-		Filename: &n.Filename,
+		Filename: makeString(n.Filename),
 	}
 }
 
@@ -1835,7 +1835,7 @@ func convertNamedArgExpr(n *pg.NamedArgExpr) *ast.NamedArgExpr {
 	return &ast.NamedArgExpr{
 		Xpr:       convertNode(n.Xpr),
 		Arg:       convertNode(n.Arg),
-		Name:      &n.Name,
+		Name:      makeString(n.Name),
 		Argnumber: int(n.Argnumber),
 		Location:  int(n.Location),
 	}
@@ -1857,8 +1857,8 @@ func convertNotifyStmt(n *pg.NotifyStmt) *ast.NotifyStmt {
 		return nil
 	}
 	return &ast.NotifyStmt{
-		Conditionname: &n.Conditionname,
-		Payload:       &n.Payload,
+		Conditionname: makeString(n.Conditionname),
+		Payload:       makeString(n.Payload),
 	}
 }
 
@@ -1992,7 +1992,7 @@ func convertPartitionElem(n *pg.PartitionElem) *ast.PartitionElem {
 		return nil
 	}
 	return &ast.PartitionElem{
-		Name:      &n.Name,
+		Name:      makeString(n.Name),
 		Expr:      convertNode(n.Expr),
 		Collation: convertSlice(n.Collation),
 		Opclass:   convertSlice(n.Opclass),
@@ -2016,7 +2016,7 @@ func convertPartitionSpec(n *pg.PartitionSpec) *ast.PartitionSpec {
 		return nil
 	}
 	return &ast.PartitionSpec{
-		Strategy:   &n.Strategy,
+		Strategy:   makeString(n.Strategy),
 		PartParams: convertSlice(n.PartParams),
 		Location:   int(n.Location),
 	}
@@ -2027,7 +2027,7 @@ func convertPrepareStmt(n *pg.PrepareStmt) *ast.PrepareStmt {
 		return nil
 	}
 	return &ast.PrepareStmt{
-		Name:     &n.Name,
+		Name:     makeString(n.Name),
 		Argtypes: convertSlice(n.Argtypes),
 		Query:    convertNode(n.Query),
 	}
@@ -2121,7 +2121,7 @@ func convertRangeTableFuncCol(n *pg.RangeTableFuncCol) *ast.RangeTableFuncCol {
 		return nil
 	}
 	return &ast.RangeTableFuncCol{
-		Colname:       &n.Colname,
+		Colname:       makeString(n.Colname),
 		TypeName:      convertTypeName(n.TypeName),
 		ForOrdinality: n.ForOrdinality,
 		IsNotNull:     n.IsNotNull,
@@ -2161,13 +2161,13 @@ func convertRangeTblEntry(n *pg.RangeTblEntry) *ast.RangeTblEntry {
 		Funcordinality:  n.Funcordinality,
 		Tablefunc:       convertTableFunc(n.Tablefunc),
 		ValuesLists:     convertSlice(n.ValuesLists),
-		Ctename:         &n.Ctename,
+		Ctename:         makeString(n.Ctename),
 		Ctelevelsup:     ast.Index(n.Ctelevelsup),
 		SelfReference:   n.SelfReference,
 		Coltypes:        convertSlice(n.Coltypes),
 		Coltypmods:      convertSlice(n.Coltypmods),
 		Colcollations:   convertSlice(n.Colcollations),
-		Enrname:         &n.Enrname,
+		Enrname:         makeString(n.Enrname),
 		Enrtuples:       n.Enrtuples,
 		Alias:           convertAlias(n.Alias),
 		Eref:            convertAlias(n.Eref),
@@ -2212,9 +2212,9 @@ func convertRangeVar(n *pg.RangeVar) *ast.RangeVar {
 		return nil
 	}
 	return &ast.RangeVar{
-		Catalogname:    &n.Catalogname,
-		Schemaname:     &n.Schemaname,
-		Relname:        &n.Relname,
+		Catalogname:    makeString(n.Catalogname),
+		Schemaname:     makeString(n.Schemaname),
+		Relname:        makeString(n.Relname),
 		Inh:            n.Inh,
 		Relpersistence: makeByte(n.Relpersistence),
 		Alias:          convertAlias(n.Alias),
@@ -2261,7 +2261,7 @@ func convertReindexStmt(n *pg.ReindexStmt) *ast.ReindexStmt {
 	return &ast.ReindexStmt{
 		Kind:     ast.ReindexObjectType(n.Kind),
 		Relation: convertRangeVar(n.Relation),
-		Name:     &n.Name,
+		Name:     makeString(n.Name),
 		Options:  int(n.Options),
 	}
 }
@@ -2290,8 +2290,8 @@ func convertRenameStmt(n *pg.RenameStmt) *ast.RenameStmt {
 		RelationType: ast.ObjectType(n.RelationType),
 		Relation:     convertRangeVar(n.Relation),
 		Object:       convertNode(n.Object),
-		Subname:      &n.Subname,
-		Newname:      &n.Newname,
+		Subname:      makeString(n.Subname),
+		Newname:      makeString(n.Newname),
 		Behavior:     ast.DropBehavior(n.Behavior),
 		MissingOk:    n.MissingOk,
 	}
@@ -2303,7 +2303,7 @@ func convertReplicaIdentityStmt(n *pg.ReplicaIdentityStmt) *ast.ReplicaIdentityS
 	}
 	return &ast.ReplicaIdentityStmt{
 		IdentityType: makeByte(n.IdentityType),
-		Name:         &n.Name,
+		Name:         makeString(n.Name),
 	}
 }
 
@@ -2312,7 +2312,7 @@ func convertResTarget(n *pg.ResTarget) *ast.ResTarget {
 		return nil
 	}
 	return &ast.ResTarget{
-		Name:        &n.Name,
+		Name:        makeString(n.Name),
 		Indirection: convertSlice(n.Indirection),
 		Val:         convertNode(n.Val),
 		Location:    int(n.Location),
@@ -2325,7 +2325,7 @@ func convertRoleSpec(n *pg.RoleSpec) *ast.RoleSpec {
 	}
 	return &ast.RoleSpec{
 		Roletype: ast.RoleSpecType(n.Roletype),
-		Rolename: &n.Rolename,
+		Rolename: makeString(n.Rolename),
 		Location: int(n.Location),
 	}
 }
@@ -2377,7 +2377,7 @@ func convertRuleStmt(n *pg.RuleStmt) *ast.RuleStmt {
 	}
 	return &ast.RuleStmt{
 		Relation:    convertRangeVar(n.Relation),
-		Rulename:    &n.Rulename,
+		Rulename:    makeString(n.Rulename),
 		WhereClause: convertNode(n.WhereClause),
 		Event:       ast.CmdType(n.Event),
 		Instead:     n.Instead,
@@ -2421,8 +2421,8 @@ func convertSecLabelStmt(n *pg.SecLabelStmt) *ast.SecLabelStmt {
 	return &ast.SecLabelStmt{
 		Objtype:  ast.ObjectType(n.Objtype),
 		Object:   convertNode(n.Object),
-		Provider: &n.Provider,
-		Label:    &n.Label,
+		Provider: makeString(n.Provider),
+		Label:    makeString(n.Label),
 	}
 }
 
@@ -2541,7 +2541,7 @@ func convertSubPlan(n *pg.SubPlan) *ast.SubPlan {
 		Testexpr:          convertNode(n.Testexpr),
 		ParamIds:          convertSlice(n.ParamIds),
 		PlanId:            int(n.PlanId),
-		PlanName:          &n.PlanName,
+		PlanName:          makeString(n.PlanName),
 		FirstColType:      ast.Oid(n.FirstColType),
 		FirstColTypmod:    n.FirstColTypmod,
 		FirstColCollation: ast.Oid(n.FirstColCollation),
@@ -2606,7 +2606,7 @@ func convertTargetEntry(n *pg.TargetEntry) *ast.TargetEntry {
 		Xpr:             convertNode(n.Xpr),
 		Expr:            convertNode(n.Expr),
 		Resno:           ast.AttrNumber(n.Resno),
-		Resname:         &n.Resname,
+		Resname:         makeString(n.Resname),
 		Ressortgroupref: ast.Index(n.Ressortgroupref),
 		Resorigtbl:      ast.Oid(n.Resorigtbl),
 		Resorigcol:      ast.AttrNumber(n.Resorigcol),
@@ -2621,7 +2621,7 @@ func convertTransactionStmt(n *pg.TransactionStmt) *ast.TransactionStmt {
 	return &ast.TransactionStmt{
 		Kind:    ast.TransactionStmtKind(n.Kind),
 		Options: convertSlice(n.Options),
-		Gid:     &n.Gid,
+		Gid:     makeString(n.Gid),
 	}
 }
 
@@ -2630,7 +2630,7 @@ func convertTriggerTransition(n *pg.TriggerTransition) *ast.TriggerTransition {
 		return nil
 	}
 	return &ast.TriggerTransition{
-		Name:    &n.Name,
+		Name:    makeString(n.Name),
 		IsNew:   n.IsNew,
 		IsTable: n.IsTable,
 	}
@@ -2679,7 +2679,7 @@ func convertUnlistenStmt(n *pg.UnlistenStmt) *ast.UnlistenStmt {
 		return nil
 	}
 	return &ast.UnlistenStmt{
-		Conditionname: &n.Conditionname,
+		Conditionname: makeString(n.Conditionname),
 	}
 }
 
@@ -2731,7 +2731,7 @@ func convertVariableSetStmt(n *pg.VariableSetStmt) *ast.VariableSetStmt {
 	}
 	return &ast.VariableSetStmt{
 		Kind:    ast.VariableSetKind(n.Kind),
-		Name:    &n.Name,
+		Name:    makeString(n.Name),
 		Args:    convertSlice(n.Args),
 		IsLocal: n.IsLocal,
 	}
@@ -2742,7 +2742,7 @@ func convertVariableShowStmt(n *pg.VariableShowStmt) *ast.VariableShowStmt {
 		return nil
 	}
 	return &ast.VariableShowStmt{
-		Name: &n.Name,
+		Name: makeString(n.Name),
 	}
 }
 
@@ -2765,8 +2765,8 @@ func convertWindowClause(n *pg.WindowClause) *ast.WindowClause {
 		return nil
 	}
 	return &ast.WindowClause{
-		Name:            &n.Name,
-		Refname:         &n.Refname,
+		Name:            makeString(n.Name),
+		Refname:         makeString(n.Refname),
 		PartitionClause: convertSlice(n.PartitionClause),
 		OrderClause:     convertSlice(n.OrderClause),
 		FrameOptions:    int(n.FrameOptions),
@@ -2782,8 +2782,8 @@ func convertWindowDef(n *pg.WindowDef) *ast.WindowDef {
 		return nil
 	}
 	return &ast.WindowDef{
-		Name:            &n.Name,
-		Refname:         &n.Refname,
+		Name:            makeString(n.Name),
+		Refname:         makeString(n.Refname),
 		PartitionClause: convertSlice(n.PartitionClause),
 		OrderClause:     convertSlice(n.OrderClause),
 		FrameOptions:    int(n.FrameOptions),
@@ -2818,8 +2818,8 @@ func convertWithCheckOption(n *pg.WithCheckOption) *ast.WithCheckOption {
 	}
 	return &ast.WithCheckOption{
 		Kind:     ast.WCOKind(n.Kind),
-		Relname:  &n.Relname,
-		Polname:  &n.Polname,
+		Relname:  makeString(n.Relname),
+		Polname:  makeString(n.Polname),
 		Qual:     convertNode(n.Qual),
 		Cascaded: n.Cascaded,
 	}
@@ -2843,7 +2843,7 @@ func convertXmlExpr(n *pg.XmlExpr) *ast.XmlExpr {
 	return &ast.XmlExpr{
 		Xpr:       convertNode(n.Xpr),
 		Op:        ast.XmlExprOp(n.Op),
-		Name:      &n.Name,
+		Name:      makeString(n.Name),
 		NamedArgs: convertSlice(n.NamedArgs),
 		ArgNames:  convertSlice(n.ArgNames),
 		Args:      convertSlice(n.Args),
