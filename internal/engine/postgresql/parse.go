@@ -9,8 +9,7 @@ import (
 	"io/ioutil"
 	"strings"
 
-	pg "github.com/lfittl/pg_query_go"
-	nodes "github.com/lfittl/pg_query_go/nodes"
+	nodes "github.com/pganalyze/pg_query_go/v2"
 
 	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
@@ -190,7 +189,7 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 	if err != nil {
 		return nil, err
 	}
-	tree, err := pg.Parse(string(contents))
+	tree, err := nodes.Parse(string(contents))
 	if err != nil {
 		return nil, err
 	}
