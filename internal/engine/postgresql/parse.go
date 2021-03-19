@@ -115,10 +115,12 @@ func parseRelationFromRangeVar(rv *nodes.RangeVar) *relation {
 
 func parseRelation(in *nodes.Node) (*relation, error) {
 	switch n := in.Node.(type) {
-	case *nodes.Node_RangeVar:
-		return parseRelationFromRangeVar(n.RangeVar), nil
 	case *nodes.Node_List:
 		return parseRelationFromNodes(n.List.Items)
+	case *nodes.Node_RangeVar:
+		return parseRelationFromRangeVar(n.RangeVar), nil
+	case *nodes.Node_TypeName:
+		return parseRelationFromNodes(n.TypeName.Names)
 	default:
 		return nil, fmt.Errorf("unexpected node type: %T", n)
 	}
@@ -529,12 +531,12 @@ func translate(node *nodes.Node) (ast.Node, error) {
 			drop := &ast.DropTableStmt{
 				IfExists: n.MissingOk,
 			}
-			for _, obj := range n.Objects.Items {
-				name, err := parseTableName(obj)
+			for _, obj := range n.Objects {
+				name, err := parseRelation(obj)
 				if err != nil {
 					return nil, fmt.Errorf("nodes.DropStmt: TABLE: %w", err)
 				}
-				drop.Tables = append(drop.Tables, name)
+				drop.Tables = append(drop.Tables, name.TableName())
 			}
 			return drop, nil
 
@@ -542,12 +544,12 @@ func translate(node *nodes.Node) (ast.Node, error) {
 			drop := &ast.DropTypeStmt{
 				IfExists: n.MissingOk,
 			}
-			for _, obj := range n.Objects.Items {
-				name, err := parseTypeName(obj)
+			for _, obj := range n.Objects {
+				name, err := parseRelation(obj)
 				if err != nil {
 					return nil, fmt.Errorf("nodes.DropStmt: TYPE: %w", err)
 				}
-				drop.Types = append(drop.Types, name)
+				drop.Types = append(drop.Types, name.TypeName())
 			}
 			return drop, nil
 
@@ -559,30 +561,24 @@ func translate(node *nodes.Node) (ast.Node, error) {
 		switch n.RenameType {
 
 		case nodes.ObjectType_OBJECT_COLUMN:
-			tbl, err := parseTableName(*n.Relation)
-			if err != nil {
-				return nil, fmt.Errorf("nodes.RenameType: COLUMN: %w", err)
-			}
+			rel := parseRelationFromRangeVar(n.Relation)
 			return &ast.RenameColumnStmt{
-				Table:   tbl,
-				Col:     &ast.ColumnRef{Name: *n.Subname},
-				NewName: n.Newname,
+				Table:   rel.TableName(),
+				Col:     &ast.ColumnRef{Name: n.Subname},
+				NewName: &n.Newname,
 			}, nil
 
 		case nodes.ObjectType_OBJECT_TABLE:
-			tbl, err := parseTableName(*n.Relation)
-			if err != nil {
-				return nil, fmt.Errorf("nodes.RenameType: TABLE: %w", err)
-			}
+			rel := parseRelationFromRangeVar(n.Relation)
 			return &ast.RenameTableStmt{
-				Table:   tbl,
-				NewName: n.Newname,
+				Table:   rel.TableName(),
+				NewName: &n.Newname,
 			}, nil
 
 		}
 		return nil, errSkip
 
 	default:
-		return convert(n)
+		return convert(node)
 	}
 }

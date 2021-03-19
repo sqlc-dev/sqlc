@@ -2867,6 +2867,10 @@ func convertXmlSerialize(n *pg.XmlSerialize) *ast.XmlSerialize {
 }
 
 func convertNode(node *pg.Node) ast.Node {
+	if node == nil || node.Node == nil {
+		return &ast.TODO{}
+	}
+
 	switch n := node.Node.(type) {
 
 	case *pg.Node_AArrayExpr:
