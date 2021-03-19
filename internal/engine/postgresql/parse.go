@@ -25,9 +25,9 @@ func stringSlice(list nodes.List) []string {
 	return items
 }
 
-func stringSliceFromNodes(items []*nodes.Node) []string {
-	items := []string{}
-	for _, item := range items {
+func stringSliceFromNodes(s []*nodes.Node) []string {
+	var items []string
+	for _, item := range s {
 		if n, ok := item.Node.(nodes.Node_String); ok {
 			items = append(items, n.String.Str)
 		}

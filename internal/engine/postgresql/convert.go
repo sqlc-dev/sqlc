@@ -2872,664 +2872,664 @@ func convertNode(node *pg.Node) ast.Node {
 	case *pg.Node_AArrayExpr:
 		return convertA_ArrayExpr(n.AArrayExpr)
 
-	case pg.A_Const:
-		return convertA_Const(&n)
+	case *pg.Node_AConst:
+		return convertA_Const(n.AConst)
 
-	case pg.A_Expr:
-		return convertA_Expr(&n)
+	case *pg.Node_AExpr:
+		return convertA_Expr(n.AExpr)
 
-	case pg.A_Indices:
-		return convertA_Indices(&n)
+	case *pg.Node_AIndices:
+		return convertA_Indices(n.AIndices)
 
-	case pg.A_Indirection:
-		return convertA_Indirection(&n)
+	case *pg.Node_AIndirection:
+		return convertA_Indirection(n.AIndirection)
 
-	case pg.A_Star:
-		return convertA_Star(&n)
+	case *pg.Node_AStar:
+		return convertA_Star(n.AStar)
 
-	case pg.AccessPriv:
-		return convertAccessPriv(&n)
+	case *pg.Node_AccessPriv:
+		return convertAccessPriv(n.AccessPriv)
 
-	case pg.Aggref:
-		return convertAggref(&n)
+	case *pg.Node_Aggref:
+		return convertAggref(n.Aggref)
 
-	case pg.Alias:
-		return convertAlias(&n)
+	case *pg.Node_Alias:
+		return convertAlias(n.Alias)
 
-	case pg.AlterCollationStmt:
-		return convertAlterCollationStmt(&n)
+	case *pg.Node_AlterCollationStmt:
+		return convertAlterCollationStmt(n.AlterCollationStmt)
 
-	case pg.AlterDatabaseSetStmt:
-		return convertAlterDatabaseSetStmt(&n)
+	case *pg.Node_AlterDatabaseSetStmt:
+		return convertAlterDatabaseSetStmt(n.AlterDatabaseSetStmt)
 
-	case pg.AlterDatabaseStmt:
-		return convertAlterDatabaseStmt(&n)
+	case *pg.Node_AlterDatabaseStmt:
+		return convertAlterDatabaseStmt(n.AlterDatabaseStmt)
 
-	case pg.AlterDefaultPrivilegesStmt:
-		return convertAlterDefaultPrivilegesStmt(&n)
+	case *pg.Node_AlterDefaultPrivilegesStmt:
+		return convertAlterDefaultPrivilegesStmt(n.AlterDefaultPrivilegesStmt)
 
-	case pg.AlterDomainStmt:
-		return convertAlterDomainStmt(&n)
+	case *pg.Node_AlterDomainStmt:
+		return convertAlterDomainStmt(n.AlterDomainStmt)
 
-	case pg.AlterEnumStmt:
+	case *pg.Node_AlterEnumStmt:
 		return convertAlterEnumStmt(&n)
 
-	case pg.AlterEventTrigStmt:
+	case *pg.Node_AlterEventTrigStmt:
 		return convertAlterEventTrigStmt(&n)
 
-	case pg.AlterExtensionContentsStmt:
+	case *pg.Node_AlterExtensionContentsStmt:
 		return convertAlterExtensionContentsStmt(&n)
 
-	case pg.AlterExtensionStmt:
+	case *pg.Node_AlterExtensionStmt:
 		return convertAlterExtensionStmt(&n)
 
-	case pg.AlterFdwStmt:
+	case *pg.Node_AlterFdwStmt:
 		return convertAlterFdwStmt(&n)
 
-	case pg.AlterForeignServerStmt:
+	case *pg.Node_AlterForeignServerStmt:
 		return convertAlterForeignServerStmt(&n)
 
-	case pg.AlterFunctionStmt:
+	case *pg.Node_AlterFunctionStmt:
 		return convertAlterFunctionStmt(&n)
 
-	case pg.AlterObjectDependsStmt:
+	case *pg.Node_AlterObjectDependsStmt:
 		return convertAlterObjectDependsStmt(&n)
 
-	case pg.AlterObjectSchemaStmt:
+	case *pg.Node_AlterObjectSchemaStmt:
 		return convertAlterObjectSchemaStmt(&n)
 
-	case pg.AlterOpFamilyStmt:
+	case *pg.Node_AlterOpFamilyStmt:
 		return convertAlterOpFamilyStmt(&n)
 
-	case pg.AlterOperatorStmt:
+	case *pg.Node_AlterOperatorStmt:
 		return convertAlterOperatorStmt(&n)
 
-	case pg.AlterOwnerStmt:
+	case *pg.Node_AlterOwnerStmt:
 		return convertAlterOwnerStmt(&n)
 
-	case pg.AlterPolicyStmt:
+	case *pg.Node_AlterPolicyStmt:
 		return convertAlterPolicyStmt(&n)
 
-	case pg.AlterPublicationStmt:
+	case *pg.Node_AlterPublicationStmt:
 		return convertAlterPublicationStmt(&n)
 
-	case pg.AlterRoleSetStmt:
+	case *pg.Node_AlterRoleSetStmt:
 		return convertAlterRoleSetStmt(&n)
 
-	case pg.AlterRoleStmt:
+	case *pg.Node_AlterRoleStmt:
 		return convertAlterRoleStmt(&n)
 
-	case pg.AlterSeqStmt:
+	case *pg.Node_AlterSeqStmt:
 		return convertAlterSeqStmt(&n)
 
-	case pg.AlterSubscriptionStmt:
+	case *pg.Node_AlterSubscriptionStmt:
 		return convertAlterSubscriptionStmt(&n)
 
-	case pg.AlterSystemStmt:
+	case *pg.Node_AlterSystemStmt:
 		return convertAlterSystemStmt(&n)
 
-	case pg.AlterTSConfigurationStmt:
+	case *pg.Node_AlterTSConfigurationStmt:
 		return convertAlterTSConfigurationStmt(&n)
 
-	case pg.AlterTSDictionaryStmt:
+	case *pg.Node_AlterTSDictionaryStmt:
 		return convertAlterTSDictionaryStmt(&n)
 
-	case pg.AlterTableCmd:
+	case *pg.Node_AlterTableCmd:
 		return convertAlterTableCmd(&n)
 
-	case pg.AlterTableMoveAllStmt:
+	case *pg.Node_AlterTableMoveAllStmt:
 		return convertAlterTableMoveAllStmt(&n)
 
-	case pg.AlterTableSpaceOptionsStmt:
+	case *pg.Node_AlterTableSpaceOptionsStmt:
 		return convertAlterTableSpaceOptionsStmt(&n)
 
-	case pg.AlterTableStmt:
+	case *pg.Node_AlterTableStmt:
 		return convertAlterTableStmt(&n)
 
-	case pg.AlterUserMappingStmt:
+	case *pg.Node_AlterUserMappingStmt:
 		return convertAlterUserMappingStmt(&n)
 
-	case pg.AlternativeSubPlan:
+	case *pg.Node_AlternativeSubPlan:
 		return convertAlternativeSubPlan(&n)
 
-	case pg.ArrayCoerceExpr:
+	case *pg.Node_ArrayCoerceExpr:
 		return convertArrayCoerceExpr(&n)
 
-	case pg.ArrayExpr:
+	case *pg.Node_ArrayExpr:
 		return convertArrayExpr(&n)
 
-	case pg.BitString:
+	case *pg.Node_BitString:
 		return convertBitString(&n)
 
-	case pg.BoolExpr:
+	case *pg.Node_BoolExpr:
 		return convertBoolExpr(&n)
 
-	case pg.BooleanTest:
+	case *pg.Node_BooleanTest:
 		return convertBooleanTest(&n)
 
-	case pg.CaseExpr:
+	case *pg.Node_CaseExpr:
 		return convertCaseExpr(&n)
 
-	case pg.CaseTestExpr:
+	case *pg.Node_CaseTestExpr:
 		return convertCaseTestExpr(&n)
 
-	case pg.CaseWhen:
+	case *pg.Node_CaseWhen:
 		return convertCaseWhen(&n)
 
-	case pg.CheckPointStmt:
+	case *pg.Node_CheckPointStmt:
 		return convertCheckPointStmt(&n)
 
-	case pg.ClosePortalStmt:
+	case *pg.Node_ClosePortalStmt:
 		return convertClosePortalStmt(&n)
 
-	case pg.ClusterStmt:
+	case *pg.Node_ClusterStmt:
 		return convertClusterStmt(&n)
 
-	case pg.CoalesceExpr:
+	case *pg.Node_CoalesceExpr:
 		return convertCoalesceExpr(&n)
 
-	case pg.CoerceToDomain:
+	case *pg.Node_CoerceToDomain:
 		return convertCoerceToDomain(&n)
 
-	case pg.CoerceToDomainValue:
+	case *pg.Node_CoerceToDomainValue:
 		return convertCoerceToDomainValue(&n)
 
-	case pg.CoerceViaIO:
+	case *pg.Node_CoerceViaIO:
 		return convertCoerceViaIO(&n)
 
-	case pg.CollateClause:
+	case *pg.Node_CollateClause:
 		return convertCollateClause(&n)
 
-	case pg.CollateExpr:
+	case *pg.Node_CollateExpr:
 		return convertCollateExpr(&n)
 
-	case pg.ColumnDef:
+	case *pg.Node_ColumnDef:
 		return convertColumnDef(&n)
 
-	case pg.ColumnRef:
+	case *pg.Node_ColumnRef:
 		return convertColumnRef(&n)
 
-	case pg.CommentStmt:
+	case *pg.Node_CommentStmt:
 		return convertCommentStmt(&n)
 
-	case pg.CommonTableExpr:
+	case *pg.Node_CommonTableExpr:
 		return convertCommonTableExpr(&n)
 
-	case pg.CompositeTypeStmt:
+	case *pg.Node_CompositeTypeStmt:
 		return convertCompositeTypeStmt(&n)
 
-	case pg.Constraint:
+	case *pg.Node_Constraint:
 		return convertConstraint(&n)
 
-	case pg.ConstraintsSetStmt:
+	case *pg.Node_ConstraintsSetStmt:
 		return convertConstraintsSetStmt(&n)
 
-	case pg.ConvertRowtypeExpr:
+	case *pg.Node_ConvertRowtypeExpr:
 		return convertConvertRowtypeExpr(&n)
 
-	case pg.CopyStmt:
+	case *pg.Node_CopyStmt:
 		return convertCopyStmt(&n)
 
-	case pg.CreateAmStmt:
+	case *pg.Node_CreateAmStmt:
 		return convertCreateAmStmt(&n)
 
-	case pg.CreateCastStmt:
+	case *pg.Node_CreateCastStmt:
 		return convertCreateCastStmt(&n)
 
-	case pg.CreateConversionStmt:
+	case *pg.Node_CreateConversionStmt:
 		return convertCreateConversionStmt(&n)
 
-	case pg.CreateDomainStmt:
+	case *pg.Node_CreateDomainStmt:
 		return convertCreateDomainStmt(&n)
 
-	case pg.CreateEnumStmt:
+	case *pg.Node_CreateEnumStmt:
 		return convertCreateEnumStmt(&n)
 
-	case pg.CreateEventTrigStmt:
+	case *pg.Node_CreateEventTrigStmt:
 		return convertCreateEventTrigStmt(&n)
 
-	case pg.CreateExtensionStmt:
+	case *pg.Node_CreateExtensionStmt:
 		return convertCreateExtensionStmt(&n)
 
-	case pg.CreateFdwStmt:
+	case *pg.Node_CreateFdwStmt:
 		return convertCreateFdwStmt(&n)
 
-	case pg.CreateForeignServerStmt:
+	case *pg.Node_CreateForeignServerStmt:
 		return convertCreateForeignServerStmt(&n)
 
-	case pg.CreateForeignTableStmt:
+	case *pg.Node_CreateForeignTableStmt:
 		return convertCreateForeignTableStmt(&n)
 
-	case pg.CreateFunctionStmt:
+	case *pg.Node_CreateFunctionStmt:
 		return convertCreateFunctionStmt(&n)
 
-	case pg.CreateOpClassItem:
+	case *pg.Node_CreateOpClassItem:
 		return convertCreateOpClassItem(&n)
 
-	case pg.CreateOpClassStmt:
+	case *pg.Node_CreateOpClassStmt:
 		return convertCreateOpClassStmt(&n)
 
-	case pg.CreateOpFamilyStmt:
+	case *pg.Node_CreateOpFamilyStmt:
 		return convertCreateOpFamilyStmt(&n)
 
-	case pg.CreatePLangStmt:
+	case *pg.Node_CreatePLangStmt:
 		return convertCreatePLangStmt(&n)
 
-	case pg.CreatePolicyStmt:
+	case *pg.Node_CreatePolicyStmt:
 		return convertCreatePolicyStmt(&n)
 
-	case pg.CreatePublicationStmt:
+	case *pg.Node_CreatePublicationStmt:
 		return convertCreatePublicationStmt(&n)
 
-	case pg.CreateRangeStmt:
+	case *pg.Node_CreateRangeStmt:
 		return convertCreateRangeStmt(&n)
 
-	case pg.CreateRoleStmt:
+	case *pg.Node_CreateRoleStmt:
 		return convertCreateRoleStmt(&n)
 
-	case pg.CreateSchemaStmt:
+	case *pg.Node_CreateSchemaStmt:
 		return convertCreateSchemaStmt(&n)
 
-	case pg.CreateSeqStmt:
+	case *pg.Node_CreateSeqStmt:
 		return convertCreateSeqStmt(&n)
 
-	case pg.CreateStatsStmt:
+	case *pg.Node_CreateStatsStmt:
 		return convertCreateStatsStmt(&n)
 
-	case pg.CreateStmt:
+	case *pg.Node_CreateStmt:
 		return convertCreateStmt(&n)
 
-	case pg.CreateSubscriptionStmt:
+	case *pg.Node_CreateSubscriptionStmt:
 		return convertCreateSubscriptionStmt(&n)
 
-	case pg.CreateTableAsStmt:
+	case *pg.Node_CreateTableAsStmt:
 		return convertCreateTableAsStmt(&n)
 
-	case pg.CreateTableSpaceStmt:
+	case *pg.Node_CreateTableSpaceStmt:
 		return convertCreateTableSpaceStmt(&n)
 
-	case pg.CreateTransformStmt:
+	case *pg.Node_CreateTransformStmt:
 		return convertCreateTransformStmt(&n)
 
-	case pg.CreateTrigStmt:
+	case *pg.Node_CreateTrigStmt:
 		return convertCreateTrigStmt(&n)
 
-	case pg.CreateUserMappingStmt:
+	case *pg.Node_CreateUserMappingStmt:
 		return convertCreateUserMappingStmt(&n)
 
-	case pg.CreatedbStmt:
+	case *pg.Node_CreatedbStmt:
 		return convertCreatedbStmt(&n)
 
-	case pg.CurrentOfExpr:
+	case *pg.Node_CurrentOfExpr:
 		return convertCurrentOfExpr(&n)
 
-	case pg.DeallocateStmt:
+	case *pg.Node_DeallocateStmt:
 		return convertDeallocateStmt(&n)
 
-	case pg.DeclareCursorStmt:
+	case *pg.Node_DeclareCursorStmt:
 		return convertDeclareCursorStmt(&n)
 
-	case pg.DefElem:
+	case *pg.Node_DefElem:
 		return convertDefElem(&n)
 
-	case pg.DefineStmt:
+	case *pg.Node_DefineStmt:
 		return convertDefineStmt(&n)
 
-	case pg.DeleteStmt:
+	case *pg.Node_DeleteStmt:
 		return convertDeleteStmt(&n)
 
-	case pg.DiscardStmt:
+	case *pg.Node_DiscardStmt:
 		return convertDiscardStmt(&n)
 
-	case pg.DoStmt:
+	case *pg.Node_DoStmt:
 		return convertDoStmt(&n)
 
-	case pg.DropOwnedStmt:
+	case *pg.Node_DropOwnedStmt:
 		return convertDropOwnedStmt(&n)
 
-	case pg.DropRoleStmt:
+	case *pg.Node_DropRoleStmt:
 		return convertDropRoleStmt(&n)
 
-	case pg.DropStmt:
+	case *pg.Node_DropStmt:
 		return convertDropStmt(&n)
 
-	case pg.DropSubscriptionStmt:
+	case *pg.Node_DropSubscriptionStmt:
 		return convertDropSubscriptionStmt(&n)
 
-	case pg.DropTableSpaceStmt:
+	case *pg.Node_DropTableSpaceStmt:
 		return convertDropTableSpaceStmt(&n)
 
-	case pg.DropUserMappingStmt:
+	case *pg.Node_DropUserMappingStmt:
 		return convertDropUserMappingStmt(&n)
 
-	case pg.DropdbStmt:
+	case *pg.Node_DropdbStmt:
 		return convertDropdbStmt(&n)
 
-	case pg.ExecuteStmt:
+	case *pg.Node_ExecuteStmt:
 		return convertExecuteStmt(&n)
 
-	case pg.ExplainStmt:
+	case *pg.Node_ExplainStmt:
 		return convertExplainStmt(&n)
 
-	case pg.Expr:
+	case *pg.Node_Expr:
 		return convertExpr(&n)
 
-	case pg.FetchStmt:
+	case *pg.Node_FetchStmt:
 		return convertFetchStmt(&n)
 
-	case pg.FieldSelect:
+	case *pg.Node_FieldSelect:
 		return convertFieldSelect(&n)
 
-	case pg.FieldStore:
+	case *pg.Node_FieldStore:
 		return convertFieldStore(&n)
 
-	case pg.Float:
+	case *pg.Node_Float:
 		return convertFloat(&n)
 
-	case pg.FromExpr:
+	case *pg.Node_FromExpr:
 		return convertFromExpr(&n)
 
-	case pg.FuncCall:
+	case *pg.Node_FuncCall:
 		return convertFuncCall(&n)
 
-	case pg.FuncExpr:
+	case *pg.Node_FuncExpr:
 		return convertFuncExpr(&n)
 
-	case pg.FunctionParameter:
+	case *pg.Node_FunctionParameter:
 		return convertFunctionParameter(&n)
 
-	case pg.GrantRoleStmt:
+	case *pg.Node_GrantRoleStmt:
 		return convertGrantRoleStmt(&n)
 
-	case pg.GrantStmt:
+	case *pg.Node_GrantStmt:
 		return convertGrantStmt(&n)
 
-	case pg.GroupingFunc:
+	case *pg.Node_GroupingFunc:
 		return convertGroupingFunc(&n)
 
-	case pg.GroupingSet:
+	case *pg.Node_GroupingSet:
 		return convertGroupingSet(&n)
 
-	case pg.ImportForeignSchemaStmt:
+	case *pg.Node_ImportForeignSchemaStmt:
 		return convertImportForeignSchemaStmt(&n)
 
-	case pg.IndexElem:
+	case *pg.Node_IndexElem:
 		return convertIndexElem(&n)
 
-	case pg.IndexStmt:
+	case *pg.Node_IndexStmt:
 		return convertIndexStmt(&n)
 
-	case pg.InferClause:
+	case *pg.Node_InferClause:
 		return convertInferClause(&n)
 
-	case pg.InferenceElem:
+	case *pg.Node_InferenceElem:
 		return convertInferenceElem(&n)
 
-	case pg.InlineCodeBlock:
+	case *pg.Node_InlineCodeBlock:
 		return convertInlineCodeBlock(&n)
 
-	case pg.InsertStmt:
+	case *pg.Node_InsertStmt:
 		return convertInsertStmt(&n)
 
-	case pg.Integer:
+	case *pg.Node_Integer:
 		return convertInteger(&n)
 
-	case pg.IntoClause:
+	case *pg.Node_IntoClause:
 		return convertIntoClause(&n)
 
-	case pg.JoinExpr:
+	case *pg.Node_JoinExpr:
 		return convertJoinExpr(&n)
 
-	case pg.List:
+	case *pg.Node_List:
 		return convertSlice(n)
 
-	case pg.ListenStmt:
+	case *pg.Node_ListenStmt:
 		return convertSliceenStmt(&n)
 
-	case pg.LoadStmt:
+	case *pg.Node_LoadStmt:
 		return convertLoadStmt(&n)
 
-	case pg.LockStmt:
+	case *pg.Node_LockStmt:
 		return convertLockStmt(&n)
 
-	case pg.LockingClause:
+	case *pg.Node_LockingClause:
 		return convertLockingClause(&n)
 
-	case pg.MinMaxExpr:
+	case *pg.Node_MinMaxExpr:
 		return convertMinMaxExpr(&n)
 
-	case pg.MultiAssignRef:
+	case *pg.Node_MultiAssignRef:
 		return convertMultiAssignRef(&n)
 
-	case pg.NamedArgExpr:
+	case *pg.Node_NamedArgExpr:
 		return convertNamedArgExpr(&n)
 
-	case pg.NextValueExpr:
+	case *pg.Node_NextValueExpr:
 		return convertNextValueExpr(&n)
 
-	case pg.NotifyStmt:
+	case *pg.Node_NotifyStmt:
 		return convertNotifyStmt(&n)
 
-	case pg.Null:
+	case *pg.Node_Null:
 		return convertNull(&n)
 
-	case pg.NullTest:
+	case *pg.Node_NullTest:
 		return convertNullTest(&n)
 
-	case pg.ObjectWithArgs:
+	case *pg.Node_ObjectWithArgs:
 		return convertObjectWithArgs(&n)
 
-	case pg.OnConflictClause:
+	case *pg.Node_OnConflictClause:
 		return convertOnConflictClause(&n)
 
-	case pg.OnConflictExpr:
+	case *pg.Node_OnConflictExpr:
 		return convertOnConflictExpr(&n)
 
-	case pg.OpExpr:
+	case *pg.Node_OpExpr:
 		return convertOpExpr(&n)
 
-	case pg.Param:
+	case *pg.Node_Param:
 		return convertParam(&n)
 
-	case pg.ParamExecData:
+	case *pg.Node_ParamExecData:
 		return convertParamExecData(&n)
 
-	case pg.ParamExternData:
+	case *pg.Node_ParamExternData:
 		return convertParamExternData(&n)
 
-	case pg.ParamListInfoData:
+	case *pg.Node_ParamListInfoData:
 		return convertParamListInfoData(&n)
 
-	case pg.ParamRef:
+	case *pg.Node_ParamRef:
 		return convertParamRef(&n)
 
-	case pg.PartitionBoundSpec:
+	case *pg.Node_PartitionBoundSpec:
 		return convertPartitionBoundSpec(&n)
 
-	case pg.PartitionCmd:
+	case *pg.Node_PartitionCmd:
 		return convertPartitionCmd(&n)
 
-	case pg.PartitionElem:
+	case *pg.Node_PartitionElem:
 		return convertPartitionElem(&n)
 
-	case pg.PartitionRangeDatum:
+	case *pg.Node_PartitionRangeDatum:
 		return convertPartitionRangeDatum(&n)
 
-	case pg.PartitionSpec:
+	case *pg.Node_PartitionSpec:
 		return convertPartitionSpec(&n)
 
-	case pg.PrepareStmt:
+	case *pg.Node_PrepareStmt:
 		return convertPrepareStmt(&n)
 
-	case pg.Query:
+	case *pg.Node_Query:
 		return convertQuery(&n)
 
-	case pg.RangeFunction:
+	case *pg.Node_RangeFunction:
 		return convertRangeFunction(&n)
 
-	case pg.RangeSubselect:
+	case *pg.Node_RangeSubselect:
 		return convertRangeSubselect(&n)
 
-	case pg.RangeTableFunc:
+	case *pg.Node_RangeTableFunc:
 		return convertRangeTableFunc(&n)
 
-	case pg.RangeTableFuncCol:
+	case *pg.Node_RangeTableFuncCol:
 		return convertRangeTableFuncCol(&n)
 
-	case pg.RangeTableSample:
+	case *pg.Node_RangeTableSample:
 		return convertRangeTableSample(&n)
 
-	case pg.RangeTblEntry:
+	case *pg.Node_RangeTblEntry:
 		return convertRangeTblEntry(&n)
 
-	case pg.RangeTblFunction:
+	case *pg.Node_RangeTblFunction:
 		return convertRangeTblFunction(&n)
 
-	case pg.RangeTblRef:
+	case *pg.Node_RangeTblRef:
 		return convertRangeTblRef(&n)
 
-	case pg.RangeVar:
+	case *pg.Node_RangeVar:
 		return convertRangeVar(&n)
 
-	case pg.RawStmt:
+	case *pg.Node_RawStmt:
 		return convertRawStmt(&n)
 
-	case pg.ReassignOwnedStmt:
+	case *pg.Node_ReassignOwnedStmt:
 		return convertReassignOwnedStmt(&n)
 
-	case pg.RefreshMatViewStmt:
+	case *pg.Node_RefreshMatViewStmt:
 		return convertRefreshMatViewStmt(&n)
 
-	case pg.ReindexStmt:
+	case *pg.Node_ReindexStmt:
 		return convertReindexStmt(&n)
 
-	case pg.RelabelType:
+	case *pg.Node_RelabelType:
 		return convertRelabelType(&n)
 
-	case pg.RenameStmt:
+	case *pg.Node_RenameStmt:
 		return convertRenameStmt(&n)
 
-	case pg.ReplicaIdentityStmt:
+	case *pg.Node_ReplicaIdentityStmt:
 		return convertReplicaIdentityStmt(&n)
 
-	case pg.ResTarget:
+	case *pg.Node_ResTarget:
 		return convertResTarget(&n)
 
-	case pg.RoleSpec:
+	case *pg.Node_RoleSpec:
 		return convertRoleSpec(&n)
 
-	case pg.RowCompareExpr:
+	case *pg.Node_RowCompareExpr:
 		return convertRowCompareExpr(&n)
 
-	case pg.RowExpr:
+	case *pg.Node_RowExpr:
 		return convertRowExpr(&n)
 
-	case pg.RowMarkClause:
+	case *pg.Node_RowMarkClause:
 		return convertRowMarkClause(&n)
 
-	case pg.RuleStmt:
+	case *pg.Node_RuleStmt:
 		return convertRuleStmt(&n)
 
-	case pg.SQLValueFunction:
+	case *pg.Node_SQLValueFunction:
 		return convertSQLValueFunction(&n)
 
-	case pg.ScalarArrayOpExpr:
+	case *pg.Node_ScalarArrayOpExpr:
 		return convertScalarArrayOpExpr(&n)
 
-	case pg.SecLabelStmt:
+	case *pg.Node_SecLabelStmt:
 		return convertSecLabelStmt(&n)
 
-	case pg.SelectStmt:
+	case *pg.Node_SelectStmt:
 		return convertSelectStmt(&n)
 
-	case pg.SetOperationStmt:
+	case *pg.Node_SetOperationStmt:
 		return convertSetOperationStmt(&n)
 
-	case pg.SetToDefault:
+	case *pg.Node_SetToDefault:
 		return convertSetToDefault(&n)
 
-	case pg.SortBy:
+	case *pg.Node_SortBy:
 		return convertSortBy(&n)
 
-	case pg.SortGroupClause:
+	case *pg.Node_SortGroupClause:
 		return convertSortGroupClause(&n)
 
-	case pg.String:
+	case *pg.Node_String:
 		return convertString(&n)
 
-	case pg.SubLink:
+	case *pg.Node_SubLink:
 		return convertSubLink(&n)
 
-	case pg.SubPlan:
+	case *pg.Node_SubPlan:
 		return convertSubPlan(&n)
 
-	case pg.TableFunc:
+	case *pg.Node_TableFunc:
 		return convertTableFunc(&n)
 
-	case pg.TableLikeClause:
+	case *pg.Node_TableLikeClause:
 		return convertTableLikeClause(&n)
 
-	case pg.TableSampleClause:
+	case *pg.Node_TableSampleClause:
 		return convertTableSampleClause(&n)
 
-	case pg.TargetEntry:
+	case *pg.Node_TargetEntry:
 		return convertTargetEntry(&n)
 
-	case pg.TransactionStmt:
+	case *pg.Node_TransactionStmt:
 		return convertTransactionStmt(&n)
 
-	case pg.TriggerTransition:
+	case *pg.Node_TriggerTransition:
 		return convertTriggerTransition(&n)
 
-	case pg.TruncateStmt:
+	case *pg.Node_TruncateStmt:
 		return convertTruncateStmt(&n)
 
-	case pg.TypeCast:
+	case *pg.Node_TypeCast:
 		return convertTypeCast(&n)
 
-	case pg.TypeName:
+	case *pg.Node_TypeName:
 		return convertTypeName(&n)
 
-	case pg.UnlistenStmt:
+	case *pg.Node_UnlistenStmt:
 		return convertUnlistenStmt(&n)
 
-	case pg.UpdateStmt:
+	case *pg.Node_UpdateStmt:
 		return convertUpdateStmt(&n)
 
-	case pg.VacuumStmt:
+	case *pg.Node_VacuumStmt:
 		return convertVacuumStmt(&n)
 
-	case pg.Var:
+	case *pg.Node_Var:
 		return convertVar(&n)
 
-	case pg.VariableSetStmt:
+	case *pg.Node_VariableSetStmt:
 		return convertVariableSetStmt(&n)
 
-	case pg.VariableShowStmt:
+	case *pg.Node_VariableShowStmt:
 		return convertVariableShowStmt(&n)
 
-	case pg.ViewStmt:
+	case *pg.Node_ViewStmt:
 		return convertViewStmt(&n)
 
-	case pg.WindowClause:
+	case *pg.Node_WindowClause:
 		return convertWindowClause(&n)
 
-	case pg.WindowDef:
+	case *pg.Node_WindowDef:
 		return convertWindowDef(&n)
 
-	case pg.WindowFunc:
+	case *pg.Node_WindowFunc:
 		return convertWindowFunc(&n)
 
-	case pg.WithCheckOption:
+	case *pg.Node_WithCheckOption:
 		return convertWithCheckOption(&n)
 
-	case pg.WithClause:
+	case *pg.Node_WithClause:
 		return convertWithClause(&n)
 
-	case pg.XmlExpr:
+	case *pg.Node_XmlExpr:
 		return convertXmlExpr(&n)
 
-	case pg.XmlSerialize:
+	case *pg.Node_XmlSerialize:
 		return convertXmlSerialize(&n)
 
 	default:
