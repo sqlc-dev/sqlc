@@ -25,10 +25,36 @@ func stringSlice(list nodes.List) []string {
 	return items
 }
 
+func stringSliceFromNodes(items []*nodes.Node) []string {
+	items := []string{}
+	for _, item := range items {
+		if n, ok := item.Node.(nodes.Node_String); ok {
+			items = append(items, n.String.Str)
+		}
+	}
+	return items
+}
+
 type relation struct {
 	Catalog string
 	Schema  string
 	Name    string
+}
+
+func (r relation) TypeName() *ast.TypeName {
+	return &ast.TypeName{
+		Catalog: r.Catalog,
+		Schema:  r.Schema,
+		Name:    r.Name,
+	}
+}
+
+func (r relation) FuncName() *ast.FuncName {
+	return &ast.FuncName{
+		Catalog: rel.Catalog,
+		Schema:  rel.Schema,
+		Name:    rel.Name,
+	}
 }
 
 func parseFuncName(node nodes.Node) (*ast.FuncName, error) {
@@ -82,6 +108,37 @@ func parseTableName(node nodes.Node) (*ast.TableName, error) {
 		Schema:  rel.Schema,
 		Name:    rel.Name,
 	}, nil
+}
+
+func parseRelationFromNodes(list []*nodes.Node) (*relation, error) {
+	parts := stringSliceFromNodes(n)
+	switch len(parts) {
+	case 1:
+		return &relation{
+			Name: parts[0],
+		}, nil
+	case 2:
+		return &relation{
+			Schema: parts[0],
+			Name:   parts[1],
+		}, nil
+	case 3:
+		return &relation{
+			Catalog: parts[0],
+			Schema:  parts[1],
+			Name:    parts[2],
+		}, nil
+	default:
+		return nil, fmt.Errorf("invalid name: %s", join(n, "."))
+	}
+}
+
+func parseRelationFromRangeVar(rv *nodes.RangeVar) *relation {
+	return *relation{
+		Catalog: n.Catalogname,
+		Schema:  *n.Schemaname,
+		Name:    *n.Relname,
+	}
 }
 
 func parseRelation(node nodes.Node) (*relation, error) {
