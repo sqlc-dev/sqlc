@@ -9,18 +9,27 @@ import (
 	"io/ioutil"
 	"strings"
 
-	pg "github.com/lfittl/pg_query_go"
-	nodes "github.com/lfittl/pg_query_go/nodes"
+	nodes "github.com/pganalyze/pg_query_go/v2"
 
 	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 )
 
-func stringSlice(list nodes.List) []string {
+func stringSlice(list *nodes.List) []string {
 	items := []string{}
 	for _, item := range list.Items {
-		if n, ok := item.(nodes.String); ok {
-			items = append(items, n.Str)
+		if n, ok := item.Node.(*nodes.Node_String_); ok {
+			items = append(items, n.String_.Str)
+		}
+	}
+	return items
+}
+
+func stringSliceFromNodes(s []*nodes.Node) []string {
+	var items []string
+	for _, item := range s {
+		if n, ok := item.Node.(*nodes.Node_String_); ok {
+			items = append(items, n.String_.Str)
 		}
 	}
 	return items
@@ -32,125 +41,78 @@ type relation struct {
 	Name    string
 }
 
-func parseFuncName(node nodes.Node) (*ast.FuncName, error) {
-	rel, err := parseRelation(node)
-	if err != nil {
-		return nil, fmt.Errorf("parse func name: %w", err)
-	}
-	return &ast.FuncName{
-		Catalog: rel.Catalog,
-		Schema:  rel.Schema,
-		Name:    rel.Name,
-	}, nil
-}
-
-func parseFuncParamMode(m nodes.FunctionParameterMode) (ast.FuncParamMode, error) {
-	switch m {
-	case 'i':
-		return ast.FuncParamIn, nil
-	case 'o':
-		return ast.FuncParamOut, nil
-	case 'b':
-		return ast.FuncParamInOut, nil
-	case 'v':
-		return ast.FuncParamVariadic, nil
-	case 't':
-		return ast.FuncParamTable, nil
-	default:
-		return -1, fmt.Errorf("parse func param: invalid mode %v", m)
-	}
-}
-
-func parseTypeName(node nodes.Node) (*ast.TypeName, error) {
-	rel, err := parseRelation(node)
-	if err != nil {
-		return nil, fmt.Errorf("parse type name: %w", err)
-	}
-	return &ast.TypeName{
-		Catalog: rel.Catalog,
-		Schema:  rel.Schema,
-		Name:    rel.Name,
-	}, nil
-}
-
-func parseTableName(node nodes.Node) (*ast.TableName, error) {
-	rel, err := parseRelation(node)
-	if err != nil {
-		return nil, fmt.Errorf("parse table name: %w", err)
-	}
+func (r relation) TableName() *ast.TableName {
 	return &ast.TableName{
-		Catalog: rel.Catalog,
-		Schema:  rel.Schema,
-		Name:    rel.Name,
-	}, nil
+		Catalog: r.Catalog,
+		Schema:  r.Schema,
+		Name:    r.Name,
+	}
 }
 
-func parseRelation(node nodes.Node) (*relation, error) {
-	switch n := node.(type) {
+func (r relation) TypeName() *ast.TypeName {
+	return &ast.TypeName{
+		Catalog: r.Catalog,
+		Schema:  r.Schema,
+		Name:    r.Name,
+	}
+}
 
-	case nodes.List:
-		parts := stringSlice(n)
-		switch len(parts) {
-		case 1:
-			return &relation{
-				Name: parts[0],
-			}, nil
-		case 2:
-			return &relation{
-				Schema: parts[0],
-				Name:   parts[1],
-			}, nil
-		case 3:
-			return &relation{
-				Catalog: parts[0],
-				Schema:  parts[1],
-				Name:    parts[2],
-			}, nil
-		default:
-			return nil, fmt.Errorf("invalid name: %s", join(n, "."))
-		}
+func (r relation) FuncName() *ast.FuncName {
+	return &ast.FuncName{
+		Catalog: r.Catalog,
+		Schema:  r.Schema,
+		Name:    r.Name,
+	}
+}
 
-	case nodes.RangeVar:
-		name := relation{}
-		if n.Catalogname != nil {
-			name.Catalog = *n.Catalogname
-		}
-		if n.Schemaname != nil {
-			name.Schema = *n.Schemaname
-		}
-		if n.Relname != nil {
-			name.Name = *n.Relname
-		}
-		return &name, nil
+func parseRelationFromNodes(list []*nodes.Node) (*relation, error) {
+	parts := stringSliceFromNodes(list)
+	switch len(parts) {
+	case 1:
+		return &relation{
+			Name: parts[0],
+		}, nil
+	case 2:
+		return &relation{
+			Schema: parts[0],
+			Name:   parts[1],
+		}, nil
+	case 3:
+		return &relation{
+			Catalog: parts[0],
+			Schema:  parts[1],
+			Name:    parts[2],
+		}, nil
+	default:
+		return nil, fmt.Errorf("invalid name: %s", joinNodes(list, "."))
+	}
+}
 
-	case *nodes.RangeVar:
-		name := relation{}
-		if n.Catalogname != nil {
-			name.Catalog = *n.Catalogname
-		}
-		if n.Schemaname != nil {
-			name.Schema = *n.Schemaname
-		}
-		if n.Relname != nil {
-			name.Name = *n.Relname
-		}
-		return &name, nil
+func parseRelationFromRangeVar(rv *nodes.RangeVar) *relation {
+	return &relation{
+		Catalog: rv.Catalogname,
+		Schema:  rv.Schemaname,
+		Name:    rv.Relname,
+	}
+}
 
-	case nodes.TypeName:
-		return parseRelation(n.Names)
-
-	case *nodes.TypeName:
-		return parseRelation(n.Names)
-
+func parseRelation(in *nodes.Node) (*relation, error) {
+	switch n := in.Node.(type) {
+	case *nodes.Node_List:
+		return parseRelationFromNodes(n.List.Items)
+	case *nodes.Node_RangeVar:
+		return parseRelationFromRangeVar(n.RangeVar), nil
+	case *nodes.Node_TypeName:
+		return parseRelationFromNodes(n.TypeName.Names)
 	default:
 		return nil, fmt.Errorf("unexpected node type: %T", n)
 	}
 }
 
-func parseColName(node nodes.Node) (*ast.ColumnRef, *ast.TableName, error) {
-	switch n := node.(type) {
-	case nodes.List:
-		parts := stringSlice(n)
+func parseColName(node *nodes.Node) (*ast.ColumnRef, *ast.TableName, error) {
+	switch n := node.Node.(type) {
+	case *nodes.Node_List:
+		parts := stringSlice(n.List)
 		var tbl *ast.TableName
 		var ref *ast.ColumnRef
 		switch len(parts) {
@@ -172,8 +134,12 @@ func parseColName(node nodes.Node) (*ast.ColumnRef, *ast.TableName, error) {
 	}
 }
 
-func join(list nodes.List, sep string) string {
+func join(list *nodes.List, sep string) string {
 	return strings.Join(stringSlice(list), sep)
+}
+
+func joinNodes(list []*nodes.Node, sep string) string {
+	return strings.Join(stringSliceFromNodes(list), sep)
 }
 
 func NewParser() *Parser {
@@ -190,17 +156,13 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 	if err != nil {
 		return nil, err
 	}
-	tree, err := pg.Parse(string(contents))
+	tree, err := nodes.Parse(string(contents))
 	if err != nil {
 		return nil, err
 	}
 
 	var stmts []ast.Statement
-	for _, stmt := range tree.Statements {
-		raw, ok := stmt.(nodes.RawStmt)
-		if !ok {
-			return nil, fmt.Errorf("expected RawStmt; got %T", stmt)
-		}
+	for _, raw := range tree.Stmts {
 		n, err := translate(raw.Stmt)
 		if err == errSkip {
 			continue
@@ -214,8 +176,8 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 		stmts = append(stmts, ast.Statement{
 			Raw: &ast.RawStmt{
 				Stmt:         n,
-				StmtLocation: raw.StmtLocation,
-				StmtLen:      raw.StmtLen,
+				StmtLocation: int(raw.StmtLocation),
+				StmtLen:      int(raw.StmtLen),
 			},
 		})
 	}
@@ -230,101 +192,106 @@ func (p *Parser) CommentSyntax() metadata.CommentSyntax {
 	}
 }
 
-func translate(node nodes.Node) (ast.Node, error) {
-	switch n := node.(type) {
+func translate(node *nodes.Node) (ast.Node, error) {
+	switch inner := node.Node.(type) {
 
-	case nodes.AlterEnumStmt:
-		name, err := parseTypeName(n.TypeName)
+	case *nodes.Node_AlterEnumStmt:
+		n := inner.AlterEnumStmt
+		rel, err := parseRelationFromNodes(n.TypeName)
 		if err != nil {
 			return nil, err
 		}
-		if n.OldVal != nil {
+		if n.OldVal != "" {
 			return &ast.AlterTypeRenameValueStmt{
-				Type:     name,
-				OldValue: n.OldVal,
-				NewValue: n.NewVal,
+				Type:     rel.TypeName(),
+				OldValue: makeString(n.OldVal),
+				NewValue: makeString(n.NewVal),
 			}, nil
 		} else {
 			return &ast.AlterTypeAddValueStmt{
-				Type:               name,
-				NewValue:           n.NewVal,
+				Type:               rel.TypeName(),
+				NewValue:           makeString(n.NewVal),
 				SkipIfNewValExists: n.SkipIfNewValExists,
 			}, nil
 		}
 
-	case nodes.AlterObjectSchemaStmt:
+	case *nodes.Node_AlterObjectSchemaStmt:
+		n := inner.AlterObjectSchemaStmt
 		switch n.ObjectType {
 
-		case nodes.OBJECT_TABLE:
-			tbl, err := parseTableName(*n.Relation)
-			if err != nil {
-				return nil, err
-			}
+		case nodes.ObjectType_OBJECT_TABLE:
+			rel := parseRelationFromRangeVar(n.Relation)
 			return &ast.AlterTableSetSchemaStmt{
-				Table:     tbl,
-				NewSchema: n.Newschema,
+				Table:     rel.TableName(),
+				NewSchema: makeString(n.Newschema),
 			}, nil
 		}
 		return nil, errSkip
 
-	case nodes.AlterTableStmt:
-		name, err := parseTableName(*n.Relation)
-		if err != nil {
-			return nil, err
-		}
+	case *nodes.Node_AlterTableStmt:
+		n := inner.AlterTableStmt
+		rel := parseRelationFromRangeVar(n.Relation)
 		at := &ast.AlterTableStmt{
-			Table: name,
+			Table: rel.TableName(),
 			Cmds:  &ast.List{},
 		}
-		for _, cmd := range n.Cmds.Items {
-			switch cmd := cmd.(type) {
-			case nodes.AlterTableCmd:
-				item := &ast.AlterTableCmd{Name: cmd.Name, MissingOk: cmd.MissingOk}
+		for _, cmd := range n.Cmds {
+			switch cmdOneOf := cmd.Node.(type) {
+			case *nodes.Node_AlterTableCmd:
+				altercmd := cmdOneOf.AlterTableCmd
+				item := &ast.AlterTableCmd{Name: &altercmd.Name, MissingOk: altercmd.MissingOk}
 
-				switch cmd.Subtype {
-				case nodes.AT_AddColumn:
-					d := cmd.Def.(nodes.ColumnDef)
-					tn, err := parseTypeName(d.TypeName)
+				switch altercmd.Subtype {
+				case nodes.AlterTableType_AT_AddColumn:
+					d, ok := altercmd.Def.Node.(*nodes.Node_ColumnDef)
+					if !ok {
+						return nil, fmt.Errorf("expected alter table defintion to be a ColumnDef")
+					}
+
+					rel, err := parseRelationFromNodes(d.ColumnDef.TypeName.Names)
 					if err != nil {
 						return nil, err
 					}
 					item.Subtype = ast.AT_AddColumn
 					item.Def = &ast.ColumnDef{
-						Colname:   *d.Colname,
-						TypeName:  tn,
-						IsNotNull: isNotNull(d),
-						IsArray:   isArray(d.TypeName),
+						Colname:   d.ColumnDef.Colname,
+						TypeName:  rel.TypeName(),
+						IsNotNull: isNotNull(d.ColumnDef),
+						IsArray:   isArray(d.ColumnDef.TypeName),
 					}
 
-				case nodes.AT_AlterColumnType:
-					d := cmd.Def.(nodes.ColumnDef)
+				case nodes.AlterTableType_AT_AlterColumnType:
+					d, ok := altercmd.Def.Node.(*nodes.Node_ColumnDef)
+					if !ok {
+						return nil, fmt.Errorf("expected alter table defintion to be a ColumnDef")
+					}
 					col := ""
-					if cmd.Name != nil {
-						col = *cmd.Name
-					} else if d.Colname != nil {
-						col = *d.Colname
+					if altercmd.Name != "" {
+						col = altercmd.Name
+					} else if d.ColumnDef.Colname != "" {
+						col = d.ColumnDef.Colname
 					} else {
 						return nil, fmt.Errorf("unknown name for alter column type")
 					}
-					tn, err := parseTypeName(d.TypeName)
+					rel, err := parseRelationFromNodes(d.ColumnDef.TypeName.Names)
 					if err != nil {
 						return nil, err
 					}
 					item.Subtype = ast.AT_AlterColumnType
 					item.Def = &ast.ColumnDef{
 						Colname:   col,
-						TypeName:  tn,
-						IsNotNull: isNotNull(d),
-						IsArray:   isArray(d.TypeName),
+						TypeName:  rel.TypeName(),
+						IsNotNull: isNotNull(d.ColumnDef),
+						IsArray:   isArray(d.ColumnDef.TypeName),
 					}
 
-				case nodes.AT_DropColumn:
+				case nodes.AlterTableType_AT_DropColumn:
 					item.Subtype = ast.AT_DropColumn
 
-				case nodes.AT_DropNotNull:
+				case nodes.AlterTableType_AT_DropNotNull:
 					item.Subtype = ast.AT_DropNotNull
 
-				case nodes.AT_SetNotNull:
+				case nodes.AlterTableType_AT_SetNotNull:
 					item.Subtype = ast.AT_SetNotNull
 
 				default:
@@ -336,10 +303,11 @@ func translate(node nodes.Node) (ast.Node, error) {
 		}
 		return at, nil
 
-	case nodes.CommentStmt:
+	case *nodes.Node_CommentStmt:
+		n := inner.CommentStmt
 		switch n.Objtype {
 
-		case nodes.OBJECT_COLUMN:
+		case nodes.ObjectType_OBJECT_COLUMN:
 			col, tbl, err := parseColName(n.Object)
 			if err != nil {
 				return nil, fmt.Errorf("COMMENT ON COLUMN: %w", err)
@@ -347,135 +315,134 @@ func translate(node nodes.Node) (ast.Node, error) {
 			return &ast.CommentOnColumnStmt{
 				Col:     col,
 				Table:   tbl,
-				Comment: n.Comment,
+				Comment: makeString(n.Comment),
 			}, nil
 
-		case nodes.OBJECT_SCHEMA:
-			o, ok := n.Object.(nodes.String)
+		case nodes.ObjectType_OBJECT_SCHEMA:
+			o, ok := n.Object.Node.(*nodes.Node_String_)
 			if !ok {
 				return nil, fmt.Errorf("COMMENT ON SCHEMA: unexpected node type: %T", n.Object)
 			}
 			return &ast.CommentOnSchemaStmt{
-				Schema:  &ast.String{Str: o.Str},
-				Comment: n.Comment,
+				Schema:  &ast.String{Str: o.String_.Str},
+				Comment: makeString(n.Comment),
 			}, nil
 
-		case nodes.OBJECT_TABLE:
-			name, err := parseTableName(n.Object)
+		case nodes.ObjectType_OBJECT_TABLE:
+			rel, err := parseRelation(n.Object)
 			if err != nil {
 				return nil, fmt.Errorf("COMMENT ON TABLE: %w", err)
 			}
 			return &ast.CommentOnTableStmt{
-				Table:   name,
-				Comment: n.Comment,
+				Table:   rel.TableName(),
+				Comment: makeString(n.Comment),
 			}, nil
 
-		case nodes.OBJECT_TYPE:
-			name, err := parseTypeName(n.Object)
+		case nodes.ObjectType_OBJECT_TYPE:
+			rel, err := parseRelation(n.Object)
 			if err != nil {
 				return nil, err
 			}
 			return &ast.CommentOnTypeStmt{
-				Type:    name,
-				Comment: n.Comment,
+				Type:    rel.TypeName(),
+				Comment: makeString(n.Comment),
 			}, nil
 
 		}
 		return nil, errSkip
 
-	case nodes.CompositeTypeStmt:
-		name, err := parseTypeName(n.Typevar)
-		if err != nil {
-			return nil, err
-		}
+	case *nodes.Node_CompositeTypeStmt:
+		n := inner.CompositeTypeStmt
+		rel := parseRelationFromRangeVar(n.Typevar)
 		return &ast.CompositeTypeStmt{
-			TypeName: name,
+			TypeName: rel.TypeName(),
 		}, nil
 
-	case nodes.CreateStmt:
-		name, err := parseTableName(*n.Relation)
-		if err != nil {
-			return nil, err
-		}
+	case *nodes.Node_CreateStmt:
+		n := inner.CreateStmt
+		rel := parseRelationFromRangeVar(n.Relation)
 		create := &ast.CreateTableStmt{
-			Name:        name,
+			Name:        rel.TableName(),
 			IfNotExists: n.IfNotExists,
 		}
 		primaryKey := make(map[string]bool)
-		for _, elt := range n.TableElts.Items {
-			switch n := elt.(type) {
-			case nodes.Constraint:
-				if n.Contype == nodes.CONSTR_PRIMARY {
-					for _, item := range n.Keys.Items {
-						primaryKey[item.(nodes.String).Str] = true
+		for _, elt := range n.TableElts {
+			switch item := elt.Node.(type) {
+			case *nodes.Node_Constraint:
+				if item.Constraint.Contype == nodes.ConstrType_CONSTR_PRIMARY {
+					for _, key := range item.Constraint.Keys {
+						// FIXME: Possible nil pointer dereference
+						primaryKey[key.Node.(*nodes.Node_String_).String_.Str] = true
 					}
 				}
 			}
 		}
-		for _, elt := range n.TableElts.Items {
-			switch n := elt.(type) {
-			case nodes.ColumnDef:
-				tn, err := parseTypeName(n.TypeName)
+		for _, elt := range n.TableElts {
+			switch item := elt.Node.(type) {
+			case *nodes.Node_ColumnDef:
+				rel, err := parseRelationFromNodes(item.ColumnDef.TypeName.Names)
 				if err != nil {
 					return nil, err
 				}
 				create.Cols = append(create.Cols, &ast.ColumnDef{
-					Colname:   *n.Colname,
-					TypeName:  tn,
-					IsNotNull: isNotNull(n) || primaryKey[*n.Colname],
-					IsArray:   isArray(n.TypeName),
+					Colname:   item.ColumnDef.Colname,
+					TypeName:  rel.TypeName(),
+					IsNotNull: isNotNull(item.ColumnDef) || primaryKey[item.ColumnDef.Colname],
+					IsArray:   isArray(item.ColumnDef.TypeName),
 				})
 			}
 		}
 		return create, nil
 
-	case nodes.CreateEnumStmt:
-		name, err := parseTypeName(n.TypeName)
+	case *nodes.Node_CreateEnumStmt:
+		n := inner.CreateEnumStmt
+		rel, err := parseRelationFromNodes(n.TypeName)
 		if err != nil {
 			return nil, err
 		}
 		stmt := &ast.CreateEnumStmt{
-			TypeName: name,
+			TypeName: rel.TypeName(),
 			Vals:     &ast.List{},
 		}
-		for _, val := range n.Vals.Items {
-			switch v := val.(type) {
-			case nodes.String:
+		for _, val := range n.Vals {
+			switch v := val.Node.(type) {
+			case *nodes.Node_String_:
 				stmt.Vals.Items = append(stmt.Vals.Items, &ast.String{
-					Str: v.Str,
+					Str: v.String_.Str,
 				})
 			}
 		}
 		return stmt, nil
 
-	case nodes.CreateFunctionStmt:
-		fn, err := parseFuncName(n.Funcname)
+	case *nodes.Node_CreateFunctionStmt:
+		n := inner.CreateFunctionStmt
+		fn, err := parseRelationFromNodes(n.Funcname)
 		if err != nil {
 			return nil, err
 		}
-		rt, err := parseTypeName(n.ReturnType)
+		rt, err := parseRelationFromNodes(n.ReturnType.Names)
 		if err != nil {
 			return nil, err
 		}
 		stmt := &ast.CreateFunctionStmt{
-			Func:       fn,
-			ReturnType: rt,
+			Func:       fn.FuncName(),
+			ReturnType: rt.TypeName(),
 			Replace:    n.Replace,
 			Params:     &ast.List{},
 		}
-		for _, item := range n.Parameters.Items {
-			arg := item.(nodes.FunctionParameter)
-			tn, err := parseTypeName(arg.ArgType)
+		for _, item := range n.Parameters {
+			arg := item.Node.(*nodes.Node_FunctionParameter).FunctionParameter
+			rel, err := parseRelationFromNodes(arg.ArgType.Names)
 			if err != nil {
 				return nil, err
 			}
-			mode, err := parseFuncParamMode(arg.Mode)
+			mode, err := convertFuncParamMode(arg.Mode)
 			if err != nil {
 				return nil, err
 			}
 			fp := &ast.FuncParam{
-				Name: arg.Name,
-				Type: tn,
+				Name: &arg.Name,
+				Type: rel.TypeName(),
 				Mode: mode,
 			}
 			if arg.Defexpr != nil {
@@ -485,118 +452,116 @@ func translate(node nodes.Node) (ast.Node, error) {
 		}
 		return stmt, nil
 
-	case nodes.CreateSchemaStmt:
+	case *nodes.Node_CreateSchemaStmt:
+		n := inner.CreateSchemaStmt
 		return &ast.CreateSchemaStmt{
-			Name:        n.Schemaname,
+			Name:        makeString(n.Schemaname),
 			IfNotExists: n.IfNotExists,
 		}, nil
 
-	case nodes.DropStmt:
+	case *nodes.Node_DropStmt:
+		n := inner.DropStmt
 		switch n.RemoveType {
 
-		case nodes.OBJECT_FUNCTION:
+		case nodes.ObjectType_OBJECT_FUNCTION:
 			drop := &ast.DropFunctionStmt{
 				MissingOk: n.MissingOk,
 			}
-			for _, obj := range n.Objects.Items {
-				owa, ok := obj.(nodes.ObjectWithArgs)
+			for _, obj := range n.Objects {
+				nowa, ok := obj.Node.(*nodes.Node_ObjectWithArgs)
 				if !ok {
 					return nil, fmt.Errorf("nodes.DropStmt: FUNCTION: unknown type in objects list: %T", obj)
 				}
-				fn, err := parseFuncName(owa.Objname)
+				owa := nowa.ObjectWithArgs
+				fn, err := parseRelationFromNodes(owa.Objname)
 				if err != nil {
 					return nil, fmt.Errorf("nodes.DropStmt: FUNCTION: %w", err)
 				}
-				args := make([]*ast.TypeName, len(owa.Objargs.Items))
-				for i, objarg := range owa.Objargs.Items {
-					tn, ok := objarg.(nodes.TypeName)
+				args := make([]*ast.TypeName, len(owa.Objargs))
+				for i, objarg := range owa.Objargs {
+					tn, ok := objarg.Node.(*nodes.Node_TypeName)
 					if !ok {
 						return nil, fmt.Errorf("nodes.DropStmt: FUNCTION: unknown type in objargs list: %T", objarg)
 					}
-					at, err := parseTypeName(tn)
+					at, err := parseRelationFromNodes(tn.TypeName.Names)
 					if err != nil {
 						return nil, fmt.Errorf("nodes.DropStmt: FUNCTION: %w", err)
 					}
-					args[i] = at
+					args[i] = at.TypeName()
 				}
 				drop.Funcs = append(drop.Funcs, &ast.FuncSpec{
-					Name:    fn,
+					Name:    fn.FuncName(),
 					Args:    args,
 					HasArgs: !owa.ArgsUnspecified,
 				})
 			}
 			return drop, nil
 
-		case nodes.OBJECT_SCHEMA:
+		case nodes.ObjectType_OBJECT_SCHEMA:
 			drop := &ast.DropSchemaStmt{
 				MissingOk: n.MissingOk,
 			}
-			for _, obj := range n.Objects.Items {
-				val, ok := obj.(nodes.String)
+			for _, obj := range n.Objects {
+				val, ok := obj.Node.(*nodes.Node_String_)
 				if !ok {
 					return nil, fmt.Errorf("nodes.DropStmt: SCHEMA: unknown type in objects list: %T", obj)
 				}
-				drop.Schemas = append(drop.Schemas, &ast.String{Str: val.Str})
+				drop.Schemas = append(drop.Schemas, &ast.String{Str: val.String_.Str})
 			}
 			return drop, nil
 
-		case nodes.OBJECT_TABLE:
+		case nodes.ObjectType_OBJECT_TABLE:
 			drop := &ast.DropTableStmt{
 				IfExists: n.MissingOk,
 			}
-			for _, obj := range n.Objects.Items {
-				name, err := parseTableName(obj)
+			for _, obj := range n.Objects {
+				name, err := parseRelation(obj)
 				if err != nil {
 					return nil, fmt.Errorf("nodes.DropStmt: TABLE: %w", err)
 				}
-				drop.Tables = append(drop.Tables, name)
+				drop.Tables = append(drop.Tables, name.TableName())
 			}
 			return drop, nil
 
-		case nodes.OBJECT_TYPE:
+		case nodes.ObjectType_OBJECT_TYPE:
 			drop := &ast.DropTypeStmt{
 				IfExists: n.MissingOk,
 			}
-			for _, obj := range n.Objects.Items {
-				name, err := parseTypeName(obj)
+			for _, obj := range n.Objects {
+				name, err := parseRelation(obj)
 				if err != nil {
 					return nil, fmt.Errorf("nodes.DropStmt: TYPE: %w", err)
 				}
-				drop.Types = append(drop.Types, name)
+				drop.Types = append(drop.Types, name.TypeName())
 			}
 			return drop, nil
 
 		}
 		return nil, errSkip
 
-	case nodes.RenameStmt:
+	case *nodes.Node_RenameStmt:
+		n := inner.RenameStmt
 		switch n.RenameType {
 
-		case nodes.OBJECT_COLUMN:
-			tbl, err := parseTableName(*n.Relation)
-			if err != nil {
-				return nil, fmt.Errorf("nodes.RenameType: COLUMN: %w", err)
-			}
+		case nodes.ObjectType_OBJECT_COLUMN:
+			rel := parseRelationFromRangeVar(n.Relation)
 			return &ast.RenameColumnStmt{
-				Table:   tbl,
-				Col:     &ast.ColumnRef{Name: *n.Subname},
-				NewName: n.Newname,
+				Table:   rel.TableName(),
+				Col:     &ast.ColumnRef{Name: n.Subname},
+				NewName: makeString(n.Newname),
 			}, nil
 
-		case nodes.OBJECT_TABLE:
-			tbl, err := parseTableName(*n.Relation)
-			if err != nil {
-				return nil, fmt.Errorf("nodes.RenameType: TABLE: %w", err)
-			}
+		case nodes.ObjectType_OBJECT_TABLE:
+			rel := parseRelationFromRangeVar(n.Relation)
 			return &ast.RenameTableStmt{
-				Table:   tbl,
-				NewName: n.Newname,
+				Table:   rel.TableName(),
+				NewName: makeString(n.Newname),
 			}, nil
 
 		}
 		return nil, errSkip
 
 	default:
-		return convert(n)
+		return convert(node)
 	}
 }
