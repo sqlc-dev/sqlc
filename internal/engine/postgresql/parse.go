@@ -420,13 +420,17 @@ func translate(node *nodes.Node) (ast.Node, error) {
 		if err != nil {
 			return nil, err
 		}
-		rt, err := parseRelationFromNodes(n.ReturnType.Names)
-		if err != nil {
-			return nil, err
+		var rt *ast.TypeName
+		if n.ReturnType != nil {
+			rel, err := parseRelationFromNodes(n.ReturnType.Names)
+			if err != nil {
+				return nil, err
+			}
+			rt = rel.TypeName()
 		}
 		stmt := &ast.CreateFunctionStmt{
 			Func:       fn.FuncName(),
-			ReturnType: rt.TypeName(),
+			ReturnType: rt,
 			Replace:    n.Replace,
 			Params:     &ast.List{},
 		}
