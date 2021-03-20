@@ -3,10 +3,67 @@
 package postgresql
 
 import (
+	"fmt"
+
 	pg "github.com/pganalyze/pg_query_go/v2"
 
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 )
+
+func convertFuncParamMode(m pg.FunctionParameterMode) (ast.FuncParamMode, error) {
+	switch m {
+	case pg.FunctionParameterMode_FUNC_PARAM_IN:
+		return ast.FuncParamIn, nil
+	case pg.FunctionParameterMode_FUNC_PARAM_OUT:
+		return ast.FuncParamOut, nil
+	case pg.FunctionParameterMode_FUNC_PARAM_INOUT:
+		return ast.FuncParamInOut, nil
+	case pg.FunctionParameterMode_FUNC_PARAM_VARIADIC:
+		return ast.FuncParamVariadic, nil
+	case pg.FunctionParameterMode_FUNC_PARAM_TABLE:
+		return ast.FuncParamTable, nil
+	default:
+		return -1, fmt.Errorf("parse func param: invalid mode %v", m)
+	}
+}
+
+func convertSubLinkType(t pg.SubLinkType) (ast.SubLinkType, error) {
+	switch t {
+	case pg.SubLinkType_EXISTS_SUBLINK:
+		return ast.EXISTS_SUBLINK, nil
+	case pg.SubLinkType_ALL_SUBLINK:
+		return ast.ALL_SUBLINK, nil
+	case pg.SubLinkType_ANY_SUBLINK:
+		return ast.ANY_SUBLINK, nil
+	case pg.SubLinkType_ROWCOMPARE_SUBLINK:
+		return ast.ROWCOMPARE_SUBLINK, nil
+	case pg.SubLinkType_EXPR_SUBLINK:
+		return ast.EXISTS_SUBLINK, nil
+	case pg.SubLinkType_MULTIEXPR_SUBLINK:
+		return ast.MULTIEXPR_SUBLINK, nil
+	case pg.SubLinkType_ARRAY_SUBLINK:
+		return ast.ARRAY_SUBLINK, nil
+	case pg.SubLinkType_CTE_SUBLINK:
+		return ast.CTE_SUBLINK, nil
+	default:
+		return 0, fmt.Errorf("parse sublink type: unknown type %s", t)
+	}
+}
+
+func convertSetOperation(t pg.SetOperation) (ast.SetOperation, error) {
+	switch t {
+	case pg.SetOperation_SETOP_NONE:
+		return ast.None, nil
+	case pg.SetOperation_SETOP_UNION:
+		return ast.Union, nil
+	case pg.SetOperation_SETOP_INTERSECT:
+		return ast.Intersect, nil
+	case pg.SetOperation_SETOP_EXCEPT:
+		return ast.Except, nil
+	default:
+		return 0, fmt.Errorf("parse set operation: unknown type %s", t)
+	}
+}
 
 func convertList(l *pg.List) *ast.List {
 	out := &ast.List{}
@@ -2430,6 +2487,10 @@ func convertSelectStmt(n *pg.SelectStmt) *ast.SelectStmt {
 	if n == nil {
 		return nil
 	}
+	op, err := convertSetOperation(n.Op)
+	if err != nil {
+		panic(err)
+	}
 	return &ast.SelectStmt{
 		DistinctClause: convertSlice(n.DistinctClause),
 		IntoClause:     convertIntoClause(n.IntoClause),
@@ -2445,7 +2506,7 @@ func convertSelectStmt(n *pg.SelectStmt) *ast.SelectStmt {
 		LimitCount:     convertNode(n.LimitCount),
 		LockingClause:  convertSlice(n.LockingClause),
 		WithClause:     convertWithClause(n.WithClause),
-		Op:             ast.SetOperation(n.Op),
+		Op:             op,
 		All:            n.All,
 		Larg:           convertSelectStmt(n.Larg),
 		Rarg:           convertSelectStmt(n.Rarg),
@@ -2456,8 +2517,12 @@ func convertSetOperationStmt(n *pg.SetOperationStmt) *ast.SetOperationStmt {
 	if n == nil {
 		return nil
 	}
+	op, err := convertSetOperation(n.Op)
+	if err != nil {
+		panic(err)
+	}
 	return &ast.SetOperationStmt{
-		Op:            ast.SetOperation(n.Op),
+		Op:            op,
 		All:           n.All,
 		Larg:          convertNode(n.Larg),
 		Rarg:          convertNode(n.Rarg),
@@ -2520,9 +2585,13 @@ func convertSubLink(n *pg.SubLink) *ast.SubLink {
 	if n == nil {
 		return nil
 	}
+	slt, err := convertSubLinkType(n.SubLinkType)
+	if err != nil {
+		panic(err)
+	}
 	return &ast.SubLink{
 		Xpr:         convertNode(n.Xpr),
-		SubLinkType: ast.SubLinkType(n.SubLinkType),
+		SubLinkType: slt,
 		SubLinkId:   int(n.SubLinkId),
 		Testexpr:    convertNode(n.Testexpr),
 		OperName:    convertSlice(n.OperName),
@@ -2535,9 +2604,13 @@ func convertSubPlan(n *pg.SubPlan) *ast.SubPlan {
 	if n == nil {
 		return nil
 	}
+	slt, err := convertSubLinkType(n.SubLinkType)
+	if err != nil {
+		panic(err)
+	}
 	return &ast.SubPlan{
 		Xpr:               convertNode(n.Xpr),
-		SubLinkType:       ast.SubLinkType(n.SubLinkType),
+		SubLinkType:       slt,
 		Testexpr:          convertNode(n.Testexpr),
 		ParamIds:          convertSlice(n.ParamIds),
 		PlanId:            int(n.PlanId),
