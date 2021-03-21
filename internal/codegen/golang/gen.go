@@ -149,10 +149,18 @@ import (
 type Querier interface {
 	{{- range .GoQueries}}
 	{{- if eq .Cmd ":one"}}
+	{{- if $.EmitPointer}}
+	{{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (*{{.Ret.Type}}, error)
+	{{- else}}
 	{{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.Type}}, error)
 	{{- end}}
+	{{- end}}
 	{{- if eq .Cmd ":many"}}
+	{{- if $.EmitPointer}}
+	{{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]*{{.Ret.Type}}, error)
+	{{- else}}
 	{{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.Type}}, error)
+	{{- end}}
 	{{- end}}
 	{{- if eq .Cmd ":exec"}}
 	{{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) error
@@ -258,7 +266,11 @@ type {{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
 {{if eq .Cmd ":one"}}
 {{range .Comments}}//{{.}}
 {{end -}}
+{{- if $.EmitPointer}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (*{{.Ret.Type}}, error) {
+{{- else}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.Type}}, error) {
+{{- end}}
   	{{- if $.EmitPreparedQueries}}
 	row := q.queryRow(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
 	{{- else}}
@@ -266,14 +278,22 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.Ty
 	{{- end}}
 	var {{.Ret.Name}} {{.Ret.Type}}
 	err := row.Scan({{.Ret.Scan}})
+	{{- if $.EmitPointer}}
+	return &{{.Ret.Name}}, err
+	{{- else}}
 	return {{.Ret.Name}}, err
+	{{- end}}
 }
 {{end}}
 
 {{if eq .Cmd ":many"}}
 {{range .Comments}}//{{.}}
 {{end -}}
+{{- if $.EmitPointer}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]*{{.Ret.Type}}, error) {
+{{- else}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.Type}}, error) {
+{{- end}}
   	{{- if $.EmitPreparedQueries}}
 	rows, err := q.query(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
   	{{- else}}
@@ -284,16 +304,28 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.
 	}
 	defer rows.Close()
 	{{- if $.EmitEmptySlices}}
+	{{- if $.EmitPointer}}
+	items := []*{{.Ret.Type}}{}
+	{{- else}}
 	items := []{{.Ret.Type}}{}
+	{{- end}}
 	{{else}}
+	{{- if $.EmitPointer}}
+	var items []*{{.Ret.Type}}
+	{{- else}}
 	var items []{{.Ret.Type}}
+	{{- end}}
 	{{end -}}
 	for rows.Next() {
 		var {{.Ret.Name}} {{.Ret.Type}}
 		if err := rows.Scan({{.Ret.Scan}}); err != nil {
 			return nil, err
 		}
+		{{- if $.EmitPointer}}
+		items = append(items, &{{.Ret.Name}})
+		{{else}}
 		items = append(items, {{.Ret.Name}})
+		{{end -}}
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -366,6 +398,7 @@ type tmplCtx struct {
 	EmitPreparedQueries bool
 	EmitInterface       bool
 	EmitEmptySlices     bool
+	EmitPointer         bool
 }
 
 func (t *tmplCtx) OutputQuery(sourceName string) bool {
@@ -404,6 +437,7 @@ func generate(settings config.CombinedSettings, enums []Enum, structs []Struct, 
 		EmitDBTags:          golang.EmitDBTags,
 		EmitPreparedQueries: golang.EmitPreparedQueries,
 		EmitEmptySlices:     golang.EmitEmptySlices,
+		EmitPointer:         golang.EmitPointer,
 		Q:                   "`",
 		Package:             golang.Package,
 		GoQueries:           queries,
