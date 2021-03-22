@@ -18,7 +18,7 @@ import (
 // Do runs the command logic.
 func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int {
 	rootCmd := &cobra.Command{Use: "sqlc", SilenceUsage: true}
-	rootCmd.PersistentFlags().StringP("file", "f", "", "specify an alternate config file (default: sqlc.yaml)")
+	rootCmd.PersistentFlags().StringP("file", "f", "sqlc.yaml", "specify an alternate config file")
 	rootCmd.PersistentFlags().BoolP("experimental", "x", false, "enable experimental features (default: false)")
 
 	rootCmd.AddCommand(checkCmd)
@@ -61,10 +61,7 @@ var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Create an empty sqlc.yaml settings file",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		file := "sqlc.yaml"
-		if f := cmd.Flag("file"); f != nil {
-			file = f.Value.String()
-		}
+		file := cmd.Flag("file").Value.String()
 		if _, err := os.Stat(file); !os.IsNotExist(err) {
 			return nil
 		}
