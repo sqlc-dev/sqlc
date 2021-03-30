@@ -62,8 +62,11 @@ var initCmd = &cobra.Command{
 	Short: "Create an empty sqlc.yaml settings file",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		file := "sqlc.yaml"
-		if f := cmd.Flag("file"); f != nil {
+		if f := cmd.Flag("file"); f != nil && f.Changed {
 			file = f.Value.String()
+			if file == "" {
+				return fmt.Errorf("file argument is empty")
+			}
 		}
 		if _, err := os.Stat(file); !os.IsNotExist(err) {
 			return nil
