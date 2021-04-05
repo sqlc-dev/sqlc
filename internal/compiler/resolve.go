@@ -58,7 +58,7 @@ func resolveCatalogRefs(c *catalog.Catalog, rvs []*ast.RangeVar, args []paramRef
 		}
 		table, err := c.GetTable(fqn)
 		if err != nil {
-			return nil, err
+			continue
 		}
 		err = indexTable(table)
 		if err != nil {
@@ -66,21 +66,6 @@ func resolveCatalogRefs(c *catalog.Catalog, rvs []*ast.RangeVar, args []paramRef
 		}
 		if rv.Alias != nil {
 			aliasMap[*rv.Alias.Aliasname] = fqn
-		}
-	}
-
-	for _, fqn := range tables {
-		table, err := c.GetTable(fqn)
-		if err != nil {
-			continue
-		}
-		if _, exists := typeMap[fqn.Schema]; !exists {
-			typeMap[fqn.Schema] = map[string]map[string]*catalog.Column{}
-		}
-		typeMap[fqn.Schema][fqn.Name] = map[string]*catalog.Column{}
-		for _, c := range table.Columns {
-			cc := c
-			typeMap[fqn.Schema][fqn.Name][c.Name] = cc
 		}
 	}
 
