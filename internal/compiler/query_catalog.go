@@ -1,6 +1,8 @@
 package compiler
 
 import (
+	"fmt"
+
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 )
@@ -70,4 +72,18 @@ func (qc QueryCatalog) GetTable(rel *ast.TableName) (*Table, error) {
 		cols = append(cols, ConvertColumn(rel, c))
 	}
 	return &Table{Rel: rel, Columns: cols}, nil
+}
+
+func (qc QueryCatalog) GetFunc(rel *ast.FuncName) (*Function, error) {
+	funcs, err := qc.catalog.ListFuncsByName(rel)
+	if err != nil {
+		return nil, err
+	}
+	if len(funcs) == 0 {
+		return nil, fmt.Errorf("function not found: %s", rel.Name)
+	}
+	return &Function{
+		Rel:        rel,
+		ReturnType: funcs[0].ReturnType,
+	}, nil
 }
