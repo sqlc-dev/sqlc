@@ -562,6 +562,16 @@ func translate(node *nodes.Node) (ast.Node, error) {
 				NewName: makeString(n.Newname),
 			}, nil
 
+		case nodes.ObjectType_OBJECT_TYPE:
+			rel, err := parseRelation(n.Object)
+			if err != nil {
+				return nil, fmt.Errorf("nodes.RenameStmt: TYPE: %w", err)
+			}
+			return &ast.RenameTypeStmt{
+				Type:    rel.TypeName(),
+				NewName: makeString(n.Newname),
+			}, nil
+
 		}
 		return nil, errSkip
 

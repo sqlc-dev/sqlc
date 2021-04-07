@@ -162,3 +162,50 @@ func (c *Catalog) dropType(stmt *ast.DropTypeStmt) error {
 	}
 	return nil
 }
+
+func (c *Catalog) renameType(stmt *ast.RenameTypeStmt) error {
+	if stmt.NewName == nil {
+		return fmt.Errorf("rename type: empty name")
+	}
+	newName := *stmt.NewName
+	ns := stmt.Type.Schema
+	if ns == "" {
+		ns = c.DefaultSchema
+	}
+	schema, err := c.getSchema(ns)
+	if err != nil {
+		return err
+	}
+	ityp, idx, err := schema.getType(stmt.Type)
+	if err != nil {
+		return err
+	}
+	if _, _, err := schema.getTable(&ast.TableName{Name: newName}); err == nil {
+		return sqlerr.RelationExists(newName)
+	}
+	if _, _, err := schema.getType(&ast.TypeName{Name: newName}); err == nil {
+		return sqlerr.TypeExists(newName)
+	}
+
+	switch typ := ityp.(type) {
+
+	case *CompositeType:
+		schema.Types[idx] = &CompositeType{
+			Name:    newName,
+			Comment: typ.Comment,
+		}
+
+	case *Enum:
+		schema.Types[idx] = &Enum{
+			Name:    newName,
+			Vals:    typ.Vals,
+			Comment: typ.Comment,
+		}
+
+	default:
+		return fmt.Errorf("unsupported type: %T", typ)
+
+	}
+
+	return nil
+}
