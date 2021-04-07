@@ -7,20 +7,20 @@ import (
 	"context"
 )
 
-const listFoo = `-- name: ListFoo :many
-SELECT foobar, digit FROM foo
+const listAuthors = `-- name: ListAuthors :many
+SELECT id, status FROM log_lines
 `
 
-func (q *Queries) ListFoo(ctx context.Context) ([]Foo, error) {
-	rows, err := q.db.QueryContext(ctx, listFoo)
+func (q *Queries) ListAuthors(ctx context.Context) ([]LogLine, error) {
+	rows, err := q.db.QueryContext(ctx, listAuthors)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Foo
+	var items []LogLine
 	for rows.Next() {
-		var i Foo
-		if err := rows.Scan(&i.Foobar, &i.Digit); err != nil {
+		var i LogLine
+		if err := rows.Scan(&i.ID, &i.Status); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
