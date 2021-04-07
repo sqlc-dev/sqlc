@@ -4,6 +4,11 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 )
 
+type Function struct {
+	Rel        *ast.FuncName
+	ReturnType *ast.TypeName
+}
+
 type Table struct {
 	Rel     *ast.TableName
 	Columns []*Column

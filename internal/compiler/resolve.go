@@ -31,6 +31,23 @@ func resolveCatalogRefs(c *catalog.Catalog, rvs []*ast.RangeVar, args []paramRef
 		return defaultName
 	}
 
+	typeMap := map[string]map[string]map[string]*catalog.Column{}
+	indexTable := func(table catalog.Table) error {
+		tables = append(tables, table.Rel)
+		if defaultTable == nil {
+			defaultTable = table.Rel
+		}
+		if _, exists := typeMap[table.Rel.Schema]; !exists {
+			typeMap[table.Rel.Schema] = map[string]map[string]*catalog.Column{}
+		}
+		typeMap[table.Rel.Schema][table.Rel.Name] = map[string]*catalog.Column{}
+		for _, c := range table.Columns {
+			cc := c
+			typeMap[table.Rel.Schema][table.Rel.Name][c.Name] = cc
+		}
+		return nil
+	}
+
 	for _, rv := range rvs {
 		if rv.Relname == nil {
 			continue
@@ -39,29 +56,16 @@ func resolveCatalogRefs(c *catalog.Catalog, rvs []*ast.RangeVar, args []paramRef
 		if err != nil {
 			return nil, err
 		}
-		tables = append(tables, fqn)
-		if defaultTable == nil {
-			defaultTable = fqn
-		}
-		if rv.Alias == nil {
-			continue
-		}
-		aliasMap[*rv.Alias.Aliasname] = fqn
-	}
-
-	typeMap := map[string]map[string]map[string]*catalog.Column{}
-	for _, fqn := range tables {
 		table, err := c.GetTable(fqn)
 		if err != nil {
 			continue
 		}
-		if _, exists := typeMap[fqn.Schema]; !exists {
-			typeMap[fqn.Schema] = map[string]map[string]*catalog.Column{}
+		err = indexTable(table)
+		if err != nil {
+			return nil, err
 		}
-		typeMap[fqn.Schema][fqn.Name] = map[string]*catalog.Column{}
-		for _, c := range table.Columns {
-			cc := c
-			typeMap[fqn.Schema][fqn.Name][c.Name] = cc
+		if rv.Alias != nil {
+			aliasMap[*rv.Alias.Aliasname] = fqn
 		}
 	}
 
@@ -270,6 +274,23 @@ func resolveCatalogRefs(c *catalog.Catalog, rvs []*ast.RangeVar, args []paramRef
 				})
 			}
 
+			if fun.ReturnType == nil {
+				continue
+			}
+
+			table, err := c.GetTable(&ast.TableName{
+				Catalog: fun.ReturnType.Catalog,
+				Schema:  fun.ReturnType.Schema,
+				Name:    fun.ReturnType.Name,
+			})
+			if err != nil {
+				// The return type wasn't a table.
+				continue
+			}
+			err = indexTable(table)
+			if err != nil {
+				return nil, err
+			}
 		case *ast.ResTarget:
 			if n.Name == nil {
 				return nil, fmt.Errorf("*ast.ResTarget has nil name")
