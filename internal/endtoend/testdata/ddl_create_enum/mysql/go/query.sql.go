@@ -8,22 +8,22 @@ import (
 )
 
 const listFoo = `-- name: ListFoo :many
-SELECT foobar FROM foo
+SELECT foobar, digit FROM foo
 `
 
-func (q *Queries) ListFoo(ctx context.Context) ([]FooFoobar, error) {
+func (q *Queries) ListFoo(ctx context.Context) ([]Foo, error) {
 	rows, err := q.db.QueryContext(ctx, listFoo)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []FooFoobar
+	var items []Foo
 	for rows.Next() {
-		var foobar FooFoobar
-		if err := rows.Scan(&foobar); err != nil {
+		var i Foo
+		if err := rows.Scan(&i.Foobar, &i.Digit); err != nil {
 			return nil, err
 		}
-		items = append(items, foobar)
+		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err

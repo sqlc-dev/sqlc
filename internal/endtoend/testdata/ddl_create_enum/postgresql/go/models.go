@@ -6,6 +6,35 @@ import (
 	"fmt"
 )
 
+type Digit string
+
+const (
+	Digit0       Digit = "0"
+	Digit1       Digit = "1"
+	Digit2       Digit = "2"
+	Digit3       Digit = "3"
+	Digit4       Digit = "4"
+	Digit5       Digit = "5"
+	Digit6       Digit = "6"
+	Digit7       Digit = "7"
+	Digit8       Digit = "8"
+	Digit9       Digit = "9"
+	DigitValue10 Digit = "#"
+	DigitValue11 Digit = "*"
+)
+
+func (e *Digit) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = Digit(s)
+	case string:
+		*e = Digit(s)
+	default:
+		return fmt.Errorf("unsupported scan type for Digit: %T", src)
+	}
+	return nil
+}
+
 type Foobar string
 
 const (

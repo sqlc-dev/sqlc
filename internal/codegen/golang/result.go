@@ -34,12 +34,18 @@ func buildEnums(r *compiler.Result, settings config.CombinedSettings) []Enum {
 				Name:    StructName(enumName, settings),
 				Comment: enum.Comment,
 			}
-			for _, v := range enum.Vals {
+			seen := make(map[string]struct{}, len(enum.Vals))
+			for i, v := range enum.Vals {
+				value := EnumReplace(v)
+				if _, found := seen[value]; found || value == "" {
+					value = fmt.Sprintf("value_%d", i)
+				}
 				e.Constants = append(e.Constants, Constant{
-					Name:  StructName(enumName+"_"+EnumReplace(v), settings),
+					Name:  StructName(enumName+"_"+value, settings),
 					Value: v,
 					Type:  e.Name,
 				})
+				seen[value] = struct{}{}
 			}
 			enums = append(enums, e)
 		}
