@@ -154,6 +154,7 @@ func resolveCatalogRefs(c *catalog.Catalog, rvs []*ast.RangeVar, args []paramRef
 								DataType: dataType(&c.Type),
 								NotNull:  c.IsNotNull,
 								IsArray:  c.IsArray,
+								Length:   c.Length,
 								Table:    table,
 							},
 						})
@@ -295,6 +296,7 @@ func resolveCatalogRefs(c *catalog.Catalog, rvs []*ast.RangeVar, args []paramRef
 						NotNull:  c.IsNotNull,
 						IsArray:  c.IsArray,
 						Table:    &ast.TableName{Schema: schema, Name: rel},
+						Length:   c.Length,
 					},
 				})
 			} else {

@@ -5,28 +5,21 @@ package db
 
 import (
 	"context"
-	"database/sql"
 )
 
 const listBar = `-- name: ListBar :many
 SELECT col_a, col_b, col_c FROM bar
 `
 
-type ListBarRow struct {
-	ColA sql.NullInt32
-	ColB sql.NullInt32
-	ColC sql.NullInt32
-}
-
-func (q *Queries) ListBar(ctx context.Context) ([]ListBarRow, error) {
+func (q *Queries) ListBar(ctx context.Context) ([]Bar, error) {
 	rows, err := q.db.QueryContext(ctx, listBar)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ListBarRow
+	var items []Bar
 	for rows.Next() {
-		var i ListBarRow
+		var i Bar
 		if err := rows.Scan(&i.ColA, &i.ColB, &i.ColC); err != nil {
 			return nil, err
 		}
@@ -45,21 +38,15 @@ const listFoo = `-- name: ListFoo :many
 SELECT col_a, col_b, col_c FROM foo
 `
 
-type ListFooRow struct {
-	ColA int32
-	ColB int32
-	ColC int32
-}
-
-func (q *Queries) ListFoo(ctx context.Context) ([]ListFooRow, error) {
+func (q *Queries) ListFoo(ctx context.Context) ([]Foo, error) {
 	rows, err := q.db.QueryContext(ctx, listFoo)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ListFooRow
+	var items []Foo
 	for rows.Next() {
-		var i ListFooRow
+		var i Foo
 		if err := rows.Scan(&i.ColA, &i.ColB, &i.ColC); err != nil {
 			return nil, err
 		}
