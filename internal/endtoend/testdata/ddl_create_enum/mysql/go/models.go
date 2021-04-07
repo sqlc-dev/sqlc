@@ -6,6 +6,35 @@ import (
 	"fmt"
 )
 
+type FooDigit string
+
+const (
+	FooDigit0       FooDigit = "0"
+	FooDigit1       FooDigit = "1"
+	FooDigit2       FooDigit = "2"
+	FooDigit3       FooDigit = "3"
+	FooDigit4       FooDigit = "4"
+	FooDigit5       FooDigit = "5"
+	FooDigit6       FooDigit = "6"
+	FooDigit7       FooDigit = "7"
+	FooDigit8       FooDigit = "8"
+	FooDigit9       FooDigit = "9"
+	FooDigitValue10 FooDigit = "#"
+	FooDigitValue11 FooDigit = "*"
+)
+
+func (e *FooDigit) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = FooDigit(s)
+	case string:
+		*e = FooDigit(s)
+	default:
+		return fmt.Errorf("unsupported scan type for FooDigit: %T", src)
+	}
+	return nil
+}
+
 type FooFoobar string
 
 const (
@@ -32,4 +61,5 @@ func (e *FooFoobar) Scan(src interface{}) error {
 
 type Foo struct {
 	Foobar FooFoobar
+	Digit  FooDigit
 }
