@@ -340,6 +340,9 @@ func (c *Catalog) Update(stmt ast.Statement) error {
 	case *ast.RenameTableStmt:
 		err = c.renameTable(n)
 
+	case *ast.RenameTypeStmt:
+		err = c.renameType(n)
+
 	}
 	return err
 }

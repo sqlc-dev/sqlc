@@ -128,6 +128,11 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Table)
 		}
 
+	case *ast.RenameTypeStmt:
+		if n.Type != nil {
+			Walk(f, n.Type)
+		}
+
 	case *ast.Statement:
 		if n.Raw != nil {
 			Walk(f, n.Raw)
