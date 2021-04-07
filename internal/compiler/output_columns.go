@@ -142,6 +142,7 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 							DataType: c.DataType,
 							NotNull:  c.NotNull,
 							IsArray:  c.IsArray,
+							Length:   c.Length,
 						})
 					}
 				}
@@ -321,6 +322,7 @@ func outputColumnRefs(res *ast.ResTarget, tables []*Table, node *ast.ColumnRef) 
 					DataType: c.DataType,
 					NotNull:  c.NotNull,
 					IsArray:  c.IsArray,
+					Length:   c.Length,
 				})
 			}
 		}
