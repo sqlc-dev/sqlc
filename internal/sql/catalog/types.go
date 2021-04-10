@@ -207,5 +207,16 @@ func (c *Catalog) renameType(stmt *ast.RenameTypeStmt) error {
 
 	}
 
+	// Update all the table columns with the new type
+	for si, schema := range c.Schemas {
+		for ti, table := range schema.Tables {
+			for ci, column := range table.Columns {
+				if column.Type == *stmt.Type {
+					c.Schemas[si].Tables[ti].Columns[ci].Type.Name = newName
+				}
+			}
+		}
+	}
+
 	return nil
 }
