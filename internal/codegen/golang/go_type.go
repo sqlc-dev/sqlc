@@ -12,7 +12,7 @@ func goType(r *compiler.Result, col *compiler.Column, settings config.CombinedSe
 			continue
 		}
 		sameTable := sameTableName(col.Table, oride.Table, r.Catalog.DefaultSchema)
-		if oride.Column != "" && oride.ColumnName == col.Name && sameTable {
+		if oride.Column != "" && oride.ColumnName.Match(col.Name) && sameTable {
 			return oride.GoTypeName
 		}
 	}
