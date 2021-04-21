@@ -170,10 +170,10 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 				})
 			}
 			gq.Arg = QueryValue{
-				Emit:   true,
-				Name:   "arg",
-				Struct: columnsToStruct(r, gq.MethodName+"Params", cols, settings),
-				EmitPointer: settings.Go.EmitResultStructPointers,
+				Emit:        true,
+				Name:        "arg",
+				Struct:      columnsToStruct(r, gq.MethodName+"Params", cols, settings),
+				EmitPointer: settings.Go.EmitParamsStructPointers,
 			}
 		}
 
