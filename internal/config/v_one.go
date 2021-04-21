@@ -16,19 +16,21 @@ type V1GenerateSettings struct {
 }
 
 type v1PackageSettings struct {
-	Name                string     `json:"name" yaml:"name"`
-	Engine              Engine     `json:"engine,omitempty" yaml:"engine"`
-	Path                string     `json:"path" yaml:"path"`
-	Schema              Paths      `json:"schema" yaml:"schema"`
-	Queries             Paths      `json:"queries" yaml:"queries"`
-	EmitInterface       bool       `json:"emit_interface" yaml:"emit_interface"`
-	EmitJSONTags        bool       `json:"emit_json_tags" yaml:"emit_json_tags"`
-	EmitDBTags          bool       `json:"emit_db_tags" yaml:"emit_db_tags"`
-	EmitPreparedQueries bool       `json:"emit_prepared_queries" yaml:"emit_prepared_queries"`
-	EmitExactTableNames bool       `json:"emit_exact_table_names,omitempty" yaml:"emit_exact_table_names"`
-	EmitEmptySlices     bool       `json:"emit_empty_slices,omitempty" yaml:"emit_empty_slices"`
-	JSONTagsCaseStyle   string     `json:"json_tags_case_style,omitempty" yaml:"json_tags_case_style"`
-	Overrides           []Override `json:"overrides" yaml:"overrides"`
+	Name                     string     `json:"name" yaml:"name"`
+	Engine                   Engine     `json:"engine,omitempty" yaml:"engine"`
+	Path                     string     `json:"path" yaml:"path"`
+	Schema                   Paths      `json:"schema" yaml:"schema"`
+	Queries                  Paths      `json:"queries" yaml:"queries"`
+	EmitInterface            bool       `json:"emit_interface" yaml:"emit_interface"`
+	EmitJSONTags             bool       `json:"emit_json_tags" yaml:"emit_json_tags"`
+	EmitDBTags               bool       `json:"emit_db_tags" yaml:"emit_db_tags"`
+	EmitPreparedQueries      bool       `json:"emit_prepared_queries" yaml:"emit_prepared_queries"`
+	EmitExactTableNames      bool       `json:"emit_exact_table_names,omitempty" yaml:"emit_exact_table_names"`
+	EmitEmptySlices          bool       `json:"emit_empty_slices,omitempty" yaml:"emit_empty_slices"`
+	EmitResultStructPointers bool       `json:"emit_result_struct_pointers" yaml:"emit_result_struct_pointers"`
+	EmitParamsStructPointers bool       `json:"emit_params_struct_pointers" yaml:"emit_params_struct_pointers"`
+	JSONTagsCaseStyle        string     `json:"json_tags_case_style,omitempty" yaml:"json_tags_case_style"`
+	Overrides                []Override `json:"overrides" yaml:"overrides"`
 }
 
 func v1ParseConfig(rd io.Reader) (Config, error) {
@@ -104,16 +106,18 @@ func (c *V1GenerateSettings) Translate() Config {
 			Queries: pkg.Queries,
 			Gen: SQLGen{
 				Go: &SQLGo{
-					EmitInterface:       pkg.EmitInterface,
-					EmitJSONTags:        pkg.EmitJSONTags,
-					EmitDBTags:          pkg.EmitDBTags,
-					EmitPreparedQueries: pkg.EmitPreparedQueries,
-					EmitExactTableNames: pkg.EmitExactTableNames,
-					EmitEmptySlices:     pkg.EmitEmptySlices,
-					Package:             pkg.Name,
-					Out:                 pkg.Path,
-					Overrides:           pkg.Overrides,
-					JSONTagsCaseStyle:   pkg.JSONTagsCaseStyle,
+					EmitInterface:            pkg.EmitInterface,
+					EmitJSONTags:             pkg.EmitJSONTags,
+					EmitDBTags:               pkg.EmitDBTags,
+					EmitPreparedQueries:      pkg.EmitPreparedQueries,
+					EmitExactTableNames:      pkg.EmitExactTableNames,
+					EmitEmptySlices:          pkg.EmitEmptySlices,
+					EmitResultStructPointers: pkg.EmitResultStructPointers,
+					EmitParamsStructPointers: pkg.EmitParamsStructPointers,
+					Package:                  pkg.Name,
+					Out:                      pkg.Path,
+					Overrides:                pkg.Overrides,
+					JSONTagsCaseStyle:        pkg.JSONTagsCaseStyle,
 				},
 			},
 		})

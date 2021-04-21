@@ -149,10 +149,10 @@ import (
 type Querier interface {
 	{{- range .GoQueries}}
 	{{- if eq .Cmd ":one"}}
-	{{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.Type}}, error)
+	{{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{if .Ret.IsPointer }}*{{end}}{{.Ret.Type}}, error)
 	{{- end}}
 	{{- if eq .Cmd ":many"}}
-	{{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.Type}}, error)
+	{{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{if .Ret.IsPointer }}*{{end}}{{.Ret.Type}}, error)
 	{{- end}}
 	{{- if eq .Cmd ":exec"}}
 	{{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) error
@@ -258,7 +258,7 @@ type {{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
 {{if eq .Cmd ":one"}}
 {{range .Comments}}//{{.}}
 {{end -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.Type}}, error) {
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{if .Ret.IsPointer }}*{{end}}{{.Ret.Type}}, error) {
   	{{- if $.EmitPreparedQueries}}
 	row := q.queryRow(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
 	{{- else}}
@@ -266,14 +266,14 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.Ty
 	{{- end}}
 	var {{.Ret.Name}} {{.Ret.Type}}
 	err := row.Scan({{.Ret.Scan}})
-	return {{.Ret.Name}}, err
+	return {{if .Ret.IsPointer }}&{{end}}{{.Ret.Name}}, err
 }
 {{end}}
 
 {{if eq .Cmd ":many"}}
 {{range .Comments}}//{{.}}
 {{end -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.Type}}, error) {
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{if .Ret.IsPointer }}*{{end}}{{.Ret.Type}}, error) {
   	{{- if $.EmitPreparedQueries}}
 	rows, err := q.query(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
   	{{- else}}
@@ -284,16 +284,16 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.
 	}
 	defer rows.Close()
 	{{- if $.EmitEmptySlices}}
-	items := []{{.Ret.Type}}{}
+	items := []{{if .Ret.IsPointer }}*{{end}}{{.Ret.Type}}{}
 	{{else}}
-	var items []{{.Ret.Type}}
+	var items []{{if .Ret.IsPointer }}*{{end}}{{.Ret.Type}}
 	{{end -}}
 	for rows.Next() {
 		var {{.Ret.Name}} {{.Ret.Type}}
 		if err := rows.Scan({{.Ret.Scan}}); err != nil {
 			return nil, err
 		}
-		items = append(items, {{.Ret.Name}})
+		items = append(items, {{if .Ret.IsPointer }}&{{end}}{{.Ret.Name}})
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
