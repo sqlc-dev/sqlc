@@ -8,10 +8,11 @@ import (
 )
 
 type Struct struct {
-	Table   core.FQN
-	Name    string
-	Fields  []Field
-	Comment string
+	Table    core.FQN
+	Name     string
+	Embedded []Struct
+	Fields   []Field
+	Comment  string
 }
 
 func StructName(name string, settings config.CombinedSettings) string {

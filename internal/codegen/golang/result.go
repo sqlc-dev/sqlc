@@ -103,7 +103,8 @@ func buildStructs(r *compiler.Result, settings config.CombinedSettings) []Struct
 }
 
 type goColumn struct {
-	id int
+	id    int
+	Embed *Struct
 	*compiler.Column
 }
 
@@ -183,37 +184,89 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 				Typ:  goType(r, c, settings),
 			}
 		} else if len(query.Columns) > 1 {
-			var gs *Struct
-			var emit bool
+			var (
+				columns  []goColumn
+				embedded = map[string]interface{}{}
+			)
 
-			for _, s := range structs {
-				if len(s.Fields) != len(query.Columns) {
-					continue
-				}
-				same := true
-				for i, f := range s.Fields {
-					c := query.Columns[i]
-					sameName := f.Name == StructName(columnName(c, i), settings)
-					sameType := f.Type == goType(r, c, settings)
-					sameTable := sameTableName(c.Table, s.Table, r.Catalog.DefaultSchema)
-					if !sameName || !sameType || !sameTable {
-						same = false
+			for ci := 0; ci < len(query.Columns); {
+				c := query.Columns[ci]
+				var embed *Struct
+
+				// Checks for matching structs.
+				for _, s := range structs {
+					// Ensuring tables match the column selector.
+					if c.Table == nil || c.Table.Name != s.Table.Rel {
+						continue
+					}
+					// If the query doesn't have enough fields, it cannot
+					// fufill the struct.
+					if len(query.Columns) < len(s.Fields) {
+						continue
+					}
+					// We can only embed one struct of each type.
+					if _, ok := embedded[s.Name]; ok {
+						continue
+					}
+					same := true
+					for fi, f := range s.Fields {
+						fieldOffset := ci + fi
+						// If the location of this field doesn't fit into our columns,
+						// we know the struct can't fit either.
+						if fieldOffset > len(query.Columns)-1 {
+							break
+						}
+						c := query.Columns[fieldOffset]
+						sameName := f.Name == StructName(columnName(c, fieldOffset), settings)
+						sameType := f.Type == goType(r, c, settings)
+						sameTable := sameTableName(c.Table, s.Table, r.Catalog.DefaultSchema)
+						if !sameName || !sameType || !sameTable {
+							same = false
+						}
+					}
+					if same {
+						embed = &s
+						break
 					}
 				}
-				if same {
-					gs = &s
+
+				// Used to track the amount of columns matched.
+				// A struct could be embedded, and in that case
+				// for performance we want to skip over those
+				// matched columns.
+				colsMatched := 1
+				if embed != nil {
+					colsMatched = len(embed.Fields)
+					embedded[embed.Name] = nil
+				}
+				for colID := ci; colID < ci+colsMatched; colID++ {
+					columns = append(columns, goColumn{
+						id:     colID,
+						Embed:  embed,
+						Column: query.Columns[colID],
+					})
+				}
+				ci += colsMatched
+			}
+
+			var emit bool
+			var gs *Struct
+			// Check if all columns match a consistent embedded struct.
+			// If they do, we don't need to generate a new struct for the row.
+			for _, c := range columns {
+				if gs == nil {
+					gs = c.Embed
+					continue
+				}
+
+				// Cheaper to compare the pointer instead of the name.
+				if gs != c.Embed {
+					gs = nil
 					break
 				}
 			}
 
 			if gs == nil {
-				var columns []goColumn
-				for i, c := range query.Columns {
-					columns = append(columns, goColumn{
-						id:     i,
-						Column: c,
-					})
-				}
 				gs = columnsToStruct(r, gq.MethodName+"Row", columns, settings)
 				emit = true
 			}
@@ -241,9 +294,18 @@ func columnsToStruct(r *compiler.Result, name string, columns []goColumn, settin
 	gs := Struct{
 		Name: name,
 	}
+	embedded := map[string]interface{}{}
 	seen := map[string]int{}
 	suffixes := map[int]int{}
 	for i, c := range columns {
+		if c.Embed != nil {
+			if _, ok := embedded[c.Embed.Name]; !ok {
+				// We only want to include each embedded struct once.
+				gs.Embedded = append(gs.Embedded, *c.Embed)
+				embedded[c.Embed.Name] = nil
+			}
+		}
+
 		colName := columnName(c.Column, i)
 		tagName := colName
 		fieldName := StructName(colName, settings)
@@ -267,11 +329,15 @@ func columnsToStruct(r *compiler.Result, name string, columns []goColumn, settin
 		if settings.Go.EmitJSONTags {
 			tags["json:"] = JSONTagName(tagName, settings)
 		}
-		gs.Fields = append(gs.Fields, Field{
+		f := Field{
 			Name: fieldName,
 			Type: goType(r, c.Column, settings),
 			Tags: tags,
-		})
+		}
+		if c.Embed != nil {
+			f.Struct = c.Embed.Name
+		}
+		gs.Fields = append(gs.Fields, f)
 		seen[colName]++
 	}
 	return &gs
