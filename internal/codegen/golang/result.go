@@ -314,6 +314,9 @@ func columnsToStruct(r *compiler.Result, name string, columns []goColumn, settin
 			suffix = v + 1
 		}
 		suffixes[c.id] = suffix
+		if c.Embed != nil {
+			suffix = 0
+		}
 		if suffix > 0 {
 			tagName = fmt.Sprintf("%s_%d", tagName, suffix)
 			fieldName = fmt.Sprintf("%s_%d", fieldName, suffix)
