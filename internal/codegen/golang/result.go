@@ -201,7 +201,7 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 					}
 					// If the query doesn't have enough fields, it cannot
 					// fufill the struct.
-					if len(query.Columns) < len(s.Fields) {
+					if len(query.Columns)-ci < len(s.Fields) {
 						continue
 					}
 					// We can only embed one struct of each type.
