@@ -338,7 +338,9 @@ func columnsToStruct(r *compiler.Result, name string, columns []goColumn, settin
 			f.Struct = c.Embed.Name
 		}
 		gs.Fields = append(gs.Fields, f)
-		seen[colName]++
+		if c.Embed == nil {
+			seen[colName]++
+		}
 	}
 	return &gs
 }
