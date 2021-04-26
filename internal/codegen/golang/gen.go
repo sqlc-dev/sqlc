@@ -249,10 +249,11 @@ type {{.Arg.Type}} struct { {{- range .Arg.Struct.Fields}}
 {{end}}
 
 {{if .Ret.EmitStruct}}
-type {{.Ret.Type}} struct { {{- range .Ret.Struct.Structs}}
+type {{.Ret.Type}} struct { {{- range .Ret.Struct.Embedded}}
   {{.Name}}
-  {{- end}} {{- range .Ret.Struct.Fields}}
+  {{- end}} {{- range .Ret.Struct.Fields}} {{if not .Struct}}
   {{.Name}} {{.Type}} {{if or ($.EmitJSONTags) ($.EmitDBTags)}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
+  {{- end}}
   {{- end}}
 }
 {{end}}

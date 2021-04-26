@@ -251,6 +251,7 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 					continue
 				}
 
+				// Cheaper to compare the pointer instead of the name.
 				if gs != c.Embed {
 					gs = nil
 					break
@@ -285,9 +286,18 @@ func columnsToStruct(r *compiler.Result, name string, columns []goColumn, settin
 	gs := Struct{
 		Name: name,
 	}
+	embedded := map[string]interface{}{}
 	seen := map[string]int{}
 	suffixes := map[int]int{}
 	for i, c := range columns {
+		if c.Embed != nil {
+			if _, ok := embedded[c.Embed.Name]; !ok {
+				// We only want to include each embedded struct once.
+				gs.Embedded = append(gs.Embedded, *c.Embed)
+				embedded[c.Embed.Name] = nil
+			}
+		}
+
 		colName := columnName(c.Column, i)
 		tagName := colName
 		fieldName := StructName(colName, settings)
@@ -311,11 +321,15 @@ func columnsToStruct(r *compiler.Result, name string, columns []goColumn, settin
 		if settings.Go.EmitJSONTags {
 			tags["json:"] = JSONTagName(tagName, settings)
 		}
-		gs.Fields = append(gs.Fields, Field{
+		f := Field{
 			Name: fieldName,
 			Type: goType(r, c.Column, settings),
 			Tags: tags,
-		})
+		}
+		if c.Embed != nil {
+			f.Struct = c.Embed.Name
+		}
+		gs.Fields = append(gs.Fields, f)
 		seen[colName]++
 	}
 	return &gs

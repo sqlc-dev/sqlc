@@ -10,6 +10,7 @@ import (
 
 type Field struct {
 	Name    string
+	Struct  string
 	Type    string
 	Tags    map[string]string
 	Comment string
