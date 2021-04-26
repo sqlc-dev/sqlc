@@ -250,20 +250,16 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 			}
 
 			var emit bool
-			var gs *Struct
+			gs := columns[0].Embed
 			// Check if all columns match a consistent embedded struct.
 			// If they do, we don't need to generate a new struct for the row.
 			for _, c := range columns {
-				if gs == nil {
-					gs = c.Embed
-					continue
-				}
-
 				// Cheaper to compare the pointer instead of the name.
 				if gs != c.Embed {
 					gs = nil
 					break
 				}
+				gs = c.Embed
 			}
 
 			if gs == nil {
