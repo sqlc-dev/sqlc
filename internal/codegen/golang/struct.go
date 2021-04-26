@@ -10,6 +10,7 @@ import (
 type Struct struct {
 	Table   core.FQN
 	Name    string
+	Structs []Struct
 	Fields  []Field
 	Comment string
 }
