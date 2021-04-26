@@ -206,7 +206,55 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 		}
 	}
 
+	if n, ok := node.(*ast.SelectStmt); ok {
+		for _, col := range cols {
+			if !col.NotNull || col.Table == nil {
+				continue
+			}
+			for _, f := range n.FromClause.Items {
+				if res := isCollNotNull(f, col.Table.Name, colNotNull); res != colNotFound {
+					col.NotNull = res == colNotNull
+					break
+				}
+			}
+		}
+	}
+
 	return cols, nil
+}
+
+const (
+	colNotFound = iota
+	colNotNull
+	colNull
+)
+
+func isCollNotNull(n ast.Node, tableName string, prior int) int {
+	switch n := n.(type) {
+	case *ast.RangeVar:
+		if *n.Relname == tableName {
+			return prior
+		}
+	case *ast.JoinExpr:
+		helper := func(l, r int) int {
+			if res := isCollNotNull(n.Larg, tableName, l); res != colNotFound {
+				return res
+			}
+			if res := isCollNotNull(n.Rarg, tableName, r); res != colNotFound {
+				return res
+			}
+			return colNotFound
+		}
+		switch n.Jointype {
+		case ast.JoinTypeLeft:
+			return helper(colNotNull, colNull)
+		case ast.JoinTypeRight:
+			return helper(colNull, colNotNull)
+		case ast.JoinTypeFull:
+			return helper(colNull, colNull)
+		}
+	}
+	return colNotFound
 }
 
 // Compute the output columns for a statement.

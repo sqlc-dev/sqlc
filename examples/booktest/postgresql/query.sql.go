@@ -5,6 +5,7 @@ package booktest
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/lib/pq"
@@ -25,7 +26,7 @@ WHERE tags && $1::varchar[]
 type BooksByTagsRow struct {
 	BookID int32
 	Title  string
-	Name   string
+	Name   sql.NullString
 	Isbn   string
 	Tags   []string
 }
