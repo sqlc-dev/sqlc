@@ -184,7 +184,10 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 				Typ:  goType(r, c, settings),
 			}
 		} else if len(query.Columns) > 1 {
-			var columns []goColumn
+			var (
+				columns  []goColumn
+				embedded = map[string]interface{}{}
+			)
 
 			for ci := 0; ci < len(query.Columns); {
 				c := query.Columns[ci]
@@ -199,6 +202,10 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 					// If the query doesn't have enough fields, it cannot
 					// fufill the struct.
 					if len(query.Columns) < len(s.Fields) {
+						continue
+					}
+					// We can only embed one struct of each type.
+					if _, ok := embedded[s.Name]; ok {
 						continue
 					}
 					same := true
@@ -230,6 +237,7 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 				colsMatched := 1
 				if embed != nil {
 					colsMatched = len(embed.Fields)
+					embedded[embed.Name] = nil
 				}
 				for colID := ci; colID < ci+colsMatched; colID++ {
 					columns = append(columns, goColumn{
