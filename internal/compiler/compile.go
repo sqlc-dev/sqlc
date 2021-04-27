@@ -102,11 +102,19 @@ func (c *Compiler) parseQueries(o opts.Parser) (*Result, error) {
 		src := string(blob)
 		stmts, err := c.parser.Parse(strings.NewReader(src))
 		if err != nil {
-			merr.Add(filename, src, 0, err)
+			qs, _ := metadata.GetQueries(src, c.parser.CommentSyntax())
+			for _, sql := range qs {
+				_, err = c.parser.Parse(strings.NewReader(sql.SQL))
+				if err != nil {
+					merr.Add(filename, src, sql.Line, fmt.Errorf("%s: %s\n%s", sql.Name, err.Error(), sql.SQL))
+				}
+			}
+			//merr.Add(filename, src, 0, err)
 			continue
 		}
 		for _, stmt := range stmts {
 			query, err := c.parseQuery(stmt.Raw, src, o)
+
 			if err == ErrUnsupportedStatementType {
 				continue
 			}
