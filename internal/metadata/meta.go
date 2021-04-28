@@ -2,6 +2,7 @@ package metadata
 
 import (
 	"fmt"
+	"github.com/kyleconroy/sqlc/internal/multierr"
 	"strings"
 	"unicode"
 )
@@ -103,15 +104,20 @@ type Query struct {
 	Line int
 }
 
-func GetQueries(src string, commentStyle CommentSyntax) ([]Query, error) {
+func GetQueries(src string, commentStyle CommentSyntax) ([]Query, []multierr.FileError) {
 	qs := []Query{}
 	next := Query{}
+	var merr []multierr.FileError
 	for i, line := range strings.Split(src, "\n") {
 		var prefix string = getPrefix(line, commentStyle)
 		if strings.HasPrefix(line, prefix) && prefix != "" {
 			qname, _, err := Parse(line, commentStyle)
 			if err != nil {
-				fmt.Println(err.Error())
+				//fmt.Println(err.Error())
+				merr = append(merr, multierr.FileError{
+					Line: i,
+					Err:  err,
+				})
 			}
 			if next.Name != "" && next.SQL != "" {
 				qs = append(qs, next)
@@ -124,5 +130,5 @@ func GetQueries(src string, commentStyle CommentSyntax) ([]Query, error) {
 			next.SQL += " " + line
 		}
 	}
-	return qs, nil
+	return qs, merr
 }
