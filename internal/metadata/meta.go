@@ -127,7 +127,10 @@ func GetQueries(src string, commentStyle CommentSyntax) ([]Query, []multierr.Fil
 				Line: i,
 			}
 		} else if next.Name != "" {
-			next.SQL += " " + line
+			if next.SQL != "" {
+				next.SQL += "\n"
+			}
+			next.SQL += line
 		}
 	}
 	return qs, merr
