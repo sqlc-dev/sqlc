@@ -6,7 +6,7 @@
       "name": "querytest",
       "schema": "test.sql",
       "queries": "test.sql",
-      "engine": "postgresql"
+      "engine": "mysql"
     }
   ]
 }
