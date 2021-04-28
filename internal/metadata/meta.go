@@ -2,6 +2,7 @@ package metadata
 
 import (
 	"fmt"
+	"github.com/kyleconroy/sqlc/internal/multierr"
 	"strings"
 	"unicode"
 )
@@ -39,27 +40,32 @@ func validateQueryName(name string) error {
 	return nil
 }
 
+func getPrefix(line string, commentStyle CommentSyntax) string {
+	var prefix string
+	if strings.HasPrefix(line, "--") {
+		if !commentStyle.Dash {
+			return prefix
+		}
+		prefix = "-- name:"
+	}
+	if strings.HasPrefix(line, "/*") {
+		if !commentStyle.SlashStar {
+			return prefix
+		}
+		prefix = "/* name:"
+	}
+	if strings.HasPrefix(line, "#") {
+		if !commentStyle.Hash {
+			return prefix
+		}
+		prefix = "# name:"
+	}
+	return prefix
+}
+
 func Parse(t string, commentStyle CommentSyntax) (string, string, error) {
 	for _, line := range strings.Split(t, "\n") {
-		var prefix string
-		if strings.HasPrefix(line, "--") {
-			if !commentStyle.Dash {
-				continue
-			}
-			prefix = "-- name:"
-		}
-		if strings.HasPrefix(line, "/*") {
-			if !commentStyle.SlashStar {
-				continue
-			}
-			prefix = "/* name:"
-		}
-		if strings.HasPrefix(line, "#") {
-			if !commentStyle.Hash {
-				continue
-			}
-			prefix = "# name:"
-		}
+		var prefix string = getPrefix(line, commentStyle)
 		if prefix == "" {
 			continue
 		}
@@ -90,4 +96,39 @@ func Parse(t string, commentStyle CommentSyntax) (string, string, error) {
 		return queryName, queryType, nil
 	}
 	return "", "", nil
+}
+
+type Query struct {
+	Name string
+	SQL  string
+	Line int
+}
+
+func GetQueries(src string, commentStyle CommentSyntax) ([]Query, []multierr.FileError) {
+	qs := []Query{}
+	next := Query{}
+	var merr []multierr.FileError
+	for i, line := range strings.Split(src, "\n") {
+		var prefix string = getPrefix(line, commentStyle)
+		if strings.HasPrefix(line, prefix) && prefix != "" {
+			qname, _, err := Parse(line, commentStyle)
+			if err != nil {
+				//fmt.Println(err.Error())
+				merr = append(merr, multierr.FileError{
+					Line: i,
+					Err:  err,
+				})
+			}
+			if next.Name != "" && next.SQL != "" {
+				qs = append(qs, next)
+			}
+			next = Query{
+				Name: qname,
+				Line: i,
+			}
+		} else if next.Name != "" {
+			next.SQL += " " + line
+		}
+	}
+	return qs, merr
 }
