@@ -88,12 +88,25 @@ func (i *importer) usesArrays() bool {
 }
 
 func (i *importer) Imports(filename string) [][]ImportSpec {
+	dbFileName := "db.go"
+	if i.Settings.Go.OutputDBFileName != "" {
+		dbFileName = i.Settings.Go.OutputDBFileName
+	}
+	modelsFileName := "models.go"
+	if i.Settings.Go.OutputModelsFileName != "" {
+		modelsFileName = i.Settings.Go.OutputModelsFileName
+	}
+	querierFileName := "querier.go"
+	if i.Settings.Go.OutputQuerierFileName != "" {
+		querierFileName = i.Settings.Go.OutputQuerierFileName
+	}
+
 	switch filename {
-	case i.Settings.Go.OutputDBFileName:
+	case dbFileName:
 		return mergeImports(i.dbImports())
-	case i.Settings.Go.OutputModelsFileName:
+	case modelsFileName:
 		return mergeImports(i.modelImports())
-	case i.Settings.Go.OutputQuerierFileName:
+	case querierFileName:
 		return mergeImports(i.interfaceImports())
 	default:
 		return mergeImports(i.queryImports(filename))
