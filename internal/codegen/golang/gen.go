@@ -427,12 +427,13 @@ func generate(settings config.CombinedSettings, enums []Enum, structs []Struct, 
 			fmt.Println(b.String())
 			return fmt.Errorf("source error: %w", err)
 		}
-		suffix := ".go"
-		if golang.OutputFilesSuffix != "" {
-			suffix = golang.OutputFilesSuffix
+
+		if templateName == "queryFile" && golang.OutputFilesSuffix != "" {
+			name += golang.OutputFilesSuffix
 		}
-		if !strings.HasSuffix(name, suffix) {
-			name += suffix
+
+		if !strings.HasSuffix(name, ".go") {
+			name += ".go"
 		}
 		output[name] = string(code)
 		return nil
