@@ -89,11 +89,11 @@ func (i *importer) usesArrays() bool {
 
 func (i *importer) Imports(filename string) [][]ImportSpec {
 	switch filename {
-	case "db.go":
+	case i.Settings.Go.OutputDBFileName:
 		return mergeImports(i.dbImports())
-	case "models.go":
+	case i.Settings.Go.OutputModelsFileName:
 		return mergeImports(i.modelImports())
-	case "querier.go":
+	case i.Settings.Go.OutputQuerierFileName:
 		return mergeImports(i.interfaceImports())
 	default:
 		return mergeImports(i.queryImports(filename))
