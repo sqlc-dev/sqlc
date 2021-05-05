@@ -1,6 +1,7 @@
 package golang
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/kyleconroy/sqlc/internal/metadata"
@@ -79,10 +80,14 @@ func (v QueryValue) Scan() string {
 		}
 	} else {
 		for _, f := range v.Struct.Fields {
+			ref := fmt.Sprintf("%s.%s", v.Name, f.Name)
+			if f.Struct != "" {
+				ref = fmt.Sprintf("%s.%s.%s", v.Name, f.Struct, f.Name)
+			}
 			if strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" {
-				out = append(out, "pq.Array(&"+v.Name+"."+f.Name+")")
+				out = append(out, "pq.Array(&"+ref+")")
 			} else {
-				out = append(out, "&"+v.Name+"."+f.Name)
+				out = append(out, "&"+ref)
 			}
 		}
 	}

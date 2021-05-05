@@ -243,14 +243,17 @@ const {{.ConstantName}} = {{$.Q}}-- name: {{.MethodName}} {{.Cmd}}
 
 {{if .Arg.EmitStruct}}
 type {{.Arg.Type}} struct { {{- range .Arg.Struct.Fields}}
-  {{.Name}} {{.Type}} {{if or ($.EmitJSONTags) ($.EmitDBTags)}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
+    {{.Name}} {{.Type}} {{if or ($.EmitJSONTags) ($.EmitDBTags)}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
   {{- end}}
 }
 {{end}}
 
 {{if .Ret.EmitStruct}}
-type {{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
+type {{.Ret.Type}} struct { {{- range .Ret.Struct.Embedded}}
+  {{.Name}}
+  {{- end}} {{- range .Ret.Struct.Fields}} {{if not .Struct}}
   {{.Name}} {{.Type}} {{if or ($.EmitJSONTags) ($.EmitDBTags)}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
+  {{- end}}
   {{- end}}
 }
 {{end}}
