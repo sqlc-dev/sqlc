@@ -9,16 +9,40 @@ import (
 )
 
 func sqliteType(r *compiler.Result, col *compiler.Column, settings config.CombinedSettings) string {
-	dt := col.DataType
+	dt := strings.ToLower(col.DataType)
 	notNull := col.NotNull || col.IsArray
 
 	switch dt {
 
-	case "integer":
+	case "int", "integer", "tinyint", "smallint", "mediumint", "bigint", "unsignedbigint", "int2", "int8", "numeric", "decimal":
 		if notNull {
-			return "int32"
+			return "int64"
 		}
-		return "sql.NullInt32"
+		return "sql.NullInt64"
+
+	case "blob":
+		if notNull {
+			return "[]uint8"
+		}
+		return "*[]uint8"
+
+	case "real", "double", "doubleprecision", "float":
+		if notNull {
+			return "float64"
+		}
+		return "sql.NullFloat64"
+
+	case "boolean":
+		if notNull {
+			return "bool"
+		}
+		return "sql.NullBool"
+
+	case "date", "datetime", "timestamp":
+		if notNull {
+			return "time.Time"
+		}
+		return "sql.NullTime"
 
 	case "any":
 		return "interface{}"
@@ -27,7 +51,14 @@ func sqliteType(r *compiler.Result, col *compiler.Column, settings config.Combin
 
 	switch {
 
-	case strings.HasPrefix(dt, "varchar"):
+	case strings.HasPrefix(dt, "character"),
+		strings.HasPrefix(dt, "varchar"),
+		strings.HasPrefix(dt, "varyingcharacter"),
+		strings.HasPrefix(dt, "nchar"),
+		strings.HasPrefix(dt, "nativecharacter"),
+		strings.HasPrefix(dt, "nvarchar"),
+		dt == "text",
+		dt == "clob":
 		if notNull {
 			return "string"
 		}
