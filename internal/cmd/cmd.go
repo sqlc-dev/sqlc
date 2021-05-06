@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	yaml "gopkg.in/yaml.v3"
 
 	"github.com/kyleconroy/sqlc/internal/config"
@@ -17,6 +18,9 @@ import (
 // Do runs the command logic.
 func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int {
 	rootCmd := &cobra.Command{Use: "sqlc", SilenceUsage: true}
+	rootCmd.PersistentFlags().StringP("file", "f", "", "specify an alternate config file (default: sqlc.yaml)")
+	rootCmd.PersistentFlags().BoolP("experimental", "x", false, "enable experimental features (default: false)")
+
 	rootCmd.AddCommand(checkCmd)
 	rootCmd.AddCommand(genCmd)
 	rootCmd.AddCommand(initCmd)
@@ -46,7 +50,7 @@ var versionCmd = &cobra.Command{
 		if version == "" {
 			// When no version is set, return the next bug fix version
 			// after the most recent tag
-			fmt.Printf("%s\n", "v1.6.1-devel")
+			fmt.Printf("%s\n", "v1.8.1-devel")
 		} else {
 			fmt.Printf("%s\n", version)
 		}
@@ -57,22 +61,54 @@ var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Create an empty sqlc.yaml settings file",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if _, err := os.Stat("sqlc.yaml"); !os.IsNotExist(err) {
+		file := "sqlc.yaml"
+		if f := cmd.Flag("file"); f != nil && f.Changed {
+			file = f.Value.String()
+			if file == "" {
+				return fmt.Errorf("file argument is empty")
+			}
+		}
+		if _, err := os.Stat(file); !os.IsNotExist(err) {
 			return nil
 		}
 		blob, err := yaml.Marshal(config.V1GenerateSettings{Version: "1"})
 		if err != nil {
 			return err
 		}
-		return ioutil.WriteFile("sqlc.yaml", blob, 0644)
+		return ioutil.WriteFile(file, blob, 0644)
 	},
 }
 
 type Env struct {
+	ExperimentalFeatures bool
 }
 
-func ParseEnv() Env {
-	return Env{}
+func ParseEnv(c *cobra.Command) Env {
+	x := c.Flag("experimental")
+	return Env{ExperimentalFeatures: x != nil && x.Changed}
+}
+
+func getConfigPath(stderr io.Writer, f *pflag.Flag) (string, string) {
+	if f != nil && f.Changed {
+		file := f.Value.String()
+		if file == "" {
+			fmt.Fprintln(stderr, "error parsing config: file argument is empty")
+			os.Exit(1)
+		}
+		abspath, err := filepath.Abs(file)
+		if err != nil {
+			fmt.Fprintf(stderr, "error parsing config: absolute file path lookup failed: %s\n", err)
+			os.Exit(1)
+		}
+		return filepath.Dir(abspath), filepath.Base(abspath)
+	} else {
+		wd, err := os.Getwd()
+		if err != nil {
+			fmt.Fprintln(stderr, "error parsing sqlc.json: file does not exist")
+			os.Exit(1)
+		}
+		return wd, ""
+	}
 }
 
 var genCmd = &cobra.Command{
@@ -80,17 +116,11 @@ var genCmd = &cobra.Command{
 	Short: "Generate Go code from SQL",
 	Run: func(cmd *cobra.Command, args []string) {
 		stderr := cmd.ErrOrStderr()
-		dir, err := os.Getwd()
-		if err != nil {
-			fmt.Fprintln(stderr, "error parsing sqlc.json: file does not exist")
-			os.Exit(1)
-		}
-
-		output, err := Generate(ParseEnv(), dir, stderr)
+		dir, name := getConfigPath(stderr, cmd.Flag("file"))
+		output, err := Generate(ParseEnv(cmd), dir, name, stderr)
 		if err != nil {
 			os.Exit(1)
 		}
-
 		for filename, source := range output {
 			os.MkdirAll(filepath.Dir(filename), 0755)
 			if err := ioutil.WriteFile(filename, []byte(source), 0644); err != nil {
@@ -106,12 +136,8 @@ var checkCmd = &cobra.Command{
 	Short: "Statically check SQL for syntax and type errors",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		stderr := cmd.ErrOrStderr()
-		dir, err := os.Getwd()
-		if err != nil {
-			fmt.Fprintln(stderr, "error parsing sqlc.json: file does not exist")
-			os.Exit(1)
-		}
-		if _, err := Generate(Env{}, dir, stderr); err != nil {
+		dir, name := getConfigPath(stderr, cmd.Flag("file"))
+		if _, err := Generate(ParseEnv(cmd), dir, name, stderr); err != nil {
 			os.Exit(1)
 		}
 		return nil

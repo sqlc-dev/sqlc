@@ -561,6 +561,11 @@ func generate(settings config.CombinedSettings, enums []Enum, structs []Struct, 
 			fmt.Println(b.String())
 			return fmt.Errorf("source error: %w", err)
 		}
+
+		if templateName == "queryFile" && golang.OutputFilesSuffix != "" {
+			name += golang.OutputFilesSuffix
+		}
+
 		if !strings.HasSuffix(name, ".go") {
 			name += ".go"
 		}
@@ -568,14 +573,27 @@ func generate(settings config.CombinedSettings, enums []Enum, structs []Struct, 
 		return nil
 	}
 
-	if err := execute("db.go", "dbFile"); err != nil {
+	dbFileName := "db.go"
+	if golang.OutputDBFileName != "" {
+		dbFileName = golang.OutputDBFileName
+	}
+	modelsFileName := "models.go"
+	if golang.OutputModelsFileName != "" {
+		modelsFileName = golang.OutputModelsFileName
+	}
+	querierFileName := "querier.go"
+	if golang.OutputQuerierFileName != "" {
+		querierFileName = golang.OutputQuerierFileName
+	}
+
+	if err := execute(dbFileName, "dbFile"); err != nil {
 		return nil, err
 	}
-	if err := execute("models.go", "modelsFile"); err != nil {
+	if err := execute(modelsFileName, "modelsFile"); err != nil {
 		return nil, err
 	}
 	if golang.EmitInterface {
-		if err := execute("querier.go", "interfaceFile"); err != nil {
+		if err := execute(querierFileName, "interfaceFile"); err != nil {
 			return nil, err
 		}
 	}

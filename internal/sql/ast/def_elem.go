@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type DefElem struct {
 	Defnamespace *string
 	Defname      *string

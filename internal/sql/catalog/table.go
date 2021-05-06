@@ -74,6 +74,7 @@ func (c *Catalog) alterTable(stmt *ast.AlterTableStmt) error {
 					Type:      *cmd.Def.TypeName,
 					IsNotNull: cmd.Def.IsNotNull,
 					IsArray:   cmd.Def.IsArray,
+					Length:    cmd.Def.Length,
 				})
 
 			case ast.AT_AlterColumnType:
@@ -160,6 +161,7 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 				IsNotNull: col.IsNotNull,
 				IsArray:   col.IsArray,
 				Comment:   col.Comment,
+				Length:    col.Length,
 			}
 			if col.Vals != nil {
 				typeName := ast.TypeName{

@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type Aggref struct {
 	Xpr           Node
 	Aggfnoid      Oid

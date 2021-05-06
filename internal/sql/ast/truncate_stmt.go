@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type TruncateStmt struct {
 	Relations   *List
 	RestartSeqs bool

@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type DropOwnedStmt struct {
 	Roles    *List
 	Behavior DropBehavior

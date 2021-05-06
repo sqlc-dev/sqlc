@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type AlterCollationStmt struct {
 	Collname *List
 }

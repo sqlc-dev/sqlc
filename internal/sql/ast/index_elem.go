@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type IndexElem struct {
 	Name          *string
 	Expr          Node

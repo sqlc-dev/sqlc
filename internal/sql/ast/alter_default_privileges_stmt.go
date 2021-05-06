@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type AlterDefaultPrivilegesStmt struct {
 	Options *List
 	Action  *GrantStmt

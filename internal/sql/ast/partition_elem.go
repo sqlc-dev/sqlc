@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type PartitionElem struct {
 	Name      *string
 	Expr      Node

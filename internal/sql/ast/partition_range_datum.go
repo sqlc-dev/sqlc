@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type PartitionRangeDatum struct {
 	Kind     PartitionRangeDatumKind
 	Value    Node

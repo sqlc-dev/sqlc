@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type AlterObjectDependsStmt struct {
 	ObjectType ObjectType
 	Relation   *RangeVar

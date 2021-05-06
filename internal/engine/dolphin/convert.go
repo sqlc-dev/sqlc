@@ -35,14 +35,19 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 		case pcast.AlterTableAddColumns:
 			for _, def := range spec.NewColumns {
 				name := def.Name.String()
+				columnDef := ast.ColumnDef{
+					Colname:   def.Name.String(),
+					TypeName:  &ast.TypeName{Name: types.TypeStr(def.Tp.Tp)},
+					IsNotNull: isNotNull(def),
+				}
+				if def.Tp.Flen >= 0 {
+					length := def.Tp.Flen
+					columnDef.Length = &length
+				}
 				alt.Cmds.Items = append(alt.Cmds.Items, &ast.AlterTableCmd{
 					Name:    &name,
 					Subtype: ast.AT_AddColumn,
-					Def: &ast.ColumnDef{
-						Colname:   def.Name.String(),
-						TypeName:  &ast.TypeName{Name: types.TypeStr(def.Tp.Tp)},
-						IsNotNull: isNotNull(def),
-					},
+					Def:     &columnDef,
 				})
 			}
 
@@ -60,6 +65,15 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 		case pcast.AlterTableModifyColumn:
 			for _, def := range spec.NewColumns {
 				name := def.Name.String()
+				columnDef := ast.ColumnDef{
+					Colname:   def.Name.String(),
+					TypeName:  &ast.TypeName{Name: types.TypeStr(def.Tp.Tp)},
+					IsNotNull: isNotNull(def),
+				}
+				if def.Tp.Flen >= 0 {
+					length := def.Tp.Flen
+					columnDef.Length = &length
+				}
 				alt.Cmds.Items = append(alt.Cmds.Items, &ast.AlterTableCmd{
 					Name:    &name,
 					Subtype: ast.AT_DropColumn,
@@ -67,11 +81,7 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 				alt.Cmds.Items = append(alt.Cmds.Items, &ast.AlterTableCmd{
 					Name:    &name,
 					Subtype: ast.AT_AddColumn,
-					Def: &ast.ColumnDef{
-						Colname:   def.Name.String(),
-						TypeName:  &ast.TypeName{Name: types.TypeStr(def.Tp.Tp)},
-						IsNotNull: isNotNull(def),
-					},
+					Def:     &columnDef,
 				})
 			}
 
@@ -224,13 +234,18 @@ func (c *cc) convertCreateTableStmt(n *pcast.CreateTableStmt) ast.Node {
 				}
 			}
 		}
-		create.Cols = append(create.Cols, &ast.ColumnDef{
+		columnDef := ast.ColumnDef{
 			Colname:   def.Name.String(),
 			TypeName:  &ast.TypeName{Name: types.TypeStr(def.Tp.Tp)},
 			IsNotNull: isNotNull(def),
 			Comment:   comment,
 			Vals:      vals,
-		})
+		}
+		if def.Tp.Flen >= 0 {
+			length := def.Tp.Flen
+			columnDef.Length = &length
+		}
+		create.Cols = append(create.Cols, &columnDef)
 	}
 	for _, opt := range n.Options {
 		switch opt.Tp {
@@ -427,10 +442,13 @@ func (c *cc) convertSelectField(n *pcast.SelectField) *ast.ResTarget {
 }
 
 func (c *cc) convertSelectStmt(n *pcast.SelectStmt) *ast.SelectStmt {
+	op, all := c.convertSetOprType(n.AfterSetOperator)
 	stmt := &ast.SelectStmt{
 		TargetList:  c.convertFieldList(n.Fields),
 		FromClause:  c.convertTableRefsClause(n.From),
 		WhereClause: c.convert(n.Where),
+		Op:          op,
+		All:         all,
 	}
 	if n.Limit != nil {
 		stmt.LimitCount = c.convert(n.Limit.Count)
@@ -451,16 +469,29 @@ func (c *cc) convertTableRefsClause(n *pcast.TableRefsClause) *ast.List {
 }
 
 func (c *cc) convertUpdateStmt(n *pcast.UpdateStmt) *ast.UpdateStmt {
-	// Relation
 	rels := c.convertTableRefsClause(n.TableRefs)
 	if len(rels.Items) != 1 {
 		panic("expected one range var")
 	}
-	rel := rels.Items[0]
-	rangeVar, ok := rel.(*ast.RangeVar)
-	if !ok {
+
+	var rangeVar *ast.RangeVar
+	switch rel := rels.Items[0].(type) {
+
+	// Special case for joins in updates
+	case *ast.JoinExpr:
+		left, ok := rel.Larg.(*ast.RangeVar)
+		if !ok {
+			panic("expected range var")
+		}
+		rangeVar = left
+
+	case *ast.RangeVar:
+		rangeVar = rel
+
+	default:
 		panic("expected range var")
 	}
+
 	// TargetList
 	list := &ast.List{}
 	for _, a := range n.List {
@@ -909,11 +940,97 @@ func (c *cc) convertSetDefaultRoleStmt(n *pcast.SetDefaultRoleStmt) ast.Node {
 	return todo(n)
 }
 
+func (c *cc) convertSetOprType(n *pcast.SetOprType) (op ast.SetOperation, all bool) {
+	if n == nil {
+		return
+	}
+
+	switch *n {
+	case pcast.Union:
+		op = ast.Union
+	case pcast.UnionAll:
+		op = ast.Union
+		all = true
+	case pcast.Intersect:
+		op = ast.Intersect
+	case pcast.IntersectAll:
+		op = ast.Intersect
+		all = true
+	case pcast.Except:
+		op = ast.Except
+	case pcast.ExceptAll:
+		op = ast.Except
+		all = true
+	}
+	return
+}
+
+// convertSetOprSelectList converts a list of SELECT from the Pingcap parser
+// into a tree. It is called for UNION, INTERSECT or EXCLUDE operation.
+//
+// Given an union with the following nodes:
+//     [Select{1}, Select{2}, Select{3}, Select{4}]
+//
+// The function will return:
+//     Select{
+//         Larg: Select{
+//             Larg: Select{
+//                 Larg: Select{1},
+//                 Rarg: Select{2},
+//                 Op: Union
+//             },
+//             Rarg: Select{3},
+//             Op: Union,
+//         },
+//         Rarg: Select{4},
+//         Op: Union,
+//     }
 func (c *cc) convertSetOprSelectList(n *pcast.SetOprSelectList) ast.Node {
-	return todo(n)
+	selectStmts := make([]*ast.SelectStmt, len(n.Selects))
+	for i, node := range n.Selects {
+		selectStmts[i] = c.convertSelectStmt(node.(*pcast.SelectStmt))
+	}
+
+	op, all := c.convertSetOprType(n.AfterSetOperator)
+	tree := &ast.SelectStmt{
+		TargetList:  &ast.List{},
+		FromClause:  &ast.List{},
+		WhereClause: nil,
+		Op:          op,
+		All:         all,
+	}
+	for _, stmt := range selectStmts {
+		// We move Op and All from the child to the parent.
+		op, all := stmt.Op, stmt.All
+		stmt.Op, stmt.All = ast.None, false
+
+		switch {
+		case tree.Larg == nil:
+			tree.Larg = stmt
+		case tree.Rarg == nil:
+			tree.Rarg = stmt
+			tree.Op = op
+			tree.All = all
+		default:
+			tree = &ast.SelectStmt{
+				TargetList:  &ast.List{},
+				FromClause:  &ast.List{},
+				WhereClause: nil,
+				Larg:        tree,
+				Rarg:        stmt,
+				Op:          op,
+				All:         all,
+			}
+		}
+	}
+
+	return tree
 }
 
 func (c *cc) convertSetOprStmt(n *pcast.SetOprStmt) ast.Node {
+	if n.SelectList != nil {
+		return c.convertSetOprSelectList(n.SelectList)
+	}
 	return todo(n)
 }
 

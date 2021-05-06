@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type AlternativeSubPlan struct {
 	Xpr      Node
 	Subplans *List

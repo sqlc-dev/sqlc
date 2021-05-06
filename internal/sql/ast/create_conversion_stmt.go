@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type CreateConversionStmt struct {
 	ConversionName  *List
 	ForEncodingName *string

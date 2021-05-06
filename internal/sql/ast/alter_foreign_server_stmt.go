@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type AlterForeignServerStmt struct {
 	Servername *string
 	Version    *string

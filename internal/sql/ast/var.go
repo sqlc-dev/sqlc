@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type Var struct {
 	Xpr         Node
 	Varno       Index

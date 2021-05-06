@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type CaseTestExpr struct {
 	Xpr       Node
 	TypeId    Oid

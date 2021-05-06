@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type AlterExtensionContentsStmt struct {
 	Extname *string
 	Action  int

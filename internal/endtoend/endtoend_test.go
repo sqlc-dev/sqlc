@@ -35,7 +35,7 @@ func TestExamples(t *testing.T) {
 			t.Parallel()
 			path := filepath.Join(examples, tc)
 			var stderr bytes.Buffer
-			output, err := cmd.Generate(cmd.Env{}, path, &stderr)
+			output, err := cmd.Generate(cmd.Env{ExperimentalFeatures: true}, path, "", &stderr)
 			if err != nil {
 				t.Fatalf("sqlc generate failed: %s", stderr.String())
 			}
@@ -62,7 +62,7 @@ func BenchmarkExamples(b *testing.B) {
 			path := filepath.Join(examples, tc)
 			for i := 0; i < b.N; i++ {
 				var stderr bytes.Buffer
-				cmd.Generate(cmd.Env{}, path, &stderr)
+				cmd.Generate(cmd.Env{ExperimentalFeatures: true}, path, "", &stderr)
 			}
 		})
 	}
@@ -91,7 +91,7 @@ func TestReplay(t *testing.T) {
 			path, _ := filepath.Abs(tc)
 			var stderr bytes.Buffer
 			expected := expectedStderr(t, path)
-			output, err := cmd.Generate(cmd.Env{}, path, &stderr)
+			output, err := cmd.Generate(cmd.Env{ExperimentalFeatures: true}, path, "", &stderr)
 			if len(expected) == 0 && err != nil {
 				t.Fatalf("sqlc generate failed: %s", stderr.String())
 			}
@@ -112,13 +112,17 @@ func cmpDirectory(t *testing.T, dir string, actual map[string]string) {
 		if file.IsDir() {
 			return nil
 		}
-		if !strings.HasSuffix(path, ".go") && !strings.HasSuffix(path, ".kt") {
+		if !strings.HasSuffix(path, ".go") && !strings.HasSuffix(path, ".kt") && !strings.HasSuffix(path, ".py") {
 			return nil
 		}
 		if strings.Contains(path, "/kotlin/build") {
 			return nil
 		}
 		if strings.HasSuffix(path, "_test.go") || strings.Contains(path, "src/test/") {
+			return nil
+		}
+		if strings.Contains(path, "/python/.venv") || strings.Contains(path, "/python/src/tests/") ||
+			strings.HasSuffix(path, "__init__.py") || strings.Contains(path, "/python/src/dbtest/") {
 			return nil
 		}
 		blob, err := ioutil.ReadFile(path)
@@ -184,7 +188,7 @@ func BenchmarkReplay(b *testing.B) {
 			path, _ := filepath.Abs(tc)
 			for i := 0; i < b.N; i++ {
 				var stderr bytes.Buffer
-				cmd.Generate(cmd.Env{}, path, &stderr)
+				cmd.Generate(cmd.Env{ExperimentalFeatures: true}, path, "", &stderr)
 			}
 		})
 	}

@@ -106,20 +106,25 @@ type SQL struct {
 type SQLGen struct {
 	Go     *SQLGo     `json:"go,omitempty" yaml:"go"`
 	Kotlin *SQLKotlin `json:"kotlin,omitempty" yaml:"kotlin"`
+	Python *SQLPython `json:"python,omitempty" yaml:"python"`
 }
 
 type SQLGo struct {
-	EmitInterface       bool              `json:"emit_interface" yaml:"emit_interface"`
-	EmitJSONTags        bool              `json:"emit_json_tags" yaml:"emit_json_tags"`
-	EmitDBTags          bool              `json:"emit_db_tags" yaml:"emit_db_tags"`
-	EmitPreparedQueries bool              `json:"emit_prepared_queries" yaml:"emit_prepared_queries"`
-	EmitExactTableNames bool              `json:"emit_exact_table_names,omitempty" yaml:"emit_exact_table_names"`
-	EmitEmptySlices     bool              `json:"emit_empty_slices,omitempty" yaml:"emit_empty_slices"`
-	SQLLibrary          string            `json:"sql_library,omitempty" yaml:"sql_library"`
-	Package             string            `json:"package" yaml:"package"`
-	Out                 string            `json:"out" yaml:"out"`
-	Overrides           []Override        `json:"overrides,omitempty" yaml:"overrides"`
-	Rename              map[string]string `json:"rename,omitempty" yaml:"rename"`
+	EmitInterface         bool              `json:"emit_interface" yaml:"emit_interface"`
+	EmitJSONTags          bool              `json:"emit_json_tags" yaml:"emit_json_tags"`
+	EmitDBTags            bool              `json:"emit_db_tags" yaml:"emit_db_tags"`
+	EmitPreparedQueries   bool              `json:"emit_prepared_queries" yaml:"emit_prepared_queries"`
+	EmitExactTableNames   bool              `json:"emit_exact_table_names,omitempty" yaml:"emit_exact_table_names"`
+	EmitEmptySlices       bool              `json:"emit_empty_slices,omitempty" yaml:"emit_empty_slices"`
+	JSONTagsCaseStyle     string            `json:"json_tags_case_style,omitempty" yaml:"json_tags_case_style"`
+	Package               string            `json:"package" yaml:"package"`
+	Out                   string            `json:"out" yaml:"out"`
+	Overrides             []Override        `json:"overrides,omitempty" yaml:"overrides"`
+	Rename                map[string]string `json:"rename,omitempty" yaml:"rename"`
+	OutputDBFileName      string            `json:"output_db_file_name,omitempty" yaml:"output_db_file_name"`
+	OutputModelsFileName  string            `json:"output_models_file_name,omitempty" yaml:"output_models_file_name"`
+	OutputQuerierFileName string            `json:"output_querier_file_name,omitempty" yaml:"output_querier_file_name"`
+	OutputFilesSuffix     string            `json:"output_files_suffix,omitempty" yaml:"output_files_suffix"`
 }
 
 type SQLKotlin struct {
@@ -128,9 +133,21 @@ type SQLKotlin struct {
 	Out                 string `json:"out" yaml:"out"`
 }
 
+type SQLPython struct {
+	EmitExactTableNames bool       `json:"emit_exact_table_names" yaml:"emit_exact_table_names"`
+	EmitSyncQuerier     bool       `json:"emit_sync_querier" yaml:"emit_sync_querier"`
+	EmitAsyncQuerier    bool       `json:"emit_async_querier" yaml:"emit_async_querier"`
+	Package             string     `json:"package" yaml:"package"`
+	Out                 string     `json:"out" yaml:"out"`
+	Overrides           []Override `json:"overrides,omitempty" yaml:"overrides"`
+}
+
 type Override struct {
 	// name of the golang type to use, e.g. `github.com/segmentio/ksuid.KSUID`
 	GoType GoType `json:"go_type" yaml:"go_type"`
+
+	// name of the python type to use, e.g. `mymodule.TypeName`
+	PythonType PythonType `json:"python_type" yaml:"python_type"`
 
 	// fully qualified name of the Go type, e.g. `github.com/segmentio/ksuid.KSUID`
 	DBType                  string `json:"db_type" yaml:"db_type"`
@@ -218,7 +235,8 @@ var ErrUnknownEngine = errors.New("invalid engine")
 var ErrNoPackages = errors.New("no packages")
 var ErrNoPackageName = errors.New("missing package name")
 var ErrNoPackagePath = errors.New("missing package path")
-var ErrKotlinNoOutPath = errors.New("no output path")
+var ErrNoOutPath = errors.New("no output path")
+var ErrNoQuerierType = errors.New("no querier emit type enabled")
 
 func ParseConfig(rd io.Reader) (Config, error) {
 	var buf bytes.Buffer
@@ -248,6 +266,7 @@ type CombinedSettings struct {
 	Package   SQL
 	Go        SQLGo
 	Kotlin    SQLKotlin
+	Python    SQLPython
 	Rename    map[string]string
 	Overrides []Override
 }
@@ -270,6 +289,10 @@ func Combine(conf Config, pkg SQL) CombinedSettings {
 	}
 	if pkg.Gen.Kotlin != nil {
 		cs.Kotlin = *pkg.Gen.Kotlin
+	}
+	if pkg.Gen.Python != nil {
+		cs.Python = *pkg.Gen.Python
+		cs.Overrides = append(cs.Overrides, pkg.Gen.Python.Overrides...)
 	}
 	return cs
 }

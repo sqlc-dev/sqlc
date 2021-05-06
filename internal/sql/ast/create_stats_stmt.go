@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type CreateStatsStmt struct {
 	Defnames    *List
 	StatTypes   *List

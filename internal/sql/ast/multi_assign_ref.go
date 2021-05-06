@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type MultiAssignRef struct {
 	Source   Node
 	Colno    int

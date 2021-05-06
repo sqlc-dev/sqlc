@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type CommonTableExpr struct {
 	Ctename          *string
 	Aliascolnames    *List

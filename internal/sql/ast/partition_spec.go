@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type PartitionSpec struct {
 	Strategy   *string
 	PartParams *List

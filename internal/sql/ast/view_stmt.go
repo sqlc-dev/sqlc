@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type ViewStmt struct {
 	View            *RangeVar
 	Aliases         *List

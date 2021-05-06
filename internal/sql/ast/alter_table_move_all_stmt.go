@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type AlterTableMoveAllStmt struct {
 	OrigTablespacename *string
 	Objtype            ObjectType

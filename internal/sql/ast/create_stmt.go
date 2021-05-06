@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type CreateStmt struct {
 	Relation       *RangeVar
 	TableElts      *List

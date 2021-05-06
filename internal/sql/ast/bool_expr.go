@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type BoolExpr struct {
 	Xpr      Node
 	Boolop   BoolExprType

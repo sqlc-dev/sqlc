@@ -204,6 +204,9 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 	case *ast.RenameTableStmt:
 		a.apply(n, "Table", nil, n.Table)
 
+	case *ast.RenameTypeStmt:
+		a.apply(n, "Type", nil, n.Type)
+
 	case *ast.Statement:
 		a.apply(n, "Raw", nil, n.Raw)
 

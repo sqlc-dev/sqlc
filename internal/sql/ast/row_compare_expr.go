@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type RowCompareExpr struct {
 	Xpr          Node
 	Rctype       RowCompareType

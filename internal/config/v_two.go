@@ -53,10 +53,26 @@ func v2ParseConfig(rd io.Reader) (Config, error) {
 		}
 		if conf.SQL[j].Gen.Kotlin != nil {
 			if conf.SQL[j].Gen.Kotlin.Out == "" {
-				return conf, ErrKotlinNoOutPath
+				return conf, ErrNoOutPath
 			}
 			if conf.SQL[j].Gen.Kotlin.Package == "" {
 				return conf, ErrNoPackageName
+			}
+		}
+		if conf.SQL[j].Gen.Python != nil {
+			if conf.SQL[j].Gen.Python.Out == "" {
+				return conf, ErrNoOutPath
+			}
+			if conf.SQL[j].Gen.Python.Package == "" {
+				return conf, ErrNoPackageName
+			}
+			if !conf.SQL[j].Gen.Python.EmitSyncQuerier && !conf.SQL[j].Gen.Python.EmitAsyncQuerier {
+				return conf, ErrNoQuerierType
+			}
+			for i := range conf.SQL[j].Gen.Python.Overrides {
+				if err := conf.SQL[j].Gen.Python.Overrides[i].Parse(); err != nil {
+					return conf, err
+				}
 			}
 		}
 	}
