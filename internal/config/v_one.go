@@ -31,6 +31,10 @@ type v1PackageSettings struct {
 	EmitParamsStructPointers bool       `json:"emit_params_struct_pointers" yaml:"emit_params_struct_pointers"`
 	JSONTagsCaseStyle        string     `json:"json_tags_case_style,omitempty" yaml:"json_tags_case_style"`
 	Overrides                []Override `json:"overrides" yaml:"overrides"`
+	OutputDBFileName         string     `json:"output_db_file_name,omitempty" yaml:"output_db_file_name"`
+	OutputModelsFileName     string     `json:"output_models_file_name,omitempty" yaml:"output_models_file_name"`
+	OutputQuerierFileName    string     `json:"output_querier_file_name,omitempty" yaml:"output_querier_file_name"`
+	OutputFilesSuffix        string     `json:"output_files_suffix,omitempty" yaml:"output_files_suffix"`
 }
 
 func v1ParseConfig(rd io.Reader) (Config, error) {
@@ -118,6 +122,10 @@ func (c *V1GenerateSettings) Translate() Config {
 					Out:                      pkg.Path,
 					Overrides:                pkg.Overrides,
 					JSONTagsCaseStyle:        pkg.JSONTagsCaseStyle,
+					OutputDBFileName:         pkg.OutputDBFileName,
+					OutputModelsFileName:     pkg.OutputModelsFileName,
+					OutputQuerierFileName:    pkg.OutputQuerierFileName,
+					OutputFilesSuffix:        pkg.OutputFilesSuffix,
 				},
 			},
 		})

@@ -123,6 +123,10 @@ type SQLGo struct {
 	Out                      string            `json:"out" yaml:"out"`
 	Overrides                []Override        `json:"overrides,omitempty" yaml:"overrides"`
 	Rename                   map[string]string `json:"rename,omitempty" yaml:"rename"`
+	OutputDBFileName         string            `json:"output_db_file_name,omitempty" yaml:"output_db_file_name"`
+	OutputModelsFileName     string            `json:"output_models_file_name,omitempty" yaml:"output_models_file_name"`
+	OutputQuerierFileName    string            `json:"output_querier_file_name,omitempty" yaml:"output_querier_file_name"`
+	OutputFilesSuffix        string            `json:"output_files_suffix,omitempty" yaml:"output_files_suffix"`
 }
 
 type SQLKotlin struct {
