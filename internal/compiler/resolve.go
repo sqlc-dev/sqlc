@@ -37,13 +37,17 @@ func resolveCatalogRefs(c *catalog.Catalog, rvs []*ast.RangeVar, args []paramRef
 		if defaultTable == nil {
 			defaultTable = table.Rel
 		}
-		if _, exists := typeMap[table.Rel.Schema]; !exists {
-			typeMap[table.Rel.Schema] = map[string]map[string]*catalog.Column{}
+		schema := table.Rel.Schema
+		if schema == "" {
+			schema = c.DefaultSchema
 		}
-		typeMap[table.Rel.Schema][table.Rel.Name] = map[string]*catalog.Column{}
+		if _, exists := typeMap[schema]; !exists {
+			typeMap[schema] = map[string]map[string]*catalog.Column{}
+		}
+		typeMap[schema][table.Rel.Name] = map[string]*catalog.Column{}
 		for _, c := range table.Columns {
 			cc := c
-			typeMap[table.Rel.Schema][table.Rel.Name][c.Name] = cc
+			typeMap[schema][table.Rel.Name][c.Name] = cc
 		}
 		return nil
 	}
@@ -146,7 +150,11 @@ func resolveCatalogRefs(c *catalog.Catalog, rvs []*ast.RangeVar, args []paramRef
 
 				var found int
 				for _, table := range search {
-					if c, ok := typeMap[table.Schema][table.Name][key]; ok {
+					schema := table.Schema
+					if schema == "" {
+						schema = c.DefaultSchema
+					}
+					if c, ok := typeMap[schema][table.Name][key]; ok {
 						found += 1
 						if ref.name != "" {
 							key = ref.name
@@ -307,6 +315,9 @@ func resolveCatalogRefs(c *catalog.Catalog, rvs []*ast.RangeVar, args []paramRef
 				}
 				schema = fqn.Schema
 				rel = fqn.Name
+			}
+			if schema == "" {
+				schema = c.DefaultSchema
 			}
 			if c, ok := typeMap[schema][rel][key]; ok {
 				a = append(a, Parameter{
