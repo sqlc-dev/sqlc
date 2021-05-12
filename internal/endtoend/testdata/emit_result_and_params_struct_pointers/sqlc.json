@@ -1,0 +1,15 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "name": "querytest",
+      "path": "go",
+      "schema": "query.sql",
+      "queries": "query.sql",
+      "engine": "mysql",
+      "emit_interface": true,
+      "emit_result_struct_pointers": true,
+      "emit_params_struct_pointers": true
+    }
+  ]
+}

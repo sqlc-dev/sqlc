@@ -1,16 +1,18 @@
 package golang
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/kyleconroy/sqlc/internal/metadata"
 )
 
 type QueryValue struct {
-	Emit   bool
-	Name   string
-	Struct *Struct
-	Typ    string
+	Emit        bool
+	EmitPointer bool
+	Name        string
+	Struct      *Struct
+	Typ         string
 }
 
 func (v QueryValue) EmitStruct() bool {
@@ -21,6 +23,10 @@ func (v QueryValue) IsStruct() bool {
 	return v.Struct != nil
 }
 
+func (v QueryValue) IsPointer() bool {
+	return v.EmitPointer && v.Struct != nil
+}
+
 func (v QueryValue) isEmpty() bool {
 	return v.Typ == "" && v.Name == "" && v.Struct == nil
 }
@@ -28,6 +34,9 @@ func (v QueryValue) isEmpty() bool {
 func (v QueryValue) Pair() string {
 	if v.isEmpty() {
 		return ""
+	}
+	if v.EmitPointer && v.Struct != nil {
+		return fmt.Sprintf("%s *%s", v.Name, v.Type())
 	}
 	return v.Name + " " + v.Type()
 }
