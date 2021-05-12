@@ -158,8 +158,9 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 		if len(query.Params) == 1 {
 			p := query.Params[0]
 			gq.Arg = QueryValue{
-				Name: paramName(p),
-				Typ:  goType(r, p.Column, settings),
+				Name:       paramName(p),
+				Typ:        goType(r, p.Column, settings),
+				SQLLibrary: settings.Go.SQLLibrary,
 			}
 		} else if len(query.Params) > 1 {
 			var cols []goColumn
@@ -170,17 +171,19 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 				})
 			}
 			gq.Arg = QueryValue{
-				Emit:   true,
-				Name:   "arg",
-				Struct: columnsToStruct(r, gq.MethodName+"Params", cols, settings),
+				Emit:       true,
+				Name:       "arg",
+				Struct:     columnsToStruct(r, gq.MethodName+"Params", cols, settings),
+				SQLLibrary: settings.Go.SQLLibrary,
 			}
 		}
 
 		if len(query.Columns) == 1 {
 			c := query.Columns[0]
 			gq.Ret = QueryValue{
-				Name: columnName(c, 0),
-				Typ:  goType(r, c, settings),
+				Name:       columnName(c, 0),
+				Typ:        goType(r, c, settings),
+				SQLLibrary: settings.Go.SQLLibrary,
 			}
 		} else if len(query.Columns) > 1 {
 			var gs *Struct
@@ -218,9 +221,10 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 				emit = true
 			}
 			gq.Ret = QueryValue{
-				Emit:   emit,
-				Name:   "i",
-				Struct: gs,
+				Emit:       emit,
+				Name:       "i",
+				Struct:     gs,
+				SQLLibrary: settings.Go.SQLLibrary,
 			}
 		}
 

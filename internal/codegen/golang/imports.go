@@ -357,7 +357,11 @@ func (i *importer) queryImports(filename string) fileImports {
 	}
 	for _, q := range gq {
 		if q.Cmd == metadata.CmdExecResult {
-			std["database/sql"] = struct{}{}
+			if i.Settings.Go.SQLLibrary == "pgx/v4" { // TODO refactor?
+				std["github.com/jackc/pgconn"] = struct{}{}
+			} else {
+				std["database/sql"] = struct{}{}
+			}
 		}
 	}
 	for typeName, pkg := range stdlibTypes {
@@ -375,11 +379,12 @@ func (i *importer) queryImports(filename string) fileImports {
 		overrideTypes[o.GoTypeName] = o.GoImportPath
 	}
 
-	if sliceScan() {
+	if sliceScan() && i.Settings.Go.SQLLibrary != "pgx/v4" { // TODO refatorar
 		pkg[ImportSpec{Path: "github.com/lib/pq"}] = struct{}{}
+
 	}
 	_, overrideNullTime := overrideTypes["pq.NullTime"]
-	if uses("pq.NullTime") && !overrideNullTime {
+	if uses("pq.NullTime") && !overrideNullTime { // TODO ver com atencao
 		pkg[ImportSpec{Path: "github.com/lib/pq"}] = struct{}{}
 	}
 	_, overrideUUID := overrideTypes["uuid.UUID"]
