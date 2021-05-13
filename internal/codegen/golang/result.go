@@ -160,7 +160,7 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 			gq.Arg = QueryValue{
 				Name:   paramName(p),
 				Typ:    goType(r, p.Column, settings),
-				Driver: settings.Go.Driver,
+				Driver: DriverFromString(settings.Go.Driver),
 			}
 		} else if len(query.Params) > 1 {
 			var cols []goColumn
@@ -174,7 +174,7 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 				Emit:   true,
 				Name:   "arg",
 				Struct: columnsToStruct(r, gq.MethodName+"Params", cols, settings),
-				Driver: settings.Go.Driver,
+				Driver: DriverFromString(settings.Go.Driver),
 			}
 		}
 
@@ -183,7 +183,7 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 			gq.Ret = QueryValue{
 				Name:   columnName(c, 0),
 				Typ:    goType(r, c, settings),
-				Driver: settings.Go.Driver,
+				Driver: DriverFromString(settings.Go.Driver),
 			}
 		} else if len(query.Columns) > 1 {
 			var gs *Struct
@@ -224,7 +224,7 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 				Emit:   emit,
 				Name:   "i",
 				Struct: gs,
-				Driver: settings.Go.Driver,
+				Driver: DriverFromString(settings.Go.Driver),
 			}
 		}
 

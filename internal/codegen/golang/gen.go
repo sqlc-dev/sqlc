@@ -22,7 +22,7 @@ type Generateable interface {
 type tmplCtx struct {
 	Q         string
 	Package   string
-	Driver    string
+	Driver    Driver
 	Enums     []Enum
 	Structs   []Struct
 	GoQueries []Query
@@ -83,7 +83,7 @@ func generate(settings config.CombinedSettings, enums []Enum, structs []Struct, 
 		EmitDBTags:          golang.EmitDBTags,
 		EmitPreparedQueries: golang.EmitPreparedQueries,
 		EmitEmptySlices:     golang.EmitEmptySlices,
-		Driver:              golang.Driver,
+		Driver:              DriverFromString(golang.Driver),
 		Q:                   "`",
 		Package:             golang.Package,
 		GoQueries:           queries,
