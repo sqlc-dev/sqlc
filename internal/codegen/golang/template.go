@@ -3,6 +3,5 @@ package golang
 import "embed"
 
 //go:embed templates/*
-//go:embed templates/pgx/*
-//go:embed templates/stdlib/*
+//go:embed templates/*/*
 var templates embed.FS
