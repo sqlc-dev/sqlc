@@ -3,7 +3,6 @@ package golang
 import (
 	"bufio"
 	"bytes"
-	"embed"
 	"fmt"
 	"go/format"
 	"strings"
@@ -13,11 +12,6 @@ import (
 	"github.com/kyleconroy/sqlc/internal/compiler"
 	"github.com/kyleconroy/sqlc/internal/config"
 )
-
-//go:embed templates/*
-//go:embed templates/pgx/*
-//go:embed templates/stdlib/*
-var content embed.FS
 
 type Generateable interface {
 	Structs(settings config.CombinedSettings) []Struct
@@ -74,7 +68,7 @@ func generate(settings config.CombinedSettings, enums []Enum, structs []Struct, 
 		template.New("table").
 			Funcs(funcMap).
 			ParseFS(
-				content,
+				templates,
 				"templates/*.txt",
 				"templates/pgx/*.txt",
 				"templates/stdlib/*.txt",
