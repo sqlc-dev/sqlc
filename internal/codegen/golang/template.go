@@ -131,7 +131,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 
 {{define "dbCode"}}
 
-{{if eq .SQLLibrary "pgx/v4"}}
+{{if eq .Driver "pgx/v4"}}
 	{{template "dbCodeTemplatePgx" .}}
 {{else}}
 	{{template "dbCodeTemplateStd" .}}
@@ -243,7 +243,7 @@ import (
 {{end}}
 
 {{define "queryCode"}}
-	{{if eq .SQLLibrary "pgx/v4"}}
+	{{if eq .Driver "pgx/v4"}}
 		{{template "queryCodePgx" .}}
 	{{else}}
 		{{template "queryCodeStd" .}}

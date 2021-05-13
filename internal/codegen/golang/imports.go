@@ -118,7 +118,7 @@ func (i *importer) dbImports() fileImports {
 		{Path: "context"},
 	}
 
-	switch i.Settings.Go.SQLLibrary {
+	switch i.Settings.Go.Driver {
 	case "pgx/v4":
 		std = append(std, ImportSpec{Path: "github.com/jackc/pgconn"})
 		std = append(std, ImportSpec{Path: "github.com/jackc/pgx/v4"})
@@ -357,7 +357,7 @@ func (i *importer) queryImports(filename string) fileImports {
 	}
 	for _, q := range gq {
 		if q.Cmd == metadata.CmdExecResult {
-			if i.Settings.Go.SQLLibrary == "pgx/v4" { // TODO refactor?
+			if i.Settings.Go.Driver == "pgx/v4" { // TODO refactor?
 				std["github.com/jackc/pgconn"] = struct{}{}
 			} else {
 				std["database/sql"] = struct{}{}
@@ -379,7 +379,7 @@ func (i *importer) queryImports(filename string) fileImports {
 		overrideTypes[o.GoTypeName] = o.GoImportPath
 	}
 
-	if sliceScan() && i.Settings.Go.SQLLibrary != "pgx/v4" { // TODO refatorar
+	if sliceScan() && i.Settings.Go.Driver != "pgx/v4" { // TODO refatorar
 		pkg[ImportSpec{Path: "github.com/lib/pq"}] = struct{}{}
 
 	}
