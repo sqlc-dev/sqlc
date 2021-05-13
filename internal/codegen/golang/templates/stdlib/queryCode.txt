@@ -1,0 +1,91 @@
+{{define "queryCodeStd"}}
+{{range .GoQueries}}
+{{if eq .Cmd ":one"}}
+{{range .Comments}}//{{.}}
+{{end -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.Type}}, error) {
+  	{{- if $.EmitPreparedQueries}}
+	row := q.queryRow(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
+	{{- else}}
+	row := q.db.QueryRowContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
+	{{- end}}
+	var {{.Ret.Name}} {{.Ret.Type}}
+	err := row.Scan({{.Ret.Scan}})
+	return {{.Ret.Name}}, err
+}
+{{end}}
+
+{{if eq .Cmd ":many"}}
+{{range .Comments}}//{{.}}
+{{end -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.Type}}, error) {
+    {{- if $.EmitPreparedQueries}}
+    rows, err := q.query(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
+    {{- else}}
+    rows, err := q.db.QueryContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
+    {{- end}}
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+    {{- if $.EmitEmptySlices}}
+    items := []{{.Ret.Type}}{}
+    {{else}}
+    var items []{{.Ret.Type}}
+    {{end -}}
+    for rows.Next() {
+        var {{.Ret.Name}} {{.Ret.Type}}
+        if err := rows.Scan({{.Ret.Scan}}); err != nil {
+            return nil, err
+        }
+        items = append(items, {{.Ret.Name}})
+    }
+    if err := rows.Close(); err != nil {
+        return nil, err
+    }
+    if err := rows.Err(); err != nil {
+        return nil, err
+    }
+    return items, nil
+}
+{{end}}
+{{if eq .Cmd ":exec"}}
+    {{range .Comments}}//{{.}}
+    {{end -}}
+    func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) error {
+        {{- if $.EmitPreparedQueries}}
+        _, err := q.exec(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
+        {{- else}}
+        _, err := q.db.ExecContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
+        {{- end}}
+        return err
+    }
+{{end}}
+{{if eq .Cmd ":execrows"}}
+{{range .Comments}}//{{.}}
+{{end -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, error) {
+    {{- if $.EmitPreparedQueries}}
+    result, err := q.exec(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
+    {{- else}}
+    result, err := q.db.ExecContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
+    {{- end}}
+    if err != nil {
+        return 0, err
+    }
+    return result.RowsAffected()
+}
+{{end}}
+{{if eq .Cmd ":execresult"}}
+{{range .Comments}}//{{.}}
+{{end -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (sql.Result, error) {
+    {{- if $.EmitPreparedQueries}}
+    return q.exec(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
+    {{- else}}
+    return q.db.ExecContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
+    {{- end}}
+}
+{{end}}
+{{end}}
+{{end}}
