@@ -1,5 +1,24 @@
 {{define "queryCodeStd"}}
 {{range .GoQueries}}
+{{if $.OutputQuery .SourceName}}
+const {{.ConstantName}} = {{$.Q}}-- name: {{.MethodName}} {{.Cmd}}
+{{escape .SQL}}
+{{$.Q}}
+
+{{if .Arg.EmitStruct}}
+type {{.Arg.Type}} struct { {{- range .Arg.Struct.Fields}}
+  {{.Name}} {{.Type}} {{if or ($.EmitJSONTags) ($.EmitDBTags)}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
+  {{- end}}
+}
+{{end}}
+
+{{if .Ret.EmitStruct}}
+type {{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
+  {{.Name}} {{.Type}} {{if or ($.EmitJSONTags) ($.EmitDBTags)}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
+  {{- end}}
+}
+{{end}}
+
 {{if eq .Cmd ":one"}}
 {{range .Comments}}//{{.}}
 {{end -}}
@@ -86,6 +105,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (sql.Resul
     return q.db.ExecContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
     {{- end}}
 }
+{{end}}
 {{end}}
 {{end}}
 {{end}}
