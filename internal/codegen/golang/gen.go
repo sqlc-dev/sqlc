@@ -70,8 +70,7 @@ func generate(settings config.CombinedSettings, enums []Enum, structs []Struct, 
 			ParseFS(
 				templates,
 				"templates/*.txt",
-				"templates/pgx/*.txt",
-				"templates/stdlib/*.txt",
+				"templates/*/*.txt",
 			),
 	)
 
