@@ -18,6 +18,7 @@ const (
 	CmdExecRows   = ":execrows"
 	CmdMany       = ":many"
 	CmdOne        = ":one"
+	CmdIter       = ":iter"
 )
 
 // A query name must be a valid Go identifier
@@ -80,7 +81,7 @@ func Parse(t string, commentStyle CommentSyntax) (string, string, error) {
 		queryName := part[2]
 		queryType := strings.TrimSpace(part[3])
 		switch queryType {
-		case CmdOne, CmdMany, CmdExec, CmdExecResult, CmdExecRows:
+		case CmdOne, CmdMany, CmdExec, CmdExecResult, CmdExecRows, CmdIter:
 		default:
 			return "", "", fmt.Errorf("invalid query type: %s", queryType)
 		}
