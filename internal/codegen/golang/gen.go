@@ -69,8 +69,8 @@ func generate(settings config.CombinedSettings, enums []Enum, structs []Struct, 
 			Funcs(funcMap).
 			ParseFS(
 				templates,
-				"templates/*.txt",
-				"templates/*/*.txt",
+				"templates/*.tmpl",
+				"templates/*/*.tmpl",
 			),
 	)
 
