@@ -114,6 +114,7 @@ func (i *importer) Imports(filename string) [][]ImportSpec {
 }
 
 func (i *importer) dbImports() fileImports {
+	var pkg []ImportSpec
 	std := []ImportSpec{
 		{Path: "context"},
 	}
@@ -121,15 +122,18 @@ func (i *importer) dbImports() fileImports {
 	driver := DriverFromString(i.Settings.Go.Driver)
 	switch driver {
 	case PgxDriver:
-		std = append(std, ImportSpec{Path: "github.com/jackc/pgconn"})
-		std = append(std, ImportSpec{Path: "github.com/jackc/pgx/v4"})
+		pkg = append(pkg, ImportSpec{Path: "github.com/jackc/pgconn"})
+		pkg = append(pkg, ImportSpec{Path: "github.com/jackc/pgx/v4"})
 	default:
+		std = append(std, ImportSpec{Path: "database/sql"})
 		if i.Settings.Go.EmitPreparedQueries {
 			std = append(std, ImportSpec{Path: "fmt"})
 		}
-		std = append(std, ImportSpec{Path: "database/sql"})
 	}
-	return fileImports{Std: std}
+
+	sort.Slice(std, func(i, j int) bool { return std[i].Path < std[j].Path })
+	sort.Slice(pkg, func(i, j int) bool { return pkg[i].Path < pkg[j].Path })
+	return fileImports{Std: std, Dep: pkg}
 }
 
 var stdlibTypes = map[string]string{
@@ -350,6 +354,7 @@ func (i *importer) queryImports(filename string) fileImports {
 		return false
 	}
 
+	pkg := make(map[ImportSpec]struct{})
 	std := map[string]struct{}{
 		"context": {},
 	}
@@ -363,7 +368,7 @@ func (i *importer) queryImports(filename string) fileImports {
 		if q.Cmd == metadata.CmdExecResult {
 			switch driver {
 			case PgxDriver:
-				std["github.com/jackc/pgconn"] = struct{}{}
+				pkg[ImportSpec{Path: "github.com/jackc/pgconn"}] = struct{}{}
 			default:
 				std["database/sql"] = struct{}{}
 			}
@@ -375,7 +380,6 @@ func (i *importer) queryImports(filename string) fileImports {
 		}
 	}
 
-	pkg := make(map[ImportSpec]struct{})
 	overrideTypes := map[string]string{}
 	for _, o := range i.Settings.Overrides {
 		if o.GoBasicType || o.GoTypeName == "" {
@@ -384,12 +388,12 @@ func (i *importer) queryImports(filename string) fileImports {
 		overrideTypes[o.GoTypeName] = o.GoImportPath
 	}
 
-	if sliceScan() && driver != PgxDriver { // TODO refatorar
+	if sliceScan() && driver != PgxDriver {
 		pkg[ImportSpec{Path: "github.com/lib/pq"}] = struct{}{}
-
 	}
+
 	_, overrideNullTime := overrideTypes["pq.NullTime"]
-	if uses("pq.NullTime") && !overrideNullTime { // TODO ver com atencao
+	if uses("pq.NullTime") && !overrideNullTime {
 		pkg[ImportSpec{Path: "github.com/lib/pq"}] = struct{}{}
 	}
 	_, overrideUUID := overrideTypes["uuid.UUID"]
