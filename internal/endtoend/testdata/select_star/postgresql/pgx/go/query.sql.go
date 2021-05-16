@@ -12,7 +12,7 @@ SELECT id, first_name, last_name, age FROM users
 `
 
 func (q *Queries) GetAll(ctx context.Context) ([]User, error) {
-	rows, err := q.db.QueryContext(ctx, getAll)
+	rows, err := q.db.Query(ctx, getAll)
 	if err != nil {
 		return nil, err
 	}
@@ -29,9 +29,6 @@ func (q *Queries) GetAll(ctx context.Context) ([]User, error) {
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

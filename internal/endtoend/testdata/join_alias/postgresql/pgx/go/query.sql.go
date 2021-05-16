@@ -22,7 +22,7 @@ type AliasExpandRow struct {
 }
 
 func (q *Queries) AliasExpand(ctx context.Context, id int32) ([]AliasExpandRow, error) {
-	rows, err := q.db.QueryContext(ctx, aliasExpand, id)
+	rows, err := q.db.Query(ctx, aliasExpand, id)
 	if err != nil {
 		return nil, err
 	}
@@ -34,9 +34,6 @@ func (q *Queries) AliasExpand(ctx context.Context, id int32) ([]AliasExpandRow, 
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -57,7 +54,7 @@ type AliasJoinRow struct {
 }
 
 func (q *Queries) AliasJoin(ctx context.Context, id int32) ([]AliasJoinRow, error) {
-	rows, err := q.db.QueryContext(ctx, aliasJoin, id)
+	rows, err := q.db.Query(ctx, aliasJoin, id)
 	if err != nil {
 		return nil, err
 	}
@@ -69,9 +66,6 @@ func (q *Queries) AliasJoin(ctx context.Context, id int32) ([]AliasJoinRow, erro
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

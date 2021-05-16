@@ -17,6 +17,6 @@ type UpdateSetParams struct {
 }
 
 func (q *Queries) UpdateSet(ctx context.Context, arg UpdateSetParams) error {
-	_, err := q.db.ExecContext(ctx, updateSet, arg.Slug, arg.Name)
+	_, err := q.db.Exec(ctx, updateSet, arg.Slug, arg.Name)
 	return err
 }

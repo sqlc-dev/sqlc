@@ -12,7 +12,7 @@ SELECT id, status FROM log_lines
 `
 
 func (q *Queries) ListAuthors(ctx context.Context) ([]LogLine, error) {
-	rows, err := q.db.QueryContext(ctx, listAuthors)
+	rows, err := q.db.Query(ctx, listAuthors)
 	if err != nil {
 		return nil, err
 	}
@@ -24,9 +24,6 @@ func (q *Queries) ListAuthors(ctx context.Context) ([]LogLine, error) {
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

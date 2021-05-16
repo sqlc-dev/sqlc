@@ -22,7 +22,7 @@ type StarExpansionRow struct {
 }
 
 func (q *Queries) StarExpansion(ctx context.Context) ([]StarExpansionRow, error) {
-	rows, err := q.db.QueryContext(ctx, starExpansion)
+	rows, err := q.db.Query(ctx, starExpansion)
 	if err != nil {
 		return nil, err
 	}
@@ -41,9 +41,6 @@ func (q *Queries) StarExpansion(ctx context.Context) ([]StarExpansionRow, error)
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

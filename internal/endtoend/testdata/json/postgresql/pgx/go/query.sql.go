@@ -12,6 +12,6 @@ SELECT a, b, c, d FROM foo
 `
 
 func (q *Queries) SelectFoo(ctx context.Context) error {
-	_, err := q.db.ExecContext(ctx, selectFoo)
+	_, err := q.db.Exec(ctx, selectFoo)
 	return err
 }

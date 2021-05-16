@@ -14,7 +14,7 @@ SELECT id, other_id, age, balance, bio, about FROM foo WHERE id = $1
 `
 
 func (q *Queries) LoadFoo(ctx context.Context, id uuid.UUID) ([]Foo, error) {
-	rows, err := q.db.QueryContext(ctx, loadFoo, id)
+	rows, err := q.db.Query(ctx, loadFoo, id)
 	if err != nil {
 		return nil, err
 	}
@@ -33,9 +33,6 @@ func (q *Queries) LoadFoo(ctx context.Context, id uuid.UUID) ([]Foo, error) {
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

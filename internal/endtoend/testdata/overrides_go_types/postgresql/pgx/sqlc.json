@@ -3,8 +3,9 @@
   "packages": [
     {
       "path": "go",
-      "name": "override",
       "engine": "postgresql",
+      "driver": "pgx/v4",
+      "name": "override",
       "schema": "schema.sql",
       "queries": "query.sql",
       "overrides": [

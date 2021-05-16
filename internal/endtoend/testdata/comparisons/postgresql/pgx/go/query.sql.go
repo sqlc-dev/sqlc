@@ -12,7 +12,7 @@ SELECT count(*) <> 0 FROM bar
 `
 
 func (q *Queries) AlsoNotEqual(ctx context.Context) ([]bool, error) {
-	rows, err := q.db.QueryContext(ctx, alsoNotEqual)
+	rows, err := q.db.Query(ctx, alsoNotEqual)
 	if err != nil {
 		return nil, err
 	}
@@ -24,9 +24,6 @@ func (q *Queries) AlsoNotEqual(ctx context.Context) ([]bool, error) {
 			return nil, err
 		}
 		items = append(items, column_1)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -39,7 +36,7 @@ SELECT count(*) = 0 FROM bar
 `
 
 func (q *Queries) Equal(ctx context.Context) ([]bool, error) {
-	rows, err := q.db.QueryContext(ctx, equal)
+	rows, err := q.db.Query(ctx, equal)
 	if err != nil {
 		return nil, err
 	}
@@ -51,9 +48,6 @@ func (q *Queries) Equal(ctx context.Context) ([]bool, error) {
 			return nil, err
 		}
 		items = append(items, column_1)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -66,7 +60,7 @@ SELECT count(*) > 0 FROM bar
 `
 
 func (q *Queries) GreaterThan(ctx context.Context) ([]bool, error) {
-	rows, err := q.db.QueryContext(ctx, greaterThan)
+	rows, err := q.db.Query(ctx, greaterThan)
 	if err != nil {
 		return nil, err
 	}
@@ -78,9 +72,6 @@ func (q *Queries) GreaterThan(ctx context.Context) ([]bool, error) {
 			return nil, err
 		}
 		items = append(items, column_1)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -93,7 +84,7 @@ SELECT count(*) >= 0 FROM bar
 `
 
 func (q *Queries) GreaterThanOrEqual(ctx context.Context) ([]bool, error) {
-	rows, err := q.db.QueryContext(ctx, greaterThanOrEqual)
+	rows, err := q.db.Query(ctx, greaterThanOrEqual)
 	if err != nil {
 		return nil, err
 	}
@@ -105,9 +96,6 @@ func (q *Queries) GreaterThanOrEqual(ctx context.Context) ([]bool, error) {
 			return nil, err
 		}
 		items = append(items, column_1)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -120,7 +108,7 @@ SELECT count(*) < 0 FROM bar
 `
 
 func (q *Queries) LessThan(ctx context.Context) ([]bool, error) {
-	rows, err := q.db.QueryContext(ctx, lessThan)
+	rows, err := q.db.Query(ctx, lessThan)
 	if err != nil {
 		return nil, err
 	}
@@ -132,9 +120,6 @@ func (q *Queries) LessThan(ctx context.Context) ([]bool, error) {
 			return nil, err
 		}
 		items = append(items, column_1)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -147,7 +132,7 @@ SELECT count(*) <= 0 FROM bar
 `
 
 func (q *Queries) LessThanOrEqual(ctx context.Context) ([]bool, error) {
-	rows, err := q.db.QueryContext(ctx, lessThanOrEqual)
+	rows, err := q.db.Query(ctx, lessThanOrEqual)
 	if err != nil {
 		return nil, err
 	}
@@ -159,9 +144,6 @@ func (q *Queries) LessThanOrEqual(ctx context.Context) ([]bool, error) {
 			return nil, err
 		}
 		items = append(items, column_1)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -174,7 +156,7 @@ SELECT count(*) != 0 FROM bar
 `
 
 func (q *Queries) NotEqual(ctx context.Context) ([]bool, error) {
-	rows, err := q.db.QueryContext(ctx, notEqual)
+	rows, err := q.db.Query(ctx, notEqual)
 	if err != nil {
 		return nil, err
 	}
@@ -186,9 +168,6 @@ func (q *Queries) NotEqual(ctx context.Context) ([]bool, error) {
 			return nil, err
 		}
 		items = append(items, column_1)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

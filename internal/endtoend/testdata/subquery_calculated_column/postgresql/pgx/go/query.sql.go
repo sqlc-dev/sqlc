@@ -12,7 +12,7 @@ SELECT sum FROM (SELECT a + b AS sum FROM foo) AS f
 `
 
 func (q *Queries) SubqueryCalcColumn(ctx context.Context) ([]int32, error) {
-	rows, err := q.db.QueryContext(ctx, subqueryCalcColumn)
+	rows, err := q.db.Query(ctx, subqueryCalcColumn)
 	if err != nil {
 		return nil, err
 	}
@@ -24,9 +24,6 @@ func (q *Queries) SubqueryCalcColumn(ctx context.Context) ([]int32, error) {
 			return nil, err
 		}
 		items = append(items, sum)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

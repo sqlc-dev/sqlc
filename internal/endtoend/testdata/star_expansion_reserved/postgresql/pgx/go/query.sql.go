@@ -12,7 +12,7 @@ SELECT "group", key FROM foo
 `
 
 func (q *Queries) StarExpansionReserved(ctx context.Context) ([]Foo, error) {
-	rows, err := q.db.QueryContext(ctx, starExpansionReserved)
+	rows, err := q.db.Query(ctx, starExpansionReserved)
 	if err != nil {
 		return nil, err
 	}
@@ -24,9 +24,6 @@ func (q *Queries) StarExpansionReserved(ctx context.Context) ([]Foo, error) {
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

@@ -12,7 +12,7 @@ SELECT name FROM foo WHERE name = $1
 `
 
 func (q *Queries) FuncParamIdent(ctx context.Context, slug string) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, funcParamIdent, slug)
+	rows, err := q.db.Query(ctx, funcParamIdent, slug)
 	if err != nil {
 		return nil, err
 	}
@@ -24,9 +24,6 @@ func (q *Queries) FuncParamIdent(ctx context.Context, slug string) ([]string, er
 			return nil, err
 		}
 		items = append(items, name)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -39,7 +36,7 @@ SELECT name FROM foo WHERE name = $1
 `
 
 func (q *Queries) FuncParamString(ctx context.Context, slug string) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, funcParamString, slug)
+	rows, err := q.db.Query(ctx, funcParamString, slug)
 	if err != nil {
 		return nil, err
 	}
@@ -51,9 +48,6 @@ func (q *Queries) FuncParamString(ctx context.Context, slug string) ([]string, e
 			return nil, err
 		}
 		items = append(items, name)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

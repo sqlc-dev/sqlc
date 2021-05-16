@@ -12,7 +12,7 @@ SELECT id FROM campus
 `
 
 func (q *Queries) ListCampuses(ctx context.Context) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, listCampuses)
+	rows, err := q.db.Query(ctx, listCampuses)
 	if err != nil {
 		return nil, err
 	}
@@ -24,9 +24,6 @@ func (q *Queries) ListCampuses(ctx context.Context) ([]string, error) {
 			return nil, err
 		}
 		items = append(items, id)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -39,7 +36,7 @@ SELECT id FROM students
 `
 
 func (q *Queries) ListStudents(ctx context.Context) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, listStudents)
+	rows, err := q.db.Query(ctx, listStudents)
 	if err != nil {
 		return nil, err
 	}
@@ -51,9 +48,6 @@ func (q *Queries) ListStudents(ctx context.Context) ([]string, error) {
 			return nil, err
 		}
 		items = append(items, id)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

@@ -12,7 +12,7 @@ SELECT a, b FROM foo WHERE EXISTS (SELECT a, b FROM foo)
 `
 
 func (q *Queries) StarExpansionSubquery(ctx context.Context) ([]Foo, error) {
-	rows, err := q.db.QueryContext(ctx, starExpansionSubquery)
+	rows, err := q.db.Query(ctx, starExpansionSubquery)
 	if err != nil {
 		return nil, err
 	}
@@ -24,9 +24,6 @@ func (q *Queries) StarExpansionSubquery(ctx context.Context) ([]Foo, error) {
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

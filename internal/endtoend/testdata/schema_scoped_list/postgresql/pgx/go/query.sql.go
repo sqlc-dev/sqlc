@@ -12,7 +12,7 @@ SELECT id FROM foo.bar
 `
 
 func (q *Queries) SchemaScopedList(ctx context.Context) ([]int32, error) {
-	rows, err := q.db.QueryContext(ctx, schemaScopedList)
+	rows, err := q.db.Query(ctx, schemaScopedList)
 	if err != nil {
 		return nil, err
 	}
@@ -24,9 +24,6 @@ func (q *Queries) SchemaScopedList(ctx context.Context) ([]int32, error) {
 			return nil, err
 		}
 		items = append(items, id)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

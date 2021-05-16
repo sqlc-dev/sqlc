@@ -19,7 +19,7 @@ type GetUserByIDRow struct {
 }
 
 func (q *Queries) GetUserByID(ctx context.Context, targetID int32) (GetUserByIDRow, error) {
-	row := q.db.QueryRowContext(ctx, getUserByID, targetID)
+	row := q.db.QueryRow(ctx, getUserByID, targetID)
 	var i GetUserByIDRow
 	err := row.Scan(&i.FirstName, &i.ID, &i.LastName)
 	return i, err
@@ -35,7 +35,7 @@ type InsertNewUserParams struct {
 }
 
 func (q *Queries) InsertNewUser(ctx context.Context, arg InsertNewUserParams) error {
-	_, err := q.db.ExecContext(ctx, insertNewUser, arg.FirstName, arg.LastName)
+	_, err := q.db.Exec(ctx, insertNewUser, arg.FirstName, arg.LastName)
 	return err
 }
 
@@ -49,7 +49,7 @@ type LimitSQLCArgRow struct {
 }
 
 func (q *Queries) LimitSQLCArg(ctx context.Context, limit int32) ([]LimitSQLCArgRow, error) {
-	rows, err := q.db.QueryContext(ctx, limitSQLCArg, limit)
+	rows, err := q.db.Query(ctx, limitSQLCArg, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -61,9 +61,6 @@ func (q *Queries) LimitSQLCArg(ctx context.Context, limit int32) ([]LimitSQLCArg
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -89,7 +86,7 @@ type ListUserOrdersRow struct {
 }
 
 func (q *Queries) ListUserOrders(ctx context.Context, minPrice string) ([]ListUserOrdersRow, error) {
-	rows, err := q.db.QueryContext(ctx, listUserOrders, minPrice)
+	rows, err := q.db.Query(ctx, listUserOrders, minPrice)
 	if err != nil {
 		return nil, err
 	}
@@ -101,9 +98,6 @@ func (q *Queries) ListUserOrders(ctx context.Context, minPrice string) ([]ListUs
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -124,7 +118,7 @@ type ListUserParenExprParams struct {
 }
 
 func (q *Queries) ListUserParenExpr(ctx context.Context, arg ListUserParenExprParams) ([]User, error) {
-	rows, err := q.db.QueryContext(ctx, listUserParenExpr, arg.ID, arg.Limit)
+	rows, err := q.db.Query(ctx, listUserParenExpr, arg.ID, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
@@ -142,9 +136,6 @@ func (q *Queries) ListUserParenExpr(ctx context.Context, arg ListUserParenExprPa
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -167,7 +158,7 @@ type ListUsersByFamilyRow struct {
 }
 
 func (q *Queries) ListUsersByFamily(ctx context.Context, arg ListUsersByFamilyParams) ([]ListUsersByFamilyRow, error) {
-	rows, err := q.db.QueryContext(ctx, listUsersByFamily, arg.MaxAge, arg.InFamily)
+	rows, err := q.db.Query(ctx, listUsersByFamily, arg.MaxAge, arg.InFamily)
 	if err != nil {
 		return nil, err
 	}
@@ -179,9 +170,6 @@ func (q *Queries) ListUsersByFamily(ctx context.Context, arg ListUsersByFamilyPa
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -200,7 +188,7 @@ type ListUsersByIDRow struct {
 }
 
 func (q *Queries) ListUsersByID(ctx context.Context, id int32) ([]ListUsersByIDRow, error) {
-	rows, err := q.db.QueryContext(ctx, listUsersByID, id)
+	rows, err := q.db.Query(ctx, listUsersByID, id)
 	if err != nil {
 		return nil, err
 	}
@@ -212,9 +200,6 @@ func (q *Queries) ListUsersByID(ctx context.Context, id int32) ([]ListUsersByIDR
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -232,7 +217,7 @@ type ListUsersWithLimitRow struct {
 }
 
 func (q *Queries) ListUsersWithLimit(ctx context.Context, limit int32) ([]ListUsersWithLimitRow, error) {
-	rows, err := q.db.QueryContext(ctx, listUsersWithLimit, limit)
+	rows, err := q.db.Query(ctx, listUsersWithLimit, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -244,9 +229,6 @@ func (q *Queries) ListUsersWithLimit(ctx context.Context, limit int32) ([]ListUs
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

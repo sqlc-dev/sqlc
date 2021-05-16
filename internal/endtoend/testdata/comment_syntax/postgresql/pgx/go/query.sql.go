@@ -13,7 +13,7 @@ SELECT bar FROM foo LIMIT 1
 `
 
 func (q *Queries) DoubleDash(ctx context.Context) (sql.NullString, error) {
-	row := q.db.QueryRowContext(ctx, doubleDash)
+	row := q.db.QueryRow(ctx, doubleDash)
 	var bar sql.NullString
 	err := row.Scan(&bar)
 	return bar, err
@@ -24,7 +24,7 @@ SELECT bar FROM foo LIMIT 1
 `
 
 func (q *Queries) SlashStar(ctx context.Context) (sql.NullString, error) {
-	row := q.db.QueryRowContext(ctx, slashStar)
+	row := q.db.QueryRow(ctx, slashStar)
 	var bar sql.NullString
 	err := row.Scan(&bar)
 	return bar, err

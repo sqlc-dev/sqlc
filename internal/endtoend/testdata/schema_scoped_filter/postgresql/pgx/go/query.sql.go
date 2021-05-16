@@ -12,7 +12,7 @@ SELECT id FROM foo.bar WHERE id = $1
 `
 
 func (q *Queries) SchemaScopedFilter(ctx context.Context, id int32) ([]int32, error) {
-	rows, err := q.db.QueryContext(ctx, schemaScopedFilter, id)
+	rows, err := q.db.Query(ctx, schemaScopedFilter, id)
 	if err != nil {
 		return nil, err
 	}
@@ -24,9 +24,6 @@ func (q *Queries) SchemaScopedFilter(ctx context.Context, id int32) ([]int32, er
 			return nil, err
 		}
 		items = append(items, id)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

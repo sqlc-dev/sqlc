@@ -15,7 +15,7 @@ JOIN baz ON baz.id = baz_id
 `
 
 func (q *Queries) TwoJoins(ctx context.Context) ([]Foo, error) {
-	rows, err := q.db.QueryContext(ctx, twoJoins)
+	rows, err := q.db.Query(ctx, twoJoins)
 	if err != nil {
 		return nil, err
 	}
@@ -27,9 +27,6 @@ func (q *Queries) TwoJoins(ctx context.Context) ([]Foo, error) {
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

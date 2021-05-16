@@ -12,7 +12,7 @@ SELECT email FROM bar, foo WHERE login = $1
 `
 
 func (q *Queries) MultiFrom(ctx context.Context, login string) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, multiFrom, login)
+	rows, err := q.db.Query(ctx, multiFrom, login)
 	if err != nil {
 		return nil, err
 	}
@@ -24,9 +24,6 @@ func (q *Queries) MultiFrom(ctx context.Context, login string) ([]string, error)
 			return nil, err
 		}
 		items = append(items, email)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

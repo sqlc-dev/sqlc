@@ -14,7 +14,7 @@ LIMIT $1
 `
 
 func (q *Queries) FooLimit(ctx context.Context, limit int32) ([]sql.NullString, error) {
-	rows, err := q.db.QueryContext(ctx, fooLimit, limit)
+	rows, err := q.db.Query(ctx, fooLimit, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -26,9 +26,6 @@ func (q *Queries) FooLimit(ctx context.Context, limit int32) ([]sql.NullString, 
 			return nil, err
 		}
 		items = append(items, a)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -47,7 +44,7 @@ type FooLimitOffsetParams struct {
 }
 
 func (q *Queries) FooLimitOffset(ctx context.Context, arg FooLimitOffsetParams) ([]sql.NullString, error) {
-	rows, err := q.db.QueryContext(ctx, fooLimitOffset, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, fooLimitOffset, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -59,9 +56,6 @@ func (q *Queries) FooLimitOffset(ctx context.Context, arg FooLimitOffsetParams) 
 			return nil, err
 		}
 		items = append(items, a)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

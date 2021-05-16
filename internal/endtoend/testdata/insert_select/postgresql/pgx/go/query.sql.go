@@ -19,6 +19,6 @@ type InsertSelectParams struct {
 }
 
 func (q *Queries) InsertSelect(ctx context.Context, arg InsertSelectParams) error {
-	_, err := q.db.ExecContext(ctx, insertSelect, arg.Meta, arg.Ready)
+	_, err := q.db.Exec(ctx, insertSelect, arg.Meta, arg.Ready)
 	return err
 }

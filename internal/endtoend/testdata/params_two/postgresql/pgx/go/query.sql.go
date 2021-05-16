@@ -19,7 +19,7 @@ type FooByAandBParams struct {
 }
 
 func (q *Queries) FooByAandB(ctx context.Context, arg FooByAandBParams) ([]Foo, error) {
-	rows, err := q.db.QueryContext(ctx, fooByAandB, arg.A, arg.B)
+	rows, err := q.db.Query(ctx, fooByAandB, arg.A, arg.B)
 	if err != nil {
 		return nil, err
 	}
@@ -31,9 +31,6 @@ func (q *Queries) FooByAandB(ctx context.Context, arg FooByAandBParams) ([]Foo, 
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

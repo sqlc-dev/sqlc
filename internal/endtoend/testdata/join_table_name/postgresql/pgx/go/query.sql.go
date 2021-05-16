@@ -20,7 +20,7 @@ type TableNameParams struct {
 }
 
 func (q *Queries) TableName(ctx context.Context, arg TableNameParams) (int32, error) {
-	row := q.db.QueryRowContext(ctx, tableName, arg.ID, arg.ID_2)
+	row := q.db.QueryRow(ctx, tableName, arg.ID, arg.ID_2)
 	var id int32
 	err := row.Scan(&id)
 	return id, err

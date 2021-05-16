@@ -12,7 +12,7 @@ SELECT val FROM foo
 `
 
 func (q *Queries) ListFoo(ctx context.Context) ([]Foobar, error) {
-	rows, err := q.db.QueryContext(ctx, listFoo)
+	rows, err := q.db.Query(ctx, listFoo)
 	if err != nil {
 		return nil, err
 	}
@@ -24,9 +24,6 @@ func (q *Queries) ListFoo(ctx context.Context) ([]Foobar, error) {
 			return nil, err
 		}
 		items = append(items, val)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
