@@ -299,10 +299,13 @@ func sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, error) {
 	var tables []*Table
 	for _, item := range list.Items {
 		switch n := item.(type) {
+
 		case *ast.FuncName:
+			// If the function or table can't be found, don't error out.  There
+			// are many queries that depend on functions unknown to sqlc.
 			fn, err := qc.GetFunc(n)
 			if err != nil {
-				return nil, err
+				continue
 			}
 			table, err := qc.GetTable(&ast.TableName{
 				Catalog: fn.ReturnType.Catalog,
@@ -310,9 +313,10 @@ func sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, error) {
 				Name:    fn.ReturnType.Name,
 			})
 			if err != nil {
-				return nil, err
+				continue
 			}
 			tables = append(tables, table)
+
 		case *ast.RangeSubselect:
 			cols, err := outputColumns(qc, n.Subquery)
 			if err != nil {
@@ -345,6 +349,7 @@ func sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, error) {
 				}
 			}
 			tables = append(tables, table)
+
 		default:
 			return nil, fmt.Errorf("sourceTable: unsupported list item type: %T", n)
 		}
