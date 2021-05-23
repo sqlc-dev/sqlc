@@ -5,8 +5,6 @@ package querytest
 
 import (
 	"context"
-
-	"github.com/lib/pq"
 )
 
 const joinTextArray = `-- name: JoinTextArray :many
@@ -24,7 +22,7 @@ func (q *Queries) JoinTextArray(ctx context.Context) ([][]string, error) {
 	var items [][]string
 	for rows.Next() {
 		var info []string
-		if err := rows.Scan(pq.Array(&info)); err != nil {
+		if err := rows.Scan(&info); err != nil {
 			return nil, err
 		}
 		items = append(items, info)
