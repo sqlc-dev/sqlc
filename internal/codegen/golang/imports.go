@@ -166,9 +166,18 @@ func (i *importer) interfaceImports() fileImports {
 	if uses("sql.Null") {
 		std["database/sql"] = struct{}{}
 	}
+
+	pkg := make(map[ImportSpec]struct{})
+
+	driver := DriverFromString(i.Settings.Go.Driver)
 	for _, q := range i.Queries {
 		if q.Cmd == metadata.CmdExecResult {
-			std["database/sql"] = struct{}{}
+			switch driver {
+			case PgxDriver:
+				pkg[ImportSpec{Path: "github.com/jackc/pgconn"}] = struct{}{}
+			default:
+				std["database/sql"] = struct{}{}
+			}
 		}
 	}
 	for typeName, pkg := range stdlibTypes {
@@ -177,7 +186,6 @@ func (i *importer) interfaceImports() fileImports {
 		}
 	}
 
-	pkg := make(map[ImportSpec]struct{})
 	overrideTypes := map[string]string{}
 	for _, o := range i.Settings.Overrides {
 		if o.GoBasicType || o.GoTypeName == "" {

@@ -71,7 +71,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) error {
 {{range .Comments}}//{{.}}
 {{end -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, error) {
-	result, err := q.db.Exec(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
+	result, err := q.db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
 	if err != nil {
 		return 0, err
 	}
@@ -83,7 +83,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, er
 {{range .Comments}}//{{.}}
 {{end -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (pgconn.CommandTag, error) {
-	return q.db.Exec(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
+	return q.db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
 }
 {{end}}
 
