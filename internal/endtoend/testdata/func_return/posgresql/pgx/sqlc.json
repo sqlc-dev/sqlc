@@ -3,10 +3,11 @@
   "packages": [
     {
       "path": "go",
+      "engine": "postgresql",
+      "driver": "pgx/v4",
       "name": "querytest",
       "schema": "schema.sql",
-      "queries": "query.sql",
-      "engine": "postgresql"
+      "queries": "query.sql"
     }
   ]
 }
