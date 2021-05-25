@@ -1,0 +1,12 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "path": "go",
+      "engine": "postgresql",
+      "name": "primary_key_later",
+      "schema": "schema.sql",
+      "queries": "queries.sql"
+    }
+  ]
+}
