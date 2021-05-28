@@ -80,8 +80,8 @@ WHERE orders.price > $1
 `
 
 type ListUserOrdersRow struct {
-	ID        int32
-	FirstName string
+	ID        sql.NullInt32
+	FirstName sql.NullString
 	Price     string
 }
 
