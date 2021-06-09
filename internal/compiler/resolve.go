@@ -98,6 +98,15 @@ func resolveCatalogRefs(c *catalog.Catalog, rvs []*ast.RangeVar, args []paramRef
 			})
 
 		case *ast.A_Expr:
+			if col := resolveKnownExpr(n, ref.ref.Number); col != nil {
+				col.Name = parameterName(ref.ref.Number, col.Name)
+				a = append(a, Parameter{
+					Number: ref.ref.Number,
+					Column: col,
+				})
+				continue
+			}
+
 			// TODO: While this works for a wide range of simple expressions,
 			// more complicated expressions will cause this logic to fail.
 			list := astutils.Search(n.Lexpr, func(node ast.Node) bool {
@@ -358,4 +367,45 @@ func resolveCatalogRefs(c *catalog.Catalog, rvs []*ast.RangeVar, args []paramRef
 		}
 	}
 	return a, nil
+}
+
+// Attempt to recognize known simple expressions the main logic doesn't handle properly
+func resolveKnownExpr(n *ast.A_Expr, targetParamNum int) *Column {
+	rn, ok := n.Rexpr.(*ast.ParamRef)
+	if !ok {
+		return nil
+	}
+	if rn.Number != targetParamNum {
+		return nil
+	}
+	switch ln := n.Lexpr.(type) {
+	case *ast.TypeCast:
+		if ln.TypeName == nil {
+			panic("type cast has nil type name")
+		}
+		return toColumn(ln.TypeName)
+	case *ast.A_Expr:
+		// Support for simple json queries
+		if len(ln.Name.Items) != 1 {
+			return nil
+		}
+		opNode, ok := ln.Name.Items[0].(*ast.String)
+		if !ok {
+			return nil
+		}
+		op := opNode.Str
+		switch op {
+		case "->", "#>":
+			return &Column{
+				DataType: "json",
+				NotNull:  true,
+			}
+		case "->>", "#>>":
+			return &Column{
+				DataType: "text",
+				NotNull:  true,
+			}
+		}
+	}
+	return nil
 }
