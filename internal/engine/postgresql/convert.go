@@ -2775,10 +2775,10 @@ func convertVacuumStmt(n *pg.VacuumStmt) *ast.VacuumStmt {
 		return nil
 	}
 	return &ast.VacuumStmt{
-	// FIXME: The VacuumStmt node has changed quite a bit
-	// Options:  n.Options
-	// Relation: convertRangeVar(n.Relation),
-	// VaCols:   convertSlice(n.VaCols),
+		// FIXME: The VacuumStmt node has changed quite a bit
+		// Options:  n.Options
+		// Relation: convertRangeVar(n.Relation),
+		// VaCols:   convertSlice(n.VaCols),
 	}
 }
 

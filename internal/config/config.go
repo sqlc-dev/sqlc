@@ -9,7 +9,7 @@ import (
 	"os"
 	"strings"
 
-	yaml "gopkg.in/yaml.v3"
+	"gopkg.in/yaml.v3"
 
 	"github.com/kyleconroy/sqlc/internal/core"
 )
@@ -121,6 +121,7 @@ type SQLGo struct {
 	Out                   string            `json:"out" yaml:"out"`
 	Overrides             []Override        `json:"overrides,omitempty" yaml:"overrides"`
 	Rename                map[string]string `json:"rename,omitempty" yaml:"rename"`
+	Driver                string            `json:"driver" yaml:"driver"`
 	OutputDBFileName      string            `json:"output_db_file_name,omitempty" yaml:"output_db_file_name"`
 	OutputModelsFileName  string            `json:"output_models_file_name,omitempty" yaml:"output_models_file_name"`
 	OutputQuerierFileName string            `json:"output_querier_file_name,omitempty" yaml:"output_querier_file_name"`
