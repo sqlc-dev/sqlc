@@ -10,7 +10,7 @@ require (
 	github.com/jackc/pgx/v4 v4.11.0
 	github.com/jinzhu/inflection v1.0.0
 	github.com/kr/pretty v0.2.1 // indirect
-	github.com/lib/pq v1.10.1
+	github.com/lib/pq v1.10.2
 	github.com/pganalyze/pg_query_go/v2 v2.0.2
 	github.com/pingcap/parser v0.0.0-20201024025010-3b2fb4b41d73
 	github.com/spf13/cobra v1.1.3
