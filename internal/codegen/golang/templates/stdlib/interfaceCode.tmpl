@@ -1,0 +1,23 @@
+{{define "interfaceCodeStd"}}
+    type Querier interface {
+    {{- range .GoQueries}}
+        {{- if eq .Cmd ":one"}}
+            {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.Type}}, error)
+        {{- end}}
+        {{- if eq .Cmd ":many"}}
+            {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.Type}}, error)
+        {{- end}}
+        {{- if eq .Cmd ":exec"}}
+            {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) error
+        {{- end}}
+        {{- if eq .Cmd ":execrows"}}
+            {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, error)
+        {{- end}}
+        {{- if eq .Cmd ":execresult"}}
+            {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (sql.Result, error)
+        {{- end}}
+    {{- end}}
+    }
+
+    var _ Querier = (*Queries)(nil)
+{{end}}
