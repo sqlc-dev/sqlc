@@ -3,12 +3,38 @@ package compiler
 import (
 	"errors"
 	"fmt"
+	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sql/astutils"
 	"github.com/kyleconroy/sqlc/internal/sql/lang"
 	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
 )
+
+// OutputColumns determines which columns a statement will output
+func (c *Compiler) OutputColumns(stmt ast.Node) ([]*catalog.Column, error) {
+	qc, err := buildQueryCatalog(c.catalog, stmt)
+	if err != nil {
+		return nil, err
+	}
+	cols, err := outputColumns(qc, stmt)
+	if err != nil {
+		return nil, err
+	}
+
+	catCols := make([]*catalog.Column, 0, len(cols))
+	for _, col := range cols {
+		catCols = append(catCols, &catalog.Column{
+			Name:      col.Name,
+			Type:      ast.TypeName{Name: col.DataType},
+			IsNotNull: col.NotNull,
+			IsArray:   col.IsArray,
+			Comment:   col.Comment,
+			Length:    col.Length,
+		})
+	}
+	return catCols, nil
+}
 
 func hasStarRef(cf *ast.ColumnRef) bool {
 	for _, item := range cf.Fields.Items {
