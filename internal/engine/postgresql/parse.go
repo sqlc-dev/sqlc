@@ -514,7 +514,7 @@ func translate(node *nodes.Node) (ast.Node, error) {
 			}
 			return drop, nil
 
-		case nodes.ObjectType_OBJECT_TABLE:
+		case nodes.ObjectType_OBJECT_TABLE, nodes.ObjectType_OBJECT_VIEW, nodes.ObjectType_OBJECT_MATVIEW:
 			drop := &ast.DropTableStmt{
 				IfExists: n.MissingOk,
 			}
