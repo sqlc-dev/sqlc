@@ -145,9 +145,16 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 			continue
 		}
 
+		var constantName string
+		if settings.Go.EmitExportedQueries {
+			constantName = codegen.Title(query.Name)
+		} else {
+			constantName = codegen.LowerTitle(query.Name)
+		}
+
 		gq := Query{
 			Cmd:          query.Cmd,
-			ConstantName: codegen.LowerTitle(query.Name),
+			ConstantName: constantName,
 			FieldName:    codegen.LowerTitle(query.Name) + "Stmt",
 			MethodName:   query.Name,
 			SourceName:   query.Filename,
