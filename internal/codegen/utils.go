@@ -11,6 +11,10 @@ func LowerTitle(s string) string {
 	return string(a)
 }
 
+func Title(s string) string {
+	return strings.Title(s)
+}
+
 // Go string literals cannot contain backtick. If a string contains
 // a backtick, replace it the following way:
 //
