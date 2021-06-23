@@ -131,8 +131,10 @@ func generate(settings config.CombinedSettings, enums []Enum, structs []Struct, 
 		querierFileName = golang.OutputQuerierFileName
 	}
 
-	if err := execute(dbFileName, "dbFile"); err != nil {
-		return nil, err
+	if !golang.SkipDBFileName {
+		if err := execute(dbFileName, "dbFile"); err != nil {
+			return nil, err
+		}
 	}
 	if err := execute(modelsFileName, "modelsFile"); err != nil {
 		return nil, err

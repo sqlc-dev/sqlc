@@ -123,6 +123,7 @@ type SQLGo struct {
 	Overrides             []Override        `json:"overrides,omitempty" yaml:"overrides"`
 	Rename                map[string]string `json:"rename,omitempty" yaml:"rename"`
 	Driver                string            `json:"driver" yaml:"driver"`
+	SkipDBFileName        bool              `json:"skip_db_file_name" yaml:"skip_db_file_name"`
 	OutputDBFileName      string            `json:"output_db_file_name,omitempty" yaml:"output_db_file_name"`
 	OutputModelsFileName  string            `json:"output_models_file_name,omitempty" yaml:"output_models_file_name"`
 	OutputQuerierFileName string            `json:"output_querier_file_name,omitempty" yaml:"output_querier_file_name"`
