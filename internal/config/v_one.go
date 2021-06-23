@@ -31,6 +31,7 @@ type v1PackageSettings struct {
 	JSONTagsCaseStyle     string     `json:"json_tags_case_style,omitempty" yaml:"json_tags_case_style"`
 	Driver                string     `json:"driver" yaml:"driver"`
 	Overrides             []Override `json:"overrides" yaml:"overrides"`
+	SkipDBFileName        bool       `json:"skip_db_file_name" yaml:"skip_db_file_name"`
 	OutputDBFileName      string     `json:"output_db_file_name,omitempty" yaml:"output_db_file_name"`
 	OutputModelsFileName  string     `json:"output_models_file_name,omitempty" yaml:"output_models_file_name"`
 	OutputQuerierFileName string     `json:"output_querier_file_name,omitempty" yaml:"output_querier_file_name"`
@@ -122,6 +123,7 @@ func (c *V1GenerateSettings) Translate() Config {
 					Driver:                pkg.Driver,
 					Overrides:             pkg.Overrides,
 					JSONTagsCaseStyle:     pkg.JSONTagsCaseStyle,
+					SkipDBFileName:        pkg.SkipDBFileName,
 					OutputDBFileName:      pkg.OutputDBFileName,
 					OutputModelsFileName:  pkg.OutputModelsFileName,
 					OutputQuerierFileName: pkg.OutputQuerierFileName,
