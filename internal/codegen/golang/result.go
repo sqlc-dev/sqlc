@@ -80,6 +80,7 @@ func buildStructs(r *compiler.Result, settings config.CombinedSettings) []Struct
 			}
 			for _, column := range table.Columns {
 				tags := map[string]string{}
+				customTags(&tags, column)
 				if settings.Go.EmitDBTags {
 					tags["db:"] = column.Name
 				}
