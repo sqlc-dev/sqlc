@@ -46,29 +46,36 @@ func Parse(t string, commentStyle CommentSyntax) (string, string, error) {
 			if !commentStyle.Dash {
 				continue
 			}
-			prefix = "-- name:"
+			prefix = "--"
 		}
 		if strings.HasPrefix(line, "/*") {
 			if !commentStyle.SlashStar {
 				continue
 			}
-			prefix = "/* name:"
+			prefix = "/*"
 		}
 		if strings.HasPrefix(line, "#") {
 			if !commentStyle.Hash {
 				continue
 			}
-			prefix = "# name:"
+			prefix = "#"
 		}
 		if prefix == "" {
 			continue
 		}
-		if !strings.HasPrefix(line, prefix) {
+		rest := line[len(prefix):]
+		if !strings.HasPrefix(strings.TrimSpace(rest), "name") {
 			continue
+		}
+		if !strings.Contains(rest, ":") {
+			continue
+		}
+		if !strings.HasPrefix(rest, " name: ") {
+			return "", "", fmt.Errorf("invalid metadata: %s", line)
 		}
 
 		part := strings.Split(strings.TrimSpace(line), " ")
-		if strings.HasPrefix(line, "/*") {
+		if prefix == "/*" {
 			part = part[:len(part)-1] // removes the trailing "*/" element
 		}
 		if len(part) == 2 {
