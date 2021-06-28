@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type WindowClause struct {
 	Name            *string
 	Refname         *string

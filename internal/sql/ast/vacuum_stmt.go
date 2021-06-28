@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type VacuumStmt struct {
 	Options  int
 	Relation *RangeVar

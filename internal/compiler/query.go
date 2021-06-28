@@ -1,6 +1,13 @@
 package compiler
 
-import "github.com/kyleconroy/sqlc/internal/sql/ast"
+import (
+	"github.com/kyleconroy/sqlc/internal/sql/ast"
+)
+
+type Function struct {
+	Rel        *ast.FuncName
+	ReturnType *ast.TypeName
+}
 
 type Table struct {
 	Rel     *ast.TableName
@@ -13,6 +20,7 @@ type Column struct {
 	NotNull  bool
 	IsArray  bool
 	Comment  string
+	Length   *int
 
 	// XXX: Figure out what PostgreSQL calls `foo.id`
 	Scope string

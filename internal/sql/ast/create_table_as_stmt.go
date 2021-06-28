@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type CreateTableAsStmt struct {
 	Query        Node
 	Into         *IntoClause

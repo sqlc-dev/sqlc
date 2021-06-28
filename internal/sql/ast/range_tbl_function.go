@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type RangeTblFunction struct {
 	Funcexpr          Node
 	Funccolcount      int

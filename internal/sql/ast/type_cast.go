@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type TypeCast struct {
 	Arg      Node
 	TypeName *TypeName

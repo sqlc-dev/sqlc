@@ -1,0 +1,63 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "path": "go",
+      "engine": "postgresql",
+      "driver": "pgx/v4",
+      "name": "override",
+      "schema": "schema.sql",
+      "queries": "query.sql",
+      "overrides": [
+        {
+          "column": "foo.id",
+          "go_type": {
+            "import": "github.com/gofrs/uuid",
+            "type": "UUID"
+          },
+        },
+        {
+          "column": "foo.other_id",
+          "go_type": {
+            "import": "github.com/gofrs/uuid",
+            "package": "fuid",
+            "type": "UUID"
+          },
+        },
+        {
+          "column": "foo.age",
+          "nullable": true,
+          "go_type": {
+            "import": "database/sql",
+            "package": "orm",
+            "type": "NullInt32"
+          },
+        },
+        {
+          "column": "foo.balance",
+          "nullable": true,
+          "go_type": {
+            "import": "github.com/volatiletech/null/v8",
+            "type": "Float32"
+          },
+        },
+        {
+          "column": "foo.bio",
+          "nullable": true,
+          "go_type": {
+            "import": "gopkg.in/guregu/null.v4",
+            "type": "String"
+          },
+        },
+        {
+          "column": "foo.about",
+          "nullable": true,
+          "go_type": {
+            "type": "string",
+            "pointer": true
+          }
+        }
+      ]
+    }
+  ]
+}

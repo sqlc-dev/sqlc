@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type CreateForeignServerStmt struct {
 	Servername  *string
 	Servertype  *string

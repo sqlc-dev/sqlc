@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type DeleteStmt struct {
 	Relation      *RangeVar
 	UsingClause   *List

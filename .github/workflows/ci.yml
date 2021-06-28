@@ -1,5 +1,9 @@
 name: go
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
 jobs:
 
   build:
@@ -26,12 +30,11 @@ jobs:
         - 3306:3306
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v2.3.4
 
-    - name: Set up Go 1.14
-      uses: actions/setup-go@v2
+    - uses: actions/setup-go@v2
       with:
-        go-version: '1.14'
+        go-version: '1.16'
 
     - run: go build ./...
       working-directory: internal/endtoend/testdata

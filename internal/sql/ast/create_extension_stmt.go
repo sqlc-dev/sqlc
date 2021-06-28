@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type CreateExtensionStmt struct {
 	Extname     *string
 	IfNotExists bool

@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type AlterTSConfigurationStmt struct {
 	Kind      AlterTSConfigType
 	Cfgname   *List

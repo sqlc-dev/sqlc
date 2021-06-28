@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type CoerceViaIO struct {
 	Xpr          Node
 	Arg          Node

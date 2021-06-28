@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type A_Indirection struct {
 	Arg         Node
 	Indirection *List

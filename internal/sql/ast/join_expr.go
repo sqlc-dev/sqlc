@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type JoinExpr struct {
 	Jointype    JoinType
 	IsNatural   bool

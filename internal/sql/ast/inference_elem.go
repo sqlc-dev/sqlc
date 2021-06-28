@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type InferenceElem struct {
 	Xpr          Node
 	Expr         Node

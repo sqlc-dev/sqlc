@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type AlterEnumStmt struct {
 	TypeName           *List
 	OldVal             *string

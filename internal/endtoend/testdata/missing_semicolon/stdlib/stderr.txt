@@ -1,0 +1,2 @@
+# package querytest
+query.sql:7:1: missing semicolon at end of file

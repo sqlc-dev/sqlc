@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type FromExpr struct {
 	Fromlist *List
 	Quals    Node

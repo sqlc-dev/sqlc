@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type InferClause struct {
 	IndexElems  *List
 	WhereClause Node

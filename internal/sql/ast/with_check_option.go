@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type WithCheckOption struct {
 	Kind     WCOKind
 	Relname  *string

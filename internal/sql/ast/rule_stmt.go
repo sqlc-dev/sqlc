@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type RuleStmt struct {
 	Relation    *RangeVar
 	Rulename    *string

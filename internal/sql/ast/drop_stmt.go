@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type DropStmt struct {
 	Objects    *List
 	RemoveType ObjectType

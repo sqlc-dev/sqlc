@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type CoerceToDomain struct {
 	Xpr            Node
 	Arg            Node

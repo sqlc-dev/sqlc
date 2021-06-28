@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type NextValueExpr struct {
 	Xpr    Node
 	Seqid  Oid

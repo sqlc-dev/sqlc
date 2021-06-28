@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type NamedArgExpr struct {
 	Xpr       Node
 	Arg       Node

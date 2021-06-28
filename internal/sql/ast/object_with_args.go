@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type ObjectWithArgs struct {
 	Objname         *List
 	Objargs         *List

@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type IntoClause struct {
 	Rel            *RangeVar
 	ColNames       *List

@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type SubLinkType uint
 
 const (

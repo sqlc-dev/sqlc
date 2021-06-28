@@ -3,12 +3,38 @@ package compiler
 import (
 	"errors"
 	"fmt"
+	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sql/astutils"
 	"github.com/kyleconroy/sqlc/internal/sql/lang"
 	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
 )
+
+// OutputColumns determines which columns a statement will output
+func (c *Compiler) OutputColumns(stmt ast.Node) ([]*catalog.Column, error) {
+	qc, err := buildQueryCatalog(c.catalog, stmt)
+	if err != nil {
+		return nil, err
+	}
+	cols, err := outputColumns(qc, stmt)
+	if err != nil {
+		return nil, err
+	}
+
+	catCols := make([]*catalog.Column, 0, len(cols))
+	for _, col := range cols {
+		catCols = append(catCols, &catalog.Column{
+			Name:      col.Name,
+			Type:      ast.TypeName{Name: col.DataType},
+			IsNotNull: col.NotNull,
+			IsArray:   col.IsArray,
+			Comment:   col.Comment,
+			Length:    col.Length,
+		})
+	}
+	return catCols, nil
+}
 
 func hasStarRef(cf *ast.ColumnRef) bool {
 	for _, item := range cf.Fields.Items {
@@ -37,6 +63,11 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 		targets = n.ReturningList
 	case *ast.SelectStmt:
 		targets = n.TargetList
+		// For UNION queries, targets is empty and we need to look for the
+		// columns in Largs.
+		if len(targets.Items) == 0 && n.Larg != nil {
+			return outputColumns(qc, n.Larg)
+		}
 	case *ast.TruncateStmt:
 		targets = &ast.List{}
 	case *ast.UpdateStmt:
@@ -137,6 +168,7 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 							DataType: c.DataType,
 							NotNull:  c.NotNull,
 							IsArray:  c.IsArray,
+							Length:   c.Length,
 						})
 					}
 				}
@@ -199,7 +231,56 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 
 		}
 	}
+
+	if n, ok := node.(*ast.SelectStmt); ok {
+		for _, col := range cols {
+			if !col.NotNull || col.Table == nil {
+				continue
+			}
+			for _, f := range n.FromClause.Items {
+				if res := isTableRequired(f, col.Table.Name, tableRequired); res != tableNotFound {
+					col.NotNull = res == tableRequired
+					break
+				}
+			}
+		}
+	}
+
 	return cols, nil
+}
+
+const (
+	tableNotFound = iota
+	tableRequired
+	tableOptional
+)
+
+func isTableRequired(n ast.Node, tableName string, prior int) int {
+	switch n := n.(type) {
+	case *ast.RangeVar:
+		if *n.Relname == tableName {
+			return prior
+		}
+	case *ast.JoinExpr:
+		helper := func(l, r int) int {
+			if res := isTableRequired(n.Larg, tableName, l); res != tableNotFound {
+				return res
+			}
+			if res := isTableRequired(n.Rarg, tableName, r); res != tableNotFound {
+				return res
+			}
+			return tableNotFound
+		}
+		switch n.Jointype {
+		case ast.JoinTypeLeft:
+			return helper(tableRequired, tableOptional)
+		case ast.JoinTypeRight:
+			return helper(tableOptional, tableRequired)
+		case ast.JoinTypeFull:
+			return helper(tableOptional, tableOptional)
+		}
+	}
+	return tableNotFound
 }
 
 // Compute the output columns for a statement.
@@ -222,7 +303,7 @@ func sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, error) {
 	case *ast.SelectStmt:
 		list = astutils.Search(n.FromClause, func(node ast.Node) bool {
 			switch node.(type) {
-			case *ast.RangeVar, *ast.RangeSubselect:
+			case *ast.RangeVar, *ast.RangeSubselect, *ast.FuncName:
 				return true
 			default:
 				return false
@@ -244,6 +325,24 @@ func sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, error) {
 	var tables []*Table
 	for _, item := range list.Items {
 		switch n := item.(type) {
+
+		case *ast.FuncName:
+			// If the function or table can't be found, don't error out.  There
+			// are many queries that depend on functions unknown to sqlc.
+			fn, err := qc.GetFunc(n)
+			if err != nil {
+				continue
+			}
+			table, err := qc.GetTable(&ast.TableName{
+				Catalog: fn.ReturnType.Catalog,
+				Schema:  fn.ReturnType.Schema,
+				Name:    fn.ReturnType.Name,
+			})
+			if err != nil {
+				continue
+			}
+			tables = append(tables, table)
+
 		case *ast.RangeSubselect:
 			cols, err := outputColumns(qc, n.Subquery)
 			if err != nil {
@@ -276,6 +375,7 @@ func sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, error) {
 				}
 			}
 			tables = append(tables, table)
+
 		default:
 			return nil, fmt.Errorf("sourceTable: unsupported list item type: %T", n)
 		}
@@ -315,6 +415,7 @@ func outputColumnRefs(res *ast.ResTarget, tables []*Table, node *ast.ColumnRef) 
 					DataType: c.DataType,
 					NotNull:  c.NotNull,
 					IsArray:  c.IsArray,
+					Length:   c.Length,
 				})
 			}
 		}

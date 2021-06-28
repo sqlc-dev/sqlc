@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type AlterSeqStmt struct {
 	Sequence    *RangeVar
 	Options     *List

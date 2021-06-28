@@ -12,6 +12,7 @@ import (
 
 	"github.com/kyleconroy/sqlc/internal/codegen/golang"
 	"github.com/kyleconroy/sqlc/internal/codegen/kotlin"
+	"github.com/kyleconroy/sqlc/internal/codegen/python"
 	"github.com/kyleconroy/sqlc/internal/compiler"
 	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/debug"
@@ -120,6 +121,16 @@ func Generate(e Env, dir, filename string, stderr io.Writer) (map[string]string,
 				Gen: config.SQLGen{Kotlin: sql.Gen.Kotlin},
 			})
 		}
+		if sql.Gen.Python != nil {
+			if !e.ExperimentalFeatures {
+				fmt.Fprintf(stderr, "error parsing %s: unknown target langauge \"python\"\n", base)
+				return nil, fmt.Errorf("unknown target language \"python\"")
+			}
+			pairs = append(pairs, outPair{
+				SQL: sql,
+				Gen: config.SQLGen{Python: sql.Gen.Python},
+			})
+		}
 	}
 
 	for _, sql := range pairs {
@@ -149,6 +160,8 @@ func Generate(e Env, dir, filename string, stderr io.Writer) (map[string]string,
 				parseOpts.UsePositionalParameters = true
 			}
 			name = combo.Kotlin.Package
+		} else if sql.Gen.Python != nil {
+			name = combo.Python.Package
 		}
 
 		result, failed := parse(e, name, dir, sql.SQL, combo, parseOpts, stderr)
@@ -166,6 +179,9 @@ func Generate(e Env, dir, filename string, stderr io.Writer) (map[string]string,
 		case sql.Gen.Kotlin != nil:
 			out = combo.Kotlin.Out
 			files, err = kotlin.Generate(result, combo)
+		case sql.Gen.Python != nil:
+			out = combo.Python.Out
+			files, err = python.Generate(result, combo)
 		default:
 			panic("missing language backend")
 		}

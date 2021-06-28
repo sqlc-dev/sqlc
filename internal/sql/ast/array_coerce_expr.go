@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type ArrayCoerceExpr struct {
 	Xpr          Node
 	Arg          Node

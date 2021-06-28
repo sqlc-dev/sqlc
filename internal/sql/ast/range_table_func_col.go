@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type RangeTableFuncCol struct {
 	Colname       *string
 	TypeName      *TypeName

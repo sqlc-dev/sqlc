@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type Constraint struct {
 	Contype        ConstrType
 	Conname        *string

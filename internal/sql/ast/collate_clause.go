@@ -1,7 +1,5 @@
 package ast
 
-import ()
-
 type CollateClause struct {
 	Arg      Node
 	Collname *List

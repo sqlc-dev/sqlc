@@ -34,12 +34,18 @@ func buildEnums(r *compiler.Result, settings config.CombinedSettings) []Enum {
 				Name:    StructName(enumName, settings),
 				Comment: enum.Comment,
 			}
-			for _, v := range enum.Vals {
+			seen := make(map[string]struct{}, len(enum.Vals))
+			for i, v := range enum.Vals {
+				value := EnumReplace(v)
+				if _, found := seen[value]; found || value == "" {
+					value = fmt.Sprintf("value_%d", i)
+				}
 				e.Constants = append(e.Constants, Constant{
-					Name:  StructName(enumName+"_"+EnumReplace(v), settings),
+					Name:  StructName(enumName+"_"+value, settings),
 					Value: v,
 					Type:  e.Name,
 				})
+				seen[value] = struct{}{}
 			}
 			enums = append(enums, e)
 		}
@@ -78,7 +84,7 @@ func buildStructs(r *compiler.Result, settings config.CombinedSettings) []Struct
 					tags["db:"] = column.Name
 				}
 				if settings.Go.EmitJSONTags {
-					tags["json:"] = column.Name
+					tags["json:"] = JSONTagName(column.Name, settings)
 				}
 				s.Fields = append(s.Fields, Field{
 					Name:    StructName(column.Name, settings),
@@ -139,9 +145,16 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 			continue
 		}
 
+		var constantName string
+		if settings.Go.EmitExportedQueries {
+			constantName = codegen.Title(query.Name)
+		} else {
+			constantName = codegen.LowerTitle(query.Name)
+		}
+
 		gq := Query{
 			Cmd:          query.Cmd,
-			ConstantName: codegen.LowerTitle(query.Name),
+			ConstantName: constantName,
 			FieldName:    codegen.LowerTitle(query.Name) + "Stmt",
 			MethodName:   query.Name,
 			SourceName:   query.Filename,
@@ -152,8 +165,9 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 		if len(query.Params) == 1 {
 			p := query.Params[0]
 			gq.Arg = QueryValue{
-				Name: paramName(p),
-				Typ:  goType(r, p.Column, settings),
+				Name:   paramName(p),
+				Typ:    goType(r, p.Column, settings),
+				Driver: DriverFromString(settings.Go.Driver),
 			}
 		} else if len(query.Params) > 1 {
 			var cols []goColumn
@@ -167,14 +181,16 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 				Emit:   true,
 				Name:   "arg",
 				Struct: columnsToStruct(r, gq.MethodName+"Params", cols, settings),
+				Driver: DriverFromString(settings.Go.Driver),
 			}
 		}
 
 		if len(query.Columns) == 1 {
 			c := query.Columns[0]
 			gq.Ret = QueryValue{
-				Name: columnName(c, 0),
-				Typ:  goType(r, c, settings),
+				Name:   columnName(c, 0),
+				Typ:    goType(r, c, settings),
+				Driver: DriverFromString(settings.Go.Driver),
 			}
 		} else if len(query.Columns) > 1 {
 			var gs *Struct
@@ -215,6 +231,7 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 				Emit:   emit,
 				Name:   "i",
 				Struct: gs,
+				Driver: DriverFromString(settings.Go.Driver),
 			}
 		}
 
@@ -259,7 +276,7 @@ func columnsToStruct(r *compiler.Result, name string, columns []goColumn, settin
 			tags["db:"] = tagName
 		}
 		if settings.Go.EmitJSONTags {
-			tags["json:"] = tagName
+			tags["json:"] = JSONTagName(tagName, settings)
 		}
 		gs.Fields = append(gs.Fields, Field{
 			Name: fieldName,
