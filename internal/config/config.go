@@ -9,7 +9,7 @@ import (
 	"os"
 	"strings"
 
-	yaml "gopkg.in/yaml.v3"
+	"gopkg.in/yaml.v3"
 
 	"github.com/kyleconroy/sqlc/internal/core"
 )
@@ -116,11 +116,13 @@ type SQLGo struct {
 	EmitPreparedQueries   bool              `json:"emit_prepared_queries" yaml:"emit_prepared_queries"`
 	EmitExactTableNames   bool              `json:"emit_exact_table_names,omitempty" yaml:"emit_exact_table_names"`
 	EmitEmptySlices       bool              `json:"emit_empty_slices,omitempty" yaml:"emit_empty_slices"`
+	EmitExportedQueries   bool              `json:"emit_exported_queries" yaml:"emit_exported_queries"`
 	JSONTagsCaseStyle     string            `json:"json_tags_case_style,omitempty" yaml:"json_tags_case_style"`
 	Package               string            `json:"package" yaml:"package"`
 	Out                   string            `json:"out" yaml:"out"`
 	Overrides             []Override        `json:"overrides,omitempty" yaml:"overrides"`
 	Rename                map[string]string `json:"rename,omitempty" yaml:"rename"`
+	Driver                string            `json:"driver" yaml:"driver"`
 	OutputDBFileName      string            `json:"output_db_file_name,omitempty" yaml:"output_db_file_name"`
 	OutputModelsFileName  string            `json:"output_models_file_name,omitempty" yaml:"output_models_file_name"`
 	OutputQuerierFileName string            `json:"output_querier_file_name,omitempty" yaml:"output_querier_file_name"`

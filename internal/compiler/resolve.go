@@ -18,7 +18,7 @@ func dataType(n *ast.TypeName) string {
 	}
 }
 
-func resolveCatalogRefs(c *catalog.Catalog, rvs []*ast.RangeVar, args []paramRef, names map[int]string) ([]Parameter, error) {
+func resolveCatalogRefs(c *catalog.Catalog, qc *QueryCatalog, rvs []*ast.RangeVar, args []paramRef, names map[int]string) ([]Parameter, error) {
 	aliasMap := map[string]*ast.TableName{}
 	// TODO: Deprecate defaultTable
 	var defaultTable *ast.TableName
@@ -62,6 +62,10 @@ func resolveCatalogRefs(c *catalog.Catalog, rvs []*ast.RangeVar, args []paramRef
 		}
 		table, err := c.GetTable(fqn)
 		if err != nil {
+			// If the table name doesn't exist, fisrt check if it's a CTE
+			if _, qcerr := qc.GetTable(fqn); qcerr != nil {
+				return nil, err
+			}
 			continue
 		}
 		err = indexTable(table)
@@ -299,15 +303,19 @@ func resolveCatalogRefs(c *catalog.Catalog, rvs []*ast.RangeVar, args []paramRef
 			if err != nil {
 				return nil, err
 			}
+
 		case *ast.ResTarget:
 			if n.Name == nil {
 				return nil, fmt.Errorf("*ast.ResTarget has nil name")
 			}
 			key := *n.Name
 
+			var schema, rel string
 			// TODO: Deprecate defaultTable
-			schema := defaultTable.Schema
-			rel := defaultTable.Name
+			if defaultTable != nil {
+				schema = defaultTable.Schema
+				rel = defaultTable.Name
+			}
 			if ref.rv != nil {
 				fqn, err := ParseTableName(ref.rv)
 				if err != nil {
@@ -319,7 +327,13 @@ func resolveCatalogRefs(c *catalog.Catalog, rvs []*ast.RangeVar, args []paramRef
 			if schema == "" {
 				schema = c.DefaultSchema
 			}
-			if c, ok := typeMap[schema][rel][key]; ok {
+
+			tableMap, ok := typeMap[schema][rel]
+			if !ok {
+				return nil, sqlerr.RelationNotFound(rel)
+			}
+
+			if c, ok := tableMap[key]; ok {
 				a = append(a, Parameter{
 					Number: ref.ref.Number,
 					Column: &Column{
