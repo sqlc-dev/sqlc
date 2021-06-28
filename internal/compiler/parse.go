@@ -34,6 +34,9 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 	if o.Debug.DumpAST {
 		debug.Dump(stmt)
 	}
+	if err := validate.ParamStyle(stmt); err != nil {
+		return nil, err
+	}
 	lastNumber, err := validate.ParamRef(stmt)
 	if err != nil {
 		return nil, err

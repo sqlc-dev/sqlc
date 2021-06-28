@@ -8,44 +8,44 @@ import (
 )
 
 const countOne = `-- name: CountOne :one
-SELECT count(1) FROM bar WHERE id = $2 AND name <> $1
+SELECT count(1) FROM bar WHERE id = ? AND name <> ?
 `
 
 type CountOneParams struct {
 	Name string
-	ID   int32
+	ID   int64
 }
 
 func (q *Queries) CountOne(ctx context.Context, arg CountOneParams) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countOne, arg.Name, arg.ID)
+	row := q.db.QueryRowContext(ctx, countOne, arg.ID, arg.Name)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
 }
 
 const countThree = `-- name: CountThree :one
-SELECT count(1) FROM bar WHERE id > $2 AND phone <> $3 AND name <> $1
+SELECT count(1) FROM bar WHERE id > ? AND phone <> ? AND name <> ?
 `
 
 type CountThreeParams struct {
 	Name  string
-	ID    int32
+	ID    int64
 	Phone string
 }
 
 func (q *Queries) CountThree(ctx context.Context, arg CountThreeParams) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countThree, arg.Name, arg.ID, arg.Phone)
+	row := q.db.QueryRowContext(ctx, countThree, arg.ID, arg.Phone, arg.Name)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
 }
 
 const countTwo = `-- name: CountTwo :one
-SELECT count(1) FROM bar WHERE id = $1 AND name <> $2
+SELECT count(1) FROM bar WHERE id = ? AND name <> ?
 `
 
 type CountTwoParams struct {
-	ID   int32
+	ID   int64
 	Name string
 }
 
