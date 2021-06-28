@@ -1796,8 +1796,8 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "bigint"},
 		},
 		{
-			Name:       "LAST_INSERT_ID",
-			Args:       []*catalog.Argument{
+			Name: "LAST_INSERT_ID",
+			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "any"},
 				},

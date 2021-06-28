@@ -88,12 +88,25 @@ func (i *importer) usesArrays() bool {
 }
 
 func (i *importer) Imports(filename string) [][]ImportSpec {
+	dbFileName := "db.go"
+	if i.Settings.Go.OutputDBFileName != "" {
+		dbFileName = i.Settings.Go.OutputDBFileName
+	}
+	modelsFileName := "models.go"
+	if i.Settings.Go.OutputModelsFileName != "" {
+		modelsFileName = i.Settings.Go.OutputModelsFileName
+	}
+	querierFileName := "querier.go"
+	if i.Settings.Go.OutputQuerierFileName != "" {
+		querierFileName = i.Settings.Go.OutputQuerierFileName
+	}
+
 	switch filename {
-	case "db.go":
+	case dbFileName:
 		return mergeImports(i.dbImports())
-	case "models.go":
+	case modelsFileName:
 		return mergeImports(i.modelImports())
-	case "querier.go":
+	case querierFileName:
 		return mergeImports(i.interfaceImports())
 	default:
 		return mergeImports(i.queryImports(filename))
@@ -101,14 +114,26 @@ func (i *importer) Imports(filename string) [][]ImportSpec {
 }
 
 func (i *importer) dbImports() fileImports {
+	var pkg []ImportSpec
 	std := []ImportSpec{
 		{Path: "context"},
-		{Path: "database/sql"},
 	}
-	if i.Settings.Go.EmitPreparedQueries {
-		std = append(std, ImportSpec{Path: "fmt"})
+
+	driver := DriverFromString(i.Settings.Go.Driver)
+	switch driver {
+	case PgxDriver:
+		pkg = append(pkg, ImportSpec{Path: "github.com/jackc/pgconn"})
+		pkg = append(pkg, ImportSpec{Path: "github.com/jackc/pgx/v4"})
+	default:
+		std = append(std, ImportSpec{Path: "database/sql"})
+		if i.Settings.Go.EmitPreparedQueries {
+			std = append(std, ImportSpec{Path: "fmt"})
+		}
 	}
-	return fileImports{Std: std}
+
+	sort.Slice(std, func(i, j int) bool { return std[i].Path < std[j].Path })
+	sort.Slice(pkg, func(i, j int) bool { return pkg[i].Path < pkg[j].Path })
+	return fileImports{Std: std, Dep: pkg}
 }
 
 var stdlibTypes = map[string]string{
@@ -141,9 +166,18 @@ func (i *importer) interfaceImports() fileImports {
 	if uses("sql.Null") {
 		std["database/sql"] = struct{}{}
 	}
+
+	pkg := make(map[ImportSpec]struct{})
+
+	driver := DriverFromString(i.Settings.Go.Driver)
 	for _, q := range i.Queries {
 		if q.Cmd == metadata.CmdExecResult {
-			std["database/sql"] = struct{}{}
+			switch driver {
+			case PgxDriver:
+				pkg[ImportSpec{Path: "github.com/jackc/pgconn"}] = struct{}{}
+			default:
+				std["database/sql"] = struct{}{}
+			}
 		}
 	}
 	for typeName, pkg := range stdlibTypes {
@@ -152,7 +186,6 @@ func (i *importer) interfaceImports() fileImports {
 		}
 	}
 
-	pkg := make(map[ImportSpec]struct{})
 	overrideTypes := map[string]string{}
 	for _, o := range i.Settings.Overrides {
 		if o.GoBasicType || o.GoTypeName == "" {
@@ -329,15 +362,24 @@ func (i *importer) queryImports(filename string) fileImports {
 		return false
 	}
 
+	pkg := make(map[ImportSpec]struct{})
 	std := map[string]struct{}{
 		"context": {},
 	}
 	if uses("sql.Null") {
 		std["database/sql"] = struct{}{}
 	}
+
+	driver := DriverFromString(i.Settings.Go.Driver)
+
 	for _, q := range gq {
 		if q.Cmd == metadata.CmdExecResult {
-			std["database/sql"] = struct{}{}
+			switch driver {
+			case PgxDriver:
+				pkg[ImportSpec{Path: "github.com/jackc/pgconn"}] = struct{}{}
+			default:
+				std["database/sql"] = struct{}{}
+			}
 		}
 	}
 	for typeName, pkg := range stdlibTypes {
@@ -346,7 +388,6 @@ func (i *importer) queryImports(filename string) fileImports {
 		}
 	}
 
-	pkg := make(map[ImportSpec]struct{})
 	overrideTypes := map[string]string{}
 	for _, o := range i.Settings.Overrides {
 		if o.GoBasicType || o.GoTypeName == "" {
@@ -355,9 +396,10 @@ func (i *importer) queryImports(filename string) fileImports {
 		overrideTypes[o.GoTypeName] = o.GoImportPath
 	}
 
-	if sliceScan() {
+	if sliceScan() && driver != PgxDriver {
 		pkg[ImportSpec{Path: "github.com/lib/pq"}] = struct{}{}
 	}
+
 	_, overrideNullTime := overrideTypes["pq.NullTime"]
 	if uses("pq.NullTime") && !overrideNullTime {
 		pkg[ImportSpec{Path: "github.com/lib/pq"}] = struct{}{}
