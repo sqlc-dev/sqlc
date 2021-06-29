@@ -107,6 +107,9 @@ func jdbcSet(t ktType, idx int, name string) string {
 	if t.IsInstant() {
 		return fmt.Sprintf("stmt.setTimestamp(%d, Timestamp.from(%s))", idx, name)
 	}
+	if t.IsUUID() {
+		return fmt.Sprintf("stmt.setObject(%d, %s)", idx, name)
+	}
 	return fmt.Sprintf("stmt.set%s(%d, %s)", t.Name, idx, name)
 }
 
@@ -158,6 +161,13 @@ func jdbcGet(t ktType, idx int) string {
 	}
 	if t.IsInstant() {
 		return fmt.Sprintf(`results.getTimestamp(%d).toInstant()`, idx)
+	}
+	if t.IsUUID() {
+		var nullCast string
+		if t.IsNull {
+			nullCast = "?"
+		}
+		return fmt.Sprintf(`results.getObject(%d) as%s %s`, idx, nullCast, t.Name)
 	}
 	return fmt.Sprintf(`results.get%s(%d)`, t.Name, idx)
 }
@@ -348,6 +358,10 @@ func (t ktType) IsTime() bool {
 
 func (t ktType) IsInstant() bool {
 	return t.Name == "Instant"
+}
+
+func (t ktType) IsUUID() bool {
+	return t.Name == "UUID"
 }
 
 func makeType(r *compiler.Result, col *compiler.Column, settings config.CombinedSettings) ktType {
