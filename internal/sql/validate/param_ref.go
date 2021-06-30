@@ -8,7 +8,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
 )
 
-func ParamRef(n ast.Node) error {
+func ParamRef(n ast.Node) (map[int]bool, error) {
 	var allrefs []*ast.ParamRef
 
 	// Find all parameter references
@@ -19,18 +19,19 @@ func ParamRef(n ast.Node) error {
 		}
 	}), n)
 
-	seen := map[int]struct{}{}
+	seen := map[int]bool{}
 	for _, r := range allrefs {
-		seen[r.Number] = struct{}{}
+		if r.Number > 0 {
+			seen[r.Number] = true
+		}
 	}
-
 	for i := 1; i <= len(seen); i += 1 {
 		if _, ok := seen[i]; !ok {
-			return &sqlerr.Error{
+			return nil, &sqlerr.Error{
 				Code:    "42P18",
 				Message: fmt.Sprintf("could not determine data type of parameter $%d", i),
 			}
 		}
 	}
-	return nil
+	return seen, nil
 }
