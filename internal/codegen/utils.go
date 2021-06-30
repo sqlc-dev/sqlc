@@ -6,6 +6,10 @@ import (
 )
 
 func LowerTitle(s string) string {
+	if s == "" {
+		return s
+	}
+
 	a := []rune(s)
 	a[0] = unicode.ToLower(a[0])
 	return string(a)
