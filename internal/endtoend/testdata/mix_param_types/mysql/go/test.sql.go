@@ -17,7 +17,7 @@ type CountOneParams struct {
 }
 
 func (q *Queries) CountOne(ctx context.Context, arg CountOneParams) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countOne, arg.ID, arg.Name)
+	row := q.db.QueryRowContext(ctx, countOne, arg.Name, arg.ID)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -28,13 +28,13 @@ SELECT count(1) FROM bar WHERE id > ? AND phone <> ? AND name <> ?
 `
 
 type CountThreeParams struct {
-	Name  string
 	ID    int64
+	Name  string
 	Phone string
 }
 
 func (q *Queries) CountThree(ctx context.Context, arg CountThreeParams) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countThree, arg.ID, arg.Phone, arg.Name)
+	row := q.db.QueryRowContext(ctx, countThree, arg.ID, arg.Name, arg.Phone)
 	var count int64
 	err := row.Scan(&count)
 	return count, err

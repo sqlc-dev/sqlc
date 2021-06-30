@@ -26,14 +26,18 @@ func ParamStyle(n ast.Node) error {
 			*/
 			switch fc.Args.Items[0].(type) {
 			case *ast.FuncCall:
+				l := fc.Args.Items[0].(*ast.FuncCall)
 				return &sqlerr.Error{
-					Code:    "", // TODO: Pick a new error code
-					Message: "expected parameter to sqlc.arg to be string or reference; got *ast.FuncCall",
+					Code:     "", // TODO: Pick a new error code
+					Message:  "Invalid argument to sqlc.arg()",
+					Location: l.Location,
 				}
 			case *ast.ParamRef:
+				l := fc.Args.Items[0].(*ast.ParamRef)
 				return &sqlerr.Error{
-					Code:    "", // TODO: Pick a new error code
-					Message: "query mixes positional parameters ($1) and named parameters (sqlc.arg or @arg)",
+					Code:     "", // TODO: Pick a new error code
+					Message:  "Invalid argument to sqlc.arg()",
+					Location: l.Location,
 				}
 			case *ast.A_Const, *ast.ColumnRef:
 			default:

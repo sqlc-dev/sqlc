@@ -37,7 +37,7 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 	if err := validate.ParamStyle(stmt); err != nil {
 		return nil, err
 	}
-	lastNumber, err := validate.ParamRef(stmt)
+	numbers, err := validate.ParamRef(stmt)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +76,7 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 		return nil, err
 	}
 
-	raw, namedParams, edits := rewrite.NamedParameters(c.conf.Engine, raw, lastNumber)
+	raw, namedParams, edits := rewrite.NamedParameters(c.conf.Engine, raw, numbers)
 	rvs := rangeVars(raw.Stmt)
 	refs := findParameters(raw.Stmt)
 	if o.UsePositionalParameters {
