@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/debug"
 	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/opts"
@@ -37,7 +38,8 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 	if err := validate.ParamStyle(stmt); err != nil {
 		return nil, err
 	}
-	if err := validate.ParamRef(stmt); err != nil {
+	numbers, err := validate.ParamRef(stmt)
+	if err != nil {
 		return nil, err
 	}
 	raw, ok := stmt.(*ast.RawStmt)
@@ -75,7 +77,7 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 		return nil, err
 	}
 
-	raw, namedParams, edits := rewrite.NamedParameters(c.conf.Engine, raw)
+	raw, namedParams, edits := rewrite.NamedParameters(c.conf.Engine, raw, numbers)
 	rvs := rangeVars(raw.Stmt)
 	refs := findParameters(raw.Stmt)
 	if o.UsePositionalParameters {
@@ -85,7 +87,11 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 		}
 	} else {
 		refs = uniqueParamRefs(refs)
-		sort.Slice(refs, func(i, j int) bool { return refs[i].ref.Number < refs[j].ref.Number })
+		if c.conf.Engine == config.EngineMySQL {
+			sort.Slice(refs, func(i, j int) bool { return refs[i].ref.Location < refs[j].ref.Location })
+		} else {
+			sort.Slice(refs, func(i, j int) bool { return refs[i].ref.Number < refs[j].ref.Number })
+		}
 	}
 	qc, err := buildQueryCatalog(c.catalog, raw.Stmt)
 	if err != nil {
@@ -122,7 +128,6 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 	if err != nil {
 		return nil, err
 	}
-
 	return &Query{
 		Cmd:      cmd,
 		Comments: comments,
