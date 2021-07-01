@@ -20,7 +20,7 @@ func ParamStyle(n ast.Node) error {
 				if len(fc.Args.Items) != 1 {
 					return &sqlerr.Error{
 						Code:    "", // TODO: Pick a new error code
-						Message: "Wrong number of arguments to sqlc.arg()",
+						Message: fmt.Sprintf("expected 1 parameter to sqlc.arg; got %d", len(fc.Args.Items)),
 					}
 				}
 			*/
