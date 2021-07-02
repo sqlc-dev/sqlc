@@ -43,5 +43,5 @@ func ParamRef(n ast.Node) (map[int]bool, bool, error) {
 			}
 		}
 	}
-	return seen, dollar, nil
+	return seen, !nodollar, nil
 }
