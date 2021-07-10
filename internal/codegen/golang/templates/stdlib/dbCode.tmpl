@@ -11,18 +11,25 @@ func New(db DBTX) *Queries {
 }
 
 {{if .EmitPreparedQueries}}
-func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
-	q := Queries{db: db}
+func (q *Queries) Prepare(ctx context.Context) error {
 	var err error
 	{{- if eq (len .GoQueries) 0 }}
 	_ = err
 	{{- end }}
 	{{- range .GoQueries }}
-	if q.{{.FieldName}}, err = db.PrepareContext(ctx, {{.ConstantName}}); err != nil {
-		return nil, fmt.Errorf("error preparing query {{.MethodName}}: %w", err)
+	if q.{{.FieldName}}, err = q.db.PrepareContext(ctx, {{.ConstantName}}); err != nil {
+		return fmt.Errorf("error preparing query {{.MethodName}}: %w", err)
 	}
 	{{- end}}
-	return &q, nil
+	return nil
+}
+
+func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
+    q := &Queries{db: db}
+    if err := q.Prepare(ctx); err != nil {
+        return nil, err
+    }
+    return q, nil
 }
 
 func (q *Queries) Close() error {
