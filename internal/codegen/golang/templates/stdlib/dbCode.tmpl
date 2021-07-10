@@ -26,7 +26,7 @@ func (q *Queries) Prepare(ctx context.Context) error {
 
 func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
     q := &Queries{db: db}
-    if err := q.Prepare(ctx, db); err != nil {
+    if err := q.Prepare(ctx); err != nil {
         return nil, err
     }
     return q, nil
