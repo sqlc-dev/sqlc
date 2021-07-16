@@ -1,0 +1,28 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "path": "go",
+      "engine": "postgresql",
+      "name": "querytest",
+      "schema": "query.sql",
+      "queries": "query.sql"
+    }
+  ],
+  "overrides": [
+    {
+      "db_type": "name",
+      "go_type": "github.com/jackc/pgtype.Name"
+    },
+    {
+      "db_type": "name",
+      "go_type": "github.com/jackc/pgtype.Name",
+      "nullable": true
+    },
+    {
+      "db_type": "text",
+      "go_type": "github.com/jackc/pgtype.Text",
+      "null": true
+    }
+  ]
+}

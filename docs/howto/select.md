@@ -189,7 +189,7 @@ In PostgreSQL,
 [ANY](https://www.postgresql.org/docs/current/functions-comparisons.html#id-1.5.8.28.16)
 allows you to check if a value exists in an array expression. Queries using ANY
 with a single parameter will generate method signatures with slices as
-arguments.
+arguments. Use the postgres data types, eg: int, varchar, etc.
 
 ```sql
 CREATE TABLE authors (
