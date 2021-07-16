@@ -425,7 +425,11 @@ func resolveCatalogRefs(c *catalog.Catalog, qc *QueryCatalog, rvs []*ast.RangeVa
 				}
 
 				for _, table := range search {
-					if c, ok := typeMap[table.Schema][table.Name][key]; ok {
+					schema := table.Schema
+					if schema == "" {
+						schema = c.DefaultSchema
+					}
+					if c, ok := typeMap[schema][table.Name][key]; ok {
 						found += 1
 						if ref.name != "" {
 							key = ref.name
