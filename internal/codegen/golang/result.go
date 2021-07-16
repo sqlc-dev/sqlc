@@ -258,6 +258,7 @@ func columnsToStruct(r *compiler.Result, name string, columns []goColumn, settin
 		colName := columnName(c.Column, i)
 		tagName := colName
 		fieldName := StructName(colName, settings)
+		baseFieldName := fieldName
 		// Track suffixes by the ID of the column, so that columns referring to the same numbered parameter can be
 		// reused.
 		suffix := 0
@@ -283,7 +284,7 @@ func columnsToStruct(r *compiler.Result, name string, columns []goColumn, settin
 			Type: goType(r, c.Column, settings),
 			Tags: tags,
 		})
-		seen[fieldName]++
+		seen[baseFieldName]++
 	}
 
 	return &gs
