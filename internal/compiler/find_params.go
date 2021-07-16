@@ -142,6 +142,25 @@ func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 			p.seen[n.Location] = struct{}{}
 		}
 		return nil
+
+	case *ast.In:
+		if n.Sel == nil {
+			p.parent = node
+		} else {
+			if sel, ok := n.Sel.(*ast.SelectStmt); ok && sel.FromClause != nil {
+				from := sel.FromClause
+				if schema, ok := from.Items[0].(*ast.RangeVar); ok && schema != nil {
+					p.rangeVar = &ast.RangeVar{
+						Catalogname: schema.Catalogname,
+						Schemaname:  schema.Schemaname,
+						Relname:     schema.Relname,
+					}
+				}
+			}
+		}
+		if _, ok := n.Expr.(*ast.ParamRef); ok {
+			p.Visit(n.Expr)
+		}
 	}
 	return p
 }
