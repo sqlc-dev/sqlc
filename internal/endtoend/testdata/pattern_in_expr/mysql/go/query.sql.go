@@ -40,12 +40,12 @@ SELECT a, b from foo where foo.a in (?, ?)
 `
 
 type FooByListParams struct {
-	A sql.NullString
-	A sql.NullString
+	A   sql.NullString
+	A_2 sql.NullString
 }
 
 func (q *Queries) FooByList(ctx context.Context, arg FooByListParams) ([]Foo, error) {
-	rows, err := q.db.QueryContext(ctx, fooByList, arg.A, arg.A)
+	rows, err := q.db.QueryContext(ctx, fooByList, arg.A, arg.A_2)
 	if err != nil {
 		return nil, err
 	}
@@ -72,12 +72,12 @@ SELECT a, b from foo where foo.a not in (?, ?)
 `
 
 type FooByNotListParams struct {
-	A sql.NullString
-	A sql.NullString
+	A   sql.NullString
+	A_2 sql.NullString
 }
 
 func (q *Queries) FooByNotList(ctx context.Context, arg FooByNotListParams) ([]Foo, error) {
-	rows, err := q.db.QueryContext(ctx, fooByNotList, arg.A, arg.A)
+	rows, err := q.db.QueryContext(ctx, fooByNotList, arg.A, arg.A_2)
 	if err != nil {
 		return nil, err
 	}
