@@ -252,7 +252,7 @@ func columnsToStruct(r *compiler.Result, name string, columns []goColumn, settin
 		suffix := 0
 		if o, ok := suffixes[c.id]; ok && useID {
 			suffix = o
-		} else if v := seen[colName]; v > 0 {
+		} else if v := seen[fieldName]; v > 0 {
 			suffix = v + 1
 		}
 		suffixes[c.id] = suffix
@@ -272,7 +272,8 @@ func columnsToStruct(r *compiler.Result, name string, columns []goColumn, settin
 			Type: goType(r, c.Column, settings),
 			Tags: tags,
 		})
-		seen[colName]++
+		seen[fieldName]++
 	}
+
 	return &gs
 }
