@@ -42,12 +42,3 @@ Get pre-built binaries for *v1.8.0*:
 
 Binaries for a specific release can be downloaded on
 [GitHub](https://github.com/kyleconroy/sqlc/releases).
-
-
-## Tip Releases
-
-Each commit is deployed to the [`devel` channel on Equinox](https://dl.equinox.io/sqlc/sqlc/devel):
-
-- [Linux](https://bin.equinox.io/c/gvM95th6ps1/sqlc-devel-linux-amd64.tgz)
-- [macOS](https://bin.equinox.io/c/gvM95th6ps1/sqlc-devel-darwin-amd64.zip)
-- [Windows (MySQL only)](https://bin.equinox.io/c/gvM95th6ps1/sqlc-devel-windows-amd64.zip)
