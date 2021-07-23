@@ -2,7 +2,7 @@ name: docker
 on:
   push:
     branches:
-    - master
+    - main
 jobs:
   docker:
     name: push kjconroy/sqlc:devel
