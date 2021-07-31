@@ -156,7 +156,11 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 	if err != nil {
 		return nil, err
 	}
-	tree, err := nodes.Parse(string(contents))
+	s := string(contents)
+	// remove byte order mask from a UTF-8 with BOM file
+	bom := string('\uFEFF')
+	s = strings.TrimPrefix(s, bom)
+	tree, err := nodes.Parse(s)
 	if err != nil {
 		return nil, err
 	}
