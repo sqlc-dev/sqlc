@@ -65,7 +65,11 @@ func (c *Compiler) parseCatalog(schemas []string) error {
 			merr.Add(filename, "", 0, err)
 			continue
 		}
-		contents := migrations.RemoveRollbackStatements(string(blob))
+		s := string(blob)
+		// remove byte order mask from a UTF-8 with BOM file
+		bom := string('\uFEFF')
+		s = strings.TrimPrefix(s, bom)
+		contents := migrations.RemoveRollbackStatements(s)
 		stmts, err := c.parser.Parse(strings.NewReader(contents))
 		if err != nil {
 			merr.Add(filename, contents, 0, err)
@@ -99,6 +103,9 @@ func (c *Compiler) parseQueries(o opts.Parser) (*Result, error) {
 			continue
 		}
 		src := string(blob)
+		// remove byte order mask from a UTF-8 with BOM file
+		bom := string('\uFEFF')
+		src = strings.TrimPrefix(src, bom)
 		stmts, err := c.parser.Parse(strings.NewReader(src))
 		if err != nil {
 			merr.Add(filename, src, 0, err)
