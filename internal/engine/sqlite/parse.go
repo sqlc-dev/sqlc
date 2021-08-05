@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"strings"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr"
 
@@ -44,7 +45,11 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 	if err != nil {
 		return nil, err
 	}
-	input := antlr.NewInputStream(string(blob))
+	s := string(blob)
+	// remove byte order mask from a UTF-8 with BOM file
+	bom := string('\uFEFF')
+	s = strings.TrimPrefix(s, bom)
+	input := antlr.NewInputStream(s)
 	lexer := parser.NewSQLiteLexer(input)
 	stream := antlr.NewCommonTokenStream(lexer, 0)
 	pp := parser.NewSQLiteParser(stream)
