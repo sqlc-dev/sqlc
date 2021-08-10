@@ -1,8 +1,6 @@
 name: docker
 on:
   push:
-    branches:
-    - main
 jobs:
   docker:
     name: push kjconroy/sqlc:devel
@@ -22,6 +20,7 @@ jobs:
       with:
         context: .
         file: ./Dockerfile
+        platforms: linux/amd64,linux/arm64/v8
         build-args: |
           github_ref=${{ github.ref }}
           github_sha=${{ github.sha }}
@@ -30,4 +29,3 @@ jobs:
           org.opencontainers.image.source=${{ github.event.repository.html_url }}
           org.opencontainers.image.created=${{ steps.prep.outputs.created }}
           org.opencontainers.image.revision=${{ github.sha }}
-        push: true
