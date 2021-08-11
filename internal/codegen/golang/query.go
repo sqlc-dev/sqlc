@@ -7,11 +7,11 @@ import (
 )
 
 type QueryValue struct {
-	Emit   bool
-	Name   string
-	Struct *Struct
-	Typ    string
-	Driver Driver
+	Emit       bool
+	Name       string
+	Struct     *Struct
+	Typ        string
+	SQLPackage SQLPackage
 }
 
 func (v QueryValue) EmitStruct() bool {
@@ -49,14 +49,14 @@ func (v QueryValue) Params() string {
 	}
 	var out []string
 	if v.Struct == nil {
-		if strings.HasPrefix(v.Typ, "[]") && v.Typ != "[]byte" && v.Driver != PgxDriver {
+		if strings.HasPrefix(v.Typ, "[]") && v.Typ != "[]byte" && v.SQLPackage != SQLPackagePGX {
 			out = append(out, "pq.Array("+v.Name+")")
 		} else {
 			out = append(out, v.Name)
 		}
 	} else {
 		for _, f := range v.Struct.Fields {
-			if strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" && v.Driver != PgxDriver {
+			if strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" && v.SQLPackage != SQLPackagePGX {
 				out = append(out, "pq.Array("+v.Name+"."+f.Name+")")
 			} else {
 				out = append(out, v.Name+"."+f.Name)
@@ -73,14 +73,14 @@ func (v QueryValue) Params() string {
 func (v QueryValue) Scan() string {
 	var out []string
 	if v.Struct == nil {
-		if strings.HasPrefix(v.Typ, "[]") && v.Typ != "[]byte" && v.Driver != PgxDriver {
+		if strings.HasPrefix(v.Typ, "[]") && v.Typ != "[]byte" && v.SQLPackage != SQLPackagePGX {
 			out = append(out, "pq.Array(&"+v.Name+")")
 		} else {
 			out = append(out, "&"+v.Name)
 		}
 	} else {
 		for _, f := range v.Struct.Fields {
-			if strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" && v.Driver != PgxDriver {
+			if strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" && v.SQLPackage != SQLPackagePGX {
 				out = append(out, "pq.Array(&"+v.Name+"."+f.Name+")")
 			} else {
 				out = append(out, "&"+v.Name+"."+f.Name)
