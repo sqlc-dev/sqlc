@@ -9,4 +9,6 @@ import (
 type Foo struct {
 	Bar sql.NullString
 	Bat string
+	Baz sql.NullInt64
+	Qux int64
 }
