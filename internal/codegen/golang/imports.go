@@ -119,9 +119,9 @@ func (i *importer) dbImports() fileImports {
 		{Path: "context"},
 	}
 
-	driver := DriverFromString(i.Settings.Go.Driver)
-	switch driver {
-	case PgxDriver:
+	sqlpkg := SQLPackageFromString(i.Settings.Go.SQLPackage)
+	switch sqlpkg {
+	case SQLPackagePGX:
 		pkg = append(pkg, ImportSpec{Path: "github.com/jackc/pgconn"})
 		pkg = append(pkg, ImportSpec{Path: "github.com/jackc/pgx/v4"})
 	default:
@@ -169,11 +169,11 @@ func (i *importer) interfaceImports() fileImports {
 
 	pkg := make(map[ImportSpec]struct{})
 
-	driver := DriverFromString(i.Settings.Go.Driver)
+	sqlpkg := SQLPackageFromString(i.Settings.Go.SQLPackage)
 	for _, q := range i.Queries {
 		if q.Cmd == metadata.CmdExecResult {
-			switch driver {
-			case PgxDriver:
+			switch sqlpkg {
+			case SQLPackagePGX:
 				pkg[ImportSpec{Path: "github.com/jackc/pgconn"}] = struct{}{}
 			default:
 				std["database/sql"] = struct{}{}
@@ -370,12 +370,12 @@ func (i *importer) queryImports(filename string) fileImports {
 		std["database/sql"] = struct{}{}
 	}
 
-	driver := DriverFromString(i.Settings.Go.Driver)
+	sqlpkg := SQLPackageFromString(i.Settings.Go.SQLPackage)
 
 	for _, q := range gq {
 		if q.Cmd == metadata.CmdExecResult {
-			switch driver {
-			case PgxDriver:
+			switch sqlpkg {
+			case SQLPackagePGX:
 				pkg[ImportSpec{Path: "github.com/jackc/pgconn"}] = struct{}{}
 			default:
 				std["database/sql"] = struct{}{}
@@ -396,7 +396,7 @@ func (i *importer) queryImports(filename string) fileImports {
 		overrideTypes[o.GoTypeName] = o.GoImportPath
 	}
 
-	if sliceScan() && driver != PgxDriver {
+	if sliceScan() && sqlpkg != SQLPackagePGX {
 		pkg[ImportSpec{Path: "github.com/lib/pq"}] = struct{}{}
 	}
 
