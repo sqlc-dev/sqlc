@@ -1,12 +1,13 @@
 Database and Language Support
 #############################
 
-========  ======  ==========
-Language  MySQL   PostgreSQL
---------  ------  ----------
-Go        Stable  Stable
-Kotlin    Beta    Beta
-========  ======  ==========
+========  ======        ==========
+Language  MySQL         PostgreSQL
+--------  ------        ----------
+Go        Stable        Stable
+Kotlin    Beta          Beta
+Python    Experimental  Experimental
+========  ============  ==========
 
 Planned Language Support
 ************************
