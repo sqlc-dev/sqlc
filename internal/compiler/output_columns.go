@@ -140,6 +140,7 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 					for _, c := range columns {
 						found = true
 						c.NotNull = true
+						c.skipTableRequiredCheck = true
 						cols = append(cols, c)
 					}
 				}
@@ -245,7 +246,7 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 
 	if n, ok := node.(*ast.SelectStmt); ok {
 		for _, col := range cols {
-			if !col.NotNull || col.Table == nil {
+			if !col.NotNull || col.Table == nil || col.skipTableRequiredCheck {
 				continue
 			}
 			for _, f := range n.FromClause.Items {
