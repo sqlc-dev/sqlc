@@ -2,7 +2,7 @@ name: kotlin
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
 jobs:
 

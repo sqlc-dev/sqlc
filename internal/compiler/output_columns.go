@@ -3,6 +3,7 @@ package compiler
 import (
 	"errors"
 	"fmt"
+
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
@@ -202,6 +203,16 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 			switch n.SubLinkType {
 			case ast.EXISTS_SUBLINK:
 				cols = append(cols, &Column{Name: name, DataType: "bool", NotNull: true})
+			case ast.EXPR_SUBLINK:
+				subcols, err := outputColumns(qc, n.Subselect)
+				if err != nil {
+					return nil, err
+				}
+				first := subcols[0]
+				if res.Name != nil {
+					first.Name = *res.Name
+				}
+				cols = append(cols, first)
 			default:
 				cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
 			}
