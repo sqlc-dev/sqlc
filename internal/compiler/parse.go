@@ -99,7 +99,6 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 	if err != nil {
 		return nil, err
 	}
-	debug.Dump(cols)
 
 	expandEdits, err := c.expand(qc, raw)
 	if err != nil {
