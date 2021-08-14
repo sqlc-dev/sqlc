@@ -175,9 +175,9 @@ type GetInfoForAuthorRow struct {
 	BirthYear int
 }
 
-func (q *Queries) GetBioForAuthor(ctx context.Context, id int) (GetBioForAuthor, error) {
+func (q *Queries) GetInfoForAuthor(ctx context.Context, id int) (GetInfoForAuthorRow, error) {
 	row := q.db.QueryRowContext(ctx, getInfoForAuthor, id)
-	var i GetBioForAuthor
+	var i GetInfoForAuthorRow
 	err := row.Scan(&i.Bio, &i.BirthYear)
 	return i, err
 }
