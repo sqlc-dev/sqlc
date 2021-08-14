@@ -5,7 +5,7 @@ sqlc is distributed as a single binary with zero dependencies.
 ## macOS
 
 ```
-brew install sqlc
+brew install kyleconroy/sqlc/sqlc
 ```
 
 ## Ubuntu
