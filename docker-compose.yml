@@ -7,9 +7,7 @@ services:
     restart: always
     environment:
       MYSQL_DATABASE: dinotest
-      MYSQL_PASSWORD: mysecretpassword
       MYSQL_ROOT_PASSWORD: mysecretpassword
-      MYSQL_USER: root
 
   postgresql:
     image: "postgres:13"
