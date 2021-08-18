@@ -52,3 +52,5 @@ jobs:
         MYSQL_PORT: ${{ job.services.mysql.ports['3306'] }}
         MYSQL_ROOT_PASSWORD: mysecretpassword
 
+    - run: go test ./...
+      working-directory: internal/endtoend/testdata
