@@ -20,13 +20,13 @@ type Generateable interface {
 }
 
 type tmplCtx struct {
-	Q         string
-	Package   string
-	Driver    Driver
-	Enums     []Enum
-	Structs   []Struct
-	GoQueries []Query
-	Settings  config.Config
+	Q          string
+	Package    string
+	SQLPackage SQLPackage
+	Enums      []Enum
+	Structs    []Struct
+	GoQueries  []Query
+	Settings   config.Config
 
 	// TODO: Race conditions
 	SourceName string
@@ -82,7 +82,7 @@ func generate(settings config.CombinedSettings, enums []Enum, structs []Struct, 
 		EmitDBTags:          golang.EmitDBTags,
 		EmitPreparedQueries: golang.EmitPreparedQueries,
 		EmitEmptySlices:     golang.EmitEmptySlices,
-		Driver:              DriverFromString(golang.Driver),
+		SQLPackage:          SQLPackageFromString(golang.SQLPackage),
 		Q:                   "`",
 		Package:             golang.Package,
 		GoQueries:           queries,

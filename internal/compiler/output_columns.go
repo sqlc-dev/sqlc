@@ -3,6 +3,7 @@ package compiler
 import (
 	"errors"
 	"fmt"
+
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
@@ -139,6 +140,7 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 					for _, c := range columns {
 						found = true
 						c.NotNull = true
+						c.skipTableRequiredCheck = true
 						cols = append(cols, c)
 					}
 				}
@@ -202,6 +204,16 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 			switch n.SubLinkType {
 			case ast.EXISTS_SUBLINK:
 				cols = append(cols, &Column{Name: name, DataType: "bool", NotNull: true})
+			case ast.EXPR_SUBLINK:
+				subcols, err := outputColumns(qc, n.Subselect)
+				if err != nil {
+					return nil, err
+				}
+				first := subcols[0]
+				if res.Name != nil {
+					first.Name = *res.Name
+				}
+				cols = append(cols, first)
 			default:
 				cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
 			}
@@ -234,7 +246,7 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 
 	if n, ok := node.(*ast.SelectStmt); ok {
 		for _, col := range cols {
-			if !col.NotNull || col.Table == nil {
+			if !col.NotNull || col.Table == nil || col.skipTableRequiredCheck {
 				continue
 			}
 			for _, f := range n.FromClause.Items {
