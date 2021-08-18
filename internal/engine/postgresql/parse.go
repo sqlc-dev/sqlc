@@ -152,11 +152,15 @@ type Parser struct {
 var errSkip = errors.New("skip stmt")
 
 func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
-	contents, err := ioutil.ReadAll(r)
+	blob, err := ioutil.ReadAll(r)
 	if err != nil {
 		return nil, err
 	}
-	tree, err := nodes.Parse(string(contents))
+	s := string(blob)
+	// remove byte order mask from a UTF-8 with BOM file
+	bom := string('\uFEFF')
+	s = strings.TrimPrefix(s, bom)
+	tree, err := nodes.Parse(s)
 	if err != nil {
 		return nil, err
 	}
