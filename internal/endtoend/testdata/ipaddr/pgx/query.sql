@@ -1,4 +1,9 @@
-CREATE TABLE foo (bar bool not null, "inet" inet not null, "cidr" cidr not null);
+CREATE TABLE foo (
+  present_ip    inet not null,
+  nullable_ip   inet,
+  present_cidr  cidr not null,
+  nullable_cidr cidr
+);
 
 -- name: Get :many
-SELECT bar, "inet", "cidr" FROM foo LIMIT $1;
+SELECT * FROM foo LIMIT $1;

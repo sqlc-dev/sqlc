@@ -5,7 +5,8 @@ package querytest
 
 import (
 	"context"
-	"net"
+
+	"github.com/jackc/pgtype"
 )
 
 const generateSeries = `-- name: GenerateSeries :many
@@ -15,7 +16,7 @@ LIMIT 1
 `
 
 type GenerateSeriesParams struct {
-	Column1 net.IP
+	Column1 pgtype.Inet
 	Column2 int32
 }
 

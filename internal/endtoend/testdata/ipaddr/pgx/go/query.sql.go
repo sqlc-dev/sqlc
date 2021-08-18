@@ -8,7 +8,7 @@ import (
 )
 
 const get = `-- name: Get :many
-SELECT bar, "inet", "cidr" FROM foo LIMIT $1
+SELECT present_ip, nullable_ip, present_cidr, nullable_cidr FROM foo LIMIT $1
 `
 
 func (q *Queries) Get(ctx context.Context, limit int32) ([]Foo, error) {
@@ -20,7 +20,12 @@ func (q *Queries) Get(ctx context.Context, limit int32) ([]Foo, error) {
 	var items []Foo
 	for rows.Next() {
 		var i Foo
-		if err := rows.Scan(&i.Bar, &i.Inet, &i.Cidr); err != nil {
+		if err := rows.Scan(
+			&i.PresentIp,
+			&i.NullableIp,
+			&i.PresentCidr,
+			&i.NullableCidr,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

@@ -194,6 +194,9 @@ func (i *importer) interfaceImports() fileImports {
 		overrideTypes[o.GoTypeName] = o.GoImportPath
 	}
 
+	if uses("pgtype.") {
+		pkg[ImportSpec{Path: "github.com/jackc/pgtype"}] = struct{}{}
+	}
 	_, overrideNullTime := overrideTypes["pq.NullTime"]
 	if uses("pq.NullTime") && !overrideNullTime {
 		pkg[ImportSpec{Path: "github.com/lib/pq"}] = struct{}{}
@@ -262,6 +265,9 @@ func (i *importer) modelImports() fileImports {
 	_, overrideUUID := overrideTypes["uuid.UUID"]
 	if i.usesType("uuid.UUID") && !overrideUUID {
 		pkg[ImportSpec{Path: "github.com/google/uuid"}] = struct{}{}
+	}
+	if i.usesType("pgtype.") {
+		pkg[ImportSpec{Path: "github.com/jackc/pgtype"}] = struct{}{}
 	}
 
 	for _, o := range i.Settings.Overrides {
@@ -369,7 +375,6 @@ func (i *importer) queryImports(filename string) fileImports {
 	if uses("sql.Null") {
 		std["database/sql"] = struct{}{}
 	}
-
 	sqlpkg := SQLPackageFromString(i.Settings.Go.SQLPackage)
 
 	for _, q := range gq {
@@ -396,6 +401,9 @@ func (i *importer) queryImports(filename string) fileImports {
 		overrideTypes[o.GoTypeName] = o.GoImportPath
 	}
 
+	if uses("pgtype.") {
+		pkg[ImportSpec{Path: "github.com/jackc/pgtype"}] = struct{}{}
+	}
 	if sliceScan() && sqlpkg != SQLPackagePGX {
 		pkg[ImportSpec{Path: "github.com/lib/pq"}] = struct{}{}
 	}

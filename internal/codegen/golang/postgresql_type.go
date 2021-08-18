@@ -105,8 +105,11 @@ func postgresType(r *compiler.Result, col *compiler.Column, settings config.Comb
 	case "uuid":
 		return "uuid.UUID"
 
-	case "inet", "cidr":
-		return "net.IP"
+	case "inet":
+		return "pgtype.Inet"
+
+	case "cidr":
+		return "pgtype.CIDR"
 
 	case "macaddr", "macaddr8":
 		return "net.HardwareAddr"

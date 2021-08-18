@@ -3,11 +3,12 @@
 package querytest
 
 import (
-	"net"
+	"github.com/jackc/pgtype"
 )
 
 type Foo struct {
-	Bar  bool
-	Inet net.IP
-	Cidr net.IP
+	PresentIp    pgtype.Inet
+	NullableIp   pgtype.Inet
+	PresentCidr  pgtype.CIDR
+	NullableCidr pgtype.CIDR
 }
