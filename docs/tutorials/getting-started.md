@@ -25,7 +25,7 @@ packages:
 ```
 
 sqlc needs to know your database schema and queries. In the same directory,
-create a file named `schema.sql` with the fullowing contents:
+create a file named `schema.sql` with the following contents:
 
 ```sql
 CREATE TABLE authors (
