@@ -202,6 +202,10 @@ func (i *importer) interfaceImports() fileImports {
 	if uses("uuid.UUID") && !overrideUUID {
 		pkg[ImportSpec{Path: "github.com/google/uuid"}] = struct{}{}
 	}
+	_, overrideNullUUID := overrideTypes["uuid.NullUUID"]
+	if uses("uuid.NullUUID") && !overrideNullUUID {
+		pkg[ImportSpec{Path: "github.com/google/uuid"}] = struct{}{}
+	}
 
 	// Custom imports
 	for _, o := range i.Settings.Overrides {
@@ -261,6 +265,10 @@ func (i *importer) modelImports() fileImports {
 
 	_, overrideUUID := overrideTypes["uuid.UUID"]
 	if i.usesType("uuid.UUID") && !overrideUUID {
+		pkg[ImportSpec{Path: "github.com/google/uuid"}] = struct{}{}
+	}
+	_, overrideNullUUID := overrideTypes["uuid.NullUUID"]
+	if i.usesType("uuid.NullUUID") && !overrideNullUUID {
 		pkg[ImportSpec{Path: "github.com/google/uuid"}] = struct{}{}
 	}
 
@@ -406,6 +414,10 @@ func (i *importer) queryImports(filename string) fileImports {
 	}
 	_, overrideUUID := overrideTypes["uuid.UUID"]
 	if uses("uuid.UUID") && !overrideUUID {
+		pkg[ImportSpec{Path: "github.com/google/uuid"}] = struct{}{}
+	}
+	_, overrideNullUUID := overrideTypes["uuid.NullUUID"]
+	if uses("uuid.NullUUID") && !overrideNullUUID {
 		pkg[ImportSpec{Path: "github.com/google/uuid"}] = struct{}{}
 	}
 
