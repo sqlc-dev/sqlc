@@ -103,7 +103,10 @@ func postgresType(r *compiler.Result, col *compiler.Column, settings config.Comb
 		return "sql.NullString"
 
 	case "uuid":
-		return "uuid.UUID"
+		if notNull {
+			return "uuid.UUID"
+		}
+		return "uuid.NullUUID"
 
 	case "inet", "cidr":
 		return "net.IP"

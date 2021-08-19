@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	github.com/gofrs/uuid v4.0.0+incompatible
-	github.com/google/uuid v1.2.0
+	github.com/google/uuid v1.3.0
 	github.com/jackc/pgconn v1.5.1-0.20200601181101-fa742c524853
 	github.com/jackc/pgtype v1.6.2
 	github.com/jackc/pgx/v4 v4.6.1-0.20200606145419-4e5062306904
