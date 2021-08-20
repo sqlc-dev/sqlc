@@ -19,7 +19,7 @@ jobs:
       with:
         username: kjconroy
         password: ${{ secrets.DOCKER_PASSWORD }}
-    - uses: docker/build-push-action@v2.6.1
+    - uses: docker/build-push-action@v2.7.0
       with:
         context: .
         file: ./Dockerfile
