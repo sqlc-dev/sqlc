@@ -9,9 +9,23 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 )
 
+type column struct {
+	DataType string
+	NotNull  bool
+}
+
 func postgresType(r *compiler.Result, col *compiler.Column, settings config.CombinedSettings) string {
 	columnType := col.DataType
 	notNull := col.NotNull || col.IsArray
+
+	// types := map[column]string{
+	// 	column{"serial", true}:              "int32",
+	// 	column{"serial4", true}:             "int32",
+	// 	column{"pg_catalog.serial4", true}:  "int32",
+	// 	column{"serial", false}:             "sql.NullInt32",
+	// 	column{"serial4", false}:            "sql.NullInt32",
+	// 	column{"pg_catalog.serial4", false}: "sql.NullInt32",
+	// }
 
 	switch columnType {
 	case "serial", "serial4", "pg_catalog.serial4":
