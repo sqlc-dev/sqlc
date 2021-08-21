@@ -3,11 +3,17 @@
 package querytest
 
 import (
-	"net"
+	"github.com/tabbed/pqtype"
 )
 
+type Bar struct {
+	Addr         pqtype.Macaddr
+	NullableAddr pqtype.Macaddr
+}
+
 type Foo struct {
-	Bar  bool
-	Inet net.IP
-	Cidr net.IP
+	PresentIp    pqtype.Inet
+	NullableIp   pqtype.Inet
+	PresentCidr  pqtype.CIDR
+	NullableCidr pqtype.CIDR
 }

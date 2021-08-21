@@ -12,6 +12,7 @@ import (
 func postgresType(r *compiler.Result, col *compiler.Column, settings config.CombinedSettings) string {
 	columnType := col.DataType
 	notNull := col.NotNull || col.IsArray
+	driver := parseDriver(settings)
 
 	switch columnType {
 	case "serial", "serial4", "pg_catalog.serial4":
@@ -108,11 +109,35 @@ func postgresType(r *compiler.Result, col *compiler.Column, settings config.Comb
 		}
 		return "uuid.NullUUID"
 
-	case "inet", "cidr":
-		return "net.IP"
+	case "inet":
+		switch driver {
+		case SQLDriverPGXV4:
+			return "pgtype.Inet"
+		case SQLDriverLibPQ:
+			return "pqtype.Inet"
+		default:
+			return "interface{}"
+		}
+
+	case "cidr":
+		switch driver {
+		case SQLDriverPGXV4:
+			return "pgtype.CIDR"
+		case SQLDriverLibPQ:
+			return "pqtype.CIDR"
+		default:
+			return "interface{}"
+		}
 
 	case "macaddr", "macaddr8":
-		return "net.HardwareAddr"
+		switch driver {
+		case SQLDriverPGXV4:
+			return "pgtype.Macaddr"
+		case SQLDriverLibPQ:
+			return "pqtype.Macaddr"
+		default:
+			return "interface{}"
+		}
 
 	case "ltree", "lquery", "ltxtquery":
 		// This module implements a data type ltree for representing labels

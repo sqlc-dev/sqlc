@@ -132,6 +132,18 @@ var stdlibTypes = map[string]string{
 	"net.HardwareAddr": "net",
 }
 
+var pgtypeTypes = map[string]struct{}{
+	"pgtype.CIDR":    {},
+	"pgtype.Inet":    {},
+	"pgtype.Macaddr": {},
+}
+
+var pqtypeTypes = map[string]struct{}{
+	"pqtype.CIDR":    {},
+	"pqtype.Inet":    {},
+	"pqtype.Macaddr": {},
+}
+
 func buildImports(settings config.CombinedSettings, queries []Query, uses func(string) bool) (map[string]struct{}, map[ImportSpec]struct{}) {
 	pkg := make(map[ImportSpec]struct{})
 	std := make(map[string]struct{})
@@ -155,6 +167,18 @@ func buildImports(settings config.CombinedSettings, queries []Query, uses func(s
 	for typeName, pkg := range stdlibTypes {
 		if uses(typeName) {
 			std[pkg] = struct{}{}
+		}
+	}
+
+	for typeName, _ := range pgtypeTypes {
+		if uses(typeName) {
+			pkg[ImportSpec{Path: "github.com/jackc/pgtype"}] = struct{}{}
+		}
+	}
+
+	for typeName, _ := range pqtypeTypes {
+		if uses(typeName) {
+			pkg[ImportSpec{Path: "github.com/tabbed/pqtype"}] = struct{}{}
 		}
 	}
 

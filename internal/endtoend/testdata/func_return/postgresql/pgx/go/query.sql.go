@@ -5,7 +5,8 @@ package querytest
 
 import (
 	"context"
-	"net"
+
+	"github.com/jackc/pgtype"
 )
 
 const generateSeries = `-- name: GenerateSeries :many
@@ -15,12 +16,12 @@ LIMIT 1
 `
 
 type GenerateSeriesParams struct {
-	Column1 net.IP
+	Column1 pgtype.Inet
 	Column2 int32
 }
 
 func (q *Queries) GenerateSeries(ctx context.Context, arg GenerateSeriesParams) ([]int32, error) {
-	rows, err := q.db.QueryContext(ctx, generateSeries, arg.Column1, arg.Column2)
+	rows, err := q.db.Query(ctx, generateSeries, arg.Column1, arg.Column2)
 	if err != nil {
 		return nil, err
 	}
@@ -32,9 +33,6 @@ func (q *Queries) GenerateSeries(ctx context.Context, arg GenerateSeriesParams) 
 			return nil, err
 		}
 		items = append(items, column_1)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -49,7 +47,7 @@ WHERE first_name != ''
 `
 
 func (q *Queries) GetUsers(ctx context.Context) ([]User, error) {
-	rows, err := q.db.QueryContext(ctx, getUsers)
+	rows, err := q.db.Query(ctx, getUsers)
 	if err != nil {
 		return nil, err
 	}
@@ -61,9 +59,6 @@ func (q *Queries) GetUsers(ctx context.Context) ([]User, error) {
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
