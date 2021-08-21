@@ -5,7 +5,8 @@ package querytest
 
 import (
 	"context"
-	"net"
+
+	"github.com/tabbed/pqtype"
 )
 
 const findBarByAddr = `-- name: FindBarByAddr :one
@@ -13,7 +14,7 @@ SELECT addr, nullable_addr FROM bar
 WHERE addr = $1
 `
 
-func (q *Queries) FindBarByAddr(ctx context.Context, addr net.HardwareAddr) (Bar, error) {
+func (q *Queries) FindBarByAddr(ctx context.Context, addr pqtype.Macaddr) (Bar, error) {
 	row := q.db.QueryRowContext(ctx, findBarByAddr, addr)
 	var i Bar
 	err := row.Scan(&i.Addr, &i.NullableAddr)
@@ -25,7 +26,7 @@ SELECT present_ip, nullable_ip, present_cidr, nullable_cidr FROM foo
 WHERE present_cidr = $1
 `
 
-func (q *Queries) FindFooByCIDR(ctx context.Context, presentCidr net.IP) (Foo, error) {
+func (q *Queries) FindFooByCIDR(ctx context.Context, presentCidr pqtype.CIDR) (Foo, error) {
 	row := q.db.QueryRowContext(ctx, findFooByCIDR, presentCidr)
 	var i Foo
 	err := row.Scan(
@@ -42,7 +43,7 @@ SELECT present_ip, nullable_ip, present_cidr, nullable_cidr FROM foo
 WHERE present_ip = $1
 `
 
-func (q *Queries) FindFooByIP(ctx context.Context, presentIp net.IP) (Foo, error) {
+func (q *Queries) FindFooByIP(ctx context.Context, presentIp pqtype.Inet) (Foo, error) {
 	row := q.db.QueryRowContext(ctx, findFooByIP, presentIp)
 	var i Foo
 	err := row.Scan(

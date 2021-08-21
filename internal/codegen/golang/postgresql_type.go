@@ -114,7 +114,7 @@ func postgresType(r *compiler.Result, col *compiler.Column, settings config.Comb
 		case SQLDriverPGXV4:
 			return "pgtype.Inet"
 		case SQLDriverLibPQ:
-			return "net.IP"
+			return "pqtype.Inet"
 		default:
 			return "interface{}"
 		}
@@ -124,7 +124,7 @@ func postgresType(r *compiler.Result, col *compiler.Column, settings config.Comb
 		case SQLDriverPGXV4:
 			return "pgtype.CIDR"
 		case SQLDriverLibPQ:
-			return "net.IP"
+			return "pqtype.CIDR"
 		default:
 			return "interface{}"
 		}
@@ -134,7 +134,7 @@ func postgresType(r *compiler.Result, col *compiler.Column, settings config.Comb
 		case SQLDriverPGXV4:
 			return "pgtype.Macaddr"
 		case SQLDriverLibPQ:
-			return "net.HardwareAddr"
+			return "pqtype.Macaddr"
 		default:
 			return "interface{}"
 		}
