@@ -6,8 +6,14 @@ import (
 	"net"
 )
 
+type Bar struct {
+	Addr         net.HardwareAddr
+	NullableAddr net.HardwareAddr
+}
+
 type Foo struct {
-	Bar  bool
-	Inet net.IP
-	Cidr net.IP
+	PresentIp    net.IP
+	NullableIp   net.IP
+	PresentCidr  net.IP
+	NullableCidr net.IP
 }
