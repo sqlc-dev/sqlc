@@ -62,6 +62,9 @@ func postgresType(r *compiler.Result, col *compiler.Column, settings config.Comb
 		// returns numerics as strings.
 		//
 		// https://github.com/lib/pq/issues/648
+		if settings.Go.SQLPackage == "pgx/v4" {
+			return "sql.NullString"
+		}
 		if notNull {
 			return "string"
 		}
