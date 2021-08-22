@@ -5,14 +5,89 @@ package querytest
 
 import (
 	"context"
+
+	"github.com/tabbed/pqtype"
 )
 
-const get = `-- name: Get :many
-SELECT bar, "inet", "cidr" FROM foo LIMIT $1
+const findBarByAddr = `-- name: FindBarByAddr :one
+SELECT addr, nullable_addr FROM bar
+WHERE addr = $1
 `
 
-func (q *Queries) Get(ctx context.Context, limit int32) ([]Foo, error) {
-	rows, err := q.db.QueryContext(ctx, get, limit)
+func (q *Queries) FindBarByAddr(ctx context.Context, addr pqtype.Macaddr) (Bar, error) {
+	row := q.db.QueryRowContext(ctx, findBarByAddr, addr)
+	var i Bar
+	err := row.Scan(&i.Addr, &i.NullableAddr)
+	return i, err
+}
+
+const findFooByCIDR = `-- name: FindFooByCIDR :one
+SELECT present_ip, nullable_ip, present_cidr, nullable_cidr FROM foo
+WHERE present_cidr = $1
+`
+
+func (q *Queries) FindFooByCIDR(ctx context.Context, presentCidr pqtype.CIDR) (Foo, error) {
+	row := q.db.QueryRowContext(ctx, findFooByCIDR, presentCidr)
+	var i Foo
+	err := row.Scan(
+		&i.PresentIp,
+		&i.NullableIp,
+		&i.PresentCidr,
+		&i.NullableCidr,
+	)
+	return i, err
+}
+
+const findFooByIP = `-- name: FindFooByIP :one
+SELECT present_ip, nullable_ip, present_cidr, nullable_cidr FROM foo
+WHERE present_ip = $1
+`
+
+func (q *Queries) FindFooByIP(ctx context.Context, presentIp pqtype.Inet) (Foo, error) {
+	row := q.db.QueryRowContext(ctx, findFooByIP, presentIp)
+	var i Foo
+	err := row.Scan(
+		&i.PresentIp,
+		&i.NullableIp,
+		&i.PresentCidr,
+		&i.NullableCidr,
+	)
+	return i, err
+}
+
+const listBar = `-- name: ListBar :many
+SELECT addr, nullable_addr FROM bar
+`
+
+func (q *Queries) ListBar(ctx context.Context) ([]Bar, error) {
+	rows, err := q.db.QueryContext(ctx, listBar)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Bar
+	for rows.Next() {
+		var i Bar
+		if err := rows.Scan(&i.Addr, &i.NullableAddr); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listFoo = `-- name: ListFoo :many
+SELECT present_ip, nullable_ip, present_cidr, nullable_cidr FROM foo
+`
+
+func (q *Queries) ListFoo(ctx context.Context) ([]Foo, error) {
+	rows, err := q.db.QueryContext(ctx, listFoo)
 	if err != nil {
 		return nil, err
 	}
@@ -20,7 +95,12 @@ func (q *Queries) Get(ctx context.Context, limit int32) ([]Foo, error) {
 	var items []Foo
 	for rows.Next() {
 		var i Foo
-		if err := rows.Scan(&i.Bar, &i.Inet, &i.Cidr); err != nil {
+		if err := rows.Scan(
+			&i.PresentIp,
+			&i.NullableIp,
+			&i.PresentCidr,
+			&i.NullableCidr,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

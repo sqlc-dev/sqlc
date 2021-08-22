@@ -10,6 +10,7 @@ require (
 	github.com/jackc/pgx/v4 v4.6.1-0.20200606145419-4e5062306904
 	github.com/kyleconroy/sqlc-testdata v0.0.0-20200512000015-15313bc43553
 	github.com/lib/pq v1.9.0
+	github.com/tabbed/pqtype v0.1.0 // indirect
 	github.com/volatiletech/null/v8 v8.1.2
 	gopkg.in/guregu/null.v4 v4.0.0
 )
