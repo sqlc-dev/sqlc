@@ -3,15 +3,15 @@
 package datatype
 
 import (
-	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgtype"
 )
 
 type Example struct {
 	ExampleID  uuid.UUID
-	Value      sql.NullString
+	Value      pgtype.Numeric
 	CreateTime time.Time
 	UpdateTime time.Time
 }

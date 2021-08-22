@@ -5,7 +5,8 @@ package datatype
 
 import (
 	"context"
-	"database/sql"
+
+	"github.com/jackc/pgtype"
 )
 
 const createExample = `-- name: CreateExample :one
@@ -13,7 +14,7 @@ INSERT INTO examples (value) VALUES ($1)
 RETURNING example_id, value, create_time, update_time
 `
 
-func (q *Queries) CreateExample(ctx context.Context, value sql.NullString) (Example, error) {
+func (q *Queries) CreateExample(ctx context.Context, value pgtype.Numeric) (Example, error) {
 	row := q.db.QueryRow(ctx, createExample, value)
 	var i Example
 	err := row.Scan(
