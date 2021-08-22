@@ -136,6 +136,7 @@ var pgtypeTypes = map[string]struct{}{
 	"pgtype.CIDR":    {},
 	"pgtype.Inet":    {},
 	"pgtype.Macaddr": {},
+	"pgtype.Numeric": {},
 }
 
 var pqtypeTypes = map[string]struct{}{

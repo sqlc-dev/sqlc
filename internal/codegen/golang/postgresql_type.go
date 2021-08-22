@@ -58,12 +58,17 @@ func postgresType(r *compiler.Result, col *compiler.Column, settings config.Comb
 		return "sql.NullFloat64" // TODO: Change to sql.NullFloat32 after updating the go.mod file
 
 	case "numeric", "pg_catalog.numeric", "money":
-		// Since the Go standard library does not have a decimal type, lib/pq
-		// returns numerics as strings.
-		//
-		// https://github.com/lib/pq/issues/648
 		if notNull {
-			return "string"
+			switch driver {
+			case SQLDriverPGXV4:
+				return "pgtype.Numeric"
+			default:
+				// Since the Go standard library does not have a decimal type, lib/pq
+				// returns numerics as strings.
+				//
+				// https://github.com/lib/pq/issues/648
+				return "string"
+			}
 		}
 		return "sql.NullString"
 
