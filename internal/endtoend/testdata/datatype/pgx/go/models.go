@@ -5,6 +5,8 @@ package datatype
 import (
 	"database/sql"
 	"time"
+
+	"github.com/jackc/pgtype"
 )
 
 type DtCharacter struct {
@@ -43,6 +45,18 @@ type DtDatetimeNotNull struct {
 	F time.Time
 	G time.Time
 	H time.Time
+}
+
+type DtNetType struct {
+	A pgtype.Inet
+	B pgtype.CIDR
+	C pgtype.Macaddr
+}
+
+type DtNetTypesNotNull struct {
+	A pgtype.Inet
+	B pgtype.CIDR
+	C pgtype.Macaddr
 }
 
 type DtNumeric struct {
