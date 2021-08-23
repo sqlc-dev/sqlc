@@ -135,14 +135,17 @@ var stdlibTypes = map[string]string{
 var pgtypeTypes = map[string]struct{}{
 	"pgtype.CIDR":    {},
 	"pgtype.Inet":    {},
+	"pgtype.JSON":    {},
+	"pgtype.JSONB":   {},
 	"pgtype.Macaddr": {},
 	"pgtype.Numeric": {},
 }
 
 var pqtypeTypes = map[string]struct{}{
-	"pqtype.CIDR":    {},
-	"pqtype.Inet":    {},
-	"pqtype.Macaddr": {},
+	"pqtype.CIDR":           {},
+	"pqtype.Inet":           {},
+	"pqtype.Macaddr":        {},
+	"pqtype.NullRawMessage": {},
 }
 
 func buildImports(settings config.CombinedSettings, queries []Query, uses func(string) bool) (map[string]struct{}, map[ImportSpec]struct{}) {
