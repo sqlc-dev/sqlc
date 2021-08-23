@@ -4,11 +4,13 @@ package querytest
 
 import (
 	"encoding/json"
+
+	"github.com/tabbed/pqtype"
 )
 
 type Foo struct {
 	A json.RawMessage
 	B json.RawMessage
-	C json.RawMessage
-	D json.RawMessage
+	C pqtype.NullRawMessage
+	D pqtype.NullRawMessage
 }
