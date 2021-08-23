@@ -76,8 +76,33 @@ func postgresType(r *compiler.Result, col *compiler.Column, settings config.Comb
 		}
 		return "sql.NullBool"
 
-	case "json", "jsonb":
-		return "json.RawMessage"
+	case "json":
+		switch driver {
+		case SQLDriverPGXV4:
+			return "pgtype.JSON"
+		case SQLDriverLibPQ:
+			if notNull {
+				return "json.RawMessage"
+			} else {
+				return "pqtype.NullRawMessage"
+			}
+		default:
+			return "interface{}"
+		}
+
+	case "jsonb":
+		switch driver {
+		case SQLDriverPGXV4:
+			return "pgtype.JSONB"
+		case SQLDriverLibPQ:
+			if notNull {
+				return "json.RawMessage"
+			} else {
+				return "pqtype.NullRawMessage"
+			}
+		default:
+			return "interface{}"
+		}
 
 	case "bytea", "blob", "pg_catalog.bytea":
 		return "[]byte"
