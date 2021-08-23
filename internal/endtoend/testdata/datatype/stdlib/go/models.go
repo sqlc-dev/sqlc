@@ -5,6 +5,8 @@ package datatype
 import (
 	"database/sql"
 	"time"
+
+	"github.com/tabbed/pqtype"
 )
 
 type DtCharacter struct {
@@ -43,6 +45,18 @@ type DtDatetimeNotNull struct {
 	F time.Time
 	G time.Time
 	H time.Time
+}
+
+type DtNetType struct {
+	A pqtype.Inet
+	B pqtype.CIDR
+	C pqtype.Macaddr
+}
+
+type DtNetTypesNotNull struct {
+	A pqtype.Inet
+	B pqtype.CIDR
+	C pqtype.Macaddr
 }
 
 type DtNumeric struct {
