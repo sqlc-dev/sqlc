@@ -6,6 +6,8 @@ package querytest
 import (
 	"context"
 	"database/sql"
+
+	"github.com/jackc/pgtype"
 )
 
 const getUserByID = `-- name: GetUserByID :one
@@ -82,10 +84,10 @@ WHERE orders.price > $1
 type ListUserOrdersRow struct {
 	ID        sql.NullInt32
 	FirstName sql.NullString
-	Price     string
+	Price     pgtype.Numeric
 }
 
-func (q *Queries) ListUserOrders(ctx context.Context, minPrice string) ([]ListUserOrdersRow, error) {
+func (q *Queries) ListUserOrders(ctx context.Context, minPrice pgtype.Numeric) ([]ListUserOrdersRow, error) {
 	rows, err := q.db.Query(ctx, listUserOrders, minPrice)
 	if err != nil {
 		return nil, err

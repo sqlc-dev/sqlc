@@ -6,6 +6,8 @@ package querytest
 import (
 	"context"
 	"time"
+
+	"github.com/jackc/pgtype"
 )
 
 const generateSeries = `-- name: GenerateSeries :many
@@ -17,15 +19,15 @@ type GenerateSeriesParams struct {
 	Column2 time.Time `json:"column_2"`
 }
 
-func (q *Queries) GenerateSeries(ctx context.Context, arg GenerateSeriesParams) ([]string, error) {
+func (q *Queries) GenerateSeries(ctx context.Context, arg GenerateSeriesParams) ([]pgtype.Numeric, error) {
 	rows, err := q.db.Query(ctx, generateSeries, arg.Column1, arg.Column2)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []string
+	var items []pgtype.Numeric
 	for rows.Next() {
-		var generate_series string
+		var generate_series pgtype.Numeric
 		if err := rows.Scan(&generate_series); err != nil {
 			return nil, err
 		}

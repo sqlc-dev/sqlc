@@ -4,11 +4,13 @@ package querytest
 
 import (
 	"database/sql"
+
+	"github.com/jackc/pgtype"
 )
 
 type Order struct {
 	ID     int32
-	Price  string
+	Price  pgtype.Numeric
 	UserID int32
 }
 
