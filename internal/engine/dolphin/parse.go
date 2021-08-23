@@ -54,7 +54,11 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 	if err != nil {
 		return nil, err
 	}
-	stmtNodes, _, err := p.pingcap.Parse(string(blob), "", "")
+	s := string(blob)
+	// remove byte order mask from a UTF-8 with BOM file
+	bom := string('\uFEFF')
+	s = strings.TrimPrefix(s, bom)
+	stmtNodes, _, err := p.pingcap.Parse(s, "", "")
 	if err != nil {
 		return nil, normalizeErr(err)
 	}
@@ -68,7 +72,7 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 
 		// TODO: Attach the text directly to the ast.Statement node
 		text := stmtNodes[i].Text()
-		loc := strings.Index(string(blob), text)
+		loc := strings.Index(s, text)
 
 		stmts = append(stmts, ast.Statement{
 			Raw: &ast.RawStmt{
