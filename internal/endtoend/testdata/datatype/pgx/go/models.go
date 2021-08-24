@@ -90,3 +90,21 @@ type DtNumericNotNull struct {
 	L int32
 	M int64
 }
+
+type DtRange struct {
+	A pgtype.Int4range
+	B pgtype.Int8range
+	C pgtype.Numrange
+	D pgtype.Tsrange
+	E pgtype.Tstzrange
+	F pgtype.Daterange
+}
+
+type DtRangeNotNull struct {
+	A pgtype.Int4range
+	B pgtype.Int8range
+	C pgtype.Numrange
+	D pgtype.Tsrange
+	E pgtype.Tstzrange
+	F pgtype.Daterange
+}

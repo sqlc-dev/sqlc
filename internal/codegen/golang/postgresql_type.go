@@ -184,6 +184,42 @@ func postgresType(r *compiler.Result, col *compiler.Column, settings config.Comb
 		}
 		return "sql.NullInt64"
 
+	case "daterange":
+		if driver == SQLDriverPGXV4 {
+			return "pgtype.Daterange"
+		}
+		return "interface{}"
+
+	case "tsrange":
+		if driver == SQLDriverPGXV4 {
+			return "pgtype.Tsrange"
+		}
+		return "interface{}"
+
+	case "tstzrange":
+		if driver == SQLDriverPGXV4 {
+			return "pgtype.Tstzrange"
+		}
+		return "interface{}"
+
+	case "numrange":
+		if driver == SQLDriverPGXV4 {
+			return "pgtype.Numrange"
+		}
+		return "interface{}"
+
+	case "int4range":
+		if driver == SQLDriverPGXV4 {
+			return "pgtype.Int4range"
+		}
+		return "interface{}"
+
+	case "int8range":
+		if driver == SQLDriverPGXV4 {
+			return "pgtype.Int8range"
+		}
+		return "interface{}"
+
 	case "void":
 		// A void value can only be scanned into an empty interface.
 		return "interface{}"
