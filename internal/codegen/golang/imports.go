@@ -133,12 +133,18 @@ var stdlibTypes = map[string]string{
 }
 
 var pgtypeTypes = map[string]struct{}{
-	"pgtype.CIDR":    {},
-	"pgtype.Inet":    {},
-	"pgtype.JSON":    {},
-	"pgtype.JSONB":   {},
-	"pgtype.Macaddr": {},
-	"pgtype.Numeric": {},
+	"pgtype.CIDR":      {},
+	"pgtype.Daterange": {},
+	"pgtype.Inet":      {},
+	"pgtype.Int4range": {},
+	"pgtype.Int8range": {},
+	"pgtype.JSON":      {},
+	"pgtype.JSONB":     {},
+	"pgtype.Macaddr":   {},
+	"pgtype.Numeric":   {},
+	"pgtype.Numrange":  {},
+	"pgtype.Tsrange":   {},
+	"pgtype.Tstzrange": {},
 }
 
 var pqtypeTypes = map[string]struct{}{
