@@ -90,3 +90,21 @@ type DtNumericNotNull struct {
 	L int32
 	M int64
 }
+
+type DtRange struct {
+	A interface{}
+	B interface{}
+	C interface{}
+	D interface{}
+	E interface{}
+	F interface{}
+}
+
+type DtRangeNotNull struct {
+	A interface{}
+	B interface{}
+	C interface{}
+	D interface{}
+	E interface{}
+	F interface{}
+}
