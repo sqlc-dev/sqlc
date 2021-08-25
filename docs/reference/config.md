@@ -33,7 +33,9 @@ Each package document has the following keys:
 - `schema`:
   - Directory of SQL migrations or path to single SQL file; or a list of paths
 - `engine`:
-  - Either `postgresql` or `mysql`. Defaults to `postgresql`. MySQL support is experimental
+  - Either `postgresql` or `mysql`. Defaults to `postgresql`.
+- `sql_package`:
+  - Either `pgx/v4` or `database/sql`. Defaults to `database/sql`.
 - `emit_db_tags`:
   - If true, add DB tags to generated structs. Defaults to `false`.
 - `emit_prepared_queries`:

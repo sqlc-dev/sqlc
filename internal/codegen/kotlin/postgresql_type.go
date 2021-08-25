@@ -67,8 +67,7 @@ func postgresType(r *compiler.Result, col *compiler.Column, settings config.Comb
 		return "String", false
 
 	case "uuid":
-		// TODO
-		return "uuid.UUID", false
+		return "UUID", false
 
 	case "inet":
 		// TODO
