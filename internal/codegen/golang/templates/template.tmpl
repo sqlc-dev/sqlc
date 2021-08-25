@@ -14,7 +14,7 @@ import (
 
 {{define "dbCode"}}
 
-{{if eq .Driver "pgx/v4"}}
+{{if eq .SQLPackage "pgx/v4"}}
 	{{- template "dbCodeTemplatePgx" .}}
 {{else}}
 	{{- template "dbCodeTemplateStd" .}}
@@ -37,7 +37,7 @@ import (
 {{end}}
 
 {{define "interfaceCode"}}
-	{{if eq .Driver "pgx/v4"}}
+	{{if eq .SQLPackage "pgx/v4"}}
 		{{- template "interfaceCodePgx" .}}
 	{{else}}
 		{{- template "interfaceCodeStd" .}}
@@ -110,7 +110,7 @@ import (
 {{end}}
 
 {{define "queryCode"}}
-{{if eq .Driver "pgx/v4"}}
+{{if eq .SQLPackage "pgx/v4"}}
     {{- template "queryCodePgx" .}}
 {{else}}
     {{- template "queryCodeStd" .}}

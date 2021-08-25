@@ -1,8 +1,31 @@
 # Getting started
 
-Okay, enough hype, let's see it in action.
+This tutorial assumes that the latest version of sqlc is installed and ready to use.
 
-First you pass the following SQL to `sqlc generate`:
+Create a new directory called `sqlc-tutorial` and open it up.
+
+Initialize a new Go module named `tutorial.sql.dev/app`
+
+```shell
+go mod init tutorial.sqlc.dev/app
+```
+
+sqlc looks for either a `sqlc.yaml` or `sqlc.json` file in the current
+directory. In our new directory, create a file named `sqlc.yaml` with the
+following contents:
+
+```yaml
+version: 1
+packages:
+  - path: "tutorial"
+    name: "tutorial"
+    engine: "postgresql"
+    schema: "schema.sql"
+    queries: "query.sql"
+```
+
+sqlc needs to know your database schema and queries. In the same directory,
+create a file named `schema.sql` with the following contents:
 
 ```sql
 CREATE TABLE authors (
@@ -10,7 +33,11 @@ CREATE TABLE authors (
   name text      NOT NULL,
   bio  text
 );
+```
 
+Next, create a `query.sql` file with the following four queries:
+
+```sql
 -- name: GetAuthor :one
 SELECT * FROM authors
 WHERE id = $1 LIMIT 1;
@@ -32,142 +59,83 @@ DELETE FROM authors
 WHERE id = $1;
 ```
 
-And then in your application code you'd write:
+You are now ready to generate code. Run the `generate` command. You shouldn't see any errors or output.
 
-```go
-
-// list all authors
-authors, err := db.ListAuthors(ctx)
-if err != nil {
-    return err
-}
-fmt.Println(authors)
-
-// create an author
-insertedAuthor, err := db.CreateAuthor(ctx, db.CreateAuthorParams{
-        Name: "Brian Kernighan",
-        Bio:  sql.NullString{String: "Co-author of The C Programming Language and The Go Programming Language", Valid: true},
-})
-if err != nil {
-        return err
-}
-fmt.Println(insertedAuthor)
-
-// get the author we just inserted
-fetchedAuthor, err := db.GetAuthor(ctx, insertedAuthor.ID)
-if err != nil {
-        return err
-}
-// prints true
-fmt.Println(reflect.DeepEqual(insertedAuthor, fetchedAuthor))
+```shell
+sqlc generate
 ```
 
-To make that possible, sqlc generates readable, **idiomatic** Go code that you
-otherwise would have had to write yourself. Take a look:
+You should now have a `db` package containing three files.
+
+```
+├── go.mod
+├── query.sql
+├── schema.sql
+├── sqlc.yaml
+└── tutorial
+    ├── db.go
+    ├── models.go
+    └── query.sql.go
+```
+
+You can use your newly generated queries in `app.go`.
 
 ```go
-package db
+package main
 
 import (
 	"context"
 	"database/sql"
+	"log"
+	"reflect"
+
+	"tutorial.sqlc.dev/app/tutorial"
 )
 
-type Author struct {
-	ID   int64
-	Name string
-	Bio  sql.NullString
-}
+func run() error {
+	ctx := context.Background()
 
-const createAuthor = `-- name: CreateAuthor :one
-INSERT INTO authors (
-  name, bio
-) VALUES (
-  $1, $2
-)
-RETURNING id, name, bio
-`
-
-type CreateAuthorParams struct {
-	Name string
-	Bio  sql.NullString
-}
-
-func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams) (Author, error) {
-	row := q.db.QueryRowContext(ctx, createAuthor, arg.Name, arg.Bio)
-	var i Author
-	err := row.Scan(&i.ID, &i.Name, &i.Bio)
-	return i, err
-}
-
-const deleteAuthor = `-- name: DeleteAuthor :exec
-DELETE FROM authors
-WHERE id = $1
-`
-
-func (q *Queries) DeleteAuthor(ctx context.Context, id int64) error {
-	_, err := q.db.ExecContext(ctx, deleteAuthor, id)
-	return err
-}
-
-const getAuthor = `-- name: GetAuthor :one
-SELECT id, name, bio FROM authors
-WHERE id = $1 LIMIT 1
-`
-
-func (q *Queries) GetAuthor(ctx context.Context, id int64) (Author, error) {
-	row := q.db.QueryRowContext(ctx, getAuthor, id)
-	var i Author
-	err := row.Scan(&i.ID, &i.Name, &i.Bio)
-	return i, err
-}
-
-const listAuthors = `-- name: ListAuthors :many
-SELECT id, name, bio FROM authors
-ORDER BY name
-`
-
-func (q *Queries) ListAuthors(ctx context.Context) ([]Author, error) {
-	rows, err := q.db.QueryContext(ctx, listAuthors)
-	 if err != nil {
-		return nil, err
+	db, err := sql.Open("postgres", "user=pqgotest dbname=pqgotest sslmode=verify-full")
+	if err != nil {
+		return err
 	}
-	defer rows.Close()
-	var items []Author
-	for rows.Next() {
-		var i Author
-		if err := rows.Scan(&i.ID, &i.Name, &i.Bio); err != nil {
-			 return nil, err
-		}
-		items = append(items, i)
+
+	queries := tutorial.New(db)
+
+	// list all authors
+	authors, err := queries.ListAuthors(ctx)
+	if err != nil {
+		return err
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
+	log.Println(authors)
+
+	// create an author
+	insertedAuthor, err := queries.CreateAuthor(ctx, tutorial.CreateAuthorParams{
+		Name: "Brian Kernighan",
+		Bio:  sql.NullString{String: "Co-author of The C Programming Language and The Go Programming Language", Valid: true},
+	})
+	if err != nil {
+		return err
 	}
-	if err := rows.Err(); err != nil {
-		return nil, err
+	log.Println(insertedAuthor)
+
+	// get the author we just inserted
+	fetchedAuthor, err := queries.GetAuthor(ctx, insertedAuthor.ID)
+	if err != nil {
+		return err
 	}
-	return items, nil
+
+	// prints true
+	log.Println(reflect.DeepEqual(insertedAuthor, fetchedAuthor))
+	return nil
 }
 
-type DBTX interface {
-	ExecContext(context.Context, string, ...interface{}) (sql.Result, error)
-	PrepareContext(context.Context, string) (*sql.Stmt, error)
-	QueryContext(context.Context, string, ...interface{}) (*sql.Rows, error)
-	QueryRowContext(context.Context, string, ...interface{}) *sql.Row
-}
-
-func New(db DBTX) *Queries {
-	return &Queries{db: db}
-}
-
-type Queries struct {
-	db DBTX
-}
-
-func (q *Queries) WithTx(tx *sql.Tx) *Queries {
-	return &Queries{
-		db: tx,
+func main() {
+	if err := run(); err != nil {
+		log.Fatal(err)
 	}
 }
 ```
+
+To make that possible, sqlc generates readable, **idiomatic** Go code that you
+otherwise would have had to write yourself. Take a look in `tutorial/query.sql.go`.
