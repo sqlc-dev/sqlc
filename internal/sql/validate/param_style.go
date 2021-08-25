@@ -12,21 +12,40 @@ import (
 // - named parameter operator        @param
 // - named parameter function calls  sqlc.arg(param)
 func ParamStyle(n ast.Node) error {
-	positional := astutils.Search(n, func(node ast.Node) bool {
-		_, ok := node.(*ast.ParamRef)
-		return ok
-	})
 	namedFunc := astutils.Search(n, named.IsParamFunc)
-	namedSign := astutils.Search(n, named.IsParamSign)
-	for _, check := range []bool{
-		len(positional.Items) > 0 && len(namedSign.Items)+len(namedFunc.Items) > 0,
-		len(namedFunc.Items) > 0 && len(namedSign.Items)+len(positional.Items) > 0,
-		len(namedSign.Items) > 0 && len(positional.Items)+len(namedFunc.Items) > 0,
-	} {
-		if check {
-			return &sqlerr.Error{
-				Code:    "", // TODO: Pick a new error code
-				Message: "query mixes positional parameters ($1) and named parameters (sqlc.arg or @arg)",
+	for _, f := range namedFunc.Items {
+		fc, ok := f.(*ast.FuncCall)
+		if ok {
+			/*
+				if len(fc.Args.Items) != 1 {
+					return &sqlerr.Error{
+						Code:    "", // TODO: Pick a new error code
+						Message: fmt.Sprintf("expected 1 parameter to sqlc.arg; got %d", len(fc.Args.Items)),
+					}
+				}
+			*/
+			switch fc.Args.Items[0].(type) {
+			case *ast.FuncCall:
+				l := fc.Args.Items[0].(*ast.FuncCall)
+				return &sqlerr.Error{
+					Code:     "", // TODO: Pick a new error code
+					Message:  "Invalid argument to sqlc.arg()",
+					Location: l.Location,
+				}
+			case *ast.ParamRef:
+				l := fc.Args.Items[0].(*ast.ParamRef)
+				return &sqlerr.Error{
+					Code:     "", // TODO: Pick a new error code
+					Message:  "Invalid argument to sqlc.arg()",
+					Location: l.Location,
+				}
+			case *ast.A_Const, *ast.ColumnRef:
+			default:
+				return &sqlerr.Error{
+					Code:    "", // TODO: Pick a new error code
+					Message: "Invalid argument to sqlc.arg()",
+				}
+
 			}
 		}
 	}
