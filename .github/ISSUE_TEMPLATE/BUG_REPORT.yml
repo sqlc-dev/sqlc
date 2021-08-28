@@ -17,6 +17,18 @@ body:
       label: Relevant log output
       description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
       render: shell
+  - type: textarea
+    id: schema
+    attributes:
+      label: Database schema
+      description: Please include definitions for the relevant database tables. This will be automatically formatted as SQL, so no need for backticks.
+      render: sql
+  - type: textarea
+    id: queries
+    attributes:
+      label: SQL queries
+      description: Please include the SQL queries causing issues. This will be automatically formatted as SQL, so no need for backticks.
+      render: sql
   - type: dropdown
     id: version
     attributes:
