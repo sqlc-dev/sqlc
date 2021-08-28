@@ -29,6 +29,12 @@ body:
       label: SQL queries
       description: Please include the SQL queries causing issues. This will be automatically formatted as SQL, so no need for backticks.
       render: sql
+  - type: input
+    id: playground
+    attributes:
+      label: Playground URL
+      description: "Link to a reproduction of the issue on the sqlc playground"
+      placeholder: "https://play.sqlc.dev/"
   - type: dropdown
     id: version
     attributes:
