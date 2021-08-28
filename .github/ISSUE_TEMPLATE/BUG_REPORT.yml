@@ -2,6 +2,19 @@ name: Bug Report
 description: File a bug report
 labels: [bug, triage]
 body:
+  - type: dropdown
+    id: version
+    attributes:
+      label: Version
+      description: What version of sqlc are you running? If you don't know, run `sqlc version`.
+      multiple: false
+      options:
+        - 1.9.0
+        - 1.8.0
+        - 1.7.0
+        - Other
+    validations:
+      required: true
   - type: textarea
     id: what-happened
     attributes:
@@ -29,25 +42,18 @@ body:
       label: SQL queries
       description: Please include the SQL queries causing issues. This will be automatically formatted as SQL, so no need for backticks.
       render: sql
+  - type: textarea
+    id: config
+    attributes:
+      label: Configuration
+      description: Please include the sqlc.yaml or sqlc.json file you using in your project. This will be automatically formatted, so no need for backticks.
+      render: yaml
   - type: input
     id: playground
     attributes:
       label: Playground URL
       description: "Link to a reproduction of the issue on the sqlc playground"
       placeholder: "https://play.sqlc.dev/"
-  - type: dropdown
-    id: version
-    attributes:
-      label: Version
-      description: What version of sqlc are you running?
-      multiple: false
-      options:
-        - 1.9.0
-        - 1.8.0
-        - 1.7.0
-        - Other
-    validations:
-      required: true
   - type: dropdown
     id: os
     attributes:
