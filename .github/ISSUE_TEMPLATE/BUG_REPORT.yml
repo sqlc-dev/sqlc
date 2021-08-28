@@ -1,0 +1,76 @@
+name: Bug Report
+description: File a bug report
+labels: [bug, triage]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Also tell us, what did you expect to happen?
+      placeholder: Tell us what you see!
+      value: "A bug happened!"
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: shell
+  - type: textarea
+    id: schema
+    attributes:
+      label: Database schema
+      description: Please include definitions for the relevant database tables. This will be automatically formatted as SQL, so no need for backticks.
+      render: sql
+  - type: textarea
+    id: queries
+    attributes:
+      label: SQL queries
+      description: Please include the SQL queries causing issues. This will be automatically formatted as SQL, so no need for backticks.
+      render: sql
+  - type: input
+    id: playground
+    attributes:
+      label: Playground URL
+      description: "Link to a reproduction of the issue on the sqlc playground"
+      placeholder: "https://play.sqlc.dev/"
+  - type: dropdown
+    id: version
+    attributes:
+      label: Version
+      description: What version of sqlc are you running?
+      multiple: false
+      options:
+        - 1.9.0
+        - 1.8.0
+        - 1.7.0
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: What operating system are you using?
+      multiple: true
+      options:
+        - Linux
+        - Windows
+        - macOS
+  - type: dropdown
+    id: engines
+    attributes:
+      label: What database engines are you using?
+      multiple: true
+      options:
+        - PostgreSQL
+        - MySQL
+  - type: dropdown
+    id: languages
+    attributes:
+      label: What type code are you generating?
+      multiple: true
+      options:
+        - Go
+        - Python
+        - Kotlin
