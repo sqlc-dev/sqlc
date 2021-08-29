@@ -140,6 +140,7 @@ var pgtypeTypes = map[string]struct{}{
 	"pgtype.Int8range": {},
 	"pgtype.JSON":      {},
 	"pgtype.JSONB":     {},
+	"pgtype.Hstore":    {},
 	"pgtype.Macaddr":   {},
 	"pgtype.Numeric":   {},
 	"pgtype.Numrange":  {},

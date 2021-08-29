@@ -220,6 +220,12 @@ func postgresType(r *compiler.Result, col *compiler.Column, settings config.Comb
 		}
 		return "interface{}"
 
+	case "hstore":
+		if driver == SQLDriverPGXV4 {
+			return "pgtype.Hstore"
+		}
+		return "interface{}"
+
 	case "void":
 		// A void value can only be scanned into an empty interface.
 		return "interface{}"
