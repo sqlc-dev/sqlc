@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"go/format"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -251,7 +250,7 @@ func run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(filepath.Join("internal", "engine", "postgresql", "pg_catalog.go"), code, 0644)
+	err = os.WriteFile(filepath.Join("internal", "engine", "postgresql", "pg_catalog.go"), code, 0644)
 	if err != nil {
 		return err
 	}
@@ -292,7 +291,7 @@ func run(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-		err = ioutil.WriteFile(filepath.Join("internal", "engine", "postgresql", "contrib", name+".go"), code, 0644)
+		err = os.WriteFile(filepath.Join("internal", "engine", "postgresql", "contrib", name+".go"), code, 0644)
 		if err != nil {
 			return err
 		}
@@ -313,7 +312,7 @@ func run(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-		err = ioutil.WriteFile(filepath.Join("internal", "engine", "postgresql", "extension.go"), code, 0644)
+		err = os.WriteFile(filepath.Join("internal", "engine", "postgresql", "extension.go"), code, 0644)
 		if err != nil {
 			return err
 		}

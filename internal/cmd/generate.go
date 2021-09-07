@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -78,7 +77,7 @@ func Generate(e Env, dir, filename string, stderr io.Writer) (map[string]string,
 	}
 
 	base := filepath.Base(configPath)
-	blob, err := ioutil.ReadFile(configPath)
+	blob, err := os.ReadFile(configPath)
 	if err != nil {
 		fmt.Fprintf(stderr, "error parsing %s: file does not exist\n", base)
 		return nil, err

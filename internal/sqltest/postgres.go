@@ -3,7 +3,6 @@ package sqltest
 import (
 	"database/sql"
 	"fmt"
-	"io/ioutil"
 	"math/rand"
 	"os"
 	"path/filepath"
@@ -82,7 +81,7 @@ func PostgreSQL(t *testing.T, migrations []string) (*sql.DB, func()) {
 		t.Fatal(err)
 	}
 	for _, f := range files {
-		blob, err := ioutil.ReadFile(f)
+		blob, err := os.ReadFile(f)
 		if err != nil {
 			t.Fatal(err)
 		}
