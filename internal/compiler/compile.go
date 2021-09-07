@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -60,7 +60,7 @@ func (c *Compiler) parseCatalog(schemas []string) error {
 	}
 	merr := multierr.New()
 	for _, filename := range files {
-		blob, err := ioutil.ReadFile(filename)
+		blob, err := os.ReadFile(filename)
 		if err != nil {
 			merr.Add(filename, "", 0, err)
 			continue
@@ -93,7 +93,7 @@ func (c *Compiler) parseQueries(o opts.Parser) (*Result, error) {
 		return nil, err
 	}
 	for _, filename := range files {
-		blob, err := ioutil.ReadFile(filename)
+		blob, err := os.ReadFile(filename)
 		if err != nil {
 			merr.Add(filename, "", 0, err)
 			continue
