@@ -1,6 +1,7 @@
-# Getting started
+# Getting started with PostgreSQL 
 
-This tutorial assumes that the latest version of sqlc is installed and ready to use.
+This tutorial assumes that the latest version of sqlc is
+[installed](../overview/install.html) and ready to use.
 
 Create a new directory called `sqlc-tutorial` and open it up.
 
@@ -90,6 +91,8 @@ import (
 	"reflect"
 
 	"tutorial.sqlc.dev/app/tutorial"
+
+	_ "github.com/lib/pq"
 )
 
 func run() error {
@@ -135,6 +138,13 @@ func main() {
 		log.Fatal(err)
 	}
 }
+```
+
+Before the code will compile, you'll need to add the Go PostgreSQL driver.
+
+```
+go get github.com/lib/pq
+go build ./...
 ```
 
 To make that possible, sqlc generates readable, **idiomatic** Go code that you
