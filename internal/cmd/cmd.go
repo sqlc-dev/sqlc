@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -75,7 +74,7 @@ var initCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return ioutil.WriteFile(file, blob, 0644)
+		return os.WriteFile(file, blob, 0644)
 	},
 }
 
@@ -123,7 +122,7 @@ var genCmd = &cobra.Command{
 		}
 		for filename, source := range output {
 			os.MkdirAll(filepath.Dir(filename), 0755)
-			if err := ioutil.WriteFile(filename, []byte(source), 0644); err != nil {
+			if err := os.WriteFile(filename, []byte(source), 0644); err != nil {
 				fmt.Fprintf(stderr, "%s: %s\n", filename, err)
 				os.Exit(1)
 			}
