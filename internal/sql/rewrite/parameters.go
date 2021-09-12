@@ -41,7 +41,7 @@ func isNamedParamSignCast(node ast.Node) bool {
 	return astutils.Join(expr.Name, ".") == "@" && cast
 }
 
-func NamedParameters(engine config.Engine, raw *ast.RawStmt) (*ast.RawStmt, map[int]string, []source.Edit) {
+func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool, dollar bool) (*ast.RawStmt, map[int]string, []source.Edit) {
 	foundFunc := astutils.Search(raw, named.IsParamFunc)
 	foundSign := astutils.Search(raw, named.IsParamSign)
 	if len(foundFunc.Items)+len(foundSign.Items) == 0 {
@@ -56,7 +56,6 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt) (*ast.RawStmt, map[
 	node := astutils.Apply(raw, func(cr *astutils.Cursor) bool {
 		node := cr.Node()
 		switch {
-
 		case named.IsParamFunc(node):
 			fun := node.(*ast.FuncCall)
 			param, isConst := flatten(fun.Args)
@@ -66,7 +65,10 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt) (*ast.RawStmt, map[
 					Location: fun.Location,
 				})
 			} else {
-				argn += 1
+				argn++
+				for numbs[argn] {
+					argn++
+				}
 				args[param] = argn
 				cr.Replace(&ast.ParamRef{
 					Number:   argn,
@@ -80,7 +82,7 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt) (*ast.RawStmt, map[
 			} else {
 				old = fmt.Sprintf("sqlc.arg(%s)", param)
 			}
-			if engine == config.EngineMySQL {
+			if engine == config.EngineMySQL || !dollar {
 				replace = "?"
 			} else {
 				replace = fmt.Sprintf("$%d", args[param])
@@ -103,7 +105,10 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt) (*ast.RawStmt, map[
 				}
 				cr.Replace(cast)
 			} else {
-				argn += 1
+				argn++
+				for numbs[argn] {
+					argn++
+				}
 				args[param] = argn
 				cast.Arg = &ast.ParamRef{
 					Number:   argn,
@@ -112,10 +117,16 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt) (*ast.RawStmt, map[
 				cr.Replace(cast)
 			}
 			// TODO: This code assumes that @foo::bool is on a single line
+			var replace string
+			if engine == config.EngineMySQL || !dollar {
+				replace = "?"
+			} else {
+				replace = fmt.Sprintf("$%d", args[param])
+			}
 			edits = append(edits, source.Edit{
 				Location: expr.Location - raw.StmtLocation,
 				Old:      fmt.Sprintf("@%s", param),
-				New:      fmt.Sprintf("$%d", args[param]),
+				New:      replace,
 			})
 			return false
 
@@ -128,7 +139,10 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt) (*ast.RawStmt, map[
 					Location: expr.Location,
 				})
 			} else {
-				argn += 1
+				argn++
+				for numbs[argn] {
+					argn++
+				}
 				args[param] = argn
 				cr.Replace(&ast.ParamRef{
 					Number:   argn,
@@ -136,10 +150,16 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt) (*ast.RawStmt, map[
 				})
 			}
 			// TODO: This code assumes that @foo is on a single line
+			var replace string
+			if engine == config.EngineMySQL || !dollar {
+				replace = "?"
+			} else {
+				replace = fmt.Sprintf("$%d", args[param])
+			}
 			edits = append(edits, source.Edit{
 				Location: expr.Location - raw.StmtLocation,
 				Old:      fmt.Sprintf("@%s", param),
-				New:      fmt.Sprintf("$%d", args[param]),
+				New:      replace,
 			})
 			return false
 

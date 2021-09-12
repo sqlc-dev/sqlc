@@ -2015,7 +2015,12 @@ func convertParamRef(n *pg.ParamRef) *ast.ParamRef {
 	if n == nil {
 		return nil
 	}
+	var dollar bool
+	if n.Number != 0 {
+		dollar = true
+	}
 	return &ast.ParamRef{
+		Dollar:   dollar,
 		Number:   int(n.Number),
 		Location: int(n.Location),
 	}
