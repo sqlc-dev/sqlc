@@ -3,7 +3,6 @@ package sqltest
 import (
 	"database/sql"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -67,7 +66,7 @@ func MySQL(t *testing.T, migrations []string) (*sql.DB, func()) {
 		t.Fatal(err)
 	}
 	for _, f := range files {
-		blob, err := ioutil.ReadFile(f)
+		blob, err := os.ReadFile(f)
 		if err != nil {
 			t.Fatal(err)
 		}

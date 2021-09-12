@@ -880,7 +880,16 @@ func (c *cc) convertPatternInExpr(n *pcast.PatternInExpr) ast.Node {
 }
 
 func (c *cc) convertPatternLikeExpr(n *pcast.PatternLikeExpr) ast.Node {
-	return todo(n)
+	return &ast.A_Expr{
+		Kind: ast.A_Expr_Kind(9),
+		Name: &ast.List{
+			Items: []ast.Node{
+				&ast.String{Str: "~~"},
+			},
+		},
+		Lexpr: c.convert(n.Expr),
+		Rexpr: c.convert(n.Pattern),
+	}
 }
 
 func (c *cc) convertPatternRegexpExpr(n *pcast.PatternRegexpExpr) ast.Node {

@@ -3,7 +3,6 @@ package dolphin
 import (
 	"errors"
 	"io"
-	"io/ioutil"
 	"regexp"
 	"strconv"
 	"strings"
@@ -50,7 +49,7 @@ func normalizeErr(err error) error {
 }
 
 func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
-	blob, err := ioutil.ReadAll(r)
+	blob, err := io.ReadAll(r)
 	if err != nil {
 		return nil, err
 	}
