@@ -14,10 +14,10 @@ brew install sqlc
 sudo snap install sqlc
 ```
 
-## go get
+## go install
 
 ```
-go get github.com/kyleconroy/sqlc/cmd/sqlc
+go install github.com/kyleconroy/sqlc/cmd/sqlc@latest
 ```
 
 ## Docker
