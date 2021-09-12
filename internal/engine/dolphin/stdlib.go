@@ -630,6 +630,9 @@ func defaultSchema(name string) *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "any"},
 				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
 			},
 			ReturnType: &ast.TypeName{Name: "date"},
 		},
@@ -662,6 +665,9 @@ func defaultSchema(name string) *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "date"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
 				},
 				{
 					Type: &ast.TypeName{Name: "any"},
