@@ -1,3 +1,4 @@
+//go:build !windows
 // +build !windows
 
 package postgresql
@@ -6,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"strings"
 
 	nodes "github.com/pganalyze/pg_query_go/v2"
@@ -152,7 +152,7 @@ type Parser struct {
 var errSkip = errors.New("skip stmt")
 
 func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
-	contents, err := ioutil.ReadAll(r)
+	contents, err := io.ReadAll(r)
 	if err != nil {
 		return nil, err
 	}

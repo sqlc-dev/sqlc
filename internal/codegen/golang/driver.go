@@ -1,17 +1,18 @@
 package golang
 
-type Driver string
+import "github.com/kyleconroy/sqlc/internal/config"
+
+type SQLDriver int
 
 const (
-	PgxDriver    Driver = "pgx/v4"
-	StdLibDriver Driver = "database/sql"
+	SQLDriverPGXV4 SQLDriver = iota
+	SQLDriverLibPQ
 )
 
-func DriverFromString(s string) Driver {
-	switch s {
-	case string(PgxDriver):
-		return PgxDriver
-	default:
-		return StdLibDriver
+func parseDriver(settings config.CombinedSettings) SQLDriver {
+	if settings.Go.SQLPackage == "pgx/v4" {
+		return SQLDriverPGXV4
+	} else {
+		return SQLDriverLibPQ
 	}
 }

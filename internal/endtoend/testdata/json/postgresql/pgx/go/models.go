@@ -3,12 +3,12 @@
 package querytest
 
 import (
-	"encoding/json"
+	"github.com/jackc/pgtype"
 )
 
 type Foo struct {
-	A json.RawMessage
-	B json.RawMessage
-	C json.RawMessage
-	D json.RawMessage
+	A pgtype.JSON
+	B pgtype.JSONB
+	C pgtype.JSON
+	D pgtype.JSONB
 }

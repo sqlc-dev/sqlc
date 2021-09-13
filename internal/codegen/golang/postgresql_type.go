@@ -12,6 +12,7 @@ import (
 func postgresType(r *compiler.Result, col *compiler.Column, settings config.CombinedSettings) string {
 	columnType := col.DataType
 	notNull := col.NotNull || col.IsArray
+	driver := parseDriver(settings)
 
 	switch columnType {
 	case "serial", "serial4", "pg_catalog.serial4":
@@ -57,6 +58,9 @@ func postgresType(r *compiler.Result, col *compiler.Column, settings config.Comb
 		return "sql.NullFloat64" // TODO: Change to sql.NullFloat32 after updating the go.mod file
 
 	case "numeric", "pg_catalog.numeric", "money":
+		if driver == SQLDriverPGXV4 {
+			return "pgtype.Numeric"
+		}
 		// Since the Go standard library does not have a decimal type, lib/pq
 		// returns numerics as strings.
 		//
@@ -72,8 +76,33 @@ func postgresType(r *compiler.Result, col *compiler.Column, settings config.Comb
 		}
 		return "sql.NullBool"
 
-	case "json", "jsonb":
-		return "json.RawMessage"
+	case "json":
+		switch driver {
+		case SQLDriverPGXV4:
+			return "pgtype.JSON"
+		case SQLDriverLibPQ:
+			if notNull {
+				return "json.RawMessage"
+			} else {
+				return "pqtype.NullRawMessage"
+			}
+		default:
+			return "interface{}"
+		}
+
+	case "jsonb":
+		switch driver {
+		case SQLDriverPGXV4:
+			return "pgtype.JSONB"
+		case SQLDriverLibPQ:
+			if notNull {
+				return "json.RawMessage"
+			} else {
+				return "pqtype.NullRawMessage"
+			}
+		default:
+			return "interface{}"
+		}
 
 	case "bytea", "blob", "pg_catalog.bytea":
 		return "[]byte"
@@ -103,13 +132,40 @@ func postgresType(r *compiler.Result, col *compiler.Column, settings config.Comb
 		return "sql.NullString"
 
 	case "uuid":
-		return "uuid.UUID"
+		if notNull {
+			return "uuid.UUID"
+		}
+		return "uuid.NullUUID"
 
-	case "inet", "cidr":
-		return "net.IP"
+	case "inet":
+		switch driver {
+		case SQLDriverPGXV4:
+			return "pgtype.Inet"
+		case SQLDriverLibPQ:
+			return "pqtype.Inet"
+		default:
+			return "interface{}"
+		}
+
+	case "cidr":
+		switch driver {
+		case SQLDriverPGXV4:
+			return "pgtype.CIDR"
+		case SQLDriverLibPQ:
+			return "pqtype.CIDR"
+		default:
+			return "interface{}"
+		}
 
 	case "macaddr", "macaddr8":
-		return "net.HardwareAddr"
+		switch driver {
+		case SQLDriverPGXV4:
+			return "pgtype.Macaddr"
+		case SQLDriverLibPQ:
+			return "pqtype.Macaddr"
+		default:
+			return "interface{}"
+		}
 
 	case "ltree", "lquery", "ltxtquery":
 		// This module implements a data type ltree for representing labels
@@ -127,6 +183,48 @@ func postgresType(r *compiler.Result, col *compiler.Column, settings config.Comb
 			return "int64"
 		}
 		return "sql.NullInt64"
+
+	case "daterange":
+		if driver == SQLDriverPGXV4 {
+			return "pgtype.Daterange"
+		}
+		return "interface{}"
+
+	case "tsrange":
+		if driver == SQLDriverPGXV4 {
+			return "pgtype.Tsrange"
+		}
+		return "interface{}"
+
+	case "tstzrange":
+		if driver == SQLDriverPGXV4 {
+			return "pgtype.Tstzrange"
+		}
+		return "interface{}"
+
+	case "numrange":
+		if driver == SQLDriverPGXV4 {
+			return "pgtype.Numrange"
+		}
+		return "interface{}"
+
+	case "int4range":
+		if driver == SQLDriverPGXV4 {
+			return "pgtype.Int4range"
+		}
+		return "interface{}"
+
+	case "int8range":
+		if driver == SQLDriverPGXV4 {
+			return "pgtype.Int8range"
+		}
+		return "interface{}"
+
+	case "hstore":
+		if driver == SQLDriverPGXV4 {
+			return "pgtype.Hstore"
+		}
+		return "interface{}"
 
 	case "void":
 		// A void value can only be scanned into an empty interface.

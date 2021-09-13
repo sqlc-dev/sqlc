@@ -60,6 +60,9 @@ func resolveCatalogRefs(c *catalog.Catalog, qc *QueryCatalog, rvs []*ast.RangeVa
 		if err != nil {
 			return nil, err
 		}
+		if _, found := aliasMap[fqn.Name]; found {
+			continue
+		}
 		table, err := c.GetTable(fqn)
 		if err != nil {
 			// If the table name doesn't exist, fisrt check if it's a CTE
