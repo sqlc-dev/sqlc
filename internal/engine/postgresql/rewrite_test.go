@@ -30,6 +30,7 @@ func TestApply(t *testing.T) {
 		}
 		if astutils.Join(fun.Funcname, ".") == "sqlc.arg" {
 			cr.Replace(&ast.ParamRef{
+				Dollar:   true,
 				Number:   1,
 				Location: fun.Location,
 			})
