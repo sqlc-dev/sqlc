@@ -16,28 +16,18 @@ func ParamStyle(n ast.Node) error {
 	for _, f := range namedFunc.Items {
 		fc, ok := f.(*ast.FuncCall)
 		if ok {
-			/*
-				if len(fc.Args.Items) != 1 {
-					return &sqlerr.Error{
-						Code:    "", // TODO: Pick a new error code
-						Message: fmt.Sprintf("expected 1 parameter to sqlc.arg; got %d", len(fc.Args.Items)),
-					}
-				}
-			*/
-			switch fc.Args.Items[0].(type) {
+			switch val := fc.Args.Items[0].(type) {
 			case *ast.FuncCall:
-				l := fc.Args.Items[0].(*ast.FuncCall)
 				return &sqlerr.Error{
 					Code:     "", // TODO: Pick a new error code
 					Message:  "Invalid argument to sqlc.arg()",
-					Location: l.Location,
+					Location: val.Location,
 				}
 			case *ast.ParamRef:
-				l := fc.Args.Items[0].(*ast.ParamRef)
 				return &sqlerr.Error{
 					Code:     "", // TODO: Pick a new error code
 					Message:  "Invalid argument to sqlc.arg()",
-					Location: l.Location,
+					Location: val.Location,
 				}
 			case *ast.A_Const, *ast.ColumnRef:
 			default:
