@@ -38,7 +38,7 @@ func convertSubLinkType(t pg.SubLinkType) (ast.SubLinkType, error) {
 	case pg.SubLinkType_ROWCOMPARE_SUBLINK:
 		return ast.ROWCOMPARE_SUBLINK, nil
 	case pg.SubLinkType_EXPR_SUBLINK:
-		return ast.EXISTS_SUBLINK, nil
+		return ast.EXPR_SUBLINK, nil
 	case pg.SubLinkType_MULTIEXPR_SUBLINK:
 		return ast.MULTIEXPR_SUBLINK, nil
 	case pg.SubLinkType_ARRAY_SUBLINK:

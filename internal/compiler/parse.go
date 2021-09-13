@@ -87,12 +87,11 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 		refs = uniqueParamRefs(refs)
 		sort.Slice(refs, func(i, j int) bool { return refs[i].ref.Number < refs[j].ref.Number })
 	}
-	params, err := resolveCatalogRefs(c.catalog, rvs, refs, namedParams)
+	qc, err := buildQueryCatalog(c.catalog, raw.Stmt)
 	if err != nil {
 		return nil, err
 	}
-
-	qc, err := buildQueryCatalog(c.catalog, raw.Stmt)
+	params, err := resolveCatalogRefs(c.catalog, qc, rvs, refs, namedParams)
 	if err != nil {
 		return nil, err
 	}

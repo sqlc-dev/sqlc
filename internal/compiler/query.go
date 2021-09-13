@@ -26,6 +26,8 @@ type Column struct {
 	Scope string
 	Table *ast.TableName
 	Type  *ast.TypeName
+
+	skipTableRequiredCheck bool
 }
 
 type Query struct {

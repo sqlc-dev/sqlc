@@ -302,10 +302,6 @@ func (c *cc) convertDeleteStmt(n *pcast.DeleteStmt) *ast.DeleteStmt {
 }
 
 func (c *cc) convertDropTableStmt(n *pcast.DropTableStmt) ast.Node {
-	// TODO: Remove once views are supported.
-	if n.IsView {
-		return todo(n)
-	}
 	drop := &ast.DropTableStmt{IfExists: n.IfExists}
 	for _, name := range n.Tables {
 		drop.Tables = append(drop.Tables, parseTableName(name))
@@ -667,7 +663,14 @@ func (c *cc) convertCreateUserStmt(n *pcast.CreateUserStmt) ast.Node {
 }
 
 func (c *cc) convertCreateViewStmt(n *pcast.CreateViewStmt) ast.Node {
-	return todo(n)
+	return &ast.ViewStmt{
+		View:            c.convertTableName(n.ViewName),
+		Aliases:         &ast.List{},
+		Query:           c.convert(n.Select),
+		Replace:         n.OrReplace,
+		Options:         &ast.List{},
+		WithCheckOption: ast.ViewCheckOption(n.CheckOption),
+	}
 }
 
 func (c *cc) convertDeallocateStmt(n *pcast.DeallocateStmt) ast.Node {
@@ -877,7 +880,16 @@ func (c *cc) convertPatternInExpr(n *pcast.PatternInExpr) ast.Node {
 }
 
 func (c *cc) convertPatternLikeExpr(n *pcast.PatternLikeExpr) ast.Node {
-	return todo(n)
+	return &ast.A_Expr{
+		Kind: ast.A_Expr_Kind(9),
+		Name: &ast.List{
+			Items: []ast.Node{
+				&ast.String{Str: "~~"},
+			},
+		},
+		Lexpr: c.convert(n.Expr),
+		Rexpr: c.convert(n.Pattern),
+	}
 }
 
 func (c *cc) convertPatternRegexpExpr(n *pcast.PatternRegexpExpr) ast.Node {

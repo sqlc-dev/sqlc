@@ -19,7 +19,7 @@ func regenerate(dir string) error {
 		}
 		if strings.HasSuffix(path, "sqlc.json") || strings.HasSuffix(path, "sqlc.yaml") {
 			cwd := filepath.Dir(path)
-			cmd := exec.Command("sqlc-dev", "generate")
+			cmd := exec.Command("sqlc-dev", "generate", "--experimental")
 			cmd.Dir = cwd
 			failed := cmd.Run()
 			if _, err := os.Stat(filepath.Join(cwd, "stderr.txt")); os.IsNotExist(err) && failed != nil {

@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -50,7 +49,7 @@ var versionCmd = &cobra.Command{
 		if version == "" {
 			// When no version is set, return the next bug fix version
 			// after the most recent tag
-			fmt.Printf("%s\n", "v1.8.1-devel")
+			fmt.Printf("%s\n", "v1.10.0")
 		} else {
 			fmt.Printf("%s\n", version)
 		}
@@ -75,7 +74,7 @@ var initCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return ioutil.WriteFile(file, blob, 0644)
+		return os.WriteFile(file, blob, 0644)
 	},
 }
 
@@ -123,7 +122,7 @@ var genCmd = &cobra.Command{
 		}
 		for filename, source := range output {
 			os.MkdirAll(filepath.Dir(filename), 0755)
-			if err := ioutil.WriteFile(filename, []byte(source), 0644); err != nil {
+			if err := os.WriteFile(filename, []byte(source), 0644); err != nil {
 				fmt.Fprintf(stderr, "%s: %s\n", filename, err)
 				os.Exit(1)
 			}
