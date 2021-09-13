@@ -14483,12 +14483,8 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
-			Name: "mode",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "anyelement"},
-				},
-			},
+			Name:       "mode",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "anyelement"},
 		},
 		{
@@ -16542,22 +16538,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "percentile_cont",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-				{
-					Type: &ast.TypeName{Name: "interval"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "interval"},
-		},
-		{
-			Name: "percentile_cont",
-			Args: []*catalog.Argument{
-				{
 					Type: &ast.TypeName{Name: "double precision[]"},
-				},
-				{
-					Type: &ast.TypeName{Name: "double precision"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "double precision[]"},
@@ -16568,32 +16549,14 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "double precision"},
 				},
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "percentile_cont",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "double precision[]"},
-				},
-				{
-					Type: &ast.TypeName{Name: "interval"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "interval[]"},
 		},
 		{
 			Name: "percentile_disc",
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "double precision"},
-				},
-				{
-					Type: &ast.TypeName{Name: "anyelement"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "anyelement"},
@@ -16603,9 +16566,6 @@ func genPGCatalog() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "double precision[]"},
-				},
-				{
-					Type: &ast.TypeName{Name: "anyelement"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "anyarray"},

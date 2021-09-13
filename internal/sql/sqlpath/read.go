@@ -2,7 +2,6 @@ package sqlpath
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -20,7 +19,7 @@ func Glob(paths []string) ([]string, error) {
 			return nil, fmt.Errorf("path %s does not exist", path)
 		}
 		if f.IsDir() {
-			listing, err := ioutil.ReadDir(path)
+			listing, err := os.ReadDir(path)
 			if err != nil {
 				return nil, err
 			}

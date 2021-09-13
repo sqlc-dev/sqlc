@@ -5,7 +5,7 @@ import (
 	"io"
 	"path/filepath"
 
-	"gopkg.in/yaml.v3"
+	yaml "gopkg.in/yaml.v3"
 )
 
 type V1GenerateSettings struct {
@@ -29,7 +29,7 @@ type v1PackageSettings struct {
 	EmitEmptySlices       bool       `json:"emit_empty_slices,omitempty" yaml:"emit_empty_slices"`
 	EmitExportedQueries   bool       `json:"emit_exported_queries,omitempty" yaml:"emit_exported_queries"`
 	JSONTagsCaseStyle     string     `json:"json_tags_case_style,omitempty" yaml:"json_tags_case_style"`
-	Driver                string     `json:"driver" yaml:"driver"`
+	SQLPackage            string     `json:"sql_package" yaml:"sql_package"`
 	Overrides             []Override `json:"overrides" yaml:"overrides"`
 	OutputDBFileName      string     `json:"output_db_file_name,omitempty" yaml:"output_db_file_name"`
 	OutputModelsFileName  string     `json:"output_models_file_name,omitempty" yaml:"output_models_file_name"`
@@ -119,7 +119,7 @@ func (c *V1GenerateSettings) Translate() Config {
 					EmitExportedQueries:   pkg.EmitExportedQueries,
 					Package:               pkg.Name,
 					Out:                   pkg.Path,
-					Driver:                pkg.Driver,
+					SQLPackage:            pkg.SQLPackage,
 					Overrides:             pkg.Overrides,
 					JSONTagsCaseStyle:     pkg.JSONTagsCaseStyle,
 					OutputDBFileName:      pkg.OutputDBFileName,

@@ -2,7 +2,7 @@ name: go
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
 jobs:
 
@@ -34,12 +34,9 @@ jobs:
 
     - uses: actions/setup-go@v2
       with:
-        go-version: '1.16'
+        go-version: '1.17'
 
-    - run: go build ./...
-      working-directory: internal/endtoend/testdata
-
-    - name: Test sqlc
+    - name: test ./...
       run: go test --tags=examples ./...
       env:
         PG_USER: postgres
@@ -52,3 +49,10 @@ jobs:
         MYSQL_PORT: ${{ job.services.mysql.ports['3306'] }}
         MYSQL_ROOT_PASSWORD: mysecretpassword
 
+    - name: build internal/endtoend
+      run: go build ./...
+      working-directory: internal/endtoend/testdata
+
+    - name: test internal/endtoend
+      run: go test ./...
+      working-directory: internal/endtoend/testdata

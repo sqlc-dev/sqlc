@@ -5,7 +5,8 @@ package querytest
 
 import (
 	"context"
-	"encoding/json"
+
+	"github.com/jackc/pgtype"
 )
 
 const selectJSONBuildArray = `-- name: SelectJSONBuildArray :one
@@ -18,11 +19,11 @@ SELECT
 `
 
 type SelectJSONBuildArrayRow struct {
-	JsonBuildArray   json.RawMessage
-	JsonBuildArray_2 json.RawMessage
-	JsonBuildArray_3 json.RawMessage
-	JsonBuildArray_4 json.RawMessage
-	JsonBuildArray_5 json.RawMessage
+	JsonBuildArray   pgtype.JSON
+	JsonBuildArray_2 pgtype.JSON
+	JsonBuildArray_3 pgtype.JSON
+	JsonBuildArray_4 pgtype.JSON
+	JsonBuildArray_5 pgtype.JSON
 }
 
 func (q *Queries) SelectJSONBuildArray(ctx context.Context) (SelectJSONBuildArrayRow, error) {
@@ -48,11 +49,11 @@ SELECT
 `
 
 type SelectJSONBuildObjectRow struct {
-	JsonBuildObject   json.RawMessage
-	JsonBuildObject_2 json.RawMessage
-	JsonBuildObject_3 json.RawMessage
-	JsonBuildObject_4 json.RawMessage
-	JsonBuildObject_5 json.RawMessage
+	JsonBuildObject   pgtype.JSON
+	JsonBuildObject_2 pgtype.JSON
+	JsonBuildObject_3 pgtype.JSON
+	JsonBuildObject_4 pgtype.JSON
+	JsonBuildObject_5 pgtype.JSON
 }
 
 func (q *Queries) SelectJSONBuildObject(ctx context.Context) (SelectJSONBuildObjectRow, error) {
