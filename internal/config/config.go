@@ -9,7 +9,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/kyleconroy/sqlc/internal/core"
+	"github.com/kyleconroy/sqlc/internal/sql/ast"
+
 	yaml "gopkg.in/yaml.v3"
 )
 
@@ -165,15 +166,50 @@ type Override struct {
 	// fully qualified name of the column, e.g. `accounts.id`
 	Column string `json:"column" yaml:"column"`
 
-	ColumnName   string
-	Table        core.FQN
+	ColumnName   *Match
+	TableCatalog *Match
+	TableSchema  *Match
+	TableRel     *Match
 	GoImportPath string
 	GoPackage    string
 	GoTypeName   string
 	GoBasicType  bool
 }
 
-func (o *Override) Parse() error {
+func (o *Override) Matches(n *ast.TableName, defaultSchema string) bool {
+	if n == nil {
+		return false
+	}
+
+	schema := n.Schema
+	if n.Schema == "" {
+		schema = defaultSchema
+	}
+
+	if o.TableCatalog != nil && !o.TableCatalog.MatchString(n.Catalog) {
+		return false
+	}
+
+	if o.TableSchema == nil && schema != "" {
+		return false
+	}
+
+	if o.TableSchema != nil && !o.TableSchema.MatchString(schema) {
+		return false
+	}
+
+	if o.TableRel == nil && n.Name != "" {
+		return false
+	}
+
+	if o.TableRel != nil && !o.TableRel.MatchString(n.Name) {
+		return false
+	}
+
+	return true
+}
+
+func (o *Override) Parse() (err error) {
 
 	// validate deprecated postgres_type field
 	if o.Deprecated_PostgresType != "" {
@@ -203,16 +239,40 @@ func (o *Override) Parse() error {
 		colParts := strings.Split(o.Column, ".")
 		switch len(colParts) {
 		case 2:
-			o.ColumnName = colParts[1]
-			o.Table = core.FQN{Schema: "public", Rel: colParts[0]}
+			if o.ColumnName, err = MatchCompile(colParts[1]); err != nil {
+				return err
+			}
+			if o.TableRel, err = MatchCompile(colParts[0]); err != nil {
+				return err
+			}
+			if o.TableSchema, err = MatchCompile("public"); err != nil {
+				return err
+			}
 		case 3:
-			o.ColumnName = colParts[2]
-			o.Table = core.FQN{Schema: colParts[0], Rel: colParts[1]}
+			if o.ColumnName, err = MatchCompile(colParts[2]); err != nil {
+				return err
+			}
+			if o.TableRel, err = MatchCompile(colParts[1]); err != nil {
+				return err
+			}
+			if o.TableSchema, err = MatchCompile(colParts[0]); err != nil {
+				return err
+			}
 		case 4:
-			o.ColumnName = colParts[3]
-			o.Table = core.FQN{Catalog: colParts[0], Schema: colParts[1], Rel: colParts[2]}
+			if o.ColumnName, err = MatchCompile(colParts[3]); err != nil {
+				return err
+			}
+			if o.TableRel, err = MatchCompile(colParts[2]); err != nil {
+				return err
+			}
+			if o.TableSchema, err = MatchCompile(colParts[1]); err != nil {
+				return err
+			}
+			if o.TableCatalog, err = MatchCompile(colParts[0]); err != nil {
+				return err
+			}
 		default:
-			return fmt.Errorf("Override `column` specifier %q is not the proper format, expected '[catalog.][schema.]colname.tablename'", o.Column)
+			return fmt.Errorf("Override `column` specifier %q is not the proper format, expected '[catalog.][schema.]tablename.colname'", o.Column)
 		}
 	}
 

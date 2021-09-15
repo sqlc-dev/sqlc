@@ -7,14 +7,3 @@ type FQN struct {
 	Schema  string
 	Rel     string
 }
-
-func (f FQN) String() string {
-	s := f.Rel
-	if f.Schema != "" {
-		s = f.Schema + "." + s
-	}
-	if f.Catalog != "" {
-		s = f.Catalog + "." + s
-	}
-	return s
-}
