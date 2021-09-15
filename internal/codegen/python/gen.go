@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"github.com/gobwas/glob"
 	"github.com/kyleconroy/sqlc/internal/codegen"
 	"github.com/kyleconroy/sqlc/internal/compiler"
 	"github.com/kyleconroy/sqlc/internal/config"
@@ -285,7 +284,7 @@ func buildModels(r *compiler.Result, settings config.CombinedSettings) []Struct 
 				structName = inflection.Singular(structName)
 			}
 			s := Struct{
-				Table:   core.FQN{Schema: glob.MustCompile(schema.Name), Rel: glob.MustCompile(table.Rel.Name)},
+				Table:   core.FQN{Schema: schema.Name, Rel: table.Rel.Name},
 				Name:    ModelName(structName, settings),
 				Comment: table.Comment,
 			}
@@ -364,7 +363,7 @@ func sameTableName(n *ast.TableName, f core.FQN, defaultSchema string) bool {
 	if n.Schema == "" {
 		schema = defaultSchema
 	}
-	return n.Catalog == f.Catalog && ((f.Schema != nil && f.Schema.Match(schema)) || schema == "") && ((f.Rel != nil && f.Rel.Match(n.Name)) || n.Name == "")
+	return n.Catalog == f.Catalog && schema == f.Schema && n.Name == f.Rel
 }
 
 var postgresPlaceholderRegexp = regexp.MustCompile(`\B\$(\d+)\b`)

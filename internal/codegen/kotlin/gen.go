@@ -9,8 +9,6 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/gobwas/glob"
-
 	"github.com/kyleconroy/sqlc/internal/codegen"
 	"github.com/kyleconroy/sqlc/internal/compiler"
 	"github.com/kyleconroy/sqlc/internal/config"
@@ -28,7 +26,7 @@ func sameTableName(n *ast.TableName, f core.FQN) bool {
 	if n.Schema == "" {
 		schema = "public"
 	}
-	return n.Catalog == f.Catalog && ((f.Schema != nil && f.Schema.Match(schema)) || schema == "") && ((f.Rel != nil && f.Rel.Match(n.Name)) || n.Name == "")
+	return n.Catalog == n.Catalog && schema == f.Schema && n.Name == f.Rel
 }
 
 var ktIdentPattern = regexp.MustCompile("[^a-zA-Z0-9_]+")
@@ -298,7 +296,7 @@ func buildDataClasses(r *compiler.Result, settings config.CombinedSettings) []St
 				structName = inflection.Singular(structName)
 			}
 			s := Struct{
-				Table:   core.FQN{Schema: glob.MustCompile(schema.Name), Rel: glob.MustCompile(table.Rel.Name)},
+				Table:   core.FQN{Schema: schema.Name, Rel: table.Rel.Name},
 				Name:    structName,
 				Comment: table.Comment,
 			}
