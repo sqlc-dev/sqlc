@@ -919,7 +919,29 @@ func (c *cc) convertPartitionByClause(n *pcast.PartitionByClause) ast.Node {
 }
 
 func (c *cc) convertPatternInExpr(n *pcast.PatternInExpr) ast.Node {
-	return todo(n)
+	var list []ast.Node
+	var val ast.Node
+
+	expr := c.convert(n.Expr)
+
+	for _, v := range n.List {
+		val = c.convert(v)
+		if val != nil {
+			list = append(list, val)
+		}
+	}
+
+	sel := c.convert(n.Sel)
+
+	in := &ast.In{
+		Expr:     expr,
+		List:     list,
+		Not:      n.Not,
+		Sel:      sel,
+		Location: n.OriginTextPosition(),
+	}
+
+	return in
 }
 
 func (c *cc) convertPatternLikeExpr(n *pcast.PatternLikeExpr) ast.Node {

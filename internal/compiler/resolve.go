@@ -370,6 +370,104 @@ func resolveCatalogRefs(c *catalog.Catalog, qc *QueryCatalog, rvs []*ast.RangeVa
 		case *ast.ParamRef:
 			a = append(a, Parameter{Number: ref.ref.Number})
 
+		case *ast.In:
+			if n == nil || n.List == nil {
+				fmt.Println("ast.In is nil")
+				continue
+			}
+
+			number := 0
+			if pr, ok := n.List[0].(*ast.ParamRef); ok {
+				number = pr.Number
+			}
+
+			location := 0
+			var key, alias string
+			var items []string
+
+			if left, ok := n.Expr.(*ast.ColumnRef); ok {
+				location = left.Location
+				items = stringSlice(left.Fields)
+			} else if left, ok := n.Expr.(*ast.ParamRef); ok {
+				if len(n.List) <= 0 {
+					continue
+				}
+				if right, ok := n.List[0].(*ast.ColumnRef); ok {
+					location = left.Location
+					items = stringSlice(right.Fields)
+				} else {
+					continue
+				}
+			} else {
+				continue
+			}
+
+			switch len(items) {
+			case 1:
+				key = items[0]
+			case 2:
+				alias = items[0]
+				key = items[1]
+			default:
+				panic("too many field items: " + strconv.Itoa(len(items)))
+			}
+
+			var found int
+			if n.Sel == nil {
+				search := tables
+				if alias != "" {
+					if original, ok := aliasMap[alias]; ok {
+						search = []*ast.TableName{original}
+					} else {
+						for _, fqn := range tables {
+							if fqn.Name == alias {
+								search = []*ast.TableName{fqn}
+							}
+						}
+					}
+				}
+
+				for _, table := range search {
+					schema := table.Schema
+					if schema == "" {
+						schema = c.DefaultSchema
+					}
+					if c, ok := typeMap[schema][table.Name][key]; ok {
+						found += 1
+						if ref.name != "" {
+							key = ref.name
+						}
+						a = append(a, Parameter{
+							Number: number,
+							Column: &Column{
+								Name:     parameterName(ref.ref.Number, key),
+								DataType: dataType(&c.Type),
+								NotNull:  c.IsNotNull,
+								IsArray:  c.IsArray,
+								Table:    table,
+							},
+						})
+					}
+				}
+			} else {
+				fmt.Println("------------------------")
+			}
+
+			if found == 0 {
+				return nil, &sqlerr.Error{
+					Code:     "42703",
+					Message:  fmt.Sprintf("396: column \"%s\" does not exist", key),
+					Location: location,
+				}
+			}
+			if found > 1 {
+				return nil, &sqlerr.Error{
+					Code:     "42703",
+					Message:  fmt.Sprintf("in same name column reference \"%s\" is ambiguous", key),
+					Location: location,
+				}
+			}
+
 		default:
 			fmt.Printf("unsupported reference type: %T", n)
 		}
