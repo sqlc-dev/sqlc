@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr"
 
@@ -40,7 +39,7 @@ type Parser struct {
 }
 
 func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
-	blob, err := ioutil.ReadAll(r)
+	blob, err := io.ReadAll(r)
 	if err != nil {
 		return nil, err
 	}

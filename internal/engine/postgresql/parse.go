@@ -1,3 +1,4 @@
+//go:build !windows
 // +build !windows
 
 package postgresql
@@ -6,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"strings"
 
 	nodes "github.com/pganalyze/pg_query_go/v2"
@@ -152,7 +152,7 @@ type Parser struct {
 var errSkip = errors.New("skip stmt")
 
 func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
-	contents, err := ioutil.ReadAll(r)
+	contents, err := io.ReadAll(r)
 	if err != nil {
 		return nil, err
 	}
@@ -514,7 +514,7 @@ func translate(node *nodes.Node) (ast.Node, error) {
 			}
 			return drop, nil
 
-		case nodes.ObjectType_OBJECT_TABLE:
+		case nodes.ObjectType_OBJECT_TABLE, nodes.ObjectType_OBJECT_VIEW, nodes.ObjectType_OBJECT_MATVIEW:
 			drop := &ast.DropTableStmt{
 				IfExists: n.MissingOk,
 			}
