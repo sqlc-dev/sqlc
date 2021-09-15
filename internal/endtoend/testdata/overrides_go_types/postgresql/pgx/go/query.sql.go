@@ -6,7 +6,7 @@ package override
 import (
 	"context"
 
-	"github.com/gofrs/uuid"
+	uuid "github.com/gofrs/uuid"
 )
 
 const loadFoo = `-- name: LoadFoo :many
