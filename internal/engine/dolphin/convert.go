@@ -468,6 +468,42 @@ func (c *cc) convertTableRefsClause(n *pcast.TableRefsClause) *ast.List {
 	return c.convertJoin(n.TableRefs)
 }
 
+func (c *cc) convertCommonTableExpression(n *pcast.CommonTableExpression) *ast.CommonTableExpr {
+	if n == nil {
+		return nil
+	}
+
+	name := n.Name.String()
+
+	columns := &ast.List{}
+	for _, col := range n.ColNameList {
+		columns.Items = append(columns.Items, &ast.String{Str: col.String()})
+	}
+
+	return &ast.CommonTableExpr{
+		Ctename:     &name,
+		Ctequery:    c.convert(n.Query),
+		Ctecolnames: columns,
+	}
+
+}
+
+func (c *cc) convertWithClause(n *pcast.WithClause) *ast.WithClause {
+	if n == nil {
+		return nil
+	}
+	list := &ast.List{}
+	for _, n := range n.CTEs {
+		list.Items = append(list.Items, c.convertCommonTableExpression(n))
+	}
+
+	return &ast.WithClause{
+		Ctes:      list,
+		Recursive: n.IsRecursive,
+		Location:  n.OriginTextPosition(),
+	}
+}
+
 func (c *cc) convertUpdateStmt(n *pcast.UpdateStmt) *ast.UpdateStmt {
 	rels := c.convertTableRefsClause(n.TableRefs)
 	if len(rels.Items) != 1 {
