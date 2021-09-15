@@ -298,6 +298,7 @@ func (c *cc) convertDeleteStmt(n *pcast.DeleteStmt) *ast.DeleteStmt {
 		Relation:      rangeVar,
 		WhereClause:   c.convert(n.Where),
 		ReturningList: &ast.List{},
+		WithClause:    c.convertWithClause(n.With),
 	}
 }
 
@@ -447,6 +448,7 @@ func (c *cc) convertSelectStmt(n *pcast.SelectStmt) *ast.SelectStmt {
 		TargetList:  c.convertFieldList(n.Fields),
 		FromClause:  c.convertTableRefsClause(n.From),
 		WhereClause: c.convert(n.Where),
+		WithClause:  c.convertWithClause(n.With),
 		Op:          op,
 		All:         all,
 	}
@@ -539,6 +541,7 @@ func (c *cc) convertUpdateStmt(n *pcast.UpdateStmt) *ast.UpdateStmt {
 		WhereClause:   c.convert(n.Where),
 		FromClause:    &ast.List{},
 		ReturningList: &ast.List{},
+		WithClause:    c.convertWithClause(n.With),
 	}
 }
 
@@ -1050,6 +1053,7 @@ func (c *cc) convertSetOprSelectList(n *pcast.SetOprSelectList) ast.Node {
 		WhereClause: nil,
 		Op:          op,
 		All:         all,
+		WithClause:  c.convertWithClause(n.With),
 	}
 	for _, stmt := range selectStmts {
 		// We move Op and All from the child to the parent.
@@ -1072,6 +1076,7 @@ func (c *cc) convertSetOprSelectList(n *pcast.SetOprSelectList) ast.Node {
 				Rarg:        stmt,
 				Op:          op,
 				All:         all,
+				WithClause:  c.convertWithClause(n.With),
 			}
 		}
 	}
