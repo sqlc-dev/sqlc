@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/debug"
 	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/opts"
@@ -37,7 +38,8 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 	if err := validate.ParamStyle(stmt); err != nil {
 		return nil, err
 	}
-	if err := validate.ParamRef(stmt); err != nil {
+	numbers, dollar, err := validate.ParamRef(stmt)
+	if err != nil {
 		return nil, err
 	}
 	raw, ok := stmt.(*ast.RawStmt)
@@ -75,7 +77,7 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 		return nil, err
 	}
 
-	raw, namedParams, edits := rewrite.NamedParameters(c.conf.Engine, raw)
+	raw, namedParams, edits := rewrite.NamedParameters(c.conf.Engine, raw, numbers, dollar)
 	rvs := rangeVars(raw.Stmt)
 	refs := findParameters(raw.Stmt)
 	if o.UsePositionalParameters {
@@ -84,8 +86,12 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 			return nil, err
 		}
 	} else {
-		refs = uniqueParamRefs(refs)
-		sort.Slice(refs, func(i, j int) bool { return refs[i].ref.Number < refs[j].ref.Number })
+		refs = uniqueParamRefs(refs, dollar)
+		if c.conf.Engine == config.EngineMySQL || !dollar {
+			sort.Slice(refs, func(i, j int) bool { return refs[i].ref.Location < refs[j].ref.Location })
+		} else {
+			sort.Slice(refs, func(i, j int) bool { return refs[i].ref.Number < refs[j].ref.Number })
+		}
 	}
 	qc, err := buildQueryCatalog(c.catalog, raw.Stmt)
 	if err != nil {
@@ -122,7 +128,6 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 	if err != nil {
 		return nil, err
 	}
-
 	return &Query{
 		Cmd:      cmd,
 		Comments: comments,
@@ -145,13 +150,27 @@ func rangeVars(root ast.Node) []*ast.RangeVar {
 	return vars
 }
 
-func uniqueParamRefs(in []paramRef) []paramRef {
-	m := make(map[int]struct{}, len(in))
+func uniqueParamRefs(in []paramRef, dollar bool) []paramRef {
+	m := make(map[int]bool, len(in))
 	o := make([]paramRef, 0, len(in))
 	for _, v := range in {
-		if _, ok := m[v.ref.Number]; !ok {
-			m[v.ref.Number] = struct{}{}
-			o = append(o, v)
+		if !m[v.ref.Number] {
+			m[v.ref.Number] = true
+			if v.ref.Number != 0 {
+				o = append(o, v)
+			}
+		}
+	}
+	if !dollar {
+		start := 1
+		for _, v := range in {
+			if v.ref.Number == 0 {
+				for m[start] {
+					start++
+				}
+				v.ref.Number = start
+				o = append(o, v)
+			}
 		}
 	}
 	return o
