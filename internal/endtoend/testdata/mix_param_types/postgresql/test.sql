@@ -1,0 +1,17 @@
+CREATE TABLE bar (
+       id serial not null,
+       name text not null,
+       phone text not null
+);
+
+-- name: CountOne :one
+SELECT count(1) FROM bar WHERE id = sqlc.arg(id) AND name <> $1 LIMIT sqlc.arg('limit');
+
+-- name: CountTwo :one
+SELECT count(1) FROM bar WHERE id = $1 AND name <> sqlc.arg(name);
+
+-- name: CountThree :one
+SELECT count(1) FROM bar WHERE id > $2 AND phone <> sqlc.arg(phone) AND name <> $1;
+
+-- name: CountFour :one
+SELECT count(1) FROM bar WHERE id > ? AND phone <> sqlc.arg(phone) AND name <> ?;
