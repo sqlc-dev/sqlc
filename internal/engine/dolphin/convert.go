@@ -310,10 +310,14 @@ func (c *cc) convertDropTableStmt(n *pcast.DropTableStmt) ast.Node {
 }
 
 func (c *cc) convertRenameTableStmt(n *pcast.RenameTableStmt) ast.Node {
-	return &ast.RenameTableStmt{
-		Table:   parseTableName(n.OldTable),
-		NewName: &parseTableName(n.NewTable).Name,
+	list := &ast.List{Items: []ast.Node{}}
+	for _, table := range n.TableToTables {
+		list.Items = append(list.Items, &ast.RenameTableStmt{
+			Table:   parseTableName(table.OldTable),
+			NewName: &parseTableName(table.NewTable).Name,
+		})
 	}
+	return list
 }
 
 func (c *cc) convertExistsSubqueryExpr(n *pcast.ExistsSubqueryExpr) *ast.SubLink {
