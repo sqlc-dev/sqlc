@@ -5,6 +5,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/gobwas/glob"
+
 	"github.com/kyleconroy/sqlc/internal/codegen"
 	"github.com/kyleconroy/sqlc/internal/compiler"
 	"github.com/kyleconroy/sqlc/internal/config"
@@ -74,7 +76,7 @@ func buildStructs(r *compiler.Result, settings config.CombinedSettings) []Struct
 				structName = inflection.Singular(structName)
 			}
 			s := Struct{
-				Table:   core.FQN{Schema: schema.Name, Rel: table.Rel.Name},
+				Table:   core.FQN{Schema: glob.MustCompile(schema.Name), Rel: glob.MustCompile(table.Rel.Name)},
 				Name:    StructName(structName, settings),
 				Comment: table.Comment,
 			}
