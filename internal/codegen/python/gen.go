@@ -181,8 +181,8 @@ func pyInnerType(r *compiler.Result, col *compiler.Column, settings config.Combi
 		if !oride.PythonType.IsSet() {
 			continue
 		}
-		sameTable := sameTableName(col.Table, oride.Table, r.Catalog.DefaultSchema)
-		if oride.Column != "" && oride.ColumnName == col.Name && sameTable {
+		sameTable := oride.Matches(col.Table, r.Catalog.DefaultSchema)
+		if oride.Column != "" && oride.ColumnName.MatchString(col.Name) && sameTable {
 			return oride.PythonType.TypeString()
 		}
 		if oride.DBType != "" && oride.DBType == col.DataType && oride.Nullable != (col.NotNull || col.IsArray) {
