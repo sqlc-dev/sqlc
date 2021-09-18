@@ -179,10 +179,10 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 				})
 			}
 			gq.Arg = QueryValue{
-				Emit:        true,
-				Name:        "arg",
-				Struct:      columnsToStruct(r, gq.MethodName+"Params", cols, settings),
-				SQLPackage:  sqlpkg,
+				Emit:       true,
+				Name:       "arg",
+				Struct:     columnsToStruct(r, gq.MethodName+"Params", cols, settings, false),
+				SQLPackage: sqlpkg,
 				EmitPointer: settings.Go.EmitParamsStructPointers,
 			}
 		}
@@ -226,7 +226,7 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 						Column: c,
 					})
 				}
-				gs = columnsToStruct(r, gq.MethodName+"Row", columns, settings)
+				gs = columnsToStruct(r, gq.MethodName+"Row", columns, settings, true)
 				emit = true
 			}
 			gq.Ret = QueryValue{
@@ -251,7 +251,7 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 // JSON tags: count, count_2, count_2
 //
 // This is unlikely to happen, so don't fix it yet
-func columnsToStruct(r *compiler.Result, name string, columns []goColumn, settings config.CombinedSettings) *Struct {
+func columnsToStruct(r *compiler.Result, name string, columns []goColumn, settings config.CombinedSettings, useID bool) *Struct {
 	gs := Struct{
 		Name: name,
 	}
@@ -261,12 +261,13 @@ func columnsToStruct(r *compiler.Result, name string, columns []goColumn, settin
 		colName := columnName(c.Column, i)
 		tagName := colName
 		fieldName := StructName(colName, settings)
+		baseFieldName := fieldName
 		// Track suffixes by the ID of the column, so that columns referring to the same numbered parameter can be
 		// reused.
 		suffix := 0
-		if o, ok := suffixes[c.id]; ok {
+		if o, ok := suffixes[c.id]; ok && useID {
 			suffix = o
-		} else if v := seen[colName]; v > 0 {
+		} else if v := seen[fieldName]; v > 0 {
 			suffix = v + 1
 		}
 		suffixes[c.id] = suffix
@@ -286,7 +287,8 @@ func columnsToStruct(r *compiler.Result, name string, columns []goColumn, settin
 			Type: goType(r, c.Column, settings),
 			Tags: tags,
 		})
-		seen[colName]++
+		seen[baseFieldName]++
 	}
+
 	return &gs
 }

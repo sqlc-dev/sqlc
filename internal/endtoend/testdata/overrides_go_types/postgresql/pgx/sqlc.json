@@ -10,14 +10,15 @@
       "queries": "query.sql",
       "overrides": [
         {
-          "column": "foo.id",
+          "column": "*.id",
           "go_type": {
             "import": "github.com/gofrs/uuid",
+            "package": "uuid",
             "type": "UUID"
           },
         },
         {
-          "column": "foo.other_id",
+          "column": "*.*_id",
           "go_type": {
             "import": "github.com/gofrs/uuid",
             "package": "fuid",

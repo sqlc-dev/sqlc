@@ -11,6 +11,10 @@
         {
           "go_type": "github.com/kyleconroy/sqlc-testdata/pkg.CustomType",
           "column": "foo.retyped"
+        },
+        {
+          "go_type": "github.com/kyleconroy/sqlc-testdata/pkg.CustomType",
+          "column": "*.also_retyped"
         }
       ]
     }

@@ -6,6 +6,18 @@ import (
 	"github.com/kyleconroy/sqlc-testdata/pkg"
 )
 
+type Bar struct {
+	Other       string
+	Total       int64
+	AlsoRetyped pkg.CustomType
+}
+
+type Baz struct {
+	Other       string
+	Total       int64
+	AlsoRetyped pkg.CustomType
+}
+
 type Foo struct {
 	Other   string
 	Total   int64

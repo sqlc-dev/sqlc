@@ -298,6 +298,7 @@ func (c *cc) convertDeleteStmt(n *pcast.DeleteStmt) *ast.DeleteStmt {
 		Relation:      rangeVar,
 		WhereClause:   c.convert(n.Where),
 		ReturningList: &ast.List{},
+		WithClause:    c.convertWithClause(n.With),
 	}
 }
 
@@ -310,10 +311,14 @@ func (c *cc) convertDropTableStmt(n *pcast.DropTableStmt) ast.Node {
 }
 
 func (c *cc) convertRenameTableStmt(n *pcast.RenameTableStmt) ast.Node {
-	return &ast.RenameTableStmt{
-		Table:   parseTableName(n.OldTable),
-		NewName: &parseTableName(n.NewTable).Name,
+	list := &ast.List{Items: []ast.Node{}}
+	for _, table := range n.TableToTables {
+		list.Items = append(list.Items, &ast.RenameTableStmt{
+			Table:   parseTableName(table.OldTable),
+			NewName: &parseTableName(table.NewTable).Name,
+		})
 	}
+	return list
 }
 
 func (c *cc) convertExistsSubqueryExpr(n *pcast.ExistsSubqueryExpr) *ast.SubLink {
@@ -443,6 +448,7 @@ func (c *cc) convertSelectStmt(n *pcast.SelectStmt) *ast.SelectStmt {
 		TargetList:  c.convertFieldList(n.Fields),
 		FromClause:  c.convertTableRefsClause(n.From),
 		WhereClause: c.convert(n.Where),
+		WithClause:  c.convertWithClause(n.With),
 		Op:          op,
 		All:         all,
 	}
@@ -462,6 +468,42 @@ func (c *cc) convertTableRefsClause(n *pcast.TableRefsClause) *ast.List {
 		return &ast.List{}
 	}
 	return c.convertJoin(n.TableRefs)
+}
+
+func (c *cc) convertCommonTableExpression(n *pcast.CommonTableExpression) *ast.CommonTableExpr {
+	if n == nil {
+		return nil
+	}
+
+	name := n.Name.String()
+
+	columns := &ast.List{}
+	for _, col := range n.ColNameList {
+		columns.Items = append(columns.Items, &ast.String{Str: col.String()})
+	}
+
+	return &ast.CommonTableExpr{
+		Ctename:     &name,
+		Ctequery:    c.convert(n.Query),
+		Ctecolnames: columns,
+	}
+
+}
+
+func (c *cc) convertWithClause(n *pcast.WithClause) *ast.WithClause {
+	if n == nil {
+		return nil
+	}
+	list := &ast.List{}
+	for _, n := range n.CTEs {
+		list.Items = append(list.Items, c.convertCommonTableExpression(n))
+	}
+
+	return &ast.WithClause{
+		Ctes:      list,
+		Recursive: n.IsRecursive,
+		Location:  n.OriginTextPosition(),
+	}
 }
 
 func (c *cc) convertUpdateStmt(n *pcast.UpdateStmt) *ast.UpdateStmt {
@@ -499,6 +541,7 @@ func (c *cc) convertUpdateStmt(n *pcast.UpdateStmt) *ast.UpdateStmt {
 		WhereClause:   c.convert(n.Where),
 		FromClause:    &ast.List{},
 		ReturningList: &ast.List{},
+		WithClause:    c.convertWithClause(n.With),
 	}
 }
 
@@ -876,7 +919,29 @@ func (c *cc) convertPartitionByClause(n *pcast.PartitionByClause) ast.Node {
 }
 
 func (c *cc) convertPatternInExpr(n *pcast.PatternInExpr) ast.Node {
-	return todo(n)
+	var list []ast.Node
+	var val ast.Node
+
+	expr := c.convert(n.Expr)
+
+	for _, v := range n.List {
+		val = c.convert(v)
+		if val != nil {
+			list = append(list, val)
+		}
+	}
+
+	sel := c.convert(n.Sel)
+
+	in := &ast.In{
+		Expr:     expr,
+		List:     list,
+		Not:      n.Not,
+		Sel:      sel,
+		Location: n.OriginTextPosition(),
+	}
+
+	return in
 }
 
 func (c *cc) convertPatternLikeExpr(n *pcast.PatternLikeExpr) ast.Node {
@@ -1010,6 +1075,7 @@ func (c *cc) convertSetOprSelectList(n *pcast.SetOprSelectList) ast.Node {
 		WhereClause: nil,
 		Op:          op,
 		All:         all,
+		WithClause:  c.convertWithClause(n.With),
 	}
 	for _, stmt := range selectStmts {
 		// We move Op and All from the child to the parent.
@@ -1032,6 +1098,7 @@ func (c *cc) convertSetOprSelectList(n *pcast.SetOprSelectList) ast.Node {
 				Rarg:        stmt,
 				Op:          op,
 				All:         all,
+				WithClause:  c.convertWithClause(n.With),
 			}
 		}
 	}
