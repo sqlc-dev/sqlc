@@ -1,7 +1,6 @@
 package golang
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/kyleconroy/sqlc/internal/metadata"
@@ -36,10 +35,7 @@ func (v QueryValue) Pair() string {
 	if v.isEmpty() {
 		return ""
 	}
-	if v.EmitPointer && v.Struct != nil {
-		return fmt.Sprintf("%s *%s", v.Name, v.Type())
-	}
-	return v.Name + " " + v.Type()
+	return v.Name + " " + v.DefineType()
 }
 
 func (v QueryValue) Type() string {
@@ -50,6 +46,21 @@ func (v QueryValue) Type() string {
 		return v.Struct.Name
 	}
 	panic("no type for QueryValue: " + v.Name)
+}
+
+func (v *QueryValue) DefineType() string {
+	t := v.Type()
+	if v.IsPointer() {
+		return "*" + t
+	}
+	return t
+}
+
+func (v *QueryValue) ReturnName() string {
+	if v.IsPointer() {
+		return "&" + v.Name
+	}
+	return v.Name
 }
 
 func (v QueryValue) Params() string {

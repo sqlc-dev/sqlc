@@ -10,7 +10,7 @@ import (
 type Querier interface {
 	GetAll(ctx context.Context) ([]*Foo, error)
 	GetAllAByB(ctx context.Context, b sql.NullInt32) ([]sql.NullInt32, error)
-	GetOne(ctx context.Context, a sql.NullInt32) (*Foo, error)
+	GetOne(ctx context.Context, arg *GetOneParams) (*Foo, error)
 }
 
 var _ Querier = (*Queries)(nil)

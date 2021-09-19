@@ -63,11 +63,16 @@ func (q *Queries) GetAllAByB(ctx context.Context, b sql.NullInt32) ([]sql.NullIn
 }
 
 const getOne = `-- name: GetOne :one
-SELECT a, b FROM foo WHERE a = ? LIMIT 1
+SELECT a, b FROM foo WHERE a = ? AND b = ? LIMIT 1
 `
 
-func (q *Queries) GetOne(ctx context.Context, a sql.NullInt32) (*Foo, error) {
-	row := q.db.QueryRowContext(ctx, getOne, a)
+type GetOneParams struct {
+	A sql.NullInt32
+	B sql.NullInt32
+}
+
+func (q *Queries) GetOne(ctx context.Context, arg *GetOneParams) (*Foo, error) {
+	row := q.db.QueryRowContext(ctx, getOne, arg.A, arg.B)
 	var i Foo
 	err := row.Scan(&i.A, &i.B)
 	return &i, err

@@ -1,7 +1,7 @@
 CREATE TABLE foo (a integer, b integer);
 
 /* name: GetOne :one */
-SELECT * FROM foo WHERE a = ? LIMIT 1;
+SELECT * FROM foo WHERE a = ? AND b = ? LIMIT 1;
 
 /* name: GetAll :many */
 SELECT * FROM foo;
