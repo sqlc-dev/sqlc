@@ -100,7 +100,7 @@ func (q *Queries) Delete(ctx context.Context, id int) error {
 	return err
 }
 
-const deleteAffected = `-- name: DeleteAffected :exec
+const deleteAffected = `-- name: DeleteAffected :execrows
 DELETE FROM authors WHERE id = $1
 `
 
