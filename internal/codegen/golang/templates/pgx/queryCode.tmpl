@@ -22,34 +22,34 @@ type {{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
 {{if eq .Cmd ":one"}}
 {{range .Comments}}//{{.}}
 {{end -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.Type}}, error) {
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.DefineType}}, error) {
 	row := q.db.QueryRow(ctx, {{.ConstantName}}, {{.Arg.Params}})
 	var {{.Ret.Name}} {{.Ret.Type}}
 	err := row.Scan({{.Ret.Scan}})
-	return {{.Ret.Name}}, err
+	return {{.Ret.ReturnName}}, err
 }
 {{end}}
 
 {{if eq .Cmd ":many"}}
 {{range .Comments}}//{{.}}
 {{end -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.Type}}, error) {
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error) {
 	rows, err := q.db.Query(ctx, {{.ConstantName}}, {{.Arg.Params}})
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 	{{- if $.EmitEmptySlices}}
-	items := []{{.Ret.Type}}{}
+	items := []{{.Ret.DefineType}}{}
 	{{else}}
-	var items []{{.Ret.Type}}
+	var items []{{.Ret.DefineType}}
 	{{end -}}
 	for rows.Next() {
 		var {{.Ret.Name}} {{.Ret.Type}}
 		if err := rows.Scan({{.Ret.Scan}}); err != nil {
 			return nil, err
 		}
-		items = append(items, {{.Ret.Name}})
+		items = append(items, {{.Ret.ReturnName}})
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
