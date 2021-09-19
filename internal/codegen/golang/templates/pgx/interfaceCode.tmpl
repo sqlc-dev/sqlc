@@ -2,10 +2,10 @@
     type Querier interface {
     {{- range .GoQueries}}
         {{- if eq .Cmd ":one"}}
-            {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.Type}}, error)
+            {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.DefineType}}, error)
         {{- end}}
         {{- if eq .Cmd ":many"}}
-            {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.Type}}, error)
+            {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error)
         {{- end}}
         {{- if eq .Cmd ":exec"}}
             {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) error
