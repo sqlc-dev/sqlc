@@ -7,11 +7,12 @@ import (
 )
 
 type QueryValue struct {
-	Emit       bool
-	Name       string
-	Struct     *Struct
-	Typ        string
-	SQLPackage SQLPackage
+	Emit        bool
+	EmitPointer bool
+	Name        string
+	Struct      *Struct
+	Typ         string
+	SQLPackage  SQLPackage
 }
 
 func (v QueryValue) EmitStruct() bool {
@@ -22,6 +23,10 @@ func (v QueryValue) IsStruct() bool {
 	return v.Struct != nil
 }
 
+func (v QueryValue) IsPointer() bool {
+	return v.EmitPointer && v.Struct != nil
+}
+
 func (v QueryValue) isEmpty() bool {
 	return v.Typ == "" && v.Name == "" && v.Struct == nil
 }
@@ -30,7 +35,7 @@ func (v QueryValue) Pair() string {
 	if v.isEmpty() {
 		return ""
 	}
-	return v.Name + " " + v.Type()
+	return v.Name + " " + v.DefineType()
 }
 
 func (v QueryValue) Type() string {
@@ -41,6 +46,21 @@ func (v QueryValue) Type() string {
 		return v.Struct.Name
 	}
 	panic("no type for QueryValue: " + v.Name)
+}
+
+func (v *QueryValue) DefineType() string {
+	t := v.Type()
+	if v.IsPointer() {
+		return "*" + t
+	}
+	return t
+}
+
+func (v *QueryValue) ReturnName() string {
+	if v.IsPointer() {
+		return "&" + v.Name
+	}
+	return v.Name
 }
 
 func (v QueryValue) Params() string {

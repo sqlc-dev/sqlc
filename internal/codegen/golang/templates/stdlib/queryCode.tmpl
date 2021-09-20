@@ -22,7 +22,7 @@ type {{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
 {{if eq .Cmd ":one"}}
 {{range .Comments}}//{{.}}
 {{end -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.Type}}, error) {
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.DefineType}}, error) {
   	{{- if $.EmitPreparedQueries}}
 	row := q.queryRow(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
 	{{- else}}
@@ -30,14 +30,14 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.Ty
 	{{- end}}
 	var {{.Ret.Name}} {{.Ret.Type}}
 	err := row.Scan({{.Ret.Scan}})
-	return {{.Ret.Name}}, err
+	return {{.Ret.ReturnName}}, err
 }
 {{end}}
 
 {{if eq .Cmd ":many"}}
 {{range .Comments}}//{{.}}
 {{end -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.Type}}, error) {
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error) {
     {{- if $.EmitPreparedQueries}}
     rows, err := q.query(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
     {{- else}}
@@ -48,16 +48,16 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.
     }
     defer rows.Close()
     {{- if $.EmitEmptySlices}}
-    items := []{{.Ret.Type}}{}
+    items := []{{.Ret.DefineType}}{}
     {{else}}
-    var items []{{.Ret.Type}}
+    var items []{{.Ret.DefineType}}
     {{end -}}
     for rows.Next() {
         var {{.Ret.Name}} {{.Ret.Type}}
         if err := rows.Scan({{.Ret.Scan}}); err != nil {
             return nil, err
         }
-        items = append(items, {{.Ret.Name}})
+        items = append(items, {{.Ret.ReturnName}})
     }
     if err := rows.Close(); err != nil {
         return nil, err
