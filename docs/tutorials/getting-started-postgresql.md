@@ -66,7 +66,7 @@ You are now ready to generate code. Run the `generate` command. You shouldn't se
 sqlc generate
 ```
 
-You should now have a `db` package containing three files.
+You should now have a `tutorial` package containing three files.
 
 ```
 ├── go.mod
