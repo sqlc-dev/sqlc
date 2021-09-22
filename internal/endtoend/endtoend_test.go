@@ -80,6 +80,9 @@ func TestReplay(t *testing.T) {
 			return err
 		}
 		if info.Name() == "sqlc.json" || info.Name() == "sqlc.yaml" {
+			// if filepath.Dir(path) != "testdata/params_duplicate/mysql" {
+			// 	return filepath.SkipDir
+			// }
 			dirs = append(dirs, filepath.Dir(path))
 			return filepath.SkipDir
 		}

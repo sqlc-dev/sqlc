@@ -349,10 +349,22 @@ func (i *importer) queryImports(filename string) fileImports {
 		return false
 	}
 
+	mysqlSliceScan := func() bool {
+		for _, q := range gq {
+			if q.Arg.HasSlices() {
+				return true
+			}
+		}
+		return false
+	}
+
 	std["context"] = struct{}{}
 
 	sqlpkg := SQLPackageFromString(i.Settings.Go.SQLPackage)
-	if sliceScan() && sqlpkg != SQLPackagePGX {
+	if mysqlSliceScan() {
+		std["fmt"] = struct{}{}
+		std["strings"] = struct{}{}
+	} else if sliceScan() && sqlpkg != SQLPackagePGX {
 		pkg[ImportSpec{Path: "github.com/lib/pq"}] = struct{}{}
 	}
 

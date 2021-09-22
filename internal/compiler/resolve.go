@@ -7,6 +7,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sql/astutils"
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
+	"github.com/kyleconroy/sqlc/internal/sql/rewrite"
 	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
 )
 
@@ -18,7 +19,7 @@ func dataType(n *ast.TypeName) string {
 	}
 }
 
-func resolveCatalogRefs(c *catalog.Catalog, qc *QueryCatalog, rvs []*ast.RangeVar, args []paramRef, names map[int]string) ([]Parameter, error) {
+func resolveCatalogRefs(c *catalog.Catalog, qc *QueryCatalog, rvs []*ast.RangeVar, args []paramRef, names map[int]rewrite.NamedParam) ([]Parameter, error) {
 	aliasMap := map[string]*ast.TableName{}
 	// TODO: Deprecate defaultTable
 	var defaultTable *ast.TableName
@@ -26,7 +27,7 @@ func resolveCatalogRefs(c *catalog.Catalog, qc *QueryCatalog, rvs []*ast.RangeVa
 
 	parameterName := func(n int, defaultName string) string {
 		if n, ok := names[n]; ok {
-			return n
+			return n.Name
 		}
 		return defaultName
 	}
@@ -498,15 +499,23 @@ func resolveCatalogRefs(c *catalog.Catalog, qc *QueryCatalog, rvs []*ast.RangeVa
 						if ref.name != "" {
 							key = ref.name
 						}
+
+						paramName := key
+						var isSlice bool
+						if n, ok := names[ref.ref.Number]; ok {
+							paramName, isSlice = n.Name, n.Slice
+						}
+
 						a = append(a, Parameter{
 							Number: number,
 							Column: &Column{
-								Name:         parameterName(ref.ref.Number, key),
+								Name:         paramName,
 								DataType:     dataType(&c.Type),
 								NotNull:      c.IsNotNull,
 								IsArray:      c.IsArray,
 								Table:        table,
 								IsNamedParam: isNamedParam(ref.ref.Number),
+								IsSlice:      isSlice,
 							},
 						})
 					}

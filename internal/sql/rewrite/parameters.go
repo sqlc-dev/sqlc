@@ -41,16 +41,22 @@ func isNamedParamSignCast(node ast.Node) bool {
 	return astutils.Join(expr.Name, ".") == "@" && cast
 }
 
-func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool, dollar bool) (*ast.RawStmt, map[int]string, []source.Edit) {
+type NamedParam struct {
+	Name  string
+	Slice bool
+}
+
+func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool, dollar bool) (*ast.RawStmt, map[int]NamedParam, []source.Edit) {
 	foundFunc := astutils.Search(raw, named.IsParamFunc)
 	foundSign := astutils.Search(raw, named.IsParamSign)
 	if len(foundFunc.Items)+len(foundSign.Items) == 0 {
-		return raw, map[int]string{}, nil
+		return raw, map[int]NamedParam{}, nil
 	}
 
 	hasNamedParameterSupport := engine != config.EngineMySQL
 
 	args := map[string][]int{}
+	argsSlice := map[string]bool{}
 	argn := 0
 	var edits []source.Edit
 	node := astutils.Apply(raw, func(cr *astutils.Cursor) bool {
@@ -59,6 +65,8 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 		case named.IsParamFunc(node):
 			fun := node.(*ast.FuncCall)
 			param, isConst := flatten(fun.Args)
+			sqlcFunc := fun.Func.Name // "arg" or "slice"
+			isSlice := sqlcFunc == "slice"
 			if nums, ok := args[param]; ok && hasNamedParameterSupport {
 				cr.Replace(&ast.ParamRef{
 					Number:   nums[0],
@@ -69,11 +77,8 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 				for numbs[argn] {
 					argn++
 				}
-				if _, found := args[param]; !found {
-					args[param] = []int{argn}
-				} else {
-					args[param] = append(args[param], argn)
-				}
+				args[param] = append(args[param], argn)
+				argsSlice[param] = isSlice
 				cr.Replace(&ast.ParamRef{
 					Number:   argn,
 					Location: fun.Location,
@@ -82,12 +87,18 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 			// TODO: This code assumes that sqlc.arg(name) is on a single line
 			var old, replace string
 			if isConst {
-				old = fmt.Sprintf("sqlc.arg('%s')", param)
+				old = fmt.Sprintf("sqlc.%s('%s')", sqlcFunc, param)
 			} else {
-				old = fmt.Sprintf("sqlc.arg(%s)", param)
+				old = fmt.Sprintf("sqlc.%s(%s)", sqlcFunc, param)
 			}
 			if engine == config.EngineMySQL || !dollar {
-				replace = "?"
+				if isSlice {
+					// This sequence is also replicated in internal/codegen/golang.Field
+					// since it's needed during template generation for replacement
+					replace = fmt.Sprintf(`/*REPLACE:%s*/?`, param)
+				} else {
+					replace = "?"
+				}
 			} else {
 				replace = fmt.Sprintf("$%d", args[param][0])
 			}
@@ -180,11 +191,12 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 		}
 	}, nil)
 
-	named := map[int]string{}
+	namedPos := make(map[int]NamedParam, len(args))
 	for k, vs := range args {
 		for _, v := range vs {
-			named[v] = k
+			namedPos[v] = NamedParam{Name: k, Slice: argsSlice[k]}
 		}
 	}
-	return node.(*ast.RawStmt), named, edits
+
+	return node.(*ast.RawStmt), namedPos, edits
 }

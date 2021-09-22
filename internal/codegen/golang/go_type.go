@@ -17,7 +17,7 @@ func goType(r *compiler.Result, col *compiler.Column, settings config.CombinedSe
 		}
 	}
 	typ := goInnerType(r, col, settings)
-	if col.IsArray {
+	if col.IsArray || col.IsSlice {
 		return "[]" + typ
 	}
 	return typ

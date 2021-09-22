@@ -1,6 +1,8 @@
 package compiler
 
 import (
+	"fmt"
+
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 )
 
@@ -29,7 +31,14 @@ type Column struct {
 	TableAlias string
 	Type       *ast.TypeName
 
+	IsSlice bool // is this sqlc.slice
+
 	skipTableRequiredCheck bool
+}
+
+// Named with "...Magic" because of the fixed string to be replaced
+func (c *Column) InterpolatedMagic() string {
+	return fmt.Sprintf(`"/*REPLACE:%s*/?"`, c.Name)
 }
 
 type Query struct {

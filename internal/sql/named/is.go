@@ -13,7 +13,7 @@ func IsParamFunc(node ast.Node) bool {
 	if call.Func == nil {
 		return false
 	}
-	return call.Func.Schema == "sqlc" && call.Func.Name == "arg"
+	return call.Func.Schema == "sqlc" && (call.Func.Name == "arg" || call.Func.Name == "slice")
 }
 
 func IsParamSign(node ast.Node) bool {

@@ -169,6 +169,7 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 				Name:       paramName(p),
 				Typ:        goType(r, p.Column, settings),
 				SQLPackage: sqlpkg,
+				Column:     p.Column,
 			}
 		} else if len(query.Params) > 1 {
 			var cols []goColumn
@@ -291,9 +292,10 @@ func columnsToStruct(r *compiler.Result, name string, columns []goColumn, settin
 			tags["json:"] = JSONTagName(tagName, settings)
 		}
 		gs.Fields = append(gs.Fields, Field{
-			Name: fieldName,
-			Type: goType(r, c.Column, settings),
-			Tags: tags,
+			Name:   fieldName,
+			Type:   goType(r, c.Column, settings),
+			Tags:   tags,
+			Column: c.Column,
 		})
 		if _, found := seen[baseFieldName]; !found {
 			seen[baseFieldName] = []int{i}
