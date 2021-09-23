@@ -8,6 +8,66 @@ import (
 	"encoding/json"
 )
 
+const selectJSONBBuildArray = `-- name: SelectJSONBBuildArray :one
+SELECT 
+  jsonb_build_array(),
+  jsonb_build_array(1),
+  jsonb_build_array(1, 2),
+  jsonb_build_array(1, 2, 'foo'),
+  jsonb_build_array(1, 2, 'foo', 4)
+`
+
+type SelectJSONBBuildArrayRow struct {
+	JsonbBuildArray   json.RawMessage
+	JsonbBuildArray_2 json.RawMessage
+	JsonbBuildArray_3 json.RawMessage
+	JsonbBuildArray_4 json.RawMessage
+	JsonbBuildArray_5 json.RawMessage
+}
+
+func (q *Queries) SelectJSONBBuildArray(ctx context.Context) (SelectJSONBBuildArrayRow, error) {
+	row := q.db.QueryRowContext(ctx, selectJSONBBuildArray)
+	var i SelectJSONBBuildArrayRow
+	err := row.Scan(
+		&i.JsonbBuildArray,
+		&i.JsonbBuildArray_2,
+		&i.JsonbBuildArray_3,
+		&i.JsonbBuildArray_4,
+		&i.JsonbBuildArray_5,
+	)
+	return i, err
+}
+
+const selectJSONBBuildObject = `-- name: SelectJSONBBuildObject :one
+SELECT
+  jsonb_build_object(),
+  jsonb_build_object('foo'),
+  jsonb_build_object('foo', 1),
+  jsonb_build_object('foo', 1, 2),
+  jsonb_build_object('foo', 1, 2, 'bar')
+`
+
+type SelectJSONBBuildObjectRow struct {
+	JsonbBuildObject   json.RawMessage
+	JsonbBuildObject_2 json.RawMessage
+	JsonbBuildObject_3 json.RawMessage
+	JsonbBuildObject_4 json.RawMessage
+	JsonbBuildObject_5 json.RawMessage
+}
+
+func (q *Queries) SelectJSONBBuildObject(ctx context.Context) (SelectJSONBBuildObjectRow, error) {
+	row := q.db.QueryRowContext(ctx, selectJSONBBuildObject)
+	var i SelectJSONBBuildObjectRow
+	err := row.Scan(
+		&i.JsonbBuildObject,
+		&i.JsonbBuildObject_2,
+		&i.JsonbBuildObject_3,
+		&i.JsonbBuildObject_4,
+		&i.JsonbBuildObject_5,
+	)
+	return i, err
+}
+
 const selectJSONBuildArray = `-- name: SelectJSONBuildArray :one
 SELECT 
   json_build_array(),

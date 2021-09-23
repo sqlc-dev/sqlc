@@ -11910,13 +11910,23 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "integer"},
 		},
 		{
-			Name:       "jsonb_build_array",
-			Args:       []*catalog.Argument{},
+			Name: "jsonb_build_array",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "jsonb"},
 		},
 		{
-			Name:       "jsonb_build_object",
-			Args:       []*catalog.Argument{},
+			Name: "jsonb_build_object",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "jsonb"},
 		},
 		{
