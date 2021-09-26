@@ -25,6 +25,14 @@ func todo(n pcast.Node) *ast.TODO {
 	return &ast.TODO{}
 }
 
+func identifier(id string) string {
+	return strings.ToLower(id)
+}
+
+func NewIdentifer(t string) *ast.String {
+	return &ast.String{Str: identifier(t)}
+}
+
 func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 	alt := &ast.AlterTableStmt{
 		Table: parseTableName(n.Table),
@@ -119,7 +127,7 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 }
 
 func (c *cc) convertAssignment(n *pcast.Assignment) *ast.ResTarget {
-	name := n.Column.Name.String()
+	name := identifier(n.Column.Name.String())
 	return &ast.ResTarget{
 		Name: &name,
 		Val:  c.convert(n.Expr),
@@ -259,12 +267,12 @@ func (c *cc) convertCreateTableStmt(n *pcast.CreateTableStmt) ast.Node {
 func (c *cc) convertColumnNameExpr(n *pcast.ColumnNameExpr) *ast.ColumnRef {
 	var items []ast.Node
 	if schema := n.Name.Schema.String(); schema != "" {
-		items = append(items, &ast.String{Str: schema})
+		items = append(items, NewIdentifer(schema))
 	}
 	if table := n.Name.Table.String(); table != "" {
-		items = append(items, &ast.String{Str: table})
+		items = append(items, NewIdentifer(table))
 	}
-	items = append(items, &ast.String{Str: n.Name.Name.String()})
+	items = append(items, NewIdentifer(n.Name.Name.String()))
 	return &ast.ColumnRef{
 		Fields: &ast.List{
 			Items: items,
@@ -275,7 +283,7 @@ func (c *cc) convertColumnNameExpr(n *pcast.ColumnNameExpr) *ast.ColumnRef {
 func (c *cc) convertColumnNames(cols []*pcast.ColumnName) *ast.List {
 	list := &ast.List{Items: []ast.Node{}}
 	for i := range cols {
-		name := cols[i].Name.String()
+		name := identifier(cols[i].Name.String())
 		list.Items = append(list.Items, &ast.ResTarget{
 			Name: &name,
 		})
@@ -344,9 +352,9 @@ func (c *cc) convertFuncCallExpr(n *pcast.FuncCallExpr) ast.Node {
 	// TODO: Deprecate the usage of Funcname
 	items := []ast.Node{}
 	if schema != "" {
-		items = append(items, &ast.String{Str: schema})
+		items = append(items, NewIdentifer(schema))
 	}
-	items = append(items, &ast.String{Str: name})
+	items = append(items, NewIdentifer(name))
 
 	args := &ast.List{}
 	for _, arg := range n.Args {
@@ -432,7 +440,8 @@ func (c *cc) convertSelectField(n *pcast.SelectField) *ast.ResTarget {
 	}
 	var name *string
 	if n.AsName.O != "" {
-		name = &n.AsName.O
+		asname := identifier(n.AsName.O)
+		name = &asname
 	}
 	return &ast.ResTarget{
 		// TODO: Populate Indirection field
@@ -479,7 +488,7 @@ func (c *cc) convertCommonTableExpression(n *pcast.CommonTableExpression) *ast.C
 
 	columns := &ast.List{}
 	for _, col := range n.ColNameList {
-		columns.Items = append(columns.Items, &ast.String{Str: col.String()})
+		columns.Items = append(columns.Items, NewIdentifer(col.String()))
 	}
 
 	return &ast.CommonTableExpr{
@@ -556,7 +565,7 @@ func (c *cc) convertValueExpr(n *driver.ValueExpr) *ast.A_Const {
 func (c *cc) convertWildCardField(n *pcast.WildCardField) *ast.ColumnRef {
 	items := []ast.Node{}
 	if t := n.Table.String(); t != "" {
-		items = append(items, &ast.String{Str: t})
+		items = append(items, NewIdentifer(t))
 	}
 	items = append(items, &ast.A_Star{})
 
@@ -579,9 +588,7 @@ func (c *cc) convertAggregateFuncExpr(n *pcast.AggregateFuncExpr) *ast.FuncCall 
 		},
 		Funcname: &ast.List{
 			Items: []ast.Node{
-				&ast.String{
-					Str: name,
-				},
+				NewIdentifer(name),
 			},
 		},
 		Args:     &ast.List{},
@@ -740,7 +747,7 @@ func (c *cc) convertDropDatabaseStmt(n *pcast.DropDatabaseStmt) ast.Node {
 	return &ast.DropSchemaStmt{
 		MissingOk: !n.IfExists,
 		Schemas: []*ast.String{
-			{Str: n.Name},
+			NewIdentifer(n.Name),
 		},
 	}
 }
@@ -1138,8 +1145,8 @@ func (c *cc) convertSplitRegionStmt(n *pcast.SplitRegionStmt) ast.Node {
 }
 
 func (c *cc) convertTableName(n *pcast.TableName) *ast.RangeVar {
-	schema := n.Schema.String()
-	rel := n.Name.String()
+	schema := identifier(n.Schema.String())
+	rel := identifier(n.Name.String())
 	return &ast.RangeVar{
 		Schemaname: &schema,
 		Relname:    &rel,
