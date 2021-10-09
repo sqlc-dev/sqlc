@@ -1,15 +1,23 @@
 package compiler
 
 import (
+	"fmt"
+
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sql/astutils"
 )
 
-func findParameters(root ast.Node) []paramRef {
+func findParameters(root ast.Node) ([]paramRef, error) {
 	refs := make([]paramRef, 0)
-	v := paramSearch{seen: make(map[int]struct{}), refs: &refs}
+	errors := make([]error, 0)
+	v := paramSearch{seen: make(map[int]struct{}), refs: &refs, errs: &errors}
 	astutils.Walk(v, root)
-	return refs
+	if len(*v.errs) > 0 {
+		problems := *v.errs
+		return nil, problems[0]
+	} else {
+		return refs, nil
+	}
 }
 
 type paramRef struct {
@@ -24,6 +32,7 @@ type paramSearch struct {
 	rangeVar *ast.RangeVar
 	refs     *[]paramRef
 	seen     map[int]struct{}
+	errs     *[]error
 
 	// XXX: Gross state hack for limit
 	limitCount  ast.Node
@@ -45,6 +54,10 @@ func (l *limitOffset) Pos() int {
 }
 
 func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
+	if len(*p.errs) > 0 {
+		return p
+	}
+
 	switch n := node.(type) {
 
 	case *ast.A_Expr:
@@ -64,7 +77,10 @@ func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 				if !ok {
 					continue
 				}
-				// TODO: Out-of-bounds panic
+				if len(n.Cols.Items) <= i {
+					*p.errs = append(*p.errs, fmt.Errorf("INSERT has more expressions than target columns"))
+					return p
+				}
 				*p.refs = append(*p.refs, paramRef{parent: n.Cols.Items[i], ref: ref, rv: n.Relation})
 				p.seen[ref.Location] = struct{}{}
 			}
@@ -78,7 +94,10 @@ func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 					if !ok {
 						continue
 					}
-					// TODO: Out-of-bounds panic
+					if len(n.Cols.Items) <= i {
+						*p.errs = append(*p.errs, fmt.Errorf("INSERT has more expressions than target columns"))
+						return p
+					}
 					*p.refs = append(*p.refs, paramRef{parent: n.Cols.Items[i], ref: ref, rv: n.Relation})
 					p.seen[ref.Location] = struct{}{}
 				}
