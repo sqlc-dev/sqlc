@@ -127,6 +127,10 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 			}
 
 		case *ast.CoalesceExpr:
+			name := "coalesce"
+			if res.Name != nil {
+				name = *res.Name
+			}
 			var found bool
 			for _, arg := range n.Args.Items {
 				if found {
@@ -146,7 +150,7 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 				}
 			}
 			if !found {
-				cols = append(cols, &Column{Name: "coalesce", DataType: "any", NotNull: false})
+				cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
 			}
 
 		case *ast.ColumnRef:
