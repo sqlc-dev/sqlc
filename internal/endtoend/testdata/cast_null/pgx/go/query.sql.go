@@ -5,26 +5,43 @@ package querytest
 
 import (
 	"context"
+	"database/sql"
 )
 
-const castCoalesce = `-- name: CastCoalesce :many
-SELECT coalesce(bar, '')::text as login
+const listNullable = `-- name: ListNullable :many
+SELECT
+  NULL::text as a,
+  NULL::integer as b,
+  NULL::bigint as c,
+  NULL::time as d
 FROM foo
 `
 
-func (q *Queries) CastCoalesce(ctx context.Context) ([]string, error) {
-	rows, err := q.db.Query(ctx, castCoalesce)
+type ListNullableRow struct {
+	A sql.NullString
+	B sql.NullInt32
+	C sql.NullInt64
+	D sql.NullTime
+}
+
+func (q *Queries) ListNullable(ctx context.Context) ([]ListNullableRow, error) {
+	rows, err := q.db.Query(ctx, listNullable)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []string
+	var items []ListNullableRow
 	for rows.Next() {
-		var login string
-		if err := rows.Scan(&login); err != nil {
+		var i ListNullableRow
+		if err := rows.Scan(
+			&i.A,
+			&i.B,
+			&i.C,
+			&i.D,
+		); err != nil {
 			return nil, err
 		}
-		items = append(items, login)
+		items = append(items, i)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
