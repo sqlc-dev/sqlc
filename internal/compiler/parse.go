@@ -79,7 +79,10 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 
 	raw, namedParams, edits := rewrite.NamedParameters(c.conf.Engine, raw, numbers, dollar)
 	rvs := rangeVars(raw.Stmt)
-	refs := findParameters(raw.Stmt)
+	refs, err := findParameters(raw.Stmt)
+	if err != nil {
+		return nil, err
+	}
 	if o.UsePositionalParameters {
 		edits, err = rewriteNumberedParameters(refs, raw, rawSQL)
 		if err != nil {
