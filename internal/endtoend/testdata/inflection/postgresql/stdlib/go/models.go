@@ -8,6 +8,10 @@ type Campus struct {
 	ID string
 }
 
+type ProductMetum struct {
+	ID string
+}
+
 type Student struct {
 	ID string
 }
