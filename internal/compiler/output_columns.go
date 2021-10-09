@@ -106,7 +106,8 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 			if res.Name != nil {
 				name = *res.Name
 			}
-			// TODO: The TypeCase code has been copied from below. Instead, we need a recurse function to get the type of a node.
+			// TODO: The TypeCase code has been copied from below. Instead, we
+			// need a recurse function to get the type of a node.
 			if tc, ok := n.Defresult.(*ast.TypeCast); ok {
 				if tc.TypeName == nil {
 					return nil, errors.New("no type name type cast")
@@ -236,6 +237,12 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 			// TODO Validate column names
 			col := toColumn(n.TypeName)
 			col.Name = name
+			// TODO Add correct, real type inference
+			if constant, ok := n.Arg.(*ast.A_Const); ok {
+				if _, ok := constant.Val.(*ast.Null); ok {
+					col.NotNull = false
+				}
+			}
 			cols = append(cols, col)
 
 		default:
