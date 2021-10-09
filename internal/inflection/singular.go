@@ -14,5 +14,12 @@ func Singular(name string) string {
 	if strings.ToLower(name) == "campus" {
 		return name
 	}
+	// Manual fix for incorrect handling of "meta"
+	//
+	// https://github.com/kyleconroy/sqlc/issues/1217
+	// https://github.com/jinzhu/inflection/issues/21
+	if strings.ToLower(name) == "meta" {
+		return name
+	}
 	return upstream.Singular(name)
 }
