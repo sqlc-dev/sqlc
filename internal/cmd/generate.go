@@ -47,7 +47,7 @@ type outPair struct {
 	config.SQL
 }
 
-func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer) (map[string]string, error) {
+func readConfig(stderr io.Writer, dir, filename string) (string, *config.Config, error) {
 	configPath := ""
 	if filename != "" {
 		configPath = filepath.Join(dir, filename)
@@ -65,12 +65,12 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 
 		if yamlMissing && jsonMissing {
 			fmt.Fprintln(stderr, "error parsing configuration files. sqlc.yaml or sqlc.json: file does not exist")
-			return nil, errors.New("config file missing")
+			return "", nil, errors.New("config file missing")
 		}
 
 		if !yamlMissing && !jsonMissing {
 			fmt.Fprintln(stderr, "error: both sqlc.json and sqlc.yaml files present")
-			return nil, errors.New("sqlc.json and sqlc.yaml present")
+			return "", nil, errors.New("sqlc.json and sqlc.yaml present")
 		}
 
 		configPath = yamlPath
@@ -83,7 +83,7 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 	blob, err := os.ReadFile(configPath)
 	if err != nil {
 		fmt.Fprintf(stderr, "error parsing %s: file does not exist\n", base)
-		return nil, err
+		return "", nil, err
 	}
 
 	conf, err := config.ParseConfig(bytes.NewReader(blob))
@@ -97,6 +97,15 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 			fmt.Fprintf(stderr, errMessageNoPackages)
 		}
 		fmt.Fprintf(stderr, "error parsing %s: %s\n", base, err)
+		return "", nil, err
+	}
+
+	return configPath, &conf, nil
+}
+
+func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer) (map[string]string, error) {
+	configPath, conf, err := readConfig(stderr, dir, filename)
+	if err != nil {
 		return nil, err
 	}
 
@@ -105,6 +114,7 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 		return nil, err
 	}
 
+	base := filepath.Base(configPath)
 	output := map[string]string{}
 	errored := false
 
@@ -135,7 +145,7 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 	}
 
 	for _, sql := range pairs {
-		combo := config.Combine(conf, sql.SQL)
+		combo := config.Combine(*conf, sql.SQL)
 
 		// TODO: This feels like a hack that will bite us later
 		joined := make([]string, 0, len(sql.Schema))
