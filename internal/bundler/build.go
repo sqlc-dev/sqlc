@@ -3,6 +3,7 @@ package bundler
 import (
 	"archive/tar"
 	"bytes"
+	"compress/gzip"
 	"io"
 	"os"
 	"path/filepath"
@@ -28,10 +29,10 @@ func Build(file string, conf *config.Config) ([]byte, error) {
 	}
 
 	// TODO: Checksum
-	// TODO: Gzip this
 	b := bytes.NewBuffer([]byte{})
-	// bz := gzip.NewWriter(b)
-	w := tar.NewWriter(b)
+	gw := gzip.NewWriter(b)
+	defer gw.Close()
+	w := tar.NewWriter(gw)
 	defer w.Close()
 
 	for file, _ := range refs {
@@ -44,9 +45,12 @@ func Build(file string, conf *config.Config) ([]byte, error) {
 		return nil, err
 	}
 
-	// if err := bz.Flush(); err != nil {
-	// 	return nil, err
-	// }
+	if err := gw.Flush(); err != nil {
+		return nil, err
+	}
+
+	w.Close()
+	gw.Close()
 
 	return b.Bytes(), nil
 }
@@ -69,11 +73,8 @@ func addFile(w *tar.Writer, file string) error {
 	if err := w.WriteHeader(header); err != nil {
 		return err
 	}
-	body, err := io.ReadAll(h)
-	if err != nil {
-		return err
-	}
-	if _, err := w.Write(body); err != nil {
+	// copy the file data to the tarball
+	if _, err := io.Copy(w, h); err != nil {
 		return err
 	}
 	return nil
