@@ -32,8 +32,7 @@ func createPkg(e Env, dir, filename string, stderr io.Writer) error {
 		return err
 	}
 
-	// TODO: Gzip?
-	if err := os.WriteFile("sqlc-package-test.tar", tarball, 0644); err != nil {
+	if err := os.WriteFile("sqlc-package-test.tar.gz", tarball, 0644); err != nil {
 		return err
 	}
 
