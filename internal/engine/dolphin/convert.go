@@ -849,11 +849,18 @@ func (c *cc) convertJoin(n *pcast.Join) *ast.List {
 		return &ast.List{}
 	}
 	if n.Right != nil && n.Left != nil {
+		// MySQL doesn't have a FULL join type
+		joinType := ast.JoinType(n.Tp)
+		if joinType >= ast.JoinTypeFull {
+			joinType++
+		}
+
 		return &ast.List{
 			Items: []ast.Node{&ast.JoinExpr{
-				Larg:  c.convert(n.Left),
-				Rarg:  c.convert(n.Right),
-				Quals: c.convert(n.On),
+				Jointype: joinType,
+				Larg:     c.convert(n.Left),
+				Rarg:     c.convert(n.Right),
+				Quals:    c.convert(n.On),
 			}},
 		}
 	}
