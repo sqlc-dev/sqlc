@@ -851,9 +851,10 @@ func (c *cc) convertJoin(n *pcast.Join) *ast.List {
 	if n.Right != nil && n.Left != nil {
 		return &ast.List{
 			Items: []ast.Node{&ast.JoinExpr{
-				Larg:  c.convert(n.Left),
-				Rarg:  c.convert(n.Right),
-				Quals: c.convert(n.On),
+				Jointype: ast.JoinType(n.Tp),
+				Larg:     c.convert(n.Left),
+				Rarg:     c.convert(n.Right),
+				Quals:    c.convert(n.On),
 			}},
 		}
 	}
