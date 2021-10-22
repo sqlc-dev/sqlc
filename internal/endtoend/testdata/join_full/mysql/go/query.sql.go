@@ -9,19 +9,23 @@ import (
 )
 
 const fullJoin = `-- name: FullJoin :many
-SELECT f.id, f.bar_id, b.id
+SELECT f.id, bar_id, b.id
 FROM foo f
-FULL OUTER JOIN bar b ON b.id = f.bar_id
-WHERE f.id = $1
+LEFT JOIN bar b ON b.id = f.bar_id
+UNION ALL
+SELECT b.id, f.id, bar_id
+FROM bar b
+RIGHT JOIN foo f ON b.id = f.bar_id
+WHERE f.id = ?
 `
 
 type FullJoinRow struct {
-	ID    sql.NullInt32
+	ID    int64
 	BarID sql.NullInt32
-	ID_2  sql.NullInt32
+	ID_2  sql.NullInt64
 }
 
-func (q *Queries) FullJoin(ctx context.Context, id int32) ([]FullJoinRow, error) {
+func (q *Queries) FullJoin(ctx context.Context, id int64) ([]FullJoinRow, error) {
 	rows, err := q.db.QueryContext(ctx, fullJoin, id)
 	if err != nil {
 		return nil, err
