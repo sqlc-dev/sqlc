@@ -18,7 +18,7 @@ WHERE f.id = ?
 type RightJoinRow struct {
 	ID    sql.NullInt64
 	BarID sql.NullInt32
-	ID_2  sql.NullInt64
+	ID_2  int64
 }
 
 func (q *Queries) RightJoin(ctx context.Context, id int64) ([]RightJoinRow, error) {
