@@ -12,16 +12,16 @@ const rightJoin = `-- name: RightJoin :many
 SELECT f.id, f.bar_id, b.id
 FROM foo f
 RIGHT JOIN bar b ON b.id = f.bar_id
-WHERE f.id = $1
+WHERE f.id = ?
 `
 
 type RightJoinRow struct {
-	ID    sql.NullInt32
+	ID    sql.NullInt64
 	BarID sql.NullInt32
-	ID_2  int32
+	ID_2  int64
 }
 
-func (q *Queries) RightJoin(ctx context.Context, id int32) ([]RightJoinRow, error) {
+func (q *Queries) RightJoin(ctx context.Context, id int64) ([]RightJoinRow, error) {
 	rows, err := q.db.QueryContext(ctx, rightJoin, id)
 	if err != nil {
 		return nil, err

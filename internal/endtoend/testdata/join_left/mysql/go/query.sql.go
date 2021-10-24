@@ -48,6 +48,7 @@ func (q *Queries) GetMayors(ctx context.Context) ([]GetMayorsRow, error) {
 const getMayorsOptional = `-- name: GetMayorsOptional :many
 SELECT
     user_id,
+    cities.city_id,
     mayors.full_name
 FROM users
 LEFT JOIN cities USING (city_id)
@@ -56,6 +57,7 @@ LEFT JOIN mayors USING (mayor_id)
 
 type GetMayorsOptionalRow struct {
 	UserID   int32
+	CityID   sql.NullInt32
 	FullName sql.NullString
 }
 
@@ -68,7 +70,7 @@ func (q *Queries) GetMayorsOptional(ctx context.Context) ([]GetMayorsOptionalRow
 	var items []GetMayorsOptionalRow
 	for rows.Next() {
 		var i GetMayorsOptionalRow
-		if err := rows.Scan(&i.UserID, &i.FullName); err != nil {
+		if err := rows.Scan(&i.UserID, &i.CityID, &i.FullName); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
