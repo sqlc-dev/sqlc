@@ -32,7 +32,8 @@ code ever again.
    :caption: Tutorials
    :hidden:
 
-   tutorials/getting-started.md
+   tutorials/getting-started-mysql.md
+   tutorials/getting-started-postgresql.md
 
 .. toctree::
    :maxdepth: 2

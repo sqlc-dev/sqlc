@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -21,7 +20,7 @@ func TestExamples(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	files, err := ioutil.ReadDir(examples)
+	files, err := os.ReadDir(examples)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -49,7 +48,7 @@ func BenchmarkExamples(b *testing.B) {
 	if err != nil {
 		b.Fatal(err)
 	}
-	files, err := ioutil.ReadDir(examples)
+	files, err := os.ReadDir(examples)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -125,7 +124,7 @@ func cmpDirectory(t *testing.T, dir string, actual map[string]string) {
 			strings.HasSuffix(path, "__init__.py") || strings.Contains(path, "/python/src/dbtest/") {
 			return nil
 		}
-		blob, err := ioutil.ReadFile(path)
+		blob, err := os.ReadFile(path)
 		if err != nil {
 			return err
 		}
@@ -158,7 +157,7 @@ func expectedStderr(t *testing.T, dir string) string {
 	t.Helper()
 	path := filepath.Join(dir, "stderr.txt")
 	if _, err := os.Stat(path); !os.IsNotExist(err) {
-		blob, err := ioutil.ReadFile(path)
+		blob, err := os.ReadFile(path)
 		if err != nil {
 			t.Fatal(err)
 		}

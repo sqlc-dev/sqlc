@@ -267,14 +267,21 @@ func New(def string) *Catalog {
 
 func (c *Catalog) Build(stmts []ast.Statement) error {
 	for i := range stmts {
-		if err := c.Update(stmts[i]); err != nil {
+		if err := c.Update(stmts[i], nil); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (c *Catalog) Update(stmt ast.Statement) error {
+// An interface is used to resolve a circular import between the catalog and compiler packages.
+// The createView function requires access to functions in the compiler package to parse the SELECT
+// statement that defines the view.
+type columnGenerator interface {
+	OutputColumns(node ast.Node) ([]*Column, error)
+}
+
+func (c *Catalog) Update(stmt ast.Statement, colGen columnGenerator) error {
 	if stmt.Raw == nil {
 		return nil
 	}
@@ -322,6 +329,9 @@ func (c *Catalog) Update(stmt ast.Statement) error {
 	case *ast.CreateTableStmt:
 		err = c.createTable(n)
 
+	case *ast.ViewStmt:
+		err = c.createView(n, colGen)
+
 	case *ast.DropFunctionStmt:
 		err = c.dropFunction(n)
 
@@ -342,6 +352,19 @@ func (c *Catalog) Update(stmt ast.Statement) error {
 
 	case *ast.RenameTypeStmt:
 		err = c.renameType(n)
+
+	case *ast.List:
+		for _, nn := range n.Items {
+			if err = c.Update(ast.Statement{
+				Raw: &ast.RawStmt{
+					Stmt:         nn,
+					StmtLocation: stmt.Raw.StmtLocation,
+					StmtLen:      stmt.Raw.StmtLen,
+				},
+			}, colGen); err != nil {
+				return err
+			}
+		}
 
 	}
 	return err

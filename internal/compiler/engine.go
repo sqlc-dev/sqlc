@@ -42,7 +42,7 @@ func (c *Compiler) Catalog() *catalog.Catalog {
 }
 
 func (c *Compiler) ParseCatalog(schema []string) error {
-	return parseCatalog(c.parser, c.catalog, schema)
+	return c.parseCatalog(schema)
 }
 
 func (c *Compiler) ParseQueries(queries []string, o opts.Parser) error {

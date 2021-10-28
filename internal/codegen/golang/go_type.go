@@ -6,13 +6,13 @@ import (
 )
 
 func goType(r *compiler.Result, col *compiler.Column, settings config.CombinedSettings) string {
-	// package overrides have a higher precedence
+	// Check if the column's type has been overridden
 	for _, oride := range settings.Overrides {
 		if oride.GoTypeName == "" {
 			continue
 		}
-		sameTable := sameTableName(col.Table, oride.Table, r.Catalog.DefaultSchema)
-		if oride.Column != "" && oride.ColumnName == col.Name && sameTable {
+		sameTable := oride.Matches(col.Table, r.Catalog.DefaultSchema)
+		if oride.Column != "" && oride.ColumnName.MatchString(col.Name) && sameTable {
 			return oride.GoTypeName
 		}
 	}

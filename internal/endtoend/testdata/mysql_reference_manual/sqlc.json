@@ -1,0 +1,12 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "name": "date_and_time_functions",
+      "path": "date_and_time_functions/go",
+      "schema": "date_and_time_functions",
+      "queries": "date_and_time_functions",
+      "engine": "mysql"
+    }
+  ]
+}

@@ -38,7 +38,7 @@ func convertSubLinkType(t pg.SubLinkType) (ast.SubLinkType, error) {
 	case pg.SubLinkType_ROWCOMPARE_SUBLINK:
 		return ast.ROWCOMPARE_SUBLINK, nil
 	case pg.SubLinkType_EXPR_SUBLINK:
-		return ast.EXISTS_SUBLINK, nil
+		return ast.EXPR_SUBLINK, nil
 	case pg.SubLinkType_MULTIEXPR_SUBLINK:
 		return ast.MULTIEXPR_SUBLINK, nil
 	case pg.SubLinkType_ARRAY_SUBLINK:
@@ -2015,7 +2015,12 @@ func convertParamRef(n *pg.ParamRef) *ast.ParamRef {
 	if n == nil {
 		return nil
 	}
+	var dollar bool
+	if n.Number != 0 {
+		dollar = true
+	}
 	return &ast.ParamRef{
+		Dollar:   dollar,
 		Number:   int(n.Number),
 		Location: int(n.Location),
 	}

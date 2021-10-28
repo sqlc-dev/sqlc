@@ -25,6 +25,14 @@ func todo(n pcast.Node) *ast.TODO {
 	return &ast.TODO{}
 }
 
+func identifier(id string) string {
+	return strings.ToLower(id)
+}
+
+func NewIdentifer(t string) *ast.String {
+	return &ast.String{Str: identifier(t)}
+}
+
 func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 	alt := &ast.AlterTableStmt{
 		Table: parseTableName(n.Table),
@@ -119,7 +127,7 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 }
 
 func (c *cc) convertAssignment(n *pcast.Assignment) *ast.ResTarget {
-	name := n.Column.Name.String()
+	name := identifier(n.Column.Name.String())
 	return &ast.ResTarget{
 		Name: &name,
 		Val:  c.convert(n.Expr),
@@ -259,12 +267,12 @@ func (c *cc) convertCreateTableStmt(n *pcast.CreateTableStmt) ast.Node {
 func (c *cc) convertColumnNameExpr(n *pcast.ColumnNameExpr) *ast.ColumnRef {
 	var items []ast.Node
 	if schema := n.Name.Schema.String(); schema != "" {
-		items = append(items, &ast.String{Str: schema})
+		items = append(items, NewIdentifer(schema))
 	}
 	if table := n.Name.Table.String(); table != "" {
-		items = append(items, &ast.String{Str: table})
+		items = append(items, NewIdentifer(table))
 	}
-	items = append(items, &ast.String{Str: n.Name.Name.String()})
+	items = append(items, NewIdentifer(n.Name.Name.String()))
 	return &ast.ColumnRef{
 		Fields: &ast.List{
 			Items: items,
@@ -275,7 +283,7 @@ func (c *cc) convertColumnNameExpr(n *pcast.ColumnNameExpr) *ast.ColumnRef {
 func (c *cc) convertColumnNames(cols []*pcast.ColumnName) *ast.List {
 	list := &ast.List{Items: []ast.Node{}}
 	for i := range cols {
-		name := cols[i].Name.String()
+		name := identifier(cols[i].Name.String())
 		list.Items = append(list.Items, &ast.ResTarget{
 			Name: &name,
 		})
@@ -298,14 +306,11 @@ func (c *cc) convertDeleteStmt(n *pcast.DeleteStmt) *ast.DeleteStmt {
 		Relation:      rangeVar,
 		WhereClause:   c.convert(n.Where),
 		ReturningList: &ast.List{},
+		WithClause:    c.convertWithClause(n.With),
 	}
 }
 
 func (c *cc) convertDropTableStmt(n *pcast.DropTableStmt) ast.Node {
-	// TODO: Remove once views are supported.
-	if n.IsView {
-		return todo(n)
-	}
 	drop := &ast.DropTableStmt{IfExists: n.IfExists}
 	for _, name := range n.Tables {
 		drop.Tables = append(drop.Tables, parseTableName(name))
@@ -314,10 +319,14 @@ func (c *cc) convertDropTableStmt(n *pcast.DropTableStmt) ast.Node {
 }
 
 func (c *cc) convertRenameTableStmt(n *pcast.RenameTableStmt) ast.Node {
-	return &ast.RenameTableStmt{
-		Table:   parseTableName(n.OldTable),
-		NewName: &parseTableName(n.NewTable).Name,
+	list := &ast.List{Items: []ast.Node{}}
+	for _, table := range n.TableToTables {
+		list.Items = append(list.Items, &ast.RenameTableStmt{
+			Table:   parseTableName(table.OldTable),
+			NewName: &parseTableName(table.NewTable).Name,
+		})
 	}
+	return list
 }
 
 func (c *cc) convertExistsSubqueryExpr(n *pcast.ExistsSubqueryExpr) *ast.SubLink {
@@ -343,9 +352,9 @@ func (c *cc) convertFuncCallExpr(n *pcast.FuncCallExpr) ast.Node {
 	// TODO: Deprecate the usage of Funcname
 	items := []ast.Node{}
 	if schema != "" {
-		items = append(items, &ast.String{Str: schema})
+		items = append(items, NewIdentifer(schema))
 	}
-	items = append(items, &ast.String{Str: name})
+	items = append(items, NewIdentifer(name))
 
 	args := &ast.List{}
 	for _, arg := range n.Args {
@@ -431,7 +440,8 @@ func (c *cc) convertSelectField(n *pcast.SelectField) *ast.ResTarget {
 	}
 	var name *string
 	if n.AsName.O != "" {
-		name = &n.AsName.O
+		asname := identifier(n.AsName.O)
+		name = &asname
 	}
 	return &ast.ResTarget{
 		// TODO: Populate Indirection field
@@ -447,6 +457,7 @@ func (c *cc) convertSelectStmt(n *pcast.SelectStmt) *ast.SelectStmt {
 		TargetList:  c.convertFieldList(n.Fields),
 		FromClause:  c.convertTableRefsClause(n.From),
 		WhereClause: c.convert(n.Where),
+		WithClause:  c.convertWithClause(n.With),
 		Op:          op,
 		All:         all,
 	}
@@ -466,6 +477,42 @@ func (c *cc) convertTableRefsClause(n *pcast.TableRefsClause) *ast.List {
 		return &ast.List{}
 	}
 	return c.convertJoin(n.TableRefs)
+}
+
+func (c *cc) convertCommonTableExpression(n *pcast.CommonTableExpression) *ast.CommonTableExpr {
+	if n == nil {
+		return nil
+	}
+
+	name := n.Name.String()
+
+	columns := &ast.List{}
+	for _, col := range n.ColNameList {
+		columns.Items = append(columns.Items, NewIdentifer(col.String()))
+	}
+
+	return &ast.CommonTableExpr{
+		Ctename:     &name,
+		Ctequery:    c.convert(n.Query),
+		Ctecolnames: columns,
+	}
+
+}
+
+func (c *cc) convertWithClause(n *pcast.WithClause) *ast.WithClause {
+	if n == nil {
+		return nil
+	}
+	list := &ast.List{}
+	for _, n := range n.CTEs {
+		list.Items = append(list.Items, c.convertCommonTableExpression(n))
+	}
+
+	return &ast.WithClause{
+		Ctes:      list,
+		Recursive: n.IsRecursive,
+		Location:  n.OriginTextPosition(),
+	}
 }
 
 func (c *cc) convertUpdateStmt(n *pcast.UpdateStmt) *ast.UpdateStmt {
@@ -503,6 +550,7 @@ func (c *cc) convertUpdateStmt(n *pcast.UpdateStmt) *ast.UpdateStmt {
 		WhereClause:   c.convert(n.Where),
 		FromClause:    &ast.List{},
 		ReturningList: &ast.List{},
+		WithClause:    c.convertWithClause(n.With),
 	}
 }
 
@@ -517,7 +565,7 @@ func (c *cc) convertValueExpr(n *driver.ValueExpr) *ast.A_Const {
 func (c *cc) convertWildCardField(n *pcast.WildCardField) *ast.ColumnRef {
 	items := []ast.Node{}
 	if t := n.Table.String(); t != "" {
-		items = append(items, &ast.String{Str: t})
+		items = append(items, NewIdentifer(t))
 	}
 	items = append(items, &ast.A_Star{})
 
@@ -540,9 +588,7 @@ func (c *cc) convertAggregateFuncExpr(n *pcast.AggregateFuncExpr) *ast.FuncCall 
 		},
 		Funcname: &ast.List{
 			Items: []ast.Node{
-				&ast.String{
-					Str: name,
-				},
+				NewIdentifer(name),
 			},
 		},
 		Args:     &ast.List{},
@@ -667,7 +713,14 @@ func (c *cc) convertCreateUserStmt(n *pcast.CreateUserStmt) ast.Node {
 }
 
 func (c *cc) convertCreateViewStmt(n *pcast.CreateViewStmt) ast.Node {
-	return todo(n)
+	return &ast.ViewStmt{
+		View:            c.convertTableName(n.ViewName),
+		Aliases:         &ast.List{},
+		Query:           c.convert(n.Select),
+		Replace:         n.OrReplace,
+		Options:         &ast.List{},
+		WithCheckOption: ast.ViewCheckOption(n.CheckOption),
+	}
 }
 
 func (c *cc) convertDeallocateStmt(n *pcast.DeallocateStmt) ast.Node {
@@ -694,7 +747,7 @@ func (c *cc) convertDropDatabaseStmt(n *pcast.DropDatabaseStmt) ast.Node {
 	return &ast.DropSchemaStmt{
 		MissingOk: !n.IfExists,
 		Schemas: []*ast.String{
-			{Str: n.Name},
+			NewIdentifer(n.Name),
 		},
 	}
 }
@@ -873,11 +926,42 @@ func (c *cc) convertPartitionByClause(n *pcast.PartitionByClause) ast.Node {
 }
 
 func (c *cc) convertPatternInExpr(n *pcast.PatternInExpr) ast.Node {
-	return todo(n)
+	var list []ast.Node
+	var val ast.Node
+
+	expr := c.convert(n.Expr)
+
+	for _, v := range n.List {
+		val = c.convert(v)
+		if val != nil {
+			list = append(list, val)
+		}
+	}
+
+	sel := c.convert(n.Sel)
+
+	in := &ast.In{
+		Expr:     expr,
+		List:     list,
+		Not:      n.Not,
+		Sel:      sel,
+		Location: n.OriginTextPosition(),
+	}
+
+	return in
 }
 
 func (c *cc) convertPatternLikeExpr(n *pcast.PatternLikeExpr) ast.Node {
-	return todo(n)
+	return &ast.A_Expr{
+		Kind: ast.A_Expr_Kind(9),
+		Name: &ast.List{
+			Items: []ast.Node{
+				&ast.String{Str: "~~"},
+			},
+		},
+		Lexpr: c.convert(n.Expr),
+		Rexpr: c.convert(n.Pattern),
+	}
 }
 
 func (c *cc) convertPatternRegexpExpr(n *pcast.PatternRegexpExpr) ast.Node {
@@ -998,6 +1082,7 @@ func (c *cc) convertSetOprSelectList(n *pcast.SetOprSelectList) ast.Node {
 		WhereClause: nil,
 		Op:          op,
 		All:         all,
+		WithClause:  c.convertWithClause(n.With),
 	}
 	for _, stmt := range selectStmts {
 		// We move Op and All from the child to the parent.
@@ -1020,6 +1105,7 @@ func (c *cc) convertSetOprSelectList(n *pcast.SetOprSelectList) ast.Node {
 				Rarg:        stmt,
 				Op:          op,
 				All:         all,
+				WithClause:  c.convertWithClause(n.With),
 			}
 		}
 	}
@@ -1059,8 +1145,8 @@ func (c *cc) convertSplitRegionStmt(n *pcast.SplitRegionStmt) ast.Node {
 }
 
 func (c *cc) convertTableName(n *pcast.TableName) *ast.RangeVar {
-	schema := n.Schema.String()
-	rel := n.Name.String()
+	schema := identifier(n.Schema.String())
+	rel := identifier(n.Name.String())
 	return &ast.RangeVar{
 		Schemaname: &schema,
 		Relname:    &rel,

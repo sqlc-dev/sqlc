@@ -66,8 +66,8 @@ func text(nodes []pcast.Node) []string {
 
 func parseTableName(n *pcast.TableName) *ast.TableName {
 	return &ast.TableName{
-		Schema: n.Schema.String(),
-		Name:   n.Name.String(),
+		Schema: identifier(n.Schema.String()),
+		Name:   identifier(n.Name.String()),
 	}
 }
 
@@ -76,9 +76,9 @@ func toList(node pcast.Node) *ast.List {
 	switch n := node.(type) {
 	case *pcast.TableName:
 		if schema := n.Schema.String(); schema != "" {
-			items = append(items, &ast.String{Str: schema})
+			items = append(items, NewIdentifer(schema))
 		}
-		items = append(items, &ast.String{Str: n.Name.String()})
+		items = append(items, NewIdentifer(n.Name.String()))
 	default:
 		return nil
 	}

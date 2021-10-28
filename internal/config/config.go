@@ -9,9 +9,9 @@ import (
 	"os"
 	"strings"
 
-	yaml "gopkg.in/yaml.v3"
+	"github.com/kyleconroy/sqlc/internal/sql/ast"
 
-	"github.com/kyleconroy/sqlc/internal/core"
+	yaml "gopkg.in/yaml.v3"
 )
 
 const errMessageNoVersion = `The configuration file must have a version number.
@@ -110,21 +110,25 @@ type SQLGen struct {
 }
 
 type SQLGo struct {
-	EmitInterface         bool              `json:"emit_interface" yaml:"emit_interface"`
-	EmitJSONTags          bool              `json:"emit_json_tags" yaml:"emit_json_tags"`
-	EmitDBTags            bool              `json:"emit_db_tags" yaml:"emit_db_tags"`
-	EmitPreparedQueries   bool              `json:"emit_prepared_queries" yaml:"emit_prepared_queries"`
-	EmitExactTableNames   bool              `json:"emit_exact_table_names,omitempty" yaml:"emit_exact_table_names"`
-	EmitEmptySlices       bool              `json:"emit_empty_slices,omitempty" yaml:"emit_empty_slices"`
-	JSONTagsCaseStyle     string            `json:"json_tags_case_style,omitempty" yaml:"json_tags_case_style"`
-	Package               string            `json:"package" yaml:"package"`
-	Out                   string            `json:"out" yaml:"out"`
-	Overrides             []Override        `json:"overrides,omitempty" yaml:"overrides"`
-	Rename                map[string]string `json:"rename,omitempty" yaml:"rename"`
-	OutputDBFileName      string            `json:"output_db_file_name,omitempty" yaml:"output_db_file_name"`
-	OutputModelsFileName  string            `json:"output_models_file_name,omitempty" yaml:"output_models_file_name"`
-	OutputQuerierFileName string            `json:"output_querier_file_name,omitempty" yaml:"output_querier_file_name"`
-	OutputFilesSuffix     string            `json:"output_files_suffix,omitempty" yaml:"output_files_suffix"`
+	EmitInterface            bool              `json:"emit_interface" yaml:"emit_interface"`
+	EmitJSONTags             bool              `json:"emit_json_tags" yaml:"emit_json_tags"`
+	EmitDBTags               bool              `json:"emit_db_tags" yaml:"emit_db_tags"`
+	EmitPreparedQueries      bool              `json:"emit_prepared_queries" yaml:"emit_prepared_queries"`
+	EmitExactTableNames      bool              `json:"emit_exact_table_names,omitempty" yaml:"emit_exact_table_names"`
+	EmitEmptySlices          bool              `json:"emit_empty_slices,omitempty" yaml:"emit_empty_slices"`
+	EmitExportedQueries      bool              `json:"emit_exported_queries" yaml:"emit_exported_queries"`
+	EmitResultStructPointers bool              `json:"emit_result_struct_pointers" yaml:"emit_result_struct_pointers"`
+	EmitParamsStructPointers bool              `json:"emit_params_struct_pointers" yaml:"emit_params_struct_pointers"`
+	JSONTagsCaseStyle        string            `json:"json_tags_case_style,omitempty" yaml:"json_tags_case_style"`
+	Package                  string            `json:"package" yaml:"package"`
+	Out                      string            `json:"out" yaml:"out"`
+	Overrides                []Override        `json:"overrides,omitempty" yaml:"overrides"`
+	Rename                   map[string]string `json:"rename,omitempty" yaml:"rename"`
+	SQLPackage               string            `json:"sql_package" yaml:"sql_package"`
+	OutputDBFileName         string            `json:"output_db_file_name,omitempty" yaml:"output_db_file_name"`
+	OutputModelsFileName     string            `json:"output_models_file_name,omitempty" yaml:"output_models_file_name"`
+	OutputQuerierFileName    string            `json:"output_querier_file_name,omitempty" yaml:"output_querier_file_name"`
+	OutputFilesSuffix        string            `json:"output_files_suffix,omitempty" yaml:"output_files_suffix"`
 }
 
 type SQLKotlin struct {
@@ -164,15 +168,50 @@ type Override struct {
 	// fully qualified name of the column, e.g. `accounts.id`
 	Column string `json:"column" yaml:"column"`
 
-	ColumnName   string
-	Table        core.FQN
+	ColumnName   *Match
+	TableCatalog *Match
+	TableSchema  *Match
+	TableRel     *Match
 	GoImportPath string
 	GoPackage    string
 	GoTypeName   string
 	GoBasicType  bool
 }
 
-func (o *Override) Parse() error {
+func (o *Override) Matches(n *ast.TableName, defaultSchema string) bool {
+	if n == nil {
+		return false
+	}
+
+	schema := n.Schema
+	if n.Schema == "" {
+		schema = defaultSchema
+	}
+
+	if o.TableCatalog != nil && !o.TableCatalog.MatchString(n.Catalog) {
+		return false
+	}
+
+	if o.TableSchema == nil && schema != "" {
+		return false
+	}
+
+	if o.TableSchema != nil && !o.TableSchema.MatchString(schema) {
+		return false
+	}
+
+	if o.TableRel == nil && n.Name != "" {
+		return false
+	}
+
+	if o.TableRel != nil && !o.TableRel.MatchString(n.Name) {
+		return false
+	}
+
+	return true
+}
+
+func (o *Override) Parse() (err error) {
 
 	// validate deprecated postgres_type field
 	if o.Deprecated_PostgresType != "" {
@@ -202,16 +241,40 @@ func (o *Override) Parse() error {
 		colParts := strings.Split(o.Column, ".")
 		switch len(colParts) {
 		case 2:
-			o.ColumnName = colParts[1]
-			o.Table = core.FQN{Schema: "public", Rel: colParts[0]}
+			if o.ColumnName, err = MatchCompile(colParts[1]); err != nil {
+				return err
+			}
+			if o.TableRel, err = MatchCompile(colParts[0]); err != nil {
+				return err
+			}
+			if o.TableSchema, err = MatchCompile("public"); err != nil {
+				return err
+			}
 		case 3:
-			o.ColumnName = colParts[2]
-			o.Table = core.FQN{Schema: colParts[0], Rel: colParts[1]}
+			if o.ColumnName, err = MatchCompile(colParts[2]); err != nil {
+				return err
+			}
+			if o.TableRel, err = MatchCompile(colParts[1]); err != nil {
+				return err
+			}
+			if o.TableSchema, err = MatchCompile(colParts[0]); err != nil {
+				return err
+			}
 		case 4:
-			o.ColumnName = colParts[3]
-			o.Table = core.FQN{Catalog: colParts[0], Schema: colParts[1], Rel: colParts[2]}
+			if o.ColumnName, err = MatchCompile(colParts[3]); err != nil {
+				return err
+			}
+			if o.TableRel, err = MatchCompile(colParts[2]); err != nil {
+				return err
+			}
+			if o.TableSchema, err = MatchCompile(colParts[1]); err != nil {
+				return err
+			}
+			if o.TableCatalog, err = MatchCompile(colParts[0]); err != nil {
+				return err
+			}
 		default:
-			return fmt.Errorf("Override `column` specifier %q is not the proper format, expected '[catalog.][schema.]colname.tablename'", o.Column)
+			return fmt.Errorf("Override `column` specifier %q is not the proper format, expected '[catalog.][schema.]tablename.colname'", o.Column)
 		}
 	}
 

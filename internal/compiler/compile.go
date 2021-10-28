@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -14,7 +14,6 @@ import (
 	"github.com/kyleconroy/sqlc/internal/multierr"
 	"github.com/kyleconroy/sqlc/internal/opts"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
 	"github.com/kyleconroy/sqlc/internal/sql/sqlpath"
 )
@@ -54,26 +53,26 @@ func enumValueName(value string) string {
 }
 
 // end copypasta
-func parseCatalog(p Parser, c *catalog.Catalog, schemas []string) error {
+func (c *Compiler) parseCatalog(schemas []string) error {
 	files, err := sqlpath.Glob(schemas)
 	if err != nil {
 		return err
 	}
 	merr := multierr.New()
 	for _, filename := range files {
-		blob, err := ioutil.ReadFile(filename)
+		blob, err := os.ReadFile(filename)
 		if err != nil {
 			merr.Add(filename, "", 0, err)
 			continue
 		}
 		contents := migrations.RemoveRollbackStatements(string(blob))
-		stmts, err := p.Parse(strings.NewReader(contents))
+		stmts, err := c.parser.Parse(strings.NewReader(contents))
 		if err != nil {
 			merr.Add(filename, contents, 0, err)
 			continue
 		}
 		for i := range stmts {
-			if err := c.Update(stmts[i]); err != nil {
+			if err := c.catalog.Update(stmts[i], c); err != nil {
 				merr.Add(filename, contents, stmts[i].Pos(), err)
 				continue
 			}
@@ -94,7 +93,7 @@ func (c *Compiler) parseQueries(o opts.Parser) (*Result, error) {
 		return nil, err
 	}
 	for _, filename := range files {
-		blob, err := ioutil.ReadFile(filename)
+		blob, err := os.ReadFile(filename)
 		if err != nil {
 			merr.Add(filename, "", 0, err)
 			continue

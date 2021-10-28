@@ -4,11 +4,38 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/kyleconroy/sqlc/internal/sql/catalog"
+
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sql/astutils"
 	"github.com/kyleconroy/sqlc/internal/sql/lang"
 	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
 )
+
+// OutputColumns determines which columns a statement will output
+func (c *Compiler) OutputColumns(stmt ast.Node) ([]*catalog.Column, error) {
+	qc, err := buildQueryCatalog(c.catalog, stmt)
+	if err != nil {
+		return nil, err
+	}
+	cols, err := outputColumns(qc, stmt)
+	if err != nil {
+		return nil, err
+	}
+
+	catCols := make([]*catalog.Column, 0, len(cols))
+	for _, col := range cols {
+		catCols = append(catCols, &catalog.Column{
+			Name:      col.Name,
+			Type:      ast.TypeName{Name: col.DataType},
+			IsNotNull: col.NotNull,
+			IsArray:   col.IsArray,
+			Comment:   col.Comment,
+			Length:    col.Length,
+		})
+	}
+	return catCols, nil
+}
 
 func hasStarRef(cf *ast.ColumnRef) bool {
 	for _, item := range cf.Fields.Items {
@@ -79,7 +106,8 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 			if res.Name != nil {
 				name = *res.Name
 			}
-			// TODO: The TypeCase code has been copied from below. Instead, we need a recurse function to get the type of a node.
+			// TODO: The TypeCase code has been copied from below. Instead, we
+			// need a recurse function to get the type of a node.
 			if tc, ok := n.Defresult.(*ast.TypeCast); ok {
 				if tc.TypeName == nil {
 					return nil, errors.New("no type name type cast")
@@ -100,6 +128,10 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 			}
 
 		case *ast.CoalesceExpr:
+			name := "coalesce"
+			if res.Name != nil {
+				name = *res.Name
+			}
 			var found bool
 			for _, arg := range n.Args.Items {
 				if found {
@@ -113,12 +145,13 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 					for _, c := range columns {
 						found = true
 						c.NotNull = true
+						c.skipTableRequiredCheck = true
 						cols = append(cols, c)
 					}
 				}
 			}
 			if !found {
-				cols = append(cols, &Column{Name: "coalesce", DataType: "any", NotNull: false})
+				cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
 			}
 
 		case *ast.ColumnRef:
@@ -176,6 +209,16 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 			switch n.SubLinkType {
 			case ast.EXISTS_SUBLINK:
 				cols = append(cols, &Column{Name: name, DataType: "bool", NotNull: true})
+			case ast.EXPR_SUBLINK:
+				subcols, err := outputColumns(qc, n.Subselect)
+				if err != nil {
+					return nil, err
+				}
+				first := subcols[0]
+				if res.Name != nil {
+					first.Name = *res.Name
+				}
+				cols = append(cols, first)
 			default:
 				cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
 			}
@@ -194,6 +237,12 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 			// TODO Validate column names
 			col := toColumn(n.TypeName)
 			col.Name = name
+			// TODO Add correct, real type inference
+			if constant, ok := n.Arg.(*ast.A_Const); ok {
+				if _, ok := constant.Val.(*ast.Null); ok {
+					col.NotNull = false
+				}
+			}
 			cols = append(cols, col)
 
 		default:
@@ -208,7 +257,7 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 
 	if n, ok := node.(*ast.SelectStmt); ok {
 		for _, col := range cols {
-			if !col.NotNull || col.Table == nil {
+			if !col.NotNull || col.Table == nil || col.skipTableRequiredCheck {
 				continue
 			}
 			for _, f := range n.FromClause.Items {
