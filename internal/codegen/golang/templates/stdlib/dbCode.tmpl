@@ -1,7 +1,9 @@
 {{define "dbCodeTemplateStd"}}
 type DBTX interface {
 	ExecContext(context.Context, string, ...interface{}) (sql.Result, error)
+{{- if .EmitPreparedQueries}}
 	PrepareContext(context.Context, string) (*sql.Stmt, error)
+{{- end}}
 	QueryContext(context.Context, string, ...interface{}) (*sql.Rows, error)
 	QueryRowContext(context.Context, string, ...interface{}) *sql.Row
 }
