@@ -144,34 +144,40 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 		}
 		sql.Queries = joined
 
-		var name string
+		var name, lang string
 		parseOpts := opts.Parser{
 			Debug: debug.Debug,
 		}
 		if sql.Gen.Go != nil {
 			name = combo.Go.Package
+			lang = "golang"
 		} else if sql.Gen.Kotlin != nil {
 			if sql.Engine == config.EnginePostgreSQL {
 				parseOpts.UsePositionalParameters = true
 			}
+			lang = "kotlin"
 			name = combo.Kotlin.Package
 		} else if sql.Gen.Python != nil {
+			lang = "python"
 			name = combo.Python.Package
 		}
 
-		var region *trace.Region
+		var packageRegion *trace.Region
 		if debug.Traced {
-			region = trace.StartRegion(ctx, "parse")
+			packageRegion = trace.StartRegion(ctx, "package")
+			trace.Logf(ctx, "", "name=%s dir=%s language=%s", name, dir, lang)
 		}
-		result, failed := parse(e, name, dir, sql.SQL, combo, parseOpts, stderr)
-		if region != nil {
-			region.End()
-		}
+
+		result, failed := parse(ctx, e, name, dir, sql.SQL, combo, parseOpts, stderr)
 		if failed {
+			if packageRegion != nil {
+				packageRegion.End()
+			}
 			errored = true
 			break
 		}
 
+		var region *trace.Region
 		if debug.Traced {
 			region = trace.StartRegion(ctx, "codegen")
 		}
@@ -198,11 +204,17 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 			fmt.Fprintf(stderr, "# package %s\n", name)
 			fmt.Fprintf(stderr, "error generating code: %s\n", err)
 			errored = true
+			if packageRegion != nil {
+				packageRegion.End()
+			}
 			continue
 		}
 		for n, source := range files {
 			filename := filepath.Join(dir, out, n)
 			output[filename] = source
+		}
+		if packageRegion != nil {
+			packageRegion.End()
 		}
 	}
 
@@ -212,7 +224,10 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 	return output, nil
 }
 
-func parse(e Env, name, dir string, sql config.SQL, combo config.CombinedSettings, parserOpts opts.Parser, stderr io.Writer) (*compiler.Result, bool) {
+func parse(ctx context.Context, e Env, name, dir string, sql config.SQL, combo config.CombinedSettings, parserOpts opts.Parser, stderr io.Writer) (*compiler.Result, bool) {
+	if debug.Traced {
+		defer trace.StartRegion(ctx, "parse").End()
+	}
 	c := compiler.NewCompiler(sql, combo)
 	if err := c.ParseCatalog(sql.Schema); err != nil {
 		fmt.Fprintf(stderr, "# package %s\n", name)
