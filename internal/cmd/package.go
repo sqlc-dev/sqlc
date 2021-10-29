@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"crypto/sha256"
+	"fmt"
 	"io"
 	"os"
 
@@ -32,7 +34,14 @@ func createPkg(e Env, dir, filename string, stderr io.Writer) error {
 		return err
 	}
 
-	if err := os.WriteFile("sqlc-package-test.tar.gz", tarball, 0644); err != nil {
+	// TODO: Move this to the configuration file
+	owner := "tabbed"
+	project := "sqlc"
+
+	checksum := sha256.Sum256(tarball)
+	sha := fmt.Sprintf("%x", checksum)
+	output := fmt.Sprintf("%s_%s_%s.tar.gz", owner, project, sha[:10])
+	if err := os.WriteFile(output, tarball, 0644); err != nil {
 		return err
 	}
 
