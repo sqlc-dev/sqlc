@@ -2,11 +2,13 @@ package cmd
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+	"runtime/trace"
 	"strings"
 
 	"github.com/kyleconroy/sqlc/internal/codegen/golang"
@@ -44,7 +46,7 @@ type outPair struct {
 	config.SQL
 }
 
-func Generate(e Env, dir, filename string, stderr io.Writer) (map[string]string, error) {
+func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer) (map[string]string, error) {
 	configPath := ""
 	if filename != "" {
 		configPath = filepath.Join(dir, filename)
@@ -97,12 +99,6 @@ func Generate(e Env, dir, filename string, stderr io.Writer) (map[string]string,
 		return nil, err
 	}
 
-	debug, err := opts.DebugFromEnv()
-	if err != nil {
-		fmt.Fprintf(stderr, "error parsing SQLCDEBUG: %s\n", err)
-		return nil, err
-	}
-
 	output := map[string]string{}
 	errored := false
 
@@ -148,27 +144,43 @@ func Generate(e Env, dir, filename string, stderr io.Writer) (map[string]string,
 		}
 		sql.Queries = joined
 
-		var name string
+		var name, lang string
 		parseOpts := opts.Parser{
-			Debug: debug,
+			Debug: debug.Debug,
 		}
 		if sql.Gen.Go != nil {
 			name = combo.Go.Package
+			lang = "golang"
 		} else if sql.Gen.Kotlin != nil {
 			if sql.Engine == config.EnginePostgreSQL {
 				parseOpts.UsePositionalParameters = true
 			}
+			lang = "kotlin"
 			name = combo.Kotlin.Package
 		} else if sql.Gen.Python != nil {
+			lang = "python"
 			name = combo.Python.Package
 		}
 
-		result, failed := parse(e, name, dir, sql.SQL, combo, parseOpts, stderr)
+		var packageRegion *trace.Region
+		if debug.Traced {
+			packageRegion = trace.StartRegion(ctx, "package")
+			trace.Logf(ctx, "", "name=%s dir=%s language=%s", name, dir, lang)
+		}
+
+		result, failed := parse(ctx, e, name, dir, sql.SQL, combo, parseOpts, stderr)
 		if failed {
+			if packageRegion != nil {
+				packageRegion.End()
+			}
 			errored = true
 			break
 		}
 
+		var region *trace.Region
+		if debug.Traced {
+			region = trace.StartRegion(ctx, "codegen")
+		}
 		var files map[string]string
 		var out string
 		switch {
@@ -184,16 +196,25 @@ func Generate(e Env, dir, filename string, stderr io.Writer) (map[string]string,
 		default:
 			panic("missing language backend")
 		}
+		if region != nil {
+			region.End()
+		}
 
 		if err != nil {
 			fmt.Fprintf(stderr, "# package %s\n", name)
 			fmt.Fprintf(stderr, "error generating code: %s\n", err)
 			errored = true
+			if packageRegion != nil {
+				packageRegion.End()
+			}
 			continue
 		}
 		for n, source := range files {
 			filename := filepath.Join(dir, out, n)
 			output[filename] = source
+		}
+		if packageRegion != nil {
+			packageRegion.End()
 		}
 	}
 
@@ -203,7 +224,10 @@ func Generate(e Env, dir, filename string, stderr io.Writer) (map[string]string,
 	return output, nil
 }
 
-func parse(e Env, name, dir string, sql config.SQL, combo config.CombinedSettings, parserOpts opts.Parser, stderr io.Writer) (*compiler.Result, bool) {
+func parse(ctx context.Context, e Env, name, dir string, sql config.SQL, combo config.CombinedSettings, parserOpts opts.Parser, stderr io.Writer) (*compiler.Result, bool) {
+	if debug.Traced {
+		defer trace.StartRegion(ctx, "parse").End()
+	}
 	c := compiler.NewCompiler(sql, combo)
 	if err := c.ParseCatalog(sql.Schema); err != nil {
 		fmt.Fprintf(stderr, "# package %s\n", name)
