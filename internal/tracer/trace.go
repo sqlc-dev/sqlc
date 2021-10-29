@@ -9,22 +9,6 @@ import (
 	"github.com/kyleconroy/sqlc/internal/debug"
 )
 
-var noop Ender
-
-func init() {
-	noop = NoopRegion{}
-}
-
-type NoopRegion struct {
-}
-
-func (n NoopRegion) End() {
-}
-
-type Ender interface {
-	End()
-}
-
 func Start(base context.Context) (context.Context, func(), error) {
 	if !debug.Traced {
 		return base, func() {}, nil
