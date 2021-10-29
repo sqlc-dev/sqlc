@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"os"
 	"path/filepath"
 	"strings"
@@ -15,6 +16,8 @@ import (
 
 func TestExamples(t *testing.T) {
 	t.Parallel()
+	ctx := context.Background()
+
 	examples, err := filepath.Abs(filepath.Join("..", "..", "examples"))
 	if err != nil {
 		t.Fatal(err)
@@ -34,7 +37,7 @@ func TestExamples(t *testing.T) {
 			t.Parallel()
 			path := filepath.Join(examples, tc)
 			var stderr bytes.Buffer
-			output, err := cmd.Generate(cmd.Env{ExperimentalFeatures: true}, path, "", &stderr)
+			output, err := cmd.Generate(ctx, cmd.Env{ExperimentalFeatures: true}, path, "", &stderr)
 			if err != nil {
 				t.Fatalf("sqlc generate failed: %s", stderr.String())
 			}
@@ -44,6 +47,7 @@ func TestExamples(t *testing.T) {
 }
 
 func BenchmarkExamples(b *testing.B) {
+	ctx := context.Background()
 	examples, err := filepath.Abs(filepath.Join("..", "..", "examples"))
 	if err != nil {
 		b.Fatal(err)
@@ -61,7 +65,7 @@ func BenchmarkExamples(b *testing.B) {
 			path := filepath.Join(examples, tc)
 			for i := 0; i < b.N; i++ {
 				var stderr bytes.Buffer
-				cmd.Generate(cmd.Env{ExperimentalFeatures: true}, path, "", &stderr)
+				cmd.Generate(ctx, cmd.Env{ExperimentalFeatures: true}, path, "", &stderr)
 			}
 		})
 	}
@@ -69,6 +73,7 @@ func BenchmarkExamples(b *testing.B) {
 
 func TestReplay(t *testing.T) {
 	t.Parallel()
+	ctx := context.Background()
 	var dirs []string
 	err := filepath.Walk("testdata", func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -90,7 +95,7 @@ func TestReplay(t *testing.T) {
 			path, _ := filepath.Abs(tc)
 			var stderr bytes.Buffer
 			expected := expectedStderr(t, path)
-			output, err := cmd.Generate(cmd.Env{ExperimentalFeatures: true}, path, "", &stderr)
+			output, err := cmd.Generate(ctx, cmd.Env{ExperimentalFeatures: true}, path, "", &stderr)
 			if len(expected) == 0 && err != nil {
 				t.Fatalf("sqlc generate failed: %s", stderr.String())
 			}
@@ -167,6 +172,7 @@ func expectedStderr(t *testing.T, dir string) string {
 }
 
 func BenchmarkReplay(b *testing.B) {
+	ctx := context.Background()
 	var dirs []string
 	err := filepath.Walk("testdata", func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -187,7 +193,7 @@ func BenchmarkReplay(b *testing.B) {
 			path, _ := filepath.Abs(tc)
 			for i := 0; i < b.N; i++ {
 				var stderr bytes.Buffer
-				cmd.Generate(cmd.Env{ExperimentalFeatures: true}, path, "", &stderr)
+				cmd.Generate(ctx, cmd.Env{ExperimentalFeatures: true}, path, "", &stderr)
 			}
 		})
 	}
