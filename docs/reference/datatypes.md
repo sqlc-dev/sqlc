@@ -39,8 +39,8 @@ CREATE TABLE authors (
 package db
 
 import (
-	"time"
 	"database/sql"
+	"time"
 )
 
 type Author struct {
@@ -129,6 +129,6 @@ import (
 )
 
 type Author struct {
-	ID   uuid.UUID
+	ID uuid.UUID
 }
 ```

@@ -75,7 +75,7 @@ DROP TABLE people;
 package db
 
 type People struct {
-	ID    int32
+	ID int32
 }
 ```
 
@@ -91,8 +91,8 @@ DROP TABLE comment;
 package db
 
 type Comment struct {
-	ID     int32
-	Text   string
+	ID   int32
+	Text string
 }
 ```
 
