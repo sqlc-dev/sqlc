@@ -1,3 +1,4 @@
+//go:build examples
 // +build examples
 
 package booktest
@@ -150,7 +151,7 @@ func TestBooks(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, ab := range res {
-		t.Logf("Book %d: '%s', Author: '%s', ISBN: '%s' Tags: '%v'\n", ab.BookID, ab.Title, ab.Name, ab.Isbn, ab.Tags)
+		t.Logf("Book %d: '%s', Author: '%s', ISBN: '%s' Tags: '%v'\n", ab.BookID, ab.Title, ab.Name.String, ab.Isbn, ab.Tags)
 	}
 
 	// TODO: call say_hello(varchar)

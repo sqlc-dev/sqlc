@@ -302,7 +302,14 @@ func isTableRequired(n ast.Node, tableName string, prior int) int {
 		case ast.JoinTypeFull:
 			return helper(tableOptional, tableOptional)
 		}
+	case *ast.List:
+		for _, item := range n.Items {
+			if res := isTableRequired(item, tableName, prior); res != tableNotFound {
+				return res
+			}
+		}
 	}
+
 	return tableNotFound
 }
 
