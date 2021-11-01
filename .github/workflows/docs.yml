@@ -11,6 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
      - uses: actions/checkout@v2.3.5
-     - run: apt-get install python3-sphinx
+     - run: sudo apt-get install python3-sphinx
      - run: make html
        working-directory: docs
