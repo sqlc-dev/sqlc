@@ -72,10 +72,10 @@ WHERE id = $1
 `
 
 func (q *Queries) GetAuthor(ctx context.Context, id int) (Author, error) {
-  row := q.db.QueryRowContext(ctx, getAuthor, id)
-  var i Author
-  err := row.Scan(&i.ID, &i.Bio, &i.BirthYear)
-  return i, err
+	row := q.db.QueryRowContext(ctx, getAuthor, id)
+	var i Author
+	err := row.Scan(&i.ID, &i.Bio, &i.BirthYear)
+	return i, err
 }
 
 const listAuthors = `-- name: ListAuthors :many
@@ -84,26 +84,26 @@ ORDER BY id
 `
 
 func (q *Queries) ListAuthors(ctx context.Context) ([]Author, error) {
-  rows, err := q.db.QueryContext(ctx, listAuthors)
-  if err != nil {
-    return nil, err
-  }
-  defer rows.Close()
-  var items []Author
-  for rows.Next() {
-    var i Author
-    if err := rows.Scan(&i.ID, &i.Bio, &i.BirthYear); err != nil {
-      return nil, err
-    }
-    items = append(items, i)
-  }
-  if err := rows.Close(); err != nil {
-    return nil, err
-  }
-  if err := rows.Err(); err != nil {
-    return nil, err
-  }
-  return items, nil
+	rows, err := q.db.QueryContext(ctx, listAuthors)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Author
+	for rows.Next() {
+		var i Author
+		if err := rows.Scan(&i.ID, &i.Bio, &i.BirthYear); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 ```
 
@@ -212,7 +212,7 @@ import (
 	"context"
 	"database/sql"
 
-  "github.com/lib/pq"
+	"github.com/lib/pq"
 )
 
 type Author struct {
@@ -240,25 +240,25 @@ WHERE id = ANY($1::int[])
 `
 
 func (q *Queries) ListAuthorsByIDs(ctx context.Context, ids []int) ([]Author, error) {
-  rows, err := q.db.QueryContext(ctx, listAuthors, pq.Array(ids))
-  if err != nil {
-    return nil, err
-  }
-  defer rows.Close()
-  var items []Author
-  for rows.Next() {
-    var i Author
-    if err := rows.Scan(&i.ID, &i.Bio, &i.BirthYear); err != nil {
-      return nil, err
-    }
-    items = append(items, i)
-  }
-  if err := rows.Close(); err != nil {
-    return nil, err
-  }
-  if err := rows.Err(); err != nil {
-    return nil, err
-  }
-  return items, nil
+	rows, err := q.db.QueryContext(ctx, listAuthors, pq.Array(ids))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Author
+	for rows.Next() {
+		var i Author
+		if err := rows.Scan(&i.ID, &i.Bio, &i.BirthYear); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 ```
