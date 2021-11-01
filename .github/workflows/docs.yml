@@ -9,12 +9,12 @@ jobs:
   build:
     name: build
     runs-on: ubuntu-latest
-   steps:
-    - uses: actions/checkout@v2.3.5
-    - uses: actions/setup-python@v2
-      with:
-        python-version: '3.x'
-    - run: pip install -r requirements.txt
-      working-directory: docs
-    - run: make html
-      working-directory: docs
+    steps:
+     - uses: actions/checkout@v2.3.5
+     - uses: actions/setup-python@v2
+       with:
+         python-version: '3.x'
+     - run: pip install -r requirements.txt
+       working-directory: docs
+     - run: make html
+       working-directory: docs
