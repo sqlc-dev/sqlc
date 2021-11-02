@@ -20,8 +20,8 @@ WHERE id = $1;
 
 ```go
 func (q *Queries) DeleteAuthor(ctx context.Context, id int64) error {
-  _, err := q.db.ExecContext(ctx, deleteAuthor, id)
-  return err
+	_, err := q.db.ExecContext(ctx, deleteAuthor, id)
+	return err
 }
 ```
 
@@ -37,7 +37,7 @@ DELETE FROM authors;
 
 ```go
 func (q *Queries) DeleteAllAuthors(ctx context.Context) (sql.Result, error) {
-  return q.db.ExecContext(ctx, deleteAllAuthors)
+	return q.db.ExecContext(ctx, deleteAllAuthors)
 }
 ```
 
@@ -54,8 +54,8 @@ DELETE FROM authors;
 
 ```go
 func (q *Queries) DeleteAllAuthors(ctx context.Context) (int64, error) {
-  _, err := q.db.ExecContext(ctx, deleteAllAuthors)
-  // ...
+	_, err := q.db.ExecContext(ctx, deleteAllAuthors)
+	// ...
 }
 ```
 
@@ -72,8 +72,8 @@ ORDER BY name;
 
 ```go
 func (q *Queries) ListAuthors(ctx context.Context) ([]Author, error) {
-  rows, err := q.db.QueryContext(ctx, listAuthors)
-  // ...
+	rows, err := q.db.QueryContext(ctx, listAuthors)
+	// ...
 }
 ```
 
@@ -90,7 +90,7 @@ WHERE id = $1 LIMIT 1;
 
 ```go
 func (q *Queries) GetAuthor(ctx context.Context, id int64) (Author, error) {
-  row := q.db.QueryRowContext(ctx, getAuthor, id)
-  // ...
+	row := q.db.QueryRowContext(ctx, getAuthor, id)
+	// ...
 }
 ```

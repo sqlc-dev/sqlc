@@ -70,7 +70,7 @@ Each package document has the following keys:
 
 ## Type Overrides
 
-The default mapping of PostgreSQL types to Go types only uses packages outside
+The default mapping of PostgreSQL/MySQL types to Go types only uses packages outside
 the standard library when it must.
 
 For example, the `uuid` PostgreSQL type is mapped to `github.com/google/uuid`.
@@ -89,7 +89,7 @@ overrides:
 Each override document has the following keys:
 
 - `db_type`:
-  - The PostgreSQL type to override. Find the full list of supported types in [postgresql_type.go](https://github.com/kyleconroy/sqlc/blob/main/internal/codegen/golang/postgresql_type.go#L12).
+  - The PostgreSQL or MySQL type to override. Find the full list of supported types in [postgresql_type.go](https://github.com/kyleconroy/sqlc/blob/main/internal/codegen/golang/postgresql_type.go#L12) or [mysql_type.go](https://github.com/kyleconroy/sqlc/blob/main/internal/codegen/golang/mysql_type.go#L12).
 - `go_type`:
   - A fully qualified name to a Go type to use in the generated code.
 - `nullable`:
@@ -101,7 +101,7 @@ Sometimes you would like to override the Go type used in model or query generati
 a specific field of a table and not on a type basis as described in the previous section.
 
 This may be configured by specifying the `column` property in the override definition. `column`
-should be of the form `table.column` buy you may be even more specify by specifying `schema.table.column`
+should be of the form `table.column` but you can be even more specific by specifying `schema.table.column`
 or `catalog.schema.table.column`.
 
 ```yaml

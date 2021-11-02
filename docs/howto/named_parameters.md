@@ -17,8 +17,8 @@ RETURNING *;
 
 ```go
 type UpdateAuthorNameParams struct {
-  Column1         bool           `json:""`
-  Column2_2       string         `json:"_2"`
+	Column1   bool   `json:""`
+	Column2_2 string `json:"_2"`
 }
 ```
 
@@ -38,8 +38,8 @@ RETURNING *;
 
 ```go
 type UpdateAuthorNameParams struct {
-  SetName         bool           `json:"set_name"`
-  Name            string         `json:"name"`
+	SetName bool   `json:"set_name"`
+	Name    string `json:"name"`
 }
 ```
 
