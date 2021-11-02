@@ -8,9 +8,9 @@ import (
 )
 
 const getBetweenPrices = `-- name: GetBetweenPrices :many
-SELECT	id, name, price
-FROM	products
-WHERE	price BETWEEN ? AND ?
+SELECT  id, name, price
+FROM    products
+WHERE   price BETWEEN ? AND ?
 `
 
 type GetBetweenPricesParams struct {
