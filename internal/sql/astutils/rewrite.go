@@ -394,6 +394,9 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.apply(n, "Refexpr", nil, n.Refexpr)
 		a.apply(n, "Refassgnexpr", nil, n.Refassgnexpr)
 
+	case *ast.BetweenExpr:
+		// pass
+
 	case *ast.BitString:
 		// pass
 
