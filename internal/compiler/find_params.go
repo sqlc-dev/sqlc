@@ -63,6 +63,9 @@ func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 	case *ast.A_Expr:
 		p.parent = node
 
+	case *ast.BetweenExpr:
+		p.parent = node
+
 	case *ast.FuncCall:
 		p.parent = node
 

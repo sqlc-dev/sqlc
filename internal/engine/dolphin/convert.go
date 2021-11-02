@@ -638,7 +638,13 @@ func (c *cc) convertBeginStmt(n *pcast.BeginStmt) ast.Node {
 }
 
 func (c *cc) convertBetweenExpr(n *pcast.BetweenExpr) ast.Node {
-	return todo(n)
+	return &ast.BetweenExpr{
+		Expr:     c.convert(n.Expr),
+		Left:     c.convert(n.Left),
+		Right:    c.convert(n.Right),
+		Location: n.OriginTextPosition(),
+		Not:      n.Not,
+	}
 }
 
 func (c *cc) convertBinlogStmt(n *pcast.BinlogStmt) ast.Node {
