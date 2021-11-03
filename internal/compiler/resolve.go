@@ -204,7 +204,8 @@ func resolveCatalogRefs(c *catalog.Catalog, qc *QueryCatalog, rvs []*ast.RangeVa
 
 			var key string
 			if ref, ok := n.Expr.(*ast.ColumnRef); ok {
-				if str, ok := ref.Fields.Items[0].(*ast.String); ok {
+				itemsCount := len(ref.Fields.Items)
+				if str, ok := ref.Fields.Items[itemsCount-1].(*ast.String); ok {
 					key = str.Str
 				}
 			}
