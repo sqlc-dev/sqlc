@@ -196,6 +196,44 @@ func resolveCatalogRefs(c *catalog.Catalog, qc *QueryCatalog, rvs []*ast.RangeVa
 				}
 			}
 
+		case *ast.BetweenExpr:
+			if n == nil || n.Expr == nil || n.Left == nil || n.Right == nil {
+				fmt.Println("ast.BetweenExpr is nil")
+				continue
+			}
+
+			var key string
+			if ref, ok := n.Expr.(*ast.ColumnRef); ok {
+				if str, ok := ref.Fields.Items[0].(*ast.String); ok {
+					key = str.Str
+				}
+			}
+
+			number := 0
+			if pr, ok := n.Left.(*ast.ParamRef); ok {
+				number = pr.Number
+			}
+
+			for _, table := range tables {
+				schema := table.Schema
+				if schema == "" {
+					schema = c.DefaultSchema
+				}
+
+				if c, ok := typeMap[schema][table.Name][key]; ok {
+					a = append(a, Parameter{
+						Number: number,
+						Column: &Column{
+							Name:     parameterName(ref.ref.Number, key),
+							DataType: dataType(&c.Type),
+							NotNull:  c.IsNotNull,
+							IsArray:  c.IsArray,
+							Table:    table,
+						},
+					})
+				}
+			}
+
 		case *ast.FuncCall:
 			fun, err := c.ResolveFuncCall(n)
 			if err != nil {
