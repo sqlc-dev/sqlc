@@ -23,9 +23,10 @@ type Column struct {
 	Length   *int
 
 	// XXX: Figure out what PostgreSQL calls `foo.id`
-	Scope string
-	Table *ast.TableName
-	Type  *ast.TypeName
+	Scope      string
+	Table      *ast.TableName
+	TableAlias string
+	Type       *ast.TypeName
 
 	skipTableRequiredCheck bool
 }
