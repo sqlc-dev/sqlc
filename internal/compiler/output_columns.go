@@ -261,7 +261,7 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 				continue
 			}
 			for _, f := range n.FromClause.Items {
-				if res := isTableRequired(f, col.Table.Name, tableRequired); res != tableNotFound {
+				if res := isTableRequired(f, col, tableRequired); res != tableNotFound {
 					col.NotNull = res == tableRequired
 					break
 				}
@@ -278,18 +278,21 @@ const (
 	tableOptional
 )
 
-func isTableRequired(n ast.Node, tableName string, prior int) int {
+func isTableRequired(n ast.Node, col *Column, prior int) int {
 	switch n := n.(type) {
 	case *ast.RangeVar:
-		if *n.Relname == tableName {
+		if n.Alias == nil && *n.Relname == col.Table.Name {
+			return prior
+		}
+		if n.Alias != nil && *n.Alias.Aliasname == col.TableAlias && *n.Relname == col.Table.Name {
 			return prior
 		}
 	case *ast.JoinExpr:
 		helper := func(l, r int) int {
-			if res := isTableRequired(n.Larg, tableName, l); res != tableNotFound {
+			if res := isTableRequired(n.Larg, col, l); res != tableNotFound {
 				return res
 			}
-			if res := isTableRequired(n.Rarg, tableName, r); res != tableNotFound {
+			if res := isTableRequired(n.Rarg, col, r); res != tableNotFound {
 				return res
 			}
 			return tableNotFound
@@ -304,7 +307,7 @@ func isTableRequired(n ast.Node, tableName string, prior int) int {
 		}
 	case *ast.List:
 		for _, item := range n.Items {
-			if res := isTableRequired(item, tableName, prior); res != tableNotFound {
+			if res := isTableRequired(item, col, prior); res != tableNotFound {
 				return res
 			}
 		}
@@ -439,13 +442,14 @@ func outputColumnRefs(res *ast.ResTarget, tables []*Table, node *ast.ColumnRef) 
 					cname = *res.Name
 				}
 				cols = append(cols, &Column{
-					Name:     cname,
-					Type:     c.Type,
-					Table:    c.Table,
-					DataType: c.DataType,
-					NotNull:  c.NotNull,
-					IsArray:  c.IsArray,
-					Length:   c.Length,
+					Name:       cname,
+					Type:       c.Type,
+					Table:      c.Table,
+					TableAlias: alias,
+					DataType:   c.DataType,
+					NotNull:    c.NotNull,
+					IsArray:    c.IsArray,
+					Length:     c.Length,
 				})
 			}
 		}
