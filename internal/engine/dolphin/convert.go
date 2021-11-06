@@ -452,14 +452,21 @@ func (c *cc) convertSelectField(n *pcast.SelectField) *ast.ResTarget {
 }
 
 func (c *cc) convertSelectStmt(n *pcast.SelectStmt) *ast.SelectStmt {
+	windowClause := &ast.List{Items: make([]ast.Node, 0)}
+	orderByClause := c.convertOrderByClause(n.OrderBy)
+	if orderByClause != nil {
+		windowClause.Items = append(windowClause.Items, orderByClause)
+	}
+
 	op, all := c.convertSetOprType(n.AfterSetOperator)
 	stmt := &ast.SelectStmt{
-		TargetList:  c.convertFieldList(n.Fields),
-		FromClause:  c.convertTableRefsClause(n.From),
-		WhereClause: c.convert(n.Where),
-		WithClause:  c.convertWithClause(n.With),
-		Op:          op,
-		All:         all,
+		TargetList:   c.convertFieldList(n.Fields),
+		FromClause:   c.convertTableRefsClause(n.From),
+		WhereClause:  c.convert(n.Where),
+		WithClause:   c.convertWithClause(n.With),
+		WindowClause: windowClause,
+		Op:           op,
+		All:          all,
 	}
 	if n.Limit != nil {
 		stmt.LimitCount = c.convert(n.Limit.Count)
@@ -656,7 +663,18 @@ func (c *cc) convertByItem(n *pcast.ByItem) ast.Node {
 }
 
 func (c *cc) convertCaseExpr(n *pcast.CaseExpr) ast.Node {
-	return todo(n)
+	if n == nil {
+		return nil
+	}
+	list := &ast.List{Items: []ast.Node{}}
+	for _, n := range n.WhenClauses {
+		list.Items = append(list.Items, c.convertWhenClause(n))
+	}
+	return &ast.CaseExpr{
+		Args:      list,
+		Defresult: c.convert(n.ElseClause),
+		Location:  n.OriginTextPosition(),
+	}
 }
 
 func (c *cc) convertChangeStmt(n *pcast.ChangeStmt) ast.Node {
@@ -924,7 +942,25 @@ func (c *cc) convertOnUpdateOpt(n *pcast.OnUpdateOpt) ast.Node {
 }
 
 func (c *cc) convertOrderByClause(n *pcast.OrderByClause) ast.Node {
-	return todo(n)
+	if n == nil {
+		return nil
+	}
+	list := &ast.List{Items: []ast.Node{}}
+	for _, item := range n.Items {
+		switch item.Expr.(type) {
+		case *pcast.CaseExpr:
+			list.Items = append(list.Items, &ast.CaseWhen{
+				Expr:     c.convert(item.Expr),
+				Location: item.Expr.OriginTextPosition(),
+			})
+		case *pcast.ColumnNameExpr:
+			list.Items = append(list.Items, &ast.CaseExpr{
+				Xpr:      c.convert(item.Expr),
+				Location: item.Expr.OriginTextPosition(),
+			})
+		}
+	}
+	return list
 }
 
 func (c *cc) convertParenthesesExpr(n *pcast.ParenthesesExpr) ast.Node {
@@ -1249,7 +1285,14 @@ func (c *cc) convertVariableExpr(n *pcast.VariableExpr) ast.Node {
 }
 
 func (c *cc) convertWhenClause(n *pcast.WhenClause) ast.Node {
-	return todo(n)
+	if n == nil {
+		return nil
+	}
+	return &ast.CaseWhen{
+		Expr:     c.convert(n.Expr),
+		Result:   c.convert(n.Result),
+		Location: n.OriginTextPosition(),
+	}
 }
 
 func (c *cc) convertWindowFuncExpr(n *pcast.WindowFuncExpr) ast.Node {
