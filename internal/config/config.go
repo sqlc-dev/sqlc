@@ -119,6 +119,7 @@ type SQLGo struct {
 	EmitExportedQueries      bool              `json:"emit_exported_queries" yaml:"emit_exported_queries"`
 	EmitResultStructPointers bool              `json:"emit_result_struct_pointers" yaml:"emit_result_struct_pointers"`
 	EmitParamsStructPointers bool              `json:"emit_params_struct_pointers" yaml:"emit_params_struct_pointers"`
+	DBTXParam                bool              `json:"dbtx_param,omitempty" yaml:"dbtx_param"`
 	JSONTagsCaseStyle        string            `json:"json_tags_case_style,omitempty" yaml:"json_tags_case_style"`
 	Package                  string            `json:"package" yaml:"package"`
 	Out                      string            `json:"out" yaml:"out"`

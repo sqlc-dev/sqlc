@@ -30,6 +30,7 @@ type v1PackageSettings struct {
 	EmitExportedQueries      bool       `json:"emit_exported_queries,omitempty" yaml:"emit_exported_queries"`
 	EmitResultStructPointers bool       `json:"emit_result_struct_pointers" yaml:"emit_result_struct_pointers"`
 	EmitParamsStructPointers bool       `json:"emit_params_struct_pointers" yaml:"emit_params_struct_pointers"`
+	DBTXParam                bool       `json:"dbtx_param" yaml:"dbtx_param"`
 	JSONTagsCaseStyle        string     `json:"json_tags_case_style,omitempty" yaml:"json_tags_case_style"`
 	SQLPackage               string     `json:"sql_package" yaml:"sql_package"`
 	Overrides                []Override `json:"overrides" yaml:"overrides"`
@@ -121,6 +122,7 @@ func (c *V1GenerateSettings) Translate() Config {
 					EmitExportedQueries:      pkg.EmitExportedQueries,
 					EmitResultStructPointers: pkg.EmitResultStructPointers,
 					EmitParamsStructPointers: pkg.EmitParamsStructPointers,
+					DBTXParam:                pkg.DBTXParam,
 					Package:                  pkg.Name,
 					Out:                      pkg.Path,
 					SQLPackage:               pkg.SQLPackage,
