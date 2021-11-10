@@ -325,6 +325,19 @@ func ParseConfig(rd io.Reader) (Config, error) {
 	}
 }
 
+func Validate(c Config) error {
+	for _, sql := range c.SQL {
+		sqlGo := sql.Gen.Go
+		if sqlGo == nil {
+			continue
+		}
+		if sqlGo.DBTXParam && sqlGo.EmitPreparedQueries {
+			return fmt.Errorf("invalid config: dbtx_param and emit_prepared_queries settings are mutually exclusive")
+		}
+	}
+	return nil
+}
+
 type CombinedSettings struct {
 	Global    Config
 	Package   SQL
