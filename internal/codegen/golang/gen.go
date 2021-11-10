@@ -36,6 +36,7 @@ type tmplCtx struct {
 	EmitPreparedQueries bool
 	EmitInterface       bool
 	EmitEmptySlices     bool
+	DBTXParam           bool
 }
 
 func (t *tmplCtx) OutputQuery(sourceName string) bool {
@@ -82,6 +83,7 @@ func generate(settings config.CombinedSettings, enums []Enum, structs []Struct, 
 		EmitDBTags:          golang.EmitDBTags,
 		EmitPreparedQueries: golang.EmitPreparedQueries,
 		EmitEmptySlices:     golang.EmitEmptySlices,
+		DBTXParam:           golang.DBTXParam,
 		SQLPackage:          SQLPackageFromString(golang.SQLPackage),
 		Q:                   "`",
 		Package:             golang.Package,

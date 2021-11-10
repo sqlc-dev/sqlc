@@ -1,0 +1,13 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "path": ".",
+      "name": "jets",
+      "schema": "schema.sql",
+      "queries": "query-building.sql",
+      "engine": "postgresql",
+      "dbtx_param": true
+    }
+  ]
+}

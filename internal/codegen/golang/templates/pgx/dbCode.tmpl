@@ -11,12 +11,16 @@ func New(db DBTX) *Queries {
 }
 
 type Queries struct {
+    {{if not .DBTXParam}}
 	db DBTX
+    {{end}}
 }
 
+{{if not .DBTXParam}}
 func (q *Queries) WithTx(tx pgx.Tx) *Queries {
 	return &Queries{
 		db: tx,
 	}
 }
+{{end}}
 {{end}}
