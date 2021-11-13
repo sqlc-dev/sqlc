@@ -69,11 +69,16 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 		text := stmtNodes[i].Text()
 		loc := strings.Index(string(blob), text)
 
+		stmtLen := len(text)
+		if text[stmtLen-1] == ';' {
+			stmtLen -= 1 // Subtract one to remove semicolon
+		}
+
 		stmts = append(stmts, ast.Statement{
 			Raw: &ast.RawStmt{
 				Stmt:         out,
 				StmtLocation: loc,
-				StmtLen:      len(text) - 1, // Subtract one to remove semicolon
+				StmtLen:      stmtLen,
 			},
 		})
 	}
