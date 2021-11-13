@@ -1,0 +1,2 @@
+# package querytest
+query.sql:10:10: column reference "invalid_reference" not found
