@@ -5,6 +5,7 @@ import (
 	"log"
 	"strings"
 
+	pg "github.com/pganalyze/pg_query_go/v2"
 	pcast "github.com/pingcap/parser/ast"
 	"github.com/pingcap/parser/opcode"
 	driver "github.com/pingcap/parser/test_driver"
@@ -407,6 +408,19 @@ func (c *cc) convertInsertStmt(n *pcast.InsertStmt) *ast.InsertStmt {
 			ValuesLists: c.convertLists(n.Lists),
 		}
 	}
+
+	if n.OnDuplicate != nil {
+		targetList := &ast.List{}
+		for _, a := range n.OnDuplicate {
+			targetList.Items = append(targetList.Items, c.convertAssignment(a))
+		}
+		insert.OnConflictClause = &ast.OnConflictClause{
+			Action:     ast.OnConflictAction(pg.OnConflictAction_ONCONFLICT_UPDATE),
+			TargetList: targetList,
+			Location:   n.OriginTextPosition(),
+		}
+	}
+
 	return insert
 }
 
