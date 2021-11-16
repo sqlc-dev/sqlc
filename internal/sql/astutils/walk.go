@@ -2008,8 +2008,8 @@ func Walk(f Visitor, node ast.Node) {
 		// pass
 
 	case *ast.UpdateStmt:
-		if n.Relation != nil {
-			Walk(f, n.Relation)
+		if n.Relations != nil {
+			Walk(f, n.Relations)
 		}
 		if n.TargetList != nil {
 			Walk(f, n.TargetList)
