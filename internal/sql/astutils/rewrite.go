@@ -1141,7 +1141,7 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		// pass
 
 	case *ast.UpdateStmt:
-		a.apply(n, "Relation", nil, n.Relation)
+		a.apply(n, "Relations", nil, n.Relations)
 		a.apply(n, "TargetList", nil, n.TargetList)
 		a.apply(n, "WhereClause", nil, n.WhereClause)
 		a.apply(n, "FromClause", nil, n.FromClause)
