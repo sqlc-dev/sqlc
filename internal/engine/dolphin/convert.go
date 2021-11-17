@@ -474,6 +474,7 @@ func (c *cc) convertSelectStmt(n *pcast.SelectStmt) *ast.SelectStmt {
 	stmt := &ast.SelectStmt{
 		TargetList:   c.convertFieldList(n.Fields),
 		FromClause:   c.convertTableRefsClause(n.From),
+		GroupClause:  c.convertGroupByClause(n.GroupBy),
 		WhereClause:  c.convert(n.Where),
 		WithClause:   c.convertWithClause(n.With),
 		WindowClause: windowClause,
@@ -677,7 +678,14 @@ func (c *cc) convertBinlogStmt(n *pcast.BinlogStmt) ast.Node {
 }
 
 func (c *cc) convertByItem(n *pcast.ByItem) ast.Node {
-	return todo(n)
+	switch n.Expr.(type) {
+	case *pcast.PositionExpr:
+		return c.convertPositionExpr(n.Expr.(*pcast.PositionExpr))
+	case *pcast.ColumnNameExpr:
+		return c.convertColumnNameExpr(n.Expr.(*pcast.ColumnNameExpr))
+	default:
+		return todo(n)
+	}
 }
 
 func (c *cc) convertCaseExpr(n *pcast.CaseExpr) ast.Node {
@@ -858,8 +866,19 @@ func (c *cc) convertGrantStmt(n *pcast.GrantStmt) ast.Node {
 	return todo(n)
 }
 
-func (c *cc) convertGroupByClause(n *pcast.GroupByClause) ast.Node {
-	return todo(n)
+func (c *cc) convertGroupByClause(n *pcast.GroupByClause) *ast.List {
+	if n == nil {
+		return &ast.List{}
+	}
+
+	var items []ast.Node
+	for _, item := range n.Items {
+		items = append(items, c.convertByItem(item))
+	}
+
+	return &ast.List{
+		Items: items,
+	}
 }
 
 func (c *cc) convertHavingClause(n *pcast.HavingClause) ast.Node {
