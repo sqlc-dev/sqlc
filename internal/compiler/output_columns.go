@@ -363,7 +363,7 @@ func sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, error) {
 		})
 	case *ast.UpdateStmt:
 		list = &ast.List{
-			Items: append(n.FromClause.Items, n.Relation),
+			Items: append(n.FromClause.Items, n.Relations.Items...),
 		}
 	default:
 		return nil, fmt.Errorf("sourceTables: unsupported node type: %T", n)

@@ -147,9 +147,18 @@ func resolveCatalogRefs(c *catalog.Catalog, qc *QueryCatalog, rvs []*ast.RangeVa
 					if original, ok := aliasMap[alias]; ok {
 						search = []*ast.TableName{original}
 					} else {
+						var located bool
 						for _, fqn := range tables {
 							if fqn.Name == alias {
+								located = true
 								search = []*ast.TableName{fqn}
+							}
+						}
+						if !located {
+							return nil, &sqlerr.Error{
+								Code:     "42703",
+								Message:  fmt.Sprintf("table alias \"%s\" does not exist", alias),
+								Location: left.Location,
 							}
 						}
 					}
