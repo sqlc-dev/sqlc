@@ -64,6 +64,21 @@ func TestBadConfigs(t *testing.T) {
 	}
 }
 
+func TestInvalidConfig(t *testing.T) {
+	err := Validate(Config{
+		SQL: []SQL{{
+			Gen: SQLGen{
+				Go: &SQLGo{
+					EmitMethodsWithDBArgument: true,
+					EmitPreparedQueries:       true,
+				},
+			},
+		}}})
+	if err == nil {
+		t.Errorf("expected err; got nil")
+	}
+}
+
 func TestTypeOverrides(t *testing.T) {
 	for _, test := range []struct {
 		override Override

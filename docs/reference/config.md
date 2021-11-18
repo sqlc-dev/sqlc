@@ -19,6 +19,7 @@ packages:
     emit_json_tags: true
     emit_result_struct_pointers: false
     emit_params_struct_pointers: false
+    emit_methods_with_db_argument: false
     json_tags_case_style: "camel"
     output_db_file_name: "db.go"
     output_models_file_name: "models.go"
@@ -57,6 +58,8 @@ Each package document has the following keys:
   - If true, query results are returned as pointers to structs. Queries returning multiple results are returned as slices of pointers. Defaults to `false`.
 - `emit_params_struct_pointers`:
   - If true, parameters are passed as pointers to structs. Defaults to `false`.
+- `emit_methods_with_db_argument`:
+  - If true, generated methods will accept a DBTX argument instead of storing a DBTX on the `*Queries` struct. Defaults to `false`.
 - `json_tags_case_style`:
   - `camel` for camelCase, `pascal` for PascalCase, `snake` for snake_case or `none` to use the column name in the DB. Defaults to `none`.
 - `output_db_file_name`:
