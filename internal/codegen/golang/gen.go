@@ -31,12 +31,12 @@ type tmplCtx struct {
 	// TODO: Race conditions
 	SourceName string
 
-	EmitJSONTags        bool
-	EmitDBTags          bool
-	EmitPreparedQueries bool
-	EmitInterface       bool
-	EmitEmptySlices     bool
-	DBTXParam           bool
+	EmitJSONTags              bool
+	EmitDBTags                bool
+	EmitPreparedQueries       bool
+	EmitInterface             bool
+	EmitEmptySlices           bool
+	EmitMethodsWithDBArgument bool
 }
 
 func (t *tmplCtx) OutputQuery(sourceName string) bool {
@@ -77,19 +77,19 @@ func generate(settings config.CombinedSettings, enums []Enum, structs []Struct, 
 
 	golang := settings.Go
 	tctx := tmplCtx{
-		Settings:            settings.Global,
-		EmitInterface:       golang.EmitInterface,
-		EmitJSONTags:        golang.EmitJSONTags,
-		EmitDBTags:          golang.EmitDBTags,
-		EmitPreparedQueries: golang.EmitPreparedQueries,
-		EmitEmptySlices:     golang.EmitEmptySlices,
-		DBTXParam:           golang.DBTXParam,
-		SQLPackage:          SQLPackageFromString(golang.SQLPackage),
-		Q:                   "`",
-		Package:             golang.Package,
-		GoQueries:           queries,
-		Enums:               enums,
-		Structs:             structs,
+		Settings:                  settings.Global,
+		EmitInterface:             golang.EmitInterface,
+		EmitJSONTags:              golang.EmitJSONTags,
+		EmitDBTags:                golang.EmitDBTags,
+		EmitPreparedQueries:       golang.EmitPreparedQueries,
+		EmitEmptySlices:           golang.EmitEmptySlices,
+		EmitMethodsWithDBArgument: golang.EmitMethodsWithDBArgument,
+		SQLPackage:                SQLPackageFromString(golang.SQLPackage),
+		Q:                         "`",
+		Package:                   golang.Package,
+		GoQueries:                 queries,
+		Enums:                     enums,
+		Structs:                   structs,
 	}
 
 	output := map[string]string{}
