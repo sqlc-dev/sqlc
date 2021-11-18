@@ -6,8 +6,13 @@ type DBTX interface {
 	QueryRowContext(context.Context, string, ...interface{}) *sql.Row
 }
 
+{{ if .EmitMethodsWithDBArgument}}
+func New() *Queries {
+	return &Queries{}
+{{- else -}}
 func New(db DBTX) *Queries {
 	return &Queries{db: db}
+{{- end}}
 }
 
 {{if .EmitPreparedQueries}}
@@ -72,7 +77,9 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 {{end}}
 
 type Queries struct {
+    {{- if not .EmitMethodsWithDBArgument}}
 	db DBTX
+    {{- end}}
 
     {{- if .EmitPreparedQueries}}
 	tx         *sql.Tx
@@ -82,6 +89,7 @@ type Queries struct {
 	{{- end}}
 }
 
+{{if not .EmitMethodsWithDBArgument}}
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
 		db: tx,
@@ -93,4 +101,5 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		{{- end}}
 	}
 }
+{{end}}
 {{end}}

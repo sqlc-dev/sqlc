@@ -6,17 +6,26 @@ type DBTX interface {
 	QueryRow(context.Context, string, ...interface{}) pgx.Row
 }
 
+{{ if .EmitMethodsWithDBArgument}}
+func New() *Queries {
+	return &Queries{}
+{{- else -}}
 func New(db DBTX) *Queries {
 	return &Queries{db: db}
+{{- end}}
 }
 
 type Queries struct {
+    {{if not .EmitMethodsWithDBArgument}}
 	db DBTX
+    {{end}}
 }
 
+{{if not .EmitMethodsWithDBArgument}}
 func (q *Queries) WithTx(tx pgx.Tx) *Queries {
 	return &Queries{
 		db: tx,
 	}
 }
+{{end}}
 {{end}}
