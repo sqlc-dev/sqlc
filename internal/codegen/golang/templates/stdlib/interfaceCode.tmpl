@@ -1,6 +1,6 @@
 {{define "interfaceCodeStd"}}
     type Querier interface {
-    {{- $dbtxParam := .DBTXParam -}}
+    {{- $dbtxParam := .EmitMethodsWithDBArgument -}}
     {{- range .GoQueries}}
         {{- if and (eq .Cmd ":one") ($dbtxParam) }}
             {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) ({{.Ret.DefineType}}, error)

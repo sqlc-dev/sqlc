@@ -69,8 +69,8 @@ func TestInvalidConfig(t *testing.T) {
 		SQL: []SQL{{
 			Gen: SQLGen{
 				Go: &SQLGo{
-					DBTXParam:           true,
-					EmitPreparedQueries: true,
+					EmitMethodsWithDBArgument: true,
+					EmitPreparedQueries:       true,
 				},
 			},
 		}}})
