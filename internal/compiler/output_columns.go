@@ -210,7 +210,7 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 			}
 			fun, err := qc.catalog.ResolveFuncCall(n)
 			if err == nil {
-				cols = append(cols, &Column{Name: name, DataType: dataType(fun.ReturnType), NotNull: true})
+				cols = append(cols, &Column{Name: name, DataType: dataType(fun.ReturnType), NotNull: !fun.ReturnTypeNullable})
 			} else {
 				cols = append(cols, &Column{Name: name, DataType: "any"})
 			}
