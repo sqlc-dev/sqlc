@@ -1,0 +1,2 @@
+# package querytest
+error generating code: named param MyNamedParam has incompatible types: sql.NullString, int64

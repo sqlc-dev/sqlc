@@ -15,12 +15,13 @@ type Table struct {
 }
 
 type Column struct {
-	Name     string
-	DataType string
-	NotNull  bool
-	IsArray  bool
-	Comment  string
-	Length   *int
+	Name         string
+	DataType     string
+	NotNull      bool
+	IsArray      bool
+	Comment      string
+	Length       *int
+	IsNamedParam bool
 
 	// XXX: Figure out what PostgreSQL calls `foo.id`
 	Scope      string

@@ -31,6 +31,11 @@ func resolveCatalogRefs(c *catalog.Catalog, qc *QueryCatalog, rvs []*ast.RangeVa
 		return defaultName
 	}
 
+	isNamedParam := func(n int) bool {
+		_, ok := names[n]
+		return ok
+	}
+
 	typeMap := map[string]map[string]map[string]*catalog.Column{}
 	indexTable := func(table catalog.Table) error {
 		tables = append(tables, table.Rel)
@@ -88,9 +93,10 @@ func resolveCatalogRefs(c *catalog.Catalog, qc *QueryCatalog, rvs []*ast.RangeVa
 			a = append(a, Parameter{
 				Number: ref.ref.Number,
 				Column: &Column{
-					Name:     parameterName(ref.ref.Number, "offset"),
-					DataType: "integer",
-					NotNull:  true,
+					Name:         parameterName(ref.ref.Number, "offset"),
+					DataType:     "integer",
+					NotNull:      true,
+					IsNamedParam: isNamedParam(ref.ref.Number),
 				},
 			})
 
@@ -98,9 +104,10 @@ func resolveCatalogRefs(c *catalog.Catalog, qc *QueryCatalog, rvs []*ast.RangeVa
 			a = append(a, Parameter{
 				Number: ref.ref.Number,
 				Column: &Column{
-					Name:     parameterName(ref.ref.Number, "limit"),
-					DataType: "integer",
-					NotNull:  true,
+					Name:         parameterName(ref.ref.Number, "limit"),
+					DataType:     "integer",
+					NotNull:      true,
+					IsNamedParam: isNamedParam(ref.ref.Number),
 				},
 			})
 
@@ -121,8 +128,9 @@ func resolveCatalogRefs(c *catalog.Catalog, qc *QueryCatalog, rvs []*ast.RangeVa
 				a = append(a, Parameter{
 					Number: ref.ref.Number,
 					Column: &Column{
-						Name:     parameterName(ref.ref.Number, ""),
-						DataType: dataType,
+						Name:         parameterName(ref.ref.Number, ""),
+						DataType:     dataType,
+						IsNamedParam: isNamedParam(ref.ref.Number),
 					},
 				})
 				continue
@@ -178,12 +186,13 @@ func resolveCatalogRefs(c *catalog.Catalog, qc *QueryCatalog, rvs []*ast.RangeVa
 						a = append(a, Parameter{
 							Number: ref.ref.Number,
 							Column: &Column{
-								Name:     parameterName(ref.ref.Number, key),
-								DataType: dataType(&c.Type),
-								NotNull:  c.IsNotNull,
-								IsArray:  c.IsArray,
-								Length:   c.Length,
-								Table:    table,
+								Name:         parameterName(ref.ref.Number, key),
+								DataType:     dataType(&c.Type),
+								NotNull:      c.IsNotNull,
+								IsArray:      c.IsArray,
+								Length:       c.Length,
+								Table:        table,
+								IsNamedParam: isNamedParam(ref.ref.Number),
 							},
 						})
 					}
@@ -234,11 +243,12 @@ func resolveCatalogRefs(c *catalog.Catalog, qc *QueryCatalog, rvs []*ast.RangeVa
 					a = append(a, Parameter{
 						Number: number,
 						Column: &Column{
-							Name:     parameterName(ref.ref.Number, key),
-							DataType: dataType(&c.Type),
-							NotNull:  c.IsNotNull,
-							IsArray:  c.IsArray,
-							Table:    table,
+							Name:         parameterName(ref.ref.Number, key),
+							DataType:     dataType(&c.Type),
+							NotNull:      c.IsNotNull,
+							IsArray:      c.IsArray,
+							Table:        table,
+							IsNamedParam: isNamedParam(ref.ref.Number),
 						},
 					})
 				}
@@ -300,8 +310,9 @@ func resolveCatalogRefs(c *catalog.Catalog, qc *QueryCatalog, rvs []*ast.RangeVa
 					a = append(a, Parameter{
 						Number: ref.ref.Number,
 						Column: &Column{
-							Name:     parameterName(ref.ref.Number, defaultName),
-							DataType: "any",
+							Name:         parameterName(ref.ref.Number, defaultName),
+							DataType:     "any",
+							IsNamedParam: isNamedParam(ref.ref.Number),
 						},
 					})
 					continue
@@ -330,9 +341,10 @@ func resolveCatalogRefs(c *catalog.Catalog, qc *QueryCatalog, rvs []*ast.RangeVa
 				a = append(a, Parameter{
 					Number: ref.ref.Number,
 					Column: &Column{
-						Name:     parameterName(ref.ref.Number, paramName),
-						DataType: dataType(paramType),
-						NotNull:  true,
+						Name:         parameterName(ref.ref.Number, paramName),
+						DataType:     dataType(paramType),
+						NotNull:      true,
+						IsNamedParam: isNamedParam(ref.ref.Number),
 					},
 				})
 			}
@@ -388,12 +400,13 @@ func resolveCatalogRefs(c *catalog.Catalog, qc *QueryCatalog, rvs []*ast.RangeVa
 				a = append(a, Parameter{
 					Number: ref.ref.Number,
 					Column: &Column{
-						Name:     parameterName(ref.ref.Number, key),
-						DataType: dataType(&c.Type),
-						NotNull:  c.IsNotNull,
-						IsArray:  c.IsArray,
-						Table:    &ast.TableName{Schema: schema, Name: rel},
-						Length:   c.Length,
+						Name:         parameterName(ref.ref.Number, key),
+						DataType:     dataType(&c.Type),
+						NotNull:      c.IsNotNull,
+						IsArray:      c.IsArray,
+						Table:        &ast.TableName{Schema: schema, Name: rel},
+						Length:       c.Length,
+						IsNamedParam: isNamedParam(ref.ref.Number),
 					},
 				})
 			} else {
@@ -488,11 +501,12 @@ func resolveCatalogRefs(c *catalog.Catalog, qc *QueryCatalog, rvs []*ast.RangeVa
 						a = append(a, Parameter{
 							Number: number,
 							Column: &Column{
-								Name:     parameterName(ref.ref.Number, key),
-								DataType: dataType(&c.Type),
-								NotNull:  c.IsNotNull,
-								IsArray:  c.IsArray,
-								Table:    table,
+								Name:         parameterName(ref.ref.Number, key),
+								DataType:     dataType(&c.Type),
+								NotNull:      c.IsNotNull,
+								IsArray:      c.IsArray,
+								Table:        table,
+								IsNamedParam: isNamedParam(ref.ref.Number),
 							},
 						})
 					}
