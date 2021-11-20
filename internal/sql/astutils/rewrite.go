@@ -190,6 +190,9 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 	case *ast.FuncSpec:
 		a.apply(n, "Name", nil, n.Name)
 
+	case *ast.In:
+		a.applyList(n, "List")
+
 	case *ast.List:
 		// Since item is a slice
 		a.applyList(n, "Items")
