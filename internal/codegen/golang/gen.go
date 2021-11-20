@@ -46,7 +46,10 @@ func (t *tmplCtx) OutputQuery(sourceName string) bool {
 func Generate(r *compiler.Result, settings config.CombinedSettings) (map[string]string, error) {
 	enums := buildEnums(r, settings)
 	structs := buildStructs(r, settings)
-	queries := buildQueries(r, settings, structs)
+	queries, err := buildQueries(r, settings, structs)
+	if err != nil {
+		return nil, err
+	}
 	return generate(settings, enums, structs, queries)
 }
 

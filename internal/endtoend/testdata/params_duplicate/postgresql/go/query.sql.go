@@ -10,15 +10,11 @@ import (
 
 const selectUserByID = `-- name: SelectUserByID :many
 SELECT first_name from
-users where (? = id OR ? = 0)
+users where ($1 = id OR $1 = 0)
 `
 
-type SelectUserByIDParams struct {
-	ID interface{}
-}
-
-func (q *Queries) SelectUserByID(ctx context.Context, arg SelectUserByIDParams) ([]sql.NullString, error) {
-	rows, err := q.db.QueryContext(ctx, selectUserByID, arg.ID, arg.ID)
+func (q *Queries) SelectUserByID(ctx context.Context, id interface{}) ([]sql.NullString, error) {
+	rows, err := q.db.QueryContext(ctx, selectUserByID, id)
 	if err != nil {
 		return nil, err
 	}
@@ -43,16 +39,12 @@ func (q *Queries) SelectUserByID(ctx context.Context, arg SelectUserByIDParams) 
 const selectUserByName = `-- name: SelectUserByName :many
 SELECT first_name
 FROM users
-WHERE first_name = ?
-   OR last_name = ?
+WHERE first_name = $1
+   OR last_name = $1
 `
 
-type SelectUserByNameParams struct {
-	Name sql.NullString
-}
-
-func (q *Queries) SelectUserByName(ctx context.Context, arg SelectUserByNameParams) ([]sql.NullString, error) {
-	rows, err := q.db.QueryContext(ctx, selectUserByName, arg.Name, arg.Name)
+func (q *Queries) SelectUserByName(ctx context.Context, name sql.NullString) ([]sql.NullString, error) {
+	rows, err := q.db.QueryContext(ctx, selectUserByName, name)
 	if err != nil {
 		return nil, err
 	}
@@ -76,16 +68,11 @@ func (q *Queries) SelectUserByName(ctx context.Context, arg SelectUserByNamePara
 
 const selectUserQuestion = `-- name: SelectUserQuestion :many
 SELECT first_name from
-users where (? = id OR  ? = 0)
+users where ($1 = id OR  $1 = 0)
 `
 
-type SelectUserQuestionParams struct {
-	Column1 interface{}
-	Column2 interface{}
-}
-
-func (q *Queries) SelectUserQuestion(ctx context.Context, arg SelectUserQuestionParams) ([]sql.NullString, error) {
-	rows, err := q.db.QueryContext(ctx, selectUserQuestion, arg.Column1, arg.Column2)
+func (q *Queries) SelectUserQuestion(ctx context.Context, dollar_1 interface{}) ([]sql.NullString, error) {
+	rows, err := q.db.QueryContext(ctx, selectUserQuestion, dollar_1)
 	if err != nil {
 		return nil, err
 	}
