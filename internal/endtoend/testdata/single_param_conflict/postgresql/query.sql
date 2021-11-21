@@ -27,3 +27,11 @@ SELECT  sub
 FROM    users
 WHERE   sub = $1
 LIMIT   1;
+
+-- https://github.com/kyleconroy/sqlc/issues/1235
+
+-- name: SetDefaultName :one
+UPDATE  authors
+SET     name = "Default Name"
+WHERE   id = $1
+RETURNING id;
