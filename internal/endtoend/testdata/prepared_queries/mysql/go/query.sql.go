@@ -18,7 +18,6 @@ type DeleteUsersByNameParams struct {
 }
 
 func (q *Queries) DeleteUsersByName(ctx context.Context, arg DeleteUsersByNameParams) (int64, error) {
-
 	result, err := q.exec(ctx, q.deleteUsersByNameStmt, deleteUsersByName, arg.FirstName, arg.LastName)
 	if err != nil {
 		return 0, err
