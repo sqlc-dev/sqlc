@@ -25,3 +25,10 @@ func Dump(n ...interface{}) {
 		spew.Dump(n)
 	}
 }
+
+func Sdump(n ...interface{}) string {
+	if Active {
+		return spew.Sdump(n)
+	}
+	return ""
+}
