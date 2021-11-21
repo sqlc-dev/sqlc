@@ -11,8 +11,13 @@ const listFoos = `-- name: ListFoos :one
 SELECT id FROM foo WHERE id = get_id(CASE WHEN $1 = 100 THEN $2 ELSE 'baz' END)
 `
 
-func (q *Queries) ListFoos(ctx context.Context, dollar_1 interface{}) (string, error) {
-	row := q.db.QueryRow(ctx, listFoos, dollar_1)
+type ListFoosParams struct {
+	Column1 interface{}
+	Column2 interface{}
+}
+
+func (q *Queries) ListFoos(ctx context.Context, arg ListFoosParams) (string, error) {
+	row := q.db.QueryRow(ctx, listFoos, arg.Column1, arg.Column2)
 	var id string
 	err := row.Scan(&id)
 	return id, err
