@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/kyleconroy/sqlc/internal/debug"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sql/astutils"
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
@@ -233,6 +234,7 @@ func resolveCatalogRefs(c *catalog.Catalog, qc *QueryCatalog, rvs []*ast.RangeVa
 				number = pr.Number
 			}
 
+			found := false
 			for _, table := range tables {
 				schema := table.Schema
 				if schema == "" {
@@ -240,6 +242,7 @@ func resolveCatalogRefs(c *catalog.Catalog, qc *QueryCatalog, rvs []*ast.RangeVa
 				}
 
 				if c, ok := typeMap[schema][table.Name][key]; ok {
+					found = true
 					a = append(a, Parameter{
 						Number: number,
 						Column: &Column{
@@ -251,7 +254,19 @@ func resolveCatalogRefs(c *catalog.Catalog, qc *QueryCatalog, rvs []*ast.RangeVa
 							IsNamedParam: isNamedParam(ref.ref.Number),
 						},
 					})
+					break
 				}
+			}
+
+			if !found {
+				a = append(a, Parameter{
+					Number: ref.ref.Number,
+					Column: &Column{
+						Name:         parameterName(ref.ref.Number, ""),
+						DataType:     "any",
+						IsNamedParam: isNamedParam(ref.ref.Number),
+					},
+				})
 			}
 
 		case *ast.FuncCall:
@@ -271,6 +286,7 @@ func resolveCatalogRefs(c *catalog.Catalog, qc *QueryCatalog, rvs []*ast.RangeVa
 					ReturnType: &ast.TypeName{Name: "any"},
 				}
 			}
+			found := false
 			for i, item := range n.Args.Items {
 				funcName := fun.Name
 				var argName string
@@ -307,6 +323,7 @@ func resolveCatalogRefs(c *catalog.Catalog, qc *QueryCatalog, rvs []*ast.RangeVa
 					if argName != "" {
 						defaultName = argName
 					}
+					found = true
 					a = append(a, Parameter{
 						Number: ref.ref.Number,
 						Column: &Column{
@@ -315,7 +332,7 @@ func resolveCatalogRefs(c *catalog.Catalog, qc *QueryCatalog, rvs []*ast.RangeVa
 							IsNamedParam: isNamedParam(ref.ref.Number),
 						},
 					})
-					continue
+					break
 				}
 
 				var paramName string
@@ -338,11 +355,25 @@ func resolveCatalogRefs(c *catalog.Catalog, qc *QueryCatalog, rvs []*ast.RangeVa
 					paramName = funcName
 				}
 
+				found = true
 				a = append(a, Parameter{
 					Number: ref.ref.Number,
 					Column: &Column{
 						Name:         parameterName(ref.ref.Number, paramName),
 						DataType:     dataType(paramType),
+						NotNull:      true,
+						IsNamedParam: isNamedParam(ref.ref.Number),
+					},
+				})
+				break
+			}
+
+			if !found {
+				a = append(a, Parameter{
+					Number: ref.ref.Number,
+					Column: &Column{
+						Name:         parameterName(ref.ref.Number, ""),
+						DataType:     "any",
 						NotNull:      true,
 						IsNamedParam: isNamedParam(ref.ref.Number),
 					},
@@ -442,24 +473,32 @@ func resolveCatalogRefs(c *catalog.Catalog, qc *QueryCatalog, rvs []*ast.RangeVa
 				number = pr.Number
 			}
 
+			foundColRef := false
 			location := 0
 			var key, alias string
 			var items []string
 
 			if left, ok := n.Expr.(*ast.ColumnRef); ok {
+				foundColRef = true
 				location = left.Location
 				items = stringSlice(left.Fields)
-			} else if left, ok := n.Expr.(*ast.ParamRef); ok {
-				if len(n.List) <= 0 {
-					continue
-				}
+			} else if left, ok := n.Expr.(*ast.ParamRef); ok && len(n.List) > 0 {
 				if right, ok := n.List[0].(*ast.ColumnRef); ok {
+					foundColRef = true
 					location = left.Location
 					items = stringSlice(right.Fields)
-				} else {
-					continue
 				}
-			} else {
+			}
+
+			if !foundColRef {
+				a = append(a, Parameter{
+					Number: ref.ref.Number,
+					Column: &Column{
+						Name:         parameterName(ref.ref.Number, ""),
+						DataType:     "any",
+						IsNamedParam: isNamedParam(ref.ref.Number),
+					},
+				})
 				continue
 			}
 
@@ -531,8 +570,26 @@ func resolveCatalogRefs(c *catalog.Catalog, qc *QueryCatalog, rvs []*ast.RangeVa
 			}
 
 		default:
-			fmt.Printf("unsupported reference type: %T", n)
+			fmt.Printf("unsupported reference type: %T\n", n)
+
+			a = append(a, Parameter{
+				Number: ref.ref.Number,
+				Column: &Column{
+					Name:         parameterName(ref.ref.Number, ""),
+					DataType:     "any",
+					IsNamedParam: isNamedParam(ref.ref.Number),
+				},
+			})
 		}
+	}
+	if len(a) != len(args) {
+		msg := "failed to generate parameter descriptors"
+		if debug.Active {
+			msg += fmt.Sprintf(
+				"\nfor inputs: %s\ngenerated: %s", debug.Sdump(args), debug.Sdump(a),
+			)
+		}
+		panic(msg)
 	}
 	return a, nil
 }
