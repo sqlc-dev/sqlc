@@ -135,7 +135,7 @@ func argName(name string) string {
 	return out
 }
 
-func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs []Struct) []Query {
+func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs []Struct) ([]Query, error) {
 	qs := make([]Query, 0, len(r.Queries))
 	for _, query := range r.Queries {
 		if query.Name == "" {
@@ -178,11 +178,15 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 					Column: p.Column,
 				})
 			}
+			s, err := columnsToStruct(r, gq.MethodName+"Params", cols, settings, false)
+			if err != nil {
+				return nil, err
+			}
 			gq.Arg = QueryValue{
-				Emit:       true,
-				Name:       "arg",
-				Struct:     columnsToStruct(r, gq.MethodName+"Params", cols, settings, false),
-				SQLPackage: sqlpkg,
+				Emit:        true,
+				Name:        "arg",
+				Struct:      s,
+				SQLPackage:  sqlpkg,
 				EmitPointer: settings.Go.EmitParamsStructPointers,
 			}
 		}
@@ -226,7 +230,11 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 						Column: c,
 					})
 				}
-				gs = columnsToStruct(r, gq.MethodName+"Row", columns, settings, true)
+				var err error
+				gs, err = columnsToStruct(r, gq.MethodName+"Row", columns, settings, true)
+				if err != nil {
+					return nil, err
+				}
 				emit = true
 			}
 			gq.Ret = QueryValue{
@@ -241,7 +249,7 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 		qs = append(qs, gq)
 	}
 	sort.Slice(qs, func(i, j int) bool { return qs[i].MethodName < qs[j].MethodName })
-	return qs
+	return qs, nil
 }
 
 // It's possible that this method will generate duplicate JSON tag values
@@ -251,11 +259,11 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 // JSON tags: count, count_2, count_2
 //
 // This is unlikely to happen, so don't fix it yet
-func columnsToStruct(r *compiler.Result, name string, columns []goColumn, settings config.CombinedSettings, useID bool) *Struct {
+func columnsToStruct(r *compiler.Result, name string, columns []goColumn, settings config.CombinedSettings, useID bool) (*Struct, error) {
 	gs := Struct{
 		Name: name,
 	}
-	seen := map[string]int{}
+	seen := map[string][]int{}
 	suffixes := map[int]int{}
 	for i, c := range columns {
 		colName := columnName(c.Column, i)
@@ -267,7 +275,7 @@ func columnsToStruct(r *compiler.Result, name string, columns []goColumn, settin
 		suffix := 0
 		if o, ok := suffixes[c.id]; ok && useID {
 			suffix = o
-		} else if v := seen[fieldName]; v > 0 {
+		} else if v := len(seen[fieldName]); v > 0 && !c.IsNamedParam {
 			suffix = v + 1
 		}
 		suffixes[c.id] = suffix
@@ -287,8 +295,47 @@ func columnsToStruct(r *compiler.Result, name string, columns []goColumn, settin
 			Type: goType(r, c.Column, settings),
 			Tags: tags,
 		})
-		seen[baseFieldName]++
+		if _, found := seen[baseFieldName]; !found {
+			seen[baseFieldName] = []int{i}
+		} else {
+			seen[baseFieldName] = append(seen[baseFieldName], i)
+		}
 	}
 
-	return &gs
+	// If a field does not have a known type, but another
+	// field with the same name has a known type, assign
+	// the known type to the field without a known type
+	for i, field := range gs.Fields {
+		if len(seen[field.Name]) > 1 && field.Type == "interface{}" {
+			for _, j := range seen[field.Name] {
+				if i == j {
+					continue
+				}
+				otherField := gs.Fields[j]
+				if otherField.Type != field.Type {
+					field.Type = otherField.Type
+				}
+				gs.Fields[i] = field
+			}
+		}
+	}
+
+	err := checkIncompatibleFieldTypes(gs.Fields)
+	if err != nil {
+		return nil, err
+	}
+
+	return &gs, nil
+}
+
+func checkIncompatibleFieldTypes(fields []Field) error {
+	fieldTypes := map[string]string{}
+	for _, field := range fields {
+		if fieldType, found := fieldTypes[field.Name]; !found {
+			fieldTypes[field.Name] = field.Type
+		} else if field.Type != fieldType {
+			return fmt.Errorf("named param %s has incompatible types: %s, %s", field.Name, field.Type, fieldType)
+		}
+	}
+	return nil
 }

@@ -63,6 +63,21 @@ func (v *QueryValue) ReturnName() string {
 	return v.Name
 }
 
+func (v QueryValue) UniqueFields() []Field {
+	seen := map[string]struct{}{}
+	fields := make([]Field, 0, len(v.Struct.Fields))
+
+	for _, field := range v.Struct.Fields {
+		if _, found := seen[field.Name]; found {
+			continue
+		}
+		seen[field.Name] = struct{}{}
+		fields = append(fields, field)
+	}
+
+	return fields
+}
+
 func (v QueryValue) Params() string {
 	if v.isEmpty() {
 		return ""

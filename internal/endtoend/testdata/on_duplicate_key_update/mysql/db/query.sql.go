@@ -25,3 +25,20 @@ func (q *Queries) UpsertAuthor(ctx context.Context, arg UpsertAuthorParams) erro
 	_, err := q.db.ExecContext(ctx, upsertAuthor, arg.Name, arg.Bio, arg.Bio_2)
 	return err
 }
+
+const upsertAuthorNamed = `-- name: UpsertAuthorNamed :exec
+INSERT INTO authors (name, bio)
+VALUES (?, ?)
+ON DUPLICATE KEY
+    UPDATE bio = ?
+`
+
+type UpsertAuthorNamedParams struct {
+	Name string
+	Bio  sql.NullString
+}
+
+func (q *Queries) UpsertAuthorNamed(ctx context.Context, arg UpsertAuthorNamedParams) error {
+	_, err := q.db.ExecContext(ctx, upsertAuthorNamed, arg.Name, arg.Bio, arg.Bio)
+	return err
+}
