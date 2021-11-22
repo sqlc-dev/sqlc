@@ -98,7 +98,7 @@ type Comment struct {
 
 ### golang-migrate
 
-Warning: [golang-migrate specifies](https://github.com/golang-migrate/migrate/blob/master/MIGRATIONS.md#migration-filename-format) that the version number in the migration file name is to be interpreted numerically. However, sqlc executes the migration files in **lexicographic** order. If you choose to simply enumert your migration versions, make sure to prepend enough zeros to the version number to avoid any unexpected behavior.
+Warning: [golang-migrate specifies](https://github.com/golang-migrate/migrate/blob/master/MIGRATIONS.md#migration-filename-format) that the version number in the migration file name is to be interpreted numerically. However, sqlc executes the migration files in **lexicographic** order. If you choose to simply enumerate your migration versions, make sure to prepend enough zeros to the version number to avoid any unexpected behavior.
 
 Probably doesn't work as intended:
 ```
