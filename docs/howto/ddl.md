@@ -98,6 +98,24 @@ type Comment struct {
 
 ### golang-migrate
 
+Warning: [golang-migrate specifies](https://github.com/golang-migrate/migrate/blob/master/MIGRATIONS.md#migration-filename-format) that the version number in the migration file name is to be interpreted numerically. However, sqlc executes the migration files in **lexicographic** order. If you choose to simply enumerate your migration versions, make sure to prepend enough zeros to the version number to avoid any unexpected behavior.
+
+Probably doesn't work as intended:
+```
+1_initial.up.sql
+...
+9_foo.up.sql
+# this migration file will be executed BEFORE 9_foo
+10_bar.up.sql
+```
+Works as was probably intended:
+```
+001_initial.up.sql
+...
+009_foo.up.sql
+010_bar.up.sql
+```
+
 In `20060102.up.sql`:
 
 ```sql
