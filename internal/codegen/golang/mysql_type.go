@@ -55,6 +55,12 @@ func mysqlType(r *compiler.Result, col *compiler.Column, settings config.Combine
 		}
 		return "sql.NullFloat64"
 
+	case "float":
+		if notNull {
+			return "float32"
+		}
+		return "sql.NullFloat64"
+
 	case "decimal", "dec", "fixed":
 		if notNull {
 			return "string"

@@ -5,6 +5,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/kyleconroy/sqlc/internal/compiler"
 	"github.com/kyleconroy/sqlc/internal/config"
 )
 
@@ -13,6 +14,7 @@ type Field struct {
 	Type    string
 	Tags    map[string]string
 	Comment string
+	Column  *compiler.Column
 }
 
 func (gf Field) Tag() string {
@@ -25,6 +27,10 @@ func (gf Field) Tag() string {
 	}
 	sort.Strings(tags)
 	return strings.Join(tags, " ")
+}
+
+func (gf Field) HasSlice() bool {
+	return gf.Column.IsSlice
 }
 
 func JSONTagName(name string, settings config.CombinedSettings) string {

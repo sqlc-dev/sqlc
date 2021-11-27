@@ -3,6 +3,7 @@ package golang
 import (
 	"strings"
 
+	"github.com/kyleconroy/sqlc/internal/compiler"
 	"github.com/kyleconroy/sqlc/internal/metadata"
 )
 
@@ -13,6 +14,10 @@ type QueryValue struct {
 	Struct      *Struct
 	Typ         string
 	SQLPackage  SQLPackage
+
+	// Column is kept so late in the generation process around to differentiate
+	// between mysql slices and pg arrays
+	Column *compiler.Column
 }
 
 func (v QueryValue) EmitStruct() bool {
@@ -84,14 +89,14 @@ func (v QueryValue) Params() string {
 	}
 	var out []string
 	if v.Struct == nil {
-		if strings.HasPrefix(v.Typ, "[]") && v.Typ != "[]byte" && v.SQLPackage != SQLPackagePGX {
+		if !v.Column.IsSlice && strings.HasPrefix(v.Typ, "[]") && v.Typ != "[]byte" && v.SQLPackage != SQLPackagePGX {
 			out = append(out, "pq.Array("+v.Name+")")
 		} else {
 			out = append(out, v.Name)
 		}
 	} else {
 		for _, f := range v.Struct.Fields {
-			if strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" && v.SQLPackage != SQLPackagePGX {
+			if !f.HasSlice() && strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" && v.SQLPackage != SQLPackagePGX {
 				out = append(out, "pq.Array("+v.Name+"."+f.Name+")")
 			} else {
 				out = append(out, v.Name+"."+f.Name)
@@ -103,6 +108,20 @@ func (v QueryValue) Params() string {
 	}
 	out = append(out, "")
 	return "\n" + strings.Join(out, ",\n")
+}
+
+// When true, we have to build the arguments to q.db.QueryContext in addition to
+// munging the SQL
+func (v QueryValue) HasSlices() bool {
+	if v.Struct == nil {
+		return v.Column != nil && v.Column.IsSlice
+	}
+	for _, v := range v.Struct.Fields {
+		if v.Column.IsSlice {
+			return true
+		}
+	}
+	return false
 }
 
 func (v QueryValue) Scan() string {
