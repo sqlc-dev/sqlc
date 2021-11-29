@@ -478,6 +478,17 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Refassgnexpr)
 		}
 
+	case *ast.BetweenExpr:
+		if n.Expr != nil {
+			Walk(f, n.Expr)
+		}
+		if n.Left != nil {
+			Walk(f, n.Left)
+		}
+		if n.Right != nil {
+			Walk(f, n.Right)
+		}
+
 	case *ast.BitString:
 		// pass
 
@@ -1997,8 +2008,8 @@ func Walk(f Visitor, node ast.Node) {
 		// pass
 
 	case *ast.UpdateStmt:
-		if n.Relation != nil {
-			Walk(f, n.Relation)
+		if n.Relations != nil {
+			Walk(f, n.Relations)
 		}
 		if n.TargetList != nil {
 			Walk(f, n.TargetList)

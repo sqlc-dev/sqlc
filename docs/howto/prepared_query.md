@@ -43,7 +43,7 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	return &q, nil
 }
 
-func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, args ...interface{}) (*sql.Row) {
+func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, args ...interface{}) *sql.Row {
 	switch {
 	case stmt != nil && q.tx != nil:
 		return q.tx.StmtContext(ctx, stmt).QueryRowContext(ctx, args...)

@@ -19,6 +19,7 @@ packages:
     emit_json_tags: true
     emit_result_struct_pointers: false
     emit_params_struct_pointers: false
+    emit_methods_with_db_argument: false
     json_tags_case_style: "camel"
     output_db_file_name: "db.go"
     output_models_file_name: "models.go"
@@ -57,6 +58,8 @@ Each package document has the following keys:
   - If true, query results are returned as pointers to structs. Queries returning multiple results are returned as slices of pointers. Defaults to `false`.
 - `emit_params_struct_pointers`:
   - If true, parameters are passed as pointers to structs. Defaults to `false`.
+- `emit_methods_with_db_argument`:
+  - If true, generated methods will accept a DBTX argument instead of storing a DBTX on the `*Queries` struct. Defaults to `false`.
 - `json_tags_case_style`:
   - `camel` for camelCase, `pascal` for PascalCase, `snake` for snake_case or `none` to use the column name in the DB. Defaults to `none`.
 - `output_db_file_name`:
@@ -70,7 +73,7 @@ Each package document has the following keys:
 
 ## Type Overrides
 
-The default mapping of PostgreSQL types to Go types only uses packages outside
+The default mapping of PostgreSQL/MySQL types to Go types only uses packages outside
 the standard library when it must.
 
 For example, the `uuid` PostgreSQL type is mapped to `github.com/google/uuid`.
@@ -89,7 +92,7 @@ overrides:
 Each override document has the following keys:
 
 - `db_type`:
-  - The PostgreSQL type to override. Find the full list of supported types in [postgresql_type.go](https://github.com/kyleconroy/sqlc/blob/main/internal/codegen/golang/postgresql_type.go#L12).
+  - The PostgreSQL or MySQL type to override. Find the full list of supported types in [postgresql_type.go](https://github.com/kyleconroy/sqlc/blob/main/internal/codegen/golang/postgresql_type.go#L12) or [mysql_type.go](https://github.com/kyleconroy/sqlc/blob/main/internal/codegen/golang/mysql_type.go#L12).
 - `go_type`:
   - A fully qualified name to a Go type to use in the generated code.
 - `nullable`:
@@ -101,7 +104,7 @@ Sometimes you would like to override the Go type used in model or query generati
 a specific field of a table and not on a type basis as described in the previous section.
 
 This may be configured by specifying the `column` property in the override definition. `column`
-should be of the form `table.column` buy you may be even more specify by specifying `schema.table.column`
+should be of the form `table.column` but you can be even more specific by specifying `schema.table.column`
 or `catalog.schema.table.column`.
 
 ```yaml

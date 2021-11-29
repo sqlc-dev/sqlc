@@ -228,11 +228,12 @@ func (ct *CompositeType) SetComment(c string) {
 }
 
 type Function struct {
-	Name       string
-	Args       []*Argument
-	ReturnType *ast.TypeName
-	Comment    string
-	Desc       string
+	Name               string
+	Args               []*Argument
+	ReturnType         *ast.TypeName
+	Comment            string
+	Desc               string
+	ReturnTypeNullable bool
 }
 
 func (f *Function) InArgs() []*Argument {

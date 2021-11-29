@@ -1,19 +1,30 @@
 {{define "interfaceCodeStd"}}
     type Querier interface {
+    {{- $dbtxParam := .EmitMethodsWithDBArgument -}}
     {{- range .GoQueries}}
-        {{- if eq .Cmd ":one"}}
+        {{- if and (eq .Cmd ":one") ($dbtxParam) }}
+            {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) ({{.Ret.DefineType}}, error)
+        {{- else if eq .Cmd ":one"}}
             {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.DefineType}}, error)
         {{- end}}
-        {{- if eq .Cmd ":many"}}
+        {{- if and (eq .Cmd ":many") ($dbtxParam) }}
+            {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error)
+        {{- else if eq .Cmd ":many"}}
             {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error)
         {{- end}}
-        {{- if eq .Cmd ":exec"}}
+        {{- if and (eq .Cmd ":exec") ($dbtxParam) }}
+            {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) error
+        {{- else if eq .Cmd ":exec"}}
             {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) error
         {{- end}}
-        {{- if eq .Cmd ":execrows"}}
+        {{- if and (eq .Cmd ":execrows") ($dbtxParam) }}
+            {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) (int64, error)
+        {{- else if eq .Cmd ":execrows"}}
             {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, error)
         {{- end}}
-        {{- if eq .Cmd ":execresult"}}
+        {{- if and (eq .Cmd ":execresult") ($dbtxParam) }}
+            {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) (sql.Result, error)
+        {{- else if eq .Cmd ":execresult"}}
             {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (sql.Result, error)
         {{- end}}
     {{- end}}

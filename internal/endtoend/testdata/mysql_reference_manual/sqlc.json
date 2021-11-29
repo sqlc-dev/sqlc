@@ -7,6 +7,13 @@
       "schema": "date_and_time_functions",
       "queries": "date_and_time_functions",
       "engine": "mysql"
+    },
+    {
+      "name": "aggregate_functions",
+      "path": "aggregate_functions/go",
+      "schema": "aggregate_functions",
+      "queries": "aggregate_functions",
+      "engine": "mysql"
     }
   ]
 }

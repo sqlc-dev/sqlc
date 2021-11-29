@@ -407,6 +407,18 @@ func (c *cc) convertInsertStmt(n *pcast.InsertStmt) *ast.InsertStmt {
 			ValuesLists: c.convertLists(n.Lists),
 		}
 	}
+
+	if n.OnDuplicate != nil {
+		targetList := &ast.List{}
+		for _, a := range n.OnDuplicate {
+			targetList.Items = append(targetList.Items, c.convertAssignment(a))
+		}
+		insert.OnConflictClause = &ast.OnConflictClause{
+			TargetList: targetList,
+			Location:   n.OriginTextPosition(),
+		}
+	}
+
 	return insert
 }
 
@@ -452,14 +464,22 @@ func (c *cc) convertSelectField(n *pcast.SelectField) *ast.ResTarget {
 }
 
 func (c *cc) convertSelectStmt(n *pcast.SelectStmt) *ast.SelectStmt {
+	windowClause := &ast.List{Items: make([]ast.Node, 0)}
+	orderByClause := c.convertOrderByClause(n.OrderBy)
+	if orderByClause != nil {
+		windowClause.Items = append(windowClause.Items, orderByClause)
+	}
+
 	op, all := c.convertSetOprType(n.AfterSetOperator)
 	stmt := &ast.SelectStmt{
-		TargetList:  c.convertFieldList(n.Fields),
-		FromClause:  c.convertTableRefsClause(n.From),
-		WhereClause: c.convert(n.Where),
-		WithClause:  c.convertWithClause(n.With),
-		Op:          op,
-		All:         all,
+		TargetList:   c.convertFieldList(n.Fields),
+		FromClause:   c.convertTableRefsClause(n.From),
+		GroupClause:  c.convertGroupByClause(n.GroupBy),
+		WhereClause:  c.convert(n.Where),
+		WithClause:   c.convertWithClause(n.With),
+		WindowClause: windowClause,
+		Op:           op,
+		All:          all,
 	}
 	if n.Limit != nil {
 		stmt.LimitCount = c.convert(n.Limit.Count)
@@ -521,7 +541,7 @@ func (c *cc) convertUpdateStmt(n *pcast.UpdateStmt) *ast.UpdateStmt {
 		panic("expected one range var")
 	}
 
-	var rangeVar *ast.RangeVar
+	relations := &ast.List{}
 	switch rel := rels.Items[0].(type) {
 
 	// Special case for joins in updates
@@ -530,10 +550,16 @@ func (c *cc) convertUpdateStmt(n *pcast.UpdateStmt) *ast.UpdateStmt {
 		if !ok {
 			panic("expected range var")
 		}
-		rangeVar = left
+		relations.Items = append(relations.Items, left)
+
+		right, ok := rel.Rarg.(*ast.RangeVar)
+		if !ok {
+			panic("expected range var")
+		}
+		relations.Items = append(relations.Items, right)
 
 	case *ast.RangeVar:
-		rangeVar = rel
+		relations.Items = append(relations.Items, rel)
 
 	default:
 		panic("expected range var")
@@ -545,7 +571,7 @@ func (c *cc) convertUpdateStmt(n *pcast.UpdateStmt) *ast.UpdateStmt {
 		list.Items = append(list.Items, c.convertAssignment(a))
 	}
 	return &ast.UpdateStmt{
-		Relation:      rangeVar,
+		Relations:     relations,
 		TargetList:    list,
 		WhereClause:   c.convert(n.Where),
 		FromClause:    &ast.List{},
@@ -638,7 +664,13 @@ func (c *cc) convertBeginStmt(n *pcast.BeginStmt) ast.Node {
 }
 
 func (c *cc) convertBetweenExpr(n *pcast.BetweenExpr) ast.Node {
-	return todo(n)
+	return &ast.BetweenExpr{
+		Expr:     c.convert(n.Expr),
+		Left:     c.convert(n.Left),
+		Right:    c.convert(n.Right),
+		Location: n.OriginTextPosition(),
+		Not:      n.Not,
+	}
 }
 
 func (c *cc) convertBinlogStmt(n *pcast.BinlogStmt) ast.Node {
@@ -646,11 +678,29 @@ func (c *cc) convertBinlogStmt(n *pcast.BinlogStmt) ast.Node {
 }
 
 func (c *cc) convertByItem(n *pcast.ByItem) ast.Node {
-	return todo(n)
+	switch n.Expr.(type) {
+	case *pcast.PositionExpr:
+		return c.convertPositionExpr(n.Expr.(*pcast.PositionExpr))
+	case *pcast.ColumnNameExpr:
+		return c.convertColumnNameExpr(n.Expr.(*pcast.ColumnNameExpr))
+	default:
+		return todo(n)
+	}
 }
 
 func (c *cc) convertCaseExpr(n *pcast.CaseExpr) ast.Node {
-	return todo(n)
+	if n == nil {
+		return nil
+	}
+	list := &ast.List{Items: []ast.Node{}}
+	for _, n := range n.WhenClauses {
+		list.Items = append(list.Items, c.convertWhenClause(n))
+	}
+	return &ast.CaseExpr{
+		Args:      list,
+		Defresult: c.convert(n.ElseClause),
+		Location:  n.OriginTextPosition(),
+	}
 }
 
 func (c *cc) convertChangeStmt(n *pcast.ChangeStmt) ast.Node {
@@ -816,8 +866,19 @@ func (c *cc) convertGrantStmt(n *pcast.GrantStmt) ast.Node {
 	return todo(n)
 }
 
-func (c *cc) convertGroupByClause(n *pcast.GroupByClause) ast.Node {
-	return todo(n)
+func (c *cc) convertGroupByClause(n *pcast.GroupByClause) *ast.List {
+	if n == nil {
+		return &ast.List{}
+	}
+
+	var items []ast.Node
+	for _, item := range n.Items {
+		items = append(items, c.convertByItem(item))
+	}
+
+	return &ast.List{
+		Items: items,
+	}
 }
 
 func (c *cc) convertHavingClause(n *pcast.HavingClause) ast.Node {
@@ -849,11 +910,18 @@ func (c *cc) convertJoin(n *pcast.Join) *ast.List {
 		return &ast.List{}
 	}
 	if n.Right != nil && n.Left != nil {
+		// MySQL doesn't have a FULL join type
+		joinType := ast.JoinType(n.Tp)
+		if joinType >= ast.JoinTypeFull {
+			joinType++
+		}
+
 		return &ast.List{
 			Items: []ast.Node{&ast.JoinExpr{
-				Larg:  c.convert(n.Left),
-				Rarg:  c.convert(n.Right),
-				Quals: c.convert(n.On),
+				Jointype: joinType,
+				Larg:     c.convert(n.Left),
+				Rarg:     c.convert(n.Right),
+				Quals:    c.convert(n.On),
 			}},
 		}
 	}
@@ -911,7 +979,25 @@ func (c *cc) convertOnUpdateOpt(n *pcast.OnUpdateOpt) ast.Node {
 }
 
 func (c *cc) convertOrderByClause(n *pcast.OrderByClause) ast.Node {
-	return todo(n)
+	if n == nil {
+		return nil
+	}
+	list := &ast.List{Items: []ast.Node{}}
+	for _, item := range n.Items {
+		switch item.Expr.(type) {
+		case *pcast.CaseExpr:
+			list.Items = append(list.Items, &ast.CaseWhen{
+				Expr:     c.convert(item.Expr),
+				Location: item.Expr.OriginTextPosition(),
+			})
+		case *pcast.ColumnNameExpr:
+			list.Items = append(list.Items, &ast.CaseExpr{
+				Xpr:      c.convert(item.Expr),
+				Location: item.Expr.OriginTextPosition(),
+			})
+		}
+	}
+	return list
 }
 
 func (c *cc) convertParenthesesExpr(n *pcast.ParenthesesExpr) ast.Node {
@@ -1236,7 +1322,14 @@ func (c *cc) convertVariableExpr(n *pcast.VariableExpr) ast.Node {
 }
 
 func (c *cc) convertWhenClause(n *pcast.WhenClause) ast.Node {
-	return todo(n)
+	if n == nil {
+		return nil
+	}
+	return &ast.CaseWhen{
+		Expr:     c.convert(n.Expr),
+		Result:   c.convert(n.Result),
+		Location: n.OriginTextPosition(),
+	}
 }
 
 func (c *cc) convertWindowFuncExpr(n *pcast.WindowFuncExpr) ast.Node {

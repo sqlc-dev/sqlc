@@ -31,11 +31,12 @@ type tmplCtx struct {
 	// TODO: Race conditions
 	SourceName string
 
-	EmitJSONTags        bool
-	EmitDBTags          bool
-	EmitPreparedQueries bool
-	EmitInterface       bool
-	EmitEmptySlices     bool
+	EmitJSONTags              bool
+	EmitDBTags                bool
+	EmitPreparedQueries       bool
+	EmitInterface             bool
+	EmitEmptySlices           bool
+	EmitMethodsWithDBArgument bool
 }
 
 func (t *tmplCtx) OutputQuery(sourceName string) bool {
@@ -45,7 +46,10 @@ func (t *tmplCtx) OutputQuery(sourceName string) bool {
 func Generate(r *compiler.Result, settings config.CombinedSettings) (map[string]string, error) {
 	enums := buildEnums(r, settings)
 	structs := buildStructs(r, settings)
-	queries := buildQueries(r, settings, structs)
+	queries, err := buildQueries(r, settings, structs)
+	if err != nil {
+		return nil, err
+	}
 	return generate(settings, enums, structs, queries)
 }
 
@@ -76,18 +80,19 @@ func generate(settings config.CombinedSettings, enums []Enum, structs []Struct, 
 
 	golang := settings.Go
 	tctx := tmplCtx{
-		Settings:            settings.Global,
-		EmitInterface:       golang.EmitInterface,
-		EmitJSONTags:        golang.EmitJSONTags,
-		EmitDBTags:          golang.EmitDBTags,
-		EmitPreparedQueries: golang.EmitPreparedQueries,
-		EmitEmptySlices:     golang.EmitEmptySlices,
-		SQLPackage:          SQLPackageFromString(golang.SQLPackage),
-		Q:                   "`",
-		Package:             golang.Package,
-		GoQueries:           queries,
-		Enums:               enums,
-		Structs:             structs,
+		Settings:                  settings.Global,
+		EmitInterface:             golang.EmitInterface,
+		EmitJSONTags:              golang.EmitJSONTags,
+		EmitDBTags:                golang.EmitDBTags,
+		EmitPreparedQueries:       golang.EmitPreparedQueries,
+		EmitEmptySlices:           golang.EmitEmptySlices,
+		EmitMethodsWithDBArgument: golang.EmitMethodsWithDBArgument,
+		SQLPackage:                SQLPackageFromString(golang.SQLPackage),
+		Q:                         "`",
+		Package:                   golang.Package,
+		GoQueries:                 queries,
+		Enums:                     enums,
+		Structs:                   structs,
 	}
 
 	output := map[string]string{}

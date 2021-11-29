@@ -22,7 +22,7 @@ WHERE tags = ?
 data class BooksByTagsRow (
   val bookId: Int,
   val title: String,
-  val name: String,
+  val name: String?,
   val isbn: String,
   val tags: String
 )

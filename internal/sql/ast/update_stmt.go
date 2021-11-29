@@ -1,7 +1,7 @@
 package ast
 
 type UpdateStmt struct {
-	Relation      *RangeVar
+	Relations     *List
 	TargetList    *List
 	WhereClause   Node
 	FromClause    *List

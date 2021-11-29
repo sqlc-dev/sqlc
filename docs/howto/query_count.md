@@ -54,8 +54,8 @@ ORDER BY 1
 `
 
 type CountAuthorsByTownRow struct {
-	Hometown  string
-	Count     int
+	Hometown string
+	Count    int
 }
 
 func (q *Queries) CountAuthorsByTown(ctx context.Context) ([]CountAuthorsByTownRow, error) {

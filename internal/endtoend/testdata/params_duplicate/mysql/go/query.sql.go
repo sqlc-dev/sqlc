@@ -14,12 +14,11 @@ users where (? = id OR ? = 0)
 `
 
 type SelectUserByIDParams struct {
-	Column1 interface{}
-	ID      interface{}
+	ID interface{}
 }
 
 func (q *Queries) SelectUserByID(ctx context.Context, arg SelectUserByIDParams) ([]sql.NullString, error) {
-	rows, err := q.db.QueryContext(ctx, selectUserByID, arg.Column1, arg.ID)
+	rows, err := q.db.QueryContext(ctx, selectUserByID, arg.ID, arg.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -49,12 +48,11 @@ WHERE first_name = ?
 `
 
 type SelectUserByNameParams struct {
-	FirstName sql.NullString
-	Name      sql.NullString
+	Name sql.NullString
 }
 
 func (q *Queries) SelectUserByName(ctx context.Context, arg SelectUserByNameParams) ([]sql.NullString, error) {
-	rows, err := q.db.QueryContext(ctx, selectUserByName, arg.FirstName, arg.Name)
+	rows, err := q.db.QueryContext(ctx, selectUserByName, arg.Name, arg.Name)
 	if err != nil {
 		return nil, err
 	}

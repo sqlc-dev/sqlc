@@ -63,6 +63,7 @@ code ever again.
    reference/datatypes.md
    reference/query-annotations.md
    reference/language-support.rst
+   reference/environment-variables.md
 
 .. toctree::
    :maxdepth: 2
