@@ -180,9 +180,9 @@ func postgresType(r *compiler.Result, col *compiler.Column, settings config.Comb
 
 	case "interval", "pg_catalog.interval":
 		if notNull {
-			return "int64"
+			return "string"
 		}
-		return "sql.NullInt64"
+		return "sql.NullString"
 
 	case "daterange":
 		if driver == SQLDriverPGXV4 {
