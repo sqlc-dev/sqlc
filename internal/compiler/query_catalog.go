@@ -15,6 +15,8 @@ type QueryCatalog struct {
 func buildQueryCatalog(c *catalog.Catalog, node ast.Node) (*QueryCatalog, error) {
 	var with *ast.WithClause
 	switch n := node.(type) {
+	case *ast.DeleteStmt:
+		with = n.WithClause
 	case *ast.InsertStmt:
 		with = n.WithClause
 	case *ast.UpdateStmt:
