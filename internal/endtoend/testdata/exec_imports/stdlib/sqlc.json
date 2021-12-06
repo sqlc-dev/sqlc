@@ -6,7 +6,8 @@
       "name": "querytest",
       "schema": "query.sql",
       "queries": "query.sql",
-      "emit_interface": true
+      "emit_interface": true,
+      "emit_meta": true
     }
   ]
 }

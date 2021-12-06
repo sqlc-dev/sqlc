@@ -1,0 +1,30 @@
+{{define "metaFile"}}
+package {{.Package}}
+
+{{template "metaCode" . }}
+{{end}}
+
+{{define "metaCode"}}
+var TableName = struct { {{range .TableStructs }}
+  {{.FieldName}}  string {{end}}
+} { {{range .TableStructs }}
+  {{.FieldName}}: "{{.TableName}}",{{end}}
+}
+
+{{range .TableStructs }}
+var {{.FieldName}}Columns = struct { {{range .Columns }}
+  {{.FieldName}}  string {{end}}
+} { {{range .Columns }}
+  {{.FieldName}}: "{{.ColumnName}}",{{end}}
+}
+{{end}}
+
+{{range .TableStructs }}
+{{ $tableName := .TableName }}
+var {{.FieldName}}SelectColumns  = struct { {{range .Columns }}
+  {{.FieldName}}  string {{end}}
+} { {{range .Columns }}
+  {{.FieldName}}: "{{$tableName}}.{{.ColumnName}}", {{end}}
+}
+{{end}}
+{{end}}
