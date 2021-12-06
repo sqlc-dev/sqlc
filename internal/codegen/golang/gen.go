@@ -20,13 +20,14 @@ type Generateable interface {
 }
 
 type tmplCtx struct {
-	Q          string
-	Package    string
-	SQLPackage SQLPackage
-	Enums      []Enum
-	Structs    []Struct
-	GoQueries  []Query
-	Settings   config.Config
+	Q            string
+	Package      string
+	SQLPackage   SQLPackage
+	Enums        []Enum
+	Structs      []Struct
+	TableStructs []TableStruct
+	GoQueries    []Query
+	Settings     config.Config
 
 	// TODO: Race conditions
 	SourceName string
@@ -47,13 +48,14 @@ func Generate(r *compiler.Result, settings config.CombinedSettings) (map[string]
 	enums := buildEnums(r, settings)
 	structs := buildStructs(r, settings)
 	queries, err := buildQueries(r, settings, structs)
+	tableStructs := BuildMetaStructs(r, settings)
 	if err != nil {
 		return nil, err
 	}
-	return generate(settings, enums, structs, queries)
+	return generate(settings, enums, structs, queries, tableStructs)
 }
 
-func generate(settings config.CombinedSettings, enums []Enum, structs []Struct, queries []Query) (map[string]string, error) {
+func generate(settings config.CombinedSettings, enums []Enum, structs []Struct, queries []Query, tableStructs []TableStruct) (map[string]string, error) {
 	i := &importer{
 		Settings: settings,
 		Queries:  queries,
@@ -93,6 +95,7 @@ func generate(settings config.CombinedSettings, enums []Enum, structs []Struct, 
 		GoQueries:                 queries,
 		Enums:                     enums,
 		Structs:                   structs,
+		TableStructs:              tableStructs,
 	}
 
 	output := map[string]string{}
@@ -136,12 +139,18 @@ func generate(settings config.CombinedSettings, enums []Enum, structs []Struct, 
 		querierFileName = golang.OutputQuerierFileName
 	}
 
+	metaFileName := "meta.go"
+
 	if err := execute(dbFileName, "dbFile"); err != nil {
 		return nil, err
 	}
 	if err := execute(modelsFileName, "modelsFile"); err != nil {
 		return nil, err
 	}
+	if err := execute(metaFileName, "metaFile"); err != nil {
+		return nil, err
+	}
+
 	if golang.EmitInterface {
 		if err := execute(querierFileName, "interfaceFile"); err != nil {
 			return nil, err
