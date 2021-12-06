@@ -138,8 +138,10 @@ func generate(settings config.CombinedSettings, enums []Enum, structs []Struct, 
 	if golang.OutputQuerierFileName != "" {
 		querierFileName = golang.OutputQuerierFileName
 	}
-
 	metaFileName := "meta.go"
+	if golang.OutputMetaFileName != "" {
+		metaFileName = golang.OutputMetaFileName
+	}
 
 	if err := execute(dbFileName, "dbFile"); err != nil {
 		return nil, err
@@ -147,10 +149,12 @@ func generate(settings config.CombinedSettings, enums []Enum, structs []Struct, 
 	if err := execute(modelsFileName, "modelsFile"); err != nil {
 		return nil, err
 	}
-	if err := execute(metaFileName, "metaFile"); err != nil {
-		return nil, err
+	
+	if golang.EmitMeta {
+		if err := execute(metaFileName, "metaFile"); err != nil {
+			return nil, err
+		}
 	}
-
 	if golang.EmitInterface {
 		if err := execute(querierFileName, "interfaceFile"); err != nil {
 			return nil, err

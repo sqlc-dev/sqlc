@@ -21,6 +21,7 @@ type v1PackageSettings struct {
 	Path                      string     `json:"path" yaml:"path"`
 	Schema                    Paths      `json:"schema" yaml:"schema"`
 	Queries                   Paths      `json:"queries" yaml:"queries"`
+	EmitMeta                  bool       `json:"emit_meta,omitempty" yaml:"emit_meta"`
 	EmitInterface             bool       `json:"emit_interface" yaml:"emit_interface"`
 	EmitJSONTags              bool       `json:"emit_json_tags" yaml:"emit_json_tags"`
 	EmitDBTags                bool       `json:"emit_db_tags" yaml:"emit_db_tags"`
@@ -38,6 +39,7 @@ type v1PackageSettings struct {
 	OutputModelsFileName      string     `json:"output_models_file_name,omitempty" yaml:"output_models_file_name"`
 	OutputQuerierFileName     string     `json:"output_querier_file_name,omitempty" yaml:"output_querier_file_name"`
 	OutputFilesSuffix         string     `json:"output_files_suffix,omitempty" yaml:"output_files_suffix"`
+	OutputMetaFileName        string     `json:"output_meta_file_name,omitempty" yaml:"output_meta_file_name"`
 }
 
 func v1ParseConfig(rd io.Reader) (Config, error) {
@@ -114,6 +116,7 @@ func (c *V1GenerateSettings) Translate() Config {
 			Gen: SQLGen{
 				Go: &SQLGo{
 					EmitInterface:             pkg.EmitInterface,
+					EmitMeta:                  pkg.EmitMeta,
 					EmitJSONTags:              pkg.EmitJSONTags,
 					EmitDBTags:                pkg.EmitDBTags,
 					EmitPreparedQueries:       pkg.EmitPreparedQueries,

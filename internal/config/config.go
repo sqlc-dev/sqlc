@@ -111,6 +111,7 @@ type SQLGen struct {
 
 type SQLGo struct {
 	EmitInterface             bool              `json:"emit_interface" yaml:"emit_interface"`
+	EmitMeta                  bool              `json:"emit_meta" yaml:"emit_meta"`
 	EmitJSONTags              bool              `json:"emit_json_tags" yaml:"emit_json_tags"`
 	EmitDBTags                bool              `json:"emit_db_tags" yaml:"emit_db_tags"`
 	EmitPreparedQueries       bool              `json:"emit_prepared_queries" yaml:"emit_prepared_queries"`
@@ -129,6 +130,7 @@ type SQLGo struct {
 	OutputDBFileName          string            `json:"output_db_file_name,omitempty" yaml:"output_db_file_name"`
 	OutputModelsFileName      string            `json:"output_models_file_name,omitempty" yaml:"output_models_file_name"`
 	OutputQuerierFileName     string            `json:"output_querier_file_name,omitempty" yaml:"output_querier_file_name"`
+	OutputMetaFileName        string            `json:"output_meta_file_name,omitempty" yaml:"output_meta_file_name"`
 	OutputFilesSuffix         string            `json:"output_files_suffix,omitempty" yaml:"output_files_suffix"`
 }
 
