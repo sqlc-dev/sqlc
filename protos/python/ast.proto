@@ -10,7 +10,13 @@ message Node {
 	Import import = 2 [json_name="Import"];
 	ImportFrom import_from = 3 [json_name="ImportFrom"];
 	Module module = 4 [json_name="Module"];
+	Alias alias = 5 [json_name="Alias"];
   }
+}
+
+message Alias
+{
+  string name = 1 [json_name="name"];
 }
 
 message ClassDef
