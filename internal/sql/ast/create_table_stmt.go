@@ -1,11 +1,12 @@
 package ast
 
 type CreateTableStmt struct {
-	IfNotExists bool
-	Name        *TableName
-	Cols        []*ColumnDef
-	ReferTable  *TableName
-	Comment     string
+	IfNotExists  bool
+	Name         *TableName
+	Cols         []*ColumnDef
+	ReferTable   *TableName
+	Comment      string
+	InhRelations []*TableName
 }
 
 func (n *CreateTableStmt) Pos() int {

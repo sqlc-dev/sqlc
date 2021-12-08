@@ -138,7 +138,7 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 		return sqlerr.RelationExists(stmt.Name.Name)
 	}
 
-	tbl := Table{Rel: stmt.Name, Comment: stmt.Comment}
+	tbl := Table{Rel: stmt.Name, Comment: stmt.Comment, Inherits: stmt.InhRelations}
 
 	if stmt.ReferTable != nil && len(stmt.Cols) != 0 {
 		return errors.New("create table node cannot have both a ReferTable and Cols")

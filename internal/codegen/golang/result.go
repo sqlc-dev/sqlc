@@ -78,6 +78,10 @@ func buildStructs(r *compiler.Result, settings config.CombinedSettings) []Struct
 				Name:    StructName(structName, settings),
 				Comment: table.Comment,
 			}
+			for _, inh := range table.Inherits {
+				// TODO: struct name need to include schema and settings, as above.
+				s.Inherits = append(s.Inherits, StructName(inh.Name, settings))
+			}
 			for _, column := range table.Columns {
 				tags := map[string]string{}
 				if settings.Go.EmitDBTags {
