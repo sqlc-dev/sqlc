@@ -370,7 +370,7 @@ func translate(node *nodes.Node) (ast.Node, error) {
 			case *nodes.Node_RangeVar:
 				if item.RangeVar.Inh {
 					rel := parseRelationFromRangeVar(item.RangeVar)
-					create.InhRelations = append(create.InhRelations, rel.TableName())
+					create.Inherits = append(create.Inherits, rel.TableName())
 				}
 			}
 		}
