@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package ast;
+
+option go_package = "github.com/kyleconroy/sqlc/internal/python/ast";
+
+message Node {
+  oneof node {
+	ClassDef class_def = 1 [json_name="ClassDef"];
+	Import import = 2 [json_name="Import"];
+	ImportFrom import_from = 3 [json_name="ImportFrom"];
+	Module module = 4 [json_name="Module"];
+  }
+}
+
+message ClassDef
+{
+  string name = 1 [json_name="name"];
+  repeated Node bases = 2 [json_name="bases"];
+  repeated Node keywords = 3 [json_name="keywords"];
+  repeated Node body = 4 [json_name="body"];
+  repeated Node decorator_list = 5 [json_name="decorator_list"];
+}
+
+message Import
+{
+  repeated Node names = 1 [json_name="names"];
+}
+
+message ImportFrom
+{
+  string module = 1 [json_name="module"];
+  repeated Node names = 2 [json_name="names"];
+  int32 level = 3 [json_name="level"];
+}
+
+message Module
+{
+  repeated Node body = 1 [json_name="body"];
+}
+
+

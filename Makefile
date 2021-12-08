@@ -26,3 +26,10 @@ psql:
 
 mysqlsh:
 	mysqlsh --sql --user root --password mysecretpassword --database dinotest 127.0.0.1:3306
+
+
+# $ protoc --version
+# libprotoc 3.17.3
+# go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+proto:
+	protoc -I ./protos --go_out=. --go_opt=module=github.com/kyleconroy/sqlc ./protos/**/*.proto
