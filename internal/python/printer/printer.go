@@ -41,8 +41,17 @@ func (w *writer) printNode(node *ast.Node, indent int32) {
 	case *ast.Node_AnnAssign:
 		w.printAnnAssign(n.AnnAssign, indent)
 
+	case *ast.Node_Assign:
+		w.printAssign(n.Assign, indent)
+
+	case *ast.Node_Attribute:
+		w.printAttribute(n.Attribute, indent)
+
 	case *ast.Node_ClassDef:
 		w.printClassDef(n.ClassDef, indent)
+
+	case *ast.Node_Constant:
+		w.printConstant(n.Constant, indent)
 
 	case *ast.Node_Import:
 		w.printImport(n.Import, indent)
@@ -71,6 +80,23 @@ func (w *writer) printAnnAssign(aa *ast.AnnAssign, indent int32) {
 	w.printNode(aa.Annotation, indent)
 }
 
+func (w *writer) printAssign(a *ast.Assign, indent int32) {
+	for i, name := range a.Targets {
+		w.printName(name, indent)
+		if i != len(a.Targets)-1 {
+			w.print(", ")
+		}
+	}
+	w.print(" = ")
+	w.printNode(a.Value, indent)
+}
+
+func (w *writer) printAttribute(a *ast.Attribute, indent int32) {
+	w.printName(a.Value, indent)
+	w.print(".")
+	w.print(a.Attr)
+}
+
 func (w *writer) printClassDef(cd *ast.ClassDef, indent int32) {
 	for _, node := range cd.DecoratorList {
 		w.print("@")
@@ -79,12 +105,28 @@ func (w *writer) printClassDef(cd *ast.ClassDef, indent int32) {
 	}
 	w.print("class ")
 	w.print(cd.Name)
+	if len(cd.Bases) > 0 {
+		w.print("(")
+		for i, node := range cd.Bases {
+			w.printNode(node, indent)
+			if i != len(cd.Bases)-1 {
+				w.print(", ")
+			}
+		}
+		w.print(")")
+	}
 	w.print(":\n")
 	for _, node := range cd.Body {
 		w.printIndent(indent + 1)
 		w.printNode(node, indent+1)
 		w.print("\n")
 	}
+}
+
+func (w *writer) printConstant(c *ast.Constant, indent int32) {
+	w.print("\"")
+	w.print(c.Value)
+	w.print("\"")
 }
 
 func (w *writer) printImport(imp *ast.Import, indent int32) {

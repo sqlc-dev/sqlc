@@ -16,6 +16,50 @@ type testcase struct {
 
 func TestPrinter(t *testing.T) {
 	for name, tc := range map[string]testcase{
+		"assign": {
+			Node: &ast.Node{
+				Node: &ast.Node_Assign{
+					Assign: &ast.Assign{
+						Targets: []*ast.Name{
+							{Id: "FICTION"},
+						},
+						Value: &ast.Node{
+							Node: &ast.Node_Constant{
+								Constant: &ast.Constant{
+									Value: "FICTION",
+								},
+							},
+						},
+					},
+				},
+			},
+			Expected: `FICTION = "FICTION"`,
+		},
+		"class-base": {
+			Node: &ast.Node{
+				Node: &ast.Node_ClassDef{
+					ClassDef: &ast.ClassDef{
+						Name: "Foo",
+						Bases: []*ast.Node{
+							{
+								Node: &ast.Node_Name{
+									Name: &ast.Name{Id: "str"},
+								},
+							},
+							{
+								Node: &ast.Node_Attribute{
+									Attribute: &ast.Attribute{
+										Value: &ast.Name{Id: "enum"},
+										Attr:  "Enum",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			Expected: `class Foo(str, enum.Enum):`,
+		},
 		"dataclass": {
 			Node: &ast.Node{
 				Node: &ast.Node_ClassDef{

@@ -14,12 +14,21 @@ message Node {
 	AnnAssign ann_assign = 6 [json_name="AnnAssign"];
 	Name name = 7 [json_name="Name"];
     Subscript subscript = 8 [json_name="Subscript"];
+    Attribute attribute = 9 [json_name="Attribute"];
+    Constant constant = 10 [json_name="Constant"];
+    Assign assign = 11 [json_name="Assign"];
   }
 }
 
 message Alias
 {
   string name = 1 [json_name="name"];
+}
+
+message Attribute
+{
+  Name value = 1 [json_name="value"];
+  string attr = 2 [json_name="attr"];
 }
 
 message AnnAssign
@@ -29,6 +38,12 @@ message AnnAssign
   int32 simple = 3 [json_name="simple"];
 }
 
+message Assign
+{
+  repeated Name targets = 1 [json_name="targets"];
+  Node value = 2 [json_name="value"];
+}
+
 message ClassDef
 {
   string name = 1 [json_name="name"];
@@ -36,6 +51,11 @@ message ClassDef
   repeated Node keywords = 3 [json_name="keywords"];
   repeated Node body = 4 [json_name="body"];
   repeated Node decorator_list = 5 [json_name="decorator_list"];
+}
+
+message Constant
+{
+  string value = 1 [json_name="value"];
 }
 
 message Import
