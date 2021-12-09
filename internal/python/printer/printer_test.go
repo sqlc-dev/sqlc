@@ -43,6 +43,21 @@ func TestPrinter(t *testing.T) {
 									},
 								},
 							},
+							{
+								Node: &ast.Node_AnnAssign{
+									AnnAssign: &ast.AnnAssign{
+										Target: &ast.Name{Id: "bat"},
+										Annotation: &ast.Node{
+											Node: &ast.Node_Subscript{
+												Subscript: &ast.Subscript{
+													Value: &ast.Name{Id: "Optional"},
+													Slice: &ast.Name{Id: "int"},
+												},
+											},
+										},
+									},
+								},
+							},
 						},
 					},
 				},
@@ -51,6 +66,7 @@ func TestPrinter(t *testing.T) {
 @dataclass
 class Foo:
     bar: int
+    bat: Optional[int]
 `,
 		},
 		"import": {

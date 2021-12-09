@@ -56,6 +56,9 @@ func (w *writer) printNode(node *ast.Node, indent int32) {
 	case *ast.Node_Name:
 		w.print(n.Name.Id)
 
+	case *ast.Node_Subscript:
+		w.printSubscript(n.Subscript, indent)
+
 	default:
 		panic(n)
 
@@ -63,7 +66,7 @@ func (w *writer) printNode(node *ast.Node, indent int32) {
 }
 
 func (w *writer) printAnnAssign(aa *ast.AnnAssign, indent int32) {
-	w.print(aa.Target.Id)
+	w.printName(aa.Target, indent)
 	w.print(": ")
 	w.printNode(aa.Annotation, indent)
 }
@@ -111,4 +114,16 @@ func (w *writer) printModule(mod *ast.Module, indent int32) {
 	for _, node := range mod.Body {
 		w.printNode(node, indent)
 	}
+}
+
+func (w *writer) printName(n *ast.Name, indent int32) {
+	w.print(n.Id)
+}
+
+func (w *writer) printSubscript(ss *ast.Subscript, indent int32) {
+	w.printName(ss.Value, indent)
+	w.print("[")
+	w.printName(ss.Slice, indent)
+	w.print("]")
+
 }

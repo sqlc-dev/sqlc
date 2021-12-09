@@ -62,6 +62,6 @@ message Name
 
 message Subscript
 {
-  string value = 1 [json_name="value"];
-  string slice = 2 [json_name="slice"];
+  Name value = 1 [json_name="value"];
+  Name slice = 2 [json_name="slice"];
 }
