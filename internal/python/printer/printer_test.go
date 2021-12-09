@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -15,6 +16,43 @@ type testcase struct {
 
 func TestPrinter(t *testing.T) {
 	for name, tc := range map[string]testcase{
+		"dataclass": {
+			Node: &ast.Node{
+				Node: &ast.Node_ClassDef{
+					ClassDef: &ast.ClassDef{
+						Name: "Foo",
+						DecoratorList: []*ast.Node{
+							{
+								Node: &ast.Node_Name{
+									Name: &ast.Name{
+										Id: "dataclass",
+									},
+								},
+							},
+						},
+						Body: []*ast.Node{
+							{
+								Node: &ast.Node_AnnAssign{
+									AnnAssign: &ast.AnnAssign{
+										Target: &ast.Name{Id: "bar"},
+										Annotation: &ast.Node{
+											Node: &ast.Node_Name{
+												Name: &ast.Name{Id: "int"},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			Expected: `
+@dataclass
+class Foo:
+    bar: int
+`,
+		},
 		"import": {
 			Node: &ast.Node{
 				Node: &ast.Node_Import{
@@ -56,7 +94,7 @@ func TestPrinter(t *testing.T) {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			result := Print(tc.Node, Options{})
-			if diff := cmp.Diff(tc.Expected, string(result.Code)); diff != "" {
+			if diff := cmp.Diff(strings.TrimSpace(tc.Expected), strings.TrimSpace(string(result.Code))); diff != "" {
 				t.Errorf("print mismatch (-want +got):\n%s", diff)
 			}
 		})
