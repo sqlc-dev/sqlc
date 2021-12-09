@@ -11,12 +11,22 @@ message Node {
 	ImportFrom import_from = 3 [json_name="ImportFrom"];
 	Module module = 4 [json_name="Module"];
 	Alias alias = 5 [json_name="Alias"];
+	AnnAssign ann_assign = 6 [json_name="AnnAssign"];
+	Name name = 7 [json_name="Name"];
+    Subscript subscript = 8 [json_name="Subscript"];
   }
 }
 
 message Alias
 {
   string name = 1 [json_name="name"];
+}
+
+message AnnAssign
+{
+  Name target = 1 [json_name="target"];
+  Node annotation = 2 [json_name="annotation"];
+  int32 simple = 3 [json_name="simple"];
 }
 
 message ClassDef
@@ -45,4 +55,13 @@ message Module
   repeated Node body = 1 [json_name="body"];
 }
 
+message Name
+{
+  string id = 1 [json_name="id"];
+}
 
+message Subscript
+{
+  string value = 1 [json_name="value"];
+  string slice = 2 [json_name="slice"];
+}

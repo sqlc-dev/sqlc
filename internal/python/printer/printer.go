@@ -39,7 +39,7 @@ func (w *writer) printNode(node *ast.Node, indent int32) {
 		w.printImport(n.Import, indent)
 
 	case *ast.Node_ImportFrom:
-		// w.printImport(n.Import, indent)
+		w.printImportFrom(n.ImportFrom, indent)
 
 	case *ast.Node_Module:
 		w.printModule(n.Module, indent)
@@ -63,7 +63,18 @@ func (w *writer) printImport(imp *ast.Import, indent int32) {
 			w.print(", ")
 		}
 	}
-	w.print("\n")
+}
+
+func (w *writer) printImportFrom(imp *ast.ImportFrom, indent int32) {
+	w.print("from ")
+	w.print(imp.Module)
+	w.print(" import ")
+	for i, node := range imp.Names {
+		w.printNode(node, indent)
+		if i != len(imp.Names)-1 {
+			w.print(", ")
+		}
+	}
 }
 
 func (w *writer) printModule(mod *ast.Module, indent int32) {
