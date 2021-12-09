@@ -137,6 +137,7 @@ func (w *writer) printImport(imp *ast.Import, indent int32) {
 			w.print(", ")
 		}
 	}
+	w.print("\n")
 }
 
 func (w *writer) printImportFrom(imp *ast.ImportFrom, indent int32) {
