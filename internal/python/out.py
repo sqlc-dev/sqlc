@@ -1,2 +1,1 @@
-class InventoryItem:
-    pass
+from collections.abc import Mapping, Sequence

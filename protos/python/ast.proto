@@ -17,6 +17,7 @@ message Node {
     Attribute attribute = 9 [json_name="Attribute"];
     Constant constant = 10 [json_name="Constant"];
     Assign assign = 11 [json_name="Assign"];
+    Comment comment = 12 [json_name="Comment"];
   }
 }
 
@@ -51,6 +52,13 @@ message ClassDef
   repeated Node keywords = 3 [json_name="keywords"];
   repeated Node body = 4 [json_name="body"];
   repeated Node decorator_list = 5 [json_name="decorator_list"];
+}
+
+// The Python ast module does not parse comments. It's not clear if this is the
+// best way to support them in the AST
+message Comment
+{
+  string text = 1 [json_name="text"];
 }
 
 message Constant

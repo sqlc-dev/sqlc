@@ -50,6 +50,9 @@ func (w *writer) printNode(node *ast.Node, indent int32) {
 	case *ast.Node_ClassDef:
 		w.printClassDef(n.ClassDef, indent)
 
+	case *ast.Node_Comment:
+		w.printComment(n.Comment, indent)
+
 	case *ast.Node_Constant:
 		w.printConstant(n.Constant, indent)
 
@@ -129,6 +132,12 @@ func (w *writer) printConstant(c *ast.Constant, indent int32) {
 	w.print("\"")
 }
 
+func (w *writer) printComment(c *ast.Comment, indent int32) {
+	w.print("# ")
+	w.print(c.Text)
+	w.print("\n")
+}
+
 func (w *writer) printImport(imp *ast.Import, indent int32) {
 	w.print("import ")
 	for i, node := range imp.Names {
@@ -155,6 +164,9 @@ func (w *writer) printImportFrom(imp *ast.ImportFrom, indent int32) {
 
 func (w *writer) printModule(mod *ast.Module, indent int32) {
 	for _, node := range mod.Body {
+		if _, ok := node.Node.(*ast.Node_ClassDef); ok {
+			w.print("\n\n")
+		}
 		w.printNode(node, indent)
 	}
 }

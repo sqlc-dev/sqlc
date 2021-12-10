@@ -135,12 +135,19 @@ class Foo:
 			Node: &ast.Node{
 				Node: &ast.Node_ImportFrom{
 					ImportFrom: &ast.ImportFrom{
-						Module: "dataclasses",
+						Module: "pkg",
 						Names: []*ast.Node{
 							{
 								Node: &ast.Node_Alias{
 									Alias: &ast.Alias{
-										Name: "dataclass",
+										Name: "foo",
+									},
+								},
+							},
+							{
+								Node: &ast.Node_Alias{
+									Alias: &ast.Alias{
+										Name: "bar",
 									},
 								},
 							},
@@ -148,7 +155,7 @@ class Foo:
 					},
 				},
 			},
-			Expected: `from dataclasses import dataclass`,
+			Expected: `from pkg import foo, bar`,
 		},
 	} {
 		tc := tc
