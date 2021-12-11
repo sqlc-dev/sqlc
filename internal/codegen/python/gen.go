@@ -747,6 +747,12 @@ func buildQueryTree(ctx *pyTmplCtx, i *importer, source string) *pyast.Node {
 		},
 	}
 
+	for _, q := range ctx.Queries {
+		if ctx.OutputQuery(q.SourceName) {
+			mod.Body = append(mod.Body, assignNode(q.ConstantName, q.SQL))
+		}
+	}
+
 	cls := queriesClassDef()
 
 	mod.Body = append(mod.Body, &pyast.Node{Node: &pyast.Node_ClassDef{ClassDef: cls}})
