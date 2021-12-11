@@ -62,6 +62,9 @@ func (w *writer) printNode(node *ast.Node, indent int32) {
 	case *ast.Node_Expr:
 		w.printNode(n.Expr.Value, indent)
 
+	case *ast.Node_FunctionDef:
+		w.printFunctionDef(n.FunctionDef, indent)
+
 	case *ast.Node_Import:
 		w.printImport(n.Import, indent)
 
@@ -95,9 +98,17 @@ func (w *writer) printAnnAssign(aa *ast.AnnAssign, indent int32) {
 	w.printNode(aa.Annotation, indent)
 }
 
+func (w *writer) printArg(a *ast.Arg, indent int32) {
+	w.print(a.Arg)
+	if a.Annotation != nil {
+		w.print(": ")
+		w.printNode(a.Annotation, indent)
+	}
+}
+
 func (w *writer) printAssign(a *ast.Assign, indent int32) {
 	for i, name := range a.Targets {
-		w.printName(name, indent)
+		w.printNode(name, indent)
 		if i != len(a.Targets)-1 {
 			w.print(", ")
 		}
@@ -107,7 +118,7 @@ func (w *writer) printAssign(a *ast.Assign, indent int32) {
 }
 
 func (w *writer) printAttribute(a *ast.Attribute, indent int32) {
-	w.printName(a.Value, indent)
+	w.printNode(a.Value, indent)
 	w.print(".")
 	w.print(a.Attr)
 }
@@ -179,6 +190,25 @@ func (w *writer) printImport(imp *ast.Import, indent int32) {
 		}
 	}
 	w.print("\n")
+}
+
+func (w *writer) printFunctionDef(fd *ast.FunctionDef, indent int32) {
+	w.print("def ")
+	w.print(fd.Name)
+	w.print("(")
+	if fd.Args != nil {
+		for i, arg := range fd.Args.Args {
+			w.printArg(arg, indent)
+			if i != len(fd.Args.Args)-1 {
+				w.print(", ")
+			}
+		}
+	}
+	w.print("):\n")
+	for _, node := range fd.Body {
+		w.printIndent(indent + 1)
+		w.printNode(node, indent+1)
+	}
 }
 
 func (w *writer) printImportFrom(imp *ast.ImportFrom, indent int32) {

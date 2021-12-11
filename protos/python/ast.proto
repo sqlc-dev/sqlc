@@ -20,6 +20,9 @@ message Node {
     Comment comment = 12 [json_name="Comment"];
     Expr expr = 13 [json_name="Expr"];
     Call call = 14 [json_name="Call"];
+    FunctionDef function_def = 15 [json_name="FunctionDef"];
+    Arg arg = 16 [json_name="Arg"];
+    Arguments arguments = 17 [json_name="Arguments"];
   }
 }
 
@@ -30,7 +33,7 @@ message Alias
 
 message Attribute
 {
-  Name value = 1 [json_name="value"];
+  Node value = 1 [json_name="value"];
   string attr = 2 [json_name="attr"];
 }
 
@@ -42,9 +45,20 @@ message AnnAssign
   string Comment = 4 [json_name="comment"];
 }
 
+message Arg
+{
+  string arg = 1 [json_name="arg"];
+  Node annotation = 2 [json_name="annotation"];
+}
+
+message Arguments
+{
+  repeated Arg args = 1 [json_name="args"];
+}
+
 message Assign
 {
-  repeated Name targets = 1 [json_name="targets"];
+  repeated Node targets = 1 [json_name="targets"];
   Node value = 2 [json_name="value"];
   string Comment = 3 [json_name="comment"];
 }
@@ -78,6 +92,13 @@ message Constant
 message Expr
 {
   Node value = 1 [json_name="value"];
+}
+
+message FunctionDef
+{
+  string name = 1 [json_name="name"];
+  Arguments Args = 2 [json_name="args"];
+  repeated Node body = 3 [json_name="body"];
 }
 
 message Import
