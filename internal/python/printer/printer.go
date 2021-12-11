@@ -11,14 +11,14 @@ type Options struct {
 }
 
 type PrintResult struct {
-	Code []byte
+	Python []byte
 }
 
 func Print(node *ast.Node, options Options) PrintResult {
 	w := writer{options: options}
 	w.printNode(node, 0)
 	return PrintResult{
-		Code: w.src,
+		Python: w.src,
 	}
 }
 
@@ -56,6 +56,9 @@ func (w *writer) printNode(node *ast.Node, indent int32) {
 	case *ast.Node_Constant:
 		w.printConstant(n.Constant, indent)
 
+	case *ast.Node_Expr:
+		w.printNode(n.Expr.Value, indent)
+
 	case *ast.Node_Import:
 		w.printImport(n.Import, indent)
 
@@ -78,6 +81,12 @@ func (w *writer) printNode(node *ast.Node, indent int32) {
 }
 
 func (w *writer) printAnnAssign(aa *ast.AnnAssign, indent int32) {
+	if aa.Comment != "" {
+		w.print("# ")
+		w.print(aa.Comment)
+		w.print("\n")
+		w.printIndent(indent)
+	}
 	w.printName(aa.Target, indent)
 	w.print(": ")
 	w.printNode(aa.Annotation, indent)
@@ -119,8 +128,23 @@ func (w *writer) printClassDef(cd *ast.ClassDef, indent int32) {
 		w.print(")")
 	}
 	w.print(":\n")
-	for _, node := range cd.Body {
+	for i, node := range cd.Body {
 		w.printIndent(indent + 1)
+		// A docstring is a string literal that occurs as the first
+		// statement in a module, function, class, or method
+		// definition. Such a docstring becomes the __doc__ special
+		// attribute of that object.
+		if i == 0 {
+			if e, ok := node.Node.(*ast.Node_Expr); ok {
+				if c, ok := e.Expr.Value.Node.(*ast.Node_Constant); ok {
+					w.print(`"""`)
+					w.print(c.Constant.Value)
+					w.print(`"""`)
+					w.print("\n")
+					continue
+				}
+			}
+		}
 		w.printNode(node, indent+1)
 		w.print("\n")
 	}

@@ -483,6 +483,15 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 	sort.Slice(qs, func(i, j int) bool { return qs[i].MethodName < qs[j].MethodName })
 	return qs
 }
+func aliasNode(name string) *pyast.Node {
+	return &pyast.Node{
+		Node: &pyast.Node_Alias{
+			Alias: &pyast.Alias{
+				Name: name,
+			},
+		},
+	}
+}
 
 func importNode(name string) *pyast.Node {
 	return &pyast.Node{
@@ -575,11 +584,25 @@ func buildModelsTree(ctx *pyTmplCtx, i *importer) *pyast.Node {
 		},
 	}
 	std, pkg := i.modelImportSpecs()
-	for _, spec := range buildImportBlock2(std) {
-		mod.Body = append(mod.Body, importNode(spec.Module))
-	}
-	for _, spec := range buildImportBlock2(pkg) {
-		mod.Body = append(mod.Body, importNode(spec.Module))
+
+	for _, specs := range []map[string]importSpec{std, pkg} {
+		for _, spec := range buildImportBlock2(specs) {
+			if len(spec.Names) > 0 && spec.Names[0] != "" {
+				imp := &pyast.ImportFrom{
+					Module: spec.Module,
+				}
+				for _, name := range spec.Names {
+					imp.Names = append(imp.Names, aliasNode(name))
+				}
+				mod.Body = append(mod.Body, &pyast.Node{
+					Node: &pyast.Node_ImportFrom{
+						ImportFrom: imp,
+					},
+				})
+			} else {
+				mod.Body = append(mod.Body, importNode(spec.Module))
+			}
+		}
 	}
 
 	for _, e := range ctx.Enums {
@@ -589,6 +612,21 @@ func buildModelsTree(ctx *pyTmplCtx, i *importer) *pyast.Node {
 				nameNode("str"),
 				attributeNode("enum", "Enum"),
 			},
+		}
+		if e.Comment != "" {
+			def.Body = append(def.Body, &pyast.Node{
+				Node: &pyast.Node_Expr{
+					Expr: &pyast.Expr{
+						Value: &pyast.Node{
+							Node: &pyast.Node_Constant{
+								Constant: &pyast.Constant{
+									Value: e.Comment,
+								},
+							},
+						},
+					},
+				},
+			})
 		}
 		for _, c := range e.Constants {
 			def.Body = append(def.Body, assignNode(c.Name, c.Value))
@@ -604,6 +642,21 @@ func buildModelsTree(ctx *pyTmplCtx, i *importer) *pyast.Node {
 		def := &pyast.ClassDef{
 			Name: m.Name,
 		}
+		if m.Comment != "" {
+			def.Body = append(def.Body, &pyast.Node{
+				Node: &pyast.Node_Expr{
+					Expr: &pyast.Expr{
+						Value: &pyast.Node{
+							Node: &pyast.Node_Constant{
+								Constant: &pyast.Constant{
+									Value: m.Comment,
+								},
+							},
+						},
+					},
+				},
+			})
+		}
 		for _, f := range m.Fields {
 			var ann *pyast.Node
 			if f.Type.IsArray {
@@ -618,6 +671,7 @@ func buildModelsTree(ctx *pyTmplCtx, i *importer) *pyast.Node {
 					AnnAssign: &pyast.AnnAssign{
 						Target:     &pyast.Name{Id: f.Name},
 						Annotation: ann,
+						Comment:    f.Comment,
 					},
 				},
 			})
@@ -855,7 +909,7 @@ func Generate(r *compiler.Result, settings config.CombinedSettings) (map[string]
 	}
 
 	result := pyprint.Print(buildModelsTree(&tctx, i), pyprint.Options{})
-	fmt.Println(string(result.Code))
+	output["models.py"] = string(result.Python)
 
 	if err := execute("models.py", modelsFile); err != nil {
 		return nil, err

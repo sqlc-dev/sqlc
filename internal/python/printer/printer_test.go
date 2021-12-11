@@ -161,7 +161,7 @@ class Foo:
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			result := Print(tc.Node, Options{})
-			if diff := cmp.Diff(strings.TrimSpace(tc.Expected), strings.TrimSpace(string(result.Code))); diff != "" {
+			if diff := cmp.Diff(strings.TrimSpace(tc.Expected), strings.TrimSpace(string(result.Python))); diff != "" {
 				t.Errorf("print mismatch (-want +got):\n%s", diff)
 			}
 		})

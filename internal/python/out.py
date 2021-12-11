@@ -1,1 +1,7 @@
-from collections.abc import Mapping, Sequence
+class Foo:
+    """
+    Hello
+    World
+    """
+
+    HELLO = "FOO"
