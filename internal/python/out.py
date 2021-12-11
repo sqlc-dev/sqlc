@@ -1,7 +1,2 @@
 class Foo:
-    """
-    Hello
-    World
-    """
-
-    HELLO = "FOO"
+    foo: Optional[List[str]]

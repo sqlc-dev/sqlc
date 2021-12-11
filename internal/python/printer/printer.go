@@ -47,6 +47,9 @@ func (w *writer) printNode(node *ast.Node, indent int32) {
 	case *ast.Node_Attribute:
 		w.printAttribute(n.Attribute, indent)
 
+	case *ast.Node_Call:
+		w.printCall(n.Call, indent)
+
 	case *ast.Node_ClassDef:
 		w.printClassDef(n.ClassDef, indent)
 
@@ -107,6 +110,11 @@ func (w *writer) printAttribute(a *ast.Attribute, indent int32) {
 	w.printName(a.Value, indent)
 	w.print(".")
 	w.print(a.Attr)
+}
+
+func (w *writer) printCall(c *ast.Call, indent int32) {
+	w.printNode(c.Func, indent)
+	w.print("()")
 }
 
 func (w *writer) printClassDef(cd *ast.ClassDef, indent int32) {
@@ -202,7 +210,7 @@ func (w *writer) printName(n *ast.Name, indent int32) {
 func (w *writer) printSubscript(ss *ast.Subscript, indent int32) {
 	w.printName(ss.Value, indent)
 	w.print("[")
-	w.printName(ss.Slice, indent)
+	w.printNode(ss.Slice, indent)
 	w.print("]")
 
 }

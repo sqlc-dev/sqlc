@@ -19,6 +19,7 @@ message Node {
     Assign assign = 11 [json_name="Assign"];
     Comment comment = 12 [json_name="Comment"];
     Expr expr = 13 [json_name="Expr"];
+    Call call = 14 [json_name="Call"];
   }
 }
 
@@ -46,6 +47,11 @@ message Assign
   repeated Name targets = 1 [json_name="targets"];
   Node value = 2 [json_name="value"];
   string Comment = 3 [json_name="comment"];
+}
+
+message Call
+{
+  Node func = 1 [json_name="func"];
 }
 
 message ClassDef
@@ -99,5 +105,5 @@ message Name
 message Subscript
 {
   Name value = 1 [json_name="value"];
-  Name slice = 2 [json_name="slice"];
+  Node slice = 2 [json_name="slice"];
 }

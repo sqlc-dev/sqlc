@@ -1,0 +1,35 @@
+Module(
+    body=[
+        ImportFrom(
+            module='dataclasses',
+            names=[
+                alias(name='dataclass')],
+            level=0),
+        ImportFrom(
+            module='typing',
+            names=[
+                alias(name='Optional')],
+            level=0),
+        ClassDef(
+            name='Author',
+            bases=[],
+            keywords=[],
+            body=[
+                AnnAssign(
+                    target=Name(id='id', ctx=Store()),
+                    annotation=Name(id='int', ctx=Load()),
+                    simple=1),
+                AnnAssign(
+                    target=Name(id='name', ctx=Store()),
+                    annotation=Name(id='str', ctx=Load()),
+                    simple=1),
+                AnnAssign(
+                    target=Name(id='bio', ctx=Store()),
+                    annotation=Subscript(
+                        value=Name(id='Optional', ctx=Load()),
+                        slice=Name(id='str', ctx=Load()),
+                        ctx=Load()),
+                    simple=1)],
+            decorator_list=[
+                Name(id='dataclass', ctx=Load())])],
+    type_ignores=[])

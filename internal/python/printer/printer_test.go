@@ -95,7 +95,11 @@ func TestPrinter(t *testing.T) {
 											Node: &ast.Node_Subscript{
 												Subscript: &ast.Subscript{
 													Value: &ast.Name{Id: "Optional"},
-													Slice: &ast.Name{Id: "int"},
+													Slice: &ast.Node{
+														Node: &ast.Node_Name{
+															Name: &ast.Name{Id: "int"},
+														},
+													},
 												},
 											},
 										},
@@ -113,6 +117,23 @@ class Foo:
     bat: Optional[int]
 `,
 		},
+		"call": {
+			Node: &ast.Node{
+				Node: &ast.Node_Call{
+					Call: &ast.Call{
+						Func: &ast.Node{
+							Node: &ast.Node_Alias{
+								Alias: &ast.Alias{
+									Name: "foo",
+								},
+							},
+						},
+					},
+				},
+			},
+			Expected: `foo()`,
+		},
+
 		"import": {
 			Node: &ast.Node{
 				Node: &ast.Node_Import{
