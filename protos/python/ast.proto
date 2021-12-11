@@ -1,0 +1,109 @@
+syntax = "proto3";
+
+package ast;
+
+option go_package = "github.com/kyleconroy/sqlc/internal/python/ast";
+
+message Node {
+  oneof node {
+	ClassDef class_def = 1 [json_name="ClassDef"];
+	Import import = 2 [json_name="Import"];
+	ImportFrom import_from = 3 [json_name="ImportFrom"];
+	Module module = 4 [json_name="Module"];
+	Alias alias = 5 [json_name="Alias"];
+	AnnAssign ann_assign = 6 [json_name="AnnAssign"];
+	Name name = 7 [json_name="Name"];
+    Subscript subscript = 8 [json_name="Subscript"];
+    Attribute attribute = 9 [json_name="Attribute"];
+    Constant constant = 10 [json_name="Constant"];
+    Assign assign = 11 [json_name="Assign"];
+    Comment comment = 12 [json_name="Comment"];
+    Expr expr = 13 [json_name="Expr"];
+    Call call = 14 [json_name="Call"];
+  }
+}
+
+message Alias
+{
+  string name = 1 [json_name="name"];
+}
+
+message Attribute
+{
+  Name value = 1 [json_name="value"];
+  string attr = 2 [json_name="attr"];
+}
+
+message AnnAssign
+{
+  Name target = 1 [json_name="target"];
+  Node annotation = 2 [json_name="annotation"];
+  int32 simple = 3 [json_name="simple"];
+  string Comment = 4 [json_name="comment"];
+}
+
+message Assign
+{
+  repeated Name targets = 1 [json_name="targets"];
+  Node value = 2 [json_name="value"];
+  string Comment = 3 [json_name="comment"];
+}
+
+message Call
+{
+  Node func = 1 [json_name="func"];
+}
+
+message ClassDef
+{
+  string name = 1 [json_name="name"];
+  repeated Node bases = 2 [json_name="bases"];
+  repeated Node keywords = 3 [json_name="keywords"];
+  repeated Node body = 4 [json_name="body"];
+  repeated Node decorator_list = 5 [json_name="decorator_list"];
+}
+
+// The Python ast module does not parse comments. It's not clear if this is the
+// best way to support them in the AST
+message Comment
+{
+  string text = 1 [json_name="text"];
+}
+
+message Constant
+{
+  string value = 1 [json_name="value"];
+}
+
+message Expr
+{
+  Node value = 1 [json_name="value"];
+}
+
+message Import
+{
+  repeated Node names = 1 [json_name="names"];
+}
+
+message ImportFrom
+{
+  string module = 1 [json_name="module"];
+  repeated Node names = 2 [json_name="names"];
+  int32 level = 3 [json_name="level"];
+}
+
+message Module
+{
+  repeated Node body = 1 [json_name="body"];
+}
+
+message Name
+{
+  string id = 1 [json_name="id"];
+}
+
+message Subscript
+{
+  Name value = 1 [json_name="value"];
+  Node slice = 2 [json_name="slice"];
+}
