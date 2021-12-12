@@ -1,6 +1,10 @@
 package printer
 
-import "github.com/kyleconroy/sqlc/internal/python/ast"
+import (
+	"strings"
+
+	"github.com/kyleconroy/sqlc/internal/python/ast"
+)
 
 type writer struct {
 	options Options
@@ -148,6 +152,11 @@ func (w *writer) printClassDef(cd *ast.ClassDef, indent int32) {
 	}
 	w.print(":\n")
 	for i, node := range cd.Body {
+		if i != 0 {
+			if _, ok := node.Node.(*ast.Node_FunctionDef); ok {
+				w.print("\n")
+			}
+		}
 		w.printIndent(indent + 1)
 		// A docstring is a string literal that occurs as the first
 		// statement in a module, function, class, or method
@@ -170,9 +179,13 @@ func (w *writer) printClassDef(cd *ast.ClassDef, indent int32) {
 }
 
 func (w *writer) printConstant(c *ast.Constant, indent int32) {
-	w.print("\"")
+	str := `"`
+	if strings.Contains(c.Value, "\n") {
+		str = `"""`
+	}
+	w.print(str)
 	w.print(c.Value)
-	w.print("\"")
+	w.print(str)
 }
 
 func (w *writer) printComment(c *ast.Comment, indent int32) {
@@ -226,7 +239,9 @@ func (w *writer) printImportFrom(imp *ast.ImportFrom, indent int32) {
 
 func (w *writer) printModule(mod *ast.Module, indent int32) {
 	for _, node := range mod.Body {
-		if _, ok := node.Node.(*ast.Node_ClassDef); ok {
+		_, isClassDef := node.Node.(*ast.Node_ClassDef)
+		_, isAssign := node.Node.(*ast.Node_Assign)
+		if isClassDef || isAssign {
 			w.print("\n\n")
 		}
 		w.printNode(node, indent)

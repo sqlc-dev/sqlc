@@ -571,6 +571,64 @@ func subscriptNode(value string, slice *pyast.Node) *pyast.Node {
 	}
 }
 
+func dataclassNode(name string) *pyast.ClassDef {
+	return &pyast.ClassDef{
+		Name: name,
+		DecoratorList: []*pyast.Node{
+			{
+				Node: &pyast.Node_Call{
+					Call: &pyast.Call{
+						Func: attributeNode(nameNode("dataclasses"), "dataclass"),
+					},
+				},
+			},
+		},
+	}
+}
+
+func fieldNode(f Field) *pyast.Node {
+	ann := nameNode(f.Type.InnerType)
+	if f.Type.IsArray {
+		ann = subscriptNode("List", ann)
+	}
+	if f.Type.IsNull {
+		ann = subscriptNode("Optional", ann)
+	}
+	return &pyast.Node{
+		Node: &pyast.Node_AnnAssign{
+			AnnAssign: &pyast.AnnAssign{
+				Target:     &pyast.Name{Id: f.Name},
+				Annotation: ann,
+				Comment:    f.Comment,
+			},
+		},
+	}
+}
+
+func buildImports(groups ...map[string]importSpec) []*pyast.Node {
+	var body []*pyast.Node
+	for _, specs := range groups {
+		for _, spec := range buildImportBlock2(specs) {
+			if len(spec.Names) > 0 && spec.Names[0] != "" {
+				imp := &pyast.ImportFrom{
+					Module: spec.Module,
+				}
+				for _, name := range spec.Names {
+					imp.Names = append(imp.Names, aliasNode(name))
+				}
+				body = append(body, &pyast.Node{
+					Node: &pyast.Node_ImportFrom{
+						ImportFrom: imp,
+					},
+				})
+			} else {
+				body = append(body, importNode(spec.Module))
+			}
+		}
+	}
+	return body
+}
+
 func buildModelsTree(ctx *pyTmplCtx, i *importer) *pyast.Node {
 	mod := &pyast.Module{
 		Body: []*pyast.Node{
@@ -583,27 +641,9 @@ func buildModelsTree(ctx *pyTmplCtx, i *importer) *pyast.Node {
 			},
 		},
 	}
-	std, pkg := i.modelImportSpecs()
 
-	for _, specs := range []map[string]importSpec{std, pkg} {
-		for _, spec := range buildImportBlock2(specs) {
-			if len(spec.Names) > 0 && spec.Names[0] != "" {
-				imp := &pyast.ImportFrom{
-					Module: spec.Module,
-				}
-				for _, name := range spec.Names {
-					imp.Names = append(imp.Names, aliasNode(name))
-				}
-				mod.Body = append(mod.Body, &pyast.Node{
-					Node: &pyast.Node_ImportFrom{
-						ImportFrom: imp,
-					},
-				})
-			} else {
-				mod.Body = append(mod.Body, importNode(spec.Module))
-			}
-		}
-	}
+	std, pkg := i.modelImportSpecs()
+	mod.Body = append(mod.Body, buildImports(std, pkg)...)
 
 	for _, e := range ctx.Enums {
 		def := &pyast.ClassDef{
@@ -639,18 +679,7 @@ func buildModelsTree(ctx *pyTmplCtx, i *importer) *pyast.Node {
 	}
 
 	for _, m := range ctx.Models {
-		def := &pyast.ClassDef{
-			Name: m.Name,
-			DecoratorList: []*pyast.Node{
-				{
-					Node: &pyast.Node_Call{
-						Call: &pyast.Call{
-							Func: attributeNode(nameNode("dataclasses"), "dataclass"),
-						},
-					},
-				},
-			},
-		}
+		def := dataclassNode(m.Name)
 		if m.Comment != "" {
 			def.Body = append(def.Body, &pyast.Node{
 				Node: &pyast.Node_Expr{
@@ -667,22 +696,7 @@ func buildModelsTree(ctx *pyTmplCtx, i *importer) *pyast.Node {
 			})
 		}
 		for _, f := range m.Fields {
-			ann := nameNode(f.Type.InnerType)
-			if f.Type.IsArray {
-				ann = subscriptNode("List", ann)
-			}
-			if f.Type.IsNull {
-				ann = subscriptNode("Optional", ann)
-			}
-			def.Body = append(def.Body, &pyast.Node{
-				Node: &pyast.Node_AnnAssign{
-					AnnAssign: &pyast.AnnAssign{
-						Target:     &pyast.Name{Id: f.Name},
-						Annotation: ann,
-						Comment:    f.Comment,
-					},
-				},
-			})
+			def.Body = append(def.Body, fieldNode(f))
 		}
 		mod.Body = append(mod.Body, &pyast.Node{
 			Node: &pyast.Node_ClassDef{
@@ -694,7 +708,7 @@ func buildModelsTree(ctx *pyTmplCtx, i *importer) *pyast.Node {
 	return &pyast.Node{Node: &pyast.Node_Module{Module: mod}}
 }
 
-func queriesClassDef() *pyast.ClassDef {
+func querierClassDef() *pyast.ClassDef {
 	return &pyast.ClassDef{
 		Name: "Querier",
 		Body: []*pyast.Node{
@@ -734,6 +748,48 @@ func queriesClassDef() *pyast.ClassDef {
 	}
 }
 
+func asyncQuerierClassDef() *pyast.ClassDef {
+	return &pyast.ClassDef{
+		Name: "AsyncQuerier",
+		Body: []*pyast.Node{
+			{
+				Node: &pyast.Node_FunctionDef{
+					FunctionDef: &pyast.FunctionDef{
+						Name: "__init__",
+						Args: &pyast.Arguments{
+							Args: []*pyast.Arg{
+								{
+									Arg: "self",
+								},
+								{
+									Arg: "conn",
+									Annotation: attributeNode(
+										attributeNode(
+											attributeNode(nameNode("sqlalchemy"), "ext"),
+											"asyncio"),
+										"AsyncConnection"),
+								},
+							},
+						},
+						Body: []*pyast.Node{
+							{
+								Node: &pyast.Node_Assign{
+									Assign: &pyast.Assign{
+										Targets: []*pyast.Node{
+											attributeNode(nameNode("self"), "_conn"),
+										},
+										Value: nameNode("conn"),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
 func buildQueryTree(ctx *pyTmplCtx, i *importer, source string) *pyast.Node {
 	mod := &pyast.Module{
 		Body: []*pyast.Node{
@@ -747,15 +803,74 @@ func buildQueryTree(ctx *pyTmplCtx, i *importer, source string) *pyast.Node {
 		},
 	}
 
+	std, pkg := i.queryImportSpecs(source)
+	mod.Body = append(mod.Body, buildImports(std, pkg)...)
+
 	for _, q := range ctx.Queries {
-		if ctx.OutputQuery(q.SourceName) {
-			mod.Body = append(mod.Body, assignNode(q.ConstantName, q.SQL))
+		if !ctx.OutputQuery(q.SourceName) {
+			continue
+		}
+		queryText := fmt.Sprintf("-- name: %s \\\\%s\n%s\n", q.MethodName, q.Cmd, q.SQL)
+		mod.Body = append(mod.Body, assignNode(q.ConstantName, queryText))
+		for _, arg := range q.Args {
+			if arg.EmitStruct() {
+				def := dataclassNode(arg.Type())
+				for _, f := range arg.Struct.Fields {
+					def.Body = append(def.Body, fieldNode(f))
+				}
+				mod.Body = append(mod.Body, &pyast.Node{
+					Node: &pyast.Node_ClassDef{
+						ClassDef: def,
+					},
+				})
+			}
+		}
+		if q.Ret.EmitStruct() {
+			def := dataclassNode(q.Ret.Type())
+			for _, f := range q.Ret.Struct.Fields {
+				def.Body = append(def.Body, fieldNode(f))
+			}
+			mod.Body = append(mod.Body, &pyast.Node{
+				Node: &pyast.Node_ClassDef{
+					ClassDef: def,
+				},
+			})
 		}
 	}
 
-	cls := queriesClassDef()
+	if ctx.EmitSync {
+		cls := querierClassDef()
+		for _, q := range ctx.Queries {
+			if !ctx.OutputQuery(q.SourceName) {
+				continue
+			}
+			cls.Body = append(cls.Body, &pyast.Node{
+				Node: &pyast.Node_FunctionDef{
+					FunctionDef: &pyast.FunctionDef{
+						Name: q.MethodName,
+					},
+				},
+			})
+		}
+		mod.Body = append(mod.Body, &pyast.Node{Node: &pyast.Node_ClassDef{ClassDef: cls}})
+	}
 
-	mod.Body = append(mod.Body, &pyast.Node{Node: &pyast.Node_ClassDef{ClassDef: cls}})
+	if ctx.EmitAsync {
+		cls := asyncQuerierClassDef()
+		for _, q := range ctx.Queries {
+			if !ctx.OutputQuery(q.SourceName) {
+				continue
+			}
+			cls.Body = append(cls.Body, &pyast.Node{
+				Node: &pyast.Node_FunctionDef{
+					FunctionDef: &pyast.FunctionDef{
+						Name: q.MethodName,
+					},
+				},
+			})
+		}
+		mod.Body = append(mod.Body, &pyast.Node{Node: &pyast.Node_ClassDef{ClassDef: cls}})
+	}
 
 	return &pyast.Node{Node: &pyast.Node_Module{Module: mod}}
 }
