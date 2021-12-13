@@ -54,6 +54,7 @@ message Arg
 message Arguments
 {
   repeated Arg args = 1 [json_name="args"];
+  repeated Arg kw_only_args = 2 [json_name="kwonlyargs"];
 }
 
 message Assign
@@ -99,6 +100,7 @@ message FunctionDef
   string name = 1 [json_name="name"];
   Arguments Args = 2 [json_name="args"];
   repeated Node body = 3 [json_name="body"];
+  Node returns = 4 [json_name="returns"];
 }
 
 message Import

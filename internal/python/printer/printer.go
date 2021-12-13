@@ -216,8 +216,22 @@ func (w *writer) printFunctionDef(fd *ast.FunctionDef, indent int32) {
 				w.print(", ")
 			}
 		}
+		if len(fd.Args.KwOnlyArgs) > 0 {
+			w.print(", *, ")
+			for i, arg := range fd.Args.KwOnlyArgs {
+				w.printArg(arg, indent)
+				if i != len(fd.Args.KwOnlyArgs)-1 {
+					w.print(", ")
+				}
+			}
+		}
 	}
-	w.print("):\n")
+	w.print(")")
+	if fd.Returns != nil {
+		w.print(" -> ")
+		w.printNode(fd.Returns, indent)
+	}
+	w.print(":\n")
 	for _, node := range fd.Body {
 		w.printIndent(indent + 1)
 		w.printNode(node, indent+1)

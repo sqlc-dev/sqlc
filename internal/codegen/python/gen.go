@@ -1,14 +1,11 @@
 package python
 
 import (
-	"bufio"
-	"bytes"
 	"fmt"
 	"log"
 	"regexp"
 	"sort"
 	"strings"
-	"text/template"
 
 	"github.com/kyleconroy/sqlc/internal/codegen"
 	"github.com/kyleconroy/sqlc/internal/compiler"
@@ -48,6 +45,17 @@ func (t pyType) String() string {
 		v = fmt.Sprintf("Optional[%s]", v)
 	}
 	return v
+}
+
+func (t pyType) Annotation() *pyast.Node {
+	ann := nameNode(t.InnerType)
+	if t.IsArray {
+		ann = subscriptNode("List", ann)
+	}
+	if t.IsNull {
+		ann = subscriptNode("Optional", ann)
+	}
+	return ann
 }
 
 type Field struct {
@@ -142,6 +150,21 @@ func (q Query) ArgPairs() string {
 		return ""
 	}
 	return ", *, " + strings.Join(argPairs, ", ")
+}
+
+func (q Query) AddArgs(f *pyast.FunctionDef) {
+	// A single struct arg does not need to be passed as a keyword argument
+	if len(q.Args) == 1 && q.Args[0].IsStruct() {
+		f.Args.Args = append(f.Args.KwOnlyArgs, &pyast.Arg{
+			Arg: q.Args[0].Name,
+		})
+		return
+	}
+	for _, a := range q.Args {
+		f.Args.KwOnlyArgs = append(f.Args.KwOnlyArgs, &pyast.Arg{
+			Arg: a.Name,
+		})
+	}
 }
 
 func (q Query) ArgDict() string {
@@ -587,22 +610,23 @@ func dataclassNode(name string) *pyast.ClassDef {
 }
 
 func fieldNode(f Field) *pyast.Node {
-	ann := nameNode(f.Type.InnerType)
-	if f.Type.IsArray {
-		ann = subscriptNode("List", ann)
-	}
-	if f.Type.IsNull {
-		ann = subscriptNode("Optional", ann)
-	}
 	return &pyast.Node{
 		Node: &pyast.Node_AnnAssign{
 			AnnAssign: &pyast.AnnAssign{
 				Target:     &pyast.Name{Id: f.Name},
-				Annotation: ann,
+				Annotation: f.Type.Annotation(),
 				Comment:    f.Comment,
 			},
 		},
 	}
+}
+
+func typeRefNode(base string, parts ...string) *pyast.Node {
+	n := nameNode(base)
+	for _, p := range parts {
+		n = attributeNode(n, p)
+	}
+	return n
 }
 
 func buildImports(groups ...map[string]importSpec) []*pyast.Node {
@@ -722,10 +746,8 @@ func querierClassDef() *pyast.ClassDef {
 									Arg: "self",
 								},
 								{
-									Arg: "conn",
-									Annotation: attributeNode(
-										attributeNode(nameNode("sqlalchemy"), "engine"),
-										"Connection"),
+									Arg:        "conn",
+									Annotation: typeRefNode("sqlalchemy", "engine", "Connection"),
 								},
 							},
 						},
@@ -762,12 +784,8 @@ func asyncQuerierClassDef() *pyast.ClassDef {
 									Arg: "self",
 								},
 								{
-									Arg: "conn",
-									Annotation: attributeNode(
-										attributeNode(
-											attributeNode(nameNode("sqlalchemy"), "ext"),
-											"asyncio"),
-										"AsyncConnection"),
+									Arg:        "conn",
+									Annotation: typeRefNode("sqlalchemy", "ext", "asyncio", "AsyncConnection"),
 								},
 							},
 						},
@@ -844,11 +862,35 @@ func buildQueryTree(ctx *pyTmplCtx, i *importer, source string) *pyast.Node {
 			if !ctx.OutputQuery(q.SourceName) {
 				continue
 			}
+			f := &pyast.FunctionDef{
+				Name: q.MethodName,
+				Args: &pyast.Arguments{
+					Args: []*pyast.Arg{
+						{
+							Arg: "self",
+						},
+					},
+				},
+			}
+
+			q.AddArgs(f)
+
+			switch q.Cmd {
+			case ":one":
+			case ":many":
+			case ":exec":
+				f.Returns = nameNode("None")
+			case ":execrows":
+				f.Returns = nameNode("int")
+			case ":execresult":
+				f.Returns = typeRefNode("sqlalchemy", "engine", "Result")
+			default:
+				panic("unknown cmd " + q.Cmd)
+			}
+
 			cls.Body = append(cls.Body, &pyast.Node{
 				Node: &pyast.Node_FunctionDef{
-					FunctionDef: &pyast.FunctionDef{
-						Name: q.MethodName,
-					},
+					FunctionDef: f,
 				},
 			})
 		}
@@ -1034,14 +1076,6 @@ func Generate(r *compiler.Result, settings config.CombinedSettings) (map[string]
 		Enums:    enums,
 	}
 
-	funcMap := template.FuncMap{
-		"lowerTitle": codegen.LowerTitle,
-		"comment":    HashComment,
-		"imports":    i.Imports,
-	}
-
-	queriesFile := template.Must(template.New("table").Funcs(funcMap).Parse(queriesTmpl))
-
 	tctx := pyTmplCtx{
 		Models:    models,
 		Queries:   queries,
@@ -1051,25 +1085,8 @@ func Generate(r *compiler.Result, settings config.CombinedSettings) (map[string]
 	}
 
 	output := map[string]string{}
-
-	execute := func(name string, t *template.Template) error {
-		var b bytes.Buffer
-		w := bufio.NewWriter(&b)
-		tctx.SourceName = name
-		err := t.Execute(w, &tctx)
-		w.Flush()
-		if err != nil {
-			return err
-		}
-		if !strings.HasSuffix(name, ".py") {
-			name = strings.TrimSuffix(name, ".sql")
-			name += ".py"
-		}
-		output[name] = b.String()
-		return nil
-	}
-
 	result := pyprint.Print(buildModelsTree(&tctx, i), pyprint.Options{})
+	tctx.SourceName = "models.py"
 	output["models.py"] = string(result.Python)
 
 	files := map[string]struct{}{}
@@ -1078,12 +1095,14 @@ func Generate(r *compiler.Result, settings config.CombinedSettings) (map[string]
 	}
 
 	for source := range files {
+		tctx.SourceName = source
 		result := pyprint.Print(buildQueryTree(&tctx, i, source), pyprint.Options{})
-		fmt.Println(string(result.Python))
-
-		if err := execute(source, queriesFile); err != nil {
-			return nil, err
+		name := source
+		if !strings.HasSuffix(name, ".py") {
+			name = strings.TrimSuffix(name, ".sql")
+			name += ".py"
 		}
+		output[name] = string(result.Python)
 	}
 
 	return output, nil
