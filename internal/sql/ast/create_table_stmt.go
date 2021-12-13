@@ -6,6 +6,7 @@ type CreateTableStmt struct {
 	Cols        []*ColumnDef
 	ReferTable  *TableName
 	Comment     string
+	Inherits    []*TableName
 }
 
 func (n *CreateTableStmt) Pos() int {
