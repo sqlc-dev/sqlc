@@ -84,11 +84,7 @@ func (e *{{.Name}}) Scan(src interface{}) error {
 
 {{range .Structs}}
 {{if .Comment}}{{comment .Comment}}{{end}}
-type {{.Name}} struct {
-{{- range .Inherits}}
-  {{.}}
-{{- end}}
-{{- range .Fields}}
+type {{.Name}} struct { {{- range .Fields}}
   {{- if .Comment}}
   {{comment .Comment}}{{else}}
   {{- end}}

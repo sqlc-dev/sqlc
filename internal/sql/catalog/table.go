@@ -138,7 +138,14 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 		return sqlerr.RelationExists(stmt.Name.Name)
 	}
 
-	tbl := Table{Rel: stmt.Name, Comment: stmt.Comment, Inherits: stmt.Inherits}
+	tbl := Table{Rel: stmt.Name, Comment: stmt.Comment}
+	for _, inheritTable := range stmt.Inherits {
+		t, _, err := schema.getTable(inheritTable)
+		if err != nil {
+			return err
+		}
+		tbl.Columns = append(tbl.Columns, t.Columns...)
+	}
 
 	if stmt.ReferTable != nil && len(stmt.Cols) != 0 {
 		return errors.New("create table node cannot have both a ReferTable and Cols")

@@ -181,10 +181,9 @@ func (s *Schema) getType(rel *ast.TypeName) (Type, int, error) {
 }
 
 type Table struct {
-	Rel      *ast.TableName
-	Columns  []*Column
-	Comment  string
-	Inherits []*ast.TableName
+	Rel     *ast.TableName
+	Columns []*Column
+	Comment string
 }
 
 // TODO: Should this just be ast Nodes?
