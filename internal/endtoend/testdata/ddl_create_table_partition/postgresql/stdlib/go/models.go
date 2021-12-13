@@ -12,4 +12,6 @@ type Foo struct {
 }
 
 type Foo1 struct {
+	ID      uuid.UUID
+	OtherID uuid.UUID
 }

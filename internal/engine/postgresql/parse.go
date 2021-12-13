@@ -365,6 +365,15 @@ func translate(node *nodes.Node) (ast.Node, error) {
 			Name:        rel.TableName(),
 			IfNotExists: n.IfNotExists,
 		}
+		for _, node := range n.InhRelations {
+			switch item := node.Node.(type) {
+			case *nodes.Node_RangeVar:
+				if item.RangeVar.Inh {
+					rel := parseRelationFromRangeVar(item.RangeVar)
+					create.Inherits = append(create.Inherits, rel.TableName())
+				}
+			}
+		}
 		primaryKey := make(map[string]bool)
 		for _, elt := range n.TableElts {
 			switch item := elt.Node.(type) {
