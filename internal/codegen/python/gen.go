@@ -78,6 +78,20 @@ type QueryValue struct {
 	Typ    pyType
 }
 
+func (v QueryValue) Annotation() *pyast.Node {
+	if v.Typ != (pyType{}) {
+		return v.Typ.Annotation()
+	}
+	if v.Struct != nil {
+		if v.Emit {
+			return nameNode(v.Struct.Name)
+		} else {
+			return typeRefNode("models", v.Struct.Name)
+		}
+	}
+	panic("no type for QueryValue: " + v.Name)
+}
+
 func (v QueryValue) EmitStruct() bool {
 	return v.Emit
 }
@@ -152,17 +166,19 @@ func (q Query) ArgPairs() string {
 	return ", *, " + strings.Join(argPairs, ", ")
 }
 
-func (q Query) AddArgs(f *pyast.FunctionDef) {
+func (q Query) AddArgs(args *pyast.Arguments) {
 	// A single struct arg does not need to be passed as a keyword argument
 	if len(q.Args) == 1 && q.Args[0].IsStruct() {
-		f.Args.Args = append(f.Args.KwOnlyArgs, &pyast.Arg{
-			Arg: q.Args[0].Name,
+		args.Args = append(args.KwOnlyArgs, &pyast.Arg{
+			Arg:        q.Args[0].Name,
+			Annotation: q.Args[0].Annotation(),
 		})
 		return
 	}
 	for _, a := range q.Args {
-		f.Args.KwOnlyArgs = append(f.Args.KwOnlyArgs, &pyast.Arg{
-			Arg: a.Name,
+		args.KwOnlyArgs = append(args.KwOnlyArgs, &pyast.Arg{
+			Arg:        a.Name,
+			Annotation: a.Annotation(),
 		})
 	}
 }
@@ -629,6 +645,58 @@ func typeRefNode(base string, parts ...string) *pyast.Node {
 	return n
 }
 
+func executeQueryNode(name string, arg *pyast.Node) *pyast.Node {
+	args := []*pyast.Node{
+		{
+			Node: &pyast.Node_Call{
+				Call: &pyast.Call{
+					Func: typeRefNode("sqlalchemy", "text"),
+					Args: []*pyast.Node{
+						nameNode(name),
+					},
+				},
+			},
+		},
+	}
+	if arg != nil {
+		args = append(args, arg)
+	}
+	return &pyast.Node{
+		Node: &pyast.Node_Call{
+			Call: &pyast.Call{
+				Func: typeRefNode("self", "_conn", "execute"),
+				Args: args,
+			},
+		},
+	}
+}
+
+//
+// 		                            value=Call(
+//                                 func=Attribute(
+//                                     value=Attribute(
+//                                         value=Name(id='self', ctx=Load()),
+//                                         attr='_conn',
+//                                         ctx=Load()),
+//                                     attr='execute',
+//                                     ctx=Load()),
+//                                 args=[
+//                                     Call(
+//                                         func=Attribute(
+//                                             value=Name(id='sqlalchemy', ctx=Load()),
+//                                             attr='text',
+//                                             ctx=Load()),
+//                                         args=[
+//                                             Name(id='DELETE_AUTHOR', ctx=Load())],
+//                                         keywords=[]),
+//                                     Dict(
+//                                         keys=[
+//                                             Constant(value='p1')],
+//                                         values=[
+//                                             Name(id='id', ctx=Load())])],
+//                                 keywords=[]))],
+//
+
 func buildImports(groups ...map[string]importSpec) []*pyast.Node {
 	var body []*pyast.Node
 	for _, specs := range groups {
@@ -871,13 +939,18 @@ func buildQueryTree(ctx *pyTmplCtx, i *importer, source string) *pyast.Node {
 						},
 					},
 				},
+				Body: []*pyast.Node{
+					executeQueryNode(q.ConstantName, nil),
+				},
 			}
 
-			q.AddArgs(f)
+			q.AddArgs(f.Args)
 
 			switch q.Cmd {
 			case ":one":
+				f.Returns = subscriptNode("Optional", q.Ret.Annotation())
 			case ":many":
+				f.Returns = subscriptNode("Iterator", q.Ret.Annotation())
 			case ":exec":
 				f.Returns = nameNode("None")
 			case ":execrows":
@@ -903,11 +976,40 @@ func buildQueryTree(ctx *pyTmplCtx, i *importer, source string) *pyast.Node {
 			if !ctx.OutputQuery(q.SourceName) {
 				continue
 			}
-			cls.Body = append(cls.Body, &pyast.Node{
-				Node: &pyast.Node_FunctionDef{
-					FunctionDef: &pyast.FunctionDef{
-						Name: q.MethodName,
+			f := &pyast.AsyncFunctionDef{
+				Name: q.MethodName,
+				Args: &pyast.Arguments{
+					Args: []*pyast.Arg{
+						{
+							Arg: "self",
+						},
 					},
+				},
+				Body: []*pyast.Node{
+					executeQueryNode(q.ConstantName, nil),
+				},
+			}
+
+			q.AddArgs(f.Args)
+
+			switch q.Cmd {
+			case ":one":
+				f.Returns = subscriptNode("Optional", q.Ret.Annotation())
+			case ":many":
+				f.Returns = subscriptNode("AsyncIterator", q.Ret.Annotation())
+			case ":exec":
+				f.Returns = nameNode("None")
+			case ":execrows":
+				f.Returns = nameNode("int")
+			case ":execresult":
+				f.Returns = typeRefNode("sqlalchemy", "engine", "Result")
+			default:
+				panic("unknown cmd " + q.Cmd)
+			}
+
+			cls.Body = append(cls.Body, &pyast.Node{
+				Node: &pyast.Node_AsyncFunctionDef{
+					AsyncFunctionDef: f,
 				},
 			})
 		}

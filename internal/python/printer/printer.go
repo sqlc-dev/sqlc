@@ -48,6 +48,9 @@ func (w *writer) printNode(node *ast.Node, indent int32) {
 	case *ast.Node_Assign:
 		w.printAssign(n.Assign, indent)
 
+	case *ast.Node_AsyncFunctionDef:
+		w.printAsyncFunctionDef(n.AsyncFunctionDef, indent)
+
 	case *ast.Node_Attribute:
 		w.printAttribute(n.Attribute, indent)
 
@@ -80,6 +83,9 @@ func (w *writer) printNode(node *ast.Node, indent int32) {
 
 	case *ast.Node_Name:
 		w.print(n.Name.Id)
+
+	case *ast.Node_Pass:
+		w.print("pass")
 
 	case *ast.Node_Subscript:
 		w.printSubscript(n.Subscript, indent)
@@ -121,6 +127,16 @@ func (w *writer) printAssign(a *ast.Assign, indent int32) {
 	w.printNode(a.Value, indent)
 }
 
+func (w *writer) printAsyncFunctionDef(afd *ast.AsyncFunctionDef, indent int32) {
+	w.print("async ")
+	w.printFunctionDef(&ast.FunctionDef{
+		Name:    afd.Name,
+		Args:    afd.Args,
+		Body:    afd.Body,
+		Returns: afd.Returns,
+	}, indent)
+}
+
 func (w *writer) printAttribute(a *ast.Attribute, indent int32) {
 	w.printNode(a.Value, indent)
 	w.print(".")
@@ -129,7 +145,14 @@ func (w *writer) printAttribute(a *ast.Attribute, indent int32) {
 
 func (w *writer) printCall(c *ast.Call, indent int32) {
 	w.printNode(c.Func, indent)
-	w.print("()")
+	w.print("(")
+	for i, a := range c.Args {
+		w.printNode(a, indent)
+		if i != len(c.Args)-1 {
+			w.print(", ")
+		}
+	}
+	w.print(")")
 }
 
 func (w *writer) printClassDef(cd *ast.ClassDef, indent int32) {
@@ -154,6 +177,9 @@ func (w *writer) printClassDef(cd *ast.ClassDef, indent int32) {
 	for i, node := range cd.Body {
 		if i != 0 {
 			if _, ok := node.Node.(*ast.Node_FunctionDef); ok {
+				w.print("\n")
+			}
+			if _, ok := node.Node.(*ast.Node_AsyncFunctionDef); ok {
 				w.print("\n")
 			}
 		}
