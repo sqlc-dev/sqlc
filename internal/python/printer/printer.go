@@ -66,6 +66,9 @@ func (w *writer) printNode(node *ast.Node, indent int32) {
 	case *ast.Node_Constant:
 		w.printConstant(n.Constant, indent)
 
+	case *ast.Node_Dict:
+		w.printDict(n.Dict, indent)
+
 	case *ast.Node_Expr:
 		w.printNode(n.Expr.Value, indent)
 
@@ -218,6 +221,22 @@ func (w *writer) printComment(c *ast.Comment, indent int32) {
 	w.print("# ")
 	w.print(c.Text)
 	w.print("\n")
+}
+
+func (w *writer) printDict(d *ast.Dict, indent int32) {
+	if len(d.Keys) != len(d.Values) {
+		panic(`dict keys and values are not the same length`)
+	}
+	w.print("{")
+	for i, _ := range d.Keys {
+		w.printNode(d.Keys[i], indent)
+		w.print(": ")
+		w.printNode(d.Values[i], indent)
+		if i != len(d.Keys)-1 {
+			w.print(", ")
+		}
+	}
+	w.print("}")
 }
 
 func (w *writer) printImport(imp *ast.Import, indent int32) {

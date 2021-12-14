@@ -209,6 +209,35 @@ func (q Query) ArgDict() string {
 	return ", {\n            " + strings.Join(params, ",\n            ") + ",\n        }"
 }
 
+func (q Query) ArgDictNode() *pyast.Node {
+	dict := &pyast.Dict{}
+	i := 1
+	for _, a := range q.Args {
+		if a.isEmpty() {
+			continue
+		}
+		if a.IsStruct() {
+			for _, f := range a.Struct.Fields {
+				dict.Keys = append(dict.Keys, constantNode(fmt.Sprintf("p%v", i)))
+				dict.Values = append(dict.Values, typeRefNode(a.Name, f.Name))
+				i++
+			}
+		} else {
+			dict.Keys = append(dict.Keys, constantNode(fmt.Sprintf("p%v", i)))
+			dict.Values = append(dict.Values, nameNode(a.Name))
+			i++
+		}
+	}
+	if len(dict.Keys) == 0 {
+		return nil
+	}
+	return &pyast.Node{
+		Node: &pyast.Node_Dict{
+			Dict: dict,
+		},
+	}
+}
+
 func makePyType(r *compiler.Result, col *compiler.Column, settings config.CombinedSettings) pyType {
 	typ := pyInnerType(r, col, settings)
 	return pyType{
@@ -580,14 +609,14 @@ func attributeNode(value *pyast.Node, attr string) *pyast.Node {
 	}
 }
 
-func assignNode(target, value string) *pyast.Node {
+func assignNode(target string, value *pyast.Node) *pyast.Node {
 	return &pyast.Node{
 		Node: &pyast.Node_Assign{
 			Assign: &pyast.Assign{
 				Targets: []*pyast.Node{
 					nameNode(target),
 				},
-				Value: constantNode(value),
+				Value: value,
 			},
 		},
 	}
@@ -765,7 +794,7 @@ func buildModelsTree(ctx *pyTmplCtx, i *importer) *pyast.Node {
 			})
 		}
 		for _, c := range e.Constants {
-			def.Body = append(def.Body, assignNode(c.Name, c.Value))
+			def.Body = append(def.Body, assignNode(c.Name, constantNode(c.Value)))
 		}
 		mod.Body = append(mod.Body, &pyast.Node{
 			Node: &pyast.Node_ClassDef{
@@ -901,7 +930,7 @@ func buildQueryTree(ctx *pyTmplCtx, i *importer, source string) *pyast.Node {
 			continue
 		}
 		queryText := fmt.Sprintf("-- name: %s \\\\%s\n%s\n", q.MethodName, q.Cmd, q.SQL)
-		mod.Body = append(mod.Body, assignNode(q.ConstantName, queryText))
+		mod.Body = append(mod.Body, assignNode(q.ConstantName, constantNode(queryText)))
 		for _, arg := range q.Args {
 			if arg.EmitStruct() {
 				def := dataclassNode(arg.Type())
@@ -943,19 +972,26 @@ func buildQueryTree(ctx *pyTmplCtx, i *importer, source string) *pyast.Node {
 						},
 					},
 				},
-				Body: []*pyast.Node{
-					executeQueryNode(q.ConstantName, nil),
-				},
 			}
 
 			q.AddArgs(f.Args)
+			exec := executeQueryNode(q.ConstantName, q.ArgDictNode())
 
 			switch q.Cmd {
 			case ":one":
+				f.Body = append(f.Body, assignNode("row", &pyast.Node{
+					Node: &pyast.Node_Call{
+						Call: &pyast.Call{
+							Func: attributeNode(exec, "first"),
+						},
+					},
+				}))
 				f.Returns = subscriptNode("Optional", q.Ret.Annotation())
 			case ":many":
+				f.Body = append(f.Body, assignNode("result", exec))
 				f.Returns = subscriptNode("Iterator", q.Ret.Annotation())
 			case ":exec":
+				f.Body = append(f.Body, exec)
 				f.Returns = nameNode("None")
 			case ":execrows":
 				f.Returns = nameNode("int")
