@@ -25,6 +25,7 @@ message Node {
     Arguments arguments = 17 [json_name="Arguments"];
     AsyncFunctionDef async_function_def = 18 [json_name="AsyncFunctionDef"];
     Pass pass = 19 [json_name="Pass"];
+    Dict dict = 20 [json_name="Dict"];
   }
 }
 
@@ -77,7 +78,7 @@ message Assign
 message Call
 {
   Node func = 1 [json_name="func"];
-  repeated Node args = 3 [json_name="args"];
+  repeated Node args = 2 [json_name="args"];
 }
 
 message ClassDef
@@ -99,6 +100,12 @@ message Comment
 message Constant
 {
   string value = 1 [json_name="value"];
+}
+
+message Dict
+{
+  repeated Node keys = 1 [json_name="keys"];
+  repeated Node values = 2 [json_name="values"];
 }
 
 message Expr

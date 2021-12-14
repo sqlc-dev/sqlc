@@ -587,13 +587,17 @@ func assignNode(target, value string) *pyast.Node {
 				Targets: []*pyast.Node{
 					nameNode(target),
 				},
-				Value: &pyast.Node{
-					Node: &pyast.Node_Constant{
-						Constant: &pyast.Constant{
-							Value: value,
-						},
-					},
-				},
+				Value: constantNode(value),
+			},
+		},
+	}
+}
+
+func constantNode(value string) *pyast.Node {
+	return &pyast.Node{
+		Node: &pyast.Node_Constant{
+			Constant: &pyast.Constant{
+				Value: value,
 			},
 		},
 	}
