@@ -196,7 +196,7 @@ func (q Query) ArgPairs() string {
 func (q Query) AddArgs(args *pyast.Arguments) {
 	// A single struct arg does not need to be passed as a keyword argument
 	if len(q.Args) == 1 && q.Args[0].IsStruct() {
-		args.Args = append(args.KwOnlyArgs, &pyast.Arg{
+		args.Args = append(args.Args, &pyast.Arg{
 			Arg:        q.Args[0].Name,
 			Annotation: q.Args[0].Annotation(),
 		})
@@ -883,6 +883,16 @@ func buildQueryTree(ctx *pyTmplCtx, i *importer, source string) *pyast.Node {
 
 	std, pkg := i.queryImportSpecs(source)
 	mod.Body = append(mod.Body, buildImports(std, pkg)...)
+	mod.Body = append(mod.Body, &pyast.Node{
+		Node: &pyast.Node_ImportFrom{
+			ImportFrom: &pyast.ImportFrom{
+				Module: i.Settings.Python.Package,
+				Names: []*pyast.Node{
+					poet.Alias("models"),
+				},
+			},
+		},
+	})
 
 	for _, q := range ctx.Queries {
 		if !ctx.OutputQuery(q.SourceName) {

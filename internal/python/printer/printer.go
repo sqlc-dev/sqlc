@@ -252,9 +252,9 @@ func (w *writer) printClassDef(cd *ast.ClassDef, indent int32) {
 		if i == 0 {
 			if e, ok := node.Node.(*ast.Node_Expr); ok {
 				if c, ok := e.Expr.Value.Node.(*ast.Node_Constant); ok {
-					w.print(`"""`)
+					w.print(`""`)
 					w.printConstant(c.Constant, indent)
-					w.print(`"""`)
+					w.print(`""`)
 					w.print("\n")
 					continue
 				}
@@ -310,13 +310,30 @@ func (w *writer) printDict(d *ast.Dict, indent int32) {
 		panic(`dict keys and values are not the same length`)
 	}
 	w.print("{")
+	split := len(d.Keys) > 3
+	keyIndent := indent
+	if split {
+		keyIndent += 1
+	}
 	for i, _ := range d.Keys {
-		w.printNode(d.Keys[i], indent)
-		w.print(": ")
-		w.printNode(d.Values[i], indent)
-		if i != len(d.Keys)-1 {
-			w.print(", ")
+		if split {
+			w.print("\n")
+			w.printIndent(keyIndent)
 		}
+		w.printNode(d.Keys[i], keyIndent)
+		w.print(": ")
+		w.printNode(d.Values[i], keyIndent)
+		if i != len(d.Keys)-1 || split {
+			if split {
+				w.print(",")
+			} else {
+				w.print(", ")
+			}
+		}
+	}
+	if split {
+		w.print("\n")
+		w.printIndent(indent)
 	}
 	w.print("}")
 }
@@ -427,6 +444,9 @@ func (w *writer) printModule(mod *ast.Module, indent int32) {
 			w.print("\n\n")
 		}
 		w.printNode(node, indent)
+		if isAssign {
+			w.print("\n")
+		}
 	}
 }
 
