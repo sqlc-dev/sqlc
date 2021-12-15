@@ -138,6 +138,32 @@ func (v QueryValue) StructRowParser(rowVar string, indentCount int) string {
 	return v.Type() + "(\n" + strings.Join(params, "\n") + "\n" + indent + ")"
 }
 
+func (v QueryValue) RowNode(rowVar string) *pyast.Node {
+	if !v.IsStruct() {
+		return subscriptNode(
+			rowVar,
+			constantInt(0),
+		)
+	}
+	call := &pyast.Call{
+		Func: v.Annotation(),
+	}
+	for i, f := range v.Struct.Fields {
+		call.Keywords = append(call.Keywords, &pyast.Keyword{
+			Arg: f.Name,
+			Value: subscriptNode(
+				rowVar,
+				constantInt(i),
+			),
+		})
+	}
+	return &pyast.Node{
+		Node: &pyast.Node_Call{
+			Call: call,
+		},
+	}
+}
+
 // A struct used to generate methods and fields on the Queries struct
 type Query struct {
 	Cmd          string
@@ -218,12 +244,12 @@ func (q Query) ArgDictNode() *pyast.Node {
 		}
 		if a.IsStruct() {
 			for _, f := range a.Struct.Fields {
-				dict.Keys = append(dict.Keys, constantNode(fmt.Sprintf("p%v", i)))
+				dict.Keys = append(dict.Keys, constantStr(fmt.Sprintf("p%v", i)))
 				dict.Values = append(dict.Values, typeRefNode(a.Name, f.Name))
 				i++
 			}
 		} else {
-			dict.Keys = append(dict.Keys, constantNode(fmt.Sprintf("p%v", i)))
+			dict.Keys = append(dict.Keys, constantStr(fmt.Sprintf("p%v", i)))
 			dict.Values = append(dict.Values, nameNode(a.Name))
 			i++
 		}
@@ -622,11 +648,35 @@ func assignNode(target string, value *pyast.Node) *pyast.Node {
 	}
 }
 
-func constantNode(value string) *pyast.Node {
+func constantStr(value string) *pyast.Node {
 	return &pyast.Node{
 		Node: &pyast.Node_Constant{
 			Constant: &pyast.Constant{
-				Value: value,
+				Value: &pyast.Constant_Str{
+					Str: value,
+				},
+			},
+		},
+	}
+}
+
+func constantInt(value int) *pyast.Node {
+	return &pyast.Node{
+		Node: &pyast.Node_Constant{
+			Constant: &pyast.Constant{
+				Value: &pyast.Constant_Int{
+					Int: int32(value),
+				},
+			},
+		},
+	}
+}
+
+func constantNone() *pyast.Node {
+	return &pyast.Node{
+		Node: &pyast.Node_Constant{
+			Constant: &pyast.Constant{
+				Value: &pyast.Constant_None{},
 			},
 		},
 	}
@@ -704,32 +754,6 @@ func executeQueryNode(name string, arg *pyast.Node) *pyast.Node {
 	}
 }
 
-//
-// 		                            value=Call(
-//                                 func=Attribute(
-//                                     value=Attribute(
-//                                         value=Name(id='self', ctx=Load()),
-//                                         attr='_conn',
-//                                         ctx=Load()),
-//                                     attr='execute',
-//                                     ctx=Load()),
-//                                 args=[
-//                                     Call(
-//                                         func=Attribute(
-//                                             value=Name(id='sqlalchemy', ctx=Load()),
-//                                             attr='text',
-//                                             ctx=Load()),
-//                                         args=[
-//                                             Name(id='DELETE_AUTHOR', ctx=Load())],
-//                                         keywords=[]),
-//                                     Dict(
-//                                         keys=[
-//                                             Constant(value='p1')],
-//                                         values=[
-//                                             Name(id='id', ctx=Load())])],
-//                                 keywords=[]))],
-//
-
 func buildImports(groups ...map[string]importSpec) []*pyast.Node {
 	var body []*pyast.Node
 	for _, specs := range groups {
@@ -782,19 +806,13 @@ func buildModelsTree(ctx *pyTmplCtx, i *importer) *pyast.Node {
 			def.Body = append(def.Body, &pyast.Node{
 				Node: &pyast.Node_Expr{
 					Expr: &pyast.Expr{
-						Value: &pyast.Node{
-							Node: &pyast.Node_Constant{
-								Constant: &pyast.Constant{
-									Value: e.Comment,
-								},
-							},
-						},
+						Value: constantStr(e.Comment),
 					},
 				},
 			})
 		}
 		for _, c := range e.Constants {
-			def.Body = append(def.Body, assignNode(c.Name, constantNode(c.Value)))
+			def.Body = append(def.Body, assignNode(c.Name, constantStr(c.Value)))
 		}
 		mod.Body = append(mod.Body, &pyast.Node{
 			Node: &pyast.Node_ClassDef{
@@ -809,13 +827,7 @@ func buildModelsTree(ctx *pyTmplCtx, i *importer) *pyast.Node {
 			def.Body = append(def.Body, &pyast.Node{
 				Node: &pyast.Node_Expr{
 					Expr: &pyast.Expr{
-						Value: &pyast.Node{
-							Node: &pyast.Node_Constant{
-								Constant: &pyast.Constant{
-									Value: m.Comment,
-								},
-							},
-						},
+						Value: constantStr(m.Comment),
 					},
 				},
 			})
@@ -930,7 +942,7 @@ func buildQueryTree(ctx *pyTmplCtx, i *importer, source string) *pyast.Node {
 			continue
 		}
 		queryText := fmt.Sprintf("-- name: %s \\\\%s\n%s\n", q.MethodName, q.Cmd, q.SQL)
-		mod.Body = append(mod.Body, assignNode(q.ConstantName, constantNode(queryText)))
+		mod.Body = append(mod.Body, assignNode(q.ConstantName, constantStr(queryText)))
 		for _, arg := range q.Args {
 			if arg.EmitStruct() {
 				def := dataclassNode(arg.Type())
@@ -979,20 +991,61 @@ func buildQueryTree(ctx *pyTmplCtx, i *importer, source string) *pyast.Node {
 
 			switch q.Cmd {
 			case ":one":
-				f.Body = append(f.Body, assignNode("row", &pyast.Node{
-					Node: &pyast.Node_Call{
-						Call: &pyast.Call{
-							Func: attributeNode(exec, "first"),
+				f.Body = append(f.Body,
+					assignNode("row", &pyast.Node{
+						Node: &pyast.Node_Call{
+							Call: &pyast.Call{
+								Func: attributeNode(exec, "first"),
+							},
+						},
+					}),
+					&pyast.Node{
+						Node: &pyast.Node_If{
+							If: &pyast.If{
+								Test: &pyast.Node{
+									Node: &pyast.Node_Compare{
+										Compare: &pyast.Compare{
+											Left: nameNode("row"),
+											Ops: []*pyast.Node{
+												{
+													Node: &pyast.Node_Is{
+														Is: &pyast.Is{},
+													},
+												},
+											},
+											Comparators: []*pyast.Node{
+												constantNone(),
+											},
+										},
+									},
+								},
+								Body: []*pyast.Node{
+									{
+										Node: &pyast.Node_Return{
+											Return: &pyast.Return{
+												Value: constantNone(),
+											},
+										},
+									},
+								},
+							},
 						},
 					},
-				}))
+					&pyast.Node{
+						Node: &pyast.Node_Return{
+							Return: &pyast.Return{
+								Value: q.Ret.RowNode("row"),
+							},
+						},
+					},
+				)
 				f.Returns = subscriptNode("Optional", q.Ret.Annotation())
 			case ":many":
 				f.Body = append(f.Body, assignNode("result", exec))
 				f.Returns = subscriptNode("Iterator", q.Ret.Annotation())
 			case ":exec":
 				f.Body = append(f.Body, exec)
-				f.Returns = nameNode("None")
+				f.Returns = constantNone()
 			case ":execrows":
 				f.Returns = nameNode("int")
 			case ":execresult":
@@ -1038,7 +1091,7 @@ func buildQueryTree(ctx *pyTmplCtx, i *importer, source string) *pyast.Node {
 			case ":many":
 				f.Returns = subscriptNode("AsyncIterator", q.Ret.Annotation())
 			case ":exec":
-				f.Returns = nameNode("None")
+				f.Returns = constantNone()
 			case ":execrows":
 				f.Returns = nameNode("int")
 			case ":execresult":

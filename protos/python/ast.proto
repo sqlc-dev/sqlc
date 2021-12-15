@@ -26,6 +26,11 @@ message Node {
     AsyncFunctionDef async_function_def = 18 [json_name="AsyncFunctionDef"];
     Pass pass = 19 [json_name="Pass"];
     Dict dict = 20 [json_name="Dict"];
+    If if = 21 [json_name="If"];
+    Compare compare = 22 [json_name="Compare"];
+    Return return = 23 [json_name="Return"];
+    Is is = 24 [json_name="Is"];
+    Keyword keyword = 25 [json_name="Keyword"];
   }
 }
 
@@ -79,6 +84,7 @@ message Call
 {
   Node func = 1 [json_name="func"];
   repeated Node args = 2 [json_name="args"];
+  repeated Keyword keywords = 3 [json_name="keywords"];
 }
 
 message ClassDef
@@ -97,9 +103,20 @@ message Comment
   string text = 1 [json_name="text"];
 }
 
+message Compare
+{
+  Node left = 1 [json_name="left"];
+  repeated Node ops = 2 [json_name="ops"];
+  repeated Node comparators = 3 [json_name="comparators"];
+}
+
 message Constant
 {
-  string value = 1 [json_name="value"];
+  oneof value {
+	string str = 1 [json_name="string"];
+	int32 int = 2 [json_name="int"];
+    bool none = 3 [json_name="none"];
+  }
 }
 
 message Dict
@@ -121,6 +138,13 @@ message FunctionDef
   Node returns = 4 [json_name="returns"];
 }
 
+message If
+{
+  Node test = 1 [json_name="test"];
+  repeated Node body = 2 [json_name="body"];
+  repeated Node or_else = 3 [json_name="orelse"];
+}
+
 message Import
 {
   repeated Node names = 1 [json_name="names"];
@@ -131,6 +155,16 @@ message ImportFrom
   string module = 1 [json_name="module"];
   repeated Node names = 2 [json_name="names"];
   int32 level = 3 [json_name="level"];
+}
+
+message Is
+{
+}
+
+message Keyword
+{
+  string arg = 1 [json_name="arg"];
+  Node value = 2 [json_name="value"];
 }
 
 message Module
@@ -146,6 +180,12 @@ message Name
 message Pass
 {
 }
+
+message Return
+{
+  Node value = 1 [json_name="value"];
+}
+
 
 message Subscript
 {

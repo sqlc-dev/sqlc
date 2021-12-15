@@ -30,7 +30,9 @@ func TestPrinter(t *testing.T) {
 						Value: &ast.Node{
 							Node: &ast.Node_Constant{
 								Constant: &ast.Constant{
-									Value: "FICTION",
+									Value: &ast.Constant_Str{
+										Str: "FICTION",
+									},
 								},
 							},
 						},

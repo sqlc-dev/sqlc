@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/kyleconroy/sqlc/internal/python/ast"
@@ -63,6 +64,9 @@ func (w *writer) printNode(node *ast.Node, indent int32) {
 	case *ast.Node_Comment:
 		w.printComment(n.Comment, indent)
 
+	case *ast.Node_Compare:
+		w.printCompare(n.Compare, indent)
+
 	case *ast.Node_Constant:
 		w.printConstant(n.Constant, indent)
 
@@ -75,11 +79,20 @@ func (w *writer) printNode(node *ast.Node, indent int32) {
 	case *ast.Node_FunctionDef:
 		w.printFunctionDef(n.FunctionDef, indent)
 
+	case *ast.Node_If:
+		w.printIf(n.If, indent)
+
 	case *ast.Node_Import:
 		w.printImport(n.Import, indent)
 
 	case *ast.Node_ImportFrom:
 		w.printImportFrom(n.ImportFrom, indent)
+
+	case *ast.Node_Is:
+		w.print("is")
+
+	case *ast.Node_Keyword:
+		w.printKeyword(n.Keyword, indent)
 
 	case *ast.Node_Module:
 		w.printModule(n.Module, indent)
@@ -89,6 +102,9 @@ func (w *writer) printNode(node *ast.Node, indent int32) {
 
 	case *ast.Node_Pass:
 		w.print("pass")
+
+	case *ast.Node_Return:
+		w.printReturn(n.Return, indent)
 
 	case *ast.Node_Subscript:
 		w.printSubscript(n.Subscript, indent)
@@ -155,6 +171,16 @@ func (w *writer) printCall(c *ast.Call, indent int32) {
 			w.print(", ")
 		}
 	}
+	for _, kw := range c.Keywords {
+		w.print("\n")
+		w.printIndent(indent + 1)
+		w.printKeyword(kw, indent+1)
+		w.print(",")
+	}
+	if len(c.Keywords) > 0 {
+		w.print("\n")
+		w.printIndent(indent)
+	}
 	w.print(")")
 }
 
@@ -195,7 +221,7 @@ func (w *writer) printClassDef(cd *ast.ClassDef, indent int32) {
 			if e, ok := node.Node.(*ast.Node_Expr); ok {
 				if c, ok := e.Expr.Value.Node.(*ast.Node_Constant); ok {
 					w.print(`"""`)
-					w.print(c.Constant.Value)
+					w.printConstant(c.Constant, indent)
 					w.print(`"""`)
 					w.print("\n")
 					continue
@@ -208,19 +234,43 @@ func (w *writer) printClassDef(cd *ast.ClassDef, indent int32) {
 }
 
 func (w *writer) printConstant(c *ast.Constant, indent int32) {
-	str := `"`
-	if strings.Contains(c.Value, "\n") {
-		str = `"""`
+	switch n := c.Value.(type) {
+	case *ast.Constant_Int:
+		w.print(strconv.Itoa(int(n.Int)))
+
+	case *ast.Constant_None:
+		w.print("None")
+
+	case *ast.Constant_Str:
+		str := `"`
+		if strings.Contains(n.Str, "\n") {
+			str = `"""`
+		}
+		w.print(str)
+		w.print(n.Str)
+		w.print(str)
+
+	default:
+		panic(n)
 	}
-	w.print(str)
-	w.print(c.Value)
-	w.print(str)
 }
 
 func (w *writer) printComment(c *ast.Comment, indent int32) {
 	w.print("# ")
 	w.print(c.Text)
 	w.print("\n")
+}
+
+func (w *writer) printCompare(c *ast.Compare, indent int32) {
+	w.printNode(c.Left, indent)
+	w.print(" ")
+	for _, node := range c.Ops {
+		w.printNode(node, indent)
+		w.print(" ")
+	}
+	for _, node := range c.Comparators {
+		w.printNode(node, indent)
+	}
 }
 
 func (w *writer) printDict(d *ast.Dict, indent int32) {
@@ -239,6 +289,19 @@ func (w *writer) printDict(d *ast.Dict, indent int32) {
 	w.print("}")
 }
 
+func (w *writer) printIf(i *ast.If, indent int32) {
+	w.print("if ")
+	w.printNode(i.Test, indent)
+	w.print(":\n")
+	for j, node := range i.Body {
+		w.printIndent(indent + 1)
+		w.printNode(node, indent+1)
+		if j != len(i.Body)-1 {
+			w.print("\n")
+		}
+	}
+}
+
 func (w *writer) printImport(imp *ast.Import, indent int32) {
 	w.print("import ")
 	for i, node := range imp.Names {
@@ -248,6 +311,10 @@ func (w *writer) printImport(imp *ast.Import, indent int32) {
 		}
 	}
 	w.print("\n")
+}
+
+func (w *writer) printIs(i *ast.Is, indent int32) {
+	w.print("is")
 }
 
 func (w *writer) printFunctionDef(fd *ast.FunctionDef, indent int32) {
@@ -277,9 +344,12 @@ func (w *writer) printFunctionDef(fd *ast.FunctionDef, indent int32) {
 		w.printNode(fd.Returns, indent)
 	}
 	w.print(":\n")
-	for _, node := range fd.Body {
+	for i, node := range fd.Body {
 		w.printIndent(indent + 1)
 		w.printNode(node, indent+1)
+		if i != len(fd.Body)-1 {
+			w.print("\n")
+		}
 	}
 }
 
@@ -296,6 +366,12 @@ func (w *writer) printImportFrom(imp *ast.ImportFrom, indent int32) {
 	w.print("\n")
 }
 
+func (w *writer) printKeyword(k *ast.Keyword, indent int32) {
+	w.print(k.Arg)
+	w.print("=")
+	w.printNode(k.Value, indent)
+}
+
 func (w *writer) printModule(mod *ast.Module, indent int32) {
 	for _, node := range mod.Body {
 		_, isClassDef := node.Node.(*ast.Node_ClassDef)
@@ -309,6 +385,11 @@ func (w *writer) printModule(mod *ast.Module, indent int32) {
 
 func (w *writer) printName(n *ast.Name, indent int32) {
 	w.print(n.Id)
+}
+
+func (w *writer) printReturn(r *ast.Return, indent int32) {
+	w.print("return ")
+	w.printNode(r.Value, indent)
 }
 
 func (w *writer) printSubscript(ss *ast.Subscript, indent int32) {
