@@ -12,6 +12,16 @@ func Alias(name string) *ast.Node {
 	}
 }
 
+func Await(value *ast.Node) *ast.Node {
+	return &ast.Node{
+		Node: &ast.Node_Await{
+			Await: &ast.Await{
+				Value: value,
+			},
+		},
+	}
+}
+
 func Attribute(value *ast.Node, attr string) *ast.Node {
 	return &ast.Node{
 		Node: &ast.Node_Attribute{

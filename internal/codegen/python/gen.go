@@ -679,7 +679,7 @@ func typeRefNode(base string, parts ...string) *pyast.Node {
 	return n
 }
 
-func executeQueryNode(name string, arg *pyast.Node) *pyast.Node {
+func connMethodNode(method, name string, arg *pyast.Node) *pyast.Node {
 	args := []*pyast.Node{
 		{
 			Node: &pyast.Node_Call{
@@ -698,7 +698,7 @@ func executeQueryNode(name string, arg *pyast.Node) *pyast.Node {
 	return &pyast.Node{
 		Node: &pyast.Node_Call{
 			Call: &pyast.Call{
-				Func: typeRefNode("self", "_conn", "execute"),
+				Func: typeRefNode("self", "_conn", method),
 				Args: args,
 			},
 		},
@@ -926,7 +926,7 @@ func buildQueryTree(ctx *pyTmplCtx, i *importer, source string) *pyast.Node {
 			}
 
 			q.AddArgs(f.Args)
-			exec := executeQueryNode(q.ConstantName, q.ArgDictNode())
+			exec := connMethodNode("execute", q.ConstantName, q.ArgDictNode())
 
 			switch q.Cmd {
 			case ":one":
@@ -1008,19 +1008,63 @@ func buildQueryTree(ctx *pyTmplCtx, i *importer, source string) *pyast.Node {
 						},
 					},
 				},
-				Body: []*pyast.Node{
-					executeQueryNode(q.ConstantName, nil),
-				},
 			}
 
 			q.AddArgs(f.Args)
+			exec := connMethodNode("exec", q.ConstantName, q.ArgDictNode())
 
 			switch q.Cmd {
 			case ":one":
+				f.Body = append(f.Body,
+					assignNode("row", poet.Node(
+						&pyast.Call{
+							Func: poet.Attribute(poet.Await(exec), "first"),
+						},
+					)),
+					poet.Node(
+						&pyast.If{
+							Test: poet.Node(
+								&pyast.Compare{
+									Left: poet.Name("row"),
+									Ops: []*pyast.Node{
+										poet.Is(),
+									},
+									Comparators: []*pyast.Node{
+										poet.Constant(nil),
+									},
+								},
+							),
+							Body: []*pyast.Node{
+								poet.Return(
+									poet.Constant(nil),
+								),
+							},
+						},
+					),
+					poet.Return(q.Ret.RowNode("row")),
+				)
 				f.Returns = subscriptNode("Optional", q.Ret.Annotation())
 			case ":many":
+				stream := connMethodNode("stream", q.ConstantName, q.ArgDictNode())
+				f.Body = append(f.Body,
+					assignNode("result", poet.Await(stream)),
+					poet.Node(
+						&pyast.For{
+							Target: poet.Name("row"),
+							Iter:   poet.Name("result"),
+							Body: []*pyast.Node{
+								poet.Expr(
+									poet.Yield(
+										q.Ret.RowNode("row"),
+									),
+								),
+							},
+						},
+					),
+				)
 				f.Returns = subscriptNode("AsyncIterator", q.Ret.Annotation())
 			case ":exec":
+				f.Body = append(f.Body, poet.Await(exec))
 				f.Returns = poet.Constant(nil)
 			case ":execrows":
 				f.Returns = poet.Name("int")

@@ -33,12 +33,18 @@ message Node {
     Keyword keyword = 25 [json_name="Keyword"];
     Yield yield = 26 [json_name="Yield"];
     For for = 27 [json_name="For"];
+    Await await = 28 [json_name="Await"];
   }
 }
 
 message Alias
 {
   string name = 1 [json_name="name"];
+}
+
+message Await
+{
+  Node value = 1 [json_name="value"];
 }
 
 message Attribute

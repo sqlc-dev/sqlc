@@ -55,6 +55,9 @@ func (w *writer) printNode(node *ast.Node, indent int32) {
 	case *ast.Node_Attribute:
 		w.printAttribute(n.Attribute, indent)
 
+	case *ast.Node_Await:
+		w.printAwait(n.Await, indent)
+
 	case *ast.Node_Call:
 		w.printCall(n.Call, indent)
 
@@ -166,6 +169,11 @@ func (w *writer) printAttribute(a *ast.Attribute, indent int32) {
 	w.printNode(a.Value, indent)
 	w.print(".")
 	w.print(a.Attr)
+}
+
+func (w *writer) printAwait(n *ast.Await, indent int32) {
+	w.print("await ")
+	w.printNode(n.Value, indent)
 }
 
 func (w *writer) printCall(c *ast.Call, indent int32) {

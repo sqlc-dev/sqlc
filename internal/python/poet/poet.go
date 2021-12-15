@@ -26,6 +26,13 @@ func Node(node proto) *ast.Node {
 			},
 		}
 
+	case *ast.Await:
+		return &ast.Node{
+			Node: &ast.Node_Await{
+				Await: n,
+			},
+		}
+
 	case *ast.AnnAssign:
 		return &ast.Node{
 			Node: &ast.Node_AnnAssign{
