@@ -1003,8 +1003,15 @@ func buildQueryTree(ctx *pyTmplCtx, i *importer, source string) *pyast.Node {
 				f.Body = append(f.Body, exec)
 				f.Returns = poet.Constant(nil)
 			case ":execrows":
+				f.Body = append(f.Body,
+					assignNode("result", exec),
+					poet.Return(poet.Attribute(poet.Name("result"), "rowcount")),
+				)
 				f.Returns = poet.Name("int")
 			case ":execresult":
+				f.Body = append(f.Body,
+					poet.Return(exec),
+				)
 				f.Returns = typeRefNode("sqlalchemy", "engine", "Result")
 			default:
 				panic("unknown cmd " + q.Cmd)
@@ -1089,8 +1096,15 @@ func buildQueryTree(ctx *pyTmplCtx, i *importer, source string) *pyast.Node {
 				f.Body = append(f.Body, poet.Await(exec))
 				f.Returns = poet.Constant(nil)
 			case ":execrows":
+				f.Body = append(f.Body,
+					assignNode("result", poet.Await(exec)),
+					poet.Return(poet.Attribute(poet.Name("result"), "rowcount")),
+				)
 				f.Returns = poet.Name("int")
 			case ":execresult":
+				f.Body = append(f.Body,
+					poet.Return(poet.Await(exec)),
+				)
 				f.Returns = typeRefNode("sqlalchemy", "engine", "Result")
 			default:
 				panic("unknown cmd " + q.Cmd)
