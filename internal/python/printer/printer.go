@@ -76,6 +76,9 @@ func (w *writer) printNode(node *ast.Node, indent int32) {
 	case *ast.Node_Expr:
 		w.printNode(n.Expr.Value, indent)
 
+	case *ast.Node_For:
+		w.printFor(n.For, indent)
+
 	case *ast.Node_FunctionDef:
 		w.printFunctionDef(n.FunctionDef, indent)
 
@@ -108,6 +111,9 @@ func (w *writer) printNode(node *ast.Node, indent int32) {
 
 	case *ast.Node_Subscript:
 		w.printSubscript(n.Subscript, indent)
+
+	case *ast.Node_Yield:
+		w.printYield(n.Yield, indent)
 
 	default:
 		panic(n)
@@ -289,6 +295,21 @@ func (w *writer) printDict(d *ast.Dict, indent int32) {
 	w.print("}")
 }
 
+func (w *writer) printFor(n *ast.For, indent int32) {
+	w.print("for ")
+	w.printNode(n.Target, indent)
+	w.print(" in ")
+	w.printNode(n.Iter, indent)
+	w.print(":\n")
+	for i, node := range n.Body {
+		w.printIndent(indent + 1)
+		w.printNode(node, indent+1)
+		if i != len(n.Body)-1 {
+			w.print("\n")
+		}
+	}
+}
+
 func (w *writer) printIf(i *ast.If, indent int32) {
 	w.print("if ")
 	w.printNode(i.Test, indent)
@@ -398,4 +419,9 @@ func (w *writer) printSubscript(ss *ast.Subscript, indent int32) {
 	w.printNode(ss.Slice, indent)
 	w.print("]")
 
+}
+
+func (w *writer) printYield(n *ast.Yield, indent int32) {
+	w.print("yield ")
+	w.printNode(n.Value, indent)
 }

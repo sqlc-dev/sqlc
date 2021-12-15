@@ -1041,7 +1041,32 @@ func buildQueryTree(ctx *pyTmplCtx, i *importer, source string) *pyast.Node {
 				)
 				f.Returns = subscriptNode("Optional", q.Ret.Annotation())
 			case ":many":
-				f.Body = append(f.Body, assignNode("result", exec))
+				f.Body = append(f.Body,
+					assignNode("result", exec),
+					&pyast.Node{
+						Node: &pyast.Node_For{
+							For: &pyast.For{
+								Target: nameNode("row"),
+								Iter:   nameNode("result"),
+								Body: []*pyast.Node{
+									{
+										Node: &pyast.Node_Expr{
+											Expr: &pyast.Expr{
+												Value: &pyast.Node{
+													Node: &pyast.Node_Yield{
+														Yield: &pyast.Yield{
+															Value: q.Ret.RowNode("row"),
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				)
 				f.Returns = subscriptNode("Iterator", q.Ret.Annotation())
 			case ":exec":
 				f.Body = append(f.Body, exec)
