@@ -8,7 +8,6 @@ import sqlalchemy.ext.asyncio
 from ondeck import models
 
 
-
 CREATE_VENUE = """-- name: create_venue \\:one
 INSERT INTO venue (
     slug,
@@ -31,6 +30,7 @@ INSERT INTO venue (
 ) RETURNING id
 """
 
+
 @dataclasses.dataclass()
 class CreateVenueParams:
     slug: str
@@ -41,16 +41,19 @@ class CreateVenueParams:
     statuses: Optional[List[models.Status]]
     tags: Optional[List[str]]
 
+
 DELETE_VENUE = """-- name: delete_venue \\:exec
 DELETE FROM venue
 WHERE slug = :p1 AND slug = :p1
 """
+
 
 GET_VENUE = """-- name: get_venue \\:one
 SELECT id, status, statuses, slug, name, city, spotify_playlist, songkick_id, tags, created_at
 FROM venue
 WHERE slug = :p1 AND city = :p2
 """
+
 
 LIST_VENUES = """-- name: list_venues \\:many
 SELECT id, status, statuses, slug, name, city, spotify_playlist, songkick_id, tags, created_at
@@ -59,12 +62,14 @@ WHERE city = :p1
 ORDER BY name
 """
 
+
 UPDATE_VENUE_NAME = """-- name: update_venue_name \\:one
 UPDATE venue
 SET name = :p2
 WHERE slug = :p1
 RETURNING id
 """
+
 
 VENUE_COUNT_BY_CITY = """-- name: venue_count_by_city \\:many
 SELECT
@@ -75,10 +80,12 @@ GROUP BY 1
 ORDER BY 1
 """
 
+
 @dataclasses.dataclass()
 class VenueCountByCityRow:
     city: str
     count: int
+
 
 class AsyncQuerier:
     def __init__(self, conn: sqlalchemy.ext.asyncio.AsyncConnection):

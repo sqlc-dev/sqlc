@@ -9,7 +9,6 @@ import sqlalchemy.ext.asyncio
 from booktest import models
 
 
-
 BOOKS_BY_TAGS = """-- name: books_by_tags \\:many
 SELECT 
   book_id,
@@ -22,6 +21,7 @@ LEFT JOIN authors ON books.author_id = authors.author_id
 WHERE tags && :p1\\:\\:varchar[]
 """
 
+
 @dataclasses.dataclass()
 class BooksByTagsRow:
     book_id: int
@@ -30,15 +30,18 @@ class BooksByTagsRow:
     isbn: str
     tags: List[str]
 
+
 BOOKS_BY_TITLE_YEAR = """-- name: books_by_title_year \\:many
 SELECT book_id, author_id, isbn, book_type, title, year, available, tags FROM books
 WHERE title = :p1 AND year = :p2
 """
 
+
 CREATE_AUTHOR = """-- name: create_author \\:one
 INSERT INTO authors (name) VALUES (:p1)
 RETURNING author_id, name
 """
+
 
 CREATE_BOOK = """-- name: create_book \\:one
 INSERT INTO books (
@@ -61,6 +64,7 @@ INSERT INTO books (
 RETURNING book_id, author_id, isbn, book_type, title, year, available, tags
 """
 
+
 @dataclasses.dataclass()
 class CreateBookParams:
     author_id: int
@@ -71,20 +75,24 @@ class CreateBookParams:
     available: datetime.datetime
     tags: List[str]
 
+
 DELETE_BOOK = """-- name: delete_book \\:exec
 DELETE FROM books
 WHERE book_id = :p1
 """
+
 
 GET_AUTHOR = """-- name: get_author \\:one
 SELECT author_id, name FROM authors
 WHERE author_id = :p1
 """
 
+
 GET_BOOK = """-- name: get_book \\:one
 SELECT book_id, author_id, isbn, book_type, title, year, available, tags FROM books
 WHERE book_id = :p1
 """
+
 
 UPDATE_BOOK = """-- name: update_book \\:exec
 UPDATE books
@@ -92,11 +100,13 @@ SET title = :p1, tags = :p2
 WHERE book_id = :p3
 """
 
+
 UPDATE_BOOK_ISBN = """-- name: update_book_isbn \\:exec
 UPDATE books
 SET title = :p1, tags = :p2, isbn = :p4
 WHERE book_id = :p3
 """
+
 
 class AsyncQuerier:
     def __init__(self, conn: sqlalchemy.ext.asyncio.AsyncConnection):

@@ -7,7 +7,6 @@ import sqlalchemy.ext.asyncio
 from ondeck import models
 
 
-
 CREATE_CITY = """-- name: create_city \\:one
 INSERT INTO city (
     name,
@@ -18,11 +17,13 @@ INSERT INTO city (
 ) RETURNING slug, name
 """
 
+
 GET_CITY = """-- name: get_city \\:one
 SELECT slug, name
 FROM city
 WHERE slug = :p1
 """
+
 
 LIST_CITIES = """-- name: list_cities \\:many
 SELECT slug, name
@@ -30,11 +31,13 @@ FROM city
 ORDER BY name
 """
 
+
 UPDATE_CITY_NAME = """-- name: update_city_name \\:exec
 UPDATE city
 SET name = :p2
 WHERE slug = :p1
 """
+
 
 class AsyncQuerier:
     def __init__(self, conn: sqlalchemy.ext.asyncio.AsyncConnection):

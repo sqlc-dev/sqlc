@@ -7,18 +7,20 @@ import sqlalchemy.ext.asyncio
 from jets import models
 
 
-
 COUNT_PILOTS = """-- name: count_pilots \\:one
 SELECT COUNT(*) FROM pilots
 """
+
 
 DELETE_PILOT = """-- name: delete_pilot \\:exec
 DELETE FROM pilots WHERE id = :p1
 """
 
+
 LIST_PILOTS = """-- name: list_pilots \\:many
 SELECT id, name FROM pilots LIMIT 5
 """
+
 
 class AsyncQuerier:
     def __init__(self, conn: sqlalchemy.ext.asyncio.AsyncConnection):

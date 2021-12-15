@@ -459,9 +459,9 @@ func (w *writer) printModule(mod *ast.Module, indent int32) {
 		_, isAssign := node.Node.(*ast.Node_Assign)
 		if isClassDef || isAssign {
 			if prevIsImport {
-				w.print("\n\n")
-			} else {
 				w.print("\n")
+			} else {
+				w.print("\n\n")
 			}
 		}
 		w.printNode(node, indent)

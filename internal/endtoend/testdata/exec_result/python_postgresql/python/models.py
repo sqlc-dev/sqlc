@@ -2,7 +2,6 @@
 import dataclasses
 
 
-
 @dataclasses.dataclass()
 class Bar:
     id: int

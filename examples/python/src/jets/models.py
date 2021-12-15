@@ -2,7 +2,6 @@
 import dataclasses
 
 
-
 @dataclasses.dataclass()
 class Jet:
     id: int
@@ -11,15 +10,18 @@ class Jet:
     name: str
     color: str
 
+
 @dataclasses.dataclass()
 class Language:
     id: int
     language: str
 
+
 @dataclasses.dataclass()
 class Pilot:
     id: int
     name: str
+
 
 @dataclasses.dataclass()
 class PilotLanguage:
