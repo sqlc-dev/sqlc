@@ -34,6 +34,7 @@ message Node {
     Yield yield = 26 [json_name="Yield"];
     For for = 27 [json_name="For"];
     Await await = 28 [json_name="Await"];
+    AsyncFor async_for = 29 [json_name="AsyncFor"];
   }
 }
 
@@ -71,6 +72,13 @@ message Arguments
 {
   repeated Arg args = 1 [json_name="args"];
   repeated Arg kw_only_args = 2 [json_name="kwonlyargs"];
+}
+
+message AsyncFor
+{
+  Node target = 1 [json_name="target"];
+  Node iter = 2 [json_name="iter"];
+  repeated Node body = 3 [json_name="body"];
 }
 
 message AsyncFunctionDef

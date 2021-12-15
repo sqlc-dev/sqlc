@@ -1011,7 +1011,7 @@ func buildQueryTree(ctx *pyTmplCtx, i *importer, source string) *pyast.Node {
 			}
 
 			q.AddArgs(f.Args)
-			exec := connMethodNode("exec", q.ConstantName, q.ArgDictNode())
+			exec := connMethodNode("execute", q.ConstantName, q.ArgDictNode())
 
 			switch q.Cmd {
 			case ":one":
@@ -1049,7 +1049,7 @@ func buildQueryTree(ctx *pyTmplCtx, i *importer, source string) *pyast.Node {
 				f.Body = append(f.Body,
 					assignNode("result", poet.Await(stream)),
 					poet.Node(
-						&pyast.For{
+						&pyast.AsyncFor{
 							Target: poet.Name("row"),
 							Iter:   poet.Name("result"),
 							Body: []*pyast.Node{

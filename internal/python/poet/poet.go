@@ -47,6 +47,13 @@ func Node(node proto) *ast.Node {
 			},
 		}
 
+	case *ast.AsyncFor:
+		return &ast.Node{
+			Node: &ast.Node_AsyncFor{
+				AsyncFor: n,
+			},
+		}
+
 	case *ast.AsyncFunctionDef:
 		return &ast.Node{
 			Node: &ast.Node_AsyncFunctionDef{

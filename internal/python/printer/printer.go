@@ -49,6 +49,9 @@ func (w *writer) printNode(node *ast.Node, indent int32) {
 	case *ast.Node_Assign:
 		w.printAssign(n.Assign, indent)
 
+	case *ast.Node_AsyncFor:
+		w.printAsyncFor(n.AsyncFor, indent)
+
 	case *ast.Node_AsyncFunctionDef:
 		w.printAsyncFunctionDef(n.AsyncFunctionDef, indent)
 
@@ -155,6 +158,15 @@ func (w *writer) printAssign(a *ast.Assign, indent int32) {
 	w.printNode(a.Value, indent)
 }
 
+func (w *writer) printAsyncFor(n *ast.AsyncFor, indent int32) {
+	w.print("async ")
+	w.printFor(&ast.For{
+		Target: n.Target,
+		Iter:   n.Iter,
+		Body:   n.Body,
+	}, indent)
+}
+
 func (w *writer) printAsyncFunctionDef(afd *ast.AsyncFunctionDef, indent int32) {
 	w.print("async ")
 	w.printFunctionDef(&ast.FunctionDef{
@@ -166,7 +178,13 @@ func (w *writer) printAsyncFunctionDef(afd *ast.AsyncFunctionDef, indent int32) 
 }
 
 func (w *writer) printAttribute(a *ast.Attribute, indent int32) {
-	w.printNode(a.Value, indent)
+	if _, ok := a.Value.Node.(*ast.Node_Await); ok {
+		w.print("(")
+		w.printNode(a.Value, indent)
+		w.print(")")
+	} else {
+		w.printNode(a.Value, indent)
+	}
 	w.print(".")
 	w.print(a.Attr)
 }
