@@ -705,28 +705,32 @@ func connMethodNode(method, name string, arg *pyast.Node) *pyast.Node {
 	}
 }
 
-func buildImports(groups ...map[string]importSpec) []*pyast.Node {
+func buildImportGroup(specs map[string]importSpec) *pyast.Node {
 	var body []*pyast.Node
-	for _, specs := range groups {
-		for _, spec := range buildImportBlock2(specs) {
-			if len(spec.Names) > 0 && spec.Names[0] != "" {
-				imp := &pyast.ImportFrom{
-					Module: spec.Module,
-				}
-				for _, name := range spec.Names {
-					imp.Names = append(imp.Names, poet.Alias(name))
-				}
-				body = append(body, &pyast.Node{
-					Node: &pyast.Node_ImportFrom{
-						ImportFrom: imp,
-					},
-				})
-			} else {
-				body = append(body, importNode(spec.Module))
+	for _, spec := range buildImportBlock2(specs) {
+		if len(spec.Names) > 0 && spec.Names[0] != "" {
+			imp := &pyast.ImportFrom{
+				Module: spec.Module,
 			}
+			for _, name := range spec.Names {
+				imp.Names = append(imp.Names, poet.Alias(name))
+			}
+			body = append(body, &pyast.Node{
+				Node: &pyast.Node_ImportFrom{
+					ImportFrom: imp,
+				},
+			})
+		} else {
+			body = append(body, importNode(spec.Module))
 		}
 	}
-	return body
+	return &pyast.Node{
+		Node: &pyast.Node_ImportGroup{
+			ImportGroup: &pyast.ImportGroup{
+				Imports: body,
+			},
+		},
+	}
 }
 
 func buildModelsTree(ctx *pyTmplCtx, i *importer) *pyast.Node {
@@ -743,7 +747,7 @@ func buildModelsTree(ctx *pyTmplCtx, i *importer) *pyast.Node {
 	}
 
 	std, pkg := i.modelImportSpecs()
-	mod.Body = append(mod.Body, buildImports(std, pkg)...)
+	mod.Body = append(mod.Body, buildImportGroup(std), buildImportGroup(pkg))
 
 	for _, e := range ctx.Enums {
 		def := &pyast.ClassDef{
@@ -882,13 +886,21 @@ func buildQueryTree(ctx *pyTmplCtx, i *importer, source string) *pyast.Node {
 	}
 
 	std, pkg := i.queryImportSpecs(source)
-	mod.Body = append(mod.Body, buildImports(std, pkg)...)
+	mod.Body = append(mod.Body, buildImportGroup(std), buildImportGroup(pkg))
 	mod.Body = append(mod.Body, &pyast.Node{
-		Node: &pyast.Node_ImportFrom{
-			ImportFrom: &pyast.ImportFrom{
-				Module: i.Settings.Python.Package,
-				Names: []*pyast.Node{
-					poet.Alias("models"),
+		Node: &pyast.Node_ImportGroup{
+			ImportGroup: &pyast.ImportGroup{
+				Imports: []*pyast.Node{
+					{
+						Node: &pyast.Node_ImportFrom{
+							ImportFrom: &pyast.ImportFrom{
+								Module: i.Settings.Python.Package,
+								Names: []*pyast.Node{
+									poet.Alias("models"),
+								},
+							},
+						},
+					},
 				},
 			},
 		},

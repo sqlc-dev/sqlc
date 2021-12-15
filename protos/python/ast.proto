@@ -35,6 +35,7 @@ message Node {
     For for = 27 [json_name="For"];
     Await await = 28 [json_name="Await"];
     AsyncFor async_for = 29 [json_name="AsyncFor"];
+    ImportGroup import_group = 30 [json_name="ImportGroup"];
   }
 }
 
@@ -178,6 +179,23 @@ message ImportFrom
   string module = 1 [json_name="module"];
   repeated Node names = 2 [json_name="names"];
   int32 level = 3 [json_name="level"];
+}
+
+// Imports are always put at the top of the file, just after any module
+// comments and docstrings, and before module globals and constants.
+// 
+// Imports should be grouped in the following order:
+// 
+//     Standard library imports.
+//     Related third party imports.
+//     Local application/library specific imports.
+// 
+// You should put a blank line between each group of imports.
+// 
+// https://www.python.org/dev/peps/pep-0008/#imports
+message ImportGroup
+{
+  repeated Node imports = 1 [json_name="imports"];
 }
 
 message Is

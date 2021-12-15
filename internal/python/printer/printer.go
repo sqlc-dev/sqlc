@@ -97,6 +97,9 @@ func (w *writer) printNode(node *ast.Node, indent int32) {
 	case *ast.Node_ImportFrom:
 		w.printImportFrom(n.ImportFrom, indent)
 
+	case *ast.Node_ImportGroup:
+		w.printImportGroup(n.ImportGroup, indent)
+
 	case *ast.Node_Is:
 		w.print("is")
 
@@ -366,21 +369,6 @@ func (w *writer) printIf(i *ast.If, indent int32) {
 	}
 }
 
-func (w *writer) printImport(imp *ast.Import, indent int32) {
-	w.print("import ")
-	for i, node := range imp.Names {
-		w.printNode(node, indent)
-		if i != len(imp.Names)-1 {
-			w.print(", ")
-		}
-	}
-	w.print("\n")
-}
-
-func (w *writer) printIs(i *ast.Is, indent int32) {
-	w.print("is")
-}
-
 func (w *writer) printFunctionDef(fd *ast.FunctionDef, indent int32) {
 	w.print("def ")
 	w.print(fd.Name)
@@ -417,6 +405,17 @@ func (w *writer) printFunctionDef(fd *ast.FunctionDef, indent int32) {
 	}
 }
 
+func (w *writer) printImport(imp *ast.Import, indent int32) {
+	w.print("import ")
+	for i, node := range imp.Names {
+		w.printNode(node, indent)
+		if i != len(imp.Names)-1 {
+			w.print(", ")
+		}
+	}
+	w.print("\n")
+}
+
 func (w *writer) printImportFrom(imp *ast.ImportFrom, indent int32) {
 	w.print("from ")
 	w.print(imp.Module)
@@ -430,6 +429,19 @@ func (w *writer) printImportFrom(imp *ast.ImportFrom, indent int32) {
 	w.print("\n")
 }
 
+func (w *writer) printImportGroup(n *ast.ImportGroup, indent int32) {
+	if len(n.Imports) == 0 {
+		return
+	}
+	for _, node := range n.Imports {
+		w.printNode(node, indent)
+	}
+	w.print("\n")
+}
+
+func (w *writer) printIs(i *ast.Is, indent int32) {
+	w.print("is")
+}
 func (w *writer) printKeyword(k *ast.Keyword, indent int32) {
 	w.print(k.Arg)
 	w.print("=")
