@@ -2,6 +2,7 @@
 import dataclasses
 
 
+
 @dataclasses.dataclass()
 class Jet:
     id: int

@@ -5,6 +5,7 @@ import enum
 from typing import List, Optional
 
 
+
 class Status(str, enum.Enum):
     """Venues can be either open or closed"""
     OPEN = "op!en"

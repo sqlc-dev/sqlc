@@ -5,6 +5,7 @@ import enum
 from typing import List
 
 
+
 class BookType(str, enum.Enum):
     FICTION = "FICTION"
     NONFICTION = "NONFICTION"
