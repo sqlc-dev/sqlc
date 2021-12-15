@@ -13,6 +13,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/core"
 	"github.com/kyleconroy/sqlc/internal/inflection"
 	pyast "github.com/kyleconroy/sqlc/internal/python/ast"
+	"github.com/kyleconroy/sqlc/internal/python/poet"
 	pyprint "github.com/kyleconroy/sqlc/internal/python/printer"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
@@ -48,7 +49,7 @@ func (t pyType) String() string {
 }
 
 func (t pyType) Annotation() *pyast.Node {
-	ann := nameNode(t.InnerType)
+	ann := poet.Name(t.InnerType)
 	if t.IsArray {
 		ann = subscriptNode("List", ann)
 	}
@@ -84,7 +85,7 @@ func (v QueryValue) Annotation() *pyast.Node {
 	}
 	if v.Struct != nil {
 		if v.Emit {
-			return nameNode(v.Struct.Name)
+			return poet.Name(v.Struct.Name)
 		} else {
 			return typeRefNode("models", v.Struct.Name)
 		}
@@ -244,13 +245,13 @@ func (q Query) ArgDictNode() *pyast.Node {
 		}
 		if a.IsStruct() {
 			for _, f := range a.Struct.Fields {
-				dict.Keys = append(dict.Keys, constantStr(fmt.Sprintf("p%v", i)))
+				dict.Keys = append(dict.Keys, poet.Constant(fmt.Sprintf("p%v", i)))
 				dict.Values = append(dict.Values, typeRefNode(a.Name, f.Name))
 				i++
 			}
 		} else {
-			dict.Keys = append(dict.Keys, constantStr(fmt.Sprintf("p%v", i)))
-			dict.Values = append(dict.Values, nameNode(a.Name))
+			dict.Keys = append(dict.Keys, poet.Constant(fmt.Sprintf("p%v", i)))
+			dict.Values = append(dict.Values, poet.Name(a.Name))
 			i++
 		}
 	}
@@ -577,15 +578,6 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 	sort.Slice(qs, func(i, j int) bool { return qs[i].MethodName < qs[j].MethodName })
 	return qs
 }
-func aliasNode(name string) *pyast.Node {
-	return &pyast.Node{
-		Node: &pyast.Node_Alias{
-			Alias: &pyast.Alias{
-				Name: name,
-			},
-		},
-	}
-}
 
 func importNode(name string) *pyast.Node {
 	return &pyast.Node{
@@ -616,45 +608,14 @@ func classDefNode(name string, bases ...*pyast.Node) *pyast.Node {
 	}
 }
 
-func nameNode(id string) *pyast.Node {
-	return &pyast.Node{
-		Node: &pyast.Node_Name{
-			Name: &pyast.Name{Id: id},
-		},
-	}
-}
-
-func attributeNode(value *pyast.Node, attr string) *pyast.Node {
-	return &pyast.Node{
-		Node: &pyast.Node_Attribute{
-			Attribute: &pyast.Attribute{
-				Value: value,
-				Attr:  attr,
-			},
-		},
-	}
-}
-
 func assignNode(target string, value *pyast.Node) *pyast.Node {
 	return &pyast.Node{
 		Node: &pyast.Node_Assign{
 			Assign: &pyast.Assign{
 				Targets: []*pyast.Node{
-					nameNode(target),
+					poet.Name(target),
 				},
 				Value: value,
-			},
-		},
-	}
-}
-
-func constantStr(value string) *pyast.Node {
-	return &pyast.Node{
-		Node: &pyast.Node_Constant{
-			Constant: &pyast.Constant{
-				Value: &pyast.Constant_Str{
-					Str: value,
-				},
 			},
 		},
 	}
@@ -667,16 +628,6 @@ func constantInt(value int) *pyast.Node {
 				Value: &pyast.Constant_Int{
 					Int: int32(value),
 				},
-			},
-		},
-	}
-}
-
-func constantNone() *pyast.Node {
-	return &pyast.Node{
-		Node: &pyast.Node_Constant{
-			Constant: &pyast.Constant{
-				Value: &pyast.Constant_None{},
 			},
 		},
 	}
@@ -700,7 +651,7 @@ func dataclassNode(name string) *pyast.ClassDef {
 			{
 				Node: &pyast.Node_Call{
 					Call: &pyast.Call{
-						Func: attributeNode(nameNode("dataclasses"), "dataclass"),
+						Func: poet.Attribute(poet.Name("dataclasses"), "dataclass"),
 					},
 				},
 			},
@@ -721,9 +672,9 @@ func fieldNode(f Field) *pyast.Node {
 }
 
 func typeRefNode(base string, parts ...string) *pyast.Node {
-	n := nameNode(base)
+	n := poet.Name(base)
 	for _, p := range parts {
-		n = attributeNode(n, p)
+		n = poet.Attribute(n, p)
 	}
 	return n
 }
@@ -735,7 +686,7 @@ func executeQueryNode(name string, arg *pyast.Node) *pyast.Node {
 				Call: &pyast.Call{
 					Func: typeRefNode("sqlalchemy", "text"),
 					Args: []*pyast.Node{
-						nameNode(name),
+						poet.Name(name),
 					},
 				},
 			},
@@ -763,7 +714,7 @@ func buildImports(groups ...map[string]importSpec) []*pyast.Node {
 					Module: spec.Module,
 				}
 				for _, name := range spec.Names {
-					imp.Names = append(imp.Names, aliasNode(name))
+					imp.Names = append(imp.Names, poet.Alias(name))
 				}
 				body = append(body, &pyast.Node{
 					Node: &pyast.Node_ImportFrom{
@@ -798,21 +749,21 @@ func buildModelsTree(ctx *pyTmplCtx, i *importer) *pyast.Node {
 		def := &pyast.ClassDef{
 			Name: e.Name,
 			Bases: []*pyast.Node{
-				nameNode("str"),
-				attributeNode(nameNode("enum"), "Enum"),
+				poet.Name("str"),
+				poet.Attribute(poet.Name("enum"), "Enum"),
 			},
 		}
 		if e.Comment != "" {
 			def.Body = append(def.Body, &pyast.Node{
 				Node: &pyast.Node_Expr{
 					Expr: &pyast.Expr{
-						Value: constantStr(e.Comment),
+						Value: poet.Constant(e.Comment),
 					},
 				},
 			})
 		}
 		for _, c := range e.Constants {
-			def.Body = append(def.Body, assignNode(c.Name, constantStr(c.Value)))
+			def.Body = append(def.Body, assignNode(c.Name, poet.Constant(c.Value)))
 		}
 		mod.Body = append(mod.Body, &pyast.Node{
 			Node: &pyast.Node_ClassDef{
@@ -827,7 +778,7 @@ func buildModelsTree(ctx *pyTmplCtx, i *importer) *pyast.Node {
 			def.Body = append(def.Body, &pyast.Node{
 				Node: &pyast.Node_Expr{
 					Expr: &pyast.Expr{
-						Value: constantStr(m.Comment),
+						Value: poet.Constant(m.Comment),
 					},
 				},
 			})
@@ -869,9 +820,9 @@ func querierClassDef() *pyast.ClassDef {
 								Node: &pyast.Node_Assign{
 									Assign: &pyast.Assign{
 										Targets: []*pyast.Node{
-											attributeNode(nameNode("self"), "_conn"),
+											poet.Attribute(poet.Name("self"), "_conn"),
 										},
-										Value: nameNode("conn"),
+										Value: poet.Name("conn"),
 									},
 								},
 							},
@@ -907,9 +858,9 @@ func asyncQuerierClassDef() *pyast.ClassDef {
 								Node: &pyast.Node_Assign{
 									Assign: &pyast.Assign{
 										Targets: []*pyast.Node{
-											attributeNode(nameNode("self"), "_conn"),
+											poet.Attribute(poet.Name("self"), "_conn"),
 										},
-										Value: nameNode("conn"),
+										Value: poet.Name("conn"),
 									},
 								},
 							},
@@ -924,13 +875,9 @@ func asyncQuerierClassDef() *pyast.ClassDef {
 func buildQueryTree(ctx *pyTmplCtx, i *importer, source string) *pyast.Node {
 	mod := &pyast.Module{
 		Body: []*pyast.Node{
-			{
-				Node: &pyast.Node_Comment{
-					Comment: &pyast.Comment{
-						Text: "Code generated by sqlc. DO NOT EDIT.",
-					},
-				},
-			},
+			poet.Comment(
+				"Code generated by sqlc. DO NOT EDIT.",
+			),
 		},
 	}
 
@@ -942,18 +889,14 @@ func buildQueryTree(ctx *pyTmplCtx, i *importer, source string) *pyast.Node {
 			continue
 		}
 		queryText := fmt.Sprintf("-- name: %s \\\\%s\n%s\n", q.MethodName, q.Cmd, q.SQL)
-		mod.Body = append(mod.Body, assignNode(q.ConstantName, constantStr(queryText)))
+		mod.Body = append(mod.Body, assignNode(q.ConstantName, poet.Constant(queryText)))
 		for _, arg := range q.Args {
 			if arg.EmitStruct() {
 				def := dataclassNode(arg.Type())
 				for _, f := range arg.Struct.Fields {
 					def.Body = append(def.Body, fieldNode(f))
 				}
-				mod.Body = append(mod.Body, &pyast.Node{
-					Node: &pyast.Node_ClassDef{
-						ClassDef: def,
-					},
-				})
+				mod.Body = append(mod.Body, poet.Node(def))
 			}
 		}
 		if q.Ret.EmitStruct() {
@@ -961,11 +904,7 @@ func buildQueryTree(ctx *pyTmplCtx, i *importer, source string) *pyast.Node {
 			for _, f := range q.Ret.Struct.Fields {
 				def.Body = append(def.Body, fieldNode(f))
 			}
-			mod.Body = append(mod.Body, &pyast.Node{
-				Node: &pyast.Node_ClassDef{
-					ClassDef: def,
-				},
-			})
+			mod.Body = append(mod.Body, poet.Node(def))
 		}
 	}
 
@@ -992,100 +931,66 @@ func buildQueryTree(ctx *pyTmplCtx, i *importer, source string) *pyast.Node {
 			switch q.Cmd {
 			case ":one":
 				f.Body = append(f.Body,
-					assignNode("row", &pyast.Node{
-						Node: &pyast.Node_Call{
-							Call: &pyast.Call{
-								Func: attributeNode(exec, "first"),
-							},
+					assignNode("row", poet.Node(
+						&pyast.Call{
+							Func: poet.Attribute(exec, "first"),
 						},
-					}),
-					&pyast.Node{
-						Node: &pyast.Node_If{
-							If: &pyast.If{
-								Test: &pyast.Node{
-									Node: &pyast.Node_Compare{
-										Compare: &pyast.Compare{
-											Left: nameNode("row"),
-											Ops: []*pyast.Node{
-												{
-													Node: &pyast.Node_Is{
-														Is: &pyast.Is{},
-													},
-												},
-											},
-											Comparators: []*pyast.Node{
-												constantNone(),
-											},
-										},
+					)),
+					poet.Node(
+						&pyast.If{
+							Test: poet.Node(
+								&pyast.Compare{
+									Left: poet.Name("row"),
+									Ops: []*pyast.Node{
+										poet.Is(),
+									},
+									Comparators: []*pyast.Node{
+										poet.Constant(nil),
 									},
 								},
-								Body: []*pyast.Node{
-									{
-										Node: &pyast.Node_Return{
-											Return: &pyast.Return{
-												Value: constantNone(),
-											},
-										},
-									},
-								},
+							),
+							Body: []*pyast.Node{
+								poet.Return(
+									poet.Constant(nil),
+								),
 							},
 						},
-					},
-					&pyast.Node{
-						Node: &pyast.Node_Return{
-							Return: &pyast.Return{
-								Value: q.Ret.RowNode("row"),
-							},
-						},
-					},
+					),
+					poet.Return(q.Ret.RowNode("row")),
 				)
 				f.Returns = subscriptNode("Optional", q.Ret.Annotation())
 			case ":many":
 				f.Body = append(f.Body,
 					assignNode("result", exec),
-					&pyast.Node{
-						Node: &pyast.Node_For{
-							For: &pyast.For{
-								Target: nameNode("row"),
-								Iter:   nameNode("result"),
-								Body: []*pyast.Node{
-									{
-										Node: &pyast.Node_Expr{
-											Expr: &pyast.Expr{
-												Value: &pyast.Node{
-													Node: &pyast.Node_Yield{
-														Yield: &pyast.Yield{
-															Value: q.Ret.RowNode("row"),
-														},
-													},
-												},
-											},
-										},
-									},
-								},
+					poet.Node(
+						&pyast.For{
+							Target: poet.Name("row"),
+							Iter:   poet.Name("result"),
+							Body: []*pyast.Node{
+								poet.Expr(
+									poet.Yield(
+										q.Ret.RowNode("row"),
+									),
+								),
 							},
 						},
-					},
+					),
 				)
 				f.Returns = subscriptNode("Iterator", q.Ret.Annotation())
 			case ":exec":
 				f.Body = append(f.Body, exec)
-				f.Returns = constantNone()
+				f.Returns = poet.Constant(nil)
 			case ":execrows":
-				f.Returns = nameNode("int")
+				f.Returns = poet.Name("int")
 			case ":execresult":
 				f.Returns = typeRefNode("sqlalchemy", "engine", "Result")
 			default:
 				panic("unknown cmd " + q.Cmd)
 			}
 
-			cls.Body = append(cls.Body, &pyast.Node{
-				Node: &pyast.Node_FunctionDef{
-					FunctionDef: f,
-				},
-			})
+			cls.Body = append(cls.Body, poet.Node(f))
 		}
-		mod.Body = append(mod.Body, &pyast.Node{Node: &pyast.Node_ClassDef{ClassDef: cls}})
+		mod.Body = append(mod.Body, poet.Node(cls))
 	}
 
 	if ctx.EmitAsync {
@@ -1116,25 +1021,21 @@ func buildQueryTree(ctx *pyTmplCtx, i *importer, source string) *pyast.Node {
 			case ":many":
 				f.Returns = subscriptNode("AsyncIterator", q.Ret.Annotation())
 			case ":exec":
-				f.Returns = constantNone()
+				f.Returns = poet.Constant(nil)
 			case ":execrows":
-				f.Returns = nameNode("int")
+				f.Returns = poet.Name("int")
 			case ":execresult":
 				f.Returns = typeRefNode("sqlalchemy", "engine", "Result")
 			default:
 				panic("unknown cmd " + q.Cmd)
 			}
 
-			cls.Body = append(cls.Body, &pyast.Node{
-				Node: &pyast.Node_AsyncFunctionDef{
-					AsyncFunctionDef: f,
-				},
-			})
+			cls.Body = append(cls.Body, poet.Node(f))
 		}
-		mod.Body = append(mod.Body, &pyast.Node{Node: &pyast.Node_ClassDef{ClassDef: cls}})
+		mod.Body = append(mod.Body, poet.Node(cls))
 	}
 
-	return &pyast.Node{Node: &pyast.Node_Module{Module: mod}}
+	return poet.Node(mod)
 }
 
 var queriesTmpl = `
