@@ -449,11 +449,20 @@ func (w *writer) printKeyword(k *ast.Keyword, indent int32) {
 }
 
 func (w *writer) printModule(mod *ast.Module, indent int32) {
-	for _, node := range mod.Body {
+	for i, node := range mod.Body {
+		prevIsImport := false
+		if i > 0 {
+			_, isImport := mod.Body[i-1].Node.(*ast.Node_ImportGroup)
+			prevIsImport = isImport
+		}
 		_, isClassDef := node.Node.(*ast.Node_ClassDef)
 		_, isAssign := node.Node.(*ast.Node_Assign)
 		if isClassDef || isAssign {
-			w.print("\n\n")
+			if prevIsImport {
+				w.print("\n\n")
+			} else {
+				w.print("\n")
+			}
 		}
 		w.printNode(node, indent)
 		if isAssign {

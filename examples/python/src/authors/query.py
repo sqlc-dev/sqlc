@@ -17,24 +17,20 @@ INSERT INTO authors (
 RETURNING id, name, bio
 """
 
-
 DELETE_AUTHOR = """-- name: delete_author \\:exec
 DELETE FROM authors
 WHERE id = :p1
 """
-
 
 GET_AUTHOR = """-- name: get_author \\:one
 SELECT id, name, bio FROM authors
 WHERE id = :p1 LIMIT 1
 """
 
-
 LIST_AUTHORS = """-- name: list_authors \\:many
 SELECT id, name, bio FROM authors
 ORDER BY name
 """
-
 
 class Querier:
     def __init__(self, conn: sqlalchemy.engine.Connection):
@@ -71,7 +67,6 @@ class Querier:
                 name=row[1],
                 bio=row[2],
             )
-
 
 class AsyncQuerier:
     def __init__(self, conn: sqlalchemy.ext.asyncio.AsyncConnection):

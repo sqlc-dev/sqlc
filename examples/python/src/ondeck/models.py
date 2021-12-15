@@ -11,12 +11,10 @@ class Status(str, enum.Enum):
     OPEN = "op!en"
     CLOSED = "clo@sed"
 
-
 @dataclasses.dataclass()
 class City:
     slug: str
     name: str
-
 
 @dataclasses.dataclass()
 class Venue:

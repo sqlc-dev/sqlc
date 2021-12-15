@@ -10,12 +10,10 @@ class BookType(str, enum.Enum):
     FICTION = "FICTION"
     NONFICTION = "NONFICTION"
 
-
 @dataclasses.dataclass()
 class Author:
     author_id: int
     name: str
-
 
 @dataclasses.dataclass()
 class Book:
