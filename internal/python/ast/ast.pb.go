@@ -40,6 +40,22 @@ type Node struct {
 	//	*Node_Comment
 	//	*Node_Expr
 	//	*Node_Call
+	//	*Node_FunctionDef
+	//	*Node_Arg
+	//	*Node_Arguments
+	//	*Node_AsyncFunctionDef
+	//	*Node_Pass
+	//	*Node_Dict
+	//	*Node_If
+	//	*Node_Compare
+	//	*Node_Return
+	//	*Node_Is
+	//	*Node_Keyword
+	//	*Node_Yield
+	//	*Node_For
+	//	*Node_Await
+	//	*Node_AsyncFor
+	//	*Node_ImportGroup
 	Node isNode_Node `protobuf_oneof:"node"`
 }
 
@@ -180,6 +196,118 @@ func (x *Node) GetCall() *Call {
 	return nil
 }
 
+func (x *Node) GetFunctionDef() *FunctionDef {
+	if x, ok := x.GetNode().(*Node_FunctionDef); ok {
+		return x.FunctionDef
+	}
+	return nil
+}
+
+func (x *Node) GetArg() *Arg {
+	if x, ok := x.GetNode().(*Node_Arg); ok {
+		return x.Arg
+	}
+	return nil
+}
+
+func (x *Node) GetArguments() *Arguments {
+	if x, ok := x.GetNode().(*Node_Arguments); ok {
+		return x.Arguments
+	}
+	return nil
+}
+
+func (x *Node) GetAsyncFunctionDef() *AsyncFunctionDef {
+	if x, ok := x.GetNode().(*Node_AsyncFunctionDef); ok {
+		return x.AsyncFunctionDef
+	}
+	return nil
+}
+
+func (x *Node) GetPass() *Pass {
+	if x, ok := x.GetNode().(*Node_Pass); ok {
+		return x.Pass
+	}
+	return nil
+}
+
+func (x *Node) GetDict() *Dict {
+	if x, ok := x.GetNode().(*Node_Dict); ok {
+		return x.Dict
+	}
+	return nil
+}
+
+func (x *Node) GetIf() *If {
+	if x, ok := x.GetNode().(*Node_If); ok {
+		return x.If
+	}
+	return nil
+}
+
+func (x *Node) GetCompare() *Compare {
+	if x, ok := x.GetNode().(*Node_Compare); ok {
+		return x.Compare
+	}
+	return nil
+}
+
+func (x *Node) GetReturn() *Return {
+	if x, ok := x.GetNode().(*Node_Return); ok {
+		return x.Return
+	}
+	return nil
+}
+
+func (x *Node) GetIs() *Is {
+	if x, ok := x.GetNode().(*Node_Is); ok {
+		return x.Is
+	}
+	return nil
+}
+
+func (x *Node) GetKeyword() *Keyword {
+	if x, ok := x.GetNode().(*Node_Keyword); ok {
+		return x.Keyword
+	}
+	return nil
+}
+
+func (x *Node) GetYield() *Yield {
+	if x, ok := x.GetNode().(*Node_Yield); ok {
+		return x.Yield
+	}
+	return nil
+}
+
+func (x *Node) GetFor() *For {
+	if x, ok := x.GetNode().(*Node_For); ok {
+		return x.For
+	}
+	return nil
+}
+
+func (x *Node) GetAwait() *Await {
+	if x, ok := x.GetNode().(*Node_Await); ok {
+		return x.Await
+	}
+	return nil
+}
+
+func (x *Node) GetAsyncFor() *AsyncFor {
+	if x, ok := x.GetNode().(*Node_AsyncFor); ok {
+		return x.AsyncFor
+	}
+	return nil
+}
+
+func (x *Node) GetImportGroup() *ImportGroup {
+	if x, ok := x.GetNode().(*Node_ImportGroup); ok {
+		return x.ImportGroup
+	}
+	return nil
+}
+
 type isNode_Node interface {
 	isNode_Node()
 }
@@ -240,6 +368,70 @@ type Node_Call struct {
 	Call *Call `protobuf:"bytes,14,opt,name=call,json=Call,proto3,oneof"`
 }
 
+type Node_FunctionDef struct {
+	FunctionDef *FunctionDef `protobuf:"bytes,15,opt,name=function_def,json=FunctionDef,proto3,oneof"`
+}
+
+type Node_Arg struct {
+	Arg *Arg `protobuf:"bytes,16,opt,name=arg,json=Arg,proto3,oneof"`
+}
+
+type Node_Arguments struct {
+	Arguments *Arguments `protobuf:"bytes,17,opt,name=arguments,json=Arguments,proto3,oneof"`
+}
+
+type Node_AsyncFunctionDef struct {
+	AsyncFunctionDef *AsyncFunctionDef `protobuf:"bytes,18,opt,name=async_function_def,json=AsyncFunctionDef,proto3,oneof"`
+}
+
+type Node_Pass struct {
+	Pass *Pass `protobuf:"bytes,19,opt,name=pass,json=Pass,proto3,oneof"`
+}
+
+type Node_Dict struct {
+	Dict *Dict `protobuf:"bytes,20,opt,name=dict,json=Dict,proto3,oneof"`
+}
+
+type Node_If struct {
+	If *If `protobuf:"bytes,21,opt,name=if,json=If,proto3,oneof"`
+}
+
+type Node_Compare struct {
+	Compare *Compare `protobuf:"bytes,22,opt,name=compare,json=Compare,proto3,oneof"`
+}
+
+type Node_Return struct {
+	Return *Return `protobuf:"bytes,23,opt,name=return,json=Return,proto3,oneof"`
+}
+
+type Node_Is struct {
+	Is *Is `protobuf:"bytes,24,opt,name=is,json=Is,proto3,oneof"`
+}
+
+type Node_Keyword struct {
+	Keyword *Keyword `protobuf:"bytes,25,opt,name=keyword,json=Keyword,proto3,oneof"`
+}
+
+type Node_Yield struct {
+	Yield *Yield `protobuf:"bytes,26,opt,name=yield,json=Yield,proto3,oneof"`
+}
+
+type Node_For struct {
+	For *For `protobuf:"bytes,27,opt,name=for,json=For,proto3,oneof"`
+}
+
+type Node_Await struct {
+	Await *Await `protobuf:"bytes,28,opt,name=await,json=Await,proto3,oneof"`
+}
+
+type Node_AsyncFor struct {
+	AsyncFor *AsyncFor `protobuf:"bytes,29,opt,name=async_for,json=AsyncFor,proto3,oneof"`
+}
+
+type Node_ImportGroup struct {
+	ImportGroup *ImportGroup `protobuf:"bytes,30,opt,name=import_group,json=ImportGroup,proto3,oneof"`
+}
+
 func (*Node_ClassDef) isNode_Node() {}
 
 func (*Node_Import) isNode_Node() {}
@@ -267,6 +459,38 @@ func (*Node_Comment) isNode_Node() {}
 func (*Node_Expr) isNode_Node() {}
 
 func (*Node_Call) isNode_Node() {}
+
+func (*Node_FunctionDef) isNode_Node() {}
+
+func (*Node_Arg) isNode_Node() {}
+
+func (*Node_Arguments) isNode_Node() {}
+
+func (*Node_AsyncFunctionDef) isNode_Node() {}
+
+func (*Node_Pass) isNode_Node() {}
+
+func (*Node_Dict) isNode_Node() {}
+
+func (*Node_If) isNode_Node() {}
+
+func (*Node_Compare) isNode_Node() {}
+
+func (*Node_Return) isNode_Node() {}
+
+func (*Node_Is) isNode_Node() {}
+
+func (*Node_Keyword) isNode_Node() {}
+
+func (*Node_Yield) isNode_Node() {}
+
+func (*Node_For) isNode_Node() {}
+
+func (*Node_Await) isNode_Node() {}
+
+func (*Node_AsyncFor) isNode_Node() {}
+
+func (*Node_ImportGroup) isNode_Node() {}
 
 type Alias struct {
 	state         protoimpl.MessageState
@@ -315,19 +539,66 @@ func (x *Alias) GetName() string {
 	return ""
 }
 
+type Await struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Value *Node `protobuf:"bytes,1,opt,name=value,proto3" json:"value,omitempty"`
+}
+
+func (x *Await) Reset() {
+	*x = Await{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_python_ast_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Await) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Await) ProtoMessage() {}
+
+func (x *Await) ProtoReflect() protoreflect.Message {
+	mi := &file_python_ast_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Await.ProtoReflect.Descriptor instead.
+func (*Await) Descriptor() ([]byte, []int) {
+	return file_python_ast_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *Await) GetValue() *Node {
+	if x != nil {
+		return x.Value
+	}
+	return nil
+}
+
 type Attribute struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Value *Name  `protobuf:"bytes,1,opt,name=value,proto3" json:"value,omitempty"`
+	Value *Node  `protobuf:"bytes,1,opt,name=value,proto3" json:"value,omitempty"`
 	Attr  string `protobuf:"bytes,2,opt,name=attr,proto3" json:"attr,omitempty"`
 }
 
 func (x *Attribute) Reset() {
 	*x = Attribute{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_python_ast_proto_msgTypes[2]
+		mi := &file_python_ast_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -340,7 +611,7 @@ func (x *Attribute) String() string {
 func (*Attribute) ProtoMessage() {}
 
 func (x *Attribute) ProtoReflect() protoreflect.Message {
-	mi := &file_python_ast_proto_msgTypes[2]
+	mi := &file_python_ast_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -353,10 +624,10 @@ func (x *Attribute) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Attribute.ProtoReflect.Descriptor instead.
 func (*Attribute) Descriptor() ([]byte, []int) {
-	return file_python_ast_proto_rawDescGZIP(), []int{2}
+	return file_python_ast_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *Attribute) GetValue() *Name {
+func (x *Attribute) GetValue() *Node {
 	if x != nil {
 		return x.Value
 	}
@@ -384,7 +655,7 @@ type AnnAssign struct {
 func (x *AnnAssign) Reset() {
 	*x = AnnAssign{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_python_ast_proto_msgTypes[3]
+		mi := &file_python_ast_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -397,7 +668,7 @@ func (x *AnnAssign) String() string {
 func (*AnnAssign) ProtoMessage() {}
 
 func (x *AnnAssign) ProtoReflect() protoreflect.Message {
-	mi := &file_python_ast_proto_msgTypes[3]
+	mi := &file_python_ast_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -410,7 +681,7 @@ func (x *AnnAssign) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AnnAssign.ProtoReflect.Descriptor instead.
 func (*AnnAssign) Descriptor() ([]byte, []int) {
-	return file_python_ast_proto_rawDescGZIP(), []int{3}
+	return file_python_ast_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *AnnAssign) GetTarget() *Name {
@@ -441,12 +712,256 @@ func (x *AnnAssign) GetComment() string {
 	return ""
 }
 
+type Arg struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Arg        string `protobuf:"bytes,1,opt,name=arg,proto3" json:"arg,omitempty"`
+	Annotation *Node  `protobuf:"bytes,2,opt,name=annotation,proto3" json:"annotation,omitempty"`
+}
+
+func (x *Arg) Reset() {
+	*x = Arg{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_python_ast_proto_msgTypes[5]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Arg) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Arg) ProtoMessage() {}
+
+func (x *Arg) ProtoReflect() protoreflect.Message {
+	mi := &file_python_ast_proto_msgTypes[5]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Arg.ProtoReflect.Descriptor instead.
+func (*Arg) Descriptor() ([]byte, []int) {
+	return file_python_ast_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *Arg) GetArg() string {
+	if x != nil {
+		return x.Arg
+	}
+	return ""
+}
+
+func (x *Arg) GetAnnotation() *Node {
+	if x != nil {
+		return x.Annotation
+	}
+	return nil
+}
+
+type Arguments struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Args       []*Arg `protobuf:"bytes,1,rep,name=args,proto3" json:"args,omitempty"`
+	KwOnlyArgs []*Arg `protobuf:"bytes,2,rep,name=kw_only_args,json=kwonlyargs,proto3" json:"kw_only_args,omitempty"`
+}
+
+func (x *Arguments) Reset() {
+	*x = Arguments{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_python_ast_proto_msgTypes[6]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Arguments) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Arguments) ProtoMessage() {}
+
+func (x *Arguments) ProtoReflect() protoreflect.Message {
+	mi := &file_python_ast_proto_msgTypes[6]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Arguments.ProtoReflect.Descriptor instead.
+func (*Arguments) Descriptor() ([]byte, []int) {
+	return file_python_ast_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *Arguments) GetArgs() []*Arg {
+	if x != nil {
+		return x.Args
+	}
+	return nil
+}
+
+func (x *Arguments) GetKwOnlyArgs() []*Arg {
+	if x != nil {
+		return x.KwOnlyArgs
+	}
+	return nil
+}
+
+type AsyncFor struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Target *Node   `protobuf:"bytes,1,opt,name=target,proto3" json:"target,omitempty"`
+	Iter   *Node   `protobuf:"bytes,2,opt,name=iter,proto3" json:"iter,omitempty"`
+	Body   []*Node `protobuf:"bytes,3,rep,name=body,proto3" json:"body,omitempty"`
+}
+
+func (x *AsyncFor) Reset() {
+	*x = AsyncFor{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_python_ast_proto_msgTypes[7]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *AsyncFor) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AsyncFor) ProtoMessage() {}
+
+func (x *AsyncFor) ProtoReflect() protoreflect.Message {
+	mi := &file_python_ast_proto_msgTypes[7]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AsyncFor.ProtoReflect.Descriptor instead.
+func (*AsyncFor) Descriptor() ([]byte, []int) {
+	return file_python_ast_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *AsyncFor) GetTarget() *Node {
+	if x != nil {
+		return x.Target
+	}
+	return nil
+}
+
+func (x *AsyncFor) GetIter() *Node {
+	if x != nil {
+		return x.Iter
+	}
+	return nil
+}
+
+func (x *AsyncFor) GetBody() []*Node {
+	if x != nil {
+		return x.Body
+	}
+	return nil
+}
+
+type AsyncFunctionDef struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Name    string     `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Args    *Arguments `protobuf:"bytes,2,opt,name=Args,json=args,proto3" json:"Args,omitempty"`
+	Body    []*Node    `protobuf:"bytes,3,rep,name=body,proto3" json:"body,omitempty"`
+	Returns *Node      `protobuf:"bytes,4,opt,name=returns,proto3" json:"returns,omitempty"`
+}
+
+func (x *AsyncFunctionDef) Reset() {
+	*x = AsyncFunctionDef{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_python_ast_proto_msgTypes[8]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *AsyncFunctionDef) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AsyncFunctionDef) ProtoMessage() {}
+
+func (x *AsyncFunctionDef) ProtoReflect() protoreflect.Message {
+	mi := &file_python_ast_proto_msgTypes[8]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AsyncFunctionDef.ProtoReflect.Descriptor instead.
+func (*AsyncFunctionDef) Descriptor() ([]byte, []int) {
+	return file_python_ast_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *AsyncFunctionDef) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *AsyncFunctionDef) GetArgs() *Arguments {
+	if x != nil {
+		return x.Args
+	}
+	return nil
+}
+
+func (x *AsyncFunctionDef) GetBody() []*Node {
+	if x != nil {
+		return x.Body
+	}
+	return nil
+}
+
+func (x *AsyncFunctionDef) GetReturns() *Node {
+	if x != nil {
+		return x.Returns
+	}
+	return nil
+}
+
 type Assign struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Targets []*Name `protobuf:"bytes,1,rep,name=targets,proto3" json:"targets,omitempty"`
+	Targets []*Node `protobuf:"bytes,1,rep,name=targets,proto3" json:"targets,omitempty"`
 	Value   *Node   `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
 	Comment string  `protobuf:"bytes,3,opt,name=Comment,json=comment,proto3" json:"Comment,omitempty"`
 }
@@ -454,7 +969,7 @@ type Assign struct {
 func (x *Assign) Reset() {
 	*x = Assign{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_python_ast_proto_msgTypes[4]
+		mi := &file_python_ast_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -467,7 +982,7 @@ func (x *Assign) String() string {
 func (*Assign) ProtoMessage() {}
 
 func (x *Assign) ProtoReflect() protoreflect.Message {
-	mi := &file_python_ast_proto_msgTypes[4]
+	mi := &file_python_ast_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -480,10 +995,10 @@ func (x *Assign) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Assign.ProtoReflect.Descriptor instead.
 func (*Assign) Descriptor() ([]byte, []int) {
-	return file_python_ast_proto_rawDescGZIP(), []int{4}
+	return file_python_ast_proto_rawDescGZIP(), []int{9}
 }
 
-func (x *Assign) GetTargets() []*Name {
+func (x *Assign) GetTargets() []*Node {
 	if x != nil {
 		return x.Targets
 	}
@@ -509,13 +1024,15 @@ type Call struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Func *Node `protobuf:"bytes,1,opt,name=func,proto3" json:"func,omitempty"`
+	Func     *Node      `protobuf:"bytes,1,opt,name=func,proto3" json:"func,omitempty"`
+	Args     []*Node    `protobuf:"bytes,2,rep,name=args,proto3" json:"args,omitempty"`
+	Keywords []*Keyword `protobuf:"bytes,3,rep,name=keywords,proto3" json:"keywords,omitempty"`
 }
 
 func (x *Call) Reset() {
 	*x = Call{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_python_ast_proto_msgTypes[5]
+		mi := &file_python_ast_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -528,7 +1045,7 @@ func (x *Call) String() string {
 func (*Call) ProtoMessage() {}
 
 func (x *Call) ProtoReflect() protoreflect.Message {
-	mi := &file_python_ast_proto_msgTypes[5]
+	mi := &file_python_ast_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -541,12 +1058,26 @@ func (x *Call) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Call.ProtoReflect.Descriptor instead.
 func (*Call) Descriptor() ([]byte, []int) {
-	return file_python_ast_proto_rawDescGZIP(), []int{5}
+	return file_python_ast_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *Call) GetFunc() *Node {
 	if x != nil {
 		return x.Func
+	}
+	return nil
+}
+
+func (x *Call) GetArgs() []*Node {
+	if x != nil {
+		return x.Args
+	}
+	return nil
+}
+
+func (x *Call) GetKeywords() []*Keyword {
+	if x != nil {
+		return x.Keywords
 	}
 	return nil
 }
@@ -566,7 +1097,7 @@ type ClassDef struct {
 func (x *ClassDef) Reset() {
 	*x = ClassDef{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_python_ast_proto_msgTypes[6]
+		mi := &file_python_ast_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -579,7 +1110,7 @@ func (x *ClassDef) String() string {
 func (*ClassDef) ProtoMessage() {}
 
 func (x *ClassDef) ProtoReflect() protoreflect.Message {
-	mi := &file_python_ast_proto_msgTypes[6]
+	mi := &file_python_ast_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -592,7 +1123,7 @@ func (x *ClassDef) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ClassDef.ProtoReflect.Descriptor instead.
 func (*ClassDef) Descriptor() ([]byte, []int) {
-	return file_python_ast_proto_rawDescGZIP(), []int{6}
+	return file_python_ast_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *ClassDef) GetName() string {
@@ -643,7 +1174,7 @@ type Comment struct {
 func (x *Comment) Reset() {
 	*x = Comment{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_python_ast_proto_msgTypes[7]
+		mi := &file_python_ast_proto_msgTypes[12]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -656,7 +1187,7 @@ func (x *Comment) String() string {
 func (*Comment) ProtoMessage() {}
 
 func (x *Comment) ProtoReflect() protoreflect.Message {
-	mi := &file_python_ast_proto_msgTypes[7]
+	mi := &file_python_ast_proto_msgTypes[12]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -669,7 +1200,7 @@ func (x *Comment) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Comment.ProtoReflect.Descriptor instead.
 func (*Comment) Descriptor() ([]byte, []int) {
-	return file_python_ast_proto_rawDescGZIP(), []int{7}
+	return file_python_ast_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *Comment) GetText() string {
@@ -679,18 +1210,85 @@ func (x *Comment) GetText() string {
 	return ""
 }
 
+type Compare struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Left        *Node   `protobuf:"bytes,1,opt,name=left,proto3" json:"left,omitempty"`
+	Ops         []*Node `protobuf:"bytes,2,rep,name=ops,proto3" json:"ops,omitempty"`
+	Comparators []*Node `protobuf:"bytes,3,rep,name=comparators,proto3" json:"comparators,omitempty"`
+}
+
+func (x *Compare) Reset() {
+	*x = Compare{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_python_ast_proto_msgTypes[13]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Compare) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Compare) ProtoMessage() {}
+
+func (x *Compare) ProtoReflect() protoreflect.Message {
+	mi := &file_python_ast_proto_msgTypes[13]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Compare.ProtoReflect.Descriptor instead.
+func (*Compare) Descriptor() ([]byte, []int) {
+	return file_python_ast_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *Compare) GetLeft() *Node {
+	if x != nil {
+		return x.Left
+	}
+	return nil
+}
+
+func (x *Compare) GetOps() []*Node {
+	if x != nil {
+		return x.Ops
+	}
+	return nil
+}
+
+func (x *Compare) GetComparators() []*Node {
+	if x != nil {
+		return x.Comparators
+	}
+	return nil
+}
+
 type Constant struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Value string `protobuf:"bytes,1,opt,name=value,proto3" json:"value,omitempty"`
+	// Types that are assignable to Value:
+	//	*Constant_Str
+	//	*Constant_Int
+	//	*Constant_None
+	Value isConstant_Value `protobuf_oneof:"value"`
 }
 
 func (x *Constant) Reset() {
 	*x = Constant{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_python_ast_proto_msgTypes[8]
+		mi := &file_python_ast_proto_msgTypes[14]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -703,7 +1301,7 @@ func (x *Constant) String() string {
 func (*Constant) ProtoMessage() {}
 
 func (x *Constant) ProtoReflect() protoreflect.Message {
-	mi := &file_python_ast_proto_msgTypes[8]
+	mi := &file_python_ast_proto_msgTypes[14]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -716,14 +1314,112 @@ func (x *Constant) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Constant.ProtoReflect.Descriptor instead.
 func (*Constant) Descriptor() ([]byte, []int) {
-	return file_python_ast_proto_rawDescGZIP(), []int{8}
+	return file_python_ast_proto_rawDescGZIP(), []int{14}
 }
 
-func (x *Constant) GetValue() string {
-	if x != nil {
-		return x.Value
+func (m *Constant) GetValue() isConstant_Value {
+	if m != nil {
+		return m.Value
+	}
+	return nil
+}
+
+func (x *Constant) GetStr() string {
+	if x, ok := x.GetValue().(*Constant_Str); ok {
+		return x.Str
 	}
 	return ""
+}
+
+func (x *Constant) GetInt() int32 {
+	if x, ok := x.GetValue().(*Constant_Int); ok {
+		return x.Int
+	}
+	return 0
+}
+
+func (x *Constant) GetNone() bool {
+	if x, ok := x.GetValue().(*Constant_None); ok {
+		return x.None
+	}
+	return false
+}
+
+type isConstant_Value interface {
+	isConstant_Value()
+}
+
+type Constant_Str struct {
+	Str string `protobuf:"bytes,1,opt,name=str,json=string,proto3,oneof"`
+}
+
+type Constant_Int struct {
+	Int int32 `protobuf:"varint,2,opt,name=int,proto3,oneof"`
+}
+
+type Constant_None struct {
+	None bool `protobuf:"varint,3,opt,name=none,proto3,oneof"`
+}
+
+func (*Constant_Str) isConstant_Value() {}
+
+func (*Constant_Int) isConstant_Value() {}
+
+func (*Constant_None) isConstant_Value() {}
+
+type Dict struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Keys   []*Node `protobuf:"bytes,1,rep,name=keys,proto3" json:"keys,omitempty"`
+	Values []*Node `protobuf:"bytes,2,rep,name=values,proto3" json:"values,omitempty"`
+}
+
+func (x *Dict) Reset() {
+	*x = Dict{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_python_ast_proto_msgTypes[15]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Dict) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Dict) ProtoMessage() {}
+
+func (x *Dict) ProtoReflect() protoreflect.Message {
+	mi := &file_python_ast_proto_msgTypes[15]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Dict.ProtoReflect.Descriptor instead.
+func (*Dict) Descriptor() ([]byte, []int) {
+	return file_python_ast_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *Dict) GetKeys() []*Node {
+	if x != nil {
+		return x.Keys
+	}
+	return nil
+}
+
+func (x *Dict) GetValues() []*Node {
+	if x != nil {
+		return x.Values
+	}
+	return nil
 }
 
 type Expr struct {
@@ -737,7 +1433,7 @@ type Expr struct {
 func (x *Expr) Reset() {
 	*x = Expr{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_python_ast_proto_msgTypes[9]
+		mi := &file_python_ast_proto_msgTypes[16]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -750,7 +1446,7 @@ func (x *Expr) String() string {
 func (*Expr) ProtoMessage() {}
 
 func (x *Expr) ProtoReflect() protoreflect.Message {
-	mi := &file_python_ast_proto_msgTypes[9]
+	mi := &file_python_ast_proto_msgTypes[16]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -763,12 +1459,209 @@ func (x *Expr) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Expr.ProtoReflect.Descriptor instead.
 func (*Expr) Descriptor() ([]byte, []int) {
-	return file_python_ast_proto_rawDescGZIP(), []int{9}
+	return file_python_ast_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *Expr) GetValue() *Node {
 	if x != nil {
 		return x.Value
+	}
+	return nil
+}
+
+type For struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Target *Node   `protobuf:"bytes,1,opt,name=target,proto3" json:"target,omitempty"`
+	Iter   *Node   `protobuf:"bytes,2,opt,name=iter,proto3" json:"iter,omitempty"`
+	Body   []*Node `protobuf:"bytes,3,rep,name=body,proto3" json:"body,omitempty"`
+}
+
+func (x *For) Reset() {
+	*x = For{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_python_ast_proto_msgTypes[17]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *For) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*For) ProtoMessage() {}
+
+func (x *For) ProtoReflect() protoreflect.Message {
+	mi := &file_python_ast_proto_msgTypes[17]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use For.ProtoReflect.Descriptor instead.
+func (*For) Descriptor() ([]byte, []int) {
+	return file_python_ast_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *For) GetTarget() *Node {
+	if x != nil {
+		return x.Target
+	}
+	return nil
+}
+
+func (x *For) GetIter() *Node {
+	if x != nil {
+		return x.Iter
+	}
+	return nil
+}
+
+func (x *For) GetBody() []*Node {
+	if x != nil {
+		return x.Body
+	}
+	return nil
+}
+
+type FunctionDef struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Name    string     `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Args    *Arguments `protobuf:"bytes,2,opt,name=Args,json=args,proto3" json:"Args,omitempty"`
+	Body    []*Node    `protobuf:"bytes,3,rep,name=body,proto3" json:"body,omitempty"`
+	Returns *Node      `protobuf:"bytes,4,opt,name=returns,proto3" json:"returns,omitempty"`
+}
+
+func (x *FunctionDef) Reset() {
+	*x = FunctionDef{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_python_ast_proto_msgTypes[18]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *FunctionDef) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FunctionDef) ProtoMessage() {}
+
+func (x *FunctionDef) ProtoReflect() protoreflect.Message {
+	mi := &file_python_ast_proto_msgTypes[18]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FunctionDef.ProtoReflect.Descriptor instead.
+func (*FunctionDef) Descriptor() ([]byte, []int) {
+	return file_python_ast_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *FunctionDef) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *FunctionDef) GetArgs() *Arguments {
+	if x != nil {
+		return x.Args
+	}
+	return nil
+}
+
+func (x *FunctionDef) GetBody() []*Node {
+	if x != nil {
+		return x.Body
+	}
+	return nil
+}
+
+func (x *FunctionDef) GetReturns() *Node {
+	if x != nil {
+		return x.Returns
+	}
+	return nil
+}
+
+type If struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Test   *Node   `protobuf:"bytes,1,opt,name=test,proto3" json:"test,omitempty"`
+	Body   []*Node `protobuf:"bytes,2,rep,name=body,proto3" json:"body,omitempty"`
+	OrElse []*Node `protobuf:"bytes,3,rep,name=or_else,json=orelse,proto3" json:"or_else,omitempty"`
+}
+
+func (x *If) Reset() {
+	*x = If{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_python_ast_proto_msgTypes[19]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *If) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*If) ProtoMessage() {}
+
+func (x *If) ProtoReflect() protoreflect.Message {
+	mi := &file_python_ast_proto_msgTypes[19]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use If.ProtoReflect.Descriptor instead.
+func (*If) Descriptor() ([]byte, []int) {
+	return file_python_ast_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *If) GetTest() *Node {
+	if x != nil {
+		return x.Test
+	}
+	return nil
+}
+
+func (x *If) GetBody() []*Node {
+	if x != nil {
+		return x.Body
+	}
+	return nil
+}
+
+func (x *If) GetOrElse() []*Node {
+	if x != nil {
+		return x.OrElse
 	}
 	return nil
 }
@@ -784,7 +1677,7 @@ type Import struct {
 func (x *Import) Reset() {
 	*x = Import{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_python_ast_proto_msgTypes[10]
+		mi := &file_python_ast_proto_msgTypes[20]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -797,7 +1690,7 @@ func (x *Import) String() string {
 func (*Import) ProtoMessage() {}
 
 func (x *Import) ProtoReflect() protoreflect.Message {
-	mi := &file_python_ast_proto_msgTypes[10]
+	mi := &file_python_ast_proto_msgTypes[20]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -810,7 +1703,7 @@ func (x *Import) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Import.ProtoReflect.Descriptor instead.
 func (*Import) Descriptor() ([]byte, []int) {
-	return file_python_ast_proto_rawDescGZIP(), []int{10}
+	return file_python_ast_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *Import) GetNames() []*Node {
@@ -833,7 +1726,7 @@ type ImportFrom struct {
 func (x *ImportFrom) Reset() {
 	*x = ImportFrom{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_python_ast_proto_msgTypes[11]
+		mi := &file_python_ast_proto_msgTypes[21]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -846,7 +1739,7 @@ func (x *ImportFrom) String() string {
 func (*ImportFrom) ProtoMessage() {}
 
 func (x *ImportFrom) ProtoReflect() protoreflect.Message {
-	mi := &file_python_ast_proto_msgTypes[11]
+	mi := &file_python_ast_proto_msgTypes[21]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -859,7 +1752,7 @@ func (x *ImportFrom) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ImportFrom.ProtoReflect.Descriptor instead.
 func (*ImportFrom) Descriptor() ([]byte, []int) {
-	return file_python_ast_proto_rawDescGZIP(), []int{11}
+	return file_python_ast_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *ImportFrom) GetModule() string {
@@ -883,6 +1776,158 @@ func (x *ImportFrom) GetLevel() int32 {
 	return 0
 }
 
+// Imports are always put at the top of the file, just after any module
+// comments and docstrings, and before module globals and constants.
+//
+// Imports should be grouped in the following order:
+//
+//     Standard library imports.
+//     Related third party imports.
+//     Local application/library specific imports.
+//
+// You should put a blank line between each group of imports.
+//
+// https://www.python.org/dev/peps/pep-0008/#imports
+type ImportGroup struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Imports []*Node `protobuf:"bytes,1,rep,name=imports,proto3" json:"imports,omitempty"`
+}
+
+func (x *ImportGroup) Reset() {
+	*x = ImportGroup{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_python_ast_proto_msgTypes[22]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ImportGroup) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ImportGroup) ProtoMessage() {}
+
+func (x *ImportGroup) ProtoReflect() protoreflect.Message {
+	mi := &file_python_ast_proto_msgTypes[22]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ImportGroup.ProtoReflect.Descriptor instead.
+func (*ImportGroup) Descriptor() ([]byte, []int) {
+	return file_python_ast_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *ImportGroup) GetImports() []*Node {
+	if x != nil {
+		return x.Imports
+	}
+	return nil
+}
+
+type Is struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *Is) Reset() {
+	*x = Is{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_python_ast_proto_msgTypes[23]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Is) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Is) ProtoMessage() {}
+
+func (x *Is) ProtoReflect() protoreflect.Message {
+	mi := &file_python_ast_proto_msgTypes[23]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Is.ProtoReflect.Descriptor instead.
+func (*Is) Descriptor() ([]byte, []int) {
+	return file_python_ast_proto_rawDescGZIP(), []int{23}
+}
+
+type Keyword struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Arg   string `protobuf:"bytes,1,opt,name=arg,proto3" json:"arg,omitempty"`
+	Value *Node  `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
+}
+
+func (x *Keyword) Reset() {
+	*x = Keyword{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_python_ast_proto_msgTypes[24]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Keyword) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Keyword) ProtoMessage() {}
+
+func (x *Keyword) ProtoReflect() protoreflect.Message {
+	mi := &file_python_ast_proto_msgTypes[24]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Keyword.ProtoReflect.Descriptor instead.
+func (*Keyword) Descriptor() ([]byte, []int) {
+	return file_python_ast_proto_rawDescGZIP(), []int{24}
+}
+
+func (x *Keyword) GetArg() string {
+	if x != nil {
+		return x.Arg
+	}
+	return ""
+}
+
+func (x *Keyword) GetValue() *Node {
+	if x != nil {
+		return x.Value
+	}
+	return nil
+}
+
 type Module struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -894,7 +1939,7 @@ type Module struct {
 func (x *Module) Reset() {
 	*x = Module{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_python_ast_proto_msgTypes[12]
+		mi := &file_python_ast_proto_msgTypes[25]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -907,7 +1952,7 @@ func (x *Module) String() string {
 func (*Module) ProtoMessage() {}
 
 func (x *Module) ProtoReflect() protoreflect.Message {
-	mi := &file_python_ast_proto_msgTypes[12]
+	mi := &file_python_ast_proto_msgTypes[25]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -920,7 +1965,7 @@ func (x *Module) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Module.ProtoReflect.Descriptor instead.
 func (*Module) Descriptor() ([]byte, []int) {
-	return file_python_ast_proto_rawDescGZIP(), []int{12}
+	return file_python_ast_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *Module) GetBody() []*Node {
@@ -941,7 +1986,7 @@ type Name struct {
 func (x *Name) Reset() {
 	*x = Name{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_python_ast_proto_msgTypes[13]
+		mi := &file_python_ast_proto_msgTypes[26]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -954,7 +1999,7 @@ func (x *Name) String() string {
 func (*Name) ProtoMessage() {}
 
 func (x *Name) ProtoReflect() protoreflect.Message {
-	mi := &file_python_ast_proto_msgTypes[13]
+	mi := &file_python_ast_proto_msgTypes[26]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -967,7 +2012,7 @@ func (x *Name) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Name.ProtoReflect.Descriptor instead.
 func (*Name) Descriptor() ([]byte, []int) {
-	return file_python_ast_proto_rawDescGZIP(), []int{13}
+	return file_python_ast_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *Name) GetId() string {
@@ -975,6 +2020,91 @@ func (x *Name) GetId() string {
 		return x.Id
 	}
 	return ""
+}
+
+type Pass struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *Pass) Reset() {
+	*x = Pass{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_python_ast_proto_msgTypes[27]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Pass) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Pass) ProtoMessage() {}
+
+func (x *Pass) ProtoReflect() protoreflect.Message {
+	mi := &file_python_ast_proto_msgTypes[27]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Pass.ProtoReflect.Descriptor instead.
+func (*Pass) Descriptor() ([]byte, []int) {
+	return file_python_ast_proto_rawDescGZIP(), []int{27}
+}
+
+type Return struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Value *Node `protobuf:"bytes,1,opt,name=value,proto3" json:"value,omitempty"`
+}
+
+func (x *Return) Reset() {
+	*x = Return{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_python_ast_proto_msgTypes[28]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Return) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Return) ProtoMessage() {}
+
+func (x *Return) ProtoReflect() protoreflect.Message {
+	mi := &file_python_ast_proto_msgTypes[28]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Return.ProtoReflect.Descriptor instead.
+func (*Return) Descriptor() ([]byte, []int) {
+	return file_python_ast_proto_rawDescGZIP(), []int{28}
+}
+
+func (x *Return) GetValue() *Node {
+	if x != nil {
+		return x.Value
+	}
+	return nil
 }
 
 type Subscript struct {
@@ -989,7 +2119,7 @@ type Subscript struct {
 func (x *Subscript) Reset() {
 	*x = Subscript{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_python_ast_proto_msgTypes[14]
+		mi := &file_python_ast_proto_msgTypes[29]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1002,7 +2132,7 @@ func (x *Subscript) String() string {
 func (*Subscript) ProtoMessage() {}
 
 func (x *Subscript) ProtoReflect() protoreflect.Message {
-	mi := &file_python_ast_proto_msgTypes[14]
+	mi := &file_python_ast_proto_msgTypes[29]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1015,7 +2145,7 @@ func (x *Subscript) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Subscript.ProtoReflect.Descriptor instead.
 func (*Subscript) Descriptor() ([]byte, []int) {
-	return file_python_ast_proto_rawDescGZIP(), []int{14}
+	return file_python_ast_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *Subscript) GetValue() *Name {
@@ -1032,11 +2162,58 @@ func (x *Subscript) GetSlice() *Node {
 	return nil
 }
 
+type Yield struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Value *Node `protobuf:"bytes,1,opt,name=value,proto3" json:"value,omitempty"`
+}
+
+func (x *Yield) Reset() {
+	*x = Yield{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_python_ast_proto_msgTypes[30]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Yield) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Yield) ProtoMessage() {}
+
+func (x *Yield) ProtoReflect() protoreflect.Message {
+	mi := &file_python_ast_proto_msgTypes[30]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Yield.ProtoReflect.Descriptor instead.
+func (*Yield) Descriptor() ([]byte, []int) {
+	return file_python_ast_proto_rawDescGZIP(), []int{30}
+}
+
+func (x *Yield) GetValue() *Node {
+	if x != nil {
+		return x.Value
+	}
+	return nil
+}
+
 var File_python_ast_proto protoreflect.FileDescriptor
 
 var file_python_ast_proto_rawDesc = []byte{
 	0x0a, 0x10, 0x70, 0x79, 0x74, 0x68, 0x6f, 0x6e, 0x2f, 0x61, 0x73, 0x74, 0x2e, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x12, 0x03, 0x61, 0x73, 0x74, 0x22, 0xd4, 0x04, 0x0a, 0x04, 0x4e, 0x6f, 0x64, 0x65,
+	0x74, 0x6f, 0x12, 0x03, 0x61, 0x73, 0x74, 0x22, 0xde, 0x09, 0x0a, 0x04, 0x4e, 0x6f, 0x64, 0x65,
 	0x12, 0x2c, 0x0a, 0x09, 0x63, 0x6c, 0x61, 0x73, 0x73, 0x5f, 0x64, 0x65, 0x66, 0x18, 0x01, 0x20,
 	0x01, 0x28, 0x0b, 0x32, 0x0d, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x43, 0x6c, 0x61, 0x73, 0x73, 0x44,
 	0x65, 0x66, 0x48, 0x00, 0x52, 0x08, 0x43, 0x6c, 0x61, 0x73, 0x73, 0x44, 0x65, 0x66, 0x12, 0x25,
@@ -1073,71 +2250,194 @@ var file_python_ast_proto_rawDesc = []byte{
 	0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x45, 0x78, 0x70, 0x72, 0x48, 0x00, 0x52,
 	0x04, 0x45, 0x78, 0x70, 0x72, 0x12, 0x1f, 0x0a, 0x04, 0x63, 0x61, 0x6c, 0x6c, 0x18, 0x0e, 0x20,
 	0x01, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x43, 0x61, 0x6c, 0x6c, 0x48, 0x00,
-	0x52, 0x04, 0x43, 0x61, 0x6c, 0x6c, 0x42, 0x06, 0x0a, 0x04, 0x6e, 0x6f, 0x64, 0x65, 0x22, 0x1b,
-	0x0a, 0x05, 0x41, 0x6c, 0x69, 0x61, 0x73, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0x40, 0x0a, 0x09, 0x41,
-	0x74, 0x74, 0x72, 0x69, 0x62, 0x75, 0x74, 0x65, 0x12, 0x1f, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75,
-	0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e, 0x61,
-	0x6d, 0x65, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x61, 0x74, 0x74,
-	0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x61, 0x74, 0x74, 0x72, 0x22, 0x8b, 0x01,
-	0x0a, 0x09, 0x41, 0x6e, 0x6e, 0x41, 0x73, 0x73, 0x69, 0x67, 0x6e, 0x12, 0x21, 0x0a, 0x06, 0x74,
-	0x61, 0x72, 0x67, 0x65, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73,
-	0x74, 0x2e, 0x4e, 0x61, 0x6d, 0x65, 0x52, 0x06, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x12, 0x29,
-	0x0a, 0x0a, 0x61, 0x6e, 0x6e, 0x6f, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x02, 0x20, 0x01,
-	0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x0a, 0x61,
-	0x6e, 0x6e, 0x6f, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x69, 0x6d,
-	0x70, 0x6c, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x05, 0x52, 0x06, 0x73, 0x69, 0x6d, 0x70, 0x6c,
-	0x65, 0x12, 0x18, 0x0a, 0x07, 0x43, 0x6f, 0x6d, 0x6d, 0x65, 0x6e, 0x74, 0x18, 0x04, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x07, 0x63, 0x6f, 0x6d, 0x6d, 0x65, 0x6e, 0x74, 0x22, 0x68, 0x0a, 0x06, 0x41,
-	0x73, 0x73, 0x69, 0x67, 0x6e, 0x12, 0x23, 0x0a, 0x07, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x73,
-	0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e, 0x61, 0x6d,
-	0x65, 0x52, 0x07, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x73, 0x12, 0x1f, 0x0a, 0x05, 0x76, 0x61,
-	0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e,
-	0x4e, 0x6f, 0x64, 0x65, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x43,
-	0x6f, 0x6d, 0x6d, 0x65, 0x6e, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x63, 0x6f,
-	0x6d, 0x6d, 0x65, 0x6e, 0x74, 0x22, 0x25, 0x0a, 0x04, 0x43, 0x61, 0x6c, 0x6c, 0x12, 0x1d, 0x0a,
-	0x04, 0x66, 0x75, 0x6e, 0x63, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73,
-	0x74, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x04, 0x66, 0x75, 0x6e, 0x63, 0x22, 0xb8, 0x01, 0x0a,
-	0x08, 0x43, 0x6c, 0x61, 0x73, 0x73, 0x44, 0x65, 0x66, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d,
-	0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x1f, 0x0a,
-	0x05, 0x62, 0x61, 0x73, 0x65, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61,
-	0x73, 0x74, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x05, 0x62, 0x61, 0x73, 0x65, 0x73, 0x12, 0x25,
-	0x0a, 0x08, 0x6b, 0x65, 0x79, 0x77, 0x6f, 0x72, 0x64, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x0b,
-	0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x08, 0x6b, 0x65, 0x79,
-	0x77, 0x6f, 0x72, 0x64, 0x73, 0x12, 0x1d, 0x0a, 0x04, 0x62, 0x6f, 0x64, 0x79, 0x18, 0x04, 0x20,
-	0x03, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x04,
-	0x62, 0x6f, 0x64, 0x79, 0x12, 0x31, 0x0a, 0x0e, 0x64, 0x65, 0x63, 0x6f, 0x72, 0x61, 0x74, 0x6f,
-	0x72, 0x5f, 0x6c, 0x69, 0x73, 0x74, 0x18, 0x05, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61,
-	0x73, 0x74, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x0e, 0x64, 0x65, 0x63, 0x6f, 0x72, 0x61, 0x74,
-	0x6f, 0x72, 0x5f, 0x6c, 0x69, 0x73, 0x74, 0x22, 0x1d, 0x0a, 0x07, 0x43, 0x6f, 0x6d, 0x6d, 0x65,
-	0x6e, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x74, 0x65, 0x78, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
-	0x52, 0x04, 0x74, 0x65, 0x78, 0x74, 0x22, 0x20, 0x0a, 0x08, 0x43, 0x6f, 0x6e, 0x73, 0x74, 0x61,
-	0x6e, 0x74, 0x12, 0x14, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x22, 0x27, 0x0a, 0x04, 0x45, 0x78, 0x70, 0x72,
-	0x12, 0x1f, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32,
-	0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75,
-	0x65, 0x22, 0x29, 0x0a, 0x06, 0x49, 0x6d, 0x70, 0x6f, 0x72, 0x74, 0x12, 0x1f, 0x0a, 0x05, 0x6e,
-	0x61, 0x6d, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73, 0x74,
-	0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x05, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x22, 0x5b, 0x0a, 0x0a,
-	0x49, 0x6d, 0x70, 0x6f, 0x72, 0x74, 0x46, 0x72, 0x6f, 0x6d, 0x12, 0x16, 0x0a, 0x06, 0x6d, 0x6f,
-	0x64, 0x75, 0x6c, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x6d, 0x6f, 0x64, 0x75,
-	0x6c, 0x65, 0x12, 0x1f, 0x0a, 0x05, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28,
-	0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x05, 0x6e, 0x61,
-	0x6d, 0x65, 0x73, 0x12, 0x14, 0x0a, 0x05, 0x6c, 0x65, 0x76, 0x65, 0x6c, 0x18, 0x03, 0x20, 0x01,
-	0x28, 0x05, 0x52, 0x05, 0x6c, 0x65, 0x76, 0x65, 0x6c, 0x22, 0x27, 0x0a, 0x06, 0x4d, 0x6f, 0x64,
-	0x75, 0x6c, 0x65, 0x12, 0x1d, 0x0a, 0x04, 0x62, 0x6f, 0x64, 0x79, 0x18, 0x01, 0x20, 0x03, 0x28,
-	0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x04, 0x62, 0x6f,
-	0x64, 0x79, 0x22, 0x16, 0x0a, 0x04, 0x4e, 0x61, 0x6d, 0x65, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64,
-	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x22, 0x4d, 0x0a, 0x09, 0x53, 0x75,
-	0x62, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x12, 0x1f, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65,
-	0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e, 0x61, 0x6d,
-	0x65, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x12, 0x1f, 0x0a, 0x05, 0x73, 0x6c, 0x69, 0x63,
-	0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e, 0x6f,
-	0x64, 0x65, 0x52, 0x05, 0x73, 0x6c, 0x69, 0x63, 0x65, 0x42, 0x30, 0x5a, 0x2e, 0x67, 0x69, 0x74,
-	0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x6b, 0x79, 0x6c, 0x65, 0x63, 0x6f, 0x6e, 0x72,
-	0x6f, 0x79, 0x2f, 0x73, 0x71, 0x6c, 0x63, 0x2f, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c,
-	0x2f, 0x70, 0x79, 0x74, 0x68, 0x6f, 0x6e, 0x2f, 0x61, 0x73, 0x74, 0x62, 0x06, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x33,
+	0x52, 0x04, 0x43, 0x61, 0x6c, 0x6c, 0x12, 0x35, 0x0a, 0x0c, 0x66, 0x75, 0x6e, 0x63, 0x74, 0x69,
+	0x6f, 0x6e, 0x5f, 0x64, 0x65, 0x66, 0x18, 0x0f, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x10, 0x2e, 0x61,
+	0x73, 0x74, 0x2e, 0x46, 0x75, 0x6e, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x44, 0x65, 0x66, 0x48, 0x00,
+	0x52, 0x0b, 0x46, 0x75, 0x6e, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x44, 0x65, 0x66, 0x12, 0x1c, 0x0a,
+	0x03, 0x61, 0x72, 0x67, 0x18, 0x10, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x08, 0x2e, 0x61, 0x73, 0x74,
+	0x2e, 0x41, 0x72, 0x67, 0x48, 0x00, 0x52, 0x03, 0x41, 0x72, 0x67, 0x12, 0x2e, 0x0a, 0x09, 0x61,
+	0x72, 0x67, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x73, 0x18, 0x11, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0e,
+	0x2e, 0x61, 0x73, 0x74, 0x2e, 0x41, 0x72, 0x67, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x73, 0x48, 0x00,
+	0x52, 0x09, 0x41, 0x72, 0x67, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x73, 0x12, 0x45, 0x0a, 0x12, 0x61,
+	0x73, 0x79, 0x6e, 0x63, 0x5f, 0x66, 0x75, 0x6e, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x64, 0x65,
+	0x66, 0x18, 0x12, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x15, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x41, 0x73,
+	0x79, 0x6e, 0x63, 0x46, 0x75, 0x6e, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x44, 0x65, 0x66, 0x48, 0x00,
+	0x52, 0x10, 0x41, 0x73, 0x79, 0x6e, 0x63, 0x46, 0x75, 0x6e, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x44,
+	0x65, 0x66, 0x12, 0x1f, 0x0a, 0x04, 0x70, 0x61, 0x73, 0x73, 0x18, 0x13, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x50, 0x61, 0x73, 0x73, 0x48, 0x00, 0x52, 0x04, 0x50,
+	0x61, 0x73, 0x73, 0x12, 0x1f, 0x0a, 0x04, 0x64, 0x69, 0x63, 0x74, 0x18, 0x14, 0x20, 0x01, 0x28,
+	0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x44, 0x69, 0x63, 0x74, 0x48, 0x00, 0x52, 0x04,
+	0x44, 0x69, 0x63, 0x74, 0x12, 0x19, 0x0a, 0x02, 0x69, 0x66, 0x18, 0x15, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x07, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x49, 0x66, 0x48, 0x00, 0x52, 0x02, 0x49, 0x66, 0x12,
+	0x28, 0x0a, 0x07, 0x63, 0x6f, 0x6d, 0x70, 0x61, 0x72, 0x65, 0x18, 0x16, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x0c, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x43, 0x6f, 0x6d, 0x70, 0x61, 0x72, 0x65, 0x48, 0x00,
+	0x52, 0x07, 0x43, 0x6f, 0x6d, 0x70, 0x61, 0x72, 0x65, 0x12, 0x25, 0x0a, 0x06, 0x72, 0x65, 0x74,
+	0x75, 0x72, 0x6e, 0x18, 0x17, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0b, 0x2e, 0x61, 0x73, 0x74, 0x2e,
+	0x52, 0x65, 0x74, 0x75, 0x72, 0x6e, 0x48, 0x00, 0x52, 0x06, 0x52, 0x65, 0x74, 0x75, 0x72, 0x6e,
+	0x12, 0x19, 0x0a, 0x02, 0x69, 0x73, 0x18, 0x18, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x07, 0x2e, 0x61,
+	0x73, 0x74, 0x2e, 0x49, 0x73, 0x48, 0x00, 0x52, 0x02, 0x49, 0x73, 0x12, 0x28, 0x0a, 0x07, 0x6b,
+	0x65, 0x79, 0x77, 0x6f, 0x72, 0x64, 0x18, 0x19, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0c, 0x2e, 0x61,
+	0x73, 0x74, 0x2e, 0x4b, 0x65, 0x79, 0x77, 0x6f, 0x72, 0x64, 0x48, 0x00, 0x52, 0x07, 0x4b, 0x65,
+	0x79, 0x77, 0x6f, 0x72, 0x64, 0x12, 0x22, 0x0a, 0x05, 0x79, 0x69, 0x65, 0x6c, 0x64, 0x18, 0x1a,
+	0x20, 0x01, 0x28, 0x0b, 0x32, 0x0a, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x59, 0x69, 0x65, 0x6c, 0x64,
+	0x48, 0x00, 0x52, 0x05, 0x59, 0x69, 0x65, 0x6c, 0x64, 0x12, 0x1c, 0x0a, 0x03, 0x66, 0x6f, 0x72,
+	0x18, 0x1b, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x08, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x46, 0x6f, 0x72,
+	0x48, 0x00, 0x52, 0x03, 0x46, 0x6f, 0x72, 0x12, 0x22, 0x0a, 0x05, 0x61, 0x77, 0x61, 0x69, 0x74,
+	0x18, 0x1c, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0a, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x41, 0x77, 0x61,
+	0x69, 0x74, 0x48, 0x00, 0x52, 0x05, 0x41, 0x77, 0x61, 0x69, 0x74, 0x12, 0x2c, 0x0a, 0x09, 0x61,
+	0x73, 0x79, 0x6e, 0x63, 0x5f, 0x66, 0x6f, 0x72, 0x18, 0x1d, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0d,
+	0x2e, 0x61, 0x73, 0x74, 0x2e, 0x41, 0x73, 0x79, 0x6e, 0x63, 0x46, 0x6f, 0x72, 0x48, 0x00, 0x52,
+	0x08, 0x41, 0x73, 0x79, 0x6e, 0x63, 0x46, 0x6f, 0x72, 0x12, 0x35, 0x0a, 0x0c, 0x69, 0x6d, 0x70,
+	0x6f, 0x72, 0x74, 0x5f, 0x67, 0x72, 0x6f, 0x75, 0x70, 0x18, 0x1e, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x10, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x49, 0x6d, 0x70, 0x6f, 0x72, 0x74, 0x47, 0x72, 0x6f, 0x75,
+	0x70, 0x48, 0x00, 0x52, 0x0b, 0x49, 0x6d, 0x70, 0x6f, 0x72, 0x74, 0x47, 0x72, 0x6f, 0x75, 0x70,
+	0x42, 0x06, 0x0a, 0x04, 0x6e, 0x6f, 0x64, 0x65, 0x22, 0x1b, 0x0a, 0x05, 0x41, 0x6c, 0x69, 0x61,
+	0x73, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x04, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0x28, 0x0a, 0x05, 0x41, 0x77, 0x61, 0x69, 0x74, 0x12, 0x1f,
+	0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x09, 0x2e,
+	0x61, 0x73, 0x74, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x22,
+	0x40, 0x0a, 0x09, 0x41, 0x74, 0x74, 0x72, 0x69, 0x62, 0x75, 0x74, 0x65, 0x12, 0x1f, 0x0a, 0x05,
+	0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73,
+	0x74, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x12, 0x12, 0x0a,
+	0x04, 0x61, 0x74, 0x74, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x61, 0x74, 0x74,
+	0x72, 0x22, 0x8b, 0x01, 0x0a, 0x09, 0x41, 0x6e, 0x6e, 0x41, 0x73, 0x73, 0x69, 0x67, 0x6e, 0x12,
+	0x21, 0x0a, 0x06, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e, 0x61, 0x6d, 0x65, 0x52, 0x06, 0x74, 0x61, 0x72, 0x67,
+	0x65, 0x74, 0x12, 0x29, 0x0a, 0x0a, 0x61, 0x6e, 0x6e, 0x6f, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e, 0x6f, 0x64,
+	0x65, 0x52, 0x0a, 0x61, 0x6e, 0x6e, 0x6f, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x16, 0x0a,
+	0x06, 0x73, 0x69, 0x6d, 0x70, 0x6c, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x05, 0x52, 0x06, 0x73,
+	0x69, 0x6d, 0x70, 0x6c, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x43, 0x6f, 0x6d, 0x6d, 0x65, 0x6e, 0x74,
+	0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x63, 0x6f, 0x6d, 0x6d, 0x65, 0x6e, 0x74, 0x22,
+	0x42, 0x0a, 0x03, 0x41, 0x72, 0x67, 0x12, 0x10, 0x0a, 0x03, 0x61, 0x72, 0x67, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x03, 0x61, 0x72, 0x67, 0x12, 0x29, 0x0a, 0x0a, 0x61, 0x6e, 0x6e, 0x6f,
+	0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61,
+	0x73, 0x74, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x0a, 0x61, 0x6e, 0x6e, 0x6f, 0x74, 0x61, 0x74,
+	0x69, 0x6f, 0x6e, 0x22, 0x55, 0x0a, 0x09, 0x41, 0x72, 0x67, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x73,
+	0x12, 0x1c, 0x0a, 0x04, 0x61, 0x72, 0x67, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x08,
+	0x2e, 0x61, 0x73, 0x74, 0x2e, 0x41, 0x72, 0x67, 0x52, 0x04, 0x61, 0x72, 0x67, 0x73, 0x12, 0x2a,
+	0x0a, 0x0c, 0x6b, 0x77, 0x5f, 0x6f, 0x6e, 0x6c, 0x79, 0x5f, 0x61, 0x72, 0x67, 0x73, 0x18, 0x02,
+	0x20, 0x03, 0x28, 0x0b, 0x32, 0x08, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x41, 0x72, 0x67, 0x52, 0x0a,
+	0x6b, 0x77, 0x6f, 0x6e, 0x6c, 0x79, 0x61, 0x72, 0x67, 0x73, 0x22, 0x6b, 0x0a, 0x08, 0x41, 0x73,
+	0x79, 0x6e, 0x63, 0x46, 0x6f, 0x72, 0x12, 0x21, 0x0a, 0x06, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e, 0x6f, 0x64,
+	0x65, 0x52, 0x06, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x12, 0x1d, 0x0a, 0x04, 0x69, 0x74, 0x65,
+	0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e, 0x6f,
+	0x64, 0x65, 0x52, 0x04, 0x69, 0x74, 0x65, 0x72, 0x12, 0x1d, 0x0a, 0x04, 0x62, 0x6f, 0x64, 0x79,
+	0x18, 0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e, 0x6f, 0x64,
+	0x65, 0x52, 0x04, 0x62, 0x6f, 0x64, 0x79, 0x22, 0x8e, 0x01, 0x0a, 0x10, 0x41, 0x73, 0x79, 0x6e,
+	0x63, 0x46, 0x75, 0x6e, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x44, 0x65, 0x66, 0x12, 0x12, 0x0a, 0x04,
+	0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65,
+	0x12, 0x22, 0x0a, 0x04, 0x41, 0x72, 0x67, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0e,
+	0x2e, 0x61, 0x73, 0x74, 0x2e, 0x41, 0x72, 0x67, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x73, 0x52, 0x04,
+	0x61, 0x72, 0x67, 0x73, 0x12, 0x1d, 0x0a, 0x04, 0x62, 0x6f, 0x64, 0x79, 0x18, 0x03, 0x20, 0x03,
+	0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x04, 0x62,
+	0x6f, 0x64, 0x79, 0x12, 0x23, 0x0a, 0x07, 0x72, 0x65, 0x74, 0x75, 0x72, 0x6e, 0x73, 0x18, 0x04,
+	0x20, 0x01, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52,
+	0x07, 0x72, 0x65, 0x74, 0x75, 0x72, 0x6e, 0x73, 0x22, 0x68, 0x0a, 0x06, 0x41, 0x73, 0x73, 0x69,
+	0x67, 0x6e, 0x12, 0x23, 0x0a, 0x07, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x73, 0x18, 0x01, 0x20,
+	0x03, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x07,
+	0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x73, 0x12, 0x1f, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e, 0x6f, 0x64,
+	0x65, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x43, 0x6f, 0x6d, 0x6d,
+	0x65, 0x6e, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x63, 0x6f, 0x6d, 0x6d, 0x65,
+	0x6e, 0x74, 0x22, 0x6e, 0x0a, 0x04, 0x43, 0x61, 0x6c, 0x6c, 0x12, 0x1d, 0x0a, 0x04, 0x66, 0x75,
+	0x6e, 0x63, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e,
+	0x6f, 0x64, 0x65, 0x52, 0x04, 0x66, 0x75, 0x6e, 0x63, 0x12, 0x1d, 0x0a, 0x04, 0x61, 0x72, 0x67,
+	0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e, 0x6f,
+	0x64, 0x65, 0x52, 0x04, 0x61, 0x72, 0x67, 0x73, 0x12, 0x28, 0x0a, 0x08, 0x6b, 0x65, 0x79, 0x77,
+	0x6f, 0x72, 0x64, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x0c, 0x2e, 0x61, 0x73, 0x74,
+	0x2e, 0x4b, 0x65, 0x79, 0x77, 0x6f, 0x72, 0x64, 0x52, 0x08, 0x6b, 0x65, 0x79, 0x77, 0x6f, 0x72,
+	0x64, 0x73, 0x22, 0xb8, 0x01, 0x0a, 0x08, 0x43, 0x6c, 0x61, 0x73, 0x73, 0x44, 0x65, 0x66, 0x12,
+	0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e,
+	0x61, 0x6d, 0x65, 0x12, 0x1f, 0x0a, 0x05, 0x62, 0x61, 0x73, 0x65, 0x73, 0x18, 0x02, 0x20, 0x03,
+	0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x05, 0x62,
+	0x61, 0x73, 0x65, 0x73, 0x12, 0x25, 0x0a, 0x08, 0x6b, 0x65, 0x79, 0x77, 0x6f, 0x72, 0x64, 0x73,
+	0x18, 0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e, 0x6f, 0x64,
+	0x65, 0x52, 0x08, 0x6b, 0x65, 0x79, 0x77, 0x6f, 0x72, 0x64, 0x73, 0x12, 0x1d, 0x0a, 0x04, 0x62,
+	0x6f, 0x64, 0x79, 0x18, 0x04, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e,
+	0x4e, 0x6f, 0x64, 0x65, 0x52, 0x04, 0x62, 0x6f, 0x64, 0x79, 0x12, 0x31, 0x0a, 0x0e, 0x64, 0x65,
+	0x63, 0x6f, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x5f, 0x6c, 0x69, 0x73, 0x74, 0x18, 0x05, 0x20, 0x03,
+	0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x0e, 0x64,
+	0x65, 0x63, 0x6f, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x5f, 0x6c, 0x69, 0x73, 0x74, 0x22, 0x1d, 0x0a,
+	0x07, 0x43, 0x6f, 0x6d, 0x6d, 0x65, 0x6e, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x74, 0x65, 0x78, 0x74,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x74, 0x65, 0x78, 0x74, 0x22, 0x72, 0x0a, 0x07,
+	0x43, 0x6f, 0x6d, 0x70, 0x61, 0x72, 0x65, 0x12, 0x1d, 0x0a, 0x04, 0x6c, 0x65, 0x66, 0x74, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e, 0x6f, 0x64, 0x65,
+	0x52, 0x04, 0x6c, 0x65, 0x66, 0x74, 0x12, 0x1b, 0x0a, 0x03, 0x6f, 0x70, 0x73, 0x18, 0x02, 0x20,
+	0x03, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x03,
+	0x6f, 0x70, 0x73, 0x12, 0x2b, 0x0a, 0x0b, 0x63, 0x6f, 0x6d, 0x70, 0x61, 0x72, 0x61, 0x74, 0x6f,
+	0x72, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e,
+	0x6f, 0x64, 0x65, 0x52, 0x0b, 0x63, 0x6f, 0x6d, 0x70, 0x61, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x73,
+	0x22, 0x54, 0x0a, 0x08, 0x43, 0x6f, 0x6e, 0x73, 0x74, 0x61, 0x6e, 0x74, 0x12, 0x15, 0x0a, 0x03,
+	0x73, 0x74, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x48, 0x00, 0x52, 0x06, 0x73, 0x74, 0x72,
+	0x69, 0x6e, 0x67, 0x12, 0x12, 0x0a, 0x03, 0x69, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x05,
+	0x48, 0x00, 0x52, 0x03, 0x69, 0x6e, 0x74, 0x12, 0x14, 0x0a, 0x04, 0x6e, 0x6f, 0x6e, 0x65, 0x18,
+	0x03, 0x20, 0x01, 0x28, 0x08, 0x48, 0x00, 0x52, 0x04, 0x6e, 0x6f, 0x6e, 0x65, 0x42, 0x07, 0x0a,
+	0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x22, 0x48, 0x0a, 0x04, 0x44, 0x69, 0x63, 0x74, 0x12, 0x1d,
+	0x0a, 0x04, 0x6b, 0x65, 0x79, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61,
+	0x73, 0x74, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x04, 0x6b, 0x65, 0x79, 0x73, 0x12, 0x21, 0x0a,
+	0x06, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x09, 0x2e,
+	0x61, 0x73, 0x74, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x06, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x73,
+	0x22, 0x27, 0x0a, 0x04, 0x45, 0x78, 0x70, 0x72, 0x12, 0x1f, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75,
+	0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e, 0x6f,
+	0x64, 0x65, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x22, 0x66, 0x0a, 0x03, 0x46, 0x6f, 0x72,
+	0x12, 0x21, 0x0a, 0x06, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x06, 0x74, 0x61, 0x72,
+	0x67, 0x65, 0x74, 0x12, 0x1d, 0x0a, 0x04, 0x69, 0x74, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28,
+	0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x04, 0x69, 0x74,
+	0x65, 0x72, 0x12, 0x1d, 0x0a, 0x04, 0x62, 0x6f, 0x64, 0x79, 0x18, 0x03, 0x20, 0x03, 0x28, 0x0b,
+	0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x04, 0x62, 0x6f, 0x64,
+	0x79, 0x22, 0x89, 0x01, 0x0a, 0x0b, 0x46, 0x75, 0x6e, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x44, 0x65,
+	0x66, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x22, 0x0a, 0x04, 0x41, 0x72, 0x67, 0x73, 0x18, 0x02, 0x20,
+	0x01, 0x28, 0x0b, 0x32, 0x0e, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x41, 0x72, 0x67, 0x75, 0x6d, 0x65,
+	0x6e, 0x74, 0x73, 0x52, 0x04, 0x61, 0x72, 0x67, 0x73, 0x12, 0x1d, 0x0a, 0x04, 0x62, 0x6f, 0x64,
+	0x79, 0x18, 0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e, 0x6f,
+	0x64, 0x65, 0x52, 0x04, 0x62, 0x6f, 0x64, 0x79, 0x12, 0x23, 0x0a, 0x07, 0x72, 0x65, 0x74, 0x75,
+	0x72, 0x6e, 0x73, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e,
+	0x4e, 0x6f, 0x64, 0x65, 0x52, 0x07, 0x72, 0x65, 0x74, 0x75, 0x72, 0x6e, 0x73, 0x22, 0x66, 0x0a,
+	0x02, 0x49, 0x66, 0x12, 0x1d, 0x0a, 0x04, 0x74, 0x65, 0x73, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x04, 0x74, 0x65,
+	0x73, 0x74, 0x12, 0x1d, 0x0a, 0x04, 0x62, 0x6f, 0x64, 0x79, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b,
+	0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x04, 0x62, 0x6f, 0x64,
+	0x79, 0x12, 0x22, 0x0a, 0x07, 0x6f, 0x72, 0x5f, 0x65, 0x6c, 0x73, 0x65, 0x18, 0x03, 0x20, 0x03,
+	0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x06, 0x6f,
+	0x72, 0x65, 0x6c, 0x73, 0x65, 0x22, 0x29, 0x0a, 0x06, 0x49, 0x6d, 0x70, 0x6f, 0x72, 0x74, 0x12,
+	0x1f, 0x0a, 0x05, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x09,
+	0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x05, 0x6e, 0x61, 0x6d, 0x65, 0x73,
+	0x22, 0x5b, 0x0a, 0x0a, 0x49, 0x6d, 0x70, 0x6f, 0x72, 0x74, 0x46, 0x72, 0x6f, 0x6d, 0x12, 0x16,
+	0x0a, 0x06, 0x6d, 0x6f, 0x64, 0x75, 0x6c, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06,
+	0x6d, 0x6f, 0x64, 0x75, 0x6c, 0x65, 0x12, 0x1f, 0x0a, 0x05, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x18,
+	0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e, 0x6f, 0x64, 0x65,
+	0x52, 0x05, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x12, 0x14, 0x0a, 0x05, 0x6c, 0x65, 0x76, 0x65, 0x6c,
+	0x18, 0x03, 0x20, 0x01, 0x28, 0x05, 0x52, 0x05, 0x6c, 0x65, 0x76, 0x65, 0x6c, 0x22, 0x32, 0x0a,
+	0x0b, 0x49, 0x6d, 0x70, 0x6f, 0x72, 0x74, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x12, 0x23, 0x0a, 0x07,
+	0x69, 0x6d, 0x70, 0x6f, 0x72, 0x74, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x09, 0x2e,
+	0x61, 0x73, 0x74, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x07, 0x69, 0x6d, 0x70, 0x6f, 0x72, 0x74,
+	0x73, 0x22, 0x04, 0x0a, 0x02, 0x49, 0x73, 0x22, 0x3c, 0x0a, 0x07, 0x4b, 0x65, 0x79, 0x77, 0x6f,
+	0x72, 0x64, 0x12, 0x10, 0x0a, 0x03, 0x61, 0x72, 0x67, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x03, 0x61, 0x72, 0x67, 0x12, 0x1f, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x02, 0x20,
+	0x01, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x05,
+	0x76, 0x61, 0x6c, 0x75, 0x65, 0x22, 0x27, 0x0a, 0x06, 0x4d, 0x6f, 0x64, 0x75, 0x6c, 0x65, 0x12,
+	0x1d, 0x0a, 0x04, 0x62, 0x6f, 0x64, 0x79, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x09, 0x2e,
+	0x61, 0x73, 0x74, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x04, 0x62, 0x6f, 0x64, 0x79, 0x22, 0x16,
+	0x0a, 0x04, 0x4e, 0x61, 0x6d, 0x65, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x22, 0x06, 0x0a, 0x04, 0x50, 0x61, 0x73, 0x73, 0x22, 0x29,
+	0x0a, 0x06, 0x52, 0x65, 0x74, 0x75, 0x72, 0x6e, 0x12, 0x1f, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75,
+	0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e, 0x6f,
+	0x64, 0x65, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x22, 0x4d, 0x0a, 0x09, 0x53, 0x75, 0x62,
+	0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x12, 0x1f, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e, 0x61, 0x6d, 0x65,
+	0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x12, 0x1f, 0x0a, 0x05, 0x73, 0x6c, 0x69, 0x63, 0x65,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e, 0x6f, 0x64,
+	0x65, 0x52, 0x05, 0x73, 0x6c, 0x69, 0x63, 0x65, 0x22, 0x28, 0x0a, 0x05, 0x59, 0x69, 0x65, 0x6c,
+	0x64, 0x12, 0x1f, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x09, 0x2e, 0x61, 0x73, 0x74, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x05, 0x76, 0x61, 0x6c,
+	0x75, 0x65, 0x42, 0x30, 0x5a, 0x2e, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d,
+	0x2f, 0x6b, 0x79, 0x6c, 0x65, 0x63, 0x6f, 0x6e, 0x72, 0x6f, 0x79, 0x2f, 0x73, 0x71, 0x6c, 0x63,
+	0x2f, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x2f, 0x70, 0x79, 0x74, 0x68, 0x6f, 0x6e,
+	0x2f, 0x61, 0x73, 0x74, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -1152,60 +2452,122 @@ func file_python_ast_proto_rawDescGZIP() []byte {
 	return file_python_ast_proto_rawDescData
 }
 
-var file_python_ast_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
+var file_python_ast_proto_msgTypes = make([]protoimpl.MessageInfo, 31)
 var file_python_ast_proto_goTypes = []interface{}{
-	(*Node)(nil),       // 0: ast.Node
-	(*Alias)(nil),      // 1: ast.Alias
-	(*Attribute)(nil),  // 2: ast.Attribute
-	(*AnnAssign)(nil),  // 3: ast.AnnAssign
-	(*Assign)(nil),     // 4: ast.Assign
-	(*Call)(nil),       // 5: ast.Call
-	(*ClassDef)(nil),   // 6: ast.ClassDef
-	(*Comment)(nil),    // 7: ast.Comment
-	(*Constant)(nil),   // 8: ast.Constant
-	(*Expr)(nil),       // 9: ast.Expr
-	(*Import)(nil),     // 10: ast.Import
-	(*ImportFrom)(nil), // 11: ast.ImportFrom
-	(*Module)(nil),     // 12: ast.Module
-	(*Name)(nil),       // 13: ast.Name
-	(*Subscript)(nil),  // 14: ast.Subscript
+	(*Node)(nil),             // 0: ast.Node
+	(*Alias)(nil),            // 1: ast.Alias
+	(*Await)(nil),            // 2: ast.Await
+	(*Attribute)(nil),        // 3: ast.Attribute
+	(*AnnAssign)(nil),        // 4: ast.AnnAssign
+	(*Arg)(nil),              // 5: ast.Arg
+	(*Arguments)(nil),        // 6: ast.Arguments
+	(*AsyncFor)(nil),         // 7: ast.AsyncFor
+	(*AsyncFunctionDef)(nil), // 8: ast.AsyncFunctionDef
+	(*Assign)(nil),           // 9: ast.Assign
+	(*Call)(nil),             // 10: ast.Call
+	(*ClassDef)(nil),         // 11: ast.ClassDef
+	(*Comment)(nil),          // 12: ast.Comment
+	(*Compare)(nil),          // 13: ast.Compare
+	(*Constant)(nil),         // 14: ast.Constant
+	(*Dict)(nil),             // 15: ast.Dict
+	(*Expr)(nil),             // 16: ast.Expr
+	(*For)(nil),              // 17: ast.For
+	(*FunctionDef)(nil),      // 18: ast.FunctionDef
+	(*If)(nil),               // 19: ast.If
+	(*Import)(nil),           // 20: ast.Import
+	(*ImportFrom)(nil),       // 21: ast.ImportFrom
+	(*ImportGroup)(nil),      // 22: ast.ImportGroup
+	(*Is)(nil),               // 23: ast.Is
+	(*Keyword)(nil),          // 24: ast.Keyword
+	(*Module)(nil),           // 25: ast.Module
+	(*Name)(nil),             // 26: ast.Name
+	(*Pass)(nil),             // 27: ast.Pass
+	(*Return)(nil),           // 28: ast.Return
+	(*Subscript)(nil),        // 29: ast.Subscript
+	(*Yield)(nil),            // 30: ast.Yield
 }
 var file_python_ast_proto_depIdxs = []int32{
-	6,  // 0: ast.Node.class_def:type_name -> ast.ClassDef
-	10, // 1: ast.Node.import:type_name -> ast.Import
-	11, // 2: ast.Node.import_from:type_name -> ast.ImportFrom
-	12, // 3: ast.Node.module:type_name -> ast.Module
+	11, // 0: ast.Node.class_def:type_name -> ast.ClassDef
+	20, // 1: ast.Node.import:type_name -> ast.Import
+	21, // 2: ast.Node.import_from:type_name -> ast.ImportFrom
+	25, // 3: ast.Node.module:type_name -> ast.Module
 	1,  // 4: ast.Node.alias:type_name -> ast.Alias
-	3,  // 5: ast.Node.ann_assign:type_name -> ast.AnnAssign
-	13, // 6: ast.Node.name:type_name -> ast.Name
-	14, // 7: ast.Node.subscript:type_name -> ast.Subscript
-	2,  // 8: ast.Node.attribute:type_name -> ast.Attribute
-	8,  // 9: ast.Node.constant:type_name -> ast.Constant
-	4,  // 10: ast.Node.assign:type_name -> ast.Assign
-	7,  // 11: ast.Node.comment:type_name -> ast.Comment
-	9,  // 12: ast.Node.expr:type_name -> ast.Expr
-	5,  // 13: ast.Node.call:type_name -> ast.Call
-	13, // 14: ast.Attribute.value:type_name -> ast.Name
-	13, // 15: ast.AnnAssign.target:type_name -> ast.Name
-	0,  // 16: ast.AnnAssign.annotation:type_name -> ast.Node
-	13, // 17: ast.Assign.targets:type_name -> ast.Name
-	0,  // 18: ast.Assign.value:type_name -> ast.Node
-	0,  // 19: ast.Call.func:type_name -> ast.Node
-	0,  // 20: ast.ClassDef.bases:type_name -> ast.Node
-	0,  // 21: ast.ClassDef.keywords:type_name -> ast.Node
-	0,  // 22: ast.ClassDef.body:type_name -> ast.Node
-	0,  // 23: ast.ClassDef.decorator_list:type_name -> ast.Node
-	0,  // 24: ast.Expr.value:type_name -> ast.Node
-	0,  // 25: ast.Import.names:type_name -> ast.Node
-	0,  // 26: ast.ImportFrom.names:type_name -> ast.Node
-	0,  // 27: ast.Module.body:type_name -> ast.Node
-	13, // 28: ast.Subscript.value:type_name -> ast.Name
-	0,  // 29: ast.Subscript.slice:type_name -> ast.Node
-	30, // [30:30] is the sub-list for method output_type
-	30, // [30:30] is the sub-list for method input_type
-	30, // [30:30] is the sub-list for extension type_name
-	30, // [30:30] is the sub-list for extension extendee
-	0,  // [0:30] is the sub-list for field type_name
+	4,  // 5: ast.Node.ann_assign:type_name -> ast.AnnAssign
+	26, // 6: ast.Node.name:type_name -> ast.Name
+	29, // 7: ast.Node.subscript:type_name -> ast.Subscript
+	3,  // 8: ast.Node.attribute:type_name -> ast.Attribute
+	14, // 9: ast.Node.constant:type_name -> ast.Constant
+	9,  // 10: ast.Node.assign:type_name -> ast.Assign
+	12, // 11: ast.Node.comment:type_name -> ast.Comment
+	16, // 12: ast.Node.expr:type_name -> ast.Expr
+	10, // 13: ast.Node.call:type_name -> ast.Call
+	18, // 14: ast.Node.function_def:type_name -> ast.FunctionDef
+	5,  // 15: ast.Node.arg:type_name -> ast.Arg
+	6,  // 16: ast.Node.arguments:type_name -> ast.Arguments
+	8,  // 17: ast.Node.async_function_def:type_name -> ast.AsyncFunctionDef
+	27, // 18: ast.Node.pass:type_name -> ast.Pass
+	15, // 19: ast.Node.dict:type_name -> ast.Dict
+	19, // 20: ast.Node.if:type_name -> ast.If
+	13, // 21: ast.Node.compare:type_name -> ast.Compare
+	28, // 22: ast.Node.return:type_name -> ast.Return
+	23, // 23: ast.Node.is:type_name -> ast.Is
+	24, // 24: ast.Node.keyword:type_name -> ast.Keyword
+	30, // 25: ast.Node.yield:type_name -> ast.Yield
+	17, // 26: ast.Node.for:type_name -> ast.For
+	2,  // 27: ast.Node.await:type_name -> ast.Await
+	7,  // 28: ast.Node.async_for:type_name -> ast.AsyncFor
+	22, // 29: ast.Node.import_group:type_name -> ast.ImportGroup
+	0,  // 30: ast.Await.value:type_name -> ast.Node
+	0,  // 31: ast.Attribute.value:type_name -> ast.Node
+	26, // 32: ast.AnnAssign.target:type_name -> ast.Name
+	0,  // 33: ast.AnnAssign.annotation:type_name -> ast.Node
+	0,  // 34: ast.Arg.annotation:type_name -> ast.Node
+	5,  // 35: ast.Arguments.args:type_name -> ast.Arg
+	5,  // 36: ast.Arguments.kw_only_args:type_name -> ast.Arg
+	0,  // 37: ast.AsyncFor.target:type_name -> ast.Node
+	0,  // 38: ast.AsyncFor.iter:type_name -> ast.Node
+	0,  // 39: ast.AsyncFor.body:type_name -> ast.Node
+	6,  // 40: ast.AsyncFunctionDef.Args:type_name -> ast.Arguments
+	0,  // 41: ast.AsyncFunctionDef.body:type_name -> ast.Node
+	0,  // 42: ast.AsyncFunctionDef.returns:type_name -> ast.Node
+	0,  // 43: ast.Assign.targets:type_name -> ast.Node
+	0,  // 44: ast.Assign.value:type_name -> ast.Node
+	0,  // 45: ast.Call.func:type_name -> ast.Node
+	0,  // 46: ast.Call.args:type_name -> ast.Node
+	24, // 47: ast.Call.keywords:type_name -> ast.Keyword
+	0,  // 48: ast.ClassDef.bases:type_name -> ast.Node
+	0,  // 49: ast.ClassDef.keywords:type_name -> ast.Node
+	0,  // 50: ast.ClassDef.body:type_name -> ast.Node
+	0,  // 51: ast.ClassDef.decorator_list:type_name -> ast.Node
+	0,  // 52: ast.Compare.left:type_name -> ast.Node
+	0,  // 53: ast.Compare.ops:type_name -> ast.Node
+	0,  // 54: ast.Compare.comparators:type_name -> ast.Node
+	0,  // 55: ast.Dict.keys:type_name -> ast.Node
+	0,  // 56: ast.Dict.values:type_name -> ast.Node
+	0,  // 57: ast.Expr.value:type_name -> ast.Node
+	0,  // 58: ast.For.target:type_name -> ast.Node
+	0,  // 59: ast.For.iter:type_name -> ast.Node
+	0,  // 60: ast.For.body:type_name -> ast.Node
+	6,  // 61: ast.FunctionDef.Args:type_name -> ast.Arguments
+	0,  // 62: ast.FunctionDef.body:type_name -> ast.Node
+	0,  // 63: ast.FunctionDef.returns:type_name -> ast.Node
+	0,  // 64: ast.If.test:type_name -> ast.Node
+	0,  // 65: ast.If.body:type_name -> ast.Node
+	0,  // 66: ast.If.or_else:type_name -> ast.Node
+	0,  // 67: ast.Import.names:type_name -> ast.Node
+	0,  // 68: ast.ImportFrom.names:type_name -> ast.Node
+	0,  // 69: ast.ImportGroup.imports:type_name -> ast.Node
+	0,  // 70: ast.Keyword.value:type_name -> ast.Node
+	0,  // 71: ast.Module.body:type_name -> ast.Node
+	0,  // 72: ast.Return.value:type_name -> ast.Node
+	26, // 73: ast.Subscript.value:type_name -> ast.Name
+	0,  // 74: ast.Subscript.slice:type_name -> ast.Node
+	0,  // 75: ast.Yield.value:type_name -> ast.Node
+	76, // [76:76] is the sub-list for method output_type
+	76, // [76:76] is the sub-list for method input_type
+	76, // [76:76] is the sub-list for extension type_name
+	76, // [76:76] is the sub-list for extension extendee
+	0,  // [0:76] is the sub-list for field type_name
 }
 
 func init() { file_python_ast_proto_init() }
@@ -1239,7 +2601,7 @@ func file_python_ast_proto_init() {
 			}
 		}
 		file_python_ast_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Attribute); i {
+			switch v := v.(*Await); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1251,7 +2613,7 @@ func file_python_ast_proto_init() {
 			}
 		}
 		file_python_ast_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*AnnAssign); i {
+			switch v := v.(*Attribute); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1263,7 +2625,7 @@ func file_python_ast_proto_init() {
 			}
 		}
 		file_python_ast_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Assign); i {
+			switch v := v.(*AnnAssign); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1275,7 +2637,7 @@ func file_python_ast_proto_init() {
 			}
 		}
 		file_python_ast_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Call); i {
+			switch v := v.(*Arg); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1287,7 +2649,7 @@ func file_python_ast_proto_init() {
 			}
 		}
 		file_python_ast_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ClassDef); i {
+			switch v := v.(*Arguments); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1299,7 +2661,7 @@ func file_python_ast_proto_init() {
 			}
 		}
 		file_python_ast_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Comment); i {
+			switch v := v.(*AsyncFor); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1311,7 +2673,7 @@ func file_python_ast_proto_init() {
 			}
 		}
 		file_python_ast_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Constant); i {
+			switch v := v.(*AsyncFunctionDef); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1323,7 +2685,7 @@ func file_python_ast_proto_init() {
 			}
 		}
 		file_python_ast_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Expr); i {
+			switch v := v.(*Assign); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1335,7 +2697,7 @@ func file_python_ast_proto_init() {
 			}
 		}
 		file_python_ast_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Import); i {
+			switch v := v.(*Call); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1347,7 +2709,7 @@ func file_python_ast_proto_init() {
 			}
 		}
 		file_python_ast_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ImportFrom); i {
+			switch v := v.(*ClassDef); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1359,7 +2721,7 @@ func file_python_ast_proto_init() {
 			}
 		}
 		file_python_ast_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Module); i {
+			switch v := v.(*Comment); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1371,7 +2733,7 @@ func file_python_ast_proto_init() {
 			}
 		}
 		file_python_ast_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Name); i {
+			switch v := v.(*Compare); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1383,7 +2745,199 @@ func file_python_ast_proto_init() {
 			}
 		}
 		file_python_ast_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Constant); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_python_ast_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Dict); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_python_ast_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Expr); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_python_ast_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*For); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_python_ast_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*FunctionDef); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_python_ast_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*If); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_python_ast_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Import); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_python_ast_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ImportFrom); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_python_ast_proto_msgTypes[22].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ImportGroup); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_python_ast_proto_msgTypes[23].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Is); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_python_ast_proto_msgTypes[24].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Keyword); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_python_ast_proto_msgTypes[25].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Module); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_python_ast_proto_msgTypes[26].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Name); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_python_ast_proto_msgTypes[27].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Pass); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_python_ast_proto_msgTypes[28].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Return); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_python_ast_proto_msgTypes[29].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Subscript); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_python_ast_proto_msgTypes[30].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Yield); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1410,6 +2964,27 @@ func file_python_ast_proto_init() {
 		(*Node_Comment)(nil),
 		(*Node_Expr)(nil),
 		(*Node_Call)(nil),
+		(*Node_FunctionDef)(nil),
+		(*Node_Arg)(nil),
+		(*Node_Arguments)(nil),
+		(*Node_AsyncFunctionDef)(nil),
+		(*Node_Pass)(nil),
+		(*Node_Dict)(nil),
+		(*Node_If)(nil),
+		(*Node_Compare)(nil),
+		(*Node_Return)(nil),
+		(*Node_Is)(nil),
+		(*Node_Keyword)(nil),
+		(*Node_Yield)(nil),
+		(*Node_For)(nil),
+		(*Node_Await)(nil),
+		(*Node_AsyncFor)(nil),
+		(*Node_ImportGroup)(nil),
+	}
+	file_python_ast_proto_msgTypes[14].OneofWrappers = []interface{}{
+		(*Constant_Str)(nil),
+		(*Constant_Int)(nil),
+		(*Constant_None)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -1417,7 +2992,7 @@ func file_python_ast_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_python_ast_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   15,
+			NumMessages:   31,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

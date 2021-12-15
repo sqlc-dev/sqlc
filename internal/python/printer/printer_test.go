@@ -20,13 +20,19 @@ func TestPrinter(t *testing.T) {
 			Node: &ast.Node{
 				Node: &ast.Node_Assign{
 					Assign: &ast.Assign{
-						Targets: []*ast.Name{
-							{Id: "FICTION"},
+						Targets: []*ast.Node{
+							{
+								Node: &ast.Node_Name{
+									Name: &ast.Name{Id: "FICTION"},
+								},
+							},
 						},
 						Value: &ast.Node{
 							Node: &ast.Node_Constant{
 								Constant: &ast.Constant{
-									Value: "FICTION",
+									Value: &ast.Constant_Str{
+										Str: "FICTION",
+									},
 								},
 							},
 						},
@@ -49,8 +55,12 @@ func TestPrinter(t *testing.T) {
 							{
 								Node: &ast.Node_Attribute{
 									Attribute: &ast.Attribute{
-										Value: &ast.Name{Id: "enum"},
-										Attr:  "Enum",
+										Value: &ast.Node{
+											Node: &ast.Node_Name{
+												Name: &ast.Name{Id: "enum"},
+											},
+										},
+										Attr: "Enum",
 									},
 								},
 							},

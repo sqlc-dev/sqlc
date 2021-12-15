@@ -115,7 +115,7 @@ func (i *importer) modelImports() []string {
 	return importLines
 }
 
-func (i *importer) queryImports(fileName string) []string {
+func (i *importer) queryImportSpecs(fileName string) (map[string]importSpec, map[string]importSpec) {
 	queryUses := func(name string) bool {
 		for _, q := range i.Queries {
 			if q.SourceName != fileName {
@@ -175,6 +175,12 @@ func (i *importer) queryImports(fileName string) []string {
 			queryValueModelImports(qv)
 		}
 	}
+
+	return std, pkg
+}
+
+func (i *importer) queryImports(fileName string) []string {
+	std, pkg := i.queryImportSpecs(fileName)
 
 	modelImportStr := fmt.Sprintf("from %s import models", i.Settings.Python.Package)
 
