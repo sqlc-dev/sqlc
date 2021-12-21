@@ -384,6 +384,10 @@ func translate(node *nodes.Node) (ast.Node, error) {
 						primaryKey[key.Node.(*nodes.Node_String_).String_.Str] = true
 					}
 				}
+
+			case *nodes.Node_TableLikeClause:
+				rel := parseRelationFromRangeVar(item.TableLikeClause.Relation)
+				create.ReferTable = rel.TableName()
 			}
 		}
 		for _, elt := range n.TableElts {
