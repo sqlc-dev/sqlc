@@ -57,10 +57,11 @@ MYSQL_DATABASE  dinotest
 ## Regenerate expected test output
 
 If you need to update a large number of expected test output in the
-`internal/endtoend/testdata` directory, run the `regenerate.sh` script.
+`internal/endtoend/testdata` directory, run the `regenerate` script.
 
 ```
-make regen
+go build -o ~/go/bin/sqlc-dev ./cmd/sqlc
+go run scripts/regenerate/main.go
 ```
 
 Note that this uses the `sqlc-dev` binary, not `sqlc` so make sure you have an
