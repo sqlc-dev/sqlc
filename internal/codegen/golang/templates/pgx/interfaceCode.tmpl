@@ -27,6 +27,11 @@
         {{- else if eq .Cmd ":execresult" }}
             {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (pgconn.CommandTag, error)
         {{- end}}
+        {{- if and (eq .Cmd ":copyFrom") ($dbtxParam) }}
+            {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) (int64, error)
+        {{- else if eq .Cmd ":copyFrom" }}
+            {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, error)
+        {{- end}}
     {{- end}}
     }
 
