@@ -136,3 +136,29 @@ func (q *Queries) DeleteAuthor(ctx context.Context, id int) (Author, error) {
 	return i, err
 }
 ```
+
+## Using CopyFrom
+
+PostgreSQL supports the Copy Protocol that can insert rows a lot faster than sequential inserts. You can use this easily with sqlc:
+
+```sql
+CREATE TABLE authors (
+  id         SERIAL PRIMARY KEY,
+  name       text   NOT NULL,
+  bio        text   NOT NULL
+);
+
+-- name: CreateAuthors :copyFrom
+INSERT INTO authors (name, bio) VALUES ($1, $2);
+```
+
+```go
+type CreateAuthorsParams struct {
+  Name string
+  Bio  string
+}
+
+func (q *Queries) CreateAuthors(ctx context.Context, arg []CreateAuthorsParams) (int64, error) {
+  return q.db.CopyFrom(ctx, []string{"authors"}, []string{"name", "bio"}, &iteratorForCreateAuthors{rows: arg})
+}
+```
