@@ -46,11 +46,17 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 	if !ok {
 		return nil, errors.New("node is not a statement")
 	}
+	var table *ast.TableName
 	switch n := raw.Stmt.(type) {
 	case *ast.SelectStmt:
 	case *ast.DeleteStmt:
 	case *ast.InsertStmt:
 		if err := validate.InsertStmt(n); err != nil {
+			return nil, err
+		}
+		var err error
+		table, err = ParseTableName(n.Relation)
+		if err != nil {
 			return nil, err
 		}
 	case *ast.TruncateStmt:
@@ -132,12 +138,13 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 		return nil, err
 	}
 	return &Query{
-		Cmd:      cmd,
-		Comments: comments,
-		Name:     name,
-		Params:   params,
-		Columns:  cols,
-		SQL:      trimmed,
+		Cmd:             cmd,
+		Comments:        comments,
+		Name:            name,
+		Params:          params,
+		Columns:         cols,
+		SQL:             trimmed,
+		InsertIntoTable: table,
 	}, nil
 }
 

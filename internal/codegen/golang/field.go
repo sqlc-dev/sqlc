@@ -9,7 +9,8 @@ import (
 )
 
 type Field struct {
-	Name    string
+	Name    string // CamelCased name for Go
+	DBName  string // Name as used in the DB
 	Type    string
 	Tags    map[string]string
 	Comment string
