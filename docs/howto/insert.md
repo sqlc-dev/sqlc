@@ -124,13 +124,13 @@ func (q *Queries) DeleteID(ctx context.Context, id int) (int, error) {
 	return i, err
 }
 
-const deleteAuhtor = `-- name: DeleteAuthor :one
+const deleteAuthor = `-- name: DeleteAuthor :one
 DELETE FROM authors WHERE id = $1
 RETURNING id, bio
 `
 
 func (q *Queries) DeleteAuthor(ctx context.Context, id int) (Author, error) {
-	row := q.db.QueryRowContext(ctx, deleteAuhtor, id)
+	row := q.db.QueryRowContext(ctx, deleteAuthor, id)
 	var i Author
 	err := row.Scan(&i.ID, &i.Bio)
 	return i, err
