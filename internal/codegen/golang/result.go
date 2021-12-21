@@ -1,6 +1,7 @@
 package golang
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -160,8 +161,21 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 			SourceName:   query.Filename,
 			SQL:          query.SQL,
 			Comments:     query.Comments,
+			Table:        query.InsertIntoTable,
 		}
 		sqlpkg := SQLPackageFromString(settings.Go.SQLPackage)
+
+		if query.Cmd == ":copyFrom" {
+			if query.InsertIntoTable == nil {
+				return nil, errors.New("CopyFrom requires an INSERT INTO statement to know its columns")
+			}
+			if len(query.Params) == 0 {
+				return nil, errors.New("CopyFrom without parameters is not supported")
+			}
+			if len(query.Columns) != 0 {
+				return nil, errors.New("CopyFrom with RETURNING is not supported")
+			}
+		}
 
 		if len(query.Params) == 1 {
 			p := query.Params[0]
@@ -291,9 +305,10 @@ func columnsToStruct(r *compiler.Result, name string, columns []goColumn, settin
 			tags["json:"] = JSONTagName(tagName, settings)
 		}
 		gs.Fields = append(gs.Fields, Field{
-			Name: fieldName,
-			Type: goType(r, c.Column, settings),
-			Tags: tags,
+			Name:   fieldName,
+			DBName: colName,
+			Type:   goType(r, c.Column, settings),
+			Tags:   tags,
 		})
 		if _, found := seen[baseFieldName]; !found {
 			seen[baseFieldName] = []int{i}
