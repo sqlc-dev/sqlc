@@ -11,6 +11,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/codegen"
 	"github.com/kyleconroy/sqlc/internal/compiler"
 	"github.com/kyleconroy/sqlc/internal/config"
+	"github.com/kyleconroy/sqlc/internal/metadata"
 )
 
 type Generateable interface {
@@ -37,6 +38,7 @@ type tmplCtx struct {
 	EmitInterface             bool
 	EmitEmptySlices           bool
 	EmitMethodsWithDBArgument bool
+	UsesCopyFrom              bool
 }
 
 func (t *tmplCtx) OutputQuery(sourceName string) bool {
@@ -87,6 +89,7 @@ func generate(settings config.CombinedSettings, enums []Enum, structs []Struct, 
 		EmitPreparedQueries:       golang.EmitPreparedQueries,
 		EmitEmptySlices:           golang.EmitEmptySlices,
 		EmitMethodsWithDBArgument: golang.EmitMethodsWithDBArgument,
+		UsesCopyFrom:              usesCopyFrom(queries),
 		SQLPackage:                SQLPackageFromString(golang.SQLPackage),
 		Q:                         "`",
 		Package:                   golang.Package,
@@ -159,4 +162,13 @@ func generate(settings config.CombinedSettings, enums []Enum, structs []Struct, 
 		}
 	}
 	return output, nil
+}
+
+func usesCopyFrom(queries []Query) bool {
+	for _, q := range queries {
+		if q.Cmd == metadata.CmdCopyFrom {
+			return true
+		}
+	}
+	return false
 }
