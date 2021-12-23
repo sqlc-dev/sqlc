@@ -210,9 +210,18 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 			}
 			fun, err := qc.catalog.ResolveFuncCall(n)
 			if err == nil {
-				cols = append(cols, &Column{Name: name, DataType: dataType(fun.ReturnType), NotNull: !fun.ReturnTypeNullable})
+				cols = append(cols, &Column{
+					Name:       name,
+					DataType:   dataType(fun.ReturnType),
+					NotNull:    !fun.ReturnTypeNullable,
+					IsFuncCall: true,
+				})
 			} else {
-				cols = append(cols, &Column{Name: name, DataType: "any"})
+				cols = append(cols, &Column{
+					Name:       name,
+					DataType:   "any",
+					IsFuncCall: true,
+				})
 			}
 
 		case *ast.SubLink:

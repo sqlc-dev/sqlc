@@ -22,6 +22,7 @@ type Column struct {
 	Comment      string
 	Length       *int
 	IsNamedParam bool
+	IsFuncCall   bool
 
 	// XXX: Figure out what PostgreSQL calls `foo.id`
 	Scope      string
