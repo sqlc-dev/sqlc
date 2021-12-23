@@ -193,8 +193,12 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 
 		if len(query.Columns) == 1 {
 			c := query.Columns[0]
+			name := columnName(c, 0)
+			if c.IsFuncCall {
+				name = strings.Replace(name, "$", "_", -1)
+			}
 			gq.Ret = QueryValue{
-				Name:       columnName(c, 0),
+				Name:       name,
 				Typ:        goType(r, c, settings),
 				SQLPackage: sqlpkg,
 			}
