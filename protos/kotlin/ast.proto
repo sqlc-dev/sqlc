@@ -11,7 +11,14 @@ message Node {
 	PackageDirective package_directive = 3 [json_name="PackageDirective"];
 	DotQualifiedExpression dot_qualified_expression = 4 [json_name="DotQualifiedExpression"];
 	NameReferenceExpression name_reference_expression = 5 [json_name="NameReferenceExpression"];
+	Class class = 6 [json_name="Class"];
   }
+}
+
+message Class
+{
+  string name = 1 [json_name="name"];
+  repeated Node body = 2 [json_name="body"];
 }
 
 message Comment
@@ -30,12 +37,12 @@ message File
   repeated Node body = 1 [json_name="body"];
 }
 
-message PackageDirective
-{
-  repeated Node names = 1 [json_name="names"];
-}
-
 message NameReferenceExpression
 {
   string name = 1 [json_name="name"];
+}
+
+message PackageDirective
+{
+  repeated Node names = 1 [json_name="names"];
 }
