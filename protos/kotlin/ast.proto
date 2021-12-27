@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package ast;
+
+option go_package = "github.com/kyleconroy/sqlc/internal/kotlin/ast";
+
+message Node {
+  oneof node {
+	Comment comment = 1 [json_name="Comment"];
+	File file = 2 [json_name="File"];
+	PackageDirective package_directive = 3 [json_name="PackageDirective"];
+	DotQualifiedExpression dot_qualified_expression = 4 [json_name="DotQualifiedExpression"];
+	NameReferenceExpression name_reference_expression = 5 [json_name="NameReferenceExpression"];
+  }
+}
+
+message Comment
+{
+  string text = 1 [json_name="text"];
+}
+
+message DotQualifiedExpression
+{
+  Node receiver = 1 [json_name="receiver"];
+  Node selector = 2 [json_name="selector"];
+}
+
+message File
+{
+  repeated Node body = 1 [json_name="body"];
+}
+
+message PackageDirective
+{
+  repeated Node names = 1 [json_name="names"];
+}
+
+message NameReferenceExpression
+{
+  string name = 1 [json_name="name"];
+}
