@@ -12,6 +12,12 @@ message Node {
 	DotQualifiedExpression dot_qualified_expression = 4 [json_name="DotQualifiedExpression"];
 	NameReferenceExpression name_reference_expression = 5 [json_name="NameReferenceExpression"];
 	Class class = 6 [json_name="Class"];
+	DeclarationModifierList declaration_modifier_list = 7 [json_name="DeclarationModifierList"];
+	PrimaryConstructor primary_constructor = 8 [json_name="PrimaryConstructor"];
+    Parameter parameter = 9 [json_name="Parameter"];
+    ParameterList parameter_list = 10 [json_name="ParameterList"];
+    TypeReference type_reference = 11 [json_name="TypeReference"];
+    UserType user_type = 12 [json_name="UserType"];
   }
 }
 
@@ -19,11 +25,17 @@ message Class
 {
   string name = 1 [json_name="name"];
   repeated Node body = 2 [json_name="body"];
+  DeclarationModifierList modifiers = 3 [json_name="modifiers"];
 }
 
 message Comment
 {
   string text = 1 [json_name="text"];
+}
+
+message DeclarationModifierList
+{
+  repeated string annotations = 1 [json_name="annotations"];
 }
 
 message DotQualifiedExpression
@@ -45,4 +57,30 @@ message NameReferenceExpression
 message PackageDirective
 {
   repeated Node names = 1 [json_name="names"];
+}
+
+message Parameter
+{
+  string name = 1 [json_name="name"];
+  TypeReference ref = 2 [json_name="ref"];
+}
+
+message ParameterList
+{
+  repeated Parameter parameters = 1 [json_name="parameters"];
+}
+
+message TypeReference
+{
+  UserType element = 1 [json_name="element"];
+}
+
+message UserType
+{
+  NameReferenceExpression reference_expression = 1 [json_name="reference_expression"];
+}
+
+message PrimaryConstructor
+{
+  ParameterList value_parameter_list = 1 [json_name="value_parameter_list"];
 }
