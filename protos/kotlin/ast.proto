@@ -56,7 +56,7 @@ message NameReferenceExpression
 
 message PackageDirective
 {
-  repeated Node names = 1 [json_name="names"];
+  Node name = 1 [json_name="name"];
 }
 
 message Parameter
