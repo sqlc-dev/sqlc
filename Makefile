@@ -30,10 +30,5 @@ mysqlsh:
 # $ protoc --version
 # libprotoc 3.17.3
 # go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-proto: internal/python/ast/ast.pb.go internal/kotlin/ast/ast.pb.go
-
-internal/python/ast/ast.pb.go: protos/python/ast.proto
-	protoc -I ./protos --go_out=. --go_opt=module=github.com/kyleconroy/sqlc ./protos/python/ast.proto
-
-internal/kotlin/ast/ast.pb.go: protos/kotlin/ast.proto
-	protoc -I ./protos --go_out=. --go_opt=module=github.com/kyleconroy/sqlc ./protos/kotlin/ast.proto
+proto:
+	protoc -I ./protos --go_out=. --go_opt=module=github.com/kyleconroy/sqlc ./protos/**/*.proto

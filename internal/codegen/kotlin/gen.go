@@ -14,6 +14,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/core"
 	"github.com/kyleconroy/sqlc/internal/inflection"
+	"github.com/kyleconroy/sqlc/internal/kotlin/printer"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 )
@@ -785,7 +786,6 @@ func Generate(r *compiler.Result, settings config.CombinedSettings) (map[string]
 		"offset":     Offset,
 	}
 
-	modelsFile := template.Must(template.New("table").Funcs(funcMap).Parse(ktModelsTmpl))
 	sqlFile := template.Must(template.New("table").Funcs(funcMap).Parse(ktSqlTmpl))
 	ifaceFile := template.Must(template.New("table").Funcs(funcMap).Parse(ktIfaceTmpl))
 
@@ -817,9 +817,10 @@ func Generate(r *compiler.Result, settings config.CombinedSettings) (map[string]
 		return nil
 	}
 
-	if err := execute("Models.kt", modelsFile); err != nil {
-		return nil, err
-	}
+	result := printer.Print(buildModelsFile(&tctx, i), printer.Options{})
+	tctx.SourceName = "Models.kt"
+	output["Models.kt"] = string(result.Kotlin)
+
 	if err := execute("Queries.kt", ifaceFile); err != nil {
 		return nil, err
 	}

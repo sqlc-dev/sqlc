@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package ast;
+package python.ast;
 
 option go_package = "github.com/kyleconroy/sqlc/internal/python/ast";
 
