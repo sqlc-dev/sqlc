@@ -18,6 +18,20 @@ func Node(node proto) *ast.Node {
 			},
 		}
 
+	case *ast.NullableType:
+		return &ast.Node{
+			Node: &ast.Node_NullableType{
+				NullableType: n,
+			},
+		}
+
+	case *ast.UserType:
+		return &ast.Node{
+			Node: &ast.Node_UserType{
+				UserType: n,
+			},
+		}
+
 	default:
 		panic(n)
 

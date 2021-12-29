@@ -36,14 +36,20 @@ func buildModelsFile(ctx *ktTmplCtx, i *importer) *ast.Node {
 	for _, m := range ctx.DataClasses {
 		list := &ast.ParameterList{}
 		for _, f := range m.Fields {
+			elem := poet.Node(&ast.UserType{
+				ReferenceExpression: &ast.NameReferenceExpression{
+					Name: f.Type.Name,
+				},
+			})
+			if f.Type.IsNull {
+				elem = poet.Node(&ast.NullableType{
+					Expr: elem,
+				})
+			}
 			list.Parameters = append(list.Parameters, &ast.Parameter{
 				Name: f.Name,
 				Ref: &ast.TypeReference{
-					Element: &ast.UserType{
-						ReferenceExpression: &ast.NameReferenceExpression{
-							Name: f.Type.String(),
-						},
-					},
+					Element: elem,
 				},
 			})
 		}

@@ -55,8 +55,14 @@ func (w *writer) printNode(node *ast.Node, indent int32) {
 	case *ast.Node_NameReferenceExpression:
 		w.printNameReferenceExpression(n.NameReferenceExpression, indent)
 
+	case *ast.Node_NullableType:
+		w.printNullableType(n.NullableType, indent)
+
 	case *ast.Node_PackageDirective:
 		w.printPackageDirective(n.PackageDirective, indent)
+
+	case *ast.Node_UserType:
+		w.printUserType(n.UserType, indent)
 
 	default:
 		panic(n)
@@ -112,6 +118,11 @@ func (w *writer) printNameReferenceExpression(n *ast.NameReferenceExpression, in
 	w.print(n.Name)
 }
 
+func (w *writer) printNullableType(n *ast.NullableType, indent int32) {
+	w.printNode(n.Expr, indent)
+	w.print("?")
+}
+
 func (w *writer) printPackageDirective(n *ast.PackageDirective, indent int32) {
 	w.print("\n")
 	w.print("package ")
@@ -146,7 +157,7 @@ func (w *writer) printPrimaryConstructor(n *ast.PrimaryConstructor, indent int32
 }
 
 func (w *writer) printTypeReference(n *ast.TypeReference, indent int32) {
-	w.printUserType(n.Element, indent)
+	w.printNode(n.Element, indent)
 }
 
 func (w *writer) printUserType(n *ast.UserType, indent int32) {

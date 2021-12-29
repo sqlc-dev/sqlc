@@ -18,6 +18,7 @@ message Node {
     ParameterList parameter_list = 10 [json_name="ParameterList"];
     TypeReference type_reference = 11 [json_name="TypeReference"];
     UserType user_type = 12 [json_name="UserType"];
+    NullableType nullable_type = 13 [json_name="NullableType"];
   }
 }
 
@@ -55,6 +56,11 @@ message NameReferenceExpression
   string name = 1 [json_name="name"];
 }
 
+message NullableType
+{
+   Node expr = 1 [json_name="expr"];
+}
+
 message PackageDirective
 {
   Node name = 1 [json_name="name"];
@@ -73,7 +79,7 @@ message ParameterList
 
 message TypeReference
 {
-  UserType element = 1 [json_name="element"];
+  Node element = 1 [json_name="element"];
 }
 
 message UserType
