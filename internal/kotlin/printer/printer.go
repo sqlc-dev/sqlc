@@ -30,7 +30,7 @@ func (w *writer) print(text string) {
 
 func (w *writer) printIndent(indent int32) {
 	for i, n := 0, int(indent); i < n; i++ {
-		w.src = append(w.src, "    "...)
+		w.src = append(w.src, "  "...)
 	}
 }
 
@@ -70,11 +70,13 @@ func (w *writer) printClass(n *ast.Class, indent int32) {
 	}
 	w.print("class ")
 	w.print(n.Name)
-	w.print(" (\n")
+	if n.Constructor != nil {
+		w.print(" ")
+		w.printPrimaryConstructor(n.Constructor, indent)
+	}
 	for _, node := range n.Body {
 		w.printNode(node, indent+1)
 	}
-	w.print(")\n")
 }
 
 func (w *writer) printComment(n *ast.Comment, indent int32) {
@@ -115,4 +117,38 @@ func (w *writer) printPackageDirective(n *ast.PackageDirective, indent int32) {
 	w.print("package ")
 	w.printNode(n.Name, indent)
 	w.print("\n")
+}
+
+func (w *writer) printParameter(n *ast.Parameter, indent int32) {
+	w.print("val ")
+	w.print(n.Name)
+	w.print(": ")
+	w.printTypeReference(n.Ref, indent)
+}
+
+func (w *writer) printParameterList(n *ast.ParameterList, indent int32) {
+	for i, p := range n.Parameters {
+		w.printIndent(indent)
+		w.printParameter(p, indent)
+		if i != len(n.Parameters)-1 {
+			w.print(",")
+		}
+		w.print("\n")
+	}
+}
+
+func (w *writer) printPrimaryConstructor(n *ast.PrimaryConstructor, indent int32) {
+	w.print("(\n")
+	if n.ValueParameterList != nil {
+		w.printParameterList(n.ValueParameterList, indent+1)
+	}
+	w.print(")\n")
+}
+
+func (w *writer) printTypeReference(n *ast.TypeReference, indent int32) {
+	w.printUserType(n.Element, indent)
+}
+
+func (w *writer) printUserType(n *ast.UserType, indent int32) {
+	w.printNameReferenceExpression(n.ReferenceExpression, indent)
 }

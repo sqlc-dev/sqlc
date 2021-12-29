@@ -2,7 +2,6 @@ package poet
 
 import "github.com/kyleconroy/sqlc/internal/kotlin/ast"
 
-
 func Comment(text string) *ast.Node {
 	return &ast.Node{
 		Node: &ast.Node_Comment{
@@ -43,4 +42,3 @@ func PackageDirective(name *ast.Node) *ast.Node {
 		},
 	}
 }
-

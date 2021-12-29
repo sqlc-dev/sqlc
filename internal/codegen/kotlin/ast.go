@@ -34,15 +34,28 @@ func buildModelsFile(ctx *ktTmplCtx, i *importer) *ast.Node {
 	}
 
 	for _, m := range ctx.DataClasses {
+		list := &ast.ParameterList{}
+		for _, f := range m.Fields {
+			list.Parameters = append(list.Parameters, &ast.Parameter{
+				Name: f.Name,
+				Ref: &ast.TypeReference{
+					Element: &ast.UserType{
+						ReferenceExpression: &ast.NameReferenceExpression{
+							Name: f.Type.String(),
+						},
+					},
+				},
+			})
+		}
 		def := &ast.Class{
 			Name: m.Name,
 			Modifiers: &ast.DeclarationModifierList{
 				Annotations: []string{"data"},
 			},
+			Constructor: &ast.PrimaryConstructor{
+				ValueParameterList: list,
+			},
 		}
-		// for _, f := range m.Fields {
-		// 	def.Body = append(def.Body, fieldNode(f))
-		// }
 		file.Body = append(file.Body, poet.Node(def))
 	}
 

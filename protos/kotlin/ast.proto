@@ -26,6 +26,7 @@ message Class
   string name = 1 [json_name="name"];
   repeated Node body = 2 [json_name="body"];
   DeclarationModifierList modifiers = 3 [json_name="modifiers"];
+  PrimaryConstructor constructor = 4 [json_name="constructor"];
 }
 
 message Comment
