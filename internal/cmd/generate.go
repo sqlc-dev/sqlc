@@ -63,7 +63,7 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 		}
 
 		if yamlMissing && jsonMissing {
-			fmt.Fprintln(stderr, "error parsing sqlc.json: file does not exist")
+			fmt.Fprintln(stderr, "error parsing configuration files. sqlc.yaml or sqlc.json: file does not exist")
 			return nil, errors.New("config file missing")
 		}
 
