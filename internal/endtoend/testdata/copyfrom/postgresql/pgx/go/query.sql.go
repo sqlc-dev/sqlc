@@ -4,7 +4,6 @@
 package querytest
 
 import (
-	"context"
 	"database/sql"
 )
 
