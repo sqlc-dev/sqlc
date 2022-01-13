@@ -160,7 +160,7 @@ type Query struct {
 	SourceName   string
 	Ret          QueryValue
 	Arg          QueryValue
-	// Used for :copyFrom
+	// Used for :copyfrom
 	Table *ast.TableName
 }
 

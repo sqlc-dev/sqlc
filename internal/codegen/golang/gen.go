@@ -3,6 +3,7 @@ package golang
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"go/format"
 	"strings"
@@ -98,6 +99,10 @@ func generate(settings config.CombinedSettings, enums []Enum, structs []Struct, 
 		Structs:                   structs,
 	}
 
+	if tctx.UsesCopyFrom && tctx.SQLPackage != SQLPackagePGX {
+		return nil, errors.New(":copyfrom is only supported by pgx")
+	}
+
 	output := map[string]string{}
 
 	execute := func(name, templateName string) error {
@@ -138,6 +143,8 @@ func generate(settings config.CombinedSettings, enums []Enum, structs []Struct, 
 	if golang.OutputQuerierFileName != "" {
 		querierFileName = golang.OutputQuerierFileName
 	}
+	copyfromFileName := "copyfrom.go"
+	// TODO(Jille): Make this configurable.
 
 	if err := execute(dbFileName, "dbFile"); err != nil {
 		return nil, err
@@ -147,6 +154,11 @@ func generate(settings config.CombinedSettings, enums []Enum, structs []Struct, 
 	}
 	if golang.EmitInterface {
 		if err := execute(querierFileName, "interfaceFile"); err != nil {
+			return nil, err
+		}
+	}
+	if tctx.UsesCopyFrom {
+		if err := execute(copyfromFileName, "copyfromFile"); err != nil {
 			return nil, err
 		}
 	}

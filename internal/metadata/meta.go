@@ -18,7 +18,7 @@ const (
 	CmdExecRows   = ":execrows"
 	CmdMany       = ":many"
 	CmdOne        = ":one"
-	CmdCopyFrom   = ":copyFrom"
+	CmdCopyFrom   = ":copyfrom"
 )
 
 // A query name must be a valid Go identifier
@@ -80,7 +80,7 @@ func Parse(t string, commentStyle CommentSyntax) (string, string, error) {
 			part = part[:len(part)-1] // removes the trailing "*/" element
 		}
 		if len(part) == 2 {
-			return "", "", fmt.Errorf("missing query type [':one', ':many', ':exec', ':execrows', ':execresult', ':copyFrom']: %s", line)
+			return "", "", fmt.Errorf("missing query type [':one', ':many', ':exec', ':execrows', ':execresult', ':copyfrom']: %s", line)
 		}
 		if len(part) != 4 {
 			return "", "", fmt.Errorf("invalid query comment: %s", line)
