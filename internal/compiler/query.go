@@ -36,13 +36,16 @@ type Column struct {
 type Query struct {
 	SQL      string
 	Name     string
-	Cmd      string // TODO: Pick a better name. One of: one, many, exec, execrows
+	Cmd      string // TODO: Pick a better name. One of: one, many, exec, execrows, copyFrom
 	Columns  []*Column
 	Params   []Parameter
 	Comments []string
 
 	// XXX: Hack
 	Filename string
+
+	// Needed for CopyFrom
+	InsertIntoTable *ast.TableName
 }
 
 type Parameter struct {
