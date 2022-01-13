@@ -32,7 +32,7 @@ This change ensures that the query will never return unexpected data.
 Our query was annotated with `:one`, meaning that it should only return a
 single row. We scan the data from that one into a `Author` struct.
 
-Since the get query has a single parameter, the `GetAuthor` method takes a single
+Since the get query has a single parameter and the `EmitParamsStructWithSingleParam` was not set, the `GetAuthor` method takes a single
 `int` as an argument.
 
 Since the list query has no parameters, the `ListAuthors` method accepts no
@@ -189,7 +189,8 @@ In PostgreSQL,
 [ANY](https://www.postgresql.org/docs/current/functions-comparisons.html#id-1.5.8.28.16)
 allows you to check if a value exists in an array expression. Queries using ANY
 with a single parameter will generate method signatures with slices as
-arguments. Use the postgres data types, eg: int, varchar, etc.
+arguments. Use the postgres data types, eg: int, varchar, etc. If you wish to 
+generate Structs for single parameter queries set EmitParamsStructWithSingleParam to true.
 
 ```sql
 CREATE TABLE authors (
