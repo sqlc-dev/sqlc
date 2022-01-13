@@ -163,14 +163,14 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 		}
 		sqlpkg := SQLPackageFromString(settings.Go.SQLPackage)
 
-		if len(query.Params) == 1 {
+		if len(query.Params) == 1 && !settings.Go.EmitParamsStructWithSingleParam {
 			p := query.Params[0]
 			gq.Arg = QueryValue{
 				Name:       paramName(p),
 				Typ:        goType(r, p.Column, settings),
 				SQLPackage: sqlpkg,
 			}
-		} else if len(query.Params) > 1 {
+		} else if (len(query.Params) > 1) || (len(query.Params) == 1 && settings.Go.EmitParamsStructWithSingleParam) {
 			var cols []goColumn
 			for _, p := range query.Params {
 				cols = append(cols, goColumn{
