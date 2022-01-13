@@ -1,6 +1,7 @@
 package python
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"regexp"
@@ -12,6 +13,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/core"
 	"github.com/kyleconroy/sqlc/internal/inflection"
+	"github.com/kyleconroy/sqlc/internal/metadata"
 	pyast "github.com/kyleconroy/sqlc/internal/python/ast"
 	"github.com/kyleconroy/sqlc/internal/python/poet"
 	pyprint "github.com/kyleconroy/sqlc/internal/python/printer"
@@ -390,7 +392,7 @@ func sqlalchemySQL(s string, engine config.Engine) string {
 	return s
 }
 
-func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs []Struct) []Query {
+func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs []Struct) ([]Query, error) {
 	qs := make([]Query, 0, len(r.Queries))
 	for _, query := range r.Queries {
 		if query.Name == "" {
@@ -398,6 +400,9 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 		}
 		if query.Cmd == "" {
 			continue
+		}
+		if query.Cmd == metadata.CmdCopyFrom {
+			return nil, errors.New("Support for CopyFrom in Python is not implemented")
 		}
 
 		methodName := MethodName(query.Name)
@@ -490,7 +495,7 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 		qs = append(qs, gq)
 	}
 	sort.Slice(qs, func(i, j int) bool { return qs[i].MethodName < qs[j].MethodName })
-	return qs
+	return qs, nil
 }
 
 func importNode(name string) *pyast.Node {
@@ -1052,7 +1057,10 @@ func HashComment(s string) string {
 func Generate(r *compiler.Result, settings config.CombinedSettings) (map[string]string, error) {
 	enums := buildEnums(r, settings)
 	models := buildModels(r, settings)
-	queries := buildQueries(r, settings, models)
+	queries, err := buildQueries(r, settings, models)
+	if err != nil {
+		return nil, err
+	}
 
 	i := &importer{
 		Settings: settings,

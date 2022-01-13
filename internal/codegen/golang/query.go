@@ -1,9 +1,11 @@
 package golang
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/kyleconroy/sqlc/internal/metadata"
+	"github.com/kyleconroy/sqlc/internal/sql/ast"
 )
 
 type QueryValue struct {
@@ -36,6 +38,13 @@ func (v QueryValue) Pair() string {
 		return ""
 	}
 	return v.Name + " " + v.DefineType()
+}
+
+func (v QueryValue) SlicePair() string {
+	if v.isEmpty() {
+		return ""
+	}
+	return v.Name + " []" + v.DefineType()
 }
 
 func (v QueryValue) Type() string {
@@ -105,6 +114,17 @@ func (v QueryValue) Params() string {
 	return "\n" + strings.Join(out, ",\n")
 }
 
+func (v QueryValue) ColumnNames() string {
+	if v.Struct == nil {
+		return fmt.Sprintf("[]string{%q}", v.Name)
+	}
+	escapedNames := make([]string, len(v.Struct.Fields))
+	for i, f := range v.Struct.Fields {
+		escapedNames[i] = fmt.Sprintf("%q", f.DBName)
+	}
+	return "[]string{" + strings.Join(escapedNames, ", ") + "}"
+}
+
 func (v QueryValue) Scan() string {
 	var out []string
 	if v.Struct == nil {
@@ -140,9 +160,21 @@ type Query struct {
 	SourceName   string
 	Ret          QueryValue
 	Arg          QueryValue
+	// Used for :copyfrom
+	Table *ast.TableName
 }
 
 func (q Query) hasRetType() bool {
 	scanned := q.Cmd == metadata.CmdOne || q.Cmd == metadata.CmdMany
 	return scanned && !q.Ret.isEmpty()
+}
+
+func (q Query) TableIdentifier() string {
+	escapedNames := make([]string, 0, 3)
+	for _, p := range []string{q.Table.Catalog, q.Table.Schema, q.Table.Name} {
+		if p != "" {
+			escapedNames = append(escapedNames, fmt.Sprintf("%q", p))
+		}
+	}
+	return "[]string{" + strings.Join(escapedNames, ", ") + "}"
 }
