@@ -28,7 +28,10 @@ func postgresType(r *compiler.Result, col *compiler.Column, settings config.Comb
 		return "sql.NullInt64"
 
 	case "smallserial", "serial2", "pg_catalog.serial2":
-		return "int16"
+		if notNull {
+			return "int16"
+		}
+		return "sql.NullInt16"
 
 	case "integer", "int", "int4", "pg_catalog.int4":
 		if notNull {
@@ -43,7 +46,10 @@ func postgresType(r *compiler.Result, col *compiler.Column, settings config.Comb
 		return "sql.NullInt64"
 
 	case "smallint", "int2", "pg_catalog.int2":
-		return "int16"
+		if notNull {
+			return "int16"
+		}
+		return "sql.NullInt16"
 
 	case "float", "double precision", "float8", "pg_catalog.float8":
 		if notNull {
