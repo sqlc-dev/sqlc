@@ -9,5 +9,5 @@ import (
 type User struct {
 	FirstName sql.NullString `json:"firstName"`
 	LastName  sql.NullString `json:"lastName"`
-	Age       int16          `json:"age"`
+	Age       sql.NullInt16  `json:"age"`
 }

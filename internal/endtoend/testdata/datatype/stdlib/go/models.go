@@ -60,17 +60,17 @@ type DtNetTypesNotNull struct {
 }
 
 type DtNumeric struct {
-	A int16
+	A sql.NullInt16
 	B sql.NullInt32
 	C sql.NullInt64
 	D sql.NullString
 	E sql.NullString
 	F sql.NullFloat64
 	G sql.NullFloat64
-	H int16
+	H sql.NullInt16
 	I sql.NullInt32
 	J sql.NullInt64
-	K int16
+	K sql.NullInt16
 	L sql.NullInt32
 	M sql.NullInt64
 }
