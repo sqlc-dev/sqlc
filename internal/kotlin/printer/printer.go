@@ -119,7 +119,7 @@ func (w *writer) printNameReferenceExpression(n *ast.NameReferenceExpression, in
 }
 
 func (w *writer) printNullableType(n *ast.NullableType, indent int32) {
-	w.printNode(n.Expr, indent)
+	w.printNode(n.InnerType, indent)
 	w.print("?")
 }
 

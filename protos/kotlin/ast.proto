@@ -58,7 +58,7 @@ message NameReferenceExpression
 
 message NullableType
 {
-   Node expr = 1 [json_name="expr"];
+   Node inner_type = 1 [json_name="inner_type"];
 }
 
 message PackageDirective

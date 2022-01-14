@@ -43,7 +43,7 @@ func buildModelsFile(ctx *ktTmplCtx, i *importer) *ast.Node {
 			})
 			if f.Type.IsNull {
 				elem = poet.Node(&ast.NullableType{
-					Expr: elem,
+					InnerType: elem,
 				})
 			}
 			list.Parameters = append(list.Parameters, &ast.Parameter{
