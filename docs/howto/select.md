@@ -21,7 +21,7 @@ ORDER BY id;
 
 A few new pieces of code are generated beyond the `Author` struct. An interface
 for the underlying database is generated. The `*sql.DB` and `*sql.Tx` types
-satisty this interface.
+satisfy this interface.
 
 The database access methods are added to a `Queries` struct, which is created
 using the `New` method.
