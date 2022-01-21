@@ -99,7 +99,7 @@ func (i *importer) Imports(filename string) [][]ImportSpec {
 	case querierFileName:
 		return mergeImports(i.interfaceImports())
 	case copyfromFileName:
-		return mergeImports(i.interfaceImports())
+		return mergeImports(i.copyfromImports())
 	default:
 		return mergeImports(i.queryImports(filename))
 	}
@@ -364,6 +364,31 @@ func (i *importer) queryImports(filename string) fileImports {
 	if sliceScan() && sqlpkg != SQLPackagePGX {
 		pkg[ImportSpec{Path: "github.com/lib/pq"}] = struct{}{}
 	}
+
+	return sortedImports(std, pkg)
+}
+
+func (i *importer) copyfromImports() fileImports {
+	std, pkg := buildImports(i.Settings, i.Queries, func(name string) bool {
+		for _, q := range i.Queries {
+			if q.Cmd != metadata.CmdCopyFrom {
+				continue
+			}
+			if q.hasRetType() {
+				if strings.HasPrefix(q.Ret.Type(), name) {
+					return true
+				}
+			}
+			if !q.Arg.isEmpty() {
+				if strings.HasPrefix(q.Arg.Type(), name) {
+					return true
+				}
+			}
+		}
+		return false
+	})
+
+	std["context"] = struct{}{}
 
 	return sortedImports(std, pkg)
 }
