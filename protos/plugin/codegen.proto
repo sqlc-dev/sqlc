@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package plugin;
 
-option go_package = "github.com/kyleconroy/sqlc/plugin";
+option go_package = "github.com/kyleconroy/sqlc/internal/plugin";
 
 message File
 {

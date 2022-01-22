@@ -21,6 +21,9 @@ sqlc-pg-gen:
 start:
 	docker-compose up -d
 
+fmt:
+	go fmt ./...
+
 psql:
 	PGPASSWORD=mysecretpassword psql --host=127.0.0.1 --port=5432 --username=postgres dinotest
 
