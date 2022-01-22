@@ -51,7 +51,12 @@ func pluginCatalog(c *catalog.Catalog) *plugin.Catalog {
 					l = *c.Length
 				}
 				columns = append(columns, &plugin.Column{
-					Name:    c.Name,
+					Name: c.Name,
+					Type: &plugin.Identifier{
+						Catalog: c.Type.Catalog,
+						Schema:  c.Type.Schema,
+						Name:    c.Type.Name,
+					},
 					Comment: c.Comment,
 					NotNull: c.IsNotNull,
 					IsArray: c.IsArray,
