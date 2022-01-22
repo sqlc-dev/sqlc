@@ -91,7 +91,7 @@ message Column
 
 message Query
 {
-  string sql = 1 [json_name="sql"];
+  string text = 1 [json_name="text"];
   string name = 2 [json_name="name"];
   string cmd = 3 [json_name="cmd"];
   repeated Column columns = 4 [json_name="columns"];

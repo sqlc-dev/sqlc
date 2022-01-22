@@ -17,8 +17,10 @@ func pluginCatalog(c *catalog.Catalog) *plugin.Catalog {
 
 func pluginQueries(r *compiler.Result) []*plugin.Query {
 	var out []*plugin.Query
-	for range r.Queries {
-		out = append(out, &plugin.Query{})
+	for _, q := range r.Queries {
+		out = append(out, &plugin.Query{
+			Text: q.SQL,
+		})
 	}
 	return out
 }
