@@ -29,7 +29,7 @@ message Settings
   string version = 1 [json_name="version"];
   string engine = 2 [json_name="engine"];
   repeated string schema = 3 [json_name="schema"];
-  repeated string paths = 4 [json_name="queries"];
+  repeated string queries = 4 [json_name="queries"];
   map<string, string> rename = 5 [json_name="rename"];
   repeated Override overrides = 6 [json_name="overrides"];
 }
@@ -74,7 +74,6 @@ message Identifier
 message Column
 {
   string name = 1;
-  string data_type = 2;
   bool not_null = 3;
   bool is_array = 4;
   string comment = 5;
