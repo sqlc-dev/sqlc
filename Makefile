@@ -27,6 +27,8 @@ psql:
 mysqlsh:
 	mysqlsh --sql --user root --password mysecretpassword --database dinotest 127.0.0.1:3306
 
+fmt:
+	go fmt ./...
 
 # $ protoc --version
 # libprotoc 3.17.3
