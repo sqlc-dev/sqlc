@@ -6,7 +6,7 @@ require (
 	github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20211208212222-82c441726976
 	github.com/davecgh/go-spew v1.1.1
 	github.com/go-sql-driver/mysql v1.6.0
-	github.com/google/go-cmp v0.5.6
+	github.com/google/go-cmp v0.5.7
 	github.com/jackc/pgx/v4 v4.14.1
 	github.com/jinzhu/inflection v1.0.0
 	github.com/lib/pq v1.10.4
