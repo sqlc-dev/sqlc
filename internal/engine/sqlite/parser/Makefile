@@ -1,2 +1,2 @@
-sqlite_parser.go: SQLite.g4
-	antlr -Dlanguage=Go SQLite.g4
+sqlite_parser.go: SQLiteLexer.g4 SQLiteParser.g4
+	antlr -Dlanguage=Go SQLiteLexer.g4 SQLiteParser.g4
