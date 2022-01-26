@@ -54,7 +54,7 @@ func convertAlter_table_stmtContext(c *parser.Alter_table_stmtContext) ast.Node 
 }
 
 func convertAttach_stmtContext(c *parser.Attach_stmtContext) ast.Node {
-	name := c.Database_name().GetText()
+	name := c.Schema_name().GetText()
 	return &ast.CreateSchemaStmt{
 		Name: &name,
 	}
@@ -63,7 +63,7 @@ func convertAttach_stmtContext(c *parser.Attach_stmtContext) ast.Node {
 func convertCreate_table_stmtContext(c *parser.Create_table_stmtContext) ast.Node {
 	stmt := &ast.CreateTableStmt{
 		Name:        parseTableName(c),
-		IfNotExists: c.K_EXISTS() != nil,
+		IfNotExists: c.EXISTS_() != nil,
 	}
 	for _, idef := range c.AllColumn_def() {
 		if def, ok := idef.(*parser.Column_defContext); ok {
