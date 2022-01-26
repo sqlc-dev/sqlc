@@ -43,7 +43,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.De
 {{- if $.EmitMethodsWithDBArgument}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error) {
 	rows, err := db.Query(ctx, {{.ConstantName}}, {{.Arg.Params}})
-{{- else}}
+{{- else -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error) {
 	rows, err := q.db.Query(ctx, {{.ConstantName}}, {{.Arg.Params}})
 {{- end}}
@@ -76,7 +76,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.
 {{- if $.EmitMethodsWithDBArgument}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) error {
 	_, err := db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
-{{- else}}
+{{- else -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) error {
 	_, err := q.db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
 {{- end}}
@@ -104,10 +104,10 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, er
 {{if eq .Cmd ":execresult"}}
 {{range .Comments}}//{{.}}
 {{end -}}
-{{if $.EmitMethodsWithDBArgument}}
+{{- if $.EmitMethodsWithDBArgument}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) (pgconn.CommandTag, error) {
 	return db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
-{{else}}
+{{- else -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (pgconn.CommandTag, error) {
 	return q.db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
 {{- end}}

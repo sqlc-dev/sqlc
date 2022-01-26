@@ -1,0 +1,14 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "path": "go",
+      "name": "querytest",
+      "engine": "postgresql",
+      "schema": "query.sql",
+      "queries": "query.sql",
+      "sql_package": "pgx/v4"
+    }
+  ]
+}
+
