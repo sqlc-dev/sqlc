@@ -101,6 +101,7 @@ func convertExprContext(c *parser.ExprContext) ast.Node {
 	return &ast.TODO{}
 }
 
+/*
 func convertFactored_select_stmtContext(c *parser.Factored_select_stmtContext) ast.Node {
 	var tables []ast.Node
 	var cols []ast.Node
@@ -159,6 +160,7 @@ func convertFactored_select_stmtContext(c *parser.Factored_select_stmtContext) a
 		TargetList: &ast.List{Items: cols},
 	}
 }
+*/
 
 func convertSql_stmtContext(n *parser.Sql_stmtContext) ast.Node {
 	if stmt := n.Alter_table_stmt(); stmt != nil {
@@ -174,9 +176,6 @@ func convertSql_stmtContext(n *parser.Sql_stmtContext) ast.Node {
 		return convert(stmt)
 	}
 	if stmt := n.Commit_stmt(); stmt != nil {
-		return convert(stmt)
-	}
-	if stmt := n.Compound_select_stmt(); stmt != nil {
 		return convert(stmt)
 	}
 	if stmt := n.Create_index_stmt(); stmt != nil {
@@ -224,9 +223,6 @@ func convertSql_stmtContext(n *parser.Sql_stmtContext) ast.Node {
 	if stmt := n.Savepoint_stmt(); stmt != nil {
 		return convert(stmt)
 	}
-	if stmt := n.Simple_select_stmt(); stmt != nil {
-		return convert(stmt)
-	}
 	if stmt := n.Select_stmt(); stmt != nil {
 		return convert(stmt)
 	}
@@ -261,10 +257,20 @@ func convert(node node) ast.Node {
 		return convertExprContext(n)
 
 	case *parser.Factored_select_stmtContext:
-		return convertFactored_select_stmtContext(n)
+		// TODO: need to handle this
+		return &ast.TODO{}
+	//	return convertFactored_select_stmtContext(n)
 
 	case *parser.Sql_stmtContext:
 		return convertSql_stmtContext(n)
+
+	case *parser.Simple_select_stmtContext:
+		// TODO: need to handle this
+		return &ast.TODO{}
+
+	case *parser.Compound_select_stmtContext:
+		// TODO: need to handle this
+		return &ast.TODO{}
 
 	default:
 		return &ast.TODO{}
