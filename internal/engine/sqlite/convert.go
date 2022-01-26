@@ -101,23 +101,6 @@ func convertExprContext(c *parser.ExprContext) ast.Node {
 	return &ast.TODO{}
 }
 
-func convertSelect_stmtContext(c *parser.Select_stmtContext) ast.Node {
-	var tables []ast.Node
-	var cols []ast.Node
-	for _, icore := range c.AllSelect_core() {
-		core, ok := icore.(*parser.Select_coreContext)
-		if !ok {
-			continue
-		}
-		cols = append(cols, getCols(core)...)
-		tables = append(cols, getTables(core)...)
-	}
-	return &ast.SelectStmt{
-		FromClause: &ast.List{Items: tables},
-		TargetList: &ast.List{Items: cols},
-	}
-}
-
 func convertSimpleSelect_stmtContext(c *parser.Simple_select_stmtContext) ast.Node {
 	if core, ok := c.Select_core().(*parser.Select_coreContext); ok {
 		cols := getCols(core)
@@ -132,7 +115,7 @@ func convertSimpleSelect_stmtContext(c *parser.Simple_select_stmtContext) ast.No
 	return &ast.TODO{}
 }
 
-func convertCompoundSelect_stmtContext(c *parser.Compound_select_stmtContext) ast.Node {
+func convertMultiSelect_stmtContext(c multiselect) ast.Node {
 	var tables []ast.Node
 	var cols []ast.Node
 	for _, icore := range c.AllSelect_core() {
@@ -302,7 +285,7 @@ func convert(node node) ast.Node {
 		return &ast.TODO{}
 
 	case *parser.Select_stmtContext:
-		return convertSelect_stmtContext(n)
+		return convertMultiSelect_stmtContext(n)
 
 	case *parser.Sql_stmtContext:
 		return convertSql_stmtContext(n)
@@ -311,7 +294,7 @@ func convert(node node) ast.Node {
 		return convertSimpleSelect_stmtContext(n)
 
 	case *parser.Compound_select_stmtContext:
-		return convertCompoundSelect_stmtContext(n)
+		return convertMultiSelect_stmtContext(n)
 
 	default:
 		return &ast.TODO{}
