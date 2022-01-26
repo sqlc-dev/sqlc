@@ -77,10 +77,23 @@ func convertCreate_table_stmtContext(c *parser.Create_table_stmtContext) ast.Nod
 	return stmt
 }
 
-func convertDrop_table_stmtContext(c *parser.Drop_table_stmtContext) ast.Node {
-	return &ast.DropTableStmt{
-		IfExists: c.K_EXISTS() != nil,
-		Tables:   []*ast.TableName{parseTableName(c)},
+func convertDrop_stmtContext(c *parser.Drop_stmtContext) ast.Node {
+	// TODO confirm that this logic does what it looks like it should
+	if tableName, ok := c.TABLE_().(antlr.TerminalNode); ok {
+
+		name := ast.TableName{
+			Name: tableName.GetText(),
+		}
+		if c.Schema_name() != nil {
+			name.Schema = c.Schema_name().GetText()
+		}
+
+		return &ast.DropTableStmt{
+			IfExists: c.EXISTS_() != nil,
+			Tables:   []*ast.TableName{&name},
+		}
+	} else {
+		return &ast.TODO{}
 	}
 }
 
@@ -190,19 +203,7 @@ func convertSql_stmtContext(n *parser.Sql_stmtContext) ast.Node {
 	if stmt := n.Detach_stmt(); stmt != nil {
 		return convert(stmt)
 	}
-	if stmt := n.Drop_index_stmt(); stmt != nil {
-		return convert(stmt)
-	}
-	if stmt := n.Drop_table_stmt(); stmt != nil {
-		return convert(stmt)
-	}
-	if stmt := n.Drop_trigger_stmt(); stmt != nil {
-		return convert(stmt)
-	}
-	if stmt := n.Drop_view_stmt(); stmt != nil {
-		return convert(stmt)
-	}
-	if stmt := n.Factored_select_stmt(); stmt != nil {
+	if stmt := n.Drop_stmt(); stmt != nil {
 		return convert(stmt)
 	}
 	if stmt := n.Insert_stmt(); stmt != nil {
@@ -253,8 +254,8 @@ func convert(node node) ast.Node {
 	case *parser.Create_table_stmtContext:
 		return convertCreate_table_stmtContext(n)
 
-	case *parser.Drop_table_stmtContext:
-		return convertDrop_table_stmtContext(n)
+	case *parser.Drop_stmtContext:
+		return convertDrop_stmtContext(n)
 
 	case *parser.ExprContext:
 		return convertExprContext(n)
