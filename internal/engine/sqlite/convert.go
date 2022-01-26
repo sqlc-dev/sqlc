@@ -20,12 +20,12 @@ func convertAlter_table_stmtContext(c *parser.Alter_table_stmtContext) ast.Node 
 		}
 	}
 
-	if newCol, ok := c.New_column_name().(*parser.New_column_nameContext); ok {
+	if newCol, ok := c.GetNew_column_name().(*parser.Column_nameContext); ok {
 		name := newCol.Any_name().GetText()
 		return &ast.RenameColumnStmt{
 			Table: parseTableName(c),
 			Col: &ast.ColumnRef{
-				Name: c.Column_name().GetText(),
+				Name: c.GetOld_column_name().GetText(),
 			},
 			NewName: &name,
 		}
