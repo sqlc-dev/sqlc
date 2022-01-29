@@ -12,40 +12,59 @@ type node interface {
 }
 
 func convertAlter_table_stmtContext(c *parser.Alter_table_stmtContext) ast.Node {
-	if newTable, ok := c.New_table_name().(*parser.New_table_nameContext); ok {
-		name := newTable.Any_name().GetText()
-		return &ast.RenameTableStmt{
-			Table:   parseTableName(c),
-			NewName: &name,
+
+	if c.RENAME_() != nil {
+		if newTable, ok := c.New_table_name().(*parser.New_table_nameContext); ok {
+			name := newTable.Any_name().GetText()
+			return &ast.RenameTableStmt{
+				Table:   parseTableName(c),
+				NewName: &name,
+			}
+		}
+
+		if newCol, ok := c.GetNew_column_name().(*parser.Column_nameContext); ok {
+			name := newCol.Any_name().GetText()
+			return &ast.RenameColumnStmt{
+				Table: parseTableName(c),
+				Col: &ast.ColumnRef{
+					Name: c.GetOld_column_name().GetText(),
+				},
+				NewName: &name,
+			}
 		}
 	}
 
-	if newCol, ok := c.GetNew_column_name().(*parser.Column_nameContext); ok {
-		name := newCol.Any_name().GetText()
-		return &ast.RenameColumnStmt{
-			Table: parseTableName(c),
-			Col: &ast.ColumnRef{
-				Name: c.GetOld_column_name().GetText(),
-			},
-			NewName: &name,
+	if c.ADD_() != nil {
+		if def, ok := c.Column_def().(*parser.Column_defContext); ok {
+			stmt := &ast.AlterTableStmt{
+				Table: parseTableName(c),
+				Cmds:  &ast.List{},
+			}
+			name := def.Column_name().GetText()
+			stmt.Cmds.Items = append(stmt.Cmds.Items, &ast.AlterTableCmd{
+				Name:    &name,
+				Subtype: ast.AT_AddColumn,
+				Def: &ast.ColumnDef{
+					Colname: name,
+					TypeName: &ast.TypeName{
+						Name: def.Type_name().GetText(),
+					},
+				},
+			})
+			return stmt
 		}
 	}
 
-	if def, ok := c.Column_def().(*parser.Column_defContext); ok {
+	if c.DROP_() != nil {
 		stmt := &ast.AlterTableStmt{
 			Table: parseTableName(c),
 			Cmds:  &ast.List{},
 		}
-		name := def.Column_name().GetText()
+		name := c.Column_name(0).GetText()
+		//fmt.Printf("column: %s", name)
 		stmt.Cmds.Items = append(stmt.Cmds.Items, &ast.AlterTableCmd{
 			Name:    &name,
-			Subtype: ast.AT_AddColumn,
-			Def: &ast.ColumnDef{
-				Colname: name,
-				TypeName: &ast.TypeName{
-					Name: def.Type_name().GetText(),
-				},
-			},
+			Subtype: ast.AT_DropColumn,
 		})
 		return stmt
 	}
