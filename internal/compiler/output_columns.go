@@ -268,6 +268,17 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 			}
 			cols = append(cols, col)
 
+		case *ast.SelectStmt:
+			subcols, err := outputColumns(qc, n)
+			if err != nil {
+				return nil, err
+			}
+			first := subcols[0]
+			if res.Name != nil {
+				first.Name = *res.Name
+			}
+			cols = append(cols, first)
+
 		default:
 			name := ""
 			if res.Name != nil {
