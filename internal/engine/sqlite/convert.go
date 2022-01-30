@@ -116,8 +116,37 @@ func convertDrop_stmtContext(c *parser.Drop_stmtContext) ast.Node {
 	}
 }
 
+func identifier(id string) string {
+	return strings.ToLower(id)
+}
+
+func NewIdentifer(t string) *ast.String {
+	return &ast.String{Str: identifier(t)}
+}
+
 func convertExprContext(c *parser.ExprContext) ast.Node {
-	return &ast.TODO{}
+	if name, ok := c.Function_name().(*parser.Function_nameContext); ok {
+		funcName := strings.ToLower(name.GetText())
+
+		fn := &ast.FuncCall{
+			Func: &ast.FuncName{
+				Name: funcName,
+			},
+			Funcname: &ast.List{
+				Items: []ast.Node{
+					NewIdentifer(funcName),
+				},
+			},
+			AggStar:     c.STAR() != nil,
+			Args:        &ast.List{},
+			AggOrder:    &ast.List{},
+			AggDistinct: c.DISTINCT_() != nil,
+		}
+
+		return fn
+	}
+
+	return &ast.Expr{}
 }
 
 func convertSimpleSelect_stmtContext(c *parser.Simple_select_stmtContext) ast.Node {
