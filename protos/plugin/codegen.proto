@@ -86,6 +86,7 @@ message Column
   Identifier table = 10;
   string table_alias = 11;
   Identifier type = 12;
+  string data_type = 13;
 }
 
 message Query
@@ -96,6 +97,7 @@ message Query
   repeated Column columns = 4 [json_name="columns"];
   repeated Parameter params = 5 [json_name="parameters"];
   repeated string comments = 6 [json_name="comments"];
+  string filename = 7 [json_name="filename"];
 }
 
 message Parameter
