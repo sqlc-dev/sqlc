@@ -38,6 +38,7 @@ type v1PackageSettings struct {
 	OutputModelsFileName      string     `json:"output_models_file_name,omitempty" yaml:"output_models_file_name"`
 	OutputQuerierFileName     string     `json:"output_querier_file_name,omitempty" yaml:"output_querier_file_name"`
 	OutputFilesSuffix         string     `json:"output_files_suffix,omitempty" yaml:"output_files_suffix"`
+	StrictFunctionChecks      bool       `json:"strict_function_checks" yaml:"strict_function_checks"`
 }
 
 func v1ParseConfig(rd io.Reader) (Config, error) {
@@ -134,6 +135,7 @@ func (c *V1GenerateSettings) Translate() Config {
 					OutputFilesSuffix:         pkg.OutputFilesSuffix,
 				},
 			},
+			StrictFunctionChecks: pkg.StrictFunctionChecks,
 		})
 	}
 

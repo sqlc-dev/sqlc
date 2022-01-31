@@ -18,7 +18,9 @@ func dataType(n *ast.TypeName) string {
 	}
 }
 
-func resolveCatalogRefs(c *catalog.Catalog, qc *QueryCatalog, rvs []*ast.RangeVar, args []paramRef, names map[int]string) ([]Parameter, error) {
+func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, args []paramRef, names map[int]string) ([]Parameter, error) {
+	c := comp.catalog
+
 	aliasMap := map[string]*ast.TableName{}
 	// TODO: Deprecate defaultTable
 	var defaultTable *ast.TableName

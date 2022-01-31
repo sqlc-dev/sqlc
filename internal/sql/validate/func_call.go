@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sql/astutils"
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
@@ -11,8 +12,9 @@ import (
 )
 
 type funcCallVisitor struct {
-	catalog *catalog.Catalog
-	err     error
+	catalog  *catalog.Catalog
+	settings config.CombinedSettings
+	err      error
 }
 
 func (v *funcCallVisitor) Visit(node ast.Node) astutils.Visitor {
@@ -59,16 +61,18 @@ func (v *funcCallVisitor) Visit(node ast.Node) astutils.Visitor {
 	}
 
 	fun, err := v.catalog.ResolveFuncCall(call)
-	if fun != nil || errors.Is(err, sqlerr.NotFound) {
+	if fun != nil {
 		return v
 	}
-
+	if errors.Is(err, sqlerr.NotFound) && !v.settings.Package.StrictFunctionChecks {
+		return v
+	}
 	v.err = err
 	return nil
 }
 
-func FuncCall(c *catalog.Catalog, n ast.Node) error {
-	visitor := funcCallVisitor{catalog: c}
+func FuncCall(c *catalog.Catalog, cs config.CombinedSettings, n ast.Node) error {
+	visitor := funcCallVisitor{catalog: c, settings: cs}
 	astutils.Walk(&visitor, n)
 	return visitor.err
 }
