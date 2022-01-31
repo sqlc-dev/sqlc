@@ -7,7 +7,7 @@
 			"schema": "query.sql",
 			"queries": "query.sql",
 			"engine": "postgresql",
-      "strict_function_checks": true
+			"strict_function_checks": true
 		}
 	]
 }

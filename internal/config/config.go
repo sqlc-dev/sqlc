@@ -97,10 +97,11 @@ type GenKotlin struct {
 }
 
 type SQL struct {
-	Engine  Engine `json:"engine,omitempty" yaml:"engine"`
-	Schema  Paths  `json:"schema" yaml:"schema"`
-	Queries Paths  `json:"queries" yaml:"queries"`
-	Gen     SQLGen `json:"gen" yaml:"gen"`
+	Engine               Engine `json:"engine,omitempty" yaml:"engine"`
+	Schema               Paths  `json:"schema" yaml:"schema"`
+	Queries              Paths  `json:"queries" yaml:"queries"`
+	StrictFunctionChecks bool   `json:"strict_function_checks" yaml:"strict_function_checks"`
+	Gen                  SQLGen `json:"gen" yaml:"gen"`
 }
 
 type SQLGen struct {

@@ -18,7 +18,9 @@ func dataType(n *ast.TypeName) string {
 	}
 }
 
-func resolveCatalogRefs(c *catalog.Catalog, qc *QueryCatalog, rvs []*ast.RangeVar, args []paramRef, names map[int]string) ([]Parameter, error) {
+func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, args []paramRef, names map[int]string) ([]Parameter, error) {
+	c := comp.catalog
+
 	aliasMap := map[string]*ast.TableName{}
 	// TODO: Deprecate defaultTable
 	var defaultTable *ast.TableName
@@ -257,6 +259,9 @@ func resolveCatalogRefs(c *catalog.Catalog, qc *QueryCatalog, rvs []*ast.RangeVa
 		case *ast.FuncCall:
 			fun, err := c.ResolveFuncCall(n)
 			if err != nil {
+				if comp.combo.Package.StrictFunctionChecks {
+					return nil, err
+				}
 				// Synthesize a function on the fly to avoid returning with an error
 				// for an unknown Postgres function (e.g. defined in an extension)
 				var args []*catalog.Argument
