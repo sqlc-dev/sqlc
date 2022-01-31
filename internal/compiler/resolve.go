@@ -259,9 +259,6 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 		case *ast.FuncCall:
 			fun, err := c.ResolveFuncCall(n)
 			if err != nil {
-				if comp.combo.Package.StrictFunctionChecks {
-					return nil, err
-				}
 				// Synthesize a function on the fly to avoid returning with an error
 				// for an unknown Postgres function (e.g. defined in an extension)
 				var args []*catalog.Argument
