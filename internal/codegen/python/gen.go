@@ -9,9 +9,9 @@ import (
 	"strings"
 
 	"github.com/kyleconroy/sqlc/internal/codegen"
-	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/inflection"
 	"github.com/kyleconroy/sqlc/internal/metadata"
+	"github.com/kyleconroy/sqlc/internal/pattern"
 	"github.com/kyleconroy/sqlc/internal/plugin"
 	pyast "github.com/kyleconroy/sqlc/internal/python/ast"
 	"github.com/kyleconroy/sqlc/internal/python/poet"
@@ -210,9 +210,8 @@ func pyInnerType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 	}
 }
 
-func matchString(pattern, target string) bool {
-	// TODO: Create a separate package for the matchers
-	matcher, err := config.MatchCompile(pattern)
+func matchString(pat, target string) bool {
+	matcher, err := pattern.MatchCompile(pat)
 	if err != nil {
 		panic(err)
 	}
