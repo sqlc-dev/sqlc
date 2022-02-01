@@ -10,7 +10,6 @@ import (
 
 	"github.com/kyleconroy/sqlc/internal/codegen"
 	"github.com/kyleconroy/sqlc/internal/config"
-	"github.com/kyleconroy/sqlc/internal/core"
 	"github.com/kyleconroy/sqlc/internal/inflection"
 	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/plugin"
@@ -55,7 +54,7 @@ type Field struct {
 }
 
 type Struct struct {
-	Table   core.FQN
+	Table   plugin.Identifier
 	Name    string
 	Fields  []Field
 	Comment string
@@ -202,8 +201,8 @@ func pyInnerType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		}
 	}
 
-	switch config.Engine(req.Settings.Engine) {
-	case config.EnginePostgreSQL:
+	switch req.Settings.Engine {
+	case "postgresql":
 		return postgresType(req, col)
 	default:
 		log.Println("unsupported engine type")
@@ -334,7 +333,7 @@ func buildModels(req *plugin.CodeGenRequest) []Struct {
 				structName = inflection.Singular(structName)
 			}
 			s := Struct{
-				Table:   core.FQN{Schema: schema.Name, Rel: table.Rel.Name},
+				Table:   plugin.Identifier{Schema: schema.Name, Name: table.Rel.Name},
 				Name:    modelName(structName, req.Settings),
 				Comment: table.Comment,
 			}
@@ -405,7 +404,7 @@ func columnsToStruct(req *plugin.CodeGenRequest, name string, columns []pyColumn
 	return &gs
 }
 
-func sameTableName(tableID *plugin.Identifier, f core.FQN, defaultSchema string) bool {
+func sameTableName(tableID, f *plugin.Identifier, defaultSchema string) bool {
 	if tableID == nil {
 		return false
 	}
@@ -413,16 +412,16 @@ func sameTableName(tableID *plugin.Identifier, f core.FQN, defaultSchema string)
 	if tableID.Schema == "" {
 		schema = defaultSchema
 	}
-	return tableID.Catalog == f.Catalog && schema == f.Schema && tableID.Name == f.Rel
+	return tableID.Catalog == f.Catalog && schema == f.Schema && tableID.Name == f.Name
 }
 
 var postgresPlaceholderRegexp = regexp.MustCompile(`\B\$(\d+)\b`)
 
 // Sqlalchemy uses ":name" for placeholders, so "$N" is converted to ":pN"
 // This also means ":" has special meaning to sqlalchemy, so it must be escaped.
-func sqlalchemySQL(s string, engine config.Engine) string {
+func sqlalchemySQL(s, engine string) string {
 	s = strings.ReplaceAll(s, ":", `\\:`)
-	if engine == config.EnginePostgreSQL {
+	if engine == "postgresql" {
 		return postgresPlaceholderRegexp.ReplaceAllString(s, ":p$1")
 	}
 	return s
@@ -449,7 +448,7 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 			MethodName:   methodName,
 			FieldName:    codegen.LowerTitle(query.Name) + "Stmt",
 			ConstantName: strings.ToUpper(methodName),
-			SQL:          sqlalchemySQL(query.Text, config.Engine(req.Settings.Engine)),
+			SQL:          sqlalchemySQL(query.Text, req.Settings.Engine),
 			SourceName:   query.Filename,
 		}
 
@@ -500,7 +499,7 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 					trimmedPyType.InnerType = strings.TrimPrefix(trimmedPyType.InnerType, "models.")
 					sameName := f.Name == columnName(c, i)
 					sameType := f.Type == trimmedPyType
-					sameTable := sameTableName(c.Table, s.Table, req.Catalog.DefaultSchema)
+					sameTable := sameTableName(c.Table, &s.Table, req.Catalog.DefaultSchema)
 					if !sameName || !sameType || !sameTable {
 						same = false
 					}
