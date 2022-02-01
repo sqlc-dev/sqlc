@@ -11,10 +11,11 @@ func pluginSettings(cs config.CombinedSettings) *plugin.Settings {
 	var over []*plugin.Override
 	for _, o := range cs.Overrides {
 		over = append(over, &plugin.Override{
-			CodeType: "", // FIXME
-			DbType:   o.DBType,
-			Nullable: o.Nullable,
-			Column:   o.Column,
+			CodeType:   "", // FIXME
+			DbType:     o.DBType,
+			Nullable:   o.Nullable,
+			Column:     o.Column,
+			PythonType: pluginPythonType(o.PythonType),
 		})
 	}
 	return &plugin.Settings{
@@ -24,6 +25,24 @@ func pluginSettings(cs config.CombinedSettings) *plugin.Settings {
 		Queries:   []string(cs.Package.Queries),
 		Overrides: over,
 		Rename:    cs.Rename,
+		Python:    pluginPythonCode(cs.Python),
+	}
+}
+
+func pluginPythonCode(s config.SQLPython) *plugin.PythonCode {
+	return &plugin.PythonCode{
+		Out:                 s.Out,
+		Package:             s.Package,
+		EmitExactTableNames: s.EmitExactTableNames,
+		EmitSyncQuerier:     s.EmitSyncQuerier,
+		EmitAsyncQuerier:    s.EmitAsyncQuerier,
+	}
+}
+
+func pluginPythonType(pt config.PythonType) *plugin.PythonType {
+	return &plugin.PythonType{
+		Module: pt.Module,
+		Name:   pt.Name,
 	}
 }
 
@@ -61,6 +80,11 @@ func pluginCatalog(c *catalog.Catalog) *plugin.Catalog {
 					NotNull: c.IsNotNull,
 					IsArray: c.IsArray,
 					Length:  int32(l),
+					Table: &plugin.Identifier{
+						Catalog: t.Rel.Catalog,
+						Schema:  t.Rel.Schema,
+						Name:    t.Rel.Name,
+					},
 				})
 			}
 			tables = append(tables, &plugin.Table{
@@ -106,15 +130,46 @@ func pluginQueries(r *compiler.Result) []*plugin.Query {
 			Comments: q.Comments,
 			Columns:  columns,
 			Params:   params,
+			Filename: q.Filename,
 		})
 	}
 	return out
 }
 
 func pluginQueryColumn(c *compiler.Column) *plugin.Column {
-	return &plugin.Column{
-		Name: c.Name,
+	l := -1
+	if c.Length != nil {
+		l = *c.Length
 	}
+	out := &plugin.Column{
+		Name:    c.Name,
+		Comment: c.Comment,
+		NotNull: c.NotNull,
+		IsArray: c.IsArray,
+		Length:  int32(l),
+	}
+
+	if c.Type != nil {
+		out.Type = &plugin.Identifier{
+			Catalog: c.Type.Catalog,
+			Schema:  c.Type.Schema,
+			Name:    c.Type.Name,
+		}
+	} else {
+		out.Type = &plugin.Identifier{
+			Name: c.DataType,
+		}
+	}
+
+	if c.Table != nil {
+		out.Table = &plugin.Identifier{
+			Catalog: c.Table.Catalog,
+			Schema:  c.Table.Schema,
+			Name:    c.Table.Name,
+		}
+	}
+
+	return out
 }
 
 func pluginQueryParam(p compiler.Parameter) *plugin.Parameter {

@@ -11,14 +11,13 @@ import (
 	"github.com/kyleconroy/sqlc/internal/codegen"
 	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/core"
+	"github.com/kyleconroy/sqlc/internal/debug"
 	"github.com/kyleconroy/sqlc/internal/inflection"
 	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/plugin"
 	pyast "github.com/kyleconroy/sqlc/internal/python/ast"
 	"github.com/kyleconroy/sqlc/internal/python/poet"
-	// pyprint "github.com/kyleconroy/sqlc/internal/python/printer"
-	// "github.com/kyleconroy/sqlc/internal/sql/ast"
-	// "github.com/kyleconroy/sqlc/internal/sql/catalog"
+	pyprint "github.com/kyleconroy/sqlc/internal/python/printer"
 )
 
 type Constant struct {
@@ -192,15 +191,16 @@ func makePyType(req *plugin.CodeGenRequest, col *plugin.Column) pyType {
 
 func pyInnerType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 	for _, oride := range req.Settings.Overrides {
-		if oride.CodeType == "" {
+		if !pyTypeIsSet(oride.PythonType) {
 			continue
 		}
+		// TODO: What do we do about regexs?
 		// sameTable := oride.Matches(col.Table, req.Catalog.DefaultSchema)
 		// if oride.Column != "" && oride.ColumnName.MatchString(col.Name) && sameTable {
-		// 	return oride.CodeType // TODO: Used to call .TypeString()
+		// 	return pyTypeString(oride.PythonType)
 		// }
 		if oride.DbType != "" && oride.DbType == col.DataType && oride.Nullable != (col.NotNull || col.IsArray) {
-			return oride.CodeType // TODO: Used to call .TypeString()
+			return pyTypeString(oride.PythonType)
 		}
 	}
 
@@ -290,8 +290,7 @@ func buildModels(req *plugin.CodeGenRequest) []Struct {
 				tableName = schema.Name + "_" + table.Rel.Name
 			}
 			structName := tableName
-			// FIXME How do we deal with plugin specific settings?
-			if false { // !req.Settings.Python.EmitExactTableNames {
+			if !req.Settings.Python.EmitExactTableNames {
 				structName = inflection.Singular(structName)
 			}
 			s := Struct{
@@ -414,6 +413,12 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 			SourceName:   query.Filename,
 		}
 
+		dump := methodName == "get_venue"
+		if dump {
+			debug.Dump(query)
+			debug.Dump(gq)
+		}
+
 		if len(query.Params) > 4 {
 			var cols []pyColumn
 			for _, p := range query.Params {
@@ -453,6 +458,7 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 					continue
 				}
 				same := true
+
 				for i, f := range s.Fields {
 					c := query.Columns[i]
 					// HACK: models do not have "models." on their types, so trim that so we can find matches
@@ -461,6 +467,10 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 					sameName := f.Name == columnName(c, i)
 					sameType := f.Type == trimmedPyType
 					sameTable := sameTableName(c.Table, s.Table, req.Catalog.DefaultSchema)
+					if dump {
+						debug.Dump(c.Table, s.Table, req.Catalog.DefaultSchema)
+						debug.Dump(sameName, sameType, sameTable)
+					}
 					if !sameName || !sameType || !sameTable {
 						same = false
 					}
@@ -1066,33 +1076,43 @@ func Generate(req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
 		Enums:    enums,
 	}
 
-	// tctx := pyTmplCtx{
-	// 	Models:    models,
-	// 	Queries:   queries,
-	// 	Enums:     enums,
-	// 	EmitSync:  settings.Python.EmitSyncQuerier,
-	// 	EmitAsync: settings.Python.EmitAsyncQuerier,
-	// }
+	tctx := pyTmplCtx{
+		Models:    models,
+		Queries:   queries,
+		Enums:     enums,
+		EmitSync:  req.Settings.Python.EmitSyncQuerier,
+		EmitAsync: req.Settings.Python.EmitAsyncQuerier,
+	}
 
-	// output := map[string]string{}
-	// result := pyprint.Print(buildModelsTree(&tctx, i), pyprint.Options{})
-	// tctx.SourceName = "models.py"
-	// output["models.py"] = string(result.Python)
+	output := map[string]string{}
+	result := pyprint.Print(buildModelsTree(&tctx, i), pyprint.Options{})
+	tctx.SourceName = "models.py"
+	output["models.py"] = string(result.Python)
 
-	// files := map[string]struct{}{}
-	// for _, q := range queries {
-	// 	files[q.SourceName] = struct{}{}
-	// }
+	files := map[string]struct{}{}
+	for _, q := range queries {
+		files[q.SourceName] = struct{}{}
+	}
 
-	// for source := range files {
-	// 	tctx.SourceName = source
-	// 	result := pyprint.Print(buildQueryTree(&tctx, i, source), pyprint.Options{})
-	// 	name := source
-	// 	if !strings.HasSuffix(name, ".py") {
-	// 		name = strings.TrimSuffix(name, ".sql")
-	// 		name += ".py"
-	// 	}
-	// 	output[name] = string(result.Python)
-	// }
-	return &plugin.CodeGenResponse{}, nil
+	for source := range files {
+		tctx.SourceName = source
+		result := pyprint.Print(buildQueryTree(&tctx, i, source), pyprint.Options{})
+		name := source
+		if !strings.HasSuffix(name, ".py") {
+			name = strings.TrimSuffix(name, ".sql")
+			name += ".py"
+		}
+		output[name] = string(result.Python)
+	}
+
+	resp := plugin.CodeGenResponse{}
+
+	for filename, code := range output {
+		resp.Files = append(resp.Files, &plugin.File{
+			Name:     filename,
+			Contents: []byte(code),
+		})
+	}
+
+	return &resp, nil
 }
