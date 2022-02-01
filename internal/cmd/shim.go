@@ -1,22 +1,51 @@
 package cmd
 
 import (
+	"strings"
+
 	"github.com/kyleconroy/sqlc/internal/compiler"
 	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/plugin"
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 )
 
+func pluginOverride(o config.Override) *plugin.Override {
+	var column string
+	var table plugin.Identifier
+
+	if o.Column != "" {
+		colParts := strings.Split(o.Column, ".")
+		switch len(colParts) {
+		case 2:
+			table.Schema = "public"
+			table.Name = colParts[0]
+			column = colParts[1]
+		case 3:
+			table.Schema = colParts[0]
+			table.Name = colParts[1]
+			column = colParts[2]
+		case 4:
+			table.Catalog = colParts[0]
+			table.Schema = colParts[1]
+			table.Name = colParts[2]
+			column = colParts[3]
+		}
+	}
+	return &plugin.Override{
+		CodeType:   "", // FIXME
+		DbType:     o.DBType,
+		Nullable:   o.Nullable,
+		Column:     o.Column,
+		ColumnName: column,
+		Table:      &table,
+		PythonType: pluginPythonType(o.PythonType),
+	}
+}
+
 func pluginSettings(cs config.CombinedSettings) *plugin.Settings {
 	var over []*plugin.Override
 	for _, o := range cs.Overrides {
-		over = append(over, &plugin.Override{
-			CodeType:   "", // FIXME
-			DbType:     o.DBType,
-			Nullable:   o.Nullable,
-			Column:     o.Column,
-			PythonType: pluginPythonType(o.PythonType),
-		})
+		over = append(over, pluginOverride(o))
 	}
 	return &plugin.Settings{
 		Version:   cs.Global.Version,

@@ -23,7 +23,11 @@ message Override {
 	// fully qualified name of the column, e.g. `accounts.id`
 	string column = 6 [json_name="column"];
 
-	PythonType python_type = 7;
+	Identifier table = 7 [json_name="table"];
+
+	string column_name = 8 [json_name="column_name"];
+
+	PythonType python_type = 9;
 }
 
 message PythonType
@@ -138,7 +142,3 @@ message CodeGenResponse
 {
   repeated File files = 1 [json_name="files"];
 }
-
-
-
- 

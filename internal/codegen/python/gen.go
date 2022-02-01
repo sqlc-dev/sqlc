@@ -11,7 +11,6 @@ import (
 	"github.com/kyleconroy/sqlc/internal/codegen"
 	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/core"
-	"github.com/kyleconroy/sqlc/internal/debug"
 	"github.com/kyleconroy/sqlc/internal/inflection"
 	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/plugin"
@@ -194,11 +193,10 @@ func pyInnerType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		if !pyTypeIsSet(oride.PythonType) {
 			continue
 		}
-		// TODO: What do we do about regexs?
-		// sameTable := oride.Matches(col.Table, req.Catalog.DefaultSchema)
-		// if oride.Column != "" && oride.ColumnName.MatchString(col.Name) && sameTable {
-		// 	return pyTypeString(oride.PythonType)
-		// }
+		sameTable := matches(oride, col.Table, req.Catalog.DefaultSchema)
+		if oride.Column != "" && matchString(oride.ColumnName, col.Name) && sameTable {
+			return pyTypeString(oride.PythonType)
+		}
 		if oride.DbType != "" && oride.DbType == col.DataType && oride.Nullable != (col.NotNull || col.IsArray) {
 			return pyTypeString(oride.PythonType)
 		}
@@ -211,6 +209,48 @@ func pyInnerType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		log.Println("unsupported engine type")
 		return "Any"
 	}
+}
+
+func matchString(pattern, target string) bool {
+	// TODO: Create a separate package for the matchers
+	matcher, err := config.MatchCompile(pattern)
+	if err != nil {
+		panic(err)
+	}
+	return matcher.MatchString(target)
+}
+
+func matches(o *plugin.Override, n *plugin.Identifier, defaultSchema string) bool {
+	if n == nil {
+		return false
+	}
+
+	schema := n.Schema
+	if n.Schema == "" {
+		schema = defaultSchema
+	}
+
+	if o.Table.Catalog != "" && !matchString(o.Table.Catalog, n.Catalog) {
+		return false
+	}
+
+	if o.Table.Schema == "" && schema != "" {
+		return false
+	}
+
+	if o.Table.Schema != "" && !matchString(o.Table.Schema, schema) {
+		return false
+	}
+
+	if o.Table.Name == "" && n.Name != "" {
+		return false
+	}
+
+	if o.Table.Name != "" && !matchString(o.Table.Name, n.Name) {
+		return false
+	}
+
+	return true
 }
 
 func modelName(name string, settings *plugin.Settings) string {
@@ -413,12 +453,6 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 			SourceName:   query.Filename,
 		}
 
-		dump := methodName == "get_venue"
-		if dump {
-			debug.Dump(query)
-			debug.Dump(gq)
-		}
-
 		if len(query.Params) > 4 {
 			var cols []pyColumn
 			for _, p := range query.Params {
@@ -467,10 +501,6 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 					sameName := f.Name == columnName(c, i)
 					sameType := f.Type == trimmedPyType
 					sameTable := sameTableName(c.Table, s.Table, req.Catalog.DefaultSchema)
-					if dump {
-						debug.Dump(c.Table, s.Table, req.Catalog.DefaultSchema)
-						debug.Dump(sameName, sameType, sameTable)
-					}
 					if !sameName || !sameType || !sameTable {
 						same = false
 					}
