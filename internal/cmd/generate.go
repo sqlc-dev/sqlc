@@ -13,8 +13,7 @@ import (
 
 	"github.com/kyleconroy/sqlc/internal/codegen/golang"
 	"github.com/kyleconroy/sqlc/internal/codegen/kotlin"
-	// "github.com/kyleconroy/sqlc/internal/codegen/python"
-	pytwo "github.com/kyleconroy/sqlc/internal/codegen/python2"
+	"github.com/kyleconroy/sqlc/internal/codegen/python"
 	"github.com/kyleconroy/sqlc/internal/compiler"
 	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/debug"
@@ -200,7 +199,7 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 			files, err = kotlin.Generate(result, combo)
 		case sql.Gen.Python != nil:
 			out = combo.Python.Out
-			resp, err = pytwo.Generate(codeGenRequest(result, combo))
+			resp, err = python.Generate(codeGenRequest(result, combo))
 		default:
 			panic("missing language backend")
 		}

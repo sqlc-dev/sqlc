@@ -5,13 +5,24 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/kyleconroy/sqlc/internal/config"
+	"github.com/kyleconroy/sqlc/internal/plugin"
 )
 
 type importSpec struct {
 	Module string
 	Name   string
 	Alias  string
+}
+
+func pyTypeIsSet(t *plugin.PythonType) bool {
+	return t.Module != "" || t.Name != ""
+}
+
+func pyTypeString(t *plugin.PythonType) string {
+	if t.Name != "" && t.Module == "" {
+		return t.Name
+	}
+	return t.Module + "." + t.Name
 }
 
 func (i importSpec) String() string {
@@ -28,7 +39,7 @@ func (i importSpec) String() string {
 }
 
 type importer struct {
-	Settings config.CombinedSettings
+	Settings *plugin.Settings
 	Models   []Struct
 	Queries  []Query
 	Enums    []Enum
@@ -96,8 +107,8 @@ func (i *importer) modelImportSpecs() (map[string]importSpec, map[string]importS
 	pkg := make(map[string]importSpec)
 
 	for _, o := range i.Settings.Overrides {
-		if o.PythonType.IsSet() && o.PythonType.Module != "" {
-			if modelUses(o.PythonType.TypeString()) {
+		if pyTypeIsSet(o.PythonType) && o.PythonType.Module != "" {
+			if modelUses(pyTypeString(o.PythonType)) {
 				pkg[o.PythonType.Module] = importSpec{Module: o.PythonType.Module}
 			}
 		}
@@ -142,8 +153,8 @@ func (i *importer) queryImportSpecs(fileName string) (map[string]importSpec, map
 	}
 
 	for _, o := range i.Settings.Overrides {
-		if o.PythonType.IsSet() && o.PythonType.Module != "" {
-			if queryUses(o.PythonType.TypeString()) {
+		if pyTypeIsSet(o.PythonType) && o.PythonType.Module != "" {
+			if queryUses(pyTypeString(o.PythonType)) {
 				pkg[o.PythonType.Module] = importSpec{Module: o.PythonType.Module}
 			}
 		}
