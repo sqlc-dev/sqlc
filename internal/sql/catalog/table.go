@@ -110,6 +110,7 @@ func (c *Catalog) alterTableSetSchema(stmt *ast.AlterTableSetSchemaStmt) error {
 	if err != nil {
 		return err
 	}
+	tbl.Rel.Schema = *stmt.NewSchema
 	newSchema, err := c.getSchema(*stmt.NewSchema)
 	if err != nil {
 		return err
