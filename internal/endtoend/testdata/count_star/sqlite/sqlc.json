@@ -1,0 +1,12 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "path": "go",
+      "name": "querytest",
+      "engine": "_lemon",
+      "schema": "schema.sql",
+      "queries": "query.sql"
+    }
+  ]
+}
