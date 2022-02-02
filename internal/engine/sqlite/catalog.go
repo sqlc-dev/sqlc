@@ -12,3 +12,7 @@ func NewCatalog() *catalog.Catalog {
 		Extensions: map[string]struct{}{},
 	}
 }
+
+func newTestCatalog() *catalog.Catalog {
+	return catalog.New("main")
+}
