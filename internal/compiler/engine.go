@@ -24,7 +24,7 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings) *Compiler {
 	switch conf.Engine {
 	case config.EngineXLemon:
 		c.parser = sqlite.NewParser()
-		c.catalog = catalog.New("main")
+		c.catalog = sqlite.NewCatalog()
 	case config.EngineMySQL:
 		c.parser = dolphin.NewParser()
 		c.catalog = dolphin.NewCatalog()

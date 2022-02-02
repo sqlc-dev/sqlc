@@ -76,6 +76,7 @@ alter_table_stmt:
             | COLUMN_? old_column_name = column_name TO_ new_column_name = column_name
         )
         | ADD_ COLUMN_? column_def
+        | DROP_ COLUMN_? column_name
     )
 ;
 
