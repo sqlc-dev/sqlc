@@ -2604,7 +2604,7 @@ var file_python_ast_proto_depIdxs = []int32{
 	0,  // [0:76] is the sub-list for field type_name
 }
 
-func init() { file_python_ast_proto_init() }
+// func init() { file_python_ast_proto_init() }
 func file_python_ast_proto_init() {
 	if File_python_ast_proto != nil {
 		return

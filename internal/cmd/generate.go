@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
 	"runtime/trace"
@@ -199,7 +200,20 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 			files, err = kotlin.Generate(result, combo)
 		case sql.Gen.Python != nil:
 			out = combo.Python.Out
-			resp, err = python.Generate(codeGenRequest(result, combo))
+			req := codeGenRequest(result, combo)
+			if os.Getenv("WASM") != "" {
+				resp, err = pythonGenerate(req)
+			} else {
+				blob, err := req.MarshalVT()
+				if err != nil {
+					log.Fatal(err)
+				}
+				var codeReq plugin.CodeGenRequest
+				if err := codeReq.UnmarshalVT(blob); err != nil {
+					log.Fatal(err)
+				}
+				resp, err = python.Generate(&codeReq)
+			}
 		default:
 			panic("missing language backend")
 		}

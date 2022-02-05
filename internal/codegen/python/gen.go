@@ -1090,6 +1090,15 @@ func HashComment(s string) string {
 }
 
 func Generate(req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
+	// empty := plugin.CodeGenResponse{
+	// 	Files: []*plugin.File{
+	// 		{
+	// 			Name:     "marker-one.py",
+	// 			Contents: []byte(fmt.Sprintf("%t", req.Catalog == nil)),
+	// 		},
+	// 	},
+	// }
+	// return &empty, nil
 	enums := buildEnums(req)
 	models := buildModels(req)
 	queries, err := buildQueries(req, models)

@@ -1343,7 +1343,7 @@ var file_plugin_codegen_proto_depIdxs = []int32{
 	0,  // [0:19] is the sub-list for field type_name
 }
 
-func init() { file_plugin_codegen_proto_init() }
+// func init() { file_plugin_codegen_proto_init() }
 func file_plugin_codegen_proto_init() {
 	if File_plugin_codegen_proto != nil {
 		return
