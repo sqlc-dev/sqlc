@@ -85,6 +85,8 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 
 func (p *Parser) CommentSyntax() metadata.CommentSyntax {
 	return metadata.CommentSyntax{
-		Dash: true,
+		Dash:      true,
+		Hash:      false,
+		SlashStar: true,
 	}
 }
