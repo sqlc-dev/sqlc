@@ -202,7 +202,7 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 			out = combo.Python.Out
 			req := codeGenRequest(result, combo)
 			if os.Getenv("WASM") != "" {
-				resp, err = pythonGenerate(req)
+				resp, err = pythonGenerate(ctx, req)
 			} else {
 				blob, err := req.MarshalVT()
 				if err != nil {

@@ -17,13 +17,42 @@ import (
 //go:embed sqlc-codegen-python.wasm
 var pythonCodeGen []byte
 
-func pythonGenerate(req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
+//go:embed sqlc-codegen-python.module
+var pythonModule []byte
+
+var engine *wasmtime.Engine
+var linker *wasmtime.Linker
+var module *wasmtime.Module
+
+func init() {
+	var err error
+	engine = wasmtime.NewEngine()
+	module, err = wasmtime.NewModuleDeserialize(engine, pythonModule)
+	if err != nil {
+		panic(err)
+	}
+
+	// out, err := module.Serialize()
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	// err = os.WriteFile("sqlc-codegen-python.module", out, 0644)
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	linker = wasmtime.NewLinker(engine)
+	if err := linker.DefineWasi(); err != nil {
+		panic(err)
+	}
+}
+
+func pythonGenerate(cctx context.Context, req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
 	stdinBlob, err := req.MarshalVT()
 	if err != nil {
 		return nil, err
 	}
-
-	cctx := context.Background()
 
 	ctx, task := trace.NewTask(cctx, "pythonGenerate")
 	defer task.End()
@@ -40,14 +69,6 @@ func pythonGenerate(req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error)
 
 	if err := os.WriteFile(stdinPath, stdinBlob, 0755); err != nil {
 		return nil, fmt.Errorf("write file: %w", err)
-	}
-
-	engine := wasmtime.NewEngine()
-	linker := wasmtime.NewLinker(engine)
-
-	// Link WASI
-	if err := linker.DefineWasi(); err != nil {
-		return nil, fmt.Errorf("define wasi: %w", err)
 	}
 
 	// Configure WASI imports to write stdout into a file.
@@ -75,12 +96,12 @@ func pythonGenerate(req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error)
 	// 	return fmt.Errorf("read file: %w", err)
 	// }
 
-	moduRegion := trace.StartRegion(ctx, "wasmtime.NewModule")
-	module, err := wasmtime.NewModule(store.Engine, pythonCodeGen)
-	moduRegion.End()
-	if err != nil {
-		return nil, fmt.Errorf("define wasi: %w", err)
-	}
+	// moduRegion := trace.StartRegion(ctx, "wasmtime.NewModule")
+	// module, err := wasmtime.NewModule(store.Engine, pythonCodeGen)
+	// moduRegion.End()
+	// if err != nil {
+	// 	return nil, fmt.Errorf("define wasi: %w", err)
+	// }
 
 	linkRegion := trace.StartRegion(ctx, "linker.Instantiate")
 	instance, err := linker.Instantiate(store, module)
