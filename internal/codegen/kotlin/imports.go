@@ -4,11 +4,11 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/kyleconroy/sqlc/internal/config"
+	"github.com/kyleconroy/sqlc/internal/plugin"
 )
 
 type importer struct {
-	Settings    config.CombinedSettings
+	Settings    *plugin.Settings
 	DataClasses []Struct
 	Enums       []Enum
 	Queries     []Query
@@ -165,7 +165,7 @@ func (i *importer) queryImports(filename string) [][]string {
 
 	std := stdImports(uses)
 	std["java.sql.Connection"] = struct{}{}
-	if hasEnum() && i.Settings.Package.Engine == config.EnginePostgreSQL {
+	if hasEnum() && i.Settings.Engine == "postgresql" {
 		std["java.sql.Types"] = struct{}{}
 	}
 

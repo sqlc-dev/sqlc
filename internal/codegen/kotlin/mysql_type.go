@@ -3,14 +3,20 @@ package kotlin
 import (
 	"log"
 
-	"github.com/kyleconroy/sqlc/internal/compiler"
-	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/debug"
-	"github.com/kyleconroy/sqlc/internal/sql/catalog"
+	"github.com/kyleconroy/sqlc/internal/plugin"
 )
 
-func mysqlType(r *compiler.Result, col *compiler.Column, settings config.CombinedSettings) (string, bool) {
-	columnType := col.DataType
+func dataType(n *plugin.Identifier) string {
+	if n.Schema != "" {
+		return n.Schema + "." + n.Name
+	} else {
+		return n.Name
+	}
+}
+
+func mysqlType(req *plugin.CodeGenRequest, col *plugin.Column) (string, bool) {
+	columnType := dataType(col.Type)
 
 	switch columnType {
 
@@ -52,16 +58,13 @@ func mysqlType(r *compiler.Result, col *compiler.Column, settings config.Combine
 		return "Any", false
 
 	default:
-		for _, schema := range r.Catalog.Schemas {
-			for _, typ := range schema.Types {
-				switch t := typ.(type) {
-				case *catalog.Enum:
-					if t.Name == columnType {
-						if schema.Name == r.Catalog.DefaultSchema {
-							return DataClassName(t.Name, settings), true
-						}
-						return DataClassName(schema.Name+"_"+t.Name, settings), true
+		for _, schema := range req.Catalog.Schemas {
+			for _, enum := range schema.Enums {
+				if columnType == enum.Name {
+					if schema.Name == req.Catalog.DefaultSchema {
+						return dataClassName(enum.Name, req.Settings), true
 					}
+					return dataClassName(schema.Name+"_"+enum.Name, req.Settings), true
 				}
 			}
 		}
