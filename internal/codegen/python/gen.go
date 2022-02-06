@@ -9,16 +9,13 @@ import (
 	"strings"
 
 	"github.com/kyleconroy/sqlc/internal/codegen"
-	"github.com/kyleconroy/sqlc/internal/compiler"
-	"github.com/kyleconroy/sqlc/internal/config"
-	"github.com/kyleconroy/sqlc/internal/core"
 	"github.com/kyleconroy/sqlc/internal/inflection"
 	"github.com/kyleconroy/sqlc/internal/metadata"
+	"github.com/kyleconroy/sqlc/internal/pattern"
+	"github.com/kyleconroy/sqlc/internal/plugin"
 	pyast "github.com/kyleconroy/sqlc/internal/python/ast"
 	"github.com/kyleconroy/sqlc/internal/python/poet"
 	pyprint "github.com/kyleconroy/sqlc/internal/python/printer"
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 )
 
 type Constant struct {
@@ -57,7 +54,7 @@ type Field struct {
 }
 
 type Struct struct {
-	Table   core.FQN
+	Table   plugin.Identifier
 	Name    string
 	Fields  []Field
 	Comment string
@@ -181,8 +178,8 @@ func (q Query) ArgDictNode() *pyast.Node {
 	}
 }
 
-func makePyType(r *compiler.Result, col *compiler.Column, settings config.CombinedSettings) pyType {
-	typ := pyInnerType(r, col, settings)
+func makePyType(req *plugin.CodeGenRequest, col *plugin.Column) pyType {
+	typ := pyInnerType(req, col)
 	return pyType{
 		InnerType: typ,
 		IsArray:   col.IsArray,
@@ -190,30 +187,71 @@ func makePyType(r *compiler.Result, col *compiler.Column, settings config.Combin
 	}
 }
 
-func pyInnerType(r *compiler.Result, col *compiler.Column, settings config.CombinedSettings) string {
-	for _, oride := range settings.Overrides {
-		if !oride.PythonType.IsSet() {
+func pyInnerType(req *plugin.CodeGenRequest, col *plugin.Column) string {
+	for _, oride := range req.Settings.Overrides {
+		if !pyTypeIsSet(oride.PythonType) {
 			continue
 		}
-		sameTable := oride.Matches(col.Table, r.Catalog.DefaultSchema)
-		if oride.Column != "" && oride.ColumnName.MatchString(col.Name) && sameTable {
-			return oride.PythonType.TypeString()
+		sameTable := matches(oride, col.Table, req.Catalog.DefaultSchema)
+		if oride.Column != "" && matchString(oride.ColumnName, col.Name) && sameTable {
+			return pyTypeString(oride.PythonType)
 		}
-		if oride.DBType != "" && oride.DBType == col.DataType && oride.Nullable != (col.NotNull || col.IsArray) {
-			return oride.PythonType.TypeString()
+		if oride.DbType != "" && oride.DbType == col.DataType && oride.Nullable != (col.NotNull || col.IsArray) {
+			return pyTypeString(oride.PythonType)
 		}
 	}
 
-	switch settings.Package.Engine {
-	case config.EnginePostgreSQL:
-		return postgresType(r, col, settings)
+	switch req.Settings.Engine {
+	case "postgresql":
+		return postgresType(req, col)
 	default:
 		log.Println("unsupported engine type")
 		return "Any"
 	}
 }
 
-func ModelName(name string, settings config.CombinedSettings) string {
+func matchString(pat, target string) bool {
+	matcher, err := pattern.MatchCompile(pat)
+	if err != nil {
+		panic(err)
+	}
+	return matcher.MatchString(target)
+}
+
+func matches(o *plugin.Override, n *plugin.Identifier, defaultSchema string) bool {
+	if n == nil {
+		return false
+	}
+
+	schema := n.Schema
+	if n.Schema == "" {
+		schema = defaultSchema
+	}
+
+	if o.Table.Catalog != "" && !matchString(o.Table.Catalog, n.Catalog) {
+		return false
+	}
+
+	if o.Table.Schema == "" && schema != "" {
+		return false
+	}
+
+	if o.Table.Schema != "" && !matchString(o.Table.Schema, schema) {
+		return false
+	}
+
+	if o.Table.Name == "" && n.Name != "" {
+		return false
+	}
+
+	if o.Table.Name != "" && !matchString(o.Table.Name, n.Name) {
+		return false
+	}
+
+	return true
+}
+
+func modelName(name string, settings *plugin.Settings) string {
 	if rename := settings.Rename[name]; rename != "" {
 		return rename
 	}
@@ -227,7 +265,7 @@ func ModelName(name string, settings config.CombinedSettings) string {
 var matchFirstCap = regexp.MustCompile("(.)([A-Z][a-z]+)")
 var matchAllCap = regexp.MustCompile("([a-z0-9])([A-Z])")
 
-func MethodName(name string) string {
+func methodName(name string) string {
 	snake := matchFirstCap.ReplaceAllString(name, "${1}_${2}")
 	snake = matchAllCap.ReplaceAllString(snake, "${1}_${2}")
 	return strings.ToLower(snake)
@@ -243,25 +281,21 @@ func pyEnumValueName(value string) string {
 	return strings.ToUpper(id)
 }
 
-func buildEnums(r *compiler.Result, settings config.CombinedSettings) []Enum {
+func buildEnums(req *plugin.CodeGenRequest) []Enum {
 	var enums []Enum
-	for _, schema := range r.Catalog.Schemas {
+	for _, schema := range req.Catalog.Schemas {
 		if schema.Name == "pg_catalog" {
 			continue
 		}
-		for _, typ := range schema.Types {
-			enum, ok := typ.(*catalog.Enum)
-			if !ok {
-				continue
-			}
+		for _, enum := range schema.Enums {
 			var enumName string
-			if schema.Name == r.Catalog.DefaultSchema {
+			if schema.Name == req.Catalog.DefaultSchema {
 				enumName = enum.Name
 			} else {
 				enumName = schema.Name + "_" + enum.Name
 			}
 			e := Enum{
-				Name:    ModelName(enumName, settings),
+				Name:    modelName(enumName, req.Settings),
 				Comment: enum.Comment,
 			}
 			for _, v := range enum.Vals {
@@ -280,30 +314,30 @@ func buildEnums(r *compiler.Result, settings config.CombinedSettings) []Enum {
 	return enums
 }
 
-func buildModels(r *compiler.Result, settings config.CombinedSettings) []Struct {
+func buildModels(req *plugin.CodeGenRequest) []Struct {
 	var structs []Struct
-	for _, schema := range r.Catalog.Schemas {
+	for _, schema := range req.Catalog.Schemas {
 		if schema.Name == "pg_catalog" {
 			continue
 		}
 		for _, table := range schema.Tables {
 			var tableName string
-			if schema.Name == r.Catalog.DefaultSchema {
+			if schema.Name == req.Catalog.DefaultSchema {
 				tableName = table.Rel.Name
 			} else {
 				tableName = schema.Name + "_" + table.Rel.Name
 			}
 			structName := tableName
-			if !settings.Python.EmitExactTableNames {
+			if !req.Settings.Python.EmitExactTableNames {
 				structName = inflection.Singular(structName)
 			}
 			s := Struct{
-				Table:   core.FQN{Schema: schema.Name, Rel: table.Rel.Name},
-				Name:    ModelName(structName, settings),
+				Table:   plugin.Identifier{Schema: schema.Name, Name: table.Rel.Name},
+				Name:    modelName(structName, req.Settings),
 				Comment: table.Comment,
 			}
 			for _, column := range table.Columns {
-				typ := makePyType(r, compiler.ConvertColumn(table.Rel, column), settings)
+				typ := makePyType(req, column) // TODO: This used to call compiler.ConvertColumn?
 				typ.InnerType = strings.TrimPrefix(typ.InnerType, "models.")
 				s.Fields = append(s.Fields, Field{
 					Name:    column.Name,
@@ -320,14 +354,14 @@ func buildModels(r *compiler.Result, settings config.CombinedSettings) []Struct 
 	return structs
 }
 
-func columnName(c *compiler.Column, pos int) string {
+func columnName(c *plugin.Column, pos int) string {
 	if c.Name != "" {
 		return c.Name
 	}
 	return fmt.Sprintf("column_%d", pos+1)
 }
 
-func paramName(p compiler.Parameter) string {
+func paramName(p *plugin.Parameter) string {
 	if p.Column.Name != "" {
 		return p.Column.Name
 	}
@@ -335,22 +369,22 @@ func paramName(p compiler.Parameter) string {
 }
 
 type pyColumn struct {
-	id int
-	*compiler.Column
+	id int32
+	*plugin.Column
 }
 
-func columnsToStruct(r *compiler.Result, name string, columns []pyColumn, settings config.CombinedSettings) *Struct {
+func columnsToStruct(req *plugin.CodeGenRequest, name string, columns []pyColumn) *Struct {
 	gs := Struct{
 		Name: name,
 	}
-	seen := map[string]int{}
-	suffixes := map[int]int{}
+	seen := map[string]int32{}
+	suffixes := map[int32]int32{}
 	for i, c := range columns {
 		colName := columnName(c.Column, i)
 		fieldName := colName
-		// Track suffixes by the ID of the column, so that columns referring to the same numbered parameter can be
-		// reused.
-		suffix := 0
+		// Track suffixes by the ID of the column, so that columns referring to
+		// the same numbered parameter can be reused.
+		var suffix int32
 		if o, ok := suffixes[c.id]; ok {
 			suffix = o
 		} else if v := seen[colName]; v > 0 {
@@ -362,39 +396,39 @@ func columnsToStruct(r *compiler.Result, name string, columns []pyColumn, settin
 		}
 		gs.Fields = append(gs.Fields, Field{
 			Name: fieldName,
-			Type: makePyType(r, c.Column, settings),
+			Type: makePyType(req, c.Column),
 		})
 		seen[colName]++
 	}
 	return &gs
 }
 
-func sameTableName(n *ast.TableName, f core.FQN, defaultSchema string) bool {
-	if n == nil {
+func sameTableName(tableID, f *plugin.Identifier, defaultSchema string) bool {
+	if tableID == nil {
 		return false
 	}
-	schema := n.Schema
-	if n.Schema == "" {
+	schema := tableID.Schema
+	if tableID.Schema == "" {
 		schema = defaultSchema
 	}
-	return n.Catalog == f.Catalog && schema == f.Schema && n.Name == f.Rel
+	return tableID.Catalog == f.Catalog && schema == f.Schema && tableID.Name == f.Name
 }
 
 var postgresPlaceholderRegexp = regexp.MustCompile(`\B\$(\d+)\b`)
 
 // Sqlalchemy uses ":name" for placeholders, so "$N" is converted to ":pN"
 // This also means ":" has special meaning to sqlalchemy, so it must be escaped.
-func sqlalchemySQL(s string, engine config.Engine) string {
+func sqlalchemySQL(s, engine string) string {
 	s = strings.ReplaceAll(s, ":", `\\:`)
-	if engine == config.EnginePostgreSQL {
+	if engine == "postgresql" {
 		return postgresPlaceholderRegexp.ReplaceAllString(s, ":p$1")
 	}
 	return s
 }
 
-func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs []Struct) ([]Query, error) {
-	qs := make([]Query, 0, len(r.Queries))
-	for _, query := range r.Queries {
+func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error) {
+	qs := make([]Query, 0, len(req.Queries))
+	for _, query := range req.Queries {
 		if query.Name == "" {
 			continue
 		}
@@ -405,7 +439,7 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 			return nil, errors.New("Support for CopyFrom in Python is not implemented")
 		}
 
-		methodName := MethodName(query.Name)
+		methodName := methodName(query.Name)
 
 		gq := Query{
 			Cmd:          query.Cmd,
@@ -413,7 +447,7 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 			MethodName:   methodName,
 			FieldName:    codegen.LowerTitle(query.Name) + "Stmt",
 			ConstantName: strings.ToUpper(methodName),
-			SQL:          sqlalchemySQL(query.SQL, settings.Package.Engine),
+			SQL:          sqlalchemySQL(query.Text, req.Settings.Engine),
 			SourceName:   query.Filename,
 		}
 
@@ -428,14 +462,14 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 			gq.Args = []QueryValue{{
 				Emit:   true,
 				Name:   "arg",
-				Struct: columnsToStruct(r, query.Name+"Params", cols, settings),
+				Struct: columnsToStruct(req, query.Name+"Params", cols),
 			}}
 		} else {
 			args := make([]QueryValue, 0, len(query.Params))
 			for _, p := range query.Params {
 				args = append(args, QueryValue{
 					Name: paramName(p),
-					Typ:  makePyType(r, p.Column, settings),
+					Typ:  makePyType(req, p.Column),
 				})
 			}
 			gq.Args = args
@@ -445,7 +479,7 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 			c := query.Columns[0]
 			gq.Ret = QueryValue{
 				Name: columnName(c, 0),
-				Typ:  makePyType(r, c, settings),
+				Typ:  makePyType(req, c),
 			}
 		} else if len(query.Columns) > 1 {
 			var gs *Struct
@@ -456,14 +490,15 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 					continue
 				}
 				same := true
+
 				for i, f := range s.Fields {
 					c := query.Columns[i]
 					// HACK: models do not have "models." on their types, so trim that so we can find matches
-					trimmedPyType := makePyType(r, c, settings)
+					trimmedPyType := makePyType(req, c)
 					trimmedPyType.InnerType = strings.TrimPrefix(trimmedPyType.InnerType, "models.")
 					sameName := f.Name == columnName(c, i)
 					sameType := f.Type == trimmedPyType
-					sameTable := sameTableName(c.Table, s.Table, r.Catalog.DefaultSchema)
+					sameTable := sameTableName(c.Table, &s.Table, req.Catalog.DefaultSchema)
 					if !sameName || !sameType || !sameTable {
 						same = false
 					}
@@ -478,11 +513,11 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 				var columns []pyColumn
 				for i, c := range query.Columns {
 					columns = append(columns, pyColumn{
-						id:     i,
+						id:     int32(i),
 						Column: c,
 					})
 				}
-				gs = columnsToStruct(r, query.Name+"Row", columns, settings)
+				gs = columnsToStruct(req, query.Name+"Row", columns)
 				emit = true
 			}
 			gq.Ret = QueryValue{
@@ -1054,16 +1089,16 @@ func HashComment(s string) string {
 	return "# " + strings.ReplaceAll(s, "\n", "\n# ")
 }
 
-func Generate(r *compiler.Result, settings config.CombinedSettings) (map[string]string, error) {
-	enums := buildEnums(r, settings)
-	models := buildModels(r, settings)
-	queries, err := buildQueries(r, settings, models)
+func Generate(req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
+	enums := buildEnums(req)
+	models := buildModels(req)
+	queries, err := buildQueries(req, models)
 	if err != nil {
 		return nil, err
 	}
 
 	i := &importer{
-		Settings: settings,
+		Settings: req.Settings,
 		Models:   models,
 		Queries:  queries,
 		Enums:    enums,
@@ -1073,8 +1108,8 @@ func Generate(r *compiler.Result, settings config.CombinedSettings) (map[string]
 		Models:    models,
 		Queries:   queries,
 		Enums:     enums,
-		EmitSync:  settings.Python.EmitSyncQuerier,
-		EmitAsync: settings.Python.EmitAsyncQuerier,
+		EmitSync:  req.Settings.Python.EmitSyncQuerier,
+		EmitAsync: req.Settings.Python.EmitAsyncQuerier,
 	}
 
 	output := map[string]string{}
@@ -1098,5 +1133,14 @@ func Generate(r *compiler.Result, settings config.CombinedSettings) (map[string]
 		output[name] = string(result.Python)
 	}
 
-	return output, nil
+	resp := plugin.CodeGenResponse{}
+
+	for filename, code := range output {
+		resp.Files = append(resp.Files, &plugin.File{
+			Name:     filename,
+			Contents: []byte(code),
+		})
+	}
+
+	return &resp, nil
 }

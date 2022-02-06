@@ -19,6 +19,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/debug"
 	"github.com/kyleconroy/sqlc/internal/multierr"
 	"github.com/kyleconroy/sqlc/internal/opts"
+	"github.com/kyleconroy/sqlc/internal/plugin"
 )
 
 const errMessageNoVersion = `The configuration file must have a version number.
@@ -187,6 +188,7 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 			region = trace.StartRegion(ctx, "codegen")
 		}
 		var files map[string]string
+		var resp *plugin.CodeGenResponse
 		var out string
 		switch {
 		case sql.Gen.Go != nil:
@@ -197,12 +199,19 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 			files, err = kotlin.Generate(result, combo)
 		case sql.Gen.Python != nil:
 			out = combo.Python.Out
-			files, err = python.Generate(result, combo)
+			resp, err = python.Generate(codeGenRequest(result, combo))
 		default:
 			panic("missing language backend")
 		}
 		if region != nil {
 			region.End()
+		}
+
+		if resp != nil {
+			files = map[string]string{}
+			for _, file := range resp.Files {
+				files[file.Name] = string(file.Contents)
+			}
 		}
 
 		if err != nil {

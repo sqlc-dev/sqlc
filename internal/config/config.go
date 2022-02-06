@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/kyleconroy/sqlc/internal/pattern"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 
 	yaml "gopkg.in/yaml.v3"
@@ -170,10 +171,10 @@ type Override struct {
 	// fully qualified name of the column, e.g. `accounts.id`
 	Column string `json:"column" yaml:"column"`
 
-	ColumnName   *Match
-	TableCatalog *Match
-	TableSchema  *Match
-	TableRel     *Match
+	ColumnName   *pattern.Match
+	TableCatalog *pattern.Match
+	TableSchema  *pattern.Match
+	TableRel     *pattern.Match
 	GoImportPath string
 	GoPackage    string
 	GoTypeName   string
@@ -243,36 +244,36 @@ func (o *Override) Parse() (err error) {
 		colParts := strings.Split(o.Column, ".")
 		switch len(colParts) {
 		case 2:
-			if o.ColumnName, err = MatchCompile(colParts[1]); err != nil {
+			if o.ColumnName, err = pattern.MatchCompile(colParts[1]); err != nil {
 				return err
 			}
-			if o.TableRel, err = MatchCompile(colParts[0]); err != nil {
+			if o.TableRel, err = pattern.MatchCompile(colParts[0]); err != nil {
 				return err
 			}
-			if o.TableSchema, err = MatchCompile("public"); err != nil {
+			if o.TableSchema, err = pattern.MatchCompile("public"); err != nil {
 				return err
 			}
 		case 3:
-			if o.ColumnName, err = MatchCompile(colParts[2]); err != nil {
+			if o.ColumnName, err = pattern.MatchCompile(colParts[2]); err != nil {
 				return err
 			}
-			if o.TableRel, err = MatchCompile(colParts[1]); err != nil {
+			if o.TableRel, err = pattern.MatchCompile(colParts[1]); err != nil {
 				return err
 			}
-			if o.TableSchema, err = MatchCompile(colParts[0]); err != nil {
+			if o.TableSchema, err = pattern.MatchCompile(colParts[0]); err != nil {
 				return err
 			}
 		case 4:
-			if o.ColumnName, err = MatchCompile(colParts[3]); err != nil {
+			if o.ColumnName, err = pattern.MatchCompile(colParts[3]); err != nil {
 				return err
 			}
-			if o.TableRel, err = MatchCompile(colParts[2]); err != nil {
+			if o.TableRel, err = pattern.MatchCompile(colParts[2]); err != nil {
 				return err
 			}
-			if o.TableSchema, err = MatchCompile(colParts[1]); err != nil {
+			if o.TableSchema, err = pattern.MatchCompile(colParts[1]); err != nil {
 				return err
 			}
-			if o.TableCatalog, err = MatchCompile(colParts[0]); err != nil {
+			if o.TableCatalog, err = pattern.MatchCompile(colParts[0]); err != nil {
 				return err
 			}
 		default:

@@ -1,14 +1,21 @@
 package python
 
 import (
-	"github.com/kyleconroy/sqlc/internal/compiler"
-	"github.com/kyleconroy/sqlc/internal/config"
-	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 	"log"
+
+	"github.com/kyleconroy/sqlc/internal/plugin"
 )
 
-func postgresType(r *compiler.Result, col *compiler.Column, settings config.CombinedSettings) string {
-	columnType := col.DataType
+func dataType(n *plugin.Identifier) string {
+	if n.Schema != "" {
+		return n.Schema + "." + n.Name
+	} else {
+		return n.Name
+	}
+}
+
+func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
+	columnType := dataType(col.Type)
 
 	switch columnType {
 	case "serial", "serial4", "pg_catalog.serial4", "bigserial", "serial8", "pg_catalog.serial8", "smallserial", "serial2", "pg_catalog.serial2", "integer", "int", "int4", "pg_catalog.int4", "bigint", "int8", "pg_catalog.int8", "smallint", "int2", "pg_catalog.int2":
@@ -43,20 +50,16 @@ func postgresType(r *compiler.Result, col *compiler.Column, settings config.Comb
 	case "ltree", "lquery", "ltxtquery":
 		return "str"
 	default:
-		for _, schema := range r.Catalog.Schemas {
+		for _, schema := range req.Catalog.Schemas {
 			if schema.Name == "pg_catalog" {
 				continue
 			}
-			for _, typ := range schema.Types {
-				enum, ok := typ.(*catalog.Enum)
-				if !ok {
-					continue
-				}
+			for _, enum := range schema.Enums {
 				if columnType == enum.Name {
-					if schema.Name == r.Catalog.DefaultSchema {
-						return "models." + ModelName(enum.Name, settings)
+					if schema.Name == req.Catalog.DefaultSchema {
+						return "models." + modelName(enum.Name, req.Settings)
 					}
-					return "models." + ModelName(schema.Name+"_"+enum.Name, settings)
+					return "models." + modelName(schema.Name+"_"+enum.Name, req.Settings)
 				}
 			}
 		}

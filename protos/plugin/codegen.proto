@@ -1,0 +1,144 @@
+syntax = "proto3";
+
+package plugin;
+
+option go_package = "github.com/kyleconroy/sqlc/internal/plugin";
+
+message File
+{
+  string name = 1 [json_name="name"];
+  bytes contents = 2 [json_name="contents"];
+}
+
+message Override {
+	// name of the type to use, e.g. `github.com/segmentio/ksuid.KSUID` or `mymodule.Type`
+	string code_type = 1 [json_name="code_type"];
+
+	// name of the type to use, e.g. `text`
+	string db_type = 3 [json_name="db_type"];
+
+	// True if the override should apply to a nullable database type
+	bool nullable = 5 [json_name="nullable"];
+
+	// fully qualified name of the column, e.g. `accounts.id`
+	string column = 6 [json_name="column"];
+
+	Identifier table = 7 [json_name="table"];
+
+	string column_name = 8 [json_name="column_name"];
+
+	PythonType python_type = 9;
+}
+
+message PythonType
+{
+  string module = 1;
+  string name = 2;
+}
+
+
+message Settings
+{
+  string version = 1 [json_name="version"];
+  string engine = 2 [json_name="engine"];
+  repeated string schema = 3 [json_name="schema"];
+  repeated string queries = 4 [json_name="queries"];
+  map<string, string> rename = 5 [json_name="rename"];
+  repeated Override overrides = 6 [json_name="overrides"];
+
+  // TODO: Refactor codegen settings
+  PythonCode python = 8;
+}
+
+message PythonCode
+{
+  bool emit_exact_table_names = 1;
+  bool emit_sync_querier = 2;
+  bool emit_async_querier = 3;
+  string package = 4;
+  string out = 5;
+}
+
+message Catalog
+{
+  string comment = 1;
+  string default_schema = 2;
+  string name = 3;
+  repeated Schema schemas = 4;
+}
+
+message Schema
+{
+  string comment = 1;
+  string name = 2;
+  repeated Table tables = 3;
+  repeated Enum enums = 4;
+}
+
+message Enum
+{
+  string name = 1;
+  repeated string vals = 2;
+  string comment = 3;
+}
+
+message Table
+{
+  Identifier rel = 1;
+  repeated Column columns = 2;
+  string comment  = 3;
+}
+
+message Identifier
+{
+	string catalog = 1;
+	string schema = 2;
+	string name = 3;
+}
+
+message Column
+{
+  string name = 1;
+  bool not_null = 3;
+  bool is_array = 4;
+  string comment = 5;
+  int32 length = 6;
+  bool is_named_param = 7;
+  bool is_func_call = 8;
+
+  // XXX: Figure out what PostgreSQL calls `foo.id`
+  string scope = 9;
+  Identifier table = 10;
+  string table_alias = 11;
+  Identifier type = 12;
+  string data_type = 13;
+}
+
+message Query
+{
+  string text = 1 [json_name="text"];
+  string name = 2 [json_name="name"];
+  string cmd = 3 [json_name="cmd"];
+  repeated Column columns = 4 [json_name="columns"];
+  repeated Parameter params = 5 [json_name="parameters"];
+  repeated string comments = 6 [json_name="comments"];
+  string filename = 7 [json_name="filename"];
+}
+
+message Parameter
+{
+  int32 number = 1 [json_name="number"];
+  Column column = 2 [json_name="column"];
+}
+
+message CodeGenRequest
+{
+  Settings settings = 1 [json_name="settings"];
+  Catalog catalog = 2 [json_name="catalog"];
+  repeated Query queries = 3 [json_name="queries"];
+}
+
+message CodeGenResponse
+{
+  repeated File files = 1 [json_name="files"];
+}
