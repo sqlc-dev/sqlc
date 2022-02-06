@@ -365,7 +365,7 @@ func makeType(req *plugin.CodeGenRequest, col *plugin.Column) ktType {
 		IsEnum:   isEnum,
 		IsArray:  col.IsArray,
 		IsNull:   !col.NotNull,
-		DataType: col.DataType,
+		DataType: dataType(col.Type),
 		Engine:   req.Settings.Engine,
 	}
 }
