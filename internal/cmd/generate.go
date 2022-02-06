@@ -196,7 +196,7 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 			files, err = golang.Generate(result, combo)
 		case sql.Gen.Kotlin != nil:
 			out = combo.Kotlin.Out
-			files, err = kotlin.Generate(result, combo)
+			resp, err = kotlin.Generate(codeGenRequest(result, combo))
 		case sql.Gen.Python != nil:
 			out = combo.Python.Out
 			resp, err = python.Generate(codeGenRequest(result, combo))

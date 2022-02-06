@@ -3,13 +3,11 @@ package kotlin
 import (
 	"log"
 
-	"github.com/kyleconroy/sqlc/internal/compiler"
-	"github.com/kyleconroy/sqlc/internal/config"
-	"github.com/kyleconroy/sqlc/internal/sql/catalog"
+	"github.com/kyleconroy/sqlc/internal/plugin"
 )
 
-func postgresType(r *compiler.Result, col *compiler.Column, settings config.CombinedSettings) (string, bool) {
-	columnType := col.DataType
+func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) (string, bool) {
+	columnType := dataType(col.Type)
 
 	switch columnType {
 	case "serial", "pg_catalog.serial4":
@@ -84,20 +82,16 @@ func postgresType(r *compiler.Result, col *compiler.Column, settings config.Comb
 		return "Any", false
 
 	default:
-		for _, schema := range r.Catalog.Schemas {
+		for _, schema := range req.Catalog.Schemas {
 			if schema.Name == "pg_catalog" {
 				continue
 			}
-			for _, typ := range schema.Types {
-				enum, ok := typ.(*catalog.Enum)
-				if !ok {
-					continue
-				}
+			for _, enum := range schema.Enums {
 				if columnType == enum.Name {
-					if schema.Name == r.Catalog.DefaultSchema {
-						return DataClassName(enum.Name, settings), true
+					if schema.Name == req.Catalog.DefaultSchema {
+						return dataClassName(enum.Name, req.Settings), true
 					}
-					return DataClassName(schema.Name+"_"+enum.Name, settings), true
+					return dataClassName(schema.Name+"_"+enum.Name, req.Settings), true
 				}
 			}
 		}

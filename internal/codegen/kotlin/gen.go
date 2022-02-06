@@ -11,16 +11,12 @@ import (
 	"text/template"
 
 	"github.com/kyleconroy/sqlc/internal/codegen"
-	"github.com/kyleconroy/sqlc/internal/compiler"
-	"github.com/kyleconroy/sqlc/internal/config"
-	"github.com/kyleconroy/sqlc/internal/core"
 	"github.com/kyleconroy/sqlc/internal/inflection"
 	"github.com/kyleconroy/sqlc/internal/metadata"
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/catalog"
+	"github.com/kyleconroy/sqlc/internal/plugin"
 )
 
-func sameTableName(n *ast.TableName, f core.FQN) bool {
+func sameTableName(n, f *plugin.Identifier) bool {
 	if n == nil {
 		return false
 	}
@@ -28,7 +24,7 @@ func sameTableName(n *ast.TableName, f core.FQN) bool {
 	if n.Schema == "" {
 		schema = "public"
 	}
-	return n.Catalog == n.Catalog && schema == f.Schema && n.Name == f.Rel
+	return n.Catalog == n.Catalog && schema == f.Schema && n.Name == f.Name
 }
 
 var ktIdentPattern = regexp.MustCompile("[^a-zA-Z0-9_]+")
@@ -52,7 +48,7 @@ type Field struct {
 }
 
 type Struct struct {
-	Table             core.FQN
+	Table             plugin.Identifier
 	Name              string
 	Fields            []Field
 	JDBCParamBindings []Field
@@ -94,7 +90,7 @@ func jdbcSet(t ktType, idx int, name string) string {
 		return fmt.Sprintf(`stmt.setArray(%d, conn.createArrayOf("%s", %s.map { v -> v.value }.toTypedArray()))`, idx, t.DataType, name)
 	}
 	if t.IsEnum {
-		if t.Engine == config.EnginePostgreSQL {
+		if t.Engine == "postgresql" {
 			return fmt.Sprintf("stmt.setObject(%d, %s.value, %s)", idx, name, "Types.OTHER")
 		} else {
 			return fmt.Sprintf("stmt.setString(%d, %s.value)", idx, name)
@@ -228,25 +224,21 @@ func ktEnumValueName(value string) string {
 	return strings.ToUpper(id)
 }
 
-func buildEnums(r *compiler.Result, settings config.CombinedSettings) []Enum {
+func buildEnums(req *plugin.CodeGenRequest) []Enum {
 	var enums []Enum
-	for _, schema := range r.Catalog.Schemas {
+	for _, schema := range req.Catalog.Schemas {
 		if schema.Name == "pg_catalog" {
 			continue
 		}
-		for _, typ := range schema.Types {
-			enum, ok := typ.(*catalog.Enum)
-			if !ok {
-				continue
-			}
+		for _, enum := range schema.Enums {
 			var enumName string
-			if schema.Name == r.Catalog.DefaultSchema {
+			if schema.Name == req.Catalog.DefaultSchema {
 				enumName = enum.Name
 			} else {
 				enumName = schema.Name + "_" + enum.Name
 			}
 			e := Enum{
-				Name:    DataClassName(enumName, settings),
+				Name:    dataClassName(enumName, req.Settings),
 				Comment: enum.Comment,
 			}
 			for _, v := range enum.Vals {
@@ -265,7 +257,7 @@ func buildEnums(r *compiler.Result, settings config.CombinedSettings) []Enum {
 	return enums
 }
 
-func DataClassName(name string, settings config.CombinedSettings) string {
+func dataClassName(name string, settings *plugin.Settings) string {
 	if rename := settings.Rename[name]; rename != "" {
 		return rename
 	}
@@ -276,36 +268,36 @@ func DataClassName(name string, settings config.CombinedSettings) string {
 	return out
 }
 
-func MemberName(name string, settings config.CombinedSettings) string {
-	return codegen.LowerTitle(DataClassName(name, settings))
+func memberName(name string, settings *plugin.Settings) string {
+	return codegen.LowerTitle(dataClassName(name, settings))
 }
 
-func buildDataClasses(r *compiler.Result, settings config.CombinedSettings) []Struct {
+func buildDataClasses(req *plugin.CodeGenRequest) []Struct {
 	var structs []Struct
-	for _, schema := range r.Catalog.Schemas {
+	for _, schema := range req.Catalog.Schemas {
 		if schema.Name == "pg_catalog" {
 			continue
 		}
 		for _, table := range schema.Tables {
 			var tableName string
-			if schema.Name == r.Catalog.DefaultSchema {
+			if schema.Name == req.Catalog.DefaultSchema {
 				tableName = table.Rel.Name
 			} else {
 				tableName = schema.Name + "_" + table.Rel.Name
 			}
-			structName := DataClassName(tableName, settings)
-			if !settings.Go.EmitExactTableNames {
+			structName := dataClassName(tableName, req.Settings)
+			if !req.Settings.Kotlin.EmitExactTableNames {
 				structName = inflection.Singular(structName)
 			}
 			s := Struct{
-				Table:   core.FQN{Schema: schema.Name, Rel: table.Rel.Name},
+				Table:   plugin.Identifier{Schema: schema.Name, Name: table.Rel.Name},
 				Name:    structName,
 				Comment: table.Comment,
 			}
 			for _, column := range table.Columns {
 				s.Fields = append(s.Fields, Field{
-					Name:    MemberName(column.Name, settings),
-					Type:    makeType(r, compiler.ConvertColumn(table.Rel, column), settings),
+					Name:    memberName(column.Name, req.Settings),
+					Type:    makeType(req, column),
 					Comment: column.Comment,
 				})
 			}
@@ -324,7 +316,7 @@ type ktType struct {
 	IsArray  bool
 	IsNull   bool
 	DataType string
-	Engine   config.Engine
+	Engine   string
 }
 
 func (t ktType) String() string {
@@ -366,25 +358,25 @@ func (t ktType) IsUUID() bool {
 	return t.Name == "UUID"
 }
 
-func makeType(r *compiler.Result, col *compiler.Column, settings config.CombinedSettings) ktType {
-	typ, isEnum := ktInnerType(r, col, settings)
+func makeType(req *plugin.CodeGenRequest, col *plugin.Column) ktType {
+	typ, isEnum := ktInnerType(req, col)
 	return ktType{
 		Name:     typ,
 		IsEnum:   isEnum,
 		IsArray:  col.IsArray,
 		IsNull:   !col.NotNull,
-		DataType: col.DataType,
-		Engine:   settings.Package.Engine,
+		DataType: dataType(col.Type),
+		Engine:   req.Settings.Engine,
 	}
 }
 
-func ktInnerType(r *compiler.Result, col *compiler.Column, settings config.CombinedSettings) (string, bool) {
+func ktInnerType(req *plugin.CodeGenRequest, col *plugin.Column) (string, bool) {
 	// TODO: Extend the engine interface to handle types
-	switch settings.Package.Engine {
-	case config.EngineMySQL:
-		return mysqlType(r, col, settings)
-	case config.EnginePostgreSQL:
-		return postgresType(r, col, settings)
+	switch req.Settings.Engine {
+	case "mysql":
+		return mysqlType(req, col)
+	case "postgresql":
+		return postgresType(req, col)
 	default:
 		return "Any", false
 	}
@@ -392,10 +384,10 @@ func ktInnerType(r *compiler.Result, col *compiler.Column, settings config.Combi
 
 type goColumn struct {
 	id int
-	*compiler.Column
+	*plugin.Column
 }
 
-func ktColumnsToStruct(r *compiler.Result, name string, columns []goColumn, settings config.CombinedSettings, namer func(*compiler.Column, int) string) *Struct {
+func ktColumnsToStruct(req *plugin.CodeGenRequest, name string, columns []goColumn, namer func(*plugin.Column, int) string) *Struct {
 	gs := Struct{
 		Name: name,
 	}
@@ -406,13 +398,13 @@ func ktColumnsToStruct(r *compiler.Result, name string, columns []goColumn, sett
 			gs.JDBCParamBindings = append(gs.JDBCParamBindings, binding)
 			continue
 		}
-		fieldName := MemberName(namer(c.Column, c.id), settings)
+		fieldName := memberName(namer(c.Column, c.id), req.Settings)
 		if v := nameSeen[c.Name]; v > 0 {
 			fieldName = fmt.Sprintf("%s_%d", fieldName, v+1)
 		}
 		field := Field{
 			Name: fieldName,
-			Type: makeType(r, c.Column, settings),
+			Type: makeType(req, c.Column),
 		}
 		gs.Fields = append(gs.Fields, field)
 		gs.JDBCParamBindings = append(gs.JDBCParamBindings, field)
@@ -434,14 +426,14 @@ func ktArgName(name string) string {
 	return out
 }
 
-func ktParamName(c *compiler.Column, number int) string {
+func ktParamName(c *plugin.Column, number int) string {
 	if c.Name != "" {
 		return ktArgName(c.Name)
 	}
 	return fmt.Sprintf("dollar_%d", number)
 }
 
-func ktColumnName(c *compiler.Column, pos int) string {
+func ktColumnName(c *plugin.Column, pos int) string {
 	if c.Name != "" {
 		return c.Name
 	}
@@ -453,16 +445,16 @@ var postgresPlaceholderRegexp = regexp.MustCompile(`\B\$\d+\b`)
 // HACK: jdbc doesn't support numbered parameters, so we need to transform them to question marks...
 // But there's no access to the SQL parser here, so we just do a dumb regexp replace instead. This won't work if
 // the literal strings contain matching values, but good enough for a prototype.
-func jdbcSQL(s string, engine config.Engine) string {
-	if engine == config.EnginePostgreSQL {
+func jdbcSQL(s, engine string) string {
+	if engine == "postgresql" {
 		return postgresPlaceholderRegexp.ReplaceAllString(s, "?")
 	}
 	return s
 }
 
-func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs []Struct) ([]Query, error) {
-	qs := make([]Query, 0, len(r.Queries))
-	for _, query := range r.Queries {
+func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error) {
+	qs := make([]Query, 0, len(req.Queries))
+	for _, query := range req.Queries {
 		if query.Name == "" {
 			continue
 		}
@@ -480,18 +472,18 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 			FieldName:    codegen.LowerTitle(query.Name) + "Stmt",
 			MethodName:   codegen.LowerTitle(query.Name),
 			SourceName:   query.Filename,
-			SQL:          jdbcSQL(query.SQL, settings.Package.Engine),
+			SQL:          jdbcSQL(query.Text, req.Settings.Engine),
 			Comments:     query.Comments,
 		}
 
 		var cols []goColumn
 		for _, p := range query.Params {
 			cols = append(cols, goColumn{
-				id:     p.Number,
+				id:     int(p.Number),
 				Column: p.Column,
 			})
 		}
-		params := ktColumnsToStruct(r, gq.ClassName+"Bindings", cols, settings, ktParamName)
+		params := ktColumnsToStruct(req, gq.ClassName+"Bindings", cols, ktParamName)
 		gq.Arg = Params{
 			Struct: params,
 		}
@@ -500,7 +492,7 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 			c := query.Columns[0]
 			gq.Ret = QueryValue{
 				Name: "results",
-				Typ:  makeType(r, c, settings),
+				Typ:  makeType(req, c),
 			}
 		} else if len(query.Columns) > 1 {
 			var gs *Struct
@@ -513,9 +505,9 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 				same := true
 				for i, f := range s.Fields {
 					c := query.Columns[i]
-					sameName := f.Name == MemberName(ktColumnName(c, i), settings)
-					sameType := f.Type == makeType(r, c, settings)
-					sameTable := sameTableName(c.Table, s.Table)
+					sameName := f.Name == memberName(ktColumnName(c, i), req.Settings)
+					sameType := f.Type == makeType(req, c)
+					sameTable := sameTableName(c.Table, &s.Table)
 
 					if !sameName || !sameType || !sameTable {
 						same = false
@@ -535,7 +527,7 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 						Column: c,
 					})
 				}
-				gs = ktColumnsToStruct(r, gq.ClassName+"Row", columns, settings, ktColumnName)
+				gs = ktColumnsToStruct(req, gq.ClassName+"Row", columns, ktColumnName)
 				emit = true
 			}
 			gq.Ret = QueryValue{
@@ -741,7 +733,7 @@ type ktTmplCtx struct {
 	Enums       []Enum
 	DataClasses []Struct
 	Queries     []Query
-	Settings    config.Config
+	Settings    *plugin.Settings
 
 	// TODO: Race conditions
 	SourceName string
@@ -771,16 +763,16 @@ func ktFormat(s string) string {
 	return o
 }
 
-func Generate(r *compiler.Result, settings config.CombinedSettings) (map[string]string, error) {
-	enums := buildEnums(r, settings)
-	structs := buildDataClasses(r, settings)
-	queries, err := buildQueries(r, settings, structs)
+func Generate(req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
+	enums := buildEnums(req)
+	structs := buildDataClasses(req)
+	queries, err := buildQueries(req, structs)
 	if err != nil {
 		return nil, err
 	}
 
 	i := &importer{
-		Settings:    settings,
+		Settings:    req.Settings,
 		Enums:       enums,
 		DataClasses: structs,
 		Queries:     queries,
@@ -797,11 +789,10 @@ func Generate(r *compiler.Result, settings config.CombinedSettings) (map[string]
 	sqlFile := template.Must(template.New("table").Funcs(funcMap).Parse(ktSqlTmpl))
 	ifaceFile := template.Must(template.New("table").Funcs(funcMap).Parse(ktIfaceTmpl))
 
-	pkg := settings.Package
 	tctx := ktTmplCtx{
-		Settings:    settings.Global,
+		Settings:    req.Settings,
 		Q:           `"""`,
-		Package:     pkg.Gen.Kotlin.Package,
+		Package:     req.Settings.Kotlin.Package,
 		Queries:     queries,
 		Enums:       enums,
 		DataClasses: structs,
@@ -835,5 +826,14 @@ func Generate(r *compiler.Result, settings config.CombinedSettings) (map[string]
 		return nil, err
 	}
 
-	return output, nil
+	resp := plugin.CodeGenResponse{}
+
+	for filename, code := range output {
+		resp.Files = append(resp.Files, &plugin.File{
+			Name:     filename,
+			Contents: []byte(code),
+		})
+	}
+
+	return &resp, nil
 }
