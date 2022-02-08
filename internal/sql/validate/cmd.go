@@ -44,9 +44,21 @@ func validateCopyfrom(n ast.Node) error {
 	return nil
 }
 
+func validateBatch(n ast.Node) error {
+	switch n.(type) {
+	case *ast.InsertStmt, *ast.UpdateStmt:
+	default:
+		return errors.New(":batchexec requires an INSERT INTO or UPDATE statement")
+	}
+
+	return nil
+}
+
 func Cmd(n ast.Node, name, cmd string) error {
 	if cmd == metadata.CmdCopyFrom {
 		return validateCopyfrom(n)
+	} else if cmd == metadata.CmdBatchExec {
+		return validateBatch(n)
 	}
 	if !(cmd == metadata.CmdMany || cmd == metadata.CmdOne) {
 		return nil

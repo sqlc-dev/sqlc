@@ -32,6 +32,12 @@
         {{- else if eq .Cmd ":copyfrom" }}
             {{.MethodName}}(ctx context.Context, {{.Arg.SlicePair}}) (int64, error)
         {{- end}}
+        {{- if and (eq .Cmd ":batchexec") ($dbtxParam) }}
+            {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.SlicePair}}) *{{.MethodName}}BatchResults
+        {{- else if eq .Cmd ":batchexec" }}
+            {{.MethodName}}(ctx context.Context, {{.Arg.SlicePair}}) *{{.MethodName}}BatchResults
+        {{- end}}
+
     {{- end}}
     }
 
