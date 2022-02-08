@@ -7,6 +7,9 @@ type DBTX interface {
 {{- if .UsesCopyFrom }}
 	CopyFrom(ctx context.Context, tableName pgx.Identifier, columnNames []string, rowSrc pgx.CopyFromSource) (int64, error)
 {{- end }}
+{{- if .UsesBatch }}
+	SendBatch(context.Context, *pgx.Batch) pgx.BatchResults
+{{- end }}
 }
 
 {{ if .EmitMethodsWithDBArgument}}
