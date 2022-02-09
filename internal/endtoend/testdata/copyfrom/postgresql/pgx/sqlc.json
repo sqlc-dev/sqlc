@@ -7,7 +7,8 @@
       "sql_package": "pgx/v4",
       "name": "querytest",
       "schema": "query.sql",
-      "queries": "query.sql"
+      "queries": "query.sql",
+      "emit_interface": true
     }
   ]
 }
