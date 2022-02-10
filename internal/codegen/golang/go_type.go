@@ -32,7 +32,14 @@ func goInnerType(r *compiler.Result, col *compiler.Column, settings config.Combi
 		if oride.GoTypeName == "" {
 			continue
 		}
-		if oride.DBType != "" && oride.DBType == columnType && oride.Nullable != notNull {
+		match := oride.DBType == columnType
+		if !match && columnType == "pg_catalog.int2" {
+			switch oride.DBType {
+			case "smallint", "int2":
+				match = true
+			}
+		}
+		if oride.DBType != "" && match && oride.Nullable != notNull {
 			return oride.GoTypeName
 		}
 	}
