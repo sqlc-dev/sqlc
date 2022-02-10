@@ -8,14 +8,14 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/kyleconroy/sqlc/internal/codegen"
-	"github.com/kyleconroy/sqlc/internal/inflection"
-	"github.com/kyleconroy/sqlc/internal/metadata"
-	"github.com/kyleconroy/sqlc/internal/pattern"
-	"github.com/kyleconroy/sqlc/internal/plugin"
-	pyast "github.com/kyleconroy/sqlc/internal/python/ast"
-	"github.com/kyleconroy/sqlc/internal/python/poet"
-	pyprint "github.com/kyleconroy/sqlc/internal/python/printer"
+	"github.com/egtann/sqlc/internal/codegen"
+	"github.com/egtann/sqlc/internal/inflection"
+	"github.com/egtann/sqlc/internal/metadata"
+	"github.com/egtann/sqlc/internal/pattern"
+	"github.com/egtann/sqlc/internal/plugin"
+	pyast "github.com/egtann/sqlc/internal/python/ast"
+	"github.com/egtann/sqlc/internal/python/poet"
+	pyprint "github.com/egtann/sqlc/internal/python/printer"
 )
 
 type Constant struct {

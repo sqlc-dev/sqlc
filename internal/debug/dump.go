@@ -5,7 +5,7 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 
-	"github.com/kyleconroy/sqlc/internal/opts"
+	"github.com/egtann/sqlc/internal/opts"
 )
 
 var Active bool

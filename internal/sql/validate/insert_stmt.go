@@ -1,8 +1,8 @@
 package validate
 
 import (
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
+	"github.com/egtann/sqlc/internal/sql/ast"
+	"github.com/egtann/sqlc/internal/sql/sqlerr"
 )
 
 func InsertStmt(stmt *ast.InsertStmt) error {

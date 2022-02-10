@@ -3,7 +3,7 @@ package kotlin
 import (
 	"log"
 
-	"github.com/kyleconroy/sqlc/internal/plugin"
+	"github.com/egtann/sqlc/internal/plugin"
 )
 
 func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) (string, bool) {

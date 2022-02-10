@@ -3,8 +3,8 @@ package kotlin
 import (
 	"log"
 
-	"github.com/kyleconroy/sqlc/internal/debug"
-	"github.com/kyleconroy/sqlc/internal/plugin"
+	"github.com/egtann/sqlc/internal/debug"
+	"github.com/egtann/sqlc/internal/plugin"
 )
 
 func dataType(n *plugin.Identifier) string {

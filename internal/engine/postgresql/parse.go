@@ -11,8 +11,8 @@ import (
 
 	nodes "github.com/pganalyze/pg_query_go/v2"
 
-	"github.com/kyleconroy/sqlc/internal/metadata"
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
+	"github.com/egtann/sqlc/internal/metadata"
+	"github.com/egtann/sqlc/internal/sql/ast"
 )
 
 func stringSlice(list *nodes.List) []string {

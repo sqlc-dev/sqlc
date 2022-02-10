@@ -3,7 +3,7 @@ package python
 import (
 	"log"
 
-	"github.com/kyleconroy/sqlc/internal/plugin"
+	"github.com/egtann/sqlc/internal/plugin"
 )
 
 func dataType(n *plugin.Identifier) string {

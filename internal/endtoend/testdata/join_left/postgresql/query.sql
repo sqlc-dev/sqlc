@@ -1,4 +1,4 @@
---- https://github.com/kyleconroy/sqlc/issues/604
+--- https://github.com/egtann/sqlc/issues/604
 CREATE TABLE users (
   user_id    INT PRIMARY KEY,
   city_id    INT -- nullable

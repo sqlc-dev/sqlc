@@ -10,8 +10,8 @@ import (
 	driver "github.com/pingcap/parser/test_driver"
 	"github.com/pingcap/parser/types"
 
-	"github.com/kyleconroy/sqlc/internal/debug"
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
+	"github.com/egtann/sqlc/internal/debug"
+	"github.com/egtann/sqlc/internal/sql/ast"
 )
 
 type cc struct {

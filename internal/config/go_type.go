@@ -149,6 +149,21 @@ func (gt GoType) Parse() (*ParsedGoType, error) {
 			typename = typename[:len(typename)-len("-go")]
 		}
 		o.ImportPath = input[:lastDot]
+
+		// set versioned overrides to reference the underlying package
+		// name. for example, the type for a/b/v2.C is b.C, not v2.C.
+		parts := strings.Split(input, "/")
+		if len(parts) >= 2 {
+			name := parts[len(parts)-1]
+			lastPeriod := strings.LastIndex(name, ".")
+			if lastPeriod > 0 {
+				version, name := name[:lastPeriod], name[lastPeriod:]
+				if versionNumber.MatchString(version) {
+					pkgName := parts[len(parts)-2]
+					typename = pkgName + name
+				}
+			}
+		}
 	}
 	o.TypeName = typename
 	isPointer := input[0] == '*'
