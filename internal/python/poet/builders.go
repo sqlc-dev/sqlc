@@ -1,6 +1,6 @@
 package poet
 
-import "github.com/kyleconroy/sqlc/internal/python/ast"
+import "github.com/egtann/sqlc/internal/python/ast"
 
 func Alias(name string) *ast.Node {
 	return &ast.Node{

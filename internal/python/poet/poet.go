@@ -1,7 +1,7 @@
 package poet
 
 import (
-	"github.com/kyleconroy/sqlc/internal/python/ast"
+	"github.com/egtann/sqlc/internal/python/ast"
 )
 
 type proto interface {

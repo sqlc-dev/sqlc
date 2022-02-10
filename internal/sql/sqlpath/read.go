@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/kyleconroy/sqlc/internal/migrations"
+	"github.com/egtann/sqlc/internal/migrations"
 )
 
 // Return a list of SQL files in the listed paths. Only includes files ending

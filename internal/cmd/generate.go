@@ -11,15 +11,15 @@ import (
 	"runtime/trace"
 	"strings"
 
-	"github.com/kyleconroy/sqlc/internal/codegen/golang"
-	"github.com/kyleconroy/sqlc/internal/codegen/kotlin"
-	"github.com/kyleconroy/sqlc/internal/codegen/python"
-	"github.com/kyleconroy/sqlc/internal/compiler"
-	"github.com/kyleconroy/sqlc/internal/config"
-	"github.com/kyleconroy/sqlc/internal/debug"
-	"github.com/kyleconroy/sqlc/internal/multierr"
-	"github.com/kyleconroy/sqlc/internal/opts"
-	"github.com/kyleconroy/sqlc/internal/plugin"
+	"github.com/egtann/sqlc/internal/codegen/golang"
+	"github.com/egtann/sqlc/internal/codegen/kotlin"
+	"github.com/egtann/sqlc/internal/codegen/python"
+	"github.com/egtann/sqlc/internal/compiler"
+	"github.com/egtann/sqlc/internal/config"
+	"github.com/egtann/sqlc/internal/debug"
+	"github.com/egtann/sqlc/internal/multierr"
+	"github.com/egtann/sqlc/internal/opts"
+	"github.com/egtann/sqlc/internal/plugin"
 )
 
 const errMessageNoVersion = `The configuration file must have a version number.

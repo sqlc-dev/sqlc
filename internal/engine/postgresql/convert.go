@@ -8,7 +8,7 @@ import (
 
 	pg "github.com/pganalyze/pg_query_go/v2"
 
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
+	"github.com/egtann/sqlc/internal/sql/ast"
 )
 
 func convertFuncParamMode(m pg.FunctionParameterMode) (ast.FuncParamMode, error) {

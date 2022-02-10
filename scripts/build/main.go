@@ -28,7 +28,7 @@ func main() {
 
 	fmt.Printf("::set-output name=version::%s\n", version)
 
-	x := "-X github.com/kyleconroy/sqlc/internal/cmd.version=" + version
+	x := "-X github.com/egtann/sqlc/internal/cmd.version=" + version
 	args := []string{
 		"build",
 		"-ldflags", x,

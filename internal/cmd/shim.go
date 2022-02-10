@@ -3,10 +3,10 @@ package cmd
 import (
 	"strings"
 
-	"github.com/kyleconroy/sqlc/internal/compiler"
-	"github.com/kyleconroy/sqlc/internal/config"
-	"github.com/kyleconroy/sqlc/internal/plugin"
-	"github.com/kyleconroy/sqlc/internal/sql/catalog"
+	"github.com/egtann/sqlc/internal/compiler"
+	"github.com/egtann/sqlc/internal/config"
+	"github.com/egtann/sqlc/internal/plugin"
+	"github.com/egtann/sqlc/internal/sql/catalog"
 )
 
 func pluginOverride(o config.Override) *plugin.Override {

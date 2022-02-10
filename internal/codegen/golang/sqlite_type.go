@@ -4,8 +4,8 @@ import (
 	"log"
 	"strings"
 
-	"github.com/kyleconroy/sqlc/internal/compiler"
-	"github.com/kyleconroy/sqlc/internal/config"
+	"github.com/egtann/sqlc/internal/compiler"
+	"github.com/egtann/sqlc/internal/config"
 )
 
 func sqliteType(r *compiler.Result, col *compiler.Column, settings config.CombinedSettings) string {

@@ -4,11 +4,11 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/kyleconroy/sqlc/internal/config"
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/astutils"
-	"github.com/kyleconroy/sqlc/internal/sql/catalog"
-	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
+	"github.com/egtann/sqlc/internal/config"
+	"github.com/egtann/sqlc/internal/sql/ast"
+	"github.com/egtann/sqlc/internal/sql/astutils"
+	"github.com/egtann/sqlc/internal/sql/catalog"
+	"github.com/egtann/sqlc/internal/sql/sqlerr"
 )
 
 type funcCallVisitor struct {

@@ -9,14 +9,14 @@ import (
 func Singular(name string) string {
 	// Manual fix for incorrect handling of "campus"
 	//
-	// https://github.com/kyleconroy/sqlc/issues/430
+	// https://github.com/egtann/sqlc/issues/430
 	// https://github.com/jinzhu/inflection/issues/13
 	if strings.ToLower(name) == "campus" {
 		return name
 	}
 	// Manual fix for incorrect handling of "meta"
 	//
-	// https://github.com/kyleconroy/sqlc/issues/1217
+	// https://github.com/egtann/sqlc/issues/1217
 	// https://github.com/jinzhu/inflection/issues/21
 	if strings.ToLower(name) == "meta" {
 		return name

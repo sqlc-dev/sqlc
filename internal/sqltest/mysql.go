@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/kyleconroy/sqlc/internal/sql/sqlpath"
+	"github.com/egtann/sqlc/internal/sql/sqlpath"
 
 	_ "github.com/go-sql-driver/mysql"
 )

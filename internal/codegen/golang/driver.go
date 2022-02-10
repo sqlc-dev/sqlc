@@ -1,6 +1,6 @@
 package golang
 
-import "github.com/kyleconroy/sqlc/internal/config"
+import "github.com/egtann/sqlc/internal/config"
 
 type SQLDriver int
 

@@ -3,10 +3,10 @@ package golang
 import (
 	"log"
 
-	"github.com/kyleconroy/sqlc/internal/compiler"
-	"github.com/kyleconroy/sqlc/internal/config"
-	"github.com/kyleconroy/sqlc/internal/debug"
-	"github.com/kyleconroy/sqlc/internal/sql/catalog"
+	"github.com/egtann/sqlc/internal/compiler"
+	"github.com/egtann/sqlc/internal/config"
+	"github.com/egtann/sqlc/internal/debug"
+	"github.com/egtann/sqlc/internal/sql/catalog"
 )
 
 func postgresType(r *compiler.Result, col *compiler.Column, settings config.CombinedSettings) string {

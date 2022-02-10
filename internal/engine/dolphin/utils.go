@@ -3,7 +3,7 @@ package dolphin
 import (
 	pcast "github.com/pingcap/parser/ast"
 
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
+	"github.com/egtann/sqlc/internal/sql/ast"
 )
 
 type nodeSearch struct {
