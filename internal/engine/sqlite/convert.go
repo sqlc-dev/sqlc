@@ -201,7 +201,7 @@ func convertMultiSelect_stmtContext(c multiselect) ast.Node {
 			continue
 		}
 		cols = append(cols, getCols(core)...)
-		tables = append(cols, getTables(core)...)
+		tables = append(tables, getTables(core)...)
 	}
 	return &ast.SelectStmt{
 		FromClause: &ast.List{Items: tables},
