@@ -98,6 +98,20 @@ Each override document has the following keys:
 - `nullable`:
   - If true, use this type when a column is nullable. Defaults to `false`.
 
+For more complicated import paths, the `go_type` can also be an object.
+
+```yaml
+version: "1"
+packages: [...]
+overrides:
+  - db_type: "uuid"
+    go_type:
+    - import: "a/b/v2"
+      package: "b"
+      type: "MyType"
+      pointer: false # or true
+```
+
 ## Per-Column Type Overrides
 
 Sometimes you would like to override the Go type used in model or query generation for
