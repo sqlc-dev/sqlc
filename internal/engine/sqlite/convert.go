@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"github.com/antlr/antlr4/runtime/Go/antlr"
+	"strings"
 
 	"github.com/kyleconroy/sqlc/internal/engine/sqlite/parser"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
@@ -12,40 +13,59 @@ type node interface {
 }
 
 func convertAlter_table_stmtContext(c *parser.Alter_table_stmtContext) ast.Node {
-	if newTable, ok := c.New_table_name().(*parser.New_table_nameContext); ok {
-		name := newTable.Any_name().GetText()
-		return &ast.RenameTableStmt{
-			Table:   parseTableName(c),
-			NewName: &name,
+
+	if c.RENAME_() != nil {
+		if newTable, ok := c.New_table_name().(*parser.New_table_nameContext); ok {
+			name := newTable.Any_name().GetText()
+			return &ast.RenameTableStmt{
+				Table:   parseTableName(c),
+				NewName: &name,
+			}
+		}
+
+		if newCol, ok := c.GetNew_column_name().(*parser.Column_nameContext); ok {
+			name := newCol.Any_name().GetText()
+			return &ast.RenameColumnStmt{
+				Table: parseTableName(c),
+				Col: &ast.ColumnRef{
+					Name: c.GetOld_column_name().GetText(),
+				},
+				NewName: &name,
+			}
 		}
 	}
 
-	if newCol, ok := c.GetNew_column_name().(*parser.Column_nameContext); ok {
-		name := newCol.Any_name().GetText()
-		return &ast.RenameColumnStmt{
-			Table: parseTableName(c),
-			Col: &ast.ColumnRef{
-				Name: c.GetOld_column_name().GetText(),
-			},
-			NewName: &name,
+	if c.ADD_() != nil {
+		if def, ok := c.Column_def().(*parser.Column_defContext); ok {
+			stmt := &ast.AlterTableStmt{
+				Table: parseTableName(c),
+				Cmds:  &ast.List{},
+			}
+			name := def.Column_name().GetText()
+			stmt.Cmds.Items = append(stmt.Cmds.Items, &ast.AlterTableCmd{
+				Name:    &name,
+				Subtype: ast.AT_AddColumn,
+				Def: &ast.ColumnDef{
+					Colname: name,
+					TypeName: &ast.TypeName{
+						Name: def.Type_name().GetText(),
+					},
+				},
+			})
+			return stmt
 		}
 	}
 
-	if def, ok := c.Column_def().(*parser.Column_defContext); ok {
+	if c.DROP_() != nil {
 		stmt := &ast.AlterTableStmt{
 			Table: parseTableName(c),
 			Cmds:  &ast.List{},
 		}
-		name := def.Column_name().GetText()
+		name := c.Column_name(0).GetText()
+		//fmt.Printf("column: %s", name)
 		stmt.Cmds.Items = append(stmt.Cmds.Items, &ast.AlterTableCmd{
 			Name:    &name,
-			Subtype: ast.AT_AddColumn,
-			Def: &ast.ColumnDef{
-				Colname: name,
-				TypeName: &ast.TypeName{
-					Name: def.Type_name().GetText(),
-				},
-			},
+			Subtype: ast.AT_DropColumn,
 		})
 		return stmt
 	}
@@ -97,8 +117,65 @@ func convertDrop_stmtContext(c *parser.Drop_stmtContext) ast.Node {
 	}
 }
 
+func identifier(id string) string {
+	return strings.ToLower(id)
+}
+
+func NewIdentifer(t string) *ast.String {
+	return &ast.String{Str: identifier(t)}
+}
+
 func convertExprContext(c *parser.ExprContext) ast.Node {
+	if name, ok := c.Function_name().(*parser.Function_nameContext); ok {
+		funcName := strings.ToLower(name.GetText())
+
+		fn := &ast.FuncCall{
+			Func: &ast.FuncName{
+				Name: funcName,
+			},
+			Funcname: &ast.List{
+				Items: []ast.Node{
+					NewIdentifer(funcName),
+				},
+			},
+			AggStar:     c.STAR() != nil,
+			Args:        &ast.List{},
+			AggOrder:    &ast.List{},
+			AggDistinct: c.DISTINCT_() != nil,
+		}
+
+		return fn
+	}
+
+	return &ast.Expr{}
+
+	if c.Column_name().(*parser.Column_nameContext) != nil {
+		return convertColumnNameExpr(c)
+	}
+
 	return &ast.TODO{}
+}
+
+func convertColumnNameExpr(c *parser.ExprContext) *ast.ColumnRef {
+	var items []ast.Node
+	if schema, ok := c.Schema_name().(*parser.Schema_nameContext); ok {
+		schemaText := schema.GetText()
+		if schemaText != "" {
+			items = append(items, NewIdentifer(schemaText))
+		}
+	}
+	if table, ok := c.Table_name().(*parser.Table_nameContext); ok {
+		tableName := table.GetText()
+		if tableName != "" {
+			items = append(items, NewIdentifer(tableName))
+		}
+	}
+	items = append(items, NewIdentifer(c.Column_name().GetText()))
+	return &ast.ColumnRef{
+		Fields: &ast.List{
+			Items: items,
+		},
+	}
 }
 
 func convertSimpleSelect_stmtContext(c *parser.Simple_select_stmtContext) ast.Node {
@@ -124,7 +201,7 @@ func convertMultiSelect_stmtContext(c multiselect) ast.Node {
 			continue
 		}
 		cols = append(cols, getCols(core)...)
-		tables = append(cols, getTables(core)...)
+		tables = append(tables, getTables(core)...)
 	}
 	return &ast.SelectStmt{
 		FromClause: &ast.List{Items: tables},
