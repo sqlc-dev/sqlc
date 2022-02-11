@@ -148,6 +148,34 @@ func convertExprContext(c *parser.ExprContext) ast.Node {
 	}
 
 	return &ast.Expr{}
+
+	if c.Column_name().(*parser.Column_nameContext) != nil {
+		return convertColumnNameExpr(c)
+	}
+
+	return &ast.TODO{}
+}
+
+func convertColumnNameExpr(c *parser.ExprContext) *ast.ColumnRef {
+	var items []ast.Node
+	if schema, ok := c.Schema_name().(*parser.Schema_nameContext); ok {
+		schemaText := schema.GetText()
+		if schemaText != "" {
+			items = append(items, NewIdentifer(schemaText))
+		}
+	}
+	if table, ok := c.Table_name().(*parser.Table_nameContext); ok {
+		tableName := table.GetText()
+		if tableName != "" {
+			items = append(items, NewIdentifer(tableName))
+		}
+	}
+	items = append(items, NewIdentifer(c.Column_name().GetText()))
+	return &ast.ColumnRef{
+		Fields: &ast.List{
+			Items: items,
+		},
+	}
 }
 
 func convertSimpleSelect_stmtContext(c *parser.Simple_select_stmtContext) ast.Node {
