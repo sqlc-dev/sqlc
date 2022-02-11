@@ -66,18 +66,32 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 		}
 		loc := 0
 		for _, stmt := range list.AllSql_stmt() {
+			fmt.Printf("[l%d c%d b%d e%d] -> [l%d c%d b%d e%d]: %s\n",
+				stmt.GetStart().GetLine(),
+				stmt.GetStart().GetColumn(),
+				stmt.GetStart().GetStart(),
+				stmt.GetStart().GetStop(),
+
+				stmt.GetStop().GetLine(),
+				stmt.GetStop().GetColumn(),
+				stmt.GetStop().GetStart(),
+				stmt.GetStop().GetStop(),
+
+				stmt.GetText())
+			fmt.Printf("start text: %s end text: %s\n", stmt.GetStart().GetText(), stmt.GetStop().GetText())
 			out := convert(stmt)
 			if _, ok := out.(*ast.TODO); ok {
 				continue
 			}
+			len := stmt.GetStop().GetStop() - loc + 1
 			stmts = append(stmts, ast.Statement{
 				Raw: &ast.RawStmt{
 					Stmt:         out,
 					StmtLocation: loc,
-					StmtLen:      stmt.GetStop().GetStop() - loc + 1,
+					StmtLen:      len,
 				},
 			})
-			loc = stmt.GetStop().GetStop() - loc
+			loc = len
 		}
 	}
 	return stmts, nil
