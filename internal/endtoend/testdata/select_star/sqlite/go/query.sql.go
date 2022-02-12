@@ -38,14 +38,3 @@ func (q *Queries) GetAll(ctx context.Context) ([]User, error) {
 	}
 	return items, nil
 }
-
-const getFirst = `-- name: GetFirst :one
-SELECT first_name FROM users LIMIT 1
-`
-
-func (q *Queries) GetFirst(ctx context.Context) (interface{}, error) {
-	row := q.db.QueryRowContext(ctx, getFirst)
-	var column_1 interface{}
-	err := row.Scan(&column_1)
-	return column_1, err
-}
