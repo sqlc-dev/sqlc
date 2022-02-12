@@ -95,7 +95,7 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 				},
 			})
 			fmt.Printf("StmtLocation: %d StmtLen: %d\n", loc, len)
-			loc = stmt.GetStop().GetStop() + 1
+			loc = stmt.GetStop().GetStop() + 2
 		}
 	}
 	return stmts, nil

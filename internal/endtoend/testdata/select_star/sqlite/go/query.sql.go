@@ -40,8 +40,6 @@ func (q *Queries) GetAll(ctx context.Context) ([]User, error) {
 }
 
 const getFirst = `-- name: GetFirst :one
-;
-
 SELECT first_name FROM users LIMIT 1
 `
 
