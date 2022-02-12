@@ -1,4 +1,4 @@
-.PHONY: build test test-examples regen start psql mysqlsh
+.PHONY: build build-endtoend test test-ci test-examples test-endtoend regen start psql mysqlsh
 
 build:
 	go build ./...
@@ -8,6 +8,14 @@ test:
 
 test-examples:
 	go test --tags=examples ./...
+
+build-endtoend:
+	cd ./internal/endtoend/testdata && go build ./...
+
+test-endtoend:
+	cd ./internal/endtoend/testdata && go test ./...
+
+test-ci: test-examples build-endtoend test-endtoend
 
 regen: sqlc-dev
 	go run ./scripts/regenerate/
