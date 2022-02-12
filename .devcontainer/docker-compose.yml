@@ -15,11 +15,11 @@ services:
     command: sleep infinity
 
     environment:
+      PG_HOST: postgresql
       PG_USER: postgres
-      PG_HOST: postgres
-      PG_DATABASE: postgres
-      PG_PASSWORD: postgres
-      MYSQL_DATABASE: mysql
+      PG_DATABASE: dinotest
+      PG_PASSWORD: mysecretpassword
+      MYSQL_DATABASE: dinotest
       MYSQL_HOST: mysql
       MYSQL_ROOT_PASSWORD: mysecretpassword
 

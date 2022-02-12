@@ -15,11 +15,11 @@
 			"name": "Container database",
 			"driver": "PostgreSQL",
 			"previewLimit": 50,
-			"server": "localhost",
+			"server": "postgresql",
 			"port": 5432,
-			"database": "postgres",
+			"database": "dinotest",
 			"username": "postgres",
-			"password": "postgres"
+			"password": "mysecretpassword"
 		}],
 		"go.toolsManagement.checkForUpdates": "local",
 		"go.useLanguageServer": true,
