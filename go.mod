@@ -3,7 +3,7 @@ module github.com/kyleconroy/sqlc
 go 1.17
 
 require (
-	github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20211208212222-82c441726976
+	github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20220209173558-ad29539cd2e9
 	github.com/davecgh/go-spew v1.1.1
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/google/go-cmp v0.5.7
