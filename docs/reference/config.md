@@ -20,6 +20,8 @@ packages:
     emit_result_struct_pointers: false
     emit_params_struct_pointers: false
     emit_methods_with_db_argument: false
+    interface_name: "Querier"
+    queries_struct_name: "Queries"
     json_tags_case_style: "camel"
     output_db_file_name: "db.go"
     output_models_file_name: "models.go"
@@ -45,7 +47,7 @@ Each package document has the following keys:
 - `emit_prepared_queries`:
   - If true, include support for prepared queries. Defaults to `false`.
 - `emit_interface`:
-  - If true, output a `Querier` interface in the generated package. Defaults to `false`.
+  - If true, output an interface in the generated package. Defaults to `false`.
 - `emit_exact_table_names`:
   - If true, struct names will mirror table names. Otherwise, sqlc attempts to singularize plural table names. Defaults to `false`.
 - `emit_empty_slices`:
@@ -60,6 +62,10 @@ Each package document has the following keys:
   - If true, parameters are passed as pointers to structs. Defaults to `false`.
 - `emit_methods_with_db_argument`:
   - If true, generated methods will accept a DBTX argument instead of storing a DBTX on the `*Queries` struct. Defaults to `false`.
+- `interface_name`:
+  - Customizes the name of the generated interface if `emit_interface` is true. Defaults to `Querier`.
+- `queries_struct_name`:
+  - Customize the name of the queries struct. Defaults to `Queries`.
 - `json_tags_case_style`:
   - `camel` for camelCase, `pascal` for PascalCase, `snake` for snake_case or `none` to use the column name in the DB. Defaults to `none`.
 - `output_db_file_name`:

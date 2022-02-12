@@ -1,5 +1,5 @@
 {{define "interfaceCodeStd"}}
-    type Querier interface {
+    type {{ .InterfaceName }} interface {
     {{- $dbtxParam := .EmitMethodsWithDBArgument -}}
     {{- range .GoQueries}}
         {{- if and (eq .Cmd ":one") ($dbtxParam) }}
@@ -30,5 +30,5 @@
     {{- end}}
     }
 
-    var _ Querier = (*Queries)(nil)
+    var _ {{ .InterfaceName }} = (*{{ .QueriesStructName }})(nil)
 {{end}}

@@ -10,23 +10,23 @@ type DBTX interface {
 }
 
 {{ if .EmitMethodsWithDBArgument}}
-func New() *Queries {
-	return &Queries{}
+func New() *{{ .QueriesStructName }} {
+	return &{{ .QueriesStructName }}{}
 {{- else -}}
-func New(db DBTX) *Queries {
-	return &Queries{db: db}
+func New(db DBTX) *{{ .QueriesStructName }} {
+	return &{{ .QueriesStructName }}{db: db}
 {{- end}}
 }
 
-type Queries struct {
+type {{ .QueriesStructName }} struct {
     {{if not .EmitMethodsWithDBArgument}}
 	db DBTX
     {{end}}
 }
 
 {{if not .EmitMethodsWithDBArgument}}
-func (q *Queries) WithTx(tx pgx.Tx) *Queries {
-	return &Queries{
+func (q *{{ .QueriesStructName }}) WithTx(tx pgx.Tx) *{{ .QueriesStructName }} {
+	return &{{ .QueriesStructName }}{
 		db: tx,
 	}
 }
