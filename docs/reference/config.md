@@ -63,7 +63,7 @@ Each package document has the following keys:
 - `emit_methods_with_db_argument`:
   - If true, generated methods will accept a DBTX argument instead of storing a DBTX on the `*Queries` struct. Defaults to `false`.
 - `interface_name`:
-  - Customizes the name of the generated interface if `emit_interface` is true. Defaults to `Querier`.
+  - Customize the name of the generated interface if `emit_interface` is true. Defaults to `Querier`.
 - `queries_struct_name`:
   - Customize the name of the queries struct. Defaults to `Queries`.
 - `json_tags_case_style`:
