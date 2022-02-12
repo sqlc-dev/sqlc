@@ -2,6 +2,7 @@ package dolphin
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"regexp"
 	"strconv"
@@ -81,6 +82,7 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 				StmtLen:      stmtLen,
 			},
 		})
+		fmt.Printf("StmtLocation: %d StmtLen: %d\n", loc, stmtLen)
 	}
 	return stmts, nil
 }
