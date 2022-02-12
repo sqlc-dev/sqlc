@@ -15,26 +15,35 @@ services:
     command: sleep infinity
 
     # Runs app on the same network as the database container, allows "forwardPorts" in devcontainer.json function.
-    network_mode: service:db
+    network_mode: service:postgresql
 
-    # Uncomment the next line to use a non-root user for all processes.
-    # user: vscode
-
-    # Use "forwardPorts" in **devcontainer.json** to forward an app port locally.
-    # (Adding the "ports" property to this file will not forward from a Codespace.)
-
-  db:
-    image: postgres:latest
-    restart: unless-stopped
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
     environment:
+      PG_USER: postgres
+      PG_HOST: postgres
+      PG_DATABASE: postgres
+      PG_PASSWORD: postgres
+      MYSQL_DATABASE: mysql
+      MYSQL_HOST: mysql
+      MYSQL_ROOT_PASSWORD: mysecretpassword
+
+  mysql:
+    image: "mysql:8"
+    ports:
+      - "3306:3306"
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: dinotest
+      MYSQL_ROOT_PASSWORD: mysecretpassword
+
+  postgresql:
+    image: "postgres:13"
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: dinotest
+      POSTGRES_PASSWORD: mysecretpassword
       POSTGRES_USER: postgres
-      POSTGRES_DB: postgres
-      POSTGRES_PASSWORD: postgres
 
     # Add "forwardPorts": ["5432"] to **devcontainer.json** to forward PostgreSQL locally.
     # (Adding the "ports" property to this file will not forward from a Codespace.)
-
-volumes:
-  postgres-data:
