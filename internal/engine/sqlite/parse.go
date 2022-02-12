@@ -65,19 +65,21 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 			return nil, fmt.Errorf("expected Sql_stmt_listContext; got %T\n", istmt)
 		}
 		loc := 0
+
 		for _, stmt := range list.AllSql_stmt() {
 			out := convert(stmt)
 			if _, ok := out.(*ast.TODO); ok {
 				continue
 			}
+			len := (stmt.GetStop().GetStop() + 1) - loc
 			stmts = append(stmts, ast.Statement{
 				Raw: &ast.RawStmt{
 					Stmt:         out,
 					StmtLocation: loc,
-					StmtLen:      stmt.GetStop().GetStop() - loc + 1,
+					StmtLen:      len,
 				},
 			})
-			loc = stmt.GetStop().GetStop() - loc
+			loc = stmt.GetStop().GetStop() + 2
 		}
 	}
 	return stmts, nil
@@ -85,6 +87,8 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 
 func (p *Parser) CommentSyntax() metadata.CommentSyntax {
 	return metadata.CommentSyntax{
-		Dash: true,
+		Dash:      true,
+		Hash:      false,
+		SlashStar: true,
 	}
 }
