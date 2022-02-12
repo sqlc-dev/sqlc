@@ -40,6 +40,9 @@ type tmplCtx struct {
 	EmitEmptySlices           bool
 	EmitMethodsWithDBArgument bool
 	UsesCopyFrom              bool
+
+	InterfaceName     string
+	QueriesStructName string
 }
 
 func (t *tmplCtx) OutputQuery(sourceName string) bool {
@@ -82,6 +85,17 @@ func generate(settings config.CombinedSettings, enums []Enum, structs []Struct, 
 	)
 
 	golang := settings.Go
+
+	interfaceName := "Querier"
+	if golang.InterfaceName != "" {
+		interfaceName = golang.InterfaceName
+	}
+
+	queriesStructName := "Queries"
+	if golang.QueriesStructName != "" {
+		queriesStructName = golang.QueriesStructName
+	}
+
 	tctx := tmplCtx{
 		Settings:                  settings.Global,
 		EmitInterface:             golang.EmitInterface,
@@ -90,6 +104,8 @@ func generate(settings config.CombinedSettings, enums []Enum, structs []Struct, 
 		EmitPreparedQueries:       golang.EmitPreparedQueries,
 		EmitEmptySlices:           golang.EmitEmptySlices,
 		EmitMethodsWithDBArgument: golang.EmitMethodsWithDBArgument,
+		InterfaceName:             interfaceName,
+		QueriesStructName:         queriesStructName,
 		UsesCopyFrom:              usesCopyFrom(queries),
 		SQLPackage:                SQLPackageFromString(golang.SQLPackage),
 		Q:                         "`",

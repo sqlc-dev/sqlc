@@ -7,17 +7,17 @@ type DBTX interface {
 }
 
 {{ if .EmitMethodsWithDBArgument}}
-func New() *Queries {
-	return &Queries{}
+func New() *{{ .QueriesStructName }} {
+	return &{{ .QueriesStructName }}{}
 {{- else -}}
-func New(db DBTX) *Queries {
-	return &Queries{db: db}
+func New(db DBTX) *{{ .QueriesStructName }} {
+	return &{{ .QueriesStructName }}{db: db}
 {{- end}}
 }
 
 {{if .EmitPreparedQueries}}
-func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
-	q := Queries{db: db}
+func Prepare(ctx context.Context, db DBTX) (*{{ .QueriesStructName }}, error) {
+	q := {{ .QueriesStructName }}{db: db}
 	var err error
 	{{- if eq (len .GoQueries) 0 }}
 	_ = err
@@ -30,7 +30,7 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	return &q, nil
 }
 
-func (q *Queries) Close() error {
+func (q *{{ .QueriesStructName }}) Close() error {
 	var err error
 	{{- range .GoQueries }}
 	if q.{{.FieldName}} != nil {
@@ -42,7 +42,7 @@ func (q *Queries) Close() error {
 	return err
 }
 
-func (q *Queries) exec(ctx context.Context, stmt *sql.Stmt, query string, args ...interface{}) (sql.Result, error) {
+func (q *{{ .QueriesStructName }}) exec(ctx context.Context, stmt *sql.Stmt, query string, args ...interface{}) (sql.Result, error) {
 	switch {
 	case stmt != nil && q.tx != nil:
 		return q.tx.StmtContext(ctx, stmt).ExecContext(ctx, args...)
@@ -53,7 +53,7 @@ func (q *Queries) exec(ctx context.Context, stmt *sql.Stmt, query string, args .
 	}
 }
 
-func (q *Queries) query(ctx context.Context, stmt *sql.Stmt, query string, args ...interface{}) (*sql.Rows, error) {
+func (q *{{ .QueriesStructName }}) query(ctx context.Context, stmt *sql.Stmt, query string, args ...interface{}) (*sql.Rows, error) {
 	switch {
 	case stmt != nil && q.tx != nil:
 		return q.tx.StmtContext(ctx, stmt).QueryContext(ctx, args...)
@@ -64,7 +64,7 @@ func (q *Queries) query(ctx context.Context, stmt *sql.Stmt, query string, args 
 	}
 }
 
-func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, args ...interface{}) (*sql.Row) {
+func (q *{{ .QueriesStructName }}) queryRow(ctx context.Context, stmt *sql.Stmt, query string, args ...interface{}) (*sql.Row) {
 	switch {
 	case stmt != nil && q.tx != nil:
 		return q.tx.StmtContext(ctx, stmt).QueryRowContext(ctx, args...)
@@ -76,7 +76,7 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 }
 {{end}}
 
-type Queries struct {
+type {{ .QueriesStructName }} struct {
     {{- if not .EmitMethodsWithDBArgument}}
 	db DBTX
     {{- end}}
@@ -90,8 +90,8 @@ type Queries struct {
 }
 
 {{if not .EmitMethodsWithDBArgument}}
-func (q *Queries) WithTx(tx *sql.Tx) *Queries {
-	return &Queries{
+func (q *{{ .QueriesStructName }}) WithTx(tx *sql.Tx) *{{ .QueriesStructName }} {
+	return &{{ .QueriesStructName }}{
 		db: tx,
      	{{- if .EmitPreparedQueries}}
 		tx: tx,
