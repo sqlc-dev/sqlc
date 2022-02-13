@@ -18,6 +18,7 @@ var packageCmd = &cobra.Command{
 		stderr := cmd.ErrOrStderr()
 		dir, name := getConfigPath(stderr, cmd.Flag("file"))
 		if err := createPkg(ParseEnv(cmd), dir, name, stderr); err != nil {
+			fmt.Fprintf(stderr, "error building package: %s\n", err)
 			os.Exit(1)
 		}
 		return nil

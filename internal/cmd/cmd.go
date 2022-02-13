@@ -15,6 +15,7 @@ import (
 
 	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/debug"
+	"github.com/kyleconroy/sqlc/internal/info"
 	"github.com/kyleconroy/sqlc/internal/tracer"
 )
 
@@ -61,9 +62,7 @@ var versionCmd = &cobra.Command{
 			defer trace.StartRegion(cmd.Context(), "version").End()
 		}
 		if version == "" {
-			// When no version is set, return the next bug fix version
-			// after the most recent tag
-			fmt.Printf("%s\n", "v1.12.0")
+			fmt.Printf("%s\n", info.Version)
 		} else {
 			fmt.Printf("%s\n", version)
 		}

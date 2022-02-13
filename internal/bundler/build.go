@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 
 	"github.com/kyleconroy/sqlc/internal/config"
+	"github.com/kyleconroy/sqlc/internal/debug"
 	"github.com/kyleconroy/sqlc/internal/sql/sqlpath"
 )
 
@@ -40,18 +41,17 @@ func Build(file string, conf *config.Config) ([]byte, error) {
 			return nil, err
 		}
 	}
-
+	if err := addMetadata(w); err != nil {
+		return nil, err
+	}
 	if err := w.Flush(); err != nil {
 		return nil, err
 	}
-
 	if err := gw.Flush(); err != nil {
 		return nil, err
 	}
-
 	w.Close()
 	gw.Close()
-
 	return b.Bytes(), nil
 }
 
@@ -69,6 +69,7 @@ func addFile(w *tar.Writer, file string) error {
 	if err != nil {
 		return err
 	}
+	debug.Dump(header)
 	header.Name = file
 	if err := w.WriteHeader(header); err != nil {
 		return err
