@@ -10,7 +10,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/sqlpath"
 )
 
-func writeContents(w *multipart.Writer, file string, conf *config.Config) error {
+func writeInputs(w *multipart.Writer, file string, conf *config.Config) error {
 	refs := map[string]struct{}{}
 	refs[filepath.Base(file)] = struct{}{}
 
@@ -50,13 +50,30 @@ func addPart(w *multipart.Writer, file string) error {
 		return err
 	}
 	defer h.Close()
-	part, err := w.CreateFormFile("contents", file)
+	part, err := w.CreateFormFile("inputs", file)
 	if err != nil {
 		return err
 	}
 	_, err = io.Copy(part, h)
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func writeOutputs(w *multipart.Writer, dir string, output map[string]string) error {
+	for filename, contents := range output {
+		rel, err := filepath.Rel(dir, filename)
+		if err != nil {
+			return err
+		}
+		part, err := w.CreateFormFile("outputs", rel)
+		if err != nil {
+			return err
+		}
+		if _, err := io.WriteString(part, contents); err != nil {
+			return err
+		}
 	}
 	return nil
 }

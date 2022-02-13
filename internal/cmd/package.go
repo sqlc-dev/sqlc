@@ -26,13 +26,17 @@ var packageCmd = &cobra.Command{
 }
 
 func createPkg(ctx context.Context, e Env, dir, filename string, stderr io.Writer) error {
+	output, err := Generate(ctx, e, dir, filename, stderr)
+	if err != nil {
+		os.Exit(1)
+	}
 	configPath, conf, err := readConfig(stderr, dir, filename)
 	if err != nil {
 		return err
 	}
-	up := bundler.NewUploader(configPath, conf)
+	up := bundler.NewUploader(configPath, dir, conf)
 	if err != nil {
 		return err
 	}
-	return up.Upload(ctx)
+	return up.Upload(ctx, output)
 }

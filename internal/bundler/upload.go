@@ -2,7 +2,6 @@ package bundler
 
 import (
 	"bytes"
-	"compress/gzip"
 	"context"
 	"fmt"
 	"mime/multipart"
@@ -14,37 +13,44 @@ import (
 type Uploader struct {
 	configPath string
 	config     *config.Config
+	dir        string
 }
 
-func NewUploader(configPath string, conf *config.Config) *Uploader {
+func NewUploader(configPath, dir string, conf *config.Config) *Uploader {
 	return &Uploader{
 		configPath: configPath,
 		config:     conf,
+		dir:        dir,
 	}
 }
 
-func (up *Uploader) Upload(ctx context.Context) error {
+func (up *Uploader) Upload(ctx context.Context, result map[string]string) error {
 	body := bytes.NewBuffer([]byte{})
 
-	gw := gzip.NewWriter(body)
-	defer gw.Close()
-	w := multipart.NewWriter(gw)
+	// gw := gzip.NewWriter(body)
+	// defer gw.Close()
+	w := multipart.NewWriter(body)
 	defer w.Close()
 
-	if err := writeContents(w, up.configPath, up.config); err != nil {
+	if err := writeInputs(w, up.configPath, up.config); err != nil {
+		return err
+	}
+	if err := writeOutputs(w, up.dir, result); err != nil {
 		return err
 	}
 
-	if err := gw.Flush(); err != nil {
-		return err
-	}
+	// if err := gw.Flush(); err != nil {
+	// 	return err
+	// }
 	w.Close()
-	gw.Close()
+	// gw.Close()
 
-	req, err := http.NewRequest("POST", "http://localhost:8000/upload", body)
+	req, err := http.NewRequest("POST", "http://localhost:8090/upload", body)
 	if err != nil {
 		return err
 	}
+
+	// Set sqlc-version header
 	req.Header.Set("Content-Type", w.FormDataContentType())
 	req = req.WithContext(ctx)
 
