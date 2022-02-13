@@ -109,12 +109,12 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 		return nil, err
 	}
 
+	base := filepath.Base(configPath)
 	if err := config.Validate(conf); err != nil {
 		fmt.Fprintf(stderr, "error validating %s: %s\n", base, err)
 		return nil, err
 	}
 
-	base := filepath.Base(configPath)
 	output := map[string]string{}
 	errored := false
 

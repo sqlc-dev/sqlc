@@ -327,7 +327,7 @@ func ParseConfig(rd io.Reader) (Config, error) {
 	}
 }
 
-func Validate(c Config) error {
+func Validate(c *Config) error {
 	for _, sql := range c.SQL {
 		sqlGo := sql.Gen.Go
 		if sqlGo == nil {
