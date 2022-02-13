@@ -287,7 +287,7 @@ func (i *importer) queryImports(filename string) fileImports {
 	var gq []Query
 	anyNonCopyFrom := false
 	for _, query := range i.Queries {
-		if query.Cmd == metadata.CmdBatchExec {
+		if usesBatch([]Query{query}) {
 			continue
 		}
 		if query.SourceName == filename {
@@ -402,7 +402,7 @@ func (i *importer) copyfromImports() fileImports {
 func (i *importer) batchImports(filename string) fileImports {
 	std, pkg := buildImports(i.Settings, i.Queries, func(name string) bool {
 		for _, q := range i.Queries {
-			if q.Cmd != metadata.CmdBatchExec {
+			if !usesBatch([]Query{q}) {
 				continue
 			}
 			if q.hasRetType() {
