@@ -201,8 +201,10 @@ func usesCopyFrom(queries []Query) bool {
 
 func usesBatch(queries []Query) bool {
 	for _, q := range queries {
-		if q.Cmd == metadata.CmdBatchExec {
-			return true
+		for _, cmd := range []string{metadata.CmdBatchExec, metadata.CmdBatchMany, metadata.CmdBatchOne} {
+			if q.Cmd == cmd {
+				return true
+			}
 		}
 	}
 	return false

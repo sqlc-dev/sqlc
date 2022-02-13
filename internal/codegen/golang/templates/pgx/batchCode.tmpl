@@ -7,6 +7,7 @@ const {{.ConstantName}} = {{$.Q}}-- name: {{.MethodName}} {{.Cmd}}
 
 type {{.MethodName}}BatchResults struct {
     br pgx.BatchResults
+    ind int
 }
 
 {{if .Arg.EmitStruct}}
@@ -23,10 +24,9 @@ type {{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
 }
 {{end}}
 
-{{if eq .Cmd ":batchexec"}}
 {{range .Comments}}//{{.}}
 {{end -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, {{- if $.EmitMethodsWithDBArgument}}db DBTX,{{end}} {{.Arg.SlicePair}}) *{{.MethodName}}BatchResults {
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{ if $.EmitMethodsWithDBArgument}}db DBTX,{{end}} {{.Arg.SlicePair}}) *{{.MethodName}}BatchResults {
     batch := &pgx.Batch{}
     for _, a := range {{index .Arg.Name}} {
         vals := []interface{}{
@@ -41,18 +41,66 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{- if $.EmitMethodsWithD
         batch.Queue({{.ConstantName}}, vals...)
     }
     br := {{if not $.EmitMethodsWithDBArgument}}q.{{end}}db.SendBatch(ctx, batch)
-    return &{{.MethodName}}BatchResults{br}
+    return &{{.MethodName}}BatchResults{br,0}
 }
 
-func (b *{{.MethodName}}BatchResults) Exec(f func(error)) {
+{{if eq .Cmd ":batchexec"}}
+func (b *{{.MethodName}}BatchResults) Exec(f func(int, error)) {
     for {
 		_, err := b.br.Exec()
         if err != nil && err.Error() == "no result" {
 			break
 		}
         if f != nil {
-            f(err)
+            f(b.ind, err)
         }
+        b.ind++
+	}
+}
+{{end}}
+
+{{if eq .Cmd ":batchmany"}}
+func (b *{{.MethodName}}BatchResults) Query(f func(int, []{{.Ret.DefineType}}, error)) {
+    for {
+		rows, err := b.br.Query()
+        if err != nil && err.Error() == "no result" {
+			break
+		}
+        defer rows.Close()
+        {{- if $.EmitEmptySlices}}
+        items := []{{.Ret.DefineType}}{}
+        {{else}}
+        var items []{{.Ret.DefineType}}
+        {{end -}}
+        for rows.Next() {
+            var {{.Ret.Name}} {{.Ret.Type}}
+            if err := rows.Scan({{.Ret.Scan}}); err != nil {
+                break
+            }
+            items = append(items, {{.Ret.ReturnName}})
+        }
+
+        if f != nil {
+            f(b.ind, items, rows.Err())
+        }
+        b.ind++
+	}
+}
+{{end}}
+
+{{if eq .Cmd ":batchone"}}
+func (b *{{.MethodName}}BatchResults) QueryRow(f func(int, {{.Ret.DefineType}}, error)) {
+    for {
+		row := b.br.QueryRow()
+        var {{.Ret.Name}} {{.Ret.Type}}
+	    err := row.Scan({{.Ret.Scan}})
+        if err != nil && err.Error() == "no result" {
+			break
+		}
+        if f != nil {
+            f(b.ind, {{.Ret.ReturnName}}, err)
+        }
+        b.ind++
 	}
 }
 {{end}}
