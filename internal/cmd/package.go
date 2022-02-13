@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"crypto/sha256"
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -12,39 +12,27 @@ import (
 )
 
 var packageCmd = &cobra.Command{
-	Use:   "build",
-	Short: "Create a tarball containing schema, queries, and configuration",
+	Use:   "upload",
+	Short: "Upload the schema, queries, and configuration for this project",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		stderr := cmd.ErrOrStderr()
 		dir, name := getConfigPath(stderr, cmd.Flag("file"))
-		if err := createPkg(ParseEnv(cmd), dir, name, stderr); err != nil {
-			fmt.Fprintf(stderr, "error building package: %s\n", err)
+		if err := createPkg(cmd.Context(), ParseEnv(cmd), dir, name, stderr); err != nil {
+			fmt.Fprintf(stderr, "error uploading project: %s\n", err)
 			os.Exit(1)
 		}
 		return nil
 	},
 }
 
-func createPkg(e Env, dir, filename string, stderr io.Writer) error {
+func createPkg(ctx context.Context, e Env, dir, filename string, stderr io.Writer) error {
 	configPath, conf, err := readConfig(stderr, dir, filename)
 	if err != nil {
 		return err
 	}
-	tarball, err := bundler.Build(configPath, conf)
+	up := bundler.NewUploader(configPath, conf)
 	if err != nil {
 		return err
 	}
-
-	// TODO: Move this to the configuration file
-	owner := "tabbed"
-	project := "sqlc"
-
-	checksum := sha256.Sum256(tarball)
-	sha := fmt.Sprintf("%x", checksum)
-	output := fmt.Sprintf("%s_%s_%s.tar.gz", owner, project, sha[:10])
-	if err := os.WriteFile(output, tarball, 0644); err != nil {
-		return err
-	}
-
-	return nil
+	return up.Upload(ctx)
 }
