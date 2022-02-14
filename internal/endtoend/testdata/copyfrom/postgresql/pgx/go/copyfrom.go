@@ -36,6 +36,7 @@ func (r iteratorForInsertSingleValue) Err() error {
 	return nil
 }
 
+// InsertSingleValue inserts a single value using copy.
 func (q *Queries) InsertSingleValue(ctx context.Context, a []sql.NullString) (int64, error) {
 	return q.db.CopyFrom(ctx, []string{"myschema", "foo"}, []string{"a"}, &iteratorForInsertSingleValue{rows: a})
 }
@@ -69,6 +70,7 @@ func (r iteratorForInsertValues) Err() error {
 	return nil
 }
 
+// InsertValues inserts multiple values using copy.
 func (q *Queries) InsertValues(ctx context.Context, arg []InsertValuesParams) (int64, error) {
 	return q.db.CopyFrom(ctx, []string{"myschema", "foo"}, []string{"a", "b"}, &iteratorForInsertValues{rows: arg})
 }
