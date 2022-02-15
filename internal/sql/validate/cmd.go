@@ -44,9 +44,20 @@ func validateCopyfrom(n ast.Node) error {
 	return nil
 }
 
+func validateBatch(n ast.Node) error {
+	nums, _, _ := ParamRef(n)
+	if len(nums) == 0 {
+		return errors.New(":batch* commands require parameters")
+	}
+	return nil
+}
+
 func Cmd(n ast.Node, name, cmd string) error {
 	if cmd == metadata.CmdCopyFrom {
 		return validateCopyfrom(n)
+	}
+	if (cmd == metadata.CmdBatchExec || cmd == metadata.CmdBatchMany) || cmd == metadata.CmdBatchOne {
+		return validateBatch(n)
 	}
 	if !(cmd == metadata.CmdMany || cmd == metadata.CmdOne) {
 		return nil

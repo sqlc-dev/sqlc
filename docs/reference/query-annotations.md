@@ -94,3 +94,110 @@ func (q *Queries) GetAuthor(ctx context.Context, id int64) (Author, error) {
 	// ...
 }
 ```
+
+## `:batchexec`
+
+__NOTE: This command only works with PostgreSQL using the `pgx` driver and outputting Go code.__
+
+The generated method will return a batch object. The batch object will have
+the following methods:
+- `Exec`, that takes a `func(int, error)` parameter,
+- `Close`, to close the batch operation early.
+
+```sql
+-- name: DeleteBook :batchexec
+DELETE FROM books
+WHERE book_id = $1;
+```
+
+```go
+type DeleteBookBatchResults struct {
+	br pgx.BatchResults
+	ind int
+}
+func (q *Queries) DeleteBook(ctx context.Context, bookID []int32) *DeleteBookBatchResults {
+	//...
+}
+func (b *DeleteBookBatchResults) Exec(f func(int, error)) {
+	//...
+}
+func (b *DeleteBookBatchResults) Close() error {
+	//...
+}
+```
+
+## `:batchmany`
+
+__NOTE: This command only works with PostgreSQL using the `pgx` driver and outputting Go code.__
+
+The generated method will return a batch object. The batch object will have
+the following methods:
+- `Query`, that takes a `func(int, []T, error)` parameter, where `T` is your query's return type
+- `Close`, to close the batch operation early.
+
+```sql
+-- name: BooksByTitleYear :batchmany
+SELECT * FROM books
+WHERE title = $1 AND year = $2;
+```
+
+```go
+type BooksByTitleYearBatchResults struct {
+	br pgx.BatchResults
+	ind int
+}
+type BooksByTitleYearParams struct {
+	Title string `json:"title"`
+	Year  int32  `json:"year"`
+}
+func (q *Queries) BooksByTitleYear(ctx context.Context, arg []BooksByTitleYearParams) *BooksByTitleYearBatchResults {
+	//...
+}
+func (b *BooksByTitleYearBatchResults) Query(f func(int, []Book, error)) {
+	//...
+}
+func (b *BooksByTitleYearBatchResults) Close() error {
+	//...
+}
+```
+
+## `:batchone`
+
+__NOTE: This command only works with PostgreSQL using the `pgx` driver and outputting Go code.__
+
+The generated method will return a batch object. The batch object will have
+the following methods:
+- `QueryRow`, that takes a `func(int, T, error)` parameter, where `T` is your query's return type
+- `Close`, to close the batch operation early.
+
+```sql
+-- name: CreateBook :batchone
+INSERT INTO books (
+    author_id,
+    isbn
+) VALUES (
+    $1,
+    $2
+)
+RETURNING book_id, author_id, isbn
+```
+
+```go
+type CreateBookBatchResults struct {
+	br pgx.BatchResults
+	ind int
+}
+type CreateBookParams struct {
+	AuthorID  int32     `json:"author_id"`
+	Isbn      string    `json:"isbn"`
+}
+func (q *Queries) CreateBook(ctx context.Context, arg []CreateBookParams) *CreateBookBatchResults {
+	//...
+}
+func (b *CreateBookBatchResults) QueryRow(f func(int, Book, error)) {
+	//...
+}
+func (b *CreateBookBatchResults) Close() error {
+	//...
+}
+```
