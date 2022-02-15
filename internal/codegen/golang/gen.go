@@ -40,6 +40,7 @@ type tmplCtx struct {
 	EmitEmptySlices           bool
 	EmitMethodsWithDBArgument bool
 	UsesCopyFrom              bool
+	UsesBatch                 bool
 }
 
 func (t *tmplCtx) OutputQuery(sourceName string) bool {
@@ -69,6 +70,7 @@ func generate(settings config.CombinedSettings, enums []Enum, structs []Struct, 
 		"comment":    codegen.DoubleSlashComment,
 		"escape":     codegen.EscapeBacktick,
 		"imports":    i.Imports,
+		"hasPrefix":  strings.HasPrefix,
 	}
 
 	tmpl := template.Must(
@@ -91,6 +93,7 @@ func generate(settings config.CombinedSettings, enums []Enum, structs []Struct, 
 		EmitEmptySlices:           golang.EmitEmptySlices,
 		EmitMethodsWithDBArgument: golang.EmitMethodsWithDBArgument,
 		UsesCopyFrom:              usesCopyFrom(queries),
+		UsesBatch:                 usesBatch(queries),
 		SQLPackage:                SQLPackageFromString(golang.SQLPackage),
 		Q:                         "`",
 		Package:                   golang.Package,
@@ -101,6 +104,10 @@ func generate(settings config.CombinedSettings, enums []Enum, structs []Struct, 
 
 	if tctx.UsesCopyFrom && tctx.SQLPackage != SQLPackagePGX {
 		return nil, errors.New(":copyfrom is only supported by pgx")
+	}
+
+	if tctx.UsesBatch && tctx.SQLPackage != SQLPackagePGX {
+		return nil, errors.New(":batch* commands are only supported by pgx")
 	}
 
 	output := map[string]string{}
@@ -146,6 +153,8 @@ func generate(settings config.CombinedSettings, enums []Enum, structs []Struct, 
 	copyfromFileName := "copyfrom.go"
 	// TODO(Jille): Make this configurable.
 
+	batchFileName := "batch.go"
+
 	if err := execute(dbFileName, "dbFile"); err != nil {
 		return nil, err
 	}
@@ -159,6 +168,11 @@ func generate(settings config.CombinedSettings, enums []Enum, structs []Struct, 
 	}
 	if tctx.UsesCopyFrom {
 		if err := execute(copyfromFileName, "copyfromFile"); err != nil {
+			return nil, err
+		}
+	}
+	if tctx.UsesBatch {
+		if err := execute(batchFileName, "batchFile"); err != nil {
 			return nil, err
 		}
 	}
@@ -180,6 +194,17 @@ func usesCopyFrom(queries []Query) bool {
 	for _, q := range queries {
 		if q.Cmd == metadata.CmdCopyFrom {
 			return true
+		}
+	}
+	return false
+}
+
+func usesBatch(queries []Query) bool {
+	for _, q := range queries {
+		for _, cmd := range []string{metadata.CmdBatchExec, metadata.CmdBatchMany, metadata.CmdBatchOne} {
+			if q.Cmd == cmd {
+				return true
+			}
 		}
 	}
 	return false

@@ -1,0 +1,113 @@
+{{define "batchCodePgx"}}
+{{range .GoQueries}}
+{{if eq (hasPrefix .Cmd ":batch") true }}
+const {{.ConstantName}} = {{$.Q}}-- name: {{.MethodName}} {{.Cmd}}
+{{escape .SQL}}
+{{$.Q}}
+
+type {{.MethodName}}BatchResults struct {
+    br pgx.BatchResults
+    ind int
+}
+
+{{if .Arg.EmitStruct}}
+type {{.Arg.Type}} struct { {{- range .Arg.Struct.Fields}}
+  {{.Name}} {{.Type}} {{if or ($.EmitJSONTags) ($.EmitDBTags)}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
+  {{- end}}
+}
+{{end}}
+
+{{if .Ret.EmitStruct}}
+type {{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
+  {{.Name}} {{.Type}} {{if or ($.EmitJSONTags) ($.EmitDBTags)}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
+  {{- end}}
+}
+{{end}}
+
+{{range .Comments}}//{{.}}
+{{end -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{ if $.EmitMethodsWithDBArgument}}db DBTX,{{end}} {{.Arg.SlicePair}}) *{{.MethodName}}BatchResults {
+    batch := &pgx.Batch{}
+    for _, a := range {{index .Arg.Name}} {
+        vals := []interface{}{
+        {{- if .Arg.Struct }}
+        {{- range .Arg.Struct.Fields }}
+            a.{{.Name}},
+        {{- end }}
+        {{- else }}
+            a,
+        {{- end }}
+        }
+        batch.Queue({{.ConstantName}}, vals...)
+    }
+    br := {{if not $.EmitMethodsWithDBArgument}}q.{{end}}db.SendBatch(ctx, batch)
+    return &{{.MethodName}}BatchResults{br,0}
+}
+
+{{if eq .Cmd ":batchexec"}}
+func (b *{{.MethodName}}BatchResults) Exec(f func(int, error)) {
+    for {
+		_, err := b.br.Exec()
+        if err != nil && (err.Error() == "no result" || err.Error() == "batch already closed"){
+			break
+		}
+        if f != nil {
+            f(b.ind, err)
+        }
+        b.ind++
+	}
+}
+{{end}}
+
+{{if eq .Cmd ":batchmany"}}
+func (b *{{.MethodName}}BatchResults) Query(f func(int, []{{.Ret.DefineType}}, error)) {
+    for {
+		rows, err := b.br.Query()
+        if err != nil && (err.Error() == "no result" || err.Error() == "batch already closed") {
+			break
+		}
+        defer rows.Close()
+        {{- if $.EmitEmptySlices}}
+        items := []{{.Ret.DefineType}}{}
+        {{else}}
+        var items []{{.Ret.DefineType}}
+        {{end -}}
+        for rows.Next() {
+            var {{.Ret.Name}} {{.Ret.Type}}
+            if err := rows.Scan({{.Ret.Scan}}); err != nil {
+                break
+            }
+            items = append(items, {{.Ret.ReturnName}})
+        }
+
+        if f != nil {
+            f(b.ind, items, rows.Err())
+        }
+        b.ind++
+	}
+}
+{{end}}
+
+{{if eq .Cmd ":batchone"}}
+func (b *{{.MethodName}}BatchResults) QueryRow(f func(int, {{.Ret.DefineType}}, error)) {
+    for {
+		row := b.br.QueryRow()
+        var {{.Ret.Name}} {{.Ret.Type}}
+	    err := row.Scan({{.Ret.Scan}})
+        if err != nil && (err.Error() == "no result" || err.Error() == "batch already closed") {
+			break
+		}
+        if f != nil {
+            f(b.ind, {{.Ret.ReturnName}}, err)
+        }
+        b.ind++
+	}
+}
+{{end}}
+
+func (b *{{.MethodName}}BatchResults) Close() error {
+    return b.br.Close()
+}
+{{end}}
+{{end}}
+{{end}}

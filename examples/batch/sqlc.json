@@ -1,0 +1,16 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "path": "postgresql",
+      "name": "batch",
+      "schema": "postgresql/schema.sql",
+      "queries": "postgresql/query.sql",
+      "engine": "postgresql",
+      "sql_package": "pgx/v4",
+      "emit_json_tags": true,
+      "emit_prepared_queries": true,
+      "emit_interface": true
+    }
+  ]
+}
