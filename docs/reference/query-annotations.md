@@ -97,6 +97,8 @@ func (q *Queries) GetAuthor(ctx context.Context, id int64) (Author, error) {
 
 ## `:batchexec`
 
+__NOTE: This command only works with PostgreSQL using the `pgx` driver and outputting Go code.__
+
 The generated method will return a batch object. The batch object will have
 the following methods:
 - `Exec`, that takes a `func(int, error)` parameter,
@@ -125,6 +127,8 @@ func (b *DeleteBookBatchResults) Close() error {
 ```
 
 ## `:batchmany`
+
+__NOTE: This command only works with PostgreSQL using the `pgx` driver and outputting Go code.__
 
 The generated method will return a batch object. The batch object will have
 the following methods:
@@ -158,6 +162,8 @@ func (b *BooksByTitleYearBatchResults) Close() error {
 ```
 
 ## `:batchone`
+
+__NOTE: This command only works with PostgreSQL using the `pgx` driver and outputting Go code.__
 
 The generated method will return a batch object. The batch object will have
 the following methods:
