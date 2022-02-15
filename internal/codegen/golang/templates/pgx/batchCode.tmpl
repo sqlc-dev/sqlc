@@ -48,7 +48,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ if $.EmitMethodsWithDB
 func (b *{{.MethodName}}BatchResults) Exec(f func(int, error)) {
     for {
 		_, err := b.br.Exec()
-        if err != nil && err.Error() == "no result" {
+        if err != nil && (err.Error() == "no result" || err.Error() == "batch already closed"){
 			break
 		}
         if f != nil {
@@ -63,7 +63,7 @@ func (b *{{.MethodName}}BatchResults) Exec(f func(int, error)) {
 func (b *{{.MethodName}}BatchResults) Query(f func(int, []{{.Ret.DefineType}}, error)) {
     for {
 		rows, err := b.br.Query()
-        if err != nil && err.Error() == "no result" {
+        if err != nil && (err.Error() == "no result" || err.Error() == "batch already closed") {
 			break
 		}
         defer rows.Close()
@@ -94,7 +94,7 @@ func (b *{{.MethodName}}BatchResults) QueryRow(f func(int, {{.Ret.DefineType}}, 
 		row := b.br.QueryRow()
         var {{.Ret.Name}} {{.Ret.Type}}
 	    err := row.Scan({{.Ret.Scan}})
-        if err != nil && err.Error() == "no result" {
+        if err != nil && (err.Error() == "no result" || err.Error() == "batch already closed") {
 			break
 		}
         if f != nil {
