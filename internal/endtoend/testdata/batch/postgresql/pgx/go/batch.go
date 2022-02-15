@@ -35,7 +35,7 @@ func (q *Queries) GetValues(ctx context.Context, b []sql.NullInt32) *GetValuesBa
 func (b *GetValuesBatchResults) Query(f func(int, []MyschemaFoo, error)) {
 	for {
 		rows, err := b.br.Query()
-		if err != nil && err.Error() == "no result" {
+		if err != nil && (err.Error() == "no result" || err.Error() == "batch already closed") {
 			break
 		}
 		defer rows.Close()
@@ -93,7 +93,7 @@ func (b *InsertValuesBatchResults) QueryRow(f func(int, sql.NullString, error)) 
 		row := b.br.QueryRow()
 		var a sql.NullString
 		err := row.Scan(&a)
-		if err != nil && err.Error() == "no result" {
+		if err != nil && (err.Error() == "no result" || err.Error() == "batch already closed") {
 			break
 		}
 		if f != nil {
@@ -137,7 +137,7 @@ func (q *Queries) UpdateValues(ctx context.Context, arg []UpdateValuesParams) *U
 func (b *UpdateValuesBatchResults) Exec(f func(int, error)) {
 	for {
 		_, err := b.br.Exec()
-		if err != nil && err.Error() == "no result" {
+		if err != nil && (err.Error() == "no result" || err.Error() == "batch already closed") {
 			break
 		}
 		if f != nil {

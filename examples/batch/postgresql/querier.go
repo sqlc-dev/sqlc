@@ -7,7 +7,9 @@ import (
 )
 
 type Querier interface {
+	BooksByYear(ctx context.Context, year []int32) *BooksByYearBatchResults
 	CreateAuthor(ctx context.Context, name string) (Author, error)
+	CreateBook(ctx context.Context, arg []CreateBookParams) *CreateBookBatchResults
 	DeleteBook(ctx context.Context, bookID []int32) *DeleteBookBatchResults
 	GetAuthor(ctx context.Context, authorID int32) (Author, error)
 	UpdateBook(ctx context.Context, arg []UpdateBookParams) *UpdateBookBatchResults

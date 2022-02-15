@@ -34,7 +34,7 @@ func (q *Queries) BooksByYear(ctx context.Context, year []int32) *BooksByYearBat
 func (b *BooksByYearBatchResults) Query(f func(int, []Book, error)) {
 	for {
 		rows, err := b.br.Query()
-		if err != nil && err.Error() == "no result" {
+		if err != nil && (err.Error() == "no result" || err.Error() == "batch already closed") {
 			break
 		}
 		defer rows.Close()
@@ -135,7 +135,7 @@ func (b *CreateBookBatchResults) QueryRow(f func(int, Book, error)) {
 			&i.Available,
 			&i.Tags,
 		)
-		if err != nil && err.Error() == "no result" {
+		if err != nil && (err.Error() == "no result" || err.Error() == "batch already closed") {
 			break
 		}
 		if f != nil {
@@ -174,7 +174,7 @@ func (q *Queries) DeleteBook(ctx context.Context, bookID []int32) *DeleteBookBat
 func (b *DeleteBookBatchResults) Exec(f func(int, error)) {
 	for {
 		_, err := b.br.Exec()
-		if err != nil && err.Error() == "no result" {
+		if err != nil && (err.Error() == "no result" || err.Error() == "batch already closed") {
 			break
 		}
 		if f != nil {
@@ -222,7 +222,7 @@ func (q *Queries) UpdateBook(ctx context.Context, arg []UpdateBookParams) *Updat
 func (b *UpdateBookBatchResults) Exec(f func(int, error)) {
 	for {
 		_, err := b.br.Exec()
-		if err != nil && err.Error() == "no result" {
+		if err != nil && (err.Error() == "no result" || err.Error() == "batch already closed") {
 			break
 		}
 		if f != nil {
