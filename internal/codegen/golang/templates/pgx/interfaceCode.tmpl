@@ -32,9 +32,9 @@
         {{- else if eq .Cmd ":copyfrom" }}
             {{.MethodName}}(ctx context.Context, {{.Arg.SlicePair}}) (int64, error)
         {{- end}}
-        {{- if and (eq .Cmd ":batchexec") ($dbtxParam) }}
+        {{- if and (or (eq .Cmd ":batchexec") (eq .Cmd ":batchmany") (eq .Cmd ":batchone")) ($dbtxParam) }}
             {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.SlicePair}}) *{{.MethodName}}BatchResults
-        {{- else if eq .Cmd ":batchexec" }}
+        {{- else if or (eq .Cmd ":batchexec") (eq .Cmd ":batchmany") (eq .Cmd ":batchone") }}
             {{.MethodName}}(ctx context.Context, {{.Arg.SlicePair}}) *{{.MethodName}}BatchResults
         {{- end}}
 
