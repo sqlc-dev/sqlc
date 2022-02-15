@@ -90,6 +90,7 @@ func (i *importer) Imports(filename string) [][]ImportSpec {
 		querierFileName = i.Settings.Go.OutputQuerierFileName
 	}
 	copyfromFileName := "copyfrom.go"
+	batchFileName := "batch.go"
 
 	switch filename {
 	case dbFileName:
@@ -100,6 +101,8 @@ func (i *importer) Imports(filename string) [][]ImportSpec {
 		return mergeImports(i.interfaceImports())
 	case copyfromFileName:
 		return mergeImports(i.copyfromImports())
+	case batchFileName:
+		return mergeImports(i.batchImports(filename))
 	default:
 		return mergeImports(i.queryImports(filename))
 	}
@@ -284,6 +287,9 @@ func (i *importer) queryImports(filename string) fileImports {
 	var gq []Query
 	anyNonCopyFrom := false
 	for _, query := range i.Queries {
+		if usesBatch([]Query{query}) {
+			continue
+		}
 		if query.SourceName == filename {
 			gq = append(gq, query)
 			if query.Cmd != metadata.CmdCopyFrom {
@@ -389,6 +395,48 @@ func (i *importer) copyfromImports() fileImports {
 	})
 
 	std["context"] = struct{}{}
+
+	return sortedImports(std, pkg)
+}
+
+func (i *importer) batchImports(filename string) fileImports {
+	std, pkg := buildImports(i.Settings, i.Queries, func(name string) bool {
+		for _, q := range i.Queries {
+			if !usesBatch([]Query{q}) {
+				continue
+			}
+			if q.hasRetType() {
+				if q.Ret.EmitStruct() {
+					for _, f := range q.Ret.Struct.Fields {
+						fType := strings.TrimPrefix(f.Type, "[]")
+						if strings.HasPrefix(fType, name) {
+							return true
+						}
+					}
+				}
+				if strings.HasPrefix(q.Ret.Type(), name) {
+					return true
+				}
+			}
+			if !q.Arg.isEmpty() {
+				if q.Arg.EmitStruct() {
+					for _, f := range q.Arg.Struct.Fields {
+						fType := strings.TrimPrefix(f.Type, "[]")
+						if strings.HasPrefix(fType, name) {
+							return true
+						}
+					}
+				}
+				if strings.HasPrefix(q.Arg.Type(), name) {
+					return true
+				}
+			}
+		}
+		return false
+	})
+
+	std["context"] = struct{}{}
+	pkg[ImportSpec{Path: "github.com/jackc/pgx/v4"}] = struct{}{}
 
 	return sortedImports(std, pkg)
 }
