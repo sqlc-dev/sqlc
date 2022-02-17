@@ -6,6 +6,11 @@ import (
 	"database/sql"
 )
 
+type Arena struct {
+	Name     string
+	Location sql.NullString
+}
+
 type Venue struct {
 	Name sql.NullString
 }
