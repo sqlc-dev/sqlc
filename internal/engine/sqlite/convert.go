@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"fmt"
 	"github.com/antlr/antlr4/runtime/Go/antlr"
 	"strings"
 
@@ -97,6 +98,35 @@ func convertCreate_table_stmtContext(c *parser.Create_table_stmtContext) ast.Nod
 	return stmt
 }
 
+func convertDelete_stmtContext(c *parser.Delete_stmtContext) ast.Node {
+	if qualifiedName, ok := c.Qualified_table_name().(*parser.Qualified_table_nameContext); ok {
+
+		tableName := qualifiedName.Table_name().GetText()
+		relation := &ast.RangeVar{
+			Relname: &tableName,
+		}
+
+		if qualifiedName.Schema_name() != nil {
+			schemaName := qualifiedName.Schema_name().GetText()
+			relation.Schemaname = &schemaName
+		}
+
+		if qualifiedName.Alias() != nil {
+			alias := qualifiedName.Alias().GetText()
+			relation.Alias = &ast.Alias{Aliasname: &alias}
+		}
+
+		return &ast.DeleteStmt{
+			Relation:      relation,
+			WhereClause:   convert(c.Expr()),
+			ReturningList: &ast.List{},
+			WithClause:    nil,
+		}
+	}
+
+	return &ast.TODO{}
+}
+
 func convertDrop_stmtContext(c *parser.Drop_stmtContext) ast.Node {
 	if c.TABLE_() != nil {
 		name := ast.TableName{
@@ -143,6 +173,10 @@ func convertExprContext(c *parser.ExprContext) ast.Node {
 		}
 
 		return fn
+	}
+
+	if c.BIND_PARAMETER() != nil {
+		fmt.Printf("bind param")
 	}
 
 	if c.Column_name() != nil {
@@ -349,6 +383,9 @@ func convert(node node) ast.Node {
 
 	case *parser.Drop_stmtContext:
 		return convertDrop_stmtContext(n)
+
+	case *parser.Delete_stmtContext:
+		return convertDelete_stmtContext(n)
 
 	case *parser.ExprContext:
 		return convertExprContext(n)
