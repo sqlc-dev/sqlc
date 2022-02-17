@@ -5,13 +5,32 @@ package querytest
 
 import (
 	"context"
+	"database/sql"
 )
 
-const placeholder = `-- name: Placeholder :exec
-SELECT 1
+const placeholder = `-- name: Placeholder :many
+SELECT baz from foo
 `
 
-func (q *Queries) Placeholder(ctx context.Context) error {
-	_, err := q.db.ExecContext(ctx, placeholder)
-	return err
+func (q *Queries) Placeholder(ctx context.Context) ([]sql.NullString, error) {
+	rows, err := q.db.QueryContext(ctx, placeholder)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []sql.NullString
+	for rows.Next() {
+		var baz sql.NullString
+		if err := rows.Scan(&baz); err != nil {
+			return nil, err
+		}
+		items = append(items, baz)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
