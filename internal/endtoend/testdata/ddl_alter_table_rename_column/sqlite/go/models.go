@@ -7,5 +7,5 @@ import (
 )
 
 type Foo struct {
-	Baz sql.NullString
+	Boo sql.NullString
 }
