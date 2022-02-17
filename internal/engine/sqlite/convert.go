@@ -145,9 +145,7 @@ func convertExprContext(c *parser.ExprContext) ast.Node {
 		return fn
 	}
 
-	return &ast.Expr{}
-
-	if c.Column_name().(*parser.Column_nameContext) != nil {
+	if c.Column_name() != nil {
 		return convertColumnNameExpr(c)
 	}
 
