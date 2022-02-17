@@ -9,6 +9,7 @@ import (
 type Arena struct {
 	Name     string
 	Location sql.NullString
+	Size     int64
 }
 
 type Venue struct {
