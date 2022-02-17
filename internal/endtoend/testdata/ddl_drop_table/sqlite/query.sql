@@ -1,2 +1,2 @@
 -- name: Placeholder :exec
-SELECT * from foo;
+SELECT 1;

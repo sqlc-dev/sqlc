@@ -98,11 +98,9 @@ func convertCreate_table_stmtContext(c *parser.Create_table_stmtContext) ast.Nod
 }
 
 func convertDrop_stmtContext(c *parser.Drop_stmtContext) ast.Node {
-	// TODO confirm that this logic does what it looks like it should
-	if tableName, ok := c.TABLE_().(antlr.TerminalNode); ok {
-
+	if c.TABLE_() != nil {
 		name := ast.TableName{
-			Name: tableName.GetText(),
+			Name: c.Any_name().GetText(),
 		}
 		if c.Schema_name() != nil {
 			name.Schema = c.Schema_name().GetText()
@@ -147,9 +145,7 @@ func convertExprContext(c *parser.ExprContext) ast.Node {
 		return fn
 	}
 
-	return &ast.Expr{}
-
-	if c.Column_name().(*parser.Column_nameContext) != nil {
+	if c.Column_name() != nil {
 		return convertColumnNameExpr(c)
 	}
 

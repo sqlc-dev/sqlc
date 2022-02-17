@@ -6,12 +6,8 @@ import (
 	"database/sql"
 )
 
-type Arena struct {
-	Name     string
-	Location sql.NullString
-	Size     int64
-}
-
 type Venue struct {
-	Name sql.NullString
+	Name     sql.NullString
+	Location sql.NullString
+	Size     sql.NullInt64
 }
