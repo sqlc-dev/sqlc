@@ -8,7 +8,7 @@ import (
 )
 
 const placeholder = `-- name: Placeholder :exec
-SELECT baz from foo
+SELECT 1
 `
 
 func (q *Queries) Placeholder(ctx context.Context) error {
