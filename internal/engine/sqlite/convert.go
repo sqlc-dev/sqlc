@@ -72,7 +72,7 @@ func convertAlter_table_stmtContext(c *parser.Alter_table_stmtContext) ast.Node 
 	}
 
 	return &ast.TODO{}
-}
+} 	
 
 func convertAttach_stmtContext(c *parser.Attach_stmtContext) ast.Node {
 	name := c.Schema_name().GetText()
