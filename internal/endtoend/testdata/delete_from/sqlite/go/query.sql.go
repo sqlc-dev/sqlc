@@ -11,7 +11,7 @@ const deleteFrom = `-- name: DeleteFrom :exec
 DELETE FROM foo WHERE id = ?
 `
 
-func (q *Queries) DeleteFrom(ctx context.Context) error {
-	_, err := q.db.ExecContext(ctx, deleteFrom)
+func (q *Queries) DeleteFrom(ctx context.Context, id string) error {
+	_, err := q.db.ExecContext(ctx, deleteFrom, id)
 	return err
 }

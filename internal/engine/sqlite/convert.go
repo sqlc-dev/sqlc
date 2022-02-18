@@ -121,11 +121,11 @@ func convertDelete_stmtContext(c *parser.Delete_stmtContext) ast.Node {
 			WithClause:    nil,
 		}
 
-		//if c.WHERE_() != nil {
-		//	if whereExpr, ok := c.Expr().(*parser.ExprContext); ok {
-		//		delete.WhereClause = convertWhereExprContext(whereExpr)
-		//	}
-		//}
+		if c.WHERE_() != nil {
+			if c.Expr() != nil {
+				delete.WhereClause = convert(c.Expr())
+			}
+		}
 
 		return delete
 	}
@@ -238,6 +238,20 @@ func convertColumnNameExpr(c *parser.Expr_qualified_column_nameContext) *ast.Col
 			Items: items,
 		},
 	}
+}
+
+func convertComparison(c *parser.Expr_comparisonContext) ast.Node {
+	aExpr := &ast.A_Expr{
+		Name: &ast.List{
+			Items: []ast.Node{
+				&ast.String{Str: "="}, // TODO: add actual comparison
+			},
+		},
+		Lexpr: convert(c.Expr(0)),
+		Rexpr: convert(c.Expr(1)),
+	}
+
+	return aExpr
 }
 
 func convertSimpleSelect_stmtContext(c *parser.Simple_select_stmtContext) ast.Node {
@@ -428,6 +442,12 @@ func convert(node node) ast.Node {
 	case *parser.Expr_qualified_column_nameContext:
 		return convertColumnNameExpr(n)
 
+	case *parser.Expr_comparisonContext:
+		return convertComparison(n)
+
+	case *parser.Expr_bindContext:
+		return convertParam(n)
+
 	case *parser.Factored_select_stmtContext:
 		// TODO: need to handle this
 		return &ast.TODO{}
@@ -447,4 +467,13 @@ func convert(node node) ast.Node {
 	default:
 		return &ast.TODO{}
 	}
+}
+
+func convertParam(c *parser.Expr_bindContext) ast.Node {
+	if c.BIND_PARAMETER() != nil {
+		return &ast.ParamRef{ // TODO: Need to count these up instead of always using 0
+			Location: c.GetStart().GetStart(),
+		}
+	}
+	return &ast.TODO{}
 }
