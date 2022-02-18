@@ -186,9 +186,6 @@ func convertWhereExprContext(c *parser.ExprContext) ast.Node {
 		}
 	}
 
-	if c.Column_name() != nil {
-		return convertColumnNameExpr(c)
-	}
 
 	return &ast.TODO{}
 }
@@ -213,6 +210,10 @@ func convertExprContext(c *parser.ExprContext) ast.Node {
 		}
 
 		return fn
+	}
+
+	if c.Column_name() != nil {
+		return convertColumnNameExpr(c)
 	}
 
 	return &ast.TODO{}
