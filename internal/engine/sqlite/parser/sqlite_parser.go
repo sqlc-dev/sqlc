@@ -9049,12 +9049,12 @@ func (s *ExprContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) s
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
-type Binary_orContext struct {
+type Expr_caseContext struct {
 	*ExprContext
 }
 
-func NewBinary_orContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *Binary_orContext {
-	var p = new(Binary_orContext)
+func NewExpr_caseContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *Expr_caseContext {
+	var p = new(Expr_caseContext)
 
 	p.ExprContext = NewEmptyExprContext()
 	p.parser = parser
@@ -9063,11 +9063,19 @@ func NewBinary_orContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *Bina
 	return p
 }
 
-func (s *Binary_orContext) GetRuleContext() antlr.RuleContext {
+func (s *Expr_caseContext) GetRuleContext() antlr.RuleContext {
 	return s
 }
 
-func (s *Binary_orContext) AllExpr() []IExprContext {
+func (s *Expr_caseContext) CASE_() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserCASE_, 0)
+}
+
+func (s *Expr_caseContext) END_() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserEND_, 0)
+}
+
+func (s *Expr_caseContext) AllExpr() []IExprContext {
 	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*IExprContext)(nil)).Elem())
 	var tst = make([]IExprContext, len(ts))
 
@@ -9080,7 +9088,7 @@ func (s *Binary_orContext) AllExpr() []IExprContext {
 	return tst
 }
 
-func (s *Binary_orContext) Expr(i int) IExprContext {
+func (s *Expr_caseContext) Expr(i int) IExprContext {
 	var t = s.GetTypedRuleContext(reflect.TypeOf((*IExprContext)(nil)).Elem(), i)
 
 	if t == nil {
@@ -9090,32 +9098,44 @@ func (s *Binary_orContext) Expr(i int) IExprContext {
 	return t.(IExprContext)
 }
 
-func (s *Binary_orContext) PIPE2() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserPIPE2, 0)
+func (s *Expr_caseContext) AllWHEN_() []antlr.TerminalNode {
+	return s.GetTokens(SQLiteParserWHEN_)
 }
 
-func (s *Binary_orContext) OR_() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserOR_, 0)
+func (s *Expr_caseContext) WHEN_(i int) antlr.TerminalNode {
+	return s.GetToken(SQLiteParserWHEN_, i)
 }
 
-func (s *Binary_orContext) EnterRule(listener antlr.ParseTreeListener) {
+func (s *Expr_caseContext) AllTHEN_() []antlr.TerminalNode {
+	return s.GetTokens(SQLiteParserTHEN_)
+}
+
+func (s *Expr_caseContext) THEN_(i int) antlr.TerminalNode {
+	return s.GetToken(SQLiteParserTHEN_, i)
+}
+
+func (s *Expr_caseContext) ELSE_() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserELSE_, 0)
+}
+
+func (s *Expr_caseContext) EnterRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(SQLiteParserListener); ok {
-		listenerT.EnterBinary_or(s)
+		listenerT.EnterExpr_case(s)
 	}
 }
 
-func (s *Binary_orContext) ExitRule(listener antlr.ParseTreeListener) {
+func (s *Expr_caseContext) ExitRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(SQLiteParserListener); ok {
-		listenerT.ExitBinary_or(s)
+		listenerT.ExitExpr_case(s)
 	}
 }
 
-type ComparisonContext struct {
+type Expr_raiseContext struct {
 	*ExprContext
 }
 
-func NewComparisonContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *ComparisonContext {
-	var p = new(ComparisonContext)
+func NewExpr_raiseContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *Expr_raiseContext {
+	var p = new(Expr_raiseContext)
 
 	p.ExprContext = NewEmptyExprContext()
 	p.parser = parser
@@ -9124,866 +9144,11 @@ func NewComparisonContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *Com
 	return p
 }
 
-func (s *ComparisonContext) GetRuleContext() antlr.RuleContext {
+func (s *Expr_raiseContext) GetRuleContext() antlr.RuleContext {
 	return s
 }
 
-func (s *ComparisonContext) AllExpr() []IExprContext {
-	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*IExprContext)(nil)).Elem())
-	var tst = make([]IExprContext, len(ts))
-
-	for i, t := range ts {
-		if t != nil {
-			tst[i] = t.(IExprContext)
-		}
-	}
-
-	return tst
-}
-
-func (s *ComparisonContext) Expr(i int) IExprContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IExprContext)(nil)).Elem(), i)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IExprContext)
-}
-
-func (s *ComparisonContext) LT2() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserLT2, 0)
-}
-
-func (s *ComparisonContext) GT2() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserGT2, 0)
-}
-
-func (s *ComparisonContext) AMP() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserAMP, 0)
-}
-
-func (s *ComparisonContext) PIPE() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserPIPE, 0)
-}
-
-func (s *ComparisonContext) LT() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserLT, 0)
-}
-
-func (s *ComparisonContext) LT_EQ() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserLT_EQ, 0)
-}
-
-func (s *ComparisonContext) GT() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserGT, 0)
-}
-
-func (s *ComparisonContext) GT_EQ() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserGT_EQ, 0)
-}
-
-func (s *ComparisonContext) ASSIGN() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserASSIGN, 0)
-}
-
-func (s *ComparisonContext) EQ() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserEQ, 0)
-}
-
-func (s *ComparisonContext) NOT_EQ1() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserNOT_EQ1, 0)
-}
-
-func (s *ComparisonContext) NOT_EQ2() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserNOT_EQ2, 0)
-}
-
-func (s *ComparisonContext) IS_() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserIS_, 0)
-}
-
-func (s *ComparisonContext) NOT_() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserNOT_, 0)
-}
-
-func (s *ComparisonContext) IN_() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserIN_, 0)
-}
-
-func (s *ComparisonContext) LIKE_() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserLIKE_, 0)
-}
-
-func (s *ComparisonContext) GLOB_() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserGLOB_, 0)
-}
-
-func (s *ComparisonContext) MATCH_() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserMATCH_, 0)
-}
-
-func (s *ComparisonContext) REGEXP_() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserREGEXP_, 0)
-}
-
-func (s *ComparisonContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(SQLiteParserListener); ok {
-		listenerT.EnterComparison(s)
-	}
-}
-
-func (s *ComparisonContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(SQLiteParserListener); ok {
-		listenerT.ExitComparison(s)
-	}
-}
-
-type IsnullContext struct {
-	*ExprContext
-}
-
-func NewIsnullContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *IsnullContext {
-	var p = new(IsnullContext)
-
-	p.ExprContext = NewEmptyExprContext()
-	p.parser = parser
-	p.CopyFrom(ctx.(*ExprContext))
-
-	return p
-}
-
-func (s *IsnullContext) GetRuleContext() antlr.RuleContext {
-	return s
-}
-
-func (s *IsnullContext) Expr() IExprContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IExprContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IExprContext)
-}
-
-func (s *IsnullContext) ISNULL_() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserISNULL_, 0)
-}
-
-func (s *IsnullContext) NOTNULL_() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserNOTNULL_, 0)
-}
-
-func (s *IsnullContext) NOT_() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserNOT_, 0)
-}
-
-func (s *IsnullContext) NULL_() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserNULL_, 0)
-}
-
-func (s *IsnullContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(SQLiteParserListener); ok {
-		listenerT.EnterIsnull(s)
-	}
-}
-
-func (s *IsnullContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(SQLiteParserListener); ok {
-		listenerT.ExitIsnull(s)
-	}
-}
-
-type Qualified_column_nameContext struct {
-	*ExprContext
-}
-
-func NewQualified_column_nameContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *Qualified_column_nameContext {
-	var p = new(Qualified_column_nameContext)
-
-	p.ExprContext = NewEmptyExprContext()
-	p.parser = parser
-	p.CopyFrom(ctx.(*ExprContext))
-
-	return p
-}
-
-func (s *Qualified_column_nameContext) GetRuleContext() antlr.RuleContext {
-	return s
-}
-
-func (s *Qualified_column_nameContext) Column_name() IColumn_nameContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IColumn_nameContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IColumn_nameContext)
-}
-
-func (s *Qualified_column_nameContext) Table_name() ITable_nameContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*ITable_nameContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(ITable_nameContext)
-}
-
-func (s *Qualified_column_nameContext) AllDOT() []antlr.TerminalNode {
-	return s.GetTokens(SQLiteParserDOT)
-}
-
-func (s *Qualified_column_nameContext) DOT(i int) antlr.TerminalNode {
-	return s.GetToken(SQLiteParserDOT, i)
-}
-
-func (s *Qualified_column_nameContext) Schema_name() ISchema_nameContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*ISchema_nameContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(ISchema_nameContext)
-}
-
-func (s *Qualified_column_nameContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(SQLiteParserListener); ok {
-		listenerT.EnterQualified_column_name(s)
-	}
-}
-
-func (s *Qualified_column_nameContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(SQLiteParserListener); ok {
-		listenerT.ExitQualified_column_name(s)
-	}
-}
-
-type UnaryContext struct {
-	*ExprContext
-}
-
-func NewUnaryContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *UnaryContext {
-	var p = new(UnaryContext)
-
-	p.ExprContext = NewEmptyExprContext()
-	p.parser = parser
-	p.CopyFrom(ctx.(*ExprContext))
-
-	return p
-}
-
-func (s *UnaryContext) GetRuleContext() antlr.RuleContext {
-	return s
-}
-
-func (s *UnaryContext) Unary_operator() IUnary_operatorContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IUnary_operatorContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IUnary_operatorContext)
-}
-
-func (s *UnaryContext) Expr() IExprContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IExprContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IExprContext)
-}
-
-func (s *UnaryContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(SQLiteParserListener); ok {
-		listenerT.EnterUnary(s)
-	}
-}
-
-func (s *UnaryContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(SQLiteParserListener); ok {
-		listenerT.ExitUnary(s)
-	}
-}
-
-type ListContext struct {
-	*ExprContext
-}
-
-func NewListContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *ListContext {
-	var p = new(ListContext)
-
-	p.ExprContext = NewEmptyExprContext()
-	p.parser = parser
-	p.CopyFrom(ctx.(*ExprContext))
-
-	return p
-}
-
-func (s *ListContext) GetRuleContext() antlr.RuleContext {
-	return s
-}
-
-func (s *ListContext) OPEN_PAR() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserOPEN_PAR, 0)
-}
-
-func (s *ListContext) AllExpr() []IExprContext {
-	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*IExprContext)(nil)).Elem())
-	var tst = make([]IExprContext, len(ts))
-
-	for i, t := range ts {
-		if t != nil {
-			tst[i] = t.(IExprContext)
-		}
-	}
-
-	return tst
-}
-
-func (s *ListContext) Expr(i int) IExprContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IExprContext)(nil)).Elem(), i)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IExprContext)
-}
-
-func (s *ListContext) CLOSE_PAR() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserCLOSE_PAR, 0)
-}
-
-func (s *ListContext) AllCOMMA() []antlr.TerminalNode {
-	return s.GetTokens(SQLiteParserCOMMA)
-}
-
-func (s *ListContext) COMMA(i int) antlr.TerminalNode {
-	return s.GetToken(SQLiteParserCOMMA, i)
-}
-
-func (s *ListContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(SQLiteParserListener); ok {
-		listenerT.EnterList(s)
-	}
-}
-
-func (s *ListContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(SQLiteParserListener); ok {
-		listenerT.ExitList(s)
-	}
-}
-
-type LiteralContext struct {
-	*ExprContext
-}
-
-func NewLiteralContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *LiteralContext {
-	var p = new(LiteralContext)
-
-	p.ExprContext = NewEmptyExprContext()
-	p.parser = parser
-	p.CopyFrom(ctx.(*ExprContext))
-
-	return p
-}
-
-func (s *LiteralContext) GetRuleContext() antlr.RuleContext {
-	return s
-}
-
-func (s *LiteralContext) Literal_value() ILiteral_valueContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*ILiteral_valueContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(ILiteral_valueContext)
-}
-
-func (s *LiteralContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(SQLiteParserListener); ok {
-		listenerT.EnterLiteral(s)
-	}
-}
-
-func (s *LiteralContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(SQLiteParserListener); ok {
-		listenerT.ExitLiteral(s)
-	}
-}
-
-type CastContext struct {
-	*ExprContext
-}
-
-func NewCastContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *CastContext {
-	var p = new(CastContext)
-
-	p.ExprContext = NewEmptyExprContext()
-	p.parser = parser
-	p.CopyFrom(ctx.(*ExprContext))
-
-	return p
-}
-
-func (s *CastContext) GetRuleContext() antlr.RuleContext {
-	return s
-}
-
-func (s *CastContext) CAST_() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserCAST_, 0)
-}
-
-func (s *CastContext) OPEN_PAR() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserOPEN_PAR, 0)
-}
-
-func (s *CastContext) Expr() IExprContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IExprContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IExprContext)
-}
-
-func (s *CastContext) AS_() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserAS_, 0)
-}
-
-func (s *CastContext) Type_name() IType_nameContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IType_nameContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IType_nameContext)
-}
-
-func (s *CastContext) CLOSE_PAR() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserCLOSE_PAR, 0)
-}
-
-func (s *CastContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(SQLiteParserListener); ok {
-		listenerT.EnterCast(s)
-	}
-}
-
-func (s *CastContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(SQLiteParserListener); ok {
-		listenerT.ExitCast(s)
-	}
-}
-
-type CollateContext struct {
-	*ExprContext
-}
-
-func NewCollateContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *CollateContext {
-	var p = new(CollateContext)
-
-	p.ExprContext = NewEmptyExprContext()
-	p.parser = parser
-	p.CopyFrom(ctx.(*ExprContext))
-
-	return p
-}
-
-func (s *CollateContext) GetRuleContext() antlr.RuleContext {
-	return s
-}
-
-func (s *CollateContext) Expr() IExprContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IExprContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IExprContext)
-}
-
-func (s *CollateContext) COLLATE_() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserCOLLATE_, 0)
-}
-
-func (s *CollateContext) Collation_name() ICollation_nameContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*ICollation_nameContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(ICollation_nameContext)
-}
-
-func (s *CollateContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(SQLiteParserListener); ok {
-		listenerT.EnterCollate(s)
-	}
-}
-
-func (s *CollateContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(SQLiteParserListener); ok {
-		listenerT.ExitCollate(s)
-	}
-}
-
-type BindContext struct {
-	*ExprContext
-}
-
-func NewBindContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *BindContext {
-	var p = new(BindContext)
-
-	p.ExprContext = NewEmptyExprContext()
-	p.parser = parser
-	p.CopyFrom(ctx.(*ExprContext))
-
-	return p
-}
-
-func (s *BindContext) GetRuleContext() antlr.RuleContext {
-	return s
-}
-
-func (s *BindContext) BIND_PARAMETER() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserBIND_PARAMETER, 0)
-}
-
-func (s *BindContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(SQLiteParserListener); ok {
-		listenerT.EnterBind(s)
-	}
-}
-
-func (s *BindContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(SQLiteParserListener); ok {
-		listenerT.ExitBind(s)
-	}
-}
-
-type Binary_andContext struct {
-	*ExprContext
-}
-
-func NewBinary_andContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *Binary_andContext {
-	var p = new(Binary_andContext)
-
-	p.ExprContext = NewEmptyExprContext()
-	p.parser = parser
-	p.CopyFrom(ctx.(*ExprContext))
-
-	return p
-}
-
-func (s *Binary_andContext) GetRuleContext() antlr.RuleContext {
-	return s
-}
-
-func (s *Binary_andContext) AllExpr() []IExprContext {
-	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*IExprContext)(nil)).Elem())
-	var tst = make([]IExprContext, len(ts))
-
-	for i, t := range ts {
-		if t != nil {
-			tst[i] = t.(IExprContext)
-		}
-	}
-
-	return tst
-}
-
-func (s *Binary_andContext) Expr(i int) IExprContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IExprContext)(nil)).Elem(), i)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IExprContext)
-}
-
-func (s *Binary_andContext) AND_() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserAND_, 0)
-}
-
-func (s *Binary_andContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(SQLiteParserListener); ok {
-		listenerT.EnterBinary_and(s)
-	}
-}
-
-func (s *Binary_andContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(SQLiteParserListener); ok {
-		listenerT.ExitBinary_and(s)
-	}
-}
-
-type FuncContext struct {
-	*ExprContext
-}
-
-func NewFuncContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *FuncContext {
-	var p = new(FuncContext)
-
-	p.ExprContext = NewEmptyExprContext()
-	p.parser = parser
-	p.CopyFrom(ctx.(*ExprContext))
-
-	return p
-}
-
-func (s *FuncContext) GetRuleContext() antlr.RuleContext {
-	return s
-}
-
-func (s *FuncContext) Function_name() IFunction_nameContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IFunction_nameContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IFunction_nameContext)
-}
-
-func (s *FuncContext) OPEN_PAR() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserOPEN_PAR, 0)
-}
-
-func (s *FuncContext) CLOSE_PAR() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserCLOSE_PAR, 0)
-}
-
-func (s *FuncContext) STAR() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserSTAR, 0)
-}
-
-func (s *FuncContext) Filter_clause() IFilter_clauseContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IFilter_clauseContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IFilter_clauseContext)
-}
-
-func (s *FuncContext) Over_clause() IOver_clauseContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IOver_clauseContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IOver_clauseContext)
-}
-
-func (s *FuncContext) AllExpr() []IExprContext {
-	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*IExprContext)(nil)).Elem())
-	var tst = make([]IExprContext, len(ts))
-
-	for i, t := range ts {
-		if t != nil {
-			tst[i] = t.(IExprContext)
-		}
-	}
-
-	return tst
-}
-
-func (s *FuncContext) Expr(i int) IExprContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IExprContext)(nil)).Elem(), i)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IExprContext)
-}
-
-func (s *FuncContext) DISTINCT_() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserDISTINCT_, 0)
-}
-
-func (s *FuncContext) AllCOMMA() []antlr.TerminalNode {
-	return s.GetTokens(SQLiteParserCOMMA)
-}
-
-func (s *FuncContext) COMMA(i int) antlr.TerminalNode {
-	return s.GetToken(SQLiteParserCOMMA, i)
-}
-
-func (s *FuncContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(SQLiteParserListener); ok {
-		listenerT.EnterFunc(s)
-	}
-}
-
-func (s *FuncContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(SQLiteParserListener); ok {
-		listenerT.ExitFunc(s)
-	}
-}
-
-type In_selectContext struct {
-	*ExprContext
-}
-
-func NewIn_selectContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *In_selectContext {
-	var p = new(In_selectContext)
-
-	p.ExprContext = NewEmptyExprContext()
-	p.parser = parser
-	p.CopyFrom(ctx.(*ExprContext))
-
-	return p
-}
-
-func (s *In_selectContext) GetRuleContext() antlr.RuleContext {
-	return s
-}
-
-func (s *In_selectContext) OPEN_PAR() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserOPEN_PAR, 0)
-}
-
-func (s *In_selectContext) Select_stmt() ISelect_stmtContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*ISelect_stmtContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(ISelect_stmtContext)
-}
-
-func (s *In_selectContext) CLOSE_PAR() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserCLOSE_PAR, 0)
-}
-
-func (s *In_selectContext) EXISTS_() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserEXISTS_, 0)
-}
-
-func (s *In_selectContext) NOT_() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserNOT_, 0)
-}
-
-func (s *In_selectContext) AllExpr() []IExprContext {
-	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*IExprContext)(nil)).Elem())
-	var tst = make([]IExprContext, len(ts))
-
-	for i, t := range ts {
-		if t != nil {
-			tst[i] = t.(IExprContext)
-		}
-	}
-
-	return tst
-}
-
-func (s *In_selectContext) Expr(i int) IExprContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IExprContext)(nil)).Elem(), i)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IExprContext)
-}
-
-func (s *In_selectContext) IN_() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserIN_, 0)
-}
-
-func (s *In_selectContext) Table_name() ITable_nameContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*ITable_nameContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(ITable_nameContext)
-}
-
-func (s *In_selectContext) Table_function_name() ITable_function_nameContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*ITable_function_nameContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(ITable_function_nameContext)
-}
-
-func (s *In_selectContext) Schema_name() ISchema_nameContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*ISchema_nameContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(ISchema_nameContext)
-}
-
-func (s *In_selectContext) DOT() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserDOT, 0)
-}
-
-func (s *In_selectContext) AllCOMMA() []antlr.TerminalNode {
-	return s.GetTokens(SQLiteParserCOMMA)
-}
-
-func (s *In_selectContext) COMMA(i int) antlr.TerminalNode {
-	return s.GetToken(SQLiteParserCOMMA, i)
-}
-
-func (s *In_selectContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(SQLiteParserListener); ok {
-		listenerT.EnterIn_select(s)
-	}
-}
-
-func (s *In_selectContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(SQLiteParserListener); ok {
-		listenerT.ExitIn_select(s)
-	}
-}
-
-type RaiseContext struct {
-	*ExprContext
-}
-
-func NewRaiseContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *RaiseContext {
-	var p = new(RaiseContext)
-
-	p.ExprContext = NewEmptyExprContext()
-	p.parser = parser
-	p.CopyFrom(ctx.(*ExprContext))
-
-	return p
-}
-
-func (s *RaiseContext) GetRuleContext() antlr.RuleContext {
-	return s
-}
-
-func (s *RaiseContext) Raise_function() IRaise_functionContext {
+func (s *Expr_raiseContext) Raise_function() IRaise_functionContext {
 	var t = s.GetTypedRuleContext(reflect.TypeOf((*IRaise_functionContext)(nil)).Elem(), 0)
 
 	if t == nil {
@@ -9993,24 +9158,24 @@ func (s *RaiseContext) Raise_function() IRaise_functionContext {
 	return t.(IRaise_functionContext)
 }
 
-func (s *RaiseContext) EnterRule(listener antlr.ParseTreeListener) {
+func (s *Expr_raiseContext) EnterRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(SQLiteParserListener); ok {
-		listenerT.EnterRaise(s)
+		listenerT.EnterExpr_raise(s)
 	}
 }
 
-func (s *RaiseContext) ExitRule(listener antlr.ParseTreeListener) {
+func (s *Expr_raiseContext) ExitRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(SQLiteParserListener); ok {
-		listenerT.ExitRaise(s)
+		listenerT.ExitExpr_raise(s)
 	}
 }
 
-type Math_opContext struct {
+type Expr_functionContext struct {
 	*ExprContext
 }
 
-func NewMath_opContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *Math_opContext {
-	var p = new(Math_opContext)
+func NewExpr_functionContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *Expr_functionContext {
+	var p = new(Expr_functionContext)
 
 	p.ExprContext = NewEmptyExprContext()
 	p.parser = parser
@@ -10019,84 +9184,53 @@ func NewMath_opContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *Math_o
 	return p
 }
 
-func (s *Math_opContext) GetRuleContext() antlr.RuleContext {
+func (s *Expr_functionContext) GetRuleContext() antlr.RuleContext {
 	return s
 }
 
-func (s *Math_opContext) AllExpr() []IExprContext {
-	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*IExprContext)(nil)).Elem())
-	var tst = make([]IExprContext, len(ts))
-
-	for i, t := range ts {
-		if t != nil {
-			tst[i] = t.(IExprContext)
-		}
-	}
-
-	return tst
-}
-
-func (s *Math_opContext) Expr(i int) IExprContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IExprContext)(nil)).Elem(), i)
+func (s *Expr_functionContext) Function_name() IFunction_nameContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IFunction_nameContext)(nil)).Elem(), 0)
 
 	if t == nil {
 		return nil
 	}
 
-	return t.(IExprContext)
+	return t.(IFunction_nameContext)
 }
 
-func (s *Math_opContext) STAR() antlr.TerminalNode {
+func (s *Expr_functionContext) OPEN_PAR() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserOPEN_PAR, 0)
+}
+
+func (s *Expr_functionContext) CLOSE_PAR() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserCLOSE_PAR, 0)
+}
+
+func (s *Expr_functionContext) STAR() antlr.TerminalNode {
 	return s.GetToken(SQLiteParserSTAR, 0)
 }
 
-func (s *Math_opContext) DIV() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserDIV, 0)
-}
+func (s *Expr_functionContext) Filter_clause() IFilter_clauseContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IFilter_clauseContext)(nil)).Elem(), 0)
 
-func (s *Math_opContext) MOD() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserMOD, 0)
-}
-
-func (s *Math_opContext) PLUS() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserPLUS, 0)
-}
-
-func (s *Math_opContext) MINUS() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserMINUS, 0)
-}
-
-func (s *Math_opContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(SQLiteParserListener); ok {
-		listenerT.EnterMath_op(s)
+	if t == nil {
+		return nil
 	}
+
+	return t.(IFilter_clauseContext)
 }
 
-func (s *Math_opContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(SQLiteParserListener); ok {
-		listenerT.ExitMath_op(s)
+func (s *Expr_functionContext) Over_clause() IOver_clauseContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IOver_clauseContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
 	}
+
+	return t.(IOver_clauseContext)
 }
 
-type Comparison4Context struct {
-	*ExprContext
-}
-
-func NewComparison4Context(parser antlr.Parser, ctx antlr.ParserRuleContext) *Comparison4Context {
-	var p = new(Comparison4Context)
-
-	p.ExprContext = NewEmptyExprContext()
-	p.parser = parser
-	p.CopyFrom(ctx.(*ExprContext))
-
-	return p
-}
-
-func (s *Comparison4Context) GetRuleContext() antlr.RuleContext {
-	return s
-}
-
-func (s *Comparison4Context) AllExpr() []IExprContext {
+func (s *Expr_functionContext) AllExpr() []IExprContext {
 	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*IExprContext)(nil)).Elem())
 	var tst = make([]IExprContext, len(ts))
 
@@ -10109,7 +9243,7 @@ func (s *Comparison4Context) AllExpr() []IExprContext {
 	return tst
 }
 
-func (s *Comparison4Context) Expr(i int) IExprContext {
+func (s *Expr_functionContext) Expr(i int) IExprContext {
 	var t = s.GetTypedRuleContext(reflect.TypeOf((*IExprContext)(nil)).Elem(), i)
 
 	if t == nil {
@@ -10119,48 +9253,169 @@ func (s *Comparison4Context) Expr(i int) IExprContext {
 	return t.(IExprContext)
 }
 
-func (s *Comparison4Context) LIKE_() antlr.TerminalNode {
+func (s *Expr_functionContext) DISTINCT_() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserDISTINCT_, 0)
+}
+
+func (s *Expr_functionContext) AllCOMMA() []antlr.TerminalNode {
+	return s.GetTokens(SQLiteParserCOMMA)
+}
+
+func (s *Expr_functionContext) COMMA(i int) antlr.TerminalNode {
+	return s.GetToken(SQLiteParserCOMMA, i)
+}
+
+func (s *Expr_functionContext) EnterRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(SQLiteParserListener); ok {
+		listenerT.EnterExpr_function(s)
+	}
+}
+
+func (s *Expr_functionContext) ExitRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(SQLiteParserListener); ok {
+		listenerT.ExitExpr_function(s)
+	}
+}
+
+type Expr_comparisonContext struct {
+	*ExprContext
+}
+
+func NewExpr_comparisonContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *Expr_comparisonContext {
+	var p = new(Expr_comparisonContext)
+
+	p.ExprContext = NewEmptyExprContext()
+	p.parser = parser
+	p.CopyFrom(ctx.(*ExprContext))
+
+	return p
+}
+
+func (s *Expr_comparisonContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *Expr_comparisonContext) AllExpr() []IExprContext {
+	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*IExprContext)(nil)).Elem())
+	var tst = make([]IExprContext, len(ts))
+
+	for i, t := range ts {
+		if t != nil {
+			tst[i] = t.(IExprContext)
+		}
+	}
+
+	return tst
+}
+
+func (s *Expr_comparisonContext) Expr(i int) IExprContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IExprContext)(nil)).Elem(), i)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IExprContext)
+}
+
+func (s *Expr_comparisonContext) LT2() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserLT2, 0)
+}
+
+func (s *Expr_comparisonContext) GT2() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserGT2, 0)
+}
+
+func (s *Expr_comparisonContext) AMP() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserAMP, 0)
+}
+
+func (s *Expr_comparisonContext) PIPE() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserPIPE, 0)
+}
+
+func (s *Expr_comparisonContext) LT() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserLT, 0)
+}
+
+func (s *Expr_comparisonContext) LT_EQ() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserLT_EQ, 0)
+}
+
+func (s *Expr_comparisonContext) GT() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserGT, 0)
+}
+
+func (s *Expr_comparisonContext) GT_EQ() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserGT_EQ, 0)
+}
+
+func (s *Expr_comparisonContext) ASSIGN() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserASSIGN, 0)
+}
+
+func (s *Expr_comparisonContext) EQ() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserEQ, 0)
+}
+
+func (s *Expr_comparisonContext) NOT_EQ1() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserNOT_EQ1, 0)
+}
+
+func (s *Expr_comparisonContext) NOT_EQ2() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserNOT_EQ2, 0)
+}
+
+func (s *Expr_comparisonContext) IS_() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserIS_, 0)
+}
+
+func (s *Expr_comparisonContext) NOT_() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserNOT_, 0)
+}
+
+func (s *Expr_comparisonContext) IN_() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserIN_, 0)
+}
+
+func (s *Expr_comparisonContext) LIKE_() antlr.TerminalNode {
 	return s.GetToken(SQLiteParserLIKE_, 0)
 }
 
-func (s *Comparison4Context) GLOB_() antlr.TerminalNode {
+func (s *Expr_comparisonContext) GLOB_() antlr.TerminalNode {
 	return s.GetToken(SQLiteParserGLOB_, 0)
 }
 
-func (s *Comparison4Context) REGEXP_() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserREGEXP_, 0)
-}
-
-func (s *Comparison4Context) MATCH_() antlr.TerminalNode {
+func (s *Expr_comparisonContext) MATCH_() antlr.TerminalNode {
 	return s.GetToken(SQLiteParserMATCH_, 0)
 }
 
-func (s *Comparison4Context) NOT_() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserNOT_, 0)
+func (s *Expr_comparisonContext) REGEXP_() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserREGEXP_, 0)
 }
 
-func (s *Comparison4Context) ESCAPE_() antlr.TerminalNode {
+func (s *Expr_comparisonContext) ESCAPE_() antlr.TerminalNode {
 	return s.GetToken(SQLiteParserESCAPE_, 0)
 }
 
-func (s *Comparison4Context) EnterRule(listener antlr.ParseTreeListener) {
+func (s *Expr_comparisonContext) EnterRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(SQLiteParserListener); ok {
-		listenerT.EnterComparison4(s)
+		listenerT.EnterExpr_comparison(s)
 	}
 }
 
-func (s *Comparison4Context) ExitRule(listener antlr.ParseTreeListener) {
+func (s *Expr_comparisonContext) ExitRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(SQLiteParserListener); ok {
-		listenerT.ExitComparison4(s)
+		listenerT.ExitExpr_comparison(s)
 	}
 }
 
-type CaseContext struct {
+type Expr_binaryContext struct {
 	*ExprContext
 }
 
-func NewCaseContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *CaseContext {
-	var p = new(CaseContext)
+func NewExpr_binaryContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *Expr_binaryContext {
+	var p = new(Expr_binaryContext)
 
 	p.ExprContext = NewEmptyExprContext()
 	p.parser = parser
@@ -10169,19 +9424,11 @@ func NewCaseContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *CaseConte
 	return p
 }
 
-func (s *CaseContext) GetRuleContext() antlr.RuleContext {
+func (s *Expr_binaryContext) GetRuleContext() antlr.RuleContext {
 	return s
 }
 
-func (s *CaseContext) CASE_() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserCASE_, 0)
-}
-
-func (s *CaseContext) END_() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserEND_, 0)
-}
-
-func (s *CaseContext) AllExpr() []IExprContext {
+func (s *Expr_binaryContext) AllExpr() []IExprContext {
 	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*IExprContext)(nil)).Elem())
 	var tst = make([]IExprContext, len(ts))
 
@@ -10194,7 +9441,7 @@ func (s *CaseContext) AllExpr() []IExprContext {
 	return tst
 }
 
-func (s *CaseContext) Expr(i int) IExprContext {
+func (s *Expr_binaryContext) Expr(i int) IExprContext {
 	var t = s.GetTypedRuleContext(reflect.TypeOf((*IExprContext)(nil)).Elem(), i)
 
 	if t == nil {
@@ -10204,100 +9451,727 @@ func (s *CaseContext) Expr(i int) IExprContext {
 	return t.(IExprContext)
 }
 
-func (s *CaseContext) AllWHEN_() []antlr.TerminalNode {
-	return s.GetTokens(SQLiteParserWHEN_)
+func (s *Expr_binaryContext) PIPE2() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserPIPE2, 0)
 }
 
-func (s *CaseContext) WHEN_(i int) antlr.TerminalNode {
-	return s.GetToken(SQLiteParserWHEN_, i)
-}
-
-func (s *CaseContext) AllTHEN_() []antlr.TerminalNode {
-	return s.GetTokens(SQLiteParserTHEN_)
-}
-
-func (s *CaseContext) THEN_(i int) antlr.TerminalNode {
-	return s.GetToken(SQLiteParserTHEN_, i)
-}
-
-func (s *CaseContext) ELSE_() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserELSE_, 0)
-}
-
-func (s *CaseContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(SQLiteParserListener); ok {
-		listenerT.EnterCase(s)
-	}
-}
-
-func (s *CaseContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(SQLiteParserListener); ok {
-		listenerT.ExitCase(s)
-	}
-}
-
-type BetweenContext struct {
-	*ExprContext
-}
-
-func NewBetweenContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *BetweenContext {
-	var p = new(BetweenContext)
-
-	p.ExprContext = NewEmptyExprContext()
-	p.parser = parser
-	p.CopyFrom(ctx.(*ExprContext))
-
-	return p
-}
-
-func (s *BetweenContext) GetRuleContext() antlr.RuleContext {
-	return s
-}
-
-func (s *BetweenContext) AllExpr() []IExprContext {
-	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*IExprContext)(nil)).Elem())
-	var tst = make([]IExprContext, len(ts))
-
-	for i, t := range ts {
-		if t != nil {
-			tst[i] = t.(IExprContext)
-		}
-	}
-
-	return tst
-}
-
-func (s *BetweenContext) Expr(i int) IExprContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IExprContext)(nil)).Elem(), i)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IExprContext)
-}
-
-func (s *BetweenContext) BETWEEN_() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserBETWEEN_, 0)
-}
-
-func (s *BetweenContext) AND_() antlr.TerminalNode {
+func (s *Expr_binaryContext) AND_() antlr.TerminalNode {
 	return s.GetToken(SQLiteParserAND_, 0)
 }
 
-func (s *BetweenContext) NOT_() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserNOT_, 0)
+func (s *Expr_binaryContext) OR_() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserOR_, 0)
 }
 
-func (s *BetweenContext) EnterRule(listener antlr.ParseTreeListener) {
+func (s *Expr_binaryContext) EnterRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(SQLiteParserListener); ok {
-		listenerT.EnterBetween(s)
+		listenerT.EnterExpr_binary(s)
 	}
 }
 
-func (s *BetweenContext) ExitRule(listener antlr.ParseTreeListener) {
+func (s *Expr_binaryContext) ExitRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(SQLiteParserListener); ok {
-		listenerT.ExitBetween(s)
+		listenerT.ExitExpr_binary(s)
+	}
+}
+
+type Expr_literalContext struct {
+	*ExprContext
+}
+
+func NewExpr_literalContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *Expr_literalContext {
+	var p = new(Expr_literalContext)
+
+	p.ExprContext = NewEmptyExprContext()
+	p.parser = parser
+	p.CopyFrom(ctx.(*ExprContext))
+
+	return p
+}
+
+func (s *Expr_literalContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *Expr_literalContext) Literal_value() ILiteral_valueContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*ILiteral_valueContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(ILiteral_valueContext)
+}
+
+func (s *Expr_literalContext) EnterRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(SQLiteParserListener); ok {
+		listenerT.EnterExpr_literal(s)
+	}
+}
+
+func (s *Expr_literalContext) ExitRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(SQLiteParserListener); ok {
+		listenerT.ExitExpr_literal(s)
+	}
+}
+
+type Expr_castContext struct {
+	*ExprContext
+}
+
+func NewExpr_castContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *Expr_castContext {
+	var p = new(Expr_castContext)
+
+	p.ExprContext = NewEmptyExprContext()
+	p.parser = parser
+	p.CopyFrom(ctx.(*ExprContext))
+
+	return p
+}
+
+func (s *Expr_castContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *Expr_castContext) CAST_() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserCAST_, 0)
+}
+
+func (s *Expr_castContext) OPEN_PAR() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserOPEN_PAR, 0)
+}
+
+func (s *Expr_castContext) Expr() IExprContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IExprContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IExprContext)
+}
+
+func (s *Expr_castContext) AS_() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserAS_, 0)
+}
+
+func (s *Expr_castContext) Type_name() IType_nameContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IType_nameContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IType_nameContext)
+}
+
+func (s *Expr_castContext) CLOSE_PAR() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserCLOSE_PAR, 0)
+}
+
+func (s *Expr_castContext) EnterRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(SQLiteParserListener); ok {
+		listenerT.EnterExpr_cast(s)
+	}
+}
+
+func (s *Expr_castContext) ExitRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(SQLiteParserListener); ok {
+		listenerT.ExitExpr_cast(s)
+	}
+}
+
+type Expr_in_selectContext struct {
+	*ExprContext
+}
+
+func NewExpr_in_selectContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *Expr_in_selectContext {
+	var p = new(Expr_in_selectContext)
+
+	p.ExprContext = NewEmptyExprContext()
+	p.parser = parser
+	p.CopyFrom(ctx.(*ExprContext))
+
+	return p
+}
+
+func (s *Expr_in_selectContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *Expr_in_selectContext) OPEN_PAR() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserOPEN_PAR, 0)
+}
+
+func (s *Expr_in_selectContext) Select_stmt() ISelect_stmtContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*ISelect_stmtContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(ISelect_stmtContext)
+}
+
+func (s *Expr_in_selectContext) CLOSE_PAR() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserCLOSE_PAR, 0)
+}
+
+func (s *Expr_in_selectContext) EXISTS_() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserEXISTS_, 0)
+}
+
+func (s *Expr_in_selectContext) NOT_() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserNOT_, 0)
+}
+
+func (s *Expr_in_selectContext) AllExpr() []IExprContext {
+	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*IExprContext)(nil)).Elem())
+	var tst = make([]IExprContext, len(ts))
+
+	for i, t := range ts {
+		if t != nil {
+			tst[i] = t.(IExprContext)
+		}
+	}
+
+	return tst
+}
+
+func (s *Expr_in_selectContext) Expr(i int) IExprContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IExprContext)(nil)).Elem(), i)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IExprContext)
+}
+
+func (s *Expr_in_selectContext) IN_() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserIN_, 0)
+}
+
+func (s *Expr_in_selectContext) Table_name() ITable_nameContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*ITable_nameContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(ITable_nameContext)
+}
+
+func (s *Expr_in_selectContext) Table_function_name() ITable_function_nameContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*ITable_function_nameContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(ITable_function_nameContext)
+}
+
+func (s *Expr_in_selectContext) Schema_name() ISchema_nameContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*ISchema_nameContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(ISchema_nameContext)
+}
+
+func (s *Expr_in_selectContext) DOT() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserDOT, 0)
+}
+
+func (s *Expr_in_selectContext) AllCOMMA() []antlr.TerminalNode {
+	return s.GetTokens(SQLiteParserCOMMA)
+}
+
+func (s *Expr_in_selectContext) COMMA(i int) antlr.TerminalNode {
+	return s.GetToken(SQLiteParserCOMMA, i)
+}
+
+func (s *Expr_in_selectContext) EnterRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(SQLiteParserListener); ok {
+		listenerT.EnterExpr_in_select(s)
+	}
+}
+
+func (s *Expr_in_selectContext) ExitRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(SQLiteParserListener); ok {
+		listenerT.ExitExpr_in_select(s)
+	}
+}
+
+type Expr_listContext struct {
+	*ExprContext
+}
+
+func NewExpr_listContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *Expr_listContext {
+	var p = new(Expr_listContext)
+
+	p.ExprContext = NewEmptyExprContext()
+	p.parser = parser
+	p.CopyFrom(ctx.(*ExprContext))
+
+	return p
+}
+
+func (s *Expr_listContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *Expr_listContext) OPEN_PAR() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserOPEN_PAR, 0)
+}
+
+func (s *Expr_listContext) AllExpr() []IExprContext {
+	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*IExprContext)(nil)).Elem())
+	var tst = make([]IExprContext, len(ts))
+
+	for i, t := range ts {
+		if t != nil {
+			tst[i] = t.(IExprContext)
+		}
+	}
+
+	return tst
+}
+
+func (s *Expr_listContext) Expr(i int) IExprContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IExprContext)(nil)).Elem(), i)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IExprContext)
+}
+
+func (s *Expr_listContext) CLOSE_PAR() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserCLOSE_PAR, 0)
+}
+
+func (s *Expr_listContext) AllCOMMA() []antlr.TerminalNode {
+	return s.GetTokens(SQLiteParserCOMMA)
+}
+
+func (s *Expr_listContext) COMMA(i int) antlr.TerminalNode {
+	return s.GetToken(SQLiteParserCOMMA, i)
+}
+
+func (s *Expr_listContext) EnterRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(SQLiteParserListener); ok {
+		listenerT.EnterExpr_list(s)
+	}
+}
+
+func (s *Expr_listContext) ExitRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(SQLiteParserListener); ok {
+		listenerT.ExitExpr_list(s)
+	}
+}
+
+type Expr_betweenContext struct {
+	*ExprContext
+}
+
+func NewExpr_betweenContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *Expr_betweenContext {
+	var p = new(Expr_betweenContext)
+
+	p.ExprContext = NewEmptyExprContext()
+	p.parser = parser
+	p.CopyFrom(ctx.(*ExprContext))
+
+	return p
+}
+
+func (s *Expr_betweenContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *Expr_betweenContext) AllExpr() []IExprContext {
+	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*IExprContext)(nil)).Elem())
+	var tst = make([]IExprContext, len(ts))
+
+	for i, t := range ts {
+		if t != nil {
+			tst[i] = t.(IExprContext)
+		}
+	}
+
+	return tst
+}
+
+func (s *Expr_betweenContext) Expr(i int) IExprContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IExprContext)(nil)).Elem(), i)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IExprContext)
+}
+
+func (s *Expr_betweenContext) BETWEEN_() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserBETWEEN_, 0)
+}
+
+func (s *Expr_betweenContext) AND_() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserAND_, 0)
+}
+
+func (s *Expr_betweenContext) NOT_() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserNOT_, 0)
+}
+
+func (s *Expr_betweenContext) EnterRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(SQLiteParserListener); ok {
+		listenerT.EnterExpr_between(s)
+	}
+}
+
+func (s *Expr_betweenContext) ExitRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(SQLiteParserListener); ok {
+		listenerT.ExitExpr_between(s)
+	}
+}
+
+type Expr_collateContext struct {
+	*ExprContext
+}
+
+func NewExpr_collateContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *Expr_collateContext {
+	var p = new(Expr_collateContext)
+
+	p.ExprContext = NewEmptyExprContext()
+	p.parser = parser
+	p.CopyFrom(ctx.(*ExprContext))
+
+	return p
+}
+
+func (s *Expr_collateContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *Expr_collateContext) Expr() IExprContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IExprContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IExprContext)
+}
+
+func (s *Expr_collateContext) COLLATE_() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserCOLLATE_, 0)
+}
+
+func (s *Expr_collateContext) Collation_name() ICollation_nameContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*ICollation_nameContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(ICollation_nameContext)
+}
+
+func (s *Expr_collateContext) EnterRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(SQLiteParserListener); ok {
+		listenerT.EnterExpr_collate(s)
+	}
+}
+
+func (s *Expr_collateContext) ExitRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(SQLiteParserListener); ok {
+		listenerT.ExitExpr_collate(s)
+	}
+}
+
+type Expr_qualified_column_nameContext struct {
+	*ExprContext
+}
+
+func NewExpr_qualified_column_nameContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *Expr_qualified_column_nameContext {
+	var p = new(Expr_qualified_column_nameContext)
+
+	p.ExprContext = NewEmptyExprContext()
+	p.parser = parser
+	p.CopyFrom(ctx.(*ExprContext))
+
+	return p
+}
+
+func (s *Expr_qualified_column_nameContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *Expr_qualified_column_nameContext) Column_name() IColumn_nameContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IColumn_nameContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IColumn_nameContext)
+}
+
+func (s *Expr_qualified_column_nameContext) Table_name() ITable_nameContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*ITable_nameContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(ITable_nameContext)
+}
+
+func (s *Expr_qualified_column_nameContext) AllDOT() []antlr.TerminalNode {
+	return s.GetTokens(SQLiteParserDOT)
+}
+
+func (s *Expr_qualified_column_nameContext) DOT(i int) antlr.TerminalNode {
+	return s.GetToken(SQLiteParserDOT, i)
+}
+
+func (s *Expr_qualified_column_nameContext) Schema_name() ISchema_nameContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*ISchema_nameContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(ISchema_nameContext)
+}
+
+func (s *Expr_qualified_column_nameContext) EnterRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(SQLiteParserListener); ok {
+		listenerT.EnterExpr_qualified_column_name(s)
+	}
+}
+
+func (s *Expr_qualified_column_nameContext) ExitRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(SQLiteParserListener); ok {
+		listenerT.ExitExpr_qualified_column_name(s)
+	}
+}
+
+type Expr_math_opContext struct {
+	*ExprContext
+}
+
+func NewExpr_math_opContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *Expr_math_opContext {
+	var p = new(Expr_math_opContext)
+
+	p.ExprContext = NewEmptyExprContext()
+	p.parser = parser
+	p.CopyFrom(ctx.(*ExprContext))
+
+	return p
+}
+
+func (s *Expr_math_opContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *Expr_math_opContext) AllExpr() []IExprContext {
+	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*IExprContext)(nil)).Elem())
+	var tst = make([]IExprContext, len(ts))
+
+	for i, t := range ts {
+		if t != nil {
+			tst[i] = t.(IExprContext)
+		}
+	}
+
+	return tst
+}
+
+func (s *Expr_math_opContext) Expr(i int) IExprContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IExprContext)(nil)).Elem(), i)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IExprContext)
+}
+
+func (s *Expr_math_opContext) STAR() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserSTAR, 0)
+}
+
+func (s *Expr_math_opContext) DIV() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserDIV, 0)
+}
+
+func (s *Expr_math_opContext) MOD() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserMOD, 0)
+}
+
+func (s *Expr_math_opContext) PLUS() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserPLUS, 0)
+}
+
+func (s *Expr_math_opContext) MINUS() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserMINUS, 0)
+}
+
+func (s *Expr_math_opContext) EnterRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(SQLiteParserListener); ok {
+		listenerT.EnterExpr_math_op(s)
+	}
+}
+
+func (s *Expr_math_opContext) ExitRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(SQLiteParserListener); ok {
+		listenerT.ExitExpr_math_op(s)
+	}
+}
+
+type Expr_unaryContext struct {
+	*ExprContext
+}
+
+func NewExpr_unaryContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *Expr_unaryContext {
+	var p = new(Expr_unaryContext)
+
+	p.ExprContext = NewEmptyExprContext()
+	p.parser = parser
+	p.CopyFrom(ctx.(*ExprContext))
+
+	return p
+}
+
+func (s *Expr_unaryContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *Expr_unaryContext) Unary_operator() IUnary_operatorContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IUnary_operatorContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IUnary_operatorContext)
+}
+
+func (s *Expr_unaryContext) Expr() IExprContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IExprContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IExprContext)
+}
+
+func (s *Expr_unaryContext) EnterRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(SQLiteParserListener); ok {
+		listenerT.EnterExpr_unary(s)
+	}
+}
+
+func (s *Expr_unaryContext) ExitRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(SQLiteParserListener); ok {
+		listenerT.ExitExpr_unary(s)
+	}
+}
+
+type Expr_null_compContext struct {
+	*ExprContext
+}
+
+func NewExpr_null_compContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *Expr_null_compContext {
+	var p = new(Expr_null_compContext)
+
+	p.ExprContext = NewEmptyExprContext()
+	p.parser = parser
+	p.CopyFrom(ctx.(*ExprContext))
+
+	return p
+}
+
+func (s *Expr_null_compContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *Expr_null_compContext) Expr() IExprContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IExprContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IExprContext)
+}
+
+func (s *Expr_null_compContext) ISNULL_() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserISNULL_, 0)
+}
+
+func (s *Expr_null_compContext) NOTNULL_() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserNOTNULL_, 0)
+}
+
+func (s *Expr_null_compContext) NOT_() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserNOT_, 0)
+}
+
+func (s *Expr_null_compContext) NULL_() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserNULL_, 0)
+}
+
+func (s *Expr_null_compContext) EnterRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(SQLiteParserListener); ok {
+		listenerT.EnterExpr_null_comp(s)
+	}
+}
+
+func (s *Expr_null_compContext) ExitRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(SQLiteParserListener); ok {
+		listenerT.ExitExpr_null_comp(s)
+	}
+}
+
+type Expr_bindContext struct {
+	*ExprContext
+}
+
+func NewExpr_bindContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *Expr_bindContext {
+	var p = new(Expr_bindContext)
+
+	p.ExprContext = NewEmptyExprContext()
+	p.parser = parser
+	p.CopyFrom(ctx.(*ExprContext))
+
+	return p
+}
+
+func (s *Expr_bindContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *Expr_bindContext) BIND_PARAMETER() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserBIND_PARAMETER, 0)
+}
+
+func (s *Expr_bindContext) EnterRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(SQLiteParserListener); ok {
+		listenerT.EnterExpr_bind(s)
+	}
+}
+
+func (s *Expr_bindContext) ExitRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(SQLiteParserListener); ok {
+		listenerT.ExitExpr_bind(s)
 	}
 }
 
@@ -10341,7 +10215,7 @@ func (p *SQLiteParser) expr(_p int) (localctx IExprContext) {
 	p.GetErrorHandler().Sync(p)
 	switch p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 118, p.GetParserRuleContext()) {
 	case 1:
-		localctx = NewLiteralContext(p, localctx)
+		localctx = NewExpr_literalContext(p, localctx)
 		p.SetParserRuleContext(localctx)
 		_prevctx = localctx
 
@@ -10351,7 +10225,7 @@ func (p *SQLiteParser) expr(_p int) (localctx IExprContext) {
 		}
 
 	case 2:
-		localctx = NewBindContext(p, localctx)
+		localctx = NewExpr_bindContext(p, localctx)
 		p.SetParserRuleContext(localctx)
 		_prevctx = localctx
 		{
@@ -10360,7 +10234,7 @@ func (p *SQLiteParser) expr(_p int) (localctx IExprContext) {
 		}
 
 	case 3:
-		localctx = NewQualified_column_nameContext(p, localctx)
+		localctx = NewExpr_qualified_column_nameContext(p, localctx)
 		p.SetParserRuleContext(localctx)
 		_prevctx = localctx
 		p.SetState(875)
@@ -10397,7 +10271,7 @@ func (p *SQLiteParser) expr(_p int) (localctx IExprContext) {
 		}
 
 	case 4:
-		localctx = NewUnaryContext(p, localctx)
+		localctx = NewExpr_unaryContext(p, localctx)
 		p.SetParserRuleContext(localctx)
 		_prevctx = localctx
 		{
@@ -10410,7 +10284,7 @@ func (p *SQLiteParser) expr(_p int) (localctx IExprContext) {
 		}
 
 	case 5:
-		localctx = NewFuncContext(p, localctx)
+		localctx = NewExpr_functionContext(p, localctx)
 		p.SetParserRuleContext(localctx)
 		_prevctx = localctx
 		{
@@ -10495,7 +10369,7 @@ func (p *SQLiteParser) expr(_p int) (localctx IExprContext) {
 		}
 
 	case 6:
-		localctx = NewListContext(p, localctx)
+		localctx = NewExpr_listContext(p, localctx)
 		p.SetParserRuleContext(localctx)
 		_prevctx = localctx
 		{
@@ -10530,7 +10404,7 @@ func (p *SQLiteParser) expr(_p int) (localctx IExprContext) {
 		}
 
 	case 7:
-		localctx = NewCastContext(p, localctx)
+		localctx = NewExpr_castContext(p, localctx)
 		p.SetParserRuleContext(localctx)
 		_prevctx = localctx
 		{
@@ -10559,7 +10433,7 @@ func (p *SQLiteParser) expr(_p int) (localctx IExprContext) {
 		}
 
 	case 8:
-		localctx = NewIn_selectContext(p, localctx)
+		localctx = NewExpr_in_selectContext(p, localctx)
 		p.SetParserRuleContext(localctx)
 		_prevctx = localctx
 		p.SetState(926)
@@ -10598,7 +10472,7 @@ func (p *SQLiteParser) expr(_p int) (localctx IExprContext) {
 		}
 
 	case 9:
-		localctx = NewCaseContext(p, localctx)
+		localctx = NewExpr_caseContext(p, localctx)
 		p.SetParserRuleContext(localctx)
 		_prevctx = localctx
 		{
@@ -10662,7 +10536,7 @@ func (p *SQLiteParser) expr(_p int) (localctx IExprContext) {
 		}
 
 	case 10:
-		localctx = NewRaiseContext(p, localctx)
+		localctx = NewExpr_raiseContext(p, localctx)
 		p.SetParserRuleContext(localctx)
 		_prevctx = localctx
 		{
@@ -10686,7 +10560,7 @@ func (p *SQLiteParser) expr(_p int) (localctx IExprContext) {
 			p.GetErrorHandler().Sync(p)
 			switch p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 132, p.GetParserRuleContext()) {
 			case 1:
-				localctx = NewBinary_orContext(p, NewExprContext(p, _parentctx, _parentState))
+				localctx = NewExpr_binaryContext(p, NewExprContext(p, _parentctx, _parentState))
 				p.PushNewRecursionContext(localctx, _startState, SQLiteParserRULE_expr)
 				p.SetState(954)
 
@@ -10703,7 +10577,7 @@ func (p *SQLiteParser) expr(_p int) (localctx IExprContext) {
 				}
 
 			case 2:
-				localctx = NewMath_opContext(p, NewExprContext(p, _parentctx, _parentState))
+				localctx = NewExpr_math_opContext(p, NewExprContext(p, _parentctx, _parentState))
 				p.PushNewRecursionContext(localctx, _startState, SQLiteParserRULE_expr)
 				p.SetState(957)
 
@@ -10727,7 +10601,7 @@ func (p *SQLiteParser) expr(_p int) (localctx IExprContext) {
 				}
 
 			case 3:
-				localctx = NewMath_opContext(p, NewExprContext(p, _parentctx, _parentState))
+				localctx = NewExpr_math_opContext(p, NewExprContext(p, _parentctx, _parentState))
 				p.PushNewRecursionContext(localctx, _startState, SQLiteParserRULE_expr)
 				p.SetState(960)
 
@@ -10751,7 +10625,7 @@ func (p *SQLiteParser) expr(_p int) (localctx IExprContext) {
 				}
 
 			case 4:
-				localctx = NewComparisonContext(p, NewExprContext(p, _parentctx, _parentState))
+				localctx = NewExpr_comparisonContext(p, NewExprContext(p, _parentctx, _parentState))
 				p.PushNewRecursionContext(localctx, _startState, SQLiteParserRULE_expr)
 				p.SetState(963)
 
@@ -10775,7 +10649,7 @@ func (p *SQLiteParser) expr(_p int) (localctx IExprContext) {
 				}
 
 			case 5:
-				localctx = NewComparisonContext(p, NewExprContext(p, _parentctx, _parentState))
+				localctx = NewExpr_comparisonContext(p, NewExprContext(p, _parentctx, _parentState))
 				p.PushNewRecursionContext(localctx, _startState, SQLiteParserRULE_expr)
 				p.SetState(966)
 
@@ -10799,7 +10673,7 @@ func (p *SQLiteParser) expr(_p int) (localctx IExprContext) {
 				}
 
 			case 6:
-				localctx = NewComparisonContext(p, NewExprContext(p, _parentctx, _parentState))
+				localctx = NewExpr_comparisonContext(p, NewExprContext(p, _parentctx, _parentState))
 				p.PushNewRecursionContext(localctx, _startState, SQLiteParserRULE_expr)
 				p.SetState(969)
 
@@ -10886,7 +10760,7 @@ func (p *SQLiteParser) expr(_p int) (localctx IExprContext) {
 				}
 
 			case 7:
-				localctx = NewBinary_andContext(p, NewExprContext(p, _parentctx, _parentState))
+				localctx = NewExpr_binaryContext(p, NewExprContext(p, _parentctx, _parentState))
 				p.PushNewRecursionContext(localctx, _startState, SQLiteParserRULE_expr)
 				p.SetState(985)
 
@@ -10903,7 +10777,7 @@ func (p *SQLiteParser) expr(_p int) (localctx IExprContext) {
 				}
 
 			case 8:
-				localctx = NewBinary_orContext(p, NewExprContext(p, _parentctx, _parentState))
+				localctx = NewExpr_binaryContext(p, NewExprContext(p, _parentctx, _parentState))
 				p.PushNewRecursionContext(localctx, _startState, SQLiteParserRULE_expr)
 				p.SetState(988)
 
@@ -10920,7 +10794,7 @@ func (p *SQLiteParser) expr(_p int) (localctx IExprContext) {
 				}
 
 			case 9:
-				localctx = NewBetweenContext(p, NewExprContext(p, _parentctx, _parentState))
+				localctx = NewExpr_betweenContext(p, NewExprContext(p, _parentctx, _parentState))
 				p.PushNewRecursionContext(localctx, _startState, SQLiteParserRULE_expr)
 				p.SetState(991)
 
@@ -10956,7 +10830,7 @@ func (p *SQLiteParser) expr(_p int) (localctx IExprContext) {
 				}
 
 			case 10:
-				localctx = NewCollateContext(p, NewExprContext(p, _parentctx, _parentState))
+				localctx = NewExpr_collateContext(p, NewExprContext(p, _parentctx, _parentState))
 				p.PushNewRecursionContext(localctx, _startState, SQLiteParserRULE_expr)
 				p.SetState(1000)
 
@@ -10973,7 +10847,7 @@ func (p *SQLiteParser) expr(_p int) (localctx IExprContext) {
 				}
 
 			case 11:
-				localctx = NewComparison4Context(p, NewExprContext(p, _parentctx, _parentState))
+				localctx = NewExpr_comparisonContext(p, NewExprContext(p, _parentctx, _parentState))
 				p.PushNewRecursionContext(localctx, _startState, SQLiteParserRULE_expr)
 				p.SetState(1003)
 
@@ -11022,7 +10896,7 @@ func (p *SQLiteParser) expr(_p int) (localctx IExprContext) {
 				}
 
 			case 12:
-				localctx = NewIsnullContext(p, NewExprContext(p, _parentctx, _parentState))
+				localctx = NewExpr_null_compContext(p, NewExprContext(p, _parentctx, _parentState))
 				p.PushNewRecursionContext(localctx, _startState, SQLiteParserRULE_expr)
 				p.SetState(1013)
 
@@ -11060,7 +10934,7 @@ func (p *SQLiteParser) expr(_p int) (localctx IExprContext) {
 				}
 
 			case 13:
-				localctx = NewIn_selectContext(p, NewExprContext(p, _parentctx, _parentState))
+				localctx = NewExpr_in_selectContext(p, NewExprContext(p, _parentctx, _parentState))
 				p.PushNewRecursionContext(localctx, _startState, SQLiteParserRULE_expr)
 				p.SetState(1020)
 
