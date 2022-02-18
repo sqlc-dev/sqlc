@@ -1,7 +1,6 @@
 package sqlite
 
 import (
-	"fmt"
 	"github.com/antlr/antlr4/runtime/Go/antlr"
 	"strings"
 
@@ -122,11 +121,11 @@ func convertDelete_stmtContext(c *parser.Delete_stmtContext) ast.Node {
 			WithClause:    nil,
 		}
 
-		if c.WHERE_() != nil {
-			if whereExpr, ok := c.Expr().(*parser.ExprContext); ok {
-				delete.WhereClause = convertWhereExprContext(whereExpr)
-			}
-		}
+		//if c.WHERE_() != nil {
+		//	if whereExpr, ok := c.Expr().(*parser.ExprContext); ok {
+		//		delete.WhereClause = convertWhereExprContext(whereExpr)
+		//	}
+		//}
 
 		return delete
 	}
@@ -160,37 +159,37 @@ func NewIdentifer(t string) *ast.String {
 	return &ast.String{Str: identifier(t)}
 }
 
-func convertWhereExprContext(c *parser.ExprContext) ast.Node {
-	for _, iexpr := range c.AllExpr() {
-		expr, ok := iexpr.(*parser.ExprContext)
-		if !ok {
-			continue
-		}
+//func convertWhereExprContext(c *parser.ExprContext) ast.Node {
+//	for _, iexpr := range c.AllExpr() {
+//		expr, ok := iexpr.(*parser.ExprContext)
+//		if !ok {
+//			continue
+//		}
+//
+//		return &ast.A_Expr{
+//			Name: &ast.List{
+//				Items: []ast.Node{
+//					&ast.String{Str: opToName(n.Op)},
+//				},
+//			},
+//			Lexpr: con
+//			Rexpr: c.convert(n.R),
+//		}
+//	}
+//
+//	if c.BIND_PARAMETER() != nil {
+//		fmt.Printf("bind param")
+//		return &ast.ParamRef{
+//			Number:   0,
+//			Location: c.GetStart().GetStart(),
+//		}
+//	}
+//
+//
+//	return &ast.TODO{}
+//}
 
-		return &ast.A_Expr{
-			Name: &ast.List{
-				Items: []ast.Node{
-					&ast.String{Str: opToName(n.Op)},
-				},
-			},
-			Lexpr: con
-			Rexpr: c.convert(n.R),
-		}
-	}
-
-	if c.BIND_PARAMETER() != nil {
-		fmt.Printf("bind param")
-		return &ast.ParamRef{
-			Number:   0,
-			Location: c.GetStart().GetStart(),
-		}
-	}
-
-
-	return &ast.TODO{}
-}
-
-func convertExprContext(c *parser.ExprContext) ast.Node {
+func convertFuncContext(c *parser.Expr_functionContext) ast.Node {
 	if name, ok := c.Function_name().(*parser.Function_nameContext); ok {
 		funcName := strings.ToLower(name.GetText())
 
@@ -212,14 +211,14 @@ func convertExprContext(c *parser.ExprContext) ast.Node {
 		return fn
 	}
 
-	if c.Column_name() != nil {
-		return convertColumnNameExpr(c)
-	}
-
 	return &ast.TODO{}
 }
 
-func convertColumnNameExpr(c *parser.ExprContext) *ast.ColumnRef {
+func convertExprContext(c *parser.ExprContext) ast.Node {
+	return &ast.TODO{}
+}
+
+func convertColumnNameExpr(c *parser.Expr_qualified_column_nameContext) *ast.ColumnRef {
 	var items []ast.Node
 	if schema, ok := c.Schema_name().(*parser.Schema_nameContext); ok {
 		schemaText := schema.GetText()
@@ -422,6 +421,12 @@ func convert(node node) ast.Node {
 
 	case *parser.ExprContext:
 		return convertExprContext(n)
+
+	case *parser.Expr_functionContext:
+		return convertFuncContext(n)
+
+	case *parser.Expr_qualified_column_nameContext:
+		return convertColumnNameExpr(n)
 
 	case *parser.Factored_select_stmtContext:
 		// TODO: need to handle this
