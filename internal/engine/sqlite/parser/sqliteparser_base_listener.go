@@ -216,11 +216,113 @@ func (s *BaseSQLiteParserListener) EnterDrop_stmt(ctx *Drop_stmtContext) {}
 // ExitDrop_stmt is called when production drop_stmt is exited.
 func (s *BaseSQLiteParserListener) ExitDrop_stmt(ctx *Drop_stmtContext) {}
 
-// EnterExpr is called when production expr is entered.
-func (s *BaseSQLiteParserListener) EnterExpr(ctx *ExprContext) {}
+// EnterBinary_or is called when production binary_or is entered.
+func (s *BaseSQLiteParserListener) EnterBinary_or(ctx *Binary_orContext) {}
 
-// ExitExpr is called when production expr is exited.
-func (s *BaseSQLiteParserListener) ExitExpr(ctx *ExprContext) {}
+// ExitBinary_or is called when production binary_or is exited.
+func (s *BaseSQLiteParserListener) ExitBinary_or(ctx *Binary_orContext) {}
+
+// EnterComparison is called when production comparison is entered.
+func (s *BaseSQLiteParserListener) EnterComparison(ctx *ComparisonContext) {}
+
+// ExitComparison is called when production comparison is exited.
+func (s *BaseSQLiteParserListener) ExitComparison(ctx *ComparisonContext) {}
+
+// EnterIsnull is called when production isnull is entered.
+func (s *BaseSQLiteParserListener) EnterIsnull(ctx *IsnullContext) {}
+
+// ExitIsnull is called when production isnull is exited.
+func (s *BaseSQLiteParserListener) ExitIsnull(ctx *IsnullContext) {}
+
+// EnterQualified_column_name is called when production qualified_column_name is entered.
+func (s *BaseSQLiteParserListener) EnterQualified_column_name(ctx *Qualified_column_nameContext) {}
+
+// ExitQualified_column_name is called when production qualified_column_name is exited.
+func (s *BaseSQLiteParserListener) ExitQualified_column_name(ctx *Qualified_column_nameContext) {}
+
+// EnterUnary is called when production unary is entered.
+func (s *BaseSQLiteParserListener) EnterUnary(ctx *UnaryContext) {}
+
+// ExitUnary is called when production unary is exited.
+func (s *BaseSQLiteParserListener) ExitUnary(ctx *UnaryContext) {}
+
+// EnterList is called when production list is entered.
+func (s *BaseSQLiteParserListener) EnterList(ctx *ListContext) {}
+
+// ExitList is called when production list is exited.
+func (s *BaseSQLiteParserListener) ExitList(ctx *ListContext) {}
+
+// EnterLiteral is called when production literal is entered.
+func (s *BaseSQLiteParserListener) EnterLiteral(ctx *LiteralContext) {}
+
+// ExitLiteral is called when production literal is exited.
+func (s *BaseSQLiteParserListener) ExitLiteral(ctx *LiteralContext) {}
+
+// EnterCast is called when production cast is entered.
+func (s *BaseSQLiteParserListener) EnterCast(ctx *CastContext) {}
+
+// ExitCast is called when production cast is exited.
+func (s *BaseSQLiteParserListener) ExitCast(ctx *CastContext) {}
+
+// EnterCollate is called when production collate is entered.
+func (s *BaseSQLiteParserListener) EnterCollate(ctx *CollateContext) {}
+
+// ExitCollate is called when production collate is exited.
+func (s *BaseSQLiteParserListener) ExitCollate(ctx *CollateContext) {}
+
+// EnterBind is called when production bind is entered.
+func (s *BaseSQLiteParserListener) EnterBind(ctx *BindContext) {}
+
+// ExitBind is called when production bind is exited.
+func (s *BaseSQLiteParserListener) ExitBind(ctx *BindContext) {}
+
+// EnterBinary_and is called when production binary_and is entered.
+func (s *BaseSQLiteParserListener) EnterBinary_and(ctx *Binary_andContext) {}
+
+// ExitBinary_and is called when production binary_and is exited.
+func (s *BaseSQLiteParserListener) ExitBinary_and(ctx *Binary_andContext) {}
+
+// EnterFunc is called when production func is entered.
+func (s *BaseSQLiteParserListener) EnterFunc(ctx *FuncContext) {}
+
+// ExitFunc is called when production func is exited.
+func (s *BaseSQLiteParserListener) ExitFunc(ctx *FuncContext) {}
+
+// EnterIn_select is called when production in_select is entered.
+func (s *BaseSQLiteParserListener) EnterIn_select(ctx *In_selectContext) {}
+
+// ExitIn_select is called when production in_select is exited.
+func (s *BaseSQLiteParserListener) ExitIn_select(ctx *In_selectContext) {}
+
+// EnterRaise is called when production raise is entered.
+func (s *BaseSQLiteParserListener) EnterRaise(ctx *RaiseContext) {}
+
+// ExitRaise is called when production raise is exited.
+func (s *BaseSQLiteParserListener) ExitRaise(ctx *RaiseContext) {}
+
+// EnterMath_op is called when production math_op is entered.
+func (s *BaseSQLiteParserListener) EnterMath_op(ctx *Math_opContext) {}
+
+// ExitMath_op is called when production math_op is exited.
+func (s *BaseSQLiteParserListener) ExitMath_op(ctx *Math_opContext) {}
+
+// EnterComparison4 is called when production comparison4 is entered.
+func (s *BaseSQLiteParserListener) EnterComparison4(ctx *Comparison4Context) {}
+
+// ExitComparison4 is called when production comparison4 is exited.
+func (s *BaseSQLiteParserListener) ExitComparison4(ctx *Comparison4Context) {}
+
+// EnterCase is called when production case is entered.
+func (s *BaseSQLiteParserListener) EnterCase(ctx *CaseContext) {}
+
+// ExitCase is called when production case is exited.
+func (s *BaseSQLiteParserListener) ExitCase(ctx *CaseContext) {}
+
+// EnterBetween is called when production between is entered.
+func (s *BaseSQLiteParserListener) EnterBetween(ctx *BetweenContext) {}
+
+// ExitBetween is called when production between is exited.
+func (s *BaseSQLiteParserListener) ExitBetween(ctx *BetweenContext) {}
 
 // EnterRaise_function is called when production raise_function is entered.
 func (s *BaseSQLiteParserListener) EnterRaise_function(ctx *Raise_functionContext) {}

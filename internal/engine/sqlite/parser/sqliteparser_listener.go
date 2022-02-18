@@ -104,8 +104,59 @@ type SQLiteParserListener interface {
 	// EnterDrop_stmt is called when entering the drop_stmt production.
 	EnterDrop_stmt(c *Drop_stmtContext)
 
-	// EnterExpr is called when entering the expr production.
-	EnterExpr(c *ExprContext)
+	// EnterBinary_or is called when entering the binary_or production.
+	EnterBinary_or(c *Binary_orContext)
+
+	// EnterComparison is called when entering the comparison production.
+	EnterComparison(c *ComparisonContext)
+
+	// EnterIsnull is called when entering the isnull production.
+	EnterIsnull(c *IsnullContext)
+
+	// EnterQualified_column_name is called when entering the qualified_column_name production.
+	EnterQualified_column_name(c *Qualified_column_nameContext)
+
+	// EnterUnary is called when entering the unary production.
+	EnterUnary(c *UnaryContext)
+
+	// EnterList is called when entering the list production.
+	EnterList(c *ListContext)
+
+	// EnterLiteral is called when entering the literal production.
+	EnterLiteral(c *LiteralContext)
+
+	// EnterCast is called when entering the cast production.
+	EnterCast(c *CastContext)
+
+	// EnterCollate is called when entering the collate production.
+	EnterCollate(c *CollateContext)
+
+	// EnterBind is called when entering the bind production.
+	EnterBind(c *BindContext)
+
+	// EnterBinary_and is called when entering the binary_and production.
+	EnterBinary_and(c *Binary_andContext)
+
+	// EnterFunc is called when entering the func production.
+	EnterFunc(c *FuncContext)
+
+	// EnterIn_select is called when entering the in_select production.
+	EnterIn_select(c *In_selectContext)
+
+	// EnterRaise is called when entering the raise production.
+	EnterRaise(c *RaiseContext)
+
+	// EnterMath_op is called when entering the math_op production.
+	EnterMath_op(c *Math_opContext)
+
+	// EnterComparison4 is called when entering the comparison4 production.
+	EnterComparison4(c *Comparison4Context)
+
+	// EnterCase is called when entering the case production.
+	EnterCase(c *CaseContext)
+
+	// EnterBetween is called when entering the between production.
+	EnterBetween(c *BetweenContext)
 
 	// EnterRaise_function is called when entering the raise_function production.
 	EnterRaise_function(c *Raise_functionContext)
@@ -437,8 +488,59 @@ type SQLiteParserListener interface {
 	// ExitDrop_stmt is called when exiting the drop_stmt production.
 	ExitDrop_stmt(c *Drop_stmtContext)
 
-	// ExitExpr is called when exiting the expr production.
-	ExitExpr(c *ExprContext)
+	// ExitBinary_or is called when exiting the binary_or production.
+	ExitBinary_or(c *Binary_orContext)
+
+	// ExitComparison is called when exiting the comparison production.
+	ExitComparison(c *ComparisonContext)
+
+	// ExitIsnull is called when exiting the isnull production.
+	ExitIsnull(c *IsnullContext)
+
+	// ExitQualified_column_name is called when exiting the qualified_column_name production.
+	ExitQualified_column_name(c *Qualified_column_nameContext)
+
+	// ExitUnary is called when exiting the unary production.
+	ExitUnary(c *UnaryContext)
+
+	// ExitList is called when exiting the list production.
+	ExitList(c *ListContext)
+
+	// ExitLiteral is called when exiting the literal production.
+	ExitLiteral(c *LiteralContext)
+
+	// ExitCast is called when exiting the cast production.
+	ExitCast(c *CastContext)
+
+	// ExitCollate is called when exiting the collate production.
+	ExitCollate(c *CollateContext)
+
+	// ExitBind is called when exiting the bind production.
+	ExitBind(c *BindContext)
+
+	// ExitBinary_and is called when exiting the binary_and production.
+	ExitBinary_and(c *Binary_andContext)
+
+	// ExitFunc is called when exiting the func production.
+	ExitFunc(c *FuncContext)
+
+	// ExitIn_select is called when exiting the in_select production.
+	ExitIn_select(c *In_selectContext)
+
+	// ExitRaise is called when exiting the raise production.
+	ExitRaise(c *RaiseContext)
+
+	// ExitMath_op is called when exiting the math_op production.
+	ExitMath_op(c *Math_opContext)
+
+	// ExitComparison4 is called when exiting the comparison4 production.
+	ExitComparison4(c *Comparison4Context)
+
+	// ExitCase is called when exiting the case production.
+	ExitCase(c *CaseContext)
+
+	// ExitBetween is called when exiting the between production.
+	ExitBetween(c *BetweenContext)
 
 	// ExitRaise_function is called when exiting the raise_function production.
 	ExitRaise_function(c *Raise_functionContext)
