@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"github.com/antlr/antlr4/runtime/Go/antlr"
+	"strconv"
 	"strings"
 
 	"github.com/kyleconroy/sqlc/internal/engine/sqlite/parser"
@@ -415,6 +416,70 @@ func convertSql_stmtContext(n *parser.Sql_stmtContext) ast.Node {
 	return nil
 }
 
+func convertLiteral(c *parser.Expr_literalContext) ast.Node {
+	if literal, ok := c.Literal_value().(*parser.Literal_valueContext); ok {
+
+		if literal.NUMERIC_LITERAL() != nil {
+			i, _ := strconv.ParseInt(literal.GetText(), 10, 64)
+			return &ast.A_Const{
+				Val: &ast.Integer{Ival: i},
+			}
+		}
+
+		if literal.STRING_LITERAL() != nil {
+			return &ast.A_Const{
+				Val: &ast.String{Str: literal.GetText()},
+			}
+		}
+
+		if literal.TRUE_() != nil || literal.FALSE_() != nil {
+			var i int64
+			if literal.TRUE_() != nil {
+				i = 1
+			}
+
+			return &ast.A_Const{
+				Val: &ast.Integer{Ival: i},
+			}
+		}
+
+	}
+	return &ast.TODO{}
+}
+
+func convertMathOperationNode(c *parser.Expr_math_opContext) ast.Node {
+	return &ast.A_Expr{
+		Name: &ast.List{
+			Items: []ast.Node{
+				&ast.String{Str: "+"}, // todo: Convert operation types
+			},
+		},
+		Lexpr: convert(c.Expr(0)),
+		Rexpr: convert(c.Expr(1)),
+	}
+}
+
+func convertBinaryNode(c *parser.Expr_binaryContext) ast.Node {
+	return &ast.BoolExpr{
+		// TODO: Set op
+		Args: &ast.List{
+			Items: []ast.Node{
+				convert(c.Expr(0)),
+				convert(c.Expr(1)),
+			},
+		},
+	}
+}
+
+func convertParam(c *parser.Expr_bindContext) ast.Node {
+	if c.BIND_PARAMETER() != nil {
+		return &ast.ParamRef{ // TODO: Need to count these up instead of always using 0
+			Location: c.GetStart().GetStart(),
+		}
+	}
+	return &ast.TODO{}
+}
+
 func convert(node node) ast.Node {
 	switch n := node.(type) {
 
@@ -448,6 +513,15 @@ func convert(node node) ast.Node {
 	case *parser.Expr_bindContext:
 		return convertParam(n)
 
+	case *parser.Expr_literalContext:
+		return convertLiteral(n)
+
+	case *parser.Expr_binaryContext:
+		return convertBinaryNode(n)
+
+	case *parser.Expr_math_opContext:
+		return convertMathOperationNode(n)
+
 	case *parser.Factored_select_stmtContext:
 		// TODO: need to handle this
 		return &ast.TODO{}
@@ -467,13 +541,4 @@ func convert(node node) ast.Node {
 	default:
 		return &ast.TODO{}
 	}
-}
-
-func convertParam(c *parser.Expr_bindContext) ast.Node {
-	if c.BIND_PARAMETER() != nil {
-		return &ast.ParamRef{ // TODO: Need to count these up instead of always using 0
-			Location: c.GetStart().GetStart(),
-		}
-	}
-	return &ast.TODO{}
 }
