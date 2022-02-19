@@ -263,15 +263,15 @@ drop_stmt:
     OR
  */
 expr:
-    literal_value
-    | BIND_PARAMETER
-    | ((schema_name DOT)? table_name DOT)? column_name
-    | unary_operator expr
-    | expr PIPE2 expr
-    | expr ( STAR | DIV | MOD) expr
-    | expr ( PLUS | MINUS) expr
-    | expr ( LT2 | GT2 | AMP | PIPE) expr
-    | expr ( LT | LT_EQ | GT | GT_EQ) expr
+    literal_value #expr_literal
+    | BIND_PARAMETER #expr_bind
+    | ((schema_name DOT)? table_name DOT)? column_name #expr_qualified_column_name
+    | unary_operator expr #expr_unary
+    | expr PIPE2 expr #expr_binary
+    | expr ( STAR | DIV | MOD) expr #expr_math_op
+    | expr ( PLUS | MINUS) expr #expr_math_op
+    | expr ( LT2 | GT2 | AMP | PIPE) expr #expr_comparison
+    | expr ( LT | LT_EQ | GT | GT_EQ) expr #expr_comparison
     | expr (
         ASSIGN
         | EQ
@@ -284,27 +284,26 @@ expr:
         | GLOB_
         | MATCH_
         | REGEXP_
-    ) expr
-    | expr AND_ expr
-    | expr OR_ expr
-    | function_name OPEN_PAR ((DISTINCT_? expr ( COMMA expr)*) | STAR)? CLOSE_PAR filter_clause? over_clause?
-    | OPEN_PAR expr (COMMA expr)* CLOSE_PAR
-    | CAST_ OPEN_PAR expr AS_ type_name CLOSE_PAR
-    | expr COLLATE_ collation_name
+    ) expr #expr_comparison
+    | expr AND_ expr #expr_binary
+    | expr OR_ expr #expr_binary
+    | function_name OPEN_PAR ((DISTINCT_? expr ( COMMA expr)*) | STAR)? CLOSE_PAR filter_clause? over_clause? #expr_function
+    | OPEN_PAR expr (COMMA expr)* CLOSE_PAR #expr_list
+    | CAST_ OPEN_PAR expr AS_ type_name CLOSE_PAR #expr_cast
+    | expr COLLATE_ collation_name #expr_collate
     | expr NOT_? (LIKE_ | GLOB_ | REGEXP_ | MATCH_) expr (
         ESCAPE_ expr
-    )?
-    | expr ( ISNULL_ | NOTNULL_ | NOT_ NULL_)
-    | expr IS_ NOT_? expr
-    | expr NOT_? BETWEEN_ expr AND_ expr
+    )? #expr_comparison
+    | expr ( ISNULL_ | NOTNULL_ | NOT_ NULL_) #expr_null_comp
+    | expr NOT_? BETWEEN_ expr AND_ expr #expr_between
     | expr NOT_? IN_ (
         OPEN_PAR (select_stmt | expr ( COMMA expr)*)? CLOSE_PAR
         | ( schema_name DOT)? table_name
         | (schema_name DOT)? table_function_name OPEN_PAR (expr (COMMA expr)*)? CLOSE_PAR
-    )
-    | ((NOT_)? EXISTS_)? OPEN_PAR select_stmt CLOSE_PAR
-    | CASE_ expr? (WHEN_ expr THEN_ expr)+ (ELSE_ expr)? END_
-    | raise_function
+    ) #expr_in_select
+    | ((NOT_)? EXISTS_)? OPEN_PAR select_stmt CLOSE_PAR #expr_in_select
+    | CASE_ expr? (WHEN_ expr THEN_ expr)+ (ELSE_ expr)? END_ #expr_case
+    | raise_function #expr_raise
 ;
 
 raise_function:
