@@ -160,36 +160,6 @@ func NewIdentifer(t string) *ast.String {
 	return &ast.String{Str: identifier(t)}
 }
 
-//func convertWhereExprContext(c *parser.ExprContext) ast.Node {
-//	for _, iexpr := range c.AllExpr() {
-//		expr, ok := iexpr.(*parser.ExprContext)
-//		if !ok {
-//			continue
-//		}
-//
-//		return &ast.A_Expr{
-//			Name: &ast.List{
-//				Items: []ast.Node{
-//					&ast.String{Str: opToName(n.Op)},
-//				},
-//			},
-//			Lexpr: con
-//			Rexpr: c.convert(n.R),
-//		}
-//	}
-//
-//	if c.BIND_PARAMETER() != nil {
-//		fmt.Printf("bind param")
-//		return &ast.ParamRef{
-//			Number:   0,
-//			Location: c.GetStart().GetStart(),
-//		}
-//	}
-//
-//
-//	return &ast.TODO{}
-//}
-
 func convertFuncContext(c *parser.Expr_functionContext) ast.Node {
 	if name, ok := c.Function_name().(*parser.Function_nameContext); ok {
 		funcName := strings.ToLower(name.GetText())
