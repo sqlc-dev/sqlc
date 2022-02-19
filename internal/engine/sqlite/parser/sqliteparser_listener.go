@@ -104,8 +104,53 @@ type SQLiteParserListener interface {
 	// EnterDrop_stmt is called when entering the drop_stmt production.
 	EnterDrop_stmt(c *Drop_stmtContext)
 
-	// EnterExpr is called when entering the expr production.
-	EnterExpr(c *ExprContext)
+	// EnterExpr_case is called when entering the expr_case production.
+	EnterExpr_case(c *Expr_caseContext)
+
+	// EnterExpr_raise is called when entering the expr_raise production.
+	EnterExpr_raise(c *Expr_raiseContext)
+
+	// EnterExpr_function is called when entering the expr_function production.
+	EnterExpr_function(c *Expr_functionContext)
+
+	// EnterExpr_comparison is called when entering the expr_comparison production.
+	EnterExpr_comparison(c *Expr_comparisonContext)
+
+	// EnterExpr_binary is called when entering the expr_binary production.
+	EnterExpr_binary(c *Expr_binaryContext)
+
+	// EnterExpr_literal is called when entering the expr_literal production.
+	EnterExpr_literal(c *Expr_literalContext)
+
+	// EnterExpr_cast is called when entering the expr_cast production.
+	EnterExpr_cast(c *Expr_castContext)
+
+	// EnterExpr_in_select is called when entering the expr_in_select production.
+	EnterExpr_in_select(c *Expr_in_selectContext)
+
+	// EnterExpr_list is called when entering the expr_list production.
+	EnterExpr_list(c *Expr_listContext)
+
+	// EnterExpr_between is called when entering the expr_between production.
+	EnterExpr_between(c *Expr_betweenContext)
+
+	// EnterExpr_collate is called when entering the expr_collate production.
+	EnterExpr_collate(c *Expr_collateContext)
+
+	// EnterExpr_qualified_column_name is called when entering the expr_qualified_column_name production.
+	EnterExpr_qualified_column_name(c *Expr_qualified_column_nameContext)
+
+	// EnterExpr_math_op is called when entering the expr_math_op production.
+	EnterExpr_math_op(c *Expr_math_opContext)
+
+	// EnterExpr_unary is called when entering the expr_unary production.
+	EnterExpr_unary(c *Expr_unaryContext)
+
+	// EnterExpr_null_comp is called when entering the expr_null_comp production.
+	EnterExpr_null_comp(c *Expr_null_compContext)
+
+	// EnterExpr_bind is called when entering the expr_bind production.
+	EnterExpr_bind(c *Expr_bindContext)
 
 	// EnterRaise_function is called when entering the raise_function production.
 	EnterRaise_function(c *Raise_functionContext)
@@ -437,8 +482,53 @@ type SQLiteParserListener interface {
 	// ExitDrop_stmt is called when exiting the drop_stmt production.
 	ExitDrop_stmt(c *Drop_stmtContext)
 
-	// ExitExpr is called when exiting the expr production.
-	ExitExpr(c *ExprContext)
+	// ExitExpr_case is called when exiting the expr_case production.
+	ExitExpr_case(c *Expr_caseContext)
+
+	// ExitExpr_raise is called when exiting the expr_raise production.
+	ExitExpr_raise(c *Expr_raiseContext)
+
+	// ExitExpr_function is called when exiting the expr_function production.
+	ExitExpr_function(c *Expr_functionContext)
+
+	// ExitExpr_comparison is called when exiting the expr_comparison production.
+	ExitExpr_comparison(c *Expr_comparisonContext)
+
+	// ExitExpr_binary is called when exiting the expr_binary production.
+	ExitExpr_binary(c *Expr_binaryContext)
+
+	// ExitExpr_literal is called when exiting the expr_literal production.
+	ExitExpr_literal(c *Expr_literalContext)
+
+	// ExitExpr_cast is called when exiting the expr_cast production.
+	ExitExpr_cast(c *Expr_castContext)
+
+	// ExitExpr_in_select is called when exiting the expr_in_select production.
+	ExitExpr_in_select(c *Expr_in_selectContext)
+
+	// ExitExpr_list is called when exiting the expr_list production.
+	ExitExpr_list(c *Expr_listContext)
+
+	// ExitExpr_between is called when exiting the expr_between production.
+	ExitExpr_between(c *Expr_betweenContext)
+
+	// ExitExpr_collate is called when exiting the expr_collate production.
+	ExitExpr_collate(c *Expr_collateContext)
+
+	// ExitExpr_qualified_column_name is called when exiting the expr_qualified_column_name production.
+	ExitExpr_qualified_column_name(c *Expr_qualified_column_nameContext)
+
+	// ExitExpr_math_op is called when exiting the expr_math_op production.
+	ExitExpr_math_op(c *Expr_math_opContext)
+
+	// ExitExpr_unary is called when exiting the expr_unary production.
+	ExitExpr_unary(c *Expr_unaryContext)
+
+	// ExitExpr_null_comp is called when exiting the expr_null_comp production.
+	ExitExpr_null_comp(c *Expr_null_compContext)
+
+	// ExitExpr_bind is called when exiting the expr_bind production.
+	ExitExpr_bind(c *Expr_bindContext)
 
 	// ExitRaise_function is called when exiting the raise_function production.
 	ExitRaise_function(c *Raise_functionContext)

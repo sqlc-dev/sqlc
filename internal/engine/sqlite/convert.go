@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"github.com/antlr/antlr4/runtime/Go/antlr"
+	"strconv"
 	"strings"
 
 	"github.com/kyleconroy/sqlc/internal/engine/sqlite/parser"
@@ -97,6 +98,42 @@ func convertCreate_table_stmtContext(c *parser.Create_table_stmtContext) ast.Nod
 	return stmt
 }
 
+func convertDelete_stmtContext(c *parser.Delete_stmtContext) ast.Node {
+	if qualifiedName, ok := c.Qualified_table_name().(*parser.Qualified_table_nameContext); ok {
+
+		tableName := qualifiedName.Table_name().GetText()
+		relation := &ast.RangeVar{
+			Relname: &tableName,
+		}
+
+		if qualifiedName.Schema_name() != nil {
+			schemaName := qualifiedName.Schema_name().GetText()
+			relation.Schemaname = &schemaName
+		}
+
+		if qualifiedName.Alias() != nil {
+			alias := qualifiedName.Alias().GetText()
+			relation.Alias = &ast.Alias{Aliasname: &alias}
+		}
+
+		delete := &ast.DeleteStmt{
+			Relation:      relation,
+			ReturningList: &ast.List{},
+			WithClause:    nil,
+		}
+
+		if c.WHERE_() != nil {
+			if c.Expr() != nil {
+				delete.WhereClause = convert(c.Expr())
+			}
+		}
+
+		return delete
+	}
+
+	return &ast.TODO{}
+}
+
 func convertDrop_stmtContext(c *parser.Drop_stmtContext) ast.Node {
 	if c.TABLE_() != nil {
 		name := ast.TableName{
@@ -123,7 +160,7 @@ func NewIdentifer(t string) *ast.String {
 	return &ast.String{Str: identifier(t)}
 }
 
-func convertExprContext(c *parser.ExprContext) ast.Node {
+func convertFuncContext(c *parser.Expr_functionContext) ast.Node {
 	if name, ok := c.Function_name().(*parser.Function_nameContext); ok {
 		funcName := strings.ToLower(name.GetText())
 
@@ -145,14 +182,14 @@ func convertExprContext(c *parser.ExprContext) ast.Node {
 		return fn
 	}
 
-	if c.Column_name() != nil {
-		return convertColumnNameExpr(c)
-	}
-
 	return &ast.TODO{}
 }
 
-func convertColumnNameExpr(c *parser.ExprContext) *ast.ColumnRef {
+func convertExprContext(c *parser.ExprContext) ast.Node {
+	return &ast.TODO{}
+}
+
+func convertColumnNameExpr(c *parser.Expr_qualified_column_nameContext) *ast.ColumnRef {
 	var items []ast.Node
 	if schema, ok := c.Schema_name().(*parser.Schema_nameContext); ok {
 		schemaText := schema.GetText()
@@ -172,6 +209,20 @@ func convertColumnNameExpr(c *parser.ExprContext) *ast.ColumnRef {
 			Items: items,
 		},
 	}
+}
+
+func convertComparison(c *parser.Expr_comparisonContext) ast.Node {
+	aExpr := &ast.A_Expr{
+		Name: &ast.List{
+			Items: []ast.Node{
+				&ast.String{Str: "="}, // TODO: add actual comparison
+			},
+		},
+		Lexpr: convert(c.Expr(0)),
+		Rexpr: convert(c.Expr(1)),
+	}
+
+	return aExpr
 }
 
 func convertSimpleSelect_stmtContext(c *parser.Simple_select_stmtContext) ast.Node {
@@ -335,6 +386,70 @@ func convertSql_stmtContext(n *parser.Sql_stmtContext) ast.Node {
 	return nil
 }
 
+func convertLiteral(c *parser.Expr_literalContext) ast.Node {
+	if literal, ok := c.Literal_value().(*parser.Literal_valueContext); ok {
+
+		if literal.NUMERIC_LITERAL() != nil {
+			i, _ := strconv.ParseInt(literal.GetText(), 10, 64)
+			return &ast.A_Const{
+				Val: &ast.Integer{Ival: i},
+			}
+		}
+
+		if literal.STRING_LITERAL() != nil {
+			return &ast.A_Const{
+				Val: &ast.String{Str: literal.GetText()},
+			}
+		}
+
+		if literal.TRUE_() != nil || literal.FALSE_() != nil {
+			var i int64
+			if literal.TRUE_() != nil {
+				i = 1
+			}
+
+			return &ast.A_Const{
+				Val: &ast.Integer{Ival: i},
+			}
+		}
+
+	}
+	return &ast.TODO{}
+}
+
+func convertMathOperationNode(c *parser.Expr_math_opContext) ast.Node {
+	return &ast.A_Expr{
+		Name: &ast.List{
+			Items: []ast.Node{
+				&ast.String{Str: "+"}, // todo: Convert operation types
+			},
+		},
+		Lexpr: convert(c.Expr(0)),
+		Rexpr: convert(c.Expr(1)),
+	}
+}
+
+func convertBinaryNode(c *parser.Expr_binaryContext) ast.Node {
+	return &ast.BoolExpr{
+		// TODO: Set op
+		Args: &ast.List{
+			Items: []ast.Node{
+				convert(c.Expr(0)),
+				convert(c.Expr(1)),
+			},
+		},
+	}
+}
+
+func convertParam(c *parser.Expr_bindContext) ast.Node {
+	if c.BIND_PARAMETER() != nil {
+		return &ast.ParamRef{ // TODO: Need to count these up instead of always using 0
+			Location: c.GetStart().GetStart(),
+		}
+	}
+	return &ast.TODO{}
+}
+
 func convert(node node) ast.Node {
 	switch n := node.(type) {
 
@@ -350,8 +465,32 @@ func convert(node node) ast.Node {
 	case *parser.Drop_stmtContext:
 		return convertDrop_stmtContext(n)
 
+	case *parser.Delete_stmtContext:
+		return convertDelete_stmtContext(n)
+
 	case *parser.ExprContext:
 		return convertExprContext(n)
+
+	case *parser.Expr_functionContext:
+		return convertFuncContext(n)
+
+	case *parser.Expr_qualified_column_nameContext:
+		return convertColumnNameExpr(n)
+
+	case *parser.Expr_comparisonContext:
+		return convertComparison(n)
+
+	case *parser.Expr_bindContext:
+		return convertParam(n)
+
+	case *parser.Expr_literalContext:
+		return convertLiteral(n)
+
+	case *parser.Expr_binaryContext:
+		return convertBinaryNode(n)
+
+	case *parser.Expr_math_opContext:
+		return convertMathOperationNode(n)
 
 	case *parser.Factored_select_stmtContext:
 		// TODO: need to handle this

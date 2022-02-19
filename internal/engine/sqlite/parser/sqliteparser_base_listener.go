@@ -216,11 +216,103 @@ func (s *BaseSQLiteParserListener) EnterDrop_stmt(ctx *Drop_stmtContext) {}
 // ExitDrop_stmt is called when production drop_stmt is exited.
 func (s *BaseSQLiteParserListener) ExitDrop_stmt(ctx *Drop_stmtContext) {}
 
-// EnterExpr is called when production expr is entered.
-func (s *BaseSQLiteParserListener) EnterExpr(ctx *ExprContext) {}
+// EnterExpr_case is called when production expr_case is entered.
+func (s *BaseSQLiteParserListener) EnterExpr_case(ctx *Expr_caseContext) {}
 
-// ExitExpr is called when production expr is exited.
-func (s *BaseSQLiteParserListener) ExitExpr(ctx *ExprContext) {}
+// ExitExpr_case is called when production expr_case is exited.
+func (s *BaseSQLiteParserListener) ExitExpr_case(ctx *Expr_caseContext) {}
+
+// EnterExpr_raise is called when production expr_raise is entered.
+func (s *BaseSQLiteParserListener) EnterExpr_raise(ctx *Expr_raiseContext) {}
+
+// ExitExpr_raise is called when production expr_raise is exited.
+func (s *BaseSQLiteParserListener) ExitExpr_raise(ctx *Expr_raiseContext) {}
+
+// EnterExpr_function is called when production expr_function is entered.
+func (s *BaseSQLiteParserListener) EnterExpr_function(ctx *Expr_functionContext) {}
+
+// ExitExpr_function is called when production expr_function is exited.
+func (s *BaseSQLiteParserListener) ExitExpr_function(ctx *Expr_functionContext) {}
+
+// EnterExpr_comparison is called when production expr_comparison is entered.
+func (s *BaseSQLiteParserListener) EnterExpr_comparison(ctx *Expr_comparisonContext) {}
+
+// ExitExpr_comparison is called when production expr_comparison is exited.
+func (s *BaseSQLiteParserListener) ExitExpr_comparison(ctx *Expr_comparisonContext) {}
+
+// EnterExpr_binary is called when production expr_binary is entered.
+func (s *BaseSQLiteParserListener) EnterExpr_binary(ctx *Expr_binaryContext) {}
+
+// ExitExpr_binary is called when production expr_binary is exited.
+func (s *BaseSQLiteParserListener) ExitExpr_binary(ctx *Expr_binaryContext) {}
+
+// EnterExpr_literal is called when production expr_literal is entered.
+func (s *BaseSQLiteParserListener) EnterExpr_literal(ctx *Expr_literalContext) {}
+
+// ExitExpr_literal is called when production expr_literal is exited.
+func (s *BaseSQLiteParserListener) ExitExpr_literal(ctx *Expr_literalContext) {}
+
+// EnterExpr_cast is called when production expr_cast is entered.
+func (s *BaseSQLiteParserListener) EnterExpr_cast(ctx *Expr_castContext) {}
+
+// ExitExpr_cast is called when production expr_cast is exited.
+func (s *BaseSQLiteParserListener) ExitExpr_cast(ctx *Expr_castContext) {}
+
+// EnterExpr_in_select is called when production expr_in_select is entered.
+func (s *BaseSQLiteParserListener) EnterExpr_in_select(ctx *Expr_in_selectContext) {}
+
+// ExitExpr_in_select is called when production expr_in_select is exited.
+func (s *BaseSQLiteParserListener) ExitExpr_in_select(ctx *Expr_in_selectContext) {}
+
+// EnterExpr_list is called when production expr_list is entered.
+func (s *BaseSQLiteParserListener) EnterExpr_list(ctx *Expr_listContext) {}
+
+// ExitExpr_list is called when production expr_list is exited.
+func (s *BaseSQLiteParserListener) ExitExpr_list(ctx *Expr_listContext) {}
+
+// EnterExpr_between is called when production expr_between is entered.
+func (s *BaseSQLiteParserListener) EnterExpr_between(ctx *Expr_betweenContext) {}
+
+// ExitExpr_between is called when production expr_between is exited.
+func (s *BaseSQLiteParserListener) ExitExpr_between(ctx *Expr_betweenContext) {}
+
+// EnterExpr_collate is called when production expr_collate is entered.
+func (s *BaseSQLiteParserListener) EnterExpr_collate(ctx *Expr_collateContext) {}
+
+// ExitExpr_collate is called when production expr_collate is exited.
+func (s *BaseSQLiteParserListener) ExitExpr_collate(ctx *Expr_collateContext) {}
+
+// EnterExpr_qualified_column_name is called when production expr_qualified_column_name is entered.
+func (s *BaseSQLiteParserListener) EnterExpr_qualified_column_name(ctx *Expr_qualified_column_nameContext) {
+}
+
+// ExitExpr_qualified_column_name is called when production expr_qualified_column_name is exited.
+func (s *BaseSQLiteParserListener) ExitExpr_qualified_column_name(ctx *Expr_qualified_column_nameContext) {
+}
+
+// EnterExpr_math_op is called when production expr_math_op is entered.
+func (s *BaseSQLiteParserListener) EnterExpr_math_op(ctx *Expr_math_opContext) {}
+
+// ExitExpr_math_op is called when production expr_math_op is exited.
+func (s *BaseSQLiteParserListener) ExitExpr_math_op(ctx *Expr_math_opContext) {}
+
+// EnterExpr_unary is called when production expr_unary is entered.
+func (s *BaseSQLiteParserListener) EnterExpr_unary(ctx *Expr_unaryContext) {}
+
+// ExitExpr_unary is called when production expr_unary is exited.
+func (s *BaseSQLiteParserListener) ExitExpr_unary(ctx *Expr_unaryContext) {}
+
+// EnterExpr_null_comp is called when production expr_null_comp is entered.
+func (s *BaseSQLiteParserListener) EnterExpr_null_comp(ctx *Expr_null_compContext) {}
+
+// ExitExpr_null_comp is called when production expr_null_comp is exited.
+func (s *BaseSQLiteParserListener) ExitExpr_null_comp(ctx *Expr_null_compContext) {}
+
+// EnterExpr_bind is called when production expr_bind is entered.
+func (s *BaseSQLiteParserListener) EnterExpr_bind(ctx *Expr_bindContext) {}
+
+// ExitExpr_bind is called when production expr_bind is exited.
+func (s *BaseSQLiteParserListener) ExitExpr_bind(ctx *Expr_bindContext) {}
 
 // EnterRaise_function is called when production raise_function is entered.
 func (s *BaseSQLiteParserListener) EnterRaise_function(ctx *Raise_functionContext) {}
