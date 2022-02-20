@@ -3,5 +3,4 @@ CREATE TABLE books (
                        title text      NOT NULL,
                        author text     NOT NULL,
                        pages integer      NOT NULL
-
 );

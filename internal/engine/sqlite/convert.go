@@ -89,7 +89,7 @@ func convertCreate_table_stmtContext(c *parser.Create_table_stmtContext) ast.Nod
 	for _, idef := range c.AllColumn_def() {
 		if def, ok := idef.(*parser.Column_defContext); ok {
 			stmt.Cols = append(stmt.Cols, &ast.ColumnDef{
-				Colname:   def.Column_name().GetText(),
+				Colname:   identifier(def.Column_name().GetText()),
 				IsNotNull: hasNotNullConstraint(def.AllColumn_constraint()),
 				TypeName:  &ast.TypeName{Name: def.Type_name().GetText()},
 			})
@@ -164,6 +164,11 @@ func convertFuncContext(c *parser.Expr_functionContext) ast.Node {
 	if name, ok := c.Function_name().(*parser.Function_nameContext); ok {
 		funcName := strings.ToLower(name.GetText())
 
+		var args []ast.Node
+		for _, exp := range c.AllExpr() {
+			args = append(args, convert(exp))
+		}
+
 		fn := &ast.FuncCall{
 			Func: &ast.FuncName{
 				Name: funcName,
@@ -174,7 +179,7 @@ func convertFuncContext(c *parser.Expr_functionContext) ast.Node {
 				},
 			},
 			AggStar:     c.STAR() != nil,
-			Args:        &ast.List{},
+			Args:        &ast.List{Items: args},
 			AggOrder:    &ast.List{},
 			AggDistinct: c.DISTINCT_() != nil,
 		}
