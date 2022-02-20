@@ -284,6 +284,9 @@ func getCols(core *parser.Select_coreContext) []ast.Node {
 		if !ok {
 			continue
 		}
+		target := &ast.ResTarget{
+			Location: col.GetStart().GetStart(),
+		}
 		var val ast.Node
 		iexpr := col.Expr()
 		switch {
@@ -299,13 +302,18 @@ func getCols(core *parser.Select_coreContext) []ast.Node {
 		case iexpr != nil:
 			val = convert(iexpr)
 		}
+
 		if val == nil {
 			continue
 		}
-		cols = append(cols, &ast.ResTarget{
-			Val:      val,
-			Location: col.GetStart().GetStart(),
-		})
+
+		if col.AS_() != nil {
+			name := col.Column_alias().GetText()
+			target.Name = &name
+		}
+
+		target.Val = val
+		cols = append(cols, target)
 	}
 	return cols
 }
