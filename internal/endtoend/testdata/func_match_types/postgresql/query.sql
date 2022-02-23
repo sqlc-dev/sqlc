@@ -1,10 +1,4 @@
--- Example queries for sqlc
-CREATE TABLE authors (
-  id   BIGSERIAL PRIMARY KEY,
-  name text      NOT NULL,
-  bio  text
-);
-
--- name: Percentile :one
-select percentile_disc(0.5) within group (order by authors.name)
-from authors;
+-- name: AuthorPages :many
+select author, count(title) as num_books, SUM(pages) as total_pages
+from books
+group by author;

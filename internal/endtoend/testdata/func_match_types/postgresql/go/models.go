@@ -2,12 +2,11 @@
 
 package querytest
 
-import (
-	"database/sql"
-)
+import ()
 
-type Author struct {
-	ID   int64
-	Name string
-	Bio  sql.NullString
+type Book struct {
+	ID     int32
+	Title  string
+	Author string
+	Pages  string
 }
