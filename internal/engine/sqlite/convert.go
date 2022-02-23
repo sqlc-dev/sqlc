@@ -89,7 +89,7 @@ func convertCreate_table_stmtContext(c *parser.Create_table_stmtContext) ast.Nod
 	for _, idef := range c.AllColumn_def() {
 		if def, ok := idef.(*parser.Column_defContext); ok {
 			stmt.Cols = append(stmt.Cols, &ast.ColumnDef{
-				Colname:   def.Column_name().GetText(),
+				Colname:   identifier(def.Column_name().GetText()),
 				IsNotNull: hasNotNullConstraint(def.AllColumn_constraint()),
 				TypeName:  &ast.TypeName{Name: def.Type_name().GetText()},
 			})
@@ -164,6 +164,11 @@ func convertFuncContext(c *parser.Expr_functionContext) ast.Node {
 	if name, ok := c.Function_name().(*parser.Function_nameContext); ok {
 		funcName := strings.ToLower(name.GetText())
 
+		var args []ast.Node
+		for _, exp := range c.AllExpr() {
+			args = append(args, convert(exp))
+		}
+
 		fn := &ast.FuncCall{
 			Func: &ast.FuncName{
 				Name: funcName,
@@ -174,7 +179,7 @@ func convertFuncContext(c *parser.Expr_functionContext) ast.Node {
 				},
 			},
 			AggStar:     c.STAR() != nil,
-			Args:        &ast.List{},
+			Args:        &ast.List{Items: args},
 			AggOrder:    &ast.List{},
 			AggDistinct: c.DISTINCT_() != nil,
 		}
@@ -284,6 +289,9 @@ func getCols(core *parser.Select_coreContext) []ast.Node {
 		if !ok {
 			continue
 		}
+		target := &ast.ResTarget{
+			Location: col.GetStart().GetStart(),
+		}
 		var val ast.Node
 		iexpr := col.Expr()
 		switch {
@@ -299,13 +307,18 @@ func getCols(core *parser.Select_coreContext) []ast.Node {
 		case iexpr != nil:
 			val = convert(iexpr)
 		}
+
 		if val == nil {
 			continue
 		}
-		cols = append(cols, &ast.ResTarget{
-			Val:      val,
-			Location: col.GetStart().GetStart(),
-		})
+
+		if col.AS_() != nil {
+			name := col.Column_alias().GetText()
+			target.Name = &name
+		}
+
+		target.Val = val
+		cols = append(cols, target)
 	}
 	return cols
 }
