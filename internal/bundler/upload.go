@@ -66,7 +66,7 @@ func (up *Uploader) Upload(ctx context.Context, result map[string]string) error 
 		return err
 	}
 	if resp.StatusCode >= 400 {
-		return fmt.Errorf("code=%d", resp.StatusCode)
+		return fmt.Errorf("upload endpiont returned non-200 status code: %d", resp.StatusCode)
 	}
 	return nil
 }
