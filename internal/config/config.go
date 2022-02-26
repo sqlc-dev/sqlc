@@ -78,9 +78,14 @@ const (
 )
 
 type Config struct {
-	Version string `json:"version" yaml:"version"`
-	SQL     []SQL  `json:"sql" yaml:"sql"`
-	Gen     Gen    `json:"overrides,omitempty" yaml:"overrides"`
+	Version string  `json:"version" yaml:"version"`
+	Project Project `json:"project" yaml:"project"`
+	SQL     []SQL   `json:"sql" yaml:"sql"`
+	Gen     Gen     `json:"overrides,omitempty" yaml:"overrides"`
+}
+
+type Project struct {
+	ID string `json:"id" yaml:"id"`
 }
 
 type Gen struct {

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"mime/multipart"
 	"net/http"
+	"os"
 
 	"github.com/kyleconroy/sqlc/internal/config"
 )
@@ -24,11 +25,19 @@ func NewUploader(configPath, dir string, conf *config.Config) *Uploader {
 	}
 }
 
+func (up *Uploader) Validate() error {
+	if up.config.Project.ID == "" {
+		return fmt.Errorf("project ID is not set")
+	}
+	return nil
+}
+
 func (up *Uploader) Upload(ctx context.Context, result map[string]string) error {
+	if err := up.Validate(); err != nil {
+		return err
+	}
 	body := bytes.NewBuffer([]byte{})
 
-	// gw := gzip.NewWriter(body)
-	// defer gw.Close()
 	w := multipart.NewWriter(body)
 	defer w.Close()
 
@@ -39,11 +48,7 @@ func (up *Uploader) Upload(ctx context.Context, result map[string]string) error 
 		return err
 	}
 
-	// if err := gw.Flush(); err != nil {
-	// 	return err
-	// }
 	w.Close()
-	// gw.Close()
 
 	req, err := http.NewRequest("POST", "http://localhost:8090/upload", body)
 	if err != nil {
@@ -52,6 +57,7 @@ func (up *Uploader) Upload(ctx context.Context, result map[string]string) error 
 
 	// Set sqlc-version header
 	req.Header.Set("Content-Type", w.FormDataContentType())
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", os.Getenv("SQLC_AUTH_TOKEN")))
 	req = req.WithContext(ctx)
 
 	client := &http.Client{}
@@ -59,7 +65,7 @@ func (up *Uploader) Upload(ctx context.Context, result map[string]string) error 
 	if err != nil {
 		return err
 	}
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode >= 400 {
 		return fmt.Errorf("code=%d", resp.StatusCode)
 	}
 	return nil

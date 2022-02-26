@@ -13,7 +13,7 @@ func projectMetadata() ([][2]string, error) {
 		{"sqlc_version", info.Version},
 		{"go_version", runtime.Version()},
 		{"goos", runtime.GOOS},
-		{"goach", runtime.GOARCH},
+		{"goarch", runtime.GOARCH},
 		{"created", now.Format(time.RFC3339)},
 	}, nil
 }

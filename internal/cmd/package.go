@@ -18,7 +18,7 @@ var packageCmd = &cobra.Command{
 		stderr := cmd.ErrOrStderr()
 		dir, name := getConfigPath(stderr, cmd.Flag("file"))
 		if err := createPkg(cmd.Context(), ParseEnv(cmd), dir, name, stderr); err != nil {
-			fmt.Fprintf(stderr, "error uploading project: %s\n", err)
+			fmt.Fprintf(stderr, "error uploading: %s\n", err)
 			os.Exit(1)
 		}
 		return nil
@@ -26,17 +26,17 @@ var packageCmd = &cobra.Command{
 }
 
 func createPkg(ctx context.Context, e Env, dir, filename string, stderr io.Writer) error {
-	output, err := Generate(ctx, e, dir, filename, stderr)
-	if err != nil {
-		os.Exit(1)
-	}
 	configPath, conf, err := readConfig(stderr, dir, filename)
 	if err != nil {
 		return err
 	}
 	up := bundler.NewUploader(configPath, dir, conf)
-	if err != nil {
+	if err := up.Validate(); err != nil {
 		return err
+	}
+	output, err := Generate(ctx, e, dir, filename, stderr)
+	if err != nil {
+		os.Exit(1)
 	}
 	return up.Upload(ctx, output)
 }

@@ -36,6 +36,7 @@ func writeInputs(w *multipart.Writer, file string, conf *config.Config) error {
 	if err != nil {
 		return err
 	}
+	params = append(params, [2]string{"project_id", conf.Project.ID})
 	for _, val := range params {
 		if err = w.WriteField(val[0], val[1]); err != nil {
 			return err
