@@ -7,6 +7,9 @@ import (
 )
 
 type Querier interface {
+	// Create a new city. The slug must be unique.
+	// This is the second line of the comment
+	// This is the third line
 	CreateCity(ctx context.Context, arg CreateCityParams) (City, error)
 	CreateVenue(ctx context.Context, arg CreateVenueParams) (int32, error)
 	DeleteVenue(ctx context.Context, slug string) error
