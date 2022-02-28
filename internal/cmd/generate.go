@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"runtime/trace"
@@ -47,19 +48,25 @@ type outPair struct {
 	config.SQL
 }
 
-func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer) (map[string]string, error) {
-	configPath := ""
+func Generate(ctx context.Context, e Env, dir string, dirfs fs.FS, filename string, stderr io.Writer) (map[string]string, error) {
+	var configBlob []byte
+	var configErr error
+	var configPath string
+
 	if filename != "" {
-		configPath = filepath.Join(dir, filename)
+		configPath = filename
+		configBlob, configErr = fs.ReadFile(dirfs, configPath)
 	} else {
 		var yamlMissing, jsonMissing bool
-		yamlPath := filepath.Join(dir, "sqlc.yaml")
-		jsonPath := filepath.Join(dir, "sqlc.json")
+		yamlPath := "sqlc.yaml"
+		jsonPath := "sqlc.json"
 
-		if _, err := os.Stat(yamlPath); os.IsNotExist(err) {
+		yamlBlob, yamlErr := fs.ReadFile(dirfs, yamlPath)
+		if os.IsNotExist(yamlErr) {
 			yamlMissing = true
 		}
-		if _, err := os.Stat(jsonPath); os.IsNotExist(err) {
+		jsonBlob, jsonErr := fs.ReadFile(dirfs, jsonPath)
+		if os.IsNotExist(jsonErr) {
 			jsonMissing = true
 		}
 
@@ -74,19 +81,22 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 		}
 
 		configPath = yamlPath
+		configBlob = yamlBlob
+		configErr = yamlErr
 		if yamlMissing {
 			configPath = jsonPath
+			configBlob = jsonBlob
+			configErr = jsonErr
 		}
 	}
 
 	base := filepath.Base(configPath)
-	blob, err := os.ReadFile(configPath)
-	if err != nil {
+	if configErr != nil {
 		fmt.Fprintf(stderr, "error parsing %s: file does not exist\n", base)
-		return nil, err
+		return nil, configErr
 	}
 
-	conf, err := config.ParseConfig(bytes.NewReader(blob))
+	conf, err := config.ParseConfig(bytes.NewReader(configBlob))
 	if err != nil {
 		switch err {
 		case config.ErrMissingVersion:
@@ -137,16 +147,15 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 	for _, sql := range pairs {
 		combo := config.Combine(conf, sql.SQL)
 
-		// TODO: This feels like a hack that will bite us later
 		joined := make([]string, 0, len(sql.Schema))
 		for _, s := range sql.Schema {
-			joined = append(joined, filepath.Join(dir, s))
+			joined = append(joined, s)
 		}
 		sql.Schema = joined
 
 		joined = make([]string, 0, len(sql.Queries))
 		for _, q := range sql.Queries {
-			joined = append(joined, filepath.Join(dir, q))
+			joined = append(joined, q)
 		}
 		sql.Queries = joined
 
@@ -174,7 +183,7 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 			trace.Logf(ctx, "", "name=%s dir=%s language=%s", name, dir, lang)
 		}
 
-		result, failed := parse(ctx, e, name, dir, sql.SQL, combo, parseOpts, stderr)
+		result, failed := parse(ctx, e, name, dir, dirfs, sql.SQL, combo, parseOpts, stderr)
 		if failed {
 			if packageRegion != nil {
 				packageRegion.End()
@@ -238,11 +247,11 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 	return output, nil
 }
 
-func parse(ctx context.Context, e Env, name, dir string, sql config.SQL, combo config.CombinedSettings, parserOpts opts.Parser, stderr io.Writer) (*compiler.Result, bool) {
+func parse(ctx context.Context, e Env, name, dir string, dirfs fs.FS, sql config.SQL, combo config.CombinedSettings, parserOpts opts.Parser, stderr io.Writer) (*compiler.Result, bool) {
 	if debug.Traced {
 		defer trace.StartRegion(ctx, "parse").End()
 	}
-	c := compiler.NewCompiler(sql, combo)
+	c := compiler.NewCompiler(dirfs, sql, combo)
 	if err := c.ParseCatalog(sql.Schema); err != nil {
 		fmt.Fprintf(stderr, "# package %s\n", name)
 		if parserErr, ok := err.(*multierr.Error); ok {

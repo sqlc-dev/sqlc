@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -103,7 +104,7 @@ func ParseEnv(c *cobra.Command) Env {
 	return Env{ExperimentalFeatures: x != nil && x.Changed}
 }
 
-func getConfigPath(stderr io.Writer, f *pflag.Flag) (string, string) {
+func getConfigPath(stderr io.Writer, f *pflag.Flag) (fs.FS, string, string) {
 	if f != nil && f.Changed {
 		file := f.Value.String()
 		if file == "" {
@@ -115,14 +116,15 @@ func getConfigPath(stderr io.Writer, f *pflag.Flag) (string, string) {
 			fmt.Fprintf(stderr, "error parsing config: absolute file path lookup failed: %s\n", err)
 			os.Exit(1)
 		}
-		return filepath.Dir(abspath), filepath.Base(abspath)
+		dir := filepath.Dir(abspath)
+		return os.DirFS(dir), dir, filepath.Base(abspath)
 	} else {
 		wd, err := os.Getwd()
 		if err != nil {
 			fmt.Fprintln(stderr, "error parsing sqlc.json: file does not exist")
 			os.Exit(1)
 		}
-		return wd, ""
+		return os.DirFS(wd), wd, ""
 	}
 }
 
@@ -134,8 +136,8 @@ var genCmd = &cobra.Command{
 			defer trace.StartRegion(cmd.Context(), "generate").End()
 		}
 		stderr := cmd.ErrOrStderr()
-		dir, name := getConfigPath(stderr, cmd.Flag("file"))
-		output, err := Generate(cmd.Context(), ParseEnv(cmd), dir, name, stderr)
+		dirfs, dir, name := getConfigPath(stderr, cmd.Flag("file"))
+		output, err := Generate(cmd.Context(), ParseEnv(cmd), dir, dirfs, name, stderr)
 		if err != nil {
 			os.Exit(1)
 		}
@@ -160,8 +162,8 @@ var checkCmd = &cobra.Command{
 			defer trace.StartRegion(cmd.Context(), "compile").End()
 		}
 		stderr := cmd.ErrOrStderr()
-		dir, name := getConfigPath(stderr, cmd.Flag("file"))
-		if _, err := Generate(cmd.Context(), ParseEnv(cmd), dir, name, stderr); err != nil {
+		dirfs, dir, name := getConfigPath(stderr, cmd.Flag("file"))
+		if _, err := Generate(cmd.Context(), ParseEnv(cmd), dir, dirfs, name, stderr); err != nil {
 			os.Exit(1)
 		}
 		return nil

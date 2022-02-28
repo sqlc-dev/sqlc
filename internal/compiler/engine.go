@@ -2,6 +2,7 @@ package compiler
 
 import (
 	"fmt"
+	"io/fs"
 
 	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/engine/dolphin"
@@ -17,10 +18,11 @@ type Compiler struct {
 	catalog *catalog.Catalog
 	parser  Parser
 	result  *Result
+	fs      fs.FS
 }
 
-func NewCompiler(conf config.SQL, combo config.CombinedSettings) *Compiler {
-	c := &Compiler{conf: conf, combo: combo}
+func NewCompiler(dirfs fs.FS, conf config.SQL, combo config.CombinedSettings) *Compiler {
+	c := &Compiler{fs: dirfs, conf: conf, combo: combo}
 	switch conf.Engine {
 	case config.EngineXLemon:
 		c.parser = sqlite.NewParser()

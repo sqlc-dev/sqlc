@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os"
+	"io/fs"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -54,13 +54,13 @@ func enumValueName(value string) string {
 
 // end copypasta
 func (c *Compiler) parseCatalog(schemas []string) error {
-	files, err := sqlpath.Glob(schemas)
+	files, err := sqlpath.GlobFS(c.fs, schemas)
 	if err != nil {
 		return err
 	}
 	merr := multierr.New()
 	for _, filename := range files {
-		blob, err := os.ReadFile(filename)
+		blob, err := fs.ReadFile(c.fs, filename)
 		if err != nil {
 			merr.Add(filename, "", 0, err)
 			continue
@@ -88,12 +88,12 @@ func (c *Compiler) parseQueries(o opts.Parser) (*Result, error) {
 	var q []*Query
 	merr := multierr.New()
 	set := map[string]struct{}{}
-	files, err := sqlpath.Glob(c.conf.Queries)
+	files, err := sqlpath.GlobFS(c.fs, c.conf.Queries)
 	if err != nil {
 		return nil, err
 	}
 	for _, filename := range files {
-		blob, err := os.ReadFile(filename)
+		blob, err := fs.ReadFile(c.fs, filename)
 		if err != nil {
 			merr.Add(filename, "", 0, err)
 			continue

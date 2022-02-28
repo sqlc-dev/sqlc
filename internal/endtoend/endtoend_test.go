@@ -37,7 +37,7 @@ func TestExamples(t *testing.T) {
 			t.Parallel()
 			path := filepath.Join(examples, tc)
 			var stderr bytes.Buffer
-			output, err := cmd.Generate(ctx, cmd.Env{ExperimentalFeatures: true}, path, "", &stderr)
+			output, err := cmd.Generate(ctx, cmd.Env{ExperimentalFeatures: true}, path, os.DirFS(path), "", &stderr)
 			if err != nil {
 				t.Fatalf("sqlc generate failed: %s", stderr.String())
 			}
@@ -65,7 +65,7 @@ func BenchmarkExamples(b *testing.B) {
 			path := filepath.Join(examples, tc)
 			for i := 0; i < b.N; i++ {
 				var stderr bytes.Buffer
-				cmd.Generate(ctx, cmd.Env{ExperimentalFeatures: true}, path, "", &stderr)
+				cmd.Generate(ctx, cmd.Env{ExperimentalFeatures: true}, path, os.DirFS(path), "", &stderr)
 			}
 		})
 	}
@@ -95,7 +95,8 @@ func TestReplay(t *testing.T) {
 			path, _ := filepath.Abs(tc)
 			var stderr bytes.Buffer
 			expected := expectedStderr(t, path)
-			output, err := cmd.Generate(ctx, cmd.Env{ExperimentalFeatures: true}, path, "", &stderr)
+			t.Log(path)
+			output, err := cmd.Generate(ctx, cmd.Env{ExperimentalFeatures: true}, path, os.DirFS(path), "", &stderr)
 			if len(expected) == 0 && err != nil {
 				t.Fatalf("sqlc generate failed: %s", stderr.String())
 			}
@@ -193,7 +194,7 @@ func BenchmarkReplay(b *testing.B) {
 			path, _ := filepath.Abs(tc)
 			for i := 0; i < b.N; i++ {
 				var stderr bytes.Buffer
-				cmd.Generate(ctx, cmd.Env{ExperimentalFeatures: true}, path, "", &stderr)
+				cmd.Generate(ctx, cmd.Env{ExperimentalFeatures: true}, path, os.DirFS(path), "", &stderr)
 			}
 		})
 	}
