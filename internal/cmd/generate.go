@@ -187,13 +187,12 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 		if debug.Traced {
 			region = trace.StartRegion(ctx, "codegen")
 		}
-		var files map[string]string
 		var resp *plugin.CodeGenResponse
 		var out string
 		switch {
 		case sql.Gen.Go != nil:
 			out = combo.Go.Out
-			files, err = golang.Generate(result, combo)
+			resp, err = golang.Generate(codeGenRequest(result, combo))
 		case sql.Gen.Kotlin != nil:
 			out = combo.Kotlin.Out
 			resp, err = kotlin.Generate(codeGenRequest(result, combo))
@@ -207,11 +206,9 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 			region.End()
 		}
 
-		if resp != nil {
-			files = map[string]string{}
-			for _, file := range resp.Files {
-				files[file.Name] = string(file.Contents)
-			}
+		files := map[string]string{}
+		for _, file := range resp.Files {
+			files[file.Name] = string(file.Contents)
 		}
 
 		if err != nil {

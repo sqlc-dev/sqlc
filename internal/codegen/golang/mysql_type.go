@@ -4,12 +4,11 @@ import (
 	"log"
 
 	"github.com/kyleconroy/sqlc/internal/compiler"
-	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/debug"
-	"github.com/kyleconroy/sqlc/internal/sql/catalog"
+	"github.com/kyleconroy/sqlc/internal/plugin"
 )
 
-func mysqlType(r *compiler.Result, col *compiler.Column, settings config.CombinedSettings) string {
+func mysqlType(req *plugin.CodeGenRequest, col *compiler.Column) string {
 	columnType := col.DataType
 	notNull := col.NotNull || col.IsArray
 
@@ -84,16 +83,13 @@ func mysqlType(r *compiler.Result, col *compiler.Column, settings config.Combine
 		return "interface{}"
 
 	default:
-		for _, schema := range r.Catalog.Schemas {
-			for _, typ := range schema.Types {
-				switch t := typ.(type) {
-				case *catalog.Enum:
-					if t.Name == columnType {
-						if schema.Name == r.Catalog.DefaultSchema {
-							return StructName(t.Name, settings)
-						}
-						return StructName(schema.Name+"_"+t.Name, settings)
+		for _, schema := range req.Catalog.Schemas {
+			for _, enum := range schema.Enums {
+				if enum.Name == columnType {
+					if schema.Name == req.Catalog.DefaultSchema {
+						return StructName(enum.Name, req.Settings)
 					}
+					return StructName(schema.Name+"_"+enum.Name, req.Settings)
 				}
 			}
 		}

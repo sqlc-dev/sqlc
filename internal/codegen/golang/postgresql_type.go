@@ -4,15 +4,15 @@ import (
 	"log"
 
 	"github.com/kyleconroy/sqlc/internal/compiler"
-	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/debug"
+	"github.com/kyleconroy/sqlc/internal/plugin"
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 )
 
-func postgresType(r *compiler.Result, col *compiler.Column, settings config.CombinedSettings) string {
+func postgresType(req *plugin.CodeGenRequest, col *compiler.Column) string {
 	columnType := col.DataType
 	notNull := col.NotNull || col.IsArray
-	driver := parseDriver(settings)
+	driver := parseDriver(req.Settings)
 
 	switch columnType {
 	case "serial", "serial4", "pg_catalog.serial4":
@@ -246,10 +246,10 @@ func postgresType(r *compiler.Result, col *compiler.Column, settings config.Comb
 			return "interface{}"
 		}
 		if rel.Schema == "" {
-			rel.Schema = r.Catalog.DefaultSchema
+			rel.Schema = req.Catalog.DefaultSchema
 		}
 
-		for _, schema := range r.Catalog.Schemas {
+		for _, schema := range req.Catalog.Schemas {
 			if schema.Name == "pg_catalog" {
 				continue
 			}
@@ -263,6 +263,7 @@ func postgresType(r *compiler.Result, col *compiler.Column, settings config.Comb
 						return StructName(schema.Name+"_"+t.Name, settings)
 					}
 				case *catalog.CompositeType:
+					// ????????
 					if notNull {
 						return "string"
 					}

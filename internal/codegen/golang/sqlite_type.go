@@ -5,10 +5,10 @@ import (
 	"strings"
 
 	"github.com/kyleconroy/sqlc/internal/compiler"
-	"github.com/kyleconroy/sqlc/internal/config"
+	"github.com/kyleconroy/sqlc/internal/plugin"
 )
 
-func sqliteType(r *compiler.Result, col *compiler.Column, settings config.CombinedSettings) string {
+func sqliteType(req *plugin.CodeGenRequest, col *compiler.Column) string {
 	dt := strings.ToLower(col.DataType)
 	notNull := col.NotNull || col.IsArray
 
