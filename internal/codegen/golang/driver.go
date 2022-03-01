@@ -12,7 +12,7 @@ const (
 )
 
 func parseDriver(settings *plugin.Settings) SQLDriver {
-	if settings.Go.SQLPackage == "pgx/v4" {
+	if settings.Go.SqlPackage == "pgx/v4" {
 		return SQLDriverPGXV4
 	} else {
 		return SQLDriverLibPQ

@@ -207,8 +207,10 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 		}
 
 		files := map[string]string{}
-		for _, file := range resp.Files {
-			files[file.Name] = string(file.Contents)
+		if resp != nil {
+			for _, file := range resp.Files {
+				files[file.Name] = string(file.Contents)
+			}
 		}
 
 		if err != nil {

@@ -3,13 +3,20 @@ package golang
 import (
 	"log"
 
-	"github.com/kyleconroy/sqlc/internal/compiler"
 	"github.com/kyleconroy/sqlc/internal/debug"
 	"github.com/kyleconroy/sqlc/internal/plugin"
 )
 
-func mysqlType(req *plugin.CodeGenRequest, col *compiler.Column) string {
-	columnType := col.DataType
+func dataType(n *plugin.Identifier) string {
+	if n.Schema != "" {
+		return n.Schema + "." + n.Name
+	} else {
+		return n.Name
+	}
+}
+
+func mysqlType(req *plugin.CodeGenRequest, col *plugin.Column) string {
+	columnType := dataType(col.Type)
 	notNull := col.NotNull || col.IsArray
 
 	switch columnType {
@@ -21,7 +28,8 @@ func mysqlType(req *plugin.CodeGenRequest, col *compiler.Column) string {
 		return "sql.NullString"
 
 	case "tinyint":
-		if col.Length != nil && *col.Length == 1 {
+		// XXX: is this still right?
+		if col.Length == 1 {
 			if notNull {
 				return "bool"
 			}

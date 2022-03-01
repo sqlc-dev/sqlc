@@ -201,10 +201,10 @@ func buildImports(settings *plugin.Settings, queries []Query, uses func(string) 
 
 	overrideTypes := map[string]string{}
 	for _, o := range settings.Overrides {
-		if o.GoBasicType || o.GoTypeName == "" {
+		if o.GoType.BasicType || o.GoType.TypeName == "" {
 			continue
 		}
-		overrideTypes[o.GoTypeName] = o.GoImportPath
+		overrideTypes[o.GoType.TypeName] = o.GoType.ImportPath
 	}
 
 	_, overrideNullTime := overrideTypes["pq.NullTime"]
@@ -222,13 +222,13 @@ func buildImports(settings *plugin.Settings, queries []Query, uses func(string) 
 
 	// Custom imports
 	for _, o := range settings.Overrides {
-		if o.GoBasicType || o.GoTypeName == "" {
+		if o.GoType.BasicType || o.GoType.TypeName == "" {
 			continue
 		}
-		_, alreadyImported := std[o.GoImportPath]
-		hasPackageAlias := o.GoPackage != ""
-		if (!alreadyImported || hasPackageAlias) && uses(o.GoTypeName) {
-			pkg[ImportSpec{Path: o.GoImportPath, ID: o.GoPackage}] = struct{}{}
+		_, alreadyImported := std[o.GoType.ImportPath] // XXX
+		hasPackageAlias := o.GoType.Package != ""
+		if (!alreadyImported || hasPackageAlias) && uses(o.GoType.TypeName) {
+			pkg[ImportSpec{Path: o.GoType.ImportPath, ID: o.GoType.Package}] = struct{}{}
 		}
 	}
 

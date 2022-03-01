@@ -29,7 +29,7 @@ func (gf Field) Tag() string {
 }
 
 func JSONTagName(name string, settings *plugin.Settings) string {
-	style := settings.Go.JSONTagsCaseStyle
+	style := settings.Go.JsonTagsCaseStyle
 	if style == "" || style == "none" {
 		return name
 	} else {

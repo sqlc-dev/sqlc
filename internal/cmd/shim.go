@@ -39,6 +39,7 @@ func pluginOverride(o config.Override) *plugin.Override {
 		ColumnName: column,
 		Table:      &table,
 		PythonType: pluginPythonType(o.PythonType),
+		GoType:     pluginGoType(o),
 	}
 }
 
@@ -56,6 +57,7 @@ func pluginSettings(cs config.CombinedSettings) *plugin.Settings {
 		Rename:    cs.Rename,
 		Python:    pluginPythonCode(cs.Python),
 		Kotlin:    pluginKotlinCode(cs.Kotlin),
+		Go:        pluginGoCode(cs.Go),
 	}
 }
 
@@ -66,6 +68,42 @@ func pluginPythonCode(s config.SQLPython) *plugin.PythonCode {
 		EmitExactTableNames: s.EmitExactTableNames,
 		EmitSyncQuerier:     s.EmitSyncQuerier,
 		EmitAsyncQuerier:    s.EmitAsyncQuerier,
+	}
+}
+
+func pluginGoCode(s config.SQLGo) *plugin.GoCode {
+	return &plugin.GoCode{
+		EmitInterface:             s.EmitInterface,
+		EmitJsonTags:              s.EmitJSONTags,
+		EmitDbTags:                s.EmitDBTags,
+		EmitPreparedQueries:       s.EmitPreparedQueries,
+		EmitExactTableNames:       s.EmitExactTableNames,
+		EmitEmptySlices:           s.EmitEmptySlices,
+		EmitExportedQueries:       s.EmitExportedQueries,
+		EmitResultStructPointers:  s.EmitResultStructPointers,
+		EmitParamsStructPointers:  s.EmitParamsStructPointers,
+		EmitMethodsWithDbArgument: s.EmitMethodsWithDBArgument,
+		JsonTagsCaseStyle:         s.JSONTagsCaseStyle,
+		Package:                   s.Package,
+		Out:                       s.Out,
+		SqlPackage:                s.SQLPackage,
+		OutputDbFileName:          s.OutputDBFileName,
+		OutputModelsFileName:      s.OutputModelsFileName,
+		OutputQuerierFileName:     s.OutputQuerierFileName,
+		OutputFilesSuffix:         s.OutputFilesSuffix,
+	}
+}
+
+func pluginGoType(o config.Override) *plugin.ParsedGoType {
+	// Note that there is a slight mismatch between this and the
+	// proto api. The GoType on the override is the unparsed type,
+	// which could be a qualified path or an object, as per
+	// https://docs.sqlc.dev/en/latest/reference/config.html#renaming-struct-fields
+	return &plugin.ParsedGoType{
+		ImportPath: o.GoImportPath,
+		Package:    o.GoPackage,
+		TypeName:   o.GoTypeName,
+		BasicType:  o.GoBasicType,
 	}
 }
 
