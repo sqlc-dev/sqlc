@@ -24,7 +24,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2.4.0
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v3
         with:
           python-version: 3.9
       - name: Install python dependencies
