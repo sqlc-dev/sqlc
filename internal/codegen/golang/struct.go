@@ -3,12 +3,11 @@ package golang
 import (
 	"strings"
 
-	"github.com/kyleconroy/sqlc/internal/core"
 	"github.com/kyleconroy/sqlc/internal/plugin"
 )
 
 type Struct struct {
-	Table   core.FQN
+	Table   plugin.Identifier
 	Name    string
 	Fields  []Field
 	Comment string

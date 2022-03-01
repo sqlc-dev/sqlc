@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/kyleconroy/sqlc/internal/codegen"
-	"github.com/kyleconroy/sqlc/internal/core"
 	"github.com/kyleconroy/sqlc/internal/inflection"
 	"github.com/kyleconroy/sqlc/internal/plugin"
 )
@@ -68,7 +67,7 @@ func buildStructs(req *plugin.CodeGenRequest) []Struct {
 				structName = inflection.Singular(structName)
 			}
 			s := Struct{
-				Table:   core.FQN{Schema: schema.Name, Rel: table.Rel.Name},
+				Table:   plugin.Identifier{Schema: schema.Name, Name: table.Rel.Name},
 				Name:    StructName(structName, req.Settings),
 				Comment: table.Comment,
 			}
@@ -210,7 +209,7 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 					c := query.Columns[i]
 					sameName := f.Name == StructName(columnName(c, i), req.Settings)
 					sameType := f.Type == goType(req, c)
-					sameTable := sameTableName(c.Table, s.Table, req.Catalog.DefaultSchema)
+					sameTable := sameTableName(c.Table, &s.Table, req.Catalog.DefaultSchema)
 					if !sameName || !sameType || !sameTable {
 						same = false
 					}
