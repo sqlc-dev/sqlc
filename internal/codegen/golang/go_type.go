@@ -5,7 +5,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/plugin"
 )
 
-// XXX: dedupe
+// XXX: These are copied from python codegen.
 func matchString(pat, target string) bool {
 	matcher, err := pattern.MatchCompile(pat)
 	if err != nil {

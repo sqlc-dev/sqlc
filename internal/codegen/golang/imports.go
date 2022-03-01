@@ -225,7 +225,7 @@ func buildImports(settings *plugin.Settings, queries []Query, uses func(string) 
 		if o.GoType.BasicType || o.GoType.TypeName == "" {
 			continue
 		}
-		_, alreadyImported := std[o.GoType.ImportPath] // XXX
+		_, alreadyImported := std[o.GoType.ImportPath]
 		hasPackageAlias := o.GoType.Package != ""
 		if (!alreadyImported || hasPackageAlias) && uses(o.GoType.TypeName) {
 			pkg[ImportSpec{Path: o.GoType.ImportPath, ID: o.GoType.Package}] = struct{}{}

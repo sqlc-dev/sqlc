@@ -28,7 +28,6 @@ func mysqlType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		return "sql.NullString"
 
 	case "tinyint":
-		// XXX: is this still right?
 		if col.Length == 1 {
 			if notNull {
 				return "bool"

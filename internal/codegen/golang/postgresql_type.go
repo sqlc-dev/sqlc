@@ -263,7 +263,6 @@ func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 			}
 
 			for _, ct := range schema.CompositeTypes {
-				// XXX: old code had a bug?
 				if rel.Name == ct.Name && rel.Schema == schema.Name {
 					if notNull {
 						return "string"

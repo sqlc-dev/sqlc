@@ -92,7 +92,6 @@ message GoCode
   string json_tags_case_style = 11;
   string package = 12;
   string out = 13;
-  // XXX: overrides, rename, is part of the parent?
   string sql_package = 14;
   string output_db_file_name = 15;
   string output_models_file_name = 16;

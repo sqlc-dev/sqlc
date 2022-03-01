@@ -10,16 +10,9 @@ import (
 	"text/template"
 
 	"github.com/kyleconroy/sqlc/internal/codegen"
-	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/plugin"
 )
-
-type Generateable interface {
-	Structs(settings config.CombinedSettings) []Struct
-	GoQueries(settings config.CombinedSettings) []Query
-	Enums(settings config.CombinedSettings) []Enum
-}
 
 type tmplCtx struct {
 	Q          string

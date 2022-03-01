@@ -168,7 +168,7 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 			var cols []goColumn
 			for _, p := range query.Params {
 				cols = append(cols, goColumn{
-					id:     int(p.Number), // XXX: ??
+					id:     int(p.Number),
 					Column: p.Column,
 				})
 			}
