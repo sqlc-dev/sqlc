@@ -1,17 +1,16 @@
 package golang
 
 import (
-	"github.com/kyleconroy/sqlc/internal/core"
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
+	"github.com/kyleconroy/sqlc/internal/plugin"
 )
 
-func sameTableName(n *ast.TableName, f core.FQN, defaultSchema string) bool {
-	if n == nil {
+func sameTableName(tableID, f *plugin.Identifier, defaultSchema string) bool {
+	if tableID == nil {
 		return false
 	}
-	schema := n.Schema
-	if n.Schema == "" {
+	schema := tableID.Schema
+	if tableID.Schema == "" {
 		schema = defaultSchema
 	}
-	return n.Catalog == f.Catalog && schema == f.Schema && n.Name == f.Rel
+	return tableID.Catalog == f.Catalog && schema == f.Schema && tableID.Name == f.Name
 }

@@ -10,16 +10,9 @@ import (
 	"text/template"
 
 	"github.com/kyleconroy/sqlc/internal/codegen"
-	"github.com/kyleconroy/sqlc/internal/compiler"
-	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/metadata"
+	"github.com/kyleconroy/sqlc/internal/plugin"
 )
-
-type Generateable interface {
-	Structs(settings config.CombinedSettings) []Struct
-	GoQueries(settings config.CombinedSettings) []Query
-	Enums(settings config.CombinedSettings) []Enum
-}
 
 type tmplCtx struct {
 	Q          string
@@ -28,7 +21,6 @@ type tmplCtx struct {
 	Enums      []Enum
 	Structs    []Struct
 	GoQueries  []Query
-	Settings   config.Config
 
 	// TODO: Race conditions
 	SourceName string
@@ -47,19 +39,19 @@ func (t *tmplCtx) OutputQuery(sourceName string) bool {
 	return t.SourceName == sourceName
 }
 
-func Generate(r *compiler.Result, settings config.CombinedSettings) (map[string]string, error) {
-	enums := buildEnums(r, settings)
-	structs := buildStructs(r, settings)
-	queries, err := buildQueries(r, settings, structs)
+func Generate(req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
+	enums := buildEnums(req)
+	structs := buildStructs(req)
+	queries, err := buildQueries(req, structs)
 	if err != nil {
 		return nil, err
 	}
-	return generate(settings, enums, structs, queries)
+	return generate(req, enums, structs, queries)
 }
 
-func generate(settings config.CombinedSettings, enums []Enum, structs []Struct, queries []Query) (map[string]string, error) {
+func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, queries []Query) (*plugin.CodeGenResponse, error) {
 	i := &importer{
-		Settings: settings,
+		Settings: req.Settings,
 		Queries:  queries,
 		Enums:    enums,
 		Structs:  structs,
@@ -83,18 +75,17 @@ func generate(settings config.CombinedSettings, enums []Enum, structs []Struct, 
 			),
 	)
 
-	golang := settings.Go
+	golang := req.Settings.Go
 	tctx := tmplCtx{
-		Settings:                  settings.Global,
 		EmitInterface:             golang.EmitInterface,
-		EmitJSONTags:              golang.EmitJSONTags,
-		EmitDBTags:                golang.EmitDBTags,
+		EmitJSONTags:              golang.EmitJsonTags,
+		EmitDBTags:                golang.EmitDbTags,
 		EmitPreparedQueries:       golang.EmitPreparedQueries,
 		EmitEmptySlices:           golang.EmitEmptySlices,
-		EmitMethodsWithDBArgument: golang.EmitMethodsWithDBArgument,
+		EmitMethodsWithDBArgument: golang.EmitMethodsWithDbArgument,
 		UsesCopyFrom:              usesCopyFrom(queries),
 		UsesBatch:                 usesBatch(queries),
-		SQLPackage:                SQLPackageFromString(golang.SQLPackage),
+		SQLPackage:                SQLPackageFromString(golang.SqlPackage),
 		Q:                         "`",
 		Package:                   golang.Package,
 		GoQueries:                 queries,
@@ -139,8 +130,8 @@ func generate(settings config.CombinedSettings, enums []Enum, structs []Struct, 
 	}
 
 	dbFileName := "db.go"
-	if golang.OutputDBFileName != "" {
-		dbFileName = golang.OutputDBFileName
+	if golang.OutputDbFileName != "" {
+		dbFileName = golang.OutputDbFileName
 	}
 	modelsFileName := "models.go"
 	if golang.OutputModelsFileName != "" {
@@ -187,7 +178,16 @@ func generate(settings config.CombinedSettings, enums []Enum, structs []Struct, 
 			return nil, err
 		}
 	}
-	return output, nil
+	resp := plugin.CodeGenResponse{}
+
+	for filename, code := range output {
+		resp.Files = append(resp.Files, &plugin.File{
+			Name:     filename,
+			Contents: []byte(code),
+		})
+	}
+
+	return &resp, nil
 }
 
 func usesCopyFrom(queries []Query) bool {

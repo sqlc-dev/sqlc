@@ -193,7 +193,7 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 		switch {
 		case sql.Gen.Go != nil:
 			out = combo.Go.Out
-			files, err = golang.Generate(result, combo)
+			resp, err = golang.Generate(codeGenRequest(result, combo))
 		case sql.Gen.Kotlin != nil:
 			out = combo.Kotlin.Out
 			resp, err = kotlin.Generate(codeGenRequest(result, combo))
