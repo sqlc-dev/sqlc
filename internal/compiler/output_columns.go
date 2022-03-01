@@ -412,6 +412,15 @@ func sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, error) {
 
 		case *ast.RangeSubselect:
 			cols, err := outputColumns(qc, n.Subquery)
+			// update columns if we are joining subquery
+			switch n.JoinType {
+			case ast.JoinTypeLeft:
+				fallthrough
+			case ast.JoinTypeFull:
+				for _, c := range cols {
+					c.NotNull = false
+				}
+			}
 			if err != nil {
 				return nil, err
 			}

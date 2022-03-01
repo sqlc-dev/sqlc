@@ -1320,6 +1320,10 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Larg)
 		}
 		if n.Rarg != nil {
+			switch t := n.Rarg.(type) {
+			case *ast.RangeSubselect:
+				t.JoinType = n.Jointype
+			}
 			Walk(f, n.Rarg)
 		}
 		if n.UsingClause != nil {
