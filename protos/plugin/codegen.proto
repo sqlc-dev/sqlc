@@ -114,6 +114,13 @@ message Schema
   string name = 2;
   repeated Table tables = 3;
   repeated Enum enums = 4;
+  repeated CompositeType composite_types = 5;
+}
+
+message CompositeType
+{
+  string name = 1;
+  string comment = 2;
 }
 
 message Enum

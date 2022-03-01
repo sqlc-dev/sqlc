@@ -260,13 +260,16 @@ func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 					}
 					return StructName(schema.Name+"_"+enum.Name, req.Settings)
 				}
-				// case *catalog.CompositeType:
-				// XXX: ???????? Why is there something non-enum?
-				// 	if notNull {
-				// 		return "string"
-				// 	}
-				// 	return "sql.NullString"
-				// }
+			}
+
+			for _, ct := range schema.CompositeTypes {
+				// XXX: old code had a bug?
+				if rel.Name == ct.Name && rel.Schema == schema.Name {
+					if notNull {
+						return "string"
+					}
+					return "sql.NullString"
+				}
 			}
 		}
 		if debug.Active {

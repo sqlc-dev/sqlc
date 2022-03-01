@@ -2,10 +2,8 @@ package golang
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/plugin"
 )
@@ -78,13 +76,11 @@ func (v QueryValue) UniqueFields() []Field {
 	seen := map[string]struct{}{}
 	fields := make([]Field, 0, len(v.Struct.Fields))
 
-	log.Println("uniqes")
 	for _, field := range v.Struct.Fields {
 		if _, found := seen[field.Name]; found {
 			continue
 		}
 		seen[field.Name] = struct{}{}
-		log.Println("what is unique?", spew.Sdump(field))
 		fields = append(fields, field)
 	}
 

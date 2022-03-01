@@ -2,11 +2,9 @@ package golang
 
 import (
 	"fmt"
-	"log"
 	"sort"
 	"strings"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/kyleconroy/sqlc/internal/codegen"
 	"github.com/kyleconroy/sqlc/internal/core"
 	"github.com/kyleconroy/sqlc/internal/inflection"
@@ -159,7 +157,6 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 			Table:        query.InsertIntoTable,
 		}
 		sqlpkg := SQLPackageFromString(req.Settings.Go.SqlPackage)
-		log.Println(query.Params)
 
 		if len(query.Params) == 1 {
 			p := query.Params[0]
@@ -176,12 +173,10 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 					Column: p.Column,
 				})
 			}
-			log.Println("cols", spew.Sdump(cols))
 			s, err := columnsToStruct(req, gq.MethodName+"Params", cols, false)
 			if err != nil {
 				return nil, err
 			}
-			log.Println("to struct", spew.Sdump(s))
 			gq.Arg = QueryValue{
 				Emit:        true,
 				Name:        "arg",
