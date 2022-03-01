@@ -3,8 +3,8 @@ package golang
 import (
 	"strings"
 
-	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/core"
+	"github.com/kyleconroy/sqlc/internal/plugin"
 )
 
 type Struct struct {
@@ -14,7 +14,7 @@ type Struct struct {
 	Comment string
 }
 
-func StructName(name string, settings config.CombinedSettings) string {
+func StructName(name string, settings *plugin.Settings) string {
 	if rename := settings.Rename[name]; rename != "" {
 		return rename
 	}

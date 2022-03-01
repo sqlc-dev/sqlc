@@ -5,7 +5,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/kyleconroy/sqlc/internal/config"
+	"github.com/kyleconroy/sqlc/internal/plugin"
 )
 
 type Field struct {
@@ -28,8 +28,8 @@ func (gf Field) Tag() string {
 	return strings.Join(tags, " ")
 }
 
-func JSONTagName(name string, settings config.CombinedSettings) string {
-	style := settings.Go.JSONTagsCaseStyle
+func JSONTagName(name string, settings *plugin.Settings) string {
+	style := settings.Go.JsonTagsCaseStyle
 	if style == "" || style == "none" {
 		return name
 	} else {

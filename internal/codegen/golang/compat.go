@@ -2,10 +2,10 @@ package golang
 
 import (
 	"github.com/kyleconroy/sqlc/internal/core"
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
+	"github.com/kyleconroy/sqlc/internal/plugin"
 )
 
-func sameTableName(n *ast.TableName, f core.FQN, defaultSchema string) bool {
+func sameTableName(n *plugin.Identifier, f core.FQN, defaultSchema string) bool {
 	if n == nil {
 		return false
 	}
