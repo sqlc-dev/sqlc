@@ -187,6 +187,7 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 		if debug.Traced {
 			region = trace.StartRegion(ctx, "codegen")
 		}
+		var files map[string]string
 		var resp *plugin.CodeGenResponse
 		var out string
 		switch {
@@ -206,8 +207,8 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 			region.End()
 		}
 
-		files := map[string]string{}
 		if resp != nil {
+			files = map[string]string{}
 			for _, file := range resp.Files {
 				files[file.Name] = string(file.Contents)
 			}
