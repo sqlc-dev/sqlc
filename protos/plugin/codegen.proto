@@ -11,23 +11,23 @@ message File
 }
 
 message Override {
-	// name of the type to use, e.g. `github.com/segmentio/ksuid.KSUID` or `mymodule.Type`
-	string code_type = 1 [json_name="code_type"];
+  // name of the type to use, e.g. `github.com/segmentio/ksuid.KSUID` or `mymodule.Type`
+  string code_type = 1 [json_name="code_type"];
 
-	// name of the type to use, e.g. `text`
-	string db_type = 3 [json_name="db_type"];
+  // name of the type to use, e.g. `text`
+  string db_type = 3 [json_name="db_type"];
 
-	// True if the override should apply to a nullable database type
-	bool nullable = 5 [json_name="nullable"];
+  // True if the override should apply to a nullable database type
+  bool nullable = 5 [json_name="nullable"];
 
-	// fully qualified name of the column, e.g. `accounts.id`
-	string column = 6 [json_name="column"];
+  // fully qualified name of the column, e.g. `accounts.id`
+  string column = 6 [json_name="column"];
 
-	Identifier table = 7 [json_name="table"];
+  Identifier table = 7 [json_name="table"];
 
-	string column_name = 8 [json_name="column_name"];
+  string column_name = 8 [json_name="column_name"];
 
-	PythonType python_type = 9;
+  PythonType python_type = 9;
 
   ParsedGoType go_type = 10;
 }
@@ -139,9 +139,9 @@ message Table
 
 message Identifier
 {
-	string catalog = 1;
-	string schema = 2;
-	string name = 3;
+  string catalog = 1;
+  string schema = 2;
+  string name = 3;
 }
 
 message Column
@@ -171,7 +171,7 @@ message Query
   repeated Parameter params = 5 [json_name="parameters"];
   repeated string comments = 6 [json_name="comments"];
   string filename = 7 [json_name="filename"];
-  Identifier InsertIntoTable = 8;
+  Identifier insert_into_table = 8 [json_name="insert_into_table"];
 }
 
 message Parameter
