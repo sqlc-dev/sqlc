@@ -1,15 +1,40 @@
 package golang
 
 import (
+	"fmt"
 	"log"
+	"strings"
 
-	"github.com/kyleconroy/sqlc/internal/compiler"
+	"github.com/kyleconroy/sqlc/internal/codegen/sdk"
 	"github.com/kyleconroy/sqlc/internal/debug"
 	"github.com/kyleconroy/sqlc/internal/plugin"
 )
 
+func parseIdentifierString(name string) (*plugin.Identifier, error) {
+	parts := strings.Split(name, ".")
+	switch len(parts) {
+	case 1:
+		return &plugin.Identifier{
+			Name: parts[0],
+		}, nil
+	case 2:
+		return &plugin.Identifier{
+			Schema: parts[0],
+			Name:   parts[1],
+		}, nil
+	case 3:
+		return &plugin.Identifier{
+			Catalog: parts[0],
+			Schema:  parts[1],
+			Name:    parts[2],
+		}, nil
+	default:
+		return nil, fmt.Errorf("invalid name: %s", name)
+	}
+}
+
 func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
-	columnType := dataType(col.Type)
+	columnType := sdk.DataType(col.Type)
 	notNull := col.NotNull || col.IsArray
 	driver := parseDriver(req.Settings)
 
@@ -239,7 +264,7 @@ func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		return "interface{}"
 
 	default:
-		rel, err := compiler.ParseRelationString(columnType)
+		rel, err := parseIdentifierString(columnType)
 		if err != nil {
 			// TODO: Should this actually return an error here?
 			return "interface{}"

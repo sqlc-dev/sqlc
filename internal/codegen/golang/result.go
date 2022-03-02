@@ -5,7 +5,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/kyleconroy/sqlc/internal/codegen"
+	"github.com/kyleconroy/sqlc/internal/codegen/sdk"
 	"github.com/kyleconroy/sqlc/internal/inflection"
 	"github.com/kyleconroy/sqlc/internal/plugin"
 )
@@ -140,15 +140,15 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 
 		var constantName string
 		if req.Settings.Go.EmitExportedQueries {
-			constantName = codegen.Title(query.Name)
+			constantName = sdk.Title(query.Name)
 		} else {
-			constantName = codegen.LowerTitle(query.Name)
+			constantName = sdk.LowerTitle(query.Name)
 		}
 
 		gq := Query{
 			Cmd:          query.Cmd,
 			ConstantName: constantName,
-			FieldName:    codegen.LowerTitle(query.Name) + "Stmt",
+			FieldName:    sdk.LowerTitle(query.Name) + "Stmt",
 			MethodName:   query.Name,
 			SourceName:   query.Filename,
 			SQL:          query.Text,
@@ -209,7 +209,7 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 					c := query.Columns[i]
 					sameName := f.Name == StructName(columnName(c, i), req.Settings)
 					sameType := f.Type == goType(req, c)
-					sameTable := sameTableName(c.Table, &s.Table, req.Catalog.DefaultSchema)
+					sameTable := sdk.SameTableName(c.Table, &s.Table, req.Catalog.DefaultSchema)
 					if !sameName || !sameType || !sameTable {
 						same = false
 					}

@@ -1,51 +1,9 @@
 package golang
 
 import (
-	"github.com/kyleconroy/sqlc/internal/pattern"
+	"github.com/kyleconroy/sqlc/internal/codegen/sdk"
 	"github.com/kyleconroy/sqlc/internal/plugin"
 )
-
-// XXX: These are copied from python codegen.
-func matchString(pat, target string) bool {
-	matcher, err := pattern.MatchCompile(pat)
-	if err != nil {
-		panic(err)
-	}
-	return matcher.MatchString(target)
-}
-
-func matches(o *plugin.Override, n *plugin.Identifier, defaultSchema string) bool {
-	if n == nil {
-		return false
-	}
-
-	schema := n.Schema
-	if n.Schema == "" {
-		schema = defaultSchema
-	}
-
-	if o.Table.Catalog != "" && !matchString(o.Table.Catalog, n.Catalog) {
-		return false
-	}
-
-	if o.Table.Schema == "" && schema != "" {
-		return false
-	}
-
-	if o.Table.Schema != "" && !matchString(o.Table.Schema, schema) {
-		return false
-	}
-
-	if o.Table.Name == "" && n.Name != "" {
-		return false
-	}
-
-	if o.Table.Name != "" && !matchString(o.Table.Name, n.Name) {
-		return false
-	}
-
-	return true
-}
 
 func goType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 	// Check if the column's type has been overridden
@@ -53,8 +11,8 @@ func goType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		if oride.GoType.TypeName == "" {
 			continue
 		}
-		sameTable := matches(oride, col.Table, req.Catalog.DefaultSchema)
-		if oride.Column != "" && matchString(oride.ColumnName, col.Name) && sameTable {
+		sameTable := sdk.Matches(oride, col.Table, req.Catalog.DefaultSchema)
+		if oride.Column != "" && sdk.MatchString(oride.ColumnName, col.Name) && sameTable {
 			return oride.GoType.TypeName
 		}
 	}
@@ -66,7 +24,7 @@ func goType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 }
 
 func goInnerType(req *plugin.CodeGenRequest, col *plugin.Column) string {
-	columnType := dataType(col.Type)
+	columnType := sdk.DataType(col.Type)
 	notNull := col.NotNull || col.IsArray
 
 	// package overrides have a higher precedence

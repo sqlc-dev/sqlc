@@ -8,10 +8,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/kyleconroy/sqlc/internal/codegen"
+	"github.com/kyleconroy/sqlc/internal/codegen/sdk"
 	"github.com/kyleconroy/sqlc/internal/inflection"
 	"github.com/kyleconroy/sqlc/internal/metadata"
-	"github.com/kyleconroy/sqlc/internal/pattern"
 	"github.com/kyleconroy/sqlc/internal/plugin"
 	pyast "github.com/kyleconroy/sqlc/internal/python/ast"
 	"github.com/kyleconroy/sqlc/internal/python/poet"
@@ -192,8 +191,8 @@ func pyInnerType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		if !pyTypeIsSet(oride.PythonType) {
 			continue
 		}
-		sameTable := matches(oride, col.Table, req.Catalog.DefaultSchema)
-		if oride.Column != "" && matchString(oride.ColumnName, col.Name) && sameTable {
+		sameTable := sdk.Matches(oride, col.Table, req.Catalog.DefaultSchema)
+		if oride.Column != "" && sdk.MatchString(oride.ColumnName, col.Name) && sameTable {
 			return pyTypeString(oride.PythonType)
 		}
 		if oride.DbType != "" && oride.DbType == col.DataType && oride.Nullable != (col.NotNull || col.IsArray) {
@@ -208,47 +207,6 @@ func pyInnerType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		log.Println("unsupported engine type")
 		return "Any"
 	}
-}
-
-func matchString(pat, target string) bool {
-	matcher, err := pattern.MatchCompile(pat)
-	if err != nil {
-		panic(err)
-	}
-	return matcher.MatchString(target)
-}
-
-func matches(o *plugin.Override, n *plugin.Identifier, defaultSchema string) bool {
-	if n == nil {
-		return false
-	}
-
-	schema := n.Schema
-	if n.Schema == "" {
-		schema = defaultSchema
-	}
-
-	if o.Table.Catalog != "" && !matchString(o.Table.Catalog, n.Catalog) {
-		return false
-	}
-
-	if o.Table.Schema == "" && schema != "" {
-		return false
-	}
-
-	if o.Table.Schema != "" && !matchString(o.Table.Schema, schema) {
-		return false
-	}
-
-	if o.Table.Name == "" && n.Name != "" {
-		return false
-	}
-
-	if o.Table.Name != "" && !matchString(o.Table.Name, n.Name) {
-		return false
-	}
-
-	return true
 }
 
 func modelName(name string, settings *plugin.Settings) string {
@@ -403,17 +361,6 @@ func columnsToStruct(req *plugin.CodeGenRequest, name string, columns []pyColumn
 	return &gs
 }
 
-func sameTableName(tableID, f *plugin.Identifier, defaultSchema string) bool {
-	if tableID == nil {
-		return false
-	}
-	schema := tableID.Schema
-	if tableID.Schema == "" {
-		schema = defaultSchema
-	}
-	return tableID.Catalog == f.Catalog && schema == f.Schema && tableID.Name == f.Name
-}
-
 var postgresPlaceholderRegexp = regexp.MustCompile(`\B\$(\d+)\b`)
 
 // Sqlalchemy uses ":name" for placeholders, so "$N" is converted to ":pN"
@@ -445,7 +392,7 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 			Cmd:          query.Cmd,
 			Comments:     query.Comments,
 			MethodName:   methodName,
-			FieldName:    codegen.LowerTitle(query.Name) + "Stmt",
+			FieldName:    sdk.LowerTitle(query.Name) + "Stmt",
 			ConstantName: strings.ToUpper(methodName),
 			SQL:          sqlalchemySQL(query.Text, req.Settings.Engine),
 			SourceName:   query.Filename,
@@ -498,7 +445,7 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 					trimmedPyType.InnerType = strings.TrimPrefix(trimmedPyType.InnerType, "models.")
 					sameName := f.Name == columnName(c, i)
 					sameType := f.Type == trimmedPyType
-					sameTable := sameTableName(c.Table, &s.Table, req.Catalog.DefaultSchema)
+					sameTable := sdk.SameTableName(c.Table, &s.Table, req.Catalog.DefaultSchema)
 					if !sameName || !sameType || !sameTable {
 						same = false
 					}

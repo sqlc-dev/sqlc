@@ -9,7 +9,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/kyleconroy/sqlc/internal/codegen"
+	"github.com/kyleconroy/sqlc/internal/codegen/sdk"
 	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/plugin"
 )
@@ -58,9 +58,9 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 	}
 
 	funcMap := template.FuncMap{
-		"lowerTitle": codegen.LowerTitle,
-		"comment":    codegen.DoubleSlashComment,
-		"escape":     codegen.EscapeBacktick,
+		"lowerTitle": sdk.LowerTitle,
+		"comment":    sdk.DoubleSlashComment,
+		"escape":     sdk.EscapeBacktick,
 		"imports":    i.Imports,
 		"hasPrefix":  strings.HasPrefix,
 	}

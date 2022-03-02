@@ -10,22 +10,11 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/kyleconroy/sqlc/internal/codegen"
+	"github.com/kyleconroy/sqlc/internal/codegen/sdk"
 	"github.com/kyleconroy/sqlc/internal/inflection"
 	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/plugin"
 )
-
-func sameTableName(n, f *plugin.Identifier) bool {
-	if n == nil {
-		return false
-	}
-	schema := n.Schema
-	if n.Schema == "" {
-		schema = "public"
-	}
-	return n.Catalog == n.Catalog && schema == f.Schema && n.Name == f.Name
-}
 
 var ktIdentPattern = regexp.MustCompile("[^a-zA-Z0-9_]+")
 
@@ -269,7 +258,7 @@ func dataClassName(name string, settings *plugin.Settings) string {
 }
 
 func memberName(name string, settings *plugin.Settings) string {
-	return codegen.LowerTitle(dataClassName(name, settings))
+	return sdk.LowerTitle(dataClassName(name, settings))
 }
 
 func buildDataClasses(req *plugin.CodeGenRequest) []Struct {
@@ -365,7 +354,7 @@ func makeType(req *plugin.CodeGenRequest, col *plugin.Column) ktType {
 		IsEnum:   isEnum,
 		IsArray:  col.IsArray,
 		IsNull:   !col.NotNull,
-		DataType: dataType(col.Type),
+		DataType: sdk.DataType(col.Type),
 		Engine:   req.Settings.Engine,
 	}
 }
@@ -468,9 +457,9 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 		gq := Query{
 			Cmd:          query.Cmd,
 			ClassName:    strings.Title(query.Name),
-			ConstantName: codegen.LowerTitle(query.Name),
-			FieldName:    codegen.LowerTitle(query.Name) + "Stmt",
-			MethodName:   codegen.LowerTitle(query.Name),
+			ConstantName: sdk.LowerTitle(query.Name),
+			FieldName:    sdk.LowerTitle(query.Name) + "Stmt",
+			MethodName:   sdk.LowerTitle(query.Name),
 			SourceName:   query.Filename,
 			SQL:          jdbcSQL(query.Text, req.Settings.Engine),
 			Comments:     query.Comments,
@@ -507,7 +496,7 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 					c := query.Columns[i]
 					sameName := f.Name == memberName(ktColumnName(c, i), req.Settings)
 					sameType := f.Type == makeType(req, c)
-					sameTable := sameTableName(c.Table, &s.Table)
+					sameTable := sdk.SameTableName(c.Table, &s.Table, req.Catalog.DefaultSchema)
 
 					if !sameName || !sameType || !sameTable {
 						same = false
@@ -779,8 +768,8 @@ func Generate(req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
 	}
 
 	funcMap := template.FuncMap{
-		"lowerTitle": codegen.LowerTitle,
-		"comment":    codegen.DoubleSlashComment,
+		"lowerTitle": sdk.LowerTitle,
+		"comment":    sdk.DoubleSlashComment,
 		"imports":    i.Imports,
 		"offset":     Offset,
 	}
