@@ -187,6 +187,7 @@ func makePyType(req *plugin.CodeGenRequest, col *plugin.Column) pyType {
 }
 
 func pyInnerType(req *plugin.CodeGenRequest, col *plugin.Column) string {
+	columnType := sdk.DataType(col.Type)
 	for _, oride := range req.Settings.Overrides {
 		if !pyTypeIsSet(oride.PythonType) {
 			continue
@@ -195,7 +196,7 @@ func pyInnerType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		if oride.Column != "" && sdk.MatchString(oride.ColumnName, col.Name) && sameTable {
 			return pyTypeString(oride.PythonType)
 		}
-		if oride.DbType != "" && oride.DbType == col.DataType && oride.Nullable != (col.NotNull || col.IsArray) {
+		if oride.DbType != "" && oride.DbType == columnType && oride.Nullable != (col.NotNull || col.IsArray) {
 			return pyTypeString(oride.PythonType)
 		}
 	}
