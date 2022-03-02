@@ -5,8 +5,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/metadata"
+	"github.com/kyleconroy/sqlc/internal/plugin"
 )
 
 type fileImports struct {
@@ -58,7 +58,7 @@ func mergeImports(imps ...fileImports) [][]ImportSpec {
 }
 
 type importer struct {
-	Settings config.CombinedSettings
+	Settings *plugin.Settings
 	Queries  []Query
 	Enums    []Enum
 	Structs  []Struct
@@ -78,8 +78,8 @@ func (i *importer) usesType(typ string) bool {
 
 func (i *importer) Imports(filename string) [][]ImportSpec {
 	dbFileName := "db.go"
-	if i.Settings.Go.OutputDBFileName != "" {
-		dbFileName = i.Settings.Go.OutputDBFileName
+	if i.Settings.Go.OutputDbFileName != "" {
+		dbFileName = i.Settings.Go.OutputDbFileName
 	}
 	modelsFileName := "models.go"
 	if i.Settings.Go.OutputModelsFileName != "" {
@@ -114,7 +114,7 @@ func (i *importer) dbImports() fileImports {
 		{Path: "context"},
 	}
 
-	sqlpkg := SQLPackageFromString(i.Settings.Go.SQLPackage)
+	sqlpkg := SQLPackageFromString(i.Settings.Go.SqlPackage)
 	switch sqlpkg {
 	case SQLPackagePGX:
 		pkg = append(pkg, ImportSpec{Path: "github.com/jackc/pgconn"})
@@ -161,7 +161,7 @@ var pqtypeTypes = map[string]struct{}{
 	"pqtype.NullRawMessage": {},
 }
 
-func buildImports(settings config.CombinedSettings, queries []Query, uses func(string) bool) (map[string]struct{}, map[ImportSpec]struct{}) {
+func buildImports(settings *plugin.Settings, queries []Query, uses func(string) bool) (map[string]struct{}, map[ImportSpec]struct{}) {
 	pkg := make(map[ImportSpec]struct{})
 	std := make(map[string]struct{})
 
@@ -169,7 +169,7 @@ func buildImports(settings config.CombinedSettings, queries []Query, uses func(s
 		std["database/sql"] = struct{}{}
 	}
 
-	sqlpkg := SQLPackageFromString(settings.Go.SQLPackage)
+	sqlpkg := SQLPackageFromString(settings.Go.SqlPackage)
 	for _, q := range queries {
 		if q.Cmd == metadata.CmdExecResult {
 			switch sqlpkg {
@@ -201,10 +201,10 @@ func buildImports(settings config.CombinedSettings, queries []Query, uses func(s
 
 	overrideTypes := map[string]string{}
 	for _, o := range settings.Overrides {
-		if o.GoBasicType || o.GoTypeName == "" {
+		if o.GoType.BasicType || o.GoType.TypeName == "" {
 			continue
 		}
-		overrideTypes[o.GoTypeName] = o.GoImportPath
+		overrideTypes[o.GoType.TypeName] = o.GoType.ImportPath
 	}
 
 	_, overrideNullTime := overrideTypes["pq.NullTime"]
@@ -222,13 +222,13 @@ func buildImports(settings config.CombinedSettings, queries []Query, uses func(s
 
 	// Custom imports
 	for _, o := range settings.Overrides {
-		if o.GoBasicType || o.GoTypeName == "" {
+		if o.GoType.BasicType || o.GoType.TypeName == "" {
 			continue
 		}
-		_, alreadyImported := std[o.GoImportPath]
-		hasPackageAlias := o.GoPackage != ""
-		if (!alreadyImported || hasPackageAlias) && uses(o.GoTypeName) {
-			pkg[ImportSpec{Path: o.GoImportPath, ID: o.GoPackage}] = struct{}{}
+		_, alreadyImported := std[o.GoType.ImportPath]
+		hasPackageAlias := o.GoType.Package != ""
+		if (!alreadyImported || hasPackageAlias) && uses(o.GoType.TypeName) {
+			pkg[ImportSpec{Path: o.GoType.ImportPath, ID: o.GoType.Package}] = struct{}{}
 		}
 	}
 
@@ -366,7 +366,7 @@ func (i *importer) queryImports(filename string) fileImports {
 		std["context"] = struct{}{}
 	}
 
-	sqlpkg := SQLPackageFromString(i.Settings.Go.SQLPackage)
+	sqlpkg := SQLPackageFromString(i.Settings.Go.SqlPackage)
 	if sliceScan() && sqlpkg != SQLPackagePGX {
 		pkg[ImportSpec{Path: "github.com/lib/pq"}] = struct{}{}
 	}

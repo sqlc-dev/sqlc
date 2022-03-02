@@ -1,6 +1,8 @@
 package golang
 
-import "github.com/kyleconroy/sqlc/internal/config"
+import (
+	"github.com/kyleconroy/sqlc/internal/plugin"
+)
 
 type SQLDriver int
 
@@ -9,8 +11,8 @@ const (
 	SQLDriverLibPQ
 )
 
-func parseDriver(settings config.CombinedSettings) SQLDriver {
-	if settings.Go.SQLPackage == "pgx/v4" {
+func parseDriver(settings *plugin.Settings) SQLDriver {
+	if settings.Go.SqlPackage == "pgx/v4" {
 		return SQLDriverPGXV4
 	} else {
 		return SQLDriverLibPQ

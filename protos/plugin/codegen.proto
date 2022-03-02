@@ -11,23 +11,25 @@ message File
 }
 
 message Override {
-	// name of the type to use, e.g. `github.com/segmentio/ksuid.KSUID` or `mymodule.Type`
-	string code_type = 1 [json_name="code_type"];
+  // name of the type to use, e.g. `github.com/segmentio/ksuid.KSUID` or `mymodule.Type`
+  string code_type = 1 [json_name="code_type"];
 
-	// name of the type to use, e.g. `text`
-	string db_type = 3 [json_name="db_type"];
+  // name of the type to use, e.g. `text`
+  string db_type = 3 [json_name="db_type"];
 
-	// True if the override should apply to a nullable database type
-	bool nullable = 5 [json_name="nullable"];
+  // True if the override should apply to a nullable database type
+  bool nullable = 5 [json_name="nullable"];
 
-	// fully qualified name of the column, e.g. `accounts.id`
-	string column = 6 [json_name="column"];
+  // fully qualified name of the column, e.g. `accounts.id`
+  string column = 6 [json_name="column"];
 
-	Identifier table = 7 [json_name="table"];
+  Identifier table = 7 [json_name="table"];
 
-	string column_name = 8 [json_name="column_name"];
+  string column_name = 8 [json_name="column_name"];
 
-	PythonType python_type = 9;
+  PythonType python_type = 9;
+
+  ParsedGoType go_type = 10;
 }
 
 message PythonType
@@ -36,6 +38,13 @@ message PythonType
   string name = 2;
 }
 
+message ParsedGoType
+{
+  string import_path = 1;
+  string package = 2;
+  string type_name = 3;
+  bool basic_type = 4;
+}
 
 message Settings
 {
@@ -49,6 +58,7 @@ message Settings
   // TODO: Refactor codegen settings
   PythonCode python = 8;
   KotlinCode kotlin = 9;
+  GoCode go = 10;
 }
 
 message PythonCode
@@ -67,6 +77,28 @@ message KotlinCode
   string out = 3;
 }
 
+message GoCode
+{
+  bool emit_interface = 1;
+  bool emit_json_tags = 2;
+  bool emit_db_tags = 3;
+  bool emit_prepared_queries = 4;
+  bool emit_exact_table_names = 5;
+  bool emit_empty_slices = 6;
+  bool emit_exported_queries = 7;
+  bool emit_result_struct_pointers = 8;
+  bool emit_params_struct_pointers = 9;
+  bool emit_methods_with_db_argument = 10;
+  string json_tags_case_style = 11;
+  string package = 12;
+  string out = 13;
+  string sql_package = 14;
+  string output_db_file_name = 15;
+  string output_models_file_name = 16;
+  string output_querier_file_name = 17;
+  string output_files_suffix = 18;
+}
+
 message Catalog
 {
   string comment = 1;
@@ -81,6 +113,13 @@ message Schema
   string name = 2;
   repeated Table tables = 3;
   repeated Enum enums = 4;
+  repeated CompositeType composite_types = 5;
+}
+
+message CompositeType
+{
+  string name = 1;
+  string comment = 2;
 }
 
 message Enum
@@ -99,9 +138,9 @@ message Table
 
 message Identifier
 {
-	string catalog = 1;
-	string schema = 2;
-	string name = 3;
+  string catalog = 1;
+  string schema = 2;
+  string name = 3;
 }
 
 message Column
@@ -131,6 +170,7 @@ message Query
   repeated Parameter params = 5 [json_name="parameters"];
   repeated string comments = 6 [json_name="comments"];
   string filename = 7 [json_name="filename"];
+  Identifier insert_into_table = 8 [json_name="insert_into_table"];
 }
 
 message Parameter
