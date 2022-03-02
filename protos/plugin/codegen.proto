@@ -158,7 +158,6 @@ message Column
   Identifier table = 10;
   string table_alias = 11;
   Identifier type = 12;
-  string data_type = 13;
 }
 
 message Query
