@@ -114,6 +114,7 @@ type SQLGen struct {
 	Go     *SQLGo     `json:"go,omitempty" yaml:"go"`
 	Kotlin *SQLKotlin `json:"kotlin,omitempty" yaml:"kotlin"`
 	Python *SQLPython `json:"python,omitempty" yaml:"python"`
+	WASM   *SQLWASM   `json:"wasm,omitempty" yaml:"wasm"`
 }
 
 type SQLGo struct {
@@ -153,6 +154,11 @@ type SQLPython struct {
 	Out                 string     `json:"out" yaml:"out"`
 	Overrides           []Override `json:"overrides,omitempty" yaml:"overrides"`
 	EmitPydanticModels  bool       `json:"emit_pydantic_models,omitempty" yaml:"emit_pydantic_models"`
+}
+
+type SQLWASM struct {
+	Out  string `json:"out" yaml:"out"`
+	Path string `json:"path" yaml:"path"`
 }
 
 type Override struct {
@@ -352,6 +358,7 @@ type CombinedSettings struct {
 	Go        SQLGo
 	Kotlin    SQLKotlin
 	Python    SQLPython
+	WASM      SQLWASM
 	Rename    map[string]string
 	Overrides []Override
 }
@@ -378,6 +385,9 @@ func Combine(conf Config, pkg SQL) CombinedSettings {
 	if pkg.Gen.Python != nil {
 		cs.Python = *pkg.Gen.Python
 		cs.Overrides = append(cs.Overrides, pkg.Gen.Python.Overrides...)
+	}
+	if pkg.Gen.WASM != nil {
+		cs.WASM = *pkg.Gen.WASM
 	}
 	return cs
 }

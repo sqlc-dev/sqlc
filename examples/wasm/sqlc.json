@@ -1,0 +1,38 @@
+{
+  "version": "2",
+  "sql": [
+    {
+      "schema": "../authors/postgresql/schema.sql",
+      "queries": "../authors/postgresql/query.sql",
+      "engine": "postgresql",
+      "gen": {
+        "wasm": {
+          "out": "gen/go",
+          "path": "../../cache/sqlc-codegen-go.wasm"
+        }
+      }
+    },
+    {
+      "schema": "../authors/postgresql/schema.sql",
+      "queries": "../authors/postgresql/query.sql",
+      "engine": "postgresql",
+      "gen": {
+        "wasm": {
+          "out": "gen/kotlin",
+          "path": "../../cache/sqlc-codegen-kotlin.wasm"
+        }
+      }
+    },
+    {
+      "schema": "../authors/postgresql/schema.sql",
+      "queries": "../authors/postgresql/query.sql",
+      "engine": "postgresql",
+      "gen": {
+        "wasm": {
+          "out": "gen/python",
+          "path": "../../cache/sqlc-codegen-python.wasm"
+        }
+      }
+    }
+  ]
+}

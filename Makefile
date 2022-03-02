@@ -1,4 +1,4 @@
-.PHONY: build build-endtoend test test-ci test-examples test-endtoend regen start psql mysqlsh
+.PHONY: build build-endtoend test test-ci test-examples test-endtoend regen start psql mysqlsh wasm
 
 build:
 	go build ./...
@@ -54,3 +54,18 @@ internal/python/ast/ast.pb.go: protos/python/ast.proto
 		--go_out=. \
 		--go_opt=module=github.com/kyleconroy/sqlc \
 		./protos/python/ast.proto
+
+wasm: cache/sqlc-codegen-python.wasm cache/sqlc-codegen-go.wasm cache/sqlc-codegen-kotlin.wasm
+
+cache/sqlc-codegen-python.wasm: cmd/sqlc-codegen-python/main.go
+	cd cmd/sqlc-codegen-python && tinygo build -o ../../cache/sqlc-codegen-python.wasm -gc=leaking -scheduler=none -wasm-abi=generic -target=wasi
+
+cache/sqlc-codegen-kotlin.wasm: cmd/sqlc-codegen-kotlin/main.go
+	cd cmd/sqlc-codegen-kotlin && tinygo build -o ../../cache/sqlc-codegen-kotlin.wasm -gc=leaking -wasm-abi=generic -target=wasi
+
+cache/sqlc-codegen-go.wasm: cmd/sqlc-codegen-go/main.go
+	cd cmd/sqlc-codegen-go && tinygo build -o ../../cache/sqlc-codegen-go.wasm -gc=leaking -wasm-abi=generic -target=wasi
+
+
+
+
