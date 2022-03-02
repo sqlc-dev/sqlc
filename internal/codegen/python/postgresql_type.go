@@ -3,19 +3,12 @@ package python
 import (
 	"log"
 
+	"github.com/kyleconroy/sqlc/internal/codegen/sdk"
 	"github.com/kyleconroy/sqlc/internal/plugin"
 )
 
-func dataType(n *plugin.Identifier) string {
-	if n.Schema != "" {
-		return n.Schema + "." + n.Name
-	} else {
-		return n.Name
-	}
-}
-
 func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
-	columnType := dataType(col.Type)
+	columnType := sdk.DataType(col.Type)
 
 	switch columnType {
 	case "serial", "serial4", "pg_catalog.serial4", "bigserial", "serial8", "pg_catalog.serial8", "smallserial", "serial2", "pg_catalog.serial2", "integer", "int", "int4", "pg_catalog.int4", "bigint", "int8", "pg_catalog.int8", "smallint", "int2", "pg_catalog.int2":

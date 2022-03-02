@@ -3,11 +3,12 @@ package kotlin
 import (
 	"log"
 
+	"github.com/kyleconroy/sqlc/internal/codegen/sdk"
 	"github.com/kyleconroy/sqlc/internal/plugin"
 )
 
 func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) (string, bool) {
-	columnType := dataType(col.Type)
+	columnType := sdk.DataType(col.Type)
 
 	switch columnType {
 	case "serial", "pg_catalog.serial4":
