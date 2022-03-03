@@ -2606,6 +2606,7 @@ var file_python_ast_proto_depIdxs = []int32{
 
 func init() { file_python_ast_proto_init() }
 func file_python_ast_proto_init() {
+	return
 	if File_python_ast_proto != nil {
 		return
 	}
