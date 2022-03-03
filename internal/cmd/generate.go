@@ -218,7 +218,6 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 		default:
 			panic("missing language backend")
 		}
-		fmt.Println("out", out)
 		resp, err := genfunc(codeGenRequest(result, combo))
 		if region != nil {
 			region.End()
