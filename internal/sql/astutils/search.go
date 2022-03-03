@@ -19,3 +19,25 @@ func Search(root ast.Node, f func(ast.Node) bool) *ast.List {
 	Walk(ns, root)
 	return ns.list
 }
+
+func IsChildOfNodes(parents []*ast.Node, node *ast.Node) bool {
+	for _, v := range parents {
+		if IsChildOfNode(v, node) {
+			return true
+		}
+	}
+	return false
+}
+
+func IsChildOfNode(parent *ast.Node, node *ast.Node) bool {
+	res := Search(*parent, func(n ast.Node) bool {
+		if n == *node {
+			return true
+		}
+		return false
+	})
+	if len(res.Items) > 0 {
+		return true
+	}
+	return false
+}

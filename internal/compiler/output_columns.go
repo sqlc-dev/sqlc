@@ -359,6 +359,7 @@ func isTableRequired(n ast.Node, col *Column, prior int) int {
 // Return an error if an unknown column is referenced
 func sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, error) {
 	var list *ast.List
+	var nullableNodes []*ast.Node
 	switch n := node.(type) {
 	case *ast.DeleteStmt:
 		list = &ast.List{
@@ -369,14 +370,29 @@ func sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, error) {
 			Items: []ast.Node{n.Relation},
 		}
 	case *ast.SelectStmt:
-		list = astutils.Search(n.FromClause, func(node ast.Node) bool {
-			switch node.(type) {
+		dirtyList := astutils.Search(n.FromClause, func(node ast.Node) bool {
+			switch t := node.(type) {
 			case *ast.RangeVar, *ast.RangeSubselect, *ast.FuncName:
 				return true
+			case *ast.JoinExpr:
+				if t.Jointype == ast.JoinTypeLeft || t.Jointype == ast.JoinTypeFull {
+					return true
+				}
+				return false
 			default:
 				return false
 			}
 		})
+		// split result into nullableJoins and list of nodes to handle
+		list = &ast.List{}
+		for i, v := range dirtyList.Items {
+			switch t := dirtyList.Items[i].(type) {
+			case *ast.JoinExpr:
+				nullableNodes = append(nullableNodes, &t.Rarg)
+			default:
+				list.Items = append(list.Items, v)
+			}
+		}
 	case *ast.TruncateStmt:
 		list = astutils.Search(n.Relations, func(node ast.Node) bool {
 			_, ok := node.(*ast.RangeVar)
@@ -413,17 +429,14 @@ func sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, error) {
 
 		case *ast.RangeSubselect:
 			cols, err := outputColumns(qc, n.Subquery)
-			// update columns if we are joining subquery
-			switch n.JoinType {
-			case ast.JoinTypeLeft:
-				fallthrough
-			case ast.JoinTypeFull:
+
+			if err != nil {
+				return nil, err
+			}
+			if astutils.IsChildOfNodes(nullableNodes, &item) {
 				for _, c := range cols {
 					c.NotNull = false
 				}
-			}
-			if err != nil {
-				return nil, err
 			}
 			tables = append(tables, &Table{
 				Rel: &ast.TableName{

@@ -2,7 +2,6 @@ package ast
 
 type RangeSubselect struct {
 	Lateral  bool
-	JoinType JoinType
 	Subquery Node
 	Alias    *Alias
 }
