@@ -9,9 +9,9 @@ place.
 
 ## Our Privacy Pledge
 
-The `sqlc` program does not collect any information. It does not send crash
-reports to a third-party. It does not gather anonymous aggregate user behaviour
-analytics.
+The `sqlc` command line tool does not collect any information. It
+does not send crash reports to a third-party. It does not gather anonymous
+aggregate user behaviour analytics.
 
 No analytics. 
 No finger-printing.
@@ -19,7 +19,7 @@ No tracking.
 
 Not now and not in the future.
 
-## Distribution Channels
+### Distribution Channels
 
 We distribute sqlc using popular package managers such as
 [Homebrew](https://brew.sh/) and [Snapcraft](https://snapcraft.io/). These
@@ -28,3 +28,27 @@ metrics.
 
 We use these services to make it easy to for users to install sqlc. There will
 always be an option to download sqlc from a stable URL.
+
+## Hosted Services
+
+We provide a few hosted services in addition to the sqlc command line tool.
+
+### sqlc.dev
+
+* Hosted on [GitHub Pages](https://pages.github.com/)
+* Analytics with [Plausible](https://plausible.io/privacy-focused-web-analytics)
+
+### docs.sqlc.dev
+
+* Hosted on [Read the Docs](https://readthedocs.org/)
+
+### play.sqlc.dev
+
+* Hosted on [Heroku](https://heroku.com)
+* Playground data stored in [Google Cloud Storage](https://cloud.google.com/storage)
+  * Automatically deleted after 30 days
+
+### api.sqlc.dev
+
+* Hosted on [Heroku](https://heroku.com)
+* Error tracking and tracing with [Sentry](https://sentry.io)
