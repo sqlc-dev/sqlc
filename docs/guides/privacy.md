@@ -41,6 +41,7 @@ We provide a few hosted services in addition to the sqlc command line tool.
 ### docs.sqlc.dev
 
 * Hosted on [Read the Docs](https://readthedocs.org/)
+* Analytics with [Plausible](https://plausible.io/privacy-focused-web-analytics)
 
 ### play.sqlc.dev
 
