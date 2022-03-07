@@ -29,7 +29,8 @@ func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int 
 	rootCmd.AddCommand(genCmd)
 	rootCmd.AddCommand(initCmd)
 	rootCmd.AddCommand(versionCmd)
-	rootCmd.AddCommand(packageCmd)
+	uploadCmd.Flags().BoolP("dry-run", "", false, "dump upload request (default: false)")
+	rootCmd.AddCommand(uploadCmd)
 
 	rootCmd.SetArgs(args)
 	rootCmd.SetIn(stdin)
@@ -96,11 +97,16 @@ var initCmd = &cobra.Command{
 
 type Env struct {
 	ExperimentalFeatures bool
+	DryRun               bool
 }
 
 func ParseEnv(c *cobra.Command) Env {
 	x := c.Flag("experimental")
-	return Env{ExperimentalFeatures: x != nil && x.Changed}
+	dr := c.Flag("dry-run")
+	return Env{
+		ExperimentalFeatures: x != nil && x.Changed,
+		DryRun:               dr != nil && dr.Changed,
+	}
 }
 
 func getConfigPath(stderr io.Writer, f *pflag.Flag) (string, string) {
@@ -149,6 +155,20 @@ var genCmd = &cobra.Command{
 				os.Exit(1)
 			}
 		}
+	},
+}
+
+var uploadCmd = &cobra.Command{
+	Use:   "upload",
+	Short: "Upload the schema, queries, and configuration for this project",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		stderr := cmd.ErrOrStderr()
+		dir, name := getConfigPath(stderr, cmd.Flag("file"))
+		if err := createPkg(cmd.Context(), ParseEnv(cmd), dir, name, stderr); err != nil {
+			fmt.Fprintf(stderr, "error uploading: %s\n", err)
+			os.Exit(1)
+		}
+		return nil
 	},
 }
 

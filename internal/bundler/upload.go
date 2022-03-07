@@ -7,6 +7,7 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
+	"net/http/httputil"
 	"os"
 
 	"github.com/kyleconroy/sqlc/internal/config"
@@ -38,32 +39,51 @@ func (up *Uploader) Validate() error {
 	return nil
 }
 
-func (up *Uploader) Upload(ctx context.Context, result map[string]string) error {
+func (up *Uploader) buildRequest(ctx context.Context, result map[string]string) (*http.Request, error) {
 	if err := up.Validate(); err != nil {
-		return err
+		return nil, err
 	}
 	body := bytes.NewBuffer([]byte{})
 
 	w := multipart.NewWriter(body)
 	defer w.Close()
 	if err := writeInputs(w, up.configPath, up.config); err != nil {
-		return err
+		return nil, err
 	}
 	if err := writeOutputs(w, up.dir, result); err != nil {
-		return err
+		return nil, err
 	}
 	w.Close()
 
 	req, err := http.NewRequest("POST", "https://api.sqlc.dev/upload", body)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// Set sqlc-version header
 	req.Header.Set("Content-Type", w.FormDataContentType())
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", up.token))
-	req = req.WithContext(ctx)
+	return req.WithContext(ctx), nil
+}
 
+func (up *Uploader) DumpRequestOut(ctx context.Context, result map[string]string) error {
+	req, err := up.buildRequest(ctx, result)
+	if err != nil {
+		return err
+	}
+	dump, err := httputil.DumpRequest(req, true)
+	if err != nil {
+		return err
+	}
+	os.Stdout.Write(dump)
+	return nil
+}
+
+func (up *Uploader) Upload(ctx context.Context, result map[string]string) error {
+	req, err := up.buildRequest(ctx, result)
+	if err != nil {
+		return err
+	}
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
