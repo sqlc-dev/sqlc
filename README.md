@@ -28,6 +28,7 @@ companies:
 - [Meter](https://meter.com)
 - [ngrok](https://ngrok.com)
 - [RStudio](https://www.rstudio.com/)
+- [時雨堂](https://shiguredo.jp/)
 
 If you use sqlc at your company, please consider [becoming a
 sponsor](https://github.com/sponsors/kyleconroy) today.
