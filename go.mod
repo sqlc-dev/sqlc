@@ -7,12 +7,13 @@ require (
 	github.com/davecgh/go-spew v1.1.1
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/google/go-cmp v0.5.7
+	github.com/jackc/pgconn v1.11.0
 	github.com/jackc/pgx/v4 v4.15.0
 	github.com/jinzhu/inflection v1.0.0
 	github.com/lib/pq v1.10.4
 	github.com/pganalyze/pg_query_go/v2 v2.1.0
 	github.com/pingcap/parser v0.0.0-20210914110036-002913dd28ec
-	github.com/spf13/cobra v1.3.0
+	github.com/spf13/cobra v1.4.0
 	github.com/spf13/pflag v1.0.5
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
@@ -22,7 +23,6 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
-	github.com/jackc/pgconn v1.11.0 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgproto3/v2 v2.2.0 // indirect
