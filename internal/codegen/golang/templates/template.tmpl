@@ -87,6 +87,30 @@ func (e *{{.Name}}) Scan(src interface{}) error {
 	return nil
 }
 
+type Null{{.Name}} struct {
+	{{.Name}} {{.Name}}
+	Valid  bool // Valid is true if String is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *Null{{.Name}}) Scan(value interface{}) error {
+	if value == nil {
+		ns.{{.Name}}, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.{{.Name}}.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns Null{{.Name}}) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return ns.{{.Name}}, nil
+}
+
+
 {{ if $.EmitEnumValidMethod }}
 func (e {{.Name}}) Valid() bool {
   switch e {
