@@ -86,10 +86,17 @@ func mysqlType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		for _, schema := range req.Catalog.Schemas {
 			for _, enum := range schema.Enums {
 				if enum.Name == columnType {
-					if schema.Name == req.Catalog.DefaultSchema {
-						return StructName(enum.Name, req.Settings)
+					if notNull {
+						if schema.Name == req.Catalog.DefaultSchema {
+							return StructName(enum.Name, req.Settings)
+						}
+						return StructName(schema.Name+"_"+enum.Name, req.Settings)
+					} else {
+						if schema.Name == req.Catalog.DefaultSchema {
+							return "Null" + StructName(enum.Name, req.Settings)
+						}
+						return "Null" + StructName(schema.Name+"_"+enum.Name, req.Settings)
 					}
-					return StructName(schema.Name+"_"+enum.Name, req.Settings)
 				}
 			}
 		}
