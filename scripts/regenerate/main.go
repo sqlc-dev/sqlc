@@ -23,7 +23,7 @@ func regenerate(dir string) error {
 			cmd.Dir = cwd
 			failed := cmd.Run()
 			if _, err := os.Stat(filepath.Join(cwd, "stderr.txt")); os.IsNotExist(err) && failed != nil {
-				return fmt.Errorf("%s: sqlc-dev generate failed", cwd)
+				return fmt.Errorf("%s: sqlc-dev generate failed: %v", cwd, failed)
 			}
 		}
 		return nil
