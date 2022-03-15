@@ -5,6 +5,7 @@
 package querytest
 
 import (
+	"database/sql/driver"
 	"fmt"
 )
 
@@ -26,6 +27,29 @@ func (e *IPProtocol) Scan(src interface{}) error {
 		return fmt.Errorf("unsupported scan type for IPProtocol: %T", src)
 	}
 	return nil
+}
+
+type NullIPProtocol struct {
+	IPProtocol IPProtocol
+	Valid      bool // Valid is true if String is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullIPProtocol) Scan(value interface{}) error {
+	if value == nil {
+		ns.IPProtocol, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.IPProtocol.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullIPProtocol) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return ns.IPProtocol, nil
 }
 
 type BarNew struct {
