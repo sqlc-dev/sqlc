@@ -3,6 +3,7 @@
 package querytest
 
 import (
+	"database/sql/driver"
 	"fmt"
 )
 
@@ -25,6 +26,29 @@ func (e *FooTypeUserRole) Scan(src interface{}) error {
 	return nil
 }
 
+type NullFooTypeUserRole struct {
+	FooTypeUserRole FooTypeUserRole
+	Valid           bool // Valid is true if String is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullFooTypeUserRole) Scan(value interface{}) error {
+	if value == nil {
+		ns.FooTypeUserRole, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.FooTypeUserRole.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullFooTypeUserRole) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return ns.FooTypeUserRole, nil
+}
+
 type FooUser struct {
-	Role FooTypeUserRole
+	Role NullFooTypeUserRole
 }
