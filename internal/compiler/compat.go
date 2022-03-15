@@ -16,10 +16,6 @@ func stringSlice(list *ast.List) []string {
 			items = append(items, n.Str)
 			continue
 		}
-		if n, ok := item.(*ast.String); ok {
-			items = append(items, n.Str)
-			continue
-		}
 	}
 	return items
 }
