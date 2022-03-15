@@ -89,13 +89,19 @@ func StripComments(sql string) (string, []string, error) {
 			continue
 		}
 		if strings.HasPrefix(t, "--") {
-			comments = append(comments, strings.TrimPrefix(t, "--"))
+			if len(lines) == 0 {
+				// We only store the first comment that should be the docstring
+				comments = append(comments, strings.TrimPrefix(t, "--"))
+			}
 			continue
 		}
 		if strings.HasPrefix(t, "/*") && strings.HasSuffix(t, "*/") {
 			t = strings.TrimPrefix(t, "/*")
 			t = strings.TrimSuffix(t, "*/")
-			comments = append(comments, t)
+			if len(lines) == 0 {
+				// We only store the first comment that should be the docstring
+				comments = append(comments, t)
+			}
 			continue
 		}
 		lines = append(lines, t)
