@@ -6,6 +6,9 @@ package querytest
 import (
 	"context"
 	"database/sql"
+	"time"
+
+	"github.com/google/uuid"
 )
 
 const allAuthors = `-- name: AllAuthors :many
@@ -345,6 +348,81 @@ func (q *Queries) GetMayorsOptional(ctx context.Context) ([]GetMayorsOptionalRow
 	for rows.Next() {
 		var i GetMayorsOptionalRow
 		if err := rows.Scan(&i.UserID, &i.FullName); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getSuggestedUsersByID = `-- name: GetSuggestedUsersByID :many
+SELECT  DISTINCT u.user_id, u.user_nickname, u.user_email, u.user_display_name, u.user_password, u.user_google_id, u.user_apple_id, u.user_bio, u.user_created_at, u.user_avatar_id, m.media_id, m.media_created_at, m.media_hash, m.media_directory, m.media_author_id, m.media_width, m.media_height
+FROM    users_2 u
+        LEFT JOIN media m
+            ON u.user_avatar_id = m.media_id
+WHERE   u.user_id != $1
+LIMIT   $2
+`
+
+type GetSuggestedUsersByIDParams struct {
+	UserID   uuid.UUID
+	UserImit int32
+}
+
+type GetSuggestedUsersByIDRow struct {
+	UserID          uuid.UUID
+	UserNickname    string
+	UserEmail       string
+	UserDisplayName string
+	UserPassword    sql.NullString
+	UserGoogleID    sql.NullString
+	UserAppleID     sql.NullString
+	UserBio         string
+	UserCreatedAt   time.Time
+	UserAvatarID    uuid.NullUUID
+	MediaID         uuid.NullUUID
+	MediaCreatedAt  sql.NullTime
+	MediaHash       sql.NullString
+	MediaDirectory  sql.NullString
+	MediaAuthorID   uuid.NullUUID
+	MediaWidth      sql.NullInt32
+	MediaHeight     sql.NullInt32
+}
+
+func (q *Queries) GetSuggestedUsersByID(ctx context.Context, arg GetSuggestedUsersByIDParams) ([]GetSuggestedUsersByIDRow, error) {
+	rows, err := q.db.QueryContext(ctx, getSuggestedUsersByID, arg.UserID, arg.UserImit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetSuggestedUsersByIDRow
+	for rows.Next() {
+		var i GetSuggestedUsersByIDRow
+		if err := rows.Scan(
+			&i.UserID,
+			&i.UserNickname,
+			&i.UserEmail,
+			&i.UserDisplayName,
+			&i.UserPassword,
+			&i.UserGoogleID,
+			&i.UserAppleID,
+			&i.UserBio,
+			&i.UserCreatedAt,
+			&i.UserAvatarID,
+			&i.MediaID,
+			&i.MediaCreatedAt,
+			&i.MediaHash,
+			&i.MediaDirectory,
+			&i.MediaAuthorID,
+			&i.MediaWidth,
+			&i.MediaHeight,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

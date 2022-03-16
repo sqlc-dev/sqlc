@@ -4,6 +4,7 @@ package querytest
 
 import (
 	"database/sql"
+	"time"
 )
 
 type Author struct {
@@ -22,6 +23,16 @@ type Mayor struct {
 	FullName string
 }
 
+type Medium struct {
+	MediaID        int32
+	MediaCreatedAt time.Time
+	MediaHash      string
+	MediaDirectory string
+	MediaAuthorID  int32
+	MediaWidth     int32
+	MediaHeight    int32
+}
+
 type SuperAuthor struct {
 	SuperID       int32
 	SuperName     string
@@ -31,4 +42,17 @@ type SuperAuthor struct {
 type User struct {
 	UserID int32
 	CityID sql.NullInt32
+}
+
+type Users2 struct {
+	UserID          int32
+	UserNickname    string
+	UserEmail       string
+	UserDisplayName string
+	UserPassword    sql.NullString
+	UserGoogleID    sql.NullString
+	UserAppleID     sql.NullString
+	UserBio         string
+	UserCreatedAt   time.Time
+	UserAvatarID    sql.NullInt32
 }
