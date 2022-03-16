@@ -83,3 +83,97 @@ func (q *Queries) GetMayorsOptional(ctx context.Context) ([]GetMayorsOptionalRow
 	}
 	return items, nil
 }
+
+const getMayorsOptionalWildcard = `-- name: GetMayorsOptionalWildcard :many
+SELECT
+    user_id, users.city_id, cities.city_id, cities.mayor_id, mayors.mayor_id, full_name
+FROM users
+LEFT JOIN cities USING (city_id)
+LEFT JOIN mayors USING (mayor_id)
+`
+
+type GetMayorsOptionalWildcardRow struct {
+	UserID    int32
+	CityID    sql.NullInt32
+	CityID_2  sql.NullInt32
+	MayorID   sql.NullInt32
+	MayorID_2 sql.NullInt32
+	FullName  sql.NullString
+}
+
+func (q *Queries) GetMayorsOptionalWildcard(ctx context.Context) ([]GetMayorsOptionalWildcardRow, error) {
+	rows, err := q.db.QueryContext(ctx, getMayorsOptionalWildcard)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetMayorsOptionalWildcardRow
+	for rows.Next() {
+		var i GetMayorsOptionalWildcardRow
+		if err := rows.Scan(
+			&i.UserID,
+			&i.CityID,
+			&i.CityID_2,
+			&i.MayorID,
+			&i.MayorID_2,
+			&i.FullName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getMayorsWildcard = `-- name: GetMayorsWildcard :many
+SELECT
+    user_id, users.city_id, cities.city_id, cities.mayor_id, mayors.mayor_id, full_name
+FROM users
+LEFT JOIN cities USING (city_id)
+INNER JOIN mayors USING (mayor_id)
+`
+
+type GetMayorsWildcardRow struct {
+	UserID    int32
+	CityID    sql.NullInt32
+	CityID_2  int32
+	MayorID   int32
+	MayorID_2 int32
+	FullName  string
+}
+
+func (q *Queries) GetMayorsWildcard(ctx context.Context) ([]GetMayorsWildcardRow, error) {
+	rows, err := q.db.QueryContext(ctx, getMayorsWildcard)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetMayorsWildcardRow
+	for rows.Next() {
+		var i GetMayorsWildcardRow
+		if err := rows.Scan(
+			&i.UserID,
+			&i.CityID,
+			&i.CityID_2,
+			&i.MayorID,
+			&i.MayorID_2,
+			&i.FullName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

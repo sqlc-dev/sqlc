@@ -14,8 +14,7 @@ SELECT  a.id,
         p.id as alias_id,
         p.name as alias_name
 FROM    authors a
-        LEFT JOIN authors p
-            ON (authors.parent_id = p.id)
+        LEFT JOIN authors p USING (parent_id)
 `
 
 type AllAuthorsRow struct {
@@ -39,6 +38,51 @@ func (q *Queries) AllAuthors(ctx context.Context) ([]AllAuthorsRow, error) {
 			&i.Name,
 			&i.AliasID,
 			&i.AliasName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const allAuthorsWildcard = `-- name: AllAuthorsWildcard :many
+SELECT  a.id, a.name, a.parent_id, p.id, p.name, p.parent_id
+FROM    authors a
+        LEFT JOIN authors p USING (parent_id)
+`
+
+type AllAuthorsWildcardRow struct {
+	ID         int32
+	Name       string
+	ParentID   sql.NullInt32
+	ID_2       sql.NullInt32
+	Name_2     sql.NullString
+	ParentID_2 sql.NullInt32
+}
+
+func (q *Queries) AllAuthorsWildcard(ctx context.Context) ([]AllAuthorsWildcardRow, error) {
+	rows, err := q.db.QueryContext(ctx, allAuthorsWildcard)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []AllAuthorsWildcardRow
+	for rows.Next() {
+		var i AllAuthorsWildcardRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.ParentID,
+			&i.ID_2,
+			&i.Name_2,
+			&i.ParentID_2,
 		); err != nil {
 			return nil, err
 		}

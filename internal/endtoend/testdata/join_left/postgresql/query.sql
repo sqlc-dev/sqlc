@@ -1,4 +1,4 @@
---- https://github.com/kyleconroy/sqlc/issues/604
+-- https://github.com/kyleconroy/sqlc/issues/604
 CREATE TABLE users (
   user_id    INT PRIMARY KEY,
   city_id    INT -- nullable
@@ -20,10 +20,25 @@ FROM users
 LEFT JOIN cities USING (city_id)
 INNER JOIN mayors USING (mayor_id);
 
+-- name: GetMayorsWildcard :many
+SELECT
+    *
+FROM users
+LEFT JOIN cities USING (city_id)
+INNER JOIN mayors USING (mayor_id);
+
 -- name: GetMayorsOptional :many
 SELECT
     user_id,
+    cities.city_id,
     mayors.full_name
+FROM users
+LEFT JOIN cities USING (city_id)
+LEFT JOIN mayors USING (mayor_id);
+
+-- name: GetMayorsOptionalWildcard :many
+SELECT
+    *
 FROM users
 LEFT JOIN cities USING (city_id)
 LEFT JOIN mayors USING (mayor_id);
