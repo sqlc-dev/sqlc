@@ -12,10 +12,7 @@ test-examples:
 build-endtoend:
 	cd ./internal/endtoend/testdata && go build ./...
 
-test-endtoend:
-	cd ./internal/endtoend/testdata && go test ./...
-
-test-ci: test-examples build-endtoend test-endtoend
+test-ci: test-examples build-endtoend
 
 regen: sqlc-dev
 	go run ./scripts/regenerate/
