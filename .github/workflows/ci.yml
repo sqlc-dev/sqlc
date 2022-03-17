@@ -52,7 +52,3 @@ jobs:
     - name: build internal/endtoend
       run: go build ./...
       working-directory: internal/endtoend/testdata
-
-    - name: test internal/endtoend
-      run: go test ./...
-      working-directory: internal/endtoend/testdata
