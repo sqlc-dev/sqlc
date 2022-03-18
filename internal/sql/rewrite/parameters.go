@@ -43,8 +43,9 @@ func isNamedParamSignCast(node ast.Node) bool {
 
 func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool, dollar bool) (*ast.RawStmt, map[int]string, []source.Edit) {
 	foundFunc := astutils.Search(raw, named.IsParamFunc)
+	foundCallStmt := astutils.Search(raw, named.IsParamCallStmt)
 	foundSign := astutils.Search(raw, named.IsParamSign)
-	if len(foundFunc.Items)+len(foundSign.Items) == 0 {
+	if len(foundFunc.Items)+len(foundSign.Items)+len(foundCallStmt.Items) == 0 {
 		return raw, map[int]string{}, nil
 	}
 
@@ -58,6 +59,50 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 		switch {
 		case named.IsParamFunc(node):
 			fun := node.(*ast.FuncCall)
+			param, isConst := flatten(fun.Args)
+			if nums, ok := args[param]; ok && hasNamedParameterSupport {
+				cr.Replace(&ast.ParamRef{
+					Number:   nums[0],
+					Location: fun.Location,
+				})
+			} else {
+				argn++
+				for numbs[argn] {
+					argn++
+				}
+				if _, found := args[param]; !found {
+					args[param] = []int{argn}
+				} else {
+					args[param] = append(args[param], argn)
+				}
+				cr.Replace(&ast.ParamRef{
+					Number:   argn,
+					Location: fun.Location,
+				})
+			}
+			// TODO: This code assumes that sqlc.arg(name) is on a single line
+			var old, replace string
+			if isConst {
+				old = fmt.Sprintf("sqlc.arg('%s')", param)
+			} else {
+				old = fmt.Sprintf("sqlc.arg(%s)", param)
+			}
+			if engine == config.EngineMySQL || !dollar {
+				replace = "?"
+			} else {
+				replace = fmt.Sprintf("$%d", args[param][0])
+			}
+			edits = append(edits, source.Edit{
+				Location: fun.Location - raw.StmtLocation,
+				Old:      old,
+				New:      replace,
+			})
+			return false
+
+		case named.IsParamCallStmt(node):
+			callStmt := node.(*ast.CallStmt)
+			fun := callStmt.FuncCall
+			// From here it's the same as processing a function
 			param, isConst := flatten(fun.Args)
 			if nums, ok := args[param]; ok && hasNamedParameterSupport {
 				cr.Replace(&ast.ParamRef{
