@@ -511,6 +511,27 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Arg)
 		}
 
+	case *ast.CallStmt:
+		// Mirrors what ast.FuncCall does
+		if n.FuncCall.Func != nil {
+			Walk(f, n.FuncCall.Func)
+		}
+		if n.FuncCall.Funcname != nil {
+			Walk(f, n.FuncCall.Funcname)
+		}
+		if n.FuncCall.Args != nil {
+			Walk(f, n.FuncCall.Args)
+		}
+		if n.FuncCall.AggOrder != nil {
+			Walk(f, n.FuncCall.AggOrder)
+		}
+		if n.FuncCall.AggFilter != nil {
+			Walk(f, n.FuncCall.AggFilter)
+		}
+		if n.FuncCall.Over != nil {
+			Walk(f, n.FuncCall.Over)
+		}
+
 	case *ast.CaseExpr:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)

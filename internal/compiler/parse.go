@@ -48,6 +48,7 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 	}
 	var table *ast.TableName
 	switch n := raw.Stmt.(type) {
+	case *ast.CallStmt:
 	case *ast.SelectStmt:
 	case *ast.DeleteStmt:
 	case *ast.InsertStmt:

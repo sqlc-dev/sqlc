@@ -83,6 +83,8 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 		if len(targets.Items) == 0 && n.Larg != nil {
 			return outputColumns(qc, n.Larg)
 		}
+	case *ast.CallStmt:
+		targets = &ast.List{}
 	case *ast.TruncateStmt:
 		targets = &ast.List{}
 	case *ast.UpdateStmt:
@@ -386,6 +388,8 @@ func sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, error) {
 		list = &ast.List{
 			Items: append(n.FromClause.Items, n.Relations.Items...),
 		}
+	case *ast.CallStmt:
+		list = &ast.List{}
 	default:
 		return nil, fmt.Errorf("sourceTables: unsupported node type: %T", n)
 	}
