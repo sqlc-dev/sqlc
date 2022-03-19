@@ -124,7 +124,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, er
 }
 {{end}}
 
-{{if eq .Cmd ":execlastinsertid"}}
+{{if eq .Cmd ":execlastid"}}
 {{range .Comments}}//{{.}}
 {{end -}}
 {{- if $.EmitMethodsWithDBArgument -}}
