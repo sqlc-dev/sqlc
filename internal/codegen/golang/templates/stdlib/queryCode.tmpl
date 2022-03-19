@@ -124,6 +124,28 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, er
 }
 {{end}}
 
+{{if eq .Cmd ":execlastid"}}
+{{range .Comments}}//{{.}}
+{{end -}}
+{{- if $.EmitMethodsWithDBArgument -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) (int64, error) {
+{{- else -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, error) {
+{{- end -}}
+    {{- if $.EmitPreparedQueries}}
+    result, err := q.exec(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
+    {{- else if $.EmitMethodsWithDBArgument}}
+    result, err := db.ExecContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
+    {{- else}}
+    result, err := q.db.ExecContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
+    {{- end}}
+    if err != nil {
+        return 0, err
+    }
+    return result.LastInsertId()
+}
+{{end}}
+
 {{if eq .Cmd ":execresult"}}
 {{range .Comments}}//{{.}}
 {{end -}}
