@@ -78,7 +78,7 @@ func (up *Uploader) DumpRequestOut(ctx context.Context, result map[string]string
 
 func (up *Uploader) Upload(ctx context.Context, result map[string]string) error {
 	if err := up.Validate(); err != nil {
-		return nil, err
+		return err
 	}
 	req, err := up.buildRequest(ctx, result)
 	if err != nil {
