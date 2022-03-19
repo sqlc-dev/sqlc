@@ -64,6 +64,18 @@ func TestBadConfigs(t *testing.T) {
 	}
 }
 
+const validConfigOne = `{
+  "version": "1"
+  "packages": []
+}`
+
+func FuzzConfig(f *testing.F) {
+	f.Add(validConfigOne)
+	f.Fuzz(func(t *testing.T, orig string) {
+		ParseConfig(strings.NewReader(orig))
+	})
+}
+
 func TestInvalidConfig(t *testing.T) {
 	err := Validate(&Config{
 		SQL: []SQL{{
@@ -162,4 +174,20 @@ func TestTypeOverrides(t *testing.T) {
 			}
 		})
 	}
+}
+
+func FuzzOverride(f *testing.F) {
+	for _, spec := range []string{
+		"string",
+		"github.com/gofrs/uuid.UUID",
+		"github.com/segmentio/ksuid.KSUID",
+	} {
+		f.Add(spec)
+	}
+	f.Fuzz(func(t *testing.T, s string) {
+		o := Override{
+			GoType: GoType{Spec: s},
+		}
+		o.Parse()
+	})
 }
