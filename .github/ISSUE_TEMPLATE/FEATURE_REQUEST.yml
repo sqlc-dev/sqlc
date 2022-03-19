@@ -1,0 +1,29 @@
+name: Feature Request
+description: Request a new fetaure or a change to an existing feature
+labels: [enhancement, triage]
+body:
+  - type: textarea
+    id: feature
+    attributes:
+      label: What do you want to change?
+      placeholder: Tell us what you want
+      value: "Free unicorns!"
+    validations:
+      required: true
+  - type: dropdown
+    id: engines
+    attributes:
+      label: What database engines need to be changed?
+      multiple: true
+      options:
+        - PostgreSQL
+        - MySQL
+  - type: dropdown
+    id: languages
+    attributes:
+      label: What programming language backends need to be changed?
+      multiple: true
+      options:
+        - Go
+        - Python
+        - Kotlin
