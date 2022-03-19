@@ -40,9 +40,6 @@ func (up *Uploader) Validate() error {
 }
 
 func (up *Uploader) buildRequest(ctx context.Context, result map[string]string) (*http.Request, error) {
-	if err := up.Validate(); err != nil {
-		return nil, err
-	}
 	body := bytes.NewBuffer([]byte{})
 
 	w := multipart.NewWriter(body)
@@ -80,6 +77,9 @@ func (up *Uploader) DumpRequestOut(ctx context.Context, result map[string]string
 }
 
 func (up *Uploader) Upload(ctx context.Context, result map[string]string) error {
+	if err := up.Validate(); err != nil {
+		return nil, err
+	}
 	req, err := up.buildRequest(ctx, result)
 	if err != nil {
 		return err
