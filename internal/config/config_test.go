@@ -65,7 +65,7 @@ func TestBadConfigs(t *testing.T) {
 }
 
 func TestInvalidConfig(t *testing.T) {
-	err := Validate(Config{
+	err := Validate(&Config{
 		SQL: []SQL{{
 			Gen: SQLGen{
 				Go: &SQLGo{

@@ -53,6 +53,8 @@ code ever again.
    howto/ddl.md
    howto/structs.md
 
+   howto/upload.md
+
 .. toctree::
    :maxdepth: 2
    :caption: Reference

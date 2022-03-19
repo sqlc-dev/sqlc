@@ -49,7 +49,7 @@ We provide a few hosted services in addition to the sqlc command line tool.
 * Playground data stored in [Google Cloud Storage](https://cloud.google.com/storage)
   * Automatically deleted after 30 days
 
-### api.sqlc.dev
+### app.sqlc.dev / api.sqlc.dev
 
 * Hosted on [Heroku](https://heroku.com)
 * Error tracking and tracing with [Sentry](https://sentry.io)

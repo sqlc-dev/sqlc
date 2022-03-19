@@ -15,6 +15,7 @@ import (
 
 	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/debug"
+	"github.com/kyleconroy/sqlc/internal/info"
 	"github.com/kyleconroy/sqlc/internal/tracer"
 )
 
@@ -28,6 +29,8 @@ func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int 
 	rootCmd.AddCommand(genCmd)
 	rootCmd.AddCommand(initCmd)
 	rootCmd.AddCommand(versionCmd)
+	uploadCmd.Flags().BoolP("dry-run", "", false, "dump upload request (default: false)")
+	rootCmd.AddCommand(uploadCmd)
 
 	rootCmd.SetArgs(args)
 	rootCmd.SetIn(stdin)
@@ -60,9 +63,7 @@ var versionCmd = &cobra.Command{
 			defer trace.StartRegion(cmd.Context(), "version").End()
 		}
 		if version == "" {
-			// When no version is set, return the next bug fix version
-			// after the most recent tag
-			fmt.Printf("%s\n", "v1.12.0")
+			fmt.Printf("%s\n", info.Version)
 		} else {
 			fmt.Printf("%s\n", version)
 		}
@@ -96,11 +97,16 @@ var initCmd = &cobra.Command{
 
 type Env struct {
 	ExperimentalFeatures bool
+	DryRun               bool
 }
 
 func ParseEnv(c *cobra.Command) Env {
 	x := c.Flag("experimental")
-	return Env{ExperimentalFeatures: x != nil && x.Changed}
+	dr := c.Flag("dry-run")
+	return Env{
+		ExperimentalFeatures: x != nil && x.Changed,
+		DryRun:               dr != nil && dr.Changed,
+	}
 }
 
 func getConfigPath(stderr io.Writer, f *pflag.Flag) (string, string) {
@@ -149,6 +155,20 @@ var genCmd = &cobra.Command{
 				os.Exit(1)
 			}
 		}
+	},
+}
+
+var uploadCmd = &cobra.Command{
+	Use:   "upload",
+	Short: "Upload the schema, queries, and configuration for this project",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		stderr := cmd.ErrOrStderr()
+		dir, name := getConfigPath(stderr, cmd.Flag("file"))
+		if err := createPkg(cmd.Context(), ParseEnv(cmd), dir, name, stderr); err != nil {
+			fmt.Fprintf(stderr, "error uploading: %s\n", err)
+			os.Exit(1)
+		}
+		return nil
 	},
 }
 
