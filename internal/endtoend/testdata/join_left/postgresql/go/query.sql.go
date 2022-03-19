@@ -361,6 +361,51 @@ func (q *Queries) GetMayorsOptional(ctx context.Context) ([]GetMayorsOptionalRow
 	return items, nil
 }
 
+const getMayorsOptionalInnerSelect = `-- name: GetMayorsOptionalInnerSelect :many
+SELECT t1.user_id, t2.full_name
+FROM (
+    SELECT user_id FROM users WHERE users.city_id = $1 LIMIT 1 OFFSET 0
+) AS t1
+LEFT JOIN cities on users.city_id = cities.city_id
+LEFT JOIN (
+    SELECT mayors.mayor_id, mayors.full_name
+    FROM mayors where mayors.mayor_id = $2
+) AS t2 on t2.mayor_id = cities.mayor_id
+`
+
+type GetMayorsOptionalInnerSelectParams struct {
+	CityID  sql.NullInt32
+	MayorID int32
+}
+
+type GetMayorsOptionalInnerSelectRow struct {
+	UserID   int32
+	FullName sql.NullString
+}
+
+func (q *Queries) GetMayorsOptionalInnerSelect(ctx context.Context, arg GetMayorsOptionalInnerSelectParams) ([]GetMayorsOptionalInnerSelectRow, error) {
+	rows, err := q.db.QueryContext(ctx, getMayorsOptionalInnerSelect, arg.CityID, arg.MayorID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetMayorsOptionalInnerSelectRow
+	for rows.Next() {
+		var i GetMayorsOptionalInnerSelectRow
+		if err := rows.Scan(&i.UserID, &i.FullName); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getSuggestedUsersByID = `-- name: GetSuggestedUsersByID :many
 SELECT  DISTINCT u.user_id, u.user_nickname, u.user_email, u.user_display_name, u.user_password, u.user_google_id, u.user_apple_id, u.user_bio, u.user_created_at, u.user_avatar_id, m.media_id, m.media_created_at, m.media_hash, m.media_directory, m.media_author_id, m.media_width, m.media_height
 FROM    users_2 u
