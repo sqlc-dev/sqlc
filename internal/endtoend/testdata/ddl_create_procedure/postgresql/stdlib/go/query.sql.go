@@ -43,3 +43,17 @@ func (q *Queries) CallInsertDataNoArgs(ctx context.Context) error {
 	_, err := q.db.ExecContext(ctx, callInsertDataNoArgs)
 	return err
 }
+
+const callInsertDataSqlcArgs = `-- name: CallInsertDataSqlcArgs :exec
+CALL insert_data($1, $2)
+`
+
+type CallInsertDataSqlcArgsParams struct {
+	Foo int32
+	Bar int32
+}
+
+func (q *Queries) CallInsertDataSqlcArgs(ctx context.Context, arg CallInsertDataSqlcArgsParams) error {
+	_, err := q.db.ExecContext(ctx, callInsertDataSqlcArgs, arg.Foo, arg.Bar)
+	return err
+}
