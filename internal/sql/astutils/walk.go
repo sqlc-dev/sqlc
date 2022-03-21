@@ -511,6 +511,11 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Arg)
 		}
 
+	case *ast.CallStmt:
+		if n.FuncCall != nil {
+			Walk(f, n.FuncCall)
+		}
+
 	case *ast.CaseExpr:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)

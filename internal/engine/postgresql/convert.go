@@ -639,6 +639,33 @@ func convertBooleanTest(n *pg.BooleanTest) *ast.BooleanTest {
 	}
 }
 
+func convertCallStmt(n *pg.CallStmt) *ast.CallStmt {
+	if n == nil {
+		return nil
+	}
+	rel, err := parseRelationFromNodes(n.Funccall.Funcname)
+	if err != nil {
+		// TODO: How should we handle errors?
+		panic(err)
+	}
+
+	return &ast.CallStmt{
+		FuncCall: &ast.FuncCall{
+			Func:           rel.FuncName(),
+			Funcname:       convertSlice(n.Funccall.Funcname),
+			Args:           convertSlice(n.Funccall.Args),
+			AggOrder:       convertSlice(n.Funccall.AggOrder),
+			AggFilter:      convertNode(n.Funccall.AggFilter),
+			AggWithinGroup: n.Funccall.AggWithinGroup,
+			AggStar:        n.Funccall.AggStar,
+			AggDistinct:    n.Funccall.AggDistinct,
+			FuncVariadic:   n.Funccall.FuncVariadic,
+			Over:           convertWindowDef(n.Funccall.Over),
+			Location:       int(n.Funccall.Location),
+		},
+	}
+}
+
 func convertCaseExpr(n *pg.CaseExpr) *ast.CaseExpr {
 	if n == nil {
 		return nil
@@ -3092,6 +3119,9 @@ func convertNode(node *pg.Node) ast.Node {
 
 	case *pg.Node_BooleanTest:
 		return convertBooleanTest(n.BooleanTest)
+		
+	case *pg.Node_CallStmt:
+		return convertCallStmt(n.CallStmt)
 
 	case *pg.Node_CaseExpr:
 		return convertCaseExpr(n.CaseExpr)
