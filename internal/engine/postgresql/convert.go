@@ -650,7 +650,7 @@ func convertCallStmt(n *pg.CallStmt) *ast.CallStmt {
 	}
 
 	return &ast.CallStmt{
-		FuncCall: ast.FuncCall{
+		FuncCall: &ast.FuncCall{
 			Func:           rel.FuncName(),
 			Funcname:       convertSlice(n.Funccall.Funcname),
 			Args:           convertSlice(n.Funccall.Args),
