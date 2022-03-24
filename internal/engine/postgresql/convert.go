@@ -1237,13 +1237,14 @@ func convertCreateTableAsStmt(n *pg.CreateTableAsStmt) *ast.CreateTableAsStmt {
 	if n == nil {
 		return nil
 	}
-	return &ast.CreateTableAsStmt{
+	res := &ast.CreateTableAsStmt{
 		Query:        convertNode(n.Query),
 		Into:         convertIntoClause(n.Into),
 		Relkind:      ast.ObjectType(n.Relkind),
 		IsSelectInto: n.IsSelectInto,
 		IfNotExists:  n.IfNotExists,
 	}
+	return res
 }
 
 func convertCreateTableSpaceStmt(n *pg.CreateTableSpaceStmt) *ast.CreateTableSpaceStmt {
@@ -2841,6 +2842,20 @@ func convertViewStmt(n *pg.ViewStmt) *ast.ViewStmt {
 		WithCheckOption: ast.ViewCheckOption(n.WithCheckOption),
 	}
 }
+
+// func convertMatViewStmt(n *pg.ViewStmt) *ast.MatViewStmt {
+// 	if n == nil {
+// 		return nil
+// 	}
+// 	return &ast.MatViewStmt{
+// 		MatView:            convertRangeVar(n.View),
+// 		Aliases:         convertSlice(n.Aliases),
+// 		Query:           convertNode(n.Query),
+// 		Replace:         n.Replace,
+// 		Options:         convertSlice(n.Options),
+// 		WithCheckOption: ast.ViewCheckOption(n.WithCheckOption),
+// 	}
+// }
 
 func convertWindowClause(n *pg.WindowClause) *ast.WindowClause {
 	if n == nil {
