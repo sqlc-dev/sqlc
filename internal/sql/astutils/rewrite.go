@@ -414,6 +414,9 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.apply(n, "Xpr", nil, n.Xpr)
 		a.apply(n, "Arg", nil, n.Arg)
 
+	case *ast.CallStmt:
+		a.apply(n, "FuncCall", nil, n.FuncCall)
+
 	case *ast.CaseExpr:
 		a.apply(n, "Xpr", nil, n.Xpr)
 		a.apply(n, "Arg", nil, n.Arg)
