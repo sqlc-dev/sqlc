@@ -247,3 +247,45 @@ func (c *Catalog) renameTable(stmt *ast.RenameTableStmt) error {
 	}
 	return nil
 }
+
+func (c *Catalog) createTableAs(stmt *ast.CreateTableAsStmt, colGen columnGenerator) error {
+	cols, err := colGen.OutputColumns(stmt.Query)
+	if err != nil {
+		return err
+	}
+
+	catName := ""
+	if stmt.Into.Rel.Catalogname != nil {
+		catName = *stmt.Into.Rel.Catalogname
+	}
+	schemaName := ""
+	if stmt.Into.Rel.Schemaname != nil {
+		schemaName = *stmt.Into.Rel.Schemaname
+	}
+
+	tbl := Table{
+		Rel: &ast.TableName{
+			Catalog: catName,
+			Schema:  schemaName,
+			Name:    *stmt.Into.Rel.Relname,
+		},
+		Columns: cols,
+	}
+
+	ns := tbl.Rel.Schema
+	if ns == "" {
+		ns = c.DefaultSchema
+	}
+	schema, err := c.getSchema(ns)
+	if err != nil {
+		return err
+	}
+	_, _, err = schema.getTable(tbl.Rel)
+	if err == nil {
+		return sqlerr.RelationExists(tbl.Rel.Name)
+	}
+
+	schema.Tables = append(schema.Tables, &tbl)
+
+	return nil
+}

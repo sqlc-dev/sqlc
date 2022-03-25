@@ -1264,13 +1264,14 @@ func convertCreateTableAsStmt(n *pg.CreateTableAsStmt) *ast.CreateTableAsStmt {
 	if n == nil {
 		return nil
 	}
-	return &ast.CreateTableAsStmt{
+	res := &ast.CreateTableAsStmt{
 		Query:        convertNode(n.Query),
 		Into:         convertIntoClause(n.Into),
 		Relkind:      ast.ObjectType(n.Relkind),
 		IsSelectInto: n.IsSelectInto,
 		IfNotExists:  n.IfNotExists,
 	}
+	return res
 }
 
 func convertCreateTableSpaceStmt(n *pg.CreateTableSpaceStmt) *ast.CreateTableSpaceStmt {
