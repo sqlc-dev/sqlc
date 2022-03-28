@@ -10,17 +10,19 @@ import (
 	"text/template"
 
 	"github.com/kyleconroy/sqlc/internal/codegen/sdk"
+	"github.com/kyleconroy/sqlc/internal/info"
 	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/plugin"
 )
 
 type tmplCtx struct {
-	Q          string
-	Package    string
-	SQLPackage SQLPackage
-	Enums      []Enum
-	Structs    []Struct
-	GoQueries  []Query
+	Q           string
+	Package     string
+	SQLPackage  SQLPackage
+	Enums       []Enum
+	Structs     []Struct
+	GoQueries   []Query
+	SqlcVersion string
 
 	// TODO: Race conditions
 	SourceName string
@@ -91,6 +93,7 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 		GoQueries:                 queries,
 		Enums:                     enums,
 		Structs:                   structs,
+		SqlcVersion:               info.Version,
 	}
 
 	if tctx.UsesCopyFrom && tctx.SQLPackage != SQLPackagePGX {
