@@ -183,6 +183,7 @@ message CodeGenRequest
   Settings settings = 1 [json_name="settings"];
   Catalog catalog = 2 [json_name="catalog"];
   repeated Query queries = 3 [json_name="queries"];
+  string sqlc_version = 4 [json_name="sqlc_version"];
 }
 
 message CodeGenResponse

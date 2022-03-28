@@ -10,7 +10,6 @@ import (
 
 	"github.com/kyleconroy/sqlc/internal/codegen/sdk"
 	"github.com/kyleconroy/sqlc/internal/inflection"
-	"github.com/kyleconroy/sqlc/internal/info"
 	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/plugin"
 	pyast "github.com/kyleconroy/sqlc/internal/python/ast"
@@ -482,7 +481,7 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 	return qs, nil
 }
 
-func moduleNode(source string) *pyast.Module {
+func moduleNode(version, source string) *pyast.Module {
 	mod := &pyast.Module{
 		Body: []*pyast.Node{
 			poet.Comment(
@@ -492,7 +491,7 @@ func moduleNode(source string) *pyast.Module {
 				"versions:",
 			),
 			poet.Comment(
-				"  sqlc " + info.Version,
+				"  sqlc " + version,
 			),
 		},
 	}
@@ -661,7 +660,7 @@ func buildImportGroup(specs map[string]importSpec) *pyast.Node {
 }
 
 func buildModelsTree(ctx *pyTmplCtx, i *importer) *pyast.Node {
-	mod := moduleNode("")
+	mod := moduleNode(ctx.SqlcVersion, "")
 	std, pkg := i.modelImportSpecs()
 	mod.Body = append(mod.Body, buildImportGroup(std), buildImportGroup(pkg))
 
@@ -793,7 +792,7 @@ func asyncQuerierClassDef() *pyast.ClassDef {
 }
 
 func buildQueryTree(ctx *pyTmplCtx, i *importer, source string) *pyast.Node {
-	mod := moduleNode(source)
+	mod := moduleNode(ctx.SqlcVersion, source)
 	std, pkg := i.queryImportSpecs(source)
 	mod.Body = append(mod.Body, buildImportGroup(std), buildImportGroup(pkg))
 	mod.Body = append(mod.Body, &pyast.Node{
@@ -1028,12 +1027,13 @@ func buildQueryTree(ctx *pyTmplCtx, i *importer, source string) *pyast.Node {
 }
 
 type pyTmplCtx struct {
-	Models     []Struct
-	Queries    []Query
-	Enums      []Enum
-	EmitSync   bool
-	EmitAsync  bool
-	SourceName string
+	Models      []Struct
+	Queries     []Query
+	Enums       []Enum
+	EmitSync    bool
+	EmitAsync   bool
+	SourceName  string
+	SqlcVersion string
 }
 
 func (t *pyTmplCtx) OutputQuery(sourceName string) bool {
@@ -1060,11 +1060,12 @@ func Generate(req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
 	}
 
 	tctx := pyTmplCtx{
-		Models:    models,
-		Queries:   queries,
-		Enums:     enums,
-		EmitSync:  req.Settings.Python.EmitSyncQuerier,
-		EmitAsync: req.Settings.Python.EmitAsyncQuerier,
+		Models:      models,
+		Queries:     queries,
+		Enums:       enums,
+		EmitSync:    req.Settings.Python.EmitSyncQuerier,
+		EmitAsync:   req.Settings.Python.EmitAsyncQuerier,
+		SqlcVersion: req.SqlcVersion,
 	}
 
 	output := map[string]string{}

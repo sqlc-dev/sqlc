@@ -10,7 +10,6 @@ import (
 	"text/template"
 
 	"github.com/kyleconroy/sqlc/internal/codegen/sdk"
-	"github.com/kyleconroy/sqlc/internal/info"
 	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/plugin"
 )
@@ -93,7 +92,7 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 		GoQueries:                 queries,
 		Enums:                     enums,
 		Structs:                   structs,
-		SqlcVersion:               info.Version,
+		SqlcVersion:               req.SqlcVersion,
 	}
 
 	if tctx.UsesCopyFrom && tctx.SQLPackage != SQLPackagePGX {
