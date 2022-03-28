@@ -60,7 +60,7 @@ message AnnAssign
   Name target = 1 [json_name="target"];
   Node annotation = 2 [json_name="annotation"];
   int32 simple = 3 [json_name="simple"];
-  string Comment = 4 [json_name="comment"];
+  string comment = 4 [json_name="comment"];
 }
 
 message Arg
@@ -85,7 +85,7 @@ message AsyncFor
 message AsyncFunctionDef
 {
   string name = 1 [json_name="name"];
-  Arguments Args = 2 [json_name="args"];
+  Arguments args = 2 [json_name="args"];
   repeated Node body = 3 [json_name="body"];
   Node returns = 4 [json_name="returns"];
 }
@@ -94,7 +94,7 @@ message Assign
 {
   repeated Node targets = 1 [json_name="targets"];
   Node value = 2 [json_name="value"];
-  string Comment = 3 [json_name="comment"];
+  string comment = 3 [json_name="comment"];
 }
 
 message Call
@@ -157,7 +157,7 @@ message For
 message FunctionDef
 {
   string name = 1 [json_name="name"];
-  Arguments Args = 2 [json_name="args"];
+  Arguments args = 2 [json_name="args"];
   repeated Node body = 3 [json_name="body"];
   Node returns = 4 [json_name="returns"];
 }

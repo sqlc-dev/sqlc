@@ -1,0 +1,11 @@
+version: v1
+plugins: 
+  - name: go
+    out: .
+    opt:
+      - module=github.com/kyleconroy/sqlc
+  - name: go-vtproto
+    out: .
+    opt:
+      - module=github.com/kyleconroy/sqlc
+      - features=marshal+unmarshal+size
