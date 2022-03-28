@@ -12,7 +12,6 @@ import (
 
 	"github.com/kyleconroy/sqlc/internal/codegen/sdk"
 	"github.com/kyleconroy/sqlc/internal/inflection"
-	"github.com/kyleconroy/sqlc/internal/info"
 	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/plugin"
 )
@@ -793,7 +792,7 @@ func Generate(req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
 		Queries:     queries,
 		Enums:       enums,
 		DataClasses: structs,
-		SqlcVersion: info.Version,
+		SqlcVersion: req.SqlcVersion,
 	}
 
 	output := map[string]string{}
