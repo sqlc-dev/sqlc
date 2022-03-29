@@ -14,3 +14,7 @@ type Author struct {
 	Bio    sql.NullString
 	Gender sql.NullInt32
 }
+
+type AuthorsName struct {
+	Name string
+}

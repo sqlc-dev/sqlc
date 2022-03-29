@@ -288,6 +288,7 @@ func (c *Catalog) Update(stmt ast.Statement, colGen columnGenerator) error {
 	}
 	var err error
 	switch n := stmt.Raw.Stmt.(type) {
+
 	case *ast.AlterTableStmt:
 		err = c.alterTable(n)
 
@@ -329,6 +330,9 @@ func (c *Catalog) Update(stmt ast.Statement, colGen columnGenerator) error {
 
 	case *ast.CreateTableStmt:
 		err = c.createTable(n)
+
+	case *ast.CreateTableAsStmt:
+		err = c.createTableAs(n, colGen)
 
 	case *ast.ViewStmt:
 		err = c.createView(n, colGen)
