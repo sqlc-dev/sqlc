@@ -34,5 +34,5 @@ func RemoveRollbackStatements(contents string) string {
 
 func IsDown(filename string) bool {
 	// Remove golang-migrate rollback files.
-	return strings.HasSuffix(filename, ".down.sql")
+	return strings.HasSuffix(filename, ".down.sql") || filename == "down.sql"
 }
