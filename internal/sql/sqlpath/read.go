@@ -1,8 +1,6 @@
 package sqlpath
 
 import (
-	"fmt"
-	"os"
 	"path/filepath"
 	"strings"
 
@@ -14,21 +12,11 @@ import (
 func Glob(paths []string) ([]string, error) {
 	var files []string
 	for _, path := range paths {
-		f, err := os.Stat(path)
+		f, err := filepath.Glob(path)
 		if err != nil {
-			return nil, fmt.Errorf("path %s does not exist", path)
+			return nil, err
 		}
-		if f.IsDir() {
-			listing, err := os.ReadDir(path)
-			if err != nil {
-				return nil, err
-			}
-			for _, f := range listing {
-				files = append(files, filepath.Join(path, f.Name()))
-			}
-		} else {
-			files = append(files, path)
-		}
+		files = append(files, f...)
 	}
 	var sqlFiles []string
 	for _, file := range files {
