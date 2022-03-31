@@ -6,7 +6,7 @@ Language  MySQL         PostgreSQL
 ========  ============  ============
 Go        Stable        Stable
 Kotlin    Beta          Beta
-Python    Experimental  Experimental
+Python    Beta          Beta
 ========  ============  ============
 
 Future Language Support
