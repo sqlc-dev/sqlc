@@ -1,6 +1,44 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.13.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.13.0)
+Released 2022-03-31
+
+### Bug Fixes
+
+- (compiler) Fix left join nullability with table aliases (#1491)
+- (postgresql) Remove extra newline with db argument (#1417)
+- (sqlite) Fix DROP TABLE (#1443)
+
+### Features
+
+- (cli) Upload projects (#1436)
+- (codegen) Add sqlc version to generated Go code (#1513)
+- (codegen) Add sqlc version to generated Kotlin code (#1512)
+- (codegen) Insert comments in interfaces (#1458)
+- (codegen) Pass sqlc version in codegen request (#1514)
+- (pgx) Add support for batch operations (#1437)
+- (postgresql) Add materialized view support (#1509)
+- (python) Graduate Python support to beta (#1520)
+- (sdk) Add the plugin SDK package (#1463)
+- (sqlite) Add support for delete statements (#1447)
+- (sqlite) Start expanding support (#1410)
+
+### Miscellaneous Tasks
+
+- Fix extra newline in comments for copyfrom (#1438)
+- Generate marshal/unmarshal with vtprotobuf (#1467)
+
+### Refactor
+
+- (codegen) Port Kotlin codegen package to use plugin types (#1416)
+- (codegen) Port Go to plugin types (#1460)
+- (cmd) Simplify codegen selection logic (#1466)
+
+### Config
+
+- Add basic fuzzing for config / overrides (#1500)
+
 ## [1.12.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.12.0)
 Released 2022-02-05
 
