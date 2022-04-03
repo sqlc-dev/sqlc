@@ -16,6 +16,7 @@ const (
 	CmdExec       = ":exec"
 	CmdExecResult = ":execresult"
 	CmdExecRows   = ":execrows"
+	CmdExecLastId = ":execlastid"
 	CmdMany       = ":many"
 	CmdOne        = ":one"
 	CmdCopyFrom   = ":copyfrom"
@@ -83,7 +84,7 @@ func Parse(t string, commentStyle CommentSyntax) (string, string, error) {
 			part = part[:len(part)-1] // removes the trailing "*/" element
 		}
 		if len(part) == 2 {
-			return "", "", fmt.Errorf("missing query type [':one', ':many', ':exec', ':execrows', ':execresult', ':copyfrom', 'batchexec', 'batchmany', 'batchone']: %s", line)
+			return "", "", fmt.Errorf("missing query type [':one', ':many', ':exec', ':execrows', ':execlastid', ':execresult', ':copyfrom', 'batchexec', 'batchmany', 'batchone']: %s", line)
 		}
 		if len(part) != 4 {
 			return "", "", fmt.Errorf("invalid query comment: %s", line)
@@ -91,7 +92,7 @@ func Parse(t string, commentStyle CommentSyntax) (string, string, error) {
 		queryName := part[2]
 		queryType := strings.TrimSpace(part[3])
 		switch queryType {
-		case CmdOne, CmdMany, CmdExec, CmdExecResult, CmdExecRows, CmdCopyFrom, CmdBatchExec, CmdBatchMany, CmdBatchOne:
+		case CmdOne, CmdMany, CmdExec, CmdExecResult, CmdExecRows, CmdExecLastId, CmdCopyFrom, CmdBatchExec, CmdBatchMany, CmdBatchOne:
 		default:
 			return "", "", fmt.Errorf("invalid query type: %s", queryType)
 		}

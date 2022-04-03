@@ -38,6 +38,15 @@
             {{end -}}
             {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, error)
         {{- end}}
+        {{- if and (eq .Cmd ":execlastid") ($dbtxParam) }}
+            {{range .Comments}}//{{.}}
+            {{end -}}
+            {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) (int64, error)
+        {{- else if eq .Cmd ":execlastid"}}
+            {{range .Comments}}//{{.}}
+            {{end -}}
+            {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, error)
+        {{- end}}
         {{- if and (eq .Cmd ":execresult") ($dbtxParam) }}
             {{range .Comments}}//{{.}}
             {{end -}}
