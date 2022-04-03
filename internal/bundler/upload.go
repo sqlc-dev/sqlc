@@ -41,22 +41,20 @@ func (up *Uploader) Validate() error {
 
 func (up *Uploader) buildRequest(ctx context.Context, result map[string]string) (*http.Request, error) {
 	body := bytes.NewBuffer([]byte{})
-
 	w := multipart.NewWriter(body)
-	defer w.Close()
 	if err := writeInputs(w, up.configPath, up.config); err != nil {
 		return nil, err
 	}
 	if err := writeOutputs(w, up.dir, result); err != nil {
 		return nil, err
 	}
-	w.Close()
-
+	if err := w.Close(); err != nil {
+		return nil, err
+	}
 	req, err := http.NewRequest("POST", "https://api.sqlc.dev/upload", body)
 	if err != nil {
 		return nil, err
 	}
-
 	// Set sqlc-version header
 	req.Header.Set("Content-Type", w.FormDataContentType())
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", up.token))
