@@ -137,12 +137,14 @@ type SQLGo struct {
 	OutputModelsFileName      string            `json:"output_models_file_name,omitempty" yaml:"output_models_file_name"`
 	OutputQuerierFileName     string            `json:"output_querier_file_name,omitempty" yaml:"output_querier_file_name"`
 	OutputFilesSuffix         string            `json:"output_files_suffix,omitempty" yaml:"output_files_suffix"`
+	ExcludeTableNames         []string          `json:"exclude_table_names,omitempty" yaml:"exclude_table_names"`
 }
 
 type SQLKotlin struct {
-	EmitExactTableNames bool   `json:"emit_exact_table_names,omitempty" yaml:"emit_exact_table_names"`
-	Package             string `json:"package" yaml:"package"`
-	Out                 string `json:"out" yaml:"out"`
+	EmitExactTableNames bool     `json:"emit_exact_table_names,omitempty" yaml:"emit_exact_table_names"`
+	Package             string   `json:"package" yaml:"package"`
+	Out                 string   `json:"out" yaml:"out"`
+	ExcludeTableNames   []string `json:"exclude_table_names,omitempty" yaml:"exclude_table_names"`
 }
 
 type SQLPython struct {
@@ -152,6 +154,7 @@ type SQLPython struct {
 	Package             string     `json:"package" yaml:"package"`
 	Out                 string     `json:"out" yaml:"out"`
 	Overrides           []Override `json:"overrides,omitempty" yaml:"overrides"`
+	ExcludeTableNames   []string   `json:"exclude_table_names,omitempty" yaml:"exclude_table_names"`
 }
 
 type Override struct {

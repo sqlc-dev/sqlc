@@ -40,6 +40,7 @@ type v1PackageSettings struct {
 	OutputQuerierFileName     string     `json:"output_querier_file_name,omitempty" yaml:"output_querier_file_name"`
 	OutputFilesSuffix         string     `json:"output_files_suffix,omitempty" yaml:"output_files_suffix"`
 	StrictFunctionChecks      bool       `json:"strict_function_checks" yaml:"strict_function_checks"`
+	ExcludeTableNames         []string   `json:"exclude_table_names,omitempty" yaml:"exclude_table_names"`
 }
 
 func v1ParseConfig(rd io.Reader) (Config, error) {
@@ -135,6 +136,7 @@ func (c *V1GenerateSettings) Translate() Config {
 					OutputModelsFileName:      pkg.OutputModelsFileName,
 					OutputQuerierFileName:     pkg.OutputQuerierFileName,
 					OutputFilesSuffix:         pkg.OutputFilesSuffix,
+					ExcludeTableNames:         pkg.ExcludeTableNames,
 				},
 			},
 			StrictFunctionChecks: pkg.StrictFunctionChecks,
