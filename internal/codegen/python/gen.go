@@ -399,7 +399,7 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 			SourceName:   query.Filename,
 		}
 
-		if len(query.Params) > 4 {
+		if len(query.Params) > int(req.Settings.Python.QueryParameterLimit) || req.Settings.Python.QueryParameterLimit == -1 {
 			var cols []pyColumn
 			for _, p := range query.Params {
 				cols = append(cols, pyColumn{

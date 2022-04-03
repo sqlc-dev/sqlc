@@ -34,46 +34,56 @@ func v2ParseConfig(rd io.Reader) (Config, error) {
 			}
 		}
 	}
-	for j := range conf.SQL {
-		if conf.SQL[j].Engine == "" {
+	for _, sql := range conf.SQL {
+		if sql.Engine == "" {
 			return conf, ErrMissingEngine
 		}
-		if conf.SQL[j].Gen.Go != nil {
-			if conf.SQL[j].Gen.Go.Out == "" {
+		if sql.Gen.Go != nil {
+			if sql.Gen.Go.Out == "" {
 				return conf, ErrNoPackagePath
 			}
-			if conf.SQL[j].Gen.Go.Package == "" {
-				conf.SQL[j].Gen.Go.Package = filepath.Base(conf.SQL[j].Gen.Go.Out)
+			if sql.Gen.Go.Package == "" {
+				sql.Gen.Go.Package = filepath.Base(sql.Gen.Go.Out)
 			}
-			for i := range conf.SQL[j].Gen.Go.Overrides {
-				if err := conf.SQL[j].Gen.Go.Overrides[i].Parse(); err != nil {
+			for i := range sql.Gen.Go.Overrides {
+				if err := sql.Gen.Go.Overrides[i].Parse(); err != nil {
 					return conf, err
 				}
 			}
 		}
-		if conf.SQL[j].Gen.Kotlin != nil {
-			if conf.SQL[j].Gen.Kotlin.Out == "" {
+		if sql.Gen.Kotlin != nil {
+			if sql.Gen.Kotlin.Out == "" {
 				return conf, ErrNoOutPath
 			}
-			if conf.SQL[j].Gen.Kotlin.Package == "" {
+			if sql.Gen.Kotlin.Package == "" {
 				return conf, ErrNoPackageName
 			}
 		}
-		if conf.SQL[j].Gen.Python != nil {
-			if conf.SQL[j].Gen.Python.Out == "" {
+		var DefaultQueryParameterLimit = new(int32)
+		*DefaultQueryParameterLimit = 1
+		if sql.Gen.Python != nil {
+			if sql.Gen.Python.QueryParameterLimit != nil {
+				if *sql.Gen.Python.QueryParameterLimit == 0 || *sql.Gen.Python.QueryParameterLimit < -1 {
+					return conf, ErrInvalidQueryParameterLimit
+				}
+			} else {
+				sql.Gen.Python.QueryParameterLimit = DefaultQueryParameterLimit
+			}
+			if sql.Gen.Python.Out == "" {
 				return conf, ErrNoOutPath
 			}
-			if conf.SQL[j].Gen.Python.Package == "" {
+			if sql.Gen.Python.Package == "" {
 				return conf, ErrNoPackageName
 			}
-			if !conf.SQL[j].Gen.Python.EmitSyncQuerier && !conf.SQL[j].Gen.Python.EmitAsyncQuerier {
+			if !sql.Gen.Python.EmitSyncQuerier && !sql.Gen.Python.EmitAsyncQuerier {
 				return conf, ErrNoQuerierType
 			}
-			for i := range conf.SQL[j].Gen.Python.Overrides {
-				if err := conf.SQL[j].Gen.Python.Overrides[i].Parse(); err != nil {
+			for i := range sql.Gen.Python.Overrides {
+				if err := sql.Gen.Python.Overrides[i].Parse(); err != nil {
 					return conf, err
 				}
 			}
+
 		}
 	}
 	return conf, nil

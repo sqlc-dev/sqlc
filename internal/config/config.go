@@ -152,6 +152,7 @@ type SQLPython struct {
 	Package             string     `json:"package" yaml:"package"`
 	Out                 string     `json:"out" yaml:"out"`
 	Overrides           []Override `json:"overrides,omitempty" yaml:"overrides"`
+	QueryParameterLimit *int32     `json:"query_parameter_limit,omitempty" yaml:"query_parameter_limit"`
 }
 
 type Override struct {
@@ -308,6 +309,7 @@ var ErrNoPackageName = errors.New("missing package name")
 var ErrNoPackagePath = errors.New("missing package path")
 var ErrNoOutPath = errors.New("no output path")
 var ErrNoQuerierType = errors.New("no querier emit type enabled")
+var ErrInvalidQueryParameterLimit = errors.New("invalid query parameter limit")
 
 func ParseConfig(rd io.Reader) (Config, error) {
 	var buf bytes.Buffer
