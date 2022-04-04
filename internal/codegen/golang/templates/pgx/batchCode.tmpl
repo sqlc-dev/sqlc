@@ -67,7 +67,6 @@ func (b *{{.MethodName}}BatchResults) Query(f func(int, []{{.Ret.DefineType}}, e
         if err != nil && (err.Error() == "no result" || err.Error() == "batch already closed") {
 			break
 		}
-
         {{- if $.EmitEmptySlices}}
         items := []{{.Ret.DefineType}}{}
         {{else}}
