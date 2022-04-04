@@ -59,15 +59,13 @@ func v2ParseConfig(rd io.Reader) (Config, error) {
 				return conf, ErrNoPackageName
 			}
 		}
-		var DefaultQueryParameterLimit = new(int32)
-		*DefaultQueryParameterLimit = 1
 		if sql.Gen.Python != nil {
 			if sql.Gen.Python.QueryParameterLimit != nil {
 				if *sql.Gen.Python.QueryParameterLimit == 0 || *sql.Gen.Python.QueryParameterLimit < -1 {
 					return conf, ErrInvalidQueryParameterLimit
 				}
 			} else {
-				sql.Gen.Python.QueryParameterLimit = DefaultQueryParameterLimit
+				sql.Gen.Python.QueryParameterLimit = &defaultQueryParameterLimit
 			}
 			if sql.Gen.Python.Out == "" {
 				return conf, ErrNoOutPath

@@ -77,6 +77,8 @@ const (
 	EngineXLemon Engine = "_lemon"
 )
 
+var defaultQueryParameterLimit int32 = 1
+
 type Config struct {
 	Version string  `json:"version" yaml:"version"`
 	Project Project `json:"project" yaml:"project"`
