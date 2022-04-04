@@ -63,10 +63,11 @@ func (b *{{.MethodName}}BatchResults) Exec(f func(int, error)) {
 func (b *{{.MethodName}}BatchResults) Query(f func(int, []{{.Ret.DefineType}}, error)) {
     for {
 		rows, err := b.br.Query()
+        defer rows.Close()
         if err != nil && (err.Error() == "no result" || err.Error() == "batch already closed") {
 			break
 		}
-        defer rows.Close()
+
         {{- if $.EmitEmptySlices}}
         items := []{{.Ret.DefineType}}{}
         {{else}}
