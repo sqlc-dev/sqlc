@@ -57,10 +57,10 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.
     {{- else}}
     rows, err := q.db.QueryContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
     {{- end}}
+    defer rows.Close()
     if err != nil {
         return nil, err
     }
-    defer rows.Close()
     {{- if $.EmitEmptySlices}}
     items := []{{.Ret.DefineType}}{}
     {{else}}
