@@ -6,14 +6,17 @@ package querytest
 
 import ()
 
-type Campus struct {
-	ID string
+type Bar struct {
+	ID   int32
+	Name string
 }
 
-type ProductMeta struct {
-	ID string
+type Exclusions struct {
+	ID   int32
+	Name string
 }
 
-type Students struct {
-	ID string
+type MyData struct {
+	ID   int32
+	Name string
 }

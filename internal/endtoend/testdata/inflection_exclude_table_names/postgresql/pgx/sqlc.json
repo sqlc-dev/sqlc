@@ -8,7 +8,7 @@
       "name": "querytest",
       "schema": "query.sql",
       "queries": "query.sql",
-      "exclude_table_names": ["product_meta", "students"]
+      "exclude_table_names": ["my_data", "exclusions"]
     }
   ]
 }

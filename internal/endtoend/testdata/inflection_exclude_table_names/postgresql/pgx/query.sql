@@ -1,12 +1,12 @@
-CREATE TABLE campus (id text not null);
-CREATE TABLE students (id text not null);
-CREATE TABLE product_meta (id text not null);
+CREATE TABLE bars (id serial not null, name text not null, primary key (id));
+CREATE TABLE my_data (id serial not null, name text not null, primary key (id));
+CREATE TABLE exclusions (id serial not null, name text not null, primary key (id));
 
--- name: ListCampuses :many
-SELECT * FROM campus;
+-- name: DeleteBarByID :one
+DELETE FROM bars WHERE id = $1 RETURNING id, name;
 
--- name: ListStudents :many
-SELECT * FROM students;
+-- name: DeleteMyDataByID :one
+DELETE FROM my_data WHERE id = $1 RETURNING id, name;
 
--- name: ListMetadata :many
-SELECT * FROM product_meta;
+-- name: DeleteExclusionByID :one
+DELETE FROM exclusions WHERE id = $1 RETURNING id, name;
