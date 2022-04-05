@@ -69,6 +69,7 @@ func pluginPythonCode(s config.SQLPython) *plugin.PythonCode {
 		EmitExactTableNames: s.EmitExactTableNames,
 		EmitSyncQuerier:     s.EmitSyncQuerier,
 		EmitAsyncQuerier:    s.EmitAsyncQuerier,
+		ExcludeTableNames:   s.ExcludeTableNames,
 	}
 }
 
@@ -92,6 +93,7 @@ func pluginGoCode(s config.SQLGo) *plugin.GoCode {
 		OutputModelsFileName:      s.OutputModelsFileName,
 		OutputQuerierFileName:     s.OutputQuerierFileName,
 		OutputFilesSuffix:         s.OutputFilesSuffix,
+		ExcludeTableNames:         s.ExcludeTableNames,
 	}
 }
 
@@ -120,6 +122,7 @@ func pluginKotlinCode(s config.SQLKotlin) *plugin.KotlinCode {
 		Out:                 s.Out,
 		Package:             s.Package,
 		EmitExactTableNames: s.EmitExactTableNames,
+		ExcludeTableNames:   s.ExcludeTableNames,
 	}
 }
 

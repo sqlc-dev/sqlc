@@ -433,6 +433,20 @@ func (m *PythonCode) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if len(m.ExcludeTableNames) > 0 {
+		for iNdEx := len(m.ExcludeTableNames) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.ExcludeTableNames[iNdEx])
+			copy(dAtA[i:], m.ExcludeTableNames[iNdEx])
+			i = encodeVarint(dAtA, i, uint64(len(m.ExcludeTableNames[iNdEx])))
+			i--
+			dAtA[i] = 0x3a
+		}
+	}
+	if m.QueryParameterLimit != 0 {
+		i = encodeVarint(dAtA, i, uint64(m.QueryParameterLimit))
+		i--
+		dAtA[i] = 0x30
+	}
 	if len(m.Out) > 0 {
 		i -= len(m.Out)
 		copy(dAtA[i:], m.Out)
@@ -510,6 +524,15 @@ func (m *KotlinCode) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if len(m.ExcludeTableNames) > 0 {
+		for iNdEx := len(m.ExcludeTableNames) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.ExcludeTableNames[iNdEx])
+			copy(dAtA[i:], m.ExcludeTableNames[iNdEx])
+			i = encodeVarint(dAtA, i, uint64(len(m.ExcludeTableNames[iNdEx])))
+			i--
+			dAtA[i] = 0x22
+		}
+	}
 	if len(m.Out) > 0 {
 		i -= len(m.Out)
 		copy(dAtA[i:], m.Out)
@@ -566,6 +589,17 @@ func (m *GoCode) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m.unknownFields != nil {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
+	}
+	if len(m.ExcludeTableNames) > 0 {
+		for iNdEx := len(m.ExcludeTableNames) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.ExcludeTableNames[iNdEx])
+			copy(dAtA[i:], m.ExcludeTableNames[iNdEx])
+			i = encodeVarint(dAtA, i, uint64(len(m.ExcludeTableNames[iNdEx])))
+			i--
+			dAtA[i] = 0x1
+			i--
+			dAtA[i] = 0x9a
+		}
 	}
 	if len(m.OutputFilesSuffix) > 0 {
 		i -= len(m.OutputFilesSuffix)
@@ -1697,6 +1731,15 @@ func (m *PythonCode) SizeVT() (n int) {
 	if l > 0 {
 		n += 1 + l + sov(uint64(l))
 	}
+	if m.QueryParameterLimit != 0 {
+		n += 1 + sov(uint64(m.QueryParameterLimit))
+	}
+	if len(m.ExcludeTableNames) > 0 {
+		for _, s := range m.ExcludeTableNames {
+			l = len(s)
+			n += 1 + l + sov(uint64(l))
+		}
+	}
 	if m.unknownFields != nil {
 		n += len(m.unknownFields)
 	}
@@ -1719,6 +1762,12 @@ func (m *KotlinCode) SizeVT() (n int) {
 	l = len(m.Out)
 	if l > 0 {
 		n += 1 + l + sov(uint64(l))
+	}
+	if len(m.ExcludeTableNames) > 0 {
+		for _, s := range m.ExcludeTableNames {
+			l = len(s)
+			n += 1 + l + sov(uint64(l))
+		}
 	}
 	if m.unknownFields != nil {
 		n += len(m.unknownFields)
@@ -1793,6 +1842,12 @@ func (m *GoCode) SizeVT() (n int) {
 	l = len(m.OutputFilesSuffix)
 	if l > 0 {
 		n += 2 + l + sov(uint64(l))
+	}
+	if len(m.ExcludeTableNames) > 0 {
+		for _, s := range m.ExcludeTableNames {
+			l = len(s)
+			n += 2 + l + sov(uint64(l))
+		}
 	}
 	if m.unknownFields != nil {
 		n += len(m.unknownFields)
@@ -3445,6 +3500,57 @@ func (m *PythonCode) UnmarshalVT(dAtA []byte) error {
 			}
 			m.Out = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+		case 6:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field QueryParameterLimit", wireType)
+			}
+			m.QueryParameterLimit = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.QueryParameterLimit |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 7:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ExcludeTableNames", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ExcludeTableNames = append(m.ExcludeTableNames, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skip(dAtA[iNdEx:])
@@ -3579,6 +3685,38 @@ func (m *KotlinCode) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.Out = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ExcludeTableNames", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ExcludeTableNames = append(m.ExcludeTableNames, string(dAtA[iNdEx:postIndex]))
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -4086,6 +4224,38 @@ func (m *GoCode) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.OutputFilesSuffix = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 19:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ExcludeTableNames", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ExcludeTableNames = append(m.ExcludeTableNames, string(dAtA[iNdEx:postIndex]))
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
