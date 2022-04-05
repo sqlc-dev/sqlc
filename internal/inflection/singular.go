@@ -17,7 +17,6 @@ func Singular(s SingularParams) string {
 			return s.Name
 		}
 	}
-	// check if name is present in a slice of exceptions
 
 	// Manual fix for incorrect handling of "campus"
 	//
