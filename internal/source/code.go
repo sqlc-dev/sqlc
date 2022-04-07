@@ -1,8 +1,9 @@
 package source
 
 import (
-	"bufio"
+	"bytes"
 	"fmt"
+	"regexp"
 	"sort"
 	"strings"
 	"unicode"
@@ -78,27 +79,36 @@ func Mutate(raw string, a []Edit) (string, error) {
 }
 
 func StripComments(sql string) (string, []string, error) {
-	s := bufio.NewScanner(strings.NewReader(strings.TrimSpace(sql)))
-	var lines, comments []string
-	for s.Scan() {
-		t := s.Text()
-		if strings.HasPrefix(t, "-- name:") {
-			continue
+	re := regexp.MustCompile(`(?s)\/\*.*?\*\/\n?|--.*?\n`)
+	re2 := regexp.MustCompile(`\/\*|\*\/|--|^\s*$`) // removes the comments
+	// It will also remove the comments inside the comments
+	sql = strings.TrimSpace(sql)
+
+	commentsIndex := re.FindAllStringIndex(sql, -1)
+	i := 0
+	lines, comments := new(bytes.Buffer), new(bytes.Buffer)
+
+	cleanComment := func(line string) string {
+		if strings.HasPrefix(line, "-- name:") ||
+			strings.HasPrefix(line, "/* name:") {
+			return ""
+		} else {
+			return re2.ReplaceAllString(line, "")
 		}
-		if strings.HasPrefix(t, "/* name:") && strings.HasSuffix(t, "*/") {
-			continue
-		}
-		if strings.HasPrefix(t, "--") {
-			comments = append(comments, strings.TrimPrefix(t, "--"))
-			continue
-		}
-		if strings.HasPrefix(t, "/*") && strings.HasSuffix(t, "*/") {
-			t = strings.TrimPrefix(t, "/*")
-			t = strings.TrimSuffix(t, "*/")
-			comments = append(comments, t)
-			continue
-		}
-		lines = append(lines, t)
 	}
-	return strings.Join(lines, "\n"), comments, s.Err()
+
+	for _, comment := range commentsIndex {
+		if i != comment[0] {
+			lines.WriteString(sql[i:comment[0]])
+		}
+		comments.WriteString(cleanComment(sql[comment[0]:comment[1]]))
+		i = comment[1]
+	}
+
+	if i < len(sql) {
+		lines.WriteString(sql[i:])
+	}
+	commentsStr := comments.String()
+	commentsStr = strings.TrimSuffix(commentsStr, "\n")
+	return lines.String(), strings.SplitN(commentsStr, "\n", -1), nil
 }
