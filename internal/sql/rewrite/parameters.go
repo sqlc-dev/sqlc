@@ -41,11 +41,11 @@ func isNamedParamSignCast(node ast.Node) bool {
 	return astutils.Join(expr.Name, ".") == "@" && cast
 }
 
-func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool, dollar bool) (*ast.RawStmt, map[int]string, []source.Edit) {
+func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool, dollar bool) (*ast.RawStmt, map[int]named.Param, []source.Edit) {
 	foundFunc := astutils.Search(raw, named.IsParamFunc)
 	foundSign := astutils.Search(raw, named.IsParamSign)
 	if len(foundFunc.Items)+len(foundSign.Items) == 0 {
-		return raw, map[int]string{}, nil
+		return raw, map[int]named.Param{}, nil
 	}
 
 	hasNamedParameterSupport := engine != config.EngineMySQL
@@ -180,11 +180,11 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 		}
 	}, nil)
 
-	named := map[int]string{}
+	paramByLoc := map[int]named.Param{}
 	for k, vs := range args {
 		for _, v := range vs {
-			named[v] = k
+			paramByLoc[v] = named.NewUnspecifiedParam(k)
 		}
 	}
-	return node.(*ast.RawStmt), named, edits
+	return node.(*ast.RawStmt), paramByLoc, edits
 }
