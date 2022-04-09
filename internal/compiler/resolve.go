@@ -89,27 +89,27 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 		switch n := ref.parent.(type) {
 
 		case *limitOffset:
-			defaultP := named.NewParam("offset", true)
+			defaultP := named.NewInferredParam("offset", true)
 			p, isNamed := fetchParam(ref.ref.Number, defaultP)
 			a = append(a, Parameter{
 				Number: ref.ref.Number,
 				Column: &Column{
 					Name:         p.Name(),
 					DataType:     "integer",
-					NotNull:      true,
+					NotNull:      p.NotNull(),
 					IsNamedParam: isNamed,
 				},
 			})
 
 		case *limitCount:
-			defaultP := named.NewParam("limit", true)
+			defaultP := named.NewInferredParam("limit", true)
 			p, isNamed := fetchParam(ref.ref.Number, defaultP)
 			a = append(a, Parameter{
 				Number: ref.ref.Number,
 				Column: &Column{
 					Name:         p.Name(),
 					DataType:     "integer",
-					NotNull:      true,
+					NotNull:      p.NotNull(),
 					IsNamedParam: isNamed,
 				},
 			})
@@ -137,6 +137,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 						Name:         p.Name(),
 						DataType:     dataType,
 						IsNamedParam: isNamed,
+						NotNull:      p.NotNull(),
 					},
 				})
 				continue
@@ -190,14 +191,14 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 							key = ref.name
 						}
 
-						defaultP := named.NewParam(key, c.IsNotNull)
+						defaultP := named.NewInferredParam(key, c.IsNotNull)
 						p, isNamed := fetchParam(ref.ref.Number, defaultP)
 						a = append(a, Parameter{
 							Number: ref.ref.Number,
 							Column: &Column{
 								Name:         p.Name(),
 								DataType:     dataType(&c.Type),
-								NotNull:      c.IsNotNull,
+								NotNull:      p.NotNull(),
 								IsArray:      c.IsArray,
 								Length:       c.Length,
 								Table:        table,
@@ -249,14 +250,14 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 				}
 
 				if c, ok := typeMap[schema][table.Name][key]; ok {
-					defaultP := named.NewParam(key, c.IsNotNull)
+					defaultP := named.NewInferredParam(key, c.IsNotNull)
 					p, isNamed := fetchParam(ref.ref.Number, defaultP)
 					a = append(a, Parameter{
 						Number: number,
 						Column: &Column{
 							Name:         p.Name(),
 							DataType:     dataType(&c.Type),
-							NotNull:      c.IsNotNull,
+							NotNull:      p.NotNull(),
 							IsArray:      c.IsArray,
 							Table:        table,
 							IsNamedParam: isNamed,
@@ -319,7 +320,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 						defaultName = argName
 					}
 
-					defaultP := named.NewParam(defaultName, false)
+					defaultP := named.NewInferredParam(defaultName, false)
 					p, isNamed := fetchParam(ref.ref.Number, defaultP)
 					a = append(a, Parameter{
 						Number: ref.ref.Number,
@@ -327,6 +328,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 							Name:         p.Name(),
 							DataType:     "any",
 							IsNamedParam: isNamed,
+							NotNull:      p.NotNull(),
 						},
 					})
 					continue
@@ -352,14 +354,14 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 					paramName = funcName
 				}
 
-				defaultP := named.NewParam(paramName, true)
+				defaultP := named.NewInferredParam(paramName, true)
 				p, isNamed := fetchParam(ref.ref.Number, defaultP)
 				a = append(a, Parameter{
 					Number: ref.ref.Number,
 					Column: &Column{
 						Name:         p.Name(),
 						DataType:     dataType(paramType),
-						NotNull:      true,
+						NotNull:      p.NotNull(),
 						IsNamedParam: isNamed,
 					},
 				})
@@ -413,14 +415,14 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 			}
 
 			if c, ok := tableMap[key]; ok {
-				defaultP := named.NewParam(key, c.IsNotNull)
+				defaultP := named.NewInferredParam(key, c.IsNotNull)
 				p, isNamed := fetchParam(ref.ref.Number, defaultP)
 				a = append(a, Parameter{
 					Number: ref.ref.Number,
 					Column: &Column{
 						Name:         p.Name(),
 						DataType:     dataType(&c.Type),
-						NotNull:      c.IsNotNull,
+						NotNull:      p.NotNull(),
 						IsArray:      c.IsArray,
 						Table:        &ast.TableName{Schema: schema, Name: rel},
 						Length:       c.Length,
@@ -440,7 +442,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 				return nil, fmt.Errorf("*ast.TypeCast has nil type name")
 			}
 			col := toColumn(n.TypeName)
-			defaultP := named.NewParam(col.Name, col.NotNull)
+			defaultP := named.NewInferredParam(col.Name, col.NotNull)
 			p, _ := fetchParam(ref.ref.Number, defaultP)
 
 			col.Name = p.Name()
@@ -520,7 +522,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 						if ref.name != "" {
 							key = ref.name
 						}
-						defaultP := named.NewParam(key, c.IsNotNull)
+						defaultP := named.NewInferredParam(key, c.IsNotNull)
 						p, isNamed := fetchParam(ref.ref.Number, defaultP)
 						a = append(a, Parameter{
 							Number: number,

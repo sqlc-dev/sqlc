@@ -47,9 +47,18 @@ type namedParameter struct {
 }
 
 // Add a new instance of this parameter of the same name
-func (n *namedParameter) AddInstance(loc int, p named.Param) {
-	n.param = named.Combine(n.param, p)
-	n.locs = append(n.locs, loc)
+func (n namedParameter) AddInstance(loc int, p named.Param) namedParameter {
+	param := named.Combine(n.param, p)
+	locs := append(n.locs, loc)
+	return namedParameter{
+		param: param,
+		locs:  locs,
+	}
+}
+
+// paramFromName takes a user-defined parameter name and builds the appropiate parameter
+func paramFromName(name string) named.Param {
+	return named.NewUnspecifiedParam(name)
 }
 
 func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool, dollar bool) (*ast.RawStmt, map[int]named.Param, []source.Edit) {
@@ -70,7 +79,9 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 		case named.IsParamFunc(node):
 			fun := node.(*ast.FuncCall)
 			paramName, isConst := flatten(fun.Args)
-			if namedP, ok := args[paramName]; ok && hasNamedParameterSupport {
+			param := paramFromName(paramName)
+
+			if namedP, ok := args[param.Name()]; ok && hasNamedParameterSupport {
 				cr.Replace(&ast.ParamRef{
 					Number:   namedP.locs[0],
 					Location: fun.Location,
@@ -82,10 +93,7 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 					argn++
 				}
 
-				// keep track of the locations this argument is present
-				p := args[paramName]
-				p.AddInstance(argn, named.NewUnspecifiedParam(paramName))
-				args[paramName] = p
+				args[param.Name()] = args[param.Name()].AddInstance(argn, param)
 				cr.Replace(&ast.ParamRef{
 					Number:   argn,
 					Location: fun.Location,
@@ -101,7 +109,7 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 			if engine == config.EngineMySQL || !dollar {
 				replace = "?"
 			} else {
-				replace = fmt.Sprintf("$%d", args[paramName].locs[0])
+				replace = fmt.Sprintf("$%d", args[param.Name()].locs[0])
 			}
 			edits = append(edits, source.Edit{
 				Location: fun.Location - raw.StmtLocation,
@@ -114,7 +122,8 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 			expr := node.(*ast.A_Expr)
 			cast := expr.Rexpr.(*ast.TypeCast)
 			paramName, _ := flatten(cast.Arg)
-			if p, ok := args[paramName]; ok {
+			param := paramFromName(paramName)
+			if p, ok := args[param.Name()]; ok {
 				cast.Arg = &ast.ParamRef{
 					Number:   p.locs[0],
 					Location: expr.Location,
@@ -126,10 +135,7 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 					argn++
 				}
 
-				p := args[paramName]
-				p.AddInstance(argn, named.NewUnspecifiedParam(paramName))
-				args[paramName] = p
-
+				args[param.Name()] = args[param.Name()].AddInstance(argn, param)
 				cast.Arg = &ast.ParamRef{
 					Number:   argn,
 					Location: expr.Location,
@@ -141,7 +147,7 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 			if engine == config.EngineMySQL || !dollar {
 				replace = "?"
 			} else {
-				replace = fmt.Sprintf("$%d", args[paramName].locs[0])
+				replace = fmt.Sprintf("$%d", args[param.Name()].locs[0])
 			}
 			edits = append(edits, source.Edit{
 				Location: expr.Location - raw.StmtLocation,
@@ -153,7 +159,8 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 		case named.IsParamSign(node):
 			expr := node.(*ast.A_Expr)
 			paramName, _ := flatten(expr.Rexpr)
-			if p, ok := args[paramName]; ok {
+			param := paramFromName(paramName)
+			if p, ok := args[param.Name()]; ok {
 				cr.Replace(&ast.ParamRef{
 					Number:   p.locs[0],
 					Location: expr.Location,
@@ -164,9 +171,7 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 					argn++
 				}
 
-				p := args[paramName]
-				p.AddInstance(argn, named.NewUnspecifiedParam(paramName))
-				args[paramName] = p
+				args[param.Name()] = args[param.Name()].AddInstance(argn, param)
 				cr.Replace(&ast.ParamRef{
 					Number:   argn,
 					Location: expr.Location,
@@ -177,8 +182,9 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 			if engine == config.EngineMySQL || !dollar {
 				replace = "?"
 			} else {
-				replace = fmt.Sprintf("$%d", args[paramName].locs[0])
+				replace = fmt.Sprintf("$%d", args[param.Name()].locs[0])
 			}
+
 			edits = append(edits, source.Edit{
 				Location: expr.Location - raw.StmtLocation,
 				Old:      fmt.Sprintf("@%s", paramName),
