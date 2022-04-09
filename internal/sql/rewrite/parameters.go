@@ -56,8 +56,22 @@ func (n namedParameter) AddInstance(loc int, p named.Param) namedParameter {
 	}
 }
 
-// paramFromName takes a user-defined parameter name and builds the appropiate parameter
+// paramFromName takes a user-defined parameter name, with an optional suffix of
+// ? (nullable), or ! (non-null) and builds the appropiate parameter
 func paramFromName(name string) named.Param {
+	if len(name) == 0 {
+		return named.NewUnspecifiedParam(name)
+	}
+
+	last := name[len(name)-1]
+	if last == '!' {
+		return named.NewUserDefinedParam(name[:len(name)-1], true)
+	}
+
+	if last == '?' {
+		return named.NewUserDefinedParam(name[:len(name)-1], false)
+	}
+
 	return named.NewUnspecifiedParam(name)
 }
 
