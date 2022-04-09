@@ -2,7 +2,7 @@ package named
 
 import "testing"
 
-func TestCombineNullability(t *testing.T) {
+func TestMergeParamNullability(t *testing.T) {
 	type test struct {
 		a       Param
 		b       Param
@@ -39,21 +39,21 @@ func TestCombineNullability(t *testing.T) {
 	for _, spec := range tests {
 		a := spec.a
 		b := spec.b
-		actual := Combine(a, b).NotNull()
+		actual := mergeParam(a, b).NotNull()
 		expected := spec.notNull
 		if actual != expected {
 			t.Errorf("Combine(%s,%s) expected %v; got %v", a.nullability, b.nullability, expected, actual)
 		}
 
 		// We have already tried Combine(a, b) the same result should be true for Combine(b, a)
-		actual = Combine(b, a).NotNull()
+		actual = mergeParam(b, a).NotNull()
 		if actual != expected {
 			t.Errorf("Combine(%s,%s) expected %v; got %v", b.nullability, a.nullability, expected, actual)
 		}
 	}
 }
 
-func TestCombineName(t *testing.T) {
+func TestMergeParamName(t *testing.T) {
 	type test struct {
 		a    Param
 		b    Param
@@ -77,7 +77,7 @@ func TestCombineName(t *testing.T) {
 	for _, spec := range tests {
 		a := spec.a
 		b := spec.b
-		actual := Combine(a, b).Name()
+		actual := mergeParam(a, b).Name()
 		expected := spec.name
 		if actual != expected {
 			t.Errorf("Combine(%s,%s) expected %v; got %v", a.name, b.name, expected, actual)

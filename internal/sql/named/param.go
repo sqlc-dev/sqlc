@@ -106,9 +106,9 @@ func (p Param) NotNull() bool {
 	return null
 }
 
-// Combine creates a new param from 2 partially specified params
+// mergeParam creates a new param from 2 partially specified params
 // If the parameters have different names, the first is preferred
-func Combine(a, b Param) Param {
+func mergeParam(a, b Param) Param {
 	name := a.name
 	if name == "" {
 		name = b.name
