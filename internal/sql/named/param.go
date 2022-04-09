@@ -1,36 +1,36 @@
 package named
 
-// Nullability represents the nullability of a named parameter.
+// nullability represents the nullability of a named parameter.
 // The nullability can be:
 // 1. unspecified
 // 2. inferred
 // 3. user-defined
 // A user-specified nullability carries a higher precedence than an inferred one
 //
-// The representation is such that you can bitwise OR together Nullability types to
+// The representation is such that you can bitwise OR together nullability types to
 // combine them together.
-type Nullability int
+type nullability int
 
 const (
-	NullUnspecified Nullability = 0b0000
-	InferredNull    Nullability = 0b0001
-	InferredNotNull Nullability = 0b0010
-	Nullable        Nullability = 0b0100
-	NotNullable     Nullability = 0b1000
+	nullUnspecified nullability = 0b0000
+	inferredNull    nullability = 0b0001
+	inferredNotNull nullability = 0b0010
+	nullable        nullability = 0b0100
+	notNullable     nullability = 0b1000
 )
 
 // String implements the Stringer interface
-func (n Nullability) String() string {
+func (n nullability) String() string {
 	switch n {
-	case NullUnspecified:
+	case nullUnspecified:
 		return "NullUnspecified"
-	case InferredNull:
+	case inferredNull:
 		return "InferredNull"
-	case InferredNotNull:
+	case inferredNotNull:
 		return "InferredNotNull"
-	case Nullable:
+	case nullable:
 		return "Nullable"
-	case NotNullable:
+	case notNullable:
 		return "NotNullable"
 	default:
 		return "NullInvalid"
@@ -43,31 +43,31 @@ func (n Nullability) String() string {
 // - named parameter function calls  sqlc.arg(param)
 type Param struct {
 	name        string
-	nullability Nullability
+	nullability nullability
 }
 
 // NewUnspecifiedParam builds a new params with unspecified nullability
 func NewUnspecifiedParam(name string) Param {
-	return Param{name: name, nullability: NullUnspecified}
+	return Param{name: name, nullability: nullUnspecified}
 }
 
 // NewInferredParam builds a new params with inferred nullability
 func NewInferredParam(name string, notNull bool) Param {
 	if notNull {
-		return Param{name: name, nullability: InferredNotNull}
+		return Param{name: name, nullability: inferredNotNull}
 	}
 
-	return Param{name: name, nullability: InferredNull}
+	return Param{name: name, nullability: inferredNull}
 }
 
 // NewUserDefinedParam creates a new param with the user specified
 // by the end user
 func NewUserDefinedParam(name string, notNull bool) Param {
 	if notNull {
-		return Param{name: name, nullability: NotNullable}
+		return Param{name: name, nullability: notNullable}
 	}
 
-	return Param{name: name, nullability: Nullable}
+	return Param{name: name, nullability: nullable}
 }
 
 // Name is the user defined name to use for this parameter
@@ -76,34 +76,34 @@ func (p Param) Name() string {
 }
 
 // is checks if this params object has the specified nullability bit set
-func (p Param) is(n Nullability) bool {
+func (p Param) is(n nullability) bool {
 	return (p.nullability & n) == n
 }
 
 // NonNull determines whether this param should be "not null" in its current state
 func (p Param) NotNull() bool {
-	const nullable = false
+	const null = false
 	const notNull = true
 
-	if p.is(NotNullable) {
+	if p.is(notNullable) {
 		return notNull
 	}
 
-	if p.is(Nullable) {
-		return nullable
+	if p.is(nullable) {
+		return null
 	}
 
-	if p.is(InferredNotNull) {
+	if p.is(inferredNotNull) {
 		return notNull
 	}
 
-	if p.is(InferredNull) {
-		return nullable
+	if p.is(inferredNull) {
+		return null
 	}
 
 	// This param is unspecified, so by default we choose nullable
 	// which matches the default behavior of most databases
-	return nullable
+	return null
 }
 
 // Combine creates a new param from 2 partially specified params
