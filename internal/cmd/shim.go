@@ -69,6 +69,7 @@ func pluginPythonCode(s config.SQLPython) *plugin.PythonCode {
 		EmitExactTableNames: s.EmitExactTableNames,
 		EmitSyncQuerier:     s.EmitSyncQuerier,
 		EmitAsyncQuerier:    s.EmitAsyncQuerier,
+		UsePydanticModels:   s.UsePydanticModels,
 	}
 }
 
