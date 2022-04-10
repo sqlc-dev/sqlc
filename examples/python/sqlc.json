@@ -10,7 +10,8 @@
           "out": "src/authors",
           "package": "authors",
           "emit_sync_querier": true,
-          "emit_async_querier": true
+          "emit_async_querier": true,
+          "use_pydantic_models": true
         }
       }
     },
