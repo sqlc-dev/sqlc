@@ -152,7 +152,7 @@ type SQLPython struct {
 	Package             string     `json:"package" yaml:"package"`
 	Out                 string     `json:"out" yaml:"out"`
 	Overrides           []Override `json:"overrides,omitempty" yaml:"overrides"`
-	UsePydanticModels   bool       `json:"use_pydantic_models,omitempty" yaml:"use_pydantic_models"`
+	EmitPydanticModels  bool       `json:"emit_pydantic_models,omitempty" yaml:"emit_pydantic_models"`
 }
 
 type Override struct {

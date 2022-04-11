@@ -99,7 +99,7 @@ func (i *importer) modelImportSpecs() (map[string]importSpec, map[string]importS
 	}
 
 	std := stdImports(modelUses)
-	if i.Settings.Python.UsePydanticModels {
+	if i.Settings.Python.EmitPydanticModels {
 		std["pydantic"] = importSpec{Module: "pydantic"}
 	} else {
 		std["dataclasses"] = importSpec{Module: "dataclasses"}
@@ -166,7 +166,7 @@ func (i *importer) queryImportSpecs(fileName string) (map[string]importSpec, map
 
 	queryValueModelImports := func(qv QueryValue) {
 		if qv.IsStruct() && qv.EmitStruct() {
-			if i.Settings.Python.UsePydanticModels {
+			if i.Settings.Python.EmitPydanticModels {
 				std["pydantic"] = importSpec{Module: "pydantic"}
 			} else {
 				std["dataclasses"] = importSpec{Module: "dataclasses"}

@@ -713,7 +713,7 @@ func buildModelsTree(ctx *pyTmplCtx, i *importer) *pyast.Node {
 
 	for _, m := range ctx.Models {
 		var def *pyast.ClassDef
-		if ctx.UsePydanticModels {
+		if ctx.EmitPydanticModels {
 			def = pydanticNode(m.Name)
 		} else {
 			def = dataclassNode(m.Name)
@@ -848,7 +848,7 @@ func buildQueryTree(ctx *pyTmplCtx, i *importer, source string) *pyast.Node {
 		for _, arg := range q.Args {
 			if arg.EmitStruct() {
 				var def *pyast.ClassDef
-				if ctx.UsePydanticModels {
+				if ctx.EmitPydanticModels {
 					def = pydanticNode(arg.Struct.Name)
 				} else {
 					def = dataclassNode(arg.Struct.Name)
@@ -861,7 +861,7 @@ func buildQueryTree(ctx *pyTmplCtx, i *importer, source string) *pyast.Node {
 		}
 		if q.Ret.EmitStruct() {
 			var def *pyast.ClassDef
-			if ctx.UsePydanticModels {
+			if ctx.EmitPydanticModels {
 				def = pydanticNode(q.Ret.Struct.Name)
 			} else {
 				def = dataclassNode(q.Ret.Struct.Name)
@@ -1062,14 +1062,14 @@ func buildQueryTree(ctx *pyTmplCtx, i *importer, source string) *pyast.Node {
 }
 
 type pyTmplCtx struct {
-	Models            []Struct
-	Queries           []Query
-	Enums             []Enum
-	EmitSync          bool
-	EmitAsync         bool
-	SourceName        string
-	SqlcVersion       string
-	UsePydanticModels bool
+	Models             []Struct
+	Queries            []Query
+	Enums              []Enum
+	EmitSync           bool
+	EmitAsync          bool
+	SourceName         string
+	SqlcVersion        string
+	EmitPydanticModels bool
 }
 
 func (t *pyTmplCtx) OutputQuery(sourceName string) bool {
@@ -1096,13 +1096,13 @@ func Generate(req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
 	}
 
 	tctx := pyTmplCtx{
-		Models:            models,
-		Queries:           queries,
-		Enums:             enums,
-		EmitSync:          req.Settings.Python.EmitSyncQuerier,
-		EmitAsync:         req.Settings.Python.EmitAsyncQuerier,
-		SqlcVersion:       req.SqlcVersion,
-		UsePydanticModels: req.Settings.Python.UsePydanticModels,
+		Models:             models,
+		Queries:            queries,
+		Enums:              enums,
+		EmitSync:           req.Settings.Python.EmitSyncQuerier,
+		EmitAsync:          req.Settings.Python.EmitAsyncQuerier,
+		SqlcVersion:        req.SqlcVersion,
+		EmitPydanticModels: req.Settings.Python.EmitPydanticModels,
 	}
 
 	output := map[string]string{}
