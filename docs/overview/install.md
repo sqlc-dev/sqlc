@@ -40,6 +40,12 @@ Run `sqlc` using `docker run`:
 docker run --rm -v $(pwd):/src -w /src kjconroy/sqlc generate
 ```
 
+Run `sqlc` using `docker run` in the Command Prompt on Windows (`cmd`):
+
+```
+docker run --rm -v "%cd%:/src" -w /src kjconroy/sqlc generate
+```
+
 ## Downloads
 
 Get pre-built binaries for *v1.13.0*:
