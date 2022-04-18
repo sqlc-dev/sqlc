@@ -133,6 +133,7 @@ type SQLGo struct {
 	OutputQuerierFileName       string            `json:"output_querier_file_name,omitempty" yaml:"output_querier_file_name"`
 	OutputFilesSuffix           string            `json:"output_files_suffix,omitempty" yaml:"output_files_suffix"`
 	InflectionExcludeTableNames []string          `json:"inflection_exclude_table_names,omitempty" yaml:"inflection_exclude_table_names"`
+	QueryParameterLimit         *int32            `json:"query_parameter_limit,omitempty" yaml:"query_parameter_limit"`
 }
 
 type SQLJSON struct {
@@ -150,6 +151,7 @@ var ErrNoPackages = errors.New("no packages")
 var ErrNoQuerierType = errors.New("no querier emit type enabled")
 var ErrUnknownEngine = errors.New("invalid engine")
 var ErrUnknownVersion = errors.New("invalid version number")
+var ErrInvalidQueryParameterLimit = errors.New("invalid query parameter limit")
 
 var ErrPluginBuiltin = errors.New("a built-in plugin with that name already exists")
 var ErrPluginNoName = errors.New("missing plugin name")
@@ -158,8 +160,6 @@ var ErrPluginNotFound = errors.New("no plugin found")
 var ErrPluginNoType = errors.New("plugin: field `process` or `wasm` required")
 var ErrPluginBothTypes = errors.New("plugin: both `process` and `wasm` cannot both be defined")
 var ErrPluginProcessNoCmd = errors.New("plugin: missing process command")
-
-var ErrInvalidQueryParameterLimit = errors.New("invalid query parameter limit")
 
 func ParseConfig(rd io.Reader) (Config, error) {
 	var buf bytes.Buffer
