@@ -24,6 +24,7 @@ packages:
     output_db_file_name: "db.go"
     output_models_file_name: "models.go"
     output_querier_file_name: "querier.go"
+    query_parameter_limit: 2
 ```
 
 Each package document has the following keys:
@@ -70,6 +71,8 @@ Each package document has the following keys:
   - Customize the name of the querier file. Defaults to `querier.go`.
 - `output_files_suffix`:
   - If specified the suffix will be added to the name of the generated files.
+- `query_parameter_limit`:
+  - Positional arguments that will be generated in go functions (>= `1` or `-1`). To always emit a parameter struct, you would need to set it to `-1`. `0` is invalid. Defaults to `1`.
 
 ## Type Overrides
 

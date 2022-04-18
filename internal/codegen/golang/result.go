@@ -157,14 +157,16 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 		}
 		sqlpkg := SQLPackageFromString(req.Settings.Go.SqlPackage)
 
-		if len(query.Params) == 1 {
+		qpl := int(req.Settings.Go.QueryParameterLimit)
+
+		if len(query.Params) == 1 && qpl != -1 {
 			p := query.Params[0]
 			gq.Arg = QueryValue{
 				Name:       paramName(p),
 				Typ:        goType(req, p.Column),
 				SQLPackage: sqlpkg,
 			}
-		} else if len(query.Params) > 1 {
+		} else if len(query.Params) >= 1 && (qpl >= 1 || qpl == -1) {
 			var cols []goColumn
 			for _, p := range query.Params {
 				cols = append(cols, goColumn{
@@ -182,6 +184,10 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 				Struct:      s,
 				SQLPackage:  sqlpkg,
 				EmitPointer: req.Settings.Go.EmitParamsStructPointers,
+			}
+
+			if len(query.Params) <= qpl {
+				gq.Arg.Emit = false
 			}
 		}
 
