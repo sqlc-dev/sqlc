@@ -40,6 +40,7 @@ type v1PackageSettings struct {
 	OutputQuerierFileName     string     `json:"output_querier_file_name,omitempty" yaml:"output_querier_file_name"`
 	OutputFilesSuffix         string     `json:"output_files_suffix,omitempty" yaml:"output_files_suffix"`
 	StrictFunctionChecks      bool       `json:"strict_function_checks" yaml:"strict_function_checks"`
+	QueryParameterLimit       *int32     `json:"query_parameter_limit,omitempty" yaml:"query_parameter_limit"`
 }
 
 func v1ParseConfig(rd io.Reader) (Config, error) {
@@ -71,6 +72,17 @@ func v1ParseConfig(rd io.Reader) (Config, error) {
 		if settings.Packages[j].Path == "" {
 			return config, ErrNoPackagePath
 		}
+
+		if settings.Packages[j].QueryParameterLimit != nil && (*settings.Packages[j].QueryParameterLimit < -1 ||
+			*settings.Packages[j].QueryParameterLimit == 0) {
+			return config, ErrInvalidQueryParameterLimit
+		}
+
+		if settings.Packages[j].QueryParameterLimit == nil {
+			settings.Packages[j].QueryParameterLimit = new(int32)
+			*settings.Packages[j].QueryParameterLimit = 1
+		}
+
 		for i := range settings.Packages[j].Overrides {
 			if err := settings.Packages[j].Overrides[i].Parse(); err != nil {
 				return config, err
@@ -135,6 +147,7 @@ func (c *V1GenerateSettings) Translate() Config {
 					OutputModelsFileName:      pkg.OutputModelsFileName,
 					OutputQuerierFileName:     pkg.OutputQuerierFileName,
 					OutputFilesSuffix:         pkg.OutputFilesSuffix,
+					QueryParameterLimit:       pkg.QueryParameterLimit,
 				},
 			},
 			StrictFunctionChecks: pkg.StrictFunctionChecks,
