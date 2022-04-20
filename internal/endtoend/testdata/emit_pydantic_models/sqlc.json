@@ -1,0 +1,19 @@
+{
+  "version": "2",
+  "sql": [
+    {
+      "schema": "postgresql/schema.sql",
+      "queries": "postgresql/query.sql",
+      "engine": "postgresql",
+      "gen": {
+        "python": {
+          "out": "postgresql",
+          "package": "postgresql",
+          "emit_sync_querier": true,
+          "emit_async_querier": true,
+          "emit_pydantic_models": true
+        }
+      }
+    }
+  ]
+}
