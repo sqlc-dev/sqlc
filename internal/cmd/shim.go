@@ -74,6 +74,10 @@ func pluginPythonCode(s config.SQLPython) *plugin.PythonCode {
 }
 
 func pluginGoCode(s config.SQLGo) *plugin.GoCode {
+	if s.QueryParameterLimit == nil {
+		s.QueryParameterLimit = new(int32)
+	}
+
 	return &plugin.GoCode{
 		EmitInterface:             s.EmitInterface,
 		EmitJsonTags:              s.EmitJSONTags,
@@ -93,6 +97,7 @@ func pluginGoCode(s config.SQLGo) *plugin.GoCode {
 		OutputModelsFileName:      s.OutputModelsFileName,
 		OutputQuerierFileName:     s.OutputQuerierFileName,
 		OutputFilesSuffix:         s.OutputFilesSuffix,
+		QueryParameterLimit:       *s.QueryParameterLimit,
 	}
 }
 

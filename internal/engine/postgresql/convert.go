@@ -3120,7 +3120,7 @@ func convertNode(node *pg.Node) ast.Node {
 
 	case *pg.Node_BooleanTest:
 		return convertBooleanTest(n.BooleanTest)
-		
+
 	case *pg.Node_CallStmt:
 		return convertCallStmt(n.CallStmt)
 

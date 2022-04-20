@@ -137,6 +137,7 @@ type SQLGo struct {
 	OutputModelsFileName      string            `json:"output_models_file_name,omitempty" yaml:"output_models_file_name"`
 	OutputQuerierFileName     string            `json:"output_querier_file_name,omitempty" yaml:"output_querier_file_name"`
 	OutputFilesSuffix         string            `json:"output_files_suffix,omitempty" yaml:"output_files_suffix"`
+	QueryParameterLimit       *int32            `json:"query_parameter_limit,omitempty" yaml:"query_parameter_limit"`
 }
 
 type SQLKotlin struct {
@@ -309,6 +310,7 @@ var ErrNoPackageName = errors.New("missing package name")
 var ErrNoPackagePath = errors.New("missing package path")
 var ErrNoOutPath = errors.New("no output path")
 var ErrNoQuerierType = errors.New("no querier emit type enabled")
+var ErrInvalidQueryParameterLimit = errors.New("invalid query parameter limit")
 
 func ParseConfig(rd io.Reader) (Config, error) {
 	var buf bytes.Buffer
