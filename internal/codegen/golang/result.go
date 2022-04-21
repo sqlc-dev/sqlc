@@ -70,6 +70,7 @@ func buildStructs(req *plugin.CodeGenRequest) []Struct {
 				Table:   plugin.Identifier{Schema: schema.Name, Name: table.Rel.Name},
 				Name:    StructName(structName, req.Settings),
 				Comment: table.Comment,
+				Package: sdk.PackageName(req.Settings.Go.ModelPackage),
 			}
 			for _, column := range table.Columns {
 				tags := map[string]string{}
@@ -177,6 +178,9 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 			if err != nil {
 				return nil, err
 			}
+			// Keep the input arguments in the same package
+			s.Package = ""
+
 			gq.Arg = QueryValue{
 				Emit:        true,
 				Name:        "arg",
@@ -260,7 +264,8 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 // This is unlikely to happen, so don't fix it yet
 func columnsToStruct(req *plugin.CodeGenRequest, name string, columns []goColumn, useID bool) (*Struct, error) {
 	gs := Struct{
-		Name: name,
+		Name:    name,
+		Package: sdk.PackageName(req.Settings.Go.ModelPackage),
 	}
 	seen := map[string][]int{}
 	suffixes := map[int]int{}

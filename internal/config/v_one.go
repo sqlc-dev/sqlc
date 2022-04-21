@@ -36,6 +36,8 @@ type v1PackageSettings struct {
 	EmitAllEnumValues         bool       `json:"emit_all_enum_values,omitempty" yaml:"emit_all_enum_values"`
 	JSONTagsCaseStyle         string     `json:"json_tags_case_style,omitempty" yaml:"json_tags_case_style"`
 	SQLPackage                string     `json:"sql_package" yaml:"sql_package"`
+	ModelPackage              string     `json:"model_package" yaml:"model_package"`
+	ModelPath                 string     `json:"model_path" yaml:"model_path"`
 	Overrides                 []Override `json:"overrides" yaml:"overrides"`
 	OutputDBFileName          string     `json:"output_db_file_name,omitempty" yaml:"output_db_file_name"`
 	OutputModelsFileName      string     `json:"output_models_file_name,omitempty" yaml:"output_models_file_name"`
@@ -133,6 +135,8 @@ func (c *V1GenerateSettings) Translate() Config {
 					Package:                   pkg.Name,
 					Out:                       pkg.Path,
 					SQLPackage:                pkg.SQLPackage,
+					ModelPackage:              pkg.ModelPackage,
+					ModelPath:                 pkg.ModelPath,
 					Overrides:                 pkg.Overrides,
 					JSONTagsCaseStyle:         pkg.JSONTagsCaseStyle,
 					OutputDBFileName:          pkg.OutputDBFileName,
