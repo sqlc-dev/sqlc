@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"go/format"
+	"path"
 	"strings"
 	"text/template"
 
@@ -15,13 +16,14 @@ import (
 )
 
 type tmplCtx struct {
-	Q           string
-	Package     string
-	SQLPackage  SQLPackage
-	Enums       []Enum
-	Structs     []Struct
-	GoQueries   []Query
-	SqlcVersion string
+	Q            string
+	Package      string
+	SQLPackage   SQLPackage
+	Enums        []Enum
+	Structs      []Struct
+	GoQueries    []Query
+	SqlcVersion  string
+	ModelPackage string
 
 	// TODO: Race conditions
 	SourceName string
@@ -59,11 +61,12 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 	}
 
 	funcMap := template.FuncMap{
-		"lowerTitle": sdk.LowerTitle,
-		"comment":    sdk.DoubleSlashComment,
-		"escape":     sdk.EscapeBacktick,
-		"imports":    i.Imports,
-		"hasPrefix":  strings.HasPrefix,
+		"lowerTitle":  sdk.LowerTitle,
+		"comment":     sdk.DoubleSlashComment,
+		"escape":      sdk.EscapeBacktick,
+		"imports":     i.Imports,
+		"hasPrefix":   strings.HasPrefix,
+		"packageName": sdk.PackageName,
 	}
 
 	tmpl := template.Must(
@@ -77,6 +80,12 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 	)
 
 	golang := req.Settings.Go
+
+	modelPackage := golang.ModelPackage
+	if modelPackage == "" && golang.ModelPath != "" {
+		modelPackage = golang.ModelPath
+	}
+
 	tctx := tmplCtx{
 		EmitInterface:             golang.EmitInterface,
 		EmitJSONTags:              golang.EmitJsonTags,
@@ -93,6 +102,7 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 		Enums:                     enums,
 		Structs:                   structs,
 		SqlcVersion:               req.SqlcVersion,
+		ModelPackage:              golang.ModelPackage,
 	}
 
 	if tctx.UsesCopyFrom && tctx.SQLPackage != SQLPackagePGX {
@@ -139,6 +149,15 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 	if golang.OutputModelsFileName != "" {
 		modelsFileName = golang.OutputModelsFileName
 	}
+
+	if golang.ModelPackage != "" {
+		if golang.ModelPath != "" {
+			modelsFileName = path.Join(golang.ModelPath, modelsFileName)
+		} else {
+			modelsFileName = path.Join(golang.ModelPackage, modelsFileName)
+		}
+	}
+
 	querierFileName := "querier.go"
 	if golang.OutputQuerierFileName != "" {
 		querierFileName = golang.OutputQuerierFileName

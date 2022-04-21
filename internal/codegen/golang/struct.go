@@ -13,6 +13,7 @@ type Struct struct {
 	Name    string
 	Fields  []Field
 	Comment string
+	Package string
 }
 
 func StructName(name string, settings *plugin.Settings) string {

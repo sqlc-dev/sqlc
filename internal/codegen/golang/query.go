@@ -59,6 +59,9 @@ func (v QueryValue) Type() string {
 
 func (v *QueryValue) DefineType() string {
 	t := v.Type()
+	if v.IsStruct() && v.Struct.Package != "" {
+		t = v.Struct.Package + "." + t
+	}
 	if v.IsPointer() {
 		return "*" + t
 	}

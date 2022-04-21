@@ -134,6 +134,8 @@ type SQLGo struct {
 	Overrides                 []Override        `json:"overrides,omitempty" yaml:"overrides"`
 	Rename                    map[string]string `json:"rename,omitempty" yaml:"rename"`
 	SQLPackage                string            `json:"sql_package" yaml:"sql_package"`
+	ModelPackage              string            `json:"model_package" yaml:"model_package"`
+	ModelPath                 string            `json:"model_path" yaml:"model_path"`
 	OutputDBFileName          string            `json:"output_db_file_name,omitempty" yaml:"output_db_file_name"`
 	OutputModelsFileName      string            `json:"output_models_file_name,omitempty" yaml:"output_models_file_name"`
 	OutputQuerierFileName     string            `json:"output_querier_file_name,omitempty" yaml:"output_querier_file_name"`

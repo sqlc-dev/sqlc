@@ -2,6 +2,7 @@ package golang
 
 import (
 	"fmt"
+	"path"
 	"sort"
 	"strings"
 
@@ -85,6 +86,15 @@ func (i *importer) Imports(filename string) [][]ImportSpec {
 	if i.Settings.Go.OutputModelsFileName != "" {
 		modelsFileName = i.Settings.Go.OutputModelsFileName
 	}
+
+	if i.Settings.Go.ModelPackage != "" {
+		if i.Settings.Go.ModelPath != "" {
+			modelsFileName = path.Join(i.Settings.Go.ModelPath, modelsFileName)
+		} else {
+			modelsFileName = path.Join(i.Settings.Go.ModelPackage, modelsFileName)
+		}
+	}
+
 	querierFileName := "querier.go"
 	if i.Settings.Go.OutputQuerierFileName != "" {
 		querierFileName = i.Settings.Go.OutputQuerierFileName
