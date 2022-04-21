@@ -3,6 +3,9 @@ package golang
 import (
 	"regexp"
 	"strings"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 var IdentPattern = regexp.MustCompile("[^a-zA-Z0-9_]+")
@@ -33,7 +36,7 @@ func EnumValueName(value string) string {
 	id = strings.Replace(id, "/", "_", -1)
 	id = IdentPattern.ReplaceAllString(id, "")
 	for _, part := range strings.Split(id, "_") {
-		name += strings.Title(part)
+		name += cases.Title(language.English).String(part)
 	}
 	return name
 }
