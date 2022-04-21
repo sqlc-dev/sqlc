@@ -38,3 +38,11 @@ func EscapeBacktick(s string) string {
 func DoubleSlashComment(s string) string {
 	return "// " + strings.ReplaceAll(s, "\n", "\n// ")
 }
+
+func PackageName(s string) string {
+	p := strings.Split(s, "/")
+	if strings.HasSuffix(s, "/") {
+		return p[len(p)-2]
+	}
+	return p[len(p)-1]
+}
