@@ -4,6 +4,8 @@ import (
 	"strings"
 
 	"github.com/kyleconroy/sqlc/internal/plugin"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 type Struct struct {
@@ -13,17 +15,22 @@ type Struct struct {
 	Comment string
 }
 
-func StructName(name string, settings *plugin.Settings) string {
-	if rename := settings.Rename[name]; rename != "" {
+// StructName constructs a valid camel case value from a snake case
+func StructName(name, rename string) string {
+
+	if rename != "" {
 		return rename
 	}
+
 	out := ""
+
 	for _, p := range strings.Split(name, "_") {
 		if p == "id" {
 			out += "ID"
 		} else {
-			out += strings.Title(p)
+			out += cases.Title(language.English).String(p)
 		}
 	}
+
 	return out
 }
