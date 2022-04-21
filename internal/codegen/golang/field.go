@@ -6,6 +6,8 @@ import (
 	"strings"
 
 	"github.com/kyleconroy/sqlc/internal/plugin"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 type Field struct {
@@ -72,7 +74,7 @@ func toCamelInitCase(name string, initUpper bool) string {
 		if p == "id" {
 			out += "ID"
 		} else {
-			out += strings.Title(p)
+			out += cases.Title(language.English).String(p)
 		}
 	}
 	return out

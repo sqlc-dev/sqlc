@@ -12,6 +12,8 @@ import (
 	"text/template"
 
 	pgx "github.com/jackc/pgx/v4"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
@@ -262,7 +264,7 @@ func run(ctx context.Context) error {
 
 		var funcName string
 		for _, part := range strings.Split(name, "_") {
-			funcName += strings.Title(part)
+			funcName += cases.Title(language.English).String(part)
 		}
 
 		_, err := conn.Exec(ctx, fmt.Sprintf("CREATE EXTENSION IF NOT EXISTS \"%s\"", extension))

@@ -3,6 +3,9 @@ package sdk
 import (
 	"strings"
 	"unicode"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 func LowerTitle(s string) string {
@@ -16,7 +19,7 @@ func LowerTitle(s string) string {
 }
 
 func Title(s string) string {
-	return strings.Title(s)
+	return cases.Title(language.English).String(s)
 }
 
 // Go string literals cannot contain backtick. If a string contains

@@ -16,6 +16,8 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
 	"github.com/kyleconroy/sqlc/internal/sql/sqlpath"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 // TODO: Rename this interface Engine
@@ -32,7 +34,7 @@ func structName(name string) string {
 		if p == "id" {
 			out += "ID"
 		} else {
-			out += strings.Title(p)
+			out += cases.Title(language.English).String(p)
 		}
 	}
 	return out
@@ -47,7 +49,7 @@ func enumValueName(value string) string {
 	id = strings.Replace(id, "/", "_", -1)
 	id = identPattern.ReplaceAllString(id, "")
 	for _, part := range strings.Split(id, "_") {
-		name += strings.Title(part)
+		name += cases.Title(language.English).String(part)
 	}
 	return name
 }
