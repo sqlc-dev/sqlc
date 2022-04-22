@@ -1,0 +1,16 @@
+{
+  "version": "2",
+  "sql": [
+    {
+      "schema": "postgresql/schema.sql",
+      "queries": "postgresql/query.sql",
+      "engine": "postgresql",
+      "gen": {
+        "json": {
+          "out": "gen",
+          "indent": "  "
+        }
+      }
+    }
+  ]
+}

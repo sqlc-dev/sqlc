@@ -1,0 +1,269 @@
+{
+  "settings": {
+    "version": "2",
+    "engine": "postgresql",
+    "schema": [
+      "postgresql/schema.sql"
+    ],
+    "queries": [
+      "postgresql/query.sql"
+    ],
+    "python": {},
+    "kotlin": {},
+    "go": {},
+    "json": {
+      "out": "gen",
+      "indent": "  "
+    }
+  },
+  "catalog": {
+    "defaultSchema": "public",
+    "schemas": [
+      {
+        "name": "public",
+        "tables": [
+          {
+            "rel": {
+              "name": "authors"
+            },
+            "columns": [
+              {
+                "name": "id",
+                "notNull": true,
+                "length": -1,
+                "table": {
+                  "name": "authors"
+                },
+                "type": {
+                  "name": "bigserial"
+                }
+              },
+              {
+                "name": "name",
+                "notNull": true,
+                "length": -1,
+                "table": {
+                  "name": "authors"
+                },
+                "type": {
+                  "name": "text"
+                }
+              },
+              {
+                "name": "bio",
+                "length": -1,
+                "table": {
+                  "name": "authors"
+                },
+                "type": {
+                  "name": "text"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "pg_temp"
+      },
+      {
+        "name": "pg_catalog"
+      }
+    ]
+  },
+  "queries": [
+    {
+      "text": "SELECT id, name, bio FROM authors\nWHERE id = $1 LIMIT 1",
+      "name": "GetAuthor",
+      "cmd": ":one",
+      "columns": [
+        {
+          "name": "id",
+          "notNull": true,
+          "length": -1,
+          "table": {
+            "name": "authors"
+          },
+          "type": {
+            "name": "bigserial"
+          }
+        },
+        {
+          "name": "name",
+          "notNull": true,
+          "length": -1,
+          "table": {
+            "name": "authors"
+          },
+          "type": {
+            "name": "text"
+          }
+        },
+        {
+          "name": "bio",
+          "length": -1,
+          "table": {
+            "name": "authors"
+          },
+          "type": {
+            "name": "text"
+          }
+        }
+      ],
+      "parameters": [
+        {
+          "number": 1,
+          "column": {
+            "name": "id",
+            "notNull": true,
+            "length": -1,
+            "table": {
+              "name": "authors"
+            },
+            "type": {
+              "name": "bigserial"
+            }
+          }
+        }
+      ],
+      "filename": "query.sql"
+    },
+    {
+      "text": "SELECT id, name, bio FROM authors\nORDER BY name",
+      "name": "ListAuthors",
+      "cmd": ":many",
+      "columns": [
+        {
+          "name": "id",
+          "notNull": true,
+          "length": -1,
+          "table": {
+            "name": "authors"
+          },
+          "type": {
+            "name": "bigserial"
+          }
+        },
+        {
+          "name": "name",
+          "notNull": true,
+          "length": -1,
+          "table": {
+            "name": "authors"
+          },
+          "type": {
+            "name": "text"
+          }
+        },
+        {
+          "name": "bio",
+          "length": -1,
+          "table": {
+            "name": "authors"
+          },
+          "type": {
+            "name": "text"
+          }
+        }
+      ],
+      "filename": "query.sql"
+    },
+    {
+      "text": "INSERT INTO authors (\n          name, bio\n) VALUES (\n  $1, $2\n)\nRETURNING id, name, bio",
+      "name": "CreateAuthor",
+      "cmd": ":one",
+      "columns": [
+        {
+          "name": "id",
+          "notNull": true,
+          "length": -1,
+          "table": {
+            "name": "authors"
+          },
+          "type": {
+            "name": "bigserial"
+          }
+        },
+        {
+          "name": "name",
+          "notNull": true,
+          "length": -1,
+          "table": {
+            "name": "authors"
+          },
+          "type": {
+            "name": "text"
+          }
+        },
+        {
+          "name": "bio",
+          "length": -1,
+          "table": {
+            "name": "authors"
+          },
+          "type": {
+            "name": "text"
+          }
+        }
+      ],
+      "parameters": [
+        {
+          "number": 1,
+          "column": {
+            "name": "name",
+            "notNull": true,
+            "length": -1,
+            "table": {
+              "schema": "public",
+              "name": "authors"
+            },
+            "type": {
+              "name": "text"
+            }
+          }
+        },
+        {
+          "number": 2,
+          "column": {
+            "name": "bio",
+            "length": -1,
+            "table": {
+              "schema": "public",
+              "name": "authors"
+            },
+            "type": {
+              "name": "text"
+            }
+          }
+        }
+      ],
+      "filename": "query.sql",
+      "insert_into_table": {
+        "name": "authors"
+      }
+    },
+    {
+      "text": "DELETE FROM authors\nWHERE id = $1",
+      "name": "DeleteAuthor",
+      "cmd": ":exec",
+      "parameters": [
+        {
+          "number": 1,
+          "column": {
+            "name": "id",
+            "notNull": true,
+            "length": -1,
+            "table": {
+              "name": "authors"
+            },
+            "type": {
+              "name": "bigserial"
+            }
+          }
+        }
+      ],
+      "filename": "query.sql"
+    }
+  ],
+  "sqlc_version": "v1.13.0"
+}
