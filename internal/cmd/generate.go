@@ -202,7 +202,6 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 		}
 		var genfunc func(req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error)
 		var out string
-		debug.Dump(sql.Gen)
 		switch {
 		case sql.Gen.Go != nil:
 			out = combo.Go.Out
