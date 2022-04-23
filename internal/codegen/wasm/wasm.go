@@ -1,3 +1,5 @@
+//go:build wasmtime
+
 package wasm
 
 import (
