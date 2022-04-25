@@ -1,0 +1,18 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "path": "go",
+      "name": "override",
+      "engine": "postgresql",
+      "schema": "schema.sql",
+      "queries": "query.sql",
+      "overrides": [
+        {
+          "column": "foo.id",
+          "go_struct_tag": "x:\"y\""
+        }
+      ]
+    }
+  ]
+}

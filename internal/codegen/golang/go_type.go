@@ -5,6 +5,26 @@ import (
 	"github.com/kyleconroy/sqlc/internal/plugin"
 )
 
+func addExtraGoStructTags(tags map[string]string, req *plugin.CodeGenRequest, col *plugin.Column) {
+	for _, oride := range req.Settings.Overrides {
+		if oride.GoType.StructTags == nil {
+			continue
+		}
+		if !sdk.Matches(oride, col.Table, req.Catalog.DefaultSchema) {
+			// Different table.
+			continue
+		}
+		if !sdk.MatchString(oride.ColumnName, col.Name) {
+			// Different column.
+			continue
+		}
+		// Add the extra tags.
+		for k, v := range oride.GoType.StructTags {
+			tags[k] = v
+		}
+	}
+}
+
 func goType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 	// Check if the column's type has been overridden
 	for _, oride := range req.Settings.Overrides {

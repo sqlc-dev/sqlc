@@ -109,6 +109,7 @@ func pluginGoType(o config.Override) *plugin.ParsedGoType {
 		Package:    o.GoPackage,
 		TypeName:   o.GoTypeName,
 		BasicType:  o.GoBasicType,
+		StructTags: o.GoStructTags,
 	}
 }
 
