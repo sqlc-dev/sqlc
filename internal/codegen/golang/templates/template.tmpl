@@ -111,7 +111,7 @@ type {{.Name}} struct { {{- range .Fields}}
   {{- if .Comment}}
   {{comment .Comment}}{{else}}
   {{- end}}
-  {{.Name}} {{.Type}} {{if or ($.EmitJSONTags) ($.EmitDBTags)}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
+  {{.Name}} {{.Type}} {{if .Tag}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
   {{- end}}
 }
 {{end}}
