@@ -1,0 +1,12 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "path": "go",
+      "name": "datatype",
+      "schema": "sql/",
+      "queries": "sql/",
+      "emit_pointers_for_null_types": true
+    }
+  ]
+}

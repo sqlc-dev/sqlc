@@ -127,6 +127,7 @@ type SQLGo struct {
 	EmitResultStructPointers  bool              `json:"emit_result_struct_pointers" yaml:"emit_result_struct_pointers"`
 	EmitParamsStructPointers  bool              `json:"emit_params_struct_pointers" yaml:"emit_params_struct_pointers"`
 	EmitMethodsWithDBArgument bool              `json:"emit_methods_with_db_argument,omitempty" yaml:"emit_methods_with_db_argument"`
+	EmitPointersForNullTypes  bool              `json:"emit_pointers_for_null_types" yaml:"emit_pointers_for_null_types"`
 	JSONTagsCaseStyle         string            `json:"json_tags_case_style,omitempty" yaml:"json_tags_case_style"`
 	Package                   string            `json:"package" yaml:"package"`
 	Out                       string            `json:"out" yaml:"out"`
