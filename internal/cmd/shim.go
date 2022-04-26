@@ -85,6 +85,7 @@ func pluginGoCode(s config.SQLGo) *plugin.GoCode {
 		EmitResultStructPointers:  s.EmitResultStructPointers,
 		EmitParamsStructPointers:  s.EmitParamsStructPointers,
 		EmitMethodsWithDbArgument: s.EmitMethodsWithDBArgument,
+		EmitPointersForNullTypes:  s.EmitPointersForNullTypes,
 		JsonTagsCaseStyle:         s.JSONTagsCaseStyle,
 		Package:                   s.Package,
 		Out:                       s.Out,
