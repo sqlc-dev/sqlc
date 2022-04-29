@@ -26,6 +26,7 @@ func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int 
 	rootCmd.PersistentFlags().BoolP("experimental", "x", false, "enable experimental features (default: false)")
 
 	rootCmd.AddCommand(checkCmd)
+	genCmd.Flags().StringP("destination", "d", "", "specify an alternate directory for generated files (default: same location as sqlc.yaml)")
 	rootCmd.AddCommand(genCmd)
 	rootCmd.AddCommand(initCmd)
 	rootCmd.AddCommand(versionCmd)
@@ -109,7 +110,9 @@ func ParseEnv(c *cobra.Command) Env {
 	}
 }
 
-func getConfigPath(stderr io.Writer, f *pflag.Flag) (string, string) {
+func getConfigPath(stderr io.Writer, f, d *pflag.Flag) (string, string, string) {
+	var dir, dstDir, name string
+
 	if f != nil && f.Changed {
 		file := f.Value.String()
 		if file == "" {
@@ -121,15 +124,34 @@ func getConfigPath(stderr io.Writer, f *pflag.Flag) (string, string) {
 			fmt.Fprintf(stderr, "error parsing config: absolute file path lookup failed: %s\n", err)
 			os.Exit(1)
 		}
-		return filepath.Dir(abspath), filepath.Base(abspath)
+		dir = filepath.Dir(abspath)
+		name = filepath.Base(abspath)
 	} else {
 		wd, err := os.Getwd()
 		if err != nil {
 			fmt.Fprintln(stderr, "error parsing sqlc.json: file does not exist")
 			os.Exit(1)
 		}
-		return wd, ""
+		dir = wd
+		name = ""
 	}
+
+	if d != nil && d.Changed {
+		destination := d.Value.String()
+		if destination == "" {
+			fmt.Fprintln(stderr, "error parsing config: destination argument is empty")
+			os.Exit(1)
+		}
+		abspath, err := filepath.Abs(destination)
+		if err != nil {
+			fmt.Fprintf(stderr, "error parsing config: absolute destination path lookup failed: %s\n", err)
+			os.Exit(1)
+		}
+		dstDir = abspath
+	} else {
+		dstDir = dir
+	}
+	return dir, name, dstDir
 }
 
 var genCmd = &cobra.Command{
@@ -140,8 +162,8 @@ var genCmd = &cobra.Command{
 			defer trace.StartRegion(cmd.Context(), "generate").End()
 		}
 		stderr := cmd.ErrOrStderr()
-		dir, name := getConfigPath(stderr, cmd.Flag("file"))
-		output, err := Generate(cmd.Context(), ParseEnv(cmd), dir, name, stderr)
+		dir, name, dstDir := getConfigPath(stderr, cmd.Flag("file"), cmd.Flag("destination"))
+		output, err := Generate(cmd.Context(), ParseEnv(cmd), dir, name, dstDir, stderr)
 		if err != nil {
 			os.Exit(1)
 		}
@@ -163,7 +185,7 @@ var uploadCmd = &cobra.Command{
 	Short: "Upload the schema, queries, and configuration for this project",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		stderr := cmd.ErrOrStderr()
-		dir, name := getConfigPath(stderr, cmd.Flag("file"))
+		dir, name, _ := getConfigPath(stderr, cmd.Flag("file"), nil)
 		if err := createPkg(cmd.Context(), ParseEnv(cmd), dir, name, stderr); err != nil {
 			fmt.Fprintf(stderr, "error uploading: %s\n", err)
 			os.Exit(1)
@@ -180,8 +202,8 @@ var checkCmd = &cobra.Command{
 			defer trace.StartRegion(cmd.Context(), "compile").End()
 		}
 		stderr := cmd.ErrOrStderr()
-		dir, name := getConfigPath(stderr, cmd.Flag("file"))
-		if _, err := Generate(cmd.Context(), ParseEnv(cmd), dir, name, stderr); err != nil {
+		dir, name, dstDir := getConfigPath(stderr, cmd.Flag("file"), nil)
+		if _, err := Generate(cmd.Context(), ParseEnv(cmd), dir, name, dstDir, stderr); err != nil {
 			os.Exit(1)
 		}
 		return nil
