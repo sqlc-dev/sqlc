@@ -10,7 +10,7 @@ import (
 
 func v2ParseConfig(rd io.Reader) (Config, error) {
 	dec := yaml.NewDecoder(rd)
-	dec.KnownFields(true)
+	// dec.KnownFields(true)
 	var conf Config
 	if err := dec.Decode(&conf); err != nil {
 		return conf, err
@@ -80,6 +80,37 @@ func v2ParseConfig(rd io.Reader) (Config, error) {
 				return conf, ErrNoOutPath
 			}
 		}
+	}
+	// TODO: Store built-in plugins somewhere else
+	builtins := map[string]struct{}{
+		"go":     struct{}{},
+		"json":   struct{}{},
+		"kotlin": struct{}{},
+		"python": struct{}{},
+	}
+	seen := map[string]struct{}{}
+	for i := range conf.Plugins {
+		if conf.Plugins[i].Name == "" {
+			return conf, ErrPluginNoName
+		}
+		if _, ok := builtins[conf.Plugins[i].Name]; ok {
+			return conf, ErrPluginBuiltin
+		}
+		if _, ok := seen[conf.Plugins[i].Name]; ok {
+			return conf, ErrPluginExists
+		}
+		if conf.Plugins[i].Process == nil && conf.Plugins[i].WASM == nil {
+			return conf, ErrPluginNoType
+		}
+		if conf.Plugins[i].Process != nil && conf.Plugins[i].WASM != nil {
+			return conf, ErrPluginBothTypes
+		}
+		if conf.Plugins[i].Process != nil {
+			if conf.Plugins[i].Process.Cmd == "" {
+				return conf, ErrPluginProcessNoCmd
+			}
+		}
+		seen[conf.Plugins[i].Name] = struct{}{}
 	}
 	return conf, nil
 }
