@@ -104,7 +104,7 @@ func readConfig(stderr io.Writer, dir, filename string) (string, *config.Config,
 	return configPath, &conf, nil
 }
 
-func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer) (map[string]string, error) {
+func Generate(ctx context.Context, e Env, dir, filename, dstDir string, stderr io.Writer) (map[string]string, error) {
 	configPath, conf, err := readConfig(stderr, dir, filename)
 	if err != nil {
 		return nil, err
@@ -236,7 +236,7 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 			files[file.Name] = string(file.Contents)
 		}
 		for n, source := range files {
-			filename := filepath.Join(dir, out, n)
+			filename := filepath.Join(dstDir, out, n)
 			output[filename] = source
 		}
 		if packageRegion != nil {
