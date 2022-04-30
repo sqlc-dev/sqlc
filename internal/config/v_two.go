@@ -75,6 +75,11 @@ func v2ParseConfig(rd io.Reader) (Config, error) {
 				}
 			}
 		}
+		if conf.SQL[j].Gen.JSON != nil {
+			if conf.SQL[j].Gen.JSON.Out == "" {
+				return conf, ErrNoOutPath
+			}
+		}
 	}
 	return conf, nil
 }

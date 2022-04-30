@@ -99,7 +99,11 @@ func (i *importer) modelImportSpecs() (map[string]importSpec, map[string]importS
 	}
 
 	std := stdImports(modelUses)
-	std["dataclasses"] = importSpec{Module: "dataclasses"}
+	if i.Settings.Python.EmitPydanticModels {
+		std["pydantic"] = importSpec{Module: "pydantic"}
+	} else {
+		std["dataclasses"] = importSpec{Module: "dataclasses"}
+	}
 	if len(i.Enums) > 0 {
 		std["enum"] = importSpec{Module: "enum"}
 	}
@@ -162,7 +166,11 @@ func (i *importer) queryImportSpecs(fileName string) (map[string]importSpec, map
 
 	queryValueModelImports := func(qv QueryValue) {
 		if qv.IsStruct() && qv.EmitStruct() {
-			std["dataclasses"] = importSpec{Module: "dataclasses"}
+			if i.Settings.Python.EmitPydanticModels {
+				std["pydantic"] = importSpec{Module: "pydantic"}
+			} else {
+				std["dataclasses"] = importSpec{Module: "dataclasses"}
+			}
 		}
 	}
 

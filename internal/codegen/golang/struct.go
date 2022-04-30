@@ -2,6 +2,8 @@ package golang
 
 import (
 	"strings"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/kyleconroy/sqlc/internal/plugin"
 )
@@ -25,5 +27,12 @@ func StructName(name string, settings *plugin.Settings) string {
 			out += strings.Title(p)
 		}
 	}
-	return out
+
+	// If a name has a digit as its first char, prepand an underscore to make it a valid Go name.
+	r, _ := utf8.DecodeRuneInString(out)
+	if unicode.IsDigit(r) {
+		return "_" + out
+	} else {
+		return out
+	}
 }

@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/kyleconroy/sqlc/internal/codegen/golang"
+	"github.com/kyleconroy/sqlc/internal/codegen/json"
 	"github.com/kyleconroy/sqlc/internal/codegen/kotlin"
 	"github.com/kyleconroy/sqlc/internal/codegen/python"
 	"github.com/kyleconroy/sqlc/internal/compiler"
@@ -138,6 +139,12 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 				Gen: config.SQLGen{Python: sql.Gen.Python},
 			})
 		}
+		if sql.Gen.JSON != nil {
+			pairs = append(pairs, outPair{
+				SQL: sql,
+				Gen: config.SQLGen{JSON: sql.Gen.JSON},
+			})
+		}
 	}
 
 	for _, sql := range pairs {
@@ -205,6 +212,9 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 		case sql.Gen.Python != nil:
 			out = combo.Python.Out
 			genfunc = python.Generate
+		case sql.Gen.JSON != nil:
+			out = combo.JSON.Out
+			genfunc = json.Generate
 		default:
 			panic("missing language backend")
 		}

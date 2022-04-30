@@ -59,6 +59,7 @@ message Settings
   PythonCode python = 8;
   KotlinCode kotlin = 9;
   GoCode go = 10;
+  JSONCode json = 11;
 }
 
 message PythonCode
@@ -68,6 +69,7 @@ message PythonCode
   bool emit_async_querier = 3;
   string package = 4;
   string out = 5;
+  bool emit_pydantic_models = 6;
 }
 
 message KotlinCode
@@ -97,6 +99,12 @@ message GoCode
   string output_models_file_name = 16;
   string output_querier_file_name = 17;
   string output_files_suffix = 18;
+}
+
+message JSONCode
+{
+  string out = 1;
+  string indent = 2;
 }
 
 message Catalog

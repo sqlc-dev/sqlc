@@ -60,6 +60,24 @@ DELETE FROM authors
 WHERE id = $1;
 ```
 
+For SQL UPDATE if you do not want to return the updated record to the user, add this to the `query.sql` file:
+```sql
+-- name: UpdateAuthor :exec
+UPDATE authors
+set name = $2,
+bio = $3
+WHERE id = $1;
+```
+Otherwise, to return the updated record back to the user, add this to the `query.sql` file:
+```sql
+-- name: UpdateAuthor :one
+UPDATE authors
+set name = $2,
+bio = $3
+WHERE id = $1
+RETURNING *;
+```
+
 You are now ready to generate code. Run the `generate` command. You shouldn't see any errors or output.
 
 ```shell

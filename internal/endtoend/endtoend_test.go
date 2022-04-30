@@ -116,7 +116,10 @@ func cmpDirectory(t *testing.T, dir string, actual map[string]string) {
 		if file.IsDir() {
 			return nil
 		}
-		if !strings.HasSuffix(path, ".go") && !strings.HasSuffix(path, ".kt") && !strings.HasSuffix(path, ".py") {
+		if !strings.HasSuffix(path, ".go") && !strings.HasSuffix(path, ".kt") && !strings.HasSuffix(path, ".py") && !strings.HasSuffix(path, ".json") {
+			return nil
+		}
+		if filepath.Base(path) == "sqlc.json" {
 			return nil
 		}
 		if strings.Contains(path, "/kotlin/build") {
@@ -126,7 +129,8 @@ func cmpDirectory(t *testing.T, dir string, actual map[string]string) {
 			return nil
 		}
 		if strings.Contains(path, "/python/.venv") || strings.Contains(path, "/python/src/tests/") ||
-			strings.HasSuffix(path, "__init__.py") || strings.Contains(path, "/python/src/dbtest/") {
+			strings.HasSuffix(path, "__init__.py") || strings.Contains(path, "/python/src/dbtest/") ||
+			strings.Contains(path, "/python/.mypy_cache") {
 			return nil
 		}
 		blob, err := os.ReadFile(path)

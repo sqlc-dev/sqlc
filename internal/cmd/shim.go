@@ -59,6 +59,7 @@ func pluginSettings(cs config.CombinedSettings) *plugin.Settings {
 		Python:    pluginPythonCode(cs.Python),
 		Kotlin:    pluginKotlinCode(cs.Kotlin),
 		Go:        pluginGoCode(cs.Go),
+		Json:      pluginJSONCode(cs.JSON),
 	}
 }
 
@@ -69,6 +70,7 @@ func pluginPythonCode(s config.SQLPython) *plugin.PythonCode {
 		EmitExactTableNames: s.EmitExactTableNames,
 		EmitSyncQuerier:     s.EmitSyncQuerier,
 		EmitAsyncQuerier:    s.EmitAsyncQuerier,
+		EmitPydanticModels:  s.EmitPydanticModels,
 	}
 }
 
@@ -120,6 +122,13 @@ func pluginKotlinCode(s config.SQLKotlin) *plugin.KotlinCode {
 		Out:                 s.Out,
 		Package:             s.Package,
 		EmitExactTableNames: s.EmitExactTableNames,
+	}
+}
+
+func pluginJSONCode(s config.SQLJSON) *plugin.JSONCode {
+	return &plugin.JSONCode{
+		Out:    s.Out,
+		Indent: s.Indent,
 	}
 }
 
