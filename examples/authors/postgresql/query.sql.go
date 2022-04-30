@@ -80,3 +80,22 @@ func (q *Queries) ListAuthors(ctx context.Context) ([]Author, error) {
 	}
 	return items, nil
 }
+
+const updateAuthor = `-- name: UpdateAuthor :exec
+UPDATE authors
+SET
+ name = coalesce($1, name),
+ bio = coalesce($2, bio)
+WHERE id = $3
+`
+
+type UpdateAuthorParams struct {
+	Name sql.NullString
+	Bio  sql.NullString
+	ID   int64
+}
+
+func (q *Queries) UpdateAuthor(ctx context.Context, arg UpdateAuthorParams) error {
+	_, err := q.db.ExecContext(ctx, updateAuthor, arg.Name, arg.Bio, arg.ID)
+	return err
+}
