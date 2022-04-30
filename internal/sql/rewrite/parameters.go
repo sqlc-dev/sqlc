@@ -41,23 +41,28 @@ func isNamedParamSignCast(node ast.Node) bool {
 	return astutils.Join(expr.Name, ".") == "@" && cast
 }
 
-// paramFromName takes a user-defined parameter name, with an optional suffix of
-// ? (nullable), or ! (non-null) and builds the appropiate parameter
-func paramFromName(name string) named.Param {
-	if len(name) == 0 {
-		return named.NewUnspecifiedParam(name)
+// paramFromFuncCall creates a param from sqlc.n?arg() calls return the
+// parameter and whether the parameter name was specified a best guess as its
+// "source" string representation (used for replacing this function call in the
+// original SQL query)
+func paramFromFuncCall(call *ast.FuncCall) (named.Param, string) {
+	paramName, isConst := flatten(call.Args)
+
+	// origName keeps track of how the parameter was specified in the source SQL
+	origName := paramName
+	if isConst {
+		origName = fmt.Sprintf("'%s'", paramName)
 	}
 
-	last := name[len(name)-1]
-	if last == '!' {
-		return named.NewUserDefinedParam(name[:len(name)-1], true)
+	param := named.NewParam(paramName)
+	if call.Func.Name == "narg" {
+		param = named.NewUserNullableParam(paramName)
 	}
 
-	if last == '?' {
-		return named.NewUserDefinedParam(name[:len(name)-1], false)
-	}
-
-	return named.NewUnspecifiedParam(name)
+	// TODO: This code assumes that sqlc.arg(name) / sqlc.narg(name) is on a single line
+	// with no extraneous spaces (or any non-significant tokens for that matter)
+	origText := fmt.Sprintf("%s.%s(%s)", call.Func.Schema, call.Func.Name, origName)
+	return param, origText
 }
 
 func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool, dollar bool) (*ast.RawStmt, *named.ParamSet, []source.Edit) {
@@ -76,30 +81,23 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 		switch {
 		case named.IsParamFunc(node):
 			fun := node.(*ast.FuncCall)
-			paramName, isConst := flatten(fun.Args)
-
-			param := paramFromName(paramName)
+			param, origText := paramFromFuncCall(fun)
 			argn := allParams.Add(param)
 			cr.Replace(&ast.ParamRef{
 				Number:   argn,
 				Location: fun.Location,
 			})
 
-			// TODO: This code assumes that sqlc.arg(name) is on a single line
-			var old, replace string
-			if isConst {
-				old = fmt.Sprintf("sqlc.arg('%s')", paramName)
-			} else {
-				old = fmt.Sprintf("sqlc.arg(%s)", paramName)
-			}
+			var replace string
 			if engine == config.EngineMySQL || !dollar {
 				replace = "?"
 			} else {
 				replace = fmt.Sprintf("$%d", argn)
 			}
+
 			edits = append(edits, source.Edit{
 				Location: fun.Location - raw.StmtLocation,
-				Old:      old,
+				Old:      origText,
 				New:      replace,
 			})
 			return false
@@ -108,7 +106,7 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 			expr := node.(*ast.A_Expr)
 			cast := expr.Rexpr.(*ast.TypeCast)
 			paramName, _ := flatten(cast.Arg)
-			param := paramFromName(paramName)
+			param := named.NewParam(paramName)
 
 			argn := allParams.Add(param)
 			cast.Arg = &ast.ParamRef{
@@ -135,7 +133,7 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 		case named.IsParamSign(node):
 			expr := node.(*ast.A_Expr)
 			paramName, _ := flatten(expr.Rexpr)
-			param := paramFromName(paramName)
+			param := named.NewParam(paramName)
 
 			argn := allParams.Add(param)
 			cr.Replace(&ast.ParamRef{

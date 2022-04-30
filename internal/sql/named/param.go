@@ -46,8 +46,8 @@ type Param struct {
 	nullability nullability
 }
 
-// NewUnspecifiedParam builds a new params with unspecified nullability
-func NewUnspecifiedParam(name string) Param {
+// NewParam builds a new params with unspecified nullability
+func NewParam(name string) Param {
 	return Param{name: name, nullability: nullUnspecified}
 }
 
@@ -60,13 +60,9 @@ func NewInferredParam(name string, notNull bool) Param {
 	return Param{name: name, nullability: inferredNull}
 }
 
-// NewUserDefinedParam creates a new param with the user specified
-// by the end user
-func NewUserDefinedParam(name string, notNull bool) Param {
-	if notNull {
-		return Param{name: name, nullability: notNullable}
-	}
-
+// NewUserNullableParam is a parameter that has been overridden
+// by the user to be nullable.
+func NewUserNullableParam(name string) Param {
 	return Param{name: name, nullability: nullable}
 }
 

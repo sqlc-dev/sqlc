@@ -121,7 +121,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 					dataType = "string"
 				}
 
-				defaultP := named.NewUnspecifiedParam("")
+				defaultP := named.NewParam("")
 				p, isNamed := params.FetchMerge(ref.ref.Number, defaultP)
 				a = append(a, Parameter{
 					Number: ref.ref.Number,

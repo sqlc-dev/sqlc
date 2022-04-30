@@ -11,11 +11,10 @@ func TestMergeParamNullability(t *testing.T) {
 	}
 
 	name := "name"
-	unspec := NewUnspecifiedParam(name)
+	unspec := NewParam(name)
 	inferredNotNull := NewInferredParam(name, true)
 	inferredNull := NewInferredParam(name, false)
-	userDefNotNull := NewUserDefinedParam(name, true)
-	userDefNull := NewUserDefinedParam(name, false)
+	userDefNull := NewUserNullableParam(name)
 
 	const notNull = true
 	const null = false
@@ -24,16 +23,13 @@ func TestMergeParamNullability(t *testing.T) {
 		// Unspecified nullability parameter works
 		{unspec, inferredNotNull, notNull, "Unspec + inferred(not null) = not null"},
 		{unspec, inferredNull, null, "Unspec + inferred(not null) = null"},
-		{unspec, userDefNotNull, notNull, "Unspec + userdef(not null) = not null"},
 		{unspec, userDefNull, null, "Unspec + userdef(null) = null"},
 
 		// Inferred nullability agreeing with user defined nullabilty
-		{inferredNotNull, userDefNotNull, notNull, "inferred(not null) + userdef(not null) = not null"},
 		{inferredNull, userDefNull, null, "inferred(null) + userdef(null) = null"},
 
 		// Inferred nullability disagreeing with user defined nullabilty
 		{inferredNotNull, userDefNull, null, "inferred(not null) + userdef(null) = null"},
-		{inferredNull, userDefNotNull, notNull, "inferred(null) + userdef(not null) = not null"},
 	}
 
 	for _, spec := range tests {
@@ -60,9 +56,9 @@ func TestMergeParamName(t *testing.T) {
 		name string
 	}
 
-	a := NewUnspecifiedParam("a")
-	b := NewUnspecifiedParam("b")
-	blank := NewUnspecifiedParam("")
+	a := NewParam("a")
+	b := NewParam("b")
+	blank := NewParam("")
 
 	tests := []test{
 		// should prefer the first param's name if both specified

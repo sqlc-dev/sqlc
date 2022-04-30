@@ -15,8 +15,8 @@ func TestParamSet_Add(t *testing.T) {
 	populatedNamed := NewParamSet(map[int]bool{1: true, 2: true, 4: true, 5: true, 6: true}, true)
 	populatedUnnamed := NewParamSet(map[int]bool{1: true, 2: true, 4: true, 5: true, 6: true}, false)
 	unnamed := NewParamSet(nil, false)
-	p1 := NewUnspecifiedParam("hello")
-	p2 := NewUnspecifiedParam("world")
+	p1 := NewParam("hello")
+	p2 := NewParam("world")
 
 	tests := []test{
 		// First parameter should be 1

@@ -5,15 +5,19 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/astutils"
 )
 
+// IsParamFunc fulfills the astutils.Search
 func IsParamFunc(node ast.Node) bool {
 	call, ok := node.(*ast.FuncCall)
 	if !ok {
 		return false
 	}
+
 	if call.Func == nil {
 		return false
 	}
-	return call.Func.Schema == "sqlc" && call.Func.Name == "arg"
+
+	isValid := call.Func.Schema == "sqlc" && (call.Func.Name == "arg" || call.Func.Name == "narg")
+	return isValid
 }
 
 func IsParamSign(node ast.Node) bool {
