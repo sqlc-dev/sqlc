@@ -10,6 +10,11 @@
     ],
     "rename": {},
     "overrides": [],
+    "codegen": {
+      "out": "",
+      "plugin": "",
+      "options": ""
+    },
     "python": {
       "emit_exact_table_names": false,
       "emit_sync_querier": false,
@@ -47,7 +52,8 @@
     },
     "json": {
       "out": "gen",
-      "indent": "  "
+      "indent": "  ",
+      "filename": "codegen.json"
     }
   },
   "catalog": {

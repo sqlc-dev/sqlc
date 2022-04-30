@@ -8,8 +8,6 @@ import (
 	"io"
 
 	yaml "gopkg.in/yaml.v3"
-
-	"github.com/kyleconroy/sqlc/internal/config/convert"
 )
 
 const errMessageNoVersion = `The configuration file must have a version number.
@@ -119,6 +117,7 @@ type SQL struct {
 	Codegen              []Codegen `json:"codegen" yaml:"codegen"`
 }
 
+// TODO: Figure out a better name for this
 type Codegen struct {
 	Out     string    `json:"out" yaml:"out"`
 	Plugin  string    `json:"plugin" yaml:"plugin"`
@@ -174,8 +173,9 @@ type SQLPython struct {
 }
 
 type SQLJSON struct {
-	Out    string `json:"out" yaml:"out"`
-	Indent string `json:"indent,omitempty" yaml:"indent"`
+	Out      string `json:"out" yaml:"out"`
+	Indent   string `json:"indent,omitempty" yaml:"indent"`
+	Filename string `json:"filename,omitempty" yaml:"filename"`
 }
 
 var ErrMissingEngine = errors.New("unknown engine")
@@ -191,6 +191,7 @@ var ErrUnknownVersion = errors.New("invalid version number")
 var ErrPluginBuiltin = errors.New("a built-in plugin with that name already exists")
 var ErrPluginNoName = errors.New("missing plugin name")
 var ErrPluginExists = errors.New("a plugin with that name already exists")
+var ErrPluginNotFound = errors.New("no plugin found")
 var ErrPluginNoType = errors.New("plugin: field `process` or `wasm` required")
 var ErrPluginBothTypes = errors.New("plugin: both `process` and `wasm` cannot both be defined")
 var ErrPluginProcessNoCmd = errors.New("plugin: missing process command")
@@ -240,6 +241,9 @@ type CombinedSettings struct {
 	JSON      SQLJSON
 	Rename    map[string]string
 	Overrides []Override
+
+	// TODO: Combine these into a more usable type
+	Codegen Codegen
 }
 
 func Combine(conf Config, pkg SQL) CombinedSettings {
@@ -247,11 +251,6 @@ func Combine(conf Config, pkg SQL) CombinedSettings {
 		Global:  conf,
 		Package: pkg,
 	}
-
-	for i, cg := range pkg.Codegen {
-		fmt.Printf("%d: %s\n", i, convert.YAMLtoJSON(cg.Options))
-	}
-
 	if conf.Gen.Go != nil {
 		cs.Rename = conf.Gen.Go.Rename
 		cs.Overrides = append(cs.Overrides, conf.Gen.Go.Overrides...)

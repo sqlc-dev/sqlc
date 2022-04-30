@@ -2,12 +2,13 @@ package convert
 
 import (
 	"encoding/json"
+	"fmt"
 	"strconv"
 
 	"gopkg.in/yaml.v3"
 )
 
-func gen(n *yaml.Node) interface{} {
+func gen(n *yaml.Node) (interface{}, error) {
 	switch n.Kind {
 
 	case yaml.MappingNode:
@@ -15,46 +16,66 @@ func gen(n *yaml.Node) interface{} {
 		for i, _ := range n.Content {
 			if i%2 == 0 {
 				k := n.Content[i]
-				nn[k.Value] = gen(n.Content[i+1])
+				v, err := gen(n.Content[i+1])
+				if err != nil {
+					return nil, err
+				}
+				nn[k.Value] = v
 			}
 		}
-		return nn
+		return nn, nil
 
 	case yaml.SequenceNode:
 		nn := []interface{}{}
 		for i, _ := range n.Content {
-			nn = append(nn, gen(n.Content[i]))
+			v, err := gen(n.Content[i])
+			if err != nil {
+				return nil, err
+			}
+			nn = append(nn, v)
 		}
-		return nn
+		return nn, nil
 
 	case yaml.ScalarNode:
 		switch n.Tag {
 
 		case "!!bool":
-			return n.Value == "true"
+			return strconv.ParseBool(n.Value)
+
+		case "!!float":
+			return strconv.ParseFloat(n.Value, 64)
 
 		case "!!int":
-			i, err := strconv.Atoi(n.Value)
-			if err != nil {
-				panic(err)
-			}
-			return i
+			return strconv.Atoi(n.Value)
+
+		case "!!null":
+			return nil, nil
+
+		case "!!str":
+			return n.Value, nil
 
 		default:
-			return n.Value
+			return n.Value, nil
 
 		}
 
 	default:
-		return ""
+		return nil, fmt.Errorf("unknown yaml value: %s (%s)", n.Value, n.Tag)
 
 	}
 }
 
-func YAMLtoJSON(n yaml.Node) []byte {
-	blob, err := json.Marshal(gen(&n))
-	if err != nil {
-		panic(err)
+func YAMLtoJSON(n yaml.Node) ([]byte, error) {
+	if n.Kind == 0 {
+		return []byte{}, nil
 	}
-	return blob
+	iface, err := gen(&n)
+	if err != nil {
+		return nil, err
+	}
+	blob, err := json.Marshal(iface)
+	if err != nil {
+		return nil, err
+	}
+	return blob, nil
 }
