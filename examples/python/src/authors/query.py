@@ -38,6 +38,15 @@ ORDER BY name
 """
 
 
+UPDATE_AUTHOR = """-- name: update_author \\:exec
+UPDATE authors
+SET
+ name = coalesce(:p1, name),
+ bio = coalesce(:p2, bio)
+WHERE id = :p3
+"""
+
+
 class Querier:
     def __init__(self, conn: sqlalchemy.engine.Connection):
         self._conn = conn
@@ -73,6 +82,9 @@ class Querier:
                 name=row[1],
                 bio=row[2],
             )
+
+    def update_author(self, *, name: Optional[str], bio: Optional[str], id: int) -> None:
+        self._conn.execute(sqlalchemy.text(UPDATE_AUTHOR), {"p1": name, "p2": bio, "p3": id})
 
 
 class AsyncQuerier:
@@ -110,3 +122,6 @@ class AsyncQuerier:
                 name=row[1],
                 bio=row[2],
             )
+
+    async def update_author(self, *, name: Optional[str], bio: Optional[str], id: int) -> None:
+        await self._conn.execute(sqlalchemy.text(UPDATE_AUTHOR), {"p1": name, "p2": bio, "p3": id})
