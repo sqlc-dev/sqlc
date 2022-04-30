@@ -53,7 +53,7 @@ func (r Runner) Generate(req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, e
 	cmd := exec.CommandContext(ctx, path)
 	cmd.Stdin = bytes.NewReader(stdin)
 	cmd.Env = []string{
-		"SQLC_VERSION=foo",
+		fmt.Sprintf("SQLC_VERSION=%s", req.SqlcVersion),
 	}
 
 	out, err := cmd.Output()

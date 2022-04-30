@@ -10,7 +10,7 @@ import (
 
 func v2ParseConfig(rd io.Reader) (Config, error) {
 	dec := yaml.NewDecoder(rd)
-	// dec.KnownFields(true)
+	dec.KnownFields(true)
 	var conf Config
 	if err := dec.Decode(&conf); err != nil {
 		return conf, err
