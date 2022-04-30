@@ -7,6 +7,7 @@ package querytest
 
 import (
 	"context"
+	"database/sql"
 )
 
 const funcParamIdent = `-- name: FuncParamIdent :many
@@ -55,4 +56,22 @@ func (q *Queries) FuncParamString(ctx context.Context, slug string) ([]string, e
 		return nil, err
 	}
 	return items, nil
+}
+
+const funcParamStringOptional = `-- name: FuncParamStringOptional :exec
+UPDATE foo SET name = coalesce($1, name)
+`
+
+func (q *Queries) FuncParamStringOptional(ctx context.Context, slug sql.NullString) error {
+	_, err := q.db.Exec(ctx, funcParamStringOptional, slug)
+	return err
+}
+
+const funcParamStringRequired = `-- name: FuncParamStringRequired :exec
+UPDATE foo SET description = $1
+`
+
+func (q *Queries) FuncParamStringRequired(ctx context.Context, slug string) error {
+	_, err := q.db.Exec(ctx, funcParamStringRequired, slug)
+	return err
 }
