@@ -32,6 +32,14 @@ SELECT id, name, bio FROM authors
 ORDER BY name
 """
 
+const val updateAuthor = """-- name: updateAuthor :exec
+UPDATE authors
+SET
+ name = coalesce(?, name),
+ bio = coalesce(?, bio)
+WHERE id = ?
+"""
+
 class QueriesImpl(private val conn: Connection) : Queries {
 
   @Throws(SQLException::class)
@@ -100,6 +108,20 @@ class QueriesImpl(private val conn: Connection) : Queries {
             ))
       }
       ret
+    }
+  }
+
+  @Throws(SQLException::class)
+  override fun updateAuthor(
+      name: String?,
+      bio: String?,
+      id: Long) {
+    conn.prepareStatement(updateAuthor).use { stmt ->
+      stmt.setString(1, name)
+          stmt.setString(2, bio)
+          stmt.setLong(3, id)
+
+      stmt.execute()
     }
   }
 
