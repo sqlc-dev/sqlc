@@ -160,7 +160,6 @@ class QueriesImpl(private val conn: Connection) : Queries {
   override fun deleteVenue(slug: String) {
     conn.prepareStatement(deleteVenue).use { stmt ->
       stmt.setString(1, slug)
-          stmt.setString(2, slug)
 
       stmt.execute()
     }
@@ -205,7 +204,7 @@ class QueriesImpl(private val conn: Connection) : Queries {
                 results.getString(6),
                 results.getString(7),
                 results.getString(8),
-                (results.getArray(9).array as Array<String>).toList(),
+                (results.getArray(9).array as? Array<*>)?.filterIsInstance<String>()!!.toList(),
                 results.getObject(10, LocalDateTime::class.java)
             )
       if (results.next()) {
@@ -248,7 +247,7 @@ class QueriesImpl(private val conn: Connection) : Queries {
                 results.getString(6),
                 results.getString(7),
                 results.getString(8),
-                (results.getArray(9).array as Array<String>).toList(),
+                (results.getArray(9).array as? Array<*>)?.filterIsInstance<String>()!!.toList(),
                 results.getObject(10, LocalDateTime::class.java)
             ))
       }
@@ -257,20 +256,20 @@ class QueriesImpl(private val conn: Connection) : Queries {
   }
 
   @Throws(SQLException::class)
-  override fun updateCityName(name: String, slug: String) {
+  override fun updateCityName(slug: String, name: String) {
     conn.prepareStatement(updateCityName).use { stmt ->
-      stmt.setString(1, name)
-          stmt.setString(2, slug)
+      stmt.setString(1, slug)
+          stmt.setString(2, name)
 
       stmt.execute()
     }
   }
 
   @Throws(SQLException::class)
-  override fun updateVenueName(name: String, slug: String): Int? {
+  override fun updateVenueName(slug: String, name: String): Int? {
     return conn.prepareStatement(updateVenueName).use { stmt ->
-      stmt.setString(1, name)
-          stmt.setString(2, slug)
+      stmt.setString(1, slug)
+          stmt.setString(2, name)
 
       val results = stmt.executeQuery()
       if (!results.next()) {
