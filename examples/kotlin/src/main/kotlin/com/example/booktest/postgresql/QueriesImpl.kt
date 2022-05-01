@@ -103,7 +103,7 @@ class QueriesImpl(private val conn: Connection) : Queries {
                 results.getString(2),
                 results.getString(3),
                 results.getString(4),
-                (results.getArray(5).array as? Array<*>)?.filterIsInstance<String>()?.toList()
+                (results.getArray(5).array as? Array<*>)?.filterIsInstance<String>()!!.toList()
             ))
       }
       ret
@@ -127,7 +127,7 @@ class QueriesImpl(private val conn: Connection) : Queries {
                 results.getString(5),
                 results.getInt(6),
                 results.getObject(7, OffsetDateTime::class.java),
-                (results.getArray(8).array as? Array<*>)?.filterIsInstance<String>()?.toList()
+                (results.getArray(8).array as? Array<*>)?.filterIsInstance<String>()!!.toList()
             ))
       }
       ret
@@ -184,7 +184,7 @@ class QueriesImpl(private val conn: Connection) : Queries {
                 results.getString(5),
                 results.getInt(6),
                 results.getObject(7, OffsetDateTime::class.java),
-                (results.getArray(8).array as? Array<*>)?.filterIsInstance<String>()?.toList()
+                (results.getArray(8).array as? Array<*>)?.filterIsInstance<String>()!!.toList()
             )
       if (results.next()) {
           throw SQLException("expected one row in result set, but got many")
@@ -239,7 +239,7 @@ class QueriesImpl(private val conn: Connection) : Queries {
                 results.getString(5),
                 results.getInt(6),
                 results.getObject(7, OffsetDateTime::class.java),
-                (results.getArray(8).array as? Array<*>)?.filterIsInstance<String>()?.toList()
+                (results.getArray(8).array as? Array<*>)?.filterIsInstance<String>()!!.toList()
             )
       if (results.next()) {
           throw SQLException("expected one row in result set, but got many")
