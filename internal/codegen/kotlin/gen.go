@@ -135,7 +135,7 @@ func (v Params) Bindings() string {
 
 func jdbcGet(t ktType, idx int) string {
 	if t.IsEnum && t.IsArray {
-		return fmt.Sprintf(`(results.getArray(%d).array as Array<String>).map { v -> %s.lookup(v)!! }.toList()`, idx, t.Name)
+		return fmt.Sprintf(`(results.getArray(%d).array as? Array<*>)?.filterIsInstance<String>()!!.map { v -> %s.lookup(v)!! }.toList()`, idx, t.Name)
 	}
 	if t.IsEnum {
 		return fmt.Sprintf("%s.lookup(results.getString(%d))!!", t.Name, idx)

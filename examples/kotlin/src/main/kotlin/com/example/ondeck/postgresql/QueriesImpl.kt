@@ -198,7 +198,7 @@ class QueriesImpl(private val conn: Connection) : Queries {
       val ret = Venue(
                 results.getInt(1),
                 Status.lookup(results.getString(2))!!,
-                (results.getArray(3).array as Array<String>).map { v -> Status.lookup(v)!! }.toList(),
+                (results.getArray(3).array as? Array<*>)?.filterIsInstance<String>()!!.map { v -> Status.lookup(v)!! }.toList(),
                 results.getString(4),
                 results.getString(5),
                 results.getString(6),
@@ -241,7 +241,7 @@ class QueriesImpl(private val conn: Connection) : Queries {
           ret.add(Venue(
                 results.getInt(1),
                 Status.lookup(results.getString(2))!!,
-                (results.getArray(3).array as Array<String>).map { v -> Status.lookup(v)!! }.toList(),
+                (results.getArray(3).array as? Array<*>)?.filterIsInstance<String>()!!.map { v -> Status.lookup(v)!! }.toList(),
                 results.getString(4),
                 results.getString(5),
                 results.getString(6),
