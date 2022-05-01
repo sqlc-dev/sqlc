@@ -204,7 +204,7 @@ class QueriesImpl(private val conn: Connection) : Queries {
                 results.getString(6),
                 results.getString(7),
                 results.getString(8),
-                (results.getArray(9).array as Array<String>).toList(),
+                (results.getArray(9).array as? Array<*>)?.filterIsInstance<String>().toList(),
                 results.getObject(10, LocalDateTime::class.java)
             )
       if (results.next()) {
@@ -247,7 +247,7 @@ class QueriesImpl(private val conn: Connection) : Queries {
                 results.getString(6),
                 results.getString(7),
                 results.getString(8),
-                (results.getArray(9).array as Array<String>).toList(),
+                (results.getArray(9).array as? Array<*>)?.filterIsInstance<String>().toList(),
                 results.getObject(10, LocalDateTime::class.java)
             ))
       }
