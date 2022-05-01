@@ -21,5 +21,11 @@ interface Queries {
   @Throws(SQLException::class)
   fun listAuthors(): List<Author>
   
+  @Throws(SQLException::class)
+  fun updateAuthor(
+      name: String?,
+      bio: String?,
+      id: Long)
+  
 }
 

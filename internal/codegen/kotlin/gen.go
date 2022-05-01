@@ -135,13 +135,13 @@ func (v Params) Bindings() string {
 
 func jdbcGet(t ktType, idx int) string {
 	if t.IsEnum && t.IsArray {
-		return fmt.Sprintf(`(results.getArray(%d).array as Array<String>).map { v -> %s.lookup(v)!! }.toList()`, idx, t.Name)
+		return fmt.Sprintf(`(results.getArray(%d).array as? Array<*>)?.filterIsInstance<String>()!!.map { v -> %s.lookup(v)!! }.toList()`, idx, t.Name)
 	}
 	if t.IsEnum {
 		return fmt.Sprintf("%s.lookup(results.getString(%d))!!", t.Name, idx)
 	}
 	if t.IsArray {
-		return fmt.Sprintf(`(results.getArray(%d).array as Array<%s>).toList()`, idx, t.Name)
+		return fmt.Sprintf(`(results.getArray(%d).array as? Array<*>)?.filterIsInstance<%s>()!!.toList()`, idx, t.Name)
 	}
 	if t.IsTime() {
 		return fmt.Sprintf(`results.getObject(%d, %s::class.java)`, idx, t.Name)
