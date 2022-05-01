@@ -103,7 +103,7 @@ class QueriesImpl(private val conn: Connection) : Queries {
                 results.getString(2),
                 results.getString(3),
                 results.getString(4),
-                (results.getArray(5).array as Array<String>).toList()
+                (results.getArray(5).array as? Array<*>)?.filterIsInstance<String>().toList()
             ))
       }
       ret
@@ -127,7 +127,7 @@ class QueriesImpl(private val conn: Connection) : Queries {
                 results.getString(5),
                 results.getInt(6),
                 results.getObject(7, OffsetDateTime::class.java),
-                (results.getArray(8).array as Array<String>).toList()
+                (results.getArray(8).array as? Array<*>)?.filterIsInstance<String>().toList()
             ))
       }
       ret
@@ -184,7 +184,7 @@ class QueriesImpl(private val conn: Connection) : Queries {
                 results.getString(5),
                 results.getInt(6),
                 results.getObject(7, OffsetDateTime::class.java),
-                (results.getArray(8).array as Array<String>).toList()
+                (results.getArray(8).array as? Array<*>)?.filterIsInstance<String>().toList()
             )
       if (results.next()) {
           throw SQLException("expected one row in result set, but got many")
@@ -239,7 +239,7 @@ class QueriesImpl(private val conn: Connection) : Queries {
                 results.getString(5),
                 results.getInt(6),
                 results.getObject(7, OffsetDateTime::class.java),
-                (results.getArray(8).array as Array<String>).toList()
+                (results.getArray(8).array as? Array<*>)?.filterIsInstance<String>().toList()
             )
       if (results.next()) {
           throw SQLException("expected one row in result set, but got many")
@@ -266,13 +266,13 @@ class QueriesImpl(private val conn: Connection) : Queries {
   override fun updateBookISBN(
       title: String,
       tags: List<String>,
-      isbn: String,
-      bookId: Int) {
+      bookId: Int,
+      isbn: String) {
     conn.prepareStatement(updateBookISBN).use { stmt ->
       stmt.setString(1, title)
           stmt.setArray(2, conn.createArrayOf("pg_catalog.varchar", tags.toTypedArray()))
-          stmt.setString(3, isbn)
-          stmt.setInt(4, bookId)
+          stmt.setInt(3, bookId)
+          stmt.setString(4, isbn)
 
       stmt.execute()
     }
