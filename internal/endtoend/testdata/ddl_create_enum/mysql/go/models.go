@@ -5,6 +5,7 @@
 package querytest
 
 import (
+	"database/sql/driver"
 	"fmt"
 )
 
@@ -37,6 +38,36 @@ func (e *FooDigit) Scan(src interface{}) error {
 	return nil
 }
 
+// NullFooDigit is the nullable version of FooDigit.
+type NullFooDigit struct {
+	FooDigit FooDigit
+	Valid    bool
+}
+
+func (e *NullFooDigit) Scan(src interface{}) error {
+	if src == nil {
+		e.Valid = false
+		return nil
+	}
+	switch s := src.(type) {
+	case []byte:
+		e.FooDigit = FooDigit(s)
+	case string:
+		e.FooDigit = FooDigit(s)
+	default:
+		return fmt.Errorf("unsupported scan type for NullFooDigit: %T", src)
+	}
+	e.Valid = len(e.FooDigit) > 0
+	return nil
+}
+
+func (e *NullFooDigit) Value() (driver.Value, error) {
+	if !e.Valid {
+		return nil, nil
+	}
+	return string(e.FooDigit), nil
+}
+
 type FooFoobar string
 
 const (
@@ -59,6 +90,36 @@ func (e *FooFoobar) Scan(src interface{}) error {
 		return fmt.Errorf("unsupported scan type for FooFoobar: %T", src)
 	}
 	return nil
+}
+
+// NullFooFoobar is the nullable version of FooFoobar.
+type NullFooFoobar struct {
+	FooFoobar FooFoobar
+	Valid     bool
+}
+
+func (e *NullFooFoobar) Scan(src interface{}) error {
+	if src == nil {
+		e.Valid = false
+		return nil
+	}
+	switch s := src.(type) {
+	case []byte:
+		e.FooFoobar = FooFoobar(s)
+	case string:
+		e.FooFoobar = FooFoobar(s)
+	default:
+		return fmt.Errorf("unsupported scan type for NullFooFoobar: %T", src)
+	}
+	e.Valid = len(e.FooFoobar) > 0
+	return nil
+}
+
+func (e *NullFooFoobar) Value() (driver.Value, error) {
+	if !e.Valid {
+		return nil, nil
+	}
+	return string(e.FooFoobar), nil
 }
 
 type Foo struct {

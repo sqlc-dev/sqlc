@@ -5,6 +5,7 @@
 package querytest
 
 import (
+	"database/sql/driver"
 	"fmt"
 )
 
@@ -27,6 +28,36 @@ func (e *FooTypeUserRole) Scan(src interface{}) error {
 	return nil
 }
 
+// NullFooTypeUserRole is the nullable version of FooTypeUserRole.
+type NullFooTypeUserRole struct {
+	FooTypeUserRole FooTypeUserRole
+	Valid           bool
+}
+
+func (e *NullFooTypeUserRole) Scan(src interface{}) error {
+	if src == nil {
+		e.Valid = false
+		return nil
+	}
+	switch s := src.(type) {
+	case []byte:
+		e.FooTypeUserRole = FooTypeUserRole(s)
+	case string:
+		e.FooTypeUserRole = FooTypeUserRole(s)
+	default:
+		return fmt.Errorf("unsupported scan type for NullFooTypeUserRole: %T", src)
+	}
+	e.Valid = len(e.FooTypeUserRole) > 0
+	return nil
+}
+
+func (e *NullFooTypeUserRole) Value() (driver.Value, error) {
+	if !e.Valid {
+		return nil, nil
+	}
+	return string(e.FooTypeUserRole), nil
+}
+
 type FooUser struct {
-	Role FooTypeUserRole
+	Role NullFooTypeUserRole
 }

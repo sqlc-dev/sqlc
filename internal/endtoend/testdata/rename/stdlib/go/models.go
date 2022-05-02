@@ -5,6 +5,7 @@
 package querytest
 
 import (
+	"database/sql/driver"
 	"fmt"
 )
 
@@ -26,6 +27,36 @@ func (e *IPProtocol) Scan(src interface{}) error {
 		return fmt.Errorf("unsupported scan type for IPProtocol: %T", src)
 	}
 	return nil
+}
+
+// NullIPProtocol is the nullable version of IPProtocol.
+type NullIPProtocol struct {
+	IPProtocol IPProtocol
+	Valid      bool
+}
+
+func (e *NullIPProtocol) Scan(src interface{}) error {
+	if src == nil {
+		e.Valid = false
+		return nil
+	}
+	switch s := src.(type) {
+	case []byte:
+		e.IPProtocol = IPProtocol(s)
+	case string:
+		e.IPProtocol = IPProtocol(s)
+	default:
+		return fmt.Errorf("unsupported scan type for NullIPProtocol: %T", src)
+	}
+	e.Valid = len(e.IPProtocol) > 0
+	return nil
+}
+
+func (e *NullIPProtocol) Value() (driver.Value, error) {
+	if !e.Valid {
+		return nil, nil
+	}
+	return string(e.IPProtocol), nil
 }
 
 type BarNew struct {

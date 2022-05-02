@@ -279,11 +279,15 @@ func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 			}
 
 			for _, enum := range schema.Enums {
+				nullPrefix := ""
+				if !notNull {
+					nullPrefix = "Null"
+				}
 				if rel.Name == enum.Name && rel.Schema == schema.Name {
 					if schema.Name == req.Catalog.DefaultSchema {
-						return StructName(enum.Name, req.Settings)
+						return nullPrefix + StructName(enum.Name, req.Settings)
 					}
-					return StructName(schema.Name+"_"+enum.Name, req.Settings)
+					return nullPrefix + StructName(schema.Name+"_"+enum.Name, req.Settings)
 				}
 			}
 

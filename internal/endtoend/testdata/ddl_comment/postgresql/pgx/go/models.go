@@ -6,6 +6,7 @@ package querytest
 
 import (
 	"database/sql"
+	"database/sql/driver"
 	"fmt"
 )
 
@@ -26,6 +27,36 @@ func (e *FooBat) Scan(src interface{}) error {
 		return fmt.Errorf("unsupported scan type for FooBat: %T", src)
 	}
 	return nil
+}
+
+// NullFooBat is the nullable version of FooBat.
+type NullFooBat struct {
+	FooBat FooBat
+	Valid  bool
+}
+
+func (e *NullFooBat) Scan(src interface{}) error {
+	if src == nil {
+		e.Valid = false
+		return nil
+	}
+	switch s := src.(type) {
+	case []byte:
+		e.FooBat = FooBat(s)
+	case string:
+		e.FooBat = FooBat(s)
+	default:
+		return fmt.Errorf("unsupported scan type for NullFooBat: %T", src)
+	}
+	e.Valid = len(e.FooBat) > 0
+	return nil
+}
+
+func (e *NullFooBat) Value() (driver.Value, error) {
+	if !e.Valid {
+		return nil, nil
+	}
+	return string(e.FooBat), nil
 }
 
 // Table comment

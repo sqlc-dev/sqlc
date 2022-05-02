@@ -5,6 +5,7 @@
 package querytest
 
 import (
+	"database/sql/driver"
 	"fmt"
 )
 
@@ -26,4 +27,34 @@ func (e *Status) Scan(src interface{}) error {
 		return fmt.Errorf("unsupported scan type for Status: %T", src)
 	}
 	return nil
+}
+
+// NullStatus is the nullable version of Status.
+type NullStatus struct {
+	Status Status
+	Valid  bool
+}
+
+func (e *NullStatus) Scan(src interface{}) error {
+	if src == nil {
+		e.Valid = false
+		return nil
+	}
+	switch s := src.(type) {
+	case []byte:
+		e.Status = Status(s)
+	case string:
+		e.Status = Status(s)
+	default:
+		return fmt.Errorf("unsupported scan type for NullStatus: %T", src)
+	}
+	e.Valid = len(e.Status) > 0
+	return nil
+}
+
+func (e *NullStatus) Value() (driver.Value, error) {
+	if !e.Valid {
+		return nil, nil
+	}
+	return string(e.Status), nil
 }
