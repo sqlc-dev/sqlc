@@ -5,6 +5,7 @@
 package querytest
 
 import (
+	"database/sql/driver"
 	"fmt"
 )
 
@@ -25,6 +26,36 @@ func (e *NewEvent) Scan(src interface{}) error {
 		return fmt.Errorf("unsupported scan type for NewEvent: %T", src)
 	}
 	return nil
+}
+
+// NullNewEvent is the nullable version of NewEvent.
+type NullNewEvent struct {
+	NewEvent NewEvent
+	Valid    bool
+}
+
+func (e *NullNewEvent) Scan(src interface{}) error {
+	if src == nil {
+		e.Valid = false
+		return nil
+	}
+	switch s := src.(type) {
+	case []byte:
+		e.NewEvent = NewEvent(s)
+	case string:
+		e.NewEvent = NewEvent(s)
+	default:
+		return fmt.Errorf("unsupported scan type for NullNewEvent: %T", src)
+	}
+	e.Valid = len(e.NewEvent) > 0
+	return nil
+}
+
+func (e *NullNewEvent) Value() (driver.Value, error) {
+	if !e.Valid {
+		return nil, nil
+	}
+	return string(e.NewEvent), nil
 }
 
 type LogLine struct {

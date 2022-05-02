@@ -5,6 +5,7 @@
 package querytest
 
 import (
+	"database/sql/driver"
 	"fmt"
 )
 
@@ -27,6 +28,36 @@ func (e *FooMood) Scan(src interface{}) error {
 		return fmt.Errorf("unsupported scan type for FooMood: %T", src)
 	}
 	return nil
+}
+
+// NullFooMood is the nullable version of FooMood.
+type NullFooMood struct {
+	FooMood FooMood
+	Valid   bool
+}
+
+func (e *NullFooMood) Scan(src interface{}) error {
+	if src == nil {
+		e.Valid = false
+		return nil
+	}
+	switch s := src.(type) {
+	case []byte:
+		e.FooMood = FooMood(s)
+	case string:
+		e.FooMood = FooMood(s)
+	default:
+		return fmt.Errorf("unsupported scan type for NullFooMood: %T", src)
+	}
+	e.Valid = len(e.FooMood) > 0
+	return nil
+}
+
+func (e *NullFooMood) Value() (driver.Value, error) {
+	if !e.Valid {
+		return nil, nil
+	}
+	return string(e.FooMood), nil
 }
 
 // this is the bar table

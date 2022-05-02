@@ -86,6 +86,36 @@ func (e *{{.Name}}) Scan(src interface{}) error {
 	}
 	return nil
 }
+
+// Null{{.Name}} is the nullable version of {{.Name}}.
+type Null{{.Name}} struct {
+	{{.Name}} {{.Name}}
+	Valid bool
+}
+
+func (e *Null{{.Name}}) Scan(src interface{}) error {
+	if src == nil {
+		e.Valid = false
+		return nil
+	}
+	switch s := src.(type) {
+	case []byte:
+		e.{{.Name}} = {{.Name}}(s)
+	case string:
+		e.{{.Name}} = {{.Name}}(s)
+	default:
+		return fmt.Errorf("unsupported scan type for Null{{.Name}}: %T", src)
+	}
+	e.Valid = len(e.{{.Name}}) > 0
+	return nil
+}
+
+func (e *Null{{.Name}}) Value() (driver.Value, error) {
+	if !e.Valid {
+		return nil, nil
+	}
+	return string(e.{{.Name}}), nil
+}
 {{end}}
 
 {{range .Structs}}

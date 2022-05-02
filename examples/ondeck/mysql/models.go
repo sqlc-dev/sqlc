@@ -6,6 +6,7 @@ package ondeck
 
 import (
 	"database/sql"
+	"database/sql/driver"
 	"fmt"
 	"time"
 )
@@ -27,6 +28,36 @@ func (e *VenuesStatus) Scan(src interface{}) error {
 		return fmt.Errorf("unsupported scan type for VenuesStatus: %T", src)
 	}
 	return nil
+}
+
+// NullVenuesStatus is the nullable version of VenuesStatus.
+type NullVenuesStatus struct {
+	VenuesStatus VenuesStatus
+	Valid        bool
+}
+
+func (e *NullVenuesStatus) Scan(src interface{}) error {
+	if src == nil {
+		e.Valid = false
+		return nil
+	}
+	switch s := src.(type) {
+	case []byte:
+		e.VenuesStatus = VenuesStatus(s)
+	case string:
+		e.VenuesStatus = VenuesStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for NullVenuesStatus: %T", src)
+	}
+	e.Valid = len(e.VenuesStatus) > 0
+	return nil
+}
+
+func (e *NullVenuesStatus) Value() (driver.Value, error) {
+	if !e.Valid {
+		return nil, nil
+	}
+	return string(e.VenuesStatus), nil
 }
 
 type City struct {

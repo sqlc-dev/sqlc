@@ -5,6 +5,7 @@
 package booktest
 
 import (
+	"database/sql/driver"
 	"fmt"
 	"time"
 )
@@ -26,6 +27,36 @@ func (e *BooksBookType) Scan(src interface{}) error {
 		return fmt.Errorf("unsupported scan type for BooksBookType: %T", src)
 	}
 	return nil
+}
+
+// NullBooksBookType is the nullable version of BooksBookType.
+type NullBooksBookType struct {
+	BooksBookType BooksBookType
+	Valid         bool
+}
+
+func (e *NullBooksBookType) Scan(src interface{}) error {
+	if src == nil {
+		e.Valid = false
+		return nil
+	}
+	switch s := src.(type) {
+	case []byte:
+		e.BooksBookType = BooksBookType(s)
+	case string:
+		e.BooksBookType = BooksBookType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for NullBooksBookType: %T", src)
+	}
+	e.Valid = len(e.BooksBookType) > 0
+	return nil
+}
+
+func (e *NullBooksBookType) Value() (driver.Value, error) {
+	if !e.Valid {
+		return nil, nil
+	}
+	return string(e.BooksBookType), nil
 }
 
 type Author struct {
