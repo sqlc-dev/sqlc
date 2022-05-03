@@ -6,6 +6,7 @@ package ondeck
 
 import (
 	"database/sql"
+	"database/sql/driver"
 	"fmt"
 	"time"
 )
@@ -27,6 +28,29 @@ func (e *VenuesStatus) Scan(src interface{}) error {
 		return fmt.Errorf("unsupported scan type for VenuesStatus: %T", src)
 	}
 	return nil
+}
+
+type NullVenuesStatus struct {
+	VenuesStatus VenuesStatus
+	Valid        bool // Valid is true if String is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullVenuesStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.VenuesStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.VenuesStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullVenuesStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return ns.VenuesStatus, nil
 }
 
 type City struct {
