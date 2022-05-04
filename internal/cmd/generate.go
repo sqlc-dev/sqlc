@@ -14,14 +14,14 @@ import (
 	"github.com/kyleconroy/sqlc/internal/codegen/golang"
 	"github.com/kyleconroy/sqlc/internal/codegen/json"
 	"github.com/kyleconroy/sqlc/internal/codegen/kotlin"
-	"github.com/kyleconroy/sqlc/internal/codegen/process"
 	"github.com/kyleconroy/sqlc/internal/codegen/python"
 	"github.com/kyleconroy/sqlc/internal/compiler"
 	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/debug"
+	"github.com/kyleconroy/sqlc/internal/ext"
+	"github.com/kyleconroy/sqlc/internal/ext/process"
 	"github.com/kyleconroy/sqlc/internal/multierr"
 	"github.com/kyleconroy/sqlc/internal/opts"
-	"github.com/kyleconroy/sqlc/internal/plugin"
 )
 
 const errMessageNoVersion = `The configuration file must have a version number.
@@ -220,37 +220,36 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 		if debug.Traced {
 			region = trace.StartRegion(ctx, "codegen")
 		}
-		var genfunc func(req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error)
+		var handler ext.Handler
 		var out string
 		switch {
 		case sql.Gen.Go != nil:
 			out = combo.Go.Out
-			genfunc = golang.Generate
+			handler = ext.HandleFunc(golang.Generate)
 
 		case sql.Gen.Kotlin != nil:
 			out = combo.Kotlin.Out
-			genfunc = kotlin.Generate
+			handler = ext.HandleFunc(kotlin.Generate)
 
 		case sql.Gen.Python != nil:
 			out = combo.Python.Out
-			genfunc = python.Generate
+			handler = ext.HandleFunc(python.Generate)
 
 		case sql.Gen.JSON != nil:
 			out = combo.JSON.Out
-			genfunc = json.Generate
+			handler = ext.HandleFunc(json.Generate)
 
 		case sql.Plugin != nil:
 			out = sql.Plugin.Out
-			runner := process.Runner{
+			handler = &process.Runner{
 				Config: combo.Global,
 				Plugin: sql.Plugin.Plugin,
 			}
-			genfunc = runner.Generate
 
 		default:
 			panic("missing language backend")
 		}
-		resp, err := genfunc(codeGenRequest(result, combo))
+		resp, err := handler.Generate(codeGenRequest(result, combo))
 		if region != nil {
 			region.End()
 		}
