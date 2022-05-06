@@ -28,6 +28,12 @@ func TestStructName(t *testing.T) {
 			rename:        "",
 			out:           "UserID",
 		},
+		{
+			name:          "Add Prefix Underscore",
+			snakeCaseName: "1value",
+			rename:        "",
+			out:           "_1value",
+		},
 	}
 
 	for i := range testCases {
