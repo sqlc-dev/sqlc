@@ -3,6 +3,9 @@ package sdk
 import (
 	"strings"
 	"unicode"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 func LowerTitle(s string) string {
@@ -16,7 +19,19 @@ func LowerTitle(s string) string {
 }
 
 func Title(s string) string {
-	return strings.Title(s)
+
+	if s == "" {
+		return s
+	}
+
+	// If the first character is a digit return s
+	//
+	// When a string starts with a digit cases.Title skips all the digits and title case
+	// the first character it finds.
+	if unicode.IsDigit(rune(s[0])) {
+		return s
+	}
+	return cases.Title(language.English, cases.NoLower).String(s)
 }
 
 // Go string literals cannot contain backtick. If a string contains

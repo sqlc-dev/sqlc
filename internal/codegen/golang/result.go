@@ -24,7 +24,7 @@ func buildEnums(req *plugin.CodeGenRequest) []Enum {
 				enumName = schema.Name + "_" + enum.Name
 			}
 			e := Enum{
-				Name:    StructName(enumName, req.Settings),
+				Name:    StructName(enumName, req.Settings.Rename[enumName]),
 				Comment: enum.Comment,
 			}
 			seen := make(map[string]struct{}, len(enum.Vals))
@@ -33,8 +33,11 @@ func buildEnums(req *plugin.CodeGenRequest) []Enum {
 				if _, found := seen[value]; found || value == "" {
 					value = fmt.Sprintf("value_%d", i)
 				}
+
+				nameWithValue := enumName + "_" + value
+
 				e.Constants = append(e.Constants, Constant{
-					Name:  StructName(enumName+"_"+value, req.Settings),
+					Name:  StructName(nameWithValue, req.Settings.Rename[nameWithValue]),
 					Value: v,
 					Type:  e.Name,
 				})
@@ -68,7 +71,7 @@ func buildStructs(req *plugin.CodeGenRequest) []Struct {
 			}
 			s := Struct{
 				Table:   plugin.Identifier{Schema: schema.Name, Name: table.Rel.Name},
-				Name:    StructName(structName, req.Settings),
+				Name:    StructName(structName, req.Settings.Rename[structName]),
 				Comment: table.Comment,
 			}
 			for _, column := range table.Columns {
@@ -80,7 +83,7 @@ func buildStructs(req *plugin.CodeGenRequest) []Struct {
 					tags["json:"] = JSONTagName(column.Name, req.Settings)
 				}
 				s.Fields = append(s.Fields, Field{
-					Name:    StructName(column.Name, req.Settings),
+					Name:    StructName(column.Name, req.Settings.Rename[column.Name]),
 					Type:    goType(req, column),
 					Tags:    tags,
 					Comment: column.Comment,
@@ -122,7 +125,7 @@ func argName(name string) string {
 		} else if p == "id" {
 			out += "ID"
 		} else {
-			out += strings.Title(p)
+			out += sdk.Title(p)
 		}
 	}
 	return out
@@ -207,7 +210,8 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 				same := true
 				for i, f := range s.Fields {
 					c := query.Columns[i]
-					sameName := f.Name == StructName(columnName(c, i), req.Settings)
+					colName := columnName(c, i)
+					sameName := f.Name == StructName(colName, req.Settings.Rename[colName])
 					sameType := f.Type == goType(req, c)
 					sameTable := sdk.SameTableName(c.Table, &s.Table, req.Catalog.DefaultSchema)
 					if !sameName || !sameType || !sameTable {
@@ -266,7 +270,7 @@ func columnsToStruct(req *plugin.CodeGenRequest, name string, columns []goColumn
 	for i, c := range columns {
 		colName := columnName(c.Column, i)
 		tagName := colName
-		fieldName := StructName(colName, req.Settings)
+		fieldName := StructName(colName, req.Settings.Rename[colName])
 		baseFieldName := fieldName
 		// Track suffixes by the ID of the column, so that columns referring to the same numbered parameter can be
 		// reused.

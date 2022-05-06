@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/kyleconroy/sqlc/internal/codegen/sdk"
 	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/migrations"
 	"github.com/kyleconroy/sqlc/internal/multierr"
@@ -32,7 +33,7 @@ func structName(name string) string {
 		if p == "id" {
 			out += "ID"
 		} else {
-			out += strings.Title(p)
+			out += sdk.Title(p)
 		}
 	}
 	return out
@@ -47,7 +48,7 @@ func enumValueName(value string) string {
 	id = strings.Replace(id, "/", "_", -1)
 	id = identPattern.ReplaceAllString(id, "")
 	for _, part := range strings.Split(id, "_") {
-		name += strings.Title(part)
+		name += sdk.Title(part)
 	}
 	return name
 }

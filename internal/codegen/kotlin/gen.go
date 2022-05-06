@@ -252,7 +252,7 @@ func dataClassName(name string, settings *plugin.Settings) string {
 	}
 	out := ""
 	for _, p := range strings.Split(name, "_") {
-		out += strings.Title(p)
+		out += sdk.Title(p)
 	}
 	return out
 }
@@ -409,7 +409,7 @@ func ktArgName(name string) string {
 		if i == 0 {
 			out += strings.ToLower(p)
 		} else {
-			out += strings.Title(p)
+			out += sdk.Title(p)
 		}
 	}
 	return out
@@ -456,7 +456,7 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 
 		gq := Query{
 			Cmd:          query.Cmd,
-			ClassName:    strings.Title(query.Name),
+			ClassName:    sdk.Title(query.Name),
 			ConstantName: sdk.LowerTitle(query.Name),
 			FieldName:    sdk.LowerTitle(query.Name) + "Stmt",
 			MethodName:   sdk.LowerTitle(query.Name),

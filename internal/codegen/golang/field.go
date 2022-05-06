@@ -5,6 +5,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/kyleconroy/sqlc/internal/codegen/sdk"
 	"github.com/kyleconroy/sqlc/internal/plugin"
 )
 
@@ -72,7 +73,7 @@ func toCamelInitCase(name string, initUpper bool) string {
 		if p == "id" {
 			out += "ID"
 		} else {
-			out += strings.Title(p)
+			out += sdk.Title(p)
 		}
 	}
 	return out
