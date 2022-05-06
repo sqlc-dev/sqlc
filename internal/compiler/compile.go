@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/kyleconroy/sqlc/internal/codegen/sdk"
 	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/migrations"
 	"github.com/kyleconroy/sqlc/internal/multierr"
@@ -16,8 +17,6 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
 	"github.com/kyleconroy/sqlc/internal/sql/sqlpath"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
 // TODO: Rename this interface Engine
@@ -34,7 +33,7 @@ func structName(name string) string {
 		if p == "id" {
 			out += "ID"
 		} else {
-			out += cases.Title(language.English).String(p)
+			out += sdk.Title(p)
 		}
 	}
 	return out
@@ -49,7 +48,7 @@ func enumValueName(value string) string {
 	id = strings.Replace(id, "/", "_", -1)
 	id = identPattern.ReplaceAllString(id, "")
 	for _, part := range strings.Split(id, "_") {
-		name += cases.Title(language.English).String(part)
+		name += sdk.Title(part)
 	}
 	return name
 }

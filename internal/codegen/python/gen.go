@@ -15,8 +15,6 @@ import (
 	pyast "github.com/kyleconroy/sqlc/internal/python/ast"
 	"github.com/kyleconroy/sqlc/internal/python/poet"
 	pyprint "github.com/kyleconroy/sqlc/internal/python/printer"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
 type Constant struct {
@@ -218,7 +216,7 @@ func modelName(name string, settings *plugin.Settings) string {
 	}
 	out := ""
 	for _, p := range strings.Split(name, "_") {
-		out += cases.Title(language.English).String(p)
+		out += sdk.Title(p)
 	}
 	return out
 }

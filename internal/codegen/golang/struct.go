@@ -5,9 +5,8 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/kyleconroy/sqlc/internal/codegen/sdk"
 	"github.com/kyleconroy/sqlc/internal/plugin"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
 type Struct struct {
@@ -30,7 +29,7 @@ func StructName(name, rename string) string {
 		if p == "id" {
 			out += "ID"
 		} else {
-			out += cases.Title(language.English).String(p)
+			out += sdk.Title(p)
 		}
 	}
 

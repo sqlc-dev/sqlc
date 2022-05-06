@@ -14,8 +14,6 @@ import (
 	"github.com/kyleconroy/sqlc/internal/inflection"
 	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/plugin"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
 var ktIdentPattern = regexp.MustCompile("[^a-zA-Z0-9_]+")
@@ -254,7 +252,7 @@ func dataClassName(name string, settings *plugin.Settings) string {
 	}
 	out := ""
 	for _, p := range strings.Split(name, "_") {
-		out += cases.Title(language.English).String(p)
+		out += sdk.Title(p)
 	}
 	return out
 }
@@ -411,7 +409,7 @@ func ktArgName(name string) string {
 		if i == 0 {
 			out += strings.ToLower(p)
 		} else {
-			out += cases.Title(language.English).String(p)
+			out += sdk.Title(p)
 		}
 	}
 	return out
@@ -458,7 +456,7 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 
 		gq := Query{
 			Cmd:          query.Cmd,
-			ClassName:    cases.Title(language.English).String(query.Name),
+			ClassName:    sdk.Title(query.Name),
 			ConstantName: sdk.LowerTitle(query.Name),
 			FieldName:    sdk.LowerTitle(query.Name) + "Stmt",
 			MethodName:   sdk.LowerTitle(query.Name),
