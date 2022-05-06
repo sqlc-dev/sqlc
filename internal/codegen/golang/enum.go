@@ -3,6 +3,8 @@ package golang
 import (
 	"regexp"
 	"strings"
+
+	"github.com/kyleconroy/sqlc/internal/codegen/sdk"
 )
 
 var IdentPattern = regexp.MustCompile("[^a-zA-Z0-9_]+")
@@ -33,7 +35,7 @@ func EnumValueName(value string) string {
 	id = strings.Replace(id, "/", "_", -1)
 	id = IdentPattern.ReplaceAllString(id, "")
 	for _, part := range strings.Split(id, "_") {
-		name += strings.Title(part)
+		name += sdk.Title(part)
 	}
 	return name
 }

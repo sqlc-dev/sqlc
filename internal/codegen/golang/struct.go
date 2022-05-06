@@ -5,6 +5,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/kyleconroy/sqlc/internal/codegen/sdk"
 	"github.com/kyleconroy/sqlc/internal/plugin"
 )
 
@@ -15,16 +16,20 @@ type Struct struct {
 	Comment string
 }
 
-func StructName(name string, settings *plugin.Settings) string {
-	if rename := settings.Rename[name]; rename != "" {
+// StructName constructs a valid camel case value from a snake case
+func StructName(name, rename string) string {
+
+	if rename != "" {
 		return rename
 	}
+
 	out := ""
+
 	for _, p := range strings.Split(name, "_") {
 		if p == "id" {
 			out += "ID"
 		} else {
-			out += strings.Title(p)
+			out += sdk.Title(p)
 		}
 	}
 

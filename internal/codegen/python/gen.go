@@ -216,7 +216,7 @@ func modelName(name string, settings *plugin.Settings) string {
 	}
 	out := ""
 	for _, p := range strings.Split(name, "_") {
-		out += strings.Title(p)
+		out += sdk.Title(p)
 	}
 	return out
 }

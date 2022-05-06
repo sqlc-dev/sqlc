@@ -13,6 +13,7 @@ import (
 
 	pgx "github.com/jackc/pgx/v4"
 
+	"github.com/kyleconroy/sqlc/internal/codegen/sdk"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 )
@@ -262,7 +263,7 @@ func run(ctx context.Context) error {
 
 		var funcName string
 		for _, part := range strings.Split(name, "_") {
-			funcName += strings.Title(part)
+			funcName += sdk.Title(part)
 		}
 
 		_, err := conn.Exec(ctx, fmt.Sprintf("CREATE EXTENSION IF NOT EXISTS \"%s\"", extension))
