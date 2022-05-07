@@ -8,6 +8,51 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
 )
 
+type Table struct {
+	Rel     *ast.TableName
+	Columns []*Column
+	Comment string
+}
+
+// TODO: Should this just be ast Nodes?
+type Column struct {
+	Name      string
+	Type      ast.TypeName
+	IsNotNull bool
+	IsArray   bool
+	Comment   string
+	Length    *int
+}
+
+// An interface is used to resolve a circular import between the catalog and compiler packages.
+// The createView function requires access to functions in the compiler package to parse the SELECT
+// statement that defines the view.
+type columnGenerator interface {
+	OutputColumns(node ast.Node) ([]*Column, error)
+}
+
+func (c *Catalog) getTable(name *ast.TableName) (*Schema, *Table, error) {
+	ns := name.Schema
+	if ns == "" {
+		ns = c.DefaultSchema
+	}
+	var s *Schema
+	for i := range c.Schemas {
+		if c.Schemas[i].Name == ns {
+			s = c.Schemas[i]
+			break
+		}
+	}
+	if s == nil {
+		return nil, nil, sqlerr.SchemaNotFound(ns)
+	}
+	t, _, err := s.getTable(name)
+	if err != nil {
+		return nil, nil, err
+	}
+	return s, t, nil
+}
+
 func (c *Catalog) alterTable(stmt *ast.AlterTableStmt) error {
 	var implemented bool
 	for _, item := range stmt.Cmds.Items {
