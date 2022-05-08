@@ -4,6 +4,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 )
 
+// Catalog describes a database instance consisting of metadata in which database objects are defined
 type Catalog struct {
 	Comment       string
 	DefaultSchema string
@@ -16,13 +17,14 @@ type Catalog struct {
 	Extensions map[string]struct{}
 }
 
-func New(def string) *Catalog {
+// New creates a new catalog
+func New(defaultSchema string) *Catalog {
 	return &Catalog{
-		DefaultSchema: def,
+		DefaultSchema: defaultSchema,
 		Schemas: []*Schema{
-			{Name: def},
+			{Name: defaultSchema},
 		},
-		Extensions: map[string]struct{}{},
+		Extensions: make(map[string]struct{}),
 	}
 }
 

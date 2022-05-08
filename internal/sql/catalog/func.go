@@ -7,6 +7,9 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
 )
 
+// Function describes a database function
+//
+// A database function is a method written to performs specific operation on data within the database.
 type Function struct {
 	Name               string
 	Args               []*Argument

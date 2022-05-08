@@ -8,6 +8,10 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
 )
 
+// Table describes a relational database table
+//
+// A database table is a collection of related data held in a table format within a database.
+// It consists of columns and rows.
 type Table struct {
 	Rel     *ast.TableName
 	Columns []*Column
