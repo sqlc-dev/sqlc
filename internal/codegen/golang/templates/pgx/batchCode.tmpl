@@ -73,7 +73,7 @@ func (b *{{.MethodName}}BatchResults) Query(f func(int, []{{.Ret.DefineType}}, e
         var items []{{.Ret.DefineType}}
         {{end -}}
         for rows.Next() {
-            var {{.Ret.Name}} {{.Ret.Type}}
+            var {{.Ret.Name}} {{.Ret.DefineType}}
             if err := rows.Scan({{.Ret.Scan}}); err != nil {
                 break
             }
@@ -92,7 +92,7 @@ func (b *{{.MethodName}}BatchResults) Query(f func(int, []{{.Ret.DefineType}}, e
 func (b *{{.MethodName}}BatchResults) QueryRow(f func(int, {{.Ret.DefineType}}, error)) {
     for {
 		row := b.br.QueryRow()
-        var {{.Ret.Name}} {{.Ret.Type}}
+        var {{.Ret.Name}} {{.Ret.DefineType}}
 	    err := row.Scan({{.Ret.Scan}})
         if err != nil && (err.Error() == "no result" || err.Error() == "batch already closed") {
 			break
