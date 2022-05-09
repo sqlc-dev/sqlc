@@ -7,6 +7,50 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
 )
 
+// Function describes a database function
+//
+// A database function is a method written to performs specific operation on data within the database.
+type Function struct {
+	Name               string
+	Args               []*Argument
+	ReturnType         *ast.TypeName
+	Comment            string
+	Desc               string
+	ReturnTypeNullable bool
+}
+
+type Argument struct {
+	Name       string
+	Type       *ast.TypeName
+	HasDefault bool
+	Mode       ast.FuncParamMode
+}
+
+func (f *Function) InArgs() []*Argument {
+	var args []*Argument
+	for _, a := range f.Args {
+		switch a.Mode {
+		case ast.FuncParamTable, ast.FuncParamOut:
+			continue
+		default:
+			args = append(args, a)
+		}
+	}
+	return args
+}
+
+func (c *Catalog) getFunc(rel *ast.FuncName, tns []*ast.TypeName) (*Function, int, error) {
+	ns := rel.Schema
+	if ns == "" {
+		ns = c.DefaultSchema
+	}
+	s, err := c.getSchema(ns)
+	if err != nil {
+		return nil, -1, err
+	}
+	return s.getFunc(rel, tns)
+}
+
 func (c *Catalog) createFunction(stmt *ast.CreateFunctionStmt) error {
 	ns := stmt.Func.Schema
 	if ns == "" {
