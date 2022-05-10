@@ -68,7 +68,29 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 			})
 
 		case pcast.AlterTableChangeColumn:
-			// 	spew.Dump("change column", spec)
+			oldName := spec.OldColumnName.String()
+			alt.Cmds.Items = append(alt.Cmds.Items, &ast.AlterTableCmd{
+				Name:    &oldName,
+				Subtype: ast.AT_DropColumn,
+			})
+
+			for _, def := range spec.NewColumns {
+				name := def.Name.String()
+				columnDef := ast.ColumnDef{
+					Colname:   def.Name.String(),
+					TypeName:  &ast.TypeName{Name: types.TypeStr(def.Tp.Tp)},
+					IsNotNull: isNotNull(def),
+				}
+				if def.Tp.Flen >= 0 {
+					length := def.Tp.Flen
+					columnDef.Length = &length
+				}
+				alt.Cmds.Items = append(alt.Cmds.Items, &ast.AlterTableCmd{
+					Name:    &name,
+					Subtype: ast.AT_AddColumn,
+					Def:     &columnDef,
+				})
+			}
 
 		case pcast.AlterTableModifyColumn:
 			for _, def := range spec.NewColumns {
