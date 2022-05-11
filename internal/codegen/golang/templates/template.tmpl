@@ -86,6 +86,23 @@ func (e *{{.Name}}) Scan(src interface{}) error {
 	}
 	return nil
 }
+
+{{ if $.EmitEnumValidMethod }}
+func (e {{.Name}}) Valid() bool {
+  switch e {
+  case {{ range $idx, $name := .Constants }}{{ if ne $idx 0 }},{{ "\n" }}{{ end }}{{ .Name }}{{ end }}:
+    return true
+  }
+  return false
+}
+{{ end }}
+
+{{ if $.EmitAllEnumValues }}
+func All{{ .Name }}Values() []{{ .Name }} {
+	return []{{ .Name }}{ {{ range .Constants}}{{ "\n" }}{{ .Name }},{{ end }}
+	}
+}
+{{ end }}
 {{end}}
 
 {{range .Structs}}

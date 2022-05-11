@@ -41,7 +41,9 @@
       "output_db_file_name": "",
       "output_models_file_name": "",
       "output_querier_file_name": "",
-      "output_files_suffix": ""
+      "output_files_suffix": "",
+      "emit_enum_valid_method": false,
+      "emit_all_enum_values": false
     },
     "json": {
       "out": "gen",

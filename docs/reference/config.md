@@ -20,6 +20,8 @@ packages:
     emit_result_struct_pointers: false
     emit_params_struct_pointers: false
     emit_methods_with_db_argument: false
+    emit_enum_valid_method: false
+    emit_all_enum_values: false
     json_tags_case_style: "camel"
     output_db_file_name: "db.go"
     output_models_file_name: "models.go"
@@ -60,6 +62,12 @@ Each package document has the following keys:
   - If true, parameters are passed as pointers to structs. Defaults to `false`.
 - `emit_methods_with_db_argument`:
   - If true, generated methods will accept a DBTX argument instead of storing a DBTX on the `*Queries` struct. Defaults to `false`.
+- `emit_enum_valid_method`:
+  - If true, generate a Valid method on enum types,
+    indicating whether a string is a valid enum value.
+- `emit_all_enum_values`:
+  - If true, emit a function per enum type
+    that returns all valid enum values.
 - `json_tags_case_style`:
   - `camel` for camelCase, `pascal` for PascalCase, `snake` for snake_case or `none` to use the column name in the DB. Defaults to `none`.
 - `output_db_file_name`:
