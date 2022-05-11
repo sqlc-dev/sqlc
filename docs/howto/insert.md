@@ -154,11 +154,11 @@ INSERT INTO authors (name, bio) VALUES ($1, $2);
 
 ```go
 type CreateAuthorsParams struct {
-  Name string
-  Bio  string
+	Name string
+	Bio  string
 }
 
 func (q *Queries) CreateAuthors(ctx context.Context, arg []CreateAuthorsParams) (int64, error) {
-  return q.db.CopyFrom(ctx, []string{"authors"}, []string{"name", "bio"}, &iteratorForCreateAuthors{rows: arg})
+	return q.db.CopyFrom(ctx, []string{"authors"}, []string{"name", "bio"}, &iteratorForCreateAuthors{rows: arg})
 }
 ```
