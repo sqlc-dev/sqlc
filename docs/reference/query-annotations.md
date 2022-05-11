@@ -130,9 +130,10 @@ WHERE book_id = $1;
 
 ```go
 type DeleteBookBatchResults struct {
-	br pgx.BatchResults
+	br  pgx.BatchResults
 	ind int
 }
+
 func (q *Queries) DeleteBook(ctx context.Context, bookID []int32) *DeleteBookBatchResults {
 	//...
 }
@@ -161,13 +162,14 @@ WHERE title = $1 AND year = $2;
 
 ```go
 type BooksByTitleYearBatchResults struct {
-	br pgx.BatchResults
+	br  pgx.BatchResults
 	ind int
 }
 type BooksByTitleYearParams struct {
 	Title string `json:"title"`
 	Year  int32  `json:"year"`
 }
+
 func (q *Queries) BooksByTitleYear(ctx context.Context, arg []BooksByTitleYearParams) *BooksByTitleYearBatchResults {
 	//...
 }
@@ -202,13 +204,14 @@ RETURNING book_id, author_id, isbn
 
 ```go
 type CreateBookBatchResults struct {
-	br pgx.BatchResults
+	br  pgx.BatchResults
 	ind int
 }
 type CreateBookParams struct {
-	AuthorID  int32     `json:"author_id"`
-	Isbn      string    `json:"isbn"`
+	AuthorID int32  `json:"author_id"`
+	Isbn     string `json:"isbn"`
 }
+
 func (q *Queries) CreateBook(ctx context.Context, arg []CreateBookParams) *CreateBookBatchResults {
 	//...
 }
