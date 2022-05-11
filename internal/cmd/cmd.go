@@ -19,6 +19,10 @@ import (
 	"github.com/kyleconroy/sqlc/internal/tracer"
 )
 
+func init() {
+	uploadCmd.Flags().BoolP("dry-run", "", false, "dump upload request (default: false)")
+}
+
 // Do runs the command logic.
 func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int {
 	rootCmd := &cobra.Command{Use: "sqlc", SilenceUsage: true}
@@ -29,7 +33,6 @@ func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int 
 	rootCmd.AddCommand(genCmd)
 	rootCmd.AddCommand(initCmd)
 	rootCmd.AddCommand(versionCmd)
-	uploadCmd.Flags().BoolP("dry-run", "", false, "dump upload request (default: false)")
 	rootCmd.AddCommand(uploadCmd)
 
 	rootCmd.SetArgs(args)
