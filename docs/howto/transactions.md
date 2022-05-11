@@ -58,7 +58,7 @@ func (q *Queries) GetRecord(ctx context.Context, id int) (Record, error) {
 With pgx you'd use it like this for example:
 
 ```go
-function bumpCounter(ctx context.Context, p *pgx.Conn, id int) error {
+func bumpCounter(ctx context.Context, p *pgx.Conn, id int) error {
 	tx, err := db.Begin(ctx)
 	if err != nil {
 		return err
