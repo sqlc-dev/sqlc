@@ -19,13 +19,18 @@ type Catalog struct {
 
 // New creates a new catalog
 func New(defaultSchema string) *Catalog {
-	return &Catalog{
+
+	newCatalog := &Catalog{
 		DefaultSchema: defaultSchema,
-		Schemas: []*Schema{
-			{Name: defaultSchema},
-		},
-		Extensions: make(map[string]struct{}),
+		Schemas:       make([]*Schema, 0),
+		Extensions:    make(map[string]struct{}),
 	}
+
+	if newCatalog.DefaultSchema != "" {
+		newCatalog.Schemas = append(newCatalog.Schemas, &Schema{Name: defaultSchema})
+	}
+
+	return newCatalog
 }
 
 func (c *Catalog) Build(stmts []ast.Statement) error {
