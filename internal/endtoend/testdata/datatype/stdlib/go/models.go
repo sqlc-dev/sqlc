@@ -8,6 +8,7 @@ import (
 	"database/sql"
 	"time"
 
+	"github.com/jackc/pgtype"
 	"github.com/tabbed/pqtype"
 )
 
@@ -29,8 +30,8 @@ type DtCharacterNotNull struct {
 
 type DtDatetime struct {
 	A sql.NullTime
-	B sql.NullTime
-	C sql.NullTime
+	B pgtype.Time
+	C pgtype.Time
 	D sql.NullTime
 	E sql.NullTime
 	F sql.NullTime
@@ -40,8 +41,8 @@ type DtDatetime struct {
 
 type DtDatetimeNotNull struct {
 	A time.Time
-	B time.Time
-	C time.Time
+	B pgtype.Time
+	C pgtype.Time
 	D time.Time
 	E time.Time
 	F time.Time

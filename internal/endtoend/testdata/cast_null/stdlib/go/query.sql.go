@@ -8,6 +8,8 @@ package querytest
 import (
 	"context"
 	"database/sql"
+
+	"github.com/jackc/pgtype"
 )
 
 const listNullable = `-- name: ListNullable :many
@@ -23,7 +25,7 @@ type ListNullableRow struct {
 	A sql.NullString
 	B sql.NullInt32
 	C sql.NullInt64
-	D sql.NullTime
+	D pgtype.Time
 }
 
 func (q *Queries) ListNullable(ctx context.Context) ([]ListNullableRow, error) {
