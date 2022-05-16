@@ -143,7 +143,10 @@ func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		}
 		return "sql.NullTime"
 
-	case "pg_catalog.time", "pg_catalog.timetz":
+	case "pg_catalog.time":
+		return "pgtype.Time"
+
+	case "pg_catalog.timetz":
 		if notNull {
 			return "time.Time"
 		}

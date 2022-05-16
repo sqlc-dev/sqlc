@@ -150,6 +150,7 @@ var pgtypeTypes = map[string]struct{}{
 	"pgtype.Macaddr":   {},
 	"pgtype.Numeric":   {},
 	"pgtype.Numrange":  {},
+	"pgtype.Time":      {},
 	"pgtype.Tsrange":   {},
 	"pgtype.Tstzrange": {},
 }
