@@ -375,11 +375,14 @@ func (i *importer) queryImports(filename string) fileImports {
 }
 
 func (i *importer) copyfromImports() fileImports {
-	std, pkg := buildImports(i.Settings, i.Queries, func(name string) bool {
-		for _, q := range i.Queries {
-			if q.Cmd != metadata.CmdCopyFrom {
-				continue
-			}
+	copyFromQueries := make([]Query, 0, len(i.Queries))
+	for _, q := range i.Queries {
+		if q.Cmd == metadata.CmdCopyFrom {
+			copyFromQueries = append(copyFromQueries, q)
+		}
+	}
+	std, pkg := buildImports(i.Settings, copyFromQueries, func(name string) bool {
+		for _, q := range copyFromQueries {
 			if q.hasRetType() {
 				if strings.HasPrefix(q.Ret.Type(), name) {
 					return true
