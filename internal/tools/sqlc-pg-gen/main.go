@@ -23,7 +23,8 @@ SELECT p.proname as name,
   format_type(p.prorettype, NULL),
   array(select format_type(unnest(p.proargtypes), NULL)),
   p.proargnames,
-  p.proargnames[p.pronargs-p.pronargdefaults+1:p.pronargs]
+  p.proargnames[p.pronargs-p.pronargdefaults+1:p.pronargs],
+  CASE WHEN p.prokind = 'a' THEN TRUE ELSE FALSE END
 FROM pg_catalog.pg_proc p
 LEFT JOIN pg_catalog.pg_namespace n ON n.oid = p.pronamespace
 WHERE n.nspname OPERATOR(pg_catalog.~) '^(pg_catalog)$'
@@ -49,7 +50,8 @@ SELECT p.proname as name,
   format_type(p.prorettype, NULL),
   array(select format_type(unnest(p.proargtypes), NULL)),
   p.proargnames,
-  p.proargnames[p.pronargs-p.pronargdefaults+1:p.pronargs]
+  p.proargnames[p.pronargs-p.pronargdefaults+1:p.pronargs],
+  false
 FROM pg_catalog.pg_proc p
 JOIN extension_funcs ef ON ef.oid = p.oid
 WHERE p.proargmodes IS NULL
@@ -86,6 +88,7 @@ func {{.Name}}() *catalog.Schema {
 				{{end}}
 			},
 			ReturnType: &ast.TypeName{Name: "{{.ReturnType.Name}}"},
+			ReturnTypeNullable: {{.ReturnTypeNullable}},
 		},
 		{{- end}}
 	}
@@ -127,11 +130,12 @@ func main() {
 }
 
 type Proc struct {
-	Name       string
-	ReturnType string
-	ArgTypes   []string
-	ArgNames   []string
-	HasDefault []string
+	Name        string
+	ReturnType  string
+	ArgTypes    []string
+	ArgNames    []string
+	HasDefault  []string
+	ReturnsNull bool
 }
 
 func clean(arg string) string {
@@ -144,9 +148,10 @@ func clean(arg string) string {
 
 func (p Proc) Func() catalog.Function {
 	return catalog.Function{
-		Name:       p.Name,
-		Args:       p.Args(),
-		ReturnType: &ast.TypeName{Name: clean(p.ReturnType)},
+		Name:               p.Name,
+		Args:               p.Args(),
+		ReturnType:         &ast.TypeName{Name: clean(p.ReturnType)},
+		ReturnTypeNullable: p.ReturnsNull,
 	}
 }
 
@@ -185,6 +190,7 @@ func scanFuncs(rows pgx.Rows) ([]catalog.Function, error) {
 			&p.ArgTypes,
 			&p.ArgNames,
 			&p.HasDefault,
+			&p.ReturnsNull,
 		)
 		if err != nil {
 			return nil, err

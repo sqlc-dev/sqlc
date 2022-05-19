@@ -213,12 +213,26 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 			}
 			fun, err := qc.catalog.ResolveFuncCall(n)
 			if err == nil {
-				cols = append(cols, &Column{
-					Name:       name,
-					DataType:   dataType(fun.ReturnType),
-					NotNull:    !fun.ReturnTypeNullable,
-					IsFuncCall: true,
-				})
+				if len(fun.Args) > 0 {
+					ref := n.Args.Items[0].(*ast.ColumnRef)
+					columns, err := outputColumnRefs(res, tables, ref)
+					if err != nil {
+						return nil, err
+					}
+					cols = append(cols, &Column{
+						Name:       name,
+						DataType:   columns[0].DataType,
+						NotNull:    !fun.ReturnTypeNullable,
+						IsFuncCall: true,
+					})
+				} else {
+					cols = append(cols, &Column{
+						Name:       name,
+						DataType:   dataType(fun.ReturnType),
+						NotNull:    !fun.ReturnTypeNullable,
+						IsFuncCall: true,
+					})
+				}
 			} else {
 				cols = append(cols, &Column{
 					Name:       name,
