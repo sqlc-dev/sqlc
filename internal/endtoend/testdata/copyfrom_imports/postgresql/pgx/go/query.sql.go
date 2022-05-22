@@ -8,7 +8,18 @@ package querytest
 import (
 	"context"
 	"database/sql"
+
+	"github.com/jackc/pgconn"
 )
+
+const deleteValues = `-- name: DeleteValues :execresult
+DELETE
+FROM myschema.foo
+`
+
+func (q *Queries) DeleteValues(ctx context.Context) (pgconn.CommandTag, error) {
+	return q.db.Exec(ctx, deleteValues)
+}
 
 const insertSingleValue = `-- name: InsertSingleValue :exec
 INSERT INTO myschema.foo (a) VALUES ($1)
