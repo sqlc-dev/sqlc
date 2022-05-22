@@ -106,7 +106,7 @@ packages: [...]
 overrides:
   - db_type: "uuid"
     go_type:
-    - import: "a/b/v2"
+      import: "a/b/v2"
       package: "b"
       type: "MyType"
       pointer: false # or true
