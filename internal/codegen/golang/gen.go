@@ -32,6 +32,8 @@ type tmplCtx struct {
 	EmitInterface             bool
 	EmitEmptySlices           bool
 	EmitMethodsWithDBArgument bool
+	EmitEnumValidMethod       bool
+	EmitAllEnumValues         bool
 	UsesCopyFrom              bool
 	UsesBatch                 bool
 }
@@ -84,6 +86,8 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 		EmitPreparedQueries:       golang.EmitPreparedQueries,
 		EmitEmptySlices:           golang.EmitEmptySlices,
 		EmitMethodsWithDBArgument: golang.EmitMethodsWithDbArgument,
+		EmitEnumValidMethod:       golang.EmitEnumValidMethod,
+		EmitAllEnumValues:         golang.EmitAllEnumValues,
 		UsesCopyFrom:              usesCopyFrom(queries),
 		UsesBatch:                 usesBatch(queries),
 		SQLPackage:                SQLPackageFromString(golang.SqlPackage),
