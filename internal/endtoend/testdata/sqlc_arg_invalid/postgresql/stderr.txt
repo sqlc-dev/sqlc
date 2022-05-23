@@ -1,5 +1,6 @@
 # package querytest
 query.sql:7:1: function "sqlc.argh" does not exist
 query.sql:10:45: expected 1 parameter to sqlc.arg; got 2
-query.sql:13:54: Invalid argument to sqlc.arg()
+query.sql:13:45: expected 1 parameter to sqlc.arg; got 0
 query.sql:16:54: Invalid argument to sqlc.arg()
+query.sql:19:54: Invalid argument to sqlc.arg()
