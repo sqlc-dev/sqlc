@@ -1,8 +1,6 @@
 package validate
 
 import (
-	"fmt"
-
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sql/astutils"
 	"github.com/kyleconroy/sqlc/internal/sql/named"
@@ -19,13 +17,8 @@ func ParamStyle(n ast.Node) error {
 		if fc, ok := f.(*ast.FuncCall); ok {
 			args := fc.Args.Items
 
-			if len(args) != 1 {
-				return &sqlerr.Error{
-					Code: "", // TODO: Pick a new error code
-					Message: fmt.Sprintf(
-						"sqlc.arg() requires one argument, %d provided",
-						len(args)),
-				}
+			if len(args) == 0 {
+				continue
 			}
 
 			switch val := args[0].(type) {
