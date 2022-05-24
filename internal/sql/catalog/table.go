@@ -19,29 +19,24 @@ type Table struct {
 }
 
 func (table *Table) isExistColumn(cmd *ast.AlterTableCmd) (int, error) {
-
 	for i, c := range table.Columns {
 		if c.Name == *cmd.Name {
 			return i, nil
 		}
 	}
-
 	if !cmd.MissingOk {
 		return -1, sqlerr.ColumnNotFound(table.Rel.Name, *cmd.Name)
 	}
-
 	// Missing column is allowed
 	return -1, nil
 }
 
 func (table *Table) addColumn(cmd *ast.AlterTableCmd) error {
-
 	for _, c := range table.Columns {
 		if c.Name == cmd.Def.Colname {
 			return sqlerr.ColumnExists(table.Rel.Name, c.Name)
 		}
 	}
-
 	table.Columns = append(table.Columns, &Column{
 		Name:      cmd.Def.Colname,
 		Type:      *cmd.Def.TypeName,
@@ -49,64 +44,51 @@ func (table *Table) addColumn(cmd *ast.AlterTableCmd) error {
 		IsArray:   cmd.Def.IsArray,
 		Length:    cmd.Def.Length,
 	})
-
 	return nil
 }
 
 func (table *Table) alterColumnType(cmd *ast.AlterTableCmd) error {
-
 	index, err := table.isExistColumn(cmd)
 	if err != nil {
 		return err
 	}
-
 	if index >= 0 {
 		table.Columns[index].Type = *cmd.Def.TypeName
 		table.Columns[index].IsArray = cmd.Def.IsArray
 	}
-
 	return nil
 }
 
 func (table *Table) dropColumn(cmd *ast.AlterTableCmd) error {
-
 	index, err := table.isExistColumn(cmd)
 	if err != nil {
 		return err
 	}
-
 	if index >= 0 {
 		table.Columns = append(table.Columns[:index], table.Columns[index+1:]...)
 	}
-
 	return nil
 }
 
 func (table *Table) dropNotNull(cmd *ast.AlterTableCmd) error {
-
 	index, err := table.isExistColumn(cmd)
 	if err != nil {
 		return err
 	}
-
 	if index >= 0 {
 		table.Columns[index].IsNotNull = false
 	}
-
 	return nil
 }
 
 func (table *Table) setNotNull(cmd *ast.AlterTableCmd) error {
-
 	index, err := table.isExistColumn(cmd)
 	if err != nil {
 		return err
 	}
-
 	if index >= 0 {
 		table.Columns[index].IsNotNull = true
 	}
-
 	return nil
 }
 
@@ -130,41 +112,57 @@ type columnGenerator interface {
 }
 
 func (c *Catalog) getTable(tableName *ast.TableName) (*Schema, *Table, error) {
-
 	schemaName := tableName.Schema
-
 	if schemaName == "" {
 		schemaName = c.DefaultSchema
 	}
-
 	var schema *Schema
-
 	for i := range c.Schemas {
 		if c.Schemas[i].Name == schemaName {
 			schema = c.Schemas[i]
 			break
 		}
 	}
-
 	if schema == nil {
 		return nil, nil, sqlerr.SchemaNotFound(schemaName)
 	}
-
 	table, _, err := schema.getTable(tableName)
 	if err != nil {
 		return nil, nil, err
 	}
-
 	return schema, table, nil
 }
 
-func (c *Catalog) alterTable(stmt *ast.AlterTableStmt) error {
+func isStmtImplemented(stmt *ast.AlterTableStmt) bool {
+	var implemented bool
+	for _, item := range stmt.Cmds.Items {
+		switch cmd := item.(type) {
+		case *ast.AlterTableCmd:
+			switch cmd.Subtype {
+			case ast.AT_AddColumn:
+				implemented = true
+			case ast.AT_AlterColumnType:
+				implemented = true
+			case ast.AT_DropColumn:
+				implemented = true
+			case ast.AT_DropNotNull:
+				implemented = true
+			case ast.AT_SetNotNull:
+				implemented = true
+			}
+		}
+	}
+	return implemented
+}
 
+func (c *Catalog) alterTable(stmt *ast.AlterTableStmt) error {
+	if !isStmtImplemented(stmt) {
+		return nil
+	}
 	_, table, err := c.getTable(stmt.Table)
 	if err != nil {
 		return err
 	}
-
 	for _, item := range stmt.Cmds.Items {
 		switch cmd := item.(type) {
 		case *ast.AlterTableCmd:
