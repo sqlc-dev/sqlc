@@ -255,7 +255,11 @@ func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 			return "pgtype.Hstore"
 		}
 		return "interface{}"
-
+	case "point":
+		if driver == SQLDriverPGXV4 {
+			return "pgtype.Point"
+		}
+		return "interface{}"
 	case "void":
 		// A void value can only be scanned into an empty interface.
 		return "interface{}"
