@@ -1117,7 +1117,13 @@ func (c *cc) convertRollbackStmt(n *pcast.RollbackStmt) ast.Node {
 }
 
 func (c *cc) convertRowExpr(n *pcast.RowExpr) ast.Node {
-	return todo(n)
+	var items []ast.Node
+	for _, v := range n.Values {
+		items = append(items, c.convert(v))
+	}
+	return &ast.RowExpr{
+		Args: &ast.List{Items: items},
+	}
 }
 
 func (c *cc) convertSetCollationExpr(n *pcast.SetCollationExpr) ast.Node {
