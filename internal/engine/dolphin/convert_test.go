@@ -29,6 +29,8 @@ func Test_TupleComparison(t *testing.T) {
 	}
 }
 
+// refExtractor is an astutils.Visitor instance that will extract all of the
+// ParamRef instances it encounters while walking an AST.
 type refExtractor struct {
 	params []*ast.ParamRef
 }
