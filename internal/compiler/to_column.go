@@ -23,9 +23,10 @@ func toColumn(n *ast.TypeName) *Column {
 		panic("toColumn: " + err.Error())
 	}
 	return &Column{
-		Type:     typ,
-		DataType: strings.TrimPrefix(astutils.Join(n.Names, "."), "."),
-		NotNull:  true, // XXX: How do we know if this should be null?
-		IsArray:  isArray(n),
+		Type:        typ,
+		DataType:    strings.TrimPrefix(astutils.Join(n.Names, "."), "."),
+		NotNull:     true, // XXX: How do we know if this should be null?
+		IsArray:     isArray(n),
+		ArrayBounds: len(n.ArrayBounds.Items),
 	}
 }

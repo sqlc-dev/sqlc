@@ -18,7 +18,11 @@ func goType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 	}
 	typ := goInnerType(req, col)
 	if col.IsArray {
-		return "[]" + typ
+		dims := ""
+		for i := int32(0); i < col.ArrayBounds; i++ {
+			dims += "[]"
+		}
+		return dims + typ
 	}
 	return typ
 }

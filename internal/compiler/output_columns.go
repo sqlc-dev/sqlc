@@ -26,12 +26,13 @@ func (c *Compiler) OutputColumns(stmt ast.Node) ([]*catalog.Column, error) {
 	catCols := make([]*catalog.Column, 0, len(cols))
 	for _, col := range cols {
 		catCols = append(catCols, &catalog.Column{
-			Name:      col.Name,
-			Type:      ast.TypeName{Name: col.DataType},
-			IsNotNull: col.NotNull,
-			IsArray:   col.IsArray,
-			Comment:   col.Comment,
-			Length:    col.Length,
+			Name:        col.Name,
+			Type:        ast.TypeName{Name: col.DataType},
+			IsNotNull:   col.NotNull,
+			IsArray:     col.IsArray,
+			ArrayBounds: col.ArrayBounds,
+			Comment:     col.Comment,
+			Length:      col.Length,
 		})
 	}
 	return catCols, nil
@@ -184,15 +185,16 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 							cname = *res.Name
 						}
 						cols = append(cols, &Column{
-							Name:       cname,
-							Type:       c.Type,
-							Scope:      scope,
-							Table:      c.Table,
-							TableAlias: t.Rel.Name,
-							DataType:   c.DataType,
-							NotNull:    c.NotNull,
-							IsArray:    c.IsArray,
-							Length:     c.Length,
+							Name:        cname,
+							Type:        c.Type,
+							Scope:       scope,
+							Table:       c.Table,
+							TableAlias:  t.Rel.Name,
+							DataType:    c.DataType,
+							NotNull:     c.NotNull,
+							IsArray:     c.IsArray,
+							ArrayBounds: c.ArrayBounds,
+							Length:      c.Length,
 						})
 					}
 				}
@@ -481,14 +483,15 @@ func outputColumnRefs(res *ast.ResTarget, tables []*Table, node *ast.ColumnRef) 
 					cname = *res.Name
 				}
 				cols = append(cols, &Column{
-					Name:       cname,
-					Type:       c.Type,
-					Table:      c.Table,
-					TableAlias: alias,
-					DataType:   c.DataType,
-					NotNull:    c.NotNull,
-					IsArray:    c.IsArray,
-					Length:     c.Length,
+					Name:        cname,
+					Type:        c.Type,
+					Table:       c.Table,
+					TableAlias:  alias,
+					DataType:    c.DataType,
+					NotNull:     c.NotNull,
+					IsArray:     c.IsArray,
+					ArrayBounds: c.ArrayBounds,
+					Length:      c.Length,
 				})
 			}
 		}

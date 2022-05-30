@@ -89,6 +89,9 @@ func TestReplay(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, replay := range dirs {
+		if replay != "testdata/array_text/pgx" {
+			continue
+		}
 		tc := replay
 		t.Run(tc, func(t *testing.T) {
 			t.Parallel()

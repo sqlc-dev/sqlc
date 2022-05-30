@@ -19,6 +19,7 @@ type Column struct {
 	DataType     string
 	NotNull      bool
 	IsArray      bool
+	ArrayBounds  int
 	Comment      string
 	Length       *int
 	IsNamedParam bool

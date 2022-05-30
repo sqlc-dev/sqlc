@@ -96,12 +96,13 @@ func (table *Table) setNotNull(cmd *ast.AlterTableCmd) error {
 //
 // TODO: Should this just be ast Nodes?
 type Column struct {
-	Name      string
-	Type      ast.TypeName
-	IsNotNull bool
-	IsArray   bool
-	Comment   string
-	Length    *int
+	Name        string
+	Type        ast.TypeName
+	IsNotNull   bool
+	IsArray     bool
+	ArrayBounds int
+	Comment     string
+	Length      *int
 }
 
 // An interface is used to resolve a circular import between the catalog and compiler packages.
@@ -260,12 +261,13 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 	} else {
 		for _, col := range stmt.Cols {
 			tc := &Column{
-				Name:      col.Colname,
-				Type:      *col.TypeName,
-				IsNotNull: col.IsNotNull,
-				IsArray:   col.IsArray,
-				Comment:   col.Comment,
-				Length:    col.Length,
+				Name:        col.Colname,
+				Type:        *col.TypeName,
+				IsNotNull:   col.IsNotNull,
+				IsArray:     col.IsArray,
+				ArrayBounds: col.ArrayBounds,
+				Comment:     col.Comment,
+				Length:      col.Length,
 			}
 			if col.Vals != nil {
 				typeName := ast.TypeName{

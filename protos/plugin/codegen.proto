@@ -168,6 +168,8 @@ message Column
   Identifier table = 10;
   string table_alias = 11;
   Identifier type = 12;
+
+  int32 array_bounds = 13;
 }
 
 message Query

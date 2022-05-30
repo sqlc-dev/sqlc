@@ -50,13 +50,15 @@ func buildQueryCatalog(c *catalog.Catalog, node ast.Node) (*QueryCatalog, error)
 
 func ConvertColumn(rel *ast.TableName, c *catalog.Column) *Column {
 	return &Column{
-		Table:    rel,
-		Name:     c.Name,
-		DataType: dataType(&c.Type),
-		NotNull:  c.IsNotNull,
-		IsArray:  c.IsArray,
-		Type:     &c.Type,
-		Length:   c.Length,
+		Table:       rel,
+		Name:        c.Name,
+		DataType:    dataType(&c.Type),
+		NotNull:     c.IsNotNull,
+		IsArray:     c.IsArray,
+		ArrayBounds: c.ArrayBounds,
+
+		Type:   &c.Type,
+		Length: c.Length,
 	}
 }
 
