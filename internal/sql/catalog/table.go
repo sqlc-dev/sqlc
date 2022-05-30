@@ -55,6 +55,7 @@ func (table *Table) alterColumnType(cmd *ast.AlterTableCmd) error {
 	if index >= 0 {
 		table.Columns[index].Type = *cmd.Def.TypeName
 		table.Columns[index].IsArray = cmd.Def.IsArray
+		table.Columns[index].ArrayBounds = cmd.Def.ArrayBounds
 	}
 	return nil
 }
