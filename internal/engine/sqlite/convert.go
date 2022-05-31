@@ -1,9 +1,10 @@
 package sqlite
 
 import (
-	"github.com/antlr/antlr4/runtime/Go/antlr"
 	"strconv"
 	"strings"
+
+	"github.com/antlr/antlr4/runtime/Go/antlr"
 
 	"github.com/kyleconroy/sqlc/internal/engine/sqlite/parser"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
@@ -132,6 +133,67 @@ func convertDelete_stmtContext(c *parser.Delete_stmtContext) ast.Node {
 	}
 
 	return &ast.TODO{}
+}
+
+func convertInsert_stmtContext(c *parser.Insert_stmtContext) ast.Node {
+	if c == nil {
+		return nil
+	}
+	values := c.AllExpr()
+	if len(values) == 0 {
+		// TODO: add INSERT WITH SELECT support
+		return &ast.TODO{}
+	}
+	tableName := c.Table_name().GetText()
+	// we MUST have the columns in the update,
+	// otherwise the parser does not give ANY context,
+	// on "expression groups"
+	columns := convertCols(c.AllColumn_name())
+	insertStmt := &ast.InsertStmt{
+		Relation: &ast.RangeVar{
+			Relname: &tableName,
+		},
+		Cols:          columns,
+		ReturningList: &ast.List{},
+		SelectStmt:    convertSelectStmt(values, len(c.AllColumn_name())),
+	}
+	return insertStmt
+}
+
+func convertSelectStmt(values []parser.IExprContext, columns int) ast.Node {
+	valueList := &ast.List{Items: []ast.Node{}}
+	// the sqlite parse will give us values in a single slice
+	// so INSERT INTO a (b, c) VALUES (?, ?), (?, ?);
+	// will produce a 4 element slice. sqlite forces
+	// each column to have an expression so
+	// INSERT INTO a (b, c) VALUES (?); is invalid
+	// even if c is nullable
+	if columns == 0 {
+		columns = len(values)
+	}
+	for i := 0; i < len(values); i++ {
+		inner := &ast.List{Items: []ast.Node{}}
+		for ; i < columns; i++ {
+			inner.Items = append(inner.Items, convert(values[i]))
+		}
+		valueList.Items = append(valueList.Items, inner)
+	}
+	return &ast.SelectStmt{
+		FromClause:  &ast.List{},
+		TargetList:  &ast.List{},
+		ValuesLists: valueList,
+	}
+}
+
+func convertCols(columns []parser.IColumn_nameContext) *ast.List {
+	out := &ast.List{}
+	for _, c := range columns {
+		colName := c.GetText()
+		out.Items = append(out.Items, &ast.ResTarget{
+			Name: &colName,
+		})
+	}
+	return out
 }
 
 func convertDrop_stmtContext(c *parser.Drop_stmtContext) ast.Node {
@@ -480,6 +542,9 @@ func convert(node node) ast.Node {
 
 	case *parser.Delete_stmtContext:
 		return convertDelete_stmtContext(n)
+
+	case *parser.Insert_stmtContext:
+		return convertInsert_stmtContext(n)
 
 	case *parser.ExprContext:
 		return convertExprContext(n)
