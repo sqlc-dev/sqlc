@@ -24,6 +24,8 @@ sql:
       out: "mysql
 ```
 
+### sql
+
 Each mapping in the `sql` collection has the following keys:
 
 - `engine`:
@@ -34,18 +36,14 @@ Each mapping in the `sql` collection has the following keys:
   - Directory of SQL queries or path to single SQL file; or a list of paths.
 - `gen`:
   - A mapping to configure built-in code generators. Supports the following keys:
-  - `go`:
-    - Go code generation options
-  - `kotlin`:
-    - Kotlin code generation options
-  - `python`:
-    - Python code generation options
-  - `json`:
-    - JSON output options
 - `strict_function_checks`
   - If true, return an error if a called SQL function does not exist. Defaults to `false`.
   
-### go
+### gen
+
+The `gen` mapping supports the following keys:
+
+#### go
 
 - `package`:
   - The package name to use for the generated code. Defaults to `out` basename.
@@ -90,7 +88,7 @@ Each mapping in the `sql` collection has the following keys:
 - `output_files_suffix`:
   - If specified the suffix will be added to the name of the generated files.
 
-### kotlin
+#### kotlin
 
 - `package`:
   - The package name to use for the generated code.
@@ -99,7 +97,7 @@ Each mapping in the `sql` collection has the following keys:
 - `emit_exact_table_names`:
   - If true, use the exact table name for generated models. Otherwise, guess a singular form. Defaults to `false`.
 
-### python
+#### python
 
 - `package`:
   - The package name to use for the generated code.
@@ -114,7 +112,14 @@ Each mapping in the `sql` collection has the following keys:
 - `emit_pydantic_models`:
   - If true, generate classes that inherit from `pydantic.BaseModel`. Otherwise, define classes using the `dataclass` decorator. Defaults to `false`.
 
-### json
+#### json
+
+- `out`:
+  - Output directory for the generated JSON.
+- `filename`:
+  - Filename for the generated JSON document. Defaults to `codegen_request.json`.
+- `indent`:
+  - Indent string to use in the JSON document. Defaults to `  `.
   
 ## Version 1
 
@@ -142,6 +147,8 @@ packages:
     output_models_file_name: "models.go"
     output_querier_file_name: "querier.go"
 ```
+
+### packages
 
 Each mapping in the `packages` collection has the following keys:
 
@@ -194,7 +201,7 @@ Each mapping in the `packages` collection has the following keys:
 - `output_files_suffix`:
   - If specified the suffix will be added to the name of the generated files.
 
-## Type Overrides
+### overrides
 
 The default mapping of PostgreSQL/MySQL types to Go types only uses packages outside
 the standard library when it must.
@@ -235,7 +242,7 @@ overrides:
       pointer: false # or true
 ```
 
-## Per-Column Type Overrides
+#### Per-Column Type Overrides
 
 Sometimes you would like to override the Go type used in model or query generation for
 a specific field of a table and not on a type basis as described in the previous section.
@@ -252,7 +259,7 @@ overrides:
     go_type: "github.com/segmentio/ksuid.KSUID"
 ```
 
-## Package Level Overrides
+#### Package Level Overrides
 
 Overrides can be configured globally, as demonstrated in the previous sections, or they can be configured on a per-package which
 scopes the override behavior to just a single package:
@@ -263,7 +270,7 @@ packages:
   - overrides: [...]
 ```
 
-## Renaming Struct Fields
+### rename
 
 Struct field names are generated from column names using a simple algorithm:
 split the column name on underscores and capitalize the first letter of each
@@ -275,7 +282,7 @@ spotify_url -> SpotifyUrl
 app_id      -> AppID
 ```
 
-If you're not happy with a field's generated name, use the `rename` dictionary
+If you're not happy with a field's generated name, use the `rename` mapping
 to pick a new name. The keys are column names and the values are the struct
 field name to use.
 
