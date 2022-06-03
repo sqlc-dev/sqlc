@@ -56,7 +56,7 @@ code ever again.
    howto/upload.md
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Reference
    :hidden:
 
