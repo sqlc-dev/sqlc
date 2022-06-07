@@ -79,7 +79,7 @@ FROM foo
 
 type CoalesceNumericNullRow struct {
 	Baz   sql.NullInt64
-	Baz_2 int64
+	Baz_2 sql.NullInt64
 }
 
 func (q *Queries) CoalesceNumericNull(ctx context.Context) ([]CoalesceNumericNullRow, error) {
@@ -174,7 +174,7 @@ FROM foo
 
 type CoalesceStringNullRow struct {
 	Bar   sql.NullString
-	Bar_2 string
+	Bar_2 sql.NullString
 }
 
 func (q *Queries) CoalesceStringNull(ctx context.Context) ([]CoalesceStringNullRow, error) {
