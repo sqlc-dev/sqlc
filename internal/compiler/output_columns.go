@@ -148,9 +148,11 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 			if res.Name != nil {
 				name = *res.Name
 			}
-			var found bool
+			var firstColumn *Column
+			var shouldNotBeNull bool
 			for _, arg := range n.Args.Items {
-				if found {
+				if _, ok := arg.(*ast.A_Const); ok {
+					shouldNotBeNull = true
 					continue
 				}
 				if ref, ok := arg.(*ast.ColumnRef); ok {
@@ -159,14 +161,18 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 						return nil, err
 					}
 					for _, c := range columns {
-						found = true
-						c.NotNull = true
-						c.skipTableRequiredCheck = true
-						cols = append(cols, c)
+						if firstColumn == nil {
+							firstColumn = c
+						}
+						shouldNotBeNull = shouldNotBeNull || c.NotNull
 					}
 				}
 			}
-			if !found {
+			if firstColumn != nil {
+				firstColumn.NotNull = shouldNotBeNull
+				firstColumn.skipTableRequiredCheck = true
+				cols = append(cols, firstColumn)
+			} else {
 				cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
 			}
 
