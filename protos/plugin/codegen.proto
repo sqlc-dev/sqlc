@@ -44,6 +44,7 @@ message ParsedGoType
   string package = 2;
   string type_name = 3;
   bool basic_type = 4;
+  map<string, string> struct_tags = 5;
 }
 
 message Settings
