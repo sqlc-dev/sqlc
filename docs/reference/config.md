@@ -120,6 +120,16 @@ The `gen` mapping supports the following keys:
   - Filename for the generated JSON document. Defaults to `codegen_request.json`.
 - `indent`:
   - Indent string to use in the JSON document. Defaults to `  `.
+
+### plugins
+
+Each mapping in the `plugins` collection has the following keys:
+
+- `name`:
+  - The name of this plugin. Required
+- `process`:
+  - `cmd`:
+    - The executable to call when using this plugin
   
 ## Version 1
 
