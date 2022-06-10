@@ -167,6 +167,10 @@ type Override struct {
 	// name of the golang type to use, e.g. `github.com/segmentio/ksuid.KSUID`
 	GoType GoType `json:"go_type" yaml:"go_type"`
 
+	// additional Go struct tags to add to this field, in raw Go struct tag form, e.g. `validate:"required" x:"y,z"`
+	// see https://github.com/kyleconroy/sqlc/issues/534
+	GoStructTag GoStructTag `json:"go_struct_tag" yaml:"go_struct_tag"`
+
 	// name of the python type to use, e.g. `mymodule.TypeName`
 	PythonType PythonType `json:"python_type" yaml:"python_type"`
 
@@ -193,6 +197,9 @@ type Override struct {
 	GoPackage    string
 	GoTypeName   string
 	GoBasicType  bool
+
+	// Parsed form of GoStructTag, e.g. {"validate:", "required"}
+	GoStructTags map[string]string
 }
 
 func (o *Override) Matches(n *ast.TableName, defaultSchema string) bool {
@@ -304,6 +311,13 @@ func (o *Override) Parse() (err error) {
 	o.GoPackage = parsed.Package
 	o.GoTypeName = parsed.TypeName
 	o.GoBasicType = parsed.BasicType
+
+	// validate GoStructTag
+	tags, err := o.GoStructTag.Parse()
+	if err != nil {
+		return err
+	}
+	o.GoStructTags = tags
 
 	return nil
 }

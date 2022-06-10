@@ -225,6 +225,9 @@ Each override document has the following keys:
   - The PostgreSQL or MySQL type to override. Find the full list of supported types in [postgresql_type.go](https://github.com/kyleconroy/sqlc/blob/main/internal/codegen/golang/postgresql_type.go#L12) or [mysql_type.go](https://github.com/kyleconroy/sqlc/blob/main/internal/codegen/golang/mysql_type.go#L12). Note that for Postgres you must use the pg_catalog prefixed names where available.
 - `go_type`:
   - A fully qualified name to a Go type to use in the generated code.
+- `go_struct_tag`:
+  - A reflect-style struct tag to use in the generated code, e.g. `a:"b" x:"y,z"`.
+    If you want general json/db tags for all fields, use `emit_db_tags` and/or `emit_json_tags` instead.
 - `nullable`:
   - If true, use this type when a column is nullable. Defaults to `false`.
 
