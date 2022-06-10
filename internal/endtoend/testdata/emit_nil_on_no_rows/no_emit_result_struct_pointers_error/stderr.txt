@@ -1,0 +1,1 @@
+error validating sqlc.json: invalid config: emit_nil_on_no_rows requires emit_result_struct_pointers

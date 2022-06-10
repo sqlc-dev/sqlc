@@ -102,6 +102,7 @@ func pluginGoCode(s config.SQLGo) *plugin.GoCode {
 		EmitMethodsWithDbArgument: s.EmitMethodsWithDBArgument,
 		EmitEnumValidMethod:       s.EmitEnumValidMethod,
 		EmitAllEnumValues:         s.EmitAllEnumValues,
+		EmitNilOnNoRows:           s.EmitNilOnNoRows,
 		JsonTagsCaseStyle:         s.JSONTagsCaseStyle,
 		Package:                   s.Package,
 		Out:                       s.Out,

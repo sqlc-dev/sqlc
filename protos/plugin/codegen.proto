@@ -110,6 +110,7 @@ message GoCode
   string output_files_suffix = 18;
   bool emit_enum_valid_method = 19;
   bool emit_all_enum_values = 20;
+  bool emit_nil_on_no_rows = 21;
 }
 
 message JSONCode
