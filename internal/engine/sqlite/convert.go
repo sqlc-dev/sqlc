@@ -231,28 +231,6 @@ func convertComparison(c *parser.Expr_comparisonContext) ast.Node {
 	return aExpr
 }
 
-func convertSimpleSelect_stmtContext(c *parser.Simple_select_stmtContext) ast.Node {
-	if core, ok := c.Select_core().(*parser.Select_coreContext); ok {
-		cols := getCols(core)
-		tables := getTables(core)
-
-		stmt := &ast.SelectStmt{
-			FromClause: &ast.List{Items: tables},
-			TargetList: &ast.List{Items: cols},
-		}
-
-		if core.WHERE_() != nil {
-			if core.Expr(0) != nil {
-				stmt.WhereClause = convert(core.Expr(0))
-			}
-		}
-
-		return stmt
-	}
-
-	return &ast.TODO{}
-}
-
 func convertMultiSelect_stmtContext(c multiselect) ast.Node {
 	var tables []ast.Node
 	var cols []ast.Node
@@ -281,22 +259,15 @@ func convertMultiSelect_stmtContext(c multiselect) ast.Node {
 
 func getTables(core *parser.Select_coreContext) []ast.Node {
 	var tables []ast.Node
-	for _, ifrom := range core.AllTable_or_subquery() {
-		from, ok := ifrom.(*parser.Table_or_subqueryContext)
-		if !ok {
-			continue
+	tables = append(tables, convertTablesOrSubquery(core.AllTable_or_subquery())...)
+
+	if core.Join_clause() != nil {
+		join, ok := core.Join_clause().(*parser.Join_clauseContext)
+		if ok {
+			tables = append(tables, convertTablesOrSubquery(join.AllTable_or_subquery())...)
 		}
-		rel := from.Table_name().GetText()
-		name := ast.RangeVar{
-			Relname:  &rel,
-			Location: from.GetStart().GetStart(),
-		}
-		if from.Schema_name() != nil {
-			text := from.Schema_name().GetText()
-			name.Schemaname = &text
-		}
-		tables = append(tables, &name)
 	}
+
 	return tables
 }
 
@@ -542,6 +513,33 @@ func convertCols(columns []parser.IColumn_nameContext) *ast.List {
 	return out
 }
 
+func convertTablesOrSubquery(tableOrSubquery []parser.ITable_or_subqueryContext) []ast.Node {
+	var tables []ast.Node
+	for _, ifrom := range tableOrSubquery {
+		from, ok := ifrom.(*parser.Table_or_subqueryContext)
+		if !ok {
+			continue
+		}
+		rel := from.Table_name().GetText()
+		name := ast.RangeVar{
+			Relname:  &rel,
+			Location: from.GetStart().GetStart(),
+		}
+		if from.Schema_name() != nil {
+			schema := from.Schema_name().GetText()
+			name.Schemaname = &schema
+		}
+		if from.Table_alias() != nil {
+			alias := from.Table_alias().GetText()
+			name.Alias = &ast.Alias{Aliasname: &alias}
+		}
+
+		tables = append(tables, &name)
+	}
+
+	return tables
+}
+
 func convert(node node) ast.Node {
 	switch n := node.(type) {
 
@@ -588,20 +586,14 @@ func convert(node node) ast.Node {
 		// TODO: need to handle this
 		return &ast.TODO{}
 
+	case *parser.Insert_stmtContext:
+		return convertInsert_stmtContext(n)
+
 	case *parser.Select_stmtContext:
 		return convertMultiSelect_stmtContext(n)
 
 	case *parser.Sql_stmtContext:
 		return convertSql_stmtContext(n)
-
-	case *parser.Simple_select_stmtContext:
-		return convertSimpleSelect_stmtContext(n)
-
-	case *parser.Compound_select_stmtContext:
-		return convertMultiSelect_stmtContext(n)
-
-	case *parser.Insert_stmtContext:
-		return convertInsert_stmtContext(n)
 
 	default:
 		return &ast.TODO{}
