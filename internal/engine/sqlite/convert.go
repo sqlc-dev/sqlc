@@ -540,6 +540,44 @@ func convertTablesOrSubquery(tableOrSubquery []parser.ITable_or_subqueryContext)
 	return tables
 }
 
+func convertUpdate_stmtContext(c *parser.Update_stmtContext) ast.Node {
+	if c == nil {
+		return nil
+	}
+
+	relations := &ast.List{}
+	tableName := c.Qualified_table_name().GetText()
+	rel := ast.RangeVar{
+		Relname:  &tableName,
+		Location: c.GetStart().GetStart(),
+	}
+	relations.Items = append(relations.Items, &rel)
+
+	list := &ast.List{}
+	for i, col := range c.AllColumn_name() {
+		colName := col.GetText()
+		target := &ast.ResTarget{
+			Name: &colName,
+			Val:  convert(c.Expr(i)),
+		}
+		list.Items = append(list.Items, target)
+	}
+
+	var where ast.Node = nil
+	if c.WHERE_() != nil {
+		where = convert(c.Expr(len(c.AllExpr()) - 1))
+	}
+
+	return &ast.UpdateStmt{
+		Relations:     relations,
+		TargetList:    list,
+		WhereClause:   where,
+		ReturningList: &ast.List{},
+		FromClause:    &ast.List{},
+		WithClause:    nil, // TODO: support with clause
+	}
+}
+
 func convert(node node) ast.Node {
 	switch n := node.(type) {
 
@@ -594,6 +632,9 @@ func convert(node node) ast.Node {
 
 	case *parser.Sql_stmtContext:
 		return convertSql_stmtContext(n)
+
+	case *parser.Update_stmtContext:
+		return convertUpdate_stmtContext(n)
 
 	default:
 		return &ast.TODO{}
