@@ -52,6 +52,7 @@ func convertAlter_table_stmtContext(c *parser.Alter_table_stmtContext) ast.Node 
 					TypeName: &ast.TypeName{
 						Name: def.Type_name().GetText(),
 					},
+					IsNotNull: hasNotNullConstraint(def.AllColumn_constraint()),
 				},
 			})
 			return stmt
