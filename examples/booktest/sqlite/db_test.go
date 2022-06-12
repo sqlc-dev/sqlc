@@ -13,8 +13,8 @@ import (
 
 // TODO: Enum is not yet supported
 const (
-	BookTypeFICTION    string = "FICTION"
-	BookTypeNONFICTION string = "NONFICTION"
+	BooksBookTypeFICTION    string = "FICTION"
+	BooksBookTypeNONFICTION string = "NONFICTION"
 )
 
 func TestBooks(t *testing.T) {
@@ -48,7 +48,7 @@ func TestBooks(t *testing.T) {
 		AuthorID:  int64(authorID),
 		Isbn:      "1",
 		Title:     "my book title",
-		BookType:  BookTypeFICTION,
+		BookType:  BooksBookTypeFICTION,
 		Yr:        2016,
 		Available: now,
 	})
@@ -61,7 +61,7 @@ func TestBooks(t *testing.T) {
 		AuthorID:  int64(authorID),
 		Isbn:      "2",
 		Title:     "the second book",
-		BookType:  BookTypeFICTION,
+		BookType:  BooksBookTypeFICTION,
 		Yr:        2016,
 		Available: now,
 		Tags:      "cool,unique",
@@ -89,7 +89,7 @@ func TestBooks(t *testing.T) {
 		AuthorID:  int64(authorID),
 		Isbn:      "3",
 		Title:     "the third book",
-		BookType:  BookTypeFICTION,
+		BookType:  BooksBookTypeFICTION,
 		Yr:        2001,
 		Available: now,
 		Tags:      "cool",
@@ -103,7 +103,7 @@ func TestBooks(t *testing.T) {
 		AuthorID:  int64(authorID),
 		Isbn:      "4",
 		Title:     "4th place finisher",
-		BookType:  BookTypeNONFICTION,
+		BookType:  BooksBookTypeFICTION,
 		Yr:        2011,
 		Available: now,
 		Tags:      "other",
