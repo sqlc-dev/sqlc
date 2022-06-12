@@ -1,0 +1,499 @@
+{
+  "settings": {
+    "version": "2",
+    "engine": "postgresql",
+    "schema": [
+      "postgresql/schema.sql"
+    ],
+    "queries": [
+      "postgresql/query.sql"
+    ],
+    "rename": {},
+    "overrides": [],
+    "codegen": {
+      "out": "",
+      "plugin": "",
+      "options": ""
+    },
+    "python": {
+      "emit_exact_table_names": false,
+      "emit_sync_querier": false,
+      "emit_async_querier": false,
+      "package": "",
+      "out": "",
+      "emit_pydantic_models": false
+    },
+    "kotlin": {
+      "emit_exact_table_names": false,
+      "package": "",
+      "out": ""
+    },
+    "go": {
+      "emit_interface": false,
+      "emit_json_tags": false,
+      "emit_db_tags": false,
+      "emit_prepared_queries": false,
+      "emit_exact_table_names": false,
+      "emit_empty_slices": false,
+      "emit_exported_queries": false,
+      "emit_result_struct_pointers": false,
+      "emit_params_struct_pointers": false,
+      "emit_methods_with_db_argument": false,
+      "json_tags_case_style": "",
+      "package": "",
+      "out": "",
+      "sql_package": "",
+      "output_db_file_name": "",
+      "output_models_file_name": "",
+      "output_querier_file_name": "",
+      "output_files_suffix": "",
+      "emit_enum_valid_method": false,
+      "emit_all_enum_values": false
+    },
+    "json": {
+      "out": "gen",
+      "indent": "  ",
+      "filename": "codegen.json"
+    }
+  },
+  "catalog": {
+    "comment": "",
+    "default_schema": "public",
+    "name": "",
+    "schemas": [
+      {
+        "comment": "",
+        "name": "public",
+        "tables": [
+          {
+            "rel": {
+              "catalog": "",
+              "schema": "",
+              "name": "authors"
+            },
+            "columns": [
+              {
+                "name": "id",
+                "not_null": true,
+                "is_array": false,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "authors"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "bigserial"
+                }
+              },
+              {
+                "name": "name",
+                "not_null": true,
+                "is_array": false,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "authors"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "text"
+                }
+              },
+              {
+                "name": "bio",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "authors"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "text"
+                }
+              }
+            ],
+            "comment": ""
+          }
+        ],
+        "enums": [],
+        "composite_types": []
+      },
+      {
+        "comment": "",
+        "name": "pg_temp",
+        "tables": [],
+        "enums": [],
+        "composite_types": []
+      },
+      {
+        "comment": "",
+        "name": "pg_catalog",
+        "tables": [],
+        "enums": [],
+        "composite_types": []
+      }
+    ]
+  },
+  "queries": [
+    {
+      "text": "SELECT id, name, bio FROM authors\nWHERE id = $1 LIMIT 1",
+      "name": "GetAuthor",
+      "cmd": ":one",
+      "columns": [
+        {
+          "name": "id",
+          "not_null": true,
+          "is_array": false,
+          "comment": "",
+          "length": -1,
+          "is_named_param": false,
+          "is_func_call": false,
+          "scope": "",
+          "table": {
+            "catalog": "",
+            "schema": "",
+            "name": "authors"
+          },
+          "table_alias": "",
+          "type": {
+            "catalog": "",
+            "schema": "",
+            "name": "bigserial"
+          }
+        },
+        {
+          "name": "name",
+          "not_null": true,
+          "is_array": false,
+          "comment": "",
+          "length": -1,
+          "is_named_param": false,
+          "is_func_call": false,
+          "scope": "",
+          "table": {
+            "catalog": "",
+            "schema": "",
+            "name": "authors"
+          },
+          "table_alias": "",
+          "type": {
+            "catalog": "",
+            "schema": "",
+            "name": "text"
+          }
+        },
+        {
+          "name": "bio",
+          "not_null": false,
+          "is_array": false,
+          "comment": "",
+          "length": -1,
+          "is_named_param": false,
+          "is_func_call": false,
+          "scope": "",
+          "table": {
+            "catalog": "",
+            "schema": "",
+            "name": "authors"
+          },
+          "table_alias": "",
+          "type": {
+            "catalog": "",
+            "schema": "",
+            "name": "text"
+          }
+        }
+      ],
+      "params": [
+        {
+          "number": 1,
+          "column": {
+            "name": "id",
+            "not_null": true,
+            "is_array": false,
+            "comment": "",
+            "length": -1,
+            "is_named_param": false,
+            "is_func_call": false,
+            "scope": "",
+            "table": {
+              "catalog": "",
+              "schema": "",
+              "name": "authors"
+            },
+            "table_alias": "",
+            "type": {
+              "catalog": "",
+              "schema": "",
+              "name": "bigserial"
+            }
+          }
+        }
+      ],
+      "comments": [],
+      "filename": "query.sql",
+      "insert_into_table": null
+    },
+    {
+      "text": "SELECT id, name, bio FROM authors\nORDER BY name",
+      "name": "ListAuthors",
+      "cmd": ":many",
+      "columns": [
+        {
+          "name": "id",
+          "not_null": true,
+          "is_array": false,
+          "comment": "",
+          "length": -1,
+          "is_named_param": false,
+          "is_func_call": false,
+          "scope": "",
+          "table": {
+            "catalog": "",
+            "schema": "",
+            "name": "authors"
+          },
+          "table_alias": "",
+          "type": {
+            "catalog": "",
+            "schema": "",
+            "name": "bigserial"
+          }
+        },
+        {
+          "name": "name",
+          "not_null": true,
+          "is_array": false,
+          "comment": "",
+          "length": -1,
+          "is_named_param": false,
+          "is_func_call": false,
+          "scope": "",
+          "table": {
+            "catalog": "",
+            "schema": "",
+            "name": "authors"
+          },
+          "table_alias": "",
+          "type": {
+            "catalog": "",
+            "schema": "",
+            "name": "text"
+          }
+        },
+        {
+          "name": "bio",
+          "not_null": false,
+          "is_array": false,
+          "comment": "",
+          "length": -1,
+          "is_named_param": false,
+          "is_func_call": false,
+          "scope": "",
+          "table": {
+            "catalog": "",
+            "schema": "",
+            "name": "authors"
+          },
+          "table_alias": "",
+          "type": {
+            "catalog": "",
+            "schema": "",
+            "name": "text"
+          }
+        }
+      ],
+      "params": [],
+      "comments": [],
+      "filename": "query.sql",
+      "insert_into_table": null
+    },
+    {
+      "text": "INSERT INTO authors (\n          name, bio\n) VALUES (\n  $1, $2\n)\nRETURNING id, name, bio",
+      "name": "CreateAuthor",
+      "cmd": ":one",
+      "columns": [
+        {
+          "name": "id",
+          "not_null": true,
+          "is_array": false,
+          "comment": "",
+          "length": -1,
+          "is_named_param": false,
+          "is_func_call": false,
+          "scope": "",
+          "table": {
+            "catalog": "",
+            "schema": "",
+            "name": "authors"
+          },
+          "table_alias": "",
+          "type": {
+            "catalog": "",
+            "schema": "",
+            "name": "bigserial"
+          }
+        },
+        {
+          "name": "name",
+          "not_null": true,
+          "is_array": false,
+          "comment": "",
+          "length": -1,
+          "is_named_param": false,
+          "is_func_call": false,
+          "scope": "",
+          "table": {
+            "catalog": "",
+            "schema": "",
+            "name": "authors"
+          },
+          "table_alias": "",
+          "type": {
+            "catalog": "",
+            "schema": "",
+            "name": "text"
+          }
+        },
+        {
+          "name": "bio",
+          "not_null": false,
+          "is_array": false,
+          "comment": "",
+          "length": -1,
+          "is_named_param": false,
+          "is_func_call": false,
+          "scope": "",
+          "table": {
+            "catalog": "",
+            "schema": "",
+            "name": "authors"
+          },
+          "table_alias": "",
+          "type": {
+            "catalog": "",
+            "schema": "",
+            "name": "text"
+          }
+        }
+      ],
+      "params": [
+        {
+          "number": 1,
+          "column": {
+            "name": "name",
+            "not_null": true,
+            "is_array": false,
+            "comment": "",
+            "length": -1,
+            "is_named_param": false,
+            "is_func_call": false,
+            "scope": "",
+            "table": {
+              "catalog": "",
+              "schema": "public",
+              "name": "authors"
+            },
+            "table_alias": "",
+            "type": {
+              "catalog": "",
+              "schema": "",
+              "name": "text"
+            }
+          }
+        },
+        {
+          "number": 2,
+          "column": {
+            "name": "bio",
+            "not_null": false,
+            "is_array": false,
+            "comment": "",
+            "length": -1,
+            "is_named_param": false,
+            "is_func_call": false,
+            "scope": "",
+            "table": {
+              "catalog": "",
+              "schema": "public",
+              "name": "authors"
+            },
+            "table_alias": "",
+            "type": {
+              "catalog": "",
+              "schema": "",
+              "name": "text"
+            }
+          }
+        }
+      ],
+      "comments": [],
+      "filename": "query.sql",
+      "insert_into_table": {
+        "catalog": "",
+        "schema": "",
+        "name": "authors"
+      }
+    },
+    {
+      "text": "DELETE FROM authors\nWHERE id = $1",
+      "name": "DeleteAuthor",
+      "cmd": ":exec",
+      "columns": [],
+      "params": [
+        {
+          "number": 1,
+          "column": {
+            "name": "id",
+            "not_null": true,
+            "is_array": false,
+            "comment": "",
+            "length": -1,
+            "is_named_param": false,
+            "is_func_call": false,
+            "scope": "",
+            "table": {
+              "catalog": "",
+              "schema": "",
+              "name": "authors"
+            },
+            "table_alias": "",
+            "type": {
+              "catalog": "",
+              "schema": "",
+              "name": "bigserial"
+            }
+          }
+        }
+      ],
+      "comments": [],
+      "filename": "query.sql",
+      "insert_into_table": null
+    }
+  ],
+  "sqlc_version": "v1.14.0"
+}

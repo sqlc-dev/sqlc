@@ -44,6 +44,7 @@ message ParsedGoType
   string package = 2;
   string type_name = 3;
   bool basic_type = 4;
+  map<string, string> struct_tags = 5;
 }
 
 message Settings
@@ -54,12 +55,20 @@ message Settings
   repeated string queries = 4 [json_name="queries"];
   map<string, string> rename = 5 [json_name="rename"];
   repeated Override overrides = 6 [json_name="overrides"];
+  Codegen codegen = 12 [json_name="codegen"];
 
   // TODO: Refactor codegen settings
   PythonCode python = 8;
   KotlinCode kotlin = 9;
   GoCode go = 10;
   JSONCode json = 11;
+}
+
+message Codegen
+{
+  string out = 1 [json_name="out"];
+  string plugin = 2 [json_name="plugin"];
+  bytes options = 3 [json_name="options"];
 }
 
 message PythonCode
@@ -107,6 +116,7 @@ message JSONCode
 {
   string out = 1;
   string indent = 2;
+  string filename = 3;
 }
 
 message Catalog

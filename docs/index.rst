@@ -74,4 +74,5 @@ code ever again.
    :hidden:
 
    guides/development.md
+   guides/plugins.md
    guides/privacy.md

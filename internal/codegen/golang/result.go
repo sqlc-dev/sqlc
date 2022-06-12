@@ -74,11 +74,12 @@ func buildStructs(req *plugin.CodeGenRequest) []Struct {
 			for _, column := range table.Columns {
 				tags := map[string]string{}
 				if req.Settings.Go.EmitDbTags {
-					tags["db:"] = column.Name
+					tags["db"] = column.Name
 				}
 				if req.Settings.Go.EmitJsonTags {
-					tags["json:"] = JSONTagName(column.Name, req.Settings)
+					tags["json"] = JSONTagName(column.Name, req.Settings)
 				}
+				addExtraGoStructTags(tags, req, column)
 				s.Fields = append(s.Fields, Field{
 					Name:    StructName(column.Name, req.Settings),
 					Type:    goType(req, column),
@@ -283,10 +284,10 @@ func columnsToStruct(req *plugin.CodeGenRequest, name string, columns []goColumn
 		}
 		tags := map[string]string{}
 		if req.Settings.Go.EmitDbTags {
-			tags["db:"] = tagName
+			tags["db"] = tagName
 		}
 		if req.Settings.Go.EmitJsonTags {
-			tags["json:"] = JSONTagName(tagName, req.Settings)
+			tags["json"] = JSONTagName(tagName, req.Settings)
 		}
 		gs.Fields = append(gs.Fields, Field{
 			Name:   fieldName,

@@ -3,13 +3,18 @@
     "version": "2",
     "engine": "postgresql",
     "schema": [
-      "postgresql/schema.sql"
+      "schema.sql"
     ],
     "queries": [
-      "postgresql/query.sql"
+      "query.sql"
     ],
     "rename": {},
     "overrides": [],
+    "codegen": {
+      "out": "gen",
+      "plugin": "jsonb",
+      "options": "eyJmaWxlbmFtZSI6ImNvZGVnZW4uanNvbiIsImluZGVudCI6IiAgIn0="
+    },
     "python": {
       "emit_exact_table_names": false,
       "emit_sync_querier": false,
@@ -46,8 +51,9 @@
       "emit_all_enum_values": false
     },
     "json": {
-      "out": "gen",
-      "indent": "  "
+      "out": "",
+      "indent": "",
+      "filename": ""
     }
   },
   "catalog": {
@@ -489,5 +495,5 @@
       "insert_into_table": null
     }
   ],
-  "sqlc_version": "v1.13.0"
+  "sqlc_version": "v1.14.0"
 }

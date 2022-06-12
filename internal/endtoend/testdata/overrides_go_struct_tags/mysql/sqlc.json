@@ -1,0 +1,22 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "path": "go",
+      "name": "override",
+      "engine": "mysql",
+      "schema": "schema.sql",
+      "queries": "query.sql",
+      "overrides": [
+        {
+          "go_struct_tag": "a:\"b\" x:\"y,z\"",
+          "column": "foo.tagged"
+        },
+        {
+          "go_struct_tag": "also:\"tagged\"",
+          "column": "*.also_tagged"
+        }
+      ]
+    }
+  ]
+}

@@ -6,11 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os"
-	"strings"
-
-	"github.com/kyleconroy/sqlc/internal/pattern"
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
 
 	yaml "gopkg.in/yaml.v3"
 )
@@ -78,14 +73,25 @@ const (
 )
 
 type Config struct {
-	Version string  `json:"version" yaml:"version"`
-	Project Project `json:"project" yaml:"project"`
-	SQL     []SQL   `json:"sql" yaml:"sql"`
-	Gen     Gen     `json:"overrides,omitempty" yaml:"overrides"`
+	Version string   `json:"version" yaml:"version"`
+	Project Project  `json:"project" yaml:"project"`
+	SQL     []SQL    `json:"sql" yaml:"sql"`
+	Gen     Gen      `json:"overrides,omitempty" yaml:"overrides"`
+	Plugins []Plugin `json:"plugins" yaml:"plugins"`
 }
 
 type Project struct {
 	ID string `json:"id" yaml:"id"`
+}
+
+type Plugin struct {
+	Name    string `json:"name" yaml:"name"`
+	Process *struct {
+		Cmd string `json:"cmd" yaml:"cmd"`
+	} `json:"process" yaml:"process"`
+	WASM *struct {
+		URL string `json:"url" yaml:"url"`
+	} `json:"wasm" yaml:"wasm"`
 }
 
 type Gen struct {
@@ -103,11 +109,19 @@ type GenKotlin struct {
 }
 
 type SQL struct {
-	Engine               Engine `json:"engine,omitempty" yaml:"engine"`
-	Schema               Paths  `json:"schema" yaml:"schema"`
-	Queries              Paths  `json:"queries" yaml:"queries"`
-	StrictFunctionChecks bool   `json:"strict_function_checks" yaml:"strict_function_checks"`
-	Gen                  SQLGen `json:"gen" yaml:"gen"`
+	Engine               Engine    `json:"engine,omitempty" yaml:"engine"`
+	Schema               Paths     `json:"schema" yaml:"schema"`
+	Queries              Paths     `json:"queries" yaml:"queries"`
+	StrictFunctionChecks bool      `json:"strict_function_checks" yaml:"strict_function_checks"`
+	Gen                  SQLGen    `json:"gen" yaml:"gen"`
+	Codegen              []Codegen `json:"codegen" yaml:"codegen"`
+}
+
+// TODO: Figure out a better name for this
+type Codegen struct {
+	Out     string    `json:"out" yaml:"out"`
+	Plugin  string    `json:"plugin" yaml:"plugin"`
+	Options yaml.Node `json:"options" yaml:"options"`
 }
 
 type SQLGen struct {
@@ -159,164 +173,28 @@ type SQLPython struct {
 }
 
 type SQLJSON struct {
-	Out    string `json:"out" yaml:"out"`
-	Indent string `json:"indent,omitempty" yaml:"indent"`
+	Out      string `json:"out" yaml:"out"`
+	Indent   string `json:"indent,omitempty" yaml:"indent"`
+	Filename string `json:"filename,omitempty" yaml:"filename"`
 }
 
-type Override struct {
-	// name of the golang type to use, e.g. `github.com/segmentio/ksuid.KSUID`
-	GoType GoType `json:"go_type" yaml:"go_type"`
-
-	// name of the python type to use, e.g. `mymodule.TypeName`
-	PythonType PythonType `json:"python_type" yaml:"python_type"`
-
-	// fully qualified name of the Go type, e.g. `github.com/segmentio/ksuid.KSUID`
-	DBType                  string `json:"db_type" yaml:"db_type"`
-	Deprecated_PostgresType string `json:"postgres_type" yaml:"postgres_type"`
-
-	// for global overrides only when two different engines are in use
-	Engine Engine `json:"engine,omitempty" yaml:"engine"`
-
-	// True if the GoType should override if the maching postgres type is nullable
-	Nullable bool `json:"nullable" yaml:"nullable"`
-	// Deprecated. Use the `nullable` property instead
-	Deprecated_Null bool `json:"null" yaml:"null"`
-
-	// fully qualified name of the column, e.g. `accounts.id`
-	Column string `json:"column" yaml:"column"`
-
-	ColumnName   *pattern.Match
-	TableCatalog *pattern.Match
-	TableSchema  *pattern.Match
-	TableRel     *pattern.Match
-	GoImportPath string
-	GoPackage    string
-	GoTypeName   string
-	GoBasicType  bool
-}
-
-func (o *Override) Matches(n *ast.TableName, defaultSchema string) bool {
-	if n == nil {
-		return false
-	}
-
-	schema := n.Schema
-	if n.Schema == "" {
-		schema = defaultSchema
-	}
-
-	if o.TableCatalog != nil && !o.TableCatalog.MatchString(n.Catalog) {
-		return false
-	}
-
-	if o.TableSchema == nil && schema != "" {
-		return false
-	}
-
-	if o.TableSchema != nil && !o.TableSchema.MatchString(schema) {
-		return false
-	}
-
-	if o.TableRel == nil && n.Name != "" {
-		return false
-	}
-
-	if o.TableRel != nil && !o.TableRel.MatchString(n.Name) {
-		return false
-	}
-
-	return true
-}
-
-func (o *Override) Parse() (err error) {
-
-	// validate deprecated postgres_type field
-	if o.Deprecated_PostgresType != "" {
-		fmt.Fprintf(os.Stderr, "WARNING: \"postgres_type\" is deprecated. Instead, use \"db_type\" to specify a type override.\n")
-		if o.DBType != "" {
-			return fmt.Errorf(`Type override configurations cannot have "db_type" and "postres_type" together. Use "db_type" alone`)
-		}
-		o.DBType = o.Deprecated_PostgresType
-	}
-
-	// validate deprecated null field
-	if o.Deprecated_Null {
-		fmt.Fprintf(os.Stderr, "WARNING: \"null\" is deprecated. Instead, use the \"nullable\" field.\n")
-		o.Nullable = true
-	}
-
-	// validate option combinations
-	switch {
-	case o.Column != "" && o.DBType != "":
-		return fmt.Errorf("Override specifying both `column` (%q) and `db_type` (%q) is not valid.", o.Column, o.DBType)
-	case o.Column == "" && o.DBType == "":
-		return fmt.Errorf("Override must specify one of either `column` or `db_type`")
-	}
-
-	// validate Column
-	if o.Column != "" {
-		colParts := strings.Split(o.Column, ".")
-		switch len(colParts) {
-		case 2:
-			if o.ColumnName, err = pattern.MatchCompile(colParts[1]); err != nil {
-				return err
-			}
-			if o.TableRel, err = pattern.MatchCompile(colParts[0]); err != nil {
-				return err
-			}
-			if o.TableSchema, err = pattern.MatchCompile("public"); err != nil {
-				return err
-			}
-		case 3:
-			if o.ColumnName, err = pattern.MatchCompile(colParts[2]); err != nil {
-				return err
-			}
-			if o.TableRel, err = pattern.MatchCompile(colParts[1]); err != nil {
-				return err
-			}
-			if o.TableSchema, err = pattern.MatchCompile(colParts[0]); err != nil {
-				return err
-			}
-		case 4:
-			if o.ColumnName, err = pattern.MatchCompile(colParts[3]); err != nil {
-				return err
-			}
-			if o.TableRel, err = pattern.MatchCompile(colParts[2]); err != nil {
-				return err
-			}
-			if o.TableSchema, err = pattern.MatchCompile(colParts[1]); err != nil {
-				return err
-			}
-			if o.TableCatalog, err = pattern.MatchCompile(colParts[0]); err != nil {
-				return err
-			}
-		default:
-			return fmt.Errorf("Override `column` specifier %q is not the proper format, expected '[catalog.][schema.]tablename.colname'", o.Column)
-		}
-	}
-
-	// validate GoType
-	parsed, err := o.GoType.Parse()
-	if err != nil {
-		return err
-	}
-	o.GoImportPath = parsed.ImportPath
-	o.GoPackage = parsed.Package
-	o.GoTypeName = parsed.TypeName
-	o.GoBasicType = parsed.BasicType
-
-	return nil
-}
-
-var ErrMissingVersion = errors.New("no version number")
-var ErrUnknownVersion = errors.New("invalid version number")
 var ErrMissingEngine = errors.New("unknown engine")
-var ErrUnknownEngine = errors.New("invalid engine")
-var ErrNoPackages = errors.New("no packages")
+var ErrMissingVersion = errors.New("no version number")
+var ErrNoOutPath = errors.New("no output path")
 var ErrNoPackageName = errors.New("missing package name")
 var ErrNoPackagePath = errors.New("missing package path")
-var ErrNoOutPath = errors.New("no output path")
+var ErrNoPackages = errors.New("no packages")
 var ErrNoQuerierType = errors.New("no querier emit type enabled")
+var ErrUnknownEngine = errors.New("invalid engine")
+var ErrUnknownVersion = errors.New("invalid version number")
+
+var ErrPluginBuiltin = errors.New("a built-in plugin with that name already exists")
+var ErrPluginNoName = errors.New("missing plugin name")
+var ErrPluginExists = errors.New("a plugin with that name already exists")
+var ErrPluginNotFound = errors.New("no plugin found")
+var ErrPluginNoType = errors.New("plugin: field `process` or `wasm` required")
+var ErrPluginBothTypes = errors.New("plugin: both `process` and `wasm` cannot both be defined")
+var ErrPluginProcessNoCmd = errors.New("plugin: missing process command")
 
 func ParseConfig(rd io.Reader) (Config, error) {
 	var buf bytes.Buffer
@@ -363,6 +241,9 @@ type CombinedSettings struct {
 	JSON      SQLJSON
 	Rename    map[string]string
 	Overrides []Override
+
+	// TODO: Combine these into a more usable type
+	Codegen Codegen
 }
 
 func Combine(conf Config, pkg SQL) CombinedSettings {

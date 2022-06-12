@@ -22,6 +22,7 @@ type ParsedGoType struct {
 	Package    string
 	TypeName   string
 	BasicType  bool
+	StructTag  string
 }
 
 func (o *GoType) UnmarshalJSON(data []byte) error {
@@ -138,16 +139,12 @@ func (gt GoType) Parse() (*ParsedGoType, error) {
 			return nil, fmt.Errorf("Package override `go_type` specifier %q is not the proper format, expected 'package.type', e.g. 'github.com/segmentio/ksuid.KSUID'", input)
 		}
 		typename = input[lastSlash+1:]
-		if strings.HasPrefix(typename, "go-") {
-			// a package name beginning with "go-" will give syntax errors in
-			// generated code. We should do the right thing and get the actual
-			// import name, but in lieu of that, stripping the leading "go-" may get
-			// us what we want.
-			typename = typename[len("go-"):]
-		}
-		if strings.HasSuffix(typename, "-go") {
-			typename = typename[:len(typename)-len("-go")]
-		}
+		// a package name beginning with "go-" will give syntax errors in
+		// generated code. We should do the right thing and get the actual
+		// import name, but in lieu of that, stripping the leading "go-" may get
+		// us what we want.
+		typename = strings.TrimPrefix(typename, "go-")
+		typename = strings.TrimSuffix(typename, "-go")
 		o.ImportPath = input[:lastDot]
 	}
 	o.TypeName = typename
@@ -157,4 +154,32 @@ func (gt GoType) Parse() (*ParsedGoType, error) {
 		o.TypeName = "*" + o.TypeName
 	}
 	return &o, nil
+}
+
+// GoStructTag is a raw Go struct tag.
+type GoStructTag string
+
+// Parse parses and validates a GoStructTag.
+// The output is in a form convenient for codegen.
+//
+// Sample valid inputs/outputs:
+//
+// In                    Out
+// empty string      {}
+// `a:"b"`           {"a": "b"}
+// `a:"b" x:"y,z"`   {"a": "b", "x": "y,z"}
+func (s GoStructTag) Parse() (map[string]string, error) {
+	m := make(map[string]string)
+	fields := strings.Fields(string(s))
+	for _, f := range fields {
+		k, v, ok := strings.Cut(f, ":")
+		if !ok {
+			return nil, fmt.Errorf("Failed to parse Go struct tag: no colon in field %q", f)
+		}
+		if len(v) < 2 || v[0] != '"' || v[len(v)-1] != '"' {
+			return nil, fmt.Errorf("Failed to parse Go struct tag: missing quotes around value in field %q", f)
+		}
+		m[k] = v[1 : len(v)-1] // trim quotes off of v
+	}
+	return m, nil
 }
