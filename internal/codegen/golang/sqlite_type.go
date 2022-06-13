@@ -32,7 +32,7 @@ func sqliteType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		}
 		return "sql.NullFloat64"
 
-	case "boolean":
+	case "boolean", "bool":
 		if notNull {
 			return "bool"
 		}
