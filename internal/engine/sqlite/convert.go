@@ -166,27 +166,32 @@ func convertFuncContext(c *parser.Expr_functionContext) ast.Node {
 	if name, ok := c.Function_name().(*parser.Function_nameContext); ok {
 		funcName := strings.ToLower(name.GetText())
 
-		var args []ast.Node
+		var argNodes []ast.Node
 		for _, exp := range c.AllExpr() {
-			args = append(args, convert(exp))
+			argNodes = append(argNodes, convert(exp))
 		}
+		args := &ast.List{Items: argNodes}
 
-		fn := &ast.FuncCall{
-			Func: &ast.FuncName{
-				Name: funcName,
-			},
-			Funcname: &ast.List{
-				Items: []ast.Node{
-					NewIdentifer(funcName),
+		if funcName == "coalesce" {
+			return &ast.CoalesceExpr{
+				Args: args,
+			}
+		} else {
+			return &ast.FuncCall{
+				Func: &ast.FuncName{
+					Name: funcName,
 				},
-			},
-			AggStar:     c.STAR() != nil,
-			Args:        &ast.List{Items: args},
-			AggOrder:    &ast.List{},
-			AggDistinct: c.DISTINCT_() != nil,
+				Funcname: &ast.List{
+					Items: []ast.Node{
+						NewIdentifer(funcName),
+					},
+				},
+				AggStar:     c.STAR() != nil,
+				Args:        args,
+				AggOrder:    &ast.List{},
+				AggDistinct: c.DISTINCT_() != nil,
+			}
 		}
-
-		return fn
 	}
 
 	return &ast.TODO{}
