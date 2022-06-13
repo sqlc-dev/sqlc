@@ -100,6 +100,27 @@ func convertCreate_table_stmtContext(c *parser.Create_table_stmtContext) ast.Nod
 	return stmt
 }
 
+func convertCreate_view_stmtContext(c *parser.Create_view_stmtContext) ast.Node {
+	viewName := c.View_name().GetText()
+	relation := &ast.RangeVar{
+		Relname: &viewName,
+	}
+
+	if c.Schema_name() != nil {
+		schemaName := c.Schema_name().GetText()
+		relation.Schemaname = &schemaName
+	}
+
+	return &ast.ViewStmt{
+		View:            relation,
+		Aliases:         &ast.List{},
+		Query:           convert(c.Select_stmt()),
+		Replace:         false,
+		Options:         &ast.List{},
+		WithCheckOption: ast.ViewCheckOption(0),
+	}
+}
+
 func convertDelete_stmtContext(c *parser.Delete_stmtContext) ast.Node {
 	if qualifiedName, ok := c.Qualified_table_name().(*parser.Qualified_table_nameContext); ok {
 
@@ -137,7 +158,7 @@ func convertDelete_stmtContext(c *parser.Delete_stmtContext) ast.Node {
 }
 
 func convertDrop_stmtContext(c *parser.Drop_stmtContext) ast.Node {
-	if c.TABLE_() != nil {
+	if c.TABLE_() != nil || c.VIEW_() != nil {
 		name := ast.TableName{
 			Name: c.Any_name().GetText(),
 		}
@@ -595,6 +616,9 @@ func convert(node node) ast.Node {
 
 	case *parser.Create_table_stmtContext:
 		return convertCreate_table_stmtContext(n)
+
+	case *parser.Create_view_stmtContext:
+		return convertCreate_view_stmtContext(n)
 
 	case *parser.Drop_stmtContext:
 		return convertDrop_stmtContext(n)
