@@ -281,6 +281,7 @@ func convertMultiSelect_stmtContext(c multiselect) ast.Node {
 		FromClause:  &ast.List{Items: tables},
 		TargetList:  &ast.List{Items: cols},
 		WhereClause: where,
+		ValuesLists: &ast.List{},
 	}
 }
 
@@ -480,64 +481,61 @@ func convertParam(c *parser.Expr_bindContext) ast.Node {
 }
 
 func convertInsert_stmtContext(c *parser.Insert_stmtContext) ast.Node {
-	if c == nil {
-		return nil
-	}
-	values := c.AllExpr()
-	if len(values) == 0 {
-		// TODO: add INSERT WITH SELECT support
-		return &ast.TODO{}
-	}
 	tableName := c.Table_name().GetText()
-	// we MUST have the columns in the update,
-	// otherwise the parser does not give ANY context,
-	// on "expression groups"
-	columns := convertCols(c.AllColumn_name())
-	insertStmt := &ast.InsertStmt{
-		Relation: &ast.RangeVar{
-			Relname: &tableName,
-		},
-		Cols:          columns,
-		ReturningList: &ast.List{},
-		SelectStmt:    convertSelectStmt(values, len(c.AllColumn_name())),
+	rel := &ast.RangeVar{
+		Relname: &tableName,
 	}
-	return insertStmt
-}
-
-func convertSelectStmt(values []parser.IExprContext, columns int) ast.Node {
-	valueList := &ast.List{Items: []ast.Node{}}
-	// the sqlite parse will give us values in a single slice
-	// so INSERT INTO a (b, c) VALUES (?, ?), (?, ?);
-	// will produce a 4 element slice. sqlite forces
-	// each column to have an expression so
-	// INSERT INTO a (b, c) VALUES (?); is invalid
-	// even if c is nullable
-	if columns == 0 {
-		columns = len(values)
+	if c.Schema_name() != nil {
+		schemaName := c.Schema_name().GetText()
+		rel.Schemaname = &schemaName
 	}
-	for i := 0; i < len(values); i++ {
-		inner := &ast.List{Items: []ast.Node{}}
-		for ; i < columns; i++ {
-			inner.Items = append(inner.Items, convert(values[i]))
+	if c.Table_alias() != nil {
+		tableAlias := c.Table_alias().GetText()
+		rel.Alias = &ast.Alias{
+			Aliasname: &tableAlias,
 		}
-		valueList.Items = append(valueList.Items, inner)
 	}
-	return &ast.SelectStmt{
-		FromClause:  &ast.List{},
-		TargetList:  &ast.List{},
-		ValuesLists: valueList,
+
+	insert := &ast.InsertStmt{
+		Relation:      rel,
+		Cols:          convertColumnNames(c.AllColumn_name()),
+		ReturningList: &ast.List{},
 	}
+
+	if ss, ok := convert(c.Select_stmt()).(*ast.SelectStmt); ok {
+		ss.ValuesLists = &ast.List{}
+		insert.SelectStmt = ss
+	} else {
+		insert.SelectStmt = &ast.SelectStmt{
+			FromClause:  &ast.List{},
+			TargetList:  &ast.List{},
+			ValuesLists: convertExprLists(c.AllExpr()),
+		}
+	}
+
+	return insert
 }
 
-func convertCols(columns []parser.IColumn_nameContext) *ast.List {
-	out := &ast.List{}
-	for _, c := range columns {
-		colName := c.GetText()
-		out.Items = append(out.Items, &ast.ResTarget{
-			Name: &colName,
+func convertExprLists(lists []parser.IExprContext) *ast.List {
+	list := &ast.List{Items: []ast.Node{}}
+	n := len(lists)
+	inner := &ast.List{Items: []ast.Node{}}
+	for i := 0; i < n; i++ {
+		inner.Items = append(inner.Items, convert(lists[i]))
+	}
+	list.Items = append(list.Items, inner)
+	return list
+}
+
+func convertColumnNames(cols []parser.IColumn_nameContext) *ast.List {
+	list := &ast.List{Items: []ast.Node{}}
+	for _, c := range cols {
+		name := c.GetText()
+		list.Items = append(list.Items, &ast.ResTarget{
+			Name: &name,
 		})
 	}
-	return out
+	return list
 }
 
 func convertTablesOrSubquery(tableOrSubquery []parser.ITable_or_subqueryContext) []ast.Node {
