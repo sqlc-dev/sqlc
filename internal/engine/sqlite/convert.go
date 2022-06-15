@@ -258,10 +258,13 @@ func convertComparison(c *parser.Expr_comparisonContext) ast.Node {
 	return aExpr
 }
 
-func convertMultiSelect_stmtContext(c multiselect) ast.Node {
+func convertMultiSelect_stmtContext(c *parser.Select_stmtContext) ast.Node {
 	var tables []ast.Node
 	var cols []ast.Node
 	var where ast.Node
+	var groupBy = &ast.List{Items: []ast.Node{}}
+	var having ast.Node
+
 	for _, icore := range c.AllSelect_core() {
 		core, ok := icore.(*parser.Select_coreContext)
 		if !ok {
@@ -270,18 +273,43 @@ func convertMultiSelect_stmtContext(c multiselect) ast.Node {
 		cols = append(cols, getCols(core)...)
 		tables = append(tables, getTables(core)...)
 
+		i := 0
 		if core.WHERE_() != nil {
-			if core.Expr(0) != nil {
-				where = convert(core.Expr(0))
+			where = convert(core.Expr(i))
+			i++
+		}
+
+		if core.GROUP_() != nil {
+			n := len(core.AllExpr()) - i
+			if core.HAVING_() != nil {
+				n--
+			}
+
+			for i < n {
+				groupBy.Items = append(groupBy.Items, convert(core.Expr(i)))
+				i++
+			}
+
+			if core.HAVING_() != nil {
+				having = convert(core.Expr(i))
+				i++
 			}
 		}
 	}
 
+	window := &ast.List{Items: []ast.Node{}}
+	if c.Order_by_stmt() != nil {
+		window.Items = append(window.Items, convert(c.Order_by_stmt()))
+	}
+
 	return &ast.SelectStmt{
-		FromClause:  &ast.List{Items: tables},
-		TargetList:  &ast.List{Items: cols},
-		WhereClause: where,
-		ValuesLists: &ast.List{},
+		FromClause:   &ast.List{Items: tables},
+		TargetList:   &ast.List{Items: cols},
+		WhereClause:  where,
+		GroupClause:  groupBy,
+		HavingClause: having,
+		WindowClause: window,
+		ValuesLists:  &ast.List{},
 	}
 }
 
@@ -313,14 +341,7 @@ func getCols(core *parser.Select_coreContext) []ast.Node {
 		iexpr := col.Expr()
 		switch {
 		case col.STAR() != nil:
-			val = &ast.ColumnRef{
-				Fields: &ast.List{
-					Items: []ast.Node{
-						&ast.A_Star{},
-					},
-				},
-				Location: col.GetStart().GetStart(),
-			}
+			val = convertWildCardField(col)
 		case iexpr != nil:
 			val = convert(iexpr)
 		}
@@ -338,6 +359,39 @@ func getCols(core *parser.Select_coreContext) []ast.Node {
 		cols = append(cols, target)
 	}
 	return cols
+}
+
+func convertWildCardField(c *parser.Result_columnContext) *ast.ColumnRef {
+	items := []ast.Node{}
+	if c.Table_name() != nil {
+		items = append(items, NewIdentifer(c.Table_name().GetText()))
+	}
+	items = append(items, &ast.A_Star{})
+
+	return &ast.ColumnRef{
+		Fields: &ast.List{
+			Items: items,
+		},
+		Location: c.GetStart().GetStart(),
+	}
+}
+
+func convertOrderby_stmtContext(c parser.IOrder_by_stmtContext) ast.Node {
+	if orderBy, ok := c.(*parser.Order_by_stmtContext); ok {
+		list := &ast.List{Items: []ast.Node{}}
+		for _, o := range orderBy.AllOrdering_term() {
+			term, ok := o.(*parser.Ordering_termContext)
+			if !ok {
+				continue
+			}
+			list.Items = append(list.Items, &ast.CaseExpr{
+				Xpr:      convert(term.Expr()),
+				Location: term.Expr().GetStart().GetStart(),
+			})
+		}
+		return list
+	}
+	return &ast.TODO{}
 }
 
 func convertSql_stmtContext(n *parser.Sql_stmtContext) ast.Node {
@@ -654,6 +708,9 @@ func convert(node node) ast.Node {
 
 	case *parser.Insert_stmtContext:
 		return convertInsert_stmtContext(n)
+
+	case *parser.Order_by_stmtContext:
+		return convertOrderby_stmtContext(n)
 
 	case *parser.Select_stmtContext:
 		return convertMultiSelect_stmtContext(n)
