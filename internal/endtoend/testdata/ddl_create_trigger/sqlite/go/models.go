@@ -13,3 +13,8 @@ type Customer struct {
 	CustName sql.NullString
 	CustAddr sql.NullString
 }
+
+type CustomerAddress struct {
+	CustID   int64
+	CustAddr sql.NullString
+}
