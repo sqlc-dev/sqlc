@@ -67,7 +67,8 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 		loc := 0
 
 		for _, stmt := range list.AllSql_stmt() {
-			out := convert(stmt)
+			converter := &cc{}
+			out := converter.convert(stmt)
 			if _, ok := out.(*ast.TODO); ok {
 				continue
 			}
