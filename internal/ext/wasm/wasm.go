@@ -8,7 +8,9 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path/filepath"
 	"runtime/trace"
@@ -18,7 +20,11 @@ import (
 	"github.com/kyleconroy/sqlc/internal/plugin"
 )
 
-func Generate(req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
+type Runner struct {
+	URL string
+}
+
+func (r *Runner) Generate(req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
 	ctx := context.Background() // XXX
 
 	engine := wasmtime.NewEngine()
@@ -81,13 +87,21 @@ func Generate(req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
 	// Compiling modules requires WebAssembly binary input, but the wasmtime
 	// package also supports converting the WebAssembly text format to the
 	// binary format.
-	wasm, err := os.ReadFile("foo.wasm") // req.Settings.Wasm.Path)
+	//
+	hresp, err := http.Get(r.URL)
 	if err != nil {
-		return nil, fmt.Errorf("read file: %w", err)
+		return nil, fmt.Errorf("http get: %w", err)
+	}
+
+	defer hresp.Body.Close()
+
+	wmod, err := io.ReadAll(hresp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("readall: %w", err)
 	}
 
 	moduRegion := trace.StartRegion(ctx, "wasmtime.NewModule")
-	module, err := wasmtime.NewModule(store.Engine, wasm)
+	module, err := wasmtime.NewModule(store.Engine, wmod)
 	moduRegion.End()
 	if err != nil {
 		return nil, fmt.Errorf("define wasi: %w", err)

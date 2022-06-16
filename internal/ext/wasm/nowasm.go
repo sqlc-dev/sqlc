@@ -8,6 +8,9 @@ import (
 	"github.com/kyleconroy/sqlc/internal/plugin"
 )
 
-func Generate(req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
+type Runner struct {
+}
+
+func (r *Runner) Generate(req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
 	return nil, fmt.Errorf("sqlc built without wasmtime support")
 }

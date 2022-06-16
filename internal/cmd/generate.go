@@ -20,6 +20,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/debug"
 	"github.com/kyleconroy/sqlc/internal/ext"
 	"github.com/kyleconroy/sqlc/internal/ext/process"
+	"github.com/kyleconroy/sqlc/internal/ext/wasm"
 	"github.com/kyleconroy/sqlc/internal/multierr"
 	"github.com/kyleconroy/sqlc/internal/opts"
 )
@@ -49,6 +50,15 @@ type outPair struct {
 	Plugin *config.Codegen
 
 	config.SQL
+}
+
+func findPlugin(conf config.Config, name string) (*config.Plugin, error) {
+	for _, plug := range conf.Plugins {
+		if plug.Name == name {
+			return &plug, nil
+		}
+	}
+	return nil, fmt.Errorf("plugin not found")
 }
 
 func readConfig(stderr io.Writer, dir, filename string) (string, *config.Config, error) {
@@ -241,12 +251,28 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 
 		case sql.Plugin != nil:
 			out = sql.Plugin.Out
-			handler = &process.Runner{
-				Config: combo.Global,
-				Plugin: sql.Plugin.Plugin,
+			plug, err := findPlugin(combo.Global, sql.Plugin.Plugin)
+			if err != nil {
+				// TODO: Return a real error
+				panic("plugin not found")
+			}
+
+			switch {
+			case plug.Process != nil:
+				handler = &process.Runner{
+					Cmd: plug.Process.Cmd,
+				}
+			case plug.WASM != nil:
+				handler = &wasm.Runner{
+					URL: plug.WASM.URL,
+				}
+			default:
+				// TODO: Return a real error
+				panic("unsupported plugin type")
 			}
 
 		default:
+			// TODO: Return a real error
 			panic("missing language backend")
 		}
 		resp, err := handler.Generate(codeGenRequest(result, combo))
