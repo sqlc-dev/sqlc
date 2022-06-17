@@ -2,9 +2,8 @@
   "version": "1",
   "packages": [
     {
+      "engine": "_lemon",
       "path": "go",
-      "engine": "postgresql",
-      "sql_package": "pgx/v4",
       "name": "querytest",
       "schema": "query.sql",
       "queries": "query.sql"

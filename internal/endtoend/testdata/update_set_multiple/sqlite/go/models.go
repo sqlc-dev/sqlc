@@ -7,5 +7,6 @@ package querytest
 import ()
 
 type Foo struct {
-	Bar bool
+	Name string
+	Slug string
 }

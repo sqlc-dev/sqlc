@@ -4,8 +4,10 @@
 
 package querytest
 
-import ()
+import (
+	"database/sql"
+)
 
 type Foo struct {
-	Bar bool
+	A sql.NullString
 }
