@@ -235,10 +235,21 @@ func convertSimpleSelect_stmtContext(c *parser.Simple_select_stmtContext) ast.No
 		cols := getCols(core)
 		tables := getTables(core)
 
-		return &ast.SelectStmt{
+		sel := &ast.SelectStmt{
 			FromClause: &ast.List{Items: tables},
 			TargetList: &ast.List{Items: cols},
 		}
+
+		if core.WHERE_() != nil {
+			where := &ast.List{}
+			for _, expr := range core.AllExpr() {
+				where.Items = append(where.Items, convert(expr))
+			}
+
+			sel.WhereClause = where
+		}
+
+		return sel
 	}
 
 	return &ast.TODO{}
@@ -247,6 +258,7 @@ func convertSimpleSelect_stmtContext(c *parser.Simple_select_stmtContext) ast.No
 func convertMultiSelect_stmtContext(c multiselect) ast.Node {
 	var tables []ast.Node
 	var cols []ast.Node
+	var wheres []ast.Node
 	for _, icore := range c.AllSelect_core() {
 		core, ok := icore.(*parser.Select_coreContext)
 		if !ok {
@@ -254,10 +266,15 @@ func convertMultiSelect_stmtContext(c multiselect) ast.Node {
 		}
 		cols = append(cols, getCols(core)...)
 		tables = append(tables, getTables(core)...)
+
+		for _, expr := range core.AllExpr() {
+			wheres = append(wheres, convert(expr))
+		}
 	}
 	return &ast.SelectStmt{
-		FromClause: &ast.List{Items: tables},
-		TargetList: &ast.List{Items: cols},
+		FromClause:  &ast.List{Items: tables},
+		TargetList:  &ast.List{Items: cols},
+		WhereClause: &ast.List{Items: wheres},
 	}
 }
 
