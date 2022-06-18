@@ -560,6 +560,10 @@ func (c *cc) convertParam(n *parser.Expr_bindContext) ast.Node {
 	return todo(n)
 }
 
+func (c *cc) convertInSelectNode(n *parser.Expr_in_selectContext) ast.Node {
+	return c.convert(n.Select_stmt())
+}
+
 func (c *cc) convertInsert_stmtContext(n *parser.Insert_stmtContext) ast.Node {
 	tableName := n.Table_name().GetText()
 	rel := &ast.RangeVar{
@@ -727,6 +731,9 @@ func (c *cc) convert(node node) ast.Node {
 
 	case *parser.Expr_math_opContext:
 		return c.convertMathOperationNode(n)
+
+	case *parser.Expr_in_selectContext:
+		return c.convertInSelectNode(n)
 
 	case *parser.Factored_select_stmtContext:
 		// TODO: need to handle this
