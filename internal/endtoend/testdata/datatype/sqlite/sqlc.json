@@ -1,0 +1,12 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "path": "go",
+      "engine": "_lemon",
+      "name": "datatype",
+      "schema": "sql/",
+      "queries": "sql/"
+    }
+  ]
+}

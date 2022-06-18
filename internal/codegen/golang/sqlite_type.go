@@ -14,7 +14,7 @@ func sqliteType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 
 	switch dt {
 
-	case "int", "integer", "tinyint", "smallint", "mediumint", "bigint", "unsignedbigint", "int2", "int8", "numeric", "decimal":
+	case "int", "integer", "tinyint", "smallint", "mediumint", "bigint", "unsignedbigint", "int2", "int8":
 		if notNull {
 			return "int64"
 		}
@@ -32,7 +32,7 @@ func sqliteType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		}
 		return "sql.NullFloat64"
 
-	case "boolean":
+	case "boolean", "bool":
 		if notNull {
 			return "bool"
 		}
@@ -63,6 +63,12 @@ func sqliteType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 			return "string"
 		}
 		return "sql.NullString"
+
+	case strings.HasPrefix(dt, "decimal"), dt == "numeric":
+		if notNull {
+			return "float64"
+		}
+		return "sql.NullFloat64"
 
 	default:
 		log.Printf("unknown SQLite type: %s\n", dt)
