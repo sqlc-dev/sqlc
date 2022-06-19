@@ -18,21 +18,22 @@ FROM foo
 `
 
 func (q *Queries) CaseStatementBoolean(ctx context.Context, id string) ([]bool, error) {
+	ctx, done := q.observer(ctx, "CaseStatementBoolean")
 	rows, err := q.db.Query(ctx, caseStatementBoolean, id)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []bool
 	for rows.Next() {
 		var is_one bool
 		if err := rows.Scan(&is_one); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, is_one)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

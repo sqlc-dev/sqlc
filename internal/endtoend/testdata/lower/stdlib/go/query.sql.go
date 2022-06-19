@@ -19,24 +19,25 @@ type LowerParams struct {
 }
 
 func (q *Queries) Lower(ctx context.Context, arg LowerParams) ([]string, error) {
+	ctx, done := q.observer(ctx, "Lower")
 	rows, err := q.db.QueryContext(ctx, lower, arg.Bar, arg.Bat)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []string
 	for rows.Next() {
 		var bar string
 		if err := rows.Scan(&bar); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, bar)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

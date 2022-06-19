@@ -25,8 +25,9 @@ type UpdateJoinParams struct {
 }
 
 func (q *Queries) UpdateJoin(ctx context.Context, arg UpdateJoinParams) error {
+	ctx, done := q.observer(ctx, "UpdateJoin")
 	_, err := q.db.ExecContext(ctx, updateJoin, arg.IsActive, arg.ID, arg.UserID)
-	return err
+	return done(err)
 }
 
 const updateLeftJoin = `-- name: UpdateLeftJoin :exec
@@ -45,8 +46,9 @@ type UpdateLeftJoinParams struct {
 }
 
 func (q *Queries) UpdateLeftJoin(ctx context.Context, arg UpdateLeftJoinParams) error {
+	ctx, done := q.observer(ctx, "UpdateLeftJoin")
 	_, err := q.db.ExecContext(ctx, updateLeftJoin, arg.IsActive, arg.ID, arg.UserID)
-	return err
+	return done(err)
 }
 
 const updateRightJoin = `-- name: UpdateRightJoin :exec
@@ -65,6 +67,7 @@ type UpdateRightJoinParams struct {
 }
 
 func (q *Queries) UpdateRightJoin(ctx context.Context, arg UpdateRightJoinParams) error {
+	ctx, done := q.observer(ctx, "UpdateRightJoin")
 	_, err := q.db.ExecContext(ctx, updateRightJoin, arg.IsActive, arg.ID, arg.UserID)
-	return err
+	return done(err)
 }

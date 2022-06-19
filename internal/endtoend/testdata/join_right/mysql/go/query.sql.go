@@ -24,24 +24,25 @@ type RightJoinRow struct {
 }
 
 func (q *Queries) RightJoin(ctx context.Context, id int64) ([]RightJoinRow, error) {
+	ctx, done := q.observer(ctx, "RightJoin")
 	rows, err := q.db.QueryContext(ctx, rightJoin, id)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []RightJoinRow
 	for rows.Next() {
 		var i RightJoinRow
 		if err := rows.Scan(&i.ID, &i.BarID, &i.ID_2); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

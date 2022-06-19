@@ -16,10 +16,11 @@ where txt ~~ '%' || $1 || '%'
 `
 
 func (q *Queries) Test(ctx context.Context, val string) (string, error) {
+	ctx, done := q.observer(ctx, "Test")
 	row := q.db.QueryRow(ctx, test, val)
 	var txt string
 	err := row.Scan(&txt)
-	return txt, err
+	return txt, done(err)
 }
 
 const test2 = `-- name: Test2 :one
@@ -28,10 +29,11 @@ where txt like '%' || $1 || '%'
 `
 
 func (q *Queries) Test2(ctx context.Context, val sql.NullString) (string, error) {
+	ctx, done := q.observer(ctx, "Test2")
 	row := q.db.QueryRow(ctx, test2, val)
 	var txt string
 	err := row.Scan(&txt)
-	return txt, err
+	return txt, done(err)
 }
 
 const test3 = `-- name: Test3 :one
@@ -40,8 +42,9 @@ where txt like concat('%', $1, '%')
 `
 
 func (q *Queries) Test3(ctx context.Context, val interface{}) (string, error) {
+	ctx, done := q.observer(ctx, "Test3")
 	row := q.db.QueryRow(ctx, test3, val)
 	var txt string
 	err := row.Scan(&txt)
-	return txt, err
+	return txt, done(err)
 }

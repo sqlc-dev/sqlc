@@ -23,26 +23,27 @@ type ListAuthorsRow struct {
 }
 
 func (q *Queries) ListAuthors(ctx context.Context) ([]ListAuthorsRow, error) {
+	ctx, done := q.observer(ctx, "ListAuthors")
 	rows, err := q.db.QueryContext(ctx, listAuthors)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []ListAuthorsRow
 	for rows.Next() {
 		var i ListAuthorsRow
 		if err := rows.Scan(&i.ID, &i.FullName, &i.Bio); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const listAuthorsIdenticalAlias = `-- name: ListAuthorsIdenticalAlias :many
@@ -52,26 +53,27 @@ GROUP BY name
 `
 
 func (q *Queries) ListAuthorsIdenticalAlias(ctx context.Context) ([]Author, error) {
+	ctx, done := q.observer(ctx, "ListAuthorsIdenticalAlias")
 	rows, err := q.db.QueryContext(ctx, listAuthorsIdenticalAlias)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []Author
 	for rows.Next() {
 		var i Author
 		if err := rows.Scan(&i.ID, &i.Name, &i.Bio); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const listMetrics = `-- name: ListMetrics :many
@@ -89,24 +91,25 @@ type ListMetricsRow struct {
 }
 
 func (q *Queries) ListMetrics(ctx context.Context) ([]ListMetricsRow, error) {
+	ctx, done := q.observer(ctx, "ListMetrics")
 	rows, err := q.db.QueryContext(ctx, listMetrics)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []ListMetricsRow
 	for rows.Next() {
 		var i ListMetricsRow
 		if err := rows.Scan(&i.Bucket, &i.CityName, &i.Avg); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

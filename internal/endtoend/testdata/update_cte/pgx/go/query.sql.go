@@ -53,6 +53,7 @@ type UpdateCodeRow struct {
 
 // FILE: query.sql
 func (q *Queries) UpdateCode(ctx context.Context, arg UpdateCodeParams) (UpdateCodeRow, error) {
+	ctx, done := q.observer(ctx, "UpdateCode")
 	row := q.db.QueryRow(ctx, updateCode,
 		arg.CreatedBy,
 		arg.Code,
@@ -70,5 +71,5 @@ func (q *Queries) UpdateCode(ctx context.Context, arg UpdateCodeParams) (UpdateC
 		&i.TestID,
 		&i.CodeHash,
 	)
-	return i, err
+	return i, done(err)
 }

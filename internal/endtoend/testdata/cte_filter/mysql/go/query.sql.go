@@ -18,24 +18,25 @@ FROM filter_count
 `
 
 func (q *Queries) CTEFilter(ctx context.Context, ready bool) ([]int64, error) {
+	ctx, done := q.observer(ctx, "CTEFilter")
 	rows, err := q.db.QueryContext(ctx, cTEFilter, ready)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []int64
 	for rows.Next() {
 		var count int64
 		if err := rows.Scan(&count); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, count)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

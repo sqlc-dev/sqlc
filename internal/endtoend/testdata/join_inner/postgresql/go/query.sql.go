@@ -19,26 +19,27 @@ where handled_events.handler = $1
 `
 
 func (q *Queries) SelectAllJoined(ctx context.Context, handler sql.NullString) ([]sql.NullInt32, error) {
+	ctx, done := q.observer(ctx, "SelectAllJoined")
 	rows, err := q.db.QueryContext(ctx, selectAllJoined, handler)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []sql.NullInt32
 	for rows.Next() {
 		var id sql.NullInt32
 		if err := rows.Scan(&id); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, id)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const selectAllJoinedAlias = `-- name: SelectAllJoinedAlias :many
@@ -50,24 +51,25 @@ where he.handler = $1
 `
 
 func (q *Queries) SelectAllJoinedAlias(ctx context.Context, handler sql.NullString) ([]sql.NullInt32, error) {
+	ctx, done := q.observer(ctx, "SelectAllJoinedAlias")
 	rows, err := q.db.QueryContext(ctx, selectAllJoinedAlias, handler)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []sql.NullInt32
 	for rows.Next() {
 		var id sql.NullInt32
 		if err := rows.Scan(&id); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, id)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

@@ -34,9 +34,10 @@ type BooksByTagsRow struct {
 }
 
 func (q *Queries) BooksByTags(ctx context.Context, dollar_1 []string) ([]BooksByTagsRow, error) {
+	ctx, done := q.observer(ctx, "BooksByTags")
 	rows, err := q.db.QueryContext(ctx, booksByTags, pq.Array(dollar_1))
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []BooksByTagsRow
@@ -49,17 +50,17 @@ func (q *Queries) BooksByTags(ctx context.Context, dollar_1 []string) ([]BooksBy
 			&i.Isbn,
 			pq.Array(&i.Tags),
 		); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const booksByTitleYear = `-- name: BooksByTitleYear :many
@@ -73,9 +74,10 @@ type BooksByTitleYearParams struct {
 }
 
 func (q *Queries) BooksByTitleYear(ctx context.Context, arg BooksByTitleYearParams) ([]Book, error) {
+	ctx, done := q.observer(ctx, "BooksByTitleYear")
 	rows, err := q.db.QueryContext(ctx, booksByTitleYear, arg.Title, arg.Year)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []Book
@@ -91,17 +93,17 @@ func (q *Queries) BooksByTitleYear(ctx context.Context, arg BooksByTitleYearPara
 			&i.Available,
 			pq.Array(&i.Tags),
 		); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const createAuthor = `-- name: CreateAuthor :one
@@ -110,10 +112,11 @@ RETURNING author_id, name
 `
 
 func (q *Queries) CreateAuthor(ctx context.Context, name string) (Author, error) {
+	ctx, done := q.observer(ctx, "CreateAuthor")
 	row := q.db.QueryRowContext(ctx, createAuthor, name)
 	var i Author
 	err := row.Scan(&i.AuthorID, &i.Name)
-	return i, err
+	return i, done(err)
 }
 
 const createBook = `-- name: CreateBook :one
@@ -148,6 +151,7 @@ type CreateBookParams struct {
 }
 
 func (q *Queries) CreateBook(ctx context.Context, arg CreateBookParams) (Book, error) {
+	ctx, done := q.observer(ctx, "CreateBook")
 	row := q.db.QueryRowContext(ctx, createBook,
 		arg.AuthorID,
 		arg.Isbn,
@@ -168,7 +172,7 @@ func (q *Queries) CreateBook(ctx context.Context, arg CreateBookParams) (Book, e
 		&i.Available,
 		pq.Array(&i.Tags),
 	)
-	return i, err
+	return i, done(err)
 }
 
 const deleteBook = `-- name: DeleteBook :exec
@@ -177,8 +181,9 @@ WHERE book_id = $1
 `
 
 func (q *Queries) DeleteBook(ctx context.Context, bookID int32) error {
+	ctx, done := q.observer(ctx, "DeleteBook")
 	_, err := q.db.ExecContext(ctx, deleteBook, bookID)
-	return err
+	return done(err)
 }
 
 const getAuthor = `-- name: GetAuthor :one
@@ -187,10 +192,11 @@ WHERE author_id = $1
 `
 
 func (q *Queries) GetAuthor(ctx context.Context, authorID int32) (Author, error) {
+	ctx, done := q.observer(ctx, "GetAuthor")
 	row := q.db.QueryRowContext(ctx, getAuthor, authorID)
 	var i Author
 	err := row.Scan(&i.AuthorID, &i.Name)
-	return i, err
+	return i, done(err)
 }
 
 const getBook = `-- name: GetBook :one
@@ -199,6 +205,7 @@ WHERE book_id = $1
 `
 
 func (q *Queries) GetBook(ctx context.Context, bookID int32) (Book, error) {
+	ctx, done := q.observer(ctx, "GetBook")
 	row := q.db.QueryRowContext(ctx, getBook, bookID)
 	var i Book
 	err := row.Scan(
@@ -211,7 +218,7 @@ func (q *Queries) GetBook(ctx context.Context, bookID int32) (Book, error) {
 		&i.Available,
 		pq.Array(&i.Tags),
 	)
-	return i, err
+	return i, done(err)
 }
 
 const updateBook = `-- name: UpdateBook :exec
@@ -227,8 +234,9 @@ type UpdateBookParams struct {
 }
 
 func (q *Queries) UpdateBook(ctx context.Context, arg UpdateBookParams) error {
+	ctx, done := q.observer(ctx, "UpdateBook")
 	_, err := q.db.ExecContext(ctx, updateBook, arg.Title, pq.Array(arg.Tags), arg.BookID)
-	return err
+	return done(err)
 }
 
 const updateBookISBN = `-- name: UpdateBookISBN :exec
@@ -245,11 +253,12 @@ type UpdateBookISBNParams struct {
 }
 
 func (q *Queries) UpdateBookISBN(ctx context.Context, arg UpdateBookISBNParams) error {
+	ctx, done := q.observer(ctx, "UpdateBookISBN")
 	_, err := q.db.ExecContext(ctx, updateBookISBN,
 		arg.Title,
 		pq.Array(arg.Tags),
 		arg.BookID,
 		arg.Isbn,
 	)
-	return err
+	return done(err)
 }

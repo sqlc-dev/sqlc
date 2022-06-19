@@ -19,26 +19,27 @@ type AtParamsParams struct {
 }
 
 func (q *Queries) AtParams(ctx context.Context, arg AtParamsParams) ([]string, error) {
+	ctx, done := q.observer(ctx, "AtParams")
 	rows, err := q.db.QueryContext(ctx, atParams, arg.Slug, arg.Filter)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []string
 	for rows.Next() {
 		var name string
 		if err := rows.Scan(&name); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, name)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const funcParams = `-- name: FuncParams :many
@@ -51,26 +52,27 @@ type FuncParamsParams struct {
 }
 
 func (q *Queries) FuncParams(ctx context.Context, arg FuncParamsParams) ([]string, error) {
+	ctx, done := q.observer(ctx, "FuncParams")
 	rows, err := q.db.QueryContext(ctx, funcParams, arg.Slug, arg.Filter)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []string
 	for rows.Next() {
 		var name string
 		if err := rows.Scan(&name); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, name)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const insertAtParams = `-- name: InsertAtParams :one
@@ -83,10 +85,11 @@ type InsertAtParamsParams struct {
 }
 
 func (q *Queries) InsertAtParams(ctx context.Context, arg InsertAtParamsParams) (string, error) {
+	ctx, done := q.observer(ctx, "InsertAtParams")
 	row := q.db.QueryRowContext(ctx, insertAtParams, arg.Name, arg.Bio)
 	var name string
 	err := row.Scan(&name)
-	return name, err
+	return name, done(err)
 }
 
 const insertFuncParams = `-- name: InsertFuncParams :one
@@ -99,10 +102,11 @@ type InsertFuncParamsParams struct {
 }
 
 func (q *Queries) InsertFuncParams(ctx context.Context, arg InsertFuncParamsParams) (string, error) {
+	ctx, done := q.observer(ctx, "InsertFuncParams")
 	row := q.db.QueryRowContext(ctx, insertFuncParams, arg.Name, arg.Bio)
 	var name string
 	err := row.Scan(&name)
-	return name, err
+	return name, done(err)
 }
 
 const update = `-- name: Update :one
@@ -121,8 +125,9 @@ type UpdateParams struct {
 }
 
 func (q *Queries) Update(ctx context.Context, arg UpdateParams) (Foo, error) {
+	ctx, done := q.observer(ctx, "Update")
 	row := q.db.QueryRowContext(ctx, update, arg.SetName, arg.Name)
 	var i Foo
 	err := row.Scan(&i.Name, &i.Bio)
-	return i, err
+	return i, done(err)
 }

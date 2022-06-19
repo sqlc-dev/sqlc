@@ -15,24 +15,25 @@ SELECT name FROM pet WHERE name LIKE $1
 `
 
 func (q *Queries) PetsByName(ctx context.Context, name sql.NullString) ([]sql.NullString, error) {
+	ctx, done := q.observer(ctx, "PetsByName")
 	rows, err := q.db.QueryContext(ctx, petsByName, name)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []sql.NullString
 	for rows.Next() {
 		var name sql.NullString
 		if err := rows.Scan(&name); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, name)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

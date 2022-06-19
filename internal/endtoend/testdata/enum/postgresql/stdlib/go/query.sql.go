@@ -21,8 +21,9 @@ type DeleteBySizeParams struct {
 }
 
 func (q *Queries) DeleteBySize(ctx context.Context, db DBTX, arg DeleteBySizeParams) error {
+	ctx, done := q.observer(ctx, "DeleteBySize")
 	_, err := db.ExecContext(ctx, deleteBySize, arg.ShoeSize, arg.ShirtSize)
-	return err
+	return done(err)
 }
 
 const getAll = `-- name: GetAll :many
@@ -30,9 +31,10 @@ SELECT id, first_name, last_name, age, shoe_size, shirt_size FROM users
 `
 
 func (q *Queries) GetAll(ctx context.Context, db DBTX) ([]User, error) {
+	ctx, done := q.observer(ctx, "GetAll")
 	rows, err := db.QueryContext(ctx, getAll)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []User
@@ -46,17 +48,17 @@ func (q *Queries) GetAll(ctx context.Context, db DBTX) ([]User, error) {
 			&i.ShoeSize,
 			&i.ShirtSize,
 		); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const newUser = `-- name: NewUser :exec
@@ -81,6 +83,7 @@ type NewUserParams struct {
 }
 
 func (q *Queries) NewUser(ctx context.Context, db DBTX, arg NewUserParams) error {
+	ctx, done := q.observer(ctx, "NewUser")
 	_, err := db.ExecContext(ctx, newUser,
 		arg.ID,
 		arg.FirstName,
@@ -89,7 +92,7 @@ func (q *Queries) NewUser(ctx context.Context, db DBTX, arg NewUserParams) error
 		arg.ShoeSize,
 		arg.ShirtSize,
 	)
-	return err
+	return done(err)
 }
 
 const updateSizes = `-- name: UpdateSizes :exec
@@ -105,6 +108,7 @@ type UpdateSizesParams struct {
 }
 
 func (q *Queries) UpdateSizes(ctx context.Context, db DBTX, arg UpdateSizesParams) error {
+	ctx, done := q.observer(ctx, "UpdateSizes")
 	_, err := db.ExecContext(ctx, updateSizes, arg.ID, arg.ShoeSize, arg.ShirtSize)
-	return err
+	return done(err)
 }

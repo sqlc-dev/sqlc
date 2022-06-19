@@ -19,8 +19,9 @@ type CallInsertDataParams struct {
 }
 
 func (q *Queries) CallInsertData(ctx context.Context, arg CallInsertDataParams) error {
+	ctx, done := q.observer(ctx, "CallInsertData")
 	_, err := q.db.ExecContext(ctx, callInsertData, arg.A, arg.B)
-	return err
+	return done(err)
 }
 
 const callInsertDataNamed = `-- name: CallInsertDataNamed :exec
@@ -33,8 +34,9 @@ type CallInsertDataNamedParams struct {
 }
 
 func (q *Queries) CallInsertDataNamed(ctx context.Context, arg CallInsertDataNamedParams) error {
+	ctx, done := q.observer(ctx, "CallInsertDataNamed")
 	_, err := q.db.ExecContext(ctx, callInsertDataNamed, arg.B, arg.A)
-	return err
+	return done(err)
 }
 
 const callInsertDataNoArgs = `-- name: CallInsertDataNoArgs :exec
@@ -42,8 +44,9 @@ CALL insert_data(1, 2)
 `
 
 func (q *Queries) CallInsertDataNoArgs(ctx context.Context) error {
+	ctx, done := q.observer(ctx, "CallInsertDataNoArgs")
 	_, err := q.db.ExecContext(ctx, callInsertDataNoArgs)
-	return err
+	return done(err)
 }
 
 const callInsertDataSqlcArgs = `-- name: CallInsertDataSqlcArgs :exec
@@ -56,6 +59,7 @@ type CallInsertDataSqlcArgsParams struct {
 }
 
 func (q *Queries) CallInsertDataSqlcArgs(ctx context.Context, arg CallInsertDataSqlcArgsParams) error {
+	ctx, done := q.observer(ctx, "CallInsertDataSqlcArgs")
 	_, err := q.db.ExecContext(ctx, callInsertDataSqlcArgs, arg.Foo, arg.Bar)
-	return err
+	return done(err)
 }

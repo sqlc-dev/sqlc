@@ -22,26 +22,27 @@ type GroupConcatRow struct {
 }
 
 func (q *Queries) GroupConcat(ctx context.Context) ([]GroupConcatRow, error) {
+	ctx, done := q.observer(ctx, "GroupConcat")
 	rows, err := q.db.QueryContext(ctx, groupConcat)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []GroupConcatRow
 	for rows.Next() {
 		var i GroupConcatRow
 		if err := rows.Scan(&i.StudentName, &i.GroupConcat); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const groupConcatOrderBy = `-- name: GroupConcatOrderBy :many
@@ -57,24 +58,25 @@ type GroupConcatOrderByRow struct {
 }
 
 func (q *Queries) GroupConcatOrderBy(ctx context.Context) ([]GroupConcatOrderByRow, error) {
+	ctx, done := q.observer(ctx, "GroupConcatOrderBy")
 	rows, err := q.db.QueryContext(ctx, groupConcatOrderBy)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []GroupConcatOrderByRow
 	for rows.Next() {
 		var i GroupConcatOrderByRow
 		if err := rows.Scan(&i.StudentName, &i.GroupConcat); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

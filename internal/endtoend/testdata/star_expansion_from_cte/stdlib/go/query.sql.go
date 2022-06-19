@@ -20,24 +20,25 @@ type StarExpansionCTERow struct {
 }
 
 func (q *Queries) StarExpansionCTE(ctx context.Context) ([]StarExpansionCTERow, error) {
+	ctx, done := q.observer(ctx, "StarExpansionCTE")
 	rows, err := q.db.QueryContext(ctx, starExpansionCTE)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []StarExpansionCTERow
 	for rows.Next() {
 		var i StarExpansionCTERow
 		if err := rows.Scan(&i.A, &i.B); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

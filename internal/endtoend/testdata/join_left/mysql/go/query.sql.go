@@ -28,9 +28,10 @@ type AllAuthorsRow struct {
 }
 
 func (q *Queries) AllAuthors(ctx context.Context) ([]AllAuthorsRow, error) {
+	ctx, done := q.observer(ctx, "AllAuthors")
 	rows, err := q.db.QueryContext(ctx, allAuthors)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []AllAuthorsRow
@@ -44,17 +45,17 @@ func (q *Queries) AllAuthors(ctx context.Context) ([]AllAuthorsRow, error) {
 			&i.Name_2,
 			&i.ParentID_2,
 		); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const allAuthorsAliases = `-- name: AllAuthorsAliases :many
@@ -74,9 +75,10 @@ type AllAuthorsAliasesRow struct {
 }
 
 func (q *Queries) AllAuthorsAliases(ctx context.Context) ([]AllAuthorsAliasesRow, error) {
+	ctx, done := q.observer(ctx, "AllAuthorsAliases")
 	rows, err := q.db.QueryContext(ctx, allAuthorsAliases)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []AllAuthorsAliasesRow
@@ -90,17 +92,17 @@ func (q *Queries) AllAuthorsAliases(ctx context.Context) ([]AllAuthorsAliasesRow
 			&i.Name_2,
 			&i.ParentID_2,
 		); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const allAuthorsAliases2 = `-- name: AllAuthorsAliases2 :many
@@ -120,9 +122,10 @@ type AllAuthorsAliases2Row struct {
 }
 
 func (q *Queries) AllAuthorsAliases2(ctx context.Context) ([]AllAuthorsAliases2Row, error) {
+	ctx, done := q.observer(ctx, "AllAuthorsAliases2")
 	rows, err := q.db.QueryContext(ctx, allAuthorsAliases2)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []AllAuthorsAliases2Row
@@ -136,17 +139,17 @@ func (q *Queries) AllAuthorsAliases2(ctx context.Context) ([]AllAuthorsAliases2R
 			&i.Name_2,
 			&i.ParentID_2,
 		); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const allSuperAuthors = `-- name: AllSuperAuthors :many
@@ -166,9 +169,10 @@ type AllSuperAuthorsRow struct {
 }
 
 func (q *Queries) AllSuperAuthors(ctx context.Context) ([]AllSuperAuthorsRow, error) {
+	ctx, done := q.observer(ctx, "AllSuperAuthors")
 	rows, err := q.db.QueryContext(ctx, allSuperAuthors)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []AllSuperAuthorsRow
@@ -182,17 +186,17 @@ func (q *Queries) AllSuperAuthors(ctx context.Context) ([]AllSuperAuthorsRow, er
 			&i.SuperName,
 			&i.SuperParentID,
 		); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const allSuperAuthorsAliases = `-- name: AllSuperAuthorsAliases :many
@@ -212,9 +216,10 @@ type AllSuperAuthorsAliasesRow struct {
 }
 
 func (q *Queries) AllSuperAuthorsAliases(ctx context.Context) ([]AllSuperAuthorsAliasesRow, error) {
+	ctx, done := q.observer(ctx, "AllSuperAuthorsAliases")
 	rows, err := q.db.QueryContext(ctx, allSuperAuthorsAliases)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []AllSuperAuthorsAliasesRow
@@ -228,17 +233,17 @@ func (q *Queries) AllSuperAuthorsAliases(ctx context.Context) ([]AllSuperAuthors
 			&i.SuperName,
 			&i.SuperParentID,
 		); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const allSuperAuthorsAliases2 = `-- name: AllSuperAuthorsAliases2 :many
@@ -258,9 +263,10 @@ type AllSuperAuthorsAliases2Row struct {
 }
 
 func (q *Queries) AllSuperAuthorsAliases2(ctx context.Context) ([]AllSuperAuthorsAliases2Row, error) {
+	ctx, done := q.observer(ctx, "AllSuperAuthorsAliases2")
 	rows, err := q.db.QueryContext(ctx, allSuperAuthorsAliases2)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []AllSuperAuthorsAliases2Row
@@ -274,17 +280,17 @@ func (q *Queries) AllSuperAuthorsAliases2(ctx context.Context) ([]AllSuperAuthor
 			&i.SuperName,
 			&i.SuperParentID,
 		); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const getMayors = `-- name: GetMayors :many
@@ -302,26 +308,27 @@ type GetMayorsRow struct {
 }
 
 func (q *Queries) GetMayors(ctx context.Context) ([]GetMayorsRow, error) {
+	ctx, done := q.observer(ctx, "GetMayors")
 	rows, err := q.db.QueryContext(ctx, getMayors)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []GetMayorsRow
 	for rows.Next() {
 		var i GetMayorsRow
 		if err := rows.Scan(&i.UserID, &i.FullName); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const getMayorsOptional = `-- name: GetMayorsOptional :many
@@ -341,26 +348,27 @@ type GetMayorsOptionalRow struct {
 }
 
 func (q *Queries) GetMayorsOptional(ctx context.Context) ([]GetMayorsOptionalRow, error) {
+	ctx, done := q.observer(ctx, "GetMayorsOptional")
 	rows, err := q.db.QueryContext(ctx, getMayorsOptional)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []GetMayorsOptionalRow
 	for rows.Next() {
 		var i GetMayorsOptionalRow
 		if err := rows.Scan(&i.UserID, &i.CityID, &i.FullName); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const getSuggestedUsersByID = `-- name: GetSuggestedUsersByID :many
@@ -392,9 +400,10 @@ type GetSuggestedUsersByIDRow struct {
 }
 
 func (q *Queries) GetSuggestedUsersByID(ctx context.Context) ([]GetSuggestedUsersByIDRow, error) {
+	ctx, done := q.observer(ctx, "GetSuggestedUsersByID")
 	rows, err := q.db.QueryContext(ctx, getSuggestedUsersByID)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []GetSuggestedUsersByIDRow
@@ -419,15 +428,15 @@ func (q *Queries) GetSuggestedUsersByID(ctx context.Context) ([]GetSuggestedUser
 			&i.MediaWidth,
 			&i.MediaHeight,
 		); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

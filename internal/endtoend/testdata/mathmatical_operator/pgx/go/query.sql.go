@@ -19,21 +19,22 @@ type MathRow struct {
 }
 
 func (q *Queries) Math(ctx context.Context) ([]MathRow, error) {
+	ctx, done := q.observer(ctx, "Math")
 	rows, err := q.db.Query(ctx, math)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []MathRow
 	for rows.Next() {
 		var i MathRow
 		if err := rows.Scan(&i.Num, &i.Division); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

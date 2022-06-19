@@ -15,10 +15,11 @@ SELECT DATE_SUB('1998-01-02', INTERVAL 31 DAY)
 `
 
 func (q *Queries) DateSub31Days(ctx context.Context) (time.Time, error) {
+	ctx, done := q.observer(ctx, "DateSub31Days")
 	row := q.db.QueryRowContext(ctx, dateSub31Days)
 	var date_sub time.Time
 	err := row.Scan(&date_sub)
-	return date_sub, err
+	return date_sub, done(err)
 }
 
 const dateSubDaySecond = `-- name: DateSubDaySecond :one
@@ -27,10 +28,11 @@ SELECT DATE_SUB('2025-01-01 00:00:00',
 `
 
 func (q *Queries) DateSubDaySecond(ctx context.Context) (time.Time, error) {
+	ctx, done := q.observer(ctx, "DateSubDaySecond")
 	row := q.db.QueryRowContext(ctx, dateSubDaySecond)
 	var date_sub time.Time
 	err := row.Scan(&date_sub)
-	return date_sub, err
+	return date_sub, done(err)
 }
 
 const dateSubOneYear = `-- name: DateSubOneYear :one
@@ -38,8 +40,9 @@ SELECT DATE_SUB('2018-05-01',INTERVAL 1 YEAR)
 `
 
 func (q *Queries) DateSubOneYear(ctx context.Context) (time.Time, error) {
+	ctx, done := q.observer(ctx, "DateSubOneYear")
 	row := q.db.QueryRowContext(ctx, dateSubOneYear)
 	var date_sub time.Time
 	err := row.Scan(&date_sub)
-	return date_sub, err
+	return date_sub, done(err)
 }

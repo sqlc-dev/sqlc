@@ -22,24 +22,25 @@ type AuthorPagesRow struct {
 }
 
 func (q *Queries) AuthorPages(ctx context.Context) ([]AuthorPagesRow, error) {
+	ctx, done := q.observer(ctx, "AuthorPages")
 	rows, err := q.db.QueryContext(ctx, authorPages)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []AuthorPagesRow
 	for rows.Next() {
 		var i AuthorPagesRow
 		if err := rows.Scan(&i.Author, &i.NumBooks, &i.TotalPages); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

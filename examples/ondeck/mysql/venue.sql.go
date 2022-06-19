@@ -43,7 +43,8 @@ type CreateVenueParams struct {
 }
 
 func (q *Queries) CreateVenue(ctx context.Context, arg CreateVenueParams) (sql.Result, error) {
-	return q.exec(ctx, q.createVenueStmt, createVenue,
+	ctx, done := q.observer(ctx, "CreateVenue")
+	result, err := q.exec(ctx, q.createVenueStmt, createVenue,
 		arg.Slug,
 		arg.Name,
 		arg.City,
@@ -52,6 +53,7 @@ func (q *Queries) CreateVenue(ctx context.Context, arg CreateVenueParams) (sql.R
 		arg.Statuses,
 		arg.Tags,
 	)
+	return result, done(err)
 }
 
 const deleteVenue = `-- name: DeleteVenue :exec
@@ -65,8 +67,9 @@ type DeleteVenueParams struct {
 }
 
 func (q *Queries) DeleteVenue(ctx context.Context, arg DeleteVenueParams) error {
+	ctx, done := q.observer(ctx, "DeleteVenue")
 	_, err := q.exec(ctx, q.deleteVenueStmt, deleteVenue, arg.Slug, arg.Slug_2)
-	return err
+	return done(err)
 }
 
 const getVenue = `-- name: GetVenue :one
@@ -81,6 +84,7 @@ type GetVenueParams struct {
 }
 
 func (q *Queries) GetVenue(ctx context.Context, arg GetVenueParams) (Venue, error) {
+	ctx, done := q.observer(ctx, "GetVenue")
 	row := q.queryRow(ctx, q.getVenueStmt, getVenue, arg.Slug, arg.City)
 	var i Venue
 	err := row.Scan(
@@ -95,7 +99,7 @@ func (q *Queries) GetVenue(ctx context.Context, arg GetVenueParams) (Venue, erro
 		&i.Tags,
 		&i.CreatedAt,
 	)
-	return i, err
+	return i, done(err)
 }
 
 const listVenues = `-- name: ListVenues :many
@@ -106,9 +110,10 @@ ORDER BY name
 `
 
 func (q *Queries) ListVenues(ctx context.Context, city string) ([]Venue, error) {
+	ctx, done := q.observer(ctx, "ListVenues")
 	rows, err := q.query(ctx, q.listVenuesStmt, listVenues, city)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []Venue
@@ -126,17 +131,17 @@ func (q *Queries) ListVenues(ctx context.Context, city string) ([]Venue, error) 
 			&i.Tags,
 			&i.CreatedAt,
 		); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const updateVenueName = `-- name: UpdateVenueName :exec
@@ -151,8 +156,9 @@ type UpdateVenueNameParams struct {
 }
 
 func (q *Queries) UpdateVenueName(ctx context.Context, arg UpdateVenueNameParams) error {
+	ctx, done := q.observer(ctx, "UpdateVenueName")
 	_, err := q.exec(ctx, q.updateVenueNameStmt, updateVenueName, arg.Name, arg.Slug)
-	return err
+	return done(err)
 }
 
 const venueCountByCity = `-- name: VenueCountByCity :many
@@ -170,24 +176,25 @@ type VenueCountByCityRow struct {
 }
 
 func (q *Queries) VenueCountByCity(ctx context.Context) ([]VenueCountByCityRow, error) {
+	ctx, done := q.observer(ctx, "VenueCountByCity")
 	rows, err := q.query(ctx, q.venueCountByCityStmt, venueCountByCity)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []VenueCountByCityRow
 	for rows.Next() {
 		var i VenueCountByCityRow
 		if err := rows.Scan(&i.City, &i.Count); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

@@ -22,21 +22,22 @@ type GenerateSeriesParams struct {
 }
 
 func (q *Queries) GenerateSeries(ctx context.Context, arg GenerateSeriesParams) ([]pgtype.Numeric, error) {
+	ctx, done := q.observer(ctx, "GenerateSeries")
 	rows, err := q.db.Query(ctx, generateSeries, arg.Column1, arg.Column2)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []pgtype.Numeric
 	for rows.Next() {
 		var generate_series pgtype.Numeric
 		if err := rows.Scan(&generate_series); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, generate_series)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

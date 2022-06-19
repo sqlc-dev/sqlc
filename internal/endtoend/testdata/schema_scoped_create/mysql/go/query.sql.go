@@ -20,5 +20,7 @@ type SchemaScopedCreateParams struct {
 }
 
 func (q *Queries) SchemaScopedCreate(ctx context.Context, arg SchemaScopedCreateParams) (sql.Result, error) {
-	return q.db.ExecContext(ctx, schemaScopedCreate, arg.ID, arg.Name)
+	ctx, done := q.observer(ctx, "SchemaScopedCreate")
+	result, err := q.db.ExecContext(ctx, schemaScopedCreate, arg.ID, arg.Name)
+	return result, done(err)
 }

@@ -25,6 +25,7 @@ type UpdateJoinParams struct {
 }
 
 func (q *Queries) UpdateJoin(ctx context.Context, arg UpdateJoinParams) error {
+	ctx, done := q.observer(ctx, "UpdateJoin")
 	_, err := q.db.ExecContext(ctx, updateJoin, arg.IsActive, arg.ID, arg.UserID)
-	return err
+	return done(err)
 }

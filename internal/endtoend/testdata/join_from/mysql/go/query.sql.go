@@ -14,24 +14,25 @@ SELECT email FROM bar, foo WHERE login = ?
 `
 
 func (q *Queries) MultiFrom(ctx context.Context, login string) ([]string, error) {
+	ctx, done := q.observer(ctx, "MultiFrom")
 	rows, err := q.db.QueryContext(ctx, multiFrom, login)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []string
 	for rows.Next() {
 		var email string
 		if err := rows.Scan(&email); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, email)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

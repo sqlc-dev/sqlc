@@ -21,26 +21,27 @@ type GetBetweenPricesParams struct {
 }
 
 func (q *Queries) GetBetweenPrices(ctx context.Context, arg GetBetweenPricesParams) ([]Product, error) {
+	ctx, done := q.observer(ctx, "GetBetweenPrices")
 	rows, err := q.db.QueryContext(ctx, getBetweenPrices, arg.Price, arg.Price_2)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []Product
 	for rows.Next() {
 		var i Product
 		if err := rows.Scan(&i.ID, &i.Name, &i.Price); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const getBetweenPricesTable = `-- name: GetBetweenPricesTable :many
@@ -55,26 +56,27 @@ type GetBetweenPricesTableParams struct {
 }
 
 func (q *Queries) GetBetweenPricesTable(ctx context.Context, arg GetBetweenPricesTableParams) ([]Product, error) {
+	ctx, done := q.observer(ctx, "GetBetweenPricesTable")
 	rows, err := q.db.QueryContext(ctx, getBetweenPricesTable, arg.Price, arg.Price_2)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []Product
 	for rows.Next() {
 		var i Product
 		if err := rows.Scan(&i.ID, &i.Name, &i.Price); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const getBetweenPricesTableAlias = `-- name: GetBetweenPricesTableAlias :many
@@ -89,24 +91,25 @@ type GetBetweenPricesTableAliasParams struct {
 }
 
 func (q *Queries) GetBetweenPricesTableAlias(ctx context.Context, arg GetBetweenPricesTableAliasParams) ([]Product, error) {
+	ctx, done := q.observer(ctx, "GetBetweenPricesTableAlias")
 	rows, err := q.db.QueryContext(ctx, getBetweenPricesTableAlias, arg.Price, arg.Price_2)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []Product
 	for rows.Next() {
 		var i Product
 		if err := rows.Scan(&i.ID, &i.Name, &i.Price); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

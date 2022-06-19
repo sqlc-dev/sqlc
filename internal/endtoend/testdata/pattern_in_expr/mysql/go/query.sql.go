@@ -15,26 +15,27 @@ SELECT a, b from foo where foo.a in (select a from bar where bar.b = ?)
 `
 
 func (q *Queries) FooByBarB(ctx context.Context, b sql.NullString) ([]Foo, error) {
+	ctx, done := q.observer(ctx, "FooByBarB")
 	rows, err := q.db.QueryContext(ctx, fooByBarB, b)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []Foo
 	for rows.Next() {
 		var i Foo
 		if err := rows.Scan(&i.A, &i.B); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const fooByList = `-- name: FooByList :many
@@ -47,26 +48,27 @@ type FooByListParams struct {
 }
 
 func (q *Queries) FooByList(ctx context.Context, arg FooByListParams) ([]Foo, error) {
+	ctx, done := q.observer(ctx, "FooByList")
 	rows, err := q.db.QueryContext(ctx, fooByList, arg.A, arg.A_2)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []Foo
 	for rows.Next() {
 		var i Foo
 		if err := rows.Scan(&i.A, &i.B); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const fooByNotList = `-- name: FooByNotList :many
@@ -79,26 +81,27 @@ type FooByNotListParams struct {
 }
 
 func (q *Queries) FooByNotList(ctx context.Context, arg FooByNotListParams) ([]Foo, error) {
+	ctx, done := q.observer(ctx, "FooByNotList")
 	rows, err := q.db.QueryContext(ctx, fooByNotList, arg.A, arg.A_2)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []Foo
 	for rows.Next() {
 		var i Foo
 		if err := rows.Scan(&i.A, &i.B); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const fooByParamList = `-- name: FooByParamList :many
@@ -106,24 +109,25 @@ SELECT a, b from foo where ? in (foo.a, foo.b)
 `
 
 func (q *Queries) FooByParamList(ctx context.Context, a sql.NullString) ([]Foo, error) {
+	ctx, done := q.observer(ctx, "FooByParamList")
 	rows, err := q.db.QueryContext(ctx, fooByParamList, a)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []Foo
 	for rows.Next() {
 		var i Foo
 		if err := rows.Scan(&i.A, &i.B); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

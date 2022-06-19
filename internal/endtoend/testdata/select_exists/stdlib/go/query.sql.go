@@ -22,8 +22,9 @@ SELECT
 `
 
 func (q *Queries) BarExists(ctx context.Context, id int32) (bool, error) {
+	ctx, done := q.observer(ctx, "BarExists")
 	row := q.db.QueryRowContext(ctx, barExists, id)
 	var exists bool
 	err := row.Scan(&exists)
-	return exists, err
+	return exists, done(err)
 }

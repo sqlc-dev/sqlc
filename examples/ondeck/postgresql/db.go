@@ -18,11 +18,11 @@ type DBTX interface {
 }
 
 func New(db DBTX) *Queries {
-	return &Queries{db: db}
+	return &Queries{db: db, observer: noopObserver}
 }
 
 func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
-	q := Queries{db: db}
+	q := Queries{db: db, observer: noopObserver}
 	var err error
 	if q.createCityStmt, err = db.PrepareContext(ctx, createCity); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateCity: %w", err)
@@ -158,6 +158,40 @@ type Queries struct {
 	updateCityNameStmt   *sql.Stmt
 	updateVenueNameStmt  *sql.Stmt
 	venueCountByCityStmt *sql.Stmt
+	observer             func(ctx context.Context, methodName string) (context.Context, func(err error) error)
+}
+
+func noopObserver(ctx context.Context, methodName string) (context.Context, func(err error) error) {
+	return ctx, func(err error) error { return err }
+}
+
+// WithObserver can be used to observe queries (metric, log, trace, ...)
+// Example usage:
+// 	queries.WithObserver(func (ctx context.Context, methodName string) (context.Context, func(err error) error) {
+// 		spanCtx, span := tracer.Start(ctx, methodName)
+// 		startTime := time.New()
+// 		return spanCtx, func(err error) error {
+// 			log.Println("Query %q executed in %s", methodName, time.Since(startTime))
+// 			span.End()
+// 			return err
+// 		}
+// 	})
+func (q *Queries) WithObserver(observer func(ctx context.Context, methodName string) (context.Context, func(err error) error)) *Queries {
+	return &Queries{
+		db:                   q.db,
+		tx:                   q.tx,
+		createCityStmt:       q.createCityStmt,
+		createVenueStmt:      q.createVenueStmt,
+		deleteVenueStmt:      q.deleteVenueStmt,
+		getCityStmt:          q.getCityStmt,
+		getVenueStmt:         q.getVenueStmt,
+		listCitiesStmt:       q.listCitiesStmt,
+		listVenuesStmt:       q.listVenuesStmt,
+		updateCityNameStmt:   q.updateCityNameStmt,
+		updateVenueNameStmt:  q.updateVenueNameStmt,
+		venueCountByCityStmt: q.venueCountByCityStmt,
+		observer:             observer,
+	}
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
@@ -174,5 +208,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		updateCityNameStmt:   q.updateCityNameStmt,
 		updateVenueNameStmt:  q.updateVenueNameStmt,
 		venueCountByCityStmt: q.venueCountByCityStmt,
+		observer:             q.observer,
 	}
 }

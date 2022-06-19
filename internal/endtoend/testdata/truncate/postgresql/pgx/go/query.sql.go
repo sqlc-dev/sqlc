@@ -14,6 +14,7 @@ TRUNCATE bar
 `
 
 func (q *Queries) Truncate(ctx context.Context) error {
+	ctx, done := q.observer(ctx, "Truncate")
 	_, err := q.db.Exec(ctx, truncate)
-	return err
+	return done(err)
 }

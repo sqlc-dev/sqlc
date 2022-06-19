@@ -27,21 +27,22 @@ type CTERecursiveRow struct {
 }
 
 func (q *Queries) CTERecursive(ctx context.Context, id int32) ([]CTERecursiveRow, error) {
+	ctx, done := q.observer(ctx, "CTERecursive")
 	rows, err := q.db.Query(ctx, cTERecursive, id)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []CTERecursiveRow
 	for rows.Next() {
 		var i CTERecursiveRow
 		if err := rows.Scan(&i.ID, &i.ParentID); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

@@ -14,8 +14,9 @@ SELECT encode(digest($1, 'sha1'), 'hex')
 `
 
 func (q *Queries) EncodeDigest(ctx context.Context, digest string) (string, error) {
+	ctx, done := q.observer(ctx, "EncodeDigest")
 	row := q.db.QueryRow(ctx, encodeDigest, digest)
 	var encode string
 	err := row.Scan(&encode)
-	return encode, err
+	return encode, done(err)
 }

@@ -14,21 +14,22 @@ SELECT "user".id FROM "user"
 `
 
 func (q *Queries) User(ctx context.Context) ([]int64, error) {
+	ctx, done := q.observer(ctx, "User")
 	rows, err := q.db.Query(ctx, user)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []int64
 	for rows.Next() {
 		var id int64
 		if err := rows.Scan(&id); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, id)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

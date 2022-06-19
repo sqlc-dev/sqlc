@@ -23,23 +23,24 @@ type GenerateSeriesParams struct {
 }
 
 func (q *Queries) GenerateSeries(ctx context.Context, arg GenerateSeriesParams) ([]int32, error) {
+	ctx, done := q.observer(ctx, "GenerateSeries")
 	rows, err := q.db.Query(ctx, generateSeries, arg.Column1, arg.Column2)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []int32
 	for rows.Next() {
 		var column_1 int32
 		if err := rows.Scan(&column_1); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, column_1)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const getUsers = `-- name: GetUsers :many
@@ -49,21 +50,22 @@ WHERE first_name != ''
 `
 
 func (q *Queries) GetUsers(ctx context.Context) ([]User, error) {
+	ctx, done := q.observer(ctx, "GetUsers")
 	rows, err := q.db.Query(ctx, getUsers)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []User
 	for rows.Next() {
 		var i User
 		if err := rows.Scan(&i.ID, &i.FirstName); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

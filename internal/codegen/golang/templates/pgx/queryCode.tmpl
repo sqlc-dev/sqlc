@@ -28,14 +28,16 @@ type {{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
 {{end -}}
 {{- if $.EmitMethodsWithDBArgument -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) ({{.Ret.DefineType}}, error) {
+	ctx, done := q.observer(ctx, "{{.MethodName}}")
 	row := db.QueryRow(ctx, {{.ConstantName}}, {{.Arg.Params}})
 {{- else -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.DefineType}}, error) {
+	ctx, done := q.observer(ctx, "{{.MethodName}}")
 	row := q.db.QueryRow(ctx, {{.ConstantName}}, {{.Arg.Params}})
 {{- end}}
 	var {{.Ret.Name}} {{.Ret.Type}}
 	err := row.Scan({{.Ret.Scan}})
-	return {{.Ret.ReturnName}}, err
+	return {{.Ret.ReturnName}}, done(err)
 }
 {{end}}
 
@@ -44,13 +46,15 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.De
 {{end -}}
 {{- if $.EmitMethodsWithDBArgument -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error) {
+	ctx, done := q.observer(ctx, "{{.MethodName}}")
 	rows, err := db.Query(ctx, {{.ConstantName}}, {{.Arg.Params}})
 {{- else -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error) {
+	ctx, done := q.observer(ctx, "{{.MethodName}}")
 	rows, err := q.db.Query(ctx, {{.ConstantName}}, {{.Arg.Params}})
 {{- end}}
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	{{- if $.EmitEmptySlices}}
@@ -61,14 +65,14 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.
 	for rows.Next() {
 		var {{.Ret.Name}} {{.Ret.Type}}
 		if err := rows.Scan({{.Ret.Scan}}); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, {{.Ret.ReturnName}})
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 {{end}}
 
@@ -77,12 +81,14 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.
 {{end -}}
 {{- if $.EmitMethodsWithDBArgument -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) error {
+	ctx, done := q.observer(ctx, "{{.MethodName}}")
 	_, err := db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
 {{- else -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) error {
+	ctx, done := q.observer(ctx, "{{.MethodName}}")
 	_, err := q.db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
 {{- end}}
-	return err
+	return done(err)
 }
 {{end}}
 
@@ -91,15 +97,17 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) error {
 {{end -}}
 {{if $.EmitMethodsWithDBArgument -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) (int64, error) {
+	ctx, done := q.observer(ctx, "{{.MethodName}}")
 	result, err := db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
 {{- else -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, error) {
+	ctx, done := q.observer(ctx, "{{.MethodName}}")
 	result, err := q.db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
 {{- end}}
 	if err != nil {
-		return 0, err
+		return 0, done(err)
 	}
-	return result.RowsAffected(), nil
+	return result.RowsAffected(), done(nil)
 }
 {{end}}
 
@@ -108,10 +116,14 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, er
 {{end -}}
 {{- if $.EmitMethodsWithDBArgument -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) (pgconn.CommandTag, error) {
-	return db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
+	ctx, done := q.observer(ctx, "{{.MethodName}}")
+	tag, err := db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
+	return tag, done(err)
 {{- else -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (pgconn.CommandTag, error) {
-	return q.db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
+	ctx, done := q.observer(ctx, "{{.MethodName}}")
+	tag, err := q.db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
+	return tag, done(err)
 {{- end}}
 }
 {{end}}

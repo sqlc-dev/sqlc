@@ -14,10 +14,11 @@ SELECT count(*) FROM bar
 `
 
 func (q *Queries) CountStarLower(ctx context.Context) (int64, error) {
+	ctx, done := q.observer(ctx, "CountStarLower")
 	row := q.db.QueryRowContext(ctx, countStarLower)
 	var count int64
 	err := row.Scan(&count)
-	return count, err
+	return count, done(err)
 }
 
 const countStarUpper = `-- name: CountStarUpper :one
@@ -25,8 +26,9 @@ SELECT COUNT(*) FROM bar
 `
 
 func (q *Queries) CountStarUpper(ctx context.Context) (int64, error) {
+	ctx, done := q.observer(ctx, "CountStarUpper")
 	row := q.db.QueryRowContext(ctx, countStarUpper)
 	var count int64
 	err := row.Scan(&count)
-	return count, err
+	return count, done(err)
 }

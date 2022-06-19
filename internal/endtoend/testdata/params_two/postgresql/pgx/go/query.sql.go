@@ -21,21 +21,22 @@ type FooByAandBParams struct {
 }
 
 func (q *Queries) FooByAandB(ctx context.Context, arg FooByAandBParams) ([]Foo, error) {
+	ctx, done := q.observer(ctx, "FooByAandB")
 	rows, err := q.db.Query(ctx, fooByAandB, arg.A, arg.B)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []Foo
 	for rows.Next() {
 		var i Foo
 		if err := rows.Scan(&i.A, &i.B); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

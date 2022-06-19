@@ -28,10 +28,11 @@ type CreateCityParams struct {
 // This is the second line of the comment
 // This is the third line
 func (q *Queries) CreateCity(ctx context.Context, arg CreateCityParams) (City, error) {
+	ctx, done := q.observer(ctx, "CreateCity")
 	row := q.queryRow(ctx, q.createCityStmt, createCity, arg.Name, arg.Slug)
 	var i City
 	err := row.Scan(&i.Slug, &i.Name)
-	return i, err
+	return i, done(err)
 }
 
 const getCity = `-- name: GetCity :one
@@ -41,10 +42,11 @@ WHERE slug = $1
 `
 
 func (q *Queries) GetCity(ctx context.Context, slug string) (City, error) {
+	ctx, done := q.observer(ctx, "GetCity")
 	row := q.queryRow(ctx, q.getCityStmt, getCity, slug)
 	var i City
 	err := row.Scan(&i.Slug, &i.Name)
-	return i, err
+	return i, done(err)
 }
 
 const listCities = `-- name: ListCities :many
@@ -54,26 +56,27 @@ ORDER BY name
 `
 
 func (q *Queries) ListCities(ctx context.Context) ([]City, error) {
+	ctx, done := q.observer(ctx, "ListCities")
 	rows, err := q.query(ctx, q.listCitiesStmt, listCities)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []City
 	for rows.Next() {
 		var i City
 		if err := rows.Scan(&i.Slug, &i.Name); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const updateCityName = `-- name: UpdateCityName :exec
@@ -88,6 +91,7 @@ type UpdateCityNameParams struct {
 }
 
 func (q *Queries) UpdateCityName(ctx context.Context, arg UpdateCityNameParams) error {
+	ctx, done := q.observer(ctx, "UpdateCityName")
 	_, err := q.exec(ctx, q.updateCityNameStmt, updateCityName, arg.Slug, arg.Name)
-	return err
+	return done(err)
 }

@@ -16,10 +16,11 @@ SELECT bar FROM foo WHERE baz = $1
 `
 
 func (q *Queries) Find(ctx context.Context, baz uuid.UUID) (uuid.NullUUID, error) {
+	ctx, done := q.observer(ctx, "Find")
 	row := q.db.QueryRowContext(ctx, find, baz)
 	var bar uuid.NullUUID
 	err := row.Scan(&bar)
-	return bar, err
+	return bar, done(err)
 }
 
 const list = `-- name: List :many
@@ -27,24 +28,25 @@ SELECT description, bar, baz FROM foo
 `
 
 func (q *Queries) List(ctx context.Context) ([]Foo, error) {
+	ctx, done := q.observer(ctx, "List")
 	rows, err := q.db.QueryContext(ctx, list)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []Foo
 	for rows.Next() {
 		var i Foo
 		if err := rows.Scan(&i.Description, &i.Bar, &i.Baz); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

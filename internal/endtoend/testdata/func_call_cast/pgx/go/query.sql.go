@@ -16,8 +16,9 @@ SELECT uuid_generate_v5('7c4597a0-8cfa-4c19-8da0-b8474a36440d', $1)::uuid as col
 `
 
 func (q *Queries) Demo(ctx context.Context, uuidGenerateV5 interface{}) (uuid.UUID, error) {
+	ctx, done := q.observer(ctx, "Demo")
 	row := q.db.QueryRow(ctx, demo, uuidGenerateV5)
 	var col1 uuid.UUID
 	err := row.Scan(&col1)
-	return col1, err
+	return col1, done(err)
 }

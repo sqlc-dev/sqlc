@@ -16,26 +16,27 @@ users where ($1 = id OR $1 = 0)
 `
 
 func (q *Queries) SelectUserByID(ctx context.Context, id interface{}) ([]sql.NullString, error) {
+	ctx, done := q.observer(ctx, "SelectUserByID")
 	rows, err := q.db.QueryContext(ctx, selectUserByID, id)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []sql.NullString
 	for rows.Next() {
 		var first_name sql.NullString
 		if err := rows.Scan(&first_name); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, first_name)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const selectUserByName = `-- name: SelectUserByName :many
@@ -46,26 +47,27 @@ WHERE first_name = $1
 `
 
 func (q *Queries) SelectUserByName(ctx context.Context, name sql.NullString) ([]sql.NullString, error) {
+	ctx, done := q.observer(ctx, "SelectUserByName")
 	rows, err := q.db.QueryContext(ctx, selectUserByName, name)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []sql.NullString
 	for rows.Next() {
 		var first_name sql.NullString
 		if err := rows.Scan(&first_name); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, first_name)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const selectUserQuestion = `-- name: SelectUserQuestion :many
@@ -74,24 +76,25 @@ users where ($1 = id OR  $1 = 0)
 `
 
 func (q *Queries) SelectUserQuestion(ctx context.Context, dollar_1 interface{}) ([]sql.NullString, error) {
+	ctx, done := q.observer(ctx, "SelectUserQuestion")
 	rows, err := q.db.QueryContext(ctx, selectUserQuestion, dollar_1)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []sql.NullString
 	for rows.Next() {
 		var first_name sql.NullString
 		if err := rows.Scan(&first_name); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, first_name)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

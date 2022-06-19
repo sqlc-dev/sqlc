@@ -19,21 +19,22 @@ type LowerSwitchedOrderParams struct {
 }
 
 func (q *Queries) LowerSwitchedOrder(ctx context.Context, arg LowerSwitchedOrderParams) ([]string, error) {
+	ctx, done := q.observer(ctx, "LowerSwitchedOrder")
 	rows, err := q.db.Query(ctx, lowerSwitchedOrder, arg.Bar, arg.Lower)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []string
 	for rows.Next() {
 		var bar string
 		if err := rows.Scan(&bar); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, bar)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

@@ -15,8 +15,9 @@ from authors
 `
 
 func (q *Queries) Percentile(ctx context.Context) (interface{}, error) {
+	ctx, done := q.observer(ctx, "Percentile")
 	row := q.db.QueryRowContext(ctx, percentile)
 	var percentile_disc interface{}
 	err := row.Scan(&percentile_disc)
-	return percentile_disc, err
+	return percentile_disc, done(err)
 }

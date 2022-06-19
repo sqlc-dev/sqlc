@@ -14,9 +14,11 @@ INSERT INTO bar () VALUES ()
 `
 
 func (q *Queries) InsertBar(ctx context.Context) (int64, error) {
+	ctx, done := q.observer(ctx, "InsertBar")
 	result, err := q.db.ExecContext(ctx, insertBar)
 	if err != nil {
-		return 0, err
+		return 0, done(err)
 	}
-	return result.LastInsertId()
+	lastInsertedID, err := result.LastInsertId()
+	return lastInsertedID, done(err)
 }

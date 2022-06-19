@@ -8,16 +8,16 @@ type DBTX interface {
 
 {{ if .EmitMethodsWithDBArgument}}
 func New() *Queries {
-	return &Queries{}
+	return &Queries{observer: noopObserver}
 {{- else -}}
 func New(db DBTX) *Queries {
-	return &Queries{db: db}
+	return &Queries{db: db, observer: noopObserver}
 {{- end}}
 }
 
 {{if .EmitPreparedQueries}}
 func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
-	q := Queries{db: db}
+	q := Queries{db: db, observer: noopObserver}
 	var err error
 	{{- if eq (len .GoQueries) 0 }}
 	_ = err
@@ -87,6 +87,37 @@ type Queries struct {
 	{{.FieldName}}  *sql.Stmt
 	{{- end}}
 	{{- end}}
+    observer func(ctx context.Context, methodName string) (context.Context, func(err error) error)
+}
+
+func noopObserver(ctx context.Context, methodName string) (context.Context, func(err error) error) {
+	return ctx, func(err error) error { return err }
+}
+
+// WithObserver can be used to observe queries (metric, log, trace, ...)
+// Example usage:
+// 	queries.WithObserver(func (ctx context.Context, methodName string) (context.Context, func(err error) error) {
+// 		spanCtx, span := tracer.Start(ctx, methodName)
+// 		startTime := time.New()
+// 		return spanCtx, func(err error) error {
+// 			log.Println("Query %q executed in %s", methodName, time.Since(startTime))
+// 			span.End()
+// 			return err
+// 		}
+// 	})
+func (q *Queries) WithObserver(observer func(ctx context.Context, methodName string) (context.Context, func(err error) error)) *Queries {
+	return &Queries{
+        {{- if not .EmitMethodsWithDBArgument}}
+        db: q.db,
+        {{- end}}
+		{{- if .EmitPreparedQueries}}
+		tx: q.tx,
+		{{- range .GoQueries}}
+		{{.FieldName}}: q.{{.FieldName}},
+	{{- end}}
+	{{- end}}
+		observer: observer,
+	}
 }
 
 {{if not .EmitMethodsWithDBArgument}}
@@ -99,6 +130,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		{{.FieldName}}: q.{{.FieldName}},
 		{{- end}}
 		{{- end}}
+		observer: q.observer,
 	}
 }
 {{end}}

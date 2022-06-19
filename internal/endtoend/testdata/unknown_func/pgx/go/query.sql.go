@@ -14,8 +14,9 @@ SELECT id FROM foo WHERE id = frobnicate($1)
 `
 
 func (q *Queries) ListFoos(ctx context.Context, frobnicate interface{}) (string, error) {
+	ctx, done := q.observer(ctx, "ListFoos")
 	row := q.db.QueryRow(ctx, listFoos, frobnicate)
 	var id string
 	err := row.Scan(&id)
-	return id, err
+	return id, done(err)
 }

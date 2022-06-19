@@ -19,10 +19,11 @@ LIMIT   1
 `
 
 func (q *Queries) GetAuthorByID(ctx context.Context, id int64) (Author, error) {
+	ctx, done := q.observer(ctx, "GetAuthorByID")
 	row := q.db.QueryRowContext(ctx, getAuthorByID, id)
 	var i Author
 	err := row.Scan(&i.ID, &i.Name, &i.Bio)
-	return i, err
+	return i, done(err)
 }
 
 const getAuthorIDByID = `-- name: GetAuthorIDByID :one
@@ -33,9 +34,10 @@ LIMIT   1
 `
 
 func (q *Queries) GetAuthorIDByID(ctx context.Context, id int64) (int64, error) {
+	ctx, done := q.observer(ctx, "GetAuthorIDByID")
 	row := q.db.QueryRowContext(ctx, getAuthorIDByID, id)
 	err := row.Scan(&id)
-	return id, err
+	return id, done(err)
 }
 
 const getUser = `-- name: GetUser :one
@@ -46,9 +48,10 @@ LIMIT   1
 `
 
 func (q *Queries) GetUser(ctx context.Context, sub uuid.UUID) (uuid.UUID, error) {
+	ctx, done := q.observer(ctx, "GetUser")
 	row := q.db.QueryRowContext(ctx, getUser, sub)
 	err := row.Scan(&sub)
-	return sub, err
+	return sub, done(err)
 }
 
 const setDefaultName = `-- name: SetDefaultName :one
@@ -61,7 +64,8 @@ RETURNING id
 
 // https://github.com/kyleconroy/sqlc/issues/1235
 func (q *Queries) SetDefaultName(ctx context.Context, id int64) (int64, error) {
+	ctx, done := q.observer(ctx, "SetDefaultName")
 	row := q.db.QueryRowContext(ctx, setDefaultName, id)
 	err := row.Scan(&id)
-	return id, err
+	return id, done(err)
 }

@@ -16,7 +16,9 @@ SELECT pg_advisory_lock($1)
 `
 
 func (q *Queries) AdvisoryLockExecResult(ctx context.Context, pgAdvisoryLock int64) (pgconn.CommandTag, error) {
-	return q.db.Exec(ctx, advisoryLockExecResult, pgAdvisoryLock)
+	ctx, done := q.observer(ctx, "AdvisoryLockExecResult")
+	tag, err := q.db.Exec(ctx, advisoryLockExecResult, pgAdvisoryLock)
+	return tag, done(err)
 }
 
 const advisoryLockOne = `-- name: AdvisoryLockOne :one
@@ -24,10 +26,11 @@ SELECT pg_advisory_lock($1)
 `
 
 func (q *Queries) AdvisoryLockOne(ctx context.Context, pgAdvisoryLock int64) (interface{}, error) {
+	ctx, done := q.observer(ctx, "AdvisoryLockOne")
 	row := q.db.QueryRow(ctx, advisoryLockOne, pgAdvisoryLock)
 	var pg_advisory_lock interface{}
 	err := row.Scan(&pg_advisory_lock)
-	return pg_advisory_lock, err
+	return pg_advisory_lock, done(err)
 }
 
 const advisoryUnlock = `-- name: AdvisoryUnlock :many
@@ -35,21 +38,22 @@ SELECT pg_advisory_unlock($1)
 `
 
 func (q *Queries) AdvisoryUnlock(ctx context.Context, pgAdvisoryUnlock int64) ([]bool, error) {
+	ctx, done := q.observer(ctx, "AdvisoryUnlock")
 	rows, err := q.db.Query(ctx, advisoryUnlock, pgAdvisoryUnlock)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []bool
 	for rows.Next() {
 		var pg_advisory_unlock bool
 		if err := rows.Scan(&pg_advisory_unlock); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, pg_advisory_unlock)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

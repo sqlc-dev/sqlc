@@ -17,24 +17,25 @@ WHERE owner = $1
 `
 
 func (q *Queries) JoinWhereClause(ctx context.Context, owner string) ([]int32, error) {
+	ctx, done := q.observer(ctx, "JoinWhereClause")
 	rows, err := q.db.QueryContext(ctx, joinWhereClause, owner)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []int32
 	for rows.Next() {
 		var barid int32
 		if err := rows.Scan(&barid); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, barid)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

@@ -14,21 +14,22 @@ SELECT $1::TEXT[]
 `
 
 func (q *Queries) SelectTextArray(ctx context.Context, dollar_1 []string) ([][]string, error) {
+	ctx, done := q.observer(ctx, "SelectTextArray")
 	rows, err := q.db.Query(ctx, selectTextArray, dollar_1)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items [][]string
 	for rows.Next() {
 		var column_1 []string
 		if err := rows.Scan(&column_1); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, column_1)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

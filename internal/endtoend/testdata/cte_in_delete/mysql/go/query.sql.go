@@ -17,6 +17,7 @@ DELETE FROM bar WHERE id IN (SELECT id FROM ready_ids)
 `
 
 func (q *Queries) DeleteReadyWithCTE(ctx context.Context) error {
+	ctx, done := q.observer(ctx, "DeleteReadyWithCTE")
 	_, err := q.db.ExecContext(ctx, deleteReadyWithCTE)
-	return err
+	return done(err)
 }

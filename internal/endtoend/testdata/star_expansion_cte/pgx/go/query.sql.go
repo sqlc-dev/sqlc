@@ -15,23 +15,24 @@ WITH cte AS (SELECT a, b FROM foo) SELECT c, d FROM bar
 `
 
 func (q *Queries) StarExpansionCTE(ctx context.Context) ([]Bar, error) {
+	ctx, done := q.observer(ctx, "StarExpansionCTE")
 	rows, err := q.db.Query(ctx, starExpansionCTE)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []Bar
 	for rows.Next() {
 		var i Bar
 		if err := rows.Scan(&i.C, &i.D); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const starExpansionTwoCTE = `-- name: StarExpansionTwoCTE :many
@@ -48,21 +49,22 @@ type StarExpansionTwoCTERow struct {
 }
 
 func (q *Queries) StarExpansionTwoCTE(ctx context.Context) ([]StarExpansionTwoCTERow, error) {
+	ctx, done := q.observer(ctx, "StarExpansionTwoCTE")
 	rows, err := q.db.Query(ctx, starExpansionTwoCTE)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []StarExpansionTwoCTERow
 	for rows.Next() {
 		var i StarExpansionTwoCTERow
 		if err := rows.Scan(&i.Bar, &i.A, &i.B); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

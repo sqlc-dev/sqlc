@@ -14,9 +14,10 @@ SELECT id, first_name, last_name, date_of_birth FROM super_users
 `
 
 func (q *Queries) GetAll(ctx context.Context) ([]SuperUser, error) {
+	ctx, done := q.observer(ctx, "GetAll")
 	rows, err := q.db.QueryContext(ctx, getAll)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []SuperUser
@@ -28,15 +29,15 @@ func (q *Queries) GetAll(ctx context.Context) ([]SuperUser, error) {
 			&i.LastName,
 			&i.DateOfBirth,
 		); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

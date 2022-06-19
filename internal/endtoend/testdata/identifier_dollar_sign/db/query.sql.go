@@ -14,8 +14,9 @@ SELECT f$n()
 `
 
 func (q *Queries) Fn(ctx context.Context) (int32, error) {
+	ctx, done := q.observer(ctx, "Fn")
 	row := q.db.QueryRowContext(ctx, fn)
 	var f_n int32
 	err := row.Scan(&f_n)
-	return f_n, err
+	return f_n, done(err)
 }

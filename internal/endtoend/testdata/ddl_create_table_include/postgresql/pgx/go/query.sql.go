@@ -14,6 +14,7 @@ SELECT 1
 `
 
 func (q *Queries) Placeholder(ctx context.Context) error {
+	ctx, done := q.observer(ctx, "Placeholder")
 	_, err := q.db.Exec(ctx, placeholder)
-	return err
+	return done(err)
 }

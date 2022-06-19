@@ -14,21 +14,22 @@ SELECT bar FROM foo LIMIT $1
 `
 
 func (q *Queries) LimitMe(ctx context.Context, limit int32) ([]bool, error) {
+	ctx, done := q.observer(ctx, "LimitMe")
 	rows, err := q.db.Query(ctx, limitMe, limit)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []bool
 	for rows.Next() {
 		var bar bool
 		if err := rows.Scan(&bar); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, bar)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

@@ -27,6 +27,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) (
 {{- else -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.DefineType}}, error) {
 {{- end -}}
+    ctx, done := q.observer(ctx, "{{.MethodName}}")
   	{{- if $.EmitPreparedQueries}}
 	row := q.queryRow(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
 	{{- else if $.EmitMethodsWithDBArgument}}
@@ -38,7 +39,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.De
 	var {{.Ret.Name}} {{.Ret.Type}}
 	{{- end}}
 	err := row.Scan({{.Ret.Scan}})
-	return {{.Ret.ReturnName}}, err
+	return {{.Ret.ReturnName}}, done(err)
 }
 {{end}}
 
@@ -50,6 +51,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) (
 {{- else -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error) {
 {{- end -}}
+    ctx, done := q.observer(ctx, "{{.MethodName}}")
     {{- if $.EmitPreparedQueries}}
     rows, err := q.query(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
     {{- else if $.EmitMethodsWithDBArgument}}
@@ -58,7 +60,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.
     rows, err := q.db.QueryContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
     {{- end}}
     if err != nil {
-        return nil, err
+        return nil, done(err)
     }
     defer rows.Close()
     {{- if $.EmitEmptySlices}}
@@ -69,17 +71,17 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.
     for rows.Next() {
         var {{.Ret.Name}} {{.Ret.Type}}
         if err := rows.Scan({{.Ret.Scan}}); err != nil {
-            return nil, err
+            return nil, done(err)
         }
         items = append(items, {{.Ret.ReturnName}})
     }
     if err := rows.Close(); err != nil {
-        return nil, err
+        return nil, done(err)
     }
     if err := rows.Err(); err != nil {
-        return nil, err
+        return nil, done(err)
     }
-    return items, nil
+    return items, done(nil)
 }
 {{end}}
 
@@ -91,6 +93,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) e
 {{- else -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) error {
 {{- end -}}
+    ctx, done := q.observer(ctx, "{{.MethodName}}")
     {{- if $.EmitPreparedQueries}}
     _, err := q.exec(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
     {{- else if $.EmitMethodsWithDBArgument}}
@@ -98,7 +101,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) error {
     {{- else}}
     _, err := q.db.ExecContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
     {{- end}}
-    return err
+    return done(err)
 }
 {{end}}
 
@@ -110,6 +113,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) (
 {{- else -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, error) {
 {{- end -}}
+    ctx, done := q.observer(ctx, "{{.MethodName}}")
     {{- if $.EmitPreparedQueries}}
     result, err := q.exec(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
     {{- else if $.EmitMethodsWithDBArgument}}
@@ -118,9 +122,10 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, er
     result, err := q.db.ExecContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
     {{- end}}
     if err != nil {
-        return 0, err
+        return 0, done(err)
     }
-    return result.RowsAffected()
+    rowsAffected, err := result.RowsAffected()
+    return rowsAffected, done(err)
 }
 {{end}}
 
@@ -132,6 +137,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) (
 {{- else -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, error) {
 {{- end -}}
+    ctx, done := q.observer(ctx, "{{.MethodName}}")
     {{- if $.EmitPreparedQueries}}
     result, err := q.exec(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
     {{- else if $.EmitMethodsWithDBArgument}}
@@ -140,9 +146,10 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, er
     result, err := q.db.ExecContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
     {{- end}}
     if err != nil {
-        return 0, err
+        return 0, done(err)
     }
-    return result.LastInsertId()
+    lastInsertedID, err := result.LastInsertId()
+    return lastInsertedID, done(err)
 }
 {{end}}
 
@@ -154,13 +161,15 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) (
 {{- else -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (sql.Result, error) {
 {{- end -}}
+    ctx, done := q.observer(ctx, "{{.MethodName}}")
     {{- if $.EmitPreparedQueries}}
-    return q.exec(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
+    result, err := q.exec(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
     {{- else if $.EmitMethodsWithDBArgument}}
-    return db.ExecContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
+    result, err := db.ExecContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
     {{- else}}
-    return q.db.ExecContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
+    result, err := q.db.ExecContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
     {{- end}}
+    return result, done(err)
 }
 {{end}}
 

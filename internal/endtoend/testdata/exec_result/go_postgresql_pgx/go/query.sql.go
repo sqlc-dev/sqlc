@@ -16,5 +16,7 @@ DELETE FROM bar WHERE id = $1
 `
 
 func (q *Queries) DeleteBarByID(ctx context.Context, id int32) (pgconn.CommandTag, error) {
-	return q.db.Exec(ctx, deleteBarByID, id)
+	ctx, done := q.observer(ctx, "DeleteBarByID")
+	tag, err := q.db.Exec(ctx, deleteBarByID, id)
+	return tag, done(err)
 }

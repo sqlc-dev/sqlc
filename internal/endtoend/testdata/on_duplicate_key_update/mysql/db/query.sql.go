@@ -24,8 +24,9 @@ type UpsertAuthorParams struct {
 }
 
 func (q *Queries) UpsertAuthor(ctx context.Context, arg UpsertAuthorParams) error {
+	ctx, done := q.observer(ctx, "UpsertAuthor")
 	_, err := q.db.ExecContext(ctx, upsertAuthor, arg.Name, arg.Bio, arg.Bio_2)
-	return err
+	return done(err)
 }
 
 const upsertAuthorNamed = `-- name: UpsertAuthorNamed :exec
@@ -41,6 +42,7 @@ type UpsertAuthorNamedParams struct {
 }
 
 func (q *Queries) UpsertAuthorNamed(ctx context.Context, arg UpsertAuthorNamedParams) error {
+	ctx, done := q.observer(ctx, "UpsertAuthorNamed")
 	_, err := q.db.ExecContext(ctx, upsertAuthorNamed, arg.Name, arg.Bio, arg.Bio)
-	return err
+	return done(err)
 }

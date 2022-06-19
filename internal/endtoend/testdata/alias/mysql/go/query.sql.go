@@ -15,6 +15,7 @@ WHERE b.id = ?
 `
 
 func (q *Queries) AliasBar(ctx context.Context, id int64) error {
+	ctx, done := q.observer(ctx, "AliasBar")
 	_, err := q.db.ExecContext(ctx, aliasBar, id)
-	return err
+	return done(err)
 }

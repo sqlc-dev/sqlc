@@ -18,8 +18,9 @@ INSERT INTO foo (bar) VALUES ("bar")
 
 // This function creates a Foo via :exec
 func (q *Queries) ExecFoo(ctx context.Context, db DBTX) error {
+	ctx, done := q.observer(ctx, "ExecFoo")
 	_, err := db.Exec(ctx, execFoo)
-	return err
+	return done(err)
 }
 
 const execResultFoo = `-- name: ExecResultFoo :execresult
@@ -28,7 +29,9 @@ INSERT INTO foo (bar) VALUES ("bar")
 
 // This function creates a Foo via :execresult
 func (q *Queries) ExecResultFoo(ctx context.Context, db DBTX) (pgconn.CommandTag, error) {
-	return db.Exec(ctx, execResultFoo)
+	ctx, done := q.observer(ctx, "ExecResultFoo")
+	tag, err := db.Exec(ctx, execResultFoo)
+	return tag, done(err)
 }
 
 const execRowFoo = `-- name: ExecRowFoo :execrows
@@ -37,11 +40,12 @@ INSERT INTO foo (bar) VALUES ("bar")
 
 // This function creates a Foo via :execrows
 func (q *Queries) ExecRowFoo(ctx context.Context, db DBTX) (int64, error) {
+	ctx, done := q.observer(ctx, "ExecRowFoo")
 	result, err := db.Exec(ctx, execRowFoo)
 	if err != nil {
-		return 0, err
+		return 0, done(err)
 	}
-	return result.RowsAffected(), nil
+	return result.RowsAffected(), done(nil)
 }
 
 const manyFoo = `-- name: ManyFoo :many
@@ -50,23 +54,24 @@ SELECT bar FROM foo
 
 // This function returns a list of Foos
 func (q *Queries) ManyFoo(ctx context.Context, db DBTX) ([]sql.NullString, error) {
+	ctx, done := q.observer(ctx, "ManyFoo")
 	rows, err := db.Query(ctx, manyFoo)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []sql.NullString
 	for rows.Next() {
 		var bar sql.NullString
 		if err := rows.Scan(&bar); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, bar)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const oneFoo = `-- name: OneFoo :one
@@ -75,8 +80,9 @@ SELECT bar FROM foo
 
 // This function returns one Foo
 func (q *Queries) OneFoo(ctx context.Context, db DBTX) (sql.NullString, error) {
+	ctx, done := q.observer(ctx, "OneFoo")
 	row := db.QueryRow(ctx, oneFoo)
 	var bar sql.NullString
 	err := row.Scan(&bar)
-	return bar, err
+	return bar, done(err)
 }

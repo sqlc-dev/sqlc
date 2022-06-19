@@ -14,21 +14,22 @@ SELECT bar, "interval" FROM foo LIMIT $1
 `
 
 func (q *Queries) Get(ctx context.Context, limit int32) ([]Foo, error) {
+	ctx, done := q.observer(ctx, "Get")
 	rows, err := q.db.Query(ctx, get, limit)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []Foo
 	for rows.Next() {
 		var i Foo
 		if err := rows.Scan(&i.Bar, &i.Interval); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

@@ -20,8 +20,9 @@ type GetNextIDRow struct {
 }
 
 func (q *Queries) GetNextID(ctx context.Context) (GetNextIDRow, error) {
+	ctx, done := q.observer(ctx, "GetNextID")
 	row := q.db.QueryRowContext(ctx, getNextID)
 	var i GetNextIDRow
 	err := row.Scan(&i.Pk, &i.Pk_2)
-	return i, err
+	return i, done(err)
 }

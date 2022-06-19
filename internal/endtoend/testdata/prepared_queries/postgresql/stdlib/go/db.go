@@ -18,11 +18,11 @@ type DBTX interface {
 }
 
 func New(db DBTX) *Queries {
-	return &Queries{db: db}
+	return &Queries{db: db, observer: noopObserver}
 }
 
 func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
-	q := Queries{db: db}
+	q := Queries{db: db, observer: noopObserver}
 	var err error
 	if q.deleteUsersByNameStmt, err = db.PrepareContext(ctx, deleteUsersByName); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteUsersByName: %w", err)
@@ -113,6 +113,35 @@ type Queries struct {
 	insertNewUserStmt           *sql.Stmt
 	insertNewUserWithResultStmt *sql.Stmt
 	listUsersStmt               *sql.Stmt
+	observer                    func(ctx context.Context, methodName string) (context.Context, func(err error) error)
+}
+
+func noopObserver(ctx context.Context, methodName string) (context.Context, func(err error) error) {
+	return ctx, func(err error) error { return err }
+}
+
+// WithObserver can be used to observe queries (metric, log, trace, ...)
+// Example usage:
+// 	queries.WithObserver(func (ctx context.Context, methodName string) (context.Context, func(err error) error) {
+// 		spanCtx, span := tracer.Start(ctx, methodName)
+// 		startTime := time.New()
+// 		return spanCtx, func(err error) error {
+// 			log.Println("Query %q executed in %s", methodName, time.Since(startTime))
+// 			span.End()
+// 			return err
+// 		}
+// 	})
+func (q *Queries) WithObserver(observer func(ctx context.Context, methodName string) (context.Context, func(err error) error)) *Queries {
+	return &Queries{
+		db:                          q.db,
+		tx:                          q.tx,
+		deleteUsersByNameStmt:       q.deleteUsersByNameStmt,
+		getUserByIDStmt:             q.getUserByIDStmt,
+		insertNewUserStmt:           q.insertNewUserStmt,
+		insertNewUserWithResultStmt: q.insertNewUserWithResultStmt,
+		listUsersStmt:               q.listUsersStmt,
+		observer:                    observer,
+	}
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
@@ -124,5 +153,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		insertNewUserStmt:           q.insertNewUserStmt,
 		insertNewUserWithResultStmt: q.insertNewUserWithResultStmt,
 		listUsersStmt:               q.listUsersStmt,
+		observer:                    q.observer,
 	}
 }

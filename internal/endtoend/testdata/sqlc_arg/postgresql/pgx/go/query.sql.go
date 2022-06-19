@@ -14,23 +14,24 @@ SELECT name FROM foo WHERE name = $1
 `
 
 func (q *Queries) FuncParamIdent(ctx context.Context, slug string) ([]string, error) {
+	ctx, done := q.observer(ctx, "FuncParamIdent")
 	rows, err := q.db.Query(ctx, funcParamIdent, slug)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []string
 	for rows.Next() {
 		var name string
 		if err := rows.Scan(&name); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, name)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const funcParamString = `-- name: FuncParamString :many
@@ -38,21 +39,22 @@ SELECT name FROM foo WHERE name = $1
 `
 
 func (q *Queries) FuncParamString(ctx context.Context, slug string) ([]string, error) {
+	ctx, done := q.observer(ctx, "FuncParamString")
 	rows, err := q.db.Query(ctx, funcParamString, slug)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []string
 	for rows.Next() {
 		var name string
 		if err := rows.Scan(&name); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, name)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

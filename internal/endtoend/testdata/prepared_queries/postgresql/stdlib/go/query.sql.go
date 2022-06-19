@@ -20,11 +20,13 @@ type DeleteUsersByNameParams struct {
 }
 
 func (q *Queries) DeleteUsersByName(ctx context.Context, arg DeleteUsersByNameParams) (int64, error) {
+	ctx, done := q.observer(ctx, "DeleteUsersByName")
 	result, err := q.exec(ctx, q.deleteUsersByNameStmt, deleteUsersByName, arg.FirstName, arg.LastName)
 	if err != nil {
-		return 0, err
+		return 0, done(err)
 	}
-	return result.RowsAffected()
+	rowsAffected, err := result.RowsAffected()
+	return rowsAffected, done(err)
 }
 
 const getUserByID = `-- name: GetUserByID :one
@@ -38,10 +40,11 @@ type GetUserByIDRow struct {
 }
 
 func (q *Queries) GetUserByID(ctx context.Context, targetID int32) (GetUserByIDRow, error) {
+	ctx, done := q.observer(ctx, "GetUserByID")
 	row := q.queryRow(ctx, q.getUserByIDStmt, getUserByID, targetID)
 	var i GetUserByIDRow
 	err := row.Scan(&i.FirstName, &i.ID, &i.LastName)
-	return i, err
+	return i, done(err)
 }
 
 const insertNewUser = `-- name: InsertNewUser :exec
@@ -54,8 +57,9 @@ type InsertNewUserParams struct {
 }
 
 func (q *Queries) InsertNewUser(ctx context.Context, arg InsertNewUserParams) error {
+	ctx, done := q.observer(ctx, "InsertNewUser")
 	_, err := q.exec(ctx, q.insertNewUserStmt, insertNewUser, arg.FirstName, arg.LastName)
-	return err
+	return done(err)
 }
 
 const insertNewUserWithResult = `-- name: InsertNewUserWithResult :execresult
@@ -68,7 +72,9 @@ type InsertNewUserWithResultParams struct {
 }
 
 func (q *Queries) InsertNewUserWithResult(ctx context.Context, arg InsertNewUserWithResultParams) (sql.Result, error) {
-	return q.exec(ctx, q.insertNewUserWithResultStmt, insertNewUserWithResult, arg.FirstName, arg.LastName)
+	ctx, done := q.observer(ctx, "InsertNewUserWithResult")
+	result, err := q.exec(ctx, q.insertNewUserWithResultStmt, insertNewUserWithResult, arg.FirstName, arg.LastName)
+	return result, done(err)
 }
 
 const listUsers = `-- name: ListUsers :many
@@ -81,24 +87,25 @@ type ListUsersRow struct {
 }
 
 func (q *Queries) ListUsers(ctx context.Context) ([]ListUsersRow, error) {
+	ctx, done := q.observer(ctx, "ListUsers")
 	rows, err := q.query(ctx, q.listUsersStmt, listUsers)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []ListUsersRow
 	for rows.Next() {
 		var i ListUsersRow
 		if err := rows.Scan(&i.FirstName, &i.LastName); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

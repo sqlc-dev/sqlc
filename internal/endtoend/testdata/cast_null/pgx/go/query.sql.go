@@ -27,9 +27,10 @@ type ListNullableRow struct {
 }
 
 func (q *Queries) ListNullable(ctx context.Context) ([]ListNullableRow, error) {
+	ctx, done := q.observer(ctx, "ListNullable")
 	rows, err := q.db.Query(ctx, listNullable)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []ListNullableRow
@@ -41,12 +42,12 @@ func (q *Queries) ListNullable(ctx context.Context) ([]ListNullableRow, error) {
 			&i.C,
 			&i.D,
 		); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

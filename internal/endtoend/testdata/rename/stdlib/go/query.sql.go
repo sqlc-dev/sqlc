@@ -14,26 +14,27 @@ SELECT id_old, ip_old FROM bar_old
 `
 
 func (q *Queries) ListBar(ctx context.Context) ([]BarNew, error) {
+	ctx, done := q.observer(ctx, "ListBar")
 	rows, err := q.db.QueryContext(ctx, listBar)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []BarNew
 	for rows.Next() {
 		var i BarNew
 		if err := rows.Scan(&i.IDNew, &i.IpOld); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const listFoo = `-- name: ListFoo :many
@@ -53,24 +54,25 @@ type ListFooRow struct {
 }
 
 func (q *Queries) ListFoo(ctx context.Context, arg ListFooParams) ([]ListFooRow, error) {
+	ctx, done := q.observer(ctx, "ListFoo")
 	rows, err := q.db.QueryContext(ctx, listFoo, arg.IpOld, arg.IDNew)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []ListFooRow
 	for rows.Next() {
 		var i ListFooRow
 		if err := rows.Scan(&i.FooNew, &i.BazOld); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

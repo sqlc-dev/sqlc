@@ -21,24 +21,25 @@ type GetBarRow struct {
 }
 
 func (q *Queries) GetBar(ctx context.Context) ([]GetBarRow, error) {
+	ctx, done := q.observer(ctx, "GetBar")
 	rows, err := q.db.QueryContext(ctx, getBar)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []GetBarRow
 	for rows.Next() {
 		var i GetBarRow
 		if err := rows.Scan(&i.ID, &i.BarID); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

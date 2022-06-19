@@ -14,8 +14,9 @@ SELECT pg_advisory_lock($1)
 `
 
 func (q *Queries) AdvisoryLockExec(ctx context.Context, pgAdvisoryLock int64) error {
+	ctx, done := q.observer(ctx, "AdvisoryLockExec")
 	_, err := q.db.ExecContext(ctx, advisoryLockExec, pgAdvisoryLock)
-	return err
+	return done(err)
 }
 
 const advisoryLockExecRows = `-- name: AdvisoryLockExecRows :execrows
@@ -23,9 +24,11 @@ SELECT pg_advisory_lock($1)
 `
 
 func (q *Queries) AdvisoryLockExecRows(ctx context.Context, pgAdvisoryLock int64) (int64, error) {
+	ctx, done := q.observer(ctx, "AdvisoryLockExecRows")
 	result, err := q.db.ExecContext(ctx, advisoryLockExecRows, pgAdvisoryLock)
 	if err != nil {
-		return 0, err
+		return 0, done(err)
 	}
-	return result.RowsAffected()
+	rowsAffected, err := result.RowsAffected()
+	return rowsAffected, done(err)
 }

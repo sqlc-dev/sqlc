@@ -16,26 +16,27 @@ FROM foo
 `
 
 func (q *Queries) Coalesce(ctx context.Context) ([]string, error) {
+	ctx, done := q.observer(ctx, "Coalesce")
 	rows, err := q.db.QueryContext(ctx, coalesce)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []string
 	for rows.Next() {
 		var login string
 		if err := rows.Scan(&login); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, login)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const coalesceColumns = `-- name: CoalesceColumns :many
@@ -50,24 +51,25 @@ type CoalesceColumnsRow struct {
 }
 
 func (q *Queries) CoalesceColumns(ctx context.Context) ([]CoalesceColumnsRow, error) {
+	ctx, done := q.observer(ctx, "CoalesceColumns")
 	rows, err := q.db.QueryContext(ctx, coalesceColumns)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []CoalesceColumnsRow
 	for rows.Next() {
 		var i CoalesceColumnsRow
 		if err := rows.Scan(&i.Bar, &i.Bat, &i.Bar_2); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

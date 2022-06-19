@@ -24,26 +24,27 @@ type AliasExpandRow struct {
 }
 
 func (q *Queries) AliasExpand(ctx context.Context, id int64) ([]AliasExpandRow, error) {
+	ctx, done := q.observer(ctx, "AliasExpand")
 	rows, err := q.db.QueryContext(ctx, aliasExpand, id)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []AliasExpandRow
 	for rows.Next() {
 		var i AliasExpandRow
 		if err := rows.Scan(&i.ID, &i.ID_2, &i.Title); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const aliasJoin = `-- name: AliasJoin :many
@@ -59,24 +60,25 @@ type AliasJoinRow struct {
 }
 
 func (q *Queries) AliasJoin(ctx context.Context, id int64) ([]AliasJoinRow, error) {
+	ctx, done := q.observer(ctx, "AliasJoin")
 	rows, err := q.db.QueryContext(ctx, aliasJoin, id)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []AliasJoinRow
 	for rows.Next() {
 		var i AliasJoinRow
 		if err := rows.Scan(&i.ID, &i.Title); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

@@ -14,21 +14,22 @@ SELECT val FROM foo
 `
 
 func (q *Queries) ListFoo(ctx context.Context) ([]Foobar, error) {
+	ctx, done := q.observer(ctx, "ListFoo")
 	rows, err := q.db.Query(ctx, listFoo)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []Foobar
 	for rows.Next() {
 		var val Foobar
 		if err := rows.Scan(&val); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, val)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

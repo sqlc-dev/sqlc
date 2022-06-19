@@ -19,6 +19,7 @@ type UpdateBarIDParams struct {
 }
 
 func (q *Queries) UpdateBarID(ctx context.Context, arg UpdateBarIDParams) error {
+	ctx, done := q.observer(ctx, "UpdateBarID")
 	_, err := q.db.Exec(ctx, UpdateBarID, arg.ID, arg.ID_2)
-	return err
+	return done(err)
 }

@@ -14,6 +14,7 @@ SELECT a, b, c, d FROM foo
 `
 
 func (q *Queries) SelectFoo(ctx context.Context) error {
+	ctx, done := q.observer(ctx, "SelectFoo")
 	_, err := q.db.Exec(ctx, selectFoo)
-	return err
+	return done(err)
 }

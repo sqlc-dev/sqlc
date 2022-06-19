@@ -23,10 +23,11 @@ type GetUserByIDRow struct {
 }
 
 func (q *Queries) GetUserByID(ctx context.Context, targetID int32) (GetUserByIDRow, error) {
+	ctx, done := q.observer(ctx, "GetUserByID")
 	row := q.db.QueryRow(ctx, getUserByID, targetID)
 	var i GetUserByIDRow
 	err := row.Scan(&i.FirstName, &i.ID, &i.LastName)
-	return i, err
+	return i, done(err)
 }
 
 const insertNewUser = `-- name: InsertNewUser :exec
@@ -39,8 +40,9 @@ type InsertNewUserParams struct {
 }
 
 func (q *Queries) InsertNewUser(ctx context.Context, arg InsertNewUserParams) error {
+	ctx, done := q.observer(ctx, "InsertNewUser")
 	_, err := q.db.Exec(ctx, insertNewUser, arg.FirstName, arg.LastName)
-	return err
+	return done(err)
 }
 
 const limitSQLCArg = `-- name: LimitSQLCArg :many
@@ -53,23 +55,24 @@ type LimitSQLCArgRow struct {
 }
 
 func (q *Queries) LimitSQLCArg(ctx context.Context, limit int32) ([]LimitSQLCArgRow, error) {
+	ctx, done := q.observer(ctx, "LimitSQLCArg")
 	rows, err := q.db.Query(ctx, limitSQLCArg, limit)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []LimitSQLCArgRow
 	for rows.Next() {
 		var i LimitSQLCArgRow
 		if err := rows.Scan(&i.FirstName, &i.ID); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const listUserOrders = `-- name: ListUserOrders :many
@@ -90,23 +93,24 @@ type ListUserOrdersRow struct {
 }
 
 func (q *Queries) ListUserOrders(ctx context.Context, minPrice pgtype.Numeric) ([]ListUserOrdersRow, error) {
+	ctx, done := q.observer(ctx, "ListUserOrders")
 	rows, err := q.db.Query(ctx, listUserOrders, minPrice)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []ListUserOrdersRow
 	for rows.Next() {
 		var i ListUserOrdersRow
 		if err := rows.Scan(&i.ID, &i.FirstName, &i.Price); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const listUserParenExpr = `-- name: ListUserParenExpr :many
@@ -122,9 +126,10 @@ type ListUserParenExprParams struct {
 }
 
 func (q *Queries) ListUserParenExpr(ctx context.Context, arg ListUserParenExprParams) ([]User, error) {
+	ctx, done := q.observer(ctx, "ListUserParenExpr")
 	rows, err := q.db.Query(ctx, listUserParenExpr, arg.ID, arg.Limit)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []User
@@ -137,14 +142,14 @@ func (q *Queries) ListUserParenExpr(ctx context.Context, arg ListUserParenExprPa
 			&i.Age,
 			&i.JobStatus,
 		); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const listUsersByFamily = `-- name: ListUsersByFamily :many
@@ -162,23 +167,24 @@ type ListUsersByFamilyRow struct {
 }
 
 func (q *Queries) ListUsersByFamily(ctx context.Context, arg ListUsersByFamilyParams) ([]ListUsersByFamilyRow, error) {
+	ctx, done := q.observer(ctx, "ListUsersByFamily")
 	rows, err := q.db.Query(ctx, listUsersByFamily, arg.MaxAge, arg.InFamily)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []ListUsersByFamilyRow
 	for rows.Next() {
 		var i ListUsersByFamilyRow
 		if err := rows.Scan(&i.FirstName, &i.LastName); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const listUsersByID = `-- name: ListUsersByID :many
@@ -192,23 +198,24 @@ type ListUsersByIDRow struct {
 }
 
 func (q *Queries) ListUsersByID(ctx context.Context, id int32) ([]ListUsersByIDRow, error) {
+	ctx, done := q.observer(ctx, "ListUsersByID")
 	rows, err := q.db.Query(ctx, listUsersByID, id)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []ListUsersByIDRow
 	for rows.Next() {
 		var i ListUsersByIDRow
 		if err := rows.Scan(&i.FirstName, &i.ID, &i.LastName); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const listUsersWithLimit = `-- name: ListUsersWithLimit :many
@@ -221,21 +228,22 @@ type ListUsersWithLimitRow struct {
 }
 
 func (q *Queries) ListUsersWithLimit(ctx context.Context, limit int32) ([]ListUsersWithLimitRow, error) {
+	ctx, done := q.observer(ctx, "ListUsersWithLimit")
 	rows, err := q.db.Query(ctx, listUsersWithLimit, limit)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []ListUsersWithLimitRow
 	for rows.Next() {
 		var i ListUsersWithLimitRow
 		if err := rows.Scan(&i.FirstName, &i.LastName); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

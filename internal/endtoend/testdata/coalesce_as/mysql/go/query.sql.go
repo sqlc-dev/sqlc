@@ -22,24 +22,25 @@ type SumBazRow struct {
 }
 
 func (q *Queries) SumBaz(ctx context.Context) ([]SumBazRow, error) {
+	ctx, done := q.observer(ctx, "SumBaz")
 	rows, err := q.db.QueryContext(ctx, sumBaz)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []SumBazRow
 	for rows.Next() {
 		var i SumBazRow
 		if err := rows.Scan(&i.Bar, &i.Quantity); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

@@ -15,10 +15,11 @@ RETURNING author_id, name
 `
 
 func (q *Queries) CreateAuthor(ctx context.Context, name string) (Author, error) {
+	ctx, done := q.observer(ctx, "CreateAuthor")
 	row := q.db.QueryRow(ctx, createAuthor, name)
 	var i Author
 	err := row.Scan(&i.AuthorID, &i.Name)
-	return i, err
+	return i, done(err)
 }
 
 const getAuthor = `-- name: GetAuthor :one
@@ -27,8 +28,9 @@ WHERE author_id = $1
 `
 
 func (q *Queries) GetAuthor(ctx context.Context, authorID int32) (Author, error) {
+	ctx, done := q.observer(ctx, "GetAuthor")
 	row := q.db.QueryRow(ctx, getAuthor, authorID)
 	var i Author
 	err := row.Scan(&i.AuthorID, &i.Name)
-	return i, err
+	return i, done(err)
 }

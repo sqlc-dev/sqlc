@@ -14,24 +14,25 @@ SELECT id, status FROM log_lines
 `
 
 func (q *Queries) ListAuthors(ctx context.Context) ([]LogLine, error) {
+	ctx, done := q.observer(ctx, "ListAuthors")
 	rows, err := q.db.QueryContext(ctx, listAuthors)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []LogLine
 	for rows.Next() {
 		var i LogLine
 		if err := rows.Scan(&i.ID, &i.Status); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

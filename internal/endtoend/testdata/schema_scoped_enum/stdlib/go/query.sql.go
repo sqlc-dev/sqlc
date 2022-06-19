@@ -14,24 +14,25 @@ SELECT role FROM foo.users WHERE role = $1
 `
 
 func (q *Queries) ListUsersByRole(ctx context.Context, role NullFooTypeUserRole) ([]NullFooTypeUserRole, error) {
+	ctx, done := q.observer(ctx, "ListUsersByRole")
 	rows, err := q.db.QueryContext(ctx, listUsersByRole, role)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []NullFooTypeUserRole
 	for rows.Next() {
 		var role NullFooTypeUserRole
 		if err := rows.Scan(&role); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, role)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

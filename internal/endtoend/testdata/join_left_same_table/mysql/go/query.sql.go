@@ -28,9 +28,10 @@ type AllAuthorsRow struct {
 }
 
 func (q *Queries) AllAuthors(ctx context.Context) ([]AllAuthorsRow, error) {
+	ctx, done := q.observer(ctx, "AllAuthors")
 	rows, err := q.db.QueryContext(ctx, allAuthors)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []AllAuthorsRow
@@ -42,15 +43,15 @@ func (q *Queries) AllAuthors(ctx context.Context) ([]AllAuthorsRow, error) {
 			&i.AliasID,
 			&i.AliasName,
 		); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

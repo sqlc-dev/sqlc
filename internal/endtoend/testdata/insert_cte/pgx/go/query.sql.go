@@ -33,6 +33,7 @@ type InsertCodeParams struct {
 
 // FILE: query.sql
 func (q *Queries) InsertCode(ctx context.Context, arg InsertCodeParams) (Td3TestCode, error) {
+	ctx, done := q.observer(ctx, "InsertCode")
 	row := q.db.QueryRow(ctx, insertCode,
 		arg.CreatedBy,
 		arg.Code,
@@ -49,5 +50,5 @@ func (q *Queries) InsertCode(ctx context.Context, arg InsertCodeParams) (Td3Test
 		&i.TestID,
 		&i.CodeHash,
 	)
-	return i, err
+	return i, done(err)
 }

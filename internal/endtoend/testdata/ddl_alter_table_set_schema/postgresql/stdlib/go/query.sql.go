@@ -15,8 +15,9 @@ SELECT name FROM foo.bar
 `
 
 func (q *Queries) GetFooBar(ctx context.Context) error {
+	ctx, done := q.observer(ctx, "GetFooBar")
 	_, err := q.db.ExecContext(ctx, getFooBar)
-	return err
+	return done(err)
 }
 
 const updateFooBar = `-- name: UpdateFooBar :exec
@@ -24,6 +25,7 @@ UPDATE foo.bar SET name = $1
 `
 
 func (q *Queries) UpdateFooBar(ctx context.Context, name sql.NullString) error {
+	ctx, done := q.observer(ctx, "UpdateFooBar")
 	_, err := q.db.ExecContext(ctx, updateFooBar, name)
-	return err
+	return done(err)
 }

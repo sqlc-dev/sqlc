@@ -19,6 +19,7 @@ type UpdateSetMultipleParams struct {
 }
 
 func (q *Queries) UpdateSetMultiple(ctx context.Context, arg UpdateSetMultipleParams) error {
+	ctx, done := q.observer(ctx, "UpdateSetMultiple")
 	_, err := q.db.ExecContext(ctx, updateSetMultiple, arg.Name, arg.Slug)
-	return err
+	return done(err)
 }

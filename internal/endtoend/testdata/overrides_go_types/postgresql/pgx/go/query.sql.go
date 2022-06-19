@@ -16,9 +16,10 @@ SELECT id, other_id, age, balance, bio, about FROM foo WHERE id = $1
 `
 
 func (q *Queries) LoadFoo(ctx context.Context, id uuid.UUID) ([]Foo, error) {
+	ctx, done := q.observer(ctx, "LoadFoo")
 	rows, err := q.db.Query(ctx, loadFoo, id)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []Foo
@@ -32,12 +33,12 @@ func (q *Queries) LoadFoo(ctx context.Context, id uuid.UUID) ([]Foo, error) {
 			&i.Bio,
 			&i.About,
 		); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

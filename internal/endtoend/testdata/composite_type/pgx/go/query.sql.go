@@ -14,21 +14,22 @@ SELECT point_one, point_two FROM foo.paths
 `
 
 func (q *Queries) ListPaths(ctx context.Context) ([]FooPath, error) {
+	ctx, done := q.observer(ctx, "ListPaths")
 	rows, err := q.db.Query(ctx, listPaths)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []FooPath
 	for rows.Next() {
 		var i FooPath
 		if err := rows.Scan(&i.PointOne, &i.PointTwo); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

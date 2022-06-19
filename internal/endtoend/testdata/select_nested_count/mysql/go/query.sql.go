@@ -26,9 +26,10 @@ type GetAuthorsWithBooksCountRow struct {
 }
 
 func (q *Queries) GetAuthorsWithBooksCount(ctx context.Context) ([]GetAuthorsWithBooksCountRow, error) {
+	ctx, done := q.observer(ctx, "GetAuthorsWithBooksCount")
 	rows, err := q.db.QueryContext(ctx, getAuthorsWithBooksCount)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []GetAuthorsWithBooksCountRow
@@ -40,15 +41,15 @@ func (q *Queries) GetAuthorsWithBooksCount(ctx context.Context) ([]GetAuthorsWit
 			&i.Bio,
 			&i.BooksCount,
 		); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

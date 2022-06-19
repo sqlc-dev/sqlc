@@ -15,26 +15,27 @@ SELECT val FROM first_view
 `
 
 func (q *Queries) GetFirst(ctx context.Context) ([]string, error) {
+	ctx, done := q.observer(ctx, "GetFirst")
 	rows, err := q.db.QueryContext(ctx, getFirst)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []string
 	for rows.Next() {
 		var val string
 		if err := rows.Scan(&val); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, val)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const getSecond = `-- name: GetSecond :many
@@ -42,24 +43,25 @@ SELECT val, val2 FROM second_view WHERE val2 = $1
 `
 
 func (q *Queries) GetSecond(ctx context.Context, val2 sql.NullInt32) ([]SecondView, error) {
+	ctx, done := q.observer(ctx, "GetSecond")
 	rows, err := q.db.QueryContext(ctx, getSecond, val2)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []SecondView
 	for rows.Next() {
 		var i SecondView
 		if err := rows.Scan(&i.Val, &i.Val2); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

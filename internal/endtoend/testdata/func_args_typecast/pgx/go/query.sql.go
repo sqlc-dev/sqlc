@@ -19,8 +19,9 @@ type PlusPositionalCastParams struct {
 }
 
 func (q *Queries) PlusPositionalCast(ctx context.Context, arg PlusPositionalCastParams) (int32, error) {
+	ctx, done := q.observer(ctx, "PlusPositionalCast")
 	row := q.db.QueryRow(ctx, plusPositionalCast, arg.A, arg.Column2)
 	var plus int32
 	err := row.Scan(&plus)
-	return plus, err
+	return plus, done(err)
 }

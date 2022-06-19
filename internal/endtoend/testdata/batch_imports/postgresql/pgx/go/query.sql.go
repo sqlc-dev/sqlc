@@ -20,6 +20,7 @@ type UpdateValuesParams struct {
 }
 
 func (q *Queries) UpdateValues(ctx context.Context, arg UpdateValuesParams) error {
+	ctx, done := q.observer(ctx, "UpdateValues")
 	_, err := q.db.Exec(ctx, updateValues, arg.A, arg.B)
-	return err
+	return done(err)
 }

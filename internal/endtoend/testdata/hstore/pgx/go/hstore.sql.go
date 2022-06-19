@@ -16,23 +16,24 @@ SELECT bar FROM foo
 `
 
 func (q *Queries) ListBar(ctx context.Context) ([]pgtype.Hstore, error) {
+	ctx, done := q.observer(ctx, "ListBar")
 	rows, err := q.db.Query(ctx, listBar)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []pgtype.Hstore
 	for rows.Next() {
 		var bar pgtype.Hstore
 		if err := rows.Scan(&bar); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, bar)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const listBaz = `-- name: ListBaz :many
@@ -40,21 +41,22 @@ SELECT baz FROM foo
 `
 
 func (q *Queries) ListBaz(ctx context.Context) ([]pgtype.Hstore, error) {
+	ctx, done := q.observer(ctx, "ListBaz")
 	rows, err := q.db.Query(ctx, listBaz)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []pgtype.Hstore
 	for rows.Next() {
 		var baz pgtype.Hstore
 		if err := rows.Scan(&baz); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, baz)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

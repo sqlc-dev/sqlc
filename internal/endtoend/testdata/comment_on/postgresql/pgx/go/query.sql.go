@@ -14,21 +14,22 @@ SELECT baz FROM foo.bar
 `
 
 func (q *Queries) ListBar(ctx context.Context) ([]string, error) {
+	ctx, done := q.observer(ctx, "ListBar")
 	rows, err := q.db.Query(ctx, listBar)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []string
 	for rows.Next() {
 		var baz string
 		if err := rows.Scan(&baz); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, baz)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

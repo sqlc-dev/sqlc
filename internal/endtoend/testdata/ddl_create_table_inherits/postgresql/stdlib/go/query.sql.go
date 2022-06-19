@@ -14,26 +14,27 @@ SELECT party_id, name, legal_name FROM organisation
 `
 
 func (q *Queries) GetAllOrganisations(ctx context.Context) ([]Organisation, error) {
+	ctx, done := q.observer(ctx, "GetAllOrganisations")
 	rows, err := q.db.QueryContext(ctx, getAllOrganisations)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []Organisation
 	for rows.Next() {
 		var i Organisation
 		if err := rows.Scan(&i.PartyID, &i.Name, &i.LegalName); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const getAllParties = `-- name: GetAllParties :many
@@ -41,26 +42,27 @@ SELECT party_id, name FROM party
 `
 
 func (q *Queries) GetAllParties(ctx context.Context) ([]Party, error) {
+	ctx, done := q.observer(ctx, "GetAllParties")
 	rows, err := q.db.QueryContext(ctx, getAllParties)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []Party
 	for rows.Next() {
 		var i Party
 		if err := rows.Scan(&i.PartyID, &i.Name); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const getAllPeople = `-- name: GetAllPeople :many
@@ -68,9 +70,10 @@ SELECT party_id, name, first_name, last_name FROM person
 `
 
 func (q *Queries) GetAllPeople(ctx context.Context) ([]Person, error) {
+	ctx, done := q.observer(ctx, "GetAllPeople")
 	rows, err := q.db.QueryContext(ctx, getAllPeople)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []Person
@@ -82,15 +85,15 @@ func (q *Queries) GetAllPeople(ctx context.Context) ([]Person, error) {
 			&i.FirstName,
 			&i.LastName,
 		); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

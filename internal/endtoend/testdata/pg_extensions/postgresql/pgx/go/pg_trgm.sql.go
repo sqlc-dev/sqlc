@@ -14,8 +14,9 @@ SELECT word_similarity('word', 'two words')
 `
 
 func (q *Queries) WordSimilarity(ctx context.Context) (float32, error) {
+	ctx, done := q.observer(ctx, "WordSimilarity")
 	row := q.db.QueryRow(ctx, wordSimilarity)
 	var word_similarity float32
 	err := row.Scan(&word_similarity)
-	return word_similarity, err
+	return word_similarity, done(err)
 }

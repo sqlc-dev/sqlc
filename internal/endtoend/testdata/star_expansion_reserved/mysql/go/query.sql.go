@@ -14,24 +14,25 @@ SELECT ` + "`" + `group` + "`" + `, ` + "`" + `key` + "`" + ` FROM foo
 `
 
 func (q *Queries) StarExpansionReserved(ctx context.Context) ([]Foo, error) {
+	ctx, done := q.observer(ctx, "StarExpansionReserved")
 	rows, err := q.db.QueryContext(ctx, starExpansionReserved)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []Foo
 	for rows.Next() {
 		var i Foo
 		if err := rows.Scan(&i.Group, &i.Key); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

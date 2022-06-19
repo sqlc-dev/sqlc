@@ -24,24 +24,25 @@ type FullJoinRow struct {
 }
 
 func (q *Queries) FullJoin(ctx context.Context, id int32) ([]FullJoinRow, error) {
+	ctx, done := q.observer(ctx, "FullJoin")
 	rows, err := q.db.QueryContext(ctx, fullJoin, id)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []FullJoinRow
 	for rows.Next() {
 		var i FullJoinRow
 		if err := rows.Scan(&i.ID, &i.BarID, &i.ID_2); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

@@ -14,21 +14,22 @@ SELECT bar::int FROM foo
 `
 
 func (q *Queries) SelectColumnCast(ctx context.Context) ([]int32, error) {
+	ctx, done := q.observer(ctx, "SelectColumnCast")
 	rows, err := q.db.Query(ctx, selectColumnCast)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []int32
 	for rows.Next() {
 		var bar int32
 		if err := rows.Scan(&bar); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, bar)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

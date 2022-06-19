@@ -22,8 +22,9 @@ type TableNameParams struct {
 }
 
 func (q *Queries) TableName(ctx context.Context, arg TableNameParams) (int64, error) {
+	ctx, done := q.observer(ctx, "TableName")
 	row := q.db.QueryRowContext(ctx, tableName, arg.ID, arg.ID_2)
 	var id int64
 	err := row.Scan(&id)
-	return id, err
+	return id, done(err)
 }

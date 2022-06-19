@@ -16,26 +16,27 @@ LIMIT ?
 `
 
 func (q *Queries) FooLimit(ctx context.Context, limit int32) ([]sql.NullString, error) {
+	ctx, done := q.observer(ctx, "FooLimit")
 	rows, err := q.db.QueryContext(ctx, fooLimit, limit)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []sql.NullString
 	for rows.Next() {
 		var a sql.NullString
 		if err := rows.Scan(&a); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, a)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const fooLimitOffset = `-- name: FooLimitOffset :many
@@ -49,24 +50,25 @@ type FooLimitOffsetParams struct {
 }
 
 func (q *Queries) FooLimitOffset(ctx context.Context, arg FooLimitOffsetParams) ([]sql.NullString, error) {
+	ctx, done := q.observer(ctx, "FooLimitOffset")
 	rows, err := q.db.QueryContext(ctx, fooLimitOffset, arg.Limit, arg.Offset)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []sql.NullString
 	for rows.Next() {
 		var a sql.NullString
 		if err := rows.Scan(&a); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, a)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

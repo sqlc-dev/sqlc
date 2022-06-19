@@ -25,24 +25,25 @@ type CTECountRow struct {
 }
 
 func (q *Queries) CTECount(ctx context.Context) ([]CTECountRow, error) {
+	ctx, done := q.observer(ctx, "CTECount")
 	rows, err := q.db.QueryContext(ctx, cTECount)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []CTECountRow
 	for rows.Next() {
 		var i CTECountRow
 		if err := rows.Scan(&i.Count, &i.Count_2); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

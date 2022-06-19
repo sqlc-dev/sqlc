@@ -15,8 +15,9 @@ FROM foo
 `
 
 func (q *Queries) Bar(ctx context.Context) error {
+	ctx, done := q.observer(ctx, "Bar")
 	_, err := q.db.Exec(ctx, bar)
-	return err
+	return done(err)
 }
 
 const bars = `-- name: Bars :exec
@@ -25,6 +26,7 @@ FROM foo
 `
 
 func (q *Queries) Bars(ctx context.Context) error {
+	ctx, done := q.observer(ctx, "Bars")
 	_, err := q.db.Exec(ctx, bars)
-	return err
+	return done(err)
 }

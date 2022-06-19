@@ -16,8 +16,9 @@ SELECT uuid_generate_v4()
 `
 
 func (q *Queries) GenerateUUID(ctx context.Context) (uuid.UUID, error) {
+	ctx, done := q.observer(ctx, "GenerateUUID")
 	row := q.db.QueryRow(ctx, generateUUID)
 	var uuid_generate_v4 uuid.UUID
 	err := row.Scan(&uuid_generate_v4)
-	return uuid_generate_v4, err
+	return uuid_generate_v4, done(err)
 }

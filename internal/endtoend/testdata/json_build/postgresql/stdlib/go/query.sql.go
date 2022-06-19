@@ -28,6 +28,7 @@ type SelectJSONBBuildArrayRow struct {
 }
 
 func (q *Queries) SelectJSONBBuildArray(ctx context.Context) (SelectJSONBBuildArrayRow, error) {
+	ctx, done := q.observer(ctx, "SelectJSONBBuildArray")
 	row := q.db.QueryRowContext(ctx, selectJSONBBuildArray)
 	var i SelectJSONBBuildArrayRow
 	err := row.Scan(
@@ -37,7 +38,7 @@ func (q *Queries) SelectJSONBBuildArray(ctx context.Context) (SelectJSONBBuildAr
 		&i.JsonbBuildArray_4,
 		&i.JsonbBuildArray_5,
 	)
-	return i, err
+	return i, done(err)
 }
 
 const selectJSONBBuildObject = `-- name: SelectJSONBBuildObject :one
@@ -58,6 +59,7 @@ type SelectJSONBBuildObjectRow struct {
 }
 
 func (q *Queries) SelectJSONBBuildObject(ctx context.Context) (SelectJSONBBuildObjectRow, error) {
+	ctx, done := q.observer(ctx, "SelectJSONBBuildObject")
 	row := q.db.QueryRowContext(ctx, selectJSONBBuildObject)
 	var i SelectJSONBBuildObjectRow
 	err := row.Scan(
@@ -67,7 +69,7 @@ func (q *Queries) SelectJSONBBuildObject(ctx context.Context) (SelectJSONBBuildO
 		&i.JsonbBuildObject_4,
 		&i.JsonbBuildObject_5,
 	)
-	return i, err
+	return i, done(err)
 }
 
 const selectJSONBuildArray = `-- name: SelectJSONBuildArray :one
@@ -88,6 +90,7 @@ type SelectJSONBuildArrayRow struct {
 }
 
 func (q *Queries) SelectJSONBuildArray(ctx context.Context) (SelectJSONBuildArrayRow, error) {
+	ctx, done := q.observer(ctx, "SelectJSONBuildArray")
 	row := q.db.QueryRowContext(ctx, selectJSONBuildArray)
 	var i SelectJSONBuildArrayRow
 	err := row.Scan(
@@ -97,7 +100,7 @@ func (q *Queries) SelectJSONBuildArray(ctx context.Context) (SelectJSONBuildArra
 		&i.JsonBuildArray_4,
 		&i.JsonBuildArray_5,
 	)
-	return i, err
+	return i, done(err)
 }
 
 const selectJSONBuildObject = `-- name: SelectJSONBuildObject :one
@@ -118,6 +121,7 @@ type SelectJSONBuildObjectRow struct {
 }
 
 func (q *Queries) SelectJSONBuildObject(ctx context.Context) (SelectJSONBuildObjectRow, error) {
+	ctx, done := q.observer(ctx, "SelectJSONBuildObject")
 	row := q.db.QueryRowContext(ctx, selectJSONBuildObject)
 	var i SelectJSONBuildObjectRow
 	err := row.Scan(
@@ -127,5 +131,5 @@ func (q *Queries) SelectJSONBuildObject(ctx context.Context) (SelectJSONBuildObj
 		&i.JsonBuildObject_4,
 		&i.JsonBuildObject_5,
 	)
-	return i, err
+	return i, done(err)
 }

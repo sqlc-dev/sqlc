@@ -24,6 +24,7 @@ type ListAuthorsParams struct {
 }
 
 func (q *Queries) ListAuthors(ctx context.Context, arg ListAuthorsParams) (Author, error) {
+	ctx, done := q.observer(ctx, "ListAuthors")
 	row := q.db.QueryRowContext(ctx, listAuthors,
 		arg.Email,
 		arg.Email,
@@ -38,5 +39,5 @@ func (q *Queries) ListAuthors(ctx context.Context, arg ListAuthorsParams) (Autho
 		&i.Name,
 		&i.Bio,
 	)
-	return i, err
+	return i, done(err)
 }

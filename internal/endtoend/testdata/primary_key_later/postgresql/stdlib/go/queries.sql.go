@@ -20,8 +20,9 @@ LIMIT 1
 `
 
 func (q *Queries) GetAuthor(ctx context.Context, id int64) (Author, error) {
+	ctx, done := q.observer(ctx, "GetAuthor")
 	row := q.db.QueryRowContext(ctx, getAuthor, id)
 	var i Author
 	err := row.Scan(&i.ID, &i.Name, &i.Bio)
-	return i, err
+	return i, done(err)
 }

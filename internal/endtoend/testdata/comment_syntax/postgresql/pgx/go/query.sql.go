@@ -15,10 +15,11 @@ SELECT bar FROM foo LIMIT 1
 `
 
 func (q *Queries) DoubleDash(ctx context.Context) (sql.NullString, error) {
+	ctx, done := q.observer(ctx, "DoubleDash")
 	row := q.db.QueryRow(ctx, doubleDash)
 	var bar sql.NullString
 	err := row.Scan(&bar)
-	return bar, err
+	return bar, done(err)
 }
 
 const slashStar = `-- name: SlashStar :one
@@ -26,8 +27,9 @@ SELECT bar FROM foo LIMIT 1
 `
 
 func (q *Queries) SlashStar(ctx context.Context) (sql.NullString, error) {
+	ctx, done := q.observer(ctx, "SlashStar")
 	row := q.db.QueryRow(ctx, slashStar)
 	var bar sql.NullString
 	err := row.Scan(&bar)
-	return bar, err
+	return bar, done(err)
 }

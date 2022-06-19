@@ -14,23 +14,24 @@ SELECT count(*) <> 0 FROM bar
 `
 
 func (q *Queries) AlsoNotEqual(ctx context.Context) ([]bool, error) {
+	ctx, done := q.observer(ctx, "AlsoNotEqual")
 	rows, err := q.db.Query(ctx, alsoNotEqual)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []bool
 	for rows.Next() {
 		var column_1 bool
 		if err := rows.Scan(&column_1); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, column_1)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const equal = `-- name: Equal :many
@@ -38,23 +39,24 @@ SELECT count(*) = 0 FROM bar
 `
 
 func (q *Queries) Equal(ctx context.Context) ([]bool, error) {
+	ctx, done := q.observer(ctx, "Equal")
 	rows, err := q.db.Query(ctx, equal)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []bool
 	for rows.Next() {
 		var column_1 bool
 		if err := rows.Scan(&column_1); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, column_1)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const greaterThan = `-- name: GreaterThan :many
@@ -62,23 +64,24 @@ SELECT count(*) > 0 FROM bar
 `
 
 func (q *Queries) GreaterThan(ctx context.Context) ([]bool, error) {
+	ctx, done := q.observer(ctx, "GreaterThan")
 	rows, err := q.db.Query(ctx, greaterThan)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []bool
 	for rows.Next() {
 		var column_1 bool
 		if err := rows.Scan(&column_1); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, column_1)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const greaterThanOrEqual = `-- name: GreaterThanOrEqual :many
@@ -86,23 +89,24 @@ SELECT count(*) >= 0 FROM bar
 `
 
 func (q *Queries) GreaterThanOrEqual(ctx context.Context) ([]bool, error) {
+	ctx, done := q.observer(ctx, "GreaterThanOrEqual")
 	rows, err := q.db.Query(ctx, greaterThanOrEqual)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []bool
 	for rows.Next() {
 		var column_1 bool
 		if err := rows.Scan(&column_1); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, column_1)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const lessThan = `-- name: LessThan :many
@@ -110,23 +114,24 @@ SELECT count(*) < 0 FROM bar
 `
 
 func (q *Queries) LessThan(ctx context.Context) ([]bool, error) {
+	ctx, done := q.observer(ctx, "LessThan")
 	rows, err := q.db.Query(ctx, lessThan)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []bool
 	for rows.Next() {
 		var column_1 bool
 		if err := rows.Scan(&column_1); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, column_1)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const lessThanOrEqual = `-- name: LessThanOrEqual :many
@@ -134,23 +139,24 @@ SELECT count(*) <= 0 FROM bar
 `
 
 func (q *Queries) LessThanOrEqual(ctx context.Context) ([]bool, error) {
+	ctx, done := q.observer(ctx, "LessThanOrEqual")
 	rows, err := q.db.Query(ctx, lessThanOrEqual)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []bool
 	for rows.Next() {
 		var column_1 bool
 		if err := rows.Scan(&column_1); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, column_1)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
 
 const notEqual = `-- name: NotEqual :many
@@ -158,21 +164,22 @@ SELECT count(*) != 0 FROM bar
 `
 
 func (q *Queries) NotEqual(ctx context.Context) ([]bool, error) {
+	ctx, done := q.observer(ctx, "NotEqual")
 	rows, err := q.db.Query(ctx, notEqual)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []bool
 	for rows.Next() {
 		var column_1 bool
 		if err := rows.Scan(&column_1); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, column_1)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }

@@ -19,10 +19,11 @@ type CountOneParams struct {
 }
 
 func (q *Queries) CountOne(ctx context.Context, arg CountOneParams) (int64, error) {
+	ctx, done := q.observer(ctx, "CountOne")
 	row := q.db.QueryRowContext(ctx, countOne, arg.ID, arg.Name)
 	var count int64
 	err := row.Scan(&count)
-	return count, err
+	return count, done(err)
 }
 
 const countThree = `-- name: CountThree :one
@@ -36,10 +37,11 @@ type CountThreeParams struct {
 }
 
 func (q *Queries) CountThree(ctx context.Context, arg CountThreeParams) (int64, error) {
+	ctx, done := q.observer(ctx, "CountThree")
 	row := q.db.QueryRowContext(ctx, countThree, arg.ID, arg.Phone, arg.Name)
 	var count int64
 	err := row.Scan(&count)
-	return count, err
+	return count, done(err)
 }
 
 const countTwo = `-- name: CountTwo :one
@@ -52,8 +54,9 @@ type CountTwoParams struct {
 }
 
 func (q *Queries) CountTwo(ctx context.Context, arg CountTwoParams) (int64, error) {
+	ctx, done := q.observer(ctx, "CountTwo")
 	row := q.db.QueryRowContext(ctx, countTwo, arg.ID, arg.Name)
 	var count int64
 	err := row.Scan(&count)
-	return count, err
+	return count, done(err)
 }

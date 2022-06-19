@@ -14,21 +14,22 @@ SELECT a, b FROM foo WHERE EXISTS (SELECT a, b FROM foo)
 `
 
 func (q *Queries) StarExpansionSubquery(ctx context.Context) ([]Foo, error) {
+	ctx, done := q.observer(ctx, "StarExpansionSubquery")
 	rows, err := q.db.Query(ctx, starExpansionSubquery)
 	if err != nil {
-		return nil, err
+		return nil, done(err)
 	}
 	defer rows.Close()
 	var items []Foo
 	for rows.Next() {
 		var i Foo
 		if err := rows.Scan(&i.A, &i.B); err != nil {
-			return nil, err
+			return nil, done(err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, done(err)
 	}
-	return items, nil
+	return items, done(nil)
 }
