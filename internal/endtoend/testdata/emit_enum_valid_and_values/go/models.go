@@ -29,24 +29,6 @@ func (e *IPProtocol) Scan(src interface{}) error {
 	return nil
 }
 
-func (e IPProtocol) Valid() bool {
-	switch e {
-	case IPProtocolTCP,
-		IpProtocolIp,
-		IpProtocolIcmp:
-		return true
-	}
-	return false
-}
-
-func AllIPProtocolValues() []IPProtocol {
-	return []IPProtocol{
-		IPProtocolTCP,
-		IpProtocolIp,
-		IpProtocolIcmp,
-	}
-}
-
 type NullIPProtocol struct {
 	IPProtocol IPProtocol
 	Valid      bool // Valid is true if String is not NULL
@@ -68,6 +50,24 @@ func (ns NullIPProtocol) Value() (driver.Value, error) {
 		return nil, nil
 	}
 	return ns.IPProtocol, nil
+}
+
+func (e IPProtocol) Valid() bool {
+	switch e {
+	case IPProtocolTCP,
+		IpProtocolIp,
+		IpProtocolIcmp:
+		return true
+	}
+	return false
+}
+
+func AllIPProtocolValues() []IPProtocol {
+	return []IPProtocol{
+		IPProtocolTCP,
+		IpProtocolIp,
+		IpProtocolIcmp,
+	}
 }
 
 type BarNew struct {
