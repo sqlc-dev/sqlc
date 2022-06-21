@@ -87,6 +87,102 @@ The `gen` mapping supports the following keys:
   - Customize the name of the querier file. Defaults to `querier.go`.
 - `output_files_suffix`:
   - If specified the suffix will be added to the name of the generated files.
+- `rename`:
+  - Customize the name of generated struct fields. Explained in detail on the `Renaming fields` section.
+- `overrides`:
+  - It is a collection of definitions that dictates which types are used to map a database types. Explained in detail on the  `Type overriding` section.
+
+##### Renaming fields
+
+Struct field names are generated from column names using a simple algorithm:
+split the column name on underscores and capitalize the first letter of each
+part.
+
+```
+account     -> Account
+spotify_url -> SpotifyUrl
+app_id      -> AppID
+```
+
+If you're not happy with a field's generated name, use the `rename` mapping
+to pick a new name. The keys are column names and the values are the struct
+field name to use.
+
+```yaml
+version: "2"
+sql:
+- schema: "postgresql/schema.sql"
+  queries: "postgresql/query.sql"
+  engine: "postgresql"
+  gen:
+    go: 
+      package: "authors"
+      out: "postgresql"
+      rename:
+        spotify_url: "SpotifyURL"
+```
+
+##### Type overriding
+
+The default mapping of PostgreSQL/MySQL types to Go types only uses packages outside
+the standard library when it must.
+
+For example, the `uuid` PostgreSQL type is mapped to `github.com/google/uuid`.
+If a different Go package for UUIDs is required, specify the package in the
+`overrides` array. In this case, I'm going to use the `github.com/gofrs/uuid`
+instead.
+
+```yaml
+version: "2"
+sql:
+- schema: "postgresql/schema.sql"
+  queries: "postgresql/query.sql"
+  engine: "postgresql"
+  gen:
+    go: 
+      package: "authors"
+      out: "postgresql"
+      overrides:
+        - db_type: "uuid"
+          go_type: "github.com/gofrs/uuid.UUID"
+```
+
+Each mapping of the `overrides` collection has the following keys:
+
+- `db_type`:
+  - The PostgreSQL or MySQL type to override. Find the full list of supported types in [postgresql_type.go](https://github.com/kyleconroy/sqlc/blob/main/internal/codegen/golang/postgresql_type.go#L12) or [mysql_type.go](https://github.com/kyleconroy/sqlc/blob/main/internal/codegen/golang/mysql_type.go#L12). Note that for Postgres you must use the pg_catalog prefixed names where available. Can't be used if the `column` key is defined.
+- `column`
+  - In case the type overriding should be done on specific a column of a table instead of a type. `column` should be of the form `table.column` but you can be even more specific by specifying `schema.table.column` or `catalog.schema.table.column`. Can't be used if the `db_type` key is defined.
+- `go_type`:
+  - A fully qualified name to a Go type to use in the generated code.
+- `go_struct_tag`:
+  - A reflect-style struct tag to use in the generated code, e.g. `a:"b" x:"y,z"`.
+    If you want general json/db tags for all fields, use `emit_db_tags` and/or `emit_json_tags` instead.
+- `nullable`:
+  - If true, use this type when a column is nullable. Defaults to `false`.
+
+For more complicated import paths, the `go_type` can also be an object.
+
+```yaml
+version: "2"
+sql:
+- schema: "postgresql/schema.sql"
+  queries: "postgresql/query.sql"
+  engine: "postgresql"
+  gen:
+    go: 
+      package: "authors"
+      out: "postgresql"
+      overrides:
+        - db_type: "uuid"
+          go_type:
+            import: "a/b/v2"
+            package: "b"
+            type: "MyType"
+```
+
+When generating code, entries using the `column` key will always have preference over
+entries using the `db_type` key in order to generate the struct.
 
 #### kotlin
 
@@ -131,6 +227,48 @@ Each mapping in the `plugins` collection has the following keys:
   - `cmd`:
     - The executable to call when using this plugin
   
+### global overrides
+
+Sometimes, the same configuration must be done across various specfications of code generation.
+Then a global definition for type overriding and field renaming can be done using the `overrides` mapping the following manner:
+
+```yaml
+version: "2"
+overrides:
+  go:
+    rename:
+      id: "Identifier"
+    overrides:
+      - db_type: "timestampz"
+        nullable: true
+        engine: ""postgresql
+        go_type:
+          import: "gopkg.in/guregu/null.v4"
+          package: "null"
+          type: "Time"
+sql:
+- schema: "postgresql/schema.sql"
+  queries: "postgresql/query.sql"
+  engine: "postgresql"
+  gen:
+    go: 
+      package: "authors"
+      out: "postgresql"
+- schema: "mysql/schema.sql"
+  queries: "mysql/query.sql"
+  engine: "mysql"
+  gen:
+    go:
+      package: "authors"
+      out: "mysql
+```
+
+With the previous configuration, whenever a struct field is generated from a table column that is called `id`, it will generated as `Identifier`.
+Also, whenever there is a nullable `timestamp with time zone` column in a Postgres table, it will be generated as `null.Time`.
+Note that, the mapping for global type overrides has a field called `engine` that is absent in the regular type overrides. This field is only used when there are multiple definitions using multiple engines. Otherwise, the value of the `engine` key will be defaulted to the engine that is currently being used.
+
+Currently, type overrides and field renaming, both global and regular, are only fully supported in Go.
+
 ## Version 1
 
 ```yaml
@@ -252,7 +390,6 @@ overrides:
       import: "a/b/v2"
       package: "b"
       type: "MyType"
-      pointer: false # or true
 ```
 
 #### Per-Column Type Overrides
