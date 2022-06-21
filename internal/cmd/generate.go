@@ -264,7 +264,8 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 				}
 			case plug.WASM != nil:
 				handler = &wasm.Runner{
-					URL: plug.WASM.URL,
+					URL:      plug.WASM.URL,
+					Checksum: plug.WASM.Checksum,
 				}
 			default:
 				// TODO: Return a real error
