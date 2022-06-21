@@ -7,9 +7,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/kyleconroy/sqlc/internal/sqltest"
-
 	"github.com/google/go-cmp/cmp"
+	"github.com/tabbed/sqltest"
 )
 
 func runOnDeckQueries(t *testing.T, q *Queries) {

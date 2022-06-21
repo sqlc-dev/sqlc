@@ -9,9 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/kyleconroy/sqlc/internal/sqltest"
-
 	"github.com/google/go-cmp/cmp"
+	"github.com/tabbed/sqltest"
 )
 
 // TODO: Enum is not yet supported
