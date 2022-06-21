@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"runtime"
 	"runtime/trace"
 	"strings"
 
@@ -64,7 +65,7 @@ func (r *Runner) loadModule(ctx context.Context, engine *wasmtime.Engine) (*wasm
 
 	pluginDir := filepath.Join(cache, expected)
 	// TODO: Include os / arch in module name
-	modPath := filepath.Join(pluginDir, "plugin.module")
+	modPath := filepath.Join(pluginDir, fmt.Sprintf("plugin_%s_%s.module", runtime.GOOS, runtime.GOARCH))
 	_, staterr := os.Stat(modPath)
 
 	if staterr == nil {
