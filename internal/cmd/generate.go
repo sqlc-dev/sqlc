@@ -237,6 +237,7 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 			}
 			continue
 		}
+
 		files := map[string]string{}
 		for _, file := range resp.Files {
 			files[file.Name] = string(file.Contents)
@@ -337,7 +338,7 @@ func codegen(ctx context.Context, combo config.CombinedSettings, sql outPair, re
 	default:
 		return "", nil, fmt.Errorf("missing language backend")
 	}
-	resp, err := handler.Generate(codeGenRequest(result, combo))
+	resp, err := handler.Generate(ctx, codeGenRequest(result, combo))
 	if region != nil {
 		region.End()
 	}

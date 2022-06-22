@@ -129,6 +129,8 @@ func (r *Runner) loadWASM(ctx context.Context, cache string, expected string) ([
 		body = file
 
 	case strings.HasPrefix(r.URL, "https://"):
+		// TODO: Set User-agent
+		// TODO: Set ETag
 		resp, err := http.Get(r.URL)
 		if err != nil {
 			return nil, fmt.Errorf("http.Get: %s %w", r.URL, err)
@@ -168,9 +170,7 @@ func (r *Runner) loadWASM(ctx context.Context, cache string, expected string) ([
 	return wmod, nil
 }
 
-func (r *Runner) Generate(req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
-	ctx := context.Background() // XXX
-
+func (r *Runner) Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
 	stdinBlob, err := req.MarshalVT()
 	if err != nil {
 		return nil, err

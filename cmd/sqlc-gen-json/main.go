@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -26,7 +27,7 @@ func run() error {
 	if err := req.UnmarshalVT(reqBlob); err != nil {
 		return err
 	}
-	resp, err := json.Generate(&req)
+	resp, err := json.Generate(context.Background(), &req)
 	if err != nil {
 		return err
 	}

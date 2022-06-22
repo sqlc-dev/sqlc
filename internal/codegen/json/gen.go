@@ -2,6 +2,7 @@ package json
 
 import (
 	"bytes"
+	"context"
 	ejson "encoding/json"
 	"fmt"
 
@@ -31,7 +32,7 @@ func parseOptions(req *plugin.CodeGenRequest) (plugin.JSONCode, error) {
 	return plugin.JSONCode{}, nil
 }
 
-func Generate(req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
+func Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
 	options, err := parseOptions(req)
 	if err != nil {
 		return nil, err

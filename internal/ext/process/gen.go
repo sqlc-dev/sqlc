@@ -17,7 +17,7 @@ type Runner struct {
 }
 
 // TODO: Update the gen func signature to take a ctx
-func (r Runner) Generate(req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
+func (r Runner) Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
 	stdin, err := proto.Marshal(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to encode codegen request: %s", err)
@@ -29,7 +29,6 @@ func (r Runner) Generate(req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, e
 		return nil, fmt.Errorf("process: %s not found", r.Cmd)
 	}
 
-	ctx := context.Background()
 	cmd := exec.CommandContext(ctx, path)
 	cmd.Stdin = bytes.NewReader(stdin)
 	cmd.Env = []string{
