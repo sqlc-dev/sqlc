@@ -69,7 +69,7 @@ const (
 	EnginePostgreSQL Engine = "postgresql"
 
 	// Experimental engines
-	EngineXLemon Engine = "_lemon"
+	EngineXLemon Engine = "sqlite"
 )
 
 type Config struct {
