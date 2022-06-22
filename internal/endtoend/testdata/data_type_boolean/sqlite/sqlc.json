@@ -3,7 +3,7 @@
   "packages": [
     {
       "path": "db",
-      "engine": "_lemon",
+      "engine": "sqlite",
       "schema": "query.sql",
       "queries": "query.sql"
     }
