@@ -76,9 +76,9 @@ func toList(node pcast.Node) *ast.List {
 	switch n := node.(type) {
 	case *pcast.TableName:
 		if schema := n.Schema.String(); schema != "" {
-			items = append(items, NewIdentifer(schema))
+			items = append(items, NewIdentifier(schema))
 		}
-		items = append(items, NewIdentifer(n.Name.String()))
+		items = append(items, NewIdentifier(n.Name.String()))
 	default:
 		return nil
 	}
