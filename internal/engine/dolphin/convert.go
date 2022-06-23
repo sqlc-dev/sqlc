@@ -29,7 +29,7 @@ func identifier(id string) string {
 	return strings.ToLower(id)
 }
 
-func NewIdentifer(t string) *ast.String {
+func NewIdentifier(t string) *ast.String {
 	return &ast.String{Str: identifier(t)}
 }
 
@@ -289,12 +289,12 @@ func (c *cc) convertCreateTableStmt(n *pcast.CreateTableStmt) ast.Node {
 func (c *cc) convertColumnNameExpr(n *pcast.ColumnNameExpr) *ast.ColumnRef {
 	var items []ast.Node
 	if schema := n.Name.Schema.String(); schema != "" {
-		items = append(items, NewIdentifer(schema))
+		items = append(items, NewIdentifier(schema))
 	}
 	if table := n.Name.Table.String(); table != "" {
-		items = append(items, NewIdentifer(table))
+		items = append(items, NewIdentifier(table))
 	}
-	items = append(items, NewIdentifer(n.Name.Name.String()))
+	items = append(items, NewIdentifier(n.Name.Name.String()))
 	return &ast.ColumnRef{
 		Fields: &ast.List{
 			Items: items,
@@ -374,9 +374,9 @@ func (c *cc) convertFuncCallExpr(n *pcast.FuncCallExpr) ast.Node {
 	// TODO: Deprecate the usage of Funcname
 	items := []ast.Node{}
 	if schema != "" {
-		items = append(items, NewIdentifer(schema))
+		items = append(items, NewIdentifier(schema))
 	}
-	items = append(items, NewIdentifer(name))
+	items = append(items, NewIdentifier(name))
 
 	args := &ast.List{}
 	for _, arg := range n.Args {
@@ -530,7 +530,7 @@ func (c *cc) convertCommonTableExpression(n *pcast.CommonTableExpression) *ast.C
 
 	columns := &ast.List{}
 	for _, col := range n.ColNameList {
-		columns.Items = append(columns.Items, NewIdentifer(col.String()))
+		columns.Items = append(columns.Items, NewIdentifier(col.String()))
 	}
 
 	return &ast.CommonTableExpr{
@@ -613,7 +613,7 @@ func (c *cc) convertValueExpr(n *driver.ValueExpr) *ast.A_Const {
 func (c *cc) convertWildCardField(n *pcast.WildCardField) *ast.ColumnRef {
 	items := []ast.Node{}
 	if t := n.Table.String(); t != "" {
-		items = append(items, NewIdentifer(t))
+		items = append(items, NewIdentifier(t))
 	}
 	items = append(items, &ast.A_Star{})
 
@@ -636,7 +636,7 @@ func (c *cc) convertAggregateFuncExpr(n *pcast.AggregateFuncExpr) *ast.FuncCall 
 		},
 		Funcname: &ast.List{
 			Items: []ast.Node{
-				NewIdentifer(name),
+				NewIdentifier(name),
 			},
 		},
 		Args:     &ast.List{},
@@ -819,7 +819,7 @@ func (c *cc) convertDropDatabaseStmt(n *pcast.DropDatabaseStmt) ast.Node {
 	return &ast.DropSchemaStmt{
 		MissingOk: !n.IfExists,
 		Schemas: []*ast.String{
-			NewIdentifer(n.Name),
+			NewIdentifier(n.Name),
 		},
 	}
 }
