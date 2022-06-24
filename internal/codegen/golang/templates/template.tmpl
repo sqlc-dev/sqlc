@@ -103,6 +103,94 @@ func All{{ .Name }}Values() []{{ .Name }} {
 	}
 }
 {{ end }}
+
+{{ if $.EmitNullableEnumTypes }}
+type Null{{ .Name }} struct {
+	{{ .Name }} {{ .Name }}
+	Valid bool
+}
+
+function (e *Null{{ .Name }}) Scan(src interface{}) error {
+	if src == nil {
+		e.Valid = false
+		return nil
+	}
+
+	err := e.{{ .Name }}.Scan(src)
+	if err != nil {
+		e.Valid = false
+		return err
+	}
+
+	{{ if $.EmitEnumValidMethod }}
+	if !e.{{ .Name }}.Valid() {
+		e.Valid = false
+		return fmt.Errorf("%v is not a  member of enum {{ .Name }}", src)
+	}
+	{{ end }}
+
+	e.Valid = true
+	return nil
+}
+
+function (e NUll{{ .Name }}) Value() (driver.Value, error) {
+	if !e.Valid {
+		return nil, return fmt.Errorf("not a valid {{ .Name }}")
+	}
+
+	{{ if $.EmitEnumValidMethod }}
+	if !e.{{ .Name }}.Valid() {
+		return nil, return fmt.Errorf("not a valid {{ .Name }}")
+	}
+	{{ end }}
+
+	return string(e.{{ .Name }}), nil
+}
+
+{{ if $.EmitJSONTags }}
+func (e Null{{ .Name }}) MarshalJSON() ([]byte, error) {
+	if !e.Valid {
+		return json.Marshal(nil)
+	}
+
+	{{ if $.EmitEnumValidMethod }}
+	if !e.{{ .Name }}.Valid() {
+		return json.Marshal(nil)
+	}
+	{{ end }}
+
+	return json.Marshal(e.{{ .Name }})
+}
+
+func (e *Null{{ .Name }}) UnmarshalJSON(data []byte) error {
+	var x *string
+
+	err := json.Unmarshal(data, x)
+	if err != nil {
+		e.Valid = false
+		return err
+	}
+
+	if x == nil {
+		e.Valid = false
+		return
+	}
+
+	e.{{ .Name }} = {{ .Name }}(*x)
+
+	{{ if $.EmitEnumValidMethod }}
+	if !e.{{ .Name }}.Valid() {
+		e.Valid = false
+		return fmt.Errorf("%v is not a  member of enum {{ .Name }}", *x)
+	}
+	{{ end }}
+	
+	e.Valid = true
+
+	return nil
+}
+{{ end }}
+{{ end }}
 {{end}}
 
 {{range .Structs}}

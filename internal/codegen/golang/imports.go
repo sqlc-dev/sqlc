@@ -264,6 +264,12 @@ func (i *importer) modelImports() fileImports {
 
 	if len(i.Enums) > 0 {
 		std["fmt"] = struct{}{}
+		if i.Settings.Go.EmitNullableEnumTypes {
+			std["database/sql/driver"] = struct{}{}
+			if i.Settings.Go.EmitJsonTags {
+				std["encoding/json"] = struct{}{}
+			}
+		}
 	}
 
 	return sortedImports(std, pkg)

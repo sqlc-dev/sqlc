@@ -144,6 +144,7 @@ type SQLGo struct {
 	EmitMethodsWithDBArgument bool              `json:"emit_methods_with_db_argument,omitempty" yaml:"emit_methods_with_db_argument"`
 	EmitEnumValidMethod       bool              `json:"emit_enum_valid_method,omitempty" yaml:"emit_enum_valid_method"`
 	EmitAllEnumValues         bool              `json:"emit_all_enum_values,omitempty" yaml:"emit_all_enum_values"`
+	EmitNullableEnumTypes     bool              `json:"emit_nullable_enum_types,omitempty" yaml:"emit_nullable_enum_types"`
 	JSONTagsCaseStyle         string            `json:"json_tags_case_style,omitempty" yaml:"json_tags_case_style"`
 	Package                   string            `json:"package" yaml:"package"`
 	Out                       string            `json:"out" yaml:"out"`
