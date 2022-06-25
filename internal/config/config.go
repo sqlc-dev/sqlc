@@ -88,7 +88,8 @@ type Plugin struct {
 		Cmd string `json:"cmd" yaml:"cmd"`
 	} `json:"process" yaml:"process"`
 	WASM *struct {
-		URL string `json:"url" yaml:"url"`
+		URL      string `json:"url" yaml:"url"`
+		Checksum string `json:"checksum" yaml:"checksum"`
 	} `json:"wasm" yaml:"wasm"`
 }
 

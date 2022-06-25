@@ -3,6 +3,7 @@ package golang
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"go/format"
@@ -42,7 +43,7 @@ func (t *tmplCtx) OutputQuery(sourceName string) bool {
 	return t.SourceName == sourceName
 }
 
-func Generate(req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
+func Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
 	enums := buildEnums(req)
 	structs := buildStructs(req)
 	queries, err := buildQueries(req, structs)
