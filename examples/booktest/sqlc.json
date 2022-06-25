@@ -20,7 +20,7 @@
       "path": "sqlite",
       "schema": "sqlite/schema.sql",
       "queries": "sqlite/query.sql",
-      "engine": "_lemon"
+      "engine": "sqlite"
     }
   ]
 }

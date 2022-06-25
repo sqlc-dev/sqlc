@@ -6,7 +6,7 @@
       "path": "go",
       "schema": "schema.sql",
       "queries": "query.sql",
-      "engine": "_lemon"
+      "engine": "sqlite"
     }
   ]
 }

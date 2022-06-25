@@ -63,7 +63,7 @@ func goInnerType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		return mysqlType(req, col)
 	case "postgresql":
 		return postgresType(req, col)
-	case "_lemon":
+	case "sqlite":
 		return sqliteType(req, col)
 	default:
 		return "interface{}"

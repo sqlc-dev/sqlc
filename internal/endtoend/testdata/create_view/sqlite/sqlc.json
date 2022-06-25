@@ -2,7 +2,7 @@
   "version": "1",
   "packages": [
     {
-      "engine": "_lemon",
+      "engine": "sqlite",
       "path": "go",
       "name": "querytest",
       "schema": "schema.sql",
