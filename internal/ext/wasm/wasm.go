@@ -20,6 +20,7 @@ import (
 
 	wasmtime "github.com/bytecodealliance/wasmtime-go"
 
+	"github.com/kyleconroy/sqlc/internal/info"
 	"github.com/kyleconroy/sqlc/internal/plugin"
 )
 
@@ -129,9 +130,12 @@ func (r *Runner) loadWASM(ctx context.Context, cache string, expected string) ([
 		body = file
 
 	case strings.HasPrefix(r.URL, "https://"):
-		// TODO: Set User-agent
-		// TODO: Set ETag
-		resp, err := http.Get(r.URL)
+		req, err := http.NewRequestWithContext(ctx, "GET", r.URL, nil)
+		if err != nil {
+			return nil, fmt.Errorf("http.Get: %s %w", r.URL, err)
+		}
+		req.Header.Set("User-Agent", fmt.Sprintf("sqlc/%s Go/%s (%s %s)", info.Version, runtime.Version(), runtime.GOOS, runtime.GOARCH))
+		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			return nil, fmt.Errorf("http.Get: %s %w", r.URL, err)
 		}
