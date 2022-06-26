@@ -45,7 +45,7 @@ type Runner struct {
 // Verify the provided sha256 is valid.
 func (r *Runner) parseChecksum() (string, error) {
 	if r.SHA256 == "" {
-		return "", fmt.Errorf("missing integrity")
+		return "", fmt.Errorf("missing SHA-256 checksum")
 	}
 	return r.SHA256, nil
 }
