@@ -25,16 +25,19 @@ import (
 )
 
 func cacheDir() (string, error) {
-	// Use the checksum to see if it already existsin the modcache
 	cache := os.Getenv("SQLCCACHE")
 	if cache != "" {
 		return cache, nil
 	}
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return "", err
+	cacheHome := os.Getenv("XDG_CACHE_HOME")
+	if cacheHome == "" {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return "", err
+		}
+		cacheHome = filepath.Join(home, ".cache")
 	}
-	return filepath.Join(home, "sqlc", "mod"), nil
+	return filepath.Join(cacheHome, "sqlc"), nil
 }
 
 type Runner struct {
@@ -58,17 +61,18 @@ func (r *Runner) loadModule(ctx context.Context, engine *wasmtime.Engine) (*wasm
 	if err != nil {
 		return nil, err
 	}
-
-	cache, err := cacheDir()
+	cacheRoot, err := cacheDir()
 	if err != nil {
 		return nil, err
 	}
+	cache := filepath.Join(cacheRoot, "plugins")
+	if err := os.MkdirAll(cache, 0755); err != nil && !os.IsExist(err) {
+		return nil, fmt.Errorf("failed to create cache directory: %w", err)
+	}
 
 	pluginDir := filepath.Join(cache, expected)
-	// TODO: Include os / arch in module name
 	modPath := filepath.Join(pluginDir, fmt.Sprintf("plugin_%s_%s.module", runtime.GOOS, runtime.GOARCH))
 	_, staterr := os.Stat(modPath)
-
 	if staterr == nil {
 		data, err := os.ReadFile(modPath)
 		if err != nil {
@@ -90,8 +94,7 @@ func (r *Runner) loadModule(ctx context.Context, engine *wasmtime.Engine) (*wasm
 	}
 
 	if staterr != nil {
-		// TODO: What permissions to use?
-		err := os.MkdirAll(pluginDir, 0750)
+		err := os.Mkdir(pluginDir, 0755)
 		if err != nil && !os.IsExist(err) {
 			return nil, fmt.Errorf("mkdirall: %w", err)
 		}
@@ -99,8 +102,7 @@ func (r *Runner) loadModule(ctx context.Context, engine *wasmtime.Engine) (*wasm
 		if err != nil {
 			return nil, fmt.Errorf("serialize: %w", err)
 		}
-		// TODO: What permissions to use?
-		if err := os.WriteFile(modPath, out, 0666); err != nil {
+		if err := os.WriteFile(modPath, out, 0444); err != nil {
 			return nil, fmt.Errorf("cache wasm: %w", err)
 		}
 	}
@@ -160,13 +162,11 @@ func (r *Runner) loadWASM(ctx context.Context, cache string, expected string) ([
 	}
 
 	if staterr != nil {
-		// TODO: What permissions to use?
-		err := os.MkdirAll(pluginDir, 0750)
+		err := os.Mkdir(pluginDir, 0755)
 		if err != nil && !os.IsExist(err) {
 			return nil, fmt.Errorf("mkdirall: %w", err)
 		}
-		// TODO: What permissions to use?
-		if err := os.WriteFile(pluginPath, wmod, 0666); err != nil {
+		if err := os.WriteFile(pluginPath, wmod, 0444); err != nil {
 			return nil, fmt.Errorf("cache wasm: %w", err)
 		}
 	}
