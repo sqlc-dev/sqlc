@@ -41,19 +41,16 @@ func cacheDir() (string, error) {
 }
 
 type Runner struct {
-	URL      string
-	Checksum string
+	URL    string
+	SHA256 string
 }
 
 // Verify the provided sha256 is valid.
 func (r *Runner) parseChecksum() (string, error) {
-	if r.Checksum == "" {
-		return "", fmt.Errorf("missing checksum")
+	if r.SHA256 == "" {
+		return "", fmt.Errorf("missing SHA-256 checksum")
 	}
-	if !strings.HasPrefix(r.Checksum, "sha256/") {
-		return "", fmt.Errorf("invalid checksum algo: %s", r.Checksum)
-	}
-	return strings.TrimPrefix(r.Checksum, "sha256/"), nil
+	return r.SHA256, nil
 }
 
 func (r *Runner) loadModule(ctx context.Context, engine *wasmtime.Engine) (*wasmtime.Module, error) {

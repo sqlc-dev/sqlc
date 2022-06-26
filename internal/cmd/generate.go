@@ -328,8 +328,8 @@ func codegen(ctx context.Context, combo config.CombinedSettings, sql outPair, re
 			}
 		case plug.WASM != nil:
 			handler = &wasm.Runner{
-				URL:      plug.WASM.URL,
-				Checksum: plug.WASM.Checksum,
+				URL:    plug.WASM.URL,
+				SHA256: plug.WASM.SHA256,
 			}
 		default:
 			return "", nil, fmt.Errorf("unsupported plugin type")
