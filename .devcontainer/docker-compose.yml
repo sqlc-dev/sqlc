@@ -6,13 +6,17 @@ services:
       context: ..
       dockerfile: .devcontainer/Dockerfile
       args:
-        VARIANT: 1.17-bullseye
+        VARIANT: 1.18-bullseye
 
     volumes:
       - ..:/workspace:cached
 
     # Overrides default command so things don't shut down after the process ends.
     command: sleep infinity
+
+    links:
+      - mysql
+      - postgresql
 
     environment:
       PG_HOST: postgresql
@@ -24,13 +28,14 @@ services:
       MYSQL_ROOT_PASSWORD: mysecretpassword
 
   mysql:
-    image: "mysql:8"
+    image: "mysql/mysql-server:8.0"
     ports:
       - "3306:3306"
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: dinotest
       MYSQL_ROOT_PASSWORD: mysecretpassword
+      MYSQL_ROOT_HOST: '%'
 
   postgresql:
     image: "postgres:13"
@@ -41,6 +46,5 @@ services:
       POSTGRES_DB: dinotest
       POSTGRES_PASSWORD: mysecretpassword
       POSTGRES_USER: postgres
-
     # Add "forwardPorts": ["5432"] to **devcontainer.json** to forward PostgreSQL locally.
     # (Adding the "ports" property to this file will not forward from a Codespace.)
