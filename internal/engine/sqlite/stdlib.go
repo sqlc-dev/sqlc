@@ -14,9 +14,19 @@ func defaultSchema(name string) *catalog.Schema {
 	s := &catalog.Schema{Name: name}
 	s.Funcs = []*catalog.Function{
 		{
+			Name: "AVG",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType:         &ast.TypeName{Name: "real"},
+			ReturnTypeNullable: true,
+		},
+		{
 			Name:       "COUNT",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "bigint"},
+			ReturnType: &ast.TypeName{Name: "integer"},
 		},
 		{
 			Name: "COUNT",
@@ -25,25 +35,48 @@ func defaultSchema(name string) *catalog.Schema {
 					Type: &ast.TypeName{Name: "any"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "bigint"},
-		},
-		{
-			Name: "SUM",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "real"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "real"},
-		},
-		{
-			Name: "SUM",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
 			ReturnType: &ast.TypeName{Name: "integer"},
+		},
+		{
+			Name: "GROUP_CONCAT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
+			Name: "GROUP_CONCAT",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
+			Name: "MAX",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType:         &ast.TypeName{Name: "any"},
+			ReturnTypeNullable: true,
+		},
+		{
+			Name: "MIN",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType:         &ast.TypeName{Name: "any"},
+			ReturnTypeNullable: true,
 		},
 		{
 			Name: "SUM",
@@ -52,7 +85,17 @@ func defaultSchema(name string) *catalog.Schema {
 					Type: &ast.TypeName{Name: "any"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "bigint"},
+			ReturnType:         &ast.TypeName{Name: "real"},
+			ReturnTypeNullable: true,
+		},
+		{
+			Name: "TOTAL",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "real"},
 		},
 	}
 	return s
