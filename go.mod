@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20220209173558-ad29539cd2e9
+	github.com/bytecodealliance/wasmtime-go v0.37.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/google/go-cmp v0.5.8
@@ -12,7 +13,7 @@ require (
 	github.com/jinzhu/inflection v1.0.0
 	github.com/lib/pq v1.10.6
 	github.com/mattn/go-sqlite3 v1.14.13
-	github.com/pganalyze/pg_query_go/v2 v2.1.0
+	github.com/pganalyze/pg_query_go/v2 v2.1.2
 	github.com/pingcap/parser v0.0.0-20210914110036-002913dd28ec
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/pflag v1.0.5
@@ -21,7 +22,6 @@ require (
 )
 
 require (
-	github.com/bytecodealliance/wasmtime-go v0.37.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
