@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20220209173558-ad29539cd2e9
-	github.com/bytecodealliance/wasmtime-go v0.37.0
+	github.com/bytecodealliance/wasmtime-go v0.38.1
 	github.com/davecgh/go-spew v1.1.1
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/google/go-cmp v0.5.8
