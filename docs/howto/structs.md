@@ -46,3 +46,7 @@ type Author struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 ```
+
+## More control
+
+See the Type Overrides section of the Configuration File docs for fine-grained control over struct field types and tags.

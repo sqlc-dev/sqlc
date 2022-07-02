@@ -3,6 +3,7 @@ package kotlin
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"regexp"
@@ -759,7 +760,7 @@ func ktFormat(s string) string {
 	return o
 }
 
-func Generate(req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
+func Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
 	enums := buildEnums(req)
 	structs := buildDataClasses(req)
 	queries, err := buildQueries(req, structs)

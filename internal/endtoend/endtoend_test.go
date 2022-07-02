@@ -116,7 +116,11 @@ func cmpDirectory(t *testing.T, dir string, actual map[string]string) {
 		if file.IsDir() {
 			return nil
 		}
-		if !strings.HasSuffix(path, ".go") && !strings.HasSuffix(path, ".kt") && !strings.HasSuffix(path, ".py") && !strings.HasSuffix(path, ".json") {
+		if !strings.HasSuffix(path, ".go") && !strings.HasSuffix(path, ".kt") && !strings.HasSuffix(path, ".py") && !strings.HasSuffix(path, ".json") && !strings.HasSuffix(path, ".txt") {
+			return nil
+		}
+		// TODO: Figure out a better way to ignore certain files
+		if strings.HasSuffix(path, ".txt") && filepath.Base(path) != "hello.txt" {
 			return nil
 		}
 		if filepath.Base(path) == "sqlc.json" {

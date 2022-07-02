@@ -1,6 +1,7 @@
 package python
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -1080,7 +1081,7 @@ func HashComment(s string) string {
 	return "# " + strings.ReplaceAll(s, "\n", "\n# ")
 }
 
-func Generate(req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
+func Generate(_ context.Context, req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
 	enums := buildEnums(req)
 	models := buildModels(req)
 	queries, err := buildQueries(req, models)

@@ -3,13 +3,18 @@
     "version": "2",
     "engine": "postgresql",
     "schema": [
-      "postgresql/schema.sql"
+      "schema.sql"
     ],
     "queries": [
-      "postgresql/query.sql"
+      "query.sql"
     ],
     "rename": {},
     "overrides": [],
+    "codegen": {
+      "out": "gen",
+      "plugin": "jsonb",
+      "options": "eyJmaWxlbmFtZSI6ImNvZGVnZW4uanNvbiIsImluZGVudCI6IiAgIn0="
+    },
     "python": {
       "emit_exact_table_names": false,
       "emit_sync_querier": false,
@@ -46,8 +51,9 @@
       "emit_all_enum_values": false
     },
     "json": {
-      "out": "gen",
-      "indent": "  "
+      "out": "",
+      "indent": "",
+      "filename": ""
     }
   },
   "catalog": {
@@ -85,8 +91,7 @@
                   "catalog": "",
                   "schema": "",
                   "name": "bigserial"
-                },
-                "array_bounds": 0
+                }
               },
               {
                 "name": "name",
@@ -107,8 +112,7 @@
                   "catalog": "",
                   "schema": "",
                   "name": "text"
-                },
-                "array_bounds": 0
+                }
               },
               {
                 "name": "bio",
@@ -129,8 +133,7 @@
                   "catalog": "",
                   "schema": "",
                   "name": "text"
-                },
-                "array_bounds": 0
+                }
               }
             ],
             "comment": ""
@@ -180,8 +183,7 @@
             "catalog": "",
             "schema": "",
             "name": "bigserial"
-          },
-          "array_bounds": 0
+          }
         },
         {
           "name": "name",
@@ -202,8 +204,7 @@
             "catalog": "",
             "schema": "",
             "name": "text"
-          },
-          "array_bounds": 0
+          }
         },
         {
           "name": "bio",
@@ -224,8 +225,7 @@
             "catalog": "",
             "schema": "",
             "name": "text"
-          },
-          "array_bounds": 0
+          }
         }
       ],
       "params": [
@@ -250,8 +250,7 @@
               "catalog": "",
               "schema": "",
               "name": "bigserial"
-            },
-            "array_bounds": 0
+            }
           }
         }
       ],
@@ -283,8 +282,7 @@
             "catalog": "",
             "schema": "",
             "name": "bigserial"
-          },
-          "array_bounds": 0
+          }
         },
         {
           "name": "name",
@@ -305,8 +303,7 @@
             "catalog": "",
             "schema": "",
             "name": "text"
-          },
-          "array_bounds": 0
+          }
         },
         {
           "name": "bio",
@@ -327,8 +324,7 @@
             "catalog": "",
             "schema": "",
             "name": "text"
-          },
-          "array_bounds": 0
+          }
         }
       ],
       "params": [],
@@ -360,8 +356,7 @@
             "catalog": "",
             "schema": "",
             "name": "bigserial"
-          },
-          "array_bounds": 0
+          }
         },
         {
           "name": "name",
@@ -382,8 +377,7 @@
             "catalog": "",
             "schema": "",
             "name": "text"
-          },
-          "array_bounds": 0
+          }
         },
         {
           "name": "bio",
@@ -404,8 +398,7 @@
             "catalog": "",
             "schema": "",
             "name": "text"
-          },
-          "array_bounds": 0
+          }
         }
       ],
       "params": [
@@ -430,8 +423,7 @@
               "catalog": "",
               "schema": "",
               "name": "text"
-            },
-            "array_bounds": 0
+            }
           }
         },
         {
@@ -455,8 +447,7 @@
               "catalog": "",
               "schema": "",
               "name": "text"
-            },
-            "array_bounds": 0
+            }
           }
         }
       ],
@@ -495,8 +486,7 @@
               "catalog": "",
               "schema": "",
               "name": "bigserial"
-            },
-            "array_bounds": 0
+            }
           }
         }
       ],
@@ -505,5 +495,5 @@
       "insert_into_table": null
     }
   ],
-  "sqlc_version": "v1.13.0"
+  "sqlc_version": "v1.14.0"
 }
