@@ -5,6 +5,7 @@
 package querytest
 
 import (
+	"database/sql/driver"
 	"fmt"
 )
 
@@ -37,6 +38,29 @@ func (e *Digit) Scan(src interface{}) error {
 	return nil
 }
 
+type NullDigit struct {
+	Digit Digit
+	Valid bool // Valid is true if String is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullDigit) Scan(value interface{}) error {
+	if value == nil {
+		ns.Digit, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.Digit.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullDigit) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return ns.Digit, nil
+}
+
 type Foobar string
 
 const (
@@ -59,6 +83,29 @@ func (e *Foobar) Scan(src interface{}) error {
 		return fmt.Errorf("unsupported scan type for Foobar: %T", src)
 	}
 	return nil
+}
+
+type NullFoobar struct {
+	Foobar Foobar
+	Valid  bool // Valid is true if String is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullFoobar) Scan(value interface{}) error {
+	if value == nil {
+		ns.Foobar, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.Foobar.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullFoobar) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return ns.Foobar, nil
 }
 
 type Foo struct {
