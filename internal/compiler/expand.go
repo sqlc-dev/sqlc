@@ -45,6 +45,12 @@ func (c *Compiler) quoteIdent(ident string) string {
 			return "\"" + ident + "\""
 		}
 	}
+	if c.conf.Engine == config.EnginePostgreSQL {
+		// camelCase means the column is also camelCase
+		if strings.ToLower(ident) != ident {
+			return "\"" + ident + "\""
+		}
+	}
 	return ident
 }
 
