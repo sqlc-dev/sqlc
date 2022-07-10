@@ -24,6 +24,9 @@ import (
 	"github.com/kyleconroy/sqlc/internal/plugin"
 )
 
+// This version must be updated whenever the wasmtime-go dependency is updated
+const wasmtimeVersion = `v0.38.1`
+
 func cacheDir() (string, error) {
 	cache := os.Getenv("SQLCCACHE")
 	if cache != "" {
@@ -68,7 +71,8 @@ func (r *Runner) loadModule(ctx context.Context, engine *wasmtime.Engine) (*wasm
 	}
 
 	pluginDir := filepath.Join(cache, expected)
-	modPath := filepath.Join(pluginDir, fmt.Sprintf("plugin_%s_%s.module", runtime.GOOS, runtime.GOARCH))
+	modName := fmt.Sprintf("plugin_%s_%s_%s.module", runtime.GOOS, runtime.GOARCH, wasmtimeVersion)
+	modPath := filepath.Join(pluginDir, modName)
 	_, staterr := os.Stat(modPath)
 	if staterr == nil {
 		data, err := os.ReadFile(modPath)
