@@ -355,8 +355,8 @@ upsert_clause:
     )? DO_ (
         NOTHING_
         | UPDATE_ SET_ (
-            (column_name | column_name_list) EQ expr (
-                COMMA (column_name | column_name_list) EQ expr
+            (column_name | column_name_list) ASSIGN expr (
+                COMMA (column_name | column_name_list) ASSIGN expr
             )* (WHERE_ expr)?
         )
     )
