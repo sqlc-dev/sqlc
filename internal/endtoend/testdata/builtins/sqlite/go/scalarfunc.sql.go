@@ -8,8 +8,6 @@ package querytest
 import (
 	"context"
 	"database/sql"
-
-	"github.com/lib/pq"
 )
 
 const getAbs = `-- name: GetAbs :one
@@ -566,9 +564,9 @@ const getZeroblob = `-- name: GetZeroblob :one
 SELECT zeroblob(16)
 `
 
-func (q *Queries) GetZeroblob(ctx context.Context) ([]uint8, error) {
+func (q *Queries) GetZeroblob(ctx context.Context) ([]byte, error) {
 	row := q.db.QueryRowContext(ctx, getZeroblob)
-	var zeroblob []uint8
-	err := row.Scan(pq.Array(&zeroblob))
+	var zeroblob []byte
+	err := row.Scan(&zeroblob)
 	return zeroblob, err
 }
