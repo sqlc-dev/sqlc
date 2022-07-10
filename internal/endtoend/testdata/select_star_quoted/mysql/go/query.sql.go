@@ -7,30 +7,26 @@ package querytest
 
 import (
 	"context"
+	"database/sql"
 )
 
 const getAll = `-- name: GetAll :many
-SELECT id, first_name, last_name, age FROM users
+SELECT camelcase FROM users
 `
 
-func (q *Queries) GetAll(ctx context.Context) ([]User, error) {
+func (q *Queries) GetAll(ctx context.Context) ([]sql.NullString, error) {
 	rows, err := q.db.QueryContext(ctx, getAll)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []User
+	var items []sql.NullString
 	for rows.Next() {
-		var i User
-		if err := rows.Scan(
-			&i.ID,
-			&i.FirstName,
-			&i.LastName,
-			&i.Age,
-		); err != nil {
+		var camelcase sql.NullString
+		if err := rows.Scan(&camelcase); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, camelcase)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
