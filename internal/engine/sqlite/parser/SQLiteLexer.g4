@@ -152,6 +152,7 @@ RELEASE_:           R E L E A S E;
 RENAME_:            R E N A M E;
 REPLACE_:           R E P L A C E;
 RESTRICT_:          R E S T R I C T;
+RETURNING_:         R E T U R N I N G;
 RIGHT_:             R I G H T;
 ROLLBACK_:          R O L L B A C K;
 ROW_:               R O W;
