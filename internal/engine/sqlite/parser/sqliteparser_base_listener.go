@@ -192,6 +192,12 @@ func (s *BaseSQLiteParserListener) EnterCommon_table_expression(ctx *Common_tabl
 // ExitCommon_table_expression is called when production common_table_expression is exited.
 func (s *BaseSQLiteParserListener) ExitCommon_table_expression(ctx *Common_table_expressionContext) {}
 
+// EnterReturning_clause is called when production returning_clause is entered.
+func (s *BaseSQLiteParserListener) EnterReturning_clause(ctx *Returning_clauseContext) {}
+
+// ExitReturning_clause is called when production returning_clause is exited.
+func (s *BaseSQLiteParserListener) ExitReturning_clause(ctx *Returning_clauseContext) {}
+
 // EnterDelete_stmt is called when production delete_stmt is entered.
 func (s *BaseSQLiteParserListener) EnterDelete_stmt(ctx *Delete_stmtContext) {}
 

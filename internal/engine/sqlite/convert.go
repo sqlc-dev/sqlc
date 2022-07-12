@@ -160,7 +160,7 @@ func (c *cc) convertDelete_stmtContext(n *parser.Delete_stmtContext) ast.Node {
 
 		delete := &ast.DeleteStmt{
 			Relation:      relation,
-			ReturningList: &ast.List{},
+			ReturningList: c.convertReturning_caluseContext(n.Returning_clause()),
 			WithClause:    nil,
 		}
 
@@ -564,6 +564,40 @@ func (c *cc) convertInSelectNode(n *parser.Expr_in_selectContext) ast.Node {
 	return c.convert(n.Select_stmt())
 }
 
+func (c *cc) convertReturning_caluseContext(n parser.IReturning_clauseContext) *ast.List {
+	list := &ast.List{Items: []ast.Node{}}
+	if n == nil {
+		return list
+	}
+
+	r, ok := n.(*parser.Returning_clauseContext)
+	if !ok {
+		return list
+	}
+
+	for _, exp := range r.AllExpr() {
+		list.Items = append(list.Items, &ast.ResTarget{
+			Indirection: &ast.List{},
+			Val:         c.convert(exp),
+		})
+	}
+
+	for _, star := range r.AllSTAR() {
+		list.Items = append(list.Items, &ast.ResTarget{
+			Indirection: &ast.List{},
+			Val: &ast.ColumnRef{
+				Fields: &ast.List{
+					Items: []ast.Node{&ast.A_Star{}},
+				},
+				Location: star.GetSymbol().GetStart(),
+			},
+			Location: star.GetSymbol().GetStart(),
+		})
+	}
+
+	return list
+}
+
 func (c *cc) convertInsert_stmtContext(n *parser.Insert_stmtContext) ast.Node {
 	tableName := n.Table_name().GetText()
 	rel := &ast.RangeVar{
@@ -583,12 +617,14 @@ func (c *cc) convertInsert_stmtContext(n *parser.Insert_stmtContext) ast.Node {
 	insert := &ast.InsertStmt{
 		Relation:      rel,
 		Cols:          c.convertColumnNames(n.AllColumn_name()),
-		ReturningList: &ast.List{},
+		ReturningList: c.convertReturning_caluseContext(n.Returning_clause()),
 	}
 
-	if ss, ok := c.convert(n.Select_stmt()).(*ast.SelectStmt); ok {
-		ss.ValuesLists = &ast.List{}
-		insert.SelectStmt = ss
+	if n.Select_stmt() != nil {
+		if ss, ok := c.convert(n.Select_stmt()).(*ast.SelectStmt); ok {
+			ss.ValuesLists = &ast.List{}
+			insert.SelectStmt = ss
+		}
 	} else {
 		insert.SelectStmt = &ast.SelectStmt{
 			FromClause:  &ast.List{},
@@ -681,7 +717,7 @@ func (c *cc) convertUpdate_stmtContext(n *parser.Update_stmtContext) ast.Node {
 		Relations:     relations,
 		TargetList:    list,
 		WhereClause:   where,
-		ReturningList: &ast.List{},
+		ReturningList: c.convertReturning_caluseContext(n.Returning_clause()),
 		FromClause:    &ast.List{},
 		WithClause:    nil, // TODO: support with clause
 	}

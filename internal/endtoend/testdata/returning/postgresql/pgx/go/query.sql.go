@@ -10,38 +10,88 @@ import (
 	"database/sql"
 )
 
-const deleteUser = `-- name: DeleteUser :one
+const deleteUserAndReturnID = `-- name: DeleteUserAndReturnID :one
 DELETE FROM users
   WHERE name = $1
   RETURNING id
 `
 
-func (q *Queries) DeleteUser(ctx context.Context, name sql.NullString) (int32, error) {
-	row := q.db.QueryRow(ctx, deleteUser, name)
+func (q *Queries) DeleteUserAndReturnID(ctx context.Context, name sql.NullString) (int32, error) {
+	row := q.db.QueryRow(ctx, deleteUserAndReturnID, name)
 	var id int32
 	err := row.Scan(&id)
 	return id, err
 }
 
-const insertUser = `-- name: InsertUser :one
-INSERT INTO users (name) VALUES ($1) RETURNING id
+const deleteUserAndReturnUser = `-- name: DeleteUserAndReturnUser :one
+DELETE FROM users
+  WHERE name = $1
+  RETURNING name, id
 `
 
-func (q *Queries) InsertUser(ctx context.Context, name sql.NullString) (int32, error) {
-	row := q.db.QueryRow(ctx, insertUser, name)
-	var id int32
-	err := row.Scan(&id)
-	return id, err
+func (q *Queries) DeleteUserAndReturnUser(ctx context.Context, name sql.NullString) (User, error) {
+	row := q.db.QueryRow(ctx, deleteUserAndReturnUser, name)
+	var i User
+	err := row.Scan(&i.Name, &i.ID)
+	return i, err
 }
 
-const updateUser = `-- name: UpdateUser :one
-UPDATE users SET name = $1
+const insertUserAndReturnID = `-- name: InsertUserAndReturnID :one
+INSERT INTO users (name) VALUES ($1)
   RETURNING id
 `
 
-func (q *Queries) UpdateUser(ctx context.Context, name sql.NullString) (int32, error) {
-	row := q.db.QueryRow(ctx, updateUser, name)
+func (q *Queries) InsertUserAndReturnID(ctx context.Context, name sql.NullString) (int32, error) {
+	row := q.db.QueryRow(ctx, insertUserAndReturnID, name)
 	var id int32
 	err := row.Scan(&id)
 	return id, err
+}
+
+const insertUserAndReturnUser = `-- name: InsertUserAndReturnUser :one
+INSERT INTO users (name) VALUES ($1)
+  RETURNING name, id
+`
+
+func (q *Queries) InsertUserAndReturnUser(ctx context.Context, name sql.NullString) (User, error) {
+	row := q.db.QueryRow(ctx, insertUserAndReturnUser, name)
+	var i User
+	err := row.Scan(&i.Name, &i.ID)
+	return i, err
+}
+
+const updateUserAndReturnID = `-- name: UpdateUserAndReturnID :one
+UPDATE users SET name = $1
+  WHERE name = $2
+  RETURNING id
+`
+
+type UpdateUserAndReturnIDParams struct {
+	Name   sql.NullString
+	Name_2 sql.NullString
+}
+
+func (q *Queries) UpdateUserAndReturnID(ctx context.Context, arg UpdateUserAndReturnIDParams) (int32, error) {
+	row := q.db.QueryRow(ctx, updateUserAndReturnID, arg.Name, arg.Name_2)
+	var id int32
+	err := row.Scan(&id)
+	return id, err
+}
+
+const updateUserAndReturnUser = `-- name: UpdateUserAndReturnUser :one
+UPDATE users SET name = $1
+  WHERE name = $2
+  RETURNING name, id
+`
+
+type UpdateUserAndReturnUserParams struct {
+	Name   sql.NullString
+	Name_2 sql.NullString
+}
+
+func (q *Queries) UpdateUserAndReturnUser(ctx context.Context, arg UpdateUserAndReturnUserParams) (User, error) {
+	row := q.db.QueryRow(ctx, updateUserAndReturnUser, arg.Name, arg.Name_2)
+	var i User
+	err := row.Scan(&i.Name, &i.ID)
+	return i, err
 }
