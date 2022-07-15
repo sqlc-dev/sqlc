@@ -91,7 +91,8 @@
                   "catalog": "",
                   "schema": "",
                   "name": "bigserial"
-                }
+                },
+                "unsigned": false
               },
               {
                 "name": "name",
@@ -112,7 +113,8 @@
                   "catalog": "",
                   "schema": "",
                   "name": "text"
-                }
+                },
+                "unsigned": false
               },
               {
                 "name": "bio",
@@ -133,7 +135,8 @@
                   "catalog": "",
                   "schema": "",
                   "name": "text"
-                }
+                },
+                "unsigned": false
               }
             ],
             "comment": ""
@@ -183,7 +186,8 @@
             "catalog": "",
             "schema": "",
             "name": "bigserial"
-          }
+          },
+          "unsigned": false
         },
         {
           "name": "name",
@@ -204,7 +208,8 @@
             "catalog": "",
             "schema": "",
             "name": "text"
-          }
+          },
+          "unsigned": false
         },
         {
           "name": "bio",
@@ -225,7 +230,8 @@
             "catalog": "",
             "schema": "",
             "name": "text"
-          }
+          },
+          "unsigned": false
         }
       ],
       "params": [
@@ -250,7 +256,8 @@
               "catalog": "",
               "schema": "",
               "name": "bigserial"
-            }
+            },
+            "unsigned": false
           }
         }
       ],
@@ -282,7 +289,8 @@
             "catalog": "",
             "schema": "",
             "name": "bigserial"
-          }
+          },
+          "unsigned": false
         },
         {
           "name": "name",
@@ -303,7 +311,8 @@
             "catalog": "",
             "schema": "",
             "name": "text"
-          }
+          },
+          "unsigned": false
         },
         {
           "name": "bio",
@@ -324,7 +333,8 @@
             "catalog": "",
             "schema": "",
             "name": "text"
-          }
+          },
+          "unsigned": false
         }
       ],
       "params": [],
@@ -356,7 +366,8 @@
             "catalog": "",
             "schema": "",
             "name": "bigserial"
-          }
+          },
+          "unsigned": false
         },
         {
           "name": "name",
@@ -377,7 +388,8 @@
             "catalog": "",
             "schema": "",
             "name": "text"
-          }
+          },
+          "unsigned": false
         },
         {
           "name": "bio",
@@ -398,7 +410,8 @@
             "catalog": "",
             "schema": "",
             "name": "text"
-          }
+          },
+          "unsigned": false
         }
       ],
       "params": [
@@ -423,7 +436,8 @@
               "catalog": "",
               "schema": "",
               "name": "text"
-            }
+            },
+            "unsigned": false
           }
         },
         {
@@ -447,7 +461,8 @@
               "catalog": "",
               "schema": "",
               "name": "text"
-            }
+            },
+            "unsigned": false
           }
         }
       ],
@@ -486,7 +501,8 @@
               "catalog": "",
               "schema": "",
               "name": "bigserial"
-            }
+            },
+            "unsigned": false
           }
         }
       ],

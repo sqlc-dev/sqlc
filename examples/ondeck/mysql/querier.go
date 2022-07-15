@@ -14,9 +14,9 @@ type Querier interface {
 	CreateVenue(ctx context.Context, arg CreateVenueParams) (sql.Result, error)
 	DeleteVenue(ctx context.Context, arg DeleteVenueParams) error
 	GetCity(ctx context.Context, slug string) (City, error)
-	GetVenue(ctx context.Context, arg GetVenueParams) (Venue, error)
+	GetVenue(ctx context.Context, arg GetVenueParams) (GetVenueRow, error)
 	ListCities(ctx context.Context) ([]City, error)
-	ListVenues(ctx context.Context, city string) ([]Venue, error)
+	ListVenues(ctx context.Context, city string) ([]ListVenuesRow, error)
 	UpdateCityName(ctx context.Context, arg UpdateCityNameParams) error
 	UpdateVenueName(ctx context.Context, arg UpdateVenueNameParams) error
 	VenueCountByCity(ctx context.Context) ([]VenueCountByCityRow, error)

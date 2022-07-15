@@ -7,5 +7,5 @@ package querytest
 import ()
 
 type Venue struct {
-	ID int64
+	ID uint64
 }

@@ -9,7 +9,7 @@ import (
 )
 
 type User struct {
-	ID        int64
+	ID        uint64
 	FirstName string
 	LastName  sql.NullString
 }
