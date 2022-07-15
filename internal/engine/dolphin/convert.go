@@ -44,9 +44,10 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 			for _, def := range spec.NewColumns {
 				name := def.Name.String()
 				columnDef := ast.ColumnDef{
-					Colname:   def.Name.String(),
-					TypeName:  &ast.TypeName{Name: types.TypeStr(def.Tp.Tp)},
-					IsNotNull: isNotNull(def),
+					Colname:    def.Name.String(),
+					TypeName:   &ast.TypeName{Name: types.TypeStr(def.Tp.Tp)},
+					IsNotNull:  isNotNull(def),
+					IsUnsigned: isUnsigned(def),
 				}
 				if def.Tp.Flen >= 0 {
 					length := def.Tp.Flen
@@ -77,9 +78,10 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 			for _, def := range spec.NewColumns {
 				name := def.Name.String()
 				columnDef := ast.ColumnDef{
-					Colname:   def.Name.String(),
-					TypeName:  &ast.TypeName{Name: types.TypeStr(def.Tp.Tp)},
-					IsNotNull: isNotNull(def),
+					Colname:    def.Name.String(),
+					TypeName:   &ast.TypeName{Name: types.TypeStr(def.Tp.Tp)},
+					IsNotNull:  isNotNull(def),
+					IsUnsigned: isUnsigned(def),
 				}
 				if def.Tp.Flen >= 0 {
 					length := def.Tp.Flen
@@ -96,9 +98,10 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 			for _, def := range spec.NewColumns {
 				name := def.Name.String()
 				columnDef := ast.ColumnDef{
-					Colname:   def.Name.String(),
-					TypeName:  &ast.TypeName{Name: types.TypeStr(def.Tp.Tp)},
-					IsNotNull: isNotNull(def),
+					Colname:    def.Name.String(),
+					TypeName:   &ast.TypeName{Name: types.TypeStr(def.Tp.Tp)},
+					IsNotNull:  isNotNull(def),
+					IsUnsigned: isUnsigned(def),
 				}
 				if def.Tp.Flen >= 0 {
 					length := def.Tp.Flen
@@ -265,11 +268,12 @@ func (c *cc) convertCreateTableStmt(n *pcast.CreateTableStmt) ast.Node {
 			}
 		}
 		columnDef := ast.ColumnDef{
-			Colname:   def.Name.String(),
-			TypeName:  &ast.TypeName{Name: types.TypeStr(def.Tp.Tp)},
-			IsNotNull: isNotNull(def),
-			Comment:   comment,
-			Vals:      vals,
+			Colname:    def.Name.String(),
+			TypeName:   &ast.TypeName{Name: types.TypeStr(def.Tp.Tp)},
+			IsNotNull:  isNotNull(def),
+			IsUnsigned: isUnsigned(def),
+			Comment:    comment,
+			Vals:       vals,
 		}
 		if def.Tp.Flen >= 0 {
 			length := def.Tp.Flen
@@ -538,7 +542,6 @@ func (c *cc) convertCommonTableExpression(n *pcast.CommonTableExpression) *ast.C
 		Ctequery:    c.convert(n.Query),
 		Ctecolnames: columns,
 	}
-
 }
 
 func (c *cc) convertWithClause(n *pcast.WithClause) *ast.WithClause {

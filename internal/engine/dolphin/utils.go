@@ -2,6 +2,7 @@ package dolphin
 
 import (
 	pcast "github.com/pingcap/parser/ast"
+	"github.com/pingcap/parser/mysql"
 
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 )
@@ -95,4 +96,8 @@ func isNotNull(n *pcast.ColumnDef) bool {
 		}
 	}
 	return false
+}
+
+func isUnsigned(n *pcast.ColumnDef) bool {
+	return mysql.HasUnsignedFlag(n.Tp.Flag)
 }
