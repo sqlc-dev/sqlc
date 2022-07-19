@@ -29,7 +29,37 @@ LEFT JOIN pg_catalog.pg_namespace n ON n.oid = p.pronamespace
 WHERE n.nspname OPERATOR(pg_catalog.~) '^(pg_catalog)$'
   AND p.proargmodes IS NULL
   AND pg_function_is_visible(p.oid)
-ORDER BY 1;
+-- The order isn't too important - just that it is stable between runs
+ORDER BY 1, 2, 3, 4, 5;
+`
+
+// Relations are the relations available in pg_tables and pg_views
+// such as pg_catalog.pg_timezone_names
+const relations = `
+with relations as (
+	select schemaname, tablename as name from pg_catalog.pg_tables
+	UNION ALL
+	select schemaname, viewname as name from pg_catalog.pg_views
+)
+select
+	relations.schemaname,
+	relations.name as tablename,
+	pg_attribute.attname as column_name,
+	attnotnull as column_notnull,
+	column_type.typname as column_type,
+	nullif(column_type.typlen, -1) as column_length,
+	column_type.typcategory = 'A' as column_isarray
+from relations
+inner join pg_catalog.pg_class on pg_class.relname = relations.name
+left join pg_catalog.pg_attribute on pg_attribute.attrelid = pg_class.oid
+inner join pg_catalog.pg_type column_type on pg_attribute.atttypid = column_type.oid
+where relations.schemaname = 'pg_catalog'
+-- Make sure these columns are always generated in the same order
+-- so that the output is stable
+order by
+ relations.schemaname ASC,
+ relations.name ASC,
+ pg_attribute.attnum ASC
 `
 
 // https://dba.stackexchange.com/questions/255412/how-to-select-functions-that-belong-in-a-given-extension-in-postgresql
@@ -54,7 +84,8 @@ FROM pg_catalog.pg_proc p
 JOIN extension_funcs ef ON ef.oid = p.oid
 WHERE p.proargmodes IS NULL
   AND pg_function_is_visible(p.oid)
-ORDER BY 1;
+-- The order isn't too important - just that it is stable between runs
+ORDER BY 1, 2, 3, 4, 5;
 `
 
 const catalogTmpl = `
@@ -66,6 +97,14 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 )
+
+{{- if .Tables }}
+// toPointer converts an int to a pointer without a temporary
+// variable at the call-site
+func toPointer(x int) *int {
+	return &x
+}
+{{- end }}
 
 func {{.Name}}() *catalog.Schema {
 	s := &catalog.Schema{Name: "pg_catalog"}
@@ -89,6 +128,36 @@ func {{.Name}}() *catalog.Schema {
 		},
 		{{- end}}
 	}
+	{{- if .Tables }}
+	s.Tables = []*catalog.Table {
+	    {{- range .Tables}}
+		{
+			Rel: &ast.TableName{
+				Catalog: "{{.Rel.Catalog}}",
+				Schema: "{{.Rel.Schema}}",
+				Name: "{{.Rel.Name}}",
+			},
+			Columns: []*catalog.Column{
+				{{- range .Columns}}
+				{
+					Name: "{{.Name}}",
+					Type: ast.TypeName{Name: "{{.Type.Name}}"},
+					{{- if .IsNotNull}}
+					IsNotNull: true,
+					{{- end}}
+					{{- if .IsArray}}
+					IsArray: true,
+					{{- end}}
+					{{- if .Length }}
+					Length: toPointer({{ .Length }}),
+					{{- end}}
+				},
+				{{- end}}
+			},
+		},
+		{{- end}}
+	}
+	{{- end }}
 	return s
 }
 `
@@ -115,9 +184,10 @@ func loadExtension(name string) *catalog.Schema {
 `
 
 type tmplCtx struct {
-	Pkg   string
-	Name  string
-	Funcs []catalog.Function
+	Pkg    string
+	Name   string
+	Funcs  []catalog.Function
+	Tables []catalog.Table
 }
 
 func main() {
@@ -171,6 +241,59 @@ func (p Proc) Args() []*catalog.Argument {
 		})
 	}
 	return args
+}
+
+func scanTables(rows pgx.Rows) ([]catalog.Table, error) {
+	defer rows.Close()
+	// Iterate through the result set
+	var tables []catalog.Table
+	var prevTable *catalog.Table
+
+	for rows.Next() {
+		var schemaName string
+		var tableName string
+		var columnName string
+		var columnNotNull bool
+		var columnType string
+		var columnLength *int
+		var columnIsArray bool
+		err := rows.Scan(
+			&schemaName,
+			&tableName,
+			&columnName,
+			&columnNotNull,
+			&columnType,
+			&columnLength,
+			&columnIsArray,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		if prevTable == nil || tableName != prevTable.Rel.Name {
+			// We are on the same table, just keep adding columns
+			t := catalog.Table{
+				Rel: &ast.TableName{
+					Catalog: "pg_catalog",
+					Schema:  schemaName,
+					Name:    tableName,
+				},
+			}
+
+			tables = append(tables, t)
+			prevTable = &tables[len(tables)-1]
+		}
+
+		prevTable.Columns = append(prevTable.Columns, &catalog.Column{
+			Name:      columnName,
+			Type:      ast.TypeName{Name: columnType},
+			IsNotNull: columnNotNull,
+			IsArray:   columnIsArray,
+			Length:    columnLength,
+		})
+	}
+
+	return tables, rows.Err()
 }
 
 func scanFuncs(rows pgx.Rows) ([]catalog.Function, error) {
@@ -238,12 +361,24 @@ func run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+
 	funcs, err := scanFuncs(rows)
 	if err != nil {
 		return err
 	}
+
+	rows, err = conn.Query(ctx, relations)
+	if err != nil {
+		return err
+	}
+
+	tables, err := scanTables(rows)
+	if err != nil {
+		return err
+	}
+
 	out := bytes.NewBuffer([]byte{})
-	if err := tmpl.Execute(out, tmplCtx{Pkg: "postgresql", Name: "genPGCatalog", Funcs: funcs}); err != nil {
+	if err := tmpl.Execute(out, tmplCtx{Pkg: "postgresql", Name: "genPGCatalog", Funcs: funcs, Tables: tables}); err != nil {
 		return err
 	}
 	code, err := format.Source(out.Bytes())
