@@ -14,7 +14,7 @@ SELECT count(1) FROM bar WHERE id = ? AND name <> ?
 `
 
 type CountOneParams struct {
-	ID   int64
+	ID   uint64
 	Name string
 }
 
@@ -30,7 +30,7 @@ SELECT count(1) FROM bar WHERE id > ? AND phone <> ? AND name <> ?
 `
 
 type CountThreeParams struct {
-	ID    int64
+	ID    uint64
 	Phone string
 	Name  string
 }
@@ -47,7 +47,7 @@ SELECT count(1) FROM bar WHERE id = ? AND name <> ?
 `
 
 type CountTwoParams struct {
-	ID   int64
+	ID   uint64
 	Name string
 }
 

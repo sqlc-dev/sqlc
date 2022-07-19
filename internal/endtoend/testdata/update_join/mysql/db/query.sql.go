@@ -20,8 +20,8 @@ WHERE   jt.id = ?
 
 type UpdateJoinParams struct {
 	IsActive bool
-	ID       int64
-	UserID   int64
+	ID       uint64
+	UserID   uint64
 }
 
 func (q *Queries) UpdateJoin(ctx context.Context, arg UpdateJoinParams) error {
@@ -40,8 +40,8 @@ WHERE   jt.id = ?
 
 type UpdateLeftJoinParams struct {
 	IsActive bool
-	ID       int64
-	UserID   int64
+	ID       uint64
+	UserID   uint64
 }
 
 func (q *Queries) UpdateLeftJoin(ctx context.Context, arg UpdateLeftJoinParams) error {
@@ -60,8 +60,8 @@ WHERE   jt.id = ?
 
 type UpdateRightJoinParams struct {
 	IsActive bool
-	ID       int64
-	UserID   int64
+	ID       uint64
+	UserID   uint64
 }
 
 func (q *Queries) UpdateRightJoin(ctx context.Context, arg UpdateRightJoinParams) error {

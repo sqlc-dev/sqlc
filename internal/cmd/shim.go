@@ -265,6 +265,7 @@ func pluginQueryColumn(c *compiler.Column) *plugin.Column {
 		Name:         c.Name,
 		Comment:      c.Comment,
 		NotNull:      c.NotNull,
+		Unsigned:     c.Unsigned,
 		IsArray:      c.IsArray,
 		Length:       int32(l),
 		IsNamedParam: c.IsNamedParam,

@@ -15,7 +15,7 @@ UPDATE foo.bar SET name = ? WHERE id = ?
 
 type SchemaScopedUpdateParams struct {
 	Name string
-	ID   int64
+	ID   uint64
 }
 
 func (q *Queries) SchemaScopedUpdate(ctx context.Context, arg SchemaScopedUpdateParams) error {

@@ -8,7 +8,6 @@ package ondeck
 import (
 	"context"
 	"database/sql"
-	"time"
 )
 
 const createVenue = `-- name: CreateVenue :execresult
@@ -81,22 +80,9 @@ type GetVenueParams struct {
 	City string `json:"city"`
 }
 
-type GetVenueRow struct {
-	ID              int64          `json:"id"`
-	Status          VenuesStatus   `json:"status"`
-	Statuses        sql.NullString `json:"statuses"`
-	Slug            string         `json:"slug"`
-	Name            string         `json:"name"`
-	City            string         `json:"city"`
-	SpotifyPlaylist string         `json:"spotify_playlist"`
-	SongkickID      sql.NullString `json:"songkick_id"`
-	Tags            sql.NullString `json:"tags"`
-	CreatedAt       time.Time      `json:"created_at"`
-}
-
-func (q *Queries) GetVenue(ctx context.Context, arg GetVenueParams) (GetVenueRow, error) {
+func (q *Queries) GetVenue(ctx context.Context, arg GetVenueParams) (Venue, error) {
 	row := q.queryRow(ctx, q.getVenueStmt, getVenue, arg.Slug, arg.City)
-	var i GetVenueRow
+	var i Venue
 	err := row.Scan(
 		&i.ID,
 		&i.Status,
@@ -119,28 +105,15 @@ WHERE city = ?
 ORDER BY name
 `
 
-type ListVenuesRow struct {
-	ID              int64          `json:"id"`
-	Status          VenuesStatus   `json:"status"`
-	Statuses        sql.NullString `json:"statuses"`
-	Slug            string         `json:"slug"`
-	Name            string         `json:"name"`
-	City            string         `json:"city"`
-	SpotifyPlaylist string         `json:"spotify_playlist"`
-	SongkickID      sql.NullString `json:"songkick_id"`
-	Tags            sql.NullString `json:"tags"`
-	CreatedAt       time.Time      `json:"created_at"`
-}
-
-func (q *Queries) ListVenues(ctx context.Context, city string) ([]ListVenuesRow, error) {
+func (q *Queries) ListVenues(ctx context.Context, city string) ([]Venue, error) {
 	rows, err := q.query(ctx, q.listVenuesStmt, listVenues, city)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ListVenuesRow
+	var items []Venue
 	for rows.Next() {
-		var i ListVenuesRow
+		var i Venue
 		if err := rows.Scan(
 			&i.ID,
 			&i.Status,

@@ -18,6 +18,7 @@ type Column struct {
 	Name         string
 	DataType     string
 	NotNull      bool
+	Unsigned     bool
 	IsArray      bool
 	Comment      string
 	Length       *int

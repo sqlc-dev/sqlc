@@ -38,11 +38,12 @@ func (table *Table) addColumn(cmd *ast.AlterTableCmd) error {
 		}
 	}
 	table.Columns = append(table.Columns, &Column{
-		Name:      cmd.Def.Colname,
-		Type:      *cmd.Def.TypeName,
-		IsNotNull: cmd.Def.IsNotNull,
-		IsArray:   cmd.Def.IsArray,
-		Length:    cmd.Def.Length,
+		Name:       cmd.Def.Colname,
+		Type:       *cmd.Def.TypeName,
+		IsNotNull:  cmd.Def.IsNotNull,
+		IsUnsigned: cmd.Def.IsUnsigned,
+		IsArray:    cmd.Def.IsArray,
+		Length:     cmd.Def.Length,
 	})
 	return nil
 }

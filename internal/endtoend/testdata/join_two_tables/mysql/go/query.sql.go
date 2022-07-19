@@ -16,20 +16,15 @@ JOIN bar ON bar.id = bar_id
 JOIN baz ON baz.id = baz_id
 `
 
-type TwoJoinsRow struct {
-	BarID int64
-	BazID int64
-}
-
-func (q *Queries) TwoJoins(ctx context.Context) ([]TwoJoinsRow, error) {
+func (q *Queries) TwoJoins(ctx context.Context) ([]Foo, error) {
 	rows, err := q.db.QueryContext(ctx, twoJoins)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []TwoJoinsRow
+	var items []Foo
 	for rows.Next() {
-		var i TwoJoinsRow
+		var i Foo
 		if err := rows.Scan(&i.BarID, &i.BazID); err != nil {
 			return nil, err
 		}
