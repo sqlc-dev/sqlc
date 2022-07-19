@@ -187,9 +187,6 @@ func Ltree() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "ltree"},
 				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "integer"},
 		},
@@ -202,12 +199,150 @@ func Ltree() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "ltree"},
 				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
 			},
 			ReturnType: &ast.TypeName{Name: "integer"},
 		},
 		{
 			Name: "lca",
 			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ltree"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ltree"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "ltree"},
+		},
+		{
+			Name: "lca",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ltree"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ltree"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ltree"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "ltree"},
+		},
+		{
+			Name: "lca",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ltree"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ltree"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ltree"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ltree"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "ltree"},
+		},
+		{
+			Name: "lca",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ltree"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ltree"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ltree"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ltree"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ltree"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "ltree"},
+		},
+		{
+			Name: "lca",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ltree"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ltree"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ltree"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ltree"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ltree"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ltree"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "ltree"},
+		},
+		{
+			Name: "lca",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ltree"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ltree"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ltree"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ltree"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ltree"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ltree"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ltree"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "ltree"},
+		},
+		{
+			Name: "lca",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ltree"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ltree"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ltree"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ltree"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ltree"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ltree"},
+				},
 				{
 					Type: &ast.TypeName{Name: "ltree"},
 				},
@@ -222,141 +357,6 @@ func Ltree() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "ltree[]"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "ltree"},
-		},
-		{
-			Name: "lca",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ltree"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ltree"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ltree"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "ltree"},
-		},
-		{
-			Name: "lca",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ltree"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ltree"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ltree"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ltree"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "ltree"},
-		},
-		{
-			Name: "lca",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ltree"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ltree"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ltree"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ltree"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ltree"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "ltree"},
-		},
-		{
-			Name: "lca",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ltree"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ltree"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ltree"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ltree"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ltree"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ltree"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "ltree"},
-		},
-		{
-			Name: "lca",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ltree"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ltree"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ltree"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ltree"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ltree"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ltree"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ltree"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "ltree"},
-		},
-		{
-			Name: "lca",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ltree"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ltree"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ltree"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ltree"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ltree"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ltree"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ltree"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ltree"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "ltree"},
@@ -378,6 +378,15 @@ func Ltree() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "cstring"},
+		},
+		{
+			Name: "lquery_send",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "lquery"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bytea"},
 		},
 		{
 			Name: "lt_q_regex",
@@ -605,6 +614,15 @@ func Ltree() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
+			Name: "ltree_send",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ltree"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bytea"},
+		},
+		{
 			Name: "ltree_textadd",
 			Args: []*catalog.Argument{
 				{
@@ -657,6 +675,15 @@ func Ltree() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "ltxtq_send",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ltxtquery"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bytea"},
 		},
 		{
 			Name: "nlevel",

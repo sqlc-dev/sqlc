@@ -23,7 +23,7 @@ func Citext() *catalog.Schema {
 			Name: "citext",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "inet"},
+					Type: &ast.TypeName{Name: "character"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "citext"},
@@ -32,7 +32,7 @@ func Citext() *catalog.Schema {
 			Name: "citext",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "character"},
+					Type: &ast.TypeName{Name: "inet"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "citext"},
@@ -307,9 +307,6 @@ func Citext() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "citext"},
 				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "text[]"},
 		},
@@ -322,6 +319,9 @@ func Citext() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "citext"},
 				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
 			},
 			ReturnType: &ast.TypeName{Name: "text[]"},
 		},
@@ -367,9 +367,6 @@ func Citext() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "citext"},
 				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "text[]"},
 		},
@@ -381,6 +378,9 @@ func Citext() *catalog.Schema {
 				},
 				{
 					Type: &ast.TypeName{Name: "citext"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "text[]"},
@@ -485,7 +485,7 @@ func Citext() *catalog.Schema {
 					Type: &ast.TypeName{Name: "citext"},
 				},
 				{
-					Type: &ast.TypeName{Name: "text"},
+					Type: &ast.TypeName{Name: "citext"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -497,7 +497,7 @@ func Citext() *catalog.Schema {
 					Type: &ast.TypeName{Name: "citext"},
 				},
 				{
-					Type: &ast.TypeName{Name: "citext"},
+					Type: &ast.TypeName{Name: "text"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
