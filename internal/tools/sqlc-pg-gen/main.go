@@ -20,17 +20,26 @@ import (
 // https://stackoverflow.com/questions/25308765/postgresql-how-can-i-inspect-which-arguments-to-a-procedure-have-a-default-valu
 const catalogFuncs = `
 SELECT p.proname as name,
-  format_type(p.prorettype, NULL),
-  array(select format_type(unnest(p.proargtypes), NULL)),
-  p.proargnames,
-  p.proargnames[p.pronargs-p.pronargdefaults+1:p.pronargs]
+  format_type(p.prorettype, NULL) as return_type,
+	arg_types.direct_arg_types,
+  arg_types.aggregated_arg_types,
+  p.proargnames as arg_names,
+  p.proargnames[p.pronargs-p.pronargdefaults+1:p.pronargs] as has_default,
+	p.prokind::text as kind
 FROM pg_catalog.pg_proc p
 LEFT JOIN pg_catalog.pg_namespace n ON n.oid = p.pronamespace
+LEFT JOIN pg_catalog.pg_aggregate agg on agg.aggfnoid = p.oid and p.prokind = 'a'
+CROSS JOIN LATERAL (
+  select
+    array_agg(format_type(arg_type, NULL)) filter (where agg is null OR argn <= agg.aggnumdirectargs),
+    array_agg(format_type(arg_type, NULL)) filter (where argn > agg.aggnumdirectargs)
+  from unnest(p.proargtypes) WITH ORDINALITY as arg_type(arg_type, argn)
+) arg_types(direct_arg_types, aggregated_arg_types)
 WHERE n.nspname OPERATOR(pg_catalog.~) '^(pg_catalog)$'
   AND p.proargmodes IS NULL
   AND pg_function_is_visible(p.oid)
 -- The order isn't too important - just that it is stable between runs
-ORDER BY 1, 2, 3, 4, 5;
+ORDER BY 1, 2, 3, 4, 5, 6, 7
 `
 
 // Relations are the relations available in pg_tables and pg_views
@@ -76,16 +85,25 @@ WITH extension_funcs AS (
   WHERE d.deptype = 'e' AND e.extname = $1
 )
 SELECT p.proname as name,
-  format_type(p.prorettype, NULL),
-  array(select format_type(unnest(p.proargtypes), NULL)),
-  p.proargnames,
-  p.proargnames[p.pronargs-p.pronargdefaults+1:p.pronargs]
+  format_type(p.prorettype, NULL) as return_type,
+	arg_types.direct_arg_types,
+  arg_types.aggregated_arg_types,
+  p.proargnames as arg_names,
+  p.proargnames[p.pronargs-p.pronargdefaults+1:p.pronargs] as has_default,
+	p.prokind::text as kind
 FROM pg_catalog.pg_proc p
 JOIN extension_funcs ef ON ef.oid = p.oid
+LEFT JOIN pg_catalog.pg_aggregate agg on agg.aggfnoid = p.oid and p.prokind = 'a'
+CROSS JOIN LATERAL (
+  select
+    array_agg(format_type(arg_type, NULL)) filter (where agg is null OR argn <= agg.aggnumdirectargs),
+    array_agg(format_type(arg_type, NULL)) filter (where argn > agg.aggnumdirectargs)
+  from unnest(p.proargtypes) WITH ORDINALITY as arg_type(arg_type, argn)
+) arg_types(direct_arg_types, aggregated_arg_types)
 WHERE p.proargmodes IS NULL
   AND pg_function_is_visible(p.oid)
 -- The order isn't too important - just that it is stable between runs
-ORDER BY 1, 2, 3, 4, 5;
+ORDER BY 1, 2, 3, 4, 5, 6, 7
 `
 
 const catalogTmpl = `
@@ -196,12 +214,25 @@ func main() {
 	}
 }
 
+// ProcKind is the type that tells what type of routine the pg_proc is
+// This corresponds to the pg_proc.prokind column
+type ProcKind string
+
+const (
+	ProcKindNormal    = ProcKind("f")
+	ProcKindWindow    = ProcKind("w")
+	ProcKindAggregate = ProcKind("a")
+	ProcKindProcedure = ProcKind("p")
+)
+
 type Proc struct {
-	Name       string
-	ReturnType string
-	ArgTypes   []string
-	ArgNames   []string
-	HasDefault []string
+	Name               string
+	ReturnType         string
+	DirectArgTypes     []string
+	AggregatedArgTypes []string
+	ArgNames           []string
+	HasDefault         []string
+	Kind               ProcKind
 }
 
 func clean(arg string) string {
@@ -223,13 +254,13 @@ func (p Proc) Func() catalog.Function {
 func (p Proc) Args() []*catalog.Argument {
 	defaults := map[string]bool{}
 	var args []*catalog.Argument
-	if len(p.ArgTypes) == 0 {
+	if len(p.DirectArgTypes) == 0 {
 		return args
 	}
 	for _, name := range p.HasDefault {
 		defaults[name] = true
 	}
-	for i, arg := range p.ArgTypes {
+	for i, arg := range p.DirectArgTypes {
 		var name string
 		if i < len(p.ArgNames) {
 			name = p.ArgNames[i]
@@ -305,9 +336,11 @@ func scanFuncs(rows pgx.Rows) ([]catalog.Function, error) {
 		err := rows.Scan(
 			&p.Name,
 			&p.ReturnType,
-			&p.ArgTypes,
+			&p.DirectArgTypes,
+			&p.AggregatedArgTypes,
 			&p.ArgNames,
 			&p.HasDefault,
+			&p.Kind,
 		)
 		if err != nil {
 			return nil, err
@@ -328,8 +361,8 @@ func scanFuncs(rows pgx.Rows) ([]catalog.Function, error) {
 		//
 		// https://www.postgresql.org/docs/current/datatype-pseudo.html
 		var skip bool
-		for i := range p.ArgTypes {
-			if p.ArgTypes[i] == "internal" {
+		for i := range p.DirectArgTypes {
+			if p.DirectArgTypes[i] == "internal" {
 				skip = true
 			}
 		}
