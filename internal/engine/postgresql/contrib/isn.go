@@ -644,17 +644,17 @@ func Isn() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "cstring"},
 		},
 		{
-			Name:       "isn_weak",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
 			Name: "isn_weak",
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "boolean"},
 				},
 			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name:       "isn_weak",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{

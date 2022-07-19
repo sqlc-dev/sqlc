@@ -223,17 +223,17 @@ func Dblink() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
-			Name:       "dblink_disconnect",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "text"},
-		},
-		{
 			Name: "dblink_disconnect",
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
 			},
+			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
+			Name:       "dblink_disconnect",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{

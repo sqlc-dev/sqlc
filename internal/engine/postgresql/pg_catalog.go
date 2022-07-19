@@ -563,21 +563,13 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
-			Name: "array_agg",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "anyarray"},
-				},
-			},
+			Name:       "array_agg",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "anyarray"},
 		},
 		{
-			Name: "array_agg",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "anynonarray"},
-				},
-			},
+			Name:       "array_agg",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "anyarray"},
 		},
 		{
@@ -1073,66 +1065,38 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
-			Name: "avg",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-			},
+			Name:       "avg",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
-			Name: "avg",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "real"},
-				},
-			},
+			Name:       "avg",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
-			Name: "avg",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "interval"},
-				},
-			},
+			Name:       "avg",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "interval"},
 		},
 		{
-			Name: "avg",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-			},
+			Name:       "avg",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
-			Name: "avg",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
+			Name:       "avg",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
-			Name: "avg",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "numeric"},
-				},
-			},
+			Name:       "avg",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
-			Name: "avg",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-			},
+			Name:       "avg",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
@@ -1298,39 +1262,23 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "bit"},
 		},
 		{
-			Name: "bit_and",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-			},
+			Name:       "bit_and",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "bigint"},
 		},
 		{
-			Name: "bit_and",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "bit"},
-				},
-			},
+			Name:       "bit_and",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "bit"},
 		},
 		{
-			Name: "bit_and",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
+			Name:       "bit_and",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "integer"},
 		},
 		{
-			Name: "bit_and",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-			},
+			Name:       "bit_and",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "smallint"},
 		},
 		{
@@ -1376,39 +1324,23 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "integer"},
 		},
 		{
-			Name: "bit_or",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-			},
+			Name:       "bit_or",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "bigint"},
 		},
 		{
-			Name: "bit_or",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "bit"},
-				},
-			},
+			Name:       "bit_or",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "bit"},
 		},
 		{
-			Name: "bit_or",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
+			Name:       "bit_or",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "integer"},
 		},
 		{
-			Name: "bit_or",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-			},
+			Name:       "bit_or",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "smallint"},
 		},
 		{
@@ -1631,21 +1563,13 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
-			Name: "bool_and",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "boolean"},
-				},
-			},
+			Name:       "bool_and",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
-			Name: "bool_or",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "boolean"},
-				},
-			},
+			Name:       "bool_or",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
@@ -4186,15 +4110,8 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "bytea"},
 		},
 		{
-			Name: "corr",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-			},
+			Name:       "corr",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
@@ -4248,36 +4165,18 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "bigint"},
 		},
 		{
-			Name: "count",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "any"},
-				},
-			},
+			Name:       "count",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "bigint"},
 		},
 		{
-			Name: "covar_pop",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-			},
+			Name:       "covar_pop",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
-			Name: "covar_samp",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-			},
+			Name:       "covar_samp",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
@@ -5679,12 +5578,8 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "cstring"},
 		},
 		{
-			Name: "every",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "boolean"},
-				},
-			},
+			Name:       "every",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
@@ -11860,12 +11755,8 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
-			Name: "json_agg",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "anyelement"},
-				},
-			},
+			Name:       "json_agg",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "json"},
 		},
 		{
@@ -11946,15 +11837,8 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "json"},
 		},
 		{
-			Name: "json_object_agg",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "any"},
-				},
-				{
-					Type: &ast.TypeName{Name: "any"},
-				},
-			},
+			Name:       "json_object_agg",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "json"},
 		},
 		{
@@ -12114,12 +11998,8 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
-			Name: "jsonb_agg",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "anyelement"},
-				},
-			},
+			Name:       "jsonb_agg",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "jsonb"},
 		},
 		{
@@ -12436,15 +12316,8 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "jsonb"},
 		},
 		{
-			Name: "jsonb_object_agg",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "any"},
-				},
-				{
-					Type: &ast.TypeName{Name: "any"},
-				},
-			},
+			Name:       "jsonb_object_agg",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "jsonb"},
 		},
 		{
@@ -14491,192 +14364,108 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "integer"},
 		},
 		{
-			Name: "max",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "anyarray"},
-				},
-			},
+			Name:       "max",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "anyarray"},
 		},
 		{
-			Name: "max",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "anyenum"},
-				},
-			},
+			Name:       "max",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "anyenum"},
 		},
 		{
-			Name: "max",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-			},
+			Name:       "max",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "bigint"},
 		},
 		{
-			Name: "max",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "character"},
-				},
-			},
+			Name:       "max",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "character"},
 		},
 		{
-			Name: "max",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "date"},
-				},
-			},
+			Name:       "max",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "date"},
 		},
 		{
-			Name: "max",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-			},
+			Name:       "max",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
-			Name: "max",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "inet"},
-				},
-			},
+			Name:       "max",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "inet"},
 		},
 		{
-			Name: "max",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
+			Name:       "max",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "integer"},
 		},
 		{
-			Name: "max",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "interval"},
-				},
-			},
+			Name:       "max",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "interval"},
 		},
 		{
-			Name: "max",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "money"},
-				},
-			},
+			Name:       "max",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "money"},
 		},
 		{
-			Name: "max",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "numeric"},
-				},
-			},
+			Name:       "max",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
-			Name: "max",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-			},
+			Name:       "max",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "oid"},
 		},
 		{
-			Name: "max",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "pg_lsn"},
-				},
-			},
+			Name:       "max",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "pg_lsn"},
 		},
 		{
-			Name: "max",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "real"},
-				},
-			},
+			Name:       "max",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "real"},
 		},
 		{
-			Name: "max",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-			},
+			Name:       "max",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "smallint"},
 		},
 		{
-			Name: "max",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
+			Name:       "max",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
-			Name: "max",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "tid"},
-				},
-			},
+			Name:       "max",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "tid"},
 		},
 		{
-			Name: "max",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "timestamp without time zone"},
-				},
-			},
+			Name:       "max",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "timestamp without time zone"},
 		},
 		{
-			Name: "max",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "timestamp with time zone"},
-				},
-			},
+			Name:       "max",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "timestamp with time zone"},
 		},
 		{
-			Name: "max",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "time without time zone"},
-				},
-			},
+			Name:       "max",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "time without time zone"},
 		},
 		{
-			Name: "max",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "time with time zone"},
-				},
-			},
+			Name:       "max",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "time with time zone"},
 		},
 		{
@@ -14698,192 +14487,108 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
-			Name: "min",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "anyarray"},
-				},
-			},
+			Name:       "min",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "anyarray"},
 		},
 		{
-			Name: "min",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "anyenum"},
-				},
-			},
+			Name:       "min",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "anyenum"},
 		},
 		{
-			Name: "min",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-			},
+			Name:       "min",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "bigint"},
 		},
 		{
-			Name: "min",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "character"},
-				},
-			},
+			Name:       "min",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "character"},
 		},
 		{
-			Name: "min",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "date"},
-				},
-			},
+			Name:       "min",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "date"},
 		},
 		{
-			Name: "min",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-			},
+			Name:       "min",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
-			Name: "min",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "inet"},
-				},
-			},
+			Name:       "min",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "inet"},
 		},
 		{
-			Name: "min",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
+			Name:       "min",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "integer"},
 		},
 		{
-			Name: "min",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "interval"},
-				},
-			},
+			Name:       "min",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "interval"},
 		},
 		{
-			Name: "min",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "money"},
-				},
-			},
+			Name:       "min",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "money"},
 		},
 		{
-			Name: "min",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "numeric"},
-				},
-			},
+			Name:       "min",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
-			Name: "min",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-			},
+			Name:       "min",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "oid"},
 		},
 		{
-			Name: "min",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "pg_lsn"},
-				},
-			},
+			Name:       "min",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "pg_lsn"},
 		},
 		{
-			Name: "min",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "real"},
-				},
-			},
+			Name:       "min",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "real"},
 		},
 		{
-			Name: "min",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-			},
+			Name:       "min",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "smallint"},
 		},
 		{
-			Name: "min",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
+			Name:       "min",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
-			Name: "min",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "tid"},
-				},
-			},
+			Name:       "min",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "tid"},
 		},
 		{
-			Name: "min",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "timestamp without time zone"},
-				},
-			},
+			Name:       "min",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "timestamp without time zone"},
 		},
 		{
-			Name: "min",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "timestamp with time zone"},
-				},
-			},
+			Name:       "min",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "timestamp with time zone"},
 		},
 		{
-			Name: "min",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "time without time zone"},
-				},
-			},
+			Name:       "min",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "time without time zone"},
 		},
 		{
-			Name: "min",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "time with time zone"},
-				},
-			},
+			Name:       "min",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "time with time zone"},
 		},
 		{
@@ -14944,12 +14649,8 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "smallint"},
 		},
 		{
-			Name: "mode",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "anyelement"},
-				},
-			},
+			Name:       "mode",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "anyelement"},
 		},
 		{
@@ -16999,9 +16700,6 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "double precision"},
 				},
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
@@ -17010,9 +16708,6 @@ func genPGCatalog() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "double precision[]"},
-				},
-				{
-					Type: &ast.TypeName{Name: "double precision"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "double precision[]"},
@@ -17023,9 +16718,6 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "double precision"},
 				},
-				{
-					Type: &ast.TypeName{Name: "interval"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "interval"},
 		},
@@ -17034,9 +16726,6 @@ func genPGCatalog() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "double precision[]"},
-				},
-				{
-					Type: &ast.TypeName{Name: "interval"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "interval[]"},
@@ -17047,9 +16736,6 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "double precision[]"},
 				},
-				{
-					Type: &ast.TypeName{Name: "anyelement"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "anyarray"},
 		},
@@ -17058,9 +16744,6 @@ func genPGCatalog() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "double precision"},
-				},
-				{
-					Type: &ast.TypeName{Name: "anyelement"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "anyelement"},
@@ -17313,17 +16996,17 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "pg_lsn"},
 		},
 		{
-			Name:       "pg_current_logfile",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "text"},
-		},
-		{
 			Name: "pg_current_logfile",
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
 			},
+			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
+			Name:       "pg_current_logfile",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
@@ -21597,111 +21280,48 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "bytea"},
 		},
 		{
-			Name: "regr_avgx",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-			},
+			Name:       "regr_avgx",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
-			Name: "regr_avgy",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-			},
+			Name:       "regr_avgy",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
-			Name: "regr_count",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-			},
+			Name:       "regr_count",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "bigint"},
 		},
 		{
-			Name: "regr_intercept",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-			},
+			Name:       "regr_intercept",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
-			Name: "regr_r2",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-			},
+			Name:       "regr_r2",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
-			Name: "regr_slope",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-			},
+			Name:       "regr_slope",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
-			Name: "regr_sxx",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-			},
+			Name:       "regr_sxx",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
-			Name: "regr_sxy",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-			},
+			Name:       "regr_sxy",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
-			Name: "regr_syy",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-			},
+			Name:       "regr_syy",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
@@ -22371,189 +21991,103 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "timestamp with time zone"},
 		},
 		{
-			Name: "stddev",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-			},
+			Name:       "stddev",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
-			Name: "stddev",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "real"},
-				},
-			},
+			Name:       "stddev",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
-			Name: "stddev",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-			},
+			Name:       "stddev",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
-			Name: "stddev",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
+			Name:       "stddev",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
-			Name: "stddev",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "numeric"},
-				},
-			},
+			Name:       "stddev",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
-			Name: "stddev",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-			},
+			Name:       "stddev",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
-			Name: "stddev_pop",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-			},
+			Name:       "stddev_pop",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
-			Name: "stddev_pop",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "real"},
-				},
-			},
+			Name:       "stddev_pop",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
-			Name: "stddev_pop",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-			},
+			Name:       "stddev_pop",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
-			Name: "stddev_pop",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
+			Name:       "stddev_pop",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
-			Name: "stddev_pop",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "numeric"},
-				},
-			},
+			Name:       "stddev_pop",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
-			Name: "stddev_pop",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-			},
+			Name:       "stddev_pop",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
-			Name: "stddev_samp",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-			},
+			Name:       "stddev_samp",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
-			Name: "stddev_samp",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "real"},
-				},
-			},
+			Name:       "stddev_samp",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
-			Name: "stddev_samp",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-			},
+			Name:       "stddev_samp",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
-			Name: "stddev_samp",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
+			Name:       "stddev_samp",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
-			Name: "stddev_samp",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "numeric"},
-				},
-			},
+			Name:       "stddev_samp",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
-			Name: "stddev_samp",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-			},
+			Name:       "stddev_samp",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
-			Name: "string_agg",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "bytea"},
-				},
-				{
-					Type: &ast.TypeName{Name: "bytea"},
-				},
-			},
+			Name:       "string_agg",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "bytea"},
 		},
 		{
-			Name: "string_agg",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
+			Name:       "string_agg",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
@@ -22767,75 +22301,43 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
-			Name: "sum",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
+			Name:       "sum",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "bigint"},
 		},
 		{
-			Name: "sum",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-			},
+			Name:       "sum",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "bigint"},
 		},
 		{
-			Name: "sum",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-			},
+			Name:       "sum",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
-			Name: "sum",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "interval"},
-				},
-			},
+			Name:       "sum",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "interval"},
 		},
 		{
-			Name: "sum",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "money"},
-				},
-			},
+			Name:       "sum",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "money"},
 		},
 		{
-			Name: "sum",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-			},
+			Name:       "sum",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
-			Name: "sum",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "numeric"},
-				},
-			},
+			Name:       "sum",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
-			Name: "sum",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "real"},
-				},
-			},
+			Name:       "sum",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "real"},
 		},
 		{
@@ -26571,111 +26073,63 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "bytea"},
 		},
 		{
-			Name: "var_pop",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-			},
+			Name:       "var_pop",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
-			Name: "var_pop",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "real"},
-				},
-			},
+			Name:       "var_pop",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
-			Name: "var_pop",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-			},
+			Name:       "var_pop",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
-			Name: "var_pop",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
+			Name:       "var_pop",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
-			Name: "var_pop",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "numeric"},
-				},
-			},
+			Name:       "var_pop",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
-			Name: "var_pop",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-			},
+			Name:       "var_pop",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
-			Name: "var_samp",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-			},
+			Name:       "var_samp",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
-			Name: "var_samp",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "real"},
-				},
-			},
+			Name:       "var_samp",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
-			Name: "var_samp",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-			},
+			Name:       "var_samp",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
-			Name: "var_samp",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
+			Name:       "var_samp",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
-			Name: "var_samp",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "numeric"},
-				},
-			},
+			Name:       "var_samp",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
-			Name: "var_samp",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-			},
+			Name:       "var_samp",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
@@ -26904,57 +26358,33 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "cstring"},
 		},
 		{
-			Name: "variance",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-			},
+			Name:       "variance",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
-			Name: "variance",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "real"},
-				},
-			},
+			Name:       "variance",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
-			Name: "variance",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-			},
+			Name:       "variance",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
-			Name: "variance",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
+			Name:       "variance",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
-			Name: "variance",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "numeric"},
-				},
-			},
+			Name:       "variance",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
-			Name: "variance",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-			},
+			Name:       "variance",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
@@ -27326,12 +26756,8 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "bytea"},
 		},
 		{
-			Name: "xmlagg",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "xml"},
-				},
-			},
+			Name:       "xmlagg",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "xml"},
 		},
 		{

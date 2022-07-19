@@ -254,21 +254,13 @@ func Citext() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "bytea"},
 		},
 		{
-			Name: "max",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "citext"},
-				},
-			},
+			Name:       "max",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "citext"},
 		},
 		{
-			Name: "min",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "citext"},
-				},
-			},
+			Name:       "min",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "citext"},
 		},
 		{
