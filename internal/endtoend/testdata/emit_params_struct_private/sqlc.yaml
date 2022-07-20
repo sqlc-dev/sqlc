@@ -1,0 +1,13 @@
+version: "2"
+sql:
+  - schema: "./query.sql"
+    queries: "./query.sql"
+    engine: "postgresql"
+    gen:
+      go:
+        package: "querytest"
+        out: "./go"
+        emit_interface: true
+        emit_result_struct_pointers: true
+        emit_params_struct_pointers: true
+        emit_params_struct_private: true
