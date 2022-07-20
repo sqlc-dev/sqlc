@@ -2,15 +2,15 @@ package golang
 
 import (
 	"fmt"
-	"strings"
-
 	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/plugin"
+	"strings"
 )
 
 type QueryValue struct {
 	Emit        bool
 	EmitPointer bool
+	EmitPrivate bool
 	Name        string
 	Struct      *Struct
 	Typ         string
@@ -59,6 +59,10 @@ func (v QueryValue) Type() string {
 
 func (v *QueryValue) DefineType() string {
 	t := v.Type()
+	if v.EmitPrivate {
+		t = strings.ToLower(t[0:1]) + t[1:]
+	}
+
 	if v.IsPointer() {
 		return "*" + t
 	}
