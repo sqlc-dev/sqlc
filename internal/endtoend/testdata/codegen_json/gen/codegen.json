@@ -48,7 +48,8 @@
       "output_querier_file_name": "",
       "output_files_suffix": "",
       "emit_enum_valid_method": false,
-      "emit_all_enum_values": false
+      "emit_all_enum_values": false,
+      "emit_params_struct_private": false
     },
     "json": {
       "out": "gen",

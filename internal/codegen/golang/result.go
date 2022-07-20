@@ -183,6 +183,7 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 				Struct:      s,
 				SQLPackage:  sqlpkg,
 				EmitPointer: req.Settings.Go.EmitParamsStructPointers,
+				EmitPrivate: req.Settings.Go.EmitParamsStructPrivate,
 			}
 		}
 
@@ -242,6 +243,7 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 				Struct:      gs,
 				SQLPackage:  sqlpkg,
 				EmitPointer: req.Settings.Go.EmitResultStructPointers,
+				EmitPrivate: false,
 			}
 		}
 

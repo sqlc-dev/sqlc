@@ -99,6 +99,7 @@ func pluginGoCode(s config.SQLGo) *plugin.GoCode {
 		EmitExportedQueries:       s.EmitExportedQueries,
 		EmitResultStructPointers:  s.EmitResultStructPointers,
 		EmitParamsStructPointers:  s.EmitParamsStructPointers,
+		EmitParamsStructPrivate:   s.EmitParamsStructPrivate,
 		EmitMethodsWithDbArgument: s.EmitMethodsWithDBArgument,
 		EmitEnumValidMethod:       s.EmitEnumValidMethod,
 		EmitAllEnumValues:         s.EmitAllEnumValues,

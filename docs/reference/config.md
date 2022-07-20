@@ -69,6 +69,8 @@ The `gen` mapping supports the following keys:
   - If true, query results are returned as pointers to structs. Queries returning multiple results are returned as slices of pointers. Defaults to `false`.
 - `emit_params_struct_pointers`:
   - If true, parameters are passed as pointers to structs. Defaults to `false`.
+- `emit_params_struct_private`:
+  - If true, parameters will be produce private structs. Defaults to `false`.
 - `emit_methods_with_db_argument`:
   - If true, generated methods will accept a DBTX argument instead of storing a DBTX on the `*Queries` struct. Defaults to `false`.
 - `emit_enum_valid_method`:
@@ -287,6 +289,7 @@ packages:
     emit_json_tags: true
     emit_result_struct_pointers: false
     emit_params_struct_pointers: false
+    emit_params_struct_private: false
     emit_methods_with_db_argument: false
     emit_enum_valid_method: false
     emit_all_enum_values: false
