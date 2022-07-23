@@ -68,6 +68,7 @@ const (
 	EngineMySQL      Engine = "mysql"
 	EnginePostgreSQL Engine = "postgresql"
 	EngineSQLite     Engine = "sqlite"
+	EngineZetaSQL    Engine = "zetasql"
 )
 
 type Config struct {

@@ -7,6 +7,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/engine/dolphin"
 	"github.com/kyleconroy/sqlc/internal/engine/postgresql"
 	"github.com/kyleconroy/sqlc/internal/engine/sqlite"
+	"github.com/kyleconroy/sqlc/internal/engine/zetasql"
 	"github.com/kyleconroy/sqlc/internal/opts"
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 )
@@ -31,6 +32,9 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings) *Compiler {
 	case config.EnginePostgreSQL:
 		c.parser = postgresql.NewParser()
 		c.catalog = postgresql.NewCatalog()
+	case config.EngineZetaSQL:
+		c.parser = zetasql.NewParser()
+		c.catalog = zetasql.NewCatalog()
 	default:
 		panic(fmt.Sprintf("unknown engine: %s", conf.Engine))
 	}
