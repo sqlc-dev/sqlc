@@ -241,6 +241,7 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 					return nil, err
 				}
 				first := subcols[0]
+				first.NotNull = false
 				if res.Name != nil {
 					first.Name = *res.Name
 				}
