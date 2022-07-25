@@ -5,10 +5,10 @@ import (
 	"log"
 	"strings"
 
-	pcast "github.com/pingcap/parser/ast"
-	"github.com/pingcap/parser/opcode"
-	driver "github.com/pingcap/parser/test_driver"
-	"github.com/pingcap/parser/types"
+	pcast "github.com/pingcap/tidb/parser/ast"
+	"github.com/pingcap/tidb/parser/opcode"
+	driver "github.com/pingcap/tidb/parser/test_driver"
+	"github.com/pingcap/tidb/parser/types"
 
 	"github.com/kyleconroy/sqlc/internal/debug"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
@@ -45,11 +45,11 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 				name := def.Name.String()
 				columnDef := ast.ColumnDef{
 					Colname:   def.Name.String(),
-					TypeName:  &ast.TypeName{Name: types.TypeStr(def.Tp.Tp)},
+					TypeName:  &ast.TypeName{Name: types.TypeStr(def.Tp.GetType())},
 					IsNotNull: isNotNull(def),
 				}
-				if def.Tp.Flen >= 0 {
-					length := def.Tp.Flen
+				if def.Tp.GetFlen() >= 0 {
+					length := def.Tp.GetFlen()
 					columnDef.Length = &length
 				}
 				alt.Cmds.Items = append(alt.Cmds.Items, &ast.AlterTableCmd{
@@ -78,11 +78,11 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 				name := def.Name.String()
 				columnDef := ast.ColumnDef{
 					Colname:   def.Name.String(),
-					TypeName:  &ast.TypeName{Name: types.TypeStr(def.Tp.Tp)},
+					TypeName:  &ast.TypeName{Name: types.TypeStr(def.Tp.GetType())},
 					IsNotNull: isNotNull(def),
 				}
-				if def.Tp.Flen >= 0 {
-					length := def.Tp.Flen
+				if def.Tp.GetFlen() >= 0 {
+					length := def.Tp.GetFlen()
 					columnDef.Length = &length
 				}
 				alt.Cmds.Items = append(alt.Cmds.Items, &ast.AlterTableCmd{
@@ -97,11 +97,11 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 				name := def.Name.String()
 				columnDef := ast.ColumnDef{
 					Colname:   def.Name.String(),
-					TypeName:  &ast.TypeName{Name: types.TypeStr(def.Tp.Tp)},
+					TypeName:  &ast.TypeName{Name: types.TypeStr(def.Tp.GetType())},
 					IsNotNull: isNotNull(def),
 				}
-				if def.Tp.Flen >= 0 {
-					length := def.Tp.Flen
+				if def.Tp.GetFlen() >= 0 {
+					length := def.Tp.GetFlen()
 					columnDef.Length = &length
 				}
 				alt.Cmds.Items = append(alt.Cmds.Items, &ast.AlterTableCmd{
@@ -247,11 +247,11 @@ func (c *cc) convertCreateTableStmt(n *pcast.CreateTableStmt) ast.Node {
 	}
 	for _, def := range n.Cols {
 		var vals *ast.List
-		if len(def.Tp.Elems) > 0 {
+		if len(def.Tp.GetElems()) > 0 {
 			vals = &ast.List{}
-			for i := range def.Tp.Elems {
+			for i := range def.Tp.GetElems() {
 				vals.Items = append(vals.Items, &ast.String{
-					Str: def.Tp.Elems[i],
+					Str: def.Tp.GetElems()[i],
 				})
 			}
 		}
@@ -266,13 +266,13 @@ func (c *cc) convertCreateTableStmt(n *pcast.CreateTableStmt) ast.Node {
 		}
 		columnDef := ast.ColumnDef{
 			Colname:   def.Name.String(),
-			TypeName:  &ast.TypeName{Name: types.TypeStr(def.Tp.Tp)},
+			TypeName:  &ast.TypeName{Name: types.TypeStr(def.Tp.GetType())},
 			IsNotNull: isNotNull(def),
 			Comment:   comment,
 			Vals:      vals,
 		}
-		if def.Tp.Flen >= 0 {
-			length := def.Tp.Flen
+		if def.Tp.GetFlen() >= 0 {
+			length := def.Tp.GetFlen()
 			columnDef.Length = &length
 		}
 		create.Cols = append(create.Cols, &columnDef)
@@ -763,7 +763,7 @@ func (c *cc) convertCreateBindingStmt(n *pcast.CreateBindingStmt) ast.Node {
 
 func (c *cc) convertCreateDatabaseStmt(n *pcast.CreateDatabaseStmt) ast.Node {
 	return &ast.CreateSchemaStmt{
-		Name:        &n.Name,
+		Name:        &n.Name.O,
 		IfNotExists: n.IfNotExists,
 	}
 }
@@ -819,7 +819,7 @@ func (c *cc) convertDropDatabaseStmt(n *pcast.DropDatabaseStmt) ast.Node {
 	return &ast.DropSchemaStmt{
 		MissingOk: !n.IfExists,
 		Schemas: []*ast.String{
-			NewIdentifier(n.Name),
+			NewIdentifier(n.Name.O),
 		},
 	}
 }
@@ -1073,10 +1073,6 @@ func (c *cc) convertPatternLikeExpr(n *pcast.PatternLikeExpr) ast.Node {
 }
 
 func (c *cc) convertPatternRegexpExpr(n *pcast.PatternRegexpExpr) ast.Node {
-	return todo(n)
-}
-
-func (c *cc) convertPlacementSpec(n *pcast.PlacementSpec) ast.Node {
 	return todo(n)
 }
 
@@ -1625,9 +1621,6 @@ func (c *cc) convert(node pcast.Node) ast.Node {
 
 	case *pcast.PatternRegexpExpr:
 		return c.convertPatternRegexpExpr(n)
-
-	case *pcast.PlacementSpec:
-		return c.convertPlacementSpec(n)
 
 	case *pcast.PositionExpr:
 		return c.convertPositionExpr(n)
