@@ -1,8 +1,8 @@
 package dolphin
 
 import (
-	pcast "github.com/pingcap/parser/ast"
 	"github.com/pingcap/parser/mysql"
+	pcast "github.com/pingcap/tidb/parser/ast"
 
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 )
