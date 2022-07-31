@@ -18,6 +18,7 @@ Check out [an interactive example](https://play.sqlc.dev/) to see it in action.
 - [Playground](https://play.sqlc.dev)
 - [Website](https://sqlc.dev)
 - [Downloads](https://downloads.sqlc.dev/)
+- [Community](https://discord.gg/EcXzGe5SEs)
 
 ## Sponsors
 
