@@ -26,7 +26,6 @@ sponsors](https://github.com/sponsors/kyleconroy), including the following
 companies:
 
 - [Context](https://context.app)
-- [Meter](https://meter.com)
 - [ngrok](https://ngrok.com)
 - [RStudio](https://www.rstudio.com/)
 - [時雨堂](https://shiguredo.jp/)
