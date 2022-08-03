@@ -1,4 +1,4 @@
-//go:build cgo && ((linux && amd64) || (linux && arm64) || (darwin && amd64) || (darwin && arm64) || (windows && amd64))
+//go:build !nowasm && cgo && ((linux && amd64) || (linux && arm64) || (darwin && amd64) || (darwin && arm64) || (windows && amd64))
 
 // The above build constraint is based of the cgo directives in this file:
 // https://github.com/bytecodealliance/wasmtime-go/blob/main/ffi.go
