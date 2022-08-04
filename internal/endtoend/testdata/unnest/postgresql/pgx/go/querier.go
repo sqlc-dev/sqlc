@@ -6,6 +6,8 @@ package querytest
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
 
 type Querier interface {
