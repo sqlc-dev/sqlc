@@ -18,6 +18,7 @@ Check out [an interactive example](https://play.sqlc.dev/) to see it in action.
 - [Playground](https://play.sqlc.dev)
 - [Website](https://sqlc.dev)
 - [Downloads](https://downloads.sqlc.dev/)
+- [Community](https://discord.gg/EcXzGe5SEs)
 
 ## Sponsors
 
@@ -26,7 +27,6 @@ sponsors](https://github.com/sponsors/kyleconroy), including the following
 companies:
 
 - [Context](https://context.app)
-- [Meter](https://meter.com)
 - [ngrok](https://ngrok.com)
 - [RStudio](https://www.rstudio.com/)
 - [時雨堂](https://shiguredo.jp/)

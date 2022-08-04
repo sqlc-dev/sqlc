@@ -13,15 +13,15 @@ const listUsersByRole = `-- name: ListUsersByRole :many
 SELECT role FROM foo.users WHERE role = $1
 `
 
-func (q *Queries) ListUsersByRole(ctx context.Context, role FooTypeUserRole) ([]FooTypeUserRole, error) {
+func (q *Queries) ListUsersByRole(ctx context.Context, role NullFooTypeUserRole) ([]NullFooTypeUserRole, error) {
 	rows, err := q.db.Query(ctx, listUsersByRole, role)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []FooTypeUserRole
+	var items []NullFooTypeUserRole
 	for rows.Next() {
-		var role FooTypeUserRole
+		var role NullFooTypeUserRole
 		if err := rows.Scan(&role); err != nil {
 			return nil, err
 		}

@@ -241,7 +241,7 @@ overrides:
     overrides:
       - db_type: "timestampz"
         nullable: true
-        engine: ""postgresql
+        engine: "postgresql"
         go_type:
           import: "gopkg.in/guregu/null.v4"
           package: "null"

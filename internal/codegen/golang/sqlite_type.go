@@ -21,10 +21,7 @@ func sqliteType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		return "sql.NullInt64"
 
 	case "blob":
-		if notNull {
-			return "[]uint8"
-		}
-		return "*[]uint8"
+		return "[]byte"
 
 	case "real", "double", "doubleprecision", "float":
 		if notNull {

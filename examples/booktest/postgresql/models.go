@@ -5,6 +5,7 @@
 package booktest
 
 import (
+	"database/sql/driver"
 	"fmt"
 	"time"
 )
@@ -26,6 +27,29 @@ func (e *BookType) Scan(src interface{}) error {
 		return fmt.Errorf("unsupported scan type for BookType: %T", src)
 	}
 	return nil
+}
+
+type NullBookType struct {
+	BookType BookType
+	Valid    bool // Valid is true if String is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullBookType) Scan(value interface{}) error {
+	if value == nil {
+		ns.BookType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.BookType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullBookType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return ns.BookType, nil
 }
 
 type Author struct {

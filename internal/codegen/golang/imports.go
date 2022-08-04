@@ -264,6 +264,7 @@ func (i *importer) modelImports() fileImports {
 
 	if len(i.Enums) > 0 {
 		std["fmt"] = struct{}{}
+		std["database/sql/driver"] = struct{}{}
 	}
 
 	return sortedImports(std, pkg)
@@ -309,7 +310,8 @@ func (i *importer) queryImports(filename string) fileImports {
 						}
 					}
 				}
-				if strings.HasPrefix(q.Ret.Type(), name) {
+				retType := strings.TrimPrefix(q.Ret.Type(), "[]")
+				if strings.HasPrefix(retType, name) {
 					return true
 				}
 			}
@@ -322,7 +324,8 @@ func (i *importer) queryImports(filename string) fileImports {
 						}
 					}
 				}
-				if strings.HasPrefix(q.Arg.Type(), name) {
+				argType := strings.TrimPrefix(q.Arg.Type(), "[]")
+				if strings.HasPrefix(argType, name) {
 					return true
 				}
 			}
@@ -417,7 +420,8 @@ func (i *importer) batchImports(filename string) fileImports {
 						}
 					}
 				}
-				if strings.HasPrefix(q.Ret.Type(), name) {
+				retType := strings.TrimPrefix(q.Ret.Type(), "[]")
+				if strings.HasPrefix(retType, name) {
 					return true
 				}
 			}
@@ -430,7 +434,8 @@ func (i *importer) batchImports(filename string) fileImports {
 						}
 					}
 				}
-				if strings.HasPrefix(q.Arg.Type(), name) {
+				argType := strings.TrimPrefix(q.Arg.Type(), "[]")
+				if strings.HasPrefix(argType, name) {
 					return true
 				}
 			}
