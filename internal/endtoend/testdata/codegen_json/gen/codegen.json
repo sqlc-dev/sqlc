@@ -495,5 +495,5 @@
       "insert_into_table": null
     }
   ],
-  "sqlc_version": "v1.14.0"
+  "sqlc_version": "v1.15.0"
 }
