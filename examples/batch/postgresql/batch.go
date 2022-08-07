@@ -2,6 +2,7 @@
 // versions:
 //   sqlc v1.14.0
 // source: batch.go
+
 package batch
 
 import (
