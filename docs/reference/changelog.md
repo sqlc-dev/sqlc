@@ -1,6 +1,55 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.15.0](https://github.com/kyleconroy/sqlc/releases/tag/1.15.0)
+Released 2022-08-07
+
+### Bug Fixes
+
+- (mysql) Typo (#1700)
+- (postgresql) Add quotes for CamelCase columns (#1729)
+- Cannot parse SQLite upsert statement (#1732)
+- (sqlite) Regenerate test output for builtins (#1735)
+- (wasm) Version modules by wasmtime version (#1734)
+- Missing imports (#1637)
+- Missing slice import for querier (#1773)
+
+### Documentation
+
+- Add process-based plugin docs (#1669)
+- Add links to downloads.sqlc.dev (#1681)
+- Update transactions how to example (#1775)
+
+### Features
+
+- More SQL Syntax Support for SQLite (#1687)
+- (sqlite) Promote SQLite support to beta (#1699)
+- Codegen plugins, powered by WASM (#1684)
+- Set user-agent for plugin downloads (#1707)
+- Null enums types (#1485)
+- (sqlite) Support stdlib functions (#1712)
+- (sqlite) Add support for returning (#1741)
+
+### Miscellaneous Tasks
+
+- Add tests for quoting columns (#1733)
+- Remove catalog tests (#1762)
+
+### Testing
+
+- Add tests for fixing slice imports (#1736)
+- Add test cases for returning (#1737)
+
+### Build
+
+- Upgrade to Go 1.19 (#1780)
+- Upgrade to go-wasmtime 0.39.0 (#1781)
+
+### Plugins
+
+- (wasm) Change default cache location (#1709)
+- (wasm) Change the SHA-256 config key (#1710)
+
 ## [1.14.0](https://github.com/kyleconroy/sqlc/releases/tag/1.14.0)
 Released 2022-06-09
 
