@@ -21,6 +21,7 @@ WHERE b = $1
 type GetValuesBatchResults struct {
 	br  pgx.BatchResults
 	ind int
+	tot int
 }
 
 func (q *Queries) GetValues(ctx context.Context, b []sql.NullInt32) *GetValuesBatchResults {
@@ -32,11 +33,14 @@ func (q *Queries) GetValues(ctx context.Context, b []sql.NullInt32) *GetValuesBa
 		batch.Queue(getValues, vals...)
 	}
 	br := q.db.SendBatch(ctx, batch)
-	return &GetValuesBatchResults{br, 0}
+	return &GetValuesBatchResults{br, 0, len(b)}
 }
 
 func (b *GetValuesBatchResults) Query(f func(int, []MyschemaFoo, error)) {
 	for {
+		if b.ind >= b.tot {
+			break
+		}
 		rows, err := b.br.Query()
 		if err != nil && (err.Error() == "no result" || err.Error() == "batch already closed") {
 			break
@@ -71,6 +75,7 @@ RETURNING a
 type InsertValuesBatchResults struct {
 	br  pgx.BatchResults
 	ind int
+	tot int
 }
 
 type InsertValuesParams struct {
@@ -88,11 +93,14 @@ func (q *Queries) InsertValues(ctx context.Context, arg []InsertValuesParams) *I
 		batch.Queue(insertValues, vals...)
 	}
 	br := q.db.SendBatch(ctx, batch)
-	return &InsertValuesBatchResults{br, 0}
+	return &InsertValuesBatchResults{br, 0, len(arg)}
 }
 
 func (b *InsertValuesBatchResults) QueryRow(f func(int, sql.NullString, error)) {
 	for {
+		if b.ind >= b.tot {
+			break
+		}
 		row := b.br.QueryRow()
 		var a sql.NullString
 		err := row.Scan(&a)
@@ -117,6 +125,7 @@ UPDATE myschema.foo SET a = $1, b = $2
 type UpdateValuesBatchResults struct {
 	br  pgx.BatchResults
 	ind int
+	tot int
 }
 
 type UpdateValuesParams struct {
@@ -134,11 +143,14 @@ func (q *Queries) UpdateValues(ctx context.Context, arg []UpdateValuesParams) *U
 		batch.Queue(updateValues, vals...)
 	}
 	br := q.db.SendBatch(ctx, batch)
-	return &UpdateValuesBatchResults{br, 0}
+	return &UpdateValuesBatchResults{br, 0, len(arg)}
 }
 
 func (b *UpdateValuesBatchResults) Exec(f func(int, error)) {
 	for {
+		if b.ind >= b.tot {
+			break
+		}
 		_, err := b.br.Exec()
 		if err != nil && (err.Error() == "no result" || err.Error() == "batch already closed") {
 			break

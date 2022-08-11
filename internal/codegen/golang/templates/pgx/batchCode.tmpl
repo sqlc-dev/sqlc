@@ -8,6 +8,7 @@ const {{.ConstantName}} = {{$.Q}}-- name: {{.MethodName}} {{.Cmd}}
 type {{.MethodName}}BatchResults struct {
     br pgx.BatchResults
     ind int
+    tot int
 }
 
 {{if .Arg.EmitStruct}}
@@ -41,16 +42,19 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ if $.EmitMethodsWithDB
         batch.Queue({{.ConstantName}}, vals...)
     }
     br := {{if not $.EmitMethodsWithDBArgument}}q.{{end}}db.SendBatch(ctx, batch)
-    return &{{.MethodName}}BatchResults{br,0}
+    return &{{.MethodName}}BatchResults{br,0,len({{.Arg.Name}})}
 }
 
 {{if eq .Cmd ":batchexec"}}
 func (b *{{.MethodName}}BatchResults) Exec(f func(int, error)) {
     for {
-		_, err := b.br.Exec()
+        if b.ind >= b.tot {
+          break
+        }
+		  _, err := b.br.Exec()
         if err != nil && (err.Error() == "no result" || err.Error() == "batch already closed"){
 			break
-		}
+		  }
         if f != nil {
             f(b.ind, err)
         }
@@ -62,6 +66,9 @@ func (b *{{.MethodName}}BatchResults) Exec(f func(int, error)) {
 {{if eq .Cmd ":batchmany"}}
 func (b *{{.MethodName}}BatchResults) Query(f func(int, []{{.Ret.DefineType}}, error)) {
     for {
+        if b.ind >= b.tot {
+          break
+        }
 		rows, err := b.br.Query()
         if err != nil && (err.Error() == "no result" || err.Error() == "batch already closed") {
 			break
@@ -91,6 +98,9 @@ func (b *{{.MethodName}}BatchResults) Query(f func(int, []{{.Ret.DefineType}}, e
 {{if eq .Cmd ":batchone"}}
 func (b *{{.MethodName}}BatchResults) QueryRow(f func(int, {{.Ret.DefineType}}, error)) {
     for {
+        if b.ind >= b.tot {
+          break
+        }
 		row := b.br.QueryRow()
         var {{.Ret.Name}} {{.Ret.Type}}
 	    err := row.Scan({{.Ret.Scan}})
