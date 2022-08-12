@@ -244,7 +244,8 @@ func (i *importer) interfaceImports() fileImports {
 				}
 			}
 			if !q.Arg.isEmpty() {
-				if strings.HasPrefix(q.Arg.Type(), name) {
+				argType := strings.TrimPrefix(q.Arg.Type(), "[]")
+				if strings.HasPrefix(argType, name) {
 					return true
 				}
 			}

@@ -658,28 +658,72 @@ func (c *cc) convertColumnNames(cols []parser.IColumn_nameContext) *ast.List {
 	return list
 }
 
-func (c *cc) convertTablesOrSubquery(tableOrSubquery []parser.ITable_or_subqueryContext) []ast.Node {
+func (c *cc) convertTablesOrSubquery(n []parser.ITable_or_subqueryContext) []ast.Node {
 	var tables []ast.Node
-	for _, ifrom := range tableOrSubquery {
+	for _, ifrom := range n {
 		from, ok := ifrom.(*parser.Table_or_subqueryContext)
 		if !ok {
 			continue
 		}
-		rel := from.Table_name().GetText()
-		name := ast.RangeVar{
-			Relname:  &rel,
-			Location: from.GetStart().GetStart(),
-		}
-		if from.Schema_name() != nil {
-			schema := from.Schema_name().GetText()
-			name.Schemaname = &schema
-		}
-		if from.Table_alias() != nil {
-			alias := from.Table_alias().GetText()
-			name.Alias = &ast.Alias{Aliasname: &alias}
-		}
 
-		tables = append(tables, &name)
+		if from.Table_name() != nil {
+			rel := from.Table_name().GetText()
+			rv := &ast.RangeVar{
+				Relname:  &rel,
+				Location: from.GetStart().GetStart(),
+			}
+
+			if from.Schema_name() != nil {
+				schema := from.Schema_name().GetText()
+				rv.Schemaname = &schema
+			}
+			if from.Table_alias() != nil {
+				alias := from.Table_alias().GetText()
+				rv.Alias = &ast.Alias{Aliasname: &alias}
+			}
+
+			tables = append(tables, rv)
+		} else if from.Table_function_name() != nil {
+			rel := from.Table_function_name().GetText()
+			rf := &ast.RangeFunction{
+				Functions: &ast.List{
+					Items: []ast.Node{
+						&ast.FuncCall{
+							Func: &ast.FuncName{
+								Name: rel,
+							},
+							Funcname: &ast.List{
+								Items: []ast.Node{
+									NewIdentifer(rel),
+								},
+							},
+							Args: &ast.List{
+								Items: []ast.Node{&ast.TODO{}},
+							},
+							Location: from.GetStart().GetStart(),
+						},
+					},
+				},
+			}
+
+			if from.Table_alias() != nil {
+				alias := from.Table_alias().GetText()
+				rf.Alias = &ast.Alias{Aliasname: &alias}
+			}
+
+			tables = append(tables, rf)
+		} else if from.Select_stmt() != nil {
+			rs := &ast.RangeSubselect{
+				Subquery: c.convert(from.Select_stmt()),
+			}
+
+			if from.Table_alias() != nil {
+				alias := from.Table_alias().GetText()
+				rs.Alias = &ast.Alias{Aliasname: &alias}
+			}
+
+			tables = append(tables, rs)
+		}
 	}
 
 	return tables

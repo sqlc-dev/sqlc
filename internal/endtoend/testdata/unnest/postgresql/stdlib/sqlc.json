@@ -6,7 +6,8 @@
       "engine": "postgresql",
       "name": "querytest",
       "schema": "schema.sql",
-      "queries": "query.sql"
+      "queries": "query.sql",
+      "emit_interface": true
     }
   ]
 }
