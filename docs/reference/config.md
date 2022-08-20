@@ -21,7 +21,7 @@ sql:
   gen:
     go:
       package: "authors"
-      out: "mysql
+      out: "mysql"
 ```
 
 ### sql
