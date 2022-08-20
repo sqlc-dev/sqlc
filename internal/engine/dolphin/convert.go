@@ -497,6 +497,7 @@ func (c *cc) convertSelectStmt(n *pcast.SelectStmt) *ast.SelectStmt {
 		TargetList:   c.convertFieldList(n.Fields),
 		FromClause:   c.convertTableRefsClause(n.From),
 		GroupClause:  c.convertGroupByClause(n.GroupBy),
+		HavingClause: c.convertHavingClause(n.Having),
 		WhereClause:  c.convert(n.Where),
 		WithClause:   c.convertWithClause(n.With),
 		WindowClause: windowClause,
@@ -904,7 +905,10 @@ func (c *cc) convertGroupByClause(n *pcast.GroupByClause) *ast.List {
 }
 
 func (c *cc) convertHavingClause(n *pcast.HavingClause) ast.Node {
-	return todo(n)
+	if n == nil {
+		return nil
+	}
+	return c.convert(n.Expr)
 }
 
 func (c *cc) convertIndexAdviseStmt(n *pcast.IndexAdviseStmt) ast.Node {
