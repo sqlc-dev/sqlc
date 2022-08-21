@@ -74,7 +74,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "abbrev",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "inet"},
+					Type: &ast.TypeName{Name: "cidr"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},
@@ -83,10 +83,19 @@ func genPGCatalog() *catalog.Schema {
 			Name: "abbrev",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "cidr"},
+					Type: &ast.TypeName{Name: "inet"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
+			Name: "abs",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "bigint"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bigint"},
 		},
 		{
 			Name: "abs",
@@ -110,15 +119,6 @@ func genPGCatalog() *catalog.Schema {
 			Name: "abs",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "smallint"},
-		},
-		{
-			Name: "abs",
-			Args: []*catalog.Argument{
-				{
 					Type: &ast.TypeName{Name: "numeric"},
 				},
 			},
@@ -128,19 +128,19 @@ func genPGCatalog() *catalog.Schema {
 			Name: "abs",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "bigint"},
+					Type: &ast.TypeName{Name: "real"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "bigint"},
+			ReturnType: &ast.TypeName{Name: "real"},
 		},
 		{
 			Name: "abs",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "real"},
+					Type: &ast.TypeName{Name: "smallint"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "real"},
+			ReturnType: &ast.TypeName{Name: "smallint"},
 		},
 		{
 			Name: "aclcontains",
@@ -251,36 +251,6 @@ func genPGCatalog() *catalog.Schema {
 			Name: "age",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "timestamp without time zone"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "interval"},
-		},
-		{
-			Name: "age",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "timestamp with time zone"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "interval"},
-		},
-		{
-			Name: "age",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "timestamp with time zone"},
-				},
-				{
-					Type: &ast.TypeName{Name: "timestamp with time zone"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "interval"},
-		},
-		{
-			Name: "age",
-			Args: []*catalog.Argument{
-				{
 					Type: &ast.TypeName{Name: "xid"},
 				},
 			},
@@ -292,8 +262,38 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "timestamp without time zone"},
 				},
+			},
+			ReturnType: &ast.TypeName{Name: "interval"},
+		},
+		{
+			Name: "age",
+			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "timestamp without time zone"},
+				},
+				{
+					Type: &ast.TypeName{Name: "timestamp without time zone"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "interval"},
+		},
+		{
+			Name: "age",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "timestamp with time zone"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "interval"},
+		},
+		{
+			Name: "age",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "timestamp with time zone"},
+				},
+				{
+					Type: &ast.TypeName{Name: "timestamp with time zone"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "interval"},
@@ -351,6 +351,93 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "bytea"},
+		},
+		{
+			Name: "anycompatible_in",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "cstring"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "anycompatible"},
+		},
+		{
+			Name: "anycompatible_out",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "anycompatible"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "cstring"},
+		},
+		{
+			Name: "anycompatiblearray_in",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "cstring"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "anycompatiblearray"},
+		},
+		{
+			Name: "anycompatiblearray_out",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "anycompatiblearray"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "cstring"},
+		},
+		{
+			Name: "anycompatiblearray_send",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "anycompatiblearray"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bytea"},
+		},
+		{
+			Name: "anycompatiblenonarray_in",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "cstring"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "anycompatiblenonarray"},
+		},
+		{
+			Name: "anycompatiblenonarray_out",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "anycompatiblenonarray"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "cstring"},
+		},
+		{
+			Name: "anycompatiblerange_in",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "cstring"},
+				},
+				{
+					Type: &ast.TypeName{Name: "oid"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "anycompatiblerange"},
+		},
+		{
+			Name: "anycompatiblerange_out",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "anycompatiblerange"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "cstring"},
 		},
 		{
 			Name: "anyelement_in",
@@ -446,6 +533,15 @@ func genPGCatalog() *catalog.Schema {
 			Name: "area",
 			Args: []*catalog.Argument{
 				{
+					Type: &ast.TypeName{Name: "box"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
+		},
+		{
+			Name: "area",
+			Args: []*catalog.Argument{
+				{
 					Type: &ast.TypeName{Name: "circle"},
 				},
 			},
@@ -456,15 +552,6 @@ func genPGCatalog() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "path"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "area",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "box"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "double precision"},
@@ -541,9 +628,6 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "integer[]"},
 				},
-				{
-					Type: &ast.TypeName{Name: "integer[]"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "anyarray"},
 		},
@@ -552,6 +636,9 @@ func genPGCatalog() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "anyelement"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer[]"},
 				},
 				{
 					Type: &ast.TypeName{Name: "integer[]"},
@@ -697,9 +784,6 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "anyelement"},
 				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "integer"},
 		},
@@ -711,6 +795,9 @@ func genPGCatalog() *catalog.Schema {
 				},
 				{
 					Type: &ast.TypeName{Name: "anyelement"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "integer"},
@@ -793,9 +880,6 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "anyarray"},
 				},
-				{
-					Type: &ast.TypeName{Name: "boolean"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "json"},
 		},
@@ -805,6 +889,9 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "anyarray"},
 				},
+				{
+					Type: &ast.TypeName{Name: "boolean"},
+				},
 			},
 			ReturnType: &ast.TypeName{Name: "json"},
 		},
@@ -813,9 +900,6 @@ func genPGCatalog() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "anyarray"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
 				},
 				{
 					Type: &ast.TypeName{Name: "text"},
@@ -828,6 +912,9 @@ func genPGCatalog() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "anyarray"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
 				},
 				{
 					Type: &ast.TypeName{Name: "text"},
@@ -983,10 +1070,28 @@ func genPGCatalog() *catalog.Schema {
 			Name: "avg",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "integer"},
+					Type: &ast.TypeName{Name: "double precision"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "numeric"},
+			ReturnType: &ast.TypeName{Name: "double precision"},
+		},
+		{
+			Name: "avg",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "real"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
+		},
+		{
+			Name: "avg",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "interval"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "interval"},
 		},
 		{
 			Name: "avg",
@@ -1001,19 +1106,10 @@ func genPGCatalog() *catalog.Schema {
 			Name: "avg",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "double precision"},
+					Type: &ast.TypeName{Name: "integer"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "avg",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "interval"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "interval"},
+			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
 			Name: "avg",
@@ -1032,15 +1128,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "numeric"},
-		},
-		{
-			Name: "avg",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "real"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
 			Name: "binary_upgrade_create_empty_extension",
@@ -1181,10 +1268,13 @@ func genPGCatalog() *catalog.Schema {
 			Name: "bit",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "integer"},
+					Type: &ast.TypeName{Name: "bit"},
 				},
 				{
 					Type: &ast.TypeName{Name: "integer"},
+				},
+				{
+					Type: &ast.TypeName{Name: "boolean"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "bit"},
@@ -1193,13 +1283,10 @@ func genPGCatalog() *catalog.Schema {
 			Name: "bit",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "bit"},
-				},
-				{
 					Type: &ast.TypeName{Name: "integer"},
 				},
 				{
-					Type: &ast.TypeName{Name: "boolean"},
+					Type: &ast.TypeName{Name: "integer"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "bit"},
@@ -1217,10 +1304,10 @@ func genPGCatalog() *catalog.Schema {
 			Name: "bit_and",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "smallint"},
+					Type: &ast.TypeName{Name: "bit"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "smallint"},
+			ReturnType: &ast.TypeName{Name: "bit"},
 		},
 		{
 			Name: "bit_and",
@@ -1235,10 +1322,10 @@ func genPGCatalog() *catalog.Schema {
 			Name: "bit_and",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "bit"},
+					Type: &ast.TypeName{Name: "smallint"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "bit"},
+			ReturnType: &ast.TypeName{Name: "smallint"},
 		},
 		{
 			Name: "bit_in",
@@ -1286,19 +1373,10 @@ func genPGCatalog() *catalog.Schema {
 			Name: "bit_or",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "smallint"},
+					Type: &ast.TypeName{Name: "bigint"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "smallint"},
-		},
-		{
-			Name: "bit_or",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "integer"},
+			ReturnType: &ast.TypeName{Name: "bigint"},
 		},
 		{
 			Name: "bit_or",
@@ -1313,10 +1391,19 @@ func genPGCatalog() *catalog.Schema {
 			Name: "bit_or",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "bigint"},
+					Type: &ast.TypeName{Name: "integer"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "bigint"},
+			ReturnType: &ast.TypeName{Name: "integer"},
+		},
+		{
+			Name: "bit_or",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "smallint"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "smallint"},
 		},
 		{
 			Name: "bit_out",
@@ -1523,7 +1610,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "bool",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "jsonb"},
+					Type: &ast.TypeName{Name: "integer"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -1532,7 +1619,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "bool",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "integer"},
+					Type: &ast.TypeName{Name: "jsonb"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -1694,37 +1781,37 @@ func genPGCatalog() *catalog.Schema {
 			Name: "box",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "polygon"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "box"},
-		},
-		{
-			Name: "box",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "point"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "box"},
-		},
-		{
-			Name: "box",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "point"},
-				},
-				{
-					Type: &ast.TypeName{Name: "point"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "box"},
-		},
-		{
-			Name: "box",
-			Args: []*catalog.Argument{
-				{
 					Type: &ast.TypeName{Name: "circle"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "box"},
+		},
+		{
+			Name: "box",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "point"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "box"},
+		},
+		{
+			Name: "box",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "point"},
+				},
+				{
+					Type: &ast.TypeName{Name: "point"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "box"},
+		},
+		{
+			Name: "box",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "polygon"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "box"},
@@ -2081,6 +2168,15 @@ func genPGCatalog() *catalog.Schema {
 			Name: "bpchar",
 			Args: []*catalog.Argument{
 				{
+					Type: &ast.TypeName{Name: "char"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "character"},
+		},
+		{
+			Name: "bpchar",
+			Args: []*catalog.Argument{
+				{
 					Type: &ast.TypeName{Name: "character"},
 				},
 				{
@@ -2097,15 +2193,6 @@ func genPGCatalog() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "name"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "character"},
-		},
-		{
-			Name: "bpchar",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "char"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "character"},
@@ -2504,6 +2591,15 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "integer"},
 		},
 		{
+			Name: "btequalimage",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "oid"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
 			Name: "btfloat48cmp",
 			Args: []*catalog.Argument{
 				{
@@ -2735,27 +2831,6 @@ func genPGCatalog() *catalog.Schema {
 			Name: "btrim",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "text"},
-		},
-		{
-			Name: "btrim",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "text"},
-		},
-		{
-			Name: "btrim",
-			Args: []*catalog.Argument{
-				{
 					Type: &ast.TypeName{Name: "bytea"},
 				},
 				{
@@ -2763,6 +2838,27 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "bytea"},
+		},
+		{
+			Name: "btrim",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
+			Name: "btrim",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
 			Name: "bttext_pattern_cmp",
@@ -2811,6 +2907,15 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "integer"},
+		},
+		{
+			Name: "btvarstrequalimage",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "oid"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
 			Name: "byteacat",
@@ -3281,19 +3386,19 @@ func genPGCatalog() *catalog.Schema {
 			Name: "ceil",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "numeric"},
+					Type: &ast.TypeName{Name: "double precision"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "numeric"},
+			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
 			Name: "ceil",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "double precision"},
+					Type: &ast.TypeName{Name: "numeric"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
+			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
 			Name: "ceiling",
@@ -3335,7 +3440,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "char",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "text"},
+					Type: &ast.TypeName{Name: "integer"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "char"},
@@ -3344,7 +3449,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "char",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "integer"},
+					Type: &ast.TypeName{Name: "text"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "char"},
@@ -3572,10 +3677,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "circle",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "point"},
-				},
-				{
-					Type: &ast.TypeName{Name: "double precision"},
+					Type: &ast.TypeName{Name: "box"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "circle"},
@@ -3584,7 +3686,10 @@ func genPGCatalog() *catalog.Schema {
 			Name: "circle",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "box"},
+					Type: &ast.TypeName{Name: "point"},
+				},
+				{
+					Type: &ast.TypeName{Name: "double precision"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "circle"},
@@ -4132,17 +4237,17 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
+			Name:       "count",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "bigint"},
+		},
+		{
 			Name: "count",
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "any"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "bigint"},
-		},
-		{
-			Name:       "count",
-			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "bigint"},
 		},
 		{
@@ -4231,9 +4336,6 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
-				{
-					Type: &ast.TypeName{Name: "boolean"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
@@ -4242,6 +4344,9 @@ func genPGCatalog() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "boolean"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},
@@ -4390,7 +4495,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "date",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "timestamp with time zone"},
+					Type: &ast.TypeName{Name: "timestamp without time zone"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "date"},
@@ -4399,7 +4504,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "date",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "timestamp without time zone"},
+					Type: &ast.TypeName{Name: "timestamp with time zone"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "date"},
@@ -4729,31 +4834,7 @@ func genPGCatalog() *catalog.Schema {
 					Type: &ast.TypeName{Name: "text"},
 				},
 				{
-					Type: &ast.TypeName{Name: "time with time zone"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "date_part",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "timestamp without time zone"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "date_part",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "time without time zone"},
+					Type: &ast.TypeName{Name: "date"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "double precision"},
@@ -4777,7 +4858,7 @@ func genPGCatalog() *catalog.Schema {
 					Type: &ast.TypeName{Name: "text"},
 				},
 				{
-					Type: &ast.TypeName{Name: "date"},
+					Type: &ast.TypeName{Name: "timestamp without time zone"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "double precision"},
@@ -4790,6 +4871,30 @@ func genPGCatalog() *catalog.Schema {
 				},
 				{
 					Type: &ast.TypeName{Name: "timestamp with time zone"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
+		},
+		{
+			Name: "date_part",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "time without time zone"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
+		},
+		{
+			Name: "date_part",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "time with time zone"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "double precision"},
@@ -4846,6 +4951,18 @@ func genPGCatalog() *catalog.Schema {
 					Type: &ast.TypeName{Name: "text"},
 				},
 				{
+					Type: &ast.TypeName{Name: "interval"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "interval"},
+		},
+		{
+			Name: "date_trunc",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
 					Type: &ast.TypeName{Name: "timestamp without time zone"},
 				},
 			},
@@ -4877,18 +4994,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "timestamp with time zone"},
-		},
-		{
-			Name: "date_trunc",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "interval"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "interval"},
 		},
 		{
 			Name: "daterange",
@@ -5025,6 +5130,42 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
+			Name: "dist_bl",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "box"},
+				},
+				{
+					Type: &ast.TypeName{Name: "line"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
+		},
+		{
+			Name: "dist_bp",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "box"},
+				},
+				{
+					Type: &ast.TypeName{Name: "point"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
+		},
+		{
+			Name: "dist_bs",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "box"},
+				},
+				{
+					Type: &ast.TypeName{Name: "lseg"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
+		},
+		{
 			Name: "dist_cpoint",
 			Args: []*catalog.Argument{
 				{
@@ -5061,6 +5202,42 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
+			Name: "dist_lp",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "line"},
+				},
+				{
+					Type: &ast.TypeName{Name: "point"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
+		},
+		{
+			Name: "dist_ls",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "line"},
+				},
+				{
+					Type: &ast.TypeName{Name: "lseg"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
+		},
+		{
+			Name: "dist_pathp",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "path"},
+				},
+				{
+					Type: &ast.TypeName{Name: "point"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
+		},
+		{
 			Name: "dist_pb",
 			Args: []*catalog.Argument{
 				{
@@ -5092,6 +5269,18 @@ func genPGCatalog() *catalog.Schema {
 				},
 				{
 					Type: &ast.TypeName{Name: "line"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
+		},
+		{
+			Name: "dist_polyc",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "polygon"},
+				},
+				{
+					Type: &ast.TypeName{Name: "circle"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "double precision"},
@@ -5164,6 +5353,18 @@ func genPGCatalog() *catalog.Schema {
 				},
 				{
 					Type: &ast.TypeName{Name: "line"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
+		},
+		{
+			Name: "dist_sp",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "lseg"},
+				},
+				{
+					Type: &ast.TypeName{Name: "point"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "double precision"},
@@ -5547,24 +5748,6 @@ func genPGCatalog() *catalog.Schema {
 			Name: "float4",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "real"},
-		},
-		{
-			Name: "float4",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "jsonb"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "real"},
-		},
-		{
-			Name: "float4",
-			Args: []*catalog.Argument{
-				{
 					Type: &ast.TypeName{Name: "bigint"},
 				},
 			},
@@ -5574,7 +5757,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "float4",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "numeric"},
+					Type: &ast.TypeName{Name: "double precision"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "real"},
@@ -5592,7 +5775,25 @@ func genPGCatalog() *catalog.Schema {
 			Name: "float4",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "double precision"},
+					Type: &ast.TypeName{Name: "jsonb"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "real"},
+		},
+		{
+			Name: "float4",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "numeric"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "real"},
+		},
+		{
+			Name: "float4",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "smallint"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "real"},
@@ -5931,24 +6132,6 @@ func genPGCatalog() *catalog.Schema {
 			Name: "float8",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "float8",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "jsonb"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "float8",
-			Args: []*catalog.Argument{
-				{
 					Type: &ast.TypeName{Name: "bigint"},
 				},
 			},
@@ -5967,7 +6150,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "float8",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "real"},
+					Type: &ast.TypeName{Name: "jsonb"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "double precision"},
@@ -5977,6 +6160,24 @@ func genPGCatalog() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "numeric"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
+		},
+		{
+			Name: "float8",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "real"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
+		},
+		{
+			Name: "float8",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "smallint"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "double precision"},
@@ -6585,6 +6786,86 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
+			Name: "gcd",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "bigint"},
+				},
+				{
+					Type: &ast.TypeName{Name: "bigint"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bigint"},
+		},
+		{
+			Name: "gcd",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "integer"},
+		},
+		{
+			Name: "gcd",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "numeric"},
+				},
+				{
+					Type: &ast.TypeName{Name: "numeric"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "numeric"},
+		},
+		{
+			Name:       "gen_random_uuid",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "uuid"},
+		},
+		{
+			Name: "generate_series",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "bigint"},
+				},
+				{
+					Type: &ast.TypeName{Name: "bigint"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bigint"},
+		},
+		{
+			Name: "generate_series",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "bigint"},
+				},
+				{
+					Type: &ast.TypeName{Name: "bigint"},
+				},
+				{
+					Type: &ast.TypeName{Name: "bigint"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bigint"},
+		},
+		{
+			Name: "generate_series",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "integer"},
+		},
+		{
 			Name: "generate_series",
 			Args: []*catalog.Argument{
 				{
@@ -6603,16 +6884,28 @@ func genPGCatalog() *catalog.Schema {
 			Name: "generate_series",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "timestamp with time zone"},
+					Type: &ast.TypeName{Name: "numeric"},
 				},
 				{
-					Type: &ast.TypeName{Name: "timestamp with time zone"},
-				},
-				{
-					Type: &ast.TypeName{Name: "interval"},
+					Type: &ast.TypeName{Name: "numeric"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "timestamp with time zone"},
+			ReturnType: &ast.TypeName{Name: "numeric"},
+		},
+		{
+			Name: "generate_series",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "numeric"},
+				},
+				{
+					Type: &ast.TypeName{Name: "numeric"},
+				},
+				{
+					Type: &ast.TypeName{Name: "numeric"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
 			Name: "generate_series",
@@ -6633,61 +6926,22 @@ func genPGCatalog() *catalog.Schema {
 			Name: "generate_series",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "numeric"},
+					Type: &ast.TypeName{Name: "timestamp with time zone"},
 				},
 				{
-					Type: &ast.TypeName{Name: "numeric"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "numeric"},
-		},
-		{
-			Name: "generate_series",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "numeric"},
+					Type: &ast.TypeName{Name: "timestamp with time zone"},
 				},
 				{
-					Type: &ast.TypeName{Name: "numeric"},
-				},
-				{
-					Type: &ast.TypeName{Name: "numeric"},
+					Type: &ast.TypeName{Name: "interval"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "numeric"},
+			ReturnType: &ast.TypeName{Name: "timestamp with time zone"},
 		},
 		{
-			Name: "generate_series",
+			Name: "generate_subscripts",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "bigint"},
-		},
-		{
-			Name: "generate_series",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "bigint"},
-		},
-		{
-			Name: "generate_series",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
+					Type: &ast.TypeName{Name: "anyarray"},
 				},
 				{
 					Type: &ast.TypeName{Name: "integer"},
@@ -6711,10 +6965,10 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "integer"},
 		},
 		{
-			Name: "generate_subscripts",
+			Name: "get_bit",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "anyarray"},
+					Type: &ast.TypeName{Name: "bit"},
 				},
 				{
 					Type: &ast.TypeName{Name: "integer"},
@@ -6729,19 +6983,7 @@ func genPGCatalog() *catalog.Schema {
 					Type: &ast.TypeName{Name: "bytea"},
 				},
 				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "integer"},
-		},
-		{
-			Name: "get_bit",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "bit"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
+					Type: &ast.TypeName{Name: "bigint"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "integer"},
@@ -6828,33 +7070,6 @@ func genPGCatalog() *catalog.Schema {
 			Name: "has_any_column_privilege",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "has_any_column_privilege",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "name"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "has_any_column_privilege",
-			Args: []*catalog.Argument{
-				{
 					Type: &ast.TypeName{Name: "name"},
 				},
 				{
@@ -6870,7 +7085,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "has_any_column_privilege",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "oid"},
+					Type: &ast.TypeName{Name: "name"},
 				},
 				{
 					Type: &ast.TypeName{Name: "text"},
@@ -6900,6 +7115,21 @@ func genPGCatalog() *catalog.Schema {
 			Name: "has_any_column_privilege",
 			Args: []*catalog.Argument{
 				{
+					Type: &ast.TypeName{Name: "oid"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "has_any_column_privilege",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "oid"},
+				},
+				{
 					Type: &ast.TypeName{Name: "text"},
 				},
 				{
@@ -6909,13 +7139,10 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
-			Name: "has_column_privilege",
+			Name: "has_any_column_privilege",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
+					Type: &ast.TypeName{Name: "text"},
 				},
 				{
 					Type: &ast.TypeName{Name: "text"},
@@ -6930,52 +7157,7 @@ func genPGCatalog() *catalog.Schema {
 					Type: &ast.TypeName{Name: "name"},
 				},
 				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "has_column_privilege",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "has_column_privilege",
-			Args: []*catalog.Argument{
-				{
 					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "has_column_privilege",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
 				},
 				{
 					Type: &ast.TypeName{Name: "smallint"},
@@ -7011,7 +7193,7 @@ func genPGCatalog() *catalog.Schema {
 					Type: &ast.TypeName{Name: "name"},
 				},
 				{
-					Type: &ast.TypeName{Name: "oid"},
+					Type: &ast.TypeName{Name: "text"},
 				},
 				{
 					Type: &ast.TypeName{Name: "smallint"},
@@ -7026,7 +7208,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "has_column_privilege",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "oid"},
+					Type: &ast.TypeName{Name: "name"},
 				},
 				{
 					Type: &ast.TypeName{Name: "text"},
@@ -7047,7 +7229,7 @@ func genPGCatalog() *catalog.Schema {
 					Type: &ast.TypeName{Name: "oid"},
 				},
 				{
-					Type: &ast.TypeName{Name: "text"},
+					Type: &ast.TypeName{Name: "oid"},
 				},
 				{
 					Type: &ast.TypeName{Name: "smallint"},
@@ -7083,7 +7265,22 @@ func genPGCatalog() *catalog.Schema {
 					Type: &ast.TypeName{Name: "oid"},
 				},
 				{
+					Type: &ast.TypeName{Name: "smallint"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "has_column_privilege",
+			Args: []*catalog.Argument{
+				{
 					Type: &ast.TypeName{Name: "oid"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
 				},
 				{
 					Type: &ast.TypeName{Name: "smallint"},
@@ -7098,8 +7295,53 @@ func genPGCatalog() *catalog.Schema {
 			Name: "has_column_privilege",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "name"},
+					Type: &ast.TypeName{Name: "oid"},
 				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "has_column_privilege",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "oid"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "has_column_privilege",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "smallint"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "has_column_privilege",
+			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
@@ -7131,32 +7373,8 @@ func genPGCatalog() *catalog.Schema {
 			Name: "has_database_privilege",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "has_database_privilege",
-			Args: []*catalog.Argument{
-				{
 					Type: &ast.TypeName{Name: "name"},
 				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "has_database_privilege",
-			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
@@ -7190,30 +7408,15 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
-			Name: "has_foreign_data_wrapper_privilege",
+			Name: "has_database_privilege",
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "oid"},
 				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "has_foreign_data_wrapper_privilege",
-			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
@@ -7224,13 +7427,10 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
-			Name: "has_foreign_data_wrapper_privilege",
+			Name: "has_database_privilege",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "name"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
+					Type: &ast.TypeName{Name: "text"},
 				},
 				{
 					Type: &ast.TypeName{Name: "text"},
@@ -7245,18 +7445,6 @@ func genPGCatalog() *catalog.Schema {
 					Type: &ast.TypeName{Name: "name"},
 				},
 				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "has_foreign_data_wrapper_privilege",
-			Args: []*catalog.Argument{
-				{
 					Type: &ast.TypeName{Name: "oid"},
 				},
 				{
@@ -7267,21 +7455,6 @@ func genPGCatalog() *catalog.Schema {
 		},
 		{
 			Name: "has_foreign_data_wrapper_privilege",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "has_function_privilege",
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "name"},
@@ -7296,7 +7469,49 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
-			Name: "has_function_privilege",
+			Name: "has_foreign_data_wrapper_privilege",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "oid"},
+				},
+				{
+					Type: &ast.TypeName{Name: "oid"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "has_foreign_data_wrapper_privilege",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "oid"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "has_foreign_data_wrapper_privilege",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "oid"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "has_foreign_data_wrapper_privilege",
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "text"},
@@ -7311,34 +7526,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "has_function_privilege",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "has_function_privilege",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "has_function_privilege",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "oid"},
+					Type: &ast.TypeName{Name: "name"},
 				},
 				{
 					Type: &ast.TypeName{Name: "oid"},
@@ -7356,7 +7544,91 @@ func genPGCatalog() *catalog.Schema {
 					Type: &ast.TypeName{Name: "name"},
 				},
 				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "has_function_privilege",
+			Args: []*catalog.Argument{
+				{
 					Type: &ast.TypeName{Name: "oid"},
+				},
+				{
+					Type: &ast.TypeName{Name: "oid"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "has_function_privilege",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "oid"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "has_function_privilege",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "oid"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "has_function_privilege",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "has_language_privilege",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "name"},
+				},
+				{
+					Type: &ast.TypeName{Name: "oid"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "has_language_privilege",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "name"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
 				},
 				{
 					Type: &ast.TypeName{Name: "text"},
@@ -7388,24 +7660,6 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "has_language_privilege",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "name"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
@@ -7417,18 +7671,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 				{
 					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "has_language_privilege",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "name"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
 				},
 				{
 					Type: &ast.TypeName{Name: "text"},
@@ -7455,30 +7697,6 @@ func genPGCatalog() *catalog.Schema {
 					Type: &ast.TypeName{Name: "name"},
 				},
 				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "has_schema_privilege",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "has_schema_privilege",
-			Args: []*catalog.Argument{
-				{
 					Type: &ast.TypeName{Name: "oid"},
 				},
 				{
@@ -7494,6 +7712,33 @@ func genPGCatalog() *catalog.Schema {
 					Type: &ast.TypeName{Name: "name"},
 				},
 				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "has_schema_privilege",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "oid"},
+				},
+				{
+					Type: &ast.TypeName{Name: "oid"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "has_schema_privilege",
+			Args: []*catalog.Argument{
+				{
 					Type: &ast.TypeName{Name: "oid"},
 				},
 				{
@@ -7520,63 +7765,6 @@ func genPGCatalog() *catalog.Schema {
 		{
 			Name: "has_schema_privilege",
 			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "has_sequence_privilege",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "has_sequence_privilege",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "has_sequence_privilege",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "has_sequence_privilege",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
@@ -7607,6 +7795,60 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "name"},
 				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "has_sequence_privilege",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "oid"},
+				},
+				{
+					Type: &ast.TypeName{Name: "oid"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "has_sequence_privilege",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "oid"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "has_sequence_privilege",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "oid"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "has_sequence_privilege",
+			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
@@ -7653,29 +7895,17 @@ func genPGCatalog() *catalog.Schema {
 					Type: &ast.TypeName{Name: "oid"},
 				},
 				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "has_server_privilege",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "has_server_privilege",
-			Args: []*catalog.Argument{
-				{
 					Type: &ast.TypeName{Name: "oid"},
 				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "has_server_privilege",
+			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "oid"},
 				},
@@ -7701,10 +7931,25 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
-			Name: "has_table_privilege",
+			Name: "has_server_privilege",
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "has_table_privilege",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "name"},
+				},
+				{
+					Type: &ast.TypeName{Name: "oid"},
 				},
 				{
 					Type: &ast.TypeName{Name: "text"},
@@ -7734,6 +7979,9 @@ func genPGCatalog() *catalog.Schema {
 					Type: &ast.TypeName{Name: "oid"},
 				},
 				{
+					Type: &ast.TypeName{Name: "oid"},
+				},
+				{
 					Type: &ast.TypeName{Name: "text"},
 				},
 			},
@@ -7741,6 +7989,45 @@ func genPGCatalog() *catalog.Schema {
 		},
 		{
 			Name: "has_table_privilege",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "oid"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "has_table_privilege",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "oid"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "has_table_privilege",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "has_tablespace_privilege",
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "name"},
@@ -7755,10 +8042,10 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
-			Name: "has_table_privilege",
+			Name: "has_tablespace_privilege",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "oid"},
+					Type: &ast.TypeName{Name: "name"},
 				},
 				{
 					Type: &ast.TypeName{Name: "text"},
@@ -7770,11 +8057,23 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
-			Name: "has_table_privilege",
+			Name: "has_tablespace_privilege",
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "oid"},
 				},
+				{
+					Type: &ast.TypeName{Name: "oid"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "has_tablespace_privilege",
+			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "oid"},
 				},
@@ -7812,53 +8111,11 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
-			Name: "has_tablespace_privilege",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "has_tablespace_privilege",
+			Name: "has_type_privilege",
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "name"},
 				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "has_tablespace_privilege",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "name"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "has_tablespace_privilege",
-			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "oid"},
 				},
@@ -7887,7 +8144,22 @@ func genPGCatalog() *catalog.Schema {
 			Name: "has_type_privilege",
 			Args: []*catalog.Argument{
 				{
+					Type: &ast.TypeName{Name: "oid"},
+				},
+				{
+					Type: &ast.TypeName{Name: "oid"},
+				},
+				{
 					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "has_type_privilege",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "oid"},
 				},
 				{
 					Type: &ast.TypeName{Name: "text"},
@@ -7914,37 +8186,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "has_type_privilege",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
 					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "has_type_privilege",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "name"},
-				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "has_type_privilege",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "oid"},
 				},
 				{
 					Type: &ast.TypeName{Name: "text"},
@@ -8403,10 +8645,94 @@ func genPGCatalog() *catalog.Schema {
 			Name: "in_range",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "smallint"},
+					Type: &ast.TypeName{Name: "bigint"},
 				},
 				{
-					Type: &ast.TypeName{Name: "smallint"},
+					Type: &ast.TypeName{Name: "bigint"},
+				},
+				{
+					Type: &ast.TypeName{Name: "bigint"},
+				},
+				{
+					Type: &ast.TypeName{Name: "boolean"},
+				},
+				{
+					Type: &ast.TypeName{Name: "boolean"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "in_range",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "date"},
+				},
+				{
+					Type: &ast.TypeName{Name: "date"},
+				},
+				{
+					Type: &ast.TypeName{Name: "interval"},
+				},
+				{
+					Type: &ast.TypeName{Name: "boolean"},
+				},
+				{
+					Type: &ast.TypeName{Name: "boolean"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "in_range",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+				{
+					Type: &ast.TypeName{Name: "boolean"},
+				},
+				{
+					Type: &ast.TypeName{Name: "boolean"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "in_range",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+				{
+					Type: &ast.TypeName{Name: "bigint"},
+				},
+				{
+					Type: &ast.TypeName{Name: "boolean"},
+				},
+				{
+					Type: &ast.TypeName{Name: "boolean"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "in_range",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
 				},
 				{
 					Type: &ast.TypeName{Name: "integer"},
@@ -8424,13 +8750,76 @@ func genPGCatalog() *catalog.Schema {
 			Name: "in_range",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "time with time zone"},
+					Type: &ast.TypeName{Name: "integer"},
 				},
 				{
-					Type: &ast.TypeName{Name: "time with time zone"},
+					Type: &ast.TypeName{Name: "integer"},
+				},
+				{
+					Type: &ast.TypeName{Name: "smallint"},
+				},
+				{
+					Type: &ast.TypeName{Name: "boolean"},
+				},
+				{
+					Type: &ast.TypeName{Name: "boolean"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "in_range",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "interval"},
 				},
 				{
 					Type: &ast.TypeName{Name: "interval"},
+				},
+				{
+					Type: &ast.TypeName{Name: "interval"},
+				},
+				{
+					Type: &ast.TypeName{Name: "boolean"},
+				},
+				{
+					Type: &ast.TypeName{Name: "boolean"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "in_range",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "numeric"},
+				},
+				{
+					Type: &ast.TypeName{Name: "numeric"},
+				},
+				{
+					Type: &ast.TypeName{Name: "numeric"},
+				},
+				{
+					Type: &ast.TypeName{Name: "boolean"},
+				},
+				{
+					Type: &ast.TypeName{Name: "boolean"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "in_range",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "real"},
+				},
+				{
+					Type: &ast.TypeName{Name: "real"},
+				},
+				{
+					Type: &ast.TypeName{Name: "double precision"},
 				},
 				{
 					Type: &ast.TypeName{Name: "boolean"},
@@ -8466,33 +8855,12 @@ func genPGCatalog() *catalog.Schema {
 			Name: "in_range",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
+					Type: &ast.TypeName{Name: "smallint"},
 				},
 				{
 					Type: &ast.TypeName{Name: "smallint"},
 				},
 				{
-					Type: &ast.TypeName{Name: "boolean"},
-				},
-				{
-					Type: &ast.TypeName{Name: "boolean"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "in_range",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
 					Type: &ast.TypeName{Name: "integer"},
 				},
 				{
@@ -8508,34 +8876,13 @@ func genPGCatalog() *catalog.Schema {
 			Name: "in_range",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "numeric"},
+					Type: &ast.TypeName{Name: "smallint"},
 				},
 				{
-					Type: &ast.TypeName{Name: "numeric"},
+					Type: &ast.TypeName{Name: "smallint"},
 				},
 				{
-					Type: &ast.TypeName{Name: "numeric"},
-				},
-				{
-					Type: &ast.TypeName{Name: "boolean"},
-				},
-				{
-					Type: &ast.TypeName{Name: "boolean"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "in_range",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "date"},
-				},
-				{
-					Type: &ast.TypeName{Name: "date"},
-				},
-				{
-					Type: &ast.TypeName{Name: "interval"},
+					Type: &ast.TypeName{Name: "smallint"},
 				},
 				{
 					Type: &ast.TypeName{Name: "boolean"},
@@ -8592,69 +8939,6 @@ func genPGCatalog() *catalog.Schema {
 			Name: "in_range",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "interval"},
-				},
-				{
-					Type: &ast.TypeName{Name: "interval"},
-				},
-				{
-					Type: &ast.TypeName{Name: "interval"},
-				},
-				{
-					Type: &ast.TypeName{Name: "boolean"},
-				},
-				{
-					Type: &ast.TypeName{Name: "boolean"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "in_range",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "boolean"},
-				},
-				{
-					Type: &ast.TypeName{Name: "boolean"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "in_range",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "boolean"},
-				},
-				{
-					Type: &ast.TypeName{Name: "boolean"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "in_range",
-			Args: []*catalog.Argument{
-				{
 					Type: &ast.TypeName{Name: "time without time zone"},
 				},
 				{
@@ -8676,55 +8960,13 @@ func genPGCatalog() *catalog.Schema {
 			Name: "in_range",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "real"},
+					Type: &ast.TypeName{Name: "time with time zone"},
 				},
 				{
-					Type: &ast.TypeName{Name: "real"},
+					Type: &ast.TypeName{Name: "time with time zone"},
 				},
 				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-				{
-					Type: &ast.TypeName{Name: "boolean"},
-				},
-				{
-					Type: &ast.TypeName{Name: "boolean"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "in_range",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-				{
-					Type: &ast.TypeName{Name: "boolean"},
-				},
-				{
-					Type: &ast.TypeName{Name: "boolean"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "in_range",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "smallint"},
+					Type: &ast.TypeName{Name: "interval"},
 				},
 				{
 					Type: &ast.TypeName{Name: "boolean"},
@@ -8906,34 +9148,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "int2",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "numeric"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "smallint"},
-		},
-		{
-			Name: "int2",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "jsonb"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "smallint"},
-		},
-		{
-			Name: "int2",
-			Args: []*catalog.Argument{
-				{
 					Type: &ast.TypeName{Name: "bigint"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "smallint"},
-		},
-		{
-			Name: "int2",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "real"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "smallint"},
@@ -8952,6 +9167,33 @@ func genPGCatalog() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "integer"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "smallint"},
+		},
+		{
+			Name: "int2",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "jsonb"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "smallint"},
+		},
+		{
+			Name: "int2",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "numeric"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "smallint"},
+		},
+		{
+			Name: "int2",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "real"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "smallint"},
@@ -9563,52 +9805,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "int4",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "numeric"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "integer"},
-		},
-		{
-			Name: "int4",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "integer"},
-		},
-		{
-			Name: "int4",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "jsonb"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "integer"},
-		},
-		{
-			Name: "int4",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "boolean"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "integer"},
-		},
-		{
-			Name: "int4",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "integer"},
-		},
-		{
-			Name: "int4",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "real"},
+					Type: &ast.TypeName{Name: "bigint"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "integer"},
@@ -9626,6 +9823,15 @@ func genPGCatalog() *catalog.Schema {
 			Name: "int4",
 			Args: []*catalog.Argument{
 				{
+					Type: &ast.TypeName{Name: "boolean"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "integer"},
+		},
+		{
+			Name: "int4",
+			Args: []*catalog.Argument{
+				{
 					Type: &ast.TypeName{Name: "char"},
 				},
 			},
@@ -9635,7 +9841,43 @@ func genPGCatalog() *catalog.Schema {
 			Name: "int4",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "bigint"},
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "integer"},
+		},
+		{
+			Name: "int4",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "jsonb"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "integer"},
+		},
+		{
+			Name: "int4",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "numeric"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "integer"},
+		},
+		{
+			Name: "int4",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "real"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "integer"},
+		},
+		{
+			Name: "int4",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "smallint"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "integer"},
@@ -10162,9 +10404,6 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "integer"},
 				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "int4range"},
 		},
@@ -10176,6 +10415,9 @@ func genPGCatalog() *catalog.Schema {
 				},
 				{
 					Type: &ast.TypeName{Name: "integer"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "int4range"},
@@ -10280,7 +10522,52 @@ func genPGCatalog() *catalog.Schema {
 			Name: "int8",
 			Args: []*catalog.Argument{
 				{
+					Type: &ast.TypeName{Name: "bit"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bigint"},
+		},
+		{
+			Name: "int8",
+			Args: []*catalog.Argument{
+				{
 					Type: &ast.TypeName{Name: "double precision"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bigint"},
+		},
+		{
+			Name: "int8",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bigint"},
+		},
+		{
+			Name: "int8",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "jsonb"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bigint"},
+		},
+		{
+			Name: "int8",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "numeric"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bigint"},
+		},
+		{
+			Name: "int8",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "oid"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "bigint"},
@@ -10299,51 +10586,6 @@ func genPGCatalog() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "smallint"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "bigint"},
-		},
-		{
-			Name: "int8",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "bit"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "bigint"},
-		},
-		{
-			Name: "int8",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "bigint"},
-		},
-		{
-			Name: "int8",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "bigint"},
-		},
-		{
-			Name: "int8",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "numeric"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "bigint"},
-		},
-		{
-			Name: "int8",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "jsonb"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "bigint"},
@@ -11069,7 +11311,10 @@ func genPGCatalog() *catalog.Schema {
 			Name: "interval",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "time without time zone"},
+					Type: &ast.TypeName{Name: "interval"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "interval"},
@@ -11078,10 +11323,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "interval",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "interval"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
+					Type: &ast.TypeName{Name: "time without time zone"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "interval"},
@@ -11429,6 +11671,18 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "cstring"},
 		},
 		{
+			Name: "is_normalized",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
 			Name: "isclosed",
 			Args: []*catalog.Argument{
 				{
@@ -11450,7 +11704,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "isfinite",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "timestamp with time zone"},
+					Type: &ast.TypeName{Name: "date"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -11459,7 +11713,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "isfinite",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "date"},
+					Type: &ast.TypeName{Name: "interval"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -11477,7 +11731,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "isfinite",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "interval"},
+					Type: &ast.TypeName{Name: "timestamp with time zone"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -11525,10 +11779,10 @@ func genPGCatalog() *catalog.Schema {
 			Name: "isparallel",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "lseg"},
+					Type: &ast.TypeName{Name: "line"},
 				},
 				{
-					Type: &ast.TypeName{Name: "lseg"},
+					Type: &ast.TypeName{Name: "line"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -11537,10 +11791,10 @@ func genPGCatalog() *catalog.Schema {
 			Name: "isparallel",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "line"},
+					Type: &ast.TypeName{Name: "lseg"},
 				},
 				{
-					Type: &ast.TypeName{Name: "line"},
+					Type: &ast.TypeName{Name: "lseg"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -11573,10 +11827,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "isvertical",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "point"},
-				},
-				{
-					Type: &ast.TypeName{Name: "point"},
+					Type: &ast.TypeName{Name: "line"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -11594,7 +11845,10 @@ func genPGCatalog() *catalog.Schema {
 			Name: "isvertical",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "line"},
+					Type: &ast.TypeName{Name: "point"},
+				},
+				{
+					Type: &ast.TypeName{Name: "point"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -11646,23 +11900,13 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "integer"},
 		},
 		{
-			Name: "json_build_array",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "any"},
-					Mode: ast.FuncParamVariadic,
-				},
-			},
+			Name:       "json_build_array",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "json"},
 		},
 		{
-			Name: "json_build_object",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "any"},
-					Mode: ast.FuncParamVariadic,
-				},
-			},
+			Name:       "json_build_object",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "json"},
 		},
 		{
@@ -11831,9 +12075,6 @@ func genPGCatalog() *catalog.Schema {
 			Name: "json_to_tsvector",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "regconfig"},
-				},
-				{
 					Type: &ast.TypeName{Name: "json"},
 				},
 				{
@@ -11845,6 +12086,9 @@ func genPGCatalog() *catalog.Schema {
 		{
 			Name: "json_to_tsvector",
 			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "regconfig"},
+				},
 				{
 					Type: &ast.TypeName{Name: "json"},
 				},
@@ -11910,23 +12154,13 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "integer"},
 		},
 		{
-			Name: "jsonb_build_array",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "any"},
-					Mode: ast.FuncParamVariadic,
-				},
-			},
+			Name:       "jsonb_build_array",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "jsonb"},
 		},
 		{
-			Name: "jsonb_build_object",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "any"},
-					Mode: ast.FuncParamVariadic,
-				},
-			},
+			Name:       "jsonb_build_object",
+			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "jsonb"},
 		},
 		{
@@ -12180,15 +12414,15 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "text[]"},
 				},
-				{
-					Type: &ast.TypeName{Name: "text[]"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "jsonb"},
 		},
 		{
 			Name: "jsonb_object",
 			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text[]"},
+				},
 				{
 					Type: &ast.TypeName{Name: "text[]"},
 				},
@@ -12290,6 +12524,30 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
+			Name: "jsonb_path_exists_tz",
+			Args: []*catalog.Argument{
+				{
+					Name: "target",
+					Type: &ast.TypeName{Name: "jsonb"},
+				},
+				{
+					Name: "path",
+					Type: &ast.TypeName{Name: "jsonpath"},
+				},
+				{
+					Name:       "vars",
+					HasDefault: true,
+					Type:       &ast.TypeName{Name: "jsonb"},
+				},
+				{
+					Name:       "silent",
+					HasDefault: true,
+					Type:       &ast.TypeName{Name: "boolean"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
 			Name: "jsonb_path_match",
 			Args: []*catalog.Argument{
 				{
@@ -12321,6 +12579,30 @@ func genPGCatalog() *catalog.Schema {
 				},
 				{
 					Type: &ast.TypeName{Name: "jsonpath"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "jsonb_path_match_tz",
+			Args: []*catalog.Argument{
+				{
+					Name: "target",
+					Type: &ast.TypeName{Name: "jsonb"},
+				},
+				{
+					Name: "path",
+					Type: &ast.TypeName{Name: "jsonpath"},
+				},
+				{
+					Name:       "vars",
+					HasDefault: true,
+					Type:       &ast.TypeName{Name: "jsonb"},
+				},
+				{
+					Name:       "silent",
+					HasDefault: true,
+					Type:       &ast.TypeName{Name: "boolean"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -12374,7 +12656,79 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "jsonb"},
 		},
 		{
+			Name: "jsonb_path_query_array_tz",
+			Args: []*catalog.Argument{
+				{
+					Name: "target",
+					Type: &ast.TypeName{Name: "jsonb"},
+				},
+				{
+					Name: "path",
+					Type: &ast.TypeName{Name: "jsonpath"},
+				},
+				{
+					Name:       "vars",
+					HasDefault: true,
+					Type:       &ast.TypeName{Name: "jsonb"},
+				},
+				{
+					Name:       "silent",
+					HasDefault: true,
+					Type:       &ast.TypeName{Name: "boolean"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "jsonb"},
+		},
+		{
 			Name: "jsonb_path_query_first",
+			Args: []*catalog.Argument{
+				{
+					Name: "target",
+					Type: &ast.TypeName{Name: "jsonb"},
+				},
+				{
+					Name: "path",
+					Type: &ast.TypeName{Name: "jsonpath"},
+				},
+				{
+					Name:       "vars",
+					HasDefault: true,
+					Type:       &ast.TypeName{Name: "jsonb"},
+				},
+				{
+					Name:       "silent",
+					HasDefault: true,
+					Type:       &ast.TypeName{Name: "boolean"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "jsonb"},
+		},
+		{
+			Name: "jsonb_path_query_first_tz",
+			Args: []*catalog.Argument{
+				{
+					Name: "target",
+					Type: &ast.TypeName{Name: "jsonb"},
+				},
+				{
+					Name: "path",
+					Type: &ast.TypeName{Name: "jsonpath"},
+				},
+				{
+					Name:       "vars",
+					HasDefault: true,
+					Type:       &ast.TypeName{Name: "jsonb"},
+				},
+				{
+					Name:       "silent",
+					HasDefault: true,
+					Type:       &ast.TypeName{Name: "boolean"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "jsonb"},
+		},
+		{
+			Name: "jsonb_path_query_tz",
 			Args: []*catalog.Argument{
 				{
 					Name: "target",
@@ -12463,6 +12817,34 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "jsonb"},
 		},
 		{
+			Name: "jsonb_set_lax",
+			Args: []*catalog.Argument{
+				{
+					Name: "jsonb_in",
+					Type: &ast.TypeName{Name: "jsonb"},
+				},
+				{
+					Name: "path",
+					Type: &ast.TypeName{Name: "text[]"},
+				},
+				{
+					Name: "replacement",
+					Type: &ast.TypeName{Name: "jsonb"},
+				},
+				{
+					Name:       "create_if_missing",
+					HasDefault: true,
+					Type:       &ast.TypeName{Name: "boolean"},
+				},
+				{
+					Name:       "null_value_treatment",
+					HasDefault: true,
+					Type:       &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "jsonb"},
+		},
+		{
 			Name: "jsonb_strip_nulls",
 			Args: []*catalog.Argument{
 				{
@@ -12493,9 +12875,6 @@ func genPGCatalog() *catalog.Schema {
 			Name: "jsonb_to_tsvector",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "regconfig"},
-				},
-				{
 					Type: &ast.TypeName{Name: "jsonb"},
 				},
 				{
@@ -12507,6 +12886,9 @@ func genPGCatalog() *catalog.Schema {
 		{
 			Name: "jsonb_to_tsvector",
 			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "regconfig"},
+				},
 				{
 					Type: &ast.TypeName{Name: "jsonb"},
 				},
@@ -12648,6 +13030,42 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "bigint"},
 		},
 		{
+			Name: "lcm",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "bigint"},
+				},
+				{
+					Type: &ast.TypeName{Name: "bigint"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bigint"},
+		},
+		{
+			Name: "lcm",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "integer"},
+		},
+		{
+			Name: "lcm",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "numeric"},
+				},
+				{
+					Type: &ast.TypeName{Name: "numeric"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "numeric"},
+		},
+		{
 			Name: "lead",
 			Args: []*catalog.Argument{
 				{
@@ -12665,9 +13083,6 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "integer"},
 				},
-				{
-					Type: &ast.TypeName{Name: "anyelement"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "anyelement"},
 		},
@@ -12679,6 +13094,9 @@ func genPGCatalog() *catalog.Schema {
 				},
 				{
 					Type: &ast.TypeName{Name: "integer"},
+				},
+				{
+					Type: &ast.TypeName{Name: "anyelement"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "anyelement"},
@@ -12699,10 +13117,10 @@ func genPGCatalog() *catalog.Schema {
 			Name: "length",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "bit"},
+					Type: &ast.TypeName{Name: "lseg"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "integer"},
+			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
 			Name: "length",
@@ -12717,10 +13135,19 @@ func genPGCatalog() *catalog.Schema {
 			Name: "length",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "lseg"},
+					Type: &ast.TypeName{Name: "bit"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
+			ReturnType: &ast.TypeName{Name: "integer"},
+		},
+		{
+			Name: "length",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "bytea"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "integer"},
 		},
 		{
 			Name: "length",
@@ -12730,24 +13157,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 				{
 					Type: &ast.TypeName{Name: "name"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "integer"},
-		},
-		{
-			Name: "length",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "tsvector"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "integer"},
-		},
-		{
-			Name: "length",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "bytea"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "integer"},
@@ -12771,16 +13180,13 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "integer"},
 		},
 		{
-			Name: "like",
+			Name: "length",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
+					Type: &ast.TypeName{Name: "tsvector"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
+			ReturnType: &ast.TypeName{Name: "integer"},
 		},
 		{
 			Name: "like",
@@ -12799,6 +13205,18 @@ func genPGCatalog() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "name"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "like",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
 				},
 				{
 					Type: &ast.TypeName{Name: "text"},
@@ -13058,9 +13476,6 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "oid"},
 		},
@@ -13069,6 +13484,9 @@ func genPGCatalog() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "oid"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "oid"},
@@ -13185,18 +13603,6 @@ func genPGCatalog() *catalog.Schema {
 			Name: "log",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "numeric"},
-				},
-				{
-					Type: &ast.TypeName{Name: "numeric"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "numeric"},
-		},
-		{
-			Name: "log",
-			Args: []*catalog.Argument{
-				{
 					Type: &ast.TypeName{Name: "double precision"},
 				},
 			},
@@ -13212,8 +13618,11 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
-			Name: "log10",
+			Name: "log",
 			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "numeric"},
+				},
 				{
 					Type: &ast.TypeName{Name: "numeric"},
 				},
@@ -13228,6 +13637,15 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "double precision"},
+		},
+		{
+			Name: "log10",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "numeric"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
 			Name: "loread",
@@ -13245,19 +13663,19 @@ func genPGCatalog() *catalog.Schema {
 			Name: "lower",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "text"},
+					Type: &ast.TypeName{Name: "anyrange"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "text"},
+			ReturnType: &ast.TypeName{Name: "anyelement"},
 		},
 		{
 			Name: "lower",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "anyrange"},
+					Type: &ast.TypeName{Name: "text"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "anyelement"},
+			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
 			Name: "lower_inc",
@@ -13320,10 +13738,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "lseg",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "point"},
-				},
-				{
-					Type: &ast.TypeName{Name: "point"},
+					Type: &ast.TypeName{Name: "box"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "lseg"},
@@ -13332,7 +13747,10 @@ func genPGCatalog() *catalog.Schema {
 			Name: "lseg",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "box"},
+					Type: &ast.TypeName{Name: "point"},
+				},
+				{
+					Type: &ast.TypeName{Name: "point"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "lseg"},
@@ -13538,15 +13956,15 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
 			Name: "ltrim",
 			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
@@ -14002,10 +14420,6 @@ func genPGCatalog() *catalog.Schema {
 					Name: "sec",
 					Type: &ast.TypeName{Name: "double precision"},
 				},
-				{
-					Name: "timezone",
-					Type: &ast.TypeName{Name: "text"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "timestamp with time zone"},
 		},
@@ -14035,6 +14449,10 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Name: "sec",
 					Type: &ast.TypeName{Name: "double precision"},
+				},
+				{
+					Name: "timezone",
+					Type: &ast.TypeName{Name: "text"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "timestamp with time zone"},
@@ -14070,19 +14488,10 @@ func genPGCatalog() *catalog.Schema {
 			Name: "max",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "timestamp with time zone"},
+					Type: &ast.TypeName{Name: "anyarray"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "timestamp with time zone"},
-		},
-		{
-			Name: "max",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "inet"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "inet"},
+			ReturnType: &ast.TypeName{Name: "anyarray"},
 		},
 		{
 			Name: "max",
@@ -14097,37 +14506,28 @@ func genPGCatalog() *catalog.Schema {
 			Name: "max",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "integer"},
+					Type: &ast.TypeName{Name: "bigint"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "integer"},
+			ReturnType: &ast.TypeName{Name: "bigint"},
 		},
 		{
 			Name: "max",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "smallint"},
+					Type: &ast.TypeName{Name: "character"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "smallint"},
+			ReturnType: &ast.TypeName{Name: "character"},
 		},
 		{
 			Name: "max",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "oid"},
+					Type: &ast.TypeName{Name: "date"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "oid"},
-		},
-		{
-			Name: "max",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "real"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "real"},
+			ReturnType: &ast.TypeName{Name: "date"},
 		},
 		{
 			Name: "max",
@@ -14142,10 +14542,118 @@ func genPGCatalog() *catalog.Schema {
 			Name: "max",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "date"},
+					Type: &ast.TypeName{Name: "inet"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "date"},
+			ReturnType: &ast.TypeName{Name: "inet"},
+		},
+		{
+			Name: "max",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "integer"},
+		},
+		{
+			Name: "max",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "interval"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "interval"},
+		},
+		{
+			Name: "max",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "money"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "money"},
+		},
+		{
+			Name: "max",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "numeric"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "numeric"},
+		},
+		{
+			Name: "max",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "oid"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "oid"},
+		},
+		{
+			Name: "max",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "pg_lsn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "pg_lsn"},
+		},
+		{
+			Name: "max",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "real"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "real"},
+		},
+		{
+			Name: "max",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "smallint"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "smallint"},
+		},
+		{
+			Name: "max",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
+			Name: "max",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "tid"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "tid"},
+		},
+		{
+			Name: "max",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "timestamp without time zone"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "timestamp without time zone"},
+		},
+		{
+			Name: "max",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "timestamp with time zone"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "timestamp with time zone"},
 		},
 		{
 			Name: "max",
@@ -14164,87 +14672,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "time with time zone"},
-		},
-		{
-			Name: "max",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "money"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "money"},
-		},
-		{
-			Name: "max",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "timestamp without time zone"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "timestamp without time zone"},
-		},
-		{
-			Name: "max",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "interval"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "interval"},
-		},
-		{
-			Name: "max",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "text"},
-		},
-		{
-			Name: "max",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "numeric"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "numeric"},
-		},
-		{
-			Name: "max",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "anyarray"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "anyarray"},
-		},
-		{
-			Name: "max",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "character"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "character"},
-		},
-		{
-			Name: "max",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "tid"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "tid"},
-		},
-		{
-			Name: "max",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "bigint"},
 		},
 		{
 			Name: "md5",
@@ -14268,37 +14695,19 @@ func genPGCatalog() *catalog.Schema {
 			Name: "min",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "timestamp with time zone"},
+					Type: &ast.TypeName{Name: "anyarray"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "timestamp with time zone"},
+			ReturnType: &ast.TypeName{Name: "anyarray"},
 		},
 		{
 			Name: "min",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "interval"},
+					Type: &ast.TypeName{Name: "anyenum"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "interval"},
-		},
-		{
-			Name: "min",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "character"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "character"},
-		},
-		{
-			Name: "min",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "smallint"},
+			ReturnType: &ast.TypeName{Name: "anyenum"},
 		},
 		{
 			Name: "min",
@@ -14313,37 +14722,28 @@ func genPGCatalog() *catalog.Schema {
 			Name: "min",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "oid"},
+					Type: &ast.TypeName{Name: "character"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "oid"},
+			ReturnType: &ast.TypeName{Name: "character"},
 		},
 		{
 			Name: "min",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "text"},
+					Type: &ast.TypeName{Name: "date"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "text"},
+			ReturnType: &ast.TypeName{Name: "date"},
 		},
 		{
 			Name: "min",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "time without time zone"},
+					Type: &ast.TypeName{Name: "double precision"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "time without time zone"},
-		},
-		{
-			Name: "min",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "time with time zone"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "time with time zone"},
+			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
 			Name: "min",
@@ -14353,6 +14753,24 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "inet"},
+		},
+		{
+			Name: "min",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "integer"},
+		},
+		{
+			Name: "min",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "interval"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "interval"},
 		},
 		{
 			Name: "min",
@@ -14376,10 +14794,19 @@ func genPGCatalog() *catalog.Schema {
 			Name: "min",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "timestamp without time zone"},
+					Type: &ast.TypeName{Name: "oid"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "timestamp without time zone"},
+			ReturnType: &ast.TypeName{Name: "oid"},
+		},
+		{
+			Name: "min",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "pg_lsn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "pg_lsn"},
 		},
 		{
 			Name: "min",
@@ -14394,37 +14821,19 @@ func genPGCatalog() *catalog.Schema {
 			Name: "min",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "anyarray"},
+					Type: &ast.TypeName{Name: "smallint"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "anyarray"},
+			ReturnType: &ast.TypeName{Name: "smallint"},
 		},
 		{
 			Name: "min",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "anyenum"},
+					Type: &ast.TypeName{Name: "text"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "anyenum"},
-		},
-		{
-			Name: "min",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "min",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "integer"},
+			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
 			Name: "min",
@@ -14439,19 +14848,43 @@ func genPGCatalog() *catalog.Schema {
 			Name: "min",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "date"},
+					Type: &ast.TypeName{Name: "timestamp without time zone"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "date"},
+			ReturnType: &ast.TypeName{Name: "timestamp without time zone"},
 		},
 		{
-			Name: "mod",
+			Name: "min",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "integer"},
+					Type: &ast.TypeName{Name: "timestamp with time zone"},
 				},
+			},
+			ReturnType: &ast.TypeName{Name: "timestamp with time zone"},
+		},
+		{
+			Name: "min",
+			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "integer"},
+					Type: &ast.TypeName{Name: "time without time zone"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "time without time zone"},
+		},
+		{
+			Name: "min",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "time with time zone"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "time with time zone"},
+		},
+		{
+			Name: "min_scale",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "numeric"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "integer"},
@@ -14472,13 +14905,13 @@ func genPGCatalog() *catalog.Schema {
 			Name: "mod",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "smallint"},
+					Type: &ast.TypeName{Name: "integer"},
 				},
 				{
-					Type: &ast.TypeName{Name: "smallint"},
+					Type: &ast.TypeName{Name: "integer"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "smallint"},
+			ReturnType: &ast.TypeName{Name: "integer"},
 		},
 		{
 			Name: "mod",
@@ -14493,8 +14926,24 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
-			Name:       "mode",
-			Args:       []*catalog.Argument{},
+			Name: "mod",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "smallint"},
+				},
+				{
+					Type: &ast.TypeName{Name: "smallint"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "smallint"},
+		},
+		{
+			Name: "mode",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "anyelement"},
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "anyelement"},
 		},
 		{
@@ -14510,7 +14959,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "money",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "numeric"},
+					Type: &ast.TypeName{Name: "integer"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "money"},
@@ -14519,7 +14968,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "money",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "integer"},
+					Type: &ast.TypeName{Name: "numeric"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "money"},
@@ -14549,6 +14998,15 @@ func genPGCatalog() *catalog.Schema {
 			Name: "name",
 			Args: []*catalog.Argument{
 				{
+					Type: &ast.TypeName{Name: "character"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "name"},
+		},
+		{
+			Name: "name",
+			Args: []*catalog.Argument{
+				{
 					Type: &ast.TypeName{Name: "character varying"},
 				},
 			},
@@ -14559,15 +15017,6 @@ func genPGCatalog() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "name"},
-		},
-		{
-			Name: "name",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "character"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "name"},
@@ -15047,13 +15496,25 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "bigint"},
 		},
 		{
-			Name: "notlike",
+			Name: "normalize",
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
 				{
 					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
+			Name: "notlike",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "bytea"},
+				},
+				{
+					Type: &ast.TypeName{Name: "bytea"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -15074,10 +15535,10 @@ func genPGCatalog() *catalog.Schema {
 			Name: "notlike",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "bytea"},
+					Type: &ast.TypeName{Name: "text"},
 				},
 				{
-					Type: &ast.TypeName{Name: "bytea"},
+					Type: &ast.TypeName{Name: "text"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -15130,7 +15591,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "numeric",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "integer"},
+					Type: &ast.TypeName{Name: "bigint"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "numeric"},
@@ -15140,6 +15601,33 @@ func genPGCatalog() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "double precision"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "numeric"},
+		},
+		{
+			Name: "numeric",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "numeric"},
+		},
+		{
+			Name: "numeric",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "jsonb"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "numeric"},
+		},
+		{
+			Name: "numeric",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "money"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "numeric"},
@@ -15160,16 +15648,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "numeric",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "numeric"},
-		},
-		{
-			Name: "numeric",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "money"},
+					Type: &ast.TypeName{Name: "real"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "numeric"},
@@ -15179,24 +15658,6 @@ func genPGCatalog() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "smallint"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "numeric"},
-		},
-		{
-			Name: "numeric",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "jsonb"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "numeric"},
-		},
-		{
-			Name: "numeric",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "real"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "numeric"},
@@ -15546,9 +16007,6 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "numeric"},
 				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "numrange"},
 		},
@@ -15560,6 +16018,9 @@ func genPGCatalog() *catalog.Schema {
 				},
 				{
 					Type: &ast.TypeName{Name: "numeric"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "numrange"},
@@ -15582,9 +16043,6 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "oid"},
 				},
-				{
-					Type: &ast.TypeName{Name: "name"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
@@ -15593,6 +16051,9 @@ func genPGCatalog() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "oid"},
+				},
+				{
+					Type: &ast.TypeName{Name: "name"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},
@@ -15610,7 +16071,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "octet_length",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "text"},
+					Type: &ast.TypeName{Name: "bytea"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "integer"},
@@ -15628,7 +16089,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "octet_length",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "bytea"},
+					Type: &ast.TypeName{Name: "text"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "integer"},
@@ -15946,22 +16407,148 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
-			Name: "opaque_in",
+			Name: "overlaps",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "cstring"},
+					Type: &ast.TypeName{Name: "timestamp without time zone"},
+				},
+				{
+					Type: &ast.TypeName{Name: "interval"},
+				},
+				{
+					Type: &ast.TypeName{Name: "timestamp without time zone"},
+				},
+				{
+					Type: &ast.TypeName{Name: "interval"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "opaque"},
+			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
-			Name: "opaque_out",
+			Name: "overlaps",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "opaque"},
+					Type: &ast.TypeName{Name: "timestamp without time zone"},
+				},
+				{
+					Type: &ast.TypeName{Name: "interval"},
+				},
+				{
+					Type: &ast.TypeName{Name: "timestamp without time zone"},
+				},
+				{
+					Type: &ast.TypeName{Name: "timestamp without time zone"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "cstring"},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "overlaps",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "timestamp without time zone"},
+				},
+				{
+					Type: &ast.TypeName{Name: "timestamp without time zone"},
+				},
+				{
+					Type: &ast.TypeName{Name: "timestamp without time zone"},
+				},
+				{
+					Type: &ast.TypeName{Name: "interval"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "overlaps",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "timestamp without time zone"},
+				},
+				{
+					Type: &ast.TypeName{Name: "timestamp without time zone"},
+				},
+				{
+					Type: &ast.TypeName{Name: "timestamp without time zone"},
+				},
+				{
+					Type: &ast.TypeName{Name: "timestamp without time zone"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "overlaps",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "timestamp with time zone"},
+				},
+				{
+					Type: &ast.TypeName{Name: "interval"},
+				},
+				{
+					Type: &ast.TypeName{Name: "timestamp with time zone"},
+				},
+				{
+					Type: &ast.TypeName{Name: "interval"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "overlaps",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "timestamp with time zone"},
+				},
+				{
+					Type: &ast.TypeName{Name: "interval"},
+				},
+				{
+					Type: &ast.TypeName{Name: "timestamp with time zone"},
+				},
+				{
+					Type: &ast.TypeName{Name: "timestamp with time zone"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "overlaps",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "timestamp with time zone"},
+				},
+				{
+					Type: &ast.TypeName{Name: "timestamp with time zone"},
+				},
+				{
+					Type: &ast.TypeName{Name: "timestamp with time zone"},
+				},
+				{
+					Type: &ast.TypeName{Name: "interval"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "overlaps",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "timestamp with time zone"},
+				},
+				{
+					Type: &ast.TypeName{Name: "timestamp with time zone"},
+				},
+				{
+					Type: &ast.TypeName{Name: "timestamp with time zone"},
+				},
+				{
+					Type: &ast.TypeName{Name: "timestamp with time zone"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
 			Name: "overlaps",
@@ -15985,154 +16572,10 @@ func genPGCatalog() *catalog.Schema {
 			Name: "overlaps",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "timestamp with time zone"},
-				},
-				{
-					Type: &ast.TypeName{Name: "timestamp with time zone"},
-				},
-				{
-					Type: &ast.TypeName{Name: "timestamp with time zone"},
-				},
-				{
-					Type: &ast.TypeName{Name: "timestamp with time zone"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "overlaps",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "timestamp with time zone"},
-				},
-				{
-					Type: &ast.TypeName{Name: "interval"},
-				},
-				{
-					Type: &ast.TypeName{Name: "timestamp with time zone"},
-				},
-				{
-					Type: &ast.TypeName{Name: "interval"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "overlaps",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "timestamp without time zone"},
-				},
-				{
-					Type: &ast.TypeName{Name: "interval"},
-				},
-				{
-					Type: &ast.TypeName{Name: "timestamp without time zone"},
-				},
-				{
-					Type: &ast.TypeName{Name: "timestamp without time zone"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "overlaps",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "timestamp without time zone"},
-				},
-				{
-					Type: &ast.TypeName{Name: "timestamp without time zone"},
-				},
-				{
-					Type: &ast.TypeName{Name: "timestamp without time zone"},
-				},
-				{
-					Type: &ast.TypeName{Name: "interval"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "overlaps",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "timestamp without time zone"},
-				},
-				{
-					Type: &ast.TypeName{Name: "interval"},
-				},
-				{
-					Type: &ast.TypeName{Name: "timestamp without time zone"},
-				},
-				{
-					Type: &ast.TypeName{Name: "interval"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "overlaps",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "timestamp without time zone"},
-				},
-				{
-					Type: &ast.TypeName{Name: "timestamp without time zone"},
-				},
-				{
-					Type: &ast.TypeName{Name: "timestamp without time zone"},
-				},
-				{
-					Type: &ast.TypeName{Name: "timestamp without time zone"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "overlaps",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "timestamp with time zone"},
-				},
-				{
-					Type: &ast.TypeName{Name: "timestamp with time zone"},
-				},
-				{
-					Type: &ast.TypeName{Name: "timestamp with time zone"},
-				},
-				{
-					Type: &ast.TypeName{Name: "interval"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "overlaps",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "timestamp with time zone"},
-				},
-				{
-					Type: &ast.TypeName{Name: "interval"},
-				},
-				{
-					Type: &ast.TypeName{Name: "timestamp with time zone"},
-				},
-				{
-					Type: &ast.TypeName{Name: "timestamp with time zone"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "overlaps",
-			Args: []*catalog.Argument{
-				{
 					Type: &ast.TypeName{Name: "time without time zone"},
 				},
 				{
-					Type: &ast.TypeName{Name: "time without time zone"},
+					Type: &ast.TypeName{Name: "interval"},
 				},
 				{
 					Type: &ast.TypeName{Name: "time without time zone"},
@@ -16168,7 +16611,7 @@ func genPGCatalog() *catalog.Schema {
 					Type: &ast.TypeName{Name: "time without time zone"},
 				},
 				{
-					Type: &ast.TypeName{Name: "interval"},
+					Type: &ast.TypeName{Name: "time without time zone"},
 				},
 				{
 					Type: &ast.TypeName{Name: "time without time zone"},
@@ -16196,42 +16639,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "overlay",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "text"},
-		},
-		{
-			Name: "overlay",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "bytea"},
-				},
-				{
-					Type: &ast.TypeName{Name: "bytea"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "bytea"},
 		},
 		{
 			Name: "overlay",
@@ -16247,21 +16654,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "bit"},
-		},
-		{
-			Name: "overlay",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
 			Name: "overlay",
@@ -16295,6 +16687,57 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "bytea"},
+		},
+		{
+			Name: "overlay",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "bytea"},
+				},
+				{
+					Type: &ast.TypeName{Name: "bytea"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bytea"},
+		},
+		{
+			Name: "overlay",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
+			Name: "overlay",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
 			Name: "parse_ident",
@@ -16548,7 +16991,22 @@ func genPGCatalog() *catalog.Schema {
 			Name: "percentile_cont",
 			Args: []*catalog.Argument{
 				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
+		},
+		{
+			Name: "percentile_cont",
+			Args: []*catalog.Argument{
+				{
 					Type: &ast.TypeName{Name: "double precision[]"},
+				},
+				{
+					Type: &ast.TypeName{Name: "double precision"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "double precision[]"},
@@ -16559,17 +17017,23 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "double precision"},
 				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "percentile_disc",
-			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "double precision"},
+					Type: &ast.TypeName{Name: "interval"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "anyelement"},
+			ReturnType: &ast.TypeName{Name: "interval"},
+		},
+		{
+			Name: "percentile_cont",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "double precision[]"},
+				},
+				{
+					Type: &ast.TypeName{Name: "interval"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "interval[]"},
 		},
 		{
 			Name: "percentile_disc",
@@ -16577,17 +17041,29 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "double precision[]"},
 				},
+				{
+					Type: &ast.TypeName{Name: "anyelement"},
+				},
 			},
 			ReturnType: &ast.TypeName{Name: "anyarray"},
+		},
+		{
+			Name: "percentile_disc",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+				{
+					Type: &ast.TypeName{Name: "anyelement"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "anyelement"},
 		},
 		{
 			Name: "pg_advisory_lock",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
+					Type: &ast.TypeName{Name: "bigint"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "void"},
@@ -16596,7 +17072,10 @@ func genPGCatalog() *catalog.Schema {
 			Name: "pg_advisory_lock",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "bigint"},
+					Type: &ast.TypeName{Name: "integer"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "void"},
@@ -16626,10 +17105,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "pg_advisory_unlock",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
+					Type: &ast.TypeName{Name: "bigint"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -16638,7 +17114,10 @@ func genPGCatalog() *catalog.Schema {
 			Name: "pg_advisory_unlock",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "bigint"},
+					Type: &ast.TypeName{Name: "integer"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -16673,10 +17152,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "pg_advisory_xact_lock",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
+					Type: &ast.TypeName{Name: "bigint"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "void"},
@@ -16685,15 +17161,6 @@ func genPGCatalog() *catalog.Schema {
 			Name: "pg_advisory_xact_lock",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "void"},
-		},
-		{
-			Name: "pg_advisory_xact_lock_shared",
-			Args: []*catalog.Argument{
-				{
 					Type: &ast.TypeName{Name: "integer"},
 				},
 				{
@@ -16707,6 +17174,18 @@ func genPGCatalog() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "bigint"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "void"},
+		},
+		{
+			Name: "pg_advisory_xact_lock_shared",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "void"},
@@ -16828,6 +17307,11 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "pg_lsn"},
 		},
 		{
+			Name:       "pg_current_logfile",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
 			Name: "pg_current_logfile",
 			Args: []*catalog.Argument{
 				{
@@ -16837,9 +17321,9 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
-			Name:       "pg_current_logfile",
+			Name:       "pg_current_snapshot",
 			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "text"},
+			ReturnType: &ast.TypeName{Name: "pg_snapshot"},
 		},
 		{
 			Name:       "pg_current_wal_flush_lsn",
@@ -16855,6 +17339,16 @@ func genPGCatalog() *catalog.Schema {
 			Name:       "pg_current_wal_lsn",
 			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "pg_lsn"},
+		},
+		{
+			Name:       "pg_current_xact_id",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "xid8"},
+		},
+		{
+			Name:       "pg_current_xact_id_if_assigned",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "xid8"},
 		},
 		{
 			Name: "pg_database_size",
@@ -17001,9 +17495,6 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
@@ -17016,8 +17507,20 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "pg_file_sync",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "void"},
 		},
 		{
 			Name: "pg_file_unlink",
@@ -17094,9 +17597,6 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "oid"},
 				},
-				{
-					Type: &ast.TypeName{Name: "boolean"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
@@ -17108,6 +17608,9 @@ func genPGCatalog() *catalog.Schema {
 				},
 				{
 					Type: &ast.TypeName{Name: "oid"},
+				},
+				{
+					Type: &ast.TypeName{Name: "boolean"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},
@@ -17166,12 +17669,6 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "oid"},
 				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "boolean"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
@@ -17180,6 +17677,12 @@ func genPGCatalog() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "oid"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+				{
+					Type: &ast.TypeName{Name: "boolean"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},
@@ -17217,9 +17720,6 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "oid"},
 				},
-				{
-					Type: &ast.TypeName{Name: "boolean"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
@@ -17228,6 +17728,9 @@ func genPGCatalog() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "oid"},
+				},
+				{
+					Type: &ast.TypeName{Name: "boolean"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},
@@ -17287,10 +17790,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "pg_get_viewdef",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "boolean"},
+					Type: &ast.TypeName{Name: "oid"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},
@@ -17323,7 +17823,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "pg_get_viewdef",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "oid"},
+					Type: &ast.TypeName{Name: "text"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},
@@ -17334,6 +17834,9 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
+				{
+					Type: &ast.TypeName{Name: "boolean"},
+				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
@@ -17344,18 +17847,6 @@ func genPGCatalog() *catalog.Schema {
 					Type: &ast.TypeName{Name: "name"},
 				},
 				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "pg_has_role",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
-				{
 					Type: &ast.TypeName{Name: "name"},
 				},
 				{
@@ -17386,6 +17877,18 @@ func genPGCatalog() *catalog.Schema {
 					Type: &ast.TypeName{Name: "name"},
 				},
 				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "pg_has_role",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "oid"},
+				},
+				{
 					Type: &ast.TypeName{Name: "name"},
 				},
 				{
@@ -17401,6 +17904,9 @@ func genPGCatalog() *catalog.Schema {
 					Type: &ast.TypeName{Name: "oid"},
 				},
 				{
+					Type: &ast.TypeName{Name: "oid"},
+				},
+				{
 					Type: &ast.TypeName{Name: "text"},
 				},
 			},
@@ -17409,9 +17915,6 @@ func genPGCatalog() *catalog.Schema {
 		{
 			Name: "pg_has_role",
 			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "oid"},
-				},
 				{
 					Type: &ast.TypeName{Name: "oid"},
 				},
@@ -17566,7 +18069,7 @@ func genPGCatalog() *catalog.Schema {
 					Type: &ast.TypeName{Name: "text"},
 				},
 				{
-					Type: &ast.TypeName{Name: "text"},
+					Type: &ast.TypeName{Name: "bytea"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "pg_lsn"},
@@ -17581,7 +18084,7 @@ func genPGCatalog() *catalog.Schema {
 					Type: &ast.TypeName{Name: "text"},
 				},
 				{
-					Type: &ast.TypeName{Name: "bytea"},
+					Type: &ast.TypeName{Name: "text"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "pg_lsn"},
@@ -17592,12 +18095,6 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
-				{
-					Type: &ast.TypeName{Name: "boolean"},
-				},
-				{
-					Type: &ast.TypeName{Name: "boolean"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
@@ -17606,6 +18103,12 @@ func genPGCatalog() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "boolean"},
+				},
+				{
+					Type: &ast.TypeName{Name: "boolean"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},
@@ -17689,6 +18192,18 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "pg_lsn"},
 		},
 		{
+			Name: "pg_lsn_larger",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "pg_lsn"},
+				},
+				{
+					Type: &ast.TypeName{Name: "pg_lsn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "pg_lsn"},
+		},
+		{
 			Name: "pg_lsn_le",
 			Args: []*catalog.Argument{
 				{
@@ -17753,6 +18268,18 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "bytea"},
+		},
+		{
+			Name: "pg_lsn_smaller",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "pg_lsn"},
+				},
+				{
+					Type: &ast.TypeName{Name: "pg_lsn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "pg_lsn"},
 		},
 		{
 			Name: "pg_mcv_list_in",
@@ -17935,6 +18462,15 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
+			},
+			ReturnType: &ast.TypeName{Name: "bytea"},
+		},
+		{
+			Name: "pg_read_binary_file",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
 				{
 					Type: &ast.TypeName{Name: "bigint"},
 				},
@@ -17963,13 +18499,28 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "bytea"},
 		},
 		{
-			Name: "pg_read_binary_file",
+			Name: "pg_read_file",
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "bytea"},
+			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
+			Name: "pg_read_file",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "bigint"},
+				},
+				{
+					Type: &ast.TypeName{Name: "bigint"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
 			Name: "pg_read_file",
@@ -17985,30 +18536,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 				{
 					Type: &ast.TypeName{Name: "boolean"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "text"},
-		},
-		{
-			Name: "pg_read_file",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "text"},
-		},
-		{
-			Name: "pg_read_file",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},
@@ -18270,6 +18797,60 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "void"},
+		},
+		{
+			Name: "pg_snapshot_in",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "cstring"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "pg_snapshot"},
+		},
+		{
+			Name: "pg_snapshot_out",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "pg_snapshot"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "cstring"},
+		},
+		{
+			Name: "pg_snapshot_send",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "pg_snapshot"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bytea"},
+		},
+		{
+			Name: "pg_snapshot_xip",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "pg_snapshot"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "xid8"},
+		},
+		{
+			Name: "pg_snapshot_xmax",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "pg_snapshot"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "xid8"},
+		},
+		{
+			Name: "pg_snapshot_xmin",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "pg_snapshot"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "xid8"},
 		},
 		{
 			Name: "pg_start_backup",
@@ -18753,6 +19334,15 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
+			Name: "pg_stat_get_ins_since_vacuum",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "oid"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bigint"},
+		},
+		{
 			Name: "pg_stat_get_last_analyze_time",
 			Args: []*catalog.Argument{
 				{
@@ -19024,6 +19614,15 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "void"},
 		},
 		{
+			Name: "pg_stat_reset_slru",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "void"},
+		},
+		{
 			Name: "pg_statistics_obj_is_visible",
 			Args: []*catalog.Argument{
 				{
@@ -19082,7 +19681,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "pg_tablespace_size",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "oid"},
+					Type: &ast.TypeName{Name: "name"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "bigint"},
@@ -19091,7 +19690,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "pg_tablespace_size",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "name"},
+					Type: &ast.TypeName{Name: "oid"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "bigint"},
@@ -19123,10 +19722,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "pg_try_advisory_lock",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
+					Type: &ast.TypeName{Name: "bigint"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -19135,15 +19731,6 @@ func genPGCatalog() *catalog.Schema {
 			Name: "pg_try_advisory_lock",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "pg_try_advisory_lock_shared",
-			Args: []*catalog.Argument{
-				{
 					Type: &ast.TypeName{Name: "integer"},
 				},
 				{
@@ -19162,7 +19749,7 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
-			Name: "pg_try_advisory_xact_lock",
+			Name: "pg_try_advisory_lock_shared",
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "integer"},
@@ -19183,7 +19770,7 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
-			Name: "pg_try_advisory_xact_lock_shared",
+			Name: "pg_try_advisory_xact_lock",
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "integer"},
@@ -19199,6 +19786,18 @@ func genPGCatalog() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "bigint"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "pg_try_advisory_xact_lock_shared",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -19258,6 +19857,18 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "regtype"},
 		},
 		{
+			Name: "pg_visible_in_snapshot",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "xid8"},
+				},
+				{
+					Type: &ast.TypeName{Name: "pg_snapshot"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
 			Name: "pg_wal_lsn_diff",
 			Args: []*catalog.Argument{
 				{
@@ -19296,6 +19907,15 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "timestamp with time zone"},
+		},
+		{
+			Name: "pg_xact_status",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "xid8"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
 			Name: "phraseto_tsquery",
@@ -19362,36 +19982,6 @@ func genPGCatalog() *catalog.Schema {
 			Name: "point",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "circle"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "point"},
-		},
-		{
-			Name: "point",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "path"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "point"},
-		},
-		{
-			Name: "point",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "point"},
-		},
-		{
-			Name: "point",
-			Args: []*catalog.Argument{
-				{
 					Type: &ast.TypeName{Name: "box"},
 				},
 			},
@@ -19401,7 +19991,37 @@ func genPGCatalog() *catalog.Schema {
 			Name: "point",
 			Args: []*catalog.Argument{
 				{
+					Type: &ast.TypeName{Name: "circle"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "point"},
+		},
+		{
+			Name: "point",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "point"},
+		},
+		{
+			Name: "point",
+			Args: []*catalog.Argument{
+				{
 					Type: &ast.TypeName{Name: "lseg"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "point"},
+		},
+		{
+			Name: "point",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "path"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "point"},
@@ -19815,7 +20435,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "polygon",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "path"},
+					Type: &ast.TypeName{Name: "box"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "polygon"},
@@ -19845,7 +20465,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "polygon",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "box"},
+					Type: &ast.TypeName{Name: "path"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "polygon"},
@@ -19863,6 +20483,18 @@ func genPGCatalog() *catalog.Schema {
 			Name: "position",
 			Args: []*catalog.Argument{
 				{
+					Type: &ast.TypeName{Name: "bit"},
+				},
+				{
+					Type: &ast.TypeName{Name: "bit"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "integer"},
+		},
+		{
+			Name: "position",
+			Args: []*catalog.Argument{
+				{
 					Type: &ast.TypeName{Name: "bytea"},
 				},
 				{
@@ -19879,18 +20511,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 				{
 					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "integer"},
-		},
-		{
-			Name: "position",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "bit"},
-				},
-				{
-					Type: &ast.TypeName{Name: "bit"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "integer"},
@@ -19911,18 +20531,6 @@ func genPGCatalog() *catalog.Schema {
 			Name: "pow",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "numeric"},
-				},
-				{
-					Type: &ast.TypeName{Name: "numeric"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "numeric"},
-		},
-		{
-			Name: "pow",
-			Args: []*catalog.Argument{
-				{
 					Type: &ast.TypeName{Name: "double precision"},
 				},
 				{
@@ -19930,6 +20538,18 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "double precision"},
+		},
+		{
+			Name: "pow",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "numeric"},
+				},
+				{
+					Type: &ast.TypeName{Name: "numeric"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
 			Name: "power",
@@ -20614,6 +21234,33 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "bytea"},
 		},
 		{
+			Name: "regcollationin",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "cstring"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "regcollation"},
+		},
+		{
+			Name: "regcollationout",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "regcollation"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "cstring"},
+		},
+		{
+			Name: "regcollationsend",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "regcollation"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bytea"},
+		},
+		{
 			Name: "regconfigin",
 			Args: []*catalog.Argument{
 				{
@@ -20676,9 +21323,6 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "text[]"},
 		},
@@ -20691,18 +21335,6 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
-			},
-			ReturnType: &ast.TypeName{Name: "text[]"},
-		},
-		{
-			Name: "regexp_matches",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
@@ -20712,6 +21344,21 @@ func genPGCatalog() *catalog.Schema {
 		{
 			Name: "regexp_matches",
 			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text[]"},
+		},
+		{
+			Name: "regexp_matches",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
@@ -20790,15 +21437,15 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
 			Name: "regexp_split_to_table",
 			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
@@ -21157,6 +21804,24 @@ func genPGCatalog() *catalog.Schema {
 			Name: "round",
 			Args: []*catalog.Argument{
 				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
+		},
+		{
+			Name: "round",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "numeric"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "numeric"},
+		},
+		{
+			Name: "round",
+			Args: []*catalog.Argument{
+				{
 					Type: &ast.TypeName{Name: "numeric"},
 				},
 				{
@@ -21164,24 +21829,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "numeric"},
-		},
-		{
-			Name: "round",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "numeric"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "numeric"},
-		},
-		{
-			Name: "round",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
 			Name:       "row_number",
@@ -21212,9 +21859,6 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "record"},
 				},
-				{
-					Type: &ast.TypeName{Name: "boolean"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "json"},
 		},
@@ -21224,6 +21868,9 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "record"},
 				},
+				{
+					Type: &ast.TypeName{Name: "boolean"},
+				},
 			},
 			ReturnType: &ast.TypeName{Name: "json"},
 		},
@@ -21260,15 +21907,15 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
 			Name: "rtrim",
 			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
@@ -21377,7 +22024,7 @@ func genPGCatalog() *catalog.Schema {
 					Type: &ast.TypeName{Name: "bytea"},
 				},
 				{
-					Type: &ast.TypeName{Name: "integer"},
+					Type: &ast.TypeName{Name: "bigint"},
 				},
 				{
 					Type: &ast.TypeName{Name: "integer"},
@@ -21484,9 +22131,6 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "char"},
 				},
-				{
-					Type: &ast.TypeName{Name: "text[]"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "tsvector"},
 		},
@@ -21498,6 +22142,9 @@ func genPGCatalog() *catalog.Schema {
 				},
 				{
 					Type: &ast.TypeName{Name: "char"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text[]"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "tsvector"},
@@ -21545,13 +22192,13 @@ func genPGCatalog() *catalog.Schema {
 					Type: &ast.TypeName{Name: "cstring"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "opaque"},
+			ReturnType: &ast.TypeName{Name: "void"},
 		},
 		{
 			Name: "shell_out",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "opaque"},
+					Type: &ast.TypeName{Name: "void"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "cstring"},
@@ -21572,22 +22219,43 @@ func genPGCatalog() *catalog.Schema {
 			Name: "sign",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "numeric"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "numeric"},
-		},
-		{
-			Name: "sign",
-			Args: []*catalog.Argument{
-				{
 					Type: &ast.TypeName{Name: "double precision"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
+			Name: "sign",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "numeric"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "numeric"},
+		},
+		{
 			Name: "similar_escape",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
+			Name: "similar_to_escape",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
+			Name: "similar_to_escape",
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "text"},
@@ -21665,19 +22333,19 @@ func genPGCatalog() *catalog.Schema {
 			Name: "sqrt",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "numeric"},
+					Type: &ast.TypeName{Name: "double precision"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "numeric"},
+			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
 			Name: "sqrt",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "double precision"},
+					Type: &ast.TypeName{Name: "numeric"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
+			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
 			Name: "starts_with",
@@ -21700,15 +22368,6 @@ func genPGCatalog() *catalog.Schema {
 			Name: "stddev",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "numeric"},
-		},
-		{
-			Name: "stddev",
-			Args: []*catalog.Argument{
-				{
 					Type: &ast.TypeName{Name: "double precision"},
 				},
 			},
@@ -21718,10 +22377,10 @@ func genPGCatalog() *catalog.Schema {
 			Name: "stddev",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "numeric"},
+					Type: &ast.TypeName{Name: "real"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "numeric"},
+			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
 			Name: "stddev",
@@ -21745,16 +22404,16 @@ func genPGCatalog() *catalog.Schema {
 			Name: "stddev",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "real"},
+					Type: &ast.TypeName{Name: "numeric"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
+			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
-			Name: "stddev_pop",
+			Name: "stddev",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "numeric"},
+					Type: &ast.TypeName{Name: "smallint"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "numeric"},
@@ -21772,15 +22431,6 @@ func genPGCatalog() *catalog.Schema {
 			Name: "stddev_pop",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "numeric"},
-		},
-		{
-			Name: "stddev_pop",
-			Args: []*catalog.Argument{
-				{
 					Type: &ast.TypeName{Name: "real"},
 				},
 			},
@@ -21790,7 +22440,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "stddev_pop",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "smallint"},
+					Type: &ast.TypeName{Name: "bigint"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "numeric"},
@@ -21805,28 +22455,19 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
-			Name: "stddev_samp",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "numeric"},
-		},
-		{
-			Name: "stddev_samp",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "numeric"},
-		},
-		{
-			Name: "stddev_samp",
+			Name: "stddev_pop",
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "numeric"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "numeric"},
+		},
+		{
+			Name: "stddev_pop",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "smallint"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "numeric"},
@@ -21853,7 +22494,34 @@ func genPGCatalog() *catalog.Schema {
 			Name: "stddev_samp",
 			Args: []*catalog.Argument{
 				{
+					Type: &ast.TypeName{Name: "bigint"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "numeric"},
+		},
+		{
+			Name: "stddev_samp",
+			Args: []*catalog.Argument{
+				{
 					Type: &ast.TypeName{Name: "integer"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "numeric"},
+		},
+		{
+			Name: "stddev_samp",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "numeric"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "numeric"},
+		},
+		{
+			Name: "stddev_samp",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "smallint"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "numeric"},
@@ -21966,9 +22634,6 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "integer"},
 				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
@@ -21981,84 +22646,6 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "integer"},
 				},
-			},
-			ReturnType: &ast.TypeName{Name: "text"},
-		},
-		{
-			Name: "substring",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "text"},
-		},
-		{
-			Name: "substring",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "text"},
-		},
-		{
-			Name: "substring",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "bytea"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "bytea"},
-		},
-		{
-			Name: "substring",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "bytea"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "bytea"},
-		},
-		{
-			Name: "substring",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "text"},
-		},
-		{
-			Name: "substring",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
 				{
 					Type: &ast.TypeName{Name: "integer"},
 				},
@@ -22091,6 +22678,87 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "bit"},
+		},
+		{
+			Name: "substring",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "bytea"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bytea"},
+		},
+		{
+			Name: "substring",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "bytea"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bytea"},
+		},
+		{
+			Name: "substring",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
+			Name: "substring",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
+			Name: "substring",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
+			Name: "substring",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
 			Name: "sum",
@@ -22105,10 +22773,19 @@ func genPGCatalog() *catalog.Schema {
 			Name: "sum",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "numeric"},
+					Type: &ast.TypeName{Name: "smallint"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "numeric"},
+			ReturnType: &ast.TypeName{Name: "bigint"},
+		},
+		{
+			Name: "sum",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
 			Name: "sum",
@@ -22132,10 +22809,19 @@ func genPGCatalog() *catalog.Schema {
 			Name: "sum",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "double precision"},
+					Type: &ast.TypeName{Name: "bigint"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
+			ReturnType: &ast.TypeName{Name: "numeric"},
+		},
+		{
+			Name: "sum",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "numeric"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
 			Name: "sum",
@@ -22145,24 +22831,6 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "real"},
-		},
-		{
-			Name: "sum",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "smallint"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "bigint"},
-		},
-		{
-			Name: "sum",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
 			Name:       "suppress_redundant_updates_trigger",
@@ -22284,25 +22952,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "text",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "name"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "text"},
-		},
-		{
-			Name: "text",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "character"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "text"},
-		},
-		{
-			Name: "text",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "xml"},
+					Type: &ast.TypeName{Name: "boolean"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},
@@ -22320,7 +22970,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "text",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "boolean"},
+					Type: &ast.TypeName{Name: "character"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},
@@ -22330,6 +22980,24 @@ func genPGCatalog() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "inet"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
+			Name: "text",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "name"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
+			Name: "text",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "xml"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},
@@ -22833,6 +23501,24 @@ func genPGCatalog() *catalog.Schema {
 			Name: "time",
 			Args: []*catalog.Argument{
 				{
+					Type: &ast.TypeName{Name: "interval"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "time without time zone"},
+		},
+		{
+			Name: "time",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "timestamp without time zone"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "time without time zone"},
+		},
+		{
+			Name: "time",
+			Args: []*catalog.Argument{
+				{
 					Type: &ast.TypeName{Name: "timestamp with time zone"},
 				},
 			},
@@ -22854,25 +23540,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "time",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "interval"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "time without time zone"},
-		},
-		{
-			Name: "time",
-			Args: []*catalog.Argument{
-				{
 					Type: &ast.TypeName{Name: "time with time zone"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "time without time zone"},
-		},
-		{
-			Name: "time",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "timestamp without time zone"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "time without time zone"},
@@ -23096,7 +23764,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "timestamp",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "timestamp with time zone"},
+					Type: &ast.TypeName{Name: "date"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "timestamp without time zone"},
@@ -23106,6 +23774,9 @@ func genPGCatalog() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "date"},
+				},
+				{
+					Type: &ast.TypeName{Name: "time without time zone"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "timestamp without time zone"},
@@ -23126,10 +23797,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "timestamp",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "date"},
-				},
-				{
-					Type: &ast.TypeName{Name: "time without time zone"},
+					Type: &ast.TypeName{Name: "timestamp with time zone"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "timestamp without time zone"},
@@ -23524,9 +24192,6 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "date"},
 				},
-				{
-					Type: &ast.TypeName{Name: "time with time zone"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "timestamp with time zone"},
 		},
@@ -23534,10 +24199,10 @@ func genPGCatalog() *catalog.Schema {
 			Name: "timestamptz",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "timestamp with time zone"},
+					Type: &ast.TypeName{Name: "date"},
 				},
 				{
-					Type: &ast.TypeName{Name: "integer"},
+					Type: &ast.TypeName{Name: "time without time zone"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "timestamp with time zone"},
@@ -23547,6 +24212,9 @@ func genPGCatalog() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "date"},
+				},
+				{
+					Type: &ast.TypeName{Name: "time with time zone"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "timestamp with time zone"},
@@ -23564,10 +24232,10 @@ func genPGCatalog() *catalog.Schema {
 			Name: "timestamptz",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "date"},
+					Type: &ast.TypeName{Name: "timestamp with time zone"},
 				},
 				{
-					Type: &ast.TypeName{Name: "time without time zone"},
+					Type: &ast.TypeName{Name: "integer"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "timestamp with time zone"},
@@ -23966,10 +24634,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "timetz",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "time with time zone"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
+					Type: &ast.TypeName{Name: "time without time zone"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "time with time zone"},
@@ -23978,7 +24643,10 @@ func genPGCatalog() *catalog.Schema {
 			Name: "timetz",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "time without time zone"},
+					Type: &ast.TypeName{Name: "time with time zone"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "time with time zone"},
@@ -24206,18 +24874,6 @@ func genPGCatalog() *catalog.Schema {
 					Type: &ast.TypeName{Name: "interval"},
 				},
 				{
-					Type: &ast.TypeName{Name: "timestamp without time zone"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "timestamp with time zone"},
-		},
-		{
-			Name: "timezone",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "interval"},
-				},
-				{
 					Type: &ast.TypeName{Name: "timestamp with time zone"},
 				},
 			},
@@ -24239,7 +24895,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "timezone",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "text"},
+					Type: &ast.TypeName{Name: "interval"},
 				},
 				{
 					Type: &ast.TypeName{Name: "timestamp without time zone"},
@@ -24254,10 +24910,10 @@ func genPGCatalog() *catalog.Schema {
 					Type: &ast.TypeName{Name: "text"},
 				},
 				{
-					Type: &ast.TypeName{Name: "time with time zone"},
+					Type: &ast.TypeName{Name: "timestamp without time zone"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "time with time zone"},
+			ReturnType: &ast.TypeName{Name: "timestamp with time zone"},
 		},
 		{
 			Name: "timezone",
@@ -24270,6 +24926,27 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "time with time zone"},
+		},
+		{
+			Name: "timezone",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "time with time zone"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "time with time zone"},
+		},
+		{
+			Name: "to_ascii",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
 			Name: "to_ascii",
@@ -24296,8 +24973,11 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
-			Name: "to_ascii",
+			Name: "to_char",
 			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "bigint"},
+				},
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
@@ -24308,19 +24988,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "to_char",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "timestamp without time zone"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "text"},
-		},
-		{
-			Name: "to_char",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "real"},
+					Type: &ast.TypeName{Name: "double precision"},
 				},
 				{
 					Type: &ast.TypeName{Name: "text"},
@@ -24333,18 +25001,6 @@ func genPGCatalog() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "text"},
-		},
-		{
-			Name: "to_char",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "timestamp with time zone"},
 				},
 				{
 					Type: &ast.TypeName{Name: "text"},
@@ -24380,7 +25036,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "to_char",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "double precision"},
+					Type: &ast.TypeName{Name: "real"},
 				},
 				{
 					Type: &ast.TypeName{Name: "text"},
@@ -24392,7 +25048,19 @@ func genPGCatalog() *catalog.Schema {
 			Name: "to_char",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "bigint"},
+					Type: &ast.TypeName{Name: "timestamp without time zone"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
+			Name: "to_char",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "timestamp with time zone"},
 				},
 				{
 					Type: &ast.TypeName{Name: "text"},
@@ -24468,6 +25136,15 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "regclass"},
+		},
+		{
+			Name: "to_regcollation",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "regcollation"},
 		},
 		{
 			Name: "to_regnamespace",
@@ -24587,39 +25264,6 @@ func genPGCatalog() *catalog.Schema {
 			Name: "to_tsvector",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "tsvector"},
-		},
-		{
-			Name: "to_tsvector",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "regconfig"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "tsvector"},
-		},
-		{
-			Name: "to_tsvector",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "jsonb"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "tsvector"},
-		},
-		{
-			Name: "to_tsvector",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "regconfig"},
-				},
-				{
 					Type: &ast.TypeName{Name: "jsonb"},
 				},
 			},
@@ -24633,6 +25277,39 @@ func genPGCatalog() *catalog.Schema {
 				},
 				{
 					Type: &ast.TypeName{Name: "json"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "tsvector"},
+		},
+		{
+			Name: "to_tsvector",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "regconfig"},
+				},
+				{
+					Type: &ast.TypeName{Name: "jsonb"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "tsvector"},
+		},
+		{
+			Name: "to_tsvector",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "regconfig"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "tsvector"},
+		},
+		{
+			Name: "to_tsvector",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "tsvector"},
@@ -24676,13 +25353,22 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "cstring"},
 		},
 		{
-			Name: "trunc",
+			Name: "trim_scale",
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "numeric"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "numeric"},
+		},
+		{
+			Name: "trunc",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
 			Name: "trunc",
@@ -24708,9 +25394,6 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "numeric"},
 				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
@@ -24718,10 +25401,13 @@ func genPGCatalog() *catalog.Schema {
 			Name: "trunc",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "double precision"},
+					Type: &ast.TypeName{Name: "numeric"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
+			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
 			Name: "ts_delete",
@@ -24775,6 +25461,81 @@ func genPGCatalog() *catalog.Schema {
 			Name: "ts_headline",
 			Args: []*catalog.Argument{
 				{
+					Type: &ast.TypeName{Name: "json"},
+				},
+				{
+					Type: &ast.TypeName{Name: "tsquery"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "json"},
+		},
+		{
+			Name: "ts_headline",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "regconfig"},
+				},
+				{
+					Type: &ast.TypeName{Name: "json"},
+				},
+				{
+					Type: &ast.TypeName{Name: "tsquery"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "json"},
+		},
+		{
+			Name: "ts_headline",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "regconfig"},
+				},
+				{
+					Type: &ast.TypeName{Name: "json"},
+				},
+				{
+					Type: &ast.TypeName{Name: "tsquery"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "json"},
+		},
+		{
+			Name: "ts_headline",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "jsonb"},
+				},
+				{
+					Type: &ast.TypeName{Name: "tsquery"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "jsonb"},
+		},
+		{
+			Name: "ts_headline",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "jsonb"},
+				},
+				{
+					Type: &ast.TypeName{Name: "tsquery"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "jsonb"},
+		},
+		{
+			Name: "ts_headline",
+			Args: []*catalog.Argument{
+				{
 					Type: &ast.TypeName{Name: "regconfig"},
 				},
 				{
@@ -24792,96 +25553,6 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "regconfig"},
 				},
-				{
-					Type: &ast.TypeName{Name: "jsonb"},
-				},
-				{
-					Type: &ast.TypeName{Name: "tsquery"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "jsonb"},
-		},
-		{
-			Name: "ts_headline",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "tsquery"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "text"},
-		},
-		{
-			Name: "ts_headline",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "tsquery"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "text"},
-		},
-		{
-			Name: "ts_headline",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "regconfig"},
-				},
-				{
-					Type: &ast.TypeName{Name: "json"},
-				},
-				{
-					Type: &ast.TypeName{Name: "tsquery"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "json"},
-		},
-		{
-			Name: "ts_headline",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "regconfig"},
-				},
-				{
-					Type: &ast.TypeName{Name: "json"},
-				},
-				{
-					Type: &ast.TypeName{Name: "tsquery"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "json"},
-		},
-		{
-			Name: "ts_headline",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "json"},
-				},
-				{
-					Type: &ast.TypeName{Name: "tsquery"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "json"},
-		},
-		{
-			Name: "ts_headline",
-			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "jsonb"},
 				},
@@ -24913,20 +25584,35 @@ func genPGCatalog() *catalog.Schema {
 			Name: "ts_headline",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "jsonb"},
+					Type: &ast.TypeName{Name: "regconfig"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
 				},
 				{
 					Type: &ast.TypeName{Name: "tsquery"},
 				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
 			},
-			ReturnType: &ast.TypeName{Name: "jsonb"},
+			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
 			Name: "ts_headline",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "regconfig"},
+					Type: &ast.TypeName{Name: "text"},
 				},
+				{
+					Type: &ast.TypeName{Name: "tsquery"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
+			Name: "ts_headline",
+			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
@@ -25011,24 +25697,6 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "tsquery"},
 				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "real"},
-		},
-		{
-			Name: "ts_rank",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "tsvector"},
-				},
-				{
-					Type: &ast.TypeName{Name: "tsquery"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "real"},
 		},
@@ -25044,6 +25712,9 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "tsquery"},
 				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
 			},
 			ReturnType: &ast.TypeName{Name: "real"},
 		},
@@ -25060,19 +25731,7 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "real"},
 		},
 		{
-			Name: "ts_rank_cd",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "tsvector"},
-				},
-				{
-					Type: &ast.TypeName{Name: "tsquery"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "real"},
-		},
-		{
-			Name: "ts_rank_cd",
+			Name: "ts_rank",
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "tsvector"},
@@ -25107,6 +25766,33 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "real[]"},
 				},
+				{
+					Type: &ast.TypeName{Name: "tsvector"},
+				},
+				{
+					Type: &ast.TypeName{Name: "tsquery"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "real"},
+		},
+		{
+			Name: "ts_rank_cd",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "tsvector"},
+				},
+				{
+					Type: &ast.TypeName{Name: "tsquery"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "real"},
+		},
+		{
+			Name: "ts_rank_cd",
+			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "tsvector"},
 				},
@@ -25314,9 +26000,6 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "tsquery"},
 				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "tsquery"},
 		},
@@ -25328,6 +26011,9 @@ func genPGCatalog() *catalog.Schema {
 				},
 				{
 					Type: &ast.TypeName{Name: "tsquery"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "tsquery"},
@@ -25368,9 +26054,6 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "timestamp without time zone"},
 				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "tsrange"},
 		},
@@ -25382,6 +26065,9 @@ func genPGCatalog() *catalog.Schema {
 				},
 				{
 					Type: &ast.TypeName{Name: "timestamp without time zone"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "tsrange"},
@@ -25407,9 +26093,6 @@ func genPGCatalog() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "timestamp with time zone"},
 				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "tstzrange"},
 		},
@@ -25421,6 +26104,9 @@ func genPGCatalog() *catalog.Schema {
 				},
 				{
 					Type: &ast.TypeName{Name: "timestamp with time zone"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "tstzrange"},
@@ -25714,19 +26400,19 @@ func genPGCatalog() *catalog.Schema {
 			Name: "upper",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "text"},
+					Type: &ast.TypeName{Name: "anyrange"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "text"},
+			ReturnType: &ast.TypeName{Name: "anyelement"},
 		},
 		{
 			Name: "upper",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "anyrange"},
+					Type: &ast.TypeName{Name: "text"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "anyelement"},
+			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
 			Name: "upper_inc",
@@ -25882,24 +26568,6 @@ func genPGCatalog() *catalog.Schema {
 			Name: "var_pop",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "numeric"},
-		},
-		{
-			Name: "var_pop",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "numeric"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "numeric"},
-		},
-		{
-			Name: "var_pop",
-			Args: []*catalog.Argument{
-				{
 					Type: &ast.TypeName{Name: "double precision"},
 				},
 			},
@@ -25918,7 +26586,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "var_pop",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "smallint"},
+					Type: &ast.TypeName{Name: "bigint"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "numeric"},
@@ -25927,10 +26595,37 @@ func genPGCatalog() *catalog.Schema {
 			Name: "var_pop",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "bigint"},
+					Type: &ast.TypeName{Name: "integer"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "numeric"},
+		},
+		{
+			Name: "var_pop",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "numeric"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "numeric"},
+		},
+		{
+			Name: "var_pop",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "smallint"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "numeric"},
+		},
+		{
+			Name: "var_samp",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
 			Name: "var_samp",
@@ -25945,7 +26640,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "var_samp",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "smallint"},
+					Type: &ast.TypeName{Name: "bigint"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "numeric"},
@@ -25963,15 +26658,6 @@ func genPGCatalog() *catalog.Schema {
 			Name: "var_samp",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "numeric"},
-		},
-		{
-			Name: "var_samp",
-			Args: []*catalog.Argument{
-				{
 					Type: &ast.TypeName{Name: "numeric"},
 				},
 			},
@@ -25981,10 +26667,10 @@ func genPGCatalog() *catalog.Schema {
 			Name: "var_samp",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "double precision"},
+					Type: &ast.TypeName{Name: "smallint"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
+			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
 			Name: "varbit",
@@ -26140,7 +26826,13 @@ func genPGCatalog() *catalog.Schema {
 			Name: "varchar",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "name"},
+					Type: &ast.TypeName{Name: "character varying"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+				{
+					Type: &ast.TypeName{Name: "boolean"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "character varying"},
@@ -26149,13 +26841,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "varchar",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "character varying"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "boolean"},
+					Type: &ast.TypeName{Name: "name"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "character varying"},
@@ -26215,10 +26901,19 @@ func genPGCatalog() *catalog.Schema {
 			Name: "variance",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "numeric"},
+					Type: &ast.TypeName{Name: "double precision"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "numeric"},
+			ReturnType: &ast.TypeName{Name: "double precision"},
+		},
+		{
+			Name: "variance",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "real"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
 			Name: "variance",
@@ -26242,7 +26937,7 @@ func genPGCatalog() *catalog.Schema {
 			Name: "variance",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "smallint"},
+					Type: &ast.TypeName{Name: "numeric"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "numeric"},
@@ -26251,19 +26946,10 @@ func genPGCatalog() *catalog.Schema {
 			Name: "variance",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "real"},
+					Type: &ast.TypeName{Name: "smallint"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
-		},
-		{
-			Name: "variance",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "double precision"},
+			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
 			Name:       "version",
@@ -26301,6 +26987,9 @@ func genPGCatalog() *catalog.Schema {
 			Name: "websearch_to_tsquery",
 			Args: []*catalog.Argument{
 				{
+					Type: &ast.TypeName{Name: "regconfig"},
+				},
+				{
 					Type: &ast.TypeName{Name: "text"},
 				},
 			},
@@ -26309,9 +26998,6 @@ func genPGCatalog() *catalog.Schema {
 		{
 			Name: "websearch_to_tsquery",
 			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "regconfig"},
-				},
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
@@ -26331,42 +27017,6 @@ func genPGCatalog() *catalog.Schema {
 			Name: "width_bucket",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-				{
-					Type: &ast.TypeName{Name: "double precision"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "integer"},
-		},
-		{
-			Name: "width_bucket",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "numeric"},
-				},
-				{
-					Type: &ast.TypeName{Name: "numeric"},
-				},
-				{
-					Type: &ast.TypeName{Name: "numeric"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "integer"},
-		},
-		{
-			Name: "width_bucket",
-			Args: []*catalog.Argument{
-				{
 					Type: &ast.TypeName{Name: "anyelement"},
 				},
 				{
@@ -26374,6 +27024,162 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "integer"},
+		},
+		{
+			Name: "width_bucket",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+				{
+					Type: &ast.TypeName{Name: "double precision"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "integer"},
+		},
+		{
+			Name: "width_bucket",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "numeric"},
+				},
+				{
+					Type: &ast.TypeName{Name: "numeric"},
+				},
+				{
+					Type: &ast.TypeName{Name: "numeric"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "integer"},
+		},
+		{
+			Name: "xid",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "xid8"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "xid"},
+		},
+		{
+			Name: "xid8cmp",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "xid8"},
+				},
+				{
+					Type: &ast.TypeName{Name: "xid8"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "integer"},
+		},
+		{
+			Name: "xid8eq",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "xid8"},
+				},
+				{
+					Type: &ast.TypeName{Name: "xid8"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "xid8ge",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "xid8"},
+				},
+				{
+					Type: &ast.TypeName{Name: "xid8"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "xid8gt",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "xid8"},
+				},
+				{
+					Type: &ast.TypeName{Name: "xid8"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "xid8in",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "cstring"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "xid8"},
+		},
+		{
+			Name: "xid8le",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "xid8"},
+				},
+				{
+					Type: &ast.TypeName{Name: "xid8"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "xid8lt",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "xid8"},
+				},
+				{
+					Type: &ast.TypeName{Name: "xid8"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "xid8ne",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "xid8"},
+				},
+				{
+					Type: &ast.TypeName{Name: "xid8"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "xid8out",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "xid8"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "cstring"},
+		},
+		{
+			Name: "xid8send",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "xid8"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bytea"},
 		},
 		{
 			Name: "xideq",

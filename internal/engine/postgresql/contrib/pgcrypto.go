@@ -16,12 +16,6 @@ func Pgcrypto() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "bytea"},
 				},
-				{
-					Type: &ast.TypeName{Name: "text[]"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text[]"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
@@ -30,6 +24,12 @@ func Pgcrypto() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "bytea"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text[]"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text[]"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},
@@ -92,7 +92,7 @@ func Pgcrypto() *catalog.Schema {
 			Name: "digest",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "text"},
+					Type: &ast.TypeName{Name: "bytea"},
 				},
 				{
 					Type: &ast.TypeName{Name: "text"},
@@ -104,7 +104,7 @@ func Pgcrypto() *catalog.Schema {
 			Name: "digest",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "bytea"},
+					Type: &ast.TypeName{Name: "text"},
 				},
 				{
 					Type: &ast.TypeName{Name: "text"},
@@ -155,11 +155,6 @@ func Pgcrypto() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "bytea"},
 		},
 		{
-			Name:       "gen_random_uuid",
-			Args:       []*catalog.Argument{},
-			ReturnType: &ast.TypeName{Name: "uuid"},
-		},
-		{
 			Name: "gen_salt",
 			Args: []*catalog.Argument{
 				{
@@ -184,10 +179,10 @@ func Pgcrypto() *catalog.Schema {
 			Name: "hmac",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "text"},
+					Type: &ast.TypeName{Name: "bytea"},
 				},
 				{
-					Type: &ast.TypeName{Name: "text"},
+					Type: &ast.TypeName{Name: "bytea"},
 				},
 				{
 					Type: &ast.TypeName{Name: "text"},
@@ -199,10 +194,10 @@ func Pgcrypto() *catalog.Schema {
 			Name: "hmac",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "bytea"},
+					Type: &ast.TypeName{Name: "text"},
 				},
 				{
-					Type: &ast.TypeName{Name: "bytea"},
+					Type: &ast.TypeName{Name: "text"},
 				},
 				{
 					Type: &ast.TypeName{Name: "text"},
@@ -243,9 +238,6 @@ func Pgcrypto() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
@@ -261,6 +253,9 @@ func Pgcrypto() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
@@ -273,24 +268,6 @@ func Pgcrypto() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "bytea"},
 				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "bytea"},
-		},
-		{
-			Name: "pgp_pub_decrypt_bytea",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "bytea"},
-				},
-				{
-					Type: &ast.TypeName{Name: "bytea"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "bytea"},
 		},
@@ -310,13 +287,16 @@ func Pgcrypto() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "bytea"},
 		},
 		{
-			Name: "pgp_pub_encrypt",
+			Name: "pgp_pub_decrypt_bytea",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "text"},
+					Type: &ast.TypeName{Name: "bytea"},
 				},
 				{
 					Type: &ast.TypeName{Name: "bytea"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
 				},
 				{
 					Type: &ast.TypeName{Name: "text"},
@@ -332,6 +312,21 @@ func Pgcrypto() *catalog.Schema {
 				},
 				{
 					Type: &ast.TypeName{Name: "bytea"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bytea"},
+		},
+		{
+			Name: "pgp_pub_encrypt",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "bytea"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "bytea"},
@@ -372,9 +367,6 @@ func Pgcrypto() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
@@ -383,6 +375,9 @@ func Pgcrypto() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "bytea"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
 				},
 				{
 					Type: &ast.TypeName{Name: "text"},
@@ -426,9 +421,6 @@ func Pgcrypto() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "bytea"},
 		},
@@ -441,6 +433,9 @@ func Pgcrypto() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
 			},
 			ReturnType: &ast.TypeName{Name: "bytea"},
 		},
@@ -453,9 +448,6 @@ func Pgcrypto() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "bytea"},
 		},
@@ -464,6 +456,9 @@ func Pgcrypto() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "bytea"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
 				},
 				{
 					Type: &ast.TypeName{Name: "text"},

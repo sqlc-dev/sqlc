@@ -104,10 +104,6 @@ func Pageinspect() *catalog.Schema {
 					Name: "t_bits",
 					Type: &ast.TypeName{Name: "text"},
 				},
-				{
-					Name: "do_detoast",
-					Type: &ast.TypeName{Name: "boolean"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "bytea[]"},
 		},
@@ -133,6 +129,10 @@ func Pageinspect() *catalog.Schema {
 				{
 					Name: "t_bits",
 					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "do_detoast",
+					Type: &ast.TypeName{Name: "boolean"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "bytea[]"},

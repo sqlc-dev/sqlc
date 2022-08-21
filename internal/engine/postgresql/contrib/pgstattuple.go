@@ -15,7 +15,7 @@ func Pgstattuple() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Name: "relname",
-					Type: &ast.TypeName{Name: "text"},
+					Type: &ast.TypeName{Name: "regclass"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "bigint"},
@@ -25,7 +25,7 @@ func Pgstattuple() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Name: "relname",
-					Type: &ast.TypeName{Name: "regclass"},
+					Type: &ast.TypeName{Name: "text"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "bigint"},
