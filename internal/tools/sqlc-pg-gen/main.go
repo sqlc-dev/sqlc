@@ -12,9 +12,6 @@ import (
 	"text/template"
 
 	pgx "github.com/jackc/pgx/v4"
-
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 )
 
 // https://stackoverflow.com/questions/25308765/postgresql-how-can-i-inspect-which-arguments-to-a-procedure-have-a-default-valu
@@ -23,14 +20,15 @@ SELECT p.proname as name,
   format_type(p.prorettype, NULL),
   array(select format_type(unnest(p.proargtypes), NULL)),
   p.proargnames,
-  p.proargnames[p.pronargs-p.pronargdefaults+1:p.pronargs]
+  p.proargnames[p.pronargs-p.pronargdefaults+1:p.pronargs],
+  p.proargmodes::text[]
 FROM pg_catalog.pg_proc p
 LEFT JOIN pg_catalog.pg_namespace n ON n.oid = p.pronamespace
 WHERE n.nspname OPERATOR(pg_catalog.~) '^(pg_catalog)$'
   AND p.proargmodes IS NULL
   AND pg_function_is_visible(p.oid)
 -- simply order all columns to keep subsequent runs stable
-ORDER BY 1, 2, 3, 4;
+ORDER BY 1, 2, 3, 4, 5;
 `
 
 // https://dba.stackexchange.com/questions/255412/how-to-select-functions-that-belong-in-a-given-extension-in-postgresql
@@ -50,13 +48,14 @@ SELECT p.proname as name,
   format_type(p.prorettype, NULL),
   array(select format_type(unnest(p.proargtypes), NULL)),
   p.proargnames,
-  p.proargnames[p.pronargs-p.pronargdefaults+1:p.pronargs]
+  p.proargnames[p.pronargs-p.pronargdefaults+1:p.pronargs],
+  p.proargmodes::text[]
 FROM pg_catalog.pg_proc p
 JOIN extension_funcs ef ON ef.oid = p.oid
 WHERE p.proargmodes IS NULL
   AND pg_function_is_visible(p.oid)
 -- simply order all columns to keep subsequent runs stable
-ORDER BY 1, 2, 3, 4;
+ORDER BY 1, 2, 3, 4, 5;
 `
 
 const catalogTmpl = `
@@ -72,7 +71,7 @@ import (
 func {{.Name}}() *catalog.Schema {
 	s := &catalog.Schema{Name: "pg_catalog"}
 	s.Funcs = []*catalog.Function{
-	    {{- range .Funcs}}
+	    {{- range .Procs}}
 		{
 			Name: "{{.Name}}",
 			Args: []*catalog.Argument{
@@ -83,11 +82,14 @@ func {{.Name}}() *catalog.Schema {
 				{{- if .HasDefault}}
 				HasDefault: true,
 				{{- end}}
-				Type: &ast.TypeName{Name: "{{.Type.Name}}"},
+				Type: &ast.TypeName{Name: "{{.TypeName}}"},
+				{{- if ne .Mode "i" }}
+				Mode: {{ .GoMode }},
+				{{- end}}
 				},
 				{{end}}
 			},
-			ReturnType: &ast.TypeName{Name: "{{.ReturnType.Name}}"},
+			ReturnType: &ast.TypeName{Name: "{{.ReturnTypeName}}"},
 		},
 		{{- end}}
 	}
@@ -119,7 +121,7 @@ func loadExtension(name string) *catalog.Schema {
 type tmplCtx struct {
 	Pkg   string
 	Name  string
-	Funcs []catalog.Function
+	Procs []Proc
 }
 
 func main() {
@@ -134,6 +136,68 @@ type Proc struct {
 	ArgTypes   []string
 	ArgNames   []string
 	HasDefault []string
+	ArgModes   []string
+}
+
+func (p *Proc) ReturnTypeName() string {
+	return clean(p.ReturnType)
+}
+
+func (p *Proc) Args() []Arg {
+	var args []Arg
+	defaults := map[string]bool{}
+	for _, name := range p.HasDefault {
+		defaults[name] = true
+	}
+
+	for i, argType := range p.ArgTypes {
+		mode := "i"
+		name := ""
+		if i < len(p.ArgModes) {
+			mode = p.ArgModes[i]
+		}
+		if i < len(p.ArgNames) {
+			name = p.ArgNames[i]
+		}
+
+		args = append(args, Arg{
+			Name:       name,
+			Type:       argType,
+			Mode:       mode,
+			HasDefault: defaults[name],
+		})
+	}
+
+	return args
+}
+
+type Arg struct {
+	Name       string
+	Mode       string
+	Type       string
+	HasDefault bool
+}
+
+func (a *Arg) TypeName() string {
+	return clean(a.Type)
+}
+
+// GoMode returns Go's representation of the arguemnt's mode
+func (a *Arg) GoMode() string {
+	switch a.Mode {
+	case "", "i":
+		return "ast.FuncParamIn"
+	case "o":
+		return "ast.FuncParamOut"
+	case "b":
+		return "ast.FuncParamInOut"
+	case "v":
+		return "ast.FuncParamVariadic"
+	case "t":
+		return "ast.FuncParamTable"
+	}
+
+	return ""
 }
 
 func clean(arg string) string {
@@ -144,41 +208,10 @@ func clean(arg string) string {
 	return arg
 }
 
-func (p Proc) Func() catalog.Function {
-	return catalog.Function{
-		Name:       p.Name,
-		Args:       p.Args(),
-		ReturnType: &ast.TypeName{Name: clean(p.ReturnType)},
-	}
-}
-
-func (p Proc) Args() []*catalog.Argument {
-	defaults := map[string]bool{}
-	var args []*catalog.Argument
-	if len(p.ArgTypes) == 0 {
-		return args
-	}
-	for _, name := range p.HasDefault {
-		defaults[name] = true
-	}
-	for i, arg := range p.ArgTypes {
-		var name string
-		if i < len(p.ArgNames) {
-			name = p.ArgNames[i]
-		}
-		args = append(args, &catalog.Argument{
-			Name:       name,
-			HasDefault: defaults[name],
-			Type:       &ast.TypeName{Name: clean(arg)},
-		})
-	}
-	return args
-}
-
-func scanFuncs(rows pgx.Rows) ([]catalog.Function, error) {
+func scanProcs(rows pgx.Rows) ([]Proc, error) {
 	defer rows.Close()
 	// Iterate through the result set
-	var funcs []catalog.Function
+	var procs []Proc
 	for rows.Next() {
 		var p Proc
 		err := rows.Scan(
@@ -187,6 +220,7 @@ func scanFuncs(rows pgx.Rows) ([]catalog.Function, error) {
 			&p.ArgTypes,
 			&p.ArgNames,
 			&p.HasDefault,
+			&p.ArgModes,
 		)
 		if err != nil {
 			return nil, err
@@ -219,9 +253,9 @@ func scanFuncs(rows pgx.Rows) ([]catalog.Function, error) {
 			continue
 		}
 
-		funcs = append(funcs, p.Func())
+		procs = append(procs, p)
 	}
-	return funcs, rows.Err()
+	return procs, rows.Err()
 }
 
 func run(ctx context.Context) error {
@@ -240,12 +274,12 @@ func run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	funcs, err := scanFuncs(rows)
+	procs, err := scanProcs(rows)
 	if err != nil {
 		return err
 	}
 	out := bytes.NewBuffer([]byte{})
-	if err := tmpl.Execute(out, tmplCtx{Pkg: "postgresql", Name: "genPGCatalog", Funcs: funcs}); err != nil {
+	if err := tmpl.Execute(out, tmplCtx{Pkg: "postgresql", Name: "genPGCatalog", Procs: procs}); err != nil {
 		return err
 	}
 	code, err := format.Source(out.Bytes())
@@ -277,16 +311,16 @@ func run(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-		funcs, err := scanFuncs(rows)
+		procs, err := scanProcs(rows)
 		if err != nil {
 			return err
 		}
-		if len(funcs) == 0 {
+		if len(procs) == 0 {
 			log.Printf("no functions in %s, skipping", extension)
 			continue
 		}
 		out := bytes.NewBuffer([]byte{})
-		if err := tmpl.Execute(out, tmplCtx{Pkg: "contrib", Name: funcName, Funcs: funcs}); err != nil {
+		if err := tmpl.Execute(out, tmplCtx{Pkg: "contrib", Name: funcName, Procs: procs}); err != nil {
 			return err
 		}
 		code, err := format.Source(out.Bytes())
