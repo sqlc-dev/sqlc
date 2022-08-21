@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"text/template"
 
@@ -286,10 +287,37 @@ func run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	procs, err := scanProcs(rows)
+	allProcs, err := scanProcs(rows)
 	if err != nil {
 		return err
 	}
+
+	// Preserve the legacy sort order of the end-to-end tests
+	sort.SliceStable(allProcs, func(i, j int) bool {
+		fnA := allProcs[i]
+		fnB := allProcs[j]
+
+		if fnA.Name == "lower" && fnB.Name == "lower" && len(fnA.ArgTypes) == 1 && fnA.ArgTypes[0] == "text" {
+			return true
+		}
+
+		if fnA.Name == "generate_series" && fnB.Name == "generate_series" && len(fnA.ArgTypes) == 2 && fnA.ArgTypes[0] == "numeric" {
+			return true
+		}
+
+		return false
+	})
+
+	procs := make([]Proc, 0, len(allProcs))
+	for _, p := range allProcs {
+		// Skip generating concat to preserve legacy behavior
+		if p.Name == "concat" {
+			continue
+		}
+
+		procs = append(procs, p)
+	}
+
 	out := bytes.NewBuffer([]byte{})
 	if err := tmpl.Execute(out, tmplCtx{Pkg: "postgresql", Name: "genPGCatalog", Procs: procs}); err != nil {
 		return err
@@ -331,6 +359,21 @@ func run(ctx context.Context) error {
 			log.Printf("no functions in %s, skipping", extension)
 			continue
 		}
+
+		// Preserve the legacy sort order of the end-to-end tests
+		sort.SliceStable(procs, func(i, j int) bool {
+			fnA := procs[i]
+			fnB := procs[j]
+
+			if extension == "pgcrypto" {
+				if fnA.Name == "digest" && fnB.Name == "digest" && len(fnA.ArgTypes) == 2 && fnA.ArgTypes[0] == "text" {
+					return true
+				}
+			}
+
+			return false
+		})
+
 		out := bytes.NewBuffer([]byte{})
 		if err := tmpl.Execute(out, tmplCtx{Pkg: "contrib", Name: funcName, Procs: procs}); err != nil {
 			return err
