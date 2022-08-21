@@ -25,7 +25,6 @@ SELECT p.proname as name,
 FROM pg_catalog.pg_proc p
 LEFT JOIN pg_catalog.pg_namespace n ON n.oid = p.pronamespace
 WHERE n.nspname OPERATOR(pg_catalog.~) '^(pg_catalog)$'
-  AND p.proargmodes IS NULL
   AND pg_function_is_visible(p.oid)
 -- simply order all columns to keep subsequent runs stable
 ORDER BY 1, 2, 3, 4, 5;
@@ -52,8 +51,7 @@ SELECT p.proname as name,
   p.proargmodes::text[]
 FROM pg_catalog.pg_proc p
 JOIN extension_funcs ef ON ef.oid = p.oid
-WHERE p.proargmodes IS NULL
-  AND pg_function_is_visible(p.oid)
+WHERE pg_function_is_visible(p.oid)
 -- simply order all columns to keep subsequent runs stable
 ORDER BY 1, 2, 3, 4, 5;
 `
