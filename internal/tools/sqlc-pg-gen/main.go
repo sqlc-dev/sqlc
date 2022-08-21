@@ -29,7 +29,8 @@ LEFT JOIN pg_catalog.pg_namespace n ON n.oid = p.pronamespace
 WHERE n.nspname OPERATOR(pg_catalog.~) '^(pg_catalog)$'
   AND p.proargmodes IS NULL
   AND pg_function_is_visible(p.oid)
-ORDER BY 1;
+-- simply order all columns to keep subsequent runs stable
+ORDER BY 1, 2, 3, 4;
 `
 
 // https://dba.stackexchange.com/questions/255412/how-to-select-functions-that-belong-in-a-given-extension-in-postgresql
@@ -54,7 +55,8 @@ FROM pg_catalog.pg_proc p
 JOIN extension_funcs ef ON ef.oid = p.oid
 WHERE p.proargmodes IS NULL
   AND pg_function_is_visible(p.oid)
-ORDER BY 1;
+-- simply order all columns to keep subsequent runs stable
+ORDER BY 1, 2, 3, 4;
 `
 
 const catalogTmpl = `
