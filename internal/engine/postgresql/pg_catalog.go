@@ -167,6 +167,16 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "aclitem[]"},
 		},
 		{
+			Name: "aclexplode",
+			Args: []*catalog.Argument{
+				{
+					Name: "acl",
+					Type: &ast.TypeName{Name: "aclitem[]"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
 			Name: "aclinsert",
 			Args: []*catalog.Argument{
 				{
@@ -4141,6 +4151,29 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
+			Name: "concat",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
+			Name: "concat_ws",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
 			Name: "convert",
 			Args: []*catalog.Argument{
 				{
@@ -4304,6 +4337,16 @@ func genPGCatalog() *catalog.Schema {
 		{
 			Name:       "cume_dist",
 			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "double precision"},
+		},
+		{
+			Name: "cume_dist",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
@@ -5100,6 +5143,16 @@ func genPGCatalog() *catalog.Schema {
 		{
 			Name:       "dense_rank",
 			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "bigint"},
+		},
+		{
+			Name: "dense_rank",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "bigint"},
 		},
 		{
@@ -6769,6 +6822,19 @@ func genPGCatalog() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
+			Name: "format",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+					Mode: ast.FuncParamVariadic,
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},
@@ -11891,6 +11957,26 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
+			Name: "json_array_elements",
+			Args: []*catalog.Argument{
+				{
+					Name: "from_json",
+					Type: &ast.TypeName{Name: "json"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "json"},
+		},
+		{
+			Name: "json_array_elements_text",
+			Args: []*catalog.Argument{
+				{
+					Name: "from_json",
+					Type: &ast.TypeName{Name: "json"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
 			Name: "json_array_length",
 			Args: []*catalog.Argument{
 				{
@@ -11905,9 +11991,79 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "json"},
 		},
 		{
+			Name: "json_build_array",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "json"},
+		},
+		{
 			Name:       "json_build_object",
 			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "json"},
+		},
+		{
+			Name: "json_build_object",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "json"},
+		},
+		{
+			Name: "json_each",
+			Args: []*catalog.Argument{
+				{
+					Name: "from_json",
+					Type: &ast.TypeName{Name: "json"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name: "json_each_text",
+			Args: []*catalog.Argument{
+				{
+					Name: "from_json",
+					Type: &ast.TypeName{Name: "json"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name: "json_extract_path",
+			Args: []*catalog.Argument{
+				{
+					Name: "from_json",
+					Type: &ast.TypeName{Name: "json"},
+				},
+				{
+					Name: "path_elems",
+					Type: &ast.TypeName{Name: "text[]"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "json"},
+		},
+		{
+			Name: "json_extract_path_text",
+			Args: []*catalog.Argument{
+				{
+					Name: "from_json",
+					Type: &ast.TypeName{Name: "json"},
+				},
+				{
+					Name: "path_elems",
+					Type: &ast.TypeName{Name: "text[]"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
 			Name: "json_in",
@@ -12145,6 +12301,26 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
+			Name: "jsonb_array_elements",
+			Args: []*catalog.Argument{
+				{
+					Name: "from_json",
+					Type: &ast.TypeName{Name: "jsonb"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "jsonb"},
+		},
+		{
+			Name: "jsonb_array_elements_text",
+			Args: []*catalog.Argument{
+				{
+					Name: "from_json",
+					Type: &ast.TypeName{Name: "jsonb"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
 			Name: "jsonb_array_length",
 			Args: []*catalog.Argument{
 				{
@@ -12159,8 +12335,28 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "jsonb"},
 		},
 		{
+			Name: "jsonb_build_array",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "jsonb"},
+		},
+		{
 			Name:       "jsonb_build_object",
 			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "jsonb"},
+		},
+		{
+			Name: "jsonb_build_object",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
 			ReturnType: &ast.TypeName{Name: "jsonb"},
 		},
 		{
@@ -12236,6 +12432,21 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "jsonb"},
 		},
 		{
+			Name: "jsonb_delete",
+			Args: []*catalog.Argument{
+				{
+					Name: "from_json",
+					Type: &ast.TypeName{Name: "jsonb"},
+				},
+				{
+					Name: "path_elems",
+					Type: &ast.TypeName{Name: "text[]"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "jsonb"},
+		},
+		{
 			Name: "jsonb_delete_path",
 			Args: []*catalog.Argument{
 				{
@@ -12246,6 +12457,26 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "jsonb"},
+		},
+		{
+			Name: "jsonb_each",
+			Args: []*catalog.Argument{
+				{
+					Name: "from_json",
+					Type: &ast.TypeName{Name: "jsonb"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name: "jsonb_each_text",
+			Args: []*catalog.Argument{
+				{
+					Name: "from_json",
+					Type: &ast.TypeName{Name: "jsonb"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
 		},
 		{
 			Name: "jsonb_eq",
@@ -12294,6 +12525,36 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "jsonb_extract_path",
+			Args: []*catalog.Argument{
+				{
+					Name: "from_json",
+					Type: &ast.TypeName{Name: "jsonb"},
+				},
+				{
+					Name: "path_elems",
+					Type: &ast.TypeName{Name: "text[]"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "jsonb"},
+		},
+		{
+			Name: "jsonb_extract_path_text",
+			Args: []*catalog.Argument{
+				{
+					Name: "from_json",
+					Type: &ast.TypeName{Name: "jsonb"},
+				},
+				{
+					Name: "path_elems",
+					Type: &ast.TypeName{Name: "text[]"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
 			Name: "jsonb_ge",
@@ -15588,6 +15849,26 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "integer"},
 		},
 		{
+			Name: "num_nonnulls",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "integer"},
+		},
+		{
+			Name: "num_nulls",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "integer"},
+		},
+		{
 			Name: "numeric",
 			Args: []*catalog.Argument{
 				{
@@ -16988,6 +17269,16 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "double precision"},
 		},
 		{
+			Name: "percent_rank",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "double precision"},
+		},
+		{
 			Name: "percentile_cont",
 			Args: []*catalog.Argument{
 				{
@@ -17191,6 +17482,16 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "void"},
 		},
 		{
+			Name:       "pg_available_extension_versions",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name:       "pg_available_extensions",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
 			Name:       "pg_backend_pid",
 			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "integer"},
@@ -17289,6 +17590,31 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "timestamp with time zone"},
 		},
 		{
+			Name:       "pg_config",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name:       "pg_control_checkpoint",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name:       "pg_control_init",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name:       "pg_control_recovery",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name:       "pg_control_system",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
 			Name: "pg_conversion_is_visible",
 			Args: []*catalog.Argument{
 				{
@@ -17296,6 +17622,131 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "pg_copy_logical_replication_slot",
+			Args: []*catalog.Argument{
+				{
+					Name: "src_slot_name",
+					Type: &ast.TypeName{Name: "name"},
+				},
+				{
+					Name: "dst_slot_name",
+					Type: &ast.TypeName{Name: "name"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name: "pg_copy_logical_replication_slot",
+			Args: []*catalog.Argument{
+				{
+					Name: "src_slot_name",
+					Type: &ast.TypeName{Name: "name"},
+				},
+				{
+					Name: "dst_slot_name",
+					Type: &ast.TypeName{Name: "name"},
+				},
+				{
+					Name: "temporary",
+					Type: &ast.TypeName{Name: "boolean"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name: "pg_copy_logical_replication_slot",
+			Args: []*catalog.Argument{
+				{
+					Name: "src_slot_name",
+					Type: &ast.TypeName{Name: "name"},
+				},
+				{
+					Name: "dst_slot_name",
+					Type: &ast.TypeName{Name: "name"},
+				},
+				{
+					Name: "temporary",
+					Type: &ast.TypeName{Name: "boolean"},
+				},
+				{
+					Name: "plugin",
+					Type: &ast.TypeName{Name: "name"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name: "pg_copy_physical_replication_slot",
+			Args: []*catalog.Argument{
+				{
+					Name: "src_slot_name",
+					Type: &ast.TypeName{Name: "name"},
+				},
+				{
+					Name: "dst_slot_name",
+					Type: &ast.TypeName{Name: "name"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name: "pg_copy_physical_replication_slot",
+			Args: []*catalog.Argument{
+				{
+					Name: "src_slot_name",
+					Type: &ast.TypeName{Name: "name"},
+				},
+				{
+					Name: "dst_slot_name",
+					Type: &ast.TypeName{Name: "name"},
+				},
+				{
+					Name: "temporary",
+					Type: &ast.TypeName{Name: "boolean"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name: "pg_create_logical_replication_slot",
+			Args: []*catalog.Argument{
+				{
+					Name: "slot_name",
+					Type: &ast.TypeName{Name: "name"},
+				},
+				{
+					Name: "plugin",
+					Type: &ast.TypeName{Name: "name"},
+				},
+				{
+					Name:       "temporary",
+					HasDefault: true,
+					Type:       &ast.TypeName{Name: "boolean"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name: "pg_create_physical_replication_slot",
+			Args: []*catalog.Argument{
+				{
+					Name: "slot_name",
+					Type: &ast.TypeName{Name: "name"},
+				},
+				{
+					Name:       "immediately_reserve",
+					HasDefault: true,
+					Type:       &ast.TypeName{Name: "boolean"},
+				},
+				{
+					Name:       "temporary",
+					HasDefault: true,
+					Type:       &ast.TypeName{Name: "boolean"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
 		},
 		{
 			Name: "pg_create_restore_point",
@@ -17349,6 +17800,11 @@ func genPGCatalog() *catalog.Schema {
 			Name:       "pg_current_xact_id_if_assigned",
 			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "xid8"},
+		},
+		{
+			Name:       "pg_cursor",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "record"},
 		},
 		{
 			Name: "pg_database_size",
@@ -17465,6 +17921,21 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "name"},
 		},
 		{
+			Name:       "pg_event_trigger_ddl_commands",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name:       "pg_event_trigger_dropped_objects",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name:       "pg_event_trigger_table_rewrite_oid",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "oid"},
+		},
+		{
 			Name:       "pg_event_trigger_table_rewrite_reason",
 			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "integer"},
@@ -17485,6 +17956,16 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "void"},
+		},
+		{
+			Name: "pg_extension_update_paths",
+			Args: []*catalog.Argument{
+				{
+					Name: "name",
+					Type: &ast.TypeName{Name: "name"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
 		},
 		{
 			Name: "pg_file_rename",
@@ -17688,6 +18169,39 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
+			Name:       "pg_get_keywords",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name: "pg_get_multixact_members",
+			Args: []*catalog.Argument{
+				{
+					Name: "multixid",
+					Type: &ast.TypeName{Name: "xid"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name: "pg_get_object_address",
+			Args: []*catalog.Argument{
+				{
+					Name: "type",
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "object_names",
+					Type: &ast.TypeName{Name: "text[]"},
+				},
+				{
+					Name: "object_args",
+					Type: &ast.TypeName{Name: "text[]"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
 			Name: "pg_get_partition_constraintdef",
 			Args: []*catalog.Argument{
 				{
@@ -17706,6 +18220,16 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
+			Name: "pg_get_publication_tables",
+			Args: []*catalog.Argument{
+				{
+					Name: "pubname",
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "oid"},
+		},
+		{
 			Name: "pg_get_replica_identity_index",
 			Args: []*catalog.Argument{
 				{
@@ -17713,6 +18237,11 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "regclass"},
+		},
+		{
+			Name:       "pg_get_replication_slots",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "record"},
 		},
 		{
 			Name: "pg_get_ruledef",
@@ -17746,6 +18275,11 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
+			Name:       "pg_get_shmem_allocations",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "record"},
 		},
 		{
 			Name: "pg_get_statisticsobjdef",
@@ -17925,6 +18459,47 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
+			Name:       "pg_hba_file_rules",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name: "pg_identify_object",
+			Args: []*catalog.Argument{
+				{
+					Name: "classid",
+					Type: &ast.TypeName{Name: "oid"},
+				},
+				{
+					Name: "objid",
+					Type: &ast.TypeName{Name: "oid"},
+				},
+				{
+					Name: "objsubid",
+					Type: &ast.TypeName{Name: "integer"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name: "pg_identify_object_as_address",
+			Args: []*catalog.Argument{
+				{
+					Name: "classid",
+					Type: &ast.TypeName{Name: "oid"},
+				},
+				{
+					Name: "objid",
+					Type: &ast.TypeName{Name: "oid"},
+				},
+				{
+					Name: "objsubid",
+					Type: &ast.TypeName{Name: "integer"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
 			Name: "pg_import_system_collations",
 			Args: []*catalog.Argument{
 				{
@@ -18035,6 +18610,11 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
+			Name:       "pg_last_committed_xact",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
 			Name:       "pg_last_wal_receive_lsn",
 			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "pg_lsn"},
@@ -18053,6 +18633,11 @@ func genPGCatalog() *catalog.Schema {
 			Name:       "pg_listening_channels",
 			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
+			Name:       "pg_lock_status",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "record"},
 		},
 		{
 			Name:       "pg_logdir_ls",
@@ -18090,6 +18675,107 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "pg_lsn"},
 		},
 		{
+			Name: "pg_logical_slot_get_binary_changes",
+			Args: []*catalog.Argument{
+				{
+					Name: "slot_name",
+					Type: &ast.TypeName{Name: "name"},
+				},
+				{
+					Name: "upto_lsn",
+					Type: &ast.TypeName{Name: "pg_lsn"},
+				},
+				{
+					Name: "upto_nchanges",
+					Type: &ast.TypeName{Name: "integer"},
+				},
+				{
+					Name:       "options",
+					HasDefault: true,
+					Type:       &ast.TypeName{Name: "text[]"},
+					Mode:       ast.FuncParamVariadic,
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name: "pg_logical_slot_get_changes",
+			Args: []*catalog.Argument{
+				{
+					Name: "slot_name",
+					Type: &ast.TypeName{Name: "name"},
+				},
+				{
+					Name: "upto_lsn",
+					Type: &ast.TypeName{Name: "pg_lsn"},
+				},
+				{
+					Name: "upto_nchanges",
+					Type: &ast.TypeName{Name: "integer"},
+				},
+				{
+					Name:       "options",
+					HasDefault: true,
+					Type:       &ast.TypeName{Name: "text[]"},
+					Mode:       ast.FuncParamVariadic,
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name: "pg_logical_slot_peek_binary_changes",
+			Args: []*catalog.Argument{
+				{
+					Name: "slot_name",
+					Type: &ast.TypeName{Name: "name"},
+				},
+				{
+					Name: "upto_lsn",
+					Type: &ast.TypeName{Name: "pg_lsn"},
+				},
+				{
+					Name: "upto_nchanges",
+					Type: &ast.TypeName{Name: "integer"},
+				},
+				{
+					Name:       "options",
+					HasDefault: true,
+					Type:       &ast.TypeName{Name: "text[]"},
+					Mode:       ast.FuncParamVariadic,
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name: "pg_logical_slot_peek_changes",
+			Args: []*catalog.Argument{
+				{
+					Name: "slot_name",
+					Type: &ast.TypeName{Name: "name"},
+				},
+				{
+					Name: "upto_lsn",
+					Type: &ast.TypeName{Name: "pg_lsn"},
+				},
+				{
+					Name: "upto_nchanges",
+					Type: &ast.TypeName{Name: "integer"},
+				},
+				{
+					Name:       "options",
+					HasDefault: true,
+					Type:       &ast.TypeName{Name: "text[]"},
+					Mode:       ast.FuncParamVariadic,
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name:       "pg_ls_archive_statusdir",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
 			Name: "pg_ls_dir",
 			Args: []*catalog.Argument{
 				{
@@ -18112,6 +18798,31 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
+			Name:       "pg_ls_logdir",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name:       "pg_ls_tmpdir",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name: "pg_ls_tmpdir",
+			Args: []*catalog.Argument{
+				{
+					Name: "tablespace",
+					Type: &ast.TypeName{Name: "oid"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name:       "pg_ls_waldir",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "record"},
 		},
 		{
 			Name: "pg_lsn_cmp",
@@ -18291,6 +19002,16 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "pg_mcv_list"},
 		},
 		{
+			Name: "pg_mcv_list_items",
+			Args: []*catalog.Argument{
+				{
+					Name: "mcv_list",
+					Type: &ast.TypeName{Name: "pg_mcv_list"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
 			Name: "pg_mcv_list_out",
 			Args: []*catalog.Argument{
 				{
@@ -18427,6 +19148,26 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
+			Name: "pg_options_to_table",
+			Args: []*catalog.Argument{
+				{
+					Name: "options_array",
+					Type: &ast.TypeName{Name: "text[]"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name: "pg_partition_ancestors",
+			Args: []*catalog.Argument{
+				{
+					Name: "partitionid",
+					Type: &ast.TypeName{Name: "regclass"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "regclass"},
+		},
+		{
 			Name: "pg_partition_root",
 			Args: []*catalog.Argument{
 				{
@@ -18436,9 +19177,29 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "regclass"},
 		},
 		{
+			Name: "pg_partition_tree",
+			Args: []*catalog.Argument{
+				{
+					Name: "rootrelid",
+					Type: &ast.TypeName{Name: "regclass"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
 			Name:       "pg_postmaster_start_time",
 			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "timestamp with time zone"},
+		},
+		{
+			Name:       "pg_prepared_statement",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name:       "pg_prepared_xact",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "record"},
 		},
 		{
 			Name: "pg_promote",
@@ -18717,6 +19478,20 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "void"},
 		},
 		{
+			Name: "pg_replication_slot_advance",
+			Args: []*catalog.Argument{
+				{
+					Name: "slot_name",
+					Type: &ast.TypeName{Name: "name"},
+				},
+				{
+					Name: "upto_lsn",
+					Type: &ast.TypeName{Name: "pg_lsn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
 			Name:       "pg_rotate_logfile",
 			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -18743,6 +19518,31 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "bigint"},
+		},
+		{
+			Name: "pg_sequence_parameters",
+			Args: []*catalog.Argument{
+				{
+					Name: "sequence_oid",
+					Type: &ast.TypeName{Name: "oid"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name:       "pg_show_all_file_settings",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name:       "pg_show_all_settings",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name:       "pg_show_replication_origin_status",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "record"},
 		},
 		{
 			Name: "pg_size_bytes",
@@ -18878,6 +19678,40 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "void"},
 		},
 		{
+			Name: "pg_stat_file",
+			Args: []*catalog.Argument{
+				{
+					Name: "filename",
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name: "pg_stat_file",
+			Args: []*catalog.Argument{
+				{
+					Name: "filename",
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "missing_ok",
+					Type: &ast.TypeName{Name: "boolean"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name: "pg_stat_get_activity",
+			Args: []*catalog.Argument{
+				{
+					Name: "pid",
+					Type: &ast.TypeName{Name: "integer"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
 			Name: "pg_stat_get_analyze_count",
 			Args: []*catalog.Argument{
 				{
@@ -18885,6 +19719,11 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "bigint"},
+		},
+		{
+			Name:       "pg_stat_get_archiver",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "record"},
 		},
 		{
 			Name: "pg_stat_get_autoanalyze_count",
@@ -19406,9 +20245,34 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "bigint"},
 		},
 		{
+			Name: "pg_stat_get_progress_info",
+			Args: []*catalog.Argument{
+				{
+					Name: "cmdtype",
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name:       "pg_stat_get_slru",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
 			Name:       "pg_stat_get_snapshot_timestamp",
 			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "timestamp with time zone"},
+		},
+		{
+			Name: "pg_stat_get_subscription",
+			Args: []*catalog.Argument{
+				{
+					Name: "subid",
+					Type: &ast.TypeName{Name: "oid"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
 		},
 		{
 			Name: "pg_stat_get_tuples_deleted",
@@ -19472,6 +20336,16 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "bigint"},
+		},
+		{
+			Name:       "pg_stat_get_wal_receiver",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name:       "pg_stat_get_wal_senders",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "record"},
 		},
 		{
 			Name: "pg_stat_get_xact_blocks_fetched",
@@ -19637,6 +20511,21 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "pg_lsn"},
 		},
 		{
+			Name: "pg_stop_backup",
+			Args: []*catalog.Argument{
+				{
+					Name: "exclusive",
+					Type: &ast.TypeName{Name: "boolean"},
+				},
+				{
+					Name:       "wait_for_archive",
+					HasDefault: true,
+					Type:       &ast.TypeName{Name: "boolean"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
 			Name:       "pg_switch_wal",
 			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "pg_lsn"},
@@ -19703,6 +20592,16 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name:       "pg_timezone_abbrevs",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name:       "pg_timezone_names",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "record"},
 		},
 		{
 			Name: "pg_total_relation_size",
@@ -19898,6 +20797,16 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
+			Name: "pg_walfile_name_offset",
+			Args: []*catalog.Argument{
+				{
+					Name: "lsn",
+					Type: &ast.TypeName{Name: "pg_lsn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
 		},
 		{
 			Name: "pg_xact_commit_timestamp",
@@ -21021,6 +21930,16 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "bigint"},
 		},
 		{
+			Name: "rank",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bigint"},
+		},
+		{
 			Name: "record_eq",
 			Args: []*catalog.Argument{
 				{
@@ -21921,6 +22840,25 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
+			Name: "satisfies_hash_partition",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "oid"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+				{
+					Type: &ast.TypeName{Name: "any"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
 			Name: "scale",
@@ -25410,6 +26348,30 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
+			Name: "ts_debug",
+			Args: []*catalog.Argument{
+				{
+					Name: "config",
+					Type: &ast.TypeName{Name: "regconfig"},
+				},
+				{
+					Name: "document",
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name: "ts_debug",
+			Args: []*catalog.Argument{
+				{
+					Name: "document",
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
 			Name: "ts_delete",
 			Args: []*catalog.Argument{
 				{
@@ -25686,6 +26648,34 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
+			Name: "ts_parse",
+			Args: []*catalog.Argument{
+				{
+					Name: "parser_oid",
+					Type: &ast.TypeName{Name: "oid"},
+				},
+				{
+					Name: "txt",
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name: "ts_parse",
+			Args: []*catalog.Argument{
+				{
+					Name: "parser_name",
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "txt",
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
 			Name: "ts_rank",
 			Args: []*catalog.Argument{
 				{
@@ -25831,6 +26821,50 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "tsquery"},
+		},
+		{
+			Name: "ts_stat",
+			Args: []*catalog.Argument{
+				{
+					Name: "query",
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name: "ts_stat",
+			Args: []*catalog.Argument{
+				{
+					Name: "query",
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "weights",
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name: "ts_token_type",
+			Args: []*catalog.Argument{
+				{
+					Name: "parser_oid",
+					Type: &ast.TypeName{Name: "oid"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name: "ts_token_type",
+			Args: []*catalog.Argument{
+				{
+					Name: "parser_name",
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
 		},
 		{
 			Name: "tsm_handler_in",
@@ -26395,6 +27429,16 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "anyelement"},
+		},
+		{
+			Name: "unnest",
+			Args: []*catalog.Argument{
+				{
+					Name: "tsvector",
+					Type: &ast.TypeName{Name: "tsvector"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
 		},
 		{
 			Name: "upper",

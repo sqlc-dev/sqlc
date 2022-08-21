@@ -206,6 +206,15 @@ func Pgcrypto() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "bytea"},
 		},
 		{
+			Name: "pgp_armor_headers",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
 			Name: "pgp_key_id",
 			Args: []*catalog.Argument{
 				{

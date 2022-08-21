@@ -77,6 +77,16 @@ func Hstore() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "hstore"},
 		},
 		{
+			Name: "each",
+			Args: []*catalog.Argument{
+				{
+					Name: "hs",
+					Type: &ast.TypeName{Name: "hstore"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
 			Name: "exist",
 			Args: []*catalog.Argument{
 				{

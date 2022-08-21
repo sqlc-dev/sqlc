@@ -51,6 +51,8 @@ func loadExtension(name string) *catalog.Schema {
 		return contrib.PgFreespacemap()
 	case "pg_prewarm":
 		return contrib.PgPrewarm()
+	case "pgrowlocks":
+		return contrib.Pgrowlocks()
 	case "pg_stat_statements":
 		return contrib.PgStatStatements()
 	case "pgstattuple":

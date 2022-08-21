@@ -373,6 +373,21 @@ func Dblink() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "text[]"},
 		},
 		{
+			Name:       "dblink_get_notify",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name: "dblink_get_notify",
+			Args: []*catalog.Argument{
+				{
+					Name: "conname",
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
 			Name: "dblink_get_pkey",
 			Args: []*catalog.Argument{
 				{
