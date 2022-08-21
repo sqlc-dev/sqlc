@@ -166,6 +166,20 @@ func (p *Proc) Args() []Arg {
 		})
 	}
 
+	// Some manual changes until https://github.com/kyleconroy/sqlc/pull/1748
+	// can be completely implmented
+	if p.Name == "mode" {
+		return nil
+	}
+
+	if p.Name == "percentile_cont" && len(args) == 2 {
+		args = args[:1]
+	}
+
+	if p.Name == "percentile_disc" && len(args) == 2 {
+		args = args[:1]
+	}
+
 	return args
 }
 
