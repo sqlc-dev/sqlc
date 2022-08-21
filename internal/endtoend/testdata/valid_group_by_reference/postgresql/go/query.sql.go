@@ -79,7 +79,7 @@ ORDER BY bucket DESC
 type ListMetricsRow struct {
 	Bucket   interface{}
 	CityName sql.NullString
-	Avg      string
+	Avg      float64
 }
 
 func (q *Queries) ListMetrics(ctx context.Context) ([]ListMetricsRow, error) {

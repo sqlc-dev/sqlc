@@ -92,7 +92,7 @@ func Pgcrypto() *catalog.Schema {
 			Name: "digest",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "bytea"},
+					Type: &ast.TypeName{Name: "text"},
 				},
 				{
 					Type: &ast.TypeName{Name: "text"},
@@ -104,7 +104,7 @@ func Pgcrypto() *catalog.Schema {
 			Name: "digest",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "text"},
+					Type: &ast.TypeName{Name: "bytea"},
 				},
 				{
 					Type: &ast.TypeName{Name: "text"},

@@ -4151,16 +4151,6 @@ func genPGCatalog() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
-			Name: "concat",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "any"},
-					Mode: ast.FuncParamVariadic,
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "text"},
-		},
-		{
 			Name: "concat_ws",
 			Args: []*catalog.Argument{
 				{
@@ -6896,60 +6886,6 @@ func genPGCatalog() *catalog.Schema {
 			Name: "generate_series",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "bigint"},
-		},
-		{
-			Name: "generate_series",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "bigint"},
-		},
-		{
-			Name: "generate_series",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "integer"},
-		},
-		{
-			Name: "generate_series",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "integer"},
-		},
-		{
-			Name: "generate_series",
-			Args: []*catalog.Argument{
-				{
 					Type: &ast.TypeName{Name: "numeric"},
 				},
 				{
@@ -6957,6 +6893,60 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "numeric"},
+		},
+		{
+			Name: "generate_series",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "bigint"},
+				},
+				{
+					Type: &ast.TypeName{Name: "bigint"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bigint"},
+		},
+		{
+			Name: "generate_series",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "bigint"},
+				},
+				{
+					Type: &ast.TypeName{Name: "bigint"},
+				},
+				{
+					Type: &ast.TypeName{Name: "bigint"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bigint"},
+		},
+		{
+			Name: "generate_series",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "integer"},
+		},
+		{
+			Name: "generate_series",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "integer"},
 		},
 		{
 			Name: "generate_series",
@@ -13924,19 +13914,19 @@ func genPGCatalog() *catalog.Schema {
 			Name: "lower",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "anyrange"},
+					Type: &ast.TypeName{Name: "text"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "anyelement"},
+			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
 			Name: "lower",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "text"},
+					Type: &ast.TypeName{Name: "anyrange"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "text"},
+			ReturnType: &ast.TypeName{Name: "anyelement"},
 		},
 		{
 			Name: "lower_inc",
