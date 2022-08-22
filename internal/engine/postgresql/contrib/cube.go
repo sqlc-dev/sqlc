@@ -14,31 +14,10 @@ func Cube() *catalog.Schema {
 			Name: "cube",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "double precision"},
+					Type: &ast.TypeName{Name: "cube"},
 				},
 				{
 					Type: &ast.TypeName{Name: "double precision"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "cube"},
-		},
-		{
-			Name: "cube",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "double precision[]"},
-				},
-				{
-					Type: &ast.TypeName{Name: "double precision[]"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "cube"},
-		},
-		{
-			Name: "cube",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "double precision[]"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "cube"},
@@ -71,10 +50,31 @@ func Cube() *catalog.Schema {
 			Name: "cube",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "cube"},
+					Type: &ast.TypeName{Name: "double precision"},
 				},
 				{
 					Type: &ast.TypeName{Name: "double precision"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "cube"},
+		},
+		{
+			Name: "cube",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "double precision[]"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "cube"},
+		},
+		{
+			Name: "cube",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "double precision[]"},
+				},
+				{
+					Type: &ast.TypeName{Name: "double precision[]"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "cube"},

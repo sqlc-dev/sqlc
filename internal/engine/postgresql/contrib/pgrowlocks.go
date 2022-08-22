@@ -7,30 +7,18 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 )
 
-func PgFreespacemap() *catalog.Schema {
+func Pgrowlocks() *catalog.Schema {
 	s := &catalog.Schema{Name: "pg_catalog"}
 	s.Funcs = []*catalog.Function{
 		{
-			Name: "pg_freespace",
+			Name: "pgrowlocks",
 			Args: []*catalog.Argument{
 				{
-					Name: "rel",
-					Type: &ast.TypeName{Name: "regclass"},
+					Name: "relname",
+					Type: &ast.TypeName{Name: "text"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "record"},
-		},
-		{
-			Name: "pg_freespace",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "regclass"},
-				},
-				{
-					Type: &ast.TypeName{Name: "bigint"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "smallint"},
 		},
 	}
 	return s

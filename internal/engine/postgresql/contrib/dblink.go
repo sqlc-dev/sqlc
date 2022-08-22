@@ -16,24 +16,6 @@ func Dblink() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "boolean"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "record"},
-		},
-		{
-			Name: "dblink",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "record"},
 		},
@@ -54,6 +36,24 @@ func Dblink() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name: "dblink",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "boolean"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "record"},
@@ -133,27 +133,12 @@ func Dblink() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
 			Name: "dblink_close",
 			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "text"},
-		},
-		{
-			Name: "dblink_close",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
@@ -166,6 +151,21 @@ func Dblink() *catalog.Schema {
 		{
 			Name: "dblink_close",
 			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
+			Name: "dblink_close",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
@@ -223,17 +223,17 @@ func Dblink() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
+			Name:       "dblink_disconnect",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
 			Name: "dblink_disconnect",
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "text"},
-		},
-		{
-			Name:       "dblink_disconnect",
-			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
@@ -314,27 +314,6 @@ func Dblink() *catalog.Schema {
 					Type: &ast.TypeName{Name: "text"},
 				},
 				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "boolean"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "record"},
-		},
-		{
-			Name: "dblink_fetch",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
 					Type: &ast.TypeName{Name: "integer"},
 				},
 			},
@@ -362,7 +341,28 @@ func Dblink() *catalog.Schema {
 					Type: &ast.TypeName{Name: "text"},
 				},
 				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
 					Type: &ast.TypeName{Name: "integer"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name: "dblink_fetch",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+				{
+					Type: &ast.TypeName{Name: "boolean"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "record"},
@@ -371,6 +371,21 @@ func Dblink() *catalog.Schema {
 			Name:       "dblink_get_connections",
 			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "text[]"},
+		},
+		{
+			Name:       "dblink_get_notify",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name: "dblink_get_notify",
+			Args: []*catalog.Argument{
+				{
+					Name: "conname",
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
 		},
 		{
 			Name: "dblink_get_pkey",
@@ -387,9 +402,6 @@ func Dblink() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
-				{
-					Type: &ast.TypeName{Name: "boolean"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "record"},
 		},
@@ -398,6 +410,9 @@ func Dblink() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "boolean"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "record"},
@@ -420,24 +435,6 @@ func Dblink() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "boolean"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "text"},
-		},
-		{
-			Name: "dblink_open",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
@@ -467,6 +464,24 @@ func Dblink() *catalog.Schema {
 				},
 				{
 					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
+			Name: "dblink_open",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "boolean"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},

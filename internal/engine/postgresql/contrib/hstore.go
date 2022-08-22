@@ -47,6 +47,18 @@ func Hstore() *catalog.Schema {
 					Type: &ast.TypeName{Name: "hstore"},
 				},
 				{
+					Type: &ast.TypeName{Name: "hstore"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "hstore"},
+		},
+		{
+			Name: "delete",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "hstore"},
+				},
+				{
 					Type: &ast.TypeName{Name: "text"},
 				},
 			},
@@ -65,16 +77,14 @@ func Hstore() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "hstore"},
 		},
 		{
-			Name: "delete",
+			Name: "each",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "hstore"},
-				},
-				{
+					Name: "hs",
 					Type: &ast.TypeName{Name: "hstore"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "hstore"},
+			ReturnType: &ast.TypeName{Name: "record"},
 		},
 		{
 			Name: "exist",
@@ -191,6 +201,18 @@ func Hstore() *catalog.Schema {
 			Name: "hstore",
 			Args: []*catalog.Argument{
 				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "hstore"},
+		},
+		{
+			Name: "hstore",
+			Args: []*catalog.Argument{
+				{
 					Type: &ast.TypeName{Name: "text[]"},
 				},
 			},
@@ -204,18 +226,6 @@ func Hstore() *catalog.Schema {
 				},
 				{
 					Type: &ast.TypeName{Name: "text[]"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "hstore"},
-		},
-		{
-			Name: "hstore",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "hstore"},

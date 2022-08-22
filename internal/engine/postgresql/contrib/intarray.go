@@ -301,9 +301,6 @@ func Intarray() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "integer"},
 				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "integer[]"},
 		},
@@ -312,6 +309,9 @@ func Intarray() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "integer[]"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
 				},
 				{
 					Type: &ast.TypeName{Name: "integer"},
