@@ -7,6 +7,12 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 )
 
+// toPointer converts an int to a pointer without a temporary
+// variable at the call-site
+func toPointer(x int) *int {
+	return &x
+}
+
 func genPGCatalog() *catalog.Schema {
 	s := &catalog.Schema{Name: "pg_catalog"}
 	s.Funcs = []*catalog.Function{
@@ -28438,6 +28444,9708 @@ func genPGCatalog() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+	}
+	s.Tables = []*catalog.Table{
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_aggregate",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "aggfnoid",
+					Type:      ast.TypeName{Name: "regproc"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "aggkind",
+					Type:      ast.TypeName{Name: "char"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "aggnumdirectargs",
+					Type:      ast.TypeName{Name: "int2"},
+					IsNotNull: true,
+					Length:    toPointer(2),
+				},
+				{
+					Name:      "aggtransfn",
+					Type:      ast.TypeName{Name: "regproc"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "aggfinalfn",
+					Type:      ast.TypeName{Name: "regproc"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "aggcombinefn",
+					Type:      ast.TypeName{Name: "regproc"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "aggserialfn",
+					Type:      ast.TypeName{Name: "regproc"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "aggdeserialfn",
+					Type:      ast.TypeName{Name: "regproc"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "aggmtransfn",
+					Type:      ast.TypeName{Name: "regproc"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "aggminvtransfn",
+					Type:      ast.TypeName{Name: "regproc"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "aggmfinalfn",
+					Type:      ast.TypeName{Name: "regproc"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "aggfinalextra",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "aggmfinalextra",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "aggfinalmodify",
+					Type:      ast.TypeName{Name: "char"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "aggmfinalmodify",
+					Type:      ast.TypeName{Name: "char"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "aggsortop",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "aggtranstype",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "aggtransspace",
+					Type:      ast.TypeName{Name: "int4"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "aggmtranstype",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "aggmtransspace",
+					Type:      ast.TypeName{Name: "int4"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name: "agginitval",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "aggminitval",
+					Type: ast.TypeName{Name: "text"},
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_am",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "oid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "amname",
+					Type:      ast.TypeName{Name: "name"},
+					IsNotNull: true,
+					Length:    toPointer(64),
+				},
+				{
+					Name:      "amhandler",
+					Type:      ast.TypeName{Name: "regproc"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "amtype",
+					Type:      ast.TypeName{Name: "char"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_amop",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "oid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "amopfamily",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "amoplefttype",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "amoprighttype",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "amopstrategy",
+					Type:      ast.TypeName{Name: "int2"},
+					IsNotNull: true,
+					Length:    toPointer(2),
+				},
+				{
+					Name:      "amoppurpose",
+					Type:      ast.TypeName{Name: "char"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "amopopr",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "amopmethod",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "amopsortfamily",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_amproc",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "oid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "amprocfamily",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "amproclefttype",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "amprocrighttype",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "amprocnum",
+					Type:      ast.TypeName{Name: "int2"},
+					IsNotNull: true,
+					Length:    toPointer(2),
+				},
+				{
+					Name:      "amproc",
+					Type:      ast.TypeName{Name: "regproc"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_attrdef",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "oid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "adrelid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "adnum",
+					Type:      ast.TypeName{Name: "int2"},
+					IsNotNull: true,
+					Length:    toPointer(2),
+				},
+				{
+					Name:      "adbin",
+					Type:      ast.TypeName{Name: "pg_node_tree"},
+					IsNotNull: true,
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_attribute",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "attrelid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "attname",
+					Type:      ast.TypeName{Name: "name"},
+					IsNotNull: true,
+					Length:    toPointer(64),
+				},
+				{
+					Name:      "atttypid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "attstattarget",
+					Type:      ast.TypeName{Name: "int4"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "attlen",
+					Type:      ast.TypeName{Name: "int2"},
+					IsNotNull: true,
+					Length:    toPointer(2),
+				},
+				{
+					Name:      "attnum",
+					Type:      ast.TypeName{Name: "int2"},
+					IsNotNull: true,
+					Length:    toPointer(2),
+				},
+				{
+					Name:      "attndims",
+					Type:      ast.TypeName{Name: "int4"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "attcacheoff",
+					Type:      ast.TypeName{Name: "int4"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "atttypmod",
+					Type:      ast.TypeName{Name: "int4"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "attbyval",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "attstorage",
+					Type:      ast.TypeName{Name: "char"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "attalign",
+					Type:      ast.TypeName{Name: "char"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "attnotnull",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "atthasdef",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "atthasmissing",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "attidentity",
+					Type:      ast.TypeName{Name: "char"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "attgenerated",
+					Type:      ast.TypeName{Name: "char"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "attisdropped",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "attislocal",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "attinhcount",
+					Type:      ast.TypeName{Name: "int4"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "attcollation",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:    "attacl",
+					Type:    ast.TypeName{Name: "_aclitem"},
+					IsArray: true,
+				},
+				{
+					Name:    "attoptions",
+					Type:    ast.TypeName{Name: "_text"},
+					IsArray: true,
+				},
+				{
+					Name:    "attfdwoptions",
+					Type:    ast.TypeName{Name: "_text"},
+					IsArray: true,
+				},
+				{
+					Name: "attmissingval",
+					Type: ast.TypeName{Name: "anyarray"},
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_auth_members",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "roleid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "member",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "grantor",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "admin_option",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_authid",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "oid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "rolname",
+					Type:      ast.TypeName{Name: "name"},
+					IsNotNull: true,
+					Length:    toPointer(64),
+				},
+				{
+					Name:      "rolsuper",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "rolinherit",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "rolcreaterole",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "rolcreatedb",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "rolcanlogin",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "rolreplication",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "rolbypassrls",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "rolconnlimit",
+					Type:      ast.TypeName{Name: "int4"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name: "rolpassword",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:   "rolvaliduntil",
+					Type:   ast.TypeName{Name: "timestamptz"},
+					Length: toPointer(8),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_available_extension_versions",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "name",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name: "version",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:   "installed",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+				{
+					Name:   "superuser",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+				{
+					Name:   "trusted",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+				{
+					Name:   "relocatable",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+				{
+					Name:   "schema",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:    "requires",
+					Type:    ast.TypeName{Name: "_name"},
+					IsArray: true,
+				},
+				{
+					Name: "comment",
+					Type: ast.TypeName{Name: "text"},
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_available_extensions",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "name",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name: "default_version",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "installed_version",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "comment",
+					Type: ast.TypeName{Name: "text"},
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_cast",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "oid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "castsource",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "casttarget",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "castfunc",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "castcontext",
+					Type:      ast.TypeName{Name: "char"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "castmethod",
+					Type:      ast.TypeName{Name: "char"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_class",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "oid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "relname",
+					Type:      ast.TypeName{Name: "name"},
+					IsNotNull: true,
+					Length:    toPointer(64),
+				},
+				{
+					Name:      "relnamespace",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "reltype",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "reloftype",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "relowner",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "relam",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "relfilenode",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "reltablespace",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "relpages",
+					Type:      ast.TypeName{Name: "int4"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "reltuples",
+					Type:      ast.TypeName{Name: "float4"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "relallvisible",
+					Type:      ast.TypeName{Name: "int4"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "reltoastrelid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "relhasindex",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "relisshared",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "relpersistence",
+					Type:      ast.TypeName{Name: "char"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "relkind",
+					Type:      ast.TypeName{Name: "char"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "relnatts",
+					Type:      ast.TypeName{Name: "int2"},
+					IsNotNull: true,
+					Length:    toPointer(2),
+				},
+				{
+					Name:      "relchecks",
+					Type:      ast.TypeName{Name: "int2"},
+					IsNotNull: true,
+					Length:    toPointer(2),
+				},
+				{
+					Name:      "relhasrules",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "relhastriggers",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "relhassubclass",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "relrowsecurity",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "relforcerowsecurity",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "relispopulated",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "relreplident",
+					Type:      ast.TypeName{Name: "char"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "relispartition",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "relrewrite",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "relfrozenxid",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "relminmxid",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:    "relacl",
+					Type:    ast.TypeName{Name: "_aclitem"},
+					IsArray: true,
+				},
+				{
+					Name:    "reloptions",
+					Type:    ast.TypeName{Name: "_text"},
+					IsArray: true,
+				},
+				{
+					Name: "relpartbound",
+					Type: ast.TypeName{Name: "pg_node_tree"},
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_collation",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "oid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "collname",
+					Type:      ast.TypeName{Name: "name"},
+					IsNotNull: true,
+					Length:    toPointer(64),
+				},
+				{
+					Name:      "collnamespace",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "collowner",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "collprovider",
+					Type:      ast.TypeName{Name: "char"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "collisdeterministic",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "collencoding",
+					Type:      ast.TypeName{Name: "int4"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "collcollate",
+					Type:      ast.TypeName{Name: "name"},
+					IsNotNull: true,
+					Length:    toPointer(64),
+				},
+				{
+					Name:      "collctype",
+					Type:      ast.TypeName{Name: "name"},
+					IsNotNull: true,
+					Length:    toPointer(64),
+				},
+				{
+					Name: "collversion",
+					Type: ast.TypeName{Name: "text"},
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_config",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name: "name",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "setting",
+					Type: ast.TypeName{Name: "text"},
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_constraint",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "oid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "conname",
+					Type:      ast.TypeName{Name: "name"},
+					IsNotNull: true,
+					Length:    toPointer(64),
+				},
+				{
+					Name:      "connamespace",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "contype",
+					Type:      ast.TypeName{Name: "char"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "condeferrable",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "condeferred",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "convalidated",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "conrelid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "contypid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "conindid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "conparentid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "confrelid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "confupdtype",
+					Type:      ast.TypeName{Name: "char"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "confdeltype",
+					Type:      ast.TypeName{Name: "char"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "confmatchtype",
+					Type:      ast.TypeName{Name: "char"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "conislocal",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "coninhcount",
+					Type:      ast.TypeName{Name: "int4"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "connoinherit",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:    "conkey",
+					Type:    ast.TypeName{Name: "_int2"},
+					IsArray: true,
+				},
+				{
+					Name:    "confkey",
+					Type:    ast.TypeName{Name: "_int2"},
+					IsArray: true,
+				},
+				{
+					Name:    "conpfeqop",
+					Type:    ast.TypeName{Name: "_oid"},
+					IsArray: true,
+				},
+				{
+					Name:    "conppeqop",
+					Type:    ast.TypeName{Name: "_oid"},
+					IsArray: true,
+				},
+				{
+					Name:    "conffeqop",
+					Type:    ast.TypeName{Name: "_oid"},
+					IsArray: true,
+				},
+				{
+					Name:    "conexclop",
+					Type:    ast.TypeName{Name: "_oid"},
+					IsArray: true,
+				},
+				{
+					Name: "conbin",
+					Type: ast.TypeName{Name: "pg_node_tree"},
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_conversion",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "oid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "conname",
+					Type:      ast.TypeName{Name: "name"},
+					IsNotNull: true,
+					Length:    toPointer(64),
+				},
+				{
+					Name:      "connamespace",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "conowner",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "conforencoding",
+					Type:      ast.TypeName{Name: "int4"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "contoencoding",
+					Type:      ast.TypeName{Name: "int4"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "conproc",
+					Type:      ast.TypeName{Name: "regproc"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "condefault",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_cursors",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name: "name",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "statement",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:   "is_holdable",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+				{
+					Name:   "is_binary",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+				{
+					Name:   "is_scrollable",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+				{
+					Name:   "creation_time",
+					Type:   ast.TypeName{Name: "timestamptz"},
+					Length: toPointer(8),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_database",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "oid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "datname",
+					Type:      ast.TypeName{Name: "name"},
+					IsNotNull: true,
+					Length:    toPointer(64),
+				},
+				{
+					Name:      "datdba",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "encoding",
+					Type:      ast.TypeName{Name: "int4"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "datcollate",
+					Type:      ast.TypeName{Name: "name"},
+					IsNotNull: true,
+					Length:    toPointer(64),
+				},
+				{
+					Name:      "datctype",
+					Type:      ast.TypeName{Name: "name"},
+					IsNotNull: true,
+					Length:    toPointer(64),
+				},
+				{
+					Name:      "datistemplate",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "datallowconn",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "datconnlimit",
+					Type:      ast.TypeName{Name: "int4"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "datlastsysoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "datfrozenxid",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "datminmxid",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "dattablespace",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:    "datacl",
+					Type:    ast.TypeName{Name: "_aclitem"},
+					IsArray: true,
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_db_role_setting",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "setdatabase",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "setrole",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:    "setconfig",
+					Type:    ast.TypeName{Name: "_text"},
+					IsArray: true,
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_default_acl",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "oid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "defaclrole",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "defaclnamespace",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "defaclobjtype",
+					Type:      ast.TypeName{Name: "char"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "defaclacl",
+					Type:      ast.TypeName{Name: "_aclitem"},
+					IsNotNull: true,
+					IsArray:   true,
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_depend",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "classid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "objid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "objsubid",
+					Type:      ast.TypeName{Name: "int4"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "refclassid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "refobjid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "refobjsubid",
+					Type:      ast.TypeName{Name: "int4"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "deptype",
+					Type:      ast.TypeName{Name: "char"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_description",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "objoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "classoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "objsubid",
+					Type:      ast.TypeName{Name: "int4"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "description",
+					Type:      ast.TypeName{Name: "text"},
+					IsNotNull: true,
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_enum",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "oid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "enumtypid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "enumsortorder",
+					Type:      ast.TypeName{Name: "float4"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "enumlabel",
+					Type:      ast.TypeName{Name: "name"},
+					IsNotNull: true,
+					Length:    toPointer(64),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_event_trigger",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "oid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "evtname",
+					Type:      ast.TypeName{Name: "name"},
+					IsNotNull: true,
+					Length:    toPointer(64),
+				},
+				{
+					Name:      "evtevent",
+					Type:      ast.TypeName{Name: "name"},
+					IsNotNull: true,
+					Length:    toPointer(64),
+				},
+				{
+					Name:      "evtowner",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "evtfoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "evtenabled",
+					Type:      ast.TypeName{Name: "char"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:    "evttags",
+					Type:    ast.TypeName{Name: "_text"},
+					IsArray: true,
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_extension",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "oid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "extname",
+					Type:      ast.TypeName{Name: "name"},
+					IsNotNull: true,
+					Length:    toPointer(64),
+				},
+				{
+					Name:      "extowner",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "extnamespace",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "extrelocatable",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "extversion",
+					Type:      ast.TypeName{Name: "text"},
+					IsNotNull: true,
+				},
+				{
+					Name:    "extconfig",
+					Type:    ast.TypeName{Name: "_oid"},
+					IsArray: true,
+				},
+				{
+					Name:    "extcondition",
+					Type:    ast.TypeName{Name: "_text"},
+					IsArray: true,
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_file_settings",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name: "sourcefile",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:   "sourceline",
+					Type:   ast.TypeName{Name: "int4"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "seqno",
+					Type:   ast.TypeName{Name: "int4"},
+					Length: toPointer(4),
+				},
+				{
+					Name: "name",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "setting",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:   "applied",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+				{
+					Name: "error",
+					Type: ast.TypeName{Name: "text"},
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_foreign_data_wrapper",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "oid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "fdwname",
+					Type:      ast.TypeName{Name: "name"},
+					IsNotNull: true,
+					Length:    toPointer(64),
+				},
+				{
+					Name:      "fdwowner",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "fdwhandler",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "fdwvalidator",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:    "fdwacl",
+					Type:    ast.TypeName{Name: "_aclitem"},
+					IsArray: true,
+				},
+				{
+					Name:    "fdwoptions",
+					Type:    ast.TypeName{Name: "_text"},
+					IsArray: true,
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_foreign_server",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "oid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "srvname",
+					Type:      ast.TypeName{Name: "name"},
+					IsNotNull: true,
+					Length:    toPointer(64),
+				},
+				{
+					Name:      "srvowner",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "srvfdw",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name: "srvtype",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "srvversion",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:    "srvacl",
+					Type:    ast.TypeName{Name: "_aclitem"},
+					IsArray: true,
+				},
+				{
+					Name:    "srvoptions",
+					Type:    ast.TypeName{Name: "_text"},
+					IsArray: true,
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_foreign_table",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "ftrelid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ftserver",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:    "ftoptions",
+					Type:    ast.TypeName{Name: "_text"},
+					IsArray: true,
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_group",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "groname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "grosysid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:    "grolist",
+					Type:    ast.TypeName{Name: "_oid"},
+					IsArray: true,
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_hba_file_rules",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "line_number",
+					Type:   ast.TypeName{Name: "int4"},
+					Length: toPointer(4),
+				},
+				{
+					Name: "type",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:    "database",
+					Type:    ast.TypeName{Name: "_text"},
+					IsArray: true,
+				},
+				{
+					Name:    "user_name",
+					Type:    ast.TypeName{Name: "_text"},
+					IsArray: true,
+				},
+				{
+					Name: "address",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "netmask",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "auth_method",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:    "options",
+					Type:    ast.TypeName{Name: "_text"},
+					IsArray: true,
+				},
+				{
+					Name: "error",
+					Type: ast.TypeName{Name: "text"},
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_index",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "indexrelid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "indrelid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "indnatts",
+					Type:      ast.TypeName{Name: "int2"},
+					IsNotNull: true,
+					Length:    toPointer(2),
+				},
+				{
+					Name:      "indnkeyatts",
+					Type:      ast.TypeName{Name: "int2"},
+					IsNotNull: true,
+					Length:    toPointer(2),
+				},
+				{
+					Name:      "indisunique",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "indisprimary",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "indisexclusion",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "indimmediate",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "indisclustered",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "indisvalid",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "indcheckxmin",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "indisready",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "indislive",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "indisreplident",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "indkey",
+					Type:      ast.TypeName{Name: "int2vector"},
+					IsNotNull: true,
+					IsArray:   true,
+				},
+				{
+					Name:      "indcollation",
+					Type:      ast.TypeName{Name: "oidvector"},
+					IsNotNull: true,
+					IsArray:   true,
+				},
+				{
+					Name:      "indclass",
+					Type:      ast.TypeName{Name: "oidvector"},
+					IsNotNull: true,
+					IsArray:   true,
+				},
+				{
+					Name:      "indoption",
+					Type:      ast.TypeName{Name: "int2vector"},
+					IsNotNull: true,
+					IsArray:   true,
+				},
+				{
+					Name: "indexprs",
+					Type: ast.TypeName{Name: "pg_node_tree"},
+				},
+				{
+					Name: "indpred",
+					Type: ast.TypeName{Name: "pg_node_tree"},
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_indexes",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "schemaname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "tablename",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "indexname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "tablespace",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name: "indexdef",
+					Type: ast.TypeName{Name: "text"},
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_inherits",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "inhrelid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "inhparent",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "inhseqno",
+					Type:      ast.TypeName{Name: "int4"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_init_privs",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "objoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "classoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "objsubid",
+					Type:      ast.TypeName{Name: "int4"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "privtype",
+					Type:      ast.TypeName{Name: "char"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "initprivs",
+					Type:      ast.TypeName{Name: "_aclitem"},
+					IsNotNull: true,
+					IsArray:   true,
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_language",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "oid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "lanname",
+					Type:      ast.TypeName{Name: "name"},
+					IsNotNull: true,
+					Length:    toPointer(64),
+				},
+				{
+					Name:      "lanowner",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "lanispl",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "lanpltrusted",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "lanplcallfoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "laninline",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "lanvalidator",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:    "lanacl",
+					Type:    ast.TypeName{Name: "_aclitem"},
+					IsArray: true,
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_largeobject",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "loid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "pageno",
+					Type:      ast.TypeName{Name: "int4"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "data",
+					Type:      ast.TypeName{Name: "bytea"},
+					IsNotNull: true,
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_largeobject_metadata",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "oid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "lomowner",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:    "lomacl",
+					Type:    ast.TypeName{Name: "_aclitem"},
+					IsArray: true,
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_locks",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name: "locktype",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:   "database",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "relation",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "page",
+					Type:   ast.TypeName{Name: "int4"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "tuple",
+					Type:   ast.TypeName{Name: "int2"},
+					Length: toPointer(2),
+				},
+				{
+					Name: "virtualxid",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:   "transactionid",
+					Type:   ast.TypeName{Name: "xid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "classid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "objid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "objsubid",
+					Type:   ast.TypeName{Name: "int2"},
+					Length: toPointer(2),
+				},
+				{
+					Name: "virtualtransaction",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:   "pid",
+					Type:   ast.TypeName{Name: "int4"},
+					Length: toPointer(4),
+				},
+				{
+					Name: "mode",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:   "granted",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+				{
+					Name:   "fastpath",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_matviews",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "schemaname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "matviewname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "matviewowner",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "tablespace",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "hasindexes",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+				{
+					Name:   "ispopulated",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+				{
+					Name: "definition",
+					Type: ast.TypeName{Name: "text"},
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_namespace",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "oid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "nspname",
+					Type:      ast.TypeName{Name: "name"},
+					IsNotNull: true,
+					Length:    toPointer(64),
+				},
+				{
+					Name:      "nspowner",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:    "nspacl",
+					Type:    ast.TypeName{Name: "_aclitem"},
+					IsArray: true,
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_opclass",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "oid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "opcmethod",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "opcname",
+					Type:      ast.TypeName{Name: "name"},
+					IsNotNull: true,
+					Length:    toPointer(64),
+				},
+				{
+					Name:      "opcnamespace",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "opcowner",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "opcfamily",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "opcintype",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "opcdefault",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "opckeytype",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_operator",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "oid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "oprname",
+					Type:      ast.TypeName{Name: "name"},
+					IsNotNull: true,
+					Length:    toPointer(64),
+				},
+				{
+					Name:      "oprnamespace",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "oprowner",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "oprkind",
+					Type:      ast.TypeName{Name: "char"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "oprcanmerge",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "oprcanhash",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "oprleft",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "oprright",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "oprresult",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "oprcom",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "oprnegate",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "oprcode",
+					Type:      ast.TypeName{Name: "regproc"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "oprrest",
+					Type:      ast.TypeName{Name: "regproc"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "oprjoin",
+					Type:      ast.TypeName{Name: "regproc"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_opfamily",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "oid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "opfmethod",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "opfname",
+					Type:      ast.TypeName{Name: "name"},
+					IsNotNull: true,
+					Length:    toPointer(64),
+				},
+				{
+					Name:      "opfnamespace",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "opfowner",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_partitioned_table",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "partrelid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "partstrat",
+					Type:      ast.TypeName{Name: "char"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "partnatts",
+					Type:      ast.TypeName{Name: "int2"},
+					IsNotNull: true,
+					Length:    toPointer(2),
+				},
+				{
+					Name:      "partdefid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "partattrs",
+					Type:      ast.TypeName{Name: "int2vector"},
+					IsNotNull: true,
+					IsArray:   true,
+				},
+				{
+					Name:      "partclass",
+					Type:      ast.TypeName{Name: "oidvector"},
+					IsNotNull: true,
+					IsArray:   true,
+				},
+				{
+					Name:      "partcollation",
+					Type:      ast.TypeName{Name: "oidvector"},
+					IsNotNull: true,
+					IsArray:   true,
+				},
+				{
+					Name: "partexprs",
+					Type: ast.TypeName{Name: "pg_node_tree"},
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_policies",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "schemaname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "tablename",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "policyname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name: "permissive",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:    "roles",
+					Type:    ast.TypeName{Name: "_name"},
+					IsArray: true,
+				},
+				{
+					Name: "cmd",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "qual",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "with_check",
+					Type: ast.TypeName{Name: "text"},
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_policy",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "oid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "polname",
+					Type:      ast.TypeName{Name: "name"},
+					IsNotNull: true,
+					Length:    toPointer(64),
+				},
+				{
+					Name:      "polrelid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "polcmd",
+					Type:      ast.TypeName{Name: "char"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "polpermissive",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "polroles",
+					Type:      ast.TypeName{Name: "_oid"},
+					IsNotNull: true,
+					IsArray:   true,
+				},
+				{
+					Name: "polqual",
+					Type: ast.TypeName{Name: "pg_node_tree"},
+				},
+				{
+					Name: "polwithcheck",
+					Type: ast.TypeName{Name: "pg_node_tree"},
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_prepared_statements",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name: "name",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "statement",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:   "prepare_time",
+					Type:   ast.TypeName{Name: "timestamptz"},
+					Length: toPointer(8),
+				},
+				{
+					Name:    "parameter_types",
+					Type:    ast.TypeName{Name: "_regtype"},
+					IsArray: true,
+				},
+				{
+					Name:   "from_sql",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_prepared_xacts",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "transaction",
+					Type:   ast.TypeName{Name: "xid"},
+					Length: toPointer(4),
+				},
+				{
+					Name: "gid",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:   "prepared",
+					Type:   ast.TypeName{Name: "timestamptz"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "owner",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "database",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_proc",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "oid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "proname",
+					Type:      ast.TypeName{Name: "name"},
+					IsNotNull: true,
+					Length:    toPointer(64),
+				},
+				{
+					Name:      "pronamespace",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "proowner",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "prolang",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "procost",
+					Type:      ast.TypeName{Name: "float4"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "prorows",
+					Type:      ast.TypeName{Name: "float4"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "provariadic",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "prosupport",
+					Type:      ast.TypeName{Name: "regproc"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "prokind",
+					Type:      ast.TypeName{Name: "char"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "prosecdef",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "proleakproof",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "proisstrict",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "proretset",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "provolatile",
+					Type:      ast.TypeName{Name: "char"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "proparallel",
+					Type:      ast.TypeName{Name: "char"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "pronargs",
+					Type:      ast.TypeName{Name: "int2"},
+					IsNotNull: true,
+					Length:    toPointer(2),
+				},
+				{
+					Name:      "pronargdefaults",
+					Type:      ast.TypeName{Name: "int2"},
+					IsNotNull: true,
+					Length:    toPointer(2),
+				},
+				{
+					Name:      "prorettype",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "proargtypes",
+					Type:      ast.TypeName{Name: "oidvector"},
+					IsNotNull: true,
+					IsArray:   true,
+				},
+				{
+					Name:    "proallargtypes",
+					Type:    ast.TypeName{Name: "_oid"},
+					IsArray: true,
+				},
+				{
+					Name:    "proargmodes",
+					Type:    ast.TypeName{Name: "_char"},
+					IsArray: true,
+				},
+				{
+					Name:    "proargnames",
+					Type:    ast.TypeName{Name: "_text"},
+					IsArray: true,
+				},
+				{
+					Name: "proargdefaults",
+					Type: ast.TypeName{Name: "pg_node_tree"},
+				},
+				{
+					Name:    "protrftypes",
+					Type:    ast.TypeName{Name: "_oid"},
+					IsArray: true,
+				},
+				{
+					Name:      "prosrc",
+					Type:      ast.TypeName{Name: "text"},
+					IsNotNull: true,
+				},
+				{
+					Name: "probin",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:    "proconfig",
+					Type:    ast.TypeName{Name: "_text"},
+					IsArray: true,
+				},
+				{
+					Name:    "proacl",
+					Type:    ast.TypeName{Name: "_aclitem"},
+					IsArray: true,
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_publication",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "oid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "pubname",
+					Type:      ast.TypeName{Name: "name"},
+					IsNotNull: true,
+					Length:    toPointer(64),
+				},
+				{
+					Name:      "pubowner",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "puballtables",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "pubinsert",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "pubupdate",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "pubdelete",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "pubtruncate",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "pubviaroot",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_publication_rel",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "oid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "prpubid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "prrelid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_publication_tables",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "pubname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "schemaname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "tablename",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_range",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "rngtypid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "rngsubtype",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "rngcollation",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "rngsubopc",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "rngcanonical",
+					Type:      ast.TypeName{Name: "regproc"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "rngsubdiff",
+					Type:      ast.TypeName{Name: "regproc"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_replication_origin",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "roident",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "roname",
+					Type:      ast.TypeName{Name: "text"},
+					IsNotNull: true,
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_replication_origin_status",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "local_id",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name: "external_id",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:   "remote_lsn",
+					Type:   ast.TypeName{Name: "pg_lsn"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "local_lsn",
+					Type:   ast.TypeName{Name: "pg_lsn"},
+					Length: toPointer(8),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_replication_slots",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "slot_name",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "plugin",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name: "slot_type",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:   "datoid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "database",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "temporary",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+				{
+					Name:   "active",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+				{
+					Name:   "active_pid",
+					Type:   ast.TypeName{Name: "int4"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "xmin",
+					Type:   ast.TypeName{Name: "xid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "catalog_xmin",
+					Type:   ast.TypeName{Name: "xid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "restart_lsn",
+					Type:   ast.TypeName{Name: "pg_lsn"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "confirmed_flush_lsn",
+					Type:   ast.TypeName{Name: "pg_lsn"},
+					Length: toPointer(8),
+				},
+				{
+					Name: "wal_status",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:   "safe_wal_size",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_rewrite",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "oid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "rulename",
+					Type:      ast.TypeName{Name: "name"},
+					IsNotNull: true,
+					Length:    toPointer(64),
+				},
+				{
+					Name:      "ev_class",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ev_type",
+					Type:      ast.TypeName{Name: "char"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "ev_enabled",
+					Type:      ast.TypeName{Name: "char"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "is_instead",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "ev_qual",
+					Type:      ast.TypeName{Name: "pg_node_tree"},
+					IsNotNull: true,
+				},
+				{
+					Name:      "ev_action",
+					Type:      ast.TypeName{Name: "pg_node_tree"},
+					IsNotNull: true,
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_roles",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "rolname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "rolsuper",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+				{
+					Name:   "rolinherit",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+				{
+					Name:   "rolcreaterole",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+				{
+					Name:   "rolcreatedb",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+				{
+					Name:   "rolcanlogin",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+				{
+					Name:   "rolreplication",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+				{
+					Name:   "rolconnlimit",
+					Type:   ast.TypeName{Name: "int4"},
+					Length: toPointer(4),
+				},
+				{
+					Name: "rolpassword",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:   "rolvaliduntil",
+					Type:   ast.TypeName{Name: "timestamptz"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "rolbypassrls",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+				{
+					Name:    "rolconfig",
+					Type:    ast.TypeName{Name: "_text"},
+					IsArray: true,
+				},
+				{
+					Name:   "oid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_rules",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "schemaname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "tablename",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "rulename",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name: "definition",
+					Type: ast.TypeName{Name: "text"},
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_seclabel",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "objoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "classoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "objsubid",
+					Type:      ast.TypeName{Name: "int4"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "provider",
+					Type:      ast.TypeName{Name: "text"},
+					IsNotNull: true,
+				},
+				{
+					Name:      "label",
+					Type:      ast.TypeName{Name: "text"},
+					IsNotNull: true,
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_seclabels",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "objoid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "classoid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "objsubid",
+					Type:   ast.TypeName{Name: "int4"},
+					Length: toPointer(4),
+				},
+				{
+					Name: "objtype",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:   "objnamespace",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name: "objname",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "provider",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "label",
+					Type: ast.TypeName{Name: "text"},
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_sequence",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "seqrelid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "seqtypid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "seqstart",
+					Type:      ast.TypeName{Name: "int8"},
+					IsNotNull: true,
+					Length:    toPointer(8),
+				},
+				{
+					Name:      "seqincrement",
+					Type:      ast.TypeName{Name: "int8"},
+					IsNotNull: true,
+					Length:    toPointer(8),
+				},
+				{
+					Name:      "seqmax",
+					Type:      ast.TypeName{Name: "int8"},
+					IsNotNull: true,
+					Length:    toPointer(8),
+				},
+				{
+					Name:      "seqmin",
+					Type:      ast.TypeName{Name: "int8"},
+					IsNotNull: true,
+					Length:    toPointer(8),
+				},
+				{
+					Name:      "seqcache",
+					Type:      ast.TypeName{Name: "int8"},
+					IsNotNull: true,
+					Length:    toPointer(8),
+				},
+				{
+					Name:      "seqcycle",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_sequences",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "schemaname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "sequencename",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "sequenceowner",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "data_type",
+					Type:   ast.TypeName{Name: "regtype"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "start_value",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "min_value",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "max_value",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "increment_by",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "cycle",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+				{
+					Name:   "cache_size",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "last_value",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_settings",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name: "name",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "setting",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "unit",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "category",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "short_desc",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "extra_desc",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "context",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "vartype",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "source",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "min_val",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "max_val",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:    "enumvals",
+					Type:    ast.TypeName{Name: "_text"},
+					IsArray: true,
+				},
+				{
+					Name: "boot_val",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "reset_val",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "sourcefile",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:   "sourceline",
+					Type:   ast.TypeName{Name: "int4"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "pending_restart",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_shadow",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "usename",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "usesysid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "usecreatedb",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+				{
+					Name:   "usesuper",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+				{
+					Name:   "userepl",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+				{
+					Name:   "usebypassrls",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+				{
+					Name: "passwd",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:   "valuntil",
+					Type:   ast.TypeName{Name: "timestamptz"},
+					Length: toPointer(8),
+				},
+				{
+					Name:    "useconfig",
+					Type:    ast.TypeName{Name: "_text"},
+					IsArray: true,
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_shdepend",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "dbid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "classid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "objid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "objsubid",
+					Type:      ast.TypeName{Name: "int4"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "refclassid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "refobjid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "deptype",
+					Type:      ast.TypeName{Name: "char"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_shdescription",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "objoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "classoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "description",
+					Type:      ast.TypeName{Name: "text"},
+					IsNotNull: true,
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_shmem_allocations",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name: "name",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:   "off",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "size",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "allocated_size",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_shseclabel",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "objoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "classoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "provider",
+					Type:      ast.TypeName{Name: "text"},
+					IsNotNull: true,
+				},
+				{
+					Name:      "label",
+					Type:      ast.TypeName{Name: "text"},
+					IsNotNull: true,
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_stat_activity",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "datid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "datname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "pid",
+					Type:   ast.TypeName{Name: "int4"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "leader_pid",
+					Type:   ast.TypeName{Name: "int4"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "usesysid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "usename",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name: "application_name",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "client_addr",
+					Type: ast.TypeName{Name: "inet"},
+				},
+				{
+					Name: "client_hostname",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:   "client_port",
+					Type:   ast.TypeName{Name: "int4"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "backend_start",
+					Type:   ast.TypeName{Name: "timestamptz"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "xact_start",
+					Type:   ast.TypeName{Name: "timestamptz"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "query_start",
+					Type:   ast.TypeName{Name: "timestamptz"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "state_change",
+					Type:   ast.TypeName{Name: "timestamptz"},
+					Length: toPointer(8),
+				},
+				{
+					Name: "wait_event_type",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "wait_event",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "state",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:   "backend_xid",
+					Type:   ast.TypeName{Name: "xid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "backend_xmin",
+					Type:   ast.TypeName{Name: "xid"},
+					Length: toPointer(4),
+				},
+				{
+					Name: "query",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "backend_type",
+					Type: ast.TypeName{Name: "text"},
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_stat_all_indexes",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "relid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "indexrelid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "schemaname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "relname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "indexrelname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "idx_scan",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "idx_tup_read",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "idx_tup_fetch",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_stat_all_tables",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "relid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "schemaname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "relname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "seq_scan",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "seq_tup_read",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "idx_scan",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "idx_tup_fetch",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "n_tup_ins",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "n_tup_upd",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "n_tup_del",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "n_tup_hot_upd",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "n_live_tup",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "n_dead_tup",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "n_mod_since_analyze",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "n_ins_since_vacuum",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "last_vacuum",
+					Type:   ast.TypeName{Name: "timestamptz"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "last_autovacuum",
+					Type:   ast.TypeName{Name: "timestamptz"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "last_analyze",
+					Type:   ast.TypeName{Name: "timestamptz"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "last_autoanalyze",
+					Type:   ast.TypeName{Name: "timestamptz"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "vacuum_count",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "autovacuum_count",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "analyze_count",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "autoanalyze_count",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_stat_archiver",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "archived_count",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name: "last_archived_wal",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:   "last_archived_time",
+					Type:   ast.TypeName{Name: "timestamptz"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "failed_count",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name: "last_failed_wal",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:   "last_failed_time",
+					Type:   ast.TypeName{Name: "timestamptz"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "stats_reset",
+					Type:   ast.TypeName{Name: "timestamptz"},
+					Length: toPointer(8),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_stat_bgwriter",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "checkpoints_timed",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "checkpoints_req",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "checkpoint_write_time",
+					Type:   ast.TypeName{Name: "float8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "checkpoint_sync_time",
+					Type:   ast.TypeName{Name: "float8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "buffers_checkpoint",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "buffers_clean",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "maxwritten_clean",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "buffers_backend",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "buffers_backend_fsync",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "buffers_alloc",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "stats_reset",
+					Type:   ast.TypeName{Name: "timestamptz"},
+					Length: toPointer(8),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_stat_database",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "datid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "datname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "numbackends",
+					Type:   ast.TypeName{Name: "int4"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "xact_commit",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "xact_rollback",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "blks_read",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "blks_hit",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "tup_returned",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "tup_fetched",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "tup_inserted",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "tup_updated",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "tup_deleted",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "conflicts",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "temp_files",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "temp_bytes",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "deadlocks",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "checksum_failures",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "checksum_last_failure",
+					Type:   ast.TypeName{Name: "timestamptz"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "blk_read_time",
+					Type:   ast.TypeName{Name: "float8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "blk_write_time",
+					Type:   ast.TypeName{Name: "float8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "stats_reset",
+					Type:   ast.TypeName{Name: "timestamptz"},
+					Length: toPointer(8),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_stat_database_conflicts",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "datid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "datname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "confl_tablespace",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "confl_lock",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "confl_snapshot",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "confl_bufferpin",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "confl_deadlock",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_stat_gssapi",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "pid",
+					Type:   ast.TypeName{Name: "int4"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "gss_authenticated",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+				{
+					Name: "principal",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:   "encrypted",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_stat_progress_analyze",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "pid",
+					Type:   ast.TypeName{Name: "int4"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "datid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "datname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "relid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name: "phase",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:   "sample_blks_total",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "sample_blks_scanned",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "ext_stats_total",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "ext_stats_computed",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "child_tables_total",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "child_tables_done",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "current_child_table_relid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_stat_progress_basebackup",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "pid",
+					Type:   ast.TypeName{Name: "int4"},
+					Length: toPointer(4),
+				},
+				{
+					Name: "phase",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:   "backup_total",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "backup_streamed",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "tablespaces_total",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "tablespaces_streamed",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_stat_progress_cluster",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "pid",
+					Type:   ast.TypeName{Name: "int4"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "datid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "datname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "relid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name: "command",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "phase",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:   "cluster_index_relid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "heap_tuples_scanned",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "heap_tuples_written",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "heap_blks_total",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "heap_blks_scanned",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "index_rebuild_count",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_stat_progress_create_index",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "pid",
+					Type:   ast.TypeName{Name: "int4"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "datid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "datname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "relid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "index_relid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name: "command",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "phase",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:   "lockers_total",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "lockers_done",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "current_locker_pid",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "blocks_total",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "blocks_done",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "tuples_total",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "tuples_done",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "partitions_total",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "partitions_done",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_stat_progress_vacuum",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "pid",
+					Type:   ast.TypeName{Name: "int4"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "datid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "datname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "relid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name: "phase",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:   "heap_blks_total",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "heap_blks_scanned",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "heap_blks_vacuumed",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "index_vacuum_count",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "max_dead_tuples",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "num_dead_tuples",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_stat_replication",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "pid",
+					Type:   ast.TypeName{Name: "int4"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "usesysid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "usename",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name: "application_name",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "client_addr",
+					Type: ast.TypeName{Name: "inet"},
+				},
+				{
+					Name: "client_hostname",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:   "client_port",
+					Type:   ast.TypeName{Name: "int4"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "backend_start",
+					Type:   ast.TypeName{Name: "timestamptz"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "backend_xmin",
+					Type:   ast.TypeName{Name: "xid"},
+					Length: toPointer(4),
+				},
+				{
+					Name: "state",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:   "sent_lsn",
+					Type:   ast.TypeName{Name: "pg_lsn"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "write_lsn",
+					Type:   ast.TypeName{Name: "pg_lsn"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "flush_lsn",
+					Type:   ast.TypeName{Name: "pg_lsn"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "replay_lsn",
+					Type:   ast.TypeName{Name: "pg_lsn"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "write_lag",
+					Type:   ast.TypeName{Name: "interval"},
+					Length: toPointer(16),
+				},
+				{
+					Name:   "flush_lag",
+					Type:   ast.TypeName{Name: "interval"},
+					Length: toPointer(16),
+				},
+				{
+					Name:   "replay_lag",
+					Type:   ast.TypeName{Name: "interval"},
+					Length: toPointer(16),
+				},
+				{
+					Name:   "sync_priority",
+					Type:   ast.TypeName{Name: "int4"},
+					Length: toPointer(4),
+				},
+				{
+					Name: "sync_state",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:   "reply_time",
+					Type:   ast.TypeName{Name: "timestamptz"},
+					Length: toPointer(8),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_stat_slru",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name: "name",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:   "blks_zeroed",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "blks_hit",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "blks_read",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "blks_written",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "blks_exists",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "flushes",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "truncates",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "stats_reset",
+					Type:   ast.TypeName{Name: "timestamptz"},
+					Length: toPointer(8),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_stat_ssl",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "pid",
+					Type:   ast.TypeName{Name: "int4"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "ssl",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+				{
+					Name: "version",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "cipher",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:   "bits",
+					Type:   ast.TypeName{Name: "int4"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "compression",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+				{
+					Name: "client_dn",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "client_serial",
+					Type: ast.TypeName{Name: "numeric"},
+				},
+				{
+					Name: "issuer_dn",
+					Type: ast.TypeName{Name: "text"},
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_stat_subscription",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "subid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "subname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "pid",
+					Type:   ast.TypeName{Name: "int4"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "relid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "received_lsn",
+					Type:   ast.TypeName{Name: "pg_lsn"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "last_msg_send_time",
+					Type:   ast.TypeName{Name: "timestamptz"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "last_msg_receipt_time",
+					Type:   ast.TypeName{Name: "timestamptz"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "latest_end_lsn",
+					Type:   ast.TypeName{Name: "pg_lsn"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "latest_end_time",
+					Type:   ast.TypeName{Name: "timestamptz"},
+					Length: toPointer(8),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_stat_sys_indexes",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "relid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "indexrelid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "schemaname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "relname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "indexrelname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "idx_scan",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "idx_tup_read",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "idx_tup_fetch",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_stat_sys_tables",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "relid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "schemaname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "relname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "seq_scan",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "seq_tup_read",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "idx_scan",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "idx_tup_fetch",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "n_tup_ins",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "n_tup_upd",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "n_tup_del",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "n_tup_hot_upd",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "n_live_tup",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "n_dead_tup",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "n_mod_since_analyze",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "n_ins_since_vacuum",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "last_vacuum",
+					Type:   ast.TypeName{Name: "timestamptz"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "last_autovacuum",
+					Type:   ast.TypeName{Name: "timestamptz"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "last_analyze",
+					Type:   ast.TypeName{Name: "timestamptz"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "last_autoanalyze",
+					Type:   ast.TypeName{Name: "timestamptz"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "vacuum_count",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "autovacuum_count",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "analyze_count",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "autoanalyze_count",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_stat_user_functions",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "funcid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "schemaname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "funcname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "calls",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "total_time",
+					Type:   ast.TypeName{Name: "float8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "self_time",
+					Type:   ast.TypeName{Name: "float8"},
+					Length: toPointer(8),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_stat_user_indexes",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "relid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "indexrelid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "schemaname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "relname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "indexrelname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "idx_scan",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "idx_tup_read",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "idx_tup_fetch",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_stat_user_tables",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "relid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "schemaname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "relname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "seq_scan",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "seq_tup_read",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "idx_scan",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "idx_tup_fetch",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "n_tup_ins",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "n_tup_upd",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "n_tup_del",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "n_tup_hot_upd",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "n_live_tup",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "n_dead_tup",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "n_mod_since_analyze",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "n_ins_since_vacuum",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "last_vacuum",
+					Type:   ast.TypeName{Name: "timestamptz"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "last_autovacuum",
+					Type:   ast.TypeName{Name: "timestamptz"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "last_analyze",
+					Type:   ast.TypeName{Name: "timestamptz"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "last_autoanalyze",
+					Type:   ast.TypeName{Name: "timestamptz"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "vacuum_count",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "autovacuum_count",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "analyze_count",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "autoanalyze_count",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_stat_wal_receiver",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "pid",
+					Type:   ast.TypeName{Name: "int4"},
+					Length: toPointer(4),
+				},
+				{
+					Name: "status",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:   "receive_start_lsn",
+					Type:   ast.TypeName{Name: "pg_lsn"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "receive_start_tli",
+					Type:   ast.TypeName{Name: "int4"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "written_lsn",
+					Type:   ast.TypeName{Name: "pg_lsn"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "flushed_lsn",
+					Type:   ast.TypeName{Name: "pg_lsn"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "received_tli",
+					Type:   ast.TypeName{Name: "int4"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "last_msg_send_time",
+					Type:   ast.TypeName{Name: "timestamptz"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "last_msg_receipt_time",
+					Type:   ast.TypeName{Name: "timestamptz"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "latest_end_lsn",
+					Type:   ast.TypeName{Name: "pg_lsn"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "latest_end_time",
+					Type:   ast.TypeName{Name: "timestamptz"},
+					Length: toPointer(8),
+				},
+				{
+					Name: "slot_name",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "sender_host",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:   "sender_port",
+					Type:   ast.TypeName{Name: "int4"},
+					Length: toPointer(4),
+				},
+				{
+					Name: "conninfo",
+					Type: ast.TypeName{Name: "text"},
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_stat_xact_all_tables",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "relid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "schemaname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "relname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "seq_scan",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "seq_tup_read",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "idx_scan",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "idx_tup_fetch",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "n_tup_ins",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "n_tup_upd",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "n_tup_del",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "n_tup_hot_upd",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_stat_xact_sys_tables",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "relid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "schemaname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "relname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "seq_scan",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "seq_tup_read",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "idx_scan",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "idx_tup_fetch",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "n_tup_ins",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "n_tup_upd",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "n_tup_del",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "n_tup_hot_upd",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_stat_xact_user_functions",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "funcid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "schemaname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "funcname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "calls",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "total_time",
+					Type:   ast.TypeName{Name: "float8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "self_time",
+					Type:   ast.TypeName{Name: "float8"},
+					Length: toPointer(8),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_stat_xact_user_tables",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "relid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "schemaname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "relname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "seq_scan",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "seq_tup_read",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "idx_scan",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "idx_tup_fetch",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "n_tup_ins",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "n_tup_upd",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "n_tup_del",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "n_tup_hot_upd",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_statio_all_indexes",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "relid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "indexrelid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "schemaname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "relname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "indexrelname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "idx_blks_read",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "idx_blks_hit",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_statio_all_sequences",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "relid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "schemaname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "relname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "blks_read",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "blks_hit",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_statio_all_tables",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "relid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "schemaname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "relname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "heap_blks_read",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "heap_blks_hit",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "idx_blks_read",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "idx_blks_hit",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "toast_blks_read",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "toast_blks_hit",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "tidx_blks_read",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "tidx_blks_hit",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_statio_sys_indexes",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "relid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "indexrelid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "schemaname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "relname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "indexrelname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "idx_blks_read",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "idx_blks_hit",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_statio_sys_sequences",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "relid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "schemaname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "relname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "blks_read",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "blks_hit",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_statio_sys_tables",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "relid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "schemaname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "relname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "heap_blks_read",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "heap_blks_hit",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "idx_blks_read",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "idx_blks_hit",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "toast_blks_read",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "toast_blks_hit",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "tidx_blks_read",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "tidx_blks_hit",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_statio_user_indexes",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "relid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "indexrelid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "schemaname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "relname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "indexrelname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "idx_blks_read",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "idx_blks_hit",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_statio_user_sequences",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "relid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "schemaname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "relname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "blks_read",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "blks_hit",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_statio_user_tables",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "relid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "schemaname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "relname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "heap_blks_read",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "heap_blks_hit",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "idx_blks_read",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "idx_blks_hit",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "toast_blks_read",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "toast_blks_hit",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "tidx_blks_read",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+				{
+					Name:   "tidx_blks_hit",
+					Type:   ast.TypeName{Name: "int8"},
+					Length: toPointer(8),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_statistic",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "starelid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "staattnum",
+					Type:      ast.TypeName{Name: "int2"},
+					IsNotNull: true,
+					Length:    toPointer(2),
+				},
+				{
+					Name:      "stainherit",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "stanullfrac",
+					Type:      ast.TypeName{Name: "float4"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "stawidth",
+					Type:      ast.TypeName{Name: "int4"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "stadistinct",
+					Type:      ast.TypeName{Name: "float4"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "stakind1",
+					Type:      ast.TypeName{Name: "int2"},
+					IsNotNull: true,
+					Length:    toPointer(2),
+				},
+				{
+					Name:      "stakind2",
+					Type:      ast.TypeName{Name: "int2"},
+					IsNotNull: true,
+					Length:    toPointer(2),
+				},
+				{
+					Name:      "stakind3",
+					Type:      ast.TypeName{Name: "int2"},
+					IsNotNull: true,
+					Length:    toPointer(2),
+				},
+				{
+					Name:      "stakind4",
+					Type:      ast.TypeName{Name: "int2"},
+					IsNotNull: true,
+					Length:    toPointer(2),
+				},
+				{
+					Name:      "stakind5",
+					Type:      ast.TypeName{Name: "int2"},
+					IsNotNull: true,
+					Length:    toPointer(2),
+				},
+				{
+					Name:      "staop1",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "staop2",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "staop3",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "staop4",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "staop5",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "stacoll1",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "stacoll2",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "stacoll3",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "stacoll4",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "stacoll5",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:    "stanumbers1",
+					Type:    ast.TypeName{Name: "_float4"},
+					IsArray: true,
+				},
+				{
+					Name:    "stanumbers2",
+					Type:    ast.TypeName{Name: "_float4"},
+					IsArray: true,
+				},
+				{
+					Name:    "stanumbers3",
+					Type:    ast.TypeName{Name: "_float4"},
+					IsArray: true,
+				},
+				{
+					Name:    "stanumbers4",
+					Type:    ast.TypeName{Name: "_float4"},
+					IsArray: true,
+				},
+				{
+					Name:    "stanumbers5",
+					Type:    ast.TypeName{Name: "_float4"},
+					IsArray: true,
+				},
+				{
+					Name: "stavalues1",
+					Type: ast.TypeName{Name: "anyarray"},
+				},
+				{
+					Name: "stavalues2",
+					Type: ast.TypeName{Name: "anyarray"},
+				},
+				{
+					Name: "stavalues3",
+					Type: ast.TypeName{Name: "anyarray"},
+				},
+				{
+					Name: "stavalues4",
+					Type: ast.TypeName{Name: "anyarray"},
+				},
+				{
+					Name: "stavalues5",
+					Type: ast.TypeName{Name: "anyarray"},
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_statistic_ext",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "oid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "stxrelid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "stxname",
+					Type:      ast.TypeName{Name: "name"},
+					IsNotNull: true,
+					Length:    toPointer(64),
+				},
+				{
+					Name:      "stxnamespace",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "stxowner",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "stxstattarget",
+					Type:      ast.TypeName{Name: "int4"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "stxkeys",
+					Type:      ast.TypeName{Name: "int2vector"},
+					IsNotNull: true,
+					IsArray:   true,
+				},
+				{
+					Name:      "stxkind",
+					Type:      ast.TypeName{Name: "_char"},
+					IsNotNull: true,
+					IsArray:   true,
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_statistic_ext_data",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "stxoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name: "stxdndistinct",
+					Type: ast.TypeName{Name: "pg_ndistinct"},
+				},
+				{
+					Name: "stxddependencies",
+					Type: ast.TypeName{Name: "pg_dependencies"},
+				},
+				{
+					Name: "stxdmcv",
+					Type: ast.TypeName{Name: "pg_mcv_list"},
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_stats",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "schemaname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "tablename",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "attname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "inherited",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+				{
+					Name:   "null_frac",
+					Type:   ast.TypeName{Name: "float4"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "avg_width",
+					Type:   ast.TypeName{Name: "int4"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "n_distinct",
+					Type:   ast.TypeName{Name: "float4"},
+					Length: toPointer(4),
+				},
+				{
+					Name: "most_common_vals",
+					Type: ast.TypeName{Name: "anyarray"},
+				},
+				{
+					Name:    "most_common_freqs",
+					Type:    ast.TypeName{Name: "_float4"},
+					IsArray: true,
+				},
+				{
+					Name: "histogram_bounds",
+					Type: ast.TypeName{Name: "anyarray"},
+				},
+				{
+					Name:   "correlation",
+					Type:   ast.TypeName{Name: "float4"},
+					Length: toPointer(4),
+				},
+				{
+					Name: "most_common_elems",
+					Type: ast.TypeName{Name: "anyarray"},
+				},
+				{
+					Name:    "most_common_elem_freqs",
+					Type:    ast.TypeName{Name: "_float4"},
+					IsArray: true,
+				},
+				{
+					Name:    "elem_count_histogram",
+					Type:    ast.TypeName{Name: "_float4"},
+					IsArray: true,
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_stats_ext",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "schemaname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "tablename",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "statistics_schemaname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "statistics_name",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "statistics_owner",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:    "attnames",
+					Type:    ast.TypeName{Name: "_name"},
+					IsArray: true,
+				},
+				{
+					Name:    "kinds",
+					Type:    ast.TypeName{Name: "_char"},
+					IsArray: true,
+				},
+				{
+					Name: "n_distinct",
+					Type: ast.TypeName{Name: "pg_ndistinct"},
+				},
+				{
+					Name: "dependencies",
+					Type: ast.TypeName{Name: "pg_dependencies"},
+				},
+				{
+					Name:    "most_common_vals",
+					Type:    ast.TypeName{Name: "_text"},
+					IsArray: true,
+				},
+				{
+					Name:    "most_common_val_nulls",
+					Type:    ast.TypeName{Name: "_bool"},
+					IsArray: true,
+				},
+				{
+					Name:    "most_common_freqs",
+					Type:    ast.TypeName{Name: "_float8"},
+					IsArray: true,
+				},
+				{
+					Name:    "most_common_base_freqs",
+					Type:    ast.TypeName{Name: "_float8"},
+					IsArray: true,
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_subscription",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "oid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "subdbid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "subname",
+					Type:      ast.TypeName{Name: "name"},
+					IsNotNull: true,
+					Length:    toPointer(64),
+				},
+				{
+					Name:      "subowner",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "subenabled",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "subconninfo",
+					Type:      ast.TypeName{Name: "text"},
+					IsNotNull: true,
+				},
+				{
+					Name:   "subslotname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:      "subsynccommit",
+					Type:      ast.TypeName{Name: "text"},
+					IsNotNull: true,
+				},
+				{
+					Name:      "subpublications",
+					Type:      ast.TypeName{Name: "_text"},
+					IsNotNull: true,
+					IsArray:   true,
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_subscription_rel",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "srsubid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "srrelid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "srsubstate",
+					Type:      ast.TypeName{Name: "char"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:   "srsublsn",
+					Type:   ast.TypeName{Name: "pg_lsn"},
+					Length: toPointer(8),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_tables",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "schemaname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "tablename",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "tableowner",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "tablespace",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "hasindexes",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+				{
+					Name:   "hasrules",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+				{
+					Name:   "hastriggers",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+				{
+					Name:   "rowsecurity",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_tablespace",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "oid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "spcname",
+					Type:      ast.TypeName{Name: "name"},
+					IsNotNull: true,
+					Length:    toPointer(64),
+				},
+				{
+					Name:      "spcowner",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:    "spcacl",
+					Type:    ast.TypeName{Name: "_aclitem"},
+					IsArray: true,
+				},
+				{
+					Name:    "spcoptions",
+					Type:    ast.TypeName{Name: "_text"},
+					IsArray: true,
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_timezone_abbrevs",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name: "abbrev",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:   "utc_offset",
+					Type:   ast.TypeName{Name: "interval"},
+					Length: toPointer(16),
+				},
+				{
+					Name:   "is_dst",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_timezone_names",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name: "name",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "abbrev",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:   "utc_offset",
+					Type:   ast.TypeName{Name: "interval"},
+					Length: toPointer(16),
+				},
+				{
+					Name:   "is_dst",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_transform",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "oid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "trftype",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "trflang",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "trffromsql",
+					Type:      ast.TypeName{Name: "regproc"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "trftosql",
+					Type:      ast.TypeName{Name: "regproc"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_trigger",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "oid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "tgrelid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "tgparentid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "tgname",
+					Type:      ast.TypeName{Name: "name"},
+					IsNotNull: true,
+					Length:    toPointer(64),
+				},
+				{
+					Name:      "tgfoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "tgtype",
+					Type:      ast.TypeName{Name: "int2"},
+					IsNotNull: true,
+					Length:    toPointer(2),
+				},
+				{
+					Name:      "tgenabled",
+					Type:      ast.TypeName{Name: "char"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "tgisinternal",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "tgconstrrelid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "tgconstrindid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "tgconstraint",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "tgdeferrable",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "tginitdeferred",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "tgnargs",
+					Type:      ast.TypeName{Name: "int2"},
+					IsNotNull: true,
+					Length:    toPointer(2),
+				},
+				{
+					Name:      "tgattr",
+					Type:      ast.TypeName{Name: "int2vector"},
+					IsNotNull: true,
+					IsArray:   true,
+				},
+				{
+					Name:      "tgargs",
+					Type:      ast.TypeName{Name: "bytea"},
+					IsNotNull: true,
+				},
+				{
+					Name: "tgqual",
+					Type: ast.TypeName{Name: "pg_node_tree"},
+				},
+				{
+					Name:   "tgoldtable",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "tgnewtable",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_ts_config",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "oid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cfgname",
+					Type:      ast.TypeName{Name: "name"},
+					IsNotNull: true,
+					Length:    toPointer(64),
+				},
+				{
+					Name:      "cfgnamespace",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cfgowner",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cfgparser",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_ts_config_map",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "mapcfg",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "maptokentype",
+					Type:      ast.TypeName{Name: "int4"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "mapseqno",
+					Type:      ast.TypeName{Name: "int4"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "mapdict",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_ts_dict",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "oid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "dictname",
+					Type:      ast.TypeName{Name: "name"},
+					IsNotNull: true,
+					Length:    toPointer(64),
+				},
+				{
+					Name:      "dictnamespace",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "dictowner",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "dicttemplate",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name: "dictinitoption",
+					Type: ast.TypeName{Name: "text"},
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_ts_parser",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "oid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "prsname",
+					Type:      ast.TypeName{Name: "name"},
+					IsNotNull: true,
+					Length:    toPointer(64),
+				},
+				{
+					Name:      "prsnamespace",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "prsstart",
+					Type:      ast.TypeName{Name: "regproc"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "prstoken",
+					Type:      ast.TypeName{Name: "regproc"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "prsend",
+					Type:      ast.TypeName{Name: "regproc"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "prsheadline",
+					Type:      ast.TypeName{Name: "regproc"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "prslextype",
+					Type:      ast.TypeName{Name: "regproc"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_ts_template",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "oid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "tmplname",
+					Type:      ast.TypeName{Name: "name"},
+					IsNotNull: true,
+					Length:    toPointer(64),
+				},
+				{
+					Name:      "tmplnamespace",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "tmplinit",
+					Type:      ast.TypeName{Name: "regproc"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "tmpllexize",
+					Type:      ast.TypeName{Name: "regproc"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_type",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "oid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "typname",
+					Type:      ast.TypeName{Name: "name"},
+					IsNotNull: true,
+					Length:    toPointer(64),
+				},
+				{
+					Name:      "typnamespace",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "typowner",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "typlen",
+					Type:      ast.TypeName{Name: "int2"},
+					IsNotNull: true,
+					Length:    toPointer(2),
+				},
+				{
+					Name:      "typbyval",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "typtype",
+					Type:      ast.TypeName{Name: "char"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "typcategory",
+					Type:      ast.TypeName{Name: "char"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "typispreferred",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "typisdefined",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "typdelim",
+					Type:      ast.TypeName{Name: "char"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "typrelid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "typelem",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "typarray",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "typinput",
+					Type:      ast.TypeName{Name: "regproc"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "typoutput",
+					Type:      ast.TypeName{Name: "regproc"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "typreceive",
+					Type:      ast.TypeName{Name: "regproc"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "typsend",
+					Type:      ast.TypeName{Name: "regproc"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "typmodin",
+					Type:      ast.TypeName{Name: "regproc"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "typmodout",
+					Type:      ast.TypeName{Name: "regproc"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "typanalyze",
+					Type:      ast.TypeName{Name: "regproc"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "typalign",
+					Type:      ast.TypeName{Name: "char"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "typstorage",
+					Type:      ast.TypeName{Name: "char"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "typnotnull",
+					Type:      ast.TypeName{Name: "bool"},
+					IsNotNull: true,
+					Length:    toPointer(1),
+				},
+				{
+					Name:      "typbasetype",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "typtypmod",
+					Type:      ast.TypeName{Name: "int4"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "typndims",
+					Type:      ast.TypeName{Name: "int4"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "typcollation",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name: "typdefaultbin",
+					Type: ast.TypeName{Name: "pg_node_tree"},
+				},
+				{
+					Name: "typdefault",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:    "typacl",
+					Type:    ast.TypeName{Name: "_aclitem"},
+					IsArray: true,
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_user",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "usename",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "usesysid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "usecreatedb",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+				{
+					Name:   "usesuper",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+				{
+					Name:   "userepl",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+				{
+					Name:   "usebypassrls",
+					Type:   ast.TypeName{Name: "bool"},
+					Length: toPointer(1),
+				},
+				{
+					Name: "passwd",
+					Type: ast.TypeName{Name: "text"},
+				},
+				{
+					Name:   "valuntil",
+					Type:   ast.TypeName{Name: "timestamptz"},
+					Length: toPointer(8),
+				},
+				{
+					Name:    "useconfig",
+					Type:    ast.TypeName{Name: "_text"},
+					IsArray: true,
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_user_mapping",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:      "tableoid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmax",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmax",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "cmin",
+					Type:      ast.TypeName{Name: "cid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "xmin",
+					Type:      ast.TypeName{Name: "xid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "ctid",
+					Type:      ast.TypeName{Name: "tid"},
+					IsNotNull: true,
+					Length:    toPointer(6),
+				},
+				{
+					Name:      "oid",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "umuser",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:      "umserver",
+					Type:      ast.TypeName{Name: "oid"},
+					IsNotNull: true,
+					Length:    toPointer(4),
+				},
+				{
+					Name:    "umoptions",
+					Type:    ast.TypeName{Name: "_text"},
+					IsArray: true,
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_user_mappings",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "umid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "srvid",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "srvname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "umuser",
+					Type:   ast.TypeName{Name: "oid"},
+					Length: toPointer(4),
+				},
+				{
+					Name:   "usename",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:    "umoptions",
+					Type:    ast.TypeName{Name: "_text"},
+					IsArray: true,
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "pg_catalog",
+				Name:    "pg_views",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "schemaname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "viewname",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "viewowner",
+					Type:   ast.TypeName{Name: "name"},
+					Length: toPointer(64),
+				},
+				{
+					Name: "definition",
+					Type: ast.TypeName{Name: "text"},
+				},
+			},
 		},
 	}
 	return s
