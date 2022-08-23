@@ -30,6 +30,8 @@ type Column struct {
 	TableAlias string
 	Type       *ast.TypeName
 
+	IsSqlcSlice bool // is this sqlc.slice()
+
 	skipTableRequiredCheck bool
 }
 

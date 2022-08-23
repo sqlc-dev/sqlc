@@ -14,6 +14,7 @@ type Field struct {
 	Type    string
 	Tags    map[string]string
 	Comment string
+	Column  *plugin.Column
 }
 
 func (gf Field) Tag() string {
@@ -26,6 +27,10 @@ func (gf Field) Tag() string {
 	}
 	sort.Strings(tags)
 	return strings.Join(tags, " ")
+}
+
+func (gf Field) HasSqlcSlice() bool {
+	return gf.Column.IsSqlcSlice
 }
 
 func JSONTagName(name string, settings *plugin.Settings) string {

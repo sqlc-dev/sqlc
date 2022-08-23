@@ -168,6 +168,7 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 				Name:      paramName(p),
 				Typ:       goType(req, p.Column),
 				SQLDriver: sqlpkg,
+				Column:    p.Column,
 			}
 		} else if len(query.Params) > 1 {
 			var cols []goColumn
@@ -311,6 +312,7 @@ func columnsToStruct(req *plugin.CodeGenRequest, name string, columns []goColumn
 			DBName: colName,
 			Type:   goType(req, c.Column),
 			Tags:   tags,
+			Column: c.Column,
 		})
 		if _, found := seen[baseFieldName]; !found {
 			seen[baseFieldName] = []int{i}
