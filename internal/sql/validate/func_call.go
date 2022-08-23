@@ -56,6 +56,10 @@ func (v *funcCallVisitor) Visit(node ast.Node) astutils.Visitor {
 			}
 			return nil
 		}
+
+		// If we have sqlc.arg or sqlc.narg, there is no need to resolve the function call.
+		// It won't resolve anyway, sinc it is not a real function.
+		return nil
 	}
 
 	fun, err := v.catalog.ResolveFuncCall(call)
