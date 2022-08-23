@@ -51,16 +51,8 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 )
 
-{{- if .Relations }}
-// toPointer converts an int to a pointer without a temporary
-// variable at the call-site
-func toPointer(x int) *int {
-	return &x
-}
-{{- end }}
-
-func {{.Name}}() *catalog.Schema {
-	s := &catalog.Schema{Name: "pg_catalog"}
+func {{.GenFnName}}() *catalog.Schema {
+	s := &catalog.Schema{Name: "{{ .SchemaName }}"}
 	s.Funcs = []*catalog.Function{
 	    {{- range .Procs}}
 		{
@@ -140,10 +132,11 @@ func loadExtension(name string) *catalog.Schema {
 `
 
 type tmplCtx struct {
-	Pkg       string
-	Name      string
-	Procs     []Proc
-	Relations []Relation
+	Pkg        string
+	GenFnName  string
+	SchemaName string
+	Procs      []Proc
+	Relations  []Relation
 }
 
 func main() {
@@ -160,27 +153,33 @@ func clean(arg string) string {
 	return arg
 }
 
-func run(ctx context.Context) error {
-	tmpl, err := template.New("").Parse(catalogTmpl)
+// writeFormattedGo executes `tmpl` with `data` as its context to the the file `destPath`
+func writeFormattedGo(tmpl *template.Template, data any, destPath string) error {
+	out := bytes.NewBuffer([]byte{})
+	err := tmpl.Execute(out, data)
 	if err != nil {
 		return err
 	}
-	conn, err := pgx.Connect(ctx, os.Getenv("DATABASE_URL"))
-	if err != nil {
-		return err
-	}
-	defer conn.Close(ctx)
-
-	// Generate internal/engine/postgresql/pg_catalog.gen.go
-	rows, err := conn.Query(ctx, catalogFuncs)
-	if err != nil {
-		return err
-	}
-	allProcs, err := scanProcs(rows)
+	code, err := format.Source(out.Bytes())
 	if err != nil {
 		return err
 	}
 
+	err = os.WriteFile(destPath, code, 0644)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// preserveLegacyCatalogBehavior maintain previous ordering and filtering
+// that was manually done to the generated file pg_catalog.go.
+// Some of the test depend on this ordering - in particular, function lookups
+// where there might be multiple matching functions (due to type overloads)
+// Until sqlc supports "smarter" looking up of these functions,
+// preserveLegacyCatalogBehavior ensures there are no accidental test breakages
+func preserveLegacyCatalogBehavior(allProcs []Proc) []Proc {
 	// Preserve the legacy sort order of the end-to-end tests
 	sort.SliceStable(allProcs, func(i, j int) bool {
 		fnA := allProcs[i]
@@ -199,7 +198,7 @@ func run(ctx context.Context) error {
 
 	procs := make([]Proc, 0, len(allProcs))
 	for _, p := range allProcs {
-		// Skip generating concat to preserve legacy behavior
+		// Skip generating pg_catalog.concat to preserve legacy behavior
 		if p.Name == "concat" {
 			continue
 		}
@@ -207,26 +206,62 @@ func run(ctx context.Context) error {
 		procs = append(procs, p)
 	}
 
-	relations, err := readRelations(ctx, conn)
+	return procs
+}
+
+func run(ctx context.Context) error {
+	tmpl, err := template.New("").Parse(catalogTmpl)
 	if err != nil {
 		return err
+	}
+	conn, err := pgx.Connect(ctx, os.Getenv("DATABASE_URL"))
+	if err != nil {
+		return err
+	}
+	defer conn.Close(ctx)
+
+	schemas := []schemaToLoad{
+		{
+			Name:      "pg_catalog",
+			GenFnName: "genPGCatalog",
+			DestPath:  filepath.Join("internal", "engine", "postgresql", "pg_catalog.go"),
+		},
+		{
+			Name:      "information_schema",
+			GenFnName: "genInformationSchema",
+			DestPath:  filepath.Join("internal", "engine", "postgresql", "information_schema.go"),
+		},
 	}
 
-	out := bytes.NewBuffer([]byte{})
-	if err := tmpl.Execute(out, tmplCtx{Pkg: "postgresql", Name: "genPGCatalog", Procs: procs, Relations: relations}); err != nil {
-		return err
-	}
-	code, err := format.Source(out.Bytes())
-	if err != nil {
-		return err
-	}
-	err = os.WriteFile(filepath.Join("internal", "engine", "postgresql", "pg_catalog.go"), code, 0644)
-	if err != nil {
-		return err
+	for _, schema := range schemas {
+		procs, err := readProcs(ctx, conn, schema.Name)
+		if err != nil {
+			return err
+		}
+
+		if schema.Name == "pg_catalog" {
+			procs = preserveLegacyCatalogBehavior(procs)
+		}
+
+		relations, err := readRelations(ctx, conn, schema.Name)
+		if err != nil {
+			return err
+		}
+
+		err = writeFormattedGo(tmpl, tmplCtx{
+			Pkg:        "postgresql",
+			SchemaName: schema.Name,
+			GenFnName:  schema.GenFnName,
+			Procs:      procs,
+			Relations:  relations,
+		}, schema.DestPath)
+
+		if err != nil {
+			return err
+		}
 	}
 
 	loaded := []extensionPair{}
-
 	for _, extension := range extensions {
 		name := strings.Replace(extension, "-", "_", -1)
 
@@ -268,42 +303,41 @@ func run(ctx context.Context) error {
 			return false
 		})
 
-		out := bytes.NewBuffer([]byte{})
-		if err := tmpl.Execute(out, tmplCtx{Pkg: "contrib", Name: funcName, Procs: procs}); err != nil {
-			return err
-		}
-		code, err := format.Source(out.Bytes())
+		extensionPath := filepath.Join("internal", "engine", "postgresql", "contrib", name+".go")
+		err = writeFormattedGo(tmpl, tmplCtx{
+			Pkg:        "contrib",
+			SchemaName: "pg_catalog",
+			GenFnName:  funcName,
+			Procs:      procs,
+		}, extensionPath)
 		if err != nil {
-			return err
-		}
-		err = os.WriteFile(filepath.Join("internal", "engine", "postgresql", "contrib", name+".go"), code, 0644)
-		if err != nil {
-			return err
+			return fmt.Errorf("error generating extension %s: %w", extension, err)
 		}
 
 		loaded = append(loaded, extensionPair{Name: extension, Func: funcName})
 	}
 
-	{
-		tmpl, err := template.New("").Parse(loaderFuncTmpl)
-		if err != nil {
-			return err
-		}
-		out := bytes.NewBuffer([]byte{})
-		if err := tmpl.Execute(out, loaded); err != nil {
-			return err
-		}
-		code, err := format.Source(out.Bytes())
-		if err != nil {
-			return err
-		}
-		err = os.WriteFile(filepath.Join("internal", "engine", "postgresql", "extension.go"), code, 0644)
-		if err != nil {
-			return err
-		}
+	extensionTmpl, err := template.New("").Parse(loaderFuncTmpl)
+	if err != nil {
+		return err
+	}
+
+	extensionLoaderPath := filepath.Join("internal", "engine", "postgresql", "extension.go")
+	err = writeFormattedGo(extensionTmpl, loaded, extensionLoaderPath)
+	if err != nil {
+		return err
 	}
 
 	return nil
+}
+
+type schemaToLoad struct {
+	// name is the name of a schema to load
+	Name string
+	// DestPath is the desination for the generate file
+	DestPath string
+	// The name of the function to generate for loading this schema
+	GenFnName string
 }
 
 type extensionPair struct {

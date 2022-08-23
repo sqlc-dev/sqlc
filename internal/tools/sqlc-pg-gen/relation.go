@@ -26,7 +26,7 @@ from relations
 inner join pg_catalog.pg_class on pg_class.relname = relations.name
 left join pg_catalog.pg_attribute on pg_attribute.attrelid = pg_class.oid
 inner join pg_catalog.pg_type column_type on pg_attribute.atttypid = column_type.oid
-where relations.schemaname = 'pg_catalog'
+where relations.schemaname = $1
 -- Make sure these columns are always generated in the same order
 -- so that the output is stable
 order by
@@ -101,8 +101,8 @@ func scanRelations(rows pgx.Rows) ([]Relation, error) {
 	return relations, rows.Err()
 }
 
-func readRelations(ctx context.Context, conn *pgx.Conn) ([]Relation, error) {
-	rows, err := conn.Query(ctx, relationQuery)
+func readRelations(ctx context.Context, conn *pgx.Conn, schemaName string) ([]Relation, error) {
+	rows, err := conn.Query(ctx, relationQuery, schemaName)
 	if err != nil {
 		return nil, err
 	}

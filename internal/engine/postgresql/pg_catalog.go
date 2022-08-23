@@ -7,12 +7,6 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 )
 
-// toPointer converts an int to a pointer without a temporary
-// variable at the call-site
-func toPointer(x int) *int {
-	return &x
-}
-
 func genPGCatalog() *catalog.Schema {
 	s := &catalog.Schema{Name: "pg_catalog"}
 	s.Funcs = []*catalog.Function{

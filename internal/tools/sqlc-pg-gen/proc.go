@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"strings"
 
 	pgx "github.com/jackc/pgx/v4"
@@ -16,7 +17,7 @@ SELECT p.proname as name,
   p.proargmodes::text[]
 FROM pg_catalog.pg_proc p
 LEFT JOIN pg_catalog.pg_namespace n ON n.oid = p.pronamespace
-WHERE n.nspname OPERATOR(pg_catalog.~) '^(pg_catalog)$'
+WHERE n.nspname::text = $1
   AND pg_function_is_visible(p.oid)
 -- simply order all columns to keep subsequent runs stable
 ORDER BY 1, 2, 3, 4, 5;
@@ -154,4 +155,13 @@ func scanProcs(rows pgx.Rows) ([]Proc, error) {
 		procs = append(procs, p)
 	}
 	return procs, rows.Err()
+}
+
+func readProcs(ctx context.Context, conn *pgx.Conn, schemaName string) ([]Proc, error) {
+	rows, err := conn.Query(ctx, catalogFuncs, schemaName)
+	if err != nil {
+		return nil, err
+	}
+
+	return scanProcs(rows)
 }

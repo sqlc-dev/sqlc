@@ -13,7 +13,7 @@ import (
 func buildEnums(req *plugin.CodeGenRequest) []Enum {
 	var enums []Enum
 	for _, schema := range req.Catalog.Schemas {
-		if schema.Name == "pg_catalog" {
+		if schema.Name == "pg_catalog" || schema.Name == "information_schema" {
 			continue
 		}
 		for _, enum := range schema.Enums {
@@ -52,7 +52,7 @@ func buildEnums(req *plugin.CodeGenRequest) []Enum {
 func buildStructs(req *plugin.CodeGenRequest) []Struct {
 	var structs []Struct
 	for _, schema := range req.Catalog.Schemas {
-		if schema.Name == "pg_catalog" {
+		if schema.Name == "pg_catalog" || schema.Name == "information_schema" {
 			continue
 		}
 		for _, table := range schema.Tables {
@@ -253,8 +253,9 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 
 // It's possible that this method will generate duplicate JSON tag values
 //
-//   Columns: count, count,   count_2
-//    Fields: Count, Count_2, Count2
+//	Columns: count, count,   count_2
+//	 Fields: Count, Count_2, Count2
+//
 // JSON tags: count, count_2, count_2
 //
 // This is unlikely to happen, so don't fix it yet

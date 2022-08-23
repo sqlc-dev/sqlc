@@ -186,7 +186,7 @@ func removePGCatalog(req *plugin.CodeGenRequest) {
 
 	filtered := make([]*plugin.Schema, 0, len(req.Catalog.Schemas))
 	for _, schema := range req.Catalog.Schemas {
-		if schema.Name == "pg_catalog" {
+		if schema.Name == "pg_catalog" || schema.Name == "information_schema" {
 			continue
 		}
 
