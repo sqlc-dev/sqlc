@@ -34,6 +34,7 @@ type v1PackageSettings struct {
 	EmitMethodsWithDBArgument bool       `json:"emit_methods_with_db_argument" yaml:"emit_methods_with_db_argument"`
 	EmitEnumValidMethod       bool       `json:"emit_enum_valid_method,omitempty" yaml:"emit_enum_valid_method"`
 	EmitAllEnumValues         bool       `json:"emit_all_enum_values,omitempty" yaml:"emit_all_enum_values"`
+	EmitNilOnNoRows           bool       `json:"emit_nil_on_no_rows,omitempty" yaml:"emit_nil_on_no_rows"`
 	JSONTagsCaseStyle         string     `json:"json_tags_case_style,omitempty" yaml:"json_tags_case_style"`
 	SQLPackage                string     `json:"sql_package" yaml:"sql_package"`
 	Overrides                 []Override `json:"overrides" yaml:"overrides"`
@@ -130,6 +131,7 @@ func (c *V1GenerateSettings) Translate() Config {
 					EmitMethodsWithDBArgument: pkg.EmitMethodsWithDBArgument,
 					EmitEnumValidMethod:       pkg.EmitEnumValidMethod,
 					EmitAllEnumValues:         pkg.EmitAllEnumValues,
+					EmitNilOnNoRows:           pkg.EmitNilOnNoRows,
 					Package:                   pkg.Name,
 					Out:                       pkg.Path,
 					SQLPackage:                pkg.SQLPackage,

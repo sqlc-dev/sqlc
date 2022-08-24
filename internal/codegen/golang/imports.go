@@ -370,6 +370,10 @@ func (i *importer) queryImports(filename string) fileImports {
 		std["context"] = struct{}{}
 	}
 
+	if i.Settings.Go.EmitNilOnNoRows {
+		std["errors"] = struct{}{}
+	}
+
 	sqlpkg := SQLPackageFromString(i.Settings.Go.SqlPackage)
 	if sliceScan() && sqlpkg != SQLPackagePGX {
 		pkg[ImportSpec{Path: "github.com/lib/pq"}] = struct{}{}

@@ -143,6 +143,7 @@ type SQLGo struct {
 	EmitMethodsWithDBArgument bool              `json:"emit_methods_with_db_argument,omitempty" yaml:"emit_methods_with_db_argument"`
 	EmitEnumValidMethod       bool              `json:"emit_enum_valid_method,omitempty" yaml:"emit_enum_valid_method"`
 	EmitAllEnumValues         bool              `json:"emit_all_enum_values,omitempty" yaml:"emit_all_enum_values"`
+	EmitNilOnNoRows           bool              `json:"emit_nil_on_no_rows,omitempty" yaml:"emit_nil_on_no_rows"`
 	JSONTagsCaseStyle         string            `json:"json_tags_case_style,omitempty" yaml:"json_tags_case_style"`
 	Package                   string            `json:"package" yaml:"package"`
 	Out                       string            `json:"out" yaml:"out"`
@@ -226,6 +227,9 @@ func Validate(c *Config) error {
 		}
 		if sqlGo.EmitMethodsWithDBArgument && sqlGo.EmitPreparedQueries {
 			return fmt.Errorf("invalid config: emit_methods_with_db_argument and emit_prepared_queries settings are mutually exclusive")
+		}
+		if sqlGo.EmitNilOnNoRows && !sqlGo.EmitResultStructPointers {
+			return fmt.Errorf("invalid config: emit_nil_on_no_rows requires emit_result_struct_pointers")
 		}
 	}
 	return nil
