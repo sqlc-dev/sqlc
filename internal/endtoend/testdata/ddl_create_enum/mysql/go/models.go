@@ -40,7 +40,7 @@ func (e *FooDigit) Scan(src interface{}) error {
 
 type NullFooDigit struct {
 	FooDigit FooDigit
-	Valid    bool // Valid is true if String is not NULL
+	Valid    bool // Valid is true if FooDigit is not NULL
 }
 
 // Scan implements the Scanner interface.
@@ -87,7 +87,7 @@ func (e *FooFoobar) Scan(src interface{}) error {
 
 type NullFooFoobar struct {
 	FooFoobar FooFoobar
-	Valid     bool // Valid is true if String is not NULL
+	Valid     bool // Valid is true if FooFoobar is not NULL
 }
 
 // Scan implements the Scanner interface.

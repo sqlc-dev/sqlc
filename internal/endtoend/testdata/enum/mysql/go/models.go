@@ -34,7 +34,7 @@ func (e *UsersShirtSize) Scan(src interface{}) error {
 
 type NullUsersShirtSize struct {
 	UsersShirtSize UsersShirtSize
-	Valid          bool // Valid is true if String is not NULL
+	Valid          bool // Valid is true if UsersShirtSize is not NULL
 }
 
 // Scan implements the Scanner interface.
@@ -79,7 +79,7 @@ func (e *UsersShoeSize) Scan(src interface{}) error {
 
 type NullUsersShoeSize struct {
 	UsersShoeSize UsersShoeSize
-	Valid         bool // Valid is true if String is not NULL
+	Valid         bool // Valid is true if UsersShoeSize is not NULL
 }
 
 // Scan implements the Scanner interface.
