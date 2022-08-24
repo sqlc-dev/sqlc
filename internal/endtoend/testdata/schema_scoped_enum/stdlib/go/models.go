@@ -30,7 +30,7 @@ func (e *FooTypeUserRole) Scan(src interface{}) error {
 
 type NullFooTypeUserRole struct {
 	FooTypeUserRole FooTypeUserRole
-	Valid           bool // Valid is true if String is not NULL
+	Valid           bool // Valid is true if FooTypeUserRole is not NULL
 }
 
 // Scan implements the Scanner interface.

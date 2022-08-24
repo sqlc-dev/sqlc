@@ -32,7 +32,7 @@ func (e *FooMood) Scan(src interface{}) error {
 
 type NullFooMood struct {
 	FooMood FooMood
-	Valid   bool // Valid is true if String is not NULL
+	Valid   bool // Valid is true if FooMood is not NULL
 }
 
 // Scan implements the Scanner interface.
