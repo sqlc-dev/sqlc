@@ -34,7 +34,7 @@ func (e *Size) Scan(src interface{}) error {
 
 type NullSize struct {
 	Size  Size
-	Valid bool // Valid is true if String is not NULL
+	Valid bool // Valid is true if Size is not NULL
 }
 
 // Scan implements the Scanner interface.

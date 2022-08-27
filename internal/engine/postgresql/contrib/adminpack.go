@@ -19,9 +19,6 @@ func Adminpack() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
@@ -34,8 +31,20 @@ func Adminpack() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "pg_file_sync",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "void"},
 		},
 		{
 			Name: "pg_file_unlink",

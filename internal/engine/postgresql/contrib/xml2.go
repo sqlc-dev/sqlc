@@ -49,9 +49,6 @@ func Xml2() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
@@ -64,21 +61,6 @@ func Xml2() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
-			},
-			ReturnType: &ast.TypeName{Name: "text"},
-		},
-		{
-			Name: "xpath_nodeset",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
@@ -100,6 +82,24 @@ func Xml2() *catalog.Schema {
 		{
 			Name: "xpath_nodeset",
 			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
+			Name: "xpath_nodeset",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
@@ -166,15 +166,15 @@ func Xml2() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
 			Name: "xslt_process",
 			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},

@@ -89,7 +89,7 @@ func (e *{{.Name}}) Scan(src interface{}) error {
 
 type Null{{.Name}} struct {
 	{{.Name}} {{.Name}}
-	Valid  bool // Valid is true if String is not NULL
+  Valid  bool // Valid is true if {{.Name}} is not NULL
 }
 
 // Scan implements the Scanner interface.
