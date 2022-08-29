@@ -169,6 +169,7 @@ type SQLPython struct {
 	Out                 string     `json:"out" yaml:"out"`
 	Overrides           []Override `json:"overrides,omitempty" yaml:"overrides"`
 	EmitPydanticModels  bool       `json:"emit_pydantic_models,omitempty" yaml:"emit_pydantic_models"`
+	QueryParameterLimit *int32     `json:"query_parameter_limit,omitempty" yaml:"query_parameter_limit"`
 }
 
 type SQLJSON struct {
@@ -194,6 +195,8 @@ var ErrPluginNotFound = errors.New("no plugin found")
 var ErrPluginNoType = errors.New("plugin: field `process` or `wasm` required")
 var ErrPluginBothTypes = errors.New("plugin: both `process` and `wasm` cannot both be defined")
 var ErrPluginProcessNoCmd = errors.New("plugin: missing process command")
+
+var ErrInvalidQueryParameterLimit = errors.New("invalid query parameter limit")
 
 func ParseConfig(rd io.Reader) (Config, error) {
 	var buf bytes.Buffer

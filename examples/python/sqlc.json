@@ -10,7 +10,8 @@
           "out": "src/authors",
           "package": "authors",
           "emit_sync_querier": true,
-          "emit_async_querier": true
+          "emit_async_querier": true,
+          "query_parameter_limit": 5
         }
       }
     },
@@ -22,7 +23,8 @@
         "python": {
           "out": "src/booktest",
           "package": "booktest",
-          "emit_async_querier": true
+          "emit_async_querier": true,
+          "query_parameter_limit": 5
         }
       }
     },
@@ -34,7 +36,8 @@
         "python": {
           "out": "src/jets",
           "package": "jets",
-          "emit_async_querier": true
+          "emit_async_querier": true,
+          "query_parameter_limit": 5
         }
       }
     },
@@ -46,7 +49,8 @@
         "python": {
           "out": "src/ondeck",
           "package": "ondeck",
-          "emit_async_querier": true
+          "emit_async_querier": true,
+          "query_parameter_limit": 5
         }
       }
     }

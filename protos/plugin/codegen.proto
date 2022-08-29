@@ -79,6 +79,7 @@ message PythonCode
   string package = 4;
   string out = 5;
   bool emit_pydantic_models = 6;
+  optional int32 query_parameter_limit = 7;
 }
 
 message KotlinCode

@@ -85,6 +85,7 @@ func pluginPythonCode(s config.SQLPython) *plugin.PythonCode {
 		EmitSyncQuerier:     s.EmitSyncQuerier,
 		EmitAsyncQuerier:    s.EmitAsyncQuerier,
 		EmitPydanticModels:  s.EmitPydanticModels,
+		QueryParameterLimit: s.QueryParameterLimit,
 	}
 }
 

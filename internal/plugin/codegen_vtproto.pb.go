@@ -526,6 +526,11 @@ func (m *PythonCode) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if m.QueryParameterLimit != nil {
+		i = encodeVarint(dAtA, i, uint64(*m.QueryParameterLimit))
+		i--
+		dAtA[i] = 0x38
+	}
 	if m.EmitPydanticModels {
 		i--
 		if m.EmitPydanticModels {
@@ -1920,6 +1925,9 @@ func (m *PythonCode) SizeVT() (n int) {
 	}
 	if m.EmitPydanticModels {
 		n += 2
+	}
+	if m.QueryParameterLimit != nil {
+		n += 1 + sov(uint64(*m.QueryParameterLimit))
 	}
 	if m.unknownFields != nil {
 		n += len(m.unknownFields)
@@ -4067,6 +4075,26 @@ func (m *PythonCode) UnmarshalVT(dAtA []byte) error {
 				}
 			}
 			m.EmitPydanticModels = bool(v != 0)
+		case 7:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field QueryParameterLimit", wireType)
+			}
+			var v int32
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.QueryParameterLimit = &v
 		default:
 			iNdEx = preIndex
 			skippy, err := skip(dAtA[iNdEx:])
