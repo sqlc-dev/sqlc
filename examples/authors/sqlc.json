@@ -22,6 +22,17 @@
           "out": "mysql"
         }
       }
+    },
+    {
+      "schema": "sqlite/schema.sql",
+      "queries": "sqlite/query.sql",
+      "engine": "sqlite",
+      "gen": {
+        "go": {
+          "package": "authors",
+          "out": "sqlite"
+        }
+      }
     }
   ]
 }

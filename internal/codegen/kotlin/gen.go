@@ -3,6 +3,7 @@ package kotlin
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"regexp"
@@ -216,7 +217,7 @@ func ktEnumValueName(value string) string {
 func buildEnums(req *plugin.CodeGenRequest) []Enum {
 	var enums []Enum
 	for _, schema := range req.Catalog.Schemas {
-		if schema.Name == "pg_catalog" {
+		if schema.Name == "pg_catalog" || schema.Name == "information_schema" {
 			continue
 		}
 		for _, enum := range schema.Enums {
@@ -264,7 +265,7 @@ func memberName(name string, settings *plugin.Settings) string {
 func buildDataClasses(req *plugin.CodeGenRequest) []Struct {
 	var structs []Struct
 	for _, schema := range req.Catalog.Schemas {
-		if schema.Name == "pg_catalog" {
+		if schema.Name == "pg_catalog" || schema.Name == "information_schema" {
 			continue
 		}
 		for _, table := range schema.Tables {
@@ -762,7 +763,7 @@ func ktFormat(s string) string {
 	return o
 }
 
-func Generate(req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
+func Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
 	enums := buildEnums(req)
 	structs := buildDataClasses(req)
 	queries, err := buildQueries(req, structs)

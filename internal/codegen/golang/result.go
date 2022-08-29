@@ -13,7 +13,7 @@ import (
 func buildEnums(req *plugin.CodeGenRequest) []Enum {
 	var enums []Enum
 	for _, schema := range req.Catalog.Schemas {
-		if schema.Name == "pg_catalog" {
+		if schema.Name == "pg_catalog" || schema.Name == "information_schema" {
 			continue
 		}
 		for _, enum := range schema.Enums {
@@ -52,7 +52,7 @@ func buildEnums(req *plugin.CodeGenRequest) []Enum {
 func buildStructs(req *plugin.CodeGenRequest) []Struct {
 	var structs []Struct
 	for _, schema := range req.Catalog.Schemas {
-		if schema.Name == "pg_catalog" {
+		if schema.Name == "pg_catalog" || schema.Name == "information_schema" {
 			continue
 		}
 		for _, table := range schema.Tables {
@@ -77,11 +77,12 @@ func buildStructs(req *plugin.CodeGenRequest) []Struct {
 			for _, column := range table.Columns {
 				tags := map[string]string{}
 				if req.Settings.Go.EmitDbTags {
-					tags["db:"] = column.Name
+					tags["db"] = column.Name
 				}
 				if req.Settings.Go.EmitJsonTags {
-					tags["json:"] = JSONTagName(column.Name, req.Settings)
+					tags["json"] = JSONTagName(column.Name, req.Settings)
 				}
+				addExtraGoStructTags(tags, req, column)
 				s.Fields = append(s.Fields, Field{
 					Name:    StructName(column.Name, req.Settings),
 					Type:    goType(req, column),
@@ -255,8 +256,9 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 
 // It's possible that this method will generate duplicate JSON tag values
 //
-//   Columns: count, count,   count_2
-//    Fields: Count, Count_2, Count2
+//	Columns: count, count,   count_2
+//	 Fields: Count, Count_2, Count2
+//
 // JSON tags: count, count_2, count_2
 //
 // This is unlikely to happen, so don't fix it yet
@@ -286,10 +288,10 @@ func columnsToStruct(req *plugin.CodeGenRequest, name string, columns []goColumn
 		}
 		tags := map[string]string{}
 		if req.Settings.Go.EmitDbTags {
-			tags["db:"] = tagName
+			tags["db"] = tagName
 		}
 		if req.Settings.Go.EmitJsonTags {
-			tags["json:"] = JSONTagName(tagName, req.Settings)
+			tags["json"] = JSONTagName(tagName, req.Settings)
 		}
 		gs.Fields = append(gs.Fields, Field{
 			Name:   fieldName,

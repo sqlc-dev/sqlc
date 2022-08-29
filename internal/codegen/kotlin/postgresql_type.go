@@ -84,7 +84,7 @@ func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) (string, bool)
 
 	default:
 		for _, schema := range req.Catalog.Schemas {
-			if schema.Name == "pg_catalog" {
+			if schema.Name == "pg_catalog" || schema.Name == "information_schema" {
 				continue
 			}
 			for _, enum := range schema.Enums {

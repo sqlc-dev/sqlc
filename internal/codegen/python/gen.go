@@ -1,6 +1,7 @@
 package python
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -243,7 +244,7 @@ func pyEnumValueName(value string) string {
 func buildEnums(req *plugin.CodeGenRequest) []Enum {
 	var enums []Enum
 	for _, schema := range req.Catalog.Schemas {
-		if schema.Name == "pg_catalog" {
+		if schema.Name == "pg_catalog" || schema.Name == "information_schema" {
 			continue
 		}
 		for _, enum := range schema.Enums {
@@ -276,7 +277,7 @@ func buildEnums(req *plugin.CodeGenRequest) []Enum {
 func buildModels(req *plugin.CodeGenRequest) []Struct {
 	var structs []Struct
 	for _, schema := range req.Catalog.Schemas {
-		if schema.Name == "pg_catalog" {
+		if schema.Name == "pg_catalog" || schema.Name == "information_schema" {
 			continue
 		}
 		for _, table := range schema.Tables {
@@ -588,6 +589,26 @@ func dataclassNode(name string) *pyast.ClassDef {
 	}
 }
 
+func pydanticNode(name string) *pyast.ClassDef {
+	return &pyast.ClassDef{
+		Name: name,
+		Bases: []*pyast.Node{
+			{
+				Node: &pyast.Node_Attribute{
+					Attribute: &pyast.Attribute{
+						Value: &pyast.Node{
+							Node: &pyast.Node_Name{
+								Name: &pyast.Name{Id: "pydantic"},
+							},
+						},
+						Attr: "BaseModel",
+					},
+				},
+			},
+		},
+	}
+}
+
 func fieldNode(f Field) *pyast.Node {
 	return &pyast.Node{
 		Node: &pyast.Node_AnnAssign{
@@ -695,7 +716,12 @@ func buildModelsTree(ctx *pyTmplCtx, i *importer) *pyast.Node {
 	}
 
 	for _, m := range ctx.Models {
-		def := dataclassNode(m.Name)
+		var def *pyast.ClassDef
+		if ctx.EmitPydanticModels {
+			def = pydanticNode(m.Name)
+		} else {
+			def = dataclassNode(m.Name)
+		}
 		if m.Comment != "" {
 			def.Body = append(def.Body, &pyast.Node{
 				Node: &pyast.Node_Expr{
@@ -825,7 +851,12 @@ func buildQueryTree(ctx *pyTmplCtx, i *importer, source string) *pyast.Node {
 		mod.Body = append(mod.Body, assignNode(q.ConstantName, poet.Constant(queryText)))
 		for _, arg := range q.Args {
 			if arg.EmitStruct() {
-				def := dataclassNode(arg.Struct.Name)
+				var def *pyast.ClassDef
+				if ctx.EmitPydanticModels {
+					def = pydanticNode(arg.Struct.Name)
+				} else {
+					def = dataclassNode(arg.Struct.Name)
+				}
 				for _, f := range arg.Struct.Fields {
 					def.Body = append(def.Body, fieldNode(f))
 				}
@@ -833,7 +864,12 @@ func buildQueryTree(ctx *pyTmplCtx, i *importer, source string) *pyast.Node {
 			}
 		}
 		if q.Ret.EmitStruct() {
-			def := dataclassNode(q.Ret.Struct.Name)
+			var def *pyast.ClassDef
+			if ctx.EmitPydanticModels {
+				def = pydanticNode(q.Ret.Struct.Name)
+			} else {
+				def = dataclassNode(q.Ret.Struct.Name)
+			}
 			for _, f := range q.Ret.Struct.Fields {
 				def.Body = append(def.Body, fieldNode(f))
 			}
@@ -1030,13 +1066,14 @@ func buildQueryTree(ctx *pyTmplCtx, i *importer, source string) *pyast.Node {
 }
 
 type pyTmplCtx struct {
-	Models      []Struct
-	Queries     []Query
-	Enums       []Enum
-	EmitSync    bool
-	EmitAsync   bool
-	SourceName  string
-	SqlcVersion string
+	Models             []Struct
+	Queries            []Query
+	Enums              []Enum
+	EmitSync           bool
+	EmitAsync          bool
+	SourceName         string
+	SqlcVersion        string
+	EmitPydanticModels bool
 }
 
 func (t *pyTmplCtx) OutputQuery(sourceName string) bool {
@@ -1047,7 +1084,7 @@ func HashComment(s string) string {
 	return "# " + strings.ReplaceAll(s, "\n", "\n# ")
 }
 
-func Generate(req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
+func Generate(_ context.Context, req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
 	enums := buildEnums(req)
 	models := buildModels(req)
 	queries, err := buildQueries(req, models)
@@ -1063,12 +1100,13 @@ func Generate(req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
 	}
 
 	tctx := pyTmplCtx{
-		Models:      models,
-		Queries:     queries,
-		Enums:       enums,
-		EmitSync:    req.Settings.Python.EmitSyncQuerier,
-		EmitAsync:   req.Settings.Python.EmitAsyncQuerier,
-		SqlcVersion: req.SqlcVersion,
+		Models:             models,
+		Queries:            queries,
+		Enums:              enums,
+		EmitSync:           req.Settings.Python.EmitSyncQuerier,
+		EmitAsync:          req.Settings.Python.EmitAsyncQuerier,
+		SqlcVersion:        req.SqlcVersion,
+		EmitPydanticModels: req.Settings.Python.EmitPydanticModels,
 	}
 
 	output := map[string]string{}

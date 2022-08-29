@@ -5,6 +5,7 @@ import (
 
 	"github.com/kyleconroy/sqlc/internal/compiler"
 	"github.com/kyleconroy/sqlc/internal/config"
+	"github.com/kyleconroy/sqlc/internal/config/convert"
 	"github.com/kyleconroy/sqlc/internal/info"
 	"github.com/kyleconroy/sqlc/internal/plugin"
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
@@ -56,9 +57,23 @@ func pluginSettings(cs config.CombinedSettings) *plugin.Settings {
 		Queries:   []string(cs.Package.Queries),
 		Overrides: over,
 		Rename:    cs.Rename,
+		Codegen:   pluginCodegen(cs.Codegen),
 		Python:    pluginPythonCode(cs.Python),
 		Kotlin:    pluginKotlinCode(cs.Kotlin),
 		Go:        pluginGoCode(cs.Go),
+		Json:      pluginJSONCode(cs.JSON),
+	}
+}
+
+func pluginCodegen(s config.Codegen) *plugin.Codegen {
+	opts, err := convert.YAMLtoJSON(s.Options)
+	if err != nil {
+		panic(err)
+	}
+	return &plugin.Codegen{
+		Out:     s.Out,
+		Plugin:  s.Plugin,
+		Options: opts,
 	}
 }
 
@@ -69,6 +84,7 @@ func pluginPythonCode(s config.SQLPython) *plugin.PythonCode {
 		EmitExactTableNames: s.EmitExactTableNames,
 		EmitSyncQuerier:     s.EmitSyncQuerier,
 		EmitAsyncQuerier:    s.EmitAsyncQuerier,
+		EmitPydanticModels:  s.EmitPydanticModels,
 		ExcludeTableNames:   s.ExcludeTableNames,
 	}
 }
@@ -85,6 +101,8 @@ func pluginGoCode(s config.SQLGo) *plugin.GoCode {
 		EmitResultStructPointers:  s.EmitResultStructPointers,
 		EmitParamsStructPointers:  s.EmitParamsStructPointers,
 		EmitMethodsWithDbArgument: s.EmitMethodsWithDBArgument,
+		EmitEnumValidMethod:       s.EmitEnumValidMethod,
+		EmitAllEnumValues:         s.EmitAllEnumValues,
 		JsonTagsCaseStyle:         s.JSONTagsCaseStyle,
 		Package:                   s.Package,
 		Out:                       s.Out,
@@ -107,6 +125,7 @@ func pluginGoType(o config.Override) *plugin.ParsedGoType {
 		Package:    o.GoPackage,
 		TypeName:   o.GoTypeName,
 		BasicType:  o.GoBasicType,
+		StructTags: o.GoStructTags,
 	}
 }
 
@@ -123,6 +142,14 @@ func pluginKotlinCode(s config.SQLKotlin) *plugin.KotlinCode {
 		Package:             s.Package,
 		EmitExactTableNames: s.EmitExactTableNames,
 		ExcludeTableNames:   s.ExcludeTableNames,
+	}
+}
+
+func pluginJSONCode(s config.SQLJSON) *plugin.JSONCode {
+	return &plugin.JSONCode{
+		Out:      s.Out,
+		Indent:   s.Indent,
+		Filename: s.Filename,
 	}
 }
 

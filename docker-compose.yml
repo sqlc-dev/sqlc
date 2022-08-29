@@ -1,13 +1,14 @@
 version: "3.8"
 services:
   mysql:
-    image: "mysql:8"
+    image: "mysql/mysql-server:8.0"
     ports:
       - "3306:3306"
     restart: always
     environment:
       MYSQL_DATABASE: dinotest
       MYSQL_ROOT_PASSWORD: mysecretpassword
+      MYSQL_ROOT_HOST: '%'
 
   postgresql:
     image: "postgres:13"

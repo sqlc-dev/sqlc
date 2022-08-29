@@ -22,7 +22,7 @@ type Compiler struct {
 func NewCompiler(conf config.SQL, combo config.CombinedSettings) *Compiler {
 	c := &Compiler{conf: conf, combo: combo}
 	switch conf.Engine {
-	case config.EngineXLemon:
+	case config.EngineSQLite:
 		c.parser = sqlite.NewParser()
 		c.catalog = sqlite.NewCatalog()
 	case config.EngineMySQL:

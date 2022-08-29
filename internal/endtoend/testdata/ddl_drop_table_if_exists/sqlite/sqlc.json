@@ -3,7 +3,7 @@
   "packages": [
     {
       "path": "go",
-      "engine": "_lemon",
+      "engine": "sqlite",
       "name": "querytest",
       "schema": "schema.sql",
       "queries": "query.sql"

@@ -231,14 +231,22 @@ common_table_expression:
     table_name (OPEN_PAR column_name ( COMMA column_name)* CLOSE_PAR)? AS_ OPEN_PAR select_stmt CLOSE_PAR
 ;
 
+returning_clause:
+    RETURNING_ (
+        (STAR | expr ( AS_? column_alias)?) (
+            COMMA (STAR | expr ( AS_? column_alias)?)
+        )*
+    )
+;
+
 delete_stmt:
-    with_clause? DELETE_ FROM_ qualified_table_name (WHERE_ expr)?
+    with_clause? DELETE_ FROM_ qualified_table_name (WHERE_ expr)? returning_clause?
 ;
 
 delete_stmt_limited:
     with_clause? DELETE_ FROM_ qualified_table_name (WHERE_ expr)? (
         order_by_stmt? limit_stmt
-    )?
+    )? returning_clause?
 ;
 
 detach_stmt:
@@ -344,7 +352,7 @@ insert_stmt:
                 COMMA OPEN_PAR expr ( COMMA expr)* CLOSE_PAR
             )*
             | select_stmt
-        ) upsert_clause?
+        ) upsert_clause? returning_clause?
     )
     | DEFAULT_ VALUES_
 ;
@@ -355,8 +363,8 @@ upsert_clause:
     )? DO_ (
         NOTHING_
         | UPDATE_ SET_ (
-            (column_name | column_name_list) EQ expr (
-                COMMA (column_name | column_name_list) EQ expr
+            (column_name | column_name_list) ASSIGN expr (
+                COMMA (column_name | column_name_list) ASSIGN expr
             )* (WHERE_ expr)?
         )
     )
@@ -456,7 +464,7 @@ update_stmt:
         OR_ (ROLLBACK_ | ABORT_ | REPLACE_ | FAIL_ | IGNORE_)
     )? qualified_table_name SET_ (column_name | column_name_list) ASSIGN expr (
         COMMA (column_name | column_name_list) ASSIGN expr
-    )* (WHERE_ expr)?
+    )* (WHERE_ expr)? returning_clause?
 ;
 
 column_name_list:
@@ -740,6 +748,7 @@ keyword:
     | RENAME_
     | REPLACE_
     | RESTRICT_
+    | RETURNING_
     | RIGHT_
     | ROLLBACK_
     | ROW_
