@@ -14,6 +14,16 @@ func PgFreespacemap() *catalog.Schema {
 			Name: "pg_freespace",
 			Args: []*catalog.Argument{
 				{
+					Name: "rel",
+					Type: &ast.TypeName{Name: "regclass"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name: "pg_freespace",
+			Args: []*catalog.Argument{
+				{
 					Type: &ast.TypeName{Name: "regclass"},
 				},
 				{

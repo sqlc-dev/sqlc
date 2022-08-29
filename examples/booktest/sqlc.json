@@ -14,6 +14,13 @@
       "schema": "mysql/schema.sql",
       "queries": "mysql/query.sql",
       "engine": "mysql"
+    },
+    {
+      "name": "booktest",
+      "path": "sqlite",
+      "schema": "sqlite/schema.sql",
+      "queries": "sqlite/query.sql",
+      "engine": "sqlite"
     }
   ]
 }

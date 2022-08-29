@@ -112,9 +112,6 @@ func Tablefunc() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "text"},
 				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "record"},
 		},
@@ -123,6 +120,9 @@ func Tablefunc() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "record"},

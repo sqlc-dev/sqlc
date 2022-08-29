@@ -34,14 +34,12 @@ func (v *funcCallVisitor) Visit(node ast.Node) astutils.Visitor {
 	// Custom validation for sqlc.arg
 	// TODO: Replace this once type-checking is implemented
 	if fn.Schema == "sqlc" {
-		if fn.Name != "arg" {
+		if !(fn.Name == "arg" || fn.Name == "narg") {
 			v.err = sqlerr.FunctionNotFound("sqlc." + fn.Name)
 			return nil
 		}
-		if call.Args == nil || len(call.Args.Items) == 0 {
-			return v
-		}
-		if len(call.Args.Items) > 1 {
+
+		if len(call.Args.Items) != 1 {
 			v.err = &sqlerr.Error{
 				Message:  fmt.Sprintf("expected 1 parameter to sqlc.arg; got %d", len(call.Args.Items)),
 				Location: call.Pos(),
@@ -58,6 +56,10 @@ func (v *funcCallVisitor) Visit(node ast.Node) astutils.Visitor {
 			}
 			return nil
 		}
+
+		// If we have sqlc.arg or sqlc.narg, there is no need to resolve the function call.
+		// It won't resolve anyway, sinc it is not a real function.
+		return nil
 	}
 
 	fun, err := v.catalog.ResolveFuncCall(call)

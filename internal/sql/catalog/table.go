@@ -8,7 +8,132 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
 )
 
-func (c *Catalog) alterTable(stmt *ast.AlterTableStmt) error {
+// Table describes a relational database table
+//
+// A database table is a collection of related data held in a table format within a database.
+// It consists of columns and rows.
+type Table struct {
+	Rel     *ast.TableName
+	Columns []*Column
+	Comment string
+}
+
+func (table *Table) isExistColumn(cmd *ast.AlterTableCmd) (int, error) {
+	for i, c := range table.Columns {
+		if c.Name == *cmd.Name {
+			return i, nil
+		}
+	}
+	if !cmd.MissingOk {
+		return -1, sqlerr.ColumnNotFound(table.Rel.Name, *cmd.Name)
+	}
+	// Missing column is allowed
+	return -1, nil
+}
+
+func (table *Table) addColumn(cmd *ast.AlterTableCmd) error {
+	for _, c := range table.Columns {
+		if c.Name == cmd.Def.Colname {
+			return sqlerr.ColumnExists(table.Rel.Name, c.Name)
+		}
+	}
+	table.Columns = append(table.Columns, &Column{
+		Name:      cmd.Def.Colname,
+		Type:      *cmd.Def.TypeName,
+		IsNotNull: cmd.Def.IsNotNull,
+		IsArray:   cmd.Def.IsArray,
+		Length:    cmd.Def.Length,
+	})
+	return nil
+}
+
+func (table *Table) alterColumnType(cmd *ast.AlterTableCmd) error {
+	index, err := table.isExistColumn(cmd)
+	if err != nil {
+		return err
+	}
+	if index >= 0 {
+		table.Columns[index].Type = *cmd.Def.TypeName
+		table.Columns[index].IsArray = cmd.Def.IsArray
+	}
+	return nil
+}
+
+func (table *Table) dropColumn(cmd *ast.AlterTableCmd) error {
+	index, err := table.isExistColumn(cmd)
+	if err != nil {
+		return err
+	}
+	if index >= 0 {
+		table.Columns = append(table.Columns[:index], table.Columns[index+1:]...)
+	}
+	return nil
+}
+
+func (table *Table) dropNotNull(cmd *ast.AlterTableCmd) error {
+	index, err := table.isExistColumn(cmd)
+	if err != nil {
+		return err
+	}
+	if index >= 0 {
+		table.Columns[index].IsNotNull = false
+	}
+	return nil
+}
+
+func (table *Table) setNotNull(cmd *ast.AlterTableCmd) error {
+	index, err := table.isExistColumn(cmd)
+	if err != nil {
+		return err
+	}
+	if index >= 0 {
+		table.Columns[index].IsNotNull = true
+	}
+	return nil
+}
+
+// Column describes a set of data values of a particular type in a relational database table
+//
+// TODO: Should this just be ast Nodes?
+type Column struct {
+	Name      string
+	Type      ast.TypeName
+	IsNotNull bool
+	IsArray   bool
+	Comment   string
+	Length    *int
+}
+
+// An interface is used to resolve a circular import between the catalog and compiler packages.
+// The createView function requires access to functions in the compiler package to parse the SELECT
+// statement that defines the view.
+type columnGenerator interface {
+	OutputColumns(node ast.Node) ([]*Column, error)
+}
+
+func (c *Catalog) getTable(tableName *ast.TableName) (*Schema, *Table, error) {
+	schemaName := tableName.Schema
+	if schemaName == "" {
+		schemaName = c.DefaultSchema
+	}
+	var schema *Schema
+	for i := range c.Schemas {
+		if c.Schemas[i].Name == schemaName {
+			schema = c.Schemas[i]
+			break
+		}
+	}
+	if schema == nil {
+		return nil, nil, sqlerr.SchemaNotFound(schemaName)
+	}
+	table, _, err := schema.getTable(tableName)
+	if err != nil {
+		return nil, nil, err
+	}
+	return schema, table, nil
+}
+
+func isStmtImplemented(stmt *ast.AlterTableStmt) bool {
 	var implemented bool
 	for _, item := range stmt.Cmds.Items {
 		switch cmd := item.(type) {
@@ -27,73 +152,44 @@ func (c *Catalog) alterTable(stmt *ast.AlterTableStmt) error {
 			}
 		}
 	}
-	if !implemented {
+	return implemented
+}
+
+func (c *Catalog) alterTable(stmt *ast.AlterTableStmt) error {
+	if !isStmtImplemented(stmt) {
 		return nil
 	}
 	_, table, err := c.getTable(stmt.Table)
 	if err != nil {
 		return err
 	}
-
-	for _, cmd := range stmt.Cmds.Items {
-		switch cmd := cmd.(type) {
+	for _, item := range stmt.Cmds.Items {
+		switch cmd := item.(type) {
 		case *ast.AlterTableCmd:
-			idx := -1
-
-			// Lookup column names for column-related commands
 			switch cmd.Subtype {
-			case ast.AT_AlterColumnType,
-				ast.AT_DropColumn,
-				ast.AT_DropNotNull,
-				ast.AT_SetNotNull:
-				for i, c := range table.Columns {
-					if c.Name == *cmd.Name {
-						idx = i
-						break
-					}
-				}
-				if idx < 0 && !cmd.MissingOk {
-					return sqlerr.ColumnNotFound(table.Rel.Name, *cmd.Name)
-				}
-				// If a missing column is allowed, skip this command
-				if idx < 0 && cmd.MissingOk {
-					continue
-				}
-			}
-
-			switch cmd.Subtype {
-
 			case ast.AT_AddColumn:
-				for _, c := range table.Columns {
-					if c.Name == cmd.Def.Colname {
-						return sqlerr.ColumnExists(table.Rel.Name, c.Name)
-					}
+				if err := table.addColumn(cmd); err != nil {
+					return err
 				}
-				table.Columns = append(table.Columns, &Column{
-					Name:      cmd.Def.Colname,
-					Type:      *cmd.Def.TypeName,
-					IsNotNull: cmd.Def.IsNotNull,
-					IsArray:   cmd.Def.IsArray,
-					Length:    cmd.Def.Length,
-				})
-
 			case ast.AT_AlterColumnType:
-				table.Columns[idx].Type = *cmd.Def.TypeName
-				table.Columns[idx].IsArray = cmd.Def.IsArray
-
+				if err := table.alterColumnType(cmd); err != nil {
+					return err
+				}
 			case ast.AT_DropColumn:
-				table.Columns = append(table.Columns[:idx], table.Columns[idx+1:]...)
-
+				if err := table.dropColumn(cmd); err != nil {
+					return err
+				}
 			case ast.AT_DropNotNull:
-				table.Columns[idx].IsNotNull = false
-
+				if err := table.dropNotNull(cmd); err != nil {
+					return err
+				}
 			case ast.AT_SetNotNull:
-				table.Columns[idx].IsNotNull = true
-
+				if err := table.setNotNull(cmd); err != nil {
+					return err
+				}
 			}
 		}
 	}
-
 	return nil
 }
 
