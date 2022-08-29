@@ -7,4 +7,6 @@ import dataclasses
 @dataclasses.dataclass()
 class Bar:
     id: int
-    name: str
+    name1: str
+    name2: str
+    name3: str

@@ -2,7 +2,6 @@
 # versions:
 #   sqlc v1.15.0
 # source: query.sql
-import pydantic
 from typing import AsyncIterator, Iterator, Optional
 
 import sqlalchemy
@@ -19,11 +18,6 @@ INSERT INTO authors (
 )
 RETURNING id, name, bio
 """
-
-
-class CreateAuthorParams(pydantic.BaseModel):
-    name: str
-    bio: Optional[str]
 
 
 DELETE_AUTHOR = """-- name: delete_author \\:exec
@@ -48,8 +42,8 @@ class Querier:
     def __init__(self, conn: sqlalchemy.engine.Connection):
         self._conn = conn
 
-    def create_author(self, arg: CreateAuthorParams) -> Optional[models.Author]:
-        row = self._conn.execute(sqlalchemy.text(CREATE_AUTHOR), {"p1": arg.name, "p2": arg.bio}).first()
+    def create_author(self, *, name: str, bio: Optional[str]) -> Optional[models.Author]:
+        row = self._conn.execute(sqlalchemy.text(CREATE_AUTHOR), {"p1": name, "p2": bio}).first()
         if row is None:
             return None
         return models.Author(
@@ -85,8 +79,8 @@ class AsyncQuerier:
     def __init__(self, conn: sqlalchemy.ext.asyncio.AsyncConnection):
         self._conn = conn
 
-    async def create_author(self, arg: CreateAuthorParams) -> Optional[models.Author]:
-        row = (await self._conn.execute(sqlalchemy.text(CREATE_AUTHOR), {"p1": arg.name, "p2": arg.bio})).first()
+    async def create_author(self, *, name: str, bio: Optional[str]) -> Optional[models.Author]:
+        row = (await self._conn.execute(sqlalchemy.text(CREATE_AUTHOR), {"p1": name, "p2": bio})).first()
         if row is None:
             return None
         return models.Author(

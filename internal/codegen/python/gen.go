@@ -400,7 +400,7 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 			SourceName:   query.Filename,
 		}
 
-		qpl := 1
+		qpl := 4
 		if req.Settings.Python.QueryParameterLimit != nil {
 			qpl = int(*req.Settings.Python.QueryParameterLimit)
 		}
