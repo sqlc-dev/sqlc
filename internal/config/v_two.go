@@ -61,7 +61,7 @@ func v2ParseConfig(rd io.Reader) (Config, error) {
 		}
 		if sql.Gen.Python != nil {
 			if sql.Gen.Python.QueryParameterLimit != nil {
-				if *sql.Gen.Python.QueryParameterLimit == 0 || *sql.Gen.Python.QueryParameterLimit < -1 {
+				if *sql.Gen.Python.QueryParameterLimit < 0 {
 					return conf, ErrInvalidQueryParameterLimit
 				}
 			} else {

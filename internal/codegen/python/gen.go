@@ -403,8 +403,7 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 		if req.Settings.Python.QueryParameterLimit != nil {
 			qpl = int(*req.Settings.Python.QueryParameterLimit)
 		}
-
-		if len(query.Params) > qpl || qpl == -1 {
+		if len(query.Params) > qpl || qpl == 0 {
 			var cols []pyColumn
 			for _, p := range query.Params {
 				cols = append(cols, pyColumn{
