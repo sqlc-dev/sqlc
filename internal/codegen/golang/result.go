@@ -66,7 +66,7 @@ func buildStructs(req *plugin.CodeGenRequest) []Struct {
 			if !req.Settings.Go.EmitExactTableNames {
 				structName = inflection.Singular(inflection.SingularParams{
 					Name:       structName,
-					Exclusions: req.Settings.Go.ExcludeTableNames,
+					Exclusions: req.Settings.Go.InflectionExcludeTableNames,
 				})
 			}
 			s := Struct{

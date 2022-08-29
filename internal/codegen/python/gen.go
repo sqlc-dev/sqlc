@@ -291,7 +291,7 @@ func buildModels(req *plugin.CodeGenRequest) []Struct {
 			if !req.Settings.Python.EmitExactTableNames {
 				structName = inflection.Singular(inflection.SingularParams{
 					Name:       structName,
-					Exclusions: req.Settings.Python.ExcludeTableNames,
+					Exclusions: req.Settings.Python.InflectionExcludeTableNames,
 				})
 			}
 			s := Struct{

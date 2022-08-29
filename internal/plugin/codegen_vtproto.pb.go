@@ -526,11 +526,11 @@ func (m *PythonCode) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
-	if len(m.ExcludeTableNames) > 0 {
-		for iNdEx := len(m.ExcludeTableNames) - 1; iNdEx >= 0; iNdEx-- {
-			i -= len(m.ExcludeTableNames[iNdEx])
-			copy(dAtA[i:], m.ExcludeTableNames[iNdEx])
-			i = encodeVarint(dAtA, i, uint64(len(m.ExcludeTableNames[iNdEx])))
+	if len(m.InflectionExcludeTableNames) > 0 {
+		for iNdEx := len(m.InflectionExcludeTableNames) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.InflectionExcludeTableNames[iNdEx])
+			copy(dAtA[i:], m.InflectionExcludeTableNames[iNdEx])
+			i = encodeVarint(dAtA, i, uint64(len(m.InflectionExcludeTableNames[iNdEx])))
 			i--
 			dAtA[i] = 0x3a
 		}
@@ -622,11 +622,11 @@ func (m *KotlinCode) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
-	if len(m.ExcludeTableNames) > 0 {
-		for iNdEx := len(m.ExcludeTableNames) - 1; iNdEx >= 0; iNdEx-- {
-			i -= len(m.ExcludeTableNames[iNdEx])
-			copy(dAtA[i:], m.ExcludeTableNames[iNdEx])
-			i = encodeVarint(dAtA, i, uint64(len(m.ExcludeTableNames[iNdEx])))
+	if len(m.InflectionExcludeTableNames) > 0 {
+		for iNdEx := len(m.InflectionExcludeTableNames) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.InflectionExcludeTableNames[iNdEx])
+			copy(dAtA[i:], m.InflectionExcludeTableNames[iNdEx])
+			i = encodeVarint(dAtA, i, uint64(len(m.InflectionExcludeTableNames[iNdEx])))
 			i--
 			dAtA[i] = 0x22
 		}
@@ -688,11 +688,11 @@ func (m *GoCode) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
-	if len(m.ExcludeTableNames) > 0 {
-		for iNdEx := len(m.ExcludeTableNames) - 1; iNdEx >= 0; iNdEx-- {
-			i -= len(m.ExcludeTableNames[iNdEx])
-			copy(dAtA[i:], m.ExcludeTableNames[iNdEx])
-			i = encodeVarint(dAtA, i, uint64(len(m.ExcludeTableNames[iNdEx])))
+	if len(m.InflectionExcludeTableNames) > 0 {
+		for iNdEx := len(m.InflectionExcludeTableNames) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.InflectionExcludeTableNames[iNdEx])
+			copy(dAtA[i:], m.InflectionExcludeTableNames[iNdEx])
+			i = encodeVarint(dAtA, i, uint64(len(m.InflectionExcludeTableNames[iNdEx])))
 			i--
 			dAtA[i] = 0x1
 			i--
@@ -1950,8 +1950,8 @@ func (m *PythonCode) SizeVT() (n int) {
 	if m.EmitPydanticModels {
 		n += 2
 	}
-	if len(m.ExcludeTableNames) > 0 {
-		for _, s := range m.ExcludeTableNames {
+	if len(m.InflectionExcludeTableNames) > 0 {
+		for _, s := range m.InflectionExcludeTableNames {
 			l = len(s)
 			n += 1 + l + sov(uint64(l))
 		}
@@ -1979,8 +1979,8 @@ func (m *KotlinCode) SizeVT() (n int) {
 	if l > 0 {
 		n += 1 + l + sov(uint64(l))
 	}
-	if len(m.ExcludeTableNames) > 0 {
-		for _, s := range m.ExcludeTableNames {
+	if len(m.InflectionExcludeTableNames) > 0 {
+		for _, s := range m.InflectionExcludeTableNames {
 			l = len(s)
 			n += 1 + l + sov(uint64(l))
 		}
@@ -2065,8 +2065,8 @@ func (m *GoCode) SizeVT() (n int) {
 	if m.EmitAllEnumValues {
 		n += 3
 	}
-	if len(m.ExcludeTableNames) > 0 {
-		for _, s := range m.ExcludeTableNames {
+	if len(m.InflectionExcludeTableNames) > 0 {
+		for _, s := range m.InflectionExcludeTableNames {
 			l = len(s)
 			n += 2 + l + sov(uint64(l))
 		}
@@ -4116,7 +4116,7 @@ func (m *PythonCode) UnmarshalVT(dAtA []byte) error {
 			m.EmitPydanticModels = bool(v != 0)
 		case 7:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ExcludeTableNames", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field InflectionExcludeTableNames", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -4144,7 +4144,7 @@ func (m *PythonCode) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.ExcludeTableNames = append(m.ExcludeTableNames, string(dAtA[iNdEx:postIndex]))
+			m.InflectionExcludeTableNames = append(m.InflectionExcludeTableNames, string(dAtA[iNdEx:postIndex]))
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -4283,7 +4283,7 @@ func (m *KotlinCode) UnmarshalVT(dAtA []byte) error {
 			iNdEx = postIndex
 		case 4:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ExcludeTableNames", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field InflectionExcludeTableNames", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -4311,7 +4311,7 @@ func (m *KotlinCode) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.ExcludeTableNames = append(m.ExcludeTableNames, string(dAtA[iNdEx:postIndex]))
+			m.InflectionExcludeTableNames = append(m.InflectionExcludeTableNames, string(dAtA[iNdEx:postIndex]))
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -4862,7 +4862,7 @@ func (m *GoCode) UnmarshalVT(dAtA []byte) error {
 			m.EmitAllEnumValues = bool(v != 0)
 		case 21:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ExcludeTableNames", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field InflectionExcludeTableNames", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -4890,7 +4890,7 @@ func (m *GoCode) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.ExcludeTableNames = append(m.ExcludeTableNames, string(dAtA[iNdEx:postIndex]))
+			m.InflectionExcludeTableNames = append(m.InflectionExcludeTableNames, string(dAtA[iNdEx:postIndex]))
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

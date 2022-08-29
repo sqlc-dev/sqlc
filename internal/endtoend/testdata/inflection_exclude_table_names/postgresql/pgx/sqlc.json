@@ -8,7 +8,10 @@
       "name": "querytest",
       "schema": "query.sql",
       "queries": "query.sql",
-      "exclude_table_names": ["my_data", "exclusions"]
+      "inflection_exclude_table_names": [
+        "my_data",
+        "exclusions"
+      ]
     }
   ]
 }

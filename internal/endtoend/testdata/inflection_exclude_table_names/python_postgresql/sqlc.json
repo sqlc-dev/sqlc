@@ -11,7 +11,10 @@
           "package": "querytest",
           "emit_sync_querier": true,
           "emit_async_querier": true,
-          "exclude_table_names": ["my_data", "exclusions"]
+          "inflection_exclude_table_names": [
+            "my_data",
+            "exclusions"
+          ]
         }
       }
     }

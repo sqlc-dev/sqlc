@@ -22,13 +22,13 @@
       "package": "",
       "out": "",
       "emit_pydantic_models": false,
-      "exclude_table_names": []
+      "inflection_exclude_table_names": []
     },
     "kotlin": {
       "emit_exact_table_names": false,
       "package": "",
       "out": "",
-      "exclude_table_names": []
+      "inflection_exclude_table_names": []
     },
     "go": {
       "emit_interface": false,
@@ -51,7 +51,7 @@
       "output_files_suffix": "",
       "emit_enum_valid_method": false,
       "emit_all_enum_values": false,
-      "exclude_table_names": []
+      "inflection_exclude_table_names": []
     },
     "json": {
       "out": "",

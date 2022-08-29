@@ -279,7 +279,7 @@ func buildDataClasses(req *plugin.CodeGenRequest) []Struct {
 			if !req.Settings.Kotlin.EmitExactTableNames {
 				structName = inflection.Singular(inflection.SingularParams{
 					Name:       structName,
-					Exclusions: req.Settings.Kotlin.ExcludeTableNames,
+					Exclusions: req.Settings.Kotlin.InflectionExcludeTableNames,
 				})
 			}
 			s := Struct{
