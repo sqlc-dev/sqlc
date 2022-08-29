@@ -532,8 +532,13 @@ func (m *PythonCode) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 			copy(dAtA[i:], m.InflectionExcludeTableNames[iNdEx])
 			i = encodeVarint(dAtA, i, uint64(len(m.InflectionExcludeTableNames[iNdEx])))
 			i--
-			dAtA[i] = 0x3a
+			dAtA[i] = 0x42
 		}
+	}
+	if m.QueryParameterLimit != nil {
+		i = encodeVarint(dAtA, i, uint64(*m.QueryParameterLimit))
+		i--
+		dAtA[i] = 0x38
 	}
 	if m.EmitPydanticModels {
 		i--
@@ -1949,6 +1954,9 @@ func (m *PythonCode) SizeVT() (n int) {
 	}
 	if m.EmitPydanticModels {
 		n += 2
+	}
+	if m.QueryParameterLimit != nil {
+		n += 1 + sov(uint64(*m.QueryParameterLimit))
 	}
 	if len(m.InflectionExcludeTableNames) > 0 {
 		for _, s := range m.InflectionExcludeTableNames {
@@ -4115,6 +4123,26 @@ func (m *PythonCode) UnmarshalVT(dAtA []byte) error {
 			}
 			m.EmitPydanticModels = bool(v != 0)
 		case 7:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field QueryParameterLimit", wireType)
+			}
+			var v int32
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.QueryParameterLimit = &v
+		case 8:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field InflectionExcludeTableNames", wireType)
 			}

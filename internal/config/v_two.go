@@ -36,10 +36,10 @@ func v2ParseConfig(rd io.Reader) (Config, error) {
 	}
 	// TODO: Store built-in plugins somewhere else
 	builtins := map[string]struct{}{
-		"go":     struct{}{},
-		"json":   struct{}{},
-		"kotlin": struct{}{},
-		"python": struct{}{},
+		"go":     {},
+		"json":   {},
+		"kotlin": {},
+		"python": {},
 	}
 	plugins := map[string]struct{}{}
 	for i := range conf.Plugins {
@@ -91,6 +91,11 @@ func v2ParseConfig(rd io.Reader) (Config, error) {
 			}
 		}
 		if conf.SQL[j].Gen.Python != nil {
+			if conf.SQL[j].Gen.Python.QueryParameterLimit != nil {
+				if *conf.SQL[j].Gen.Python.QueryParameterLimit < 0 {
+					return conf, ErrInvalidQueryParameterLimit
+				}
+			}
 			if conf.SQL[j].Gen.Python.Out == "" {
 				return conf, ErrNoOutPath
 			}

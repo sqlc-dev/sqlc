@@ -79,7 +79,8 @@ message PythonCode
   string package = 4;
   string out = 5;
   bool emit_pydantic_models = 6;
-  repeated string inflection_exclude_table_names = 7;
+  optional int32 query_parameter_limit = 7;
+  repeated string inflection_exclude_table_names = 8;
 }
 
 message KotlinCode

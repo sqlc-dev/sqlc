@@ -1,17 +1,21 @@
 {
-  "version": "1",
-  "packages": [
+  "version": "2",
+  "sql": [
     {
-      "path": "go",
       "engine": "postgresql",
-      "sql_package": "pgx/v4",
-      "name": "querytest",
       "schema": "query.sql",
       "queries": "query.sql",
-      "inflection_exclude_table_names": [
-        "my_data",
-        "exclusions"
-      ]
+      "gen": {
+        "go": {
+          "package": "querytest",
+          "sql_package": "pgx/v4",
+          "out": "go",
+          "inflection_exclude_table_names": [
+            "my_data",
+            "exclusions"
+          ]
+        }
+      }
     }
   ]
 }
