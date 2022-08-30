@@ -80,6 +80,7 @@ message PythonCode
   string out = 5;
   bool emit_pydantic_models = 6;
   optional int32 query_parameter_limit = 7;
+  repeated string inflection_exclude_table_names = 8;
 }
 
 message KotlinCode
@@ -87,6 +88,7 @@ message KotlinCode
   bool emit_exact_table_names = 1;
   string package = 2;
   string out = 3;
+  repeated string inflection_exclude_table_names = 4;
 }
 
 message GoCode
@@ -111,6 +113,7 @@ message GoCode
   string output_files_suffix = 18;
   bool emit_enum_valid_method = 19;
   bool emit_all_enum_values = 20;
+  repeated string inflection_exclude_table_names = 21;
 }
 
 message JSONCode
