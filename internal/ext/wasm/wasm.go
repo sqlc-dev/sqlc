@@ -25,7 +25,7 @@ import (
 )
 
 // This version must be updated whenever the wasmtime-go dependency is updated
-const wasmtimeVersion = `v0.39.0`
+const wasmtimeVersion = `v0.40.0`
 
 func cacheDir() (string, error) {
 	cache := os.Getenv("SQLCCACHE")
