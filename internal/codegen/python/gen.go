@@ -289,7 +289,10 @@ func buildModels(req *plugin.CodeGenRequest) []Struct {
 			}
 			structName := tableName
 			if !req.Settings.Python.EmitExactTableNames {
-				structName = inflection.Singular(structName)
+				structName = inflection.Singular(inflection.SingularParams{
+					Name:       structName,
+					Exclusions: req.Settings.Python.InflectionExcludeTableNames,
+				})
 			}
 			s := Struct{
 				Table:   plugin.Identifier{Schema: schema.Name, Name: table.Rel.Name},
@@ -400,7 +403,11 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 			SourceName:   query.Filename,
 		}
 
-		if len(query.Params) > 4 {
+		qpl := 4
+		if req.Settings.Python.QueryParameterLimit != nil {
+			qpl = int(*req.Settings.Python.QueryParameterLimit)
+		}
+		if len(query.Params) > qpl || qpl == 0 {
 			var cols []pyColumn
 			for _, p := range query.Params {
 				cols = append(cols, pyColumn{
