@@ -11,7 +11,7 @@ require (
 	github.com/jackc/pgconn v1.13.0
 	github.com/jackc/pgx/v4 v4.17.2
 	github.com/jinzhu/inflection v1.0.0
-	github.com/lib/pq v1.10.6
+	github.com/lib/pq v1.10.7
 	github.com/mattn/go-sqlite3 v1.14.15
 	github.com/pganalyze/pg_query_go/v2 v2.1.2
 	github.com/spf13/cobra v1.5.0
