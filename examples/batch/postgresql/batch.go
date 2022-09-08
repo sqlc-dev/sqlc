@@ -7,6 +7,7 @@ package batch
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/jackc/pgx/v4"
@@ -18,8 +19,9 @@ WHERE year = $1
 `
 
 type BooksByYearBatchResults struct {
-	br  pgx.BatchResults
-	ind int
+	br     pgx.BatchResults
+	tot    int
+	closed bool
 }
 
 func (q *Queries) BooksByYear(ctx context.Context, year []int32) *BooksByYearBatchResults {
@@ -31,42 +33,51 @@ func (q *Queries) BooksByYear(ctx context.Context, year []int32) *BooksByYearBat
 		batch.Queue(booksByYear, vals...)
 	}
 	br := q.db.SendBatch(ctx, batch)
-	return &BooksByYearBatchResults{br, 0}
+	return &BooksByYearBatchResults{br, len(year), false}
 }
 
 func (b *BooksByYearBatchResults) Query(f func(int, []Book, error)) {
-	for {
-		rows, err := b.br.Query()
-		if err != nil && (err.Error() == "no result" || err.Error() == "batch already closed") {
-			break
-		}
-		defer rows.Close()
+	defer b.br.Close()
+	for t := 0; t < b.tot; t++ {
 		var items []Book
-		for rows.Next() {
-			var i Book
-			if err := rows.Scan(
-				&i.BookID,
-				&i.AuthorID,
-				&i.Isbn,
-				&i.BookType,
-				&i.Title,
-				&i.Year,
-				&i.Available,
-				&i.Tags,
-			); err != nil {
-				break
+		if b.closed {
+			if f != nil {
+				f(t, items, errors.New("batch already closed"))
 			}
-			items = append(items, i)
+			continue
 		}
-
+		err := func() error {
+			rows, err := b.br.Query()
+			defer rows.Close()
+			if err != nil {
+				return err
+			}
+			for rows.Next() {
+				var i Book
+				if err := rows.Scan(
+					&i.BookID,
+					&i.AuthorID,
+					&i.Isbn,
+					&i.BookType,
+					&i.Title,
+					&i.Year,
+					&i.Available,
+					&i.Tags,
+				); err != nil {
+					return err
+				}
+				items = append(items, i)
+			}
+			return rows.Err()
+		}()
 		if f != nil {
-			f(b.ind, items, rows.Err())
+			f(t, items, err)
 		}
-		b.ind++
 	}
 }
 
 func (b *BooksByYearBatchResults) Close() error {
+	b.closed = true
 	return b.br.Close()
 }
 
@@ -92,8 +103,9 @@ RETURNING book_id, author_id, isbn, book_type, title, year, available, tags
 `
 
 type CreateBookBatchResults struct {
-	br  pgx.BatchResults
-	ind int
+	br     pgx.BatchResults
+	tot    int
+	closed bool
 }
 
 type CreateBookParams struct {
@@ -121,13 +133,20 @@ func (q *Queries) CreateBook(ctx context.Context, arg []CreateBookParams) *Creat
 		batch.Queue(createBook, vals...)
 	}
 	br := q.db.SendBatch(ctx, batch)
-	return &CreateBookBatchResults{br, 0}
+	return &CreateBookBatchResults{br, len(arg), false}
 }
 
 func (b *CreateBookBatchResults) QueryRow(f func(int, Book, error)) {
-	for {
-		row := b.br.QueryRow()
+	defer b.br.Close()
+	for t := 0; t < b.tot; t++ {
 		var i Book
+		if b.closed {
+			if f != nil {
+				f(t, i, errors.New("batch already closed"))
+			}
+			continue
+		}
+		row := b.br.QueryRow()
 		err := row.Scan(
 			&i.BookID,
 			&i.AuthorID,
@@ -138,17 +157,14 @@ func (b *CreateBookBatchResults) QueryRow(f func(int, Book, error)) {
 			&i.Available,
 			&i.Tags,
 		)
-		if err != nil && (err.Error() == "no result" || err.Error() == "batch already closed") {
-			break
-		}
 		if f != nil {
-			f(b.ind, i, err)
+			f(t, i, err)
 		}
-		b.ind++
 	}
 }
 
 func (b *CreateBookBatchResults) Close() error {
+	b.closed = true
 	return b.br.Close()
 }
 
@@ -158,8 +174,9 @@ WHERE book_id = $1
 `
 
 type DeleteBookBatchResults struct {
-	br  pgx.BatchResults
-	ind int
+	br     pgx.BatchResults
+	tot    int
+	closed bool
 }
 
 func (q *Queries) DeleteBook(ctx context.Context, bookID []int32) *DeleteBookBatchResults {
@@ -171,23 +188,27 @@ func (q *Queries) DeleteBook(ctx context.Context, bookID []int32) *DeleteBookBat
 		batch.Queue(deleteBook, vals...)
 	}
 	br := q.db.SendBatch(ctx, batch)
-	return &DeleteBookBatchResults{br, 0}
+	return &DeleteBookBatchResults{br, len(bookID), false}
 }
 
 func (b *DeleteBookBatchResults) Exec(f func(int, error)) {
-	for {
+	defer b.br.Close()
+	for t := 0; t < b.tot; t++ {
+		if b.closed {
+			if f != nil {
+				f(t, errors.New("batch already closed"))
+			}
+			continue
+		}
 		_, err := b.br.Exec()
-		if err != nil && (err.Error() == "no result" || err.Error() == "batch already closed") {
-			break
-		}
 		if f != nil {
-			f(b.ind, err)
+			f(t, err)
 		}
-		b.ind++
 	}
 }
 
 func (b *DeleteBookBatchResults) Close() error {
+	b.closed = true
 	return b.br.Close()
 }
 
@@ -198,8 +219,9 @@ WHERE book_id = $3
 `
 
 type UpdateBookBatchResults struct {
-	br  pgx.BatchResults
-	ind int
+	br     pgx.BatchResults
+	tot    int
+	closed bool
 }
 
 type UpdateBookParams struct {
@@ -219,22 +241,26 @@ func (q *Queries) UpdateBook(ctx context.Context, arg []UpdateBookParams) *Updat
 		batch.Queue(updateBook, vals...)
 	}
 	br := q.db.SendBatch(ctx, batch)
-	return &UpdateBookBatchResults{br, 0}
+	return &UpdateBookBatchResults{br, len(arg), false}
 }
 
 func (b *UpdateBookBatchResults) Exec(f func(int, error)) {
-	for {
+	defer b.br.Close()
+	for t := 0; t < b.tot; t++ {
+		if b.closed {
+			if f != nil {
+				f(t, errors.New("batch already closed"))
+			}
+			continue
+		}
 		_, err := b.br.Exec()
-		if err != nil && (err.Error() == "no result" || err.Error() == "batch already closed") {
-			break
-		}
 		if f != nil {
-			f(b.ind, err)
+			f(t, err)
 		}
-		b.ind++
 	}
 }
 
 func (b *UpdateBookBatchResults) Close() error {
+	b.closed = true
 	return b.br.Close()
 }

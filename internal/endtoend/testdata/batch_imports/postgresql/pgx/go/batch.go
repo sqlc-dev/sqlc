@@ -8,6 +8,7 @@ package querytest
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	"github.com/jackc/pgx/v4"
 )
@@ -19,8 +20,9 @@ WHERE b = $1
 `
 
 type GetValuesBatchResults struct {
-	br  pgx.BatchResults
-	ind int
+	br     pgx.BatchResults
+	tot    int
+	closed bool
 }
 
 func (q *Queries) GetValues(ctx context.Context, b []sql.NullInt32) *GetValuesBatchResults {
@@ -32,33 +34,42 @@ func (q *Queries) GetValues(ctx context.Context, b []sql.NullInt32) *GetValuesBa
 		batch.Queue(getValues, vals...)
 	}
 	br := q.db.SendBatch(ctx, batch)
-	return &GetValuesBatchResults{br, 0}
+	return &GetValuesBatchResults{br, len(b), false}
 }
 
 func (b *GetValuesBatchResults) Query(f func(int, []MyschemaFoo, error)) {
-	for {
-		rows, err := b.br.Query()
-		if err != nil && (err.Error() == "no result" || err.Error() == "batch already closed") {
-			break
-		}
-		defer rows.Close()
+	defer b.br.Close()
+	for t := 0; t < b.tot; t++ {
 		var items []MyschemaFoo
-		for rows.Next() {
-			var i MyschemaFoo
-			if err := rows.Scan(&i.A, &i.B); err != nil {
-				break
+		if b.closed {
+			if f != nil {
+				f(t, items, errors.New("batch already closed"))
 			}
-			items = append(items, i)
+			continue
 		}
-
+		err := func() error {
+			rows, err := b.br.Query()
+			defer rows.Close()
+			if err != nil {
+				return err
+			}
+			for rows.Next() {
+				var i MyschemaFoo
+				if err := rows.Scan(&i.A, &i.B); err != nil {
+					return err
+				}
+				items = append(items, i)
+			}
+			return rows.Err()
+		}()
 		if f != nil {
-			f(b.ind, items, rows.Err())
+			f(t, items, err)
 		}
-		b.ind++
 	}
 }
 
 func (b *GetValuesBatchResults) Close() error {
+	b.closed = true
 	return b.br.Close()
 }
 
@@ -69,8 +80,9 @@ RETURNING a
 `
 
 type InsertValuesBatchResults struct {
-	br  pgx.BatchResults
-	ind int
+	br     pgx.BatchResults
+	tot    int
+	closed bool
 }
 
 type InsertValuesParams struct {
@@ -88,24 +100,28 @@ func (q *Queries) InsertValues(ctx context.Context, arg []InsertValuesParams) *I
 		batch.Queue(insertValues, vals...)
 	}
 	br := q.db.SendBatch(ctx, batch)
-	return &InsertValuesBatchResults{br, 0}
+	return &InsertValuesBatchResults{br, len(arg), false}
 }
 
 func (b *InsertValuesBatchResults) QueryRow(f func(int, sql.NullString, error)) {
-	for {
-		row := b.br.QueryRow()
+	defer b.br.Close()
+	for t := 0; t < b.tot; t++ {
 		var a sql.NullString
+		if b.closed {
+			if f != nil {
+				f(t, a, errors.New("batch already closed"))
+			}
+			continue
+		}
+		row := b.br.QueryRow()
 		err := row.Scan(&a)
-		if err != nil && (err.Error() == "no result" || err.Error() == "batch already closed") {
-			break
-		}
 		if f != nil {
-			f(b.ind, a, err)
+			f(t, a, err)
 		}
-		b.ind++
 	}
 }
 
 func (b *InsertValuesBatchResults) Close() error {
+	b.closed = true
 	return b.br.Close()
 }
