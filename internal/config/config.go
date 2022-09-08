@@ -10,21 +10,6 @@ import (
 	yaml "gopkg.in/yaml.v3"
 )
 
-const errMessageNoVersion = `The configuration file must have a version number.
-Set the version to 1 at the top of sqlc.json:
-
-{
-  "version": "1"
-  ...
-}
-`
-
-const errMessageUnknownVersion = `The configuration file has an invalid version number.
-The only supported version is "1".
-`
-
-const errMessageNoPackages = `No packages are configured`
-
 type versionSetting struct {
 	Number string `json:"version" yaml:"version"`
 }
