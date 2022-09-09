@@ -27,7 +27,7 @@ import (
 )
 
 const errMessageNoVersion = `The configuration file must have a version number.
-Set the version to 1 at the top of sqlc.json:
+Set the version to 1 or 2 at the top of sqlc.json:
 
 {
   "version": "1"
@@ -36,7 +36,7 @@ Set the version to 1 at the top of sqlc.json:
 `
 
 const errMessageUnknownVersion = `The configuration file has an invalid version number.
-The only supported version is "1".
+The supported version can only be "1" or "2".
 `
 
 const errMessageNoPackages = `No packages are configured`
