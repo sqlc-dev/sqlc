@@ -407,7 +407,13 @@ func (i *importer) copyfromImports() fileImports {
 }
 
 func (i *importer) batchImports(filename string) fileImports {
-	std, pkg := buildImports(i.Settings, i.Queries, func(name string) bool {
+	batchQueries := make([]Query, 0, len(i.Queries))
+	for _, q := range i.Queries {
+		if q.Cmd == metadata.CmdBatchExec || q.Cmd == metadata.CmdBatchMany || q.Cmd == metadata.CmdBatchOne {
+			batchQueries = append(batchQueries, q)
+		}
+	}
+	std, pkg := buildImports(i.Settings, batchQueries, func(name string) bool {
 		for _, q := range i.Queries {
 			if !usesBatch([]Query{q}) {
 				continue

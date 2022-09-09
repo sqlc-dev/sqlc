@@ -7,6 +7,8 @@ package batch
 
 import (
 	"context"
+
+	"github.com/jackc/pgconn"
 )
 
 const createAuthor = `-- name: CreateAuthor :one
@@ -19,6 +21,15 @@ func (q *Queries) CreateAuthor(ctx context.Context, name string) (Author, error)
 	var i Author
 	err := row.Scan(&i.AuthorID, &i.Name)
 	return i, err
+}
+
+const deleteBookExecResult = `-- name: DeleteBookExecResult :execresult
+DELETE FROM books
+WHERE book_id = $1
+`
+
+func (q *Queries) DeleteBookExecResult(ctx context.Context, bookID int32) (pgconn.CommandTag, error) {
+	return q.db.Exec(ctx, deleteBookExecResult, bookID)
 }
 
 const getAuthor = `-- name: GetAuthor :one
