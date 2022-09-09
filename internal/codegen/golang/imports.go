@@ -239,6 +239,9 @@ func (i *importer) interfaceImports() fileImports {
 	std, pkg := buildImports(i.Settings, i.Queries, func(name string) bool {
 		for _, q := range i.Queries {
 			if q.hasRetType() {
+				if usesBatch([]Query{q}) {
+					continue
+				}
 				if strings.HasPrefix(q.Ret.Type(), name) {
 					return true
 				}

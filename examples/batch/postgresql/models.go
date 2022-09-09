@@ -8,6 +8,8 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"time"
+
+	"github.com/jackc/pgtype"
 )
 
 type BookType string
@@ -53,8 +55,9 @@ func (ns NullBookType) Value() (driver.Value, error) {
 }
 
 type Author struct {
-	AuthorID int32  `json:"author_id"`
-	Name     string `json:"name"`
+	AuthorID  int32        `json:"author_id"`
+	Name      string       `json:"name"`
+	Biography pgtype.JSONB `json:"biography"`
 }
 
 type Book struct {

@@ -17,6 +17,7 @@ type Querier interface {
 	DeleteBook(ctx context.Context, bookID []int32) *DeleteBookBatchResults
 	DeleteBookExecResult(ctx context.Context, bookID int32) (pgconn.CommandTag, error)
 	GetAuthor(ctx context.Context, authorID int32) (Author, error)
+	GetBiography(ctx context.Context, authorID []int32) *GetBiographyBatchResults
 	UpdateBook(ctx context.Context, arg []UpdateBookParams) *UpdateBookBatchResults
 }
 

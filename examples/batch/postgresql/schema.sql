@@ -1,6 +1,7 @@
 CREATE TABLE authors (
           author_id SERIAL PRIMARY KEY,
-          name text NOT NULL DEFAULT ''
+          name text NOT NULL DEFAULT '',
+          biography JSONB
 );
 
 CREATE TYPE book_type AS ENUM (
