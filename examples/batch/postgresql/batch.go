@@ -213,6 +213,94 @@ func (b *DeleteBookBatchResults) Close() error {
 	return b.br.Close()
 }
 
+const deleteBookNamedFunc = `-- name: DeleteBookNamedFunc :batchexec
+DELETE FROM books
+WHERE book_id = $1
+`
+
+type DeleteBookNamedFuncBatchResults struct {
+	br     pgx.BatchResults
+	tot    int
+	closed bool
+}
+
+func (q *Queries) DeleteBookNamedFunc(ctx context.Context, bookID []int32) *DeleteBookNamedFuncBatchResults {
+	batch := &pgx.Batch{}
+	for _, a := range bookID {
+		vals := []interface{}{
+			a,
+		}
+		batch.Queue(deleteBookNamedFunc, vals...)
+	}
+	br := q.db.SendBatch(ctx, batch)
+	return &DeleteBookNamedFuncBatchResults{br, len(bookID), false}
+}
+
+func (b *DeleteBookNamedFuncBatchResults) Exec(f func(int, error)) {
+	defer b.br.Close()
+	for t := 0; t < b.tot; t++ {
+		if b.closed {
+			if f != nil {
+				f(t, errors.New("batch already closed"))
+			}
+			continue
+		}
+		_, err := b.br.Exec()
+		if f != nil {
+			f(t, err)
+		}
+	}
+}
+
+func (b *DeleteBookNamedFuncBatchResults) Close() error {
+	b.closed = true
+	return b.br.Close()
+}
+
+const deleteBookNamedSign = `-- name: DeleteBookNamedSign :batchexec
+DELETE FROM books
+WHERE book_id = $1
+`
+
+type DeleteBookNamedSignBatchResults struct {
+	br     pgx.BatchResults
+	tot    int
+	closed bool
+}
+
+func (q *Queries) DeleteBookNamedSign(ctx context.Context, bookID []int32) *DeleteBookNamedSignBatchResults {
+	batch := &pgx.Batch{}
+	for _, a := range bookID {
+		vals := []interface{}{
+			a,
+		}
+		batch.Queue(deleteBookNamedSign, vals...)
+	}
+	br := q.db.SendBatch(ctx, batch)
+	return &DeleteBookNamedSignBatchResults{br, len(bookID), false}
+}
+
+func (b *DeleteBookNamedSignBatchResults) Exec(f func(int, error)) {
+	defer b.br.Close()
+	for t := 0; t < b.tot; t++ {
+		if b.closed {
+			if f != nil {
+				f(t, errors.New("batch already closed"))
+			}
+			continue
+		}
+		_, err := b.br.Exec()
+		if f != nil {
+			f(t, err)
+		}
+	}
+}
+
+func (b *DeleteBookNamedSignBatchResults) Close() error {
+	b.closed = true
+	return b.br.Close()
+}
+
 const getBiography = `-- name: GetBiography :batchone
 SELECT biography FROM authors
 WHERE author_id = $1

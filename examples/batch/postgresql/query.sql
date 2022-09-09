@@ -10,6 +10,14 @@ WHERE book_id = $1;
 DELETE FROM books
 WHERE book_id = $1;
 
+-- name: DeleteBookNamedFunc :batchexec
+DELETE FROM books
+WHERE book_id = sqlc.arg(book_id);
+
+-- name: DeleteBookNamedSign :batchexec
+DELETE FROM books
+WHERE book_id = @book_id;
+
 -- name: BooksByYear :batchmany
 SELECT * FROM books
 WHERE year = $1;

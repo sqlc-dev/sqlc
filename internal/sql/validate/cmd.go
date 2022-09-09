@@ -6,6 +6,8 @@ import (
 
 	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
+	"github.com/kyleconroy/sqlc/internal/sql/astutils"
+	"github.com/kyleconroy/sqlc/internal/sql/named"
 )
 
 func validateCopyfrom(n ast.Node) error {
@@ -45,6 +47,11 @@ func validateCopyfrom(n ast.Node) error {
 }
 
 func validateBatch(n ast.Node) error {
+	namedFunc := astutils.Search(n, named.IsParamFunc)
+	namedSign := astutils.Search(n, named.IsParamSign)
+	if len(namedFunc.Items)+len(namedSign.Items) > 0 {
+		return nil
+	}
 	nums, _, _ := ParamRef(n)
 	if len(nums) == 0 {
 		return errors.New(":batch* commands require parameters")
