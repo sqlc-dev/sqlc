@@ -7,6 +7,7 @@ import (
 
 	"github.com/kyleconroy/sqlc/internal/codegen/sdk"
 	"github.com/kyleconroy/sqlc/internal/inflection"
+	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/plugin"
 )
 
@@ -200,7 +201,7 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 				Typ:        goType(req, c),
 				SQLPackage: sqlpkg,
 			}
-		} else if len(query.Columns) > 1 {
+		} else if putOutColumns(query) {
 			var gs *Struct
 			var emit bool
 
@@ -252,6 +253,18 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 	}
 	sort.Slice(qs, func(i, j int) bool { return qs[i].MethodName < qs[j].MethodName })
 	return qs, nil
+}
+
+func putOutColumns(query *plugin.Query) bool {
+	if len(query.Columns) > 0 {
+		return true
+	}
+	for _, allowed := range []string{metadata.CmdMany, metadata.CmdOne, metadata.CmdBatchMany} {
+		if query.Cmd == allowed {
+			return true
+		}
+	}
+	return false
 }
 
 // It's possible that this method will generate duplicate JSON tag values
