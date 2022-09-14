@@ -10,6 +10,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/jackc/pgtype"
 	"github.com/jackc/pgx/v4"
 )
 
@@ -208,6 +209,52 @@ func (b *DeleteBookBatchResults) Exec(f func(int, error)) {
 }
 
 func (b *DeleteBookBatchResults) Close() error {
+	b.closed = true
+	return b.br.Close()
+}
+
+const getBiography = `-- name: GetBiography :batchone
+SELECT biography FROM authors
+WHERE author_id = $1
+`
+
+type GetBiographyBatchResults struct {
+	br     pgx.BatchResults
+	tot    int
+	closed bool
+}
+
+func (q *Queries) GetBiography(ctx context.Context, authorID []int32) *GetBiographyBatchResults {
+	batch := &pgx.Batch{}
+	for _, a := range authorID {
+		vals := []interface{}{
+			a,
+		}
+		batch.Queue(getBiography, vals...)
+	}
+	br := q.db.SendBatch(ctx, batch)
+	return &GetBiographyBatchResults{br, len(authorID), false}
+}
+
+func (b *GetBiographyBatchResults) QueryRow(f func(int, pgtype.JSONB, error)) {
+	defer b.br.Close()
+	for t := 0; t < b.tot; t++ {
+		var biography pgtype.JSONB
+		if b.closed {
+			if f != nil {
+				f(t, biography, errors.New("batch already closed"))
+			}
+			continue
+		}
+		row := b.br.QueryRow()
+		err := row.Scan(&biography)
+		if f != nil {
+			f(t, biography, err)
+		}
+	}
+}
+
+func (b *GetBiographyBatchResults) Close() error {
 	b.closed = true
 	return b.br.Close()
 }
