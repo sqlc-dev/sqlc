@@ -19,8 +19,13 @@ func StructName(name string, settings *plugin.Settings) string {
 	if rename := settings.Rename[name]; rename != "" {
 		return rename
 	}
-	out := ""
-	for _, p := range strings.Split(name, "_") {
+	var (
+		out string
+		fn  = func(r rune) bool {
+			return r == '_' || r == '-'
+		}
+	)
+	for _, p := range strings.FieldsFunc(name, fn) {
 		if p == "id" {
 			out += "ID"
 		} else {
