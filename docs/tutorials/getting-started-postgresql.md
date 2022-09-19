@@ -16,14 +16,6 @@ directory. In our new directory, create a file named `sqlc.yaml` with the
 following contents:
 
 ```yaml
-version: 1
-packages:
-  - path: "tutorial"
-    name: "tutorial"
-    engine: "postgresql"
-    schema: "schema.sql"
-    queries: "query.sql"
-
 version: "2"
 sql:
   - engine: "postgresql"
@@ -82,8 +74,7 @@ UPDATE authors
 WHERE id = $1;
 ```
 
-Otherwise, to return the updated record to the user, add this to the
-`query.sql`:
+Otherwise, to return the updated record to the user, add this to `query.sql`:
 
 ```sql
 -- name: UpdateAuthor :one
