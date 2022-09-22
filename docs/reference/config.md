@@ -35,7 +35,7 @@ Each mapping in the `sql` collection has the following keys:
 - `queries`:
   - Directory of SQL queries or path to single SQL file; or a list of paths.
 - `gen`:
-  - A mapping to configure built-in code generators. Supports the following keys:
+  - A mapping to configure built-in code generators. See [gen](#gen) for the supported keys.
 - `strict_function_checks`
   - If true, return an error if a called SQL function does not exist. Defaults to `false`.
   
