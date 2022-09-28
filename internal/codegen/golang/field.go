@@ -19,7 +19,7 @@ type Field struct {
 func (gf Field) Tag() string {
 	tags := make([]string, 0, len(gf.Tags))
 	for key, val := range gf.Tags {
-		tags = append(tags, fmt.Sprintf("%s\"%s\"", key, val))
+		tags = append(tags, fmt.Sprintf("%s:\"%s\"", key, val))
 	}
 	if len(tags) == 0 {
 		return ""

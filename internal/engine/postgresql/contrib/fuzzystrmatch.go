@@ -85,15 +85,6 @@ func Fuzzystrmatch() *catalog.Schema {
 				{
 					Type: &ast.TypeName{Name: "integer"},
 				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
-				{
-					Type: &ast.TypeName{Name: "integer"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "integer"},
 		},
@@ -105,6 +96,15 @@ func Fuzzystrmatch() *catalog.Schema {
 				},
 				{
 					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
+				},
+				{
+					Type: &ast.TypeName{Name: "integer"},
 				},
 				{
 					Type: &ast.TypeName{Name: "integer"},

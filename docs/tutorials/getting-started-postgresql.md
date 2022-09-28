@@ -16,17 +16,20 @@ directory. In our new directory, create a file named `sqlc.yaml` with the
 following contents:
 
 ```yaml
-version: 1
-packages:
-  - path: "tutorial"
-    name: "tutorial"
-    engine: "postgresql"
-    schema: "schema.sql"
+version: "2"
+sql:
+  - engine: "postgresql"
     queries: "query.sql"
+    schema: "schema.sql"
+    gen:
+      go:
+        package: "tutorial"
+        out: "tutorial"
 ```
 
-sqlc needs to know your database schema and queries. In the same directory,
-create a file named `schema.sql` with the following contents:
+sqlc needs to know your database schema and queries in order to generate code.
+In the same directory, create a file named `schema.sql` with the following
+content:
 
 ```sql
 CREATE TABLE authors (
@@ -60,25 +63,29 @@ DELETE FROM authors
 WHERE id = $1;
 ```
 
-For SQL UPDATE if you do not want to return the updated record to the user, add this to the `query.sql` file:
+If you **do not** want your SQL `UPDATE` queries to return the updated record
+to the user, add this to `query.sql`:
+
 ```sql
 -- name: UpdateAuthor :exec
 UPDATE authors
-set name = $2,
-bio = $3
+  set name = $2,
+  bio = $3
 WHERE id = $1;
 ```
-Otherwise, to return the updated record back to the user, add this to the `query.sql` file:
+
+Otherwise, to return the updated record to the user, add this to `query.sql`:
+
 ```sql
 -- name: UpdateAuthor :one
 UPDATE authors
-set name = $2,
-bio = $3
+  set name = $2,
+  bio = $3
 WHERE id = $1
 RETURNING *;
 ```
 
-You are now ready to generate code. Run the `generate` command. You shouldn't see any errors or output.
+You are now ready to generate code. You shouldn't see any errors or output.
 
 ```shell
 sqlc generate
@@ -165,5 +172,6 @@ go get github.com/lib/pq
 go build ./...
 ```
 
-To make that possible, sqlc generates readable, **idiomatic** Go code that you
-otherwise would have had to write yourself. Take a look in `tutorial/query.sql.go`.
+sqlc generates readable, **idiomatic** Go code that you otherwise would have
+had to write yourself. Take a look in the `tutorial` package to see what code
+sqlc generated.

@@ -1,0 +1,2 @@
+CREATE TABLE foo (bar text NOT NULL);
+ALTER TABLE foo RENAME COLUMN bar TO baz;

@@ -14,9 +14,14 @@ import (
 func ParamStyle(n ast.Node) error {
 	namedFunc := astutils.Search(n, named.IsParamFunc)
 	for _, f := range namedFunc.Items {
-		fc, ok := f.(*ast.FuncCall)
-		if ok {
-			switch val := fc.Args.Items[0].(type) {
+		if fc, ok := f.(*ast.FuncCall); ok {
+			args := fc.Args.Items
+
+			if len(args) == 0 {
+				continue
+			}
+
+			switch val := args[0].(type) {
 			case *ast.FuncCall:
 				return &sqlerr.Error{
 					Code:     "", // TODO: Pick a new error code

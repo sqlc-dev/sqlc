@@ -1,4 +1,4 @@
-// Code generated from SQLiteParser.g4 by ANTLR 4.9.3. DO NOT EDIT.
+// Code generated from SQLiteParser.g4 by ANTLR 4.10.1. DO NOT EDIT.
 
 package parser // SQLiteParser
 
@@ -91,6 +91,9 @@ type SQLiteParserListener interface {
 
 	// EnterCommon_table_expression is called when entering the common_table_expression production.
 	EnterCommon_table_expression(c *Common_table_expressionContext)
+
+	// EnterReturning_clause is called when entering the returning_clause production.
+	EnterReturning_clause(c *Returning_clauseContext)
 
 	// EnterDelete_stmt is called when entering the delete_stmt production.
 	EnterDelete_stmt(c *Delete_stmtContext)
@@ -469,6 +472,9 @@ type SQLiteParserListener interface {
 
 	// ExitCommon_table_expression is called when exiting the common_table_expression production.
 	ExitCommon_table_expression(c *Common_table_expressionContext)
+
+	// ExitReturning_clause is called when exiting the returning_clause production.
+	ExitReturning_clause(c *Returning_clauseContext)
 
 	// ExitDelete_stmt is called when exiting the delete_stmt production.
 	ExitDelete_stmt(c *Delete_stmtContext)

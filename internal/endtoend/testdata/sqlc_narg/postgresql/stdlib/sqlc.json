@@ -1,12 +1,28 @@
 {
-  "version": "1",
-  "packages": [
+  "version": "2",
+  "sql": [
     {
       "engine": "postgresql",
-      "path": "go",
-      "name": "querytest",
       "schema": "query.sql",
-      "queries": "query.sql"
+      "queries": "query.sql",
+      "gen": {
+        "go": {
+          "package": "querytest",
+          "out": "go"
+        }
+      }
+    },
+    {
+      "engine": "postgresql",
+      "schema": "query.sql",
+      "queries": "query.sql",
+      "strict_function_checks": true,
+      "gen": {
+        "go": {
+          "package": "querytest_strict",
+          "out": "go_strict"
+        }
+      }
     }
   ]
 }

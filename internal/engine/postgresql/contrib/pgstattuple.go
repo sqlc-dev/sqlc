@@ -15,7 +15,7 @@ func Pgstattuple() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Name: "relname",
-					Type: &ast.TypeName{Name: "text"},
+					Type: &ast.TypeName{Name: "regclass"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "bigint"},
@@ -25,10 +25,80 @@ func Pgstattuple() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Name: "relname",
-					Type: &ast.TypeName{Name: "regclass"},
+					Type: &ast.TypeName{Name: "text"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "bigint"},
+		},
+		{
+			Name: "pgstatginindex",
+			Args: []*catalog.Argument{
+				{
+					Name: "relname",
+					Type: &ast.TypeName{Name: "regclass"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name: "pgstathashindex",
+			Args: []*catalog.Argument{
+				{
+					Name: "relname",
+					Type: &ast.TypeName{Name: "regclass"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name: "pgstatindex",
+			Args: []*catalog.Argument{
+				{
+					Name: "relname",
+					Type: &ast.TypeName{Name: "regclass"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name: "pgstatindex",
+			Args: []*catalog.Argument{
+				{
+					Name: "relname",
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name: "pgstattuple",
+			Args: []*catalog.Argument{
+				{
+					Name: "reloid",
+					Type: &ast.TypeName{Name: "regclass"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name: "pgstattuple",
+			Args: []*catalog.Argument{
+				{
+					Name: "relname",
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
+			Name: "pgstattuple_approx",
+			Args: []*catalog.Argument{
+				{
+					Name: "reloid",
+					Type: &ast.TypeName{Name: "regclass"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
 		},
 	}
 	return s

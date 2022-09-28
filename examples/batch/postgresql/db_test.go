@@ -122,19 +122,24 @@ func TestBatchBooks(t *testing.T) {
 	}
 	batchDelete := dq.DeleteBook(ctx, deleteBooksParams)
 	numDeletesProcessed := 0
+	wantNumDeletesProcessed := 2
 	batchDelete.Exec(func(i int, err error) {
-		numDeletesProcessed++
-		if err != nil {
+		if err != nil && err.Error() != "batch already closed" {
 			t.Fatalf("error deleting book %d: %s", deleteBooksParams[i], err)
 		}
-		if i == len(deleteBooksParams)-3 {
+
+		if err == nil {
+			numDeletesProcessed++
+		}
+
+		if i == wantNumDeletesProcessed-1 {
 			// close batch operation before processing all errors from delete operation
 			if err := batchDelete.Close(); err != nil {
 				t.Fatalf("failed to close batch operation: %s", err)
 			}
 		}
 	})
-	if numDeletesProcessed != 2 {
-		t.Fatalf("expected Close to short-circuit record processing (expected 2; got %d)", numDeletesProcessed)
+	if numDeletesProcessed != wantNumDeletesProcessed {
+		t.Fatalf("expected Close to short-circuit record processing (expected %d; got %d)", wantNumDeletesProcessed, numDeletesProcessed)
 	}
 }

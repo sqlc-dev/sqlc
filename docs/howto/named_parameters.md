@@ -61,8 +61,8 @@ RETURNING *;
 
 sqlc infers the nullability of any specified parameters, and often does exactly
 what you want. If you want finer control over the nullability of your
-parameters, you may use `sql.narg()` (**n**ullable arg) to override the default
-behavior. Using `sql.narg` tells sqlc to ignore whatever nullability it has
+parameters, you may use `sqlc.narg()` (**n**ullable arg) to override the default
+behavior. Using `sqlc.narg` tells sqlc to ignore whatever nullability it has
 inferred and generate a nullable parameter instead. There is no nullable
 equivalent of the `@` syntax.
 
