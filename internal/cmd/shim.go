@@ -77,6 +77,7 @@ func pluginCodegen(s config.Codegen) *plugin.Codegen {
 func pluginGoCode(s config.SQLGo) *plugin.GoCode {
 	if s.QueryParameterLimit == nil {
 		s.QueryParameterLimit = new(int32)
+		*s.QueryParameterLimit = 1
 	}
 
 	return &plugin.GoCode{
@@ -102,7 +103,7 @@ func pluginGoCode(s config.SQLGo) *plugin.GoCode {
 		OutputQuerierFileName:       s.OutputQuerierFileName,
 		OutputFilesSuffix:           s.OutputFilesSuffix,
 		InflectionExcludeTableNames: s.InflectionExcludeTableNames,
-		QueryParameterLimit:         *s.QueryParameterLimit,
+		QueryParameterLimit:         s.QueryParameterLimit,
 	}
 }
 

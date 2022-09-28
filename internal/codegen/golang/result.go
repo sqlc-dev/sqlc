@@ -202,9 +202,9 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 		}
 		sqlpkg := parseDriver(req.Settings.Go.SqlPackage)
 
-		qpl := int(req.Settings.Go.QueryParameterLimit)
+		qpl := int(*req.Settings.Go.QueryParameterLimit)
 
-		if len(query.Params) == 1 && qpl != -1 {
+		if len(query.Params) == 1 && qpl != 0 {
 			p := query.Params[0]
 			gq.Arg = QueryValue{
 				Name:      paramName(p),
@@ -213,7 +213,7 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 				SQLDriver: sqlpkg,
 				Column:    p.Column,
 			}
-		} else if len(query.Params) >= 1 && (qpl >= 1 || qpl == -1) {
+		} else if len(query.Params) >= 1 && (qpl >= 0) {
 			var cols []goColumn
 			for _, p := range query.Params {
 				cols = append(cols, goColumn{

@@ -75,8 +75,7 @@ func v2ParseConfig(rd io.Reader) (Config, error) {
 				conf.SQL[j].Gen.Go.Package = filepath.Base(conf.SQL[j].Gen.Go.Out)
 			}
 
-			if conf.SQL[j].Gen.Go.QueryParameterLimit != nil && (*conf.SQL[j].Gen.Go.QueryParameterLimit < -1 ||
-				*conf.SQL[j].Gen.Go.QueryParameterLimit == 0) {
+			if conf.SQL[j].Gen.Go.QueryParameterLimit != nil && (*conf.SQL[j].Gen.Go.QueryParameterLimit < 0) {
 				return conf, ErrInvalidQueryParameterLimit
 			}
 

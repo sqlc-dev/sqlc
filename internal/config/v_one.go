@@ -76,8 +76,7 @@ func v1ParseConfig(rd io.Reader) (Config, error) {
 			return config, ErrNoPackagePath
 		}
 
-		if settings.Packages[j].QueryParameterLimit != nil && (*settings.Packages[j].QueryParameterLimit < -1 ||
-			*settings.Packages[j].QueryParameterLimit == 0) {
+		if settings.Packages[j].QueryParameterLimit != nil && (*settings.Packages[j].QueryParameterLimit < 0) {
 			return config, ErrInvalidQueryParameterLimit
 		}
 
