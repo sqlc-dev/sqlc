@@ -102,7 +102,7 @@ func (i *importer) Imports(filename string) [][]ImportSpec {
 	case copyfromFileName:
 		return mergeImports(i.copyfromImports())
 	case batchFileName:
-		return mergeImports(i.batchImports(filename))
+		return mergeImports(i.batchImports())
 	default:
 		return mergeImports(i.queryImports(filename))
 	}
@@ -114,11 +114,14 @@ func (i *importer) dbImports() fileImports {
 		{Path: "context"},
 	}
 
-	sqlpkg := SQLPackageFromString(i.Settings.Go.SqlPackage)
+	sqlpkg := parseDriver(i.Settings.Go.SqlPackage)
 	switch sqlpkg {
-	case SQLPackagePGX:
+	case SQLDriverPGXV4:
 		pkg = append(pkg, ImportSpec{Path: "github.com/jackc/pgconn"})
 		pkg = append(pkg, ImportSpec{Path: "github.com/jackc/pgx/v4"})
+	case SQLDriverPGXV5:
+		pkg = append(pkg, ImportSpec{Path: "github.com/jackc/pgx/v5/pgconn"})
+		pkg = append(pkg, ImportSpec{Path: "github.com/jackc/pgx/v5"})
 	default:
 		std = append(std, ImportSpec{Path: "database/sql"})
 		if i.Settings.Go.EmitPreparedQueries {
@@ -136,22 +139,8 @@ var stdlibTypes = map[string]string{
 	"time.Time":        "time",
 	"net.IP":           "net",
 	"net.HardwareAddr": "net",
-}
-
-var pgtypeTypes = map[string]struct{}{
-	"pgtype.CIDR":      {},
-	"pgtype.Daterange": {},
-	"pgtype.Inet":      {},
-	"pgtype.Int4range": {},
-	"pgtype.Int8range": {},
-	"pgtype.JSON":      {},
-	"pgtype.JSONB":     {},
-	"pgtype.Hstore":    {},
-	"pgtype.Macaddr":   {},
-	"pgtype.Numeric":   {},
-	"pgtype.Numrange":  {},
-	"pgtype.Tsrange":   {},
-	"pgtype.Tstzrange": {},
+	"netip.Addr":       "net/netip",
+	"netip.Prefix":     "net/netip",
 }
 
 var pqtypeTypes = map[string]struct{}{
@@ -169,12 +158,14 @@ func buildImports(settings *plugin.Settings, queries []Query, uses func(string) 
 		std["database/sql"] = struct{}{}
 	}
 
-	sqlpkg := SQLPackageFromString(settings.Go.SqlPackage)
+	sqlpkg := parseDriver(settings.Go.SqlPackage)
 	for _, q := range queries {
 		if q.Cmd == metadata.CmdExecResult {
 			switch sqlpkg {
-			case SQLPackagePGX:
+			case SQLDriverPGXV4:
 				pkg[ImportSpec{Path: "github.com/jackc/pgconn"}] = struct{}{}
+			case SQLDriverPGXV5:
+				pkg[ImportSpec{Path: "github.com/jackc/pgx/v5/pgconn"}] = struct{}{}
 			default:
 				std["database/sql"] = struct{}{}
 			}
@@ -187,8 +178,10 @@ func buildImports(settings *plugin.Settings, queries []Query, uses func(string) 
 		}
 	}
 
-	for typeName, _ := range pgtypeTypes {
-		if uses(typeName) {
+	if uses("pgtype.") {
+		if sqlpkg == SQLDriverPGXV5 {
+			pkg[ImportSpec{Path: "github.com/jackc/pgx/v5/pgtype"}] = struct{}{}
+		} else {
 			pkg[ImportSpec{Path: "github.com/jackc/pgtype"}] = struct{}{}
 		}
 	}
@@ -196,6 +189,7 @@ func buildImports(settings *plugin.Settings, queries []Query, uses func(string) 
 	for typeName, _ := range pqtypeTypes {
 		if uses(typeName) {
 			pkg[ImportSpec{Path: "github.com/tabbed/pqtype"}] = struct{}{}
+			break
 		}
 	}
 
@@ -373,8 +367,8 @@ func (i *importer) queryImports(filename string) fileImports {
 		std["context"] = struct{}{}
 	}
 
-	sqlpkg := SQLPackageFromString(i.Settings.Go.SqlPackage)
-	if sliceScan() && sqlpkg != SQLPackagePGX {
+	sqlpkg := parseDriver(i.Settings.Go.SqlPackage)
+	if sliceScan() && !sqlpkg.IsPGX() {
 		pkg[ImportSpec{Path: "github.com/lib/pq"}] = struct{}{}
 	}
 
@@ -409,7 +403,7 @@ func (i *importer) copyfromImports() fileImports {
 	return sortedImports(std, pkg)
 }
 
-func (i *importer) batchImports(filename string) fileImports {
+func (i *importer) batchImports() fileImports {
 	batchQueries := make([]Query, 0, len(i.Queries))
 	for _, q := range i.Queries {
 		if usesBatch([]Query{q}) {
@@ -452,7 +446,13 @@ func (i *importer) batchImports(filename string) fileImports {
 
 	std["context"] = struct{}{}
 	std["errors"] = struct{}{}
-	pkg[ImportSpec{Path: "github.com/jackc/pgx/v4"}] = struct{}{}
+	sqlpkg := parseDriver(i.Settings.Go.SqlPackage)
+	switch sqlpkg {
+	case SQLDriverPGXV4:
+		pkg[ImportSpec{Path: "github.com/jackc/pgx/v4"}] = struct{}{}
+	case SQLDriverPGXV5:
+		pkg[ImportSpec{Path: "github.com/jackc/pgx/v5"}] = struct{}{}
+	}
 
 	return sortedImports(std, pkg)
 }

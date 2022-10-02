@@ -84,7 +84,7 @@ The `gen` mapping supports the following keys:
 - `out`:
   - Output directory for generated code.
 - `sql_package`:
-  - Either `pgx/v4` or `database/sql`. Defaults to `database/sql`.
+  - Either `pgx/v4`, `pgx/v5` or `database/sql`. Defaults to `database/sql`.
 - `emit_db_tags`:
   - If true, add DB tags to generated structs. Defaults to `false`.
 - `emit_prepared_queries`:
@@ -363,7 +363,7 @@ Each mapping in the `packages` collection has the following keys:
 - `engine`:
   - Either `postgresql` or `mysql`. Defaults to `postgresql`.
 - `sql_package`:
-  - Either `pgx/v4` or `database/sql`. Defaults to `database/sql`.
+  - Either `pgx/v4`, `pgx/v5` or `database/sql`. Defaults to `database/sql`.
 - `emit_db_tags`:
   - If true, add DB tags to generated structs. Defaults to `false`.
 - `emit_prepared_queries`:
