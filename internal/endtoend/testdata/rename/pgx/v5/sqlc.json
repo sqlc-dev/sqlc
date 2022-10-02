@@ -1,0 +1,20 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "path": "go",
+      "engine": "postgresql",
+      "sql_package": "pgx/v5",
+      "name": "querytest",
+      "schema": "query.sql",
+      "queries": "query.sql"
+    }
+  ],
+  "rename": {
+    "id_old": "IDNew",
+    "bar_old": "BarNew",
+    "foo_old": "FooNew",
+    "ip_protocol": "IPProtocol",
+    "ip_protocol_tcp": "IPProtocolTCP"
+  }
+}

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgtype"
+	"github.com/tabbed/pqtype"
 )
 
 type DtCharacter struct {
@@ -51,13 +52,13 @@ type DtDatetimeNotNull struct {
 
 type DtNetType struct {
 	A pgtype.Inet
-	B pgtype.CIDR
+	B pqtype.CIDR
 	C pgtype.Macaddr
 }
 
 type DtNetTypesNotNull struct {
 	A pgtype.Inet
-	B pgtype.CIDR
+	B pqtype.CIDR
 	C pgtype.Macaddr
 }
 

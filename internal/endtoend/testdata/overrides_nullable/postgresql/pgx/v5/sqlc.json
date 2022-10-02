@@ -1,0 +1,29 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "path": "go",
+      "engine": "postgresql",
+      "sql_package": "pgx/v5",
+      "name": "querytest",
+      "schema": "query.sql",
+      "queries": "query.sql"
+    }
+  ],
+  "overrides": [
+    {
+      "db_type": "jsonb",
+      "go_type": "github.com/jackc/pgx/v5/pgtype.Text"
+    },
+    {
+      "db_type": "jsonb",
+      "go_type": "github.com/jackc/pgx/v5/pgtype.DriverBytes",
+      "nullable": true
+    },
+    {
+      "db_type": "text",
+      "go_type": "github.com/jackc/pgx/v5/pgtype.UndecodedBytes",
+      "null": true
+    }
+  ]
+}
