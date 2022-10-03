@@ -239,7 +239,7 @@ overrides:
     rename:
       id: "Identifier"
     overrides:
-      - db_type: "timestampz"
+      - db_type: "timestamptz"
         nullable: true
         engine: "postgresql"
         go_type:
