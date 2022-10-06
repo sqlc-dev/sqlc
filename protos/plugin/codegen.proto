@@ -151,6 +151,7 @@ message Identifier
 message Column
 {
   string name = 1;
+  string original_name = 15;
   bool not_null = 3;
   bool is_array = 4;
   string comment = 5;
