@@ -306,6 +306,7 @@ func columnsToStruct(req *plugin.CodeGenRequest, name string, columns []goColumn
 		if req.Settings.Go.EmitJsonTags {
 			tags["json"] = JSONTagName(tagName, req.Settings)
 		}
+		addExtraGoStructTags(tags, req, c.Column)
 		gs.Fields = append(gs.Fields, Field{
 			Name:   fieldName,
 			DBName: colName,
