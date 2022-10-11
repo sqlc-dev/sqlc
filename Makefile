@@ -17,7 +17,7 @@ build-endtoend:
 
 test-ci: test-examples build-endtoend
 
-regen: sqlc-dev
+regen: sqlc-dev sqlc-gen-json
 	go run ./scripts/regenerate/
 
 sqlc-dev:
@@ -25,6 +25,9 @@ sqlc-dev:
 
 sqlc-pg-gen:
 	go build -o ~/bin/sqlc-pg-gen ./internal/tools/sqlc-pg-gen
+
+sqlc-gen-json:
+	go build -o ~/bin/sqlc-gen-json ./cmd/sqlc-gen-json
 
 start:
 	docker-compose up -d
