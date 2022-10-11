@@ -21,14 +21,12 @@
       "emit_async_querier": false,
       "package": "",
       "out": "",
-      "emit_pydantic_models": false,
-      "inflection_exclude_table_names": []
+      "emit_pydantic_models": false
     },
     "kotlin": {
       "emit_exact_table_names": false,
       "package": "",
-      "out": "",
-      "inflection_exclude_table_names": []
+      "out": ""
     },
     "go": {
       "emit_interface": false,
@@ -50,8 +48,7 @@
       "output_querier_file_name": "",
       "output_files_suffix": "",
       "emit_enum_valid_method": false,
-      "emit_all_enum_values": false,
-      "inflection_exclude_table_names": []
+      "emit_all_enum_values": false
     },
     "json": {
       "out": "",
