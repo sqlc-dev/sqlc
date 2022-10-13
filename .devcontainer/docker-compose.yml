@@ -6,7 +6,7 @@ services:
       context: ..
       dockerfile: .devcontainer/Dockerfile
       args:
-        VARIANT: 1.18-bullseye
+        VARIANT: 1.19-bullseye
 
     volumes:
       - ..:/workspace:cached
