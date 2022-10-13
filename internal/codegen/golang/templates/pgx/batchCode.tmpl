@@ -7,7 +7,8 @@ const {{.ConstantName}} = {{$.Q}}-- name: {{.MethodName}} {{.Cmd}}
 
 type {{.MethodName}}BatchResults struct {
     br pgx.BatchResults
-    ind int
+    tot int
+    closed bool
 }
 
 {{if .Arg.EmitStruct}}
@@ -41,71 +42,86 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ if $.EmitMethodsWithDB
         batch.Queue({{.ConstantName}}, vals...)
     }
     br := {{if not $.EmitMethodsWithDBArgument}}q.{{end}}db.SendBatch(ctx, batch)
-    return &{{.MethodName}}BatchResults{br,0}
+    return &{{.MethodName}}BatchResults{br,len({{.Arg.Name}}),false}
 }
 
 {{if eq .Cmd ":batchexec"}}
 func (b *{{.MethodName}}BatchResults) Exec(f func(int, error)) {
-    for {
-		_, err := b.br.Exec()
-        if err != nil && (err.Error() == "no result" || err.Error() == "batch already closed"){
-			break
-		}
-        if f != nil {
-            f(b.ind, err)
-        }
-        b.ind++
-	}
+	defer b.br.Close()
+   for t := 0; t < b.tot; t++ {
+     if b.closed {
+       if f != nil {
+         f(t, errors.New("batch already closed"))
+       }
+       continue
+     }
+     _, err := b.br.Exec()
+     if f != nil {
+        f(t, err)
+     }
+   }
 }
 {{end}}
 
 {{if eq .Cmd ":batchmany"}}
 func (b *{{.MethodName}}BatchResults) Query(f func(int, []{{.Ret.DefineType}}, error)) {
-    for {
-		rows, err := b.br.Query()
-        if err != nil && (err.Error() == "no result" || err.Error() == "batch already closed") {
-			break
-		}
-        defer rows.Close()
-        {{- if $.EmitEmptySlices}}
-        items := []{{.Ret.DefineType}}{}
-        {{else}}
-        var items []{{.Ret.DefineType}}
-        {{end -}}
-        for rows.Next() {
-            var {{.Ret.Name}} {{.Ret.Type}}
-            if err := rows.Scan({{.Ret.Scan}}); err != nil {
-                break
-            }
-            items = append(items, {{.Ret.ReturnName}})
-        }
-
+	defer b.br.Close()
+   for t := 0; t < b.tot; t++ {
+     {{- if $.EmitEmptySlices}}
+     items := []{{.Ret.DefineType}}{}
+     {{else}}
+     var items []{{.Ret.DefineType}}
+     {{end -}}
+     if b.closed {
         if f != nil {
-            f(b.ind, items, rows.Err())
+          f(t, items, errors.New("batch already closed"))
         }
-        b.ind++
-	}
+        continue
+     }
+     err := func() error {
+	    rows, err := b.br.Query()
+       defer rows.Close()
+       if err != nil {
+         return err
+       }
+       for rows.Next() {
+           var {{.Ret.Name}} {{.Ret.Type}}
+           if err := rows.Scan({{.Ret.Scan}}); err != nil {
+             return err
+           }
+           items = append(items, {{.Ret.ReturnName}})
+        }
+        return rows.Err()
+      }()
+      if f != nil {
+        f(t, items, err)
+      }
+   }
 }
 {{end}}
 
 {{if eq .Cmd ":batchone"}}
 func (b *{{.MethodName}}BatchResults) QueryRow(f func(int, {{.Ret.DefineType}}, error)) {
-    for {
-		row := b.br.QueryRow()
-        var {{.Ret.Name}} {{.Ret.Type}}
-	    err := row.Scan({{.Ret.Scan}})
-        if err != nil && (err.Error() == "no result" || err.Error() == "batch already closed") {
-			break
-		}
+	defer b.br.Close()
+   for t := 0; t < b.tot; t++ {
+     var {{.Ret.Name}} {{.Ret.Type}}
+     if b.closed {
         if f != nil {
-            f(b.ind, {{.Ret.ReturnName}}, err)
+          f(t, {{.Ret.Name}}, errors.New("batch already closed"))
         }
-        b.ind++
-	}
+        continue
+     }
+     row := b.br.QueryRow()
+	  err := row.Scan({{.Ret.Scan}})
+     if f != nil {
+       f(t, {{.Ret.ReturnName}}, err)
+     }
+   }
 }
 {{end}}
 
 func (b *{{.MethodName}}BatchResults) Close() error {
+    b.closed = true
     return b.br.Close()
 }
 {{end}}

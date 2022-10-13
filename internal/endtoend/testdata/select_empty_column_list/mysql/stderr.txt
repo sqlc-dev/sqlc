@@ -1,0 +1,2 @@
+# package querytest
+query.sql:4:12: syntax error near "FROM bar;" "

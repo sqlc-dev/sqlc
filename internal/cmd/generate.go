@@ -17,6 +17,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/codegen/python"
 	"github.com/kyleconroy/sqlc/internal/compiler"
 	"github.com/kyleconroy/sqlc/internal/config"
+	"github.com/kyleconroy/sqlc/internal/config/convert"
 	"github.com/kyleconroy/sqlc/internal/debug"
 	"github.com/kyleconroy/sqlc/internal/ext"
 	"github.com/kyleconroy/sqlc/internal/ext/process"
@@ -27,7 +28,7 @@ import (
 )
 
 const errMessageNoVersion = `The configuration file must have a version number.
-Set the version to 1 at the top of sqlc.json:
+Set the version to 1 or 2 at the top of sqlc.json:
 
 {
   "version": "1"
@@ -36,7 +37,7 @@ Set the version to 1 at the top of sqlc.json:
 `
 
 const errMessageUnknownVersion = `The configuration file has an invalid version number.
-The only supported version is "1".
+The supported version can only be "1" or "2".
 `
 
 const errMessageNoPackages = `No packages are configured`
@@ -295,6 +296,7 @@ func codegen(ctx context.Context, combo config.CombinedSettings, sql outPair, re
 	if debug.Traced {
 		region = trace.StartRegion(ctx, "codegen")
 	}
+	req := codeGenRequest(result, combo)
 	var handler ext.Handler
 	var out string
 	switch {
@@ -335,10 +337,16 @@ func codegen(ctx context.Context, combo config.CombinedSettings, sql outPair, re
 			return "", nil, fmt.Errorf("unsupported plugin type")
 		}
 
+		opts, err := convert.YAMLtoJSON(sql.Plugin.Options)
+		if err != nil {
+			return "", nil, fmt.Errorf("invalid plugin options")
+		}
+		req.PluginOptions = opts
+
 	default:
 		return "", nil, fmt.Errorf("missing language backend")
 	}
-	resp, err := handler.Generate(ctx, codeGenRequest(result, combo))
+	resp, err := handler.Generate(ctx, req)
 	if region != nil {
 		region.End()
 	}

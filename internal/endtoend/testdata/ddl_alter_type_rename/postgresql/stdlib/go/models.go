@@ -30,7 +30,7 @@ func (e *NewEvent) Scan(src interface{}) error {
 
 type NullNewEvent struct {
 	NewEvent NewEvent
-	Valid    bool // Valid is true if String is not NULL
+	Valid    bool // Valid is true if NewEvent is not NULL
 }
 
 // Scan implements the Scanner interface.

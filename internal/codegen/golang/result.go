@@ -7,13 +7,14 @@ import (
 
 	"github.com/kyleconroy/sqlc/internal/codegen/sdk"
 	"github.com/kyleconroy/sqlc/internal/inflection"
+	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/plugin"
 )
 
 func buildEnums(req *plugin.CodeGenRequest) []Enum {
 	var enums []Enum
 	for _, schema := range req.Catalog.Schemas {
-		if schema.Name == "pg_catalog" {
+		if schema.Name == "pg_catalog" || schema.Name == "information_schema" {
 			continue
 		}
 		for _, enum := range schema.Enums {
@@ -52,7 +53,7 @@ func buildEnums(req *plugin.CodeGenRequest) []Enum {
 func buildStructs(req *plugin.CodeGenRequest) []Struct {
 	var structs []Struct
 	for _, schema := range req.Catalog.Schemas {
-		if schema.Name == "pg_catalog" {
+		if schema.Name == "pg_catalog" || schema.Name == "information_schema" {
 			continue
 		}
 		for _, table := range schema.Tables {
@@ -64,7 +65,10 @@ func buildStructs(req *plugin.CodeGenRequest) []Struct {
 			}
 			structName := tableName
 			if !req.Settings.Go.EmitExactTableNames {
-				structName = inflection.Singular(structName)
+				structName = inflection.Singular(inflection.SingularParams{
+					Name:       structName,
+					Exclusions: req.Settings.Go.InflectionExcludeTableNames,
+				})
 			}
 			s := Struct{
 				Table:   plugin.Identifier{Schema: schema.Name, Name: table.Rel.Name},
@@ -197,7 +201,7 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 				Typ:        goType(req, c),
 				SQLPackage: sqlpkg,
 			}
-		} else if len(query.Columns) > 1 {
+		} else if putOutColumns(query) {
 			var gs *Struct
 			var emit bool
 
@@ -251,10 +255,23 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 	return qs, nil
 }
 
+func putOutColumns(query *plugin.Query) bool {
+	if len(query.Columns) > 0 {
+		return true
+	}
+	for _, allowed := range []string{metadata.CmdMany, metadata.CmdOne, metadata.CmdBatchMany} {
+		if query.Cmd == allowed {
+			return true
+		}
+	}
+	return false
+}
+
 // It's possible that this method will generate duplicate JSON tag values
 //
-//   Columns: count, count,   count_2
-//    Fields: Count, Count_2, Count2
+//	Columns: count, count,   count_2
+//	 Fields: Count, Count_2, Count2
+//
 // JSON tags: count, count_2, count_2
 //
 // This is unlikely to happen, so don't fix it yet

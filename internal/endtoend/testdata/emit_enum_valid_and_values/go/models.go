@@ -31,7 +31,7 @@ func (e *IPProtocol) Scan(src interface{}) error {
 
 type NullIPProtocol struct {
 	IPProtocol IPProtocol
-	Valid      bool // Valid is true if String is not NULL
+	Valid      bool // Valid is true if IPProtocol is not NULL
 }
 
 // Scan implements the Scanner interface.

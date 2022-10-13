@@ -40,6 +40,11 @@ func Sslinfo() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "numeric"},
 		},
 		{
+			Name:       "ssl_extension_info",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
 			Name:       "ssl_is_used",
 			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "boolean"},

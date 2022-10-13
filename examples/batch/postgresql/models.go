@@ -8,6 +8,8 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"time"
+
+	"github.com/jackc/pgtype"
 )
 
 type BookType string
@@ -31,7 +33,7 @@ func (e *BookType) Scan(src interface{}) error {
 
 type NullBookType struct {
 	BookType BookType
-	Valid    bool // Valid is true if String is not NULL
+	Valid    bool // Valid is true if BookType is not NULL
 }
 
 // Scan implements the Scanner interface.
@@ -53,8 +55,9 @@ func (ns NullBookType) Value() (driver.Value, error) {
 }
 
 type Author struct {
-	AuthorID int32  `json:"author_id"`
-	Name     string `json:"name"`
+	AuthorID  int32        `json:"author_id"`
+	Name      string       `json:"name"`
+	Biography pgtype.JSONB `json:"biography"`
 }
 
 type Book struct {

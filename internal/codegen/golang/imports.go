@@ -239,6 +239,9 @@ func (i *importer) interfaceImports() fileImports {
 	std, pkg := buildImports(i.Settings, i.Queries, func(name string) bool {
 		for _, q := range i.Queries {
 			if q.hasRetType() {
+				if usesBatch([]Query{q}) {
+					continue
+				}
 				if strings.HasPrefix(q.Ret.Type(), name) {
 					return true
 				}
@@ -407,11 +410,14 @@ func (i *importer) copyfromImports() fileImports {
 }
 
 func (i *importer) batchImports(filename string) fileImports {
-	std, pkg := buildImports(i.Settings, i.Queries, func(name string) bool {
-		for _, q := range i.Queries {
-			if !usesBatch([]Query{q}) {
-				continue
-			}
+	batchQueries := make([]Query, 0, len(i.Queries))
+	for _, q := range i.Queries {
+		if usesBatch([]Query{q}) {
+			batchQueries = append(batchQueries, q)
+		}
+	}
+	std, pkg := buildImports(i.Settings, batchQueries, func(name string) bool {
+		for _, q := range batchQueries {
 			if q.hasRetType() {
 				if q.Ret.EmitStruct() {
 					for _, f := range q.Ret.Struct.Fields {
@@ -445,6 +451,7 @@ func (i *importer) batchImports(filename string) fileImports {
 	})
 
 	std["context"] = struct{}{}
+	std["errors"] = struct{}{}
 	pkg[ImportSpec{Path: "github.com/jackc/pgx/v4"}] = struct{}{}
 
 	return sortedImports(std, pkg)

@@ -10,21 +10,6 @@ import (
 	yaml "gopkg.in/yaml.v3"
 )
 
-const errMessageNoVersion = `The configuration file must have a version number.
-Set the version to 1 at the top of sqlc.json:
-
-{
-  "version": "1"
-  ...
-}
-`
-
-const errMessageUnknownVersion = `The configuration file has an invalid version number.
-The only supported version is "1".
-`
-
-const errMessageNoPackages = `No packages are configured`
-
 type versionSetting struct {
 	Number string `json:"version" yaml:"version"`
 }
@@ -131,44 +116,48 @@ type SQLGen struct {
 }
 
 type SQLGo struct {
-	EmitInterface             bool              `json:"emit_interface" yaml:"emit_interface"`
-	EmitJSONTags              bool              `json:"emit_json_tags" yaml:"emit_json_tags"`
-	EmitDBTags                bool              `json:"emit_db_tags" yaml:"emit_db_tags"`
-	EmitPreparedQueries       bool              `json:"emit_prepared_queries" yaml:"emit_prepared_queries"`
-	EmitExactTableNames       bool              `json:"emit_exact_table_names,omitempty" yaml:"emit_exact_table_names"`
-	EmitEmptySlices           bool              `json:"emit_empty_slices,omitempty" yaml:"emit_empty_slices"`
-	EmitExportedQueries       bool              `json:"emit_exported_queries" yaml:"emit_exported_queries"`
-	EmitResultStructPointers  bool              `json:"emit_result_struct_pointers" yaml:"emit_result_struct_pointers"`
-	EmitParamsStructPointers  bool              `json:"emit_params_struct_pointers" yaml:"emit_params_struct_pointers"`
-	EmitMethodsWithDBArgument bool              `json:"emit_methods_with_db_argument,omitempty" yaml:"emit_methods_with_db_argument"`
-	EmitEnumValidMethod       bool              `json:"emit_enum_valid_method,omitempty" yaml:"emit_enum_valid_method"`
-	EmitAllEnumValues         bool              `json:"emit_all_enum_values,omitempty" yaml:"emit_all_enum_values"`
-	JSONTagsCaseStyle         string            `json:"json_tags_case_style,omitempty" yaml:"json_tags_case_style"`
-	Package                   string            `json:"package" yaml:"package"`
-	Out                       string            `json:"out" yaml:"out"`
-	Overrides                 []Override        `json:"overrides,omitempty" yaml:"overrides"`
-	Rename                    map[string]string `json:"rename,omitempty" yaml:"rename"`
-	SQLPackage                string            `json:"sql_package" yaml:"sql_package"`
-	OutputDBFileName          string            `json:"output_db_file_name,omitempty" yaml:"output_db_file_name"`
-	OutputModelsFileName      string            `json:"output_models_file_name,omitempty" yaml:"output_models_file_name"`
-	OutputQuerierFileName     string            `json:"output_querier_file_name,omitempty" yaml:"output_querier_file_name"`
-	OutputFilesSuffix         string            `json:"output_files_suffix,omitempty" yaml:"output_files_suffix"`
+	EmitInterface               bool              `json:"emit_interface" yaml:"emit_interface"`
+	EmitJSONTags                bool              `json:"emit_json_tags" yaml:"emit_json_tags"`
+	EmitDBTags                  bool              `json:"emit_db_tags" yaml:"emit_db_tags"`
+	EmitPreparedQueries         bool              `json:"emit_prepared_queries" yaml:"emit_prepared_queries"`
+	EmitExactTableNames         bool              `json:"emit_exact_table_names,omitempty" yaml:"emit_exact_table_names"`
+	EmitEmptySlices             bool              `json:"emit_empty_slices,omitempty" yaml:"emit_empty_slices"`
+	EmitExportedQueries         bool              `json:"emit_exported_queries" yaml:"emit_exported_queries"`
+	EmitResultStructPointers    bool              `json:"emit_result_struct_pointers" yaml:"emit_result_struct_pointers"`
+	EmitParamsStructPointers    bool              `json:"emit_params_struct_pointers" yaml:"emit_params_struct_pointers"`
+	EmitMethodsWithDBArgument   bool              `json:"emit_methods_with_db_argument,omitempty" yaml:"emit_methods_with_db_argument"`
+	EmitEnumValidMethod         bool              `json:"emit_enum_valid_method,omitempty" yaml:"emit_enum_valid_method"`
+	EmitAllEnumValues           bool              `json:"emit_all_enum_values,omitempty" yaml:"emit_all_enum_values"`
+	JSONTagsCaseStyle           string            `json:"json_tags_case_style,omitempty" yaml:"json_tags_case_style"`
+	Package                     string            `json:"package" yaml:"package"`
+	Out                         string            `json:"out" yaml:"out"`
+	Overrides                   []Override        `json:"overrides,omitempty" yaml:"overrides"`
+	Rename                      map[string]string `json:"rename,omitempty" yaml:"rename"`
+	SQLPackage                  string            `json:"sql_package" yaml:"sql_package"`
+	OutputDBFileName            string            `json:"output_db_file_name,omitempty" yaml:"output_db_file_name"`
+	OutputModelsFileName        string            `json:"output_models_file_name,omitempty" yaml:"output_models_file_name"`
+	OutputQuerierFileName       string            `json:"output_querier_file_name,omitempty" yaml:"output_querier_file_name"`
+	OutputFilesSuffix           string            `json:"output_files_suffix,omitempty" yaml:"output_files_suffix"`
+	InflectionExcludeTableNames []string          `json:"inflection_exclude_table_names,omitempty" yaml:"inflection_exclude_table_names"`
 }
 
 type SQLKotlin struct {
-	EmitExactTableNames bool   `json:"emit_exact_table_names,omitempty" yaml:"emit_exact_table_names"`
-	Package             string `json:"package" yaml:"package"`
-	Out                 string `json:"out" yaml:"out"`
+	EmitExactTableNames         bool     `json:"emit_exact_table_names,omitempty" yaml:"emit_exact_table_names"`
+	Package                     string   `json:"package" yaml:"package"`
+	Out                         string   `json:"out" yaml:"out"`
+	InflectionExcludeTableNames []string `json:"inflection_exclude_table_names,omitempty" yaml:"inflection_exclude_table_names"`
 }
 
 type SQLPython struct {
-	EmitExactTableNames bool       `json:"emit_exact_table_names" yaml:"emit_exact_table_names"`
-	EmitSyncQuerier     bool       `json:"emit_sync_querier" yaml:"emit_sync_querier"`
-	EmitAsyncQuerier    bool       `json:"emit_async_querier" yaml:"emit_async_querier"`
-	Package             string     `json:"package" yaml:"package"`
-	Out                 string     `json:"out" yaml:"out"`
-	Overrides           []Override `json:"overrides,omitempty" yaml:"overrides"`
-	EmitPydanticModels  bool       `json:"emit_pydantic_models,omitempty" yaml:"emit_pydantic_models"`
+	EmitExactTableNames         bool       `json:"emit_exact_table_names" yaml:"emit_exact_table_names"`
+	EmitSyncQuerier             bool       `json:"emit_sync_querier" yaml:"emit_sync_querier"`
+	EmitAsyncQuerier            bool       `json:"emit_async_querier" yaml:"emit_async_querier"`
+	Package                     string     `json:"package" yaml:"package"`
+	Out                         string     `json:"out" yaml:"out"`
+	Overrides                   []Override `json:"overrides,omitempty" yaml:"overrides"`
+	EmitPydanticModels          bool       `json:"emit_pydantic_models,omitempty" yaml:"emit_pydantic_models"`
+	QueryParameterLimit         *int32     `json:"query_parameter_limit,omitempty" yaml:"query_parameter_limit"`
+	InflectionExcludeTableNames []string   `json:"inflection_exclude_table_names,omitempty" yaml:"inflection_exclude_table_names"`
 }
 
 type SQLJSON struct {
@@ -194,6 +183,8 @@ var ErrPluginNotFound = errors.New("no plugin found")
 var ErrPluginNoType = errors.New("plugin: field `process` or `wasm` required")
 var ErrPluginBothTypes = errors.New("plugin: both `process` and `wasm` cannot both be defined")
 var ErrPluginProcessNoCmd = errors.New("plugin: missing process command")
+
+var ErrInvalidQueryParameterLimit = errors.New("invalid query parameter limit")
 
 func ParseConfig(rd io.Reader) (Config, error) {
 	var buf bytes.Buffer

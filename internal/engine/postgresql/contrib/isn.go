@@ -29,6 +29,30 @@ func Isn() *catalog.Schema {
 					Type: &ast.TypeName{Name: "ean13"},
 				},
 				{
+					Type: &ast.TypeName{Name: "isbn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "integer"},
+		},
+		{
+			Name: "btean13cmp",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "isbn13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "integer"},
+		},
+		{
+			Name: "btean13cmp",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+				{
 					Type: &ast.TypeName{Name: "ismn"},
 				},
 			},
@@ -41,7 +65,31 @@ func Isn() *catalog.Schema {
 					Type: &ast.TypeName{Name: "ean13"},
 				},
 				{
-					Type: &ast.TypeName{Name: "isbn"},
+					Type: &ast.TypeName{Name: "ismn13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "integer"},
+		},
+		{
+			Name: "btean13cmp",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "issn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "integer"},
+		},
+		{
+			Name: "btean13cmp",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "issn13"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "integer"},
@@ -59,49 +107,13 @@ func Isn() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "integer"},
 		},
 		{
-			Name: "btean13cmp",
+			Name: "btisbn13cmp",
 			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "issn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "integer"},
-		},
-		{
-			Name: "btean13cmp",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ismn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "integer"},
-		},
-		{
-			Name: "btean13cmp",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
 				{
 					Type: &ast.TypeName{Name: "isbn13"},
 				},
-			},
-			ReturnType: &ast.TypeName{Name: "integer"},
-		},
-		{
-			Name: "btean13cmp",
-			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "ean13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "issn"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "integer"},
@@ -126,18 +138,6 @@ func Isn() *catalog.Schema {
 				},
 				{
 					Type: &ast.TypeName{Name: "isbn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "integer"},
-		},
-		{
-			Name: "btisbn13cmp",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "isbn13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ean13"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "integer"},
@@ -185,18 +185,6 @@ func Isn() *catalog.Schema {
 					Type: &ast.TypeName{Name: "ismn13"},
 				},
 				{
-					Type: &ast.TypeName{Name: "ismn"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "integer"},
-		},
-		{
-			Name: "btismn13cmp",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ismn13"},
-				},
-				{
 					Type: &ast.TypeName{Name: "ean13"},
 				},
 			},
@@ -209,6 +197,18 @@ func Isn() *catalog.Schema {
 					Type: &ast.TypeName{Name: "ismn13"},
 				},
 				{
+					Type: &ast.TypeName{Name: "ismn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "integer"},
+		},
+		{
+			Name: "btismn13cmp",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ismn13"},
+				},
+				{
 					Type: &ast.TypeName{Name: "ismn13"},
 				},
 			},
@@ -221,6 +221,18 @@ func Isn() *catalog.Schema {
 					Type: &ast.TypeName{Name: "ismn"},
 				},
 				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "integer"},
+		},
+		{
+			Name: "btismncmp",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ismn"},
+				},
+				{
 					Type: &ast.TypeName{Name: "ismn"},
 				},
 			},
@@ -239,18 +251,6 @@ func Isn() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "integer"},
 		},
 		{
-			Name: "btismncmp",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ismn"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "integer"},
-		},
-		{
 			Name: "btissn13cmp",
 			Args: []*catalog.Argument{
 				{
@@ -293,31 +293,31 @@ func Isn() *catalog.Schema {
 					Type: &ast.TypeName{Name: "issn"},
 				},
 				{
-					Type: &ast.TypeName{Name: "issn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "integer"},
-		},
-		{
-			Name: "btissncmp",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "issn"},
-				},
-				{
-					Type: &ast.TypeName{Name: "issn"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "integer"},
-		},
-		{
-			Name: "btissncmp",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "issn"},
-				},
-				{
 					Type: &ast.TypeName{Name: "ean13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "integer"},
+		},
+		{
+			Name: "btissncmp",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "issn"},
+				},
+				{
+					Type: &ast.TypeName{Name: "issn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "integer"},
+		},
+		{
+			Name: "btissncmp",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "issn"},
+				},
+				{
+					Type: &ast.TypeName{Name: "issn13"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "integer"},
@@ -359,7 +359,7 @@ func Isn() *catalog.Schema {
 			Name: "ean13_out",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "ismn13"},
+					Type: &ast.TypeName{Name: "ean13"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "cstring"},
@@ -377,7 +377,7 @@ func Isn() *catalog.Schema {
 			Name: "ean13_out",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "issn13"},
+					Type: &ast.TypeName{Name: "ismn13"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "cstring"},
@@ -386,7 +386,7 @@ func Isn() *catalog.Schema {
 			Name: "ean13_out",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "ean13"},
+					Type: &ast.TypeName{Name: "issn13"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "cstring"},
@@ -467,34 +467,7 @@ func Isn() *catalog.Schema {
 			Name: "is_valid",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "issn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "is_valid",
-			Args: []*catalog.Argument{
-				{
 					Type: &ast.TypeName{Name: "ean13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "is_valid",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "isbn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "is_valid",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ismn13"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -512,6 +485,15 @@ func Isn() *catalog.Schema {
 			Name: "is_valid",
 			Args: []*catalog.Argument{
 				{
+					Type: &ast.TypeName{Name: "isbn13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "is_valid",
+			Args: []*catalog.Argument{
+				{
 					Type: &ast.TypeName{Name: "ismn"},
 				},
 			},
@@ -521,7 +503,25 @@ func Isn() *catalog.Schema {
 			Name: "is_valid",
 			Args: []*catalog.Argument{
 				{
+					Type: &ast.TypeName{Name: "ismn13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "is_valid",
+			Args: []*catalog.Argument{
+				{
 					Type: &ast.TypeName{Name: "issn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "is_valid",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "issn13"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -611,24 +611,6 @@ func Isn() *catalog.Schema {
 			Name: "isn_out",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "issn"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "cstring"},
-		},
-		{
-			Name: "isn_out",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "upc"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "cstring"},
-		},
-		{
-			Name: "isn_out",
-			Args: []*catalog.Argument{
-				{
 					Type: &ast.TypeName{Name: "isbn"},
 				},
 			},
@@ -639,6 +621,24 @@ func Isn() *catalog.Schema {
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "ismn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "cstring"},
+		},
+		{
+			Name: "isn_out",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "issn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "cstring"},
+		},
+		{
+			Name: "isn_out",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "upc"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "cstring"},
@@ -664,6 +664,90 @@ func Isn() *catalog.Schema {
 					Type: &ast.TypeName{Name: "ean13"},
 				},
 				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isneq",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "isbn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isneq",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "isbn13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isneq",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ismn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isneq",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ismn13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isneq",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "issn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isneq",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "issn13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isneq",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+				{
 					Type: &ast.TypeName{Name: "upc"},
 				},
 			},
@@ -673,115 +757,7 @@ func Isn() *catalog.Schema {
 			Name: "isneq",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isneq",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "isbn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isneq",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ismn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isneq",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "issn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isneq",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-				{
 					Type: &ast.TypeName{Name: "isbn"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isneq",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ismn"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isneq",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "issn"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isneq",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "isbn13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "isbn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isneq",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "isbn13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "isbn"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isneq",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "isbn13"},
 				},
 				{
 					Type: &ast.TypeName{Name: "ean13"},
@@ -817,11 +793,23 @@ func Isn() *catalog.Schema {
 			Name: "isneq",
 			Args: []*catalog.Argument{
 				{
+					Type: &ast.TypeName{Name: "isbn13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isneq",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "isbn13"},
+				},
+				{
 					Type: &ast.TypeName{Name: "isbn"},
 				},
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
@@ -829,10 +817,10 @@ func Isn() *catalog.Schema {
 			Name: "isneq",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "ismn13"},
+					Type: &ast.TypeName{Name: "isbn13"},
 				},
 				{
-					Type: &ast.TypeName{Name: "ismn13"},
+					Type: &ast.TypeName{Name: "isbn13"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -840,20 +828,8 @@ func Isn() *catalog.Schema {
 		{
 			Name: "isneq",
 			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ismn13"},
-				},
 				{
 					Type: &ast.TypeName{Name: "ismn"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isneq",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ismn13"},
 				},
 				{
 					Type: &ast.TypeName{Name: "ean13"},
@@ -889,11 +865,23 @@ func Isn() *catalog.Schema {
 			Name: "isneq",
 			Args: []*catalog.Argument{
 				{
+					Type: &ast.TypeName{Name: "ismn13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isneq",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ismn13"},
+				},
+				{
 					Type: &ast.TypeName{Name: "ismn"},
 				},
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
@@ -901,58 +889,10 @@ func Isn() *catalog.Schema {
 			Name: "isneq",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "issn13"},
+					Type: &ast.TypeName{Name: "ismn13"},
 				},
 				{
-					Type: &ast.TypeName{Name: "issn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isneq",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "issn13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "issn"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isneq",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "issn13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isneq",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "issn"},
-				},
-				{
-					Type: &ast.TypeName{Name: "issn"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isneq",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "issn"},
-				},
-				{
-					Type: &ast.TypeName{Name: "issn13"},
+					Type: &ast.TypeName{Name: "ismn13"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -973,10 +913,58 @@ func Isn() *catalog.Schema {
 			Name: "isneq",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "upc"},
+					Type: &ast.TypeName{Name: "issn"},
 				},
 				{
-					Type: &ast.TypeName{Name: "upc"},
+					Type: &ast.TypeName{Name: "issn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isneq",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "issn"},
+				},
+				{
+					Type: &ast.TypeName{Name: "issn13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isneq",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "issn13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isneq",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "issn13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "issn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isneq",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "issn13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "issn13"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -994,10 +982,46 @@ func Isn() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
+			Name: "isneq",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "upc"},
+				},
+				{
+					Type: &ast.TypeName{Name: "upc"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
 			Name: "isnge",
 			Args: []*catalog.Argument{
 				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnge",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+				{
 					Type: &ast.TypeName{Name: "isbn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnge",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ean13"},
 				},
 				{
 					Type: &ast.TypeName{Name: "isbn13"},
@@ -1021,34 +1045,10 @@ func Isn() *catalog.Schema {
 			Name: "isnge",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "ismn"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ismn"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnge",
-			Args: []*catalog.Argument{
-				{
 					Type: &ast.TypeName{Name: "ean13"},
 				},
 				{
-					Type: &ast.TypeName{Name: "isbn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnge",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "issn"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ean13"},
+					Type: &ast.TypeName{Name: "ismn13"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -1069,58 +1069,10 @@ func Isn() *catalog.Schema {
 			Name: "isnge",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "isbn"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnge",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "isbn"},
-				},
-				{
-					Type: &ast.TypeName{Name: "isbn"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnge",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ismn"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ismn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnge",
-			Args: []*catalog.Argument{
-				{
 					Type: &ast.TypeName{Name: "ean13"},
 				},
 				{
-					Type: &ast.TypeName{Name: "ismn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnge",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ismn13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ismn"},
+					Type: &ast.TypeName{Name: "issn13"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -1141,6 +1093,42 @@ func Isn() *catalog.Schema {
 			Name: "isnge",
 			Args: []*catalog.Argument{
 				{
+					Type: &ast.TypeName{Name: "isbn"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnge",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "isbn"},
+				},
+				{
+					Type: &ast.TypeName{Name: "isbn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnge",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "isbn"},
+				},
+				{
+					Type: &ast.TypeName{Name: "isbn13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnge",
+			Args: []*catalog.Argument{
+				{
 					Type: &ast.TypeName{Name: "isbn13"},
 				},
 				{
@@ -1153,30 +1141,6 @@ func Isn() *catalog.Schema {
 			Name: "isnge",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnge",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ismn"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnge",
-			Args: []*catalog.Argument{
-				{
 					Type: &ast.TypeName{Name: "isbn13"},
 				},
 				{
@@ -1201,10 +1165,58 @@ func Isn() *catalog.Schema {
 			Name: "isnge",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "ean13"},
+					Type: &ast.TypeName{Name: "ismn"},
 				},
 				{
-					Type: &ast.TypeName{Name: "issn13"},
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnge",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ismn"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ismn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnge",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ismn"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ismn13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnge",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ismn13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnge",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ismn13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ismn"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -1228,67 +1240,19 @@ func Isn() *catalog.Schema {
 					Type: &ast.TypeName{Name: "issn"},
 				},
 				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnge",
+			Args: []*catalog.Argument{
+				{
 					Type: &ast.TypeName{Name: "issn"},
 				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnge",
-			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "issn13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "issn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnge",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ismn13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnge",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "upc"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnge",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "issn13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnge",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "isbn"},
+					Type: &ast.TypeName{Name: "issn"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -1312,7 +1276,43 @@ func Isn() *catalog.Schema {
 					Type: &ast.TypeName{Name: "issn13"},
 				},
 				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnge",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "issn13"},
+				},
+				{
 					Type: &ast.TypeName{Name: "issn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnge",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "issn13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "issn13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnge",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "upc"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ean13"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -1333,139 +1333,7 @@ func Isn() *catalog.Schema {
 			Name: "isngt",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "issn13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "issn"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isngt",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "issn"},
-				},
-				{
 					Type: &ast.TypeName{Name: "ean13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isngt",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "issn13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isngt",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "issn"},
-				},
-				{
-					Type: &ast.TypeName{Name: "issn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isngt",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "issn"},
-				},
-				{
-					Type: &ast.TypeName{Name: "issn"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isngt",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ismn13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ismn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isngt",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "isbn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isngt",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ismn13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ismn"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isngt",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ismn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isngt",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "isbn"},
-				},
-				{
-					Type: &ast.TypeName{Name: "isbn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isngt",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "issn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isngt",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ismn13"},
 				},
 				{
 					Type: &ast.TypeName{Name: "ean13"},
@@ -1489,23 +1357,11 @@ func Isn() *catalog.Schema {
 			Name: "isngt",
 			Args: []*catalog.Argument{
 				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+				{
 					Type: &ast.TypeName{Name: "isbn13"},
 				},
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isngt",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ismn"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ismn"},
-				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
@@ -1525,19 +1381,7 @@ func Isn() *catalog.Schema {
 			Name: "isngt",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "isbn"},
-				},
-				{
 					Type: &ast.TypeName{Name: "ean13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isngt",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ismn"},
 				},
 				{
 					Type: &ast.TypeName{Name: "ismn13"},
@@ -1553,6 +1397,18 @@ func Isn() *catalog.Schema {
 				},
 				{
 					Type: &ast.TypeName{Name: "issn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isngt",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "issn13"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -1573,70 +1429,10 @@ func Isn() *catalog.Schema {
 			Name: "isngt",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "ismn"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isngt",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "isbn13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "isbn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isngt",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "isbn13"},
-				},
-				{
 					Type: &ast.TypeName{Name: "isbn"},
 				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isngt",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "upc"},
-				},
 				{
 					Type: &ast.TypeName{Name: "ean13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isngt",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "issn13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "issn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isngt",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "upc"},
-				},
-				{
-					Type: &ast.TypeName{Name: "upc"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -1657,6 +1453,222 @@ func Isn() *catalog.Schema {
 			Name: "isngt",
 			Args: []*catalog.Argument{
 				{
+					Type: &ast.TypeName{Name: "isbn"},
+				},
+				{
+					Type: &ast.TypeName{Name: "isbn13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isngt",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "isbn13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isngt",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "isbn13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "isbn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isngt",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "isbn13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "isbn13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isngt",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ismn"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isngt",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ismn"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ismn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isngt",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ismn"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ismn13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isngt",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ismn13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isngt",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ismn13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ismn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isngt",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ismn13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ismn13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isngt",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "issn"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isngt",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "issn"},
+				},
+				{
+					Type: &ast.TypeName{Name: "issn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isngt",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "issn"},
+				},
+				{
+					Type: &ast.TypeName{Name: "issn13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isngt",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "issn13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isngt",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "issn13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "issn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isngt",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "issn13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "issn13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isngt",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "upc"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isngt",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "upc"},
+				},
+				{
+					Type: &ast.TypeName{Name: "upc"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnle",
+			Args: []*catalog.Argument{
+				{
 					Type: &ast.TypeName{Name: "ean13"},
 				},
 				{
@@ -1669,10 +1681,82 @@ func Isn() *catalog.Schema {
 			Name: "isnle",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "issn13"},
+					Type: &ast.TypeName{Name: "ean13"},
 				},
 				{
+					Type: &ast.TypeName{Name: "isbn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnle",
+			Args: []*catalog.Argument{
+				{
 					Type: &ast.TypeName{Name: "ean13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "isbn13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnle",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ismn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnle",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ismn13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnle",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "issn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnle",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "issn13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnle",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "upc"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -1693,22 +1777,10 @@ func Isn() *catalog.Schema {
 			Name: "isnle",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "ismn13"},
+					Type: &ast.TypeName{Name: "isbn"},
 				},
 				{
-					Type: &ast.TypeName{Name: "ismn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnle",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ismn13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ismn"},
+					Type: &ast.TypeName{Name: "isbn"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -1717,7 +1789,19 @@ func Isn() *catalog.Schema {
 			Name: "isnle",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "ismn13"},
+					Type: &ast.TypeName{Name: "isbn"},
+				},
+				{
+					Type: &ast.TypeName{Name: "isbn13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnle",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "isbn13"},
 				},
 				{
 					Type: &ast.TypeName{Name: "ean13"},
@@ -1729,22 +1813,10 @@ func Isn() *catalog.Schema {
 			Name: "isnle",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "ismn"},
+					Type: &ast.TypeName{Name: "isbn13"},
 				},
 				{
-					Type: &ast.TypeName{Name: "ismn"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnle",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ismn"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ismn13"},
+					Type: &ast.TypeName{Name: "isbn"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -1753,7 +1825,7 @@ func Isn() *catalog.Schema {
 			Name: "isnle",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "ean13"},
+					Type: &ast.TypeName{Name: "isbn13"},
 				},
 				{
 					Type: &ast.TypeName{Name: "isbn13"},
@@ -1777,22 +1849,10 @@ func Isn() *catalog.Schema {
 			Name: "isnle",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "issn13"},
+					Type: &ast.TypeName{Name: "ismn"},
 				},
 				{
-					Type: &ast.TypeName{Name: "issn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnle",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "issn13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "issn"},
+					Type: &ast.TypeName{Name: "ismn"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -1801,10 +1861,10 @@ func Isn() *catalog.Schema {
 			Name: "isnle",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "issn"},
+					Type: &ast.TypeName{Name: "ismn"},
 				},
 				{
-					Type: &ast.TypeName{Name: "issn"},
+					Type: &ast.TypeName{Name: "ismn13"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -1813,7 +1873,7 @@ func Isn() *catalog.Schema {
 			Name: "isnle",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "ean13"},
+					Type: &ast.TypeName{Name: "ismn13"},
 				},
 				{
 					Type: &ast.TypeName{Name: "ean13"},
@@ -1825,6 +1885,54 @@ func Isn() *catalog.Schema {
 			Name: "isnle",
 			Args: []*catalog.Argument{
 				{
+					Type: &ast.TypeName{Name: "ismn13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ismn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnle",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ismn13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ismn13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnle",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "issn"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnle",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "issn"},
+				},
+				{
+					Type: &ast.TypeName{Name: "issn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnle",
+			Args: []*catalog.Argument{
+				{
 					Type: &ast.TypeName{Name: "issn"},
 				},
 				{
@@ -1837,7 +1945,43 @@ func Isn() *catalog.Schema {
 			Name: "isnle",
 			Args: []*catalog.Argument{
 				{
+					Type: &ast.TypeName{Name: "issn13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnle",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "issn13"},
+				},
+				{
 					Type: &ast.TypeName{Name: "issn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnle",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "issn13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "issn13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnle",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "upc"},
 				},
 				{
 					Type: &ast.TypeName{Name: "ean13"},
@@ -1858,10 +2002,10 @@ func Isn() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
-			Name: "isnle",
+			Name: "isnlt",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "upc"},
+					Type: &ast.TypeName{Name: "ean13"},
 				},
 				{
 					Type: &ast.TypeName{Name: "ean13"},
@@ -1870,10 +2014,10 @@ func Isn() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
-			Name: "isnle",
+			Name: "isnlt",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "isbn13"},
+					Type: &ast.TypeName{Name: "ean13"},
 				},
 				{
 					Type: &ast.TypeName{Name: "isbn"},
@@ -1882,43 +2026,19 @@ func Isn() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
-			Name: "isnle",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "isbn13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "isbn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnle",
+			Name: "isnlt",
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "ean13"},
 				},
 				{
-					Type: &ast.TypeName{Name: "upc"},
+					Type: &ast.TypeName{Name: "isbn13"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
-			Name: "isnle",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "issn"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnle",
+			Name: "isnlt",
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "ean13"},
@@ -1930,31 +2050,7 @@ func Isn() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
-			Name: "isnle",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "isbn"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnle",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "issn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnle",
+			Name: "isnlt",
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "ean13"},
@@ -1966,181 +2062,13 @@ func Isn() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
-			Name: "isnle",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "isbn13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnle",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "isbn"},
-				},
-				{
-					Type: &ast.TypeName{Name: "isbn"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnle",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "isbn"},
-				},
-				{
-					Type: &ast.TypeName{Name: "isbn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
 			Name: "isnlt",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "issn"},
-				},
-				{
 					Type: &ast.TypeName{Name: "ean13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnlt",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "issn"},
 				},
 				{
 					Type: &ast.TypeName{Name: "issn"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnlt",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ismn"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnlt",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "upc"},
-				},
-				{
-					Type: &ast.TypeName{Name: "upc"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnlt",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ismn"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ismn"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnlt",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "isbn13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "isbn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnlt",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "isbn"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnlt",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "isbn"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnlt",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "issn13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnlt",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnlt",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ismn13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnlt",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "isbn13"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -2153,42 +2081,6 @@ func Isn() *catalog.Schema {
 				},
 				{
 					Type: &ast.TypeName{Name: "issn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnlt",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ismn"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnlt",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "isbn"},
-				},
-				{
-					Type: &ast.TypeName{Name: "isbn"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnlt",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "isbn13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ean13"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -2209,10 +2101,46 @@ func Isn() *catalog.Schema {
 			Name: "isnlt",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "ean13"},
+					Type: &ast.TypeName{Name: "isbn"},
 				},
 				{
-					Type: &ast.TypeName{Name: "ismn13"},
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnlt",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "isbn"},
+				},
+				{
+					Type: &ast.TypeName{Name: "isbn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnlt",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "isbn"},
+				},
+				{
+					Type: &ast.TypeName{Name: "isbn13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnlt",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "isbn13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ean13"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -2233,10 +2161,58 @@ func Isn() *catalog.Schema {
 			Name: "isnlt",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "issn"},
+					Type: &ast.TypeName{Name: "isbn13"},
 				},
 				{
-					Type: &ast.TypeName{Name: "issn13"},
+					Type: &ast.TypeName{Name: "isbn13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnlt",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ismn"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnlt",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ismn"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ismn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnlt",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ismn"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ismn13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnlt",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ismn13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ean13"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -2249,6 +2225,90 @@ func Isn() *catalog.Schema {
 				},
 				{
 					Type: &ast.TypeName{Name: "ismn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnlt",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ismn13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ismn13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnlt",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "issn"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnlt",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "issn"},
+				},
+				{
+					Type: &ast.TypeName{Name: "issn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnlt",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "issn"},
+				},
+				{
+					Type: &ast.TypeName{Name: "issn13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnlt",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "issn13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnlt",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "issn13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "issn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnlt",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "issn13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "issn13"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -2269,70 +2329,10 @@ func Isn() *catalog.Schema {
 			Name: "isnlt",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "ismn13"},
+					Type: &ast.TypeName{Name: "upc"},
 				},
 				{
-					Type: &ast.TypeName{Name: "ismn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnlt",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ismn"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ismn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnlt",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "isbn"},
-				},
-				{
-					Type: &ast.TypeName{Name: "isbn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnlt",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "issn"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnlt",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "issn13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "issn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnlt",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "issn13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "issn"},
+					Type: &ast.TypeName{Name: "upc"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -2341,7 +2341,43 @@ func Isn() *catalog.Schema {
 			Name: "isnne",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "ismn"},
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnne",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "isbn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnne",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "isbn13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnne",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ean13"},
 				},
 				{
 					Type: &ast.TypeName{Name: "ismn"},
@@ -2353,7 +2389,43 @@ func Isn() *catalog.Schema {
 			Name: "isnne",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "upc"},
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ismn13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnne",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "issn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnne",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "issn13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnne",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ean13"},
 				},
 				{
 					Type: &ast.TypeName{Name: "upc"},
@@ -2377,7 +2449,163 @@ func Isn() *catalog.Schema {
 			Name: "isnne",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "issn13"},
+					Type: &ast.TypeName{Name: "isbn"},
+				},
+				{
+					Type: &ast.TypeName{Name: "isbn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnne",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "isbn"},
+				},
+				{
+					Type: &ast.TypeName{Name: "isbn13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnne",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "isbn13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnne",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "isbn13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "isbn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnne",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "isbn13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "isbn13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnne",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ismn"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnne",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ismn"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ismn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnne",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ismn"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ismn13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnne",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ismn13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnne",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ismn13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ismn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnne",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ismn13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ismn13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnne",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "issn"},
+				},
+				{
+					Type: &ast.TypeName{Name: "ean13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnne",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "issn"},
+				},
+				{
+					Type: &ast.TypeName{Name: "issn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnne",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "issn"},
 				},
 				{
 					Type: &ast.TypeName{Name: "issn13"},
@@ -2389,10 +2617,34 @@ func Isn() *catalog.Schema {
 			Name: "isnne",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "ean13"},
+					Type: &ast.TypeName{Name: "issn13"},
 				},
 				{
 					Type: &ast.TypeName{Name: "ean13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnne",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "issn13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "issn"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "boolean"},
+		},
+		{
+			Name: "isnne",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "issn13"},
+				},
+				{
+					Type: &ast.TypeName{Name: "issn13"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -2413,262 +2665,10 @@ func Isn() *catalog.Schema {
 			Name: "isnne",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "isbn13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "isbn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnne",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ismn"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnne",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "isbn13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnne",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ean13"},
+					Type: &ast.TypeName{Name: "upc"},
 				},
 				{
 					Type: &ast.TypeName{Name: "upc"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnne",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "issn"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnne",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ismn"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ismn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnne",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ismn"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnne",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "issn13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "issn"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnne",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "isbn"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnne",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ismn13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnne",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "issn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnne",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "isbn"},
-				},
-				{
-					Type: &ast.TypeName{Name: "isbn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnne",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ismn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnne",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ismn13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ismn"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnne",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "isbn"},
-				},
-				{
-					Type: &ast.TypeName{Name: "isbn"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnne",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "isbn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnne",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "ismn13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ismn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnne",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "isbn13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "isbn"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnne",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "issn"},
-				},
-				{
-					Type: &ast.TypeName{Name: "issn"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnne",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "issn"},
-				},
-				{
-					Type: &ast.TypeName{Name: "issn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnne",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "issn13"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ean13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "isnne",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "issn"},
-				},
-				{
-					Type: &ast.TypeName{Name: "ean13"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "boolean"},
@@ -2713,15 +2713,6 @@ func Isn() *catalog.Schema {
 			Name: "make_valid",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "ismn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "ismn13"},
-		},
-		{
-			Name: "make_valid",
-			Args: []*catalog.Argument{
-				{
 					Type: &ast.TypeName{Name: "ean13"},
 				},
 			},
@@ -2740,10 +2731,28 @@ func Isn() *catalog.Schema {
 			Name: "make_valid",
 			Args: []*catalog.Argument{
 				{
+					Type: &ast.TypeName{Name: "isbn13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "isbn13"},
+		},
+		{
+			Name: "make_valid",
+			Args: []*catalog.Argument{
+				{
 					Type: &ast.TypeName{Name: "ismn"},
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "ismn"},
+		},
+		{
+			Name: "make_valid",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "ismn13"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "ismn13"},
 		},
 		{
 			Name: "make_valid",
@@ -2758,10 +2767,10 @@ func Isn() *catalog.Schema {
 			Name: "make_valid",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "isbn13"},
+					Type: &ast.TypeName{Name: "issn13"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "isbn13"},
+			ReturnType: &ast.TypeName{Name: "issn13"},
 		},
 		{
 			Name: "make_valid",
@@ -2771,15 +2780,6 @@ func Isn() *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "upc"},
-		},
-		{
-			Name: "make_valid",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "issn13"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "issn13"},
 		},
 		{
 			Name: "upc",

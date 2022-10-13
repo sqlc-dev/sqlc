@@ -79,37 +79,40 @@ func pluginCodegen(s config.Codegen) *plugin.Codegen {
 
 func pluginPythonCode(s config.SQLPython) *plugin.PythonCode {
 	return &plugin.PythonCode{
-		Out:                 s.Out,
-		Package:             s.Package,
-		EmitExactTableNames: s.EmitExactTableNames,
-		EmitSyncQuerier:     s.EmitSyncQuerier,
-		EmitAsyncQuerier:    s.EmitAsyncQuerier,
-		EmitPydanticModels:  s.EmitPydanticModels,
+		Out:                         s.Out,
+		Package:                     s.Package,
+		EmitExactTableNames:         s.EmitExactTableNames,
+		EmitSyncQuerier:             s.EmitSyncQuerier,
+		EmitAsyncQuerier:            s.EmitAsyncQuerier,
+		EmitPydanticModels:          s.EmitPydanticModels,
+		QueryParameterLimit:         s.QueryParameterLimit,
+		InflectionExcludeTableNames: s.InflectionExcludeTableNames,
 	}
 }
 
 func pluginGoCode(s config.SQLGo) *plugin.GoCode {
 	return &plugin.GoCode{
-		EmitInterface:             s.EmitInterface,
-		EmitJsonTags:              s.EmitJSONTags,
-		EmitDbTags:                s.EmitDBTags,
-		EmitPreparedQueries:       s.EmitPreparedQueries,
-		EmitExactTableNames:       s.EmitExactTableNames,
-		EmitEmptySlices:           s.EmitEmptySlices,
-		EmitExportedQueries:       s.EmitExportedQueries,
-		EmitResultStructPointers:  s.EmitResultStructPointers,
-		EmitParamsStructPointers:  s.EmitParamsStructPointers,
-		EmitMethodsWithDbArgument: s.EmitMethodsWithDBArgument,
-		EmitEnumValidMethod:       s.EmitEnumValidMethod,
-		EmitAllEnumValues:         s.EmitAllEnumValues,
-		JsonTagsCaseStyle:         s.JSONTagsCaseStyle,
-		Package:                   s.Package,
-		Out:                       s.Out,
-		SqlPackage:                s.SQLPackage,
-		OutputDbFileName:          s.OutputDBFileName,
-		OutputModelsFileName:      s.OutputModelsFileName,
-		OutputQuerierFileName:     s.OutputQuerierFileName,
-		OutputFilesSuffix:         s.OutputFilesSuffix,
+		EmitInterface:               s.EmitInterface,
+		EmitJsonTags:                s.EmitJSONTags,
+		EmitDbTags:                  s.EmitDBTags,
+		EmitPreparedQueries:         s.EmitPreparedQueries,
+		EmitExactTableNames:         s.EmitExactTableNames,
+		EmitEmptySlices:             s.EmitEmptySlices,
+		EmitExportedQueries:         s.EmitExportedQueries,
+		EmitResultStructPointers:    s.EmitResultStructPointers,
+		EmitParamsStructPointers:    s.EmitParamsStructPointers,
+		EmitMethodsWithDbArgument:   s.EmitMethodsWithDBArgument,
+		EmitEnumValidMethod:         s.EmitEnumValidMethod,
+		EmitAllEnumValues:           s.EmitAllEnumValues,
+		JsonTagsCaseStyle:           s.JSONTagsCaseStyle,
+		Package:                     s.Package,
+		Out:                         s.Out,
+		SqlPackage:                  s.SQLPackage,
+		OutputDbFileName:            s.OutputDBFileName,
+		OutputModelsFileName:        s.OutputModelsFileName,
+		OutputQuerierFileName:       s.OutputQuerierFileName,
+		OutputFilesSuffix:           s.OutputFilesSuffix,
+		InflectionExcludeTableNames: s.InflectionExcludeTableNames,
 	}
 }
 
@@ -136,9 +139,10 @@ func pluginPythonType(pt config.PythonType) *plugin.PythonType {
 
 func pluginKotlinCode(s config.SQLKotlin) *plugin.KotlinCode {
 	return &plugin.KotlinCode{
-		Out:                 s.Out,
-		Package:             s.Package,
-		EmitExactTableNames: s.EmitExactTableNames,
+		Out:                         s.Out,
+		Package:                     s.Package,
+		EmitExactTableNames:         s.EmitExactTableNames,
+		InflectionExcludeTableNames: s.InflectionExcludeTableNames,
 	}
 }
 
