@@ -107,7 +107,7 @@ func (ns Null{{.Name}}) Value() (driver.Value, error) {
 	if !ns.Valid {
 		return nil, nil
 	}
-	return ns.{{.Name}}, nil
+	return string(ns.{{.Name}}), nil
 }
 
 
