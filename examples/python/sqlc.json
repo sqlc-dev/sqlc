@@ -1,58 +1,79 @@
 {
   "version": "2",
+  "plugins": [
+    {
+      "name": "py",
+      "wasm": {
+        "url": "https://github.com/tabbed/sqlc-gen-python/releases/download/v0.16.0-alpha/sqlc-gen-python.wasm",
+        "sha256": "428476c7408fd4c032da4ec74e8a7344f4fa75e0f98a5a3302f238283b9b95f2"
+      },
+    }
+  ],
   "sql": [
     {
       "schema": "../authors/postgresql/schema.sql",
       "queries": "../authors/postgresql/query.sql",
       "engine": "postgresql",
-      "gen": {
-        "python": {
+      "codegen": [
+        {
           "out": "src/authors",
-          "package": "authors",
-          "emit_sync_querier": true,
-          "emit_async_querier": true,
-          "query_parameter_limit": 5
+          "plugin": "py",
+          "options": {
+            "package": "authors",
+            "emit_sync_querier": true,
+            "emit_async_querier": true,
+            "query_parameter_limit": 5
+          }
         }
-      }
+      ]
     },
     {
       "schema": "../booktest/postgresql/schema.sql",
       "queries": "../booktest/postgresql/query.sql",
       "engine": "postgresql",
-      "gen": {
-        "python": {
+      "codegen": [
+        {
           "out": "src/booktest",
-          "package": "booktest",
-          "emit_async_querier": true,
-          "query_parameter_limit": 5
+          "plugin": "py",
+          "options": {
+            "package": "booktest",
+            "emit_async_querier": true,
+            "query_parameter_limit": 5
+          }
         }
-      }
+      ]
     },
     {
       "schema": "../jets/schema.sql",
       "queries": "../jets/query-building.sql",
       "engine": "postgresql",
-      "gen": {
-        "python": {
+      "codegen": [
+        {
           "out": "src/jets",
-          "package": "jets",
-          "emit_async_querier": true,
-          "query_parameter_limit": 5
+          "plugin": "py",
+          "options": {
+            "package": "jets",
+            "emit_async_querier": true,
+            "query_parameter_limit": 5
+          }
         }
-      }
+      ]
     },
     {
       "schema": "../ondeck/postgresql/schema",
       "queries": "../ondeck/postgresql/query",
       "engine": "postgresql",
-      "gen": {
-        "python": {
+      "codegen": [
+        {
           "out": "src/ondeck",
-          "package": "ondeck",
-          "emit_async_querier": true,
-          "query_parameter_limit": 5
+          "plugin": "py",
+          "options": {
+            "package": "ondeck",
+            "emit_async_querier": true,
+            "query_parameter_limit": 5
+          }
         }
-      }
+      ]
     }
   ]
 }
