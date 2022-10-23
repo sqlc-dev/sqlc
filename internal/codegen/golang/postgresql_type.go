@@ -297,6 +297,8 @@ func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 			}
 			return "*netip.Prefix"
 		case SQLDriverPGXV4:
+			return "pgtype.CIDR"
+		case SQLDriverLibPQ:
 			return "pqtype.CIDR"
 		default:
 			return "interface{}"
