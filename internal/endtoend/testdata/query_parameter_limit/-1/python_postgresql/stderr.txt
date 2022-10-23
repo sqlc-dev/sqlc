@@ -1,1 +1,2 @@
-error parsing sqlc.json: invalid query parameter limit
+# package py
+error generating code: error generating output: invalid query parameter limit

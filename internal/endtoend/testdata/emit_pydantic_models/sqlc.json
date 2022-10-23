@@ -1,19 +1,31 @@
 {
   "version": "2",
+  "plugins": [
+    {
+      "name": "py",
+      "wasm": {
+        "url": "https://github.com/tabbed/sqlc-gen-python/releases/download/v0.16.0-alpha/sqlc-gen-python.wasm",
+        "sha256": "e95460ce7116fa78bcbd4d1466144c20f5a54df8068ae6dfedadfac87cca3a1b"
+      }
+    }
+  ],
   "sql": [
     {
       "schema": "postgresql/schema.sql",
       "queries": "postgresql/query.sql",
       "engine": "postgresql",
-      "gen": {
-        "python": {
+      "codegen": [
+        {
+          "plugin": "py",
           "out": "postgresql",
-          "package": "postgresql",
-          "emit_sync_querier": true,
-          "emit_async_querier": true,
-          "emit_pydantic_models": true
+          "options": {
+            "package": "postgresql",
+            "emit_sync_querier": true,
+            "emit_async_querier": true,
+            "emit_pydantic_models": true
+          }
         }
-      }
+      ]
     }
   ]
 }
