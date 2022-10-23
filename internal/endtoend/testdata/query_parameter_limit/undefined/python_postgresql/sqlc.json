@@ -5,7 +5,7 @@
       "name": "py",
       "wasm": {
         "url": "https://github.com/tabbed/sqlc-gen-python/releases/download/v0.16.0-alpha/sqlc-gen-python.wasm",
-        "sha256": "e95460ce7116fa78bcbd4d1466144c20f5a54df8068ae6dfedadfac87cca3a1b"
+        "sha256": "4fb54ee7d25b4d909b59a8271ebee60ad76ff17b10d61632a5ca5651e4bfe438"
       }
     }
   ],
