@@ -255,7 +255,7 @@ func (r *Runner) Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plu
 	if err != nil {
 		// Print WASM stdout
 		stderrBlob, err := os.ReadFile(stderrPath)
-		if err == nil {
+		if err == nil && len(stderrBlob) > 0 {
 			return nil, errors.New(string(stderrBlob))
 		}
 		return nil, fmt.Errorf("call: %w", err)
