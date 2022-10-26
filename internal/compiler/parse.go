@@ -19,18 +19,6 @@ import (
 
 var ErrUnsupportedStatementType = errors.New("parseQuery: unsupported statement type")
 
-func rewriteNumberedParameters(refs []paramRef, raw *ast.RawStmt, sql string) ([]source.Edit, error) {
-	edits := make([]source.Edit, len(refs))
-	for i, ref := range refs {
-		edits[i] = source.Edit{
-			Location: ref.ref.Location - raw.StmtLocation,
-			Old:      fmt.Sprintf("$%d", ref.ref.Number),
-			New:      "?",
-		}
-	}
-	return edits, nil
-}
-
 func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query, error) {
 	if o.Debug.DumpAST {
 		debug.Dump(stmt)
