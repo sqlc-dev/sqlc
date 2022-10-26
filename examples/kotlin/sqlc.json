@@ -3,8 +3,9 @@
   "plugins": [
     {
       "name": "kt",
-      "process": {
-        "cmd": "sqlc-gen-kotlin"
+      "wasm": {
+        "url": "file:///Users/kyle/projects/sqlc-gen-kotlin/plugin/sqlc-gen-kotlin.wasm",
+        "sha256": "8c18cbef4da156c4d419bed331e0dab4be835b2cb7bee578607df40c3c35b42f"
       }
     }
   ],
