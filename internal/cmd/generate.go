@@ -198,9 +198,6 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 			lang = "golang"
 
 		case sql.Gen.Kotlin != nil:
-			if sql.Engine == config.EnginePostgreSQL {
-				parseOpts.UsePositionalParameters = true
-			}
 			lang = "kotlin"
 			name = combo.Kotlin.Package
 

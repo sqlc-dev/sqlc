@@ -89,18 +89,11 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 	if err != nil {
 		return nil, err
 	}
-	if o.UsePositionalParameters {
-		edits, err = rewriteNumberedParameters(refs, raw, rawSQL)
-		if err != nil {
-			return nil, err
-		}
+	refs = uniqueParamRefs(refs, dollar)
+	if c.conf.Engine == config.EngineMySQL || !dollar {
+		sort.Slice(refs, func(i, j int) bool { return refs[i].ref.Location < refs[j].ref.Location })
 	} else {
-		refs = uniqueParamRefs(refs, dollar)
-		if c.conf.Engine == config.EngineMySQL || !dollar {
-			sort.Slice(refs, func(i, j int) bool { return refs[i].ref.Location < refs[j].ref.Location })
-		} else {
-			sort.Slice(refs, func(i, j int) bool { return refs[i].ref.Number < refs[j].ref.Number })
-		}
+		sort.Slice(refs, func(i, j int) bool { return refs[i].ref.Number < refs[j].ref.Number })
 	}
 	qc, err := buildQueryCatalog(c.catalog, raw.Stmt)
 	if err != nil {
