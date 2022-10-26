@@ -5202,7 +5202,7 @@ func defaultSchema(name string) *catalog.Schema {
 					Type: &ast.TypeName{Name: "any"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "any"},
+			ReturnType: &ast.TypeName{Name: "bigint"},
 		},
 		{
 			Name:       "SYSDATE",
