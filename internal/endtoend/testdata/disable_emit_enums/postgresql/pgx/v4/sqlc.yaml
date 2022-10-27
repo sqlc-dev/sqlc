@@ -1,0 +1,11 @@
+version: "2"
+sql:
+  - schema: "schema.sql"
+    queries: "query.sql"
+    engine: "postgresql"
+    gen:
+      go:
+        sql_package: "pgx/v4"
+        package: "db"
+        out: "go"
+        disable_emit_enums: true
