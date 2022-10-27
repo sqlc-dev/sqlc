@@ -114,6 +114,8 @@ message GoCode
   bool emit_enum_valid_method = 19;
   bool emit_all_enum_values = 20;
   repeated string inflection_exclude_table_names = 21;
+  bool disable_emit_enums = 22;
+  bool disable_emit_table_structs = 23;
 }
 
 message JSONCode

@@ -139,6 +139,8 @@ type SQLGo struct {
 	OutputQuerierFileName       string            `json:"output_querier_file_name,omitempty" yaml:"output_querier_file_name"`
 	OutputFilesSuffix           string            `json:"output_files_suffix,omitempty" yaml:"output_files_suffix"`
 	InflectionExcludeTableNames []string          `json:"inflection_exclude_table_names,omitempty" yaml:"inflection_exclude_table_names"`
+	DisableEmitEnums            bool              `json:"disable_emit_enums,omitempty" yaml:"disable_emit_enums"`
+	DisableEmitTableStructs     bool              `json:"disable_emit_table_structs,omitempty" yaml:"disable_emit_table_structs"`
 }
 
 type SQLKotlin struct {
@@ -166,23 +168,27 @@ type SQLJSON struct {
 	Filename string `json:"filename,omitempty" yaml:"filename"`
 }
 
-var ErrMissingEngine = errors.New("unknown engine")
-var ErrMissingVersion = errors.New("no version number")
-var ErrNoOutPath = errors.New("no output path")
-var ErrNoPackageName = errors.New("missing package name")
-var ErrNoPackagePath = errors.New("missing package path")
-var ErrNoPackages = errors.New("no packages")
-var ErrNoQuerierType = errors.New("no querier emit type enabled")
-var ErrUnknownEngine = errors.New("invalid engine")
-var ErrUnknownVersion = errors.New("invalid version number")
+var (
+	ErrMissingEngine  = errors.New("unknown engine")
+	ErrMissingVersion = errors.New("no version number")
+	ErrNoOutPath      = errors.New("no output path")
+	ErrNoPackageName  = errors.New("missing package name")
+	ErrNoPackagePath  = errors.New("missing package path")
+	ErrNoPackages     = errors.New("no packages")
+	ErrNoQuerierType  = errors.New("no querier emit type enabled")
+	ErrUnknownEngine  = errors.New("invalid engine")
+	ErrUnknownVersion = errors.New("invalid version number")
+)
 
-var ErrPluginBuiltin = errors.New("a built-in plugin with that name already exists")
-var ErrPluginNoName = errors.New("missing plugin name")
-var ErrPluginExists = errors.New("a plugin with that name already exists")
-var ErrPluginNotFound = errors.New("no plugin found")
-var ErrPluginNoType = errors.New("plugin: field `process` or `wasm` required")
-var ErrPluginBothTypes = errors.New("plugin: both `process` and `wasm` cannot both be defined")
-var ErrPluginProcessNoCmd = errors.New("plugin: missing process command")
+var (
+	ErrPluginBuiltin      = errors.New("a built-in plugin with that name already exists")
+	ErrPluginNoName       = errors.New("missing plugin name")
+	ErrPluginExists       = errors.New("a plugin with that name already exists")
+	ErrPluginNotFound     = errors.New("no plugin found")
+	ErrPluginNoType       = errors.New("plugin: field `process` or `wasm` required")
+	ErrPluginBothTypes    = errors.New("plugin: both `process` and `wasm` cannot both be defined")
+	ErrPluginProcessNoCmd = errors.New("plugin: missing process command")
+)
 
 var ErrInvalidQueryParameterLimit = errors.New("invalid query parameter limit")
 

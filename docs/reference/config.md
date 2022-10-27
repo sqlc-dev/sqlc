@@ -12,7 +12,7 @@ sql:
   queries: "postgresql/query.sql"
   engine: "postgresql"
   gen:
-    go: 
+    go:
       package: "authors"
       out: "postgresql"
 - schema: "mysql/schema.sql"
@@ -40,7 +40,7 @@ Each mapping in the `sql` collection has the following keys:
   - A mapping to configure built-in code generators. See [gen](#gen) for the supported keys.
 - `strict_function_checks`
   - If true, return an error if a called SQL function does not exist. Defaults to `false`.
-  - 
+  -
 ### codegen
 
 The `codegen` mapping supports the following keys:
@@ -72,7 +72,7 @@ sql:
       emit_async_querier: true
       query_parameter_limit: 5
 ```
-  
+
 ### gen
 
 The `gen` mapping supports the following keys:
@@ -111,6 +111,10 @@ The `gen` mapping supports the following keys:
 - `emit_all_enum_values`:
   - If true, emit a function per enum type
     that returns all valid enum values.
+- `disable_emit_enums`:
+  - If true, enums are not exported to the models file. Default: `false`.
+- `disable_emit_table_structs`:
+  - If true, tables are not exported to the models file. Default: `false`.
 - `json_tags_case_style`:
   - `camel` for camelCase, `pascal` for PascalCase, `snake` for snake_case or `none` to use the column name in the DB. Defaults to `none`.
 - `output_db_file_name`:
@@ -149,7 +153,7 @@ sql:
   queries: "postgresql/query.sql"
   engine: "postgresql"
   gen:
-    go: 
+    go:
       package: "authors"
       out: "postgresql"
       rename:
@@ -173,7 +177,7 @@ sql:
   queries: "postgresql/query.sql"
   engine: "postgresql"
   gen:
-    go: 
+    go:
       package: "authors"
       out: "postgresql"
       overrides:
@@ -204,7 +208,7 @@ sql:
   queries: "postgresql/query.sql"
   engine: "postgresql"
   gen:
-    go: 
+    go:
       package: "authors"
       out: "postgresql"
       overrides:
@@ -265,19 +269,19 @@ Each mapping in the `plugins` collection has the following keys:
     - The URL to fetch the WASM file. Supports the `https://` or `file://` schemes.
   - `sha256`
     - The SHA256 checksum for the downloaded file.
-   
+
 ```yaml
 version: 2
 plugins:
 - name: "py"
-  wasm: 
+  wasm:
     url: "https://github.com/tabbed/sqlc-gen-python/releases/download/v0.16.0-alpha/sqlc-gen-python.wasm"
     sha256: "428476c7408fd4c032da4ec74e8a7344f4fa75e0f98a5a3302f238283b9b95f2"
 - name: "js"
-  process: 
+  process:
     cmd: "sqlc-gen-json"
 ```
- 
+
 ### global overrides
 
 Sometimes, the same configuration must be done across various specfications of code generation.
@@ -302,7 +306,7 @@ sql:
   queries: "postgresql/query.sql"
   engine: "postgresql"
   gen:
-    go: 
+    go:
       package: "authors"
       out: "postgresql"
 - schema: "mysql/schema.sql"

@@ -37,6 +37,8 @@ type tmplCtx struct {
 	EmitAllEnumValues         bool
 	UsesCopyFrom              bool
 	UsesBatch                 bool
+	DisableEmitEnums          bool
+	DisableEmitTableStructs   bool
 }
 
 func (t *tmplCtx) OutputQuery(sourceName string) bool {
@@ -89,6 +91,8 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 		EmitMethodsWithDBArgument: golang.EmitMethodsWithDbArgument,
 		EmitEnumValidMethod:       golang.EmitEnumValidMethod,
 		EmitAllEnumValues:         golang.EmitAllEnumValues,
+		DisableEmitEnums:          golang.DisableEmitEnums,
+		DisableEmitTableStructs:   golang.DisableEmitTableStructs,
 		UsesCopyFrom:              usesCopyFrom(queries),
 		UsesBatch:                 usesBatch(queries),
 		SQLPackage:                SQLPackageFromString(golang.SqlPackage),
