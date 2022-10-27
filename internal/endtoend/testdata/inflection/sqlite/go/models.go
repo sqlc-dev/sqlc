@@ -4,8 +4,6 @@
 
 package querytest
 
-import ()
-
 type Campus struct {
 	ID string
 }

@@ -4,8 +4,6 @@
 
 package querytest
 
-import ()
-
 type Transaction struct {
 	ID        int64
 	Uri       string

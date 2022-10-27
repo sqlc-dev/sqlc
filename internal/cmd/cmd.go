@@ -11,7 +11,6 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"golang.org/x/tools/imports"
 	yaml "gopkg.in/yaml.v3"
 
 	"github.com/kyleconroy/sqlc/internal/config"
@@ -154,16 +153,10 @@ var genCmd = &cobra.Command{
 		}
 		for filename, source := range output {
 			os.MkdirAll(filepath.Dir(filename), 0o755)
-			buf, err := imports.Process("", []byte(source), nil)
-			if err != nil {
+			if err := os.WriteFile(filename, []byte(source), 0o644); err != nil {
 				fmt.Fprintf(stderr, "%s: %s\n", filename, err)
 				os.Exit(1)
 			}
-			if err := os.WriteFile(filename, buf, 0o644); err != nil {
-				fmt.Fprintf(stderr, "%s: %s\n", filename, err)
-				os.Exit(1)
-			}
-
 		}
 	},
 }

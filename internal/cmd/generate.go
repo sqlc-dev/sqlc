@@ -25,6 +25,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/multierr"
 	"github.com/kyleconroy/sqlc/internal/opts"
 	"github.com/kyleconroy/sqlc/internal/plugin"
+	"golang.org/x/tools/imports"
 )
 
 const errMessageNoVersion = `The configuration file must have a version number.
@@ -160,7 +161,7 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 				Gen: config.SQLGen{JSON: sql.Gen.JSON},
 			})
 		}
-		for i, _ := range sql.Codegen {
+		for i := range sql.Codegen {
 			pairs = append(pairs, outPair{
 				SQL:    sql,
 				Plugin: &sql.Codegen[i],
@@ -238,7 +239,15 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 
 		files := map[string]string{}
 		for _, file := range resp.Files {
-			files[file.Name] = string(file.Contents)
+			buf := file.Contents
+			// run goimports
+			if sql.Gen.Go != nil {
+				buf, err = imports.Process("", file.Contents, nil)
+				if err != nil {
+					fmt.Fprintf(stderr, "%s: %s\n", filename, err)
+				}
+			}
+			files[file.Name] = string(buf)
 		}
 		for n, source := range files {
 			filename := filepath.Join(dir, out, n)

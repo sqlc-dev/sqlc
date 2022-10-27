@@ -4,5 +4,3 @@
 // source: query.sql
 
 package querytest
-
-import ()

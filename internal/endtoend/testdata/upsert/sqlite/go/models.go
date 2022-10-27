@@ -4,8 +4,6 @@
 
 package querytest
 
-import ()
-
 type Location struct {
 	ID        int64
 	Name      string

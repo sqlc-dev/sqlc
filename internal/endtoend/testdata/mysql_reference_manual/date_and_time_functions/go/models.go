@@ -3,5 +3,3 @@
 //   sqlc v1.15.0
 
 package date_and_time_functions
-
-import ()

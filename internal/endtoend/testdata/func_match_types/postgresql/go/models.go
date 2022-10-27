@@ -4,8 +4,6 @@
 
 package querytest
 
-import ()
-
 type Book struct {
 	ID     int32
 	Title  string

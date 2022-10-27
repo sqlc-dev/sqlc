@@ -4,8 +4,6 @@
 
 package querytest
 
-import ()
-
 type Bar struct {
 	ID    int32
 	Name  string
