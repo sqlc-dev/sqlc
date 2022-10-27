@@ -109,7 +109,7 @@ func TestReplay(t *testing.T) {
 
 func cmpDirectory(t *testing.T, dir string, actual map[string]string) {
 	expected := map[string]string{}
-	var ff = func(path string, file os.FileInfo, err error) error {
+	ff := func(path string, file os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -149,16 +149,19 @@ func cmpDirectory(t *testing.T, dir string, actual map[string]string) {
 	}
 
 	if !cmp.Equal(expected, actual, cmpopts.EquateEmpty()) {
-		t.Errorf("%s contents differ", dir)
 		for name, contents := range expected {
 			name := name
+			external := strings.Contains(name, ".external.go")
+
 			tn := strings.Replace(name, dir+"/", "", -1)
 			t.Run(tn, func(t *testing.T) {
-				if actual[name] == "" {
+				if actual[name] == "" && !external {
+					t.Errorf("%s contents differ", dir)
 					t.Errorf("%s is empty", name)
 					return
 				}
-				if diff := cmp.Diff(contents, actual[name]); diff != "" {
+				if diff := cmp.Diff(contents, actual[name]); diff != "" && !external {
+					t.Errorf("%s contents differ", dir)
 					t.Errorf("%s differed (-want +got):\n%s", name, diff)
 				}
 			})
