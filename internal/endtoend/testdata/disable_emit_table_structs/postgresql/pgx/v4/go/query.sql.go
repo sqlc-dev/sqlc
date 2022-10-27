@@ -7,21 +7,71 @@ package db
 
 import (
 	"context"
+	"database/sql"
 )
 
 const getAll = `-- name: GetAll :many
 SELECT id, first_name, last_name, age, shoe_size, shirt_size FROM users
 `
 
-func (q *Queries) GetAll(ctx context.Context) ([]User, error) {
+type GetAllRow struct {
+	ID        int32
+	FirstName string
+	LastName  sql.NullString
+	Age       int32
+	ShoeSize  Size
+	ShirtSize NullSize
+}
+
+func (q *Queries) GetAll(ctx context.Context) ([]GetAllRow, error) {
 	rows, err := q.db.Query(ctx, getAll)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []User
+	var items []GetAllRow
 	for rows.Next() {
-		var i User
+		var i GetAllRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.FirstName,
+			&i.LastName,
+			&i.Age,
+			&i.ShoeSize,
+			&i.ShirtSize,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAll2 = `-- name: GetAll2 :many
+SELECT id, first_name, last_name, age, shoe_size, shirt_size FROM users
+`
+
+type GetAll2Row struct {
+	ID        int32
+	FirstName string
+	LastName  sql.NullString
+	Age       int32
+	ShoeSize  Size
+	ShirtSize NullSize
+}
+
+func (q *Queries) GetAll2(ctx context.Context) ([]GetAll2Row, error) {
+	rows, err := q.db.Query(ctx, getAll2)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAll2Row
+	for rows.Next() {
+		var i GetAll2Row
 		if err := rows.Scan(
 			&i.ID,
 			&i.FirstName,

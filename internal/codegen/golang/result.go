@@ -219,7 +219,7 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 						same = false
 					}
 				}
-				if same {
+				if same && !req.Settings.Go.DisableEmitTableStructs {
 					gs = &s
 					break
 				}
