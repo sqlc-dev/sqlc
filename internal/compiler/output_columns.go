@@ -67,13 +67,38 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 
 		if n.GroupClause != nil {
 			for _, item := range n.GroupClause.Items {
-				ref, ok := item.(*ast.ColumnRef)
+				if err := findColumnForNode(item, tables, n); err != nil {
+					return nil, err
+				}
+			}
+		}
+		if n.SortClause != nil {
+			for _, item := range n.SortClause.Items {
+				sb, ok := item.(*ast.SortBy)
 				if !ok {
 					continue
 				}
 
-				if err := findColumnForRef(ref, tables, n); err != nil {
+				if err := findColumnForNode(sb.Node, tables, n); err != nil {
 					return nil, err
+				}
+			}
+		}
+		if n.WindowClause != nil {
+			for _, item := range n.WindowClause.Items {
+				sb, ok := item.(*ast.List)
+				if !ok {
+					continue
+				}
+				for _, single := range sb.Items {
+					caseExpr, ok := single.(*ast.CaseExpr)
+					if !ok {
+						continue
+					}
+
+					if err := findColumnForNode(caseExpr.Xpr, tables, n); err != nil {
+						return nil, err
+					}
 				}
 			}
 		}
@@ -514,6 +539,14 @@ func outputColumnRefs(res *ast.ResTarget, tables []*Table, node *ast.ColumnRef) 
 		}
 	}
 	return cols, nil
+}
+
+func findColumnForNode(item ast.Node, tables []*Table, n *ast.SelectStmt) error {
+	ref, ok := item.(*ast.ColumnRef)
+	if !ok {
+		return nil
+	}
+	return findColumnForRef(ref, tables, n)
 }
 
 func findColumnForRef(ref *ast.ColumnRef, tables []*Table, selectStatement *ast.SelectStmt) error {
