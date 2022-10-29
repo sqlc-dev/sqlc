@@ -9,7 +9,7 @@ CREATE TABLE td3.codes (
             ts_updated timestamptz DEFAULT now() NOT NULL,
             created_by text NOT NULL,
             updated_by text NOT NULL,
-            
+
             code text,
             hash text,
             is_private boolean
@@ -27,9 +27,9 @@ CREATE TABLE td3.test_codes (
             code_hash text NOT NULL
 );
 
--- FILE: query.sql
 
 -- name: UpdateCode :one
+-- FILE: query.sql
 WITH cc AS (
             UPDATE td3.codes
             SET

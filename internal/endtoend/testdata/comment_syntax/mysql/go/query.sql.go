@@ -22,7 +22,6 @@ func (q *Queries) DoubleDash(ctx context.Context) (sql.NullString, error) {
 }
 
 const hash = `-- name: Hash :one
-# name: Hash :one
 SELECT bar FROM foo LIMIT 1
 `
 

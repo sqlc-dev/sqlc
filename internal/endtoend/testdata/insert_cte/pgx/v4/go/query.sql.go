@@ -11,7 +11,6 @@ import (
 )
 
 const insertCode = `-- name: InsertCode :one
-
 WITH cc AS (
             INSERT INTO td3.codes(created_by, updated_by, code, hash, is_private)
             VALUES ($1, $1, $2, $3, false)

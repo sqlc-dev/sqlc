@@ -12,7 +12,6 @@ import (
 )
 
 const updateCode = `-- name: UpdateCode :one
-
 WITH cc AS (
             UPDATE td3.codes
             SET

@@ -86,12 +86,17 @@ func Mutate(raw string, a []Edit) (string, error) {
 func StripComments(sql string) (string, []string, error) {
 	s := bufio.NewScanner(strings.NewReader(strings.TrimSpace(sql)))
 	var lines, comments []string
+	var nameFound bool
 	for s.Scan() {
 		t := s.Text()
-		if strings.HasPrefix(t, "-- name:") {
+
+		if (strings.HasPrefix(t, "/* name:") && strings.HasSuffix(t, "*/")) ||
+			strings.HasPrefix(t, "-- name:") ||
+			strings.HasPrefix(t, "# name:") {
+			nameFound = true
 			continue
 		}
-		if strings.HasPrefix(t, "/* name:") && strings.HasSuffix(t, "*/") {
+		if !nameFound {
 			continue
 		}
 		if strings.HasPrefix(t, "--") {
