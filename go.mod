@@ -47,3 +47,6 @@ require (
 	golang.org/x/text v0.3.7 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 )
+
+// FIXME
+replace github.com/kyleconroy/sqlc => github.com/DispatchHealth/sqlc tj-ventura
