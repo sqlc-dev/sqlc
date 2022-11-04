@@ -12,7 +12,7 @@ require (
 	github.com/jackc/pgx/v4 v4.17.2
 	github.com/jinzhu/inflection v1.0.0
 	github.com/lib/pq v1.10.7
-	github.com/mattn/go-sqlite3 v1.14.15
+	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/pganalyze/pg_query_go/v2 v2.2.0
 	github.com/spf13/cobra v1.6.0
 	github.com/spf13/pflag v1.0.5
