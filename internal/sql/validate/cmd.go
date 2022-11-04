@@ -45,7 +45,10 @@ func validateCopyfrom(n ast.Node) error {
 }
 
 func validateBatch(n ast.Node) error {
-	nums, _, _ := ParamRef(n)
+	nums, _, err := ParamRef(n)
+	if err != nil {
+		return err
+	}
 	if len(nums) == 0 {
 		return errors.New(":batch* commands require parameters")
 	}
