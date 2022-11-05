@@ -8,7 +8,11 @@ This comment is ignored
 
 -- name: ManyFoo :many
 -- This function returns a list of Foos
-SELECT * FROM foo;
+SELECT
+  *
+-- this comment is also ignored
+FROM
+  foo;
 
 -- This comment is ignored
 -- name: OneFoo :one

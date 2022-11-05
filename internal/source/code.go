@@ -86,7 +86,7 @@ func Mutate(raw string, a []Edit) (string, error) {
 func StripComments(sql string) (string, []string, error) {
 	s := bufio.NewScanner(strings.NewReader(strings.TrimSpace(sql)))
 	var lines, comments []string
-	var nameFound bool
+	var nameFound, queryStarted bool
 	for s.Scan() {
 		t := s.Text()
 
@@ -99,16 +99,20 @@ func StripComments(sql string) (string, []string, error) {
 		if !nameFound {
 			continue
 		}
-		if strings.HasPrefix(t, "--") {
-			comments = append(comments, strings.TrimPrefix(t, "--"))
-			continue
+		if !queryStarted {
+			if strings.HasPrefix(t, "--") {
+				comments = append(comments, strings.TrimPrefix(t, "--"))
+				continue
+			}
+			if strings.HasPrefix(t, "/*") && strings.HasSuffix(t, "*/") {
+				t = strings.TrimPrefix(t, "/*")
+				t = strings.TrimSuffix(t, "*/")
+				comments = append(comments, t)
+				continue
+			}
+			queryStarted = true
 		}
-		if strings.HasPrefix(t, "/*") && strings.HasSuffix(t, "*/") {
-			t = strings.TrimPrefix(t, "/*")
-			t = strings.TrimSuffix(t, "*/")
-			comments = append(comments, t)
-			continue
-		}
+
 		lines = append(lines, t)
 	}
 	return strings.Join(lines, "\n"), comments, s.Err()

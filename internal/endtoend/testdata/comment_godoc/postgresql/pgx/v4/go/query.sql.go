@@ -45,7 +45,11 @@ func (q *Queries) ExecRowFoo(ctx context.Context) (int64, error) {
 }
 
 const manyFoo = `-- name: ManyFoo :many
-SELECT bar FROM foo
+SELECT
+  bar
+-- this comment is also ignored
+FROM
+  foo
 `
 
 // This function returns a list of Foos
