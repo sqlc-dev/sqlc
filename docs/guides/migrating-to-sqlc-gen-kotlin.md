@@ -20,10 +20,10 @@ already. Add the following configuration for the plugin:
   "version": "2",
   "plugins": [
     {
-      "name": "py",
+      "name": "kt",
       "wasm": {
-        "url": "https://github.com/tabbed/sqlc-gen-kotlin/releases/download/v0.16.0-alpha/sqlc-gen-python.wasm",
-        "sha256": "4fb54ee7d25b4d909b59a8271ebee60ad76ff17b10d61632a5ca5651e4bfe438"
+        "url": "https://downloads.sqlc.dev/plugins/sqlc-gen-kotlin_0.16.0.wasm",
+        "sha256": "FIXME"
       }
     }
   ]
@@ -33,10 +33,10 @@ already. Add the following configuration for the plugin:
 ```yaml
 version: "2"
 plugins:
-  name: py,
+  name: "kt"
   wasm:
-    url: "https://github.com/tabbed/sqlc-gen-kotlin/releases/download/v0.16.0-alpha/sqlc-gen-python.wasm"
-    sha256: "4fb54ee7d25b4d909b59a8271ebee60ad76ff17b10d61632a5ca5651e4bfe438"
+    url: "https://downloads.sqlc.dev/plugins/sqlc-gen-kotlin_0.16.0.wasm"
+    sha256: "FIXME"
 ```
 
 ## Migrate each package
@@ -51,11 +51,8 @@ Your package configuration should currently looks something like this for JSON.
       "engine": "postgresql",
       "gen": {
         "kotlin": {
-          "out": "src",
-          "package": "foo",
-          "emit_sync_querier": true,
-          "emit_async_querier": true,
-          "query_parameter_limit": 5
+          "out": "src/main/kotlin/com/example/foo",
+          "package": "com.example.foo"
         }
       }
     }
@@ -71,15 +68,12 @@ Or this if you're using YAML.
     engine: "postgresql"
     gen:
       kotlin:
-        out: "src"
-        package: "foo"
-        emit_sync_querier: true
-        emit_async_querier: true
-        query_parameter_limit: 5
+        out: "src/main/kotlin/com/example/foo"
+        package: "com.example.foo"
 ```
 
 To use the plugin, you'll need to replace the `gen` mapping with the `codegen`
-collection. Add the `plugin` field, setting it to `py`. All fields other than
+collection. Add the `plugin` field, setting it to `kt`. All fields other than
 `out` need to be moved into the `options` mapping.
 
 After you're done, it should look like this for JSON.
@@ -92,13 +86,10 @@ After you're done, it should look like this for JSON.
       "engine": "postgresql",
       "codegen": [
         {
-          "out": "src",
-          "plugin": "py",
+          "out": "src/main/kotlin/com/example/foo",
+          "plugin": "kt",
           "options": {
-            "package": "authors",
-            "emit_sync_querier": true,
-            "emit_async_querier": true,
-            "query_parameter_limit": 5
+            "package": "com.example.foo"
           }
         }
       ]
@@ -114,13 +105,10 @@ Or this for YAML.
     queries: "query.sql"
     engine: "postgresql"
     codegen:
-    - plugin: "py"
-      out: "src"
+    - plugin: "kt"
+      out: "src/main/kotlin/com/example/foo"
       options:
-        package: "foo"
-        emit_sync_querier: true
-        emit_async_querier: true
-        query_parameter_limit: 5
+        package: "com.example.foo"
 ```
 
 ## Re-generate the code
