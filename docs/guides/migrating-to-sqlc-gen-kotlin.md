@@ -22,8 +22,8 @@ already. Add the following configuration for the plugin:
     {
       "name": "kt",
       "wasm": {
-        "url": "https://downloads.sqlc.dev/plugins/sqlc-gen-kotlin_0.16.0.wasm",
-        "sha256": "FIXME"
+        "url": "https://downloads.sqlc.dev/plugin/sqlc-gen-kotlin_1.0.0.wasm",
+        "sha256": "7620dc5d462de41fdc90e2011232c842117b416c98fd5c163d27c5738431a45c"
       }
     }
   ]
@@ -35,8 +35,8 @@ version: "2"
 plugins:
   name: "kt"
   wasm:
-    url: "https://downloads.sqlc.dev/plugins/sqlc-gen-kotlin_0.16.0.wasm"
-    sha256: "FIXME"
+    url: "https://downloads.sqlc.dev/plugin/sqlc-gen-kotlin_1.0.0.wasm"
+    sha256: "7620dc5d462de41fdc90e2011232c842117b416c98fd5c163d27c5738431a45c"
 ```
 
 ## Migrate each package
