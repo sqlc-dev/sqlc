@@ -39,7 +39,6 @@ func v2ParseConfig(rd io.Reader) (Config, error) {
 	builtins := map[string]struct{}{
 		"go":     {},
 		"json":   {},
-		"kotlin": {},
 		"python": {},
 	}
 	plugins := map[string]struct{}{}
@@ -81,19 +80,6 @@ func v2ParseConfig(rd io.Reader) (Config, error) {
 				if err := conf.SQL[j].Gen.Go.Overrides[i].Parse(); err != nil {
 					return conf, err
 				}
-			}
-		}
-		if conf.SQL[j].Gen.Kotlin != nil {
-			fmt.Fprintf(os.Stderr, "WARNING: Built-in Kotlin support is deprecated.\n")
-			fmt.Fprintf(os.Stderr, "  It will be removed in the next version (1.17.0).\n")
-			fmt.Fprintf(os.Stderr, "  You will need to migrate to the sqlc-gen-kotlin plugin. See the step-by-step guide here:\n")
-			fmt.Fprintf(os.Stderr, "  https://docs.sqlc.dev/en/latest/guides/migrating-to-sqlc-gen-kotlin.html\n")
-
-			if conf.SQL[j].Gen.Kotlin.Out == "" {
-				return conf, ErrNoOutPath
-			}
-			if conf.SQL[j].Gen.Kotlin.Package == "" {
-				return conf, ErrNoPackageName
 			}
 		}
 		if conf.SQL[j].Gen.Python != nil {

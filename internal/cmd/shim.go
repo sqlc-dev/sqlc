@@ -59,7 +59,6 @@ func pluginSettings(cs config.CombinedSettings) *plugin.Settings {
 		Rename:    cs.Rename,
 		Codegen:   pluginCodegen(cs.Codegen),
 		Python:    pluginPythonCode(cs.Python),
-		Kotlin:    pluginKotlinCode(cs.Kotlin),
 		Go:        pluginGoCode(cs.Go),
 		Json:      pluginJSONCode(cs.JSON),
 	}
@@ -134,15 +133,6 @@ func pluginPythonType(pt config.PythonType) *plugin.PythonType {
 	return &plugin.PythonType{
 		Module: pt.Module,
 		Name:   pt.Name,
-	}
-}
-
-func pluginKotlinCode(s config.SQLKotlin) *plugin.KotlinCode {
-	return &plugin.KotlinCode{
-		Out:                         s.Out,
-		Package:                     s.Package,
-		EmitExactTableNames:         s.EmitExactTableNames,
-		InflectionExcludeTableNames: s.InflectionExcludeTableNames,
 	}
 }
 
