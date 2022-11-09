@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"io"
+	"os"
 	"path/filepath"
 
 	yaml "gopkg.in/yaml.v3"
@@ -83,6 +84,11 @@ func v2ParseConfig(rd io.Reader) (Config, error) {
 			}
 		}
 		if conf.SQL[j].Gen.Kotlin != nil {
+			fmt.Fprintf(os.Stderr, "WARNING: Built-in Kotlin support is deprecated.\n")
+			fmt.Fprintf(os.Stderr, "  It will be removed in the next version (1.17.0).\n")
+			fmt.Fprintf(os.Stderr, "  You will need to migrate to the sqlc-gen-kotlin plugin. See the step-by-step guide here:\n")
+			fmt.Fprintf(os.Stderr, "  https://docs.sqlc.dev/en/latest/guides/migrating-to-sqlc-gen-kotlin.html\n")
+
 			if conf.SQL[j].Gen.Kotlin.Out == "" {
 				return conf, ErrNoOutPath
 			}
@@ -91,6 +97,11 @@ func v2ParseConfig(rd io.Reader) (Config, error) {
 			}
 		}
 		if conf.SQL[j].Gen.Python != nil {
+			fmt.Fprintf(os.Stderr, "WARNING: Built-in Python support is deprecated.\n")
+			fmt.Fprintf(os.Stderr, "  It will be removed in the next version (1.17.0).\n")
+			fmt.Fprintf(os.Stderr, "  You will need to migrate to the sqlc-gen-python plugin. See the step-by-step guide here:\n")
+			fmt.Fprintf(os.Stderr, "  https://docs.sqlc.dev/en/latest/guides/migrating-to-sqlc-gen-python.html\n")
+
 			if conf.SQL[j].Gen.Python.QueryParameterLimit != nil {
 				if *conf.SQL[j].Gen.Python.QueryParameterLimit < 0 {
 					return conf, ErrInvalidQueryParameterLimit

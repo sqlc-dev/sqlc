@@ -1,0 +1,18 @@
+{
+  "version": "2",
+  "sql": [
+    {
+      "schema": "schema.sql",
+      "queries": "query.sql",
+      "engine": "postgresql",
+      "gen": {
+        "python": {
+          "out": "src/authors",
+          "package": "authors",
+          "emit_sync_querier": true,
+          "emit_async_querier": true
+        }
+      }
+    }
+  ]
+}
