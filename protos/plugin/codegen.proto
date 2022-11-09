@@ -49,6 +49,9 @@ message ParsedGoType
 
 message Settings
 {
+  // Kotlin settings used to be field 9
+  reserved 9;
+
   string version = 1 [json_name="version"];
   string engine = 2 [json_name="engine"];
   repeated string schema = 3 [json_name="schema"];
