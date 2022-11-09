@@ -15,15 +15,6 @@
       "plugin": "jsonb",
       "options": "eyJmaWxlbmFtZSI6ImNvZGVnZW4uanNvbiIsImluZGVudCI6IiAgIn0="
     },
-    "python": {
-      "emit_exact_table_names": false,
-      "emit_sync_querier": false,
-      "emit_async_querier": false,
-      "package": "",
-      "out": "",
-      "emit_pydantic_models": false,
-      "inflection_exclude_table_names": []
-    },
     "go": {
       "emit_interface": false,
       "emit_json_tags": false,

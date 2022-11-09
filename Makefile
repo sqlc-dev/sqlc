@@ -45,7 +45,7 @@ mysqlsh:
 # libprotoc 3.19.1
 # $ go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 # $ go install github.com/planetscale/vtprotobuf/cmd/protoc-gen-go-vtproto@latest
-proto: internal/plugin/codegen.pb.go internal/python/ast/ast.pb.go
+proto: internal/plugin/codegen.pb.go
 
 internal/plugin/codegen.pb.go: protos/plugin/codegen.proto
 	protoc -I ./protos \
@@ -54,9 +54,3 @@ internal/plugin/codegen.pb.go: protos/plugin/codegen.proto
 		--go-vtproto_out=. \
 		--go-vtproto_opt=module=github.com/kyleconroy/sqlc,features=marshal+unmarshal+size \
 		./protos/plugin/codegen.proto
-
-internal/python/ast/ast.pb.go: protos/python/ast.proto
-	protoc -I ./protos \
-		--go_out=. \
-		--go_opt=module=github.com/kyleconroy/sqlc \
-		./protos/python/ast.proto
