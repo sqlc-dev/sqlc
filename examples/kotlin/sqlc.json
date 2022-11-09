@@ -4,8 +4,8 @@
     {
       "name": "kt",
       "wasm": {
-        "url": "file:///Users/kyle/projects/sqlc-gen-kotlin/plugin/sqlc-gen-kotlin.wasm",
-        "sha256": "8c18cbef4da156c4d419bed331e0dab4be835b2cb7bee578607df40c3c35b42f"
+        "url": "https://downloads.sqlc.dev/plugin/sqlc-gen-kotlin_1.0.0.wasm",
+        "sha256": "7620dc5d462de41fdc90e2011232c842117b416c98fd5c163d27c5738431a45c"
       }
     }
   ],
