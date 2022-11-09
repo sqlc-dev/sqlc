@@ -3,7 +3,7 @@
 Starting in sqlc 1.16.0, built-in Python support has been deprecated. It will
 be fully removed in 1.17.0 in favor of sqlc-gen-python.
 
-This guide will walk you through migrating to the [sqlc-gen-python] plugin,
+This guide will walk you through migrating to the [sqlc-gen-python](https://github.com/tabbed/sqlc-gen-python) plugin,
 which involves three steps.
 
 1. Add the sqlc-gen-python plugin
@@ -22,8 +22,8 @@ already. Add the following configuration for the plugin:
     {
       "name": "py",
       "wasm": {
-        "url": "https://downloads.sqlc.dev/plugins/sqlc-gen-python_0.16.0.wasm",
-        "sha256": "FIXME"
+        "url": "https://downloads.sqlc.dev/plugin/sqlc-gen-python_1.0.0.wasm",
+        "sha256": "aca83e1f59f8ffdc604774c2f6f9eb321a2b23e07dc83fc12289d25305fa065b"
       }
     }
   ]
@@ -33,10 +33,10 @@ already. Add the following configuration for the plugin:
 ```yaml
 version: "2"
 plugins:
-  name: py,
+  name: "py"
   wasm:
-    url: "https://downloads.sqlc.dev/plugins/sqlc-gen-python_0.16.0.wasm"
-    sha256: "FIXME"
+    url: "https://downloads.sqlc.dev/plugin/sqlc-gen-python_1.0.0.wasm"
+    sha256: "aca83e1f59f8ffdc604774c2f6f9eb321a2b23e07dc83fc12289d25305fa065b"
 ```
 
 ## Migrate each package
