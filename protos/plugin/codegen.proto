@@ -49,6 +49,9 @@ message ParsedGoType
 
 message Settings
 {
+  // Kotlin settings used to be field 9
+  reserved 9;
+
   string version = 1 [json_name="version"];
   string engine = 2 [json_name="engine"];
   repeated string schema = 3 [json_name="schema"];
@@ -59,7 +62,6 @@ message Settings
 
   // TODO: Refactor codegen settings
   PythonCode python = 8;
-  KotlinCode kotlin = 9;
   GoCode go = 10;
   JSONCode json = 11;
 }
@@ -81,14 +83,6 @@ message PythonCode
   bool emit_pydantic_models = 6;
   optional int32 query_parameter_limit = 7;
   repeated string inflection_exclude_table_names = 8;
-}
-
-message KotlinCode
-{
-  bool emit_exact_table_names = 1;
-  string package = 2;
-  string out = 3;
-  repeated string inflection_exclude_table_names = 4;
 }
 
 message GoCode

@@ -24,12 +24,6 @@
       "emit_pydantic_models": false,
       "inflection_exclude_table_names": []
     },
-    "kotlin": {
-      "emit_exact_table_names": false,
-      "package": "",
-      "out": "",
-      "inflection_exclude_table_names": []
-    },
     "go": {
       "emit_interface": false,
       "emit_json_tags": false,

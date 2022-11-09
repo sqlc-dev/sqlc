@@ -79,17 +79,12 @@ type Plugin struct {
 }
 
 type Gen struct {
-	Go     *GenGo     `json:"go,omitempty" yaml:"go"`
-	Kotlin *GenKotlin `json:"kotlin,omitempty" yaml:"kotlin"`
+	Go *GenGo `json:"go,omitempty" yaml:"go"`
 }
 
 type GenGo struct {
 	Overrides []Override        `json:"overrides,omitempty" yaml:"overrides"`
 	Rename    map[string]string `json:"rename,omitempty" yaml:"rename"`
-}
-
-type GenKotlin struct {
-	Rename map[string]string `json:"rename,omitempty" yaml:"rename"`
 }
 
 type SQL struct {
@@ -110,7 +105,6 @@ type Codegen struct {
 
 type SQLGen struct {
 	Go     *SQLGo     `json:"go,omitempty" yaml:"go"`
-	Kotlin *SQLKotlin `json:"kotlin,omitempty" yaml:"kotlin"`
 	Python *SQLPython `json:"python,omitempty" yaml:"python"`
 	JSON   *SQLJSON   `json:"json,omitempty" yaml:"json"`
 }
@@ -139,13 +133,6 @@ type SQLGo struct {
 	OutputQuerierFileName       string            `json:"output_querier_file_name,omitempty" yaml:"output_querier_file_name"`
 	OutputFilesSuffix           string            `json:"output_files_suffix,omitempty" yaml:"output_files_suffix"`
 	InflectionExcludeTableNames []string          `json:"inflection_exclude_table_names,omitempty" yaml:"inflection_exclude_table_names"`
-}
-
-type SQLKotlin struct {
-	EmitExactTableNames         bool     `json:"emit_exact_table_names,omitempty" yaml:"emit_exact_table_names"`
-	Package                     string   `json:"package" yaml:"package"`
-	Out                         string   `json:"out" yaml:"out"`
-	InflectionExcludeTableNames []string `json:"inflection_exclude_table_names,omitempty" yaml:"inflection_exclude_table_names"`
 }
 
 type SQLPython struct {
@@ -226,7 +213,6 @@ type CombinedSettings struct {
 	Global    Config
 	Package   SQL
 	Go        SQLGo
-	Kotlin    SQLKotlin
 	Python    SQLPython
 	JSON      SQLJSON
 	Rename    map[string]string
@@ -245,15 +231,9 @@ func Combine(conf Config, pkg SQL) CombinedSettings {
 		cs.Rename = conf.Gen.Go.Rename
 		cs.Overrides = append(cs.Overrides, conf.Gen.Go.Overrides...)
 	}
-	if conf.Gen.Kotlin != nil {
-		cs.Rename = conf.Gen.Kotlin.Rename
-	}
 	if pkg.Gen.Go != nil {
 		cs.Go = *pkg.Gen.Go
 		cs.Overrides = append(cs.Overrides, pkg.Gen.Go.Overrides...)
-	}
-	if pkg.Gen.Kotlin != nil {
-		cs.Kotlin = *pkg.Gen.Kotlin
 	}
 	if pkg.Gen.Python != nil {
 		cs.Python = *pkg.Gen.Python
