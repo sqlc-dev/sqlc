@@ -48,10 +48,10 @@ docker run --rm -v "%cd%:/src" -w /src kjconroy/sqlc generate
 
 ## Downloads
 
-Get pre-built binaries for *v1.15.0*:
+Get pre-built binaries for *v1.16.0*:
 
-- [Linux](https://github.com/kyleconroy/sqlc/releases/download/v1.15.0/sqlc_1.15.0_linux_amd64.tar.gz)
-- [macOS](https://github.com/kyleconroy/sqlc/releases/download/v1.15.0/sqlc_1.15.0_darwin_amd64.zip)
-- [Windows (MySQL only)](https://github.com/kyleconroy/sqlc/releases/download/v1.15.0/sqlc_1.15.0_windows_amd64.zip)
+- [Linux](https://github.com/kyleconroy/sqlc/releases/download/v1.16.0/sqlc_1.16.0_linux_amd64.tar.gz)
+- [macOS](https://github.com/kyleconroy/sqlc/releases/download/v1.16.0/sqlc_1.16.0_darwin_amd64.zip)
+- [Windows (MySQL only)](https://github.com/kyleconroy/sqlc/releases/download/v1.16.0/sqlc_1.16.0_windows_amd64.zip)
 
 See [downloads.sqlc.dev](https://downloads.sqlc.dev/) for older versions.
