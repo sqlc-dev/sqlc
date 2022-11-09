@@ -13,7 +13,6 @@ import (
 
 	"github.com/kyleconroy/sqlc/internal/codegen/golang"
 	"github.com/kyleconroy/sqlc/internal/codegen/json"
-	"github.com/kyleconroy/sqlc/internal/codegen/python"
 	"github.com/kyleconroy/sqlc/internal/compiler"
 	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/config/convert"
@@ -141,12 +140,6 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 				Gen: config.SQLGen{Go: sql.Gen.Go},
 			})
 		}
-		if sql.Gen.Python != nil {
-			pairs = append(pairs, outPair{
-				SQL: sql,
-				Gen: config.SQLGen{Python: sql.Gen.Python},
-			})
-		}
 		if sql.Gen.JSON != nil {
 			pairs = append(pairs, outPair{
 				SQL: sql,
@@ -189,10 +182,6 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 		case sql.Gen.Go != nil:
 			name = combo.Go.Package
 			lang = "golang"
-
-		case sql.Gen.Python != nil:
-			lang = "python"
-			name = combo.Python.Package
 
 		case sql.Plugin != nil:
 			lang = fmt.Sprintf("process:%s", sql.Plugin.Plugin)
@@ -289,10 +278,6 @@ func codegen(ctx context.Context, combo config.CombinedSettings, sql outPair, re
 	case sql.Gen.Go != nil:
 		out = combo.Go.Out
 		handler = ext.HandleFunc(golang.Generate)
-
-	case sql.Gen.Python != nil:
-		out = combo.Python.Out
-		handler = ext.HandleFunc(python.Generate)
 
 	case sql.Gen.JSON != nil:
 		out = combo.JSON.Out

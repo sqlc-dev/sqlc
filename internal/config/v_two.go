@@ -3,7 +3,6 @@ package config
 import (
 	"fmt"
 	"io"
-	"os"
 	"path/filepath"
 
 	yaml "gopkg.in/yaml.v3"
@@ -37,9 +36,8 @@ func v2ParseConfig(rd io.Reader) (Config, error) {
 	}
 	// TODO: Store built-in plugins somewhere else
 	builtins := map[string]struct{}{
-		"go":     {},
-		"json":   {},
-		"python": {},
+		"go":   {},
+		"json": {},
 	}
 	plugins := map[string]struct{}{}
 	for i := range conf.Plugins {
@@ -78,32 +76,6 @@ func v2ParseConfig(rd io.Reader) (Config, error) {
 			}
 			for i := range conf.SQL[j].Gen.Go.Overrides {
 				if err := conf.SQL[j].Gen.Go.Overrides[i].Parse(); err != nil {
-					return conf, err
-				}
-			}
-		}
-		if conf.SQL[j].Gen.Python != nil {
-			fmt.Fprintf(os.Stderr, "WARNING: Built-in Python support is deprecated.\n")
-			fmt.Fprintf(os.Stderr, "  It will be removed in the next version (1.17.0).\n")
-			fmt.Fprintf(os.Stderr, "  You will need to migrate to the sqlc-gen-python plugin. See the step-by-step guide here:\n")
-			fmt.Fprintf(os.Stderr, "  https://docs.sqlc.dev/en/latest/guides/migrating-to-sqlc-gen-python.html\n")
-
-			if conf.SQL[j].Gen.Python.QueryParameterLimit != nil {
-				if *conf.SQL[j].Gen.Python.QueryParameterLimit < 0 {
-					return conf, ErrInvalidQueryParameterLimit
-				}
-			}
-			if conf.SQL[j].Gen.Python.Out == "" {
-				return conf, ErrNoOutPath
-			}
-			if conf.SQL[j].Gen.Python.Package == "" {
-				return conf, ErrNoPackageName
-			}
-			if !conf.SQL[j].Gen.Python.EmitSyncQuerier && !conf.SQL[j].Gen.Python.EmitAsyncQuerier {
-				return conf, ErrNoQuerierType
-			}
-			for i := range conf.SQL[j].Gen.Python.Overrides {
-				if err := conf.SQL[j].Gen.Python.Overrides[i].Parse(); err != nil {
 					return conf, err
 				}
 			}

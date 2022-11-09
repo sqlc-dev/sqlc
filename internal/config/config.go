@@ -104,9 +104,8 @@ type Codegen struct {
 }
 
 type SQLGen struct {
-	Go     *SQLGo     `json:"go,omitempty" yaml:"go"`
-	Python *SQLPython `json:"python,omitempty" yaml:"python"`
-	JSON   *SQLJSON   `json:"json,omitempty" yaml:"json"`
+	Go   *SQLGo   `json:"go,omitempty" yaml:"go"`
+	JSON *SQLJSON `json:"json,omitempty" yaml:"json"`
 }
 
 type SQLGo struct {
@@ -133,18 +132,6 @@ type SQLGo struct {
 	OutputQuerierFileName       string            `json:"output_querier_file_name,omitempty" yaml:"output_querier_file_name"`
 	OutputFilesSuffix           string            `json:"output_files_suffix,omitempty" yaml:"output_files_suffix"`
 	InflectionExcludeTableNames []string          `json:"inflection_exclude_table_names,omitempty" yaml:"inflection_exclude_table_names"`
-}
-
-type SQLPython struct {
-	EmitExactTableNames         bool       `json:"emit_exact_table_names" yaml:"emit_exact_table_names"`
-	EmitSyncQuerier             bool       `json:"emit_sync_querier" yaml:"emit_sync_querier"`
-	EmitAsyncQuerier            bool       `json:"emit_async_querier" yaml:"emit_async_querier"`
-	Package                     string     `json:"package" yaml:"package"`
-	Out                         string     `json:"out" yaml:"out"`
-	Overrides                   []Override `json:"overrides,omitempty" yaml:"overrides"`
-	EmitPydanticModels          bool       `json:"emit_pydantic_models,omitempty" yaml:"emit_pydantic_models"`
-	QueryParameterLimit         *int32     `json:"query_parameter_limit,omitempty" yaml:"query_parameter_limit"`
-	InflectionExcludeTableNames []string   `json:"inflection_exclude_table_names,omitempty" yaml:"inflection_exclude_table_names"`
 }
 
 type SQLJSON struct {
@@ -213,7 +200,6 @@ type CombinedSettings struct {
 	Global    Config
 	Package   SQL
 	Go        SQLGo
-	Python    SQLPython
 	JSON      SQLJSON
 	Rename    map[string]string
 	Overrides []Override
@@ -234,10 +220,6 @@ func Combine(conf Config, pkg SQL) CombinedSettings {
 	if pkg.Gen.Go != nil {
 		cs.Go = *pkg.Gen.Go
 		cs.Overrides = append(cs.Overrides, pkg.Gen.Go.Overrides...)
-	}
-	if pkg.Gen.Python != nil {
-		cs.Python = *pkg.Gen.Python
-		cs.Overrides = append(cs.Overrides, pkg.Gen.Python.Overrides...)
 	}
 	if pkg.Gen.JSON != nil {
 		cs.JSON = *pkg.Gen.JSON
