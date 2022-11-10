@@ -16,4 +16,4 @@ RUN go run scripts/release.go -docker
 FROM scratch
 
 COPY --from=builder /workspace/sqlc /workspace/sqlc
-ENTRYPOINT ["/workspace/sqlc"]
+CMD ["/workspace/sqlc"]
