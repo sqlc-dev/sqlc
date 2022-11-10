@@ -28,15 +28,15 @@ type DtCharacterNotNull struct {
 	A string
 	B string
 	C string
-	D string
-	E string
-	F string
+	D []byte
+	E []byte
+	F []byte
 	G string
 	H string
 	I string
-	J string
+	J []byte
 	K string
-	L string
+	L []byte
 }
 
 type DtDatetime struct {
