@@ -8,6 +8,60 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
 )
 
+type Type interface {
+	isType()
+
+	SetComment(string)
+}
+
+type Enum struct {
+	Name    string
+	Vals    []string
+	Comment string
+}
+
+func (e *Enum) SetComment(c string) {
+	e.Comment = c
+}
+
+func (e *Enum) isType() {
+}
+
+type CompositeType struct {
+	Name    string
+	Comment string
+}
+
+func (ct *CompositeType) isType() {
+}
+
+func (ct *CompositeType) SetComment(c string) {
+	ct.Comment = c
+}
+
+func sameType(a, b *ast.TypeName) bool {
+	if a.Catalog != b.Catalog {
+		return false
+	}
+	// The pg_catalog schema is searched by default, so take that into
+	// account when comparing schemas
+	aSchema := a.Schema
+	bSchema := b.Schema
+	if aSchema == "pg_catalog" {
+		aSchema = ""
+	}
+	if bSchema == "pg_catalog" {
+		bSchema = ""
+	}
+	if aSchema != bSchema {
+		return false
+	}
+	if a.Name != b.Name {
+		return false
+	}
+	return true
+}
+
 func (c *Catalog) createEnum(stmt *ast.CreateEnumStmt) error {
 	ns := stmt.TypeName.Schema
 	if ns == "" {
@@ -35,6 +89,28 @@ func (c *Catalog) createEnum(stmt *ast.CreateEnumStmt) error {
 		Vals: stringSlice(stmt.Vals),
 	})
 	return nil
+}
+
+func stringSlice(list *ast.List) []string {
+	items := []string{}
+	for _, item := range list.Items {
+		if n, ok := item.(*ast.String); ok {
+			items = append(items, n.Str)
+		}
+	}
+	return items
+}
+
+func (c *Catalog) getType(rel *ast.TypeName) (Type, int, error) {
+	ns := rel.Schema
+	if ns == "" {
+		ns = c.DefaultSchema
+	}
+	s, err := c.getSchema(ns)
+	if err != nil {
+		return nil, -1, err
+	}
+	return s.getType(rel)
 }
 
 func (c *Catalog) createCompositeType(stmt *ast.CompositeTypeStmt) error {

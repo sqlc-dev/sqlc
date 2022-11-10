@@ -2,9 +2,21 @@
 SELECT * FROM authors
 WHERE author_id = $1;
 
+-- name: DeleteBookExecResult :execresult
+DELETE FROM books
+WHERE book_id = $1;
+
 -- name: DeleteBook :batchexec
 DELETE FROM books
 WHERE book_id = $1;
+
+-- name: DeleteBookNamedFunc :batchexec
+DELETE FROM books
+WHERE book_id = sqlc.arg(book_id);
+
+-- name: DeleteBookNamedSign :batchexec
+DELETE FROM books
+WHERE book_id = @book_id;
 
 -- name: BooksByYear :batchmany
 SELECT * FROM books
@@ -38,3 +50,7 @@ RETURNING *;
 UPDATE books
 SET title = $1, tags = $2
 WHERE book_id = $3;
+
+-- name: GetBiography :batchone
+SELECT biography FROM authors
+WHERE author_id = $1;

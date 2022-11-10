@@ -11,6 +11,9 @@ message File
 }
 
 message Override {
+  // PythonType message was field 9
+  reserved 9;
+
   // name of the type to use, e.g. `github.com/segmentio/ksuid.KSUID` or `mymodule.Type`
   string code_type = 1 [json_name="code_type"];
 
@@ -27,15 +30,7 @@ message Override {
 
   string column_name = 8 [json_name="column_name"];
 
-  PythonType python_type = 9;
-
   ParsedGoType go_type = 10;
-}
-
-message PythonType
-{
-  string module = 1;
-  string name = 2;
 }
 
 message ParsedGoType
@@ -44,38 +39,33 @@ message ParsedGoType
   string package = 2;
   string type_name = 3;
   bool basic_type = 4;
+  map<string, string> struct_tags = 5;
 }
 
 message Settings
 {
+  // PythonCode message was field 8
+  // KotlinCode message was field 9
+  reserved 8, 9;
+
   string version = 1 [json_name="version"];
   string engine = 2 [json_name="engine"];
   repeated string schema = 3 [json_name="schema"];
   repeated string queries = 4 [json_name="queries"];
   map<string, string> rename = 5 [json_name="rename"];
   repeated Override overrides = 6 [json_name="overrides"];
+  Codegen codegen = 12 [json_name="codegen"];
 
   // TODO: Refactor codegen settings
-  PythonCode python = 8;
-  KotlinCode kotlin = 9;
   GoCode go = 10;
+  JSONCode json = 11;
 }
 
-message PythonCode
+message Codegen
 {
-  bool emit_exact_table_names = 1;
-  bool emit_sync_querier = 2;
-  bool emit_async_querier = 3;
-  string package = 4;
-  string out = 5;
-  bool emit_pydantic_models = 6;
-}
-
-message KotlinCode
-{
-  bool emit_exact_table_names = 1;
-  string package = 2;
-  string out = 3;
+  string out = 1 [json_name="out"];
+  string plugin = 2 [json_name="plugin"];
+  bytes options = 3 [json_name="options"];
 }
 
 message GoCode
@@ -99,6 +89,16 @@ message GoCode
   string output_models_file_name = 16;
   string output_querier_file_name = 17;
   string output_files_suffix = 18;
+  bool emit_enum_valid_method = 19;
+  bool emit_all_enum_values = 20;
+  repeated string inflection_exclude_table_names = 21;
+}
+
+message JSONCode
+{
+  string out = 1;
+  string indent = 2;
+  string filename = 3;
 }
 
 message Catalog
@@ -186,6 +186,7 @@ message CodeGenRequest
   Catalog catalog = 2 [json_name="catalog"];
   repeated Query queries = 3 [json_name="queries"];
   string sqlc_version = 4 [json_name="sqlc_version"];
+  bytes plugin_options = 5 [json_name="plugin_options"];
 }
 
 message CodeGenResponse

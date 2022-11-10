@@ -5,6 +5,7 @@ import (
 
 	"github.com/kyleconroy/sqlc/internal/compiler"
 	"github.com/kyleconroy/sqlc/internal/config"
+	"github.com/kyleconroy/sqlc/internal/config/convert"
 	"github.com/kyleconroy/sqlc/internal/info"
 	"github.com/kyleconroy/sqlc/internal/plugin"
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
@@ -39,7 +40,6 @@ func pluginOverride(o config.Override) *plugin.Override {
 		Column:     o.Column,
 		ColumnName: column,
 		Table:      &table,
-		PythonType: pluginPythonType(o.PythonType),
 		GoType:     pluginGoType(o),
 	}
 }
@@ -56,44 +56,48 @@ func pluginSettings(cs config.CombinedSettings) *plugin.Settings {
 		Queries:   []string(cs.Package.Queries),
 		Overrides: over,
 		Rename:    cs.Rename,
-		Python:    pluginPythonCode(cs.Python),
-		Kotlin:    pluginKotlinCode(cs.Kotlin),
+		Codegen:   pluginCodegen(cs.Codegen),
 		Go:        pluginGoCode(cs.Go),
+		Json:      pluginJSONCode(cs.JSON),
 	}
 }
 
-func pluginPythonCode(s config.SQLPython) *plugin.PythonCode {
-	return &plugin.PythonCode{
-		Out:                 s.Out,
-		Package:             s.Package,
-		EmitExactTableNames: s.EmitExactTableNames,
-		EmitSyncQuerier:     s.EmitSyncQuerier,
-		EmitAsyncQuerier:    s.EmitAsyncQuerier,
-		EmitPydanticModels:  s.EmitPydanticModels,
+func pluginCodegen(s config.Codegen) *plugin.Codegen {
+	opts, err := convert.YAMLtoJSON(s.Options)
+	if err != nil {
+		panic(err)
+	}
+	return &plugin.Codegen{
+		Out:     s.Out,
+		Plugin:  s.Plugin,
+		Options: opts,
 	}
 }
 
 func pluginGoCode(s config.SQLGo) *plugin.GoCode {
 	return &plugin.GoCode{
-		EmitInterface:             s.EmitInterface,
-		EmitJsonTags:              s.EmitJSONTags,
-		EmitDbTags:                s.EmitDBTags,
-		EmitPreparedQueries:       s.EmitPreparedQueries,
-		EmitExactTableNames:       s.EmitExactTableNames,
-		EmitEmptySlices:           s.EmitEmptySlices,
-		EmitExportedQueries:       s.EmitExportedQueries,
-		EmitResultStructPointers:  s.EmitResultStructPointers,
-		EmitParamsStructPointers:  s.EmitParamsStructPointers,
-		EmitMethodsWithDbArgument: s.EmitMethodsWithDBArgument,
-		EmitPointersForNullTypes:  s.EmitPointersForNullTypes,
-		JsonTagsCaseStyle:         s.JSONTagsCaseStyle,
-		Package:                   s.Package,
-		Out:                       s.Out,
-		SqlPackage:                s.SQLPackage,
-		OutputDbFileName:          s.OutputDBFileName,
-		OutputModelsFileName:      s.OutputModelsFileName,
-		OutputQuerierFileName:     s.OutputQuerierFileName,
-		OutputFilesSuffix:         s.OutputFilesSuffix,
+		EmitInterface:               s.EmitInterface,
+		EmitJsonTags:                s.EmitJSONTags,
+		EmitDbTags:                  s.EmitDBTags,
+		EmitPreparedQueries:         s.EmitPreparedQueries,
+		EmitExactTableNames:         s.EmitExactTableNames,
+		EmitEmptySlices:             s.EmitEmptySlices,
+		EmitExportedQueries:         s.EmitExportedQueries,
+		EmitResultStructPointers:    s.EmitResultStructPointers,
+		EmitParamsStructPointers:    s.EmitParamsStructPointers,
+		EmitMethodsWithDbArgument:   s.EmitMethodsWithDBArgument,
+    EmitPointersForNullTypes:  s.EmitPointersForNullTypes,
+		EmitEnumValidMethod:         s.EmitEnumValidMethod,
+		EmitAllEnumValues:           s.EmitAllEnumValues,
+		JsonTagsCaseStyle:           s.JSONTagsCaseStyle,
+		Package:                     s.Package,
+		Out:                         s.Out,
+		SqlPackage:                  s.SQLPackage,
+		OutputDbFileName:            s.OutputDBFileName,
+		OutputModelsFileName:        s.OutputModelsFileName,
+		OutputQuerierFileName:       s.OutputQuerierFileName,
+		OutputFilesSuffix:           s.OutputFilesSuffix,
+		InflectionExcludeTableNames: s.InflectionExcludeTableNames,
 	}
 }
 
@@ -107,21 +111,15 @@ func pluginGoType(o config.Override) *plugin.ParsedGoType {
 		Package:    o.GoPackage,
 		TypeName:   o.GoTypeName,
 		BasicType:  o.GoBasicType,
+		StructTags: o.GoStructTags,
 	}
 }
 
-func pluginPythonType(pt config.PythonType) *plugin.PythonType {
-	return &plugin.PythonType{
-		Module: pt.Module,
-		Name:   pt.Name,
-	}
-}
-
-func pluginKotlinCode(s config.SQLKotlin) *plugin.KotlinCode {
-	return &plugin.KotlinCode{
-		Out:                 s.Out,
-		Package:             s.Package,
-		EmitExactTableNames: s.EmitExactTableNames,
+func pluginJSONCode(s config.SQLJSON) *plugin.JSONCode {
+	return &plugin.JSONCode{
+		Out:      s.Out,
+		Indent:   s.Indent,
+		Filename: s.Filename,
 	}
 }
 

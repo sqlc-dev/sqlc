@@ -3,34 +3,18 @@ package main
 import (
 	"bytes"
 	"context"
+	"flag"
 	"fmt"
 	"go/format"
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"text/template"
 
 	pgx "github.com/jackc/pgx/v4"
-
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 )
-
-// https://stackoverflow.com/questions/25308765/postgresql-how-can-i-inspect-which-arguments-to-a-procedure-have-a-default-valu
-const catalogFuncs = `
-SELECT p.proname as name,
-  format_type(p.prorettype, NULL),
-  array(select format_type(unnest(p.proargtypes), NULL)),
-  p.proargnames,
-  p.proargnames[p.pronargs-p.pronargdefaults+1:p.pronargs]
-FROM pg_catalog.pg_proc p
-LEFT JOIN pg_catalog.pg_namespace n ON n.oid = p.pronamespace
-WHERE n.nspname OPERATOR(pg_catalog.~) '^(pg_catalog)$'
-  AND p.proargmodes IS NULL
-  AND pg_function_is_visible(p.oid)
-ORDER BY 1;
-`
 
 // https://dba.stackexchange.com/questions/255412/how-to-select-functions-that-belong-in-a-given-extension-in-postgresql
 //
@@ -49,12 +33,13 @@ SELECT p.proname as name,
   format_type(p.prorettype, NULL),
   array(select format_type(unnest(p.proargtypes), NULL)),
   p.proargnames,
-  p.proargnames[p.pronargs-p.pronargdefaults+1:p.pronargs]
+  p.proargnames[p.pronargs-p.pronargdefaults+1:p.pronargs],
+  p.proargmodes::text[]
 FROM pg_catalog.pg_proc p
 JOIN extension_funcs ef ON ef.oid = p.oid
-WHERE p.proargmodes IS NULL
-  AND pg_function_is_visible(p.oid)
-ORDER BY 1;
+WHERE pg_function_is_visible(p.oid)
+-- simply order all columns to keep subsequent runs stable
+ORDER BY 1, 2, 3, 4, 5;
 `
 
 const catalogTmpl = `
@@ -67,28 +52,63 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 )
 
-func {{.Name}}() *catalog.Schema {
-	s := &catalog.Schema{Name: "pg_catalog"}
-	s.Funcs = []*catalog.Function{
-	    {{- range .Funcs}}
-		{
+var funcs{{.GenFnName}} = []*catalog.Function {
+    {{- range .Procs}}
+	{
+		Name: "{{.Name}}",
+		Args: []*catalog.Argument{
+			{{range .Args}}{
+			{{- if .Name}}
 			Name: "{{.Name}}",
-			Args: []*catalog.Argument{
-				{{range .Args}}{
-				{{- if .Name}}
-				Name: "{{.Name}}",
-				{{- end}}
-				{{- if .HasDefault}}
-				HasDefault: true,
-				{{- end}}
-				Type: &ast.TypeName{Name: "{{.Type.Name}}"},
-				},
-				{{end}}
+			{{- end}}
+			{{- if .HasDefault}}
+			HasDefault: true,
+			{{- end}}
+			Type: &ast.TypeName{Name: "{{.TypeName}}"},
+			{{- if ne .Mode "i" }}
+			Mode: {{ .GoMode }},
+			{{- end}}
 			},
-			ReturnType: &ast.TypeName{Name: "{{.ReturnType.Name}}"},
+			{{end}}
+		},
+		ReturnType: &ast.TypeName{Name: "{{.ReturnTypeName}}"},
+	},
+	{{- end}}
+}
+
+func {{.GenFnName}}() *catalog.Schema {
+	s := &catalog.Schema{Name: "{{ .SchemaName }}"}
+	s.Funcs = funcs{{.GenFnName}}
+	{{- if .Relations }}
+	s.Tables = []*catalog.Table {
+	    {{- range .Relations }}
+		{
+			Rel: &ast.TableName{
+				Catalog: "{{.Catalog}}",
+				Schema: "{{.SchemaName}}",
+				Name: "{{.Name}}",
+			},
+			Columns: []*catalog.Column{
+				{{- range .Columns}}
+				{
+					Name: "{{.Name}}",
+					Type: ast.TypeName{Name: "{{.Type}}"},
+					{{- if .IsNotNull}}
+					IsNotNull: true,
+					{{- end}}
+					{{- if .IsArray}}
+					IsArray: true,
+					{{- end}}
+					{{- if .Length }}
+					Length: toPointer({{ .Length }}),
+					{{- end}}
+				},
+				{{- end}}
+			},
 		},
 		{{- end}}
 	}
+	{{- end }}
 	return s
 }
 `
@@ -115,23 +135,17 @@ func loadExtension(name string) *catalog.Schema {
 `
 
 type tmplCtx struct {
-	Pkg   string
-	Name  string
-	Funcs []catalog.Function
+	Pkg        string
+	GenFnName  string
+	SchemaName string
+	Procs      []Proc
+	Relations  []Relation
 }
 
 func main() {
 	if err := run(context.Background()); err != nil {
 		log.Fatal(err)
 	}
-}
-
-type Proc struct {
-	Name       string
-	ReturnType string
-	ArgTypes   []string
-	ArgNames   []string
-	HasDefault []string
 }
 
 func clean(arg string) string {
@@ -142,121 +156,150 @@ func clean(arg string) string {
 	return arg
 }
 
-func (p Proc) Func() catalog.Function {
-	return catalog.Function{
-		Name:       p.Name,
-		Args:       p.Args(),
-		ReturnType: &ast.TypeName{Name: clean(p.ReturnType)},
-	}
-}
-
-func (p Proc) Args() []*catalog.Argument {
-	defaults := map[string]bool{}
-	var args []*catalog.Argument
-	if len(p.ArgTypes) == 0 {
-		return args
-	}
-	for _, name := range p.HasDefault {
-		defaults[name] = true
-	}
-	for i, arg := range p.ArgTypes {
-		var name string
-		if i < len(p.ArgNames) {
-			name = p.ArgNames[i]
-		}
-		args = append(args, &catalog.Argument{
-			Name:       name,
-			HasDefault: defaults[name],
-			Type:       &ast.TypeName{Name: clean(arg)},
-		})
-	}
-	return args
-}
-
-func scanFuncs(rows pgx.Rows) ([]catalog.Function, error) {
-	defer rows.Close()
-	// Iterate through the result set
-	var funcs []catalog.Function
-	for rows.Next() {
-		var p Proc
-		err := rows.Scan(
-			&p.Name,
-			&p.ReturnType,
-			&p.ArgTypes,
-			&p.ArgNames,
-			&p.HasDefault,
-		)
-		if err != nil {
-			return nil, err
-		}
-
-		// TODO: Filter these out in SQL
-		if strings.HasPrefix(p.ReturnType, "SETOF") {
-			continue
-		}
-
-		// The internal pseudo-type is used to declare functions that are meant
-		// only to be called internally by the database system, and not by
-		// direct invocation in an SQL query. If a function has at least one
-		// internal-type argument then it cannot be called from SQL. To
-		// preserve the type safety of this restriction it is important to
-		// follow this coding rule: do not create any function that is declared
-		// to return internal unless it has at least one internal argument
-		//
-		// https://www.postgresql.org/docs/current/datatype-pseudo.html
-		var skip bool
-		for i := range p.ArgTypes {
-			if p.ArgTypes[i] == "internal" {
-				skip = true
-			}
-		}
-		if skip {
-			continue
-		}
-		if p.ReturnType == "internal" {
-			continue
-		}
-
-		funcs = append(funcs, p.Func())
-	}
-	return funcs, rows.Err()
-}
-
-func run(ctx context.Context) error {
-	tmpl, err := template.New("").Parse(catalogTmpl)
-	if err != nil {
-		return err
-	}
-	conn, err := pgx.Connect(ctx, os.Getenv("DATABASE_URL"))
-	if err != nil {
-		return err
-	}
-	defer conn.Close(ctx)
-
-	// Generate internal/engine/postgresql/pg_catalog.gen.go
-	rows, err := conn.Query(ctx, catalogFuncs)
-	if err != nil {
-		return err
-	}
-	funcs, err := scanFuncs(rows)
-	if err != nil {
-		return err
-	}
+// writeFormattedGo executes `tmpl` with `data` as its context to the the file `destPath`
+func writeFormattedGo(tmpl *template.Template, data any, destPath string) error {
 	out := bytes.NewBuffer([]byte{})
-	if err := tmpl.Execute(out, tmplCtx{Pkg: "postgresql", Name: "genPGCatalog", Funcs: funcs}); err != nil {
+	err := tmpl.Execute(out, data)
+	if err != nil {
 		return err
 	}
 	code, err := format.Source(out.Bytes())
 	if err != nil {
 		return err
 	}
-	err = os.WriteFile(filepath.Join("internal", "engine", "postgresql", "pg_catalog.go"), code, 0644)
+
+	err = os.WriteFile(destPath, code, 0644)
 	if err != nil {
 		return err
 	}
 
-	loaded := []extensionPair{}
+	return nil
+}
 
+// preserveLegacyCatalogBehavior maintain previous ordering and filtering
+// that was manually done to the generated file pg_catalog.go.
+// Some of the test depend on this ordering - in particular, function lookups
+// where there might be multiple matching functions (due to type overloads)
+// Until sqlc supports "smarter" looking up of these functions,
+// preserveLegacyCatalogBehavior ensures there are no accidental test breakages
+func preserveLegacyCatalogBehavior(allProcs []Proc) []Proc {
+	// Preserve the legacy sort order of the end-to-end tests
+	sort.SliceStable(allProcs, func(i, j int) bool {
+		fnA := allProcs[i]
+		fnB := allProcs[j]
+
+		if fnA.Name == "lower" && fnB.Name == "lower" && len(fnA.ArgTypes) == 1 && fnA.ArgTypes[0] == "text" {
+			return true
+		}
+
+		if fnA.Name == "generate_series" && fnB.Name == "generate_series" && len(fnA.ArgTypes) == 2 && fnA.ArgTypes[0] == "numeric" {
+			return true
+		}
+
+		return false
+	})
+
+	procs := make([]Proc, 0, len(allProcs))
+	for _, p := range allProcs {
+		// Skip generating pg_catalog.concat to preserve legacy behavior
+		if p.Name == "concat" {
+			continue
+		}
+
+		procs = append(procs, p)
+	}
+
+	return procs
+}
+
+func databaseURL() string {
+	dburl := os.Getenv("DATABASE_URL")
+	if dburl != "" {
+		return dburl
+	}
+	pgUser := os.Getenv("PG_USER")
+	pgHost := os.Getenv("PG_HOST")
+	pgPort := os.Getenv("PG_PORT")
+	pgPass := os.Getenv("PG_PASSWORD")
+	pgDB := os.Getenv("PG_DATABASE")
+	if pgUser == "" {
+		pgUser = "postgres"
+	}
+	if pgPass == "" {
+		pgPass = "mysecretpassword"
+	}
+	if pgPort == "" {
+		pgPort = "5432"
+	}
+	if pgHost == "" {
+		pgHost = "127.0.0.1"
+	}
+	if pgDB == "" {
+		pgDB = "dinotest"
+	}
+	return fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", pgUser, pgPass, pgHost, pgPort, pgDB)
+}
+
+func run(ctx context.Context) error {
+	flag.Parse()
+
+	dir := flag.Arg(0)
+	if dir == "" {
+		dir = filepath.Join("internal", "engine", "postgresql")
+	}
+
+	tmpl, err := template.New("").Parse(catalogTmpl)
+	if err != nil {
+		return err
+	}
+	conn, err := pgx.Connect(ctx, databaseURL())
+	if err != nil {
+		return err
+	}
+	defer conn.Close(ctx)
+
+	schemas := []schemaToLoad{
+		{
+			Name:      "pg_catalog",
+			GenFnName: "genPGCatalog",
+			DestPath:  filepath.Join(dir, "pg_catalog.go"),
+		},
+		{
+			Name:      "information_schema",
+			GenFnName: "genInformationSchema",
+			DestPath:  filepath.Join(dir, "information_schema.go"),
+		},
+	}
+
+	for _, schema := range schemas {
+		procs, err := readProcs(ctx, conn, schema.Name)
+		if err != nil {
+			return err
+		}
+
+		if schema.Name == "pg_catalog" {
+			procs = preserveLegacyCatalogBehavior(procs)
+		}
+
+		relations, err := readRelations(ctx, conn, schema.Name)
+		if err != nil {
+			return err
+		}
+
+		err = writeFormattedGo(tmpl, tmplCtx{
+			Pkg:        "postgresql",
+			SchemaName: schema.Name,
+			GenFnName:  schema.GenFnName,
+			Procs:      procs,
+			Relations:  relations,
+		}, schema.DestPath)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	loaded := []extensionPair{}
 	for _, extension := range extensions {
 		name := strings.Replace(extension, "-", "_", -1)
 
@@ -267,58 +310,71 @@ func run(ctx context.Context) error {
 
 		_, err := conn.Exec(ctx, fmt.Sprintf("CREATE EXTENSION IF NOT EXISTS \"%s\"", extension))
 		if err != nil {
-			log.Printf("error creating %s: %s", extension, err)
-			continue
+			return fmt.Errorf("error creating %s: %s", extension, err)
 		}
 
 		rows, err := conn.Query(ctx, extensionFuncs, extension)
 		if err != nil {
 			return err
 		}
-		funcs, err := scanFuncs(rows)
+		procs, err := scanProcs(rows)
 		if err != nil {
 			return err
 		}
-		if len(funcs) == 0 {
+		if len(procs) == 0 {
 			log.Printf("no functions in %s, skipping", extension)
 			continue
 		}
-		out := bytes.NewBuffer([]byte{})
-		if err := tmpl.Execute(out, tmplCtx{Pkg: "contrib", Name: funcName, Funcs: funcs}); err != nil {
-			return err
-		}
-		code, err := format.Source(out.Bytes())
+
+		// Preserve the legacy sort order of the end-to-end tests
+		sort.SliceStable(procs, func(i, j int) bool {
+			fnA := procs[i]
+			fnB := procs[j]
+
+			if extension == "pgcrypto" {
+				if fnA.Name == "digest" && fnB.Name == "digest" && len(fnA.ArgTypes) == 2 && fnA.ArgTypes[0] == "text" {
+					return true
+				}
+			}
+
+			return false
+		})
+
+		extensionPath := filepath.Join(dir, "contrib", name+".go")
+		err = writeFormattedGo(tmpl, tmplCtx{
+			Pkg:        "contrib",
+			SchemaName: "pg_catalog",
+			GenFnName:  funcName,
+			Procs:      procs,
+		}, extensionPath)
 		if err != nil {
-			return err
-		}
-		err = os.WriteFile(filepath.Join("internal", "engine", "postgresql", "contrib", name+".go"), code, 0644)
-		if err != nil {
-			return err
+			return fmt.Errorf("error generating extension %s: %w", extension, err)
 		}
 
 		loaded = append(loaded, extensionPair{Name: extension, Func: funcName})
 	}
 
-	{
-		tmpl, err := template.New("").Parse(loaderFuncTmpl)
-		if err != nil {
-			return err
-		}
-		out := bytes.NewBuffer([]byte{})
-		if err := tmpl.Execute(out, loaded); err != nil {
-			return err
-		}
-		code, err := format.Source(out.Bytes())
-		if err != nil {
-			return err
-		}
-		err = os.WriteFile(filepath.Join("internal", "engine", "postgresql", "extension.go"), code, 0644)
-		if err != nil {
-			return err
-		}
+	extensionTmpl, err := template.New("").Parse(loaderFuncTmpl)
+	if err != nil {
+		return err
+	}
+
+	extensionLoaderPath := filepath.Join(dir, "extension.go")
+	err = writeFormattedGo(extensionTmpl, loaded, extensionLoaderPath)
+	if err != nil {
+		return err
 	}
 
 	return nil
+}
+
+type schemaToLoad struct {
+	// name is the name of a schema to load
+	Name string
+	// DestPath is the desination for the generate file
+	DestPath string
+	// The name of the function to generate for loading this schema
+	GenFnName string
 }
 
 type extensionPair struct {
@@ -330,16 +386,16 @@ type extensionPair struct {
 var extensions = []string{
 	"adminpack",
 	"amcheck",
-	"auth_delay",
-	"auto_explain",
-	"bloom",
+	// "auth_delay",
+	// "auto_explain",
+	// "bloom",
 	"btree_gin",
 	"btree_gist",
 	"citext",
 	"cube",
 	"dblink",
-	"dict_int",
-	"dict_xsyn",
+	// "dict_int",
+	// "dict_xsyn",
 	"earthdistance",
 	"file_fdw",
 	"fuzzystrmatch",
@@ -350,26 +406,26 @@ var extensions = []string{
 	"lo",
 	"ltree",
 	"pageinspect",
-	"passwordcheck",
+	// "passwordcheck",
 	"pg_buffercache",
-	"pgcrypto",
 	"pg_freespacemap",
 	"pg_prewarm",
-	"pgrowlocks",
 	"pg_stat_statements",
-	"pgstattuple",
 	"pg_trgm",
 	"pg_visibility",
+	"pgcrypto",
+	"pgrowlocks",
+	"pgstattuple",
 	"postgres_fdw",
 	"seg",
-	"sepgsql",
-	"spi",
+	// "sepgsql",
+	// "spi",
 	"sslinfo",
 	"tablefunc",
 	"tcn",
-	"test_decoding",
-	"tsm_system_rows",
-	"tsm_system_time",
+	// "test_decoding",
+	// "tsm_system_rows",
+	// "tsm_system_time",
 	"unaccent",
 	"uuid-ossp",
 	"xml2",

@@ -33,6 +33,8 @@ type v1PackageSettings struct {
 	EmitParamsStructPointers  bool       `json:"emit_params_struct_pointers" yaml:"emit_params_struct_pointers"`
 	EmitMethodsWithDBArgument bool       `json:"emit_methods_with_db_argument" yaml:"emit_methods_with_db_argument"`
 	EmitPointersForNullTypes  bool       `json:"emit_pointers_for_null_types" yaml:"emit_pointers_for_null_types"`
+	EmitEnumValidMethod       bool       `json:"emit_enum_valid_method,omitempty" yaml:"emit_enum_valid_method"`
+	EmitAllEnumValues         bool       `json:"emit_all_enum_values,omitempty" yaml:"emit_all_enum_values"`
 	JSONTagsCaseStyle         string     `json:"json_tags_case_style,omitempty" yaml:"json_tags_case_style"`
 	SQLPackage                string     `json:"sql_package" yaml:"sql_package"`
 	Overrides                 []Override `json:"overrides" yaml:"overrides"`
@@ -83,7 +85,9 @@ func v1ParseConfig(rd io.Reader) (Config, error) {
 		if settings.Packages[j].Engine == "" {
 			settings.Packages[j].Engine = EnginePostgreSQL
 		}
+
 	}
+
 	return settings.Translate(), nil
 }
 
@@ -128,6 +132,8 @@ func (c *V1GenerateSettings) Translate() Config {
 					EmitParamsStructPointers:  pkg.EmitParamsStructPointers,
 					EmitMethodsWithDBArgument: pkg.EmitMethodsWithDBArgument,
 					EmitPointersForNullTypes:  pkg.EmitPointersForNullTypes,
+					EmitEnumValidMethod:       pkg.EmitEnumValidMethod,
+					EmitAllEnumValues:         pkg.EmitAllEnumValues,
 					Package:                   pkg.Name,
 					Out:                       pkg.Path,
 					SQLPackage:                pkg.SQLPackage,

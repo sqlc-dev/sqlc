@@ -4,7 +4,7 @@
     {
       "path": "go",
       "name": "querytest",
-      "engine": "_lemon",
+      "engine": "sqlite",
       "schema": "schema.sql",
       "queries": "query.sql"
     }

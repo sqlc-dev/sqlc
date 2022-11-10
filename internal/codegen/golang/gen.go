@@ -3,6 +3,7 @@ package golang
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"go/format"
@@ -32,6 +33,8 @@ type tmplCtx struct {
 	EmitInterface             bool
 	EmitEmptySlices           bool
 	EmitMethodsWithDBArgument bool
+	EmitEnumValidMethod       bool
+	EmitAllEnumValues         bool
 	UsesCopyFrom              bool
 	UsesBatch                 bool
 }
@@ -40,7 +43,7 @@ func (t *tmplCtx) OutputQuery(sourceName string) bool {
 	return t.SourceName == sourceName
 }
 
-func Generate(req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
+func Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
 	enums := buildEnums(req)
 	structs := buildStructs(req)
 	queries, err := buildQueries(req, structs)
@@ -84,6 +87,8 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 		EmitPreparedQueries:       golang.EmitPreparedQueries,
 		EmitEmptySlices:           golang.EmitEmptySlices,
 		EmitMethodsWithDBArgument: golang.EmitMethodsWithDbArgument,
+		EmitEnumValidMethod:       golang.EmitEnumValidMethod,
+		EmitAllEnumValues:         golang.EmitAllEnumValues,
 		UsesCopyFrom:              usesCopyFrom(queries),
 		UsesBatch:                 usesBatch(queries),
 		SQLPackage:                SQLPackageFromString(golang.SqlPackage),

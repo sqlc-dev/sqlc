@@ -1,0 +1,34 @@
+{
+  "version": "2",
+  "plugins": [
+    {
+      "name": "py",
+      "wasm": {
+        "url": "https://downloads.sqlc.dev/plugin/sqlc-gen-python_1.0.0.wasm",
+        "sha256": "aca83e1f59f8ffdc604774c2f6f9eb321a2b23e07dc83fc12289d25305fa065b"
+      }
+    }
+  ],
+  "sql": [
+    {
+      "schema": "query.sql",
+      "queries": "query.sql",
+      "engine": "postgresql",
+      "codegen": [
+        {
+          "plugin": "py",
+          "out": "python",
+          "options": {
+            "package": "querytest",
+            "emit_sync_querier": true,
+            "emit_async_querier": true,
+            "inflection_exclude_table_names": [
+              "my_data",
+              "exclusions"
+            ]
+         }
+       }
+      ]
+    }
+  ]
+}

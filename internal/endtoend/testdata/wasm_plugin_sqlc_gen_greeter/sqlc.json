@@ -1,0 +1,25 @@
+{
+  "version": "2",
+  "sql": [
+    {
+      "schema": "schema.sql",
+      "queries": "query.sql",
+      "engine": "postgresql",
+      "codegen": [
+        {
+          "out": "gen",
+          "plugin": "greeter"
+        }
+      ]
+    }
+  ],
+  "plugins": [
+    {
+      "name": "greeter",
+      "wasm": {
+        "url": "https://github.com/kyleconroy/sqlc-gen-greeter/releases/download/v0.1.0/sqlc-gen-greeter.wasm",
+        "sha256": "afc486dac2068d741d7a4110146559d12a013fd0286f42a2fc7dcd802424ad07"
+      }
+    }
+  ]
+}

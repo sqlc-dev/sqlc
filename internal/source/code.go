@@ -54,25 +54,31 @@ func Mutate(raw string, a []Edit) (string, error) {
 	if len(a) == 0 {
 		return raw, nil
 	}
+
 	sort.Slice(a, func(i, j int) bool { return a[i].Location > a[j].Location })
+
 	s := raw
-	for _, edit := range a {
+	for idx, edit := range a {
 		start := edit.Location
-		if start > len(s) {
+		if start > len(s) || start < 0 {
 			return "", fmt.Errorf("edit start location is out of bounds")
 		}
-		if len(edit.New) <= 0 {
-			return "", fmt.Errorf("empty edit contents")
+
+		stop := edit.Location + len(edit.Old)
+		if stop > len(s) {
+			return "", fmt.Errorf("edit stop location is out of bounds")
 		}
-		if len(edit.Old) <= 0 {
-			return "", fmt.Errorf("empty edit contents")
+
+		// If this is not the first edit, (applied backwards), check if
+		// this edit overlaps the previous one (and is therefore a developer error)
+		if idx != 0 {
+			prevEdit := a[idx-1]
+			if prevEdit.Location < edit.Location+len(edit.Old) {
+				return "", fmt.Errorf("2 edits overlap")
+			}
 		}
-		stop := edit.Location + len(edit.Old) - 1 // Assumes edit.New is non-empty
-		if stop < len(s) {
-			s = s[:start] + edit.New + s[stop+1:]
-		} else {
-			s = s[:start] + edit.New
-		}
+
+		s = s[:start] + edit.New + s[stop:]
 	}
 	return s, nil
 }

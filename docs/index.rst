@@ -34,6 +34,7 @@ code ever again.
 
    tutorials/getting-started-mysql.md
    tutorials/getting-started-postgresql.md
+   tutorials/getting-started-sqlite.md
 
 .. toctree::
    :maxdepth: 2
@@ -56,7 +57,7 @@ code ever again.
    howto/upload.md
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Reference
    :hidden:
 
@@ -74,4 +75,5 @@ code ever again.
    :hidden:
 
    guides/development.md
+   guides/plugins.md
    guides/privacy.md

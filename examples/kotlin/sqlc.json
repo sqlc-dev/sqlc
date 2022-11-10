@@ -1,82 +1,112 @@
 {
   "version": "2",
+  "plugins": [
+    {
+      "name": "kt",
+      "wasm": {
+        "url": "https://downloads.sqlc.dev/plugin/sqlc-gen-kotlin_1.0.0.wasm",
+        "sha256": "7620dc5d462de41fdc90e2011232c842117b416c98fd5c163d27c5738431a45c"
+      }
+    }
+  ],
   "sql": [
     {
       "schema": "src/main/resources/authors/postgresql/schema.sql",
       "queries": "src/main/resources/authors/postgresql/query.sql",
       "engine": "postgresql",
-      "gen": {
-        "kotlin": {
+      "codegen": [
+        {
           "out": "src/main/kotlin/com/example/authors/postgresql",
-          "package": "com.example.authors.postgresql"
+          "plugin": "kt",
+          "options": {
+            "package": "com.example.authors.postgresql"
+          }
         }
-      }
+      ]
     },
     {
       "schema": "src/main/resources/ondeck/postgresql/schema",
       "queries": "src/main/resources/ondeck/postgresql/query",
       "engine": "postgresql",
-      "gen": {
-        "kotlin": {
+      "codegen": [
+        {
           "out": "src/main/kotlin/com/example/ondeck/postgresql",
-          "package": "com.example.ondeck.postgresql"
+          "plugin": "kt",
+          "options": {
+            "package": "com.example.ondeck.postgresql"
+          }
         }
-      }
+      ]
     },
     {
       "schema": "src/main/resources/jets/schema.sql",
       "queries": "src/main/resources/jets/query-building.sql",
       "engine": "postgresql",
-      "gen": {
-        "kotlin": {
+      "codegen": [
+        {
+          "plugin": "kt",
           "out": "src/main/kotlin/com/example/jets",
-          "package": "com.example.jets"
+          "options": {
+            "package": "com.example.jets"
+          }
         }
-      }
+      ]
     },
     {
       "schema": "src/main/resources/booktest/postgresql/schema.sql",
       "queries": "src/main/resources/booktest/postgresql/query.sql",
       "engine": "postgresql",
-      "gen": {
-        "kotlin": {
+      "codegen": [
+        {
           "out": "src/main/kotlin/com/example/booktest/postgresql",
-          "package": "com.example.booktest.postgresql"
+          "plugin": "kt",
+          "options": {
+            "package": "com.example.booktest.postgresql"
+          }
         }
-      }
+      ]
     },
     {
       "schema": "src/main/resources/authors/mysql/schema.sql",
       "queries": "src/main/resources/authors/mysql/query.sql",
       "engine": "mysql",
-      "gen": {
-        "kotlin": {
+      "codegen": [
+        {
           "out": "src/main/kotlin/com/example/authors/mysql",
-          "package": "com.example.authors.mysql"
+          "plugin": "kt",
+          "options": {
+            "package": "com.example.authors.mysql"
+          }
         }
-      }
+      ]
     },
     {
       "schema": "src/main/resources/booktest/mysql/schema.sql",
       "queries": "src/main/resources/booktest/mysql/query.sql",
       "engine": "mysql",
-      "gen": {
-        "kotlin": {
+      "codegen": [
+        {
           "out": "src/main/kotlin/com/example/booktest/mysql",
-          "package": "com.example.booktest.mysql"
+          "plugin": "kt",
+          "options": {
+            "package": "com.example.booktest.mysql"
+          }
         }
-      }
+      ]
     },
     {
       "schema": "src/main/resources/ondeck/mysql/schema",
       "queries": "src/main/resources/ondeck/mysql/query",
       "engine": "mysql",
-      "gen": {
-        "kotlin": {
+      "codegen": [
+        {
           "out": "src/main/kotlin/com/example/ondeck/mysql",
-          "package": "com.example.ondeck.mysql"
+          "plugin": "kt",
+          "options": {
+            "package": "com.example.ondeck.mysql"
+          }
         }
-      }
+      ]
     }
   ]
 }

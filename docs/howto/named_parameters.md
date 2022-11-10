@@ -56,3 +56,34 @@ SET
     END
 RETURNING *;
 ```
+
+## Nullable parameters
+
+sqlc infers the nullability of any specified parameters, and often does exactly
+what you want. If you want finer control over the nullability of your
+parameters, you may use `sqlc.narg()` (**n**ullable arg) to override the default
+behavior. Using `sqlc.narg` tells sqlc to ignore whatever nullability it has
+inferred and generate a nullable parameter instead. There is no nullable
+equivalent of the `@` syntax.
+
+Here is an example that uses a single query to allow updating an author's
+name, bio or both.
+
+```sql
+-- name: UpdateAuthor :one
+UPDATE author
+SET
+ name = coalesce(sqlc.narg('name'), name),
+ bio = coalesce(sqlc.narg('bio'), bio)
+WHERE id = sqlc.arg('id');
+```
+
+The following code is generated:
+
+```go
+type UpdateAuthorParams struct {
+	Name sql.NullString
+	Bio  sql.NullString
+	ID   int64
+}
+```

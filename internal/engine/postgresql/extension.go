@@ -45,20 +45,22 @@ func loadExtension(name string) *catalog.Schema {
 		return contrib.Pageinspect()
 	case "pg_buffercache":
 		return contrib.PgBuffercache()
-	case "pgcrypto":
-		return contrib.Pgcrypto()
 	case "pg_freespacemap":
 		return contrib.PgFreespacemap()
 	case "pg_prewarm":
 		return contrib.PgPrewarm()
 	case "pg_stat_statements":
 		return contrib.PgStatStatements()
-	case "pgstattuple":
-		return contrib.Pgstattuple()
 	case "pg_trgm":
 		return contrib.PgTrgm()
 	case "pg_visibility":
 		return contrib.PgVisibility()
+	case "pgcrypto":
+		return contrib.Pgcrypto()
+	case "pgrowlocks":
+		return contrib.Pgrowlocks()
+	case "pgstattuple":
+		return contrib.Pgstattuple()
 	case "postgres_fdw":
 		return contrib.PostgresFdw()
 	case "seg":

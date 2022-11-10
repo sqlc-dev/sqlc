@@ -326,16 +326,23 @@ func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		}
 
 		for _, schema := range req.Catalog.Schemas {
-			if schema.Name == "pg_catalog" {
+			if schema.Name == "pg_catalog" || schema.Name == "information_schema" {
 				continue
 			}
 
 			for _, enum := range schema.Enums {
 				if rel.Name == enum.Name && rel.Schema == schema.Name {
-					if schema.Name == req.Catalog.DefaultSchema {
-						return StructName(enum.Name, req.Settings)
+					if notNull {
+						if schema.Name == req.Catalog.DefaultSchema {
+							return StructName(enum.Name, req.Settings)
+						}
+						return StructName(schema.Name+"_"+enum.Name, req.Settings)
+					} else {
+						if schema.Name == req.Catalog.DefaultSchema {
+							return "Null" + StructName(enum.Name, req.Settings)
+						}
+						return "Null" + StructName(schema.Name+"_"+enum.Name, req.Settings)
 					}
-					return StructName(schema.Name+"_"+enum.Name, req.Settings)
 				}
 			}
 
