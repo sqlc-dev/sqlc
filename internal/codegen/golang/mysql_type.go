@@ -46,7 +46,10 @@ func mysqlType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		return "sql.NullInt64"
 
 	case "blob", "binary", "varbinary", "tinyblob", "mediumblob", "longblob":
-		return "[]byte"
+		if notNull {
+			return "[]byte"
+		}
+		return "sql.NullString"
 
 	case "double", "double precision", "real":
 		if notNull {

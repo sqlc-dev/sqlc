@@ -13,15 +13,15 @@ type DtCharacter struct {
 	A sql.NullString
 	B sql.NullString
 	C sql.NullString
-	D []byte
-	E []byte
-	F []byte
+	D sql.NullString
+	E sql.NullString
+	F sql.NullString
 	G sql.NullString
 	H sql.NullString
 	I sql.NullString
-	J []byte
+	J sql.NullString
 	K sql.NullString
-	L []byte
+	L sql.NullString
 }
 
 type DtCharacterNotNull struct {
