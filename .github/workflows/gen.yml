@@ -1,0 +1,24 @@
+name: sqlc-pg-gen
+on: workflow_dispatch
+jobs:
+  gen:
+    name: sqlc-pg-gen
+    runs-on: ubuntu-22.04
+    services:
+      postgres:
+        image: postgres:15.0
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+        - 5432:5432
+        # needed because the postgres container does not provide a healthcheck
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-go@v3
+      with:
+        go-version: '1.19'
+    - run: go build -o sqlc-pg-gen ./internal/tools/sqlc-pg-gen
+    - run: ./sqlc-pg-gen
