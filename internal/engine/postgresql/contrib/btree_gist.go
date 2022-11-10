@@ -77,6 +77,24 @@ func BtreeGist() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "cstring"},
 		},
 		{
+			Name: "gbtreekey2_in",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "cstring"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "gbtreekey2"},
+		},
+		{
+			Name: "gbtreekey2_out",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "gbtreekey2"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "cstring"},
+		},
+		{
 			Name: "gbtreekey32_in",
 			Args: []*catalog.Argument{
 				{

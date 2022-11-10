@@ -311,6 +311,15 @@ func Cube() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "boolean"},
 		},
 		{
+			Name: "cube_send",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "cube"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "bytea"},
+		},
+		{
 			Name: "cube_size",
 			Args: []*catalog.Argument{
 				{

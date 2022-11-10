@@ -21,6 +21,11 @@ func PgStatStatements() *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "record"},
 		},
 		{
+			Name:       "pg_stat_statements_info",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
+		{
 			Name: "pg_stat_statements_reset",
 			Args: []*catalog.Argument{
 				{

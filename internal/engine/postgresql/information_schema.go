@@ -2260,6 +2260,65 @@ func genInformationSchema() *catalog.Schema {
 			Rel: &ast.TableName{
 				Catalog: "pg_catalog",
 				Schema:  "information_schema",
+				Name:    "routine_column_usage",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "specific_catalog",
+					Type:   ast.TypeName{Name: "sql_identifier"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "specific_schema",
+					Type:   ast.TypeName{Name: "sql_identifier"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "specific_name",
+					Type:   ast.TypeName{Name: "sql_identifier"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "routine_catalog",
+					Type:   ast.TypeName{Name: "sql_identifier"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "routine_schema",
+					Type:   ast.TypeName{Name: "sql_identifier"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "routine_name",
+					Type:   ast.TypeName{Name: "sql_identifier"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "table_catalog",
+					Type:   ast.TypeName{Name: "sql_identifier"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "table_schema",
+					Type:   ast.TypeName{Name: "sql_identifier"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "table_name",
+					Type:   ast.TypeName{Name: "sql_identifier"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "column_name",
+					Type:   ast.TypeName{Name: "sql_identifier"},
+					Length: toPointer(64),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "information_schema",
 				Name:    "routine_privileges",
 			},
 			Columns: []*catalog.Column{
@@ -2310,6 +2369,153 @@ func genInformationSchema() *catalog.Schema {
 				{
 					Name: "is_grantable",
 					Type: ast.TypeName{Name: "yes_or_no"},
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "information_schema",
+				Name:    "routine_routine_usage",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "specific_catalog",
+					Type:   ast.TypeName{Name: "sql_identifier"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "specific_schema",
+					Type:   ast.TypeName{Name: "sql_identifier"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "specific_name",
+					Type:   ast.TypeName{Name: "sql_identifier"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "routine_catalog",
+					Type:   ast.TypeName{Name: "sql_identifier"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "routine_schema",
+					Type:   ast.TypeName{Name: "sql_identifier"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "routine_name",
+					Type:   ast.TypeName{Name: "sql_identifier"},
+					Length: toPointer(64),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "information_schema",
+				Name:    "routine_sequence_usage",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "specific_catalog",
+					Type:   ast.TypeName{Name: "sql_identifier"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "specific_schema",
+					Type:   ast.TypeName{Name: "sql_identifier"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "specific_name",
+					Type:   ast.TypeName{Name: "sql_identifier"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "routine_catalog",
+					Type:   ast.TypeName{Name: "sql_identifier"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "routine_schema",
+					Type:   ast.TypeName{Name: "sql_identifier"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "routine_name",
+					Type:   ast.TypeName{Name: "sql_identifier"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "sequence_catalog",
+					Type:   ast.TypeName{Name: "sql_identifier"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "sequence_schema",
+					Type:   ast.TypeName{Name: "sql_identifier"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "sequence_name",
+					Type:   ast.TypeName{Name: "sql_identifier"},
+					Length: toPointer(64),
+				},
+			},
+		},
+		{
+			Rel: &ast.TableName{
+				Catalog: "pg_catalog",
+				Schema:  "information_schema",
+				Name:    "routine_table_usage",
+			},
+			Columns: []*catalog.Column{
+				{
+					Name:   "specific_catalog",
+					Type:   ast.TypeName{Name: "sql_identifier"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "specific_schema",
+					Type:   ast.TypeName{Name: "sql_identifier"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "specific_name",
+					Type:   ast.TypeName{Name: "sql_identifier"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "routine_catalog",
+					Type:   ast.TypeName{Name: "sql_identifier"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "routine_schema",
+					Type:   ast.TypeName{Name: "sql_identifier"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "routine_name",
+					Type:   ast.TypeName{Name: "sql_identifier"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "table_catalog",
+					Type:   ast.TypeName{Name: "sql_identifier"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "table_schema",
+					Type:   ast.TypeName{Name: "sql_identifier"},
+					Length: toPointer(64),
+				},
+				{
+					Name:   "table_name",
+					Type:   ast.TypeName{Name: "sql_identifier"},
+					Length: toPointer(64),
 				},
 			},
 		},
@@ -3134,6 +3340,10 @@ func genInformationSchema() *catalog.Schema {
 				},
 				{
 					Name: "enforced",
+					Type: ast.TypeName{Name: "yes_or_no"},
+				},
+				{
+					Name: "nulls_distinct",
 					Type: ast.TypeName{Name: "yes_or_no"},
 				},
 			},

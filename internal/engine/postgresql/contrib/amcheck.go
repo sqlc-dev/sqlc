@@ -76,6 +76,41 @@ func Amcheck() *catalog.Schema {
 			},
 			ReturnType: &ast.TypeName{Name: "void"},
 		},
+		{
+			Name: "verify_heapam",
+			Args: []*catalog.Argument{
+				{
+					Name: "relation",
+					Type: &ast.TypeName{Name: "regclass"},
+				},
+				{
+					Name:       "on_error_stop",
+					HasDefault: true,
+					Type:       &ast.TypeName{Name: "boolean"},
+				},
+				{
+					Name:       "check_toast",
+					HasDefault: true,
+					Type:       &ast.TypeName{Name: "boolean"},
+				},
+				{
+					Name:       "skip",
+					HasDefault: true,
+					Type:       &ast.TypeName{Name: "text"},
+				},
+				{
+					Name:       "startblock",
+					HasDefault: true,
+					Type:       &ast.TypeName{Name: "bigint"},
+				},
+				{
+					Name:       "endblock",
+					HasDefault: true,
+					Type:       &ast.TypeName{Name: "bigint"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "record"},
+		},
 	}
 	return s
 }
