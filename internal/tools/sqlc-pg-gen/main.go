@@ -52,31 +52,33 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 )
 
+var funcs{{.GenFnName}} = []*catalog.Function {
+    {{- range .Procs}}
+	{
+		Name: "{{.Name}}",
+		Args: []*catalog.Argument{
+			{{range .Args}}{
+			{{- if .Name}}
+			Name: "{{.Name}}",
+			{{- end}}
+			{{- if .HasDefault}}
+			HasDefault: true,
+			{{- end}}
+			Type: &ast.TypeName{Name: "{{.TypeName}}"},
+			{{- if ne .Mode "i" }}
+			Mode: {{ .GoMode }},
+			{{- end}}
+			},
+			{{end}}
+		},
+		ReturnType: &ast.TypeName{Name: "{{.ReturnTypeName}}"},
+	},
+	{{- end}}
+}
+
 func {{.GenFnName}}() *catalog.Schema {
 	s := &catalog.Schema{Name: "{{ .SchemaName }}"}
-	s.Funcs = []*catalog.Function{
-	    {{- range .Procs}}
-		{
-			Name: "{{.Name}}",
-			Args: []*catalog.Argument{
-				{{range .Args}}{
-				{{- if .Name}}
-				Name: "{{.Name}}",
-				{{- end}}
-				{{- if .HasDefault}}
-				HasDefault: true,
-				{{- end}}
-				Type: &ast.TypeName{Name: "{{.TypeName}}"},
-				{{- if ne .Mode "i" }}
-				Mode: {{ .GoMode }},
-				{{- end}}
-				},
-				{{end}}
-			},
-			ReturnType: &ast.TypeName{Name: "{{.ReturnTypeName}}"},
-		},
-		{{- end}}
-	}
+	s.Funcs = funcs{{.GenFnName}}
 	{{- if .Relations }}
 	s.Tables = []*catalog.Table {
 	    {{- range .Relations }}
