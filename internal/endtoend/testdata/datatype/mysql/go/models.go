@@ -13,30 +13,30 @@ type DtCharacter struct {
 	A sql.NullString
 	B sql.NullString
 	C sql.NullString
-	D sql.NullString
-	E sql.NullString
-	F sql.NullString
+	D []byte
+	E []byte
+	F []byte
 	G sql.NullString
 	H sql.NullString
 	I sql.NullString
-	J sql.NullString
+	J []byte
 	K sql.NullString
-	L sql.NullString
+	L []byte
 }
 
 type DtCharacterNotNull struct {
 	A string
 	B string
 	C string
-	D string
-	E string
-	F string
+	D []byte
+	E []byte
+	F []byte
 	G string
 	H string
 	I string
-	J string
+	J []byte
 	K string
-	L string
+	L []byte
 }
 
 type DtDatetime struct {
