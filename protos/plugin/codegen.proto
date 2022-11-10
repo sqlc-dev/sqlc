@@ -80,6 +80,7 @@ message GoCode
   bool emit_result_struct_pointers = 8;
   bool emit_params_struct_pointers = 9;
   bool emit_methods_with_db_argument = 10;
+  bool emit_pointers_for_null_types = 19;
   string json_tags_case_style = 11;
   string package = 12;
   string out = 13;
