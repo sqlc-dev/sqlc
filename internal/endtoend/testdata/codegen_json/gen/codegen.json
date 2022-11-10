@@ -2110,6 +2110,27 @@
                 }
               },
               {
+                "name": "attalign",
+                "not_null": true,
+                "is_array": false,
+                "comment": "",
+                "length": 1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_attribute"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "char"
+                }
+              },
+              {
                 "name": "attstorage",
                 "not_null": true,
                 "is_array": false,
@@ -2131,7 +2152,7 @@
                 }
               },
               {
-                "name": "attalign",
+                "name": "attcompression",
                 "not_null": true,
                 "is_array": false,
                 "comment": "",
@@ -3323,6 +3344,205 @@
                   "catalog": "",
                   "schema": "",
                   "name": "text"
+                }
+              }
+            ],
+            "comment": ""
+          },
+          {
+            "rel": {
+              "catalog": "pg_catalog",
+              "schema": "pg_catalog",
+              "name": "pg_backend_memory_contexts"
+            },
+            "columns": [
+              {
+                "name": "name",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_backend_memory_contexts"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "text"
+                }
+              },
+              {
+                "name": "ident",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_backend_memory_contexts"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "text"
+                }
+              },
+              {
+                "name": "parent",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_backend_memory_contexts"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "text"
+                }
+              },
+              {
+                "name": "level",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 4,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_backend_memory_contexts"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int4"
+                }
+              },
+              {
+                "name": "total_bytes",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_backend_memory_contexts"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int8"
+                }
+              },
+              {
+                "name": "total_nblocks",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_backend_memory_contexts"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int8"
+                }
+              },
+              {
+                "name": "free_bytes",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_backend_memory_contexts"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int8"
+                }
+              },
+              {
+                "name": "free_chunks",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_backend_memory_contexts"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int8"
+                }
+              },
+              {
+                "name": "used_bytes",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_backend_memory_contexts"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int8"
                 }
               }
             ],
@@ -4701,10 +4921,10 @@
               },
               {
                 "name": "collcollate",
-                "not_null": true,
+                "not_null": false,
                 "is_array": false,
                 "comment": "",
-                "length": 64,
+                "length": -1,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -4717,15 +4937,15 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "name"
+                  "name": "text"
                 }
               },
               {
                 "name": "collctype",
-                "not_null": true,
+                "not_null": false,
                 "is_array": false,
                 "comment": "",
-                "length": 64,
+                "length": -1,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -4738,7 +4958,28 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "name"
+                  "name": "text"
+                }
+              },
+              {
+                "name": "colliculocale",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_collation"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "text"
                 }
               },
               {
@@ -5431,6 +5672,27 @@
                   "catalog": "",
                   "schema": "",
                   "name": "_oid"
+                }
+              },
+              {
+                "name": "confdelsetcols",
+                "not_null": false,
+                "is_array": true,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_constraint"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "_int2"
                 }
               },
               {
@@ -6136,11 +6398,11 @@
                 }
               },
               {
-                "name": "datcollate",
+                "name": "datlocprovider",
                 "not_null": true,
                 "is_array": false,
                 "comment": "",
-                "length": 64,
+                "length": 1,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -6153,28 +6415,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "name"
-                }
-              },
-              {
-                "name": "datctype",
-                "not_null": true,
-                "is_array": false,
-                "comment": "",
-                "length": 64,
-                "is_named_param": false,
-                "is_func_call": false,
-                "scope": "",
-                "table": {
-                  "catalog": "pg_catalog",
-                  "schema": "pg_catalog",
-                  "name": "pg_database"
-                },
-                "table_alias": "",
-                "type": {
-                  "catalog": "",
-                  "schema": "",
-                  "name": "name"
+                  "name": "char"
                 }
               },
               {
@@ -6241,27 +6482,6 @@
                 }
               },
               {
-                "name": "datlastsysoid",
-                "not_null": true,
-                "is_array": false,
-                "comment": "",
-                "length": 4,
-                "is_named_param": false,
-                "is_func_call": false,
-                "scope": "",
-                "table": {
-                  "catalog": "pg_catalog",
-                  "schema": "pg_catalog",
-                  "name": "pg_database"
-                },
-                "table_alias": "",
-                "type": {
-                  "catalog": "",
-                  "schema": "",
-                  "name": "oid"
-                }
-              },
-              {
                 "name": "datfrozenxid",
                 "not_null": true,
                 "is_array": false,
@@ -6322,6 +6542,90 @@
                   "catalog": "",
                   "schema": "",
                   "name": "oid"
+                }
+              },
+              {
+                "name": "datcollate",
+                "not_null": true,
+                "is_array": false,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_database"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "text"
+                }
+              },
+              {
+                "name": "datctype",
+                "not_null": true,
+                "is_array": false,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_database"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "text"
+                }
+              },
+              {
+                "name": "daticulocale",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_database"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "text"
+                }
+              },
+              {
+                "name": "datcollversion",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_database"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "text"
                 }
               },
               {
@@ -9317,6 +9621,121 @@
             "rel": {
               "catalog": "pg_catalog",
               "schema": "pg_catalog",
+              "name": "pg_ident_file_mappings"
+            },
+            "columns": [
+              {
+                "name": "line_number",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 4,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_ident_file_mappings"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int4"
+                }
+              },
+              {
+                "name": "map_name",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_ident_file_mappings"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "text"
+                }
+              },
+              {
+                "name": "sys_name",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_ident_file_mappings"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "text"
+                }
+              },
+              {
+                "name": "pg_username",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_ident_file_mappings"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "text"
+                }
+              },
+              {
+                "name": "error",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_ident_file_mappings"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "text"
+                }
+              }
+            ],
+            "comment": ""
+          },
+          {
+            "rel": {
+              "catalog": "pg_catalog",
+              "schema": "pg_catalog",
               "name": "pg_index"
             },
             "columns": [
@@ -9532,6 +9951,27 @@
               },
               {
                 "name": "indisunique",
+                "not_null": true,
+                "is_array": false,
+                "comment": "",
+                "length": 1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_index"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "bool"
+                }
+              },
+              {
+                "name": "indnullsnotdistinct",
                 "not_null": true,
                 "is_array": false,
                 "comment": "",
@@ -10178,6 +10618,27 @@
                   "catalog": "",
                   "schema": "",
                   "name": "int4"
+                }
+              },
+              {
+                "name": "inhdetachpending",
+                "not_null": true,
+                "is_array": false,
+                "comment": "",
+                "length": 1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_inherits"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "bool"
                 }
               }
             ],
@@ -11467,6 +11928,27 @@
                   "catalog": "",
                   "schema": "",
                   "name": "bool"
+                }
+              },
+              {
+                "name": "waitstart",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_locks"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "timestamptz"
                 }
               }
             ],
@@ -12870,6 +13352,205 @@
             "rel": {
               "catalog": "pg_catalog",
               "schema": "pg_catalog",
+              "name": "pg_parameter_acl"
+            },
+            "columns": [
+              {
+                "name": "tableoid",
+                "not_null": true,
+                "is_array": false,
+                "comment": "",
+                "length": 4,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_parameter_acl"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "oid"
+                }
+              },
+              {
+                "name": "cmax",
+                "not_null": true,
+                "is_array": false,
+                "comment": "",
+                "length": 4,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_parameter_acl"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "cid"
+                }
+              },
+              {
+                "name": "xmax",
+                "not_null": true,
+                "is_array": false,
+                "comment": "",
+                "length": 4,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_parameter_acl"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "xid"
+                }
+              },
+              {
+                "name": "cmin",
+                "not_null": true,
+                "is_array": false,
+                "comment": "",
+                "length": 4,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_parameter_acl"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "cid"
+                }
+              },
+              {
+                "name": "xmin",
+                "not_null": true,
+                "is_array": false,
+                "comment": "",
+                "length": 4,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_parameter_acl"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "xid"
+                }
+              },
+              {
+                "name": "ctid",
+                "not_null": true,
+                "is_array": false,
+                "comment": "",
+                "length": 6,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_parameter_acl"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "tid"
+                }
+              },
+              {
+                "name": "oid",
+                "not_null": true,
+                "is_array": false,
+                "comment": "",
+                "length": 4,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_parameter_acl"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "oid"
+                }
+              },
+              {
+                "name": "parname",
+                "not_null": true,
+                "is_array": false,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_parameter_acl"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "text"
+                }
+              },
+              {
+                "name": "paracl",
+                "not_null": false,
+                "is_array": true,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_parameter_acl"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "_aclitem"
+                }
+              }
+            ],
+            "comment": ""
+          },
+          {
+            "rel": {
+              "catalog": "pg_catalog",
+              "schema": "pg_catalog",
               "name": "pg_partitioned_table"
             },
             "columns": [
@@ -13763,6 +14444,48 @@
                   "schema": "",
                   "name": "bool"
                 }
+              },
+              {
+                "name": "generic_plans",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_prepared_statements"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int8"
+                }
+              },
+              {
+                "name": "custom_plans",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_prepared_statements"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int8"
+                }
               }
             ],
             "comment": ""
@@ -14583,6 +15306,27 @@
                 }
               },
               {
+                "name": "prosqlbody",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_proc"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "pg_node_tree"
+                }
+              },
+              {
                 "name": "proconfig",
                 "not_null": false,
                 "is_array": true,
@@ -14956,6 +15700,205 @@
             "rel": {
               "catalog": "pg_catalog",
               "schema": "pg_catalog",
+              "name": "pg_publication_namespace"
+            },
+            "columns": [
+              {
+                "name": "tableoid",
+                "not_null": true,
+                "is_array": false,
+                "comment": "",
+                "length": 4,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_publication_namespace"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "oid"
+                }
+              },
+              {
+                "name": "cmax",
+                "not_null": true,
+                "is_array": false,
+                "comment": "",
+                "length": 4,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_publication_namespace"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "cid"
+                }
+              },
+              {
+                "name": "xmax",
+                "not_null": true,
+                "is_array": false,
+                "comment": "",
+                "length": 4,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_publication_namespace"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "xid"
+                }
+              },
+              {
+                "name": "cmin",
+                "not_null": true,
+                "is_array": false,
+                "comment": "",
+                "length": 4,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_publication_namespace"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "cid"
+                }
+              },
+              {
+                "name": "xmin",
+                "not_null": true,
+                "is_array": false,
+                "comment": "",
+                "length": 4,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_publication_namespace"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "xid"
+                }
+              },
+              {
+                "name": "ctid",
+                "not_null": true,
+                "is_array": false,
+                "comment": "",
+                "length": 6,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_publication_namespace"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "tid"
+                }
+              },
+              {
+                "name": "oid",
+                "not_null": true,
+                "is_array": false,
+                "comment": "",
+                "length": 4,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_publication_namespace"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "oid"
+                }
+              },
+              {
+                "name": "pnpubid",
+                "not_null": true,
+                "is_array": false,
+                "comment": "",
+                "length": 4,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_publication_namespace"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "oid"
+                }
+              },
+              {
+                "name": "pnnspid",
+                "not_null": true,
+                "is_array": false,
+                "comment": "",
+                "length": 4,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_publication_namespace"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "oid"
+                }
+              }
+            ],
+            "comment": ""
+          },
+          {
+            "rel": {
+              "catalog": "pg_catalog",
+              "schema": "pg_catalog",
               "name": "pg_publication_rel"
             },
             "columns": [
@@ -15147,6 +16090,48 @@
                   "schema": "",
                   "name": "oid"
                 }
+              },
+              {
+                "name": "prqual",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_publication_rel"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "pg_node_tree"
+                }
+              },
+              {
+                "name": "prattrs",
+                "not_null": false,
+                "is_array": true,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_publication_rel"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int2vector"
+                }
               }
             ],
             "comment": ""
@@ -15219,6 +16204,48 @@
                   "catalog": "",
                   "schema": "",
                   "name": "name"
+                }
+              },
+              {
+                "name": "attnames",
+                "not_null": false,
+                "is_array": true,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_publication_tables"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "_name"
+                }
+              },
+              {
+                "name": "rowfilter",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_publication_tables"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "text"
                 }
               }
             ],
@@ -15380,6 +16407,27 @@
               },
               {
                 "name": "rngsubtype",
+                "not_null": true,
+                "is_array": false,
+                "comment": "",
+                "length": 4,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_range"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "oid"
+                }
+              },
+              {
+                "name": "rngmultitypid",
                 "not_null": true,
                 "is_array": false,
                 "comment": "",
@@ -16057,6 +17105,27 @@
                   "catalog": "",
                   "schema": "",
                   "name": "int8"
+                }
+              },
+              {
+                "name": "two_phase",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_replication_slots"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "bool"
                 }
               }
             ],
@@ -19476,6 +20545,27 @@
                 }
               },
               {
+                "name": "query_id",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_activity"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int8"
+                }
+              },
+              {
                 "name": "query",
                 "not_null": false,
                 "is_array": false,
@@ -21017,6 +22107,153 @@
                 }
               },
               {
+                "name": "session_time",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_database"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "float8"
+                }
+              },
+              {
+                "name": "active_time",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_database"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "float8"
+                }
+              },
+              {
+                "name": "idle_in_transaction_time",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_database"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "float8"
+                }
+              },
+              {
+                "name": "sessions",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_database"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int8"
+                }
+              },
+              {
+                "name": "sessions_abandoned",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_database"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int8"
+                }
+              },
+              {
+                "name": "sessions_fatal",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_database"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int8"
+                }
+              },
+              {
+                "name": "sessions_killed",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_database"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int8"
+                }
+              },
+              {
                 "name": "stats_reset",
                 "not_null": false,
                 "is_array": false,
@@ -21955,6 +23192,226 @@
             "rel": {
               "catalog": "pg_catalog",
               "schema": "pg_catalog",
+              "name": "pg_stat_progress_copy"
+            },
+            "columns": [
+              {
+                "name": "pid",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 4,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_progress_copy"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int4"
+                }
+              },
+              {
+                "name": "datid",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 4,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_progress_copy"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "oid"
+                }
+              },
+              {
+                "name": "datname",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 64,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_progress_copy"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "name"
+                }
+              },
+              {
+                "name": "relid",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 4,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_progress_copy"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "oid"
+                }
+              },
+              {
+                "name": "command",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_progress_copy"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "text"
+                }
+              },
+              {
+                "name": "type",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_progress_copy"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "text"
+                }
+              },
+              {
+                "name": "bytes_processed",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_progress_copy"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int8"
+                }
+              },
+              {
+                "name": "bytes_total",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_progress_copy"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int8"
+                }
+              },
+              {
+                "name": "tuples_processed",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_progress_copy"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int8"
+                }
+              },
+              {
+                "name": "tuples_excluded",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_progress_copy"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int8"
+                }
+              }
+            ],
+            "comment": ""
+          },
+          {
+            "rel": {
+              "catalog": "pg_catalog",
+              "schema": "pg_catalog",
               "name": "pg_stat_progress_create_index"
             },
             "columns": [
@@ -22542,6 +23999,226 @@
             "rel": {
               "catalog": "pg_catalog",
               "schema": "pg_catalog",
+              "name": "pg_stat_recovery_prefetch"
+            },
+            "columns": [
+              {
+                "name": "stats_reset",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_recovery_prefetch"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "timestamptz"
+                }
+              },
+              {
+                "name": "prefetch",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_recovery_prefetch"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int8"
+                }
+              },
+              {
+                "name": "hit",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_recovery_prefetch"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int8"
+                }
+              },
+              {
+                "name": "skip_init",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_recovery_prefetch"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int8"
+                }
+              },
+              {
+                "name": "skip_new",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_recovery_prefetch"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int8"
+                }
+              },
+              {
+                "name": "skip_fpw",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_recovery_prefetch"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int8"
+                }
+              },
+              {
+                "name": "skip_rep",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_recovery_prefetch"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int8"
+                }
+              },
+              {
+                "name": "wal_distance",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 4,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_recovery_prefetch"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int4"
+                }
+              },
+              {
+                "name": "block_distance",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 4,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_recovery_prefetch"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int4"
+                }
+              },
+              {
+                "name": "io_depth",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 4,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_recovery_prefetch"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int4"
+                }
+              }
+            ],
+            "comment": ""
+          },
+          {
+            "rel": {
+              "catalog": "pg_catalog",
+              "schema": "pg_catalog",
               "name": "pg_stat_replication"
             },
             "columns": [
@@ -22972,6 +24649,226 @@
             "rel": {
               "catalog": "pg_catalog",
               "schema": "pg_catalog",
+              "name": "pg_stat_replication_slots"
+            },
+            "columns": [
+              {
+                "name": "slot_name",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_replication_slots"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "text"
+                }
+              },
+              {
+                "name": "spill_txns",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_replication_slots"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int8"
+                }
+              },
+              {
+                "name": "spill_count",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_replication_slots"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int8"
+                }
+              },
+              {
+                "name": "spill_bytes",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_replication_slots"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int8"
+                }
+              },
+              {
+                "name": "stream_txns",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_replication_slots"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int8"
+                }
+              },
+              {
+                "name": "stream_count",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_replication_slots"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int8"
+                }
+              },
+              {
+                "name": "stream_bytes",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_replication_slots"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int8"
+                }
+              },
+              {
+                "name": "total_txns",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_replication_slots"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int8"
+                }
+              },
+              {
+                "name": "total_bytes",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_replication_slots"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int8"
+                }
+              },
+              {
+                "name": "stats_reset",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_replication_slots"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "timestamptz"
+                }
+              }
+            ],
+            "comment": ""
+          },
+          {
+            "rel": {
+              "catalog": "pg_catalog",
+              "schema": "pg_catalog",
               "name": "pg_stat_slru"
             },
             "columns": [
@@ -23280,27 +25177,6 @@
                 }
               },
               {
-                "name": "compression",
-                "not_null": false,
-                "is_array": false,
-                "comment": "",
-                "length": 1,
-                "is_named_param": false,
-                "is_func_call": false,
-                "scope": "",
-                "table": {
-                  "catalog": "pg_catalog",
-                  "schema": "pg_catalog",
-                  "name": "pg_stat_ssl"
-                },
-                "table_alias": "",
-                "type": {
-                  "catalog": "",
-                  "schema": "",
-                  "name": "bool"
-                }
-              },
-              {
                 "name": "client_dn",
                 "not_null": false,
                 "is_array": false,
@@ -23554,6 +25430,121 @@
                   "catalog": "pg_catalog",
                   "schema": "pg_catalog",
                   "name": "pg_stat_subscription"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "timestamptz"
+                }
+              }
+            ],
+            "comment": ""
+          },
+          {
+            "rel": {
+              "catalog": "pg_catalog",
+              "schema": "pg_catalog",
+              "name": "pg_stat_subscription_stats"
+            },
+            "columns": [
+              {
+                "name": "subid",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 4,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_subscription_stats"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "oid"
+                }
+              },
+              {
+                "name": "subname",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 64,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_subscription_stats"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "name"
+                }
+              },
+              {
+                "name": "apply_error_count",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_subscription_stats"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int8"
+                }
+              },
+              {
+                "name": "sync_error_count",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_subscription_stats"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int8"
+                }
+              },
+              {
+                "name": "stats_reset",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_subscription_stats"
                 },
                 "table_alias": "",
                 "type": {
@@ -25038,6 +27029,205 @@
                   "catalog": "",
                   "schema": "",
                   "name": "int8"
+                }
+              }
+            ],
+            "comment": ""
+          },
+          {
+            "rel": {
+              "catalog": "pg_catalog",
+              "schema": "pg_catalog",
+              "name": "pg_stat_wal"
+            },
+            "columns": [
+              {
+                "name": "wal_records",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_wal"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int8"
+                }
+              },
+              {
+                "name": "wal_fpi",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_wal"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int8"
+                }
+              },
+              {
+                "name": "wal_bytes",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_wal"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "numeric"
+                }
+              },
+              {
+                "name": "wal_buffers_full",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_wal"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int8"
+                }
+              },
+              {
+                "name": "wal_write",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_wal"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int8"
+                }
+              },
+              {
+                "name": "wal_sync",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_wal"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int8"
+                }
+              },
+              {
+                "name": "wal_write_time",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_wal"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "float8"
+                }
+              },
+              {
+                "name": "wal_sync_time",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_wal"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "float8"
+                }
+              },
+              {
+                "name": "stats_reset",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stat_wal"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "timestamptz"
                 }
               }
             ],
@@ -28853,6 +31043,27 @@
                   "schema": "",
                   "name": "_char"
                 }
+              },
+              {
+                "name": "stxexprs",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_statistic_ext"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "pg_node_tree"
+                }
               }
             ],
             "comment": ""
@@ -29012,6 +31223,27 @@
                 }
               },
               {
+                "name": "stxdinherit",
+                "not_null": true,
+                "is_array": false,
+                "comment": "",
+                "length": 1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_statistic_ext_data"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "bool"
+                }
+              },
+              {
                 "name": "stxdndistinct",
                 "not_null": false,
                 "is_array": false,
@@ -29072,6 +31304,27 @@
                   "catalog": "",
                   "schema": "",
                   "name": "pg_mcv_list"
+                }
+              },
+              {
+                "name": "stxdexpr",
+                "not_null": false,
+                "is_array": true,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_statistic_ext_data"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "_pg_statistic"
                 }
               }
             ],
@@ -29515,6 +31768,27 @@
                 }
               },
               {
+                "name": "exprs",
+                "not_null": false,
+                "is_array": true,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stats_ext"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "_text"
+                }
+              },
+              {
                 "name": "kinds",
                 "not_null": false,
                 "is_array": true,
@@ -29533,6 +31807,27 @@
                   "catalog": "",
                   "schema": "",
                   "name": "_char"
+                }
+              },
+              {
+                "name": "inherited",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stats_ext"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "bool"
                 }
               },
               {
@@ -29659,6 +31954,373 @@
                   "catalog": "",
                   "schema": "",
                   "name": "_float8"
+                }
+              }
+            ],
+            "comment": ""
+          },
+          {
+            "rel": {
+              "catalog": "pg_catalog",
+              "schema": "pg_catalog",
+              "name": "pg_stats_ext_exprs"
+            },
+            "columns": [
+              {
+                "name": "schemaname",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 64,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stats_ext_exprs"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "name"
+                }
+              },
+              {
+                "name": "tablename",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 64,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stats_ext_exprs"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "name"
+                }
+              },
+              {
+                "name": "statistics_schemaname",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 64,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stats_ext_exprs"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "name"
+                }
+              },
+              {
+                "name": "statistics_name",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 64,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stats_ext_exprs"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "name"
+                }
+              },
+              {
+                "name": "statistics_owner",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 64,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stats_ext_exprs"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "name"
+                }
+              },
+              {
+                "name": "expr",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stats_ext_exprs"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "text"
+                }
+              },
+              {
+                "name": "inherited",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stats_ext_exprs"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "bool"
+                }
+              },
+              {
+                "name": "null_frac",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 4,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stats_ext_exprs"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "float4"
+                }
+              },
+              {
+                "name": "avg_width",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 4,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stats_ext_exprs"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "int4"
+                }
+              },
+              {
+                "name": "n_distinct",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 4,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stats_ext_exprs"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "float4"
+                }
+              },
+              {
+                "name": "most_common_vals",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stats_ext_exprs"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "anyarray"
+                }
+              },
+              {
+                "name": "most_common_freqs",
+                "not_null": false,
+                "is_array": true,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stats_ext_exprs"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "_float4"
+                }
+              },
+              {
+                "name": "histogram_bounds",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stats_ext_exprs"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "anyarray"
+                }
+              },
+              {
+                "name": "correlation",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 4,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stats_ext_exprs"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "float4"
+                }
+              },
+              {
+                "name": "most_common_elems",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stats_ext_exprs"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "anyarray"
+                }
+              },
+              {
+                "name": "most_common_elem_freqs",
+                "not_null": false,
+                "is_array": true,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stats_ext_exprs"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "_float4"
+                }
+              },
+              {
+                "name": "elem_count_histogram",
+                "not_null": false,
+                "is_array": true,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_stats_ext_exprs"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "_float4"
                 }
               }
             ],
@@ -29840,6 +32502,27 @@
                 }
               },
               {
+                "name": "subskiplsn",
+                "not_null": true,
+                "is_array": false,
+                "comment": "",
+                "length": 8,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_subscription"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "pg_lsn"
+                }
+              },
+              {
                 "name": "subname",
                 "not_null": true,
                 "is_array": false,
@@ -29883,6 +32566,90 @@
               },
               {
                 "name": "subenabled",
+                "not_null": true,
+                "is_array": false,
+                "comment": "",
+                "length": 1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_subscription"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "bool"
+                }
+              },
+              {
+                "name": "subbinary",
+                "not_null": true,
+                "is_array": false,
+                "comment": "",
+                "length": 1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_subscription"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "bool"
+                }
+              },
+              {
+                "name": "substream",
+                "not_null": true,
+                "is_array": false,
+                "comment": "",
+                "length": 1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_subscription"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "bool"
+                }
+              },
+              {
+                "name": "subtwophasestate",
+                "not_null": true,
+                "is_array": false,
+                "comment": "",
+                "length": 1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_subscription"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "char"
+                }
+              },
+              {
+                "name": "subdisableonerr",
                 "not_null": true,
                 "is_array": false,
                 "comment": "",
@@ -33222,6 +35989,27 @@
                   "catalog": "",
                   "schema": "",
                   "name": "oid"
+                }
+              },
+              {
+                "name": "typsubscript",
+                "not_null": true,
+                "is_array": false,
+                "comment": "",
+                "length": 4,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "pg_catalog",
+                  "name": "pg_type"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "regproc"
                 }
               },
               {
@@ -42834,6 +45622,226 @@
             "rel": {
               "catalog": "pg_catalog",
               "schema": "information_schema",
+              "name": "routine_column_usage"
+            },
+            "columns": [
+              {
+                "name": "specific_catalog",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 64,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "information_schema",
+                  "name": "routine_column_usage"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "sql_identifier"
+                }
+              },
+              {
+                "name": "specific_schema",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 64,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "information_schema",
+                  "name": "routine_column_usage"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "sql_identifier"
+                }
+              },
+              {
+                "name": "specific_name",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 64,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "information_schema",
+                  "name": "routine_column_usage"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "sql_identifier"
+                }
+              },
+              {
+                "name": "routine_catalog",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 64,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "information_schema",
+                  "name": "routine_column_usage"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "sql_identifier"
+                }
+              },
+              {
+                "name": "routine_schema",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 64,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "information_schema",
+                  "name": "routine_column_usage"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "sql_identifier"
+                }
+              },
+              {
+                "name": "routine_name",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 64,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "information_schema",
+                  "name": "routine_column_usage"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "sql_identifier"
+                }
+              },
+              {
+                "name": "table_catalog",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 64,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "information_schema",
+                  "name": "routine_column_usage"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "sql_identifier"
+                }
+              },
+              {
+                "name": "table_schema",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 64,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "information_schema",
+                  "name": "routine_column_usage"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "sql_identifier"
+                }
+              },
+              {
+                "name": "table_name",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 64,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "information_schema",
+                  "name": "routine_column_usage"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "sql_identifier"
+                }
+              },
+              {
+                "name": "column_name",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 64,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "information_schema",
+                  "name": "routine_column_usage"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "sql_identifier"
+                }
+              }
+            ],
+            "comment": ""
+          },
+          {
+            "rel": {
+              "catalog": "pg_catalog",
+              "schema": "information_schema",
               "name": "routine_privileges"
             },
             "columns": [
@@ -43045,6 +46053,540 @@
                   "catalog": "",
                   "schema": "",
                   "name": "yes_or_no"
+                }
+              }
+            ],
+            "comment": ""
+          },
+          {
+            "rel": {
+              "catalog": "pg_catalog",
+              "schema": "information_schema",
+              "name": "routine_routine_usage"
+            },
+            "columns": [
+              {
+                "name": "specific_catalog",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 64,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "information_schema",
+                  "name": "routine_routine_usage"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "sql_identifier"
+                }
+              },
+              {
+                "name": "specific_schema",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 64,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "information_schema",
+                  "name": "routine_routine_usage"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "sql_identifier"
+                }
+              },
+              {
+                "name": "specific_name",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 64,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "information_schema",
+                  "name": "routine_routine_usage"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "sql_identifier"
+                }
+              },
+              {
+                "name": "routine_catalog",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 64,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "information_schema",
+                  "name": "routine_routine_usage"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "sql_identifier"
+                }
+              },
+              {
+                "name": "routine_schema",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 64,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "information_schema",
+                  "name": "routine_routine_usage"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "sql_identifier"
+                }
+              },
+              {
+                "name": "routine_name",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 64,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "information_schema",
+                  "name": "routine_routine_usage"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "sql_identifier"
+                }
+              }
+            ],
+            "comment": ""
+          },
+          {
+            "rel": {
+              "catalog": "pg_catalog",
+              "schema": "information_schema",
+              "name": "routine_sequence_usage"
+            },
+            "columns": [
+              {
+                "name": "specific_catalog",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 64,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "information_schema",
+                  "name": "routine_sequence_usage"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "sql_identifier"
+                }
+              },
+              {
+                "name": "specific_schema",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 64,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "information_schema",
+                  "name": "routine_sequence_usage"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "sql_identifier"
+                }
+              },
+              {
+                "name": "specific_name",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 64,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "information_schema",
+                  "name": "routine_sequence_usage"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "sql_identifier"
+                }
+              },
+              {
+                "name": "routine_catalog",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 64,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "information_schema",
+                  "name": "routine_sequence_usage"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "sql_identifier"
+                }
+              },
+              {
+                "name": "routine_schema",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 64,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "information_schema",
+                  "name": "routine_sequence_usage"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "sql_identifier"
+                }
+              },
+              {
+                "name": "routine_name",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 64,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "information_schema",
+                  "name": "routine_sequence_usage"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "sql_identifier"
+                }
+              },
+              {
+                "name": "sequence_catalog",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 64,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "information_schema",
+                  "name": "routine_sequence_usage"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "sql_identifier"
+                }
+              },
+              {
+                "name": "sequence_schema",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 64,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "information_schema",
+                  "name": "routine_sequence_usage"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "sql_identifier"
+                }
+              },
+              {
+                "name": "sequence_name",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 64,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "information_schema",
+                  "name": "routine_sequence_usage"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "sql_identifier"
+                }
+              }
+            ],
+            "comment": ""
+          },
+          {
+            "rel": {
+              "catalog": "pg_catalog",
+              "schema": "information_schema",
+              "name": "routine_table_usage"
+            },
+            "columns": [
+              {
+                "name": "specific_catalog",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 64,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "information_schema",
+                  "name": "routine_table_usage"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "sql_identifier"
+                }
+              },
+              {
+                "name": "specific_schema",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 64,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "information_schema",
+                  "name": "routine_table_usage"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "sql_identifier"
+                }
+              },
+              {
+                "name": "specific_name",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 64,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "information_schema",
+                  "name": "routine_table_usage"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "sql_identifier"
+                }
+              },
+              {
+                "name": "routine_catalog",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 64,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "information_schema",
+                  "name": "routine_table_usage"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "sql_identifier"
+                }
+              },
+              {
+                "name": "routine_schema",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 64,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "information_schema",
+                  "name": "routine_table_usage"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "sql_identifier"
+                }
+              },
+              {
+                "name": "routine_name",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 64,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "information_schema",
+                  "name": "routine_table_usage"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "sql_identifier"
+                }
+              },
+              {
+                "name": "table_catalog",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 64,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "information_schema",
+                  "name": "routine_table_usage"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "sql_identifier"
+                }
+              },
+              {
+                "name": "table_schema",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 64,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "information_schema",
+                  "name": "routine_table_usage"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "sql_identifier"
+                }
+              },
+              {
+                "name": "table_name",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": 64,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "information_schema",
+                  "name": "routine_table_usage"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "sql_identifier"
                 }
               }
             ],
@@ -46384,6 +49926,27 @@
               },
               {
                 "name": "enforced",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "pg_catalog",
+                  "schema": "information_schema",
+                  "name": "table_constraints"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "yes_or_no"
+                }
+              },
+              {
+                "name": "nulls_distinct",
                 "not_null": false,
                 "is_array": false,
                 "comment": "",

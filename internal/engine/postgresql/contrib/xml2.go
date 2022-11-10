@@ -7,183 +7,185 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 )
 
+var funcsXml2 = []*catalog.Function{
+	{
+		Name: "xml_encode_special_chars",
+		Args: []*catalog.Argument{
+			{
+				Type: &ast.TypeName{Name: "text"},
+			},
+		},
+		ReturnType: &ast.TypeName{Name: "text"},
+	},
+	{
+		Name: "xml_valid",
+		Args: []*catalog.Argument{
+			{
+				Type: &ast.TypeName{Name: "text"},
+			},
+		},
+		ReturnType: &ast.TypeName{Name: "boolean"},
+	},
+	{
+		Name: "xpath_bool",
+		Args: []*catalog.Argument{
+			{
+				Type: &ast.TypeName{Name: "text"},
+			},
+			{
+				Type: &ast.TypeName{Name: "text"},
+			},
+		},
+		ReturnType: &ast.TypeName{Name: "boolean"},
+	},
+	{
+		Name: "xpath_list",
+		Args: []*catalog.Argument{
+			{
+				Type: &ast.TypeName{Name: "text"},
+			},
+			{
+				Type: &ast.TypeName{Name: "text"},
+			},
+		},
+		ReturnType: &ast.TypeName{Name: "text"},
+	},
+	{
+		Name: "xpath_list",
+		Args: []*catalog.Argument{
+			{
+				Type: &ast.TypeName{Name: "text"},
+			},
+			{
+				Type: &ast.TypeName{Name: "text"},
+			},
+			{
+				Type: &ast.TypeName{Name: "text"},
+			},
+		},
+		ReturnType: &ast.TypeName{Name: "text"},
+	},
+	{
+		Name: "xpath_nodeset",
+		Args: []*catalog.Argument{
+			{
+				Type: &ast.TypeName{Name: "text"},
+			},
+			{
+				Type: &ast.TypeName{Name: "text"},
+			},
+		},
+		ReturnType: &ast.TypeName{Name: "text"},
+	},
+	{
+		Name: "xpath_nodeset",
+		Args: []*catalog.Argument{
+			{
+				Type: &ast.TypeName{Name: "text"},
+			},
+			{
+				Type: &ast.TypeName{Name: "text"},
+			},
+			{
+				Type: &ast.TypeName{Name: "text"},
+			},
+		},
+		ReturnType: &ast.TypeName{Name: "text"},
+	},
+	{
+		Name: "xpath_nodeset",
+		Args: []*catalog.Argument{
+			{
+				Type: &ast.TypeName{Name: "text"},
+			},
+			{
+				Type: &ast.TypeName{Name: "text"},
+			},
+			{
+				Type: &ast.TypeName{Name: "text"},
+			},
+			{
+				Type: &ast.TypeName{Name: "text"},
+			},
+		},
+		ReturnType: &ast.TypeName{Name: "text"},
+	},
+	{
+		Name: "xpath_number",
+		Args: []*catalog.Argument{
+			{
+				Type: &ast.TypeName{Name: "text"},
+			},
+			{
+				Type: &ast.TypeName{Name: "text"},
+			},
+		},
+		ReturnType: &ast.TypeName{Name: "real"},
+	},
+	{
+		Name: "xpath_string",
+		Args: []*catalog.Argument{
+			{
+				Type: &ast.TypeName{Name: "text"},
+			},
+			{
+				Type: &ast.TypeName{Name: "text"},
+			},
+		},
+		ReturnType: &ast.TypeName{Name: "text"},
+	},
+	{
+		Name: "xpath_table",
+		Args: []*catalog.Argument{
+			{
+				Type: &ast.TypeName{Name: "text"},
+			},
+			{
+				Type: &ast.TypeName{Name: "text"},
+			},
+			{
+				Type: &ast.TypeName{Name: "text"},
+			},
+			{
+				Type: &ast.TypeName{Name: "text"},
+			},
+			{
+				Type: &ast.TypeName{Name: "text"},
+			},
+		},
+		ReturnType: &ast.TypeName{Name: "record"},
+	},
+	{
+		Name: "xslt_process",
+		Args: []*catalog.Argument{
+			{
+				Type: &ast.TypeName{Name: "text"},
+			},
+			{
+				Type: &ast.TypeName{Name: "text"},
+			},
+		},
+		ReturnType: &ast.TypeName{Name: "text"},
+	},
+	{
+		Name: "xslt_process",
+		Args: []*catalog.Argument{
+			{
+				Type: &ast.TypeName{Name: "text"},
+			},
+			{
+				Type: &ast.TypeName{Name: "text"},
+			},
+			{
+				Type: &ast.TypeName{Name: "text"},
+			},
+		},
+		ReturnType: &ast.TypeName{Name: "text"},
+	},
+}
+
 func Xml2() *catalog.Schema {
 	s := &catalog.Schema{Name: "pg_catalog"}
-	s.Funcs = []*catalog.Function{
-		{
-			Name: "xml_encode_special_chars",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "text"},
-		},
-		{
-			Name: "xml_valid",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "xpath_bool",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "boolean"},
-		},
-		{
-			Name: "xpath_list",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "text"},
-		},
-		{
-			Name: "xpath_list",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "text"},
-		},
-		{
-			Name: "xpath_nodeset",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "text"},
-		},
-		{
-			Name: "xpath_nodeset",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "text"},
-		},
-		{
-			Name: "xpath_nodeset",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "text"},
-		},
-		{
-			Name: "xpath_number",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "real"},
-		},
-		{
-			Name: "xpath_string",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "text"},
-		},
-		{
-			Name: "xpath_table",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "record"},
-		},
-		{
-			Name: "xslt_process",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "text"},
-		},
-		{
-			Name: "xslt_process",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "text"},
-		},
-	}
+	s.Funcs = funcsXml2
 	return s
 }

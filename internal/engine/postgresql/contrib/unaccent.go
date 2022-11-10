@@ -7,30 +7,32 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 )
 
+var funcsUnaccent = []*catalog.Function{
+	{
+		Name: "unaccent",
+		Args: []*catalog.Argument{
+			{
+				Type: &ast.TypeName{Name: "regdictionary"},
+			},
+			{
+				Type: &ast.TypeName{Name: "text"},
+			},
+		},
+		ReturnType: &ast.TypeName{Name: "text"},
+	},
+	{
+		Name: "unaccent",
+		Args: []*catalog.Argument{
+			{
+				Type: &ast.TypeName{Name: "text"},
+			},
+		},
+		ReturnType: &ast.TypeName{Name: "text"},
+	},
+}
+
 func Unaccent() *catalog.Schema {
 	s := &catalog.Schema{Name: "pg_catalog"}
-	s.Funcs = []*catalog.Function{
-		{
-			Name: "unaccent",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "regdictionary"},
-				},
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "text"},
-		},
-		{
-			Name: "unaccent",
-			Args: []*catalog.Argument{
-				{
-					Type: &ast.TypeName{Name: "text"},
-				},
-			},
-			ReturnType: &ast.TypeName{Name: "text"},
-		},
-	}
+	s.Funcs = funcsUnaccent
 	return s
 }
