@@ -23,7 +23,8 @@ jobs:
       with:
         go-version: '1.19'
     - run: go build -o sqlc-pg-gen ./internal/tools/sqlc-pg-gen
-    - run: ./sqlc-pg-gen
+    - run: mkdir -p gen/contrib
+    - run: ./sqlc-pg-gen gen
       env:
         PG_USER: postgres
         PG_HOST: localhost

@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"flag"
 	"fmt"
 	"go/format"
 	"log"
@@ -238,6 +239,13 @@ func databaseURL() string {
 }
 
 func run(ctx context.Context) error {
+	flag.Parse()
+
+	dir := flag.Arg(0)
+	if dir == "" {
+		dir = filepath.Join("internal", "engine", "postgresql")
+	}
+
 	tmpl, err := template.New("").Parse(catalogTmpl)
 	if err != nil {
 		return err
@@ -252,12 +260,12 @@ func run(ctx context.Context) error {
 		{
 			Name:      "pg_catalog",
 			GenFnName: "genPGCatalog",
-			DestPath:  filepath.Join("internal", "engine", "postgresql", "pg_catalog.go"),
+			DestPath:  filepath.Join(dir, "pg_catalog.go"),
 		},
 		{
 			Name:      "information_schema",
 			GenFnName: "genInformationSchema",
-			DestPath:  filepath.Join("internal", "engine", "postgresql", "information_schema.go"),
+			DestPath:  filepath.Join(dir, "information_schema.go"),
 		},
 	}
 
@@ -330,7 +338,7 @@ func run(ctx context.Context) error {
 			return false
 		})
 
-		extensionPath := filepath.Join("internal", "engine", "postgresql", "contrib", name+".go")
+		extensionPath := filepath.Join(dir, "contrib", name+".go")
 		err = writeFormattedGo(tmpl, tmplCtx{
 			Pkg:        "contrib",
 			SchemaName: "pg_catalog",
@@ -349,7 +357,7 @@ func run(ctx context.Context) error {
 		return err
 	}
 
-	extensionLoaderPath := filepath.Join("internal", "engine", "postgresql", "extension.go")
+	extensionLoaderPath := filepath.Join(dir, "extension.go")
 	err = writeFormattedGo(extensionTmpl, loaded, extensionLoaderPath)
 	if err != nil {
 		return err
