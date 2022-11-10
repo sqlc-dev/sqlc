@@ -36,7 +36,8 @@
       "output_files_suffix": "",
       "emit_enum_valid_method": false,
       "emit_all_enum_values": false,
-      "inflection_exclude_table_names": []
+      "inflection_exclude_table_names": [],
+      "emit_pointers_for_null_types": false
     },
     "json": {
       "out": "gen",
