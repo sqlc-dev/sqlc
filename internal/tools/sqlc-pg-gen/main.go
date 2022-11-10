@@ -300,8 +300,7 @@ func run(ctx context.Context) error {
 
 		_, err := conn.Exec(ctx, fmt.Sprintf("CREATE EXTENSION IF NOT EXISTS \"%s\"", extension))
 		if err != nil {
-			log.Printf("error creating %s: %s", extension, err)
-			continue
+			return fmt.Errorf("error creating %s: %s", extension, err)
 		}
 
 		rows, err := conn.Query(ctx, extensionFuncs, extension)
@@ -377,16 +376,16 @@ type extensionPair struct {
 var extensions = []string{
 	"adminpack",
 	"amcheck",
-	"auth_delay",
-	"auto_explain",
-	"bloom",
+	// "auth_delay",
+	// "auto_explain",
+	// "bloom",
 	"btree_gin",
 	"btree_gist",
 	"citext",
 	"cube",
 	"dblink",
-	"dict_int",
-	"dict_xsyn",
+	// "dict_int",
+	// "dict_xsyn",
 	"earthdistance",
 	"file_fdw",
 	"fuzzystrmatch",
@@ -397,26 +396,26 @@ var extensions = []string{
 	"lo",
 	"ltree",
 	"pageinspect",
-	"passwordcheck",
+	// "passwordcheck",
 	"pg_buffercache",
-	"pgcrypto",
 	"pg_freespacemap",
 	"pg_prewarm",
-	"pgrowlocks",
 	"pg_stat_statements",
-	"pgstattuple",
 	"pg_trgm",
 	"pg_visibility",
+	"pgcrypto",
+	"pgrowlocks",
+	"pgstattuple",
 	"postgres_fdw",
 	"seg",
-	"sepgsql",
-	"spi",
+	// "sepgsql",
+	// "spi",
 	"sslinfo",
 	"tablefunc",
 	"tcn",
-	"test_decoding",
-	"tsm_system_rows",
-	"tsm_system_time",
+	// "test_decoding",
+	// "tsm_system_rows",
+	// "tsm_system_time",
 	"unaccent",
 	"uuid-ossp",
 	"xml2",
