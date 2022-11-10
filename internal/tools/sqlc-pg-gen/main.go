@@ -209,12 +209,40 @@ func preserveLegacyCatalogBehavior(allProcs []Proc) []Proc {
 	return procs
 }
 
+func databaseURL() string {
+	dburl := os.Getenv("DATABASE_URL")
+	if dburl != "" {
+		return dburl
+	}
+	pgUser := os.Getenv("PG_USER")
+	pgHost := os.Getenv("PG_HOST")
+	pgPort := os.Getenv("PG_PORT")
+	pgPass := os.Getenv("PG_PASSWORD")
+	pgDB := os.Getenv("PG_DATABASE")
+	if pgUser == "" {
+		pgUser = "postgres"
+	}
+	if pgPass == "" {
+		pgPass = "mysecretpassword"
+	}
+	if pgPort == "" {
+		pgPort = "5432"
+	}
+	if pgHost == "" {
+		pgHost = "127.0.0.1"
+	}
+	if pgDB == "" {
+		pgDB = "dinotest"
+	}
+	return fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", pgUser, pgPass, pgHost, pgPort, pgDB)
+}
+
 func run(ctx context.Context) error {
 	tmpl, err := template.New("").Parse(catalogTmpl)
 	if err != nil {
 		return err
 	}
-	conn, err := pgx.Connect(ctx, os.Getenv("DATABASE_URL"))
+	conn, err := pgx.Connect(ctx, databaseURL())
 	if err != nil {
 		return err
 	}
