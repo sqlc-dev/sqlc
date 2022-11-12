@@ -97,6 +97,10 @@ func v2ParseConfig(rd io.Reader) (Config, error) {
 				return conf, ErrPluginNotFound
 			}
 		}
+		if conf.SQL[j].ValidateOrderBy == nil {
+			defaultValidate := true
+			conf.SQL[j].ValidateOrderBy = &defaultValidate
+		}
 	}
 	return conf, nil
 }

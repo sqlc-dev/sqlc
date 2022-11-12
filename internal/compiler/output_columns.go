@@ -14,11 +14,11 @@ import (
 
 // OutputColumns determines which columns a statement will output
 func (c *Compiler) OutputColumns(stmt ast.Node) ([]*catalog.Column, error) {
-	qc, err := buildQueryCatalog(c.catalog, stmt)
+	qc, err := buildQueryCatalog(c.catalog, stmt, *c.conf.ValidateOrderBy)
 	if err != nil {
 		return nil, err
 	}
-	cols, err := outputColumns(qc, stmt)
+	cols, err := outputColumns(qc, stmt, *c.conf.ValidateOrderBy)
 	if err != nil {
 		return nil, err
 	}
@@ -50,8 +50,8 @@ func hasStarRef(cf *ast.ColumnRef) bool {
 //
 // Return an error if column references are ambiguous
 // Return an error if column references don't exist
-func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
-	tables, err := sourceTables(qc, node)
+func outputColumns(qc *QueryCatalog, node ast.Node, validateOrderBy bool) ([]*Column, error) {
+	tables, err := sourceTables(qc, node, validateOrderBy)
 	if err != nil {
 		return nil, err
 	}
@@ -72,32 +72,34 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 				}
 			}
 		}
-		if n.SortClause != nil {
-			for _, item := range n.SortClause.Items {
-				sb, ok := item.(*ast.SortBy)
-				if !ok {
-					continue
-				}
-
-				if err := findColumnForNode(sb.Node, tables, n); err != nil {
-					return nil, err
-				}
-			}
-		}
-		if n.WindowClause != nil {
-			for _, item := range n.WindowClause.Items {
-				sb, ok := item.(*ast.List)
-				if !ok {
-					continue
-				}
-				for _, single := range sb.Items {
-					caseExpr, ok := single.(*ast.CaseExpr)
+		if validateOrderBy {
+			if n.SortClause != nil {
+				for _, item := range n.SortClause.Items {
+					sb, ok := item.(*ast.SortBy)
 					if !ok {
 						continue
 					}
 
-					if err := findColumnForNode(caseExpr.Xpr, tables, n); err != nil {
+					if err := findColumnForNode(sb.Node, tables, n); err != nil {
 						return nil, err
+					}
+				}
+			}
+			if n.WindowClause != nil {
+				for _, item := range n.WindowClause.Items {
+					sb, ok := item.(*ast.List)
+					if !ok {
+						continue
+					}
+					for _, single := range sb.Items {
+						caseExpr, ok := single.(*ast.CaseExpr)
+						if !ok {
+							continue
+						}
+
+						if err := findColumnForNode(caseExpr.Xpr, tables, n); err != nil {
+							return nil, err
+						}
 					}
 				}
 			}
@@ -106,7 +108,7 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 		// For UNION queries, targets is empty and we need to look for the
 		// columns in Largs.
 		if len(targets.Items) == 0 && n.Larg != nil {
-			return outputColumns(qc, n.Larg)
+			return outputColumns(qc, n.Larg, validateOrderBy)
 		}
 	case *ast.CallStmt:
 		targets = &ast.List{}
@@ -267,7 +269,7 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 			case ast.EXISTS_SUBLINK:
 				cols = append(cols, &Column{Name: name, DataType: "bool", NotNull: true})
 			case ast.EXPR_SUBLINK:
-				subcols, err := outputColumns(qc, n.Subselect)
+				subcols, err := outputColumns(qc, n.Subselect, validateOrderBy)
 				if err != nil {
 					return nil, err
 				}
@@ -303,7 +305,7 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 			cols = append(cols, col)
 
 		case *ast.SelectStmt:
-			subcols, err := outputColumns(qc, n)
+			subcols, err := outputColumns(qc, n, validateOrderBy)
 			if err != nil {
 				return nil, err
 			}
@@ -390,7 +392,7 @@ func isTableRequired(n ast.Node, col *Column, prior int) int {
 // Return an error if column references don't exist
 // Return an error if a table is referenced twice
 // Return an error if an unknown column is referenced
-func sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, error) {
+func sourceTables(qc *QueryCatalog, node ast.Node, validateOrderBy bool) ([]*Table, error) {
 	var list *ast.List
 	switch n := node.(type) {
 	case *ast.DeleteStmt:
@@ -447,7 +449,7 @@ func sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, error) {
 			tables = append(tables, table)
 
 		case *ast.RangeSubselect:
-			cols, err := outputColumns(qc, n.Subquery)
+			cols, err := outputColumns(qc, n.Subquery, validateOrderBy)
 			if err != nil {
 				return nil, err
 			}
