@@ -81,7 +81,7 @@ func outputColumns(qc *QueryCatalog, node ast.Node, validateOrderBy bool) ([]*Co
 					}
 
 					if err := findColumnForNode(sb.Node, tables, n); err != nil {
-						return nil, err
+						return nil, fmt.Errorf("%v: if you want to skip this validation, set 'validate_order_by' to false", err)
 					}
 				}
 			}
@@ -98,7 +98,7 @@ func outputColumns(qc *QueryCatalog, node ast.Node, validateOrderBy bool) ([]*Co
 						}
 
 						if err := findColumnForNode(caseExpr.Xpr, tables, n); err != nil {
-							return nil, err
+							return nil, fmt.Errorf("%v: if you want to skip this validation, set 'validate_order_by' to false", err)
 						}
 					}
 				}
