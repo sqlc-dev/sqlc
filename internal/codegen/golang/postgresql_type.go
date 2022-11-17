@@ -206,6 +206,9 @@ func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		if notNull {
 			return "time.Time"
 		}
+		if emitPointersForNull {
+			return "*time.Time"
+		}
 		return "sql.NullTime"
 
 	case "pg_catalog.time":
@@ -214,6 +217,9 @@ func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		}
 		if notNull {
 			return "time.Time"
+		}
+		if emitPointersForNull {
+			return "*time.Time"
 		}
 		return "sql.NullTime"
 
