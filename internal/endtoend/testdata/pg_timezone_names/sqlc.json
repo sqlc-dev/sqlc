@@ -9,7 +9,7 @@
         "go": {
           "sql_package": "pgx/v4",
           "package": "querytest",
-          "out": "go_pgx"
+          "out": "go_pgx/v4"
         }
       }
     },

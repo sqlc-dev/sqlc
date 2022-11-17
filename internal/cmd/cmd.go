@@ -11,8 +11,9 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	yaml "gopkg.in/yaml.v3"
+	"gopkg.in/yaml.v3"
 
+	"github.com/kyleconroy/sqlc/internal/codegen/golang"
 	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/debug"
 	"github.com/kyleconroy/sqlc/internal/info"
@@ -110,6 +111,16 @@ func ParseEnv(c *cobra.Command) Env {
 		ExperimentalFeatures: x != nil && x.Changed,
 		DryRun:               dr != nil && dr.Changed,
 	}
+}
+
+func (e *Env) Validate(cfg *config.Config) error {
+	for _, sql := range cfg.SQL {
+		if sql.Gen.Go != nil && sql.Gen.Go.SQLPackage == golang.SQLPackagePGXV5 && !e.ExperimentalFeatures {
+			return fmt.Errorf("'pgx/v5' golang sql package requires enabled '--experimental' flag")
+		}
+	}
+
+	return nil
 }
 
 func getConfigPath(stderr io.Writer, f *pflag.Flag) (string, string) {

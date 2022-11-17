@@ -129,6 +129,11 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 		return nil, err
 	}
 
+	if err := e.Validate(conf); err != nil {
+		fmt.Fprintf(stderr, "error validating %s: %s\n", base, err)
+		return nil, err
+	}
+
 	output := map[string]string{}
 	errored := false
 
@@ -194,7 +199,7 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 			trace.Logf(ctx, "", "name=%s dir=%s plugin=%s", name, dir, lang)
 		}
 
-		result, failed := parse(ctx, e, name, dir, sql.SQL, combo, parseOpts, stderr)
+		result, failed := parse(ctx, name, dir, sql.SQL, combo, parseOpts, stderr)
 		if failed {
 			if packageRegion != nil {
 				packageRegion.End()
@@ -233,7 +238,7 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 	return output, nil
 }
 
-func parse(ctx context.Context, e Env, name, dir string, sql config.SQL, combo config.CombinedSettings, parserOpts opts.Parser, stderr io.Writer) (*compiler.Result, bool) {
+func parse(ctx context.Context, name, dir string, sql config.SQL, combo config.CombinedSettings, parserOpts opts.Parser, stderr io.Writer) (*compiler.Result, bool) {
 	if debug.Traced {
 		defer trace.StartRegion(ctx, "parse").End()
 	}
