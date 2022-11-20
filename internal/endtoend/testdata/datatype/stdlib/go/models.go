@@ -51,13 +51,13 @@ type DtDatetimeNotNull struct {
 
 type DtNetType struct {
 	A pqtype.Inet
-	B interface{}
+	B pqtype.CIDR
 	C pqtype.Macaddr
 }
 
 type DtNetTypesNotNull struct {
 	A pqtype.Inet
-	B interface{}
+	B pqtype.CIDR
 	C pqtype.Macaddr
 }
 
