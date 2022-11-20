@@ -19,6 +19,18 @@
       "queries": "query.sql",
       "gen": {
         "go": {
+          "sql_package": "pgx/v5",
+          "package": "querytest",
+          "out": "go_pgx/v5"
+        }
+      }
+    },
+    {
+      "engine": "postgresql",
+      "schema": "query.sql",
+      "queries": "query.sql",
+      "gen": {
+        "go": {
           "package": "querytest",
           "out": "go_stdlib"
         }
