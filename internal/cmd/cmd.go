@@ -1,7 +1,10 @@
 package cmd
 
 import (
+	"bufio"
+	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -9,6 +12,7 @@ import (
 	"path/filepath"
 	"runtime/trace"
 
+	"github.com/cubicdaiya/gonp"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"gopkg.in/yaml.v3"
@@ -31,6 +35,7 @@ func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int 
 	rootCmd.PersistentFlags().BoolP("experimental", "x", false, "enable experimental features (default: false)")
 
 	rootCmd.AddCommand(checkCmd)
+	rootCmd.AddCommand(diffCmd)
 	rootCmd.AddCommand(genCmd)
 	rootCmd.AddCommand(initCmd)
 	rootCmd.AddCommand(versionCmd)
@@ -196,6 +201,59 @@ var checkCmd = &cobra.Command{
 		stderr := cmd.ErrOrStderr()
 		dir, name := getConfigPath(stderr, cmd.Flag("file"))
 		if _, err := Generate(cmd.Context(), ParseEnv(cmd), dir, name, stderr); err != nil {
+			os.Exit(1)
+		}
+		return nil
+	},
+}
+
+func getLines(f []byte) []string {
+	fp := bytes.NewReader(f)
+	scanner := bufio.NewScanner(fp)
+	lines := make([]string, 0)
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+	return lines
+}
+
+var diffCmd = &cobra.Command{
+	Use:   "diff",
+	Short: "Compare the generated files to the existing files",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if debug.Traced {
+			defer trace.StartRegion(cmd.Context(), "diff").End()
+		}
+		stderr := cmd.ErrOrStderr()
+		dir, name := getConfigPath(stderr, cmd.Flag("file"))
+		output, err := Generate(cmd.Context(), ParseEnv(cmd), dir, name, stderr)
+		if err != nil {
+			os.Exit(1)
+		}
+		if debug.Traced {
+			defer trace.StartRegion(cmd.Context(), "checkfiles").End()
+		}
+		var errored bool
+		for filename, source := range output {
+			if _, err := os.Stat(filename); errors.Is(err, os.ErrNotExist) {
+				errored = true
+				// stdout message
+				continue
+			}
+			existing, err := os.ReadFile(filename)
+			if err != nil {
+				errored = true
+				fmt.Fprintf(stderr, "%s: %s\n", filename, err)
+				continue
+			}
+			diff := gonp.New(getLines(existing), getLines([]byte(source)))
+			diff.Compose()
+			uniHunks := diff.UnifiedHunks()
+			fmt.Fprintf(stderr, "--- %s\n", filename)
+			fmt.Fprintf(stderr, "+++ %s\n", filename)
+			diff.FprintUniHunks(stderr, uniHunks)
+		}
+		if errored {
 			os.Exit(1)
 		}
 		return nil
