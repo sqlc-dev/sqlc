@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -217,6 +216,25 @@ func getLines(f []byte) []string {
 	return lines
 }
 
+func filterHunks[T gonp.Elem](uniHunks []gonp.UniHunk[T]) []gonp.UniHunk[T] {
+	var out []gonp.UniHunk[T]
+	for i, uniHunk := range uniHunks {
+		var changed bool
+		for _, e := range uniHunk.GetChanges() {
+			switch e.GetType() {
+			case gonp.SesDelete:
+				changed = true
+			case gonp.SesAdd:
+				changed = true
+			}
+		}
+		if changed {
+			out = append(out, uniHunks[i])
+		}
+	}
+	return out
+}
+
 var diffCmd = &cobra.Command{
 	Use:   "diff",
 	Short: "Compare the generated files to the existing files",
@@ -226,34 +244,7 @@ var diffCmd = &cobra.Command{
 		}
 		stderr := cmd.ErrOrStderr()
 		dir, name := getConfigPath(stderr, cmd.Flag("file"))
-		output, err := Generate(cmd.Context(), ParseEnv(cmd), dir, name, stderr)
-		if err != nil {
-			os.Exit(1)
-		}
-		if debug.Traced {
-			defer trace.StartRegion(cmd.Context(), "checkfiles").End()
-		}
-		var errored bool
-		for filename, source := range output {
-			if _, err := os.Stat(filename); errors.Is(err, os.ErrNotExist) {
-				errored = true
-				// stdout message
-				continue
-			}
-			existing, err := os.ReadFile(filename)
-			if err != nil {
-				errored = true
-				fmt.Fprintf(stderr, "%s: %s\n", filename, err)
-				continue
-			}
-			diff := gonp.New(getLines(existing), getLines([]byte(source)))
-			diff.Compose()
-			uniHunks := diff.UnifiedHunks()
-			fmt.Fprintf(stderr, "--- %s\n", filename)
-			fmt.Fprintf(stderr, "+++ %s\n", filename)
-			diff.FprintUniHunks(stderr, uniHunks)
-		}
-		if errored {
+		if err := Diff(cmd.Context(), ParseEnv(cmd), dir, name, stderr); err != nil {
 			os.Exit(1)
 		}
 		return nil
