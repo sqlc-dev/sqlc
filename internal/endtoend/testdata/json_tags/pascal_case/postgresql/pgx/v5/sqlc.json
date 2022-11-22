@@ -1,0 +1,15 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "path": "go",
+      "engine": "postgresql",
+      "sql_package": "pgx/v5",
+      "name": "querytest",
+      "schema": "query.sql",
+      "queries": "query.sql",
+      "emit_json_tags": true,
+      "json_tags_case_style": "pascal"
+    }
+  ]
+}
