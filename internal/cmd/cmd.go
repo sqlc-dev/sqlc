@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"bufio"
+	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -9,6 +11,7 @@ import (
 	"path/filepath"
 	"runtime/trace"
 
+	"github.com/cubicdaiya/gonp"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"gopkg.in/yaml.v3"
@@ -31,6 +34,7 @@ func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int 
 	rootCmd.PersistentFlags().BoolP("experimental", "x", false, "enable experimental features (default: false)")
 
 	rootCmd.AddCommand(checkCmd)
+	rootCmd.AddCommand(diffCmd)
 	rootCmd.AddCommand(genCmd)
 	rootCmd.AddCommand(initCmd)
 	rootCmd.AddCommand(versionCmd)
@@ -196,6 +200,51 @@ var checkCmd = &cobra.Command{
 		stderr := cmd.ErrOrStderr()
 		dir, name := getConfigPath(stderr, cmd.Flag("file"))
 		if _, err := Generate(cmd.Context(), ParseEnv(cmd), dir, name, stderr); err != nil {
+			os.Exit(1)
+		}
+		return nil
+	},
+}
+
+func getLines(f []byte) []string {
+	fp := bytes.NewReader(f)
+	scanner := bufio.NewScanner(fp)
+	lines := make([]string, 0)
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+	return lines
+}
+
+func filterHunks[T gonp.Elem](uniHunks []gonp.UniHunk[T]) []gonp.UniHunk[T] {
+	var out []gonp.UniHunk[T]
+	for i, uniHunk := range uniHunks {
+		var changed bool
+		for _, e := range uniHunk.GetChanges() {
+			switch e.GetType() {
+			case gonp.SesDelete:
+				changed = true
+			case gonp.SesAdd:
+				changed = true
+			}
+		}
+		if changed {
+			out = append(out, uniHunks[i])
+		}
+	}
+	return out
+}
+
+var diffCmd = &cobra.Command{
+	Use:   "diff",
+	Short: "Compare the generated files to the existing files",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if debug.Traced {
+			defer trace.StartRegion(cmd.Context(), "diff").End()
+		}
+		stderr := cmd.ErrOrStderr()
+		dir, name := getConfigPath(stderr, cmd.Flag("file"))
+		if err := Diff(cmd.Context(), ParseEnv(cmd), dir, name, stderr); err != nil {
 			os.Exit(1)
 		}
 		return nil
