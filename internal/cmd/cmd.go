@@ -52,13 +52,15 @@ func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int 
 	}
 	defer cleanup()
 
-	if err := rootCmd.ExecuteContext(ctx); err == nil {
-		return 0
+	if err := rootCmd.ExecuteContext(ctx); err != nil {
+		fmt.Fprintf(stderr, "%v\n", err)
+		if exitError, ok := err.(*exec.ExitError); ok {
+			return exitError.ExitCode()
+		} else {
+			return 1
+		}
 	}
-	if exitError, ok := err.(*exec.ExitError); ok {
-		return exitError.ExitCode()
-	}
-	return 1
+	return 0
 }
 
 var version string
