@@ -72,13 +72,14 @@ var version string
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print the sqlc version number",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		defer trace.StartRegion(cmd.Context(), "version").End()
 		if version == "" {
 			fmt.Printf("%s\n", info.Version)
 		} else {
 			fmt.Printf("%s\n", version)
 		}
+		return nil
 	},
 }
 
@@ -155,22 +156,23 @@ func getConfigPath(stderr io.Writer, f *pflag.Flag) (string, string) {
 var genCmd = &cobra.Command{
 	Use:   "generate",
 	Short: "Generate Go code from SQL",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		defer trace.StartRegion(cmd.Context(), "generate").End()
 		stderr := cmd.ErrOrStderr()
 		dir, name := getConfigPath(stderr, cmd.Flag("file"))
 		output, err := Generate(cmd.Context(), ParseEnv(cmd), dir, name, stderr)
 		if err != nil {
-			os.Exit(1)
+			return err
 		}
 		defer trace.StartRegion(cmd.Context(), "writefiles").End()
 		for filename, source := range output {
 			os.MkdirAll(filepath.Dir(filename), 0755)
 			if err := os.WriteFile(filename, []byte(source), 0644); err != nil {
 				fmt.Fprintf(stderr, "%s: %s\n", filename, err)
-				os.Exit(1)
+				return err
 			}
 		}
+		return nil
 	},
 }
 
