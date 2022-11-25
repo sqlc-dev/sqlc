@@ -9,14 +9,12 @@ import (
 )
 
 var Active bool
-var Traced bool
 var Debug opts.Debug
 
 func init() {
 	Active = os.Getenv("SQLCDEBUG") != ""
 	if Active {
 		Debug = opts.DebugFromEnv()
-		Traced = Debug.Trace != ""
 	}
 }
 

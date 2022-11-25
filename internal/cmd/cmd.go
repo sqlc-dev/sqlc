@@ -45,12 +45,16 @@ func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int 
 	rootCmd.SetOut(stdout)
 	rootCmd.SetErr(stderr)
 
-	ctx, cleanup, err := tracer.Start(context.Background())
-	if err != nil {
-		fmt.Printf("failed to start trace: %v\n", err)
-		return 1
+	ctx := context.Background()
+	if debug.Debug.Trace != "" {
+		tracectx, cleanup, err := tracer.Start(ctx)
+		if err != nil {
+			fmt.Printf("failed to start trace: %v\n", err)
+			return 1
+		}
+		ctx = tracectx
+		defer cleanup()
 	}
-	defer cleanup()
 
 	if err := rootCmd.ExecuteContext(ctx); err != nil {
 		fmt.Fprintf(stderr, "%v\n", err)
@@ -69,9 +73,7 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print the sqlc version number",
 	Run: func(cmd *cobra.Command, args []string) {
-		if debug.Traced {
-			defer trace.StartRegion(cmd.Context(), "version").End()
-		}
+		defer trace.StartRegion(cmd.Context(), "version").End()
 		if version == "" {
 			fmt.Printf("%s\n", info.Version)
 		} else {
@@ -84,9 +86,7 @@ var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Create an empty sqlc.yaml settings file",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if debug.Traced {
-			defer trace.StartRegion(cmd.Context(), "init").End()
-		}
+		defer trace.StartRegion(cmd.Context(), "init").End()
 		file := "sqlc.yaml"
 		if f := cmd.Flag("file"); f != nil && f.Changed {
 			file = f.Value.String()
@@ -156,18 +156,14 @@ var genCmd = &cobra.Command{
 	Use:   "generate",
 	Short: "Generate Go code from SQL",
 	Run: func(cmd *cobra.Command, args []string) {
-		if debug.Traced {
-			defer trace.StartRegion(cmd.Context(), "generate").End()
-		}
+		defer trace.StartRegion(cmd.Context(), "generate").End()
 		stderr := cmd.ErrOrStderr()
 		dir, name := getConfigPath(stderr, cmd.Flag("file"))
 		output, err := Generate(cmd.Context(), ParseEnv(cmd), dir, name, stderr)
 		if err != nil {
 			os.Exit(1)
 		}
-		if debug.Traced {
-			defer trace.StartRegion(cmd.Context(), "writefiles").End()
-		}
+		defer trace.StartRegion(cmd.Context(), "writefiles").End()
 		for filename, source := range output {
 			os.MkdirAll(filepath.Dir(filename), 0755)
 			if err := os.WriteFile(filename, []byte(source), 0644); err != nil {
@@ -196,9 +192,7 @@ var checkCmd = &cobra.Command{
 	Use:   "compile",
 	Short: "Statically check SQL for syntax and type errors",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if debug.Traced {
-			defer trace.StartRegion(cmd.Context(), "compile").End()
-		}
+		defer trace.StartRegion(cmd.Context(), "compile").End()
 		stderr := cmd.ErrOrStderr()
 		dir, name := getConfigPath(stderr, cmd.Flag("file"))
 		if _, err := Generate(cmd.Context(), ParseEnv(cmd), dir, name, stderr); err != nil {
@@ -241,9 +235,7 @@ var diffCmd = &cobra.Command{
 	Use:   "diff",
 	Short: "Compare the generated files to the existing files",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if debug.Traced {
-			defer trace.StartRegion(cmd.Context(), "diff").End()
-		}
+		defer trace.StartRegion(cmd.Context(), "diff").End()
 		stderr := cmd.ErrOrStderr()
 		dir, name := getConfigPath(stderr, cmd.Flag("file"))
 		if err := Diff(cmd.Context(), ParseEnv(cmd), dir, name, stderr); err != nil {

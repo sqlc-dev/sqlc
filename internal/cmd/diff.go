@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	"github.com/cubicdaiya/gonp"
-	"github.com/kyleconroy/sqlc/internal/debug"
 )
 
 func Diff(ctx context.Context, e Env, dir, name string, stderr io.Writer) error {
@@ -19,9 +18,7 @@ func Diff(ctx context.Context, e Env, dir, name string, stderr io.Writer) error 
 	if err != nil {
 		return err
 	}
-	if debug.Traced {
-		defer trace.StartRegion(ctx, "checkfiles").End()
-	}
+	defer trace.StartRegion(ctx, "checkfiles").End()
 	var errored bool
 
 	keys := make([]string, 0, len(output))
