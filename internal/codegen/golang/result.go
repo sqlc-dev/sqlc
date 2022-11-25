@@ -71,7 +71,7 @@ func buildStructs(req *plugin.CodeGenRequest) []Struct {
 				})
 			}
 			s := Struct{
-				Table:   plugin.Identifier{Schema: schema.Name, Name: table.Rel.Name},
+				Table:   &plugin.Identifier{Schema: schema.Name, Name: table.Rel.Name},
 				Name:    StructName(structName, req.Settings),
 				Comment: table.Comment,
 			}
@@ -214,7 +214,7 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 					c := query.Columns[i]
 					sameName := f.Name == StructName(columnName(c, i), req.Settings)
 					sameType := f.Type == goType(req, c)
-					sameTable := sdk.SameTableName(c.Table, &s.Table, req.Catalog.DefaultSchema)
+					sameTable := sdk.SameTableName(c.Table, s.Table, req.Catalog.DefaultSchema)
 					if !sameName || !sameType || !sameTable {
 						same = false
 					}
