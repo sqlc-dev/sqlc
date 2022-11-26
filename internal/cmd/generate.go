@@ -193,17 +193,12 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 			name = sql.Plugin.Plugin
 		}
 
-		var packageRegion *trace.Region
-		if debug.Traced {
-			packageRegion = trace.StartRegion(ctx, "package")
-			trace.Logf(ctx, "", "name=%s dir=%s plugin=%s", name, dir, lang)
-		}
+		packageRegion := trace.StartRegion(ctx, "package")
+		trace.Logf(ctx, "", "name=%s dir=%s plugin=%s", name, dir, lang)
 
 		result, failed := parse(ctx, name, dir, sql.SQL, combo, parseOpts, stderr)
 		if failed {
-			if packageRegion != nil {
-				packageRegion.End()
-			}
+			packageRegion.End()
 			errored = true
 			break
 		}
@@ -213,9 +208,7 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 			fmt.Fprintf(stderr, "# package %s\n", name)
 			fmt.Fprintf(stderr, "error generating code: %s\n", err)
 			errored = true
-			if packageRegion != nil {
-				packageRegion.End()
-			}
+			packageRegion.End()
 			continue
 		}
 
@@ -227,9 +220,7 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 			filename := filepath.Join(dir, out, n)
 			output[filename] = source
 		}
-		if packageRegion != nil {
-			packageRegion.End()
-		}
+		packageRegion.End()
 	}
 
 	if errored {
@@ -239,9 +230,7 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 }
 
 func parse(ctx context.Context, name, dir string, sql config.SQL, combo config.CombinedSettings, parserOpts opts.Parser, stderr io.Writer) (*compiler.Result, bool) {
-	if debug.Traced {
-		defer trace.StartRegion(ctx, "parse").End()
-	}
+	defer trace.StartRegion(ctx, "parse").End()
 	c := compiler.NewCompiler(sql, combo)
 	if err := c.ParseCatalog(sql.Schema); err != nil {
 		fmt.Fprintf(stderr, "# package %s\n", name)
@@ -272,10 +261,7 @@ func parse(ctx context.Context, name, dir string, sql config.SQL, combo config.C
 }
 
 func codegen(ctx context.Context, combo config.CombinedSettings, sql outPair, result *compiler.Result) (string, *plugin.CodeGenResponse, error) {
-	var region *trace.Region
-	if debug.Traced {
-		region = trace.StartRegion(ctx, "codegen")
-	}
+	defer trace.StartRegion(ctx, "codegen").End()
 	req := codeGenRequest(result, combo)
 	var handler ext.Handler
 	var out string
@@ -319,8 +305,5 @@ func codegen(ctx context.Context, combo config.CombinedSettings, sql outPair, re
 		return "", nil, fmt.Errorf("missing language backend")
 	}
 	resp, err := handler.Generate(ctx, req)
-	if region != nil {
-		region.End()
-	}
 	return out, resp, err
 }

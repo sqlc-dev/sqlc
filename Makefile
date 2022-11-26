@@ -9,13 +9,16 @@ install:
 test:
 	go test ./...
 
+vet:
+	go vet ./...
+
 test-examples:
 	go test --tags=examples ./...
 
 build-endtoend:
 	cd ./internal/endtoend/testdata && go build ./...
 
-test-ci: test-examples build-endtoend
+test-ci: test-examples build-endtoend vet
 
 regen: sqlc-dev sqlc-gen-json
 	go run ./scripts/regenerate/
