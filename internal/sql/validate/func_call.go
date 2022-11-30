@@ -34,7 +34,7 @@ func (v *funcCallVisitor) Visit(node ast.Node) astutils.Visitor {
 	// Custom validation for sqlc.arg, sqlc.narg and sqlc.slice
 	// TODO: Replace this once type-checking is implemented
 	if fn.Schema == "sqlc" {
-		if !(fn.Name == "arg" || fn.Name == "narg" || fn.Name == "slice") {
+		if !(fn.Name == "arg" || fn.Name == "narg" || fn.Name == "slice" || fn.Name == "embed") {
 			v.err = sqlerr.FunctionNotFound("sqlc." + fn.Name)
 			return nil
 		}

@@ -19,6 +19,7 @@ func flatten(root ast.Node) (string, bool) {
 
 type stringWalker struct {
 	String  string
+	Parts   []string
 	IsConst bool
 }
 
@@ -28,6 +29,7 @@ func (s *stringWalker) Visit(node ast.Node) astutils.Visitor {
 	}
 	if n, ok := node.(*ast.String); ok {
 		s.String += n.Str
+		s.Parts = append(s.Parts, n.Str)
 	}
 	return s
 }

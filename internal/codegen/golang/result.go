@@ -103,6 +103,46 @@ func buildStructs(req *plugin.CodeGenRequest) []Struct {
 type goColumn struct {
 	id int
 	*plugin.Column
+	embed *goEmbed
+}
+
+type goEmbed struct {
+	modelType string
+	modelName string
+	fields    []string
+}
+
+// look through all the structs and attempt to find a matching one to embed
+// We need the name of the struct and its field names.
+func newGoEmbed(embed *plugin.Identifier, structs []Struct) *goEmbed {
+	if embed == nil {
+		return nil
+	}
+
+	for _, s := range structs {
+		embedSchema := "public"
+		if embed.Schema != "" {
+			embedSchema = embed.Schema
+		}
+
+		// compare the other attributes
+		if embed.Catalog != s.Table.Catalog || embed.Name != s.Table.Name || embedSchema != s.Table.Schema {
+			continue
+		}
+
+		fields := make([]string, len(s.Fields))
+		for i, f := range s.Fields {
+			fields[i] = f.Name
+		}
+
+		return &goEmbed{
+			modelType: s.Name,
+			modelName: s.Name,
+			fields:    fields,
+		}
+	}
+
+	return nil
 }
 
 func columnName(c *plugin.Column, pos int) string {
@@ -192,7 +232,7 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 			}
 		}
 
-		if len(query.Columns) == 1 {
+		if len(query.Columns) == 1 && query.Columns[0].EmbedTable == nil {
 			c := query.Columns[0]
 			name := columnName(c, 0)
 			if c.IsFuncCall {
@@ -234,6 +274,7 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 					columns = append(columns, goColumn{
 						id:     i,
 						Column: c,
+						embed:  newGoEmbed(c.EmbedTable, structs),
 					})
 				}
 				var err error
@@ -287,6 +328,13 @@ func columnsToStruct(req *plugin.CodeGenRequest, name string, columns []goColumn
 	for i, c := range columns {
 		colName := columnName(c.Column, i)
 		tagName := colName
+
+		// overide col/tag with expected model name
+		if c.embed != nil {
+			colName = c.embed.modelName
+			tagName = SetCaseStyle(colName, "snake")
+		}
+
 		fieldName := StructName(colName, req.Settings)
 		baseFieldName := fieldName
 		// Track suffixes by the ID of the column, so that columns referring to the same numbered parameter can be
@@ -309,13 +357,20 @@ func columnsToStruct(req *plugin.CodeGenRequest, name string, columns []goColumn
 		if req.Settings.Go.EmitJsonTags {
 			tags["json"] = JSONTagName(tagName, req.Settings)
 		}
-		gs.Fields = append(gs.Fields, Field{
+		f := Field{
 			Name:   fieldName,
 			DBName: colName,
-			Type:   goType(req, c.Column),
 			Tags:   tags,
 			Column: c.Column,
-		})
+		}
+		if c.embed == nil {
+			f.Type = goType(req, c.Column)
+		} else {
+			f.Type = c.embed.modelType
+			f.EmbedFields = c.embed.fields
+		}
+
+		gs.Fields = append(gs.Fields, f)
 		if _, found := seen[baseFieldName]; !found {
 			seen[baseFieldName] = []int{i}
 		} else {

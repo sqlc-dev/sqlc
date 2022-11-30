@@ -8,6 +8,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/astutils"
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 	"github.com/kyleconroy/sqlc/internal/sql/named"
+	"github.com/kyleconroy/sqlc/internal/sql/rewrite"
 	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
 )
 
@@ -19,7 +20,7 @@ func dataType(n *ast.TypeName) string {
 	}
 }
 
-func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, args []paramRef, params *named.ParamSet) ([]Parameter, error) {
+func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, args []paramRef, params *named.ParamSet, embeds rewrite.EmbedSet) ([]Parameter, error) {
 	c := comp.catalog
 
 	aliasMap := map[string]*ast.TableName{}
@@ -74,6 +75,22 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 		if rv.Alias != nil {
 			aliasMap[*rv.Alias.Aliasname] = fqn
 		}
+	}
+
+	// resolve a table for an embed
+	for _, embed := range embeds {
+		table, err := c.GetTable(embed.Table)
+		if err == nil {
+			embed.Table = table.Rel
+			continue
+		}
+
+		if alias, ok := aliasMap[embed.Table.Name]; ok {
+			embed.Table = alias
+			continue
+		}
+
+		return nil, fmt.Errorf("unable to resolve table with %q: %w", embed.Orig(), err)
 	}
 
 	var a []Parameter
