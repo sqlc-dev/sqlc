@@ -1,0 +1,8 @@
+version: v1
+name: github.com/kyleconroy/sqlc
+breaking:
+lint:
+  use:
+    - DEFAULT
+  except:
+    - PACKAGE_VERSION_SUFFIX
