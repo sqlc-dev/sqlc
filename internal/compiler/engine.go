@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/kyleconroy/sqlc/internal/config"
+	"github.com/kyleconroy/sqlc/internal/engine/cockroach"
 	"github.com/kyleconroy/sqlc/internal/engine/dolphin"
 	"github.com/kyleconroy/sqlc/internal/engine/postgresql"
 	"github.com/kyleconroy/sqlc/internal/engine/sqlite"
@@ -30,6 +31,9 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings) *Compiler {
 		c.catalog = dolphin.NewCatalog()
 	case config.EnginePostgreSQL:
 		c.parser = postgresql.NewParser()
+		c.catalog = postgresql.NewCatalog()
+	case config.EngineCockroachDB:
+		c.parser = cockroach.NewParser()
 		c.catalog = postgresql.NewCatalog()
 	default:
 		panic(fmt.Sprintf("unknown engine: %s", conf.Engine))
