@@ -8,12 +8,31 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 )
 
+type node interface {
+	Format(ctx *tree.FmtCtx)
+}
+
+func convertSlice[T node](nodes []T) *ast.List {
+	out := &ast.List{}
+	for _, n := range nodes {
+		out.Items = append(out.Items, convert(n))
+	}
+	return out
+}
+
+func convertAliasTableExpr(n *tree.AliasedTableExpr) ast.Node {
+	if n == nil {
+		return nil
+	}
+	return convert(n.Expr)
+}
+
 func convertCreateTable(n *tree.CreateTable) *ast.CreateTableStmt {
 	if n == nil {
 		return nil
 	}
 	create := &ast.CreateTableStmt{
-		Name:        convertTableName(n.Table),
+		Name:        convertTableName(&n.Table),
 		IfNotExists: n.IfNotExists,
 	}
 	for _, def := range n.Defs {
@@ -71,7 +90,7 @@ func convertSelect(n *tree.Select) *ast.SelectStmt {
 	switch s := n.Select.(type) {
 	case *tree.SelectClause:
 		stmt = &ast.SelectStmt{
-			FromClause: convertFrom(s.From),
+			FromClause: convertSlice(s.From.Tables),
 			TargetList: convertSelectExprs(s.Exprs),
 		}
 	default:
@@ -80,20 +99,47 @@ func convertSelect(n *tree.Select) *ast.SelectStmt {
 	return stmt
 }
 
-func convertTableName(n tree.TableName) *ast.TableName {
+func convertSelectExpr(n *tree.SelectExpr) *ast.TODO {
+	return &ast.TODO{}
+}
+
+func convertSelectExprs(nodes tree.SelectExprs) *ast.List {
+	out := &ast.List{}
+	for _, n := range nodes {
+		out.Items = append(out.Items, convert(&n))
+	}
+	return out
+}
+
+func convertTableName(n *tree.TableName) *ast.TableName {
 	name := n.ToUnresolvedObjectName()
-	return &ast.TableName{
-		Catalog: name.Parts[0],
-		Schema:  name.Parts[1],
-		Name:    name.Parts[2],
+	switch name.NumParts {
+	case 1:
+		return &ast.TableName{
+			Name: name.Parts[0],
+		}
+	case 2:
+		return &ast.TableName{
+			Schema: name.Parts[0],
+			Name:   name.Parts[1],
+		}
+	default:
+		return &ast.TableName{
+			Catalog: name.Parts[0],
+			Schema:  name.Parts[1],
+			Name:    name.Parts[2],
+		}
 	}
 }
 
-func convert(stmt tree.Statement) ast.Node {
-	if stmt == nil {
+func convert(nn node) ast.Node {
+	if nn == nil {
 		return &ast.TODO{}
 	}
-	switch n := stmt.(type) {
+	switch n := nn.(type) {
+
+	case *tree.AliasedTableExpr:
+		return convertAliasTableExpr(n)
 
 	case *tree.CreateTable:
 		return convertCreateTable(n)
@@ -106,6 +152,12 @@ func convert(stmt tree.Statement) ast.Node {
 
 	case *tree.Select:
 		return convertSelect(n)
+
+	case *tree.SelectExpr:
+		return convertSelectExpr(n)
+
+	case *tree.TableName:
+		return convertTableName(n)
 
 	default:
 		fmt.Printf("%#T\n", n)
