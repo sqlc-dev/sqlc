@@ -244,7 +244,12 @@ func parse(ctx context.Context, name, dir string, sql config.SQL, combo config.C
 		return nil, true
 	}
 	if parserOpts.Debug.DumpCatalog {
-		debug.Dump(c.Catalog())
+		catalog := c.Catalog()
+		for i, _ := range catalog.Schemas {
+			if catalog.Schemas[i].Name == catalog.DefaultSchema {
+				debug.Dump(catalog.Schemas[i])
+			}
+		}
 	}
 	if err := c.ParseQueries(sql.Queries, parserOpts); err != nil {
 		fmt.Fprintf(stderr, "# package %s\n", name)

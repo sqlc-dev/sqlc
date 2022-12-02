@@ -62,6 +62,8 @@ func goInnerType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 
 	// TODO: Extend the engine interface to handle types
 	switch req.Settings.Engine {
+	case "cockroachdb":
+		return postgresType(req, col)
 	case "mysql":
 		return mysqlType(req, col)
 	case "postgresql":
