@@ -12,6 +12,34 @@ type node interface {
 	Format(ctx *tree.FmtCtx)
 }
 
+func makeString(s string) *string {
+	if s == "" {
+		return nil
+	}
+	return &s
+}
+
+func createTableName(n *tree.TableName) *ast.TableName {
+	name := n.ToUnresolvedObjectName()
+	switch name.NumParts {
+	case 1:
+		return &ast.TableName{
+			Name: name.Parts[0],
+		}
+	case 2:
+		return &ast.TableName{
+			Schema: name.Parts[0],
+			Name:   name.Parts[1],
+		}
+	default:
+		return &ast.TableName{
+			Catalog: name.Parts[0],
+			Schema:  name.Parts[1],
+			Name:    name.Parts[2],
+		}
+	}
+}
+
 func convertSlice[T node](nodes []T) *ast.List {
 	out := &ast.List{}
 	for _, n := range nodes {
@@ -32,7 +60,7 @@ func convertCreateTable(n *tree.CreateTable) *ast.CreateTableStmt {
 		return nil
 	}
 	create := &ast.CreateTableStmt{
-		Name:        convertTableName(&n.Table),
+		Name:        createTableName(&n.Table),
 		IfNotExists: n.IfNotExists,
 	}
 	for _, def := range n.Defs {
@@ -99,8 +127,10 @@ func convertSelect(n *tree.Select) *ast.SelectStmt {
 	return stmt
 }
 
-func convertSelectExpr(n *tree.SelectExpr) *ast.TODO {
-	return &ast.TODO{}
+func convertSelectExpr(n *tree.SelectExpr) *ast.ResTarget {
+	return &ast.ResTarget{
+		Val: convert(n.Expr),
+	}
 }
 
 func convertSelectExprs(nodes tree.SelectExprs) *ast.List {
@@ -111,24 +141,38 @@ func convertSelectExprs(nodes tree.SelectExprs) *ast.List {
 	return out
 }
 
-func convertTableName(n *tree.TableName) *ast.TableName {
+func convertTableName(n *tree.TableName) *ast.RangeVar {
 	name := n.ToUnresolvedObjectName()
 	switch name.NumParts {
 	case 1:
-		return &ast.TableName{
-			Name: name.Parts[0],
+		return &ast.RangeVar{
+			Relname: makeString(name.Parts[0]),
 		}
 	case 2:
-		return &ast.TableName{
-			Schema: name.Parts[0],
-			Name:   name.Parts[1],
+		return &ast.RangeVar{
+			Schemaname: makeString(name.Parts[0]),
+			Relname:    makeString(name.Parts[1]),
 		}
 	default:
-		return &ast.TableName{
-			Catalog: name.Parts[0],
-			Schema:  name.Parts[1],
-			Name:    name.Parts[2],
+		return &ast.RangeVar{
+			Catalogname: makeString(name.Parts[0]),
+			Schemaname:  makeString(name.Parts[1]),
+			Relname:     makeString(name.Parts[2]),
 		}
+	}
+}
+
+func convertUnresolvedName(n *tree.UnresolvedName) *ast.ColumnRef {
+	items := &ast.List{}
+	for _, v := range n.Parts {
+		if v != "" {
+			items.Items = append(items.Items, &ast.String{
+				Str: v,
+			})
+		}
+	}
+	return &ast.ColumnRef{
+		Fields: items,
 	}
 }
 
@@ -158,6 +202,9 @@ func convert(nn node) ast.Node {
 
 	case *tree.TableName:
 		return convertTableName(n)
+
+	case *tree.UnresolvedName:
+		return convertUnresolvedName(n)
 
 	default:
 		fmt.Printf("%#T\n", n)
