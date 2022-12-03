@@ -68,6 +68,9 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 	if err != nil {
 		return nil, err
 	}
+
+	debug.Dump(rawSQL, name, cmd, err)
+
 	raw, namedParams, edits := rewrite.NamedParameters(c.conf.Engine, raw, numbers, dollar)
 	if err := validate.Cmd(raw.Stmt, name, cmd); err != nil {
 		return nil, err
@@ -119,6 +122,7 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 	if err != nil {
 		return nil, err
 	}
+
 	return &Query{
 		Cmd:             cmd,
 		Comments:        comments,

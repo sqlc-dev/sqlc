@@ -136,6 +136,7 @@ func argName(name string) string {
 func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error) {
 	qs := make([]Query, 0, len(req.Queries))
 	for _, query := range req.Queries {
+
 		if query.Name == "" {
 			continue
 		}
