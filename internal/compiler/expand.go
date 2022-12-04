@@ -74,6 +74,10 @@ func (c *Compiler) expandStmt(qc *QueryCatalog, raw *ast.RawStmt, node ast.Node)
 		return nil, fmt.Errorf("outputColumns: unsupported node type: %T", n)
 	}
 
+	if targets == nil {
+		targets = &ast.List{}
+	}
+
 	var edits []source.Edit
 	for _, target := range targets.Items {
 		res, ok := target.(*ast.ResTarget)

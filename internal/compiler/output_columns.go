@@ -84,9 +84,9 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 			return outputColumns(qc, n.Larg)
 		}
 	case *ast.CallStmt:
-		targets = &ast.List{}
+		// pass
 	case *ast.TruncateStmt:
-		targets = &ast.List{}
+		// pass
 	case *ast.UpdateStmt:
 		targets = n.ReturningList
 	default:
@@ -94,6 +94,10 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 	}
 
 	var cols []*Column
+
+	if targets == nil {
+		targets = &ast.List{}
+	}
 
 	for _, target := range targets.Items {
 		res, ok := target.(*ast.ResTarget)

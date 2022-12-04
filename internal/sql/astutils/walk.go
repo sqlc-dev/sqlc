@@ -111,6 +111,9 @@ func Walk(f Visitor, node ast.Node) {
 		}
 
 	case *ast.List:
+		if n == nil {
+			return
+		}
 		for _, item := range n.Items {
 			Walk(f, item)
 		}
