@@ -2,6 +2,7 @@ package cockroach
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/cockroachdb/cockroachdb-parser/pkg/sql/sem/tree"
 
@@ -111,12 +112,14 @@ func convertCreateTable(n *tree.CreateTable) *ast.CreateTableStmt {
 	for _, def := range n.Defs {
 		switch d := def.(type) {
 		case *tree.ColumnTableDef:
+			isNotNull := d.Nullable.Nullability == tree.NotNull
+			isPrimary := d.PrimaryKey.IsPrimaryKey
 			create.Cols = append(create.Cols, &ast.ColumnDef{
 				Colname: d.Name.String(),
 				TypeName: &ast.TypeName{
-					Name: "text",
+					Name: strings.ToLower(d.Type.SQLString()),
 				},
-				IsNotNull: d.Nullable.Nullability == tree.NotNull,
+				IsNotNull: isNotNull || isPrimary,
 				// IsArray:   isArray(item.ColumnDef.TypeName),
 			})
 		default:
