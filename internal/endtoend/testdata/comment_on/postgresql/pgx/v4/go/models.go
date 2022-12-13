@@ -50,7 +50,7 @@ func (ns NullFooMood) Value() (driver.Value, error) {
 	if !ns.Valid {
 		return nil, nil
 	}
-	return ns.FooMood, nil
+	return string(ns.FooMood), nil
 }
 
 // this is the bar table

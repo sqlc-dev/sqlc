@@ -49,7 +49,7 @@ func (ns NullFooBat) Value() (driver.Value, error) {
 	if !ns.Valid {
 		return nil, nil
 	}
-	return ns.FooBat, nil
+	return string(ns.FooBat), nil
 }
 
 // Table comment

@@ -52,7 +52,7 @@ func (ns NullSize) Value() (driver.Value, error) {
 	if !ns.Valid {
 		return nil, nil
 	}
-	return ns.Size, nil
+	return string(ns.Size), nil
 }
 
 type User struct {

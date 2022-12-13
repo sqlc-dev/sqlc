@@ -48,7 +48,7 @@ func (ns NullNewEvent) Value() (driver.Value, error) {
 	if !ns.Valid {
 		return nil, nil
 	}
-	return ns.NewEvent, nil
+	return string(ns.NewEvent), nil
 }
 
 type LogLine struct {

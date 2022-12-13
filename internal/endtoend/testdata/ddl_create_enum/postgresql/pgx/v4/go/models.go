@@ -58,7 +58,7 @@ func (ns NullDigit) Value() (driver.Value, error) {
 	if !ns.Valid {
 		return nil, nil
 	}
-	return ns.Digit, nil
+	return string(ns.Digit), nil
 }
 
 type Foobar string
@@ -105,7 +105,7 @@ func (ns NullFoobar) Value() (driver.Value, error) {
 	if !ns.Valid {
 		return nil, nil
 	}
-	return ns.Foobar, nil
+	return string(ns.Foobar), nil
 }
 
 type Foo struct {

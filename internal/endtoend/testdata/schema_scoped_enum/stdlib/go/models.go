@@ -48,7 +48,7 @@ func (ns NullFooTypeUserRole) Value() (driver.Value, error) {
 	if !ns.Valid {
 		return nil, nil
 	}
-	return ns.FooTypeUserRole, nil
+	return string(ns.FooTypeUserRole), nil
 }
 
 type FooUser struct {

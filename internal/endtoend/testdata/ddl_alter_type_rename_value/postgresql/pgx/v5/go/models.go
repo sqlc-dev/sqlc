@@ -48,5 +48,5 @@ func (ns NullStatus) Value() (driver.Value, error) {
 	if !ns.Valid {
 		return nil, nil
 	}
-	return ns.Status, nil
+	return string(ns.Status), nil
 }
