@@ -160,7 +160,11 @@ CREATE TABLE books (
   "overrides": [
     {
       "column": "books.data",
-      "go_type": "*example.com/db/dto.BookData"
+      "go_type": {
+          "import":"example/db",
+          "package": "dto",
+          "type":"BookData"
+        }
     }
   ]
 }
