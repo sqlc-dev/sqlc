@@ -213,13 +213,19 @@ func Combine(conf Config, pkg SQL) CombinedSettings {
 	cs := CombinedSettings{
 		Global:  conf,
 		Package: pkg,
+		Rename:  map[string]string{},
 	}
 	if conf.Gen.Go != nil {
-		cs.Rename = conf.Gen.Go.Rename
+		for k, v := range conf.Gen.Go.Rename {
+			cs.Rename[k] = v
+		}
 		cs.Overrides = append(cs.Overrides, conf.Gen.Go.Overrides...)
 	}
 	if pkg.Gen.Go != nil {
 		cs.Go = *pkg.Gen.Go
+		for k, v := range pkg.Gen.Go.Rename {
+			cs.Rename[k] = v
+		}
 		cs.Overrides = append(cs.Overrides, pkg.Gen.Go.Overrides...)
 	}
 	if pkg.Gen.JSON != nil {
