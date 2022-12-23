@@ -90,6 +90,7 @@ type GenGo struct {
 type SQL struct {
 	Engine               Engine    `json:"engine,omitempty" yaml:"engine"`
 	Schema               Paths     `json:"schema" yaml:"schema"`
+	DefaultSchema        string    `json:"default_schema" yaml:"default_schema"`
 	Queries              Paths     `json:"queries" yaml:"queries"`
 	StrictFunctionChecks bool      `json:"strict_function_checks" yaml:"strict_function_checks"`
 	Gen                  SQLGen    `json:"gen" yaml:"gen"`

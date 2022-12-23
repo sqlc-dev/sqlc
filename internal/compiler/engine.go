@@ -30,7 +30,7 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings) *Compiler {
 		c.catalog = dolphin.NewCatalog()
 	case config.EnginePostgreSQL:
 		c.parser = postgresql.NewParser()
-		c.catalog = postgresql.NewCatalog()
+		c.catalog = postgresql.NewCatalog(c.conf.DefaultSchema)
 	default:
 		panic(fmt.Sprintf("unknown engine: %s", conf.Engine))
 	}
