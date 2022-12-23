@@ -47,3 +47,5 @@ require (
 	golang.org/x/text v0.3.7 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 )
+
+replace github.com/kyleconroy/sqlc v1.16.0 => github.com/debugger84/sqlc v0.0.0-20221223152948-780b95d17d6f
