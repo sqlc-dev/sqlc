@@ -127,6 +127,16 @@ func TestTypeOverrides(t *testing.T) {
 			"string",
 			true,
 		},
+		{
+			Override{
+				DBType:   "date",
+				GoType:   GoType{Spec: "time.Time"},
+				Nullable: true,
+			},
+			"time",
+			"time.Time",
+			false,
+		},
 	} {
 		tt := test
 		t.Run(tt.override.GoType.Spec, func(t *testing.T) {
@@ -181,6 +191,7 @@ func FuzzOverride(f *testing.F) {
 		"string",
 		"github.com/gofrs/uuid.UUID",
 		"github.com/segmentio/ksuid.KSUID",
+		"time.Time",
 	} {
 		f.Add(spec)
 	}
