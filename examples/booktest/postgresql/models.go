@@ -49,7 +49,7 @@ func (ns NullBookType) Value() (driver.Value, error) {
 	if !ns.Valid {
 		return nil, nil
 	}
-	return ns.BookType, nil
+	return string(ns.BookType), nil
 }
 
 type Author struct {

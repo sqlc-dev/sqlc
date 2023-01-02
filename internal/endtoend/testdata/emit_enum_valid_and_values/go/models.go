@@ -49,7 +49,7 @@ func (ns NullIPProtocol) Value() (driver.Value, error) {
 	if !ns.Valid {
 		return nil, nil
 	}
-	return ns.IPProtocol, nil
+	return string(ns.IPProtocol), nil
 }
 
 func (e IPProtocol) Valid() bool {

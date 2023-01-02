@@ -50,7 +50,7 @@ func (ns NullVenuesStatus) Value() (driver.Value, error) {
 	if !ns.Valid {
 		return nil, nil
 	}
-	return ns.VenuesStatus, nil
+	return string(ns.VenuesStatus), nil
 }
 
 type City struct {
