@@ -161,10 +161,10 @@ CREATE TABLE books (
     {
       "column": "books.data",
       "go_type": {
-          "import":"example/db",
-          "package": "dto",
-          "type":"BookData"
-        }
+        "import":"example/db",
+        "package": "dto",
+        "type":"BookData"
+      }
     }
   ]
 }
