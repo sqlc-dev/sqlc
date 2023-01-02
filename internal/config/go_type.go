@@ -25,6 +25,10 @@ type ParsedGoType struct {
 	StructTag  string
 }
 
+const (
+	timePkg = "time.Time"
+)
+
 func (o *GoType) UnmarshalJSON(data []byte) error {
 	var spec string
 	if err := json.Unmarshal(data, &spec); err == nil {
@@ -135,7 +139,7 @@ func (gt GoType) Parse() (*ParsedGoType, error) {
 		if lastDot == -1 {
 			return nil, fmt.Errorf("Package override `go_type` specifier %q is not the proper format, expected 'package.type', e.g. 'github.com/segmentio/ksuid.KSUID'", input)
 		}
-		if lastSlash == -1 && typename != "time.Time" {
+		if lastSlash == -1 && typename != timePkg {
 			return nil, fmt.Errorf("Package override `go_type` specifier %q is not the proper format, expected 'package.type', e.g. 'github.com/segmentio/ksuid.KSUID'", input)
 		}
 		typename = input[lastSlash+1:]
