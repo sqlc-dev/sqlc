@@ -767,6 +767,16 @@ func (c *cc) convertUpdate_stmtContext(n *parser.Update_stmtContext) ast.Node {
 	}
 }
 
+func (c *cc) convertBetweenExpr(n *parser.Expr_betweenContext) ast.Node {
+	return &ast.BetweenExpr{
+		Expr:     c.convert(n.Expr(0)),
+		Left:     c.convert(n.Expr(1)),
+		Right:    c.convert(n.Expr(2)),
+		Location: n.GetStart().GetStart(),
+		Not:      n.NOT_() != nil,
+	}
+}
+
 func (c *cc) convert(node node) ast.Node {
 	switch n := node.(type) {
 
@@ -814,6 +824,9 @@ func (c *cc) convert(node node) ast.Node {
 
 	case *parser.Expr_in_selectContext:
 		return c.convertInSelectNode(n)
+
+	case *parser.Expr_betweenContext:
+		return c.convertBetweenExpr(n)
 
 	case *parser.Factored_select_stmtContext:
 		// TODO: need to handle this

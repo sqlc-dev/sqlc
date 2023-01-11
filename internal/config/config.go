@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"io"
 
-	yaml "gopkg.in/yaml.v3"
+	"gopkg.in/yaml.v3"
 )
 
 type versionSetting struct {
@@ -79,17 +79,12 @@ type Plugin struct {
 }
 
 type Gen struct {
-	Go     *GenGo     `json:"go,omitempty" yaml:"go"`
-	Kotlin *GenKotlin `json:"kotlin,omitempty" yaml:"kotlin"`
+	Go *GenGo `json:"go,omitempty" yaml:"go"`
 }
 
 type GenGo struct {
 	Overrides []Override        `json:"overrides,omitempty" yaml:"overrides"`
 	Rename    map[string]string `json:"rename,omitempty" yaml:"rename"`
-}
-
-type GenKotlin struct {
-	Rename map[string]string `json:"rename,omitempty" yaml:"rename"`
 }
 
 type SQL struct {
@@ -109,10 +104,8 @@ type Codegen struct {
 }
 
 type SQLGen struct {
-	Go     *SQLGo     `json:"go,omitempty" yaml:"go"`
-	Kotlin *SQLKotlin `json:"kotlin,omitempty" yaml:"kotlin"`
-	Python *SQLPython `json:"python,omitempty" yaml:"python"`
-	JSON   *SQLJSON   `json:"json,omitempty" yaml:"json"`
+	Go   *SQLGo   `json:"go,omitempty" yaml:"go"`
+	JSON *SQLJSON `json:"json,omitempty" yaml:"json"`
 }
 
 type SQLGo struct {
@@ -126,6 +119,7 @@ type SQLGo struct {
 	EmitResultStructPointers    bool              `json:"emit_result_struct_pointers" yaml:"emit_result_struct_pointers"`
 	EmitParamsStructPointers    bool              `json:"emit_params_struct_pointers" yaml:"emit_params_struct_pointers"`
 	EmitMethodsWithDBArgument   bool              `json:"emit_methods_with_db_argument,omitempty" yaml:"emit_methods_with_db_argument"`
+	EmitPointersForNullTypes    bool              `json:"emit_pointers_for_null_types" yaml:"emit_pointers_for_null_types"`
 	EmitEnumValidMethod         bool              `json:"emit_enum_valid_method,omitempty" yaml:"emit_enum_valid_method"`
 	EmitAllEnumValues           bool              `json:"emit_all_enum_values,omitempty" yaml:"emit_all_enum_values"`
 	JSONTagsCaseStyle           string            `json:"json_tags_case_style,omitempty" yaml:"json_tags_case_style"`
@@ -139,25 +133,6 @@ type SQLGo struct {
 	OutputQuerierFileName       string            `json:"output_querier_file_name,omitempty" yaml:"output_querier_file_name"`
 	OutputFilesSuffix           string            `json:"output_files_suffix,omitempty" yaml:"output_files_suffix"`
 	InflectionExcludeTableNames []string          `json:"inflection_exclude_table_names,omitempty" yaml:"inflection_exclude_table_names"`
-}
-
-type SQLKotlin struct {
-	EmitExactTableNames         bool     `json:"emit_exact_table_names,omitempty" yaml:"emit_exact_table_names"`
-	Package                     string   `json:"package" yaml:"package"`
-	Out                         string   `json:"out" yaml:"out"`
-	InflectionExcludeTableNames []string `json:"inflection_exclude_table_names,omitempty" yaml:"inflection_exclude_table_names"`
-}
-
-type SQLPython struct {
-	EmitExactTableNames         bool       `json:"emit_exact_table_names" yaml:"emit_exact_table_names"`
-	EmitSyncQuerier             bool       `json:"emit_sync_querier" yaml:"emit_sync_querier"`
-	EmitAsyncQuerier            bool       `json:"emit_async_querier" yaml:"emit_async_querier"`
-	Package                     string     `json:"package" yaml:"package"`
-	Out                         string     `json:"out" yaml:"out"`
-	Overrides                   []Override `json:"overrides,omitempty" yaml:"overrides"`
-	EmitPydanticModels          bool       `json:"emit_pydantic_models,omitempty" yaml:"emit_pydantic_models"`
-	QueryParameterLimit         *int32     `json:"query_parameter_limit,omitempty" yaml:"query_parameter_limit"`
-	InflectionExcludeTableNames []string   `json:"inflection_exclude_table_names,omitempty" yaml:"inflection_exclude_table_names"`
 }
 
 type SQLJSON struct {
@@ -226,8 +201,6 @@ type CombinedSettings struct {
 	Global    Config
 	Package   SQL
 	Go        SQLGo
-	Kotlin    SQLKotlin
-	Python    SQLPython
 	JSON      SQLJSON
 	Rename    map[string]string
 	Overrides []Override
@@ -245,19 +218,9 @@ func Combine(conf Config, pkg SQL) CombinedSettings {
 		cs.Rename = conf.Gen.Go.Rename
 		cs.Overrides = append(cs.Overrides, conf.Gen.Go.Overrides...)
 	}
-	if conf.Gen.Kotlin != nil {
-		cs.Rename = conf.Gen.Kotlin.Rename
-	}
 	if pkg.Gen.Go != nil {
 		cs.Go = *pkg.Gen.Go
 		cs.Overrides = append(cs.Overrides, pkg.Gen.Go.Overrides...)
-	}
-	if pkg.Gen.Kotlin != nil {
-		cs.Kotlin = *pkg.Gen.Kotlin
-	}
-	if pkg.Gen.Python != nil {
-		cs.Python = *pkg.Gen.Python
-		cs.Overrides = append(cs.Overrides, pkg.Gen.Python.Overrides...)
 	}
 	if pkg.Gen.JSON != nil {
 		cs.JSON = *pkg.Gen.JSON

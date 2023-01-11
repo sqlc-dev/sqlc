@@ -22,7 +22,7 @@ copyright = '2021, Kyle Conroy'
 author = 'Kyle Conroy'
 
 # The full version, including alpha/beta/rc tags
-release = '1.15.0'
+release = '1.16.0'
 
 
 # -- General configuration ---------------------------------------------------

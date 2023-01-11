@@ -9,6 +9,7 @@ body:
       description: What version of sqlc are you running? If you don't know, run `sqlc version`.
       multiple: false
       options:
+        - 1.16.0
         - 1.15.0
         - 1.14.0
         - 1.13.0

@@ -18,7 +18,7 @@ import (
 type tmplCtx struct {
 	Q           string
 	Package     string
-	SQLPackage  SQLPackage
+	SQLDriver   SQLDriver
 	Enums       []Enum
 	Structs     []Struct
 	GoQueries   []Query
@@ -91,7 +91,7 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 		EmitAllEnumValues:         golang.EmitAllEnumValues,
 		UsesCopyFrom:              usesCopyFrom(queries),
 		UsesBatch:                 usesBatch(queries),
-		SQLPackage:                SQLPackageFromString(golang.SqlPackage),
+		SQLDriver:                 parseDriver(golang.SqlPackage),
 		Q:                         "`",
 		Package:                   golang.Package,
 		GoQueries:                 queries,
@@ -100,11 +100,11 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 		SqlcVersion:               req.SqlcVersion,
 	}
 
-	if tctx.UsesCopyFrom && tctx.SQLPackage != SQLPackagePGX {
+	if tctx.UsesCopyFrom && !tctx.SQLDriver.IsPGX() {
 		return nil, errors.New(":copyfrom is only supported by pgx")
 	}
 
-	if tctx.UsesBatch && tctx.SQLPackage != SQLPackagePGX {
+	if tctx.UsesBatch && !tctx.SQLDriver.IsPGX() {
 		return nil, errors.New(":batch* commands are only supported by pgx")
 	}
 

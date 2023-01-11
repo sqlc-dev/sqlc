@@ -9,7 +9,7 @@ import (
 )
 
 type Struct struct {
-	Table   plugin.Identifier
+	Table   *plugin.Identifier
 	Name    string
 	Fields  []Field
 	Comment string

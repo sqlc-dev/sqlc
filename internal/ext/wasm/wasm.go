@@ -8,6 +8,7 @@ import (
 	"context"
 	"crypto/sha256"
 	_ "embed"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -18,14 +19,14 @@ import (
 	"runtime/trace"
 	"strings"
 
-	wasmtime "github.com/bytecodealliance/wasmtime-go"
+	wasmtime "github.com/bytecodealliance/wasmtime-go/v3"
 
 	"github.com/kyleconroy/sqlc/internal/info"
 	"github.com/kyleconroy/sqlc/internal/plugin"
 )
 
 // This version must be updated whenever the wasmtime-go dependency is updated
-const wasmtimeVersion = `v1.0.0`
+const wasmtimeVersion = `v3.0.2`
 
 func cacheDir() (string, error) {
 	cache := os.Getenv("SQLCCACHE")
@@ -252,6 +253,11 @@ func (r *Runner) Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plu
 	_, err = nom.Call(store)
 	callRegion.End()
 	if err != nil {
+		// Print WASM stdout
+		stderrBlob, err := os.ReadFile(stderrPath)
+		if err == nil && len(stderrBlob) > 0 {
+			return nil, errors.New(string(stderrBlob))
+		}
 		return nil, fmt.Errorf("call: %w", err)
 	}
 

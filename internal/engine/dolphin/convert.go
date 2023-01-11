@@ -44,9 +44,9 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 			for _, def := range spec.NewColumns {
 				name := def.Name.String()
 				columnDef := ast.ColumnDef{
-					Colname:    def.Name.String(),
-					TypeName:   &ast.TypeName{Name: types.TypeStr(def.Tp.GetType())},
-					IsNotNull:  isNotNull(def),
+					Colname:   def.Name.String(),
+					TypeName:  &ast.TypeName{Name: types.TypeToStr(def.Tp.GetType(), def.Tp.GetCharset())},
+					IsNotNull: isNotNull(def),
 					IsUnsigned: isUnsigned(def),
 				}
 				if def.Tp.GetFlen() >= 0 {
@@ -78,9 +78,9 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 			for _, def := range spec.NewColumns {
 				name := def.Name.String()
 				columnDef := ast.ColumnDef{
-					Colname:    def.Name.String(),
-					TypeName:   &ast.TypeName{Name: types.TypeStr(def.Tp.GetType())},
-					IsNotNull:  isNotNull(def),
+					Colname:   def.Name.String(),
+					TypeName:  &ast.TypeName{Name: types.TypeToStr(def.Tp.GetType(), def.Tp.GetCharset())},
+					IsNotNull: isNotNull(def),
 					IsUnsigned: isUnsigned(def),
 				}
 				if def.Tp.GetFlen() >= 0 {
@@ -98,9 +98,9 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 			for _, def := range spec.NewColumns {
 				name := def.Name.String()
 				columnDef := ast.ColumnDef{
-					Colname:    def.Name.String(),
-					TypeName:   &ast.TypeName{Name: types.TypeStr(def.Tp.GetType())},
-					IsNotNull:  isNotNull(def),
+					Colname:   def.Name.String(),
+					TypeName:  &ast.TypeName{Name: types.TypeToStr(def.Tp.GetType(), def.Tp.GetCharset())},
+					IsNotNull: isNotNull(def),
 					IsUnsigned: isUnsigned(def),
 				}
 				if def.Tp.GetFlen() >= 0 {
@@ -268,12 +268,26 @@ func (c *cc) convertCreateTableStmt(n *pcast.CreateTableStmt) ast.Node {
 			}
 		}
 		columnDef := ast.ColumnDef{
+<<<<<<< HEAD
 			Colname:    def.Name.String(),
 			TypeName:   &ast.TypeName{Name: types.TypeStr(def.Tp.GetType())},
 			IsNotNull:  isNotNull(def),
 			IsUnsigned: isUnsigned(def),
 			Comment:    comment,
 			Vals:       vals,
+||||||| c3fea587
+			Colname:   def.Name.String(),
+			TypeName:  &ast.TypeName{Name: types.TypeStr(def.Tp.GetType())},
+			IsNotNull: isNotNull(def),
+			Comment:   comment,
+			Vals:      vals,
+=======
+			Colname:   def.Name.String(),
+			TypeName:  &ast.TypeName{Name: types.TypeToStr(def.Tp.GetType(), def.Tp.GetCharset())},
+			IsNotNull: isNotNull(def),
+			Comment:   comment,
+			Vals:      vals,
+>>>>>>> upstream/main
 		}
 		if def.Tp.GetFlen() >= 0 {
 			length := def.Tp.GetFlen()

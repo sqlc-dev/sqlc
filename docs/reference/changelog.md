@@ -1,6 +1,78 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.16.0](https://github.com/kyleconroy/sqlc/releases/tag/1.16.0)
+Released 2022-11-09
+
+
+### Bug Fixes
+
+- (validate) Sqlc.arg & sqlc.narg are not "missing" (#1814)
+- Emit correct comment for nullable enums (#1819)
+- 🐛 Correctly switch `coalesce()` result `.NotNull` value (#1664)
+- Prevent batch infinite loop with arg length (#1794)
+- Support version 2 in error message (#1839)
+- Handle empty column list in postgresql (#1843)
+- Batch imports filter queries, update cmds having ret type (#1842)
+- Named params contribute to batch parameter count (#1841)
+
+### Documentation
+
+- Add a getting started guide for SQLite (#1798)
+- Various readability improvements (#1854)
+- Add documentation for codegen plugins (#1904)
+- Update migration guides with links (#1933)
+
+### Features
+
+- Add HAVING support to MySQL (#1806)
+
+### Miscellaneous Tasks
+
+- Upgrade wasmtime version (#1827)
+- Bump wasmtime version to v1.0.0 (#1869)
+
+### Build
+
+- (deps) Bump github.com/jackc/pgconn from 1.12.1 to 1.13.0 (#1785)
+- (deps) Bump github.com/mattn/go-sqlite3 from 1.14.13 to 1.14.15 (#1799)
+- (deps) Bump github.com/jackc/pgx/v4 from 4.16.1 to 4.17.0 (#1786)
+- (deps) Bump github.com/jackc/pgx/v4 from 4.17.0 to 4.17.1 (#1825)
+- (deps) Bump github.com/bytecodealliance/wasmtime-go (#1826)
+- (deps) Bump github.com/jackc/pgx/v4 from 4.17.1 to 4.17.2 (#1831)
+- (deps) Bump golang from 1.19.0 to 1.19.1 (#1834)
+- (deps) Bump github.com/google/go-cmp from 0.5.8 to 0.5.9 (#1838)
+- (deps) Bump github.com/lib/pq from 1.10.6 to 1.10.7 (#1835)
+- (deps) Bump github.com/bytecodealliance/wasmtime-go (#1857)
+- (deps) Bump github.com/spf13/cobra from 1.5.0 to 1.6.0 (#1893)
+- (deps) Bump golang from 1.19.1 to 1.19.3 (#1920)
+
+### Cmd/sqlc
+
+- Bump to v1.16.0
+
+### Codgen
+
+- Include serialized codegen options (#1890)
+
+### Compiler
+
+- Move Kotlin parameter logic into codegen (#1910)
+
+### Examples
+
+- Port Python examples to WASM plugin (#1903)
+
+### Pg-gen
+
+- Make sqlc-pg-gen the complete source of truth for pg_catalog.go (#1809)
+- Implement information_schema shema (#1815)
+
+### Python
+
+- Port all Python tests to sqlc-gen-python (#1907)
+- Upgrade to sqlc-gen-python v1.0.0 (#1932)
+
 ## [1.15.0](https://github.com/kyleconroy/sqlc/releases/tag/1.15.0)
 Released 2022-08-07
 
