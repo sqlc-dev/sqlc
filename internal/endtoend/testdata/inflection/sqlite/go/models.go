@@ -6,6 +6,10 @@ package querytest
 
 import ()
 
+type Calorie struct {
+	ID string
+}
+
 type Campus struct {
 	ID string
 }
