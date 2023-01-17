@@ -26,7 +26,7 @@ import (
 )
 
 type DBTX interface {
-	ExecContext(context.Context, string, ...interface{}) error
+	ExecContext(context.Context, string, ...interface{}) (sql.Result, error)
 }
 
 func New(db DBTX) *Queries {
@@ -52,6 +52,12 @@ func (q *Queries) UpdateAuthorBios(ctx context.Context, bio string) error {
 If your query has more than one parameter, your Go method will accept a
 `Params` struct.
 
+```sql
+-- name: UpdateAuthor :exec
+UPDATE authors SET bio = $2
+WHERE id = $1;
+```
+
 ```go
 package db
 
@@ -61,7 +67,7 @@ import (
 )
 
 type DBTX interface {
-	ExecContext(context.Context, string, ...interface{}) error
+	ExecContext(context.Context, string, ...interface{}) (sql.Result, error)
 }
 
 func New(db DBTX) *Queries {

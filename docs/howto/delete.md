@@ -19,7 +19,7 @@ import (
 )
 
 type DBTX interface {
-	ExecContext(context.Context, string, ...interface{}) error
+	ExecContext(context.Context, string, ...interface{}) (sql.Result, error)
 }
 
 func New(db DBTX) *Queries {
