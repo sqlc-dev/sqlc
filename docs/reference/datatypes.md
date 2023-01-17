@@ -133,6 +133,18 @@ type Author struct {
 }
 ```
 
+For MySQL, there is no native `uuid` data type. When using `UUID_TO_BIN` to store a `UUID()`, the underlying field type is `BINARY(16)` which by default sqlc would interpret this to `sql.NullString`. To have sqlc automatically convert these fields to a `uuid.UUID` type, use an overide on the column storing the `uuid`.
+```json
+{
+  "overrides": [
+    {
+      "column": "*.uuid",
+      "go_type": "github.com/google/uuid.UUID"
+    }
+  ]
+}
+```
+
 ## JSON
 
 By default, sqlc will generate the `[]byte`, `pgtype.JSON` or `json.RawMessage` for JSON column type.
