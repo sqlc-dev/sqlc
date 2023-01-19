@@ -44,6 +44,7 @@ func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int 
 	rootCmd.SetIn(stdin)
 	rootCmd.SetOut(stdout)
 	rootCmd.SetErr(stderr)
+	rootCmd.SilenceErrors = true
 
 	ctx := context.Background()
 	if debug.Debug.Trace != "" {
@@ -55,9 +56,7 @@ func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int 
 		ctx = tracectx
 		defer cleanup()
 	}
-
 	if err := rootCmd.ExecuteContext(ctx); err != nil {
-		fmt.Fprintf(stderr, "%v\n", err)
 		if exitError, ok := err.(*exec.ExitError); ok {
 			return exitError.ExitCode()
 		} else {

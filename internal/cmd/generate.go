@@ -8,8 +8,12 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 	"runtime/trace"
 	"strings"
+	"sync"
+
+	"golang.org/x/sync/errgroup"
 
 	"github.com/kyleconroy/sqlc/internal/codegen/golang"
 	"github.com/kyleconroy/sqlc/internal/codegen/json"
@@ -159,71 +163,94 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 		}
 	}
 
-	for _, sql := range pairs {
-		combo := config.Combine(*conf, sql.SQL)
-		if sql.Plugin != nil {
-			combo.Codegen = *sql.Plugin
-		}
+	var m sync.Mutex
+	grp, gctx := errgroup.WithContext(ctx)
+	grp.SetLimit(runtime.GOMAXPROCS(0))
 
-		// TODO: This feels like a hack that will bite us later
-		joined := make([]string, 0, len(sql.Schema))
-		for _, s := range sql.Schema {
-			joined = append(joined, filepath.Join(dir, s))
-		}
-		sql.Schema = joined
+	stderrs := make([]bytes.Buffer, len(pairs))
 
-		joined = make([]string, 0, len(sql.Queries))
-		for _, q := range sql.Queries {
-			joined = append(joined, filepath.Join(dir, q))
-		}
-		sql.Queries = joined
+	for i, pair := range pairs {
+		sql := pair
+		errout := &stderrs[i]
 
-		var name, lang string
-		parseOpts := opts.Parser{
-			Debug: debug.Debug,
-		}
+		grp.Go(func() error {
+			combo := config.Combine(*conf, sql.SQL)
+			if sql.Plugin != nil {
+				combo.Codegen = *sql.Plugin
+			}
 
-		switch {
-		case sql.Gen.Go != nil:
-			name = combo.Go.Package
-			lang = "golang"
+			// TODO: This feels like a hack that will bite us later
+			joined := make([]string, 0, len(sql.Schema))
+			for _, s := range sql.Schema {
+				joined = append(joined, filepath.Join(dir, s))
+			}
+			sql.Schema = joined
 
-		case sql.Plugin != nil:
-			lang = fmt.Sprintf("process:%s", sql.Plugin.Plugin)
-			name = sql.Plugin.Plugin
-		}
+			joined = make([]string, 0, len(sql.Queries))
+			for _, q := range sql.Queries {
+				joined = append(joined, filepath.Join(dir, q))
+			}
+			sql.Queries = joined
 
-		packageRegion := trace.StartRegion(ctx, "package")
-		trace.Logf(ctx, "", "name=%s dir=%s plugin=%s", name, dir, lang)
+			var name, lang string
+			parseOpts := opts.Parser{
+				Debug: debug.Debug,
+			}
 
-		result, failed := parse(ctx, name, dir, sql.SQL, combo, parseOpts, stderr)
-		if failed {
+			switch {
+			case sql.Gen.Go != nil:
+				name = combo.Go.Package
+				lang = "golang"
+
+			case sql.Plugin != nil:
+				lang = fmt.Sprintf("process:%s", sql.Plugin.Plugin)
+				name = sql.Plugin.Plugin
+			}
+
+			packageRegion := trace.StartRegion(gctx, "package")
+			trace.Logf(gctx, "", "name=%s dir=%s plugin=%s", name, dir, lang)
+
+			result, failed := parse(gctx, name, dir, sql.SQL, combo, parseOpts, errout)
+			if failed {
+				packageRegion.End()
+				errored = true
+				return nil
+			}
+
+			out, resp, err := codegen(gctx, combo, sql, result)
+			if err != nil {
+				fmt.Fprintf(errout, "# package %s\n", name)
+				fmt.Fprintf(errout, "error generating code: %s\n", err)
+				errored = true
+				packageRegion.End()
+				return nil
+			}
+
+			files := map[string]string{}
+			for _, file := range resp.Files {
+				files[file.Name] = string(file.Contents)
+			}
+
+			m.Lock()
+			for n, source := range files {
+				filename := filepath.Join(dir, out, n)
+				output[filename] = source
+			}
+			m.Unlock()
+
 			packageRegion.End()
-			errored = true
-			break
-		}
-
-		out, resp, err := codegen(ctx, combo, sql, result)
-		if err != nil {
-			fmt.Fprintf(stderr, "# package %s\n", name)
-			fmt.Fprintf(stderr, "error generating code: %s\n", err)
-			errored = true
-			packageRegion.End()
-			continue
-		}
-
-		files := map[string]string{}
-		for _, file := range resp.Files {
-			files[file.Name] = string(file.Contents)
-		}
-		for n, source := range files {
-			filename := filepath.Join(dir, out, n)
-			output[filename] = source
-		}
-		packageRegion.End()
+			return nil
+		})
 	}
-
+	if err := grp.Wait(); err != nil {
+		return nil, err
+	}
 	if errored {
+		for i, _ := range stderrs {
+			if _, err := io.Copy(stderr, &stderrs[i]); err != nil {
+				return nil, err
+			}
+		}
 		return nil, fmt.Errorf("errored")
 	}
 	return output, nil
