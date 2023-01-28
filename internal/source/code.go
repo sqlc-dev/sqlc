@@ -47,7 +47,8 @@ func LineNumber(source string, head int) (int, int) {
 func Pluck(source string, location, length int) (string, error) {
 	head := location
 	tail := location + length
-	return source[head:tail], nil
+	runes := []rune(source)
+	return string(runes[head:tail]), nil
 }
 
 func Mutate(raw string, a []Edit) (string, error) {
@@ -57,7 +58,7 @@ func Mutate(raw string, a []Edit) (string, error) {
 
 	sort.Slice(a, func(i, j int) bool { return a[i].Location > a[j].Location })
 
-	s := raw
+	s := []rune(raw)
 	for idx, edit := range a {
 		start := edit.Location
 		if start > len(s) || start < 0 {
@@ -78,9 +79,9 @@ func Mutate(raw string, a []Edit) (string, error) {
 			}
 		}
 
-		s = s[:start] + edit.New + s[stop:]
+		s = append(append(s[:start], []rune(edit.New)...), s[stop:]...)
 	}
-	return s, nil
+	return string(s), nil
 }
 
 func StripComments(sql string) (string, []string, error) {
