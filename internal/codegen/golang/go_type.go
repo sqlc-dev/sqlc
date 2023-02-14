@@ -1,6 +1,8 @@
 package golang
 
 import (
+	"fmt"
+
 	"github.com/kyleconroy/sqlc/internal/codegen/sdk"
 	"github.com/kyleconroy/sqlc/internal/plugin"
 )
@@ -47,7 +49,17 @@ func goType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		}
 
 		if parseDriver(req.Settings.Go.SqlPackage) == SQLDriverPGXV5 {
-			return "pgtype.Array[" + typ + "]"
+			if col.ArrayBounds == 1 {
+				return "pgtype.FlatArray[" + typ + "]"
+			}
+
+			return fmt.Sprintf(`pgtype.Array[%s]{
+				Dims: []ArrayDimension{
+					Length: %d,
+					LowerBound: %d,
+				},
+				Valid: true,
+			}`, typ, col.ArrayBounds, col.ArrayBounds)
 		}
 
 		return "[]" + typ
