@@ -19,18 +19,6 @@ import (
 
 var ErrUnsupportedStatementType = errors.New("parseQuery: unsupported statement type")
 
-func rewriteNumberedParameters(refs []paramRef, raw *ast.RawStmt, sql string) ([]source.Edit, error) {
-	edits := make([]source.Edit, len(refs))
-	for i, ref := range refs {
-		edits[i] = source.Edit{
-			Location: ref.ref.Location - raw.StmtLocation,
-			Old:      fmt.Sprintf("$%d", ref.ref.Number),
-			New:      "?",
-		}
-	}
-	return edits, nil
-}
-
 func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query, error) {
 	if o.Debug.DumpAST {
 		debug.Dump(stmt)
@@ -80,28 +68,20 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 	if err != nil {
 		return nil, err
 	}
+	raw, namedParams, edits := rewrite.NamedParameters(c.conf.Engine, raw, numbers, dollar)
 	if err := validate.Cmd(raw.Stmt, name, cmd); err != nil {
 		return nil, err
 	}
-
-	raw, namedParams, edits := rewrite.NamedParameters(c.conf.Engine, raw, numbers, dollar)
 	rvs := rangeVars(raw.Stmt)
 	refs, err := findParameters(raw.Stmt)
 	if err != nil {
 		return nil, err
 	}
-	if o.UsePositionalParameters {
-		edits, err = rewriteNumberedParameters(refs, raw, rawSQL)
-		if err != nil {
-			return nil, err
-		}
+	refs = uniqueParamRefs(refs, dollar)
+	if c.conf.Engine == config.EngineMySQL || !dollar {
+		sort.Slice(refs, func(i, j int) bool { return refs[i].ref.Location < refs[j].ref.Location })
 	} else {
-		refs = uniqueParamRefs(refs, dollar)
-		if c.conf.Engine == config.EngineMySQL || !dollar {
-			sort.Slice(refs, func(i, j int) bool { return refs[i].ref.Location < refs[j].ref.Location })
-		} else {
-			sort.Slice(refs, func(i, j int) bool { return refs[i].ref.Number < refs[j].ref.Number })
-		}
+		sort.Slice(refs, func(i, j int) bool { return refs[i].ref.Number < refs[j].ref.Number })
 	}
 	qc, err := buildQueryCatalog(c.catalog, raw.Stmt)
 	if err != nil {

@@ -1,7 +1,7 @@
 # Configuration
 
-The `sqlc` tool is configured via a `sqlc.yaml` or `sqlc.json` file. This file must be
-in the directory where the `sqlc` command is run.
+The `sqlc` tool is configured via a `sqlc.yaml` or `sqlc.json` file. This
+file must be in the directory where the `sqlc` command is run.
 
 ## Version 2
 
@@ -34,10 +34,44 @@ Each mapping in the `sql` collection has the following keys:
   - Directory of SQL migrations or path to single SQL file; or a list of paths.
 - `queries`:
   - Directory of SQL queries or path to single SQL file; or a list of paths.
+- `codegen`:
+  - A colleciton of mappings to configure code generators. See [codegen](#codegen) for the supported keys.
 - `gen`:
-  - A mapping to configure built-in code generators. Supports the following keys:
+  - A mapping to configure built-in code generators. See [gen](#gen) for the supported keys.
 - `strict_function_checks`
   - If true, return an error if a called SQL function does not exist. Defaults to `false`.
+  - 
+### codegen
+
+The `codegen` mapping supports the following keys:
+
+- `out`:
+  - Output directory for generated code.
+- `plugin`:
+  - The name of the plugin. Must be defined in the `plugins` collection.
+- `options`:
+  - A mapping of plugin-specific options.
+
+```yaml
+version: '2'
+plugins:
+- name: py
+  wasm:
+    url: https://github.com/tabbed/sqlc-gen-python/releases/download/v0.16.0-alpha/sqlc-gen-python.wasm
+    sha256: 428476c7408fd4c032da4ec74e8a7344f4fa75e0f98a5a3302f238283b9b95f2
+sql:
+- schema: "schema.sql"
+  queries: "query.sql"
+  engine: postgresql
+  codegen:
+  - out: src/authors
+    plugin: py
+    options:
+      package: authors
+      emit_sync_querier: true
+      emit_async_querier: true
+      query_parameter_limit: 5
+```
   
 ### gen
 
@@ -50,7 +84,7 @@ The `gen` mapping supports the following keys:
 - `out`:
   - Output directory for generated code.
 - `sql_package`:
-  - Either `pgx/v4` or `database/sql`. Defaults to `database/sql`.
+  - Either `pgx/v4`, `pgx/v5` or `database/sql`. Defaults to `database/sql`.
 - `emit_db_tags`:
   - If true, add DB tags to generated structs. Defaults to `false`.
 - `emit_prepared_queries`:
@@ -223,10 +257,27 @@ Each mapping in the `plugins` collection has the following keys:
 
 - `name`:
   - The name of this plugin. Required
-- `process`:
+- `process`: A mapping with a single `cmd` key
   - `cmd`:
     - The executable to call when using this plugin
-  
+- `wasm`: A mapping with a two keys `url` and `sha256`
+  - `url`:
+    - The URL to fetch the WASM file. Supports the `https://` or `file://` schemes.
+  - `sha256`
+    - The SHA256 checksum for the downloaded file.
+   
+```yaml
+version: 2
+plugins:
+- name: "py"
+  wasm: 
+    url: "https://github.com/tabbed/sqlc-gen-python/releases/download/v0.16.0-alpha/sqlc-gen-python.wasm"
+    sha256: "428476c7408fd4c032da4ec74e8a7344f4fa75e0f98a5a3302f238283b9b95f2"
+- name: "js"
+  process: 
+    cmd: "sqlc-gen-json"
+```
+ 
 ### global overrides
 
 Sometimes, the same configuration must be done across various specfications of code generation.
@@ -239,7 +290,7 @@ overrides:
     rename:
       id: "Identifier"
     overrides:
-      - db_type: "timestampz"
+      - db_type: "timestamptz"
         nullable: true
         engine: "postgresql"
         go_type:
@@ -288,6 +339,7 @@ packages:
     emit_result_struct_pointers: false
     emit_params_struct_pointers: false
     emit_methods_with_db_argument: false
+    emit_pointers_for_null_types: false
     emit_enum_valid_method: false
     emit_all_enum_values: false
     json_tags_case_style: "camel"
@@ -311,7 +363,7 @@ Each mapping in the `packages` collection has the following keys:
 - `engine`:
   - Either `postgresql` or `mysql`. Defaults to `postgresql`.
 - `sql_package`:
-  - Either `pgx/v4` or `database/sql`. Defaults to `database/sql`.
+  - Either `pgx/v4`, `pgx/v5` or `database/sql`. Defaults to `database/sql`.
 - `emit_db_tags`:
   - If true, add DB tags to generated structs. Defaults to `false`.
 - `emit_prepared_queries`:
@@ -332,6 +384,8 @@ Each mapping in the `packages` collection has the following keys:
   - If true, parameters are passed as pointers to structs. Defaults to `false`.
 - `emit_methods_with_db_argument`:
   - If true, generated methods will accept a DBTX argument instead of storing a DBTX on the `*Queries` struct. Defaults to `false`.
+- `emit_pointers_for_null_types`:
+  - If true and `sql_package` is set to `pgx/v4`, generated types for nullable columns are emitted as pointers (ie. `*string`) instead of `database/sql` null types (ie. `NullString`). Defaults to `false`.
 - `emit_enum_valid_method`:
   - If true, generate a Valid method on enum types,
     indicating whether a string is a valid enum value.

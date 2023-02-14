@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"flag"
 	"fmt"
 	"go/format"
 	"log"
@@ -51,31 +52,33 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 )
 
+var funcs{{.GenFnName}} = []*catalog.Function {
+    {{- range .Procs}}
+	{
+		Name: "{{.Name}}",
+		Args: []*catalog.Argument{
+			{{range .Args}}{
+			{{- if .Name}}
+			Name: "{{.Name}}",
+			{{- end}}
+			{{- if .HasDefault}}
+			HasDefault: true,
+			{{- end}}
+			Type: &ast.TypeName{Name: "{{.TypeName}}"},
+			{{- if ne .Mode "i" }}
+			Mode: {{ .GoMode }},
+			{{- end}}
+			},
+			{{end}}
+		},
+		ReturnType: &ast.TypeName{Name: "{{.ReturnTypeName}}"},
+	},
+	{{- end}}
+}
+
 func {{.GenFnName}}() *catalog.Schema {
 	s := &catalog.Schema{Name: "{{ .SchemaName }}"}
-	s.Funcs = []*catalog.Function{
-	    {{- range .Procs}}
-		{
-			Name: "{{.Name}}",
-			Args: []*catalog.Argument{
-				{{range .Args}}{
-				{{- if .Name}}
-				Name: "{{.Name}}",
-				{{- end}}
-				{{- if .HasDefault}}
-				HasDefault: true,
-				{{- end}}
-				Type: &ast.TypeName{Name: "{{.TypeName}}"},
-				{{- if ne .Mode "i" }}
-				Mode: {{ .GoMode }},
-				{{- end}}
-				},
-				{{end}}
-			},
-			ReturnType: &ast.TypeName{Name: "{{.ReturnTypeName}}"},
-		},
-		{{- end}}
-	}
+	s.Funcs = funcs{{.GenFnName}}
 	{{- if .Relations }}
 	s.Tables = []*catalog.Table {
 	    {{- range .Relations }}
@@ -209,12 +212,47 @@ func preserveLegacyCatalogBehavior(allProcs []Proc) []Proc {
 	return procs
 }
 
+func databaseURL() string {
+	dburl := os.Getenv("DATABASE_URL")
+	if dburl != "" {
+		return dburl
+	}
+	pgUser := os.Getenv("PG_USER")
+	pgHost := os.Getenv("PG_HOST")
+	pgPort := os.Getenv("PG_PORT")
+	pgPass := os.Getenv("PG_PASSWORD")
+	pgDB := os.Getenv("PG_DATABASE")
+	if pgUser == "" {
+		pgUser = "postgres"
+	}
+	if pgPass == "" {
+		pgPass = "mysecretpassword"
+	}
+	if pgPort == "" {
+		pgPort = "5432"
+	}
+	if pgHost == "" {
+		pgHost = "127.0.0.1"
+	}
+	if pgDB == "" {
+		pgDB = "dinotest"
+	}
+	return fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", pgUser, pgPass, pgHost, pgPort, pgDB)
+}
+
 func run(ctx context.Context) error {
+	flag.Parse()
+
+	dir := flag.Arg(0)
+	if dir == "" {
+		dir = filepath.Join("internal", "engine", "postgresql")
+	}
+
 	tmpl, err := template.New("").Parse(catalogTmpl)
 	if err != nil {
 		return err
 	}
-	conn, err := pgx.Connect(ctx, os.Getenv("DATABASE_URL"))
+	conn, err := pgx.Connect(ctx, databaseURL())
 	if err != nil {
 		return err
 	}
@@ -224,12 +262,12 @@ func run(ctx context.Context) error {
 		{
 			Name:      "pg_catalog",
 			GenFnName: "genPGCatalog",
-			DestPath:  filepath.Join("internal", "engine", "postgresql", "pg_catalog.go"),
+			DestPath:  filepath.Join(dir, "pg_catalog.go"),
 		},
 		{
 			Name:      "information_schema",
 			GenFnName: "genInformationSchema",
-			DestPath:  filepath.Join("internal", "engine", "postgresql", "information_schema.go"),
+			DestPath:  filepath.Join(dir, "information_schema.go"),
 		},
 	}
 
@@ -272,8 +310,7 @@ func run(ctx context.Context) error {
 
 		_, err := conn.Exec(ctx, fmt.Sprintf("CREATE EXTENSION IF NOT EXISTS \"%s\"", extension))
 		if err != nil {
-			log.Printf("error creating %s: %s", extension, err)
-			continue
+			return fmt.Errorf("error creating %s: %s", extension, err)
 		}
 
 		rows, err := conn.Query(ctx, extensionFuncs, extension)
@@ -303,7 +340,7 @@ func run(ctx context.Context) error {
 			return false
 		})
 
-		extensionPath := filepath.Join("internal", "engine", "postgresql", "contrib", name+".go")
+		extensionPath := filepath.Join(dir, "contrib", name+".go")
 		err = writeFormattedGo(tmpl, tmplCtx{
 			Pkg:        "contrib",
 			SchemaName: "pg_catalog",
@@ -322,7 +359,7 @@ func run(ctx context.Context) error {
 		return err
 	}
 
-	extensionLoaderPath := filepath.Join("internal", "engine", "postgresql", "extension.go")
+	extensionLoaderPath := filepath.Join(dir, "extension.go")
 	err = writeFormattedGo(extensionTmpl, loaded, extensionLoaderPath)
 	if err != nil {
 		return err
@@ -349,16 +386,16 @@ type extensionPair struct {
 var extensions = []string{
 	"adminpack",
 	"amcheck",
-	"auth_delay",
-	"auto_explain",
-	"bloom",
+	// "auth_delay",
+	// "auto_explain",
+	// "bloom",
 	"btree_gin",
 	"btree_gist",
 	"citext",
 	"cube",
 	"dblink",
-	"dict_int",
-	"dict_xsyn",
+	// "dict_int",
+	// "dict_xsyn",
 	"earthdistance",
 	"file_fdw",
 	"fuzzystrmatch",
@@ -369,26 +406,26 @@ var extensions = []string{
 	"lo",
 	"ltree",
 	"pageinspect",
-	"passwordcheck",
+	// "passwordcheck",
 	"pg_buffercache",
-	"pgcrypto",
 	"pg_freespacemap",
 	"pg_prewarm",
-	"pgrowlocks",
 	"pg_stat_statements",
-	"pgstattuple",
 	"pg_trgm",
 	"pg_visibility",
+	"pgcrypto",
+	"pgrowlocks",
+	"pgstattuple",
 	"postgres_fdw",
 	"seg",
-	"sepgsql",
-	"spi",
+	// "sepgsql",
+	// "spi",
 	"sslinfo",
 	"tablefunc",
 	"tcn",
-	"test_decoding",
-	"tsm_system_rows",
-	"tsm_system_time",
+	// "test_decoding",
+	// "tsm_system_rows",
+	// "tsm_system_time",
 	"unaccent",
 	"uuid-ossp",
 	"xml2",

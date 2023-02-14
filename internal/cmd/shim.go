@@ -40,7 +40,6 @@ func pluginOverride(o config.Override) *plugin.Override {
 		Column:     o.Column,
 		ColumnName: column,
 		Table:      &table,
-		PythonType: pluginPythonType(o.PythonType),
 		GoType:     pluginGoType(o),
 	}
 }
@@ -58,8 +57,6 @@ func pluginSettings(cs config.CombinedSettings) *plugin.Settings {
 		Overrides: over,
 		Rename:    cs.Rename,
 		Codegen:   pluginCodegen(cs.Codegen),
-		Python:    pluginPythonCode(cs.Python),
-		Kotlin:    pluginKotlinCode(cs.Kotlin),
 		Go:        pluginGoCode(cs.Go),
 		Json:      pluginJSONCode(cs.JSON),
 	}
@@ -77,19 +74,6 @@ func pluginCodegen(s config.Codegen) *plugin.Codegen {
 	}
 }
 
-func pluginPythonCode(s config.SQLPython) *plugin.PythonCode {
-	return &plugin.PythonCode{
-		Out:                         s.Out,
-		Package:                     s.Package,
-		EmitExactTableNames:         s.EmitExactTableNames,
-		EmitSyncQuerier:             s.EmitSyncQuerier,
-		EmitAsyncQuerier:            s.EmitAsyncQuerier,
-		EmitPydanticModels:          s.EmitPydanticModels,
-		QueryParameterLimit:         s.QueryParameterLimit,
-		InflectionExcludeTableNames: s.InflectionExcludeTableNames,
-	}
-}
-
 func pluginGoCode(s config.SQLGo) *plugin.GoCode {
 	return &plugin.GoCode{
 		EmitInterface:               s.EmitInterface,
@@ -102,6 +86,7 @@ func pluginGoCode(s config.SQLGo) *plugin.GoCode {
 		EmitResultStructPointers:    s.EmitResultStructPointers,
 		EmitParamsStructPointers:    s.EmitParamsStructPointers,
 		EmitMethodsWithDbArgument:   s.EmitMethodsWithDBArgument,
+		EmitPointersForNullTypes:    s.EmitPointersForNullTypes,
 		EmitEnumValidMethod:         s.EmitEnumValidMethod,
 		EmitAllEnumValues:           s.EmitAllEnumValues,
 		JsonTagsCaseStyle:           s.JSONTagsCaseStyle,
@@ -127,22 +112,6 @@ func pluginGoType(o config.Override) *plugin.ParsedGoType {
 		TypeName:   o.GoTypeName,
 		BasicType:  o.GoBasicType,
 		StructTags: o.GoStructTags,
-	}
-}
-
-func pluginPythonType(pt config.PythonType) *plugin.PythonType {
-	return &plugin.PythonType{
-		Module: pt.Module,
-		Name:   pt.Name,
-	}
-}
-
-func pluginKotlinCode(s config.SQLKotlin) *plugin.KotlinCode {
-	return &plugin.KotlinCode{
-		Out:                         s.Out,
-		Package:                     s.Package,
-		EmitExactTableNames:         s.EmitExactTableNames,
-		InflectionExcludeTableNames: s.InflectionExcludeTableNames,
 	}
 }
 

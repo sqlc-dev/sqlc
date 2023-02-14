@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"bufio"
+	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -9,10 +11,12 @@ import (
 	"path/filepath"
 	"runtime/trace"
 
+	"github.com/cubicdaiya/gonp"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	yaml "gopkg.in/yaml.v3"
+	"gopkg.in/yaml.v3"
 
+	"github.com/kyleconroy/sqlc/internal/codegen/golang"
 	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/debug"
 	"github.com/kyleconroy/sqlc/internal/info"
@@ -30,6 +34,7 @@ func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int 
 	rootCmd.PersistentFlags().BoolP("experimental", "x", false, "enable experimental features (default: false)")
 
 	rootCmd.AddCommand(checkCmd)
+	rootCmd.AddCommand(diffCmd)
 	rootCmd.AddCommand(genCmd)
 	rootCmd.AddCommand(initCmd)
 	rootCmd.AddCommand(versionCmd)
@@ -39,21 +44,26 @@ func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int 
 	rootCmd.SetIn(stdin)
 	rootCmd.SetOut(stdout)
 	rootCmd.SetErr(stderr)
+	rootCmd.SilenceErrors = true
 
-	ctx, cleanup, err := tracer.Start(context.Background())
-	if err != nil {
-		fmt.Printf("failed to start trace: %v\n", err)
-		return 1
+	ctx := context.Background()
+	if debug.Debug.Trace != "" {
+		tracectx, cleanup, err := tracer.Start(ctx)
+		if err != nil {
+			fmt.Printf("failed to start trace: %v\n", err)
+			return 1
+		}
+		ctx = tracectx
+		defer cleanup()
 	}
-	defer cleanup()
-
-	if err := rootCmd.ExecuteContext(ctx); err == nil {
-		return 0
+	if err := rootCmd.ExecuteContext(ctx); err != nil {
+		if exitError, ok := err.(*exec.ExitError); ok {
+			return exitError.ExitCode()
+		} else {
+			return 1
+		}
 	}
-	if exitError, ok := err.(*exec.ExitError); ok {
-		return exitError.ExitCode()
-	}
-	return 1
+	return 0
 }
 
 var version string
@@ -61,15 +71,14 @@ var version string
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print the sqlc version number",
-	Run: func(cmd *cobra.Command, args []string) {
-		if debug.Traced {
-			defer trace.StartRegion(cmd.Context(), "version").End()
-		}
+	RunE: func(cmd *cobra.Command, args []string) error {
+		defer trace.StartRegion(cmd.Context(), "version").End()
 		if version == "" {
 			fmt.Printf("%s\n", info.Version)
 		} else {
 			fmt.Printf("%s\n", version)
 		}
+		return nil
 	},
 }
 
@@ -77,9 +86,7 @@ var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Create an empty sqlc.yaml settings file",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if debug.Traced {
-			defer trace.StartRegion(cmd.Context(), "init").End()
-		}
+		defer trace.StartRegion(cmd.Context(), "init").End()
 		file := "sqlc.yaml"
 		if f := cmd.Flag("file"); f != nil && f.Changed {
 			file = f.Value.String()
@@ -112,6 +119,16 @@ func ParseEnv(c *cobra.Command) Env {
 	}
 }
 
+func (e *Env) Validate(cfg *config.Config) error {
+	for _, sql := range cfg.SQL {
+		if sql.Gen.Go != nil && sql.Gen.Go.SQLPackage == golang.SQLPackagePGXV5 && !e.ExperimentalFeatures {
+			return fmt.Errorf("'pgx/v5' golang sql package requires enabled '--experimental' flag")
+		}
+	}
+
+	return nil
+}
+
 func getConfigPath(stderr io.Writer, f *pflag.Flag) (string, string) {
 	if f != nil && f.Changed {
 		file := f.Value.String()
@@ -138,26 +155,23 @@ func getConfigPath(stderr io.Writer, f *pflag.Flag) (string, string) {
 var genCmd = &cobra.Command{
 	Use:   "generate",
 	Short: "Generate Go code from SQL",
-	Run: func(cmd *cobra.Command, args []string) {
-		if debug.Traced {
-			defer trace.StartRegion(cmd.Context(), "generate").End()
-		}
+	RunE: func(cmd *cobra.Command, args []string) error {
+		defer trace.StartRegion(cmd.Context(), "generate").End()
 		stderr := cmd.ErrOrStderr()
 		dir, name := getConfigPath(stderr, cmd.Flag("file"))
 		output, err := Generate(cmd.Context(), ParseEnv(cmd), dir, name, stderr)
 		if err != nil {
-			os.Exit(1)
+			return err
 		}
-		if debug.Traced {
-			defer trace.StartRegion(cmd.Context(), "writefiles").End()
-		}
+		defer trace.StartRegion(cmd.Context(), "writefiles").End()
 		for filename, source := range output {
 			os.MkdirAll(filepath.Dir(filename), 0755)
 			if err := os.WriteFile(filename, []byte(source), 0644); err != nil {
 				fmt.Fprintf(stderr, "%s: %s\n", filename, err)
-				os.Exit(1)
+				return err
 			}
 		}
+		return nil
 	},
 }
 
@@ -179,12 +193,53 @@ var checkCmd = &cobra.Command{
 	Use:   "compile",
 	Short: "Statically check SQL for syntax and type errors",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if debug.Traced {
-			defer trace.StartRegion(cmd.Context(), "compile").End()
-		}
+		defer trace.StartRegion(cmd.Context(), "compile").End()
 		stderr := cmd.ErrOrStderr()
 		dir, name := getConfigPath(stderr, cmd.Flag("file"))
 		if _, err := Generate(cmd.Context(), ParseEnv(cmd), dir, name, stderr); err != nil {
+			os.Exit(1)
+		}
+		return nil
+	},
+}
+
+func getLines(f []byte) []string {
+	fp := bytes.NewReader(f)
+	scanner := bufio.NewScanner(fp)
+	lines := make([]string, 0)
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+	return lines
+}
+
+func filterHunks[T gonp.Elem](uniHunks []gonp.UniHunk[T]) []gonp.UniHunk[T] {
+	var out []gonp.UniHunk[T]
+	for i, uniHunk := range uniHunks {
+		var changed bool
+		for _, e := range uniHunk.GetChanges() {
+			switch e.GetType() {
+			case gonp.SesDelete:
+				changed = true
+			case gonp.SesAdd:
+				changed = true
+			}
+		}
+		if changed {
+			out = append(out, uniHunks[i])
+		}
+	}
+	return out
+}
+
+var diffCmd = &cobra.Command{
+	Use:   "diff",
+	Short: "Compare the generated files to the existing files",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		defer trace.StartRegion(cmd.Context(), "diff").End()
+		stderr := cmd.ErrOrStderr()
+		dir, name := getConfigPath(stderr, cmd.Flag("file"))
+		if err := Diff(cmd.Context(), ParseEnv(cmd), dir, name, stderr); err != nil {
 			os.Exit(1)
 		}
 		return nil

@@ -7,6 +7,7 @@ import (
 
 	"github.com/kyleconroy/sqlc/internal/codegen/sdk"
 	"github.com/kyleconroy/sqlc/internal/inflection"
+	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/plugin"
 )
 
@@ -70,7 +71,7 @@ func buildStructs(req *plugin.CodeGenRequest) []Struct {
 				})
 			}
 			s := Struct{
-				Table:   plugin.Identifier{Schema: schema.Name, Name: table.Rel.Name},
+				Table:   &plugin.Identifier{Schema: schema.Name, Name: table.Rel.Name},
 				Name:    StructName(structName, req.Settings),
 				Comment: table.Comment,
 			}
@@ -159,14 +160,14 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 			Comments:     query.Comments,
 			Table:        query.InsertIntoTable,
 		}
-		sqlpkg := SQLPackageFromString(req.Settings.Go.SqlPackage)
+		sqlpkg := parseDriver(req.Settings.Go.SqlPackage)
 
 		if len(query.Params) == 1 {
 			p := query.Params[0]
 			gq.Arg = QueryValue{
-				Name:       paramName(p),
-				Typ:        goType(req, p.Column),
-				SQLPackage: sqlpkg,
+				Name:      paramName(p),
+				Typ:       goType(req, p.Column),
+				SQLDriver: sqlpkg,
 			}
 		} else if len(query.Params) > 1 {
 			var cols []goColumn
@@ -184,7 +185,7 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 				Emit:        true,
 				Name:        "arg",
 				Struct:      s,
-				SQLPackage:  sqlpkg,
+				SQLDriver:   sqlpkg,
 				EmitPointer: req.Settings.Go.EmitParamsStructPointers,
 			}
 		}
@@ -196,11 +197,11 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 				name = strings.Replace(name, "$", "_", -1)
 			}
 			gq.Ret = QueryValue{
-				Name:       name,
-				Typ:        goType(req, c),
-				SQLPackage: sqlpkg,
+				Name:      name,
+				Typ:       goType(req, c),
+				SQLDriver: sqlpkg,
 			}
-		} else if len(query.Columns) > 1 {
+		} else if putOutColumns(query) {
 			var gs *Struct
 			var emit bool
 
@@ -213,7 +214,7 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 					c := query.Columns[i]
 					sameName := f.Name == StructName(columnName(c, i), req.Settings)
 					sameType := f.Type == goType(req, c)
-					sameTable := sdk.SameTableName(c.Table, &s.Table, req.Catalog.DefaultSchema)
+					sameTable := sdk.SameTableName(c.Table, s.Table, req.Catalog.DefaultSchema)
 					if !sameName || !sameType || !sameTable {
 						same = false
 					}
@@ -243,7 +244,7 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 				Emit:        emit,
 				Name:        "i",
 				Struct:      gs,
-				SQLPackage:  sqlpkg,
+				SQLDriver:   sqlpkg,
 				EmitPointer: req.Settings.Go.EmitResultStructPointers,
 			}
 		}
@@ -252,6 +253,18 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 	}
 	sort.Slice(qs, func(i, j int) bool { return qs[i].MethodName < qs[j].MethodName })
 	return qs, nil
+}
+
+func putOutColumns(query *plugin.Query) bool {
+	if len(query.Columns) > 0 {
+		return true
+	}
+	for _, allowed := range []string{metadata.CmdMany, metadata.CmdOne, metadata.CmdBatchMany} {
+		if query.Cmd == allowed {
+			return true
+		}
+	}
+	return false
 }
 
 // It's possible that this method will generate duplicate JSON tag values

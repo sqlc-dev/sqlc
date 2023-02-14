@@ -45,7 +45,7 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 				name := def.Name.String()
 				columnDef := ast.ColumnDef{
 					Colname:   def.Name.String(),
-					TypeName:  &ast.TypeName{Name: types.TypeStr(def.Tp.GetType())},
+					TypeName:  &ast.TypeName{Name: types.TypeToStr(def.Tp.GetType(), def.Tp.GetCharset())},
 					IsNotNull: isNotNull(def),
 				}
 				if def.Tp.GetFlen() >= 0 {
@@ -78,7 +78,7 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 				name := def.Name.String()
 				columnDef := ast.ColumnDef{
 					Colname:   def.Name.String(),
-					TypeName:  &ast.TypeName{Name: types.TypeStr(def.Tp.GetType())},
+					TypeName:  &ast.TypeName{Name: types.TypeToStr(def.Tp.GetType(), def.Tp.GetCharset())},
 					IsNotNull: isNotNull(def),
 				}
 				if def.Tp.GetFlen() >= 0 {
@@ -97,7 +97,7 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 				name := def.Name.String()
 				columnDef := ast.ColumnDef{
 					Colname:   def.Name.String(),
-					TypeName:  &ast.TypeName{Name: types.TypeStr(def.Tp.GetType())},
+					TypeName:  &ast.TypeName{Name: types.TypeToStr(def.Tp.GetType(), def.Tp.GetCharset())},
 					IsNotNull: isNotNull(def),
 				}
 				if def.Tp.GetFlen() >= 0 {
@@ -266,7 +266,7 @@ func (c *cc) convertCreateTableStmt(n *pcast.CreateTableStmt) ast.Node {
 		}
 		columnDef := ast.ColumnDef{
 			Colname:   def.Name.String(),
-			TypeName:  &ast.TypeName{Name: types.TypeStr(def.Tp.GetType())},
+			TypeName:  &ast.TypeName{Name: types.TypeToStr(def.Tp.GetType(), def.Tp.GetCharset())},
 			IsNotNull: isNotNull(def),
 			Comment:   comment,
 			Vals:      vals,

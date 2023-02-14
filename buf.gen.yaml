@@ -1,0 +1,10 @@
+version: v1
+managed:
+  enabled: true
+plugins:
+  - remote: buf.build/protocolbuffers/plugins/go:v1.28.1-1
+    out: internal
+    opt: paths=source_relative
+  - remote: buf.build/planetscale/plugins/vtproto:v0.3.0
+    out: internal
+    opt: paths=source_relative

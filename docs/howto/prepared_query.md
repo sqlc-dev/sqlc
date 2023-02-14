@@ -19,10 +19,11 @@ package db
 import (
 	"context"
 	"database/sql"
+	"fmt"
 )
 
 type Record struct {
-	ID int
+	ID int32
 }
 
 type DBTX interface {
@@ -38,7 +39,7 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	q := Queries{db: db}
 	var err error
 	if q.getRecordStmt, err = db.PrepareContext(ctx, getRecord); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error preparing query GetRecord: %w", err)
 	}
 	return &q, nil
 }
@@ -73,11 +74,10 @@ SELECT id FROM records
 WHERE id = $1
 `
 
-func (q *Queries) GetRecord(ctx context.Context, id int) (Record, error) {
+func (q *Queries) GetRecord(ctx context.Context, id int32) (int32, error) {
 	row := q.queryRow(ctx, q.getRecordStmt, getRecord, id)
-	var i Record
-	err := row.Scan(&i.ID)
-	return i, err
+	err := row.Scan(&id)
+	return id, err
 }
 ```
 
