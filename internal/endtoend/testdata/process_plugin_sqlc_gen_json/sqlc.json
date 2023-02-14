@@ -21,7 +21,7 @@
     {
       "name": "jsonb",
       "process": {
-        "cmd": "sqlc-gen-json"
+        "cmd": "go run ../../cmd/sqlc-gen-json"
       }
     }
   ]

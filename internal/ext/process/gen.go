@@ -5,7 +5,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"os/exec"
+	"strings"
 
 	"google.golang.org/protobuf/proto"
 
@@ -23,17 +25,21 @@ func (r Runner) Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plug
 		return nil, fmt.Errorf("failed to encode codegen request: %s", err)
 	}
 
+	cmdAndArgs := strings.Split(r.Cmd, " ")
+
 	// Check if the output plugin exists
-	path, err := exec.LookPath(r.Cmd)
+	path, err := exec.LookPath(cmdAndArgs[0])
 	if err != nil {
 		return nil, fmt.Errorf("process: %s not found", r.Cmd)
 	}
 
-	cmd := exec.CommandContext(ctx, path)
+	cmd := exec.CommandContext(ctx, path, cmdAndArgs[1:]...)
 	cmd.Stdin = bytes.NewReader(stdin)
-	cmd.Env = []string{
-		fmt.Sprintf("SQLC_VERSION=%s", req.SqlcVersion),
-	}
+	// Make sure to propagate current env before modifying it.
+	env := make([]string, len(os.Environ()))
+	copy(env, os.Environ())
+	env = append(env, fmt.Sprintf("SQLC_VERSION=%s", req.SqlcVersion))
+	cmd.Env = env
 
 	out, err := cmd.Output()
 	if err != nil {
