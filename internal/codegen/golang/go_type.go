@@ -38,18 +38,19 @@ func goType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 	}
 	typ := goInnerType(req, col)
 	if col.IsArray {
-<<<<<<< HEAD
-		dims := ""
-		for i := int32(0); i < col.ArrayBounds; i++ {
-			dims += "[]"
+		if parseDriver(req.Settings.Go.SqlPackage) == SQLDriverPGXV4 {
+			dims := ""
+			for i := int32(0); i < col.ArrayBounds; i++ {
+				dims += "[]"
+			}
+			return dims + typ
 		}
-		return dims + typ
-=======
+
 		if parseDriver(req.Settings.Go.SqlPackage) == SQLDriverPGXV5 {
 			return "pgtype.Array[" + typ + "]"
 		}
+
 		return "[]" + typ
->>>>>>> main
 	}
 	return typ
 }
