@@ -7,10 +7,10 @@ package querytest
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const insertValues = `-- name: InsertValues :batchone
@@ -27,8 +27,8 @@ type InsertValuesBatchResults struct {
 }
 
 type InsertValuesParams struct {
-	A sql.NullInt32
-	B sql.NullInt32
+	A pgtype.Int4
+	B pgtype.Int4
 }
 
 func (q *Queries) InsertValues(ctx context.Context, arg []*InsertValuesParams) *InsertValuesBatchResults {

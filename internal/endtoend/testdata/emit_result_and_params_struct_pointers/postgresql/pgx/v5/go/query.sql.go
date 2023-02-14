@@ -7,7 +7,8 @@ package querytest
 
 import (
 	"context"
-	"database/sql"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const getAll = `-- name: GetAll :many
@@ -38,15 +39,15 @@ const getAllAByB = `-- name: GetAllAByB :many
 SELECT a FROM foo WHERE b = ?
 `
 
-func (q *Queries) GetAllAByB(ctx context.Context, b sql.NullInt32) ([]sql.NullInt32, error) {
+func (q *Queries) GetAllAByB(ctx context.Context, b pgtype.Int4) ([]pgtype.Int4, error) {
 	rows, err := q.db.Query(ctx, getAllAByB, b)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []sql.NullInt32
+	var items []pgtype.Int4
 	for rows.Next() {
-		var a sql.NullInt32
+		var a pgtype.Int4
 		if err := rows.Scan(&a); err != nil {
 			return nil, err
 		}
@@ -63,8 +64,8 @@ SELECT a, b FROM foo WHERE a = ? AND b = ? LIMIT 1
 `
 
 type GetOneParams struct {
-	A sql.NullInt32
-	B sql.NullInt32
+	A pgtype.Int4
+	B pgtype.Int4
 }
 
 func (q *Queries) GetOne(ctx context.Context, arg *GetOneParams) (*Foo, error) {

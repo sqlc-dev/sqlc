@@ -5,10 +5,10 @@
 package querytest
 
 import (
-	"database/sql"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Foo struct {
-	A sql.NullInt32
-	B sql.NullInt32
+	A pgtype.Int4
+	B pgtype.Int4
 }
