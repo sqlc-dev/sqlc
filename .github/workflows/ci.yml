@@ -60,6 +60,7 @@ jobs:
       working-directory: internal/endtoend/testdata
 
     - name: report
+      if: ${{ github.ref == 'refs/heads/main' }}
       run: ./scripts/report.sh
       env:
         BUILDKITE_ANALYTICS_TOKEN: ${{ secrets.BUILDKITE_ANALYTICS_TOKEN }}
