@@ -33,10 +33,10 @@ already. Add the following configuration for the plugin:
 ```yaml
 version: "2"
 plugins:
-  name: "py"
-  wasm:
-    url: "https://downloads.sqlc.dev/plugin/sqlc-gen-python_1.0.0.wasm"
-    sha256: "aca83e1f59f8ffdc604774c2f6f9eb321a2b23e07dc83fc12289d25305fa065b"
+  - name: "py"
+    wasm:
+      url: "https://downloads.sqlc.dev/plugin/sqlc-gen-python_1.0.0.wasm"
+      sha256: "aca83e1f59f8ffdc604774c2f6f9eb321a2b23e07dc83fc12289d25305fa065b"
 ```
 
 ## Migrate each package
