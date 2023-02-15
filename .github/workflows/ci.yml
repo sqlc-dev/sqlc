@@ -36,11 +36,11 @@ jobs:
       with:
         go-version: '1.19'
 
-    - name: install ./...
-      run: go install ./...
-
     - name: gotestsum
       run: go install gotest.tools/gotestsum@latest
+
+    - name: install ./...
+      run: go install ./...
 
     - name: test ./...
       run: gotestsum --junitfile junit.xml --tags=examples ./...
@@ -58,3 +58,8 @@ jobs:
     - name: build internal/endtoend
       run: go build ./...
       working-directory: internal/endtoend/testdata
+
+    - name: report
+      run: ./scripts/report.sh
+      env:
+        BUILDKITE_ANALYTICS_TOKEN: ${{ secrets.BUILDKITE_ANALYTICS_TOKEN }}
