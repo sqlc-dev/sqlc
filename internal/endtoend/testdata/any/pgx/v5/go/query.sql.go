@@ -7,8 +7,6 @@ package querytest
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const any = `-- name: Any :many
@@ -17,7 +15,7 @@ FROM bar
 WHERE foo = ANY($1::bigserial[])
 `
 
-func (q *Queries) Any(ctx context.Context, dollar_1 pgtype.Array[int64]) ([]int64, error) {
+func (q *Queries) Any(ctx context.Context, dollar_1 []int64) ([]int64, error) {
 	rows, err := q.db.Query(ctx, any, dollar_1)
 	if err != nil {
 		return nil, err

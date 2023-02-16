@@ -7,23 +7,21 @@ package querytest
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const textArray = `-- name: TextArray :many
 SELECT tags FROM bar
 `
 
-func (q *Queries) TextArray(ctx context.Context) ([]pgtype.Array[string], error) {
+func (q *Queries) TextArray(ctx context.Context) ([][]string, error) {
 	rows, err := q.db.Query(ctx, textArray)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []pgtype.Array[string]
+	var items [][]string
 	for rows.Next() {
-		var tags pgtype.Array[string]
+		var tags []string
 		if err := rows.Scan(&tags); err != nil {
 			return nil, err
 		}

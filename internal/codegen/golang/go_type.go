@@ -1,8 +1,6 @@
 package golang
 
 import (
-	"fmt"
-
 	"github.com/kyleconroy/sqlc/internal/codegen/sdk"
 	"github.com/kyleconroy/sqlc/internal/plugin"
 )
@@ -53,13 +51,7 @@ func goType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 				return "pgtype.FlatArray[" + typ + "]"
 			}
 
-			return fmt.Sprintf(`pgtype.Array[%s]{
-				Dims: []ArrayDimension{
-					Length: %d,
-					LowerBound: %d,
-				},
-				Valid: true,
-			}`, typ, col.ArrayBounds, col.ArrayBounds)
+			return "pgtype.Array[" + typ + "]"
 		}
 
 		return "[]" + typ

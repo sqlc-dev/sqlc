@@ -135,9 +135,6 @@ func (gt GoType) Parse() (*ParsedGoType, error) {
 		if lastDot == -1 {
 			return nil, fmt.Errorf("Package override `go_type` specifier %q is not the proper format, expected 'package.type', e.g. 'github.com/segmentio/ksuid.KSUID'", input)
 		}
-		if lastSlash == -1 {
-			return nil, fmt.Errorf("Package override `go_type` specifier %q is not the proper format, expected 'package.type', e.g. 'github.com/segmentio/ksuid.KSUID'", input)
-		}
 		typename = input[lastSlash+1:]
 		// a package name beginning with "go-" will give syntax errors in
 		// generated code. We should do the right thing and get the actual
