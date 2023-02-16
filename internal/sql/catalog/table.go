@@ -242,6 +242,7 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 		if err != nil {
 			return err
 		}
+		// check and ignore duplicate columns
 		for _, col := range t.Columns {
 			if _, ok := m[col.Name]; ok {
 				continue
@@ -250,7 +251,6 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 				tbl.Columns = append(tbl.Columns, col)
 			}
 		}
-		//tbl.Columns = append(tbl.Columns, t.Columns...)
 	}
 
 	if stmt.ReferTable != nil && len(stmt.Cols) != 0 {
