@@ -7,6 +7,8 @@ package querytest
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const joinTextArray = `-- name: JoinTextArray :many
@@ -15,15 +17,15 @@ FROM foo
 JOIN bar ON foo.bar = bar.id
 `
 
-func (q *Queries) JoinTextArray(ctx context.Context) ([][]string, error) {
+func (q *Queries) JoinTextArray(ctx context.Context) ([]pgtype.FlatArray[string], error) {
 	rows, err := q.db.Query(ctx, joinTextArray)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items [][]string
+	var items []pgtype.FlatArray[string]
 	for rows.Next() {
-		var info []string
+		var info pgtype.FlatArray[string]
 		if err := rows.Scan(&info); err != nil {
 			return nil, err
 		}

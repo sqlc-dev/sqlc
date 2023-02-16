@@ -4,8 +4,10 @@
 
 package querytest
 
-import ()
+import (
+	"github.com/jackc/pgx/v5/pgtype"
+)
 
 type Foo struct {
-	Bar []string
+	Bar pgtype.FlatArray[string]
 }
