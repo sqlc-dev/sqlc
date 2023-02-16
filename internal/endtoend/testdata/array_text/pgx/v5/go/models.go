@@ -4,10 +4,8 @@
 
 package querytest
 
-import (
-	"github.com/jackc/pgx/v5/pgtype"
-)
+import ()
 
 type Bar struct {
-	Tags pgtype.Array[string]
+	Tags []string
 }

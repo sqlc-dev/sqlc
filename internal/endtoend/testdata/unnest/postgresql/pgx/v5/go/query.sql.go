@@ -19,7 +19,7 @@ RETURNING
     id, vampire_id, created_at, updated_at
 `
 
-func (q *Queries) CreateMemories(ctx context.Context, vampireID pgtype.Array[pgtype.UUID]) ([]Memory, error) {
+func (q *Queries) CreateMemories(ctx context.Context, vampireID []pgtype.UUID) ([]Memory, error) {
 	rows, err := q.db.Query(ctx, createMemories, vampireID)
 	if err != nil {
 		return nil, err

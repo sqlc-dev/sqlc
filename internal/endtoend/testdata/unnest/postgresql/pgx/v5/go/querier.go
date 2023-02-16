@@ -11,7 +11,7 @@ import (
 )
 
 type Querier interface {
-	CreateMemories(ctx context.Context, vampireID pgtype.Array[pgtype.UUID]) ([]Memory, error)
+	CreateMemories(ctx context.Context, vampireID []pgtype.UUID) ([]Memory, error)
 }
 
 var _ Querier = (*Queries)(nil)
