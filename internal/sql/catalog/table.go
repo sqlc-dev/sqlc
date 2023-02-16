@@ -236,12 +236,21 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 	}
 
 	tbl := Table{Rel: stmt.Name, Comment: stmt.Comment}
+	m := make(map[string]struct{}) // used to check for duplicate column names
 	for _, inheritTable := range stmt.Inherits {
 		t, _, err := schema.getTable(inheritTable)
 		if err != nil {
 			return err
 		}
-		tbl.Columns = append(tbl.Columns, t.Columns...)
+		for _, col := range t.Columns {
+			if _, ok := m[col.Name]; ok {
+				continue
+			} else {
+				m[col.Name] = struct{}{}
+				tbl.Columns = append(tbl.Columns, col)
+			}
+		}
+		//tbl.Columns = append(tbl.Columns, t.Columns...)
 	}
 
 	if stmt.ReferTable != nil && len(stmt.Cols) != 0 {
