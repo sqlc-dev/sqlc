@@ -5,7 +5,6 @@
 package override
 
 import (
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/kyleconroy/sqlc-testdata/pkg"
 	"github.com/lib/pq"
 )
@@ -13,7 +12,7 @@ import (
 type Foo struct {
 	Other   string
 	Total   int64
-	Tags    pgtype.Array[string]
+	Tags    []string
 	ByteSeq []byte
 	Retyped pkg.CustomType
 	Langs   pq.StringArray
