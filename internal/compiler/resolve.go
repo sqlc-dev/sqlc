@@ -334,9 +334,12 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 
 				var paramName string
 				var paramType *ast.TypeName
+
 				if argName == "" {
-					paramName = fun.Args[i].Name
-					paramType = fun.Args[i].Type
+					if i < len(fun.Args) {
+						paramName = fun.Args[i].Name
+						paramType = fun.Args[i].Type
+					}
 				} else {
 					paramName = argName
 					for _, arg := range fun.Args {
@@ -350,6 +353,9 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 				}
 				if paramName == "" {
 					paramName = funcName
+				}
+				if paramType == nil {
+					paramType = &ast.TypeName{Name: ""}
 				}
 
 				defaultP := named.NewInferredParam(paramName, true)

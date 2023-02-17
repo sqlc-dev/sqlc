@@ -9,7 +9,7 @@ import (
 
 // Function describes a database function
 //
-// A database function is a method written to performs specific operation on data within the database.
+// A database function is a method written to perform a specific operation on data within the database.
 type Function struct {
 	Name               string
 	Args               []*Argument
