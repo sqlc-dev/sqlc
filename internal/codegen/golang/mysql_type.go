@@ -51,6 +51,12 @@ func mysqlType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		}
 		return "sql.NullString"
 
+	case "float":
+		if notNull {
+			return "float32"
+		}
+		return "sql.NullFloat32"
+
 	case "double", "double precision", "real":
 		if notNull {
 			return "float64"
