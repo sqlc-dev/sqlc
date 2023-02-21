@@ -1,5 +1,5 @@
 # STEP 1: Build sqlc
-FROM golang:1.20.0 AS builder
+FROM golang:1.20.1 AS builder
 
 COPY . /workspace
 WORKDIR /workspace
@@ -16,4 +16,4 @@ RUN go run scripts/release.go -docker
 FROM scratch
 
 COPY --from=builder /workspace/sqlc /workspace/sqlc
-CMD ["/workspace/sqlc"]
+ENTRYPOINT ["/workspace/sqlc"]

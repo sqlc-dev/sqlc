@@ -127,6 +127,15 @@ func TestTypeOverrides(t *testing.T) {
 			"string",
 			true,
 		},
+		{
+			Override{
+				DBType: "timestamp",
+				GoType: GoType{Spec: "time.Time"},
+			},
+			"time",
+			"time.Time",
+			false,
+		},
 	} {
 		tt := test
 		t.Run(tt.override.GoType.Spec, func(t *testing.T) {
@@ -167,7 +176,7 @@ func TestTypeOverrides(t *testing.T) {
 		t.Run(tt.override.GoType.Spec, func(t *testing.T) {
 			err := tt.override.Parse()
 			if err == nil {
-				t.Fatalf("expected pars to fail; got nil")
+				t.Fatalf("expected parse to fail; got nil")
 			}
 			if diff := cmp.Diff(tt.err, err.Error()); diff != "" {
 				t.Errorf("error mismatch;\n%s", diff)

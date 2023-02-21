@@ -113,6 +113,12 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 				_, ok := node.(*ast.ColumnRef)
 				return ok
 			})
+			if len(list.Items) == 0 {
+				list = astutils.Search(n.Rexpr, func(node ast.Node) bool {
+					_, ok := node.(*ast.ColumnRef)
+					return ok
+				})
+			}
 
 			if len(list.Items) == 0 {
 				// TODO: Move this to database-specific engine package
@@ -135,9 +141,9 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 				continue
 			}
 
-			switch left := list.Items[0].(type) {
+			switch node := list.Items[0].(type) {
 			case *ast.ColumnRef:
-				items := stringSlice(left.Fields)
+				items := stringSlice(node.Fields)
 				var key, alias string
 				switch len(items) {
 				case 1:
@@ -165,7 +171,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 							return nil, &sqlerr.Error{
 								Code:     "42703",
 								Message:  fmt.Sprintf("table alias \"%s\" does not exist", alias),
-								Location: left.Location,
+								Location: node.Location,
 							}
 						}
 					}
@@ -204,14 +210,14 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 					return nil, &sqlerr.Error{
 						Code:     "42703",
 						Message:  fmt.Sprintf("column \"%s\" does not exist", key),
-						Location: left.Location,
+						Location: node.Location,
 					}
 				}
 				if found > 1 {
 					return nil, &sqlerr.Error{
 						Code:     "42703",
 						Message:  fmt.Sprintf("column reference \"%s\" is ambiguous", key),
-						Location: left.Location,
+						Location: node.Location,
 					}
 				}
 			}
@@ -328,9 +334,12 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 
 				var paramName string
 				var paramType *ast.TypeName
+
 				if argName == "" {
-					paramName = fun.Args[i].Name
-					paramType = fun.Args[i].Type
+					if i < len(fun.Args) {
+						paramName = fun.Args[i].Name
+						paramType = fun.Args[i].Type
+					}
 				} else {
 					paramName = argName
 					for _, arg := range fun.Args {
@@ -344,6 +353,9 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 				}
 				if paramName == "" {
 					paramName = funcName
+				}
+				if paramType == nil {
+					paramType = &ast.TypeName{Name: ""}
 				}
 
 				defaultP := named.NewInferredParam(paramName, true)
