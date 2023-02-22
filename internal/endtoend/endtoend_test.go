@@ -152,6 +152,9 @@ func cmpDirectory(t *testing.T, dir string, actual map[string]string) {
 		if filepath.Base(path) == "sqlc.json" {
 			return nil
 		}
+		if filepath.Base(path) == "exec.json" {
+			return nil
+		}
 		if strings.Contains(path, "/kotlin/build") {
 			return nil
 		}
