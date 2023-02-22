@@ -19,7 +19,7 @@ type Parser struct {
 }
 
 func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
-	return nil, errors.New("the PostgreSQL engine does not support Windows")
+	return nil, errors.New("the PostgreSQL engine is not supported on Windows or any environment where CGO is unavailable")
 }
 
 // https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-COMMENTS
