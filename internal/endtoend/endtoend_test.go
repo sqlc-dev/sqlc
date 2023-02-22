@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"os"
+	osexec "os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -101,6 +102,13 @@ func TestReplay(t *testing.T) {
 			path, _ := filepath.Abs(tc)
 			args := parseExec(t, path)
 			expected := expectedStderr(t, path)
+
+			if args.Process != "" {
+				_, err := osexec.LookPath(args.Process)
+				if err != nil {
+					t.Skipf("executable not found: %s %s", args.Process, err)
+				}
+			}
 
 			switch args.Command {
 			case "diff":
@@ -199,6 +207,7 @@ func expectedStderr(t *testing.T, dir string) string {
 
 type exec struct {
 	Command string `json:"command"`
+	Process string `json:"process"`
 }
 
 func parseExec(t *testing.T, dir string) exec {
