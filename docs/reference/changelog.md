@@ -1,6 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.17.2](https://github.com/kyleconroy/sqlc/releases/tag/1.17.2)
+Released 2023-02-22
+
+### Bug Fixes
+
+- Fix build on Windows (#2102)
+
 ## [1.17.1](https://github.com/kyleconroy/sqlc/releases/tag/1.17.1)
 Released 2023-02-22
 
