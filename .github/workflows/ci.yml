@@ -5,6 +5,25 @@ on:
       - main
   pull_request:
 jobs:
+  windows-build:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-go@v3
+      with:
+        go-version: '1.19'
+    - run: go build ./...
+
+  darwin-build:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-go@v3
+      with:
+        go-version: '1.19'
+    - run: go build ./...
 
   build:
     name: test

@@ -6,6 +6,7 @@ package postgresql
 import (
 	"errors"
 	"io"
+	"runtime"
 
 	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
