@@ -225,6 +225,16 @@ func translate(node *nodes.Node) (ast.Node, error) {
 				Table:     rel.TableName(),
 				NewSchema: makeString(n.Newschema),
 			}, nil
+
+		case nodes.ObjectType_OBJECT_TYPE:
+			rel, err := parseRelation(n.Object)
+			if err != nil {
+				return nil, err
+			}
+			return &ast.AlterTypeSetSchemaStmt{
+				Type:      rel.TypeName(),
+				NewSchema: makeString(n.Newschema),
+			}, nil
 		}
 		return nil, errSkip
 

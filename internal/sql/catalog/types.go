@@ -214,6 +214,54 @@ func (c *Catalog) alterTypeAddValue(stmt *ast.AlterTypeAddValueStmt) error {
 	return nil
 }
 
+func (c *Catalog) alterTypeSetSchema(stmt *ast.AlterTypeSetSchemaStmt) error {
+	ns := stmt.Type.Schema
+	if ns == "" {
+		ns = c.DefaultSchema
+	}
+	oldSchema, err := c.getSchema(ns)
+	if err != nil {
+		return err
+	}
+	typ, idx, err := oldSchema.getType(stmt.Type)
+	if err != nil {
+		return err
+	}
+	oldType := *stmt.Type
+	stmt.Type.Schema = *stmt.NewSchema
+	newSchema, err := c.getSchema(*stmt.NewSchema)
+	if err != nil {
+		return err
+	}
+	// Because tables have associated data types, the type name must also
+	// be distinct from the name of any existing table in the same
+	// schema.
+	// https://www.postgresql.org/docs/current/sql-createtype.html
+	tbl := &ast.TableName{
+		Name: stmt.Type.Name,
+	}
+	if _, _, err := newSchema.getTable(tbl); err == nil {
+		return sqlerr.RelationExists(tbl.Name)
+	}
+	if _, _, err := newSchema.getType(stmt.Type); err == nil {
+		return sqlerr.TypeExists(stmt.Type.Name)
+	}
+	oldSchema.Types = append(oldSchema.Types[:idx], oldSchema.Types[idx+1:]...)
+	newSchema.Types = append(newSchema.Types, typ)
+
+	// Update all the table columns with the new type
+	for _, schema := range c.Schemas {
+		for _, table := range schema.Tables {
+			for _, column := range table.Columns {
+				if column.Type == oldType {
+					column.Type.Schema = *stmt.NewSchema
+				}
+			}
+		}
+	}
+	return nil
+}
+
 func (c *Catalog) dropType(stmt *ast.DropTypeStmt) error {
 	for _, name := range stmt.Types {
 		ns := name.Schema
