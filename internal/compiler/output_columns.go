@@ -347,6 +347,8 @@ func isTableRequired(n ast.Node, col *Column, prior int) int {
 			return helper(tableOptional, tableRequired)
 		case ast.JoinTypeFull:
 			return helper(tableOptional, tableOptional)
+		case ast.JoinTypeInner:
+			return helper(tableRequired, tableRequired)
 		}
 	case *ast.List:
 		for _, item := range n.Items {
