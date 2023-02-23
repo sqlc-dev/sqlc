@@ -1,6 +1,30 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.17.2](https://github.com/kyleconroy/sqlc/releases/tag/1.17.2)
+Released 2023-02-22
+
+### Bug Fixes
+
+- Fix build on Windows (#2102)
+
+## [1.17.1](https://github.com/kyleconroy/sqlc/releases/tag/1.17.1)
+Released 2023-02-22
+
+### Bug Fixes
+
+- Prefer to use []T over pgype.Array[T] (#2090)
+- Revert changes to Dockerfile (#2091)
+- Do not throw error when IF NOT EXISTS is used on ADD COLUMN (#2092)
+
+### MySQL
+
+- Add `float` support to MySQL (#2097)
+
+### Build
+
+- (deps) Bump golang from 1.20.0 to 1.20.1 (#2082)
+
 ## [1.17.0](https://github.com/kyleconroy/sqlc/releases/tag/1.17.0)
 Released 2023-02-13
 
