@@ -4,13 +4,11 @@
 
 package querytest
 
-import (
-	"github.com/jackc/pgx/v5/pgtype"
-)
+import ()
 
 type Bar struct {
 	ID   string
-	Info pgtype.FlatArray[string]
+	Info []string
 }
 
 type Foo struct {

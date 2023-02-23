@@ -38,23 +38,11 @@ func goType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 	}
 	typ := goInnerType(req, col)
 	if col.IsArray {
-		if parseDriver(req.Settings.Go.SqlPackage) == SQLDriverPGXV4 {
-			dims := ""
-			for i := int32(0); i < col.ArrayBounds; i++ {
-				dims += "[]"
-			}
-			return dims + typ
+		dims := ""
+		for i := int32(0); i < col.ArrayBounds; i++ {
+			dims += "[]"
 		}
-
-		if parseDriver(req.Settings.Go.SqlPackage) == SQLDriverPGXV5 {
-			if col.ArrayBounds == 1 {
-				return "pgtype.FlatArray[" + typ + "]"
-			}
-
-			return "pgtype.Array[" + typ + "]"
-		}
-
-		return "[]" + typ
+		return dims + typ
 	}
 	return typ
 }
