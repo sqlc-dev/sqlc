@@ -94,7 +94,6 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 		SQLDriver:                 parseDriver(golang.SqlPackage),
 		Q:                         "`",
 		Package:                   golang.Package,
-		GoQueries:                 queries,
 		Enums:                     enums,
 		Structs:                   structs,
 		SqlcVersion:               req.SqlcVersion,
@@ -111,9 +110,13 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 	output := map[string]string{}
 
 	execute := func(name, templateName string) error {
+		imports := i.Imports(name)
+		replacedQueries := replaceConflictedArg(imports, queries)
+
 		var b bytes.Buffer
 		w := bufio.NewWriter(&b)
 		tctx.SourceName = name
+		tctx.GoQueries = replacedQueries
 		err := tmpl.ExecuteTemplate(w, templateName, &tctx)
 		w.Flush()
 		if err != nil {
