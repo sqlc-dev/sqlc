@@ -19,7 +19,7 @@ func stringSlice(list *nodes.List) []string {
 	items := []string{}
 	for _, item := range list.Items {
 		if n, ok := item.Node.(*nodes.Node_String_); ok {
-			items = append(items, n.String_.Str)
+			items = append(items, n.String_.Sval)
 		}
 	}
 	return items
@@ -29,7 +29,7 @@ func stringSliceFromNodes(s []*nodes.Node) []string {
 	var items []string
 	for _, item := range s {
 		if n, ok := item.Node.(*nodes.Node_String_); ok {
-			items = append(items, n.String_.Str)
+			items = append(items, n.String_.Sval)
 		}
 	}
 	return items
@@ -334,7 +334,7 @@ func translate(node *nodes.Node) (ast.Node, error) {
 				return nil, fmt.Errorf("COMMENT ON SCHEMA: unexpected node type: %T", n.Object)
 			}
 			return &ast.CommentOnSchemaStmt{
-				Schema:  &ast.String{Str: o.String_.Str},
+				Schema:  &ast.String{Str: o.String_.Sval},
 				Comment: makeString(n.Comment),
 			}, nil
 
@@ -391,7 +391,7 @@ func translate(node *nodes.Node) (ast.Node, error) {
 				if item.Constraint.Contype == nodes.ConstrType_CONSTR_PRIMARY {
 					for _, key := range item.Constraint.Keys {
 						// FIXME: Possible nil pointer dereference
-						primaryKey[key.Node.(*nodes.Node_String_).String_.Str] = true
+						primaryKey[key.Node.(*nodes.Node_String_).String_.Sval] = true
 					}
 				}
 
@@ -431,7 +431,7 @@ func translate(node *nodes.Node) (ast.Node, error) {
 			switch v := val.Node.(type) {
 			case *nodes.Node_String_:
 				stmt.Vals.Items = append(stmt.Vals.Items, &ast.String{
-					Str: v.String_.Str,
+					Str: v.String_.Sval,
 				})
 			}
 		}
@@ -533,7 +533,7 @@ func translate(node *nodes.Node) (ast.Node, error) {
 				if !ok {
 					return nil, fmt.Errorf("nodes.DropStmt: SCHEMA: unknown type in objects list: %T", obj)
 				}
-				drop.Schemas = append(drop.Schemas, &ast.String{Str: val.String_.Str})
+				drop.Schemas = append(drop.Schemas, &ast.String{Str: val.String_.Sval})
 			}
 			return drop, nil
 
