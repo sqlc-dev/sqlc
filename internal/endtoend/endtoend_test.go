@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"os"
+	osexec "os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -102,6 +103,13 @@ func TestReplay(t *testing.T) {
 			args := parseExec(t, path)
 			expected := expectedStderr(t, path)
 
+			if args.Process != "" {
+				_, err := osexec.LookPath(args.Process)
+				if err != nil {
+					t.Skipf("executable not found: %s %s", args.Process, err)
+				}
+			}
+
 			switch args.Command {
 			case "diff":
 				err = cmd.Diff(ctx, cmd.Env{ExperimentalFeatures: true}, path, "", &stderr)
@@ -142,6 +150,9 @@ func cmpDirectory(t *testing.T, dir string, actual map[string]string) {
 			return nil
 		}
 		if filepath.Base(path) == "sqlc.json" {
+			return nil
+		}
+		if filepath.Base(path) == "exec.json" {
 			return nil
 		}
 		if strings.Contains(path, "/kotlin/build") {
@@ -199,6 +210,7 @@ func expectedStderr(t *testing.T, dir string) string {
 
 type exec struct {
 	Command string `json:"command"`
+	Process string `json:"process"`
 }
 
 func parseExec(t *testing.T, dir string) exec {

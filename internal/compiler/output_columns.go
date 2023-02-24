@@ -117,6 +117,23 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 				cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
 			}
 
+		case *ast.BoolExpr:
+			name := ""
+			if res.Name != nil {
+				name = *res.Name
+			}
+			notNull := false
+			if n.Boolop == ast.BoolExprTypeNot && len(n.Args.Items) == 1 {
+				sublink, ok := n.Args.Items[0].(*ast.SubLink)
+				if ok && sublink.SubLinkType == ast.EXISTS_SUBLINK {
+					notNull = true
+					if name == "" {
+						name = "not_exists"
+					}
+				}
+			}
+			cols = append(cols, &Column{Name: name, DataType: "bool", NotNull: notNull})
+
 		case *ast.CaseExpr:
 			name := ""
 			if res.Name != nil {
@@ -347,6 +364,8 @@ func isTableRequired(n ast.Node, col *Column, prior int) int {
 			return helper(tableOptional, tableRequired)
 		case ast.JoinTypeFull:
 			return helper(tableOptional, tableOptional)
+		case ast.JoinTypeInner:
+			return helper(tableRequired, tableRequired)
 		}
 	case *ast.List:
 		for _, item := range n.Items {
