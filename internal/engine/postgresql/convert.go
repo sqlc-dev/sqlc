@@ -112,8 +112,21 @@ func convertA_Const(n *pg.A_Const) *ast.A_Const {
 	if n == nil {
 		return nil
 	}
+	var val ast.Node
+	switch v := n.Val.(type) {
+	case *pg.A_Const_Boolval:
+		val = convertBoolean(v.Boolval)
+	case *pg.A_Const_Bsval:
+		val = convertBitString(v.Bsval)
+	case *pg.A_Const_Fval:
+		val = convertFloat(v.Fval)
+	case *pg.A_Const_Ival:
+		val = convertInteger(v.Ival)
+	case *pg.A_Const_Sval:
+		val = convertString(v.Sval)
+	}
 	return &ast.A_Const{
-		Val:      convertNode(n.Val),
+		Val:      val,
 		Location: int(n.Location),
 	}
 }
@@ -624,6 +637,15 @@ func convertBoolExpr(n *pg.BoolExpr) *ast.BoolExpr {
 		Boolop:   ast.BoolExprType(n.Boolop),
 		Args:     convertSlice(n.Args),
 		Location: int(n.Location),
+	}
+}
+
+func convertBoolean(n *pg.Boolean) *ast.Boolean {
+	if n == nil {
+		return nil
+	}
+	return &ast.Boolean{
+		Boolval: n.Boolval,
 	}
 }
 
@@ -3117,6 +3139,9 @@ func convertNode(node *pg.Node) ast.Node {
 
 	case *pg.Node_BoolExpr:
 		return convertBoolExpr(n.BoolExpr)
+
+	case *pg.Node_Boolean:
+		return convertBoolean(n.Boolean)
 
 	case *pg.Node_BooleanTest:
 		return convertBooleanTest(n.BooleanTest)
