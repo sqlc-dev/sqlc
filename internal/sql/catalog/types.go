@@ -3,7 +3,6 @@ package catalog
 import (
 	"errors"
 	"fmt"
-
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
 )
@@ -197,20 +196,47 @@ func (c *Catalog) alterTypeAddValue(stmt *ast.AlterTypeAddValueStmt) error {
 		return fmt.Errorf("type is not an enum: %T", stmt.Type)
 	}
 
-	newIndex := -1
+	existingIndex := -1
 	for i, val := range enum.Vals {
 		if val == *stmt.NewValue {
-			newIndex = i
+			existingIndex = i
 		}
 	}
-	if newIndex >= 0 {
+
+	if existingIndex >= 0 {
 		if !stmt.SkipIfNewValExists {
-			return fmt.Errorf("type %T already has value %s", stmt.Type, *stmt.NewValue)
+			return fmt.Errorf("enum %s already has value %s", enum.Name, *stmt.NewValue)
 		} else {
 			return nil
 		}
 	}
-	enum.Vals = append(enum.Vals, *stmt.NewValue)
+
+	if stmt.NewValHasNeighbor {
+		insertIndex := -1
+		for i, val := range enum.Vals {
+			if val == *stmt.NewValNeighbor {
+				if stmt.NewValIsAfter {
+					insertIndex = i + 1
+				} else {
+					insertIndex = i
+				}
+			}
+		}
+
+		if insertIndex == -1 {
+			return fmt.Errorf("enum %s unable to find existing neighbor value %s for new value %s", enum.Name, *stmt.NewValNeighbor, *stmt.NewValue)
+		}
+
+		if insertIndex == len(enum.Vals) {
+			enum.Vals = append(enum.Vals, *stmt.NewValue)
+		} else {
+			enum.Vals = append(enum.Vals[:insertIndex+1], enum.Vals[insertIndex:]...)
+			enum.Vals[insertIndex] = *stmt.NewValue
+		}
+	} else {
+		enum.Vals = append(enum.Vals, *stmt.NewValue)
+	}
+
 	return nil
 }
 

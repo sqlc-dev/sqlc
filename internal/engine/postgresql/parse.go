@@ -211,6 +211,9 @@ func translate(node *nodes.Node) (ast.Node, error) {
 			return &ast.AlterTypeAddValueStmt{
 				Type:               rel.TypeName(),
 				NewValue:           makeString(n.NewVal),
+				NewValHasNeighbor:  len(n.NewValNeighbor) > 0,
+				NewValNeighbor:     makeString(n.NewValNeighbor),
+				NewValIsAfter:      n.NewValIsAfter,
 				SkipIfNewValExists: n.SkipIfNewValExists,
 			}, nil
 		}
