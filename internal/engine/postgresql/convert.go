@@ -6,7 +6,7 @@ package postgresql
 import (
 	"fmt"
 
-	pg "github.com/pganalyze/pg_query_go/v2"
+	pg "github.com/pganalyze/pg_query_go/v4"
 
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 )
