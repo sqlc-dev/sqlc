@@ -23,6 +23,8 @@ func convertFuncParamMode(m pg.FunctionParameterMode) (ast.FuncParamMode, error)
 		return ast.FuncParamVariadic, nil
 	case pg.FunctionParameterMode_FUNC_PARAM_TABLE:
 		return ast.FuncParamTable, nil
+	case pg.FunctionParameterMode_FUNC_PARAM_DEFAULT:
+		return ast.FuncParamDefault, nil
 	default:
 		return -1, fmt.Errorf("parse func param: invalid mode %v", m)
 	}
