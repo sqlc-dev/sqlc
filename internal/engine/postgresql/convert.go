@@ -113,17 +113,21 @@ func convertA_Const(n *pg.A_Const) *ast.A_Const {
 		return nil
 	}
 	var val ast.Node
-	switch v := n.Val.(type) {
-	case *pg.A_Const_Boolval:
-		val = convertBoolean(v.Boolval)
-	case *pg.A_Const_Bsval:
-		val = convertBitString(v.Bsval)
-	case *pg.A_Const_Fval:
-		val = convertFloat(v.Fval)
-	case *pg.A_Const_Ival:
-		val = convertInteger(v.Ival)
-	case *pg.A_Const_Sval:
-		val = convertString(v.Sval)
+	if n.Isnull {
+		val = &ast.Null{}
+	} else {
+		switch v := n.Val.(type) {
+		case *pg.A_Const_Boolval:
+			val = convertBoolean(v.Boolval)
+		case *pg.A_Const_Bsval:
+			val = convertBitString(v.Bsval)
+		case *pg.A_Const_Fval:
+			val = convertFloat(v.Fval)
+		case *pg.A_Const_Ival:
+			val = convertInteger(v.Ival)
+		case *pg.A_Const_Sval:
+			val = convertString(v.Sval)
+		}
 	}
 	return &ast.A_Const{
 		Val:      val,
