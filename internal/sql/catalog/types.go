@@ -227,8 +227,12 @@ func (c *Catalog) alterTypeAddValue(stmt *ast.AlterTypeAddValueStmt) error {
 			return fmt.Errorf("enum %s unable to find existing neighbor value %s for new value %s", enum.Name, *stmt.NewValNeighbor, *stmt.NewValue)
 		}
 
-		enum.Vals = append(enum.Vals[:insertIndex+1], enum.Vals[insertIndex:]...)
-		enum.Vals[insertIndex] = *stmt.NewValue
+		if insertIndex == len(enum.Vals) {
+			enum.Vals = append(enum.Vals, *stmt.NewValue)
+		} else {
+			enum.Vals = append(enum.Vals[:insertIndex+1], enum.Vals[insertIndex:]...)
+			enum.Vals[insertIndex] = *stmt.NewValue
+		}
 	} else {
 		enum.Vals = append(enum.Vals, *stmt.NewValue)
 	}
