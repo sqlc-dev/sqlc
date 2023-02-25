@@ -1,0 +1,121 @@
+([]interface {}) (len=1 cap=1) {
+ (*ast.RawStmt)(0x1400003cd20)({
+  Stmt: (*ast.SelectStmt)(0x140009666e0)({
+   DistinctClause: (*ast.List)(0x14000962408)({
+    Items: ([]ast.Node) <nil>
+   }),
+   IntoClause: (*ast.IntoClause)(<nil>),
+   TargetList: (*ast.List)(0x14000962420)({
+    Items: ([]ast.Node) (len=1 cap=1) {
+     (*ast.ResTarget)(0x14000960c90)({
+      Name: (*string)(0x14000915cc0)((len=6) "is_one"),
+      Indirection: (*ast.List)(0x14000962438)({
+       Items: ([]ast.Node) <nil>
+      }),
+      Val: (*ast.CaseExpr)(0x1400095d630)({
+       Xpr: (*ast.TODO)(0x102d4dd40)({
+       }),
+       Casetype: (ast.Oid) 0,
+       Casecollid: (ast.Oid) 0,
+       Arg: (*ast.TODO)(0x102d4dd40)({
+       }),
+       Args: (*ast.List)(0x14000962450)({
+        Items: ([]ast.Node) (len=1 cap=1) {
+         (*ast.CaseWhen)(0x14000160500)({
+          Xpr: (*ast.TODO)(0x102d4dd40)({
+          }),
+          Expr: (*ast.A_Expr)(0x140001604c0)({
+           Kind: (ast.A_Expr_Kind) 1,
+           Name: (*ast.List)(0x14000962468)({
+            Items: ([]ast.Node) (len=1 cap=1) {
+             (*ast.String)(0x14000915cd0)({
+              Str: (string) (len=1) "="
+             })
+            }
+           }),
+           Lexpr: (*ast.ColumnRef)(0x1400003cd00)({
+            Name: (string) "",
+            Fields: (*ast.List)(0x14000962480)({
+             Items: ([]ast.Node) (len=1 cap=1) {
+              (*ast.String)(0x14000915cf0)({
+               Str: (string) (len=2) "id"
+              })
+             }
+            }),
+            Location: (int) 94
+           }),
+           Rexpr: (*ast.ParamRef)(0x14000040120)({
+            Number: (int) 1,
+            Location: (int) 99,
+            Dollar: (bool) true
+           }),
+           Location: (int) 97
+          }),
+          Result: (*ast.A_Const)(0x14000962498)({
+           Val: (*ast.Boolean)(0x1400022ee93)({
+            Boolval: (bool) true
+           }),
+           Location: (int) 107
+          }),
+          Location: (int) 89
+         })
+        }
+       }),
+       Defresult: (*ast.A_Const)(0x140009624b0)({
+        Val: (*ast.Boolean)(0x1400022ee94)({
+         Boolval: (bool) false
+        }),
+        Location: (int) 119
+       }),
+       Location: (int) 81
+      }),
+      Location: (int) 81
+     })
+    }
+   }),
+   FromClause: (*ast.List)(0x140009624c8)({
+    Items: ([]ast.Node) (len=1 cap=1) {
+     (*ast.RangeVar)(0x14000960cc0)({
+      Catalogname: (*string)(<nil>),
+      Schemaname: (*string)(<nil>),
+      Relname: (*string)(0x14000915d50)((len=3) "foo"),
+      Inh: (bool) true,
+      Relpersistence: (uint8) 112,
+      Alias: (*ast.Alias)(<nil>),
+      Location: (int) 141
+     })
+    }
+   }),
+   WhereClause: (*ast.TODO)(0x102d4dd40)({
+   }),
+   GroupClause: (*ast.List)(0x140009624e0)({
+    Items: ([]ast.Node) <nil>
+   }),
+   HavingClause: (*ast.TODO)(0x102d4dd40)({
+   }),
+   WindowClause: (*ast.List)(0x140009624f8)({
+    Items: ([]ast.Node) <nil>
+   }),
+   ValuesLists: (*ast.List)(0x14000962510)({
+    Items: ([]ast.Node) <nil>
+   }),
+   SortClause: (*ast.List)(0x14000962528)({
+    Items: ([]ast.Node) <nil>
+   }),
+   LimitOffset: (*ast.TODO)(0x102d4dd40)({
+   }),
+   LimitCount: (*ast.TODO)(0x102d4dd40)({
+   }),
+   LockingClause: (*ast.List)(0x14000962540)({
+    Items: ([]ast.Node) <nil>
+   }),
+   WithClause: (*ast.WithClause)(<nil>),
+   Op: (ast.SetOperation) None,
+   All: (bool) false,
+   Larg: (*ast.SelectStmt)(<nil>),
+   Rarg: (*ast.SelectStmt)(<nil>)
+  }),
+  StmtLocation: (int) 36,
+  StmtLen: (int) 108
+ })
+}
