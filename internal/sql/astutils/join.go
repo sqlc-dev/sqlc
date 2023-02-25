@@ -7,7 +7,11 @@ import (
 )
 
 func Join(list *ast.List, sep string) string {
-	items := []string{}
+	if list == nil {
+		return ""
+	}
+
+	var items []string
 	for _, item := range list.Items {
 		if n, ok := item.(*ast.String); ok {
 			items = append(items, n.Str)
