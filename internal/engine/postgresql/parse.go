@@ -211,6 +211,9 @@ func translate(node *nodes.Node) (ast.Node, error) {
 			return &ast.AlterTypeAddValueStmt{
 				Type:               rel.TypeName(),
 				NewValue:           makeString(n.NewVal),
+				NewValHasNeighbor:  len(n.NewValNeighbor) > 0,
+				NewValNeighbor:     makeString(n.NewValNeighbor),
+				NewValIsAfter:      n.NewValIsAfter,
 				SkipIfNewValExists: n.SkipIfNewValExists,
 			}, nil
 		}
@@ -223,6 +226,16 @@ func translate(node *nodes.Node) (ast.Node, error) {
 			rel := parseRelationFromRangeVar(n.Relation)
 			return &ast.AlterTableSetSchemaStmt{
 				Table:     rel.TableName(),
+				NewSchema: makeString(n.Newschema),
+			}, nil
+
+		case nodes.ObjectType_OBJECT_TYPE:
+			rel, err := parseRelation(n.Object)
+			if err != nil {
+				return nil, err
+			}
+			return &ast.AlterTypeSetSchemaStmt{
+				Type:      rel.TypeName(),
 				NewSchema: makeString(n.Newschema),
 			}, nil
 		}
