@@ -156,6 +156,12 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 				col := toColumn(tc.TypeName)
 				col.Name = name
 				cols = append(cols, col)
+			} else if aconst, ok := n.Defresult.(*ast.A_Const); ok {
+				tn, err := ParseTypeName(aconst.Val)
+				if err != nil {
+					return nil, err
+				}
+				cols = append(cols, &Column{Name: name, DataType: dataType(tn), NotNull: true})
 			} else {
 				cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
 			}

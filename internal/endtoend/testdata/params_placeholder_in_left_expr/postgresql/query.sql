@@ -4,7 +4,7 @@ CREATE TABLE users (
 );
 
 -- name: FindByID :many
-SELECT * FROM users WHERE ? = id;
+SELECT * FROM users WHERE $1 = id;
 
 -- name: FindByIDAndName :many
-SELECT * FROM users WHERE ? = id AND ? = name;
+SELECT * FROM users WHERE $1 = id AND $1 = name;

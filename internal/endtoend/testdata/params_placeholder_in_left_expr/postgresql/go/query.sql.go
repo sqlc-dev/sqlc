@@ -7,11 +7,10 @@ package querytest
 
 import (
 	"context"
-	"database/sql"
 )
 
 const findByID = `-- name: FindByID :many
-SELECT id, name FROM users WHERE ? = id
+SELECT id, name FROM users WHERE $1 = id
 `
 
 func (q *Queries) FindByID(ctx context.Context, id int32) ([]User, error) {
@@ -38,16 +37,11 @@ func (q *Queries) FindByID(ctx context.Context, id int32) ([]User, error) {
 }
 
 const findByIDAndName = `-- name: FindByIDAndName :many
-SELECT id, name FROM users WHERE ? = id AND ? = name
+SELECT id, name FROM users WHERE $1 = id AND $1 = name
 `
 
-type FindByIDAndNameParams struct {
-	ID   int32
-	Name sql.NullString
-}
-
-func (q *Queries) FindByIDAndName(ctx context.Context, arg FindByIDAndNameParams) ([]User, error) {
-	rows, err := q.db.QueryContext(ctx, findByIDAndName, arg.ID, arg.Name)
+func (q *Queries) FindByIDAndName(ctx context.Context, id int32) ([]User, error) {
+	rows, err := q.db.QueryContext(ctx, findByIDAndName, id)
 	if err != nil {
 		return nil, err
 	}
