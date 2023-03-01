@@ -35,7 +35,7 @@ func (q *Queries) GetAll(ctx context.Context) ([]*Foo, error) {
 }
 
 const getAllAByB = `-- name: GetAllAByB :many
-SELECT a FROM foo WHERE b = ?
+SELECT a FROM foo WHERE b = $1
 `
 
 func (q *Queries) GetAllAByB(ctx context.Context, b sql.NullInt32) ([]sql.NullInt32, error) {
@@ -59,7 +59,7 @@ func (q *Queries) GetAllAByB(ctx context.Context, b sql.NullInt32) ([]sql.NullIn
 }
 
 const getOne = `-- name: GetOne :one
-SELECT a, b FROM foo WHERE a = ? AND b = ? LIMIT 1
+SELECT a, b FROM foo WHERE a = $1 AND b = $2 LIMIT 1
 `
 
 type GetOneParams struct {

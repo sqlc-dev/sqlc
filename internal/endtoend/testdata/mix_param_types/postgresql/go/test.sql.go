@@ -9,23 +9,6 @@ import (
 	"context"
 )
 
-const countFour = `-- name: CountFour :one
-SELECT count(1) FROM bar WHERE id > ? AND phone <> ? AND name <> ?
-`
-
-type CountFourParams struct {
-	ID    int32
-	Phone string
-	Name  string
-}
-
-func (q *Queries) CountFour(ctx context.Context, arg CountFourParams) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countFour, arg.ID, arg.Phone, arg.Name)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
-
 const countOne = `-- name: CountOne :one
 SELECT count(1) FROM bar WHERE id = $2 AND name <> $1 LIMIT $3
 `
