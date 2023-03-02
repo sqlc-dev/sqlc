@@ -6,7 +6,7 @@ package postgresql
 import (
 	"fmt"
 
-	pg "github.com/pganalyze/pg_query_go/v2"
+	pg "github.com/pganalyze/pg_query_go/v4"
 
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 )
@@ -23,6 +23,8 @@ func convertFuncParamMode(m pg.FunctionParameterMode) (ast.FuncParamMode, error)
 		return ast.FuncParamVariadic, nil
 	case pg.FunctionParameterMode_FUNC_PARAM_TABLE:
 		return ast.FuncParamTable, nil
+	case pg.FunctionParameterMode_FUNC_PARAM_DEFAULT:
+		return ast.FuncParamDefault, nil
 	default:
 		return -1, fmt.Errorf("parse func param: invalid mode %v", m)
 	}
@@ -112,8 +114,25 @@ func convertA_Const(n *pg.A_Const) *ast.A_Const {
 	if n == nil {
 		return nil
 	}
+	var val ast.Node
+	if n.Isnull {
+		val = &ast.Null{}
+	} else {
+		switch v := n.Val.(type) {
+		case *pg.A_Const_Boolval:
+			val = convertBoolean(v.Boolval)
+		case *pg.A_Const_Bsval:
+			val = convertBitString(v.Bsval)
+		case *pg.A_Const_Fval:
+			val = convertFloat(v.Fval)
+		case *pg.A_Const_Ival:
+			val = convertInteger(v.Ival)
+		case *pg.A_Const_Sval:
+			val = convertString(v.Sval)
+		}
+	}
 	return &ast.A_Const{
-		Val:      convertNode(n.Val),
+		Val:      val,
 		Location: int(n.Location),
 	}
 }
@@ -345,7 +364,7 @@ func convertAlterObjectDependsStmt(n *pg.AlterObjectDependsStmt) *ast.AlterObjec
 		ObjectType: ast.ObjectType(n.ObjectType),
 		Relation:   convertRangeVar(n.Relation),
 		Object:     convertNode(n.Object),
-		Extname:    convertNode(n.Extname),
+		Extname:    convertString(n.Extname),
 	}
 }
 
@@ -416,9 +435,9 @@ func convertAlterPublicationStmt(n *pg.AlterPublicationStmt) *ast.AlterPublicati
 	return &ast.AlterPublicationStmt{
 		Pubname:      makeString(n.Pubname),
 		Options:      convertSlice(n.Options),
-		Tables:       convertSlice(n.Tables),
+		Tables:       convertSlice(n.Pubobjects),
 		ForAllTables: n.ForAllTables,
-		TableAction:  ast.DefElemAction(n.TableAction),
+		TableAction:  ast.DefElemAction(n.Action),
 	}
 }
 
@@ -550,7 +569,7 @@ func convertAlterTableStmt(n *pg.AlterTableStmt) *ast.AlterTableStmt {
 	return &ast.AlterTableStmt{
 		Relation:  convertRangeVar(n.Relation),
 		Cmds:      convertSlice(n.Cmds),
-		Relkind:   ast.ObjectType(n.Relkind),
+		Relkind:   ast.ObjectType(n.Objtype),
 		MissingOk: n.MissingOk,
 	}
 }
@@ -611,7 +630,7 @@ func convertBitString(n *pg.BitString) *ast.BitString {
 		return nil
 	}
 	return &ast.BitString{
-		Str: n.Str,
+		Str: n.Bsval,
 	}
 }
 
@@ -624,6 +643,15 @@ func convertBoolExpr(n *pg.BoolExpr) *ast.BoolExpr {
 		Boolop:   ast.BoolExprType(n.Boolop),
 		Args:     convertSlice(n.Args),
 		Location: int(n.Location),
+	}
+}
+
+func convertBoolean(n *pg.Boolean) *ast.Boolean {
+	if n == nil {
+		return nil
+	}
+	return &ast.Boolean{
+		Boolval: n.Boolval,
 	}
 }
 
@@ -1165,7 +1193,7 @@ func convertCreatePublicationStmt(n *pg.CreatePublicationStmt) *ast.CreatePublic
 	return &ast.CreatePublicationStmt{
 		Pubname:      makeString(n.Pubname),
 		Options:      convertSlice(n.Options),
-		Tables:       convertSlice(n.Tables),
+		Tables:       convertSlice(n.Pubobjects),
 		ForAllTables: n.ForAllTables,
 	}
 }
@@ -1267,7 +1295,7 @@ func convertCreateTableAsStmt(n *pg.CreateTableAsStmt) *ast.CreateTableAsStmt {
 	res := &ast.CreateTableAsStmt{
 		Query:        convertNode(n.Query),
 		Into:         convertIntoClause(n.Into),
-		Relkind:      ast.ObjectType(n.Relkind),
+		Relkind:      ast.ObjectType(n.Objtype),
 		IsSelectInto: n.IsSelectInto,
 		IfNotExists:  n.IfNotExists,
 	}
@@ -1528,13 +1556,6 @@ func convertExplainStmt(n *pg.ExplainStmt) *ast.ExplainStmt {
 	}
 }
 
-func convertExpr(n *pg.Expr) *ast.Expr {
-	if n == nil {
-		return nil
-	}
-	return &ast.Expr{}
-}
-
 func convertFetchStmt(n *pg.FetchStmt) *ast.FetchStmt {
 	if n == nil {
 		return nil
@@ -1579,7 +1600,7 @@ func convertFloat(n *pg.Float) *ast.Float {
 		return nil
 	}
 	return &ast.Float{
-		Str: n.Str,
+		Str: n.Fval,
 	}
 }
 
@@ -1946,13 +1967,6 @@ func convertNotifyStmt(n *pg.NotifyStmt) *ast.NotifyStmt {
 		Conditionname: makeString(n.Conditionname),
 		Payload:       makeString(n.Payload),
 	}
-}
-
-func convertNull(n *pg.Null) *ast.Null {
-	if n == nil {
-		return nil
-	}
-	return &ast.Null{}
 }
 
 func convertNullTest(n *pg.NullTest) *ast.NullTest {
@@ -2353,7 +2367,7 @@ func convertReindexStmt(n *pg.ReindexStmt) *ast.ReindexStmt {
 		Kind:     ast.ReindexObjectType(n.Kind),
 		Relation: convertRangeVar(n.Relation),
 		Name:     makeString(n.Name),
-		Options:  int(n.Options),
+		// Options:  int(n.Options), TODO: Support params
 	}
 }
 
@@ -2611,7 +2625,7 @@ func convertString(n *pg.String) *ast.String {
 		return nil
 	}
 	return &ast.String{
-		Str: n.Str,
+		Str: n.Sval,
 	}
 }
 
@@ -3118,6 +3132,9 @@ func convertNode(node *pg.Node) ast.Node {
 	case *pg.Node_BoolExpr:
 		return convertBoolExpr(n.BoolExpr)
 
+	case *pg.Node_Boolean:
+		return convertBoolean(n.Boolean)
+
 	case *pg.Node_BooleanTest:
 		return convertBooleanTest(n.BooleanTest)
 
@@ -3328,9 +3345,6 @@ func convertNode(node *pg.Node) ast.Node {
 	case *pg.Node_ExplainStmt:
 		return convertExplainStmt(n.ExplainStmt)
 
-	case *pg.Node_Expr:
-		return convertExpr(n.Expr)
-
 	case *pg.Node_FetchStmt:
 		return convertFetchStmt(n.FetchStmt)
 
@@ -3426,9 +3440,6 @@ func convertNode(node *pg.Node) ast.Node {
 
 	case *pg.Node_NotifyStmt:
 		return convertNotifyStmt(n.NotifyStmt)
-
-	case *pg.Node_Null:
-		return convertNull(n.Null)
 
 	case *pg.Node_NullTest:
 		return convertNullTest(n.NullTest)

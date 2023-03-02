@@ -462,3 +462,22 @@ func trimSliceAndPointerPrefix(v string) string {
 	v = strings.TrimPrefix(v, "*")
 	return v
 }
+
+func replaceConflictedArg(imports [][]ImportSpec, queries []Query) []Query {
+	m := make(map[string]struct{})
+	for _, is := range imports {
+		for _, i := range is {
+			paths := strings.Split(i.Path, "/")
+			m[paths[len(paths)-1]] = struct{}{}
+		}
+	}
+
+	replacedQueries := make([]Query, 0, len(queries))
+	for _, query := range queries {
+		if _, exist := m[query.Arg.Name]; exist {
+			query.Arg.Name = toCamelCase(fmt.Sprintf("arg_%s", query.Arg.Name))
+		}
+		replacedQueries = append(replacedQueries, query)
+	}
+	return replacedQueries
+}

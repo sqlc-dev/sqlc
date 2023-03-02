@@ -1,20 +1,20 @@
 module github.com/kyleconroy/sqlc
 
-go 1.19
+go 1.20
 
 require (
-	github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20220626175859-9abda183db8e
+	github.com/antlr/antlr4/runtime/Go/antlr v1.4.10
 	github.com/bytecodealliance/wasmtime-go/v5 v5.0.0
 	github.com/cubicdaiya/gonp v1.0.4
 	github.com/davecgh/go-spew v1.1.1
 	github.com/go-sql-driver/mysql v1.7.0
 	github.com/google/go-cmp v0.5.9
 	github.com/jackc/pgconn v1.14.0
-	github.com/jackc/pgx/v4 v4.18.0
+	github.com/jackc/pgx/v4 v4.18.1
 	github.com/jinzhu/inflection v1.0.0
 	github.com/lib/pq v1.10.7
 	github.com/mattn/go-sqlite3 v1.14.16
-	github.com/pganalyze/pg_query_go/v2 v2.2.0
+	github.com/pganalyze/pg_query_go/v4 v4.2.0
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/pflag v1.0.5
 	golang.org/x/sync v0.1.0

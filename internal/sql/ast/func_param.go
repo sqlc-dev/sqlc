@@ -8,6 +8,7 @@ const (
 	FuncParamInOut
 	FuncParamVariadic
 	FuncParamTable
+	FuncParamDefault
 )
 
 type FuncParam struct {

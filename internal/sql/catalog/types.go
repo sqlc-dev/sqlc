@@ -3,7 +3,6 @@ package catalog
 import (
 	"errors"
 	"fmt"
-
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
 )
@@ -197,20 +196,95 @@ func (c *Catalog) alterTypeAddValue(stmt *ast.AlterTypeAddValueStmt) error {
 		return fmt.Errorf("type is not an enum: %T", stmt.Type)
 	}
 
-	newIndex := -1
+	existingIndex := -1
 	for i, val := range enum.Vals {
 		if val == *stmt.NewValue {
-			newIndex = i
+			existingIndex = i
 		}
 	}
-	if newIndex >= 0 {
+
+	if existingIndex >= 0 {
 		if !stmt.SkipIfNewValExists {
-			return fmt.Errorf("type %T already has value %s", stmt.Type, *stmt.NewValue)
+			return fmt.Errorf("enum %s already has value %s", enum.Name, *stmt.NewValue)
 		} else {
 			return nil
 		}
 	}
-	enum.Vals = append(enum.Vals, *stmt.NewValue)
+
+	if stmt.NewValHasNeighbor {
+		insertIndex := -1
+		for i, val := range enum.Vals {
+			if val == *stmt.NewValNeighbor {
+				if stmt.NewValIsAfter {
+					insertIndex = i + 1
+				} else {
+					insertIndex = i
+				}
+			}
+		}
+
+		if insertIndex == -1 {
+			return fmt.Errorf("enum %s unable to find existing neighbor value %s for new value %s", enum.Name, *stmt.NewValNeighbor, *stmt.NewValue)
+		}
+
+		if insertIndex == len(enum.Vals) {
+			enum.Vals = append(enum.Vals, *stmt.NewValue)
+		} else {
+			enum.Vals = append(enum.Vals[:insertIndex+1], enum.Vals[insertIndex:]...)
+			enum.Vals[insertIndex] = *stmt.NewValue
+		}
+	} else {
+		enum.Vals = append(enum.Vals, *stmt.NewValue)
+	}
+
+	return nil
+}
+
+func (c *Catalog) alterTypeSetSchema(stmt *ast.AlterTypeSetSchemaStmt) error {
+	ns := stmt.Type.Schema
+	if ns == "" {
+		ns = c.DefaultSchema
+	}
+	oldSchema, err := c.getSchema(ns)
+	if err != nil {
+		return err
+	}
+	typ, idx, err := oldSchema.getType(stmt.Type)
+	if err != nil {
+		return err
+	}
+	oldType := *stmt.Type
+	stmt.Type.Schema = *stmt.NewSchema
+	newSchema, err := c.getSchema(*stmt.NewSchema)
+	if err != nil {
+		return err
+	}
+	// Because tables have associated data types, the type name must also
+	// be distinct from the name of any existing table in the same
+	// schema.
+	// https://www.postgresql.org/docs/current/sql-createtype.html
+	tbl := &ast.TableName{
+		Name: stmt.Type.Name,
+	}
+	if _, _, err := newSchema.getTable(tbl); err == nil {
+		return sqlerr.RelationExists(tbl.Name)
+	}
+	if _, _, err := newSchema.getType(stmt.Type); err == nil {
+		return sqlerr.TypeExists(stmt.Type.Name)
+	}
+	oldSchema.Types = append(oldSchema.Types[:idx], oldSchema.Types[idx+1:]...)
+	newSchema.Types = append(newSchema.Types, typ)
+
+	// Update all the table columns with the new type
+	for _, schema := range c.Schemas {
+		for _, table := range schema.Tables {
+			for _, column := range table.Columns {
+				if column.Type == oldType {
+					column.Type.Schema = *stmt.NewSchema
+				}
+			}
+		}
+	}
 	return nil
 }
 

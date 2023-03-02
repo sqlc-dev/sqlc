@@ -44,6 +44,11 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Type)
 		}
 
+	case *ast.AlterTypeSetSchemaStmt:
+		if n.Type != nil {
+			Walk(f, n.Type)
+		}
+
 	case *ast.AlterTypeRenameValueStmt:
 		if n.Type != nil {
 			Walk(f, n.Type)
@@ -502,6 +507,9 @@ func Walk(f Visitor, node ast.Node) {
 		if n.Args != nil {
 			Walk(f, n.Args)
 		}
+
+	case *ast.Boolean:
+		// pass
 
 	case *ast.BooleanTest:
 		if n.Xpr != nil {
