@@ -34,9 +34,13 @@ func (table *Table) isExistColumn(cmd *ast.AlterTableCmd) (int, error) {
 func (table *Table) addColumn(cmd *ast.AlterTableCmd) error {
 	for _, c := range table.Columns {
 		if c.Name == cmd.Def.Colname {
-			return sqlerr.ColumnExists(table.Rel.Name, c.Name)
+			if !cmd.MissingOk {
+				return sqlerr.ColumnExists(table.Rel.Name, cmd.Def.Colname)
+			}
+			return nil
 		}
 	}
+
 	table.Columns = append(table.Columns, &Column{
 		Name:      cmd.Def.Colname,
 		Type:      *cmd.Def.TypeName,

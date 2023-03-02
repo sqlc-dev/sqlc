@@ -1,0 +1,19 @@
+{
+  "version": "2",
+  "sql": [
+    {
+      "engine": "postgresql",
+      "schema": "schema.sql",
+      "queries": "query.sql",
+      "gen": {
+        "go": {
+          "out" : "go",
+          "package" : "db",
+          "emit_interface": true,
+          "emit_all_enum_values": true,
+          "emit_enum_valid_method": true
+        }
+      }
+    }
+  ]
+}

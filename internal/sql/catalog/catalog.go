@@ -61,6 +61,9 @@ func (c *Catalog) Update(stmt ast.Statement, colGen columnGenerator) error {
 	case *ast.AlterTypeRenameValueStmt:
 		err = c.alterTypeRenameValue(n)
 
+	case *ast.AlterTypeSetSchemaStmt:
+		err = c.alterTypeSetSchema(n)
+
 	case *ast.CommentOnColumnStmt:
 		err = c.commentOnColumn(n)
 
