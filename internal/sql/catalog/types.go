@@ -211,8 +211,9 @@ func (c *Catalog) alterTypeAddValue(stmt *ast.AlterTypeAddValueStmt) error {
 		}
 	}
 
+	insertIndex := len(enum.Vals)
 	if stmt.NewValHasNeighbor {
-		insertIndex := -1
+		foundNeighbor := false
 		for i, val := range enum.Vals {
 			if val == *stmt.NewValNeighbor {
 				if stmt.NewValIsAfter {
@@ -220,21 +221,21 @@ func (c *Catalog) alterTypeAddValue(stmt *ast.AlterTypeAddValueStmt) error {
 				} else {
 					insertIndex = i
 				}
+				foundNeighbor = true
+				break
 			}
 		}
 
-		if insertIndex == -1 {
+		if !foundNeighbor {
 			return fmt.Errorf("enum %s unable to find existing neighbor value %s for new value %s", enum.Name, *stmt.NewValNeighbor, *stmt.NewValue)
 		}
+	}
 
-		if insertIndex == len(enum.Vals) {
-			enum.Vals = append(enum.Vals, *stmt.NewValue)
-		} else {
-			enum.Vals = append(enum.Vals[:insertIndex+1], enum.Vals[insertIndex:]...)
-			enum.Vals[insertIndex] = *stmt.NewValue
-		}
-	} else {
+	if insertIndex == len(enum.Vals) {
 		enum.Vals = append(enum.Vals, *stmt.NewValue)
+	} else {
+		enum.Vals = append(enum.Vals[:insertIndex+1], enum.Vals[insertIndex:]...)
+		enum.Vals[insertIndex] = *stmt.NewValue
 	}
 
 	return nil
