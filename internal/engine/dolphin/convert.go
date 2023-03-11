@@ -318,9 +318,22 @@ func (c *cc) convertDeleteStmt(n *pcast.DeleteStmt) *ast.DeleteStmt {
 	if len(rels.Items) != 1 {
 		panic("expected one range var")
 	}
-	rel := rels.Items[0]
-	rangeVar, ok := rel.(*ast.RangeVar)
-	if !ok {
+	var rangeVar *ast.RangeVar
+
+	switch rel := rels.Items[0].(type) {
+
+	// Special case for joins in deletes
+	case *ast.JoinExpr:
+		left, ok := rel.Larg.(*ast.RangeVar)
+		if !ok {
+			panic("expected range var")
+		}
+		rangeVar = left
+
+	case *ast.RangeVar:
+		rangeVar = rel
+
+	default:
 		panic("expected range var")
 	}
 
@@ -1161,22 +1174,24 @@ func (c *cc) convertSetOprType(n *pcast.SetOprType) (op ast.SetOperation, all bo
 // into a tree. It is called for UNION, INTERSECT or EXCLUDE operation.
 //
 // Given an union with the following nodes:
-//     [Select{1}, Select{2}, Select{3}, Select{4}]
+//
+//	[Select{1}, Select{2}, Select{3}, Select{4}]
 //
 // The function will return:
-//     Select{
-//         Larg: Select{
-//             Larg: Select{
-//                 Larg: Select{1},
-//                 Rarg: Select{2},
-//                 Op: Union
-//             },
-//             Rarg: Select{3},
-//             Op: Union,
-//         },
-//         Rarg: Select{4},
-//         Op: Union,
-//     }
+//
+//	Select{
+//	    Larg: Select{
+//	        Larg: Select{
+//	            Larg: Select{1},
+//	            Rarg: Select{2},
+//	            Op: Union
+//	        },
+//	        Rarg: Select{3},
+//	        Op: Union,
+//	    },
+//	    Rarg: Select{4},
+//	    Op: Union,
+//	}
 func (c *cc) convertSetOprSelectList(n *pcast.SetOprSelectList) ast.Node {
 	selectStmts := make([]*ast.SelectStmt, len(n.Selects))
 	for i, node := range n.Selects {
