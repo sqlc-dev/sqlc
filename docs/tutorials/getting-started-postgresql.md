@@ -5,7 +5,7 @@ This tutorial assumes that the latest version of sqlc is
 
 Create a new directory called `sqlc-tutorial` and open it up.
 
-Initialize a new Go module named `tutorial.sql.dev/app`
+Initialize a new Go module named `tutorial.sqlc.dev/app`
 
 ```shell
 go mod init tutorial.sqlc.dev/app
