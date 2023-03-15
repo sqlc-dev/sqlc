@@ -1,4 +1,9 @@
 {{define "batchCodePgx"}}
+
+var (
+	ErrBatchAlreadyClosed = errors.New("batch already closed")
+)
+
 {{range .GoQueries}}
 {{if eq (hasPrefix .Cmd ":batch") true }}
 const {{.ConstantName}} = {{$.Q}}-- name: {{.MethodName}} {{.Cmd}}
@@ -51,7 +56,7 @@ func (b *{{.MethodName}}BatchResults) Exec(f func(int, error)) {
    for t := 0; t < b.tot; t++ {
      if b.closed {
        if f != nil {
-         f(t, errors.New("batch already closed"))
+         f(t, ErrBatchAlreadyClosed)
        }
        continue
      }
@@ -74,7 +79,7 @@ func (b *{{.MethodName}}BatchResults) Query(f func(int, []{{.Ret.DefineType}}, e
      {{end -}}
      if b.closed {
         if f != nil {
-          f(t, items, errors.New("batch already closed"))
+          f(t, items, ErrBatchAlreadyClosed)
         }
         continue
      }
@@ -107,7 +112,7 @@ func (b *{{.MethodName}}BatchResults) QueryRow(f func(int, {{.Ret.DefineType}}, 
      var {{.Ret.Name}} {{.Ret.Type}}
      if b.closed {
         if f != nil {
-          f(t, {{if .Ret.IsPointer}}nil{{else}}{{.Ret.Name}}{{end}}, errors.New("batch already closed"))
+          f(t, {{if .Ret.IsPointer}}nil{{else}}{{.Ret.Name}}{{end}}, ErrBatchAlreadyClosed)
         }
         continue
      }
