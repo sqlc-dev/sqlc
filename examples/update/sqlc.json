@@ -1,0 +1,27 @@
+{
+  "version": "2",
+  "sql": [
+    {
+      "schema": "withparams/schema.sql",
+      "queries": "withparams/query.sql",
+      "engine": "mysql",
+      "gen": {
+        "go": {
+          "package": "update",
+          "out": "withparams"
+        }
+      }
+    },
+    {
+      "schema": "noparams/schema.sql",
+      "queries": "noparams/query.sql",
+      "engine": "mysql",
+      "gen": {
+        "go": {
+          "package": "update",
+          "out": "noparams"
+        }
+      }
+    }
+  ]
+}
