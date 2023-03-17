@@ -437,7 +437,7 @@ func sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, error) {
 	case *ast.SelectStmt:
 		list = astutils.Search(n.FromClause, func(node ast.Node) bool {
 			switch node.(type) {
-			case *ast.RangeVar, *ast.RangeSubselect, *ast.FuncName:
+			case *ast.RangeVar, *ast.RangeSubselect, *ast.RangeFunction:
 				return true
 			default:
 				return false
@@ -462,10 +462,20 @@ func sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, error) {
 	for _, item := range list.Items {
 		switch n := item.(type) {
 
-		case *ast.FuncName:
+		case *ast.RangeFunction:
 			// If the function or table can't be found, don't error out.  There
 			// are many queries that depend on functions unknown to sqlc.
-			fn, err := qc.GetFunc(n)
+			var funcCall *ast.FuncCall
+			switch f := n.Functions.Items[0].(type) {
+			case *ast.List:
+				funcCall = f.Items[0].(*ast.FuncCall)
+			case *ast.FuncCall:
+				funcCall = f
+			default:
+				return nil, fmt.Errorf("sourceTables: unsupported function call type %T", n.Functions.Items[0])
+			}
+
+			fn, err := qc.GetFunc(funcCall.Func)
 			if err != nil {
 				continue
 			}
@@ -475,7 +485,22 @@ func sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, error) {
 				Name:    fn.ReturnType.Name,
 			})
 			if err != nil {
-				continue
+				if n.Alias == nil || len(n.Alias.Colnames.Items) == 0 {
+					continue
+				}
+
+				table = &Table{}
+				for _, colName := range n.Alias.Colnames.Items {
+					table.Columns = append(table.Columns, &Column{
+						Name:     colName.(*ast.String).Str,
+						DataType: "any",
+					})
+				}
+			}
+			if n.Alias != nil {
+				table.Rel = &ast.TableName{
+					Name: *n.Alias.Aliasname,
+				}
 			}
 			tables = append(tables, table)
 
