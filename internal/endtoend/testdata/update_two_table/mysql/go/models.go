@@ -2,20 +2,22 @@
 // versions:
 //   sqlc v1.17.2
 
-package update
+package querytest
 
 import (
 	"time"
 )
 
 type Author struct {
-	ID        int64
 	Name      string
 	DeletedAt time.Time
+	CreatedAt time.Time
 	UpdatedAt time.Time
 }
 
 type Book struct {
-	ID        int64
 	IsAmazing bool
+	DeletedAt time.Time
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }

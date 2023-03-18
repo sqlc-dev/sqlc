@@ -98,6 +98,9 @@ func isNotNull(n *pcast.ColumnDef) bool {
 }
 
 func convertToRangeVarList(list *ast.List, result *ast.List) {
+	if len(list.Items) == 0 {
+		return
+	}
 	switch rel := list.Items[0].(type) {
 
 	// Special case for joins in updates
