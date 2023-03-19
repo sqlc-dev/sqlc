@@ -219,6 +219,7 @@ func (c *cc) convertFuncContext(n *parser.Expr_functionContext) ast.Node {
 				Args:        args,
 				AggOrder:    &ast.List{},
 				AggDistinct: n.DISTINCT_() != nil,
+				Location:    n.GetStart().GetStart(),
 			}
 		}
 	}

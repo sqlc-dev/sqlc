@@ -16,7 +16,8 @@ func IsParamFunc(node ast.Node) bool {
 		return false
 	}
 
-	isValid := call.Func.Schema == "sqlc" && (call.Func.Name == "arg" || call.Func.Name == "narg")
+	// sqlite doesn't support the sql.narg syntax and the parser fails, so we have to "sqlc_narg"
+	isValid := (call.Func.Schema == "sqlc" && (call.Func.Name == "arg" || call.Func.Name == "narg")) || call.Func.Name == "sqlc_narg"
 	return isValid
 }
 

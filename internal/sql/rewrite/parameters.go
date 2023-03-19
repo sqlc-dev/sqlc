@@ -41,7 +41,7 @@ func isNamedParamSignCast(node ast.Node) bool {
 	return astutils.Join(expr.Name, ".") == "@" && cast
 }
 
-// paramFromFuncCall creates a param from sqlc.n?arg() calls return the
+// paramFromFuncCall creates a param from sqlc.n?arg() / sqlc_narg() calls return the
 // parameter and whether the parameter name was specified a best guess as its
 // "source" string representation (used for replacing this function call in the
 // original SQL query)
@@ -50,19 +50,34 @@ func paramFromFuncCall(call *ast.FuncCall) (named.Param, string) {
 
 	// origName keeps track of how the parameter was specified in the source SQL
 	origName := paramName
-	if isConst {
+	// the paramName from sqlite comes already wrapped in single quotes
+	if isConst && call.Func.Name != "sqlc_narg" {
 		origName = fmt.Sprintf("'%s'", paramName)
 	}
 
+	if call.Func.Name == "sqlc_narg" {
+		// the sqlite parser returns paramName in single quotes.
+		// we need to strip them or codegen will fail
+		paramName = paramName[1 : len(paramName)-1]
+	}
+
 	param := named.NewParam(paramName)
-	if call.Func.Name == "narg" {
+	if call.Func.Name == "narg" || call.Func.Name == "sqlc_narg" {
 		param = named.NewUserNullableParam(paramName)
 	}
 
-	// TODO: This code assumes that sqlc.arg(name) / sqlc.narg(name) is on a single line
-	// with no extraneous spaces (or any non-significant tokens for that matter)
-	origText := fmt.Sprintf("%s.%s(%s)", call.Func.Schema, call.Func.Name, origName)
+	origText := formatOrigText(call.Func.Schema, call.Func.Name, origName)
 	return param, origText
+}
+
+// TODO: This code assumes that sqlc.arg(name) / sqlc.narg(name) / sqlc_narg(name) is on a single line
+// with no extraneous spaces (or any non-significant tokens for that matter)
+func formatOrigText(funcSchema, funcName, origName string) string {
+	if funcSchema == "" && funcName == "sqlc_narg" {
+		return fmt.Sprintf("%s(%s)", funcName, origName)
+	}
+
+	return fmt.Sprintf("%s.%s(%s)", funcSchema, funcName, origName)
 }
 
 func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool, dollar bool) (*ast.RawStmt, *named.ParamSet, []source.Edit) {
