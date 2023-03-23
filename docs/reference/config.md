@@ -29,7 +29,7 @@ sql:
 Each mapping in the `sql` collection has the following keys:
 
 - `engine`:
-  - Either `postgresql` or `mysql`.
+  - One of `postgresql`, `mysql` or `sqlite`.
 - `schema`:
   - Directory of SQL migrations or path to single SQL file; or a list of paths.
 - `queries`:
