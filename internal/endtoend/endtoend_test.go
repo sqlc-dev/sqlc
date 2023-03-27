@@ -39,7 +39,7 @@ func TestExamples(t *testing.T) {
 			t.Parallel()
 			path := filepath.Join(examples, tc)
 			var stderr bytes.Buffer
-			output, err := cmd.Generate(ctx, cmd.Env{ExperimentalFeatures: true}, path, "", &stderr)
+			output, err := cmd.Generate(ctx, cmd.Env{}, path, "", &stderr)
 			if err != nil {
 				t.Fatalf("sqlc generate failed: %s", stderr.String())
 			}
@@ -67,7 +67,7 @@ func BenchmarkExamples(b *testing.B) {
 			path := filepath.Join(examples, tc)
 			for i := 0; i < b.N; i++ {
 				var stderr bytes.Buffer
-				cmd.Generate(ctx, cmd.Env{ExperimentalFeatures: true}, path, "", &stderr)
+				cmd.Generate(ctx, cmd.Env{}, path, "", &stderr)
 			}
 		})
 	}
@@ -112,9 +112,9 @@ func TestReplay(t *testing.T) {
 
 			switch args.Command {
 			case "diff":
-				err = cmd.Diff(ctx, cmd.Env{ExperimentalFeatures: true}, path, "", &stderr)
+				err = cmd.Diff(ctx, cmd.Env{}, path, "", &stderr)
 			case "generate":
-				output, err = cmd.Generate(ctx, cmd.Env{ExperimentalFeatures: true}, path, "", &stderr)
+				output, err = cmd.Generate(ctx, cmd.Env{}, path, "", &stderr)
 				if err == nil {
 					cmpDirectory(t, path, output)
 				}
@@ -254,7 +254,7 @@ func BenchmarkReplay(b *testing.B) {
 			path, _ := filepath.Abs(tc)
 			for i := 0; i < b.N; i++ {
 				var stderr bytes.Buffer
-				cmd.Generate(ctx, cmd.Env{ExperimentalFeatures: true}, path, "", &stderr)
+				cmd.Generate(ctx, cmd.Env{}, path, "", &stderr)
 			}
 		})
 	}

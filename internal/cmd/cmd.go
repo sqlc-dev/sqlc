@@ -16,7 +16,6 @@ import (
 	"github.com/spf13/pflag"
 	"gopkg.in/yaml.v3"
 
-	"github.com/kyleconroy/sqlc/internal/codegen/golang"
 	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/debug"
 	"github.com/kyleconroy/sqlc/internal/info"
@@ -31,7 +30,7 @@ func init() {
 func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int {
 	rootCmd := &cobra.Command{Use: "sqlc", SilenceUsage: true}
 	rootCmd.PersistentFlags().StringP("file", "f", "", "specify an alternate config file (default: sqlc.yaml)")
-	rootCmd.PersistentFlags().BoolP("experimental", "x", false, "enable experimental features (default: false)")
+	rootCmd.PersistentFlags().BoolP("experimental", "x", false, "DEPRECATED: enable experimental features (default: false)")
 
 	rootCmd.AddCommand(checkCmd)
 	rootCmd.AddCommand(diffCmd)
@@ -106,26 +105,17 @@ var initCmd = &cobra.Command{
 }
 
 type Env struct {
-	ExperimentalFeatures bool
-	DryRun               bool
+	DryRun bool
 }
 
 func ParseEnv(c *cobra.Command) Env {
-	x := c.Flag("experimental")
 	dr := c.Flag("dry-run")
 	return Env{
-		ExperimentalFeatures: x != nil && x.Changed,
-		DryRun:               dr != nil && dr.Changed,
+		DryRun: dr != nil && dr.Changed,
 	}
 }
 
 func (e *Env) Validate(cfg *config.Config) error {
-	for _, sql := range cfg.SQL {
-		if sql.Gen.Go != nil && sql.Gen.Go.SQLPackage == golang.SQLPackagePGXV5 && !e.ExperimentalFeatures {
-			return fmt.Errorf("'pgx/v5' golang sql package requires enabled '--experimental' flag")
-		}
-	}
-
 	return nil
 }
 
