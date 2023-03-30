@@ -122,7 +122,7 @@ create_table_stmt:
         schema_name DOT
     )? table_name (
         OPEN_PAR column_def (COMMA column_def)*? (COMMA table_constraint)* CLOSE_PAR (
-            WITHOUT_ row_ROW_ID = IDENTIFIER
+            (WITHOUT_ row_ROW_ID = IDENTIFIER) | (STRICT_)
         )?
         | AS_ select_stmt
     )
@@ -756,6 +756,7 @@ keyword:
     | SAVEPOINT_
     | SELECT_
     | SET_
+    | STRICT_
     | TABLE_
     | TEMP_
     | TEMPORARY_

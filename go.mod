@@ -3,7 +3,7 @@ module github.com/kyleconroy/sqlc
 go 1.20
 
 require (
-	github.com/antlr/antlr4/runtime/Go/antlr v1.4.10
+	github.com/antlr/antlr4/runtime/Go/antlr/v4 v4.0.0-20230321174746-8dcc6526cfb1
 	github.com/bytecodealliance/wasmtime-go/v5 v5.0.0
 	github.com/cubicdaiya/gonp v1.0.4
 	github.com/davecgh/go-spew v1.1.1
@@ -25,7 +25,7 @@ require (
 require (
 	github.com/cznic/mathutil v0.0.0-20181122101859-297441e03548 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20200410134404-eec4a21b6bb0 // indirect
-	golang.org/x/exp v0.0.0-20220428152302-39d4317da171 // indirect
+	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e // indirect
 )
 
 require (
