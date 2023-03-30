@@ -243,6 +243,9 @@ func (this *GoCode) EqualVT(that *GoCode) bool {
 	if this.EmitPointersForNullTypes != that.EmitPointersForNullTypes {
 		return false
 	}
+	if this.OutputBatchFileName != that.OutputBatchFileName {
+		return false
+	}
 	return string(this.unknownFields) == string(that.unknownFields)
 }
 
@@ -989,6 +992,15 @@ func (m *GoCode) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m.unknownFields != nil {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
+	}
+	if len(m.OutputBatchFileName) > 0 {
+		i -= len(m.OutputBatchFileName)
+		copy(dAtA[i:], m.OutputBatchFileName)
+		i = encodeVarint(dAtA, i, uint64(len(m.OutputBatchFileName)))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xba
 	}
 	if m.EmitPointersForNullTypes {
 		i--
@@ -2295,6 +2307,10 @@ func (m *GoCode) SizeVT() (n int) {
 	}
 	if m.EmitPointersForNullTypes {
 		n += 3
+	}
+	l = len(m.OutputBatchFileName)
+	if l > 0 {
+		n += 2 + l + sov(uint64(l))
 	}
 	if m.unknownFields != nil {
 		n += len(m.unknownFields)
@@ -4524,6 +4540,38 @@ func (m *GoCode) UnmarshalVT(dAtA []byte) error {
 				}
 			}
 			m.EmitPointersForNullTypes = bool(v != 0)
+		case 23:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OutputBatchFileName", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.OutputBatchFileName = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skip(dAtA[iNdEx:])

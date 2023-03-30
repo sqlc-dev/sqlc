@@ -92,6 +92,7 @@ message GoCode
   bool emit_all_enum_values = 20;
   repeated string inflection_exclude_table_names = 21;
   bool emit_pointers_for_null_types = 22;
+  string output_batch_file_name = 23;
 }
 
 message JSONCode

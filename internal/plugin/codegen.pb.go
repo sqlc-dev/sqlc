@@ -455,6 +455,7 @@ type GoCode struct {
 	EmitAllEnumValues           bool     `protobuf:"varint,20,opt,name=emit_all_enum_values,json=emitAllEnumValues,proto3" json:"emit_all_enum_values,omitempty"`
 	InflectionExcludeTableNames []string `protobuf:"bytes,21,rep,name=inflection_exclude_table_names,json=inflectionExcludeTableNames,proto3" json:"inflection_exclude_table_names,omitempty"`
 	EmitPointersForNullTypes    bool     `protobuf:"varint,22,opt,name=emit_pointers_for_null_types,json=emitPointersForNullTypes,proto3" json:"emit_pointers_for_null_types,omitempty"`
+	OutputBatchFileName         string   `protobuf:"bytes,23,opt,name=output_batch_file_name,json=outputBatchFileName,proto3" json:"output_batch_file_name,omitempty"`
 }
 
 func (x *GoCode) Reset() {
@@ -641,6 +642,13 @@ func (x *GoCode) GetEmitPointersForNullTypes() bool {
 		return x.EmitPointersForNullTypes
 	}
 	return false
+}
+
+func (x *GoCode) GetOutputBatchFileName() string {
+	if x != nil {
+		return x.OutputBatchFileName
+	}
+	return ""
 }
 
 type JSONCode struct {
