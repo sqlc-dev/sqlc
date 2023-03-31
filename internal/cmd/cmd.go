@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -19,6 +20,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/debug"
 	"github.com/kyleconroy/sqlc/internal/info"
+	"github.com/kyleconroy/sqlc/internal/opts"
 	"github.com/kyleconroy/sqlc/internal/tracer"
 )
 
@@ -106,16 +108,25 @@ var initCmd = &cobra.Command{
 
 type Env struct {
 	DryRun bool
+	Debug  opts.Debug
 }
 
 func ParseEnv(c *cobra.Command) Env {
 	dr := c.Flag("dry-run")
 	return Env{
 		DryRun: dr != nil && dr.Changed,
+		Debug:  opts.DebugFromEnv(),
 	}
 }
 
+var ErrPluginProcessDisabled = errors.New("plugin: process-based plugins disabled via SQLCDEBUG=processplugins=0")
+
 func (e *Env) Validate(cfg *config.Config) error {
+	for _, plugin := range cfg.Plugins {
+		if plugin.Process != nil && !e.Debug.ProcessPlugins {
+			return ErrPluginProcessDisabled
+		}
+	}
 	return nil
 }
 
