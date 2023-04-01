@@ -213,7 +213,7 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 				SQLDriver: sqlpkg,
 				Column:    p.Column,
 			}
-		} else if len(query.Params) >= 1 && (qpl >= 0) {
+		} else if len(query.Params) >= 1 {
 			var cols []goColumn
 			for _, p := range query.Params {
 				cols = append(cols, goColumn{
