@@ -3,6 +3,7 @@ package pattern
 import (
 	"fmt"
 	"regexp"
+	"sync"
 )
 
 // Match is a wrapper of *regexp.Regexp.
@@ -11,9 +12,36 @@ type Match struct {
 	*regexp.Regexp
 }
 
+var (
+	matchCache     = make(map[string]*Match)
+	matchCacheLock sync.RWMutex
+)
+
 // Compile takes our match expression as a string, and compiles it into a *Match object.
 // Will return an error on an invalid pattern.
-func MatchCompile(pattern string) (match *Match, err error) {
+func MatchCompile(pattern string) (*Match, error) {
+	// check for pattern in cache
+	matchCacheLock.RLock()
+	matcher, ok := matchCache[pattern]
+	matchCacheLock.RUnlock()
+	if ok {
+		return matcher, nil
+	}
+
+	// pattern isn't in cache, compile it
+	matcher, err := matchCompile(pattern)
+	if err != nil {
+		return nil, err
+	}
+	// add it to the cache
+	matchCacheLock.Lock()
+	matchCache[pattern] = matcher
+	matchCacheLock.Unlock()
+
+	return matcher, nil
+}
+
+func matchCompile(pattern string) (match *Match, err error) {
 	regex := ""
 	escaped := false
 	arr := []byte(pattern)

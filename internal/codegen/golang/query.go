@@ -12,6 +12,7 @@ type QueryValue struct {
 	Emit        bool
 	EmitPointer bool
 	Name        string
+	DBName      string // The name of the field in the database. Only set if Struct==nil.
 	Struct      *Struct
 	Typ         string
 	SQLDriver   SQLDriver
@@ -116,7 +117,7 @@ func (v QueryValue) Params() string {
 
 func (v QueryValue) ColumnNames() string {
 	if v.Struct == nil {
-		return fmt.Sprintf("[]string{%q}", v.Name)
+		return fmt.Sprintf("[]string{%q}", v.DBName)
 	}
 	escapedNames := make([]string, len(v.Struct.Fields))
 	for i, f := range v.Struct.Fields {

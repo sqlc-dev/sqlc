@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/antlr/antlr4/runtime/Go/antlr"
+	"github.com/antlr/antlr4/runtime/Go/antlr/v4"
 
 	"github.com/kyleconroy/sqlc/internal/engine/sqlite/parser"
 	"github.com/kyleconroy/sqlc/internal/metadata"

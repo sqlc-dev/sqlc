@@ -5,6 +5,25 @@ on:
       - main
   pull_request:
 jobs:
+  windows-build:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-go@v3
+      with:
+        go-version: '1.20'
+    - run: go build ./...
+
+  darwin-build:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-go@v3
+      with:
+        go-version: '1.20'
+    - run: go build ./...
 
   build:
     name: test
@@ -34,13 +53,16 @@ jobs:
 
     - uses: actions/setup-go@v3
       with:
-        go-version: '1.19'
+        go-version: '1.20'
+
+    - name: gotestsum
+      run: go install gotest.tools/gotestsum@latest
 
     - name: install ./...
       run: go install ./...
 
     - name: test ./...
-      run: go test --tags=examples ./...
+      run: gotestsum --junitfile junit.xml -- --tags=examples ./...
       env:
         PG_USER: postgres
         PG_HOST: localhost
@@ -55,3 +77,9 @@ jobs:
     - name: build internal/endtoend
       run: go build ./...
       working-directory: internal/endtoend/testdata
+
+    - name: report
+      if: ${{ github.ref == 'refs/heads/main' }}
+      run: ./scripts/report.sh
+      env:
+        BUILDKITE_ANALYTICS_TOKEN: ${{ secrets.BUILDKITE_ANALYTICS_TOKEN }}

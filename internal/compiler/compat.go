@@ -33,6 +33,11 @@ type Relation struct {
 func parseRelation(node ast.Node) (*Relation, error) {
 	switch n := node.(type) {
 
+	case *ast.Boolean:
+		return &Relation{
+			Name: "bool",
+		}, nil
+
 	case *ast.List:
 		parts := stringSlice(n)
 		switch len(parts) {

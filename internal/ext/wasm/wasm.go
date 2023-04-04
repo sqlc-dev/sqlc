@@ -19,14 +19,15 @@ import (
 	"runtime/trace"
 	"strings"
 
-	wasmtime "github.com/bytecodealliance/wasmtime-go"
+	wasmtime "github.com/bytecodealliance/wasmtime-go/v5"
+	"golang.org/x/sync/singleflight"
 
 	"github.com/kyleconroy/sqlc/internal/info"
 	"github.com/kyleconroy/sqlc/internal/plugin"
 )
 
 // This version must be updated whenever the wasmtime-go dependency is updated
-const wasmtimeVersion = `v1.0.0`
+const wasmtimeVersion = `v5.0.0`
 
 func cacheDir() (string, error) {
 	cache := os.Getenv("SQLCCACHE")
@@ -49,6 +50,8 @@ type Runner struct {
 	SHA256 string
 }
 
+var flight singleflight.Group
+
 // Verify the provided sha256 is valid.
 func (r *Runner) parseChecksum() (string, error) {
 	if r.SHA256 == "" {
@@ -58,6 +61,24 @@ func (r *Runner) parseChecksum() (string, error) {
 }
 
 func (r *Runner) loadModule(ctx context.Context, engine *wasmtime.Engine) (*wasmtime.Module, error) {
+	expected, err := r.parseChecksum()
+	if err != nil {
+		return nil, err
+	}
+	value, err, _ := flight.Do(expected, func() (interface{}, error) {
+		return r.loadSerializedModule(ctx, engine)
+	})
+	if err != nil {
+		return nil, err
+	}
+	data, ok := value.([]byte)
+	if !ok {
+		return nil, fmt.Errorf("returned value was not a byte slice")
+	}
+	return wasmtime.NewModuleDeserialize(engine, data)
+}
+
+func (r *Runner) loadSerializedModule(ctx context.Context, engine *wasmtime.Engine) ([]byte, error) {
 	expected, err := r.parseChecksum()
 	if err != nil {
 		return nil, err
@@ -80,7 +101,7 @@ func (r *Runner) loadModule(ctx context.Context, engine *wasmtime.Engine) (*wasm
 		if err != nil {
 			return nil, err
 		}
-		return wasmtime.NewModuleDeserialize(engine, data)
+		return data, nil
 	}
 
 	wmod, err := r.loadWASM(ctx, cache, expected)
@@ -95,21 +116,19 @@ func (r *Runner) loadModule(ctx context.Context, engine *wasmtime.Engine) (*wasm
 		return nil, fmt.Errorf("define wasi: %w", err)
 	}
 
-	if staterr != nil {
-		err := os.Mkdir(pluginDir, 0755)
-		if err != nil && !os.IsExist(err) {
-			return nil, fmt.Errorf("mkdirall: %w", err)
-		}
-		out, err := module.Serialize()
-		if err != nil {
-			return nil, fmt.Errorf("serialize: %w", err)
-		}
-		if err := os.WriteFile(modPath, out, 0444); err != nil {
-			return nil, fmt.Errorf("cache wasm: %w", err)
-		}
+	err = os.Mkdir(pluginDir, 0755)
+	if err != nil && !os.IsExist(err) {
+		return nil, fmt.Errorf("mkdirall: %w", err)
+	}
+	out, err := module.Serialize()
+	if err != nil {
+		return nil, fmt.Errorf("serialize: %w", err)
+	}
+	if err := os.WriteFile(modPath, out, 0444); err != nil {
+		return nil, fmt.Errorf("cache wasm: %w", err)
 	}
 
-	return module, nil
+	return out, nil
 }
 
 func (r *Runner) loadWASM(ctx context.Context, cache string, expected string) ([]byte, error) {
