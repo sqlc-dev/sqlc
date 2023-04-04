@@ -236,7 +236,7 @@ func (r *Runner) Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plu
 		return nil, err
 	}
 
-	dir, err := ioutil.TempDir("", "out")
+	dir, err := ioutil.TempDir(os.Getenv("SQLCTMPDIR"), "out")
 	if err != nil {
 		return nil, fmt.Errorf("temp dir: %w", err)
 	}
