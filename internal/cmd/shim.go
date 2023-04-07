@@ -241,6 +241,7 @@ func pluginQueryColumn(c *compiler.Column) *plugin.Column {
 		Length:       int32(l),
 		IsNamedParam: c.IsNamedParam,
 		IsFuncCall:   c.IsFuncCall,
+		IsSqlcSlice:  c.IsSqlcSlice,
 	}
 
 	if c.Type != nil {

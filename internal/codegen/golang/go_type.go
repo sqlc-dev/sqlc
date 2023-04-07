@@ -37,7 +37,7 @@ func goType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		}
 	}
 	typ := goInnerType(req, col)
-	if col.IsArray {
+	if col.IsArray || col.IsSqlcSlice {
 		return "[]" + typ
 	}
 	return typ

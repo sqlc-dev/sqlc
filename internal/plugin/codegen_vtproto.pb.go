@@ -447,6 +447,9 @@ func (this *Column) EqualVT(that *Column) bool {
 	if !this.Type.EqualVT(that.Type) {
 		return false
 	}
+	if this.IsSqlcSlice != that.IsSqlcSlice {
+		return false
+	}
 	return string(this.unknownFields) == string(that.unknownFields)
 }
 
@@ -1654,6 +1657,16 @@ func (m *Column) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if m.IsSqlcSlice {
+		i--
+		if m.IsSqlcSlice {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x68
+	}
 	if m.Type != nil {
 		size, err := m.Type.MarshalToSizedBufferVT(dAtA[:i])
 		if err != nil {
@@ -2534,6 +2547,9 @@ func (m *Column) SizeVT() (n int) {
 	if m.Type != nil {
 		l = m.Type.SizeVT()
 		n += 1 + l + sov(uint64(l))
+	}
+	if m.IsSqlcSlice {
+		n += 2
 	}
 	if m.unknownFields != nil {
 		n += len(m.unknownFields)
@@ -5981,6 +5997,26 @@ func (m *Column) UnmarshalVT(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
+		case 13:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field IsSqlcSlice", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.IsSqlcSlice = bool(v != 0)
 		default:
 			iNdEx = preIndex
 			skippy, err := skip(dAtA[iNdEx:])

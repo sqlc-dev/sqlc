@@ -363,12 +363,24 @@ func (i *importer) queryImports(filename string) fileImports {
 		return false
 	}
 
+	// Search for sqlc.slice() calls
+	sqlcSliceScan := func() bool {
+		for _, q := range gq {
+			if q.Arg.HasSqlcSlices() {
+				return true
+			}
+		}
+		return false
+	}
+
 	if anyNonCopyFrom {
 		std["context"] = struct{}{}
 	}
 
 	sqlpkg := parseDriver(i.Settings.Go.SqlPackage)
-	if sliceScan() && !sqlpkg.IsPGX() {
+	if sqlcSliceScan() {
+		std["strings"] = struct{}{}
+	} else if sliceScan() && !sqlpkg.IsPGX() {
 		pkg[ImportSpec{Path: "github.com/lib/pq"}] = struct{}{}
 	}
 

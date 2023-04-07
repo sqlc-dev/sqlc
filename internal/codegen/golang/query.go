@@ -16,6 +16,10 @@ type QueryValue struct {
 	Struct      *Struct
 	Typ         string
 	SQLDriver   SQLDriver
+
+	// Column is kept so late in the generation process around to differentiate
+	// between mysql slices and pg arrays
+	Column *plugin.Column
 }
 
 func (v QueryValue) EmitStruct() bool {
@@ -94,14 +98,14 @@ func (v QueryValue) Params() string {
 	}
 	var out []string
 	if v.Struct == nil {
-		if strings.HasPrefix(v.Typ, "[]") && v.Typ != "[]byte" && !v.SQLDriver.IsPGX() {
+		if !v.Column.IsSqlcSlice && strings.HasPrefix(v.Typ, "[]") && v.Typ != "[]byte" && !v.SQLDriver.IsPGX() {
 			out = append(out, "pq.Array("+v.Name+")")
 		} else {
 			out = append(out, v.Name)
 		}
 	} else {
 		for _, f := range v.Struct.Fields {
-			if strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" && !v.SQLDriver.IsPGX() {
+			if !f.HasSqlcSlice() && strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" && !v.SQLDriver.IsPGX() {
 				out = append(out, "pq.Array("+v.Name+"."+f.Name+")")
 			} else {
 				out = append(out, v.Name+"."+f.Name)
@@ -124,6 +128,20 @@ func (v QueryValue) ColumnNames() string {
 		escapedNames[i] = fmt.Sprintf("%q", f.DBName)
 	}
 	return "[]string{" + strings.Join(escapedNames, ", ") + "}"
+}
+
+// When true, we have to build the arguments to q.db.QueryContext in addition to
+// munging the SQL
+func (v QueryValue) HasSqlcSlices() bool {
+	if v.Struct == nil {
+		return v.Column != nil && v.Column.IsSqlcSlice
+	}
+	for _, v := range v.Struct.Fields {
+		if v.Column.IsSqlcSlice {
+			return true
+		}
+	}
+	return false
 }
 
 func (v QueryValue) Scan() string {
