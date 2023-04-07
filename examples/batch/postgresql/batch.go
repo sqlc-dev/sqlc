@@ -14,6 +14,10 @@ import (
 	"github.com/jackc/pgx/v4"
 )
 
+var (
+	ErrBatchAlreadyClosed = errors.New("batch already closed")
+)
+
 const booksByYear = `-- name: BooksByYear :batchmany
 SELECT book_id, author_id, isbn, book_type, title, year, available, tags FROM books
 WHERE year = $1
@@ -43,7 +47,7 @@ func (b *BooksByYearBatchResults) Query(f func(int, []Book, error)) {
 		var items []Book
 		if b.closed {
 			if f != nil {
-				f(t, items, errors.New("batch already closed"))
+				f(t, items, ErrBatchAlreadyClosed)
 			}
 			continue
 		}
@@ -143,7 +147,7 @@ func (b *CreateBookBatchResults) QueryRow(f func(int, Book, error)) {
 		var i Book
 		if b.closed {
 			if f != nil {
-				f(t, i, errors.New("batch already closed"))
+				f(t, i, ErrBatchAlreadyClosed)
 			}
 			continue
 		}
@@ -197,7 +201,7 @@ func (b *DeleteBookBatchResults) Exec(f func(int, error)) {
 	for t := 0; t < b.tot; t++ {
 		if b.closed {
 			if f != nil {
-				f(t, errors.New("batch already closed"))
+				f(t, ErrBatchAlreadyClosed)
 			}
 			continue
 		}
@@ -241,7 +245,7 @@ func (b *DeleteBookNamedFuncBatchResults) Exec(f func(int, error)) {
 	for t := 0; t < b.tot; t++ {
 		if b.closed {
 			if f != nil {
-				f(t, errors.New("batch already closed"))
+				f(t, ErrBatchAlreadyClosed)
 			}
 			continue
 		}
@@ -285,7 +289,7 @@ func (b *DeleteBookNamedSignBatchResults) Exec(f func(int, error)) {
 	for t := 0; t < b.tot; t++ {
 		if b.closed {
 			if f != nil {
-				f(t, errors.New("batch already closed"))
+				f(t, ErrBatchAlreadyClosed)
 			}
 			continue
 		}
@@ -330,7 +334,7 @@ func (b *GetBiographyBatchResults) QueryRow(f func(int, pgtype.JSONB, error)) {
 		var biography pgtype.JSONB
 		if b.closed {
 			if f != nil {
-				f(t, biography, errors.New("batch already closed"))
+				f(t, biography, ErrBatchAlreadyClosed)
 			}
 			continue
 		}
@@ -384,7 +388,7 @@ func (b *UpdateBookBatchResults) Exec(f func(int, error)) {
 	for t := 0; t < b.tot; t++ {
 		if b.closed {
 			if f != nil {
-				f(t, errors.New("batch already closed"))
+				f(t, ErrBatchAlreadyClosed)
 			}
 			continue
 		}
