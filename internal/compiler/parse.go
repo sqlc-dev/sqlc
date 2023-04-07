@@ -86,12 +86,14 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 	} else {
 		sort.Slice(refs, func(i, j int) bool { return refs[i].ref.Number < refs[j].ref.Number })
 	}
-	qc, err := buildQueryCatalog(c.catalog, raw.Stmt)
+
+	raw, embeds := rewrite.Embeds(raw)
+	qc, err := buildQueryCatalog(c.catalog, raw.Stmt, embeds)
 	if err != nil {
 		return nil, err
 	}
 
-	params, err := c.resolveCatalogRefs(qc, rvs, refs, namedParams)
+	params, err := c.resolveCatalogRefs(qc, rvs, refs, namedParams, embeds)
 	if err != nil {
 		return nil, err
 	}

@@ -154,6 +154,15 @@ func (v QueryValue) Scan() string {
 		}
 	} else {
 		for _, f := range v.Struct.Fields {
+
+			// append any embedded fields
+			if len(f.EmbedFields) > 0 {
+				for _, embed := range f.EmbedFields {
+					out = append(out, "&"+v.Name+"."+f.Name+"."+embed)
+				}
+				continue
+			}
+
 			if strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" && !v.SQLDriver.IsPGX() {
 				out = append(out, "pq.Array(&"+v.Name+"."+f.Name+")")
 			} else {

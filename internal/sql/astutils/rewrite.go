@@ -406,6 +406,9 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 	case *ast.BlockIdData:
 		// pass
 
+	case *ast.Boolean:
+		// pass
+
 	case *ast.BoolExpr:
 		a.apply(n, "Xpr", nil, n.Xpr)
 		a.apply(n, "Args", nil, n.Args)

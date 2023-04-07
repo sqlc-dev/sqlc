@@ -161,6 +161,7 @@ message Column
   string table_alias = 11;
   Identifier type = 12;
   bool is_sqlc_slice = 13;
+  Identifier embed_table = 14;
 }
 
 message Query

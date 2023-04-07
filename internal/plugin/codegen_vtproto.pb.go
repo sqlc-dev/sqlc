@@ -450,6 +450,9 @@ func (this *Column) EqualVT(that *Column) bool {
 	if this.IsSqlcSlice != that.IsSqlcSlice {
 		return false
 	}
+	if !this.EmbedTable.EqualVT(that.EmbedTable) {
+		return false
+	}
 	return string(this.unknownFields) == string(that.unknownFields)
 }
 
@@ -1657,6 +1660,16 @@ func (m *Column) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if m.EmbedTable != nil {
+		size, err := m.EmbedTable.MarshalToSizedBufferVT(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarint(dAtA, i, uint64(size))
+		i--
+		dAtA[i] = 0x72
+	}
 	if m.IsSqlcSlice {
 		i--
 		if m.IsSqlcSlice {
@@ -2550,6 +2563,10 @@ func (m *Column) SizeVT() (n int) {
 	}
 	if m.IsSqlcSlice {
 		n += 2
+	}
+	if m.EmbedTable != nil {
+		l = m.EmbedTable.SizeVT()
+		n += 1 + l + sov(uint64(l))
 	}
 	if m.unknownFields != nil {
 		n += len(m.unknownFields)
@@ -6017,6 +6034,42 @@ func (m *Column) UnmarshalVT(dAtA []byte) error {
 				}
 			}
 			m.IsSqlcSlice = bool(v != 0)
+		case 14:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field EmbedTable", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.EmbedTable == nil {
+				m.EmbedTable = &Identifier{}
+			}
+			if err := m.EmbedTable.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skip(dAtA[iNdEx:])
