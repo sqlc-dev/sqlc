@@ -14,7 +14,7 @@ import (
 
 // OutputColumns determines which columns a statement will output
 func (c *Compiler) OutputColumns(stmt ast.Node) ([]*catalog.Column, error) {
-	qc, err := buildQueryCatalog(c.catalog, stmt)
+	qc, err := buildQueryCatalog(c.catalog, stmt, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -201,6 +201,16 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 
 		case *ast.ColumnRef:
 			if hasStarRef(n) {
+
+				// add a column with a reference to an embedded table
+				if embed, ok := qc.embeds.Find(n); ok {
+					cols = append(cols, &Column{
+						Name:       embed.Table.Name,
+						EmbedTable: embed.Table,
+					})
+					continue
+				}
+
 				// TODO: This code is copied in func expand()
 				for _, t := range tables {
 					scope := astutils.Join(n.Fields, ".")
@@ -520,6 +530,7 @@ func outputColumnRefs(res *ast.ResTarget, tables []*Table, node *ast.ColumnRef) 
 					NotNull:    c.NotNull,
 					IsArray:    c.IsArray,
 					Length:     c.Length,
+					EmbedTable: c.EmbedTable,
 				})
 			}
 		}

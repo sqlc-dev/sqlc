@@ -14,6 +14,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"github.com/kyleconroy/sqlc/internal/cmd"
+	"github.com/kyleconroy/sqlc/internal/opts"
 )
 
 func TestExamples(t *testing.T) {
@@ -110,11 +111,14 @@ func TestReplay(t *testing.T) {
 				}
 			}
 
+			env := cmd.Env{
+				Debug: opts.DebugFromString(args.Env["SQLCDEBUG"]),
+			}
 			switch args.Command {
 			case "diff":
-				err = cmd.Diff(ctx, cmd.Env{}, path, "", &stderr)
+				err = cmd.Diff(ctx, env, path, "", &stderr)
 			case "generate":
-				output, err = cmd.Generate(ctx, cmd.Env{}, path, "", &stderr)
+				output, err = cmd.Generate(ctx, env, path, "", &stderr)
 				if err == nil {
 					cmpDirectory(t, path, output)
 				}
@@ -209,8 +213,9 @@ func expectedStderr(t *testing.T, dir string) string {
 }
 
 type exec struct {
-	Command string `json:"command"`
-	Process string `json:"process"`
+	Command string            `json:"command"`
+	Process string            `json:"process"`
+	Env     map[string]string `json:"env"`
 }
 
 func parseExec(t *testing.T, dir string) exec {
