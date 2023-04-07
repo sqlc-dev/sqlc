@@ -84,3 +84,11 @@ func toCamelInitCase(name string, initUpper bool) string {
 	}
 	return out
 }
+
+func toLowerCase(str string) string {
+	if str == "" {
+		return ""
+	}
+
+	return strings.ToLower(str[:1]) + str[1:]
+}

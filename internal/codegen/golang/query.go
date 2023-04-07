@@ -42,6 +42,16 @@ func (v QueryValue) Pair() string {
 	if v.isEmpty() {
 		return ""
 	}
+
+	var out []string
+	if !v.EmitStruct() && v.IsStruct() {
+		for _, f := range v.Struct.Fields {
+			out = append(out, toLowerCase(f.Name)+" "+f.Type)
+		}
+
+		return strings.Join(out, ",")
+	}
+
 	return v.Name + " " + v.DefineType()
 }
 
@@ -107,6 +117,8 @@ func (v QueryValue) Params() string {
 		for _, f := range v.Struct.Fields {
 			if !f.HasSqlcSlice() && strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" && !v.SQLDriver.IsPGX() {
 				out = append(out, "pq.Array("+v.Name+"."+f.Name+")")
+			} else if !v.EmitStruct() && v.IsStruct() {
+				out = append(out, toLowerCase(f.Name))
 			} else {
 				out = append(out, v.Name+"."+f.Name)
 			}

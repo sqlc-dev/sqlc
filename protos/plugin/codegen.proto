@@ -92,6 +92,7 @@ message GoCode
   bool emit_all_enum_values = 20;
   repeated string inflection_exclude_table_names = 21;
   bool emit_pointers_for_null_types = 22;
+  optional int32 query_parameter_limit = 23;
 }
 
 message JSONCode

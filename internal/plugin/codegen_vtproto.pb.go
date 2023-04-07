@@ -243,6 +243,9 @@ func (this *GoCode) EqualVT(that *GoCode) bool {
 	if this.EmitPointersForNullTypes != that.EmitPointersForNullTypes {
 		return false
 	}
+	if p, q := this.QueryParameterLimit, that.QueryParameterLimit; (p == nil && q != nil) || (p != nil && (q == nil || *p != *q)) {
+		return false
+	}
 	return string(this.unknownFields) == string(that.unknownFields)
 }
 
@@ -995,6 +998,13 @@ func (m *GoCode) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m.unknownFields != nil {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
+	}
+	if m.QueryParameterLimit != nil {
+		i = encodeVarint(dAtA, i, uint64(*m.QueryParameterLimit))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xb8
 	}
 	if m.EmitPointersForNullTypes {
 		i--
@@ -2321,6 +2331,9 @@ func (m *GoCode) SizeVT() (n int) {
 	}
 	if m.EmitPointersForNullTypes {
 		n += 3
+	}
+	if m.QueryParameterLimit != nil {
+		n += 2 + sov(uint64(*m.QueryParameterLimit))
 	}
 	if m.unknownFields != nil {
 		n += len(m.unknownFields)
@@ -4557,6 +4570,26 @@ func (m *GoCode) UnmarshalVT(dAtA []byte) error {
 				}
 			}
 			m.EmitPointersForNullTypes = bool(v != 0)
+		case 23:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field QueryParameterLimit", wireType)
+			}
+			var v int32
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.QueryParameterLimit = &v
 		default:
 			iNdEx = preIndex
 			skippy, err := skip(dAtA[iNdEx:])
