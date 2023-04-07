@@ -219,6 +219,9 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 	// TODO(Jille): Make this configurable.
 
 	batchFileName := "batch.go"
+	if golang.OutputBatchFileName != "" {
+		batchFileName = golang.OutputBatchFileName
+	}
 
 	if err := execute(dbFileName, "dbFile"); err != nil {
 		return nil, err

@@ -91,6 +91,9 @@ func (i *importer) Imports(filename string) [][]ImportSpec {
 	}
 	copyfromFileName := "copyfrom.go"
 	batchFileName := "batch.go"
+	if i.Settings.Go.OutputBatchFileName != "" {
+		batchFileName = i.Settings.Go.OutputBatchFileName
+	}
 
 	switch filename {
 	case dbFileName:

@@ -38,6 +38,7 @@ type v1PackageSettings struct {
 	JSONTagsCaseStyle         string     `json:"json_tags_case_style,omitempty" yaml:"json_tags_case_style"`
 	SQLPackage                string     `json:"sql_package" yaml:"sql_package"`
 	Overrides                 []Override `json:"overrides" yaml:"overrides"`
+	OutputBatchFileName       string     `json:"output_batch_file_name,omitempty" yaml:"output_batch_file_name"`
 	OutputDBFileName          string     `json:"output_db_file_name,omitempty" yaml:"output_db_file_name"`
 	OutputModelsFileName      string     `json:"output_models_file_name,omitempty" yaml:"output_models_file_name"`
 	OutputQuerierFileName     string     `json:"output_querier_file_name,omitempty" yaml:"output_querier_file_name"`
@@ -150,6 +151,7 @@ func (c *V1GenerateSettings) Translate() Config {
 					SQLPackage:                pkg.SQLPackage,
 					Overrides:                 pkg.Overrides,
 					JSONTagsCaseStyle:         pkg.JSONTagsCaseStyle,
+					OutputBatchFileName:       pkg.OutputBatchFileName,
 					OutputDBFileName:          pkg.OutputDBFileName,
 					OutputModelsFileName:      pkg.OutputModelsFileName,
 					OutputQuerierFileName:     pkg.OutputQuerierFileName,
