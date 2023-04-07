@@ -565,28 +565,7 @@ func (c *cc) convertUpdateStmt(n *pcast.UpdateStmt) *ast.UpdateStmt {
 	}
 
 	relations := &ast.List{}
-	switch rel := rels.Items[0].(type) {
-
-	// Special case for joins in updates
-	case *ast.JoinExpr:
-		left, ok := rel.Larg.(*ast.RangeVar)
-		if !ok {
-			panic("expected range var")
-		}
-		relations.Items = append(relations.Items, left)
-
-		right, ok := rel.Rarg.(*ast.RangeVar)
-		if !ok {
-			panic("expected range var")
-		}
-		relations.Items = append(relations.Items, right)
-
-	case *ast.RangeVar:
-		relations.Items = append(relations.Items, rel)
-
-	default:
-		panic("expected range var")
-	}
+	convertToRangeVarList(rels, relations)
 
 	// TargetList
 	list := &ast.List{}
