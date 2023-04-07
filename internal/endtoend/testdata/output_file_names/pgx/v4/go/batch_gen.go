@@ -12,6 +12,10 @@ import (
 	"github.com/jackc/pgx/v4"
 )
 
+var (
+	ErrBatchAlreadyClosed = errors.New("batch already closed")
+)
+
 const usersB = `-- name: UsersB :batchmany
 SELECT id FROM "user"
 WHERE id = $1
@@ -41,7 +45,7 @@ func (b *UsersBBatchResults) Query(f func(int, []int64, error)) {
 		var items []int64
 		if b.closed {
 			if f != nil {
-				f(t, items, errors.New("batch already closed"))
+				f(t, items, ErrBatchAlreadyClosed)
 			}
 			continue
 		}
