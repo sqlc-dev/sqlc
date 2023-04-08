@@ -1054,8 +1054,8 @@ func Walk(f Visitor, node ast.Node) {
 		}
 
 	case *ast.DeleteStmt:
-		if n.Relation != nil {
-			Walk(f, n.Relation)
+		if n.Relations != nil {
+			Walk(f, n.Relations)
 		}
 		if n.UsingClause != nil {
 			Walk(f, n.UsingClause)
