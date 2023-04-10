@@ -1,6 +1,107 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## 1.18.0
+Released XXXX-XX-ZZ
+
+### Changes
+
+#### sqlc.embed
+
+Embedding allows you to reuse existing model structs in more queries, resulting
+in less manual serilization work. First, imagine we have the following schema
+with students and test scores.
+
+
+```sql
+CREATE TABLE students (
+  id   bigserial PRIMARY KEY,
+  name text,
+  age  integer
+)
+
+CREATE TABLE test_scores (
+  student_id bigint,
+  score integer,
+  grade text
+)
+```
+
+We want to select the student record and the highest score they got on a test.
+Here's how we'd usually do that:
+
+```sql
+-- name: HighScore :many
+WITH high_scores AS (
+  SELECT student_id, max(score) as high_score
+  FROM test_scores
+  GROUP BY 1
+)
+SELECT students.*, high_score::integer
+FROM students
+JOIN high_scores ON high_scores.student_id = students.id;
+```
+
+When using Go, sqlc will produce a struct like
+
+```
+type HighScoreRow struct {
+	ID        int64
+	Name      sql.NullString
+	Age       sql.NullInt32
+	HighScore int32
+}
+```
+
+```sql
+-- name: HighScoreEmbed :many
+WITH high_scores AS (
+  SELECT student_id, max(score) as high_score
+  FROM test_scores
+  GROUP BY 1
+)
+SELECT sqlc.embed(students), high_score::integer
+FROM students
+JOIN high_scores ON high_scores.student_id = students.id;
+```
+
+```
+type HighScoreRow struct {
+	Student   Student
+	HighScore int32
+}
+```
+
+#### sqlc.slice
+
+#### Batch operation improvements  
+
+When using batches with pgx, the error returned when a batch is closed is
+exported by the generated package. This change allows for cleaner error
+handling using `errors.Is`.
+
+```go
+errors.Is(err, generated_package.ErrBatchAlreadyClosed)
+```
+
+Previously, you would have had to check match on the error message itself.
+
+```
+err.Error() == "batch already closed"
+```
+
+The generated code for batch operations always lived in `batch.go`. This file
+name can now be configured via the `output_batch_file_name` configuration
+option.
+
+#### Configurable query parameter limits for Go
+
+By default, sqlc will limit Go functions to a single parameter. If a query
+includes more than one parameter, the generated method will use an argument
+struct instead of positional arguments. This behavior can now be changed via
+the `query_parameter_limit` configuration option.  If set to `0`, every
+genreated method will use a argument struct. 
+
 ## [1.17.2](https://github.com/kyleconroy/sqlc/releases/tag/1.17.2)
 Released 2023-02-22
 
