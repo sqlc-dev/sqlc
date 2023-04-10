@@ -404,9 +404,7 @@ func sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, error) {
 	var list *ast.List
 	switch n := node.(type) {
 	case *ast.DeleteStmt:
-		list = &ast.List{
-			Items: []ast.Node{n.Relation},
-		}
+		list = n.Relations
 	case *ast.InsertStmt:
 		list = &ast.List{
 			Items: []ast.Node{n.Relation},
