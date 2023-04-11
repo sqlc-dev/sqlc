@@ -12,9 +12,14 @@ type QueryValue struct {
 	Emit        bool
 	EmitPointer bool
 	Name        string
+	DBName      string // The name of the field in the database. Only set if Struct==nil.
 	Struct      *Struct
 	Typ         string
 	SQLDriver   SQLDriver
+
+	// Column is kept so late in the generation process around to differentiate
+	// between mysql slices and pg arrays
+	Column *plugin.Column
 }
 
 func (v QueryValue) EmitStruct() bool {
@@ -37,6 +42,16 @@ func (v QueryValue) Pair() string {
 	if v.isEmpty() {
 		return ""
 	}
+
+	var out []string
+	if !v.EmitStruct() && v.IsStruct() {
+		for _, f := range v.Struct.Fields {
+			out = append(out, toLowerCase(f.Name)+" "+f.Type)
+		}
+
+		return strings.Join(out, ",")
+	}
+
 	return v.Name + " " + v.DefineType()
 }
 
@@ -93,15 +108,17 @@ func (v QueryValue) Params() string {
 	}
 	var out []string
 	if v.Struct == nil {
-		if strings.HasPrefix(v.Typ, "[]") && v.Typ != "[]byte" && !v.SQLDriver.IsPGX() {
+		if !v.Column.IsSqlcSlice && strings.HasPrefix(v.Typ, "[]") && v.Typ != "[]byte" && !v.SQLDriver.IsPGX() {
 			out = append(out, "pq.Array("+v.Name+")")
 		} else {
 			out = append(out, v.Name)
 		}
 	} else {
 		for _, f := range v.Struct.Fields {
-			if strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" && !v.SQLDriver.IsPGX() {
+			if !f.HasSqlcSlice() && strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" && !v.SQLDriver.IsPGX() {
 				out = append(out, "pq.Array("+v.Name+"."+f.Name+")")
+			} else if !v.EmitStruct() && v.IsStruct() {
+				out = append(out, toLowerCase(f.Name))
 			} else {
 				out = append(out, v.Name+"."+f.Name)
 			}
@@ -116,13 +133,27 @@ func (v QueryValue) Params() string {
 
 func (v QueryValue) ColumnNames() string {
 	if v.Struct == nil {
-		return fmt.Sprintf("[]string{%q}", v.Name)
+		return fmt.Sprintf("[]string{%q}", v.DBName)
 	}
 	escapedNames := make([]string, len(v.Struct.Fields))
 	for i, f := range v.Struct.Fields {
 		escapedNames[i] = fmt.Sprintf("%q", f.DBName)
 	}
 	return "[]string{" + strings.Join(escapedNames, ", ") + "}"
+}
+
+// When true, we have to build the arguments to q.db.QueryContext in addition to
+// munging the SQL
+func (v QueryValue) HasSqlcSlices() bool {
+	if v.Struct == nil {
+		return v.Column != nil && v.Column.IsSqlcSlice
+	}
+	for _, v := range v.Struct.Fields {
+		if v.Column.IsSqlcSlice {
+			return true
+		}
+	}
+	return false
 }
 
 func (v QueryValue) Scan() string {
@@ -135,6 +166,15 @@ func (v QueryValue) Scan() string {
 		}
 	} else {
 		for _, f := range v.Struct.Fields {
+
+			// append any embedded fields
+			if len(f.EmbedFields) > 0 {
+				for _, embed := range f.EmbedFields {
+					out = append(out, "&"+v.Name+"."+f.Name+"."+embed)
+				}
+				continue
+			}
+
 			if strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" && !v.SQLDriver.IsPGX() {
 				out = append(out, "pq.Array(&"+v.Name+"."+f.Name+")")
 			} else {

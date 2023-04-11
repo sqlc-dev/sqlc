@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/antlr/antlr4/runtime/Go/antlr"
+	"github.com/antlr/antlr4/runtime/Go/antlr/v4"
 
 	"github.com/kyleconroy/sqlc/internal/debug"
 	"github.com/kyleconroy/sqlc/internal/engine/sqlite/parser"
@@ -158,8 +158,12 @@ func (c *cc) convertDelete_stmtContext(n *parser.Delete_stmtContext) ast.Node {
 			relation.Alias = &ast.Alias{Aliasname: &alias}
 		}
 
+		relations := &ast.List{}
+
+		relations.Items = append(relations.Items, relation)
+
 		delete := &ast.DeleteStmt{
-			Relation:      relation,
+			Relations:     relations,
 			ReturningList: c.convertReturning_caluseContext(n.Returning_clause()),
 			WithClause:    nil,
 		}

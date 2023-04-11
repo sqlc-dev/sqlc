@@ -1,6 +1,106 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.17.2](https://github.com/kyleconroy/sqlc/releases/tag/1.17.2)
+Released 2023-02-22
+
+### Bug Fixes
+
+- Fix build on Windows (#2102)
+
+## [1.17.1](https://github.com/kyleconroy/sqlc/releases/tag/1.17.1)
+Released 2023-02-22
+
+### Bug Fixes
+
+- Prefer to use []T over pgype.Array[T] (#2090)
+- Revert changes to Dockerfile (#2091)
+- Do not throw error when IF NOT EXISTS is used on ADD COLUMN (#2092)
+
+### MySQL
+
+- Add `float` support to MySQL (#2097)
+
+### Build
+
+- (deps) Bump golang from 1.20.0 to 1.20.1 (#2082)
+
+## [1.17.0](https://github.com/kyleconroy/sqlc/releases/tag/1.17.0)
+Released 2023-02-13
+
+### Bug Fixes
+
+- Initialize generated code outside function (#1850)
+- (engine/mysql) Take into account column's charset to distinguish text/blob, (var)char/(var)binary (#776) (#1895)
+- The enum Value method returns correct type (#1996)
+- Documentation for Inserting Rows (#2034)
+- Add import statements even if only pointer types exist (#2046)
+- Search from Rexpr if not found from Lexpr (#2056)
+
+### Documentation
+
+- Change ENTRYPOINT to CMD (#1943)
+- Update samples for HOW-TO GUIDES (#1953)
+
+### Features
+
+- Add the diff command (#1963)
+
+### Build
+
+- (deps) Bump github.com/mattn/go-sqlite3 from 1.14.15 to 1.14.16 (#1913)
+- (deps) Bump github.com/spf13/cobra from 1.6.0 to 1.6.1 (#1909)
+- Fix devcontainer (#1942)
+- Run sqlc-pg-gen via GitHub Actions (#1944)
+- Move large arrays out of functions (#1947)
+- Fix conflicts from pointer configuration (#1950)
+- (deps) Bump github.com/go-sql-driver/mysql from 1.6.0 to 1.7.0 (#1988)
+- (deps) Bump github.com/jackc/pgtype from 1.12.0 to 1.13.0 (#1978)
+- (deps) Bump golang from 1.19.3 to 1.19.4 (#1992)
+- (deps) Bump certifi from 2020.12.5 to 2022.12.7 in /docs (#1993)
+- (deps) Bump golang from 1.19.4 to 1.19.5 (#2016)
+- (deps) Bump golang from 1.19.5 to 1.20.0 (#2045)
+- (deps) Bump github.com/jackc/pgtype from 1.13.0 to 1.14.0 (#2062)
+- (deps) Bump github.com/jackc/pgx/v4 from 4.17.2 to 4.18.0 (#2063)
+
+### Cmd
+
+- Generate packages in parallel (#2026)
+
+### Cmd/sqlc
+
+- Bump version to v1.17.0
+
+### Codegen
+
+- Remove built-in Kotlin support (#1935)
+- Remove built-in Python support (#1936)
+
+### Internal/codegen
+
+- Cache pattern matching compilations (#2028)
+
+### Mysql
+
+- Add datatype tests (#1948)
+- Fix blob tests (#1949)
+
+### Plugins
+
+- Upgrade to wasmtime 3.0.1 (#2009)
+
+### Sqlite
+
+- Supported between expr (#1958) (#1967)
+
+### Tools
+
+- Regenerate scripts skips dirs that contains diff exec command (#1987)
+
+### Wasm
+
+- Upgrade to wasmtime 5.0.0 (#2065)
+
 ## [1.16.0](https://github.com/kyleconroy/sqlc/releases/tag/1.16.0)
 Released 2022-11-09
 

@@ -1,0 +1,23 @@
+{
+  "version": "2",
+  "sql": [
+    {
+      "schema": "query.sql",
+      "queries": "query.sql",
+      "engine": "postgresql",
+      "gen": {
+        "go": {
+          "package": "querytest",
+          "out": "go",
+          "rename": {
+            "id_old": "IDNew",
+            "bar_old": "BarNew",
+            "foo_old": "FooNew",
+            "ip_protocol": "IPProtocol",
+            "ip_protocol_tcp": "IPProtocolTCP"
+          }
+        }
+      }
+    }
+  ],
+}

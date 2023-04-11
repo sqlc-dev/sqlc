@@ -14,7 +14,7 @@ import (
 
 // OutputColumns determines which columns a statement will output
 func (c *Compiler) OutputColumns(stmt ast.Node) ([]*catalog.Column, error) {
-	qc, err := buildQueryCatalog(c.catalog, stmt)
+	qc, err := buildQueryCatalog(c.catalog, stmt, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -118,6 +118,23 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 				cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
 			}
 
+		case *ast.BoolExpr:
+			name := ""
+			if res.Name != nil {
+				name = *res.Name
+			}
+			notNull := false
+			if n.Boolop == ast.BoolExprTypeNot && len(n.Args.Items) == 1 {
+				sublink, ok := n.Args.Items[0].(*ast.SubLink)
+				if ok && sublink.SubLinkType == ast.EXISTS_SUBLINK {
+					notNull = true
+					if name == "" {
+						name = "not_exists"
+					}
+				}
+			}
+			cols = append(cols, &Column{Name: name, DataType: "bool", NotNull: notNull})
+
 		case *ast.CaseExpr:
 			name := ""
 			if res.Name != nil {
@@ -140,6 +157,12 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 				col := toColumn(tc.TypeName)
 				col.Name = name
 				cols = append(cols, col)
+			} else if aconst, ok := n.Defresult.(*ast.A_Const); ok {
+				tn, err := ParseTypeName(aconst.Val)
+				if err != nil {
+					return nil, err
+				}
+				cols = append(cols, &Column{Name: name, DataType: dataType(tn), NotNull: true})
 			} else {
 				cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
 			}
@@ -179,6 +202,16 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 
 		case *ast.ColumnRef:
 			if hasStarRef(n) {
+
+				// add a column with a reference to an embedded table
+				if embed, ok := qc.embeds.Find(n); ok {
+					cols = append(cols, &Column{
+						Name:       embed.Table.Name,
+						EmbedTable: embed.Table,
+					})
+					continue
+				}
+
 				// TODO: This code is copied in func expand()
 				for _, t := range tables {
 					scope := astutils.Join(n.Fields, ".")
@@ -349,6 +382,8 @@ func isTableRequired(n ast.Node, col *Column, prior int) int {
 			return helper(tableOptional, tableRequired)
 		case ast.JoinTypeFull:
 			return helper(tableOptional, tableOptional)
+		case ast.JoinTypeInner:
+			return helper(tableRequired, tableRequired)
 		}
 	case *ast.List:
 		for _, item := range n.Items {
@@ -371,9 +406,7 @@ func sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, error) {
 	var list *ast.List
 	switch n := node.(type) {
 	case *ast.DeleteStmt:
-		list = &ast.List{
-			Items: []ast.Node{n.Relation},
-		}
+		list = n.Relations
 	case *ast.InsertStmt:
 		list = &ast.List{
 			Items: []ast.Node{n.Relation},
@@ -498,6 +531,7 @@ func outputColumnRefs(res *ast.ResTarget, tables []*Table, node *ast.ColumnRef) 
 					Unsigned:   c.Unsigned,
 					IsArray:    c.IsArray,
 					Length:     c.Length,
+					EmbedTable: c.EmbedTable,
 				})
 			}
 		}

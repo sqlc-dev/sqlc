@@ -75,6 +75,11 @@ func pluginCodegen(s config.Codegen) *plugin.Codegen {
 }
 
 func pluginGoCode(s config.SQLGo) *plugin.GoCode {
+	if s.QueryParameterLimit == nil {
+		s.QueryParameterLimit = new(int32)
+		*s.QueryParameterLimit = 1
+	}
+
 	return &plugin.GoCode{
 		EmitInterface:               s.EmitInterface,
 		EmitJsonTags:                s.EmitJSONTags,
@@ -86,7 +91,7 @@ func pluginGoCode(s config.SQLGo) *plugin.GoCode {
 		EmitResultStructPointers:    s.EmitResultStructPointers,
 		EmitParamsStructPointers:    s.EmitParamsStructPointers,
 		EmitMethodsWithDbArgument:   s.EmitMethodsWithDBArgument,
-    EmitPointersForNullTypes:  s.EmitPointersForNullTypes,
+		EmitPointersForNullTypes:    s.EmitPointersForNullTypes,
 		EmitEnumValidMethod:         s.EmitEnumValidMethod,
 		EmitAllEnumValues:           s.EmitAllEnumValues,
 		JsonTagsCaseStyle:           s.JSONTagsCaseStyle,
@@ -94,10 +99,12 @@ func pluginGoCode(s config.SQLGo) *plugin.GoCode {
 		Out:                         s.Out,
 		SqlPackage:                  s.SQLPackage,
 		OutputDbFileName:            s.OutputDBFileName,
+		OutputBatchFileName:         s.OutputBatchFileName,
 		OutputModelsFileName:        s.OutputModelsFileName,
 		OutputQuerierFileName:       s.OutputQuerierFileName,
 		OutputFilesSuffix:           s.OutputFilesSuffix,
 		InflectionExcludeTableNames: s.InflectionExcludeTableNames,
+		QueryParameterLimit:         s.QueryParameterLimit,
 	}
 }
 
@@ -243,6 +250,7 @@ func pluginQueryColumn(c *compiler.Column) *plugin.Column {
 		Length:       int32(l),
 		IsNamedParam: c.IsNamedParam,
 		IsFuncCall:   c.IsFuncCall,
+		IsSqlcSlice:  c.IsSqlcSlice,
 	}
 
 	if c.Type != nil {
@@ -262,6 +270,14 @@ func pluginQueryColumn(c *compiler.Column) *plugin.Column {
 			Catalog: c.Table.Catalog,
 			Schema:  c.Table.Schema,
 			Name:    c.Table.Name,
+		}
+	}
+
+	if c.EmbedTable != nil {
+		out.EmbedTable = &plugin.Identifier{
+			Catalog: c.EmbedTable.Catalog,
+			Schema:  c.EmbedTable.Schema,
+			Name:    c.EmbedTable.Name,
 		}
 	}
 

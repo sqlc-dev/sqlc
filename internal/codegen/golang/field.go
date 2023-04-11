@@ -14,6 +14,9 @@ type Field struct {
 	Type    string
 	Tags    map[string]string
 	Comment string
+	Column  *plugin.Column
+	// EmbedFields contains the embedded fields that reuqire scanning.
+	EmbedFields []string
 }
 
 func (gf Field) Tag() string {
@@ -26,6 +29,10 @@ func (gf Field) Tag() string {
 	}
 	sort.Strings(tags)
 	return strings.Join(tags, " ")
+}
+
+func (gf Field) HasSqlcSlice() bool {
+	return gf.Column.IsSqlcSlice
 }
 
 func JSONTagName(name string, settings *plugin.Settings) string {
@@ -76,4 +83,12 @@ func toCamelInitCase(name string, initUpper bool) string {
 		}
 	}
 	return out
+}
+
+func toLowerCase(str string) string {
+	if str == "" {
+		return ""
+	}
+
+	return strings.ToLower(str[:1]) + str[1:]
 }

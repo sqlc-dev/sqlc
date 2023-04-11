@@ -92,6 +92,8 @@ message GoCode
   bool emit_all_enum_values = 20;
   repeated string inflection_exclude_table_names = 21;
   bool emit_pointers_for_null_types = 22;
+  optional int32 query_parameter_limit = 23;
+  string output_batch_file_name = 24;
 }
 
 message JSONCode
@@ -160,8 +162,9 @@ message Column
   Identifier table = 10;
   string table_alias = 11;
   Identifier type = 12;
-
-  bool unsigned = 13;
+  bool is_sqlc_slice = 13;
+  Identifier embed_table = 14;
+  bool unsigned = 15;
 }
 
 message Query
