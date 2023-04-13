@@ -243,6 +243,12 @@ func (this *GoCode) EqualVT(that *GoCode) bool {
 	if this.EmitPointersForNullTypes != that.EmitPointersForNullTypes {
 		return false
 	}
+	if p, q := this.QueryParameterLimit, that.QueryParameterLimit; (p == nil && q != nil) || (p != nil && (q == nil || *p != *q)) {
+		return false
+	}
+	if this.OutputBatchFileName != that.OutputBatchFileName {
+		return false
+	}
 	return string(this.unknownFields) == string(that.unknownFields)
 }
 
@@ -445,6 +451,15 @@ func (this *Column) EqualVT(that *Column) bool {
 		return false
 	}
 	if !this.Type.EqualVT(that.Type) {
+		return false
+	}
+	if this.IsSqlcSlice != that.IsSqlcSlice {
+		return false
+	}
+	if !this.EmbedTable.EqualVT(that.EmbedTable) {
+		return false
+	}
+	if this.ArrayBounds != that.ArrayBounds {
 		return false
 	}
 	return string(this.unknownFields) == string(that.unknownFields)
@@ -989,6 +1004,22 @@ func (m *GoCode) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m.unknownFields != nil {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
+	}
+	if len(m.OutputBatchFileName) > 0 {
+		i -= len(m.OutputBatchFileName)
+		copy(dAtA[i:], m.OutputBatchFileName)
+		i = encodeVarint(dAtA, i, uint64(len(m.OutputBatchFileName)))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xc2
+	}
+	if m.QueryParameterLimit != nil {
+		i = encodeVarint(dAtA, i, uint64(*m.QueryParameterLimit))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xb8
 	}
 	if m.EmitPointersForNullTypes {
 		i--
@@ -1657,6 +1688,26 @@ func (m *Column) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m.ArrayBounds != 0 {
 		i = encodeVarint(dAtA, i, uint64(m.ArrayBounds))
 		i--
+		dAtA[i] = 0x78
+	}
+	if m.EmbedTable != nil {
+		size, err := m.EmbedTable.MarshalToSizedBufferVT(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarint(dAtA, i, uint64(size))
+		i--
+		dAtA[i] = 0x72
+	}
+	if m.IsSqlcSlice {
+		i--
+		if m.IsSqlcSlice {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
 		dAtA[i] = 0x68
 	}
 	if m.Type != nil {
@@ -2301,6 +2352,13 @@ func (m *GoCode) SizeVT() (n int) {
 	if m.EmitPointersForNullTypes {
 		n += 3
 	}
+	if m.QueryParameterLimit != nil {
+		n += 2 + sov(uint64(*m.QueryParameterLimit))
+	}
+	l = len(m.OutputBatchFileName)
+	if l > 0 {
+		n += 2 + l + sov(uint64(l))
+	}
 	if m.unknownFields != nil {
 		n += len(m.unknownFields)
 	}
@@ -2538,6 +2596,13 @@ func (m *Column) SizeVT() (n int) {
 	}
 	if m.Type != nil {
 		l = m.Type.SizeVT()
+		n += 1 + l + sov(uint64(l))
+	}
+	if m.IsSqlcSlice {
+		n += 2
+	}
+	if m.EmbedTable != nil {
+		l = m.EmbedTable.SizeVT()
 		n += 1 + l + sov(uint64(l))
 	}
 	if m.ArrayBounds != 0 {
@@ -4532,6 +4597,58 @@ func (m *GoCode) UnmarshalVT(dAtA []byte) error {
 				}
 			}
 			m.EmitPointersForNullTypes = bool(v != 0)
+		case 23:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field QueryParameterLimit", wireType)
+			}
+			var v int32
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.QueryParameterLimit = &v
+		case 24:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OutputBatchFileName", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.OutputBatchFileName = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skip(dAtA[iNdEx:])
@@ -5990,6 +6107,62 @@ func (m *Column) UnmarshalVT(dAtA []byte) error {
 			}
 			iNdEx = postIndex
 		case 13:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field IsSqlcSlice", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.IsSqlcSlice = bool(v != 0)
+		case 14:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field EmbedTable", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.EmbedTable == nil {
+				m.EmbedTable = &Identifier{}
+			}
+			if err := m.EmbedTable.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 15:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ArrayBounds", wireType)
 			}

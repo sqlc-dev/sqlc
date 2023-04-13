@@ -14,6 +14,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"github.com/kyleconroy/sqlc/internal/cmd"
+	"github.com/kyleconroy/sqlc/internal/opts"
 )
 
 func TestExamples(t *testing.T) {
@@ -39,7 +40,7 @@ func TestExamples(t *testing.T) {
 			t.Parallel()
 			path := filepath.Join(examples, tc)
 			var stderr bytes.Buffer
-			output, err := cmd.Generate(ctx, cmd.Env{ExperimentalFeatures: true}, path, "", &stderr)
+			output, err := cmd.Generate(ctx, cmd.Env{}, path, "", &stderr)
 			if err != nil {
 				t.Fatalf("sqlc generate failed: %s", stderr.String())
 			}
@@ -67,7 +68,7 @@ func BenchmarkExamples(b *testing.B) {
 			path := filepath.Join(examples, tc)
 			for i := 0; i < b.N; i++ {
 				var stderr bytes.Buffer
-				cmd.Generate(ctx, cmd.Env{ExperimentalFeatures: true}, path, "", &stderr)
+				cmd.Generate(ctx, cmd.Env{}, path, "", &stderr)
 			}
 		})
 	}
@@ -110,11 +111,14 @@ func TestReplay(t *testing.T) {
 				}
 			}
 
+			env := cmd.Env{
+				Debug: opts.DebugFromString(args.Env["SQLCDEBUG"]),
+			}
 			switch args.Command {
 			case "diff":
-				err = cmd.Diff(ctx, cmd.Env{ExperimentalFeatures: true}, path, "", &stderr)
+				err = cmd.Diff(ctx, env, path, "", &stderr)
 			case "generate":
-				output, err = cmd.Generate(ctx, cmd.Env{ExperimentalFeatures: true}, path, "", &stderr)
+				output, err = cmd.Generate(ctx, env, path, "", &stderr)
 				if err == nil {
 					cmpDirectory(t, path, output)
 				}
@@ -209,8 +213,9 @@ func expectedStderr(t *testing.T, dir string) string {
 }
 
 type exec struct {
-	Command string `json:"command"`
-	Process string `json:"process"`
+	Command string            `json:"command"`
+	Process string            `json:"process"`
+	Env     map[string]string `json:"env"`
 }
 
 func parseExec(t *testing.T, dir string) exec {
@@ -254,7 +259,7 @@ func BenchmarkReplay(b *testing.B) {
 			path, _ := filepath.Abs(tc)
 			for i := 0; i < b.N; i++ {
 				var stderr bytes.Buffer
-				cmd.Generate(ctx, cmd.Env{ExperimentalFeatures: true}, path, "", &stderr)
+				cmd.Generate(ctx, cmd.Env{}, path, "", &stderr)
 			}
 		})
 	}

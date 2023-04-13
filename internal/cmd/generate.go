@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"runtime/trace"
-	"strings"
 	"sync"
 
 	"golang.org/x/sync/errgroup"
@@ -45,7 +44,10 @@ The supported version can only be "1" or "2".
 const errMessageNoPackages = `No packages are configured`
 
 func printFileErr(stderr io.Writer, dir string, fileErr *multierr.FileError) {
-	filename := strings.TrimPrefix(fileErr.Filename, dir+"/")
+	filename, err := filepath.Rel(dir, fileErr.Filename)
+	if err != nil {
+		filename = fileErr.Filename
+	}
 	fmt.Fprintf(stderr, "%s:%d:%d: %s\n", filename, fileErr.Line, fileErr.Column, fileErr.Err)
 }
 

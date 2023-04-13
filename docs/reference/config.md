@@ -29,7 +29,7 @@ sql:
 Each mapping in the `sql` collection has the following keys:
 
 - `engine`:
-  - Either `postgresql` or `mysql`.
+  - One of `postgresql`, `mysql` or `sqlite`.
 - `schema`:
   - Directory of SQL migrations or path to single SQL file; or a list of paths.
 - `queries`:
@@ -113,6 +113,8 @@ The `gen` mapping supports the following keys:
     that returns all valid enum values.
 - `json_tags_case_style`:
   - `camel` for camelCase, `pascal` for PascalCase, `snake` for snake_case or `none` to use the column name in the DB. Defaults to `none`.
+- `output_batch_file_name`:
+  - Customize the name of the batch file. Defaults to `batch.go`.
 - `output_db_file_name`:
   - Customize the name of the db file. Defaults to `db.go`.
 - `output_models_file_name`:
@@ -121,7 +123,9 @@ The `gen` mapping supports the following keys:
   - Customize the name of the querier file. Defaults to `querier.go`.
 - `output_files_suffix`:
   - If specified the suffix will be added to the name of the generated files.
-- `rename`:
+- `query_parameter_limit`:
+  - Positional arguments that will be generated in Go functions (>= `1` or `-1`). To always emit a parameter struct, you would need to set it to `-1`. `0` is invalid. Defaults to `1`.
+`rename`:
   - Customize the name of generated struct fields. Explained in detail on the `Renaming fields` section.
 - `overrides`:
   - It is a collection of definitions that dictates which types are used to map a database types. Explained in detail on the  `Type overriding` section.
@@ -213,6 +217,7 @@ sql:
             import: "a/b/v2"
             package: "b"
             type: "MyType"
+            pointer: true
 ```
 
 When generating code, entries using the `column` key will always have preference over
@@ -343,6 +348,7 @@ packages:
     emit_enum_valid_method: false
     emit_all_enum_values: false
     json_tags_case_style: "camel"
+    output_batch_file_name: "batch.go"
     output_db_file_name: "db.go"
     output_models_file_name: "models.go"
     output_querier_file_name: "querier.go"
@@ -394,6 +400,8 @@ Each mapping in the `packages` collection has the following keys:
     that returns all valid enum values.
 - `json_tags_case_style`:
   - `camel` for camelCase, `pascal` for PascalCase, `snake` for snake_case or `none` to use the column name in the DB. Defaults to `none`.
+- `output_batch_file_name`:
+  - Customize the name of the batch file. Defaults to `batch.go`.
 - `output_db_file_name`:
   - Customize the name of the db file. Defaults to `db.go`.
 - `output_models_file_name`:
@@ -402,6 +410,8 @@ Each mapping in the `packages` collection has the following keys:
   - Customize the name of the querier file. Defaults to `querier.go`.
 - `output_files_suffix`:
   - If specified the suffix will be added to the name of the generated files.
+- `query_parameter_limit`:
+  - Positional arguments that will be generated in Go functions (`>= 0`). To always emit a parameter struct, you would need to set it to `0`. Defaults to `1`.
 
 ### overrides
 

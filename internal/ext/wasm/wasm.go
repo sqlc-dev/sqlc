@@ -11,7 +11,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -236,7 +235,7 @@ func (r *Runner) Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plu
 		return nil, err
 	}
 
-	dir, err := ioutil.TempDir("", "out")
+	dir, err := os.MkdirTemp(os.Getenv("SQLCTMPDIR"), "out")
 	if err != nil {
 		return nil, fmt.Errorf("temp dir: %w", err)
 	}

@@ -39,5 +39,9 @@ func Singular(s SingularParams) string {
 	if strings.ToLower(s.Name) == "calories" {
 		return "calorie"
 	}
+	// Manual fix for incorrect handling of "-ves" suffix
+	if strings.ToLower(s.Name) == "waves" {
+		return "wave"
+	}
 	return upstream.Singular(s.Name)
 }
