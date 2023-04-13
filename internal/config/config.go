@@ -58,6 +58,7 @@ const (
 type Config struct {
 	Version string   `json:"version" yaml:"version"`
 	Project Project  `json:"project" yaml:"project"`
+	Cloud   Cloud    `json:"cloud" yaml:"cloud"`
 	SQL     []SQL    `json:"sql" yaml:"sql"`
 	Gen     Gen      `json:"overrides,omitempty" yaml:"overrides"`
 	Plugins []Plugin `json:"plugins" yaml:"plugins"`
@@ -65,6 +66,12 @@ type Config struct {
 
 type Project struct {
 	ID string `json:"id" yaml:"id"`
+}
+
+type Cloud struct {
+	Organization string `json:"organization" yaml:"organization"`
+	Project      string `json:"project" yaml:"project"`
+	Hostname     string `json:"hostname" yaml:"hostname"`
 }
 
 type Plugin struct {
