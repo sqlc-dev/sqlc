@@ -100,13 +100,14 @@ func readConfig(stderr io.Writer, dir, filename string) (string, *config.Config,
 	}
 
 	base := filepath.Base(configPath)
-	blob, err := os.ReadFile(configPath)
+	file, err := os.Open(configPath)
 	if err != nil {
 		fmt.Fprintf(stderr, "error parsing %s: file does not exist\n", base)
 		return "", nil, err
 	}
+	defer file.Close()
 
-	conf, err := config.ParseConfig(bytes.NewReader(blob))
+	conf, err := config.ParseConfig(file)
 	if err != nil {
 		switch err {
 		case config.ErrMissingVersion:
