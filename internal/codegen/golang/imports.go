@@ -68,7 +68,8 @@ func (i *importer) usesType(typ string) bool {
 	for _, strct := range i.Structs {
 		for _, f := range strct.Fields {
 			fType := trimSliceAndPointerPrefix(f.Type)
-			if strings.HasPrefix(fType, typ) {
+			tType := trimSliceAndPointerPrefix(typ)
+			if strings.HasPrefix(fType, tType) {
 				return true
 			}
 		}
