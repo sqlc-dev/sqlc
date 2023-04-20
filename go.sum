@@ -5,8 +5,8 @@ github.com/antlr/antlr4/runtime/Go/antlr/v4 v4.0.0-20230321174746-8dcc6526cfb1 h
 github.com/antlr/antlr4/runtime/Go/antlr/v4 v4.0.0-20230321174746-8dcc6526cfb1/go.mod h1:pSwJ0fSY5KhvocuWSx4fz3BA8OrA1bQn+K1Eli3BRwM=
 github.com/benbjohnson/clock v1.1.0 h1:Q92kusRqC1XV2MjkWETPvjJVqKetz1OzxZB7mHJLju8=
 github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
-github.com/bytecodealliance/wasmtime-go/v5 v5.0.0 h1:Ue3eBDElMrdzWoUtr7uPr7NeDZriuR5oIivp5EHknQU=
-github.com/bytecodealliance/wasmtime-go/v5 v5.0.0/go.mod h1:KcecyOqumZrvLnlaEIMFRbBaQeUYNvsbPjAEVho1Fcs=
+github.com/bytecodealliance/wasmtime-go/v8 v8.0.0 h1:jP4sqm2PHgm3+eQ50zCoCdIyQFkIL/Rtkw6TT8OYPFI=
+github.com/bytecodealliance/wasmtime-go/v8 v8.0.0/go.mod h1:tgazNLU7xSC2gfRAM8L4WyE+dgs5yp9FF5/tGebEQyM=
 github.com/cockroachdb/apd v1.1.0 h1:3LFP3629v+1aKXU5Q37mxmRxX/pIu1nijXydLShEq5I=
 github.com/cockroachdb/apd v1.1.0/go.mod h1:8Sl8LxpKi29FqWXR16WEFZRNSz3SoPzUzeMeY4+DwBQ=
 github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e/go.mod h1:F5haX7vjVVG0kc13fIWeqUViNPyEJxv/OmvnBo0Yme4=
