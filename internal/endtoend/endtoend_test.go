@@ -112,7 +112,8 @@ func TestReplay(t *testing.T) {
 			}
 
 			env := cmd.Env{
-				Debug: opts.DebugFromString(args.Env["SQLCDEBUG"]),
+				Debug:    opts.DebugFromString(args.Env["SQLCDEBUG"]),
+				NoRemote: true,
 			}
 			switch args.Command {
 			case "diff":
