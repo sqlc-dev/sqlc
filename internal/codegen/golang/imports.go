@@ -406,6 +406,13 @@ func (i *importer) copyfromImports() fileImports {
 	})
 
 	std["context"] = struct{}{}
+	if i.Settings.Go.SqlDriver == SQLDriverGoSQLDriverMySQL {
+		std["io"] = struct{}{}
+		std["fmt"] = struct{}{}
+		std["sync/atomic"] = struct{}{}
+		pkg[ImportSpec{Path: "github.com/go-sql-driver/mysql"}] = struct{}{}
+		pkg[ImportSpec{Path: "github.com/hexon/mysqltsv"}] = struct{}{}
+	}
 
 	return sortedImports(std, pkg)
 }

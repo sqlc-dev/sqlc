@@ -186,6 +186,8 @@ import (
 {{define "copyfromCode"}}
 {{if .SQLDriver.IsPGX }}
     {{- template "copyfromCodePgx" .}}
+{{else}}
+    {{- template "copyfromCodeGoSqlDriver" .}}
 {{end}}
 {{end}}
 
