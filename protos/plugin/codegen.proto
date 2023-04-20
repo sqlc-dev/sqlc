@@ -84,6 +84,7 @@ message GoCode
   string package = 12;
   string out = 13;
   string sql_package = 14;
+  string sql_driver = 25;
   string output_db_file_name = 15;
   string output_models_file_name = 16;
   string output_querier_file_name = 17;
