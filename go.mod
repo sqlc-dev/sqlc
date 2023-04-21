@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/antlr/antlr4/runtime/Go/antlr/v4 v4.0.0-20230321174746-8dcc6526cfb1
-	github.com/bytecodealliance/wasmtime-go/v5 v5.0.0
+	github.com/bytecodealliance/wasmtime-go/v8 v8.0.0
 	github.com/cubicdaiya/gonp v1.0.4
 	github.com/davecgh/go-spew v1.1.1
 	github.com/go-sql-driver/mysql v1.7.0
@@ -12,7 +12,7 @@ require (
 	github.com/jackc/pgconn v1.14.0
 	github.com/jackc/pgx/v4 v4.18.1
 	github.com/jinzhu/inflection v1.0.0
-	github.com/lib/pq v1.10.7
+	github.com/lib/pq v1.10.8
 	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/pganalyze/pg_query_go/v4 v4.2.0
 	github.com/riza-io/grpc-go v0.1.0

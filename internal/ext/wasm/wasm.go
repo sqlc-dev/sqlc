@@ -18,7 +18,7 @@ import (
 	"runtime/trace"
 	"strings"
 
-	wasmtime "github.com/bytecodealliance/wasmtime-go/v5"
+	wasmtime "github.com/bytecodealliance/wasmtime-go/v8"
 	"golang.org/x/sync/singleflight"
 
 	"github.com/kyleconroy/sqlc/internal/info"
@@ -26,7 +26,7 @@ import (
 )
 
 // This version must be updated whenever the wasmtime-go dependency is updated
-const wasmtimeVersion = `v5.0.0`
+const wasmtimeVersion = `v8.0.0`
 
 func cacheDir() (string, error) {
 	cache := os.Getenv("SQLCCACHE")
