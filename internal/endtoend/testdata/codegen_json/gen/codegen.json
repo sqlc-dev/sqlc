@@ -30,6 +30,7 @@
       "package": "",
       "out": "",
       "sql_package": "",
+      "sql_driver": "",
       "output_db_file_name": "",
       "output_models_file_name": "",
       "output_querier_file_name": "",

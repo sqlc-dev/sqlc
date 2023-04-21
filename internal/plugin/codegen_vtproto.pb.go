@@ -249,6 +249,9 @@ func (this *GoCode) EqualVT(that *GoCode) bool {
 	if this.OutputBatchFileName != that.OutputBatchFileName {
 		return false
 	}
+	if this.SqlDriver != that.SqlDriver {
+		return false
+	}
 	return string(this.unknownFields) == string(that.unknownFields)
 }
 
@@ -1001,6 +1004,15 @@ func (m *GoCode) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m.unknownFields != nil {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
+	}
+	if len(m.SqlDriver) > 0 {
+		i -= len(m.SqlDriver)
+		copy(dAtA[i:], m.SqlDriver)
+		i = encodeVarint(dAtA, i, uint64(len(m.SqlDriver)))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xca
 	}
 	if len(m.OutputBatchFileName) > 0 {
 		i -= len(m.OutputBatchFileName)
@@ -2348,6 +2360,10 @@ func (m *GoCode) SizeVT() (n int) {
 		n += 2 + sov(uint64(*m.QueryParameterLimit))
 	}
 	l = len(m.OutputBatchFileName)
+	if l > 0 {
+		n += 2 + l + sov(uint64(l))
+	}
+	l = len(m.SqlDriver)
 	if l > 0 {
 		n += 2 + l + sov(uint64(l))
 	}
@@ -4637,6 +4653,38 @@ func (m *GoCode) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.OutputBatchFileName = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 25:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field SqlDriver", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.SqlDriver = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
