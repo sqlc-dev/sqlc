@@ -102,6 +102,24 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 		}
 		switch n := res.Val.(type) {
 
+		case *ast.A_Const:
+			name := ""
+			if res.Name != nil {
+				name = *res.Name
+			}
+			switch n.Val.(type) {
+			case *ast.String:
+				cols = append(cols, &Column{Name: name, DataType: "text", NotNull: true})
+			case *ast.Integer:
+				cols = append(cols, &Column{Name: name, DataType: "int", NotNull: true})
+			case *ast.Float:
+				cols = append(cols, &Column{Name: name, DataType: "float", NotNull: true})
+			case *ast.Boolean:
+				cols = append(cols, &Column{Name: name, DataType: "bool", NotNull: true})
+			default:
+				cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
+			}
+
 		case *ast.A_Expr:
 			name := ""
 			if res.Name != nil {
