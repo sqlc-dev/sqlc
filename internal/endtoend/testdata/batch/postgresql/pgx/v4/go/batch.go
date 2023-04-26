@@ -13,6 +13,10 @@ import (
 	"github.com/jackc/pgx/v4"
 )
 
+var (
+	ErrBatchAlreadyClosed = errors.New("batch already closed")
+)
+
 const getValues = `-- name: GetValues :batchmany
 SELECT a, b
 FROM myschema.foo
@@ -43,7 +47,7 @@ func (b *GetValuesBatchResults) Query(f func(int, []MyschemaFoo, error)) {
 		var items []MyschemaFoo
 		if b.closed {
 			if f != nil {
-				f(t, items, errors.New("batch already closed"))
+				f(t, items, ErrBatchAlreadyClosed)
 			}
 			continue
 		}
@@ -109,7 +113,7 @@ func (b *InsertValuesBatchResults) QueryRow(f func(int, sql.NullString, error)) 
 		var a sql.NullString
 		if b.closed {
 			if f != nil {
-				f(t, a, errors.New("batch already closed"))
+				f(t, a, ErrBatchAlreadyClosed)
 			}
 			continue
 		}
@@ -159,7 +163,7 @@ func (b *UpdateValuesBatchResults) Exec(f func(int, error)) {
 	for t := 0; t < b.tot; t++ {
 		if b.closed {
 			if f != nil {
-				f(t, errors.New("batch already closed"))
+				f(t, ErrBatchAlreadyClosed)
 			}
 			continue
 		}

@@ -1435,7 +1435,9 @@ func convertDeleteStmt(n *pg.DeleteStmt) *ast.DeleteStmt {
 		return nil
 	}
 	return &ast.DeleteStmt{
-		Relation:      convertRangeVar(n.Relation),
+		Relations: &ast.List{
+			Items: []ast.Node{convertRangeVar(n.Relation)},
+		},
 		UsingClause:   convertSlice(n.UsingClause),
 		WhereClause:   convertNode(n.WhereClause),
 		ReturningList: convertSlice(n.ReturningList),

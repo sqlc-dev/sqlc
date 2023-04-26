@@ -13,6 +13,10 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+var (
+	ErrBatchAlreadyClosed = errors.New("batch already closed")
+)
+
 const insertValues = `-- name: InsertValues :batchone
 INSERT INTO foo (a, b)
 VALUES ($1, $2)
@@ -50,7 +54,7 @@ func (b *InsertValuesBatchResults) QueryRow(f func(int, *Foo, error)) {
 		var i Foo
 		if b.closed {
 			if f != nil {
-				f(t, nil, errors.New("batch already closed"))
+				f(t, nil, ErrBatchAlreadyClosed)
 			}
 			continue
 		}

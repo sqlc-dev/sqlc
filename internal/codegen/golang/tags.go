@@ -8,12 +8,12 @@ import (
 )
 
 func TagsToString(tags map[string]string) string {
+	if len(tags) == 0 {
+		return ""
+	}
 	tagParts := make([]string, 0, len(tags))
 	for key, val := range tags {
 		tagParts = append(tagParts, fmt.Sprintf("%s:\"%s\"", key, val))
-	}
-	if len(tagParts) == 0 {
-		return ""
 	}
 	sort.Strings(tagParts)
 	return strings.Join(tagParts, " ")

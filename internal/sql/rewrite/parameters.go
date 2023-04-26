@@ -54,9 +54,14 @@ func paramFromFuncCall(call *ast.FuncCall) (named.Param, string) {
 		origName = fmt.Sprintf("'%s'", paramName)
 	}
 
-	param := named.NewParam(paramName)
-	if call.Func.Name == "narg" {
+	var param named.Param
+	switch call.Func.Name {
+	case "narg":
 		param = named.NewUserNullableParam(paramName)
+	case "slice":
+		param = named.NewSqlcSlice(paramName)
+	default:
+		param = named.NewParam(paramName)
 	}
 
 	// TODO: This code assumes that sqlc.arg(name) / sqlc.narg(name) is on a single line
@@ -90,7 +95,13 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 
 			var replace string
 			if engine == config.EngineMySQL || !dollar {
-				replace = "?"
+				if param.IsSqlcSlice() {
+					// This sequence is also replicated in internal/codegen/golang.Field
+					// since it's needed during template generation for replacement
+					replace = fmt.Sprintf(`/*SLICE:%s*/?`, param.Name())
+				} else {
+					replace = "?"
+				}
 			} else {
 				replace = fmt.Sprintf("$%d", argn)
 			}
