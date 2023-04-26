@@ -8,6 +8,8 @@ Released XXXX-XX-ZZ
 
 #### sqlc.embed
 
+_Developed by [@nickjackson](https://github.com/nickjackson)_
+
 Embedding allows you to reuse existing model structs in more queries, resulting
 in less manual serilization work. First, imagine we have the following schema
 with students and test scores.
@@ -42,7 +44,7 @@ FROM students
 JOIN high_scores ON high_scores.student_id = students.id;
 ```
 
-When using Go, sqlc will produce a struct like
+When using Go, sqlc will produce a struct like this:
 
 ```
 type HighScoreRow struct {
@@ -52,6 +54,9 @@ type HighScoreRow struct {
 	HighScore int32
 }
 ```
+
+With embedding, the struct will contain a model for the table instead of a
+flattened list of columns.
 
 ```sql
 -- name: HighScoreEmbed :many
@@ -73,6 +78,25 @@ type HighScoreRow struct {
 ```
 
 #### sqlc.slice
+
+_Developed by Paul Cameron and Jille Timmermans_
+
+The MySQL Go driver does not support passing slices to the IN operator. The
+`sqlc.slice` function generates a dynamic query at runtime with the correct
+number of parameters.
+
+```sql
+/* name: SelectStudents :many */
+SELECT * FROM students 
+WHERE age IN (sqlc.slice("ages"))
+```
+
+```go
+func (q *Queries) SelectStudents(ctx context.Context, arges []int32) ([]Student, error) {
+```
+
+This feature is only supported in MySQL and cannot be used with prepared
+queries.
 
 #### Batch operation improvements  
 
