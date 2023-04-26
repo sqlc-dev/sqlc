@@ -31,8 +31,8 @@ func (e *VenuesStatus) Scan(src interface{}) error {
 }
 
 type NullVenuesStatus struct {
-	VenuesStatus VenuesStatus `json:"venues_status"`
-	Valid        bool         `json:"valid"` // Valid is true if VenuesStatus is not NULL
+	VenuesStatus VenuesStatus
+	Valid        bool // Valid is true if VenuesStatus is not NULL
 }
 
 // Scan implements the Scanner interface.

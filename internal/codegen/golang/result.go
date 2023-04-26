@@ -27,7 +27,7 @@ func buildEnums(req *plugin.CodeGenRequest) []Enum {
 
 			nameTags := map[string]string{}
 			validTags := map[string]string{}
-			if req.Settings.Go.EmitJsonTags {
+			if req.Settings.Go.EmitJsonTags && req.Settings.Go.EmitJsonTagsOnNullEnumStructs {
 				nameTags["json"] = JSONTagName(enumName, req.Settings)
 				validTags["json"] = JSONTagName("valid", req.Settings)
 			}

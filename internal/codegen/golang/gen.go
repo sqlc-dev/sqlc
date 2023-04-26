@@ -27,16 +27,17 @@ type tmplCtx struct {
 	// TODO: Race conditions
 	SourceName string
 
-	EmitJSONTags              bool
-	EmitDBTags                bool
-	EmitPreparedQueries       bool
-	EmitInterface             bool
-	EmitEmptySlices           bool
-	EmitMethodsWithDBArgument bool
-	EmitEnumValidMethod       bool
-	EmitAllEnumValues         bool
-	UsesCopyFrom              bool
-	UsesBatch                 bool
+	EmitJSONTags                  bool
+	EmitJSONTagsOnNullEnumStructs bool
+	EmitDBTags                    bool
+	EmitPreparedQueries           bool
+	EmitInterface                 bool
+	EmitEmptySlices               bool
+	EmitMethodsWithDBArgument     bool
+	EmitEnumValidMethod           bool
+	EmitAllEnumValues             bool
+	UsesCopyFrom                  bool
+	UsesBatch                     bool
 }
 
 func (t *tmplCtx) OutputQuery(sourceName string) bool {
@@ -120,22 +121,23 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 
 	golang := req.Settings.Go
 	tctx := tmplCtx{
-		EmitInterface:             golang.EmitInterface,
-		EmitJSONTags:              golang.EmitJsonTags,
-		EmitDBTags:                golang.EmitDbTags,
-		EmitPreparedQueries:       golang.EmitPreparedQueries,
-		EmitEmptySlices:           golang.EmitEmptySlices,
-		EmitMethodsWithDBArgument: golang.EmitMethodsWithDbArgument,
-		EmitEnumValidMethod:       golang.EmitEnumValidMethod,
-		EmitAllEnumValues:         golang.EmitAllEnumValues,
-		UsesCopyFrom:              usesCopyFrom(queries),
-		UsesBatch:                 usesBatch(queries),
-		SQLDriver:                 parseDriver(golang.SqlPackage),
-		Q:                         "`",
-		Package:                   golang.Package,
-		Enums:                     enums,
-		Structs:                   structs,
-		SqlcVersion:               req.SqlcVersion,
+		EmitInterface:                 golang.EmitInterface,
+		EmitJSONTags:                  golang.EmitJsonTags,
+		EmitJSONTagsOnNullEnumStructs: golang.EmitJsonTagsOnNullEnumStructs,
+		EmitDBTags:                    golang.EmitDbTags,
+		EmitPreparedQueries:           golang.EmitPreparedQueries,
+		EmitEmptySlices:               golang.EmitEmptySlices,
+		EmitMethodsWithDBArgument:     golang.EmitMethodsWithDbArgument,
+		EmitEnumValidMethod:           golang.EmitEnumValidMethod,
+		EmitAllEnumValues:             golang.EmitAllEnumValues,
+		UsesCopyFrom:                  usesCopyFrom(queries),
+		UsesBatch:                     usesBatch(queries),
+		SQLDriver:                     parseDriver(golang.SqlPackage),
+		Q:                             "`",
+		Package:                       golang.Package,
+		Enums:                         enums,
+		Structs:                       structs,
+		SqlcVersion:                   req.SqlcVersion,
 	}
 
 	if tctx.UsesCopyFrom && !tctx.SQLDriver.IsPGX() {
