@@ -1,10 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## 1.18.0
+## [1.18.0](https://github.com/kyleconroy/sqlc/releases/tag/1.18.0)
 Released 2023-04-27
 
-### Changes
+### Release notes
 
 #### Remote code generation
 
@@ -167,6 +167,94 @@ includes more than one parameter, the generated method will use an argument
 struct instead of positional arguments. This behavior can now be changed via
 the `query_parameter_limit` configuration option.  If set to `0`, every
 genreated method will use a argument struct. 
+
+### Changes
+
+#### Bug Fixes
+
+- Prevent variable redeclaration in single param conflict for pgx (#2058)
+- Retrieve Larg/Rarg join query after inner join (#2051)
+- Rename argument when conflicted to imported package (#2048)
+- Pgx closed batch return pointer if need #1959 (#1960)
+- Correct singularization of "waves" (#2194)
+- Honor Package level renames in v2 yaml config (#2001)
+- (mysql) Prevent UPDATE ... JOIN panic #1590 (#2154)
+- Mysql delete join panic (#2197)
+- Missing import with pointer overrides, solves #2168 #2125 (#2217)
+
+#### Documentation
+
+- (config.md) Add `sqlite` as engine option (#2164)
+- Add first pass at pgx documentation (#2174)
+- Add missed configuration option (#2188)
+- `specifies parameter ":one" without containing a RETURNING clause` (#2173)
+
+#### Features
+
+- Add `sqlc.embed` to allow model re-use (#1615)
+- (Go) Add query_parameter_limit conf to codegen (#1558)
+- Add remote execution for codegen (#2214)
+
+#### Testing
+
+- Skip tests if required plugins are missing (#2104)
+- Add tests for reanme fix in v2 (#2196)
+- Regenerate batch output for filename tests
+- Remove remote test (#2232)
+- Regenerate test output
+
+#### Bin/sqlc
+
+- Add SQLCTMPDIR environment variable (#2189)
+
+#### Build
+
+- (deps) Bump github.com/antlr/antlr4/runtime/Go/antlr (#2109)
+- (deps) Bump github.com/jackc/pgx/v4 from 4.18.0 to 4.18.1 (#2119)
+- (deps) Bump golang from 1.20.1 to 1.20.2 (#2135)
+- (deps) Bump google.golang.org/protobuf from 1.28.1 to 1.29.0 (#2137)
+- (deps) Bump google.golang.org/protobuf from 1.29.0 to 1.29.1 (#2143)
+- (deps) Bump golang from 1.20.2 to 1.20.3 (#2192)
+- (deps) Bump actions/setup-go from 3 to 4 (#2150)
+- (deps) Bump google.golang.org/protobuf from 1.29.1 to 1.30.0 (#2151)
+- (deps) Bump github.com/spf13/cobra from 1.6.1 to 1.7.0 (#2193)
+- (deps) Bump github.com/lib/pq from 1.10.7 to 1.10.8 (#2211)
+- (deps) Bump github.com/lib/pq from 1.10.8 to 1.10.9 (#2229)
+- (deps) Bump github.com/go-sql-driver/mysql from 1.7.0 to 1.7.1 (#2228)
+
+#### Cmd/sqlc
+
+- Remove --experimental flag (#2170)
+- Add option to disable process-based plugins (#2180)
+- Bump version to v1.18.0
+
+#### Codegen
+
+- Correctly generate CopyFrom columns for single-column copyfroms (#2185)
+
+#### Config
+
+- Add top-level cloud configuration (#2204)
+
+#### Engine/postgres
+
+- Upgrade to pg_query_go/v4 (#2114)
+
+#### Ext/wasm
+
+- Check exit code on returned error (#2223)
+
+#### Parser
+
+- Generate correct types for `SELECT NOT EXISTS` (#1972)
+
+#### Sqlite
+
+- Add support for CREATE TABLE ... STRICT (#2175)
+
+#### Wasm
+
+- Upgrade to wasmtime v8.0.0 (#2222)
 
 ## [1.17.2](https://github.com/kyleconroy/sqlc/releases/tag/1.17.2)
 Released 2023-02-22
