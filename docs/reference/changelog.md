@@ -18,7 +18,11 @@ work on Windows.
 To bridge that gap, we're announcing remote code generation, currently in
 private alpha. To join the private alpha, [sign up for the waitlist](https://docs.google.com/forms/d/e/1FAIpQLScDWrGtTgZWKt3mdlF5R2XCX6tL1pMkB4yuZx5yq684tTNN1Q/viewform?usp=sf_link).
 
-To configure remote generation, configure a `cloud` block in `sqlc.json`.
+Remote code generation works like local code generation, except the heavy
+lifting is performed in a consistent cloud environment. WASM-based plugins are
+supported in the remote environment, but process-based plugins are not.
+
+To configure remote generation, add a `cloud` block in `sqlc.json`.
 
 ```json
 {
@@ -31,15 +35,15 @@ To configure remote generation, configure a `cloud` block in `sqlc.json`.
 }
 ```
 
-You'll also need to the `SQLC_AUTH_TOKEN` environment variable.
+You'll also need to set the `SQLC_AUTH_TOKEN` environment variable.
 
 ```bash
 export SQLC_AUTH_TOKEN=<token>
 ```
 
-When the cloud configuration exists, `sqlc generate` will default to remote
-generation. If you'd like to generate code locally, pass the `--no-remote`
-option.
+When the `cloud` configuration block exists, `sqlc generate` will default to remote
+code generation. If you'd like to generate code locally without removing the `cloud`
+block from your config, pass the `--no-remote` option.
 
 
 ```bash
@@ -53,7 +57,7 @@ Remote generation is off by default and requires an opt-in to use.
 _Developed by [@nickjackson](https://github.com/nickjackson)_
 
 Embedding allows you to reuse existing model structs in more queries, resulting
-in less manual serilization work. First, imagine we have the following schema
+in less manual serialization work. First, imagine we have the following schema
 with students and test scores.
 
 
@@ -134,7 +138,7 @@ WHERE age IN (sqlc.slice("ages"))
 ```
 
 ```go
-func (q *Queries) SelectStudents(ctx context.Context, arges []int32) ([]Student, error) {
+func (q *Queries) SelectStudents(ctx context.Context, ages []int32) ([]Student, error) {
 ```
 
 This feature is only supported in MySQL and cannot be used with prepared
