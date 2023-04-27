@@ -9,7 +9,7 @@ Using Go and pgx
 
 
 pgx is a pure Go driver and toolkit for PostgreSQL. It's become the default
-PostgreSQL package for many Gophers since lib/pq was put into maitience mode.
+PostgreSQL package for many Gophers since lib/pq was put into maintenance mode.
 
 ^^^^^^^^^^^^^^^
 Getting started
