@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	pcast "github.com/pingcap/tidb/parser/ast"
+	"github.com/pingcap/tidb/parser/mysql"
 	"github.com/pingcap/tidb/parser/opcode"
 	driver "github.com/pingcap/tidb/parser/test_driver"
 	"github.com/pingcap/tidb/parser/types"
@@ -580,6 +581,41 @@ func (c *cc) convertUpdateStmt(n *pcast.UpdateStmt) *ast.UpdateStmt {
 }
 
 func (c *cc) convertValueExpr(n *driver.ValueExpr) *ast.A_Const {
+	switch n.TexprNode.Type.GetType() {
+	case mysql.TypeBit:
+	case mysql.TypeDate:
+	case mysql.TypeDatetime:
+	case mysql.TypeGeometry:
+	case mysql.TypeJSON:
+	case mysql.TypeNull:
+	case mysql.TypeSet:
+	case mysql.TypeShort:
+	case mysql.TypeDuration:
+	case mysql.TypeTimestamp:
+		// TODO: Create an AST type for these?
+
+	case mysql.TypeTiny,
+		mysql.TypeInt24,
+		mysql.TypeYear,
+		mysql.TypeLong,
+		mysql.TypeLonglong:
+		return &ast.A_Const{
+			Val: &ast.Integer{
+				Ival: n.Datum.GetInt64(),
+			},
+		}
+
+	case mysql.TypeDouble,
+		mysql.TypeFloat,
+		mysql.TypeNewDecimal:
+		return &ast.A_Const{
+			Val: &ast.Float{
+				// TODO: Extract the value from n.TexprNode
+			},
+		}
+
+	case mysql.TypeBlob, mysql.TypeString, mysql.TypeVarchar, mysql.TypeVarString, mysql.TypeLongBlob, mysql.TypeMediumBlob, mysql.TypeTinyBlob, mysql.TypeEnum:
+	}
 	return &ast.A_Const{
 		Val: &ast.String{
 			Str: n.Datum.GetString(),
@@ -1219,7 +1255,32 @@ func (c *cc) convertSetStmt(n *pcast.SetStmt) ast.Node {
 }
 
 func (c *cc) convertShowStmt(n *pcast.ShowStmt) ast.Node {
-	return todo(n)
+	if n.Tp != pcast.ShowWarnings {
+		return todo(n)
+	}
+	level := "level"
+	code := "code"
+	message := "message"
+	stmt := &ast.SelectStmt{
+		FromClause: &ast.List{},
+		TargetList: &ast.List{
+			Items: []ast.Node{
+				&ast.ResTarget{
+					Name: &level,
+					Val:  &ast.A_Const{Val: &ast.String{}},
+				},
+				&ast.ResTarget{
+					Name: &code,
+					Val:  &ast.A_Const{Val: &ast.Integer{}},
+				},
+				&ast.ResTarget{
+					Name: &message,
+					Val:  &ast.A_Const{Val: &ast.String{}},
+				},
+			},
+		},
+	}
+	return stmt
 }
 
 func (c *cc) convertShutdownStmt(n *pcast.ShutdownStmt) ast.Node {
