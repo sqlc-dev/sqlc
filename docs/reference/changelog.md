@@ -2,9 +2,51 @@
 All notable changes to this project will be documented in this file.
 
 ## 1.18.0
-Released XXXX-XX-ZZ
+Released 2023-04-27
 
 ### Changes
+
+#### Remote code generation
+
+_Developed by [@andrewmbenton](https://github.com/andrewmbenton)_
+
+At its core, sqlc is powered by SQL engines, which include parsers, formatters,
+analyzers and more. While our goal is to support each engine on each operating
+system, it's not always possible. For example, the PostgreSQL engine does not
+work on Windows.
+
+To bridge that gap, we're announcing remote code generation, currently in
+private alpha. To join the private alpha, [sign up for the waitlist](https://docs.google.com/forms/d/e/1FAIpQLScDWrGtTgZWKt3mdlF5R2XCX6tL1pMkB4yuZx5yq684tTNN1Q/viewform?usp=sf_link).
+
+To configure remote generation, configure a `cloud` block in `sqlc.json`.
+
+```json
+{
+  "version": "2",
+  "cloud": {
+    "organization": "<org-id>",
+    "project": "<project-id>",
+  },
+  ...
+}
+```
+
+You'll also need to the `SQLC_AUTH_TOKEN` environment variable.
+
+```bash
+export SQLC_AUTH_TOKEN=<token>
+```
+
+When the cloud configuration exists, `sqlc generate` will default to remote
+generation. If you'd like to generate code locally, pass the `--no-remote`
+option.
+
+
+```bash
+sqlc generate --no-remote
+```
+
+Remote generation is off by default and requires an opt-in to use.
 
 #### sqlc.embed
 
