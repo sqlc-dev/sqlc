@@ -1,0 +1,24 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "path": "go",
+      "engine": "postgresql",
+      "sql_package": "pgx/v5",
+      "name": "override",
+      "schema": "schema.sql",
+      "queries": "query.sql",
+      "overrides": [
+        {
+          "go_type": {
+            "import": "github.com/jackc/pgtype",
+            "type": "Text",
+            "package": "t",
+            "pointer": true
+          },
+          "column": "foo.langs"
+        }
+      ]
+    }
+  ]
+}

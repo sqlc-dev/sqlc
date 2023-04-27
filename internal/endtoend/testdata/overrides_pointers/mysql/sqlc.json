@@ -1,0 +1,23 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "path": "go",
+      "name": "override",
+      "engine": "mysql",
+      "schema": "schema.sql",
+      "queries": "query.sql",
+      "overrides": [
+        {
+          "go_type": {
+            "import": "github.com/jackc/pgtype",
+            "type": "Text",
+            "package": "t",
+            "pointer": true
+          },
+          "column": "foo.retyped"
+        }
+      ]
+    }
+  ]
+}
