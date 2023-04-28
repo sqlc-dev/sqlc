@@ -157,7 +157,7 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 			if res.Name != nil {
 				name = *res.Name
 			}
-			// TODO: The TypeCase code has been copied from below. Instead, we
+			// TODO: The TypeCase and A_Const code has been copied from below. Instead, we
 			// need a recurse function to get the type of a node.
 			if tc, ok := n.Defresult.(*ast.TypeCast); ok {
 				if tc.TypeName == nil {
@@ -175,11 +175,18 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 				col.Name = name
 				cols = append(cols, col)
 			} else if aconst, ok := n.Defresult.(*ast.A_Const); ok {
-				tn, err := ParseTypeName(aconst.Val)
-				if err != nil {
-					return nil, err
+				switch aconst.Val.(type) {
+				case *ast.String:
+					cols = append(cols, &Column{Name: name, DataType: "text", NotNull: true})
+				case *ast.Integer:
+					cols = append(cols, &Column{Name: name, DataType: "int", NotNull: true})
+				case *ast.Float:
+					cols = append(cols, &Column{Name: name, DataType: "float", NotNull: true})
+				case *ast.Boolean:
+					cols = append(cols, &Column{Name: name, DataType: "bool", NotNull: true})
+				default:
+					cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
 				}
-				cols = append(cols, &Column{Name: name, DataType: dataType(tn), NotNull: true})
 			} else {
 				cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
 			}
