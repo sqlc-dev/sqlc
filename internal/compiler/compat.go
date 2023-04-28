@@ -96,7 +96,7 @@ func ParseTableName(node ast.Node) (*ast.TableName, error) {
 func ParseTypeName(node ast.Node) (*ast.TypeName, error) {
 	rel, err := parseRelation(node)
 	if err != nil {
-		return nil, fmt.Errorf("parse table name: %w", err)
+		return nil, fmt.Errorf("parse type name: %w", err)
 	}
 	return &ast.TypeName{
 		Catalog: rel.Catalog,
