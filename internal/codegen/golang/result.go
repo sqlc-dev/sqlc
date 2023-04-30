@@ -335,7 +335,7 @@ func columnsToStruct(req *plugin.CodeGenRequest, name string, columns []goColumn
 		colName := columnName(c.Column, i)
 		tagName := colName
 
-		// overide col/tag with expected model name
+		// override col/tag with expected model name
 		if c.embed != nil {
 			colName = c.embed.modelName
 			tagName = SetCaseStyle(colName, "snake")
