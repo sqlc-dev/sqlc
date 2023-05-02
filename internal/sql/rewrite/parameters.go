@@ -2,6 +2,7 @@ package rewrite
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/source"
@@ -66,7 +67,14 @@ func paramFromFuncCall(call *ast.FuncCall) (named.Param, string) {
 
 	// TODO: This code assumes that sqlc.arg(name) / sqlc.narg(name) is on a single line
 	// with no extraneous spaces (or any non-significant tokens for that matter)
-	origText := fmt.Sprintf("%s.%s(%s)", call.Func.Schema, call.Func.Name, origName)
+	// except between the function name and argument
+	funcName := call.Func.Schema + "." + call.Func.Name
+	spaces := ""
+	if call.Args != nil && len(call.Args.Items) > 0 {
+		leftParen := call.Args.Items[0].Pos() - 1
+		spaces = strings.Repeat(" ", leftParen-call.Location-len(funcName))
+	}
+	origText := fmt.Sprintf("%s%s(%s)", funcName, spaces, origName)
 	return param, origText
 }
 
