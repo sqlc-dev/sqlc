@@ -361,6 +361,16 @@ func translate(node *nodes.Node) (ast.Node, error) {
 				Comment: makeString(n.Comment),
 			}, nil
 
+		case nodes.ObjectType_OBJECT_VIEW:
+			rel, err := parseRelation(n.Object)
+			if err != nil {
+				return nil, fmt.Errorf("COMMENT ON VIEW: %w", err)
+			}
+			return &ast.CommentOnViewStmt{
+				View:    rel.TableName(),
+				Comment: makeString(n.Comment),
+			}, nil
+
 		}
 		return nil, errSkip
 
