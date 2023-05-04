@@ -223,6 +223,7 @@ func (c *cc) convertFuncContext(n *parser.Expr_functionContext) ast.Node {
 				Args:        args,
 				AggOrder:    &ast.List{},
 				AggDistinct: n.DISTINCT_() != nil,
+				Location:    n.GetStart().GetStart(),
 			}
 		}
 	}
@@ -253,6 +254,7 @@ func (c *cc) convertColumnNameExpr(n *parser.Expr_qualified_column_nameContext) 
 		Fields: &ast.List{
 			Items: items,
 		},
+		Location: n.GetStart().GetStart(),
 	}
 }
 
@@ -554,11 +556,38 @@ func (c *cc) convertBinaryNode(n *parser.Expr_binaryContext) ast.Node {
 
 func (c *cc) convertParam(n *parser.Expr_bindContext) ast.Node {
 	if n.BIND_PARAMETER() != nil {
-		// Parameter numbers start at one
-		c.paramCount += 1
-		return &ast.ParamRef{
-			Number:   c.paramCount,
-			Location: n.GetStart().GetStart(),
+		text := n.GetText()
+		if strings.ContainsRune("@$:", rune(text[0])) {
+			loc := n.GetStart().GetStart()
+			return &ast.A_Expr{
+				Kind: ast.A_Expr_Kind(1),
+				Name: &ast.List{
+					Items: []ast.Node{&ast.String{Str: text[:1]}},
+				},
+				Rexpr: &ast.ColumnRef{
+					Name: text[1:],
+					Fields: &ast.List{
+						Items: []ast.Node{&ast.String{Str: text[1:]}},
+					},
+					Location: loc + 1,
+				},
+				Location: loc,
+			}
+		}
+		if text == "?" {
+			// Parameter numbers start at one
+			c.paramCount += 1
+			return &ast.ParamRef{
+				Number:   c.paramCount,
+				Location: n.GetStart().GetStart(),
+			}
+		} else {
+			argn, _ := strconv.Atoi(text[1:])
+			return &ast.ParamRef{
+				Number:   argn,
+				Location: n.GetStart().GetStart(),
+				Dollar:   true,
+			}
 		}
 	}
 	return todo(n)

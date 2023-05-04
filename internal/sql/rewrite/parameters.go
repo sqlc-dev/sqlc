@@ -102,6 +102,8 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 				} else {
 					replace = "?"
 				}
+			} else if engine == config.EngineSQLite {
+				replace = fmt.Sprintf("?%d", argn)
 			} else {
 				replace = fmt.Sprintf("$%d", argn)
 			}
@@ -130,6 +132,8 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 			var replace string
 			if engine == config.EngineMySQL || !dollar {
 				replace = "?"
+			} else if engine == config.EngineSQLite {
+				replace = fmt.Sprintf("?%d", argn)
 			} else {
 				replace = fmt.Sprintf("$%d", argn)
 			}
@@ -156,6 +160,8 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 			var replace string
 			if engine == config.EngineMySQL || !dollar {
 				replace = "?"
+			} else if engine == config.EngineSQLite {
+				replace = fmt.Sprintf("?%d", argn)
 			} else {
 				replace = fmt.Sprintf("$%d", argn)
 			}
