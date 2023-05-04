@@ -210,9 +210,16 @@ func (c *cc) convertFuncContext(n *parser.Expr_functionContext) ast.Node {
 				Args: args,
 			}
 		} else {
+			schema := ""
+			const sqlcPrefix = "sqlc_"
+			if strings.HasPrefix(funcName, sqlcPrefix) {
+				schema = "sqlc"
+				funcName = funcName[len(sqlcPrefix):]
+			}
 			return &ast.FuncCall{
 				Func: &ast.FuncName{
-					Name: funcName,
+					Schema: schema,
+					Name:   funcName,
 				},
 				Funcname: &ast.List{
 					Items: []ast.Node{
@@ -511,8 +518,10 @@ func (c *cc) convertLiteral(n *parser.Expr_literalContext) ast.Node {
 		}
 
 		if literal.STRING_LITERAL() != nil {
+			text := literal.GetText()
+			unquoted := text[1 : len(text)-1]
 			return &ast.A_Const{
-				Val: &ast.String{Str: literal.GetText()},
+				Val: &ast.String{Str: unquoted},
 			}
 		}
 
