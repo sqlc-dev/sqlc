@@ -4,7 +4,7 @@ import (
 	"crypto/tls"
 	"os"
 
-	"github.com/riza-io/grpc-go/credentials/bearer"
+	"github.com/riza-io/grpc-go/credentials/basic"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
@@ -14,9 +14,11 @@ import (
 const defaultHostname = "remote.sqlc.dev"
 
 func NewClient(cloudConfig config.Cloud) (GenClient, error) {
+	authID := cloudConfig.Organization + "/" + cloudConfig.Project
+	authToken := os.Getenv("SQLC_AUTH_TOKEN")
 	opts := []grpc.DialOption{
 		grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{})),
-		grpc.WithPerRPCCredentials(bearer.NewPerRPCCredentials(os.Getenv("SQLC_AUTH_TOKEN"))),
+		grpc.WithPerRPCCredentials(basic.NewPerRPCCredentials(authID, authToken)),
 	}
 
 	hostname := cloudConfig.Hostname
