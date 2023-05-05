@@ -21,5 +21,5 @@ type Book struct {
 	Title     string
 	Yr        int64
 	Available time.Time
-	Tags      string
+	Tag       string
 }
