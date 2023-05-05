@@ -149,9 +149,6 @@ type SQLiteParserListener interface {
 	// EnterExpr_unary is called when entering the expr_unary production.
 	EnterExpr_unary(c *Expr_unaryContext)
 
-	// EnterExpr_named_bind is called when entering the expr_named_bind production.
-	EnterExpr_named_bind(c *Expr_named_bindContext)
-
 	// EnterExpr_null_comp is called when entering the expr_null_comp production.
 	EnterExpr_null_comp(c *Expr_null_compContext)
 
@@ -535,9 +532,6 @@ type SQLiteParserListener interface {
 
 	// ExitExpr_unary is called when exiting the expr_unary production.
 	ExitExpr_unary(c *Expr_unaryContext)
-
-	// ExitExpr_named_bind is called when exiting the expr_named_bind production.
-	ExitExpr_named_bind(c *Expr_named_bindContext)
 
 	// ExitExpr_null_comp is called when exiting the expr_null_comp production.
 	ExitExpr_null_comp(c *Expr_null_compContext)

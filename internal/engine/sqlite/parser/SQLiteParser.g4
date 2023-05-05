@@ -272,8 +272,8 @@ drop_stmt:
  */
 expr:
     literal_value #expr_literal
-    | BIND_PARAMETER #expr_bind
-    | NAMED_BIND_PARAMETER #expr_named_bind
+    | NUMBERED_BIND_PARAMETER #expr_bind
+    | NAMED_BIND_PARAMETER #expr_bind
     | ((schema_name DOT)? table_name DOT)? column_name #expr_qualified_column_name
     | unary_operator expr #expr_unary
     | expr PIPE2 expr #expr_binary

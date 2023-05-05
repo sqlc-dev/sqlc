@@ -588,26 +588,30 @@ func (c *cc) convertBinaryNode(n *parser.Expr_binaryContext) ast.Node {
 }
 
 func (c *cc) convertParam(n *parser.Expr_bindContext) ast.Node {
-	if n.BIND_PARAMETER() != nil {
+	if n.NUMBERED_BIND_PARAMETER() != nil {
 		// Parameter numbers start at one
 		c.paramCount += 1
+
+		text := n.GetText()
+		number := c.paramCount
+		if len(text) > 1 {
+			number, _ = strconv.Atoi(text[1:])
+		}
 		return &ast.ParamRef{
-			Number:   c.paramCount,
+			Number:   number,
 			Location: n.GetStart().GetStart(),
+			Dollar:   len(text) > 1,
 		}
 	}
-	return todo(n)
-}
 
-func (c *cc) convertNamedParam(n *parser.Expr_named_bindContext) ast.Node {
 	if n.NAMED_BIND_PARAMETER() != nil {
-		c.paramCount += 1
 		return &ast.A_Expr{
 			Name:     &ast.List{Items: []ast.Node{&ast.String{Str: "@"}}},
 			Rexpr:    &ast.String{Str: n.GetText()[1:]},
 			Location: n.GetStart().GetStart(),
 		}
 	}
+
 	return todo(n)
 }
 
@@ -893,9 +897,6 @@ func (c *cc) convert(node node) ast.Node {
 
 	case *parser.Expr_bindContext:
 		return c.convertParam(n)
-
-	case *parser.Expr_named_bindContext:
-		return c.convertNamedParam(n)
 
 	case *parser.Expr_literalContext:
 		return c.convertLiteral(n)

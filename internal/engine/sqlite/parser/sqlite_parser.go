@@ -65,8 +65,9 @@ func sqliteparserParserInit() {
 		"RANK_", "ROW_NUMBER_", "GENERATED_", "ALWAYS_", "STORED_", "TRUE_",
 		"FALSE_", "WINDOW_", "NULLS_", "FIRST_", "LAST_", "FILTER_", "GROUPS_",
 		"EXCLUDE_", "TIES_", "OTHERS_", "DO_", "NOTHING_", "IDENTIFIER", "NUMERIC_LITERAL",
-		"BIND_PARAMETER", "NAMED_BIND_PARAMETER", "STRING_LITERAL", "BLOB_LITERAL",
-		"SINGLE_LINE_COMMENT", "MULTILINE_COMMENT", "SPACES", "UNEXPECTED_CHAR",
+		"NUMBERED_BIND_PARAMETER", "NAMED_BIND_PARAMETER", "STRING_LITERAL",
+		"BLOB_LITERAL", "SINGLE_LINE_COMMENT", "MULTILINE_COMMENT", "SPACES",
+		"UNEXPECTED_CHAR",
 	}
 	staticData.ruleNames = []string{
 		"parse", "sql_stmt_list", "sql_stmt", "alter_table_stmt", "analyze_stmt",
@@ -1183,202 +1184,202 @@ func NewSQLiteParser(input antlr.TokenStream) *SQLiteParser {
 
 // SQLiteParser tokens.
 const (
-	SQLiteParserEOF                  = antlr.TokenEOF
-	SQLiteParserSCOL                 = 1
-	SQLiteParserDOT                  = 2
-	SQLiteParserOPEN_PAR             = 3
-	SQLiteParserCLOSE_PAR            = 4
-	SQLiteParserCOMMA                = 5
-	SQLiteParserASSIGN               = 6
-	SQLiteParserSTAR                 = 7
-	SQLiteParserPLUS                 = 8
-	SQLiteParserMINUS                = 9
-	SQLiteParserTILDE                = 10
-	SQLiteParserPIPE2                = 11
-	SQLiteParserDIV                  = 12
-	SQLiteParserMOD                  = 13
-	SQLiteParserLT2                  = 14
-	SQLiteParserGT2                  = 15
-	SQLiteParserAMP                  = 16
-	SQLiteParserPIPE                 = 17
-	SQLiteParserLT                   = 18
-	SQLiteParserLT_EQ                = 19
-	SQLiteParserGT                   = 20
-	SQLiteParserGT_EQ                = 21
-	SQLiteParserEQ                   = 22
-	SQLiteParserNOT_EQ1              = 23
-	SQLiteParserNOT_EQ2              = 24
-	SQLiteParserABORT_               = 25
-	SQLiteParserACTION_              = 26
-	SQLiteParserADD_                 = 27
-	SQLiteParserAFTER_               = 28
-	SQLiteParserALL_                 = 29
-	SQLiteParserALTER_               = 30
-	SQLiteParserANALYZE_             = 31
-	SQLiteParserAND_                 = 32
-	SQLiteParserAS_                  = 33
-	SQLiteParserASC_                 = 34
-	SQLiteParserATTACH_              = 35
-	SQLiteParserAUTOINCREMENT_       = 36
-	SQLiteParserBEFORE_              = 37
-	SQLiteParserBEGIN_               = 38
-	SQLiteParserBETWEEN_             = 39
-	SQLiteParserBY_                  = 40
-	SQLiteParserCASCADE_             = 41
-	SQLiteParserCASE_                = 42
-	SQLiteParserCAST_                = 43
-	SQLiteParserCHECK_               = 44
-	SQLiteParserCOLLATE_             = 45
-	SQLiteParserCOLUMN_              = 46
-	SQLiteParserCOMMIT_              = 47
-	SQLiteParserCONFLICT_            = 48
-	SQLiteParserCONSTRAINT_          = 49
-	SQLiteParserCREATE_              = 50
-	SQLiteParserCROSS_               = 51
-	SQLiteParserCURRENT_DATE_        = 52
-	SQLiteParserCURRENT_TIME_        = 53
-	SQLiteParserCURRENT_TIMESTAMP_   = 54
-	SQLiteParserDATABASE_            = 55
-	SQLiteParserDEFAULT_             = 56
-	SQLiteParserDEFERRABLE_          = 57
-	SQLiteParserDEFERRED_            = 58
-	SQLiteParserDELETE_              = 59
-	SQLiteParserDESC_                = 60
-	SQLiteParserDETACH_              = 61
-	SQLiteParserDISTINCT_            = 62
-	SQLiteParserDROP_                = 63
-	SQLiteParserEACH_                = 64
-	SQLiteParserELSE_                = 65
-	SQLiteParserEND_                 = 66
-	SQLiteParserESCAPE_              = 67
-	SQLiteParserEXCEPT_              = 68
-	SQLiteParserEXCLUSIVE_           = 69
-	SQLiteParserEXISTS_              = 70
-	SQLiteParserEXPLAIN_             = 71
-	SQLiteParserFAIL_                = 72
-	SQLiteParserFOR_                 = 73
-	SQLiteParserFOREIGN_             = 74
-	SQLiteParserFROM_                = 75
-	SQLiteParserFULL_                = 76
-	SQLiteParserGLOB_                = 77
-	SQLiteParserGROUP_               = 78
-	SQLiteParserHAVING_              = 79
-	SQLiteParserIF_                  = 80
-	SQLiteParserIGNORE_              = 81
-	SQLiteParserIMMEDIATE_           = 82
-	SQLiteParserIN_                  = 83
-	SQLiteParserINDEX_               = 84
-	SQLiteParserINDEXED_             = 85
-	SQLiteParserINITIALLY_           = 86
-	SQLiteParserINNER_               = 87
-	SQLiteParserINSERT_              = 88
-	SQLiteParserINSTEAD_             = 89
-	SQLiteParserINTERSECT_           = 90
-	SQLiteParserINTO_                = 91
-	SQLiteParserIS_                  = 92
-	SQLiteParserISNULL_              = 93
-	SQLiteParserJOIN_                = 94
-	SQLiteParserKEY_                 = 95
-	SQLiteParserLEFT_                = 96
-	SQLiteParserLIKE_                = 97
-	SQLiteParserLIMIT_               = 98
-	SQLiteParserMATCH_               = 99
-	SQLiteParserNATURAL_             = 100
-	SQLiteParserNO_                  = 101
-	SQLiteParserNOT_                 = 102
-	SQLiteParserNOTNULL_             = 103
-	SQLiteParserNULL_                = 104
-	SQLiteParserOF_                  = 105
-	SQLiteParserOFFSET_              = 106
-	SQLiteParserON_                  = 107
-	SQLiteParserOR_                  = 108
-	SQLiteParserORDER_               = 109
-	SQLiteParserOUTER_               = 110
-	SQLiteParserPLAN_                = 111
-	SQLiteParserPRAGMA_              = 112
-	SQLiteParserPRIMARY_             = 113
-	SQLiteParserQUERY_               = 114
-	SQLiteParserRAISE_               = 115
-	SQLiteParserRECURSIVE_           = 116
-	SQLiteParserREFERENCES_          = 117
-	SQLiteParserREGEXP_              = 118
-	SQLiteParserREINDEX_             = 119
-	SQLiteParserRELEASE_             = 120
-	SQLiteParserRENAME_              = 121
-	SQLiteParserREPLACE_             = 122
-	SQLiteParserRESTRICT_            = 123
-	SQLiteParserRETURNING_           = 124
-	SQLiteParserRIGHT_               = 125
-	SQLiteParserROLLBACK_            = 126
-	SQLiteParserROW_                 = 127
-	SQLiteParserROWS_                = 128
-	SQLiteParserSAVEPOINT_           = 129
-	SQLiteParserSELECT_              = 130
-	SQLiteParserSET_                 = 131
-	SQLiteParserSTRICT_              = 132
-	SQLiteParserTABLE_               = 133
-	SQLiteParserTEMP_                = 134
-	SQLiteParserTEMPORARY_           = 135
-	SQLiteParserTHEN_                = 136
-	SQLiteParserTO_                  = 137
-	SQLiteParserTRANSACTION_         = 138
-	SQLiteParserTRIGGER_             = 139
-	SQLiteParserUNION_               = 140
-	SQLiteParserUNIQUE_              = 141
-	SQLiteParserUPDATE_              = 142
-	SQLiteParserUSING_               = 143
-	SQLiteParserVACUUM_              = 144
-	SQLiteParserVALUES_              = 145
-	SQLiteParserVIEW_                = 146
-	SQLiteParserVIRTUAL_             = 147
-	SQLiteParserWHEN_                = 148
-	SQLiteParserWHERE_               = 149
-	SQLiteParserWITH_                = 150
-	SQLiteParserWITHOUT_             = 151
-	SQLiteParserFIRST_VALUE_         = 152
-	SQLiteParserOVER_                = 153
-	SQLiteParserPARTITION_           = 154
-	SQLiteParserRANGE_               = 155
-	SQLiteParserPRECEDING_           = 156
-	SQLiteParserUNBOUNDED_           = 157
-	SQLiteParserCURRENT_             = 158
-	SQLiteParserFOLLOWING_           = 159
-	SQLiteParserCUME_DIST_           = 160
-	SQLiteParserDENSE_RANK_          = 161
-	SQLiteParserLAG_                 = 162
-	SQLiteParserLAST_VALUE_          = 163
-	SQLiteParserLEAD_                = 164
-	SQLiteParserNTH_VALUE_           = 165
-	SQLiteParserNTILE_               = 166
-	SQLiteParserPERCENT_RANK_        = 167
-	SQLiteParserRANK_                = 168
-	SQLiteParserROW_NUMBER_          = 169
-	SQLiteParserGENERATED_           = 170
-	SQLiteParserALWAYS_              = 171
-	SQLiteParserSTORED_              = 172
-	SQLiteParserTRUE_                = 173
-	SQLiteParserFALSE_               = 174
-	SQLiteParserWINDOW_              = 175
-	SQLiteParserNULLS_               = 176
-	SQLiteParserFIRST_               = 177
-	SQLiteParserLAST_                = 178
-	SQLiteParserFILTER_              = 179
-	SQLiteParserGROUPS_              = 180
-	SQLiteParserEXCLUDE_             = 181
-	SQLiteParserTIES_                = 182
-	SQLiteParserOTHERS_              = 183
-	SQLiteParserDO_                  = 184
-	SQLiteParserNOTHING_             = 185
-	SQLiteParserIDENTIFIER           = 186
-	SQLiteParserNUMERIC_LITERAL      = 187
-	SQLiteParserBIND_PARAMETER       = 188
-	SQLiteParserNAMED_BIND_PARAMETER = 189
-	SQLiteParserSTRING_LITERAL       = 190
-	SQLiteParserBLOB_LITERAL         = 191
-	SQLiteParserSINGLE_LINE_COMMENT  = 192
-	SQLiteParserMULTILINE_COMMENT    = 193
-	SQLiteParserSPACES               = 194
-	SQLiteParserUNEXPECTED_CHAR      = 195
+	SQLiteParserEOF                     = antlr.TokenEOF
+	SQLiteParserSCOL                    = 1
+	SQLiteParserDOT                     = 2
+	SQLiteParserOPEN_PAR                = 3
+	SQLiteParserCLOSE_PAR               = 4
+	SQLiteParserCOMMA                   = 5
+	SQLiteParserASSIGN                  = 6
+	SQLiteParserSTAR                    = 7
+	SQLiteParserPLUS                    = 8
+	SQLiteParserMINUS                   = 9
+	SQLiteParserTILDE                   = 10
+	SQLiteParserPIPE2                   = 11
+	SQLiteParserDIV                     = 12
+	SQLiteParserMOD                     = 13
+	SQLiteParserLT2                     = 14
+	SQLiteParserGT2                     = 15
+	SQLiteParserAMP                     = 16
+	SQLiteParserPIPE                    = 17
+	SQLiteParserLT                      = 18
+	SQLiteParserLT_EQ                   = 19
+	SQLiteParserGT                      = 20
+	SQLiteParserGT_EQ                   = 21
+	SQLiteParserEQ                      = 22
+	SQLiteParserNOT_EQ1                 = 23
+	SQLiteParserNOT_EQ2                 = 24
+	SQLiteParserABORT_                  = 25
+	SQLiteParserACTION_                 = 26
+	SQLiteParserADD_                    = 27
+	SQLiteParserAFTER_                  = 28
+	SQLiteParserALL_                    = 29
+	SQLiteParserALTER_                  = 30
+	SQLiteParserANALYZE_                = 31
+	SQLiteParserAND_                    = 32
+	SQLiteParserAS_                     = 33
+	SQLiteParserASC_                    = 34
+	SQLiteParserATTACH_                 = 35
+	SQLiteParserAUTOINCREMENT_          = 36
+	SQLiteParserBEFORE_                 = 37
+	SQLiteParserBEGIN_                  = 38
+	SQLiteParserBETWEEN_                = 39
+	SQLiteParserBY_                     = 40
+	SQLiteParserCASCADE_                = 41
+	SQLiteParserCASE_                   = 42
+	SQLiteParserCAST_                   = 43
+	SQLiteParserCHECK_                  = 44
+	SQLiteParserCOLLATE_                = 45
+	SQLiteParserCOLUMN_                 = 46
+	SQLiteParserCOMMIT_                 = 47
+	SQLiteParserCONFLICT_               = 48
+	SQLiteParserCONSTRAINT_             = 49
+	SQLiteParserCREATE_                 = 50
+	SQLiteParserCROSS_                  = 51
+	SQLiteParserCURRENT_DATE_           = 52
+	SQLiteParserCURRENT_TIME_           = 53
+	SQLiteParserCURRENT_TIMESTAMP_      = 54
+	SQLiteParserDATABASE_               = 55
+	SQLiteParserDEFAULT_                = 56
+	SQLiteParserDEFERRABLE_             = 57
+	SQLiteParserDEFERRED_               = 58
+	SQLiteParserDELETE_                 = 59
+	SQLiteParserDESC_                   = 60
+	SQLiteParserDETACH_                 = 61
+	SQLiteParserDISTINCT_               = 62
+	SQLiteParserDROP_                   = 63
+	SQLiteParserEACH_                   = 64
+	SQLiteParserELSE_                   = 65
+	SQLiteParserEND_                    = 66
+	SQLiteParserESCAPE_                 = 67
+	SQLiteParserEXCEPT_                 = 68
+	SQLiteParserEXCLUSIVE_              = 69
+	SQLiteParserEXISTS_                 = 70
+	SQLiteParserEXPLAIN_                = 71
+	SQLiteParserFAIL_                   = 72
+	SQLiteParserFOR_                    = 73
+	SQLiteParserFOREIGN_                = 74
+	SQLiteParserFROM_                   = 75
+	SQLiteParserFULL_                   = 76
+	SQLiteParserGLOB_                   = 77
+	SQLiteParserGROUP_                  = 78
+	SQLiteParserHAVING_                 = 79
+	SQLiteParserIF_                     = 80
+	SQLiteParserIGNORE_                 = 81
+	SQLiteParserIMMEDIATE_              = 82
+	SQLiteParserIN_                     = 83
+	SQLiteParserINDEX_                  = 84
+	SQLiteParserINDEXED_                = 85
+	SQLiteParserINITIALLY_              = 86
+	SQLiteParserINNER_                  = 87
+	SQLiteParserINSERT_                 = 88
+	SQLiteParserINSTEAD_                = 89
+	SQLiteParserINTERSECT_              = 90
+	SQLiteParserINTO_                   = 91
+	SQLiteParserIS_                     = 92
+	SQLiteParserISNULL_                 = 93
+	SQLiteParserJOIN_                   = 94
+	SQLiteParserKEY_                    = 95
+	SQLiteParserLEFT_                   = 96
+	SQLiteParserLIKE_                   = 97
+	SQLiteParserLIMIT_                  = 98
+	SQLiteParserMATCH_                  = 99
+	SQLiteParserNATURAL_                = 100
+	SQLiteParserNO_                     = 101
+	SQLiteParserNOT_                    = 102
+	SQLiteParserNOTNULL_                = 103
+	SQLiteParserNULL_                   = 104
+	SQLiteParserOF_                     = 105
+	SQLiteParserOFFSET_                 = 106
+	SQLiteParserON_                     = 107
+	SQLiteParserOR_                     = 108
+	SQLiteParserORDER_                  = 109
+	SQLiteParserOUTER_                  = 110
+	SQLiteParserPLAN_                   = 111
+	SQLiteParserPRAGMA_                 = 112
+	SQLiteParserPRIMARY_                = 113
+	SQLiteParserQUERY_                  = 114
+	SQLiteParserRAISE_                  = 115
+	SQLiteParserRECURSIVE_              = 116
+	SQLiteParserREFERENCES_             = 117
+	SQLiteParserREGEXP_                 = 118
+	SQLiteParserREINDEX_                = 119
+	SQLiteParserRELEASE_                = 120
+	SQLiteParserRENAME_                 = 121
+	SQLiteParserREPLACE_                = 122
+	SQLiteParserRESTRICT_               = 123
+	SQLiteParserRETURNING_              = 124
+	SQLiteParserRIGHT_                  = 125
+	SQLiteParserROLLBACK_               = 126
+	SQLiteParserROW_                    = 127
+	SQLiteParserROWS_                   = 128
+	SQLiteParserSAVEPOINT_              = 129
+	SQLiteParserSELECT_                 = 130
+	SQLiteParserSET_                    = 131
+	SQLiteParserSTRICT_                 = 132
+	SQLiteParserTABLE_                  = 133
+	SQLiteParserTEMP_                   = 134
+	SQLiteParserTEMPORARY_              = 135
+	SQLiteParserTHEN_                   = 136
+	SQLiteParserTO_                     = 137
+	SQLiteParserTRANSACTION_            = 138
+	SQLiteParserTRIGGER_                = 139
+	SQLiteParserUNION_                  = 140
+	SQLiteParserUNIQUE_                 = 141
+	SQLiteParserUPDATE_                 = 142
+	SQLiteParserUSING_                  = 143
+	SQLiteParserVACUUM_                 = 144
+	SQLiteParserVALUES_                 = 145
+	SQLiteParserVIEW_                   = 146
+	SQLiteParserVIRTUAL_                = 147
+	SQLiteParserWHEN_                   = 148
+	SQLiteParserWHERE_                  = 149
+	SQLiteParserWITH_                   = 150
+	SQLiteParserWITHOUT_                = 151
+	SQLiteParserFIRST_VALUE_            = 152
+	SQLiteParserOVER_                   = 153
+	SQLiteParserPARTITION_              = 154
+	SQLiteParserRANGE_                  = 155
+	SQLiteParserPRECEDING_              = 156
+	SQLiteParserUNBOUNDED_              = 157
+	SQLiteParserCURRENT_                = 158
+	SQLiteParserFOLLOWING_              = 159
+	SQLiteParserCUME_DIST_              = 160
+	SQLiteParserDENSE_RANK_             = 161
+	SQLiteParserLAG_                    = 162
+	SQLiteParserLAST_VALUE_             = 163
+	SQLiteParserLEAD_                   = 164
+	SQLiteParserNTH_VALUE_              = 165
+	SQLiteParserNTILE_                  = 166
+	SQLiteParserPERCENT_RANK_           = 167
+	SQLiteParserRANK_                   = 168
+	SQLiteParserROW_NUMBER_             = 169
+	SQLiteParserGENERATED_              = 170
+	SQLiteParserALWAYS_                 = 171
+	SQLiteParserSTORED_                 = 172
+	SQLiteParserTRUE_                   = 173
+	SQLiteParserFALSE_                  = 174
+	SQLiteParserWINDOW_                 = 175
+	SQLiteParserNULLS_                  = 176
+	SQLiteParserFIRST_                  = 177
+	SQLiteParserLAST_                   = 178
+	SQLiteParserFILTER_                 = 179
+	SQLiteParserGROUPS_                 = 180
+	SQLiteParserEXCLUDE_                = 181
+	SQLiteParserTIES_                   = 182
+	SQLiteParserOTHERS_                 = 183
+	SQLiteParserDO_                     = 184
+	SQLiteParserNOTHING_                = 185
+	SQLiteParserIDENTIFIER              = 186
+	SQLiteParserNUMERIC_LITERAL         = 187
+	SQLiteParserNUMBERED_BIND_PARAMETER = 188
+	SQLiteParserNAMED_BIND_PARAMETER    = 189
+	SQLiteParserSTRING_LITERAL          = 190
+	SQLiteParserBLOB_LITERAL            = 191
+	SQLiteParserSINGLE_LINE_COMMENT     = 192
+	SQLiteParserMULTILINE_COMMENT       = 193
+	SQLiteParserSPACES                  = 194
+	SQLiteParserUNEXPECTED_CHAR         = 195
 )
 
 // SQLiteParser rules.
@@ -9878,7 +9879,7 @@ func (p *SQLiteParser) Returning_clause() (localctx IReturning_clauseContext) {
 			p.Match(SQLiteParserSTAR)
 		}
 
-	case SQLiteParserOPEN_PAR, SQLiteParserPLUS, SQLiteParserMINUS, SQLiteParserTILDE, SQLiteParserABORT_, SQLiteParserACTION_, SQLiteParserADD_, SQLiteParserAFTER_, SQLiteParserALL_, SQLiteParserALTER_, SQLiteParserANALYZE_, SQLiteParserAND_, SQLiteParserAS_, SQLiteParserASC_, SQLiteParserATTACH_, SQLiteParserAUTOINCREMENT_, SQLiteParserBEFORE_, SQLiteParserBEGIN_, SQLiteParserBETWEEN_, SQLiteParserBY_, SQLiteParserCASCADE_, SQLiteParserCASE_, SQLiteParserCAST_, SQLiteParserCHECK_, SQLiteParserCOLLATE_, SQLiteParserCOLUMN_, SQLiteParserCOMMIT_, SQLiteParserCONFLICT_, SQLiteParserCONSTRAINT_, SQLiteParserCREATE_, SQLiteParserCROSS_, SQLiteParserCURRENT_DATE_, SQLiteParserCURRENT_TIME_, SQLiteParserCURRENT_TIMESTAMP_, SQLiteParserDATABASE_, SQLiteParserDEFAULT_, SQLiteParserDEFERRABLE_, SQLiteParserDEFERRED_, SQLiteParserDELETE_, SQLiteParserDESC_, SQLiteParserDETACH_, SQLiteParserDISTINCT_, SQLiteParserDROP_, SQLiteParserEACH_, SQLiteParserELSE_, SQLiteParserEND_, SQLiteParserESCAPE_, SQLiteParserEXCEPT_, SQLiteParserEXCLUSIVE_, SQLiteParserEXISTS_, SQLiteParserEXPLAIN_, SQLiteParserFAIL_, SQLiteParserFOR_, SQLiteParserFOREIGN_, SQLiteParserFROM_, SQLiteParserFULL_, SQLiteParserGLOB_, SQLiteParserGROUP_, SQLiteParserHAVING_, SQLiteParserIF_, SQLiteParserIGNORE_, SQLiteParserIMMEDIATE_, SQLiteParserIN_, SQLiteParserINDEX_, SQLiteParserINDEXED_, SQLiteParserINITIALLY_, SQLiteParserINNER_, SQLiteParserINSERT_, SQLiteParserINSTEAD_, SQLiteParserINTERSECT_, SQLiteParserINTO_, SQLiteParserIS_, SQLiteParserISNULL_, SQLiteParserJOIN_, SQLiteParserKEY_, SQLiteParserLEFT_, SQLiteParserLIKE_, SQLiteParserLIMIT_, SQLiteParserMATCH_, SQLiteParserNATURAL_, SQLiteParserNO_, SQLiteParserNOT_, SQLiteParserNOTNULL_, SQLiteParserNULL_, SQLiteParserOF_, SQLiteParserOFFSET_, SQLiteParserON_, SQLiteParserOR_, SQLiteParserORDER_, SQLiteParserOUTER_, SQLiteParserPLAN_, SQLiteParserPRAGMA_, SQLiteParserPRIMARY_, SQLiteParserQUERY_, SQLiteParserRAISE_, SQLiteParserRECURSIVE_, SQLiteParserREFERENCES_, SQLiteParserREGEXP_, SQLiteParserREINDEX_, SQLiteParserRELEASE_, SQLiteParserRENAME_, SQLiteParserREPLACE_, SQLiteParserRESTRICT_, SQLiteParserRETURNING_, SQLiteParserRIGHT_, SQLiteParserROLLBACK_, SQLiteParserROW_, SQLiteParserROWS_, SQLiteParserSAVEPOINT_, SQLiteParserSELECT_, SQLiteParserSET_, SQLiteParserSTRICT_, SQLiteParserTABLE_, SQLiteParserTEMP_, SQLiteParserTEMPORARY_, SQLiteParserTHEN_, SQLiteParserTO_, SQLiteParserTRANSACTION_, SQLiteParserTRIGGER_, SQLiteParserUNION_, SQLiteParserUNIQUE_, SQLiteParserUPDATE_, SQLiteParserUSING_, SQLiteParserVACUUM_, SQLiteParserVALUES_, SQLiteParserVIEW_, SQLiteParserVIRTUAL_, SQLiteParserWHEN_, SQLiteParserWHERE_, SQLiteParserWITH_, SQLiteParserWITHOUT_, SQLiteParserFIRST_VALUE_, SQLiteParserOVER_, SQLiteParserPARTITION_, SQLiteParserRANGE_, SQLiteParserPRECEDING_, SQLiteParserUNBOUNDED_, SQLiteParserCURRENT_, SQLiteParserFOLLOWING_, SQLiteParserCUME_DIST_, SQLiteParserDENSE_RANK_, SQLiteParserLAG_, SQLiteParserLAST_VALUE_, SQLiteParserLEAD_, SQLiteParserNTH_VALUE_, SQLiteParserNTILE_, SQLiteParserPERCENT_RANK_, SQLiteParserRANK_, SQLiteParserROW_NUMBER_, SQLiteParserGENERATED_, SQLiteParserALWAYS_, SQLiteParserSTORED_, SQLiteParserTRUE_, SQLiteParserFALSE_, SQLiteParserWINDOW_, SQLiteParserNULLS_, SQLiteParserFIRST_, SQLiteParserLAST_, SQLiteParserFILTER_, SQLiteParserGROUPS_, SQLiteParserEXCLUDE_, SQLiteParserIDENTIFIER, SQLiteParserNUMERIC_LITERAL, SQLiteParserBIND_PARAMETER, SQLiteParserNAMED_BIND_PARAMETER, SQLiteParserSTRING_LITERAL, SQLiteParserBLOB_LITERAL:
+	case SQLiteParserOPEN_PAR, SQLiteParserPLUS, SQLiteParserMINUS, SQLiteParserTILDE, SQLiteParserABORT_, SQLiteParserACTION_, SQLiteParserADD_, SQLiteParserAFTER_, SQLiteParserALL_, SQLiteParserALTER_, SQLiteParserANALYZE_, SQLiteParserAND_, SQLiteParserAS_, SQLiteParserASC_, SQLiteParserATTACH_, SQLiteParserAUTOINCREMENT_, SQLiteParserBEFORE_, SQLiteParserBEGIN_, SQLiteParserBETWEEN_, SQLiteParserBY_, SQLiteParserCASCADE_, SQLiteParserCASE_, SQLiteParserCAST_, SQLiteParserCHECK_, SQLiteParserCOLLATE_, SQLiteParserCOLUMN_, SQLiteParserCOMMIT_, SQLiteParserCONFLICT_, SQLiteParserCONSTRAINT_, SQLiteParserCREATE_, SQLiteParserCROSS_, SQLiteParserCURRENT_DATE_, SQLiteParserCURRENT_TIME_, SQLiteParserCURRENT_TIMESTAMP_, SQLiteParserDATABASE_, SQLiteParserDEFAULT_, SQLiteParserDEFERRABLE_, SQLiteParserDEFERRED_, SQLiteParserDELETE_, SQLiteParserDESC_, SQLiteParserDETACH_, SQLiteParserDISTINCT_, SQLiteParserDROP_, SQLiteParserEACH_, SQLiteParserELSE_, SQLiteParserEND_, SQLiteParserESCAPE_, SQLiteParserEXCEPT_, SQLiteParserEXCLUSIVE_, SQLiteParserEXISTS_, SQLiteParserEXPLAIN_, SQLiteParserFAIL_, SQLiteParserFOR_, SQLiteParserFOREIGN_, SQLiteParserFROM_, SQLiteParserFULL_, SQLiteParserGLOB_, SQLiteParserGROUP_, SQLiteParserHAVING_, SQLiteParserIF_, SQLiteParserIGNORE_, SQLiteParserIMMEDIATE_, SQLiteParserIN_, SQLiteParserINDEX_, SQLiteParserINDEXED_, SQLiteParserINITIALLY_, SQLiteParserINNER_, SQLiteParserINSERT_, SQLiteParserINSTEAD_, SQLiteParserINTERSECT_, SQLiteParserINTO_, SQLiteParserIS_, SQLiteParserISNULL_, SQLiteParserJOIN_, SQLiteParserKEY_, SQLiteParserLEFT_, SQLiteParserLIKE_, SQLiteParserLIMIT_, SQLiteParserMATCH_, SQLiteParserNATURAL_, SQLiteParserNO_, SQLiteParserNOT_, SQLiteParserNOTNULL_, SQLiteParserNULL_, SQLiteParserOF_, SQLiteParserOFFSET_, SQLiteParserON_, SQLiteParserOR_, SQLiteParserORDER_, SQLiteParserOUTER_, SQLiteParserPLAN_, SQLiteParserPRAGMA_, SQLiteParserPRIMARY_, SQLiteParserQUERY_, SQLiteParserRAISE_, SQLiteParserRECURSIVE_, SQLiteParserREFERENCES_, SQLiteParserREGEXP_, SQLiteParserREINDEX_, SQLiteParserRELEASE_, SQLiteParserRENAME_, SQLiteParserREPLACE_, SQLiteParserRESTRICT_, SQLiteParserRETURNING_, SQLiteParserRIGHT_, SQLiteParserROLLBACK_, SQLiteParserROW_, SQLiteParserROWS_, SQLiteParserSAVEPOINT_, SQLiteParserSELECT_, SQLiteParserSET_, SQLiteParserSTRICT_, SQLiteParserTABLE_, SQLiteParserTEMP_, SQLiteParserTEMPORARY_, SQLiteParserTHEN_, SQLiteParserTO_, SQLiteParserTRANSACTION_, SQLiteParserTRIGGER_, SQLiteParserUNION_, SQLiteParserUNIQUE_, SQLiteParserUPDATE_, SQLiteParserUSING_, SQLiteParserVACUUM_, SQLiteParserVALUES_, SQLiteParserVIEW_, SQLiteParserVIRTUAL_, SQLiteParserWHEN_, SQLiteParserWHERE_, SQLiteParserWITH_, SQLiteParserWITHOUT_, SQLiteParserFIRST_VALUE_, SQLiteParserOVER_, SQLiteParserPARTITION_, SQLiteParserRANGE_, SQLiteParserPRECEDING_, SQLiteParserUNBOUNDED_, SQLiteParserCURRENT_, SQLiteParserFOLLOWING_, SQLiteParserCUME_DIST_, SQLiteParserDENSE_RANK_, SQLiteParserLAG_, SQLiteParserLAST_VALUE_, SQLiteParserLEAD_, SQLiteParserNTH_VALUE_, SQLiteParserNTILE_, SQLiteParserPERCENT_RANK_, SQLiteParserRANK_, SQLiteParserROW_NUMBER_, SQLiteParserGENERATED_, SQLiteParserALWAYS_, SQLiteParserSTORED_, SQLiteParserTRUE_, SQLiteParserFALSE_, SQLiteParserWINDOW_, SQLiteParserNULLS_, SQLiteParserFIRST_, SQLiteParserLAST_, SQLiteParserFILTER_, SQLiteParserGROUPS_, SQLiteParserEXCLUDE_, SQLiteParserIDENTIFIER, SQLiteParserNUMERIC_LITERAL, SQLiteParserNUMBERED_BIND_PARAMETER, SQLiteParserNAMED_BIND_PARAMETER, SQLiteParserSTRING_LITERAL, SQLiteParserBLOB_LITERAL:
 		{
 			p.SetState(826)
 			p.expr(0)
@@ -9928,7 +9929,7 @@ func (p *SQLiteParser) Returning_clause() (localctx IReturning_clauseContext) {
 				p.Match(SQLiteParserSTAR)
 			}
 
-		case SQLiteParserOPEN_PAR, SQLiteParserPLUS, SQLiteParserMINUS, SQLiteParserTILDE, SQLiteParserABORT_, SQLiteParserACTION_, SQLiteParserADD_, SQLiteParserAFTER_, SQLiteParserALL_, SQLiteParserALTER_, SQLiteParserANALYZE_, SQLiteParserAND_, SQLiteParserAS_, SQLiteParserASC_, SQLiteParserATTACH_, SQLiteParserAUTOINCREMENT_, SQLiteParserBEFORE_, SQLiteParserBEGIN_, SQLiteParserBETWEEN_, SQLiteParserBY_, SQLiteParserCASCADE_, SQLiteParserCASE_, SQLiteParserCAST_, SQLiteParserCHECK_, SQLiteParserCOLLATE_, SQLiteParserCOLUMN_, SQLiteParserCOMMIT_, SQLiteParserCONFLICT_, SQLiteParserCONSTRAINT_, SQLiteParserCREATE_, SQLiteParserCROSS_, SQLiteParserCURRENT_DATE_, SQLiteParserCURRENT_TIME_, SQLiteParserCURRENT_TIMESTAMP_, SQLiteParserDATABASE_, SQLiteParserDEFAULT_, SQLiteParserDEFERRABLE_, SQLiteParserDEFERRED_, SQLiteParserDELETE_, SQLiteParserDESC_, SQLiteParserDETACH_, SQLiteParserDISTINCT_, SQLiteParserDROP_, SQLiteParserEACH_, SQLiteParserELSE_, SQLiteParserEND_, SQLiteParserESCAPE_, SQLiteParserEXCEPT_, SQLiteParserEXCLUSIVE_, SQLiteParserEXISTS_, SQLiteParserEXPLAIN_, SQLiteParserFAIL_, SQLiteParserFOR_, SQLiteParserFOREIGN_, SQLiteParserFROM_, SQLiteParserFULL_, SQLiteParserGLOB_, SQLiteParserGROUP_, SQLiteParserHAVING_, SQLiteParserIF_, SQLiteParserIGNORE_, SQLiteParserIMMEDIATE_, SQLiteParserIN_, SQLiteParserINDEX_, SQLiteParserINDEXED_, SQLiteParserINITIALLY_, SQLiteParserINNER_, SQLiteParserINSERT_, SQLiteParserINSTEAD_, SQLiteParserINTERSECT_, SQLiteParserINTO_, SQLiteParserIS_, SQLiteParserISNULL_, SQLiteParserJOIN_, SQLiteParserKEY_, SQLiteParserLEFT_, SQLiteParserLIKE_, SQLiteParserLIMIT_, SQLiteParserMATCH_, SQLiteParserNATURAL_, SQLiteParserNO_, SQLiteParserNOT_, SQLiteParserNOTNULL_, SQLiteParserNULL_, SQLiteParserOF_, SQLiteParserOFFSET_, SQLiteParserON_, SQLiteParserOR_, SQLiteParserORDER_, SQLiteParserOUTER_, SQLiteParserPLAN_, SQLiteParserPRAGMA_, SQLiteParserPRIMARY_, SQLiteParserQUERY_, SQLiteParserRAISE_, SQLiteParserRECURSIVE_, SQLiteParserREFERENCES_, SQLiteParserREGEXP_, SQLiteParserREINDEX_, SQLiteParserRELEASE_, SQLiteParserRENAME_, SQLiteParserREPLACE_, SQLiteParserRESTRICT_, SQLiteParserRETURNING_, SQLiteParserRIGHT_, SQLiteParserROLLBACK_, SQLiteParserROW_, SQLiteParserROWS_, SQLiteParserSAVEPOINT_, SQLiteParserSELECT_, SQLiteParserSET_, SQLiteParserSTRICT_, SQLiteParserTABLE_, SQLiteParserTEMP_, SQLiteParserTEMPORARY_, SQLiteParserTHEN_, SQLiteParserTO_, SQLiteParserTRANSACTION_, SQLiteParserTRIGGER_, SQLiteParserUNION_, SQLiteParserUNIQUE_, SQLiteParserUPDATE_, SQLiteParserUSING_, SQLiteParserVACUUM_, SQLiteParserVALUES_, SQLiteParserVIEW_, SQLiteParserVIRTUAL_, SQLiteParserWHEN_, SQLiteParserWHERE_, SQLiteParserWITH_, SQLiteParserWITHOUT_, SQLiteParserFIRST_VALUE_, SQLiteParserOVER_, SQLiteParserPARTITION_, SQLiteParserRANGE_, SQLiteParserPRECEDING_, SQLiteParserUNBOUNDED_, SQLiteParserCURRENT_, SQLiteParserFOLLOWING_, SQLiteParserCUME_DIST_, SQLiteParserDENSE_RANK_, SQLiteParserLAG_, SQLiteParserLAST_VALUE_, SQLiteParserLEAD_, SQLiteParserNTH_VALUE_, SQLiteParserNTILE_, SQLiteParserPERCENT_RANK_, SQLiteParserRANK_, SQLiteParserROW_NUMBER_, SQLiteParserGENERATED_, SQLiteParserALWAYS_, SQLiteParserSTORED_, SQLiteParserTRUE_, SQLiteParserFALSE_, SQLiteParserWINDOW_, SQLiteParserNULLS_, SQLiteParserFIRST_, SQLiteParserLAST_, SQLiteParserFILTER_, SQLiteParserGROUPS_, SQLiteParserEXCLUDE_, SQLiteParserIDENTIFIER, SQLiteParserNUMERIC_LITERAL, SQLiteParserBIND_PARAMETER, SQLiteParserNAMED_BIND_PARAMETER, SQLiteParserSTRING_LITERAL, SQLiteParserBLOB_LITERAL:
+		case SQLiteParserOPEN_PAR, SQLiteParserPLUS, SQLiteParserMINUS, SQLiteParserTILDE, SQLiteParserABORT_, SQLiteParserACTION_, SQLiteParserADD_, SQLiteParserAFTER_, SQLiteParserALL_, SQLiteParserALTER_, SQLiteParserANALYZE_, SQLiteParserAND_, SQLiteParserAS_, SQLiteParserASC_, SQLiteParserATTACH_, SQLiteParserAUTOINCREMENT_, SQLiteParserBEFORE_, SQLiteParserBEGIN_, SQLiteParserBETWEEN_, SQLiteParserBY_, SQLiteParserCASCADE_, SQLiteParserCASE_, SQLiteParserCAST_, SQLiteParserCHECK_, SQLiteParserCOLLATE_, SQLiteParserCOLUMN_, SQLiteParserCOMMIT_, SQLiteParserCONFLICT_, SQLiteParserCONSTRAINT_, SQLiteParserCREATE_, SQLiteParserCROSS_, SQLiteParserCURRENT_DATE_, SQLiteParserCURRENT_TIME_, SQLiteParserCURRENT_TIMESTAMP_, SQLiteParserDATABASE_, SQLiteParserDEFAULT_, SQLiteParserDEFERRABLE_, SQLiteParserDEFERRED_, SQLiteParserDELETE_, SQLiteParserDESC_, SQLiteParserDETACH_, SQLiteParserDISTINCT_, SQLiteParserDROP_, SQLiteParserEACH_, SQLiteParserELSE_, SQLiteParserEND_, SQLiteParserESCAPE_, SQLiteParserEXCEPT_, SQLiteParserEXCLUSIVE_, SQLiteParserEXISTS_, SQLiteParserEXPLAIN_, SQLiteParserFAIL_, SQLiteParserFOR_, SQLiteParserFOREIGN_, SQLiteParserFROM_, SQLiteParserFULL_, SQLiteParserGLOB_, SQLiteParserGROUP_, SQLiteParserHAVING_, SQLiteParserIF_, SQLiteParserIGNORE_, SQLiteParserIMMEDIATE_, SQLiteParserIN_, SQLiteParserINDEX_, SQLiteParserINDEXED_, SQLiteParserINITIALLY_, SQLiteParserINNER_, SQLiteParserINSERT_, SQLiteParserINSTEAD_, SQLiteParserINTERSECT_, SQLiteParserINTO_, SQLiteParserIS_, SQLiteParserISNULL_, SQLiteParserJOIN_, SQLiteParserKEY_, SQLiteParserLEFT_, SQLiteParserLIKE_, SQLiteParserLIMIT_, SQLiteParserMATCH_, SQLiteParserNATURAL_, SQLiteParserNO_, SQLiteParserNOT_, SQLiteParserNOTNULL_, SQLiteParserNULL_, SQLiteParserOF_, SQLiteParserOFFSET_, SQLiteParserON_, SQLiteParserOR_, SQLiteParserORDER_, SQLiteParserOUTER_, SQLiteParserPLAN_, SQLiteParserPRAGMA_, SQLiteParserPRIMARY_, SQLiteParserQUERY_, SQLiteParserRAISE_, SQLiteParserRECURSIVE_, SQLiteParserREFERENCES_, SQLiteParserREGEXP_, SQLiteParserREINDEX_, SQLiteParserRELEASE_, SQLiteParserRENAME_, SQLiteParserREPLACE_, SQLiteParserRESTRICT_, SQLiteParserRETURNING_, SQLiteParserRIGHT_, SQLiteParserROLLBACK_, SQLiteParserROW_, SQLiteParserROWS_, SQLiteParserSAVEPOINT_, SQLiteParserSELECT_, SQLiteParserSET_, SQLiteParserSTRICT_, SQLiteParserTABLE_, SQLiteParserTEMP_, SQLiteParserTEMPORARY_, SQLiteParserTHEN_, SQLiteParserTO_, SQLiteParserTRANSACTION_, SQLiteParserTRIGGER_, SQLiteParserUNION_, SQLiteParserUNIQUE_, SQLiteParserUPDATE_, SQLiteParserUSING_, SQLiteParserVACUUM_, SQLiteParserVALUES_, SQLiteParserVIEW_, SQLiteParserVIRTUAL_, SQLiteParserWHEN_, SQLiteParserWHERE_, SQLiteParserWITH_, SQLiteParserWITHOUT_, SQLiteParserFIRST_VALUE_, SQLiteParserOVER_, SQLiteParserPARTITION_, SQLiteParserRANGE_, SQLiteParserPRECEDING_, SQLiteParserUNBOUNDED_, SQLiteParserCURRENT_, SQLiteParserFOLLOWING_, SQLiteParserCUME_DIST_, SQLiteParserDENSE_RANK_, SQLiteParserLAG_, SQLiteParserLAST_VALUE_, SQLiteParserLEAD_, SQLiteParserNTH_VALUE_, SQLiteParserNTILE_, SQLiteParserPERCENT_RANK_, SQLiteParserRANK_, SQLiteParserROW_NUMBER_, SQLiteParserGENERATED_, SQLiteParserALWAYS_, SQLiteParserSTORED_, SQLiteParserTRUE_, SQLiteParserFALSE_, SQLiteParserWINDOW_, SQLiteParserNULLS_, SQLiteParserFIRST_, SQLiteParserLAST_, SQLiteParserFILTER_, SQLiteParserGROUPS_, SQLiteParserEXCLUDE_, SQLiteParserIDENTIFIER, SQLiteParserNUMERIC_LITERAL, SQLiteParserNUMBERED_BIND_PARAMETER, SQLiteParserNAMED_BIND_PARAMETER, SQLiteParserSTRING_LITERAL, SQLiteParserBLOB_LITERAL:
 			{
 				p.SetState(837)
 				p.expr(0)
@@ -12164,40 +12165,6 @@ func (s *Expr_unaryContext) ExitRule(listener antlr.ParseTreeListener) {
 	}
 }
 
-type Expr_named_bindContext struct {
-	*ExprContext
-}
-
-func NewExpr_named_bindContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *Expr_named_bindContext {
-	var p = new(Expr_named_bindContext)
-
-	p.ExprContext = NewEmptyExprContext()
-	p.parser = parser
-	p.CopyFrom(ctx.(*ExprContext))
-
-	return p
-}
-
-func (s *Expr_named_bindContext) GetRuleContext() antlr.RuleContext {
-	return s
-}
-
-func (s *Expr_named_bindContext) NAMED_BIND_PARAMETER() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserNAMED_BIND_PARAMETER, 0)
-}
-
-func (s *Expr_named_bindContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(SQLiteParserListener); ok {
-		listenerT.EnterExpr_named_bind(s)
-	}
-}
-
-func (s *Expr_named_bindContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(SQLiteParserListener); ok {
-		listenerT.ExitExpr_named_bind(s)
-	}
-}
-
 type Expr_null_compContext struct {
 	*ExprContext
 }
@@ -12278,8 +12245,12 @@ func (s *Expr_bindContext) GetRuleContext() antlr.RuleContext {
 	return s
 }
 
-func (s *Expr_bindContext) BIND_PARAMETER() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserBIND_PARAMETER, 0)
+func (s *Expr_bindContext) NUMBERED_BIND_PARAMETER() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserNUMBERED_BIND_PARAMETER, 0)
+}
+
+func (s *Expr_bindContext) NAMED_BIND_PARAMETER() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserNAMED_BIND_PARAMETER, 0)
 }
 
 func (s *Expr_bindContext) EnterRule(listener antlr.ParseTreeListener) {
@@ -12349,11 +12320,11 @@ func (p *SQLiteParser) expr(_p int) (localctx IExprContext) {
 		_prevctx = localctx
 		{
 			p.SetState(904)
-			p.Match(SQLiteParserBIND_PARAMETER)
+			p.Match(SQLiteParserNUMBERED_BIND_PARAMETER)
 		}
 
 	case 3:
-		localctx = NewExpr_named_bindContext(p, localctx)
+		localctx = NewExpr_bindContext(p, localctx)
 		p.SetParserRuleContext(localctx)
 		_prevctx = localctx
 		{
@@ -12427,7 +12398,7 @@ func (p *SQLiteParser) expr(_p int) (localctx IExprContext) {
 		p.GetErrorHandler().Sync(p)
 
 		switch p.GetTokenStream().LA(1) {
-		case SQLiteParserOPEN_PAR, SQLiteParserPLUS, SQLiteParserMINUS, SQLiteParserTILDE, SQLiteParserABORT_, SQLiteParserACTION_, SQLiteParserADD_, SQLiteParserAFTER_, SQLiteParserALL_, SQLiteParserALTER_, SQLiteParserANALYZE_, SQLiteParserAND_, SQLiteParserAS_, SQLiteParserASC_, SQLiteParserATTACH_, SQLiteParserAUTOINCREMENT_, SQLiteParserBEFORE_, SQLiteParserBEGIN_, SQLiteParserBETWEEN_, SQLiteParserBY_, SQLiteParserCASCADE_, SQLiteParserCASE_, SQLiteParserCAST_, SQLiteParserCHECK_, SQLiteParserCOLLATE_, SQLiteParserCOLUMN_, SQLiteParserCOMMIT_, SQLiteParserCONFLICT_, SQLiteParserCONSTRAINT_, SQLiteParserCREATE_, SQLiteParserCROSS_, SQLiteParserCURRENT_DATE_, SQLiteParserCURRENT_TIME_, SQLiteParserCURRENT_TIMESTAMP_, SQLiteParserDATABASE_, SQLiteParserDEFAULT_, SQLiteParserDEFERRABLE_, SQLiteParserDEFERRED_, SQLiteParserDELETE_, SQLiteParserDESC_, SQLiteParserDETACH_, SQLiteParserDISTINCT_, SQLiteParserDROP_, SQLiteParserEACH_, SQLiteParserELSE_, SQLiteParserEND_, SQLiteParserESCAPE_, SQLiteParserEXCEPT_, SQLiteParserEXCLUSIVE_, SQLiteParserEXISTS_, SQLiteParserEXPLAIN_, SQLiteParserFAIL_, SQLiteParserFOR_, SQLiteParserFOREIGN_, SQLiteParserFROM_, SQLiteParserFULL_, SQLiteParserGLOB_, SQLiteParserGROUP_, SQLiteParserHAVING_, SQLiteParserIF_, SQLiteParserIGNORE_, SQLiteParserIMMEDIATE_, SQLiteParserIN_, SQLiteParserINDEX_, SQLiteParserINDEXED_, SQLiteParserINITIALLY_, SQLiteParserINNER_, SQLiteParserINSERT_, SQLiteParserINSTEAD_, SQLiteParserINTERSECT_, SQLiteParserINTO_, SQLiteParserIS_, SQLiteParserISNULL_, SQLiteParserJOIN_, SQLiteParserKEY_, SQLiteParserLEFT_, SQLiteParserLIKE_, SQLiteParserLIMIT_, SQLiteParserMATCH_, SQLiteParserNATURAL_, SQLiteParserNO_, SQLiteParserNOT_, SQLiteParserNOTNULL_, SQLiteParserNULL_, SQLiteParserOF_, SQLiteParserOFFSET_, SQLiteParserON_, SQLiteParserOR_, SQLiteParserORDER_, SQLiteParserOUTER_, SQLiteParserPLAN_, SQLiteParserPRAGMA_, SQLiteParserPRIMARY_, SQLiteParserQUERY_, SQLiteParserRAISE_, SQLiteParserRECURSIVE_, SQLiteParserREFERENCES_, SQLiteParserREGEXP_, SQLiteParserREINDEX_, SQLiteParserRELEASE_, SQLiteParserRENAME_, SQLiteParserREPLACE_, SQLiteParserRESTRICT_, SQLiteParserRETURNING_, SQLiteParserRIGHT_, SQLiteParserROLLBACK_, SQLiteParserROW_, SQLiteParserROWS_, SQLiteParserSAVEPOINT_, SQLiteParserSELECT_, SQLiteParserSET_, SQLiteParserSTRICT_, SQLiteParserTABLE_, SQLiteParserTEMP_, SQLiteParserTEMPORARY_, SQLiteParserTHEN_, SQLiteParserTO_, SQLiteParserTRANSACTION_, SQLiteParserTRIGGER_, SQLiteParserUNION_, SQLiteParserUNIQUE_, SQLiteParserUPDATE_, SQLiteParserUSING_, SQLiteParserVACUUM_, SQLiteParserVALUES_, SQLiteParserVIEW_, SQLiteParserVIRTUAL_, SQLiteParserWHEN_, SQLiteParserWHERE_, SQLiteParserWITH_, SQLiteParserWITHOUT_, SQLiteParserFIRST_VALUE_, SQLiteParserOVER_, SQLiteParserPARTITION_, SQLiteParserRANGE_, SQLiteParserPRECEDING_, SQLiteParserUNBOUNDED_, SQLiteParserCURRENT_, SQLiteParserFOLLOWING_, SQLiteParserCUME_DIST_, SQLiteParserDENSE_RANK_, SQLiteParserLAG_, SQLiteParserLAST_VALUE_, SQLiteParserLEAD_, SQLiteParserNTH_VALUE_, SQLiteParserNTILE_, SQLiteParserPERCENT_RANK_, SQLiteParserRANK_, SQLiteParserROW_NUMBER_, SQLiteParserGENERATED_, SQLiteParserALWAYS_, SQLiteParserSTORED_, SQLiteParserTRUE_, SQLiteParserFALSE_, SQLiteParserWINDOW_, SQLiteParserNULLS_, SQLiteParserFIRST_, SQLiteParserLAST_, SQLiteParserFILTER_, SQLiteParserGROUPS_, SQLiteParserEXCLUDE_, SQLiteParserIDENTIFIER, SQLiteParserNUMERIC_LITERAL, SQLiteParserBIND_PARAMETER, SQLiteParserNAMED_BIND_PARAMETER, SQLiteParserSTRING_LITERAL, SQLiteParserBLOB_LITERAL:
+		case SQLiteParserOPEN_PAR, SQLiteParserPLUS, SQLiteParserMINUS, SQLiteParserTILDE, SQLiteParserABORT_, SQLiteParserACTION_, SQLiteParserADD_, SQLiteParserAFTER_, SQLiteParserALL_, SQLiteParserALTER_, SQLiteParserANALYZE_, SQLiteParserAND_, SQLiteParserAS_, SQLiteParserASC_, SQLiteParserATTACH_, SQLiteParserAUTOINCREMENT_, SQLiteParserBEFORE_, SQLiteParserBEGIN_, SQLiteParserBETWEEN_, SQLiteParserBY_, SQLiteParserCASCADE_, SQLiteParserCASE_, SQLiteParserCAST_, SQLiteParserCHECK_, SQLiteParserCOLLATE_, SQLiteParserCOLUMN_, SQLiteParserCOMMIT_, SQLiteParserCONFLICT_, SQLiteParserCONSTRAINT_, SQLiteParserCREATE_, SQLiteParserCROSS_, SQLiteParserCURRENT_DATE_, SQLiteParserCURRENT_TIME_, SQLiteParserCURRENT_TIMESTAMP_, SQLiteParserDATABASE_, SQLiteParserDEFAULT_, SQLiteParserDEFERRABLE_, SQLiteParserDEFERRED_, SQLiteParserDELETE_, SQLiteParserDESC_, SQLiteParserDETACH_, SQLiteParserDISTINCT_, SQLiteParserDROP_, SQLiteParserEACH_, SQLiteParserELSE_, SQLiteParserEND_, SQLiteParserESCAPE_, SQLiteParserEXCEPT_, SQLiteParserEXCLUSIVE_, SQLiteParserEXISTS_, SQLiteParserEXPLAIN_, SQLiteParserFAIL_, SQLiteParserFOR_, SQLiteParserFOREIGN_, SQLiteParserFROM_, SQLiteParserFULL_, SQLiteParserGLOB_, SQLiteParserGROUP_, SQLiteParserHAVING_, SQLiteParserIF_, SQLiteParserIGNORE_, SQLiteParserIMMEDIATE_, SQLiteParserIN_, SQLiteParserINDEX_, SQLiteParserINDEXED_, SQLiteParserINITIALLY_, SQLiteParserINNER_, SQLiteParserINSERT_, SQLiteParserINSTEAD_, SQLiteParserINTERSECT_, SQLiteParserINTO_, SQLiteParserIS_, SQLiteParserISNULL_, SQLiteParserJOIN_, SQLiteParserKEY_, SQLiteParserLEFT_, SQLiteParserLIKE_, SQLiteParserLIMIT_, SQLiteParserMATCH_, SQLiteParserNATURAL_, SQLiteParserNO_, SQLiteParserNOT_, SQLiteParserNOTNULL_, SQLiteParserNULL_, SQLiteParserOF_, SQLiteParserOFFSET_, SQLiteParserON_, SQLiteParserOR_, SQLiteParserORDER_, SQLiteParserOUTER_, SQLiteParserPLAN_, SQLiteParserPRAGMA_, SQLiteParserPRIMARY_, SQLiteParserQUERY_, SQLiteParserRAISE_, SQLiteParserRECURSIVE_, SQLiteParserREFERENCES_, SQLiteParserREGEXP_, SQLiteParserREINDEX_, SQLiteParserRELEASE_, SQLiteParserRENAME_, SQLiteParserREPLACE_, SQLiteParserRESTRICT_, SQLiteParserRETURNING_, SQLiteParserRIGHT_, SQLiteParserROLLBACK_, SQLiteParserROW_, SQLiteParserROWS_, SQLiteParserSAVEPOINT_, SQLiteParserSELECT_, SQLiteParserSET_, SQLiteParserSTRICT_, SQLiteParserTABLE_, SQLiteParserTEMP_, SQLiteParserTEMPORARY_, SQLiteParserTHEN_, SQLiteParserTO_, SQLiteParserTRANSACTION_, SQLiteParserTRIGGER_, SQLiteParserUNION_, SQLiteParserUNIQUE_, SQLiteParserUPDATE_, SQLiteParserUSING_, SQLiteParserVACUUM_, SQLiteParserVALUES_, SQLiteParserVIEW_, SQLiteParserVIRTUAL_, SQLiteParserWHEN_, SQLiteParserWHERE_, SQLiteParserWITH_, SQLiteParserWITHOUT_, SQLiteParserFIRST_VALUE_, SQLiteParserOVER_, SQLiteParserPARTITION_, SQLiteParserRANGE_, SQLiteParserPRECEDING_, SQLiteParserUNBOUNDED_, SQLiteParserCURRENT_, SQLiteParserFOLLOWING_, SQLiteParserCUME_DIST_, SQLiteParserDENSE_RANK_, SQLiteParserLAG_, SQLiteParserLAST_VALUE_, SQLiteParserLEAD_, SQLiteParserNTH_VALUE_, SQLiteParserNTILE_, SQLiteParserPERCENT_RANK_, SQLiteParserRANK_, SQLiteParserROW_NUMBER_, SQLiteParserGENERATED_, SQLiteParserALWAYS_, SQLiteParserSTORED_, SQLiteParserTRUE_, SQLiteParserFALSE_, SQLiteParserWINDOW_, SQLiteParserNULLS_, SQLiteParserFIRST_, SQLiteParserLAST_, SQLiteParserFILTER_, SQLiteParserGROUPS_, SQLiteParserEXCLUDE_, SQLiteParserIDENTIFIER, SQLiteParserNUMERIC_LITERAL, SQLiteParserNUMBERED_BIND_PARAMETER, SQLiteParserNAMED_BIND_PARAMETER, SQLiteParserSTRING_LITERAL, SQLiteParserBLOB_LITERAL:
 			p.SetState(923)
 			p.GetErrorHandler().Sync(p)
 
@@ -21482,7 +21453,7 @@ func (p *SQLiteParser) Simple_function_invocation() (localctx ISimple_function_i
 	p.GetErrorHandler().Sync(p)
 
 	switch p.GetTokenStream().LA(1) {
-	case SQLiteParserOPEN_PAR, SQLiteParserPLUS, SQLiteParserMINUS, SQLiteParserTILDE, SQLiteParserABORT_, SQLiteParserACTION_, SQLiteParserADD_, SQLiteParserAFTER_, SQLiteParserALL_, SQLiteParserALTER_, SQLiteParserANALYZE_, SQLiteParserAND_, SQLiteParserAS_, SQLiteParserASC_, SQLiteParserATTACH_, SQLiteParserAUTOINCREMENT_, SQLiteParserBEFORE_, SQLiteParserBEGIN_, SQLiteParserBETWEEN_, SQLiteParserBY_, SQLiteParserCASCADE_, SQLiteParserCASE_, SQLiteParserCAST_, SQLiteParserCHECK_, SQLiteParserCOLLATE_, SQLiteParserCOLUMN_, SQLiteParserCOMMIT_, SQLiteParserCONFLICT_, SQLiteParserCONSTRAINT_, SQLiteParserCREATE_, SQLiteParserCROSS_, SQLiteParserCURRENT_DATE_, SQLiteParserCURRENT_TIME_, SQLiteParserCURRENT_TIMESTAMP_, SQLiteParserDATABASE_, SQLiteParserDEFAULT_, SQLiteParserDEFERRABLE_, SQLiteParserDEFERRED_, SQLiteParserDELETE_, SQLiteParserDESC_, SQLiteParserDETACH_, SQLiteParserDISTINCT_, SQLiteParserDROP_, SQLiteParserEACH_, SQLiteParserELSE_, SQLiteParserEND_, SQLiteParserESCAPE_, SQLiteParserEXCEPT_, SQLiteParserEXCLUSIVE_, SQLiteParserEXISTS_, SQLiteParserEXPLAIN_, SQLiteParserFAIL_, SQLiteParserFOR_, SQLiteParserFOREIGN_, SQLiteParserFROM_, SQLiteParserFULL_, SQLiteParserGLOB_, SQLiteParserGROUP_, SQLiteParserHAVING_, SQLiteParserIF_, SQLiteParserIGNORE_, SQLiteParserIMMEDIATE_, SQLiteParserIN_, SQLiteParserINDEX_, SQLiteParserINDEXED_, SQLiteParserINITIALLY_, SQLiteParserINNER_, SQLiteParserINSERT_, SQLiteParserINSTEAD_, SQLiteParserINTERSECT_, SQLiteParserINTO_, SQLiteParserIS_, SQLiteParserISNULL_, SQLiteParserJOIN_, SQLiteParserKEY_, SQLiteParserLEFT_, SQLiteParserLIKE_, SQLiteParserLIMIT_, SQLiteParserMATCH_, SQLiteParserNATURAL_, SQLiteParserNO_, SQLiteParserNOT_, SQLiteParserNOTNULL_, SQLiteParserNULL_, SQLiteParserOF_, SQLiteParserOFFSET_, SQLiteParserON_, SQLiteParserOR_, SQLiteParserORDER_, SQLiteParserOUTER_, SQLiteParserPLAN_, SQLiteParserPRAGMA_, SQLiteParserPRIMARY_, SQLiteParserQUERY_, SQLiteParserRAISE_, SQLiteParserRECURSIVE_, SQLiteParserREFERENCES_, SQLiteParserREGEXP_, SQLiteParserREINDEX_, SQLiteParserRELEASE_, SQLiteParserRENAME_, SQLiteParserREPLACE_, SQLiteParserRESTRICT_, SQLiteParserRETURNING_, SQLiteParserRIGHT_, SQLiteParserROLLBACK_, SQLiteParserROW_, SQLiteParserROWS_, SQLiteParserSAVEPOINT_, SQLiteParserSELECT_, SQLiteParserSET_, SQLiteParserSTRICT_, SQLiteParserTABLE_, SQLiteParserTEMP_, SQLiteParserTEMPORARY_, SQLiteParserTHEN_, SQLiteParserTO_, SQLiteParserTRANSACTION_, SQLiteParserTRIGGER_, SQLiteParserUNION_, SQLiteParserUNIQUE_, SQLiteParserUPDATE_, SQLiteParserUSING_, SQLiteParserVACUUM_, SQLiteParserVALUES_, SQLiteParserVIEW_, SQLiteParserVIRTUAL_, SQLiteParserWHEN_, SQLiteParserWHERE_, SQLiteParserWITH_, SQLiteParserWITHOUT_, SQLiteParserFIRST_VALUE_, SQLiteParserOVER_, SQLiteParserPARTITION_, SQLiteParserRANGE_, SQLiteParserPRECEDING_, SQLiteParserUNBOUNDED_, SQLiteParserCURRENT_, SQLiteParserFOLLOWING_, SQLiteParserCUME_DIST_, SQLiteParserDENSE_RANK_, SQLiteParserLAG_, SQLiteParserLAST_VALUE_, SQLiteParserLEAD_, SQLiteParserNTH_VALUE_, SQLiteParserNTILE_, SQLiteParserPERCENT_RANK_, SQLiteParserRANK_, SQLiteParserROW_NUMBER_, SQLiteParserGENERATED_, SQLiteParserALWAYS_, SQLiteParserSTORED_, SQLiteParserTRUE_, SQLiteParserFALSE_, SQLiteParserWINDOW_, SQLiteParserNULLS_, SQLiteParserFIRST_, SQLiteParserLAST_, SQLiteParserFILTER_, SQLiteParserGROUPS_, SQLiteParserEXCLUDE_, SQLiteParserIDENTIFIER, SQLiteParserNUMERIC_LITERAL, SQLiteParserBIND_PARAMETER, SQLiteParserNAMED_BIND_PARAMETER, SQLiteParserSTRING_LITERAL, SQLiteParserBLOB_LITERAL:
+	case SQLiteParserOPEN_PAR, SQLiteParserPLUS, SQLiteParserMINUS, SQLiteParserTILDE, SQLiteParserABORT_, SQLiteParserACTION_, SQLiteParserADD_, SQLiteParserAFTER_, SQLiteParserALL_, SQLiteParserALTER_, SQLiteParserANALYZE_, SQLiteParserAND_, SQLiteParserAS_, SQLiteParserASC_, SQLiteParserATTACH_, SQLiteParserAUTOINCREMENT_, SQLiteParserBEFORE_, SQLiteParserBEGIN_, SQLiteParserBETWEEN_, SQLiteParserBY_, SQLiteParserCASCADE_, SQLiteParserCASE_, SQLiteParserCAST_, SQLiteParserCHECK_, SQLiteParserCOLLATE_, SQLiteParserCOLUMN_, SQLiteParserCOMMIT_, SQLiteParserCONFLICT_, SQLiteParserCONSTRAINT_, SQLiteParserCREATE_, SQLiteParserCROSS_, SQLiteParserCURRENT_DATE_, SQLiteParserCURRENT_TIME_, SQLiteParserCURRENT_TIMESTAMP_, SQLiteParserDATABASE_, SQLiteParserDEFAULT_, SQLiteParserDEFERRABLE_, SQLiteParserDEFERRED_, SQLiteParserDELETE_, SQLiteParserDESC_, SQLiteParserDETACH_, SQLiteParserDISTINCT_, SQLiteParserDROP_, SQLiteParserEACH_, SQLiteParserELSE_, SQLiteParserEND_, SQLiteParserESCAPE_, SQLiteParserEXCEPT_, SQLiteParserEXCLUSIVE_, SQLiteParserEXISTS_, SQLiteParserEXPLAIN_, SQLiteParserFAIL_, SQLiteParserFOR_, SQLiteParserFOREIGN_, SQLiteParserFROM_, SQLiteParserFULL_, SQLiteParserGLOB_, SQLiteParserGROUP_, SQLiteParserHAVING_, SQLiteParserIF_, SQLiteParserIGNORE_, SQLiteParserIMMEDIATE_, SQLiteParserIN_, SQLiteParserINDEX_, SQLiteParserINDEXED_, SQLiteParserINITIALLY_, SQLiteParserINNER_, SQLiteParserINSERT_, SQLiteParserINSTEAD_, SQLiteParserINTERSECT_, SQLiteParserINTO_, SQLiteParserIS_, SQLiteParserISNULL_, SQLiteParserJOIN_, SQLiteParserKEY_, SQLiteParserLEFT_, SQLiteParserLIKE_, SQLiteParserLIMIT_, SQLiteParserMATCH_, SQLiteParserNATURAL_, SQLiteParserNO_, SQLiteParserNOT_, SQLiteParserNOTNULL_, SQLiteParserNULL_, SQLiteParserOF_, SQLiteParserOFFSET_, SQLiteParserON_, SQLiteParserOR_, SQLiteParserORDER_, SQLiteParserOUTER_, SQLiteParserPLAN_, SQLiteParserPRAGMA_, SQLiteParserPRIMARY_, SQLiteParserQUERY_, SQLiteParserRAISE_, SQLiteParserRECURSIVE_, SQLiteParserREFERENCES_, SQLiteParserREGEXP_, SQLiteParserREINDEX_, SQLiteParserRELEASE_, SQLiteParserRENAME_, SQLiteParserREPLACE_, SQLiteParserRESTRICT_, SQLiteParserRETURNING_, SQLiteParserRIGHT_, SQLiteParserROLLBACK_, SQLiteParserROW_, SQLiteParserROWS_, SQLiteParserSAVEPOINT_, SQLiteParserSELECT_, SQLiteParserSET_, SQLiteParserSTRICT_, SQLiteParserTABLE_, SQLiteParserTEMP_, SQLiteParserTEMPORARY_, SQLiteParserTHEN_, SQLiteParserTO_, SQLiteParserTRANSACTION_, SQLiteParserTRIGGER_, SQLiteParserUNION_, SQLiteParserUNIQUE_, SQLiteParserUPDATE_, SQLiteParserUSING_, SQLiteParserVACUUM_, SQLiteParserVALUES_, SQLiteParserVIEW_, SQLiteParserVIRTUAL_, SQLiteParserWHEN_, SQLiteParserWHERE_, SQLiteParserWITH_, SQLiteParserWITHOUT_, SQLiteParserFIRST_VALUE_, SQLiteParserOVER_, SQLiteParserPARTITION_, SQLiteParserRANGE_, SQLiteParserPRECEDING_, SQLiteParserUNBOUNDED_, SQLiteParserCURRENT_, SQLiteParserFOLLOWING_, SQLiteParserCUME_DIST_, SQLiteParserDENSE_RANK_, SQLiteParserLAG_, SQLiteParserLAST_VALUE_, SQLiteParserLEAD_, SQLiteParserNTH_VALUE_, SQLiteParserNTILE_, SQLiteParserPERCENT_RANK_, SQLiteParserRANK_, SQLiteParserROW_NUMBER_, SQLiteParserGENERATED_, SQLiteParserALWAYS_, SQLiteParserSTORED_, SQLiteParserTRUE_, SQLiteParserFALSE_, SQLiteParserWINDOW_, SQLiteParserNULLS_, SQLiteParserFIRST_, SQLiteParserLAST_, SQLiteParserFILTER_, SQLiteParserGROUPS_, SQLiteParserEXCLUDE_, SQLiteParserIDENTIFIER, SQLiteParserNUMERIC_LITERAL, SQLiteParserNUMBERED_BIND_PARAMETER, SQLiteParserNAMED_BIND_PARAMETER, SQLiteParserSTRING_LITERAL, SQLiteParserBLOB_LITERAL:
 		{
 			p.SetState(1756)
 			p.expr(0)
@@ -21727,7 +21698,7 @@ func (p *SQLiteParser) Aggregate_function_invocation() (localctx IAggregate_func
 	p.GetErrorHandler().Sync(p)
 
 	switch p.GetTokenStream().LA(1) {
-	case SQLiteParserOPEN_PAR, SQLiteParserPLUS, SQLiteParserMINUS, SQLiteParserTILDE, SQLiteParserABORT_, SQLiteParserACTION_, SQLiteParserADD_, SQLiteParserAFTER_, SQLiteParserALL_, SQLiteParserALTER_, SQLiteParserANALYZE_, SQLiteParserAND_, SQLiteParserAS_, SQLiteParserASC_, SQLiteParserATTACH_, SQLiteParserAUTOINCREMENT_, SQLiteParserBEFORE_, SQLiteParserBEGIN_, SQLiteParserBETWEEN_, SQLiteParserBY_, SQLiteParserCASCADE_, SQLiteParserCASE_, SQLiteParserCAST_, SQLiteParserCHECK_, SQLiteParserCOLLATE_, SQLiteParserCOLUMN_, SQLiteParserCOMMIT_, SQLiteParserCONFLICT_, SQLiteParserCONSTRAINT_, SQLiteParserCREATE_, SQLiteParserCROSS_, SQLiteParserCURRENT_DATE_, SQLiteParserCURRENT_TIME_, SQLiteParserCURRENT_TIMESTAMP_, SQLiteParserDATABASE_, SQLiteParserDEFAULT_, SQLiteParserDEFERRABLE_, SQLiteParserDEFERRED_, SQLiteParserDELETE_, SQLiteParserDESC_, SQLiteParserDETACH_, SQLiteParserDISTINCT_, SQLiteParserDROP_, SQLiteParserEACH_, SQLiteParserELSE_, SQLiteParserEND_, SQLiteParserESCAPE_, SQLiteParserEXCEPT_, SQLiteParserEXCLUSIVE_, SQLiteParserEXISTS_, SQLiteParserEXPLAIN_, SQLiteParserFAIL_, SQLiteParserFOR_, SQLiteParserFOREIGN_, SQLiteParserFROM_, SQLiteParserFULL_, SQLiteParserGLOB_, SQLiteParserGROUP_, SQLiteParserHAVING_, SQLiteParserIF_, SQLiteParserIGNORE_, SQLiteParserIMMEDIATE_, SQLiteParserIN_, SQLiteParserINDEX_, SQLiteParserINDEXED_, SQLiteParserINITIALLY_, SQLiteParserINNER_, SQLiteParserINSERT_, SQLiteParserINSTEAD_, SQLiteParserINTERSECT_, SQLiteParserINTO_, SQLiteParserIS_, SQLiteParserISNULL_, SQLiteParserJOIN_, SQLiteParserKEY_, SQLiteParserLEFT_, SQLiteParserLIKE_, SQLiteParserLIMIT_, SQLiteParserMATCH_, SQLiteParserNATURAL_, SQLiteParserNO_, SQLiteParserNOT_, SQLiteParserNOTNULL_, SQLiteParserNULL_, SQLiteParserOF_, SQLiteParserOFFSET_, SQLiteParserON_, SQLiteParserOR_, SQLiteParserORDER_, SQLiteParserOUTER_, SQLiteParserPLAN_, SQLiteParserPRAGMA_, SQLiteParserPRIMARY_, SQLiteParserQUERY_, SQLiteParserRAISE_, SQLiteParserRECURSIVE_, SQLiteParserREFERENCES_, SQLiteParserREGEXP_, SQLiteParserREINDEX_, SQLiteParserRELEASE_, SQLiteParserRENAME_, SQLiteParserREPLACE_, SQLiteParserRESTRICT_, SQLiteParserRETURNING_, SQLiteParserRIGHT_, SQLiteParserROLLBACK_, SQLiteParserROW_, SQLiteParserROWS_, SQLiteParserSAVEPOINT_, SQLiteParserSELECT_, SQLiteParserSET_, SQLiteParserSTRICT_, SQLiteParserTABLE_, SQLiteParserTEMP_, SQLiteParserTEMPORARY_, SQLiteParserTHEN_, SQLiteParserTO_, SQLiteParserTRANSACTION_, SQLiteParserTRIGGER_, SQLiteParserUNION_, SQLiteParserUNIQUE_, SQLiteParserUPDATE_, SQLiteParserUSING_, SQLiteParserVACUUM_, SQLiteParserVALUES_, SQLiteParserVIEW_, SQLiteParserVIRTUAL_, SQLiteParserWHEN_, SQLiteParserWHERE_, SQLiteParserWITH_, SQLiteParserWITHOUT_, SQLiteParserFIRST_VALUE_, SQLiteParserOVER_, SQLiteParserPARTITION_, SQLiteParserRANGE_, SQLiteParserPRECEDING_, SQLiteParserUNBOUNDED_, SQLiteParserCURRENT_, SQLiteParserFOLLOWING_, SQLiteParserCUME_DIST_, SQLiteParserDENSE_RANK_, SQLiteParserLAG_, SQLiteParserLAST_VALUE_, SQLiteParserLEAD_, SQLiteParserNTH_VALUE_, SQLiteParserNTILE_, SQLiteParserPERCENT_RANK_, SQLiteParserRANK_, SQLiteParserROW_NUMBER_, SQLiteParserGENERATED_, SQLiteParserALWAYS_, SQLiteParserSTORED_, SQLiteParserTRUE_, SQLiteParserFALSE_, SQLiteParserWINDOW_, SQLiteParserNULLS_, SQLiteParserFIRST_, SQLiteParserLAST_, SQLiteParserFILTER_, SQLiteParserGROUPS_, SQLiteParserEXCLUDE_, SQLiteParserIDENTIFIER, SQLiteParserNUMERIC_LITERAL, SQLiteParserBIND_PARAMETER, SQLiteParserNAMED_BIND_PARAMETER, SQLiteParserSTRING_LITERAL, SQLiteParserBLOB_LITERAL:
+	case SQLiteParserOPEN_PAR, SQLiteParserPLUS, SQLiteParserMINUS, SQLiteParserTILDE, SQLiteParserABORT_, SQLiteParserACTION_, SQLiteParserADD_, SQLiteParserAFTER_, SQLiteParserALL_, SQLiteParserALTER_, SQLiteParserANALYZE_, SQLiteParserAND_, SQLiteParserAS_, SQLiteParserASC_, SQLiteParserATTACH_, SQLiteParserAUTOINCREMENT_, SQLiteParserBEFORE_, SQLiteParserBEGIN_, SQLiteParserBETWEEN_, SQLiteParserBY_, SQLiteParserCASCADE_, SQLiteParserCASE_, SQLiteParserCAST_, SQLiteParserCHECK_, SQLiteParserCOLLATE_, SQLiteParserCOLUMN_, SQLiteParserCOMMIT_, SQLiteParserCONFLICT_, SQLiteParserCONSTRAINT_, SQLiteParserCREATE_, SQLiteParserCROSS_, SQLiteParserCURRENT_DATE_, SQLiteParserCURRENT_TIME_, SQLiteParserCURRENT_TIMESTAMP_, SQLiteParserDATABASE_, SQLiteParserDEFAULT_, SQLiteParserDEFERRABLE_, SQLiteParserDEFERRED_, SQLiteParserDELETE_, SQLiteParserDESC_, SQLiteParserDETACH_, SQLiteParserDISTINCT_, SQLiteParserDROP_, SQLiteParserEACH_, SQLiteParserELSE_, SQLiteParserEND_, SQLiteParserESCAPE_, SQLiteParserEXCEPT_, SQLiteParserEXCLUSIVE_, SQLiteParserEXISTS_, SQLiteParserEXPLAIN_, SQLiteParserFAIL_, SQLiteParserFOR_, SQLiteParserFOREIGN_, SQLiteParserFROM_, SQLiteParserFULL_, SQLiteParserGLOB_, SQLiteParserGROUP_, SQLiteParserHAVING_, SQLiteParserIF_, SQLiteParserIGNORE_, SQLiteParserIMMEDIATE_, SQLiteParserIN_, SQLiteParserINDEX_, SQLiteParserINDEXED_, SQLiteParserINITIALLY_, SQLiteParserINNER_, SQLiteParserINSERT_, SQLiteParserINSTEAD_, SQLiteParserINTERSECT_, SQLiteParserINTO_, SQLiteParserIS_, SQLiteParserISNULL_, SQLiteParserJOIN_, SQLiteParserKEY_, SQLiteParserLEFT_, SQLiteParserLIKE_, SQLiteParserLIMIT_, SQLiteParserMATCH_, SQLiteParserNATURAL_, SQLiteParserNO_, SQLiteParserNOT_, SQLiteParserNOTNULL_, SQLiteParserNULL_, SQLiteParserOF_, SQLiteParserOFFSET_, SQLiteParserON_, SQLiteParserOR_, SQLiteParserORDER_, SQLiteParserOUTER_, SQLiteParserPLAN_, SQLiteParserPRAGMA_, SQLiteParserPRIMARY_, SQLiteParserQUERY_, SQLiteParserRAISE_, SQLiteParserRECURSIVE_, SQLiteParserREFERENCES_, SQLiteParserREGEXP_, SQLiteParserREINDEX_, SQLiteParserRELEASE_, SQLiteParserRENAME_, SQLiteParserREPLACE_, SQLiteParserRESTRICT_, SQLiteParserRETURNING_, SQLiteParserRIGHT_, SQLiteParserROLLBACK_, SQLiteParserROW_, SQLiteParserROWS_, SQLiteParserSAVEPOINT_, SQLiteParserSELECT_, SQLiteParserSET_, SQLiteParserSTRICT_, SQLiteParserTABLE_, SQLiteParserTEMP_, SQLiteParserTEMPORARY_, SQLiteParserTHEN_, SQLiteParserTO_, SQLiteParserTRANSACTION_, SQLiteParserTRIGGER_, SQLiteParserUNION_, SQLiteParserUNIQUE_, SQLiteParserUPDATE_, SQLiteParserUSING_, SQLiteParserVACUUM_, SQLiteParserVALUES_, SQLiteParserVIEW_, SQLiteParserVIRTUAL_, SQLiteParserWHEN_, SQLiteParserWHERE_, SQLiteParserWITH_, SQLiteParserWITHOUT_, SQLiteParserFIRST_VALUE_, SQLiteParserOVER_, SQLiteParserPARTITION_, SQLiteParserRANGE_, SQLiteParserPRECEDING_, SQLiteParserUNBOUNDED_, SQLiteParserCURRENT_, SQLiteParserFOLLOWING_, SQLiteParserCUME_DIST_, SQLiteParserDENSE_RANK_, SQLiteParserLAG_, SQLiteParserLAST_VALUE_, SQLiteParserLEAD_, SQLiteParserNTH_VALUE_, SQLiteParserNTILE_, SQLiteParserPERCENT_RANK_, SQLiteParserRANK_, SQLiteParserROW_NUMBER_, SQLiteParserGENERATED_, SQLiteParserALWAYS_, SQLiteParserSTORED_, SQLiteParserTRUE_, SQLiteParserFALSE_, SQLiteParserWINDOW_, SQLiteParserNULLS_, SQLiteParserFIRST_, SQLiteParserLAST_, SQLiteParserFILTER_, SQLiteParserGROUPS_, SQLiteParserEXCLUDE_, SQLiteParserIDENTIFIER, SQLiteParserNUMERIC_LITERAL, SQLiteParserNUMBERED_BIND_PARAMETER, SQLiteParserNAMED_BIND_PARAMETER, SQLiteParserSTRING_LITERAL, SQLiteParserBLOB_LITERAL:
 		p.SetState(1772)
 		p.GetErrorHandler().Sync(p)
 
@@ -22028,7 +21999,7 @@ func (p *SQLiteParser) Window_function_invocation() (localctx IWindow_function_i
 	p.GetErrorHandler().Sync(p)
 
 	switch p.GetTokenStream().LA(1) {
-	case SQLiteParserOPEN_PAR, SQLiteParserPLUS, SQLiteParserMINUS, SQLiteParserTILDE, SQLiteParserABORT_, SQLiteParserACTION_, SQLiteParserADD_, SQLiteParserAFTER_, SQLiteParserALL_, SQLiteParserALTER_, SQLiteParserANALYZE_, SQLiteParserAND_, SQLiteParserAS_, SQLiteParserASC_, SQLiteParserATTACH_, SQLiteParserAUTOINCREMENT_, SQLiteParserBEFORE_, SQLiteParserBEGIN_, SQLiteParserBETWEEN_, SQLiteParserBY_, SQLiteParserCASCADE_, SQLiteParserCASE_, SQLiteParserCAST_, SQLiteParserCHECK_, SQLiteParserCOLLATE_, SQLiteParserCOLUMN_, SQLiteParserCOMMIT_, SQLiteParserCONFLICT_, SQLiteParserCONSTRAINT_, SQLiteParserCREATE_, SQLiteParserCROSS_, SQLiteParserCURRENT_DATE_, SQLiteParserCURRENT_TIME_, SQLiteParserCURRENT_TIMESTAMP_, SQLiteParserDATABASE_, SQLiteParserDEFAULT_, SQLiteParserDEFERRABLE_, SQLiteParserDEFERRED_, SQLiteParserDELETE_, SQLiteParserDESC_, SQLiteParserDETACH_, SQLiteParserDISTINCT_, SQLiteParserDROP_, SQLiteParserEACH_, SQLiteParserELSE_, SQLiteParserEND_, SQLiteParserESCAPE_, SQLiteParserEXCEPT_, SQLiteParserEXCLUSIVE_, SQLiteParserEXISTS_, SQLiteParserEXPLAIN_, SQLiteParserFAIL_, SQLiteParserFOR_, SQLiteParserFOREIGN_, SQLiteParserFROM_, SQLiteParserFULL_, SQLiteParserGLOB_, SQLiteParserGROUP_, SQLiteParserHAVING_, SQLiteParserIF_, SQLiteParserIGNORE_, SQLiteParserIMMEDIATE_, SQLiteParserIN_, SQLiteParserINDEX_, SQLiteParserINDEXED_, SQLiteParserINITIALLY_, SQLiteParserINNER_, SQLiteParserINSERT_, SQLiteParserINSTEAD_, SQLiteParserINTERSECT_, SQLiteParserINTO_, SQLiteParserIS_, SQLiteParserISNULL_, SQLiteParserJOIN_, SQLiteParserKEY_, SQLiteParserLEFT_, SQLiteParserLIKE_, SQLiteParserLIMIT_, SQLiteParserMATCH_, SQLiteParserNATURAL_, SQLiteParserNO_, SQLiteParserNOT_, SQLiteParserNOTNULL_, SQLiteParserNULL_, SQLiteParserOF_, SQLiteParserOFFSET_, SQLiteParserON_, SQLiteParserOR_, SQLiteParserORDER_, SQLiteParserOUTER_, SQLiteParserPLAN_, SQLiteParserPRAGMA_, SQLiteParserPRIMARY_, SQLiteParserQUERY_, SQLiteParserRAISE_, SQLiteParserRECURSIVE_, SQLiteParserREFERENCES_, SQLiteParserREGEXP_, SQLiteParserREINDEX_, SQLiteParserRELEASE_, SQLiteParserRENAME_, SQLiteParserREPLACE_, SQLiteParserRESTRICT_, SQLiteParserRETURNING_, SQLiteParserRIGHT_, SQLiteParserROLLBACK_, SQLiteParserROW_, SQLiteParserROWS_, SQLiteParserSAVEPOINT_, SQLiteParserSELECT_, SQLiteParserSET_, SQLiteParserSTRICT_, SQLiteParserTABLE_, SQLiteParserTEMP_, SQLiteParserTEMPORARY_, SQLiteParserTHEN_, SQLiteParserTO_, SQLiteParserTRANSACTION_, SQLiteParserTRIGGER_, SQLiteParserUNION_, SQLiteParserUNIQUE_, SQLiteParserUPDATE_, SQLiteParserUSING_, SQLiteParserVACUUM_, SQLiteParserVALUES_, SQLiteParserVIEW_, SQLiteParserVIRTUAL_, SQLiteParserWHEN_, SQLiteParserWHERE_, SQLiteParserWITH_, SQLiteParserWITHOUT_, SQLiteParserFIRST_VALUE_, SQLiteParserOVER_, SQLiteParserPARTITION_, SQLiteParserRANGE_, SQLiteParserPRECEDING_, SQLiteParserUNBOUNDED_, SQLiteParserCURRENT_, SQLiteParserFOLLOWING_, SQLiteParserCUME_DIST_, SQLiteParserDENSE_RANK_, SQLiteParserLAG_, SQLiteParserLAST_VALUE_, SQLiteParserLEAD_, SQLiteParserNTH_VALUE_, SQLiteParserNTILE_, SQLiteParserPERCENT_RANK_, SQLiteParserRANK_, SQLiteParserROW_NUMBER_, SQLiteParserGENERATED_, SQLiteParserALWAYS_, SQLiteParserSTORED_, SQLiteParserTRUE_, SQLiteParserFALSE_, SQLiteParserWINDOW_, SQLiteParserNULLS_, SQLiteParserFIRST_, SQLiteParserLAST_, SQLiteParserFILTER_, SQLiteParserGROUPS_, SQLiteParserEXCLUDE_, SQLiteParserIDENTIFIER, SQLiteParserNUMERIC_LITERAL, SQLiteParserBIND_PARAMETER, SQLiteParserNAMED_BIND_PARAMETER, SQLiteParserSTRING_LITERAL, SQLiteParserBLOB_LITERAL:
+	case SQLiteParserOPEN_PAR, SQLiteParserPLUS, SQLiteParserMINUS, SQLiteParserTILDE, SQLiteParserABORT_, SQLiteParserACTION_, SQLiteParserADD_, SQLiteParserAFTER_, SQLiteParserALL_, SQLiteParserALTER_, SQLiteParserANALYZE_, SQLiteParserAND_, SQLiteParserAS_, SQLiteParserASC_, SQLiteParserATTACH_, SQLiteParserAUTOINCREMENT_, SQLiteParserBEFORE_, SQLiteParserBEGIN_, SQLiteParserBETWEEN_, SQLiteParserBY_, SQLiteParserCASCADE_, SQLiteParserCASE_, SQLiteParserCAST_, SQLiteParserCHECK_, SQLiteParserCOLLATE_, SQLiteParserCOLUMN_, SQLiteParserCOMMIT_, SQLiteParserCONFLICT_, SQLiteParserCONSTRAINT_, SQLiteParserCREATE_, SQLiteParserCROSS_, SQLiteParserCURRENT_DATE_, SQLiteParserCURRENT_TIME_, SQLiteParserCURRENT_TIMESTAMP_, SQLiteParserDATABASE_, SQLiteParserDEFAULT_, SQLiteParserDEFERRABLE_, SQLiteParserDEFERRED_, SQLiteParserDELETE_, SQLiteParserDESC_, SQLiteParserDETACH_, SQLiteParserDISTINCT_, SQLiteParserDROP_, SQLiteParserEACH_, SQLiteParserELSE_, SQLiteParserEND_, SQLiteParserESCAPE_, SQLiteParserEXCEPT_, SQLiteParserEXCLUSIVE_, SQLiteParserEXISTS_, SQLiteParserEXPLAIN_, SQLiteParserFAIL_, SQLiteParserFOR_, SQLiteParserFOREIGN_, SQLiteParserFROM_, SQLiteParserFULL_, SQLiteParserGLOB_, SQLiteParserGROUP_, SQLiteParserHAVING_, SQLiteParserIF_, SQLiteParserIGNORE_, SQLiteParserIMMEDIATE_, SQLiteParserIN_, SQLiteParserINDEX_, SQLiteParserINDEXED_, SQLiteParserINITIALLY_, SQLiteParserINNER_, SQLiteParserINSERT_, SQLiteParserINSTEAD_, SQLiteParserINTERSECT_, SQLiteParserINTO_, SQLiteParserIS_, SQLiteParserISNULL_, SQLiteParserJOIN_, SQLiteParserKEY_, SQLiteParserLEFT_, SQLiteParserLIKE_, SQLiteParserLIMIT_, SQLiteParserMATCH_, SQLiteParserNATURAL_, SQLiteParserNO_, SQLiteParserNOT_, SQLiteParserNOTNULL_, SQLiteParserNULL_, SQLiteParserOF_, SQLiteParserOFFSET_, SQLiteParserON_, SQLiteParserOR_, SQLiteParserORDER_, SQLiteParserOUTER_, SQLiteParserPLAN_, SQLiteParserPRAGMA_, SQLiteParserPRIMARY_, SQLiteParserQUERY_, SQLiteParserRAISE_, SQLiteParserRECURSIVE_, SQLiteParserREFERENCES_, SQLiteParserREGEXP_, SQLiteParserREINDEX_, SQLiteParserRELEASE_, SQLiteParserRENAME_, SQLiteParserREPLACE_, SQLiteParserRESTRICT_, SQLiteParserRETURNING_, SQLiteParserRIGHT_, SQLiteParserROLLBACK_, SQLiteParserROW_, SQLiteParserROWS_, SQLiteParserSAVEPOINT_, SQLiteParserSELECT_, SQLiteParserSET_, SQLiteParserSTRICT_, SQLiteParserTABLE_, SQLiteParserTEMP_, SQLiteParserTEMPORARY_, SQLiteParserTHEN_, SQLiteParserTO_, SQLiteParserTRANSACTION_, SQLiteParserTRIGGER_, SQLiteParserUNION_, SQLiteParserUNIQUE_, SQLiteParserUPDATE_, SQLiteParserUSING_, SQLiteParserVACUUM_, SQLiteParserVALUES_, SQLiteParserVIEW_, SQLiteParserVIRTUAL_, SQLiteParserWHEN_, SQLiteParserWHERE_, SQLiteParserWITH_, SQLiteParserWITHOUT_, SQLiteParserFIRST_VALUE_, SQLiteParserOVER_, SQLiteParserPARTITION_, SQLiteParserRANGE_, SQLiteParserPRECEDING_, SQLiteParserUNBOUNDED_, SQLiteParserCURRENT_, SQLiteParserFOLLOWING_, SQLiteParserCUME_DIST_, SQLiteParserDENSE_RANK_, SQLiteParserLAG_, SQLiteParserLAST_VALUE_, SQLiteParserLEAD_, SQLiteParserNTH_VALUE_, SQLiteParserNTILE_, SQLiteParserPERCENT_RANK_, SQLiteParserRANK_, SQLiteParserROW_NUMBER_, SQLiteParserGENERATED_, SQLiteParserALWAYS_, SQLiteParserSTORED_, SQLiteParserTRUE_, SQLiteParserFALSE_, SQLiteParserWINDOW_, SQLiteParserNULLS_, SQLiteParserFIRST_, SQLiteParserLAST_, SQLiteParserFILTER_, SQLiteParserGROUPS_, SQLiteParserEXCLUDE_, SQLiteParserIDENTIFIER, SQLiteParserNUMERIC_LITERAL, SQLiteParserNUMBERED_BIND_PARAMETER, SQLiteParserNAMED_BIND_PARAMETER, SQLiteParserSTRING_LITERAL, SQLiteParserBLOB_LITERAL:
 		{
 			p.SetState(1791)
 			p.expr(0)

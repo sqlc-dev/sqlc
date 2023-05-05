@@ -10,7 +10,7 @@ import (
 )
 
 const funcParamIdent = `-- name: FuncParamIdent :many
-SELECT name FROM foo WHERE name = $1
+SELECT name FROM foo WHERE name = $1 and name = $1
 `
 
 func (q *Queries) FuncParamIdent(ctx context.Context, slug string) ([]string, error) {

@@ -368,7 +368,7 @@ SELECT  DISTINCT u.user_id, u.user_nickname, u.user_email, u.user_display_name, 
 FROM    users_2 AS u
         LEFT JOIN media AS m
             ON u.user_avatar_id = m.media_id
-WHERE   u.user_id != ?
+WHERE   u.user_id != ?1
 `
 
 type GetSuggestedUsersByIDRow struct {

@@ -51,13 +51,13 @@ RETURNING *;
 
 /* name: UpdateBook :exec */
 UPDATE books
-SET title = ?, tag = ?
-WHERE book_id = ?;
+SET title = ?1, tag = ?2
+WHERE book_id = ?3;
 
 /* name: UpdateBookISBN :exec */
 UPDATE books
-SET title = ?, tag = ?, isbn = ?
-WHERE book_id = ?;
+SET title = ?1, tag = ?2, isbn = ?4
+WHERE book_id = ?3;
 
 /* name: DeleteAuthorBeforeYear :exec */
 DELETE FROM books

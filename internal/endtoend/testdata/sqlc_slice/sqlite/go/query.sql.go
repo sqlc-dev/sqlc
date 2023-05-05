@@ -12,7 +12,7 @@ import (
 
 const funcParamIdent = `-- name: FuncParamIdent :many
 SELECT name FROM foo
-WHERE name = ?
+WHERE name = ?1
   AND id IN (/*SLICE:favourites*/?)
 `
 
@@ -95,7 +95,7 @@ func (q *Queries) FuncParamSoloArg(ctx context.Context, favourites []int64) ([]s
 
 const funcParamString = `-- name: FuncParamString :many
 SELECT name FROM foo
-WHERE name = ?
+WHERE name = ?1
   AND id IN (/*SLICE:favourites*/?)
 `
 
@@ -139,7 +139,7 @@ func (q *Queries) FuncParamString(ctx context.Context, arg FuncParamStringParams
 }
 
 const sliceExec = `-- name: SliceExec :exec
-UPDATE foo SET name = ?
+UPDATE foo SET name = ?1
 WHERE id IN (/*SLICE:favourites*/?)
 `
 

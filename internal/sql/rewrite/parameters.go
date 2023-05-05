@@ -100,7 +100,11 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 					// since it's needed during template generation for replacement
 					replace = fmt.Sprintf(`/*SLICE:%s*/?`, param.Name())
 				} else {
-					replace = "?"
+					if engine == config.EngineSQLite {
+						replace = fmt.Sprintf("?%d", argn)
+					} else {
+						replace = "?"
+					}
 				}
 			} else {
 				replace = fmt.Sprintf("$%d", argn)
@@ -128,8 +132,10 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 
 			// TODO: This code assumes that @foo::bool is on a single line
 			var replace string
-			if engine == config.EngineMySQL || engine == config.EngineSQLite || !dollar {
+			if engine == config.EngineMySQL || !dollar {
 				replace = "?"
+			} else if engine == config.EngineSQLite {
+				replace = fmt.Sprintf("?%d", argn)
 			} else {
 				replace = fmt.Sprintf("$%d", argn)
 			}
@@ -154,8 +160,10 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 
 			// TODO: This code assumes that @foo is on a single line
 			var replace string
-			if engine == config.EngineMySQL || engine == config.EngineSQLite || !dollar {
+			if engine == config.EngineMySQL || !dollar {
 				replace = "?"
+			} else if engine == config.EngineSQLite {
+				replace = fmt.Sprintf("?%d", argn)
 			} else {
 				replace = fmt.Sprintf("$%d", argn)
 			}

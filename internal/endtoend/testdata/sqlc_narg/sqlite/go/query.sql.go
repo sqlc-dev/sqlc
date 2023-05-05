@@ -11,7 +11,7 @@ import (
 )
 
 const identOnNonNullable = `-- name: IdentOnNonNullable :many
-SELECT bar FROM foo WHERE bar = ?
+SELECT bar FROM foo WHERE bar = ?1
 `
 
 func (q *Queries) IdentOnNonNullable(ctx context.Context, bar sql.NullString) ([]string, error) {
@@ -38,7 +38,7 @@ func (q *Queries) IdentOnNonNullable(ctx context.Context, bar sql.NullString) ([
 }
 
 const identOnNullable = `-- name: IdentOnNullable :many
-SELECT maybe_bar FROM foo WHERE maybe_bar = ?
+SELECT maybe_bar FROM foo WHERE maybe_bar = ?1
 `
 
 func (q *Queries) IdentOnNullable(ctx context.Context, maybeBar sql.NullString) ([]sql.NullString, error) {
@@ -65,7 +65,7 @@ func (q *Queries) IdentOnNullable(ctx context.Context, maybeBar sql.NullString) 
 }
 
 const stringOnNonNullable = `-- name: StringOnNonNullable :many
-SELECT bar FROM foo WHERE bar = ?
+SELECT bar FROM foo WHERE bar = ?1
 `
 
 func (q *Queries) StringOnNonNullable(ctx context.Context, bar sql.NullString) ([]string, error) {
@@ -92,7 +92,7 @@ func (q *Queries) StringOnNonNullable(ctx context.Context, bar sql.NullString) (
 }
 
 const stringOnNullable = `-- name: StringOnNullable :many
-SELECT maybe_bar FROM foo WHERE maybe_bar = ?
+SELECT maybe_bar FROM foo WHERE maybe_bar = ?1
 `
 
 func (q *Queries) StringOnNullable(ctx context.Context, maybeBar sql.NullString) ([]sql.NullString, error) {

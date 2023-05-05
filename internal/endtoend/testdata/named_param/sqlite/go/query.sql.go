@@ -10,7 +10,7 @@ import (
 )
 
 const atParams = `-- name: AtParams :many
-SELECT name FROM foo WHERE name = ?
+SELECT name FROM foo WHERE name = ?1
 `
 
 func (q *Queries) AtParams(ctx context.Context, slug string) ([]string, error) {
@@ -37,7 +37,7 @@ func (q *Queries) AtParams(ctx context.Context, slug string) ([]string, error) {
 }
 
 const funcParams = `-- name: FuncParams :many
-SELECT name FROM foo WHERE name = ?
+SELECT name FROM foo WHERE name = ?1
 `
 
 func (q *Queries) FuncParams(ctx context.Context, slug string) ([]string, error) {
@@ -64,7 +64,7 @@ func (q *Queries) FuncParams(ctx context.Context, slug string) ([]string, error)
 }
 
 const insertAtParams = `-- name: InsertAtParams :one
-INSERT INTO foo(name, bio) values (?, ?) returning name
+INSERT INTO foo(name, bio) values (?1, ?2) returning name
 `
 
 type InsertAtParamsParams struct {
@@ -80,7 +80,7 @@ func (q *Queries) InsertAtParams(ctx context.Context, arg InsertAtParamsParams) 
 }
 
 const insertFuncParams = `-- name: InsertFuncParams :one
-INSERT INTO foo(name, bio) values (?, ?) returning name
+INSERT INTO foo(name, bio) values (?1, ?2) returning name
 `
 
 type InsertFuncParamsParams struct {

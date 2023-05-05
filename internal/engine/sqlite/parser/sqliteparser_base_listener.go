@@ -308,12 +308,6 @@ func (s *BaseSQLiteParserListener) EnterExpr_unary(ctx *Expr_unaryContext) {}
 // ExitExpr_unary is called when production expr_unary is exited.
 func (s *BaseSQLiteParserListener) ExitExpr_unary(ctx *Expr_unaryContext) {}
 
-// EnterExpr_named_bind is called when production expr_named_bind is entered.
-func (s *BaseSQLiteParserListener) EnterExpr_named_bind(ctx *Expr_named_bindContext) {}
-
-// ExitExpr_named_bind is called when production expr_named_bind is exited.
-func (s *BaseSQLiteParserListener) ExitExpr_named_bind(ctx *Expr_named_bindContext) {}
-
 // EnterExpr_null_comp is called when production expr_null_comp is entered.
 func (s *BaseSQLiteParserListener) EnterExpr_null_comp(ctx *Expr_null_compContext) {}
 

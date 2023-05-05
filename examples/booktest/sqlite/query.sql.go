@@ -239,8 +239,8 @@ func (q *Queries) GetBook(ctx context.Context, bookID int64) (Book, error) {
 
 const updateBook = `-- name: UpdateBook :exec
 UPDATE books
-SET title = ?, tag = ?
-WHERE book_id = ?
+SET title = ?1, tag = ?2
+WHERE book_id = ?3
 `
 
 type UpdateBookParams struct {
@@ -256,23 +256,23 @@ func (q *Queries) UpdateBook(ctx context.Context, arg UpdateBookParams) error {
 
 const updateBookISBN = `-- name: UpdateBookISBN :exec
 UPDATE books
-SET title = ?, tag = ?, isbn = ?
-WHERE book_id = ?
+SET title = ?1, tag = ?2, isbn = ?4
+WHERE book_id = ?3
 `
 
 type UpdateBookISBNParams struct {
 	Title  string
 	Tag    string
-	Isbn   string
 	BookID int64
+	Isbn   string
 }
 
 func (q *Queries) UpdateBookISBN(ctx context.Context, arg UpdateBookISBNParams) error {
 	_, err := q.db.ExecContext(ctx, updateBookISBN,
 		arg.Title,
 		arg.Tag,
-		arg.Isbn,
 		arg.BookID,
+		arg.Isbn,
 	)
 	return err
 }
