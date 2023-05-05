@@ -224,7 +224,9 @@ IDENTIFIER:
 
 NUMERIC_LITERAL: ((DIGIT+ ('.' DIGIT*)?) | ('.' DIGIT+)) (E [-+]? DIGIT+)? | '0x' HEX_DIGIT+;
 
-BIND_PARAMETER: '?' DIGIT* | [:@$] IDENTIFIER;
+BIND_PARAMETER: '?' DIGIT* | [:$] IDENTIFIER;
+
+NAMED_BIND_PARAMETER: '@' IDENTIFIER;
 
 STRING_LITERAL: '\'' ( ~'\'' | '\'\'')* '\'';
 

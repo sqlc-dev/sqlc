@@ -196,8 +196,13 @@ func (c *cc) convertDrop_stmtContext(n *parser.Drop_stmtContext) ast.Node {
 }
 
 func (c *cc) convertFuncContext(n *parser.Expr_functionContext) ast.Node {
-	if name, ok := n.Function_name().(*parser.Function_nameContext); ok {
-		funcName := strings.ToLower(name.GetText())
+	if name, ok := n.Qualified_function_name().(*parser.Qualified_function_nameContext); ok {
+		funcName := strings.ToLower(name.Function_name().GetText())
+
+		schema := ""
+		if name.Schema_name() != nil {
+			schema = name.Schema_name().GetText()
+		}
 
 		var argNodes []ast.Node
 		for _, exp := range n.AllExpr() {
@@ -207,12 +212,14 @@ func (c *cc) convertFuncContext(n *parser.Expr_functionContext) ast.Node {
 
 		if funcName == "coalesce" {
 			return &ast.CoalesceExpr{
-				Args: args,
+				Args:     args,
+				Location: name.GetStart().GetStart(),
 			}
 		} else {
 			return &ast.FuncCall{
 				Func: &ast.FuncName{
-					Name: funcName,
+					Schema: schema,
+					Name:   funcName,
 				},
 				Funcname: &ast.List{
 					Items: []ast.Node{
@@ -223,6 +230,7 @@ func (c *cc) convertFuncContext(n *parser.Expr_functionContext) ast.Node {
 				Args:        args,
 				AggOrder:    &ast.List{},
 				AggDistinct: n.DISTINCT_() != nil,
+				Location:    name.GetStart().GetStart(),
 			}
 		}
 	}
@@ -257,17 +265,38 @@ func (c *cc) convertColumnNameExpr(n *parser.Expr_qualified_column_nameContext) 
 }
 
 func (c *cc) convertComparison(n *parser.Expr_comparisonContext) ast.Node {
-	aExpr := &ast.A_Expr{
+	lexpr := c.convert(n.Expr(0))
+
+	if n.IN_() != nil {
+		rexprs := []ast.Node{}
+		for _, expr := range n.AllExpr()[1:] {
+			e := c.convert(expr)
+			switch t := e.(type) {
+			case *ast.List:
+				rexprs = append(rexprs, t.Items...)
+			default:
+				rexprs = append(rexprs, t)
+			}
+		}
+
+		return &ast.In{
+			Expr:     lexpr,
+			List:     rexprs,
+			Not:      false,
+			Sel:      nil,
+			Location: n.GetStart().GetStart(),
+		}
+	}
+
+	return &ast.A_Expr{
 		Name: &ast.List{
 			Items: []ast.Node{
 				&ast.String{Str: "="}, // TODO: add actual comparison
 			},
 		},
-		Lexpr: c.convert(n.Expr(0)),
+		Lexpr: lexpr,
 		Rexpr: c.convert(n.Expr(1)),
 	}
-
-	return aExpr
 }
 
 func (c *cc) convertMultiSelect_stmtContext(n *parser.Select_stmtContext) ast.Node {
@@ -323,6 +352,10 @@ func (c *cc) convertMultiSelect_stmtContext(n *parser.Select_stmtContext) ast.No
 		LimitOffset:  limitOffset,
 		ValuesLists:  &ast.List{},
 	}
+}
+
+func (c *cc) convertExprListContext(n *parser.Expr_listContext) ast.Node {
+	return c.convertExprLists(n.AllExpr())
 }
 
 func (c *cc) getTables(core *parser.Select_coreContext) []ast.Node {
@@ -509,8 +542,10 @@ func (c *cc) convertLiteral(n *parser.Expr_literalContext) ast.Node {
 		}
 
 		if literal.STRING_LITERAL() != nil {
+			// remove surrounding single quote
+			text := literal.GetText()
 			return &ast.A_Const{
-				Val: &ast.String{Str: literal.GetText()},
+				Val: &ast.String{Str: text[1 : len(text)-1]},
 			}
 		}
 
@@ -564,8 +599,50 @@ func (c *cc) convertParam(n *parser.Expr_bindContext) ast.Node {
 	return todo(n)
 }
 
+func (c *cc) convertNamedParam(n *parser.Expr_named_bindContext) ast.Node {
+	if n.NAMED_BIND_PARAMETER() != nil {
+		c.paramCount += 1
+		return &ast.A_Expr{
+			Name:     &ast.List{Items: []ast.Node{&ast.String{Str: "@"}}},
+			Rexpr:    &ast.String{Str: n.GetText()[1:]},
+			Location: n.GetStart().GetStart(),
+		}
+	}
+	return todo(n)
+}
+
 func (c *cc) convertInSelectNode(n *parser.Expr_in_selectContext) ast.Node {
-	return c.convert(n.Select_stmt())
+	if n.IN_() == nil && n.EXISTS_() == nil {
+		return c.convert(n.Select_stmt())
+	}
+
+	lexpr := c.convert(n.Expr(0))
+	rexprs := []ast.Node{}
+	for i, expr := range n.AllExpr()[1:] {
+		if i == 0 {
+			continue
+		}
+		e := c.convert(expr)
+		switch t := e.(type) {
+		case *ast.List:
+			rexprs = append(rexprs, t.Items...)
+		default:
+			rexprs = append(rexprs, t)
+		}
+	}
+
+	var subquery ast.Node = nil
+	if n.Select_stmt() != nil {
+		subquery = c.convert(n.Select_stmt())
+	}
+
+	return &ast.In{
+		Expr:     lexpr,
+		List:     rexprs,
+		Not:      n.NOT_() != nil,
+		Sel:      subquery,
+		Location: n.GetStart().GetStart(),
+	}
 }
 
 func (c *cc) convertReturning_caluseContext(n parser.IReturning_clauseContext) *ast.List {
@@ -817,11 +894,17 @@ func (c *cc) convert(node node) ast.Node {
 	case *parser.Expr_bindContext:
 		return c.convertParam(n)
 
+	case *parser.Expr_named_bindContext:
+		return c.convertNamedParam(n)
+
 	case *parser.Expr_literalContext:
 		return c.convertLiteral(n)
 
 	case *parser.Expr_binaryContext:
 		return c.convertBinaryNode(n)
+
+	case *parser.Expr_listContext:
+		return c.convertExprListContext(n)
 
 	case *parser.Expr_math_opContext:
 		return c.convertMathOperationNode(n)

@@ -149,6 +149,9 @@ type SQLiteParserListener interface {
 	// EnterExpr_unary is called when entering the expr_unary production.
 	EnterExpr_unary(c *Expr_unaryContext)
 
+	// EnterExpr_named_bind is called when entering the expr_named_bind production.
+	EnterExpr_named_bind(c *Expr_named_bindContext)
+
 	// EnterExpr_null_comp is called when entering the expr_null_comp production.
 	EnterExpr_null_comp(c *Expr_null_compContext)
 
@@ -319,6 +322,9 @@ type SQLiteParserListener interface {
 
 	// EnterFunction_name is called when entering the function_name production.
 	EnterFunction_name(c *Function_nameContext)
+
+	// EnterQualified_function_name is called when entering the qualified_function_name production.
+	EnterQualified_function_name(c *Qualified_function_nameContext)
 
 	// EnterSchema_name is called when entering the schema_name production.
 	EnterSchema_name(c *Schema_nameContext)
@@ -530,6 +536,9 @@ type SQLiteParserListener interface {
 	// ExitExpr_unary is called when exiting the expr_unary production.
 	ExitExpr_unary(c *Expr_unaryContext)
 
+	// ExitExpr_named_bind is called when exiting the expr_named_bind production.
+	ExitExpr_named_bind(c *Expr_named_bindContext)
+
 	// ExitExpr_null_comp is called when exiting the expr_null_comp production.
 	ExitExpr_null_comp(c *Expr_null_compContext)
 
@@ -700,6 +709,9 @@ type SQLiteParserListener interface {
 
 	// ExitFunction_name is called when exiting the function_name production.
 	ExitFunction_name(c *Function_nameContext)
+
+	// ExitQualified_function_name is called when exiting the qualified_function_name production.
+	ExitQualified_function_name(c *Qualified_function_nameContext)
 
 	// ExitSchema_name is called when exiting the schema_name production.
 	ExitSchema_name(c *Schema_nameContext)

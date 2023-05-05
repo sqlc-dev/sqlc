@@ -308,6 +308,12 @@ func (s *BaseSQLiteParserListener) EnterExpr_unary(ctx *Expr_unaryContext) {}
 // ExitExpr_unary is called when production expr_unary is exited.
 func (s *BaseSQLiteParserListener) ExitExpr_unary(ctx *Expr_unaryContext) {}
 
+// EnterExpr_named_bind is called when production expr_named_bind is entered.
+func (s *BaseSQLiteParserListener) EnterExpr_named_bind(ctx *Expr_named_bindContext) {}
+
+// ExitExpr_named_bind is called when production expr_named_bind is exited.
+func (s *BaseSQLiteParserListener) ExitExpr_named_bind(ctx *Expr_named_bindContext) {}
+
 // EnterExpr_null_comp is called when production expr_null_comp is entered.
 func (s *BaseSQLiteParserListener) EnterExpr_null_comp(ctx *Expr_null_compContext) {}
 
@@ -655,6 +661,13 @@ func (s *BaseSQLiteParserListener) EnterFunction_name(ctx *Function_nameContext)
 
 // ExitFunction_name is called when production function_name is exited.
 func (s *BaseSQLiteParserListener) ExitFunction_name(ctx *Function_nameContext) {}
+
+// EnterQualified_function_name is called when production qualified_function_name is entered.
+func (s *BaseSQLiteParserListener) EnterQualified_function_name(ctx *Qualified_function_nameContext) {
+}
+
+// ExitQualified_function_name is called when production qualified_function_name is exited.
+func (s *BaseSQLiteParserListener) ExitQualified_function_name(ctx *Qualified_function_nameContext) {}
 
 // EnterSchema_name is called when production schema_name is entered.
 func (s *BaseSQLiteParserListener) EnterSchema_name(ctx *Schema_nameContext) {}
