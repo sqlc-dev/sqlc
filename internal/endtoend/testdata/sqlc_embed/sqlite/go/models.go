@@ -8,6 +8,11 @@ import (
 	"database/sql"
 )
 
+type BazUser struct {
+	ID   int64
+	Name string
+}
+
 type Post struct {
 	ID     int64
 	UserID int64

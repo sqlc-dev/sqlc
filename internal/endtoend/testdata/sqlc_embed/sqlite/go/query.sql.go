@@ -15,14 +15,21 @@ SELECT users.id, users.name, users.age, users.id, users.name, users.age FROM use
 `
 
 type DuplicateRow struct {
-	Users   interface{}
-	Users_2 interface{}
+	User   User
+	User_2 User
 }
 
 func (q *Queries) Duplicate(ctx context.Context) (DuplicateRow, error) {
 	row := q.db.QueryRowContext(ctx, duplicate)
 	var i DuplicateRow
-	err := row.Scan(&i.Users, &i.Users_2)
+	err := row.Scan(
+		&i.User.ID,
+		&i.User.Name,
+		&i.User.Age,
+		&i.User_2.ID,
+		&i.User_2.Name,
+		&i.User_2.Age,
+	)
 	return i, err
 }
 
@@ -32,14 +39,20 @@ INNER JOIN users AS u ON p.user_id = u.users.id
 `
 
 type JoinRow struct {
-	Users interface{}
-	Posts interface{}
+	User User
+	Post Post
 }
 
 func (q *Queries) Join(ctx context.Context) (JoinRow, error) {
 	row := q.db.QueryRowContext(ctx, join)
 	var i JoinRow
-	err := row.Scan(&i.Users, &i.Posts)
+	err := row.Scan(
+		&i.User.ID,
+		&i.User.Name,
+		&i.User.Age,
+		&i.Post.ID,
+		&i.Post.UserID,
+	)
 	return i, err
 }
 
@@ -48,13 +61,13 @@ SELECT users.id, users.name, users.age FROM users
 `
 
 type OnlyRow struct {
-	Users interface{}
+	User User
 }
 
 func (q *Queries) Only(ctx context.Context) (OnlyRow, error) {
 	row := q.db.QueryRowContext(ctx, only)
 	var i OnlyRow
-	err := row.Scan(&i.Users)
+	err := row.Scan(&i.User.ID, &i.User.Name, &i.User.Age)
 	return i, err
 }
 
@@ -63,13 +76,13 @@ SELECT u.id, u.name, u.age FROM users AS u
 `
 
 type WithAliasRow struct {
-	Users interface{}
+	User User
 }
 
 func (q *Queries) WithAlias(ctx context.Context) (WithAliasRow, error) {
 	row := q.db.QueryRowContext(ctx, withAlias)
 	var i WithAliasRow
-	err := row.Scan(&i.Users)
+	err := row.Scan(&i.User.ID, &i.User.Name, &i.User.Age)
 	return i, err
 }
 
@@ -78,21 +91,77 @@ SELECT users.id, users.name, users.age, id, name, age FROM users
 `
 
 type WithAsteriskRow struct {
-	Users interface{}
-	ID    int64
-	Name  string
-	Age   sql.NullInt64
+	User User
+	ID   int64
+	Name string
+	Age  sql.NullInt64
 }
 
 func (q *Queries) WithAsterisk(ctx context.Context) (WithAsteriskRow, error) {
 	row := q.db.QueryRowContext(ctx, withAsterisk)
 	var i WithAsteriskRow
 	err := row.Scan(
-		&i.Users,
+		&i.User.ID,
+		&i.User.Name,
+		&i.User.Age,
 		&i.ID,
 		&i.Name,
 		&i.Age,
 	)
+	return i, err
+}
+
+const withCrossSchema = `-- name: WithCrossSchema :many
+SELECT u.id, u.name, u.age, bu.id, bu.name FROM users AS u
+INNER JOIN baz.users bu ON u.id = bu.id
+`
+
+type WithCrossSchemaRow struct {
+	User    User
+	BazUser BazUser
+}
+
+func (q *Queries) WithCrossSchema(ctx context.Context) ([]WithCrossSchemaRow, error) {
+	rows, err := q.db.QueryContext(ctx, withCrossSchema)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []WithCrossSchemaRow
+	for rows.Next() {
+		var i WithCrossSchemaRow
+		if err := rows.Scan(
+			&i.User.ID,
+			&i.User.Name,
+			&i.User.Age,
+			&i.BazUser.ID,
+			&i.BazUser.Name,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const withSchema = `-- name: WithSchema :one
+SELECT bu.id, bu.name FROM baz.users AS bu
+`
+
+type WithSchemaRow struct {
+	BazUser BazUser
+}
+
+func (q *Queries) WithSchema(ctx context.Context) (WithSchemaRow, error) {
+	row := q.db.QueryRowContext(ctx, withSchema)
+	var i WithSchemaRow
+	err := row.Scan(&i.BazUser.ID, &i.BazUser.Name)
 	return i, err
 }
 
@@ -101,7 +170,7 @@ SELECT users.id, users.name, users.age, (SELECT count(*) FROM users) AS total_co
 `
 
 type WithSubqueryRow struct {
-	Users      interface{}
+	User       User
 	TotalCount int64
 }
 
@@ -114,7 +183,12 @@ func (q *Queries) WithSubquery(ctx context.Context) ([]WithSubqueryRow, error) {
 	var items []WithSubqueryRow
 	for rows.Next() {
 		var i WithSubqueryRow
-		if err := rows.Scan(&i.Users, &i.TotalCount); err != nil {
+		if err := rows.Scan(
+			&i.User.ID,
+			&i.User.Name,
+			&i.User.Age,
+			&i.TotalCount,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
