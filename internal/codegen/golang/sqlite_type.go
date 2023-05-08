@@ -70,5 +70,6 @@ func sqliteType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 	default:
 		log.Printf("unknown SQLite type: %s\n", dt)
 		return "interface{}"
+
 	}
 }
