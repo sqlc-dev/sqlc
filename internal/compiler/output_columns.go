@@ -377,6 +377,11 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 			if res.Name != nil {
 				first.Name = *res.Name
 			}
+
+			if hasWhereOrHavingClause(n) {
+				first.NotNull = false
+			}
+
 			cols = append(cols, first)
 
 		default:
@@ -763,4 +768,18 @@ func findColumnForRef(ref *ast.ColumnRef, tables []*Table, targetList *ast.List)
 	}
 
 	return nil
+}
+
+// hasWhereOrHavingClause returns true if the statement contains WHERE or HAVING clause
+func hasWhereOrHavingClause(node ast.Node) bool {
+	stmt := node.(*ast.SelectStmt)
+
+	if _, isTODO := stmt.WhereClause.(*ast.TODO); stmt.WhereClause != nil && !isTODO {
+		return true
+	}
+	if _, isTODO := stmt.HavingClause.(*ast.TODO); stmt.HavingClause != nil && !isTODO {
+		return true
+	}
+
+	return false
 }

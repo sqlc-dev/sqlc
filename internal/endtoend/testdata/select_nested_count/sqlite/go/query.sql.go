@@ -22,7 +22,7 @@ type GetAuthorsWithBooksCountRow struct {
 	ID         int64
 	Name       string
 	Bio        sql.NullString
-	BooksCount int64
+	BooksCount sql.NullInt64
 }
 
 func (q *Queries) GetAuthorsWithBooksCount(ctx context.Context) ([]GetAuthorsWithBooksCountRow, error) {
