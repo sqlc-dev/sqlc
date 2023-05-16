@@ -109,10 +109,14 @@ func (c *cc) convertCreate_table_stmtContext(n *parser.Create_table_stmtContext)
 	}
 	for _, idef := range n.AllColumn_def() {
 		if def, ok := idef.(*parser.Column_defContext); ok {
+			typeName := "any"
+			if def.Type_name() != nil {
+				typeName = def.Type_name().GetText()
+			}
 			stmt.Cols = append(stmt.Cols, &ast.ColumnDef{
 				Colname:   identifier(def.Column_name().GetText()),
 				IsNotNull: hasNotNullConstraint(def.AllColumn_constraint()),
-				TypeName:  &ast.TypeName{Name: def.Type_name().GetText()},
+				TypeName:  &ast.TypeName{Name: typeName},
 			})
 		}
 	}
