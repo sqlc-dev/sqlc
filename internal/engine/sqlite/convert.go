@@ -355,7 +355,11 @@ func (c *cc) convertMultiSelect_stmtContext(n *parser.Select_stmtContext) ast.No
 }
 
 func (c *cc) convertExprListContext(n *parser.Expr_listContext) ast.Node {
-	return c.convertExprLists(n.AllExpr())
+	list := &ast.List{Items: []ast.Node{}}
+	for _, e := range n.AllExpr() {
+		list.Items = append(list.Items, c.convert(e))
+	}
+	return list
 }
 
 func (c *cc) getTables(core *parser.Select_coreContext) []ast.Node {
