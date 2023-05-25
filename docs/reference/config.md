@@ -247,6 +247,17 @@ entries using the `db_type` key in order to generate the struct.
 - `emit_pydantic_models`:
   - If true, generate classes that inherit from `pydantic.BaseModel`. Otherwise, define classes using the `dataclass` decorator. Defaults to `false`.
 
+#### fsharp
+
+- `package`:
+  - The package name to use for the generated code.
+- `out`:
+  - Output directory for generated code.
+- `emit_exact_table_names`:
+  - If true, use the exact table name for generated models. Otherwise, guess a singular form. Defaults to `false`.
+- `async`:
+  - If true, generated query functions will return Async results. Defaults to `false`.
+
 #### json
 
 - `out`:
