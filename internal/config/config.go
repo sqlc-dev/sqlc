@@ -58,6 +58,7 @@ const (
 type Config struct {
 	Version string   `json:"version" yaml:"version"`
 	Project Project  `json:"project" yaml:"project"`
+	Cloud   Cloud    `json:"cloud" yaml:"cloud"`
 	SQL     []SQL    `json:"sql" yaml:"sql"`
 	Gen     Gen      `json:"overrides,omitempty" yaml:"overrides"`
 	Plugins []Plugin `json:"plugins" yaml:"plugins"`
@@ -65,6 +66,12 @@ type Config struct {
 
 type Project struct {
 	ID string `json:"id" yaml:"id"`
+}
+
+type Cloud struct {
+	Organization string `json:"organization" yaml:"organization"`
+	Project      string `json:"project" yaml:"project"`
+	Hostname     string `json:"hostname" yaml:"hostname"`
 }
 
 type Plugin struct {
@@ -128,6 +135,7 @@ type SQLGo struct {
 	Overrides                   []Override        `json:"overrides,omitempty" yaml:"overrides"`
 	Rename                      map[string]string `json:"rename,omitempty" yaml:"rename"`
 	SQLPackage                  string            `json:"sql_package" yaml:"sql_package"`
+	SQLDriver                   string            `json:"sql_driver" yaml:"sql_driver"`
 	OutputBatchFileName         string            `json:"output_batch_file_name,omitempty" yaml:"output_batch_file_name"`
 	OutputDBFileName            string            `json:"output_db_file_name,omitempty" yaml:"output_db_file_name"`
 	OutputModelsFileName        string            `json:"output_models_file_name,omitempty" yaml:"output_models_file_name"`

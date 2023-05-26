@@ -30,6 +30,7 @@
       "package": "",
       "out": "",
       "sql_package": "",
+      "sql_driver": "",
       "output_db_file_name": "",
       "output_models_file_name": "",
       "output_querier_file_name": "",
@@ -60535,6 +60536,6 @@
       "insert_into_table": null
     }
   ],
-  "sqlc_version": "v1.17.2",
+  "sqlc_version": "v1.18.0",
   "plugin_options": "eyJmaWxlbmFtZSI6ImNvZGVnZW4uanNvbiIsImluZGVudCI6IiAgIn0="
 }

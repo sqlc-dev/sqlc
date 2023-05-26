@@ -14,6 +14,8 @@ const (
 	SQLDriverLibPQ
 )
 
+const SQLDriverGoSQLDriverMySQL = "github.com/go-sql-driver/mysql"
+
 func parseDriver(sqlPackage string) SQLDriver {
 	switch sqlPackage {
 	case SQLPackagePGXV4:

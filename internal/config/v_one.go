@@ -10,6 +10,7 @@ import (
 
 type V1GenerateSettings struct {
 	Version   string              `json:"version" yaml:"version"`
+	Cloud     Cloud               `json:"cloud" yaml:"cloud"`
 	Project   Project             `json:"project" yaml:"project"`
 	Packages  []v1PackageSettings `json:"packages" yaml:"packages"`
 	Overrides []Override          `json:"overrides,omitempty" yaml:"overrides,omitempty"`
@@ -37,6 +38,7 @@ type v1PackageSettings struct {
 	EmitAllEnumValues         bool       `json:"emit_all_enum_values,omitempty" yaml:"emit_all_enum_values"`
 	JSONTagsCaseStyle         string     `json:"json_tags_case_style,omitempty" yaml:"json_tags_case_style"`
 	SQLPackage                string     `json:"sql_package" yaml:"sql_package"`
+	SQLDriver                 string     `json:"sql_driver" yaml:"sql_driver"`
 	Overrides                 []Override `json:"overrides" yaml:"overrides"`
 	OutputBatchFileName       string     `json:"output_batch_file_name,omitempty" yaml:"output_batch_file_name"`
 	OutputDBFileName          string     `json:"output_db_file_name,omitempty" yaml:"output_db_file_name"`
@@ -124,6 +126,7 @@ func (c *V1GenerateSettings) Translate() Config {
 	conf := Config{
 		Version: c.Version,
 		Project: c.Project,
+		Cloud:   c.Cloud,
 	}
 
 	for _, pkg := range c.Packages {
@@ -149,6 +152,7 @@ func (c *V1GenerateSettings) Translate() Config {
 					Package:                   pkg.Name,
 					Out:                       pkg.Path,
 					SQLPackage:                pkg.SQLPackage,
+					SQLDriver:                 pkg.SQLDriver,
 					Overrides:                 pkg.Overrides,
 					JSONTagsCaseStyle:         pkg.JSONTagsCaseStyle,
 					OutputBatchFileName:       pkg.OutputBatchFileName,

@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package remote.sqlc.dev.Gen.v1;
+
+service Gen {
+  rpc Generate(GenerateRequest) returns (GenerateResponse);
+}
+
+message GenerateRequest {
+  string version = 1;
+  repeated File inputs = 2;
+}
+
+message GenerateResponse {
+  repeated File outputs = 1;
+  int32 exit_code = 2;
+  bytes stdout = 3;
+  bytes stderr = 4;
+}
+
+message File {
+  string path = 1;
+  string content_type = 2;
+  bytes bytes = 3;
+}

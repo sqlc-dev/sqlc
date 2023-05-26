@@ -98,6 +98,7 @@ func pluginGoCode(s config.SQLGo) *plugin.GoCode {
 		Package:                     s.Package,
 		Out:                         s.Out,
 		SqlPackage:                  s.SQLPackage,
+		SqlDriver:                   s.SQLDriver,
 		OutputDbFileName:            s.OutputDBFileName,
 		OutputBatchFileName:         s.OutputBatchFileName,
 		OutputModelsFileName:        s.OutputModelsFileName,
