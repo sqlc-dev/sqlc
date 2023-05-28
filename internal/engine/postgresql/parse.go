@@ -10,9 +10,11 @@ import (
 	"strings"
 
 	nodes "github.com/pganalyze/pg_query_go/v4"
+	"github.com/pganalyze/pg_query_go/v4/parser"
 
 	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
+	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
 )
 
 func stringSlice(list *nodes.List) []string {
@@ -158,7 +160,8 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 	}
 	tree, err := nodes.Parse(string(contents))
 	if err != nil {
-		return nil, err
+		pErr := normalizeErr(err)
+		return nil, pErr
 	}
 
 	var stmts []ast.Statement
@@ -182,6 +185,21 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 		})
 	}
 	return stmts, nil
+}
+
+func normalizeErr(err error) error {
+	//TODO: errors.As complains that *parser.Error does not implement error
+	if pErr, ok := err.(*parser.Error); ok {
+		sErr := &sqlerr.Error{
+			Message: pErr.Message,
+			//Err:      pErr,
+			Line:     pErr.Lineno,
+			Location: pErr.Cursorpos,
+		}
+		return sErr
+	}
+
+	return err
 }
 
 // https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-COMMENTS
