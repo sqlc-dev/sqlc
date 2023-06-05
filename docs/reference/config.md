@@ -225,6 +225,8 @@ entries using the `db_type` key in order to generate the struct.
 
 #### kotlin
 
+> Removed in v1.17.0 and replaced by the [sqlc-gen-kotlin](https://github.com/tabbed/sqlc-gen-kotlin) plugin. Follow the [migration guide](../guides/migrating-to-sqlc-gen-kotlin) to switch.
+
 - `package`:
   - The package name to use for the generated code.
 - `out`:
@@ -233,6 +235,8 @@ entries using the `db_type` key in order to generate the struct.
   - If true, use the exact table name for generated models. Otherwise, guess a singular form. Defaults to `false`.
 
 #### python
+
+> Removed in v1.17.0 and replaced by the [sqlc-gen-python](https://github.com/tabbed/sqlc-gen-python) plugin. Follow the [migration guide](../guides/migrating-to-sqlc-gen-python) to switch.
 
 - `package`:
   - The package name to use for the generated code.
