@@ -95,6 +95,7 @@ message GoCode
   bool emit_pointers_for_null_types = 22;
   optional int32 query_parameter_limit = 23;
   string output_batch_file_name = 24;
+  string template_path = 26;
 }
 
 message JSONCode

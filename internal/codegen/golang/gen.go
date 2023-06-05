@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"go/format"
+	"os"
 	"strings"
 	"text/template"
 
@@ -161,15 +162,31 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 		"queryRetval":         tctx.codegenQueryRetval,
 	}
 
-	tmpl := template.Must(
-		template.New("table").
-			Funcs(funcMap).
-			ParseFS(
-				templates,
-				"templates/*.tmpl",
-				"templates/*/*.tmpl",
-			),
-	)
+	var tmpl *template.Template
+	templatesPath := req.Settings.Go.TemplatePath
+	if templatesPath == "" {
+		fmt.Println("Embedded templates")
+		tmpl = template.Must(
+			template.New("table").
+				Funcs(funcMap).
+				ParseFS(
+					templates,
+					"templates/*.tmpl",
+					"templates/*/*.tmpl",
+				),
+		)
+	} else {
+		fmt.Println("templatesPath:", templatesPath)
+		tmpl = template.Must(
+			template.New("table").
+				Funcs(funcMap).
+				ParseFS(
+					os.DirFS(templatesPath),
+					"./*.tmpl",
+					"./*/*.tmpl",
+				),
+		)
+	}
 
 	output := map[string]string{}
 
