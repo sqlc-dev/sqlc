@@ -12,7 +12,7 @@ WHERE book_id = $1;
 
 -- name: DeleteBookNamedFunc :batchexec
 DELETE FROM books
-WHERE book_id = sqlc.arg(book_id);
+WHERE book_id = sqlc.arg (book_id);
 
 -- name: DeleteBookNamedSign :batchexec
 DELETE FROM books
