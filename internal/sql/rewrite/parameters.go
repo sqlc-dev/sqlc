@@ -94,13 +94,17 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 			})
 
 			var replace string
-			if engine == config.EngineMySQL || !dollar {
+			if engine == config.EngineMySQL || engine == config.EngineSQLite || !dollar {
 				if param.IsSqlcSlice() {
 					// This sequence is also replicated in internal/codegen/golang.Field
 					// since it's needed during template generation for replacement
 					replace = fmt.Sprintf(`/*SLICE:%s*/?`, param.Name())
 				} else {
-					replace = "?"
+					if engine == config.EngineSQLite {
+						replace = fmt.Sprintf("?%d", argn)
+					} else {
+						replace = "?"
+					}
 				}
 			} else {
 				replace = fmt.Sprintf("$%d", argn)
@@ -130,6 +134,8 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 			var replace string
 			if engine == config.EngineMySQL || !dollar {
 				replace = "?"
+			} else if engine == config.EngineSQLite {
+				replace = fmt.Sprintf("?%d", argn)
 			} else {
 				replace = fmt.Sprintf("$%d", argn)
 			}
@@ -156,6 +162,8 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 			var replace string
 			if engine == config.EngineMySQL || !dollar {
 				replace = "?"
+			} else if engine == config.EngineSQLite {
+				replace = fmt.Sprintf("?%d", argn)
 			} else {
 				replace = fmt.Sprintf("$%d", argn)
 			}
