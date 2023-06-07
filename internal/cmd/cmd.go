@@ -39,6 +39,7 @@ func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int 
 	rootCmd.AddCommand(diffCmd)
 	rootCmd.AddCommand(genCmd)
 	rootCmd.AddCommand(initCmd)
+	rootCmd.AddCommand(initTmplCmd)
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(uploadCmd)
 
@@ -104,6 +105,21 @@ var initCmd = &cobra.Command{
 			return err
 		}
 		return os.WriteFile(file, blob, 0644)
+	},
+}
+
+var initTmplCmd = &cobra.Command{
+	Use:   "inittmpl",
+	Short: "Create and populate template directory with default templates",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		defer trace.StartRegion(cmd.Context(), "inittmpl").End()
+		stderr := cmd.ErrOrStderr()
+		dir, name := getConfigPath(stderr, cmd.Flag("file"))
+		_, err := InitTmpl(cmd.Context(), ParseEnv(cmd), dir, name, stderr)
+		if err != nil {
+			return err
+		}
+		return nil
 	},
 }
 

@@ -27,6 +27,7 @@
       "emit_params_struct_pointers": false,
       "emit_methods_with_db_argument": false,
       "json_tags_case_style": "",
+      "template_path": "",
       "package": "",
       "out": "",
       "sql_package": "",
