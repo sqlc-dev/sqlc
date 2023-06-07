@@ -32,7 +32,7 @@ create a file named `schema.sql` with the following contents:
 
 ```sql
 CREATE TABLE authors (
-  id   INTEGER PRIMARY KEY AUTOINCREMENT,
+  id   INTEGER PRIMARY KEY,
   name text    NOT NULL,
   bio  text
 );

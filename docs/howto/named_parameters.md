@@ -75,7 +75,8 @@ UPDATE author
 SET
  name = coalesce(sqlc.narg('name'), name),
  bio = coalesce(sqlc.narg('bio'), bio)
-WHERE id = sqlc.arg('id');
+WHERE id = sqlc.arg('id')
+RETURNING *;
 ```
 
 The following code is generated:

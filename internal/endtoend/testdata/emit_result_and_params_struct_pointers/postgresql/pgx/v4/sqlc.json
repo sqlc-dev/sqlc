@@ -1,0 +1,19 @@
+{
+  "version": "2",
+  "sql": [
+    {
+      "engine": "postgresql",
+      "schema": "query.sql",
+      "queries": "query.sql",
+      "gen": {
+        "go": {
+          "package": "querytest",
+          "sql_package": "pgx/v4",
+          "out": "go",
+          "emit_result_struct_pointers": true,
+          "emit_params_struct_pointers": true
+        }
+      }
+    }
+  ]
+}

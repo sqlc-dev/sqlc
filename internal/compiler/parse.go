@@ -19,18 +19,6 @@ import (
 
 var ErrUnsupportedStatementType = errors.New("parseQuery: unsupported statement type")
 
-func rewriteNumberedParameters(refs []paramRef, raw *ast.RawStmt, sql string) ([]source.Edit, error) {
-	edits := make([]source.Edit, len(refs))
-	for i, ref := range refs {
-		edits[i] = source.Edit{
-			Location: ref.ref.Location - raw.StmtLocation,
-			Old:      fmt.Sprintf("$%d", ref.ref.Number),
-			New:      "?",
-		}
-	}
-	return edits, nil
-}
-
 func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query, error) {
 	if o.Debug.DumpAST {
 		debug.Dump(stmt)
@@ -76,6 +64,9 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 	if err := validate.FuncCall(c.catalog, c.combo, raw); err != nil {
 		return nil, err
 	}
+	if err := validate.In(c.catalog, raw); err != nil {
+		return nil, err
+	}
 	name, cmd, err := metadata.Parse(strings.TrimSpace(rawSQL), c.parser.CommentSyntax())
 	if err != nil {
 		return nil, err
@@ -89,25 +80,20 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 	if err != nil {
 		return nil, err
 	}
-	if o.UsePositionalParameters {
-		edits, err = rewriteNumberedParameters(refs, raw, rawSQL)
-		if err != nil {
-			return nil, err
-		}
+	refs = uniqueParamRefs(refs, dollar)
+	if c.conf.Engine == config.EngineMySQL || !dollar {
+		sort.Slice(refs, func(i, j int) bool { return refs[i].ref.Location < refs[j].ref.Location })
 	} else {
-		refs = uniqueParamRefs(refs, dollar)
-		if c.conf.Engine == config.EngineMySQL || !dollar {
-			sort.Slice(refs, func(i, j int) bool { return refs[i].ref.Location < refs[j].ref.Location })
-		} else {
-			sort.Slice(refs, func(i, j int) bool { return refs[i].ref.Number < refs[j].ref.Number })
-		}
+		sort.Slice(refs, func(i, j int) bool { return refs[i].ref.Number < refs[j].ref.Number })
 	}
-	qc, err := buildQueryCatalog(c.catalog, raw.Stmt)
+
+	raw, embeds := rewrite.Embeds(raw)
+	qc, err := buildQueryCatalog(c.catalog, raw.Stmt, embeds)
 	if err != nil {
 		return nil, err
 	}
 
-	params, err := c.resolveCatalogRefs(qc, rvs, refs, namedParams)
+	params, err := c.resolveCatalogRefs(qc, rvs, refs, namedParams, embeds)
 	if err != nil {
 		return nil, err
 	}
@@ -121,7 +107,6 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 		return nil, err
 	}
 	edits = append(edits, expandEdits...)
-
 	expanded, err := source.Mutate(rawSQL, edits)
 	if err != nil {
 		return nil, err

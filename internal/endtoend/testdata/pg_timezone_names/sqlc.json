@@ -9,7 +9,19 @@
         "go": {
           "sql_package": "pgx/v4",
           "package": "querytest",
-          "out": "go_pgx"
+          "out": "go_pgx/v4"
+        }
+      }
+    },
+    {
+      "engine": "postgresql",
+      "schema": "query.sql",
+      "queries": "query.sql",
+      "gen": {
+        "go": {
+          "sql_package": "pgx/v5",
+          "package": "querytest",
+          "out": "go_pgx/v5"
         }
       }
     },

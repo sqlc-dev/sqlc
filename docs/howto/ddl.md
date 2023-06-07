@@ -1,6 +1,7 @@
 # Modifying the database schema
 
-sqlc understands `ALTER TABLE` statements when parsing SQL.
+sqlc parses `CREATE TABLE` and `ALTER TABLE` statements in order to generate
+the necessary code.
 
 ```sql
 CREATE TABLE authors (
@@ -24,8 +25,11 @@ type Writer struct {
 
 ## Handling SQL migrations
 
-sqlc will ignore rollback statements when parsing migration SQL files. The
-following tools are current supported:
+sqlc does not perform database migrations for you. However, sqlc is able to
+differentiate between up and down migrations. sqlc ignores down migrations when
+parsing SQL files.
+
+sqlc supports parsing migrations from the following tools:
 
 - [dbmate](https://github.com/amacneil/dbmate)
 - [golang-migrate](https://github.com/golang-migrate/migrate)
@@ -98,17 +102,26 @@ type Comment struct {
 
 ### golang-migrate
 
-Warning: [golang-migrate specifies](https://github.com/golang-migrate/migrate/blob/master/MIGRATIONS.md#migration-filename-format) that the version number in the migration file name is to be interpreted numerically. However, sqlc executes the migration files in **lexicographic** order. If you choose to simply enumerate your migration versions, make sure to prepend enough zeros to the version number to avoid any unexpected behavior.
+**Warning:**
+[golang-migrate interprets](https://github.com/golang-migrate/migrate/blob/master/MIGRATIONS.md#migration-filename-format)
+migration filenames numerically. However, sqlc parses migration files in
+lexicographic order. If you choose to have sqlc enumerate your migration files,
+make sure their numeric ordering matches their lexicographic ordering to avoid
+unexpected behavior. This can be done by prepending enough zeroes to the
+migration filenames.
 
-Probably doesn't work as intended:
+This doesn't work as intended.
+
 ```
 1_initial.up.sql
 ...
 9_foo.up.sql
-# this migration file will be executed BEFORE 9_foo
+# this migration file will be parsed BEFORE 9_foo
 10_bar.up.sql
 ```
-Works as was probably intended:
+
+This worked as intended.
+
 ```
 001_initial.up.sql
 ...

@@ -17,9 +17,6 @@ type Override struct {
 	// see https://github.com/kyleconroy/sqlc/issues/534
 	GoStructTag GoStructTag `json:"go_struct_tag" yaml:"go_struct_tag"`
 
-	// name of the python type to use, e.g. `mymodule.TypeName`
-	PythonType PythonType `json:"python_type" yaml:"python_type"`
-
 	// fully qualified name of the Go type, e.g. `github.com/segmentio/ksuid.KSUID`
 	DBType                  string `json:"db_type" yaml:"db_type"`
 	Deprecated_PostgresType string `json:"postgres_type" yaml:"postgres_type"`

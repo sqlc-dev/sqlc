@@ -29,6 +29,9 @@ type Column struct {
 	Table      *ast.TableName
 	TableAlias string
 	Type       *ast.TypeName
+	EmbedTable *ast.TableName
+
+	IsSqlcSlice bool // is this sqlc.slice()
 
 	skipTableRequiredCheck bool
 }

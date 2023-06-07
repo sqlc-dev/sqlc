@@ -1,0 +1,6 @@
+{
+  "process": "sqlc-gen-json",
+  "env": {
+    "SQLCDEBUG": "processplugins=0"
+  }
+}

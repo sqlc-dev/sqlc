@@ -11,7 +11,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 )
 
-func pluginOverride(o config.Override) *plugin.Override {
+func pluginOverride(r *compiler.Result, o config.Override) *plugin.Override {
 	var column string
 	var table plugin.Identifier
 
@@ -19,7 +19,7 @@ func pluginOverride(o config.Override) *plugin.Override {
 		colParts := strings.Split(o.Column, ".")
 		switch len(colParts) {
 		case 2:
-			table.Schema = "public"
+			table.Schema = r.Catalog.DefaultSchema
 			table.Name = colParts[0]
 			column = colParts[1]
 		case 3:
@@ -40,15 +40,14 @@ func pluginOverride(o config.Override) *plugin.Override {
 		Column:     o.Column,
 		ColumnName: column,
 		Table:      &table,
-		PythonType: pluginPythonType(o.PythonType),
 		GoType:     pluginGoType(o),
 	}
 }
 
-func pluginSettings(cs config.CombinedSettings) *plugin.Settings {
+func pluginSettings(r *compiler.Result, cs config.CombinedSettings) *plugin.Settings {
 	var over []*plugin.Override
 	for _, o := range cs.Overrides {
-		over = append(over, pluginOverride(o))
+		over = append(over, pluginOverride(r, o))
 	}
 	return &plugin.Settings{
 		Version:   cs.Global.Version,
@@ -58,8 +57,6 @@ func pluginSettings(cs config.CombinedSettings) *plugin.Settings {
 		Overrides: over,
 		Rename:    cs.Rename,
 		Codegen:   pluginCodegen(cs.Codegen),
-		Python:    pluginPythonCode(cs.Python),
-		Kotlin:    pluginKotlinCode(cs.Kotlin),
 		Go:        pluginGoCode(cs.Go),
 		Json:      pluginJSONCode(cs.JSON),
 	}
@@ -77,20 +74,12 @@ func pluginCodegen(s config.Codegen) *plugin.Codegen {
 	}
 }
 
-func pluginPythonCode(s config.SQLPython) *plugin.PythonCode {
-	return &plugin.PythonCode{
-		Out:                         s.Out,
-		Package:                     s.Package,
-		EmitExactTableNames:         s.EmitExactTableNames,
-		EmitSyncQuerier:             s.EmitSyncQuerier,
-		EmitAsyncQuerier:            s.EmitAsyncQuerier,
-		EmitPydanticModels:          s.EmitPydanticModels,
-		QueryParameterLimit:         s.QueryParameterLimit,
-		InflectionExcludeTableNames: s.InflectionExcludeTableNames,
-	}
-}
-
 func pluginGoCode(s config.SQLGo) *plugin.GoCode {
+	if s.QueryParameterLimit == nil {
+		s.QueryParameterLimit = new(int32)
+		*s.QueryParameterLimit = 1
+	}
+
 	return &plugin.GoCode{
 		EmitInterface:               s.EmitInterface,
 		EmitJsonTags:                s.EmitJSONTags,
@@ -102,17 +91,21 @@ func pluginGoCode(s config.SQLGo) *plugin.GoCode {
 		EmitResultStructPointers:    s.EmitResultStructPointers,
 		EmitParamsStructPointers:    s.EmitParamsStructPointers,
 		EmitMethodsWithDbArgument:   s.EmitMethodsWithDBArgument,
+		EmitPointersForNullTypes:    s.EmitPointersForNullTypes,
 		EmitEnumValidMethod:         s.EmitEnumValidMethod,
 		EmitAllEnumValues:           s.EmitAllEnumValues,
 		JsonTagsCaseStyle:           s.JSONTagsCaseStyle,
 		Package:                     s.Package,
 		Out:                         s.Out,
 		SqlPackage:                  s.SQLPackage,
+		SqlDriver:                   s.SQLDriver,
 		OutputDbFileName:            s.OutputDBFileName,
+		OutputBatchFileName:         s.OutputBatchFileName,
 		OutputModelsFileName:        s.OutputModelsFileName,
 		OutputQuerierFileName:       s.OutputQuerierFileName,
 		OutputFilesSuffix:           s.OutputFilesSuffix,
 		InflectionExcludeTableNames: s.InflectionExcludeTableNames,
+		QueryParameterLimit:         s.QueryParameterLimit,
 	}
 }
 
@@ -127,22 +120,6 @@ func pluginGoType(o config.Override) *plugin.ParsedGoType {
 		TypeName:   o.GoTypeName,
 		BasicType:  o.GoBasicType,
 		StructTags: o.GoStructTags,
-	}
-}
-
-func pluginPythonType(pt config.PythonType) *plugin.PythonType {
-	return &plugin.PythonType{
-		Module: pt.Module,
-		Name:   pt.Name,
-	}
-}
-
-func pluginKotlinCode(s config.SQLKotlin) *plugin.KotlinCode {
-	return &plugin.KotlinCode{
-		Out:                         s.Out,
-		Package:                     s.Package,
-		EmitExactTableNames:         s.EmitExactTableNames,
-		InflectionExcludeTableNames: s.InflectionExcludeTableNames,
 	}
 }
 
@@ -272,6 +249,7 @@ func pluginQueryColumn(c *compiler.Column) *plugin.Column {
 		Length:       int32(l),
 		IsNamedParam: c.IsNamedParam,
 		IsFuncCall:   c.IsFuncCall,
+		IsSqlcSlice:  c.IsSqlcSlice,
 	}
 
 	if c.Type != nil {
@@ -294,6 +272,14 @@ func pluginQueryColumn(c *compiler.Column) *plugin.Column {
 		}
 	}
 
+	if c.EmbedTable != nil {
+		out.EmbedTable = &plugin.Identifier{
+			Catalog: c.EmbedTable.Catalog,
+			Schema:  c.EmbedTable.Schema,
+			Name:    c.EmbedTable.Name,
+		}
+	}
+
 	return out
 }
 
@@ -306,7 +292,7 @@ func pluginQueryParam(p compiler.Parameter) *plugin.Parameter {
 
 func codeGenRequest(r *compiler.Result, settings config.CombinedSettings) *plugin.CodeGenRequest {
 	return &plugin.CodeGenRequest{
-		Settings:    pluginSettings(settings),
+		Settings:    pluginSettings(r, settings),
 		Catalog:     pluginCatalog(r.Catalog),
 		Queries:     pluginQueries(r),
 		SqlcVersion: info.Version,

@@ -10,6 +10,7 @@ import (
 
 type V1GenerateSettings struct {
 	Version   string              `json:"version" yaml:"version"`
+	Cloud     Cloud               `json:"cloud" yaml:"cloud"`
 	Project   Project             `json:"project" yaml:"project"`
 	Packages  []v1PackageSettings `json:"packages" yaml:"packages"`
 	Overrides []Override          `json:"overrides,omitempty" yaml:"overrides,omitempty"`
@@ -32,16 +33,20 @@ type v1PackageSettings struct {
 	EmitResultStructPointers  bool       `json:"emit_result_struct_pointers" yaml:"emit_result_struct_pointers"`
 	EmitParamsStructPointers  bool       `json:"emit_params_struct_pointers" yaml:"emit_params_struct_pointers"`
 	EmitMethodsWithDBArgument bool       `json:"emit_methods_with_db_argument" yaml:"emit_methods_with_db_argument"`
+	EmitPointersForNullTypes  bool       `json:"emit_pointers_for_null_types" yaml:"emit_pointers_for_null_types"`
 	EmitEnumValidMethod       bool       `json:"emit_enum_valid_method,omitempty" yaml:"emit_enum_valid_method"`
 	EmitAllEnumValues         bool       `json:"emit_all_enum_values,omitempty" yaml:"emit_all_enum_values"`
 	JSONTagsCaseStyle         string     `json:"json_tags_case_style,omitempty" yaml:"json_tags_case_style"`
 	SQLPackage                string     `json:"sql_package" yaml:"sql_package"`
+	SQLDriver                 string     `json:"sql_driver" yaml:"sql_driver"`
 	Overrides                 []Override `json:"overrides" yaml:"overrides"`
+	OutputBatchFileName       string     `json:"output_batch_file_name,omitempty" yaml:"output_batch_file_name"`
 	OutputDBFileName          string     `json:"output_db_file_name,omitempty" yaml:"output_db_file_name"`
 	OutputModelsFileName      string     `json:"output_models_file_name,omitempty" yaml:"output_models_file_name"`
 	OutputQuerierFileName     string     `json:"output_querier_file_name,omitempty" yaml:"output_querier_file_name"`
 	OutputFilesSuffix         string     `json:"output_files_suffix,omitempty" yaml:"output_files_suffix"`
 	StrictFunctionChecks      bool       `json:"strict_function_checks" yaml:"strict_function_checks"`
+	QueryParameterLimit       *int32     `json:"query_parameter_limit,omitempty" yaml:"query_parameter_limit"`
 }
 
 func v1ParseConfig(rd io.Reader) (Config, error) {
@@ -73,6 +78,16 @@ func v1ParseConfig(rd io.Reader) (Config, error) {
 		if settings.Packages[j].Path == "" {
 			return config, ErrNoPackagePath
 		}
+
+		if settings.Packages[j].QueryParameterLimit != nil && (*settings.Packages[j].QueryParameterLimit < 0) {
+			return config, ErrInvalidQueryParameterLimit
+		}
+
+		if settings.Packages[j].QueryParameterLimit == nil {
+			settings.Packages[j].QueryParameterLimit = new(int32)
+			*settings.Packages[j].QueryParameterLimit = 1
+		}
+
 		for i := range settings.Packages[j].Overrides {
 			if err := settings.Packages[j].Overrides[i].Parse(); err != nil {
 				return config, err
@@ -111,6 +126,7 @@ func (c *V1GenerateSettings) Translate() Config {
 	conf := Config{
 		Version: c.Version,
 		Project: c.Project,
+		Cloud:   c.Cloud,
 	}
 
 	for _, pkg := range c.Packages {
@@ -130,17 +146,21 @@ func (c *V1GenerateSettings) Translate() Config {
 					EmitResultStructPointers:  pkg.EmitResultStructPointers,
 					EmitParamsStructPointers:  pkg.EmitParamsStructPointers,
 					EmitMethodsWithDBArgument: pkg.EmitMethodsWithDBArgument,
+					EmitPointersForNullTypes:  pkg.EmitPointersForNullTypes,
 					EmitEnumValidMethod:       pkg.EmitEnumValidMethod,
 					EmitAllEnumValues:         pkg.EmitAllEnumValues,
 					Package:                   pkg.Name,
 					Out:                       pkg.Path,
 					SQLPackage:                pkg.SQLPackage,
+					SQLDriver:                 pkg.SQLDriver,
 					Overrides:                 pkg.Overrides,
 					JSONTagsCaseStyle:         pkg.JSONTagsCaseStyle,
+					OutputBatchFileName:       pkg.OutputBatchFileName,
 					OutputDBFileName:          pkg.OutputDBFileName,
 					OutputModelsFileName:      pkg.OutputModelsFileName,
 					OutputQuerierFileName:     pkg.OutputQuerierFileName,
 					OutputFilesSuffix:         pkg.OutputFilesSuffix,
+					QueryParameterLimit:       pkg.QueryParameterLimit,
 				},
 			},
 			StrictFunctionChecks: pkg.StrictFunctionChecks,

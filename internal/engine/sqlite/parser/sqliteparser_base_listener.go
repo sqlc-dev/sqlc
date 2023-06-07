@@ -1,8 +1,8 @@
-// Code generated from SQLiteParser.g4 by ANTLR 4.10.1. DO NOT EDIT.
+// Code generated from SQLiteParser.g4 by ANTLR 4.12.0. DO NOT EDIT.
 
 package parser // SQLiteParser
 
-import "github.com/antlr/antlr4/runtime/Go/antlr"
+import "github.com/antlr/antlr4/runtime/Go/antlr/v4"
 
 // BaseSQLiteParserListener is a complete listener for a parse tree produced by SQLiteParser.
 type BaseSQLiteParserListener struct{}
@@ -655,6 +655,13 @@ func (s *BaseSQLiteParserListener) EnterFunction_name(ctx *Function_nameContext)
 
 // ExitFunction_name is called when production function_name is exited.
 func (s *BaseSQLiteParserListener) ExitFunction_name(ctx *Function_nameContext) {}
+
+// EnterQualified_function_name is called when production qualified_function_name is entered.
+func (s *BaseSQLiteParserListener) EnterQualified_function_name(ctx *Qualified_function_nameContext) {
+}
+
+// ExitQualified_function_name is called when production qualified_function_name is exited.
+func (s *BaseSQLiteParserListener) ExitQualified_function_name(ctx *Qualified_function_nameContext) {}
 
 // EnterSchema_name is called when production schema_name is entered.
 func (s *BaseSQLiteParserListener) EnterSchema_name(ctx *Schema_nameContext) {}

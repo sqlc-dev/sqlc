@@ -5,14 +5,16 @@ import (
 
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
+	"github.com/kyleconroy/sqlc/internal/sql/rewrite"
 )
 
 type QueryCatalog struct {
 	catalog *catalog.Catalog
 	ctes    map[string]*Table
+	embeds  rewrite.EmbedSet
 }
 
-func buildQueryCatalog(c *catalog.Catalog, node ast.Node) (*QueryCatalog, error) {
+func buildQueryCatalog(c *catalog.Catalog, node ast.Node, embeds rewrite.EmbedSet) (*QueryCatalog, error) {
 	var with *ast.WithClause
 	switch n := node.(type) {
 	case *ast.DeleteStmt:
@@ -26,7 +28,7 @@ func buildQueryCatalog(c *catalog.Catalog, node ast.Node) (*QueryCatalog, error)
 	default:
 		with = nil
 	}
-	qc := &QueryCatalog{catalog: c, ctes: map[string]*Table{}}
+	qc := &QueryCatalog{catalog: c, ctes: map[string]*Table{}, embeds: embeds}
 	if with != nil {
 		for _, item := range with.Ctes.Items {
 			if cte, ok := item.(*ast.CommonTableExpr); ok {
