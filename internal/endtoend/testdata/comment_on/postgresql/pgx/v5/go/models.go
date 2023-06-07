@@ -58,3 +58,8 @@ type FooBar struct {
 	// this is the baz column
 	Baz string
 }
+
+// this is the bat view
+type FooBat struct {
+	Baz string
+}

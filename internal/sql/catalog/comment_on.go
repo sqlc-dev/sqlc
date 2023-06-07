@@ -61,3 +61,16 @@ func (c *Catalog) commentOnType(stmt *ast.CommentOnTypeStmt) error {
 	}
 	return nil
 }
+
+func (c *Catalog) commentOnView(stmt *ast.CommentOnViewStmt) error {
+	_, t, err := c.getTable(stmt.View)
+	if err != nil {
+		return err
+	}
+	if stmt.Comment != nil {
+		t.Comment = *stmt.Comment
+	} else {
+		t.Comment = ""
+	}
+	return nil
+}
