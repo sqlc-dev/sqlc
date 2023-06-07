@@ -265,6 +265,7 @@ func (c *cc) convertColumnNameExpr(n *parser.Expr_qualified_column_nameContext) 
 		Fields: &ast.List{
 			Items: items,
 		},
+		Location: n.GetStart().GetStart(),
 	}
 }
 
@@ -545,7 +546,8 @@ func (c *cc) convertLiteral(n *parser.Expr_literalContext) ast.Node {
 		if literal.NUMERIC_LITERAL() != nil {
 			i, _ := strconv.ParseInt(literal.GetText(), 10, 64)
 			return &ast.A_Const{
-				Val: &ast.Integer{Ival: i},
+				Val:      &ast.Integer{Ival: i},
+				Location: n.GetStart().GetStart(),
 			}
 		}
 
@@ -553,7 +555,8 @@ func (c *cc) convertLiteral(n *parser.Expr_literalContext) ast.Node {
 			// remove surrounding single quote
 			text := literal.GetText()
 			return &ast.A_Const{
-				Val: &ast.String{Str: text[1 : len(text)-1]},
+				Val:      &ast.String{Str: text[1 : len(text)-1]},
+				Location: n.GetStart().GetStart(),
 			}
 		}
 
@@ -564,7 +567,8 @@ func (c *cc) convertLiteral(n *parser.Expr_literalContext) ast.Node {
 			}
 
 			return &ast.A_Const{
-				Val: &ast.Integer{Ival: i},
+				Val:      &ast.Integer{Ival: i},
+				Location: n.GetStart().GetStart(),
 			}
 		}
 	}
