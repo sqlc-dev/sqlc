@@ -407,6 +407,7 @@ func (m *Column) CloneVT() *Column {
 		Type:         m.Type.CloneVT(),
 		IsSqlcSlice:  m.IsSqlcSlice,
 		EmbedTable:   m.EmbedTable.CloneVT(),
+		ArrayBounds:  m.ArrayBounds,
 	}
 	if len(m.unknownFields) > 0 {
 		r.unknownFields = make([]byte, len(m.unknownFields))
@@ -3970,6 +3971,11 @@ func (m *Column) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if m.ArrayBounds != 0 {
+		i = encodeVarint(dAtA, i, uint64(m.ArrayBounds))
+		i--
+		dAtA[i] = 0x78
+	}
 	if m.EmbedTable != nil {
 		size, err := m.EmbedTable.MarshalToSizedBufferVTStrict(dAtA[:i])
 		if err != nil {
@@ -4852,16 +4858,10 @@ func (m *Column) SizeVT() (n int) {
 		l = m.EmbedTable.SizeVT()
 		n += 1 + l + sov(uint64(l))
 	}
-<<<<<<< HEAD
 	if m.ArrayBounds != 0 {
 		n += 1 + sov(uint64(m.ArrayBounds))
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
-=======
 	n += len(m.unknownFields)
->>>>>>> main
 	return n
 }
 
