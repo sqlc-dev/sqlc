@@ -304,6 +304,7 @@ func (c *cc) convertColumnNameExpr(n *pcast.ColumnNameExpr) *ast.ColumnRef {
 		Fields: &ast.List{
 			Items: items,
 		},
+		Location: n.OriginTextPosition(),
 	}
 }
 
@@ -606,6 +607,7 @@ func (c *cc) convertValueExpr(n *driver.ValueExpr) *ast.A_Const {
 			Val: &ast.Integer{
 				Ival: n.Datum.GetInt64(),
 			},
+			Location: n.OriginTextPosition(),
 		}
 
 	case mysql.TypeDouble,
@@ -615,6 +617,7 @@ func (c *cc) convertValueExpr(n *driver.ValueExpr) *ast.A_Const {
 			Val: &ast.Float{
 				// TODO: Extract the value from n.TexprNode
 			},
+			Location: n.OriginTextPosition(),
 		}
 
 	case mysql.TypeBlob, mysql.TypeString, mysql.TypeVarchar, mysql.TypeVarString, mysql.TypeLongBlob, mysql.TypeMediumBlob, mysql.TypeTinyBlob, mysql.TypeEnum:
@@ -623,6 +626,7 @@ func (c *cc) convertValueExpr(n *driver.ValueExpr) *ast.A_Const {
 		Val: &ast.String{
 			Str: n.Datum.GetString(),
 		},
+		Location: n.OriginTextPosition(),
 	}
 }
 

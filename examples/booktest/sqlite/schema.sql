@@ -13,7 +13,7 @@ CREATE TABLE books (
           title text NOT NULL,
           yr integer NOT NULL DEFAULT 2000,
           available datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-          tags text NOT NULL,
+          tag text NOT NULL,
           CHECK (book_type = 'FICTION' OR book_type = 'NONFICTION')
 );
 

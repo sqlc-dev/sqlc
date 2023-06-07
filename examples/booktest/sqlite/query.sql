@@ -20,15 +20,16 @@ SELECT
   title,
   name,
   isbn,
-  tags
+  tag
 FROM books
 LEFT JOIN authors ON books.author_id = authors.author_id
-WHERE tags = ?;
+WHERE tag IN (sqlc.slice(tags));
 
-/* name: CreateAuthor :execresult */
-INSERT INTO authors (name) VALUES (?);
+/* name: CreateAuthor :one */
+INSERT INTO authors (name) VALUES (?)
+RETURNING *;
 
-/* name: CreateBook :execresult */
+/* name: CreateBook :one */
 INSERT INTO books (
     author_id,
     isbn,
@@ -36,7 +37,7 @@ INSERT INTO books (
     title,
     yr,
     available,
-    tags
+    tag
 ) VALUES (
     ?,
     ?,
@@ -45,17 +46,18 @@ INSERT INTO books (
     ?,
     ?,
     ?
-);
+)
+RETURNING *;
 
 /* name: UpdateBook :exec */
 UPDATE books
-SET title = ?, tags = ?
-WHERE book_id = ?;
+SET title = ?1, tag = ?2
+WHERE book_id = ?3;
 
 /* name: UpdateBookISBN :exec */
 UPDATE books
-SET title = ?, tags = ?, isbn = ?
-WHERE book_id = ?;
+SET title = ?1, tag = ?2, isbn = ?4
+WHERE book_id = ?3;
 
 /* name: DeleteAuthorBeforeYear :exec */
 DELETE FROM books
