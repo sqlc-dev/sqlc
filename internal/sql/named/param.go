@@ -44,6 +44,7 @@ func (n nullability) String() string {
 type Param struct {
 	name        string
 	nullability nullability
+	isSqlcSlice bool
 }
 
 // NewParam builds a new params with unspecified nullability
@@ -64,6 +65,11 @@ func NewInferredParam(name string, notNull bool) Param {
 // by the user to be nullable.
 func NewUserNullableParam(name string) Param {
 	return Param{name: name, nullability: nullable}
+}
+
+// NewSqlcSlice is a sqlc.slice() parameter.
+func NewSqlcSlice(name string) Param {
+	return Param{name: name, nullability: nullUnspecified, isSqlcSlice: true}
 }
 
 // Name is the user defined name to use for this parameter
@@ -102,6 +108,11 @@ func (p Param) NotNull() bool {
 	return null
 }
 
+// IsSlice returns whether this param is a sqlc.slice() param.
+func (p Param) IsSqlcSlice() bool {
+	return p.isSqlcSlice
+}
+
 // mergeParam creates a new param from 2 partially specified params
 // If the parameters have different names, the first is preferred
 func mergeParam(a, b Param) Param {
@@ -110,5 +121,9 @@ func mergeParam(a, b Param) Param {
 		name = b.name
 	}
 
-	return Param{name: name, nullability: a.nullability | b.nullability}
+	return Param{
+		name:        name,
+		nullability: a.nullability | b.nullability,
+		isSqlcSlice: a.isSqlcSlice || b.isSqlcSlice,
+	}
 }

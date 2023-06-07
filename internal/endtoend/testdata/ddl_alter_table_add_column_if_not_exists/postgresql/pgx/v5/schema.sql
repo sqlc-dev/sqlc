@@ -1,0 +1,2 @@
+CREATE TABLE foo (bar text NOT NULL, baz text NOT NULL);
+ALTER TABLE foo ADD COLUMN IF NOT EXISTS bar text;

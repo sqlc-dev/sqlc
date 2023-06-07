@@ -1,0 +1,39 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "path": "go",
+      "engine": "postgresql",
+      "sql_package": "pgx/v5",
+      "name": "override",
+      "schema": "schema.sql",
+      "queries": "query.sql",
+      "overrides": [
+        {
+          "column": "*.id",
+          "go_struct_tag": "type:\"id\""
+        },
+        {
+          "column": "*.*_id",
+          "go_struct_tag": "type:\"other_id\""
+        },
+        {
+          "column": "foo.about",
+          "go_struct_tag": "type:\"about\""
+        },
+        {
+          "column": "foo.id",
+          "go_struct_tag": "source:\"foo\""
+        },
+        {
+          "column": "*.other",
+          "go_struct_tag": "type:\"other\""
+        },
+        {
+          "column": "foo.other",
+          "go_struct_tag": "type:\"this\""
+        }
+      ]
+    }
+  ]
+}

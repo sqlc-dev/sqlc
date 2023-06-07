@@ -1,4 +1,4 @@
 # package querytest
-query/from.sql:1:1: syntax error at or near "from"
-query/select.sql:1:1: syntax error at or near "select"
-query/typo.sql:1:1: syntax error at or near "selectt"
+query/from.sql:2:35: syntax error at or near "from"
+query/select.sql:2:29: syntax error at or near "select"
+query/typo.sql:2:2: syntax error at or near "selectt"

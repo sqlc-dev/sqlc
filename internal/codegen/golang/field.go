@@ -2,6 +2,7 @@ package golang
 
 import (
 	"fmt"
+	"regexp"
 	"sort"
 	"strings"
 
@@ -14,6 +15,9 @@ type Field struct {
 	Type    string
 	Tags    map[string]string
 	Comment string
+	Column  *plugin.Column
+	// EmbedFields contains the embedded fields that reuqire scanning.
+	EmbedFields []string
 }
 
 func (gf Field) Tag() string {
@@ -26,6 +30,10 @@ func (gf Field) Tag() string {
 	}
 	sort.Strings(tags)
 	return strings.Join(tags, " ")
+}
+
+func (gf Field) HasSqlcSlice() bool {
+	return gf.Column.IsSqlcSlice
 }
 
 func JSONTagName(name string, settings *plugin.Settings) string {
@@ -50,7 +58,14 @@ func SetCaseStyle(name string, style string) string {
 	}
 }
 
+var camelPattern = regexp.MustCompile("[^A-Z][A-Z]+")
+
 func toSnakeCase(s string) string {
+	if !strings.ContainsRune(s, '_') {
+		s = camelPattern.ReplaceAllStringFunc(s, func(x string) string {
+			return x[:1] + "_" + x[1:]
+		})
+	}
 	return strings.ToLower(s)
 }
 
@@ -76,4 +91,12 @@ func toCamelInitCase(name string, initUpper bool) string {
 		}
 	}
 	return out
+}
+
+func toLowerCase(str string) string {
+	if str == "" {
+		return ""
+	}
+
+	return strings.ToLower(str[:1]) + str[1:]
 }

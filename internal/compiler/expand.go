@@ -132,9 +132,16 @@ func (c *Compiler) expandStmt(qc *QueryCatalog, raw *ast.RawStmt, node ast.Node)
 		for _, p := range parts {
 			old = append(old, c.quoteIdent(p))
 		}
+		oldString := strings.Join(old, ".")
+
+		// use the sqlc.embed string instead
+		if embed, ok := qc.embeds.Find(ref); ok {
+			oldString = embed.Orig()
+		}
+
 		edits = append(edits, source.Edit{
 			Location: res.Location - raw.StmtLocation,
-			Old:      strings.Join(old, "."),
+			Old:      oldString,
 			New:      strings.Join(cols, ", "),
 		})
 	}

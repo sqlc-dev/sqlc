@@ -7,23 +7,8 @@ import (
 	"fmt"
 	"io"
 
-	yaml "gopkg.in/yaml.v3"
+	"gopkg.in/yaml.v3"
 )
-
-const errMessageNoVersion = `The configuration file must have a version number.
-Set the version to 1 at the top of sqlc.json:
-
-{
-  "version": "1"
-  ...
-}
-`
-
-const errMessageUnknownVersion = `The configuration file has an invalid version number.
-The only supported version is "1".
-`
-
-const errMessageNoPackages = `No packages are configured`
 
 type versionSetting struct {
 	Number string `json:"version" yaml:"version"`
@@ -73,6 +58,7 @@ const (
 type Config struct {
 	Version string   `json:"version" yaml:"version"`
 	Project Project  `json:"project" yaml:"project"`
+	Cloud   Cloud    `json:"cloud" yaml:"cloud"`
 	SQL     []SQL    `json:"sql" yaml:"sql"`
 	Gen     Gen      `json:"overrides,omitempty" yaml:"overrides"`
 	Plugins []Plugin `json:"plugins" yaml:"plugins"`
@@ -80,6 +66,12 @@ type Config struct {
 
 type Project struct {
 	ID string `json:"id" yaml:"id"`
+}
+
+type Cloud struct {
+	Organization string `json:"organization" yaml:"organization"`
+	Project      string `json:"project" yaml:"project"`
+	Hostname     string `json:"hostname" yaml:"hostname"`
 }
 
 type Plugin struct {
@@ -94,17 +86,12 @@ type Plugin struct {
 }
 
 type Gen struct {
-	Go     *GenGo     `json:"go,omitempty" yaml:"go"`
-	Kotlin *GenKotlin `json:"kotlin,omitempty" yaml:"kotlin"`
+	Go *GenGo `json:"go,omitempty" yaml:"go"`
 }
 
 type GenGo struct {
 	Overrides []Override        `json:"overrides,omitempty" yaml:"overrides"`
 	Rename    map[string]string `json:"rename,omitempty" yaml:"rename"`
-}
-
-type GenKotlin struct {
-	Rename map[string]string `json:"rename,omitempty" yaml:"rename"`
 }
 
 type SQL struct {
@@ -124,10 +111,8 @@ type Codegen struct {
 }
 
 type SQLGen struct {
-	Go     *SQLGo     `json:"go,omitempty" yaml:"go"`
-	Kotlin *SQLKotlin `json:"kotlin,omitempty" yaml:"kotlin"`
-	Python *SQLPython `json:"python,omitempty" yaml:"python"`
-	JSON   *SQLJSON   `json:"json,omitempty" yaml:"json"`
+	Go   *SQLGo   `json:"go,omitempty" yaml:"go"`
+	JSON *SQLJSON `json:"json,omitempty" yaml:"json"`
 }
 
 type SQLGo struct {
@@ -141,6 +126,7 @@ type SQLGo struct {
 	EmitResultStructPointers    bool              `json:"emit_result_struct_pointers" yaml:"emit_result_struct_pointers"`
 	EmitParamsStructPointers    bool              `json:"emit_params_struct_pointers" yaml:"emit_params_struct_pointers"`
 	EmitMethodsWithDBArgument   bool              `json:"emit_methods_with_db_argument,omitempty" yaml:"emit_methods_with_db_argument"`
+	EmitPointersForNullTypes    bool              `json:"emit_pointers_for_null_types" yaml:"emit_pointers_for_null_types"`
 	EmitEnumValidMethod         bool              `json:"emit_enum_valid_method,omitempty" yaml:"emit_enum_valid_method"`
 	EmitAllEnumValues           bool              `json:"emit_all_enum_values,omitempty" yaml:"emit_all_enum_values"`
 	JSONTagsCaseStyle           string            `json:"json_tags_case_style,omitempty" yaml:"json_tags_case_style"`
@@ -149,30 +135,14 @@ type SQLGo struct {
 	Overrides                   []Override        `json:"overrides,omitempty" yaml:"overrides"`
 	Rename                      map[string]string `json:"rename,omitempty" yaml:"rename"`
 	SQLPackage                  string            `json:"sql_package" yaml:"sql_package"`
+	SQLDriver                   string            `json:"sql_driver" yaml:"sql_driver"`
+	OutputBatchFileName         string            `json:"output_batch_file_name,omitempty" yaml:"output_batch_file_name"`
 	OutputDBFileName            string            `json:"output_db_file_name,omitempty" yaml:"output_db_file_name"`
 	OutputModelsFileName        string            `json:"output_models_file_name,omitempty" yaml:"output_models_file_name"`
 	OutputQuerierFileName       string            `json:"output_querier_file_name,omitempty" yaml:"output_querier_file_name"`
 	OutputFilesSuffix           string            `json:"output_files_suffix,omitempty" yaml:"output_files_suffix"`
 	InflectionExcludeTableNames []string          `json:"inflection_exclude_table_names,omitempty" yaml:"inflection_exclude_table_names"`
-}
-
-type SQLKotlin struct {
-	EmitExactTableNames         bool     `json:"emit_exact_table_names,omitempty" yaml:"emit_exact_table_names"`
-	Package                     string   `json:"package" yaml:"package"`
-	Out                         string   `json:"out" yaml:"out"`
-	InflectionExcludeTableNames []string `json:"inflection_exclude_table_names,omitempty" yaml:"inflection_exclude_table_names"`
-}
-
-type SQLPython struct {
-	EmitExactTableNames         bool       `json:"emit_exact_table_names" yaml:"emit_exact_table_names"`
-	EmitSyncQuerier             bool       `json:"emit_sync_querier" yaml:"emit_sync_querier"`
-	EmitAsyncQuerier            bool       `json:"emit_async_querier" yaml:"emit_async_querier"`
-	Package                     string     `json:"package" yaml:"package"`
-	Out                         string     `json:"out" yaml:"out"`
-	Overrides                   []Override `json:"overrides,omitempty" yaml:"overrides"`
-	EmitPydanticModels          bool       `json:"emit_pydantic_models,omitempty" yaml:"emit_pydantic_models"`
-	QueryParameterLimit         *int32     `json:"query_parameter_limit,omitempty" yaml:"query_parameter_limit"`
-	InflectionExcludeTableNames []string   `json:"inflection_exclude_table_names,omitempty" yaml:"inflection_exclude_table_names"`
+	QueryParameterLimit         *int32            `json:"query_parameter_limit,omitempty" yaml:"query_parameter_limit"`
 }
 
 type SQLJSON struct {
@@ -190,6 +160,7 @@ var ErrNoPackages = errors.New("no packages")
 var ErrNoQuerierType = errors.New("no querier emit type enabled")
 var ErrUnknownEngine = errors.New("invalid engine")
 var ErrUnknownVersion = errors.New("invalid version number")
+var ErrInvalidQueryParameterLimit = errors.New("invalid query parameter limit")
 
 var ErrPluginBuiltin = errors.New("a built-in plugin with that name already exists")
 var ErrPluginNoName = errors.New("missing plugin name")
@@ -198,8 +169,6 @@ var ErrPluginNotFound = errors.New("no plugin found")
 var ErrPluginNoType = errors.New("plugin: field `process` or `wasm` required")
 var ErrPluginBothTypes = errors.New("plugin: both `process` and `wasm` cannot both be defined")
 var ErrPluginProcessNoCmd = errors.New("plugin: missing process command")
-
-var ErrInvalidQueryParameterLimit = errors.New("invalid query parameter limit")
 
 func ParseConfig(rd io.Reader) (Config, error) {
 	var buf bytes.Buffer
@@ -241,8 +210,6 @@ type CombinedSettings struct {
 	Global    Config
 	Package   SQL
 	Go        SQLGo
-	Kotlin    SQLKotlin
-	Python    SQLPython
 	JSON      SQLJSON
 	Rename    map[string]string
 	Overrides []Override
@@ -255,24 +222,20 @@ func Combine(conf Config, pkg SQL) CombinedSettings {
 	cs := CombinedSettings{
 		Global:  conf,
 		Package: pkg,
+		Rename:  map[string]string{},
 	}
 	if conf.Gen.Go != nil {
-		cs.Rename = conf.Gen.Go.Rename
+		for k, v := range conf.Gen.Go.Rename {
+			cs.Rename[k] = v
+		}
 		cs.Overrides = append(cs.Overrides, conf.Gen.Go.Overrides...)
-	}
-	if conf.Gen.Kotlin != nil {
-		cs.Rename = conf.Gen.Kotlin.Rename
 	}
 	if pkg.Gen.Go != nil {
 		cs.Go = *pkg.Gen.Go
+		for k, v := range pkg.Gen.Go.Rename {
+			cs.Rename[k] = v
+		}
 		cs.Overrides = append(cs.Overrides, pkg.Gen.Go.Overrides...)
-	}
-	if pkg.Gen.Kotlin != nil {
-		cs.Kotlin = *pkg.Gen.Kotlin
-	}
-	if pkg.Gen.Python != nil {
-		cs.Python = *pkg.Gen.Python
-		cs.Overrides = append(cs.Overrides, pkg.Gen.Python.Overrides...)
 	}
 	if pkg.Gen.JSON != nil {
 		cs.JSON = *pkg.Gen.JSON

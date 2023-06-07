@@ -32,5 +32,16 @@ func Singular(s SingularParams) string {
 	if strings.ToLower(s.Name) == "meta" {
 		return s.Name
 	}
+	// Manual fix for incorrect handling of "calories"
+	//
+	// https://github.com/kyleconroy/sqlc/issues/2017
+	// https://github.com/jinzhu/inflection/issues/23
+	if strings.ToLower(s.Name) == "calories" {
+		return "calorie"
+	}
+	// Manual fix for incorrect handling of "-ves" suffix
+	if strings.ToLower(s.Name) == "waves" {
+		return "wave"
+	}
 	return upstream.Singular(s.Name)
 }

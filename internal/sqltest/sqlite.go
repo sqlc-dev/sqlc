@@ -2,7 +2,6 @@ package sqltest
 
 import (
 	"database/sql"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -16,7 +15,7 @@ func SQLite(t *testing.T, migrations []string) (*sql.DB, func()) {
 	t.Helper()
 
 	// For each test, pick a new database name at random.
-	source, err := ioutil.TempFile("", "sqltest_sqlite_")
+	source, err := os.CreateTemp("", "sqltest_sqlite_")
 	if err != nil {
 		t.Fatal(err)
 	}

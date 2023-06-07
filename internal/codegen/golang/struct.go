@@ -9,7 +9,7 @@ import (
 )
 
 type Struct struct {
-	Table   plugin.Identifier
+	Table   *plugin.Identifier
 	Name    string
 	Fields  []Field
 	Comment string
@@ -29,6 +29,7 @@ func StructName(name string, settings *plugin.Settings) string {
 		}
 		return rune('_')
 	}, name)
+
 	for _, p := range strings.Split(name, "_") {
 		if p == "id" {
 			out += "ID"

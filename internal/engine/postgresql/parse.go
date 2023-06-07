@@ -1,5 +1,5 @@
-//go:build !windows
-// +build !windows
+//go:build !windows && cgo
+// +build !windows,cgo
 
 package postgresql
 
@@ -9,17 +9,19 @@ import (
 	"io"
 	"strings"
 
-	nodes "github.com/pganalyze/pg_query_go/v2"
+	nodes "github.com/pganalyze/pg_query_go/v4"
+	"github.com/pganalyze/pg_query_go/v4/parser"
 
 	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
+	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
 )
 
 func stringSlice(list *nodes.List) []string {
 	items := []string{}
 	for _, item := range list.Items {
 		if n, ok := item.Node.(*nodes.Node_String_); ok {
-			items = append(items, n.String_.Str)
+			items = append(items, n.String_.Sval)
 		}
 	}
 	return items
@@ -29,7 +31,7 @@ func stringSliceFromNodes(s []*nodes.Node) []string {
 	var items []string
 	for _, item := range s {
 		if n, ok := item.Node.(*nodes.Node_String_); ok {
-			items = append(items, n.String_.Str)
+			items = append(items, n.String_.Sval)
 		}
 	}
 	return items
@@ -158,7 +160,8 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 	}
 	tree, err := nodes.Parse(string(contents))
 	if err != nil {
-		return nil, err
+		pErr := normalizeErr(err)
+		return nil, pErr
 	}
 
 	var stmts []ast.Statement
@@ -182,6 +185,21 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 		})
 	}
 	return stmts, nil
+}
+
+func normalizeErr(err error) error {
+	//TODO: errors.As complains that *parser.Error does not implement error
+	if pErr, ok := err.(*parser.Error); ok {
+		sErr := &sqlerr.Error{
+			Message: pErr.Message,
+			//Err:      pErr,
+			Line:     pErr.Lineno,
+			Location: pErr.Cursorpos,
+		}
+		return sErr
+	}
+
+	return err
 }
 
 // https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-COMMENTS
@@ -211,6 +229,9 @@ func translate(node *nodes.Node) (ast.Node, error) {
 			return &ast.AlterTypeAddValueStmt{
 				Type:               rel.TypeName(),
 				NewValue:           makeString(n.NewVal),
+				NewValHasNeighbor:  len(n.NewValNeighbor) > 0,
+				NewValNeighbor:     makeString(n.NewValNeighbor),
+				NewValIsAfter:      n.NewValIsAfter,
 				SkipIfNewValExists: n.SkipIfNewValExists,
 			}, nil
 		}
@@ -223,6 +244,16 @@ func translate(node *nodes.Node) (ast.Node, error) {
 			rel := parseRelationFromRangeVar(n.Relation)
 			return &ast.AlterTableSetSchemaStmt{
 				Table:     rel.TableName(),
+				NewSchema: makeString(n.Newschema),
+			}, nil
+
+		case nodes.ObjectType_OBJECT_TYPE:
+			rel, err := parseRelation(n.Object)
+			if err != nil {
+				return nil, err
+			}
+			return &ast.AlterTypeSetSchemaStmt{
+				Type:      rel.TypeName(),
 				NewSchema: makeString(n.Newschema),
 			}, nil
 		}
@@ -324,7 +355,7 @@ func translate(node *nodes.Node) (ast.Node, error) {
 				return nil, fmt.Errorf("COMMENT ON SCHEMA: unexpected node type: %T", n.Object)
 			}
 			return &ast.CommentOnSchemaStmt{
-				Schema:  &ast.String{Str: o.String_.Str},
+				Schema:  &ast.String{Str: o.String_.Sval},
 				Comment: makeString(n.Comment),
 			}, nil
 
@@ -345,6 +376,16 @@ func translate(node *nodes.Node) (ast.Node, error) {
 			}
 			return &ast.CommentOnTypeStmt{
 				Type:    rel.TypeName(),
+				Comment: makeString(n.Comment),
+			}, nil
+
+		case nodes.ObjectType_OBJECT_VIEW:
+			rel, err := parseRelation(n.Object)
+			if err != nil {
+				return nil, fmt.Errorf("COMMENT ON VIEW: %w", err)
+			}
+			return &ast.CommentOnViewStmt{
+				View:    rel.TableName(),
 				Comment: makeString(n.Comment),
 			}, nil
 
@@ -381,7 +422,7 @@ func translate(node *nodes.Node) (ast.Node, error) {
 				if item.Constraint.Contype == nodes.ConstrType_CONSTR_PRIMARY {
 					for _, key := range item.Constraint.Keys {
 						// FIXME: Possible nil pointer dereference
-						primaryKey[key.Node.(*nodes.Node_String_).String_.Str] = true
+						primaryKey[key.Node.(*nodes.Node_String_).String_.Sval] = true
 					}
 				}
 
@@ -421,7 +462,7 @@ func translate(node *nodes.Node) (ast.Node, error) {
 			switch v := val.Node.(type) {
 			case *nodes.Node_String_:
 				stmt.Vals.Items = append(stmt.Vals.Items, &ast.String{
-					Str: v.String_.Str,
+					Str: v.String_.Sval,
 				})
 			}
 		}
@@ -523,7 +564,7 @@ func translate(node *nodes.Node) (ast.Node, error) {
 				if !ok {
 					return nil, fmt.Errorf("nodes.DropStmt: SCHEMA: unknown type in objects list: %T", obj)
 				}
-				drop.Schemas = append(drop.Schemas, &ast.String{Str: val.String_.Str})
+				drop.Schemas = append(drop.Schemas, &ast.String{Str: val.String_.Sval})
 			}
 			return drop, nil
 
