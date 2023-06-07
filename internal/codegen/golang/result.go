@@ -114,13 +114,13 @@ type goEmbed struct {
 
 // look through all the structs and attempt to find a matching one to embed
 // We need the name of the struct and its field names.
-func newGoEmbed(embed *plugin.Identifier, structs []Struct) *goEmbed {
+func newGoEmbed(embed *plugin.Identifier, structs []Struct, defaultSchema string) *goEmbed {
 	if embed == nil {
 		return nil
 	}
 
 	for _, s := range structs {
-		embedSchema := "public"
+		embedSchema := defaultSchema
 		if embed.Schema != "" {
 			embedSchema = embed.Schema
 		}
@@ -280,7 +280,7 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 					columns = append(columns, goColumn{
 						id:     i,
 						Column: c,
-						embed:  newGoEmbed(c.EmbedTable, structs),
+						embed:  newGoEmbed(c.EmbedTable, structs, req.Catalog.DefaultSchema),
 					})
 				}
 				var err error
@@ -335,7 +335,7 @@ func columnsToStruct(req *plugin.CodeGenRequest, name string, columns []goColumn
 		colName := columnName(c.Column, i)
 		tagName := colName
 
-		// overide col/tag with expected model name
+		// override col/tag with expected model name
 		if c.embed != nil {
 			colName = c.embed.modelName
 			tagName = SetCaseStyle(colName, "snake")

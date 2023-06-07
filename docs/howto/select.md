@@ -265,9 +265,9 @@ func (q *Queries) ListAuthorsByIDs(ctx context.Context, ids []int) ([]Author, er
 }
 ```
 
-### MySQL
+### MySQL and SQLite
 
-MySQL differs from PostgreSQL in that placeholders must be generated based on
+MySQL and SQLite differ from PostgreSQL in that placeholders must be generated based on
 the number of elements in the slice you pass in. Though trivial it is still
 something of a nuisance. The passed in slice must not be nil or empty or an
 error will be returned (ie not a panic). The placeholder insertion location is

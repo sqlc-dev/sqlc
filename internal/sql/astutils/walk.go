@@ -77,6 +77,11 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Type)
 		}
 
+	case *ast.CommentOnViewStmt:
+		if n.View != nil {
+			Walk(f, n.View)
+		}
+
 	case *ast.CompositeTypeStmt:
 		if n.TypeName != nil {
 			Walk(f, n.TypeName)

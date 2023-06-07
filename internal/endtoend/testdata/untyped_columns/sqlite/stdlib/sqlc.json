@@ -1,0 +1,16 @@
+{
+  "version": "2",
+  "sql": [
+    {
+      "engine": "sqlite",
+      "schema": "query.sql",
+      "queries": "query.sql",
+      "gen": {
+        "go": {
+          "package": "db",
+          "out": "db"
+        }
+      }
+    }
+  ]
+}
