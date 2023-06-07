@@ -19,7 +19,6 @@ func pluginOverride(o config.Override) *plugin.Override {
 		colParts := strings.Split(o.Column, ".")
 		switch len(colParts) {
 		case 2:
-			table.Schema = "public"
 			table.Name = colParts[0]
 			column = colParts[1]
 		case 3:
