@@ -16,6 +16,7 @@ type Table struct {
 
 type Column struct {
 	Name         string
+	OriginalName string
 	DataType     string
 	NotNull      bool
 	IsArray      bool
