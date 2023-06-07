@@ -32,7 +32,7 @@ func Matches(o *plugin.Override, n *plugin.Identifier, defaultSchema string) boo
 	if o.Table.Catalog != "" && !MatchString(o.Table.Catalog, n.Catalog) {
 		return false
 	}
-	if o.Table.Schema == "" && n.Schema != "" {
+	if o.Table.Schema == "" && schema != "" {
 		return false
 	}
 	if o.Table.Schema != "" && !MatchString(o.Table.Schema, schema) {
