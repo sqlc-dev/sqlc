@@ -9,10 +9,9 @@ body:
       description: What version of sqlc are you running? If you don't know, run `sqlc version`.
       multiple: false
       options:
+        - 1.18.0
         - 1.17.2
         - 1.16.0
-        - 1.15.0
-        - 1.14.0
         - Other
     validations:
       required: true
@@ -70,8 +69,9 @@ body:
       label: What database engines are you using?
       multiple: true
       options:
-        - PostgreSQL
         - MySQL
+        - PostgreSQL
+        - SQLite
   - type: dropdown
     id: languages
     attributes:
