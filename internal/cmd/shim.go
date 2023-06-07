@@ -11,7 +11,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 )
 
-func pluginOverride(o config.Override) *plugin.Override {
+func pluginOverride(r *compiler.Result, o config.Override) *plugin.Override {
 	var column string
 	var table plugin.Identifier
 
@@ -19,6 +19,7 @@ func pluginOverride(o config.Override) *plugin.Override {
 		colParts := strings.Split(o.Column, ".")
 		switch len(colParts) {
 		case 2:
+			table.Schema = r.Catalog.DefaultSchema
 			table.Name = colParts[0]
 			column = colParts[1]
 		case 3:
@@ -43,10 +44,10 @@ func pluginOverride(o config.Override) *plugin.Override {
 	}
 }
 
-func pluginSettings(cs config.CombinedSettings) *plugin.Settings {
+func pluginSettings(r *compiler.Result, cs config.CombinedSettings) *plugin.Settings {
 	var over []*plugin.Override
 	for _, o := range cs.Overrides {
-		over = append(over, pluginOverride(o))
+		over = append(over, pluginOverride(r, o))
 	}
 	return &plugin.Settings{
 		Version:   cs.Global.Version,
@@ -291,7 +292,7 @@ func pluginQueryParam(p compiler.Parameter) *plugin.Parameter {
 
 func codeGenRequest(r *compiler.Result, settings config.CombinedSettings) *plugin.CodeGenRequest {
 	return &plugin.CodeGenRequest{
-		Settings:    pluginSettings(settings),
+		Settings:    pluginSettings(r, settings),
 		Catalog:     pluginCatalog(r.Catalog),
 		Queries:     pluginQueries(r),
 		SqlcVersion: info.Version,
