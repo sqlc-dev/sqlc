@@ -250,6 +250,7 @@ func outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
 						}
 						cols = append(cols, &Column{
 							Name:       cname,
+							OriginalName: c.Name,
 							Type:       c.Type,
 							Scope:      scope,
 							Table:      c.Table,
@@ -546,7 +547,9 @@ func outputColumnRefs(res *ast.ResTarget, tables []*Table, node *ast.ColumnRef) 
 				if res.Name != nil {
 					cname = *res.Name
 				}
+
 				cols = append(cols, &Column{
+<<<<<<< HEAD
 					Name:       cname,
 					Type:       c.Type,
 					Table:      c.Table,
@@ -557,6 +560,18 @@ func outputColumnRefs(res *ast.ResTarget, tables []*Table, node *ast.ColumnRef) 
 					IsArray:    c.IsArray,
 					Length:     c.Length,
 					EmbedTable: c.EmbedTable,
+=======
+					Name:         cname,
+					OriginalName: c.Name,
+					Type:         c.Type,
+					Table:        c.Table,
+					TableAlias:   alias,
+					DataType:     c.DataType,
+					NotNull:      c.NotNull,
+					IsArray:      c.IsArray,
+					Length:       c.Length,
+					EmbedTable:   c.EmbedTable,
+>>>>>>> main
 				})
 			}
 		}

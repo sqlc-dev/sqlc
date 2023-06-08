@@ -11,3 +11,8 @@ CREATE TABLE person (
 CREATE TABLE organisation (
     legal_name text
 ) INHERITS (party);
+
+CREATE TABLE llc (
+   incorporation_date timestamp,
+   legal_name text NOT NULL
+) INHERITS (organisation); 

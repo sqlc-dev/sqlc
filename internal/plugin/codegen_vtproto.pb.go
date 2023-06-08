@@ -395,6 +395,7 @@ func (m *Column) CloneVT() *Column {
 	}
 	r := &Column{
 		Name:         m.Name,
+		OriginalName: m.OriginalName,
 		NotNull:      m.NotNull,
 		IsArray:      m.IsArray,
 		Comment:      m.Comment,
@@ -1136,7 +1137,11 @@ func (this *Column) EqualVT(that *Column) bool {
 	if !this.EmbedTable.EqualVT(that.EmbedTable) {
 		return false
 	}
+<<<<<<< HEAD
 	if this.Unsigned != that.Unsigned {
+=======
+	if this.OriginalName != that.OriginalName {
+>>>>>>> main
 		return false
 	}
 	return string(this.unknownFields) == string(that.unknownFields)
@@ -2443,6 +2448,7 @@ func (m *Column) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+<<<<<<< HEAD
 	if m.Unsigned {
 		i--
 		if m.Unsigned {
@@ -2452,6 +2458,14 @@ func (m *Column) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		}
 		i--
 		dAtA[i] = 0x78
+=======
+	if len(m.OriginalName) > 0 {
+		i -= len(m.OriginalName)
+		copy(dAtA[i:], m.OriginalName)
+		i = encodeVarint(dAtA, i, uint64(len(m.OriginalName)))
+		i--
+		dAtA[i] = 0x7a
+>>>>>>> main
 	}
 	if m.EmbedTable != nil {
 		size, err := m.EmbedTable.MarshalToSizedBufferVT(dAtA[:i])
@@ -3976,6 +3990,7 @@ func (m *Column) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+<<<<<<< HEAD
 	if m.Unsigned {
 		i--
 		if m.Unsigned {
@@ -3985,6 +4000,14 @@ func (m *Column) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 		}
 		i--
 		dAtA[i] = 0x78
+=======
+	if len(m.OriginalName) > 0 {
+		i -= len(m.OriginalName)
+		copy(dAtA[i:], m.OriginalName)
+		i = encodeVarint(dAtA, i, uint64(len(m.OriginalName)))
+		i--
+		dAtA[i] = 0x7a
+>>>>>>> main
 	}
 	if m.EmbedTable != nil {
 		size, err := m.EmbedTable.MarshalToSizedBufferVTStrict(dAtA[:i])
@@ -4868,8 +4891,14 @@ func (m *Column) SizeVT() (n int) {
 		l = m.EmbedTable.SizeVT()
 		n += 1 + l + sov(uint64(l))
 	}
+<<<<<<< HEAD
 	if m.Unsigned {
 		n += 2
+=======
+	l = len(m.OriginalName)
+	if l > 0 {
+		n += 1 + l + sov(uint64(l))
+>>>>>>> main
 	}
 	n += len(m.unknownFields)
 	return n
@@ -8448,10 +8477,17 @@ func (m *Column) UnmarshalVT(dAtA []byte) error {
 			}
 			iNdEx = postIndex
 		case 15:
+<<<<<<< HEAD
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Unsigned", wireType)
 			}
 			var v int
+=======
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OriginalName", wireType)
+			}
+			var stringLen uint64
+>>>>>>> main
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflow
@@ -8461,12 +8497,32 @@ func (m *Column) UnmarshalVT(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
+<<<<<<< HEAD
 				v |= int(b&0x7F) << shift
+=======
+				stringLen |= uint64(b&0x7F) << shift
+>>>>>>> main
 				if b < 0x80 {
 					break
 				}
 			}
+<<<<<<< HEAD
 			m.Unsigned = bool(v != 0)
+=======
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.OriginalName = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+>>>>>>> main
 		default:
 			iNdEx = preIndex
 			skippy, err := skip(dAtA[iNdEx:])
