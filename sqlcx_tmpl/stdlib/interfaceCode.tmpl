@@ -1,0 +1,63 @@
+{{define "interfaceCodeStd"}}
+    type Querier interface {
+    {{- $dbtxParam := .EmitMethodsWithDBArgument -}}
+    {{- range .GoQueries}}
+        {{- if and (eq .Cmd ":one") ($dbtxParam) }}
+            {{range .Comments}}//{{.}}
+            {{end -}}
+            {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) ({{.Ret.DefineType}}, error)
+        {{- else if eq .Cmd ":one"}}
+            {{range .Comments}}//{{.}}
+            {{end -}}
+            {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.DefineType}}, error)
+        {{- end}}
+        {{- if and (eq .Cmd ":many") ($dbtxParam) }}
+            {{range .Comments}}//{{.}}
+            {{end -}}
+            {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error)
+        {{- else if eq .Cmd ":many"}}
+            {{range .Comments}}//{{.}}
+            {{end -}}
+            {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error)
+        {{- end}}
+        {{- if and (eq .Cmd ":exec") ($dbtxParam) }}
+            {{range .Comments}}//{{.}}
+            {{end -}}
+            {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) error
+        {{- else if eq .Cmd ":exec"}}
+            {{range .Comments}}//{{.}}
+            {{end -}}
+            {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) error
+        {{- end}}
+        {{- if and (eq .Cmd ":execrows") ($dbtxParam) }}
+            {{range .Comments}}//{{.}}
+            {{end -}}
+            {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) (int64, error)
+        {{- else if eq .Cmd ":execrows"}}
+            {{range .Comments}}//{{.}}
+            {{end -}}
+            {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, error)
+        {{- end}}
+        {{- if and (eq .Cmd ":execlastid") ($dbtxParam) }}
+            {{range .Comments}}//{{.}}
+            {{end -}}
+            {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) (int64, error)
+        {{- else if eq .Cmd ":execlastid"}}
+            {{range .Comments}}//{{.}}
+            {{end -}}
+            {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, error)
+        {{- end}}
+        {{- if and (eq .Cmd ":execresult") ($dbtxParam) }}
+            {{range .Comments}}//{{.}}
+            {{end -}}
+            {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) (sql.Result, error)
+        {{- else if eq .Cmd ":execresult"}}
+            {{range .Comments}}//{{.}}
+            {{end -}}
+            {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (sql.Result, error)
+        {{- end}}
+    {{- end}}
+    }
+
+    var _ Querier = (*Queries)(nil)
+{{end}}

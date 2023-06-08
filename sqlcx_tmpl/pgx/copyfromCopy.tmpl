@@ -1,0 +1,51 @@
+{{define "copyfromCodePgx"}}
+{{range .GoQueries}}
+{{if eq .Cmd ":copyfrom" }}
+// iteratorFor{{.MethodName}} implements pgx.CopyFromSource.
+type iteratorFor{{.MethodName}} struct {
+	rows []{{.Arg.DefineType}}
+	skippedFirstNextCall bool
+}
+
+func (r *iteratorFor{{.MethodName}}) Next() bool {
+	if len(r.rows) == 0 {
+		return false
+	}
+	if !r.skippedFirstNextCall {
+		r.skippedFirstNextCall = true
+		return true
+	}
+	r.rows = r.rows[1:]
+	return len(r.rows) > 0
+}
+
+func (r iteratorFor{{.MethodName}}) Values() ([]interface{}, error) {
+	return []interface{}{
+{{- if .Arg.Struct }}
+{{- range .Arg.Struct.Fields }}
+		r.rows[0].{{.Name}},
+{{- end }}
+{{- else }}
+		r.rows[0],
+{{- end }}
+	}, nil
+}
+
+func (r iteratorFor{{.MethodName}}) Err() error {
+	return nil
+}
+
+{{range .Comments}}//{{.}}
+{{end -}}
+{{- if $.EmitMethodsWithDBArgument -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.SlicePair}}) (int64, error) {
+	return db.CopyFrom(ctx, {{.TableIdentifier}}, {{.Arg.ColumnNames}}, &iteratorFor{{.MethodName}}{rows: {{.Arg.Name}}})
+{{- else -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.SlicePair}}) (int64, error) {
+	return q.db.CopyFrom(ctx, {{.TableIdentifier}}, {{.Arg.ColumnNames}}, &iteratorFor{{.MethodName}}{rows: {{.Arg.Name}}})
+{{- end}}
+}
+
+{{end}}
+{{end}}
+{{end}}

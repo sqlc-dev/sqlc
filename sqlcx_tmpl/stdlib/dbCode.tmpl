@@ -1,0 +1,105 @@
+{{define "dbCodeTemplateStd"}}
+type DBTX interface {
+	ExecContext(context.Context, string, ...interface{}) (sql.Result, error)
+	PrepareContext(context.Context, string) (*sql.Stmt, error)
+	QueryContext(context.Context, string, ...interface{}) (*sql.Rows, error)
+	QueryRowContext(context.Context, string, ...interface{}) *sql.Row
+}
+
+{{ if .EmitMethodsWithDBArgument}}
+func New() *Queries {
+	return &Queries{}
+{{- else -}}
+func New(db DBTX) *Queries {
+	return &Queries{db: db}
+{{- end}}
+}
+
+{{if .EmitPreparedQueries}}
+func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
+	q := Queries{db: db}
+	var err error
+	{{- if eq (len .GoQueries) 0 }}
+	_ = err
+	{{- end }}
+	{{- range .GoQueries }}
+	if q.{{.FieldName}}, err = db.PrepareContext(ctx, {{.ConstantName}}); err != nil {
+		return nil, fmt.Errorf("error preparing query {{.MethodName}}: %w", err)
+	}
+	{{- end}}
+	return &q, nil
+}
+
+func (q *Queries) Close() error {
+	var err error
+	{{- range .GoQueries }}
+	if q.{{.FieldName}} != nil {
+		if cerr := q.{{.FieldName}}.Close(); cerr != nil {
+			err = fmt.Errorf("error closing {{.FieldName}}: %w", cerr)
+		}
+	}
+	{{- end}}
+	return err
+}
+
+func (q *Queries) exec(ctx context.Context, stmt *sql.Stmt, query string, args ...interface{}) (sql.Result, error) {
+	switch {
+	case stmt != nil && q.tx != nil:
+		return q.tx.StmtContext(ctx, stmt).ExecContext(ctx, args...)
+	case stmt != nil:
+		return stmt.ExecContext(ctx, args...)
+	default:
+		return q.db.ExecContext(ctx, query, args...)
+	}
+}
+
+func (q *Queries) query(ctx context.Context, stmt *sql.Stmt, query string, args ...interface{}) (*sql.Rows, error) {
+	switch {
+	case stmt != nil && q.tx != nil:
+		return q.tx.StmtContext(ctx, stmt).QueryContext(ctx, args...)
+	case stmt != nil:
+		return stmt.QueryContext(ctx, args...)
+	default:
+		return q.db.QueryContext(ctx, query, args...)
+	}
+}
+
+func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, args ...interface{}) (*sql.Row) {
+	switch {
+	case stmt != nil && q.tx != nil:
+		return q.tx.StmtContext(ctx, stmt).QueryRowContext(ctx, args...)
+	case stmt != nil:
+		return stmt.QueryRowContext(ctx, args...)
+	default:
+		return q.db.QueryRowContext(ctx, query, args...)
+	}
+}
+{{end}}
+
+type Queries struct {
+    {{- if not .EmitMethodsWithDBArgument}}
+	db DBTX
+    {{- end}}
+
+    {{- if .EmitPreparedQueries}}
+	tx         *sql.Tx
+	{{- range .GoQueries}}
+	{{.FieldName}}  *sql.Stmt
+	{{- end}}
+	{{- end}}
+}
+
+{{if not .EmitMethodsWithDBArgument}}
+func (q *Queries) WithTx(tx *sql.Tx) *Queries {
+	return &Queries{
+		db: tx,
+     	{{- if .EmitPreparedQueries}}
+		tx: tx,
+		{{- range .GoQueries}}
+		{{.FieldName}}: q.{{.FieldName}},
+		{{- end}}
+		{{- end}}
+	}
+}
+{{end}}
+{{end}}

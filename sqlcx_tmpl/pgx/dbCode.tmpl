@@ -1,0 +1,37 @@
+{{define "dbCodeTemplatePgx"}}
+
+type DBTX interface {
+	Exec(context.Context, string, ...interface{}) (pgconn.CommandTag, error)
+	Query(context.Context, string, ...interface{}) (pgx.Rows, error)
+	QueryRow(context.Context, string, ...interface{}) pgx.Row
+{{- if .UsesCopyFrom }}
+	CopyFrom(ctx context.Context, tableName pgx.Identifier, columnNames []string, rowSrc pgx.CopyFromSource) (int64, error)
+{{- end }}
+{{- if .UsesBatch }}
+	SendBatch(context.Context, *pgx.Batch) pgx.BatchResults
+{{- end }}
+}
+
+{{ if .EmitMethodsWithDBArgument}}
+func New() *Queries {
+	return &Queries{}
+{{- else -}}
+func New(db DBTX) *Queries {
+	return &Queries{db: db}
+{{- end}}
+}
+
+type Queries struct {
+    {{if not .EmitMethodsWithDBArgument}}
+	db DBTX
+    {{end}}
+}
+
+{{if not .EmitMethodsWithDBArgument}}
+func (q *Queries) WithTx(tx pgx.Tx) *Queries {
+	return &Queries{
+		db: tx,
+	}
+}
+{{end}}
+{{end}}
