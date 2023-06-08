@@ -92,7 +92,7 @@ type SQL struct {
 	Schema               Paths     `json:"schema" yaml:"schema"`
 	Queries              Paths     `json:"queries" yaml:"queries"`
 	StrictFunctionChecks bool      `json:"strict_function_checks" yaml:"strict_function_checks"`
-	ValidateOrderBy      *bool     `json:"validate_order_by" yaml:"validate_order_by"`
+	StrictOrderBy        *bool     `json:"strict_order_by" yaml:"strict_order_by"`
 	Gen                  SQLGen    `json:"gen" yaml:"gen"`
 	Codegen              []Codegen `json:"codegen" yaml:"codegen"`
 }

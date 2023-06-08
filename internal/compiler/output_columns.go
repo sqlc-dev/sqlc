@@ -14,11 +14,11 @@ import (
 
 // OutputColumns determines which columns a statement will output
 func (c *Compiler) OutputColumns(stmt ast.Node) ([]*catalog.Column, error) {
-	qc, err := buildQueryCatalog(c.catalog, stmt, *c.conf.ValidateOrderBy)
+	qc, err := c.buildQueryCatalog(c.catalog, stmt)
 	if err != nil {
 		return nil, err
 	}
-	cols, err := outputColumns(qc, stmt, *c.conf.ValidateOrderBy)
+	cols, err := c.outputColumns(qc, stmt)
 	if err != nil {
 		return nil, err
 	}
@@ -50,8 +50,8 @@ func hasStarRef(cf *ast.ColumnRef) bool {
 //
 // Return an error if column references are ambiguous
 // Return an error if column references don't exist
-func outputColumns(qc *QueryCatalog, node ast.Node, validateOrderBy bool) ([]*Column, error) {
-	tables, err := sourceTables(qc, node, validateOrderBy)
+func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
+	tables, err := c.sourceTables(qc, node)
 	if err != nil {
 		return nil, err
 	}
@@ -72,6 +72,10 @@ func outputColumns(qc *QueryCatalog, node ast.Node, validateOrderBy bool) ([]*Co
 				}
 			}
 		}
+		validateOrderBy := true
+		if c.conf.StrictOrderBy != nil {
+			validateOrderBy = *c.conf.StrictOrderBy
+		}
 		if validateOrderBy {
 			if n.SortClause != nil {
 				for _, item := range n.SortClause.Items {
@@ -79,9 +83,8 @@ func outputColumns(qc *QueryCatalog, node ast.Node, validateOrderBy bool) ([]*Co
 					if !ok {
 						continue
 					}
-
 					if err := findColumnForNode(sb.Node, tables, n); err != nil {
-						return nil, fmt.Errorf("%v: if you want to skip this validation, set 'validate_order_by' to false", err)
+						return nil, fmt.Errorf("%v: if you want to skip this validation, set 'strict_order_by' to false", err)
 					}
 				}
 			}
@@ -96,9 +99,8 @@ func outputColumns(qc *QueryCatalog, node ast.Node, validateOrderBy bool) ([]*Co
 						if !ok {
 							continue
 						}
-
 						if err := findColumnForNode(caseExpr.Xpr, tables, n); err != nil {
-							return nil, fmt.Errorf("%v: if you want to skip this validation, set 'validate_order_by' to false", err)
+							return nil, fmt.Errorf("%v: if you want to skip this validation, set 'strict_order_by' to false", err)
 						}
 					}
 				}
@@ -108,7 +110,7 @@ func outputColumns(qc *QueryCatalog, node ast.Node, validateOrderBy bool) ([]*Co
 		// For UNION queries, targets is empty and we need to look for the
 		// columns in Largs.
 		if len(targets.Items) == 0 && n.Larg != nil {
-			return outputColumns(qc, n.Larg, validateOrderBy)
+			return c.outputColumns(qc, n.Larg)
 		}
 	case *ast.CallStmt:
 		targets = &ast.List{}
@@ -269,7 +271,7 @@ func outputColumns(qc *QueryCatalog, node ast.Node, validateOrderBy bool) ([]*Co
 			case ast.EXISTS_SUBLINK:
 				cols = append(cols, &Column{Name: name, DataType: "bool", NotNull: true})
 			case ast.EXPR_SUBLINK:
-				subcols, err := outputColumns(qc, n.Subselect, validateOrderBy)
+				subcols, err := c.outputColumns(qc, n.Subselect)
 				if err != nil {
 					return nil, err
 				}
@@ -305,7 +307,7 @@ func outputColumns(qc *QueryCatalog, node ast.Node, validateOrderBy bool) ([]*Co
 			cols = append(cols, col)
 
 		case *ast.SelectStmt:
-			subcols, err := outputColumns(qc, n, validateOrderBy)
+			subcols, err := c.outputColumns(qc, n)
 			if err != nil {
 				return nil, err
 			}
@@ -392,7 +394,7 @@ func isTableRequired(n ast.Node, col *Column, prior int) int {
 // Return an error if column references don't exist
 // Return an error if a table is referenced twice
 // Return an error if an unknown column is referenced
-func sourceTables(qc *QueryCatalog, node ast.Node, validateOrderBy bool) ([]*Table, error) {
+func (c *Compiler) sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, error) {
 	var list *ast.List
 	switch n := node.(type) {
 	case *ast.DeleteStmt:
@@ -449,7 +451,7 @@ func sourceTables(qc *QueryCatalog, node ast.Node, validateOrderBy bool) ([]*Tab
 			tables = append(tables, table)
 
 		case *ast.RangeSubselect:
-			cols, err := outputColumns(qc, n.Subquery, validateOrderBy)
+			cols, err := c.outputColumns(qc, n.Subquery)
 			if err != nil {
 				return nil, err
 			}

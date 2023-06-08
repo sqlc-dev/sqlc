@@ -12,7 +12,7 @@ type QueryCatalog struct {
 	ctes    map[string]*Table
 }
 
-func buildQueryCatalog(c *catalog.Catalog, node ast.Node, validateOrderBy bool) (*QueryCatalog, error) {
+func (comp *Compiler) buildQueryCatalog(c *catalog.Catalog, node ast.Node) (*QueryCatalog, error) {
 	var with *ast.WithClause
 	switch n := node.(type) {
 	case *ast.DeleteStmt:
@@ -30,7 +30,7 @@ func buildQueryCatalog(c *catalog.Catalog, node ast.Node, validateOrderBy bool) 
 	if with != nil {
 		for _, item := range with.Ctes.Items {
 			if cte, ok := item.(*ast.CommonTableExpr); ok {
-				cols, err := outputColumns(qc, cte.Ctequery, validateOrderBy)
+				cols, err := comp.outputColumns(qc, cte.Ctequery)
 				if err != nil {
 					return nil, err
 				}

@@ -55,7 +55,7 @@ func (c *Compiler) quoteIdent(ident string) string {
 }
 
 func (c *Compiler) expandStmt(qc *QueryCatalog, raw *ast.RawStmt, node ast.Node) ([]source.Edit, error) {
-	tables, err := sourceTables(qc, node, *c.conf.ValidateOrderBy)
+	tables, err := c.sourceTables(qc, node)
 	if err != nil {
 		return nil, err
 	}
