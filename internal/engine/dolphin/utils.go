@@ -2,6 +2,7 @@ package dolphin
 
 import (
 	pcast "github.com/pingcap/tidb/parser/ast"
+	"github.com/pingcap/tidb/parser/mysql"
 
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 )
@@ -95,4 +96,48 @@ func isNotNull(n *pcast.ColumnDef) bool {
 		}
 	}
 	return false
+}
+
+func convertToRangeVarList(list *ast.List, result *ast.List) {
+	if len(list.Items) == 0 {
+		return
+	}
+	switch rel := list.Items[0].(type) {
+
+	// Special case for joins in updates
+	case *ast.JoinExpr:
+		left, ok := rel.Larg.(*ast.RangeVar)
+		if !ok {
+			if list, check := rel.Larg.(*ast.List); check {
+				convertToRangeVarList(list, result)
+			} else {
+				panic("expected range var")
+			}
+		}
+		if left != nil {
+			result.Items = append(result.Items, left)
+		}
+
+		right, ok := rel.Rarg.(*ast.RangeVar)
+		if !ok {
+			if list, check := rel.Rarg.(*ast.List); check {
+				convertToRangeVarList(list, result)
+			} else {
+				panic("expected range var")
+			}
+		}
+		if right != nil {
+			result.Items = append(result.Items, right)
+		}
+
+	case *ast.RangeVar:
+		result.Items = append(result.Items, rel)
+
+	default:
+		panic("expected range var")
+	}
+}
+
+func isUnsigned(n *pcast.ColumnDef) bool {
+	return mysql.HasUnsignedFlag(n.Tp.GetFlag())
 }

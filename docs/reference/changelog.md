@@ -1,6 +1,365 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.18.0](https://github.com/kyleconroy/sqlc/releases/tag/1.18.0)
+Released 2023-04-27
+
+### Release notes
+
+#### Remote code generation
+
+_Developed by [@andrewmbenton](https://github.com/andrewmbenton)_
+
+At its core, sqlc is powered by SQL engines, which include parsers, formatters,
+analyzers and more. While our goal is to support each engine on each operating
+system, it's not always possible. For example, the PostgreSQL engine does not
+work on Windows.
+
+To bridge that gap, we're announcing remote code generation, currently in
+private alpha. To join the private alpha, [sign up for the waitlist](https://docs.google.com/forms/d/e/1FAIpQLScDWrGtTgZWKt3mdlF5R2XCX6tL1pMkB4yuZx5yq684tTNN1Q/viewform?usp=sf_link).
+
+Remote code generation works like local code generation, except the heavy
+lifting is performed in a consistent cloud environment. WASM-based plugins are
+supported in the remote environment, but process-based plugins are not.
+
+To configure remote generation, add a `cloud` block in `sqlc.json`.
+
+```json
+{
+  "version": "2",
+  "cloud": {
+    "organization": "<org-id>",
+    "project": "<project-id>",
+  },
+  ...
+}
+```
+
+You'll also need to set the `SQLC_AUTH_TOKEN` environment variable.
+
+```bash
+export SQLC_AUTH_TOKEN=<token>
+```
+
+When the `cloud` configuration block exists, `sqlc generate` will default to remote
+code generation. If you'd like to generate code locally without removing the `cloud`
+block from your config, pass the `--no-remote` option.
+
+
+```bash
+sqlc generate --no-remote
+```
+
+Remote generation is off by default and requires an opt-in to use.
+
+#### sqlc.embed
+
+_Developed by [@nickjackson](https://github.com/nickjackson)_
+
+Embedding allows you to reuse existing model structs in more queries, resulting
+in less manual serialization work. First, imagine we have the following schema
+with students and test scores.
+
+
+```sql
+CREATE TABLE students (
+  id   bigserial PRIMARY KEY,
+  name text,
+  age  integer
+)
+
+CREATE TABLE test_scores (
+  student_id bigint,
+  score integer,
+  grade text
+)
+```
+
+We want to select the student record and the highest score they got on a test.
+Here's how we'd usually do that:
+
+```sql
+-- name: HighScore :many
+WITH high_scores AS (
+  SELECT student_id, max(score) as high_score
+  FROM test_scores
+  GROUP BY 1
+)
+SELECT students.*, high_score::integer
+FROM students
+JOIN high_scores ON high_scores.student_id = students.id;
+```
+
+When using Go, sqlc will produce a struct like this:
+
+```
+type HighScoreRow struct {
+	ID        int64
+	Name      sql.NullString
+	Age       sql.NullInt32
+	HighScore int32
+}
+```
+
+With embedding, the struct will contain a model for the table instead of a
+flattened list of columns.
+
+```sql
+-- name: HighScoreEmbed :many
+WITH high_scores AS (
+  SELECT student_id, max(score) as high_score
+  FROM test_scores
+  GROUP BY 1
+)
+SELECT sqlc.embed(students), high_score::integer
+FROM students
+JOIN high_scores ON high_scores.student_id = students.id;
+```
+
+```
+type HighScoreRow struct {
+	Student   Student
+	HighScore int32
+}
+```
+
+#### sqlc.slice
+
+_Developed by Paul Cameron and Jille Timmermans_
+
+The MySQL Go driver does not support passing slices to the IN operator. The
+`sqlc.slice` function generates a dynamic query at runtime with the correct
+number of parameters.
+
+```sql
+/* name: SelectStudents :many */
+SELECT * FROM students 
+WHERE age IN (sqlc.slice("ages"))
+```
+
+```go
+func (q *Queries) SelectStudents(ctx context.Context, ages []int32) ([]Student, error) {
+```
+
+This feature is only supported in MySQL and cannot be used with prepared
+queries.
+
+#### Batch operation improvements  
+
+When using batches with pgx, the error returned when a batch is closed is
+exported by the generated package. This change allows for cleaner error
+handling using `errors.Is`.
+
+```go
+errors.Is(err, generated_package.ErrBatchAlreadyClosed)
+```
+
+Previously, you would have had to check match on the error message itself.
+
+```
+err.Error() == "batch already closed"
+```
+
+The generated code for batch operations always lived in `batch.go`. This file
+name can now be configured via the `output_batch_file_name` configuration
+option.
+
+#### Configurable query parameter limits for Go
+
+By default, sqlc will limit Go functions to a single parameter. If a query
+includes more than one parameter, the generated method will use an argument
+struct instead of positional arguments. This behavior can now be changed via
+the `query_parameter_limit` configuration option.  If set to `0`, every
+genreated method will use a argument struct. 
+
+### Changes
+
+#### Bug Fixes
+
+- Prevent variable redeclaration in single param conflict for pgx (#2058)
+- Retrieve Larg/Rarg join query after inner join (#2051)
+- Rename argument when conflicted to imported package (#2048)
+- Pgx closed batch return pointer if need #1959 (#1960)
+- Correct singularization of "waves" (#2194)
+- Honor Package level renames in v2 yaml config (#2001)
+- (mysql) Prevent UPDATE ... JOIN panic #1590 (#2154)
+- Mysql delete join panic (#2197)
+- Missing import with pointer overrides, solves #2168 #2125 (#2217)
+
+#### Documentation
+
+- (config.md) Add `sqlite` as engine option (#2164)
+- Add first pass at pgx documentation (#2174)
+- Add missed configuration option (#2188)
+- `specifies parameter ":one" without containing a RETURNING clause` (#2173)
+
+#### Features
+
+- Add `sqlc.embed` to allow model re-use (#1615)
+- (Go) Add query_parameter_limit conf to codegen (#1558)
+- Add remote execution for codegen (#2214)
+
+#### Testing
+
+- Skip tests if required plugins are missing (#2104)
+- Add tests for reanme fix in v2 (#2196)
+- Regenerate batch output for filename tests
+- Remove remote test (#2232)
+- Regenerate test output
+
+#### Bin/sqlc
+
+- Add SQLCTMPDIR environment variable (#2189)
+
+#### Build
+
+- (deps) Bump github.com/antlr/antlr4/runtime/Go/antlr (#2109)
+- (deps) Bump github.com/jackc/pgx/v4 from 4.18.0 to 4.18.1 (#2119)
+- (deps) Bump golang from 1.20.1 to 1.20.2 (#2135)
+- (deps) Bump google.golang.org/protobuf from 1.28.1 to 1.29.0 (#2137)
+- (deps) Bump google.golang.org/protobuf from 1.29.0 to 1.29.1 (#2143)
+- (deps) Bump golang from 1.20.2 to 1.20.3 (#2192)
+- (deps) Bump actions/setup-go from 3 to 4 (#2150)
+- (deps) Bump google.golang.org/protobuf from 1.29.1 to 1.30.0 (#2151)
+- (deps) Bump github.com/spf13/cobra from 1.6.1 to 1.7.0 (#2193)
+- (deps) Bump github.com/lib/pq from 1.10.7 to 1.10.8 (#2211)
+- (deps) Bump github.com/lib/pq from 1.10.8 to 1.10.9 (#2229)
+- (deps) Bump github.com/go-sql-driver/mysql from 1.7.0 to 1.7.1 (#2228)
+
+#### Cmd/sqlc
+
+- Remove --experimental flag (#2170)
+- Add option to disable process-based plugins (#2180)
+- Bump version to v1.18.0
+
+#### Codegen
+
+- Correctly generate CopyFrom columns for single-column copyfroms (#2185)
+
+#### Config
+
+- Add top-level cloud configuration (#2204)
+
+#### Engine/postgres
+
+- Upgrade to pg_query_go/v4 (#2114)
+
+#### Ext/wasm
+
+- Check exit code on returned error (#2223)
+
+#### Parser
+
+- Generate correct types for `SELECT NOT EXISTS` (#1972)
+
+#### Sqlite
+
+- Add support for CREATE TABLE ... STRICT (#2175)
+
+#### Wasm
+
+- Upgrade to wasmtime v8.0.0 (#2222)
+
+## [1.17.2](https://github.com/kyleconroy/sqlc/releases/tag/1.17.2)
+Released 2023-02-22
+
+### Bug Fixes
+
+- Fix build on Windows (#2102)
+
+## [1.17.1](https://github.com/kyleconroy/sqlc/releases/tag/1.17.1)
+Released 2023-02-22
+
+### Bug Fixes
+
+- Prefer to use []T over pgype.Array[T] (#2090)
+- Revert changes to Dockerfile (#2091)
+- Do not throw error when IF NOT EXISTS is used on ADD COLUMN (#2092)
+
+### MySQL
+
+- Add `float` support to MySQL (#2097)
+
+### Build
+
+- (deps) Bump golang from 1.20.0 to 1.20.1 (#2082)
+
+## [1.17.0](https://github.com/kyleconroy/sqlc/releases/tag/1.17.0)
+Released 2023-02-13
+
+### Bug Fixes
+
+- Initialize generated code outside function (#1850)
+- (engine/mysql) Take into account column's charset to distinguish text/blob, (var)char/(var)binary (#776) (#1895)
+- The enum Value method returns correct type (#1996)
+- Documentation for Inserting Rows (#2034)
+- Add import statements even if only pointer types exist (#2046)
+- Search from Rexpr if not found from Lexpr (#2056)
+
+### Documentation
+
+- Change ENTRYPOINT to CMD (#1943)
+- Update samples for HOW-TO GUIDES (#1953)
+
+### Features
+
+- Add the diff command (#1963)
+
+### Build
+
+- (deps) Bump github.com/mattn/go-sqlite3 from 1.14.15 to 1.14.16 (#1913)
+- (deps) Bump github.com/spf13/cobra from 1.6.0 to 1.6.1 (#1909)
+- Fix devcontainer (#1942)
+- Run sqlc-pg-gen via GitHub Actions (#1944)
+- Move large arrays out of functions (#1947)
+- Fix conflicts from pointer configuration (#1950)
+- (deps) Bump github.com/go-sql-driver/mysql from 1.6.0 to 1.7.0 (#1988)
+- (deps) Bump github.com/jackc/pgtype from 1.12.0 to 1.13.0 (#1978)
+- (deps) Bump golang from 1.19.3 to 1.19.4 (#1992)
+- (deps) Bump certifi from 2020.12.5 to 2022.12.7 in /docs (#1993)
+- (deps) Bump golang from 1.19.4 to 1.19.5 (#2016)
+- (deps) Bump golang from 1.19.5 to 1.20.0 (#2045)
+- (deps) Bump github.com/jackc/pgtype from 1.13.0 to 1.14.0 (#2062)
+- (deps) Bump github.com/jackc/pgx/v4 from 4.17.2 to 4.18.0 (#2063)
+
+### Cmd
+
+- Generate packages in parallel (#2026)
+
+### Cmd/sqlc
+
+- Bump version to v1.17.0
+
+### Codegen
+
+- Remove built-in Kotlin support (#1935)
+- Remove built-in Python support (#1936)
+
+### Internal/codegen
+
+- Cache pattern matching compilations (#2028)
+
+### Mysql
+
+- Add datatype tests (#1948)
+- Fix blob tests (#1949)
+
+### Plugins
+
+- Upgrade to wasmtime 3.0.1 (#2009)
+
+### Sqlite
+
+- Supported between expr (#1958) (#1967)
+
+### Tools
+
+- Regenerate scripts skips dirs that contains diff exec command (#1987)
+
+### Wasm
+
+- Upgrade to wasmtime 5.0.0 (#2065)
+
 ## [1.16.0](https://github.com/kyleconroy/sqlc/releases/tag/1.16.0)
 Released 2022-11-09
 

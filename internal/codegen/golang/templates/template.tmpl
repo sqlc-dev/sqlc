@@ -16,7 +16,7 @@ import (
 
 {{define "dbCode"}}
 
-{{if eq .SQLPackage "pgx/v4"}}
+{{if .SQLDriver.IsPGX }}
 	{{- template "dbCodeTemplatePgx" .}}
 {{else}}
 	{{- template "dbCodeTemplateStd" .}}
@@ -41,7 +41,7 @@ import (
 {{end}}
 
 {{define "interfaceCode"}}
-	{{if eq .SQLPackage "pgx/v4"}}
+	{{if .SQLDriver.IsPGX }}
 		{{- template "interfaceCodePgx" .}}
 	{{else}}
 		{{- template "interfaceCodeStd" .}}
@@ -107,7 +107,7 @@ func (ns Null{{.Name}}) Value() (driver.Value, error) {
 	if !ns.Valid {
 		return nil, nil
 	}
-	return ns.{{.Name}}, nil
+	return string(ns.{{.Name}}), nil
 }
 
 
@@ -159,7 +159,7 @@ import (
 {{end}}
 
 {{define "queryCode"}}
-{{if eq .SQLPackage "pgx/v4"}}
+{{if .SQLDriver.IsPGX }}
     {{- template "queryCodePgx" .}}
 {{else}}
     {{- template "queryCodeStd" .}}
@@ -184,7 +184,7 @@ import (
 {{end}}
 
 {{define "copyfromCode"}}
-{{if eq .SQLPackage "pgx/v4"}}
+{{if .SQLDriver.IsPGX }}
     {{- template "copyfromCodePgx" .}}
 {{end}}
 {{end}}
@@ -206,7 +206,7 @@ import (
 {{end}}
 
 {{define "batchCode"}}
-{{if eq .SQLPackage "pgx/v4"}}
+{{if .SQLDriver.IsPGX }}
     {{- template "batchCodePgx" .}}
 {{end}}
 {{end}}

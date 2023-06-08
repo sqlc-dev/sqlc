@@ -13,14 +13,20 @@ import (
 //     trace: setting trace=<path> will output a trace
 
 type Debug struct {
-	DumpAST     bool
-	DumpCatalog bool
-	Trace       string
+	DumpAST        bool
+	DumpCatalog    bool
+	Trace          string
+	ProcessPlugins bool
 }
 
 func DebugFromEnv() Debug {
-	d := Debug{}
-	val := os.Getenv("SQLCDEBUG")
+	return DebugFromString(os.Getenv("SQLCDEBUG"))
+}
+
+func DebugFromString(val string) Debug {
+	d := Debug{
+		ProcessPlugins: true,
+	}
 	if val == "" {
 		return d
 	}
@@ -38,6 +44,8 @@ func DebugFromEnv() Debug {
 			} else {
 				d.Trace = traceName
 			}
+		case pair == "processplugins=0":
+			d.ProcessPlugins = false
 		}
 	}
 	return d

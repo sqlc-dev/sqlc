@@ -160,6 +160,7 @@ ROWS_:              R O W S;
 SAVEPOINT_:         S A V E P O I N T;
 SELECT_:            S E L E C T;
 SET_:               S E T;
+STRICT_:            S T R I C T;
 TABLE_:             T A B L E;
 TEMP_:              T E M P;
 TEMPORARY_:         T E M P O R A R Y;
@@ -223,7 +224,9 @@ IDENTIFIER:
 
 NUMERIC_LITERAL: ((DIGIT+ ('.' DIGIT*)?) | ('.' DIGIT+)) (E [-+]? DIGIT+)? | '0x' HEX_DIGIT+;
 
-BIND_PARAMETER: '?' DIGIT* | [:@$] IDENTIFIER;
+NUMBERED_BIND_PARAMETER: '?' DIGIT*;
+
+NAMED_BIND_PARAMETER: [:@$] IDENTIFIER;
 
 STRING_LITERAL: '\'' ( ~'\'' | '\'\'')* '\'';
 

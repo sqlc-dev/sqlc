@@ -14,7 +14,7 @@ import (
 
 // OutputColumns determines which columns a statement will output
 func (c *Compiler) OutputColumns(stmt ast.Node) ([]*catalog.Column, error) {
-	qc, err := c.buildQueryCatalog(c.catalog, stmt)
+	qc, err := c.buildQueryCatalog(c.catalog, stmt, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -26,12 +26,13 @@ func (c *Compiler) OutputColumns(stmt ast.Node) ([]*catalog.Column, error) {
 	catCols := make([]*catalog.Column, 0, len(cols))
 	for _, col := range cols {
 		catCols = append(catCols, &catalog.Column{
-			Name:      col.Name,
-			Type:      ast.TypeName{Name: col.DataType},
-			IsNotNull: col.NotNull,
-			IsArray:   col.IsArray,
-			Comment:   col.Comment,
-			Length:    col.Length,
+			Name:       col.Name,
+			Type:       ast.TypeName{Name: col.DataType},
+			IsNotNull:  col.NotNull,
+			IsUnsigned: col.Unsigned,
+			IsArray:    col.IsArray,
+			Comment:    col.Comment,
+			Length:     col.Length,
 		})
 	}
 	return catCols, nil
@@ -131,6 +132,24 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 		}
 		switch n := res.Val.(type) {
 
+		case *ast.A_Const:
+			name := ""
+			if res.Name != nil {
+				name = *res.Name
+			}
+			switch n.Val.(type) {
+			case *ast.String:
+				cols = append(cols, &Column{Name: name, DataType: "text", NotNull: true})
+			case *ast.Integer:
+				cols = append(cols, &Column{Name: name, DataType: "int", NotNull: true})
+			case *ast.Float:
+				cols = append(cols, &Column{Name: name, DataType: "float", NotNull: true})
+			case *ast.Boolean:
+				cols = append(cols, &Column{Name: name, DataType: "bool", NotNull: true})
+			default:
+				cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
+			}
+
 		case *ast.A_Expr:
 			name := ""
 			if res.Name != nil {
@@ -146,12 +165,29 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 				cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
 			}
 
+		case *ast.BoolExpr:
+			name := ""
+			if res.Name != nil {
+				name = *res.Name
+			}
+			notNull := false
+			if n.Boolop == ast.BoolExprTypeNot && len(n.Args.Items) == 1 {
+				sublink, ok := n.Args.Items[0].(*ast.SubLink)
+				if ok && sublink.SubLinkType == ast.EXISTS_SUBLINK {
+					notNull = true
+					if name == "" {
+						name = "not_exists"
+					}
+				}
+			}
+			cols = append(cols, &Column{Name: name, DataType: "bool", NotNull: notNull})
+
 		case *ast.CaseExpr:
 			name := ""
 			if res.Name != nil {
 				name = *res.Name
 			}
-			// TODO: The TypeCase code has been copied from below. Instead, we
+			// TODO: The TypeCase and A_Const code has been copied from below. Instead, we
 			// need a recurse function to get the type of a node.
 			if tc, ok := n.Defresult.(*ast.TypeCast); ok {
 				if tc.TypeName == nil {
@@ -168,6 +204,19 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 				col := toColumn(tc.TypeName)
 				col.Name = name
 				cols = append(cols, col)
+			} else if aconst, ok := n.Defresult.(*ast.A_Const); ok {
+				switch aconst.Val.(type) {
+				case *ast.String:
+					cols = append(cols, &Column{Name: name, DataType: "text", NotNull: true})
+				case *ast.Integer:
+					cols = append(cols, &Column{Name: name, DataType: "int", NotNull: true})
+				case *ast.Float:
+					cols = append(cols, &Column{Name: name, DataType: "float", NotNull: true})
+				case *ast.Boolean:
+					cols = append(cols, &Column{Name: name, DataType: "bool", NotNull: true})
+				default:
+					cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
+				}
 			} else {
 				cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
 			}
@@ -207,6 +256,16 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 
 		case *ast.ColumnRef:
 			if hasStarRef(n) {
+
+				// add a column with a reference to an embedded table
+				if embed, ok := qc.embeds.Find(n); ok {
+					cols = append(cols, &Column{
+						Name:       embed.Table.Name,
+						EmbedTable: embed.Table,
+					})
+					continue
+				}
+
 				// TODO: This code is copied in func expand()
 				for _, t := range tables {
 					scope := astutils.Join(n.Fields, ".")
@@ -219,15 +278,17 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 							cname = *res.Name
 						}
 						cols = append(cols, &Column{
-							Name:       cname,
-							Type:       c.Type,
-							Scope:      scope,
-							Table:      c.Table,
-							TableAlias: t.Rel.Name,
-							DataType:   c.DataType,
-							NotNull:    c.NotNull,
-							IsArray:    c.IsArray,
-							Length:     c.Length,
+							Name:         cname,
+							OriginalName: c.Name,
+							Type:         c.Type,
+							Scope:        scope,
+							Table:        c.Table,
+							TableAlias:   t.Rel.Name,
+							DataType:     c.DataType,
+							NotNull:      c.NotNull,
+							Unsigned:     c.Unsigned,
+							IsArray:      c.IsArray,
+							Length:       c.Length,
 						})
 					}
 				}
@@ -376,6 +437,8 @@ func isTableRequired(n ast.Node, col *Column, prior int) int {
 			return helper(tableOptional, tableRequired)
 		case ast.JoinTypeFull:
 			return helper(tableOptional, tableOptional)
+		case ast.JoinTypeInner:
+			return helper(tableRequired, tableRequired)
 		}
 	case *ast.List:
 		for _, item := range n.Items {
@@ -398,9 +461,7 @@ func (c *Compiler) sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, erro
 	var list *ast.List
 	switch n := node.(type) {
 	case *ast.DeleteStmt:
-		list = &ast.List{
-			Items: []ast.Node{n.Relation},
-		}
+		list = n.Relations
 	case *ast.InsertStmt:
 		list = &ast.List{
 			Items: []ast.Node{n.Relation},
@@ -515,15 +576,19 @@ func outputColumnRefs(res *ast.ResTarget, tables []*Table, node *ast.ColumnRef) 
 				if res.Name != nil {
 					cname = *res.Name
 				}
+
 				cols = append(cols, &Column{
-					Name:       cname,
-					Type:       c.Type,
-					Table:      c.Table,
-					TableAlias: alias,
-					DataType:   c.DataType,
-					NotNull:    c.NotNull,
-					IsArray:    c.IsArray,
-					Length:     c.Length,
+					Name:         cname,
+					Type:         c.Type,
+					Table:        c.Table,
+					TableAlias:   alias,
+					DataType:     c.DataType,
+					NotNull:      c.NotNull,
+					Unsigned:     c.Unsigned,
+					IsArray:      c.IsArray,
+					Length:       c.Length,
+					EmbedTable:   c.EmbedTable,
+					OriginalName: c.Name,
 				})
 			}
 		}

@@ -24,8 +24,12 @@ type Override struct {
 	// for global overrides only when two different engines are in use
 	Engine Engine `json:"engine,omitempty" yaml:"engine"`
 
-	// True if the GoType should override if the maching postgres type is nullable
+	// True if the GoType should override if the matching type is nullable
 	Nullable bool `json:"nullable" yaml:"nullable"`
+
+	// True if the GoType should override if the matching type is unsiged.
+	Unsigned bool `json:"unsigned" yaml:"unsigned"`
+
 	// Deprecated. Use the `nullable` property instead
 	Deprecated_Null bool `json:"null" yaml:"null"`
 

@@ -3,8 +3,7 @@
 ## Arrays
 
 PostgreSQL [arrays](https://www.postgresql.org/docs/current/arrays.html) are
-materialized as Go slices. Currently, only one-dimensional arrays are
-supported.
+materialized as Go slices. Currently, the `pgx/v5` sql package only supports multidimensional arrays.
 
 ```sql
 CREATE TABLE places (
@@ -26,6 +25,7 @@ type Place struct {
 
 All PostgreSQL time and date types are returned as `time.Time` structs. For
 null time or date values, the `NullTime` type from `database/sql` is used.
+The `pgx/v5` sql package uses the appropriate pgx types.
 
 ```sql
 CREATE TABLE authors (
@@ -86,7 +86,7 @@ type Store struct {
 ## Null
 
 For structs, null values are represented using the appropriate type from the
-`database/sql` package. 
+`database/sql` or `pgx` package. 
 
 ```sql
 CREATE TABLE authors (
@@ -130,5 +130,66 @@ import (
 
 type Author struct {
 	ID uuid.UUID
+}
+```
+
+For MySQL, there is no native `uuid` data type. When using `UUID_TO_BIN` to store a `UUID()`, the underlying field type is `BINARY(16)` which by default sqlc would interpret this to `sql.NullString`. To have sqlc automatically convert these fields to a `uuid.UUID` type, use an overide on the column storing the `uuid`.
+```json
+{
+  "overrides": [
+    {
+      "column": "*.uuid",
+      "go_type": "github.com/google/uuid.UUID"
+    }
+  ]
+}
+```
+
+## JSON
+
+By default, sqlc will generate the `[]byte`, `pgtype.JSON` or `json.RawMessage` for JSON column type.
+But if you use the `pgx/v5` sql package then you can specify a some struct instead of default type.
+The `pgx` implementation will marshall/unmarshall the struct automatically.
+
+```go
+package dto
+
+type BookData struct {
+	Genres    []string `json:"genres"`
+	Title     string   `json:"title"`
+	Published bool     `json:"published"`
+}
+```
+
+```sql
+CREATE TABLE books (
+  data jsonb
+);
+```
+
+```json
+{
+  "overrides": [
+    {
+      "column": "books.data",
+      "go_type": {
+        "import":"example/db",
+        "package": "dto",
+        "type":"BookData"
+      }
+    }
+  ]
+}
+```
+
+```go
+package db
+
+import (
+	"example.com/db/dto"
+)
+
+type Book struct {
+    Data *dto.BookData
 }
 ```

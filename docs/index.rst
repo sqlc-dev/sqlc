@@ -74,6 +74,7 @@ code ever again.
    :caption: Conceptual Guides
    :hidden:
 
+   guides/using-go-and-pgx.rst
    guides/development.md
    guides/plugins.md
    guides/privacy.md

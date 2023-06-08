@@ -19,7 +19,7 @@ import (
 )
 
 type DBTX interface {
-	ExecContext(context.Context, string, ...interface{}) error
+	ExecContext(context.Context, string, ...interface{}) (sql.Result, error)
 }
 
 func New(db DBTX) *Queries {
@@ -45,24 +45,28 @@ func (q *Queries) CreateAuthor(ctx context.Context, bio string) error {
 sqlc has full support for the `RETURNING` statement.
 
 ```sql
+-- Example queries for sqlc
 CREATE TABLE authors (
-  id         SERIAL PRIMARY KEY,
-  bio        text   NOT NULL
+  id   BIGSERIAL PRIMARY KEY,
+  name text      NOT NULL,
+  bio  text
 );
 
--- name: Delete :exec
-DELETE FROM authors WHERE id = $1;
-
--- name: DeleteAffected :execrows
-DELETE FROM authors WHERE id = $1;
-
--- name: DeleteID :one
-DELETE FROM authors WHERE id = $1
-RETURNING id;
-
--- name: DeleteAuthor :one
-DELETE FROM authors WHERE id = $1
+-- name: CreateAuthor :one
+INSERT INTO authors (
+  name, bio
+) VALUES (
+  $1, $2
+)
 RETURNING *;
+
+-- name: CreateAuthorAndReturnId :one
+INSERT INTO authors (
+  name, bio
+) VALUES (
+  $1, $2
+)
+RETURNING id;
 ```
 
 ```go
@@ -73,67 +77,46 @@ import (
 	"database/sql"
 )
 
-type Author struct {
-	ID  int
-	Bio string
-}
-
-type DBTX interface {
-	ExecContext(context.Context, string, ...interface{}) error
-	QueryRowContext(context.Context, string, ...interface{}) error
-}
-
-func New(db DBTX) *Queries {
-	return &Queries{db: db}
-}
-
-type Queries struct {
-	db DBTX
-}
-
-const delete = `-- name: Delete :exec
-DELETE FROM authors WHERE id = $1
+const createAuthor = `-- name: CreateAuthor :one
+INSERT INTO authors (
+  name, bio
+) VALUES (
+  $1, $2
+)
+RETURNING id, name, bio
 `
 
-func (q *Queries) Delete(ctx context.Context, id int) error {
-	_, err := q.db.ExecContext(ctx, delete, id)
-	return err
+type CreateAuthorParams struct {
+	Name string
+	Bio  sql.NullString
 }
 
-const deleteAffected = `-- name: DeleteAffected :execrows
-DELETE FROM authors WHERE id = $1
-`
-
-func (q *Queries) DeleteAffected(ctx context.Context, id int) (int64, error) {
-	result, err := q.db.ExecContext(ctx, deleteAffected, id)
-	if err != nil {
-		return 0, err
-	}
-	return result.RowsAffected()
+func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams) (Author, error) {
+	row := q.db.QueryRowContext(ctx, createAuthor, arg.Name, arg.Bio)
+	var i Author
+	err := row.Scan(&i.ID, &i.Name, &i.Bio)
+	return i, err
 }
 
-const deleteID = `-- name: DeleteID :one
-DELETE FROM authors WHERE id = $1
+const createAuthorAndReturnId = `-- name: CreateAuthorAndReturnId :one
+INSERT INTO authors (
+  name, bio
+) VALUES (
+  $1, $2
+)
 RETURNING id
 `
 
-func (q *Queries) DeleteID(ctx context.Context, id int) (int, error) {
-	row := q.db.QueryRowContext(ctx, deleteID, id)
-	var i int
-	err := row.Scan(&i)
-	return i, err
+type CreateAuthorAndReturnIdParams struct {
+	Name string
+	Bio  sql.NullString
 }
 
-const deleteAuthor = `-- name: DeleteAuthor :one
-DELETE FROM authors WHERE id = $1
-RETURNING id, bio
-`
-
-func (q *Queries) DeleteAuthor(ctx context.Context, id int) (Author, error) {
-	row := q.db.QueryRowContext(ctx, deleteAuthor, id)
-	var i Author
-	err := row.Scan(&i.ID, &i.Bio)
-	return i, err
+func (q *Queries) CreateAuthorAndReturnId(ctx context.Context, arg CreateAuthorAndReturnIdParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, createAuthorAndReturnId, arg.Name, arg.Bio)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
 }
 ```
 

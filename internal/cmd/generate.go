@@ -8,8 +8,12 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 	"runtime/trace"
-	"strings"
+	"sync"
+
+	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc/status"
 
 	"github.com/kyleconroy/sqlc/internal/codegen/golang"
 	"github.com/kyleconroy/sqlc/internal/codegen/json"
@@ -20,9 +24,12 @@ import (
 	"github.com/kyleconroy/sqlc/internal/ext"
 	"github.com/kyleconroy/sqlc/internal/ext/process"
 	"github.com/kyleconroy/sqlc/internal/ext/wasm"
+	"github.com/kyleconroy/sqlc/internal/info"
 	"github.com/kyleconroy/sqlc/internal/multierr"
 	"github.com/kyleconroy/sqlc/internal/opts"
 	"github.com/kyleconroy/sqlc/internal/plugin"
+	"github.com/kyleconroy/sqlc/internal/remote"
+	"github.com/kyleconroy/sqlc/internal/sql/sqlpath"
 )
 
 const errMessageNoVersion = `The configuration file must have a version number.
@@ -41,7 +48,10 @@ The supported version can only be "1" or "2".
 const errMessageNoPackages = `No packages are configured`
 
 func printFileErr(stderr io.Writer, dir string, fileErr *multierr.FileError) {
-	filename := strings.TrimPrefix(fileErr.Filename, dir+"/")
+	filename, err := filepath.Rel(dir, fileErr.Filename)
+	if err != nil {
+		filename = fileErr.Filename
+	}
 	fmt.Fprintf(stderr, "%s:%d:%d: %s\n", filename, fileErr.Line, fileErr.Column, fileErr.Err)
 }
 
@@ -94,13 +104,14 @@ func readConfig(stderr io.Writer, dir, filename string) (string, *config.Config,
 	}
 
 	base := filepath.Base(configPath)
-	blob, err := os.ReadFile(configPath)
+	file, err := os.Open(configPath)
 	if err != nil {
 		fmt.Fprintf(stderr, "error parsing %s: file does not exist\n", base)
 		return "", nil, err
 	}
+	defer file.Close()
 
-	conf, err := config.ParseConfig(bytes.NewReader(blob))
+	conf, err := config.ParseConfig(file)
 	if err != nil {
 		switch err {
 		case config.ErrMissingVersion:
@@ -129,6 +140,15 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 		return nil, err
 	}
 
+	if err := e.Validate(conf); err != nil {
+		fmt.Fprintf(stderr, "error validating %s: %s\n", base, err)
+		return nil, err
+	}
+
+	if conf.Cloud.Project != "" && !e.NoRemote {
+		return remoteGenerate(ctx, configPath, conf, dir, stderr)
+	}
+
 	output := map[string]string{}
 	errored := false
 
@@ -154,89 +174,164 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 		}
 	}
 
-	for _, sql := range pairs {
-		combo := config.Combine(*conf, sql.SQL)
-		if sql.Plugin != nil {
-			combo.Codegen = *sql.Plugin
-		}
+	var m sync.Mutex
+	grp, gctx := errgroup.WithContext(ctx)
+	grp.SetLimit(runtime.GOMAXPROCS(0))
 
-		// TODO: This feels like a hack that will bite us later
-		joined := make([]string, 0, len(sql.Schema))
-		for _, s := range sql.Schema {
-			joined = append(joined, filepath.Join(dir, s))
-		}
-		sql.Schema = joined
+	stderrs := make([]bytes.Buffer, len(pairs))
 
-		joined = make([]string, 0, len(sql.Queries))
-		for _, q := range sql.Queries {
-			joined = append(joined, filepath.Join(dir, q))
-		}
-		sql.Queries = joined
+	for i, pair := range pairs {
+		sql := pair
+		errout := &stderrs[i]
 
-		var name, lang string
-		parseOpts := opts.Parser{
-			Debug: debug.Debug,
-		}
-
-		switch {
-		case sql.Gen.Go != nil:
-			name = combo.Go.Package
-			lang = "golang"
-
-		case sql.Plugin != nil:
-			lang = fmt.Sprintf("process:%s", sql.Plugin.Plugin)
-			name = sql.Plugin.Plugin
-		}
-
-		var packageRegion *trace.Region
-		if debug.Traced {
-			packageRegion = trace.StartRegion(ctx, "package")
-			trace.Logf(ctx, "", "name=%s dir=%s plugin=%s", name, dir, lang)
-		}
-
-		result, failed := parse(ctx, e, name, dir, sql.SQL, combo, parseOpts, stderr)
-		if failed {
-			if packageRegion != nil {
-				packageRegion.End()
+		grp.Go(func() error {
+			combo := config.Combine(*conf, sql.SQL)
+			if sql.Plugin != nil {
+				combo.Codegen = *sql.Plugin
 			}
-			errored = true
-			break
-		}
 
-		out, resp, err := codegen(ctx, combo, sql, result)
-		if err != nil {
-			fmt.Fprintf(stderr, "# package %s\n", name)
-			fmt.Fprintf(stderr, "error generating code: %s\n", err)
-			errored = true
-			if packageRegion != nil {
-				packageRegion.End()
+			// TODO: This feels like a hack that will bite us later
+			joined := make([]string, 0, len(sql.Schema))
+			for _, s := range sql.Schema {
+				joined = append(joined, filepath.Join(dir, s))
 			}
-			continue
-		}
+			sql.Schema = joined
 
-		files := map[string]string{}
-		for _, file := range resp.Files {
-			files[file.Name] = string(file.Contents)
-		}
-		for n, source := range files {
-			filename := filepath.Join(dir, out, n)
-			output[filename] = source
-		}
-		if packageRegion != nil {
+			joined = make([]string, 0, len(sql.Queries))
+			for _, q := range sql.Queries {
+				joined = append(joined, filepath.Join(dir, q))
+			}
+			sql.Queries = joined
+
+			var name, lang string
+			parseOpts := opts.Parser{
+				Debug: debug.Debug,
+			}
+
+			switch {
+			case sql.Gen.Go != nil:
+				name = combo.Go.Package
+				lang = "golang"
+
+			case sql.Plugin != nil:
+				lang = fmt.Sprintf("process:%s", sql.Plugin.Plugin)
+				name = sql.Plugin.Plugin
+			}
+
+			packageRegion := trace.StartRegion(gctx, "package")
+			trace.Logf(gctx, "", "name=%s dir=%s plugin=%s", name, dir, lang)
+
+			result, failed := parse(gctx, name, dir, sql.SQL, combo, parseOpts, errout)
+			if failed {
+				packageRegion.End()
+				errored = true
+				return nil
+			}
+
+			out, resp, err := codegen(gctx, combo, sql, result)
+			if err != nil {
+				fmt.Fprintf(errout, "# package %s\n", name)
+				fmt.Fprintf(errout, "error generating code: %s\n", err)
+				errored = true
+				packageRegion.End()
+				return nil
+			}
+
+			files := map[string]string{}
+			for _, file := range resp.Files {
+				files[file.Name] = string(file.Contents)
+			}
+
+			m.Lock()
+			for n, source := range files {
+				filename := filepath.Join(dir, out, n)
+				output[filename] = source
+			}
+			m.Unlock()
+
 			packageRegion.End()
-		}
+			return nil
+		})
 	}
-
+	if err := grp.Wait(); err != nil {
+		return nil, err
+	}
 	if errored {
+		for i, _ := range stderrs {
+			if _, err := io.Copy(stderr, &stderrs[i]); err != nil {
+				return nil, err
+			}
+		}
 		return nil, fmt.Errorf("errored")
 	}
 	return output, nil
 }
 
-func parse(ctx context.Context, e Env, name, dir string, sql config.SQL, combo config.CombinedSettings, parserOpts opts.Parser, stderr io.Writer) (*compiler.Result, bool) {
-	if debug.Traced {
-		defer trace.StartRegion(ctx, "parse").End()
+func remoteGenerate(ctx context.Context, configPath string, conf *config.Config, dir string, stderr io.Writer) (map[string]string, error) {
+	rpcClient, err := remote.NewClient(conf.Cloud)
+	if err != nil {
+		fmt.Fprintf(stderr, "error creating rpc client: %s\n", err)
+		return nil, err
 	}
+
+	configBytes, err := os.ReadFile(configPath)
+	if err != nil {
+		fmt.Fprintf(stderr, "error reading config file %s: %s\n", configPath, err)
+		return nil, err
+	}
+
+	rpcReq := remote.GenerateRequest{
+		Version: info.Version,
+		Inputs:  []*remote.File{{Path: filepath.Base(configPath), Bytes: configBytes}},
+	}
+
+	for _, pkg := range conf.SQL {
+		for _, paths := range []config.Paths{pkg.Schema, pkg.Queries} {
+			for i, relFilePath := range paths {
+				paths[i] = filepath.Join(dir, relFilePath)
+			}
+			files, err := sqlpath.Glob(paths)
+			if err != nil {
+				fmt.Fprintf(stderr, "error globbing paths: %s\n", err)
+				return nil, err
+			}
+			for _, filePath := range files {
+				fileBytes, err := os.ReadFile(filePath)
+				if err != nil {
+					fmt.Fprintf(stderr, "error reading file %s: %s\n", filePath, err)
+					return nil, err
+				}
+				fileRelPath, _ := filepath.Rel(dir, filePath)
+				rpcReq.Inputs = append(rpcReq.Inputs, &remote.File{Path: fileRelPath, Bytes: fileBytes})
+			}
+		}
+	}
+
+	rpcResp, err := rpcClient.Generate(ctx, &rpcReq)
+	if err != nil {
+		rpcStatus, ok := status.FromError(err)
+		if !ok {
+			return nil, err
+		}
+		fmt.Fprintf(stderr, "rpc error: %s", rpcStatus.Message())
+		return nil, rpcStatus.Err()
+	}
+
+	if rpcResp.ExitCode != 0 {
+		fmt.Fprintf(stderr, "%s", rpcResp.Stderr)
+		return nil, errors.New("remote execution returned with non-zero exit code")
+	}
+
+	output := map[string]string{}
+	for _, file := range rpcResp.Outputs {
+		output[filepath.Join(dir, file.Path)] = string(file.Bytes)
+	}
+
+	return output, nil
+}
+
+func parse(ctx context.Context, name, dir string, sql config.SQL, combo config.CombinedSettings, parserOpts opts.Parser, stderr io.Writer) (*compiler.Result, bool) {
+	defer trace.StartRegion(ctx, "parse").End()
 	c := compiler.NewCompiler(sql, combo)
 	if err := c.ParseCatalog(sql.Schema); err != nil {
 		fmt.Fprintf(stderr, "# package %s\n", name)
@@ -267,10 +362,7 @@ func parse(ctx context.Context, e Env, name, dir string, sql config.SQL, combo c
 }
 
 func codegen(ctx context.Context, combo config.CombinedSettings, sql outPair, result *compiler.Result) (string, *plugin.CodeGenResponse, error) {
-	var region *trace.Region
-	if debug.Traced {
-		region = trace.StartRegion(ctx, "codegen")
-	}
+	defer trace.StartRegion(ctx, "codegen").End()
 	req := codeGenRequest(result, combo)
 	var handler ext.Handler
 	var out string
@@ -314,8 +406,5 @@ func codegen(ctx context.Context, combo config.CombinedSettings, sql outPair, re
 		return "", nil, fmt.Errorf("missing language backend")
 	}
 	resp, err := handler.Generate(ctx, req)
-	if region != nil {
-		region.End()
-	}
 	return out, resp, err
 }

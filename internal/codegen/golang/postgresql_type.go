@@ -36,8 +36,8 @@ func parseIdentifierString(name string) (*plugin.Identifier, error) {
 func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 	columnType := sdk.DataType(col.Type)
 	notNull := col.NotNull || col.IsArray
-	driver := parseDriver(req.Settings)
-	emitPointersForNull := driver == SQLDriverPGXV4 && req.Settings.Go.EmitPointersForNullTypes
+	driver := parseDriver(req.Settings.Go.SqlPackage)
+	emitPointersForNull := driver.IsPGX() && req.Settings.Go.EmitPointersForNullTypes
 
 	switch columnType {
 	case "serial", "serial4", "pg_catalog.serial4":
@@ -46,6 +46,9 @@ func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		}
 		if emitPointersForNull {
 			return "*int32"
+		}
+		if driver == SQLDriverPGXV5 {
+			return "pgtype.Int4"
 		}
 		return "sql.NullInt32"
 
@@ -56,6 +59,9 @@ func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		if emitPointersForNull {
 			return "*int64"
 		}
+		if driver == SQLDriverPGXV5 {
+			return "pgtype.Int8"
+		}
 		return "sql.NullInt64"
 
 	case "smallserial", "serial2", "pg_catalog.serial2":
@@ -64,6 +70,9 @@ func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		}
 		if emitPointersForNull {
 			return "*int16"
+		}
+		if driver == SQLDriverPGXV5 {
+			return "pgtype.Int2"
 		}
 		return "sql.NullInt16"
 
@@ -74,6 +83,9 @@ func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		if emitPointersForNull {
 			return "*int32"
 		}
+		if driver == SQLDriverPGXV5 {
+			return "pgtype.Int4"
+		}
 		return "sql.NullInt32"
 
 	case "bigint", "int8", "pg_catalog.int8":
@@ -82,6 +94,9 @@ func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		}
 		if emitPointersForNull {
 			return "*int64"
+		}
+		if driver == SQLDriverPGXV5 {
+			return "pgtype.Int8"
 		}
 		return "sql.NullInt64"
 
@@ -92,6 +107,9 @@ func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		if emitPointersForNull {
 			return "*int16"
 		}
+		if driver == SQLDriverPGXV5 {
+			return "pgtype.Int2"
+		}
 		return "sql.NullInt16"
 
 	case "float", "double precision", "float8", "pg_catalog.float8":
@@ -100,6 +118,9 @@ func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		}
 		if emitPointersForNull {
 			return "*float64"
+		}
+		if driver == SQLDriverPGXV5 {
+			return "pgtype.Float8"
 		}
 		return "sql.NullFloat64"
 
@@ -110,10 +131,13 @@ func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		if emitPointersForNull {
 			return "*float32"
 		}
+		if driver == SQLDriverPGXV5 {
+			return "pgtype.Float4"
+		}
 		return "sql.NullFloat64" // TODO: Change to sql.NullFloat32 after updating the go.mod file
 
 	case "numeric", "pg_catalog.numeric", "money":
-		if driver == SQLDriverPGXV4 {
+		if driver.IsPGX() {
 			return "pgtype.Numeric"
 		}
 		// Since the Go standard library does not have a decimal type, lib/pq
@@ -135,10 +159,15 @@ func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		if emitPointersForNull {
 			return "*bool"
 		}
+		if driver == SQLDriverPGXV5 {
+			return "pgtype.Bool"
+		}
 		return "sql.NullBool"
 
 	case "json":
 		switch driver {
+		case SQLDriverPGXV5:
+			return "[]byte"
 		case SQLDriverPGXV4:
 			return "pgtype.JSON"
 		case SQLDriverLibPQ:
@@ -153,6 +182,8 @@ func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 
 	case "jsonb":
 		switch driver {
+		case SQLDriverPGXV5:
+			return "[]byte"
 		case SQLDriverPGXV4:
 			return "pgtype.JSONB"
 		case SQLDriverLibPQ:
@@ -169,6 +200,9 @@ func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		return "[]byte"
 
 	case "date":
+		if driver == SQLDriverPGXV5 {
+			return "pgtype.Date"
+		}
 		if notNull {
 			return "time.Time"
 		}
@@ -177,7 +211,10 @@ func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		}
 		return "sql.NullTime"
 
-	case "pg_catalog.time", "pg_catalog.timetz":
+	case "pg_catalog.time":
+		if driver == SQLDriverPGXV5 {
+			return "pgtype.Time"
+		}
 		if notNull {
 			return "time.Time"
 		}
@@ -186,7 +223,7 @@ func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		}
 		return "sql.NullTime"
 
-	case "pg_catalog.timestamp", "pg_catalog.timestamptz", "timestamptz":
+	case "pg_catalog.timetz":
 		if notNull {
 			return "time.Time"
 		}
@@ -195,16 +232,46 @@ func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		}
 		return "sql.NullTime"
 
-	case "text", "pg_catalog.varchar", "pg_catalog.bpchar", "string":
+	case "pg_catalog.timestamp":
+		if driver == SQLDriverPGXV5 {
+			return "pgtype.Timestamp"
+		}
+		if notNull {
+			return "time.Time"
+		}
+		if emitPointersForNull {
+			return "*time.Time"
+		}
+		return "sql.NullTime"
+
+	case "pg_catalog.timestamptz", "timestamptz":
+		if driver == SQLDriverPGXV5 {
+			return "pgtype.Timestamptz"
+		}
+		if notNull {
+			return "time.Time"
+		}
+		if emitPointersForNull {
+			return "*time.Time"
+		}
+		return "sql.NullTime"
+
+	case "text", "pg_catalog.varchar", "pg_catalog.bpchar", "string", "citext":
 		if notNull {
 			return "string"
 		}
 		if emitPointersForNull {
 			return "*string"
 		}
+		if driver == SQLDriverPGXV5 {
+			return "pgtype.Text"
+		}
 		return "sql.NullString"
 
 	case "uuid":
+		if driver == SQLDriverPGXV5 {
+			return "pgtype.UUID"
+		}
 		if notNull {
 			return "uuid.UUID"
 		}
@@ -215,6 +282,11 @@ func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 
 	case "inet":
 		switch driver {
+		case SQLDriverPGXV5:
+			if notNull {
+				return "netip.Addr"
+			}
+			return "*netip.Addr"
 		case SQLDriverPGXV4:
 			return "pgtype.Inet"
 		case SQLDriverLibPQ:
@@ -225,6 +297,11 @@ func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 
 	case "cidr":
 		switch driver {
+		case SQLDriverPGXV5:
+			if notNull {
+				return "netip.Prefix"
+			}
+			return "*netip.Prefix"
 		case SQLDriverPGXV4:
 			return "pgtype.CIDR"
 		case SQLDriverLibPQ:
@@ -235,6 +312,8 @@ func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 
 	case "macaddr", "macaddr8":
 		switch driver {
+		case SQLDriverPGXV5:
+			return "net.HardwareAddr"
 		case SQLDriverPGXV4:
 			return "pgtype.Macaddr"
 		case SQLDriverLibPQ:
@@ -255,9 +334,16 @@ func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		if emitPointersForNull {
 			return "*string"
 		}
+		if driver == SQLDriverPGXV5 {
+			return "pgtype.Text"
+		}
 		return "sql.NullString"
 
 	case "interval", "pg_catalog.interval":
+		if driver == SQLDriverPGXV5 {
+			return "pgtype.Interval"
+		}
+
 		if notNull {
 			return "int64"
 		}
@@ -267,46 +353,168 @@ func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		return "sql.NullInt64"
 
 	case "daterange":
-		if driver == SQLDriverPGXV4 {
+		switch driver {
+		case SQLDriverPGXV4:
 			return "pgtype.Daterange"
+		case SQLDriverPGXV5:
+			return "pgtype.Range[pgtype.Date]"
+		default:
+			return "interface{}"
 		}
-		return "interface{}"
+
+	case "datemultirange":
+		switch driver {
+		case SQLDriverPGXV5:
+			return "pgtype.Multirange[pgtype.Range[pgtype.Date]]"
+		default:
+			return "interface{}"
+		}
 
 	case "tsrange":
-		if driver == SQLDriverPGXV4 {
+		switch driver {
+		case SQLDriverPGXV4:
 			return "pgtype.Tsrange"
+		case SQLDriverPGXV5:
+			return "pgtype.Range[pgtype.Timestamp]"
+		default:
+			return "interface{}"
 		}
-		return "interface{}"
+
+	case "tsmultirange":
+		switch driver {
+		case SQLDriverPGXV5:
+			return "pgtype.Multirange[pgtype.Range[pgtype.Timestamp]]"
+		default:
+			return "interface{}"
+		}
 
 	case "tstzrange":
-		if driver == SQLDriverPGXV4 {
+		switch driver {
+		case SQLDriverPGXV4:
 			return "pgtype.Tstzrange"
+		case SQLDriverPGXV5:
+			return "pgtype.Range[pgtype.Timestamptz]"
+		default:
+			return "interface{}"
 		}
-		return "interface{}"
+
+	case "tstzmultirange":
+		switch driver {
+		case SQLDriverPGXV5:
+			return "pgtype.Multirange[pgtype.Range[pgtype.Timestamptz]]"
+		default:
+			return "interface{}"
+		}
 
 	case "numrange":
-		if driver == SQLDriverPGXV4 {
+		switch driver {
+		case SQLDriverPGXV4:
 			return "pgtype.Numrange"
+		case SQLDriverPGXV5:
+			return "pgtype.Range[pgtype.Numeric]"
+		default:
+			return "interface{}"
 		}
-		return "interface{}"
+
+	case "nummultirange":
+		switch driver {
+		case SQLDriverPGXV5:
+			return "pgtype.Multirange[pgtype.Range[pgtype.Numeric]]"
+		default:
+			return "interface{}"
+		}
 
 	case "int4range":
-		if driver == SQLDriverPGXV4 {
+		switch driver {
+		case SQLDriverPGXV4:
 			return "pgtype.Int4range"
+		case SQLDriverPGXV5:
+			return "pgtype.Range[pgtype.Int4]"
+		default:
+			return "interface{}"
 		}
-		return "interface{}"
+
+	case "int4multirange":
+		switch driver {
+		case SQLDriverPGXV5:
+			return "pgtype.Multirange[pgtype.Range[pgtype.Int4]]"
+		default:
+			return "interface{}"
+		}
 
 	case "int8range":
-		if driver == SQLDriverPGXV4 {
+		switch driver {
+		case SQLDriverPGXV4:
 			return "pgtype.Int8range"
+		case SQLDriverPGXV5:
+			return "pgtype.Range[pgtype.Int8]"
+		default:
+			return "interface{}"
 		}
-		return "interface{}"
+
+	case "int8multirange":
+		switch driver {
+		case SQLDriverPGXV5:
+			return "pgtype.Multirange[pgtype.Range[pgtype.Int8]]"
+		default:
+			return "interface{}"
+		}
 
 	case "hstore":
-		if driver == SQLDriverPGXV4 {
+		if driver.IsPGX() {
 			return "pgtype.Hstore"
 		}
 		return "interface{}"
+
+	case "bit", "varbit", "pg_catalog.bit", "pg_catalog.varbit":
+		if driver.IsPGX() {
+			return "pgtype.Bits"
+		}
+
+	case "box":
+		if driver.IsPGX() {
+			return "pgtype.Box"
+		}
+
+	case "cid", "oid":
+		if driver.IsPGX() {
+			return "pgtype.Uint32"
+		}
+
+	case "tid":
+		if driver.IsPGX() {
+			return "pgtype.TID"
+		}
+
+	case "circle":
+		if driver.IsPGX() {
+			return "pgtype.Circle"
+		}
+
+	case "line":
+		if driver.IsPGX() {
+			return "pgtype.Line"
+		}
+
+	case "lseg":
+		if driver.IsPGX() {
+			return "pgtype.Lseg"
+		}
+
+	case "path":
+		if driver.IsPGX() {
+			return "pgtype.Path"
+		}
+
+	case "point":
+		if driver.IsPGX() {
+			return "pgtype.Point"
+		}
+
+	case "polygon":
+		if driver.IsPGX() {
+			return "pgtype.Polygon"
+		}
 
 	case "void":
 		// A void value can only be scanned into an empty interface.
@@ -358,9 +566,10 @@ func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 				}
 			}
 		}
-		if debug.Active {
-			log.Printf("unknown PostgreSQL type: %s\n", columnType)
-		}
-		return "interface{}"
 	}
+
+	if debug.Active {
+		log.Printf("unknown PostgreSQL type: %s\n", columnType)
+	}
+	return "interface{}"
 }

@@ -11,7 +11,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 )
 
-func pluginOverride(o config.Override) *plugin.Override {
+func pluginOverride(r *compiler.Result, o config.Override) *plugin.Override {
 	var column string
 	var table plugin.Identifier
 
@@ -19,7 +19,7 @@ func pluginOverride(o config.Override) *plugin.Override {
 		colParts := strings.Split(o.Column, ".")
 		switch len(colParts) {
 		case 2:
-			table.Schema = "public"
+			table.Schema = r.Catalog.DefaultSchema
 			table.Name = colParts[0]
 			column = colParts[1]
 		case 3:
@@ -37,6 +37,7 @@ func pluginOverride(o config.Override) *plugin.Override {
 		CodeType:   "", // FIXME
 		DbType:     o.DBType,
 		Nullable:   o.Nullable,
+		Unsigned:   o.Unsigned,
 		Column:     o.Column,
 		ColumnName: column,
 		Table:      &table,
@@ -44,10 +45,10 @@ func pluginOverride(o config.Override) *plugin.Override {
 	}
 }
 
-func pluginSettings(cs config.CombinedSettings) *plugin.Settings {
+func pluginSettings(r *compiler.Result, cs config.CombinedSettings) *plugin.Settings {
 	var over []*plugin.Override
 	for _, o := range cs.Overrides {
-		over = append(over, pluginOverride(o))
+		over = append(over, pluginOverride(r, o))
 	}
 	return &plugin.Settings{
 		Version:   cs.Global.Version,
@@ -75,6 +76,11 @@ func pluginCodegen(s config.Codegen) *plugin.Codegen {
 }
 
 func pluginGoCode(s config.SQLGo) *plugin.GoCode {
+	if s.QueryParameterLimit == nil {
+		s.QueryParameterLimit = new(int32)
+		*s.QueryParameterLimit = 1
+	}
+
 	return &plugin.GoCode{
 		EmitInterface:               s.EmitInterface,
 		EmitJsonTags:                s.EmitJSONTags,
@@ -86,18 +92,21 @@ func pluginGoCode(s config.SQLGo) *plugin.GoCode {
 		EmitResultStructPointers:    s.EmitResultStructPointers,
 		EmitParamsStructPointers:    s.EmitParamsStructPointers,
 		EmitMethodsWithDbArgument:   s.EmitMethodsWithDBArgument,
-    EmitPointersForNullTypes:  s.EmitPointersForNullTypes,
+		EmitPointersForNullTypes:    s.EmitPointersForNullTypes,
 		EmitEnumValidMethod:         s.EmitEnumValidMethod,
 		EmitAllEnumValues:           s.EmitAllEnumValues,
 		JsonTagsCaseStyle:           s.JSONTagsCaseStyle,
 		Package:                     s.Package,
 		Out:                         s.Out,
 		SqlPackage:                  s.SQLPackage,
+		SqlDriver:                   s.SQLDriver,
 		OutputDbFileName:            s.OutputDBFileName,
+		OutputBatchFileName:         s.OutputBatchFileName,
 		OutputModelsFileName:        s.OutputModelsFileName,
 		OutputQuerierFileName:       s.OutputQuerierFileName,
 		OutputFilesSuffix:           s.OutputFilesSuffix,
 		InflectionExcludeTableNames: s.InflectionExcludeTableNames,
+		QueryParameterLimit:         s.QueryParameterLimit,
 	}
 }
 
@@ -158,10 +167,11 @@ func pluginCatalog(c *catalog.Catalog) *plugin.Catalog {
 						Schema:  c.Type.Schema,
 						Name:    c.Type.Name,
 					},
-					Comment: c.Comment,
-					NotNull: c.IsNotNull,
-					IsArray: c.IsArray,
-					Length:  int32(l),
+					Comment:  c.Comment,
+					NotNull:  c.IsNotNull,
+					Unsigned: c.IsUnsigned,
+					IsArray:  c.IsArray,
+					Length:   int32(l),
 					Table: &plugin.Identifier{
 						Catalog: t.Rel.Catalog,
 						Schema:  t.Rel.Schema,
@@ -235,12 +245,15 @@ func pluginQueryColumn(c *compiler.Column) *plugin.Column {
 	}
 	out := &plugin.Column{
 		Name:         c.Name,
+		OriginalName: c.OriginalName,
 		Comment:      c.Comment,
 		NotNull:      c.NotNull,
+		Unsigned:     c.Unsigned,
 		IsArray:      c.IsArray,
 		Length:       int32(l),
 		IsNamedParam: c.IsNamedParam,
 		IsFuncCall:   c.IsFuncCall,
+		IsSqlcSlice:  c.IsSqlcSlice,
 	}
 
 	if c.Type != nil {
@@ -263,6 +276,14 @@ func pluginQueryColumn(c *compiler.Column) *plugin.Column {
 		}
 	}
 
+	if c.EmbedTable != nil {
+		out.EmbedTable = &plugin.Identifier{
+			Catalog: c.EmbedTable.Catalog,
+			Schema:  c.EmbedTable.Schema,
+			Name:    c.EmbedTable.Name,
+		}
+	}
+
 	return out
 }
 
@@ -275,7 +296,7 @@ func pluginQueryParam(p compiler.Parameter) *plugin.Parameter {
 
 func codeGenRequest(r *compiler.Result, settings config.CombinedSettings) *plugin.CodeGenRequest {
 	return &plugin.CodeGenRequest{
-		Settings:    pluginSettings(settings),
+		Settings:    pluginSettings(r, settings),
 		Catalog:     pluginCatalog(r.Catalog),
 		Queries:     pluginQueries(r),
 		SqlcVersion: info.Version,

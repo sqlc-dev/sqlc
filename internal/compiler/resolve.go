@@ -8,6 +8,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/astutils"
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 	"github.com/kyleconroy/sqlc/internal/sql/named"
+	"github.com/kyleconroy/sqlc/internal/sql/rewrite"
 	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
 )
 
@@ -19,7 +20,7 @@ func dataType(n *ast.TypeName) string {
 	}
 }
 
-func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, args []paramRef, params *named.ParamSet) ([]Parameter, error) {
+func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, args []paramRef, params *named.ParamSet, embeds rewrite.EmbedSet) ([]Parameter, error) {
 	c := comp.catalog
 
 	aliasMap := map[string]*ast.TableName{}
@@ -76,6 +77,22 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 		}
 	}
 
+	// resolve a table for an embed
+	for _, embed := range embeds {
+		table, err := c.GetTable(embed.Table)
+		if err == nil {
+			embed.Table = table.Rel
+			continue
+		}
+
+		if alias, ok := aliasMap[embed.Table.Name]; ok {
+			embed.Table = alias
+			continue
+		}
+
+		return nil, fmt.Errorf("unable to resolve table with %q: %w", embed.Orig(), err)
+	}
+
 	var a []Parameter
 	for _, ref := range args {
 		switch n := ref.parent.(type) {
@@ -113,6 +130,12 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 				_, ok := node.(*ast.ColumnRef)
 				return ok
 			})
+			if len(list.Items) == 0 {
+				list = astutils.Search(n.Rexpr, func(node ast.Node) bool {
+					_, ok := node.(*ast.ColumnRef)
+					return ok
+				})
+			}
 
 			if len(list.Items) == 0 {
 				// TODO: Move this to database-specific engine package
@@ -135,9 +158,9 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 				continue
 			}
 
-			switch left := list.Items[0].(type) {
+			switch node := list.Items[0].(type) {
 			case *ast.ColumnRef:
-				items := stringSlice(left.Fields)
+				items := stringSlice(node.Fields)
 				var key, alias string
 				switch len(items) {
 				case 1:
@@ -165,7 +188,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 							return nil, &sqlerr.Error{
 								Code:     "42703",
 								Message:  fmt.Sprintf("table alias \"%s\" does not exist", alias),
-								Location: left.Location,
+								Location: node.Location,
 							}
 						}
 					}
@@ -189,8 +212,10 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 							Number: ref.ref.Number,
 							Column: &Column{
 								Name:         p.Name(),
+								OriginalName: c.Name,
 								DataType:     dataType(&c.Type),
 								NotNull:      p.NotNull(),
+								Unsigned:     c.IsUnsigned,
 								IsArray:      c.IsArray,
 								Length:       c.Length,
 								Table:        table,
@@ -204,14 +229,14 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 					return nil, &sqlerr.Error{
 						Code:     "42703",
 						Message:  fmt.Sprintf("column \"%s\" does not exist", key),
-						Location: left.Location,
+						Location: node.Location,
 					}
 				}
 				if found > 1 {
 					return nil, &sqlerr.Error{
 						Code:     "42703",
 						Message:  fmt.Sprintf("column reference \"%s\" is ambiguous", key),
-						Location: left.Location,
+						Location: node.Location,
 					}
 				}
 			}
@@ -250,6 +275,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 							Name:         p.Name(),
 							DataType:     dataType(&c.Type),
 							NotNull:      p.NotNull(),
+							Unsigned:     c.IsUnsigned,
 							IsArray:      c.IsArray,
 							Table:        table,
 							IsNamedParam: isNamed,
@@ -328,9 +354,12 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 
 				var paramName string
 				var paramType *ast.TypeName
+
 				if argName == "" {
-					paramName = fun.Args[i].Name
-					paramType = fun.Args[i].Type
+					if i < len(fun.Args) {
+						paramName = fun.Args[i].Name
+						paramType = fun.Args[i].Type
+					}
 				} else {
 					paramName = argName
 					for _, arg := range fun.Args {
@@ -344,6 +373,9 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 				}
 				if paramName == "" {
 					paramName = funcName
+				}
+				if paramType == nil {
+					paramType = &ast.TypeName{Name: ""}
 				}
 
 				defaultP := named.NewInferredParam(paramName, true)
@@ -413,6 +445,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 					Number: ref.ref.Number,
 					Column: &Column{
 						Name:         p.Name(),
+						OriginalName: c.Name,
 						DataType:     dataType(&c.Type),
 						NotNull:      p.NotNull(),
 						IsArray:      c.IsArray,
@@ -522,9 +555,11 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 								Name:         p.Name(),
 								DataType:     dataType(&c.Type),
 								NotNull:      c.IsNotNull,
+								Unsigned:     c.IsUnsigned,
 								IsArray:      c.IsArray,
 								Table:        table,
 								IsNamedParam: isNamed,
+								IsSqlcSlice:  p.IsSqlcSlice(),
 							},
 						})
 					}
