@@ -31,6 +31,9 @@ message Override {
   string column_name = 8 [json_name="column_name"];
 
   ParsedGoType go_type = 10;
+
+   // True if the override should apply to a unsigned database type
+  bool unsigned = 11 [json_name="unsigned"];
 }
 
 message ParsedGoType
@@ -151,7 +154,6 @@ message Identifier
 message Column
 {
   string name = 1;
-  string original_name = 15;
   bool not_null = 3;
   bool is_array = 4;
   string comment = 5;
@@ -166,7 +168,8 @@ message Column
   Identifier type = 12;
   bool is_sqlc_slice = 13;
   Identifier embed_table = 14;
-  bool unsigned = 15;
+  string original_name = 15;
+  bool unsigned = 16;
 }
 
 message Query

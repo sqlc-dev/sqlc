@@ -37,6 +37,7 @@ func pluginOverride(r *compiler.Result, o config.Override) *plugin.Override {
 		CodeType:   "", // FIXME
 		DbType:     o.DBType,
 		Nullable:   o.Nullable,
+		Unsigned:   o.Unsigned,
 		Column:     o.Column,
 		ColumnName: column,
 		Table:      &table,
