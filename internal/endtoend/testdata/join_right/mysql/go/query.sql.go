@@ -20,10 +20,10 @@ WHERE f.id = ?
 type RightJoinRow struct {
 	ID    sql.NullInt64
 	BarID sql.NullInt32
-	ID_2  int64
+	ID_2  uint64
 }
 
-func (q *Queries) RightJoin(ctx context.Context, id int64) ([]RightJoinRow, error) {
+func (q *Queries) RightJoin(ctx context.Context, id uint64) ([]RightJoinRow, error) {
 	rows, err := q.db.QueryContext(ctx, rightJoin, id)
 	if err != nil {
 		return nil, err

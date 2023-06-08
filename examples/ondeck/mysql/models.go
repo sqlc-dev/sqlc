@@ -60,7 +60,7 @@ type City struct {
 
 // Venues are places where muisc happens
 type Venue struct {
-	ID int64 `json:"id"`
+	ID uint64 `json:"id"`
 	// Venues can be either open or closed
 	Status   VenuesStatus   `json:"status"`
 	Statuses sql.NullString `json:"statuses"`

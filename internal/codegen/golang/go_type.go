@@ -60,7 +60,7 @@ func goInnerType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		if oride.GoType.TypeName == "" {
 			continue
 		}
-		if oride.DbType != "" && oride.DbType == columnType && oride.Nullable != notNull {
+		if oride.DbType != "" && oride.DbType == columnType && oride.Nullable != notNull && oride.Unsigned == col.Unsigned {
 			return oride.GoType.TypeName
 		}
 	}

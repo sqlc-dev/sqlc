@@ -7,10 +7,10 @@ package querytest
 import ()
 
 type Bar struct {
-	ID    int64
+	ID    uint64
 	Owner string
 }
 
 type Foo struct {
-	Barid int64
+	Barid uint64
 }

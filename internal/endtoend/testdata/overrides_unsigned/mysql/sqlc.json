@@ -1,0 +1,23 @@
+{
+    "version": "2",
+    "sql": [
+        {
+            "schema": "query.sql",
+            "queries": "query.sql",
+            "engine": "mysql",
+            "gen": {
+                "go": {
+                    "package": "db",
+                    "out": "go",
+                    "overrides": [
+                        {
+                            "db_type": "bigint",
+                            "go_type": "int64",
+                            "unsigned": true
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}

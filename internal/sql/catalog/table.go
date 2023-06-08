@@ -42,11 +42,12 @@ func (table *Table) addColumn(cmd *ast.AlterTableCmd) error {
 	}
 
 	table.Columns = append(table.Columns, &Column{
-		Name:      cmd.Def.Colname,
-		Type:      *cmd.Def.TypeName,
-		IsNotNull: cmd.Def.IsNotNull,
-		IsArray:   cmd.Def.IsArray,
-		Length:    cmd.Def.Length,
+		Name:       cmd.Def.Colname,
+		Type:       *cmd.Def.TypeName,
+		IsNotNull:  cmd.Def.IsNotNull,
+		IsUnsigned: cmd.Def.IsUnsigned,
+		IsArray:    cmd.Def.IsArray,
+		Length:     cmd.Def.Length,
 	})
 	return nil
 }
@@ -100,12 +101,13 @@ func (table *Table) setNotNull(cmd *ast.AlterTableCmd) error {
 //
 // TODO: Should this just be ast Nodes?
 type Column struct {
-	Name      string
-	Type      ast.TypeName
-	IsNotNull bool
-	IsArray   bool
-	Comment   string
-	Length    *int
+	Name       string
+	Type       ast.TypeName
+	IsNotNull  bool
+	IsUnsigned bool
+	IsArray    bool
+	Comment    string
+	Length     *int
 }
 
 // An interface is used to resolve a circular import between the catalog and compiler packages.
@@ -291,12 +293,13 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 			}
 
 			tc := &Column{
-				Name:      col.Colname,
-				Type:      *col.TypeName,
-				IsNotNull: col.IsNotNull,
-				IsArray:   col.IsArray,
-				Comment:   col.Comment,
-				Length:    col.Length,
+				Name:       col.Colname,
+				Type:       *col.TypeName,
+				IsNotNull:  col.IsNotNull,
+				IsUnsigned: col.IsUnsigned,
+				IsArray:    col.IsArray,
+				Comment:    col.Comment,
+				Length:     col.Length,
 			}
 			if col.Vals != nil {
 				typeName := ast.TypeName{

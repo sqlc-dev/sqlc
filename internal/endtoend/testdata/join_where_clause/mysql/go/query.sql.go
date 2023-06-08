@@ -16,15 +16,15 @@ JOIN bar ON bar.id = barid
 WHERE owner = ?
 `
 
-func (q *Queries) JoinWhereClause(ctx context.Context, owner string) ([]int64, error) {
+func (q *Queries) JoinWhereClause(ctx context.Context, owner string) ([]uint64, error) {
 	rows, err := q.db.QueryContext(ctx, joinWhereClause, owner)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []int64
+	var items []uint64
 	for rows.Next() {
-		var barid int64
+		var barid uint64
 		if err := rows.Scan(&barid); err != nil {
 			return nil, err
 		}
