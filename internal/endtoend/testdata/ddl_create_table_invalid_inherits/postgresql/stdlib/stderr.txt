@@ -1,0 +1,2 @@
+# package querytest
+schema.sql:1:1: column "name" has a type conflict
