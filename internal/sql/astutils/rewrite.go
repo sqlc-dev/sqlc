@@ -164,6 +164,9 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 	case *ast.CommentOnTypeStmt:
 		a.apply(n, "Type", nil, n.Type)
 
+	case *ast.CommentOnViewStmt:
+		a.apply(n, "View", nil, n.View)
+
 	case *ast.CreateTableStmt:
 		a.apply(n, "Name", nil, n.Name)
 

@@ -320,6 +320,9 @@ type SQLiteParserListener interface {
 	// EnterFunction_name is called when entering the function_name production.
 	EnterFunction_name(c *Function_nameContext)
 
+	// EnterQualified_function_name is called when entering the qualified_function_name production.
+	EnterQualified_function_name(c *Qualified_function_nameContext)
+
 	// EnterSchema_name is called when entering the schema_name production.
 	EnterSchema_name(c *Schema_nameContext)
 
@@ -700,6 +703,9 @@ type SQLiteParserListener interface {
 
 	// ExitFunction_name is called when exiting the function_name production.
 	ExitFunction_name(c *Function_nameContext)
+
+	// ExitQualified_function_name is called when exiting the qualified_function_name production.
+	ExitQualified_function_name(c *Qualified_function_nameContext)
 
 	// ExitSchema_name is called when exiting the schema_name production.
 	ExitSchema_name(c *Schema_nameContext)

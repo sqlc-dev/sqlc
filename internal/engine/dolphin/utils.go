@@ -2,6 +2,7 @@ package dolphin
 
 import (
 	pcast "github.com/pingcap/tidb/parser/ast"
+	"github.com/pingcap/tidb/parser/mysql"
 
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 )
@@ -135,4 +136,8 @@ func convertToRangeVarList(list *ast.List, result *ast.List) {
 	default:
 		panic("expected range var")
 	}
+}
+
+func isUnsigned(n *pcast.ColumnDef) bool {
+	return mysql.HasUnsignedFlag(n.Tp.GetFlag())
 }

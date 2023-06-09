@@ -65,7 +65,7 @@ func runOnDeckQueries(t *testing.T, q *Queries) {
 		t.Fatal(err)
 	}
 
-	if diff := cmp.Diff(venue.ID, venueID); diff != "" {
+	if diff := cmp.Diff(venue.ID, uint64(venueID)); diff != "" {
 		t.Errorf("venue ID mismatch:\n%s", diff)
 	}
 
