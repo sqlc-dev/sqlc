@@ -37,6 +37,7 @@ type v1PackageSettings struct {
 	EmitEnumValidMethod       bool       `json:"emit_enum_valid_method,omitempty" yaml:"emit_enum_valid_method"`
 	EmitAllEnumValues         bool       `json:"emit_all_enum_values,omitempty" yaml:"emit_all_enum_values"`
 	JSONTagsCaseStyle         string     `json:"json_tags_case_style,omitempty" yaml:"json_tags_case_style"`
+	TemplatePath              string     `json:"template_path" yaml:"template_path"`
 	SQLPackage                string     `json:"sql_package" yaml:"sql_package"`
 	SQLDriver                 string     `json:"sql_driver" yaml:"sql_driver"`
 	Overrides                 []Override `json:"overrides" yaml:"overrides"`
@@ -160,6 +161,7 @@ func (c *V1GenerateSettings) Translate() Config {
 					SQLDriver:                 pkg.SQLDriver,
 					Overrides:                 pkg.Overrides,
 					JSONTagsCaseStyle:         pkg.JSONTagsCaseStyle,
+					TemplatePath:              pkg.TemplatePath,
 					OutputBatchFileName:       pkg.OutputBatchFileName,
 					OutputDBFileName:          pkg.OutputDBFileName,
 					OutputModelsFileName:      pkg.OutputModelsFileName,

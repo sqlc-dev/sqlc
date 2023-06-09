@@ -453,6 +453,7 @@ type GoCode struct {
 	EmitParamsStructPointers    bool     `protobuf:"varint,9,opt,name=emit_params_struct_pointers,json=emitParamsStructPointers,proto3" json:"emit_params_struct_pointers,omitempty"`
 	EmitMethodsWithDbArgument   bool     `protobuf:"varint,10,opt,name=emit_methods_with_db_argument,json=emitMethodsWithDbArgument,proto3" json:"emit_methods_with_db_argument,omitempty"`
 	JsonTagsCaseStyle           string   `protobuf:"bytes,11,opt,name=json_tags_case_style,json=jsonTagsCaseStyle,proto3" json:"json_tags_case_style,omitempty"`
+	TemplatePath           		string   `protobuf:"bytes,26,opt,name=template_path,json=templatePath,proto3" json:"template_path,omitempty"`
 	Package                     string   `protobuf:"bytes,12,opt,name=package,proto3" json:"package,omitempty"`
 	Out                         string   `protobuf:"bytes,13,opt,name=out,proto3" json:"out,omitempty"`
 	SqlPackage                  string   `protobuf:"bytes,14,opt,name=sql_package,json=sqlPackage,proto3" json:"sql_package,omitempty"`
@@ -574,6 +575,13 @@ func (x *GoCode) GetEmitMethodsWithDbArgument() bool {
 func (x *GoCode) GetJsonTagsCaseStyle() string {
 	if x != nil {
 		return x.JsonTagsCaseStyle
+	}
+	return ""
+}
+
+func (x *GoCode) GetTemplatePath() string {
+	if x != nil {
+		return x.TemplatePath
 	}
 	return ""
 }
