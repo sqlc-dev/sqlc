@@ -2,9 +2,11 @@ package golang
 
 import (
 	"fmt"
-	"github.com/kyleconroy/sqlc/internal/plugin"
+	"regexp"
 	"sort"
 	"strings"
+
+	"github.com/kyleconroy/sqlc/internal/plugin"
 )
 
 func TagsToString(tags map[string]string) string {
@@ -41,7 +43,14 @@ func SetCaseStyle(name string, style string) string {
 	}
 }
 
+var camelPattern = regexp.MustCompile("[^A-Z][A-Z]+")
+
 func toSnakeCase(s string) string {
+	if !strings.ContainsRune(s, '_') {
+		s = camelPattern.ReplaceAllStringFunc(s, func(x string) string {
+			return x[:1] + "_" + x[1:]
+		})
+	}
 	return strings.ToLower(s)
 }
 
