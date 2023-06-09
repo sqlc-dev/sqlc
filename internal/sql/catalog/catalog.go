@@ -76,6 +76,9 @@ func (c *Catalog) Update(stmt ast.Statement, colGen columnGenerator) error {
 	case *ast.CommentOnTypeStmt:
 		err = c.commentOnType(n)
 
+	case *ast.CommentOnViewStmt:
+		err = c.commentOnView(n)
+
 	case *ast.CompositeTypeStmt:
 		err = c.createCompositeType(n)
 

@@ -1,12 +1,13 @@
 package ast
 
 type ColumnDef struct {
-	Colname   string
-	TypeName  *TypeName
-	IsNotNull bool
-	IsArray   bool
-	Vals      *List
-	Length    *int
+	Colname    string
+	TypeName   *TypeName
+	IsNotNull  bool
+	IsUnsigned bool
+	IsArray    bool
+	Vals       *List
+	Length     *int
 
 	// From pg.ColumnDef
 	Inhcount      int

@@ -7,13 +7,13 @@ package db
 import ()
 
 type JoinTable struct {
-	ID             int64
-	PrimaryTableID int64
-	OtherTableID   int64
+	ID             uint64
+	PrimaryTableID uint64
+	OtherTableID   uint64
 	IsActive       bool
 }
 
 type PrimaryTable struct {
-	ID     int64
-	UserID int64
+	ID     uint64
+	UserID uint64
 }

@@ -86,9 +86,8 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 	} else {
 		sort.Slice(refs, func(i, j int) bool { return refs[i].ref.Number < refs[j].ref.Number })
 	}
-
 	raw, embeds := rewrite.Embeds(raw)
-	qc, err := buildQueryCatalog(c.catalog, raw.Stmt, embeds)
+	qc, err := c.buildQueryCatalog(c.catalog, raw.Stmt, embeds)
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +96,7 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 	if err != nil {
 		return nil, err
 	}
-	cols, err := outputColumns(qc, raw.Stmt)
+	cols, err := c.outputColumns(qc, raw.Stmt)
 	if err != nil {
 		return nil, err
 	}

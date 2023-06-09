@@ -46,6 +46,7 @@ type v1PackageSettings struct {
 	OutputQuerierFileName     string     `json:"output_querier_file_name,omitempty" yaml:"output_querier_file_name"`
 	OutputFilesSuffix         string     `json:"output_files_suffix,omitempty" yaml:"output_files_suffix"`
 	StrictFunctionChecks      bool       `json:"strict_function_checks" yaml:"strict_function_checks"`
+	StrictOrderBy             *bool      `json:"strict_order_by" yaml:"strict_order_by"`
 	QueryParameterLimit       *int32     `json:"query_parameter_limit,omitempty" yaml:"query_parameter_limit"`
 }
 
@@ -130,6 +131,10 @@ func (c *V1GenerateSettings) Translate() Config {
 	}
 
 	for _, pkg := range c.Packages {
+		if pkg.StrictOrderBy == nil {
+			defaultValue := true
+			pkg.StrictOrderBy = &defaultValue
+		}
 		conf.SQL = append(conf.SQL, SQL{
 			Engine:  pkg.Engine,
 			Schema:  pkg.Schema,
@@ -164,6 +169,7 @@ func (c *V1GenerateSettings) Translate() Config {
 				},
 			},
 			StrictFunctionChecks: pkg.StrictFunctionChecks,
+			StrictOrderBy:        pkg.StrictOrderBy,
 		})
 	}
 

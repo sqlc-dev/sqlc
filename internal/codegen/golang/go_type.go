@@ -14,7 +14,11 @@ func addExtraGoStructTags(tags map[string]string, req *plugin.CodeGenRequest, co
 			// Different table.
 			continue
 		}
-		if !sdk.MatchString(oride.ColumnName, col.Name) {
+		cname := col.Name
+		if col.OriginalName != "" {
+			cname = col.OriginalName
+		}
+		if !sdk.MatchString(oride.ColumnName, cname) {
 			// Different column.
 			continue
 		}
@@ -31,8 +35,12 @@ func goType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		if oride.GoType.TypeName == "" {
 			continue
 		}
+		cname := col.Name
+		if col.OriginalName != "" {
+			cname = col.OriginalName
+		}
 		sameTable := sdk.Matches(oride, col.Table, req.Catalog.DefaultSchema)
-		if oride.Column != "" && sdk.MatchString(oride.ColumnName, col.Name) && sameTable {
+		if oride.Column != "" && sdk.MatchString(oride.ColumnName, cname) && sameTable {
 			return oride.GoType.TypeName
 		}
 	}
@@ -52,7 +60,7 @@ func goInnerType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		if oride.GoType.TypeName == "" {
 			continue
 		}
-		if oride.DbType != "" && oride.DbType == columnType && oride.Nullable != notNull {
+		if oride.DbType != "" && oride.DbType == columnType && oride.Nullable != notNull && oride.Unsigned == col.Unsigned {
 			return oride.GoType.TypeName
 		}
 	}

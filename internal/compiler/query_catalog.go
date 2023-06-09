@@ -14,7 +14,7 @@ type QueryCatalog struct {
 	embeds  rewrite.EmbedSet
 }
 
-func buildQueryCatalog(c *catalog.Catalog, node ast.Node, embeds rewrite.EmbedSet) (*QueryCatalog, error) {
+func (comp *Compiler) buildQueryCatalog(c *catalog.Catalog, node ast.Node, embeds rewrite.EmbedSet) (*QueryCatalog, error) {
 	var with *ast.WithClause
 	switch n := node.(type) {
 	case *ast.DeleteStmt:
@@ -32,7 +32,7 @@ func buildQueryCatalog(c *catalog.Catalog, node ast.Node, embeds rewrite.EmbedSe
 	if with != nil {
 		for _, item := range with.Ctes.Items {
 			if cte, ok := item.(*ast.CommonTableExpr); ok {
-				cols, err := outputColumns(qc, cte.Ctequery)
+				cols, err := comp.outputColumns(qc, cte.Ctequery)
 				if err != nil {
 					return nil, err
 				}
@@ -56,6 +56,7 @@ func ConvertColumn(rel *ast.TableName, c *catalog.Column) *Column {
 		Name:     c.Name,
 		DataType: dataType(&c.Type),
 		NotNull:  c.IsNotNull,
+		Unsigned: c.IsUnsigned,
 		IsArray:  c.IsArray,
 		Type:     &c.Type,
 		Length:   c.Length,
