@@ -24,10 +24,18 @@ func buildEnums(req *plugin.CodeGenRequest) []Enum {
 			} else {
 				enumName = schema.Name + "_" + enum.Name
 			}
+
 			e := Enum{
-				Name:    StructName(enumName, req.Settings),
-				Comment: enum.Comment,
+				Name:      StructName(enumName, req.Settings),
+				Comment:   enum.Comment,
+				NameTags:  map[string]string{},
+				ValidTags: map[string]string{},
 			}
+			if req.Settings.Go.EmitJsonTags {
+				e.NameTags["json"] = JSONTagName(enumName, req.Settings)
+				e.ValidTags["json"] = JSONTagName("valid", req.Settings)
+			}
+
 			seen := make(map[string]struct{}, len(enum.Vals))
 			for i, v := range enum.Vals {
 				value := EnumReplace(v)
