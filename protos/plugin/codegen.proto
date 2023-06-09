@@ -72,7 +72,6 @@ message GoCode
 {
   bool emit_interface = 1;
   bool emit_json_tags = 2;
-  bool emit_json_tags_on_null_enum_structs = 26;
   bool emit_db_tags = 3;
   bool emit_prepared_queries = 4;
   bool emit_exact_table_names = 5;

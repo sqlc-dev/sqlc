@@ -18,7 +18,6 @@
     "go": {
       "emit_interface": false,
       "emit_json_tags": false,
-      "emit_json_tags_on_null_enum_structs": false,
       "emit_db_tags": false,
       "emit_prepared_queries": false,
       "emit_exact_table_names": false,

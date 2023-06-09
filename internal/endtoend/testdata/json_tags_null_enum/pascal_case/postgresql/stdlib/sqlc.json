@@ -8,7 +8,6 @@
       "schema": "query.sql",
       "queries": "query.sql",
       "emit_json_tags": true,
-      "emit_json_tags_on_null_enum_structs": true,
       "json_tags_case_style": "pascal"
     }
   ]

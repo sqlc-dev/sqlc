@@ -27,17 +27,16 @@ type tmplCtx struct {
 	// TODO: Race conditions
 	SourceName string
 
-	EmitJSONTags                  bool
-	EmitJSONTagsOnNullEnumStructs bool
-	EmitDBTags                    bool
-	EmitPreparedQueries           bool
-	EmitInterface                 bool
-	EmitEmptySlices               bool
-	EmitMethodsWithDBArgument     bool
-	EmitEnumValidMethod           bool
-	EmitAllEnumValues             bool
-	UsesCopyFrom                  bool
-	UsesBatch                     bool
+	EmitJSONTags              bool
+	EmitDBTags                bool
+	EmitPreparedQueries       bool
+	EmitInterface             bool
+	EmitEmptySlices           bool
+	EmitMethodsWithDBArgument bool
+	EmitEnumValidMethod       bool
+	EmitAllEnumValues         bool
+	UsesCopyFrom              bool
+	UsesBatch                 bool
 }
 
 func (t *tmplCtx) OutputQuery(sourceName string) bool {

@@ -1,8 +1,9 @@
 package golang
 
 import (
-	"github.com/kyleconroy/sqlc/internal/plugin"
 	"strings"
+
+	"github.com/kyleconroy/sqlc/internal/plugin"
 )
 
 type Field struct {
