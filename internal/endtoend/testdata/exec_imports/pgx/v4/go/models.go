@@ -10,5 +10,5 @@ import (
 
 type Foo struct {
 	Bar  sql.NullInt32
-	Bars int32
+	Bars []int32
 }

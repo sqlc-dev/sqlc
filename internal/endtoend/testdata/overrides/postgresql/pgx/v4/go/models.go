@@ -12,7 +12,7 @@ import (
 type Foo struct {
 	Other   string
 	Total   int64
-	Tags    string
+	Tags    []string
 	ByteSeq []byte
 	Retyped pkg.CustomType
 	Langs   pq.StringArray

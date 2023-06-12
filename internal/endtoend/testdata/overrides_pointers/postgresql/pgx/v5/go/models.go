@@ -11,7 +11,7 @@ import (
 type Foo struct {
 	Other   string
 	Total   int64
-	Tags    string
+	Tags    []string
 	ByteSeq []byte
 	Retyped string
 	Langs   *t.Text

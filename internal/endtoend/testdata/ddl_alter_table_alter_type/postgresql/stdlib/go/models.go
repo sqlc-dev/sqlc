@@ -7,5 +7,5 @@ package querytest
 import ()
 
 type Foo struct {
-	Bar string
+	Bar []string
 }

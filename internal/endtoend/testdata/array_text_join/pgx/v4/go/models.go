@@ -8,7 +8,7 @@ import ()
 
 type Bar struct {
 	ID   string
-	Info string
+	Info []string
 }
 
 type Foo struct {
