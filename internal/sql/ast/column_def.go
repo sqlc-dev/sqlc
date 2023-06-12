@@ -4,6 +4,7 @@ type ColumnDef struct {
 	Colname     string
 	TypeName    *TypeName
 	IsNotNull   bool
+	IsUnsigned  bool
 	IsArray     bool
 	ArrayBounds int
 	Vals        *List

@@ -16,8 +16,10 @@ type Table struct {
 
 type Column struct {
 	Name         string
+	OriginalName string
 	DataType     string
 	NotNull      bool
+	Unsigned     bool
 	IsArray      bool
 	ArrayBounds  int
 	Comment      string

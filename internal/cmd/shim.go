@@ -11,7 +11,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 )
 
-func pluginOverride(o config.Override) *plugin.Override {
+func pluginOverride(r *compiler.Result, o config.Override) *plugin.Override {
 	var column string
 	var table plugin.Identifier
 
@@ -19,7 +19,7 @@ func pluginOverride(o config.Override) *plugin.Override {
 		colParts := strings.Split(o.Column, ".")
 		switch len(colParts) {
 		case 2:
-			table.Schema = "public"
+			table.Schema = r.Catalog.DefaultSchema
 			table.Name = colParts[0]
 			column = colParts[1]
 		case 3:
@@ -37,6 +37,7 @@ func pluginOverride(o config.Override) *plugin.Override {
 		CodeType:   "", // FIXME
 		DbType:     o.DBType,
 		Nullable:   o.Nullable,
+		Unsigned:   o.Unsigned,
 		Column:     o.Column,
 		ColumnName: column,
 		Table:      &table,
@@ -44,10 +45,10 @@ func pluginOverride(o config.Override) *plugin.Override {
 	}
 }
 
-func pluginSettings(cs config.CombinedSettings) *plugin.Settings {
+func pluginSettings(r *compiler.Result, cs config.CombinedSettings) *plugin.Settings {
 	var over []*plugin.Override
 	for _, o := range cs.Overrides {
-		over = append(over, pluginOverride(o))
+		over = append(over, pluginOverride(r, o))
 	}
 	return &plugin.Settings{
 		Version:   cs.Global.Version,
@@ -168,6 +169,7 @@ func pluginCatalog(c *catalog.Catalog) *plugin.Catalog {
 					},
 					Comment:     c.Comment,
 					NotNull:     c.IsNotNull,
+					Unsigned:    c.IsUnsigned,
 					IsArray:     c.IsArray,
 					ArrayBounds: int32(c.ArrayBounds),
 					Length:      int32(l),
@@ -244,8 +246,10 @@ func pluginQueryColumn(c *compiler.Column) *plugin.Column {
 	}
 	out := &plugin.Column{
 		Name:         c.Name,
+		OriginalName: c.OriginalName,
 		Comment:      c.Comment,
 		NotNull:      c.NotNull,
+		Unsigned:     c.Unsigned,
 		IsArray:      c.IsArray,
 		ArrayBounds:  int32(c.ArrayBounds),
 		Length:       int32(l),
@@ -294,7 +298,7 @@ func pluginQueryParam(p compiler.Parameter) *plugin.Parameter {
 
 func codeGenRequest(r *compiler.Result, settings config.CombinedSettings) *plugin.CodeGenRequest {
 	return &plugin.CodeGenRequest{
-		Settings:    pluginSettings(settings),
+		Settings:    pluginSettings(r, settings),
 		Catalog:     pluginCatalog(r.Catalog),
 		Queries:     pluginQueries(r),
 		SqlcVersion: info.Version,

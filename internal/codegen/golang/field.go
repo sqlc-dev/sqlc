@@ -16,24 +16,28 @@ type Field struct {
 	Tags    map[string]string
 	Comment string
 	Column  *plugin.Column
-	// EmbedFields contains the embedded fields that reuqire scanning.
+	// EmbedFields contains the embedded fields that require scanning.
 	EmbedFields []string
 }
 
 func (gf Field) Tag() string {
-	tags := make([]string, 0, len(gf.Tags))
-	for key, val := range gf.Tags {
-		tags = append(tags, fmt.Sprintf("%s:\"%s\"", key, val))
-	}
-	if len(tags) == 0 {
-		return ""
-	}
-	sort.Strings(tags)
-	return strings.Join(tags, " ")
+	return TagsToString(gf.Tags)
 }
 
 func (gf Field) HasSqlcSlice() bool {
 	return gf.Column.IsSqlcSlice
+}
+
+func TagsToString(tags map[string]string) string {
+	if len(tags) == 0 {
+		return ""
+	}
+	tagParts := make([]string, 0, len(tags))
+	for key, val := range tags {
+		tagParts = append(tagParts, fmt.Sprintf("%s:\"%s\"", key, val))
+	}
+	sort.Strings(tagParts)
+	return strings.Join(tagParts, " ")
 }
 
 func JSONTagName(name string, settings *plugin.Settings) string {
