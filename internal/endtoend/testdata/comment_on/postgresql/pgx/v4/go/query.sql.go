@@ -32,3 +32,27 @@ func (q *Queries) ListBar(ctx context.Context) ([]string, error) {
 	}
 	return items, nil
 }
+
+const listBat = `-- name: ListBat :many
+SELECT baz FROM foo.bat
+`
+
+func (q *Queries) ListBat(ctx context.Context) ([]string, error) {
+	rows, err := q.db.Query(ctx, listBat)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var baz string
+		if err := rows.Scan(&baz); err != nil {
+			return nil, err
+		}
+		items = append(items, baz)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

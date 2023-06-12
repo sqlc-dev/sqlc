@@ -43,3 +43,27 @@ func (q *Queries) CreateMemories(ctx context.Context, vampireID []uuid.UUID) ([]
 	}
 	return items, nil
 }
+
+const getVampireIDs = `-- name: GetVampireIDs :many
+SELECT vampires.id::uuid FROM unnest($1::uuid[]) AS vampires (id)
+`
+
+func (q *Queries) GetVampireIDs(ctx context.Context, vampireID []uuid.UUID) ([]uuid.UUID, error) {
+	rows, err := q.db.Query(ctx, getVampireIDs, vampireID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []uuid.UUID
+	for rows.Next() {
+		var vampires_id uuid.UUID
+		if err := rows.Scan(&vampires_id); err != nil {
+			return nil, err
+		}
+		items = append(items, vampires_id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

@@ -7,7 +7,7 @@ package querytest
 import ()
 
 type Bar struct {
-	ID    int64
+	ID    uint64
 	Name  string
 	Phone string
 }

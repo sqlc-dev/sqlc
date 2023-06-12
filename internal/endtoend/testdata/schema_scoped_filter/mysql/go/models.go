@@ -7,5 +7,5 @@ package querytest
 import ()
 
 type FooBar struct {
-	ID int64
+	ID uint64
 }

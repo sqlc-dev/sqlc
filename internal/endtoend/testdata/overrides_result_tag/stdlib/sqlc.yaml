@@ -1,0 +1,12 @@
+version: "2"
+sql:
+  - schema: "query.sql"
+    queries: "query.sql"
+    engine: "postgresql"
+    gen:
+      go:
+        package: "querytest"
+        out: "go"
+        overrides:
+          - column: accounts.id
+            go_struct_tag: sometagtype:"some_value"

@@ -42,11 +42,12 @@ func (table *Table) addColumn(cmd *ast.AlterTableCmd) error {
 	}
 
 	table.Columns = append(table.Columns, &Column{
-		Name:      cmd.Def.Colname,
-		Type:      *cmd.Def.TypeName,
-		IsNotNull: cmd.Def.IsNotNull,
-		IsArray:   cmd.Def.IsArray,
-		Length:    cmd.Def.Length,
+		Name:       cmd.Def.Colname,
+		Type:       *cmd.Def.TypeName,
+		IsNotNull:  cmd.Def.IsNotNull,
+		IsUnsigned: cmd.Def.IsUnsigned,
+		IsArray:    cmd.Def.IsArray,
+		Length:     cmd.Def.Length,
 	})
 	return nil
 }
@@ -104,6 +105,7 @@ type Column struct {
 	Name        string
 	Type        ast.TypeName
 	IsNotNull   bool
+	IsUnsigned  bool
 	IsArray     bool
 	ArrayBounds int
 	Comment     string
@@ -242,12 +244,29 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 	}
 
 	tbl := Table{Rel: stmt.Name, Comment: stmt.Comment}
+	coltype := make(map[string]ast.TypeName) // used to check for duplicate column names
+	seen := make(map[string]bool)            // used to check for duplicate column names
 	for _, inheritTable := range stmt.Inherits {
 		t, _, err := schema.getTable(inheritTable)
 		if err != nil {
 			return err
 		}
-		tbl.Columns = append(tbl.Columns, t.Columns...)
+		// check and ignore duplicate columns
+		for _, col := range t.Columns {
+			if notNull, ok := seen[col.Name]; ok {
+				seen[col.Name] = notNull || col.IsNotNull
+				if a, ok := coltype[col.Name]; ok {
+					if !sameType(&a, &col.Type) {
+						return fmt.Errorf("column \"%s\" has a type conflict", col.Name)
+					}
+				}
+				continue
+			}
+
+			seen[col.Name] = col.IsNotNull
+			coltype[col.Name] = col.Type
+			tbl.Columns = append(tbl.Columns, col)
+		}
 	}
 
 	if stmt.ReferTable != nil && len(stmt.Cols) != 0 {
@@ -265,10 +284,21 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 		}
 	} else {
 		for _, col := range stmt.Cols {
+			if notNull, ok := seen[col.Colname]; ok {
+				seen[col.Colname] = notNull || col.IsNotNull
+				if a, ok := coltype[col.Colname]; ok {
+					if !sameType(&a, col.TypeName) {
+						return fmt.Errorf("column \"%s\" has a type conflict", col.Colname)
+					}
+				}
+				continue
+			}
+
 			tc := &Column{
 				Name:        col.Colname,
 				Type:        *col.TypeName,
 				IsNotNull:   col.IsNotNull,
+				IsUnsigned:  col.IsUnsigned,
 				IsArray:     col.IsArray,
 				ArrayBounds: col.ArrayBounds,
 				Comment:     col.Comment,
@@ -287,6 +317,14 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 			tbl.Columns = append(tbl.Columns, tc)
 		}
 	}
+
+	// If one of the merged columns was not null, mark the column as not null
+	for i := range tbl.Columns {
+		if notNull, ok := seen[tbl.Columns[i].Name]; ok {
+			tbl.Columns[i].IsNotNull = notNull
+		}
+	}
+
 	schema.Tables = append(schema.Tables, &tbl)
 	return nil
 }

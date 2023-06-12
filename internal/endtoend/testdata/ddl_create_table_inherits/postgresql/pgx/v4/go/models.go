@@ -10,10 +10,17 @@ import (
 	"github.com/google/uuid"
 )
 
+type Llc struct {
+	PartyID           uuid.UUID
+	Name              string
+	LegalName         string
+	IncorporationDate sql.NullTime
+}
+
 type Organisation struct {
 	PartyID   uuid.UUID
 	Name      string
-	LegalName sql.NullString
+	LegalName string
 }
 
 type Party struct {

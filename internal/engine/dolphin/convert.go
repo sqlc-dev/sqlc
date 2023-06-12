@@ -45,9 +45,10 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 			for _, def := range spec.NewColumns {
 				name := def.Name.String()
 				columnDef := ast.ColumnDef{
-					Colname:   def.Name.String(),
-					TypeName:  &ast.TypeName{Name: types.TypeToStr(def.Tp.GetType(), def.Tp.GetCharset())},
-					IsNotNull: isNotNull(def),
+					Colname:    def.Name.String(),
+					TypeName:   &ast.TypeName{Name: types.TypeToStr(def.Tp.GetType(), def.Tp.GetCharset())},
+					IsNotNull:  isNotNull(def),
+					IsUnsigned: isUnsigned(def),
 				}
 				if def.Tp.GetFlen() >= 0 {
 					length := def.Tp.GetFlen()
@@ -78,9 +79,10 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 			for _, def := range spec.NewColumns {
 				name := def.Name.String()
 				columnDef := ast.ColumnDef{
-					Colname:   def.Name.String(),
-					TypeName:  &ast.TypeName{Name: types.TypeToStr(def.Tp.GetType(), def.Tp.GetCharset())},
-					IsNotNull: isNotNull(def),
+					Colname:    def.Name.String(),
+					TypeName:   &ast.TypeName{Name: types.TypeToStr(def.Tp.GetType(), def.Tp.GetCharset())},
+					IsNotNull:  isNotNull(def),
+					IsUnsigned: isUnsigned(def),
 				}
 				if def.Tp.GetFlen() >= 0 {
 					length := def.Tp.GetFlen()
@@ -97,9 +99,10 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 			for _, def := range spec.NewColumns {
 				name := def.Name.String()
 				columnDef := ast.ColumnDef{
-					Colname:   def.Name.String(),
-					TypeName:  &ast.TypeName{Name: types.TypeToStr(def.Tp.GetType(), def.Tp.GetCharset())},
-					IsNotNull: isNotNull(def),
+					Colname:    def.Name.String(),
+					TypeName:   &ast.TypeName{Name: types.TypeToStr(def.Tp.GetType(), def.Tp.GetCharset())},
+					IsNotNull:  isNotNull(def),
+					IsUnsigned: isUnsigned(def),
 				}
 				if def.Tp.GetFlen() >= 0 {
 					length := def.Tp.GetFlen()
@@ -266,11 +269,12 @@ func (c *cc) convertCreateTableStmt(n *pcast.CreateTableStmt) ast.Node {
 			}
 		}
 		columnDef := ast.ColumnDef{
-			Colname:   def.Name.String(),
-			TypeName:  &ast.TypeName{Name: types.TypeToStr(def.Tp.GetType(), def.Tp.GetCharset())},
-			IsNotNull: isNotNull(def),
-			Comment:   comment,
-			Vals:      vals,
+			Colname:    def.Name.String(),
+			TypeName:   &ast.TypeName{Name: types.TypeToStr(def.Tp.GetType(), def.Tp.GetCharset())},
+			IsNotNull:  isNotNull(def),
+			IsUnsigned: isUnsigned(def),
+			Comment:    comment,
+			Vals:       vals,
 		}
 		if def.Tp.GetFlen() >= 0 {
 			length := def.Tp.GetFlen()
@@ -300,6 +304,7 @@ func (c *cc) convertColumnNameExpr(n *pcast.ColumnNameExpr) *ast.ColumnRef {
 		Fields: &ast.List{
 			Items: items,
 		},
+		Location: n.OriginTextPosition(),
 	}
 }
 
@@ -537,7 +542,6 @@ func (c *cc) convertCommonTableExpression(n *pcast.CommonTableExpression) *ast.C
 		Ctequery:    c.convert(n.Query),
 		Ctecolnames: columns,
 	}
-
 }
 
 func (c *cc) convertWithClause(n *pcast.WithClause) *ast.WithClause {
@@ -603,6 +607,7 @@ func (c *cc) convertValueExpr(n *driver.ValueExpr) *ast.A_Const {
 			Val: &ast.Integer{
 				Ival: n.Datum.GetInt64(),
 			},
+			Location: n.OriginTextPosition(),
 		}
 
 	case mysql.TypeDouble,
@@ -612,6 +617,7 @@ func (c *cc) convertValueExpr(n *driver.ValueExpr) *ast.A_Const {
 			Val: &ast.Float{
 				// TODO: Extract the value from n.TexprNode
 			},
+			Location: n.OriginTextPosition(),
 		}
 
 	case mysql.TypeBlob, mysql.TypeString, mysql.TypeVarchar, mysql.TypeVarString, mysql.TypeLongBlob, mysql.TypeMediumBlob, mysql.TypeTinyBlob, mysql.TypeEnum:
@@ -620,6 +626,7 @@ func (c *cc) convertValueExpr(n *driver.ValueExpr) *ast.A_Const {
 		Val: &ast.String{
 			Str: n.Datum.GetString(),
 		},
+		Location: n.OriginTextPosition(),
 	}
 }
 

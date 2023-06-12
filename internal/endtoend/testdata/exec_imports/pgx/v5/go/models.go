@@ -10,5 +10,5 @@ import (
 
 type Foo struct {
 	Bar  pgtype.Int4
-	Bars []int32
+	Bars int32
 }

@@ -7,16 +7,16 @@ package querytest
 import ()
 
 type Author struct {
-	ID   int32
+	ID   uint32
 	Name string
 }
 
 type AuthorBook struct {
-	AuthorID int32
-	BookID   int32
+	AuthorID uint32
+	BookID   uint32
 }
 
 type Book struct {
-	ID    int32
+	ID    uint32
 	Title string
 }

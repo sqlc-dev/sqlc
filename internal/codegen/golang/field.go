@@ -2,6 +2,7 @@ package golang
 
 import (
 	"fmt"
+	"regexp"
 	"sort"
 	"strings"
 
@@ -15,24 +16,28 @@ type Field struct {
 	Tags    map[string]string
 	Comment string
 	Column  *plugin.Column
-	// EmbedFields contains the embedded fields that reuqire scanning.
+	// EmbedFields contains the embedded fields that require scanning.
 	EmbedFields []string
 }
 
 func (gf Field) Tag() string {
-	tags := make([]string, 0, len(gf.Tags))
-	for key, val := range gf.Tags {
-		tags = append(tags, fmt.Sprintf("%s:\"%s\"", key, val))
-	}
-	if len(tags) == 0 {
-		return ""
-	}
-	sort.Strings(tags)
-	return strings.Join(tags, " ")
+	return TagsToString(gf.Tags)
 }
 
 func (gf Field) HasSqlcSlice() bool {
 	return gf.Column.IsSqlcSlice
+}
+
+func TagsToString(tags map[string]string) string {
+	if len(tags) == 0 {
+		return ""
+	}
+	tagParts := make([]string, 0, len(tags))
+	for key, val := range tags {
+		tagParts = append(tagParts, fmt.Sprintf("%s:\"%s\"", key, val))
+	}
+	sort.Strings(tagParts)
+	return strings.Join(tagParts, " ")
 }
 
 func JSONTagName(name string, settings *plugin.Settings) string {
@@ -57,7 +62,14 @@ func SetCaseStyle(name string, style string) string {
 	}
 }
 
+var camelPattern = regexp.MustCompile("[^A-Z][A-Z]+")
+
 func toSnakeCase(s string) string {
+	if !strings.ContainsRune(s, '_') {
+		s = camelPattern.ReplaceAllStringFunc(s, func(x string) string {
+			return x[:1] + "_" + x[1:]
+		})
+	}
 	return strings.ToLower(s)
 }
 

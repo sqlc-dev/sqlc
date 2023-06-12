@@ -32,8 +32,8 @@ func (e *BookType) Scan(src interface{}) error {
 }
 
 type NullBookType struct {
-	BookType BookType
-	Valid    bool // Valid is true if BookType is not NULL
+	BookType BookType `json:"book_type"`
+	Valid    bool     `json:"valid"` // Valid is true if BookType is not NULL
 }
 
 // Scan implements the Scanner interface.

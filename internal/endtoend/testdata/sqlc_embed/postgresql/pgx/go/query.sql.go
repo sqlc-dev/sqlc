@@ -118,7 +118,7 @@ INNER JOIN baz.users bu ON users.id = bu.id
 
 type WithCrossSchemaRow struct {
 	User    User    `db:"user" json:"user"`
-	BazUser BazUser `db:"bazuser" json:"bazuser"`
+	BazUser BazUser `db:"baz_user" json:"baz_user"`
 }
 
 func (q *Queries) WithCrossSchema(ctx context.Context) ([]WithCrossSchemaRow, error) {
@@ -152,7 +152,7 @@ SELECT bu.id, bu.name FROM baz.users bu
 `
 
 type WithSchemaRow struct {
-	BazUser BazUser `db:"bazuser" json:"bazuser"`
+	BazUser BazUser `db:"baz_user" json:"baz_user"`
 }
 
 func (q *Queries) WithSchema(ctx context.Context) (WithSchemaRow, error) {
