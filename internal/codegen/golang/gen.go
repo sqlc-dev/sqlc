@@ -28,6 +28,7 @@ type tmplCtx struct {
 	SourceName string
 
 	EmitJSONTags              bool
+	JsonTagsIDCamelcase       bool
 	EmitDBTags                bool
 	EmitPreparedQueries       bool
 	EmitInterface             bool
@@ -122,6 +123,7 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 	tctx := tmplCtx{
 		EmitInterface:             golang.EmitInterface,
 		EmitJSONTags:              golang.EmitJsonTags,
+		JsonTagsIDCamelcase:       golang.JsonTagsIDCamelcase,
 		EmitDBTags:                golang.EmitDbTags,
 		EmitPreparedQueries:       golang.EmitPreparedQueries,
 		EmitEmptySlices:           golang.EmitEmptySlices,
