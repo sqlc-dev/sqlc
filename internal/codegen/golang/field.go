@@ -42,10 +42,11 @@ func TagsToString(tags map[string]string) string {
 
 func JSONTagName(name string, settings *plugin.Settings) string {
 	style := settings.Go.JsonTagsCaseStyle
+	idCamelcase := settings.Go.JsonTagsIDCamelcase
 	if style == "" || style == "none" {
 		return name
 	} else {
-		return SetCaseStyle(name, style)
+		return SetJSONCaseStyle(name, style, idCamelcase)
 	}
 }
 
@@ -53,6 +54,19 @@ func SetCaseStyle(name string, style string) string {
 	switch style {
 	case "camel":
 		return toCamelCase(name)
+	case "pascal":
+		return toPascalCase(name)
+	case "snake":
+		return toSnakeCase(name)
+	default:
+		panic(fmt.Sprintf("unsupported JSON tags case style: '%s'", style))
+	}
+}
+
+func SetJSONCaseStyle(name string, style string, idCamelcase bool) string {
+	switch style {
+	case "camel":
+		return toJsonCamelCase(name, idCamelcase)
 	case "pascal":
 		return toPascalCase(name)
 	case "snake":
@@ -90,6 +104,28 @@ func toCamelInitCase(name string, initUpper bool) string {
 		}
 		if p == "id" {
 			out += "ID"
+		} else {
+			out += strings.Title(p)
+		}
+	}
+	return out
+}
+
+func toJsonCamelCase(name string, idCamelcase bool) string {
+	out := ""
+	idStr := "ID"
+
+	if idCamelcase {
+		idStr = "Id"
+	}
+
+	for i, p := range strings.Split(name, "_") {
+		if i == 0 {
+			out += p
+			continue
+		}
+		if p == "id" {
+			out += idStr
 		} else {
 			out += strings.Title(p)
 		}
