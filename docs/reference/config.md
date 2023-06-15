@@ -105,6 +105,9 @@ The `gen` mapping supports the following keys:
   - If true, parameters are passed as pointers to structs. Defaults to `false`.
 - `emit_methods_with_db_argument`:
   - If true, generated methods will accept a DBTX argument instead of storing a DBTX on the `*Queries` struct. Defaults to `false`.
+- `emit_methods_arg_with_struct`:
+  - If true, generated methods will always have struct argument even if number of arugments is 1. Defaults to `false`.
+- `emit_enum_valid_method`:
 - `emit_enum_valid_method`:
   - If true, generate a Valid method on enum types,
     indicating whether a string is a valid enum value.

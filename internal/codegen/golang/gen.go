@@ -29,6 +29,7 @@ type tmplCtx struct {
 
 	EmitJSONTags              bool
 	JsonTagsIDCamelcase       bool
+	EmitMethodsArgWithStruct  bool
 	EmitDBTags                bool
 	EmitPreparedQueries       bool
 	EmitInterface             bool

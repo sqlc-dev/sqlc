@@ -468,6 +468,7 @@ type GoCode struct {
 	QueryParameterLimit         *int32   `protobuf:"varint,23,opt,name=query_parameter_limit,json=queryParameterLimit,proto3,oneof" json:"query_parameter_limit,omitempty"`
 	OutputBatchFileName         string   `protobuf:"bytes,24,opt,name=output_batch_file_name,json=outputBatchFileName,proto3" json:"output_batch_file_name,omitempty"`
 	JsonTagsIDCamelcase         bool     `protobuf:"varint,26,opt,name=json_tags_id_camelcase,json=jsonTagsIdCamelcase,proto3" json:"json_tags_id_camelcase,omitempty"`
+	EmitMethodsArgWithStruct    bool     `protobuf:"varint,27,opt,name=emit_methods_arg_with_struct,json=emitMethodsArgWithStruct,proto3" json:"emit_methods_arg_with_struct,omitempty"`
 }
 
 func (x *GoCode) Reset() {
@@ -519,6 +520,13 @@ func (x *GoCode) GetEmitJsonTags() bool {
 func (x *GoCode) GetJsonTagsIDCamelcase() bool {
 	if x != nil {
 		return x.JsonTagsIDCamelcase
+	}
+	return false
+}
+
+func (x *GoCode) GetEmitMethodsArgWithStruct() bool {
+	if x != nil {
+		return x.EmitMethodsArgWithStruct
 	}
 	return false
 }

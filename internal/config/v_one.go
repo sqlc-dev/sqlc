@@ -26,6 +26,7 @@ type v1PackageSettings struct {
 	EmitInterface             bool       `json:"emit_interface" yaml:"emit_interface"`
 	EmitJSONTags              bool       `json:"emit_json_tags" yaml:"emit_json_tags"`
 	JsonTagsIDCamelcase       bool       `json:"json_tags_id_camelcase" yaml:"json_tags_id_camelcase"`
+	EmitMethodsArgWithStruct  bool       `json:"emit_methods_arg_with_struct" yaml:"emit_methods_arg_with_struct"`
 	EmitDBTags                bool       `json:"emit_db_tags" yaml:"emit_db_tags"`
 	EmitPreparedQueries       bool       `json:"emit_prepared_queries" yaml:"emit_prepared_queries"`
 	EmitExactTableNames       bool       `json:"emit_exact_table_names,omitempty" yaml:"emit_exact_table_names"`
@@ -145,6 +146,7 @@ func (c *V1GenerateSettings) Translate() Config {
 					EmitInterface:             pkg.EmitInterface,
 					EmitJSONTags:              pkg.EmitJSONTags,
 					JsonTagsIDCamelcase:       pkg.JsonTagsIDCamelcase,
+					EmitMethodsArgWithStruct:  pkg.EmitMethodsArgWithStruct,
 					EmitDBTags:                pkg.EmitDBTags,
 					EmitPreparedQueries:       pkg.EmitPreparedQueries,
 					EmitExactTableNames:       pkg.EmitExactTableNames,

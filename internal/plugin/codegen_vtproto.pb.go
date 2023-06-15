@@ -173,6 +173,7 @@ func (m *GoCode) CloneVT() *GoCode {
 		EmitInterface:             m.EmitInterface,
 		EmitJsonTags:              m.EmitJsonTags,
 		JsonTagsIDCamelcase:       m.JsonTagsIDCamelcase,
+		EmitMethodsArgWithStruct:  m.EmitMethodsArgWithStruct,
 		EmitDbTags:                m.EmitDbTags,
 		EmitPreparedQueries:       m.EmitPreparedQueries,
 		EmitExactTableNames:       m.EmitExactTableNames,
@@ -756,6 +757,9 @@ func (this *GoCode) EqualVT(that *GoCode) bool {
 		return false
 	}
 	if this.JsonTagsIDCamelcase != that.JsonTagsIDCamelcase {
+		return false
+	}
+	if this.EmitMethodsArgWithStruct != that.EmitMethodsArgWithStruct {
 		return false
 	}
 	if this.EmitDbTags != that.EmitDbTags {
@@ -2009,6 +2013,16 @@ func (m *GoCode) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		}
 		i--
 		dAtA[i] = 0x64
+	}
+	if m.EmitMethodsArgWithStruct {
+		i--
+		if m.EmitMethodsArgWithStruct {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x65
 	}
 	if m.EmitInterface {
 		i--
@@ -3582,6 +3596,16 @@ func (m *GoCode) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x64
 	}
+	if m.EmitMethodsArgWithStruct {
+		i--
+		if m.EmitMethodsArgWithStruct {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x65
+	}
 	return len(dAtA) - i, nil
 }
 
@@ -4630,6 +4654,9 @@ func (m *GoCode) SizeVT() (n int) {
 		n += 2
 	}
 	if m.JsonTagsIDCamelcase {
+		n += 2
+	}
+	if m.EmitMethodsArgWithStruct {
 		n += 2
 	}
 	if m.EmitDbTags {
@@ -7054,6 +7081,26 @@ func (m *GoCode) UnmarshalVT(dAtA []byte) error {
 				}
 			}
 			m.JsonTagsIDCamelcase = bool(v != 0)
+		case 27:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field EmitMethodsArgWithStruct", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.EmitMethodsArgWithStruct = bool(v != 0)
 		default:
 			iNdEx = preIndex
 			skippy, err := skip(dAtA[iNdEx:])
