@@ -211,8 +211,9 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 		sqlpkg := parseDriver(req.Settings.Go.SqlPackage)
 
 		qpl := int(*req.Settings.Go.QueryParameterLimit)
+		emitMethodsArgWithStruct := req.Settings.Go.EmitMethodsArgWithStruct
 
-		if len(query.Params) == 1 && qpl != 0 {
+		if len(query.Params) == 1 && qpl != 0 && !emitMethodsArgWithStruct {
 			p := query.Params[0]
 			gq.Arg = QueryValue{
 				Name:      paramName(p),
@@ -241,7 +242,7 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 				EmitPointer: req.Settings.Go.EmitParamsStructPointers,
 			}
 
-			if len(query.Params) <= qpl {
+			if len(query.Params) <= qpl && !emitMethodsArgWithStruct {
 				gq.Arg.Emit = false
 			}
 		}
