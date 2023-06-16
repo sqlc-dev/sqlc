@@ -44,6 +44,7 @@ func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int 
 	rootCmd.AddCommand(initCmd)
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(uploadCmd)
+	rootCmd.AddCommand(NewCmdVet())
 
 	rootCmd.SetArgs(args)
 	rootCmd.SetIn(stdin)
