@@ -430,3 +430,65 @@ func checkIncompatibleFieldTypes(fields []Field) error {
 	}
 	return nil
 }
+func findStructByName(structs []Struct, structName string) (Struct, bool) {
+	for _, s := range structs {
+		if s.Name == structName {
+			return s, true
+		}
+	}
+	return Struct{}, false
+}
+func findEnumByName(enums []Enum, enumName string) (Enum, bool) {
+	for _, e := range enums {
+		if e.Name == enumName {
+			return e, true
+		}
+	}
+	return Enum{}, false
+}
+
+func removeUnused(enums []Enum, structs []Struct, queries []Query) ([]Enum, []Struct) {
+	filteredStructs := make(map[string]Struct, len(structs))
+	for _, query := range queries {
+		if query.hasRetType() && query.Ret.IsStruct() {
+			structName := query.Ret.Struct.Name
+			_, ok := filteredStructs[structName]
+			if !ok {
+				s, ok := findStructByName(structs, structName)
+				if ok {
+					filteredStructs[structName] = s
+				}
+			}
+		}
+		if query.Arg.IsStruct() {
+			structName := query.Arg.Struct.Name
+			_, ok := filteredStructs[structName]
+			if !ok {
+				s, ok := findStructByName(structs, structName)
+				if ok {
+					filteredStructs[structName] = s
+				}
+			}
+		}
+	}
+	filteredStructsSlice := make([]Struct, 0, len(filteredStructs))
+	filteredEnums := make(map[string]Enum, len(enums))
+	for _, s := range filteredStructs {
+		for _, field := range s.Fields {
+			if _, ok := filteredEnums[field.Type]; ok {
+				continue
+			}
+			enum, ok := findEnumByName(enums, field.Type)
+			if !ok {
+				continue
+			}
+			filteredEnums[field.Type] = enum
+		}
+		filteredStructsSlice = append(filteredStructsSlice, s)
+	}
+	filteredEnumsSlice := make([]Enum, 0, len(filteredEnums))
+	for _, enum := range filteredEnums {
+		filteredEnumsSlice = append(filteredEnumsSlice, enum)
+	}
+	return filteredEnumsSlice, filteredStructsSlice
+}
