@@ -26,6 +26,9 @@ import (
 
 func init() {
 	uploadCmd.Flags().BoolP("dry-run", "", false, "dump upload request (default: false)")
+	initCmd.Flags().BoolP("v1", "", false, "generate v1 config yaml file")
+	initCmd.Flags().BoolP("v2", "", true, "generate v2 config yaml file")
+	initCmd.MarkFlagsMutuallyExclusive("v1", "v2")
 }
 
 // Do runs the command logic.
@@ -88,6 +91,17 @@ var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Create an empty sqlc.yaml settings file",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		useV1, err := cmd.Flags().GetBool("v1")
+		if err != nil {
+			return err
+		}
+		var yamlConfig interface{}
+		if useV1 {
+			yamlConfig = config.V1GenerateSettings{Version: "1"}
+		} else {
+			yamlConfig = config.Config{Version: "2"}
+		}
+
 		defer trace.StartRegion(cmd.Context(), "init").End()
 		file := "sqlc.yaml"
 		if f := cmd.Flag("file"); f != nil && f.Changed {
@@ -97,13 +111,24 @@ var initCmd = &cobra.Command{
 			}
 		}
 		if _, err := os.Stat(file); !os.IsNotExist(err) {
+			fmt.Printf("%s is already created\n", file)
 			return nil
 		}
-		blob, err := yaml.Marshal(config.V1GenerateSettings{Version: "1"})
+		blob, err := yaml.Marshal(yamlConfig)
 		if err != nil {
 			return err
 		}
-		return os.WriteFile(file, blob, 0644)
+		err = os.WriteFile(file, blob, 0644)
+		if err != nil {
+			return err
+		}
+		configDoc := "https://docs.sqlc.dev/en/stable/reference/config.html"
+		fmt.Printf(
+			"%s is added. Please visit %s to learn more about configuration\n",
+			file,
+			configDoc,
+		)
+		return nil
 	},
 }
 
