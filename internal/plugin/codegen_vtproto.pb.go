@@ -193,6 +193,7 @@ func (m *GoCode) CloneVT() *GoCode {
 		EmitAllEnumValues:         m.EmitAllEnumValues,
 		EmitPointersForNullTypes:  m.EmitPointersForNullTypes,
 		OutputBatchFileName:       m.OutputBatchFileName,
+		EmitFilterUnusedModels:    m.EmitFilterUnusedModels,
 	}
 	if rhs := m.InflectionExcludeTableNames; rhs != nil {
 		tmpContainer := make([]string, len(rhs))
@@ -827,6 +828,9 @@ func (this *GoCode) EqualVT(that *GoCode) bool {
 		return false
 	}
 	if this.SqlDriver != that.SqlDriver {
+		return false
+	}
+	if this.EmitFilterUnusedModels != that.EmitFilterUnusedModels {
 		return false
 	}
 	return string(this.unknownFields) == string(that.unknownFields)
@@ -1771,6 +1775,18 @@ func (m *GoCode) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m.unknownFields != nil {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
+	}
+	if m.EmitFilterUnusedModels {
+		i--
+		if m.EmitFilterUnusedModels {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xd0
 	}
 	if len(m.SqlDriver) > 0 {
 		i -= len(m.SqlDriver)
@@ -3324,6 +3340,18 @@ func (m *GoCode) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if m.EmitFilterUnusedModels {
+		i--
+		if m.EmitFilterUnusedModels {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xd0
+	}
 	if len(m.SqlDriver) > 0 {
 		i -= len(m.SqlDriver)
 		copy(dAtA[i:], m.SqlDriver)
@@ -4686,6 +4714,9 @@ func (m *GoCode) SizeVT() (n int) {
 	l = len(m.SqlDriver)
 	if l > 0 {
 		n += 2 + l + sov(uint64(l))
+	}
+	if m.EmitFilterUnusedModels {
+		n += 3
 	}
 	n += len(m.unknownFields)
 	return n
@@ -7007,6 +7038,26 @@ func (m *GoCode) UnmarshalVT(dAtA []byte) error {
 			}
 			m.SqlDriver = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+		case 26:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field EmitFilterUnusedModels", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.EmitFilterUnusedModels = bool(v != 0)
 		default:
 			iNdEx = preIndex
 			skippy, err := skip(dAtA[iNdEx:])

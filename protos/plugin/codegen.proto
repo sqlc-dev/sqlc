@@ -98,6 +98,7 @@ message GoCode
   bool emit_pointers_for_null_types = 22;
   optional int32 query_parameter_limit = 23;
   string output_batch_file_name = 24;
+  bool emit_filter_unused_models = 26;
 }
 
 message JSONCode

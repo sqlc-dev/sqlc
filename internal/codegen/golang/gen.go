@@ -107,7 +107,9 @@ func Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plugin.CodeGenR
 	if err != nil {
 		return nil, err
 	}
-	enums, structs = removeUnused(enums, structs, queries)
+	if req.Settings.Go.EmitFilterUnusedModels {
+		enums, structs = removeUnused(enums, structs, queries)
+	}
 	return generate(req, enums, structs, queries)
 }
 

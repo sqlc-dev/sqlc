@@ -83,6 +83,7 @@ func pluginGoCode(s config.SQLGo) *plugin.GoCode {
 
 	return &plugin.GoCode{
 		EmitInterface:               s.EmitInterface,
+		EmitFilterUnusedModels:      s.EmitFilterUnusedModels,
 		EmitJsonTags:                s.EmitJSONTags,
 		EmitDbTags:                  s.EmitDBTags,
 		EmitPreparedQueries:         s.EmitPreparedQueries,
