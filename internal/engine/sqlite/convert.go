@@ -20,9 +20,9 @@ type node interface {
 	GetParser() antlr.Parser
 }
 
-func todo(n node) *ast.TODO {
+func todo(funcname string, n node) *ast.TODO {
 	if debug.Active {
-		log.Printf("sqlite.convert: Unknown node type %T\n", n)
+		log.Printf("sqlite.%s: Unknown node type %T\n", funcname, n)
 	}
 	return &ast.TODO{}
 }
@@ -92,7 +92,7 @@ func (c *cc) convertAlter_table_stmtContext(n *parser.Alter_table_stmtContext) a
 		return stmt
 	}
 
-	return todo(n)
+	return todo("convertAlter_table_stmtContext", n)
 }
 
 func (c *cc) convertAttach_stmtContext(n *parser.Attach_stmtContext) ast.Node {
@@ -179,7 +179,7 @@ func (c *cc) convertDelete_stmtContext(n *parser.Delete_stmtContext) ast.Node {
 		return delete
 	}
 
-	return todo(n)
+	return todo("convertDelete_stmtContext", n)
 }
 
 func (c *cc) convertDrop_stmtContext(n *parser.Drop_stmtContext) ast.Node {
@@ -196,7 +196,7 @@ func (c *cc) convertDrop_stmtContext(n *parser.Drop_stmtContext) ast.Node {
 			Tables:   []*ast.TableName{&name},
 		}
 	}
-	return todo(n)
+	return todo("convertDrop_stmtContext", n)
 }
 
 func (c *cc) convertFuncContext(n *parser.Expr_functionContext) ast.Node {
@@ -239,7 +239,7 @@ func (c *cc) convertFuncContext(n *parser.Expr_functionContext) ast.Node {
 		}
 	}
 
-	return todo(n)
+	return todo("convertFuncContext", n)
 }
 
 func (c *cc) convertExprContext(n *parser.ExprContext) ast.Node {
@@ -445,7 +445,7 @@ func (c *cc) convertOrderby_stmtContext(n parser.IOrder_by_stmtContext) ast.Node
 		}
 		return list
 	}
-	return todo(n)
+	return todo("convertOrderby_stmtContext", n)
 }
 
 func (c *cc) convertLimit_stmtContext(n parser.ILimit_stmtContext) (ast.Node, ast.Node) {
@@ -572,7 +572,7 @@ func (c *cc) convertLiteral(n *parser.Expr_literalContext) ast.Node {
 			}
 		}
 	}
-	return todo(n)
+	return todo("convertLiteral", n)
 }
 
 func (c *cc) convertMathOperationNode(n *parser.Expr_math_opContext) ast.Node {
@@ -624,41 +624,11 @@ func (c *cc) convertParam(n *parser.Expr_bindContext) ast.Node {
 		}
 	}
 
-	return todo(n)
+	return todo("convertParam", n)
 }
 
 func (c *cc) convertInSelectNode(n *parser.Expr_in_selectContext) ast.Node {
-	if n.IN_() == nil && n.EXISTS_() == nil {
-		return c.convert(n.Select_stmt())
-	}
-
-	lexpr := c.convert(n.Expr(0))
-	rexprs := []ast.Node{}
-	for i, expr := range n.AllExpr()[1:] {
-		if i == 0 {
-			continue
-		}
-		e := c.convert(expr)
-		switch t := e.(type) {
-		case *ast.List:
-			rexprs = append(rexprs, t.Items...)
-		default:
-			rexprs = append(rexprs, t)
-		}
-	}
-
-	var subquery ast.Node = nil
-	if n.Select_stmt() != nil {
-		subquery = c.convert(n.Select_stmt())
-	}
-
-	return &ast.In{
-		Expr:     lexpr,
-		List:     rexprs,
-		Not:      n.NOT_() != nil,
-		Sel:      subquery,
-		Location: n.GetStart().GetStart(),
-	}
+	return c.convert(n.Select_stmt())
 }
 
 func (c *cc) convertReturning_caluseContext(n parser.IReturning_clauseContext) *ast.List {
@@ -930,7 +900,7 @@ func (c *cc) convert(node node) ast.Node {
 
 	case *parser.Factored_select_stmtContext:
 		// TODO: need to handle this
-		return todo(n)
+		return todo("convert(case=parser.Factored_select_stmtContext)", n)
 
 	case *parser.Insert_stmtContext:
 		return c.convertInsert_stmtContext(n)
@@ -948,6 +918,6 @@ func (c *cc) convert(node node) ast.Node {
 		return c.convertUpdate_stmtContext(n)
 
 	default:
-		return todo(n)
+		return todo("convert(case=default)", n)
 	}
 }
