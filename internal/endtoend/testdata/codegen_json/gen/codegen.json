@@ -40,7 +40,8 @@
       "inflection_exclude_table_names": [],
       "emit_pointers_for_null_types": false,
       "query_parameter_limit": 1,
-      "output_batch_file_name": ""
+      "output_batch_file_name": "",
+      "emit_filter_unused_models": false
     },
     "json": {
       "out": "gen",
