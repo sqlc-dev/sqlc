@@ -114,7 +114,7 @@ func pluginGoType(o config.Override) *plugin.ParsedGoType {
 	// Note that there is a slight mismatch between this and the
 	// proto api. The GoType on the override is the unparsed type,
 	// which could be a qualified path or an object, as per
-	// https://docs.sqlc.dev/en/latest/reference/config.html#renaming-struct-fields
+	// https://docs.sqlc.dev/en/v1.18.0/reference/config.html#type-overriding
 	return &plugin.ParsedGoType{
 		ImportPath: o.GoImportPath,
 		Package:    o.GoPackage,

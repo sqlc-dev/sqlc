@@ -257,9 +257,7 @@ func (i *importer) interfaceImports() fileImports {
 }
 
 func (i *importer) modelImports() fileImports {
-	std, pkg := buildImports(i.Settings, nil, func(prefix string) bool {
-		return i.usesType(prefix)
-	})
+	std, pkg := buildImports(i.Settings, nil, i.usesType)
 
 	if len(i.Enums) > 0 {
 		std["fmt"] = struct{}{}
@@ -462,15 +460,9 @@ func (i *importer) batchImports() fileImports {
 	return sortedImports(std, pkg)
 }
 
-func trimSliceAndPointerPrefix(v string) string {
-	v = strings.TrimPrefix(v, "[]")
-	v = strings.TrimPrefix(v, "*")
-	return v
-}
-
 func hasPrefixIgnoringSliceAndPointerPrefix(s, prefix string) bool {
-	trimmedS := trimSliceAndPointerPrefix(s)
-	trimmedPrefix := trimSliceAndPointerPrefix(prefix)
+	trimmedS := strings.TrimLeft(s, "*[]")
+	trimmedPrefix := strings.TrimLeft(prefix, "*[]")
 	return strings.HasPrefix(trimmedS, trimmedPrefix)
 }
 

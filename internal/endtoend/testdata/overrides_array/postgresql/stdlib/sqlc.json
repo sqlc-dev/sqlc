@@ -1,0 +1,22 @@
+{
+    "version": "2",
+    "sql": [{
+        "schema": "query.sql",
+        "queries": "query.sql",
+        "engine": "postgresql",
+        "gen": {
+            "go": {
+                "package": "query",
+                "out": "query",
+                "overrides": [{
+                  "column": "authors.tags",
+                  "go_type": {
+                    "type": "NullInt64",
+                    "import": "database/sql",
+                    "slice": true
+                  }
+                }]
+            }
+      }
+    }]
+  }
