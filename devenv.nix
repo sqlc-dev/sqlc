@@ -7,5 +7,6 @@
     pkgs.go
     pkgs.git
     pkgs.git-cliff
+    pkgs.python311
   ];
 }
