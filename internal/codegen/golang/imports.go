@@ -460,9 +460,15 @@ func (i *importer) batchImports() fileImports {
 	return sortedImports(std, pkg)
 }
 
+func trimSliceAndPointerPrefix(v string) string {
+	v = strings.TrimPrefix(v, "[]")
+	v = strings.TrimPrefix(v, "*")
+	return v
+}
+
 func hasPrefixIgnoringSliceAndPointerPrefix(s, prefix string) bool {
-	trimmedS := strings.TrimLeft(s, "*[]")
-	trimmedPrefix := strings.TrimLeft(prefix, "*[]")
+	trimmedS := trimSliceAndPointerPrefix(s)
+	trimmedPrefix := trimSliceAndPointerPrefix(prefix)
 	return strings.HasPrefix(trimmedS, trimmedPrefix)
 }
 
