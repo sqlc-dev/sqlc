@@ -120,7 +120,9 @@ func (v QueryValue) Params() string {
 			} else if !v.EmitStruct() && v.IsStruct() {
 				out = append(out, toLowerCase(f.Name))
 			} else {
-				out = append(out, v.Name+"."+f.Name)
+				if !f.Column.IsFilter {
+					out = append(out, v.Name+"."+f.Name)
+				}
 			}
 		}
 	}
@@ -200,6 +202,8 @@ type Query struct {
 	SourceName   string
 	Ret          QueryValue
 	Arg          QueryValue
+	HasFilter    bool
+	HasOrderBy   bool
 	// Used for :copyfrom
 	Table *plugin.Identifier
 }

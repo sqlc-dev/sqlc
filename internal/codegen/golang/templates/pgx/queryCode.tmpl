@@ -28,10 +28,18 @@ type {{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
 {{end -}}
 {{- if $.EmitMethodsWithDBArgument -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) ({{.Ret.DefineType}}, error) {
-	row := db.QueryRow(ctx, {{.ConstantName}}, {{.Arg.Params}})
+    sql := {{.ConstantName}}
+{{ if .HasFilter -}}
+    sql = strings.Replace(sql, "@filter::text", arg.Filter, -1)
+{{- end}}
+	row := db.QueryRow(ctx, sql, {{.Arg.Params}})
 {{- else -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.DefineType}}, error) {
-	row := q.db.QueryRow(ctx, {{.ConstantName}}, {{.Arg.Params}})
+    sql := {{.ConstantName}}
+{{ if .HasFilter -}}
+    sql = strings.Replace(sql, "@filter::text", arg.Filter, -1)
+{{- end}}
+	row := q.db.QueryRow(ctx, sql, {{.Arg.Params}})
 {{- end}}
 	{{- if ne .Arg.Pair .Ret.Pair }}
 	var {{.Ret.Name}} {{.Ret.Type}}
@@ -46,10 +54,18 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.De
 {{end -}}
 {{- if $.EmitMethodsWithDBArgument -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error) {
-	rows, err := db.Query(ctx, {{.ConstantName}}, {{.Arg.Params}})
+    sql := {{.ConstantName}}
+{{ if .HasFilter -}}
+    sql = strings.Replace(sql, "@filter::text", arg.Filter, -1)
+{{- end}}
+	rows, err := db.Query(ctx, sql, {{.Arg.Params}})
 {{- else -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error) {
-	rows, err := q.db.Query(ctx, {{.ConstantName}}, {{.Arg.Params}})
+func (q *Queries) {{.MethodName}}XXX(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error) {
+    sql := {{.ConstantName}}
+{{ if .HasFilter -}}
+    sql = strings.Replace(sql, "@filter::text", arg.Filter, -1)
+{{- end}}
+	rows, err := q.db.Query(ctx, sql, {{.Arg.Params}})
 {{- end}}
 	if err != nil {
 		return nil, err
