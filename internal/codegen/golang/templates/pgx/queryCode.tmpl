@@ -69,7 +69,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) (
 {{- end}}
 	rows, err := db.Query(ctx, sql, {{.Arg.Params}})
 {{- else -}}
-func (q *Queries) {{.MethodName}}XXX(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error) {
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error) {
     sql := {{.ConstantName}}
 {{ if (gt .FilterNumber 0) -}}
     sql = strings.Replace(sql, "${{.FilterNumber}}::text", arg.Filter, -1)
