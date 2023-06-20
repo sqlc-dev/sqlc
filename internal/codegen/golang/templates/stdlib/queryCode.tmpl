@@ -120,7 +120,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 
 {{define "queryCodeStdExec"}}
     {{- if .Arg.HasSqlcSlices }}
-        sql := {{.ConstantName}}
+        query := {{.ConstantName}}
         var queryParams []interface{}
         {{- if .Arg.Struct }}
             {{- $arg := .Arg }}
@@ -130,9 +130,9 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
                       for _, v := range {{$arg.Name}}.{{.Name}} {
                         queryParams = append(queryParams, v)
                       }
-                      sql = strings.Replace(sql, "/*SLICE:{{.Column.Name}}*/?", strings.Repeat(",?", len({{$arg.Name}}.{{.Name}}))[1:], 1)
+                      query = strings.Replace(query, "/*SLICE:{{.Column.Name}}*/?", strings.Repeat(",?", len({{$arg.Name}}.{{.Name}}))[1:], 1)
                     } else {
-                      sql = strings.Replace(sql, "/*SLICE:{{.Column.Name}}*/?", "NULL", 1)
+                      query = strings.Replace(query, "/*SLICE:{{.Column.Name}}*/?", "NULL", 1)
                     }
                 {{- else }}
                   queryParams = append(queryParams, {{$arg.Name}}.{{.Name}})
@@ -147,12 +147,12 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
               for _, v := range {{.Arg.Name}} {
                 queryParams = append(queryParams, v)
               }
-              sql = strings.Replace(sql, "/*SLICE:{{.Arg.Column.Name}}*/?", strings.Repeat(",?", len({{.Arg.Name}}))[1:], 1)
+              query = strings.Replace(query, "/*SLICE:{{.Arg.Column.Name}}*/?", strings.Repeat(",?", len({{.Arg.Name}}))[1:], 1)
             } else {
-              sql = strings.Replace(sql, "/*SLICE:{{.Arg.Column.Name}}*/?", "NULL", 1)
+              query = strings.Replace(query, "/*SLICE:{{.Arg.Column.Name}}*/?", "NULL", 1)
             }
         {{- end }}
-        {{ queryRetval . }} {{ queryMethod . }}(ctx, sql, queryParams...)
+        {{ queryRetval . }} {{ queryMethod . }}(ctx, query, queryParams...)
     {{- else if emitPreparedQueries }}
         {{- queryRetval . }} {{ queryMethod . }}(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
     {{- else}}
