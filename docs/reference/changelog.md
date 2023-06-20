@@ -1,7 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [1.18.0](https://github.com/kyleconroy/sqlc/releases/tag/1.18.0)
+## [1.18.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.18.0)
 Released 2023-04-27
 
 ### Release notes
@@ -260,14 +260,14 @@ genreated method will use a argument struct.
 
 - Upgrade to wasmtime v8.0.0 (#2222)
 
-## [1.17.2](https://github.com/kyleconroy/sqlc/releases/tag/1.17.2)
+## [1.17.2](https://github.com/kyleconroy/sqlc/releases/tag/v1.17.2)
 Released 2023-02-22
 
 ### Bug Fixes
 
 - Fix build on Windows (#2102)
 
-## [1.17.1](https://github.com/kyleconroy/sqlc/releases/tag/1.17.1)
+## [1.17.1](https://github.com/kyleconroy/sqlc/releases/tag/v1.17.1)
 Released 2023-02-22
 
 ### Bug Fixes
@@ -284,7 +284,7 @@ Released 2023-02-22
 
 - (deps) Bump golang from 1.20.0 to 1.20.1 (#2082)
 
-## [1.17.0](https://github.com/kyleconroy/sqlc/releases/tag/1.17.0)
+## [1.17.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.17.0)
 Released 2023-02-13
 
 ### Bug Fixes
@@ -360,7 +360,7 @@ Released 2023-02-13
 
 - Upgrade to wasmtime 5.0.0 (#2065)
 
-## [1.16.0](https://github.com/kyleconroy/sqlc/releases/tag/1.16.0)
+## [1.16.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.16.0)
 Released 2022-11-09
 
 
@@ -432,7 +432,7 @@ Released 2022-11-09
 - Port all Python tests to sqlc-gen-python (#1907)
 - Upgrade to sqlc-gen-python v1.0.0 (#1932)
 
-## [1.15.0](https://github.com/kyleconroy/sqlc/releases/tag/1.15.0)
+## [1.15.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.15.0)
 Released 2022-08-07
 
 ### Bug Fixes
@@ -481,7 +481,7 @@ Released 2022-08-07
 - (wasm) Change default cache location (#1709)
 - (wasm) Change the SHA-256 config key (#1710)
 
-## [1.14.0](https://github.com/kyleconroy/sqlc/releases/tag/1.14.0)
+## [1.14.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.14.0)
 Released 2022-06-09
 
 ### Bug Fixes
