@@ -231,12 +231,10 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 			for _, p := range query.Params {
 				number := int(p.Number)
 				if p.Column.Name == "filter" && p.Column.Table == nil {
-					fmt.Println("Filter found:", number)
 					gq.FilterNumber = number
 					filterNumber = number
 				}
 				if p.Column.Name == "orderby" && p.Column.Table == nil {
-					fmt.Println("OrderBy found:", p.Number)
 					gq.OrderByNumber = number
 					orderByNumber = number
 				}
