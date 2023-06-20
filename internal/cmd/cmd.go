@@ -49,7 +49,6 @@ func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int 
 	rootCmd.SetIn(stdin)
 	rootCmd.SetOut(stdout)
 	rootCmd.SetErr(stderr)
-	rootCmd.SilenceErrors = true
 
 	ctx := context.Background()
 	if debug.Debug.Trace != "" {
@@ -79,9 +78,9 @@ var versionCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		defer trace.StartRegion(cmd.Context(), "version").End()
 		if version == "" {
-			fmt.Printf("%s\n", info.Version)
+			fmt.Fprintf(cmd.OutOrStdout(), "%s\n", info.Version)
 		} else {
-			fmt.Printf("%s\n", version)
+			fmt.Fprintf(cmd.OutOrStdout(), "%s\n", version)
 		}
 		return nil
 	},
@@ -191,7 +190,7 @@ var genCmd = &cobra.Command{
 		dir, name := getConfigPath(stderr, cmd.Flag("file"))
 		output, err := Generate(cmd.Context(), ParseEnv(cmd), dir, name, stderr)
 		if err != nil {
-			return err
+			os.Exit(1)
 		}
 		defer trace.StartRegion(cmd.Context(), "writefiles").End()
 		for filename, source := range output {
