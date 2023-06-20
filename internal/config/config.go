@@ -62,7 +62,7 @@ type Config struct {
 	SQL     []SQL    `json:"sql" yaml:"sql"`
 	Gen     Gen      `json:"overrides,omitempty" yaml:"overrides"`
 	Plugins []Plugin `json:"plugins" yaml:"plugins"`
-	Checks  []Check  `json:"checks" yaml:"checks"`
+	Rules   []Rule   `json:"rules" yaml:"rules"`
 }
 
 type Project struct {
@@ -86,9 +86,10 @@ type Plugin struct {
 	} `json:"wasm" yaml:"wasm"`
 }
 
-type Check struct {
+type Rule struct {
 	Name string `json:"name" yaml:"name"`
-	Expr string `json:"expr" yaml:"expr"`
+	Rule string `json:"rule" yaml:"rule"`
+	Msg  string `json:"message" yaml:"message"`
 }
 
 type Gen struct {
@@ -108,7 +109,7 @@ type SQL struct {
 	StrictOrderBy        *bool     `json:"strict_order_by" yaml:"strict_order_by"`
 	Gen                  SQLGen    `json:"gen" yaml:"gen"`
 	Codegen              []Codegen `json:"codegen" yaml:"codegen"`
-	Checks               []string  `json:"checks" yaml:"checks"`
+	Rules                []string  `json:"rules" yaml:"rules"`
 }
 
 // TODO: Figure out a better name for this

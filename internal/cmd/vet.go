@@ -1,13 +1,14 @@
 package cmd
 
 import (
-	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"runtime/trace"
+	"strings"
 
 	"github.com/google/cel-go/cel"
 	"github.com/spf13/cobra"
@@ -18,6 +19,8 @@ import (
 	"github.com/kyleconroy/sqlc/internal/plugin"
 )
 
+var ErrFailedChecks = errors.New("failed checks")
+
 func NewCmdVet() *cobra.Command {
 	return &cobra.Command{
 		Use:   "vet",
@@ -27,7 +30,9 @@ func NewCmdVet() *cobra.Command {
 			stderr := cmd.ErrOrStderr()
 			dir, name := getConfigPath(stderr, cmd.Flag("file"))
 			if err := examine(cmd.Context(), ParseEnv(cmd), dir, name, stderr); err != nil {
-				fmt.Fprintf(stderr, "%s\n", err)
+				if !errors.Is(err, ErrFailedChecks) {
+					fmt.Fprintf(stderr, "%s\n", err)
+				}
 				os.Exit(1)
 			}
 			return nil
@@ -54,9 +59,9 @@ func examine(ctx context.Context, e Env, dir, filename string, stderr io.Writer)
 
 	env, err := cel.NewEnv(
 		cel.StdLib(),
-		cel.Types(&plugin.Query{}),
+		cel.Types(&plugin.VetQuery{}),
 		cel.Variable("query",
-			cel.ObjectType("plugin.Query"),
+			cel.ObjectType("plugin.VetQuery"),
 		),
 	)
 	if err != nil {
@@ -64,11 +69,19 @@ func examine(ctx context.Context, e Env, dir, filename string, stderr io.Writer)
 	}
 
 	checks := map[string]cel.Program{}
+	msgs := map[string]string{}
 
-	for _, c := range conf.Checks {
-		// TODO: Verify check has a name
-		// TODO: Verify that check names are unique
-		ast, issues := env.Compile(c.Expr)
+	for _, c := range conf.Rules {
+		if c.Name == "" {
+			return fmt.Errorf("checks require a name")
+		}
+		if _, found := checks[c.Name]; found {
+			return fmt.Errorf("type-check error: a check with the name '%s' already exists", c.Name)
+		}
+		if c.Rule == "" {
+			return fmt.Errorf("type-check error: %s is empty", c.Name)
+		}
+		ast, issues := env.Compile(c.Rule)
 		if issues != nil && issues.Err() != nil {
 			return fmt.Errorf("type-check error: %s %s", c.Name, issues.Err())
 		}
@@ -77,6 +90,7 @@ func examine(ctx context.Context, e Env, dir, filename string, stderr io.Writer)
 			return fmt.Errorf("program construction error: %s %s", c.Name, err)
 		}
 		checks[c.Name] = prg
+		msgs[c.Name] = c.Msg
 	}
 
 	errored := true
@@ -101,18 +115,16 @@ func examine(ctx context.Context, e Env, dir, filename string, stderr io.Writer)
 			Debug: debug.Debug,
 		}
 
-		var errout bytes.Buffer
-		result, failed := parse(ctx, name, dir, sql, combo, parseOpts, &errout)
+		result, failed := parse(ctx, name, dir, sql, combo, parseOpts, stderr)
 		if failed {
 			return nil
 		}
 		req := codeGenRequest(result, combo)
-		for _, q := range req.Queries {
-			for _, name := range sql.Checks {
+		for _, q := range vetQueries(req) {
+			for _, name := range sql.Rules {
 				prg, ok := checks[name]
 				if !ok {
-					// TODO: Return a helpful error message
-					continue
+					return fmt.Errorf("type-check error: a check with the name '%s' does not exist", name)
 				}
 				out, _, err := prg.Eval(map[string]any{
 					"query": q,
@@ -125,15 +137,41 @@ func examine(ctx context.Context, e Env, dir, filename string, stderr io.Writer)
 					return fmt.Errorf("expression returned non-bool: %s", err)
 				}
 				if tripped {
-					// internal/cmd/vet.go:123:13: fmt.Errorf format %s has arg false of wrong type bool
-					fmt.Fprintf(stderr, q.Filename+":17:1: query uses :exec\n")
+					// TODO: Get line numbers in the output
+					msg := msgs[name]
+					if msg == "" {
+						fmt.Fprintf(stderr, q.Path+": %s: %s\n", q.Name, name, msg)
+					} else {
+						fmt.Fprintf(stderr, q.Path+": %s: %s: %s\n", q.Name, name, msg)
+					}
 					errored = true
 				}
 			}
 		}
 	}
 	if errored {
-		return fmt.Errorf("errored")
+		return ErrFailedChecks
 	}
 	return nil
+}
+
+func vetQueries(req *plugin.CodeGenRequest) []*plugin.VetQuery {
+	var out []*plugin.VetQuery
+	for _, q := range req.Queries {
+		var params []*plugin.VetParameter
+		for _, p := range q.Params {
+			params = append(params, &plugin.VetParameter{
+				Number: p.Number,
+			})
+		}
+		out = append(out, &plugin.VetQuery{
+			Sql:    q.Text,
+			Name:   q.Name,
+			Cmd:    strings.TrimPrefix(":", q.Cmd),
+			Engine: req.Settings.Engine,
+			Params: params,
+			Path:   q.Filename,
+		})
+	}
+	return out
 }
