@@ -123,6 +123,8 @@ func TestReplay(t *testing.T) {
 				if err == nil {
 					cmpDirectory(t, path, output)
 				}
+			case "vet":
+				err = cmd.Vet(ctx, env, path, "", &stderr)
 			default:
 				t.Fatalf("unknown command")
 			}

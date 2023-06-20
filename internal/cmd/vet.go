@@ -29,7 +29,7 @@ func NewCmdVet() *cobra.Command {
 			defer trace.StartRegion(cmd.Context(), "vet").End()
 			stderr := cmd.ErrOrStderr()
 			dir, name := getConfigPath(stderr, cmd.Flag("file"))
-			if err := examine(cmd.Context(), ParseEnv(cmd), dir, name, stderr); err != nil {
+			if err := Vet(cmd.Context(), ParseEnv(cmd), dir, name, stderr); err != nil {
 				if !errors.Is(err, ErrFailedChecks) {
 					fmt.Fprintf(stderr, "%s\n", err)
 				}
@@ -40,7 +40,7 @@ func NewCmdVet() *cobra.Command {
 	}
 }
 
-func examine(ctx context.Context, e Env, dir, filename string, stderr io.Writer) error {
+func Vet(ctx context.Context, e Env, dir, filename string, stderr io.Writer) error {
 	configPath, conf, err := readConfig(stderr, dir, filename)
 	if err != nil {
 		return err
