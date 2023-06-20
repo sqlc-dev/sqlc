@@ -1154,8 +1154,8 @@ type Column struct {
 	EmbedTable   *Identifier `protobuf:"bytes,14,opt,name=embed_table,json=embedTable,proto3" json:"embed_table,omitempty"`
 	OriginalName string      `protobuf:"bytes,15,opt,name=original_name,json=originalName,proto3" json:"original_name,omitempty"`
 	Unsigned     bool        `protobuf:"varint,16,opt,name=unsigned,proto3" json:"unsigned,omitempty"`
-	IsFilter     bool        `protobuf:"varint,17,opt,name=is_filter,proto3" json:"is_filter,omitempty"`
-	IsOrderBy    bool        `protobuf:"varint,18,opt,name=is_order_by,proto3" json:"is_order_by,omitempty"`
+	FilterNumber     int        `protobuf:"varint,17,opt,name=filter_number,proto3" json:"filter_number,omitempty"`
+	OrderByNumber    int       `protobuf:"varint,18,opt,name=order_by_number,proto3" json:"order_by_number,omitempty"`
 }
 
 func (x *Column) Reset() {
