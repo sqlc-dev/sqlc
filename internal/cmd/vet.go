@@ -59,9 +59,15 @@ func Vet(ctx context.Context, e Env, dir, filename string, stderr io.Writer) err
 
 	env, err := cel.NewEnv(
 		cel.StdLib(),
-		cel.Types(&plugin.VetQuery{}),
+		cel.Types(
+			&plugin.VetConfig{},
+			&plugin.VetQuery{},
+		),
 		cel.Variable("query",
 			cel.ObjectType("plugin.VetQuery"),
+		),
+		cel.Variable("config",
+			cel.ObjectType("plugin.VetConfig"),
 		),
 	)
 	if err != nil {
@@ -120,14 +126,17 @@ func Vet(ctx context.Context, e Env, dir, filename string, stderr io.Writer) err
 			return nil
 		}
 		req := codeGenRequest(result, combo)
-		for _, q := range vetQueries(req) {
+		cfg := vetConfig(req)
+		for _, query := range req.Queries {
+			q := vetQuery(query)
 			for _, name := range sql.Rules {
 				prg, ok := checks[name]
 				if !ok {
 					return fmt.Errorf("type-check error: a check with the name '%s' does not exist", name)
 				}
 				out, _, err := prg.Eval(map[string]any{
-					"query": q,
+					"query":  q,
+					"config": cfg,
 				})
 				if err != nil {
 					return err
@@ -140,9 +149,9 @@ func Vet(ctx context.Context, e Env, dir, filename string, stderr io.Writer) err
 					// TODO: Get line numbers in the output
 					msg := msgs[name]
 					if msg == "" {
-						fmt.Fprintf(stderr, q.Path+": %s: %s\n", q.Name, name, msg)
+						fmt.Fprintf(stderr, query.Filename+": %s: %s\n", q.Name, name, msg)
 					} else {
-						fmt.Fprintf(stderr, q.Path+": %s: %s: %s\n", q.Name, name, msg)
+						fmt.Fprintf(stderr, query.Filename+": %s: %s: %s\n", q.Name, name, msg)
 					}
 					errored = true
 				}
@@ -155,23 +164,26 @@ func Vet(ctx context.Context, e Env, dir, filename string, stderr io.Writer) err
 	return nil
 }
 
-func vetQueries(req *plugin.CodeGenRequest) []*plugin.VetQuery {
-	var out []*plugin.VetQuery
-	for _, q := range req.Queries {
-		var params []*plugin.VetParameter
-		for _, p := range q.Params {
-			params = append(params, &plugin.VetParameter{
-				Number: p.Number,
-			})
-		}
-		out = append(out, &plugin.VetQuery{
-			Sql:    q.Text,
-			Name:   q.Name,
-			Cmd:    strings.TrimPrefix(":", q.Cmd),
-			Engine: req.Settings.Engine,
-			Params: params,
-			Path:   q.Filename,
+func vetConfig(req *plugin.CodeGenRequest) *plugin.VetConfig {
+	return &plugin.VetConfig{
+		Version: req.Settings.Version,
+		Engine:  req.Settings.Engine,
+		Schema:  req.Settings.Schema,
+		Queries: req.Settings.Queries,
+	}
+}
+
+func vetQuery(q *plugin.Query) *plugin.VetQuery {
+	var params []*plugin.VetParameter
+	for _, p := range q.Params {
+		params = append(params, &plugin.VetParameter{
+			Number: p.Number,
 		})
 	}
-	return out
+	return &plugin.VetQuery{
+		Sql:    q.Text,
+		Name:   q.Name,
+		Cmd:    strings.TrimPrefix(":", q.Cmd),
+		Params: params,
+	}
 }
