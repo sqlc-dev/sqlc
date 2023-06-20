@@ -257,9 +257,7 @@ func (i *importer) interfaceImports() fileImports {
 }
 
 func (i *importer) modelImports() fileImports {
-	std, pkg := buildImports(i.Settings, nil, func(prefix string) bool {
-		return i.usesType(prefix)
-	})
+	std, pkg := buildImports(i.Settings, nil, i.usesType)
 
 	if len(i.Enums) > 0 {
 		std["fmt"] = struct{}{}
