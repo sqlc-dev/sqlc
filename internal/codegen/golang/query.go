@@ -120,7 +120,7 @@ func (v QueryValue) Params() string {
 			} else if !v.EmitStruct() && v.IsStruct() {
 				out = append(out, toLowerCase(f.Name))
 			} else {
-				if !f.Column.IsFilter {
+				if !f.Column.IsFilter && !f.Column.IsOrderBy {
 					out = append(out, v.Name+"."+f.Name)
 				}
 			}

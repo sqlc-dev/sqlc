@@ -32,12 +32,18 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) (
 {{ if .HasFilter -}}
     sql = strings.Replace(sql, "@filter::text", arg.Filter, -1)
 {{- end}}
+{{ if .HasOrderBy -}}
+    sql = strings.Replace(sql, "@orderby::text", arg.Filter, -1)
+{{- end}}
 	row := db.QueryRow(ctx, sql, {{.Arg.Params}})
 {{- else -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.DefineType}}, error) {
     sql := {{.ConstantName}}
 {{ if .HasFilter -}}
     sql = strings.Replace(sql, "@filter::text", arg.Filter, -1)
+{{- end}}
+{{ if .HasOrderBy -}}
+    sql = strings.Replace(sql, "@orderby::text", arg.Filter, -1)
 {{- end}}
 	row := q.db.QueryRow(ctx, sql, {{.Arg.Params}})
 {{- end}}
@@ -58,12 +64,18 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) (
 {{ if .HasFilter -}}
     sql = strings.Replace(sql, "@filter::text", arg.Filter, -1)
 {{- end}}
+{{ if .HasOrderBy -}}
+    sql = strings.Replace(sql, "@orderby::text", arg.Filter, -1)
+{{- end}}
 	rows, err := db.Query(ctx, sql, {{.Arg.Params}})
 {{- else -}}
 func (q *Queries) {{.MethodName}}XXX(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error) {
     sql := {{.ConstantName}}
 {{ if .HasFilter -}}
     sql = strings.Replace(sql, "@filter::text", arg.Filter, -1)
+{{- end}}
+{{ if .HasOrderBy -}}
+    sql = strings.Replace(sql, "@orderby::text", arg.Filter, -1)
 {{- end}}
 	rows, err := q.db.Query(ctx, sql, {{.Arg.Params}})
 {{- end}}

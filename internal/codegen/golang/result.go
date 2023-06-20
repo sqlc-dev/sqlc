@@ -109,8 +109,9 @@ func buildStructs(req *plugin.CodeGenRequest) []Struct {
 }
 
 type goColumn struct {
-	id       int
-	IsFilter bool
+	id        int
+	IsFilter  bool
+	IsOrderBy bool
 	*plugin.Column
 	embed *goEmbed
 }
@@ -225,18 +226,26 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 		} else if len(query.Params) >= 1 {
 			var cols []goColumn
 			var isFilter bool
+			var isOrderBy bool
 
 			for _, p := range query.Params {
 				isFilter = false
+				isOrderBy = false
 				if p.Column.Name == "filter" && p.Column.Table == nil {
 					fmt.Println("Filter found")
 					gq.HasFilter = true
 					isFilter = true
 				}
+				if p.Column.Name == "orderby" && p.Column.Table == nil {
+					fmt.Println("OrderBy found")
+					gq.HasOrderBy = true
+					isOrderBy = true
+				}
 				cols = append(cols, goColumn{
-					id:       int(p.Number),
-					IsFilter: isFilter,
-					Column:   p.Column,
+					id:        int(p.Number),
+					IsFilter:  isFilter,
+					IsOrderBy: isOrderBy,
+					Column:    p.Column,
 				})
 			}
 
