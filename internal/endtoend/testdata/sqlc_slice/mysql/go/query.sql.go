@@ -210,7 +210,7 @@ SELECT bar FROM foo
 WHERE mystr IN (/*SLICE:mystr*/?)
 `
 
-func (q *Queries) TypedMyStr(ctx context.Context, mystr mysql.ID) ([]sql.NullString, error) {
+func (q *Queries) TypedMyStr(ctx context.Context, mystr []mysql.ID) ([]sql.NullString, error) {
 	query := typedMyStr
 	var queryParams []interface{}
 	if len(mystr) > 0 {
