@@ -6,10 +6,13 @@ package querytest
 
 import (
 	"database/sql"
+
+	"github.com/kyleconroy/sqlc-testdata/mysql"
 )
 
 type Foo struct {
-	ID   int32
-	Name string
-	Bar  sql.NullString
+	ID    int32
+	Name  string
+	Bar   sql.NullString
+	Mystr mysql.ID
 }
