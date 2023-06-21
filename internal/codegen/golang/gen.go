@@ -123,7 +123,7 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 	tctx := tmplCtx{
 		EmitInterface:             golang.EmitInterface,
 		EmitJSONTags:              golang.EmitJsonTags,
-		JsonTagsIDUppercase:       golang.JsonTagsIDUppercase,
+		JsonTagsIDUppercase:       golang.JsonTagsIdUppercase,
 		EmitDBTags:                golang.EmitDbTags,
 		EmitPreparedQueries:       golang.EmitPreparedQueries,
 		EmitEmptySlices:           golang.EmitEmptySlices,
