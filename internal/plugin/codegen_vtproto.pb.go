@@ -172,7 +172,7 @@ func (m *GoCode) CloneVT() *GoCode {
 	r := &GoCode{
 		EmitInterface:             m.EmitInterface,
 		EmitJsonTags:              m.EmitJsonTags,
-		JsonTagsIDCamelcase:       m.JsonTagsIDCamelcase,
+		JsonTagsIDUppercase:       m.JsonTagsIDUppercase,
 		EmitDbTags:                m.EmitDbTags,
 		EmitPreparedQueries:       m.EmitPreparedQueries,
 		EmitExactTableNames:       m.EmitExactTableNames,
@@ -755,7 +755,7 @@ func (this *GoCode) EqualVT(that *GoCode) bool {
 	if this.EmitJsonTags != that.EmitJsonTags {
 		return false
 	}
-	if this.JsonTagsIDCamelcase != that.JsonTagsIDCamelcase {
+	if this.JsonTagsIDUppercase != that.JsonTagsIDUppercase {
 		return false
 	}
 	if this.EmitDbTags != that.EmitDbTags {
@@ -2000,9 +2000,9 @@ func (m *GoCode) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x10
 	}
-	if m.JsonTagsIDCamelcase {
+	if m.JsonTagsIDUppercase {
 		i--
-		if m.JsonTagsIDCamelcase {
+		if m.JsonTagsIDUppercase {
 			dAtA[i] = 1
 		} else {
 			dAtA[i] = 0
@@ -3572,9 +3572,9 @@ func (m *GoCode) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x10
 	}
-	if m.JsonTagsIDCamelcase {
+	if m.JsonTagsIDUppercase {
 		i--
-		if m.JsonTagsIDCamelcase {
+		if m.JsonTagsIDUppercase {
 			dAtA[i] = 1
 		} else {
 			dAtA[i] = 0
@@ -4629,7 +4629,7 @@ func (m *GoCode) SizeVT() (n int) {
 	if m.EmitJsonTags {
 		n += 2
 	}
-	if m.JsonTagsIDCamelcase {
+	if m.JsonTagsIDUppercase {
 		n += 2
 	}
 	if m.EmitDbTags {
@@ -7036,7 +7036,7 @@ func (m *GoCode) UnmarshalVT(dAtA []byte) error {
 			iNdEx = postIndex
 		case 26:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field JsonTagsIDCamelcase", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field JsonTagsIDUppercase", wireType)
 			}
 			var v int
 			for shift := uint(0); ; shift += 7 {
@@ -7053,7 +7053,7 @@ func (m *GoCode) UnmarshalVT(dAtA []byte) error {
 					break
 				}
 			}
-			m.JsonTagsIDCamelcase = bool(v != 0)
+			m.JsonTagsIDUppercase = bool(v != 0)
 		default:
 			iNdEx = preIndex
 			skippy, err := skip(dAtA[iNdEx:])
