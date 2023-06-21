@@ -50,6 +50,7 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 		}
 	case *ast.TruncateStmt:
 	case *ast.UpdateStmt:
+	case *ast.RefreshMatViewStmt:
 	default:
 		return nil, ErrUnsupportedStatementType
 	}
