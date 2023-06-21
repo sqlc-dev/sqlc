@@ -1,4 +1,5 @@
 version: v1
+name: buf.build/sqlc/sqlc
 breaking:
   use:
     - FILE
