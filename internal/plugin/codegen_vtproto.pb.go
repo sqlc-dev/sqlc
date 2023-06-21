@@ -172,7 +172,6 @@ func (m *GoCode) CloneVT() *GoCode {
 	r := &GoCode{
 		EmitInterface:             m.EmitInterface,
 		EmitJsonTags:              m.EmitJsonTags,
-		JsonTagsIDUppercase:       m.JsonTagsIDUppercase,
 		EmitDbTags:                m.EmitDbTags,
 		EmitPreparedQueries:       m.EmitPreparedQueries,
 		EmitExactTableNames:       m.EmitExactTableNames,
@@ -194,6 +193,7 @@ func (m *GoCode) CloneVT() *GoCode {
 		EmitAllEnumValues:         m.EmitAllEnumValues,
 		EmitPointersForNullTypes:  m.EmitPointersForNullTypes,
 		OutputBatchFileName:       m.OutputBatchFileName,
+		JsonTagsIdUppercase:       m.JsonTagsIdUppercase,
 	}
 	if rhs := m.InflectionExcludeTableNames; rhs != nil {
 		tmpContainer := make([]string, len(rhs))
@@ -755,9 +755,6 @@ func (this *GoCode) EqualVT(that *GoCode) bool {
 	if this.EmitJsonTags != that.EmitJsonTags {
 		return false
 	}
-	if this.JsonTagsIDUppercase != that.JsonTagsIDUppercase {
-		return false
-	}
 	if this.EmitDbTags != that.EmitDbTags {
 		return false
 	}
@@ -831,6 +828,9 @@ func (this *GoCode) EqualVT(that *GoCode) bool {
 		return false
 	}
 	if this.SqlDriver != that.SqlDriver {
+		return false
+	}
+	if this.JsonTagsIdUppercase != that.JsonTagsIdUppercase {
 		return false
 	}
 	return string(this.unknownFields) == string(that.unknownFields)
@@ -1776,6 +1776,18 @@ func (m *GoCode) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if m.JsonTagsIdUppercase {
+		i--
+		if m.JsonTagsIdUppercase {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xd0
+	}
 	if len(m.SqlDriver) > 0 {
 		i -= len(m.SqlDriver)
 		copy(dAtA[i:], m.SqlDriver)
@@ -1999,16 +2011,6 @@ func (m *GoCode) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		}
 		i--
 		dAtA[i] = 0x10
-	}
-	if m.JsonTagsIDUppercase {
-		i--
-		if m.JsonTagsIDUppercase {
-			dAtA[i] = 1
-		} else {
-			dAtA[i] = 0
-		}
-		i--
-		dAtA[i] = 0x64
 	}
 	if m.EmitInterface {
 		i--
@@ -3338,6 +3340,18 @@ func (m *GoCode) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if m.JsonTagsIdUppercase {
+		i--
+		if m.JsonTagsIdUppercase {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xd0
+	}
 	if len(m.SqlDriver) > 0 {
 		i -= len(m.SqlDriver)
 		copy(dAtA[i:], m.SqlDriver)
@@ -3562,25 +3576,15 @@ func (m *GoCode) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x10
 	}
-	if m.EmitJsonTags {
+	if m.EmitInterface {
 		i--
-		if m.EmitJsonTags {
+		if m.EmitInterface {
 			dAtA[i] = 1
 		} else {
 			dAtA[i] = 0
 		}
 		i--
-		dAtA[i] = 0x10
-	}
-	if m.JsonTagsIDUppercase {
-		i--
-		if m.JsonTagsIDUppercase {
-			dAtA[i] = 1
-		} else {
-			dAtA[i] = 0
-		}
-		i--
-		dAtA[i] = 0x64
+		dAtA[i] = 0x8
 	}
 	return len(dAtA) - i, nil
 }
@@ -4629,9 +4633,6 @@ func (m *GoCode) SizeVT() (n int) {
 	if m.EmitJsonTags {
 		n += 2
 	}
-	if m.JsonTagsIDUppercase {
-		n += 2
-	}
 	if m.EmitDbTags {
 		n += 2
 	}
@@ -4713,6 +4714,9 @@ func (m *GoCode) SizeVT() (n int) {
 	l = len(m.SqlDriver)
 	if l > 0 {
 		n += 2 + l + sov(uint64(l))
+	}
+	if m.JsonTagsIdUppercase {
+		n += 3
 	}
 	n += len(m.unknownFields)
 	return n
@@ -7036,7 +7040,7 @@ func (m *GoCode) UnmarshalVT(dAtA []byte) error {
 			iNdEx = postIndex
 		case 26:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field JsonTagsIDUppercase", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field JsonTagsIdUppercase", wireType)
 			}
 			var v int
 			for shift := uint(0); ; shift += 7 {
@@ -7053,7 +7057,7 @@ func (m *GoCode) UnmarshalVT(dAtA []byte) error {
 					break
 				}
 			}
-			m.JsonTagsIDUppercase = bool(v != 0)
+			m.JsonTagsIdUppercase = bool(v != 0)
 		default:
 			iNdEx = preIndex
 			skippy, err := skip(dAtA[iNdEx:])

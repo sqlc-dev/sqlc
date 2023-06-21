@@ -42,7 +42,7 @@ func TagsToString(tags map[string]string) string {
 
 func JSONTagName(name string, settings *plugin.Settings) string {
 	style := settings.Go.JsonTagsCaseStyle
-	idUppercase := settings.Go.JsonTagsIDUppercase
+	idUppercase := settings.Go.JsonTagsIdUppercase
 	if style == "" || style == "none" {
 		return name
 	} else {
