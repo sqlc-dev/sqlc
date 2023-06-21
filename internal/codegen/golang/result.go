@@ -241,7 +241,7 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 				EmitPointer: req.Settings.Go.EmitParamsStructPointers,
 			}
 
-			if len(query.Params) <= qpl {
+			if len(query.Params) <= qpl || qpl == -1 {
 				gq.Arg.Emit = false
 			}
 		}
