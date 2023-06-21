@@ -172,6 +172,7 @@ func (m *GoCode) CloneVT() *GoCode {
 	r := &GoCode{
 		EmitInterface:             m.EmitInterface,
 		EmitJsonTags:              m.EmitJsonTags,
+		JsonTagsIDUppercase:       m.JsonTagsIDUppercase,
 		EmitDbTags:                m.EmitDbTags,
 		EmitPreparedQueries:       m.EmitPreparedQueries,
 		EmitExactTableNames:       m.EmitExactTableNames,
@@ -752,6 +753,9 @@ func (this *GoCode) EqualVT(that *GoCode) bool {
 		return false
 	}
 	if this.EmitJsonTags != that.EmitJsonTags {
+		return false
+	}
+	if this.JsonTagsIDUppercase != that.JsonTagsIDUppercase {
 		return false
 	}
 	if this.EmitDbTags != that.EmitDbTags {
@@ -1995,6 +1999,16 @@ func (m *GoCode) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		}
 		i--
 		dAtA[i] = 0x10
+	}
+	if m.JsonTagsIDUppercase {
+		i--
+		if m.JsonTagsIDUppercase {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x64
 	}
 	if m.EmitInterface {
 		i--
@@ -3548,15 +3562,25 @@ func (m *GoCode) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x10
 	}
-	if m.EmitInterface {
+	if m.EmitJsonTags {
 		i--
-		if m.EmitInterface {
+		if m.EmitJsonTags {
 			dAtA[i] = 1
 		} else {
 			dAtA[i] = 0
 		}
 		i--
-		dAtA[i] = 0x8
+		dAtA[i] = 0x10
+	}
+	if m.JsonTagsIDUppercase {
+		i--
+		if m.JsonTagsIDUppercase {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x64
 	}
 	return len(dAtA) - i, nil
 }
@@ -4603,6 +4627,9 @@ func (m *GoCode) SizeVT() (n int) {
 		n += 2
 	}
 	if m.EmitJsonTags {
+		n += 2
+	}
+	if m.JsonTagsIDUppercase {
 		n += 2
 	}
 	if m.EmitDbTags {
@@ -7007,6 +7034,26 @@ func (m *GoCode) UnmarshalVT(dAtA []byte) error {
 			}
 			m.SqlDriver = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+		case 26:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field JsonTagsIDUppercase", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.JsonTagsIDUppercase = bool(v != 0)
 		default:
 			iNdEx = preIndex
 			skippy, err := skip(dAtA[iNdEx:])

@@ -467,6 +467,7 @@ type GoCode struct {
 	EmitPointersForNullTypes    bool     `protobuf:"varint,22,opt,name=emit_pointers_for_null_types,json=emitPointersForNullTypes,proto3" json:"emit_pointers_for_null_types,omitempty"`
 	QueryParameterLimit         *int32   `protobuf:"varint,23,opt,name=query_parameter_limit,json=queryParameterLimit,proto3,oneof" json:"query_parameter_limit,omitempty"`
 	OutputBatchFileName         string   `protobuf:"bytes,24,opt,name=output_batch_file_name,json=outputBatchFileName,proto3" json:"output_batch_file_name,omitempty"`
+	JsonTagsIDUppercase         bool     `protobuf:"varint,26,opt,name=json_tags_id_uppercase,json=jsonTagsIdCamelcase,proto3" json:"json_tags_id_uppercase,omitempty"`
 }
 
 func (x *GoCode) Reset() {
@@ -513,6 +514,13 @@ func (x *GoCode) GetEmitJsonTags() bool {
 		return x.EmitJsonTags
 	}
 	return false
+}
+
+func (x *GoCode) GetJsonTagsIDUppercase() bool {
+	if x != nil {
+		return x.JsonTagsIDUppercase
+	}
+	return true
 }
 
 func (x *GoCode) GetEmitDbTags() bool {
