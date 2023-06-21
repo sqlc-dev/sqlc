@@ -115,7 +115,7 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 		}
 	case *ast.CallStmt:
 		targets = &ast.List{}
-	case *ast.TruncateStmt:
+	case *ast.TruncateStmt, *ast.RefreshMatViewStmt:
 		targets = &ast.List{}
 	case *ast.UpdateStmt:
 		targets = n.ReturningList
@@ -477,6 +477,11 @@ func (c *Compiler) sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, erro
 		})
 	case *ast.TruncateStmt:
 		list = astutils.Search(n.Relations, func(node ast.Node) bool {
+			_, ok := node.(*ast.RangeVar)
+			return ok
+		})
+	case *ast.RefreshMatViewStmt:
+		list = astutils.Search(n.Relation, func(node ast.Node) bool {
 			_, ok := node.(*ast.RangeVar)
 			return ok
 		})
