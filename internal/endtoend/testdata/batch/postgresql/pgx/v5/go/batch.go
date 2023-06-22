@@ -53,10 +53,10 @@ func (b *GetValuesBatchResults) Query(f func(int, []MyschemaFoo, error)) {
 		}
 		err := func() error {
 			rows, err := b.br.Query()
-			defer rows.Close()
 			if err != nil {
 				return err
 			}
+			defer rows.Close()
 			for rows.Next() {
 				var i MyschemaFoo
 				if err := rows.Scan(&i.A, &i.B); err != nil {

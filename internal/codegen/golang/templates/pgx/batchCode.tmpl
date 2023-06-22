@@ -85,10 +85,10 @@ func (b *{{.MethodName}}BatchResults) Query(f func(int, []{{.Ret.DefineType}}, e
      }
      err := func() error {
        rows, err := b.br.Query()
-       defer rows.Close()
        if err != nil {
          return err
        }
+       defer rows.Close()
        for rows.Next() {
            var {{.Ret.Name}} {{.Ret.Type}}
            if err := rows.Scan({{.Ret.Scan}}); err != nil {

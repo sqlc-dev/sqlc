@@ -53,10 +53,10 @@ func (b *BooksByYearBatchResults) Query(f func(int, []Book, error)) {
 		}
 		err := func() error {
 			rows, err := b.br.Query()
-			defer rows.Close()
 			if err != nil {
 				return err
 			}
+			defer rows.Close()
 			for rows.Next() {
 				var i Book
 				if err := rows.Scan(
