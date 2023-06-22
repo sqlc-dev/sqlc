@@ -27,7 +27,7 @@ func ParamRef(n ast.Node) (map[int]bool, bool, error) {
 		}
 	}), n)
 	if dollar && nodollar {
-		return nil, false, errors.New("Can not mix $1 format with ? format")
+		return nil, false, errors.New("can not mix $1 format with ? format")
 	}
 
 	seen := map[int]bool{}
