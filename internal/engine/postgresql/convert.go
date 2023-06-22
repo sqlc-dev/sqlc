@@ -84,18 +84,6 @@ func convertSlice(nodes []*pg.Node) *ast.List {
 	return out
 }
 
-func convertValuesList(l [][]*pg.Node) *ast.List {
-	out := &ast.List{}
-	for _, outer := range l {
-		o := &ast.List{}
-		for _, inner := range outer {
-			o.Items = append(o.Items, convertNode(inner))
-		}
-		out.Items = append(out.Items, o)
-	}
-	return out
-}
-
 func convert(node *pg.Node) (ast.Node, error) {
 	return convertNode(node), nil
 }

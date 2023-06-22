@@ -39,18 +39,6 @@ func (f *Function) InArgs() []*Argument {
 	return args
 }
 
-func (c *Catalog) getFunc(rel *ast.FuncName, tns []*ast.TypeName) (*Function, int, error) {
-	ns := rel.Schema
-	if ns == "" {
-		ns = c.DefaultSchema
-	}
-	s, err := c.getSchema(ns)
-	if err != nil {
-		return nil, -1, err
-	}
-	return s.getFunc(rel, tns)
-}
-
 func (c *Catalog) createFunction(stmt *ast.CreateFunctionStmt) error {
 	ns := stmt.Func.Schema
 	if ns == "" {
