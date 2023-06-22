@@ -48,6 +48,8 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 		if err != nil {
 			return nil, err
 		}
+	case *ast.ListenStmt:
+	case *ast.NotifyStmt:
 	case *ast.TruncateStmt:
 	case *ast.UpdateStmt:
 	case *ast.RefreshMatViewStmt:
