@@ -69,6 +69,11 @@ func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 	case *ast.CallStmt:
 		p.parent = n.FuncCall
 
+	case *ast.DeleteStmt:
+		if n.LimitCount != nil {
+			p.limitCount = n.LimitCount
+		}
+
 	case *ast.FuncCall:
 		p.parent = node
 
@@ -128,6 +133,9 @@ func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 				*p.refs = append(*p.refs, paramRef{parent: target, ref: ref, rv: rv})
 			}
 			p.seen[ref.Location] = struct{}{}
+		}
+		if n.LimitCount != nil {
+			p.limitCount = n.LimitCount
 		}
 
 	case *ast.RangeVar:

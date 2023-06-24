@@ -327,12 +327,16 @@ func (c *cc) convertDeleteStmt(n *pcast.DeleteStmt) *ast.DeleteStmt {
 	relations := &ast.List{}
 	convertToRangeVarList(rels, relations)
 
-	return &ast.DeleteStmt{
+	stmt := &ast.DeleteStmt{
 		Relations:     relations,
 		WhereClause:   c.convert(n.Where),
 		ReturningList: &ast.List{},
 		WithClause:    c.convertWithClause(n.With),
 	}
+	if n.Limit != nil {
+		stmt.LimitCount = c.convert(n.Limit.Count)
+	}
+	return stmt
 }
 
 func (c *cc) convertDropTableStmt(n *pcast.DropTableStmt) ast.Node {
@@ -574,7 +578,7 @@ func (c *cc) convertUpdateStmt(n *pcast.UpdateStmt) *ast.UpdateStmt {
 	for _, a := range n.List {
 		list.Items = append(list.Items, c.convertAssignment(a))
 	}
-	return &ast.UpdateStmt{
+	stmt := &ast.UpdateStmt{
 		Relations:     relations,
 		TargetList:    list,
 		WhereClause:   c.convert(n.Where),
@@ -582,6 +586,10 @@ func (c *cc) convertUpdateStmt(n *pcast.UpdateStmt) *ast.UpdateStmt {
 		ReturningList: &ast.List{},
 		WithClause:    c.convertWithClause(n.With),
 	}
+	if n.Limit != nil {
+		stmt.LimitCount = c.convert(n.Limit.Count)
+	}
+	return stmt
 }
 
 func (c *cc) convertValueExpr(n *driver.ValueExpr) *ast.A_Const {
