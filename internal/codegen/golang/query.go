@@ -200,6 +200,8 @@ type Query struct {
 	SourceName   string
 	Ret          QueryValue
 	Arg          QueryValue
+	ManyKey      string // Taken from CmdParams.ManyKey, the map-key for :many. If empty a slice should be returned.
+	ManyKeyType  string // The Go type of ManyKey
 	// Used for :copyfrom
 	Table *plugin.Identifier
 }
@@ -218,4 +220,24 @@ func (q Query) TableIdentifier() string {
 		}
 	}
 	return "[]string{" + strings.Join(escapedNames, ", ") + "}"
+}
+
+func (v Query) DefineRetTypeMultiple() string {
+	if v.ManyKey != "" {
+		return "map[" + v.ManyKeyType + "]" + v.Ret.DefineType()
+	}
+	return "[]" + v.Ret.DefineType()
+}
+
+func (v Query) HasManyKey() bool {
+	return v.ManyKey != ""
+}
+
+func (v Query) ManyKeyField() string {
+	for _, f := range v.Ret.Struct.Fields {
+		if f.DBName == v.ManyKey {
+			return v.Ret.Name + "." + f.Name
+		}
+	}
+	panic("couldn't find :many-key in struct fields")
 }
