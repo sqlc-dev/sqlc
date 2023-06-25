@@ -432,6 +432,7 @@ func (m *Query) CloneVT() *Query {
 		Text:            m.Text,
 		Name:            m.Name,
 		Cmd:             m.Cmd,
+		CmdParams:       m.CmdParams.CloneVT(),
 		Filename:        m.Filename,
 		InsertIntoTable: m.InsertIntoTable.CloneVT(),
 	}
@@ -462,6 +463,26 @@ func (m *Query) CloneVT() *Query {
 }
 
 func (m *Query) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *CmdParams) CloneVT() *CmdParams {
+	if m == nil {
+		return (*CmdParams)(nil)
+	}
+	r := &CmdParams{
+		ManyKey:        m.ManyKey,
+		InsertMultiple: m.InsertMultiple,
+		NoInference:    m.NoInference,
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *CmdParams) CloneMessageVT() proto.Message {
 	return m.CloneVT()
 }
 
@@ -1303,11 +1324,39 @@ func (this *Query) EqualVT(that *Query) bool {
 	if !this.InsertIntoTable.EqualVT(that.InsertIntoTable) {
 		return false
 	}
+	if !this.CmdParams.EqualVT(that.CmdParams) {
+		return false
+	}
 	return string(this.unknownFields) == string(that.unknownFields)
 }
 
 func (this *Query) EqualMessageVT(thatMsg proto.Message) bool {
 	that, ok := thatMsg.(*Query)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *CmdParams) EqualVT(that *CmdParams) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if this.ManyKey != that.ManyKey {
+		return false
+	}
+	if this.InsertMultiple != that.InsertMultiple {
+		return false
+	}
+	if this.NoInference != that.NoInference {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *CmdParams) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*CmdParams)
 	if !ok {
 		return false
 	}
@@ -2833,6 +2882,16 @@ func (m *Query) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if m.CmdParams != nil {
+		size, err := m.CmdParams.MarshalToSizedBufferVT(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarint(dAtA, i, uint64(size))
+		i--
+		dAtA[i] = 0x4a
+	}
 	if m.InsertIntoTable != nil {
 		size, err := m.InsertIntoTable.MarshalToSizedBufferVT(dAtA[:i])
 		if err != nil {
@@ -2901,6 +2960,66 @@ func (m *Query) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i -= len(m.Text)
 		copy(dAtA[i:], m.Text)
 		i = encodeVarint(dAtA, i, uint64(len(m.Text)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *CmdParams) MarshalVT() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
+	size := m.SizeVT()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBufferVT(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *CmdParams) MarshalToVT(dAtA []byte) (int, error) {
+	size := m.SizeVT()
+	return m.MarshalToSizedBufferVT(dAtA[:size])
+}
+
+func (m *CmdParams) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.unknownFields != nil {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
+	if m.NoInference {
+		i--
+		if m.NoInference {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x18
+	}
+	if m.InsertMultiple {
+		i--
+		if m.InsertMultiple {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x10
+	}
+	if len(m.ManyKey) > 0 {
+		i -= len(m.ManyKey)
+		copy(dAtA[i:], m.ManyKey)
+		i = encodeVarint(dAtA, i, uint64(len(m.ManyKey)))
 		i--
 		dAtA[i] = 0xa
 	}
@@ -4578,6 +4697,16 @@ func (m *Query) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if m.CmdParams != nil {
+		size, err := m.CmdParams.MarshalToSizedBufferVTStrict(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarint(dAtA, i, uint64(size))
+		i--
+		dAtA[i] = 0x4a
+	}
 	if m.InsertIntoTable != nil {
 		size, err := m.InsertIntoTable.MarshalToSizedBufferVTStrict(dAtA[:i])
 		if err != nil {
@@ -4646,6 +4775,66 @@ func (m *Query) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 		i -= len(m.Text)
 		copy(dAtA[i:], m.Text)
 		i = encodeVarint(dAtA, i, uint64(len(m.Text)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *CmdParams) MarshalVTStrict() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
+	size := m.SizeVT()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBufferVTStrict(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *CmdParams) MarshalToVTStrict(dAtA []byte) (int, error) {
+	size := m.SizeVT()
+	return m.MarshalToSizedBufferVTStrict(dAtA[:size])
+}
+
+func (m *CmdParams) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.unknownFields != nil {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
+	if m.NoInference {
+		i--
+		if m.NoInference {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x18
+	}
+	if m.InsertMultiple {
+		i--
+		if m.InsertMultiple {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x10
+	}
+	if len(m.ManyKey) > 0 {
+		i -= len(m.ManyKey)
+		copy(dAtA[i:], m.ManyKey)
+		i = encodeVarint(dAtA, i, uint64(len(m.ManyKey)))
 		i--
 		dAtA[i] = 0xa
 	}
@@ -5546,6 +5735,30 @@ func (m *Query) SizeVT() (n int) {
 	if m.InsertIntoTable != nil {
 		l = m.InsertIntoTable.SizeVT()
 		n += 1 + l + sov(uint64(l))
+	}
+	if m.CmdParams != nil {
+		l = m.CmdParams.SizeVT()
+		n += 1 + l + sov(uint64(l))
+	}
+	n += len(m.unknownFields)
+	return n
+}
+
+func (m *CmdParams) SizeVT() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.ManyKey)
+	if l > 0 {
+		n += 1 + l + sov(uint64(l))
+	}
+	if m.InsertMultiple {
+		n += 2
+	}
+	if m.NoInference {
+		n += 2
 	}
 	n += len(m.unknownFields)
 	return n
@@ -9573,6 +9786,165 @@ func (m *Query) UnmarshalVT(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
+		case 9:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CmdParams", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.CmdParams == nil {
+				m.CmdParams = &CmdParams{}
+			}
+			if err := m.CmdParams.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skip(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLength
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *CmdParams) UnmarshalVT(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflow
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: CmdParams: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: CmdParams: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ManyKey", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ManyKey = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field InsertMultiple", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.InsertMultiple = bool(v != 0)
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NoInference", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.NoInference = bool(v != 0)
 		default:
 			iNdEx = preIndex
 			skippy, err := skip(dAtA[iNdEx:])
