@@ -255,10 +255,6 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 				}
 			}
 
-			number := 0
-			if pr, ok := n.Left.(*ast.ParamRef); ok {
-				number = pr.Number
-			}
 
 			for _, table := range tables {
 				schema := table.Schema
@@ -269,10 +265,19 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 				if c, ok := typeMap[schema][table.Name][key]; ok {
 					defaultP := named.NewInferredParam(key, c.IsNotNull)
 					p, isNamed := params.FetchMerge(ref.ref.Number, defaultP)
+					var namePrefix string
+					if !isNamed {
+						if ref.ref == n.Left {
+							namePrefix = "from_"
+						} else if ref.ref == n.Right {
+							namePrefix = "to_"
+						}
+					}
+
 					a = append(a, Parameter{
-						Number: number,
+						Number: ref.ref.Number,
 						Column: &Column{
-							Name:         p.Name(),
+							Name:         namePrefix + p.Name(),
 							DataType:     dataType(&c.Type),
 							NotNull:      p.NotNull(),
 							Unsigned:     c.IsUnsigned,
