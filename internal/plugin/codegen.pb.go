@@ -1593,6 +1593,195 @@ func (x *CodeGenResponse) GetFiles() []*File {
 	return nil
 }
 
+type VetParameter struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Number int32 `protobuf:"varint,1,opt,name=number,proto3" json:"number,omitempty"`
+}
+
+func (x *VetParameter) Reset() {
+	*x = VetParameter{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_plugin_codegen_proto_msgTypes[18]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *VetParameter) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VetParameter) ProtoMessage() {}
+
+func (x *VetParameter) ProtoReflect() protoreflect.Message {
+	mi := &file_plugin_codegen_proto_msgTypes[18]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VetParameter.ProtoReflect.Descriptor instead.
+func (*VetParameter) Descriptor() ([]byte, []int) {
+	return file_plugin_codegen_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *VetParameter) GetNumber() int32 {
+	if x != nil {
+		return x.Number
+	}
+	return 0
+}
+
+type VetConfig struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Version string   `protobuf:"bytes,1,opt,name=version,proto3" json:"version,omitempty"`
+	Engine  string   `protobuf:"bytes,2,opt,name=engine,proto3" json:"engine,omitempty"`
+	Schema  []string `protobuf:"bytes,3,rep,name=schema,proto3" json:"schema,omitempty"`
+	Queries []string `protobuf:"bytes,4,rep,name=queries,proto3" json:"queries,omitempty"`
+}
+
+func (x *VetConfig) Reset() {
+	*x = VetConfig{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_plugin_codegen_proto_msgTypes[19]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *VetConfig) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VetConfig) ProtoMessage() {}
+
+func (x *VetConfig) ProtoReflect() protoreflect.Message {
+	mi := &file_plugin_codegen_proto_msgTypes[19]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VetConfig.ProtoReflect.Descriptor instead.
+func (*VetConfig) Descriptor() ([]byte, []int) {
+	return file_plugin_codegen_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *VetConfig) GetVersion() string {
+	if x != nil {
+		return x.Version
+	}
+	return ""
+}
+
+func (x *VetConfig) GetEngine() string {
+	if x != nil {
+		return x.Engine
+	}
+	return ""
+}
+
+func (x *VetConfig) GetSchema() []string {
+	if x != nil {
+		return x.Schema
+	}
+	return nil
+}
+
+func (x *VetConfig) GetQueries() []string {
+	if x != nil {
+		return x.Queries
+	}
+	return nil
+}
+
+type VetQuery struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Sql    string          `protobuf:"bytes,1,opt,name=sql,proto3" json:"sql,omitempty"`
+	Name   string          `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Cmd    string          `protobuf:"bytes,3,opt,name=cmd,proto3" json:"cmd,omitempty"`
+	Params []*VetParameter `protobuf:"bytes,4,rep,name=params,json=parameters,proto3" json:"params,omitempty"`
+}
+
+func (x *VetQuery) Reset() {
+	*x = VetQuery{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_plugin_codegen_proto_msgTypes[20]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *VetQuery) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VetQuery) ProtoMessage() {}
+
+func (x *VetQuery) ProtoReflect() protoreflect.Message {
+	mi := &file_plugin_codegen_proto_msgTypes[20]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VetQuery.ProtoReflect.Descriptor instead.
+func (*VetQuery) Descriptor() ([]byte, []int) {
+	return file_plugin_codegen_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *VetQuery) GetSql() string {
+	if x != nil {
+		return x.Sql
+	}
+	return ""
+}
+
+func (x *VetQuery) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *VetQuery) GetCmd() string {
+	if x != nil {
+		return x.Cmd
+	}
+	return ""
+}
+
+func (x *VetQuery) GetParams() []*VetParameter {
+	if x != nil {
+		return x.Params
+	}
+	return nil
+}
+
 var File_plugin_codegen_proto protoreflect.FileDescriptor
 
 var file_plugin_codegen_proto_rawDesc = []byte{
@@ -1867,16 +2056,33 @@ var file_plugin_codegen_proto_rawDesc = []byte{
 	0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x22, 0x35, 0x0a, 0x0f, 0x43, 0x6f, 0x64, 0x65, 0x47,
 	0x65, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x22, 0x0a, 0x05, 0x66, 0x69,
 	0x6c, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x0c, 0x2e, 0x70, 0x6c, 0x75, 0x67,
-	0x69, 0x6e, 0x2e, 0x46, 0x69, 0x6c, 0x65, 0x52, 0x05, 0x66, 0x69, 0x6c, 0x65, 0x73, 0x42, 0x7e,
-	0x0a, 0x0a, 0x63, 0x6f, 0x6d, 0x2e, 0x70, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0x42, 0x0c, 0x43, 0x6f,
-	0x64, 0x65, 0x67, 0x65, 0x6e, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x2a, 0x67, 0x69,
-	0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x6b, 0x79, 0x6c, 0x65, 0x63, 0x6f, 0x6e,
-	0x72, 0x6f, 0x79, 0x2f, 0x73, 0x71, 0x6c, 0x63, 0x2f, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61,
-	0x6c, 0x2f, 0x70, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0xa2, 0x02, 0x03, 0x50, 0x58, 0x58, 0xaa, 0x02,
-	0x06, 0x50, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0xca, 0x02, 0x06, 0x50, 0x6c, 0x75, 0x67, 0x69, 0x6e,
-	0xe2, 0x02, 0x12, 0x50, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74,
-	0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x06, 0x50, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0x62, 0x06,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x69, 0x6e, 0x2e, 0x46, 0x69, 0x6c, 0x65, 0x52, 0x05, 0x66, 0x69, 0x6c, 0x65, 0x73, 0x22, 0x26,
+	0x0a, 0x0c, 0x56, 0x65, 0x74, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x65, 0x74, 0x65, 0x72, 0x12, 0x16,
+	0x0a, 0x06, 0x6e, 0x75, 0x6d, 0x62, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x06,
+	0x6e, 0x75, 0x6d, 0x62, 0x65, 0x72, 0x22, 0x6f, 0x0a, 0x09, 0x56, 0x65, 0x74, 0x43, 0x6f, 0x6e,
+	0x66, 0x69, 0x67, 0x12, 0x18, 0x0a, 0x07, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x12, 0x16, 0x0a,
+	0x06, 0x65, 0x6e, 0x67, 0x69, 0x6e, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x65,
+	0x6e, 0x67, 0x69, 0x6e, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x63, 0x68, 0x65, 0x6d, 0x61, 0x18,
+	0x03, 0x20, 0x03, 0x28, 0x09, 0x52, 0x06, 0x73, 0x63, 0x68, 0x65, 0x6d, 0x61, 0x12, 0x18, 0x0a,
+	0x07, 0x71, 0x75, 0x65, 0x72, 0x69, 0x65, 0x73, 0x18, 0x04, 0x20, 0x03, 0x28, 0x09, 0x52, 0x07,
+	0x71, 0x75, 0x65, 0x72, 0x69, 0x65, 0x73, 0x22, 0x74, 0x0a, 0x08, 0x56, 0x65, 0x74, 0x51, 0x75,
+	0x65, 0x72, 0x79, 0x12, 0x10, 0x0a, 0x03, 0x73, 0x71, 0x6c, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x03, 0x73, 0x71, 0x6c, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x10, 0x0a, 0x03, 0x63, 0x6d, 0x64,
+	0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x63, 0x6d, 0x64, 0x12, 0x30, 0x0a, 0x06, 0x70,
+	0x61, 0x72, 0x61, 0x6d, 0x73, 0x18, 0x04, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x70, 0x6c,
+	0x75, 0x67, 0x69, 0x6e, 0x2e, 0x56, 0x65, 0x74, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x65, 0x74, 0x65,
+	0x72, 0x52, 0x0a, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x65, 0x74, 0x65, 0x72, 0x73, 0x42, 0x7e, 0x0a,
+	0x0a, 0x63, 0x6f, 0x6d, 0x2e, 0x70, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0x42, 0x0c, 0x43, 0x6f, 0x64,
+	0x65, 0x67, 0x65, 0x6e, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x2a, 0x67, 0x69, 0x74,
+	0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x6b, 0x79, 0x6c, 0x65, 0x63, 0x6f, 0x6e, 0x72,
+	0x6f, 0x79, 0x2f, 0x73, 0x71, 0x6c, 0x63, 0x2f, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c,
+	0x2f, 0x70, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0xa2, 0x02, 0x03, 0x50, 0x58, 0x58, 0xaa, 0x02, 0x06,
+	0x50, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0xca, 0x02, 0x06, 0x50, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0xe2,
+	0x02, 0x12, 0x50, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61,
+	0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x06, 0x50, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0x62, 0x06, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -1891,7 +2097,7 @@ func file_plugin_codegen_proto_rawDescGZIP() []byte {
 	return file_plugin_codegen_proto_rawDescData
 }
 
-var file_plugin_codegen_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
+var file_plugin_codegen_proto_msgTypes = make([]protoimpl.MessageInfo, 23)
 var file_plugin_codegen_proto_goTypes = []interface{}{
 	(*File)(nil),            // 0: plugin.File
 	(*Override)(nil),        // 1: plugin.Override
@@ -1911,14 +2117,17 @@ var file_plugin_codegen_proto_goTypes = []interface{}{
 	(*Parameter)(nil),       // 15: plugin.Parameter
 	(*CodeGenRequest)(nil),  // 16: plugin.CodeGenRequest
 	(*CodeGenResponse)(nil), // 17: plugin.CodeGenResponse
-	nil,                     // 18: plugin.ParsedGoType.StructTagsEntry
-	nil,                     // 19: plugin.Settings.RenameEntry
+	(*VetParameter)(nil),    // 18: plugin.VetParameter
+	(*VetConfig)(nil),       // 19: plugin.VetConfig
+	(*VetQuery)(nil),        // 20: plugin.VetQuery
+	nil,                     // 21: plugin.ParsedGoType.StructTagsEntry
+	nil,                     // 22: plugin.Settings.RenameEntry
 }
 var file_plugin_codegen_proto_depIdxs = []int32{
 	12, // 0: plugin.Override.table:type_name -> plugin.Identifier
 	2,  // 1: plugin.Override.go_type:type_name -> plugin.ParsedGoType
-	18, // 2: plugin.ParsedGoType.struct_tags:type_name -> plugin.ParsedGoType.StructTagsEntry
-	19, // 3: plugin.Settings.rename:type_name -> plugin.Settings.RenameEntry
+	21, // 2: plugin.ParsedGoType.struct_tags:type_name -> plugin.ParsedGoType.StructTagsEntry
+	22, // 3: plugin.Settings.rename:type_name -> plugin.Settings.RenameEntry
 	1,  // 4: plugin.Settings.overrides:type_name -> plugin.Override
 	4,  // 5: plugin.Settings.codegen:type_name -> plugin.Codegen
 	5,  // 6: plugin.Settings.go:type_name -> plugin.GoCode
@@ -1940,11 +2149,12 @@ var file_plugin_codegen_proto_depIdxs = []int32{
 	7,  // 22: plugin.CodeGenRequest.catalog:type_name -> plugin.Catalog
 	14, // 23: plugin.CodeGenRequest.queries:type_name -> plugin.Query
 	0,  // 24: plugin.CodeGenResponse.files:type_name -> plugin.File
-	25, // [25:25] is the sub-list for method output_type
-	25, // [25:25] is the sub-list for method input_type
-	25, // [25:25] is the sub-list for extension type_name
-	25, // [25:25] is the sub-list for extension extendee
-	0,  // [0:25] is the sub-list for field type_name
+	18, // 25: plugin.VetQuery.params:type_name -> plugin.VetParameter
+	26, // [26:26] is the sub-list for method output_type
+	26, // [26:26] is the sub-list for method input_type
+	26, // [26:26] is the sub-list for extension type_name
+	26, // [26:26] is the sub-list for extension extendee
+	0,  // [0:26] is the sub-list for field type_name
 }
 
 func init() { file_plugin_codegen_proto_init() }
@@ -2169,6 +2379,42 @@ func file_plugin_codegen_proto_init() {
 				return nil
 			}
 		}
+		file_plugin_codegen_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*VetParameter); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_plugin_codegen_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*VetConfig); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_plugin_codegen_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*VetQuery); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	file_plugin_codegen_proto_msgTypes[5].OneofWrappers = []interface{}{}
 	type x struct{}
@@ -2177,7 +2423,7 @@ func file_plugin_codegen_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_plugin_codegen_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   20,
+			NumMessages:   23,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

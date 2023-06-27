@@ -1,0 +1,31 @@
+version: 2
+sql:
+  - schema: "query.sql"
+    queries: "query.sql"
+    engine: "postgresql"
+    gen:
+      go:
+        package: "authors"
+        out: "db"
+    rules:
+      - no-pg
+      - no-delete
+      - only-one-param
+      - no-exec
+rules:
+  - name: no-pg
+    message: "invalid engine: postgresql"
+    rule: |
+      config.engine == "postgresql"
+  - name: no-delete
+    message: "don't use delete statements"
+    rule: |
+      query.sql.contains("DELETE")
+  - name: only-one-param
+    message: "too many parameters"
+    rule: |
+      query.params.size() > 1
+  - name: no-exec
+    message: "don't use exec"
+    rule: |
+      query.cmd == "exec"

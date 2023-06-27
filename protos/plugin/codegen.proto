@@ -205,3 +205,24 @@ message CodeGenResponse
 {
   repeated File files = 1 [json_name="files"];
 }
+
+message VetParameter
+{
+  int32 number = 1 [json_name="number"];
+}
+
+message VetConfig
+{
+  string version = 1 [json_name="version"];
+  string engine = 2 [json_name="engine"];
+  repeated string schema = 3 [json_name="schema"];
+  repeated string queries = 4 [json_name="queries"];
+}
+
+message VetQuery
+{
+  string sql = 1 [json_name="sql"];
+  string name = 2 [json_name="name"];
+  string cmd = 3 [json_name="cmd"];
+  repeated VetParameter params = 4 [json_name="parameters"];
+}

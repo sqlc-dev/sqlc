@@ -8,6 +8,7 @@ require (
 	github.com/cubicdaiya/gonp v1.0.4
 	github.com/davecgh/go-spew v1.1.1
 	github.com/go-sql-driver/mysql v1.7.1
+	github.com/google/cel-go v0.16.0
 	github.com/google/go-cmp v0.5.9
 	github.com/jackc/pgconn v1.14.0
 	github.com/jackc/pgx/v4 v4.18.1
@@ -23,6 +24,8 @@ require (
 	google.golang.org/protobuf v1.31.0
 	gopkg.in/yaml.v3 v3.0.1
 )
+
+require github.com/stoewer/go-strcase v1.2.0 // indirect
 
 require (
 	github.com/cznic/mathutil v0.0.0-20181122101859-297441e03548 // indirect
