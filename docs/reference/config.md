@@ -126,8 +126,8 @@ The `gen` mapping supports the following keys:
 - `output_files_suffix`:
   - If specified the suffix will be added to the name of the generated files.
 - `query_parameter_limit`:
-  - Positional arguments that will be generated in Go functions (>= `1` or `-1`). To always emit a parameter struct, you would need to set it to `-1`. `0` is invalid. Defaults to `1`.
-`rename`:
+  - The number of positional arguments that will be generated for Go functions. To always emit a parameter struct, set this to `0`. Defaults to `1`.
+- `rename`:
   - Customize the name of generated struct fields. Explained in detail on the `Renaming fields` section.
 - `overrides`:
   - It is a collection of definitions that dictates which types are used to map a database types. Explained in detail on the  `Type overriding` section.
