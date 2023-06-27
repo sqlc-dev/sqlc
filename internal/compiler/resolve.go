@@ -553,6 +553,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 							Number: number,
 							Column: &Column{
 								Name:         p.Name(),
+								OriginalName: c.Name,
 								DataType:     dataType(&c.Type),
 								NotNull:      c.IsNotNull,
 								Unsigned:     c.IsUnsigned,
