@@ -10,10 +10,6 @@ type tableNamer interface {
 	Schema_name() parser.ISchema_nameContext
 }
 
-type multiselect interface {
-	AllSelect_core() []parser.ISelect_coreContext
-}
-
 func parseTableName(c tableNamer) *ast.TableName {
 	name := ast.TableName{
 		Name: c.Table_name().GetText(),

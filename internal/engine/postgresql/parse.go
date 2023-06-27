@@ -136,10 +136,6 @@ func parseColName(node *nodes.Node) (*ast.ColumnRef, *ast.TableName, error) {
 	}
 }
 
-func join(list *nodes.List, sep string) string {
-	return strings.Join(stringSlice(list), sep)
-}
-
 func joinNodes(list []*nodes.Node, sep string) string {
 	return strings.Join(stringSliceFromNodes(list), sep)
 }
