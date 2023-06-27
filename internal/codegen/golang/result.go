@@ -216,6 +216,21 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 
 		if len(query.Params) == 1 && qpl != 0 {
 			p := query.Params[0]
+
+			if p.Column.Name == "filter" && p.Column.Table == nil {
+				p.Column.IsClause = true
+				gq.WhereClause = &QueryClause{
+					Position: 1,
+					Name:     "filter",
+				}
+			}
+			if p.Column.Name == "orderby" && p.Column.Table == nil {
+				p.Column.IsClause = true
+				gq.OrderbyClause = &QueryClause{
+					Position: 1,
+					Name:     "orderby",
+				}
+			}
 			gq.Arg = QueryValue{
 				Name:      paramName(p),
 				DBName:    p.Column.GetName(),
@@ -223,26 +238,30 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 				SQLDriver: sqlpkg,
 				Column:    p.Column,
 			}
+
 		} else if len(query.Params) >= 1 {
 			var cols []goColumn
-			var filterNumber int
-			var orderByNumber int
 
 			for _, p := range query.Params {
 				number := int(p.Number)
+
 				if p.Column.Name == "filter" && p.Column.Table == nil {
-					gq.FilterNumber = number
-					filterNumber = number
+					p.Column.IsClause = true
+					gq.WhereClause = &QueryClause{
+						Position: number,
+						Name:     "arg.Filter",
+					}
 				}
 				if p.Column.Name == "orderby" && p.Column.Table == nil {
-					gq.OrderByNumber = number
-					orderByNumber = number
+					p.Column.IsClause = true
+					gq.OrderbyClause = &QueryClause{
+						Position: number,
+						Name:     "arg.Orderby",
+					}
 				}
 				cols = append(cols, goColumn{
-					id:            int(p.Number),
-					FilterNumber:  filterNumber,
-					OrderByNumber: orderByNumber,
-					Column:        p.Column,
+					id:     int(number),
+					Column: p.Column,
 				})
 			}
 
@@ -395,8 +414,7 @@ func columnsToStruct(req *plugin.CodeGenRequest, name string, columns []goColumn
 			Tags:   tags,
 			Column: c.Column,
 		}
-		f.Column.FilterNumber = c.FilterNumber
-		f.Column.OrderByNumber = c.OrderByNumber
+		//f.Column.IsClause = c.IsClause // TODO: Is this needed?
 		if c.embed == nil {
 			f.Type = goType(req, c.Column)
 		} else {

@@ -120,7 +120,7 @@ func (v QueryValue) Params() string {
 			} else if !v.EmitStruct() && v.IsStruct() {
 				out = append(out, toLowerCase(f.Name))
 			} else {
-				if f.Column.FilterNumber == 0 && f.Column.OrderByNumber == 0 {
+				if !f.Column.IsClause {
 					out = append(out, v.Name+"."+f.Name)
 				}
 			}
@@ -191,6 +191,11 @@ func (v QueryValue) Scan() string {
 	return "\n" + strings.Join(out, ",\n")
 }
 
+type QueryClause struct {
+	Position int
+	Name     string
+}
+
 // A struct used to generate methods and fields on the Queries struct
 type Query struct {
 	Cmd           string
@@ -202,8 +207,8 @@ type Query struct {
 	SourceName    string
 	Ret           QueryValue
 	Arg           QueryValue
-	FilterNumber  int
-	OrderByNumber int
+	WhereClause   *QueryClause
+	OrderbyClause *QueryClause
 	// Used for :copyfrom
 	Table *plugin.Identifier
 }

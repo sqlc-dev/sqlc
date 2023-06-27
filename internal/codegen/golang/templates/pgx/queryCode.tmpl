@@ -28,23 +28,11 @@ type {{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
 {{end -}}
 {{- if $.EmitMethodsWithDBArgument -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) ({{.Ret.DefineType}}, error) {
-    sql := {{.ConstantName}}
-{{ if (gt .FilterNumber 0) -}}
-    sql = strings.Replace(sql, "${{.FilterNumber}}::text", arg.Filter, -1)
-{{- end}}
-{{ if (gt .OrderByNumber 0) -}}
-    sql = strings.Replace(sql, "${{.OrderByNumber}}::text", arg.Orderby, -1)
-{{- end}}
+{{-  template "makeSql" . -}}
 	row := db.QueryRow(ctx, sql, {{.Arg.Params}})
 {{- else -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.DefineType}}, error) {
-    sql := {{.ConstantName}}
-{{ if (gt .FilterNumber 0) -}}
-    sql = strings.Replace(sql, "${{.FilterNumber}}::text", arg.Filter, -1)
-{{- end}}
-{{ if (gt .OrderByNumber 0) -}}
-    sql = strings.Replace(sql, "${{.OrderByNumber}}::text", arg.Orderby, -1)
-{{- end}}
+{{-  template "makeSql" . -}}
 	row := q.db.QueryRow(ctx, sql, {{.Arg.Params}})
 {{- end}}
 	{{- if ne .Arg.Pair .Ret.Pair }}
@@ -60,23 +48,11 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.De
 {{end -}}
 {{- if $.EmitMethodsWithDBArgument -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error) {
-    sql := {{.ConstantName}}
-{{ if (gt .FilterNumber 0) -}}
-    sql = strings.Replace(sql, "${{.FilterNumber}}::text", arg.Filter, -1)
-{{- end}}
-{{ if (gt .OrderByNumber 0) -}}
-    sql = strings.Replace(sql, "${{.OrderByNumber}}::text", arg.Orderby, -1)
-{{- end}}
+{{-  template "makeSql" . -}}
 	rows, err := db.Query(ctx, sql, {{.Arg.Params}})
 {{- else -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error) {
-    sql := {{.ConstantName}}
-{{ if (gt .FilterNumber 0) -}}
-    sql = strings.Replace(sql, "${{.FilterNumber}}::text", arg.Filter, -1)
-{{- end}}
-{{ if (gt .OrderByNumber 0) -}}
-    sql = strings.Replace(sql, "${{.OrderByNumber}}::text", arg.Orderby, -1)
-{{- end}}
+{{-  template "makeSql" . -}}
 	rows, err := q.db.Query(ctx, sql, {{.Arg.Params}})
 {{- end}}
 	if err != nil {
@@ -149,4 +125,14 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (pgconn.Co
 
 {{end}}
 {{end}}
+{{end}}
+
+{{define "makeSql"}}
+    sql := {{.ConstantName}}
+{{- if .WhereClause }}
+    sql = strings.Replace(sql, "${{.WhereClause.Position}}::text", {{.WhereClause.Name}}, -1)
+{{- end }}
+{{- if .OrderbyClause }}
+    sql = strings.Replace(sql, "${{.OrderbyClause.Position}}::text", {{.OrderbyClause.Name}}, -1)
+{{- end }}
 {{end}}
