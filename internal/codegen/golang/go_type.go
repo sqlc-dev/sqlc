@@ -41,6 +41,9 @@ func goType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		}
 		sameTable := sdk.Matches(oride, col.Table, req.Catalog.DefaultSchema)
 		if oride.Column != "" && sdk.MatchString(oride.ColumnName, cname) && sameTable {
+			if col.IsSqlcSlice {
+				return "[]" + oride.GoType.TypeName
+			}
 			return oride.GoType.TypeName
 		}
 	}
