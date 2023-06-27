@@ -299,18 +299,18 @@ func filterUnusedStructs(enums []Enum, structs []Struct, queries []Query) ([]Enu
 
 	for _, query := range queries {
 		if !query.Arg.isEmpty() {
-			keepTypes[strings.TrimPrefix(query.Arg.Type(), "Null")] = struct{}{}
+			keepTypes[query.Arg.Type()] = struct{}{}
 			if query.Arg.IsStruct() {
 				for _, field := range query.Arg.Struct.Fields {
-					keepTypes[strings.TrimPrefix(field.Type, "Null")] = struct{}{}
+					keepTypes[field.Type] = struct{}{}
 				}
 			}
 		}
 		if query.hasRetType() {
-			keepTypes[strings.TrimPrefix(query.Ret.Type(), "Null")] = struct{}{}
+			keepTypes[query.Ret.Type()] = struct{}{}
 			if query.Ret.IsStruct() {
 				for _, field := range query.Ret.Struct.Fields {
-					keepTypes[strings.TrimPrefix(field.Type, "Null")] = struct{}{}
+					keepTypes[field.Type] = struct{}{}
 				}
 			}
 		}
@@ -319,6 +319,9 @@ func filterUnusedStructs(enums []Enum, structs []Struct, queries []Query) ([]Enu
 	keepEnums := make([]Enum, 0, len(enums))
 	for _, enum := range enums {
 		if _, ok := keepTypes[enum.Name]; ok {
+			keepEnums = append(keepEnums, enum)
+		}
+		if _, ok := keepTypes["Null"+enum.Name]; ok {
 			keepEnums = append(keepEnums, enum)
 		}
 	}
