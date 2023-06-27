@@ -51,10 +51,10 @@ func (b *UsersBBatchResults) Query(f func(int, []int64, error)) {
 		}
 		err := func() error {
 			rows, err := b.br.Query()
-			defer rows.Close()
 			if err != nil {
 				return err
 			}
+			defer rows.Close()
 			for rows.Next() {
 				var id int64
 				if err := rows.Scan(&id); err != nil {
