@@ -20,7 +20,7 @@ type Schema struct {
 
 func (s *Schema) getFunc(rel *ast.FuncName, tns []*ast.TypeName) (*Function, int, error) {
 	for i := range s.Funcs {
-		if strings.ToLower(s.Funcs[i].Name) != strings.ToLower(rel.Name) {
+		if !strings.EqualFold(s.Funcs[i].Name, rel.Name) {
 			continue
 		}
 
