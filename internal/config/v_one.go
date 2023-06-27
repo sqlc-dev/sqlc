@@ -49,6 +49,7 @@ type v1PackageSettings struct {
 	StrictFunctionChecks      bool       `json:"strict_function_checks" yaml:"strict_function_checks"`
 	StrictOrderBy             *bool      `json:"strict_order_by" yaml:"strict_order_by"`
 	QueryParameterLimit       *int32     `json:"query_parameter_limit,omitempty" yaml:"query_parameter_limit"`
+	OmitUnusedStructs         bool       `json:"omit_unused_structs,omitempty" yaml:"omit_unused_structs"`
 }
 
 func v1ParseConfig(rd io.Reader) (Config, error) {
@@ -168,6 +169,7 @@ func (c *V1GenerateSettings) Translate() Config {
 					OutputQuerierFileName:     pkg.OutputQuerierFileName,
 					OutputFilesSuffix:         pkg.OutputFilesSuffix,
 					QueryParameterLimit:       pkg.QueryParameterLimit,
+					OmitUnusedStructs:         pkg.OmitUnusedStructs,
 				},
 			},
 			StrictFunctionChecks: pkg.StrictFunctionChecks,
