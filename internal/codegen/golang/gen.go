@@ -108,6 +108,11 @@ func Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plugin.CodeGenR
 	if err != nil {
 		return nil, err
 	}
+
+	if req.Settings.Go.OmitUnusedStructs {
+		enums, structs = filterUnusedStructs(enums, structs, queries)
+	}
+
 	return generate(req, enums, structs, queries)
 }
 
@@ -287,4 +292,43 @@ func usesBatch(queries []Query) bool {
 		}
 	}
 	return false
+}
+
+func filterUnusedStructs(enums []Enum, structs []Struct, queries []Query) ([]Enum, []Struct) {
+	keepTypes := make(map[string]struct{})
+
+	for _, query := range queries {
+		if !query.Arg.isEmpty() {
+			keepTypes[strings.TrimPrefix(query.Arg.Type(), "Null")] = struct{}{}
+			if query.Arg.IsStruct() {
+				for _, field := range query.Arg.Struct.Fields {
+					keepTypes[strings.TrimPrefix(field.Type, "Null")] = struct{}{}
+				}
+			}
+		}
+		if query.hasRetType() {
+			keepTypes[strings.TrimPrefix(query.Ret.Type(), "Null")] = struct{}{}
+			if query.Ret.IsStruct() {
+				for _, field := range query.Ret.Struct.Fields {
+					keepTypes[strings.TrimPrefix(field.Type, "Null")] = struct{}{}
+				}
+			}
+		}
+	}
+
+	keepEnums := make([]Enum, 0, len(enums))
+	for _, enum := range enums {
+		if _, ok := keepTypes[enum.Name]; ok {
+			keepEnums = append(keepEnums, enum)
+		}
+	}
+
+	keepStructs := make([]Struct, 0, len(structs))
+	for _, st := range structs {
+		if _, ok := keepTypes[st.Name]; ok {
+			keepStructs = append(keepStructs, st)
+		}
+	}
+
+	return keepEnums, keepStructs
 }

@@ -108,6 +108,7 @@ func pluginGoCode(s config.SQLGo) *plugin.GoCode {
 		OutputFilesSuffix:           s.OutputFilesSuffix,
 		InflectionExcludeTableNames: s.InflectionExcludeTableNames,
 		QueryParameterLimit:         s.QueryParameterLimit,
+		OmitUnusedStructs:           s.OmitUnusedStructs,
 	}
 }
 
