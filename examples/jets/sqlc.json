@@ -2,11 +2,14 @@
   "version": "1",
   "packages": [
     {
-      "path": ".",
+      "path": "postgresql",
       "name": "jets",
-      "schema": "schema.sql",
-      "queries": "query-building.sql",
-      "engine": "postgresql"
+      "schema": "postgresql/schema.sql",
+      "queries": "postgresql/query-building.sql",
+      "engine": "postgresql",
+      "database": {
+        "url": "'postgresql://%s:%s@%s:%s/jets'.format([env.PG_USER, env.PG_PASSWORD, env.PG_HOST, env.PG_PORT])"
+      }
     }
   ]
 }

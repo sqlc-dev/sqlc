@@ -11,7 +11,22 @@ import (
 	"testing"
 
 	"github.com/kyleconroy/sqlc/internal/cmd"
+	"github.com/kyleconroy/sqlc/internal/sqltest"
 )
+
+func findSchema(t *testing.T, path string) string {
+	t.Helper()
+	schemaFile := filepath.Join(path, "postgresql", "schema.sql")
+	if _, err := os.Stat(schemaFile); !os.IsNotExist(err) {
+		return schemaFile
+	}
+	schemaDir := filepath.Join(path, "postgresql", "schema")
+	if _, err := os.Stat(schemaDir); !os.IsNotExist(err) {
+		return schemaDir
+	}
+	t.Fatalf("error: can't find schema files in %s", path)
+	return ""
+}
 
 func TestExamplesVet(t *testing.T) {
 	t.Parallel()
@@ -32,13 +47,16 @@ func TestExamplesVet(t *testing.T) {
 			continue
 		}
 		tc := replay.Name()
-
-		// Does this work?
-		sqltest.PostgreSQL(t, tc)
-
 		t.Run(tc, func(t *testing.T) {
 			t.Parallel()
 			path := filepath.Join(examples, tc)
+
+			if tc != "kotlin" && tc != "python" {
+				sqltest.CreatePostgreSQLDatabase(t, tc, []string{
+					findSchema(t, path),
+				})
+			}
+
 			var stderr bytes.Buffer
 			err := cmd.Vet(ctx, cmd.Env{}, path, "", &stderr)
 			if err != nil {

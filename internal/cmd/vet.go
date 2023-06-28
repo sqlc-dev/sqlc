@@ -232,6 +232,9 @@ func (c *checker) checkSQL(ctx context.Context, sql config.SQL) error {
 		if err != nil {
 			return fmt.Errorf("database: connection error: %s", err)
 		}
+		if err := conn.Ping(ctx); err != nil {
+			return fmt.Errorf("database: connection error: %s", err)
+		}
 		defer conn.Close(ctx)
 		pgconn = conn
 	}

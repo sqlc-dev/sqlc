@@ -20,6 +20,7 @@ type V1GenerateSettings struct {
 type v1PackageSettings struct {
 	Name                      string     `json:"name" yaml:"name"`
 	Engine                    Engine     `json:"engine,omitempty" yaml:"engine"`
+	Database                  *Database  `json:"database,omitempty" yaml:"database"`
 	Path                      string     `json:"path" yaml:"path"`
 	Schema                    Paths      `json:"schema" yaml:"schema"`
 	Queries                   Paths      `json:"queries" yaml:"queries"`
@@ -138,9 +139,10 @@ func (c *V1GenerateSettings) Translate() Config {
 			pkg.StrictOrderBy = &defaultValue
 		}
 		conf.SQL = append(conf.SQL, SQL{
-			Engine:  pkg.Engine,
-			Schema:  pkg.Schema,
-			Queries: pkg.Queries,
+			Engine:   pkg.Engine,
+			Database: pkg.Database,
+			Schema:   pkg.Schema,
+			Queries:  pkg.Queries,
 			Gen: SQLGen{
 				Go: &SQLGo{
 					EmitInterface:             pkg.EmitInterface,

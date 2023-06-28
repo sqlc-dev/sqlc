@@ -30,7 +30,7 @@ func id() string {
 
 // Disable random new schema
 // Override database name
-func CreatePostgreSQLDatabase(t *testing.T, newDB string) *sql.DB {
+func CreatePostgreSQLDatabase(t *testing.T, newDB string, migrations []string) *sql.DB {
 	t.Helper()
 
 	pgUser := os.Getenv("PG_USER")
@@ -79,6 +79,21 @@ func CreatePostgreSQLDatabase(t *testing.T, newDB string) *sql.DB {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	files, err := sqlpath.Glob(migrations)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, f := range files {
+		blob, err := os.ReadFile(f)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := sdb.Exec(string(blob)); err != nil {
+			t.Fatalf("%s: %s", filepath.Base(f), err)
+		}
+	}
+
 	return sdb
 }
 
