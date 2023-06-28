@@ -51,6 +51,9 @@ type Query struct {
 
 	// Needed for CopyFrom
 	InsertIntoTable *ast.TableName
+
+	// Needed for vet
+	RawStmt *ast.RawStmt
 }
 
 type Parameter struct {

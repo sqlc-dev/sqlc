@@ -5,6 +5,9 @@
       "schema": "postgresql/schema.sql",
       "queries": "postgresql/query.sql",
       "engine": "postgresql",
+      "database": {
+        "url": "'postgresql://%s:%s@%s:%s/%s'.format([env.PG_USER, env.PG_PASSWORD, env.PG_HOST, env.PG_PORT, env.PG_DATABASE])"
+      },
       "gen": {
         "go": {
           "package": "authors",

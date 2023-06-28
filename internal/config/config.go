@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 
 	"gopkg.in/yaml.v3"
@@ -69,6 +68,10 @@ type Project struct {
 	ID string `json:"id" yaml:"id"`
 }
 
+type Database struct {
+	URL string `json:"url" yaml:"url"`
+}
+
 type Cloud struct {
 	Organization string `json:"organization" yaml:"organization"`
 	Project      string `json:"project" yaml:"project"`
@@ -105,6 +108,7 @@ type SQL struct {
 	Engine               Engine    `json:"engine,omitempty" yaml:"engine"`
 	Schema               Paths     `json:"schema" yaml:"schema"`
 	Queries              Paths     `json:"queries" yaml:"queries"`
+	Database             *Database `json:"database" yaml:"database"`
 	StrictFunctionChecks bool      `json:"strict_function_checks" yaml:"strict_function_checks"`
 	StrictOrderBy        *bool     `json:"strict_order_by" yaml:"strict_order_by"`
 	Gen                  SQLGen    `json:"gen" yaml:"gen"`
@@ -202,19 +206,6 @@ func ParseConfig(rd io.Reader) (Config, error) {
 	default:
 		return config, ErrUnknownVersion
 	}
-}
-
-func Validate(c *Config) error {
-	for _, sql := range c.SQL {
-		sqlGo := sql.Gen.Go
-		if sqlGo == nil {
-			continue
-		}
-		if sqlGo.EmitMethodsWithDBArgument && sqlGo.EmitPreparedQueries {
-			return fmt.Errorf("invalid config: emit_methods_with_db_argument and emit_prepared_queries settings are mutually exclusive")
-		}
-	}
-	return nil
 }
 
 type CombinedSettings struct {
