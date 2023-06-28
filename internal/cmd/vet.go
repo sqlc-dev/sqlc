@@ -16,6 +16,7 @@ import (
 	"github.com/google/cel-go/cel"
 	"github.com/google/cel-go/ext"
 	"github.com/jackc/pgx/v5"
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/spf13/cobra"
 
 	"github.com/kyleconroy/sqlc/internal/config"
@@ -277,6 +278,16 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 			prep = &pgxPreparer{conn}
 		case config.EngineMySQL:
 			db, err := sql.Open("mysql", dburl)
+			if err != nil {
+				return fmt.Errorf("database: connection error: %s", err)
+			}
+			if err := db.PingContext(ctx); err != nil {
+				return fmt.Errorf("database: connection error: %s", err)
+			}
+			defer db.Close()
+			prep = &dbPreparer{db}
+		case config.EngineSQLite:
+			db, err := sql.Open("sqlite3", dburl)
 			if err != nil {
 				return fmt.Errorf("database: connection error: %s", err)
 			}

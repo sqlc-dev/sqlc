@@ -60,6 +60,11 @@ func TestExamplesVet(t *testing.T) {
 					defer db.Close()
 					defer cleanup()
 				}
+				if s, found := findSchema(t, filepath.Join(path, "sqlite")); found {
+					db, cleanup := sqltest.CreateSQLiteDatabase(t, filepath.Join(path, "test.db"), []string{s})
+					defer db.Close()
+					defer cleanup()
+				}
 			}
 
 			var stderr bytes.Buffer

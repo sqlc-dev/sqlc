@@ -29,6 +29,8 @@ func id() string {
 }
 
 func PostgreSQL(t *testing.T, migrations []string) (*sql.DB, func()) {
+	t.Helper()
+
 	// For each test, pick a new schema name at random.
 	schema := "sqltest_postgresql_" + id()
 	return CreatePostgreSQLDatabase(t, schema, true, migrations)
