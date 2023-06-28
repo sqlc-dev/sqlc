@@ -47,6 +47,23 @@ func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams) (Aut
 	return i, err
 }
 
+const createAuthorOnlyTitles = `-- name: CreateAuthorOnlyTitles :one
+INSERT INTO authors (name, titles) VALUES ($1, $2) RETURNING id, name, bio, country_code, titles
+`
+
+func (q *Queries) CreateAuthorOnlyTitles(ctx context.Context, name string, titles []string) (Author, error) {
+	row := q.db.QueryRowContext(ctx, createAuthorOnlyTitles, name, pq.Array(titles))
+	var i Author
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Bio,
+		&i.CountryCode,
+		pq.Array(&i.Titles),
+	)
+	return i, err
+}
+
 const deleteAuthor = `-- name: DeleteAuthor :exec
 DELETE FROM authors
 WHERE id = $1

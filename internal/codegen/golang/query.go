@@ -116,7 +116,7 @@ func (v QueryValue) Params() string {
 	} else {
 		for _, f := range v.Struct.Fields {
 			if !f.HasSqlcSlice() && strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" && !v.SQLDriver.IsPGX() {
-				out = append(out, "pq.Array("+v.Name+"."+f.Name+")")
+				out = append(out, "pq.Array("+v.VariableForField(f)+")")
 			} else {
 				out = append(out, v.VariableForField(f))
 			}

@@ -30,3 +30,6 @@ WHERE id = $1;
 -- name: DeleteAuthors :exec
 DELETE FROM authors
 WHERE id IN (sqlc.slice(ids)) AND name = $1;
+
+-- name: CreateAuthorOnlyTitles :one
+INSERT INTO authors (name, titles) VALUES ($1, $2) RETURNING *;
