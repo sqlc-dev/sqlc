@@ -32,6 +32,10 @@ func TestExamplesVet(t *testing.T) {
 			continue
 		}
 		tc := replay.Name()
+
+		// Does this work?
+		sqltest.PostgreSQL(t, tc)
+
 		t.Run(tc, func(t *testing.T) {
 			t.Parallel()
 			path := filepath.Join(examples, tc)

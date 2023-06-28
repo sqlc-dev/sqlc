@@ -28,6 +28,60 @@ func id() string {
 	return string(b)
 }
 
+// Disable random new schema
+// Override database name
+func CreatePostgreSQLDatabase(t *testing.T, newDB string) *sql.DB {
+	t.Helper()
+
+	pgUser := os.Getenv("PG_USER")
+	pgHost := os.Getenv("PG_HOST")
+	pgPort := os.Getenv("PG_PORT")
+	pgPass := os.Getenv("PG_PASSWORD")
+	pgDB := os.Getenv("PG_DATABASE")
+
+	if pgUser == "" {
+		pgUser = "postgres"
+	}
+
+	if pgPass == "" {
+		pgPass = "mysecretpassword"
+	}
+
+	if pgPort == "" {
+		pgPort = "5432"
+	}
+
+	if pgHost == "" {
+		pgHost = "127.0.0.1"
+	}
+
+	if pgDB == "" {
+		pgDB = "dinotest"
+	}
+
+	source := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", pgUser, pgPass, pgHost, pgPort, pgDB)
+	t.Logf("db: %s", source)
+
+	db, err := sql.Open("postgres", source)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	if _, err := db.Exec("CREATE DATABASE " + newDB); err != nil {
+		t.Fatal(err)
+	}
+
+	newSource := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", pgUser, pgPass, pgHost, pgPort, newDB)
+	t.Logf("newdb: %s", newSource)
+
+	sdb, err := sql.Open("postgres", newSource)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return sdb
+}
+
 func PostgreSQL(t *testing.T, migrations []string) (*sql.DB, func()) {
 	t.Helper()
 
