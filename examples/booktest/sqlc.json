@@ -28,7 +28,7 @@
       "queries": "sqlite/query.sql",
       "engine": "sqlite",
       "database": {
-        "url": "'test.db'"
+        "url": "'file:booktest?mode=memory&cache=shared'"
       }
     }
   ]

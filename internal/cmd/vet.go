@@ -166,6 +166,9 @@ func prepareable(sql config.SQL, raw *ast.RawStmt) bool {
 	if sql.Engine == config.EngineMySQL {
 		return true
 	}
+	if sql.Engine == config.EngineSQLite {
+		return true
+	}
 	return false
 }
 

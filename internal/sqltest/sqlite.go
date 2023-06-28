@@ -45,6 +45,8 @@ func CreateSQLiteDatabase(t *testing.T, path string, migrations []string) (*sql.
 	}
 
 	return sdb, func() {
-		os.Remove(path)
+		if _, err := os.Stat(path); err == nil {
+			os.Remove(path)
+		}
 	}
 }
