@@ -31,7 +31,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:11
+        image: "postgres:15"
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -41,7 +41,7 @@ jobs:
         # needed because the postgres container does not provide a healthcheck
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
       mysql:
-        image: mysql:8
+        image: "mysql/mysql-server:8.0"
         env:
           MYSQL_ROOT_PASSWORD: mysecretpassword
           MYSQL_DATABASE: mysql
