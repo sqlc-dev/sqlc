@@ -9,31 +9,40 @@ import (
 	"context"
 	"database/sql"
 	"strings"
+
+	"github.com/lib/pq"
 )
 
 const createAuthor = `-- name: CreateAuthor :one
 INSERT INTO authors (
-  name, bio, country_code
+  name, bio, country_code, titles
 ) VALUES (
-  $1, $2, $3
+  $1, $2, $3, $4
 )
-RETURNING id, name, bio, country_code
+RETURNING id, name, bio, country_code, titles
 `
 
 type CreateAuthorParams struct {
 	Name        string
 	Bio         sql.NullString
 	CountryCode string
+	Titles      []string
 }
 
 func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams) (Author, error) {
-	row := q.db.QueryRowContext(ctx, createAuthor, arg.Name, arg.Bio, arg.CountryCode)
+	row := q.db.QueryRowContext(ctx, createAuthor,
+		arg.Name,
+		arg.Bio,
+		arg.CountryCode,
+		pq.Array(arg.Titles),
+	)
 	var i Author
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
 		&i.Bio,
 		&i.CountryCode,
+		pq.Array(&i.Titles),
 	)
 	return i, err
 }
@@ -70,7 +79,7 @@ func (q *Queries) DeleteAuthors(ctx context.Context, name string, ids []int64) e
 }
 
 const getAuthor = `-- name: GetAuthor :one
-SELECT id, name, bio, country_code FROM authors
+SELECT id, name, bio, country_code, titles FROM authors
 WHERE name = $1 AND country_code = $2 LIMIT 1
 `
 
@@ -82,12 +91,13 @@ func (q *Queries) GetAuthor(ctx context.Context, name string, countryCode string
 		&i.Name,
 		&i.Bio,
 		&i.CountryCode,
+		pq.Array(&i.Titles),
 	)
 	return i, err
 }
 
 const listAuthors = `-- name: ListAuthors :many
-SELECT id, name, bio, country_code FROM authors
+SELECT id, name, bio, country_code, titles FROM authors
 ORDER BY name
 `
 
@@ -105,6 +115,7 @@ func (q *Queries) ListAuthors(ctx context.Context) ([]Author, error) {
 			&i.Name,
 			&i.Bio,
 			&i.CountryCode,
+			pq.Array(&i.Titles),
 		); err != nil {
 			return nil, err
 		}

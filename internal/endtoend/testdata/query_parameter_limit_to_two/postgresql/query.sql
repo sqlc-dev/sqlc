@@ -3,7 +3,8 @@ CREATE TABLE authors (
   id   BIGSERIAL PRIMARY KEY,
   name text      NOT NULL,
   bio  text,
-  country_code CHAR(2) NOT NULL
+  country_code CHAR(2) NOT NULL,
+  titles TEXT[]
 );
 
 -- name: GetAuthor :one
@@ -16,9 +17,9 @@ ORDER BY name;
 
 -- name: CreateAuthor :one
 INSERT INTO authors (
-  name, bio, country_code
+  name, bio, country_code, titles
 ) VALUES (
-  $1, $2, $3
+  $1, $2, $3, $4
 )
 RETURNING *;
 

@@ -13,4 +13,5 @@ type Author struct {
 	Name        string
 	Bio         sql.NullString
 	CountryCode string
+	Titles      []string
 }
