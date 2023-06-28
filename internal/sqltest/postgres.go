@@ -68,8 +68,18 @@ func CreatePostgreSQLDatabase(t *testing.T, newDB string, migrations []string) *
 	}
 	defer db.Close()
 
-	if _, err := db.Exec("CREATE DATABASE " + newDB); err != nil {
+	var exists bool
+	dberr := db.QueryRow(`SELECT true FROM pg_database WHERE datname = $1`, newDB).Scan(&exists)
+	if dberr != nil && dberr != sql.ErrNoRows {
 		t.Fatal(err)
+	}
+
+	if !exists {
+		if _, err := db.Exec("CREATE DATABASE " + newDB); err != nil {
+			t.Fatal(err)
+		}
+	} else {
+		t.Logf("database '%s' exists, not creating", newDB)
 	}
 
 	newSource := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", pgUser, pgPass, pgHost, pgPort, newDB)
@@ -80,20 +90,21 @@ func CreatePostgreSQLDatabase(t *testing.T, newDB string, migrations []string) *
 		t.Fatal(err)
 	}
 
-	files, err := sqlpath.Glob(migrations)
-	if err != nil {
-		t.Fatal(err)
-	}
-	for _, f := range files {
-		blob, err := os.ReadFile(f)
+	if !exists {
+		files, err := sqlpath.Glob(migrations)
 		if err != nil {
 			t.Fatal(err)
 		}
-		if _, err := sdb.Exec(string(blob)); err != nil {
-			t.Fatalf("%s: %s", filepath.Base(f), err)
+		for _, f := range files {
+			blob, err := os.ReadFile(f)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if _, err := sdb.Exec(string(blob)); err != nil {
+				t.Fatalf("%s: %s", filepath.Base(f), err)
+			}
 		}
 	}
-
 	return sdb
 }
 
