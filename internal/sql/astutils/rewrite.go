@@ -400,7 +400,9 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.apply(n, "Refassgnexpr", nil, n.Refassgnexpr)
 
 	case *ast.BetweenExpr:
-		// pass
+		a.apply(n, "Expr", nil, n.Expr)
+		a.apply(n, "Left", nil, n.Left)
+		a.apply(n, "Right", nil, n.Right)
 
 	case *ast.BitString:
 		// pass
