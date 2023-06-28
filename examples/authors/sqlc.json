@@ -19,6 +19,9 @@
       "schema": "mysql/schema.sql",
       "queries": "mysql/query.sql",
       "engine": "mysql",
+      "database": {
+        "url": "'root:%s@tcp(%s:%s)/authors?multiStatements=true&parseTime=true'.format([env.MYSQL_ROOT_PASSWORD, env.MYSQL_HOST, env.MYSQL_PORT])"
+      },
       "gen": {
         "go": {
           "package": "authors",

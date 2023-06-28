@@ -20,6 +20,9 @@
       "schema": "mysql/schema",
       "queries": "mysql/query",
       "engine": "mysql",
+      "database": {
+        "url": "'root:%s@tcp(%s:%s)/ondeck?multiStatements=true&parseTime=true'.format([env.MYSQL_ROOT_PASSWORD, env.MYSQL_HOST, env.MYSQL_PORT])"
+      },
       "emit_json_tags": true,
       "emit_prepared_queries": true,
       "emit_interface": true
