@@ -116,11 +116,9 @@ func (v QueryValue) Params() string {
 	} else {
 		for _, f := range v.Struct.Fields {
 			if !f.HasSqlcSlice() && strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" && !v.SQLDriver.IsPGX() {
-				out = append(out, "pq.Array("+v.Name+"."+f.Name+")")
-			} else if !v.EmitStruct() && v.IsStruct() {
-				out = append(out, toLowerCase(f.Name))
+				out = append(out, "pq.Array("+v.VariableForField(f)+")")
 			} else {
-				out = append(out, v.Name+"."+f.Name)
+				out = append(out, v.VariableForField(f))
 			}
 		}
 	}
@@ -187,6 +185,16 @@ func (v QueryValue) Scan() string {
 	}
 	out = append(out, "")
 	return "\n" + strings.Join(out, ",\n")
+}
+
+func (v QueryValue) VariableForField(f Field) string {
+	if !v.IsStruct() {
+		return v.Name
+	}
+	if !v.EmitStruct() {
+		return toLowerCase(f.Name)
+	}
+	return v.Name + "." + f.Name
 }
 
 // A struct used to generate methods and fields on the Queries struct

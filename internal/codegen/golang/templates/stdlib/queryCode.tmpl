@@ -126,16 +126,16 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
             {{- $arg := .Arg }}
             {{- range .Arg.Struct.Fields }}
                 {{- if .HasSqlcSlice }}
-                    if len({{$arg.Name}}.{{.Name}}) > 0 {
-                      for _, v := range {{$arg.Name}}.{{.Name}} {
+                    if len({{$arg.VariableForField .}}) > 0 {
+                      for _, v := range {{$arg.VariableForField .}} {
                         queryParams = append(queryParams, v)
                       }
-                      query = strings.Replace(query, "/*SLICE:{{.Column.Name}}*/?", strings.Repeat(",?", len({{$arg.Name}}.{{.Name}}))[1:], 1)
+                      query = strings.Replace(query, "/*SLICE:{{.Column.Name}}*/?", strings.Repeat(",?", len({{$arg.VariableForField .}}))[1:], 1)
                     } else {
                       query = strings.Replace(query, "/*SLICE:{{.Column.Name}}*/?", "NULL", 1)
                     }
                 {{- else }}
-                  queryParams = append(queryParams, {{$arg.Name}}.{{.Name}})
+                  queryParams = append(queryParams, {{$arg.VariableForField .}})
                 {{- end }}
             {{- end }}
         {{- else }}
