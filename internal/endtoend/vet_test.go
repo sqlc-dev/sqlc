@@ -14,18 +14,16 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sqltest"
 )
 
-func findSchema(t *testing.T, path string) string {
-	t.Helper()
-	schemaFile := filepath.Join(path, "postgresql", "schema.sql")
+func findSchema(t *testing.T, path string) (string, bool) {
+	schemaFile := filepath.Join(path, "schema.sql")
 	if _, err := os.Stat(schemaFile); !os.IsNotExist(err) {
-		return schemaFile
+		return schemaFile, true
 	}
-	schemaDir := filepath.Join(path, "postgresql", "schema")
+	schemaDir := filepath.Join(path, "schema")
 	if _, err := os.Stat(schemaDir); !os.IsNotExist(err) {
-		return schemaDir
+		return schemaDir, true
 	}
-	t.Fatalf("error: can't find schema files in %s", path)
-	return ""
+	return "", false
 }
 
 func TestExamplesVet(t *testing.T) {
@@ -52,9 +50,16 @@ func TestExamplesVet(t *testing.T) {
 			path := filepath.Join(examples, tc)
 
 			if tc != "kotlin" && tc != "python" {
-				sqltest.CreatePostgreSQLDatabase(t, tc, []string{
-					findSchema(t, path),
-				})
+				if s, found := findSchema(t, filepath.Join(path, "postgresql")); found {
+					db, cleanup := sqltest.CreatePostgreSQLDatabase(t, tc, false, []string{s})
+					defer db.Close()
+					defer cleanup()
+				}
+				if s, found := findSchema(t, filepath.Join(path, "mysql")); found {
+					db, cleanup := sqltest.CreateMySQLDatabase(t, tc, []string{s})
+					defer db.Close()
+					defer cleanup()
+				}
 			}
 
 			var stderr bytes.Buffer

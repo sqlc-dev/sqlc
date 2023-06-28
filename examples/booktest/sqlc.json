@@ -16,7 +16,10 @@
       "path": "mysql",
       "schema": "mysql/schema.sql",
       "queries": "mysql/query.sql",
-      "engine": "mysql"
+      "engine": "mysql",
+      "database": {
+        "url": "'root:%s@tcp(%s:%s)/booktest?multiStatements=true&parseTime=true'.format([env.MYSQL_ROOT_PASSWORD, env.MYSQL_HOST, env.MYSQL_PORT])"
+      }
     },
     {
       "name": "booktest",
