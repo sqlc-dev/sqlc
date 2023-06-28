@@ -26,7 +26,10 @@
       "path": "sqlite",
       "schema": "sqlite/schema.sql",
       "queries": "sqlite/query.sql",
-      "engine": "sqlite"
+      "engine": "sqlite",
+      "database": {
+        "url": "'file:booktest?mode=memory&cache=shared'"
+      }
     }
   ]
 }

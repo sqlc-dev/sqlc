@@ -33,6 +33,9 @@
       "schema": "sqlite/schema",
       "queries": "sqlite/query",
       "engine": "sqlite",
+      "database": {
+        "url": "'file:ondeck?mode=memory&cache=shared'"
+      },
       "emit_json_tags": true,
       "emit_prepared_queries": true,
       "emit_interface": true

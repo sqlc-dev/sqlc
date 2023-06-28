@@ -33,6 +33,9 @@
       "schema": "sqlite/schema.sql",
       "queries": "sqlite/query.sql",
       "engine": "sqlite",
+      "database": {
+        "url": "'file:authors?mode=memory&cache=shared'"
+      },
       "gen": {
         "go": {
           "package": "authors",
