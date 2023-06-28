@@ -33,9 +33,9 @@ jobs:
       postgres:
         image: "postgres:15"
         env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
           POSTGRES_DB: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
         ports:
         - 5432:5432
         # needed because the postgres container does not provide a healthcheck
@@ -43,8 +43,9 @@ jobs:
       mysql:
         image: "mysql/mysql-server:8.0"
         env:
-          MYSQL_ROOT_PASSWORD: mysecretpassword
           MYSQL_DATABASE: mysql
+          MYSQL_ROOT_HOST: '%'
+          MYSQL_ROOT_PASSWORD: mysecretpassword
         ports:
         - 3306:3306
 
