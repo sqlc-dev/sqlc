@@ -8,6 +8,7 @@ package querytest
 import (
 	"context"
 	"database/sql"
+	"strings"
 )
 
 const createAuthor = `-- name: CreateAuthor :one
@@ -44,6 +45,27 @@ WHERE id = $1
 
 func (q *Queries) DeleteAuthor(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, deleteAuthor, id)
+	return err
+}
+
+const deleteAuthors = `-- name: DeleteAuthors :exec
+DELETE FROM authors
+WHERE id IN ($2) AND name = $1
+`
+
+func (q *Queries) DeleteAuthors(ctx context.Context, name string, ids []int64) error {
+	query := deleteAuthors
+	var queryParams []interface{}
+	queryParams = append(queryParams, name)
+	if len(ids) > 0 {
+		for _, v := range ids {
+			queryParams = append(queryParams, v)
+		}
+		query = strings.Replace(query, "/*SLICE:ids*/?", strings.Repeat(",?", len(ids))[1:], 1)
+	} else {
+		query = strings.Replace(query, "/*SLICE:ids*/?", "NULL", 1)
+	}
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }
 
