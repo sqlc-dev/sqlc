@@ -126,6 +126,7 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 		return nil, err
 	}
 	return &Query{
+		RawStmt:         raw,
 		Cmd:             cmd,
 		Comments:        comments,
 		Name:            name,

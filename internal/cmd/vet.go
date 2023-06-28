@@ -9,14 +9,18 @@ import (
 	"path/filepath"
 	"runtime/trace"
 	"strings"
+	"time"
 
 	"github.com/google/cel-go/cel"
+	"github.com/google/cel-go/ext"
+	"github.com/jackc/pgx/v5"
 	"github.com/spf13/cobra"
 
 	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/debug"
 	"github.com/kyleconroy/sqlc/internal/opts"
 	"github.com/kyleconroy/sqlc/internal/plugin"
+	"github.com/kyleconroy/sqlc/internal/sql/ast"
 )
 
 var ErrFailedChecks = errors.New("failed checks")
@@ -59,6 +63,7 @@ func Vet(ctx context.Context, e Env, dir, filename string, stderr io.Writer) err
 
 	env, err := cel.NewEnv(
 		cel.StdLib(),
+		ext.Strings(ext.StringsVersion(1)),
 		cel.Types(
 			&plugin.VetConfig{},
 			&plugin.VetQuery{},
@@ -71,7 +76,7 @@ func Vet(ctx context.Context, e Env, dir, filename string, stderr io.Writer) err
 		),
 	)
 	if err != nil {
-		return fmt.Errorf("new env; %s", err)
+		return fmt.Errorf("new env: %s", err)
 	}
 
 	checks := map[string]cel.Program{}
@@ -99,62 +104,178 @@ func Vet(ctx context.Context, e Env, dir, filename string, stderr io.Writer) err
 		msgs[c.Name] = c.Msg
 	}
 
-	errored := true
+	dbenv, err := cel.NewEnv(
+		cel.StdLib(),
+		ext.Strings(ext.StringsVersion(1)),
+		cel.Variable("env",
+			cel.MapType(cel.StringType, cel.StringType),
+		),
+	)
+	if err != nil {
+		return fmt.Errorf("new dbenv; %s", err)
+	}
+
+	c := checker{
+		Checks: checks,
+		Conf:   conf,
+		Dbenv:  dbenv,
+		Dir:    dir,
+		Env:    env,
+		Envmap: map[string]string{},
+		Msgs:   msgs,
+		Stderr: stderr,
+	}
+	errored := false
 	for _, sql := range conf.SQL {
-		combo := config.Combine(*conf, sql)
-
-		// TODO: This feels like a hack that will bite us later
-		joined := make([]string, 0, len(sql.Schema))
-		for _, s := range sql.Schema {
-			joined = append(joined, filepath.Join(dir, s))
+		if err := c.checkSQL(ctx, sql); err != nil {
+			if !errors.Is(err, ErrFailedChecks) {
+				fmt.Fprintf(stderr, "%s\n", err)
+			}
+			errored = true
 		}
-		sql.Schema = joined
+	}
+	if errored {
+		return ErrFailedChecks
+	}
+	return nil
+}
 
-		joined = make([]string, 0, len(sql.Queries))
-		for _, q := range sql.Queries {
-			joined = append(joined, filepath.Join(dir, q))
-		}
-		sql.Queries = joined
+type checker struct {
+	Checks map[string]cel.Program
+	Conf   *config.Config
+	Dbenv  *cel.Env
+	Dir    string
+	Env    *cel.Env
+	Envmap map[string]string
+	Msgs   map[string]string
+	Stderr io.Writer
+}
 
-		var name string
-		parseOpts := opts.Parser{
-			Debug: debug.Debug,
+// Determine if a query can be prepared based on the engine and the statement
+// type.
+func prepareable(sql config.SQL, raw *ast.RawStmt) bool {
+	if sql.Engine == config.EnginePostgreSQL {
+		// TOOD: Add support for MERGE and VALUES stmts
+		switch raw.Stmt.(type) {
+		case *ast.DeleteStmt:
+			return true
+		case *ast.InsertStmt:
+			return true
+		case *ast.SelectStmt:
+			return true
+		case *ast.UpdateStmt:
+			return true
+		default:
+			return false
 		}
+	}
+	return false
+}
 
-		result, failed := parse(ctx, name, dir, sql, combo, parseOpts, stderr)
-		if failed {
-			return nil
+func (c *checker) checkSQL(ctx context.Context, sql config.SQL) error {
+	// TODO: Create a separate function for this logic so we can
+	combo := config.Combine(*c.Conf, sql)
+
+	// TODO: This feels like a hack that will bite us later
+	joined := make([]string, 0, len(sql.Schema))
+	for _, s := range sql.Schema {
+		joined = append(joined, filepath.Join(c.Dir, s))
+	}
+	sql.Schema = joined
+
+	joined = make([]string, 0, len(sql.Queries))
+	for _, q := range sql.Queries {
+		joined = append(joined, filepath.Join(c.Dir, q))
+	}
+	sql.Queries = joined
+
+	var name string
+	parseOpts := opts.Parser{
+		Debug: debug.Debug,
+	}
+
+	result, failed := parse(ctx, name, c.Dir, sql, combo, parseOpts, c.Stderr)
+	if failed {
+		return ErrFailedChecks
+	}
+
+	// TODO: Add MySQL support
+	var pgconn *pgx.Conn
+	if sql.Engine == config.EnginePostgreSQL && sql.Database != nil {
+		ast, issues := c.Dbenv.Compile(sql.Database.URL)
+		if issues != nil && issues.Err() != nil {
+			return fmt.Errorf("type-check error: database url %s", issues.Err())
 		}
-		req := codeGenRequest(result, combo)
-		cfg := vetConfig(req)
-		for _, query := range req.Queries {
-			q := vetQuery(query)
-			for _, name := range sql.Rules {
-				prg, ok := checks[name]
-				if !ok {
-					return fmt.Errorf("type-check error: a check with the name '%s' does not exist", name)
+		prg, err := c.Dbenv.Program(ast)
+		if err != nil {
+			return fmt.Errorf("program construction error: database url %s", err)
+		}
+		// Populate the environment variable map if it is empty
+		if len(c.Envmap) == 0 {
+			for _, e := range os.Environ() {
+				k, v, _ := strings.Cut(e, "=")
+				c.Envmap[k] = v
+			}
+		}
+		out, _, err := prg.Eval(map[string]any{
+			"env": c.Envmap,
+		})
+		if err != nil {
+			return fmt.Errorf("expression error: %s", err)
+		}
+		dburl, ok := out.Value().(string)
+		if !ok {
+			return fmt.Errorf("expression returned non-string value: %v", out.Value())
+		}
+		fmt.Println("URL", dburl)
+		conn, err := pgx.Connect(ctx, dburl)
+		if err != nil {
+			return fmt.Errorf("database: connection error: %s", err)
+		}
+		defer conn.Close(ctx)
+		pgconn = conn
+	}
+
+	errored := false
+	req := codeGenRequest(result, combo)
+	cfg := vetConfig(req)
+	for i, query := range req.Queries {
+		original := result.Queries[i]
+		if pgconn != nil && prepareable(sql, original.RawStmt) {
+			name := fmt.Sprintf("sqlc_vet_%d_%d", time.Now().Unix(), i)
+			_, err := pgconn.Prepare(ctx, name, query.Text)
+			if err != nil {
+				fmt.Fprintf(c.Stderr, "%s: error preparing %s: %s\n", query.Filename, query.Name, err)
+				errored = true
+				continue
+			}
+		}
+		q := vetQuery(query)
+		for _, name := range sql.Rules {
+			prg, ok := c.Checks[name]
+			if !ok {
+				return fmt.Errorf("type-check error: a check with the name '%s' does not exist", name)
+			}
+			out, _, err := prg.Eval(map[string]any{
+				"query":  q,
+				"config": cfg,
+			})
+			if err != nil {
+				return err
+			}
+			tripped, ok := out.Value().(bool)
+			if !ok {
+				return fmt.Errorf("expression returned non-bool value: %v", out.Value())
+			}
+			if tripped {
+				// TODO: Get line numbers in the output
+				msg := c.Msgs[name]
+				if msg == "" {
+					fmt.Fprintf(c.Stderr, "%s: %s: %s\n", query.Filename, q.Name, name)
+				} else {
+					fmt.Fprintf(c.Stderr, "%s: %s: %s: %s\n", query.Filename, q.Name, name, msg)
 				}
-				out, _, err := prg.Eval(map[string]any{
-					"query":  q,
-					"config": cfg,
-				})
-				if err != nil {
-					return err
-				}
-				tripped, ok := out.Value().(bool)
-				if !ok {
-					return fmt.Errorf("expression returned non-bool: %s", err)
-				}
-				if tripped {
-					// TODO: Get line numbers in the output
-					msg := msgs[name]
-					if msg == "" {
-						fmt.Fprintf(stderr, query.Filename+": %s: %s\n", q.Name, name, msg)
-					} else {
-						fmt.Fprintf(stderr, query.Filename+": %s: %s: %s\n", q.Name, name, msg)
-					}
-					errored = true
-				}
+				errored = true
 			}
 		}
 	}
