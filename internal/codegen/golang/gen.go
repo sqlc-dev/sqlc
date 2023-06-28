@@ -92,7 +92,7 @@ func (t *tmplCtx) codegenQueryRetval(q Query) (string, error) {
 		return "rows, err :=", nil
 	case ":exec":
 		return "_, err :=", nil
-	case ":execrows":
+	case ":execrows", ":execlastid":
 		return "result, err :=", nil
 	case ":execresult":
 		return "return", nil
