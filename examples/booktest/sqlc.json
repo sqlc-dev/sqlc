@@ -6,7 +6,10 @@
       "path": "postgresql",
       "schema": "postgresql/schema.sql",
       "queries": "postgresql/query.sql",
-      "engine": "postgresql"
+      "engine": "postgresql",
+      "database": {
+        "url": "'postgresql://%s:%s@%s:%s/booktest'.format([env.PG_USER, env.PG_PASSWORD, env.PG_HOST, env.PG_PORT])"
+      }
     },
     {
       "name": "booktest",

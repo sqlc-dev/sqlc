@@ -7,6 +7,9 @@
       "schema": "postgresql/schema",
       "queries": "postgresql/query",
       "engine": "postgresql",
+      "database": {
+        "url": "'postgresql://%s:%s@%s:%s/ondeck'.format([env.PG_USER, env.PG_PASSWORD, env.PG_HOST, env.PG_PORT])"
+      },
       "emit_json_tags": true,
       "emit_prepared_queries": true,
       "emit_interface": true
