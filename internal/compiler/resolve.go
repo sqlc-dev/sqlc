@@ -153,6 +153,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 						DataType:     dataType,
 						IsNamedParam: isNamed,
 						NotNull:      p.NotNull(),
+						IsSqlcSlice:  p.IsSqlcSlice(),
 					},
 				})
 				continue
@@ -220,6 +221,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 								Length:       c.Length,
 								Table:        table,
 								IsNamedParam: isNamed,
+								IsSqlcSlice:  p.IsSqlcSlice(),
 							},
 						})
 					}
@@ -284,6 +286,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 							IsArray:      c.IsArray,
 							Table:        table,
 							IsNamedParam: isNamed,
+							IsSqlcSlice:  p.IsSqlcSlice(),
 						},
 					})
 				}
@@ -352,6 +355,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 							DataType:     "any",
 							IsNamedParam: isNamed,
 							NotNull:      p.NotNull(),
+							IsSqlcSlice:  p.IsSqlcSlice(),
 						},
 					})
 					continue
@@ -392,6 +396,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 						DataType:     dataType(paramType),
 						NotNull:      p.NotNull(),
 						IsNamedParam: isNamed,
+						IsSqlcSlice:  p.IsSqlcSlice(),
 					},
 				})
 			}
@@ -457,6 +462,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 						Table:        &ast.TableName{Schema: schema, Name: rel},
 						Length:       c.Length,
 						IsNamedParam: isNamed,
+						IsSqlcSlice:  p.IsSqlcSlice(),
 					},
 				})
 			} else {
