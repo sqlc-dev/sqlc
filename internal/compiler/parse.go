@@ -23,16 +23,42 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 	if o.Debug.DumpAST {
 		debug.Dump(stmt)
 	}
+	raw, ok := stmt.(*ast.RawStmt)
+	if !ok {
+		return nil, errors.New("node is not a statement")
+	}
+	rawSQL, err := source.Pluck(src, raw.StmtLocation, raw.StmtLen)
+	if err != nil {
+		return nil, err
+	}
+	if rawSQL == "" {
+		return nil, errors.New("missing semicolon at end of file")
+	}
+	name, cmd, cmdParams, err := metadata.Parse(strings.TrimSpace(rawSQL), c.parser.CommentSyntax())
+	if err != nil {
+		return nil, err
+	}
+	if cmdParams.NoInference {
+		trimmed, comments, err := source.StripComments(rawSQL)
+		if err != nil {
+			return nil, err
+		}
+		return &Query{
+			Cmd:       cmd,
+			Comments:  comments,
+			Name:      name,
+			Params:    nil,
+			Columns:   nil,
+			SQL:       trimmed,
+			CmdParams: cmdParams,
+		}, nil
+	}
 	if err := validate.ParamStyle(stmt); err != nil {
 		return nil, err
 	}
 	numbers, dollar, err := validate.ParamRef(stmt)
 	if err != nil {
 		return nil, err
-	}
-	raw, ok := stmt.(*ast.RawStmt)
-	if !ok {
-		return nil, errors.New("node is not a statement")
 	}
 	var table *ast.TableName
 	switch n := raw.Stmt.(type) {
@@ -57,21 +83,10 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 		return nil, ErrUnsupportedStatementType
 	}
 
-	rawSQL, err := source.Pluck(src, raw.StmtLocation, raw.StmtLen)
-	if err != nil {
-		return nil, err
-	}
-	if rawSQL == "" {
-		return nil, errors.New("missing semicolon at end of file")
-	}
 	if err := validate.FuncCall(c.catalog, c.combo, raw); err != nil {
 		return nil, err
 	}
 	if err := validate.In(c.catalog, raw); err != nil {
-		return nil, err
-	}
-	name, cmd, cmdParams, err := metadata.Parse(strings.TrimSpace(rawSQL), c.parser.CommentSyntax())
-	if err != nil {
 		return nil, err
 	}
 	raw, namedParams, edits := rewrite.NamedParameters(c.conf.Engine, raw, numbers, dollar)
