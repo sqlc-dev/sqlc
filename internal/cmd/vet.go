@@ -264,7 +264,8 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 		if err != nil {
 			return err
 		}
-		if s.Engine == config.EnginePostgreSQL {
+		switch s.Engine {
+		case config.EnginePostgreSQL:
 			conn, err := pgx.Connect(ctx, dburl)
 			if err != nil {
 				return fmt.Errorf("database: connection error: %s", err)
@@ -274,8 +275,7 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 			}
 			defer conn.Close(ctx)
 			prep = &pgxPreparer{conn}
-		}
-		if s.Engine == config.EngineMySQL {
+		case config.EngineMySQL:
 			db, err := sql.Open("mysql", dburl)
 			if err != nil {
 				return fmt.Errorf("database: connection error: %s", err)
@@ -285,6 +285,8 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 			}
 			defer db.Close()
 			prep = &dbPreparer{db}
+		default:
+			return fmt.Errorf("unsupported database url: %s", s.Engine)
 		}
 	}
 
