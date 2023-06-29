@@ -6,7 +6,7 @@
       "queries": "postgresql/query.sql",
       "engine": "postgresql",
       "database": {
-        "url": "'postgresql://%s:%s@%s:%s/authors'.format([env.PG_USER, env.PG_PASSWORD, env.PG_HOST, env.PG_PORT])"
+        "url": "postgresql://${PG_USER}:${PG_PASSWORD}@${PG_HOST}:${PG_PORT}/authors"
       },
       "gen": {
         "go": {
@@ -20,7 +20,7 @@
       "queries": "mysql/query.sql",
       "engine": "mysql",
       "database": {
-        "url": "'root:%s@tcp(%s:%s)/authors?multiStatements=true&parseTime=true'.format([env.MYSQL_ROOT_PASSWORD, env.MYSQL_HOST, env.MYSQL_PORT])"
+        "url": "root:${MYSQL_ROOT_PASSWORD}@tcp(${MYSQL_HOST}:${MYSQL_PORT})/authors?multiStatements=true&parseTime=true"
       },
       "gen": {
         "go": {
@@ -34,7 +34,7 @@
       "queries": "sqlite/query.sql",
       "engine": "sqlite",
       "database": {
-        "url": "'file:authors?mode=memory&cache=shared'"
+        "url": "file:authors?mode=memory&cache=shared"
       },
       "gen": {
         "go": {
