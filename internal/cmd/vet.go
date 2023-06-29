@@ -298,8 +298,13 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 		for _, name := range s.Rules {
 			// Built-in rule
 			if name == RuleDbPrepare {
+				if prep == nil {
+					fmt.Fprintf(c.Stderr, "%s: %s: %s: error preparing query: database connection required\n", query.Filename, q.Name, name)
+					errored = true
+					continue
+				}
 				original := result.Queries[i]
-				if prep != nil && prepareable(s, original.RawStmt) {
+				if prepareable(s, original.RawStmt) {
 					name := fmt.Sprintf("sqlc_vet_%d_%d", time.Now().Unix(), i)
 					if err := prep.Prepare(ctx, name, query.Text); err != nil {
 						fmt.Fprintf(c.Stderr, "%s: %s: %s: error preparing query: %s\n", query.Filename, q.Name, name, err)
