@@ -23,6 +23,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/debug"
 	"github.com/kyleconroy/sqlc/internal/opts"
 	"github.com/kyleconroy/sqlc/internal/plugin"
+	"github.com/kyleconroy/sqlc/internal/shfmt"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 )
 
@@ -107,21 +108,9 @@ func Vet(ctx context.Context, e Env, dir, filename string, stderr io.Writer) err
 		msgs[c.Name] = c.Msg
 	}
 
-	dbenv, err := cel.NewEnv(
-		cel.StdLib(),
-		ext.Strings(ext.StringsVersion(1)),
-		cel.Variable("env",
-			cel.MapType(cel.StringType, cel.StringType),
-		),
-	)
-	if err != nil {
-		return fmt.Errorf("new dbenv; %s", err)
-	}
-
 	c := checker{
 		Checks: checks,
 		Conf:   conf,
-		Dbenv:  dbenv,
 		Dir:    dir,
 		Env:    env,
 		Envmap: map[string]string{},
@@ -197,7 +186,6 @@ func (p *dbPreparer) Prepare(ctx context.Context, name, query string) error {
 type checker struct {
 	Checks map[string]cel.Program
 	Conf   *config.Config
-	Dbenv  *cel.Env
 	Dir    string
 	Env    *cel.Env
 	Envmap map[string]string
@@ -205,15 +193,7 @@ type checker struct {
 	Stderr io.Writer
 }
 
-func (c *checker) DSN(expr string) (string, error) {
-	ast, issues := c.Dbenv.Compile(expr)
-	if issues != nil && issues.Err() != nil {
-		return "", fmt.Errorf("type-check error: database url %s", issues.Err())
-	}
-	prg, err := c.Dbenv.Program(ast)
-	if err != nil {
-		return "", fmt.Errorf("program construction error: database url %s", err)
-	}
+func (c *checker) DSN(dsn string) (string, error) {
 	// Populate the environment variable map if it is empty
 	if len(c.Envmap) == 0 {
 		for _, e := range os.Environ() {
@@ -221,17 +201,7 @@ func (c *checker) DSN(expr string) (string, error) {
 			c.Envmap[k] = v
 		}
 	}
-	out, _, err := prg.Eval(map[string]any{
-		"env": c.Envmap,
-	})
-	if err != nil {
-		return "", fmt.Errorf("expression error: %s", err)
-	}
-	dsn, ok := out.Value().(string)
-	if !ok {
-		return "", fmt.Errorf("expression returned non-string value: %v", out.Value())
-	}
-	return dsn, nil
+	return shfmt.Replace(dsn, c.Envmap), nil
 }
 
 func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
@@ -312,9 +282,8 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 		if prep != nil && prepareable(s, original.RawStmt) {
 			name := fmt.Sprintf("sqlc_vet_%d_%d", time.Now().Unix(), i)
 			if err := prep.Prepare(ctx, name, query.Text); err != nil {
-				fmt.Fprintf(c.Stderr, "%s: error preparing %s: %s\n", query.Filename, query.Name, err)
+				fmt.Fprintf(c.Stderr, "%s: error preparing %s on %s: %s\n", query.Filename, query.Name, s.Engine, err)
 				errored = true
-				continue
 			}
 		}
 		q := vetQuery(query)

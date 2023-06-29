@@ -8,7 +8,7 @@
       "queries": "postgresql/query",
       "engine": "postgresql",
       "database": {
-        "url": "'postgresql://%s:%s@%s:%s/ondeck'.format([env.PG_USER, env.PG_PASSWORD, env.PG_HOST, env.PG_PORT])"
+        "url": "postgresql://${PG_USER}:${PG_PASSWORD}@${PG_HOST}:${PG_PORT}/ondeck"
       },
       "emit_json_tags": true,
       "emit_prepared_queries": true,
@@ -21,7 +21,7 @@
       "queries": "mysql/query",
       "engine": "mysql",
       "database": {
-        "url": "'root:%s@tcp(%s:%s)/ondeck?multiStatements=true&parseTime=true'.format([env.MYSQL_ROOT_PASSWORD, env.MYSQL_HOST, env.MYSQL_PORT])"
+        "url": "root:${MYSQL_ROOT_PASSWORD}@tcp(${MYSQL_HOST}:${MYSQL_PORT})/ondeck?multiStatements=true&parseTime=true"
       },
       "emit_json_tags": true,
       "emit_prepared_queries": true,
@@ -34,7 +34,7 @@
       "queries": "sqlite/query",
       "engine": "sqlite",
       "database": {
-        "url": "'file:ondeck?mode=memory&cache=shared'"
+        "url": "file:ondeck?mode=memory&cache=shared"
       },
       "emit_json_tags": true,
       "emit_prepared_queries": true,
