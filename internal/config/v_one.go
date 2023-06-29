@@ -15,6 +15,7 @@ type V1GenerateSettings struct {
 	Packages  []v1PackageSettings `json:"packages" yaml:"packages"`
 	Overrides []Override          `json:"overrides,omitempty" yaml:"overrides,omitempty"`
 	Rename    map[string]string   `json:"rename,omitempty" yaml:"rename,omitempty"`
+	Rules     []Rule              `json:"rules" yaml:"rules"`
 }
 
 type v1PackageSettings struct {
@@ -51,6 +52,7 @@ type v1PackageSettings struct {
 	StrictOrderBy             *bool      `json:"strict_order_by" yaml:"strict_order_by"`
 	QueryParameterLimit       *int32     `json:"query_parameter_limit,omitempty" yaml:"query_parameter_limit"`
 	OmitUnusedStructs         bool       `json:"omit_unused_structs,omitempty" yaml:"omit_unused_structs"`
+	Rules                     []string   `json:"rules" yaml:"rules"`
 }
 
 func v1ParseConfig(rd io.Reader) (Config, error) {
@@ -131,6 +133,7 @@ func (c *V1GenerateSettings) Translate() Config {
 		Version: c.Version,
 		Project: c.Project,
 		Cloud:   c.Cloud,
+		Rules:   c.Rules,
 	}
 
 	for _, pkg := range c.Packages {
@@ -143,6 +146,7 @@ func (c *V1GenerateSettings) Translate() Config {
 			Database: pkg.Database,
 			Schema:   pkg.Schema,
 			Queries:  pkg.Queries,
+			Rules:    pkg.Rules,
 			Gen: SQLGen{
 				Go: &SQLGo{
 					EmitInterface:             pkg.EmitInterface,
