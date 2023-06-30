@@ -30,7 +30,7 @@ import (
 
 var ErrFailedChecks = errors.New("failed checks")
 
-const RuleDbPrepare = "db-prepare"
+const RuleDbPrepare = "sqlc/db-prepare"
 
 func NewCmdVet() *cobra.Command {
 	return &cobra.Command{

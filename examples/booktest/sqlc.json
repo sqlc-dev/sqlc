@@ -11,7 +11,7 @@
         "url": "postgresql://${PG_USER}:${PG_PASSWORD}@${PG_HOST}:${PG_PORT}/booktest"
       },
       "rules": [
-        "db-prepare"
+        "sqlc/db-prepare"
       ]
     },
     {
@@ -24,7 +24,7 @@
         "url": "root:${MYSQL_ROOT_PASSWORD}@tcp(${MYSQL_HOST}:${MYSQL_PORT})/booktest?multiStatements=true&parseTime=true"
       },
       "rules": [
-        "db-prepare"
+        "sqlc/db-prepare"
       ]
     },
     {
@@ -37,7 +37,7 @@
         "url": "file:booktest?mode=memory&cache=shared"
       },
       "rules": [
-        "db-prepare"
+        "sqlc/db-prepare"
       ]
     }
   ]
