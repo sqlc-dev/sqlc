@@ -14,6 +14,7 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/google/cel-go/cel"
+	"github.com/google/cel-go/common/types/ref"
 	"github.com/google/cel-go/ext"
 	"github.com/jackc/pgx/v5"
 	_ "github.com/mattn/go-sqlite3"
@@ -28,6 +29,8 @@ import (
 )
 
 var ErrFailedChecks = errors.New("failed checks")
+
+const RuleDbPrepare = "sqlc/db-prepare"
 
 func NewCmdVet() *cobra.Command {
 	return &cobra.Command{
@@ -46,6 +49,17 @@ func NewCmdVet() *cobra.Command {
 			return nil
 		},
 	}
+}
+
+type emptyProgram struct {
+}
+
+func (e *emptyProgram) Eval(any) (ref.Val, *cel.EvalDetails, error) {
+	return nil, nil, fmt.Errorf("unimplemented")
+}
+
+func (e *emptyProgram) ContextEval(ctx context.Context, a any) (ref.Val, *cel.EvalDetails, error) {
+	return e.Eval(a)
 }
 
 func Vet(ctx context.Context, e Env, dir, filename string, stderr io.Writer) error {
@@ -83,7 +97,9 @@ func Vet(ctx context.Context, e Env, dir, filename string, stderr io.Writer) err
 		return fmt.Errorf("new env: %s", err)
 	}
 
-	checks := map[string]cel.Program{}
+	checks := map[string]cel.Program{
+		RuleDbPrepare: &emptyProgram{},
+	}
 	msgs := map[string]string{}
 
 	for _, c := range conf.Rules {
@@ -278,16 +294,26 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 	req := codeGenRequest(result, combo)
 	cfg := vetConfig(req)
 	for i, query := range req.Queries {
-		original := result.Queries[i]
-		if prep != nil && prepareable(s, original.RawStmt) {
-			name := fmt.Sprintf("sqlc_vet_%d_%d", time.Now().Unix(), i)
-			if err := prep.Prepare(ctx, name, query.Text); err != nil {
-				fmt.Fprintf(c.Stderr, "%s: error preparing %s on %s: %s\n", query.Filename, query.Name, s.Engine, err)
-				errored = true
-			}
-		}
 		q := vetQuery(query)
 		for _, name := range s.Rules {
+			// Built-in rule
+			if name == RuleDbPrepare {
+				if prep == nil {
+					fmt.Fprintf(c.Stderr, "%s: %s: %s: error preparing query: database connection required\n", query.Filename, q.Name, name)
+					errored = true
+					continue
+				}
+				original := result.Queries[i]
+				if prepareable(s, original.RawStmt) {
+					name := fmt.Sprintf("sqlc_vet_%d_%d", time.Now().Unix(), i)
+					if err := prep.Prepare(ctx, name, query.Text); err != nil {
+						fmt.Fprintf(c.Stderr, "%s: %s: %s: error preparing query: %s\n", query.Filename, q.Name, name, err)
+						errored = true
+					}
+				}
+				continue
+			}
+
 			prg, ok := c.Checks[name]
 			if !ok {
 				return fmt.Errorf("type-check error: a check with the name '%s' does not exist", name)

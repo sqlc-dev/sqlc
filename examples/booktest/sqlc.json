@@ -9,7 +9,10 @@
       "engine": "postgresql",
       "database": {
         "url": "postgresql://${PG_USER}:${PG_PASSWORD}@${PG_HOST}:${PG_PORT}/booktest"
-      }
+      },
+      "rules": [
+        "sqlc/db-prepare"
+      ]
     },
     {
       "name": "booktest",
@@ -19,7 +22,10 @@
       "engine": "mysql",
       "database": {
         "url": "root:${MYSQL_ROOT_PASSWORD}@tcp(${MYSQL_HOST}:${MYSQL_PORT})/booktest?multiStatements=true&parseTime=true"
-      }
+      },
+      "rules": [
+        "sqlc/db-prepare"
+      ]
     },
     {
       "name": "booktest",
@@ -29,7 +35,10 @@
       "engine": "sqlite",
       "database": {
         "url": "file:booktest?mode=memory&cache=shared"
-      }
+      },
+      "rules": [
+        "sqlc/db-prepare"
+      ]
     }
   ]
 }

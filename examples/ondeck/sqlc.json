@@ -10,6 +10,9 @@
       "database": {
         "url": "postgresql://${PG_USER}:${PG_PASSWORD}@${PG_HOST}:${PG_PORT}/ondeck"
       },
+      "rules": [
+        "sqlc/db-prepare"
+      ],
       "emit_json_tags": true,
       "emit_prepared_queries": true,
       "emit_interface": true
@@ -23,6 +26,9 @@
       "database": {
         "url": "root:${MYSQL_ROOT_PASSWORD}@tcp(${MYSQL_HOST}:${MYSQL_PORT})/ondeck?multiStatements=true&parseTime=true"
       },
+      "rules": [
+        "sqlc/db-prepare"
+      ],
       "emit_json_tags": true,
       "emit_prepared_queries": true,
       "emit_interface": true
@@ -36,6 +42,9 @@
       "database": {
         "url": "file:ondeck?mode=memory&cache=shared"
       },
+      "rules": [
+        "sqlc/db-prepare"
+      ],
       "emit_json_tags": true,
       "emit_prepared_queries": true,
       "emit_interface": true
