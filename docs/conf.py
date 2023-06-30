@@ -33,6 +33,7 @@ release = '1.18.0'
 extensions = [
     'recommonmark',
     'sphinx_rtd_theme',
+    "sphinx_favicon",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -62,3 +63,7 @@ html_theme_options = {
 
 def setup(app):
     app.add_css_file('customize.css')
+
+favicons = [
+    "favicon.png",
+]
