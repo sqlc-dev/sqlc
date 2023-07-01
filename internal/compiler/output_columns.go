@@ -661,6 +661,7 @@ func findColumnForRef(ref *ast.ColumnRef, tables []*Table, selectStatement *ast.
 	}
 
 	var found int
+	var foundResTarget *ast.ResTarget
 	for _, t := range tables {
 		if alias != "" && t.Rel.Name != alias {
 			continue
@@ -686,7 +687,10 @@ func findColumnForRef(ref *ast.ColumnRef, tables []*Table, selectStatement *ast.
 				continue
 			}
 			if resTarget.Name != nil && *resTarget.Name == name {
-				found++
+				if resTarget != foundResTarget {
+					found++
+					foundResTarget = resTarget
+				}
 			}
 		}
 	}
