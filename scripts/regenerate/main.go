@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -63,7 +62,7 @@ func regenerate(dir string) error {
 				return fmt.Errorf("%s: sqlc-dev generate failed\n%s", cwd, out)
 			}
 			if expectFailure {
-				if err := ioutil.WriteFile(filepath.Join(cwd, "stderr.txt"), out, 0644); err != nil {
+				if err := os.WriteFile(filepath.Join(cwd, "stderr.txt"), out, 0644); err != nil {
 					return fmt.Errorf("failed to update stderr.txt: %v", err)
 				}
 			}
