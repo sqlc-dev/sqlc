@@ -43,7 +43,7 @@ Each mapping in the `sql` collection has the following keys:
 - `gen`:
   - A mapping to configure built-in code generators. See [gen](#gen) for the supported keys.
 - `database`:
-  - A mapping configure database connections. See [database](#database) for the supported keys.
+  - A mapping to configure database connections. See [database](#database) for the supported keys.
 - `rules`:
   - A collection of rule names to run via `sqlc vet`. See [rules](#rules) for configuration options.
 - `strict_function_checks`
@@ -86,11 +86,11 @@ sql:
 The `database` mapping supports the following keys:
 
 - `uri`:
-  - Database connection URL
+  - Database connection URI
 
-The URI can contain references to environment variables using the `${...}`
-syntax. In the following example, the connection string will set the value of
-the password to the value set in the `PG_PASSWORD` environment variable.
+The `uri` string can contain references to environment variables using the `${...}`
+syntax. In the following example, the connection string will have the value of
+the `PG_PASSWORD` environment variable set as its password.
 
 ```yaml
 version: '2'
@@ -344,9 +344,10 @@ Each mapping in the `rules` collection has the following keys:
 - `rule`:
   - A [Common Expression Language (CEL)](https://github.com/google/cel-spec) expression. Required.
 - `message`:
-  - An optional message shown when the rule returns true.
+  - An optional message shown when this rule evaluates to `true`.
 
-See the [vet](../howto/vet.md) documentation for help writing custom rules.
+See the [vet](../howto/vet.md) documentation for a list of built-in rules and
+help writing custom rules.
    
 ```yaml
 version: 2
