@@ -8,7 +8,7 @@
       "queries": "postgresql/query",
       "engine": "postgresql",
       "database": {
-        "url": "postgresql://${PG_USER}:${PG_PASSWORD}@${PG_HOST}:${PG_PORT}/ondeck"
+        "uri": "postgresql://${PG_USER}:${PG_PASSWORD}@${PG_HOST}:${PG_PORT}/ondeck"
       },
       "rules": [
         "sqlc/db-prepare"
@@ -24,7 +24,7 @@
       "queries": "mysql/query",
       "engine": "mysql",
       "database": {
-        "url": "root:${MYSQL_ROOT_PASSWORD}@tcp(${MYSQL_HOST}:${MYSQL_PORT})/ondeck?multiStatements=true&parseTime=true"
+        "uri": "root:${MYSQL_ROOT_PASSWORD}@tcp(${MYSQL_HOST}:${MYSQL_PORT})/ondeck?multiStatements=true&parseTime=true"
       },
       "rules": [
         "sqlc/db-prepare"
@@ -40,7 +40,7 @@
       "queries": "sqlite/query",
       "engine": "sqlite",
       "database": {
-        "url": "file:ondeck?mode=memory&cache=shared"
+        "uri": "file:ondeck?mode=memory&cache=shared"
       },
       "rules": [
         "sqlc/db-prepare"
