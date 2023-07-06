@@ -4,7 +4,7 @@ sql:
   queries: postgresql/query.sql
   engine: postgresql
   database:
-    url: postgresql://${PG_USER}:${PG_PASSWORD}@${PG_HOST}:${PG_PORT}/authors
+    uri: postgresql://${PG_USER}:${PG_PASSWORD}@${PG_HOST}:${PG_PORT}/authors
   rules:
   - sqlc/db-prepare
   gen:
@@ -15,7 +15,7 @@ sql:
   queries: mysql/query.sql
   engine: mysql
   database:
-    url: root:${MYSQL_ROOT_PASSWORD}@tcp(${MYSQL_HOST}:${MYSQL_PORT})/authors?multiStatements=true&parseTime=true
+    uri: root:${MYSQL_ROOT_PASSWORD}@tcp(${MYSQL_HOST}:${MYSQL_PORT})/authors?multiStatements=true&parseTime=true
   rules:
   - sqlc/db-prepare
   gen:
@@ -26,7 +26,7 @@ sql:
   queries: sqlite/query.sql
   engine: sqlite
   database:
-    url: file:authors?mode=memory&cache=shared
+    uri: file:authors?mode=memory&cache=shared
   rules:
   - sqlc/db-prepare
   gen:

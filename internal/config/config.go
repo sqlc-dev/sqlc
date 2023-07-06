@@ -69,7 +69,7 @@ type Project struct {
 }
 
 type Database struct {
-	URL string `json:"url" yaml:"url"`
+	URI string `json:"uri" yaml:"uri"`
 }
 
 type Cloud struct {

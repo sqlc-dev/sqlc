@@ -255,7 +255,7 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 		if c.NoDatabase {
 			return fmt.Errorf("database: connections disabled via command line flag")
 		}
-		dburl, err := c.DSN(s.Database.URL)
+		dburl, err := c.DSN(s.Database.URI)
 		if err != nil {
 			return err
 		}
