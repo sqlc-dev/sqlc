@@ -13,7 +13,7 @@ func Validate(c *Config) error {
 		}
 		if sql.Database != nil {
 			if sql.Database.URI == "" {
-				return fmt.Errorf("invalid config: database must have a non-empty URL")
+				return fmt.Errorf("invalid config: database must have a non-empty URI")
 			}
 		}
 	}
