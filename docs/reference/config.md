@@ -16,7 +16,7 @@ sql:
       package: "authors"
       out: "postgresql"
   database:
-    url: "postgresql://postgres:postgres@localhost:5432/postgres"
+    uri: "postgresql://postgres:postgres@localhost:5432/postgres"
   rules:
     - sqlc/db-prepare
 - schema: "mysql/schema.sql"
@@ -85,10 +85,10 @@ sql:
 
 The `database` mapping supports the following keys:
 
-- `url`:
+- `uri`:
   - Database connection URL
 
-The URL can contain references to environment variables using the `${...}`
+The URI can contain references to environment variables using the `${...}`
 syntax. In the following example, the connection string will set the value of
 the password to the value set in the `PG_PASSWORD` environment variable.
 
@@ -99,7 +99,7 @@ sql:
   queries: query.sql
   engine: postgresql
   database:
-    url: postgresql://postgres:${PG_PASSWORD}@localhost:5432/authors
+    uri: postgresql://postgres:${PG_PASSWORD}@localhost:5432/authors
   gen:
     go:
       package: authors
@@ -346,7 +346,7 @@ Each mapping in the `rules` collection has the following keys:
 - `message`:
   - An optional message shown when the rule returns true.
 
-See the [vet](cli.html#vet) documentation for help writing custom rules.
+See the [vet](../howto/vet.md) documentation for help writing custom rules.
    
 ```yaml
 version: 2

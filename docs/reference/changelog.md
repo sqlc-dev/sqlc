@@ -8,7 +8,7 @@ Released 2023-07-06
 
 #### sqlc vet
 
-[`vet`](cli.html#vet) runs queries through a set of lint rules.
+[`vet`](../howto/vet.md) runs queries through a set of lint rules.
 
 Rules are defined in the `sqlc` [configuration](config.html#rules) file. They consist
 of a name, message, and an expression. If the expression evaluates to `true`, an
@@ -73,7 +73,7 @@ sql:
         package: "authors"
         out: "db"
     database:
-      url: "postgresql://postgres:password@localhost:5432/postgres"
+      uri: "postgresql://postgres:password@localhost:5432/postgres"
     rules:
       - sqlc/db-prepare
 ```

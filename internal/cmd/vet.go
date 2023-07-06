@@ -291,7 +291,7 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 			defer db.Close()
 			prep = &dbPreparer{db}
 		default:
-			return fmt.Errorf("unsupported database url: %s", s.Engine)
+			return fmt.Errorf("unsupported database uri: %s", s.Engine)
 		}
 	}
 

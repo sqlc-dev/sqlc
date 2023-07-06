@@ -22,7 +22,7 @@ catch both scenarios.
 
 `sqlc vet` runs a set of lint checks against your SQL queries. These checks are
 helpful in catching anti-patterns before they make it into production. Please
-see the [vet](../reference/cli.html#vet) documentation for a complete guide on adding checks to your
+see the [vet](vet.md) documentation for a complete guide on adding checks to your
 project.
 
 ## General setup
@@ -54,9 +54,8 @@ jobs:
     - run: sqlc diff
 ```
 
-We also encourage running [`sqlc vet`](../reference/cli.html#vet). To get the most value out of `vet`,
-you'll want to set up a running database. See the [vet] documentation for a
-complete guide on adding checks to your project.
+We also encourage running [`sqlc vet`](vet.md). To get the most value out of
+`vet`, you'll want to set up a running database.
 
 ```yaml
 name: sqlc
