@@ -5,12 +5,12 @@
 `sqlc vet` runs queries through a set of lint rules.
 
 Rules are defined in the `sqlc` [configuration](../reference/config) file. They consist
-of a name, message, and an expression. If the expression evaluates to `true`, an
-error is reported. These expressions are evaluated using
-[cel-go](https://github.com/google/cel-go).
+of a name, message, and a [Common Expression Language (CEL)](https://github.com/google/cel-spec)
+expression. Expressions are evaluated using [cel-go](https://github.com/google/cel-go).
+If an expression evaluates to `true`, an error is reported using the given message.
 
-Each expression has access to a query object, which is defined as the following
-struct:
+Each expression has access to variables from your sqlc configuration and queries,
+defined in the following struct:
 
 ```proto
 message Config
@@ -33,18 +33,17 @@ message Query
   repeated Parameter params = 4;
 }
 
-
 message Parameter
 {
   int32 number = 1;
 }
 ```
 
-This struct may be expanded in the future to include more query information.
-We may also add information from a running database, such as the result from
-`EXPLAIN`.
+This struct will likely expand in the future to include more query information.
+We may also add information returned from a running database, such as the result from
+`EXPLAIN ...`.
 
-While these examples are simplistic, they give you an idea on what types of
+While these examples are simplistic, they give you a flavor of the types of
 rules you can write.
 
 ```yaml
@@ -85,9 +84,9 @@ rules:
 
 ### sqlc/db-prepare
 
-When a [database](../reference/config.html#database) in configured, the `sqlc/db-preapre`
-rule will attempt to prepare each of your queries against the connected
-database. Any failures will be reported to standard error.
+When a [database](../reference/config.html#database) connection is configured, you can
+run the built-in `sqlc/db-preapre` rule. This rule will attempt to prepare
+each of your queries against the connected database and report any failures.
 
 ```yaml
 version: 2
@@ -108,5 +107,6 @@ sql:
 To see this in action, check out the [authors
 example](https://github.com/kyleconroy/sqlc/blob/main/examples/authors/sqlc.yaml).
 
-Please note that `sqlc` does not manage or migrate the database. Use your
-migration tool of choice to create the necessary database tables and objects.
+Please note that `sqlc` does not manage or migrate your database. Use your
+migration tool of choice to create the necessary database tables and objects
+before running `sqlc vet`.

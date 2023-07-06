@@ -8,14 +8,14 @@ Released 2023-07-06
 
 #### sqlc vet
 
-[`vet`](../howto/vet.md) runs queries through a set of lint rules.
+[`sqlc vet`](../howto/vet.md) runs queries through a set of lint rules.
 
-Rules are defined in the `sqlc` [configuration](config.html#rules) file. They consist
-of a name, message, and an expression. If the expression evaluates to `true`, an
-error is reported. These expressions are evaluated using
-[cel-go](https://github.com/google/cel-go).
+Rules are defined in the `sqlc` [configuration](config.md) file. They consist
+of a name, message, and a [Common Expression Language (CEL)](https://github.com/google/cel-spec)
+expression. Expressions are evaluated using [cel-go](https://github.com/google/cel-go).
+If an expression evaluates to `true`, an error is reported using the given message.
 
-While these examples are simplistic, they give you an idea on what types of
+While these examples are simplistic, they give you a flavor of the types of
 rules you can write.
 
 ```yaml
@@ -55,12 +55,12 @@ rules:
 ##### Database connectivity
 
 `vet` also marks the first time that `sqlc` can connect to a live, running
-database server. This functionality will be expanded over time, but for now it
+database server. We'll expand this functionality over time, but for now it
 powers the `sqlc/db-prepare` built-in rule.
 
-When a [database](config.html#database) in configured, the `sqlc/db-preapre`
-rule will attempt to prepare each of your queries against the connected
-database. Any failures will be reported to standard error.
+When a [database](config.html#database) is configured, the
+`sqlc/db-preapre` rule will attempt to prepare each of your
+queries against the connected database and report any failures.
 
 ```yaml
 version: 2
@@ -81,8 +81,9 @@ sql:
 To see this in action, check out the [authors
 example](https://github.com/kyleconroy/sqlc/blob/main/examples/authors/sqlc.yaml).
 
-Please note that `sqlc` does not manage or migrate the database. Use your
-migration tool of choice to create the necessary database tables and objects.
+Please note that `sqlc` does not manage or migrate your database. Use your
+migration tool of choice to create the necessary database tables and objects
+before running `sqlc vet`.
 
 #### Omit unused structs
 

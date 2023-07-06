@@ -1,14 +1,15 @@
-# Suggested CI/CD setup
+# Using sqlc in CI/CD
 
 If your project has more than a single developer, we suggest running `sqlc` as
-part of your CI/CD pipeline. The two commands you'll want to run are `diff` and `vet`
+part of your CI/CD pipeline. The two subcommands you'll want to run are `diff` and `vet`.
 
-`sqlc diff` ensures that code is up to date. New developers to a project may
-forget to run `sqlc generate`. They also might edit generated code. `diff` will
-catch both scenarios.
+`sqlc diff` ensures that your generated code is up to date. New developers to a project may
+forget to run `sqlc generate` after adding a query or updating a schema. They also might
+edit generated code. `sqlc diff` will catch both errors by comparing the expected output
+from `sqlc generate` to what's on disk.
 
 ```diff
-% sqlc-dev diff
+% sqlc diff
 --- a/postgresql/query.sql.go
 +++ b/postgresql/query.sql.go
 @@ -55,7 +55,7 @@
@@ -20,16 +21,16 @@ catch both scenarios.
  `
 ```
 
-`sqlc vet` runs a set of lint checks against your SQL queries. These checks are
+`sqlc vet` runs a set of lint rules against your SQL queries. These rules are
 helpful in catching anti-patterns before they make it into production. Please
-see the [vet](vet.md) documentation for a complete guide on adding checks to your
-project.
+see the [vet](vet.md) documentation for a complete guide to adding lint rules
+for your project.
 
 ## General setup
 
 Install `sqlc` using the [suggested instructions](../overview/install).
 
-Create two steps in your pipelines, one for `sqlc diff`and one for `sqlc vet`.
+Create two steps in your pipeline, one for `sqlc diff`and one for `sqlc vet`.
 
 ## GitHub Actions
 
@@ -38,7 +39,9 @@ GitHub Action to install `sqlc`. The action uses the built-in
 [tool-cache](https://github.com/actions/toolkit/blob/main/packages/tool-cache/README.md)
 to speed up the installation process.
 
-The following workflow runs `sqlc diff` on every push.
+## GitHub Workflows
+
+The following GitHub Workflow configuration runs `sqlc diff` on every push.
 
 ```yaml
 name: sqlc
@@ -54,8 +57,9 @@ jobs:
     - run: sqlc diff
 ```
 
-We also encourage running [`sqlc vet`](vet.md). To get the most value out of
-`vet`, you'll want to set up a running database.
+The following GitHub Workflow configuration runs [`sqlc vet`](vet.md) on every push.
+You can use `sqlc vet` without a database connection, but you'll need one if your
+`sqlc` configuration references the built-in `sqlc/db-prepare` lint rule.
 
 ```yaml
 name: sqlc
