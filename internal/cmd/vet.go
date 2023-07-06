@@ -125,14 +125,14 @@ func Vet(ctx context.Context, e Env, dir, filename string, stderr io.Writer) err
 	}
 
 	c := checker{
-		Checks: checks,
-		Conf:   conf,
-		Dir:    dir,
-		Env:    env,
-		Envmap: map[string]string{},
-		Msgs:   msgs,
-		Stderr: stderr,
-		NoDB:   e.NoDB,
+		Checks:     checks,
+		Conf:       conf,
+		Dir:        dir,
+		Env:        env,
+		Envmap:     map[string]string{},
+		Msgs:       msgs,
+		Stderr:     stderr,
+		NoDatabase: e.NoDatabase,
 	}
 	errored := false
 	for _, sql := range conf.SQL {
@@ -201,14 +201,14 @@ func (p *dbPreparer) Prepare(ctx context.Context, name, query string) error {
 }
 
 type checker struct {
-	Checks map[string]cel.Program
-	Conf   *config.Config
-	Dir    string
-	Env    *cel.Env
-	Envmap map[string]string
-	Msgs   map[string]string
-	Stderr io.Writer
-	NoDB   bool
+	Checks     map[string]cel.Program
+	Conf       *config.Config
+	Dir        string
+	Env        *cel.Env
+	Envmap     map[string]string
+	Msgs       map[string]string
+	Stderr     io.Writer
+	NoDatabase bool
 }
 
 func (c *checker) DSN(dsn string) (string, error) {
@@ -252,8 +252,8 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 	// TODO: Add MySQL support
 	var prep preparer
 	if s.Database != nil {
-		if c.NoDB {
-			return fmt.Errorf("database: refusing to connect since the --no-db flag was specified")
+		if c.NoDatabase {
+			return fmt.Errorf("database: connections disabled via command line flag")
 		}
 		dburl, err := c.DSN(s.Database.URL)
 		if err != nil {
