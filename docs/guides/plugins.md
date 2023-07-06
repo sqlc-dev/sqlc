@@ -1,6 +1,6 @@
 # Authoring plugins
 
-To use plugins, you must be using [Version 2](../reference/config.html) of
+To use plugins, you must be using [Version 2](../reference/config.md) of
 the configuration file. The top-level `plugins` array defines the available
 plugins.
 

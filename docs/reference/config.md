@@ -15,6 +15,10 @@ sql:
     go: 
       package: "authors"
       out: "postgresql"
+  database:
+    uri: "postgresql://postgres:postgres@localhost:5432/postgres"
+  rules:
+    - sqlc/db-prepare
 - schema: "mysql/schema.sql"
   queries: "mysql/query.sql"
   engine: "mysql"
@@ -35,12 +39,16 @@ Each mapping in the `sql` collection has the following keys:
 - `queries`:
   - Directory of SQL queries or path to single SQL file; or a list of paths.
 - `codegen`:
-  - A colleciton of mappings to configure code generators. See [codegen](#codegen) for the supported keys.
+  - A collection of mappings to configure code generators. See [codegen](#codegen) for the supported keys.
 - `gen`:
   - A mapping to configure built-in code generators. See [gen](#gen) for the supported keys.
+- `database`:
+  - A mapping configure database connections. See [database](#database) for the supported keys.
+- `rules`:
+  - A collection of rule names to run via `sqlc vet`. See [rules](#rules) for configuration options.
 - `strict_function_checks`
   - If true, return an error if a called SQL function does not exist. Defaults to `false`.
-  - 
+
 ### codegen
 
 The `codegen` mapping supports the following keys:
@@ -72,7 +80,32 @@ sql:
       emit_async_querier: true
       query_parameter_limit: 5
 ```
-  
+
+### database
+
+The `database` mapping supports the following keys:
+
+- `uri`:
+  - Database connection URL
+
+The URI can contain references to environment variables using the `${...}`
+syntax. In the following example, the connection string will set the value of
+the password to the value set in the `PG_PASSWORD` environment variable.
+
+```yaml
+version: '2'
+sql:
+- schema: schema.sql
+  queries: query.sql
+  engine: postgresql
+  database:
+    uri: postgresql://postgres:${PG_PASSWORD}@localhost:5432/authors
+  gen:
+    go:
+      package: authors
+      out: postgresql
+```
+ 
 ### gen
 
 The `gen` mapping supports the following keys:
@@ -301,11 +334,59 @@ plugins:
   process: 
     cmd: "sqlc-gen-json"
 ```
- 
+
+### rules
+
+Each mapping in the `rules` collection has the following keys:
+
+- `name`:
+  - The name of this rule. Required
+- `rule`:
+  - A [Common Expression Language (CEL)](https://github.com/google/cel-spec) expression. Required.
+- `message`:
+  - An optional message shown when the rule returns true.
+
+See the [vet](../howto/vet.md) documentation for help writing custom rules.
+   
+```yaml
+version: 2
+sql:
+  - schema: "query.sql"
+    queries: "query.sql"
+    engine: "postgresql"
+    gen:
+      go:
+        package: "authors"
+        out: "db"
+    rules:
+      - no-pg
+      - no-delete
+      - only-one-param
+      - no-exec
+rules:
+  - name: no-pg
+    message: "invalid engine: postgresql"
+    rule: |
+      config.engine == "postgresql"
+  - name: no-delete
+    message: "don't use delete statements"
+    rule: |
+      query.sql.contains("DELETE")
+  - name: only-one-param
+    message: "too many parameters"
+    rule: |
+      query.params.size() > 1
+  - name: no-exec
+    message: "don't use exec"
+    rule: |
+      query.cmd == "exec"
+```
+  
 ### global overrides
 
-Sometimes, the same configuration must be done across various specfications of code generation.
-Then a global definition for type overriding and field renaming can be done using the `overrides` mapping the following manner:
+Sometimes, the same configuration must be done across various specifications of
+code generation.  Then a global definition for type overriding and field
+renaming can be done using the `overrides` mapping the following manner:
 
 ```yaml
 version: "2"
@@ -338,11 +419,18 @@ sql:
       out: "mysql
 ```
 
-With the previous configuration, whenever a struct field is generated from a table column that is called `id`, it will generated as `Identifier`.
-Also, whenever there is a nullable `timestamp with time zone` column in a Postgres table, it will be generated as `null.Time`.
-Note that, the mapping for global type overrides has a field called `engine` that is absent in the regular type overrides. This field is only used when there are multiple definitions using multiple engines. Otherwise, the value of the `engine` key will be defaulted to the engine that is currently being used.
+With the previous configuration, whenever a struct field is generated from a
+table column that is called `id`, it will generated as `Identifier`.
 
-Currently, type overrides and field renaming, both global and regular, are only fully supported in Go.
+Also, whenever there is a nullable `timestamp with time zone` column in a
+Postgres table, it will be generated as `null.Time`.  Note that, the mapping for
+global type overrides has a field called `engine` that is absent in the regular
+type overrides. This field is only used when there are multiple definitions
+using multiple engines. Otherwise, the value of the `engine` key will be
+defaulted to the engine that is currently being used.
+
+Currently, type overrides and field renaming, both global and regular, are only
+fully supported in Go.
 
 ## Version 1
 
