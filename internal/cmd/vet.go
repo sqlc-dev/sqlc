@@ -132,6 +132,7 @@ func Vet(ctx context.Context, e Env, dir, filename string, stderr io.Writer) err
 		Envmap: map[string]string{},
 		Msgs:   msgs,
 		Stderr: stderr,
+		NoDB:   e.NoDB,
 	}
 	errored := false
 	for _, sql := range conf.SQL {
@@ -207,6 +208,7 @@ type checker struct {
 	Envmap map[string]string
 	Msgs   map[string]string
 	Stderr io.Writer
+	NoDB   bool
 }
 
 func (c *checker) DSN(dsn string) (string, error) {
@@ -250,6 +252,9 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 	// TODO: Add MySQL support
 	var prep preparer
 	if s.Database != nil {
+		if c.NoDB {
+			return fmt.Errorf("database: refusing to connect since the --no-db flag was specified")
+		}
 		dburl, err := c.DSN(s.Database.URL)
 		if err != nil {
 			return err
