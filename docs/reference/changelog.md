@@ -10,7 +10,7 @@ Released 2023-07-06
 
 [`sqlc vet`](../howto/vet.md) runs queries through a set of lint rules.
 
-RRules are defined in the `sqlc` [configuration](../reference/config) file. They consist
+Rules are defined in the `sqlc` [configuration](config.md) file. They consist
 of a name, message, and a [Common Expression Language (CEL)](https://github.com/google/cel-spec)
 expression. Expressions are evaluated using [cel-go](https://github.com/google/cel-go).
 If an expression evaluates to `true`, an error is reported using the given message.
