@@ -54,6 +54,7 @@ code ever again.
    howto/ddl.md
    howto/structs.md
 
+   howto/ci-cd.md
    howto/upload.md
 
 .. toctree::
