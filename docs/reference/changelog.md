@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [1.19.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.19.0)
-Released 2023-07-05
+Released 2023-07-06
 
 ### Release notes
 
