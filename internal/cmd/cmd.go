@@ -37,6 +37,7 @@ func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int 
 	rootCmd.PersistentFlags().StringP("file", "f", "", "specify an alternate config file (default: sqlc.yaml)")
 	rootCmd.PersistentFlags().BoolP("experimental", "x", false, "DEPRECATED: enable experimental features (default: false)")
 	rootCmd.PersistentFlags().Bool("no-remote", false, "disable remote execution (default: false)")
+	rootCmd.PersistentFlags().Bool("no-database", false, "disable database connections (default: false)")
 
 	rootCmd.AddCommand(checkCmd)
 	rootCmd.AddCommand(diffCmd)
@@ -133,18 +134,21 @@ var initCmd = &cobra.Command{
 }
 
 type Env struct {
-	DryRun   bool
-	Debug    opts.Debug
-	NoRemote bool
+	DryRun     bool
+	Debug      opts.Debug
+	NoRemote   bool
+	NoDatabase bool
 }
 
 func ParseEnv(c *cobra.Command) Env {
 	dr := c.Flag("dry-run")
 	nr := c.Flag("no-remote")
+	nodb := c.Flag("no-database")
 	return Env{
-		DryRun:   dr != nil && dr.Changed,
-		Debug:    opts.DebugFromEnv(),
-		NoRemote: nr != nil && nr.Value.String() == "true",
+		DryRun:     dr != nil && dr.Changed,
+		Debug:      opts.DebugFromEnv(),
+		NoRemote:   nr != nil && nr.Value.String() == "true",
+		NoDatabase: nodb != nil && nodb.Value.String() == "true",
 	}
 }
 
