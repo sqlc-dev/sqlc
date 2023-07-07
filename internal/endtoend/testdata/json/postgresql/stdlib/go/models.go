@@ -7,7 +7,7 @@ package querytest
 import (
 	"encoding/json"
 
-	"github.com/tabbed/pqtype"
+	"github.com/sqlc-dev/pqtype"
 )
 
 type Foo struct {

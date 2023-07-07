@@ -8,7 +8,7 @@ package querytest
 import (
 	"context"
 
-	"github.com/tabbed/pqtype"
+	"github.com/sqlc-dev/pqtype"
 )
 
 const generateSeries = `-- name: GenerateSeries :many
