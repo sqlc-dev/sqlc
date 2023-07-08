@@ -190,7 +190,7 @@ func buildImports(settings *plugin.Settings, queries []Query, uses func(string) 
 
 	for typeName, _ := range pqtypeTypes {
 		if uses(typeName) {
-			pkg[ImportSpec{Path: "github.com/tabbed/pqtype"}] = struct{}{}
+			pkg[ImportSpec{Path: "github.com/sqlc-dev/pqtype"}] = struct{}{}
 			break
 		}
 	}

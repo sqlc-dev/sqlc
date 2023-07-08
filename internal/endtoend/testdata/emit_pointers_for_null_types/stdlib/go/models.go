@@ -8,7 +8,7 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/tabbed/pqtype"
+	"github.com/sqlc-dev/pqtype"
 )
 
 type DtCharacter struct {
