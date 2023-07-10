@@ -85,7 +85,7 @@ rules:
 ### sqlc/db-prepare
 
 When a [database](../reference/config.html#database) connection is configured, you can
-run the built-in `sqlc/db-preapre` rule. This rule will attempt to prepare
+run the built-in `sqlc/db-prepare` rule. This rule will attempt to prepare
 each of your queries against the connected database and report any failures.
 
 ```yaml
