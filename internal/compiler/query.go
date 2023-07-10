@@ -5,8 +5,10 @@ import (
 )
 
 type Function struct {
-	Rel        *ast.FuncName
-	ReturnType *ast.TypeName
+	Rel         *ast.FuncName
+	ReturnType  *ast.TypeName
+	Columns     []*Column
+	ReturnTable *Table
 }
 
 type Table struct {

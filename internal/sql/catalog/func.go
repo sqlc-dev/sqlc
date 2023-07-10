@@ -2,6 +2,7 @@ package catalog
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
@@ -17,6 +18,7 @@ type Function struct {
 	Comment            string
 	Desc               string
 	ReturnTypeNullable bool
+	ReturnTable        *Table
 }
 
 type Argument struct {
@@ -53,6 +55,9 @@ func (c *Catalog) createFunction(stmt *ast.CreateFunctionStmt) error {
 		Args:       make([]*Argument, len(stmt.Params.Items)),
 		ReturnType: stmt.ReturnType,
 	}
+	if stmt.ReturnType.Name == "record" {
+		fn.ReturnTable = createFuncReturnTable(stmt.ReturnTable)
+	}
 	types := make([]*ast.TypeName, len(stmt.Params.Items))
 	for i, item := range stmt.Params.Items {
 		arg := item.(*ast.FuncParam)
@@ -80,6 +85,32 @@ func (c *Catalog) createFunction(stmt *ast.CreateFunctionStmt) error {
 		s.Funcs = append(s.Funcs, fn)
 	}
 	return nil
+}
+
+func createFuncReturnTable(stmt *ast.CreateTableStmt) *Table {
+	tbl := Table{
+		Rel:     stmt.Name,
+		Comment: stmt.Comment,
+	}
+	for _, col := range stmt.Cols {
+		tc := &Column{
+			Name:       col.Colname,
+			Type:       *col.TypeName,
+			IsNotNull:  col.IsNotNull,
+			IsUnsigned: col.IsUnsigned,
+			IsArray:    col.IsArray,
+			Comment:    col.Comment,
+			Length:     col.Length,
+		}
+		if col.Vals != nil {
+			typeName := ast.TypeName{
+				Name: fmt.Sprintf("%s_%s", stmt.Name.Name, col.Colname),
+			}
+			tc.Type = typeName
+		}
+		tbl.Columns = append(tbl.Columns, tc)
+	}
+	return &tbl
 }
 
 func (c *Catalog) dropFunction(stmt *ast.DropFunctionStmt) error {

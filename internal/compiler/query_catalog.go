@@ -87,8 +87,21 @@ func (qc QueryCatalog) GetFunc(rel *ast.FuncName) (*Function, error) {
 	if len(funcs) == 0 {
 		return nil, fmt.Errorf("function not found: %s", rel.Name)
 	}
+
+	var funcRecord *Table
+	var cols []*Column
+	rt := funcs[0].ReturnTable
+	if rt != nil {
+		for _, c := range rt.Columns {
+			cols = append(cols, ConvertColumn(rt.Rel, c))
+		}
+		funcRecord = &Table{Rel: rt.Rel, Columns: cols}
+	}
+
 	return &Function{
-		Rel:        rel,
-		ReturnType: funcs[0].ReturnType,
+		Rel:         rel,
+		ReturnType:  funcs[0].ReturnType,
+		ReturnTable: funcRecord,
+		Columns:     cols,
 	}, nil
 }

@@ -6,8 +6,9 @@ type CreateFunctionStmt struct {
 	ReturnType *TypeName
 	Func       *FuncName
 	// TODO: Undertand these two fields
-	Options    *List
-	WithClause *List
+	Options     *List
+	WithClause  *List
+	ReturnTable *CreateTableStmt
 }
 
 func (n *CreateFunctionStmt) Pos() int {

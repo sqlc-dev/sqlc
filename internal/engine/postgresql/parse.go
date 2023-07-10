@@ -504,6 +504,9 @@ func translate(node *nodes.Node) (ast.Node, error) {
 			}
 			stmt.Params.Items = append(stmt.Params.Items, fp)
 		}
+		if stmt.ReturnType != nil && stmt.ReturnType.Name == "record" {
+			stmt.ReturnTable = funcReturnTable(stmt)
+		}
 		return stmt, nil
 
 	case *nodes.Node_CreateSchemaStmt:
@@ -628,4 +631,26 @@ func translate(node *nodes.Node) (ast.Node, error) {
 	default:
 		return convert(node)
 	}
+}
+
+// makes a pseudo table from a function for table return type
+func funcReturnTable(stmt *ast.CreateFunctionStmt) *ast.CreateTableStmt {
+	name := ast.TableName{
+		Name:    stmt.Func.Name,
+		Catalog: stmt.Func.Catalog,
+		Schema:  stmt.Func.Schema,
+	}
+	table := &ast.CreateTableStmt{
+		Name: &name,
+	}
+	for _, param := range stmt.Params.Items {
+		funcParam := param.(*ast.FuncParam)
+		if funcParam.Mode == ast.FuncParamTable {
+			table.Cols = append(table.Cols, &ast.ColumnDef{
+				Colname:  *funcParam.Name,
+				TypeName: funcParam.Type,
+			})
+		}
+	}
+	return table
 }

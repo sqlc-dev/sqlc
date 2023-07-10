@@ -515,13 +515,30 @@ func (c *Compiler) sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, erro
 			}
 
 			fn, err := qc.GetFunc(funcCall.Func)
-			if err != nil {
+			if err == nil {
+				table := &Table{
+					Rel: &ast.TableName{
+						Catalog: fn.ReturnTable.Rel.Catalog,
+						Schema:  fn.ReturnTable.Rel.Schema,
+						//Name:    fn.ReturnType.Name,
+						Name: fn.ReturnTable.Rel.Name,
+					},
+				}
+
+				for _, c := range fn.Columns {
+					table.Columns = append(table.Columns, &Column{
+						Name:     c.Name,
+						DataType: c.DataType,
+					})
+				}
+				tables = append(tables, table)
 				continue
 			}
 			table, err := qc.GetTable(&ast.TableName{
 				Catalog: fn.ReturnType.Catalog,
 				Schema:  fn.ReturnType.Schema,
-				Name:    fn.ReturnType.Name,
+				//Name:    fn.ReturnType.Name,
+				Name: fn.Rel.Name,
 			})
 			if err != nil {
 				if n.Alias == nil || len(n.Alias.Colnames.Items) == 0 {
