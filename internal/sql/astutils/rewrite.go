@@ -194,6 +194,7 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 
 	case *ast.In:
 		a.applyList(n, "List")
+		a.apply(n, "Sel", nil, n.Sel)
 
 	case *ast.List:
 		// Since item is a slice
