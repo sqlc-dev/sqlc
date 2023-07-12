@@ -8,6 +8,7 @@
     pkgs.git
     pkgs.git-cliff
     pkgs.govulncheck
+    pkgs.gopls
     pkgs.python311
   ];
 }
