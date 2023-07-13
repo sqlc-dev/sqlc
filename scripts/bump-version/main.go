@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
@@ -71,6 +72,68 @@ func run(current, next string, realmode bool) error {
 		old := string(c)
 		new := strings.ReplaceAll(old, "release = '"+current, "release = '"+next)
 		if err := write(path, old, new); err != nil {
+			return err
+		}
+	}
+
+	{
+		p := filepath.Join("internal", "endtoend", "testdata")
+		err := filepath.Walk(p, func(path string, info fs.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if info.IsDir() {
+				return nil
+			}
+			switch filepath.Ext(path) {
+			case ".go", ".kt", ".py":
+				c, err := os.ReadFile(path)
+				if err != nil {
+					return err
+				}
+				old := string(c)
+				new := strings.ReplaceAll(old, " sqlc v"+current, "sqlc v"+next)
+				if realmode {
+					if err := os.WriteFile(path, []byte(new), 0644); err != nil {
+						return fmt.Errorf("write error: %s: %w", path, err)
+					}
+				}
+			default:
+			}
+			return nil
+		})
+		if err != nil {
+			return err
+		}
+	}
+
+	{
+		p := filepath.Join("examples")
+		err := filepath.Walk(p, func(path string, info fs.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if info.IsDir() {
+				return nil
+			}
+			switch filepath.Ext(path) {
+			case ".go", ".kt", ".py":
+				c, err := os.ReadFile(path)
+				if err != nil {
+					return err
+				}
+				old := string(c)
+				new := strings.ReplaceAll(old, "sqlc v"+current, "sqlc v"+next)
+				if realmode {
+					if err := os.WriteFile(path, []byte(new), 0644); err != nil {
+						return fmt.Errorf("write error: %s: %w", path, err)
+					}
+				}
+			default:
+			}
+			return nil
+		})
+		if err != nil {
 			return err
 		}
 	}
