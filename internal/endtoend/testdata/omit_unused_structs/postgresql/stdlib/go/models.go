@@ -219,6 +219,12 @@ func (ns NullQueryReturnStructEnumTableEnum) Value() (driver.Value, error) {
 	return string(ns.QueryReturnStructEnumTableEnum), nil
 }
 
+type QueryParamEnumTable struct {
+	ID    int32
+	Other QueryParamEnumTableEnum
+	Value NullQueryParamEnumTableEnum
+}
+
 type QueryReturnFullTable struct {
 	ID    int32
 	Value NullQueryReturnFullTableEnum

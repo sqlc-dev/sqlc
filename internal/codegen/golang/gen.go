@@ -318,10 +318,9 @@ func filterUnusedStructs(enums []Enum, structs []Struct, queries []Query) ([]Enu
 
 	keepEnums := make([]Enum, 0, len(enums))
 	for _, enum := range enums {
-		if _, ok := keepTypes[enum.Name]; ok {
-			keepEnums = append(keepEnums, enum)
-		}
-		if _, ok := keepTypes["Null"+enum.Name]; ok {
+		_, keep := keepTypes[enum.Name]
+		_, keepNull := keepTypes["Null"+enum.Name]
+		if keep || keepNull {
 			keepEnums = append(keepEnums, enum)
 		}
 	}
