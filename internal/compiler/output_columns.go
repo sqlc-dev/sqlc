@@ -65,6 +65,7 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 		targets = n.ReturningList
 	case *ast.SelectStmt:
 		targets = n.TargetList
+		isUnion := len(targets.Items) == 0 && n.Larg != nil
 
 		if n.GroupClause != nil {
 			for _, item := range n.GroupClause.Items {
@@ -77,7 +78,7 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 		if c.conf.StrictOrderBy != nil {
 			validateOrderBy = *c.conf.StrictOrderBy
 		}
-		if validateOrderBy {
+		if !isUnion && validateOrderBy {
 			if n.SortClause != nil {
 				for _, item := range n.SortClause.Items {
 					sb, ok := item.(*ast.SortBy)
@@ -110,7 +111,7 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 
 		// For UNION queries, targets is empty and we need to look for the
 		// columns in Largs.
-		if len(targets.Items) == 0 && n.Larg != nil {
+		if isUnion {
 			return c.outputColumns(qc, n.Larg)
 		}
 	case *ast.CallStmt:
