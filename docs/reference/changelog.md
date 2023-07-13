@@ -1,6 +1,26 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.19.1](https://github.com/kyleconroy/sqlc/releases/tag/v1.19.1)
+Released 2023-07-13
+
+### Bug Fixes
+
+- Fix to traverse Sel in ast.In (#2414)
+- (compiler) Validate UNION ... ORDER BY (#2446)
+- (golang) Prevent duplicate enum output (#2447)
+
+### Miscellaneous Tasks
+
+- Replace codegen, test and docs references to github.com/tabbed repos (#2418)
+
+### Build
+
+- (deps) Bump google.golang.org/grpc from 1.56.1 to 1.56.2 (#2415)
+- (deps) Bump golang from 1.20.5 to 1.20.6 (#2437)
+- Pin Go to 1.20.6 (#2441)
+- (deps) Bump github.com/jackc/pgx/v5 from 5.4.1 to 5.4.2 (#2436)
+
 ## [1.19.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.19.0)
 Released 2023-07-06
 
