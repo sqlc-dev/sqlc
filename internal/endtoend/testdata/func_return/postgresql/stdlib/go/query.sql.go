@@ -45,6 +45,20 @@ func (q *Queries) GenerateSeries(ctx context.Context, arg GenerateSeriesParams) 
 	return items, nil
 }
 
+const getDate = `-- name: GetDate :one
+SELECT  from CURRENT_DATE
+`
+
+type GetDateRow struct {
+}
+
+func (q *Queries) GetDate(ctx context.Context) (GetDateRow, error) {
+	row := q.db.QueryRowContext(ctx, getDate)
+	var i GetDateRow
+	err := row.Scan()
+	return i, err
+}
+
 const getUsers = `-- name: GetUsers :many
 SELECT id, first_name
 FROM users_func()

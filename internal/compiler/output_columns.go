@@ -503,18 +503,25 @@ func (c *Compiler) sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, erro
 		switch n := item.(type) {
 
 		case *ast.RangeFunction:
-			// If the function or table can't be found, don't error out.  There
-			// are many queries that depend on functions unknown to sqlc.
 			var funcCall *ast.FuncCall
 			switch f := n.Functions.Items[0].(type) {
 			case *ast.List:
-				funcCall = f.Items[0].(*ast.FuncCall)
+				switch fi := f.Items[0].(type) {
+				case *ast.FuncCall:
+					funcCall = fi
+				case *ast.SQLValueFunction:
+					continue // TODO handle this correctly
+				default:
+					continue
+			}
 			case *ast.FuncCall:
 				funcCall = f
 			default:
 				return nil, fmt.Errorf("sourceTables: unsupported function call type %T", n.Functions.Items[0])
 			}
 
+			// If the function or table can't be found, don't error out.  There
+			// are many queries that depend on functions unknown to sqlc.
 			fn, err := qc.GetFunc(funcCall.Func)
 			if err != nil {
 				continue
