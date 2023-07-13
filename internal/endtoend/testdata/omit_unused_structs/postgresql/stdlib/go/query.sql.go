@@ -11,14 +11,14 @@ import (
 )
 
 const query_param_enum_table = `-- name: query_param_enum_table :one
-SELECT id FROM query_param_enum_table WHERE value = $1
+SELECT id, other, value FROM query_param_enum_table WHERE value = $1
 `
 
-func (q *Queries) query_param_enum_table(ctx context.Context, value NullQueryParamEnumTableEnum) (int32, error) {
+func (q *Queries) query_param_enum_table(ctx context.Context, value NullQueryParamEnumTableEnum) (QueryParamEnumTable, error) {
 	row := q.db.QueryRowContext(ctx, query_param_enum_table, value)
-	var id int32
-	err := row.Scan(&id)
-	return id, err
+	var i QueryParamEnumTable
+	err := row.Scan(&i.ID, &i.Other, &i.Value)
+	return i, err
 }
 
 const query_param_struct_enum_table = `-- name: query_param_struct_enum_table :one

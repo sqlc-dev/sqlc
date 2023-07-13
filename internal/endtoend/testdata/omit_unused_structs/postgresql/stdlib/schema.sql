@@ -23,6 +23,7 @@ CREATE TYPE query_param_enum_table_enum AS ENUM (
 );
 CREATE TABLE query_param_enum_table (
     id      INTEGER PRIMARY KEY,
+    other   query_param_enum_table_enum NOT NULL,
     value   query_param_enum_table_enum
 );
 
