@@ -76,64 +76,44 @@ func run(current, next string, realmode bool) error {
 		}
 	}
 
-	{
-		p := filepath.Join("internal", "endtoend", "testdata")
-		err := filepath.Walk(p, func(path string, info fs.FileInfo, err error) error {
+	walker := func(path string, info fs.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			return nil
+		}
+		switch filepath.Ext(path) {
+		case ".go", ".kt", ".py", ".json":
+			c, err := os.ReadFile(path)
 			if err != nil {
 				return err
 			}
-			if info.IsDir() {
-				return nil
-			}
-			switch filepath.Ext(path) {
-			case ".go", ".kt", ".py":
-				c, err := os.ReadFile(path)
-				if err != nil {
-					return err
+			old := string(c)
+			new := strings.ReplaceAll(old,
+				`"sqlc_version": "v`+current,
+				`"sqlc_version": "v`+next)
+			new = strings.ReplaceAll(new, "sqlc v"+current, "sqlc v"+next)
+			if realmode {
+				if err := os.WriteFile(path, []byte(new), 0644); err != nil {
+					return fmt.Errorf("write error: %s: %w", path, err)
 				}
-				old := string(c)
-				new := strings.ReplaceAll(old, " sqlc v"+current, "sqlc v"+next)
-				if realmode {
-					if err := os.WriteFile(path, []byte(new), 0644); err != nil {
-						return fmt.Errorf("write error: %s: %w", path, err)
-					}
-				}
-			default:
 			}
-			return nil
-		})
-		if err != nil {
+		default:
+		}
+		return nil
+	}
+
+	{
+		p := filepath.Join("internal", "endtoend", "testdata")
+		if err := filepath.Walk(p, walker); err != nil {
 			return err
 		}
 	}
 
 	{
 		p := filepath.Join("examples")
-		err := filepath.Walk(p, func(path string, info fs.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-			if info.IsDir() {
-				return nil
-			}
-			switch filepath.Ext(path) {
-			case ".go", ".kt", ".py":
-				c, err := os.ReadFile(path)
-				if err != nil {
-					return err
-				}
-				old := string(c)
-				new := strings.ReplaceAll(old, "sqlc v"+current, "sqlc v"+next)
-				if realmode {
-					if err := os.WriteFile(path, []byte(new), 0644); err != nil {
-						return fmt.Errorf("write error: %s: %w", path, err)
-					}
-				}
-			default:
-			}
-			return nil
-		})
-		if err != nil {
+		if err := filepath.Walk(p, walker); err != nil {
 			return err
 		}
 	}
