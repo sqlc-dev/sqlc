@@ -1782,6 +1782,434 @@ func (x *VetQuery) GetParams() []*VetParameter {
 	return nil
 }
 
+type Explain struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Types that are assignable to Explain:
+	//
+	//	*Explain_Pe
+	//	*Explain_Me
+	Explain isExplain_Explain `protobuf_oneof:"explain"`
+}
+
+func (x *Explain) Reset() {
+	*x = Explain{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_plugin_codegen_proto_msgTypes[21]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Explain) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Explain) ProtoMessage() {}
+
+func (x *Explain) ProtoReflect() protoreflect.Message {
+	mi := &file_plugin_codegen_proto_msgTypes[21]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Explain.ProtoReflect.Descriptor instead.
+func (*Explain) Descriptor() ([]byte, []int) {
+	return file_plugin_codegen_proto_rawDescGZIP(), []int{21}
+}
+
+func (m *Explain) GetExplain() isExplain_Explain {
+	if m != nil {
+		return m.Explain
+	}
+	return nil
+}
+
+func (x *Explain) GetPe() *PostgresExplain {
+	if x, ok := x.GetExplain().(*Explain_Pe); ok {
+		return x.Pe
+	}
+	return nil
+}
+
+func (x *Explain) GetMe() *MySQLExplain {
+	if x, ok := x.GetExplain().(*Explain_Me); ok {
+		return x.Me
+	}
+	return nil
+}
+
+type isExplain_Explain interface {
+	isExplain_Explain()
+}
+
+type Explain_Pe struct {
+	Pe *PostgresExplain `protobuf:"bytes,1,opt,name=pe,proto3,oneof"`
+}
+
+type Explain_Me struct {
+	Me *MySQLExplain `protobuf:"bytes,2,opt,name=me,proto3,oneof"`
+}
+
+func (*Explain_Pe) isExplain_Explain() {}
+
+func (*Explain_Me) isExplain_Explain() {}
+
+type PostgresExplain struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Plan *PostgresExplain_Plan `protobuf:"bytes,1,opt,name=plan,json=Plan,proto3" json:"plan,omitempty"`
+}
+
+func (x *PostgresExplain) Reset() {
+	*x = PostgresExplain{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_plugin_codegen_proto_msgTypes[22]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *PostgresExplain) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PostgresExplain) ProtoMessage() {}
+
+func (x *PostgresExplain) ProtoReflect() protoreflect.Message {
+	mi := &file_plugin_codegen_proto_msgTypes[22]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PostgresExplain.ProtoReflect.Descriptor instead.
+func (*PostgresExplain) Descriptor() ([]byte, []int) {
+	return file_plugin_codegen_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *PostgresExplain) GetPlan() *PostgresExplain_Plan {
+	if x != nil {
+		return x.Plan
+	}
+	return nil
+}
+
+type MySQLExplain struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	QueryBlock *MySQLExplain_QueryBlock `protobuf:"bytes,1,opt,name=query_block,json=queryBlock,proto3" json:"query_block,omitempty"`
+}
+
+func (x *MySQLExplain) Reset() {
+	*x = MySQLExplain{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_plugin_codegen_proto_msgTypes[23]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *MySQLExplain) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MySQLExplain) ProtoMessage() {}
+
+func (x *MySQLExplain) ProtoReflect() protoreflect.Message {
+	mi := &file_plugin_codegen_proto_msgTypes[23]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MySQLExplain.ProtoReflect.Descriptor instead.
+func (*MySQLExplain) Descriptor() ([]byte, []int) {
+	return file_plugin_codegen_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *MySQLExplain) GetQueryBlock() *MySQLExplain_QueryBlock {
+	if x != nil {
+		return x.QueryBlock
+	}
+	return nil
+}
+
+type PostgresExplain_Plan struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	NodeType           string                  `protobuf:"bytes,1,opt,name=node_type,json=Node Type,proto3" json:"node_type,omitempty"`
+	ParentRelationship string                  `protobuf:"bytes,2,opt,name=parent_relationship,json=Parent Relationship,proto3" json:"parent_relationship,omitempty"`
+	RelationName       string                  `protobuf:"bytes,3,opt,name=relation_name,json=Relation Name,proto3" json:"relation_name,omitempty"`
+	Alias              string                  `protobuf:"bytes,4,opt,name=alias,json=Alias,proto3" json:"alias,omitempty"`
+	ParallelAware      bool                    `protobuf:"varint,5,opt,name=parallel_aware,json=Parallel Aware,proto3" json:"parallel_aware,omitempty"`
+	AsyncCapable       bool                    `protobuf:"varint,6,opt,name=async_capable,json=Async Capable,proto3" json:"async_capable,omitempty"`
+	JoinType           string                  `protobuf:"bytes,7,opt,name=join_type,json=Join Type,proto3" json:"join_type,omitempty"`
+	StartupCost        float32                 `protobuf:"fixed32,8,opt,name=startup_cost,json=Startup Cost,proto3" json:"startup_cost,omitempty"`
+	TotalCost          float32                 `protobuf:"fixed32,9,opt,name=total_cost,json=Total Cost,proto3" json:"total_cost,omitempty"`
+	PlanRows           uint64                  `protobuf:"varint,10,opt,name=plan_rows,json=Plan Rows,proto3" json:"plan_rows,omitempty"`
+	PlanWidth          uint64                  `protobuf:"varint,11,opt,name=plan_width,json=Plan Width,proto3" json:"plan_width,omitempty"`
+	InnerUnique        bool                    `protobuf:"varint,12,opt,name=inner_unique,json=Inner Unique,proto3" json:"inner_unique,omitempty"`
+	HashCond           string                  `protobuf:"bytes,13,opt,name=hash_cond,json=Hash Cond,proto3" json:"hash_cond,omitempty"`
+	Plans              []*PostgresExplain_Plan `protobuf:"bytes,14,rep,name=plans,json=Plans,proto3" json:"plans,omitempty"`
+}
+
+func (x *PostgresExplain_Plan) Reset() {
+	*x = PostgresExplain_Plan{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_plugin_codegen_proto_msgTypes[26]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *PostgresExplain_Plan) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PostgresExplain_Plan) ProtoMessage() {}
+
+func (x *PostgresExplain_Plan) ProtoReflect() protoreflect.Message {
+	mi := &file_plugin_codegen_proto_msgTypes[26]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PostgresExplain_Plan.ProtoReflect.Descriptor instead.
+func (*PostgresExplain_Plan) Descriptor() ([]byte, []int) {
+	return file_plugin_codegen_proto_rawDescGZIP(), []int{22, 0}
+}
+
+func (x *PostgresExplain_Plan) GetNodeType() string {
+	if x != nil {
+		return x.NodeType
+	}
+	return ""
+}
+
+func (x *PostgresExplain_Plan) GetParentRelationship() string {
+	if x != nil {
+		return x.ParentRelationship
+	}
+	return ""
+}
+
+func (x *PostgresExplain_Plan) GetRelationName() string {
+	if x != nil {
+		return x.RelationName
+	}
+	return ""
+}
+
+func (x *PostgresExplain_Plan) GetAlias() string {
+	if x != nil {
+		return x.Alias
+	}
+	return ""
+}
+
+func (x *PostgresExplain_Plan) GetParallelAware() bool {
+	if x != nil {
+		return x.ParallelAware
+	}
+	return false
+}
+
+func (x *PostgresExplain_Plan) GetAsyncCapable() bool {
+	if x != nil {
+		return x.AsyncCapable
+	}
+	return false
+}
+
+func (x *PostgresExplain_Plan) GetJoinType() string {
+	if x != nil {
+		return x.JoinType
+	}
+	return ""
+}
+
+func (x *PostgresExplain_Plan) GetStartupCost() float32 {
+	if x != nil {
+		return x.StartupCost
+	}
+	return 0
+}
+
+func (x *PostgresExplain_Plan) GetTotalCost() float32 {
+	if x != nil {
+		return x.TotalCost
+	}
+	return 0
+}
+
+func (x *PostgresExplain_Plan) GetPlanRows() uint64 {
+	if x != nil {
+		return x.PlanRows
+	}
+	return 0
+}
+
+func (x *PostgresExplain_Plan) GetPlanWidth() uint64 {
+	if x != nil {
+		return x.PlanWidth
+	}
+	return 0
+}
+
+func (x *PostgresExplain_Plan) GetInnerUnique() bool {
+	if x != nil {
+		return x.InnerUnique
+	}
+	return false
+}
+
+func (x *PostgresExplain_Plan) GetHashCond() string {
+	if x != nil {
+		return x.HashCond
+	}
+	return ""
+}
+
+func (x *PostgresExplain_Plan) GetPlans() []*PostgresExplain_Plan {
+	if x != nil {
+		return x.Plans
+	}
+	return nil
+}
+
+type MySQLExplain_QueryBlock struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	SelectId uint64                            `protobuf:"varint,1,opt,name=select_id,json=selectId,proto3" json:"select_id,omitempty"`
+	CostInfo *MySQLExplain_QueryBlock_CostInfo `protobuf:"bytes,2,opt,name=cost_info,json=costInfo,proto3" json:"cost_info,omitempty"`
+}
+
+func (x *MySQLExplain_QueryBlock) Reset() {
+	*x = MySQLExplain_QueryBlock{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_plugin_codegen_proto_msgTypes[27]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *MySQLExplain_QueryBlock) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MySQLExplain_QueryBlock) ProtoMessage() {}
+
+func (x *MySQLExplain_QueryBlock) ProtoReflect() protoreflect.Message {
+	mi := &file_plugin_codegen_proto_msgTypes[27]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MySQLExplain_QueryBlock.ProtoReflect.Descriptor instead.
+func (*MySQLExplain_QueryBlock) Descriptor() ([]byte, []int) {
+	return file_plugin_codegen_proto_rawDescGZIP(), []int{23, 0}
+}
+
+func (x *MySQLExplain_QueryBlock) GetSelectId() uint64 {
+	if x != nil {
+		return x.SelectId
+	}
+	return 0
+}
+
+func (x *MySQLExplain_QueryBlock) GetCostInfo() *MySQLExplain_QueryBlock_CostInfo {
+	if x != nil {
+		return x.CostInfo
+	}
+	return nil
+}
+
+type MySQLExplain_QueryBlock_CostInfo struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	QueryCost string `protobuf:"bytes,1,opt,name=query_cost,json=queryCost,proto3" json:"query_cost,omitempty"`
+}
+
+func (x *MySQLExplain_QueryBlock_CostInfo) Reset() {
+	*x = MySQLExplain_QueryBlock_CostInfo{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_plugin_codegen_proto_msgTypes[28]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *MySQLExplain_QueryBlock_CostInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MySQLExplain_QueryBlock_CostInfo) ProtoMessage() {}
+
+func (x *MySQLExplain_QueryBlock_CostInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_plugin_codegen_proto_msgTypes[28]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MySQLExplain_QueryBlock_CostInfo.ProtoReflect.Descriptor instead.
+func (*MySQLExplain_QueryBlock_CostInfo) Descriptor() ([]byte, []int) {
+	return file_plugin_codegen_proto_rawDescGZIP(), []int{23, 0, 0}
+}
+
+func (x *MySQLExplain_QueryBlock_CostInfo) GetQueryCost() string {
+	if x != nil {
+		return x.QueryCost
+	}
+	return ""
+}
+
 var File_plugin_codegen_proto protoreflect.FileDescriptor
 
 var file_plugin_codegen_proto_rawDesc = []byte{
@@ -2073,16 +2501,73 @@ var file_plugin_codegen_proto_rawDesc = []byte{
 	0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x63, 0x6d, 0x64, 0x12, 0x30, 0x0a, 0x06, 0x70,
 	0x61, 0x72, 0x61, 0x6d, 0x73, 0x18, 0x04, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x70, 0x6c,
 	0x75, 0x67, 0x69, 0x6e, 0x2e, 0x56, 0x65, 0x74, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x65, 0x74, 0x65,
-	0x72, 0x52, 0x0a, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x65, 0x74, 0x65, 0x72, 0x73, 0x42, 0x7e, 0x0a,
-	0x0a, 0x63, 0x6f, 0x6d, 0x2e, 0x70, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0x42, 0x0c, 0x43, 0x6f, 0x64,
-	0x65, 0x67, 0x65, 0x6e, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x2a, 0x67, 0x69, 0x74,
-	0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x6b, 0x79, 0x6c, 0x65, 0x63, 0x6f, 0x6e, 0x72,
-	0x6f, 0x79, 0x2f, 0x73, 0x71, 0x6c, 0x63, 0x2f, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c,
-	0x2f, 0x70, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0xa2, 0x02, 0x03, 0x50, 0x58, 0x58, 0xaa, 0x02, 0x06,
-	0x50, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0xca, 0x02, 0x06, 0x50, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0xe2,
-	0x02, 0x12, 0x50, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61,
-	0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x06, 0x50, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0x62, 0x06, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x72, 0x52, 0x0a, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x65, 0x74, 0x65, 0x72, 0x73, 0x22, 0x67, 0x0a,
+	0x07, 0x45, 0x78, 0x70, 0x6c, 0x61, 0x69, 0x6e, 0x12, 0x29, 0x0a, 0x02, 0x70, 0x65, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x0b, 0x32, 0x17, 0x2e, 0x70, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0x2e, 0x50, 0x6f,
+	0x73, 0x74, 0x67, 0x72, 0x65, 0x73, 0x45, 0x78, 0x70, 0x6c, 0x61, 0x69, 0x6e, 0x48, 0x00, 0x52,
+	0x02, 0x70, 0x65, 0x12, 0x26, 0x0a, 0x02, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x14, 0x2e, 0x70, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0x2e, 0x4d, 0x79, 0x53, 0x51, 0x4c, 0x45, 0x78,
+	0x70, 0x6c, 0x61, 0x69, 0x6e, 0x48, 0x00, 0x52, 0x02, 0x6d, 0x65, 0x42, 0x09, 0x0a, 0x07, 0x65,
+	0x78, 0x70, 0x6c, 0x61, 0x69, 0x6e, 0x22, 0xbc, 0x04, 0x0a, 0x0f, 0x50, 0x6f, 0x73, 0x74, 0x67,
+	0x72, 0x65, 0x73, 0x45, 0x78, 0x70, 0x6c, 0x61, 0x69, 0x6e, 0x12, 0x30, 0x0a, 0x04, 0x70, 0x6c,
+	0x61, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x70, 0x6c, 0x75, 0x67, 0x69,
+	0x6e, 0x2e, 0x50, 0x6f, 0x73, 0x74, 0x67, 0x72, 0x65, 0x73, 0x45, 0x78, 0x70, 0x6c, 0x61, 0x69,
+	0x6e, 0x2e, 0x50, 0x6c, 0x61, 0x6e, 0x52, 0x04, 0x50, 0x6c, 0x61, 0x6e, 0x1a, 0xf6, 0x03, 0x0a,
+	0x04, 0x50, 0x6c, 0x61, 0x6e, 0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x6f, 0x64, 0x65, 0x5f, 0x74, 0x79,
+	0x70, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x4e, 0x6f, 0x64, 0x65, 0x20, 0x54,
+	0x79, 0x70, 0x65, 0x12, 0x30, 0x0a, 0x13, 0x70, 0x61, 0x72, 0x65, 0x6e, 0x74, 0x5f, 0x72, 0x65,
+	0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x68, 0x69, 0x70, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x13, 0x50, 0x61, 0x72, 0x65, 0x6e, 0x74, 0x20, 0x52, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f,
+	0x6e, 0x73, 0x68, 0x69, 0x70, 0x12, 0x24, 0x0a, 0x0d, 0x72, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f,
+	0x6e, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0d, 0x52, 0x65,
+	0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x20, 0x4e, 0x61, 0x6d, 0x65, 0x12, 0x14, 0x0a, 0x05, 0x61,
+	0x6c, 0x69, 0x61, 0x73, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x41, 0x6c, 0x69, 0x61,
+	0x73, 0x12, 0x26, 0x0a, 0x0e, 0x70, 0x61, 0x72, 0x61, 0x6c, 0x6c, 0x65, 0x6c, 0x5f, 0x61, 0x77,
+	0x61, 0x72, 0x65, 0x18, 0x05, 0x20, 0x01, 0x28, 0x08, 0x52, 0x0e, 0x50, 0x61, 0x72, 0x61, 0x6c,
+	0x6c, 0x65, 0x6c, 0x20, 0x41, 0x77, 0x61, 0x72, 0x65, 0x12, 0x24, 0x0a, 0x0d, 0x61, 0x73, 0x79,
+	0x6e, 0x63, 0x5f, 0x63, 0x61, 0x70, 0x61, 0x62, 0x6c, 0x65, 0x18, 0x06, 0x20, 0x01, 0x28, 0x08,
+	0x52, 0x0d, 0x41, 0x73, 0x79, 0x6e, 0x63, 0x20, 0x43, 0x61, 0x70, 0x61, 0x62, 0x6c, 0x65, 0x12,
+	0x1c, 0x0a, 0x09, 0x6a, 0x6f, 0x69, 0x6e, 0x5f, 0x74, 0x79, 0x70, 0x65, 0x18, 0x07, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x09, 0x4a, 0x6f, 0x69, 0x6e, 0x20, 0x54, 0x79, 0x70, 0x65, 0x12, 0x22, 0x0a,
+	0x0c, 0x73, 0x74, 0x61, 0x72, 0x74, 0x75, 0x70, 0x5f, 0x63, 0x6f, 0x73, 0x74, 0x18, 0x08, 0x20,
+	0x01, 0x28, 0x02, 0x52, 0x0c, 0x53, 0x74, 0x61, 0x72, 0x74, 0x75, 0x70, 0x20, 0x43, 0x6f, 0x73,
+	0x74, 0x12, 0x1e, 0x0a, 0x0a, 0x74, 0x6f, 0x74, 0x61, 0x6c, 0x5f, 0x63, 0x6f, 0x73, 0x74, 0x18,
+	0x09, 0x20, 0x01, 0x28, 0x02, 0x52, 0x0a, 0x54, 0x6f, 0x74, 0x61, 0x6c, 0x20, 0x43, 0x6f, 0x73,
+	0x74, 0x12, 0x1c, 0x0a, 0x09, 0x70, 0x6c, 0x61, 0x6e, 0x5f, 0x72, 0x6f, 0x77, 0x73, 0x18, 0x0a,
+	0x20, 0x01, 0x28, 0x04, 0x52, 0x09, 0x50, 0x6c, 0x61, 0x6e, 0x20, 0x52, 0x6f, 0x77, 0x73, 0x12,
+	0x1e, 0x0a, 0x0a, 0x70, 0x6c, 0x61, 0x6e, 0x5f, 0x77, 0x69, 0x64, 0x74, 0x68, 0x18, 0x0b, 0x20,
+	0x01, 0x28, 0x04, 0x52, 0x0a, 0x50, 0x6c, 0x61, 0x6e, 0x20, 0x57, 0x69, 0x64, 0x74, 0x68, 0x12,
+	0x22, 0x0a, 0x0c, 0x69, 0x6e, 0x6e, 0x65, 0x72, 0x5f, 0x75, 0x6e, 0x69, 0x71, 0x75, 0x65, 0x18,
+	0x0c, 0x20, 0x01, 0x28, 0x08, 0x52, 0x0c, 0x49, 0x6e, 0x6e, 0x65, 0x72, 0x20, 0x55, 0x6e, 0x69,
+	0x71, 0x75, 0x65, 0x12, 0x1c, 0x0a, 0x09, 0x68, 0x61, 0x73, 0x68, 0x5f, 0x63, 0x6f, 0x6e, 0x64,
+	0x18, 0x0d, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x48, 0x61, 0x73, 0x68, 0x20, 0x43, 0x6f, 0x6e,
+	0x64, 0x12, 0x32, 0x0a, 0x05, 0x70, 0x6c, 0x61, 0x6e, 0x73, 0x18, 0x0e, 0x20, 0x03, 0x28, 0x0b,
+	0x32, 0x1c, 0x2e, 0x70, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0x2e, 0x50, 0x6f, 0x73, 0x74, 0x67, 0x72,
+	0x65, 0x73, 0x45, 0x78, 0x70, 0x6c, 0x61, 0x69, 0x6e, 0x2e, 0x50, 0x6c, 0x61, 0x6e, 0x52, 0x05,
+	0x50, 0x6c, 0x61, 0x6e, 0x73, 0x22, 0xee, 0x01, 0x0a, 0x0c, 0x4d, 0x79, 0x53, 0x51, 0x4c, 0x45,
+	0x78, 0x70, 0x6c, 0x61, 0x69, 0x6e, 0x12, 0x40, 0x0a, 0x0b, 0x71, 0x75, 0x65, 0x72, 0x79, 0x5f,
+	0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1f, 0x2e, 0x70, 0x6c,
+	0x75, 0x67, 0x69, 0x6e, 0x2e, 0x4d, 0x79, 0x53, 0x51, 0x4c, 0x45, 0x78, 0x70, 0x6c, 0x61, 0x69,
+	0x6e, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x52, 0x0a, 0x71, 0x75,
+	0x65, 0x72, 0x79, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x1a, 0x9b, 0x01, 0x0a, 0x0a, 0x51, 0x75, 0x65,
+	0x72, 0x79, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x12, 0x1b, 0x0a, 0x09, 0x73, 0x65, 0x6c, 0x65, 0x63,
+	0x74, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x08, 0x73, 0x65, 0x6c, 0x65,
+	0x63, 0x74, 0x49, 0x64, 0x12, 0x45, 0x0a, 0x09, 0x63, 0x6f, 0x73, 0x74, 0x5f, 0x69, 0x6e, 0x66,
+	0x6f, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x28, 0x2e, 0x70, 0x6c, 0x75, 0x67, 0x69, 0x6e,
+	0x2e, 0x4d, 0x79, 0x53, 0x51, 0x4c, 0x45, 0x78, 0x70, 0x6c, 0x61, 0x69, 0x6e, 0x2e, 0x51, 0x75,
+	0x65, 0x72, 0x79, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x2e, 0x43, 0x6f, 0x73, 0x74, 0x49, 0x6e, 0x66,
+	0x6f, 0x52, 0x08, 0x63, 0x6f, 0x73, 0x74, 0x49, 0x6e, 0x66, 0x6f, 0x1a, 0x29, 0x0a, 0x08, 0x43,
+	0x6f, 0x73, 0x74, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x1d, 0x0a, 0x0a, 0x71, 0x75, 0x65, 0x72, 0x79,
+	0x5f, 0x63, 0x6f, 0x73, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x71, 0x75, 0x65,
+	0x72, 0x79, 0x43, 0x6f, 0x73, 0x74, 0x42, 0x7e, 0x0a, 0x0a, 0x63, 0x6f, 0x6d, 0x2e, 0x70, 0x6c,
+	0x75, 0x67, 0x69, 0x6e, 0x42, 0x0c, 0x43, 0x6f, 0x64, 0x65, 0x67, 0x65, 0x6e, 0x50, 0x72, 0x6f,
+	0x74, 0x6f, 0x50, 0x01, 0x5a, 0x2a, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d,
+	0x2f, 0x6b, 0x79, 0x6c, 0x65, 0x63, 0x6f, 0x6e, 0x72, 0x6f, 0x79, 0x2f, 0x73, 0x71, 0x6c, 0x63,
+	0x2f, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x2f, 0x70, 0x6c, 0x75, 0x67, 0x69, 0x6e,
+	0xa2, 0x02, 0x03, 0x50, 0x58, 0x58, 0xaa, 0x02, 0x06, 0x50, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0xca,
+	0x02, 0x06, 0x50, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0xe2, 0x02, 0x12, 0x50, 0x6c, 0x75, 0x67, 0x69,
+	0x6e, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x06,
+	0x50, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -2097,37 +2582,43 @@ func file_plugin_codegen_proto_rawDescGZIP() []byte {
 	return file_plugin_codegen_proto_rawDescData
 }
 
-var file_plugin_codegen_proto_msgTypes = make([]protoimpl.MessageInfo, 23)
+var file_plugin_codegen_proto_msgTypes = make([]protoimpl.MessageInfo, 29)
 var file_plugin_codegen_proto_goTypes = []interface{}{
-	(*File)(nil),            // 0: plugin.File
-	(*Override)(nil),        // 1: plugin.Override
-	(*ParsedGoType)(nil),    // 2: plugin.ParsedGoType
-	(*Settings)(nil),        // 3: plugin.Settings
-	(*Codegen)(nil),         // 4: plugin.Codegen
-	(*GoCode)(nil),          // 5: plugin.GoCode
-	(*JSONCode)(nil),        // 6: plugin.JSONCode
-	(*Catalog)(nil),         // 7: plugin.Catalog
-	(*Schema)(nil),          // 8: plugin.Schema
-	(*CompositeType)(nil),   // 9: plugin.CompositeType
-	(*Enum)(nil),            // 10: plugin.Enum
-	(*Table)(nil),           // 11: plugin.Table
-	(*Identifier)(nil),      // 12: plugin.Identifier
-	(*Column)(nil),          // 13: plugin.Column
-	(*Query)(nil),           // 14: plugin.Query
-	(*Parameter)(nil),       // 15: plugin.Parameter
-	(*CodeGenRequest)(nil),  // 16: plugin.CodeGenRequest
-	(*CodeGenResponse)(nil), // 17: plugin.CodeGenResponse
-	(*VetParameter)(nil),    // 18: plugin.VetParameter
-	(*VetConfig)(nil),       // 19: plugin.VetConfig
-	(*VetQuery)(nil),        // 20: plugin.VetQuery
-	nil,                     // 21: plugin.ParsedGoType.StructTagsEntry
-	nil,                     // 22: plugin.Settings.RenameEntry
+	(*File)(nil),                             // 0: plugin.File
+	(*Override)(nil),                         // 1: plugin.Override
+	(*ParsedGoType)(nil),                     // 2: plugin.ParsedGoType
+	(*Settings)(nil),                         // 3: plugin.Settings
+	(*Codegen)(nil),                          // 4: plugin.Codegen
+	(*GoCode)(nil),                           // 5: plugin.GoCode
+	(*JSONCode)(nil),                         // 6: plugin.JSONCode
+	(*Catalog)(nil),                          // 7: plugin.Catalog
+	(*Schema)(nil),                           // 8: plugin.Schema
+	(*CompositeType)(nil),                    // 9: plugin.CompositeType
+	(*Enum)(nil),                             // 10: plugin.Enum
+	(*Table)(nil),                            // 11: plugin.Table
+	(*Identifier)(nil),                       // 12: plugin.Identifier
+	(*Column)(nil),                           // 13: plugin.Column
+	(*Query)(nil),                            // 14: plugin.Query
+	(*Parameter)(nil),                        // 15: plugin.Parameter
+	(*CodeGenRequest)(nil),                   // 16: plugin.CodeGenRequest
+	(*CodeGenResponse)(nil),                  // 17: plugin.CodeGenResponse
+	(*VetParameter)(nil),                     // 18: plugin.VetParameter
+	(*VetConfig)(nil),                        // 19: plugin.VetConfig
+	(*VetQuery)(nil),                         // 20: plugin.VetQuery
+	(*Explain)(nil),                          // 21: plugin.Explain
+	(*PostgresExplain)(nil),                  // 22: plugin.PostgresExplain
+	(*MySQLExplain)(nil),                     // 23: plugin.MySQLExplain
+	nil,                                      // 24: plugin.ParsedGoType.StructTagsEntry
+	nil,                                      // 25: plugin.Settings.RenameEntry
+	(*PostgresExplain_Plan)(nil),             // 26: plugin.PostgresExplain.Plan
+	(*MySQLExplain_QueryBlock)(nil),          // 27: plugin.MySQLExplain.QueryBlock
+	(*MySQLExplain_QueryBlock_CostInfo)(nil), // 28: plugin.MySQLExplain.QueryBlock.CostInfo
 }
 var file_plugin_codegen_proto_depIdxs = []int32{
 	12, // 0: plugin.Override.table:type_name -> plugin.Identifier
 	2,  // 1: plugin.Override.go_type:type_name -> plugin.ParsedGoType
-	21, // 2: plugin.ParsedGoType.struct_tags:type_name -> plugin.ParsedGoType.StructTagsEntry
-	22, // 3: plugin.Settings.rename:type_name -> plugin.Settings.RenameEntry
+	24, // 2: plugin.ParsedGoType.struct_tags:type_name -> plugin.ParsedGoType.StructTagsEntry
+	25, // 3: plugin.Settings.rename:type_name -> plugin.Settings.RenameEntry
 	1,  // 4: plugin.Settings.overrides:type_name -> plugin.Override
 	4,  // 5: plugin.Settings.codegen:type_name -> plugin.Codegen
 	5,  // 6: plugin.Settings.go:type_name -> plugin.GoCode
@@ -2150,11 +2641,17 @@ var file_plugin_codegen_proto_depIdxs = []int32{
 	14, // 23: plugin.CodeGenRequest.queries:type_name -> plugin.Query
 	0,  // 24: plugin.CodeGenResponse.files:type_name -> plugin.File
 	18, // 25: plugin.VetQuery.params:type_name -> plugin.VetParameter
-	26, // [26:26] is the sub-list for method output_type
-	26, // [26:26] is the sub-list for method input_type
-	26, // [26:26] is the sub-list for extension type_name
-	26, // [26:26] is the sub-list for extension extendee
-	0,  // [0:26] is the sub-list for field type_name
+	22, // 26: plugin.Explain.pe:type_name -> plugin.PostgresExplain
+	23, // 27: plugin.Explain.me:type_name -> plugin.MySQLExplain
+	26, // 28: plugin.PostgresExplain.plan:type_name -> plugin.PostgresExplain.Plan
+	27, // 29: plugin.MySQLExplain.query_block:type_name -> plugin.MySQLExplain.QueryBlock
+	26, // 30: plugin.PostgresExplain.Plan.plans:type_name -> plugin.PostgresExplain.Plan
+	28, // 31: plugin.MySQLExplain.QueryBlock.cost_info:type_name -> plugin.MySQLExplain.QueryBlock.CostInfo
+	32, // [32:32] is the sub-list for method output_type
+	32, // [32:32] is the sub-list for method input_type
+	32, // [32:32] is the sub-list for extension type_name
+	32, // [32:32] is the sub-list for extension extendee
+	0,  // [0:32] is the sub-list for field type_name
 }
 
 func init() { file_plugin_codegen_proto_init() }
@@ -2415,15 +2912,91 @@ func file_plugin_codegen_proto_init() {
 				return nil
 			}
 		}
+		file_plugin_codegen_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Explain); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_plugin_codegen_proto_msgTypes[22].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*PostgresExplain); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_plugin_codegen_proto_msgTypes[23].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*MySQLExplain); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_plugin_codegen_proto_msgTypes[26].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*PostgresExplain_Plan); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_plugin_codegen_proto_msgTypes[27].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*MySQLExplain_QueryBlock); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_plugin_codegen_proto_msgTypes[28].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*MySQLExplain_QueryBlock_CostInfo); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	file_plugin_codegen_proto_msgTypes[5].OneofWrappers = []interface{}{}
+	file_plugin_codegen_proto_msgTypes[21].OneofWrappers = []interface{}{
+		(*Explain_Pe)(nil),
+		(*Explain_Me)(nil),
+	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_plugin_codegen_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   23,
+			NumMessages:   29,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

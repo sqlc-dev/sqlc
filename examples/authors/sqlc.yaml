@@ -7,6 +7,7 @@ sql:
     uri: postgresql://${PG_USER}:${PG_PASSWORD}@${PG_HOST}:${PG_PORT}/authors
   rules:
   - sqlc/db-prepare
+  - postgres-query-too-costly
   gen:
     go:
       package: authors
@@ -18,6 +19,7 @@ sql:
     uri: root:${MYSQL_ROOT_PASSWORD}@tcp(${MYSQL_HOST}:${MYSQL_PORT})/authors?multiStatements=true&parseTime=true
   rules:
   - sqlc/db-prepare
+  - mysql-query-too-costly
   gen:
     go:
       package: authors
@@ -33,3 +35,10 @@ sql:
     go:
       package: authors
       out: sqlite
+rules:
+- name: postgres-query-too-costly
+  message: "Too costly"
+  rule: "explain.pe.plan.total_cost > 0.0"
+- name: mysql-query-too-costly
+  message: "Too costly"
+  rule: "explain.me.query_block.cost_info.query_cost != '0.35'"

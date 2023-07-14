@@ -226,3 +226,44 @@ message VetQuery
   string cmd = 3 [json_name="cmd"];
   repeated VetParameter params = 4 [json_name="parameters"];
 }
+
+message Explain {
+  oneof explain {
+    PostgresExplain pe = 1;
+    MySQLExplain me = 2;
+  }
+}
+
+message PostgresExplain {
+  Plan plan = 1 [json_name="Plan"];
+
+  message Plan {
+    string node_type = 1 [json_name="Node Type"];
+    string parent_relationship = 2 [json_name="Parent Relationship"];
+    string relation_name = 3 [json_name="Relation Name"];
+    string alias = 4 [json_name="Alias"];
+    bool parallel_aware = 5 [json_name="Parallel Aware"];
+    bool async_capable = 6 [json_name="Async Capable"];
+    string join_type = 7 [json_name="Join Type"];
+    float startup_cost = 8 [json_name="Startup Cost"];
+    float total_cost = 9 [json_name="Total Cost"];
+    uint64 plan_rows = 10 [json_name="Plan Rows"];
+    uint64 plan_width = 11 [json_name="Plan Width"];
+    bool inner_unique = 12 [json_name="Inner Unique"];
+    string hash_cond = 13 [json_name="Hash Cond"];
+    repeated Plan plans = 14 [json_name="Plans"];
+  }
+}
+
+message MySQLExplain {
+  QueryBlock query_block = 1;
+
+  message QueryBlock {
+    uint64 select_id = 1;
+    CostInfo cost_info = 2;
+
+    message CostInfo {
+      string query_cost = 1;
+    }
+  }
+}
