@@ -37,6 +37,22 @@ func run(current, next string, realmode bool) error {
 	}
 
 	{
+		path := filepath.Join(".github", "ISSUE_TEMPLATE", "BUG_REPORT.yml")
+		c, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		old := string(c)
+		if !strings.Contains(old, "- "+next) {
+			item := "- " + current
+			new := strings.ReplaceAll(old, item, "- "+next+"\n        "+item)
+			if err := write(path, old, new); err != nil {
+				return err
+			}
+		}
+	}
+
+	{
 		path := filepath.Join("docs", "overview", "install.md")
 		c, err := os.ReadFile(path)
 		if err != nil {
