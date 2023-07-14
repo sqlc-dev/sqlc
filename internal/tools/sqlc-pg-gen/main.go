@@ -156,7 +156,7 @@ func clean(arg string) string {
 	return arg
 }
 
-// writeFormattedGo executes `tmpl` with `data` as its context to the the file `destPath`
+// writeFormattedGo executes `tmpl` with `data` as its context to the file `destPath`
 func writeFormattedGo(tmpl *template.Template, data any, destPath string) error {
 	out := bytes.NewBuffer([]byte{})
 	err := tmpl.Execute(out, data)
