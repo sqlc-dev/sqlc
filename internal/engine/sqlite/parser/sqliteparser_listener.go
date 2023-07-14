@@ -365,6 +365,9 @@ type SQLiteParserListener interface {
 	// EnterTable_alias is called when entering the table_alias production.
 	EnterTable_alias(c *Table_aliasContext)
 
+	// EnterTable_alias_fallback is called when entering the table_alias_fallback production.
+	EnterTable_alias_fallback(c *Table_alias_fallbackContext)
+
 	// EnterTransaction_name is called when entering the transaction_name production.
 	EnterTransaction_name(c *Transaction_nameContext)
 
@@ -748,6 +751,9 @@ type SQLiteParserListener interface {
 
 	// ExitTable_alias is called when exiting the table_alias production.
 	ExitTable_alias(c *Table_aliasContext)
+
+	// ExitTable_alias_fallback is called when exiting the table_alias_fallback production.
+	ExitTable_alias_fallback(c *Table_alias_fallbackContext)
 
 	// ExitTransaction_name is called when exiting the transaction_name production.
 	ExitTransaction_name(c *Transaction_nameContext)

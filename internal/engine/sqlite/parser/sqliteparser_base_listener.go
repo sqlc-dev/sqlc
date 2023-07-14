@@ -747,6 +747,12 @@ func (s *BaseSQLiteParserListener) EnterTable_alias(ctx *Table_aliasContext) {}
 // ExitTable_alias is called when production table_alias is exited.
 func (s *BaseSQLiteParserListener) ExitTable_alias(ctx *Table_aliasContext) {}
 
+// EnterTable_alias_fallback is called when production table_alias_fallback is entered.
+func (s *BaseSQLiteParserListener) EnterTable_alias_fallback(ctx *Table_alias_fallbackContext) {}
+
+// ExitTable_alias_fallback is called when production table_alias_fallback is exited.
+func (s *BaseSQLiteParserListener) ExitTable_alias_fallback(ctx *Table_alias_fallbackContext) {}
+
 // EnterTransaction_name is called when production transaction_name is entered.
 func (s *BaseSQLiteParserListener) EnterTransaction_name(ctx *Transaction_nameContext) {}
 
