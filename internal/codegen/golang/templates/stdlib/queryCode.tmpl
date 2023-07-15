@@ -35,23 +35,27 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 {{if eq .Cmd ":many"}}
 {{range .Comments}}//{{.}}
 {{end -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error) {
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) ({{.DefineRetTypeMultiple}}, error) {
     {{- template "queryCodeStdExec" . }}
     if err != nil {
         return nil, err
     }
     defer rows.Close()
-    {{- if $.EmitEmptySlices}}
-    items := []{{.Ret.DefineType}}{}
+    {{- if (or $.EmitEmptySlices .HasManyKey)}}
+    items := {{.DefineRetTypeMultiple}}{}
     {{else}}
-    var items []{{.Ret.DefineType}}
+    var items {{.DefineRetTypeMultiple}}
     {{end -}}
     for rows.Next() {
         var {{.Ret.Name}} {{.Ret.Type}}
         if err := rows.Scan({{.Ret.Scan}}); err != nil {
             return nil, err
         }
+        {{- if .HasManyKey}}
+        items[{{.ManyKeyField}}] = {{.Ret.ReturnName}}
+        {{else}}
         items = append(items, {{.Ret.ReturnName}})
+        {{end -}}
     }
     if err := rows.Close(); err != nil {
         return nil, err

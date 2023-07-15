@@ -70,7 +70,7 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 	if err := validate.In(c.catalog, raw); err != nil {
 		return nil, err
 	}
-	name, cmd, err := metadata.Parse(strings.TrimSpace(rawSQL), c.parser.CommentSyntax())
+	name, cmd, cmdParams, err := metadata.Parse(strings.TrimSpace(rawSQL), c.parser.CommentSyntax())
 	if err != nil {
 		return nil, err
 	}
@@ -134,6 +134,7 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 		Columns:         cols,
 		SQL:             trimmed,
 		InsertIntoTable: table,
+		CmdParams:       cmdParams,
 	}, nil
 }
 

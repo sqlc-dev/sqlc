@@ -247,6 +247,9 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 		}
 
 		if len(query.Columns) == 1 && query.Columns[0].EmbedTable == nil {
+			if query.CmdParams.GetManyKey() != "" {
+				return nil, fmt.Errorf(":many key=%s query %s has only one column", query.CmdParams.GetManyKey(), query.Name)
+			}
 			c := query.Columns[0]
 			name := columnName(c, 0)
 			if c.IsFuncCall {
@@ -304,6 +307,18 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 				Struct:      gs,
 				SQLDriver:   sqlpkg,
 				EmitPointer: req.Settings.Go.EmitResultStructPointers,
+			}
+			if query.CmdParams.GetManyKey() != "" {
+				gq.ManyKey = query.CmdParams.GetManyKey()
+				for _, c := range gs.Fields {
+					if c.DBName == gq.ManyKey {
+						gq.ManyKeyType = c.Type
+						break
+					}
+				}
+				if gq.ManyKeyType == "" {
+					return nil, fmt.Errorf("can not find key column %q in query %s", gq.ManyKey, gq.MethodName)
+				}
 			}
 		}
 

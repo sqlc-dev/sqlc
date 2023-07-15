@@ -7,6 +7,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/config"
 	"github.com/kyleconroy/sqlc/internal/config/convert"
 	"github.com/kyleconroy/sqlc/internal/info"
+	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/plugin"
 	"github.com/kyleconroy/sqlc/internal/sql/catalog"
 )
@@ -226,9 +227,18 @@ func pluginQueries(r *compiler.Result) []*plugin.Query {
 				Name:    q.InsertIntoTable.Name,
 			}
 		}
+		var cmdParams *plugin.CmdParams
+		if q.CmdParams != (metadata.CmdParams{}) {
+			cmdParams = &plugin.CmdParams{
+				ManyKey:        q.CmdParams.ManyKey,
+				InsertMultiple: q.CmdParams.InsertMultiple,
+				NoInference:    q.CmdParams.NoInference,
+			}
+		}
 		out = append(out, &plugin.Query{
 			Name:            q.Name,
 			Cmd:             q.Cmd,
+			CmdParams:       cmdParams,
 			Text:            q.SQL,
 			Comments:        q.Comments,
 			Columns:         columns,
