@@ -1,6 +1,7 @@
 package compiler
 
 import (
+	"github.com/kyleconroy/sqlc/internal/metadata"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 )
 
@@ -39,12 +40,13 @@ type Column struct {
 }
 
 type Query struct {
-	SQL      string
-	Name     string
-	Cmd      string // TODO: Pick a better name. One of: one, many, exec, execrows, copyFrom
-	Columns  []*Column
-	Params   []Parameter
-	Comments []string
+	SQL       string
+	Name      string
+	Cmd       string // TODO: Pick a better name. One of: one, many, exec, execrows, copyFrom
+	CmdParams metadata.CmdParams
+	Columns   []*Column
+	Params    []Parameter
+	Comments  []string
 
 	// XXX: Hack
 	Filename string

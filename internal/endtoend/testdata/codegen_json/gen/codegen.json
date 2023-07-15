@@ -62583,6 +62583,7 @@
       "text": "SELECT id, name, bio FROM authors\nWHERE id = $1 LIMIT 1",
       "name": "GetAuthor",
       "cmd": ":one",
+      "cmd_params": null,
       "columns": [
         {
           "name": "id",
@@ -62698,6 +62699,7 @@
       "text": "SELECT id, name, bio FROM authors\nORDER BY name",
       "name": "ListAuthors",
       "cmd": ":many",
+      "cmd_params": null,
       "columns": [
         {
           "name": "id",
@@ -62784,6 +62786,7 @@
       "text": "INSERT INTO authors (\n          name, bio\n) VALUES (\n  $1, $2\n)\nRETURNING id, name, bio",
       "name": "CreateAuthor",
       "cmd": ":one",
+      "cmd_params": null,
       "columns": [
         {
           "name": "id",
@@ -62931,6 +62934,7 @@
       "text": "DELETE FROM authors\nWHERE id = $1",
       "name": "DeleteAuthor",
       "cmd": ":exec",
+      "cmd_params": null,
       "columns": [],
       "params": [
         {
