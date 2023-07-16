@@ -887,6 +887,21 @@ func (c *cc) convertBetweenExpr(n *parser.Expr_betweenContext) ast.Node {
 	}
 }
 
+func (c *cc) convertCastExpr(n *parser.Expr_castContext) ast.Node {
+	name := n.Type_name().GetText()
+	return &ast.TypeCast{
+		Arg: c.convert(n.Expr()),
+		TypeName: &ast.TypeName{
+			Name: name,
+			Names: &ast.List{Items: []ast.Node{
+				NewIdentifer(name),
+			}},
+			ArrayBounds: &ast.List{},
+		},
+		Location: n.GetStart().GetStart(),
+	}
+}
+
 func (c *cc) convert(node node) ast.Node {
 	switch n := node.(type) {
 
@@ -965,6 +980,9 @@ func (c *cc) convert(node node) ast.Node {
 
 	case *parser.Update_stmt_limitedContext:
 		return c.convertUpdate_stmtContext(n)
+
+	case *parser.Expr_castContext:
+		return c.convertCastExpr(n)
 
 	default:
 		return todo("convert(case=default)", n)
