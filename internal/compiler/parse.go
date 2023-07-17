@@ -70,7 +70,7 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 	if err := validate.In(c.catalog, raw); err != nil {
 		return nil, err
 	}
-	name, cmd, err := metadata.Parse(strings.TrimSpace(rawSQL), c.parser.CommentSyntax())
+	name, cmd, err := metadata.ParseQueryNameAndType(strings.TrimSpace(rawSQL), c.parser.CommentSyntax())
 	if err != nil {
 		return nil, err
 	}
@@ -125,11 +125,18 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 	if err != nil {
 		return nil, err
 	}
+
+	flags, err := metadata.ParseQueryFlags(comments)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Query{
 		RawStmt:         raw,
 		Cmd:             cmd,
 		Comments:        comments,
 		Name:            name,
+		Flags:           flags,
 		Params:          params,
 		Columns:         cols,
 		SQL:             trimmed,
