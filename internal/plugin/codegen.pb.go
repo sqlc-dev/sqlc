@@ -469,6 +469,7 @@ type GoCode struct {
 	OutputBatchFileName         string   `protobuf:"bytes,24,opt,name=output_batch_file_name,json=outputBatchFileName,proto3" json:"output_batch_file_name,omitempty"`
 	JsonTagsIdUppercase         bool     `protobuf:"varint,26,opt,name=json_tags_id_uppercase,json=jsonTagsIdUppercase,proto3" json:"json_tags_id_uppercase,omitempty"`
 	OmitUnusedStructs           bool     `protobuf:"varint,27,opt,name=omit_unused_structs,json=omitUnusedStructs,proto3" json:"omit_unused_structs,omitempty"`
+	EmitGetters                 bool     `protobuf:"varint,28,opt,name=emit_getters,json=emitGetters,proto3" json:"emit_getters,omitempty"`
 }
 
 func (x *GoCode) Reset() {

@@ -130,14 +130,23 @@ func All{{ .Name }}Values() []{{ .Name }} {
 {{end}}
 
 {{range .Structs}}
+{{ $structName := .Name }}
 {{if .Comment}}{{comment .Comment}}{{end}}
-type {{.Name}} struct { {{- range .Fields}}
+type {{$structName}} struct { {{- range .Fields}}
   {{- if .Comment}}
   {{comment .Comment}}{{else}}
   {{- end}}
   {{.Name}} {{.Type}} {{if .Tag}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
   {{- end}}
 }
+
+{{if $.EmitGetters}}{{range .Fields}}
+{{if .Name}}func (m {{$structName}}) Get{{.Name}}() {{.Type}} {
+  return m.{{.Name}}
+}{{end}}
+
+{{- end}}
+{{end}}
 {{end}}
 {{end}}
 

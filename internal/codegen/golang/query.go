@@ -10,6 +10,7 @@ import (
 
 type QueryValue struct {
 	Emit        bool
+	EmitGetters bool
 	EmitPointer bool
 	Name        string
 	DBName      string // The name of the field in the database. Only set if Struct==nil.
@@ -24,6 +25,10 @@ type QueryValue struct {
 
 func (v QueryValue) EmitStruct() bool {
 	return v.Emit
+}
+
+func (v QueryValue) EmitStructGetters() bool {
+	return v.EmitGetters
 }
 
 func (v QueryValue) IsStruct() bool {
