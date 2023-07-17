@@ -6,17 +6,35 @@ const {{.ConstantName}} = {{$.Q}}-- name: {{.MethodName}} {{.Cmd}}
 {{$.Q}}
 
 {{if .Arg.EmitStruct}}
+{{ $structName := .Arg.Type }}
 type {{.Arg.Type}} struct { {{- range .Arg.UniqueFields}}
   {{.Name}} {{.Type}} {{if .Tag}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
   {{- end}}
 }
+
+{{if $.EmitGetters}}{{range .Arg.UniqueFields}}
+{{if .Name}}func (m {{$structName}}) Get{{.Name}}() {{.Type}} {
+    return m.{{.Name}}
+}{{end}}
+
+{{- end}}
+{{end}}
 {{end}}
 
 {{if .Ret.EmitStruct}}
+{{ $structName := .Ret.Type }}
 type {{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
   {{.Name}} {{.Type}} {{if .Tag}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
   {{- end}}
 }
+
+{{if $.EmitGetters}}{{range .Ret.Struct.Fields}}
+{{if .Name}}func (m {{$structName}}) Get{{.Name}}() {{.Type}} {
+    return m.{{.Name}}
+}{{end}}
+
+{{- end}}
+{{end}}
 {{end}}
 
 {{if eq .Cmd ":one"}}
