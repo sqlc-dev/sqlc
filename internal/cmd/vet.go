@@ -31,6 +31,7 @@ import (
 var ErrFailedChecks = errors.New("failed checks")
 
 const RuleDbPrepare = "sqlc/db-prepare"
+const QueryFlagSqlcVetDisable = "@sqlc-vet-disable"
 
 func NewCmdVet() *cobra.Command {
 	return &cobra.Command{
@@ -249,7 +250,6 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 		return ErrFailedChecks
 	}
 
-	// TODO: Add MySQL support
 	var prep preparer
 	if s.Database != nil {
 		if c.NoDatabase {
@@ -299,6 +299,10 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 	req := codeGenRequest(result, combo)
 	cfg := vetConfig(req)
 	for i, query := range req.Queries {
+		if result.Queries[i].Flags[QueryFlagSqlcVetDisable] {
+			fmt.Printf("Skipping vet rules for query %s", query.Name)
+			continue
+		}
 		q := vetQuery(query)
 		for _, name := range s.Rules {
 			// Built-in rule

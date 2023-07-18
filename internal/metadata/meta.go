@@ -104,8 +104,9 @@ func ParseQueryNameAndType(t string, commentStyle CommentSyntax) (string, string
 	return "", "", nil
 }
 
-func ParseQueryFlags(comments []string) (map[string]bool, error) {
+func ParseQueryFlags(comments []string) (map[string]bool, []string, error) {
 	flags := make(map[string]bool)
+	remainingComments := make([]string, 0, len(comments))
 	for _, line := range comments {
 		cleanLine := strings.TrimPrefix(line, "--")
 		cleanLine = strings.TrimPrefix(cleanLine, "/*")
@@ -115,7 +116,9 @@ func ParseQueryFlags(comments []string) (map[string]bool, error) {
 		if strings.HasPrefix(cleanLine, "@") {
 			flagName := strings.SplitN(cleanLine, " ", 2)[0]
 			flags[flagName] = true
+			continue
 		}
+		remainingComments = append(remainingComments, line)
 	}
-	return flags, nil
+	return flags, remainingComments, nil
 }

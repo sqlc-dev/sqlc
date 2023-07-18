@@ -1,4 +1,5 @@
 /* name: GetAuthor :one */
+/* @sqlc-vet-disable */
 SELECT * FROM authors
 WHERE id = ? LIMIT 1;
 
