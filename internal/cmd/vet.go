@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
 	"runtime/trace"
@@ -300,7 +301,9 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 	cfg := vetConfig(req)
 	for i, query := range req.Queries {
 		if result.Queries[i].Flags[QueryFlagSqlcVetDisable] {
-			fmt.Printf("Skipping vet rules for query %s", query.Name)
+			if debug.Active {
+				log.Printf("Skipping vet rules for query: %s\n", query.Name)
+			}
 			continue
 		}
 		q := vetQuery(query)

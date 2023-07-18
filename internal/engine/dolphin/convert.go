@@ -1,7 +1,6 @@
 package dolphin
 
 import (
-	"fmt"
 	"log"
 	"strings"
 
@@ -144,7 +143,7 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 
 		default:
 			if debug.Active {
-				fmt.Printf("dolphin.convert: Unknown alter table cmd %v\n", spec.Tp)
+				log.Printf("dolphin.convert: Unknown alter table cmd %v\n", spec.Tp)
 			}
 			continue
 		}
