@@ -53,7 +53,7 @@ func TestParseQueryFlags(t *testing.T) {
 			"-- @flag-foo",
 		},
 	} {
-		flags, _, err := ParseQueryFlags(comments)
+		flags, err := ParseQueryFlags(comments)
 		if err != nil {
 			t.Errorf("expected query flags to parse, got error: %s", err)
 		}

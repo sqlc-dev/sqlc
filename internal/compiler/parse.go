@@ -126,7 +126,7 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 		return nil, err
 	}
 
-	flags, comments, err := metadata.ParseQueryFlags(comments)
+	flags, err := metadata.ParseQueryFlags(comments)
 	if err != nil {
 		return nil, err
 	}
