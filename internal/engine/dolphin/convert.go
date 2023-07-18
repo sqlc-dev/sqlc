@@ -901,7 +901,10 @@ func (c *cc) convertFrameClause(n *pcast.FrameClause) ast.Node {
 }
 
 func (c *cc) convertFuncCastExpr(n *pcast.FuncCastExpr) ast.Node {
-	return todo(n)
+	return &ast.TypeCast{
+		Arg:      c.convert(n.Expr),
+		TypeName: &ast.TypeName{Name: types.TypeStr(n.Tp.GetType())},
+	}
 }
 
 func (c *cc) convertGetFormatSelectorExpr(n *pcast.GetFormatSelectorExpr) ast.Node {
