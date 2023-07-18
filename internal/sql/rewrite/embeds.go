@@ -7,16 +7,23 @@ import (
 	"github.com/kyleconroy/sqlc/internal/sql/astutils"
 )
 
-// Embed is an instance of `sqlc.embed(param)`
+// Embed is an instance of `sqlc.embed(param)` or `sqlc.nembed(param)`.
+// The only difference in an embed generated with `nembed` is that `Nullable`
+// will always be `true`.
 type Embed struct {
-	Table *ast.TableName
-	param string
-	Node  *ast.ColumnRef
+	Table    *ast.TableName
+	param    string
+	Node     *ast.ColumnRef
+	Nullable bool
 }
 
 // Orig string to replace
 func (e Embed) Orig() string {
-	return fmt.Sprintf("sqlc.embed(%s)", e.param)
+	fName := "embed"
+	if e.Nullable {
+		fName = "nembed"
+	}
+	return fmt.Sprintf("sqlc.%s(%s)", fName, e.param)
 }
 
 // EmbedSet is a set of Embed instances
@@ -32,9 +39,9 @@ func (es EmbedSet) Find(node *ast.ColumnRef) (*Embed, bool) {
 	return nil, false
 }
 
-// Embeds rewrites `sqlc.embed(param)` to a `ast.ColumnRef` of form `param.*`.
-// The compiler can make use of the returned `EmbedSet` while expanding the
-// `param.*` column refs to produce the correct source edits.
+// Embeds rewrites `sqlc.embed(param)` or `sqlc.nembed(param)` to an `ast.ColumnRef`
+// of form `param.*`. The compiler can make use of the returned `EmbedSet` while
+// expanding the `param.*` column refs to produce the correct source edits.
 func Embeds(raw *ast.RawStmt) (*ast.RawStmt, EmbedSet) {
 	var embeds []*Embed
 
@@ -60,10 +67,15 @@ func Embeds(raw *ast.RawStmt) (*ast.RawStmt, EmbedSet) {
 				},
 			}
 
+			nullable := false
+			if fun.Func.Name == "nembed" {
+				nullable = true
+			}
 			embeds = append(embeds, &Embed{
-				Table: &ast.TableName{Name: param},
-				param: param,
-				Node:  node,
+				Table:    &ast.TableName{Name: param},
+				param:    param,
+				Node:     node,
+				Nullable: nullable,
 			})
 
 			cr.Replace(node)
@@ -86,6 +98,6 @@ func isEmbed(node ast.Node) bool {
 		return false
 	}
 
-	isValid := call.Func.Schema == "sqlc" && call.Func.Name == "embed"
+	isValid := call.Func.Schema == "sqlc" && (call.Func.Name == "embed" || call.Func.Name == "nembed")
 	return isValid
 }

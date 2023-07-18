@@ -31,10 +31,10 @@ func (v *funcCallVisitor) Visit(node ast.Node) astutils.Visitor {
 		return v
 	}
 
-	// Custom validation for sqlc.arg, sqlc.narg and sqlc.slice
+	// Custom validation for `sqlc.` functions.
 	// TODO: Replace this once type-checking is implemented
 	if fn.Schema == "sqlc" {
-		if !(fn.Name == "arg" || fn.Name == "narg" || fn.Name == "slice" || fn.Name == "embed") {
+		if !(fn.Name == "arg" || fn.Name == "narg" || fn.Name == "slice" || fn.Name == "embed" || fn.Name == "nembed") {
 			v.err = sqlerr.FunctionNotFound("sqlc." + fn.Name)
 			return nil
 		}
@@ -57,8 +57,7 @@ func (v *funcCallVisitor) Visit(node ast.Node) astutils.Visitor {
 			return nil
 		}
 
-		// If we have sqlc.arg or sqlc.narg, there is no need to resolve the function call.
-		// It won't resolve anyway, sinc it is not a real function.
+		// Don't attempt to resolve `sqlc.` functions.
 		return nil
 	}
 

@@ -382,6 +382,9 @@ func columnsToStruct(req *plugin.CodeGenRequest, name string, columns []goColumn
 			f.Type = goType(req, c.Column)
 		} else {
 			f.Type = c.embed.modelType
+			if !c.NotNull {
+				f.Type = fmt.Sprintf("*%s", c.embed.modelType)
+			}
 			f.EmbedFields = c.embed.fields
 		}
 

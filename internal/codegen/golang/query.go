@@ -154,6 +154,54 @@ func (v QueryValue) HasSqlcSlices() bool {
 	return false
 }
 
+func (v QueryValue) AssignNullableEmbeds() string {
+	var out []string
+	if v.Struct != nil {
+		for _, f := range v.Struct.Fields {
+			if len(f.EmbedFields) > 0 && !f.Column.NotNull {
+				out = append(out, v.Name+"."+f.Name+" = &n"+f.Name)
+			}
+		}
+	}
+	return "\n" + strings.Join(out, "\n")
+}
+
+func (v QueryValue) DeclareNullableEmbeds() string {
+	var out []string
+	if v.Struct != nil {
+		for _, f := range v.Struct.Fields {
+			if len(f.EmbedFields) > 0 && !f.Column.NotNull {
+				out = append(out, "var n"+f.Name+" "+f.Type[1:])
+			}
+		}
+	}
+	return "\n" + strings.Join(out, "\n")
+}
+
+func (v QueryValue) NullableIndices() [][]int {
+	var out [][]int
+	fieldIdx := 0
+	if v.Struct != nil {
+		for _, f := range v.Struct.Fields {
+			if len(f.EmbedFields) > 0 {
+				var nullableIndices []int
+				for range f.EmbedFields {
+					if !f.Column.NotNull {
+						nullableIndices = append(nullableIndices, fieldIdx)
+					}
+					fieldIdx++
+				}
+				if len(nullableIndices) > 0 {
+					out = append(out, nullableIndices)
+				}
+			} else {
+				fieldIdx++
+			}
+		}
+	}
+	return out
+}
+
 func (v QueryValue) Scan() string {
 	var out []string
 	if v.Struct == nil {
@@ -167,8 +215,14 @@ func (v QueryValue) Scan() string {
 
 			// append any embedded fields
 			if len(f.EmbedFields) > 0 {
+				prefix := "&" + v.Name + "."
+				// Regular embeds go straight into the return struct, nembed uses an intermediate
+				// value to check for NULL
+				if !f.Column.NotNull {
+					prefix = "&n"
+				}
 				for _, embed := range f.EmbedFields {
-					out = append(out, "&"+v.Name+"."+f.Name+"."+embed)
+					out = append(out, prefix+f.Name+"."+embed)
 				}
 				continue
 			}

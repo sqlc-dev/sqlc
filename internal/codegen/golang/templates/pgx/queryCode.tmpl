@@ -28,15 +28,50 @@ type {{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
 {{end -}}
 {{- if $.EmitMethodsWithDBArgument -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) ({{.Ret.DefineType}}, error) {
-	row := db.QueryRow(ctx, {{.ConstantName}}, {{.Arg.Params}})
+	rows, err := db.Query(ctx, {{.ConstantName}}, {{.Arg.Params}})
 {{- else -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.DefineType}}, error) {
-	row := q.db.QueryRow(ctx, {{.ConstantName}}, {{.Arg.Params}})
+	rows, err := q.db.Query(ctx, {{.ConstantName}}, {{.Arg.Params}})
 {{- end}}
 	{{- if ne .Arg.Pair .Ret.Pair }}
 	var {{.Ret.Name}} {{.Ret.Type}}
 	{{- end}}
-	err := row.Scan({{.Ret.Scan}})
+    if err != nil {
+        return {{.Ret.ReturnName}}, err
+    }
+    {{- .Ret.DeclareNullableEmbeds}}
+    var cols []interface{}
+    cols = append(cols, {{.Ret.Scan}})
+	defer rows.Close()
+    // This effectively duplicates the behaviour of Row.Scan, which we can't use (because it doesn't
+    // provide Values).
+	if !rows.Next() {
+		if rows.Err() == nil {
+			return {{.Ret.ReturnName}}, pgx.ErrNoRows
+		}
+		return {{.Ret.ReturnName}}, rows.Err()
+	}
+    {{if .Ret.NullableIndices -}}
+    vals, verr := rows.Values()
+    if verr != nil {
+        return {{.Ret.ReturnName}}, verr
+    }
+    {{- range $nembed := .Ret.NullableIndices}}
+    if 
+    {{- range $nembed}}
+      vals[{{.}}] == nil &&
+    {{- end -}}
+    true {
+    {{range $nembed}}
+      cols[{{.}}] = nil
+    {{- end}}
+    }
+    {{- end -}}
+    {{- end}}
+    if err := rows.Scan(cols...); err != nil {
+        return {{.Ret.ReturnName}}, err
+    }
+    {{- .Ret.AssignNullableEmbeds}}
 	return {{.Ret.ReturnName}}, err
 }
 {{end}}
