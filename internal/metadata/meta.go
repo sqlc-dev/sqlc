@@ -115,6 +115,7 @@ func ParseQueryFlags(comments []string) (map[string]bool, error) {
 		if strings.HasPrefix(cleanLine, "@") {
 			flagName := strings.SplitN(cleanLine, " ", 2)[0]
 			flags[flagName] = true
+			continue
 		}
 	}
 	return flags, nil
