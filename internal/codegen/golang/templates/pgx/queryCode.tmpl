@@ -40,8 +40,9 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.De
         return {{.Ret.ReturnName}}, err
     }
     {{- .Ret.DeclareNullableEmbeds}}
-    var cols []interface{}
-    cols = append(cols, {{.Ret.Scan}})
+    cols := []interface{}{
+    {{- .Ret.Scan -}}
+    }
 	defer rows.Close()
     // This effectively duplicates the behaviour of Row.Scan, which we can't use (because it doesn't
     // provide Values).
@@ -56,18 +57,9 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.De
     if verr != nil {
         return {{.Ret.ReturnName}}, verr
     }
-    {{- range $nembed := .Ret.NullableIndices}}
-    if 
-    {{- range $nembed}}
-      vals[{{.}}] == nil &&
-    {{- end -}}
-    true {
-    {{range $nembed}}
-      cols[{{.}}] = nil
-    {{- end}}
-    }
-    {{- end -}}
-    {{- end}}
+    nullableIndices := [][]int{ {{- range .Ret.NullableIndices}}[]int{ {{- . -}}}, {{- end -}} }
+    setEmbedsNil(vals, cols, nullableIndices)
+    {{end -}}
     if err := rows.Scan(cols...); err != nil {
         return {{.Ret.ReturnName}}, err
     }

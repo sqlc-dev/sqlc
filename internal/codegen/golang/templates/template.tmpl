@@ -157,6 +157,26 @@ import (
     "github.com/jackc/pgx/v5"
 )
 
+// TODO: naming feels off
+func setEmbedsNil(dbVals []interface{}, fields []interface{}, nullableIndices [][]int) {
+    for _, nembed := range nullableIndices {
+        setNil := true
+        for _, idx := range nembed {
+            // Any non-NULL value in the query result will cause a Scan attempt into the
+            // intermediate struct.
+            if dbVals[idx] != nil {
+                setNil = false
+                break
+            }
+        }
+        if setNil {
+            for _, idx := range nembed {
+                fields[idx] = nil
+            }
+        }
+    }
+}
+
 {{template "queryCode" . }}
 {{end}}
 

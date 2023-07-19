@@ -2,6 +2,7 @@ package golang
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/kyleconroy/sqlc/internal/metadata"
@@ -178,16 +179,16 @@ func (v QueryValue) DeclareNullableEmbeds() string {
 	return "\n" + strings.Join(out, "\n")
 }
 
-func (v QueryValue) NullableIndices() [][]int {
-	var out [][]int
+func (v QueryValue) NullableIndices() []string {
+	var out []string
 	fieldIdx := 0
 	if v.Struct != nil {
 		for _, f := range v.Struct.Fields {
 			if len(f.EmbedFields) > 0 {
-				var nullableIndices []int
+				var nullableIndices string
 				for range f.EmbedFields {
 					if !f.Column.NotNull {
-						nullableIndices = append(nullableIndices, fieldIdx)
+						nullableIndices += strconv.Itoa(fieldIdx) + ","
 					}
 					fieldIdx++
 				}
