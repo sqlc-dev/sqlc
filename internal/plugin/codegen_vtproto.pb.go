@@ -653,17 +653,17 @@ func (m *PostgreSQLExplain_Plan) CloneVT() *PostgreSQLExplain_Plan {
 		copy(tmpContainer, rhs)
 		r.Output = tmpContainer
 	}
-	if rhs := m.SortKey; rhs != nil {
-		tmpContainer := make([]string, len(rhs))
-		copy(tmpContainer, rhs)
-		r.SortKey = tmpContainer
-	}
 	if rhs := m.Plans; rhs != nil {
 		tmpContainer := make([]*PostgreSQLExplain_Plan, len(rhs))
 		for k, v := range rhs {
 			tmpContainer[k] = v.CloneVT()
 		}
 		r.Plans = tmpContainer
+	}
+	if rhs := m.SortKey; rhs != nil {
+		tmpContainer := make([]string, len(rhs))
+		copy(tmpContainer, rhs)
+		r.SortKey = tmpContainer
 	}
 	if len(m.unknownFields) > 0 {
 		r.unknownFields = make([]byte, len(m.unknownFields))
@@ -673,22 +673,6 @@ func (m *PostgreSQLExplain_Plan) CloneVT() *PostgreSQLExplain_Plan {
 }
 
 func (m *PostgreSQLExplain_Plan) CloneMessageVT() proto.Message {
-	return m.CloneVT()
-}
-
-func (m *PostgreSQLExplain_Settings) CloneVT() *PostgreSQLExplain_Settings {
-	if m == nil {
-		return (*PostgreSQLExplain_Settings)(nil)
-	}
-	r := &PostgreSQLExplain_Settings{}
-	if len(m.unknownFields) > 0 {
-		r.unknownFields = make([]byte, len(m.unknownFields))
-		copy(r.unknownFields, m.unknownFields)
-	}
-	return r
-}
-
-func (m *PostgreSQLExplain_Settings) CloneMessageVT() proto.Message {
 	return m.CloneVT()
 }
 
@@ -725,8 +709,14 @@ func (m *PostgreSQLExplain) CloneVT() *PostgreSQLExplain {
 	}
 	r := &PostgreSQLExplain{
 		Plan:     m.Plan.CloneVT(),
-		Settings: m.Settings.CloneVT(),
 		Planning: m.Planning.CloneVT(),
+	}
+	if rhs := m.Settings; rhs != nil {
+		tmpContainer := make(map[string]string, len(rhs))
+		for k, v := range rhs {
+			tmpContainer[k] = v
+		}
+		r.Settings = tmpContainer
 	}
 	if len(m.unknownFields) > 0 {
 		r.unknownFields = make([]byte, len(m.unknownFields))
@@ -1743,6 +1733,23 @@ func (this *PostgreSQLExplain_Plan) EqualVT(that *PostgreSQLExplain_Plan) bool {
 			return false
 		}
 	}
+	if len(this.Plans) != len(that.Plans) {
+		return false
+	}
+	for i, vx := range this.Plans {
+		vy := that.Plans[i]
+		if p, q := vx, vy; p != q {
+			if p == nil {
+				p = &PostgreSQLExplain_Plan{}
+			}
+			if q == nil {
+				q = &PostgreSQLExplain_Plan{}
+			}
+			if !p.EqualVT(q) {
+				return false
+			}
+		}
+	}
 	if this.SharedHitBlocks != that.SharedHitBlocks {
 		return false
 	}
@@ -1791,23 +1798,6 @@ func (this *PostgreSQLExplain_Plan) EqualVT(that *PostgreSQLExplain_Plan) bool {
 	if this.HashCond != that.HashCond {
 		return false
 	}
-	if len(this.Plans) != len(that.Plans) {
-		return false
-	}
-	for i, vx := range this.Plans {
-		vy := that.Plans[i]
-		if p, q := vx, vy; p != q {
-			if p == nil {
-				p = &PostgreSQLExplain_Plan{}
-			}
-			if q == nil {
-				q = &PostgreSQLExplain_Plan{}
-			}
-			if !p.EqualVT(q) {
-				return false
-			}
-		}
-	}
 	if this.IndexName != that.IndexName {
 		return false
 	}
@@ -1822,22 +1812,6 @@ func (this *PostgreSQLExplain_Plan) EqualVT(that *PostgreSQLExplain_Plan) bool {
 
 func (this *PostgreSQLExplain_Plan) EqualMessageVT(thatMsg proto.Message) bool {
 	that, ok := thatMsg.(*PostgreSQLExplain_Plan)
-	if !ok {
-		return false
-	}
-	return this.EqualVT(that)
-}
-func (this *PostgreSQLExplain_Settings) EqualVT(that *PostgreSQLExplain_Settings) bool {
-	if this == that {
-		return true
-	} else if this == nil || that == nil {
-		return false
-	}
-	return string(this.unknownFields) == string(that.unknownFields)
-}
-
-func (this *PostgreSQLExplain_Settings) EqualMessageVT(thatMsg proto.Message) bool {
-	that, ok := thatMsg.(*PostgreSQLExplain_Settings)
 	if !ok {
 		return false
 	}
@@ -1898,8 +1872,17 @@ func (this *PostgreSQLExplain) EqualVT(that *PostgreSQLExplain) bool {
 	if !this.Plan.EqualVT(that.Plan) {
 		return false
 	}
-	if !this.Settings.EqualVT(that.Settings) {
+	if len(this.Settings) != len(that.Settings) {
 		return false
+	}
+	for i, vx := range this.Settings {
+		vy, ok := that.Settings[i]
+		if !ok {
+			return false
+		}
+		if vx != vy {
+			return false
+		}
 	}
 	if !this.Planning.EqualVT(that.Planning) {
 		return false
@@ -3765,20 +3748,6 @@ func (m *PostgreSQLExplain_Plan) MarshalToSizedBufferVT(dAtA []byte) (int, error
 		i--
 		dAtA[i] = 0xe2
 	}
-	if len(m.Plans) > 0 {
-		for iNdEx := len(m.Plans) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Plans[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarint(dAtA, i, uint64(size))
-			i--
-			dAtA[i] = 0x1
-			i--
-			dAtA[i] = 0xda
-		}
-	}
 	if len(m.HashCond) > 0 {
 		i -= len(m.HashCond)
 		copy(dAtA[i:], m.HashCond)
@@ -3786,7 +3755,7 @@ func (m *PostgreSQLExplain_Plan) MarshalToSizedBufferVT(dAtA []byte) (int, error
 		i--
 		dAtA[i] = 0x1
 		i--
-		dAtA[i] = 0xd2
+		dAtA[i] = 0xda
 	}
 	if m.InnerUnique {
 		i--
@@ -3798,7 +3767,7 @@ func (m *PostgreSQLExplain_Plan) MarshalToSizedBufferVT(dAtA []byte) (int, error
 		i--
 		dAtA[i] = 0x1
 		i--
-		dAtA[i] = 0xc8
+		dAtA[i] = 0xd0
 	}
 	if len(m.JoinType) > 0 {
 		i -= len(m.JoinType)
@@ -3807,7 +3776,7 @@ func (m *PostgreSQLExplain_Plan) MarshalToSizedBufferVT(dAtA []byte) (int, error
 		i--
 		dAtA[i] = 0x1
 		i--
-		dAtA[i] = 0xc2
+		dAtA[i] = 0xca
 	}
 	if len(m.SortKey) > 0 {
 		for iNdEx := len(m.SortKey) - 1; iNdEx >= 0; iNdEx-- {
@@ -3817,7 +3786,7 @@ func (m *PostgreSQLExplain_Plan) MarshalToSizedBufferVT(dAtA []byte) (int, error
 			i--
 			dAtA[i] = 0x1
 			i--
-			dAtA[i] = 0xba
+			dAtA[i] = 0xc2
 		}
 	}
 	if m.TempWrittenBlocks != 0 {
@@ -3825,64 +3794,78 @@ func (m *PostgreSQLExplain_Plan) MarshalToSizedBufferVT(dAtA []byte) (int, error
 		i--
 		dAtA[i] = 0x1
 		i--
-		dAtA[i] = 0xb0
+		dAtA[i] = 0xb8
 	}
 	if m.TempReadBlocks != 0 {
 		i = encodeVarint(dAtA, i, uint64(m.TempReadBlocks))
 		i--
 		dAtA[i] = 0x1
 		i--
-		dAtA[i] = 0xa8
+		dAtA[i] = 0xb0
 	}
 	if m.LocalWrittenBlocks != 0 {
 		i = encodeVarint(dAtA, i, uint64(m.LocalWrittenBlocks))
 		i--
 		dAtA[i] = 0x1
 		i--
-		dAtA[i] = 0xa0
+		dAtA[i] = 0xa8
 	}
 	if m.LocalDirtiedBlocks != 0 {
 		i = encodeVarint(dAtA, i, uint64(m.LocalDirtiedBlocks))
 		i--
 		dAtA[i] = 0x1
 		i--
-		dAtA[i] = 0x98
+		dAtA[i] = 0xa0
 	}
 	if m.LocalReadBlocks != 0 {
 		i = encodeVarint(dAtA, i, uint64(m.LocalReadBlocks))
 		i--
 		dAtA[i] = 0x1
 		i--
-		dAtA[i] = 0x90
+		dAtA[i] = 0x98
 	}
 	if m.LocalHitBlocks != 0 {
 		i = encodeVarint(dAtA, i, uint64(m.LocalHitBlocks))
 		i--
 		dAtA[i] = 0x1
 		i--
-		dAtA[i] = 0x88
+		dAtA[i] = 0x90
 	}
 	if m.SharedWrittenBlocks != 0 {
 		i = encodeVarint(dAtA, i, uint64(m.SharedWrittenBlocks))
 		i--
 		dAtA[i] = 0x1
 		i--
-		dAtA[i] = 0x80
+		dAtA[i] = 0x88
 	}
 	if m.SharedDirtiedBlocks != 0 {
 		i = encodeVarint(dAtA, i, uint64(m.SharedDirtiedBlocks))
 		i--
-		dAtA[i] = 0x78
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0x80
 	}
 	if m.SharedReadBlocks != 0 {
 		i = encodeVarint(dAtA, i, uint64(m.SharedReadBlocks))
 		i--
-		dAtA[i] = 0x70
+		dAtA[i] = 0x78
 	}
 	if m.SharedHitBlocks != 0 {
 		i = encodeVarint(dAtA, i, uint64(m.SharedHitBlocks))
 		i--
-		dAtA[i] = 0x68
+		dAtA[i] = 0x70
+	}
+	if len(m.Plans) > 0 {
+		for iNdEx := len(m.Plans) - 1; iNdEx >= 0; iNdEx-- {
+			size, err := m.Plans[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarint(dAtA, i, uint64(size))
+			i--
+			dAtA[i] = 0x6a
+		}
 	}
 	if len(m.Output) > 0 {
 		for iNdEx := len(m.Output) - 1; iNdEx >= 0; iNdEx-- {
@@ -3969,39 +3952,6 @@ func (m *PostgreSQLExplain_Plan) MarshalToSizedBufferVT(dAtA []byte) (int, error
 		i = encodeVarint(dAtA, i, uint64(len(m.NodeType)))
 		i--
 		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *PostgreSQLExplain_Settings) MarshalVT() (dAtA []byte, err error) {
-	if m == nil {
-		return nil, nil
-	}
-	size := m.SizeVT()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBufferVT(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *PostgreSQLExplain_Settings) MarshalToVT(dAtA []byte) (int, error) {
-	size := m.SizeVT()
-	return m.MarshalToSizedBufferVT(dAtA[:size])
-}
-
-func (m *PostgreSQLExplain_Settings) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.unknownFields != nil {
-		i -= len(m.unknownFields)
-		copy(dAtA[i:], m.unknownFields)
 	}
 	return len(dAtA) - i, nil
 }
@@ -4129,15 +4079,24 @@ func (m *PostgreSQLExplain) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x1a
 	}
-	if m.Settings != nil {
-		size, err := m.Settings.MarshalToSizedBufferVT(dAtA[:i])
-		if err != nil {
-			return 0, err
+	if len(m.Settings) > 0 {
+		for k := range m.Settings {
+			v := m.Settings[k]
+			baseI := i
+			i -= len(v)
+			copy(dAtA[i:], v)
+			i = encodeVarint(dAtA, i, uint64(len(v)))
+			i--
+			dAtA[i] = 0x12
+			i -= len(k)
+			copy(dAtA[i:], k)
+			i = encodeVarint(dAtA, i, uint64(len(k)))
+			i--
+			dAtA[i] = 0xa
+			i = encodeVarint(dAtA, i, uint64(baseI-i))
+			i--
+			dAtA[i] = 0x12
 		}
-		i -= size
-		i = encodeVarint(dAtA, i, uint64(size))
-		i--
-		dAtA[i] = 0x12
 	}
 	if m.Plan != nil {
 		size, err := m.Plan.MarshalToSizedBufferVT(dAtA[:i])
@@ -6085,20 +6044,6 @@ func (m *PostgreSQLExplain_Plan) MarshalToSizedBufferVTStrict(dAtA []byte) (int,
 		i--
 		dAtA[i] = 0xe2
 	}
-	if len(m.Plans) > 0 {
-		for iNdEx := len(m.Plans) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Plans[iNdEx].MarshalToSizedBufferVTStrict(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarint(dAtA, i, uint64(size))
-			i--
-			dAtA[i] = 0x1
-			i--
-			dAtA[i] = 0xda
-		}
-	}
 	if len(m.HashCond) > 0 {
 		i -= len(m.HashCond)
 		copy(dAtA[i:], m.HashCond)
@@ -6106,7 +6051,7 @@ func (m *PostgreSQLExplain_Plan) MarshalToSizedBufferVTStrict(dAtA []byte) (int,
 		i--
 		dAtA[i] = 0x1
 		i--
-		dAtA[i] = 0xd2
+		dAtA[i] = 0xda
 	}
 	if m.InnerUnique {
 		i--
@@ -6118,7 +6063,7 @@ func (m *PostgreSQLExplain_Plan) MarshalToSizedBufferVTStrict(dAtA []byte) (int,
 		i--
 		dAtA[i] = 0x1
 		i--
-		dAtA[i] = 0xc8
+		dAtA[i] = 0xd0
 	}
 	if len(m.JoinType) > 0 {
 		i -= len(m.JoinType)
@@ -6127,7 +6072,7 @@ func (m *PostgreSQLExplain_Plan) MarshalToSizedBufferVTStrict(dAtA []byte) (int,
 		i--
 		dAtA[i] = 0x1
 		i--
-		dAtA[i] = 0xc2
+		dAtA[i] = 0xca
 	}
 	if len(m.SortKey) > 0 {
 		for iNdEx := len(m.SortKey) - 1; iNdEx >= 0; iNdEx-- {
@@ -6137,7 +6082,7 @@ func (m *PostgreSQLExplain_Plan) MarshalToSizedBufferVTStrict(dAtA []byte) (int,
 			i--
 			dAtA[i] = 0x1
 			i--
-			dAtA[i] = 0xba
+			dAtA[i] = 0xc2
 		}
 	}
 	if m.TempWrittenBlocks != 0 {
@@ -6145,64 +6090,78 @@ func (m *PostgreSQLExplain_Plan) MarshalToSizedBufferVTStrict(dAtA []byte) (int,
 		i--
 		dAtA[i] = 0x1
 		i--
-		dAtA[i] = 0xb0
+		dAtA[i] = 0xb8
 	}
 	if m.TempReadBlocks != 0 {
 		i = encodeVarint(dAtA, i, uint64(m.TempReadBlocks))
 		i--
 		dAtA[i] = 0x1
 		i--
-		dAtA[i] = 0xa8
+		dAtA[i] = 0xb0
 	}
 	if m.LocalWrittenBlocks != 0 {
 		i = encodeVarint(dAtA, i, uint64(m.LocalWrittenBlocks))
 		i--
 		dAtA[i] = 0x1
 		i--
-		dAtA[i] = 0xa0
+		dAtA[i] = 0xa8
 	}
 	if m.LocalDirtiedBlocks != 0 {
 		i = encodeVarint(dAtA, i, uint64(m.LocalDirtiedBlocks))
 		i--
 		dAtA[i] = 0x1
 		i--
-		dAtA[i] = 0x98
+		dAtA[i] = 0xa0
 	}
 	if m.LocalReadBlocks != 0 {
 		i = encodeVarint(dAtA, i, uint64(m.LocalReadBlocks))
 		i--
 		dAtA[i] = 0x1
 		i--
-		dAtA[i] = 0x90
+		dAtA[i] = 0x98
 	}
 	if m.LocalHitBlocks != 0 {
 		i = encodeVarint(dAtA, i, uint64(m.LocalHitBlocks))
 		i--
 		dAtA[i] = 0x1
 		i--
-		dAtA[i] = 0x88
+		dAtA[i] = 0x90
 	}
 	if m.SharedWrittenBlocks != 0 {
 		i = encodeVarint(dAtA, i, uint64(m.SharedWrittenBlocks))
 		i--
 		dAtA[i] = 0x1
 		i--
-		dAtA[i] = 0x80
+		dAtA[i] = 0x88
 	}
 	if m.SharedDirtiedBlocks != 0 {
 		i = encodeVarint(dAtA, i, uint64(m.SharedDirtiedBlocks))
 		i--
-		dAtA[i] = 0x78
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0x80
 	}
 	if m.SharedReadBlocks != 0 {
 		i = encodeVarint(dAtA, i, uint64(m.SharedReadBlocks))
 		i--
-		dAtA[i] = 0x70
+		dAtA[i] = 0x78
 	}
 	if m.SharedHitBlocks != 0 {
 		i = encodeVarint(dAtA, i, uint64(m.SharedHitBlocks))
 		i--
-		dAtA[i] = 0x68
+		dAtA[i] = 0x70
+	}
+	if len(m.Plans) > 0 {
+		for iNdEx := len(m.Plans) - 1; iNdEx >= 0; iNdEx-- {
+			size, err := m.Plans[iNdEx].MarshalToSizedBufferVTStrict(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarint(dAtA, i, uint64(size))
+			i--
+			dAtA[i] = 0x6a
+		}
 	}
 	if len(m.Output) > 0 {
 		for iNdEx := len(m.Output) - 1; iNdEx >= 0; iNdEx-- {
@@ -6289,39 +6248,6 @@ func (m *PostgreSQLExplain_Plan) MarshalToSizedBufferVTStrict(dAtA []byte) (int,
 		i = encodeVarint(dAtA, i, uint64(len(m.NodeType)))
 		i--
 		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *PostgreSQLExplain_Settings) MarshalVTStrict() (dAtA []byte, err error) {
-	if m == nil {
-		return nil, nil
-	}
-	size := m.SizeVT()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBufferVTStrict(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *PostgreSQLExplain_Settings) MarshalToVTStrict(dAtA []byte) (int, error) {
-	size := m.SizeVT()
-	return m.MarshalToSizedBufferVTStrict(dAtA[:size])
-}
-
-func (m *PostgreSQLExplain_Settings) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.unknownFields != nil {
-		i -= len(m.unknownFields)
-		copy(dAtA[i:], m.unknownFields)
 	}
 	return len(dAtA) - i, nil
 }
@@ -6449,15 +6375,24 @@ func (m *PostgreSQLExplain) MarshalToSizedBufferVTStrict(dAtA []byte) (int, erro
 		i--
 		dAtA[i] = 0x1a
 	}
-	if m.Settings != nil {
-		size, err := m.Settings.MarshalToSizedBufferVTStrict(dAtA[:i])
-		if err != nil {
-			return 0, err
+	if len(m.Settings) > 0 {
+		for k := range m.Settings {
+			v := m.Settings[k]
+			baseI := i
+			i -= len(v)
+			copy(dAtA[i:], v)
+			i = encodeVarint(dAtA, i, uint64(len(v)))
+			i--
+			dAtA[i] = 0x12
+			i -= len(k)
+			copy(dAtA[i:], k)
+			i = encodeVarint(dAtA, i, uint64(len(k)))
+			i--
+			dAtA[i] = 0xa
+			i = encodeVarint(dAtA, i, uint64(baseI-i))
+			i--
+			dAtA[i] = 0x12
 		}
-		i -= size
-		i = encodeVarint(dAtA, i, uint64(size))
-		i--
-		dAtA[i] = 0x12
 	}
 	if m.Plan != nil {
 		size, err := m.Plan.MarshalToSizedBufferVTStrict(dAtA[:i])
@@ -7347,6 +7282,12 @@ func (m *PostgreSQLExplain_Plan) SizeVT() (n int) {
 			n += 1 + l + sov(uint64(l))
 		}
 	}
+	if len(m.Plans) > 0 {
+		for _, e := range m.Plans {
+			l = e.SizeVT()
+			n += 1 + l + sov(uint64(l))
+		}
+	}
 	if m.SharedHitBlocks != 0 {
 		n += 1 + sov(uint64(m.SharedHitBlocks))
 	}
@@ -7354,7 +7295,7 @@ func (m *PostgreSQLExplain_Plan) SizeVT() (n int) {
 		n += 1 + sov(uint64(m.SharedReadBlocks))
 	}
 	if m.SharedDirtiedBlocks != 0 {
-		n += 1 + sov(uint64(m.SharedDirtiedBlocks))
+		n += 2 + sov(uint64(m.SharedDirtiedBlocks))
 	}
 	if m.SharedWrittenBlocks != 0 {
 		n += 2 + sov(uint64(m.SharedWrittenBlocks))
@@ -7394,12 +7335,6 @@ func (m *PostgreSQLExplain_Plan) SizeVT() (n int) {
 	if l > 0 {
 		n += 2 + l + sov(uint64(l))
 	}
-	if len(m.Plans) > 0 {
-		for _, e := range m.Plans {
-			l = e.SizeVT()
-			n += 2 + l + sov(uint64(l))
-		}
-	}
 	l = len(m.IndexName)
 	if l > 0 {
 		n += 2 + l + sov(uint64(l))
@@ -7412,16 +7347,6 @@ func (m *PostgreSQLExplain_Plan) SizeVT() (n int) {
 	if l > 0 {
 		n += 2 + l + sov(uint64(l))
 	}
-	n += len(m.unknownFields)
-	return n
-}
-
-func (m *PostgreSQLExplain_Settings) SizeVT() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
 	n += len(m.unknownFields)
 	return n
 }
@@ -7476,9 +7401,13 @@ func (m *PostgreSQLExplain) SizeVT() (n int) {
 		l = m.Plan.SizeVT()
 		n += 1 + l + sov(uint64(l))
 	}
-	if m.Settings != nil {
-		l = m.Settings.SizeVT()
-		n += 1 + l + sov(uint64(l))
+	if len(m.Settings) > 0 {
+		for k, v := range m.Settings {
+			_ = k
+			_ = v
+			mapEntrySize := 1 + len(k) + sov(uint64(len(k))) + 1 + len(v) + sov(uint64(len(v)))
+			n += mapEntrySize + 1 + sov(uint64(mapEntrySize))
+		}
 	}
 	if m.Planning != nil {
 		l = m.Planning.SizeVT()
@@ -12607,312 +12536,6 @@ func (m *PostgreSQLExplain_Plan) UnmarshalVT(dAtA []byte) error {
 			m.Output = append(m.Output, string(dAtA[iNdEx:postIndex]))
 			iNdEx = postIndex
 		case 13:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field SharedHitBlocks", wireType)
-			}
-			m.SharedHitBlocks = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.SharedHitBlocks |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 14:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field SharedReadBlocks", wireType)
-			}
-			m.SharedReadBlocks = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.SharedReadBlocks |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 15:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field SharedDirtiedBlocks", wireType)
-			}
-			m.SharedDirtiedBlocks = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.SharedDirtiedBlocks |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 16:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field SharedWrittenBlocks", wireType)
-			}
-			m.SharedWrittenBlocks = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.SharedWrittenBlocks |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 17:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field LocalHitBlocks", wireType)
-			}
-			m.LocalHitBlocks = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.LocalHitBlocks |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 18:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field LocalReadBlocks", wireType)
-			}
-			m.LocalReadBlocks = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.LocalReadBlocks |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 19:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field LocalDirtiedBlocks", wireType)
-			}
-			m.LocalDirtiedBlocks = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.LocalDirtiedBlocks |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 20:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field LocalWrittenBlocks", wireType)
-			}
-			m.LocalWrittenBlocks = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.LocalWrittenBlocks |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 21:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field TempReadBlocks", wireType)
-			}
-			m.TempReadBlocks = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.TempReadBlocks |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 22:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field TempWrittenBlocks", wireType)
-			}
-			m.TempWrittenBlocks = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.TempWrittenBlocks |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 23:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field SortKey", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLength
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLength
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.SortKey = append(m.SortKey, string(dAtA[iNdEx:postIndex]))
-			iNdEx = postIndex
-		case 24:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field JoinType", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLength
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLength
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.JoinType = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 25:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field InnerUnique", wireType)
-			}
-			var v int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				v |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			m.InnerUnique = bool(v != 0)
-		case 26:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field HashCond", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLength
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLength
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.HashCond = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 27:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Plans", wireType)
 			}
@@ -12945,6 +12568,312 @@ func (m *PostgreSQLExplain_Plan) UnmarshalVT(dAtA []byte) error {
 			if err := m.Plans[len(m.Plans)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
+			iNdEx = postIndex
+		case 14:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field SharedHitBlocks", wireType)
+			}
+			m.SharedHitBlocks = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.SharedHitBlocks |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 15:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field SharedReadBlocks", wireType)
+			}
+			m.SharedReadBlocks = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.SharedReadBlocks |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 16:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field SharedDirtiedBlocks", wireType)
+			}
+			m.SharedDirtiedBlocks = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.SharedDirtiedBlocks |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 17:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field SharedWrittenBlocks", wireType)
+			}
+			m.SharedWrittenBlocks = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.SharedWrittenBlocks |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 18:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field LocalHitBlocks", wireType)
+			}
+			m.LocalHitBlocks = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.LocalHitBlocks |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 19:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field LocalReadBlocks", wireType)
+			}
+			m.LocalReadBlocks = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.LocalReadBlocks |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 20:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field LocalDirtiedBlocks", wireType)
+			}
+			m.LocalDirtiedBlocks = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.LocalDirtiedBlocks |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 21:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field LocalWrittenBlocks", wireType)
+			}
+			m.LocalWrittenBlocks = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.LocalWrittenBlocks |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 22:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TempReadBlocks", wireType)
+			}
+			m.TempReadBlocks = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TempReadBlocks |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 23:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TempWrittenBlocks", wireType)
+			}
+			m.TempWrittenBlocks = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TempWrittenBlocks |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 24:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field SortKey", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.SortKey = append(m.SortKey, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		case 25:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field JoinType", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.JoinType = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 26:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field InnerUnique", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.InnerUnique = bool(v != 0)
+		case 27:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field HashCond", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.HashCond = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 28:
 			if wireType != 2 {
@@ -13042,57 +12971,6 @@ func (m *PostgreSQLExplain_Plan) UnmarshalVT(dAtA []byte) error {
 			}
 			m.IndexCond = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skip(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLength
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *PostgreSQLExplain_Settings) UnmarshalVT(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflow
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: PostgreSQLExplain_Settings: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: PostgreSQLExplain_Settings: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
 		default:
 			iNdEx = preIndex
 			skippy, err := skip(dAtA[iNdEx:])
@@ -13451,11 +13329,102 @@ func (m *PostgreSQLExplain) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Settings == nil {
-				m.Settings = &PostgreSQLExplain_Settings{}
+				m.Settings = make(map[string]string)
 			}
-			if err := m.Settings.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
-				return err
+			var mapkey string
+			var mapvalue string
+			for iNdEx < postIndex {
+				entryPreIndex := iNdEx
+				var wire uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					wire |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				fieldNum := int32(wire >> 3)
+				if fieldNum == 1 {
+					var stringLenmapkey uint64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return ErrIntOverflow
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						stringLenmapkey |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					intStringLenmapkey := int(stringLenmapkey)
+					if intStringLenmapkey < 0 {
+						return ErrInvalidLength
+					}
+					postStringIndexmapkey := iNdEx + intStringLenmapkey
+					if postStringIndexmapkey < 0 {
+						return ErrInvalidLength
+					}
+					if postStringIndexmapkey > l {
+						return io.ErrUnexpectedEOF
+					}
+					mapkey = string(dAtA[iNdEx:postStringIndexmapkey])
+					iNdEx = postStringIndexmapkey
+				} else if fieldNum == 2 {
+					var stringLenmapvalue uint64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return ErrIntOverflow
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						stringLenmapvalue |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					intStringLenmapvalue := int(stringLenmapvalue)
+					if intStringLenmapvalue < 0 {
+						return ErrInvalidLength
+					}
+					postStringIndexmapvalue := iNdEx + intStringLenmapvalue
+					if postStringIndexmapvalue < 0 {
+						return ErrInvalidLength
+					}
+					if postStringIndexmapvalue > l {
+						return io.ErrUnexpectedEOF
+					}
+					mapvalue = string(dAtA[iNdEx:postStringIndexmapvalue])
+					iNdEx = postStringIndexmapvalue
+				} else {
+					iNdEx = entryPreIndex
+					skippy, err := skip(dAtA[iNdEx:])
+					if err != nil {
+						return err
+					}
+					if (skippy < 0) || (iNdEx+skippy) < 0 {
+						return ErrInvalidLength
+					}
+					if (iNdEx + skippy) > postIndex {
+						return io.ErrUnexpectedEOF
+					}
+					iNdEx += skippy
+				}
 			}
+			m.Settings[mapkey] = mapvalue
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {

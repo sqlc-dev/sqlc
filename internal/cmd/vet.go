@@ -33,6 +33,8 @@ import (
 
 var ErrFailedChecks = errors.New("failed checks")
 
+var pjson = protojson.UnmarshalOptions{AllowPartial: true, DiscardUnknown: true}
+
 const RuleDbPrepare = "sqlc/db-prepare"
 const QueryFlagSqlcVetDisable = "@sqlc-vet-disable"
 
@@ -218,12 +220,11 @@ func (p *pgxConn) Explain(ctx context.Context, query string, args ...*plugin.Par
 	if err := row.Scan(&result); err != nil {
 		return nil, err
 	}
-	var ret plugin.PostgreSQLExplain
-	pJSON := protojson.UnmarshalOptions{AllowPartial: true, DiscardUnknown: true}
-	if err := pJSON.Unmarshal(result[0], &ret); err != nil {
+	var explain plugin.PostgreSQLExplain
+	if err := pjson.Unmarshal(result[0], &explain); err != nil {
 		return nil, err
 	}
-	return &vetExplain{PostgreSQL: &ret}, nil
+	return &vetExplain{PostgreSQL: &explain}, nil
 }
 
 type dbPreparer struct {
@@ -251,12 +252,11 @@ func (me *mysqlExplainer) Explain(ctx context.Context, query string, args ...*pl
 	if err := row.Scan(&result); err != nil {
 		return nil, err
 	}
-	var ret plugin.MySQLExplain
-	pJSON := protojson.UnmarshalOptions{AllowPartial: true, DiscardUnknown: true}
-	if err := pJSON.Unmarshal(result, &ret); err != nil {
+	var explain plugin.MySQLExplain
+	if err := pjson.Unmarshal(result, &explain); err != nil {
 		return nil, err
 	}
-	return &vetExplain{MySQL: &ret}, nil
+	return &vetExplain{MySQL: &explain}, nil
 }
 
 type checker struct {
