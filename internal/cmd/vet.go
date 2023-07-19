@@ -89,7 +89,8 @@ func Vet(ctx context.Context, e Env, dir, filename string, stderr io.Writer) err
 		cel.Types(
 			&plugin.VetConfig{},
 			&plugin.VetQuery{},
-			&plugin.Explain{},
+			&plugin.PostgreSQLExplain{},
+			&plugin.MySQLExplain{},
 		),
 		cel.Variable("query",
 			cel.ObjectType("plugin.VetQuery"),
@@ -97,18 +98,22 @@ func Vet(ctx context.Context, e Env, dir, filename string, stderr io.Writer) err
 		cel.Variable("config",
 			cel.ObjectType("plugin.VetConfig"),
 		),
-		cel.Variable("explain",
-			cel.ObjectType("plugin.Explain"),
+		cel.Variable("postgresql.explain",
+			cel.ObjectType("plugin.PostgreSQLExplain"),
+		),
+		cel.Variable("mysql.explain",
+			cel.ObjectType("plugin.MySQLExplain"),
 		),
 	)
 	if err != nil {
-		return fmt.Errorf("new env: %s", err)
+		return fmt.Errorf("new CEL env error: %s", err)
 	}
 
 	checks := map[string]cel.Program{
 		RuleDbPrepare: &emptyProgram{}, // Keep this to trigger the name conflict error below
 	}
 	msgs := map[string]string{}
+	explRules := map[string]bool{}
 
 	for _, c := range conf.Rules {
 		if c.Name == "" {
@@ -130,10 +135,17 @@ func Vet(ctx context.Context, e Env, dir, filename string, stderr io.Writer) err
 		}
 		checks[c.Name] = prg
 		msgs[c.Name] = c.Msg
+
+		// TODO There's probably a nicer way to do this
+		if strings.Contains(c.Rule, "postgresql.explain") ||
+		strings.Contains(c.Rule, "mysql.explain") {
+			explRules[c.Name] = true
+		}
 	}
 
 	c := checker{
 		Checks:     checks,
+		ExplRules:  explRules,
 		Conf:       conf,
 		Dir:        dir,
 		Env:        env,
@@ -199,20 +211,19 @@ func (p *pgxConn) Prepare(ctx context.Context, name, query string) error {
 	return err
 }
 
-func (p *pgxConn) Explain(ctx context.Context, query string, args ...*plugin.Parameter) (*plugin.Explain, error) {
+func (p *pgxConn) Explain(ctx context.Context, query string, args ...*plugin.Parameter) (*vetExplain, error) {
 	eArgs := make([]any, len(args))
-	row := p.c.QueryRow(ctx, "EXPLAIN (ANALYZE, VERBOSE, COSTS, BUFFERS, SETTINGS, SUMMARY, FORMAT JSON) "+query, eArgs...)
+	row := p.c.QueryRow(ctx, "EXPLAIN (ANALYZE false, VERBOSE, COSTS, SETTINGS, BUFFERS, FORMAT JSON) "+query, eArgs...)
 	var result []json.RawMessage
 	if err := row.Scan(&result); err != nil {
 		return nil, err
 	}
-	var ret plugin.PostgresExplain
+	var ret plugin.PostgreSQLExplain
 	pJSON := protojson.UnmarshalOptions{AllowPartial: true, DiscardUnknown: true}
 	if err := pJSON.Unmarshal(result[0], &ret); err != nil {
 		return nil, err
 	}
-	explain := plugin.Explain{Explain: &plugin.Explain_Pe{Pe: &ret}}
-	return &explain, nil
+	return &vetExplain{PostgreSQL: &ret}, nil
 }
 
 type dbPreparer struct {
@@ -226,14 +237,14 @@ func (p *dbPreparer) Prepare(ctx context.Context, name, query string) error {
 }
 
 type explainer interface {
-	Explain(context.Context, string, ...*plugin.Parameter) (*plugin.Explain, error)
+	Explain(context.Context, string, ...*plugin.Parameter) (*vetExplain, error)
 }
 
 type mysqlExplainer struct {
 	*sql.DB
 }
 
-func (me *mysqlExplainer) Explain(ctx context.Context, query string, args ...*plugin.Parameter) (*plugin.Explain, error) {
+func (me *mysqlExplainer) Explain(ctx context.Context, query string, args ...*plugin.Parameter) (*vetExplain, error) {
 	eArgs := make([]any, len(args))
 	row := me.QueryRowContext(ctx, "EXPLAIN FORMAT=JSON "+query, eArgs...)
 	var result json.RawMessage
@@ -245,11 +256,12 @@ func (me *mysqlExplainer) Explain(ctx context.Context, query string, args ...*pl
 	if err := pJSON.Unmarshal(result, &ret); err != nil {
 		return nil, err
 	}
-	return &plugin.Explain{Explain: &plugin.Explain_Me{Me: &ret}}, nil
+	return &vetExplain{MySQL: &ret}, nil
 }
 
 type checker struct {
 	Checks     map[string]cel.Program
+	ExplRules  map[string]bool
 	Conf       *config.Config
 	Dir        string
 	Env        *cel.Env
@@ -361,18 +373,7 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 		}
 		q := vetQuery(query)
 		
-		// TODO ofc don't run explain every time, only when a rule requires its output
-		if expl == nil {
-			fmt.Fprintf(c.Stderr, "%s: %s: %s: error explaining query: database connection required\n", query.Filename, q.Name, name)
-			errored = true
-			continue
-		}
-		explain, err := expl.Explain(ctx, query.Text, query.Params...)
-		if err != nil {
-			fmt.Fprintf(c.Stderr, "%s: %s: %s: error explaining query: %s\n", query.Filename, q.Name, name, err)
-			errored = true
-			continue
-		}
+		var explain *vetExplain
 
 		for _, name := range s.Rules {
 			// Built-in rules
@@ -400,11 +401,32 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 			if !ok {
 				return fmt.Errorf("type-check error: a check with the name '%s' does not exist", name)
 			}
-			out, _, err := prg.Eval(map[string]any{
+
+			evalMap := map[string]any{
 				"query":  q,
 				"config": cfg,
-				"explain": explain,
-			})
+			}
+
+			// Get explain output for this query if we need it
+			if c.ExplRules[name] && explain == nil {
+				if expl == nil {
+					fmt.Fprintf(c.Stderr, "%s: %s: %s: error explaining query: database connection required\n", query.Filename, q.Name, name)
+					errored = true
+					continue
+				}
+				var explainErr error
+				explain, explainErr = expl.Explain(ctx, query.Text, query.Params...)
+				if explainErr != nil {
+					fmt.Fprintf(c.Stderr, "%s: %s: %s: error explaining query: %s\n", query.Filename, q.Name, name, explainErr)
+					errored = true
+					continue
+				}
+
+				evalMap["postgresql.explain"] = explain.PostgreSQL
+				evalMap["mysql.explain"] = explain.MySQL
+			}
+
+			out, _, err := prg.Eval(evalMap)
 			if err != nil {
 				return err
 			}
@@ -452,4 +474,9 @@ func vetQuery(q *plugin.Query) *plugin.VetQuery {
 		Cmd:    strings.TrimPrefix(":", q.Cmd),
 		Params: params,
 	}
+}
+
+type vetExplain struct {
+	PostgreSQL *plugin.PostgreSQLExplain
+	MySQL *plugin.MySQLExplain
 }
