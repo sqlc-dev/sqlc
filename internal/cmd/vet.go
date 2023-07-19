@@ -256,6 +256,9 @@ func (me *mysqlExplainer) Explain(ctx context.Context, query string, args ...*pl
 	if err := pjson.Unmarshal(result, &explain); err != nil {
 		return nil, err
 	}
+	if explain.QueryBlock.Message != "" {
+		return nil, fmt.Errorf("mysql explain: %s", explain.QueryBlock.Message)
+	}
 	return &vetExplain{MySQL: &explain}, nil
 }
 

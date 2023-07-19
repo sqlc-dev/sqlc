@@ -729,31 +729,22 @@ func (m *PostgreSQLExplain) CloneMessageVT() proto.Message {
 	return m.CloneVT()
 }
 
-func (m *MySQLExplain_QueryBlock_CostInfo) CloneVT() *MySQLExplain_QueryBlock_CostInfo {
-	if m == nil {
-		return (*MySQLExplain_QueryBlock_CostInfo)(nil)
-	}
-	r := &MySQLExplain_QueryBlock_CostInfo{
-		QueryCost: m.QueryCost,
-	}
-	if len(m.unknownFields) > 0 {
-		r.unknownFields = make([]byte, len(m.unknownFields))
-		copy(r.unknownFields, m.unknownFields)
-	}
-	return r
-}
-
-func (m *MySQLExplain_QueryBlock_CostInfo) CloneMessageVT() proto.Message {
-	return m.CloneVT()
-}
-
 func (m *MySQLExplain_QueryBlock) CloneVT() *MySQLExplain_QueryBlock {
 	if m == nil {
 		return (*MySQLExplain_QueryBlock)(nil)
 	}
 	r := &MySQLExplain_QueryBlock{
-		SelectId: m.SelectId,
-		CostInfo: m.CostInfo.CloneVT(),
+		SelectId:          m.SelectId,
+		Message:           m.Message,
+		Table:             m.Table.CloneVT(),
+		OrderingOperation: m.OrderingOperation.CloneVT(),
+	}
+	if rhs := m.CostInfo; rhs != nil {
+		tmpContainer := make(map[string]string, len(rhs))
+		for k, v := range rhs {
+			tmpContainer[k] = v
+		}
+		r.CostInfo = tmpContainer
 	}
 	if len(m.unknownFields) > 0 {
 		r.unknownFields = make([]byte, len(m.unknownFields))
@@ -763,6 +754,67 @@ func (m *MySQLExplain_QueryBlock) CloneVT() *MySQLExplain_QueryBlock {
 }
 
 func (m *MySQLExplain_QueryBlock) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *MySQLExplain_Table) CloneVT() *MySQLExplain_Table {
+	if m == nil {
+		return (*MySQLExplain_Table)(nil)
+	}
+	r := &MySQLExplain_Table{
+		TableName:           m.TableName,
+		AccessType:          m.AccessType,
+		RowsExaminedPerScan: m.RowsExaminedPerScan,
+		RowsProducedPerJoin: m.RowsProducedPerJoin,
+		Filtered:            m.Filtered,
+		Insert:              m.Insert,
+	}
+	if rhs := m.CostInfo; rhs != nil {
+		tmpContainer := make(map[string]string, len(rhs))
+		for k, v := range rhs {
+			tmpContainer[k] = v
+		}
+		r.CostInfo = tmpContainer
+	}
+	if rhs := m.UsedColumns; rhs != nil {
+		tmpContainer := make([]string, len(rhs))
+		copy(tmpContainer, rhs)
+		r.UsedColumns = tmpContainer
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *MySQLExplain_Table) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *MySQLExplain_OrderingOperation) CloneVT() *MySQLExplain_OrderingOperation {
+	if m == nil {
+		return (*MySQLExplain_OrderingOperation)(nil)
+	}
+	r := &MySQLExplain_OrderingOperation{
+		UsingFilesort: m.UsingFilesort,
+		Table:         m.Table.CloneVT(),
+	}
+	if rhs := m.CostInfo; rhs != nil {
+		tmpContainer := make(map[string]string, len(rhs))
+		for k, v := range rhs {
+			tmpContainer[k] = v
+		}
+		r.CostInfo = tmpContainer
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *MySQLExplain_OrderingOperation) CloneMessageVT() proto.Message {
 	return m.CloneVT()
 }
 
@@ -1897,25 +1949,6 @@ func (this *PostgreSQLExplain) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
-func (this *MySQLExplain_QueryBlock_CostInfo) EqualVT(that *MySQLExplain_QueryBlock_CostInfo) bool {
-	if this == that {
-		return true
-	} else if this == nil || that == nil {
-		return false
-	}
-	if this.QueryCost != that.QueryCost {
-		return false
-	}
-	return string(this.unknownFields) == string(that.unknownFields)
-}
-
-func (this *MySQLExplain_QueryBlock_CostInfo) EqualMessageVT(thatMsg proto.Message) bool {
-	that, ok := thatMsg.(*MySQLExplain_QueryBlock_CostInfo)
-	if !ok {
-		return false
-	}
-	return this.EqualVT(that)
-}
 func (this *MySQLExplain_QueryBlock) EqualVT(that *MySQLExplain_QueryBlock) bool {
 	if this == that {
 		return true
@@ -1925,7 +1958,25 @@ func (this *MySQLExplain_QueryBlock) EqualVT(that *MySQLExplain_QueryBlock) bool
 	if this.SelectId != that.SelectId {
 		return false
 	}
-	if !this.CostInfo.EqualVT(that.CostInfo) {
+	if this.Message != that.Message {
+		return false
+	}
+	if len(this.CostInfo) != len(that.CostInfo) {
+		return false
+	}
+	for i, vx := range this.CostInfo {
+		vy, ok := that.CostInfo[i]
+		if !ok {
+			return false
+		}
+		if vx != vy {
+			return false
+		}
+	}
+	if !this.Table.EqualVT(that.Table) {
+		return false
+	}
+	if !this.OrderingOperation.EqualVT(that.OrderingOperation) {
 		return false
 	}
 	return string(this.unknownFields) == string(that.unknownFields)
@@ -1933,6 +1984,95 @@ func (this *MySQLExplain_QueryBlock) EqualVT(that *MySQLExplain_QueryBlock) bool
 
 func (this *MySQLExplain_QueryBlock) EqualMessageVT(thatMsg proto.Message) bool {
 	that, ok := thatMsg.(*MySQLExplain_QueryBlock)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *MySQLExplain_Table) EqualVT(that *MySQLExplain_Table) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if this.TableName != that.TableName {
+		return false
+	}
+	if this.AccessType != that.AccessType {
+		return false
+	}
+	if this.RowsExaminedPerScan != that.RowsExaminedPerScan {
+		return false
+	}
+	if this.RowsProducedPerJoin != that.RowsProducedPerJoin {
+		return false
+	}
+	if this.Filtered != that.Filtered {
+		return false
+	}
+	if len(this.CostInfo) != len(that.CostInfo) {
+		return false
+	}
+	for i, vx := range this.CostInfo {
+		vy, ok := that.CostInfo[i]
+		if !ok {
+			return false
+		}
+		if vx != vy {
+			return false
+		}
+	}
+	if len(this.UsedColumns) != len(that.UsedColumns) {
+		return false
+	}
+	for i, vx := range this.UsedColumns {
+		vy := that.UsedColumns[i]
+		if vx != vy {
+			return false
+		}
+	}
+	if this.Insert != that.Insert {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *MySQLExplain_Table) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*MySQLExplain_Table)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *MySQLExplain_OrderingOperation) EqualVT(that *MySQLExplain_OrderingOperation) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if this.UsingFilesort != that.UsingFilesort {
+		return false
+	}
+	if len(this.CostInfo) != len(that.CostInfo) {
+		return false
+	}
+	for i, vx := range this.CostInfo {
+		vy, ok := that.CostInfo[i]
+		if !ok {
+			return false
+		}
+		if vx != vy {
+			return false
+		}
+	}
+	if !this.Table.EqualVT(that.Table) {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *MySQLExplain_OrderingOperation) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*MySQLExplain_OrderingOperation)
 	if !ok {
 		return false
 	}
@@ -4111,46 +4251,6 @@ func (m *PostgreSQLExplain) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *MySQLExplain_QueryBlock_CostInfo) MarshalVT() (dAtA []byte, err error) {
-	if m == nil {
-		return nil, nil
-	}
-	size := m.SizeVT()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBufferVT(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *MySQLExplain_QueryBlock_CostInfo) MarshalToVT(dAtA []byte) (int, error) {
-	size := m.SizeVT()
-	return m.MarshalToSizedBufferVT(dAtA[:size])
-}
-
-func (m *MySQLExplain_QueryBlock_CostInfo) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.unknownFields != nil {
-		i -= len(m.unknownFields)
-		copy(dAtA[i:], m.unknownFields)
-	}
-	if len(m.QueryCost) > 0 {
-		i -= len(m.QueryCost)
-		copy(dAtA[i:], m.QueryCost)
-		i = encodeVarint(dAtA, i, uint64(len(m.QueryCost)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
 func (m *MySQLExplain_QueryBlock) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
@@ -4181,18 +4281,228 @@ func (m *MySQLExplain_QueryBlock) MarshalToSizedBufferVT(dAtA []byte) (int, erro
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
-	if m.CostInfo != nil {
-		size, err := m.CostInfo.MarshalToSizedBufferVT(dAtA[:i])
+	if m.OrderingOperation != nil {
+		size, err := m.OrderingOperation.MarshalToSizedBufferVT(dAtA[:i])
 		if err != nil {
 			return 0, err
 		}
 		i -= size
 		i = encodeVarint(dAtA, i, uint64(size))
 		i--
+		dAtA[i] = 0x2a
+	}
+	if m.Table != nil {
+		size, err := m.Table.MarshalToSizedBufferVT(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarint(dAtA, i, uint64(size))
+		i--
+		dAtA[i] = 0x22
+	}
+	if len(m.CostInfo) > 0 {
+		for k := range m.CostInfo {
+			v := m.CostInfo[k]
+			baseI := i
+			i -= len(v)
+			copy(dAtA[i:], v)
+			i = encodeVarint(dAtA, i, uint64(len(v)))
+			i--
+			dAtA[i] = 0x12
+			i -= len(k)
+			copy(dAtA[i:], k)
+			i = encodeVarint(dAtA, i, uint64(len(k)))
+			i--
+			dAtA[i] = 0xa
+			i = encodeVarint(dAtA, i, uint64(baseI-i))
+			i--
+			dAtA[i] = 0x1a
+		}
+	}
+	if len(m.Message) > 0 {
+		i -= len(m.Message)
+		copy(dAtA[i:], m.Message)
+		i = encodeVarint(dAtA, i, uint64(len(m.Message)))
+		i--
 		dAtA[i] = 0x12
 	}
 	if m.SelectId != 0 {
 		i = encodeVarint(dAtA, i, uint64(m.SelectId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MySQLExplain_Table) MarshalVT() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
+	size := m.SizeVT()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBufferVT(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MySQLExplain_Table) MarshalToVT(dAtA []byte) (int, error) {
+	size := m.SizeVT()
+	return m.MarshalToSizedBufferVT(dAtA[:size])
+}
+
+func (m *MySQLExplain_Table) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.unknownFields != nil {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
+	if m.Insert {
+		i--
+		if m.Insert {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x40
+	}
+	if len(m.UsedColumns) > 0 {
+		for iNdEx := len(m.UsedColumns) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.UsedColumns[iNdEx])
+			copy(dAtA[i:], m.UsedColumns[iNdEx])
+			i = encodeVarint(dAtA, i, uint64(len(m.UsedColumns[iNdEx])))
+			i--
+			dAtA[i] = 0x3a
+		}
+	}
+	if len(m.CostInfo) > 0 {
+		for k := range m.CostInfo {
+			v := m.CostInfo[k]
+			baseI := i
+			i -= len(v)
+			copy(dAtA[i:], v)
+			i = encodeVarint(dAtA, i, uint64(len(v)))
+			i--
+			dAtA[i] = 0x12
+			i -= len(k)
+			copy(dAtA[i:], k)
+			i = encodeVarint(dAtA, i, uint64(len(k)))
+			i--
+			dAtA[i] = 0xa
+			i = encodeVarint(dAtA, i, uint64(baseI-i))
+			i--
+			dAtA[i] = 0x32
+		}
+	}
+	if len(m.Filtered) > 0 {
+		i -= len(m.Filtered)
+		copy(dAtA[i:], m.Filtered)
+		i = encodeVarint(dAtA, i, uint64(len(m.Filtered)))
+		i--
+		dAtA[i] = 0x2a
+	}
+	if m.RowsProducedPerJoin != 0 {
+		i = encodeVarint(dAtA, i, uint64(m.RowsProducedPerJoin))
+		i--
+		dAtA[i] = 0x20
+	}
+	if m.RowsExaminedPerScan != 0 {
+		i = encodeVarint(dAtA, i, uint64(m.RowsExaminedPerScan))
+		i--
+		dAtA[i] = 0x18
+	}
+	if len(m.AccessType) > 0 {
+		i -= len(m.AccessType)
+		copy(dAtA[i:], m.AccessType)
+		i = encodeVarint(dAtA, i, uint64(len(m.AccessType)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.TableName) > 0 {
+		i -= len(m.TableName)
+		copy(dAtA[i:], m.TableName)
+		i = encodeVarint(dAtA, i, uint64(len(m.TableName)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MySQLExplain_OrderingOperation) MarshalVT() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
+	size := m.SizeVT()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBufferVT(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MySQLExplain_OrderingOperation) MarshalToVT(dAtA []byte) (int, error) {
+	size := m.SizeVT()
+	return m.MarshalToSizedBufferVT(dAtA[:size])
+}
+
+func (m *MySQLExplain_OrderingOperation) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.unknownFields != nil {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
+	if m.Table != nil {
+		size, err := m.Table.MarshalToSizedBufferVT(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarint(dAtA, i, uint64(size))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.CostInfo) > 0 {
+		for k := range m.CostInfo {
+			v := m.CostInfo[k]
+			baseI := i
+			i -= len(v)
+			copy(dAtA[i:], v)
+			i = encodeVarint(dAtA, i, uint64(len(v)))
+			i--
+			dAtA[i] = 0x12
+			i -= len(k)
+			copy(dAtA[i:], k)
+			i = encodeVarint(dAtA, i, uint64(len(k)))
+			i--
+			dAtA[i] = 0xa
+			i = encodeVarint(dAtA, i, uint64(baseI-i))
+			i--
+			dAtA[i] = 0x12
+		}
+	}
+	if m.UsingFilesort {
+		i--
+		if m.UsingFilesort {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
 		i--
 		dAtA[i] = 0x8
 	}
@@ -6407,46 +6717,6 @@ func (m *PostgreSQLExplain) MarshalToSizedBufferVTStrict(dAtA []byte) (int, erro
 	return len(dAtA) - i, nil
 }
 
-func (m *MySQLExplain_QueryBlock_CostInfo) MarshalVTStrict() (dAtA []byte, err error) {
-	if m == nil {
-		return nil, nil
-	}
-	size := m.SizeVT()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBufferVTStrict(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *MySQLExplain_QueryBlock_CostInfo) MarshalToVTStrict(dAtA []byte) (int, error) {
-	size := m.SizeVT()
-	return m.MarshalToSizedBufferVTStrict(dAtA[:size])
-}
-
-func (m *MySQLExplain_QueryBlock_CostInfo) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
-	if m == nil {
-		return 0, nil
-	}
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.unknownFields != nil {
-		i -= len(m.unknownFields)
-		copy(dAtA[i:], m.unknownFields)
-	}
-	if len(m.QueryCost) > 0 {
-		i -= len(m.QueryCost)
-		copy(dAtA[i:], m.QueryCost)
-		i = encodeVarint(dAtA, i, uint64(len(m.QueryCost)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
 func (m *MySQLExplain_QueryBlock) MarshalVTStrict() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
@@ -6477,18 +6747,228 @@ func (m *MySQLExplain_QueryBlock) MarshalToSizedBufferVTStrict(dAtA []byte) (int
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
-	if m.CostInfo != nil {
-		size, err := m.CostInfo.MarshalToSizedBufferVTStrict(dAtA[:i])
+	if m.OrderingOperation != nil {
+		size, err := m.OrderingOperation.MarshalToSizedBufferVTStrict(dAtA[:i])
 		if err != nil {
 			return 0, err
 		}
 		i -= size
 		i = encodeVarint(dAtA, i, uint64(size))
 		i--
+		dAtA[i] = 0x2a
+	}
+	if m.Table != nil {
+		size, err := m.Table.MarshalToSizedBufferVTStrict(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarint(dAtA, i, uint64(size))
+		i--
+		dAtA[i] = 0x22
+	}
+	if len(m.CostInfo) > 0 {
+		for k := range m.CostInfo {
+			v := m.CostInfo[k]
+			baseI := i
+			i -= len(v)
+			copy(dAtA[i:], v)
+			i = encodeVarint(dAtA, i, uint64(len(v)))
+			i--
+			dAtA[i] = 0x12
+			i -= len(k)
+			copy(dAtA[i:], k)
+			i = encodeVarint(dAtA, i, uint64(len(k)))
+			i--
+			dAtA[i] = 0xa
+			i = encodeVarint(dAtA, i, uint64(baseI-i))
+			i--
+			dAtA[i] = 0x1a
+		}
+	}
+	if len(m.Message) > 0 {
+		i -= len(m.Message)
+		copy(dAtA[i:], m.Message)
+		i = encodeVarint(dAtA, i, uint64(len(m.Message)))
+		i--
 		dAtA[i] = 0x12
 	}
 	if m.SelectId != 0 {
 		i = encodeVarint(dAtA, i, uint64(m.SelectId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MySQLExplain_Table) MarshalVTStrict() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
+	size := m.SizeVT()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBufferVTStrict(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MySQLExplain_Table) MarshalToVTStrict(dAtA []byte) (int, error) {
+	size := m.SizeVT()
+	return m.MarshalToSizedBufferVTStrict(dAtA[:size])
+}
+
+func (m *MySQLExplain_Table) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.unknownFields != nil {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
+	if m.Insert {
+		i--
+		if m.Insert {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x40
+	}
+	if len(m.UsedColumns) > 0 {
+		for iNdEx := len(m.UsedColumns) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.UsedColumns[iNdEx])
+			copy(dAtA[i:], m.UsedColumns[iNdEx])
+			i = encodeVarint(dAtA, i, uint64(len(m.UsedColumns[iNdEx])))
+			i--
+			dAtA[i] = 0x3a
+		}
+	}
+	if len(m.CostInfo) > 0 {
+		for k := range m.CostInfo {
+			v := m.CostInfo[k]
+			baseI := i
+			i -= len(v)
+			copy(dAtA[i:], v)
+			i = encodeVarint(dAtA, i, uint64(len(v)))
+			i--
+			dAtA[i] = 0x12
+			i -= len(k)
+			copy(dAtA[i:], k)
+			i = encodeVarint(dAtA, i, uint64(len(k)))
+			i--
+			dAtA[i] = 0xa
+			i = encodeVarint(dAtA, i, uint64(baseI-i))
+			i--
+			dAtA[i] = 0x32
+		}
+	}
+	if len(m.Filtered) > 0 {
+		i -= len(m.Filtered)
+		copy(dAtA[i:], m.Filtered)
+		i = encodeVarint(dAtA, i, uint64(len(m.Filtered)))
+		i--
+		dAtA[i] = 0x2a
+	}
+	if m.RowsProducedPerJoin != 0 {
+		i = encodeVarint(dAtA, i, uint64(m.RowsProducedPerJoin))
+		i--
+		dAtA[i] = 0x20
+	}
+	if m.RowsExaminedPerScan != 0 {
+		i = encodeVarint(dAtA, i, uint64(m.RowsExaminedPerScan))
+		i--
+		dAtA[i] = 0x18
+	}
+	if len(m.AccessType) > 0 {
+		i -= len(m.AccessType)
+		copy(dAtA[i:], m.AccessType)
+		i = encodeVarint(dAtA, i, uint64(len(m.AccessType)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.TableName) > 0 {
+		i -= len(m.TableName)
+		copy(dAtA[i:], m.TableName)
+		i = encodeVarint(dAtA, i, uint64(len(m.TableName)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MySQLExplain_OrderingOperation) MarshalVTStrict() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
+	size := m.SizeVT()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBufferVTStrict(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MySQLExplain_OrderingOperation) MarshalToVTStrict(dAtA []byte) (int, error) {
+	size := m.SizeVT()
+	return m.MarshalToSizedBufferVTStrict(dAtA[:size])
+}
+
+func (m *MySQLExplain_OrderingOperation) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.unknownFields != nil {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
+	if m.Table != nil {
+		size, err := m.Table.MarshalToSizedBufferVTStrict(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarint(dAtA, i, uint64(size))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.CostInfo) > 0 {
+		for k := range m.CostInfo {
+			v := m.CostInfo[k]
+			baseI := i
+			i -= len(v)
+			copy(dAtA[i:], v)
+			i = encodeVarint(dAtA, i, uint64(len(v)))
+			i--
+			dAtA[i] = 0x12
+			i -= len(k)
+			copy(dAtA[i:], k)
+			i = encodeVarint(dAtA, i, uint64(len(k)))
+			i--
+			dAtA[i] = 0xa
+			i = encodeVarint(dAtA, i, uint64(baseI-i))
+			i--
+			dAtA[i] = 0x12
+		}
+	}
+	if m.UsingFilesort {
+		i--
+		if m.UsingFilesort {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
 		i--
 		dAtA[i] = 0x8
 	}
@@ -7417,20 +7897,6 @@ func (m *PostgreSQLExplain) SizeVT() (n int) {
 	return n
 }
 
-func (m *MySQLExplain_QueryBlock_CostInfo) SizeVT() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.QueryCost)
-	if l > 0 {
-		n += 1 + l + sov(uint64(l))
-	}
-	n += len(m.unknownFields)
-	return n
-}
-
 func (m *MySQLExplain_QueryBlock) SizeVT() (n int) {
 	if m == nil {
 		return 0
@@ -7440,8 +7906,94 @@ func (m *MySQLExplain_QueryBlock) SizeVT() (n int) {
 	if m.SelectId != 0 {
 		n += 1 + sov(uint64(m.SelectId))
 	}
-	if m.CostInfo != nil {
-		l = m.CostInfo.SizeVT()
+	l = len(m.Message)
+	if l > 0 {
+		n += 1 + l + sov(uint64(l))
+	}
+	if len(m.CostInfo) > 0 {
+		for k, v := range m.CostInfo {
+			_ = k
+			_ = v
+			mapEntrySize := 1 + len(k) + sov(uint64(len(k))) + 1 + len(v) + sov(uint64(len(v)))
+			n += mapEntrySize + 1 + sov(uint64(mapEntrySize))
+		}
+	}
+	if m.Table != nil {
+		l = m.Table.SizeVT()
+		n += 1 + l + sov(uint64(l))
+	}
+	if m.OrderingOperation != nil {
+		l = m.OrderingOperation.SizeVT()
+		n += 1 + l + sov(uint64(l))
+	}
+	n += len(m.unknownFields)
+	return n
+}
+
+func (m *MySQLExplain_Table) SizeVT() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.TableName)
+	if l > 0 {
+		n += 1 + l + sov(uint64(l))
+	}
+	l = len(m.AccessType)
+	if l > 0 {
+		n += 1 + l + sov(uint64(l))
+	}
+	if m.RowsExaminedPerScan != 0 {
+		n += 1 + sov(uint64(m.RowsExaminedPerScan))
+	}
+	if m.RowsProducedPerJoin != 0 {
+		n += 1 + sov(uint64(m.RowsProducedPerJoin))
+	}
+	l = len(m.Filtered)
+	if l > 0 {
+		n += 1 + l + sov(uint64(l))
+	}
+	if len(m.CostInfo) > 0 {
+		for k, v := range m.CostInfo {
+			_ = k
+			_ = v
+			mapEntrySize := 1 + len(k) + sov(uint64(len(k))) + 1 + len(v) + sov(uint64(len(v)))
+			n += mapEntrySize + 1 + sov(uint64(mapEntrySize))
+		}
+	}
+	if len(m.UsedColumns) > 0 {
+		for _, s := range m.UsedColumns {
+			l = len(s)
+			n += 1 + l + sov(uint64(l))
+		}
+	}
+	if m.Insert {
+		n += 2
+	}
+	n += len(m.unknownFields)
+	return n
+}
+
+func (m *MySQLExplain_OrderingOperation) SizeVT() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.UsingFilesort {
+		n += 2
+	}
+	if len(m.CostInfo) > 0 {
+		for k, v := range m.CostInfo {
+			_ = k
+			_ = v
+			mapEntrySize := 1 + len(k) + sov(uint64(len(k))) + 1 + len(v) + sov(uint64(len(v)))
+			n += mapEntrySize + 1 + sov(uint64(mapEntrySize))
+		}
+	}
+	if m.Table != nil {
+		l = m.Table.SizeVT()
 		n += 1 + l + sov(uint64(l))
 	}
 	n += len(m.unknownFields)
@@ -13484,89 +14036,6 @@ func (m *PostgreSQLExplain) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *MySQLExplain_QueryBlock_CostInfo) UnmarshalVT(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflow
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: MySQLExplain_QueryBlock_CostInfo: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MySQLExplain_QueryBlock_CostInfo: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field QueryCost", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLength
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLength
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.QueryCost = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skip(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLength
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
 func (m *MySQLExplain_QueryBlock) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -13617,6 +14086,38 @@ func (m *MySQLExplain_QueryBlock) UnmarshalVT(dAtA []byte) error {
 			}
 		case 2:
 			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Message", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Message = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field CostInfo", wireType)
 			}
 			var msglen int
@@ -13645,9 +14146,770 @@ func (m *MySQLExplain_QueryBlock) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.CostInfo == nil {
-				m.CostInfo = &MySQLExplain_QueryBlock_CostInfo{}
+				m.CostInfo = make(map[string]string)
 			}
-			if err := m.CostInfo.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+			var mapkey string
+			var mapvalue string
+			for iNdEx < postIndex {
+				entryPreIndex := iNdEx
+				var wire uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					wire |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				fieldNum := int32(wire >> 3)
+				if fieldNum == 1 {
+					var stringLenmapkey uint64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return ErrIntOverflow
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						stringLenmapkey |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					intStringLenmapkey := int(stringLenmapkey)
+					if intStringLenmapkey < 0 {
+						return ErrInvalidLength
+					}
+					postStringIndexmapkey := iNdEx + intStringLenmapkey
+					if postStringIndexmapkey < 0 {
+						return ErrInvalidLength
+					}
+					if postStringIndexmapkey > l {
+						return io.ErrUnexpectedEOF
+					}
+					mapkey = string(dAtA[iNdEx:postStringIndexmapkey])
+					iNdEx = postStringIndexmapkey
+				} else if fieldNum == 2 {
+					var stringLenmapvalue uint64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return ErrIntOverflow
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						stringLenmapvalue |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					intStringLenmapvalue := int(stringLenmapvalue)
+					if intStringLenmapvalue < 0 {
+						return ErrInvalidLength
+					}
+					postStringIndexmapvalue := iNdEx + intStringLenmapvalue
+					if postStringIndexmapvalue < 0 {
+						return ErrInvalidLength
+					}
+					if postStringIndexmapvalue > l {
+						return io.ErrUnexpectedEOF
+					}
+					mapvalue = string(dAtA[iNdEx:postStringIndexmapvalue])
+					iNdEx = postStringIndexmapvalue
+				} else {
+					iNdEx = entryPreIndex
+					skippy, err := skip(dAtA[iNdEx:])
+					if err != nil {
+						return err
+					}
+					if (skippy < 0) || (iNdEx+skippy) < 0 {
+						return ErrInvalidLength
+					}
+					if (iNdEx + skippy) > postIndex {
+						return io.ErrUnexpectedEOF
+					}
+					iNdEx += skippy
+				}
+			}
+			m.CostInfo[mapkey] = mapvalue
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Table", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Table == nil {
+				m.Table = &MySQLExplain_Table{}
+			}
+			if err := m.Table.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OrderingOperation", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.OrderingOperation == nil {
+				m.OrderingOperation = &MySQLExplain_OrderingOperation{}
+			}
+			if err := m.OrderingOperation.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skip(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLength
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MySQLExplain_Table) UnmarshalVT(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflow
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MySQLExplain_Table: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MySQLExplain_Table: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TableName", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.TableName = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AccessType", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.AccessType = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field RowsExaminedPerScan", wireType)
+			}
+			m.RowsExaminedPerScan = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.RowsExaminedPerScan |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 4:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field RowsProducedPerJoin", wireType)
+			}
+			m.RowsProducedPerJoin = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.RowsProducedPerJoin |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Filtered", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Filtered = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 6:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CostInfo", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.CostInfo == nil {
+				m.CostInfo = make(map[string]string)
+			}
+			var mapkey string
+			var mapvalue string
+			for iNdEx < postIndex {
+				entryPreIndex := iNdEx
+				var wire uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					wire |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				fieldNum := int32(wire >> 3)
+				if fieldNum == 1 {
+					var stringLenmapkey uint64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return ErrIntOverflow
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						stringLenmapkey |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					intStringLenmapkey := int(stringLenmapkey)
+					if intStringLenmapkey < 0 {
+						return ErrInvalidLength
+					}
+					postStringIndexmapkey := iNdEx + intStringLenmapkey
+					if postStringIndexmapkey < 0 {
+						return ErrInvalidLength
+					}
+					if postStringIndexmapkey > l {
+						return io.ErrUnexpectedEOF
+					}
+					mapkey = string(dAtA[iNdEx:postStringIndexmapkey])
+					iNdEx = postStringIndexmapkey
+				} else if fieldNum == 2 {
+					var stringLenmapvalue uint64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return ErrIntOverflow
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						stringLenmapvalue |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					intStringLenmapvalue := int(stringLenmapvalue)
+					if intStringLenmapvalue < 0 {
+						return ErrInvalidLength
+					}
+					postStringIndexmapvalue := iNdEx + intStringLenmapvalue
+					if postStringIndexmapvalue < 0 {
+						return ErrInvalidLength
+					}
+					if postStringIndexmapvalue > l {
+						return io.ErrUnexpectedEOF
+					}
+					mapvalue = string(dAtA[iNdEx:postStringIndexmapvalue])
+					iNdEx = postStringIndexmapvalue
+				} else {
+					iNdEx = entryPreIndex
+					skippy, err := skip(dAtA[iNdEx:])
+					if err != nil {
+						return err
+					}
+					if (skippy < 0) || (iNdEx+skippy) < 0 {
+						return ErrInvalidLength
+					}
+					if (iNdEx + skippy) > postIndex {
+						return io.ErrUnexpectedEOF
+					}
+					iNdEx += skippy
+				}
+			}
+			m.CostInfo[mapkey] = mapvalue
+			iNdEx = postIndex
+		case 7:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field UsedColumns", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.UsedColumns = append(m.UsedColumns, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		case 8:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Insert", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.Insert = bool(v != 0)
+		default:
+			iNdEx = preIndex
+			skippy, err := skip(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLength
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MySQLExplain_OrderingOperation) UnmarshalVT(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflow
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MySQLExplain_OrderingOperation: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MySQLExplain_OrderingOperation: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field UsingFilesort", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.UsingFilesort = bool(v != 0)
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CostInfo", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.CostInfo == nil {
+				m.CostInfo = make(map[string]string)
+			}
+			var mapkey string
+			var mapvalue string
+			for iNdEx < postIndex {
+				entryPreIndex := iNdEx
+				var wire uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					wire |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				fieldNum := int32(wire >> 3)
+				if fieldNum == 1 {
+					var stringLenmapkey uint64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return ErrIntOverflow
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						stringLenmapkey |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					intStringLenmapkey := int(stringLenmapkey)
+					if intStringLenmapkey < 0 {
+						return ErrInvalidLength
+					}
+					postStringIndexmapkey := iNdEx + intStringLenmapkey
+					if postStringIndexmapkey < 0 {
+						return ErrInvalidLength
+					}
+					if postStringIndexmapkey > l {
+						return io.ErrUnexpectedEOF
+					}
+					mapkey = string(dAtA[iNdEx:postStringIndexmapkey])
+					iNdEx = postStringIndexmapkey
+				} else if fieldNum == 2 {
+					var stringLenmapvalue uint64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return ErrIntOverflow
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						stringLenmapvalue |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					intStringLenmapvalue := int(stringLenmapvalue)
+					if intStringLenmapvalue < 0 {
+						return ErrInvalidLength
+					}
+					postStringIndexmapvalue := iNdEx + intStringLenmapvalue
+					if postStringIndexmapvalue < 0 {
+						return ErrInvalidLength
+					}
+					if postStringIndexmapvalue > l {
+						return io.ErrUnexpectedEOF
+					}
+					mapvalue = string(dAtA[iNdEx:postStringIndexmapvalue])
+					iNdEx = postStringIndexmapvalue
+				} else {
+					iNdEx = entryPreIndex
+					skippy, err := skip(dAtA[iNdEx:])
+					if err != nil {
+						return err
+					}
+					if (skippy < 0) || (iNdEx+skippy) < 0 {
+						return ErrInvalidLength
+					}
+					if (iNdEx + skippy) > postIndex {
+						return io.ErrUnexpectedEOF
+					}
+					iNdEx += skippy
+				}
+			}
+			m.CostInfo[mapkey] = mapvalue
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Table", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Table == nil {
+				m.Table = &MySQLExplain_Table{}
+			}
+			if err := m.Table.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex

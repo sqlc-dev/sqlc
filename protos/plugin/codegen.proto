@@ -292,10 +292,26 @@ message MySQLExplain {
 
   message QueryBlock {
     uint64 select_id = 1;
-    CostInfo cost_info = 2;
+    string message = 2;
+    map<string, string> cost_info = 3;
+    Table table = 4;
+    OrderingOperation ordering_operation = 5;
+  }
 
-    message CostInfo {
-      string query_cost = 1;
-    }
+  message Table {
+    string table_name = 1;
+    string access_type = 2;
+    uint64 rows_examined_per_scan = 3;
+    uint64 rows_produced_per_join = 4;
+    string filtered = 5;
+    map<string, string> cost_info = 6;
+    repeated string used_columns = 7;
+    bool insert = 8;
+  }
+
+  message OrderingOperation {
+    bool using_filesort = 1;
+    map<string, string> cost_info = 2;
+    Table table = 3;
   }
 }
