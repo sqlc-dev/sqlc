@@ -296,6 +296,7 @@ message MySQLExplain {
     map<string, string> cost_info = 3;
     Table table = 4;
     OrderingOperation ordering_operation = 5;
+    repeated NestedLoopObj nested_loop = 6;
   }
 
   message Table {
@@ -307,11 +308,21 @@ message MySQLExplain {
     map<string, string> cost_info = 6;
     repeated string used_columns = 7;
     bool insert = 8;
+    repeated string possible_keys = 9;
+    string key = 10;
+    repeated string used_key_parts = 11;
+    string key_length = 12;
+    repeated string ref = 13;
+  }
+
+  message NestedLoopObj {
+    Table table = 1;
   }
 
   message OrderingOperation {
     bool using_filesort = 1;
     map<string, string> cost_info = 2;
     Table table = 3;
+    repeated NestedLoopObj nested_loop = 4;
   }
 }

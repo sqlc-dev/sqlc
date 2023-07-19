@@ -746,6 +746,13 @@ func (m *MySQLExplain_QueryBlock) CloneVT() *MySQLExplain_QueryBlock {
 		}
 		r.CostInfo = tmpContainer
 	}
+	if rhs := m.NestedLoop; rhs != nil {
+		tmpContainer := make([]*MySQLExplain_NestedLoopObj, len(rhs))
+		for k, v := range rhs {
+			tmpContainer[k] = v.CloneVT()
+		}
+		r.NestedLoop = tmpContainer
+	}
 	if len(m.unknownFields) > 0 {
 		r.unknownFields = make([]byte, len(m.unknownFields))
 		copy(r.unknownFields, m.unknownFields)
@@ -768,6 +775,8 @@ func (m *MySQLExplain_Table) CloneVT() *MySQLExplain_Table {
 		RowsProducedPerJoin: m.RowsProducedPerJoin,
 		Filtered:            m.Filtered,
 		Insert:              m.Insert,
+		Key:                 m.Key,
+		KeyLength:           m.KeyLength,
 	}
 	if rhs := m.CostInfo; rhs != nil {
 		tmpContainer := make(map[string]string, len(rhs))
@@ -781,6 +790,21 @@ func (m *MySQLExplain_Table) CloneVT() *MySQLExplain_Table {
 		copy(tmpContainer, rhs)
 		r.UsedColumns = tmpContainer
 	}
+	if rhs := m.PossibleKeys; rhs != nil {
+		tmpContainer := make([]string, len(rhs))
+		copy(tmpContainer, rhs)
+		r.PossibleKeys = tmpContainer
+	}
+	if rhs := m.UsedKeyParts; rhs != nil {
+		tmpContainer := make([]string, len(rhs))
+		copy(tmpContainer, rhs)
+		r.UsedKeyParts = tmpContainer
+	}
+	if rhs := m.Ref; rhs != nil {
+		tmpContainer := make([]string, len(rhs))
+		copy(tmpContainer, rhs)
+		r.Ref = tmpContainer
+	}
 	if len(m.unknownFields) > 0 {
 		r.unknownFields = make([]byte, len(m.unknownFields))
 		copy(r.unknownFields, m.unknownFields)
@@ -789,6 +813,24 @@ func (m *MySQLExplain_Table) CloneVT() *MySQLExplain_Table {
 }
 
 func (m *MySQLExplain_Table) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *MySQLExplain_NestedLoopObj) CloneVT() *MySQLExplain_NestedLoopObj {
+	if m == nil {
+		return (*MySQLExplain_NestedLoopObj)(nil)
+	}
+	r := &MySQLExplain_NestedLoopObj{
+		Table: m.Table.CloneVT(),
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *MySQLExplain_NestedLoopObj) CloneMessageVT() proto.Message {
 	return m.CloneVT()
 }
 
@@ -806,6 +848,13 @@ func (m *MySQLExplain_OrderingOperation) CloneVT() *MySQLExplain_OrderingOperati
 			tmpContainer[k] = v
 		}
 		r.CostInfo = tmpContainer
+	}
+	if rhs := m.NestedLoop; rhs != nil {
+		tmpContainer := make([]*MySQLExplain_NestedLoopObj, len(rhs))
+		for k, v := range rhs {
+			tmpContainer[k] = v.CloneVT()
+		}
+		r.NestedLoop = tmpContainer
 	}
 	if len(m.unknownFields) > 0 {
 		r.unknownFields = make([]byte, len(m.unknownFields))
@@ -1979,6 +2028,23 @@ func (this *MySQLExplain_QueryBlock) EqualVT(that *MySQLExplain_QueryBlock) bool
 	if !this.OrderingOperation.EqualVT(that.OrderingOperation) {
 		return false
 	}
+	if len(this.NestedLoop) != len(that.NestedLoop) {
+		return false
+	}
+	for i, vx := range this.NestedLoop {
+		vy := that.NestedLoop[i]
+		if p, q := vx, vy; p != q {
+			if p == nil {
+				p = &MySQLExplain_NestedLoopObj{}
+			}
+			if q == nil {
+				q = &MySQLExplain_NestedLoopObj{}
+			}
+			if !p.EqualVT(q) {
+				return false
+			}
+		}
+	}
 	return string(this.unknownFields) == string(that.unknownFields)
 }
 
@@ -2034,11 +2100,63 @@ func (this *MySQLExplain_Table) EqualVT(that *MySQLExplain_Table) bool {
 	if this.Insert != that.Insert {
 		return false
 	}
+	if len(this.PossibleKeys) != len(that.PossibleKeys) {
+		return false
+	}
+	for i, vx := range this.PossibleKeys {
+		vy := that.PossibleKeys[i]
+		if vx != vy {
+			return false
+		}
+	}
+	if this.Key != that.Key {
+		return false
+	}
+	if len(this.UsedKeyParts) != len(that.UsedKeyParts) {
+		return false
+	}
+	for i, vx := range this.UsedKeyParts {
+		vy := that.UsedKeyParts[i]
+		if vx != vy {
+			return false
+		}
+	}
+	if this.KeyLength != that.KeyLength {
+		return false
+	}
+	if len(this.Ref) != len(that.Ref) {
+		return false
+	}
+	for i, vx := range this.Ref {
+		vy := that.Ref[i]
+		if vx != vy {
+			return false
+		}
+	}
 	return string(this.unknownFields) == string(that.unknownFields)
 }
 
 func (this *MySQLExplain_Table) EqualMessageVT(thatMsg proto.Message) bool {
 	that, ok := thatMsg.(*MySQLExplain_Table)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *MySQLExplain_NestedLoopObj) EqualVT(that *MySQLExplain_NestedLoopObj) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if !this.Table.EqualVT(that.Table) {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *MySQLExplain_NestedLoopObj) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*MySQLExplain_NestedLoopObj)
 	if !ok {
 		return false
 	}
@@ -2067,6 +2185,23 @@ func (this *MySQLExplain_OrderingOperation) EqualVT(that *MySQLExplain_OrderingO
 	}
 	if !this.Table.EqualVT(that.Table) {
 		return false
+	}
+	if len(this.NestedLoop) != len(that.NestedLoop) {
+		return false
+	}
+	for i, vx := range this.NestedLoop {
+		vy := that.NestedLoop[i]
+		if p, q := vx, vy; p != q {
+			if p == nil {
+				p = &MySQLExplain_NestedLoopObj{}
+			}
+			if q == nil {
+				q = &MySQLExplain_NestedLoopObj{}
+			}
+			if !p.EqualVT(q) {
+				return false
+			}
+		}
 	}
 	return string(this.unknownFields) == string(that.unknownFields)
 }
@@ -4281,6 +4416,18 @@ func (m *MySQLExplain_QueryBlock) MarshalToSizedBufferVT(dAtA []byte) (int, erro
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if len(m.NestedLoop) > 0 {
+		for iNdEx := len(m.NestedLoop) - 1; iNdEx >= 0; iNdEx-- {
+			size, err := m.NestedLoop[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarint(dAtA, i, uint64(size))
+			i--
+			dAtA[i] = 0x32
+		}
+	}
 	if m.OrderingOperation != nil {
 		size, err := m.OrderingOperation.MarshalToSizedBufferVT(dAtA[:i])
 		if err != nil {
@@ -4365,6 +4512,47 @@ func (m *MySQLExplain_Table) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if len(m.Ref) > 0 {
+		for iNdEx := len(m.Ref) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.Ref[iNdEx])
+			copy(dAtA[i:], m.Ref[iNdEx])
+			i = encodeVarint(dAtA, i, uint64(len(m.Ref[iNdEx])))
+			i--
+			dAtA[i] = 0x6a
+		}
+	}
+	if len(m.KeyLength) > 0 {
+		i -= len(m.KeyLength)
+		copy(dAtA[i:], m.KeyLength)
+		i = encodeVarint(dAtA, i, uint64(len(m.KeyLength)))
+		i--
+		dAtA[i] = 0x62
+	}
+	if len(m.UsedKeyParts) > 0 {
+		for iNdEx := len(m.UsedKeyParts) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.UsedKeyParts[iNdEx])
+			copy(dAtA[i:], m.UsedKeyParts[iNdEx])
+			i = encodeVarint(dAtA, i, uint64(len(m.UsedKeyParts[iNdEx])))
+			i--
+			dAtA[i] = 0x5a
+		}
+	}
+	if len(m.Key) > 0 {
+		i -= len(m.Key)
+		copy(dAtA[i:], m.Key)
+		i = encodeVarint(dAtA, i, uint64(len(m.Key)))
+		i--
+		dAtA[i] = 0x52
+	}
+	if len(m.PossibleKeys) > 0 {
+		for iNdEx := len(m.PossibleKeys) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.PossibleKeys[iNdEx])
+			copy(dAtA[i:], m.PossibleKeys[iNdEx])
+			i = encodeVarint(dAtA, i, uint64(len(m.PossibleKeys[iNdEx])))
+			i--
+			dAtA[i] = 0x4a
+		}
+	}
 	if m.Insert {
 		i--
 		if m.Insert {
@@ -4437,6 +4625,49 @@ func (m *MySQLExplain_Table) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *MySQLExplain_NestedLoopObj) MarshalVT() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
+	size := m.SizeVT()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBufferVT(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MySQLExplain_NestedLoopObj) MarshalToVT(dAtA []byte) (int, error) {
+	size := m.SizeVT()
+	return m.MarshalToSizedBufferVT(dAtA[:size])
+}
+
+func (m *MySQLExplain_NestedLoopObj) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.unknownFields != nil {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
+	if m.Table != nil {
+		size, err := m.Table.MarshalToSizedBufferVT(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarint(dAtA, i, uint64(size))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
 func (m *MySQLExplain_OrderingOperation) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
@@ -4466,6 +4697,18 @@ func (m *MySQLExplain_OrderingOperation) MarshalToSizedBufferVT(dAtA []byte) (in
 	if m.unknownFields != nil {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
+	}
+	if len(m.NestedLoop) > 0 {
+		for iNdEx := len(m.NestedLoop) - 1; iNdEx >= 0; iNdEx-- {
+			size, err := m.NestedLoop[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarint(dAtA, i, uint64(size))
+			i--
+			dAtA[i] = 0x22
+		}
 	}
 	if m.Table != nil {
 		size, err := m.Table.MarshalToSizedBufferVT(dAtA[:i])
@@ -6747,6 +6990,18 @@ func (m *MySQLExplain_QueryBlock) MarshalToSizedBufferVTStrict(dAtA []byte) (int
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if len(m.NestedLoop) > 0 {
+		for iNdEx := len(m.NestedLoop) - 1; iNdEx >= 0; iNdEx-- {
+			size, err := m.NestedLoop[iNdEx].MarshalToSizedBufferVTStrict(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarint(dAtA, i, uint64(size))
+			i--
+			dAtA[i] = 0x32
+		}
+	}
 	if m.OrderingOperation != nil {
 		size, err := m.OrderingOperation.MarshalToSizedBufferVTStrict(dAtA[:i])
 		if err != nil {
@@ -6831,6 +7086,47 @@ func (m *MySQLExplain_Table) MarshalToSizedBufferVTStrict(dAtA []byte) (int, err
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if len(m.Ref) > 0 {
+		for iNdEx := len(m.Ref) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.Ref[iNdEx])
+			copy(dAtA[i:], m.Ref[iNdEx])
+			i = encodeVarint(dAtA, i, uint64(len(m.Ref[iNdEx])))
+			i--
+			dAtA[i] = 0x6a
+		}
+	}
+	if len(m.KeyLength) > 0 {
+		i -= len(m.KeyLength)
+		copy(dAtA[i:], m.KeyLength)
+		i = encodeVarint(dAtA, i, uint64(len(m.KeyLength)))
+		i--
+		dAtA[i] = 0x62
+	}
+	if len(m.UsedKeyParts) > 0 {
+		for iNdEx := len(m.UsedKeyParts) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.UsedKeyParts[iNdEx])
+			copy(dAtA[i:], m.UsedKeyParts[iNdEx])
+			i = encodeVarint(dAtA, i, uint64(len(m.UsedKeyParts[iNdEx])))
+			i--
+			dAtA[i] = 0x5a
+		}
+	}
+	if len(m.Key) > 0 {
+		i -= len(m.Key)
+		copy(dAtA[i:], m.Key)
+		i = encodeVarint(dAtA, i, uint64(len(m.Key)))
+		i--
+		dAtA[i] = 0x52
+	}
+	if len(m.PossibleKeys) > 0 {
+		for iNdEx := len(m.PossibleKeys) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.PossibleKeys[iNdEx])
+			copy(dAtA[i:], m.PossibleKeys[iNdEx])
+			i = encodeVarint(dAtA, i, uint64(len(m.PossibleKeys[iNdEx])))
+			i--
+			dAtA[i] = 0x4a
+		}
+	}
 	if m.Insert {
 		i--
 		if m.Insert {
@@ -6903,6 +7199,49 @@ func (m *MySQLExplain_Table) MarshalToSizedBufferVTStrict(dAtA []byte) (int, err
 	return len(dAtA) - i, nil
 }
 
+func (m *MySQLExplain_NestedLoopObj) MarshalVTStrict() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
+	size := m.SizeVT()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBufferVTStrict(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MySQLExplain_NestedLoopObj) MarshalToVTStrict(dAtA []byte) (int, error) {
+	size := m.SizeVT()
+	return m.MarshalToSizedBufferVTStrict(dAtA[:size])
+}
+
+func (m *MySQLExplain_NestedLoopObj) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.unknownFields != nil {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
+	if m.Table != nil {
+		size, err := m.Table.MarshalToSizedBufferVTStrict(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarint(dAtA, i, uint64(size))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
 func (m *MySQLExplain_OrderingOperation) MarshalVTStrict() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
@@ -6932,6 +7271,18 @@ func (m *MySQLExplain_OrderingOperation) MarshalToSizedBufferVTStrict(dAtA []byt
 	if m.unknownFields != nil {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
+	}
+	if len(m.NestedLoop) > 0 {
+		for iNdEx := len(m.NestedLoop) - 1; iNdEx >= 0; iNdEx-- {
+			size, err := m.NestedLoop[iNdEx].MarshalToSizedBufferVTStrict(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarint(dAtA, i, uint64(size))
+			i--
+			dAtA[i] = 0x22
+		}
 	}
 	if m.Table != nil {
 		size, err := m.Table.MarshalToSizedBufferVTStrict(dAtA[:i])
@@ -7926,6 +8277,12 @@ func (m *MySQLExplain_QueryBlock) SizeVT() (n int) {
 		l = m.OrderingOperation.SizeVT()
 		n += 1 + l + sov(uint64(l))
 	}
+	if len(m.NestedLoop) > 0 {
+		for _, e := range m.NestedLoop {
+			l = e.SizeVT()
+			n += 1 + l + sov(uint64(l))
+		}
+	}
 	n += len(m.unknownFields)
 	return n
 }
@@ -7971,6 +8328,46 @@ func (m *MySQLExplain_Table) SizeVT() (n int) {
 	if m.Insert {
 		n += 2
 	}
+	if len(m.PossibleKeys) > 0 {
+		for _, s := range m.PossibleKeys {
+			l = len(s)
+			n += 1 + l + sov(uint64(l))
+		}
+	}
+	l = len(m.Key)
+	if l > 0 {
+		n += 1 + l + sov(uint64(l))
+	}
+	if len(m.UsedKeyParts) > 0 {
+		for _, s := range m.UsedKeyParts {
+			l = len(s)
+			n += 1 + l + sov(uint64(l))
+		}
+	}
+	l = len(m.KeyLength)
+	if l > 0 {
+		n += 1 + l + sov(uint64(l))
+	}
+	if len(m.Ref) > 0 {
+		for _, s := range m.Ref {
+			l = len(s)
+			n += 1 + l + sov(uint64(l))
+		}
+	}
+	n += len(m.unknownFields)
+	return n
+}
+
+func (m *MySQLExplain_NestedLoopObj) SizeVT() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Table != nil {
+		l = m.Table.SizeVT()
+		n += 1 + l + sov(uint64(l))
+	}
 	n += len(m.unknownFields)
 	return n
 }
@@ -7995,6 +8392,12 @@ func (m *MySQLExplain_OrderingOperation) SizeVT() (n int) {
 	if m.Table != nil {
 		l = m.Table.SizeVT()
 		n += 1 + l + sov(uint64(l))
+	}
+	if len(m.NestedLoop) > 0 {
+		for _, e := range m.NestedLoop {
+			l = e.SizeVT()
+			n += 1 + l + sov(uint64(l))
+		}
 	}
 	n += len(m.unknownFields)
 	return n
@@ -14315,6 +14718,40 @@ func (m *MySQLExplain_QueryBlock) UnmarshalVT(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
+		case 6:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NestedLoop", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.NestedLoop = append(m.NestedLoop, &MySQLExplain_NestedLoopObj{})
+			if err := m.NestedLoop[len(m.NestedLoop)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skip(dAtA[iNdEx:])
@@ -14679,6 +15116,253 @@ func (m *MySQLExplain_Table) UnmarshalVT(dAtA []byte) error {
 				}
 			}
 			m.Insert = bool(v != 0)
+		case 9:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field PossibleKeys", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.PossibleKeys = append(m.PossibleKeys, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		case 10:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Key", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Key = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 11:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field UsedKeyParts", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.UsedKeyParts = append(m.UsedKeyParts, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		case 12:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field KeyLength", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.KeyLength = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 13:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Ref", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Ref = append(m.Ref, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skip(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLength
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MySQLExplain_NestedLoopObj) UnmarshalVT(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflow
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MySQLExplain_NestedLoopObj: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MySQLExplain_NestedLoopObj: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Table", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Table == nil {
+				m.Table = &MySQLExplain_Table{}
+			}
+			if err := m.Table.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skip(dAtA[iNdEx:])
@@ -14910,6 +15594,40 @@ func (m *MySQLExplain_OrderingOperation) UnmarshalVT(dAtA []byte) error {
 				m.Table = &MySQLExplain_Table{}
 			}
 			if err := m.Table.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NestedLoop", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.NestedLoop = append(m.NestedLoop, &MySQLExplain_NestedLoopObj{})
+			if err := m.NestedLoop[len(m.NestedLoop)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
