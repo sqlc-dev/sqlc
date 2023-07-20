@@ -47,6 +47,9 @@ type SQLiteParserListener interface {
 	// EnterIndexed_column is called when entering the indexed_column production.
 	EnterIndexed_column(c *Indexed_columnContext)
 
+	// EnterTable_option is called when entering the table_option production.
+	EnterTable_option(c *Table_optionContext)
+
 	// EnterCreate_table_stmt is called when entering the create_table_stmt production.
 	EnterCreate_table_stmt(c *Create_table_stmtContext)
 
@@ -430,6 +433,9 @@ type SQLiteParserListener interface {
 
 	// ExitIndexed_column is called when exiting the indexed_column production.
 	ExitIndexed_column(c *Indexed_columnContext)
+
+	// ExitTable_option is called when exiting the table_option production.
+	ExitTable_option(c *Table_optionContext)
 
 	// ExitCreate_table_stmt is called when exiting the create_table_stmt production.
 	ExitCreate_table_stmt(c *Create_table_stmtContext)
