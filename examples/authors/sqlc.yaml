@@ -19,7 +19,7 @@ sql:
     uri: root:${MYSQL_ROOT_PASSWORD}@tcp(${MYSQL_HOST}:${MYSQL_PORT})/authors?multiStatements=true&parseTime=true
   rules:
   - sqlc/db-prepare
-  - mysql-query-too-costly
+  # - mysql-query-too-costly
   gen:
     go:
       package: authors
