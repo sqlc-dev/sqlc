@@ -16,7 +16,6 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/google/cel-go/cel"
-	"github.com/google/cel-go/common/types/ref"
 	"github.com/google/cel-go/ext"
 	"github.com/jackc/pgx/v5"
 	_ "github.com/mattn/go-sqlite3"
@@ -37,17 +36,6 @@ var pjson = protojson.UnmarshalOptions{AllowPartial: true, DiscardUnknown: true}
 
 const RuleDbPrepare = "sqlc/db-prepare"
 const QueryFlagSqlcVetDisable = "@sqlc-vet-disable"
-
-type emptyProgram struct {
-}
-
-func (e *emptyProgram) Eval(any) (ref.Val, *cel.EvalDetails, error) {
-       return nil, nil, fmt.Errorf("unimplemented")
-}
-
-func (e *emptyProgram) ContextEval(ctx context.Context, a any) (ref.Val, *cel.EvalDetails, error) {
-       return e.Eval(a)
-}
 
 func NewCmdVet() *cobra.Command {
 	return &cobra.Command{
@@ -111,18 +99,16 @@ func Vet(ctx context.Context, e Env, dir, filename string, stderr io.Writer) err
 		return fmt.Errorf("new CEL env error: %s", err)
 	}
 
-	checks := map[string]cel.Program{
-		RuleDbPrepare: &emptyProgram{}, // Keep this to trigger the name conflict error below
+	rules := map[string]rule{
+		RuleDbPrepare: {NeedsPrepare: true},
 	}
-	msgs := map[string]string{}
-	explRules := map[string]bool{}
 
 	for _, c := range conf.Rules {
 		if c.Name == "" {
-			return fmt.Errorf("checks require a name")
+			return fmt.Errorf("rules require a name")
 		}
-		if _, found := checks[c.Name]; found {
-			return fmt.Errorf("type-check error: a check with the name '%s' already exists", c.Name)
+		if _, found := rules[c.Name]; found {
+			return fmt.Errorf("type-check error: a rule with the name '%s' already exists", c.Name)
 		}
 		if c.Rule == "" {
 			return fmt.Errorf("type-check error: %s is empty", c.Name)
@@ -135,24 +121,24 @@ func Vet(ctx context.Context, e Env, dir, filename string, stderr io.Writer) err
 		if err != nil {
 			return fmt.Errorf("program construction error: %s %s", c.Name, err)
 		}
-		checks[c.Name] = prg
-		msgs[c.Name] = c.Msg
+		rule := rule{Program: &prg, Message: c.Msg}
 
-		// TODO There's probably a nicer way to do this
+		// TODO There's probably a nicer way to do this from the ast
+		// https://pkg.go.dev/github.com/google/cel-go/common/ast#AllMatcher
 		if strings.Contains(c.Rule, "postgresql.explain") ||
-		strings.Contains(c.Rule, "mysql.explain") {
-			explRules[c.Name] = true
+			strings.Contains(c.Rule, "mysql.explain") {
+			rule.NeedsExplain = true
 		}
+
+		rules[c.Name] = rule
 	}
 
 	c := checker{
-		Checks:     checks,
-		ExplRules:  explRules,
+		Rules:      rules,
 		Conf:       conf,
 		Dir:        dir,
 		Env:        env,
 		Envmap:     map[string]string{},
-		Msgs:       msgs,
 		Stderr:     stderr,
 		NoDatabase: e.NoDatabase,
 	}
@@ -252,6 +238,7 @@ func (me *mysqlExplainer) Explain(ctx context.Context, query string, args ...*pl
 	if err := row.Scan(&result); err != nil {
 		return nil, err
 	}
+	// TODO if some debug parameter is true, dump this explain output and explain query
 	var explain plugin.MySQLExplain
 	if err := pjson.Unmarshal(result, &explain); err != nil {
 		return nil, err
@@ -262,14 +249,19 @@ func (me *mysqlExplainer) Explain(ctx context.Context, query string, args ...*pl
 	return &vetExplain{MySQL: &explain}, nil
 }
 
+type rule struct {
+	Program      *cel.Program
+	Message      string
+	NeedsPrepare bool
+	NeedsExplain bool
+}
+
 type checker struct {
-	Checks     map[string]cel.Program
-	ExplRules  map[string]bool
+	Rules      map[string]rule
 	Conf       *config.Config
 	Dir        string
 	Env        *cel.Env
 	Envmap     map[string]string
-	Msgs       map[string]string
 	Stderr     io.Writer
 	NoDatabase bool
 }
@@ -375,19 +367,22 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 			continue
 		}
 		q := vetQuery(query)
-		
+
 		var explain *vetExplain
 
 		for _, name := range s.Rules {
-			// Built-in rules
-			if name == RuleDbPrepare {
+			rule, ok := c.Rules[name]
+			if !ok {
+				return fmt.Errorf("type-check error: a rule with the name '%s' does not exist", name)
+			}
+
+			if rule.NeedsPrepare {
 				if prep == nil {
 					fmt.Fprintf(c.Stderr, "%s: %s: %s: error preparing query: database connection required\n", query.Filename, q.Name, name)
 					errored = true
 					continue
 				}
-				original := result.Queries[i]
-				if !prepareable(s, original.RawStmt) {
+				if !prepareable(s, result.Queries[i].RawStmt) {
 					fmt.Fprintf(c.Stderr, "%s: %s: %s: error preparing query: %s\n", query.Filename, q.Name, name, "query type is unpreparable")
 					errored = true
 					continue
@@ -397,12 +392,11 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 					fmt.Fprintf(c.Stderr, "%s: %s: %s: error preparing query: %s\n", query.Filename, q.Name, name, err)
 					errored = true
 				}
-				continue
 			}
 
-			prg, ok := c.Checks[name]
-			if !ok {
-				return fmt.Errorf("type-check error: a check with the name '%s' does not exist", name)
+			// short-circuit for "sqlc/db-prepare" rule which doesn't have a CEL program
+			if rule.Program == nil {
+				continue // TODO perhaps handle this some other way
 			}
 
 			evalMap := map[string]any{
@@ -411,7 +405,7 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 			}
 
 			// Get explain output for this query if we need it
-			if c.ExplRules[name] && explain == nil {
+			if rule.NeedsExplain && explain == nil {
 				if expl == nil {
 					fmt.Fprintf(c.Stderr, "%s: %s: %s: error explaining query: database connection required\n", query.Filename, q.Name, name)
 					errored = true
@@ -429,7 +423,7 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 				evalMap["mysql.explain"] = explain.MySQL
 			}
 
-			out, _, err := prg.Eval(evalMap)
+			out, _, err := (*rule.Program).Eval(evalMap)
 			if err != nil {
 				return err
 			}
@@ -439,11 +433,10 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 			}
 			if tripped {
 				// TODO: Get line numbers in the output
-				msg := c.Msgs[name]
-				if msg == "" {
+				if rule.Message == "" {
 					fmt.Fprintf(c.Stderr, "%s: %s: %s\n", query.Filename, q.Name, name)
 				} else {
-					fmt.Fprintf(c.Stderr, "%s: %s: %s: %s\n", query.Filename, q.Name, name, msg)
+					fmt.Fprintf(c.Stderr, "%s: %s: %s: %s\n", query.Filename, q.Name, name, rule.Message)
 				}
 				errored = true
 			}
@@ -481,5 +474,5 @@ func vetQuery(q *plugin.Query) *plugin.VetQuery {
 
 type vetExplain struct {
 	PostgreSQL *plugin.PostgreSQLExplain
-	MySQL *plugin.MySQLExplain
+	MySQL      *plugin.MySQLExplain
 }
