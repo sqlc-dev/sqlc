@@ -188,7 +188,7 @@ func buildImports(settings *plugin.Settings, queries []Query, uses func(string) 
 		}
 	}
 
-	for typeName, _ := range pqtypeTypes {
+	for typeName := range pqtypeTypes {
 		if uses(typeName) {
 			pkg[ImportSpec{Path: "github.com/sqlc-dev/pqtype"}] = struct{}{}
 			break
