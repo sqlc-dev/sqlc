@@ -315,7 +315,7 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 
 	var prep preparer
 	var expl explainer
-	if s.Database != nil {
+	if s.Database != nil { // TODO only set up a database connection if a rule evaluation requires it
 		if c.NoDatabase {
 			return fmt.Errorf("database: connections disabled via command line flag")
 		}
@@ -375,9 +375,11 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 			}
 			continue
 		}
-		q := vetQuery(query)
 
-		var engineOutput *vetEngineOutput
+		evalMap := map[string]any{
+			"query":  vetQuery(query),
+			"config": cfg,
+		}
 
 		for _, name := range s.Rules {
 			rule, ok := c.Rules[name]
@@ -387,43 +389,39 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 
 			if rule.NeedsPrepare {
 				if prep == nil {
-					fmt.Fprintf(c.Stderr, "%s: %s: %s: error preparing query: database connection required\n", query.Filename, q.Name, name)
+					fmt.Fprintf(c.Stderr, "%s: %s: %s: error preparing query: database connection required\n", query.Filename, query.Name, name)
 					errored = true
 					continue
 				}
 				if !prepareable(s, result.Queries[i].RawStmt) {
-					fmt.Fprintf(c.Stderr, "%s: %s: %s: error preparing query: %s\n", query.Filename, q.Name, name, "query type is unpreparable")
+					fmt.Fprintf(c.Stderr, "%s: %s: %s: error preparing query: %s\n", query.Filename, query.Name, name, "query type is unpreparable")
 					errored = true
 					continue
 				}
 				name := fmt.Sprintf("sqlc_vet_%d_%d", time.Now().Unix(), i)
 				if err := prep.Prepare(ctx, name, query.Text); err != nil {
-					fmt.Fprintf(c.Stderr, "%s: %s: %s: error preparing query: %s\n", query.Filename, q.Name, name, err)
+					fmt.Fprintf(c.Stderr, "%s: %s: %s: error preparing query: %s\n", query.Filename, query.Name, name, err)
 					errored = true
+					continue
 				}
 			}
 
 			// short-circuit for "sqlc/db-prepare" rule which doesn't have a CEL program
 			if rule.Program == nil {
-				continue // TODO perhaps handle this some other way
-			}
-
-			evalMap := map[string]any{
-				"query":  q,
-				"config": cfg,
+				continue
 			}
 
 			// Get explain output for this query if we need it
-			if rule.NeedsExplain && engineOutput == nil {
+			_, pgsqlOK := evalMap["postgresql"]; _, mysqlOK := evalMap["mysql"]
+			if rule.NeedsExplain && !(pgsqlOK || mysqlOK) {
 				if expl == nil {
-					fmt.Fprintf(c.Stderr, "%s: %s: %s: error explaining query: database connection required\n", query.Filename, q.Name, name)
+					fmt.Fprintf(c.Stderr, "%s: %s: %s: error explaining query: database connection required\n", query.Filename, query.Name, name)
 					errored = true
 					continue
 				}
-				var explainErr error
-				engineOutput, explainErr = expl.Explain(ctx, query.Text, query.Params...)
-				if explainErr != nil {
-					fmt.Fprintf(c.Stderr, "%s: %s: %s: error explaining query: %s\n", query.Filename, q.Name, name, explainErr)
+				engineOutput, err := expl.Explain(ctx, query.Text, query.Params...)
+				if err != nil {
+					fmt.Fprintf(c.Stderr, "%s: %s: %s: error explaining query: %s\n", query.Filename, query.Name, name, err)
 					errored = true
 					continue
 				}
@@ -443,9 +441,9 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 			if tripped {
 				// TODO: Get line numbers in the output
 				if rule.Message == "" {
-					fmt.Fprintf(c.Stderr, "%s: %s: %s\n", query.Filename, q.Name, name)
+					fmt.Fprintf(c.Stderr, "%s: %s: %s\n", query.Filename, query.Name, name)
 				} else {
-					fmt.Fprintf(c.Stderr, "%s: %s: %s: %s\n", query.Filename, q.Name, name, rule.Message)
+					fmt.Fprintf(c.Stderr, "%s: %s: %s: %s\n", query.Filename, query.Name, name, rule.Message)
 				}
 				errored = true
 			}
