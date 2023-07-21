@@ -200,11 +200,16 @@ func (p *pgxConn) Prepare(ctx context.Context, name, query string) error {
 }
 
 func (p *pgxConn) Explain(ctx context.Context, query string, args ...*plugin.Parameter) (*vetEngineOutput, error) {
+	eQuery := "EXPLAIN (ANALYZE false, VERBOSE, COSTS, SETTINGS, BUFFERS, FORMAT JSON) "+query
 	eArgs := make([]any, len(args))
-	row := p.c.QueryRow(ctx, "EXPLAIN (ANALYZE false, VERBOSE, COSTS, SETTINGS, BUFFERS, FORMAT JSON) "+query, eArgs...)
+	row := p.c.QueryRow(ctx, eQuery, eArgs...)
 	var result []json.RawMessage
 	if err := row.Scan(&result); err != nil {
 		return nil, err
+	}
+	if debug.Debug.DumpExplain {
+		fmt.Println(eQuery)
+		fmt.Println(string(result[0]))
 	}
 	var explain plugin.PostgreSQLExplain
 	if err := pjson.Unmarshal(result[0], &explain); err != nil {
@@ -232,13 +237,17 @@ type mysqlExplainer struct {
 }
 
 func (me *mysqlExplainer) Explain(ctx context.Context, query string, args ...*plugin.Parameter) (*vetEngineOutput, error) {
+	eQuery := "EXPLAIN FORMAT=JSON "+query
 	eArgs := make([]any, len(args))
-	row := me.QueryRowContext(ctx, "EXPLAIN FORMAT=JSON "+query, eArgs...)
+	row := me.QueryRowContext(ctx, eQuery, eArgs...)
 	var result json.RawMessage
 	if err := row.Scan(&result); err != nil {
 		return nil, err
 	}
-	// TODO if some debug parameter is true, dump this explain output and explain query
+	if debug.Debug.DumpExplain {
+		fmt.Println(eQuery)
+		fmt.Println(string(result))
+	}
 	var explain plugin.MySQLExplain
 	if err := pjson.Unmarshal(result, &explain); err != nil {
 		return nil, err
