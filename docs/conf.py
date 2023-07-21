@@ -18,8 +18,8 @@ import sphinx_rtd_theme
 # -- Project information -----------------------------------------------------
 
 project = 'sqlc'
-copyright = '2021, Kyle Conroy'
-author = 'Kyle Conroy'
+copyright = '2023, Riza, Inc.'
+author = 'Riza, Inc.'
 
 # The full version, including alpha/beta/rc tags
 release = '1.19.1'
