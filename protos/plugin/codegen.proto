@@ -227,6 +227,10 @@ message VetQuery
   repeated VetParameter params = 4 [json_name="parameters"];
 }
 
+message PostgreSQL {
+  PostgreSQLExplain explain = 1;
+}
+
 message PostgreSQLExplain {
   Plan plan = 1 [json_name="Plan"];
   map<string, string> settings = 2 [json_name="Settings"];
@@ -285,6 +289,10 @@ message PostgreSQLExplain {
     uint64 temp_read_blocks = 9 [json_name="Temp Read Blocks"];
     uint64 temp_written_blocks = 10 [json_name="Temp Written Blocks"];
   }
+}
+
+message MySQL {
+  MySQLExplain explain = 1;
 }
 
 message MySQLExplain {
