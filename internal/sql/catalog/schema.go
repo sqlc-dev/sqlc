@@ -96,11 +96,15 @@ func (c *Catalog) getSchema(name string) (*Schema, error) {
 }
 
 func (c *Catalog) createSchema(stmt *ast.CreateSchemaStmt) error {
-	if stmt.Name == nil {
+	if *stmt.Name == "" {
 		return fmt.Errorf("create schema: empty name")
 	}
 	if _, err := c.getSchema(*stmt.Name); err == nil {
-		if !stmt.IfNotExists {
+		// If the schema is 'public' and IfNotExists is false,
+		// we want to ignore the error and proceed as if IfNotExists was true.
+		if *stmt.Name == "public" && !stmt.IfNotExists {
+			return nil
+		} else {
 			return sqlerr.SchemaExists(*stmt.Name)
 		}
 	}
