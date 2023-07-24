@@ -44,7 +44,7 @@ func validateQueryName(name string) error {
 	return nil
 }
 
-func Parse(t string, commentStyle CommentSyntax) (string, string, error) {
+func ParseQueryNameAndType(t string, commentStyle CommentSyntax) (string, string, error) {
 	for _, line := range strings.Split(t, "\n") {
 		var prefix string
 		if strings.HasPrefix(line, "--") {
@@ -102,4 +102,21 @@ func Parse(t string, commentStyle CommentSyntax) (string, string, error) {
 		return queryName, queryType, nil
 	}
 	return "", "", nil
+}
+
+func ParseQueryFlags(comments []string) (map[string]bool, error) {
+	flags := make(map[string]bool)
+	for _, line := range comments {
+		cleanLine := strings.TrimPrefix(line, "--")
+		cleanLine = strings.TrimPrefix(cleanLine, "/*")
+		cleanLine = strings.TrimPrefix(cleanLine, "#")
+		cleanLine = strings.TrimSuffix(cleanLine, "*/")
+		cleanLine = strings.TrimSpace(cleanLine)
+		if strings.HasPrefix(cleanLine, "@") {
+			flagName := strings.SplitN(cleanLine, " ", 2)[0]
+			flags[flagName] = true
+			continue
+		}
+	}
+	return flags, nil
 }

@@ -8,9 +8,9 @@ require (
 	github.com/cubicdaiya/gonp v1.0.4
 	github.com/davecgh/go-spew v1.1.1
 	github.com/go-sql-driver/mysql v1.7.1
-	github.com/google/cel-go v0.16.0
+	github.com/google/cel-go v0.17.1
 	github.com/google/go-cmp v0.5.9
-	github.com/jackc/pgconn v1.14.0
+	github.com/jackc/pgconn v1.14.1
 	github.com/jackc/pgx/v4 v4.18.1
 	github.com/jackc/pgx/v5 v5.4.2
 	github.com/jinzhu/inflection v1.0.0

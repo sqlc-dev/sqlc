@@ -117,12 +117,17 @@ create_index_stmt:
 indexed_column: (column_name | expr) (COLLATE_ collation_name)? asc_desc?
 ;
 
+table_option:
+    WITHOUT_ row_ROW_ID = IDENTIFIER
+    | STRICT_
+;
+
 create_table_stmt:
     CREATE_ (TEMP_ | TEMPORARY_)? TABLE_ (IF_ NOT_ EXISTS_)? (
         schema_name DOT
     )? table_name (
         OPEN_PAR column_def (COMMA column_def)*? (COMMA table_constraint)* CLOSE_PAR (
-            (WITHOUT_ row_ROW_ID = IDENTIFIER) | (STRICT_)
+            table_option (COMMA table_option)*
         )?
         | AS_ select_stmt
     )
@@ -294,6 +299,11 @@ expr:
         | MATCH_
         | REGEXP_
     ) expr #expr_comparison
+    | expr NOT_? IN_ (
+        OPEN_PAR (select_stmt | expr ( COMMA expr)*)? CLOSE_PAR
+        | ( schema_name DOT)? table_name
+        | (schema_name DOT)? table_function_name OPEN_PAR (expr (COMMA expr)*)? CLOSE_PAR
+    ) #expr_in_select
     | expr AND_ expr #expr_binary
     | expr OR_ expr #expr_binary
     | qualified_function_name OPEN_PAR ((DISTINCT_? expr ( COMMA expr)*) | STAR)? CLOSE_PAR filter_clause? over_clause? #expr_function
@@ -305,11 +315,6 @@ expr:
     )? #expr_comparison
     | expr ( ISNULL_ | NOTNULL_ | NOT_ NULL_) #expr_null_comp
     | expr NOT_? BETWEEN_ expr AND_ expr #expr_between
-    | expr NOT_? IN_ (
-        OPEN_PAR (select_stmt | expr ( COMMA expr)*)? CLOSE_PAR
-        | ( schema_name DOT)? table_name
-        | (schema_name DOT)? table_function_name OPEN_PAR (expr (COMMA expr)*)? CLOSE_PAR
-    ) #expr_in_select
     | ((NOT_)? EXISTS_)? OPEN_PAR select_stmt CLOSE_PAR #expr_in_select
     | CASE_ expr? (WHEN_ expr THEN_ expr)+ (ELSE_ expr)? END_ #expr_case
     | raise_function #expr_raise
@@ -425,17 +430,15 @@ compound_select_stmt:
     )+ order_by_stmt? limit_stmt?
 ;
 
-table_or_subquery: (
-        (schema_name DOT)? table_name (AS_? table_alias)? (
-            INDEXED_ BY_ index_name
-            | NOT_ INDEXED_
-        )?
-    )
-    | (schema_name DOT)? table_function_name OPEN_PAR expr (COMMA expr)* CLOSE_PAR (
-        AS_? table_alias
-    )?
+table_or_subquery:
+    (schema_name DOT)? table_name (AS_? table_alias)? (INDEXED_ BY_ index_name | NOT_ INDEXED_)?
+    | (schema_name DOT)? table_function_name OPEN_PAR expr (COMMA expr)* CLOSE_PAR (AS_? table_alias)?
     | OPEN_PAR (table_or_subquery (COMMA table_or_subquery)* | join_clause) CLOSE_PAR
     | OPEN_PAR select_stmt CLOSE_PAR (AS_? table_alias)?
+    | (schema_name DOT)? table_name (AS_? table_alias_fallback)? (INDEXED_ BY_ index_name | NOT_ INDEXED_)?
+    | (schema_name DOT)? table_function_name OPEN_PAR expr (COMMA expr)* CLOSE_PAR (AS_? table_alias_fallback)?
+    | OPEN_PAR (table_or_subquery (COMMA table_or_subquery)* | join_clause) CLOSE_PAR
+    | OPEN_PAR select_stmt CLOSE_PAR (AS_? table_alias_fallback)?
 ;
 
 result_column:
@@ -876,9 +879,9 @@ savepoint_name:
     any_name
 ;
 
-table_alias:
-    any_name
-;
+table_alias: IDENTIFIER | STRING_LITERAL;
+
+table_alias_fallback: any_name;
 
 transaction_name:
     any_name
