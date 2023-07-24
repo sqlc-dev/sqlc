@@ -430,17 +430,15 @@ compound_select_stmt:
     )+ order_by_stmt? limit_stmt?
 ;
 
-table_or_subquery: (
-        (schema_name DOT)? table_name (AS_? table_alias)? (
-            INDEXED_ BY_ index_name
-            | NOT_ INDEXED_
-        )?
-    )
-    | (schema_name DOT)? table_function_name OPEN_PAR expr (COMMA expr)* CLOSE_PAR (
-        AS_? table_alias
-    )?
+table_or_subquery:
+    (schema_name DOT)? table_name (AS_? table_alias)? (INDEXED_ BY_ index_name | NOT_ INDEXED_)?
+    | (schema_name DOT)? table_function_name OPEN_PAR expr (COMMA expr)* CLOSE_PAR (AS_? table_alias)?
     | OPEN_PAR (table_or_subquery (COMMA table_or_subquery)* | join_clause) CLOSE_PAR
     | OPEN_PAR select_stmt CLOSE_PAR (AS_? table_alias)?
+    | (schema_name DOT)? table_name (AS_? table_alias_fallback)? (INDEXED_ BY_ index_name | NOT_ INDEXED_)?
+    | (schema_name DOT)? table_function_name OPEN_PAR expr (COMMA expr)* CLOSE_PAR (AS_? table_alias_fallback)?
+    | OPEN_PAR (table_or_subquery (COMMA table_or_subquery)* | join_clause) CLOSE_PAR
+    | OPEN_PAR select_stmt CLOSE_PAR (AS_? table_alias_fallback)?
 ;
 
 result_column:
@@ -880,9 +878,9 @@ savepoint_name:
     any_name
 ;
 
-table_alias:
-    any_name
-;
+table_alias: IDENTIFIER | STRING_LITERAL;
+
+table_alias_fallback: any_name;
 
 transaction_name:
     any_name

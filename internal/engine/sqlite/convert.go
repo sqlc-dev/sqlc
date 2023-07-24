@@ -791,6 +791,10 @@ func (c *cc) convertTablesOrSubquery(n []parser.ITable_or_subqueryContext) []ast
 				alias := from.Table_alias().GetText()
 				rv.Alias = &ast.Alias{Aliasname: &alias}
 			}
+			if from.Table_alias_fallback() != nil {
+				alias := identifier(from.Table_alias_fallback().GetText())
+				rv.Alias = &ast.Alias{Aliasname: &alias}
+			}
 
 			tables = append(tables, rv)
 		} else if from.Table_function_name() != nil {

@@ -431,3 +431,34 @@ func (q *Queries) GetSuggestedUsersByID(ctx context.Context, userID int64) ([]Ge
 	}
 	return items, nil
 }
+
+const getSuggestedUsersByID2 = `-- name: GetSuggestedUsersByID2 :many
+SELECT  users_2.user_id
+FROM    users_2
+            LEFT JOIN media AS m
+                      ON user_avatar_id = m.media_id
+WHERE   user_id != ?1
+`
+
+func (q *Queries) GetSuggestedUsersByID2(ctx context.Context, userID int64) ([]int64, error) {
+	rows, err := q.db.QueryContext(ctx, getSuggestedUsersByID2, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []int64
+	for rows.Next() {
+		var user_id int64
+		if err := rows.Scan(&user_id); err != nil {
+			return nil, err
+		}
+		items = append(items, user_id)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
