@@ -4,7 +4,7 @@ certifi==2022.12.7
 chardet==4.0.0
 commonmark==0.9.1
 docutils==0.16
-idna==2.10
+idna==3.4
 imagesize==1.2.0
 Jinja2==2.11.3
 MarkupSafe==1.1.1
