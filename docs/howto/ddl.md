@@ -37,6 +37,21 @@ sqlc supports parsing migrations from the following tools:
 - [sql-migrate](https://github.com/rubenv/sql-migrate)
 - [tern](https://github.com/jackc/tern)
 
+To enable migration parsing, specify the migration directory instead of a schema file:
+
+```yaml
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: "query.sql"
+    schema: "db/migrations"
+    gen:
+      go:
+        package: "tutorial"
+        out: "tutorial"
+```
+
+
 ### goose
 
 ```sql

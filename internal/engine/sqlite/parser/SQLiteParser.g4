@@ -117,12 +117,17 @@ create_index_stmt:
 indexed_column: (column_name | expr) (COLLATE_ collation_name)? asc_desc?
 ;
 
+table_option:
+    WITHOUT_ row_ROW_ID = IDENTIFIER
+    | STRICT_
+;
+
 create_table_stmt:
     CREATE_ (TEMP_ | TEMPORARY_)? TABLE_ (IF_ NOT_ EXISTS_)? (
         schema_name DOT
     )? table_name (
         OPEN_PAR column_def (COMMA column_def)*? (COMMA table_constraint)* CLOSE_PAR (
-            (WITHOUT_ row_ROW_ID = IDENTIFIER) | (STRICT_)
+            table_option (COMMA table_option)*
         )?
         | AS_ select_stmt
     )

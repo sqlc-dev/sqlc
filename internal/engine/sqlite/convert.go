@@ -331,6 +331,25 @@ func (c *cc) convertMultiSelect_stmtContext(n *parser.Select_stmtContext) ast.No
 	var where ast.Node
 	var groups = []ast.Node{}
 	var having ast.Node
+	var ctes []ast.Node
+
+	if ct := n.Common_table_stmt(); ct != nil {
+		recursive := ct.RECURSIVE_() != nil
+		for _, cte := range ct.AllCommon_table_expression() {
+			tableName := identifier(cte.Table_name().GetText())
+			var cteCols ast.List
+			for _, col := range cte.AllColumn_name() {
+				cteCols.Items = append(cteCols.Items, NewIdentifer(col.GetText()))
+			}
+			ctes = append(ctes, &ast.CommonTableExpr{
+				Ctename:      &tableName,
+				Ctequery:     c.convert(cte.Select_stmt()),
+				Location:     cte.GetStart().GetStart(),
+				Cterecursive: recursive,
+				Ctecolnames:  &cteCols,
+			})
+		}
+	}
 
 	for _, icore := range n.AllSelect_core() {
 		core, ok := icore.(*parser.Select_coreContext)
@@ -377,6 +396,9 @@ func (c *cc) convertMultiSelect_stmtContext(n *parser.Select_stmtContext) ast.No
 		LimitCount:   limitCount,
 		LimitOffset:  limitOffset,
 		ValuesLists:  &ast.List{},
+		WithClause: &ast.WithClause{
+			Ctes: &ast.List{Items: ctes},
+		},
 	}
 }
 
@@ -887,6 +909,21 @@ func (c *cc) convertBetweenExpr(n *parser.Expr_betweenContext) ast.Node {
 	}
 }
 
+func (c *cc) convertCastExpr(n *parser.Expr_castContext) ast.Node {
+	name := n.Type_name().GetText()
+	return &ast.TypeCast{
+		Arg: c.convert(n.Expr()),
+		TypeName: &ast.TypeName{
+			Name: name,
+			Names: &ast.List{Items: []ast.Node{
+				NewIdentifer(name),
+			}},
+			ArrayBounds: &ast.List{},
+		},
+		Location: n.GetStart().GetStart(),
+	}
+}
+
 func (c *cc) convert(node node) ast.Node {
 	switch n := node.(type) {
 
@@ -965,6 +1002,9 @@ func (c *cc) convert(node node) ast.Node {
 
 	case *parser.Update_stmt_limitedContext:
 		return c.convertUpdate_stmtContext(n)
+
+	case *parser.Expr_castContext:
+		return c.convertCastExpr(n)
 
 	default:
 		return todo("convert(case=default)", n)

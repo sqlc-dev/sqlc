@@ -1,0 +1,15 @@
+version: 2
+sql:
+  - schema: "query.sql"
+    queries: "query.sql"
+    engine: "postgresql"
+    gen:
+      go:
+        package: "db"
+        out: "db"
+    rules:
+      - always-fail
+rules:
+  - name: always-fail
+    message: "Fail"
+    rule: "true"
