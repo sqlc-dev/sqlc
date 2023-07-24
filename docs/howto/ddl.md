@@ -44,7 +44,7 @@ version: "2"
 sql:
   - engine: "postgresql"
     queries: "query.sql"
-    schema: "../../db/migrations"
+    schema: "db/migrations"
     gen:
       go:
         package: "tutorial"
