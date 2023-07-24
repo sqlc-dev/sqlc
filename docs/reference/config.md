@@ -148,6 +148,8 @@ The `gen` mapping supports the following keys:
   - If true, "Id" in json tags will be uppercase. If false, will be camelcase. Defaults to `false`
 - `json_tags_case_style`:
   - `camel` for camelCase, `pascal` for PascalCase, `snake` for snake_case or `none` to use the column name in the DB. Defaults to `none`.
+- `omit_unused_structs`:
+  - If `true`, sqlc won't generate table and enum structs that aren't used in queries for a given package. Defaults to `false`.
 - `output_batch_file_name`:
   - Customize the name of the batch file. Defaults to `batch.go`.
 - `output_db_file_name`:
@@ -456,6 +458,7 @@ packages:
     emit_enum_valid_method: false
     emit_all_enum_values: false
     json_tags_case_style: "camel"
+    omit_unused_structs: false
     output_batch_file_name: "batch.go"
     output_db_file_name: "db.go"
     output_models_file_name: "models.go"
@@ -508,6 +511,8 @@ Each mapping in the `packages` collection has the following keys:
     that returns all valid enum values.
 - `json_tags_case_style`:
   - `camel` for camelCase, `pascal` for PascalCase, `snake` for snake_case or `none` to use the column name in the DB. Defaults to `none`.
+- `omit_unused_structs`:
+  - If `true`, sqlc won't generate table and enum structs that aren't used in queries for a given package. Defaults to `false`.
 - `output_batch_file_name`:
   - Customize the name of the batch file. Defaults to `batch.go`.
 - `output_db_file_name`:
