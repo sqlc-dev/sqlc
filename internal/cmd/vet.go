@@ -28,6 +28,7 @@ import (
 	"github.com/kyleconroy/sqlc/internal/plugin"
 	"github.com/kyleconroy/sqlc/internal/shfmt"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
+	"github.com/kyleconroy/sqlc/internal/vet"
 )
 
 var ErrFailedChecks = errors.New("failed checks")
@@ -77,22 +78,22 @@ func Vet(ctx context.Context, e Env, dir, filename string, stderr io.Writer) err
 		cel.StdLib(),
 		ext.Strings(ext.StringsVersion(1)),
 		cel.Types(
-			&plugin.VetConfig{},
-			&plugin.VetQuery{},
-			&plugin.PostgreSQLExplain{},
-			&plugin.MySQLExplain{},
+			&vet.Config{},
+			&vet.Query{},
+			&vet.PostgreSQLExplain{},
+			&vet.MySQLExplain{},
 		),
 		cel.Variable("query",
-			cel.ObjectType("plugin.VetQuery"),
+			cel.ObjectType("vet.Query"),
 		),
 		cel.Variable("config",
-			cel.ObjectType("plugin.VetConfig"),
+			cel.ObjectType("vet.Config"),
 		),
 		cel.Variable("postgresql",
-			cel.ObjectType("plugin.PostgreSQL"),
+			cel.ObjectType("vet.PostgreSQL"),
 		),
 		cel.Variable("mysql",
-			cel.ObjectType("plugin.MySQL"),
+			cel.ObjectType("vet.MySQL"),
 		),
 	)
 	if err != nil {
@@ -200,7 +201,7 @@ func (p *pgxConn) Prepare(ctx context.Context, name, query string) error {
 }
 
 func (p *pgxConn) Explain(ctx context.Context, query string, args ...*plugin.Parameter) (*vetEngineOutput, error) {
-	eQuery := "EXPLAIN (ANALYZE false, VERBOSE, COSTS, SETTINGS, BUFFERS, FORMAT JSON) "+query
+	eQuery := "EXPLAIN (ANALYZE false, VERBOSE, COSTS, SETTINGS, BUFFERS, FORMAT JSON) " + query
 	eArgs := make([]any, len(args))
 	row := p.c.QueryRow(ctx, eQuery, eArgs...)
 	var result []json.RawMessage
@@ -211,11 +212,11 @@ func (p *pgxConn) Explain(ctx context.Context, query string, args ...*plugin.Par
 		fmt.Println(eQuery)
 		fmt.Println(string(result[0]))
 	}
-	var explain plugin.PostgreSQLExplain
+	var explain vet.PostgreSQLExplain
 	if err := pjson.Unmarshal(result[0], &explain); err != nil {
 		return nil, err
 	}
-	return &vetEngineOutput{PostgreSQL: &plugin.PostgreSQL{Explain: &explain}}, nil
+	return &vetEngineOutput{PostgreSQL: &vet.PostgreSQL{Explain: &explain}}, nil
 }
 
 type dbPreparer struct {
@@ -237,7 +238,7 @@ type mysqlExplainer struct {
 }
 
 func (me *mysqlExplainer) Explain(ctx context.Context, query string, args ...*plugin.Parameter) (*vetEngineOutput, error) {
-	eQuery := "EXPLAIN FORMAT=JSON "+query
+	eQuery := "EXPLAIN FORMAT=JSON " + query
 	eArgs := make([]any, len(args))
 	row := me.QueryRowContext(ctx, eQuery, eArgs...)
 	var result json.RawMessage
@@ -248,14 +249,14 @@ func (me *mysqlExplainer) Explain(ctx context.Context, query string, args ...*pl
 		fmt.Println(eQuery)
 		fmt.Println(string(result))
 	}
-	var explain plugin.MySQLExplain
+	var explain vet.MySQLExplain
 	if err := pjson.Unmarshal(result, &explain); err != nil {
 		return nil, err
 	}
 	if explain.QueryBlock.Message != "" {
 		return nil, fmt.Errorf("mysql explain: %s", explain.QueryBlock.Message)
 	}
-	return &vetEngineOutput{MySQL: &plugin.MySQL{Explain: &explain}}, nil
+	return &vetEngineOutput{MySQL: &vet.MySQL{Explain: &explain}}, nil
 }
 
 type rule struct {
@@ -412,7 +413,8 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 			}
 
 			// Get explain output for this query if we need it
-			_, pgsqlOK := evalMap["postgresql"]; _, mysqlOK := evalMap["mysql"]
+			_, pgsqlOK := evalMap["postgresql"]
+			_, mysqlOK := evalMap["mysql"]
 			if rule.NeedsExplain && !(pgsqlOK || mysqlOK) {
 				if expl == nil {
 					fmt.Fprintf(c.Stderr, "%s: %s: %s: error explaining query: database connection required\n", query.Filename, query.Name, name)
@@ -455,8 +457,8 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 	return nil
 }
 
-func vetConfig(req *plugin.CodeGenRequest) *plugin.VetConfig {
-	return &plugin.VetConfig{
+func vetConfig(req *plugin.CodeGenRequest) *vet.Config {
+	return &vet.Config{
 		Version: req.Settings.Version,
 		Engine:  req.Settings.Engine,
 		Schema:  req.Settings.Schema,
@@ -464,14 +466,14 @@ func vetConfig(req *plugin.CodeGenRequest) *plugin.VetConfig {
 	}
 }
 
-func vetQuery(q *plugin.Query) *plugin.VetQuery {
-	var params []*plugin.VetParameter
+func vetQuery(q *plugin.Query) *vet.Query {
+	var params []*vet.Parameter
 	for _, p := range q.Params {
-		params = append(params, &plugin.VetParameter{
+		params = append(params, &vet.Parameter{
 			Number: p.Number,
 		})
 	}
-	return &plugin.VetQuery{
+	return &vet.Query{
 		Sql:    q.Text,
 		Name:   q.Name,
 		Cmd:    strings.TrimPrefix(":", q.Cmd),
@@ -480,6 +482,6 @@ func vetQuery(q *plugin.Query) *plugin.VetQuery {
 }
 
 type vetEngineOutput struct {
-	PostgreSQL *plugin.PostgreSQL
-	MySQL      *plugin.MySQL
+	PostgreSQL *vet.PostgreSQL
+	MySQL      *vet.MySQL
 }
