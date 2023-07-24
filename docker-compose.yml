@@ -19,6 +19,8 @@ services:
       MYSQL_DATABASE: mysql
       MYSQL_ROOT_PASSWORD: mysecretpassword
       MYSQL_ROOT_HOST: '%'
+    profiles:
+      - mysql
 
   postgresql:
     image: "postgres:15"
@@ -39,6 +41,8 @@ services:
       POSTGRES_DB: postgres
       POSTGRES_PASSWORD: mysecretpassword
       POSTGRES_USER: postgres
+    profiles:
+      - postgres
 
   postgresql13:
     image: "postgres:13"
@@ -49,6 +53,8 @@ services:
       POSTGRES_DB: postgres
       POSTGRES_PASSWORD: mysecretpassword
       POSTGRES_USER: postgres
+    profiles:
+      - postgres
 
   postgresql12:
     image: "postgres:12"
@@ -59,6 +65,8 @@ services:
       POSTGRES_DB: postgres
       POSTGRES_PASSWORD: mysecretpassword
       POSTGRES_USER: postgres
+    profiles:
+      - postgres
 
   postgresql11:
     image: "postgres:11"
@@ -69,3 +77,5 @@ services:
       POSTGRES_DB: postgres
       POSTGRES_PASSWORD: mysecretpassword
       POSTGRES_USER: postgres
+    profiles:
+      - postgres
