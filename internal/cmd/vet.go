@@ -430,6 +430,10 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 				evalMap["mysql"] = engineOutput.MySQL
 			}
 
+			if debug.Debug.DumpVetEnv {
+				fmt.Printf("vars for rule '%s' evaluating against query '%s':\n%v\n", name, query.Name, evalMap)
+			}
+
 			out, _, err := (*rule.Program).Eval(evalMap)
 			if err != nil {
 				return err
