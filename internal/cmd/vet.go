@@ -27,7 +27,6 @@ import (
 	"github.com/kyleconroy/sqlc/internal/opts"
 	"github.com/kyleconroy/sqlc/internal/plugin"
 	"github.com/kyleconroy/sqlc/internal/shfmt"
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
 	"github.com/kyleconroy/sqlc/internal/vet"
 )
 
@@ -156,35 +155,6 @@ func Vet(ctx context.Context, e Env, dir, filename string, stderr io.Writer) err
 		return ErrFailedChecks
 	}
 	return nil
-}
-
-// Determine if a query can be prepared based on the engine and the statement
-// type.
-func prepareable(sql config.SQL, raw *ast.RawStmt) bool {
-	if sql.Engine == config.EnginePostgreSQL {
-		// TOOD: Add support for MERGE and VALUES stmts
-		switch raw.Stmt.(type) {
-		case *ast.DeleteStmt:
-			return true
-		case *ast.InsertStmt:
-			return true
-		case *ast.SelectStmt:
-			return true
-		case *ast.UpdateStmt:
-			return true
-		default:
-			return false
-		}
-	}
-	// Almost all statements in MySQL can be prepared, so I'm just going to assume they can be
-	// https://dev.mysql.com/doc/refman/8.0/en/sql-prepared-statements.html
-	if sql.Engine == config.EngineMySQL {
-		return true
-	}
-	if sql.Engine == config.EngineSQLite {
-		return true
-	}
-	return false
 }
 
 type preparer interface {
@@ -394,13 +364,8 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 					errored = true
 					continue
 				}
-				if !prepareable(s, result.Queries[i].RawStmt) {
-					fmt.Fprintf(c.Stderr, "%s: %s: %s: error preparing query: %s\n", query.Filename, query.Name, name, "query type is unpreparable")
-					errored = true
-					continue
-				}
-				name := fmt.Sprintf("sqlc_vet_%d_%d", time.Now().Unix(), i)
-				if err := prep.Prepare(ctx, name, query.Text); err != nil {
+				prepName := fmt.Sprintf("sqlc_vet_%d_%d", time.Now().Unix(), i)
+				if err := prep.Prepare(ctx, prepName, query.Text); err != nil {
 					fmt.Fprintf(c.Stderr, "%s: %s: %s: error preparing query: %s\n", query.Filename, query.Name, name, err)
 					errored = true
 					continue
