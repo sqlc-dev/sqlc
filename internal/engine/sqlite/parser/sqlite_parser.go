@@ -211,14 +211,14 @@ func sqliteparserParserInit() {
 		34, 1, 34, 1, 34, 1, 34, 1, 34, 1, 34, 1, 34, 1, 34, 1, 34, 1, 34, 1, 34,
 		1, 34, 1, 34, 1, 34, 1, 34, 1, 34, 1, 34, 1, 34, 3, 34, 1034, 8, 34, 1,
 		34, 1, 34, 1, 34, 1, 34, 1, 34, 1, 34, 1, 34, 1, 34, 1, 34, 3, 34, 1045,
-		8, 34, 1, 34, 1, 34, 1, 34, 1, 34, 1, 34, 1, 34, 1, 34, 1, 34, 1, 34, 1,
-		34, 3, 34, 1057, 8, 34, 1, 34, 1, 34, 1, 34, 1, 34, 3, 34, 1063, 8, 34,
-		1, 34, 1, 34, 1, 34, 1, 34, 1, 34, 3, 34, 1070, 8, 34, 1, 34, 1, 34, 3,
-		34, 1074, 8, 34, 1, 34, 1, 34, 1, 34, 1, 34, 1, 34, 1, 34, 5, 34, 1082,
-		8, 34, 10, 34, 12, 34, 1085, 9, 34, 3, 34, 1087, 8, 34, 1, 34, 1, 34, 1,
-		34, 1, 34, 3, 34, 1093, 8, 34, 1, 34, 1, 34, 1, 34, 1, 34, 3, 34, 1099,
-		8, 34, 1, 34, 1, 34, 1, 34, 1, 34, 1, 34, 5, 34, 1106, 8, 34, 10, 34, 12,
-		34, 1109, 9, 34, 3, 34, 1111, 8, 34, 1, 34, 1, 34, 3, 34, 1115, 8, 34,
+		8, 34, 1, 34, 1, 34, 1, 34, 1, 34, 1, 34, 1, 34, 1, 34, 3, 34, 1054, 8,
+		34, 1, 34, 1, 34, 1, 34, 1, 34, 1, 34, 1, 34, 5, 34, 1062, 8, 34, 10, 34,
+		12, 34, 1065, 9, 34, 3, 34, 1067, 8, 34, 1, 34, 1, 34, 1, 34, 1, 34, 3,
+		34, 1073, 8, 34, 1, 34, 1, 34, 1, 34, 1, 34, 3, 34, 1079, 8, 34, 1, 34,
+		1, 34, 1, 34, 1, 34, 1, 34, 5, 34, 1086, 8, 34, 10, 34, 12, 34, 1089, 9,
+		34, 3, 34, 1091, 8, 34, 1, 34, 1, 34, 3, 34, 1095, 8, 34, 1, 34, 1, 34,
+		1, 34, 1, 34, 1, 34, 3, 34, 1102, 8, 34, 1, 34, 1, 34, 1, 34, 1, 34, 3,
+		34, 1108, 8, 34, 1, 34, 1, 34, 1, 34, 1, 34, 1, 34, 3, 34, 1115, 8, 34,
 		5, 34, 1117, 8, 34, 10, 34, 12, 34, 1120, 9, 34, 1, 35, 1, 35, 1, 35, 1,
 		35, 1, 35, 1, 35, 3, 35, 1128, 8, 35, 1, 35, 1, 35, 1, 36, 1, 36, 1, 37,
 		3, 37, 1135, 8, 37, 1, 37, 1, 37, 1, 37, 1, 37, 1, 37, 3, 37, 1142, 8,
@@ -696,44 +696,44 @@ func sqliteparserParserInit() {
 		1023, 1, 0, 0, 0, 1033, 1024, 1, 0, 0, 0, 1033, 1025, 1, 0, 0, 0, 1033,
 		1026, 1, 0, 0, 0, 1033, 1028, 1, 0, 0, 0, 1033, 1029, 1, 0, 0, 0, 1033,
 		1030, 1, 0, 0, 0, 1033, 1031, 1, 0, 0, 0, 1033, 1032, 1, 0, 0, 0, 1034,
-		1035, 1, 0, 0, 0, 1035, 1117, 3, 68, 34, 15, 1036, 1037, 10, 13, 0, 0,
-		1037, 1038, 5, 32, 0, 0, 1038, 1117, 3, 68, 34, 14, 1039, 1040, 10, 12,
-		0, 0, 1040, 1041, 5, 108, 0, 0, 1041, 1117, 3, 68, 34, 13, 1042, 1044,
-		10, 5, 0, 0, 1043, 1045, 5, 102, 0, 0, 1044, 1043, 1, 0, 0, 0, 1044, 1045,
+		1035, 1, 0, 0, 0, 1035, 1117, 3, 68, 34, 15, 1036, 1037, 10, 12, 0, 0,
+		1037, 1038, 5, 32, 0, 0, 1038, 1117, 3, 68, 34, 13, 1039, 1040, 10, 11,
+		0, 0, 1040, 1041, 5, 108, 0, 0, 1041, 1117, 3, 68, 34, 12, 1042, 1044,
+		10, 4, 0, 0, 1043, 1045, 5, 102, 0, 0, 1044, 1043, 1, 0, 0, 0, 1044, 1045,
 		1, 0, 0, 0, 1045, 1046, 1, 0, 0, 0, 1046, 1047, 5, 39, 0, 0, 1047, 1048,
-		3, 68, 34, 0, 1048, 1049, 5, 32, 0, 0, 1049, 1050, 3, 68, 34, 6, 1050,
-		1117, 1, 0, 0, 0, 1051, 1052, 10, 8, 0, 0, 1052, 1053, 5, 45, 0, 0, 1053,
-		1117, 3, 192, 96, 0, 1054, 1056, 10, 7, 0, 0, 1055, 1057, 5, 102, 0, 0,
-		1056, 1055, 1, 0, 0, 0, 1056, 1057, 1, 0, 0, 0, 1057, 1058, 1, 0, 0, 0,
-		1058, 1059, 7, 13, 0, 0, 1059, 1062, 3, 68, 34, 0, 1060, 1061, 5, 67, 0,
-		0, 1061, 1063, 3, 68, 34, 0, 1062, 1060, 1, 0, 0, 0, 1062, 1063, 1, 0,
-		0, 0, 1063, 1117, 1, 0, 0, 0, 1064, 1069, 10, 6, 0, 0, 1065, 1070, 5, 93,
-		0, 0, 1066, 1070, 5, 103, 0, 0, 1067, 1068, 5, 102, 0, 0, 1068, 1070, 5,
-		104, 0, 0, 1069, 1065, 1, 0, 0, 0, 1069, 1066, 1, 0, 0, 0, 1069, 1067,
-		1, 0, 0, 0, 1070, 1117, 1, 0, 0, 0, 1071, 1073, 10, 4, 0, 0, 1072, 1074,
-		5, 102, 0, 0, 1073, 1072, 1, 0, 0, 0, 1073, 1074, 1, 0, 0, 0, 1074, 1075,
-		1, 0, 0, 0, 1075, 1114, 5, 83, 0, 0, 1076, 1086, 5, 3, 0, 0, 1077, 1087,
-		3, 84, 42, 0, 1078, 1083, 3, 68, 34, 0, 1079, 1080, 5, 5, 0, 0, 1080, 1082,
-		3, 68, 34, 0, 1081, 1079, 1, 0, 0, 0, 1082, 1085, 1, 0, 0, 0, 1083, 1081,
-		1, 0, 0, 0, 1083, 1084, 1, 0, 0, 0, 1084, 1087, 1, 0, 0, 0, 1085, 1083,
-		1, 0, 0, 0, 1086, 1077, 1, 0, 0, 0, 1086, 1078, 1, 0, 0, 0, 1086, 1087,
-		1, 0, 0, 0, 1087, 1088, 1, 0, 0, 0, 1088, 1115, 5, 4, 0, 0, 1089, 1090,
-		3, 182, 91, 0, 1090, 1091, 5, 2, 0, 0, 1091, 1093, 1, 0, 0, 0, 1092, 1089,
-		1, 0, 0, 0, 1092, 1093, 1, 0, 0, 0, 1093, 1094, 1, 0, 0, 0, 1094, 1115,
-		3, 184, 92, 0, 1095, 1096, 3, 182, 91, 0, 1096, 1097, 5, 2, 0, 0, 1097,
-		1099, 1, 0, 0, 0, 1098, 1095, 1, 0, 0, 0, 1098, 1099, 1, 0, 0, 0, 1099,
-		1100, 1, 0, 0, 0, 1100, 1101, 3, 224, 112, 0, 1101, 1110, 5, 3, 0, 0, 1102,
-		1107, 3, 68, 34, 0, 1103, 1104, 5, 5, 0, 0, 1104, 1106, 3, 68, 34, 0, 1105,
-		1103, 1, 0, 0, 0, 1106, 1109, 1, 0, 0, 0, 1107, 1105, 1, 0, 0, 0, 1107,
-		1108, 1, 0, 0, 0, 1108, 1111, 1, 0, 0, 0, 1109, 1107, 1, 0, 0, 0, 1110,
-		1102, 1, 0, 0, 0, 1110, 1111, 1, 0, 0, 0, 1111, 1112, 1, 0, 0, 0, 1112,
-		1113, 5, 4, 0, 0, 1113, 1115, 1, 0, 0, 0, 1114, 1076, 1, 0, 0, 0, 1114,
-		1092, 1, 0, 0, 0, 1114, 1098, 1, 0, 0, 0, 1115, 1117, 1, 0, 0, 0, 1116,
+		3, 68, 34, 0, 1048, 1049, 5, 32, 0, 0, 1049, 1050, 3, 68, 34, 5, 1050,
+		1117, 1, 0, 0, 0, 1051, 1053, 10, 13, 0, 0, 1052, 1054, 5, 102, 0, 0, 1053,
+		1052, 1, 0, 0, 0, 1053, 1054, 1, 0, 0, 0, 1054, 1055, 1, 0, 0, 0, 1055,
+		1094, 5, 83, 0, 0, 1056, 1066, 5, 3, 0, 0, 1057, 1067, 3, 84, 42, 0, 1058,
+		1063, 3, 68, 34, 0, 1059, 1060, 5, 5, 0, 0, 1060, 1062, 3, 68, 34, 0, 1061,
+		1059, 1, 0, 0, 0, 1062, 1065, 1, 0, 0, 0, 1063, 1061, 1, 0, 0, 0, 1063,
+		1064, 1, 0, 0, 0, 1064, 1067, 1, 0, 0, 0, 1065, 1063, 1, 0, 0, 0, 1066,
+		1057, 1, 0, 0, 0, 1066, 1058, 1, 0, 0, 0, 1066, 1067, 1, 0, 0, 0, 1067,
+		1068, 1, 0, 0, 0, 1068, 1095, 5, 4, 0, 0, 1069, 1070, 3, 182, 91, 0, 1070,
+		1071, 5, 2, 0, 0, 1071, 1073, 1, 0, 0, 0, 1072, 1069, 1, 0, 0, 0, 1072,
+		1073, 1, 0, 0, 0, 1073, 1074, 1, 0, 0, 0, 1074, 1095, 3, 184, 92, 0, 1075,
+		1076, 3, 182, 91, 0, 1076, 1077, 5, 2, 0, 0, 1077, 1079, 1, 0, 0, 0, 1078,
+		1075, 1, 0, 0, 0, 1078, 1079, 1, 0, 0, 0, 1079, 1080, 1, 0, 0, 0, 1080,
+		1081, 3, 224, 112, 0, 1081, 1090, 5, 3, 0, 0, 1082, 1087, 3, 68, 34, 0,
+		1083, 1084, 5, 5, 0, 0, 1084, 1086, 3, 68, 34, 0, 1085, 1083, 1, 0, 0,
+		0, 1086, 1089, 1, 0, 0, 0, 1087, 1085, 1, 0, 0, 0, 1087, 1088, 1, 0, 0,
+		0, 1088, 1091, 1, 0, 0, 0, 1089, 1087, 1, 0, 0, 0, 1090, 1082, 1, 0, 0,
+		0, 1090, 1091, 1, 0, 0, 0, 1091, 1092, 1, 0, 0, 0, 1092, 1093, 5, 4, 0,
+		0, 1093, 1095, 1, 0, 0, 0, 1094, 1056, 1, 0, 0, 0, 1094, 1072, 1, 0, 0,
+		0, 1094, 1078, 1, 0, 0, 0, 1095, 1117, 1, 0, 0, 0, 1096, 1097, 10, 7, 0,
+		0, 1097, 1098, 5, 45, 0, 0, 1098, 1117, 3, 192, 96, 0, 1099, 1101, 10,
+		6, 0, 0, 1100, 1102, 5, 102, 0, 0, 1101, 1100, 1, 0, 0, 0, 1101, 1102,
+		1, 0, 0, 0, 1102, 1103, 1, 0, 0, 0, 1103, 1104, 7, 13, 0, 0, 1104, 1107,
+		3, 68, 34, 0, 1105, 1106, 5, 67, 0, 0, 1106, 1108, 3, 68, 34, 0, 1107,
+		1105, 1, 0, 0, 0, 1107, 1108, 1, 0, 0, 0, 1108, 1117, 1, 0, 0, 0, 1109,
+		1114, 10, 5, 0, 0, 1110, 1115, 5, 93, 0, 0, 1111, 1115, 5, 103, 0, 0, 1112,
+		1113, 5, 102, 0, 0, 1113, 1115, 5, 104, 0, 0, 1114, 1110, 1, 0, 0, 0, 1114,
+		1111, 1, 0, 0, 0, 1114, 1112, 1, 0, 0, 0, 1115, 1117, 1, 0, 0, 0, 1116,
 		1005, 1, 0, 0, 0, 1116, 1008, 1, 0, 0, 0, 1116, 1011, 1, 0, 0, 0, 1116,
 		1014, 1, 0, 0, 0, 1116, 1017, 1, 0, 0, 0, 1116, 1020, 1, 0, 0, 0, 1116,
 		1036, 1, 0, 0, 0, 1116, 1039, 1, 0, 0, 0, 1116, 1042, 1, 0, 0, 0, 1116,
-		1051, 1, 0, 0, 0, 1116, 1054, 1, 0, 0, 0, 1116, 1064, 1, 0, 0, 0, 1116,
-		1071, 1, 0, 0, 0, 1117, 1120, 1, 0, 0, 0, 1118, 1116, 1, 0, 0, 0, 1118,
+		1051, 1, 0, 0, 0, 1116, 1096, 1, 0, 0, 0, 1116, 1099, 1, 0, 0, 0, 1116,
+		1109, 1, 0, 0, 0, 1117, 1120, 1, 0, 0, 0, 1118, 1116, 1, 0, 0, 0, 1118,
 		1119, 1, 0, 0, 0, 1119, 69, 1, 0, 0, 0, 1120, 1118, 1, 0, 0, 0, 1121, 1122,
 		5, 115, 0, 0, 1122, 1127, 5, 3, 0, 0, 1123, 1128, 5, 81, 0, 0, 1124, 1125,
 		7, 14, 0, 0, 1125, 1126, 5, 5, 0, 0, 1126, 1128, 3, 168, 84, 0, 1127, 1123,
@@ -1138,8 +1138,8 @@ func sqliteparserParserInit() {
 		723, 732, 737, 748, 753, 764, 769, 773, 789, 799, 804, 812, 824, 829, 840,
 		843, 845, 851, 854, 856, 860, 864, 871, 874, 877, 884, 887, 890, 893, 897,
 		905, 910, 921, 926, 935, 942, 946, 950, 953, 961, 974, 977, 985, 994, 998,
-		1003, 1033, 1044, 1056, 1062, 1069, 1073, 1083, 1086, 1092, 1098, 1107,
-		1110, 1114, 1116, 1118, 1127, 1134, 1141, 1147, 1152, 1160, 1165, 1174,
+		1003, 1033, 1044, 1053, 1063, 1066, 1072, 1078, 1087, 1090, 1094, 1101,
+		1107, 1114, 1116, 1118, 1127, 1134, 1141, 1147, 1152, 1160, 1165, 1174,
 		1185, 1192, 1196, 1199, 1202, 1206, 1216, 1222, 1224, 1232, 1239, 1246,
 		1251, 1253, 1259, 1268, 1273, 1280, 1284, 1286, 1289, 1297, 1301, 1304,
 		1310, 1314, 1319, 1326, 1335, 1339, 1341, 1345, 1354, 1359, 1361, 1374,
@@ -13030,8 +13030,8 @@ func (p *SQLiteParser) expr(_p int) (localctx IExprContext) {
 				p.PushNewRecursionContext(localctx, _startState, SQLiteParserRULE_expr)
 				p.SetState(1036)
 
-				if !(p.Precpred(p.GetParserRuleContext(), 13)) {
-					panic(antlr.NewFailedPredicateException(p, "p.Precpred(p.GetParserRuleContext(), 13)", ""))
+				if !(p.Precpred(p.GetParserRuleContext(), 12)) {
+					panic(antlr.NewFailedPredicateException(p, "p.Precpred(p.GetParserRuleContext(), 12)", ""))
 				}
 				{
 					p.SetState(1037)
@@ -13039,7 +13039,7 @@ func (p *SQLiteParser) expr(_p int) (localctx IExprContext) {
 				}
 				{
 					p.SetState(1038)
-					p.expr(14)
+					p.expr(13)
 				}
 
 			case 8:
@@ -13047,8 +13047,8 @@ func (p *SQLiteParser) expr(_p int) (localctx IExprContext) {
 				p.PushNewRecursionContext(localctx, _startState, SQLiteParserRULE_expr)
 				p.SetState(1039)
 
-				if !(p.Precpred(p.GetParserRuleContext(), 12)) {
-					panic(antlr.NewFailedPredicateException(p, "p.Precpred(p.GetParserRuleContext(), 12)", ""))
+				if !(p.Precpred(p.GetParserRuleContext(), 11)) {
+					panic(antlr.NewFailedPredicateException(p, "p.Precpred(p.GetParserRuleContext(), 11)", ""))
 				}
 				{
 					p.SetState(1040)
@@ -13056,7 +13056,7 @@ func (p *SQLiteParser) expr(_p int) (localctx IExprContext) {
 				}
 				{
 					p.SetState(1041)
-					p.expr(13)
+					p.expr(12)
 				}
 
 			case 9:
@@ -13064,8 +13064,8 @@ func (p *SQLiteParser) expr(_p int) (localctx IExprContext) {
 				p.PushNewRecursionContext(localctx, _startState, SQLiteParserRULE_expr)
 				p.SetState(1042)
 
-				if !(p.Precpred(p.GetParserRuleContext(), 5)) {
-					panic(antlr.NewFailedPredicateException(p, "p.Precpred(p.GetParserRuleContext(), 5)", ""))
+				if !(p.Precpred(p.GetParserRuleContext(), 4)) {
+					panic(antlr.NewFailedPredicateException(p, "p.Precpred(p.GetParserRuleContext(), 4)", ""))
 				}
 				p.SetState(1044)
 				p.GetErrorHandler().Sync(p)
@@ -13092,47 +13092,196 @@ func (p *SQLiteParser) expr(_p int) (localctx IExprContext) {
 				}
 				{
 					p.SetState(1049)
-					p.expr(6)
+					p.expr(5)
 				}
 
 			case 10:
-				localctx = NewExpr_collateContext(p, NewExprContext(p, _parentctx, _parentState))
+				localctx = NewExpr_in_selectContext(p, NewExprContext(p, _parentctx, _parentState))
 				p.PushNewRecursionContext(localctx, _startState, SQLiteParserRULE_expr)
 				p.SetState(1051)
 
-				if !(p.Precpred(p.GetParserRuleContext(), 8)) {
-					panic(antlr.NewFailedPredicateException(p, "p.Precpred(p.GetParserRuleContext(), 8)", ""))
+				if !(p.Precpred(p.GetParserRuleContext(), 13)) {
+					panic(antlr.NewFailedPredicateException(p, "p.Precpred(p.GetParserRuleContext(), 13)", ""))
 				}
-				{
-					p.SetState(1052)
-					p.Match(SQLiteParserCOLLATE_)
-				}
-				{
-					p.SetState(1053)
-					p.Collation_name()
-				}
-
-			case 11:
-				localctx = NewExpr_comparisonContext(p, NewExprContext(p, _parentctx, _parentState))
-				p.PushNewRecursionContext(localctx, _startState, SQLiteParserRULE_expr)
-				p.SetState(1054)
-
-				if !(p.Precpred(p.GetParserRuleContext(), 7)) {
-					panic(antlr.NewFailedPredicateException(p, "p.Precpred(p.GetParserRuleContext(), 7)", ""))
-				}
-				p.SetState(1056)
+				p.SetState(1053)
 				p.GetErrorHandler().Sync(p)
 				_la = p.GetTokenStream().LA(1)
 
 				if _la == SQLiteParserNOT_ {
 					{
-						p.SetState(1055)
+						p.SetState(1052)
 						p.Match(SQLiteParserNOT_)
 					}
 
 				}
 				{
-					p.SetState(1058)
+					p.SetState(1055)
+					p.Match(SQLiteParserIN_)
+				}
+				p.SetState(1094)
+				p.GetErrorHandler().Sync(p)
+				switch p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 139, p.GetParserRuleContext()) {
+				case 1:
+					{
+						p.SetState(1056)
+						p.Match(SQLiteParserOPEN_PAR)
+					}
+					p.SetState(1066)
+					p.GetErrorHandler().Sync(p)
+
+					if p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 134, p.GetParserRuleContext()) == 1 {
+						{
+							p.SetState(1057)
+							p.Select_stmt()
+						}
+
+					} else if p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 134, p.GetParserRuleContext()) == 2 {
+						{
+							p.SetState(1058)
+							p.expr(0)
+						}
+						p.SetState(1063)
+						p.GetErrorHandler().Sync(p)
+						_la = p.GetTokenStream().LA(1)
+
+						for _la == SQLiteParserCOMMA {
+							{
+								p.SetState(1059)
+								p.Match(SQLiteParserCOMMA)
+							}
+							{
+								p.SetState(1060)
+								p.expr(0)
+							}
+
+							p.SetState(1065)
+							p.GetErrorHandler().Sync(p)
+							_la = p.GetTokenStream().LA(1)
+						}
+
+					}
+					{
+						p.SetState(1068)
+						p.Match(SQLiteParserCLOSE_PAR)
+					}
+
+				case 2:
+					p.SetState(1072)
+					p.GetErrorHandler().Sync(p)
+
+					if p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 135, p.GetParserRuleContext()) == 1 {
+						{
+							p.SetState(1069)
+							p.Schema_name()
+						}
+						{
+							p.SetState(1070)
+							p.Match(SQLiteParserDOT)
+						}
+
+					}
+					{
+						p.SetState(1074)
+						p.Table_name()
+					}
+
+				case 3:
+					p.SetState(1078)
+					p.GetErrorHandler().Sync(p)
+
+					if p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 136, p.GetParserRuleContext()) == 1 {
+						{
+							p.SetState(1075)
+							p.Schema_name()
+						}
+						{
+							p.SetState(1076)
+							p.Match(SQLiteParserDOT)
+						}
+
+					}
+					{
+						p.SetState(1080)
+						p.Table_function_name()
+					}
+					{
+						p.SetState(1081)
+						p.Match(SQLiteParserOPEN_PAR)
+					}
+					p.SetState(1090)
+					p.GetErrorHandler().Sync(p)
+					_la = p.GetTokenStream().LA(1)
+
+					if ((int64(_la) & ^0x3f) == 0 && ((int64(1)<<_la)&-33552632) != 0) || ((int64((_la-64)) & ^0x3f) == 0 && ((int64(1)<<(_la-64))&-1) != 0) || ((int64((_la-128)) & ^0x3f) == 0 && ((int64(1)<<(_la-128))&-270215977642229761) != 0) {
+						{
+							p.SetState(1082)
+							p.expr(0)
+						}
+						p.SetState(1087)
+						p.GetErrorHandler().Sync(p)
+						_la = p.GetTokenStream().LA(1)
+
+						for _la == SQLiteParserCOMMA {
+							{
+								p.SetState(1083)
+								p.Match(SQLiteParserCOMMA)
+							}
+							{
+								p.SetState(1084)
+								p.expr(0)
+							}
+
+							p.SetState(1089)
+							p.GetErrorHandler().Sync(p)
+							_la = p.GetTokenStream().LA(1)
+						}
+
+					}
+					{
+						p.SetState(1092)
+						p.Match(SQLiteParserCLOSE_PAR)
+					}
+
+				}
+
+			case 11:
+				localctx = NewExpr_collateContext(p, NewExprContext(p, _parentctx, _parentState))
+				p.PushNewRecursionContext(localctx, _startState, SQLiteParserRULE_expr)
+				p.SetState(1096)
+
+				if !(p.Precpred(p.GetParserRuleContext(), 7)) {
+					panic(antlr.NewFailedPredicateException(p, "p.Precpred(p.GetParserRuleContext(), 7)", ""))
+				}
+				{
+					p.SetState(1097)
+					p.Match(SQLiteParserCOLLATE_)
+				}
+				{
+					p.SetState(1098)
+					p.Collation_name()
+				}
+
+			case 12:
+				localctx = NewExpr_comparisonContext(p, NewExprContext(p, _parentctx, _parentState))
+				p.PushNewRecursionContext(localctx, _startState, SQLiteParserRULE_expr)
+				p.SetState(1099)
+
+				if !(p.Precpred(p.GetParserRuleContext(), 6)) {
+					panic(antlr.NewFailedPredicateException(p, "p.Precpred(p.GetParserRuleContext(), 6)", ""))
+				}
+				p.SetState(1101)
+				p.GetErrorHandler().Sync(p)
+				_la = p.GetTokenStream().LA(1)
+
+				if _la == SQLiteParserNOT_ {
+					{
+						p.SetState(1100)
+						p.Match(SQLiteParserNOT_)
+					}
+
+				}
+				{
+					p.SetState(1103)
 					_la = p.GetTokenStream().LA(1)
 
 					if !((int64((_la-77)) & ^0x3f) == 0 && ((int64(1)<<(_la-77))&2199028498433) != 0) {
@@ -13143,209 +13292,60 @@ func (p *SQLiteParser) expr(_p int) (localctx IExprContext) {
 					}
 				}
 				{
-					p.SetState(1059)
+					p.SetState(1104)
 					p.expr(0)
 				}
-				p.SetState(1062)
+				p.SetState(1107)
 				p.GetErrorHandler().Sync(p)
 
-				if p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 133, p.GetParserRuleContext()) == 1 {
+				if p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 141, p.GetParserRuleContext()) == 1 {
 					{
-						p.SetState(1060)
+						p.SetState(1105)
 						p.Match(SQLiteParserESCAPE_)
 					}
 					{
-						p.SetState(1061)
+						p.SetState(1106)
 						p.expr(0)
 					}
 
 				}
 
-			case 12:
+			case 13:
 				localctx = NewExpr_null_compContext(p, NewExprContext(p, _parentctx, _parentState))
 				p.PushNewRecursionContext(localctx, _startState, SQLiteParserRULE_expr)
-				p.SetState(1064)
+				p.SetState(1109)
 
-				if !(p.Precpred(p.GetParserRuleContext(), 6)) {
-					panic(antlr.NewFailedPredicateException(p, "p.Precpred(p.GetParserRuleContext(), 6)", ""))
+				if !(p.Precpred(p.GetParserRuleContext(), 5)) {
+					panic(antlr.NewFailedPredicateException(p, "p.Precpred(p.GetParserRuleContext(), 5)", ""))
 				}
-				p.SetState(1069)
+				p.SetState(1114)
 				p.GetErrorHandler().Sync(p)
 
 				switch p.GetTokenStream().LA(1) {
 				case SQLiteParserISNULL_:
 					{
-						p.SetState(1065)
+						p.SetState(1110)
 						p.Match(SQLiteParserISNULL_)
 					}
 
 				case SQLiteParserNOTNULL_:
 					{
-						p.SetState(1066)
+						p.SetState(1111)
 						p.Match(SQLiteParserNOTNULL_)
 					}
 
 				case SQLiteParserNOT_:
 					{
-						p.SetState(1067)
+						p.SetState(1112)
 						p.Match(SQLiteParserNOT_)
 					}
 					{
-						p.SetState(1068)
+						p.SetState(1113)
 						p.Match(SQLiteParserNULL_)
 					}
 
 				default:
 					panic(antlr.NewNoViableAltException(p, nil, nil, nil, nil, nil))
-				}
-
-			case 13:
-				localctx = NewExpr_in_selectContext(p, NewExprContext(p, _parentctx, _parentState))
-				p.PushNewRecursionContext(localctx, _startState, SQLiteParserRULE_expr)
-				p.SetState(1071)
-
-				if !(p.Precpred(p.GetParserRuleContext(), 4)) {
-					panic(antlr.NewFailedPredicateException(p, "p.Precpred(p.GetParserRuleContext(), 4)", ""))
-				}
-				p.SetState(1073)
-				p.GetErrorHandler().Sync(p)
-				_la = p.GetTokenStream().LA(1)
-
-				if _la == SQLiteParserNOT_ {
-					{
-						p.SetState(1072)
-						p.Match(SQLiteParserNOT_)
-					}
-
-				}
-				{
-					p.SetState(1075)
-					p.Match(SQLiteParserIN_)
-				}
-				p.SetState(1114)
-				p.GetErrorHandler().Sync(p)
-				switch p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 142, p.GetParserRuleContext()) {
-				case 1:
-					{
-						p.SetState(1076)
-						p.Match(SQLiteParserOPEN_PAR)
-					}
-					p.SetState(1086)
-					p.GetErrorHandler().Sync(p)
-
-					if p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 137, p.GetParserRuleContext()) == 1 {
-						{
-							p.SetState(1077)
-							p.Select_stmt()
-						}
-
-					} else if p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 137, p.GetParserRuleContext()) == 2 {
-						{
-							p.SetState(1078)
-							p.expr(0)
-						}
-						p.SetState(1083)
-						p.GetErrorHandler().Sync(p)
-						_la = p.GetTokenStream().LA(1)
-
-						for _la == SQLiteParserCOMMA {
-							{
-								p.SetState(1079)
-								p.Match(SQLiteParserCOMMA)
-							}
-							{
-								p.SetState(1080)
-								p.expr(0)
-							}
-
-							p.SetState(1085)
-							p.GetErrorHandler().Sync(p)
-							_la = p.GetTokenStream().LA(1)
-						}
-
-					}
-					{
-						p.SetState(1088)
-						p.Match(SQLiteParserCLOSE_PAR)
-					}
-
-				case 2:
-					p.SetState(1092)
-					p.GetErrorHandler().Sync(p)
-
-					if p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 138, p.GetParserRuleContext()) == 1 {
-						{
-							p.SetState(1089)
-							p.Schema_name()
-						}
-						{
-							p.SetState(1090)
-							p.Match(SQLiteParserDOT)
-						}
-
-					}
-					{
-						p.SetState(1094)
-						p.Table_name()
-					}
-
-				case 3:
-					p.SetState(1098)
-					p.GetErrorHandler().Sync(p)
-
-					if p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 139, p.GetParserRuleContext()) == 1 {
-						{
-							p.SetState(1095)
-							p.Schema_name()
-						}
-						{
-							p.SetState(1096)
-							p.Match(SQLiteParserDOT)
-						}
-
-					}
-					{
-						p.SetState(1100)
-						p.Table_function_name()
-					}
-					{
-						p.SetState(1101)
-						p.Match(SQLiteParserOPEN_PAR)
-					}
-					p.SetState(1110)
-					p.GetErrorHandler().Sync(p)
-					_la = p.GetTokenStream().LA(1)
-
-					if ((int64(_la) & ^0x3f) == 0 && ((int64(1)<<_la)&-33552632) != 0) || ((int64((_la-64)) & ^0x3f) == 0 && ((int64(1)<<(_la-64))&-1) != 0) || ((int64((_la-128)) & ^0x3f) == 0 && ((int64(1)<<(_la-128))&-270215977642229761) != 0) {
-						{
-							p.SetState(1102)
-							p.expr(0)
-						}
-						p.SetState(1107)
-						p.GetErrorHandler().Sync(p)
-						_la = p.GetTokenStream().LA(1)
-
-						for _la == SQLiteParserCOMMA {
-							{
-								p.SetState(1103)
-								p.Match(SQLiteParserCOMMA)
-							}
-							{
-								p.SetState(1104)
-								p.expr(0)
-							}
-
-							p.SetState(1109)
-							p.GetErrorHandler().Sync(p)
-							_la = p.GetTokenStream().LA(1)
-						}
-
-					}
-					{
-						p.SetState(1112)
-						p.Match(SQLiteParserCLOSE_PAR)
-					}
-
 				}
 
 			}
@@ -29771,16 +29771,16 @@ func (p *SQLiteParser) Expr_Sempred(localctx antlr.RuleContext, predIndex int) b
 		return p.Precpred(p.GetParserRuleContext(), 14)
 
 	case 6:
-		return p.Precpred(p.GetParserRuleContext(), 13)
-
-	case 7:
 		return p.Precpred(p.GetParserRuleContext(), 12)
 
+	case 7:
+		return p.Precpred(p.GetParserRuleContext(), 11)
+
 	case 8:
-		return p.Precpred(p.GetParserRuleContext(), 5)
+		return p.Precpred(p.GetParserRuleContext(), 4)
 
 	case 9:
-		return p.Precpred(p.GetParserRuleContext(), 8)
+		return p.Precpred(p.GetParserRuleContext(), 13)
 
 	case 10:
 		return p.Precpred(p.GetParserRuleContext(), 7)
@@ -29789,7 +29789,7 @@ func (p *SQLiteParser) Expr_Sempred(localctx antlr.RuleContext, predIndex int) b
 		return p.Precpred(p.GetParserRuleContext(), 6)
 
 	case 12:
-		return p.Precpred(p.GetParserRuleContext(), 4)
+		return p.Precpred(p.GetParserRuleContext(), 5)
 
 	default:
 		panic("No predicate with index: " + fmt.Sprint(predIndex))
