@@ -80,8 +80,8 @@ func Vet(ctx context.Context, e Env, dir, filename string, stderr io.Writer) err
 		cel.Types(
 			&vet.Config{},
 			&vet.Query{},
-			&vet.PostgreSQLExplain{},
-			&vet.MySQLExplain{},
+			&vet.PostgreSQL{},
+			&vet.MySQL{},
 		),
 		cel.Variable("query",
 			cel.ObjectType("vet.Query"),
