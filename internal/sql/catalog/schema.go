@@ -100,6 +100,11 @@ func (c *Catalog) createSchema(stmt *ast.CreateSchemaStmt) error {
 		return fmt.Errorf("create schema: empty name")
 	}
 	if _, err := c.getSchema(*stmt.Name); err == nil {
+		// If the default schema already exists, treat additional CREATE SCHEMA
+		// statements as no-ops.
+		if *stmt.Name == c.DefaultSchema {
+			return nil
+		}
 		if !stmt.IfNotExists {
 			return sqlerr.SchemaExists(*stmt.Name)
 		}
