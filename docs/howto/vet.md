@@ -147,6 +147,8 @@ sql:
   - schema: "query.sql"
     queries: "query.sql"
     engine: "postgresql"
+    database:
+      uri: "postgresql://postgres:postgres@localhost:5432/postgres"
     gen:
       go:
         package: "db"
@@ -155,8 +157,7 @@ sql:
       - debug
 rules:
 - name: debug
-  message: "Debug"
-  rule: has(postgresql.explain)
+  rule: "!has(postgresql.explain)" # A dummy rule to trigger explain
 ```
 
 Please note that `sqlc` does not manage or migrate your database. Use your
