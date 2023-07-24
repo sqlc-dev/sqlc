@@ -7,10 +7,12 @@
 Rules are defined in the `sqlc` [configuration](../reference/config) file. They consist
 of a name, message, and a [Common Expression Language (CEL)](https://github.com/google/cel-spec)
 expression. Expressions are evaluated using [cel-go](https://github.com/google/cel-go).
-If an expression evaluates to `true`, an error is reported using the given message.
+If an expression evaluates to `true`, `sqlc vet` will report an error using the given message.
 
-Each expression has access to variables from your sqlc configuration and queries,
-defined in the following struct:
+## Defining lint rules
+
+Each lint rule's CEL expression has access to information from your sqlc configuration and queries
+via variables defined in the following proto messages.
 
 ```proto
 message Config
@@ -39,12 +41,17 @@ message Parameter
 }
 ```
 
-This struct will likely expand in the future to include more query information.
-We may also add information returned from a running database, such as the result from
-`EXPLAIN ...`.
+In addition to this basic information, when you have a PostgreSQL or MySQL
+[database connection configured](../reference/config.html#database)
+each CEL expression has access to the output from running `EXPLAIN ...` on your query
+via the `postgresql.explain` and `mysql.explain` variables.
+This output is quite complex and depends on the structure of your query but sqlc attempts
+to parse and provide as much information as it can. See
+[Rules using `EXPLAIN ...` output](#rules-using-explain-output) for more information.
 
-While these examples are simplistic, they give you a flavor of the types of
-rules you can write.
+Here are a few example rules just using the basic configuration and query information available
+to the CEL expression environment. While these examples are simplistic, they give you a flavor
+of the types of rules you can write.
 
 ```yaml
 version: 2
@@ -80,6 +87,83 @@ rules:
       query.cmd == "exec"
 ```
 
+### Rules using `EXPLAIN ...` output
+
+The CEL expression environment has two variables containing `EXPLAIN ...` output,
+`postgresql.explain` and `mysql.explain`. `sqlc` only populates the variable associated with
+your configured database engine, and only when you have a
+[database connection configured](../reference/config.html#database).
+
+For the `postgresql` engine, `sqlc` runs
+
+```sql
+EXPLAIN (ANALYZE false, VERBOSE, COSTS, SETTINGS, BUFFERS, FORMAT JSON) ...
+```
+
+where `"..."` is your query string, and parses the output into a `PostgreSQLExplain` proto message.
+
+For the `mysql` engine, `sqlc` runs
+
+```sql
+EXPLAIN FORMAT=JSON ...
+```
+
+where `"..."` is your query string, and parses the output into a `MySQLExplain` proto message.
+
+These proto message definitions are too long to include here, but you can find them in the `protos`
+directory within the `sqlc` source tree.
+
+The output from `EXPLAIN ...` depends on the structure of your query so it's a bit difficult
+to offer generic examples. Refer to the
+[PostgreSQL documentation](https://www.postgresql.org/docs/current/using-explain.html) and
+[MySQL documentation](https://dev.mysql.com/doc/refman/en/explain-output.html) for more
+information.
+
+```yaml
+...
+rules:
+- name: postgresql-query-too-costly
+  message: "Query cost estimate is too high"
+  rule: "postgresql.explain.plan.total_cost > 1.0"
+- name: postgresql-no-seq-scan
+  message: "Query plan results in a sequential scan"
+  rule: "postgresql.explain.plan.node_type == 'Seq Scan'"
+- name: mysql-query-too-costly
+  message: "Query cost estimate is too high"
+  rule: "has(mysql.explain.query_block.cost_info) && double(mysql.explain.query_block.cost_info.query_cost) > 2.0"
+- name: mysql-must-use-primary-key
+  message: "Query plan doesn't use primary key"
+  rule: "has(mysql.explain.query_block.table.key) && mysql.explain.query_block.table.key != 'PRIMARY'"
+```
+
+When building rules that depend on `EXPLAIN ...` output, it may be helpful to see the actual JSON
+returned from the database. `sqlc` will print it When you set the environment variable
+`SQLCDEBUG=dumpexplain=1`. Use this environment variable together with a dummy rule to see
+`EXPLAIN ...` output for all of your queries.
+
+```yaml
+version: 2
+sql:
+  - schema: "query.sql"
+    queries: "query.sql"
+    engine: "postgresql"
+    database:
+      uri: "postgresql://postgres:postgres@localhost:5432/postgres"
+    gen:
+      go:
+        package: "db"
+        out: "db"
+    rules:
+      - debug
+rules:
+- name: debug
+  rule: "!has(postgresql.explain)" # A dummy rule to trigger explain
+```
+
+Please note that `sqlc` does not manage or migrate your database. Use your
+migration tool of choice to create the necessary database tables and objects
+before running `sqlc vet` with rules that depend on `EXPLAIN ...` output.
+
 ## Built-in rules
 
 ### sqlc/db-prepare
@@ -109,4 +193,47 @@ example](https://github.com/kyleconroy/sqlc/blob/main/examples/authors/sqlc.yaml
 
 Please note that `sqlc` does not manage or migrate your database. Use your
 migration tool of choice to create the necessary database tables and objects
-before running `sqlc vet`.
+before running `sqlc vet` with the `sqlc/db-prepare` rule.
+
+## Running lint rules
+
+When you add the name of a defined rule to the rules list
+for a [sql package](https://docs.sqlc.dev/en/stable/reference/config.html#sql),
+`sqlc vet` will evaluate that rule against every query in the package.
+
+In the example below, two rules are defined but only one is enabled.
+
+```yaml
+version: 2
+sql:
+  - schema: "query.sql"
+    queries: "query.sql"
+    engine: "postgresql"
+    gen:
+      go:
+        package: "authors"
+        out: "db"
+    rules:
+      - no-delete
+rules:
+  - name: no-pg
+    message: "invalid engine: postgresql"
+    rule: |
+      config.engine == "postgresql"
+  - name: no-delete
+    message: "don't use delete statements"
+    rule: |
+      query.sql.contains("DELETE")
+```
+
+### Opting-out of lint rules
+
+For any query, you can tell `sqlc vet` not to evaluate lint rules using the
+`@sqlc-vet-disable` query annotation.
+
+```sql
+/* name: GetAuthor :one */
+/* @sqlc-vet-disable */
+SELECT * FROM authors
+WHERE id = ? LIMIT 1;
+```
