@@ -431,7 +431,8 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 			}
 
 			if debug.Debug.DumpVetEnv {
-				fmt.Printf("vars for rule '%s' evaluating against query '%s':\n%v\n", name, query.Name, evalMap)
+				fmt.Printf("vars for rule '%s' evaluating against query '%s':\n", name, query.Name)
+				debug.DumpAsJSON(evalMap)
 			}
 
 			out, _, err := (*rule.Program).Eval(evalMap)
