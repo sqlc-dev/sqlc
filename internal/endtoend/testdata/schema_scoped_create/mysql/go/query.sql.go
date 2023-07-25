@@ -15,7 +15,7 @@ INSERT INTO foo.bar (id, name) VALUES (?, ?)
 `
 
 type SchemaScopedCreateParams struct {
-	ID   int64
+	ID   uint64
 	Name string
 }
 
