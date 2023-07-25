@@ -5,7 +5,7 @@ packages:
     schema: "sql/"
     queries: "sql/"
     overrides:
-      - go_type: "github.com/kyleconroy/sqlc-testdata/pkg.CustomType"
+      - go_type: "github.com/sqlc-dev/sqlc-testdata/pkg.CustomType"
         column: "foo.retyped"
       - go_type: "github.com/lib/pq.StringArray"
         column: "foo.langs"

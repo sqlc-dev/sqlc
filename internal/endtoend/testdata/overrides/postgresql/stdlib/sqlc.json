@@ -9,7 +9,7 @@
       "queries": "query.sql",
       "overrides": [
         {
-          "go_type": "github.com/kyleconroy/sqlc-testdata/pkg.CustomType",
+          "go_type": "github.com/sqlc-dev/sqlc-testdata/pkg.CustomType",
           "column": "foo.retyped"
         },
         {
