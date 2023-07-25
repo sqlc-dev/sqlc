@@ -12,6 +12,8 @@ import (
 //     dumpcatalog: setting dumpcatalog=1 will print the parsed database schema
 //     trace: setting trace=<path> will output a trace
 //     processplugins: setting processplugins=0 will disable process-based plugins
+//     dumpvetenv: setting dumpvetenv=1 will print the variables available to
+//         a vet rule during evaluation
 //     dumpexplain: setting dumpexplain=1 will print the JSON-formatted output
 //         from executing EXPLAIN ... on a query during vet rule evaluation
 
@@ -20,6 +22,7 @@ type Debug struct {
 	DumpCatalog    bool
 	Trace          string
 	ProcessPlugins bool
+	DumpVetEnv     bool
 	DumpExplain    bool
 }
 
@@ -50,6 +53,8 @@ func DebugFromString(val string) Debug {
 			}
 		case pair == "processplugins=0":
 			d.ProcessPlugins = false
+		case pair == "dumpvetenv=1":
+			d.DumpVetEnv = true
 		case pair == "dumpexplain=1":
 			d.DumpExplain = true
 		}

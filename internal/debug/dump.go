@@ -1,6 +1,8 @@
 package debug
 
 import (
+	"encoding/json"
+	"fmt"
 	"os"
 
 	"github.com/davecgh/go-spew/spew"
@@ -21,5 +23,12 @@ func init() {
 func Dump(n ...interface{}) {
 	if Active {
 		spew.Dump(n)
+	}
+}
+
+func DumpAsJSON(a any) {
+	if Active {
+		out, _ := json.MarshalIndent(a, "", "  ")
+		fmt.Printf("%s\n", out)
 	}
 }
