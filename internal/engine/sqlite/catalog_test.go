@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/catalog"
+	"github.com/sqlc-dev/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"

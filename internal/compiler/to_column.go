@@ -3,8 +3,8 @@ package compiler
 import (
 	"strings"
 
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/astutils"
+	"github.com/sqlc-dev/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
 )
 
 func isArray(n *ast.TypeName) bool {

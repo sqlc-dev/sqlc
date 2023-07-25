@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/astutils"
-	"github.com/kyleconroy/sqlc/internal/sql/catalog"
-	"github.com/kyleconroy/sqlc/internal/sql/named"
-	"github.com/kyleconroy/sqlc/internal/sql/rewrite"
-	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
+	"github.com/sqlc-dev/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
+	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
+	"github.com/sqlc-dev/sqlc/internal/sql/named"
+	"github.com/sqlc-dev/sqlc/internal/sql/rewrite"
+	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
 )
 
 func dataType(n *ast.TypeName) string {
@@ -256,7 +256,6 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 					key = str.Str
 				}
 			}
-
 
 			for _, table := range tables {
 				schema := table.Schema

@@ -4,7 +4,7 @@ import (
 	pcast "github.com/pingcap/tidb/parser/ast"
 	"github.com/pingcap/tidb/parser/mysql"
 
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 )
 
 func parseTableName(n *pcast.TableName) *ast.TableName {
