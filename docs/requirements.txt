@@ -14,7 +14,7 @@ pyparsing==2.4.7
 pytz==2021.1
 recommonmark==0.7.1
 requests==2.31.0
-snowballstemmer==2.1.0
+snowballstemmer==2.2.0
 Sphinx==6.2.1
 sphinx-favicon==1.0.1
 sphinx-rtd-theme==1.2.2
