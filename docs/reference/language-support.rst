@@ -25,5 +25,5 @@ F#        `kaashyapan/sqlc-gen-fsharp`_   Not implemented  Beta          Beta
 Future language support
 ************************
 
-- `C# <https://github.com/kyleconroy/sqlc/issues/373>`_
-- `TypeScript <https://github.com/kyleconroy/sqlc/issues/296>`_
+- `C# <https://github.com/sqlc-dev/sqlc/issues/373>`_
+- `TypeScript <https://github.com/sqlc-dev/sqlc/issues/296>`_
