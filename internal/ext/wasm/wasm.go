@@ -21,8 +21,8 @@ import (
 	wasmtime "github.com/bytecodealliance/wasmtime-go/v8"
 	"golang.org/x/sync/singleflight"
 
-	"github.com/kyleconroy/sqlc/internal/info"
-	"github.com/kyleconroy/sqlc/internal/plugin"
+	"github.com/sqlc-dev/sqlc/internal/info"
+	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
 
 // This version must be updated whenever the wasmtime-go dependency is updated

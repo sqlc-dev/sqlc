@@ -1,7 +1,7 @@
 package postgresql
 
 import (
-	"github.com/kyleconroy/sqlc/internal/sql/catalog"
+	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
 )
 
 func pgTemp() *catalog.Schema {
