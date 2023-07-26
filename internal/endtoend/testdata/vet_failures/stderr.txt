@@ -4,3 +4,4 @@ query.sql: CreateAuthor: no-pg: invalid engine: postgresql
 query.sql: CreateAuthor: only-one-param: too many parameters
 query.sql: DeleteAuthor: no-pg: invalid engine: postgresql
 query.sql: DeleteAuthor: no-delete: don't use delete statements
+query.sql: DeleteAuthor: no-exec: don't use exec

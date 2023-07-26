@@ -446,7 +446,7 @@ func vetQuery(q *plugin.Query) *vet.Query {
 	return &vet.Query{
 		Sql:    q.Text,
 		Name:   q.Name,
-		Cmd:    strings.TrimPrefix(":", q.Cmd),
+		Cmd:    strings.TrimPrefix(q.Cmd, ":"),
 		Params: params,
 	}
 }

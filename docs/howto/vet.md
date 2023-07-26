@@ -29,7 +29,7 @@ message Query
   string sql = 1;
   // Name of the query
   string name = 2; 
-  // One of :many, :one, :exec, etc.
+  // One of "many", "one", "exec", etc.
   string cmd = 3;
   // Query parameters, if any
   repeated Parameter params = 4;
