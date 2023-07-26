@@ -15,7 +15,7 @@ pytz==2023.3
 recommonmark==0.7.1
 requests==2.31.0
 snowballstemmer==2.2.0
-Sphinx==6.2.1
+Sphinx==7.1.0
 sphinx-favicon==1.0.1
 sphinx-rtd-theme==1.2.2
 sphinxcontrib-applehelp==1.0.2
