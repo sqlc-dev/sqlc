@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"fmt"
 	"log"
 	"strconv"
 	"strings"
@@ -120,6 +121,50 @@ func (c *cc) convertCreate_table_stmtContext(n *parser.Create_table_stmtContext)
 			})
 		}
 	}
+	return stmt
+}
+
+func (c *cc) convertCreate_virtual_table_stmtContext(n *parser.Create_virtual_table_stmtContext) ast.Node {
+	switch moduleName := n.Module_name().GetText(); moduleName {
+	case "fts5":
+		// https://www.sqlite.org/fts5.html
+		return c.convertCreate_virtual_table_fts5(n)
+	default:
+		return todo(
+			fmt.Sprintf("create_virtual_table. unsupported module name: %q", moduleName),
+			n,
+		)
+	}
+}
+
+func (c *cc) convertCreate_virtual_table_fts5(n *parser.Create_virtual_table_stmtContext) ast.Node {
+	stmt := &ast.CreateTableStmt{
+		Name:        parseTableName(n),
+		IfNotExists: n.EXISTS_() != nil,
+	}
+
+	for _, arg := range n.AllModule_argument() {
+		var columnName string
+
+		// For example: CREATE VIRTUAL TABLE tbl_ft USING fts5(b, c UNINDEXED)
+		//   * the 'b' column is parsed like Expr_qualified_column_nameContext
+		//   * the 'c' column is parsed like Column_defContext
+		if columnExpr, ok := arg.Expr().(*parser.Expr_qualified_column_nameContext); ok {
+			columnName = columnExpr.Column_name().GetText()
+		} else if columnDef, ok := arg.Column_def().(*parser.Column_defContext); ok {
+			columnName = columnDef.Column_name().GetText()
+		}
+
+		if columnName != "" {
+			stmt.Cols = append(stmt.Cols, &ast.ColumnDef{
+				Colname: identifier(columnName),
+				// you can not specify any column constraints in fts5, so we pass them manually
+				IsNotNull: true,
+				TypeName:  &ast.TypeName{Name: "text"},
+			})
+		}
+	}
+
 	return stmt
 }
 
@@ -939,6 +984,9 @@ func (c *cc) convert(node node) ast.Node {
 
 	case *parser.Create_table_stmtContext:
 		return c.convertCreate_table_stmtContext(n)
+
+	case *parser.Create_virtual_table_stmtContext:
+		return c.convertCreate_virtual_table_stmtContext(n)
 
 	case *parser.Create_view_stmtContext:
 		return c.convertCreate_view_stmtContext(n)
