@@ -554,6 +554,7 @@ func convertAlterTableStmt(n *pg.AlterTableStmt) *ast.AlterTableStmt {
 	if n == nil {
 		return nil
 	}
+	fmt.Println("alter table", n)
 	return &ast.AlterTableStmt{
 		Relation:  convertRangeVar(n.Relation),
 		Cmds:      convertSlice(n.Cmds),

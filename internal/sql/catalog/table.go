@@ -18,6 +18,16 @@ type Table struct {
 	Comment string
 }
 
+func exists(err error, missingOK bool) error {
+	var serr *sqlerr.Error
+	if errors.As(err, &serr) {
+		if serr.Err == sqlerr.NotFound && missingOK {
+			return nil
+		}
+	}
+	return err
+}
+
 func (table *Table) isExistColumn(cmd *ast.AlterTableCmd) (int, error) {
 	for i, c := range table.Columns {
 		if c.Name == *cmd.Name {
@@ -167,7 +177,7 @@ func (c *Catalog) alterTable(stmt *ast.AlterTableStmt) error {
 	}
 	_, table, err := c.getTable(stmt.Table)
 	if err != nil {
-		return err
+		return exists(err, stmt.MissingOk)
 	}
 	for _, item := range stmt.Cmds.Items {
 		switch cmd := item.(type) {

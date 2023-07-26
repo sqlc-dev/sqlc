@@ -1,6 +1,7 @@
 package catalog
 
 import (
+	"github.com/kyleconroy/sqlc/internal/debug"
 	"github.com/kyleconroy/sqlc/internal/sql/ast"
 )
 
@@ -46,6 +47,7 @@ func (c *Catalog) Update(stmt ast.Statement, colGen columnGenerator) error {
 	if stmt.Raw == nil {
 		return nil
 	}
+	debug.Dump("update", stmt)
 	var err error
 	switch n := stmt.Raw.Stmt.(type) {
 
