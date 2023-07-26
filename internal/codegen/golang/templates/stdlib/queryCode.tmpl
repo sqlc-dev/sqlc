@@ -142,7 +142,11 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
               query = strings.Replace(query, "/*SLICE:{{.Arg.Column.Name}}*/?", "NULL", 1)
             }
         {{- end }}
+        {{- if emitPreparedQueries }}
+        {{ queryRetval . }} {{ queryMethod . }}(ctx, nil, query, queryParams...)
+        {{- else}}
         {{ queryRetval . }} {{ queryMethod . }}(ctx, query, queryParams...)
+        {{- end -}}
     {{- else if emitPreparedQueries }}
         {{- queryRetval . }} {{ queryMethod . }}(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
     {{- else}}
