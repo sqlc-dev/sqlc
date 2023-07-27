@@ -675,16 +675,11 @@ func findColumnForRef(ref *ast.ColumnRef, tables []*Table, targetList *ast.List)
 		}
 
 		// Find matching column
-		var foundColumn bool
 		for _, c := range t.Columns {
 			if c.Name == name {
 				found++
-				foundColumn = true
+				break
 			}
-		}
-
-		if foundColumn {
-			continue
 		}
 	}
 
