@@ -69,7 +69,7 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 
 		if n.GroupClause != nil {
 			for _, item := range n.GroupClause.Items {
-				if err := findColumnForNode(item, tables, n); err != nil {
+				if err := findColumnForNode(item, tables, targets); err != nil {
 					return nil, err
 				}
 			}
@@ -85,7 +85,7 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 					if !ok {
 						continue
 					}
-					if err := findColumnForNode(sb.Node, tables, n); err != nil {
+					if err := findColumnForNode(sb.Node, tables, targets); err != nil {
 						return nil, fmt.Errorf("%v: if you want to skip this validation, set 'strict_order_by' to false", err)
 					}
 				}
@@ -101,7 +101,7 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 						if !ok {
 							continue
 						}
-						if err := findColumnForNode(caseExpr.Xpr, tables, n); err != nil {
+						if err := findColumnForNode(caseExpr.Xpr, tables, targets); err != nil {
 							return nil, fmt.Errorf("%v: if you want to skip this validation, set 'strict_order_by' to false", err)
 						}
 					}
@@ -650,15 +650,15 @@ func outputColumnRefs(res *ast.ResTarget, tables []*Table, node *ast.ColumnRef) 
 	return cols, nil
 }
 
-func findColumnForNode(item ast.Node, tables []*Table, n *ast.SelectStmt) error {
+func findColumnForNode(item ast.Node, tables []*Table, targetList *ast.List) error {
 	ref, ok := item.(*ast.ColumnRef)
 	if !ok {
 		return nil
 	}
-	return findColumnForRef(ref, tables, n)
+	return findColumnForRef(ref, tables, targetList)
 }
 
-func findColumnForRef(ref *ast.ColumnRef, tables []*Table, selectStatement *ast.SelectStmt) error {
+func findColumnForRef(ref *ast.ColumnRef, tables []*Table, targetList *ast.List) error {
 	parts := stringSlice(ref.Fields)
 	var alias, name string
 	if len(parts) == 1 {
@@ -686,9 +686,11 @@ func findColumnForRef(ref *ast.ColumnRef, tables []*Table, selectStatement *ast.
 		if foundColumn {
 			continue
 		}
+	}
 
-		// Find matching alias
-		for _, c := range selectStatement.TargetList.Items {
+	// Find matching alias if necessary
+	if found == 0 {
+		for _, c := range targetList.Items {
 			resTarget, ok := c.(*ast.ResTarget)
 			if !ok {
 				continue
