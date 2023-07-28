@@ -46,7 +46,6 @@ func (c *Catalog) Update(stmt ast.Statement, colGen columnGenerator) error {
 	if stmt.Raw == nil {
 		return nil
 	}
-	debug.Dump("update", stmt)
 	var err error
 	switch n := stmt.Raw.Stmt.(type) {
 
