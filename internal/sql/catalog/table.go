@@ -18,7 +18,7 @@ type Table struct {
 	Comment string
 }
 
-func exists(err error, missingOK bool) error {
+func checkMissing(err error, missingOK bool) error {
 	var serr *sqlerr.Error
 	if errors.As(err, &serr) {
 		if serr.Err == sqlerr.NotFound && missingOK {
@@ -177,7 +177,7 @@ func (c *Catalog) alterTable(stmt *ast.AlterTableStmt) error {
 	}
 	_, table, err := c.getTable(stmt.Table)
 	if err != nil {
-		return exists(err, stmt.MissingOk)
+		return checkMissing(err, stmt.MissingOk)
 	}
 	for _, item := range stmt.Cmds.Items {
 		switch cmd := item.(type) {
@@ -216,11 +216,11 @@ func (c *Catalog) alterTableSetSchema(stmt *ast.AlterTableSetSchemaStmt) error {
 	}
 	oldSchema, err := c.getSchema(ns)
 	if err != nil {
-		return err
+		return checkMissing(err, stmt.MissingOk)
 	}
 	tbl, idx, err := oldSchema.getTable(stmt.Table)
 	if err != nil {
-		return err
+		return checkMissing(err, stmt.MissingOk)
 	}
 	tbl.Rel.Schema = *stmt.NewSchema
 	newSchema, err := c.getSchema(*stmt.NewSchema)
@@ -364,7 +364,7 @@ func (c *Catalog) dropTable(stmt *ast.DropTableStmt) error {
 func (c *Catalog) renameColumn(stmt *ast.RenameColumnStmt) error {
 	_, tbl, err := c.getTable(stmt.Table)
 	if err != nil {
-		return err
+		return checkMissing(err, stmt.MissingOk)
 	}
 	idx := -1
 	for i := range tbl.Columns {
@@ -385,7 +385,7 @@ func (c *Catalog) renameColumn(stmt *ast.RenameColumnStmt) error {
 func (c *Catalog) renameTable(stmt *ast.RenameTableStmt) error {
 	sch, tbl, err := c.getTable(stmt.Table)
 	if err != nil {
-		return err
+		return checkMissing(err, stmt.MissingOk)
 	}
 	if _, _, err := sch.getTable(&ast.TableName{Name: *stmt.NewName}); err == nil {
 		return sqlerr.RelationExists(*stmt.NewName)
