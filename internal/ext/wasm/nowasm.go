@@ -4,9 +4,9 @@ package wasm
 
 import (
 	"fmt"
-    "context"
+	"context"
 
-	"github.com/kyleconroy/sqlc/internal/plugin"
+	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
 
 type Runner struct {

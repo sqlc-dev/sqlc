@@ -8,9 +8,9 @@ import (
 
 	"github.com/antlr/antlr4/runtime/Go/antlr/v4"
 
-	"github.com/kyleconroy/sqlc/internal/debug"
-	"github.com/kyleconroy/sqlc/internal/engine/sqlite/parser"
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/debug"
+	"github.com/sqlc-dev/sqlc/internal/engine/sqlite/parser"
+	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 )
 
 type cc struct {
@@ -493,7 +493,7 @@ func (c *cc) getCols(core *parser.Select_coreContext) []ast.Node {
 		}
 
 		if col.AS_() != nil {
-			name := col.Column_alias().GetText()
+			name := identifier(col.Column_alias().GetText())
 			target.Name = &name
 		}
 
@@ -805,7 +805,7 @@ func (c *cc) convertExprLists(lists []parser.IExprContext) *ast.List {
 func (c *cc) convertColumnNames(cols []parser.IColumn_nameContext) *ast.List {
 	list := &ast.List{Items: []ast.Node{}}
 	for _, c := range cols {
-		name := c.GetText()
+		name := identifier(c.GetText())
 		list.Items = append(list.Items, &ast.ResTarget{
 			Name: &name,
 		})
@@ -912,7 +912,7 @@ func (c *cc) convertUpdate_stmtContext(n Update_stmt) ast.Node {
 
 	list := &ast.List{}
 	for i, col := range n.AllColumn_name() {
-		colName := col.GetText()
+		colName := identifier(col.GetText())
 		target := &ast.ResTarget{
 			Name: &colName,
 			Val:  c.convert(n.Expr(i)),
