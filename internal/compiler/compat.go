@@ -31,11 +31,17 @@ type Relation struct {
 }
 
 func parseRelation(node ast.Node) (*Relation, error) {
-	if n, ok := node.(*ast.Boolean); ok && n != nil {
+	switch n := node.(type) {
+	case *ast.Boolean:
+		if n == nil {
+			return nil, fmt.Errorf("unexpected nil in %T node", n)
+		}
 		return &Relation{Name: "bool"}, nil
-	}
 
-	if n, ok := node.(*ast.List); ok && n != nil {
+	case *ast.List:
+		if n == nil {
+			return nil, fmt.Errorf("unexpected nil in %T node", n)
+		}
 		parts := stringSlice(n)
 		switch len(parts) {
 		case 1:
@@ -56,9 +62,11 @@ func parseRelation(node ast.Node) (*Relation, error) {
 		default:
 			return nil, fmt.Errorf("invalid name: %s", astutils.Join(n, "."))
 		}
-	}
 
-	if n, ok := node.(*ast.RangeVar); ok && n != nil {
+	case *ast.RangeVar:
+		if n == nil {
+			return nil, fmt.Errorf("unexpected nil in %T node", n)
+		}
 		name := Relation{}
 		if n.Catalogname != nil {
 			name.Catalog = *n.Catalogname
@@ -70,17 +78,20 @@ func parseRelation(node ast.Node) (*Relation, error) {
 			name.Name = *n.Relname
 		}
 		return &name, nil
-	}
 
-	if n, ok := node.(*ast.TypeName); ok && n != nil {
+	case *ast.TypeName:
+		if n == nil {
+			return nil, fmt.Errorf("unexpected nil in %T node", n)
+		}
 		if n.Names != nil {
 			return parseRelation(n.Names)
 		} else {
 			return &Relation{Name: n.Name}, nil
 		}
-	}
 
-	return nil, fmt.Errorf("unexpected node type: %T", node)
+	default:
+		return nil, fmt.Errorf("unexpected node type: %T", node)
+	}
 }
 
 func ParseTableName(node ast.Node) (*ast.TableName, error) {
