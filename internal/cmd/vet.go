@@ -210,13 +210,40 @@ type mysqlExplainer struct {
 func (me *mysqlExplainer) Explain(ctx context.Context, query string, args ...*plugin.Parameter) (*vetEngineOutput, error) {
 	eQuery := "EXPLAIN FORMAT=JSON " + query
 	eArgs := make([]any, len(args))
+	for i, arg := range args {
+		switch arg.Column.Type.Name {
+		case "int", "bigint", "mediumint", "smallint", "tinyint", "bit": // "bool"
+			eArgs[i] = 1
+		case "decimal": // "numeric", "dec", "fixed"
+			// No perfect choice here to avoid "Impossible WHERE" but I think
+			// 0.1 is decent. It works for all cases where `scale` > 0 which
+			// should be the majority. For more information refer to
+			// https://dev.mysql.com/doc/refman/8.1/en/fixed-point-types.html.
+			eArgs[i] = 0.1
+		case "float", "double":
+			eArgs[i] = 0.1
+		case "date":
+			eArgs[i] = time.Now().Format(time.DateOnly)
+		case "datetime", "timestamp", "time":
+			eArgs[i] = time.Now()
+		case "year":
+			eArgs[i] = time.Now().Year()
+		case "char", "varchar", "binary", "varbinary", "tinyblob", "blob",
+		"mediumblob", "longblob", "tinytext", "text", "mediumtext", "longtext":
+			eArgs[i] = "A"
+		case "json":
+			eArgs[i] = "{}"
+		default:
+			eArgs[i] = nil
+		}
+	}
 	row := me.QueryRowContext(ctx, eQuery, eArgs...)
 	var result json.RawMessage
 	if err := row.Scan(&result); err != nil {
 		return nil, err
 	}
 	if debug.Debug.DumpExplain {
-		fmt.Println(eQuery)
+		fmt.Println(eQuery, "with args", eArgs)
 		fmt.Println(string(result))
 	}
 	var explain vet.MySQLExplain
