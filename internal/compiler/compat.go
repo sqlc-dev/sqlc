@@ -32,13 +32,16 @@ type Relation struct {
 
 func parseRelation(node ast.Node) (*Relation, error) {
 	switch n := node.(type) {
-
 	case *ast.Boolean:
-		return &Relation{
-			Name: "bool",
-		}, nil
+		if n == nil {
+			return nil, fmt.Errorf("unexpected nil in %T node", n)
+		}
+		return &Relation{Name: "bool"}, nil
 
 	case *ast.List:
+		if n == nil {
+			return nil, fmt.Errorf("unexpected nil in %T node", n)
+		}
 		parts := stringSlice(n)
 		switch len(parts) {
 		case 1:
@@ -61,6 +64,9 @@ func parseRelation(node ast.Node) (*Relation, error) {
 		}
 
 	case *ast.RangeVar:
+		if n == nil {
+			return nil, fmt.Errorf("unexpected nil in %T node", n)
+		}
 		name := Relation{}
 		if n.Catalogname != nil {
 			name.Catalog = *n.Catalogname
@@ -74,10 +80,17 @@ func parseRelation(node ast.Node) (*Relation, error) {
 		return &name, nil
 
 	case *ast.TypeName:
-		return parseRelation(n.Names)
+		if n == nil {
+			return nil, fmt.Errorf("unexpected nil in %T node", n)
+		}
+		if n.Names != nil {
+			return parseRelation(n.Names)
+		} else {
+			return &Relation{Name: n.Name}, nil
+		}
 
 	default:
-		return nil, fmt.Errorf("unexpected node type: %T", n)
+		return nil, fmt.Errorf("unexpected node type: %T", node)
 	}
 }
 

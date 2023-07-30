@@ -8,7 +8,7 @@ import (
 )
 
 func isArray(n *ast.TypeName) bool {
-	if n == nil {
+	if n == nil || n.ArrayBounds == nil {
 		return false
 	}
 	return len(n.ArrayBounds.Items) > 0
