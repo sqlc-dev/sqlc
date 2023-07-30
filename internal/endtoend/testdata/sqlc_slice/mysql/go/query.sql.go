@@ -18,7 +18,7 @@ SELECT bar FROM foo
 WHERE id IN (/*SLICE:favourites*/?)
 `
 
-func (q *Queries) FuncNullable(ctx context.Context, favourites []int32) ([]sql.NullString, error) {
+func (q *Queries) FuncNullable(ctx context.Context, favourites int32) ([]sql.NullString, error) {
 	query := funcNullable
 	var queryParams []interface{}
 	if len(favourites) > 0 {
@@ -59,7 +59,7 @@ WHERE name = ?
 
 type FuncParamIdentParams struct {
 	Slug       string
-	Favourites []int32
+	Favourites int32
 }
 
 func (q *Queries) FuncParamIdent(ctx context.Context, arg FuncParamIdentParams) ([]string, error) {
@@ -101,7 +101,7 @@ SELECT name FROM foo
 WHERE id IN (/*SLICE:favourites*/?)
 `
 
-func (q *Queries) FuncParamSoloArg(ctx context.Context, favourites []int32) ([]string, error) {
+func (q *Queries) FuncParamSoloArg(ctx context.Context, favourites int32) ([]string, error) {
 	query := funcParamSoloArg
 	var queryParams []interface{}
 	if len(favourites) > 0 {
@@ -142,7 +142,7 @@ WHERE name = ?
 
 type FuncParamStringParams struct {
 	Slug       string
-	Favourites []int32
+	Favourites int32
 }
 
 func (q *Queries) FuncParamString(ctx context.Context, arg FuncParamStringParams) ([]string, error) {
@@ -186,7 +186,7 @@ WHERE id IN (/*SLICE:favourites*/?)
 
 type SliceExecParams struct {
 	Slug       string
-	Favourites []int32
+	Favourites int32
 }
 
 func (q *Queries) SliceExec(ctx context.Context, arg SliceExecParams) error {
