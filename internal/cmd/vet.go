@@ -170,16 +170,145 @@ func (p *pgxConn) Prepare(ctx context.Context, name, query string) error {
 	return err
 }
 
+// Return a default value for a PostgreSQL column based on its type. Returns nil
+// if the type is unknown.
+func pgDefaultValue(col *plugin.Column) any {
+	if col == nil {
+		return nil
+	}
+	if col.Type == nil {
+		return nil
+	}
+	typname := strings.TrimPrefix(col.Type.Name, "pg_catalog.")
+	switch typname {
+	case "any", "void":
+		if col.IsArray {
+			return []any{}
+		} else {
+			return nil
+		}
+	case "anyarray":
+		return []any{}
+	case "bool", "boolean":
+		if col.IsArray {
+			return []bool{}
+		} else {
+			return false
+		}
+	case "double", "double precision", "real":
+		if col.IsArray {
+			return []float32{}
+		} else {
+			return 0.1
+		}
+	case "json", "jsonb":
+		if col.IsArray {
+			return []string{}
+		} else {
+			return "{}"
+		}
+	case "citext", "string", "text", "varchar":
+		if col.IsArray {
+			return []string{}
+		} else {
+			return ""
+		}
+	case "bigint", "bigserial", "integer", "int", "int2", "int4", "int8", "serial":
+		if col.IsArray {
+			return []int{}
+		} else {
+			return 1
+		}
+	case "date", "time", "timestamp", "timestamptz":
+		if col.IsArray {
+			return []time.Time{}
+		} else {
+			return time.Time{}
+		}
+	case "uuid":
+		if col.IsArray {
+			return []string{}
+		} else {
+			return "00000000-0000-0000-0000-000000000000"
+		}
+	case "numeric", "decimal":
+		if col.IsArray {
+			return []string{}
+		} else {
+			return "0.1"
+		}
+	case "inet":
+		if col.IsArray {
+			return []string{}
+		} else {
+			return "192.168.0.1/24"
+		}
+	case "cidr":
+		if col.IsArray {
+			return []string{}
+		} else {
+			return "192.168.1/24"
+		}
+	default:
+		return nil
+	}
+}
+
+// Return a default value for a MySQL column based on its type. Returns nil
+// if the type is unknown.
+func mysqlDefaultValue(col *plugin.Column) any {
+	if col == nil {
+		return nil
+	}
+	if col.Type == nil {
+		return nil
+	}
+	switch col.Type.Name {
+	case "any":
+		return nil
+	case "bool":
+		return false
+	case "int", "bigint", "mediumint", "smallint", "tinyint", "bit":
+		return 1
+	case "decimal": // "numeric", "dec", "fixed"
+		// No perfect choice here to avoid "Impossible WHERE" but I think
+		// 0.1 is decent. It works for all cases where `scale` > 0 which
+		// should be the majority. For more information refer to
+		// https://dev.mysql.com/doc/refman/8.1/en/fixed-point-types.html.
+		return 0.1
+	case "float", "double":
+		return 0.1
+	case "date":
+		t := time.Time{}
+		return t.Format(time.DateOnly)
+	case "datetime", "timestamp", "time":
+		return time.Time{}
+	case "year":
+		t := time.Time{}
+		return t.Year()
+	case "char", "varchar", "binary", "varbinary", "tinyblob", "blob",
+		"mediumblob", "longblob", "tinytext", "text", "mediumtext", "longtext":
+		return ""
+	case "json":
+		return "{}"
+	default:
+		return nil
+	}
+}
+
 func (p *pgxConn) Explain(ctx context.Context, query string, args ...*plugin.Parameter) (*vetEngineOutput, error) {
 	eQuery := "EXPLAIN (ANALYZE false, VERBOSE, COSTS, SETTINGS, BUFFERS, FORMAT JSON) " + query
 	eArgs := make([]any, len(args))
+	for i, a := range args {
+		eArgs[i] = pgDefaultValue(a.Column)
+	}
 	row := p.c.QueryRow(ctx, eQuery, eArgs...)
 	var result []json.RawMessage
 	if err := row.Scan(&result); err != nil {
 		return nil, err
 	}
 	if debug.Debug.DumpExplain {
-		fmt.Println(eQuery)
+		fmt.Println(eQuery, "with args", eArgs)
 		fmt.Println(string(result[0]))
 	}
 	var explain vet.PostgreSQLExplain
@@ -210,32 +339,8 @@ type mysqlExplainer struct {
 func (me *mysqlExplainer) Explain(ctx context.Context, query string, args ...*plugin.Parameter) (*vetEngineOutput, error) {
 	eQuery := "EXPLAIN FORMAT=JSON " + query
 	eArgs := make([]any, len(args))
-	for i, arg := range args {
-		switch arg.Column.Type.Name {
-		case "int", "bigint", "mediumint", "smallint", "tinyint", "bit": // "bool"
-			eArgs[i] = 1
-		case "decimal": // "numeric", "dec", "fixed"
-			// No perfect choice here to avoid "Impossible WHERE" but I think
-			// 0.1 is decent. It works for all cases where `scale` > 0 which
-			// should be the majority. For more information refer to
-			// https://dev.mysql.com/doc/refman/8.1/en/fixed-point-types.html.
-			eArgs[i] = 0.1
-		case "float", "double":
-			eArgs[i] = 0.1
-		case "date":
-			eArgs[i] = time.Now().Format(time.DateOnly)
-		case "datetime", "timestamp", "time":
-			eArgs[i] = time.Now()
-		case "year":
-			eArgs[i] = time.Now().Year()
-		case "char", "varchar", "binary", "varbinary", "tinyblob", "blob",
-		"mediumblob", "longblob", "tinytext", "text", "mediumtext", "longtext":
-			eArgs[i] = "A"
-		case "json":
-			eArgs[i] = "{}"
-		default:
-			eArgs[i] = nil
-		}
+	for i, a := range args {
+		eArgs[i] = mysqlDefaultValue(a.Column)
 	}
 	row := me.QueryRowContext(ctx, eQuery, eArgs...)
 	var result json.RawMessage

@@ -297,10 +297,21 @@ func pluginQueryParam(p compiler.Parameter) *plugin.Parameter {
 }
 
 func codeGenRequest(r *compiler.Result, settings config.CombinedSettings) *plugin.CodeGenRequest {
-	return &plugin.CodeGenRequest{
+	out := &plugin.CodeGenRequest{
 		Settings:    pluginSettings(r, settings),
 		Catalog:     pluginCatalog(r.Catalog),
 		Queries:     pluginQueries(r),
 		SqlcVersion: info.Version,
 	}
+
+	// TODO: Remove this
+	if out.Settings.Engine == "mysql" {
+		for _, query := range out.Queries {
+			for _, col := range query.Columns {
+				mysqlDefaultValue(col)
+			}
+		}
+	}
+
+	return out
 }
