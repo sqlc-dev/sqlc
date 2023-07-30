@@ -51,7 +51,7 @@ func goType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 	if col.IsArray || col.IsSqlcSlice {
 		if req.Settings.Engine == "postgresql" {
 			dims := ""
-			for i := int32(0); i < col.ArrayBounds; i++ {
+			for i := int32(0); i < col.ArrayDims; i++ {
 				dims += "[]"
 			}
 			return dims + typ

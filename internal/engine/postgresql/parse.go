@@ -283,11 +283,11 @@ func translate(node *nodes.Node) (ast.Node, error) {
 					}
 					item.Subtype = ast.AT_AddColumn
 					item.Def = &ast.ColumnDef{
-						Colname:     d.ColumnDef.Colname,
-						TypeName:    rel.TypeName(),
-						IsNotNull:   isNotNull(d.ColumnDef),
-						IsArray:     isArray(d.ColumnDef.TypeName),
-						ArrayBounds: len(d.ColumnDef.TypeName.ArrayBounds),
+						Colname:   d.ColumnDef.Colname,
+						TypeName:  rel.TypeName(),
+						IsNotNull: isNotNull(d.ColumnDef),
+						IsArray:   isArray(d.ColumnDef.TypeName),
+						ArrayDims: len(d.ColumnDef.TypeName.ArrayBounds),
 					}
 
 				case nodes.AlterTableType_AT_AlterColumnType:
@@ -309,11 +309,11 @@ func translate(node *nodes.Node) (ast.Node, error) {
 					}
 					item.Subtype = ast.AT_AlterColumnType
 					item.Def = &ast.ColumnDef{
-						Colname:     col,
-						TypeName:    rel.TypeName(),
-						IsNotNull:   isNotNull(d.ColumnDef),
-						IsArray:     isArray(d.ColumnDef.TypeName),
-						ArrayBounds: len(d.ColumnDef.TypeName.ArrayBounds),
+						Colname:   col,
+						TypeName:  rel.TypeName(),
+						IsNotNull: isNotNull(d.ColumnDef),
+						IsArray:   isArray(d.ColumnDef.TypeName),
+						ArrayDims: len(d.ColumnDef.TypeName.ArrayBounds),
 					}
 
 				case nodes.AlterTableType_AT_DropColumn:
@@ -439,11 +439,11 @@ func translate(node *nodes.Node) (ast.Node, error) {
 					return nil, err
 				}
 				create.Cols = append(create.Cols, &ast.ColumnDef{
-					Colname:     item.ColumnDef.Colname,
-					TypeName:    rel.TypeName(),
-					IsNotNull:   isNotNull(item.ColumnDef) || primaryKey[item.ColumnDef.Colname],
-					IsArray:     isArray(item.ColumnDef.TypeName),
-					ArrayBounds: len(item.ColumnDef.TypeName.ArrayBounds),
+					Colname:   item.ColumnDef.Colname,
+					TypeName:  rel.TypeName(),
+					IsNotNull: isNotNull(item.ColumnDef) || primaryKey[item.ColumnDef.Colname],
+					IsArray:   isArray(item.ColumnDef.TypeName),
+					ArrayDims: len(item.ColumnDef.TypeName.ArrayBounds),
 				})
 			}
 		}

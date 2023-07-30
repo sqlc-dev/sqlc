@@ -26,14 +26,14 @@ func (c *Compiler) OutputColumns(stmt ast.Node) ([]*catalog.Column, error) {
 	catCols := make([]*catalog.Column, 0, len(cols))
 	for _, col := range cols {
 		catCols = append(catCols, &catalog.Column{
-			Name:        col.Name,
-			Type:        ast.TypeName{Name: col.DataType},
-			IsNotNull:   col.NotNull,
-			IsUnsigned:  col.Unsigned,
-			IsArray:     col.IsArray,
-			ArrayBounds: col.ArrayBounds,
-			Comment:     col.Comment,
-			Length:      col.Length,
+			Name:       col.Name,
+			Type:       ast.TypeName{Name: col.DataType},
+			IsNotNull:  col.NotNull,
+			IsUnsigned: col.Unsigned,
+			IsArray:    col.IsArray,
+			ArrayDims:  col.ArrayDims,
+			Comment:    col.Comment,
+			Length:     col.Length,
 		})
 	}
 	return catCols, nil
@@ -290,7 +290,7 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 							NotNull:      c.NotNull,
 							Unsigned:     c.Unsigned,
 							IsArray:      c.IsArray,
-							ArrayBounds:  c.ArrayBounds,
+							ArrayDims:    c.ArrayDims,
 							Length:       c.Length,
 						})
 					}
@@ -628,7 +628,7 @@ func outputColumnRefs(res *ast.ResTarget, tables []*Table, node *ast.ColumnRef) 
 					NotNull:      c.NotNull,
 					Unsigned:     c.Unsigned,
 					IsArray:      c.IsArray,
-					ArrayBounds:  c.ArrayBounds,
+					ArrayDims:    c.ArrayDims,
 					Length:       c.Length,
 					EmbedTable:   c.EmbedTable,
 					OriginalName: c.Name,
