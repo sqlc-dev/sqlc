@@ -8,7 +8,7 @@ import (
 
 	pg "github.com/pganalyze/pg_query_go/v4"
 
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 )
 
 func convertFuncParamMode(m pg.FunctionParameterMode) (ast.FuncParamMode, error) {
@@ -80,18 +80,6 @@ func convertSlice(nodes []*pg.Node) *ast.List {
 	out := &ast.List{}
 	for _, n := range nodes {
 		out.Items = append(out.Items, convertNode(n))
-	}
-	return out
-}
-
-func convertValuesList(l [][]*pg.Node) *ast.List {
-	out := &ast.List{}
-	for _, outer := range l {
-		o := &ast.List{}
-		for _, inner := range outer {
-			o.Items = append(o.Items, convertNode(inner))
-		}
-		out.Items = append(out.Items, o)
 	}
 	return out
 }

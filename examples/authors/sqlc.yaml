@@ -1,0 +1,44 @@
+version: '2'
+sql:
+- schema: postgresql/schema.sql
+  queries: postgresql/query.sql
+  engine: postgresql
+  database:
+    uri: postgresql://${PG_USER}:${PG_PASSWORD}@${PG_HOST}:${PG_PORT}/authors
+  rules:
+  - sqlc/db-prepare
+  - postgresql-query-too-costly
+  gen:
+    go:
+      package: authors
+      out: postgresql
+- schema: mysql/schema.sql
+  queries: mysql/query.sql
+  engine: mysql
+  database:
+    uri: root:${MYSQL_ROOT_PASSWORD}@tcp(${MYSQL_HOST}:${MYSQL_PORT})/authors?multiStatements=true&parseTime=true
+  rules:
+  - sqlc/db-prepare
+  # - mysql-query-too-costly
+  gen:
+    go:
+      package: authors
+      out: mysql
+- schema: sqlite/schema.sql
+  queries: sqlite/query.sql
+  engine: sqlite
+  database:
+    uri: file:authors?mode=memory&cache=shared
+  rules:
+  - sqlc/db-prepare
+  gen:
+    go:
+      package: authors
+      out: sqlite
+rules:
+- name: postgresql-query-too-costly
+  message: "Too costly"
+  rule: "postgresql.explain.plan.total_cost > 300.0"
+- name: mysql-query-too-costly
+  message: "Too costly"
+  rule: "has(mysql.explain.query_block.cost_info) && double(mysql.explain.query_block.cost_info.query_cost) > 2.0"

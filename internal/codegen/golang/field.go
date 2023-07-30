@@ -6,7 +6,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/kyleconroy/sqlc/internal/plugin"
+	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
 
 type Field struct {
@@ -42,10 +42,11 @@ func TagsToString(tags map[string]string) string {
 
 func JSONTagName(name string, settings *plugin.Settings) string {
 	style := settings.Go.JsonTagsCaseStyle
+	idUppercase := settings.Go.JsonTagsIdUppercase
 	if style == "" || style == "none" {
 		return name
 	} else {
-		return SetCaseStyle(name, style)
+		return SetJSONCaseStyle(name, style, idUppercase)
 	}
 }
 
@@ -53,6 +54,19 @@ func SetCaseStyle(name string, style string) string {
 	switch style {
 	case "camel":
 		return toCamelCase(name)
+	case "pascal":
+		return toPascalCase(name)
+	case "snake":
+		return toSnakeCase(name)
+	default:
+		panic(fmt.Sprintf("unsupported JSON tags case style: '%s'", style))
+	}
+}
+
+func SetJSONCaseStyle(name string, style string, idUppercase bool) string {
+	switch style {
+	case "camel":
+		return toJsonCamelCase(name, idUppercase)
 	case "pascal":
 		return toPascalCase(name)
 	case "snake":
@@ -90,6 +104,28 @@ func toCamelInitCase(name string, initUpper bool) string {
 		}
 		if p == "id" {
 			out += "ID"
+		} else {
+			out += strings.Title(p)
+		}
+	}
+	return out
+}
+
+func toJsonCamelCase(name string, idUppercase bool) string {
+	out := ""
+	idStr := "Id"
+
+	if idUppercase {
+		idStr = "ID"
+	}
+
+	for i, p := range strings.Split(name, "_") {
+		if i == 0 {
+			out += p
+			continue
+		}
+		if p == "id" {
+			out += idStr
 		} else {
 			out += strings.Title(p)
 		}

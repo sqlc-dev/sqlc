@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/kyleconroy/sqlc/internal/sql/sqlpath"
+	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
 
 	"github.com/jackc/pgx/v4"
 )

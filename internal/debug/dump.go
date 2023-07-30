@@ -1,11 +1,13 @@
 package debug
 
 import (
+	"encoding/json"
+	"fmt"
 	"os"
 
 	"github.com/davecgh/go-spew/spew"
 
-	"github.com/kyleconroy/sqlc/internal/opts"
+	"github.com/sqlc-dev/sqlc/internal/opts"
 )
 
 var Active bool
@@ -21,5 +23,12 @@ func init() {
 func Dump(n ...interface{}) {
 	if Active {
 		spew.Dump(n)
+	}
+}
+
+func DumpAsJSON(a any) {
+	if Active {
+		out, _ := json.MarshalIndent(a, "", "  ")
+		fmt.Printf("%s\n", out)
 	}
 }

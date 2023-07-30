@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 )
 
 // An ApplyFunc is invoked by Apply for each node n, even if n is nil,
@@ -194,6 +194,7 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 
 	case *ast.In:
 		a.applyList(n, "List")
+		a.apply(n, "Sel", nil, n.Sel)
 
 	case *ast.List:
 		// Since item is a slice
@@ -400,7 +401,9 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.apply(n, "Refassgnexpr", nil, n.Refassgnexpr)
 
 	case *ast.BetweenExpr:
-		// pass
+		a.apply(n, "Expr", nil, n.Expr)
+		a.apply(n, "Left", nil, n.Left)
+		a.apply(n, "Right", nil, n.Right)
 
 	case *ast.BitString:
 		// pass

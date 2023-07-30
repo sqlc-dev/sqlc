@@ -12,9 +12,9 @@ import (
 	nodes "github.com/pganalyze/pg_query_go/v4"
 	"github.com/pganalyze/pg_query_go/v4/parser"
 
-	"github.com/kyleconroy/sqlc/internal/metadata"
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
+	"github.com/sqlc-dev/sqlc/internal/metadata"
+	"github.com/sqlc-dev/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
 )
 
 func stringSlice(list *nodes.List) []string {
@@ -136,10 +136,6 @@ func parseColName(node *nodes.Node) (*ast.ColumnRef, *ast.TableName, error) {
 	}
 }
 
-func join(list *nodes.List, sep string) string {
-	return strings.Join(stringSlice(list), sep)
-}
-
 func joinNodes(list []*nodes.Node, sep string) string {
 	return strings.Join(stringSliceFromNodes(list), sep)
 }
@@ -245,6 +241,7 @@ func translate(node *nodes.Node) (ast.Node, error) {
 			return &ast.AlterTableSetSchemaStmt{
 				Table:     rel.TableName(),
 				NewSchema: makeString(n.Newschema),
+				MissingOk: n.MissingOk,
 			}, nil
 
 		case nodes.ObjectType_OBJECT_TYPE:
@@ -263,8 +260,9 @@ func translate(node *nodes.Node) (ast.Node, error) {
 		n := inner.AlterTableStmt
 		rel := parseRelationFromRangeVar(n.Relation)
 		at := &ast.AlterTableStmt{
-			Table: rel.TableName(),
-			Cmds:  &ast.List{},
+			Table:     rel.TableName(),
+			Cmds:      &ast.List{},
+			MissingOk: n.MissingOk,
 		}
 		for _, cmd := range n.Cmds {
 			switch cmdOneOf := cmd.Node.(type) {
@@ -607,16 +605,18 @@ func translate(node *nodes.Node) (ast.Node, error) {
 		case nodes.ObjectType_OBJECT_COLUMN:
 			rel := parseRelationFromRangeVar(n.Relation)
 			return &ast.RenameColumnStmt{
-				Table:   rel.TableName(),
-				Col:     &ast.ColumnRef{Name: n.Subname},
-				NewName: makeString(n.Newname),
+				Table:     rel.TableName(),
+				Col:       &ast.ColumnRef{Name: n.Subname},
+				NewName:   makeString(n.Newname),
+				MissingOk: n.MissingOk,
 			}, nil
 
 		case nodes.ObjectType_OBJECT_TABLE:
 			rel := parseRelationFromRangeVar(n.Relation)
 			return &ast.RenameTableStmt{
-				Table:   rel.TableName(),
-				NewName: makeString(n.Newname),
+				Table:     rel.TableName(),
+				NewName:   makeString(n.Newname),
+				MissingOk: n.MissingOk,
 			}, nil
 
 		case nodes.ObjectType_OBJECT_TYPE:

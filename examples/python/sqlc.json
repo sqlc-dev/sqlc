@@ -4,8 +4,8 @@
     {
       "name": "py",
       "wasm": {
-        "url": "https://downloads.sqlc.dev/plugin/sqlc-gen-python_1.0.0.wasm",
-        "sha256": "aca83e1f59f8ffdc604774c2f6f9eb321a2b23e07dc83fc12289d25305fa065b"
+        "url": "https://downloads.sqlc.dev/plugin/sqlc-gen-python_1.1.0.wasm",
+        "sha256": "ef58f143a8c116781091441770c7166caaf361dd645f62b8f05f462e9f95c3b2"
       }
     }
   ],
@@ -44,8 +44,8 @@
       ]
     },
     {
-      "schema": "../jets/schema.sql",
-      "queries": "../jets/query-building.sql",
+      "schema": "../jets/postgresql/schema.sql",
+      "queries": "../jets/postgresql/query-building.sql",
       "engine": "postgresql",
       "codegen": [
         {

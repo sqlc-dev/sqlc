@@ -40,7 +40,9 @@
       "inflection_exclude_table_names": [],
       "emit_pointers_for_null_types": false,
       "query_parameter_limit": 1,
-      "output_batch_file_name": ""
+      "output_batch_file_name": "",
+      "json_tags_id_uppercase": false,
+      "omit_unused_structs": false
     },
     "json": {
       "out": "gen",
@@ -65394,6 +65396,6 @@
       "insert_into_table": null
     }
   ],
-  "sqlc_version": "v1.18.0",
+  "sqlc_version": "v1.19.1",
   "plugin_options": ""
 }

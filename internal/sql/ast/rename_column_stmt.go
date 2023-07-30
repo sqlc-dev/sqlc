@@ -1,9 +1,10 @@
 package ast
 
 type RenameColumnStmt struct {
-	Table   *TableName
-	Col     *ColumnRef
-	NewName *string
+	Table     *TableName
+	Col       *ColumnRef
+	NewName   *string
+	MissingOk bool
 }
 
 func (n *RenameColumnStmt) Pos() int {

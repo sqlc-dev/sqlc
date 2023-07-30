@@ -3,7 +3,7 @@
 Starting in sqlc 1.16.0, built-in Kotlin support has been deprecated. It will
 be fully removed in 1.17.0 in favor of sqlc-gen-kotlin.
 
-This guide will walk you through migrating to the [sqlc-gen-kotlin](https://github.com/tabbed/sqlc-gen-kotlin) plugin,
+This guide will walk you through migrating to the [sqlc-gen-kotlin](https://github.com/sqlc-dev/sqlc-gen-kotlin) plugin,
 which involves three steps.
 
 1. Add the sqlc-gen-kotlin plugin

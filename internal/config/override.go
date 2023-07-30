@@ -5,8 +5,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/kyleconroy/sqlc/internal/pattern"
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/pattern"
+	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 )
 
 type Override struct {

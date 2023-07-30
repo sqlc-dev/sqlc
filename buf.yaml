@@ -1,0 +1,8 @@
+version: v1
+name: buf.build/sqlc/sqlc
+breaking:
+  use:
+    - FILE
+lint:
+  use:
+    - DEFAULT

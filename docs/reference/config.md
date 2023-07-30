@@ -15,6 +15,10 @@ sql:
     go: 
       package: "authors"
       out: "postgresql"
+  database:
+    uri: "postgresql://postgres:postgres@localhost:5432/postgres"
+  rules:
+    - sqlc/db-prepare
 - schema: "mysql/schema.sql"
   queries: "mysql/query.sql"
   engine: "mysql"
@@ -35,12 +39,16 @@ Each mapping in the `sql` collection has the following keys:
 - `queries`:
   - Directory of SQL queries or path to single SQL file; or a list of paths.
 - `codegen`:
-  - A colleciton of mappings to configure code generators. See [codegen](#codegen) for the supported keys.
+  - A collection of mappings to configure code generators. See [codegen](#codegen) for the supported keys.
 - `gen`:
   - A mapping to configure built-in code generators. See [gen](#gen) for the supported keys.
+- `database`:
+  - A mapping to configure database connections. See [database](#database) for the supported keys.
+- `rules`:
+  - A collection of rule names to run via `sqlc vet`. See [rules](#rules) for configuration options.
 - `strict_function_checks`
   - If true, return an error if a called SQL function does not exist. Defaults to `false`.
-  - 
+
 ### codegen
 
 The `codegen` mapping supports the following keys:
@@ -57,7 +65,7 @@ version: '2'
 plugins:
 - name: py
   wasm:
-    url: https://github.com/tabbed/sqlc-gen-python/releases/download/v0.16.0-alpha/sqlc-gen-python.wasm
+    url: https://github.com/sqlc-dev/sqlc-gen-python/releases/download/v0.16.0-alpha/sqlc-gen-python.wasm
     sha256: 428476c7408fd4c032da4ec74e8a7344f4fa75e0f98a5a3302f238283b9b95f2
 sql:
 - schema: "schema.sql"
@@ -72,7 +80,32 @@ sql:
       emit_async_querier: true
       query_parameter_limit: 5
 ```
-  
+
+### database
+
+The `database` mapping supports the following keys:
+
+- `uri`:
+  - Database connection URI
+
+The `uri` string can contain references to environment variables using the `${...}`
+syntax. In the following example, the connection string will have the value of
+the `PG_PASSWORD` environment variable set as its password.
+
+```yaml
+version: '2'
+sql:
+- schema: schema.sql
+  queries: query.sql
+  engine: postgresql
+  database:
+    uri: postgresql://postgres:${PG_PASSWORD}@localhost:5432/authors
+  gen:
+    go:
+      package: authors
+      out: postgresql
+```
+ 
 ### gen
 
 The `gen` mapping supports the following keys:
@@ -111,8 +144,12 @@ The `gen` mapping supports the following keys:
 - `emit_all_enum_values`:
   - If true, emit a function per enum type
     that returns all valid enum values.
+- `json_tags_id_uppercase`:
+  - If true, "Id" in json tags will be uppercase. If false, will be camelcase. Defaults to `false`
 - `json_tags_case_style`:
   - `camel` for camelCase, `pascal` for PascalCase, `snake` for snake_case or `none` to use the column name in the DB. Defaults to `none`.
+- `omit_unused_structs`:
+  - If `true`, sqlc won't generate table and enum structs that aren't used in queries for a given package. Defaults to `false`.
 - `output_batch_file_name`:
   - Customize the name of the batch file. Defaults to `batch.go`.
 - `output_db_file_name`:
@@ -124,8 +161,8 @@ The `gen` mapping supports the following keys:
 - `output_files_suffix`:
   - If specified the suffix will be added to the name of the generated files.
 - `query_parameter_limit`:
-  - Positional arguments that will be generated in Go functions (>= `1` or `-1`). To always emit a parameter struct, you would need to set it to `-1`. `0` is invalid. Defaults to `1`.
-`rename`:
+  - The number of positional arguments that will be generated for Go functions. To always emit a parameter struct, set this to `0`. Defaults to `1`.
+- `rename`:
   - Customize the name of generated struct fields. Explained in detail on the `Renaming fields` section.
 - `overrides`:
   - It is a collection of definitions that dictates which types are used to map a database types. Explained in detail on the  `Type overriding` section.
@@ -188,8 +225,8 @@ sql:
 Each mapping of the `overrides` collection has the following keys:
 
 - `db_type`:
-  - The PostgreSQL or MySQL type to override. Find the full list of supported types in [postgresql_type.go](https://github.com/kyleconroy/sqlc/blob/main/internal/codegen/golang/postgresql_type.go#L12) or [mysql_type.go](https://github.com/kyleconroy/sqlc/blob/main/internal/codegen/golang/mysql_type.go#L12). Note that for Postgres you must use the pg_catalog prefixed names where available. Can't be used if the `column` key is defined.
-- `column`
+  - The PostgreSQL or MySQL type to override. Find the full list of supported types in [postgresql_type.go](https://github.com/sqlc-dev/sqlc/blob/main/internal/codegen/golang/postgresql_type.go#L12) or [mysql_type.go](https://github.com/sqlc-dev/sqlc/blob/main/internal/codegen/golang/mysql_type.go#L12). Note that for Postgres you must use the pg_catalog prefixed names where available. Can't be used if the `column` key is defined.
+- `column`:
   - In case the type overriding should be done on specific a column of a table instead of a type. `column` should be of the form `table.column` but you can be even more specific by specifying `schema.table.column` or `catalog.schema.table.column`. Can't be used if the `db_type` key is defined.
 - `go_type`:
   - A fully qualified name to a Go type to use in the generated code.
@@ -197,9 +234,25 @@ Each mapping of the `overrides` collection has the following keys:
   - A reflect-style struct tag to use in the generated code, e.g. `a:"b" x:"y,z"`.
     If you want general json/db tags for all fields, use `emit_db_tags` and/or `emit_json_tags` instead.
 - `nullable`:
-  - If true, use this type when a column is nullable. Defaults to `false`.
+  - If `true`, use this type when a column is nullable. Defaults to `false`.
 
-For more complicated import paths, the `go_type` can also be an object.
+When generating code, entries using the `column` key will always have preference over
+entries using the `db_type` key in order to generate the struct.
+
+For more complicated import paths, the `go_type` can also be an object with the following keys:
+
+- `import`:
+  - The import path for the package where the type is defined.
+- `package`:
+  - The package name where the type is defined. This should only be necessary when your import path doesn't end with the desired package name.
+- `type`:
+  - The type name itself, without any package prefix.
+- `pointer`:
+  - If set to `true`, generated code will use pointers to the type rather than the type itself.
+- `slice`:
+  - If set to `true`, generated code will use a slice of the type rather than the type itself.
+
+An example:
 
 ```yaml
 version: "2"
@@ -220,12 +273,9 @@ sql:
             pointer: true
 ```
 
-When generating code, entries using the `column` key will always have preference over
-entries using the `db_type` key in order to generate the struct.
-
 #### kotlin
 
-> Removed in v1.17.0 and replaced by the [sqlc-gen-kotlin](https://github.com/tabbed/sqlc-gen-kotlin) plugin. Follow the [migration guide](../guides/migrating-to-sqlc-gen-kotlin) to switch.
+> Removed in v1.17.0 and replaced by the [sqlc-gen-kotlin](https://github.com/sqlc-dev/sqlc-gen-kotlin) plugin. Follow the [migration guide](../guides/migrating-to-sqlc-gen-kotlin) to switch.
 
 - `package`:
   - The package name to use for the generated code.
@@ -236,7 +286,7 @@ entries using the `db_type` key in order to generate the struct.
 
 #### python
 
-> Removed in v1.17.0 and replaced by the [sqlc-gen-python](https://github.com/tabbed/sqlc-gen-python) plugin. Follow the [migration guide](../guides/migrating-to-sqlc-gen-python) to switch.
+> Removed in v1.17.0 and replaced by the [sqlc-gen-python](https://github.com/sqlc-dev/sqlc-gen-python) plugin. Follow the [migration guide](../guides/migrating-to-sqlc-gen-python) to switch.
 
 - `package`:
   - The package name to use for the generated code.
@@ -280,17 +330,66 @@ version: 2
 plugins:
 - name: "py"
   wasm: 
-    url: "https://github.com/tabbed/sqlc-gen-python/releases/download/v0.16.0-alpha/sqlc-gen-python.wasm"
+    url: "https://github.com/sqlc-dev/sqlc-gen-python/releases/download/v0.16.0-alpha/sqlc-gen-python.wasm"
     sha256: "428476c7408fd4c032da4ec74e8a7344f4fa75e0f98a5a3302f238283b9b95f2"
 - name: "js"
   process: 
     cmd: "sqlc-gen-json"
 ```
- 
+
+### rules
+
+Each mapping in the `rules` collection has the following keys:
+
+- `name`:
+  - The name of this rule. Required
+- `rule`:
+  - A [Common Expression Language (CEL)](https://github.com/google/cel-spec) expression. Required.
+- `message`:
+  - An optional message shown when this rule evaluates to `true`.
+
+See the [vet](../howto/vet.md) documentation for a list of built-in rules and
+help writing custom rules.
+   
+```yaml
+version: 2
+sql:
+  - schema: "query.sql"
+    queries: "query.sql"
+    engine: "postgresql"
+    gen:
+      go:
+        package: "authors"
+        out: "db"
+    rules:
+      - no-pg
+      - no-delete
+      - only-one-param
+      - no-exec
+rules:
+  - name: no-pg
+    message: "invalid engine: postgresql"
+    rule: |
+      config.engine == "postgresql"
+  - name: no-delete
+    message: "don't use delete statements"
+    rule: |
+      query.sql.contains("DELETE")
+  - name: only-one-param
+    message: "too many parameters"
+    rule: |
+      query.params.size() > 1
+  - name: no-exec
+    message: "don't use exec"
+    rule: |
+      query.cmd == "exec"
+```
+  
 ### global overrides
 
-Sometimes, the same configuration must be done across various specfications of code generation.
-Then a global definition for type overriding and field renaming can be done using the `overrides` mapping the following manner:
+Sometimes, the same configuration must be done across various specifications of
+code generation.  Then a global definition for type overriding and field
+renaming can be done using the `overrides` mapping the following manner:
 
 ```yaml
 version: "2"
@@ -323,11 +422,18 @@ sql:
       out: "mysql
 ```
 
-With the previous configuration, whenever a struct field is generated from a table column that is called `id`, it will generated as `Identifier`.
-Also, whenever there is a nullable `timestamp with time zone` column in a Postgres table, it will be generated as `null.Time`.
-Note that, the mapping for global type overrides has a field called `engine` that is absent in the regular type overrides. This field is only used when there are multiple definitions using multiple engines. Otherwise, the value of the `engine` key will be defaulted to the engine that is currently being used.
+With the previous configuration, whenever a struct field is generated from a
+table column that is called `id`, it will generated as `Identifier`.
 
-Currently, type overrides and field renaming, both global and regular, are only fully supported in Go.
+Also, whenever there is a nullable `timestamp with time zone` column in a
+Postgres table, it will be generated as `null.Time`.  Note that, the mapping for
+global type overrides has a field called `engine` that is absent in the regular
+type overrides. This field is only used when there are multiple definitions
+using multiple engines. Otherwise, the value of the `engine` key will be
+defaulted to the engine that is currently being used.
+
+Currently, type overrides and field renaming, both global and regular, are only
+fully supported in Go.
 
 ## Version 1
 
@@ -352,6 +458,7 @@ packages:
     emit_enum_valid_method: false
     emit_all_enum_values: false
     json_tags_case_style: "camel"
+    omit_unused_structs: false
     output_batch_file_name: "batch.go"
     output_db_file_name: "db.go"
     output_models_file_name: "models.go"
@@ -395,7 +502,7 @@ Each mapping in the `packages` collection has the following keys:
 - `emit_methods_with_db_argument`:
   - If true, generated methods will accept a DBTX argument instead of storing a DBTX on the `*Queries` struct. Defaults to `false`.
 - `emit_pointers_for_null_types`:
-  - If true and `sql_package` is set to `pgx/v4`, generated types for nullable columns are emitted as pointers (ie. `*string`) instead of `database/sql` null types (ie. `NullString`). Defaults to `false`.
+  - If true and `sql_package` is set to `pgx/v4` or `pgx/v5`, generated types for nullable columns are emitted as pointers (ie. `*string`) instead of `database/sql` null types (ie. `NullString`). Defaults to `false`.
 - `emit_enum_valid_method`:
   - If true, generate a Valid method on enum types,
     indicating whether a string is a valid enum value.
@@ -404,6 +511,8 @@ Each mapping in the `packages` collection has the following keys:
     that returns all valid enum values.
 - `json_tags_case_style`:
   - `camel` for camelCase, `pascal` for PascalCase, `snake` for snake_case or `none` to use the column name in the DB. Defaults to `none`.
+- `omit_unused_structs`:
+  - If `true`, sqlc won't generate table and enum structs that aren't used in queries for a given package. Defaults to `false`.
 - `output_batch_file_name`:
   - Customize the name of the batch file. Defaults to `batch.go`.
 - `output_db_file_name`:
@@ -438,7 +547,7 @@ overrides:
 Each override document has the following keys:
 
 - `db_type`:
-  - The PostgreSQL or MySQL type to override. Find the full list of supported types in [postgresql_type.go](https://github.com/kyleconroy/sqlc/blob/main/internal/codegen/golang/postgresql_type.go#L12) or [mysql_type.go](https://github.com/kyleconroy/sqlc/blob/main/internal/codegen/golang/mysql_type.go#L12). Note that for Postgres you must use the pg_catalog prefixed names where available.
+  - The PostgreSQL or MySQL type to override. Find the full list of supported types in [postgresql_type.go](https://github.com/sqlc-dev/sqlc/blob/main/internal/codegen/golang/postgresql_type.go#L12) or [mysql_type.go](https://github.com/sqlc-dev/sqlc/blob/main/internal/codegen/golang/mysql_type.go#L12). Note that for Postgres you must use the pg_catalog prefixed names where available.
 - `go_type`:
   - A fully qualified name to a Go type to use in the generated code.
 - `go_struct_tag`:

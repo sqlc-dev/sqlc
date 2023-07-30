@@ -4,8 +4,9 @@ import (
 	"log"
 	"strings"
 
-	"github.com/kyleconroy/sqlc/internal/codegen/sdk"
-	"github.com/kyleconroy/sqlc/internal/plugin"
+	"github.com/sqlc-dev/sqlc/internal/codegen/sdk"
+	"github.com/sqlc-dev/sqlc/internal/debug"
+	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
 
 func sqliteType(req *plugin.CodeGenRequest, col *plugin.Column) string {
@@ -68,7 +69,10 @@ func sqliteType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		return "sql.NullFloat64"
 
 	default:
-		log.Printf("unknown SQLite type: %s\n", dt)
+		if debug.Active {
+			log.Printf("unknown SQLite type: %s\n", dt)
+		}
+
 		return "interface{}"
 
 	}

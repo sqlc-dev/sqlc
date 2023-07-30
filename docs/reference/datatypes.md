@@ -113,7 +113,7 @@ type Author struct {
 ## UUIDs
 
 The Go standard library does not come with a `uuid` package. For UUID support,
-sqlc uses the excellent `github.com/google/uuid` package.
+sqlc uses the excellent `github.com/google/uuid` package. The pgx/v5 sql package uses `pgtype.UUID`.
 
 ```sql
 CREATE TABLE records (

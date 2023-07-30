@@ -12,3 +12,12 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+  - package-ecosystem: "pip"
+    directory: "/docs"
+    schedule:
+      interval: "daily"
+    ignore:
+      # sphinx-rtd-theme does not support the latest versions of docutils and
+      # sphinx
+      - dependency-name: "docutils"
+      - dependency-name: "sphinx"

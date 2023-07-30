@@ -15,21 +15,21 @@ import (
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc/status"
 
-	"github.com/kyleconroy/sqlc/internal/codegen/golang"
-	"github.com/kyleconroy/sqlc/internal/codegen/json"
-	"github.com/kyleconroy/sqlc/internal/compiler"
-	"github.com/kyleconroy/sqlc/internal/config"
-	"github.com/kyleconroy/sqlc/internal/config/convert"
-	"github.com/kyleconroy/sqlc/internal/debug"
-	"github.com/kyleconroy/sqlc/internal/ext"
-	"github.com/kyleconroy/sqlc/internal/ext/process"
-	"github.com/kyleconroy/sqlc/internal/ext/wasm"
-	"github.com/kyleconroy/sqlc/internal/info"
-	"github.com/kyleconroy/sqlc/internal/multierr"
-	"github.com/kyleconroy/sqlc/internal/opts"
-	"github.com/kyleconroy/sqlc/internal/plugin"
-	"github.com/kyleconroy/sqlc/internal/remote"
-	"github.com/kyleconroy/sqlc/internal/sql/sqlpath"
+	"github.com/sqlc-dev/sqlc/internal/codegen/golang"
+	"github.com/sqlc-dev/sqlc/internal/codegen/json"
+	"github.com/sqlc-dev/sqlc/internal/compiler"
+	"github.com/sqlc-dev/sqlc/internal/config"
+	"github.com/sqlc-dev/sqlc/internal/config/convert"
+	"github.com/sqlc-dev/sqlc/internal/debug"
+	"github.com/sqlc-dev/sqlc/internal/ext"
+	"github.com/sqlc-dev/sqlc/internal/ext/process"
+	"github.com/sqlc-dev/sqlc/internal/ext/wasm"
+	"github.com/sqlc-dev/sqlc/internal/info"
+	"github.com/sqlc-dev/sqlc/internal/multierr"
+	"github.com/sqlc-dev/sqlc/internal/opts"
+	"github.com/sqlc-dev/sqlc/internal/plugin"
+	"github.com/sqlc-dev/sqlc/internal/remote"
+	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
 )
 
 const errMessageNoVersion = `The configuration file must have a version number.
@@ -115,11 +115,11 @@ func readConfig(stderr io.Writer, dir, filename string) (string, *config.Config,
 	if err != nil {
 		switch err {
 		case config.ErrMissingVersion:
-			fmt.Fprintf(stderr, errMessageNoVersion)
+			fmt.Fprint(stderr, errMessageNoVersion)
 		case config.ErrUnknownVersion:
-			fmt.Fprintf(stderr, errMessageUnknownVersion)
+			fmt.Fprint(stderr, errMessageUnknownVersion)
 		case config.ErrNoPackages:
-			fmt.Fprintf(stderr, errMessageNoPackages)
+			fmt.Fprint(stderr, errMessageNoPackages)
 		}
 		fmt.Fprintf(stderr, "error parsing %s: %s\n", base, err)
 		return "", nil, err

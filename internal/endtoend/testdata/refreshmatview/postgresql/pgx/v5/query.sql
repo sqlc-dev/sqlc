@@ -1,0 +1,4 @@
+CREATE MATERIALIZED VIEW myview AS (SELECT 1);
+
+-- name: Refresh :exec
+REFRESH MATERIALIZED VIEW myview;

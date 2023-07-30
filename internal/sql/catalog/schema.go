@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
+	"github.com/sqlc-dev/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
 )
 
 // Schema describes how the data in a relational database may relate to other tables or other data models
@@ -20,7 +20,7 @@ type Schema struct {
 
 func (s *Schema) getFunc(rel *ast.FuncName, tns []*ast.TypeName) (*Function, int, error) {
 	for i := range s.Funcs {
-		if strings.ToLower(s.Funcs[i].Name) != strings.ToLower(rel.Name) {
+		if !strings.EqualFold(s.Funcs[i].Name, rel.Name) {
 			continue
 		}
 
@@ -100,6 +100,11 @@ func (c *Catalog) createSchema(stmt *ast.CreateSchemaStmt) error {
 		return fmt.Errorf("create schema: empty name")
 	}
 	if _, err := c.getSchema(*stmt.Name); err == nil {
+		// If the default schema already exists, treat additional CREATE SCHEMA
+		// statements as no-ops.
+		if *stmt.Name == c.DefaultSchema {
+			return nil
+		}
 		if !stmt.IfNotExists {
 			return sqlerr.SchemaExists(*stmt.Name)
 		}

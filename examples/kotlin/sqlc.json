@@ -4,8 +4,8 @@
     {
       "name": "kt",
       "wasm": {
-        "url": "https://downloads.sqlc.dev/plugin/sqlc-gen-kotlin_1.0.0.wasm",
-        "sha256": "7620dc5d462de41fdc90e2011232c842117b416c98fd5c163d27c5738431a45c"
+        "url": "https://downloads.sqlc.dev/plugin/sqlc-gen-kotlin_1.1.0.wasm",
+        "sha256": "57890144f4effed4fe71855418b87ad26d53dc5ed2030a66ad77e5e3a93d77fb"
       }
     }
   ],
@@ -39,8 +39,8 @@
       ]
     },
     {
-      "schema": "src/main/resources/jets/schema.sql",
-      "queries": "src/main/resources/jets/query-building.sql",
+      "schema": "src/main/resources/jets/postgresql/schema.sql",
+      "queries": "src/main/resources/jets/postgresql/query-building.sql",
       "engine": "postgresql",
       "codegen": [
         {

@@ -1,15 +1,16 @@
 package sqlite
 
 import (
+	"fmt"
 	"log"
 	"strconv"
 	"strings"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr/v4"
 
-	"github.com/kyleconroy/sqlc/internal/debug"
-	"github.com/kyleconroy/sqlc/internal/engine/sqlite/parser"
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/debug"
+	"github.com/sqlc-dev/sqlc/internal/engine/sqlite/parser"
+	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 )
 
 type cc struct {
@@ -20,9 +21,9 @@ type node interface {
 	GetParser() antlr.Parser
 }
 
-func todo(n node) *ast.TODO {
+func todo(funcname string, n node) *ast.TODO {
 	if debug.Active {
-		log.Printf("sqlite.convert: Unknown node type %T\n", n)
+		log.Printf("sqlite.%s: Unknown node type %T\n", funcname, n)
 	}
 	return &ast.TODO{}
 }
@@ -92,7 +93,7 @@ func (c *cc) convertAlter_table_stmtContext(n *parser.Alter_table_stmtContext) a
 		return stmt
 	}
 
-	return todo(n)
+	return todo("convertAlter_table_stmtContext", n)
 }
 
 func (c *cc) convertAttach_stmtContext(n *parser.Attach_stmtContext) ast.Node {
@@ -123,6 +124,50 @@ func (c *cc) convertCreate_table_stmtContext(n *parser.Create_table_stmtContext)
 	return stmt
 }
 
+func (c *cc) convertCreate_virtual_table_stmtContext(n *parser.Create_virtual_table_stmtContext) ast.Node {
+	switch moduleName := n.Module_name().GetText(); moduleName {
+	case "fts5":
+		// https://www.sqlite.org/fts5.html
+		return c.convertCreate_virtual_table_fts5(n)
+	default:
+		return todo(
+			fmt.Sprintf("create_virtual_table. unsupported module name: %q", moduleName),
+			n,
+		)
+	}
+}
+
+func (c *cc) convertCreate_virtual_table_fts5(n *parser.Create_virtual_table_stmtContext) ast.Node {
+	stmt := &ast.CreateTableStmt{
+		Name:        parseTableName(n),
+		IfNotExists: n.EXISTS_() != nil,
+	}
+
+	for _, arg := range n.AllModule_argument() {
+		var columnName string
+
+		// For example: CREATE VIRTUAL TABLE tbl_ft USING fts5(b, c UNINDEXED)
+		//   * the 'b' column is parsed like Expr_qualified_column_nameContext
+		//   * the 'c' column is parsed like Column_defContext
+		if columnExpr, ok := arg.Expr().(*parser.Expr_qualified_column_nameContext); ok {
+			columnName = columnExpr.Column_name().GetText()
+		} else if columnDef, ok := arg.Column_def().(*parser.Column_defContext); ok {
+			columnName = columnDef.Column_name().GetText()
+		}
+
+		if columnName != "" {
+			stmt.Cols = append(stmt.Cols, &ast.ColumnDef{
+				Colname: identifier(columnName),
+				// you can not specify any column constraints in fts5, so we pass them manually
+				IsNotNull: true,
+				TypeName:  &ast.TypeName{Name: "text"},
+			})
+		}
+	}
+
+	return stmt
+}
+
 func (c *cc) convertCreate_view_stmtContext(n *parser.Create_view_stmtContext) ast.Node {
 	viewName := n.View_name().GetText()
 	relation := &ast.RangeVar{
@@ -144,7 +189,15 @@ func (c *cc) convertCreate_view_stmtContext(n *parser.Create_view_stmtContext) a
 	}
 }
 
-func (c *cc) convertDelete_stmtContext(n *parser.Delete_stmtContext) ast.Node {
+type Delete_stmt interface {
+	node
+
+	Qualified_table_name() parser.IQualified_table_nameContext
+	WHERE_() antlr.TerminalNode
+	Expr() parser.IExprContext
+}
+
+func (c *cc) convertDelete_stmtContext(n Delete_stmt) ast.Node {
 	if qualifiedName, ok := n.Qualified_table_name().(*parser.Qualified_table_nameContext); ok {
 
 		tableName := qualifiedName.Table_name().GetText()
@@ -167,19 +220,32 @@ func (c *cc) convertDelete_stmtContext(n *parser.Delete_stmtContext) ast.Node {
 		relations.Items = append(relations.Items, relation)
 
 		delete := &ast.DeleteStmt{
-			Relations:     relations,
-			ReturningList: c.convertReturning_caluseContext(n.Returning_clause()),
-			WithClause:    nil,
+			Relations:  relations,
+			WithClause: nil,
 		}
 
 		if n.WHERE_() != nil && n.Expr() != nil {
 			delete.WhereClause = c.convert(n.Expr())
 		}
 
+		if n, ok := n.(interface {
+			Returning_clause() parser.IReturning_clauseContext
+		}); ok {
+			delete.ReturningList = c.convertReturning_caluseContext(n.Returning_clause())
+		} else {
+			delete.ReturningList = c.convertReturning_caluseContext(nil)
+		}
+		if n, ok := n.(interface {
+			Limit_stmt() parser.ILimit_stmtContext
+		}); ok {
+			limitCount, _ := c.convertLimit_stmtContext(n.Limit_stmt())
+			delete.LimitCount = limitCount
+		}
+
 		return delete
 	}
 
-	return todo(n)
+	return todo("convertDelete_stmtContext", n)
 }
 
 func (c *cc) convertDrop_stmtContext(n *parser.Drop_stmtContext) ast.Node {
@@ -196,7 +262,7 @@ func (c *cc) convertDrop_stmtContext(n *parser.Drop_stmtContext) ast.Node {
 			Tables:   []*ast.TableName{&name},
 		}
 	}
-	return todo(n)
+	return todo("convertDrop_stmtContext", n)
 }
 
 func (c *cc) convertFuncContext(n *parser.Expr_functionContext) ast.Node {
@@ -239,7 +305,7 @@ func (c *cc) convertFuncContext(n *parser.Expr_functionContext) ast.Node {
 		}
 	}
 
-	return todo(n)
+	return todo("convertFuncContext", n)
 }
 
 func (c *cc) convertExprContext(n *parser.ExprContext) ast.Node {
@@ -310,6 +376,25 @@ func (c *cc) convertMultiSelect_stmtContext(n *parser.Select_stmtContext) ast.No
 	var where ast.Node
 	var groups = []ast.Node{}
 	var having ast.Node
+	var ctes []ast.Node
+
+	if ct := n.Common_table_stmt(); ct != nil {
+		recursive := ct.RECURSIVE_() != nil
+		for _, cte := range ct.AllCommon_table_expression() {
+			tableName := identifier(cte.Table_name().GetText())
+			var cteCols ast.List
+			for _, col := range cte.AllColumn_name() {
+				cteCols.Items = append(cteCols.Items, NewIdentifer(col.GetText()))
+			}
+			ctes = append(ctes, &ast.CommonTableExpr{
+				Ctename:      &tableName,
+				Ctequery:     c.convert(cte.Select_stmt()),
+				Location:     cte.GetStart().GetStart(),
+				Cterecursive: recursive,
+				Ctecolnames:  &cteCols,
+			})
+		}
+	}
 
 	for _, icore := range n.AllSelect_core() {
 		core, ok := icore.(*parser.Select_coreContext)
@@ -356,6 +441,9 @@ func (c *cc) convertMultiSelect_stmtContext(n *parser.Select_stmtContext) ast.No
 		LimitCount:   limitCount,
 		LimitOffset:  limitOffset,
 		ValuesLists:  &ast.List{},
+		WithClause: &ast.WithClause{
+			Ctes: &ast.List{Items: ctes},
+		},
 	}
 }
 
@@ -405,7 +493,7 @@ func (c *cc) getCols(core *parser.Select_coreContext) []ast.Node {
 		}
 
 		if col.AS_() != nil {
-			name := col.Column_alias().GetText()
+			name := identifier(col.Column_alias().GetText())
 			target.Name = &name
 		}
 
@@ -445,7 +533,7 @@ func (c *cc) convertOrderby_stmtContext(n parser.IOrder_by_stmtContext) ast.Node
 		}
 		return list
 	}
-	return todo(n)
+	return todo("convertOrderby_stmtContext", n)
 }
 
 func (c *cc) convertLimit_stmtContext(n parser.ILimit_stmtContext) (ast.Node, ast.Node) {
@@ -572,7 +660,7 @@ func (c *cc) convertLiteral(n *parser.Expr_literalContext) ast.Node {
 			}
 		}
 	}
-	return todo(n)
+	return todo("convertLiteral", n)
 }
 
 func (c *cc) convertMathOperationNode(n *parser.Expr_math_opContext) ast.Node {
@@ -624,41 +712,11 @@ func (c *cc) convertParam(n *parser.Expr_bindContext) ast.Node {
 		}
 	}
 
-	return todo(n)
+	return todo("convertParam", n)
 }
 
 func (c *cc) convertInSelectNode(n *parser.Expr_in_selectContext) ast.Node {
-	if n.IN_() == nil && n.EXISTS_() == nil {
-		return c.convert(n.Select_stmt())
-	}
-
-	lexpr := c.convert(n.Expr(0))
-	rexprs := []ast.Node{}
-	for i, expr := range n.AllExpr()[1:] {
-		if i == 0 {
-			continue
-		}
-		e := c.convert(expr)
-		switch t := e.(type) {
-		case *ast.List:
-			rexprs = append(rexprs, t.Items...)
-		default:
-			rexprs = append(rexprs, t)
-		}
-	}
-
-	var subquery ast.Node = nil
-	if n.Select_stmt() != nil {
-		subquery = c.convert(n.Select_stmt())
-	}
-
-	return &ast.In{
-		Expr:     lexpr,
-		List:     rexprs,
-		Not:      n.NOT_() != nil,
-		Sel:      subquery,
-		Location: n.GetStart().GetStart(),
-	}
+	return c.convert(n.Select_stmt())
 }
 
 func (c *cc) convertReturning_caluseContext(n parser.IReturning_clauseContext) *ast.List {
@@ -747,7 +805,7 @@ func (c *cc) convertExprLists(lists []parser.IExprContext) *ast.List {
 func (c *cc) convertColumnNames(cols []parser.IColumn_nameContext) *ast.List {
 	list := &ast.List{Items: []ast.Node{}}
 	for _, c := range cols {
-		name := c.GetText()
+		name := identifier(c.GetText())
 		list.Items = append(list.Items, &ast.ResTarget{
 			Name: &name,
 		})
@@ -776,6 +834,10 @@ func (c *cc) convertTablesOrSubquery(n []parser.ITable_or_subqueryContext) []ast
 			}
 			if from.Table_alias() != nil {
 				alias := from.Table_alias().GetText()
+				rv.Alias = &ast.Alias{Aliasname: &alias}
+			}
+			if from.Table_alias_fallback() != nil {
+				alias := identifier(from.Table_alias_fallback().GetText())
 				rv.Alias = &ast.Alias{Aliasname: &alias}
 			}
 
@@ -826,7 +888,16 @@ func (c *cc) convertTablesOrSubquery(n []parser.ITable_or_subqueryContext) []ast
 	return tables
 }
 
-func (c *cc) convertUpdate_stmtContext(n *parser.Update_stmtContext) ast.Node {
+type Update_stmt interface {
+	Qualified_table_name() parser.IQualified_table_nameContext
+	GetStart() antlr.Token
+	AllColumn_name() []parser.IColumn_nameContext
+	WHERE_() antlr.TerminalNode
+	Expr(i int) parser.IExprContext
+	AllExpr() []parser.IExprContext
+}
+
+func (c *cc) convertUpdate_stmtContext(n Update_stmt) ast.Node {
 	if n == nil {
 		return nil
 	}
@@ -841,7 +912,7 @@ func (c *cc) convertUpdate_stmtContext(n *parser.Update_stmtContext) ast.Node {
 
 	list := &ast.List{}
 	for i, col := range n.AllColumn_name() {
-		colName := col.GetText()
+		colName := identifier(col.GetText())
 		target := &ast.ResTarget{
 			Name: &colName,
 			Val:  c.convert(n.Expr(i)),
@@ -854,14 +925,27 @@ func (c *cc) convertUpdate_stmtContext(n *parser.Update_stmtContext) ast.Node {
 		where = c.convert(n.Expr(len(n.AllExpr()) - 1))
 	}
 
-	return &ast.UpdateStmt{
-		Relations:     relations,
-		TargetList:    list,
-		WhereClause:   where,
-		ReturningList: c.convertReturning_caluseContext(n.Returning_clause()),
-		FromClause:    &ast.List{},
-		WithClause:    nil, // TODO: support with clause
+	stmt := &ast.UpdateStmt{
+		Relations:   relations,
+		TargetList:  list,
+		WhereClause: where,
+		FromClause:  &ast.List{},
+		WithClause:  nil, // TODO: support with clause
 	}
+	if n, ok := n.(interface {
+		Returning_clause() parser.IReturning_clauseContext
+	}); ok {
+		stmt.ReturningList = c.convertReturning_caluseContext(n.Returning_clause())
+	} else {
+		stmt.ReturningList = c.convertReturning_caluseContext(nil)
+	}
+	if n, ok := n.(interface {
+		Limit_stmt() parser.ILimit_stmtContext
+	}); ok {
+		limitCount, _ := c.convertLimit_stmtContext(n.Limit_stmt())
+		stmt.LimitCount = limitCount
+	}
+	return stmt
 }
 
 func (c *cc) convertBetweenExpr(n *parser.Expr_betweenContext) ast.Node {
@@ -871,6 +955,21 @@ func (c *cc) convertBetweenExpr(n *parser.Expr_betweenContext) ast.Node {
 		Right:    c.convert(n.Expr(2)),
 		Location: n.GetStart().GetStart(),
 		Not:      n.NOT_() != nil,
+	}
+}
+
+func (c *cc) convertCastExpr(n *parser.Expr_castContext) ast.Node {
+	name := n.Type_name().GetText()
+	return &ast.TypeCast{
+		Arg: c.convert(n.Expr()),
+		TypeName: &ast.TypeName{
+			Name: name,
+			Names: &ast.List{Items: []ast.Node{
+				NewIdentifer(name),
+			}},
+			ArrayBounds: &ast.List{},
+		},
+		Location: n.GetStart().GetStart(),
 	}
 }
 
@@ -886,6 +985,9 @@ func (c *cc) convert(node node) ast.Node {
 	case *parser.Create_table_stmtContext:
 		return c.convertCreate_table_stmtContext(n)
 
+	case *parser.Create_virtual_table_stmtContext:
+		return c.convertCreate_virtual_table_stmtContext(n)
+
 	case *parser.Create_view_stmtContext:
 		return c.convertCreate_view_stmtContext(n)
 
@@ -893,6 +995,9 @@ func (c *cc) convert(node node) ast.Node {
 		return c.convertDrop_stmtContext(n)
 
 	case *parser.Delete_stmtContext:
+		return c.convertDelete_stmtContext(n)
+
+	case *parser.Delete_stmt_limitedContext:
 		return c.convertDelete_stmtContext(n)
 
 	case *parser.ExprContext:
@@ -930,7 +1035,7 @@ func (c *cc) convert(node node) ast.Node {
 
 	case *parser.Factored_select_stmtContext:
 		// TODO: need to handle this
-		return todo(n)
+		return todo("convert(case=parser.Factored_select_stmtContext)", n)
 
 	case *parser.Insert_stmtContext:
 		return c.convertInsert_stmtContext(n)
@@ -947,7 +1052,13 @@ func (c *cc) convert(node node) ast.Node {
 	case *parser.Update_stmtContext:
 		return c.convertUpdate_stmtContext(n)
 
+	case *parser.Update_stmt_limitedContext:
+		return c.convertUpdate_stmtContext(n)
+
+	case *parser.Expr_castContext:
+		return c.convertCastExpr(n)
+
 	default:
-		return todo(n)
+		return todo("convert(case=default)", n)
 	}
 }

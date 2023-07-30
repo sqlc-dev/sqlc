@@ -108,3 +108,10 @@ FROM    users_2 AS u
         LEFT JOIN media AS m
             ON u.user_avatar_id = m.media_id
 WHERE   u.user_id != @user_id;
+
+-- name: GetSuggestedUsersByID2 :many
+SELECT  users_2.user_id
+FROM    users_2
+            LEFT JOIN media AS m
+                      ON user_avatar_id = m.media_id
+WHERE   user_id != @user_id;

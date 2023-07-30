@@ -1,0 +1,10 @@
+{% extends "!breadcrumbs.html" %}
+
+{% block breadcrumbs %}
+{% if show_banner %}
+<header id="banner">
+  <div>✨ We're now working full-time on sqlc. Read more <a href="https://sqlc.dev/posts/2023/07/06/working-on-sqlc-full-time">here</a>.</div>
+</header>
+{% endif %}
+{{ super() }}
+{% endblock %}
