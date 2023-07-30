@@ -7,13 +7,6 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
 )
 
-func isArray(n *ast.TypeName) bool {
-	if n == nil || n.ArrayBounds == nil {
-		return false
-	}
-	return len(n.ArrayBounds.Items) > 0
-}
-
 func arrayDims(n *ast.TypeName) int {
 	if n == nil || n.ArrayBounds == nil {
 		return 0
@@ -29,11 +22,12 @@ func toColumn(n *ast.TypeName) *Column {
 	if err != nil {
 		panic("toColumn: " + err.Error())
 	}
+	arrayDims := arrayDims(n)
 	return &Column{
 		Type:      typ,
 		DataType:  strings.TrimPrefix(astutils.Join(n.Names, "."), "."),
 		NotNull:   true, // XXX: How do we know if this should be null?
-		IsArray:   isArray(n),
-		ArrayDims: arrayDims(n),
+		IsArray:   arrayDims > 0,
+		ArrayDims: arrayDims,
 	}
 }
