@@ -129,7 +129,18 @@ func (v QueryValue) Params() string {
 	return "\n" + strings.Join(out, ",\n")
 }
 
-func (v QueryValue) ColumnNames() string {
+func (v QueryValue) ColumnNames() []string {
+	if v.Struct == nil {
+		return []string{v.DBName}
+	}
+	names := make([]string, len(v.Struct.Fields))
+	for i, f := range v.Struct.Fields {
+		names[i] = f.DBName
+	}
+	return names
+}
+
+func (v QueryValue) ColumnNamesAsGoSlice() string {
 	if v.Struct == nil {
 		return fmt.Sprintf("[]string{%q}", v.DBName)
 	}
@@ -187,6 +198,19 @@ func (v QueryValue) Scan() string {
 	return "\n" + strings.Join(out, ",\n")
 }
 
+func (v QueryValue) Fields() []Field {
+	if v.Struct != nil {
+		return v.Struct.Fields
+	}
+	return []Field{
+		{
+			Name:   v.Name,
+			DBName: v.DBName,
+			Type:   v.Typ,
+		},
+	}
+}
+
 func (v QueryValue) VariableForField(f Field) string {
 	if !v.IsStruct() {
 		return v.Name
@@ -218,7 +242,7 @@ func (q Query) hasRetType() bool {
 	return scanned && !q.Ret.isEmpty()
 }
 
-func (q Query) TableIdentifier() string {
+func (q Query) TableIdentifierAsGoSlice() string {
 	escapedNames := make([]string, 0, 3)
 	for _, p := range []string{q.Table.Catalog, q.Table.Schema, q.Table.Name} {
 		if p != "" {
@@ -226,4 +250,14 @@ func (q Query) TableIdentifier() string {
 		}
 	}
 	return "[]string{" + strings.Join(escapedNames, ", ") + "}"
+}
+
+func (q Query) TableIdentifierForMySQL() string {
+	escapedNames := make([]string, 0, 3)
+	for _, p := range []string{q.Table.Catalog, q.Table.Schema, q.Table.Name} {
+		if p != "" {
+			escapedNames = append(escapedNames, fmt.Sprintf("`%s`", p))
+		}
+	}
+	return strings.Join(escapedNames, ".")
 }

@@ -145,8 +145,15 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 		SqlcVersion:               req.SqlcVersion,
 	}
 
-	if tctx.UsesCopyFrom && !tctx.SQLDriver.IsPGX() {
-		return nil, errors.New(":copyfrom is only supported by pgx")
+	if tctx.UsesCopyFrom && !tctx.SQLDriver.IsPGX() && golang.SqlDriver != SQLDriverGoSQLDriverMySQL {
+		return nil, errors.New(":copyfrom is only supported by pgx and github.com/go-sql-driver/mysql")
+	}
+
+	if tctx.UsesCopyFrom && golang.SqlDriver == SQLDriverGoSQLDriverMySQL {
+		if err := checkNoTimesForMySQLCopyFrom(queries); err != nil {
+			return nil, err
+		}
+		tctx.SQLDriver = SQLDriverGoSQLDriverMySQL
 	}
 
 	if tctx.UsesBatch && !tctx.SQLDriver.IsPGX() {
@@ -292,6 +299,17 @@ func usesBatch(queries []Query) bool {
 		}
 	}
 	return false
+}
+
+func checkNoTimesForMySQLCopyFrom(queries []Query) error {
+	for _, q := range queries {
+		for _, f := range q.Arg.Fields() {
+			if f.Type == "time.Time" {
+				return fmt.Errorf("values with a timezone are not yet supported")
+			}
+		}
+	}
+	return nil
 }
 
 func filterUnusedStructs(enums []Enum, structs []Struct, queries []Query) ([]Enum, []Struct) {
