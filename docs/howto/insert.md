@@ -122,7 +122,7 @@ func (q *Queries) CreateAuthorAndReturnId(ctx context.Context, arg CreateAuthorA
 
 ## Using CopyFrom
 
-PostgreSQL supports the Copy Protocol that can insert rows a lot faster than sequential inserts. You can use this easily with sqlc:
+PostgreSQL supports the [COPY protocol](https://www.postgresql.org/docs/current/sql-copy.html) that can insert rows a lot faster than sequential inserts. You can use this easily with sqlc:
 
 ```sql
 CREATE TABLE authors (
@@ -142,6 +142,27 @@ type CreateAuthorsParams struct {
 }
 
 func (q *Queries) CreateAuthors(ctx context.Context, arg []CreateAuthorsParams) (int64, error) {
-	return q.db.CopyFrom(ctx, []string{"authors"}, []string{"name", "bio"}, &iteratorForCreateAuthors{rows: arg})
+	...
+}
+```
+
+MySQL supports a similar feature using [LOAD DATA](https://dev.mysql.com/doc/refman/8.0/en/load-data.html).
+
+Errors and duplicate keys are treated as warnings and insertion will
+continue, even without an error for some cases.  Use this in a transaction
+and use SHOW WARNINGS to check for any problems and roll back if you want to.
+
+Check the [error handling](https://dev.mysql.com/doc/refman/8.0/en/load-data.html#load-data-error-handling) documentation for more information.
+
+```sql
+CREATE TABLE foo (a text, b integer, c DATETIME, d DATE);
+
+-- name: InsertValues :copyfrom
+INSERT INTO foo (a, b, c, d) VALUES (?, ?, ?, ?);
+```
+
+```go
+func (q *Queries) InsertValues(ctx context.Context, arg []InsertValuesParams) (int64, error) {
+	...
 }
 ```
