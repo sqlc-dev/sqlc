@@ -8,7 +8,8 @@ CREATE TABLE users (
 
 CREATE TABLE posts (
     id integer NOT NULL PRIMARY KEY,
-    user_id integer NOT NULL
+    user_id integer NOT NULL,
+    likes integer[] NOT NULL
 );
 
 CREATE TABLE baz.users (

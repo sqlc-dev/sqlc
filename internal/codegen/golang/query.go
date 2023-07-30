@@ -179,7 +179,11 @@ func (v QueryValue) Scan() string {
 			// append any embedded fields
 			if len(f.EmbedFields) > 0 {
 				for _, embed := range f.EmbedFields {
-					out = append(out, "&"+v.Name+"."+f.Name+"."+embed)
+					if strings.HasPrefix(embed.Type, "[]") && embed.Type != "[]byte" && !v.SQLDriver.IsPGX() {
+						out = append(out, "pq.Array(&"+v.Name+"."+f.Name+"."+embed.Name+")")
+					} else {
+						out = append(out, "&"+v.Name+"."+f.Name+"."+embed.Name)
+					}
 				}
 				continue
 			}

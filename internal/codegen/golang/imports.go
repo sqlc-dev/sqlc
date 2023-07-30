@@ -334,6 +334,11 @@ func (i *importer) queryImports(filename string) fileImports {
 						if strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" {
 							return true
 						}
+						for _, embed := range f.EmbedFields {
+							if strings.HasPrefix(embed.Type, "[]") && embed.Type != "[]byte" {
+								return true
+							}
+						}
 					}
 				} else {
 					if strings.HasPrefix(q.Ret.Type(), "[]") && q.Ret.Type() != "[]byte" {

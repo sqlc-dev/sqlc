@@ -16,6 +16,7 @@ type BazUser struct {
 type Post struct {
 	ID     int32
 	UserID int32
+	Likes  []int32
 }
 
 type User struct {
