@@ -8,6 +8,8 @@ package querytest
 import (
 	"context"
 	"database/sql"
+
+	"github.com/lib/pq"
 )
 
 const duplicate = `-- name: Duplicate :one
@@ -34,7 +36,7 @@ func (q *Queries) Duplicate(ctx context.Context) (DuplicateRow, error) {
 }
 
 const join = `-- name: Join :one
-SELECT users.id, users.name, users.age, posts.id, posts.user_id FROM posts
+SELECT users.id, users.name, users.age, posts.id, posts.user_id, posts.likes FROM posts
 INNER JOIN users ON posts.user_id = users.id
 `
 
@@ -52,6 +54,7 @@ func (q *Queries) Join(ctx context.Context) (JoinRow, error) {
 		&i.User.Age,
 		&i.Post.ID,
 		&i.Post.UserID,
+		pq.Array(&i.Post.Likes),
 	)
 	return i, err
 }
