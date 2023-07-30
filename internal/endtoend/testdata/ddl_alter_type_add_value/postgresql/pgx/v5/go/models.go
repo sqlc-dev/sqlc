@@ -51,3 +51,7 @@ func (ns NullStatus) Value() (driver.Value, error) {
 	}
 	return string(ns.Status), nil
 }
+
+var EnumNames = []string{
+	"status",
+}

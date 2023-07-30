@@ -96,6 +96,10 @@ func (ns NullNewEvent) Value() (driver.Value, error) {
 	return string(ns.NewEvent), nil
 }
 
+var EnumNames = []string{
+	"level", "event",
+}
+
 type LogLine struct {
 	ID     int64
 	Status NewEvent

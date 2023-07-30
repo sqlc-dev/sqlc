@@ -27,6 +27,7 @@ func buildEnums(req *plugin.CodeGenRequest) []Enum {
 
 			e := Enum{
 				Name:      StructName(enumName, req.Settings),
+				TypeName:  enum.Name,
 				Comment:   enum.Comment,
 				NameTags:  map[string]string{},
 				ValidTags: map[string]string{},

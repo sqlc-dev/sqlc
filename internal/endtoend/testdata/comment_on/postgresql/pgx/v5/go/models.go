@@ -53,6 +53,10 @@ func (ns NullFooMood) Value() (driver.Value, error) {
 	return string(ns.FooMood), nil
 }
 
+var EnumNames = []string{
+	"mood",
+}
+
 // this is the bar table
 type FooBar struct {
 	// this is the baz column

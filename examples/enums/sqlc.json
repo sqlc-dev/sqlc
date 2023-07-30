@@ -1,0 +1,22 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "path": "postgresql",
+      "name": "enums",
+      "schema": "postgresql/schema.sql",
+      "queries": "postgresql/query.sql",
+      "engine": "postgresql",
+      "database": {
+        "uri": "postgresql://${PG_USER}:${PG_PASSWORD}@${PG_HOST}:${PG_PORT}/enums"
+      },
+      "rules": [
+        "sqlc/db-prepare"
+      ],
+      "sql_package": "pgx/v5",
+      "emit_json_tags": true,
+      "emit_prepared_queries": true,
+      "emit_interface": true
+    }
+  ]
+}

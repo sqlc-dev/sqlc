@@ -51,6 +51,10 @@ func (ns NullFooTypeUserRole) Value() (driver.Value, error) {
 	return string(ns.FooTypeUserRole), nil
 }
 
+var EnumNames = []string{
+	"type_user_role",
+}
+
 type FooUser struct {
 	Role NullFooTypeUserRole
 }

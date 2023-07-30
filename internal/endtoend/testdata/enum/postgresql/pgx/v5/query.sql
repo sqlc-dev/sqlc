@@ -12,6 +12,10 @@ INSERT INTO users (
 ) VALUES
 ($1, $2, $3, $4, $5, $6);
 
+-- name: FindShoeSizes :many
+SELECT * FROM users
+WHERE shoe_size = ANY(@shoe_size::size[]);
+
 -- name: UpdateSizes :exec
 UPDATE users
 SET shoe_size = $2, shirt_size = $3
