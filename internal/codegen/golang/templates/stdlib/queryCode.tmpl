@@ -87,18 +87,8 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 {{if eq .Cmd ":execlastid"}}
 {{range .Comments}}//{{.}}
 {{end -}}
-{{- if $.EmitMethodsWithDBArgument -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) (int64, error) {
-{{- else -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, error) {
-{{- end -}}
-    {{- if $.EmitPreparedQueries}}
-    result, err := q.exec(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
-    {{- else if $.EmitMethodsWithDBArgument}}
-    result, err := db.ExecContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
-    {{- else}}
-    result, err := q.db.ExecContext(ctx, {{.ConstantName}}, {{.Arg.Params}})
-    {{- end}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) (int64, error) {
+    {{- template "queryCodeStdExec" . }}
     if err != nil {
         return 0, err
     }
@@ -126,16 +116,16 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
             {{- $arg := .Arg }}
             {{- range .Arg.Struct.Fields }}
                 {{- if .HasSqlcSlice }}
-                    if len({{$arg.Name}}.{{.Name}}) > 0 {
-                      for _, v := range {{$arg.Name}}.{{.Name}} {
+                    if len({{$arg.VariableForField .}}) > 0 {
+                      for _, v := range {{$arg.VariableForField .}} {
                         queryParams = append(queryParams, v)
                       }
-                      query = strings.Replace(query, "/*SLICE:{{.Column.Name}}*/?", strings.Repeat(",?", len({{$arg.Name}}.{{.Name}}))[1:], 1)
+                      query = strings.Replace(query, "/*SLICE:{{.Column.Name}}*/?", strings.Repeat(",?", len({{$arg.VariableForField .}}))[1:], 1)
                     } else {
                       query = strings.Replace(query, "/*SLICE:{{.Column.Name}}*/?", "NULL", 1)
                     }
                 {{- else }}
-                  queryParams = append(queryParams, {{$arg.Name}}.{{.Name}})
+                  queryParams = append(queryParams, {{$arg.VariableForField .}})
                 {{- end }}
             {{- end }}
         {{- else }}
@@ -152,7 +142,11 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
               query = strings.Replace(query, "/*SLICE:{{.Arg.Column.Name}}*/?", "NULL", 1)
             }
         {{- end }}
+        {{- if emitPreparedQueries }}
+        {{ queryRetval . }} {{ queryMethod . }}(ctx, nil, query, queryParams...)
+        {{- else}}
         {{ queryRetval . }} {{ queryMethod . }}(ctx, query, queryParams...)
+        {{- end -}}
     {{- else if emitPreparedQueries }}
         {{- queryRetval . }} {{ queryMethod . }}(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
     {{- else}}

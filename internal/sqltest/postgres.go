@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/kyleconroy/sqlc/internal/sql/sqlpath"
+	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
 
 	_ "github.com/lib/pq"
 )
@@ -29,6 +29,14 @@ func id() string {
 }
 
 func PostgreSQL(t *testing.T, migrations []string) (*sql.DB, func()) {
+	t.Helper()
+
+	// For each test, pick a new schema name at random.
+	schema := "sqltest_postgresql_" + id()
+	return CreatePostgreSQLDatabase(t, schema, true, migrations)
+}
+
+func CreatePostgreSQLDatabase(t *testing.T, name string, schema bool, migrations []string) (*sql.DB, func()) {
 	t.Helper()
 
 	pgUser := os.Getenv("PG_USER")
@@ -66,12 +74,22 @@ func PostgreSQL(t *testing.T, migrations []string) (*sql.DB, func()) {
 	}
 
 	// For each test, pick a new schema name at random.
-	schema := "sqltest_postgresql_" + id()
-	if _, err := db.Exec("CREATE SCHEMA " + schema); err != nil {
-		t.Fatal(err)
+	var newsource, dropQuery string
+	if schema {
+		if _, err := db.Exec("CREATE SCHEMA " + name); err != nil {
+			t.Fatal(err)
+		}
+		newsource = source + "&search_path=" + name
+		dropQuery = "DROP SCHEMA " + name + " CASCADE"
+	} else {
+		if _, err := db.Exec("CREATE DATABASE " + name); err != nil {
+			t.Fatal(err)
+		}
+		newsource = fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", pgUser, pgPass, pgHost, pgPort, name)
+		dropQuery = "DROP DATABASE IF EXISTS " + name + " WITH (FORCE)"
 	}
 
-	sdb, err := sql.Open("postgres", source+"&search_path="+schema)
+	sdb, err := sql.Open("postgres", newsource)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -91,8 +109,9 @@ func PostgreSQL(t *testing.T, migrations []string) (*sql.DB, func()) {
 	}
 
 	return sdb, func() {
-		if _, err := db.Exec("DROP SCHEMA " + schema + " CASCADE"); err != nil {
+		if _, err := db.Exec(dropQuery); err != nil {
 			t.Fatal(err)
 		}
+		db.Close()
 	}
 }

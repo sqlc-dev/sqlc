@@ -99,6 +99,12 @@ func (s *BaseSQLiteParserListener) EnterIndexed_column(ctx *Indexed_columnContex
 // ExitIndexed_column is called when production indexed_column is exited.
 func (s *BaseSQLiteParserListener) ExitIndexed_column(ctx *Indexed_columnContext) {}
 
+// EnterTable_option is called when production table_option is entered.
+func (s *BaseSQLiteParserListener) EnterTable_option(ctx *Table_optionContext) {}
+
+// ExitTable_option is called when production table_option is exited.
+func (s *BaseSQLiteParserListener) ExitTable_option(ctx *Table_optionContext) {}
+
 // EnterCreate_table_stmt is called when production create_table_stmt is entered.
 func (s *BaseSQLiteParserListener) EnterCreate_table_stmt(ctx *Create_table_stmtContext) {}
 
@@ -746,6 +752,12 @@ func (s *BaseSQLiteParserListener) EnterTable_alias(ctx *Table_aliasContext) {}
 
 // ExitTable_alias is called when production table_alias is exited.
 func (s *BaseSQLiteParserListener) ExitTable_alias(ctx *Table_aliasContext) {}
+
+// EnterTable_alias_fallback is called when production table_alias_fallback is entered.
+func (s *BaseSQLiteParserListener) EnterTable_alias_fallback(ctx *Table_alias_fallbackContext) {}
+
+// ExitTable_alias_fallback is called when production table_alias_fallback is exited.
+func (s *BaseSQLiteParserListener) ExitTable_alias_fallback(ctx *Table_alias_fallbackContext) {}
 
 // EnterTransaction_name is called when production transaction_name is entered.
 func (s *BaseSQLiteParserListener) EnterTransaction_name(ctx *Transaction_nameContext) {}

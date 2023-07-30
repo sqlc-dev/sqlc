@@ -13,8 +13,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
-	"github.com/kyleconroy/sqlc/internal/cmd"
-	"github.com/kyleconroy/sqlc/internal/opts"
+	"github.com/sqlc-dev/sqlc/internal/cmd"
+	"github.com/sqlc-dev/sqlc/internal/opts"
 )
 
 func TestExamples(t *testing.T) {
@@ -123,6 +123,8 @@ func TestReplay(t *testing.T) {
 				if err == nil {
 					cmpDirectory(t, path, output)
 				}
+			case "vet":
+				err = cmd.Vet(ctx, env, path, "", &stderr)
 			default:
 				t.Fatalf("unknown command")
 			}

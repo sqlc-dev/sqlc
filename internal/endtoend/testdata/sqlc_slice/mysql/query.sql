@@ -1,4 +1,4 @@
-CREATE TABLE foo (id int not null, name text not null, bar text null);
+CREATE TABLE foo (id int not null, name text not null, bar text null, mystr text not null);
 
 /* name: FuncParamIdent :many */
 SELECT name FROM foo
@@ -21,3 +21,7 @@ WHERE id IN (sqlc.slice(favourites));
 /* name: FuncNullable :many */
 SELECT bar FROM foo
 WHERE id IN (sqlc.slice('favourites'));
+
+/* name: TypedMyStr :many */
+SELECT bar FROM foo
+WHERE mystr IN (sqlc.slice(mystr));

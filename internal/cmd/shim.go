@@ -3,12 +3,12 @@ package cmd
 import (
 	"strings"
 
-	"github.com/kyleconroy/sqlc/internal/compiler"
-	"github.com/kyleconroy/sqlc/internal/config"
-	"github.com/kyleconroy/sqlc/internal/config/convert"
-	"github.com/kyleconroy/sqlc/internal/info"
-	"github.com/kyleconroy/sqlc/internal/plugin"
-	"github.com/kyleconroy/sqlc/internal/sql/catalog"
+	"github.com/sqlc-dev/sqlc/internal/compiler"
+	"github.com/sqlc-dev/sqlc/internal/config"
+	"github.com/sqlc-dev/sqlc/internal/config/convert"
+	"github.com/sqlc-dev/sqlc/internal/info"
+	"github.com/sqlc-dev/sqlc/internal/plugin"
+	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
 )
 
 func pluginOverride(r *compiler.Result, o config.Override) *plugin.Override {
@@ -108,6 +108,7 @@ func pluginGoCode(s config.SQLGo) *plugin.GoCode {
 		OutputFilesSuffix:           s.OutputFilesSuffix,
 		InflectionExcludeTableNames: s.InflectionExcludeTableNames,
 		QueryParameterLimit:         s.QueryParameterLimit,
+		OmitUnusedStructs:           s.OmitUnusedStructs,
 	}
 }
 

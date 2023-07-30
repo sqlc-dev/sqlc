@@ -1,17 +1,13 @@
 package sqlite
 
 import (
-	"github.com/kyleconroy/sqlc/internal/engine/sqlite/parser"
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/engine/sqlite/parser"
+	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 )
 
 type tableNamer interface {
 	Table_name() parser.ITable_nameContext
 	Schema_name() parser.ISchema_nameContext
-}
-
-type multiselect interface {
-	AllSelect_core() []parser.ISelect_coreContext
 }
 
 func parseTableName(c tableNamer) *ast.TableName {

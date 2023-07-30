@@ -4,9 +4,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/astutils"
-	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
+	"github.com/sqlc-dev/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
+	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
 )
 
 func ParamRef(n ast.Node) (map[int]bool, bool, error) {
@@ -27,7 +27,7 @@ func ParamRef(n ast.Node) (map[int]bool, bool, error) {
 		}
 	}), n)
 	if dollar && nodollar {
-		return nil, false, errors.New("Can not mix $1 format with ? format")
+		return nil, false, errors.New("can not mix $1 format with ? format")
 	}
 
 	seen := map[int]bool{}

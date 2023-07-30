@@ -1,7 +1,7 @@
 package compiler
 
 import (
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 )
 
 type Function struct {
@@ -42,6 +42,7 @@ type Query struct {
 	SQL      string
 	Name     string
 	Cmd      string // TODO: Pick a better name. One of: one, many, exec, execrows, copyFrom
+	Flags    map[string]bool
 	Columns  []*Column
 	Params   []Parameter
 	Comments []string
@@ -51,6 +52,9 @@ type Query struct {
 
 	// Needed for CopyFrom
 	InsertIntoTable *ast.TableName
+
+	// Needed for vet
+	RawStmt *ast.RawStmt
 }
 
 type Parameter struct {

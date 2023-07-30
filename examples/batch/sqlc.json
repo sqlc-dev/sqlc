@@ -7,6 +7,12 @@
       "schema": "postgresql/schema.sql",
       "queries": "postgresql/query.sql",
       "engine": "postgresql",
+      "database": {
+        "uri": "postgresql://${PG_USER}:${PG_PASSWORD}@${PG_HOST}:${PG_PORT}/batch"
+      },
+      "rules": [
+        "sqlc/db-prepare"
+      ],
       "sql_package": "pgx/v4",
       "emit_json_tags": true,
       "emit_prepared_queries": true,

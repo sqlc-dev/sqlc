@@ -4,6 +4,7 @@ type DeleteStmt struct {
 	Relations     *List
 	UsingClause   *List
 	WhereClause   Node
+	LimitCount    Node
 	ReturningList *List
 	WithClause    *WithClause
 }

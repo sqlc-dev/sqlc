@@ -39,8 +39,8 @@
       ]
     },
     {
-      "schema": "src/main/resources/jets/schema.sql",
-      "queries": "src/main/resources/jets/query-building.sql",
+      "schema": "src/main/resources/jets/postgresql/schema.sql",
+      "queries": "src/main/resources/jets/postgresql/query-building.sql",
       "engine": "postgresql",
       "codegen": [
         {

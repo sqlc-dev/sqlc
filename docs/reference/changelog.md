@@ -1,7 +1,241 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [1.18.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.18.0)
+## [1.19.1](https://github.com/sqlc-dev/sqlc/releases/tag/v1.19.1)
+Released 2023-07-13
+
+### Bug Fixes
+
+- Fix to traverse Sel in ast.In (#2414)
+- (compiler) Validate UNION ... ORDER BY (#2446)
+- (golang) Prevent duplicate enum output (#2447)
+
+### Miscellaneous Tasks
+
+- Replace codegen, test and docs references to github.com/tabbed repos (#2418)
+
+### Build
+
+- (deps) Bump google.golang.org/grpc from 1.56.1 to 1.56.2 (#2415)
+- (deps) Bump golang from 1.20.5 to 1.20.6 (#2437)
+- Pin Go to 1.20.6 (#2441)
+- (deps) Bump github.com/jackc/pgx/v5 from 5.4.1 to 5.4.2 (#2436)
+
+## [1.19.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.19.0)
+Released 2023-07-06
+
+### Release notes
+
+#### sqlc vet
+
+[`sqlc vet`](../howto/vet.md) runs queries through a set of lint rules.
+
+Rules are defined in the `sqlc` [configuration](config.md) file. They consist
+of a name, message, and a [Common Expression Language (CEL)](https://github.com/google/cel-spec)
+expression. Expressions are evaluated using [cel-go](https://github.com/google/cel-go).
+If an expression evaluates to `true`, an error is reported using the given message.
+
+While these examples are simplistic, they give you a flavor of the types of
+rules you can write.
+
+```yaml
+version: 2
+sql:
+  - schema: "query.sql"
+    queries: "query.sql"
+    engine: "postgresql"
+    gen:
+      go:
+        package: "authors"
+        out: "db"
+    rules:
+      - no-pg
+      - no-delete
+      - only-one-param
+      - no-exec
+rules:
+  - name: no-pg
+    message: "invalid engine: postgresql"
+    rule: |
+      config.engine == "postgresql"
+  - name: no-delete
+    message: "don't use delete statements"
+    rule: |
+      query.sql.contains("DELETE")
+  - name: only-one-param
+    message: "too many parameters"
+    rule: |
+      query.params.size() > 1
+  - name: no-exec
+    message: "don't use exec"
+    rule: |
+      query.cmd == "exec"
+```
+
+##### Database connectivity
+
+`vet` also marks the first time that `sqlc` can connect to a live, running
+database server. We'll expand this functionality over time, but for now it
+powers the `sqlc/db-prepare` built-in rule.
+
+When a [database](config.html#database) is configured, the
+`sqlc/db-preapre` rule will attempt to prepare each of your
+queries against the connected database and report any failures.
+
+```yaml
+version: 2
+sql:
+  - schema: "query.sql"
+    queries: "query.sql"
+    engine: "postgresql"
+    gen:
+      go:
+        package: "authors"
+        out: "db"
+    database:
+      uri: "postgresql://postgres:password@localhost:5432/postgres"
+    rules:
+      - sqlc/db-prepare
+```
+
+To see this in action, check out the [authors
+example](https://github.com/sqlc-dev/sqlc/blob/main/examples/authors/sqlc.yaml).
+
+Please note that `sqlc` does not manage or migrate your database. Use your
+migration tool of choice to create the necessary database tables and objects
+before running `sqlc vet`.
+
+#### Omit unused structs
+
+Added a new configuration parameter `omit_unused_structs` which, when set to
+true, filters out table and enum structs that aren't used in queries for a given
+package.
+
+#### Suggested CI/CD setup
+
+With the addition of `sqlc diff` and `sqlc vet`, we encourage users to run sqlc
+in your CI/CD pipelines. See our [suggested CI/CD setup](../howto/ci-cd.md) for
+more information.
+
+#### Simplified plugin development
+
+The [sqlc-gen-kotlin](https://github.com/sqlc-dev/sqlc-gen-kotlin) and
+[sqlc-gen-python](https://github.com/sqlc-dev/sqlc-gen-python) plugins have been
+updated use the upcoming [WASI](https://wasi.dev/) support in [Go
+1.21](https://tip.golang.org/doc/go1.21#wasip1). Building these plugins no
+longer requires [TinyGo](https://tinygo.org/).
+
+### Changes
+
+#### Bug Fixes
+
+- Pointers overrides skip imports in generated query files (#2240)
+- CASE-ELSE clause is not properly parsed when a value is constant (#2238)
+- Fix toSnakeCase to handle input in CamelCase format (#2245)
+- Add location info to sqlite ast (#2298)
+- Add override tags to result struct (#1867) (#1887)
+- Override types of aliased columns and named parameters (#1884)
+- Resolve duplicate fields generated when inheriting multiple tables (#2089)
+- Check column references in ORDER BY (#1411) (#1915)
+- MySQL slice shadowing database/sql import (#2332)
+- Don't defer rows.Close() if pgx.BatchResults.Query() failed  (#2362)
+- Fix type overrides not working with sqlc.slice (#2351)
+- Type overrides on columns for parameters inside an IN clause (#2352)
+- Broken interaction between query_parameter_limit and pq.Array() (#2383)
+- (codegen/golang) Bring :execlastid in line with the rest (#2378)
+
+#### Documentation
+
+- Update changelog.md with some minor edits (#2235)
+- Add F# community plugin (#2295)
+- Add a ReadTheDocs config file (#2327)
+- Update query_parameter_limit documentation (#2374)
+- Add launch announcement banner
+
+#### Features
+- PostgreSQL capture correct line and column numbers for parse error (#2289)
+- Add supporting COMMENT ON VIEW (#2249)
+- To allow spaces between function name and arguments of functions to be rewritten (#2250)
+- Add support for pgx/v5 emit_pointers_for_null_types flag (#2269)
+- (mysql) Support unsigned integers (#1746)
+- Allow use of table and column aliases for table functions returning unknown types (#2156)
+- Support "LIMIT ?" in UPDATE and DELETE for MySQL (#2365)
+- (internal/codegen/golang) Omit unused structs from output (#2369)
+- Improve default names for BETWEEN ? AND ? to have prefixes from_ and to_ (#2366)
+- (cmd/sqlc) Add the vet subcommand (#2344)
+- (sqlite) Add support for UPDATE/DELETE with a LIMIT clause (#2384)
+- Add support for BETWEEN sqlc.arg(min) AND sqlc.arg(max) (#2373)
+- (cmd/vet) Prepare queries against a database (#2387)
+- (cmd/vet) Prepare queries for MySQL (#2388)
+- (cmd/vet) Prepare SQLite queries (#2389)
+- (cmd/vet) Simplify environment variable substiution (#2393)
+- (cmd/vet) Add built-in db-prepare rule
+- Add compiler support for NOTIFY and LISTEN (PostgreSQL) (#2363)
+
+#### Miscellaneous Tasks
+
+- A few small staticcheck fixes (#2361)
+- Remove a bunch of dead code (#2360)
+- (scripts/regenerate) Should also update stderr.txt (#2379)
+
+#### Build
+
+- (deps) Bump requests from 2.25.1 to 2.31.0 in /docs (#2283)
+- (deps) Bump golang from 1.20.3 to 1.20.4 (#2256)
+- (deps) Bump google.golang.org/grpc from 1.54.0 to 1.55.0 (#2265)
+- (deps) Bump github.com/mattn/go-sqlite3 from 1.14.16 to 1.14.17 (#2293)
+- (deps) Bump golang.org/x/sync from 0.1.0 to 0.2.0 (#2266)
+- (deps) Bump golang from 1.20.4 to 1.20.5 (#2301)
+- Configure dependencies via devenv.sh (#2319)
+- Configure dependencies via devenv.sh (#2326)
+- (deps) Bump golang.org/x/sync from 0.2.0 to 0.3.0 (#2328)
+- (deps) Bump google.golang.org/grpc from 1.55.0 to 1.56.0 (#2333)
+- (deps) Bump google.golang.org/protobuf from 1.30.0 to 1.31.0 (#2370)
+- (deps) Bump actions/checkout from 2 to 3 (#2357)
+- Run govulncheck on all builds (#2372)
+- (deps) Bump google.golang.org/grpc from 1.56.0 to 1.56.1 (#2358)
+
+#### Cmd/sqlc
+
+- Show helpful output on missing subcommand (#2345)
+
+#### Codegen
+
+- Use catalog's default schema (#2310)
+- (go) Add tests for tables with dashes (#2312)
+- (go) Strip invalid characters from table and column names (#2314)
+- (go) Support JSON tags for nullable enum structs (#2121)
+
+#### Internal/config
+
+- Support golang overrides for slices (#2339)
+
+#### Kotlin
+
+- Use latest version of sqlc-gen-kotlin (#2356)
+
+#### Postgres
+
+- Column merging for table inheritence (#2315)
+
+#### Protos
+
+- Add missing field name (#2354)
+
+#### Python
+
+- Use latest version of sqlc-gen-python (#2355)
+
+#### Remote
+
+- Use user-id/password auth (#2262)
+
+#### Sqlite
+
+- Fixed sqlite column type override (#1986)
+
+
+## [1.18.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.18.0)
 Released 2023-04-27
 
 ### Release notes
@@ -260,14 +494,14 @@ genreated method will use a argument struct.
 
 - Upgrade to wasmtime v8.0.0 (#2222)
 
-## [1.17.2](https://github.com/kyleconroy/sqlc/releases/tag/v1.17.2)
+## [1.17.2](https://github.com/sqlc-dev/sqlc/releases/tag/v1.17.2)
 Released 2023-02-22
 
 ### Bug Fixes
 
 - Fix build on Windows (#2102)
 
-## [1.17.1](https://github.com/kyleconroy/sqlc/releases/tag/v1.17.1)
+## [1.17.1](https://github.com/sqlc-dev/sqlc/releases/tag/v1.17.1)
 Released 2023-02-22
 
 ### Bug Fixes
@@ -284,7 +518,7 @@ Released 2023-02-22
 
 - (deps) Bump golang from 1.20.0 to 1.20.1 (#2082)
 
-## [1.17.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.17.0)
+## [1.17.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.17.0)
 Released 2023-02-13
 
 ### Bug Fixes
@@ -360,7 +594,7 @@ Released 2023-02-13
 
 - Upgrade to wasmtime 5.0.0 (#2065)
 
-## [1.16.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.16.0)
+## [1.16.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.16.0)
 Released 2022-11-09
 
 
@@ -432,7 +666,7 @@ Released 2022-11-09
 - Port all Python tests to sqlc-gen-python (#1907)
 - Upgrade to sqlc-gen-python v1.0.0 (#1932)
 
-## [1.15.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.15.0)
+## [1.15.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.15.0)
 Released 2022-08-07
 
 ### Bug Fixes
@@ -481,7 +715,7 @@ Released 2022-08-07
 - (wasm) Change default cache location (#1709)
 - (wasm) Change the SHA-256 config key (#1710)
 
-## [1.14.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.14.0)
+## [1.14.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.14.0)
 Released 2022-06-09
 
 ### Bug Fixes
@@ -528,7 +762,7 @@ Released 2022-06-09
 - (sql/catalog) Improve Readability (#1595)
 - Add basic fuzzing for config / overrides (#1500)
 
-## [1.13.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.13.0)
+## [1.13.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.13.0)
 Released 2022-03-31
 
 ### Bug Fixes
@@ -566,7 +800,7 @@ Released 2022-03-31
 
 - Add basic fuzzing for config / overrides (#1500)
 
-## [1.12.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.12.0)
+## [1.12.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.12.0)
 Released 2022-02-05
 
 ### Bug
@@ -609,7 +843,7 @@ Released 2022-02-05
 - Bump github.com/google/go-cmp from 0.5.6 to 0.5.7 (#1382)
 - Format all Go code (#1387)
 
-## [1.11.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.11.0)
+## [1.11.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.11.0)
 Released 2021-11-24
 
 
@@ -674,7 +908,7 @@ Released 2021-11-24
 
 - Bump version to v1.11.0
 
-## [1.10.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.10.0)
+## [1.10.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.10.0)
 Released 2021-09-07
 
 
@@ -718,7 +952,7 @@ Released 2021-09-07
 
 - Output NullUUID when necessary (#1137)
 
-## [1.9.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.9.0)
+## [1.9.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.9.0)
 Released 2021-08-13
 
 
@@ -739,7 +973,7 @@ Released 2021-08-13
 - Add tests for COALESCE behavior (#1112)
 - Handle subqueries in SELECT statements (#1113)
 
-## [1.8.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.8.0)
+## [1.8.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.8.0)
 Released 2021-05-03
 
 
@@ -798,7 +1032,7 @@ Released 2021-05-03
 
 - Only run tests once (#924)
 
-## [1.7.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.7.0)
+## [1.7.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.7.0)
 Released 2021-02-28
 
 
@@ -884,7 +1118,7 @@ Released 2021-02-28
 
 - Add enum values for SetOperation
 
-## [1.6.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.6.0)
+## [1.6.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.6.0)
 Released 2020-11-23
 
 
@@ -975,7 +1209,7 @@ Released 2020-11-23
 
 - Add support for variadic functions (#798)
 
-## [1.5.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.5.0)
+## [1.5.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.5.0)
 Released 2020-08-05
 
 
@@ -1078,7 +1312,7 @@ Released 2020-08-05
 
 - Migrate to equinox-io/setup-release-tool (#614)
 
-## [1.4.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.4.0)
+## [1.4.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.4.0)
 Released 2020-06-17
 
 
@@ -1168,7 +1402,7 @@ Released 2020-06-17
 
 - Move query validation to separate package (#498)
 
-## [1.3.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.3.0)
+## [1.3.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.3.0)
 Released 2020-05-12
 
 
@@ -1213,7 +1447,7 @@ Released 2020-05-12
 
 - Fix panic walking CreateTableAsStmt (#475)
 
-## [1.2.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.2.0)
+## [1.2.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.2.0)
 Released 2020-04-07
 
 
@@ -1243,7 +1477,7 @@ Released 2020-04-07
 
 - Generate correct types for SELECT EXISTS (#411)
 
-## [1.1.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.1.0)
+## [1.1.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.1.0)
 Released 2020-03-17
 
 
@@ -1333,7 +1567,7 @@ Released 2020-03-17
 
 - Add experimental parser for SQLite
 
-## [1.0.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.0.0)
+## [1.0.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.0.0)
 Released 2020-02-18
 
 
@@ -1420,7 +1654,7 @@ Released 2020-02-18
 - Attach range vars to insert params (#342)
 - Remove dead code (#343)
 
-## [0.1.0](https://github.com/kyleconroy/sqlc/releases/tag/v0.1.0)
+## [0.1.0](https://github.com/sqlc-dev/sqlc/releases/tag/v0.1.0)
 Released 2020-01-07
 
 

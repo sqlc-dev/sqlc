@@ -133,6 +133,10 @@ When selecting multiple columns, a row record (method-specific struct) is
 returned. In this case, `GetInfoForAuthor` returns a struct with two fields:
 `Bio` and `BirthYear`.
 
+If a query result has no row records, a zero value and an `ErrNoRows` error are
+returned instead of a zero value and `nil`. For instance, when the `GetBioForAuthor`
+result has no rows, it will return `""` and `ErrNoRows`.
+
 ```go
 package db
 

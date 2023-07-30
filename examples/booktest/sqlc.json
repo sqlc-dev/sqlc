@@ -6,21 +6,39 @@
       "path": "postgresql",
       "schema": "postgresql/schema.sql",
       "queries": "postgresql/query.sql",
-      "engine": "postgresql"
+      "engine": "postgresql",
+      "database": {
+        "uri": "postgresql://${PG_USER}:${PG_PASSWORD}@${PG_HOST}:${PG_PORT}/booktest"
+      },
+      "rules": [
+        "sqlc/db-prepare"
+      ]
     },
     {
       "name": "booktest",
       "path": "mysql",
       "schema": "mysql/schema.sql",
       "queries": "mysql/query.sql",
-      "engine": "mysql"
+      "engine": "mysql",
+      "database": {
+        "uri": "root:${MYSQL_ROOT_PASSWORD}@tcp(${MYSQL_HOST}:${MYSQL_PORT})/booktest?multiStatements=true&parseTime=true"
+      },
+      "rules": [
+        "sqlc/db-prepare"
+      ]
     },
     {
       "name": "booktest",
       "path": "sqlite",
       "schema": "sqlite/schema.sql",
       "queries": "sqlite/query.sql",
-      "engine": "sqlite"
+      "engine": "sqlite",
+      "database": {
+        "uri": "file:booktest?mode=memory&cache=shared"
+      },
+      "rules": [
+        "sqlc/db-prepare"
+      ]
     }
   ]
 }
