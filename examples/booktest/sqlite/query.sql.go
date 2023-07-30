@@ -31,7 +31,7 @@ type BooksByTagsRow struct {
 	Tag    string
 }
 
-func (q *Queries) BooksByTags(ctx context.Context, tags string) ([]BooksByTagsRow, error) {
+func (q *Queries) BooksByTags(ctx context.Context, tags []string) ([]BooksByTagsRow, error) {
 	query := booksByTags
 	var queryParams []interface{}
 	if len(tags) > 0 {

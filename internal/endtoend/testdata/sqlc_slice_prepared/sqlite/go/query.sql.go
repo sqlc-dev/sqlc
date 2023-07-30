@@ -18,7 +18,7 @@ WHERE name = ?1
 
 type FuncParamIdentParams struct {
 	Slug       string
-	Favourites int64
+	Favourites []int64
 }
 
 func (q *Queries) FuncParamIdent(ctx context.Context, arg FuncParamIdentParams) ([]string, error) {

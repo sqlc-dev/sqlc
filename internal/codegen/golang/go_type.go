@@ -49,11 +49,14 @@ func goType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 	}
 	typ := goInnerType(req, col)
 	if col.IsArray || col.IsSqlcSlice {
-		dims := ""
-		for i := int32(0); i < col.ArrayBounds; i++ {
-			dims += "[]"
+		if req.Settings.Engine == "postgresql" {
+			dims := ""
+			for i := int32(0); i < col.ArrayBounds; i++ {
+				dims += "[]"
+			}
+			return dims + typ
 		}
-		return dims + typ
+		return "[]" + typ
 	}
 	return typ
 }
