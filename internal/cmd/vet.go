@@ -279,13 +279,13 @@ func mysqlDefaultValue(col *plugin.Column) any {
 	case "float", "double":
 		return 0.1
 	case "date":
-		t := time.Time{}
-		return t.Format(time.DateOnly)
-	case "datetime", "timestamp", "time":
+		return "0000-00-00"
+	case "datetime", "timestamp":
 		return time.Time{}
+	case "time":
+		return "00:00:00"
 	case "year":
-		t := time.Time{}
-		return t.Year()
+		return "0000"
 	case "char", "varchar", "binary", "varbinary", "tinyblob", "blob",
 		"mediumblob", "longblob", "tinytext", "text", "mediumtext", "longtext":
 		return ""
