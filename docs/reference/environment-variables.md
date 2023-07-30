@@ -126,6 +126,20 @@ return an error.
 
 `SQLCDEBUG=processplugins=0`
 
+### dumpvetenv
+
+The `dumpvetenv` command prints the variables available to a `sqlc vet` rule
+during evaluation.
+
+`SQLCDEBUG=dumpvetenv=1`
+
+### dumpexplain
+
+The `dumpexplain` command prints the JSON-formatted result from running
+`EXPLAIN ...` on a query when a `sqlc vet` rule evaluation requires its output.
+
+`SQLCDEBUG=dumpexplain=1`
+
 ## SQLCTMPDIR
 
 If specified, use the given directory as the base for temporary folders. Only

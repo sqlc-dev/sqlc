@@ -3,12 +3,12 @@ package cmd
 import (
 	"strings"
 
-	"github.com/kyleconroy/sqlc/internal/compiler"
-	"github.com/kyleconroy/sqlc/internal/config"
-	"github.com/kyleconroy/sqlc/internal/config/convert"
-	"github.com/kyleconroy/sqlc/internal/info"
-	"github.com/kyleconroy/sqlc/internal/plugin"
-	"github.com/kyleconroy/sqlc/internal/sql/catalog"
+	"github.com/sqlc-dev/sqlc/internal/compiler"
+	"github.com/sqlc-dev/sqlc/internal/config"
+	"github.com/sqlc-dev/sqlc/internal/config/convert"
+	"github.com/sqlc-dev/sqlc/internal/info"
+	"github.com/sqlc-dev/sqlc/internal/plugin"
+	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
 )
 
 func pluginOverride(r *compiler.Result, o config.Override) *plugin.Override {
@@ -84,6 +84,7 @@ func pluginGoCode(s config.SQLGo) *plugin.GoCode {
 	return &plugin.GoCode{
 		EmitInterface:               s.EmitInterface,
 		EmitJsonTags:                s.EmitJSONTags,
+		JsonTagsIdUppercase:         s.JsonTagsIDUppercase,
 		EmitDbTags:                  s.EmitDBTags,
 		EmitPreparedQueries:         s.EmitPreparedQueries,
 		EmitExactTableNames:         s.EmitExactTableNames,
@@ -107,6 +108,7 @@ func pluginGoCode(s config.SQLGo) *plugin.GoCode {
 		OutputFilesSuffix:           s.OutputFilesSuffix,
 		InflectionExcludeTableNames: s.InflectionExcludeTableNames,
 		QueryParameterLimit:         s.QueryParameterLimit,
+		OmitUnusedStructs:           s.OmitUnusedStructs,
 	}
 }
 
@@ -114,7 +116,7 @@ func pluginGoType(o config.Override) *plugin.ParsedGoType {
 	// Note that there is a slight mismatch between this and the
 	// proto api. The GoType on the override is the unparsed type,
 	// which could be a qualified path or an object, as per
-	// https://docs.sqlc.dev/en/latest/reference/config.html#renaming-struct-fields
+	// https://docs.sqlc.dev/en/v1.18.0/reference/config.html#type-overriding
 	return &plugin.ParsedGoType{
 		ImportPath: o.GoImportPath,
 		Package:    o.GoPackage,

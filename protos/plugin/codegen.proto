@@ -93,6 +93,8 @@ message GoCode {
   bool emit_pointers_for_null_types = 22;
   optional int32 query_parameter_limit = 23;
   string output_batch_file_name = 24;
+  bool json_tags_id_uppercase = 26;
+  bool omit_unused_structs = 27;
 }
 
 message JSONCode {

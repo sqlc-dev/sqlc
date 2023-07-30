@@ -1,7 +1,6 @@
 package dolphin
 
 import (
-	"fmt"
 	"log"
 	"strings"
 
@@ -11,8 +10,8 @@ import (
 	driver "github.com/pingcap/tidb/parser/test_driver"
 	"github.com/pingcap/tidb/parser/types"
 
-	"github.com/kyleconroy/sqlc/internal/debug"
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/debug"
+	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 )
 
 type cc struct {
@@ -144,7 +143,7 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 
 		default:
 			if debug.Active {
-				fmt.Printf("dolphin.convert: Unknown alter table cmd %v\n", spec.Tp)
+				log.Printf("dolphin.convert: Unknown alter table cmd %v\n", spec.Tp)
 			}
 			continue
 		}
@@ -327,12 +326,16 @@ func (c *cc) convertDeleteStmt(n *pcast.DeleteStmt) *ast.DeleteStmt {
 	relations := &ast.List{}
 	convertToRangeVarList(rels, relations)
 
-	return &ast.DeleteStmt{
+	stmt := &ast.DeleteStmt{
 		Relations:     relations,
 		WhereClause:   c.convert(n.Where),
 		ReturningList: &ast.List{},
 		WithClause:    c.convertWithClause(n.With),
 	}
+	if n.Limit != nil {
+		stmt.LimitCount = c.convert(n.Limit.Count)
+	}
+	return stmt
 }
 
 func (c *cc) convertDropTableStmt(n *pcast.DropTableStmt) ast.Node {
@@ -574,7 +577,7 @@ func (c *cc) convertUpdateStmt(n *pcast.UpdateStmt) *ast.UpdateStmt {
 	for _, a := range n.List {
 		list.Items = append(list.Items, c.convertAssignment(a))
 	}
-	return &ast.UpdateStmt{
+	stmt := &ast.UpdateStmt{
 		Relations:     relations,
 		TargetList:    list,
 		WhereClause:   c.convert(n.Where),
@@ -582,6 +585,10 @@ func (c *cc) convertUpdateStmt(n *pcast.UpdateStmt) *ast.UpdateStmt {
 		ReturningList: &ast.List{},
 		WithClause:    c.convertWithClause(n.With),
 	}
+	if n.Limit != nil {
+		stmt.LimitCount = c.convert(n.Limit.Count)
+	}
+	return stmt
 }
 
 func (c *cc) convertValueExpr(n *driver.ValueExpr) *ast.A_Const {

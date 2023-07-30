@@ -10,9 +10,9 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/kyleconroy/sqlc/internal/codegen/sdk"
-	"github.com/kyleconroy/sqlc/internal/metadata"
-	"github.com/kyleconroy/sqlc/internal/plugin"
+	"github.com/sqlc-dev/sqlc/internal/codegen/sdk"
+	"github.com/sqlc-dev/sqlc/internal/metadata"
+	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
 
 type tmplCtx struct {
@@ -28,6 +28,7 @@ type tmplCtx struct {
 	SourceName string
 
 	EmitJSONTags              bool
+	JsonTagsIDUppercase       bool
 	EmitDBTags                bool
 	EmitPreparedQueries       bool
 	EmitInterface             bool
@@ -91,7 +92,7 @@ func (t *tmplCtx) codegenQueryRetval(q Query) (string, error) {
 		return "rows, err :=", nil
 	case ":exec":
 		return "_, err :=", nil
-	case ":execrows":
+	case ":execrows", ":execlastid":
 		return "result, err :=", nil
 	case ":execresult":
 		return "return", nil
@@ -107,6 +108,11 @@ func Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plugin.CodeGenR
 	if err != nil {
 		return nil, err
 	}
+
+	if req.Settings.Go.OmitUnusedStructs {
+		enums, structs = filterUnusedStructs(enums, structs, queries)
+	}
+
 	return generate(req, enums, structs, queries)
 }
 
@@ -122,6 +128,7 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 	tctx := tmplCtx{
 		EmitInterface:             golang.EmitInterface,
 		EmitJSONTags:              golang.EmitJsonTags,
+		JsonTagsIDUppercase:       golang.JsonTagsIdUppercase,
 		EmitDBTags:                golang.EmitDbTags,
 		EmitPreparedQueries:       golang.EmitPreparedQueries,
 		EmitEmptySlices:           golang.EmitEmptySlices,
@@ -285,4 +292,45 @@ func usesBatch(queries []Query) bool {
 		}
 	}
 	return false
+}
+
+func filterUnusedStructs(enums []Enum, structs []Struct, queries []Query) ([]Enum, []Struct) {
+	keepTypes := make(map[string]struct{})
+
+	for _, query := range queries {
+		if !query.Arg.isEmpty() {
+			keepTypes[query.Arg.Type()] = struct{}{}
+			if query.Arg.IsStruct() {
+				for _, field := range query.Arg.Struct.Fields {
+					keepTypes[field.Type] = struct{}{}
+				}
+			}
+		}
+		if query.hasRetType() {
+			keepTypes[query.Ret.Type()] = struct{}{}
+			if query.Ret.IsStruct() {
+				for _, field := range query.Ret.Struct.Fields {
+					keepTypes[field.Type] = struct{}{}
+				}
+			}
+		}
+	}
+
+	keepEnums := make([]Enum, 0, len(enums))
+	for _, enum := range enums {
+		_, keep := keepTypes[enum.Name]
+		_, keepNull := keepTypes["Null"+enum.Name]
+		if keep || keepNull {
+			keepEnums = append(keepEnums, enum)
+		}
+	}
+
+	keepStructs := make([]Struct, 0, len(structs))
+	for _, st := range structs {
+		if _, ok := keepTypes[st.Name]; ok {
+			keepStructs = append(keepStructs, st)
+		}
+	}
+
+	return keepEnums, keepStructs
 }

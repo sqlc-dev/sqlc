@@ -2,11 +2,17 @@
   "version": "1",
   "packages": [
     {
-      "path": ".",
+      "path": "postgresql",
       "name": "jets",
-      "schema": "schema.sql",
-      "queries": "query-building.sql",
-      "engine": "postgresql"
+      "schema": "postgresql/schema.sql",
+      "queries": "postgresql/query-building.sql",
+      "engine": "postgresql",
+      "database": {
+        "uri": "postgresql://${PG_USER}:${PG_PASSWORD}@${PG_HOST}:${PG_PORT}/jets"
+      },
+      "rules": [
+        "sqlc/db-prepare"
+      ]
     }
   ]
 }

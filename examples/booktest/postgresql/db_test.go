@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/kyleconroy/sqlc/internal/sqltest"
+	"github.com/sqlc-dev/sqlc/internal/sqltest"
 )
 
 func TestBooks(t *testing.T) {

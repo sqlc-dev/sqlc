@@ -19,3 +19,8 @@ WHERE   products.price BETWEEN ? AND ?;
 SELECT  *
 FROM    products as p
 WHERE   p.price BETWEEN ? AND ?;
+
+-- name: GetBetweenPricesNamed :many
+SELECT  *
+FROM    products
+WHERE   price BETWEEN sqlc.arg(min_price) AND sqlc.arg(max_price);

@@ -18,6 +18,7 @@ body:
       options:
         - PostgreSQL
         - MySQL
+        - SQLite
   - type: dropdown
     id: languages
     attributes:

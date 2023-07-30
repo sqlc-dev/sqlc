@@ -5,6 +5,7 @@ type UpdateStmt struct {
 	TargetList    *List
 	WhereClause   Node
 	FromClause    *List
+	LimitCount    Node
 	ReturningList *List
 	WithClause    *WithClause
 }

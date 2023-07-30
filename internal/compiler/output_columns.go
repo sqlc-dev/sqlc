@@ -4,12 +4,12 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/kyleconroy/sqlc/internal/sql/catalog"
+	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
 
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/astutils"
-	"github.com/kyleconroy/sqlc/internal/sql/lang"
-	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
+	"github.com/sqlc-dev/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
+	"github.com/sqlc-dev/sqlc/internal/sql/lang"
+	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
 )
 
 // OutputColumns determines which columns a statement will output
@@ -66,10 +66,11 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 		targets = n.ReturningList
 	case *ast.SelectStmt:
 		targets = n.TargetList
+		isUnion := len(targets.Items) == 0 && n.Larg != nil
 
 		if n.GroupClause != nil {
 			for _, item := range n.GroupClause.Items {
-				if err := findColumnForNode(item, tables, n); err != nil {
+				if err := findColumnForNode(item, tables, targets); err != nil {
 					return nil, err
 				}
 			}
@@ -78,14 +79,14 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 		if c.conf.StrictOrderBy != nil {
 			validateOrderBy = *c.conf.StrictOrderBy
 		}
-		if validateOrderBy {
+		if !isUnion && validateOrderBy {
 			if n.SortClause != nil {
 				for _, item := range n.SortClause.Items {
 					sb, ok := item.(*ast.SortBy)
 					if !ok {
 						continue
 					}
-					if err := findColumnForNode(sb.Node, tables, n); err != nil {
+					if err := findColumnForNode(sb.Node, tables, targets); err != nil {
 						return nil, fmt.Errorf("%v: if you want to skip this validation, set 'strict_order_by' to false", err)
 					}
 				}
@@ -101,7 +102,7 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 						if !ok {
 							continue
 						}
-						if err := findColumnForNode(caseExpr.Xpr, tables, n); err != nil {
+						if err := findColumnForNode(caseExpr.Xpr, tables, targets); err != nil {
 							return nil, fmt.Errorf("%v: if you want to skip this validation, set 'strict_order_by' to false", err)
 						}
 					}
@@ -111,12 +112,12 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 
 		// For UNION queries, targets is empty and we need to look for the
 		// columns in Largs.
-		if len(targets.Items) == 0 && n.Larg != nil {
+		if isUnion {
 			return c.outputColumns(qc, n.Larg)
 		}
 	case *ast.CallStmt:
 		targets = &ast.List{}
-	case *ast.TruncateStmt:
+	case *ast.TruncateStmt, *ast.RefreshMatViewStmt, *ast.NotifyStmt, *ast.ListenStmt:
 		targets = &ast.List{}
 	case *ast.UpdateStmt:
 		targets = n.ReturningList
@@ -482,11 +483,18 @@ func (c *Compiler) sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, erro
 			_, ok := node.(*ast.RangeVar)
 			return ok
 		})
+	case *ast.RefreshMatViewStmt:
+		list = astutils.Search(n.Relation, func(node ast.Node) bool {
+			_, ok := node.(*ast.RangeVar)
+			return ok
+		})
 	case *ast.UpdateStmt:
 		list = &ast.List{
 			Items: append(n.FromClause.Items, n.Relations.Items...),
 		}
 	case *ast.CallStmt:
+		list = &ast.List{}
+	case *ast.NotifyStmt, *ast.ListenStmt:
 		list = &ast.List{}
 	default:
 		return nil, fmt.Errorf("sourceTables: unsupported node type: %T", n)
@@ -497,18 +505,25 @@ func (c *Compiler) sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, erro
 		switch n := item.(type) {
 
 		case *ast.RangeFunction:
-			// If the function or table can't be found, don't error out.  There
-			// are many queries that depend on functions unknown to sqlc.
 			var funcCall *ast.FuncCall
 			switch f := n.Functions.Items[0].(type) {
 			case *ast.List:
-				funcCall = f.Items[0].(*ast.FuncCall)
+				switch fi := f.Items[0].(type) {
+				case *ast.FuncCall:
+					funcCall = fi
+				case *ast.SQLValueFunction:
+					continue // TODO handle this correctly
+				default:
+					continue
+				}
 			case *ast.FuncCall:
 				funcCall = f
 			default:
 				return nil, fmt.Errorf("sourceTables: unsupported function call type %T", n.Functions.Items[0])
 			}
 
+			// If the function or table can't be found, don't error out.  There
+			// are many queries that depend on functions unknown to sqlc.
 			fn, err := qc.GetFunc(funcCall.Func)
 			if err != nil {
 				continue
@@ -638,15 +653,15 @@ func outputColumnRefs(res *ast.ResTarget, tables []*Table, node *ast.ColumnRef) 
 	return cols, nil
 }
 
-func findColumnForNode(item ast.Node, tables []*Table, n *ast.SelectStmt) error {
+func findColumnForNode(item ast.Node, tables []*Table, targetList *ast.List) error {
 	ref, ok := item.(*ast.ColumnRef)
 	if !ok {
 		return nil
 	}
-	return findColumnForRef(ref, tables, n)
+	return findColumnForRef(ref, tables, targetList)
 }
 
-func findColumnForRef(ref *ast.ColumnRef, tables []*Table, selectStatement *ast.SelectStmt) error {
+func findColumnForRef(ref *ast.ColumnRef, tables []*Table, targetList *ast.List) error {
 	parts := stringSlice(ref.Fields)
 	var alias, name string
 	if len(parts) == 1 {
@@ -663,20 +678,17 @@ func findColumnForRef(ref *ast.ColumnRef, tables []*Table, selectStatement *ast.
 		}
 
 		// Find matching column
-		var foundColumn bool
 		for _, c := range t.Columns {
 			if c.Name == name {
 				found++
-				foundColumn = true
+				break
 			}
 		}
+	}
 
-		if foundColumn {
-			continue
-		}
-
-		// Find matching alias
-		for _, c := range selectStatement.TargetList.Items {
+	// Find matching alias if necessary
+	if found == 0 {
+		for _, c := range targetList.Items {
 			resTarget, ok := c.(*ast.ResTarget)
 			if !ok {
 				continue

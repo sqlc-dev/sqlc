@@ -8,5 +8,11 @@
       "schema": "query.sql",
       "queries": "query.sql"
     }
+  ],
+  "overrides": [
+    {
+    "column": "foo.mystr",
+    "go_type": "github.com/sqlc-dev/sqlc-testdata/mysql.ID"
+    }
   ]
 }

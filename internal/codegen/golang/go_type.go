@@ -1,8 +1,8 @@
 package golang
 
 import (
-	"github.com/kyleconroy/sqlc/internal/codegen/sdk"
-	"github.com/kyleconroy/sqlc/internal/plugin"
+	"github.com/sqlc-dev/sqlc/internal/codegen/sdk"
+	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
 
 func addExtraGoStructTags(tags map[string]string, req *plugin.CodeGenRequest, col *plugin.Column) {
@@ -41,6 +41,9 @@ func goType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		}
 		sameTable := sdk.Matches(oride, col.Table, req.Catalog.DefaultSchema)
 		if oride.Column != "" && sdk.MatchString(oride.ColumnName, cname) && sameTable {
+			if col.IsSqlcSlice {
+				return "[]" + oride.GoType.TypeName
+			}
 			return oride.GoType.TypeName
 		}
 	}

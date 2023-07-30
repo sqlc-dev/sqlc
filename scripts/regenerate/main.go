@@ -50,11 +50,21 @@ func regenerate(dir string) error {
 				return nil
 			}
 
+			var expectFailure bool
+			if _, err := os.Stat(filepath.Join(cwd, "stderr.txt")); !os.IsNotExist(err) {
+				expectFailure = true
+			}
+
 			cmd := exec.Command("sqlc-dev", "generate", "--experimental")
 			cmd.Dir = cwd
 			out, failed := cmd.CombinedOutput()
-			if _, err := os.Stat(filepath.Join(cwd, "stderr.txt")); os.IsNotExist(err) && failed != nil {
+			if failed != nil && !expectFailure {
 				return fmt.Errorf("%s: sqlc-dev generate failed\n%s", cwd, out)
+			}
+			if expectFailure {
+				if err := os.WriteFile(filepath.Join(cwd, "stderr.txt"), out, 0644); err != nil {
+					return fmt.Errorf("failed to update stderr.txt: %v", err)
+				}
 			}
 		}
 		return nil
