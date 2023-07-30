@@ -412,6 +412,7 @@ func (m *Column) CloneVT() *Column {
 		EmbedTable:   m.EmbedTable.CloneVT(),
 		OriginalName: m.OriginalName,
 		Unsigned:     m.Unsigned,
+		ArrayDims:    m.ArrayDims,
 	}
 	if len(m.unknownFields) > 0 {
 		r.unknownFields = make([]byte, len(m.unknownFields))
@@ -1153,6 +1154,9 @@ func (this *Column) EqualVT(that *Column) bool {
 		return false
 	}
 	if this.Unsigned != that.Unsigned {
+		return false
+	}
+	if this.ArrayDims != that.ArrayDims {
 		return false
 	}
 	return string(this.unknownFields) == string(that.unknownFields)
@@ -2492,6 +2496,13 @@ func (m *Column) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m.unknownFields != nil {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
+	}
+	if m.ArrayDims != 0 {
+		i = encodeVarint(dAtA, i, uint64(m.ArrayDims))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0x88
 	}
 	if m.Unsigned {
 		i--
@@ -4069,6 +4080,13 @@ func (m *Column) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if m.ArrayDims != 0 {
+		i = encodeVarint(dAtA, i, uint64(m.ArrayDims))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0x88
+	}
 	if m.Unsigned {
 		i--
 		if m.Unsigned {
@@ -4985,6 +5003,9 @@ func (m *Column) SizeVT() (n int) {
 	}
 	if m.Unsigned {
 		n += 3
+	}
+	if m.ArrayDims != 0 {
+		n += 2 + sov(uint64(m.ArrayDims))
 	}
 	n += len(m.unknownFields)
 	return n
@@ -8674,6 +8695,25 @@ func (m *Column) UnmarshalVT(dAtA []byte) error {
 				}
 			}
 			m.Unsigned = bool(v != 0)
+		case 17:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ArrayDims", wireType)
+			}
+			m.ArrayDims = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.ArrayDims |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skip(dAtA[iNdEx:])

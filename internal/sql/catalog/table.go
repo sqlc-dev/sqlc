@@ -70,6 +70,7 @@ func (table *Table) alterColumnType(cmd *ast.AlterTableCmd) error {
 	if index >= 0 {
 		table.Columns[index].Type = *cmd.Def.TypeName
 		table.Columns[index].IsArray = cmd.Def.IsArray
+		table.Columns[index].ArrayDims = cmd.Def.ArrayDims
 	}
 	return nil
 }
@@ -116,6 +117,7 @@ type Column struct {
 	IsNotNull  bool
 	IsUnsigned bool
 	IsArray    bool
+	ArrayDims  int
 	Comment    string
 	Length     *int
 }
@@ -308,6 +310,7 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 				IsNotNull:  col.IsNotNull,
 				IsUnsigned: col.IsUnsigned,
 				IsArray:    col.IsArray,
+				ArrayDims:  col.ArrayDims,
 				Comment:    col.Comment,
 				Length:     col.Length,
 			}

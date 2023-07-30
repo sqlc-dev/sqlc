@@ -287,6 +287,7 @@ func translate(node *nodes.Node) (ast.Node, error) {
 						TypeName:  rel.TypeName(),
 						IsNotNull: isNotNull(d.ColumnDef),
 						IsArray:   isArray(d.ColumnDef.TypeName),
+						ArrayDims: len(d.ColumnDef.TypeName.ArrayBounds),
 					}
 
 				case nodes.AlterTableType_AT_AlterColumnType:
@@ -312,6 +313,7 @@ func translate(node *nodes.Node) (ast.Node, error) {
 						TypeName:  rel.TypeName(),
 						IsNotNull: isNotNull(d.ColumnDef),
 						IsArray:   isArray(d.ColumnDef.TypeName),
+						ArrayDims: len(d.ColumnDef.TypeName.ArrayBounds),
 					}
 
 				case nodes.AlterTableType_AT_DropColumn:
@@ -441,6 +443,7 @@ func translate(node *nodes.Node) (ast.Node, error) {
 					TypeName:  rel.TypeName(),
 					IsNotNull: isNotNull(item.ColumnDef) || primaryKey[item.ColumnDef.Colname],
 					IsArray:   isArray(item.ColumnDef.TypeName),
+					ArrayDims: len(item.ColumnDef.TypeName.ArrayBounds),
 				})
 			}
 		}

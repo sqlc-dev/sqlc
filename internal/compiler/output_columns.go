@@ -31,6 +31,7 @@ func (c *Compiler) OutputColumns(stmt ast.Node) ([]*catalog.Column, error) {
 			IsNotNull:  col.NotNull,
 			IsUnsigned: col.Unsigned,
 			IsArray:    col.IsArray,
+			ArrayDims:  col.ArrayDims,
 			Comment:    col.Comment,
 			Length:     col.Length,
 		})
@@ -289,6 +290,7 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 							NotNull:      c.NotNull,
 							Unsigned:     c.Unsigned,
 							IsArray:      c.IsArray,
+							ArrayDims:    c.ArrayDims,
 							Length:       c.Length,
 						})
 					}
@@ -626,6 +628,7 @@ func outputColumnRefs(res *ast.ResTarget, tables []*Table, node *ast.ColumnRef) 
 					NotNull:      c.NotNull,
 					Unsigned:     c.Unsigned,
 					IsArray:      c.IsArray,
+					ArrayDims:    c.ArrayDims,
 					Length:       c.Length,
 					EmbedTable:   c.EmbedTable,
 					OriginalName: c.Name,

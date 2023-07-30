@@ -14,6 +14,13 @@ func isArray(n *ast.TypeName) bool {
 	return len(n.ArrayBounds.Items) > 0
 }
 
+func arrayDims(n *ast.TypeName) int {
+	if n == nil || n.ArrayBounds == nil {
+		return 0
+	}
+	return len(n.ArrayBounds.Items)
+}
+
 func toColumn(n *ast.TypeName) *Column {
 	if n == nil {
 		panic("can't build column for nil type name")
@@ -23,9 +30,10 @@ func toColumn(n *ast.TypeName) *Column {
 		panic("toColumn: " + err.Error())
 	}
 	return &Column{
-		Type:     typ,
-		DataType: strings.TrimPrefix(astutils.Join(n.Names, "."), "."),
-		NotNull:  true, // XXX: How do we know if this should be null?
-		IsArray:  isArray(n),
+		Type:      typ,
+		DataType:  strings.TrimPrefix(astutils.Join(n.Names, "."), "."),
+		NotNull:   true, // XXX: How do we know if this should be null?
+		IsArray:   isArray(n),
+		ArrayDims: arrayDims(n),
 	}
 }

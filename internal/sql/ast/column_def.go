@@ -6,6 +6,7 @@ type ColumnDef struct {
 	IsNotNull  bool
 	IsUnsigned bool
 	IsArray    bool
+	ArrayDims  int
 	Vals       *List
 	Length     *int
 

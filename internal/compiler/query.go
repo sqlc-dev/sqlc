@@ -21,6 +21,7 @@ type Column struct {
 	NotNull      bool
 	Unsigned     bool
 	IsArray      bool
+	ArrayDims    int
 	Comment      string
 	Length       *int
 	IsNamedParam bool
