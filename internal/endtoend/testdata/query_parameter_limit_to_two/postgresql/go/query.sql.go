@@ -79,7 +79,7 @@ DELETE FROM authors
 WHERE id IN ($2) AND name = $1
 `
 
-func (q *Queries) DeleteAuthors(ctx context.Context, name string, ids int64) error {
+func (q *Queries) DeleteAuthors(ctx context.Context, name string, ids []int64) error {
 	query := deleteAuthors
 	var queryParams []interface{}
 	queryParams = append(queryParams, name)
