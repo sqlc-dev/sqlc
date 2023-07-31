@@ -31,19 +31,19 @@ go get github.com/sqlc-dev/sqlc/cmd/sqlc
 ## Docker
 
 ```
-docker pull kjconroy/sqlc
+docker pull sqlc/sqlc
 ```
 
 Run `sqlc` using `docker run`:
 
 ```
-docker run --rm -v $(pwd):/src -w /src kjconroy/sqlc generate
+docker run --rm -v $(pwd):/src -w /src sqlc/sqlc generate
 ```
 
 Run `sqlc` using `docker run` in the Command Prompt on Windows (`cmd`):
 
 ```
-docker run --rm -v "%cd%:/src" -w /src kjconroy/sqlc generate
+docker run --rm -v "%cd%:/src" -w /src sqlc/sqlc generate
 ```
 
 ## Downloads
