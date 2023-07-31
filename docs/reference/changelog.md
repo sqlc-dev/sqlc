@@ -22,7 +22,7 @@ We designed the upgrade process to be as smooth as possible. If you run into any
 
 #### Use `EXPLAIN ...` output in lint rules
 
-`sqlc vet` can now run `EXPLAIN` on queries and include the results in your lint rules. For example, this rule checks that `SELECT` queries use an index.
+`sqlc vet` can now run `EXPLAIN` on your queries and include the results for use in your lint rules. For example, this rule checks that `SELECT` queries use an index.
 
 ```yaml
 version: 2
@@ -103,7 +103,7 @@ _Developed by [@Jille](https://github.com/Jille)_
 
 MySQL now supports the `:copyfrom` query annotation. The generated code uses the [LOAD DATA](https://dev.mysql.com/doc/refman/8.0/en/load-data.html) command to insert data quickly and efficiently.
 
-Some caution must be taken when using this feature. Errors and duplicate keys are treated as warnings and insertion will continue, even without an error for some cases.  Use this in a transaction and use `SHOW WARNINGS` to check for any problems and roll back if you want to.
+Use caution with this feature. Errors and duplicate keys are treated as warnings and insertion will continue, even without an error for some cases.  Use this in a transaction and use `SHOW WARNINGS` to check for any problems and roll back if necessary.
 
 Check the [error handling](https://dev.mysql.com/doc/refman/8.0/en/load-data.html#load-data-error-handling) documentation for more information.
 
@@ -120,13 +120,13 @@ func (q *Queries) InsertValues(ctx context.Context, arg []InsertValuesParams) (i
 }
 ```
 
-`LOAD DATA` support must be enabled in the MySQL client and server.
+`LOAD DATA` support must be enabled in the MySQL server.
 
 #### CAST support for MySQL
 
 _Developed by [@ryanpbrewster](https://github.com/ryanpbrewster) and [@RadhiFadlillah](https://github.com/RadhiFadlillah)_
 
-When `sqlc` now understands `CAST` calls in MySQL queries, offering greater flexibility for generating code for complex queries.
+`sqlc` now understands `CAST` calls in MySQL queries, offering greater flexibility when generating code for complex queries.
 
 ```sql
 CREATE TABLE foo (bar BOOLEAN NOT NULL);
@@ -153,7 +153,7 @@ func (q *Queries) SelectColumnCast(ctx context.Context) ([]int64, error) {
 
 #### SQLite improvements
 
-A slew of fixes landed for our SQLite implementation, bringing it closer to parity with MySQL and PostgreSQL. We wanted to thank [@orisano](https://github.com/orisano) for their continued dedication to making SQLite better.
+A slew of fixes landed for our SQLite implementation, bringing it closer to parity with MySQL and PostgreSQL. We want to thank [@orisano](https://github.com/orisano) for their continued dedication to improving `sqlc`'s SQLite support.
 
 ### Changes
 
