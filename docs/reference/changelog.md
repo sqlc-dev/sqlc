@@ -1,6 +1,186 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.20.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.20.0)
+Released 2023-07-31
+
+### Release notes
+
+#### Use `EXPLAIN ...` output in lint rules
+
+`sqlc vet` can now run `EXPLAIN` on queries and include the results in your lint rules. For example, this rule checks that `SELECT` queries use an index.
+
+```yaml
+version: 2
+sql:
+  - schema: "query.sql"
+    queries: "query.sql"
+    engine: "postgresql"
+    database:
+      uri: "postgresql://postgres:postgres@localhost:5432/postgres"
+    gen:
+      go:
+        package: "db"
+        out: "db"
+    rules:
+      - has-index
+rules:
+- name: has-index
+  rule: >
+    query.sql.startsWith("SELECT") &&
+    !(postgresql.explain.plan.plans.all(p, has(p.index_name) || p.plans.all(p, has(p.index_name))))
+```
+
+The expression environment has two variables containing `EXPLAIN ...` output,
+`postgresql.explain` and `mysql.explain`. `sqlc` only populates the variable associated with
+your configured database engine, and only when you have a
+[database connection configured](../reference/config.html#database).
+
+For the `postgresql` engine, `sqlc` runs
+
+```sql
+EXPLAIN (ANALYZE false, VERBOSE, COSTS, SETTINGS, BUFFERS, FORMAT JSON) ...
+```
+
+where `"..."` is your query string, and parses the output into a [`PostgreSQLExplain`](https://buf.build/sqlc/sqlc/docs/v1.20.0:vet#vet.PostgreSQLExplain) proto message.
+
+For the `mysql` engine, `sqlc` runs
+
+```sql
+EXPLAIN FORMAT=JSON ...
+```
+
+where `"..."` is your query string, and parses the output into a [`MySQLExplain`](https://buf.build/sqlc/sqlc/docs/v1.20.0:vet#vet.MySQLExplain) proto message.
+
+These proto message definitions are too long to include here, but you can find them in the `protos`
+directory within the `sqlc` source tree.
+
+The output from `EXPLAIN ...` depends on the structure of your query so it's a bit difficult
+to offer generic examples. Refer to the
+[PostgreSQL documentation](https://www.postgresql.org/docs/current/using-explain.html) and
+[MySQL documentation](https://dev.mysql.com/doc/refman/en/explain-output.html) for more
+information.
+
+```yaml
+...
+rules:
+- name: postgresql-query-too-costly
+  message: "Query cost estimate is too high"
+  rule: "postgresql.explain.plan.total_cost > 1.0"
+- name: postgresql-no-seq-scan
+  message: "Query plan results in a sequential scan"
+  rule: "postgresql.explain.plan.node_type == 'Seq Scan'"
+- name: mysql-query-too-costly
+  message: "Query cost estimate is too high"
+  rule: "has(mysql.explain.query_block.cost_info) && double(mysql.explain.query_block.cost_info.query_cost) > 2.0"
+- name: mysql-must-use-primary-key
+  message: "Query plan doesn't use primary key"
+  rule: "has(mysql.explain.query_block.table.key) && mysql.explain.query_block.table.key != 'PRIMARY'"
+```
+
+When building rules that depend on `EXPLAIN ...` output, it may be helpful to see the actual JSON
+returned from the database. `sqlc` will print it When you set the environment variable
+`SQLCDEBUG=dumpexplain=1`. Use this environment variable together with a dummy rule to see
+`EXPLAIN ...` output for all of your queries.
+
+#### Opting-out of lint rules
+
+For any query, you can tell `sqlc vet` not to evaluate lint rules using the
+`@sqlc-vet-disable` query annotation.
+
+```sql
+/* name: GetAuthor :one */
+/* @sqlc-vet-disable */
+SELECT * FROM authors
+WHERE id = ? LIMIT 1;
+```
+
+#### SQLite improvements
+
+A slew of fixes landed for our SQLite implementation, bringing it closer to parity with MySQL and PostgreSQL. We wanted to thank [@orisano](https://github.com/orisano) for their continued dedication to making SQLite better.
+
+### Changes
+
+#### Features
+
+- (debug) Add debug flag and docs for dumping vet rule variables (#2521)
+- (mysql) :copyfrom support via LOAD DATA INFILE (#2545)
+- (mysql) Implement cast function parser (#2473)
+- (postgresql) Add support for PostgreSQL multi-dimensional arrays (#2338)
+- (sql/catalog) Support ALTER TABLE IF EXISTS (#2542)
+- (sqlite) Virtual tables and fts5 supported (#2531)
+- (vet) Add default query parameters for explain queries (#2543)
+- (vet) Add output from `EXPLAIN ...` for queries to the CEL program environment (#2489)
+- (vet) Introduce a query annotation to opt out of sqlc vet rules (#2474)
+- Parse comment lines starting with `@symbol` as boolean flags associated with a query (#2464)
+
+#### Bug Fixes
+
+- (codegen/golang) Fix sqlc.embed to work with pq.Array (#2544)
+- (compiler) Correctly validate alias in order/group by clauses for joins (#2537)
+- (engine/sqlite) Added function to convert cast node (#2470)
+- (engine/sqlite) Fix join_operator rule (#2434)
+- (engine/sqlite) Fix table_alias rules (#2465)
+- (engine/sqlite) Fixed IN operator precedence (#2428)
+- (engine/sqlite) Fixed to be able to find relation from WITH clause (#2444)
+- (engine/sqlite) Lowercase ast.ResTarget.Name (#2433)
+- (engine/sqlite) Put logging statement behind debug flag (#2488)
+- (engine/sqlite) Support for repeated table_option (#2482)
+- (mysql) Generate unsigned param (#2522)
+- (sql/catalog) Support pg_dump output (#2508)
+- (sqlite) Code generation for sqlc.slice (#2431)
+- (vet) Clean up unnecessary `prepareable()` func and a var name (#2509)
+- (vet) Query.cmd was always set to ":" (#2525)
+- (vet) Report an error when a query is unpreparable, close prepared statement connection (#2486)
+- (vet) Split vet messages out of codegen.proto (#2511)
+
+#### Documentation
+
+- Add a description to the document for cases when a query result has no rows (#2462)
+- Update copyright and author (#2490)
+- Add example sqlc.yaml for migration parsing (#2479)
+- Small updates (#2506)
+- Point GitHub links to new repository location (#2534)
+
+#### Miscellaneous Tasks
+
+- Rename kyleconroy/sqlc to sqlc-dev/sqlc (#2523)
+- (proto) Reformat protos using `buf format -w` (#2536)
+- Update FEATURE_REQUEST.yml to include SQLite engine option
+- Finish migration to sqlc-dev/sqlc (#2548)
+- (compiler) Remove some duplicate code (#2546)
+
+#### Testing
+
+- Add profiles to docker compose (#2503)
+
+#### Build
+
+- Run all supported versions of MySQL / PostgreSQL (#2463)
+- (deps) Bump pygments from 2.7.4 to 2.15.0 in /docs (#2485)
+- (deps) Bump github.com/jackc/pgconn from 1.14.0 to 1.14.1 (#2483)
+- (deps) Bump github.com/google/cel-go from 0.16.0 to 0.17.1 (#2484)
+- (docs) Check Python dependencies via dependabot (#2497)
+- (deps) Bump idna from 2.10 to 3.4 in /docs (#2499)
+- (deps) Bump packaging from 20.9 to 23.1 in /docs (#2498)
+- (deps) Bump pygments from 2.15.0 to 2.15.1 in /docs (#2500)
+- (deps) Bump certifi from 2022.12.7 to 2023.7.22 in /docs (#2504)
+- (deps) Bump sphinx from 4.4.0 to 6.1.0 in /docs (#2505)
+- Add psql and mysqlsh to devenv (#2507)
+- (deps) Bump urllib3 from 1.26.5 to 2.0.4 in /docs (#2516)
+- (deps) Bump chardet from 4.0.0 to 5.1.0 in /docs (#2517)
+- (deps) Bump snowballstemmer from 2.1.0 to 2.2.0 in /docs (#2519)
+- (deps) Bump pytz from 2021.1 to 2023.3 in /docs (#2520)
+- (deps) Bump sphinxcontrib-htmlhelp from 2.0.0 to 2.0.1 in /docs (#2518)
+- (deps) Bump pyparsing from 2.4.7 to 3.1.0 in /docs (#2530)
+- (deps) Bump alabaster from 0.7.12 to 0.7.13 in /docs (#2526)
+- (docs) Ignore updates for sphinx (#2532)
+- (deps) Bump babel from 2.9.1 to 2.12.1 in /docs (#2527)
+- (deps) Bump sphinxcontrib-applehelp from 1.0.2 to 1.0.4 in /docs (#2533)
+- (deps) Bump google.golang.org/grpc from 1.56.2 to 1.57.0 (#2535)
+- (deps) Bump pyparsing from 3.1.0 to 3.1.1 in /docs (#2547)
+
+
 ## [1.19.1](https://github.com/sqlc-dev/sqlc/releases/tag/v1.19.1)
 Released 2023-07-13
 
