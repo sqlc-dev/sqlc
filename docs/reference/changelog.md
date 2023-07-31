@@ -6,6 +6,20 @@ Released 2023-07-31
 
 ### Release notes
 
+#### `kyleconroy/sqlc` is now `sqlc-dev/sqlc`
+
+We've completed our migration to the [sqlc-dev/sqlc](https://github.com/sqlc-dev/sqlc) repository. All existing links and installation instructions will continue to work. If you're using the `go` tool to install `sqlc`, you'll need to use the new import path to get v1.20.0 (and all future versions).
+
+```sh
+# INCORRECT: old import path
+go install github.com/kyleconroy/sqlc/cmd/sqlc@v1.20.0
+
+# CORRECT: new import path
+go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.20.0
+```
+
+We designed the upgrade process to be as smooth as possible. If you run into any issues, please [file a bug report](https://github.com/sqlc-dev/sqlc/issues/new?assignees=&labels=bug%2Ctriage&projects=&template=BUG_REPORT.yml) via GitHub.
+
 #### Use `EXPLAIN ...` output in lint rules
 
 `sqlc vet` can now run `EXPLAIN` on queries and include the results in your lint rules. For example, this rule checks that `SELECT` queries use an index.
