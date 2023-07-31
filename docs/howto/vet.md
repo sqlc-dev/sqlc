@@ -89,6 +89,8 @@ rules:
 
 ### Rules using `EXPLAIN ...` output
 
+*Added in v1.20.0*
+
 The CEL expression environment has two variables containing `EXPLAIN ...` output,
 `postgresql.explain` and `mysql.explain`. `sqlc` only populates the variable associated with
 your configured database engine, and only when you have a
@@ -100,7 +102,7 @@ For the `postgresql` engine, `sqlc` runs
 EXPLAIN (ANALYZE false, VERBOSE, COSTS, SETTINGS, BUFFERS, FORMAT JSON) ...
 ```
 
-where `"..."` is your query string, and parses the output into a `PostgreSQLExplain` proto message.
+where `"..."` is your query string, and parses the output into a [`PostgreSQLExplain`](https://buf.build/sqlc/sqlc/docs/main:vet#vet.PostgreSQLExplain) proto message.
 
 For the `mysql` engine, `sqlc` runs
 
@@ -108,7 +110,7 @@ For the `mysql` engine, `sqlc` runs
 EXPLAIN FORMAT=JSON ...
 ```
 
-where `"..."` is your query string, and parses the output into a `MySQLExplain` proto message.
+where `"..."` is your query string, and parses the output into a [`MySQLExplain`](https://buf.build/sqlc/sqlc/docs/main:vet#vet.MySQLExplain) proto message.
 
 These proto message definitions are too long to include here, but you can find them in the `protos`
 directory within the `sqlc` source tree.
