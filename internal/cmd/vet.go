@@ -281,7 +281,7 @@ func mysqlDefaultValue(col *plugin.Column) any {
 	case "date":
 		return "0000-00-00"
 	case "datetime", "timestamp":
-		return time.Time{}
+		return "0000-00-00 00:00:00"
 	case "time":
 		return "00:00:00"
 	case "year":
