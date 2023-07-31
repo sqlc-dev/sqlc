@@ -1,4 +1,4 @@
--- https://github.com/kyleconroy/sqlc/issues/921
+-- https://github.com/sqlc-dev/sqlc/issues/921
 CREATE TABLE authors (
   id   BIGINT  NOT NULL AUTO_INCREMENT PRIMARY KEY,
   name text    NOT NULL,

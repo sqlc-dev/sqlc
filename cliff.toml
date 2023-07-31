@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.\n
 # https://tera.netlify.app/docs/#introduction
 body = """
 {% if version %}\
-    ## [{{ version | trim_start_matches(pat="v") }}](https://github.com/kyleconroy/sqlc/releases/tag/{{ version }})
+    ## [{{ version | trim_start_matches(pat="v") }}](https://github.com/sqlc-dev/sqlc/releases/tag/{{ version }})
 {% else %}\
     ## [unreleased]
 {% endif %}\
