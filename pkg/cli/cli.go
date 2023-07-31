@@ -8,7 +8,7 @@
 //	import (
 //	    "os"
 //
-//	    sqlc "github.com/kyleconroy/sqlc/pkg/cli"
+//	    sqlc "github.com/sqlc-dev/sqlc/pkg/cli"
 //	)
 //
 //	func main() {

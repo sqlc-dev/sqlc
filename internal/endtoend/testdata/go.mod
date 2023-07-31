@@ -1,4 +1,4 @@
-module github.com/kyleconroy/sqlc/endtoend
+module github.com/sqlc-dev/sqlc/endtoend
 
 go 1.18
 
