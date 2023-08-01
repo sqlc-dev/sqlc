@@ -1,5 +1,11 @@
 # Datatypes
 
+`sqlc` attempts to make reasonable default choices when mapping internal
+database types to Go types. Choices for more complex types are described below.
+
+If you're unsatisfied with the default, you can override any type using the
+[overrides list](config.html#type-overriding) in your `sqlc` config file.
+
 ## Arrays
 
 PostgreSQL [arrays](https://www.postgresql.org/docs/current/arrays.html) are
