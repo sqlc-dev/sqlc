@@ -34,7 +34,7 @@ func TagsToString(tags map[string]string) string {
 	}
 	tagParts := make([]string, 0, len(tags))
 	for key, val := range tags {
-		tagParts = append(tagParts, fmt.Sprintf("%s:\"%s\"", key, val))
+		tagParts = append(tagParts, fmt.Sprintf("%s:%q", key, val))
 	}
 	sort.Strings(tagParts)
 	return strings.Join(tagParts, " ")

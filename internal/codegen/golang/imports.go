@@ -21,9 +21,9 @@ type ImportSpec struct {
 
 func (s ImportSpec) String() string {
 	if s.ID != "" {
-		return fmt.Sprintf("%s \"%s\"", s.ID, s.Path)
+		return fmt.Sprintf("%s %q", s.ID, s.Path)
 	} else {
-		return fmt.Sprintf("\"%s\"", s.Path)
+		return fmt.Sprintf("%q", s.Path)
 	}
 }
 
