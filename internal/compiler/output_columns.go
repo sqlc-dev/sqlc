@@ -639,14 +639,14 @@ func outputColumnRefs(res *ast.ResTarget, tables []*Table, node *ast.ColumnRef) 
 	if found == 0 {
 		return nil, &sqlerr.Error{
 			Code:     "42703",
-			Message:  fmt.Sprintf("column \"%s\" does not exist", name),
+			Message:  fmt.Sprintf("column %q does not exist", name),
 			Location: res.Location,
 		}
 	}
 	if found > 1 {
 		return nil, &sqlerr.Error{
 			Code:     "42703",
-			Message:  fmt.Sprintf("column reference \"%s\" is ambiguous", name),
+			Message:  fmt.Sprintf("column reference %q is ambiguous", name),
 			Location: res.Location,
 		}
 	}
@@ -702,14 +702,14 @@ func findColumnForRef(ref *ast.ColumnRef, tables []*Table, targetList *ast.List)
 	if found == 0 {
 		return &sqlerr.Error{
 			Code:     "42703",
-			Message:  fmt.Sprintf("column reference \"%s\" not found", name),
+			Message:  fmt.Sprintf("column reference %q not found", name),
 			Location: ref.Location,
 		}
 	}
 	if found > 1 {
 		return &sqlerr.Error{
 			Code:     "42703",
-			Message:  fmt.Sprintf("column reference \"%s\" is ambiguous", name),
+			Message:  fmt.Sprintf("column reference %q is ambiguous", name),
 			Location: ref.Location,
 		}
 	}

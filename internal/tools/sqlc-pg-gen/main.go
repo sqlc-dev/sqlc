@@ -13,7 +13,7 @@ import (
 	"strings"
 	"text/template"
 
-	pgx "github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4"
 )
 
 // https://dba.stackexchange.com/questions/255412/how-to-select-functions-that-belong-in-a-given-extension-in-postgresql
@@ -308,8 +308,7 @@ func run(ctx context.Context) error {
 			funcName += strings.Title(part)
 		}
 
-		_, err := conn.Exec(ctx, fmt.Sprintf("CREATE EXTENSION IF NOT EXISTS \"%s\"", extension))
-		if err != nil {
+		if _, err := conn.Exec(ctx, fmt.Sprintf("CREATE EXTENSION IF NOT EXISTS %q", extension)); err != nil {
 			return fmt.Errorf("error creating %s: %s", extension, err)
 		}
 
