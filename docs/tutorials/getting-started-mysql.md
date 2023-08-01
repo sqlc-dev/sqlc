@@ -16,13 +16,15 @@ directory. In our new directory, create a file named `sqlc.yaml` with the
 following contents:
 
 ```yaml
-version: 1
-packages:
-  - path: "tutorial"
-    name: "tutorial"
-    engine: "mysql"
-    schema: "schema.sql"
+version: 2
+sql:
+  - engine: "mysql"
     queries: "query.sql"
+    schema: "schema.sql"
+    gen:
+      go:
+        package: "tutorial"
+        out: "tutorial"
 ```
 
 sqlc needs to know your database schema and queries. In the same directory,
