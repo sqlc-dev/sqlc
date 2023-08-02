@@ -5,7 +5,3 @@
 package querytest
 
 import ()
-
-type Foo struct {
-	Email string
-}

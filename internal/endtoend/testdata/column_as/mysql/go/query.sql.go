@@ -9,29 +9,34 @@ import (
 	"context"
 )
 
-const columnAs = `-- name: ColumnAs :many
-SELECT email AS id FROM foo
+const withAs = `-- name: WithAs :one
+SELECT 1 AS x, 2 AS y
 `
 
-func (q *Queries) ColumnAs(ctx context.Context) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, columnAs)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []string
-	for rows.Next() {
-		var id string
-		if err := rows.Scan(&id); err != nil {
-			return nil, err
-		}
-		items = append(items, id)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
+type WithAsRow struct {
+	X int32
+	Y int32
+}
+
+func (q *Queries) WithAs(ctx context.Context) (WithAsRow, error) {
+	row := q.db.QueryRowContext(ctx, withAs)
+	var i WithAsRow
+	err := row.Scan(&i.X, &i.Y)
+	return i, err
+}
+
+const withoutAs = `-- name: WithoutAs :one
+SELECT 1 x, 2 y
+`
+
+type WithoutAsRow struct {
+	X int32
+	Y int32
+}
+
+func (q *Queries) WithoutAs(ctx context.Context) (WithoutAsRow, error) {
+	row := q.db.QueryRowContext(ctx, withoutAs)
+	var i WithoutAsRow
+	err := row.Scan(&i.X, &i.Y)
+	return i, err
 }
