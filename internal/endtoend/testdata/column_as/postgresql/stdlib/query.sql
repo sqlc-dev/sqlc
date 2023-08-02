@@ -1,4 +1,5 @@
-CREATE TABLE foo (email text not null);
+-- name: WithAs :one
+SELECT 1 AS x, 2 AS y;
 
--- name: ColumnAs :many
-SELECT email AS id FROM foo;
+-- name: WithoutAs :one
+SELECT 1 x, 2 y;

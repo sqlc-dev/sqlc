@@ -496,7 +496,7 @@ func (c *cc) getCols(core *parser.Select_coreContext) []ast.Node {
 			continue
 		}
 
-		if col.AS_() != nil {
+		if col.Column_alias() != nil {
 			name := identifier(col.Column_alias().GetText())
 			target.Name = &name
 		}
