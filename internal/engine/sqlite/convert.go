@@ -977,6 +977,14 @@ func (c *cc) convertCastExpr(n *parser.Expr_castContext) ast.Node {
 	}
 }
 
+func (c *cc) convertCollateExpr(n *parser.Expr_collateContext) ast.Node {
+	return &ast.CollateExpr{
+		Xpr:      c.convert(n.Expr()),
+		Arg:      NewIdentifer(n.Collation_name().GetText()),
+		Location: n.GetStart().GetStart(),
+	}
+}
+
 func (c *cc) convert(node node) ast.Node {
 	switch n := node.(type) {
 
@@ -1036,6 +1044,9 @@ func (c *cc) convert(node node) ast.Node {
 
 	case *parser.Expr_betweenContext:
 		return c.convertBetweenExpr(n)
+
+	case *parser.Expr_collateContext:
+		return c.convertCollateExpr(n)
 
 	case *parser.Factored_select_stmtContext:
 		// TODO: need to handle this
