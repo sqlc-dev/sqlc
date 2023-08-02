@@ -58,6 +58,8 @@ code ever again.
    howto/ci-cd.md
    howto/upload.md
 
+   howto/automatic-migrations.md
+
 .. toctree::
    :maxdepth: 3
    :caption: Reference
