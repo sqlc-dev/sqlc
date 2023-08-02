@@ -66,7 +66,7 @@ Generating the code will now give you pgx-compatible database access methods.
 
 .. code-block:: bash
 
-   sqlc generate --experimental
+   sqlc generate
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 Generated code walkthrough
