@@ -980,7 +980,7 @@ func (c *cc) convertCastExpr(n *parser.Expr_castContext) ast.Node {
 func (c *cc) convertCollateExpr(n *parser.Expr_collateContext) ast.Node {
 	return &ast.CollateExpr{
 		Xpr:      c.convert(n.Expr()),
-		Arg:      NewIdentifer(n.Collation_name().GetText()),
+		Arg:      NewIdentifier(n.Collation_name().GetText()),
 		Location: n.GetStart().GetStart(),
 	}
 }
