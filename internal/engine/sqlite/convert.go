@@ -29,10 +29,14 @@ func todo(funcname string, n node) *ast.TODO {
 }
 
 func identifier(id string) string {
+	if len(id) >= 2 && id[0] == '"' && id[len(id)-1] == '"' {
+		unquoted, _ := strconv.Unquote(id)
+		return unquoted
+	}
 	return strings.ToLower(id)
 }
 
-func NewIdentifer(t string) *ast.String {
+func NewIdentifier(t string) *ast.String {
 	return &ast.String{Str: identifier(t)}
 }
 
@@ -293,7 +297,7 @@ func (c *cc) convertFuncContext(n *parser.Expr_functionContext) ast.Node {
 				},
 				Funcname: &ast.List{
 					Items: []ast.Node{
-						NewIdentifer(funcName),
+						NewIdentifier(funcName),
 					},
 				},
 				AggStar:     n.STAR() != nil,
@@ -317,16 +321,16 @@ func (c *cc) convertColumnNameExpr(n *parser.Expr_qualified_column_nameContext) 
 	if schema, ok := n.Schema_name().(*parser.Schema_nameContext); ok {
 		schemaText := schema.GetText()
 		if schemaText != "" {
-			items = append(items, NewIdentifer(schemaText))
+			items = append(items, NewIdentifier(schemaText))
 		}
 	}
 	if table, ok := n.Table_name().(*parser.Table_nameContext); ok {
 		tableName := table.GetText()
 		if tableName != "" {
-			items = append(items, NewIdentifer(tableName))
+			items = append(items, NewIdentifier(tableName))
 		}
 	}
-	items = append(items, NewIdentifer(n.Column_name().GetText()))
+	items = append(items, NewIdentifier(n.Column_name().GetText()))
 	return &ast.ColumnRef{
 		Fields: &ast.List{
 			Items: items,
@@ -384,7 +388,7 @@ func (c *cc) convertMultiSelect_stmtContext(n *parser.Select_stmtContext) ast.No
 			tableName := identifier(cte.Table_name().GetText())
 			var cteCols ast.List
 			for _, col := range cte.AllColumn_name() {
-				cteCols.Items = append(cteCols.Items, NewIdentifer(col.GetText()))
+				cteCols.Items = append(cteCols.Items, NewIdentifier(col.GetText()))
 			}
 			ctes = append(ctes, &ast.CommonTableExpr{
 				Ctename:      &tableName,
@@ -506,7 +510,7 @@ func (c *cc) getCols(core *parser.Select_coreContext) []ast.Node {
 func (c *cc) convertWildCardField(n *parser.Result_columnContext) *ast.ColumnRef {
 	items := []ast.Node{}
 	if n.Table_name() != nil {
-		items = append(items, NewIdentifer(n.Table_name().GetText()))
+		items = append(items, NewIdentifier(n.Table_name().GetText()))
 	}
 	items = append(items, &ast.A_Star{})
 
@@ -853,7 +857,7 @@ func (c *cc) convertTablesOrSubquery(n []parser.ITable_or_subqueryContext) []ast
 							},
 							Funcname: &ast.List{
 								Items: []ast.Node{
-									NewIdentifer(rel),
+									NewIdentifier(rel),
 								},
 							},
 							Args: &ast.List{
@@ -965,7 +969,7 @@ func (c *cc) convertCastExpr(n *parser.Expr_castContext) ast.Node {
 		TypeName: &ast.TypeName{
 			Name: name,
 			Names: &ast.List{Items: []ast.Node{
-				NewIdentifer(name),
+				NewIdentifier(name),
 			}},
 			ArrayBounds: &ast.List{},
 		},
