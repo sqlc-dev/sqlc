@@ -1,7 +1,7 @@
 alabaster==0.7.13
 Babel==2.12.1
 certifi==2023.7.22
-chardet==5.1.0
+chardet==5.2.0
 commonmark==0.9.1
 docutils==0.18.1
 idna==3.4
