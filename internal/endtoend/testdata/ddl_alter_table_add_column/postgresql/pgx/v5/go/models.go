@@ -9,7 +9,8 @@ import (
 )
 
 type Foo struct {
-	Bar string
-	Baz pgtype.Int4
-	Bio pgtype.Int4
+	Bar    string
+	Baz    pgtype.Int4
+	Bio    pgtype.Int4
+	Foobar []int32
 }
