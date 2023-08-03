@@ -9,7 +9,8 @@ import (
 )
 
 type Foo struct {
-	Bar string
-	Baz sql.NullInt32
-	Bio sql.NullInt32
+	Bar    string
+	Baz    sql.NullInt32
+	Bio    sql.NullInt32
+	Foobar []int32
 }
