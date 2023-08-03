@@ -57,6 +57,7 @@ func (table *Table) addColumn(cmd *ast.AlterTableCmd) error {
 		IsNotNull:  cmd.Def.IsNotNull,
 		IsUnsigned: cmd.Def.IsUnsigned,
 		IsArray:    cmd.Def.IsArray,
+		ArrayDims:  cmd.Def.ArrayDims,
 		Length:     cmd.Def.Length,
 	})
 	return nil
