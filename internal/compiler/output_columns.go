@@ -3,6 +3,7 @@ package compiler
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
 
@@ -317,12 +318,14 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 					DataType:   dataType(fun.ReturnType),
 					NotNull:    !fun.ReturnTypeNullable,
 					IsFuncCall: true,
+					FuncName:   rel.Name,
 				})
 			} else {
 				cols = append(cols, &Column{
 					Name:       name,
 					DataType:   "any",
 					IsFuncCall: true,
+					FuncName:   rel.Name,
 				})
 			}
 
@@ -343,6 +346,10 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 				if res.Name != nil {
 					first.Name = *res.Name
 				}
+				if !(first.IsFuncCall && strings.EqualFold(first.FuncName, "count")) {
+					first.NotNull = false
+				}
+
 				cols = append(cols, first)
 			default:
 				cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
@@ -379,8 +386,9 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 			if res.Name != nil {
 				first.Name = *res.Name
 			}
-
-			if hasWhereOrHavingClause(n) {
+			if !(first.IsFuncCall &&
+				(strings.EqualFold(first.FuncName, "count") ||
+					strings.EqualFold(first.FuncName, "total"))) {
 				first.NotNull = false
 			}
 
@@ -720,18 +728,4 @@ func findColumnForRef(ref *ast.ColumnRef, tables []*Table, targetList *ast.List)
 	}
 
 	return nil
-}
-
-// hasWhereOrHavingClause returns true if the statement contains WHERE or HAVING clause
-func hasWhereOrHavingClause(node ast.Node) bool {
-	stmt := node.(*ast.SelectStmt)
-
-	if _, isTODO := stmt.WhereClause.(*ast.TODO); stmt.WhereClause != nil && !isTODO {
-		return true
-	}
-	if _, isTODO := stmt.HavingClause.(*ast.TODO); stmt.HavingClause != nil && !isTODO {
-		return true
-	}
-
-	return false
 }

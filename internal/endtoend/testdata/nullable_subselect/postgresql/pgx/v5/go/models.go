@@ -8,6 +8,11 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type Empty struct {
+	A int32
+	B pgtype.Int4
+}
+
 type Foo struct {
 	A int32
 	B pgtype.Int4

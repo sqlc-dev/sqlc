@@ -7,27 +7,30 @@ package querytest
 
 import (
 	"context"
+	"database/sql"
 )
 
-const subqueryWithHavingClause = `-- name: SubqueryWithHavingClause :many
-SELECT a, (SELECT COUNT(a) FROM foo GROUP BY b HAVING COUNT(a) > 10) as "total" FROM foo
+const countRowsEmptyTable = `-- name: CountRowsEmptyTable :many
+SELECT a, (SELECT count(a) FROM empty) as "count" FROM foo
 `
 
-type SubqueryWithHavingClauseRow struct {
+type CountRowsEmptyTableRow struct {
 	A     int32
-	Total int64
+	Count int64
 }
 
-func (q *Queries) SubqueryWithHavingClause(ctx context.Context) ([]SubqueryWithHavingClauseRow, error) {
-	rows, err := q.db.QueryContext(ctx, subqueryWithHavingClause)
+// In MySQL, only count() returns 0 for empty table.
+// https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html
+func (q *Queries) CountRowsEmptyTable(ctx context.Context) ([]CountRowsEmptyTableRow, error) {
+	rows, err := q.db.QueryContext(ctx, countRowsEmptyTable)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []SubqueryWithHavingClauseRow
+	var items []CountRowsEmptyTableRow
 	for rows.Next() {
-		var i SubqueryWithHavingClauseRow
-		if err := rows.Scan(&i.A, &i.Total); err != nil {
+		var i CountRowsEmptyTableRow
+		if err := rows.Scan(&i.A, &i.Count); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -41,25 +44,57 @@ func (q *Queries) SubqueryWithHavingClause(ctx context.Context) ([]SubqueryWithH
 	return items, nil
 }
 
-const subqueryWithWhereClause = `-- name: SubqueryWithWhereClause :many
-SELECT a, (SELECT COUNT(a) FROM foo WHERE a > 10) as "total" FROM foo
+const firstRowFromEmptyTable = `-- name: FirstRowFromEmptyTable :many
+SELECT a, (SELECT a FROM empty limit 1) as "first" FROM foo
 `
 
-type SubqueryWithWhereClauseRow struct {
+type FirstRowFromEmptyTableRow struct {
 	A     int32
-	Total int64
+	First sql.NullInt32
 }
 
-func (q *Queries) SubqueryWithWhereClause(ctx context.Context) ([]SubqueryWithWhereClauseRow, error) {
-	rows, err := q.db.QueryContext(ctx, subqueryWithWhereClause)
+func (q *Queries) FirstRowFromEmptyTable(ctx context.Context) ([]FirstRowFromEmptyTableRow, error) {
+	rows, err := q.db.QueryContext(ctx, firstRowFromEmptyTable)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []SubqueryWithWhereClauseRow
+	var items []FirstRowFromEmptyTableRow
 	for rows.Next() {
-		var i SubqueryWithWhereClauseRow
-		if err := rows.Scan(&i.A, &i.Total); err != nil {
+		var i FirstRowFromEmptyTableRow
+		if err := rows.Scan(&i.A, &i.First); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const firstRowFromFooTable = `-- name: FirstRowFromFooTable :many
+SELECT a, (SELECT a FROM foo limit 1) as "first" FROM foo
+`
+
+type FirstRowFromFooTableRow struct {
+	A     int32
+	First sql.NullInt32
+}
+
+func (q *Queries) FirstRowFromFooTable(ctx context.Context) ([]FirstRowFromFooTableRow, error) {
+	rows, err := q.db.QueryContext(ctx, firstRowFromFooTable)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []FirstRowFromFooTableRow
+	for rows.Next() {
+		var i FirstRowFromFooTableRow
+		if err := rows.Scan(&i.A, &i.First); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

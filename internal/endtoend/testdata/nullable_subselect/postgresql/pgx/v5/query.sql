@@ -1,7 +1,10 @@
-CREATE TABLE foo (a int not null, b int);
+-- name: FirstRowFromFooTable :many
+SELECT a, (SELECT a FROM foo limit 1) as "first" FROM foo;
 
--- name: SubqueryWithWhereClause :many
-SELECT a, (SELECT COUNT(a) FROM foo WHERE a > 10) as "total" FROM foo;
+-- name: FirstRowFromEmptyTable :many
+SELECT a, (SELECT a FROM empty limit 1) as "first" FROM foo;
 
--- name: SubqueryWithHavingClause :many
-SELECT a, (SELECT COUNT(a) FROM foo GROUP BY b HAVING COUNT(a) > 10) as "total" FROM foo;
+-- In PostgreSQL, only count() returns 0 for empty table.
+-- https://www.postgresql.org/docs/15/functions-aggregate.html
+-- name: CountRowsEmptyTable :many
+SELECT a, (SELECT count(a) FROM empty) as "count" FROM foo;
