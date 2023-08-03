@@ -7,27 +7,31 @@ package querytest
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const subqueryWithHavingClause = `-- name: SubqueryWithHavingClause :many
-SELECT a, (SELECT COUNT(a) FROM foo GROUP BY b HAVING COUNT(a) > 10) as "total" FROM foo
+const countRowsEmptyTable = `-- name: CountRowsEmptyTable :many
+SELECT a, (SELECT count(a) FROM empty) as "count" FROM foo
 `
 
-type SubqueryWithHavingClauseRow struct {
+type CountRowsEmptyTableRow struct {
 	A     int32
-	Total int64
+	Count int64
 }
 
-func (q *Queries) SubqueryWithHavingClause(ctx context.Context) ([]SubqueryWithHavingClauseRow, error) {
-	rows, err := q.db.Query(ctx, subqueryWithHavingClause)
+// In PostgreSQL, only count() returns 0 for empty table.
+// https://www.postgresql.org/docs/15/functions-aggregate.html
+func (q *Queries) CountRowsEmptyTable(ctx context.Context) ([]CountRowsEmptyTableRow, error) {
+	rows, err := q.db.Query(ctx, countRowsEmptyTable)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []SubqueryWithHavingClauseRow
+	var items []CountRowsEmptyTableRow
 	for rows.Next() {
-		var i SubqueryWithHavingClauseRow
-		if err := rows.Scan(&i.A, &i.Total); err != nil {
+		var i CountRowsEmptyTableRow
+		if err := rows.Scan(&i.A, &i.Count); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -38,25 +42,54 @@ func (q *Queries) SubqueryWithHavingClause(ctx context.Context) ([]SubqueryWithH
 	return items, nil
 }
 
-const subqueryWithWhereClause = `-- name: SubqueryWithWhereClause :many
-SELECT a, (SELECT COUNT(a) FROM foo WHERE a > 10) as "total" FROM foo
+const firstRowFromEmptyTable = `-- name: FirstRowFromEmptyTable :many
+SELECT a, (SELECT a FROM empty limit 1) as "first" FROM foo
 `
 
-type SubqueryWithWhereClauseRow struct {
+type FirstRowFromEmptyTableRow struct {
 	A     int32
-	Total int64
+	First pgtype.Int4
 }
 
-func (q *Queries) SubqueryWithWhereClause(ctx context.Context) ([]SubqueryWithWhereClauseRow, error) {
-	rows, err := q.db.Query(ctx, subqueryWithWhereClause)
+func (q *Queries) FirstRowFromEmptyTable(ctx context.Context) ([]FirstRowFromEmptyTableRow, error) {
+	rows, err := q.db.Query(ctx, firstRowFromEmptyTable)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []SubqueryWithWhereClauseRow
+	var items []FirstRowFromEmptyTableRow
 	for rows.Next() {
-		var i SubqueryWithWhereClauseRow
-		if err := rows.Scan(&i.A, &i.Total); err != nil {
+		var i FirstRowFromEmptyTableRow
+		if err := rows.Scan(&i.A, &i.First); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const firstRowFromFooTable = `-- name: FirstRowFromFooTable :many
+SELECT a, (SELECT a FROM foo limit 1) as "first" FROM foo
+`
+
+type FirstRowFromFooTableRow struct {
+	A     int32
+	First pgtype.Int4
+}
+
+func (q *Queries) FirstRowFromFooTable(ctx context.Context) ([]FirstRowFromFooTableRow, error) {
+	rows, err := q.db.Query(ctx, firstRowFromFooTable)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []FirstRowFromFooTableRow
+	for rows.Next() {
+		var i FirstRowFromFooTableRow
+		if err := rows.Scan(&i.A, &i.First); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

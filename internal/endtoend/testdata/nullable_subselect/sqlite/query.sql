@@ -1,7 +1,14 @@
-CREATE TABLE foo (a int not null, b int);
+-- name: FirstRowFromFooTable :many
+SELECT a, (SELECT a FROM foo limit 1) as "first" FROM foo;
 
--- name: SubqueryWithWhereClause :many
-SELECT a, (SELECT COUNT(a) FROM foo WHERE a > 10) FROM foo;
+-- name: FirstRowFromEmptyTable :many
+SELECT a, (SELECT a FROM empty limit 1) as "first" FROM foo;
 
--- name: SubqueryWithHavingClause :many
-SELECT a, (SELECT COUNT(a) FROM foo GROUP BY b HAVING COUNT(a) > 10) FROM foo;
+-- In SQLite, count() and total() return 0 for empty table.
+-- https://www.sqlite.org/lang_aggfunc.html
+
+-- name: CountRowsEmptyTable :many
+SELECT a, (SELECT count(a) FROM empty) as "count" FROM foo;
+
+-- name: TotalEmptyTable :many
+SELECT a, (SELECT total(a) FROM empty) as "total" FROM foo;

@@ -8,6 +8,11 @@ import (
 	"database/sql"
 )
 
+type Empty struct {
+	A int32
+	B sql.NullInt32
+}
+
 type Foo struct {
 	A int32
 	B sql.NullInt32
