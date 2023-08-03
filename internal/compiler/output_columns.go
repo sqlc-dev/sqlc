@@ -454,6 +454,23 @@ func isTableRequired(n ast.Node, col *Column, prior int) int {
 	return tableNotFound
 }
 
+type tableVisitor struct {
+	list ast.List
+}
+
+func (r *tableVisitor) Visit(n ast.Node) astutils.Visitor {
+	switch n.(type) {
+	case *ast.RangeVar, *ast.RangeFunction:
+		r.list.Items = append(r.list.Items, n)
+		return r
+	case *ast.RangeSubselect:
+		r.list.Items = append(r.list.Items, n)
+		return nil
+	default:
+		return r
+	}
+}
+
 // Compute the output columns for a statement.
 //
 // Return an error if column references are ambiguous
@@ -470,14 +487,9 @@ func (c *Compiler) sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, erro
 			Items: []ast.Node{n.Relation},
 		}
 	case *ast.SelectStmt:
-		list = astutils.Search(n.FromClause, func(node ast.Node) bool {
-			switch node.(type) {
-			case *ast.RangeVar, *ast.RangeSubselect, *ast.RangeFunction:
-				return true
-			default:
-				return false
-			}
-		})
+		var tv tableVisitor
+		astutils.Walk(&tv, n.FromClause)
+		list = &tv.list
 	case *ast.TruncateStmt:
 		list = astutils.Search(n.Relations, func(node ast.Node) bool {
 			_, ok := node.(*ast.RangeVar)
