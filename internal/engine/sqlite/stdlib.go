@@ -1017,7 +1017,7 @@ func defaultSchema(name string) *catalog.Schema {
 	}
 	s.Tables = []*catalog.Table{
 		{
-			Rel: &ast.TableName{Schema: "sqlc.hidden", Name: "json_tree"},
+			Rel: &ast.TableName{Name: "json_tree"},
 			Columns: []*catalog.Column{
 				{Name: "key", Type: ast.TypeName{Name: "any"}},
 				{Name: "value", Type: ast.TypeName{Name: "any"}},
@@ -1028,6 +1028,7 @@ func defaultSchema(name string) *catalog.Schema {
 				{Name: "fullkey", Type: ast.TypeName{Name: "integer"}},
 				{Name: "path", Type: ast.TypeName{Name: "text"}},
 			},
+			Hidden: true,
 		},
 	}
 	return s

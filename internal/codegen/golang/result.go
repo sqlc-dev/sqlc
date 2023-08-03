@@ -66,7 +66,7 @@ func buildStructs(req *plugin.CodeGenRequest) []Struct {
 		}
 		for _, table := range schema.Tables {
 			var tableName string
-			if table.Rel.Schema == "sqlc.hidden" {
+			if table.Hidden {
 				continue
 			}
 			if schema.Name == req.Catalog.DefaultSchema {
