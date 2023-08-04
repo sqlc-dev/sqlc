@@ -767,7 +767,7 @@ func (c *cc) convertInsert_stmtContext(n *parser.Insert_stmtContext) ast.Node {
 		rel.Schemaname = &schemaName
 	}
 	if n.Table_alias() != nil {
-		tableAlias := n.Table_alias().GetText()
+		tableAlias := identifier(n.Table_alias().GetText())
 		rel.Alias = &ast.Alias{
 			Aliasname: &tableAlias,
 		}
@@ -837,7 +837,7 @@ func (c *cc) convertTablesOrSubquery(n []parser.ITable_or_subqueryContext) []ast
 				rv.Schemaname = &schema
 			}
 			if from.Table_alias() != nil {
-				alias := from.Table_alias().GetText()
+				alias := identifier(from.Table_alias().GetText())
 				rv.Alias = &ast.Alias{Aliasname: &alias}
 			}
 			if from.Table_alias_fallback() != nil {
@@ -870,7 +870,7 @@ func (c *cc) convertTablesOrSubquery(n []parser.ITable_or_subqueryContext) []ast
 			}
 
 			if from.Table_alias() != nil {
-				alias := from.Table_alias().GetText()
+				alias := identifier(from.Table_alias().GetText())
 				rf.Alias = &ast.Alias{Aliasname: &alias}
 			}
 
@@ -881,7 +881,7 @@ func (c *cc) convertTablesOrSubquery(n []parser.ITable_or_subqueryContext) []ast
 			}
 
 			if from.Table_alias() != nil {
-				alias := from.Table_alias().GetText()
+				alias := identifier(from.Table_alias().GetText())
 				rs.Alias = &ast.Alias{Aliasname: &alias}
 			}
 
