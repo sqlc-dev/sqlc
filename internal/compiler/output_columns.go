@@ -595,19 +595,26 @@ func (c *Compiler) sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, erro
 
 func outputColumnRefs(res *ast.ResTarget, tables []*Table, node *ast.ColumnRef) ([]*Column, error) {
 	parts := stringSlice(node.Fields)
-	var name, alias string
+	var schema, name, alias string
 	switch {
 	case len(parts) == 1:
 		name = parts[0]
 	case len(parts) == 2:
 		alias = parts[0]
 		name = parts[1]
+	case len(parts) == 3:
+		schema = parts[0]
+		alias = parts[1]
+		name = parts[2]
 	default:
 		return nil, fmt.Errorf("unknown number of fields: %d", len(parts))
 	}
 	var cols []*Column
 	var found int
 	for _, t := range tables {
+		if schema != "" && t.Rel.Schema != schema {
+			continue
+		}
 		if alias != "" && t.Rel.Name != alias {
 			continue
 		}
