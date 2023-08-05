@@ -15,3 +15,8 @@ type Author struct {
 	CountryCode string
 	Titles      []string
 }
+
+type Client struct {
+	ID   int32
+	Name string
+}

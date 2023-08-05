@@ -33,7 +33,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) (
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.DefineType}}, error) {
 	row := q.db.QueryRow(ctx, {{.ConstantName}}, {{.Arg.Params}})
 {{- end}}
-	{{- if ne .Arg.Pair .Ret.Pair }}
+	{{- if or (ne .Arg.Pair .Ret.Pair) (ne .Arg.DefineType .Ret.DefineType) }}
 	var {{.Ret.Name}} {{.Ret.Type}}
 	{{- end}}
 	err := row.Scan({{.Ret.Scan}})
