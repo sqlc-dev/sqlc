@@ -293,7 +293,7 @@ expr:
         | NOT_EQ2
         | IS_
         | IS_ NOT_
-        | IN_
+        | NOT_? IN_
         | LIKE_
         | GLOB_
         | MATCH_
