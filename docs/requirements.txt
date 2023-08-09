@@ -19,7 +19,7 @@ Sphinx==6.2.1
 sphinx-favicon==1.0.1
 sphinx-rtd-theme==1.2.2
 sphinxcontrib-applehelp==1.0.4
-sphinxcontrib-devhelp==1.0.2
+sphinxcontrib-devhelp==1.0.3
 sphinxcontrib-serializinghtml==1.1.5
 sphinxcontrib-htmlhelp==2.0.1
 sphinxcontrib-jsmath==1.0.1
