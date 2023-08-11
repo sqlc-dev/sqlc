@@ -1,5 +1,15 @@
 # Preparing queries
 
+If you're using `pgx/v5` you get its
+[implicit support](https://github.com/jackc/pgx/wiki/Automatic-Prepared-Statement-Caching)
+for prepared statements. No additional `sqlc` configuration is required.
+
+For other drivers, `sqlc` can give you the option to explicitly use prepared
+queries. These prepared queries also work with transactions.
+
+You'll need to set `emit_prepared_queries` to `true` in your `sqlc` configuration
+to generate code similar to the example below.
+
 ```sql
 CREATE TABLE records (
   id SERIAL PRIMARY KEY
@@ -9,9 +19,6 @@ CREATE TABLE records (
 SELECT * FROM records
 WHERE id = $1;
 ```
-
-sqlc has an option to use prepared queries. These prepared queries also work
-with transactions.
 
 ```go
 package db
@@ -80,4 +87,3 @@ func (q *Queries) GetRecord(ctx context.Context, id int32) (int32, error) {
 	return id, err
 }
 ```
-
