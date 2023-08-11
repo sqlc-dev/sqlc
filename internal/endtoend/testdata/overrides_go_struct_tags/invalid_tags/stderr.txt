@@ -1,1 +1,1 @@
-error parsing sqlc.json: Failed to parse Go struct tag: no colon in field "abc"
+error parsing sqlc.json: bad syntax for struct tag pair

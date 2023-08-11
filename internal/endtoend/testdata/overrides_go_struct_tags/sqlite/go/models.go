@@ -9,14 +9,17 @@ import ()
 type Bar struct {
 	Other      string
 	AlsoTagged string `also:"tagged"`
+	Tag3       string `tag_with_space:" it's legal!"`
 }
 
 type Baz struct {
 	Other      string
 	AlsoTagged string `also:"tagged"`
+	Tag3       string `tag_with_space:" it's legal!"`
 }
 
 type Foo struct {
 	Other  string
 	Tagged string `a:"b" x:"y,z"`
+	Tag3   string `tag_with_space:" it's legal!"`
 }

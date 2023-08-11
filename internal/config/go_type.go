@@ -6,6 +6,8 @@ import (
 	"go/types"
 	"regexp"
 	"strings"
+
+	"github.com/fatih/structtag"
 )
 
 type GoType struct {
@@ -171,16 +173,12 @@ type GoStructTag string
 // `a:"b" x:"y,z"`   {"a": "b", "x": "y,z"}
 func (s GoStructTag) Parse() (map[string]string, error) {
 	m := make(map[string]string)
-	fields := strings.Fields(string(s))
-	for _, f := range fields {
-		k, v, ok := strings.Cut(f, ":")
-		if !ok {
-			return nil, fmt.Errorf("Failed to parse Go struct tag: no colon in field %q", f)
-		}
-		if len(v) < 2 || v[0] != '"' || v[len(v)-1] != '"' {
-			return nil, fmt.Errorf("Failed to parse Go struct tag: missing quotes around value in field %q", f)
-		}
-		m[k] = v[1 : len(v)-1] // trim quotes off of v
+	tags, err := structtag.Parse(string(s))
+	if err != nil {
+		return nil, err
+	}
+	for _, tag := range tags.Tags() {
+		m[tag.Key] = tag.Value()
 	}
 	return m, nil
 }
