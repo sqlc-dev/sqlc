@@ -1434,6 +1434,30 @@ func (c *cc) convertWindowSpec(n *pcast.WindowSpec) ast.Node {
 	return todo(n)
 }
 
+func (c *cc) convertCallStmt(n *pcast.CallStmt) ast.Node {
+	var funcname ast.List
+	for _, s := range []string{n.Procedure.Schema.L, n.Procedure.FnName.L} {
+		if s != "" {
+			funcname.Items = append(funcname.Items, NewIdentifier(s))
+		}
+	}
+	var args ast.List
+	for _, a := range n.Procedure.Args {
+		args.Items = append(args.Items, c.convert(a))
+	}
+	return &ast.CallStmt{
+		FuncCall: &ast.FuncCall{
+			Func: &ast.FuncName{
+				Schema: n.Procedure.Schema.L,
+				Name:   n.Procedure.FnName.L,
+			},
+			Funcname: &funcname,
+			Args:     &args,
+			Location: n.OriginTextPosition(),
+		},
+	}
+}
+
 func (c *cc) convert(node pcast.Node) ast.Node {
 	switch n := node.(type) {
 
@@ -1487,6 +1511,9 @@ func (c *cc) convert(node pcast.Node) ast.Node {
 
 	case *pcast.ByItem:
 		return c.convertByItem(n)
+
+	case *pcast.CallStmt:
+		return c.convertCallStmt(n)
 
 	case *pcast.CaseExpr:
 		return c.convertCaseExpr(n)
