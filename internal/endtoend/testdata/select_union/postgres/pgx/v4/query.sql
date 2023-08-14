@@ -5,6 +5,12 @@ SELECT * FROM foo
 UNION
 SELECT * FROM foo;
 
+-- name: SelectUnionWithLimit :many
+SELECT * FROM foo
+UNION
+SELECT * FROM foo
+LIMIT $1 OFFSET $2;
+
 -- name: SelectExcept :many
 SELECT * FROM foo
 EXCEPT
