@@ -1254,7 +1254,12 @@ func (c *cc) convertSetOprSelectList(n *pcast.SetOprSelectList) ast.Node {
 
 func (c *cc) convertSetOprStmt(n *pcast.SetOprStmt) ast.Node {
 	if n.SelectList != nil {
-		return c.convertSetOprSelectList(n.SelectList)
+		sn := c.convertSetOprSelectList(n.SelectList)
+		if ss, ok := sn.(*ast.SelectStmt); ok && n.Limit != nil {
+			ss.LimitOffset = c.convert(n.Limit.Offset)
+			ss.LimitCount = c.convert(n.Limit.Count)
+		}
+		return sn
 	}
 	return todo(n)
 }
