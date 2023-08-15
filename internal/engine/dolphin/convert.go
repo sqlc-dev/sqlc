@@ -1458,6 +1458,24 @@ func (c *cc) convertCallStmt(n *pcast.CallStmt) ast.Node {
 	}
 }
 
+func (c *cc) convertProcedureInfo(n *pcast.ProcedureInfo) ast.Node {
+	var params ast.List
+	for _, sp := range n.ProcedureParam {
+		paramName := sp.ParamName
+		params.Items = append(params.Items, &ast.FuncParam{
+			Name: &paramName,
+			Type: &ast.TypeName{Name: types.TypeToStr(sp.ParamType.GetType(), sp.ParamType.GetCharset())},
+		})
+	}
+	return &ast.CreateFunctionStmt{
+		Params: &params,
+		Func: &ast.FuncName{
+			Schema: n.ProcedureName.Schema.L,
+			Name:   n.ProcedureName.Name.L,
+		},
+	}
+}
+
 func (c *cc) convert(node pcast.Node) ast.Node {
 	switch n := node.(type) {
 
@@ -1733,6 +1751,9 @@ func (c *cc) convert(node pcast.Node) ast.Node {
 
 	case *pcast.PrivElem:
 		return c.convertPrivElem(n)
+
+	case *pcast.ProcedureInfo:
+		return c.convertProcedureInfo(n)
 
 	case *pcast.RecoverTableStmt:
 		return c.convertRecoverTableStmt(n)
