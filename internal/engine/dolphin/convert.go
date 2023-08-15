@@ -1103,7 +1103,7 @@ func (c *cc) convertPatternInExpr(n *pcast.PatternInExpr) ast.Node {
 	return in
 }
 
-func (c *cc) convertPatternLikeExpr(n *pcast.PatternLikeExpr) ast.Node {
+func (c *cc) convertPatternLikeExpr(n *pcast.PatternLikeOrIlikeExpr) ast.Node {
 	return &ast.A_Expr{
 		Kind: ast.A_Expr_Kind(9),
 		Name: &ast.List{
@@ -1719,7 +1719,7 @@ func (c *cc) convert(node pcast.Node) ast.Node {
 	case *pcast.PatternInExpr:
 		return c.convertPatternInExpr(n)
 
-	case *pcast.PatternLikeExpr:
+	case *pcast.PatternLikeOrIlikeExpr:
 		return c.convertPatternLikeExpr(n)
 
 	case *pcast.PatternRegexpExpr:
