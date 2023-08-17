@@ -190,7 +190,9 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 		if query.Cmd == "" {
 			continue
 		}
-
+		if req.Settings.Go.StandAloneName != "" {
+			query.Name = req.Settings.Go.StandAloneName + sdk.Title(query.Name)
+		}
 		var constantName string
 		if req.Settings.Go.EmitExportedQueries {
 			constantName = sdk.Title(query.Name)

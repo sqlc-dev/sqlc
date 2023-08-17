@@ -100,12 +100,18 @@ func (i *importer) Imports(filename string) [][]ImportSpec {
 	case modelsFileName:
 		return mergeImports(i.modelImports())
 	case querierFileName:
+		if i.Settings.Go.StandAloneName != "" {
+			return mergeImports(i.dbImports(), i.interfaceImports(), i.queryImports(filename))
+		}
 		return mergeImports(i.interfaceImports())
 	case copyfromFileName:
 		return mergeImports(i.copyfromImports())
 	case batchFileName:
 		return mergeImports(i.batchImports())
 	default:
+		if i.Settings.Go.StandAloneName != "" {
+			return mergeImports(i.dbImports(), i.interfaceImports(), i.queryImports(filename))
+		}
 		return mergeImports(i.queryImports(filename))
 	}
 }

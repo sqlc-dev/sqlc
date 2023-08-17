@@ -158,6 +158,7 @@ type SQLGo struct {
 	InflectionExcludeTableNames []string          `json:"inflection_exclude_table_names,omitempty" yaml:"inflection_exclude_table_names"`
 	QueryParameterLimit         *int32            `json:"query_parameter_limit,omitempty" yaml:"query_parameter_limit"`
 	OmitUnusedStructs           bool              `json:"omit_unused_structs,omitempty" yaml:"omit_unused_structs"`
+	StandAloneName              string            `json:"stand_alone_name" yaml:"stand_alone_name"`
 }
 
 type SQLJSON struct {

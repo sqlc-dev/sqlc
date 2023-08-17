@@ -1,6 +1,6 @@
 {{define "dbCodeTemplatePgx"}}
 
-type DBTX interface {
+type {{.StandAloneName}}DBTX interface {
 	Exec(context.Context, string, ...interface{}) (pgconn.CommandTag, error)
 	Query(context.Context, string, ...interface{}) (pgx.Rows, error)
 	QueryRow(context.Context, string, ...interface{}) pgx.Row
@@ -13,23 +13,23 @@ type DBTX interface {
 }
 
 {{ if .EmitMethodsWithDBArgument}}
-func New() *Queries {
-	return &Queries{}
+func New{{.StandAloneName}}() *{{.StandAloneName}}Queries {
+	return &{{.StandAloneName}}Queries{}
 {{- else -}}
-func New(db DBTX) *Queries {
-	return &Queries{db: db}
+func New{{.StandAloneName}}(db {{.StandAloneName}}DBTX) *{{.StandAloneName}}Queries {
+	return &{{.StandAloneName}}Queries{db: db}
 {{- end}}
 }
 
-type Queries struct {
+type {{.StandAloneName}}Queries struct {
     {{if not .EmitMethodsWithDBArgument}}
-	db DBTX
+	db {{.StandAloneName}}DBTX
     {{end}}
 }
 
 {{if not .EmitMethodsWithDBArgument}}
-func (q *Queries) WithTx(tx pgx.Tx) *Queries {
-	return &Queries{
+func (q *{{.StandAloneName}}Queries) WithTx(tx pgx.Tx) *{{.StandAloneName}}Queries {
+	return &{{.StandAloneName}}Queries{
 		db: tx,
 	}
 }

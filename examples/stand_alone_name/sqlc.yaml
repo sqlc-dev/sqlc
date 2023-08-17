@@ -1,0 +1,27 @@
+version: "2"
+overrides:
+  go:
+    overrides:
+      - db_type: "jsonb"
+        go_type: "encoding/json.RawMessage"
+sql:
+  - engine: "postgresql"
+    queries: "ding_depts.sql"
+    schema: "schema.sql"
+    gen:
+      go:
+        package: "repo"
+        sql_package: "pgx/v5"
+        out: "./repo"
+        stand_alone_name: "DingDept"
+        emit_json_tags: true
+  - engine: "postgresql"
+    queries: "domains.sql"
+    schema: "schema.sql"
+    gen:
+      go:
+        package: "repo"
+        sql_package: "pgx/v5"
+        out: "./repo"
+        stand_alone_name: "Domain"
+        emit_json_tags: true

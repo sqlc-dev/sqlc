@@ -155,6 +155,10 @@ import (
 	{{end}}
 )
 
+{{- if .StandAloneName}}
+{{template "dbCode" . }}
+{{end}}
+
 {{template "queryCode" . }}
 {{end}}
 

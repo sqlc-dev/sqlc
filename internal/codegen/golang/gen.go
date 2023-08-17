@@ -38,6 +38,7 @@ type tmplCtx struct {
 	EmitAllEnumValues         bool
 	UsesCopyFrom              bool
 	UsesBatch                 bool
+	StandAloneName            string
 }
 
 func (t *tmplCtx) OutputQuery(sourceName string) bool {
@@ -135,6 +136,7 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 		EmitMethodsWithDBArgument: golang.EmitMethodsWithDbArgument,
 		EmitEnumValidMethod:       golang.EmitEnumValidMethod,
 		EmitAllEnumValues:         golang.EmitAllEnumValues,
+		StandAloneName:            golang.StandAloneName,
 		UsesCopyFrom:              usesCopyFrom(queries),
 		UsesBatch:                 usesBatch(queries),
 		SQLDriver:                 parseDriver(golang.SqlPackage),
@@ -236,9 +238,10 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 	if golang.OutputBatchFileName != "" {
 		batchFileName = golang.OutputBatchFileName
 	}
-
-	if err := execute(dbFileName, "dbFile"); err != nil {
-		return nil, err
+	if golang.StandAloneName == "" {
+		if err := execute(dbFileName, "dbFile"); err != nil {
+			return nil, err
+		}
 	}
 	if err := execute(modelsFileName, "modelsFile"); err != nil {
 		return nil, err
