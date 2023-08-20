@@ -83,11 +83,12 @@ func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 
 	case *ast.InsertStmt:
 		reset = true
+		rvs := *p.rvs
 		if n.Relation != nil {
-			*p.rvs = append(*p.rvs, n.Relation)
+			rvs = append(rvs, n.Relation)
 		}
 		if s, ok := n.SelectStmt.(*ast.SelectStmt); ok {
-			*p.rvs = append(*p.rvs, toTables(s.FromClause)...)
+			rvs = append(rvs, toTables(s.FromClause)...)
 			for i, item := range s.TargetList.Items {
 				target, ok := item.(*ast.ResTarget)
 				if !ok {
@@ -101,7 +102,7 @@ func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 					*p.errs = append(*p.errs, fmt.Errorf("INSERT has more expressions than target columns"))
 					return p
 				}
-				*p.refs = append(*p.refs, paramRef{parent: n.Cols.Items[i], ref: ref, rv: n.Relation, rvs: *p.rvs})
+				*p.refs = append(*p.refs, paramRef{parent: n.Cols.Items[i], ref: ref, rv: n.Relation, rvs: rvs})
 				p.seen[ref.Location] = struct{}{}
 			}
 			for _, item := range s.ValuesLists.Items {
@@ -118,7 +119,7 @@ func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 						*p.errs = append(*p.errs, fmt.Errorf("INSERT has more expressions than target columns"))
 						return p
 					}
-					*p.refs = append(*p.refs, paramRef{parent: n.Cols.Items[i], ref: ref, rv: n.Relation, rvs: *p.rvs})
+					*p.refs = append(*p.refs, paramRef{parent: n.Cols.Items[i], ref: ref, rv: n.Relation, rvs: rvs})
 					p.seen[ref.Location] = struct{}{}
 				}
 			}
@@ -126,8 +127,8 @@ func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 
 	case *ast.UpdateStmt:
 		reset = true
-		*p.rvs = append(*p.rvs, toTables(n.FromClause)...)
-		*p.rvs = append(*p.rvs, toTables(n.Relations)...)
+		rvs := append(*p.rvs, toTables(n.FromClause)...)
+		rvs = append(rvs, toTables(n.Relations)...)
 		for _, item := range n.TargetList.Items {
 			target, ok := item.(*ast.ResTarget)
 			if !ok {
@@ -142,7 +143,7 @@ func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 				if !ok {
 					continue
 				}
-				*p.refs = append(*p.refs, paramRef{parent: target, ref: ref, rv: rv, rvs: *p.rvs})
+				*p.refs = append(*p.refs, paramRef{parent: target, ref: ref, rv: rv, rvs: rvs})
 			}
 			p.seen[ref.Location] = struct{}{}
 		}

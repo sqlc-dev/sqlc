@@ -256,12 +256,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, args []paramRef, para
 				}
 
 				var found int
-				seenTable := make(map[string]bool, len(search))
 				for _, table := range search {
-					if seenTable[table.Name] {
-						continue
-					}
-					seenTable[table.Name] = true
 					schema := table.Schema
 					if schema == "" {
 						schema = c.DefaultSchema
@@ -617,12 +612,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, args []paramRef, para
 					}
 				}
 
-				seenTables := make(map[string]bool, len(search))
 				for _, table := range search {
-					if seenTables[table.Name] {
-						continue
-					}
-					seenTables[table.Name] = true
 					schema := table.Schema
 					if schema == "" {
 						schema = c.DefaultSchema
