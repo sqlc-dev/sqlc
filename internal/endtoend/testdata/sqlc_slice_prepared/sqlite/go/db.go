@@ -89,5 +89,5 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 
 type AdditionalQuery struct {
 	SQL  string
-	Args []any
+	Args []interface{}
 }

@@ -34,5 +34,5 @@ func (q *Queries) WithTx(tx pgx.Tx) *Queries {
 
 type AdditionalQuery struct {
 	SQL  string
-	Args []any
+	Args []interface{}
 }

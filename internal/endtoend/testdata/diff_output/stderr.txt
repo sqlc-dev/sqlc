@@ -7,7 +7,7 @@
 +
 +type AdditionalQuery struct {
 +	SQL  string
-+	Args []any
++	Args []interface{}
 +}
 --- a/go/models.go
 +++ b/go/models.go

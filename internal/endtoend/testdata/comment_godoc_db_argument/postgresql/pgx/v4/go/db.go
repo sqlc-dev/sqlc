@@ -26,5 +26,5 @@ type Queries struct {
 
 type AdditionalQuery struct {
 	SQL  string
-	Args []any
+	Args []interface{}
 }
