@@ -27,8 +27,16 @@ type CTERecursiveRow struct {
 	ParentID pgtype.Int4
 }
 
-func (q *Queries) CTERecursive(ctx context.Context, id int32) ([]CTERecursiveRow, error) {
-	rows, err := q.db.Query(ctx, cTERecursive, id)
+func (q *Queries) CTERecursive(ctx context.Context, id int32, aq ...AdditionalQuery) ([]CTERecursiveRow, error) {
+	query := cTERecursive
+	queryParams := []interface{}{id}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

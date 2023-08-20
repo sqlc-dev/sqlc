@@ -13,8 +13,16 @@ const listPaths = `-- name: ListPaths :many
 SELECT point_one, point_two FROM foo.paths
 `
 
-func (q *Queries) ListPaths(ctx context.Context) ([]FooPath, error) {
-	rows, err := q.db.Query(ctx, listPaths)
+func (q *Queries) ListPaths(ctx context.Context, aq ...AdditionalQuery) ([]FooPath, error) {
+	query := listPaths
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

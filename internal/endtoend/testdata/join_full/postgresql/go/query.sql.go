@@ -23,8 +23,16 @@ type FullJoinRow struct {
 	ID_2  sql.NullInt32
 }
 
-func (q *Queries) FullJoin(ctx context.Context, id int32) ([]FullJoinRow, error) {
-	rows, err := q.db.QueryContext(ctx, fullJoin, id)
+func (q *Queries) FullJoin(ctx context.Context, id int32, aq ...AdditionalQuery) ([]FullJoinRow, error) {
+	query := fullJoin
+	queryParams := []interface{}{id}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

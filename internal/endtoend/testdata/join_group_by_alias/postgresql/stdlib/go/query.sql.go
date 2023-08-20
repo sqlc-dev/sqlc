@@ -15,8 +15,16 @@ FROM foo a JOIN foo b ON a.email = b.email
 GROUP BY id
 `
 
-func (q *Queries) ColumnAsGroupBy(ctx context.Context) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, columnAsGroupBy)
+func (q *Queries) ColumnAsGroupBy(ctx context.Context, aq ...AdditionalQuery) ([]string, error) {
+	query := columnAsGroupBy
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

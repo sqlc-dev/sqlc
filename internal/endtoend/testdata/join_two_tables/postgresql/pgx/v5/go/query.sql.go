@@ -16,8 +16,16 @@ JOIN bar ON bar.id = bar_id
 JOIN baz ON baz.id = baz_id
 `
 
-func (q *Queries) TwoJoins(ctx context.Context) ([]Foo, error) {
-	rows, err := q.db.Query(ctx, twoJoins)
+func (q *Queries) TwoJoins(ctx context.Context, aq ...AdditionalQuery) ([]Foo, error) {
+	query := twoJoins
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

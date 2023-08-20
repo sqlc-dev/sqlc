@@ -15,8 +15,16 @@ SELECT a FROM foo
 LIMIT $1
 `
 
-func (q *Queries) FooLimit(ctx context.Context, limit int32) ([]sql.NullString, error) {
-	rows, err := q.db.Query(ctx, fooLimit, limit)
+func (q *Queries) FooLimit(ctx context.Context, limit int32, aq ...AdditionalQuery) ([]sql.NullString, error) {
+	query := fooLimit
+	queryParams := []interface{}{limit}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -45,8 +53,16 @@ type FooLimitOffsetParams struct {
 	Offset int32
 }
 
-func (q *Queries) FooLimitOffset(ctx context.Context, arg FooLimitOffsetParams) ([]sql.NullString, error) {
-	rows, err := q.db.Query(ctx, fooLimitOffset, arg.Limit, arg.Offset)
+func (q *Queries) FooLimitOffset(ctx context.Context, arg FooLimitOffsetParams, aq ...AdditionalQuery) ([]sql.NullString, error) {
+	query := fooLimitOffset
+	queryParams := []interface{}{arg.Limit, arg.Offset}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

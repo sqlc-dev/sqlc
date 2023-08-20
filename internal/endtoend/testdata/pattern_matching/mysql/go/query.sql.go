@@ -14,8 +14,16 @@ const petsByName = `-- name: PetsByName :many
 SELECT name FROM pet WHERE name LIKE ?
 `
 
-func (q *Queries) PetsByName(ctx context.Context, name sql.NullString) ([]sql.NullString, error) {
-	rows, err := q.db.QueryContext(ctx, petsByName, name)
+func (q *Queries) PetsByName(ctx context.Context, name sql.NullString, aq ...AdditionalQuery) ([]sql.NullString, error) {
+	query := petsByName
+	queryParams := []interface{}{name}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

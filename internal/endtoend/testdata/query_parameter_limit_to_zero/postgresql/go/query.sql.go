@@ -25,8 +25,16 @@ type CreateAuthorParams struct {
 	CountryCode string
 }
 
-func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams) (Author, error) {
-	row := q.db.QueryRowContext(ctx, createAuthor, arg.Name, arg.Bio, arg.CountryCode)
+func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams, aq ...AdditionalQuery) (Author, error) {
+	query := createAuthor
+	queryParams := []interface{}{arg.Name, arg.Bio, arg.CountryCode}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var i Author
 	err := row.Scan(
 		&i.ID,
@@ -47,7 +55,10 @@ type DeleteAuthorParams struct {
 }
 
 func (q *Queries) DeleteAuthor(ctx context.Context, arg DeleteAuthorParams) error {
-	_, err := q.db.ExecContext(ctx, deleteAuthor, arg.ID)
+	query := deleteAuthor
+	queryParams := []interface{}{arg.ID}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }
 
@@ -61,8 +72,16 @@ type GetAuthorParams struct {
 	CountryCode string
 }
 
-func (q *Queries) GetAuthor(ctx context.Context, arg GetAuthorParams) (Author, error) {
-	row := q.db.QueryRowContext(ctx, getAuthor, arg.Name, arg.CountryCode)
+func (q *Queries) GetAuthor(ctx context.Context, arg GetAuthorParams, aq ...AdditionalQuery) (Author, error) {
+	query := getAuthor
+	queryParams := []interface{}{arg.Name, arg.CountryCode}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var i Author
 	err := row.Scan(
 		&i.ID,
@@ -78,8 +97,16 @@ SELECT id, name, bio, country_code FROM authors
 ORDER BY name
 `
 
-func (q *Queries) ListAuthors(ctx context.Context) ([]Author, error) {
-	rows, err := q.db.QueryContext(ctx, listAuthors)
+func (q *Queries) ListAuthors(ctx context.Context, aq ...AdditionalQuery) ([]Author, error) {
+	query := listAuthors
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

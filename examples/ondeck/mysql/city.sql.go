@@ -25,7 +25,10 @@ type CreateCityParams struct {
 }
 
 func (q *Queries) CreateCity(ctx context.Context, arg CreateCityParams) error {
-	_, err := q.exec(ctx, q.createCityStmt, createCity, arg.Name, arg.Slug)
+	query := createCity
+	queryParams := []interface{}{arg.Name, arg.Slug}
+
+	_, err := q.exec(ctx, q.createCityStmt, query, queryParams...)
 	return err
 }
 
@@ -35,8 +38,16 @@ FROM city
 WHERE slug = ?
 `
 
-func (q *Queries) GetCity(ctx context.Context, slug string) (City, error) {
-	row := q.queryRow(ctx, q.getCityStmt, getCity, slug)
+func (q *Queries) GetCity(ctx context.Context, slug string, aq ...AdditionalQuery) (City, error) {
+	query := getCity
+	queryParams := []interface{}{slug}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.queryRow(ctx, q.getCityStmt, query, queryParams...)
 	var i City
 	err := row.Scan(&i.Slug, &i.Name)
 	return i, err
@@ -48,8 +59,16 @@ FROM city
 ORDER BY name
 `
 
-func (q *Queries) ListCities(ctx context.Context) ([]City, error) {
-	rows, err := q.query(ctx, q.listCitiesStmt, listCities)
+func (q *Queries) ListCities(ctx context.Context, aq ...AdditionalQuery) ([]City, error) {
+	query := listCities
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.query(ctx, q.listCitiesStmt, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -83,6 +102,9 @@ type UpdateCityNameParams struct {
 }
 
 func (q *Queries) UpdateCityName(ctx context.Context, arg UpdateCityNameParams) error {
-	_, err := q.exec(ctx, q.updateCityNameStmt, updateCityName, arg.Name, arg.Slug)
+	query := updateCityName
+	queryParams := []interface{}{arg.Name, arg.Slug}
+
+	_, err := q.exec(ctx, q.updateCityNameStmt, query, queryParams...)
 	return err
 }

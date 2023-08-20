@@ -14,7 +14,10 @@ UPDATE foo SET bar='baz' LIMIT ?
 `
 
 func (q *Queries) LimitMe(ctx context.Context, limit int32) error {
-	_, err := q.db.ExecContext(ctx, limitMe, limit)
+	query := limitMe
+	queryParams := []interface{}{limit}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }
 
@@ -23,6 +26,9 @@ DELETE FROM foo LIMIT ?
 `
 
 func (q *Queries) LimitMeToo(ctx context.Context, limit int32) error {
-	_, err := q.db.ExecContext(ctx, limitMeToo, limit)
+	query := limitMeToo
+	queryParams := []interface{}{limit}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }

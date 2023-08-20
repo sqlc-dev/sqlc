@@ -21,8 +21,16 @@ SELECT
     )
 `
 
-func (q *Queries) BarNotExists(ctx context.Context) (interface{}, error) {
-	row := q.db.QueryRowContext(ctx, barNotExists)
+func (q *Queries) BarNotExists(ctx context.Context, aq ...AdditionalQuery) (interface{}, error) {
+	query := barNotExists
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var column_1 interface{}
 	err := row.Scan(&column_1)
 	return column_1, err

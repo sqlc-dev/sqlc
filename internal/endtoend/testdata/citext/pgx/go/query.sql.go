@@ -14,8 +14,16 @@ SELECT bar, bat
 FROM foo
 `
 
-func (q *Queries) GetCitexts(ctx context.Context) ([]Foo, error) {
-	rows, err := q.db.Query(ctx, getCitexts)
+func (q *Queries) GetCitexts(ctx context.Context, aq ...AdditionalQuery) ([]Foo, error) {
+	query := getCitexts
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

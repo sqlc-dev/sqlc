@@ -13,8 +13,16 @@ const listBar = `-- name: ListBar :many
 SELECT id_old, ip_old FROM bar_old
 `
 
-func (q *Queries) ListBar(ctx context.Context) ([]BarNew, error) {
-	rows, err := q.db.Query(ctx, listBar)
+func (q *Queries) ListBar(ctx context.Context, aq ...AdditionalQuery) ([]BarNew, error) {
+	query := listBar
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -49,8 +57,16 @@ type ListFooRow struct {
 	BazOld int32
 }
 
-func (q *Queries) ListFoo(ctx context.Context, arg ListFooParams) ([]ListFooRow, error) {
-	rows, err := q.db.Query(ctx, listFoo, arg.IpOld, arg.IDNew)
+func (q *Queries) ListFoo(ctx context.Context, arg ListFooParams, aq ...AdditionalQuery) ([]ListFooRow, error) {
+	query := listFoo
+	queryParams := []interface{}{arg.IpOld, arg.IDNew}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

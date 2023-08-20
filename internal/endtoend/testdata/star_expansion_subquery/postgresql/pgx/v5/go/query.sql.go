@@ -13,8 +13,16 @@ const starExpansionSubquery = `-- name: StarExpansionSubquery :many
 SELECT a, b FROM foo WHERE EXISTS (SELECT a, b FROM foo)
 `
 
-func (q *Queries) StarExpansionSubquery(ctx context.Context) ([]Foo, error) {
-	rows, err := q.db.Query(ctx, starExpansionSubquery)
+func (q *Queries) StarExpansionSubquery(ctx context.Context, aq ...AdditionalQuery) ([]Foo, error) {
+	query := starExpansionSubquery
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

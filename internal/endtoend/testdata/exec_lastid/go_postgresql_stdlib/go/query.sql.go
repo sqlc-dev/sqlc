@@ -14,7 +14,10 @@ INSERT INTO bar () VALUES ()
 `
 
 func (q *Queries) InsertBar(ctx context.Context) (int64, error) {
-	result, err := q.db.ExecContext(ctx, insertBar)
+	query := insertBar
+	queryParams := []interface{}{}
+
+	result, err := q.db.ExecContext(ctx, query, queryParams...)
 	if err != nil {
 		return 0, err
 	}

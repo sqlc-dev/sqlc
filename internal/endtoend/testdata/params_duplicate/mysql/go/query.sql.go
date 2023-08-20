@@ -19,8 +19,16 @@ type SelectUserByIDParams struct {
 	ID int32
 }
 
-func (q *Queries) SelectUserByID(ctx context.Context, arg SelectUserByIDParams) ([]sql.NullString, error) {
-	rows, err := q.db.QueryContext(ctx, selectUserByID, arg.ID, arg.ID)
+func (q *Queries) SelectUserByID(ctx context.Context, arg SelectUserByIDParams, aq ...AdditionalQuery) ([]sql.NullString, error) {
+	query := selectUserByID
+	queryParams := []interface{}{arg.ID, arg.ID}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -53,8 +61,16 @@ type SelectUserByNameParams struct {
 	Name sql.NullString
 }
 
-func (q *Queries) SelectUserByName(ctx context.Context, arg SelectUserByNameParams) ([]sql.NullString, error) {
-	rows, err := q.db.QueryContext(ctx, selectUserByName, arg.Name, arg.Name)
+func (q *Queries) SelectUserByName(ctx context.Context, arg SelectUserByNameParams, aq ...AdditionalQuery) ([]sql.NullString, error) {
+	query := selectUserByName
+	queryParams := []interface{}{arg.Name, arg.Name}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -86,8 +102,16 @@ type SelectUserQuestionParams struct {
 	Column2 interface{}
 }
 
-func (q *Queries) SelectUserQuestion(ctx context.Context, arg SelectUserQuestionParams) ([]sql.NullString, error) {
-	rows, err := q.db.QueryContext(ctx, selectUserQuestion, arg.ID, arg.Column2)
+func (q *Queries) SelectUserQuestion(ctx context.Context, arg SelectUserQuestionParams, aq ...AdditionalQuery) ([]sql.NullString, error) {
+	query := selectUserQuestion
+	queryParams := []interface{}{arg.ID, arg.Column2}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

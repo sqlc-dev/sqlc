@@ -13,8 +13,16 @@ const multiFrom = `-- name: MultiFrom :many
 SELECT email FROM bar, foo WHERE login = ?
 `
 
-func (q *Queries) MultiFrom(ctx context.Context, login string) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, multiFrom, login)
+func (q *Queries) MultiFrom(ctx context.Context, login string, aq ...AdditionalQuery) ([]string, error) {
+	query := multiFrom
+	queryParams := []interface{}{login}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

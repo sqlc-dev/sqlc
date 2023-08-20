@@ -13,8 +13,16 @@ const countStarLower = `-- name: CountStarLower :one
 SELECT count(*) FROM bar
 `
 
-func (q *Queries) CountStarLower(ctx context.Context) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countStarLower)
+func (q *Queries) CountStarLower(ctx context.Context, aq ...AdditionalQuery) (int64, error) {
+	query := countStarLower
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -24,8 +32,16 @@ const countStarUpper = `-- name: CountStarUpper :one
 SELECT COUNT(*) FROM bar
 `
 
-func (q *Queries) CountStarUpper(ctx context.Context) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countStarUpper)
+func (q *Queries) CountStarUpper(ctx context.Context, aq ...AdditionalQuery) (int64, error) {
+	query := countStarUpper
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var count int64
 	err := row.Scan(&count)
 	return count, err

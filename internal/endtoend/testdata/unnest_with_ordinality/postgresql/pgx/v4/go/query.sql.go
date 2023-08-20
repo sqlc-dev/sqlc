@@ -20,8 +20,16 @@ type GetValuesRow struct {
 	Value string
 }
 
-func (q *Queries) GetValues(ctx context.Context) ([]GetValuesRow, error) {
-	rows, err := q.db.Query(ctx, getValues)
+func (q *Queries) GetValues(ctx context.Context, aq ...AdditionalQuery) ([]GetValuesRow, error) {
+	query := getValues
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

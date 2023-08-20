@@ -20,7 +20,10 @@ type DeleteUsersByNameParams struct {
 }
 
 func (q *Queries) DeleteUsersByName(ctx context.Context, arg DeleteUsersByNameParams) (int64, error) {
-	result, err := q.exec(ctx, q.deleteUsersByNameStmt, deleteUsersByName, arg.FirstName, arg.LastName)
+	query := deleteUsersByName
+	queryParams := []interface{}{arg.FirstName, arg.LastName}
+
+	result, err := q.exec(ctx, q.deleteUsersByNameStmt, query, queryParams...)
 	if err != nil {
 		return 0, err
 	}
@@ -37,8 +40,16 @@ type GetUserByIDRow struct {
 	LastName  sql.NullString
 }
 
-func (q *Queries) GetUserByID(ctx context.Context, targetID uint64) (GetUserByIDRow, error) {
-	row := q.queryRow(ctx, q.getUserByIDStmt, getUserByID, targetID)
+func (q *Queries) GetUserByID(ctx context.Context, targetID uint64, aq ...AdditionalQuery) (GetUserByIDRow, error) {
+	query := getUserByID
+	queryParams := []interface{}{targetID}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.queryRow(ctx, q.getUserByIDStmt, query, queryParams...)
 	var i GetUserByIDRow
 	err := row.Scan(&i.FirstName, &i.ID, &i.LastName)
 	return i, err
@@ -54,7 +65,10 @@ type InsertNewUserParams struct {
 }
 
 func (q *Queries) InsertNewUser(ctx context.Context, arg InsertNewUserParams) error {
-	_, err := q.exec(ctx, q.insertNewUserStmt, insertNewUser, arg.FirstName, arg.LastName)
+	query := insertNewUser
+	queryParams := []interface{}{arg.FirstName, arg.LastName}
+
+	_, err := q.exec(ctx, q.insertNewUserStmt, query, queryParams...)
 	return err
 }
 
@@ -68,7 +82,10 @@ type InsertNewUserWithResultParams struct {
 }
 
 func (q *Queries) InsertNewUserWithResult(ctx context.Context, arg InsertNewUserWithResultParams) (sql.Result, error) {
-	return q.exec(ctx, q.insertNewUserWithResultStmt, insertNewUserWithResult, arg.FirstName, arg.LastName)
+	query := insertNewUserWithResult
+	queryParams := []interface{}{arg.FirstName, arg.LastName}
+
+	return q.exec(ctx, q.insertNewUserWithResultStmt, query, queryParams...)
 }
 
 const listUsers = `-- name: ListUsers :many
@@ -80,8 +97,16 @@ type ListUsersRow struct {
 	LastName  sql.NullString
 }
 
-func (q *Queries) ListUsers(ctx context.Context) ([]ListUsersRow, error) {
-	rows, err := q.query(ctx, q.listUsersStmt, listUsers)
+func (q *Queries) ListUsers(ctx context.Context, aq ...AdditionalQuery) ([]ListUsersRow, error) {
+	query := listUsers
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.query(ctx, q.listUsersStmt, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

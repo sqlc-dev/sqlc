@@ -14,7 +14,10 @@ DELETE FROM bar WHERE id = $1
 `
 
 func (q *Queries) DeleteBarByID(ctx context.Context, id int32) (int64, error) {
-	result, err := q.db.ExecContext(ctx, deleteBarByID, id)
+	query := deleteBarByID
+	queryParams := []interface{}{id}
+
+	result, err := q.db.ExecContext(ctx, query, queryParams...)
 	if err != nil {
 		return 0, err
 	}

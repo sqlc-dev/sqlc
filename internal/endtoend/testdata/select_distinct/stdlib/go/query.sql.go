@@ -14,8 +14,16 @@ SELECT DISTINCT ON (a.id) a.id, a.name
 FROM bar a
 `
 
-func (q *Queries) GetBars(ctx context.Context) ([]Bar, error) {
-	rows, err := q.db.QueryContext(ctx, getBars)
+func (q *Queries) GetBars(ctx context.Context, aq ...AdditionalQuery) ([]Bar, error) {
+	query := getBars
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

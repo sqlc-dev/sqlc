@@ -13,8 +13,16 @@ const user = `-- name: User :many
 SELECT "user".id FROM "user"
 `
 
-func (q *Queries) User(ctx context.Context) ([]int64, error) {
-	rows, err := q.db.QueryContext(ctx, user)
+func (q *Queries) User(ctx context.Context, aq ...AdditionalQuery) ([]int64, error) {
+	query := user
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

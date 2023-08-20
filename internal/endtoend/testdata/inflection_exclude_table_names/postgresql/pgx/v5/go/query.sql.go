@@ -13,8 +13,10 @@ const deleteBarByID = `-- name: DeleteBarByID :one
 DELETE FROM bars WHERE id = $1 RETURNING id, name
 `
 
-func (q *Queries) DeleteBarByID(ctx context.Context, id int32) (Bar, error) {
-	row := q.db.QueryRow(ctx, deleteBarByID, id)
+func (q *Queries) DeleteBarByID(ctx context.Context, id int32, aq ...AdditionalQuery) (Bar, error) {
+	query := deleteBarByID
+	queryParams := []interface{}{id}
+	row := q.db.QueryRow(ctx, query, queryParams...)
 	var i Bar
 	err := row.Scan(&i.ID, &i.Name)
 	return i, err
@@ -24,8 +26,10 @@ const deleteExclusionByID = `-- name: DeleteExclusionByID :one
 DELETE FROM exclusions WHERE id = $1 RETURNING id, name
 `
 
-func (q *Queries) DeleteExclusionByID(ctx context.Context, id int32) (Exclusions, error) {
-	row := q.db.QueryRow(ctx, deleteExclusionByID, id)
+func (q *Queries) DeleteExclusionByID(ctx context.Context, id int32, aq ...AdditionalQuery) (Exclusions, error) {
+	query := deleteExclusionByID
+	queryParams := []interface{}{id}
+	row := q.db.QueryRow(ctx, query, queryParams...)
 	var i Exclusions
 	err := row.Scan(&i.ID, &i.Name)
 	return i, err
@@ -35,8 +39,10 @@ const deleteMyDataByID = `-- name: DeleteMyDataByID :one
 DELETE FROM my_data WHERE id = $1 RETURNING id, name
 `
 
-func (q *Queries) DeleteMyDataByID(ctx context.Context, id int32) (MyData, error) {
-	row := q.db.QueryRow(ctx, deleteMyDataByID, id)
+func (q *Queries) DeleteMyDataByID(ctx context.Context, id int32, aq ...AdditionalQuery) (MyData, error) {
+	query := deleteMyDataByID
+	queryParams := []interface{}{id}
+	row := q.db.QueryRow(ctx, query, queryParams...)
 	var i MyData
 	err := row.Scan(&i.ID, &i.Name)
 	return i, err

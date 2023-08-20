@@ -16,8 +16,16 @@ SELECT id FROM debug
 WHERE Cbinary = ? LIMIT 1
 `
 
-func (q *Queries) SelectByCbinary(ctx context.Context, cbinary []byte) (int64, error) {
-	row := q.db.QueryRowContext(ctx, selectByCbinary, cbinary)
+func (q *Queries) SelectByCbinary(ctx context.Context, cbinary []byte, aq ...AdditionalQuery) (int64, error) {
+	query := selectByCbinary
+	queryParams := []interface{}{cbinary}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
@@ -28,8 +36,16 @@ SELECT id FROM debug
 WHERE Cbit = ? LIMIT 1
 `
 
-func (q *Queries) SelectByCbit(ctx context.Context, cbit interface{}) (int64, error) {
-	row := q.db.QueryRowContext(ctx, selectByCbit, cbit)
+func (q *Queries) SelectByCbit(ctx context.Context, cbit interface{}, aq ...AdditionalQuery) (int64, error) {
+	query := selectByCbit
+	queryParams := []interface{}{cbit}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
@@ -40,8 +56,16 @@ SELECT id FROM debug
 WHERE Cblob = ? LIMIT 1
 `
 
-func (q *Queries) SelectByCblob(ctx context.Context, cblob []byte) (int64, error) {
-	row := q.db.QueryRowContext(ctx, selectByCblob, cblob)
+func (q *Queries) SelectByCblob(ctx context.Context, cblob []byte, aq ...AdditionalQuery) (int64, error) {
+	query := selectByCblob
+	queryParams := []interface{}{cblob}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
@@ -52,8 +76,16 @@ SELECT id FROM debug
 WHERE Cbool = ? LIMIT 1
 `
 
-func (q *Queries) SelectByCbool(ctx context.Context, cbool bool) (int64, error) {
-	row := q.db.QueryRowContext(ctx, selectByCbool, cbool)
+func (q *Queries) SelectByCbool(ctx context.Context, cbool bool, aq ...AdditionalQuery) (int64, error) {
+	query := selectByCbool
+	queryParams := []interface{}{cbool}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
@@ -64,8 +96,16 @@ SELECT id FROM debug
 WHERE Cchar = ? LIMIT 1
 `
 
-func (q *Queries) SelectByCchar(ctx context.Context, cchar string) (int64, error) {
-	row := q.db.QueryRowContext(ctx, selectByCchar, cchar)
+func (q *Queries) SelectByCchar(ctx context.Context, cchar string, aq ...AdditionalQuery) (int64, error) {
+	query := selectByCchar
+	queryParams := []interface{}{cchar}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
@@ -76,8 +116,16 @@ SELECT id FROM debug
 WHERE Cdate = ? LIMIT 1
 `
 
-func (q *Queries) SelectByCdate(ctx context.Context, cdate time.Time) (int64, error) {
-	row := q.db.QueryRowContext(ctx, selectByCdate, cdate)
+func (q *Queries) SelectByCdate(ctx context.Context, cdate time.Time, aq ...AdditionalQuery) (int64, error) {
+	query := selectByCdate
+	queryParams := []interface{}{cdate}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
@@ -88,8 +136,16 @@ SELECT id FROM debug
 WHERE Cdatetime = ? LIMIT 1
 `
 
-func (q *Queries) SelectByCdatetime(ctx context.Context, cdatetime time.Time) (int64, error) {
-	row := q.db.QueryRowContext(ctx, selectByCdatetime, cdatetime)
+func (q *Queries) SelectByCdatetime(ctx context.Context, cdatetime time.Time, aq ...AdditionalQuery) (int64, error) {
+	query := selectByCdatetime
+	queryParams := []interface{}{cdatetime}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
@@ -100,8 +156,16 @@ SELECT id FROM debug
 WHERE Cdec = ? LIMIT 1
 `
 
-func (q *Queries) SelectByCdec(ctx context.Context, cdec string) (int64, error) {
-	row := q.db.QueryRowContext(ctx, selectByCdec, cdec)
+func (q *Queries) SelectByCdec(ctx context.Context, cdec string, aq ...AdditionalQuery) (int64, error) {
+	query := selectByCdec
+	queryParams := []interface{}{cdec}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
@@ -112,8 +176,16 @@ SELECT id FROM debug
 WHERE Cdecimal = ? LIMIT 1
 `
 
-func (q *Queries) SelectByCdecimal(ctx context.Context, cdecimal string) (int64, error) {
-	row := q.db.QueryRowContext(ctx, selectByCdecimal, cdecimal)
+func (q *Queries) SelectByCdecimal(ctx context.Context, cdecimal string, aq ...AdditionalQuery) (int64, error) {
+	query := selectByCdecimal
+	queryParams := []interface{}{cdecimal}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
@@ -124,8 +196,16 @@ SELECT id FROM debug
 WHERE Cdouble = ? LIMIT 1
 `
 
-func (q *Queries) SelectByCdouble(ctx context.Context, cdouble float64) (int64, error) {
-	row := q.db.QueryRowContext(ctx, selectByCdouble, cdouble)
+func (q *Queries) SelectByCdouble(ctx context.Context, cdouble float64, aq ...AdditionalQuery) (int64, error) {
+	query := selectByCdouble
+	queryParams := []interface{}{cdouble}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
@@ -136,8 +216,16 @@ SELECT id FROM debug
 WHERE Cdoubleprecision = ? LIMIT 1
 `
 
-func (q *Queries) SelectByCdoubleprecision(ctx context.Context, cdoubleprecision float64) (int64, error) {
-	row := q.db.QueryRowContext(ctx, selectByCdoubleprecision, cdoubleprecision)
+func (q *Queries) SelectByCdoubleprecision(ctx context.Context, cdoubleprecision float64, aq ...AdditionalQuery) (int64, error) {
+	query := selectByCdoubleprecision
+	queryParams := []interface{}{cdoubleprecision}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
@@ -148,8 +236,16 @@ SELECT id FROM debug
 WHERE Cenum = ? LIMIT 1
 `
 
-func (q *Queries) SelectByCenum(ctx context.Context, cenum NullDebugCenum) (int64, error) {
-	row := q.db.QueryRowContext(ctx, selectByCenum, cenum)
+func (q *Queries) SelectByCenum(ctx context.Context, cenum NullDebugCenum, aq ...AdditionalQuery) (int64, error) {
+	query := selectByCenum
+	queryParams := []interface{}{cenum}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
@@ -160,8 +256,16 @@ SELECT id FROM debug
 WHERE Cfixed = ? LIMIT 1
 `
 
-func (q *Queries) SelectByCfixed(ctx context.Context, cfixed string) (int64, error) {
-	row := q.db.QueryRowContext(ctx, selectByCfixed, cfixed)
+func (q *Queries) SelectByCfixed(ctx context.Context, cfixed string, aq ...AdditionalQuery) (int64, error) {
+	query := selectByCfixed
+	queryParams := []interface{}{cfixed}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
@@ -172,8 +276,16 @@ SELECT id FROM debug
 WHERE Cfloat = ? LIMIT 1
 `
 
-func (q *Queries) SelectByCfloat(ctx context.Context, cfloat float64) (int64, error) {
-	row := q.db.QueryRowContext(ctx, selectByCfloat, cfloat)
+func (q *Queries) SelectByCfloat(ctx context.Context, cfloat float64, aq ...AdditionalQuery) (int64, error) {
+	query := selectByCfloat
+	queryParams := []interface{}{cfloat}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
@@ -184,8 +296,16 @@ SELECT id FROM debug
 WHERE Cint = ? LIMIT 1
 `
 
-func (q *Queries) SelectByCint(ctx context.Context, cint int32) (int64, error) {
-	row := q.db.QueryRowContext(ctx, selectByCint, cint)
+func (q *Queries) SelectByCint(ctx context.Context, cint int32, aq ...AdditionalQuery) (int64, error) {
+	query := selectByCint
+	queryParams := []interface{}{cint}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
@@ -196,8 +316,16 @@ SELECT id FROM debug
 WHERE Cinteger = ? LIMIT 1
 `
 
-func (q *Queries) SelectByCinteger(ctx context.Context, cinteger int32) (int64, error) {
-	row := q.db.QueryRowContext(ctx, selectByCinteger, cinteger)
+func (q *Queries) SelectByCinteger(ctx context.Context, cinteger int32, aq ...AdditionalQuery) (int64, error) {
+	query := selectByCinteger
+	queryParams := []interface{}{cinteger}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
@@ -208,8 +336,16 @@ SELECT id FROM debug
 WHERE Cjson = ? LIMIT 1
 `
 
-func (q *Queries) SelectByCjson(ctx context.Context, cjson json.RawMessage) (int64, error) {
-	row := q.db.QueryRowContext(ctx, selectByCjson, cjson)
+func (q *Queries) SelectByCjson(ctx context.Context, cjson json.RawMessage, aq ...AdditionalQuery) (int64, error) {
+	query := selectByCjson
+	queryParams := []interface{}{cjson}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
@@ -220,8 +356,16 @@ SELECT id FROM debug
 WHERE Clongblob = ? LIMIT 1
 `
 
-func (q *Queries) SelectByClongblob(ctx context.Context, clongblob []byte) (int64, error) {
-	row := q.db.QueryRowContext(ctx, selectByClongblob, clongblob)
+func (q *Queries) SelectByClongblob(ctx context.Context, clongblob []byte, aq ...AdditionalQuery) (int64, error) {
+	query := selectByClongblob
+	queryParams := []interface{}{clongblob}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
@@ -232,8 +376,16 @@ SELECT id FROM debug
 WHERE Clongtext = ? LIMIT 1
 `
 
-func (q *Queries) SelectByClongtext(ctx context.Context, clongtext string) (int64, error) {
-	row := q.db.QueryRowContext(ctx, selectByClongtext, clongtext)
+func (q *Queries) SelectByClongtext(ctx context.Context, clongtext string, aq ...AdditionalQuery) (int64, error) {
+	query := selectByClongtext
+	queryParams := []interface{}{clongtext}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
@@ -244,8 +396,16 @@ SELECT id FROM debug
 WHERE Cmediumblob = ? LIMIT 1
 `
 
-func (q *Queries) SelectByCmediumblob(ctx context.Context, cmediumblob []byte) (int64, error) {
-	row := q.db.QueryRowContext(ctx, selectByCmediumblob, cmediumblob)
+func (q *Queries) SelectByCmediumblob(ctx context.Context, cmediumblob []byte, aq ...AdditionalQuery) (int64, error) {
+	query := selectByCmediumblob
+	queryParams := []interface{}{cmediumblob}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
@@ -256,8 +416,16 @@ SELECT id FROM debug
 WHERE Cmediumint = ? LIMIT 1
 `
 
-func (q *Queries) SelectByCmediumint(ctx context.Context, cmediumint int32) (int64, error) {
-	row := q.db.QueryRowContext(ctx, selectByCmediumint, cmediumint)
+func (q *Queries) SelectByCmediumint(ctx context.Context, cmediumint int32, aq ...AdditionalQuery) (int64, error) {
+	query := selectByCmediumint
+	queryParams := []interface{}{cmediumint}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
@@ -268,8 +436,16 @@ SELECT id FROM debug
 WHERE Cmediumtext = ? LIMIT 1
 `
 
-func (q *Queries) SelectByCmediumtext(ctx context.Context, cmediumtext string) (int64, error) {
-	row := q.db.QueryRowContext(ctx, selectByCmediumtext, cmediumtext)
+func (q *Queries) SelectByCmediumtext(ctx context.Context, cmediumtext string, aq ...AdditionalQuery) (int64, error) {
+	query := selectByCmediumtext
+	queryParams := []interface{}{cmediumtext}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
@@ -280,8 +456,16 @@ SELECT id FROM debug
 WHERE Cnumeric = ? LIMIT 1
 `
 
-func (q *Queries) SelectByCnumeric(ctx context.Context, cnumeric string) (int64, error) {
-	row := q.db.QueryRowContext(ctx, selectByCnumeric, cnumeric)
+func (q *Queries) SelectByCnumeric(ctx context.Context, cnumeric string, aq ...AdditionalQuery) (int64, error) {
+	query := selectByCnumeric
+	queryParams := []interface{}{cnumeric}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
@@ -292,8 +476,16 @@ SELECT id FROM debug
 WHERE Creal = ? LIMIT 1
 `
 
-func (q *Queries) SelectByCreal(ctx context.Context, creal float64) (int64, error) {
-	row := q.db.QueryRowContext(ctx, selectByCreal, creal)
+func (q *Queries) SelectByCreal(ctx context.Context, creal float64, aq ...AdditionalQuery) (int64, error) {
+	query := selectByCreal
+	queryParams := []interface{}{creal}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
@@ -304,8 +496,16 @@ SELECT id FROM debug
 WHERE Cset = ? LIMIT 1
 `
 
-func (q *Queries) SelectByCset(ctx context.Context, cset DebugCset) (int64, error) {
-	row := q.db.QueryRowContext(ctx, selectByCset, cset)
+func (q *Queries) SelectByCset(ctx context.Context, cset DebugCset, aq ...AdditionalQuery) (int64, error) {
+	query := selectByCset
+	queryParams := []interface{}{cset}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
@@ -316,8 +516,16 @@ SELECT id FROM debug
 WHERE Csmallint = ? LIMIT 1
 `
 
-func (q *Queries) SelectByCsmallint(ctx context.Context, csmallint int32) (int64, error) {
-	row := q.db.QueryRowContext(ctx, selectByCsmallint, csmallint)
+func (q *Queries) SelectByCsmallint(ctx context.Context, csmallint int32, aq ...AdditionalQuery) (int64, error) {
+	query := selectByCsmallint
+	queryParams := []interface{}{csmallint}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
@@ -328,8 +536,16 @@ SELECT id FROM debug
 WHERE Ctext = ? LIMIT 1
 `
 
-func (q *Queries) SelectByCtext(ctx context.Context, ctext string) (int64, error) {
-	row := q.db.QueryRowContext(ctx, selectByCtext, ctext)
+func (q *Queries) SelectByCtext(ctx context.Context, ctext string, aq ...AdditionalQuery) (int64, error) {
+	query := selectByCtext
+	queryParams := []interface{}{ctext}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
@@ -340,8 +556,16 @@ SELECT id FROM debug
 WHERE Ctime = ? LIMIT 1
 `
 
-func (q *Queries) SelectByCtime(ctx context.Context, ctime time.Time) (int64, error) {
-	row := q.db.QueryRowContext(ctx, selectByCtime, ctime)
+func (q *Queries) SelectByCtime(ctx context.Context, ctime time.Time, aq ...AdditionalQuery) (int64, error) {
+	query := selectByCtime
+	queryParams := []interface{}{ctime}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
@@ -352,8 +576,16 @@ SELECT id FROM debug
 WHERE Ctimestamp = ? LIMIT 1
 `
 
-func (q *Queries) SelectByCtimestamp(ctx context.Context, ctimestamp time.Time) (int64, error) {
-	row := q.db.QueryRowContext(ctx, selectByCtimestamp, ctimestamp)
+func (q *Queries) SelectByCtimestamp(ctx context.Context, ctimestamp time.Time, aq ...AdditionalQuery) (int64, error) {
+	query := selectByCtimestamp
+	queryParams := []interface{}{ctimestamp}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
@@ -364,8 +596,16 @@ SELECT id FROM debug
 WHERE Ctinyblob = ? LIMIT 1
 `
 
-func (q *Queries) SelectByCtinyblob(ctx context.Context, ctinyblob []byte) (int64, error) {
-	row := q.db.QueryRowContext(ctx, selectByCtinyblob, ctinyblob)
+func (q *Queries) SelectByCtinyblob(ctx context.Context, ctinyblob []byte, aq ...AdditionalQuery) (int64, error) {
+	query := selectByCtinyblob
+	queryParams := []interface{}{ctinyblob}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
@@ -376,8 +616,16 @@ SELECT id FROM debug
 WHERE Ctinyint = ? LIMIT 1
 `
 
-func (q *Queries) SelectByCtinyint(ctx context.Context, ctinyint int32) (int64, error) {
-	row := q.db.QueryRowContext(ctx, selectByCtinyint, ctinyint)
+func (q *Queries) SelectByCtinyint(ctx context.Context, ctinyint int32, aq ...AdditionalQuery) (int64, error) {
+	query := selectByCtinyint
+	queryParams := []interface{}{ctinyint}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
@@ -388,8 +636,16 @@ SELECT id FROM debug
 WHERE Ctinytext = ? LIMIT 1
 `
 
-func (q *Queries) SelectByCtinytext(ctx context.Context, ctinytext string) (int64, error) {
-	row := q.db.QueryRowContext(ctx, selectByCtinytext, ctinytext)
+func (q *Queries) SelectByCtinytext(ctx context.Context, ctinytext string, aq ...AdditionalQuery) (int64, error) {
+	query := selectByCtinytext
+	queryParams := []interface{}{ctinytext}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
@@ -400,8 +656,16 @@ SELECT id FROM debug
 WHERE Cvarbinary = ? LIMIT 1
 `
 
-func (q *Queries) SelectByCvarbinary(ctx context.Context, cvarbinary []byte) (int64, error) {
-	row := q.db.QueryRowContext(ctx, selectByCvarbinary, cvarbinary)
+func (q *Queries) SelectByCvarbinary(ctx context.Context, cvarbinary []byte, aq ...AdditionalQuery) (int64, error) {
+	query := selectByCvarbinary
+	queryParams := []interface{}{cvarbinary}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
@@ -412,8 +676,16 @@ SELECT id FROM debug
 WHERE Cvarchar = ? LIMIT 1
 `
 
-func (q *Queries) SelectByCvarchar(ctx context.Context, cvarchar string) (int64, error) {
-	row := q.db.QueryRowContext(ctx, selectByCvarchar, cvarchar)
+func (q *Queries) SelectByCvarchar(ctx context.Context, cvarchar string, aq ...AdditionalQuery) (int64, error) {
+	query := selectByCvarchar
+	queryParams := []interface{}{cvarchar}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
@@ -424,8 +696,16 @@ SELECT id FROM debug
 WHERE Cyear = ? LIMIT 1
 `
 
-func (q *Queries) SelectByCyear(ctx context.Context, cyear int32) (int64, error) {
-	row := q.db.QueryRowContext(ctx, selectByCyear, cyear)
+func (q *Queries) SelectByCyear(ctx context.Context, cyear int32, aq ...AdditionalQuery) (int64, error) {
+	query := selectByCyear
+	queryParams := []interface{}{cyear}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
@@ -436,8 +716,16 @@ SELECT id FROM debug
 WHERE id = ? LIMIT 1
 `
 
-func (q *Queries) SelectById(ctx context.Context, id int64) (int64, error) {
-	row := q.db.QueryRowContext(ctx, selectById, id)
+func (q *Queries) SelectById(ctx context.Context, id int64, aq ...AdditionalQuery) (int64, error) {
+	query := selectById
+	queryParams := []interface{}{id}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	err := row.Scan(&id)
 	return id, err
 }

@@ -16,8 +16,16 @@ SELECT coalesce(baz, 0) as login
 FROM foo
 `
 
-func (q *Queries) CoalesceNumeric(ctx context.Context) ([]int64, error) {
-	rows, err := q.db.Query(ctx, coalesceNumeric)
+func (q *Queries) CoalesceNumeric(ctx context.Context, aq ...AdditionalQuery) ([]int64, error) {
+	query := coalesceNumeric
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -47,8 +55,16 @@ type CoalesceNumericColumnsRow struct {
 	Baz_2 int64
 }
 
-func (q *Queries) CoalesceNumericColumns(ctx context.Context) ([]CoalesceNumericColumnsRow, error) {
-	rows, err := q.db.Query(ctx, coalesceNumericColumns)
+func (q *Queries) CoalesceNumericColumns(ctx context.Context, aq ...AdditionalQuery) ([]CoalesceNumericColumnsRow, error) {
+	query := coalesceNumericColumns
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -77,8 +93,16 @@ type CoalesceNumericNullRow struct {
 	Baz_2 pgtype.Int8
 }
 
-func (q *Queries) CoalesceNumericNull(ctx context.Context) ([]CoalesceNumericNullRow, error) {
-	rows, err := q.db.Query(ctx, coalesceNumericNull)
+func (q *Queries) CoalesceNumericNull(ctx context.Context, aq ...AdditionalQuery) ([]CoalesceNumericNullRow, error) {
+	query := coalesceNumericNull
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -102,8 +126,16 @@ SELECT coalesce(bar, '') as login
 FROM foo
 `
 
-func (q *Queries) CoalesceString(ctx context.Context) ([]string, error) {
-	rows, err := q.db.Query(ctx, coalesceString)
+func (q *Queries) CoalesceString(ctx context.Context, aq ...AdditionalQuery) ([]string, error) {
+	query := coalesceString
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -133,8 +165,16 @@ type CoalesceStringColumnsRow struct {
 	Bar_2 string
 }
 
-func (q *Queries) CoalesceStringColumns(ctx context.Context) ([]CoalesceStringColumnsRow, error) {
-	rows, err := q.db.Query(ctx, coalesceStringColumns)
+func (q *Queries) CoalesceStringColumns(ctx context.Context, aq ...AdditionalQuery) ([]CoalesceStringColumnsRow, error) {
+	query := coalesceStringColumns
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -163,8 +203,16 @@ type CoalesceStringNullRow struct {
 	Bar_2 pgtype.Text
 }
 
-func (q *Queries) CoalesceStringNull(ctx context.Context) ([]CoalesceStringNullRow, error) {
-	rows, err := q.db.Query(ctx, coalesceStringNull)
+func (q *Queries) CoalesceStringNull(ctx context.Context, aq ...AdditionalQuery) ([]CoalesceStringNullRow, error) {
+	query := coalesceStringNull
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

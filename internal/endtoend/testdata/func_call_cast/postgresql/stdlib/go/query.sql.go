@@ -15,8 +15,16 @@ const demo = `-- name: Demo :one
 SELECT uuid_generate_v5('7c4597a0-8cfa-4c19-8da0-b8474a36440d', $1)::uuid as col1
 `
 
-func (q *Queries) Demo(ctx context.Context, uuidGenerateV5 interface{}) (uuid.UUID, error) {
-	row := q.db.QueryRowContext(ctx, demo, uuidGenerateV5)
+func (q *Queries) Demo(ctx context.Context, uuidGenerateV5 interface{}, aq ...AdditionalQuery) (uuid.UUID, error) {
+	query := demo
+	queryParams := []interface{}{uuidGenerateV5}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var col1 uuid.UUID
 	err := row.Scan(&col1)
 	return col1, err

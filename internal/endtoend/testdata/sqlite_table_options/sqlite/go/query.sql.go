@@ -14,8 +14,16 @@ SELECT id, name, bio FROM authors1
 WHERE id = ?1 LIMIT 1
 `
 
-func (q *Queries) GetAuthor(ctx context.Context, id int64) (Authors1, error) {
-	row := q.db.QueryRowContext(ctx, getAuthor, id)
+func (q *Queries) GetAuthor(ctx context.Context, id int64, aq ...AdditionalQuery) (Authors1, error) {
+	query := getAuthor
+	queryParams := []interface{}{id}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var i Authors1
 	err := row.Scan(&i.ID, &i.Name, &i.Bio)
 	return i, err

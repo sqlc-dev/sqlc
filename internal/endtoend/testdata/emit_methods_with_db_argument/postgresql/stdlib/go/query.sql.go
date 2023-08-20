@@ -13,8 +13,16 @@ const getAll = `-- name: GetAll :many
 SELECT id, first_name, last_name, age FROM users
 `
 
-func (q *Queries) GetAll(ctx context.Context, db DBTX) ([]User, error) {
-	rows, err := db.QueryContext(ctx, getAll)
+func (q *Queries) GetAll(ctx context.Context, db DBTX, aq ...AdditionalQuery) ([]User, error) {
+	query := getAll
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

@@ -14,7 +14,10 @@ DELETE FROM foo LIMIT ?
 `
 
 func (q *Queries) DeleteLimit(ctx context.Context, limit int64) error {
-	_, err := q.db.ExecContext(ctx, deleteLimit, limit)
+	query := deleteLimit
+	queryParams := []interface{}{limit}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }
 
@@ -22,8 +25,16 @@ const limitMe = `-- name: LimitMe :many
 SELECT bar FROM foo LIMIT ?
 `
 
-func (q *Queries) LimitMe(ctx context.Context, limit int64) ([]bool, error) {
-	rows, err := q.db.QueryContext(ctx, limitMe, limit)
+func (q *Queries) LimitMe(ctx context.Context, limit int64, aq ...AdditionalQuery) ([]bool, error) {
+	query := limitMe
+	queryParams := []interface{}{limit}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -50,6 +61,9 @@ UPDATE foo SET bar='baz' LIMIT ?
 `
 
 func (q *Queries) UpdateLimit(ctx context.Context, limit int64) error {
-	_, err := q.db.ExecContext(ctx, updateLimit, limit)
+	query := updateLimit
+	queryParams := []interface{}{limit}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }

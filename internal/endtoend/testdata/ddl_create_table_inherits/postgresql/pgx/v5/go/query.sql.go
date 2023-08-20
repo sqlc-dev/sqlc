@@ -13,8 +13,16 @@ const getAllOrganisations = `-- name: GetAllOrganisations :many
 SELECT party_id, name, legal_name FROM organisation
 `
 
-func (q *Queries) GetAllOrganisations(ctx context.Context) ([]Organisation, error) {
-	rows, err := q.db.Query(ctx, getAllOrganisations)
+func (q *Queries) GetAllOrganisations(ctx context.Context, aq ...AdditionalQuery) ([]Organisation, error) {
+	query := getAllOrganisations
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -37,8 +45,16 @@ const getAllParties = `-- name: GetAllParties :many
 SELECT party_id, name FROM party
 `
 
-func (q *Queries) GetAllParties(ctx context.Context) ([]Party, error) {
-	rows, err := q.db.Query(ctx, getAllParties)
+func (q *Queries) GetAllParties(ctx context.Context, aq ...AdditionalQuery) ([]Party, error) {
+	query := getAllParties
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -61,8 +77,16 @@ const getAllPeople = `-- name: GetAllPeople :many
 SELECT party_id, name, first_name, last_name FROM person
 `
 
-func (q *Queries) GetAllPeople(ctx context.Context) ([]Person, error) {
-	rows, err := q.db.Query(ctx, getAllPeople)
+func (q *Queries) GetAllPeople(ctx context.Context, aq ...AdditionalQuery) ([]Person, error) {
+	query := getAllPeople
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

@@ -13,8 +13,16 @@ const getFirst = `-- name: GetFirst :many
 SELECT val FROM first_view
 `
 
-func (q *Queries) GetFirst(ctx context.Context) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, getFirst)
+func (q *Queries) GetFirst(ctx context.Context, aq ...AdditionalQuery) ([]string, error) {
+	query := getFirst
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -40,8 +48,16 @@ const getSecond = `-- name: GetSecond :many
 SELECT val, val2 FROM second_view WHERE val2 = $1
 `
 
-func (q *Queries) GetSecond(ctx context.Context) ([]SecondView, error) {
-	rows, err := q.db.QueryContext(ctx, getSecond)
+func (q *Queries) GetSecond(ctx context.Context, aq ...AdditionalQuery) ([]SecondView, error) {
+	query := getSecond
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

@@ -35,12 +35,15 @@ type UpsertLocationParams struct {
 }
 
 func (q *Queries) UpsertLocation(ctx context.Context, arg UpsertLocationParams) error {
-	_, err := q.db.ExecContext(ctx, upsertLocation,
+	query := upsertLocation
+	queryParams := []interface{}{
 		arg.Name,
 		arg.Address,
 		arg.ZipCode,
 		arg.Latitude,
 		arg.Longitude,
-	)
+	}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }

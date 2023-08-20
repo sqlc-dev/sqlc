@@ -22,6 +22,9 @@ WHERE
 `
 
 func (q *Queries) DeleteAuthor(ctx context.Context, name string) error {
-	_, err := q.db.ExecContext(ctx, deleteAuthor, name)
+	query := deleteAuthor
+	queryParams := []interface{}{name}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }

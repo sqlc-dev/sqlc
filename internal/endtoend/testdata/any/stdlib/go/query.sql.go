@@ -17,8 +17,16 @@ FROM bar
 WHERE foo = ANY($1::bigserial[])
 `
 
-func (q *Queries) Any(ctx context.Context, dollar_1 []int64) ([]int64, error) {
-	rows, err := q.db.QueryContext(ctx, any, pq.Array(dollar_1))
+func (q *Queries) Any(ctx context.Context, dollar_1 []int64, aq ...AdditionalQuery) ([]int64, error) {
+	query := any
+	queryParams := []interface{}{pq.Array(dollar_1)}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

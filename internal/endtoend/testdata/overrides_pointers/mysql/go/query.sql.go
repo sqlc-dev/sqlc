@@ -21,6 +21,9 @@ type testParams struct {
 }
 
 func (q *Queries) test(ctx context.Context, arg testParams) error {
-	_, err := q.db.ExecContext(ctx, test, arg.Other, arg.Retyped)
+	query := test
+	queryParams := []interface{}{arg.Other, arg.Retyped}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }

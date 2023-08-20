@@ -13,8 +13,10 @@ const encodeDigest = `-- name: EncodeDigest :one
 SELECT encode(digest($1, 'sha1'), 'hex')
 `
 
-func (q *Queries) EncodeDigest(ctx context.Context, digest string) (string, error) {
-	row := q.db.QueryRow(ctx, encodeDigest, digest)
+func (q *Queries) EncodeDigest(ctx context.Context, digest string, aq ...AdditionalQuery) (string, error) {
+	query := encodeDigest
+	queryParams := []interface{}{digest}
+	row := q.db.QueryRow(ctx, query, queryParams...)
 	var encode string
 	err := row.Scan(&encode)
 	return encode, err

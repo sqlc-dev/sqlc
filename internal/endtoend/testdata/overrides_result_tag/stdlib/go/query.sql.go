@@ -30,8 +30,16 @@ type FindAccountRow struct {
 	Name  sql.NullString
 }
 
-func (q *Queries) FindAccount(ctx context.Context, accountID uuid.UUID) (FindAccountRow, error) {
-	row := q.db.QueryRowContext(ctx, findAccount, accountID)
+func (q *Queries) FindAccount(ctx context.Context, accountID uuid.UUID, aq ...AdditionalQuery) (FindAccountRow, error) {
+	query := findAccount
+	queryParams := []interface{}{accountID}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var i FindAccountRow
 	err := row.Scan(&i.ID, &i.State, &i.Name)
 	return i, err

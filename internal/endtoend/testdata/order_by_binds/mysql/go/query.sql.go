@@ -20,8 +20,16 @@ type ListAuthorsColumnSortParams struct {
 	SortColumn interface{}
 }
 
-func (q *Queries) ListAuthorsColumnSort(ctx context.Context, arg ListAuthorsColumnSortParams) ([]Author, error) {
-	rows, err := q.db.QueryContext(ctx, listAuthorsColumnSort, arg.MinID, arg.SortColumn)
+func (q *Queries) ListAuthorsColumnSort(ctx context.Context, arg ListAuthorsColumnSortParams, aq ...AdditionalQuery) ([]Author, error) {
+	query := listAuthorsColumnSort
+	queryParams := []interface{}{arg.MinID, arg.SortColumn}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -49,8 +57,16 @@ WHERE   id > ?
 ORDER   BY name ASC
 `
 
-func (q *Queries) ListAuthorsNameSort(ctx context.Context, minID int64) ([]Author, error) {
-	rows, err := q.db.QueryContext(ctx, listAuthorsNameSort, minID)
+func (q *Queries) ListAuthorsNameSort(ctx context.Context, minID int64, aq ...AdditionalQuery) ([]Author, error) {
+	query := listAuthorsNameSort
+	queryParams := []interface{}{minID}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

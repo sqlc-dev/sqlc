@@ -16,8 +16,16 @@ SELECT FROM bar LIMIT 5
 type GetBarsRow struct {
 }
 
-func (q *Queries) GetBars(ctx context.Context) ([]GetBarsRow, error) {
-	rows, err := q.db.QueryContext(ctx, getBars)
+func (q *Queries) GetBars(ctx context.Context, aq ...AdditionalQuery) ([]GetBarsRow, error) {
+	query := getBars
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

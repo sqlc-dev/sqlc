@@ -13,8 +13,16 @@ const starExpansionReserved = `-- name: StarExpansionReserved :many
 SELECT "group", key FROM foo
 `
 
-func (q *Queries) StarExpansionReserved(ctx context.Context) ([]Foo, error) {
-	rows, err := q.db.QueryContext(ctx, starExpansionReserved)
+func (q *Queries) StarExpansionReserved(ctx context.Context, aq ...AdditionalQuery) ([]Foo, error) {
+	query := starExpansionReserved
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

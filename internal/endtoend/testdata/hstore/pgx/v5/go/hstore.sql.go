@@ -15,8 +15,16 @@ const listBar = `-- name: ListBar :many
 SELECT bar FROM foo
 `
 
-func (q *Queries) ListBar(ctx context.Context) ([]pgtype.Hstore, error) {
-	rows, err := q.db.Query(ctx, listBar)
+func (q *Queries) ListBar(ctx context.Context, aq ...AdditionalQuery) ([]pgtype.Hstore, error) {
+	query := listBar
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -39,8 +47,16 @@ const listBaz = `-- name: ListBaz :many
 SELECT baz FROM foo
 `
 
-func (q *Queries) ListBaz(ctx context.Context) ([]pgtype.Hstore, error) {
-	rows, err := q.db.Query(ctx, listBaz)
+func (q *Queries) ListBaz(ctx context.Context, aq ...AdditionalQuery) ([]pgtype.Hstore, error) {
+	query := listBaz
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

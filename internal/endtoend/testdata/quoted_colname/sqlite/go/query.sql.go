@@ -13,8 +13,16 @@ const testList = `-- name: TestList :many
 SELECT id FROM "test"
 `
 
-func (q *Queries) TestList(ctx context.Context) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, testList)
+func (q *Queries) TestList(ctx context.Context, aq ...AdditionalQuery) ([]string, error) {
+	query := testList
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

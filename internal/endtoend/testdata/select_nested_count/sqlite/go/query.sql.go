@@ -25,8 +25,16 @@ type GetAuthorsWithBooksCountRow struct {
 	BooksCount int64
 }
 
-func (q *Queries) GetAuthorsWithBooksCount(ctx context.Context) ([]GetAuthorsWithBooksCountRow, error) {
-	rows, err := q.db.QueryContext(ctx, getAuthorsWithBooksCount)
+func (q *Queries) GetAuthorsWithBooksCount(ctx context.Context, aq ...AdditionalQuery) ([]GetAuthorsWithBooksCountRow, error) {
+	query := getAuthorsWithBooksCount
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

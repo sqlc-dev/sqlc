@@ -13,8 +13,16 @@ const demo = `-- name: Demo :one
 SELECT CAST(CHAR(1,2,3,4,5) AS BLOB) AS col1
 `
 
-func (q *Queries) Demo(ctx context.Context) ([]byte, error) {
-	row := q.db.QueryRowContext(ctx, demo)
+func (q *Queries) Demo(ctx context.Context, aq ...AdditionalQuery) ([]byte, error) {
+	query := demo
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var col1 []byte
 	err := row.Scan(&col1)
 	return col1, err

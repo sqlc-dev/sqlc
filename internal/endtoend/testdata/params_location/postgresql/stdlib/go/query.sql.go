@@ -20,8 +20,16 @@ type GetUserByIDRow struct {
 	LastName  sql.NullString
 }
 
-func (q *Queries) GetUserByID(ctx context.Context, targetID int32) (GetUserByIDRow, error) {
-	row := q.db.QueryRowContext(ctx, getUserByID, targetID)
+func (q *Queries) GetUserByID(ctx context.Context, targetID int32, aq ...AdditionalQuery) (GetUserByIDRow, error) {
+	query := getUserByID
+	queryParams := []interface{}{targetID}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var i GetUserByIDRow
 	err := row.Scan(&i.FirstName, &i.ID, &i.LastName)
 	return i, err
@@ -37,7 +45,10 @@ type InsertNewUserParams struct {
 }
 
 func (q *Queries) InsertNewUser(ctx context.Context, arg InsertNewUserParams) error {
-	_, err := q.db.ExecContext(ctx, insertNewUser, arg.FirstName, arg.LastName)
+	query := insertNewUser
+	queryParams := []interface{}{arg.FirstName, arg.LastName}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }
 
@@ -50,8 +61,16 @@ type LimitSQLCArgRow struct {
 	ID        int32
 }
 
-func (q *Queries) LimitSQLCArg(ctx context.Context, limit int32) ([]LimitSQLCArgRow, error) {
-	rows, err := q.db.QueryContext(ctx, limitSQLCArg, limit)
+func (q *Queries) LimitSQLCArg(ctx context.Context, limit int32, aq ...AdditionalQuery) ([]LimitSQLCArgRow, error) {
+	query := limitSQLCArg
+	queryParams := []interface{}{limit}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -90,8 +109,16 @@ type ListUserOrdersRow struct {
 	Price     string
 }
 
-func (q *Queries) ListUserOrders(ctx context.Context, minPrice string) ([]ListUserOrdersRow, error) {
-	rows, err := q.db.QueryContext(ctx, listUserOrders, minPrice)
+func (q *Queries) ListUserOrders(ctx context.Context, minPrice string, aq ...AdditionalQuery) ([]ListUserOrdersRow, error) {
+	query := listUserOrders
+	queryParams := []interface{}{minPrice}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -125,8 +152,16 @@ type ListUserParenExprParams struct {
 	Limit int32
 }
 
-func (q *Queries) ListUserParenExpr(ctx context.Context, arg ListUserParenExprParams) ([]User, error) {
-	rows, err := q.db.QueryContext(ctx, listUserParenExpr, arg.ID, arg.Limit)
+func (q *Queries) ListUserParenExpr(ctx context.Context, arg ListUserParenExprParams, aq ...AdditionalQuery) ([]User, error) {
+	query := listUserParenExpr
+	queryParams := []interface{}{arg.ID, arg.Limit}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -168,8 +203,16 @@ type ListUsersByFamilyRow struct {
 	LastName  sql.NullString
 }
 
-func (q *Queries) ListUsersByFamily(ctx context.Context, arg ListUsersByFamilyParams) ([]ListUsersByFamilyRow, error) {
-	rows, err := q.db.QueryContext(ctx, listUsersByFamily, arg.MaxAge, arg.InFamily)
+func (q *Queries) ListUsersByFamily(ctx context.Context, arg ListUsersByFamilyParams, aq ...AdditionalQuery) ([]ListUsersByFamilyRow, error) {
+	query := listUsersByFamily
+	queryParams := []interface{}{arg.MaxAge, arg.InFamily}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -201,8 +244,16 @@ type ListUsersByIDRow struct {
 	LastName  sql.NullString
 }
 
-func (q *Queries) ListUsersByID(ctx context.Context, id int32) ([]ListUsersByIDRow, error) {
-	rows, err := q.db.QueryContext(ctx, listUsersByID, id)
+func (q *Queries) ListUsersByID(ctx context.Context, id int32, aq ...AdditionalQuery) ([]ListUsersByIDRow, error) {
+	query := listUsersByID
+	queryParams := []interface{}{id}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -233,8 +284,16 @@ type ListUsersWithLimitRow struct {
 	LastName  sql.NullString
 }
 
-func (q *Queries) ListUsersWithLimit(ctx context.Context, limit int32) ([]ListUsersWithLimitRow, error) {
-	rows, err := q.db.QueryContext(ctx, listUsersWithLimit, limit)
+func (q *Queries) ListUsersWithLimit(ctx context.Context, limit int32, aq ...AdditionalQuery) ([]ListUsersWithLimitRow, error) {
+	query := listUsersWithLimit
+	queryParams := []interface{}{limit}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

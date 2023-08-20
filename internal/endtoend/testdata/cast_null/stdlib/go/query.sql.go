@@ -26,8 +26,16 @@ type ListNullableRow struct {
 	D sql.NullTime
 }
 
-func (q *Queries) ListNullable(ctx context.Context) ([]ListNullableRow, error) {
-	rows, err := q.db.QueryContext(ctx, listNullable)
+func (q *Queries) ListNullable(ctx context.Context, aq ...AdditionalQuery) ([]ListNullableRow, error) {
+	query := listNullable
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

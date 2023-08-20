@@ -15,8 +15,16 @@ const generateUUID = `-- name: GenerateUUID :one
 SELECT uuid_generate_v4()
 `
 
-func (q *Queries) GenerateUUID(ctx context.Context) (uuid.UUID, error) {
-	row := q.db.QueryRowContext(ctx, generateUUID)
+func (q *Queries) GenerateUUID(ctx context.Context, aq ...AdditionalQuery) (uuid.UUID, error) {
+	query := generateUUID
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var uuid_generate_v4 uuid.UUID
 	err := row.Scan(&uuid_generate_v4)
 	return uuid_generate_v4, err

@@ -13,8 +13,16 @@ const getRepro = `-- name: GetRepro :one
 select id, name, seq from repro where id = ? limit 1
 `
 
-func (q *Queries) GetRepro(ctx context.Context, id interface{}) (Repro, error) {
-	row := q.db.QueryRowContext(ctx, getRepro, id)
+func (q *Queries) GetRepro(ctx context.Context, id interface{}, aq ...AdditionalQuery) (Repro, error) {
+	query := getRepro
+	queryParams := []interface{}{id}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var i Repro
 	err := row.Scan(&i.ID, &i.Name, &i.Seq)
 	return i, err

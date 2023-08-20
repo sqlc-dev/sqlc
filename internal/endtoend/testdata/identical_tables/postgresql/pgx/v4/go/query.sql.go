@@ -13,8 +13,16 @@ const identicalTable = `-- name: IdenticalTable :many
 SELECT id FROM foo
 `
 
-func (q *Queries) IdenticalTable(ctx context.Context) ([]string, error) {
-	rows, err := q.db.Query(ctx, identicalTable)
+func (q *Queries) IdenticalTable(ctx context.Context, aq ...AdditionalQuery) ([]string, error) {
+	query := identicalTable
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

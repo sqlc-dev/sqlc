@@ -15,8 +15,16 @@ FROM foo
 JOIN bar ON foo.bar = bar.id
 `
 
-func (q *Queries) JoinTextArray(ctx context.Context) ([][]string, error) {
-	rows, err := q.db.Query(ctx, joinTextArray)
+func (q *Queries) JoinTextArray(ctx context.Context, aq ...AdditionalQuery) ([][]string, error) {
+	query := joinTextArray
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

@@ -21,7 +21,7 @@ type FuncParamIdentParams struct {
 	Favourites []int64
 }
 
-func (q *Queries) FuncParamIdent(ctx context.Context, arg FuncParamIdentParams) ([]string, error) {
+func (q *Queries) FuncParamIdent(ctx context.Context, arg FuncParamIdentParams, aq ...AdditionalQuery) ([]string, error) {
 	query := funcParamIdent
 	var queryParams []interface{}
 	queryParams = append(queryParams, arg.Slug)
@@ -33,6 +33,12 @@ func (q *Queries) FuncParamIdent(ctx context.Context, arg FuncParamIdentParams) 
 	} else {
 		query = strings.Replace(query, "/*SLICE:favourites*/?", "NULL", 1)
 	}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
 	rows, err := q.query(ctx, nil, query, queryParams...)
 	if err != nil {
 		return nil, err

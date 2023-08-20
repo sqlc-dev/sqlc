@@ -13,8 +13,16 @@ const getAll = `-- name: GetAll :many
 SELECT id FROM foo
 `
 
-func (q *Queries) GetAll(ctx context.Context) ([]int32, error) {
-	rows, err := q.db.QueryContext(ctx, getAll)
+func (q *Queries) GetAll(ctx context.Context, aq ...AdditionalQuery) ([]int32, error) {
+	query := getAll
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

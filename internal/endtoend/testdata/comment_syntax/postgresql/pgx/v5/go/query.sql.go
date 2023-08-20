@@ -15,8 +15,10 @@ const doubleDash = `-- name: DoubleDash :one
 SELECT bar FROM foo LIMIT 1
 `
 
-func (q *Queries) DoubleDash(ctx context.Context) (pgtype.Text, error) {
-	row := q.db.QueryRow(ctx, doubleDash)
+func (q *Queries) DoubleDash(ctx context.Context, aq ...AdditionalQuery) (pgtype.Text, error) {
+	query := doubleDash
+	queryParams := []interface{}{}
+	row := q.db.QueryRow(ctx, query, queryParams...)
 	var bar pgtype.Text
 	err := row.Scan(&bar)
 	return bar, err
@@ -26,8 +28,10 @@ const slashStar = `-- name: SlashStar :one
 SELECT bar FROM foo LIMIT 1
 `
 
-func (q *Queries) SlashStar(ctx context.Context) (pgtype.Text, error) {
-	row := q.db.QueryRow(ctx, slashStar)
+func (q *Queries) SlashStar(ctx context.Context, aq ...AdditionalQuery) (pgtype.Text, error) {
+	query := slashStar
+	queryParams := []interface{}{}
+	row := q.db.QueryRow(ctx, query, queryParams...)
 	var bar pgtype.Text
 	err := row.Scan(&bar)
 	return bar, err

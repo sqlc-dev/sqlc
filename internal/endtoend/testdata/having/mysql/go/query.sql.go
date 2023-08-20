@@ -16,8 +16,16 @@ GROUP BY city
 HAVING max(temp_lo) < ?
 `
 
-func (q *Queries) ColdCities(ctx context.Context, tempLo int32) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, coldCities, tempLo)
+func (q *Queries) ColdCities(ctx context.Context, tempLo int32, aq ...AdditionalQuery) ([]string, error) {
+	query := coldCities
+	queryParams := []interface{}{tempLo}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

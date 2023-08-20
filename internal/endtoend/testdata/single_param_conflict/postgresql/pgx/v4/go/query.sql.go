@@ -18,8 +18,10 @@ WHERE   id = $1
 LIMIT   1
 `
 
-func (q *Queries) GetAuthorByID(ctx context.Context, id int64) (Author, error) {
-	row := q.db.QueryRow(ctx, getAuthorByID, id)
+func (q *Queries) GetAuthorByID(ctx context.Context, id int64, aq ...AdditionalQuery) (Author, error) {
+	query := getAuthorByID
+	queryParams := []interface{}{id}
+	row := q.db.QueryRow(ctx, query, queryParams...)
 	var i Author
 	err := row.Scan(&i.ID, &i.Name, &i.Bio)
 	return i, err
@@ -32,8 +34,10 @@ WHERE   id = $1
 LIMIT   1
 `
 
-func (q *Queries) GetAuthorIDByID(ctx context.Context, id int64) (int64, error) {
-	row := q.db.QueryRow(ctx, getAuthorIDByID, id)
+func (q *Queries) GetAuthorIDByID(ctx context.Context, id int64, aq ...AdditionalQuery) (int64, error) {
+	query := getAuthorIDByID
+	queryParams := []interface{}{id}
+	row := q.db.QueryRow(ctx, query, queryParams...)
 	err := row.Scan(&id)
 	return id, err
 }
@@ -45,8 +49,10 @@ WHERE   sub = $1
 LIMIT   1
 `
 
-func (q *Queries) GetUser(ctx context.Context, sub uuid.UUID) (uuid.UUID, error) {
-	row := q.db.QueryRow(ctx, getUser, sub)
+func (q *Queries) GetUser(ctx context.Context, sub uuid.UUID, aq ...AdditionalQuery) (uuid.UUID, error) {
+	query := getUser
+	queryParams := []interface{}{sub}
+	row := q.db.QueryRow(ctx, query, queryParams...)
 	err := row.Scan(&sub)
 	return sub, err
 }
@@ -60,8 +66,10 @@ RETURNING id
 `
 
 // https://github.com/sqlc-dev/sqlc/issues/1235
-func (q *Queries) SetDefaultName(ctx context.Context, id int64) (int64, error) {
-	row := q.db.QueryRow(ctx, setDefaultName, id)
+func (q *Queries) SetDefaultName(ctx context.Context, id int64, aq ...AdditionalQuery) (int64, error) {
+	query := setDefaultName
+	queryParams := []interface{}{id}
+	row := q.db.QueryRow(ctx, query, queryParams...)
 	err := row.Scan(&id)
 	return id, err
 }

@@ -22,8 +22,16 @@ type StarExpansionJoinRow struct {
 	D pgtype.Text
 }
 
-func (q *Queries) StarExpansionJoin(ctx context.Context) ([]StarExpansionJoinRow, error) {
-	rows, err := q.db.Query(ctx, starExpansionJoin)
+func (q *Queries) StarExpansionJoin(ctx context.Context, aq ...AdditionalQuery) ([]StarExpansionJoinRow, error) {
+	query := starExpansionJoin
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

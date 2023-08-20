@@ -15,8 +15,16 @@ SELECT first_name from
 users where ($1 = id OR $1 = 0)
 `
 
-func (q *Queries) SelectUserByID(ctx context.Context, id int32) ([]sql.NullString, error) {
-	rows, err := q.db.QueryContext(ctx, selectUserByID, id)
+func (q *Queries) SelectUserByID(ctx context.Context, id int32, aq ...AdditionalQuery) ([]sql.NullString, error) {
+	query := selectUserByID
+	queryParams := []interface{}{id}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -45,8 +53,16 @@ WHERE first_name = $1
    OR last_name = $1
 `
 
-func (q *Queries) SelectUserByName(ctx context.Context, name sql.NullString) ([]sql.NullString, error) {
-	rows, err := q.db.QueryContext(ctx, selectUserByName, name)
+func (q *Queries) SelectUserByName(ctx context.Context, name sql.NullString, aq ...AdditionalQuery) ([]sql.NullString, error) {
+	query := selectUserByName
+	queryParams := []interface{}{name}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -73,8 +89,16 @@ SELECT first_name from
 users where ($1 = id OR  $1 = 0)
 `
 
-func (q *Queries) SelectUserQuestion(ctx context.Context, id int32) ([]sql.NullString, error) {
-	rows, err := q.db.QueryContext(ctx, selectUserQuestion, id)
+func (q *Queries) SelectUserQuestion(ctx context.Context, id int32, aq ...AdditionalQuery) ([]sql.NullString, error) {
+	query := selectUserQuestion
+	queryParams := []interface{}{id}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

@@ -24,6 +24,9 @@ type InsertContactParams struct {
 }
 
 func (q *Queries) InsertContact(ctx context.Context, arg InsertContactParams) error {
-	_, err := q.db.ExecContext(ctx, insertContact, arg.Pid, arg.Customername)
+	query := insertContact
+	queryParams := []interface{}{arg.Pid, arg.Customername}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }

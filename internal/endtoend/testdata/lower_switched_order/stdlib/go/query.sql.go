@@ -18,8 +18,16 @@ type LowerSwitchedOrderParams struct {
 	Lower string
 }
 
-func (q *Queries) LowerSwitchedOrder(ctx context.Context, arg LowerSwitchedOrderParams) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, lowerSwitchedOrder, arg.Bar, arg.Lower)
+func (q *Queries) LowerSwitchedOrder(ctx context.Context, arg LowerSwitchedOrderParams, aq ...AdditionalQuery) ([]string, error) {
+	query := lowerSwitchedOrder
+	queryParams := []interface{}{arg.Bar, arg.Lower}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

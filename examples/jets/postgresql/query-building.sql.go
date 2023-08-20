@@ -13,8 +13,16 @@ const countPilots = `-- name: CountPilots :one
 SELECT COUNT(*) FROM pilots
 `
 
-func (q *Queries) CountPilots(ctx context.Context) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countPilots)
+func (q *Queries) CountPilots(ctx context.Context, aq ...AdditionalQuery) (int64, error) {
+	query := countPilots
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -25,7 +33,10 @@ DELETE FROM pilots WHERE id = $1
 `
 
 func (q *Queries) DeletePilot(ctx context.Context, id int32) error {
-	_, err := q.db.ExecContext(ctx, deletePilot, id)
+	query := deletePilot
+	queryParams := []interface{}{id}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }
 
@@ -33,8 +44,16 @@ const listPilots = `-- name: ListPilots :many
 SELECT id, name FROM pilots LIMIT 5
 `
 
-func (q *Queries) ListPilots(ctx context.Context) ([]Pilot, error) {
-	rows, err := q.db.QueryContext(ctx, listPilots)
+func (q *Queries) ListPilots(ctx context.Context, aq ...AdditionalQuery) ([]Pilot, error) {
+	query := listPilots
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

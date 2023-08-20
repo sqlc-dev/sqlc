@@ -32,13 +32,21 @@ type InsertCodeParams struct {
 }
 
 // FILE: query.sql
-func (q *Queries) InsertCode(ctx context.Context, arg InsertCodeParams) (Td3TestCode, error) {
-	row := q.db.QueryRowContext(ctx, insertCode,
+func (q *Queries) InsertCode(ctx context.Context, arg InsertCodeParams, aq ...AdditionalQuery) (Td3TestCode, error) {
+	query := insertCode
+	queryParams := []interface{}{
 		arg.CreatedBy,
 		arg.Code,
 		arg.Hash,
 		arg.TestID,
-	)
+	}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var i Td3TestCode
 	err := row.Scan(
 		&i.ID,

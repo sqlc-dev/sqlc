@@ -16,8 +16,16 @@ DELETE FROM users
   RETURNING id
 `
 
-func (q *Queries) DeleteUserAndReturnID(ctx context.Context, name sql.NullString) (int64, error) {
-	row := q.db.QueryRowContext(ctx, deleteUserAndReturnID, name)
+func (q *Queries) DeleteUserAndReturnID(ctx context.Context, name sql.NullString, aq ...AdditionalQuery) (int64, error) {
+	query := deleteUserAndReturnID
+	queryParams := []interface{}{name}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
@@ -29,8 +37,16 @@ DELETE FROM users
   RETURNING name, id
 `
 
-func (q *Queries) DeleteUserAndReturnUser(ctx context.Context, name sql.NullString) (User, error) {
-	row := q.db.QueryRowContext(ctx, deleteUserAndReturnUser, name)
+func (q *Queries) DeleteUserAndReturnUser(ctx context.Context, name sql.NullString, aq ...AdditionalQuery) (User, error) {
+	query := deleteUserAndReturnUser
+	queryParams := []interface{}{name}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var i User
 	err := row.Scan(&i.Name, &i.ID)
 	return i, err
@@ -41,8 +57,16 @@ INSERT INTO users (name) VALUES (?1)
   RETURNING id
 `
 
-func (q *Queries) InsertUserAndReturnID(ctx context.Context, name sql.NullString) (int64, error) {
-	row := q.db.QueryRowContext(ctx, insertUserAndReturnID, name)
+func (q *Queries) InsertUserAndReturnID(ctx context.Context, name sql.NullString, aq ...AdditionalQuery) (int64, error) {
+	query := insertUserAndReturnID
+	queryParams := []interface{}{name}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
@@ -53,8 +77,16 @@ INSERT INTO users (name) VALUES (?1)
   RETURNING name, id
 `
 
-func (q *Queries) InsertUserAndReturnUser(ctx context.Context, name sql.NullString) (User, error) {
-	row := q.db.QueryRowContext(ctx, insertUserAndReturnUser, name)
+func (q *Queries) InsertUserAndReturnUser(ctx context.Context, name sql.NullString, aq ...AdditionalQuery) (User, error) {
+	query := insertUserAndReturnUser
+	queryParams := []interface{}{name}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var i User
 	err := row.Scan(&i.Name, &i.ID)
 	return i, err
@@ -71,8 +103,16 @@ type UpdateUserAndReturnIDParams struct {
 	Name_2 sql.NullString
 }
 
-func (q *Queries) UpdateUserAndReturnID(ctx context.Context, arg UpdateUserAndReturnIDParams) (int64, error) {
-	row := q.db.QueryRowContext(ctx, updateUserAndReturnID, arg.Name, arg.Name_2)
+func (q *Queries) UpdateUserAndReturnID(ctx context.Context, arg UpdateUserAndReturnIDParams, aq ...AdditionalQuery) (int64, error) {
+	query := updateUserAndReturnID
+	queryParams := []interface{}{arg.Name, arg.Name_2}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
@@ -89,8 +129,16 @@ type UpdateUserAndReturnUserParams struct {
 	Name_2 sql.NullString
 }
 
-func (q *Queries) UpdateUserAndReturnUser(ctx context.Context, arg UpdateUserAndReturnUserParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, updateUserAndReturnUser, arg.Name, arg.Name_2)
+func (q *Queries) UpdateUserAndReturnUser(ctx context.Context, arg UpdateUserAndReturnUserParams, aq ...AdditionalQuery) (User, error) {
+	query := updateUserAndReturnUser
+	queryParams := []interface{}{arg.Name, arg.Name_2}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var i User
 	err := row.Scan(&i.Name, &i.ID)
 	return i, err

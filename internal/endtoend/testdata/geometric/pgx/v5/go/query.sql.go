@@ -14,8 +14,16 @@ SELECT v_box_null, v_circle_null, v_line_null, v_lseg_null, v_path_null, v_point
 from test_table
 `
 
-func (q *Queries) SelectTest(ctx context.Context) ([]TestTable, error) {
-	rows, err := q.db.Query(ctx, selectTest)
+func (q *Queries) SelectTest(ctx context.Context, aq ...AdditionalQuery) ([]TestTable, error) {
+	query := selectTest
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

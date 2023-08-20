@@ -14,6 +14,9 @@ TRUNCATE bar
 `
 
 func (q *Queries) Truncate(ctx context.Context) error {
-	_, err := q.db.ExecContext(ctx, truncate)
+	query := truncate
+	queryParams := []interface{}{}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }

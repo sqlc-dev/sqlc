@@ -19,7 +19,10 @@ type CallInsertDataParams struct {
 }
 
 func (q *Queries) CallInsertData(ctx context.Context, arg CallInsertDataParams) error {
-	_, err := q.db.ExecContext(ctx, callInsertData, arg.A, arg.B)
+	query := callInsertData
+	queryParams := []interface{}{arg.A, arg.B}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }
 
@@ -33,7 +36,10 @@ type CallInsertDataNamedParams struct {
 }
 
 func (q *Queries) CallInsertDataNamed(ctx context.Context, arg CallInsertDataNamedParams) error {
-	_, err := q.db.ExecContext(ctx, callInsertDataNamed, arg.B, arg.A)
+	query := callInsertDataNamed
+	queryParams := []interface{}{arg.B, arg.A}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }
 
@@ -42,7 +48,10 @@ CALL insert_data(1, 2)
 `
 
 func (q *Queries) CallInsertDataNoArgs(ctx context.Context) error {
-	_, err := q.db.ExecContext(ctx, callInsertDataNoArgs)
+	query := callInsertDataNoArgs
+	queryParams := []interface{}{}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }
 
@@ -56,6 +65,9 @@ type CallInsertDataSqlcArgsParams struct {
 }
 
 func (q *Queries) CallInsertDataSqlcArgs(ctx context.Context, arg CallInsertDataSqlcArgsParams) error {
-	_, err := q.db.ExecContext(ctx, callInsertDataSqlcArgs, arg.Foo, arg.Bar)
+	query := callInsertDataSqlcArgs
+	queryParams := []interface{}{arg.Foo, arg.Bar}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }

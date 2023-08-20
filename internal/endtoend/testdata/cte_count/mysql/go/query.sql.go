@@ -24,8 +24,16 @@ type CTECountRow struct {
 	Count_2 int64
 }
 
-func (q *Queries) CTECount(ctx context.Context) ([]CTECountRow, error) {
-	rows, err := q.db.QueryContext(ctx, cTECount)
+func (q *Queries) CTECount(ctx context.Context, aq ...AdditionalQuery) ([]CTECountRow, error) {
+	query := cTECount
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

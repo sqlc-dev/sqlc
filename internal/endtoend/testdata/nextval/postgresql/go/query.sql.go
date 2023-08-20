@@ -19,8 +19,16 @@ type GetNextIDRow struct {
 	Pk_2 int64
 }
 
-func (q *Queries) GetNextID(ctx context.Context) (GetNextIDRow, error) {
-	row := q.db.QueryRowContext(ctx, getNextID)
+func (q *Queries) GetNextID(ctx context.Context, aq ...AdditionalQuery) (GetNextIDRow, error) {
+	query := getNextID
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var i GetNextIDRow
 	err := row.Scan(&i.Pk, &i.Pk_2)
 	return i, err

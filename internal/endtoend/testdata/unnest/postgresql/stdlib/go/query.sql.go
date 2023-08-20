@@ -20,8 +20,16 @@ RETURNING
     id, vampire_id, created_at, updated_at
 `
 
-func (q *Queries) CreateMemories(ctx context.Context, vampireID []uuid.UUID) ([]Memory, error) {
-	rows, err := q.db.QueryContext(ctx, createMemories, pq.Array(vampireID))
+func (q *Queries) CreateMemories(ctx context.Context, vampireID []uuid.UUID, aq ...AdditionalQuery) ([]Memory, error) {
+	query := createMemories
+	queryParams := []interface{}{pq.Array(vampireID)}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -52,8 +60,16 @@ const getVampireIDs = `-- name: GetVampireIDs :many
 SELECT vampires.id::uuid FROM unnest($1::uuid[]) AS vampires (id)
 `
 
-func (q *Queries) GetVampireIDs(ctx context.Context, vampireID []uuid.UUID) ([]uuid.UUID, error) {
-	rows, err := q.db.QueryContext(ctx, getVampireIDs, pq.Array(vampireID))
+func (q *Queries) GetVampireIDs(ctx context.Context, vampireID []uuid.UUID, aq ...AdditionalQuery) ([]uuid.UUID, error) {
+	query := getVampireIDs
+	queryParams := []interface{}{pq.Array(vampireID)}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

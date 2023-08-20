@@ -14,6 +14,9 @@ DELETE FROM foo.bar WHERE id = ?
 `
 
 func (q *Queries) SchemaScopedDelete(ctx context.Context, id uint64) error {
-	_, err := q.db.ExecContext(ctx, schemaScopedDelete, id)
+	query := schemaScopedDelete
+	queryParams := []interface{}{id}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }

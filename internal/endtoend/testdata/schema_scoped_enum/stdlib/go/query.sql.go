@@ -13,8 +13,16 @@ const listUsersByRole = `-- name: ListUsersByRole :many
 SELECT role FROM foo.users WHERE role = $1
 `
 
-func (q *Queries) ListUsersByRole(ctx context.Context, role NullFooTypeUserRole) ([]NullFooTypeUserRole, error) {
-	rows, err := q.db.QueryContext(ctx, listUsersByRole, role)
+func (q *Queries) ListUsersByRole(ctx context.Context, role NullFooTypeUserRole, aq ...AdditionalQuery) ([]NullFooTypeUserRole, error) {
+	query := listUsersByRole
+	queryParams := []interface{}{role}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

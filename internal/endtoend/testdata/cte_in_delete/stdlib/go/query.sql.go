@@ -17,8 +17,16 @@ DELETE FROM bar WHERE id IN (SELECT id FROM ready_ids)
 RETURNING id
 `
 
-func (q *Queries) DeleteReadyWithCTE(ctx context.Context) ([]int32, error) {
-	rows, err := q.db.QueryContext(ctx, deleteReadyWithCTE)
+func (q *Queries) DeleteReadyWithCTE(ctx context.Context, aq ...AdditionalQuery) ([]int32, error) {
+	query := deleteReadyWithCTE
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

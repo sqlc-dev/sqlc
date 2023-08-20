@@ -17,8 +17,16 @@ END is_one
 FROM foo
 `
 
-func (q *Queries) CaseStatementText(ctx context.Context, id string) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, caseStatementText, id)
+func (q *Queries) CaseStatementText(ctx context.Context, id string, aq ...AdditionalQuery) ([]string, error) {
+	query := caseStatementText
+	queryParams := []interface{}{id}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

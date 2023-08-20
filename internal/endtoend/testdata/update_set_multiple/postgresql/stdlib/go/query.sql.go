@@ -19,6 +19,9 @@ type UpdateSetMultipleParams struct {
 }
 
 func (q *Queries) UpdateSetMultiple(ctx context.Context, arg UpdateSetMultipleParams) error {
-	_, err := q.db.ExecContext(ctx, updateSetMultiple, arg.Slug, arg.Name)
+	query := updateSetMultiple
+	queryParams := []interface{}{arg.Slug, arg.Name}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }

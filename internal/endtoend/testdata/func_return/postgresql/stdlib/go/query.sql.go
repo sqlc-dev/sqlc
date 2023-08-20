@@ -22,8 +22,16 @@ type GenerateSeriesParams struct {
 	Column2 int32
 }
 
-func (q *Queries) GenerateSeries(ctx context.Context, arg GenerateSeriesParams) ([]int32, error) {
-	rows, err := q.db.QueryContext(ctx, generateSeries, arg.Column1, arg.Column2)
+func (q *Queries) GenerateSeries(ctx context.Context, arg GenerateSeriesParams, aq ...AdditionalQuery) ([]int32, error) {
+	query := generateSeries
+	queryParams := []interface{}{arg.Column1, arg.Column2}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -52,8 +60,16 @@ SELECT  from CURRENT_DATE
 type GetDateRow struct {
 }
 
-func (q *Queries) GetDate(ctx context.Context) (GetDateRow, error) {
-	row := q.db.QueryRowContext(ctx, getDate)
+func (q *Queries) GetDate(ctx context.Context, aq ...AdditionalQuery) (GetDateRow, error) {
+	query := getDate
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var i GetDateRow
 	err := row.Scan()
 	return i, err
@@ -65,8 +81,16 @@ FROM users_func()
 WHERE first_name != ''
 `
 
-func (q *Queries) GetUsers(ctx context.Context) ([]User, error) {
-	rows, err := q.db.QueryContext(ctx, getUsers)
+func (q *Queries) GetUsers(ctx context.Context, aq ...AdditionalQuery) ([]User, error) {
+	query := getUsers
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

@@ -13,8 +13,16 @@ const listAuthors = `-- name: ListAuthors :many
 SELECT id, status FROM log_lines
 `
 
-func (q *Queries) ListAuthors(ctx context.Context) ([]LogLine, error) {
-	rows, err := q.db.QueryContext(ctx, listAuthors)
+func (q *Queries) ListAuthors(ctx context.Context, aq ...AdditionalQuery) ([]LogLine, error) {
+	query := listAuthors
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

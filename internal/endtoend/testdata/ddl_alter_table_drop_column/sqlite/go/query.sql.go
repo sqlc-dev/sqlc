@@ -14,6 +14,9 @@ SELECT baz from foo
 `
 
 func (q *Queries) Placeholder(ctx context.Context) error {
-	_, err := q.db.ExecContext(ctx, placeholder)
+	query := placeholder
+	queryParams := []interface{}{}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }

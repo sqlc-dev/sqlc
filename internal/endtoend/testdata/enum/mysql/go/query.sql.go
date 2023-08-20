@@ -21,7 +21,10 @@ type DeleteBySizeParams struct {
 }
 
 func (q *Queries) DeleteBySize(ctx context.Context, db DBTX, arg DeleteBySizeParams) error {
-	_, err := db.ExecContext(ctx, deleteBySize, arg.ShoeSize, arg.ShirtSize)
+	query := deleteBySize
+	queryParams := []interface{}{arg.ShoeSize, arg.ShirtSize}
+
+	_, err := db.ExecContext(ctx, query, queryParams...)
 	return err
 }
 
@@ -29,8 +32,16 @@ const getAll = `-- name: GetAll :many
 SELECT id, first_name, last_name, age, shoe_size, shirt_size FROM users
 `
 
-func (q *Queries) GetAll(ctx context.Context, db DBTX) ([]User, error) {
-	rows, err := db.QueryContext(ctx, getAll)
+func (q *Queries) GetAll(ctx context.Context, db DBTX, aq ...AdditionalQuery) ([]User, error) {
+	query := getAll
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -81,14 +92,17 @@ type NewUserParams struct {
 }
 
 func (q *Queries) NewUser(ctx context.Context, db DBTX, arg NewUserParams) error {
-	_, err := db.ExecContext(ctx, newUser,
+	query := newUser
+	queryParams := []interface{}{
 		arg.ID,
 		arg.FirstName,
 		arg.LastName,
 		arg.Age,
 		arg.ShoeSize,
 		arg.ShirtSize,
-	)
+	}
+
+	_, err := db.ExecContext(ctx, query, queryParams...)
 	return err
 }
 
@@ -105,6 +119,9 @@ type UpdateSizesParams struct {
 }
 
 func (q *Queries) UpdateSizes(ctx context.Context, db DBTX, arg UpdateSizesParams) error {
-	_, err := db.ExecContext(ctx, updateSizes, arg.ShoeSize, arg.ShirtSize, arg.ID)
+	query := updateSizes
+	queryParams := []interface{}{arg.ShoeSize, arg.ShirtSize, arg.ID}
+
+	_, err := db.ExecContext(ctx, query, queryParams...)
 	return err
 }

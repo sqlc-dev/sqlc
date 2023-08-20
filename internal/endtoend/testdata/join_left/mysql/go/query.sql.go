@@ -27,8 +27,16 @@ type AllAuthorsRow struct {
 	ParentID_2 sql.NullInt32
 }
 
-func (q *Queries) AllAuthors(ctx context.Context) ([]AllAuthorsRow, error) {
-	rows, err := q.db.QueryContext(ctx, allAuthors)
+func (q *Queries) AllAuthors(ctx context.Context, aq ...AdditionalQuery) ([]AllAuthorsRow, error) {
+	query := allAuthors
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -73,8 +81,16 @@ type AllAuthorsAliasesRow struct {
 	ParentID_2 sql.NullInt32
 }
 
-func (q *Queries) AllAuthorsAliases(ctx context.Context) ([]AllAuthorsAliasesRow, error) {
-	rows, err := q.db.QueryContext(ctx, allAuthorsAliases)
+func (q *Queries) AllAuthorsAliases(ctx context.Context, aq ...AdditionalQuery) ([]AllAuthorsAliasesRow, error) {
+	query := allAuthorsAliases
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -119,8 +135,16 @@ type AllAuthorsAliases2Row struct {
 	ParentID_2 sql.NullInt32
 }
 
-func (q *Queries) AllAuthorsAliases2(ctx context.Context) ([]AllAuthorsAliases2Row, error) {
-	rows, err := q.db.QueryContext(ctx, allAuthorsAliases2)
+func (q *Queries) AllAuthorsAliases2(ctx context.Context, aq ...AdditionalQuery) ([]AllAuthorsAliases2Row, error) {
+	query := allAuthorsAliases2
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -165,8 +189,16 @@ type AllSuperAuthorsRow struct {
 	SuperParentID sql.NullInt32
 }
 
-func (q *Queries) AllSuperAuthors(ctx context.Context) ([]AllSuperAuthorsRow, error) {
-	rows, err := q.db.QueryContext(ctx, allSuperAuthors)
+func (q *Queries) AllSuperAuthors(ctx context.Context, aq ...AdditionalQuery) ([]AllSuperAuthorsRow, error) {
+	query := allSuperAuthors
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -211,8 +243,16 @@ type AllSuperAuthorsAliasesRow struct {
 	SuperParentID sql.NullInt32
 }
 
-func (q *Queries) AllSuperAuthorsAliases(ctx context.Context) ([]AllSuperAuthorsAliasesRow, error) {
-	rows, err := q.db.QueryContext(ctx, allSuperAuthorsAliases)
+func (q *Queries) AllSuperAuthorsAliases(ctx context.Context, aq ...AdditionalQuery) ([]AllSuperAuthorsAliasesRow, error) {
+	query := allSuperAuthorsAliases
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -257,8 +297,16 @@ type AllSuperAuthorsAliases2Row struct {
 	SuperParentID sql.NullInt32
 }
 
-func (q *Queries) AllSuperAuthorsAliases2(ctx context.Context) ([]AllSuperAuthorsAliases2Row, error) {
-	rows, err := q.db.QueryContext(ctx, allSuperAuthorsAliases2)
+func (q *Queries) AllSuperAuthorsAliases2(ctx context.Context, aq ...AdditionalQuery) ([]AllSuperAuthorsAliases2Row, error) {
+	query := allSuperAuthorsAliases2
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -301,8 +349,16 @@ type GetMayorsRow struct {
 	FullName string
 }
 
-func (q *Queries) GetMayors(ctx context.Context) ([]GetMayorsRow, error) {
-	rows, err := q.db.QueryContext(ctx, getMayors)
+func (q *Queries) GetMayors(ctx context.Context, aq ...AdditionalQuery) ([]GetMayorsRow, error) {
+	query := getMayors
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -340,8 +396,16 @@ type GetMayorsOptionalRow struct {
 	FullName sql.NullString
 }
 
-func (q *Queries) GetMayorsOptional(ctx context.Context) ([]GetMayorsOptionalRow, error) {
-	rows, err := q.db.QueryContext(ctx, getMayorsOptional)
+func (q *Queries) GetMayorsOptional(ctx context.Context, aq ...AdditionalQuery) ([]GetMayorsOptionalRow, error) {
+	query := getMayorsOptional
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -391,8 +455,16 @@ type GetSuggestedUsersByIDRow struct {
 	MediaHeight     sql.NullInt32
 }
 
-func (q *Queries) GetSuggestedUsersByID(ctx context.Context) ([]GetSuggestedUsersByIDRow, error) {
-	rows, err := q.db.QueryContext(ctx, getSuggestedUsersByID)
+func (q *Queries) GetSuggestedUsersByID(ctx context.Context, aq ...AdditionalQuery) ([]GetSuggestedUsersByIDRow, error) {
+	query := getSuggestedUsersByID
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

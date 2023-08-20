@@ -13,8 +13,16 @@ const alsoNotEqual = `-- name: AlsoNotEqual :many
 SELECT count(*) <> 0 FROM bar
 `
 
-func (q *Queries) AlsoNotEqual(ctx context.Context) ([]bool, error) {
-	rows, err := q.db.Query(ctx, alsoNotEqual)
+func (q *Queries) AlsoNotEqual(ctx context.Context, aq ...AdditionalQuery) ([]bool, error) {
+	query := alsoNotEqual
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -37,8 +45,16 @@ const equal = `-- name: Equal :many
 SELECT count(*) = 0 FROM bar
 `
 
-func (q *Queries) Equal(ctx context.Context) ([]bool, error) {
-	rows, err := q.db.Query(ctx, equal)
+func (q *Queries) Equal(ctx context.Context, aq ...AdditionalQuery) ([]bool, error) {
+	query := equal
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -61,8 +77,16 @@ const greaterThan = `-- name: GreaterThan :many
 SELECT count(*) > 0 FROM bar
 `
 
-func (q *Queries) GreaterThan(ctx context.Context) ([]bool, error) {
-	rows, err := q.db.Query(ctx, greaterThan)
+func (q *Queries) GreaterThan(ctx context.Context, aq ...AdditionalQuery) ([]bool, error) {
+	query := greaterThan
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -85,8 +109,16 @@ const greaterThanOrEqual = `-- name: GreaterThanOrEqual :many
 SELECT count(*) >= 0 FROM bar
 `
 
-func (q *Queries) GreaterThanOrEqual(ctx context.Context) ([]bool, error) {
-	rows, err := q.db.Query(ctx, greaterThanOrEqual)
+func (q *Queries) GreaterThanOrEqual(ctx context.Context, aq ...AdditionalQuery) ([]bool, error) {
+	query := greaterThanOrEqual
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -109,8 +141,16 @@ const lessThan = `-- name: LessThan :many
 SELECT count(*) < 0 FROM bar
 `
 
-func (q *Queries) LessThan(ctx context.Context) ([]bool, error) {
-	rows, err := q.db.Query(ctx, lessThan)
+func (q *Queries) LessThan(ctx context.Context, aq ...AdditionalQuery) ([]bool, error) {
+	query := lessThan
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -133,8 +173,16 @@ const lessThanOrEqual = `-- name: LessThanOrEqual :many
 SELECT count(*) <= 0 FROM bar
 `
 
-func (q *Queries) LessThanOrEqual(ctx context.Context) ([]bool, error) {
-	rows, err := q.db.Query(ctx, lessThanOrEqual)
+func (q *Queries) LessThanOrEqual(ctx context.Context, aq ...AdditionalQuery) ([]bool, error) {
+	query := lessThanOrEqual
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -157,8 +205,16 @@ const notEqual = `-- name: NotEqual :many
 SELECT count(*) != 0 FROM bar
 `
 
-func (q *Queries) NotEqual(ctx context.Context) ([]bool, error) {
-	rows, err := q.db.Query(ctx, notEqual)
+func (q *Queries) NotEqual(ctx context.Context, aq ...AdditionalQuery) ([]bool, error) {
+	query := notEqual
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

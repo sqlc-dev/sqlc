@@ -40,6 +40,9 @@ type DeleteAuthorParams struct {
 }
 
 func (q *Queries) DeleteAuthor(ctx context.Context, arg DeleteAuthorParams) error {
-	_, err := q.db.ExecContext(ctx, deleteAuthor, arg.Age, arg.Age_2, arg.Year)
+	query := deleteAuthor
+	queryParams := []interface{}{arg.Age, arg.Age_2, arg.Year}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }

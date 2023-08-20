@@ -18,8 +18,16 @@ where handled_events.handler = $1
     for update of handled_events skip locked
 `
 
-func (q *Queries) SelectAllJoined(ctx context.Context, handler sql.NullString) ([]sql.NullInt32, error) {
-	rows, err := q.db.QueryContext(ctx, selectAllJoined, handler)
+func (q *Queries) SelectAllJoined(ctx context.Context, handler sql.NullString, aq ...AdditionalQuery) ([]sql.NullInt32, error) {
+	query := selectAllJoined
+	queryParams := []interface{}{handler}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -49,8 +57,16 @@ where he.handler = $1
     for update of he skip locked
 `
 
-func (q *Queries) SelectAllJoinedAlias(ctx context.Context, handler sql.NullString) ([]sql.NullInt32, error) {
-	rows, err := q.db.QueryContext(ctx, selectAllJoinedAlias, handler)
+func (q *Queries) SelectAllJoinedAlias(ctx context.Context, handler sql.NullString, aq ...AdditionalQuery) ([]sql.NullInt32, error) {
+	query := selectAllJoinedAlias
+	queryParams := []interface{}{handler}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

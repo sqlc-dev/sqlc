@@ -43,8 +43,9 @@ type CreateVenueParams struct {
 	Tags            []string `json:"tags"`
 }
 
-func (q *Queries) CreateVenue(ctx context.Context, arg CreateVenueParams) (int32, error) {
-	row := q.queryRow(ctx, q.createVenueStmt, createVenue,
+func (q *Queries) CreateVenue(ctx context.Context, arg CreateVenueParams, aq ...AdditionalQuery) (int32, error) {
+	query := createVenue
+	queryParams := []interface{}{
 		arg.Slug,
 		arg.Name,
 		arg.City,
@@ -52,7 +53,14 @@ func (q *Queries) CreateVenue(ctx context.Context, arg CreateVenueParams) (int32
 		arg.Status,
 		pq.Array(arg.Statuses),
 		pq.Array(arg.Tags),
-	)
+	}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.queryRow(ctx, q.createVenueStmt, query, queryParams...)
 	var id int32
 	err := row.Scan(&id)
 	return id, err
@@ -64,7 +72,10 @@ WHERE slug = $1 AND slug = $1
 `
 
 func (q *Queries) DeleteVenue(ctx context.Context, slug string) error {
-	_, err := q.exec(ctx, q.deleteVenueStmt, deleteVenue, slug)
+	query := deleteVenue
+	queryParams := []interface{}{slug}
+
+	_, err := q.exec(ctx, q.deleteVenueStmt, query, queryParams...)
 	return err
 }
 
@@ -79,8 +90,16 @@ type GetVenueParams struct {
 	City string `json:"city"`
 }
 
-func (q *Queries) GetVenue(ctx context.Context, arg GetVenueParams) (Venue, error) {
-	row := q.queryRow(ctx, q.getVenueStmt, getVenue, arg.Slug, arg.City)
+func (q *Queries) GetVenue(ctx context.Context, arg GetVenueParams, aq ...AdditionalQuery) (Venue, error) {
+	query := getVenue
+	queryParams := []interface{}{arg.Slug, arg.City}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.queryRow(ctx, q.getVenueStmt, query, queryParams...)
 	var i Venue
 	err := row.Scan(
 		&i.ID,
@@ -104,8 +123,16 @@ WHERE city = $1
 ORDER BY name
 `
 
-func (q *Queries) ListVenues(ctx context.Context, city string) ([]Venue, error) {
-	rows, err := q.query(ctx, q.listVenuesStmt, listVenues, city)
+func (q *Queries) ListVenues(ctx context.Context, city string, aq ...AdditionalQuery) ([]Venue, error) {
+	query := listVenues
+	queryParams := []interface{}{city}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.query(ctx, q.listVenuesStmt, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -150,8 +177,16 @@ type UpdateVenueNameParams struct {
 	Name string `json:"name"`
 }
 
-func (q *Queries) UpdateVenueName(ctx context.Context, arg UpdateVenueNameParams) (int32, error) {
-	row := q.queryRow(ctx, q.updateVenueNameStmt, updateVenueName, arg.Slug, arg.Name)
+func (q *Queries) UpdateVenueName(ctx context.Context, arg UpdateVenueNameParams, aq ...AdditionalQuery) (int32, error) {
+	query := updateVenueName
+	queryParams := []interface{}{arg.Slug, arg.Name}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.queryRow(ctx, q.updateVenueNameStmt, query, queryParams...)
 	var id int32
 	err := row.Scan(&id)
 	return id, err
@@ -171,8 +206,16 @@ type VenueCountByCityRow struct {
 	Count int64  `json:"count"`
 }
 
-func (q *Queries) VenueCountByCity(ctx context.Context) ([]VenueCountByCityRow, error) {
-	rows, err := q.query(ctx, q.venueCountByCityStmt, venueCountByCity)
+func (q *Queries) VenueCountByCity(ctx context.Context, aq ...AdditionalQuery) ([]VenueCountByCityRow, error) {
+	query := venueCountByCity
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.query(ctx, q.venueCountByCityStmt, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

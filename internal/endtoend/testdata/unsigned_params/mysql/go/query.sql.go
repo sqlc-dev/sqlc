@@ -14,6 +14,9 @@ INSERT INTO foo (id) VALUES (?)
 `
 
 func (q *Queries) CreateFoo(ctx context.Context, id uint32) error {
-	_, err := q.db.ExecContext(ctx, createFoo, id)
+	query := createFoo
+	queryParams := []interface{}{id}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }
