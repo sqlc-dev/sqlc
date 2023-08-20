@@ -24,8 +24,16 @@ type CreateAuthorParams struct {
 	Bio  sql.NullString
 }
 
-func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams) (Author, error) {
-	row := q.db.QueryRowContext(ctx, createAuthor, arg.Name, arg.Bio)
+func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams, aq ...AdditionalQuery) (Author, error) {
+	query := createAuthor
+	queryParams := []interface{}{arg.Name, arg.Bio}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var i Author
 	err := row.Scan(&i.ID, &i.Name, &i.Bio)
 	return i, err
@@ -36,8 +44,16 @@ SELECT id, name, bio FROM authors
 WHERE id = $1 LIMIT 1
 `
 
-func (q *Queries) GetAuthor(ctx context.Context, id int64) (Author, error) {
-	row := q.db.QueryRowContext(ctx, getAuthor, id)
+func (q *Queries) GetAuthor(ctx context.Context, id int64, aq ...AdditionalQuery) (Author, error) {
+	query := getAuthor
+	queryParams := []interface{}{id}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var i Author
 	err := row.Scan(&i.ID, &i.Name, &i.Bio)
 	return i, err
@@ -48,8 +64,16 @@ SELECT id, name, bio FROM authors
 ORDER BY bio
 `
 
-func (q *Queries) ListAuthors(ctx context.Context) ([]Author, error) {
-	rows, err := q.db.QueryContext(ctx, listAuthors)
+func (q *Queries) ListAuthors(ctx context.Context, aq ...AdditionalQuery) ([]Author, error) {
+	query := listAuthors
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -75,8 +99,16 @@ const selectOne = `-- name: SelectOne :one
 SELECT 1
 `
 
-func (q *Queries) SelectOne(ctx context.Context) (int32, error) {
-	row := q.db.QueryRowContext(ctx, selectOne)
+func (q *Queries) SelectOne(ctx context.Context, aq ...AdditionalQuery) (int32, error) {
+	query := selectOne
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var column_1 int32
 	err := row.Scan(&column_1)
 	return column_1, err
