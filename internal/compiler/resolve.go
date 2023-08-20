@@ -296,7 +296,6 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, args []paramRef, para
 					}
 				}
 				if found > 1 {
-					fmt.Println("ambiguous 3")
 					return nil, &sqlerr.Error{
 						Code:     "42703",
 						Message:  fmt.Sprintf("column reference %q is ambiguous", key),
