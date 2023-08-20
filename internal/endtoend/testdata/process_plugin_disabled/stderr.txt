@@ -1,0 +1,1 @@
+error validating sqlc.json: plugin: process-based plugins disabled via SQLCDEBUG=processplugins=0
