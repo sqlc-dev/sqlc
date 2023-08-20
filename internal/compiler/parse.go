@@ -95,7 +95,11 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 		return nil, err
 	}
 
-	params, err := c.resolveCatalogRefs(qc, rvs, refs, namedParams, embeds)
+	err = c.resolveCatalogEmbeds(qc, rvs, embeds)
+	if err != nil {
+		return nil, err
+	}
+	params, err := c.resolveCatalogRefs(qc, refs, namedParams)
 	if err != nil {
 		return nil, err
 	}

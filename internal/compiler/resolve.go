@@ -20,7 +20,7 @@ func dataType(n *ast.TypeName) string {
 	}
 }
 
-func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, args []paramRef, params *named.ParamSet, embeds rewrite.EmbedSet) ([]Parameter, error) {
+func (comp *Compiler) resolveCatalogEmbeds(qc *QueryCatalog, rvs []*ast.RangeVar, embeds rewrite.EmbedSet) error {
 	c := comp.catalog
 
 	aliasMap := map[string]*ast.TableName{}
@@ -55,7 +55,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 		}
 		fqn, err := ParseTableName(rv)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		if _, found := aliasMap[fqn.Name]; found {
 			continue
@@ -64,13 +64,13 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 		if err != nil {
 			// If the table name doesn't exist, fisrt check if it's a CTE
 			if _, qcerr := qc.GetTable(fqn); qcerr != nil {
-				return nil, err
+				return err
 			}
 			continue
 		}
 		err = indexTable(table)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		if rv.Alias != nil {
 			aliasMap[*rv.Alias.Aliasname] = fqn
@@ -90,11 +90,71 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 			continue
 		}
 
-		return nil, fmt.Errorf("unable to resolve table with %q: %w", embed.Orig(), err)
+		return fmt.Errorf("unable to resolve table with %q: %w", embed.Orig(), err)
 	}
+	return nil
+}
 
+func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, args []paramRef, params *named.ParamSet) ([]Parameter, error) {
+	c := comp.catalog
+
+	// resolve a table for an embed
 	var a []Parameter
 	for _, ref := range args {
+		aliasMap := map[string]*ast.TableName{}
+		// TODO: Deprecate defaultTable
+		var defaultTable *ast.TableName
+		var tables []*ast.TableName
+
+		typeMap := map[string]map[string]map[string]*catalog.Column{}
+		indexTable := func(table catalog.Table) error {
+			tables = append(tables, table.Rel)
+			if defaultTable == nil {
+				defaultTable = table.Rel
+			}
+			schema := table.Rel.Schema
+			if schema == "" {
+				schema = c.DefaultSchema
+			}
+			if _, exists := typeMap[schema]; !exists {
+				typeMap[schema] = map[string]map[string]*catalog.Column{}
+			}
+			typeMap[schema][table.Rel.Name] = map[string]*catalog.Column{}
+			for _, c := range table.Columns {
+				cc := c
+				typeMap[schema][table.Rel.Name][c.Name] = cc
+			}
+			return nil
+		}
+
+		for _, rv := range ref.rvs {
+			if rv == nil || rv.Relname == nil {
+				continue
+			}
+			fqn, err := ParseTableName(rv)
+			if err != nil {
+				return nil, err
+			}
+			if _, found := aliasMap[fqn.Name]; found {
+				continue
+			}
+			table, err := c.GetTable(fqn)
+			if err != nil {
+				// If the table name doesn't exist, fisrt check if it's a CTE
+				if _, qcerr := qc.GetTable(fqn); qcerr != nil {
+					return nil, err
+				}
+				continue
+			}
+			err = indexTable(table)
+			if err != nil {
+				return nil, err
+			}
+			if rv.Alias != nil {
+				aliasMap[*rv.Alias.Aliasname] = fqn
+			}
+		}
+
 		switch n := ref.parent.(type) {
 
 		case *limitOffset:
@@ -196,7 +256,12 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 				}
 
 				var found int
+				seenTable := make(map[string]bool, len(search))
 				for _, table := range search {
+					if seenTable[table.Name] {
+						continue
+					}
+					seenTable[table.Name] = true
 					schema := table.Schema
 					if schema == "" {
 						schema = c.DefaultSchema
@@ -236,6 +301,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 					}
 				}
 				if found > 1 {
+					fmt.Println("ambiguous 3")
 					return nil, &sqlerr.Error{
 						Code:     "42703",
 						Message:  fmt.Sprintf("column reference %q is ambiguous", key),
@@ -551,7 +617,12 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 					}
 				}
 
+				seenTables := make(map[string]bool, len(search))
 				for _, table := range search {
+					if seenTables[table.Name] {
+						continue
+					}
+					seenTables[table.Name] = true
 					schema := table.Schema
 					if schema == "" {
 						schema = c.DefaultSchema
