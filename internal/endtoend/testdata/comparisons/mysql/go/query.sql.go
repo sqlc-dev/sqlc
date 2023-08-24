@@ -117,6 +117,60 @@ func (q *Queries) GreaterThanOrEqual(ctx context.Context) ([]bool, error) {
 	return items, nil
 }
 
+const isNotNull = `-- name: IsNotNull :many
+SELECT id IS NOT NULL FROM bar
+`
+
+func (q *Queries) IsNotNull(ctx context.Context) ([]bool, error) {
+	rows, err := q.db.QueryContext(ctx, isNotNull)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []bool
+	for rows.Next() {
+		var column_1 bool
+		if err := rows.Scan(&column_1); err != nil {
+			return nil, err
+		}
+		items = append(items, column_1)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const isNull = `-- name: IsNull :many
+SELECT id IS NULL FROM bar
+`
+
+func (q *Queries) IsNull(ctx context.Context) ([]bool, error) {
+	rows, err := q.db.QueryContext(ctx, isNull)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []bool
+	for rows.Next() {
+		var column_1 bool
+		if err := rows.Scan(&column_1); err != nil {
+			return nil, err
+		}
+		items = append(items, column_1)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const lessThan = `-- name: LessThan :many
 SELECT count(*) < 0 FROM bar
 `

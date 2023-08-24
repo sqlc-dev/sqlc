@@ -173,12 +173,17 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 				name = *res.Name
 			}
 			notNull := false
-			if n.Boolop == ast.BoolExprTypeNot && len(n.Args.Items) == 1 {
-				sublink, ok := n.Args.Items[0].(*ast.SubLink)
-				if ok && sublink.SubLinkType == ast.EXISTS_SUBLINK {
+			if len(n.Args.Items) == 1 {
+				switch n.Boolop {
+				case ast.BoolExprTypeIsNull, ast.BoolExprTypeIsNotNull:
 					notNull = true
-					if name == "" {
-						name = "not_exists"
+				case ast.BoolExprTypeNot:
+					sublink, ok := n.Args.Items[0].(*ast.SubLink)
+					if ok && sublink.SubLinkType == ast.EXISTS_SUBLINK {
+						notNull = true
+						if name == "" {
+							name = "not_exists"
+						}
 					}
 				}
 			}

@@ -953,7 +953,18 @@ func (c *cc) convertIndexPartSpecification(n *pcast.IndexPartSpecification) ast.
 }
 
 func (c *cc) convertIsNullExpr(n *pcast.IsNullExpr) ast.Node {
-	return todo(n)
+	op := ast.BoolExprTypeIsNull
+	if n.Not {
+		op = ast.BoolExprTypeIsNotNull
+	}
+	return &ast.BoolExpr{
+		Boolop: op,
+		Args: &ast.List{
+			Items: []ast.Node{
+				c.convert(n.Expr),
+			},
+		},
+	}
 }
 
 func (c *cc) convertIsTruthExpr(n *pcast.IsTruthExpr) ast.Node {
