@@ -1,4 +1,4 @@
--- https://github.com/kyleconroy/sqlc/issues/604
+-- https://github.com/sqlc-dev/sqlc/issues/604
 CREATE TABLE users (
   user_id    INT PRIMARY KEY,
   city_id    INT -- nullable
@@ -29,7 +29,7 @@ FROM users
 LEFT JOIN cities USING (city_id)
 LEFT JOIN mayors USING (mayor_id);
 
--- https://github.com/kyleconroy/sqlc/issues/1334
+-- https://github.com/sqlc-dev/sqlc/issues/1334
 CREATE TABLE authors (
   id        INT PRIMARY KEY,
   name      TEXT NOT NULL,
@@ -78,7 +78,7 @@ FROM    authors AS a
         LEFT JOIN super_authors AS sa
             ON a.parent_id = sa.super_id;
 
--- https://github.com/kyleconroy/sqlc/issues/1334
+-- https://github.com/sqlc-dev/sqlc/issues/1334
 CREATE TABLE users_2 (
     user_id           INT PRIMARY KEY,
     user_nickname     VARCHAR(30) UNIQUE NOT NULL,
@@ -108,3 +108,10 @@ FROM    users_2 AS u
         LEFT JOIN media AS m
             ON u.user_avatar_id = m.media_id
 WHERE   u.user_id != @user_id;
+
+-- name: GetSuggestedUsersByID2 :many
+SELECT  users_2.user_id
+FROM    users_2
+            LEFT JOIN media AS m
+                      ON user_avatar_id = m.media_id
+WHERE   user_id != @user_id;

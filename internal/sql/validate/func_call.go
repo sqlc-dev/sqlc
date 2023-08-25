@@ -4,11 +4,11 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/kyleconroy/sqlc/internal/config"
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/astutils"
-	"github.com/kyleconroy/sqlc/internal/sql/catalog"
-	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
+	"github.com/sqlc-dev/sqlc/internal/config"
+	"github.com/sqlc-dev/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
+	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
+	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
 )
 
 type funcCallVisitor struct {
@@ -31,17 +31,17 @@ func (v *funcCallVisitor) Visit(node ast.Node) astutils.Visitor {
 		return v
 	}
 
-	// Custom validation for sqlc.arg
+	// Custom validation for sqlc.arg, sqlc.narg and sqlc.slice
 	// TODO: Replace this once type-checking is implemented
 	if fn.Schema == "sqlc" {
-		if !(fn.Name == "arg" || fn.Name == "narg") {
+		if !(fn.Name == "arg" || fn.Name == "narg" || fn.Name == "slice" || fn.Name == "embed") {
 			v.err = sqlerr.FunctionNotFound("sqlc." + fn.Name)
 			return nil
 		}
 
 		if len(call.Args.Items) != 1 {
 			v.err = &sqlerr.Error{
-				Message:  fmt.Sprintf("expected 1 parameter to sqlc.arg; got %d", len(call.Args.Items)),
+				Message:  fmt.Sprintf("expected 1 parameter to sqlc.%s; got %d", fn.Name, len(call.Args.Items)),
 				Location: call.Pos(),
 			}
 			return nil
@@ -51,7 +51,7 @@ func (v *funcCallVisitor) Visit(node ast.Node) astutils.Visitor {
 		case *ast.ColumnRef:
 		default:
 			v.err = &sqlerr.Error{
-				Message:  fmt.Sprintf("expected parameter to sqlc.arg to be string or reference; got %T", n),
+				Message:  fmt.Sprintf("expected parameter to sqlc.%s to be string or reference; got %T", fn.Name, n),
 				Location: call.Pos(),
 			}
 			return nil

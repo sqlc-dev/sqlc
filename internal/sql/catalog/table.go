@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
+	"github.com/sqlc-dev/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
 )
 
 // Table describes a relational database table
@@ -16,6 +16,16 @@ type Table struct {
 	Rel     *ast.TableName
 	Columns []*Column
 	Comment string
+}
+
+func checkMissing(err error, missingOK bool) error {
+	var serr *sqlerr.Error
+	if errors.As(err, &serr) {
+		if serr.Err == sqlerr.NotFound && missingOK {
+			return nil
+		}
+	}
+	return err
 }
 
 func (table *Table) isExistColumn(cmd *ast.AlterTableCmd) (int, error) {
@@ -42,11 +52,13 @@ func (table *Table) addColumn(cmd *ast.AlterTableCmd) error {
 	}
 
 	table.Columns = append(table.Columns, &Column{
-		Name:      cmd.Def.Colname,
-		Type:      *cmd.Def.TypeName,
-		IsNotNull: cmd.Def.IsNotNull,
-		IsArray:   cmd.Def.IsArray,
-		Length:    cmd.Def.Length,
+		Name:       cmd.Def.Colname,
+		Type:       *cmd.Def.TypeName,
+		IsNotNull:  cmd.Def.IsNotNull,
+		IsUnsigned: cmd.Def.IsUnsigned,
+		IsArray:    cmd.Def.IsArray,
+		ArrayDims:  cmd.Def.ArrayDims,
+		Length:     cmd.Def.Length,
 	})
 	return nil
 }
@@ -59,6 +71,7 @@ func (table *Table) alterColumnType(cmd *ast.AlterTableCmd) error {
 	if index >= 0 {
 		table.Columns[index].Type = *cmd.Def.TypeName
 		table.Columns[index].IsArray = cmd.Def.IsArray
+		table.Columns[index].ArrayDims = cmd.Def.ArrayDims
 	}
 	return nil
 }
@@ -100,12 +113,14 @@ func (table *Table) setNotNull(cmd *ast.AlterTableCmd) error {
 //
 // TODO: Should this just be ast Nodes?
 type Column struct {
-	Name      string
-	Type      ast.TypeName
-	IsNotNull bool
-	IsArray   bool
-	Comment   string
-	Length    *int
+	Name       string
+	Type       ast.TypeName
+	IsNotNull  bool
+	IsUnsigned bool
+	IsArray    bool
+	ArrayDims  int
+	Comment    string
+	Length     *int
 }
 
 // An interface is used to resolve a circular import between the catalog and compiler packages.
@@ -165,7 +180,7 @@ func (c *Catalog) alterTable(stmt *ast.AlterTableStmt) error {
 	}
 	_, table, err := c.getTable(stmt.Table)
 	if err != nil {
-		return err
+		return checkMissing(err, stmt.MissingOk)
 	}
 	for _, item := range stmt.Cmds.Items {
 		switch cmd := item.(type) {
@@ -204,11 +219,11 @@ func (c *Catalog) alterTableSetSchema(stmt *ast.AlterTableSetSchemaStmt) error {
 	}
 	oldSchema, err := c.getSchema(ns)
 	if err != nil {
-		return err
+		return checkMissing(err, stmt.MissingOk)
 	}
 	tbl, idx, err := oldSchema.getTable(stmt.Table)
 	if err != nil {
-		return err
+		return checkMissing(err, stmt.MissingOk)
 	}
 	tbl.Rel.Schema = *stmt.NewSchema
 	newSchema, err := c.getSchema(*stmt.NewSchema)
@@ -240,12 +255,29 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 	}
 
 	tbl := Table{Rel: stmt.Name, Comment: stmt.Comment}
+	coltype := make(map[string]ast.TypeName) // used to check for duplicate column names
+	seen := make(map[string]bool)            // used to check for duplicate column names
 	for _, inheritTable := range stmt.Inherits {
 		t, _, err := schema.getTable(inheritTable)
 		if err != nil {
 			return err
 		}
-		tbl.Columns = append(tbl.Columns, t.Columns...)
+		// check and ignore duplicate columns
+		for _, col := range t.Columns {
+			if notNull, ok := seen[col.Name]; ok {
+				seen[col.Name] = notNull || col.IsNotNull
+				if a, ok := coltype[col.Name]; ok {
+					if !sameType(&a, &col.Type) {
+						return fmt.Errorf("column %q has a type conflict", col.Name)
+					}
+				}
+				continue
+			}
+
+			seen[col.Name] = col.IsNotNull
+			coltype[col.Name] = col.Type
+			tbl.Columns = append(tbl.Columns, col)
+		}
 	}
 
 	if stmt.ReferTable != nil && len(stmt.Cols) != 0 {
@@ -263,13 +295,25 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 		}
 	} else {
 		for _, col := range stmt.Cols {
+			if notNull, ok := seen[col.Colname]; ok {
+				seen[col.Colname] = notNull || col.IsNotNull
+				if a, ok := coltype[col.Colname]; ok {
+					if !sameType(&a, col.TypeName) {
+						return fmt.Errorf("column %q has a type conflict", col.Colname)
+					}
+				}
+				continue
+			}
+
 			tc := &Column{
-				Name:      col.Colname,
-				Type:      *col.TypeName,
-				IsNotNull: col.IsNotNull,
-				IsArray:   col.IsArray,
-				Comment:   col.Comment,
-				Length:    col.Length,
+				Name:       col.Colname,
+				Type:       *col.TypeName,
+				IsNotNull:  col.IsNotNull,
+				IsUnsigned: col.IsUnsigned,
+				IsArray:    col.IsArray,
+				ArrayDims:  col.ArrayDims,
+				Comment:    col.Comment,
+				Length:     col.Length,
 			}
 			if col.Vals != nil {
 				typeName := ast.TypeName{
@@ -284,6 +328,14 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 			tbl.Columns = append(tbl.Columns, tc)
 		}
 	}
+
+	// If one of the merged columns was not null, mark the column as not null
+	for i := range tbl.Columns {
+		if notNull, ok := seen[tbl.Columns[i].Name]; ok {
+			tbl.Columns[i].IsNotNull = notNull
+		}
+	}
+
 	schema.Tables = append(schema.Tables, &tbl)
 	return nil
 }
@@ -316,7 +368,7 @@ func (c *Catalog) dropTable(stmt *ast.DropTableStmt) error {
 func (c *Catalog) renameColumn(stmt *ast.RenameColumnStmt) error {
 	_, tbl, err := c.getTable(stmt.Table)
 	if err != nil {
-		return err
+		return checkMissing(err, stmt.MissingOk)
 	}
 	idx := -1
 	for i := range tbl.Columns {
@@ -337,7 +389,7 @@ func (c *Catalog) renameColumn(stmt *ast.RenameColumnStmt) error {
 func (c *Catalog) renameTable(stmt *ast.RenameTableStmt) error {
 	sch, tbl, err := c.getTable(stmt.Table)
 	if err != nil {
-		return err
+		return checkMissing(err, stmt.MissingOk)
 	}
 	if _, _, err := sch.getTable(&ast.TableName{Name: *stmt.NewName}); err == nil {
 		return sqlerr.RelationExists(*stmt.NewName)

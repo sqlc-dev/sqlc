@@ -2,26 +2,30 @@ package sqltest
 
 import (
 	"database/sql"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
 
-	"github.com/kyleconroy/sqlc/internal/sql/sqlpath"
+	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
 func SQLite(t *testing.T, migrations []string) (*sql.DB, func()) {
 	t.Helper()
-
 	// For each test, pick a new database name at random.
-	source, err := ioutil.TempFile("", "sqltest_sqlite_")
+	source, err := os.CreateTemp("", "sqltest_sqlite_")
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Logf("open %s\n", source.Name())
-	sdb, err := sql.Open("sqlite3", source.Name())
+	return CreateSQLiteDatabase(t, source.Name(), migrations)
+}
+
+func CreateSQLiteDatabase(t *testing.T, path string, migrations []string) (*sql.DB, func()) {
+	t.Helper()
+
+	t.Logf("open %s\n", path)
+	sdb, err := sql.Open("sqlite3", path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -41,6 +45,8 @@ func SQLite(t *testing.T, migrations []string) (*sql.DB, func()) {
 	}
 
 	return sdb, func() {
-		os.Remove(source.Name())
+		if _, err := os.Stat(path); err == nil {
+			os.Remove(path)
+		}
 	}
 }

@@ -1,6 +1,6 @@
 package golang
 
-type SQLDriver int
+type SQLDriver string
 
 const (
 	SQLPackagePGXV4    string = "pgx/v4"
@@ -9,9 +9,10 @@ const (
 )
 
 const (
-	SQLDriverPGXV4 SQLDriver = iota
-	SQLDriverPGXV5
-	SQLDriverLibPQ
+	SQLDriverPGXV4            SQLDriver = "github.com/jackc/pgx/v4"
+	SQLDriverPGXV5                      = "github.com/jackc/pgx/v5"
+	SQLDriverLibPQ                      = "github.com/lib/pq"
+	SQLDriverGoSQLDriverMySQL           = "github.com/go-sql-driver/mysql"
 )
 
 func parseDriver(sqlPackage string) SQLDriver {
@@ -27,6 +28,10 @@ func parseDriver(sqlPackage string) SQLDriver {
 
 func (d SQLDriver) IsPGX() bool {
 	return d == SQLDriverPGXV4 || d == SQLDriverPGXV5
+}
+
+func (d SQLDriver) IsGoSQLDriverMySQL() bool {
+	return d == SQLDriverGoSQLDriverMySQL
 }
 
 func (d SQLDriver) Package() string {

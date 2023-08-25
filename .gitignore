@@ -1,2 +1,10 @@
 /.idea/
 __pycache__
+.DS_Store
+
+# Devenv
+.envrc
+.direnv
+.devenv*
+devenv.local.nix
+

@@ -47,6 +47,9 @@ type SQLiteParserListener interface {
 	// EnterIndexed_column is called when entering the indexed_column production.
 	EnterIndexed_column(c *Indexed_columnContext)
 
+	// EnterTable_option is called when entering the table_option production.
+	EnterTable_option(c *Table_optionContext)
+
 	// EnterCreate_table_stmt is called when entering the create_table_stmt production.
 	EnterCreate_table_stmt(c *Create_table_stmtContext)
 
@@ -320,6 +323,9 @@ type SQLiteParserListener interface {
 	// EnterFunction_name is called when entering the function_name production.
 	EnterFunction_name(c *Function_nameContext)
 
+	// EnterQualified_function_name is called when entering the qualified_function_name production.
+	EnterQualified_function_name(c *Qualified_function_nameContext)
+
 	// EnterSchema_name is called when entering the schema_name production.
 	EnterSchema_name(c *Schema_nameContext)
 
@@ -361,6 +367,9 @@ type SQLiteParserListener interface {
 
 	// EnterTable_alias is called when entering the table_alias production.
 	EnterTable_alias(c *Table_aliasContext)
+
+	// EnterTable_alias_fallback is called when entering the table_alias_fallback production.
+	EnterTable_alias_fallback(c *Table_alias_fallbackContext)
 
 	// EnterTransaction_name is called when entering the transaction_name production.
 	EnterTransaction_name(c *Transaction_nameContext)
@@ -427,6 +436,9 @@ type SQLiteParserListener interface {
 
 	// ExitIndexed_column is called when exiting the indexed_column production.
 	ExitIndexed_column(c *Indexed_columnContext)
+
+	// ExitTable_option is called when exiting the table_option production.
+	ExitTable_option(c *Table_optionContext)
 
 	// ExitCreate_table_stmt is called when exiting the create_table_stmt production.
 	ExitCreate_table_stmt(c *Create_table_stmtContext)
@@ -701,6 +713,9 @@ type SQLiteParserListener interface {
 	// ExitFunction_name is called when exiting the function_name production.
 	ExitFunction_name(c *Function_nameContext)
 
+	// ExitQualified_function_name is called when exiting the qualified_function_name production.
+	ExitQualified_function_name(c *Qualified_function_nameContext)
+
 	// ExitSchema_name is called when exiting the schema_name production.
 	ExitSchema_name(c *Schema_nameContext)
 
@@ -742,6 +757,9 @@ type SQLiteParserListener interface {
 
 	// ExitTable_alias is called when exiting the table_alias production.
 	ExitTable_alias(c *Table_aliasContext)
+
+	// ExitTable_alias_fallback is called when exiting the table_alias_fallback production.
+	ExitTable_alias_fallback(c *Table_alias_fallbackContext)
 
 	// ExitTransaction_name is called when exiting the transaction_name production.
 	ExitTransaction_name(c *Transaction_nameContext)

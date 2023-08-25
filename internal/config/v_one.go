@@ -10,20 +10,24 @@ import (
 
 type V1GenerateSettings struct {
 	Version   string              `json:"version" yaml:"version"`
+	Cloud     Cloud               `json:"cloud" yaml:"cloud"`
 	Project   Project             `json:"project" yaml:"project"`
 	Packages  []v1PackageSettings `json:"packages" yaml:"packages"`
 	Overrides []Override          `json:"overrides,omitempty" yaml:"overrides,omitempty"`
 	Rename    map[string]string   `json:"rename,omitempty" yaml:"rename,omitempty"`
+	Rules     []Rule              `json:"rules" yaml:"rules"`
 }
 
 type v1PackageSettings struct {
 	Name                      string     `json:"name" yaml:"name"`
 	Engine                    Engine     `json:"engine,omitempty" yaml:"engine"`
+	Database                  *Database  `json:"database,omitempty" yaml:"database"`
 	Path                      string     `json:"path" yaml:"path"`
 	Schema                    Paths      `json:"schema" yaml:"schema"`
 	Queries                   Paths      `json:"queries" yaml:"queries"`
 	EmitInterface             bool       `json:"emit_interface" yaml:"emit_interface"`
 	EmitJSONTags              bool       `json:"emit_json_tags" yaml:"emit_json_tags"`
+	JsonTagsIDUppercase       bool       `json:"json_tags_id_uppercase" yaml:"json_tags_id_uppercase"`
 	EmitDBTags                bool       `json:"emit_db_tags" yaml:"emit_db_tags"`
 	EmitPreparedQueries       bool       `json:"emit_prepared_queries" yaml:"emit_prepared_queries"`
 	EmitExactTableNames       bool       `json:"emit_exact_table_names,omitempty" yaml:"emit_exact_table_names"`
@@ -37,12 +41,18 @@ type v1PackageSettings struct {
 	EmitAllEnumValues         bool       `json:"emit_all_enum_values,omitempty" yaml:"emit_all_enum_values"`
 	JSONTagsCaseStyle         string     `json:"json_tags_case_style,omitempty" yaml:"json_tags_case_style"`
 	SQLPackage                string     `json:"sql_package" yaml:"sql_package"`
+	SQLDriver                 string     `json:"sql_driver" yaml:"sql_driver"`
 	Overrides                 []Override `json:"overrides" yaml:"overrides"`
+	OutputBatchFileName       string     `json:"output_batch_file_name,omitempty" yaml:"output_batch_file_name"`
 	OutputDBFileName          string     `json:"output_db_file_name,omitempty" yaml:"output_db_file_name"`
 	OutputModelsFileName      string     `json:"output_models_file_name,omitempty" yaml:"output_models_file_name"`
 	OutputQuerierFileName     string     `json:"output_querier_file_name,omitempty" yaml:"output_querier_file_name"`
 	OutputFilesSuffix         string     `json:"output_files_suffix,omitempty" yaml:"output_files_suffix"`
 	StrictFunctionChecks      bool       `json:"strict_function_checks" yaml:"strict_function_checks"`
+	StrictOrderBy             *bool      `json:"strict_order_by" yaml:"strict_order_by"`
+	QueryParameterLimit       *int32     `json:"query_parameter_limit,omitempty" yaml:"query_parameter_limit"`
+	OmitUnusedStructs         bool       `json:"omit_unused_structs,omitempty" yaml:"omit_unused_structs"`
+	Rules                     []string   `json:"rules" yaml:"rules"`
 }
 
 func v1ParseConfig(rd io.Reader) (Config, error) {
@@ -74,6 +84,16 @@ func v1ParseConfig(rd io.Reader) (Config, error) {
 		if settings.Packages[j].Path == "" {
 			return config, ErrNoPackagePath
 		}
+
+		if settings.Packages[j].QueryParameterLimit != nil && (*settings.Packages[j].QueryParameterLimit < 0) {
+			return config, ErrInvalidQueryParameterLimit
+		}
+
+		if settings.Packages[j].QueryParameterLimit == nil {
+			settings.Packages[j].QueryParameterLimit = new(int32)
+			*settings.Packages[j].QueryParameterLimit = 1
+		}
+
 		for i := range settings.Packages[j].Overrides {
 			if err := settings.Packages[j].Overrides[i].Parse(); err != nil {
 				return config, err
@@ -112,17 +132,26 @@ func (c *V1GenerateSettings) Translate() Config {
 	conf := Config{
 		Version: c.Version,
 		Project: c.Project,
+		Cloud:   c.Cloud,
+		Rules:   c.Rules,
 	}
 
 	for _, pkg := range c.Packages {
+		if pkg.StrictOrderBy == nil {
+			defaultValue := true
+			pkg.StrictOrderBy = &defaultValue
+		}
 		conf.SQL = append(conf.SQL, SQL{
-			Engine:  pkg.Engine,
-			Schema:  pkg.Schema,
-			Queries: pkg.Queries,
+			Engine:   pkg.Engine,
+			Database: pkg.Database,
+			Schema:   pkg.Schema,
+			Queries:  pkg.Queries,
+			Rules:    pkg.Rules,
 			Gen: SQLGen{
 				Go: &SQLGo{
 					EmitInterface:             pkg.EmitInterface,
 					EmitJSONTags:              pkg.EmitJSONTags,
+					JsonTagsIDUppercase:       pkg.JsonTagsIDUppercase,
 					EmitDBTags:                pkg.EmitDBTags,
 					EmitPreparedQueries:       pkg.EmitPreparedQueries,
 					EmitExactTableNames:       pkg.EmitExactTableNames,
@@ -137,15 +166,20 @@ func (c *V1GenerateSettings) Translate() Config {
 					Package:                   pkg.Name,
 					Out:                       pkg.Path,
 					SQLPackage:                pkg.SQLPackage,
+					SQLDriver:                 pkg.SQLDriver,
 					Overrides:                 pkg.Overrides,
 					JSONTagsCaseStyle:         pkg.JSONTagsCaseStyle,
+					OutputBatchFileName:       pkg.OutputBatchFileName,
 					OutputDBFileName:          pkg.OutputDBFileName,
 					OutputModelsFileName:      pkg.OutputModelsFileName,
 					OutputQuerierFileName:     pkg.OutputQuerierFileName,
 					OutputFilesSuffix:         pkg.OutputFilesSuffix,
+					QueryParameterLimit:       pkg.QueryParameterLimit,
+					OmitUnusedStructs:         pkg.OmitUnusedStructs,
 				},
 			},
 			StrictFunctionChecks: pkg.StrictFunctionChecks,
+			StrictOrderBy:        pkg.StrictOrderBy,
 		})
 	}
 

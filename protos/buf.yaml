@@ -1,5 +1,5 @@
 version: v1
-name: github.com/kyleconroy/sqlc
+name: github.com/sqlc-dev/sqlc
 breaking:
 lint:
   use:

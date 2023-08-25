@@ -1,4 +1,4 @@
--- https://github.com/kyleconroy/sqlc/issues/604
+-- https://github.com/sqlc-dev/sqlc/issues/604
 CREATE TABLE users (
   user_id    INT PRIMARY KEY,
   city_id    INT -- nullable
@@ -29,7 +29,7 @@ FROM users
 LEFT JOIN cities USING (city_id)
 LEFT JOIN mayors USING (mayor_id);
 
--- https://github.com/kyleconroy/sqlc/issues/1334
+-- https://github.com/sqlc-dev/sqlc/issues/1334
 CREATE TABLE authors (
   id        INT PRIMARY KEY,
   name      TEXT NOT NULL,
@@ -78,7 +78,7 @@ FROM    authors a
         LEFT JOIN super_authors sa
             ON a.parent_id = sa.super_id;
 
--- https://github.com/kyleconroy/sqlc/issues/1334
+-- https://github.com/sqlc-dev/sqlc/issues/1334
 CREATE TABLE users_2 (
     user_id           INT PRIMARY KEY,
     user_nickname     VARCHAR(30) UNIQUE NOT NULL,

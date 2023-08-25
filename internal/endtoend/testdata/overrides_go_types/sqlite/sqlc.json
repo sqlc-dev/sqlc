@@ -1,0 +1,22 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "path": "go",
+      "name": "override",
+      "engine": "sqlite",
+      "schema": "schema.sql",
+      "queries": "query.sql",
+      "overrides": [
+        {
+          "go_type": "github.com/sqlc-dev/sqlc-testdata/pkg.CustomType",
+          "column": "foo.retyped"
+        },
+        {
+          "go_type": "github.com/sqlc-dev/sqlc-testdata/pkg.CustomType",
+          "column": "*.also_retyped"
+        }
+      ]
+    }
+  ]
+}

@@ -2,10 +2,11 @@ package golang
 
 import (
 	"fmt"
+	"regexp"
 	"sort"
 	"strings"
 
-	"github.com/kyleconroy/sqlc/internal/plugin"
+	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
 
 type Field struct {
@@ -14,26 +15,38 @@ type Field struct {
 	Type    string
 	Tags    map[string]string
 	Comment string
+	Column  *plugin.Column
+	// EmbedFields contains the embedded fields that require scanning.
+	EmbedFields []Field
 }
 
 func (gf Field) Tag() string {
-	tags := make([]string, 0, len(gf.Tags))
-	for key, val := range gf.Tags {
-		tags = append(tags, fmt.Sprintf("%s:\"%s\"", key, val))
-	}
+	return TagsToString(gf.Tags)
+}
+
+func (gf Field) HasSqlcSlice() bool {
+	return gf.Column.IsSqlcSlice
+}
+
+func TagsToString(tags map[string]string) string {
 	if len(tags) == 0 {
 		return ""
 	}
-	sort.Strings(tags)
-	return strings.Join(tags, " ")
+	tagParts := make([]string, 0, len(tags))
+	for key, val := range tags {
+		tagParts = append(tagParts, fmt.Sprintf("%s:%q", key, val))
+	}
+	sort.Strings(tagParts)
+	return strings.Join(tagParts, " ")
 }
 
 func JSONTagName(name string, settings *plugin.Settings) string {
 	style := settings.Go.JsonTagsCaseStyle
+	idUppercase := settings.Go.JsonTagsIdUppercase
 	if style == "" || style == "none" {
 		return name
 	} else {
-		return SetCaseStyle(name, style)
+		return SetJSONCaseStyle(name, style, idUppercase)
 	}
 }
 
@@ -50,7 +63,27 @@ func SetCaseStyle(name string, style string) string {
 	}
 }
 
+func SetJSONCaseStyle(name string, style string, idUppercase bool) string {
+	switch style {
+	case "camel":
+		return toJsonCamelCase(name, idUppercase)
+	case "pascal":
+		return toPascalCase(name)
+	case "snake":
+		return toSnakeCase(name)
+	default:
+		panic(fmt.Sprintf("unsupported JSON tags case style: '%s'", style))
+	}
+}
+
+var camelPattern = regexp.MustCompile("[^A-Z][A-Z]+")
+
 func toSnakeCase(s string) string {
+	if !strings.ContainsRune(s, '_') {
+		s = camelPattern.ReplaceAllStringFunc(s, func(x string) string {
+			return x[:1] + "_" + x[1:]
+		})
+	}
 	return strings.ToLower(s)
 }
 
@@ -76,4 +109,34 @@ func toCamelInitCase(name string, initUpper bool) string {
 		}
 	}
 	return out
+}
+
+func toJsonCamelCase(name string, idUppercase bool) string {
+	out := ""
+	idStr := "Id"
+
+	if idUppercase {
+		idStr = "ID"
+	}
+
+	for i, p := range strings.Split(name, "_") {
+		if i == 0 {
+			out += p
+			continue
+		}
+		if p == "id" {
+			out += idStr
+		} else {
+			out += strings.Title(p)
+		}
+	}
+	return out
+}
+
+func toLowerCase(str string) string {
+	if str == "" {
+		return ""
+	}
+
+	return strings.ToLower(str[:1]) + str[1:]
 }

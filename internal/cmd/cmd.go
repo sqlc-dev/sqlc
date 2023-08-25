@@ -17,15 +17,18 @@ import (
 	"github.com/spf13/pflag"
 	"gopkg.in/yaml.v3"
 
-	"github.com/kyleconroy/sqlc/internal/config"
-	"github.com/kyleconroy/sqlc/internal/debug"
-	"github.com/kyleconroy/sqlc/internal/info"
-	"github.com/kyleconroy/sqlc/internal/opts"
-	"github.com/kyleconroy/sqlc/internal/tracer"
+	"github.com/sqlc-dev/sqlc/internal/config"
+	"github.com/sqlc-dev/sqlc/internal/debug"
+	"github.com/sqlc-dev/sqlc/internal/info"
+	"github.com/sqlc-dev/sqlc/internal/opts"
+	"github.com/sqlc-dev/sqlc/internal/tracer"
 )
 
 func init() {
 	uploadCmd.Flags().BoolP("dry-run", "", false, "dump upload request (default: false)")
+	initCmd.Flags().BoolP("v1", "", false, "generate v1 config yaml file")
+	initCmd.Flags().BoolP("v2", "", true, "generate v2 config yaml file")
+	initCmd.MarkFlagsMutuallyExclusive("v1", "v2")
 }
 
 // Do runs the command logic.
@@ -33,6 +36,8 @@ func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int 
 	rootCmd := &cobra.Command{Use: "sqlc", SilenceUsage: true}
 	rootCmd.PersistentFlags().StringP("file", "f", "", "specify an alternate config file (default: sqlc.yaml)")
 	rootCmd.PersistentFlags().BoolP("experimental", "x", false, "DEPRECATED: enable experimental features (default: false)")
+	rootCmd.PersistentFlags().Bool("no-remote", false, "disable remote execution (default: false)")
+	rootCmd.PersistentFlags().Bool("no-database", false, "disable database connections (default: false)")
 
 	rootCmd.AddCommand(checkCmd)
 	rootCmd.AddCommand(diffCmd)
@@ -40,12 +45,12 @@ func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int 
 	rootCmd.AddCommand(initCmd)
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(uploadCmd)
+	rootCmd.AddCommand(NewCmdVet())
 
 	rootCmd.SetArgs(args)
 	rootCmd.SetIn(stdin)
 	rootCmd.SetOut(stdout)
 	rootCmd.SetErr(stderr)
-	rootCmd.SilenceErrors = true
 
 	ctx := context.Background()
 	if debug.Debug.Trace != "" {
@@ -75,9 +80,9 @@ var versionCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		defer trace.StartRegion(cmd.Context(), "version").End()
 		if version == "" {
-			fmt.Printf("%s\n", info.Version)
+			fmt.Fprintf(cmd.OutOrStdout(), "%s\n", info.Version)
 		} else {
-			fmt.Printf("%s\n", version)
+			fmt.Fprintf(cmd.OutOrStdout(), "%s\n", version)
 		}
 		return nil
 	},
@@ -87,6 +92,17 @@ var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Create an empty sqlc.yaml settings file",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		useV1, err := cmd.Flags().GetBool("v1")
+		if err != nil {
+			return err
+		}
+		var yamlConfig interface{}
+		if useV1 {
+			yamlConfig = config.V1GenerateSettings{Version: "1"}
+		} else {
+			yamlConfig = config.Config{Version: "2"}
+		}
+
 		defer trace.StartRegion(cmd.Context(), "init").End()
 		file := "sqlc.yaml"
 		if f := cmd.Flag("file"); f != nil && f.Changed {
@@ -96,26 +112,43 @@ var initCmd = &cobra.Command{
 			}
 		}
 		if _, err := os.Stat(file); !os.IsNotExist(err) {
+			fmt.Printf("%s is already created\n", file)
 			return nil
 		}
-		blob, err := yaml.Marshal(config.V1GenerateSettings{Version: "1"})
+		blob, err := yaml.Marshal(yamlConfig)
 		if err != nil {
 			return err
 		}
-		return os.WriteFile(file, blob, 0644)
+		err = os.WriteFile(file, blob, 0644)
+		if err != nil {
+			return err
+		}
+		configDoc := "https://docs.sqlc.dev/en/stable/reference/config.html"
+		fmt.Printf(
+			"%s is added. Please visit %s to learn more about configuration\n",
+			file,
+			configDoc,
+		)
+		return nil
 	},
 }
 
 type Env struct {
-	DryRun bool
-	Debug  opts.Debug
+	DryRun     bool
+	Debug      opts.Debug
+	NoRemote   bool
+	NoDatabase bool
 }
 
 func ParseEnv(c *cobra.Command) Env {
 	dr := c.Flag("dry-run")
+	nr := c.Flag("no-remote")
+	nodb := c.Flag("no-database")
 	return Env{
-		DryRun: dr != nil && dr.Changed,
-		Debug:  opts.DebugFromEnv(),
+		DryRun:     dr != nil && dr.Changed,
+		Debug:      opts.DebugFromEnv(),
+		NoRemote:   nr != nil && nr.Value.String() == "true",
+		NoDatabase: nodb != nil && nodb.Value.String() == "true",
 	}
 }
 
@@ -162,7 +195,7 @@ var genCmd = &cobra.Command{
 		dir, name := getConfigPath(stderr, cmd.Flag("file"))
 		output, err := Generate(cmd.Context(), ParseEnv(cmd), dir, name, stderr)
 		if err != nil {
-			return err
+			os.Exit(1)
 		}
 		defer trace.StartRegion(cmd.Context(), "writefiles").End()
 		for filename, source := range output {

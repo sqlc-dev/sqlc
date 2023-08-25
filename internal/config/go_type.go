@@ -13,6 +13,7 @@ type GoType struct {
 	Package string `json:"package" yaml:"package"`
 	Name    string `json:"type" yaml:"type"`
 	Pointer bool   `json:"pointer" yaml:"pointer"`
+	Slice   bool   `json:"slice" yaml:"slice"`
 	Spec    string
 	BuiltIn bool
 }
@@ -103,6 +104,9 @@ func (gt GoType) Parse() (*ParsedGoType, error) {
 		}
 		if gt.Pointer {
 			o.TypeName = "*" + o.TypeName
+		}
+		if gt.Slice {
+			o.TypeName = "[]" + o.TypeName
 		}
 		return &o, nil
 	}

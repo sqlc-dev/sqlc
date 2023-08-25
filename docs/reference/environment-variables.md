@@ -1,5 +1,12 @@
 # Environment variables
 
+## SQLCCACHE
+
+The `SQLCCACHE` environment variable dictates where `sqlc` will store cached
+WASM-based plugins and modules. By default `sqlc` follows the [XDG Base
+Directory
+Specification](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html).
+
 ## SQLCDEBUG
 
 The `SQLCDEBUG` variable controls debugging variables within the runtime. It is
@@ -110,3 +117,32 @@ log showing the execution time for each package.
 0.046042779 	 .  5148212 	1 	region writefiles started (duration: 1.718259ms)
 0.047767781 	 .  1725002 	1 	task end
 ```
+
+### processplugins
+
+Setting this value to `0` disables process-based plugins. If a process-based
+plugin is declared in the configuration file, running any `sqlc` command will
+return an error.
+
+`SQLCDEBUG=processplugins=0`
+
+### dumpvetenv
+
+The `dumpvetenv` command prints the variables available to a `sqlc vet` rule
+during evaluation.
+
+`SQLCDEBUG=dumpvetenv=1`
+
+### dumpexplain
+
+The `dumpexplain` command prints the JSON-formatted result from running
+`EXPLAIN ...` on a query when a `sqlc vet` rule evaluation requires its output.
+
+`SQLCDEBUG=dumpexplain=1`
+
+## SQLCTMPDIR
+
+If specified, use the given directory as the base for temporary folders. Only
+applies when using WASM-based codegen plugins. When not specified, this
+defaults to passing an empty string to
+[`os.MkdirTemp`](https://pkg.go.dev/os#MkdirTemp).

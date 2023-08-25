@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/kyleconroy/sqlc/internal/metadata"
-	"github.com/kyleconroy/sqlc/internal/plugin"
+	"github.com/sqlc-dev/sqlc/internal/metadata"
+	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
 
 type QueryValue struct {
@@ -16,6 +16,10 @@ type QueryValue struct {
 	Struct      *Struct
 	Typ         string
 	SQLDriver   SQLDriver
+
+	// Column is kept so late in the generation process around to differentiate
+	// between mysql slices and pg arrays
+	Column *plugin.Column
 }
 
 func (v QueryValue) EmitStruct() bool {
@@ -38,6 +42,16 @@ func (v QueryValue) Pair() string {
 	if v.isEmpty() {
 		return ""
 	}
+
+	var out []string
+	if !v.EmitStruct() && v.IsStruct() {
+		for _, f := range v.Struct.Fields {
+			out = append(out, toLowerCase(f.Name)+" "+f.Type)
+		}
+
+		return strings.Join(out, ",")
+	}
+
 	return v.Name + " " + v.DefineType()
 }
 
@@ -94,17 +108,17 @@ func (v QueryValue) Params() string {
 	}
 	var out []string
 	if v.Struct == nil {
-		if strings.HasPrefix(v.Typ, "[]") && v.Typ != "[]byte" && !v.SQLDriver.IsPGX() {
+		if !v.Column.IsSqlcSlice && strings.HasPrefix(v.Typ, "[]") && v.Typ != "[]byte" && !v.SQLDriver.IsPGX() {
 			out = append(out, "pq.Array("+v.Name+")")
 		} else {
 			out = append(out, v.Name)
 		}
 	} else {
 		for _, f := range v.Struct.Fields {
-			if strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" && !v.SQLDriver.IsPGX() {
-				out = append(out, "pq.Array("+v.Name+"."+f.Name+")")
+			if !f.HasSqlcSlice() && strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" && !v.SQLDriver.IsPGX() {
+				out = append(out, "pq.Array("+v.VariableForField(f)+")")
 			} else {
-				out = append(out, v.Name+"."+f.Name)
+				out = append(out, v.VariableForField(f))
 			}
 		}
 	}
@@ -115,7 +129,18 @@ func (v QueryValue) Params() string {
 	return "\n" + strings.Join(out, ",\n")
 }
 
-func (v QueryValue) ColumnNames() string {
+func (v QueryValue) ColumnNames() []string {
+	if v.Struct == nil {
+		return []string{v.DBName}
+	}
+	names := make([]string, len(v.Struct.Fields))
+	for i, f := range v.Struct.Fields {
+		names[i] = f.DBName
+	}
+	return names
+}
+
+func (v QueryValue) ColumnNamesAsGoSlice() string {
 	if v.Struct == nil {
 		return fmt.Sprintf("[]string{%q}", v.DBName)
 	}
@@ -124,6 +149,20 @@ func (v QueryValue) ColumnNames() string {
 		escapedNames[i] = fmt.Sprintf("%q", f.DBName)
 	}
 	return "[]string{" + strings.Join(escapedNames, ", ") + "}"
+}
+
+// When true, we have to build the arguments to q.db.QueryContext in addition to
+// munging the SQL
+func (v QueryValue) HasSqlcSlices() bool {
+	if v.Struct == nil {
+		return v.Column != nil && v.Column.IsSqlcSlice
+	}
+	for _, v := range v.Struct.Fields {
+		if v.Column.IsSqlcSlice {
+			return true
+		}
+	}
+	return false
 }
 
 func (v QueryValue) Scan() string {
@@ -136,6 +175,19 @@ func (v QueryValue) Scan() string {
 		}
 	} else {
 		for _, f := range v.Struct.Fields {
+
+			// append any embedded fields
+			if len(f.EmbedFields) > 0 {
+				for _, embed := range f.EmbedFields {
+					if strings.HasPrefix(embed.Type, "[]") && embed.Type != "[]byte" && !v.SQLDriver.IsPGX() {
+						out = append(out, "pq.Array(&"+v.Name+"."+f.Name+"."+embed.Name+")")
+					} else {
+						out = append(out, "&"+v.Name+"."+f.Name+"."+embed.Name)
+					}
+				}
+				continue
+			}
+
 			if strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" && !v.SQLDriver.IsPGX() {
 				out = append(out, "pq.Array(&"+v.Name+"."+f.Name+")")
 			} else {
@@ -148,6 +200,29 @@ func (v QueryValue) Scan() string {
 	}
 	out = append(out, "")
 	return "\n" + strings.Join(out, ",\n")
+}
+
+func (v QueryValue) Fields() []Field {
+	if v.Struct != nil {
+		return v.Struct.Fields
+	}
+	return []Field{
+		{
+			Name:   v.Name,
+			DBName: v.DBName,
+			Type:   v.Typ,
+		},
+	}
+}
+
+func (v QueryValue) VariableForField(f Field) string {
+	if !v.IsStruct() {
+		return v.Name
+	}
+	if !v.EmitStruct() {
+		return toLowerCase(f.Name)
+	}
+	return v.Name + "." + f.Name
 }
 
 // A struct used to generate methods and fields on the Queries struct
@@ -171,7 +246,7 @@ func (q Query) hasRetType() bool {
 	return scanned && !q.Ret.isEmpty()
 }
 
-func (q Query) TableIdentifier() string {
+func (q Query) TableIdentifierAsGoSlice() string {
 	escapedNames := make([]string, 0, 3)
 	for _, p := range []string{q.Table.Catalog, q.Table.Schema, q.Table.Name} {
 		if p != "" {
@@ -179,4 +254,14 @@ func (q Query) TableIdentifier() string {
 		}
 	}
 	return "[]string{" + strings.Join(escapedNames, ", ") + "}"
+}
+
+func (q Query) TableIdentifierForMySQL() string {
+	escapedNames := make([]string, 0, 3)
+	for _, p := range []string{q.Table.Catalog, q.Table.Schema, q.Table.Name} {
+		if p != "" {
+			escapedNames = append(escapedNames, fmt.Sprintf("`%s`", p))
+		}
+	}
+	return strings.Join(escapedNames, ".")
 }

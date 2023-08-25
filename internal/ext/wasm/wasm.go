@@ -11,7 +11,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -19,15 +18,15 @@ import (
 	"runtime/trace"
 	"strings"
 
-	wasmtime "github.com/bytecodealliance/wasmtime-go/v5"
+	wasmtime "github.com/bytecodealliance/wasmtime-go/v11"
 	"golang.org/x/sync/singleflight"
 
-	"github.com/kyleconroy/sqlc/internal/info"
-	"github.com/kyleconroy/sqlc/internal/plugin"
+	"github.com/sqlc-dev/sqlc/internal/info"
+	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
 
 // This version must be updated whenever the wasmtime-go dependency is updated
-const wasmtimeVersion = `v5.0.0`
+const wasmtimeVersion = `v11.0.0`
 
 func cacheDir() (string, error) {
 	cache := os.Getenv("SQLCCACHE")
@@ -198,7 +197,7 @@ func (r *Runner) loadWASM(ctx context.Context, cache string, expected string) ([
 // removePGCatalog removes the pg_catalog schema from the request. There is a
 // mysterious (reason unknown) bug with wasm plugins when a large amount of
 // tables (like there are in the catalog) are sent.
-// @see https://github.com/kyleconroy/sqlc/pull/1748
+// @see https://github.com/sqlc-dev/sqlc/pull/1748
 func removePGCatalog(req *plugin.CodeGenRequest) {
 	if req.Catalog == nil || req.Catalog.Schemas == nil {
 		return
@@ -236,7 +235,7 @@ func (r *Runner) Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plu
 		return nil, err
 	}
 
-	dir, err := ioutil.TempDir("", "out")
+	dir, err := os.MkdirTemp(os.Getenv("SQLCTMPDIR"), "out")
 	if err != nil {
 		return nil, fmt.Errorf("temp dir: %w", err)
 	}
@@ -259,25 +258,25 @@ func (r *Runner) Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plu
 	store := wasmtime.NewStore(engine)
 	store.SetWasi(wasiConfig)
 
-	linkRegion := trace.StartRegion(ctx, "linker.Instantiate")
-	instance, err := linker.Instantiate(store, module)
+	linkRegion := trace.StartRegion(ctx, "linker.DefineModule")
+	err = linker.DefineModule(store, "", module)
 	linkRegion.End()
 	if err != nil {
 		return nil, fmt.Errorf("define wasi: %w", err)
 	}
 
 	// Run the function
-	callRegion := trace.StartRegion(ctx, "call _start")
-	nom := instance.GetExport(store, "_start").Func()
-	_, err = nom.Call(store)
-	callRegion.End()
+	fn, err := linker.GetDefault(store, "")
 	if err != nil {
-		// Print WASM stdout
-		stderrBlob, err := os.ReadFile(stderrPath)
-		if err == nil && len(stderrBlob) > 0 {
-			return nil, errors.New(string(stderrBlob))
-		}
-		return nil, fmt.Errorf("call: %w", err)
+		return nil, fmt.Errorf("wasi: get default: %w", err)
+	}
+
+	callRegion := trace.StartRegion(ctx, "call _start")
+	_, err = fn.Call(store)
+	callRegion.End()
+
+	if cerr := checkError(err, stderrPath); cerr != nil {
+		return nil, cerr
 	}
 
 	// Print WASM stdout
@@ -285,6 +284,28 @@ func (r *Runner) Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plu
 	if err != nil {
 		return nil, fmt.Errorf("read file: %w", err)
 	}
+
 	var resp plugin.CodeGenResponse
 	return &resp, resp.UnmarshalVT(stdoutBlob)
+}
+
+func checkError(err error, stderrPath string) error {
+	if err == nil {
+		return err
+	}
+
+	var wtError *wasmtime.Error
+	if errors.As(err, &wtError) {
+		if code, ok := wtError.ExitStatus(); ok {
+			if code == 0 {
+				return nil
+			}
+		}
+	}
+	// Print WASM stdout
+	stderrBlob, rferr := os.ReadFile(stderrPath)
+	if rferr == nil && len(stderrBlob) > 0 {
+		return errors.New(string(stderrBlob))
+	}
+	return fmt.Errorf("call: %w", err)
 }

@@ -88,8 +88,8 @@ func (e *{{.Name}}) Scan(src interface{}) error {
 }
 
 type Null{{.Name}} struct {
-	{{.Name}} {{.Name}}
-  Valid  bool // Valid is true if {{.Name}} is not NULL
+	{{.Name}} {{.Name}} {{if .NameTag}}{{$.Q}}{{.NameTag}}{{$.Q}}{{end}}
+  Valid  bool {{if .ValidTag}}{{$.Q}}{{.ValidTag}}{{$.Q}}{{end}} // Valid is true if {{.Name}} is not NULL
 }
 
 // Scan implements the Scanner interface.
@@ -186,6 +186,8 @@ import (
 {{define "copyfromCode"}}
 {{if .SQLDriver.IsPGX }}
     {{- template "copyfromCodePgx" .}}
+{{else if .SQLDriver.IsGoSQLDriverMySQL }}
+    {{- template "copyfromCodeGoSqlDriver" .}}
 {{end}}
 {{end}}
 

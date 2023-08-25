@@ -3,11 +3,15 @@ package astutils
 import (
 	"strings"
 
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 )
 
 func Join(list *ast.List, sep string) string {
-	items := []string{}
+	if list == nil {
+		return ""
+	}
+
+	var items []string
 	for _, item := range list.Items {
 		if n, ok := item.(*ast.String); ok {
 			items = append(items, n.Str)

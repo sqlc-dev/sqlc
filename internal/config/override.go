@@ -5,8 +5,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/kyleconroy/sqlc/internal/pattern"
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/pattern"
+	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 )
 
 type Override struct {
@@ -14,7 +14,7 @@ type Override struct {
 	GoType GoType `json:"go_type" yaml:"go_type"`
 
 	// additional Go struct tags to add to this field, in raw Go struct tag form, e.g. `validate:"required" x:"y,z"`
-	// see https://github.com/kyleconroy/sqlc/issues/534
+	// see https://github.com/sqlc-dev/sqlc/issues/534
 	GoStructTag GoStructTag `json:"go_struct_tag" yaml:"go_struct_tag"`
 
 	// fully qualified name of the Go type, e.g. `github.com/segmentio/ksuid.KSUID`
@@ -24,8 +24,12 @@ type Override struct {
 	// for global overrides only when two different engines are in use
 	Engine Engine `json:"engine,omitempty" yaml:"engine"`
 
-	// True if the GoType should override if the maching postgres type is nullable
+	// True if the GoType should override if the matching type is nullable
 	Nullable bool `json:"nullable" yaml:"nullable"`
+
+	// True if the GoType should override if the matching type is unsiged.
+	Unsigned bool `json:"unsigned" yaml:"unsigned"`
+
 	// Deprecated. Use the `nullable` property instead
 	Deprecated_Null bool `json:"null" yaml:"null"`
 

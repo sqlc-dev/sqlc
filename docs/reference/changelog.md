@@ -1,14 +1,743 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [1.17.2](https://github.com/kyleconroy/sqlc/releases/tag/1.17.2)
+## [1.20.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.20.0)
+Released 2023-07-31
+
+### Release notes
+
+#### `kyleconroy/sqlc` is now `sqlc-dev/sqlc`
+
+We've completed our migration to the [sqlc-dev/sqlc](https://github.com/sqlc-dev/sqlc) repository. All existing links and installation instructions will continue to work. If you're using the `go` tool to install `sqlc`, you'll need to use the new import path to get v1.20.0 (and all future versions).
+
+```sh
+# INCORRECT: old import path
+go install github.com/kyleconroy/sqlc/cmd/sqlc@v1.20.0
+
+# CORRECT: new import path
+go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.20.0
+```
+
+We designed the upgrade process to be as smooth as possible. If you run into any issues, please [file a bug report](https://github.com/sqlc-dev/sqlc/issues/new?assignees=&labels=bug%2Ctriage&projects=&template=BUG_REPORT.yml) via GitHub.
+
+#### Use `EXPLAIN ...` output in lint rules
+
+`sqlc vet` can now run `EXPLAIN` on your queries and include the results for use in your lint rules. For example, this rule checks that `SELECT` queries use an index.
+
+```yaml
+version: 2
+sql:
+  - schema: "query.sql"
+    queries: "query.sql"
+    engine: "postgresql"
+    database:
+      uri: "postgresql://postgres:postgres@localhost:5432/postgres"
+    gen:
+      go:
+        package: "db"
+        out: "db"
+    rules:
+      - has-index
+rules:
+- name: has-index
+  rule: >
+    query.sql.startsWith("SELECT") &&
+    !(postgresql.explain.plan.plans.all(p, has(p.index_name) || p.plans.all(p, has(p.index_name))))
+```
+
+The expression environment has two variables containing `EXPLAIN ...` output, `postgresql.explain` and `mysql.explain`. `sqlc` only populates the variable associated with your configured database engine, and only when you have a [database connection configured](../reference/config.html#database).
+
+For the `postgresql` engine, `sqlc` runs
+
+```sql
+EXPLAIN (ANALYZE false, VERBOSE, COSTS, SETTINGS, BUFFERS, FORMAT JSON) ...
+```
+
+where `"..."` is your query string, and parses the output into a [`PostgreSQLExplain`](https://buf.build/sqlc/sqlc/docs/v1.20.0:vet#vet.PostgreSQLExplain) proto message.
+
+For the `mysql` engine, `sqlc` runs
+
+```sql
+EXPLAIN FORMAT=JSON ...
+```
+
+where `"..."` is your query string, and parses the output into a [`MySQLExplain`](https://buf.build/sqlc/sqlc/docs/v1.20.0:vet#vet.MySQLExplain) proto message.
+
+These proto message definitions are too long to include here, but you can find them in the `protos` directory within the `sqlc` source tree.
+
+The output from `EXPLAIN ...` depends on the structure of your query so it's a bit difficult to offer generic examples. Refer to the [PostgreSQL documentation](https://www.postgresql.org/docs/current/using-explain.html) and [MySQL documentation](https://dev.mysql.com/doc/refman/en/explain-output.html) for more information.
+
+```yaml
+...
+rules:
+- name: postgresql-query-too-costly
+  message: "Query cost estimate is too high"
+  rule: "postgresql.explain.plan.total_cost > 1.0"
+- name: postgresql-no-seq-scan
+  message: "Query plan results in a sequential scan"
+  rule: "postgresql.explain.plan.node_type == 'Seq Scan'"
+- name: mysql-query-too-costly
+  message: "Query cost estimate is too high"
+  rule: "has(mysql.explain.query_block.cost_info) && double(mysql.explain.query_block.cost_info.query_cost) > 2.0"
+- name: mysql-must-use-primary-key
+  message: "Query plan doesn't use primary key"
+  rule: "has(mysql.explain.query_block.table.key) && mysql.explain.query_block.table.key != 'PRIMARY'"
+```
+
+When building rules that depend on `EXPLAIN ...` output, it may be helpful to see the actual JSON returned from the database. `sqlc` will print it When you set the environment variable `SQLCDEBUG=dumpexplain=1`. Use this environment variable together with a dummy rule to see `EXPLAIN ...` output for all of your queries.
+
+#### Opting-out of lint rules
+
+For any query, you can tell `sqlc vet` not to evaluate lint rules using the `@sqlc-vet-disable` query annotation.
+
+```sql
+/* name: GetAuthor :one */
+/* @sqlc-vet-disable */
+SELECT * FROM authors
+WHERE id = ? LIMIT 1;
+```
+
+#### Bulk insert for MySQL
+
+_Developed by [@Jille](https://github.com/Jille)_
+
+MySQL now supports the `:copyfrom` query annotation. The generated code uses the [LOAD DATA](https://dev.mysql.com/doc/refman/8.0/en/load-data.html) command to insert data quickly and efficiently.
+
+Use caution with this feature. Errors and duplicate keys are treated as warnings and insertion will continue, even without an error for some cases.  Use this in a transaction and use `SHOW WARNINGS` to check for any problems and roll back if necessary.
+
+Check the [error handling](https://dev.mysql.com/doc/refman/8.0/en/load-data.html#load-data-error-handling) documentation for more information.
+
+```sql
+CREATE TABLE foo (a text, b integer, c DATETIME, d DATE);
+
+-- name: InsertValues :copyfrom
+INSERT INTO foo (a, b, c, d) VALUES (?, ?, ?, ?);
+```
+
+```go
+func (q *Queries) InsertValues(ctx context.Context, arg []InsertValuesParams) (int64, error) {
+	...
+}
+```
+
+`LOAD DATA` support must be enabled in the MySQL server.
+
+#### CAST support for MySQL
+
+_Developed by [@ryanpbrewster](https://github.com/ryanpbrewster) and [@RadhiFadlillah](https://github.com/RadhiFadlillah)_
+
+`sqlc` now understands `CAST` calls in MySQL queries, offering greater flexibility when generating code for complex queries.
+
+```sql
+CREATE TABLE foo (bar BOOLEAN NOT NULL);
+
+-- name: SelectColumnCast :many
+SELECT CAST(bar AS BIGINT) FROM foo;
+```
+
+```go
+package querytest
+
+import (
+	"context"
+)
+
+const selectColumnCast = `-- name: SelectColumnCast :many
+SELECT CAST(bar AS BIGINT) FROM foo
+`
+
+func (q *Queries) SelectColumnCast(ctx context.Context) ([]int64, error) {
+  ...
+}
+```
+
+#### SQLite improvements
+
+A slew of fixes landed for our SQLite implementation, bringing it closer to parity with MySQL and PostgreSQL. We want to thank [@orisano](https://github.com/orisano) for their continued dedication to improving `sqlc`'s SQLite support.
+
+### Changes
+
+#### Features
+
+- (debug) Add debug flag and docs for dumping vet rule variables (#2521)
+- (mysql) :copyfrom support via LOAD DATA INFILE (#2545)
+- (mysql) Implement cast function parser (#2473)
+- (postgresql) Add support for PostgreSQL multi-dimensional arrays (#2338)
+- (sql/catalog) Support ALTER TABLE IF EXISTS (#2542)
+- (sqlite) Virtual tables and fts5 supported (#2531)
+- (vet) Add default query parameters for explain queries (#2543)
+- (vet) Add output from `EXPLAIN ...` for queries to the CEL program environment (#2489)
+- (vet) Introduce a query annotation to opt out of sqlc vet rules (#2474)
+- Parse comment lines starting with `@symbol` as boolean flags associated with a query (#2464)
+
+#### Bug Fixes
+
+- (codegen/golang) Fix sqlc.embed to work with pq.Array (#2544)
+- (compiler) Correctly validate alias in order/group by clauses for joins (#2537)
+- (engine/sqlite) Added function to convert cast node (#2470)
+- (engine/sqlite) Fix join_operator rule (#2434)
+- (engine/sqlite) Fix table_alias rules (#2465)
+- (engine/sqlite) Fixed IN operator precedence (#2428)
+- (engine/sqlite) Fixed to be able to find relation from WITH clause (#2444)
+- (engine/sqlite) Lowercase ast.ResTarget.Name (#2433)
+- (engine/sqlite) Put logging statement behind debug flag (#2488)
+- (engine/sqlite) Support for repeated table_option (#2482)
+- (mysql) Generate unsigned param (#2522)
+- (sql/catalog) Support pg_dump output (#2508)
+- (sqlite) Code generation for sqlc.slice (#2431)
+- (vet) Clean up unnecessary `prepareable()` func and a var name (#2509)
+- (vet) Query.cmd was always set to ":" (#2525)
+- (vet) Report an error when a query is unpreparable, close prepared statement connection (#2486)
+- (vet) Split vet messages out of codegen.proto (#2511)
+
+#### Documentation
+
+- Add a description to the document for cases when a query result has no rows (#2462)
+- Update copyright and author (#2490)
+- Add example sqlc.yaml for migration parsing (#2479)
+- Small updates (#2506)
+- Point GitHub links to new repository location (#2534)
+
+#### Miscellaneous Tasks
+
+- Rename kyleconroy/sqlc to sqlc-dev/sqlc (#2523)
+- (proto) Reformat protos using `buf format -w` (#2536)
+- Update FEATURE_REQUEST.yml to include SQLite engine option
+- Finish migration to sqlc-dev/sqlc (#2548)
+- (compiler) Remove some duplicate code (#2546)
+
+#### Testing
+
+- Add profiles to docker compose (#2503)
+
+#### Build
+
+- Run all supported versions of MySQL / PostgreSQL (#2463)
+- (deps) Bump pygments from 2.7.4 to 2.15.0 in /docs (#2485)
+- (deps) Bump github.com/jackc/pgconn from 1.14.0 to 1.14.1 (#2483)
+- (deps) Bump github.com/google/cel-go from 0.16.0 to 0.17.1 (#2484)
+- (docs) Check Python dependencies via dependabot (#2497)
+- (deps) Bump idna from 2.10 to 3.4 in /docs (#2499)
+- (deps) Bump packaging from 20.9 to 23.1 in /docs (#2498)
+- (deps) Bump pygments from 2.15.0 to 2.15.1 in /docs (#2500)
+- (deps) Bump certifi from 2022.12.7 to 2023.7.22 in /docs (#2504)
+- (deps) Bump sphinx from 4.4.0 to 6.1.0 in /docs (#2505)
+- Add psql and mysqlsh to devenv (#2507)
+- (deps) Bump urllib3 from 1.26.5 to 2.0.4 in /docs (#2516)
+- (deps) Bump chardet from 4.0.0 to 5.1.0 in /docs (#2517)
+- (deps) Bump snowballstemmer from 2.1.0 to 2.2.0 in /docs (#2519)
+- (deps) Bump pytz from 2021.1 to 2023.3 in /docs (#2520)
+- (deps) Bump sphinxcontrib-htmlhelp from 2.0.0 to 2.0.1 in /docs (#2518)
+- (deps) Bump pyparsing from 2.4.7 to 3.1.0 in /docs (#2530)
+- (deps) Bump alabaster from 0.7.12 to 0.7.13 in /docs (#2526)
+- (docs) Ignore updates for sphinx (#2532)
+- (deps) Bump babel from 2.9.1 to 2.12.1 in /docs (#2527)
+- (deps) Bump sphinxcontrib-applehelp from 1.0.2 to 1.0.4 in /docs (#2533)
+- (deps) Bump google.golang.org/grpc from 1.56.2 to 1.57.0 (#2535)
+- (deps) Bump pyparsing from 3.1.0 to 3.1.1 in /docs (#2547)
+
+
+## [1.19.1](https://github.com/sqlc-dev/sqlc/releases/tag/v1.19.1)
+Released 2023-07-13
+
+### Bug Fixes
+
+- Fix to traverse Sel in ast.In (#2414)
+- (compiler) Validate UNION ... ORDER BY (#2446)
+- (golang) Prevent duplicate enum output (#2447)
+
+### Miscellaneous Tasks
+
+- Replace codegen, test and docs references to github.com/tabbed repos (#2418)
+
+### Build
+
+- (deps) Bump google.golang.org/grpc from 1.56.1 to 1.56.2 (#2415)
+- (deps) Bump golang from 1.20.5 to 1.20.6 (#2437)
+- Pin Go to 1.20.6 (#2441)
+- (deps) Bump github.com/jackc/pgx/v5 from 5.4.1 to 5.4.2 (#2436)
+
+## [1.19.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.19.0)
+Released 2023-07-06
+
+### Release notes
+
+#### sqlc vet
+
+[`sqlc vet`](../howto/vet.md) runs queries through a set of lint rules.
+
+Rules are defined in the `sqlc` [configuration](config.md) file. They consist
+of a name, message, and a [Common Expression Language (CEL)](https://github.com/google/cel-spec)
+expression. Expressions are evaluated using [cel-go](https://github.com/google/cel-go).
+If an expression evaluates to `true`, an error is reported using the given message.
+
+While these examples are simplistic, they give you a flavor of the types of
+rules you can write.
+
+```yaml
+version: 2
+sql:
+  - schema: "query.sql"
+    queries: "query.sql"
+    engine: "postgresql"
+    gen:
+      go:
+        package: "authors"
+        out: "db"
+    rules:
+      - no-pg
+      - no-delete
+      - only-one-param
+      - no-exec
+rules:
+  - name: no-pg
+    message: "invalid engine: postgresql"
+    rule: |
+      config.engine == "postgresql"
+  - name: no-delete
+    message: "don't use delete statements"
+    rule: |
+      query.sql.contains("DELETE")
+  - name: only-one-param
+    message: "too many parameters"
+    rule: |
+      query.params.size() > 1
+  - name: no-exec
+    message: "don't use exec"
+    rule: |
+      query.cmd == "exec"
+```
+
+##### Database connectivity
+
+`vet` also marks the first time that `sqlc` can connect to a live, running
+database server. We'll expand this functionality over time, but for now it
+powers the `sqlc/db-prepare` built-in rule.
+
+When a [database](config.html#database) is configured, the
+`sqlc/db-preapre` rule will attempt to prepare each of your
+queries against the connected database and report any failures.
+
+```yaml
+version: 2
+sql:
+  - schema: "query.sql"
+    queries: "query.sql"
+    engine: "postgresql"
+    gen:
+      go:
+        package: "authors"
+        out: "db"
+    database:
+      uri: "postgresql://postgres:password@localhost:5432/postgres"
+    rules:
+      - sqlc/db-prepare
+```
+
+To see this in action, check out the [authors
+example](https://github.com/sqlc-dev/sqlc/blob/main/examples/authors/sqlc.yaml).
+
+Please note that `sqlc` does not manage or migrate your database. Use your
+migration tool of choice to create the necessary database tables and objects
+before running `sqlc vet`.
+
+#### Omit unused structs
+
+Added a new configuration parameter `omit_unused_structs` which, when set to
+true, filters out table and enum structs that aren't used in queries for a given
+package.
+
+#### Suggested CI/CD setup
+
+With the addition of `sqlc diff` and `sqlc vet`, we encourage users to run sqlc
+in your CI/CD pipelines. See our [suggested CI/CD setup](../howto/ci-cd.md) for
+more information.
+
+#### Simplified plugin development
+
+The [sqlc-gen-kotlin](https://github.com/sqlc-dev/sqlc-gen-kotlin) and
+[sqlc-gen-python](https://github.com/sqlc-dev/sqlc-gen-python) plugins have been
+updated use the upcoming [WASI](https://wasi.dev/) support in [Go
+1.21](https://tip.golang.org/doc/go1.21#wasip1). Building these plugins no
+longer requires [TinyGo](https://tinygo.org/).
+
+### Changes
+
+#### Bug Fixes
+
+- Pointers overrides skip imports in generated query files (#2240)
+- CASE-ELSE clause is not properly parsed when a value is constant (#2238)
+- Fix toSnakeCase to handle input in CamelCase format (#2245)
+- Add location info to sqlite ast (#2298)
+- Add override tags to result struct (#1867) (#1887)
+- Override types of aliased columns and named parameters (#1884)
+- Resolve duplicate fields generated when inheriting multiple tables (#2089)
+- Check column references in ORDER BY (#1411) (#1915)
+- MySQL slice shadowing database/sql import (#2332)
+- Don't defer rows.Close() if pgx.BatchResults.Query() failed  (#2362)
+- Fix type overrides not working with sqlc.slice (#2351)
+- Type overrides on columns for parameters inside an IN clause (#2352)
+- Broken interaction between query_parameter_limit and pq.Array() (#2383)
+- (codegen/golang) Bring :execlastid in line with the rest (#2378)
+
+#### Documentation
+
+- Update changelog.md with some minor edits (#2235)
+- Add F# community plugin (#2295)
+- Add a ReadTheDocs config file (#2327)
+- Update query_parameter_limit documentation (#2374)
+- Add launch announcement banner
+
+#### Features
+- PostgreSQL capture correct line and column numbers for parse error (#2289)
+- Add supporting COMMENT ON VIEW (#2249)
+- To allow spaces between function name and arguments of functions to be rewritten (#2250)
+- Add support for pgx/v5 emit_pointers_for_null_types flag (#2269)
+- (mysql) Support unsigned integers (#1746)
+- Allow use of table and column aliases for table functions returning unknown types (#2156)
+- Support "LIMIT ?" in UPDATE and DELETE for MySQL (#2365)
+- (internal/codegen/golang) Omit unused structs from output (#2369)
+- Improve default names for BETWEEN ? AND ? to have prefixes from_ and to_ (#2366)
+- (cmd/sqlc) Add the vet subcommand (#2344)
+- (sqlite) Add support for UPDATE/DELETE with a LIMIT clause (#2384)
+- Add support for BETWEEN sqlc.arg(min) AND sqlc.arg(max) (#2373)
+- (cmd/vet) Prepare queries against a database (#2387)
+- (cmd/vet) Prepare queries for MySQL (#2388)
+- (cmd/vet) Prepare SQLite queries (#2389)
+- (cmd/vet) Simplify environment variable substiution (#2393)
+- (cmd/vet) Add built-in db-prepare rule
+- Add compiler support for NOTIFY and LISTEN (PostgreSQL) (#2363)
+
+#### Miscellaneous Tasks
+
+- A few small staticcheck fixes (#2361)
+- Remove a bunch of dead code (#2360)
+- (scripts/regenerate) Should also update stderr.txt (#2379)
+
+#### Build
+
+- (deps) Bump requests from 2.25.1 to 2.31.0 in /docs (#2283)
+- (deps) Bump golang from 1.20.3 to 1.20.4 (#2256)
+- (deps) Bump google.golang.org/grpc from 1.54.0 to 1.55.0 (#2265)
+- (deps) Bump github.com/mattn/go-sqlite3 from 1.14.16 to 1.14.17 (#2293)
+- (deps) Bump golang.org/x/sync from 0.1.0 to 0.2.0 (#2266)
+- (deps) Bump golang from 1.20.4 to 1.20.5 (#2301)
+- Configure dependencies via devenv.sh (#2319)
+- Configure dependencies via devenv.sh (#2326)
+- (deps) Bump golang.org/x/sync from 0.2.0 to 0.3.0 (#2328)
+- (deps) Bump google.golang.org/grpc from 1.55.0 to 1.56.0 (#2333)
+- (deps) Bump google.golang.org/protobuf from 1.30.0 to 1.31.0 (#2370)
+- (deps) Bump actions/checkout from 2 to 3 (#2357)
+- Run govulncheck on all builds (#2372)
+- (deps) Bump google.golang.org/grpc from 1.56.0 to 1.56.1 (#2358)
+
+#### Cmd/sqlc
+
+- Show helpful output on missing subcommand (#2345)
+
+#### Codegen
+
+- Use catalog's default schema (#2310)
+- (go) Add tests for tables with dashes (#2312)
+- (go) Strip invalid characters from table and column names (#2314)
+- (go) Support JSON tags for nullable enum structs (#2121)
+
+#### Internal/config
+
+- Support golang overrides for slices (#2339)
+
+#### Kotlin
+
+- Use latest version of sqlc-gen-kotlin (#2356)
+
+#### Postgres
+
+- Column merging for table inheritence (#2315)
+
+#### Protos
+
+- Add missing field name (#2354)
+
+#### Python
+
+- Use latest version of sqlc-gen-python (#2355)
+
+#### Remote
+
+- Use user-id/password auth (#2262)
+
+#### Sqlite
+
+- Fixed sqlite column type override (#1986)
+
+
+## [1.18.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.18.0)
+Released 2023-04-27
+
+### Release notes
+
+#### Remote code generation
+
+_Developed by [@andrewmbenton](https://github.com/andrewmbenton)_
+
+At its core, sqlc is powered by SQL engines, which include parsers, formatters,
+analyzers and more. While our goal is to support each engine on each operating
+system, it's not always possible. For example, the PostgreSQL engine does not
+work on Windows.
+
+To bridge that gap, we're announcing remote code generation, currently in
+private alpha. To join the private alpha, [sign up for the waitlist](https://docs.google.com/forms/d/e/1FAIpQLScDWrGtTgZWKt3mdlF5R2XCX6tL1pMkB4yuZx5yq684tTNN1Q/viewform?usp=sf_link).
+
+Remote code generation works like local code generation, except the heavy
+lifting is performed in a consistent cloud environment. WASM-based plugins are
+supported in the remote environment, but process-based plugins are not.
+
+To configure remote generation, add a `cloud` block in `sqlc.json`.
+
+```json
+{
+  "version": "2",
+  "cloud": {
+    "organization": "<org-id>",
+    "project": "<project-id>",
+  },
+  ...
+}
+```
+
+You'll also need to set the `SQLC_AUTH_TOKEN` environment variable.
+
+```bash
+export SQLC_AUTH_TOKEN=<token>
+```
+
+When the `cloud` configuration block exists, `sqlc generate` will default to remote
+code generation. If you'd like to generate code locally without removing the `cloud`
+block from your config, pass the `--no-remote` option.
+
+
+```bash
+sqlc generate --no-remote
+```
+
+Remote generation is off by default and requires an opt-in to use.
+
+#### sqlc.embed
+
+_Developed by [@nickjackson](https://github.com/nickjackson)_
+
+Embedding allows you to reuse existing model structs in more queries, resulting
+in less manual serialization work. First, imagine we have the following schema
+with students and test scores.
+
+
+```sql
+CREATE TABLE students (
+  id   bigserial PRIMARY KEY,
+  name text,
+  age  integer
+)
+
+CREATE TABLE test_scores (
+  student_id bigint,
+  score integer,
+  grade text
+)
+```
+
+We want to select the student record and the highest score they got on a test.
+Here's how we'd usually do that:
+
+```sql
+-- name: HighScore :many
+WITH high_scores AS (
+  SELECT student_id, max(score) as high_score
+  FROM test_scores
+  GROUP BY 1
+)
+SELECT students.*, high_score::integer
+FROM students
+JOIN high_scores ON high_scores.student_id = students.id;
+```
+
+When using Go, sqlc will produce a struct like this:
+
+```
+type HighScoreRow struct {
+	ID        int64
+	Name      sql.NullString
+	Age       sql.NullInt32
+	HighScore int32
+}
+```
+
+With embedding, the struct will contain a model for the table instead of a
+flattened list of columns.
+
+```sql
+-- name: HighScoreEmbed :many
+WITH high_scores AS (
+  SELECT student_id, max(score) as high_score
+  FROM test_scores
+  GROUP BY 1
+)
+SELECT sqlc.embed(students), high_score::integer
+FROM students
+JOIN high_scores ON high_scores.student_id = students.id;
+```
+
+```
+type HighScoreRow struct {
+	Student   Student
+	HighScore int32
+}
+```
+
+#### sqlc.slice
+
+_Developed by Paul Cameron and Jille Timmermans_
+
+The MySQL Go driver does not support passing slices to the IN operator. The
+`sqlc.slice` function generates a dynamic query at runtime with the correct
+number of parameters.
+
+```sql
+/* name: SelectStudents :many */
+SELECT * FROM students 
+WHERE age IN (sqlc.slice("ages"))
+```
+
+```go
+func (q *Queries) SelectStudents(ctx context.Context, ages []int32) ([]Student, error) {
+```
+
+This feature is only supported in MySQL and cannot be used with prepared
+queries.
+
+#### Batch operation improvements  
+
+When using batches with pgx, the error returned when a batch is closed is
+exported by the generated package. This change allows for cleaner error
+handling using `errors.Is`.
+
+```go
+errors.Is(err, generated_package.ErrBatchAlreadyClosed)
+```
+
+Previously, you would have had to check match on the error message itself.
+
+```
+err.Error() == "batch already closed"
+```
+
+The generated code for batch operations always lived in `batch.go`. This file
+name can now be configured via the `output_batch_file_name` configuration
+option.
+
+#### Configurable query parameter limits for Go
+
+By default, sqlc will limit Go functions to a single parameter. If a query
+includes more than one parameter, the generated method will use an argument
+struct instead of positional arguments. This behavior can now be changed via
+the `query_parameter_limit` configuration option.  If set to `0`, every
+genreated method will use a argument struct. 
+
+### Changes
+
+#### Bug Fixes
+
+- Prevent variable redeclaration in single param conflict for pgx (#2058)
+- Retrieve Larg/Rarg join query after inner join (#2051)
+- Rename argument when conflicted to imported package (#2048)
+- Pgx closed batch return pointer if need #1959 (#1960)
+- Correct singularization of "waves" (#2194)
+- Honor Package level renames in v2 yaml config (#2001)
+- (mysql) Prevent UPDATE ... JOIN panic #1590 (#2154)
+- Mysql delete join panic (#2197)
+- Missing import with pointer overrides, solves #2168 #2125 (#2217)
+
+#### Documentation
+
+- (config.md) Add `sqlite` as engine option (#2164)
+- Add first pass at pgx documentation (#2174)
+- Add missed configuration option (#2188)
+- `specifies parameter ":one" without containing a RETURNING clause` (#2173)
+
+#### Features
+
+- Add `sqlc.embed` to allow model re-use (#1615)
+- (Go) Add query_parameter_limit conf to codegen (#1558)
+- Add remote execution for codegen (#2214)
+
+#### Testing
+
+- Skip tests if required plugins are missing (#2104)
+- Add tests for reanme fix in v2 (#2196)
+- Regenerate batch output for filename tests
+- Remove remote test (#2232)
+- Regenerate test output
+
+#### Bin/sqlc
+
+- Add SQLCTMPDIR environment variable (#2189)
+
+#### Build
+
+- (deps) Bump github.com/antlr/antlr4/runtime/Go/antlr (#2109)
+- (deps) Bump github.com/jackc/pgx/v4 from 4.18.0 to 4.18.1 (#2119)
+- (deps) Bump golang from 1.20.1 to 1.20.2 (#2135)
+- (deps) Bump google.golang.org/protobuf from 1.28.1 to 1.29.0 (#2137)
+- (deps) Bump google.golang.org/protobuf from 1.29.0 to 1.29.1 (#2143)
+- (deps) Bump golang from 1.20.2 to 1.20.3 (#2192)
+- (deps) Bump actions/setup-go from 3 to 4 (#2150)
+- (deps) Bump google.golang.org/protobuf from 1.29.1 to 1.30.0 (#2151)
+- (deps) Bump github.com/spf13/cobra from 1.6.1 to 1.7.0 (#2193)
+- (deps) Bump github.com/lib/pq from 1.10.7 to 1.10.8 (#2211)
+- (deps) Bump github.com/lib/pq from 1.10.8 to 1.10.9 (#2229)
+- (deps) Bump github.com/go-sql-driver/mysql from 1.7.0 to 1.7.1 (#2228)
+
+#### Cmd/sqlc
+
+- Remove --experimental flag (#2170)
+- Add option to disable process-based plugins (#2180)
+- Bump version to v1.18.0
+
+#### Codegen
+
+- Correctly generate CopyFrom columns for single-column copyfroms (#2185)
+
+#### Config
+
+- Add top-level cloud configuration (#2204)
+
+#### Engine/postgres
+
+- Upgrade to pg_query_go/v4 (#2114)
+
+#### Ext/wasm
+
+- Check exit code on returned error (#2223)
+
+#### Parser
+
+- Generate correct types for `SELECT NOT EXISTS` (#1972)
+
+#### Sqlite
+
+- Add support for CREATE TABLE ... STRICT (#2175)
+
+#### Wasm
+
+- Upgrade to wasmtime v8.0.0 (#2222)
+
+## [1.17.2](https://github.com/sqlc-dev/sqlc/releases/tag/v1.17.2)
 Released 2023-02-22
 
 ### Bug Fixes
 
 - Fix build on Windows (#2102)
 
-## [1.17.1](https://github.com/kyleconroy/sqlc/releases/tag/1.17.1)
+## [1.17.1](https://github.com/sqlc-dev/sqlc/releases/tag/v1.17.1)
 Released 2023-02-22
 
 ### Bug Fixes
@@ -25,7 +754,7 @@ Released 2023-02-22
 
 - (deps) Bump golang from 1.20.0 to 1.20.1 (#2082)
 
-## [1.17.0](https://github.com/kyleconroy/sqlc/releases/tag/1.17.0)
+## [1.17.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.17.0)
 Released 2023-02-13
 
 ### Bug Fixes
@@ -101,7 +830,7 @@ Released 2023-02-13
 
 - Upgrade to wasmtime 5.0.0 (#2065)
 
-## [1.16.0](https://github.com/kyleconroy/sqlc/releases/tag/1.16.0)
+## [1.16.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.16.0)
 Released 2022-11-09
 
 
@@ -173,7 +902,7 @@ Released 2022-11-09
 - Port all Python tests to sqlc-gen-python (#1907)
 - Upgrade to sqlc-gen-python v1.0.0 (#1932)
 
-## [1.15.0](https://github.com/kyleconroy/sqlc/releases/tag/1.15.0)
+## [1.15.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.15.0)
 Released 2022-08-07
 
 ### Bug Fixes
@@ -222,7 +951,7 @@ Released 2022-08-07
 - (wasm) Change default cache location (#1709)
 - (wasm) Change the SHA-256 config key (#1710)
 
-## [1.14.0](https://github.com/kyleconroy/sqlc/releases/tag/1.14.0)
+## [1.14.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.14.0)
 Released 2022-06-09
 
 ### Bug Fixes
@@ -269,7 +998,7 @@ Released 2022-06-09
 - (sql/catalog) Improve Readability (#1595)
 - Add basic fuzzing for config / overrides (#1500)
 
-## [1.13.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.13.0)
+## [1.13.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.13.0)
 Released 2022-03-31
 
 ### Bug Fixes
@@ -307,7 +1036,7 @@ Released 2022-03-31
 
 - Add basic fuzzing for config / overrides (#1500)
 
-## [1.12.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.12.0)
+## [1.12.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.12.0)
 Released 2022-02-05
 
 ### Bug
@@ -350,7 +1079,7 @@ Released 2022-02-05
 - Bump github.com/google/go-cmp from 0.5.6 to 0.5.7 (#1382)
 - Format all Go code (#1387)
 
-## [1.11.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.11.0)
+## [1.11.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.11.0)
 Released 2021-11-24
 
 
@@ -415,7 +1144,7 @@ Released 2021-11-24
 
 - Bump version to v1.11.0
 
-## [1.10.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.10.0)
+## [1.10.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.10.0)
 Released 2021-09-07
 
 
@@ -459,7 +1188,7 @@ Released 2021-09-07
 
 - Output NullUUID when necessary (#1137)
 
-## [1.9.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.9.0)
+## [1.9.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.9.0)
 Released 2021-08-13
 
 
@@ -480,7 +1209,7 @@ Released 2021-08-13
 - Add tests for COALESCE behavior (#1112)
 - Handle subqueries in SELECT statements (#1113)
 
-## [1.8.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.8.0)
+## [1.8.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.8.0)
 Released 2021-05-03
 
 
@@ -539,7 +1268,7 @@ Released 2021-05-03
 
 - Only run tests once (#924)
 
-## [1.7.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.7.0)
+## [1.7.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.7.0)
 Released 2021-02-28
 
 
@@ -625,7 +1354,7 @@ Released 2021-02-28
 
 - Add enum values for SetOperation
 
-## [1.6.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.6.0)
+## [1.6.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.6.0)
 Released 2020-11-23
 
 
@@ -716,7 +1445,7 @@ Released 2020-11-23
 
 - Add support for variadic functions (#798)
 
-## [1.5.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.5.0)
+## [1.5.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.5.0)
 Released 2020-08-05
 
 
@@ -819,7 +1548,7 @@ Released 2020-08-05
 
 - Migrate to equinox-io/setup-release-tool (#614)
 
-## [1.4.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.4.0)
+## [1.4.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.4.0)
 Released 2020-06-17
 
 
@@ -909,7 +1638,7 @@ Released 2020-06-17
 
 - Move query validation to separate package (#498)
 
-## [1.3.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.3.0)
+## [1.3.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.3.0)
 Released 2020-05-12
 
 
@@ -954,7 +1683,7 @@ Released 2020-05-12
 
 - Fix panic walking CreateTableAsStmt (#475)
 
-## [1.2.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.2.0)
+## [1.2.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.2.0)
 Released 2020-04-07
 
 
@@ -984,7 +1713,7 @@ Released 2020-04-07
 
 - Generate correct types for SELECT EXISTS (#411)
 
-## [1.1.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.1.0)
+## [1.1.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.1.0)
 Released 2020-03-17
 
 
@@ -1074,7 +1803,7 @@ Released 2020-03-17
 
 - Add experimental parser for SQLite
 
-## [1.0.0](https://github.com/kyleconroy/sqlc/releases/tag/v1.0.0)
+## [1.0.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.0.0)
 Released 2020-02-18
 
 
@@ -1161,7 +1890,7 @@ Released 2020-02-18
 - Attach range vars to insert params (#342)
 - Remove dead code (#343)
 
-## [0.1.0](https://github.com/kyleconroy/sqlc/releases/tag/v0.1.0)
+## [0.1.0](https://github.com/sqlc-dev/sqlc/releases/tag/v0.1.0)
 Released 2020-01-07
 
 

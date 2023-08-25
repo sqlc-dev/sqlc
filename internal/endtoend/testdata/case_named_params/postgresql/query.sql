@@ -1,4 +1,4 @@
--- https://github.com/kyleconroy/sqlc/issues/1195
+-- https://github.com/sqlc-dev/sqlc/issues/1195
 
 CREATE TABLE authors (
   id   BIGSERIAL PRIMARY KEY,

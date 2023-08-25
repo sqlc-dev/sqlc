@@ -10,9 +10,11 @@ import (
 	"strings"
 
 	nodes "github.com/pganalyze/pg_query_go/v4"
+	"github.com/pganalyze/pg_query_go/v4/parser"
 
-	"github.com/kyleconroy/sqlc/internal/metadata"
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/metadata"
+	"github.com/sqlc-dev/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
 )
 
 func stringSlice(list *nodes.List) []string {
@@ -134,10 +136,6 @@ func parseColName(node *nodes.Node) (*ast.ColumnRef, *ast.TableName, error) {
 	}
 }
 
-func join(list *nodes.List, sep string) string {
-	return strings.Join(stringSlice(list), sep)
-}
-
 func joinNodes(list []*nodes.Node, sep string) string {
 	return strings.Join(stringSliceFromNodes(list), sep)
 }
@@ -158,7 +156,8 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 	}
 	tree, err := nodes.Parse(string(contents))
 	if err != nil {
-		return nil, err
+		pErr := normalizeErr(err)
+		return nil, pErr
 	}
 
 	var stmts []ast.Statement
@@ -182,6 +181,21 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 		})
 	}
 	return stmts, nil
+}
+
+func normalizeErr(err error) error {
+	//TODO: errors.As complains that *parser.Error does not implement error
+	if pErr, ok := err.(*parser.Error); ok {
+		sErr := &sqlerr.Error{
+			Message: pErr.Message,
+			//Err:      pErr,
+			Line:     pErr.Lineno,
+			Location: pErr.Cursorpos,
+		}
+		return sErr
+	}
+
+	return err
 }
 
 // https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-COMMENTS
@@ -227,6 +241,7 @@ func translate(node *nodes.Node) (ast.Node, error) {
 			return &ast.AlterTableSetSchemaStmt{
 				Table:     rel.TableName(),
 				NewSchema: makeString(n.Newschema),
+				MissingOk: n.MissingOk,
 			}, nil
 
 		case nodes.ObjectType_OBJECT_TYPE:
@@ -245,8 +260,9 @@ func translate(node *nodes.Node) (ast.Node, error) {
 		n := inner.AlterTableStmt
 		rel := parseRelationFromRangeVar(n.Relation)
 		at := &ast.AlterTableStmt{
-			Table: rel.TableName(),
-			Cmds:  &ast.List{},
+			Table:     rel.TableName(),
+			Cmds:      &ast.List{},
+			MissingOk: n.MissingOk,
 		}
 		for _, cmd := range n.Cmds {
 			switch cmdOneOf := cmd.Node.(type) {
@@ -271,6 +287,7 @@ func translate(node *nodes.Node) (ast.Node, error) {
 						TypeName:  rel.TypeName(),
 						IsNotNull: isNotNull(d.ColumnDef),
 						IsArray:   isArray(d.ColumnDef.TypeName),
+						ArrayDims: len(d.ColumnDef.TypeName.ArrayBounds),
 					}
 
 				case nodes.AlterTableType_AT_AlterColumnType:
@@ -296,6 +313,7 @@ func translate(node *nodes.Node) (ast.Node, error) {
 						TypeName:  rel.TypeName(),
 						IsNotNull: isNotNull(d.ColumnDef),
 						IsArray:   isArray(d.ColumnDef.TypeName),
+						ArrayDims: len(d.ColumnDef.TypeName.ArrayBounds),
 					}
 
 				case nodes.AlterTableType_AT_DropColumn:
@@ -361,6 +379,16 @@ func translate(node *nodes.Node) (ast.Node, error) {
 				Comment: makeString(n.Comment),
 			}, nil
 
+		case nodes.ObjectType_OBJECT_VIEW:
+			rel, err := parseRelation(n.Object)
+			if err != nil {
+				return nil, fmt.Errorf("COMMENT ON VIEW: %w", err)
+			}
+			return &ast.CommentOnViewStmt{
+				View:    rel.TableName(),
+				Comment: makeString(n.Comment),
+			}, nil
+
 		}
 		return nil, errSkip
 
@@ -415,6 +443,7 @@ func translate(node *nodes.Node) (ast.Node, error) {
 					TypeName:  rel.TypeName(),
 					IsNotNull: isNotNull(item.ColumnDef) || primaryKey[item.ColumnDef.Colname],
 					IsArray:   isArray(item.ColumnDef.TypeName),
+					ArrayDims: len(item.ColumnDef.TypeName.ArrayBounds),
 				})
 			}
 		}
@@ -576,16 +605,18 @@ func translate(node *nodes.Node) (ast.Node, error) {
 		case nodes.ObjectType_OBJECT_COLUMN:
 			rel := parseRelationFromRangeVar(n.Relation)
 			return &ast.RenameColumnStmt{
-				Table:   rel.TableName(),
-				Col:     &ast.ColumnRef{Name: n.Subname},
-				NewName: makeString(n.Newname),
+				Table:     rel.TableName(),
+				Col:       &ast.ColumnRef{Name: n.Subname},
+				NewName:   makeString(n.Newname),
+				MissingOk: n.MissingOk,
 			}, nil
 
 		case nodes.ObjectType_OBJECT_TABLE:
 			rel := parseRelationFromRangeVar(n.Relation)
 			return &ast.RenameTableStmt{
-				Table:   rel.TableName(),
-				NewName: makeString(n.Newname),
+				Table:     rel.TableName(),
+				NewName:   makeString(n.Newname),
+				MissingOk: n.MissingOk,
 			}, nil
 
 		case nodes.ObjectType_OBJECT_TYPE:

@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/kyleconroy/sqlc/internal/sqltest"
+	"github.com/sqlc-dev/sqlc/internal/sqltest"
 
 	"github.com/google/go-cmp/cmp"
 )
@@ -65,7 +65,7 @@ func runOnDeckQueries(t *testing.T, q *Queries) {
 		t.Fatal(err)
 	}
 
-	if diff := cmp.Diff(venue.ID, venueID); diff != "" {
+	if diff := cmp.Diff(venue.ID, uint64(venueID)); diff != "" {
 		t.Errorf("venue ID mismatch:\n%s", diff)
 	}
 

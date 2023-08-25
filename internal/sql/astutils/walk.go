@@ -3,7 +3,7 @@ package astutils
 import (
 	"fmt"
 
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 )
 
 type Visitor interface {
@@ -75,6 +75,11 @@ func Walk(f Visitor, node ast.Node) {
 	case *ast.CommentOnTypeStmt:
 		if n.Type != nil {
 			Walk(f, n.Type)
+		}
+
+	case *ast.CommentOnViewStmt:
+		if n.View != nil {
+			Walk(f, n.View)
 		}
 
 	case *ast.CompositeTypeStmt:
@@ -1054,14 +1059,17 @@ func Walk(f Visitor, node ast.Node) {
 		}
 
 	case *ast.DeleteStmt:
-		if n.Relation != nil {
-			Walk(f, n.Relation)
+		if n.Relations != nil {
+			Walk(f, n.Relations)
 		}
 		if n.UsingClause != nil {
 			Walk(f, n.UsingClause)
 		}
 		if n.WhereClause != nil {
 			Walk(f, n.WhereClause)
+		}
+		if n.LimitCount != nil {
+			Walk(f, n.LimitCount)
 		}
 		if n.ReturningList != nil {
 			Walk(f, n.ReturningList)
@@ -2032,6 +2040,9 @@ func Walk(f Visitor, node ast.Node) {
 		}
 		if n.FromClause != nil {
 			Walk(f, n.FromClause)
+		}
+		if n.LimitCount != nil {
+			Walk(f, n.LimitCount)
 		}
 		if n.ReturningList != nil {
 			Walk(f, n.ReturningList)

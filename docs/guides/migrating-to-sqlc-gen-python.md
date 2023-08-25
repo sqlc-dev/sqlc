@@ -3,7 +3,7 @@
 Starting in sqlc 1.16.0, built-in Python support has been deprecated. It will
 be fully removed in 1.17.0 in favor of sqlc-gen-python.
 
-This guide will walk you through migrating to the [sqlc-gen-python](https://github.com/tabbed/sqlc-gen-python) plugin,
+This guide will walk you through migrating to the [sqlc-gen-python](https://github.com/sqlc-dev/sqlc-gen-python) plugin,
 which involves three steps.
 
 1. Add the sqlc-gen-python plugin

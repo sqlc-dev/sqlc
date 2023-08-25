@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 )
 
 // An ApplyFunc is invoked by Apply for each node n, even if n is nil,
@@ -39,7 +39,6 @@ type ApplyFunc func(*Cursor) bool
 // Children are traversed in the order in which they appear in the
 // respective node's struct definition. A package's files are
 // traversed in the filenames' alphabetical order.
-//
 func Apply(root ast.Node, pre, post ApplyFunc) (result ast.Node) {
 	parent := &struct{ ast.Node }{root}
 	defer func() {
@@ -63,8 +62,8 @@ var abort = new(int) // singleton, to signal termination of Apply
 // c.Parent(), and f is the field identifier with name c.Name(),
 // the following invariants hold:
 //
-//   p.f            == c.Node()  if c.Index() <  0
-//   p.f[c.Index()] == c.Node()  if c.Index() >= 0
+//	p.f            == c.Node()  if c.Index() <  0
+//	p.f[c.Index()] == c.Node()  if c.Index() >= 0
 //
 // The methods Replace, Delete, InsertBefore, and InsertAfter
 // can be used to change the AST without disrupting Apply.
@@ -165,6 +164,9 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 	case *ast.CommentOnTypeStmt:
 		a.apply(n, "Type", nil, n.Type)
 
+	case *ast.CommentOnViewStmt:
+		a.apply(n, "View", nil, n.View)
+
 	case *ast.CreateTableStmt:
 		a.apply(n, "Name", nil, n.Name)
 
@@ -192,6 +194,7 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 
 	case *ast.In:
 		a.applyList(n, "List")
+		a.apply(n, "Sel", nil, n.Sel)
 
 	case *ast.List:
 		// Since item is a slice
@@ -398,12 +401,17 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.apply(n, "Refassgnexpr", nil, n.Refassgnexpr)
 
 	case *ast.BetweenExpr:
-		// pass
+		a.apply(n, "Expr", nil, n.Expr)
+		a.apply(n, "Left", nil, n.Left)
+		a.apply(n, "Right", nil, n.Right)
 
 	case *ast.BitString:
 		// pass
 
 	case *ast.BlockIdData:
+		// pass
+
+	case *ast.Boolean:
 		// pass
 
 	case *ast.BoolExpr:
@@ -674,7 +682,7 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.apply(n, "Definition", nil, n.Definition)
 
 	case *ast.DeleteStmt:
-		a.apply(n, "Relation", nil, n.Relation)
+		a.apply(n, "Relations", nil, n.Relations)
 		a.apply(n, "UsingClause", nil, n.UsingClause)
 		a.apply(n, "WhereClause", nil, n.WhereClause)
 		a.apply(n, "ReturningList", nil, n.ReturningList)

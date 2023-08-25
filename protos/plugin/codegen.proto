@@ -2,12 +2,11 @@ syntax = "proto3";
 
 package plugin;
 
-option go_package = "github.com/kyleconroy/sqlc/internal/plugin";
+option go_package = "github.com/sqlc-dev/sqlc/internal/plugin";
 
-message File
-{
-  string name = 1 [json_name="name"];
-  bytes contents = 2 [json_name="contents"];
+message File {
+  string name = 1 [json_name = "name"];
+  bytes contents = 2 [json_name = "contents"];
 }
 
 message Override {
@@ -15,26 +14,28 @@ message Override {
   reserved 9;
 
   // name of the type to use, e.g. `github.com/segmentio/ksuid.KSUID` or `mymodule.Type`
-  string code_type = 1 [json_name="code_type"];
+  string code_type = 1 [json_name = "code_type"];
 
   // name of the type to use, e.g. `text`
-  string db_type = 3 [json_name="db_type"];
+  string db_type = 3 [json_name = "db_type"];
 
   // True if the override should apply to a nullable database type
-  bool nullable = 5 [json_name="nullable"];
+  bool nullable = 5 [json_name = "nullable"];
 
   // fully qualified name of the column, e.g. `accounts.id`
-  string column = 6 [json_name="column"];
+  string column = 6 [json_name = "column"];
 
-  Identifier table = 7 [json_name="table"];
+  Identifier table = 7 [json_name = "table"];
 
-  string column_name = 8 [json_name="column_name"];
+  string column_name = 8 [json_name = "column_name"];
 
   ParsedGoType go_type = 10;
+
+  // True if the override should apply to a unsigned database type
+  bool unsigned = 11 [json_name = "unsigned"];
 }
 
-message ParsedGoType
-{
+message ParsedGoType {
   string import_path = 1;
   string package = 2;
   string type_name = 3;
@@ -42,34 +43,31 @@ message ParsedGoType
   map<string, string> struct_tags = 5;
 }
 
-message Settings
-{
+message Settings {
   // PythonCode message was field 8
   // KotlinCode message was field 9
   reserved 8, 9;
 
-  string version = 1 [json_name="version"];
-  string engine = 2 [json_name="engine"];
-  repeated string schema = 3 [json_name="schema"];
-  repeated string queries = 4 [json_name="queries"];
-  map<string, string> rename = 5 [json_name="rename"];
-  repeated Override overrides = 6 [json_name="overrides"];
-  Codegen codegen = 12 [json_name="codegen"];
+  string version = 1 [json_name = "version"];
+  string engine = 2 [json_name = "engine"];
+  repeated string schema = 3 [json_name = "schema"];
+  repeated string queries = 4 [json_name = "queries"];
+  map<string, string> rename = 5 [json_name = "rename"];
+  repeated Override overrides = 6 [json_name = "overrides"];
+  Codegen codegen = 12 [json_name = "codegen"];
 
   // TODO: Refactor codegen settings
   GoCode go = 10;
   JSONCode json = 11;
 }
 
-message Codegen
-{
-  string out = 1 [json_name="out"];
-  string plugin = 2 [json_name="plugin"];
-  bytes options = 3 [json_name="options"];
+message Codegen {
+  string out = 1 [json_name = "out"];
+  string plugin = 2 [json_name = "plugin"];
+  bytes options = 3 [json_name = "options"];
 }
 
-message GoCode
-{
+message GoCode {
   bool emit_interface = 1;
   bool emit_json_tags = 2;
   bool emit_db_tags = 3;
@@ -84,6 +82,7 @@ message GoCode
   string package = 12;
   string out = 13;
   string sql_package = 14;
+  string sql_driver = 25;
   string output_db_file_name = 15;
   string output_models_file_name = 16;
   string output_querier_file_name = 17;
@@ -92,25 +91,26 @@ message GoCode
   bool emit_all_enum_values = 20;
   repeated string inflection_exclude_table_names = 21;
   bool emit_pointers_for_null_types = 22;
+  optional int32 query_parameter_limit = 23;
+  string output_batch_file_name = 24;
+  bool json_tags_id_uppercase = 26;
+  bool omit_unused_structs = 27;
 }
 
-message JSONCode
-{
+message JSONCode {
   string out = 1;
   string indent = 2;
   string filename = 3;
 }
 
-message Catalog
-{
+message Catalog {
   string comment = 1;
   string default_schema = 2;
   string name = 3;
   repeated Schema schemas = 4;
 }
 
-message Schema
-{
+message Schema {
   string comment = 1;
   string name = 2;
   repeated Table tables = 3;
@@ -118,35 +118,30 @@ message Schema
   repeated CompositeType composite_types = 5;
 }
 
-message CompositeType
-{
+message CompositeType {
   string name = 1;
   string comment = 2;
 }
 
-message Enum
-{
+message Enum {
   string name = 1;
   repeated string vals = 2;
   string comment = 3;
 }
 
-message Table
-{
+message Table {
   Identifier rel = 1;
   repeated Column columns = 2;
-  string comment  = 3;
+  string comment = 3;
 }
 
-message Identifier
-{
+message Identifier {
   string catalog = 1;
   string schema = 2;
   string name = 3;
 }
 
-message Column
-{
+message Column {
   string name = 1;
   bool not_null = 3;
   bool is_array = 4;
@@ -160,36 +155,37 @@ message Column
   Identifier table = 10;
   string table_alias = 11;
   Identifier type = 12;
+  bool is_sqlc_slice = 13;
+  Identifier embed_table = 14;
+  string original_name = 15;
+  bool unsigned = 16;
+  int32 array_dims = 17;
 }
 
-message Query
-{
-  string text = 1 [json_name="text"];
-  string name = 2 [json_name="name"];
-  string cmd = 3 [json_name="cmd"];
-  repeated Column columns = 4 [json_name="columns"];
-  repeated Parameter params = 5 [json_name="parameters"];
-  repeated string comments = 6 [json_name="comments"];
-  string filename = 7 [json_name="filename"];
-  Identifier insert_into_table = 8 [json_name="insert_into_table"];
+message Query {
+  string text = 1 [json_name = "text"];
+  string name = 2 [json_name = "name"];
+  string cmd = 3 [json_name = "cmd"];
+  repeated Column columns = 4 [json_name = "columns"];
+  repeated Parameter params = 5 [json_name = "parameters"];
+  repeated string comments = 6 [json_name = "comments"];
+  string filename = 7 [json_name = "filename"];
+  Identifier insert_into_table = 8 [json_name = "insert_into_table"];
 }
 
-message Parameter
-{
-  int32 number = 1 [json_name="number"];
-  Column column = 2 [json_name="column"];
+message Parameter {
+  int32 number = 1 [json_name = "number"];
+  Column column = 2 [json_name = "column"];
 }
 
-message CodeGenRequest
-{
-  Settings settings = 1 [json_name="settings"];
-  Catalog catalog = 2 [json_name="catalog"];
-  repeated Query queries = 3 [json_name="queries"];
-  string sqlc_version = 4 [json_name="sqlc_version"];
-  bytes plugin_options = 5 [json_name="plugin_options"];
+message CodeGenRequest {
+  Settings settings = 1 [json_name = "settings"];
+  Catalog catalog = 2 [json_name = "catalog"];
+  repeated Query queries = 3 [json_name = "queries"];
+  string sqlc_version = 4 [json_name = "sqlc_version"];
+  bytes plugin_options = 5 [json_name = "plugin_options"];
 }
 
-message CodeGenResponse
-{
-  repeated File files = 1 [json_name="files"];
+message CodeGenResponse {
+  repeated File files = 1 [json_name = "files"];
 }

@@ -6,15 +6,15 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/kyleconroy/sqlc/internal/config"
-	"github.com/kyleconroy/sqlc/internal/debug"
-	"github.com/kyleconroy/sqlc/internal/metadata"
-	"github.com/kyleconroy/sqlc/internal/opts"
-	"github.com/kyleconroy/sqlc/internal/source"
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/astutils"
-	"github.com/kyleconroy/sqlc/internal/sql/rewrite"
-	"github.com/kyleconroy/sqlc/internal/sql/validate"
+	"github.com/sqlc-dev/sqlc/internal/config"
+	"github.com/sqlc-dev/sqlc/internal/debug"
+	"github.com/sqlc-dev/sqlc/internal/metadata"
+	"github.com/sqlc-dev/sqlc/internal/opts"
+	"github.com/sqlc-dev/sqlc/internal/source"
+	"github.com/sqlc-dev/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
+	"github.com/sqlc-dev/sqlc/internal/sql/rewrite"
+	"github.com/sqlc-dev/sqlc/internal/sql/validate"
 )
 
 var ErrUnsupportedStatementType = errors.New("parseQuery: unsupported statement type")
@@ -48,8 +48,11 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 		if err != nil {
 			return nil, err
 		}
+	case *ast.ListenStmt:
+	case *ast.NotifyStmt:
 	case *ast.TruncateStmt:
 	case *ast.UpdateStmt:
+	case *ast.RefreshMatViewStmt:
 	default:
 		return nil, ErrUnsupportedStatementType
 	}
@@ -64,7 +67,10 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 	if err := validate.FuncCall(c.catalog, c.combo, raw); err != nil {
 		return nil, err
 	}
-	name, cmd, err := metadata.Parse(strings.TrimSpace(rawSQL), c.parser.CommentSyntax())
+	if err := validate.In(c.catalog, raw); err != nil {
+		return nil, err
+	}
+	name, cmd, err := metadata.ParseQueryNameAndType(strings.TrimSpace(rawSQL), c.parser.CommentSyntax())
 	if err != nil {
 		return nil, err
 	}
@@ -83,16 +89,17 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 	} else {
 		sort.Slice(refs, func(i, j int) bool { return refs[i].ref.Number < refs[j].ref.Number })
 	}
-	qc, err := buildQueryCatalog(c.catalog, raw.Stmt)
+	raw, embeds := rewrite.Embeds(raw)
+	qc, err := c.buildQueryCatalog(c.catalog, raw.Stmt, embeds)
 	if err != nil {
 		return nil, err
 	}
 
-	params, err := c.resolveCatalogRefs(qc, rvs, refs, namedParams)
+	params, err := c.resolveCatalogRefs(qc, rvs, refs, namedParams, embeds)
 	if err != nil {
 		return nil, err
 	}
-	cols, err := outputColumns(qc, raw.Stmt)
+	cols, err := c.outputColumns(qc, raw.Stmt)
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +109,6 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 		return nil, err
 	}
 	edits = append(edits, expandEdits...)
-
 	expanded, err := source.Mutate(rawSQL, edits)
 	if err != nil {
 		return nil, err
@@ -119,10 +125,18 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 	if err != nil {
 		return nil, err
 	}
+
+	flags, err := metadata.ParseQueryFlags(comments)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Query{
+		RawStmt:         raw,
 		Cmd:             cmd,
 		Comments:        comments,
 		Name:            name,
+		Flags:           flags,
 		Params:          params,
 		Columns:         cols,
 		SQL:             trimmed,

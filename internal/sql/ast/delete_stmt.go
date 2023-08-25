@@ -1,9 +1,10 @@
 package ast
 
 type DeleteStmt struct {
-	Relation      *RangeVar
+	Relations     *List
 	UsingClause   *List
 	WhereClause   Node
+	LimitCount    Node
 	ReturningList *List
 	WithClause    *WithClause
 }

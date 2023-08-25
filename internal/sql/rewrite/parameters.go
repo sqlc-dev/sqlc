@@ -2,12 +2,13 @@ package rewrite
 
 import (
 	"fmt"
+	"strings"
 
-	"github.com/kyleconroy/sqlc/internal/config"
-	"github.com/kyleconroy/sqlc/internal/source"
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/astutils"
-	"github.com/kyleconroy/sqlc/internal/sql/named"
+	"github.com/sqlc-dev/sqlc/internal/config"
+	"github.com/sqlc-dev/sqlc/internal/source"
+	"github.com/sqlc-dev/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
+	"github.com/sqlc-dev/sqlc/internal/sql/named"
 )
 
 // Given an AST node, return the string representation of names
@@ -54,14 +55,26 @@ func paramFromFuncCall(call *ast.FuncCall) (named.Param, string) {
 		origName = fmt.Sprintf("'%s'", paramName)
 	}
 
-	param := named.NewParam(paramName)
-	if call.Func.Name == "narg" {
+	var param named.Param
+	switch call.Func.Name {
+	case "narg":
 		param = named.NewUserNullableParam(paramName)
+	case "slice":
+		param = named.NewSqlcSlice(paramName)
+	default:
+		param = named.NewParam(paramName)
 	}
 
 	// TODO: This code assumes that sqlc.arg(name) / sqlc.narg(name) is on a single line
 	// with no extraneous spaces (or any non-significant tokens for that matter)
-	origText := fmt.Sprintf("%s.%s(%s)", call.Func.Schema, call.Func.Name, origName)
+	// except between the function name and argument
+	funcName := call.Func.Schema + "." + call.Func.Name
+	spaces := ""
+	if call.Args != nil && len(call.Args.Items) > 0 {
+		leftParen := call.Args.Items[0].Pos() - 1
+		spaces = strings.Repeat(" ", leftParen-call.Location-len(funcName))
+	}
+	origText := fmt.Sprintf("%s%s(%s)", funcName, spaces, origName)
 	return param, origText
 }
 
@@ -89,8 +102,18 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 			})
 
 			var replace string
-			if engine == config.EngineMySQL || !dollar {
-				replace = "?"
+			if engine == config.EngineMySQL || engine == config.EngineSQLite || !dollar {
+				if param.IsSqlcSlice() {
+					// This sequence is also replicated in internal/codegen/golang.Field
+					// since it's needed during template generation for replacement
+					replace = fmt.Sprintf(`/*SLICE:%s*/?`, param.Name())
+				} else {
+					if engine == config.EngineSQLite {
+						replace = fmt.Sprintf("?%d", argn)
+					} else {
+						replace = "?"
+					}
+				}
 			} else {
 				replace = fmt.Sprintf("$%d", argn)
 			}
@@ -119,6 +142,8 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 			var replace string
 			if engine == config.EngineMySQL || !dollar {
 				replace = "?"
+			} else if engine == config.EngineSQLite {
+				replace = fmt.Sprintf("?%d", argn)
 			} else {
 				replace = fmt.Sprintf("$%d", argn)
 			}
@@ -145,6 +170,8 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 			var replace string
 			if engine == config.EngineMySQL || !dollar {
 				replace = "?"
+			} else if engine == config.EngineSQLite {
+				replace = fmt.Sprintf("?%d", argn)
 			} else {
 				replace = fmt.Sprintf("$%d", argn)
 			}

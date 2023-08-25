@@ -1,0 +1,131 @@
+syntax = "proto3";
+
+package vet;
+
+option go_package = "github.com/sqlc-dev/sqlc/internal/vet";
+
+message Parameter {
+  int32 number = 1 [json_name = "number"];
+}
+
+message Config {
+  string version = 1 [json_name = "version"];
+  string engine = 2 [json_name = "engine"];
+  repeated string schema = 3 [json_name = "schema"];
+  repeated string queries = 4 [json_name = "queries"];
+}
+
+message Query {
+  string sql = 1 [json_name = "sql"];
+  string name = 2 [json_name = "name"];
+  string cmd = 3 [json_name = "cmd"];
+  repeated Parameter params = 4 [json_name = "parameters"];
+}
+
+message PostgreSQL {
+  PostgreSQLExplain explain = 1;
+}
+
+message PostgreSQLExplain {
+  Plan plan = 1 [json_name = "Plan"];
+  map<string, string> settings = 2 [json_name = "Settings"];
+  Planning planning = 3 [json_name = "Planning"];
+
+  message Plan {
+    string node_type = 1 [json_name = "Node Type"];
+    string parent_relationship = 2 [json_name = "Parent Relationship"];
+    string relation_name = 3 [json_name = "Relation Name"];
+    string schema = 4 [json_name = "Schema"];
+    string alias = 5 [json_name = "Alias"];
+    bool parallel_aware = 6 [json_name = "Parallel Aware"];
+    bool async_capable = 7 [json_name = "Async Capable"];
+    float startup_cost = 8 [json_name = "Startup Cost"];
+    float total_cost = 9 [json_name = "Total Cost"];
+    uint64 plan_rows = 10 [json_name = "Plan Rows"];
+    uint64 plan_width = 11 [json_name = "Plan Width"];
+    repeated string output = 12 [json_name = "Output"];
+    repeated Plan plans = 13 [json_name = "Plans"];
+
+    // Embedded "Blocks" fields
+    uint64 shared_hit_blocks = 14 [json_name = "Shared Hit Blocks"];
+    uint64 shared_read_blocks = 15 [json_name = "Shared Read Blocks"];
+    uint64 shared_dirtied_blocks = 16 [json_name = "Shared Dirtied Blocks"];
+    uint64 shared_written_blocks = 17 [json_name = "Shared Written Blocks"];
+    uint64 local_hit_blocks = 18 [json_name = "Local Hit Blocks"];
+    uint64 local_read_blocks = 19 [json_name = "Local Read Blocks"];
+    uint64 local_dirtied_blocks = 20 [json_name = "Local Dirtied Blocks"];
+    uint64 local_written_blocks = 21 [json_name = "Local Written Blocks"];
+    uint64 temp_read_blocks = 22 [json_name = "Temp Read Blocks"];
+    uint64 temp_written_blocks = 23 [json_name = "Temp Written Blocks"];
+
+    // "Node Type": "Sort" fields
+    repeated string sort_key = 24 [json_name = "Sort Key"];
+
+    // "Node Type": "Hash Join" fields
+    string join_type = 25 [json_name = "Join Type"];
+    bool inner_unique = 26 [json_name = "Inner Unique"];
+    string hash_cond = 27 [json_name = "Hash Cond"];
+
+    // "Node Type": "Index Scan" fields
+    string index_name = 28 [json_name = "Index Name"];
+    string scan_direction = 29 [json_name = "Scan Direction"];
+    string index_cond = 30 [json_name = "Index Cond"];
+  }
+
+  message Planning {
+    uint64 shared_hit_blocks = 1 [json_name = "Shared Hit Blocks"];
+    uint64 shared_read_blocks = 2 [json_name = "Shared Read Blocks"];
+    uint64 shared_dirtied_blocks = 3 [json_name = "Shared Dirtied Blocks"];
+    uint64 shared_written_blocks = 4 [json_name = "Shared Written Blocks"];
+    uint64 local_hit_blocks = 5 [json_name = "Local Hit Blocks"];
+    uint64 local_read_blocks = 6 [json_name = "Local Read Blocks"];
+    uint64 local_dirtied_blocks = 7 [json_name = "Local Dirtied Blocks"];
+    uint64 local_written_blocks = 8 [json_name = "Local Written Blocks"];
+    uint64 temp_read_blocks = 9 [json_name = "Temp Read Blocks"];
+    uint64 temp_written_blocks = 10 [json_name = "Temp Written Blocks"];
+  }
+}
+
+message MySQL {
+  MySQLExplain explain = 1;
+}
+
+message MySQLExplain {
+  QueryBlock query_block = 1;
+
+  message QueryBlock {
+    uint64 select_id = 1;
+    string message = 2;
+    map<string, string> cost_info = 3;
+    Table table = 4;
+    OrderingOperation ordering_operation = 5;
+    repeated NestedLoopObj nested_loop = 6;
+  }
+
+  message Table {
+    string table_name = 1;
+    string access_type = 2;
+    uint64 rows_examined_per_scan = 3;
+    uint64 rows_produced_per_join = 4;
+    string filtered = 5;
+    map<string, string> cost_info = 6;
+    repeated string used_columns = 7;
+    bool insert = 8;
+    repeated string possible_keys = 9;
+    string key = 10;
+    repeated string used_key_parts = 11;
+    string key_length = 12;
+    repeated string ref = 13;
+  }
+
+  message NestedLoopObj {
+    Table table = 1;
+  }
+
+  message OrderingOperation {
+    bool using_filesort = 1;
+    map<string, string> cost_info = 2;
+    Table table = 3;
+    repeated NestedLoopObj nested_loop = 4;
+  }
+}

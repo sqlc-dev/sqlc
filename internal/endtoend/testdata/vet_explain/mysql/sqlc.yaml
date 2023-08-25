@@ -1,0 +1,16 @@
+version: 2
+sql:
+  - schema: "schema.sql"
+    queries: "query.sql"
+    engine: "mysql"
+    database:
+      uri: root:${MYSQL_ROOT_PASSWORD}@tcp(${MYSQL_HOST}:${MYSQL_PORT})/test?multiStatements=true&parseTime=true
+    gen:
+      go:
+        package: "test"
+        out: "db"
+    rules:
+      - test
+rules:
+  - name: test
+    rule: "!has(mysql.explain)"

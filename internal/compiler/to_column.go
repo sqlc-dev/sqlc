@@ -3,15 +3,15 @@ package compiler
 import (
 	"strings"
 
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/astutils"
+	"github.com/sqlc-dev/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
 )
 
-func isArray(n *ast.TypeName) bool {
-	if n == nil {
-		return false
+func arrayDims(n *ast.TypeName) int {
+	if n == nil || n.ArrayBounds == nil {
+		return 0
 	}
-	return len(n.ArrayBounds.Items) > 0
+	return len(n.ArrayBounds.Items)
 }
 
 func toColumn(n *ast.TypeName) *Column {
@@ -22,10 +22,12 @@ func toColumn(n *ast.TypeName) *Column {
 	if err != nil {
 		panic("toColumn: " + err.Error())
 	}
+	arrayDims := arrayDims(n)
 	return &Column{
-		Type:     typ,
-		DataType: strings.TrimPrefix(astutils.Join(n.Names, "."), "."),
-		NotNull:  true, // XXX: How do we know if this should be null?
-		IsArray:  isArray(n),
+		Type:      typ,
+		DataType:  strings.TrimPrefix(astutils.Join(n.Names, "."), "."),
+		NotNull:   true, // XXX: How do we know if this should be null?
+		IsArray:   arrayDims > 0,
+		ArrayDims: arrayDims,
 	}
 }

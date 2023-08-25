@@ -1,8 +1,8 @@
 package catalog
 
 import (
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/sqlerr"
+	"github.com/sqlc-dev/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
 )
 
 func (c *Catalog) commentOnColumn(stmt *ast.CommentOnColumnStmt) error {
@@ -58,6 +58,19 @@ func (c *Catalog) commentOnType(stmt *ast.CommentOnTypeStmt) error {
 		t.SetComment(*stmt.Comment)
 	} else {
 		t.SetComment("")
+	}
+	return nil
+}
+
+func (c *Catalog) commentOnView(stmt *ast.CommentOnViewStmt) error {
+	_, t, err := c.getTable(stmt.View)
+	if err != nil {
+		return err
+	}
+	if stmt.Comment != nil {
+		t.Comment = *stmt.Comment
+	} else {
+		t.Comment = ""
 	}
 	return nil
 }

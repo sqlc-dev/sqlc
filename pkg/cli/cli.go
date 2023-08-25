@@ -3,24 +3,23 @@
 //
 // Example usage:
 //
-//     package main
+//	package main
 //
-//     import (
-//         "os"
+//	import (
+//	    "os"
 //
-//         sqlc "github.com/kyleconroy/sqlc/pkg/cli"
-//     )
+//	    sqlc "github.com/sqlc-dev/sqlc/pkg/cli"
+//	)
 //
-//     func main() {
-//         os.Exit(sqlc.Run(os.Args[1:]))
-//     }
-//
+//	func main() {
+//	    os.Exit(sqlc.Run(os.Args[1:]))
+//	}
 package cli
 
 import (
 	"os"
 
-	"github.com/kyleconroy/sqlc/internal/cmd"
+	"github.com/sqlc-dev/sqlc/internal/cmd"
 )
 
 // Run the sqlc CLI. It takes an array of command-line arguments

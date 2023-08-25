@@ -5,8 +5,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/kyleconroy/sqlc/internal/metadata"
-	"github.com/kyleconroy/sqlc/internal/plugin"
+	"github.com/sqlc-dev/sqlc/internal/metadata"
+	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
 
 type fileImports struct {
@@ -21,9 +21,9 @@ type ImportSpec struct {
 
 func (s ImportSpec) String() string {
 	if s.ID != "" {
-		return fmt.Sprintf("%s \"%s\"", s.ID, s.Path)
+		return fmt.Sprintf("%s %q", s.ID, s.Path)
 	} else {
-		return fmt.Sprintf("\"%s\"", s.Path)
+		return fmt.Sprintf("%q", s.Path)
 	}
 }
 
@@ -67,8 +67,7 @@ type importer struct {
 func (i *importer) usesType(typ string) bool {
 	for _, strct := range i.Structs {
 		for _, f := range strct.Fields {
-			fType := trimSliceAndPointerPrefix(f.Type)
-			if strings.HasPrefix(fType, typ) {
+			if hasPrefixIgnoringSliceAndPointerPrefix(f.Type, typ) {
 				return true
 			}
 		}
@@ -91,6 +90,9 @@ func (i *importer) Imports(filename string) [][]ImportSpec {
 	}
 	copyfromFileName := "copyfrom.go"
 	batchFileName := "batch.go"
+	if i.Settings.Go.OutputBatchFileName != "" {
+		batchFileName = i.Settings.Go.OutputBatchFileName
+	}
 
 	switch filename {
 	case dbFileName:
@@ -186,9 +188,9 @@ func buildImports(settings *plugin.Settings, queries []Query, uses func(string) 
 		}
 	}
 
-	for typeName, _ := range pqtypeTypes {
+	for typeName := range pqtypeTypes {
 		if uses(typeName) {
-			pkg[ImportSpec{Path: "github.com/tabbed/pqtype"}] = struct{}{}
+			pkg[ImportSpec{Path: "github.com/sqlc-dev/pqtype"}] = struct{}{}
 			break
 		}
 	}
@@ -236,13 +238,12 @@ func (i *importer) interfaceImports() fileImports {
 				if usesBatch([]Query{q}) {
 					continue
 				}
-				if strings.HasPrefix(q.Ret.Type(), name) {
+				if hasPrefixIgnoringSliceAndPointerPrefix(q.Ret.Type(), name) {
 					return true
 				}
 			}
 			if !q.Arg.isEmpty() {
-				argType := trimSliceAndPointerPrefix(q.Arg.Type())
-				if strings.HasPrefix(argType, name) {
+				if hasPrefixIgnoringSliceAndPointerPrefix(q.Arg.Type(), name) {
 					return true
 				}
 			}
@@ -256,9 +257,7 @@ func (i *importer) interfaceImports() fileImports {
 }
 
 func (i *importer) modelImports() fileImports {
-	std, pkg := buildImports(i.Settings, nil, func(prefix string) bool {
-		return i.usesType(prefix)
-	})
+	std, pkg := buildImports(i.Settings, nil, i.usesType)
 
 	if len(i.Enums) > 0 {
 		std["fmt"] = struct{}{}
@@ -302,28 +301,24 @@ func (i *importer) queryImports(filename string) fileImports {
 			if q.hasRetType() {
 				if q.Ret.EmitStruct() {
 					for _, f := range q.Ret.Struct.Fields {
-						fType := trimSliceAndPointerPrefix(f.Type)
-						if strings.HasPrefix(fType, name) {
+						if hasPrefixIgnoringSliceAndPointerPrefix(f.Type, name) {
 							return true
 						}
 					}
 				}
-				retType := trimSliceAndPointerPrefix(q.Ret.Type())
-				if strings.HasPrefix(retType, name) {
+				if hasPrefixIgnoringSliceAndPointerPrefix(q.Ret.Type(), name) {
 					return true
 				}
 			}
 			if !q.Arg.isEmpty() {
 				if q.Arg.EmitStruct() {
 					for _, f := range q.Arg.Struct.Fields {
-						fType := trimSliceAndPointerPrefix(f.Type)
-						if strings.HasPrefix(fType, name) {
+						if hasPrefixIgnoringSliceAndPointerPrefix(f.Type, name) {
 							return true
 						}
 					}
 				}
-				argType := trimSliceAndPointerPrefix(q.Arg.Type())
-				if strings.HasPrefix(argType, name) {
+				if hasPrefixIgnoringSliceAndPointerPrefix(q.Arg.Type(), name) {
 					return true
 				}
 			}
@@ -339,6 +334,11 @@ func (i *importer) queryImports(filename string) fileImports {
 						if strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" {
 							return true
 						}
+						for _, embed := range f.EmbedFields {
+							if strings.HasPrefix(embed.Type, "[]") && embed.Type != "[]byte" {
+								return true
+							}
+						}
 					}
 				} else {
 					if strings.HasPrefix(q.Ret.Type(), "[]") && q.Ret.Type() != "[]byte" {
@@ -349,15 +349,25 @@ func (i *importer) queryImports(filename string) fileImports {
 			if !q.Arg.isEmpty() {
 				if q.Arg.IsStruct() {
 					for _, f := range q.Arg.Struct.Fields {
-						if strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" {
+						if strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" && !f.HasSqlcSlice() {
 							return true
 						}
 					}
 				} else {
-					if strings.HasPrefix(q.Arg.Type(), "[]") && q.Arg.Type() != "[]byte" {
+					if strings.HasPrefix(q.Arg.Type(), "[]") && q.Arg.Type() != "[]byte" && !q.Arg.HasSqlcSlices() {
 						return true
 					}
 				}
+			}
+		}
+		return false
+	}
+
+	// Search for sqlc.slice() calls
+	sqlcSliceScan := func() bool {
+		for _, q := range gq {
+			if q.Arg.HasSqlcSlices() {
+				return true
 			}
 		}
 		return false
@@ -368,6 +378,9 @@ func (i *importer) queryImports(filename string) fileImports {
 	}
 
 	sqlpkg := parseDriver(i.Settings.Go.SqlPackage)
+	if sqlcSliceScan() {
+		std["strings"] = struct{}{}
+	}
 	if sliceScan() && !sqlpkg.IsPGX() {
 		pkg[ImportSpec{Path: "github.com/lib/pq"}] = struct{}{}
 	}
@@ -399,6 +412,13 @@ func (i *importer) copyfromImports() fileImports {
 	})
 
 	std["context"] = struct{}{}
+	if i.Settings.Go.SqlDriver == SQLDriverGoSQLDriverMySQL {
+		std["io"] = struct{}{}
+		std["fmt"] = struct{}{}
+		std["sync/atomic"] = struct{}{}
+		pkg[ImportSpec{Path: "github.com/go-sql-driver/mysql"}] = struct{}{}
+		pkg[ImportSpec{Path: "github.com/hexon/mysqltsv"}] = struct{}{}
+	}
 
 	return sortedImports(std, pkg)
 }
@@ -415,28 +435,24 @@ func (i *importer) batchImports() fileImports {
 			if q.hasRetType() {
 				if q.Ret.EmitStruct() {
 					for _, f := range q.Ret.Struct.Fields {
-						fType := trimSliceAndPointerPrefix(f.Type)
-						if strings.HasPrefix(fType, name) {
+						if hasPrefixIgnoringSliceAndPointerPrefix(f.Type, name) {
 							return true
 						}
 					}
 				}
-				retType := trimSliceAndPointerPrefix(q.Ret.Type())
-				if strings.HasPrefix(retType, name) {
+				if hasPrefixIgnoringSliceAndPointerPrefix(q.Ret.Type(), name) {
 					return true
 				}
 			}
 			if !q.Arg.isEmpty() {
 				if q.Arg.EmitStruct() {
 					for _, f := range q.Arg.Struct.Fields {
-						fType := trimSliceAndPointerPrefix(f.Type)
-						if strings.HasPrefix(fType, name) {
+						if hasPrefixIgnoringSliceAndPointerPrefix(f.Type, name) {
 							return true
 						}
 					}
 				}
-				argType := trimSliceAndPointerPrefix(q.Arg.Type())
-				if strings.HasPrefix(argType, name) {
+				if hasPrefixIgnoringSliceAndPointerPrefix(q.Arg.Type(), name) {
 					return true
 				}
 			}
@@ -461,6 +477,12 @@ func trimSliceAndPointerPrefix(v string) string {
 	v = strings.TrimPrefix(v, "[]")
 	v = strings.TrimPrefix(v, "*")
 	return v
+}
+
+func hasPrefixIgnoringSliceAndPointerPrefix(s, prefix string) bool {
+	trimmedS := trimSliceAndPointerPrefix(s)
+	trimmedPrefix := trimSliceAndPointerPrefix(prefix)
+	return strings.HasPrefix(trimmedS, trimmedPrefix)
 }
 
 func replaceConflictedArg(imports [][]ImportSpec, queries []Query) []Query {

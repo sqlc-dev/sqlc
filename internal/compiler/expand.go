@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/kyleconroy/sqlc/internal/config"
-	"github.com/kyleconroy/sqlc/internal/source"
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
-	"github.com/kyleconroy/sqlc/internal/sql/astutils"
+	"github.com/sqlc-dev/sqlc/internal/config"
+	"github.com/sqlc-dev/sqlc/internal/source"
+	"github.com/sqlc-dev/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
 )
 
 func (c *Compiler) expand(qc *QueryCatalog, raw *ast.RawStmt) ([]source.Edit, error) {
@@ -55,7 +55,7 @@ func (c *Compiler) quoteIdent(ident string) string {
 }
 
 func (c *Compiler) expandStmt(qc *QueryCatalog, raw *ast.RawStmt, node ast.Node) ([]source.Edit, error) {
-	tables, err := sourceTables(qc, node)
+	tables, err := c.sourceTables(qc, node)
 	if err != nil {
 		return nil, err
 	}
@@ -132,9 +132,16 @@ func (c *Compiler) expandStmt(qc *QueryCatalog, raw *ast.RawStmt, node ast.Node)
 		for _, p := range parts {
 			old = append(old, c.quoteIdent(p))
 		}
+		oldString := strings.Join(old, ".")
+
+		// use the sqlc.embed string instead
+		if embed, ok := qc.embeds.Find(ref); ok {
+			oldString = embed.Orig()
+		}
+
 		edits = append(edits, source.Edit{
 			Location: res.Location - raw.StmtLocation,
-			Old:      strings.Join(old, "."),
+			Old:      oldString,
 			New:      strings.Join(cols, ", "),
 		})
 	}

@@ -7,12 +7,18 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/kyleconroy/sqlc/internal/sql/sqlpath"
+	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
 
 	_ "github.com/go-sql-driver/mysql"
 )
 
 func MySQL(t *testing.T, migrations []string) (*sql.DB, func()) {
+	// For each test, pick a new database name at random.
+	name := "sqltest_mysql_" + id()
+	return CreateMySQLDatabase(t, name, migrations)
+}
+
+func CreateMySQLDatabase(t *testing.T, name string, migrations []string) (*sql.DB, func()) {
 	t.Helper()
 
 	data := os.Getenv("MYSQL_DATABASE")
@@ -49,13 +55,11 @@ func MySQL(t *testing.T, migrations []string) (*sql.DB, func()) {
 		t.Fatal(err)
 	}
 
-	// For each test, pick a new database name at random.
-	dbName := "sqltest_mysql_" + id()
-	if _, err := db.Exec("CREATE DATABASE " + dbName); err != nil {
+	if _, err := db.Exec("CREATE DATABASE " + name); err != nil {
 		t.Fatal(err)
 	}
 
-	source = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?multiStatements=true&parseTime=true", user, pass, host, port, dbName)
+	source = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?multiStatements=true&parseTime=true", user, pass, host, port, name)
 	sdb, err := sql.Open("mysql", source)
 	if err != nil {
 		t.Fatal(err)
@@ -77,7 +81,7 @@ func MySQL(t *testing.T, migrations []string) (*sql.DB, func()) {
 
 	return sdb, func() {
 		// Drop the test db after test runs
-		if _, err := db.Exec("DROP DATABASE " + dbName); err != nil {
+		if _, err := db.Exec("DROP DATABASE " + name); err != nil {
 			t.Fatal(err)
 		}
 	}

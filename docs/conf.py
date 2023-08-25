@@ -10,7 +10,7 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
+import os
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 import sphinx_rtd_theme
@@ -18,11 +18,11 @@ import sphinx_rtd_theme
 # -- Project information -----------------------------------------------------
 
 project = 'sqlc'
-copyright = '2021, Kyle Conroy'
-author = 'Kyle Conroy'
+copyright = '2023, Riza, Inc.'
+author = 'Riza, Inc.'
 
 # The full version, including alpha/beta/rc tags
-release = '1.17.2'
+release = '1.20.0'
 
 
 # -- General configuration ---------------------------------------------------
@@ -33,6 +33,7 @@ release = '1.17.2'
 extensions = [
     'recommonmark',
     'sphinx_rtd_theme',
+    "sphinx_favicon",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -60,5 +61,13 @@ html_theme_options = {
     'logo_only': True,
 }
 
+html_context = {
+    'show_banner': 'SHOW_LAUNCH_BANNER' in os.environ,
+}
+
 def setup(app):
     app.add_css_file('customize.css')
+
+favicons = [
+    "favicon.png",
+]

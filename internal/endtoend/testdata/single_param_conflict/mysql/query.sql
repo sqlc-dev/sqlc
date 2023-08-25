@@ -17,7 +17,7 @@ FROM    authors
 WHERE   id = ?
 LIMIT   1;
 
--- https://github.com/kyleconroy/sqlc/issues/1290
+-- https://github.com/sqlc-dev/sqlc/issues/1290
 CREATE TABLE users (
   sub TEXT PRIMARY KEY
 );

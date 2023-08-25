@@ -74,10 +74,23 @@ func v2ParseConfig(rd io.Reader) (Config, error) {
 			if conf.SQL[j].Gen.Go.Package == "" {
 				conf.SQL[j].Gen.Go.Package = filepath.Base(conf.SQL[j].Gen.Go.Out)
 			}
+
+			if conf.SQL[j].Gen.Go.QueryParameterLimit != nil && (*conf.SQL[j].Gen.Go.QueryParameterLimit < 0) {
+				return conf, ErrInvalidQueryParameterLimit
+			}
+
+			if conf.SQL[j].Gen.Go.QueryParameterLimit == nil {
+				conf.SQL[j].Gen.Go.QueryParameterLimit = new(int32)
+				*conf.SQL[j].Gen.Go.QueryParameterLimit = 1
+			}
+
 			for i := range conf.SQL[j].Gen.Go.Overrides {
 				if err := conf.SQL[j].Gen.Go.Overrides[i].Parse(); err != nil {
 					return conf, err
 				}
+			}
+			for k, v := range conf.SQL[j].Gen.Go.Rename {
+				conf.SQL[j].Gen.Go.Rename[k] = v
 			}
 		}
 		if conf.SQL[j].Gen.JSON != nil {
@@ -96,6 +109,10 @@ func v2ParseConfig(rd io.Reader) (Config, error) {
 			if _, ok := plugins[cg.Plugin]; !ok {
 				return conf, ErrPluginNotFound
 			}
+		}
+		if conf.SQL[j].StrictOrderBy == nil {
+			defaultValidate := true
+			conf.SQL[j].StrictOrderBy = &defaultValidate
 		}
 	}
 	return conf, nil

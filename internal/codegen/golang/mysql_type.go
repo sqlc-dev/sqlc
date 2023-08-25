@@ -3,14 +3,15 @@ package golang
 import (
 	"log"
 
-	"github.com/kyleconroy/sqlc/internal/codegen/sdk"
-	"github.com/kyleconroy/sqlc/internal/debug"
-	"github.com/kyleconroy/sqlc/internal/plugin"
+	"github.com/sqlc-dev/sqlc/internal/codegen/sdk"
+	"github.com/sqlc-dev/sqlc/internal/debug"
+	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
 
 func mysqlType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 	columnType := sdk.DataType(col.Type)
 	notNull := col.NotNull || col.IsArray
+	unsigned := col.Unsigned
 
 	switch columnType {
 
@@ -28,6 +29,9 @@ func mysqlType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 			return "sql.NullBool"
 		} else {
 			if notNull {
+				if unsigned {
+					return "uint32"
+				}
 				return "int32"
 			}
 			return "sql.NullInt32"
@@ -35,12 +39,18 @@ func mysqlType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 
 	case "int", "integer", "smallint", "mediumint", "year":
 		if notNull {
+			if unsigned {
+				return "uint32"
+			}
 			return "int32"
 		}
 		return "sql.NullInt32"
 
 	case "bigint":
 		if notNull {
+			if unsigned {
+				return "uint64"
+			}
 			return "int64"
 		}
 		return "sql.NullInt64"

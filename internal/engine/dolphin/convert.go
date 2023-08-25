@@ -1,17 +1,17 @@
 package dolphin
 
 import (
-	"fmt"
 	"log"
 	"strings"
 
 	pcast "github.com/pingcap/tidb/parser/ast"
+	"github.com/pingcap/tidb/parser/mysql"
 	"github.com/pingcap/tidb/parser/opcode"
 	driver "github.com/pingcap/tidb/parser/test_driver"
 	"github.com/pingcap/tidb/parser/types"
 
-	"github.com/kyleconroy/sqlc/internal/debug"
-	"github.com/kyleconroy/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/debug"
+	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 )
 
 type cc struct {
@@ -44,9 +44,10 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 			for _, def := range spec.NewColumns {
 				name := def.Name.String()
 				columnDef := ast.ColumnDef{
-					Colname:   def.Name.String(),
-					TypeName:  &ast.TypeName{Name: types.TypeToStr(def.Tp.GetType(), def.Tp.GetCharset())},
-					IsNotNull: isNotNull(def),
+					Colname:    def.Name.String(),
+					TypeName:   &ast.TypeName{Name: types.TypeToStr(def.Tp.GetType(), def.Tp.GetCharset())},
+					IsNotNull:  isNotNull(def),
+					IsUnsigned: isUnsigned(def),
 				}
 				if def.Tp.GetFlen() >= 0 {
 					length := def.Tp.GetFlen()
@@ -77,9 +78,10 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 			for _, def := range spec.NewColumns {
 				name := def.Name.String()
 				columnDef := ast.ColumnDef{
-					Colname:   def.Name.String(),
-					TypeName:  &ast.TypeName{Name: types.TypeToStr(def.Tp.GetType(), def.Tp.GetCharset())},
-					IsNotNull: isNotNull(def),
+					Colname:    def.Name.String(),
+					TypeName:   &ast.TypeName{Name: types.TypeToStr(def.Tp.GetType(), def.Tp.GetCharset())},
+					IsNotNull:  isNotNull(def),
+					IsUnsigned: isUnsigned(def),
 				}
 				if def.Tp.GetFlen() >= 0 {
 					length := def.Tp.GetFlen()
@@ -96,9 +98,10 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 			for _, def := range spec.NewColumns {
 				name := def.Name.String()
 				columnDef := ast.ColumnDef{
-					Colname:   def.Name.String(),
-					TypeName:  &ast.TypeName{Name: types.TypeToStr(def.Tp.GetType(), def.Tp.GetCharset())},
-					IsNotNull: isNotNull(def),
+					Colname:    def.Name.String(),
+					TypeName:   &ast.TypeName{Name: types.TypeToStr(def.Tp.GetType(), def.Tp.GetCharset())},
+					IsNotNull:  isNotNull(def),
+					IsUnsigned: isUnsigned(def),
 				}
 				if def.Tp.GetFlen() >= 0 {
 					length := def.Tp.GetFlen()
@@ -140,7 +143,7 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 
 		default:
 			if debug.Active {
-				fmt.Printf("dolphin.convert: Unknown alter table cmd %v\n", spec.Tp)
+				log.Printf("dolphin.convert: Unknown alter table cmd %v\n", spec.Tp)
 			}
 			continue
 		}
@@ -265,11 +268,12 @@ func (c *cc) convertCreateTableStmt(n *pcast.CreateTableStmt) ast.Node {
 			}
 		}
 		columnDef := ast.ColumnDef{
-			Colname:   def.Name.String(),
-			TypeName:  &ast.TypeName{Name: types.TypeToStr(def.Tp.GetType(), def.Tp.GetCharset())},
-			IsNotNull: isNotNull(def),
-			Comment:   comment,
-			Vals:      vals,
+			Colname:    def.Name.String(),
+			TypeName:   &ast.TypeName{Name: types.TypeToStr(def.Tp.GetType(), def.Tp.GetCharset())},
+			IsNotNull:  isNotNull(def),
+			IsUnsigned: isUnsigned(def),
+			Comment:    comment,
+			Vals:       vals,
 		}
 		if def.Tp.GetFlen() >= 0 {
 			length := def.Tp.GetFlen()
@@ -299,6 +303,7 @@ func (c *cc) convertColumnNameExpr(n *pcast.ColumnNameExpr) *ast.ColumnRef {
 		Fields: &ast.List{
 			Items: items,
 		},
+		Location: n.OriginTextPosition(),
 	}
 }
 
@@ -318,18 +323,19 @@ func (c *cc) convertDeleteStmt(n *pcast.DeleteStmt) *ast.DeleteStmt {
 	if len(rels.Items) != 1 {
 		panic("expected one range var")
 	}
-	rel := rels.Items[0]
-	rangeVar, ok := rel.(*ast.RangeVar)
-	if !ok {
-		panic("expected range var")
-	}
+	relations := &ast.List{}
+	convertToRangeVarList(rels, relations)
 
-	return &ast.DeleteStmt{
-		Relation:      rangeVar,
+	stmt := &ast.DeleteStmt{
+		Relations:     relations,
 		WhereClause:   c.convert(n.Where),
 		ReturningList: &ast.List{},
 		WithClause:    c.convertWithClause(n.With),
 	}
+	if n.Limit != nil {
+		stmt.LimitCount = c.convert(n.Limit.Count)
+	}
+	return stmt
 }
 
 func (c *cc) convertDropTableStmt(n *pcast.DropTableStmt) ast.Node {
@@ -539,7 +545,6 @@ func (c *cc) convertCommonTableExpression(n *pcast.CommonTableExpression) *ast.C
 		Ctequery:    c.convert(n.Query),
 		Ctecolnames: columns,
 	}
-
 }
 
 func (c *cc) convertWithClause(n *pcast.WithClause) *ast.WithClause {
@@ -565,35 +570,14 @@ func (c *cc) convertUpdateStmt(n *pcast.UpdateStmt) *ast.UpdateStmt {
 	}
 
 	relations := &ast.List{}
-	switch rel := rels.Items[0].(type) {
-
-	// Special case for joins in updates
-	case *ast.JoinExpr:
-		left, ok := rel.Larg.(*ast.RangeVar)
-		if !ok {
-			panic("expected range var")
-		}
-		relations.Items = append(relations.Items, left)
-
-		right, ok := rel.Rarg.(*ast.RangeVar)
-		if !ok {
-			panic("expected range var")
-		}
-		relations.Items = append(relations.Items, right)
-
-	case *ast.RangeVar:
-		relations.Items = append(relations.Items, rel)
-
-	default:
-		panic("expected range var")
-	}
+	convertToRangeVarList(rels, relations)
 
 	// TargetList
 	list := &ast.List{}
 	for _, a := range n.List {
 		list.Items = append(list.Items, c.convertAssignment(a))
 	}
-	return &ast.UpdateStmt{
+	stmt := &ast.UpdateStmt{
 		Relations:     relations,
 		TargetList:    list,
 		WhereClause:   c.convert(n.Where),
@@ -601,13 +585,55 @@ func (c *cc) convertUpdateStmt(n *pcast.UpdateStmt) *ast.UpdateStmt {
 		ReturningList: &ast.List{},
 		WithClause:    c.convertWithClause(n.With),
 	}
+	if n.Limit != nil {
+		stmt.LimitCount = c.convert(n.Limit.Count)
+	}
+	return stmt
 }
 
 func (c *cc) convertValueExpr(n *driver.ValueExpr) *ast.A_Const {
+	switch n.TexprNode.Type.GetType() {
+	case mysql.TypeBit:
+	case mysql.TypeDate:
+	case mysql.TypeDatetime:
+	case mysql.TypeGeometry:
+	case mysql.TypeJSON:
+	case mysql.TypeNull:
+	case mysql.TypeSet:
+	case mysql.TypeShort:
+	case mysql.TypeDuration:
+	case mysql.TypeTimestamp:
+		// TODO: Create an AST type for these?
+
+	case mysql.TypeTiny,
+		mysql.TypeInt24,
+		mysql.TypeYear,
+		mysql.TypeLong,
+		mysql.TypeLonglong:
+		return &ast.A_Const{
+			Val: &ast.Integer{
+				Ival: n.Datum.GetInt64(),
+			},
+			Location: n.OriginTextPosition(),
+		}
+
+	case mysql.TypeDouble,
+		mysql.TypeFloat,
+		mysql.TypeNewDecimal:
+		return &ast.A_Const{
+			Val: &ast.Float{
+				// TODO: Extract the value from n.TexprNode
+			},
+			Location: n.OriginTextPosition(),
+		}
+
+	case mysql.TypeBlob, mysql.TypeString, mysql.TypeVarchar, mysql.TypeVarString, mysql.TypeLongBlob, mysql.TypeMediumBlob, mysql.TypeTinyBlob, mysql.TypeEnum:
+	}
 	return &ast.A_Const{
 		Val: &ast.String{
 			Str: n.Datum.GetString(),
 		},
+		Location: n.OriginTextPosition(),
 	}
 }
 
@@ -874,7 +900,10 @@ func (c *cc) convertFrameClause(n *pcast.FrameClause) ast.Node {
 }
 
 func (c *cc) convertFuncCastExpr(n *pcast.FuncCastExpr) ast.Node {
-	return todo(n)
+	return &ast.TypeCast{
+		Arg:      c.convert(n.Expr),
+		TypeName: &ast.TypeName{Name: types.TypeStr(n.Tp.GetType())},
+	}
 }
 
 func (c *cc) convertGetFormatSelectorExpr(n *pcast.GetFormatSelectorExpr) ast.Node {
@@ -1161,22 +1190,24 @@ func (c *cc) convertSetOprType(n *pcast.SetOprType) (op ast.SetOperation, all bo
 // into a tree. It is called for UNION, INTERSECT or EXCLUDE operation.
 //
 // Given an union with the following nodes:
-//     [Select{1}, Select{2}, Select{3}, Select{4}]
+//
+//	[Select{1}, Select{2}, Select{3}, Select{4}]
 //
 // The function will return:
-//     Select{
-//         Larg: Select{
-//             Larg: Select{
-//                 Larg: Select{1},
-//                 Rarg: Select{2},
-//                 Op: Union
-//             },
-//             Rarg: Select{3},
-//             Op: Union,
-//         },
-//         Rarg: Select{4},
-//         Op: Union,
-//     }
+//
+//	Select{
+//	    Larg: Select{
+//	        Larg: Select{
+//	            Larg: Select{1},
+//	            Rarg: Select{2},
+//	            Op: Union
+//	        },
+//	        Rarg: Select{3},
+//	        Op: Union,
+//	    },
+//	    Rarg: Select{4},
+//	    Op: Union,
+//	}
 func (c *cc) convertSetOprSelectList(n *pcast.SetOprSelectList) ast.Node {
 	selectStmts := make([]*ast.SelectStmt, len(n.Selects))
 	for i, node := range n.Selects {
@@ -1241,7 +1272,32 @@ func (c *cc) convertSetStmt(n *pcast.SetStmt) ast.Node {
 }
 
 func (c *cc) convertShowStmt(n *pcast.ShowStmt) ast.Node {
-	return todo(n)
+	if n.Tp != pcast.ShowWarnings {
+		return todo(n)
+	}
+	level := "level"
+	code := "code"
+	message := "message"
+	stmt := &ast.SelectStmt{
+		FromClause: &ast.List{},
+		TargetList: &ast.List{
+			Items: []ast.Node{
+				&ast.ResTarget{
+					Name: &level,
+					Val:  &ast.A_Const{Val: &ast.String{}},
+				},
+				&ast.ResTarget{
+					Name: &code,
+					Val:  &ast.A_Const{Val: &ast.Integer{}},
+				},
+				&ast.ResTarget{
+					Name: &message,
+					Val:  &ast.A_Const{Val: &ast.String{}},
+				},
+			},
+		},
+	}
+	return stmt
 }
 
 func (c *cc) convertShutdownStmt(n *pcast.ShutdownStmt) ast.Node {

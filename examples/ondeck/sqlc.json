@@ -7,6 +7,12 @@
       "schema": "postgresql/schema",
       "queries": "postgresql/query",
       "engine": "postgresql",
+      "database": {
+        "uri": "postgresql://${PG_USER}:${PG_PASSWORD}@${PG_HOST}:${PG_PORT}/ondeck"
+      },
+      "rules": [
+        "sqlc/db-prepare"
+      ],
       "emit_json_tags": true,
       "emit_prepared_queries": true,
       "emit_interface": true
@@ -17,6 +23,12 @@
       "schema": "mysql/schema",
       "queries": "mysql/query",
       "engine": "mysql",
+      "database": {
+        "uri": "root:${MYSQL_ROOT_PASSWORD}@tcp(${MYSQL_HOST}:${MYSQL_PORT})/ondeck?multiStatements=true&parseTime=true"
+      },
+      "rules": [
+        "sqlc/db-prepare"
+      ],
       "emit_json_tags": true,
       "emit_prepared_queries": true,
       "emit_interface": true
@@ -27,6 +39,12 @@
       "schema": "sqlite/schema",
       "queries": "sqlite/query",
       "engine": "sqlite",
+      "database": {
+        "uri": "file:ondeck?mode=memory&cache=shared"
+      },
+      "rules": [
+        "sqlc/db-prepare"
+      ],
       "emit_json_tags": true,
       "emit_prepared_queries": true,
       "emit_interface": true

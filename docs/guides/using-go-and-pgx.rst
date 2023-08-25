@@ -3,13 +3,11 @@ Using Go and pgx
 ================
 
 .. note::
-   Experimental support for :code:`pgx/v5` was added in v1.17.2. Full support will be
-   included in v1.18.0. Until then, you'll need to pass the :code:`--experimental`
-   flag to :code:`sqlc generate`.
+   :code:`pgx/v5` is supported starting from v1.18.0.
 
 
 pgx is a pure Go driver and toolkit for PostgreSQL. It's become the default
-PostgreSQL package for many Gophers since lib/pq was put into maitience mode.
+PostgreSQL package for many Gophers since lib/pq was put into maintenance mode.
 
 ^^^^^^^^^^^^^^^
 Getting started
@@ -68,7 +66,7 @@ Generating the code will now give you pgx-compatible database access methods.
 
 .. code-block:: bash
 
-   sqlc generate --experimental
+   sqlc generate
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 Generated code walkthrough

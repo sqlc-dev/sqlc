@@ -10,9 +10,9 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/kyleconroy/sqlc/internal/codegen/sdk"
-	"github.com/kyleconroy/sqlc/internal/metadata"
-	"github.com/kyleconroy/sqlc/internal/plugin"
+	"github.com/sqlc-dev/sqlc/internal/codegen/sdk"
+	"github.com/sqlc-dev/sqlc/internal/metadata"
+	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
 
 type tmplCtx struct {
@@ -28,6 +28,7 @@ type tmplCtx struct {
 	SourceName string
 
 	EmitJSONTags              bool
+	JsonTagsIDUppercase       bool
 	EmitDBTags                bool
 	EmitPreparedQueries       bool
 	EmitInterface             bool
@@ -43,6 +44,63 @@ func (t *tmplCtx) OutputQuery(sourceName string) bool {
 	return t.SourceName == sourceName
 }
 
+func (t *tmplCtx) codegenDbarg() string {
+	if t.EmitMethodsWithDBArgument {
+		return "db DBTX, "
+	}
+	return ""
+}
+
+// Called as a global method since subtemplate queryCodeStdExec does not have
+// access to the toplevel tmplCtx
+func (t *tmplCtx) codegenEmitPreparedQueries() bool {
+	return t.EmitPreparedQueries
+}
+
+func (t *tmplCtx) codegenQueryMethod(q Query) string {
+	db := "q.db"
+	if t.EmitMethodsWithDBArgument {
+		db = "db"
+	}
+
+	switch q.Cmd {
+	case ":one":
+		if t.EmitPreparedQueries {
+			return "q.queryRow"
+		}
+		return db + ".QueryRowContext"
+
+	case ":many":
+		if t.EmitPreparedQueries {
+			return "q.query"
+		}
+		return db + ".QueryContext"
+
+	default:
+		if t.EmitPreparedQueries {
+			return "q.exec"
+		}
+		return db + ".ExecContext"
+	}
+}
+
+func (t *tmplCtx) codegenQueryRetval(q Query) (string, error) {
+	switch q.Cmd {
+	case ":one":
+		return "row :=", nil
+	case ":many":
+		return "rows, err :=", nil
+	case ":exec":
+		return "_, err :=", nil
+	case ":execrows", ":execlastid":
+		return "result, err :=", nil
+	case ":execresult":
+		return "return", nil
+	default:
+		return "", fmt.Errorf("unhandled q.Cmd case %q", q.Cmd)
+	}
+}
+
 func Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
 	enums := buildEnums(req)
 	structs := buildStructs(req)
@@ -50,6 +108,11 @@ func Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plugin.CodeGenR
 	if err != nil {
 		return nil, err
 	}
+
+	if req.Settings.Go.OmitUnusedStructs {
+		enums, structs = filterUnusedStructs(enums, structs, queries)
+	}
+
 	return generate(req, enums, structs, queries)
 }
 
@@ -61,28 +124,11 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 		Structs:  structs,
 	}
 
-	funcMap := template.FuncMap{
-		"lowerTitle": sdk.LowerTitle,
-		"comment":    sdk.DoubleSlashComment,
-		"escape":     sdk.EscapeBacktick,
-		"imports":    i.Imports,
-		"hasPrefix":  strings.HasPrefix,
-	}
-
-	tmpl := template.Must(
-		template.New("table").
-			Funcs(funcMap).
-			ParseFS(
-				templates,
-				"templates/*.tmpl",
-				"templates/*/*.tmpl",
-			),
-	)
-
 	golang := req.Settings.Go
 	tctx := tmplCtx{
 		EmitInterface:             golang.EmitInterface,
 		EmitJSONTags:              golang.EmitJsonTags,
+		JsonTagsIDUppercase:       golang.JsonTagsIdUppercase,
 		EmitDBTags:                golang.EmitDbTags,
 		EmitPreparedQueries:       golang.EmitPreparedQueries,
 		EmitEmptySlices:           golang.EmitEmptySlices,
@@ -99,13 +145,45 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 		SqlcVersion:               req.SqlcVersion,
 	}
 
-	if tctx.UsesCopyFrom && !tctx.SQLDriver.IsPGX() {
-		return nil, errors.New(":copyfrom is only supported by pgx")
+	if tctx.UsesCopyFrom && !tctx.SQLDriver.IsPGX() && golang.SqlDriver != SQLDriverGoSQLDriverMySQL {
+		return nil, errors.New(":copyfrom is only supported by pgx and github.com/go-sql-driver/mysql")
+	}
+
+	if tctx.UsesCopyFrom && golang.SqlDriver == SQLDriverGoSQLDriverMySQL {
+		if err := checkNoTimesForMySQLCopyFrom(queries); err != nil {
+			return nil, err
+		}
+		tctx.SQLDriver = SQLDriverGoSQLDriverMySQL
 	}
 
 	if tctx.UsesBatch && !tctx.SQLDriver.IsPGX() {
 		return nil, errors.New(":batch* commands are only supported by pgx")
 	}
+
+	funcMap := template.FuncMap{
+		"lowerTitle": sdk.LowerTitle,
+		"comment":    sdk.DoubleSlashComment,
+		"escape":     sdk.EscapeBacktick,
+		"imports":    i.Imports,
+		"hasPrefix":  strings.HasPrefix,
+
+		// These methods are Go specific, they do not belong in the codegen package
+		// (as that is language independent)
+		"dbarg":               tctx.codegenDbarg,
+		"emitPreparedQueries": tctx.codegenEmitPreparedQueries,
+		"queryMethod":         tctx.codegenQueryMethod,
+		"queryRetval":         tctx.codegenQueryRetval,
+	}
+
+	tmpl := template.Must(
+		template.New("table").
+			Funcs(funcMap).
+			ParseFS(
+				templates,
+				"templates/*.tmpl",
+				"templates/*/*.tmpl",
+			),
+	)
 
 	output := map[string]string{}
 
@@ -155,6 +233,9 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 	// TODO(Jille): Make this configurable.
 
 	batchFileName := "batch.go"
+	if golang.OutputBatchFileName != "" {
+		batchFileName = golang.OutputBatchFileName
+	}
 
 	if err := execute(dbFileName, "dbFile"); err != nil {
 		return nil, err
@@ -218,4 +299,56 @@ func usesBatch(queries []Query) bool {
 		}
 	}
 	return false
+}
+
+func checkNoTimesForMySQLCopyFrom(queries []Query) error {
+	for _, q := range queries {
+		for _, f := range q.Arg.Fields() {
+			if f.Type == "time.Time" {
+				return fmt.Errorf("values with a timezone are not yet supported")
+			}
+		}
+	}
+	return nil
+}
+
+func filterUnusedStructs(enums []Enum, structs []Struct, queries []Query) ([]Enum, []Struct) {
+	keepTypes := make(map[string]struct{})
+
+	for _, query := range queries {
+		if !query.Arg.isEmpty() {
+			keepTypes[query.Arg.Type()] = struct{}{}
+			if query.Arg.IsStruct() {
+				for _, field := range query.Arg.Struct.Fields {
+					keepTypes[field.Type] = struct{}{}
+				}
+			}
+		}
+		if query.hasRetType() {
+			keepTypes[query.Ret.Type()] = struct{}{}
+			if query.Ret.IsStruct() {
+				for _, field := range query.Ret.Struct.Fields {
+					keepTypes[field.Type] = struct{}{}
+				}
+			}
+		}
+	}
+
+	keepEnums := make([]Enum, 0, len(enums))
+	for _, enum := range enums {
+		_, keep := keepTypes[enum.Name]
+		_, keepNull := keepTypes["Null"+enum.Name]
+		if keep || keepNull {
+			keepEnums = append(keepEnums, enum)
+		}
+	}
+
+	keepStructs := make([]Struct, 0, len(structs))
+	for _, st := range structs {
+		if _, ok := keepTypes[st.Name]; ok {
+			keepStructs = append(keepStructs, st)
+		}
+	}
+
+	return keepEnums, keepStructs
 }
