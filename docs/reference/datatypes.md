@@ -9,7 +9,7 @@ If you're unsatisfied with the default, you can override any type using the
 ## Arrays
 
 PostgreSQL [arrays](https://www.postgresql.org/docs/current/arrays.html) are
-materialized as Go slices. Currently, the `pgx/v5` sql package only supports multidimensional arrays.
+materialized as Go slices.
 
 ```sql
 CREATE TABLE places (
@@ -92,7 +92,7 @@ type Store struct {
 ## Null
 
 For structs, null values are represented using the appropriate type from the
-`database/sql` or `pgx` package. 
+`database/sql` or `pgx` package.
 
 ```sql
 CREATE TABLE authors (
