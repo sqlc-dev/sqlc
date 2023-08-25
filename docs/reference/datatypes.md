@@ -9,7 +9,7 @@ If you're unsatisfied with the default, you can override any type using the
 ## Arrays
 
 PostgreSQL [arrays](https://www.postgresql.org/docs/current/arrays.html) are
-materialized as Go slices. Currently, only the `pgx/v5` sql package supports multidimensional arrays.
+materialized as Go slices.
 
 ```sql
 CREATE TABLE places (
