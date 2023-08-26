@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"os/exec"
 
 	"google.golang.org/protobuf/proto"
@@ -31,9 +32,7 @@ func (r Runner) Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plug
 
 	cmd := exec.CommandContext(ctx, path)
 	cmd.Stdin = bytes.NewReader(stdin)
-	cmd.Env = []string{
-		fmt.Sprintf("SQLC_VERSION=%s", req.SqlcVersion),
-	}
+	cmd.Env = append(os.Environ(), fmt.Sprintf("SQLC_VERSION=%s", req.SqlcVersion))
 
 	out, err := cmd.Output()
 	if err != nil {
