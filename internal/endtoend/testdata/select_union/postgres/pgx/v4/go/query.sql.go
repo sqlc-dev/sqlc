@@ -86,3 +86,35 @@ func (q *Queries) SelectUnion(ctx context.Context) ([]Foo, error) {
 	}
 	return items, nil
 }
+
+const selectUnionWithLimit = `-- name: SelectUnionWithLimit :many
+SELECT a, b FROM foo
+UNION
+SELECT a, b FROM foo
+LIMIT $1 OFFSET $2
+`
+
+type SelectUnionWithLimitParams struct {
+	Limit  int32
+	Offset int32
+}
+
+func (q *Queries) SelectUnionWithLimit(ctx context.Context, arg SelectUnionWithLimitParams) ([]Foo, error) {
+	rows, err := q.db.Query(ctx, selectUnionWithLimit, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Foo
+	for rows.Next() {
+		var i Foo
+		if err := rows.Scan(&i.A, &i.B); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
