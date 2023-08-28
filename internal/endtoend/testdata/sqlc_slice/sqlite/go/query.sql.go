@@ -49,6 +49,44 @@ func (q *Queries) FuncNullable(ctx context.Context, favourites []int64) ([]sql.N
 	return items, nil
 }
 
+const funcNullableNot = `-- name: FuncNullableNot :many
+SELECT bar FROM foo
+WHERE id NOT IN (/*SLICE:favourites*/?)
+`
+
+func (q *Queries) FuncNullableNot(ctx context.Context, favourites []int64) ([]sql.NullString, error) {
+	query := funcNullableNot
+	var queryParams []interface{}
+	if len(favourites) > 0 {
+		for _, v := range favourites {
+			queryParams = append(queryParams, v)
+		}
+		query = strings.Replace(query, "/*SLICE:favourites*/?", strings.Repeat(",?", len(favourites))[1:], 1)
+	} else {
+		query = strings.Replace(query, "/*SLICE:favourites*/?", "NULL", 1)
+	}
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []sql.NullString
+	for rows.Next() {
+		var bar sql.NullString
+		if err := rows.Scan(&bar); err != nil {
+			return nil, err
+		}
+		items = append(items, bar)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const funcParamIdent = `-- name: FuncParamIdent :many
 SELECT name FROM foo
 WHERE name = ?1
