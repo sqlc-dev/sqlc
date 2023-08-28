@@ -7,6 +7,8 @@ github.com/benbjohnson/clock v1.1.0 h1:Q92kusRqC1XV2MjkWETPvjJVqKetz1OzxZB7mHJLj
 github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
 github.com/bytecodealliance/wasmtime-go/v11 v11.0.0 h1:SwLgbjbFpQ1tf5vIbWexaZABezBSL8WmzP+foLyi0lE=
 github.com/bytecodealliance/wasmtime-go/v11 v11.0.0/go.mod h1:9btfEuCkOP7EDR9a7LqDXrfQ7dtWeGlDHt3buV5UyjY=
+github.com/bytecodealliance/wasmtime-go/v12 v12.0.0 h1:Wga02UaZXYF3p0LIeL5xFp09/RI7UhjfT2uB0mLrwlw=
+github.com/bytecodealliance/wasmtime-go/v12 v12.0.0/go.mod h1:a3PRoftJxxUzkQvgjC6sv7pKyJJK0ZsFVmH+eeEKQC4=
 github.com/cockroachdb/apd v1.1.0 h1:3LFP3629v+1aKXU5Q37mxmRxX/pIu1nijXydLShEq5I=
 github.com/cockroachdb/apd v1.1.0/go.mod h1:8Sl8LxpKi29FqWXR16WEFZRNSz3SoPzUzeMeY4+DwBQ=
 github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e/go.mod h1:F5haX7vjVVG0kc13fIWeqUViNPyEJxv/OmvnBo0Yme4=
