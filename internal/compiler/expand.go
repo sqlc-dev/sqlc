@@ -38,12 +38,7 @@ func (c *Compiler) expand(qc *QueryCatalog, raw *ast.RawStmt) ([]source.Edit, er
 
 func (c *Compiler) quoteIdent(ident string) string {
 	if c.parser.IsReservedKeyword(ident) {
-		switch c.conf.Engine {
-		case config.EngineMySQL:
-			return "`" + ident + "`"
-		default:
-			return "\"" + ident + "\""
-		}
+		return c.quote(ident)
 	}
 	if c.conf.Engine == config.EnginePostgreSQL {
 		// camelCase means the column is also camelCase
@@ -52,6 +47,15 @@ func (c *Compiler) quoteIdent(ident string) string {
 		}
 	}
 	return ident
+}
+
+func (c *Compiler) quote(x string) string {
+	switch c.conf.Engine {
+	case config.EngineMySQL:
+		return "`" + x + "`"
+	default:
+		return "\"" + x + "\""
+	}
 }
 
 func (c *Compiler) expandStmt(qc *QueryCatalog, raw *ast.RawStmt, node ast.Node) ([]source.Edit, error) {
@@ -132,16 +136,36 @@ func (c *Compiler) expandStmt(qc *QueryCatalog, raw *ast.RawStmt, node ast.Node)
 		for _, p := range parts {
 			old = append(old, c.quoteIdent(p))
 		}
-		oldString := strings.Join(old, ".")
+
+		var oldString string
+		var oldFunc func(string) int
 
 		// use the sqlc.embed string instead
 		if embed, ok := qc.embeds.Find(ref); ok {
 			oldString = embed.Orig()
+		} else {
+			oldFunc = func(s string) int {
+				length := 0
+				for i, o := range old {
+					if hasSeparator := i > 0; hasSeparator {
+						length++
+					}
+					if strings.HasPrefix(s[length:], o) {
+						length += len(o)
+					} else if quoted := c.quote(o); strings.HasPrefix(s[length:], quoted) {
+						length += len(quoted)
+					} else {
+						length += len(o)
+					}
+				}
+				return length
+			}
 		}
 
 		edits = append(edits, source.Edit{
 			Location: res.Location - raw.StmtLocation,
 			Old:      oldString,
+			OldFunc:  oldFunc,
 			New:      strings.Join(cols, ", "),
 		})
 	}
