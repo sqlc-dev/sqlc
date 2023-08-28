@@ -37,3 +37,27 @@ func (q *Queries) GetAll(ctx context.Context) ([]User, error) {
 	}
 	return items, nil
 }
+
+const getIDAll = `-- name: GetIDAll :many
+SELECT id FROM (SELECT id FROM users) t
+`
+
+func (q *Queries) GetIDAll(ctx context.Context) ([]int32, error) {
+	rows, err := q.db.Query(ctx, getIDAll)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []int32
+	for rows.Next() {
+		var id int32
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		items = append(items, id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
