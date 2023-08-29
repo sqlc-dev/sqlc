@@ -8,17 +8,17 @@
       "codegen": [
         {
           "out": "gen",
-          "plugin": "env"
+          "plugin": "test"
         }
       ]
     }
   ],
   "plugins": [
     {
-      "name": "env",
+      "name": "test",
       "env": ["SQLC_DUMMY_VALUE"],
       "process": {
-        "cmd": "sqlc-gen-env"
+        "cmd": "sqlc-gen-test"
       }
     }
   ]
