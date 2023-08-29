@@ -316,6 +316,8 @@ Each mapping in the `plugins` collection has the following keys:
 
 - `name`:
   - The name of this plugin. Required
+- `env`
+  - A list of environment variables to pass to the plugin. By default, no environment variables are passed.
 - `process`: A mapping with a single `cmd` key
   - `cmd`:
     - The executable to call when using this plugin
@@ -333,6 +335,8 @@ plugins:
     url: "https://github.com/sqlc-dev/sqlc-gen-python/releases/download/v0.16.0-alpha/sqlc-gen-python.wasm"
     sha256: "428476c7408fd4c032da4ec74e8a7344f4fa75e0f98a5a3302f238283b9b95f2"
 - name: "js"
+  env:
+  - PATH
   process: 
     cmd: "sqlc-gen-json"
 ```
