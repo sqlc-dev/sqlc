@@ -59,7 +59,7 @@ jobs:
       run: go install gotest.tools/gotestsum@latest
 
     - name: install sqlc-gen-test
-      run: go install github.com/sqlc-dev/sqlc-gen-test@main
+      run: go install github.com/sqlc-dev/sqlc-gen-test@v0.1.0
 
     - name: install ./...
       run: go install ./...
