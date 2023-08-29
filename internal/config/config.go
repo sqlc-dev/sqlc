@@ -79,7 +79,8 @@ type Cloud struct {
 }
 
 type Plugin struct {
-	Name    string `json:"name" yaml:"name"`
+	Name    string   `json:"name" yaml:"name"`
+	Env     []string `json:"env" yaml:"env"`
 	Process *struct {
 		Cmd string `json:"cmd" yaml:"cmd"`
 	} `json:"process" yaml:"process"`

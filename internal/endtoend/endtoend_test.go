@@ -75,6 +75,10 @@ func BenchmarkExamples(b *testing.B) {
 }
 
 func TestReplay(t *testing.T) {
+	// Ensure that this environment variable is always set to true when running
+	// end-to-end tests
+	os.Setenv("SQLC_DUMMY_VALUE", "true")
+
 	t.Parallel()
 	ctx := context.Background()
 	var dirs []string
