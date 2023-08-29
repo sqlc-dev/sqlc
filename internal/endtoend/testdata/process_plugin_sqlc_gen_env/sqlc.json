@@ -1,0 +1,25 @@
+{
+  "version": "2",
+  "sql": [
+    {
+      "schema": "schema.sql",
+      "queries": "query.sql",
+      "engine": "postgresql",
+      "codegen": [
+        {
+          "out": "gen",
+          "plugin": "env"
+        }
+      ]
+    }
+  ],
+  "plugins": [
+    {
+      "name": "env",
+      "env": ["SQLC_DUMMY_VALUE"],
+      "process": {
+        "cmd": "sqlc-gen-env"
+      }
+    }
+  ]
+}
