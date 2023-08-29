@@ -386,11 +386,13 @@ func codegen(ctx context.Context, combo config.CombinedSettings, sql outPair, re
 		case plug.Process != nil:
 			handler = &process.Runner{
 				Cmd: plug.Process.Cmd,
+				Env: plug.Env,
 			}
 		case plug.WASM != nil:
 			handler = &wasm.Runner{
 				URL:    plug.WASM.URL,
 				SHA256: plug.WASM.SHA256,
+				Env:    plug.Env,
 			}
 		default:
 			return "", nil, fmt.Errorf("unsupported plugin type")

@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"os/exec"
 
 	"google.golang.org/protobuf/proto"
@@ -14,6 +15,7 @@ import (
 
 type Runner struct {
 	Cmd string
+	Env []string
 }
 
 // TODO: Update the gen func signature to take a ctx
@@ -33,6 +35,9 @@ func (r Runner) Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plug
 	cmd.Stdin = bytes.NewReader(stdin)
 	cmd.Env = []string{
 		fmt.Sprintf("SQLC_VERSION=%s", req.SqlcVersion),
+	}
+	for _, key := range r.Env {
+		cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", key, os.Getenv(key)))
 	}
 
 	out, err := cmd.Output()
