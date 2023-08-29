@@ -33,3 +33,16 @@ WHERE id IN (sqlc.slice(ids)) AND name = $1;
 
 -- name: CreateAuthorOnlyTitles :one
 INSERT INTO authors (name, titles) VALUES ($1, $2) RETURNING *;
+
+CREATE TABLE clients (
+  id INT PRIMARY KEY,
+  name TEXT NOT NULL
+);
+
+-- name: AddNewClient :one
+INSERT INTO clients (
+  id, name
+) VALUES (
+  $1, $2
+)
+RETURNING *;

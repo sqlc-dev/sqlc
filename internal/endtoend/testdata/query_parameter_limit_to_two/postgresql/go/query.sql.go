@@ -13,6 +13,22 @@ import (
 	"github.com/lib/pq"
 )
 
+const addNewClient = `-- name: AddNewClient :one
+INSERT INTO clients (
+  id, name
+) VALUES (
+  $1, $2
+)
+RETURNING id, name
+`
+
+func (q *Queries) AddNewClient(ctx context.Context, iD int32, name string) (Client, error) {
+	row := q.db.QueryRowContext(ctx, addNewClient, iD, name)
+	var i Client
+	err := row.Scan(&i.ID, &i.Name)
+	return i, err
+}
+
 const createAuthor = `-- name: CreateAuthor :one
 INSERT INTO authors (
   name, bio, country_code, titles
