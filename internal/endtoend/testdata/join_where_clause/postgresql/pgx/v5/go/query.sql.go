@@ -9,6 +9,38 @@ import (
 	"context"
 )
 
+const joinParamWhereClause = `-- name: JoinParamWhereClause :many
+SELECT foo.barid
+FROM foo
+JOIN bar ON bar.id = $2
+WHERE owner = $1
+`
+
+type JoinParamWhereClauseParams struct {
+	Owner string
+	ID    int32
+}
+
+func (q *Queries) JoinParamWhereClause(ctx context.Context, arg JoinParamWhereClauseParams) ([]int32, error) {
+	rows, err := q.db.Query(ctx, joinParamWhereClause, arg.Owner, arg.ID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []int32
+	for rows.Next() {
+		var barid int32
+		if err := rows.Scan(&barid); err != nil {
+			return nil, err
+		}
+		items = append(items, barid)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const joinWhereClause = `-- name: JoinWhereClause :many
 SELECT foo.barid
 FROM foo

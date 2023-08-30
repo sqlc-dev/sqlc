@@ -6,3 +6,9 @@ SELECT foo.*
 FROM foo
 JOIN bar ON bar.id = barid
 WHERE owner = ?;
+
+-- name: JoinParamWhereClause :many
+SELECT foo.*
+FROM foo
+JOIN bar ON bar.id = ?
+WHERE owner = ?;
