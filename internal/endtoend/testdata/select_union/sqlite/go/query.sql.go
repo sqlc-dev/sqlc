@@ -129,12 +129,12 @@ const selectUnionWithLimit = `-- name: SelectUnionWithLimit :many
 SELECT a, b FROM foo
 UNION
 SELECT a, b FROM foo
-LIMIT $1 OFFSET $2
+LIMIT ? OFFSET ?
 `
 
 type SelectUnionWithLimitParams struct {
-	Limit  int32
-	Offset int32
+	Limit  int64
+	Offset int64
 }
 
 func (q *Queries) SelectUnionWithLimit(ctx context.Context, arg SelectUnionWithLimitParams) ([]Foo, error) {

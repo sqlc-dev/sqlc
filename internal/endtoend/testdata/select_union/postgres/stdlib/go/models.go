@@ -8,6 +8,11 @@ import (
 	"database/sql"
 )
 
+type Bar struct {
+	A sql.NullString
+	B sql.NullString
+}
+
 type Foo struct {
 	A sql.NullString
 	B sql.NullString

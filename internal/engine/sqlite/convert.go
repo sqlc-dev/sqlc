@@ -375,13 +375,7 @@ func (c *cc) convertComparison(n *parser.Expr_comparisonContext) ast.Node {
 }
 
 func (c *cc) convertMultiSelect_stmtContext(n *parser.Select_stmtContext) ast.Node {
-	var tables []ast.Node
-	var cols []ast.Node
-	var where ast.Node
-	var groups = []ast.Node{}
-	var having ast.Node
-	var ctes []ast.Node
-
+	var ctes ast.List
 	if ct := n.Common_table_stmt(); ct != nil {
 		recursive := ct.RECURSIVE_() != nil
 		for _, cte := range ct.AllCommon_table_expression() {
@@ -390,7 +384,7 @@ func (c *cc) convertMultiSelect_stmtContext(n *parser.Select_stmtContext) ast.No
 			for _, col := range cte.AllColumn_name() {
 				cteCols.Items = append(cteCols.Items, NewIdentifier(col.GetText()))
 			}
-			ctes = append(ctes, &ast.CommonTableExpr{
+			ctes.Items = append(ctes.Items, &ast.CommonTableExpr{
 				Ctename:      &tableName,
 				Ctequery:     c.convert(cte.Select_stmt()),
 				Location:     cte.GetStart().GetStart(),
@@ -400,20 +394,24 @@ func (c *cc) convertMultiSelect_stmtContext(n *parser.Select_stmtContext) ast.No
 		}
 	}
 
-	for _, icore := range n.AllSelect_core() {
+	var selectStmt *ast.SelectStmt
+	for s, icore := range n.AllSelect_core() {
 		core, ok := icore.(*parser.Select_coreContext)
 		if !ok {
 			continue
 		}
-		cols = append(cols, c.getCols(core)...)
-		tables = append(tables, c.getTables(core)...)
+		cols := c.getCols(core)
+		tables := c.getTables(core)
 
+		var where ast.Node
 		i := 0
 		if core.WHERE_() != nil {
 			where = c.convert(core.Expr(i))
 			i++
 		}
 
+		var groups ast.List
+		var having ast.Node
 		if core.GROUP_() != nil {
 			l := len(core.AllExpr()) - i
 			if core.HAVING_() != nil {
@@ -422,33 +420,103 @@ func (c *cc) convertMultiSelect_stmtContext(n *parser.Select_stmtContext) ast.No
 			}
 
 			for i < l {
-				groups = append(groups, c.convert(core.Expr(i)))
+				groups.Items = append(groups.Items, c.convert(core.Expr(i)))
 				i++
+			}
+		}
+		var window ast.List
+		if core.WINDOW_() != nil {
+			for w, windowNameCtx := range core.AllWindow_name() {
+				windowName := identifier(windowNameCtx.GetText())
+				windowDef := core.Window_defn(w)
+
+				_ = windowDef.Base_window_name()
+				var partitionBy ast.List
+				if windowDef.PARTITION_() != nil {
+					for _, e := range windowDef.AllExpr() {
+						partitionBy.Items = append(partitionBy.Items, c.convert(e))
+					}
+				}
+				var orderBy ast.List
+				if windowDef.ORDER_() != nil {
+					for _, e := range windowDef.AllOrdering_term() {
+						oterm := e.(*parser.Ordering_termContext)
+						sortByDir := ast.SortByDirDefault
+						if ad := oterm.Asc_desc(); ad != nil {
+							if ad.ASC_() != nil {
+								sortByDir = ast.SortByDirAsc
+							} else {
+								sortByDir = ast.SortByDirDesc
+							}
+						}
+						sortByNulls := ast.SortByNullsDefault
+						if oterm.NULLS_() != nil {
+							if oterm.FIRST_() != nil {
+								sortByNulls = ast.SortByNullsFirst
+							} else {
+								sortByNulls = ast.SortByNullsLast
+							}
+						}
+
+						orderBy.Items = append(orderBy.Items, &ast.SortBy{
+							Node:        c.convert(oterm.Expr()),
+							SortbyDir:   sortByDir,
+							SortbyNulls: sortByNulls,
+							UseOp:       &ast.List{},
+						})
+					}
+				}
+				window.Items = append(window.Items, &ast.WindowDef{
+					Name:            &windowName,
+					PartitionClause: &partitionBy,
+					OrderClause:     &orderBy,
+					FrameOptions:    0, // todo
+					StartOffset:     &ast.TODO{},
+					EndOffset:       &ast.TODO{},
+					Location:        windowNameCtx.GetStart().GetStart(),
+				})
+			}
+		}
+		sel := &ast.SelectStmt{
+			FromClause:   &ast.List{Items: tables},
+			TargetList:   &ast.List{Items: cols},
+			WhereClause:  where,
+			GroupClause:  &groups,
+			HavingClause: having,
+			WindowClause: &window,
+			ValuesLists:  &ast.List{},
+		}
+		if selectStmt == nil {
+			selectStmt = sel
+		} else {
+			co := n.Compound_operator(s - 1)
+			so := ast.None
+			all := false
+			switch {
+			case co.UNION_() != nil:
+				so = ast.Union
+				all = co.ALL_() != nil
+			case co.INTERSECT_() != nil:
+				so = ast.Intersect
+			case co.EXCEPT_() != nil:
+				so = ast.Except
+			}
+			selectStmt = &ast.SelectStmt{
+				TargetList: &ast.List{},
+				FromClause: &ast.List{},
+				Op:         so,
+				All:        all,
+				Larg:       selectStmt,
+				Rarg:       sel,
 			}
 		}
 	}
 
-	window := &ast.List{Items: []ast.Node{}}
-	if n.Order_by_stmt() != nil {
-		window.Items = append(window.Items, c.convert(n.Order_by_stmt()))
-	}
-
 	limitCount, limitOffset := c.convertLimit_stmtContext(n.Limit_stmt())
-
-	return &ast.SelectStmt{
-		FromClause:   &ast.List{Items: tables},
-		TargetList:   &ast.List{Items: cols},
-		WhereClause:  where,
-		GroupClause:  &ast.List{Items: groups},
-		HavingClause: having,
-		WindowClause: window,
-		LimitCount:   limitCount,
-		LimitOffset:  limitOffset,
-		ValuesLists:  &ast.List{},
-		WithClause: &ast.WithClause{
-			Ctes: &ast.List{Items: ctes},
-		},
-	}
+	selectStmt.LimitCount = limitCount
+	selectStmt.LimitOffset = limitOffset
+	selectStmt.WithClause = &ast.WithClause{Ctes: &ctes}
+	return selectStmt
 }
 
 func (c *cc) convertExprListContext(n *parser.Expr_listContext) ast.Node {

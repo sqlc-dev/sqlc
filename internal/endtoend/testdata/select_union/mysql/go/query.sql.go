@@ -96,6 +96,35 @@ func (q *Queries) SelectUnion(ctx context.Context) ([]Foo, error) {
 	return items, nil
 }
 
+const selectUnionOther = `-- name: SelectUnionOther :many
+SELECT a, b FROM foo
+UNION
+SELECT a, b FROM bar
+`
+
+func (q *Queries) SelectUnionOther(ctx context.Context) ([]Foo, error) {
+	rows, err := q.db.QueryContext(ctx, selectUnionOther)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Foo
+	for rows.Next() {
+		var i Foo
+		if err := rows.Scan(&i.A, &i.B); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const selectUnionWithLimit = `-- name: SelectUnionWithLimit :many
 SELECT a, b FROM foo
 UNION
