@@ -8,6 +8,11 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type Bar struct {
+	A pgtype.Text
+	B pgtype.Text
+}
+
 type Foo struct {
 	A pgtype.Text
 	B pgtype.Text
