@@ -7,6 +7,7 @@ package booktest
 
 import (
 	"context"
+	"database/sql"
 	"strings"
 	"time"
 )
@@ -26,7 +27,7 @@ WHERE tag IN (/*SLICE:tags*/?)
 type BooksByTagsRow struct {
 	BookID int64
 	Title  string
-	Name   string
+	Name   sql.NullString
 	Isbn   string
 	Tag    string
 }

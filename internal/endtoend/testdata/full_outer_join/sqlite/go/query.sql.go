@@ -7,6 +7,7 @@ package querytest
 
 import (
 	"context"
+	"database/sql"
 )
 
 const getAuthor = `-- name: GetAuthor :one
@@ -17,10 +18,10 @@ WHERE a.id = ? LIMIT 1
 `
 
 type GetAuthorRow struct {
-	ID    int64
-	Name  string
-	ID_2  int64
-	Title string
+	ID    sql.NullInt64
+	Name  sql.NullString
+	ID_2  sql.NullInt64
+	Title sql.NullString
 }
 
 func (q *Queries) GetAuthor(ctx context.Context, id int64) (GetAuthorRow, error) {

@@ -7,6 +7,7 @@ package querytest
 
 import (
 	"context"
+	"database/sql"
 )
 
 const allAuthors = `-- name: AllAuthors :many
@@ -22,8 +23,8 @@ FROM    authors AS a
 type AllAuthorsRow struct {
 	ID        int64
 	Name      string
-	AliasID   int64
-	AliasName string
+	AliasID   sql.NullInt64
+	AliasName sql.NullString
 }
 
 func (q *Queries) AllAuthors(ctx context.Context) ([]AllAuthorsRow, error) {
