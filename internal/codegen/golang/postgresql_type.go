@@ -343,7 +343,6 @@ func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		if driver == SQLDriverPGXV5 {
 			return "pgtype.Interval"
 		}
-
 		if notNull {
 			return "int64"
 		}
@@ -467,23 +466,45 @@ func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		return "interface{}"
 
 	case "bit", "varbit", "pg_catalog.bit", "pg_catalog.varbit":
-		if driver.IsPGX() {
+		if driver == SQLDriverPGXV5 {
 			return "pgtype.Bits"
 		}
-
-	case "box":
-		if driver.IsPGX() {
-			return "pgtype.Box"
+		if driver == SQLDriverPGXV4 {
+			return "pgtype.Varbit"
 		}
 
-	case "cid", "oid":
-		if driver.IsPGX() {
+	case "cid":
+		if driver == SQLDriverPGXV5 {
 			return "pgtype.Uint32"
+		}
+		if driver == SQLDriverPGXV4 {
+			return "pgtype.CID"
+		}
+
+	case "oid":
+		if driver == SQLDriverPGXV5 {
+			return "pgtype.Uint32"
+		}
+		if driver == SQLDriverPGXV4 {
+			return "pgtype.OID"
 		}
 
 	case "tid":
 		if driver.IsPGX() {
 			return "pgtype.TID"
+		}
+
+	case "xid":
+		if driver == SQLDriverPGXV5 {
+			return "pgtype.Uint32"
+		}
+		if driver == SQLDriverPGXV4 {
+			return "pgtype.XID"
+		}
+
+	case "box":
+		if driver.IsPGX() {
+			return "pgtype.Box"
 		}
 
 	case "circle":
