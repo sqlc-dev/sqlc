@@ -6,4 +6,4 @@ CREATE TABLE authors (
 );
 
 -- remove this alter to see the change in models.go
--- ALTER TABLE authors MODIFY status enum('init', 'done', 'canceled', 'processing', 'waiting') default "init" not null;
+ALTER TABLE authors MODIFY status enum('init', 'done', 'canceled', 'processing', 'waiting') default "init" not null;
