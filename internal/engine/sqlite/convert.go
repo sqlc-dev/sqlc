@@ -528,17 +528,46 @@ func (c *cc) convertExprListContext(n *parser.Expr_listContext) ast.Node {
 }
 
 func (c *cc) getTables(core *parser.Select_coreContext) []ast.Node {
-	var tables []ast.Node
-	tables = append(tables, c.convertTablesOrSubquery(core.AllTable_or_subquery())...)
-
 	if core.Join_clause() != nil {
-		join, ok := core.Join_clause().(*parser.Join_clauseContext)
-		if ok {
-			tables = append(tables, c.convertTablesOrSubquery(join.AllTable_or_subquery())...)
+		join := core.Join_clause().(*parser.Join_clauseContext)
+		tables := c.convertTablesOrSubquery(join.AllTable_or_subquery())
+		table := tables[0]
+		for i, t := range tables[1:] {
+			joinExpr := &ast.JoinExpr{
+				Larg: table,
+				Rarg: t,
+			}
+			jo := join.Join_operator(i)
+			if jo.NATURAL_() != nil {
+				joinExpr.IsNatural = true
+			}
+			switch {
+			case jo.CROSS_() != nil || jo.INNER_() != nil:
+				joinExpr.Jointype = ast.JoinTypeInner
+			case jo.LEFT_() != nil:
+				joinExpr.Jointype = ast.JoinTypeLeft
+			case jo.RIGHT_() != nil:
+				joinExpr.Jointype = ast.JoinTypeRight
+			case jo.FULL_() != nil:
+				joinExpr.Jointype = ast.JoinTypeFull
+			}
+			jc := join.Join_constraint(i)
+			switch {
+			case jc.ON_() != nil:
+				joinExpr.Quals = c.convert(jc.Expr())
+			case jc.USING_() != nil:
+				var using ast.List
+				for _, cn := range jc.AllColumn_name() {
+					using.Items = append(using.Items, NewIdentifier(cn.GetText()))
+				}
+				joinExpr.UsingClause = &using
+			}
+			table = joinExpr
 		}
+		return []ast.Node{table}
+	} else {
+		return c.convertTablesOrSubquery(core.AllTable_or_subquery())
 	}
-
-	return tables
 }
 
 func (c *cc) getCols(core *parser.Select_coreContext) []ast.Node {
