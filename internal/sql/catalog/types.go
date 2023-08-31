@@ -3,6 +3,7 @@ package catalog
 import (
 	"errors"
 	"fmt"
+
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
 )
@@ -82,6 +83,41 @@ func (c *Catalog) createEnum(stmt *ast.CreateEnumStmt) error {
 	}
 	if _, _, err := schema.getType(stmt.TypeName); err == nil {
 		return sqlerr.TypeExists(tbl.Name)
+	}
+	schema.Types = append(schema.Types, &Enum{
+		Name: stmt.TypeName.Name,
+		Vals: stringSlice(stmt.Vals),
+	})
+	return nil
+}
+
+func (c *Catalog) createOrSetEnum(stmt *ast.CreateEnumStmt) error {
+	ns := stmt.TypeName.Schema
+	if ns == "" {
+		ns = c.DefaultSchema
+	}
+	schema, err := c.getSchema(ns)
+	if err != nil {
+		return err
+	}
+	// Because tables have associated data types, the type name must also
+	// be distinct from the name of any existing table in the same
+	// schema.
+	// https://www.postgresql.org/docs/current/sql-createtype.html
+	tbl := &ast.TableName{
+		Name: stmt.TypeName.Name,
+	}
+	if _, _, err := schema.getTable(tbl); err == nil {
+		return sqlerr.RelationExists(tbl.Name)
+	}
+	if typ, _, err := schema.getType(stmt.TypeName); err == nil {
+		enum, ok := typ.(*Enum)
+		if !ok {
+			return fmt.Errorf("type is not an enum: %s", stmt.TypeName.Name)
+		}
+		enum.Vals = stringSlice(stmt.Vals)
+
+		return nil
 	}
 	schema.Types = append(schema.Types, &Enum{
 		Name: stmt.TypeName.Name,

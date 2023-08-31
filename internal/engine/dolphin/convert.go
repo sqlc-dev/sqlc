@@ -43,16 +43,7 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 		case pcast.AlterTableAddColumns:
 			for _, def := range spec.NewColumns {
 				name := def.Name.String()
-				columnDef := ast.ColumnDef{
-					Colname:    def.Name.String(),
-					TypeName:   &ast.TypeName{Name: types.TypeToStr(def.Tp.GetType(), def.Tp.GetCharset())},
-					IsNotNull:  isNotNull(def),
-					IsUnsigned: isUnsigned(def),
-				}
-				if def.Tp.GetFlen() >= 0 {
-					length := def.Tp.GetFlen()
-					columnDef.Length = &length
-				}
+				columnDef := convertColumnDef(def)
 				alt.Cmds.Items = append(alt.Cmds.Items, &ast.AlterTableCmd{
 					Name:    &name,
 					Subtype: ast.AT_AddColumn,
@@ -77,36 +68,20 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 
 			for _, def := range spec.NewColumns {
 				name := def.Name.String()
-				columnDef := ast.ColumnDef{
-					Colname:    def.Name.String(),
-					TypeName:   &ast.TypeName{Name: types.TypeToStr(def.Tp.GetType(), def.Tp.GetCharset())},
-					IsNotNull:  isNotNull(def),
-					IsUnsigned: isUnsigned(def),
-				}
-				if def.Tp.GetFlen() >= 0 {
-					length := def.Tp.GetFlen()
-					columnDef.Length = &length
-				}
+				columnDef := convertColumnDef(def)
 				alt.Cmds.Items = append(alt.Cmds.Items, &ast.AlterTableCmd{
 					Name:    &name,
 					Subtype: ast.AT_AddColumn,
 					Def:     &columnDef,
 				})
+
+				log.Printf("CHANGE COLUMN: %#v\n%#v\n%#v", columnDef, columnDef.TypeName, columnDef.Vals)
 			}
 
 		case pcast.AlterTableModifyColumn:
 			for _, def := range spec.NewColumns {
 				name := def.Name.String()
-				columnDef := ast.ColumnDef{
-					Colname:    def.Name.String(),
-					TypeName:   &ast.TypeName{Name: types.TypeToStr(def.Tp.GetType(), def.Tp.GetCharset())},
-					IsNotNull:  isNotNull(def),
-					IsUnsigned: isUnsigned(def),
-				}
-				if def.Tp.GetFlen() >= 0 {
-					length := def.Tp.GetFlen()
-					columnDef.Length = &length
-				}
+				columnDef := convertColumnDef(def)
 				alt.Cmds.Items = append(alt.Cmds.Items, &ast.AlterTableCmd{
 					Name:    &name,
 					Subtype: ast.AT_DropColumn,
@@ -116,6 +91,8 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 					Subtype: ast.AT_AddColumn,
 					Def:     &columnDef,
 				})
+
+				log.Printf("MODIFY COLUMN: %#v\n%#v\n%#v", columnDef, columnDef.TypeName, columnDef.Vals)
 			}
 
 		case pcast.AlterTableAlterColumn:
@@ -249,36 +226,9 @@ func (c *cc) convertCreateTableStmt(n *pcast.CreateTableStmt) ast.Node {
 		create.ReferTable = parseTableName(n.ReferTable)
 	}
 	for _, def := range n.Cols {
-		var vals *ast.List
-		if len(def.Tp.GetElems()) > 0 {
-			vals = &ast.List{}
-			for i := range def.Tp.GetElems() {
-				vals.Items = append(vals.Items, &ast.String{
-					Str: def.Tp.GetElems()[i],
-				})
-			}
-		}
-		comment := ""
-		for _, opt := range def.Options {
-			switch opt.Tp {
-			case pcast.ColumnOptionComment:
-				if value, ok := opt.Expr.(*driver.ValueExpr); ok {
-					comment = value.GetString()
-				}
-			}
-		}
-		columnDef := ast.ColumnDef{
-			Colname:    def.Name.String(),
-			TypeName:   &ast.TypeName{Name: types.TypeToStr(def.Tp.GetType(), def.Tp.GetCharset())},
-			IsNotNull:  isNotNull(def),
-			IsUnsigned: isUnsigned(def),
-			Comment:    comment,
-			Vals:       vals,
-		}
-		if def.Tp.GetFlen() >= 0 {
-			length := def.Tp.GetFlen()
-			columnDef.Length = &length
-		}
+		columnDef := convertColumnDef(def)
+
+		log.Printf("CREATE COLUMN: %#v\n%#v\n%#v", columnDef, columnDef.TypeName, columnDef.Vals)
 		create.Cols = append(create.Cols, &columnDef)
 	}
 	for _, opt := range n.Options {
@@ -288,6 +238,41 @@ func (c *cc) convertCreateTableStmt(n *pcast.CreateTableStmt) ast.Node {
 		}
 	}
 	return create
+}
+
+func convertColumnDef(def *pcast.ColumnDef) ast.ColumnDef {
+	var vals *ast.List
+	if len(def.Tp.GetElems()) > 0 {
+		vals = &ast.List{}
+		for i := range def.Tp.GetElems() {
+			vals.Items = append(vals.Items, &ast.String{
+				Str: def.Tp.GetElems()[i],
+			})
+		}
+	}
+	comment := ""
+	for _, opt := range def.Options {
+		switch opt.Tp {
+		case pcast.ColumnOptionComment:
+			if value, ok := opt.Expr.(*driver.ValueExpr); ok {
+				comment = value.GetString()
+			}
+		}
+	}
+	columnDef := ast.ColumnDef{
+		Colname:    def.Name.String(),
+		TypeName:   &ast.TypeName{Name: types.TypeToStr(def.Tp.GetType(), def.Tp.GetCharset())},
+		IsNotNull:  isNotNull(def),
+		IsUnsigned: isUnsigned(def),
+		Comment:    comment,
+		Vals:       vals,
+	}
+	if def.Tp.GetFlen() >= 0 {
+		length := def.Tp.GetFlen()
+		columnDef.Length = &length
+	}
+
+	return columnDef
 }
 
 func (c *cc) convertColumnNameExpr(n *pcast.ColumnNameExpr) *ast.ColumnRef {
