@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -46,7 +45,6 @@ func (c *Compiler) parseCatalog(schemas []string) error {
 		}
 
 		for i := range stmts {
-			log.Printf("stmts[%d]: %#v", i, stmts[i].Raw.Stmt)
 			if err := c.catalog.Update(stmts[i], c); err != nil {
 				merr.Add(filename, contents, stmts[i].Pos(), err)
 				continue

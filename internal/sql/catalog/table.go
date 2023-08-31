@@ -3,7 +3,6 @@ package catalog
 import (
 	"errors"
 	"fmt"
-	"log"
 
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
@@ -56,7 +55,6 @@ func (table *Table) addColumn(c *Catalog, cmd *ast.AlterTableCmd) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("addColumn COLUMN: %#v\n%#v\n%#v", tc, tc.Type, cmd.Def.Vals)
 
 	table.Columns = append(table.Columns, tc)
 	return nil
@@ -308,7 +306,6 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 			if err != nil {
 				return err
 			}
-			log.Printf("createTable COLUMN: %#v\n%#v\n%#v", tc, tc.Type, col.Vals)
 			tbl.Columns = append(tbl.Columns, tc)
 		}
 	}
@@ -340,7 +337,7 @@ func (c *Catalog) defToColumn(table *ast.TableName, col *ast.ColumnDef) (*Column
 			Name: fmt.Sprintf("%s_%s", table.Name, col.Colname),
 		}
 		s := &ast.CreateEnumStmt{TypeName: &typeName, Vals: col.Vals}
-		if err := c.createOrSetEnum(s); err != nil {
+		if err := c.createEnum(s, true); err != nil {
 			return nil, err
 		}
 		tc.Type = typeName

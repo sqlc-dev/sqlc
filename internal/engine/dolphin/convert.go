@@ -43,11 +43,10 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 		case pcast.AlterTableAddColumns:
 			for _, def := range spec.NewColumns {
 				name := def.Name.String()
-				columnDef := convertColumnDef(def)
 				alt.Cmds.Items = append(alt.Cmds.Items, &ast.AlterTableCmd{
 					Name:    &name,
 					Subtype: ast.AT_AddColumn,
-					Def:     &columnDef,
+					Def:     convertColumnDef(def),
 				})
 			}
 
@@ -68,20 +67,16 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 
 			for _, def := range spec.NewColumns {
 				name := def.Name.String()
-				columnDef := convertColumnDef(def)
 				alt.Cmds.Items = append(alt.Cmds.Items, &ast.AlterTableCmd{
 					Name:    &name,
 					Subtype: ast.AT_AddColumn,
-					Def:     &columnDef,
+					Def:     convertColumnDef(def),
 				})
-
-				log.Printf("CHANGE COLUMN: %#v\n%#v\n%#v", columnDef, columnDef.TypeName, columnDef.Vals)
 			}
 
 		case pcast.AlterTableModifyColumn:
 			for _, def := range spec.NewColumns {
 				name := def.Name.String()
-				columnDef := convertColumnDef(def)
 				alt.Cmds.Items = append(alt.Cmds.Items, &ast.AlterTableCmd{
 					Name:    &name,
 					Subtype: ast.AT_DropColumn,
@@ -89,10 +84,8 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 				alt.Cmds.Items = append(alt.Cmds.Items, &ast.AlterTableCmd{
 					Name:    &name,
 					Subtype: ast.AT_AddColumn,
-					Def:     &columnDef,
+					Def:     convertColumnDef(def),
 				})
-
-				log.Printf("MODIFY COLUMN: %#v\n%#v\n%#v", columnDef, columnDef.TypeName, columnDef.Vals)
 			}
 
 		case pcast.AlterTableAlterColumn:
@@ -226,10 +219,7 @@ func (c *cc) convertCreateTableStmt(n *pcast.CreateTableStmt) ast.Node {
 		create.ReferTable = parseTableName(n.ReferTable)
 	}
 	for _, def := range n.Cols {
-		columnDef := convertColumnDef(def)
-
-		log.Printf("CREATE COLUMN: %#v\n%#v\n%#v", columnDef, columnDef.TypeName, columnDef.Vals)
-		create.Cols = append(create.Cols, &columnDef)
+		create.Cols = append(create.Cols, convertColumnDef(def))
 	}
 	for _, opt := range n.Options {
 		switch opt.Tp {
@@ -240,7 +230,7 @@ func (c *cc) convertCreateTableStmt(n *pcast.CreateTableStmt) ast.Node {
 	return create
 }
 
-func convertColumnDef(def *pcast.ColumnDef) ast.ColumnDef {
+func convertColumnDef(def *pcast.ColumnDef) *ast.ColumnDef {
 	var vals *ast.List
 	if len(def.Tp.GetElems()) > 0 {
 		vals = &ast.List{}
@@ -272,7 +262,7 @@ func convertColumnDef(def *pcast.ColumnDef) ast.ColumnDef {
 		columnDef.Length = &length
 	}
 
-	return columnDef
+	return &columnDef
 }
 
 func (c *cc) convertColumnNameExpr(n *pcast.ColumnNameExpr) *ast.ColumnRef {
