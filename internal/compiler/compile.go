@@ -43,7 +43,6 @@ func (c *Compiler) parseCatalog(schemas []string) error {
 			merr.Add(filename, contents, 0, err)
 			continue
 		}
-
 		for i := range stmts {
 			if err := c.catalog.Update(stmts[i], c); err != nil {
 				merr.Add(filename, contents, stmts[i].Pos(), err)
