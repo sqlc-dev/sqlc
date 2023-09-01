@@ -18,7 +18,7 @@ type Bar struct {
 	OtherID fuid.UUID
 	MoreID  fuid.UUID
 	Age     pgtype.Int4
-	Balance interface{}
+	Balance pgtype.Float8
 	Bio     pgtype.Text
 	About   pgtype.Text
 }

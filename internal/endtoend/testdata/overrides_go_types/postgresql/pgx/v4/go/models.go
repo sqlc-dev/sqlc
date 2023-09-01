@@ -19,7 +19,7 @@ type Bar struct {
 	OtherID fuid.UUID
 	MoreID  fuid.UUID
 	Age     sql.NullInt32
-	Balance interface{}
+	Balance sql.NullFloat64
 	Bio     sql.NullString
 	About   sql.NullString
 }
