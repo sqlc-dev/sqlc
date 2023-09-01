@@ -8,11 +8,11 @@ import (
 	"database/sql"
 )
 
-type New struct {
+type NewTable struct {
 	Val sql.NullInt32
 }
 
-type Old struct {
+type OldTable struct {
 	Val sql.NullInt32
 }
 

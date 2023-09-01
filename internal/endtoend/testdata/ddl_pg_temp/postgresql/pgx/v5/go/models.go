@@ -8,11 +8,11 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type New struct {
+type NewTable struct {
 	Val pgtype.Int4
 }
 
-type Old struct {
+type OldTable struct {
 	Val pgtype.Int4
 }
 
