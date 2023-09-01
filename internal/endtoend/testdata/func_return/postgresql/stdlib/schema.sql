@@ -3,7 +3,9 @@ CREATE TABLE users (
    first_name varchar(255) NOT NULL
 );
 
-CREATE FUNCTION users_func() RETURNS SETOF users AS $func$ BEGIN QUERY
-SELECT *
-FROM users
-END $func$ LANGUAGE plpgsql;
+CREATE FUNCTION users_func() RETURNS SETOF users AS $func$
+    BEGIN
+        SELECT *
+        FROM users;
+    END;
+$func$ LANGUAGE plpgsql;

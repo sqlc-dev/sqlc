@@ -8,6 +8,14 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type New struct {
+	Val pgtype.Int4
+}
+
+type Old struct {
+	Val pgtype.Int4
+}
+
 type PgTempMigrate struct {
 	Val pgtype.Int4
 }

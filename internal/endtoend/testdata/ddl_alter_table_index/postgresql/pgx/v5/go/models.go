@@ -8,6 +8,16 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type Temp struct {
-	A pgtype.Text
+type Measurement struct {
+	CityID    int32
+	Logdate   pgtype.Date
+	Peaktemp  pgtype.Int4
+	Unitsales pgtype.Int4
+}
+
+type MeasurementY2006m02 struct {
+	CityID    int32
+	Logdate   pgtype.Date
+	Peaktemp  pgtype.Int4
+	Unitsales pgtype.Int4
 }

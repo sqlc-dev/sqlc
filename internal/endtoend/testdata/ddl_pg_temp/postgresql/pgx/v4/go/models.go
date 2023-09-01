@@ -8,6 +8,14 @@ import (
 	"database/sql"
 )
 
+type New struct {
+	Val sql.NullInt32
+}
+
+type Old struct {
+	Val sql.NullInt32
+}
+
 type PgTempMigrate struct {
 	Val sql.NullInt32
 }

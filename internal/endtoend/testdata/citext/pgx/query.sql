@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS citext;
+
 CREATE TABLE foo (
     bar citext,
     bat citext not null
@@ -6,4 +8,3 @@ CREATE TABLE foo (
 -- name: GetCitexts :many
 SELECT bar, bat
 FROM foo;
-

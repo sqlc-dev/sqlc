@@ -1,5 +1,5 @@
 CREATE TABLE foo (
-    id uuid PRIMARY KEY,
+    id uuid NOT NULL,
     other_id uuid NOT NULL
 ) PARTITION BY HASH (other_id);
 
