@@ -23,3 +23,8 @@ type User struct {
 	Name string        `db:"name" json:"name"`
 	Age  sql.NullInt32 `db:"age" json:"age"`
 }
+
+type UserLink struct {
+	OwnerID    int32 `db:"owner_id" json:"owner_id"`
+	ConsumerID int32 `db:"consumer_id" json:"consumer_id"`
+}

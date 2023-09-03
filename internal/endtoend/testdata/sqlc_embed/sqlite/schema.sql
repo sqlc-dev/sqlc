@@ -17,3 +17,10 @@ CREATE TABLE baz.users (
 );
 
 
+CREATE TABLE user_links (
+  owner_id integer NOT NULL,
+  consumer_id integer NOT NULL,
+  PRIMARY KEY (owner_id, consumer_id)
+);
+
+

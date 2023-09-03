@@ -23,3 +23,8 @@ type User struct {
 	Name string
 	Age  sql.NullInt32
 }
+
+type UserLink struct {
+	OwnerID    int32
+	ConsumerID int32
+}

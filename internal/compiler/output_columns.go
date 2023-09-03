@@ -268,7 +268,7 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 				// add a column with a reference to an embedded table
 				if embed, ok := qc.embeds.Find(n); ok {
 					cols = append(cols, &Column{
-						Name:       embed.Table.Name,
+						Name:       embed.Name(),
 						EmbedTable: embed.Table,
 					})
 					continue
