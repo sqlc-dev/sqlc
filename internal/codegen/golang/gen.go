@@ -123,7 +123,6 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 		Enums:    enums,
 		Structs:  structs,
 	}
-
 	golang := req.Settings.Go
 	tctx := tmplCtx{
 		EmitInterface:             golang.EmitInterface,
@@ -137,7 +136,7 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 		EmitAllEnumValues:         golang.EmitAllEnumValues,
 		UsesCopyFrom:              usesCopyFrom(queries),
 		UsesBatch:                 usesBatch(queries),
-		SQLDriver:                 parseDriver(golang.SqlPackage),
+		SQLDriver:                 parseDriver(golang.SqlPackage, req.Settings.Engine),
 		Q:                         "`",
 		Package:                   golang.Package,
 		Enums:                     enums,
@@ -145,15 +144,14 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 		SqlcVersion:               req.SqlcVersion,
 	}
 
-	if tctx.UsesCopyFrom && !tctx.SQLDriver.IsPGX() && golang.SqlDriver != SQLDriverGoSQLDriverMySQL {
+	if tctx.UsesCopyFrom && !tctx.SQLDriver.IsPGX() && tctx.SQLDriver != SQLDriverGoSQLDriverMySQL {
 		return nil, errors.New(":copyfrom is only supported by pgx and github.com/go-sql-driver/mysql")
 	}
 
-	if tctx.UsesCopyFrom && golang.SqlDriver == SQLDriverGoSQLDriverMySQL {
+	if tctx.UsesCopyFrom && tctx.SQLDriver == SQLDriverGoSQLDriverMySQL {
 		if err := checkNoTimesForMySQLCopyFrom(queries); err != nil {
 			return nil, err
 		}
-		tctx.SQLDriver = SQLDriverGoSQLDriverMySQL
 	}
 
 	if tctx.UsesBatch && !tctx.SQLDriver.IsPGX() {

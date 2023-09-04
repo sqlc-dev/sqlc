@@ -116,7 +116,7 @@ func (i *importer) dbImports() fileImports {
 		{Path: "context"},
 	}
 
-	sqlpkg := parseDriver(i.Settings.Go.SqlPackage)
+	sqlpkg := parseDriver(i.Settings.Go.SqlPackage, i.Settings.Engine)
 	switch sqlpkg {
 	case SQLDriverPGXV4:
 		pkg = append(pkg, ImportSpec{Path: "github.com/jackc/pgconn"})
@@ -160,7 +160,7 @@ func buildImports(settings *plugin.Settings, queries []Query, uses func(string) 
 		std["database/sql"] = struct{}{}
 	}
 
-	sqlpkg := parseDriver(settings.Go.SqlPackage)
+	sqlpkg := parseDriver(settings.Go.SqlPackage, settings.Engine)
 	for _, q := range queries {
 		if q.Cmd == metadata.CmdExecResult {
 			switch sqlpkg {
@@ -374,7 +374,7 @@ func (i *importer) queryImports(filename string) fileImports {
 		std["context"] = struct{}{}
 	}
 
-	sqlpkg := parseDriver(i.Settings.Go.SqlPackage)
+	sqlpkg := parseDriver(i.Settings.Go.SqlPackage, i.Settings.Engine)
 	if sqlcSliceScan() {
 		std["strings"] = struct{}{}
 	}
@@ -459,7 +459,7 @@ func (i *importer) batchImports() fileImports {
 
 	std["context"] = struct{}{}
 	std["errors"] = struct{}{}
-	sqlpkg := parseDriver(i.Settings.Go.SqlPackage)
+	sqlpkg := parseDriver(i.Settings.Go.SqlPackage, i.Settings.Engine)
 	switch sqlpkg {
 	case SQLDriverPGXV4:
 		pkg[ImportSpec{Path: "github.com/jackc/pgx/v4"}] = struct{}{}

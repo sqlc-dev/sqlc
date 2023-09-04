@@ -1,5 +1,7 @@
 package golang
 
+import "github.com/sqlc-dev/sqlc/internal/config"
+
 type SQLDriver string
 
 const (
@@ -15,12 +17,24 @@ const (
 	SQLDriverGoSQLDriverMySQL           = "github.com/go-sql-driver/mysql"
 )
 
-func parseDriver(sqlPackage string) SQLDriver {
+func parseDriver(sqlPackage string, engine string) SQLDriver {
 	switch sqlPackage {
 	case SQLPackagePGXV4:
 		return SQLDriverPGXV4
 	case SQLPackagePGXV5:
 		return SQLDriverPGXV5
+	default:
+		driver := driverFromEngine(engine)
+		return driver
+	}
+}
+
+func driverFromEngine(engine string) SQLDriver {
+	switch engine {
+	case string(config.EnginePostgreSQL):
+		return SQLDriverLibPQ
+	case string(config.EngineMySQL):
+		return SQLDriverGoSQLDriverMySQL
 	default:
 		return SQLDriverLibPQ
 	}

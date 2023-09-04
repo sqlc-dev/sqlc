@@ -208,7 +208,7 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 			Comments:     query.Comments,
 			Table:        query.InsertIntoTable,
 		}
-		sqlpkg := parseDriver(req.Settings.Go.SqlPackage)
+		sqlpkg := parseDriver(req.Settings.Go.SqlPackage, req.Settings.Engine)
 
 		qpl := int(*req.Settings.Go.QueryParameterLimit)
 
