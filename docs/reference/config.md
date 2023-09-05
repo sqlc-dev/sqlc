@@ -425,7 +425,7 @@ sql:
   gen:
     go:
       package: "authors"
-      out: "mysql
+      out: "mysql"
 ```
 
 With the previous configuration, whenever a struct field is generated from a
