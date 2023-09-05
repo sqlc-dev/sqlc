@@ -4,11 +4,11 @@ go 1.20
 
 require (
 	github.com/antlr/antlr4/runtime/Go/antlr/v4 v4.0.0-20230321174746-8dcc6526cfb1
-	github.com/bytecodealliance/wasmtime-go/v11 v11.0.0
+	github.com/bytecodealliance/wasmtime-go/v12 v12.0.0
 	github.com/cubicdaiya/gonp v1.0.4
 	github.com/davecgh/go-spew v1.1.1
 	github.com/go-sql-driver/mysql v1.7.1
-	github.com/google/cel-go v0.17.6
+	github.com/google/cel-go v0.18.0
 	github.com/google/go-cmp v0.5.9
 	github.com/jackc/pgconn v1.14.1
 	github.com/jackc/pgx/v4 v4.18.1
@@ -27,16 +27,15 @@ require (
 )
 
 require (
-	github.com/bytecodealliance/wasmtime-go/v12 v12.0.0 // indirect
 	github.com/benbjohnson/clock v1.3.5 // indirect
 	github.com/pingcap/failpoint v0.0.0-20220801062533-2eaa32854a6c // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20230525234035-dd9d682886f9 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20230525234030-28d5490b6b19 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20230803162519-f966b187b2e5 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20230803162519-f966b187b2e5 // indirect
 )
 
 require (
 	github.com/cznic/mathutil v0.0.0-20181122101859-297441e03548 // indirect
-	github.com/fatih/structtag v1.2.0 // indirect
+	github.com/fatih/structtag v1.2.0
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
@@ -48,7 +47,6 @@ require (
 	github.com/pingcap/errors v0.11.5-0.20210425183316-da1aaba5fb63 // indirect
 	github.com/pingcap/log v1.1.0 // indirect
 	github.com/pingcap/tidb/parser v0.0.0-20230815160630-b69fa21942d1
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/rogpeppe/go-internal v1.10.0 // indirect
 	github.com/stoewer/go-strcase v1.2.0 // indirect
