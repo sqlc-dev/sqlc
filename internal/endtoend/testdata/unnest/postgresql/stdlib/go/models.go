@@ -17,3 +17,7 @@ type Memory struct {
 	CreatedAt time.Time
 	UpdatedAt sql.NullTime
 }
+
+type Vampire struct {
+	ID uuid.UUID
+}

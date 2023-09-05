@@ -14,3 +14,7 @@ type Memory struct {
 	CreatedAt pgtype.Timestamp
 	UpdatedAt pgtype.Timestamp
 }
+
+type Vampire struct {
+	ID pgtype.UUID
+}

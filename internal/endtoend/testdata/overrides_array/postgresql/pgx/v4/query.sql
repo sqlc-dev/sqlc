@@ -3,7 +3,7 @@ CREATE TABLE authors (
   id   BIGSERIAL PRIMARY KEY,
   name text      NOT NULL,
   bio  text,
-  tags string[]
+  tags text[]
 );
 
 -- name: GetAuthor :one

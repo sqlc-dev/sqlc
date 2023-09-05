@@ -6,8 +6,19 @@ package querytest
 
 import (
 	"database/sql"
+	"time"
 )
 
-type Temp struct {
-	A sql.NullString
+type Measurement struct {
+	CityID    int32
+	Logdate   time.Time
+	Peaktemp  sql.NullInt32
+	Unitsales sql.NullInt32
+}
+
+type MeasurementY2006m02 struct {
+	CityID    int32
+	Logdate   time.Time
+	Peaktemp  sql.NullInt32
+	Unitsales sql.NullInt32
 }
