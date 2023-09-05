@@ -330,7 +330,7 @@ Each mapping in the `plugins` collection has the following keys:
     - The SHA256 checksum for the downloaded file.
    
 ```yaml
-version: 2
+version: "2"
 plugins:
 - name: "py"
   wasm: 
@@ -358,7 +358,7 @@ See the [vet](../howto/vet.md) documentation for a list of built-in rules and
 help writing custom rules.
    
 ```yaml
-version: 2
+version: "2"
 sql:
   - schema: "query.sql"
     queries: "query.sql"
