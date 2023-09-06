@@ -1,6 +1,137 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.21.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.21.0)
+Released 2023-09-06
+
+### Release notes
+
+This is primarily a bugfix release, along with some documentation and testing improvements.
+
+#### MySQL engine improvements
+
+`sqlc` previously didn't know how to parse a `CALL` statement when using the MySQL engine,
+which meant it was impossible to use sqlc with stored procedures in MySQL databases.
+
+Additionally, `sqlc` now supports `IS [NOT] NULL` in queries. And `LIMIT` and `OFFSET` clauses
+now work with `UNION`.
+
+#### SQLite engine improvements
+
+GitHub user [@orisano](https://github.com/orisano) continues to bring bugfixes and
+improvements to `sqlc`'s SQLite engine. See the "Changes" section below for the
+full list.
+
+#### Plugin access to environment variables
+
+If you're authoring a [sqlc plugin](../guides/plugins.html), you can now configure
+sqlc to pass your plugin the values of specific environment variables.
+
+For example, if your plugin
+needs the `PATH` environment variable, add `PATH` to the `env` list in the
+`plugins` collection.
+
+```yaml
+version: '2'
+sql:
+- schema: schema.sql
+  queries: query.sql
+  engine: postgresql
+  codegen:
+  - out: gen
+    plugin: test
+plugins:
+- name: test
+  env:
+  - PATH
+  wasm:
+    url: https://github.com/sqlc-dev/sqlc-gen-test/releases/download/v0.1.0/sqlc-gen-test.wasm
+    sha256: 138220eae508d4b65a5a8cea555edd155eb2290daf576b7a8b96949acfeb3790
+```
+
+A variable named `SQLC_VERSION` is always included in the plugin's
+environment, set to the version of the `sqlc` executable invoking it.
+
+### Changes
+
+#### Bug Fixes
+
+- Myriad string formatting changes (#2558)
+- (engine/sqlite) Support quoted identifier (#2556)
+- (engine/sqlite) Fix compile error (#2564)
+- (engine/sqlite) Fixed detection of column alias without AS (#2560)
+- (ci) Bump go version to 1.20.7 (#2568)
+- Remove references to deprecated `--experimental` flag (#2567)
+- (postgres) Fixed a problem with array dimensions disappearing when using "ALTER TABLE ADD COLUMN" (#2572)
+- Remove GitHub sponsor integration (#2574)
+- (docs) Improve discussion of prepared statements support (#2604)
+- (docs) Remove multidimensional array qualification in datatypes.md (#2619)
+- (config) Go struct tag parsing (#2606)
+- (compiler) Fix to not scan children under ast.RangeSubselect when retrieving table listing (#2573)
+- (engine/sqlite) Support NOT IN (#2587)
+- (codegen/golang) Fixed detection of the used package (#2597)
+- (engine/dolphin) Fixed problem that LIMIT OFFSET cannot be used with `UNION ALL` (#2613)
+- (compiler) Support identifiers with schema (#2579)
+- (compiler) Fix column expansion to work with quoted non-keyword identifiers (#2576)
+- (codegen/go) Compare define type in codegen (#2263) (#2578)
+- (engine/sqlite) Fix ast when using compound operator (#2673)
+- (engine/sqlite) Fix to handle join clauses correctly (#2674)
+- (codegen) Use correct Go types for bit strings and cid/oid/tid/xid with pgx/v4 (#2668)
+- (endtoend) Ensure all SQL works against PostgreSQL (#2684)
+
+#### Documentation
+
+- Update Docker installation instructions (#2552)
+- Missing emit_pointers_for_null_types configuration option in version 2 (#2682) (#2683)
+- Fix typo (#2697)
+- Document sqlc.* macros (#2698)
+- (mysql) Document parseTimet=true requirement (#2699)
+- Add atlas to the list of supported migration frameworks (#2700)
+- Minor updates to insert howto (#2701)
+
+#### Features
+
+- (endtoend/testdata) Added two sqlite `CAST` tests and rearranged postgres tests for same (#2551)
+- (docs) Add a reference to type overriding in datatypes.md (#2557)
+- (engine/sqlite) Support COLLATE for sqlite WHERE clause (#2554)
+- (mysql) Add parser support for IS [NOT] NULL (#2651)
+- (engine/dolphin) Support CALL statement (#2614)
+- (codegen) Allow plugins to access environment variables (#2669)
+- (config) Add JSON schema files for configs (#2703)
+
+#### Miscellaneous Tasks
+
+- Ignore Vim swap files (#2616)
+- Fix typo (#2696)
+
+#### Refactor
+
+- (astutils) Remove redundant nil check in `Walk` (#2660)
+
+#### Build
+
+- (deps) Bump wasmtime from v8.0.0 to v11.0.0 (#2553)
+- (deps) Bump golang from 1.20.6 to 1.20.7 (#2563)
+- (deps) Bump chardet from 5.1.0 to 5.2.0 in /docs (#2562)
+- (deps) Bump github.com/pganalyze/pg_query_go/v4 (#2583)
+- (deps) Bump golang from 1.20.7 to 1.21.0 (#2596)
+- (deps) Bump github.com/jackc/pgx/v5 from 5.4.2 to 5.4.3 (#2582)
+- (deps) Bump pygments from 2.15.1 to 2.16.1 in /docs (#2584)
+- (deps) Bump sphinxcontrib-applehelp from 1.0.4 to 1.0.7 in /docs (#2620)
+- (deps) Bump sphinxcontrib-qthelp from 1.0.3 to 1.0.6 in /docs (#2622)
+- (deps) Bump github.com/google/cel-go from 0.17.1 to 0.17.6 (#2650)
+- (deps) Bump sphinxcontrib-serializinghtml in /docs (#2641)
+- Upgrade from Go 1.20 to Go 1.21 (#2665)
+- (deps) Bump sphinxcontrib-devhelp from 1.0.2 to 1.0.5 in /docs (#2621)
+- (deps) Bump github.com/bytecodealliance/wasmtime-go from v11.0.0 to v12.0.0 (#2666)
+- (deps) Bump sphinx-rtd-theme from 1.2.2 to 1.3.0 in /docs (#2670)
+- (deps) Bump sphinxcontrib-htmlhelp from 2.0.1 to 2.0.4 in /docs (#2671)
+- (deps) Bump github.com/google/cel-go from 0.17.6 to 0.18.0 (#2691)
+- (deps) Bump actions/checkout from 3 to 4 (#2694)
+- (deps) Bump pytz from 2023.3 to 2023.3.post1 in /docs (#2695)
+- (devenv) Bump go from 1.20.7 to 1.21.0 (#2702)
+
+
 ## [1.20.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.20.0)
 Released 2023-07-31
 
