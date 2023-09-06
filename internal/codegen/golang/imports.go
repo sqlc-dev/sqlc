@@ -242,7 +242,7 @@ func (i *importer) interfaceImports() fileImports {
 					return true
 				}
 			}
-			if !q.Arg.isEmpty() {
+			if !q.Arg.isEmpty() && !q.Arg.Emit {
 				for _, f := range q.Arg.Fields() {
 					if hasPrefixIgnoringSliceAndPointerPrefix(f.Type, name) {
 						return true
