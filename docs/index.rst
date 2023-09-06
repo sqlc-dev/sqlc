@@ -53,6 +53,7 @@ code ever again.
 
    howto/ddl.md
    howto/structs.md
+   howto/embedding.md
 
    howto/vet.md
    howto/ci-cd.md
@@ -63,13 +64,14 @@ code ever again.
    :caption: Reference
    :hidden:
 
+   reference/changelog.md
    reference/cli.md
    reference/config.md
    reference/datatypes.md
-   reference/query-annotations.md
-   reference/language-support.rst
    reference/environment-variables.md
-   reference/changelog.md
+   reference/language-support.rst
+   reference/macros.md
+   reference/query-annotations.md
 
 .. toctree::
    :maxdepth: 2
