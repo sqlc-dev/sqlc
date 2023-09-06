@@ -7,7 +7,8 @@
         "name": "querytest",
         "schema": "query.sql",
         "queries": "query.sql",
-        "query_parameter_limit": 0
+        "query_parameter_limit": 0,
+        "emit_interface": true
       }
     ]
   }
