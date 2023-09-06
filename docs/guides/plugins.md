@@ -74,8 +74,8 @@ For a complete working example see the following files:
 ## Environment variables
 
 By default, plugins do not inherit access to environment variables. Instead,
-access can be configured on a per-variable basis. For example, if your plugin
-needs the `PATH` environment variable, add the `PATH` to the `env` option in the
+you can configure access on a per-variable basis. For example, if your plugin
+needs the `PATH` environment variable, add `PATH` to the `env` list in the
 `plugins` collection.
 
 ```yaml
@@ -96,5 +96,5 @@ plugins:
     sha256: 138220eae508d4b65a5a8cea555edd155eb2290daf576b7a8b96949acfeb3790
 ```
 
-The `SQLC_VERSION` environment variable will always be included in the
-environment, set to the version of the `sqlc` executable.
+A variable named `SQLC_VERSION` is always included in the plugin's
+environment, set to the version of the `sqlc` executable invoking it.
