@@ -1,0 +1,334 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "type": "object",
+    "required": [
+        "version"
+    ],
+    "properties": {
+        "version": {
+            "const": "1"
+        },
+        "project": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "cloud": {
+            "type": "object",
+            "properties": {
+                "organization": {
+                    "type": "string"
+                },
+                "project": {
+                    "type": "string"
+                },
+                "hostname": {
+                    "type": "string"
+                }
+            }
+        },
+        "packages": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+                "type": "object",
+                "required": [
+                    "engine"
+                ],
+                "properties": {
+                    "engine": {
+                        "enum": [
+                            "postgresql",
+                            "mysql",
+                            "sqlite"
+                        ]
+                    },
+                    "schema": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        ]
+                    },
+                    "queries": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        ]
+                    },
+                    "database": {
+                        "type": "object",
+                        "properties": {
+                            "uri": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "strict_function_checks": {
+                        "type": "boolean"
+                    },
+                    "strict_order_by": {
+                        "type": "boolean"
+                    },
+                    "emit_interface": {
+                        "type": "boolean"
+                    },
+                    "emit_json_tags": {
+                        "type": "boolean"
+                    },
+                    "json_tags_id_uppercase": {
+                        "type": "boolean"
+                    },
+                    "emit_db_tags": {
+                        "type": "boolean"
+                    },
+                    "emit_prepared_queries": {
+                        "type": "boolean"
+                    },
+                    "emit_exact_table_names": {
+                        "type": "boolean"
+                    },
+                    "emit_empty_slices": {
+                        "type": "boolean"
+                    },
+                    "emit_exported_queries": {
+                        "type": "boolean"
+                    },
+                    "emit_result_struct_pointers": {
+                        "type": "boolean"
+                    },
+                    "emit_params_struct_pointers": {
+                        "type": "boolean"
+                    },
+                    "emit_methods_with_db_argument": {
+                        "type": "boolean"
+                    },
+                    "emit_pointers_for_null_types": {
+                        "type": "boolean"
+                    },
+                    "emit_enum_valid_method": {
+                        "type": "boolean"
+                    },
+                    "emit_all_enum_values": {
+                        "type": "boolean"
+                    },
+                    "json_tags_case_style": {
+                        "type": "string"
+                    },
+                    "package": {
+                        "type": "string"
+                    },
+                    "out": {
+                        "type": "string"
+                    },
+                    "overrides": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "go_type": {
+                                    "oneOf": [
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "import": {
+                                                    "type": "string"
+                                                },
+                                                "package": {
+                                                    "type": "string"
+                                                },
+                                                "type": {
+                                                    "type": "string"
+                                                },
+                                                "pointer": {
+                                                    "type": "boolean"
+                                                },
+                                                "slice": {
+                                                    "type": "boolean"
+                                                },
+                                                "spec": {
+                                                    "type": "string"
+                                                },
+                                                "builtin": {
+                                                    "type": "boolean"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "go_struct_tag": {
+                                    "type": "string"
+                                },
+                                "db_type": {
+                                    "type": "string"
+                                },
+                                "engine": {
+                                    "enum": [
+                                        "postgresql",
+                                        "mysql",
+                                        "sqlite"
+                                    ]
+                                },
+                                "nullable": {
+                                    "type": "boolean"
+                                },
+                                "unsigned": {
+                                    "type": "boolean"
+                                },
+                                "column": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "sql_package": {
+                        "type": "string"
+                    },
+                    "sql_driver": {
+                        "type": "string"
+                    },
+                    "output_batch_file_name": {
+                        "type": "string"
+                    },
+                    "output_db_file_name": {
+                        "type": "string"
+                    },
+                    "output_models_file_name": {
+                        "type": "string"
+                    },
+                    "output_querier_file_name": {
+                        "type": "string"
+                    },
+                    "output_files_suffix": {
+                        "type": "string"
+                    },
+                    "inflection_exclude_table_names": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "query_parameter_limit": {
+                        "type": "integer"
+                    },
+                    "omit_unused_structs": {
+                        "type": "boolean"
+                    },
+                    "rules": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "overrides": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "go_type": {
+                        "oneOf": [
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "import": {
+                                        "type": "string"
+                                    },
+                                    "package": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "pointer": {
+                                        "type": "boolean"
+                                    },
+                                    "slice": {
+                                        "type": "boolean"
+                                    },
+                                    "spec": {
+                                        "type": "string"
+                                    },
+                                    "builtin": {
+                                        "type": "boolean"
+                                    }
+                                }
+                            },
+                            {
+                                "type": "string"
+                            }
+                        ]
+                    },
+                    "go_struct_tag": {
+                        "type": "string"
+                    },
+                    "db_type": {
+                        "type": "string"
+                    },
+                    "engine": {
+                        "enum": [
+                            "postgresql",
+                            "mysql",
+                            "sqlite"
+                        ]
+                    },
+                    "nullable": {
+                        "type": "boolean"
+                    },
+                    "unsigned": {
+                        "type": "boolean"
+                    },
+                    "column": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    },
+    "rename": {
+        "type": "object",
+        "patternProperties": {
+            ".*": {
+                "type": "string"
+            }
+        }
+    },
+    "rules": {
+        "type": "array",
+        "items": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "rule": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}
