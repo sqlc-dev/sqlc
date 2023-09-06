@@ -31,6 +31,7 @@ parsing SQL files.
 
 sqlc supports parsing migrations from the following tools:
 
+- [atlas](https://github.com/ariga/atlas)
 - [dbmate](https://github.com/amacneil/dbmate)
 - [golang-migrate](https://github.com/golang-migrate/migrate)
 - [goose](https://github.com/pressly/goose)
@@ -51,6 +52,22 @@ sql:
         out: "tutorial"
 ```
 
+### atlas
+
+```sql
+-- Create "post" table
+CREATE TABLE "public"."post" ("id" integer NOT NULL, "title" text NULL, "body" text NULL, PRIMARY KEY ("id"));
+```
+
+```go
+package db
+
+type Post struct {
+	ID    int
+	Title sql.NullString
+	Body  sql.NullString
+}
+```
 
 ### goose
 
