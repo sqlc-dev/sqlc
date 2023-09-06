@@ -165,12 +165,11 @@ sql:
 
 ### MySQL
 
-### MySQL supports a similar feature using [LOAD DATA](https://dev.mysql.com/doc/refman/8.0/en/load-data.html).
-
+MySQL supports a similar feature using [LOAD DATA](https://dev.mysql.com/doc/refman/8.0/en/load-data.html).
 
 Errors and duplicate keys are treated as warnings and insertion will
-continue, even without an error for some cases.  Use this in a transaction
-and use SHOW WARNINGS to check for any problems and roll back if you want to.
+continue, even without an error for some cases. Use this in a transaction
+and use SHOW WARNINGS to check for any problems and roll back if necessary.
 
 Check the [error handling](https://dev.mysql.com/doc/refman/8.0/en/load-data.html#load-data-error-handling) documentation for more information.
 
@@ -199,6 +198,6 @@ sql:
       go:
         package: "db"
         sql_package: "database/sql"
-		sql_driver: "github.com/go-sql-driver/mysql"
+        sql_driver: "github.com/go-sql-driver/mysql"
         out: "db"
 ```
