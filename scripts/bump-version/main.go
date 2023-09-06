@@ -110,6 +110,7 @@ func run(current, next string, realmode bool) error {
 				`"sqlc_version": "v`+current,
 				`"sqlc_version": "v`+next)
 			new = strings.ReplaceAll(new, "sqlc v"+current, "sqlc v"+next)
+			new = strings.ReplaceAll(new, "SQLC_VERSION=v"+current, "SQLC_VERSION=v"+next)
 			if realmode {
 				if err := os.WriteFile(path, []byte(new), 0644); err != nil {
 					return fmt.Errorf("write error: %s: %w", path, err)
