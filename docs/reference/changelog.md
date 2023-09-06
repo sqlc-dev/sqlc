@@ -1,7 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [1.21.0](https://github.com/sqlc-dev/sqlc/releases/tag/1.21.0)
+## [1.21.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.21.0)
 Released 2023-09-06
 
 ### Release notes
