@@ -38,21 +38,41 @@ func (v QueryValue) isEmpty() bool {
 	return v.Typ == "" && v.Name == "" && v.Struct == nil
 }
 
+type Argument struct {
+	Name string
+	Type string
+}
+
 func (v QueryValue) Pair() string {
-	if v.isEmpty() {
-		return ""
-	}
-
 	var out []string
-	if !v.EmitStruct() && v.IsStruct() {
-		for _, f := range v.Struct.Fields {
-			out = append(out, toLowerCase(f.Name)+" "+f.Type)
-		}
-
-		return strings.Join(out, ",")
+	for _, arg := range v.Pairs() {
+		out = append(out, arg.Name+" "+arg.Type)
 	}
+	return strings.Join(out, ",")
+}
 
-	return v.Name + " " + v.DefineType()
+// Return the argument name and type for query methods. Should only be used in
+// the context of method arguments.
+func (v QueryValue) Pairs() []Argument {
+	if v.isEmpty() {
+		return nil
+	}
+	if !v.EmitStruct() && v.IsStruct() {
+		var out []Argument
+		for _, f := range v.Struct.Fields {
+			out = append(out, Argument{
+				Name: toLowerCase(f.Name),
+				Type: f.Type,
+			})
+		}
+		return out
+	}
+	return []Argument{
+		{
+			Name: v.Name,
+			Type: v.DefineType(),
+		},
+	}
 }
 
 func (v QueryValue) SlicePair() string {
@@ -202,7 +222,11 @@ func (v QueryValue) Scan() string {
 	return "\n" + strings.Join(out, ",\n")
 }
 
-func (v QueryValue) Fields() []Field {
+// Deprecated: This method does not respect the Emit field set on the
+// QueryValue. It's used by the go-sql-driver-mysql/copyfromCopy.tmpl and should
+// not be used other places.
+func (v QueryValue) CopyFromMySQLFields() []Field {
+	// fmt.Printf("%#v\n", v)
 	if v.Struct != nil {
 		return v.Struct.Fields
 	}
