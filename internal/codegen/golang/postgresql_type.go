@@ -256,7 +256,7 @@ func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		}
 		return "sql.NullTime"
 
-	case "text", "pg_catalog.varchar", "pg_catalog.bpchar", "string", "citext":
+	case "text", "pg_catalog.varchar", "pg_catalog.bpchar", "string", "citext", "name":
 		if notNull {
 			return "string"
 		}
