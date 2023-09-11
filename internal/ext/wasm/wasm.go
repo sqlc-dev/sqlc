@@ -44,12 +44,6 @@ func cacheDir() (string, error) {
 	return filepath.Join(cacheHome, "sqlc"), nil
 }
 
-type Runner struct {
-	URL    string
-	SHA256 string
-	Env    []string
-}
-
 var flight singleflight.Group
 
 // Verify the provided sha256 is valid.

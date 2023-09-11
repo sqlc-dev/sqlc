@@ -3,16 +3,11 @@
 package wasm
 
 import (
-	"fmt"
 	"context"
+	"fmt"
 
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
-
-type Runner struct {
-	URL    string
-	SHA256 string
-}
 
 func (r *Runner) Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
 	return nil, fmt.Errorf("sqlc built without wasmtime support")
