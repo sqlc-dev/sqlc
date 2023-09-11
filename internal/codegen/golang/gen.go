@@ -36,6 +36,7 @@ type tmplCtx struct {
 	EmitMethodsWithDBArgument bool
 	EmitEnumValidMethod       bool
 	EmitAllEnumValues         bool
+	EmitQueryNameInContext    bool
 	UsesCopyFrom              bool
 	UsesBatch                 bool
 }
@@ -55,6 +56,12 @@ func (t *tmplCtx) codegenDbarg() string {
 // access to the toplevel tmplCtx
 func (t *tmplCtx) codegenEmitPreparedQueries() bool {
 	return t.EmitPreparedQueries
+}
+
+// Called as a global method since subtemplate queryCodeStdExec does not have
+// access to the toplevel tmplCtx
+func (t *tmplCtx) codegenEmitQueryNameInContext() bool {
+	return t.EmitQueryNameInContext
 }
 
 func (t *tmplCtx) codegenQueryMethod(q Query) string {
@@ -135,6 +142,7 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 		EmitMethodsWithDBArgument: golang.EmitMethodsWithDbArgument,
 		EmitEnumValidMethod:       golang.EmitEnumValidMethod,
 		EmitAllEnumValues:         golang.EmitAllEnumValues,
+		EmitQueryNameInContext:    golang.EmitQueryNameInContext,
 		UsesCopyFrom:              usesCopyFrom(queries),
 		UsesBatch:                 usesBatch(queries),
 		SQLDriver:                 parseDriver(golang.SqlPackage),
@@ -169,10 +177,11 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 
 		// These methods are Go specific, they do not belong in the codegen package
 		// (as that is language independent)
-		"dbarg":               tctx.codegenDbarg,
-		"emitPreparedQueries": tctx.codegenEmitPreparedQueries,
-		"queryMethod":         tctx.codegenQueryMethod,
-		"queryRetval":         tctx.codegenQueryRetval,
+		"dbarg":                  tctx.codegenDbarg,
+		"emitPreparedQueries":    tctx.codegenEmitPreparedQueries,
+		"emitQueryNameInContext": tctx.codegenEmitQueryNameInContext,
+		"queryMethod":            tctx.codegenQueryMethod,
+		"queryRetval":            tctx.codegenQueryRetval,
 	}
 
 	tmpl := template.Must(

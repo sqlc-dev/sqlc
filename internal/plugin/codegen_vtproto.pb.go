@@ -195,6 +195,7 @@ func (m *GoCode) CloneVT() *GoCode {
 		OutputBatchFileName:       m.OutputBatchFileName,
 		JsonTagsIdUppercase:       m.JsonTagsIdUppercase,
 		OmitUnusedStructs:         m.OmitUnusedStructs,
+		EmitQueryNameInContext:    m.EmitQueryNameInContext,
 	}
 	if rhs := m.InflectionExcludeTableNames; rhs != nil {
 		tmpContainer := make([]string, len(rhs))
@@ -836,6 +837,9 @@ func (this *GoCode) EqualVT(that *GoCode) bool {
 		return false
 	}
 	if this.OmitUnusedStructs != that.OmitUnusedStructs {
+		return false
+	}
+	if this.EmitQueryNameInContext != that.EmitQueryNameInContext {
 		return false
 	}
 	return string(this.unknownFields) == string(that.unknownFields)
@@ -1783,6 +1787,18 @@ func (m *GoCode) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m.unknownFields != nil {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
+	}
+	if m.EmitQueryNameInContext {
+		i--
+		if m.EmitQueryNameInContext {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xe0
 	}
 	if m.OmitUnusedStructs {
 		i--
@@ -3367,6 +3383,18 @@ func (m *GoCode) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if m.EmitQueryNameInContext {
+		i--
+		if m.EmitQueryNameInContext {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xe0
+	}
 	if m.OmitUnusedStructs {
 		i--
 		if m.OmitUnusedStructs {
@@ -4765,6 +4793,9 @@ func (m *GoCode) SizeVT() (n int) {
 		n += 3
 	}
 	if m.OmitUnusedStructs {
+		n += 3
+	}
+	if m.EmitQueryNameInContext {
 		n += 3
 	}
 	n += len(m.unknownFields)
@@ -7130,6 +7161,26 @@ func (m *GoCode) UnmarshalVT(dAtA []byte) error {
 				}
 			}
 			m.OmitUnusedStructs = bool(v != 0)
+		case 28:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field EmitQueryNameInContext", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.EmitQueryNameInContext = bool(v != 0)
 		default:
 			iNdEx = preIndex
 			skippy, err := skip(dAtA[iNdEx:])

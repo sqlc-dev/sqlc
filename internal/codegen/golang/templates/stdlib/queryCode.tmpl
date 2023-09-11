@@ -109,6 +109,9 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 {{end}}
 
 {{define "queryCodeStdExec"}}
+		{{- if emitQueryNameInContext }}
+        ctx = context.WithValue(ctx, QueryNameContextKey, "{{.MethodName}}")
+		{{ end }}
     {{- if .Arg.HasSqlcSlices }}
         query := {{.ConstantName}}
         var queryParams []interface{}
