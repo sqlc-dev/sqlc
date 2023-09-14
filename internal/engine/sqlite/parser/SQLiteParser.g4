@@ -398,7 +398,7 @@ select_stmt:
 ;
 
 join_clause:
-    table_or_subquery (join_operator table_or_subquery join_constraint?)*
+    table_or_subquery (join_operator table_or_subquery join_constraint)*
 ;
 
 select_core:
@@ -454,8 +454,8 @@ join_operator:
 ;
 
 join_constraint:
-    ON_ expr
-    | USING_ OPEN_PAR column_name ( COMMA column_name)* CLOSE_PAR
+    (ON_ expr
+    | USING_ OPEN_PAR column_name ( COMMA column_name)* CLOSE_PAR)?
 ;
 
 compound_operator:
