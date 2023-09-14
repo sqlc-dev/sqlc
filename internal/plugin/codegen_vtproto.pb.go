@@ -188,6 +188,7 @@ func (m *GoCode) CloneVT() *GoCode {
 		OutputDbFileName:          m.OutputDbFileName,
 		OutputModelsFileName:      m.OutputModelsFileName,
 		OutputQuerierFileName:     m.OutputQuerierFileName,
+		OutputCopyfromFileName:    m.OutputCopyfromFileName,
 		OutputFilesSuffix:         m.OutputFilesSuffix,
 		EmitEnumValidMethod:       m.EmitEnumValidMethod,
 		EmitAllEnumValues:         m.EmitAllEnumValues,
@@ -836,6 +837,9 @@ func (this *GoCode) EqualVT(that *GoCode) bool {
 		return false
 	}
 	if this.OmitUnusedStructs != that.OmitUnusedStructs {
+		return false
+	}
+	if this.OutputCopyfromFileName != that.OutputCopyfromFileName {
 		return false
 	}
 	return string(this.unknownFields) == string(that.unknownFields)
@@ -1783,6 +1787,15 @@ func (m *GoCode) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m.unknownFields != nil {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
+	}
+	if len(m.OutputCopyfromFileName) > 0 {
+		i -= len(m.OutputCopyfromFileName)
+		copy(dAtA[i:], m.OutputCopyfromFileName)
+		i = encodeVarint(dAtA, i, uint64(len(m.OutputCopyfromFileName)))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xe2
 	}
 	if m.OmitUnusedStructs {
 		i--
@@ -3367,6 +3380,15 @@ func (m *GoCode) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if len(m.OutputCopyfromFileName) > 0 {
+		i -= len(m.OutputCopyfromFileName)
+		copy(dAtA[i:], m.OutputCopyfromFileName)
+		i = encodeVarint(dAtA, i, uint64(len(m.OutputCopyfromFileName)))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xe2
+	}
 	if m.OmitUnusedStructs {
 		i--
 		if m.OmitUnusedStructs {
@@ -4766,6 +4788,10 @@ func (m *GoCode) SizeVT() (n int) {
 	}
 	if m.OmitUnusedStructs {
 		n += 3
+	}
+	l = len(m.OutputCopyfromFileName)
+	if l > 0 {
+		n += 2 + l + sov(uint64(l))
 	}
 	n += len(m.unknownFields)
 	return n
@@ -7130,6 +7156,38 @@ func (m *GoCode) UnmarshalVT(dAtA []byte) error {
 				}
 			}
 			m.OmitUnusedStructs = bool(v != 0)
+		case 28:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OutputCopyfromFileName", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.OutputCopyfromFileName = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skip(dAtA[iNdEx:])

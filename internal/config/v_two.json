@@ -233,6 +233,9 @@
                                 "output_querier_file_name": {
                                     "type": "string"
                                 },
+                                "output_copyfrom_file_name": {
+                                    "type": "string"
+                                },
                                 "output_files_suffix": {
                                     "type": "string"
                                 },
