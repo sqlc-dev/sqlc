@@ -553,6 +553,8 @@ func (c *cc) getTables(core *parser.Select_coreContext) []ast.Node {
 			}
 			jc := join.Join_constraint(i)
 			switch {
+			case jc == nil:
+			// do nothing
 			case jc.ON_() != nil:
 				joinExpr.Quals = c.convert(jc.Expr())
 			case jc.USING_() != nil:
