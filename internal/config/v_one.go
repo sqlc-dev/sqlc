@@ -58,6 +58,7 @@ type v1PackageSettings struct {
 	OmitUnusedStructs         bool              `json:"omit_unused_structs,omitempty" yaml:"omit_unused_structs"`
 	Rules                     []string          `json:"rules" yaml:"rules"`
 	BuildTags                 string            `json:"build_tags,omitempty" yaml:"build_tags"`
+	EmitSqlAsComment          bool              `json:"emit_sql_as_comment,omitempty" yaml:"emit_sql_as_comment"`
 }
 
 func v1ParseConfig(rd io.Reader) (Config, error) {
@@ -166,6 +167,7 @@ func (c *V1GenerateSettings) Translate() Config {
 					OmitSqlcVersion:           pkg.OmitSqlcVersion,
 					OmitUnusedStructs:         pkg.OmitUnusedStructs,
 					BuildTags:                 pkg.BuildTags,
+					EmitSqlAsComment:          pkg.EmitSqlAsComment,
 				},
 			},
 			StrictFunctionChecks: pkg.StrictFunctionChecks,

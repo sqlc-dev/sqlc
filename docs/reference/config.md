@@ -165,6 +165,8 @@ The `gen` mapping supports the following keys:
     that returns all valid enum values.
 - `build_tags`:
   - If set, add a `//go:build <build_tags>` directive at the beginning of each generated Go file.
+- `emit_sql_as_comment`:
+  - If true, emits the SQL statement as a code-block comment above the generated function, appending to any existing comments. Defaults to `false`.
 - `json_tags_id_uppercase`:
   - If true, "Id" in json tags will be uppercase. If false, will be camelcase. Defaults to `false`
 - `json_tags_case_style`:

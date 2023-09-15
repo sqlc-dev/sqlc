@@ -134,6 +134,9 @@
                     "build_tags": {
                         "type": "string"
                     },
+                    "emit_sql_as_comment": {
+                        "type": "boolean"
+                    },
                     "json_tags_case_style": {
                         "type": "string"
                     },
