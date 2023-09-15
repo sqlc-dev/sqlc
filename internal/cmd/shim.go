@@ -105,6 +105,7 @@ func pluginGoCode(s config.SQLGo) *plugin.GoCode {
 		OutputBatchFileName:         s.OutputBatchFileName,
 		OutputModelsFileName:        s.OutputModelsFileName,
 		OutputQuerierFileName:       s.OutputQuerierFileName,
+		OutputCopyfromFileName:      s.OutputCopyFromFileName,
 		OutputFilesSuffix:           s.OutputFilesSuffix,
 		InflectionExcludeTableNames: s.InflectionExcludeTableNames,
 		QueryParameterLimit:         s.QueryParameterLimit,
