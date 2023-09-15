@@ -163,6 +163,8 @@ The `gen` mapping supports the following keys:
 - `emit_all_enum_values`:
   - If true, emit a function per enum type
     that returns all valid enum values.
+- `emit_sql_as_comment`:
+  - If true, emits the SQL statement as a code-block comment above the generated function, appending to any existing comments. Defaults to `false`.
 - `build_tags`:
   - If set, add a `//go:build <build_tags>` directive at the beginning of each generated Go file.
 - `json_tags_id_uppercase`:

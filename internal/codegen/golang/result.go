@@ -199,6 +199,17 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, structs []
 			constantName = sdk.LowerTitle(query.Name)
 		}
 
+		comments := query.Comments
+		if options.EmitSqlAsComment {
+			if len(comments) == 0 {
+				comments = append(comments, query.Name)
+			}
+			comments = append(comments, " ")
+			for _, line := range strings.Split(query.Text, "\n") {
+				comments = append(comments, "  "+line)
+			}
+		}
+
 		gq := Query{
 			Cmd:          query.Cmd,
 			ConstantName: constantName,
@@ -206,7 +217,7 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, structs []
 			MethodName:   query.Name,
 			SourceName:   query.Filename,
 			SQL:          query.Text,
-			Comments:     query.Comments,
+			Comments:     comments,
 			Table:        query.InsertIntoTable,
 		}
 		sqlpkg := parseDriver(options.SqlPackage)

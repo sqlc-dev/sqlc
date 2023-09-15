@@ -131,6 +131,9 @@
                     "emit_all_enum_values": {
                         "type": "boolean"
                     },
+                    "emit_sql_as_comment": {
+                        "type": "boolean"
+                    },
                     "build_tags": {
                         "type": "string"
                     },
