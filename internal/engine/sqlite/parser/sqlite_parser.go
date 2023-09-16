@@ -11582,10 +11582,6 @@ func (s *Expr_binaryContext) Expr(i int) IExprContext {
 	return t.(IExprContext)
 }
 
-func (s *Expr_binaryContext) PIPE2() antlr.TerminalNode {
-	return s.GetToken(SQLiteParserPIPE2, 0)
-}
-
 func (s *Expr_binaryContext) AND_() antlr.TerminalNode {
 	return s.GetToken(SQLiteParserAND_, 0)
 }
@@ -12278,6 +12274,10 @@ func (s *Expr_math_opContext) Expr(i int) IExprContext {
 	return t.(IExprContext)
 }
 
+func (s *Expr_math_opContext) PIPE2() antlr.TerminalNode {
+	return s.GetToken(SQLiteParserPIPE2, 0)
+}
+
 func (s *Expr_math_opContext) STAR() antlr.TerminalNode {
 	return s.GetToken(SQLiteParserSTAR, 0)
 }
@@ -12866,7 +12866,7 @@ func (p *SQLiteParser) expr(_p int) (localctx IExprContext) {
 			p.GetErrorHandler().Sync(p)
 			switch p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 144, p.GetParserRuleContext()) {
 			case 1:
-				localctx = NewExpr_binaryContext(p, NewExprContext(p, _parentctx, _parentState))
+				localctx = NewExpr_math_opContext(p, NewExprContext(p, _parentctx, _parentState))
 				p.PushNewRecursionContext(localctx, _startState, SQLiteParserRULE_expr)
 				p.SetState(1007)
 

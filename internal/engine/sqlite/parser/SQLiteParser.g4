@@ -281,7 +281,7 @@ expr:
     | NAMED_BIND_PARAMETER #expr_bind
     | ((schema_name DOT)? table_name DOT)? column_name #expr_qualified_column_name
     | unary_operator expr #expr_unary
-    | expr PIPE2 expr #expr_binary
+    | expr PIPE2 expr #expr_math_op
     | expr ( STAR | DIV | MOD) expr #expr_math_op
     | expr ( PLUS | MINUS) expr #expr_math_op
     | expr ( LT2 | GT2 | AMP | PIPE) expr #expr_comparison

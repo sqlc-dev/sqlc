@@ -768,7 +768,7 @@ func (c *cc) convertMathOperationNode(n *parser.Expr_math_opContext) ast.Node {
 	return &ast.A_Expr{
 		Name: &ast.List{
 			Items: []ast.Node{
-				&ast.String{Str: "+"}, // todo: Convert operation types
+				&ast.String{Str: n.GetChild(1).(antlr.TerminalNode).GetText()},
 			},
 		},
 		Lexpr: c.convert(n.Expr(0)),
