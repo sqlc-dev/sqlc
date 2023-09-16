@@ -980,6 +980,56 @@ func defaultSchema(name string) *catalog.Schema {
 			},
 			ReturnType: &ast.TypeName{Name: "real"},
 		},
+		{
+			Name: "json_each",
+			Args: []*catalog.Argument{
+				{
+					Name: "json",
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "path",
+					Type: &ast.TypeName{Name: "text"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
+			ReturnType: &ast.TypeName{
+				Name: "json_tree",
+			},
+		},
+		{
+			Name: "json_tree",
+			Args: []*catalog.Argument{
+				{
+					Name: "json",
+					Type: &ast.TypeName{Name: "text"},
+				},
+				{
+					Name: "path",
+					Type: &ast.TypeName{Name: "text"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
+			ReturnType: &ast.TypeName{
+				Name: "json_tree",
+			},
+		},
+	}
+	s.Tables = []*catalog.Table{
+		{
+			Rel: &ast.TableName{Name: "json_tree"},
+			Columns: []*catalog.Column{
+				{Name: "key", Type: ast.TypeName{Name: "any"}},
+				{Name: "value", Type: ast.TypeName{Name: "any"}},
+				{Name: "type", Type: ast.TypeName{Name: "text"}},
+				{Name: "atom", Type: ast.TypeName{Name: "any"}},
+				{Name: "id", Type: ast.TypeName{Name: "integer"}},
+				{Name: "parent", Type: ast.TypeName{Name: "integer"}},
+				{Name: "fullkey", Type: ast.TypeName{Name: "integer"}},
+				{Name: "path", Type: ast.TypeName{Name: "text"}},
+			},
+			Hidden: true,
+		},
 	}
 	return s
 }
