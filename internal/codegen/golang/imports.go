@@ -89,6 +89,9 @@ func (i *importer) Imports(filename string) [][]ImportSpec {
 		querierFileName = i.Settings.Go.OutputQuerierFileName
 	}
 	copyfromFileName := "copyfrom.go"
+	if i.Settings.Go.OutputCopyfromFileName != "" {
+		copyfromFileName = i.Settings.Go.OutputCopyfromFileName
+	}
 	batchFileName := "batch.go"
 	if i.Settings.Go.OutputBatchFileName != "" {
 		batchFileName = i.Settings.Go.OutputBatchFileName

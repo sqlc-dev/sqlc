@@ -86,6 +86,7 @@ message GoCode {
   string output_db_file_name = 15;
   string output_models_file_name = 16;
   string output_querier_file_name = 17;
+  string output_copyfrom_file_name = 28;
   string output_files_suffix = 18;
   bool emit_enum_valid_method = 19;
   bool emit_all_enum_values = 20;

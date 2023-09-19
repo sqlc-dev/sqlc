@@ -230,7 +230,9 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 		querierFileName = golang.OutputQuerierFileName
 	}
 	copyfromFileName := "copyfrom.go"
-	// TODO(Jille): Make this configurable.
+	if golang.OutputCopyfromFileName != "" {
+		copyfromFileName = golang.OutputCopyfromFileName
+	}
 
 	batchFileName := "batch.go"
 	if golang.OutputBatchFileName != "" {
