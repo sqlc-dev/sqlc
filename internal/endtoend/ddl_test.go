@@ -76,6 +76,10 @@ func TestValidSchema(t *testing.T) {
 			t.Run(fmt.Sprintf("endtoend-%s-%d", file, j), func(t *testing.T) {
 				t.Parallel()
 
+				if strings.Contains(file, "pg_dump") {
+					t.Skip("loading pg_dump not supported")
+				}
+
 				var schema []string
 				for _, path := range pkg.Schema {
 					schema = append(schema, filepath.Join(filepath.Dir(file), path))
