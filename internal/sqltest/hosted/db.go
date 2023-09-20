@@ -56,9 +56,10 @@ func PostgreSQL(t *testing.T, migrations []string) string {
 		seed = append(seed, string(blob))
 	}
 
+	fmt.Println("region", os.Getenv("SQLC_REGION"))
 	resp, err := client.CreateEphemeralDatabase(ctx, &pb.CreateEphemeralDatabaseRequest{
 		Engine:     "postgresql",
-		Region:     "iad",
+		Region:     os.Getenv("SQLC_REGION"),
 		Migrations: seed,
 	})
 	if err != nil {

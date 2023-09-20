@@ -23,6 +23,9 @@ func TestValidSchema(t *testing.T) {
 
 	projectID := os.Getenv("CI_SQLC_PROJECT_ID")
 	authToken := os.Getenv("CI_SQLC_AUTH_TOKEN")
+
+	fmt.Println("region", os.Getenv("SQLC_REGION"))
+
 	if projectID == "" || authToken == "" {
 		if os.Getenv("CI") == "" {
 			t.Skip("skiping ddl tests outside of CI")
@@ -106,7 +109,7 @@ func TestValidSchema(t *testing.T) {
 
 				resp, err := client.CreateEphemeralDatabase(ctx, &pb.CreateEphemeralDatabaseRequest{
 					Engine:     "postgresql",
-					Region:     "iad",
+					Region:     os.Getenv("SQLC_REGION"),
 					Migrations: sqls,
 				})
 				if err != nil {
