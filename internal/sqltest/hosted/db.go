@@ -62,7 +62,7 @@ func PostgreSQL(t *testing.T, migrations []string) string {
 		Migrations: seed,
 	})
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("region %s: %s", quickdb.GetClosestRegion(), err)
 	}
 
 	t.Cleanup(func() {
