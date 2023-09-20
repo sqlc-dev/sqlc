@@ -105,7 +105,7 @@ func TestValidSchema(t *testing.T) {
 				start := time.Now()
 				resp, err := client.CreateEphemeralDatabase(ctx, &pb.CreateEphemeralDatabaseRequest{
 					Engine:     "postgresql",
-					Region:     "sjc",
+					Region:     "iad",
 					Migrations: sqls,
 				})
 				t.Logf("%s", time.Since(start))
