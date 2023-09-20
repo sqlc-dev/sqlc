@@ -12,7 +12,7 @@ import (
 )
 
 func TestBatchBooks(t *testing.T) {
-	db, cleanup := sqltest.PostgreSQLPgx(t, []string{"schema.sql"})
+	db, cleanup := sqltest.PostgreSQLPgxV4(t, []string{"schema.sql"})
 	defer cleanup()
 
 	ctx := context.Background()

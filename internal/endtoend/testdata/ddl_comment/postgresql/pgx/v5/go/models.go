@@ -53,6 +53,10 @@ func (ns NullFooBat) Value() (driver.Value, error) {
 	return string(ns.FooBat), nil
 }
 
+var EnumNames = []string{
+	"bat",
+}
+
 // Table comment
 type FooBar struct {
 	// Column comment

@@ -52,6 +52,10 @@ func (ns NullIPProtocol) Value() (driver.Value, error) {
 	return string(ns.IPProtocol), nil
 }
 
+var EnumNames = []string{
+	"ip_protocol",
+}
+
 type BarNew struct {
 	IDNew int32
 	IpOld IPProtocol

@@ -129,6 +129,12 @@ func All{{ .Name }}Values() []{{ .Name }} {
 {{ end }}
 {{end}}
 
+{{if and (gt (len .Enums) 0) (eq $.SQLDriver.Package "pgx/v5") }}
+var EnumNames = []string{
+	{{range .Enums}}{{printf "%q" .TypeName}},{{end}}
+}
+{{end}}
+
 {{range .Structs}}
 {{if .Comment}}{{comment .Comment}}{{end}}
 type {{.Name}} struct { {{- range .Fields}}

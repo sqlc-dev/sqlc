@@ -108,6 +108,10 @@ func (ns NullFoobar) Value() (driver.Value, error) {
 	return string(ns.Foobar), nil
 }
 
+var EnumNames = []string{
+	"digit", "foobar",
+}
+
 type Foo struct {
 	Val Foobar
 }

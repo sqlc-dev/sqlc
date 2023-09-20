@@ -15,6 +15,7 @@ type Constant struct {
 
 type Enum struct {
 	Name      string
+	TypeName  string
 	Comment   string
 	Constants []Constant
 	NameTags  map[string]string
