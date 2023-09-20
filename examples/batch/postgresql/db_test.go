@@ -8,14 +8,21 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sqlc-dev/sqlc/internal/sqltest"
+	"github.com/jackc/pgx/v4"
+	"github.com/sqlc-dev/sqlc/internal/sqltest/hosted"
 )
 
 func TestBatchBooks(t *testing.T) {
-	db, cleanup := sqltest.PostgreSQLPgx(t, []string{"schema.sql"})
-	defer cleanup()
+	uri := hosted.PostgreSQL(t, []string{"schema.sql"})
 
 	ctx := context.Background()
+
+	db, err := pgx.Connect(ctx, uri)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close(ctx)
+
 	dq := New(db)
 
 	// create an author

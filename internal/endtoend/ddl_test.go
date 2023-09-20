@@ -22,8 +22,8 @@ import (
 func TestValidSchema(t *testing.T) {
 	ctx := context.Background()
 
-	projectID := os.Getenv("DDL_SQLC_PROJECT_ID")
-	authToken := os.Getenv("DDL_SQLC_AUTH_TOKEN")
+	projectID := os.Getenv("CI_SQLC_PROJECT_ID")
+	authToken := os.Getenv("CI_SQLC_AUTH_TOKEN")
 
 	if projectID == "" || authToken == "" {
 		if os.Getenv("CI") == "" {
