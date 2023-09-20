@@ -24,8 +24,6 @@ func TestValidSchema(t *testing.T) {
 	projectID := os.Getenv("CI_SQLC_PROJECT_ID")
 	authToken := os.Getenv("CI_SQLC_AUTH_TOKEN")
 
-	fmt.Println("region", quickdb.GetClosestRegion())
-
 	if projectID == "" || authToken == "" {
 		if os.Getenv("CI") == "" {
 			t.Skip("skiping ddl tests outside of CI")
