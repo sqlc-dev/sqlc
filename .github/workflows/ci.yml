@@ -30,16 +30,6 @@ jobs:
     runs-on: ubuntu-latest
 
     services:
-      postgres:
-        image: "postgres:15"
-        env:
-          POSTGRES_DB: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_USER: postgres
-        ports:
-        - 5432:5432
-        # needed because the postgres container does not provide a healthcheck
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
       mysql:
         image: "mysql/mysql-server:8.0"
         env:
@@ -69,11 +59,6 @@ jobs:
     - name: test ./...
       run: gotestsum --junitfile junit.xml -- --tags=examples ./...
       env:
-        PG_USER: postgres
-        PG_HOST: localhost
-        PG_DATABASE: postgres
-        PG_PASSWORD: postgres
-        PG_PORT: ${{ job.services.postgres.ports['5432'] }}
         MYSQL_DATABASE: mysql
         MYSQL_HOST: localhost
         MYSQL_PORT: ${{ job.services.mysql.ports['3306'] }}
