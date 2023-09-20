@@ -5,11 +5,13 @@ package ondeck
 
 import (
 	"context"
+	"database/sql"
 	"testing"
 
-	"github.com/sqlc-dev/sqlc/internal/sqltest"
-
 	"github.com/google/go-cmp/cmp"
+	_ "github.com/lib/pq"
+
+	"github.com/sqlc-dev/sqlc/internal/sqltest/hosted"
 )
 
 func runOnDeckQueries(t *testing.T, q *Queries) {
@@ -124,10 +126,14 @@ func runOnDeckQueries(t *testing.T, q *Queries) {
 func TestPrepared(t *testing.T) {
 	t.Parallel()
 
-	sdb, cleanup := sqltest.PostgreSQL(t, []string{"schema"})
-	defer cleanup()
+	uri := hosted.PostgreSQL(t, []string{"schema"})
+	db, err := sql.Open("postgres", uri)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
 
-	q, err := Prepare(context.Background(), sdb)
+	q, err := Prepare(context.Background(), db)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -138,8 +144,12 @@ func TestPrepared(t *testing.T) {
 func TestQueries(t *testing.T) {
 	t.Parallel()
 
-	sdb, cleanup := sqltest.PostgreSQL(t, []string{"schema"})
-	defer cleanup()
+	uri := hosted.PostgreSQL(t, []string{"schema"})
+	db, err := sql.Open("postgres", uri)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
 
-	runOnDeckQueries(t, New(sdb))
+	runOnDeckQueries(t, New(db))
 }

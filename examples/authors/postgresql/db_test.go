@@ -8,25 +8,31 @@ import (
 	"database/sql"
 	"testing"
 
-	"github.com/sqlc-dev/sqlc/internal/sqltest"
+	_ "github.com/lib/pq"
+
+	"github.com/sqlc-dev/sqlc/internal/sqltest/hosted"
 )
 
 func TestAuthors(t *testing.T) {
-	sdb, cleanup := sqltest.PostgreSQL(t, []string{"schema.sql"})
-	defer cleanup()
+	uri := hosted.PostgreSQL(t, []string{"schema.sql"})
+	db, err := sql.Open("postgres", uri)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
 
 	ctx := context.Background()
-	db := New(sdb)
+	q := New(db)
 
 	// list all authors
-	authors, err := db.ListAuthors(ctx)
+	authors, err := q.ListAuthors(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Log(authors)
 
 	// create an author
-	insertedAuthor, err := db.CreateAuthor(ctx, CreateAuthorParams{
+	insertedAuthor, err := q.CreateAuthor(ctx, CreateAuthorParams{
 		Name: "Brian Kernighan",
 		Bio:  sql.NullString{String: "Co-author of The C Programming Language and The Go Programming Language", Valid: true},
 	})
@@ -36,7 +42,7 @@ func TestAuthors(t *testing.T) {
 	t.Log(insertedAuthor)
 
 	// get the author we just inserted
-	fetchedAuthor, err := db.GetAuthor(ctx, insertedAuthor.ID)
+	fetchedAuthor, err := q.GetAuthor(ctx, insertedAuthor.ID)
 	if err != nil {
 		t.Fatal(err)
 	}

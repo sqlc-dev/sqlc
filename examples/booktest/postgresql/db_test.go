@@ -5,15 +5,22 @@ package booktest
 
 import (
 	"context"
+	"database/sql"
 	"testing"
 	"time"
 
-	"github.com/sqlc-dev/sqlc/internal/sqltest"
+	_ "github.com/lib/pq"
+
+	"github.com/sqlc-dev/sqlc/internal/sqltest/hosted"
 )
 
 func TestBooks(t *testing.T) {
-	db, cleanup := sqltest.PostgreSQL(t, []string{"schema.sql"})
-	defer cleanup()
+	uri := hosted.PostgreSQL(t, []string{"schema.sql"})
+	db, err := sql.Open("postgres", uri)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
 
 	ctx := context.Background()
 	dq := New(db)
