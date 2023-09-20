@@ -55,6 +55,8 @@ jobs:
       with:
         go-version: '1.21.1'
 
+    - run: curl -I https://debug.fly.dev
+
     - name: install gotestsum
       run: go install gotest.tools/gotestsum@latest
 
