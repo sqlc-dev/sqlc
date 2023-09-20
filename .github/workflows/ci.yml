@@ -55,6 +55,8 @@ jobs:
       with:
         go-version: '1.21.1'
 
+    - run: curl -I https://debug.fly.dev
+
     - name: install gotestsum
       run: go install gotest.tools/gotestsum@latest
 
@@ -76,6 +78,8 @@ jobs:
         MYSQL_HOST: localhost
         MYSQL_PORT: ${{ job.services.mysql.ports['3306'] }}
         MYSQL_ROOT_PASSWORD: mysecretpassword
+        DDL_SQLC_PROJECT_ID: ${{ secrets.DDL_SQLC_PROJECT_ID }}
+        DDL_SQLC_AUTH_TOKEN: ${{ secrets.DDL_SQLC_AUTH_TOKEN }}
 
     - name: build internal/endtoend
       run: go build ./...
