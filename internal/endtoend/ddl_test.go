@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/jackc/pgx/v5"
 
@@ -24,7 +23,6 @@ func TestValidSchema(t *testing.T) {
 
 	projectID := os.Getenv("CI_SQLC_PROJECT_ID")
 	authToken := os.Getenv("CI_SQLC_AUTH_TOKEN")
-
 	if projectID == "" || authToken == "" {
 		if os.Getenv("CI") == "" {
 			t.Skip("skiping ddl tests outside of CI")
@@ -102,13 +100,11 @@ func TestValidSchema(t *testing.T) {
 					sqls = append(sqls, migrations.RemoveRollbackStatements(before))
 				}
 
-				start := time.Now()
 				resp, err := client.CreateEphemeralDatabase(ctx, &pb.CreateEphemeralDatabaseRequest{
 					Engine:     "postgresql",
 					Region:     "iad",
 					Migrations: sqls,
 				})
-				t.Logf("%s", time.Since(start))
 				if err != nil {
 					t.Fatal(err)
 				}
