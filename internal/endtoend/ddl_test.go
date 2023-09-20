@@ -111,7 +111,7 @@ func TestValidSchema(t *testing.T) {
 					Migrations: sqls,
 				})
 				if err != nil {
-					t.Fatal(err)
+					t.Fatalf("region %s: %s", quickdb.GetClosestRegion(), err)
 				}
 
 				t.Cleanup(func() {
