@@ -58,11 +58,11 @@ func PostgreSQL(t *testing.T, migrations []string) string {
 
 	resp, err := client.CreateEphemeralDatabase(ctx, &pb.CreateEphemeralDatabaseRequest{
 		Engine:     "postgresql",
-		Region:     "iad",
+		Region:     quickdb.GetClosestRegion(),
 		Migrations: seed,
 	})
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("region %s: %s", quickdb.GetClosestRegion(), err)
 	}
 
 	t.Cleanup(func() {
