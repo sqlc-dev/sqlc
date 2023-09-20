@@ -55,10 +55,6 @@ jobs:
       with:
         go-version: '1.21.1'
 
-    - name: set sqlc region
-      run: |
-        curl -I -s -o foo.txt -w 'SQLC_REGION=%header{fly-region}' https://debug.fly.dev >> "$GITHUB_ENV"
-
     - name: install gotestsum
       run: go install gotest.tools/gotestsum@latest
 
