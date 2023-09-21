@@ -21,8 +21,14 @@ CREATE TABLE baz.users (
 -- name: Only :one
 SELECT sqlc.embed(users) FROM users;
 
+-- name: OnlyCamel :one
+SELECT sqlc.embed(Users) FROM Users;
+
 -- name: WithAlias :one
 SELECT sqlc.embed(u) FROM users u;
+
+-- name: WithAliasCamel :one
+SELECT sqlc.embed(U) FROM users U;
 
 -- name: WithSubquery :many
 SELECT sqlc.embed(users), (SELECT count(*) FROM users) AS total_count FROM users;

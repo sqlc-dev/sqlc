@@ -63,7 +63,7 @@ func (s *Schema) getFuncByName(rel *ast.FuncName) (*Function, int, error) {
 
 func (s *Schema) getTable(rel *ast.TableName) (*Table, int, error) {
 	for i := range s.Tables {
-		if s.Tables[i].Rel.Name == rel.Name {
+		if strings.EqualFold(s.Tables[i].Rel.Name, rel.Name) {
 			return s.Tables[i], i, nil
 		}
 	}

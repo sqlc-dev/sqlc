@@ -71,6 +71,21 @@ func (q *Queries) Only(ctx context.Context) (OnlyRow, error) {
 	return i, err
 }
 
+const onlyCamel = `-- name: OnlyCamel :one
+SELECT users.id, users.name, users.age FROM Users
+`
+
+type OnlyCamelRow struct {
+	User User
+}
+
+func (q *Queries) OnlyCamel(ctx context.Context) (OnlyCamelRow, error) {
+	row := q.db.QueryRowContext(ctx, onlyCamel)
+	var i OnlyCamelRow
+	err := row.Scan(&i.User.ID, &i.User.Name, &i.User.Age)
+	return i, err
+}
+
 const withAlias = `-- name: WithAlias :one
 SELECT u.id, u.name, u.age FROM users AS u
 `
@@ -82,6 +97,21 @@ type WithAliasRow struct {
 func (q *Queries) WithAlias(ctx context.Context) (WithAliasRow, error) {
 	row := q.db.QueryRowContext(ctx, withAlias)
 	var i WithAliasRow
+	err := row.Scan(&i.User.ID, &i.User.Name, &i.User.Age)
+	return i, err
+}
+
+const withAliasCamel = `-- name: WithAliasCamel :one
+SELECT u.id, u.name, u.age FROM users AS U
+`
+
+type WithAliasCamelRow struct {
+	User User
+}
+
+func (q *Queries) WithAliasCamel(ctx context.Context) (WithAliasCamelRow, error) {
+	row := q.db.QueryRowContext(ctx, withAliasCamel)
+	var i WithAliasCamelRow
 	err := row.Scan(&i.User.ID, &i.User.Name, &i.User.Age)
 	return i, err
 }

@@ -3,6 +3,7 @@ package compiler
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
@@ -57,7 +58,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 		if err != nil {
 			return nil, err
 		}
-		if _, found := aliasMap[fqn.Name]; found {
+		if _, found := aliasMap[strings.ToLower(fqn.Name)]; found {
 			continue
 		}
 		table, err := c.GetTable(fqn)
@@ -73,7 +74,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 			return nil, err
 		}
 		if rv.Alias != nil {
-			aliasMap[*rv.Alias.Aliasname] = fqn
+			aliasMap[strings.ToLower(*rv.Alias.Aliasname)] = fqn
 		}
 	}
 
@@ -85,7 +86,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 			continue
 		}
 
-		if alias, ok := aliasMap[embed.Table.Name]; ok {
+		if alias, ok := aliasMap[strings.ToLower(embed.Table.Name)]; ok {
 			embed.Table = alias
 			continue
 		}
