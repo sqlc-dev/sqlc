@@ -29,6 +29,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/quickdb"
 	pb "github.com/sqlc-dev/sqlc/internal/quickdb/v1"
 	"github.com/sqlc-dev/sqlc/internal/shfmt"
+	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
 	"github.com/sqlc-dev/sqlc/internal/vet"
 )
 
@@ -407,7 +408,11 @@ func (c *checker) fetchDatabaseUri(ctx context.Context, s config.SQL) (string, f
 	}
 
 	var migrations []string
-	for _, query := range s.Schema {
+	files, err := sqlpath.Glob(s.Schema)
+	if err != nil {
+		return "", cleanup, err
+	}
+	for _, query := range files {
 		contents, err := os.ReadFile(query)
 		if err != nil {
 			return "", cleanup, fmt.Errorf("read file: %w", err)
