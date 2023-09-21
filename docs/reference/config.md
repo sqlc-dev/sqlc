@@ -457,6 +457,7 @@ packages:
     queries: "./sql/query/"
     schema: "./sql/schema/"
     engine: "postgresql"
+    emit_db_tags: false
     emit_prepared_queries: true
     emit_interface: false
     emit_exact_table_names: false
@@ -476,6 +477,7 @@ packages:
     output_models_file_name: "models.go"
     output_querier_file_name: "querier.go"
     output_copyfrom_file_name: "copyfrom.go"
+    query_parameter_limit: 1
 ```
 
 ### packages
