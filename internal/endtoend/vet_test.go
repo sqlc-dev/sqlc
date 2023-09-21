@@ -52,7 +52,6 @@ func TestExamplesVet(t *testing.T) {
 
 			if tc != "kotlin" && tc != "python" {
 				if s, found := findSchema(t, filepath.Join(path, "mysql")); found {
-					t.Skip("local")
 					db, cleanup := sqltest.CreateMySQLDatabase(t, tc, []string{s})
 					defer db.Close()
 					defer cleanup()
