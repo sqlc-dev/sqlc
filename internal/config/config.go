@@ -69,7 +69,8 @@ type Project struct {
 }
 
 type Database struct {
-	URI string `json:"uri" yaml:"uri"`
+	URI     string `json:"uri" yaml:"uri"`
+	Managed bool   `json:"managed" yaml:"managed"`
 }
 
 type Cloud struct {
