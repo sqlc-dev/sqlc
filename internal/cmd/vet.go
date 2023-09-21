@@ -415,10 +415,9 @@ func (c *checker) fetchDatabaseUri(ctx context.Context, s config.SQL) (string, f
 		migrations = append(migrations, string(contents))
 	}
 
-	start := time.Now()
 	resp, err := c.Client.CreateEphemeralDatabase(ctx, &pb.CreateEphemeralDatabaseRequest{
 		Engine:     "postgresql",
-		Region:     "sjc",
+		Region:     quickdb.GetClosestRegion(),
 		Migrations: migrations,
 	})
 	if err != nil {
@@ -432,7 +431,6 @@ func (c *checker) fetchDatabaseUri(ctx context.Context, s config.SQL) (string, f
 		return err
 	}
 
-	fmt.Println("createdb+template", time.Since(start))
 	return resp.Uri, cleanup, nil
 }
 

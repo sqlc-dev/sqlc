@@ -1,10 +1,12 @@
 version: '2'
+cloud:
+  project: "01HAQMMECEYQYKFJN8MP16QC41"
 sql:
 - schema: postgresql/schema.sql
   queries: postgresql/query.sql
   engine: postgresql
   database:
-    uri: postgresql://${PG_USER}:${PG_PASSWORD}@${PG_HOST}:${PG_PORT}/authors
+    managed: true
   rules:
   - sqlc/db-prepare
   - postgresql-query-too-costly
