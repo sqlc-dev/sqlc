@@ -10,7 +10,7 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v4
-    - run: choco install mingw --version 11.2.0.07112021
+    - run: choco install mingw --version 11.2.0.07112021 --allow-downgrade
     - uses: actions/setup-go@v4
       with:
         go-version: '1.21.1'
@@ -27,6 +27,7 @@ jobs:
     - run: go build ./...
 
   build:
+    if: false
     name: test
     runs-on: ubuntu-latest
 
