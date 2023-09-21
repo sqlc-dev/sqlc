@@ -240,6 +240,10 @@ Each mapping of the `overrides` collection has the following keys:
 - `nullable`:
   - If `true`, use this type when a column is nullable. Defaults to `false`.
 
+Note that a single `db_type` override configuration applies to either nullable or non-nullable
+columns, but not both. If you want a single `go_type` to override in both cases, you'll
+need to specify two overrides.
+
 When generating code, entries using the `column` key will always have preference over
 entries using the `db_type` key in order to generate the struct.
 
@@ -434,11 +438,11 @@ With the previous configuration, whenever a struct field is generated from a
 table column that is called `id`, it will generated as `Identifier`.
 
 Also, whenever there is a nullable `timestamp with time zone` column in a
-Postgres table, it will be generated as `null.Time`.  Note that, the mapping for
+Postgres table, it will be generated as `null.Time`.  Note that the mapping for
 global type overrides has a field called `engine` that is absent in the regular
 type overrides. This field is only used when there are multiple definitions
-using multiple engines. Otherwise, the value of the `engine` key will be
-defaulted to the engine that is currently being used.
+using multiple engines. Otherwise, the value of the `engine` key
+defaults to the engine that is currently being used.
 
 Currently, type overrides and field renaming, both global and regular, are only
 fully supported in Go.
@@ -453,6 +457,7 @@ packages:
     queries: "./sql/query/"
     schema: "./sql/schema/"
     engine: "postgresql"
+    emit_db_tags: false
     emit_prepared_queries: true
     emit_interface: false
     emit_exact_table_names: false
@@ -472,6 +477,7 @@ packages:
     output_models_file_name: "models.go"
     output_querier_file_name: "querier.go"
     output_copyfrom_file_name: "copyfrom.go"
+    query_parameter_limit: 1
 ```
 
 ### packages
@@ -567,6 +573,10 @@ Each override document has the following keys:
 - `nullable`:
   - If true, use this type when a column is nullable. Defaults to `false`.
 
+Note that a single `db_type` override configuration applies to either nullable or non-nullable
+columns, but not both. If you want a single `go_type` to override in both cases, you'll
+need to specify two overrides.
+
 For more complicated import paths, the `go_type` can also be an object.
 
 ```yaml
@@ -599,7 +609,7 @@ overrides:
 
 #### Package Level Overrides
 
-Overrides can be configured globally, as demonstrated in the previous sections, or they can be configured on a per-package which
+Overrides can be configured globally, as demonstrated in the previous sections, or they can be configured per-package which
 scopes the override behavior to just a single package:
 
 ```yaml
