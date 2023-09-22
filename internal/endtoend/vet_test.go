@@ -31,6 +31,11 @@ func TestExamplesVet(t *testing.T) {
 	t.Parallel()
 	ctx := context.Background()
 
+	authToken := os.Getenv("SQLC_AUTH_TOKEN")
+	if authToken == "" {
+		t.Skip("missing auth token")
+	}
+
 	examples, err := filepath.Abs(filepath.Join("..", "..", "examples"))
 	if err != nil {
 		t.Fatal(err)

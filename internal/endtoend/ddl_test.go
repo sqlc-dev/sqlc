@@ -23,13 +23,8 @@ func TestValidSchema(t *testing.T) {
 
 	projectID := os.Getenv("CI_SQLC_PROJECT_ID")
 	authToken := os.Getenv("CI_SQLC_AUTH_TOKEN")
-
 	if projectID == "" || authToken == "" {
-		if os.Getenv("CI") == "" {
-			t.Skip("skiping ddl tests outside of CI")
-		} else {
-			t.Fatal("missing project id and auth token")
-		}
+		t.Skip("missing project id or auth token")
 	}
 
 	client, err := quickdb.NewClient(projectID, authToken)
