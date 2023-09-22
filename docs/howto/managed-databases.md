@@ -3,21 +3,24 @@
 *Added in v1.22.0*
 
 `sqlc` can create and maintain hosted databases for your project. These
-databases can be used for linting queries. Right now, only PostgreSQL is
-supported, with MySQL on the way.
+databases are immediately useful for linting queries with [`sqlc vet`](vet.md)
+if your lint rules require a connection to a running database. PostgreSQL
+support is available today, with MySQL on the way.
 
-This feature is under active development. Beyond linting queries, managed
-databases can be created per test suite or even per test, providing a real,
-isolated PostgreSQL database for a test run, no cleanup required.
+This feature is under active development, and we're interested in supporting
+other use-cases. Beyond linting queries, you can use sqlc managed databases
+in your tests to quickly stand up a database per test suite or even per test,
+providing a real, isolated database for a test run. No cleanup required.
 
 Interested in trying out managed databases? Sign up [here](https://docs.google.com/forms/d/e/1FAIpQLSdxoMzJ7rKkBpuez-KyBcPNyckYV-5iMR--FRB7WnhvAmEvKg/viewform) or send us an email
 at <mailto:hello@sqlc.dev>.
 
 ## Configuring managed databases
 
-To configured a managed database, remove the `uri` key, replacing it with the
-`managed` key set to `true`. Set the `project` key to your project ID, obtained
-via the sqlc Dashboard.
+To configure `sqlc` to use a managed database, remove the `uri` key from your
+`database` configuration and replace it with the `managed` key set to `true`.
+Set the `project` key in your `cloud` configuration to the value of your
+project ID, obtained via the sqlc.dev Dashboard.
 
 ```yaml
 version: '2'
@@ -33,8 +36,8 @@ sql:
 
 ## Authentication
 
-You'll also need to create an access token and make it available via the
-`SQLC_AUTH_TOKEN` environment variable.
+`sqlc` expects to find a valid auth token in the value of the `SQLC_AUTH_TOKEN`
+environment variable. You can create an auth token via the sqlc.dev Dashboard.
 
 ```shell
 export SQLC_AUTH_TOKEN=sqlc_xxxxxxxx
@@ -42,10 +45,13 @@ export SQLC_AUTH_TOKEN=sqlc_xxxxxxxx
 
 ## Linting queries
 
-In managed mode, `sqlc vet` will create a database with the provided schema and
-use that database when running lint rules. If you don't currently have any
-rules, the [built-in sqlc/db-prepare] rule verifies each of your queries against
-the database by creating a prepared statement.
+With managed databases configured, `sqlc vet` will create a database with your
+package's schema and use that database when running lint rules that require a
+database connection, e.g. any [rule relying on `EXPLAIN ...` output](vet.md#rules-using-explain-output).
+
+If you don't yet have any vet rules, the [built-in sqlc/db-prepare rule](vet.md#sqlc-db-prepare)
+is a good place to start. It prepares each of your queries against the database
+to ensure the query is valid. Here's a minimal working configuration:
 
 ```yaml
 version: '2'
@@ -60,4 +66,3 @@ sql:
   rules:
   - sqlc/db-prepare
 ```
-
