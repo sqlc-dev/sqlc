@@ -56,6 +56,7 @@ code ever again.
    howto/embedding.md
 
    howto/vet.md
+   howto/managed-databases.md
    howto/ci-cd.md
    howto/upload.md
 
