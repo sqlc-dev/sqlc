@@ -145,7 +145,7 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 		return nil, err
 	}
 
-	if conf.Cloud.Project != "" && !e.NoRemote {
+	if conf.Cloud.Project != "" && e.Remote && !e.NoRemote {
 		return remoteGenerate(ctx, configPath, conf, dir, stderr)
 	}
 

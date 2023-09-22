@@ -1,5 +1,8 @@
 {
   "version": "1",
+  "cloud": {
+    "project": "01HAQMMECEYQYKFJN8MP16QC41"
+  },
   "packages": [
     {
       "name": "booktest",
@@ -8,7 +11,7 @@
       "queries": "postgresql/query.sql",
       "engine": "postgresql",
       "database": {
-        "uri": "postgresql://${PG_USER}:${PG_PASSWORD}@${PG_HOST}:${PG_PORT}/booktest"
+        "managed": true
       },
       "rules": [
         "sqlc/db-prepare"
