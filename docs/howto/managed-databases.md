@@ -13,7 +13,7 @@ in your tests to quickly stand up a database per test suite or even per test,
 providing a real, isolated database for a test run. No cleanup required.
 
 Interested in trying out managed databases? Sign up [here](https://docs.google.com/forms/d/e/1FAIpQLSdxoMzJ7rKkBpuez-KyBcPNyckYV-5iMR--FRB7WnhvAmEvKg/viewform) or send us an email
-at <mailto:hello@sqlc.dev>.
+at [hello@sqlc.dev](mailto:hello@sqlc.dev).
 
 ## Configuring managed databases
 
