@@ -35,12 +35,12 @@ func PostgreSQL(t *testing.T, migrations []string) string {
 
 	once.Do(func() {
 		if err := initClient(); err != nil {
-			t.Fatal(err)
+			t.Log(err)
 		}
 	})
 
 	if client == nil {
-		t.Fatalf("client init failed")
+		t.Skip("client init failed")
 	}
 
 	var seed []string
