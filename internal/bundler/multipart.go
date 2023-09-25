@@ -48,7 +48,7 @@ func readOutputs(dir string, output map[string]string) ([]*pb.File, error) {
 		}
 		files = append(files, &pb.File{
 			Name:     rel,
-			Contents: contents,
+			Contents: []byte(contents),
 		})
 	}
 	return files, nil
