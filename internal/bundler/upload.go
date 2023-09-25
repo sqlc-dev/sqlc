@@ -6,8 +6,9 @@ import (
 	"os"
 	"runtime"
 
+	"google.golang.org/protobuf/encoding/protojson"
+
 	"github.com/sqlc-dev/sqlc/internal/config"
-	"github.com/sqlc-dev/sqlc/internal/debug"
 	"github.com/sqlc-dev/sqlc/internal/info"
 	"github.com/sqlc-dev/sqlc/internal/quickdb"
 	pb "github.com/sqlc-dev/sqlc/internal/quickdb/v1"
@@ -72,7 +73,7 @@ func (up *Uploader) DumpRequestOut(ctx context.Context, result map[string]string
 	if err != nil {
 		return err
 	}
-	debug.Dump(req)
+	fmt.Println(protojson.Format(req))
 	return nil
 }
 
