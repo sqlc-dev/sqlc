@@ -11,7 +11,6 @@ import (
 type V1GenerateSettings struct {
 	Version   string              `json:"version" yaml:"version"`
 	Cloud     Cloud               `json:"cloud" yaml:"cloud"`
-	Project   Project             `json:"project" yaml:"project"`
 	Packages  []v1PackageSettings `json:"packages" yaml:"packages"`
 	Overrides []Override          `json:"overrides,omitempty" yaml:"overrides,omitempty"`
 	Rename    map[string]string   `json:"rename,omitempty" yaml:"rename,omitempty"`
@@ -132,7 +131,6 @@ func (c *V1GenerateSettings) ValidateGlobalOverrides() error {
 func (c *V1GenerateSettings) Translate() Config {
 	conf := Config{
 		Version: c.Version,
-		Project: c.Project,
 		Cloud:   c.Cloud,
 		Rules:   c.Rules,
 	}
