@@ -305,6 +305,9 @@ func usesBatch(queries []Query) bool {
 
 func checkNoTimesForMySQLCopyFrom(queries []Query) error {
 	for _, q := range queries {
+		if q.Cmd != metadata.CmdCopyFrom {
+			continue
+		}
 		for _, f := range q.Arg.CopyFromMySQLFields() {
 			if f.Type == "time.Time" {
 				return fmt.Errorf("values with a timezone are not yet supported")
