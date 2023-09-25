@@ -8,14 +8,6 @@
         "version": {
             "const": "2"
         },
-        "project": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "string"
-                }
-            }
-        },
         "cloud": {
             "type": "object",
             "properties": {

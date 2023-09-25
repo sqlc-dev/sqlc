@@ -56,16 +56,11 @@ const (
 
 type Config struct {
 	Version string   `json:"version" yaml:"version"`
-	Project Project  `json:"project" yaml:"project"`
 	Cloud   Cloud    `json:"cloud" yaml:"cloud"`
 	SQL     []SQL    `json:"sql" yaml:"sql"`
 	Gen     Gen      `json:"overrides,omitempty" yaml:"overrides"`
 	Plugins []Plugin `json:"plugins" yaml:"plugins"`
 	Rules   []Rule   `json:"rules" yaml:"rules"`
-}
-
-type Project struct {
-	ID string `json:"id" yaml:"id"`
 }
 
 type Database struct {
