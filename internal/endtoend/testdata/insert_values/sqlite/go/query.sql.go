@@ -10,6 +10,27 @@ import (
 	"database/sql"
 )
 
+const insertMultipleValues = `-- name: InsertMultipleValues :exec
+INSERT INTO foo (a, b) VALUES (?, ?), (?, ?)
+`
+
+type InsertMultipleValuesParams struct {
+	A   sql.NullString
+	B   sql.NullInt64
+	A_2 sql.NullString
+	B_2 sql.NullInt64
+}
+
+func (q *Queries) InsertMultipleValues(ctx context.Context, arg InsertMultipleValuesParams) error {
+	_, err := q.db.ExecContext(ctx, insertMultipleValues,
+		arg.A,
+		arg.B,
+		arg.A_2,
+		arg.B_2,
+	)
+	return err
+}
+
 const insertValues = `-- name: InsertValues :exec
 INSERT INTO foo (a, b) VALUES (?, ?)
 `

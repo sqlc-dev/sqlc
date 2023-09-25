@@ -882,25 +882,39 @@ func (c *cc) convertInsert_stmtContext(n *parser.Insert_stmtContext) ast.Node {
 			insert.SelectStmt = ss
 		}
 	} else {
+		var valuesLists ast.List
+		var values *ast.List
+		for _, cn := range n.GetChildren() {
+			switch cn := cn.(type) {
+			case antlr.TerminalNode:
+				switch cn.GetSymbol().GetTokenType() {
+				case parser.SQLiteParserVALUES_:
+					values = &ast.List{}
+				case parser.SQLiteParserOPEN_PAR:
+					if values != nil {
+						values = &ast.List{}
+					}
+				case parser.SQLiteParserCOMMA:
+				case parser.SQLiteParserCLOSE_PAR:
+					if values != nil {
+						valuesLists.Items = append(valuesLists.Items, values)
+					}
+				}
+			case parser.IExprContext:
+				if values != nil {
+					values.Items = append(values.Items, c.convert(cn))
+				}
+			}
+		}
+
 		insert.SelectStmt = &ast.SelectStmt{
 			FromClause:  &ast.List{},
 			TargetList:  &ast.List{},
-			ValuesLists: c.convertExprLists(n.AllExpr()),
+			ValuesLists: &valuesLists,
 		}
 	}
 
 	return insert
-}
-
-func (c *cc) convertExprLists(lists []parser.IExprContext) *ast.List {
-	list := &ast.List{Items: []ast.Node{}}
-	n := len(lists)
-	inner := &ast.List{Items: []ast.Node{}}
-	for i := 0; i < n; i++ {
-		inner.Items = append(inner.Items, c.convert(lists[i]))
-	}
-	list.Items = append(list.Items, inner)
-	return list
 }
 
 func (c *cc) convertColumnNames(cols []parser.IColumn_nameContext) *ast.List {
