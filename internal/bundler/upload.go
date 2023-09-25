@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"runtime"
 
 	"google.golang.org/protobuf/encoding/protojson"
 
@@ -49,12 +48,6 @@ func (up *Uploader) Validate() error {
 }
 
 func (up *Uploader) buildRequest(ctx context.Context, result map[string]string) (*pb.UploadArchiveRequest, error) {
-	req := &pb.UploadArchiveRequest{
-		SqlcVersion: info.Version,
-		GoVersion:   runtime.Version(),
-		Goos:        runtime.GOOS,
-		Goarch:      runtime.GOARCH,
-	}
 	ins, err := readInputs(up.configPath, up.config)
 	if err != nil {
 		return nil, err
@@ -63,9 +56,11 @@ func (up *Uploader) buildRequest(ctx context.Context, result map[string]string) 
 	if err != nil {
 		return nil, err
 	}
-	req.Inputs = ins
-	req.Outputs = outs
-	return req, nil
+	return &pb.UploadArchiveRequest{
+		SqlcVersion: info.Version,
+		Inputs:      ins,
+		Outputs:     outs,
+	}, nil
 }
 
 func (up *Uploader) DumpRequestOut(ctx context.Context, result map[string]string) error {

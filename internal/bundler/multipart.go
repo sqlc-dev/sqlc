@@ -32,9 +32,8 @@ func readInputs(file string, conf *config.Config) ([]*pb.File, error) {
 			return nil, err
 		}
 		files = append(files, &pb.File{
-			Name:      file,
-			MediaType: "application/octet-stream",
-			Contents:  contents,
+			Name:     file,
+			Contents: contents,
 		})
 	}
 	return files, nil
@@ -48,9 +47,8 @@ func readOutputs(dir string, output map[string]string) ([]*pb.File, error) {
 			return nil, err
 		}
 		files = append(files, &pb.File{
-			Name:      rel,
-			MediaType: "application/octet-stream",
-			Contents:  []byte(contents),
+			Name:     rel,
+			Contents: []byte(contents),
 		})
 	}
 	return files, nil
