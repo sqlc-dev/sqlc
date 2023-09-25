@@ -36,7 +36,7 @@ You can see what's included when uploading your project by using using the
 sqlc upload --dry-run
 ```
 
-The output will be request sent by `sqlc`.
+The output is the request `sqlc` would have sent without the `--dry-run` flag.
 
 ## Upload
 
