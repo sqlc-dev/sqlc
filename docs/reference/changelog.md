@@ -1,6 +1,70 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.22.0](https://github.com/sqlc-dev/sqlc/releases/tag/1.22.0)
+Released 2023-09-26
+
+### Release notes
+
+#### Managed databses for `sqlc vet`
+
+If you're using [sqlc vet](../howto/vet.md) to write rules that require access to a running
+database, `sqlc` can now start and manage that database for you.
+
+This feature relies on configuration obtained via the sqlc.dev Dashboard. Ifyou're interested
+in early access you can [fill out this form](https://docs.google.com/forms/d/e/1FAIpQLSdxoMzJ7rKkBpuez-KyBcPNyckYV-5iMR--FRB7WnhvAmEvKg/viewform)
+or send us an email at [hello@sqlc.dev](mailto:hello@sqlc.dev).
+
+Read more in the [managed databases](../howto/managed-databases.md) documentation.
+
+### Changes
+
+#### Bug Fixes
+
+- (codegen/golang) Refactor imports code to match templates (#2709)
+- (codegen/golang) Support name type (#2715)
+- (wasm) Move Runner struct to shared file (#2725)
+- (engine/sqlite) Fix grammer to avoid missing join_constraint (#2732)
+- (convert) Support YAML anchors in plugin options (#2733)
+- (mysql) Disallow time.Time in mysql :copyfrom queries, not all queries (#2768)
+- (engine/sqlite) Fix convert process for VALUES (#2737)
+
+#### Documentation
+
+- Clarify nullable override behavior (#2753)
+- Add managed databases to sidebar (#2764)
+
+#### Features
+
+- (config) Enables the configuration of copyfrom.go similar to quierer and friends (#2727)
+- (vet) Run rules against a managed database (#2751)
+- (upload) Point upload command at new endpoint (#2772)
+
+#### Miscellaneous Tasks
+
+- (endtoend) Skip tests missing secrets (#2763)
+- Skip certain tests on PRs (#2769)
+
+#### Testing
+
+- (endtoend) Verify all schemas in endtoend (#2744)
+- (examples) Use a hosted database for example testing (#2749)
+- (endtoend) Pull region from environment (#2750)
+
+#### Build
+
+- (deps) Bump golang from 1.21.0 to 1.21.1 (#2711)
+- (deps) Bump google.golang.org/grpc from 1.57.0 to 1.58.1 (#2743)
+- (deps) Bump wasmtime-go from v12 to v13 (#2756)
+- (windows) Downgrade to mingw 11.2.0 (#2757)
+- (deps) Bump urllib3 from 2.0.4 to 2.0.5 in /docs (#2747)
+- (deps) Bump google.golang.org/grpc from 1.58.1 to 1.58.2 (#2758)
+
+#### Ci
+
+- Bump go version to latest in ci workflows (#2722)
+
+
 ## [1.21.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.21.0)
 Released 2023-09-06
 
