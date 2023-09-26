@@ -39,6 +39,7 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 	case *ast.CallStmt:
 	case *ast.SelectStmt:
 	case *ast.DeleteStmt:
+	case *ast.DoStmt:
 	case *ast.InsertStmt:
 		if err := validate.InsertStmt(n); err != nil {
 			return nil, err
