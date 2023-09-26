@@ -31,7 +31,7 @@ release = '1.22.0'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'recommonmark',
+    'myst_parser',
     'sphinx_rtd_theme',
     "sphinx_favicon",
 ]
@@ -70,4 +70,9 @@ def setup(app):
 
 favicons = [
     "favicon.png",
+]
+
+myst_enable_extensions = [
+    "attrs_inline",
+    "colon_fence",
 ]

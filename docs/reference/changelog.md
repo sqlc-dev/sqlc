@@ -1,7 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [1.22.0](https://github.com/sqlc-dev/sqlc/releases/tag/1.22.0)
+
+(v1-22-0)=
+## [1.22.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.22.0)
 Released 2023-09-26
 
 ### Release notes
@@ -74,7 +76,7 @@ Read more in the [managed databases](../howto/managed-databases.md) documentatio
 - Bump go version to latest in ci workflows (#2722)
 
 
-
+(v1-21-0)=
 ## [1.21.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.21.0)
 Released 2023-09-06
 
@@ -205,7 +207,7 @@ environment, set to the version of the `sqlc` executable invoking it.
 - (deps) Bump pytz from 2023.3 to 2023.3.post1 in /docs (#2695)
 - (devenv) Bump go from 1.20.7 to 1.21.0 (#2702)
 
-
+(v1-20-0)=
 ## [1.20.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.20.0)
 Released 2023-07-31
 
