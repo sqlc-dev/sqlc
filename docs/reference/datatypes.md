@@ -199,3 +199,47 @@ type Book struct {
     Data *dto.BookData
 }
 ```
+
+## Geometry
+
+### PostGIS
+
+sqlc can be configured to use the [geom](https://github.com/twpayne/go-geom)
+package for working with PostGIS geometry types.
+
+```sql
+-- Multipolygons in British National Grid (epsg:27700)
+create table shapes(
+  id serial,
+  name varchar,
+  geom geometry(Multipolygon, 27700)
+);
+
+-- name: GetShapes :many
+SELECT * FROM shapes;
+```
+
+```json
+{
+  "version": "1",
+  "packages": [
+    {
+      "path": "db",
+      "engine": "postgresql",
+      "schema": "query.sql",
+      "queries": "query.sql"
+    }
+  ],
+  "overrides": [
+    {
+      "db_type": "geometry",
+      "go_type": "github.com/twpayne/go-geom.MultiPolygon"
+  	},
+  	{
+      "db_type": "geometry",
+  	  "go_type": "github.com/twpayne/go-geom.MultiPolygon",
+  	  "null": true
+  	}
+  ]
+}
+```
