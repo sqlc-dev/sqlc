@@ -115,6 +115,8 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 		if isUnion {
 			return c.outputColumns(qc, n.Larg)
 		}
+	case *ast.DoStmt:
+		targets = &ast.List{}
 	case *ast.CallStmt:
 		targets = &ast.List{}
 	case *ast.TruncateStmt, *ast.RefreshMatViewStmt, *ast.NotifyStmt, *ast.ListenStmt:
@@ -509,6 +511,8 @@ func (c *Compiler) sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, erro
 		list = &ast.List{
 			Items: append(n.FromClause.Items, n.Relations.Items...),
 		}
+	case *ast.DoStmt:
+		list = &ast.List{}
 	case *ast.CallStmt:
 		list = &ast.List{}
 	case *ast.NotifyStmt, *ast.ListenStmt:
