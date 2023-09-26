@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const doStuff = `-- name: DoStuff :one
+const doStuff = `-- name: DoStuff :exec
 DO $$
     BEGIN
         ALTER TABLE authors
@@ -18,12 +18,7 @@ DO $$
 $$
 `
 
-type DoStuffRow struct {
-}
-
-func (q *Queries) DoStuff(ctx context.Context) (DoStuffRow, error) {
-	row := q.db.QueryRowContext(ctx, doStuff)
-	var i DoStuffRow
-	err := row.Scan()
-	return i, err
+func (q *Queries) DoStuff(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, doStuff)
+	return err
 }
