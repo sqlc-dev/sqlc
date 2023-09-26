@@ -10,7 +10,7 @@ import (
 	"database/sql"
 	"strings"
 
-	"github.com/sqlc-dev/sqlc-testdata/mysql"
+	"github.com/Dionid/sqlc-testdata/mysql"
 )
 
 const funcNullable = `-- name: FuncNullable :many

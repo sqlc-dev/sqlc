@@ -1,6 +1,6 @@
 package postgresql
 
-import "github.com/sqlc-dev/sqlc/internal/sql/catalog"
+import "github.com/Dionid/sqlc/internal/sql/catalog"
 
 // toPointer converts an int to a pointer without a temporary
 // variable at the call-site, and is used by the generated schemas

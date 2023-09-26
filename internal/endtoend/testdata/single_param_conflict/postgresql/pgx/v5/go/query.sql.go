@@ -59,7 +59,7 @@ WHERE   id = $1
 RETURNING id
 `
 
-// https://github.com/sqlc-dev/sqlc/issues/1235
+// https://github.com/Dionid/sqlc/issues/1235
 func (q *Queries) SetDefaultName(ctx context.Context, id int64) (int64, error) {
 	row := q.db.QueryRow(ctx, setDefaultName, id)
 	err := row.Scan(&id)

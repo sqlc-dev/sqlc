@@ -10,7 +10,7 @@ import (
 
 	"google.golang.org/protobuf/proto"
 
-	"github.com/sqlc-dev/sqlc/internal/plugin"
+	"github.com/Dionid/sqlc/internal/plugin"
 )
 
 type Runner struct {

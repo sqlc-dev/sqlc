@@ -8,9 +8,9 @@ import (
 
 	"github.com/antlr/antlr4/runtime/Go/antlr/v4"
 
-	"github.com/sqlc-dev/sqlc/internal/debug"
-	"github.com/sqlc-dev/sqlc/internal/engine/sqlite/parser"
-	"github.com/sqlc-dev/sqlc/internal/sql/ast"
+	"github.com/Dionid/sqlc/internal/debug"
+	"github.com/Dionid/sqlc/internal/engine/sqlite/parser"
+	"github.com/Dionid/sqlc/internal/sql/ast"
 )
 
 type cc struct {

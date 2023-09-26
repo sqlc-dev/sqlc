@@ -5,10 +5,10 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/sqlc-dev/sqlc/internal/codegen/sdk"
-	"github.com/sqlc-dev/sqlc/internal/inflection"
-	"github.com/sqlc-dev/sqlc/internal/metadata"
-	"github.com/sqlc-dev/sqlc/internal/plugin"
+	"github.com/Dionid/sqlc/internal/codegen/sdk"
+	"github.com/Dionid/sqlc/internal/inflection"
+	"github.com/Dionid/sqlc/internal/metadata"
+	"github.com/Dionid/sqlc/internal/plugin"
 )
 
 func buildEnums(req *plugin.CodeGenRequest) []Enum {

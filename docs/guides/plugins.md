@@ -20,7 +20,7 @@ version: '2'
 plugins:
 - name: greeter
   wasm:
-    url: https://github.com/sqlc-dev/sqlc-gen-greeter/releases/download/v0.1.0/sqlc-gen-greeter.wasm
+    url: https://github.com/Dionid/sqlc-gen-greeter/releases/download/v0.1.0/sqlc-gen-greeter.wasm
     sha256: afc486dac2068d741d7a4110146559d12a013fd0286f42a2fc7dcd802424ad07
 sql:
 - schema: schema.sql
@@ -32,9 +32,9 @@ sql:
 ```
 
 For a complete working example see the following files:
-- [sqlc-gen-greeter](https://github.com/sqlc-dev/sqlc-gen-greeter)
+- [sqlc-gen-greeter](https://github.com/Dionid/sqlc-gen-greeter)
   - A WASM plugin (written in Rust) that outputs a friendly message
-- [wasm_plugin_sqlc_gen_greeter](https://github.com/sqlc-dev/sqlc/tree/main/internal/endtoend/testdata/wasm_plugin_sqlc_gen_greeter)
+- [wasm_plugin_sqlc_gen_greeter](https://github.com/Dionid/sqlc/tree/main/internal/endtoend/testdata/wasm_plugin_sqlc_gen_greeter)
   - An example project showing how to use a WASM plugin
 
 ## Process plugins
@@ -66,9 +66,9 @@ sql:
 ```
 
 For a complete working example see the following files:
-- [sqlc-gen-json](https://github.com/sqlc-dev/sqlc/tree/main/cmd/sqlc-gen-json)
+- [sqlc-gen-json](https://github.com/Dionid/sqlc/tree/main/cmd/sqlc-gen-json)
   - A process-based plugin that serializes the CodeGenRequest to JSON
-- [process_plugin_sqlc_gen_json](https://github.com/sqlc-dev/sqlc/tree/main/internal/endtoend/testdata/process_plugin_sqlc_gen_json)
+- [process_plugin_sqlc_gen_json](https://github.com/Dionid/sqlc/tree/main/internal/endtoend/testdata/process_plugin_sqlc_gen_json)
   - An example project showing how to use a process-based plugin
 
 ## Environment variables
@@ -92,7 +92,7 @@ plugins:
   env:
   - PATH
   wasm:
-    url: https://github.com/sqlc-dev/sqlc-gen-test/releases/download/v0.1.0/sqlc-gen-test.wasm
+    url: https://github.com/Dionid/sqlc-gen-test/releases/download/v0.1.0/sqlc-gen-test.wasm
     sha256: 138220eae508d4b65a5a8cea555edd155eb2290daf576b7a8b96949acfeb3790
 ```
 

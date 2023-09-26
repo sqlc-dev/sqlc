@@ -3,8 +3,8 @@ package golang
 import (
 	"strings"
 
-	"github.com/sqlc-dev/sqlc/internal/codegen/sdk"
-	"github.com/sqlc-dev/sqlc/internal/plugin"
+	"github.com/Dionid/sqlc/internal/codegen/sdk"
+	"github.com/Dionid/sqlc/internal/plugin"
 )
 
 func addExtraGoStructTags(tags map[string]string, req *plugin.CodeGenRequest, col *plugin.Column) {

@@ -1,7 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [1.22.0](https://github.com/sqlc-dev/sqlc/releases/tag/1.22.0)
+## [1.22.0](https://github.com/Dionid/sqlc/releases/tag/1.22.0)
 Released 2023-09-26
 
 ### Release notes
@@ -70,7 +70,7 @@ Read more in the [managed databases](../howto/managed-databases.md) documentatio
 - Bump go version to latest in ci workflows (#2722)
 
 
-## [1.21.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.21.0)
+## [1.21.0](https://github.com/Dionid/sqlc/releases/tag/v1.21.0)
 Released 2023-09-06
 
 ### Release notes
@@ -114,7 +114,7 @@ plugins:
   env:
   - PATH
   wasm:
-    url: https://github.com/sqlc-dev/sqlc-gen-test/releases/download/v0.1.0/sqlc-gen-test.wasm
+    url: https://github.com/Dionid/sqlc-gen-test/releases/download/v0.1.0/sqlc-gen-test.wasm
     sha256: 138220eae508d4b65a5a8cea555edd155eb2290daf576b7a8b96949acfeb3790
 ```
 
@@ -201,24 +201,24 @@ environment, set to the version of the `sqlc` executable invoking it.
 - (devenv) Bump go from 1.20.7 to 1.21.0 (#2702)
 
 
-## [1.20.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.20.0)
+## [1.20.0](https://github.com/Dionid/sqlc/releases/tag/v1.20.0)
 Released 2023-07-31
 
 ### Release notes
 
 #### `kyleconroy/sqlc` is now `sqlc-dev/sqlc`
 
-We've completed our migration to the [sqlc-dev/sqlc](https://github.com/sqlc-dev/sqlc) repository. All existing links and installation instructions will continue to work. If you're using the `go` tool to install `sqlc`, you'll need to use the new import path to get v1.20.0 (and all future versions).
+We've completed our migration to the [sqlc-dev/sqlc](https://github.com/Dionid/sqlc) repository. All existing links and installation instructions will continue to work. If you're using the `go` tool to install `sqlc`, you'll need to use the new import path to get v1.20.0 (and all future versions).
 
 ```sh
 # INCORRECT: old import path
 go install github.com/kyleconroy/sqlc/cmd/sqlc@v1.20.0
 
 # CORRECT: new import path
-go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.20.0
+go install github.com/Dionid/sqlc/cmd/sqlc@v1.20.0
 ```
 
-We designed the upgrade process to be as smooth as possible. If you run into any issues, please [file a bug report](https://github.com/sqlc-dev/sqlc/issues/new?assignees=&labels=bug%2Ctriage&projects=&template=BUG_REPORT.yml) via GitHub.
+We designed the upgrade process to be as smooth as possible. If you run into any issues, please [file a bug report](https://github.com/Dionid/sqlc/issues/new?assignees=&labels=bug%2Ctriage&projects=&template=BUG_REPORT.yml) via GitHub.
 
 #### Use `EXPLAIN ...` output in lint rules
 
@@ -437,7 +437,7 @@ A slew of fixes landed for our SQLite implementation, bringing it closer to pari
 - (deps) Bump pyparsing from 3.1.0 to 3.1.1 in /docs (#2547)
 
 
-## [1.19.1](https://github.com/sqlc-dev/sqlc/releases/tag/v1.19.1)
+## [1.19.1](https://github.com/Dionid/sqlc/releases/tag/v1.19.1)
 Released 2023-07-13
 
 ### Bug Fixes
@@ -457,7 +457,7 @@ Released 2023-07-13
 - Pin Go to 1.20.6 (#2441)
 - (deps) Bump github.com/jackc/pgx/v5 from 5.4.1 to 5.4.2 (#2436)
 
-## [1.19.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.19.0)
+## [1.19.0](https://github.com/Dionid/sqlc/releases/tag/v1.19.0)
 Released 2023-07-06
 
 ### Release notes
@@ -535,7 +535,7 @@ sql:
 ```
 
 To see this in action, check out the [authors
-example](https://github.com/sqlc-dev/sqlc/blob/main/examples/authors/sqlc.yaml).
+example](https://github.com/Dionid/sqlc/blob/main/examples/authors/sqlc.yaml).
 
 Please note that `sqlc` does not manage or migrate your database. Use your
 migration tool of choice to create the necessary database tables and objects
@@ -555,8 +555,8 @@ more information.
 
 #### Simplified plugin development
 
-The [sqlc-gen-kotlin](https://github.com/sqlc-dev/sqlc-gen-kotlin) and
-[sqlc-gen-python](https://github.com/sqlc-dev/sqlc-gen-python) plugins have been
+The [sqlc-gen-kotlin](https://github.com/Dionid/sqlc-gen-kotlin) and
+[sqlc-gen-python](https://github.com/Dionid/sqlc-gen-python) plugins have been
 updated use the upcoming [WASI](https://wasi.dev/) support in [Go
 1.21](https://tip.golang.org/doc/go1.21#wasip1). Building these plugins no
 longer requires [TinyGo](https://tinygo.org/).
@@ -671,7 +671,7 @@ longer requires [TinyGo](https://tinygo.org/).
 - Fixed sqlite column type override (#1986)
 
 
-## [1.18.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.18.0)
+## [1.18.0](https://github.com/Dionid/sqlc/releases/tag/v1.18.0)
 Released 2023-04-27
 
 ### Release notes
@@ -930,14 +930,14 @@ genreated method will use a argument struct.
 
 - Upgrade to wasmtime v8.0.0 (#2222)
 
-## [1.17.2](https://github.com/sqlc-dev/sqlc/releases/tag/v1.17.2)
+## [1.17.2](https://github.com/Dionid/sqlc/releases/tag/v1.17.2)
 Released 2023-02-22
 
 ### Bug Fixes
 
 - Fix build on Windows (#2102)
 
-## [1.17.1](https://github.com/sqlc-dev/sqlc/releases/tag/v1.17.1)
+## [1.17.1](https://github.com/Dionid/sqlc/releases/tag/v1.17.1)
 Released 2023-02-22
 
 ### Bug Fixes
@@ -954,7 +954,7 @@ Released 2023-02-22
 
 - (deps) Bump golang from 1.20.0 to 1.20.1 (#2082)
 
-## [1.17.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.17.0)
+## [1.17.0](https://github.com/Dionid/sqlc/releases/tag/v1.17.0)
 Released 2023-02-13
 
 ### Bug Fixes
@@ -1030,7 +1030,7 @@ Released 2023-02-13
 
 - Upgrade to wasmtime 5.0.0 (#2065)
 
-## [1.16.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.16.0)
+## [1.16.0](https://github.com/Dionid/sqlc/releases/tag/v1.16.0)
 Released 2022-11-09
 
 
@@ -1102,7 +1102,7 @@ Released 2022-11-09
 - Port all Python tests to sqlc-gen-python (#1907)
 - Upgrade to sqlc-gen-python v1.0.0 (#1932)
 
-## [1.15.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.15.0)
+## [1.15.0](https://github.com/Dionid/sqlc/releases/tag/v1.15.0)
 Released 2022-08-07
 
 ### Bug Fixes
@@ -1151,7 +1151,7 @@ Released 2022-08-07
 - (wasm) Change default cache location (#1709)
 - (wasm) Change the SHA-256 config key (#1710)
 
-## [1.14.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.14.0)
+## [1.14.0](https://github.com/Dionid/sqlc/releases/tag/v1.14.0)
 Released 2022-06-09
 
 ### Bug Fixes
@@ -1198,7 +1198,7 @@ Released 2022-06-09
 - (sql/catalog) Improve Readability (#1595)
 - Add basic fuzzing for config / overrides (#1500)
 
-## [1.13.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.13.0)
+## [1.13.0](https://github.com/Dionid/sqlc/releases/tag/v1.13.0)
 Released 2022-03-31
 
 ### Bug Fixes
@@ -1236,7 +1236,7 @@ Released 2022-03-31
 
 - Add basic fuzzing for config / overrides (#1500)
 
-## [1.12.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.12.0)
+## [1.12.0](https://github.com/Dionid/sqlc/releases/tag/v1.12.0)
 Released 2022-02-05
 
 ### Bug
@@ -1279,7 +1279,7 @@ Released 2022-02-05
 - Bump github.com/google/go-cmp from 0.5.6 to 0.5.7 (#1382)
 - Format all Go code (#1387)
 
-## [1.11.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.11.0)
+## [1.11.0](https://github.com/Dionid/sqlc/releases/tag/v1.11.0)
 Released 2021-11-24
 
 
@@ -1344,7 +1344,7 @@ Released 2021-11-24
 
 - Bump version to v1.11.0
 
-## [1.10.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.10.0)
+## [1.10.0](https://github.com/Dionid/sqlc/releases/tag/v1.10.0)
 Released 2021-09-07
 
 
@@ -1388,7 +1388,7 @@ Released 2021-09-07
 
 - Output NullUUID when necessary (#1137)
 
-## [1.9.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.9.0)
+## [1.9.0](https://github.com/Dionid/sqlc/releases/tag/v1.9.0)
 Released 2021-08-13
 
 
@@ -1409,7 +1409,7 @@ Released 2021-08-13
 - Add tests for COALESCE behavior (#1112)
 - Handle subqueries in SELECT statements (#1113)
 
-## [1.8.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.8.0)
+## [1.8.0](https://github.com/Dionid/sqlc/releases/tag/v1.8.0)
 Released 2021-05-03
 
 
@@ -1468,7 +1468,7 @@ Released 2021-05-03
 
 - Only run tests once (#924)
 
-## [1.7.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.7.0)
+## [1.7.0](https://github.com/Dionid/sqlc/releases/tag/v1.7.0)
 Released 2021-02-28
 
 
@@ -1554,7 +1554,7 @@ Released 2021-02-28
 
 - Add enum values for SetOperation
 
-## [1.6.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.6.0)
+## [1.6.0](https://github.com/Dionid/sqlc/releases/tag/v1.6.0)
 Released 2020-11-23
 
 
@@ -1645,7 +1645,7 @@ Released 2020-11-23
 
 - Add support for variadic functions (#798)
 
-## [1.5.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.5.0)
+## [1.5.0](https://github.com/Dionid/sqlc/releases/tag/v1.5.0)
 Released 2020-08-05
 
 
@@ -1748,7 +1748,7 @@ Released 2020-08-05
 
 - Migrate to equinox-io/setup-release-tool (#614)
 
-## [1.4.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.4.0)
+## [1.4.0](https://github.com/Dionid/sqlc/releases/tag/v1.4.0)
 Released 2020-06-17
 
 
@@ -1838,7 +1838,7 @@ Released 2020-06-17
 
 - Move query validation to separate package (#498)
 
-## [1.3.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.3.0)
+## [1.3.0](https://github.com/Dionid/sqlc/releases/tag/v1.3.0)
 Released 2020-05-12
 
 
@@ -1883,7 +1883,7 @@ Released 2020-05-12
 
 - Fix panic walking CreateTableAsStmt (#475)
 
-## [1.2.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.2.0)
+## [1.2.0](https://github.com/Dionid/sqlc/releases/tag/v1.2.0)
 Released 2020-04-07
 
 
@@ -1913,7 +1913,7 @@ Released 2020-04-07
 
 - Generate correct types for SELECT EXISTS (#411)
 
-## [1.1.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.1.0)
+## [1.1.0](https://github.com/Dionid/sqlc/releases/tag/v1.1.0)
 Released 2020-03-17
 
 
@@ -2003,7 +2003,7 @@ Released 2020-03-17
 
 - Add experimental parser for SQLite
 
-## [1.0.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.0.0)
+## [1.0.0](https://github.com/Dionid/sqlc/releases/tag/v1.0.0)
 Released 2020-02-18
 
 
@@ -2090,7 +2090,7 @@ Released 2020-02-18
 - Attach range vars to insert params (#342)
 - Remove dead code (#343)
 
-## [0.1.0](https://github.com/sqlc-dev/sqlc/releases/tag/v0.1.0)
+## [0.1.0](https://github.com/Dionid/sqlc/releases/tag/v0.1.0)
 Released 2020-01-07
 
 

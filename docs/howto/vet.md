@@ -191,7 +191,7 @@ sql:
 ```
 
 To see this in action, check out the [authors
-example](https://github.com/sqlc-dev/sqlc/blob/main/examples/authors/sqlc.yaml).
+example](https://github.com/Dionid/sqlc/blob/main/examples/authors/sqlc.yaml).
 
 Please note that `sqlc` does not manage or migrate your database. Use your
 migration tool of choice to create the necessary database tables and objects

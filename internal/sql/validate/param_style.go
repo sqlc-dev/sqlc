@@ -1,10 +1,10 @@
 package validate
 
 import (
-	"github.com/sqlc-dev/sqlc/internal/sql/ast"
-	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
-	"github.com/sqlc-dev/sqlc/internal/sql/named"
-	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
+	"github.com/Dionid/sqlc/internal/sql/ast"
+	"github.com/Dionid/sqlc/internal/sql/astutils"
+	"github.com/Dionid/sqlc/internal/sql/named"
+	"github.com/Dionid/sqlc/internal/sql/sqlerr"
 )
 
 // A query can use one (and only one) of the following formats:

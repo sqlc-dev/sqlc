@@ -65,7 +65,7 @@ version: '2'
 plugins:
 - name: py
   wasm:
-    url: https://github.com/sqlc-dev/sqlc-gen-python/releases/download/v0.16.0-alpha/sqlc-gen-python.wasm
+    url: https://github.com/Dionid/sqlc-gen-python/releases/download/v0.16.0-alpha/sqlc-gen-python.wasm
     sha256: 428476c7408fd4c032da4ec74e8a7344f4fa75e0f98a5a3302f238283b9b95f2
 sql:
 - schema: "schema.sql"
@@ -176,7 +176,7 @@ The `gen` mapping supports the following keys:
 See [Overriding types](../howto/overrides.md) for in-depth guide to using type overrides. Each mapping of the `overrides` collection has the following keys:
 
 - `db_type`:
-  - The PostgreSQL or MySQL type to override. Find the full list of supported types in [postgresql_type.go](https://github.com/sqlc-dev/sqlc/blob/main/internal/codegen/golang/postgresql_type.go#L12) or [mysql_type.go](https://github.com/sqlc-dev/sqlc/blob/main/internal/codegen/golang/mysql_type.go#L12). Note that for Postgres you must use the pg_catalog prefixed names where available. Can't be used if the `column` key is defined.
+  - The PostgreSQL or MySQL type to override. Find the full list of supported types in [postgresql_type.go](https://github.com/Dionid/sqlc/blob/main/internal/codegen/golang/postgresql_type.go#L12) or [mysql_type.go](https://github.com/Dionid/sqlc/blob/main/internal/codegen/golang/mysql_type.go#L12). Note that for Postgres you must use the pg_catalog prefixed names where available. Can't be used if the `column` key is defined.
 - `column`:
   - In case the type overriding should be done on specific a column of a table instead of a type. `column` should be of the form `table.column` but you can be even more specific by specifying `schema.table.column` or `catalog.schema.table.column`. Can't be used if the `db_type` key is defined.
 - `go_type`:
@@ -202,7 +202,7 @@ For more complicated import paths, the `go_type` can also be an object with the 
 
 #### kotlin
 
-> Removed in v1.17.0 and replaced by the [sqlc-gen-kotlin](https://github.com/sqlc-dev/sqlc-gen-kotlin) plugin. Follow the [migration guide](../guides/migrating-to-sqlc-gen-kotlin) to switch.
+> Removed in v1.17.0 and replaced by the [sqlc-gen-kotlin](https://github.com/Dionid/sqlc-gen-kotlin) plugin. Follow the [migration guide](../guides/migrating-to-sqlc-gen-kotlin) to switch.
 
 - `package`:
   - The package name to use for the generated code.
@@ -213,7 +213,7 @@ For more complicated import paths, the `go_type` can also be an object with the 
 
 #### python
 
-> Removed in v1.17.0 and replaced by the [sqlc-gen-python](https://github.com/sqlc-dev/sqlc-gen-python) plugin. Follow the [migration guide](../guides/migrating-to-sqlc-gen-python) to switch.
+> Removed in v1.17.0 and replaced by the [sqlc-gen-python](https://github.com/Dionid/sqlc-gen-python) plugin. Follow the [migration guide](../guides/migrating-to-sqlc-gen-python) to switch.
 
 - `package`:
   - The package name to use for the generated code.
@@ -259,7 +259,7 @@ version: "2"
 plugins:
 - name: "py"
   wasm: 
-    url: "https://github.com/sqlc-dev/sqlc-gen-python/releases/download/v0.16.0-alpha/sqlc-gen-python.wasm"
+    url: "https://github.com/Dionid/sqlc-gen-python/releases/download/v0.16.0-alpha/sqlc-gen-python.wasm"
     sha256: "428476c7408fd4c032da4ec74e8a7344f4fa75e0f98a5a3302f238283b9b95f2"
 - name: "js"
   env:
@@ -483,7 +483,7 @@ overrides:
 Each override document has the following keys:
 
 - `db_type`:
-  - The PostgreSQL or MySQL type to override. Find the full list of supported types in [postgresql_type.go](https://github.com/sqlc-dev/sqlc/blob/main/internal/codegen/golang/postgresql_type.go#L12) or [mysql_type.go](https://github.com/sqlc-dev/sqlc/blob/main/internal/codegen/golang/mysql_type.go#L12). Note that for Postgres you must use the pg_catalog prefixed names where available.
+  - The PostgreSQL or MySQL type to override. Find the full list of supported types in [postgresql_type.go](https://github.com/Dionid/sqlc/blob/main/internal/codegen/golang/postgresql_type.go#L12) or [mysql_type.go](https://github.com/Dionid/sqlc/blob/main/internal/codegen/golang/mysql_type.go#L12). Note that for Postgres you must use the pg_catalog prefixed names where available.
 - `go_type`:
   - A fully qualified name to a Go type to use in the generated code.
 - `go_struct_tag`:

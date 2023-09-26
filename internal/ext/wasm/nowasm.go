@@ -6,7 +6,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/sqlc-dev/sqlc/internal/plugin"
+	"github.com/Dionid/sqlc/internal/plugin"
 )
 
 func (r *Runner) Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {

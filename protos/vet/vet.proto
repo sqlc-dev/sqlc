@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package vet;
 
-option go_package = "github.com/sqlc-dev/sqlc/internal/vet";
+option go_package = "github.com/Dionid/sqlc/internal/vet";
 
 message Parameter {
   int32 number = 1 [json_name = "number"];

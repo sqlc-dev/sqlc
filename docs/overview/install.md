@@ -19,13 +19,13 @@ sudo snap install sqlc
 ### Go >= 1.17:
 
 ```
-go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+go install github.com/Dionid/sqlc/cmd/sqlc@latest
 ```
 
 ### Go < 1.17:
 
 ```
-go get github.com/sqlc-dev/sqlc/cmd/sqlc
+go get github.com/Dionid/sqlc/cmd/sqlc
 ```
 
 ## Docker

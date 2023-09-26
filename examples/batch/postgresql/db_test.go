@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Dionid/sqlc/internal/sqltest/hosted"
 	"github.com/jackc/pgx/v4"
-	"github.com/sqlc-dev/sqlc/internal/sqltest/hosted"
 )
 
 func TestBatchBooks(t *testing.T) {

@@ -11,11 +11,11 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
-	"github.com/sqlc-dev/sqlc/internal/config"
-	"github.com/sqlc-dev/sqlc/internal/migrations"
-	"github.com/sqlc-dev/sqlc/internal/quickdb"
-	pb "github.com/sqlc-dev/sqlc/internal/quickdb/v1"
-	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
+	"github.com/Dionid/sqlc/internal/config"
+	"github.com/Dionid/sqlc/internal/migrations"
+	"github.com/Dionid/sqlc/internal/quickdb"
+	pb "github.com/Dionid/sqlc/internal/quickdb/v1"
+	"github.com/Dionid/sqlc/internal/sql/sqlpath"
 )
 
 func TestValidSchema(t *testing.T) {

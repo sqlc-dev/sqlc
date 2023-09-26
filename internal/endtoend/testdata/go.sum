@@ -105,8 +105,8 @@ github.com/sirupsen/logrus v1.4.1/go.mod h1:ni0Sbl8bgC9z8RoU9G6nDWqqs/fq4eDPysMB
 github.com/sirupsen/logrus v1.4.2/go.mod h1:tLMulIdttU9McNUspp0xgXVQah82FyeX6MwdIuYE2rE=
 github.com/sqlc-dev/pqtype v0.2.0 h1:zfzDpAxjCU0/GO7EgZ7ELUh0w28SrMSHzO3rH5Wd3is=
 github.com/sqlc-dev/pqtype v0.2.0/go.mod h1:oyUjp5981ctiL9UYvj1bVvCKi8OXkCa0u645hce7CAs=
-github.com/sqlc-dev/sqlc-testdata v1.0.0 h1:NrfFkZ3xh2XHqDNqYE6Q87hhXd1n6GQr3XE0V+CveSQ=
-github.com/sqlc-dev/sqlc-testdata v1.0.0/go.mod h1:Ima4gy0tylq+cNW1VSV36/NoAHMbZZKjHNs7SfM9Pns=
+github.com/Dionid/sqlc-testdata v1.0.0 h1:NrfFkZ3xh2XHqDNqYE6Q87hhXd1n6GQr3XE0V+CveSQ=
+github.com/Dionid/sqlc-testdata v1.0.0/go.mod h1:Ima4gy0tylq+cNW1VSV36/NoAHMbZZKjHNs7SfM9Pns=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/objx v0.1.1/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/objx v0.2.0/go.mod h1:qt09Ya8vawLte6SNmTgCsAVtYtaKzEcn8ATUoHMkEqE=

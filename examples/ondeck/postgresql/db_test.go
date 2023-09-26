@@ -11,7 +11,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	_ "github.com/lib/pq"
 
-	"github.com/sqlc-dev/sqlc/internal/sqltest/hosted"
+	"github.com/Dionid/sqlc/internal/sqltest/hosted"
 )
 
 func runOnDeckQueries(t *testing.T, q *Queries) {

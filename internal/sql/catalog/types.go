@@ -3,8 +3,9 @@ package catalog
 import (
 	"errors"
 	"fmt"
-	"github.com/sqlc-dev/sqlc/internal/sql/ast"
-	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
+
+	"github.com/Dionid/sqlc/internal/sql/ast"
+	"github.com/Dionid/sqlc/internal/sql/sqlerr"
 )
 
 type Type interface {

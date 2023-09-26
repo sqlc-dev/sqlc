@@ -7,10 +7,10 @@ import (
 
 	"google.golang.org/protobuf/encoding/protojson"
 
-	"github.com/sqlc-dev/sqlc/internal/config"
-	"github.com/sqlc-dev/sqlc/internal/info"
-	"github.com/sqlc-dev/sqlc/internal/quickdb"
-	pb "github.com/sqlc-dev/sqlc/internal/quickdb/v1"
+	"github.com/Dionid/sqlc/internal/config"
+	"github.com/Dionid/sqlc/internal/info"
+	"github.com/Dionid/sqlc/internal/quickdb"
+	pb "github.com/Dionid/sqlc/internal/quickdb/v1"
 )
 
 type Uploader struct {

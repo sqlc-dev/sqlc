@@ -8,7 +8,7 @@
 //	import (
 //	    "os"
 //
-//	    sqlc "github.com/sqlc-dev/sqlc/pkg/cli"
+//	    sqlc "github.com/Dionid/sqlc/pkg/cli"
 //	)
 //
 //	func main() {
@@ -19,7 +19,7 @@ package cli
 import (
 	"os"
 
-	"github.com/sqlc-dev/sqlc/internal/cmd"
+	"github.com/Dionid/sqlc/internal/cmd"
 )
 
 // Run the sqlc CLI. It takes an array of command-line arguments

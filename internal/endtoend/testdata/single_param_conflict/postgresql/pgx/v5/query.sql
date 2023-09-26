@@ -17,7 +17,7 @@ FROM    authors
 WHERE   id = $1
 LIMIT   1;
 
--- https://github.com/sqlc-dev/sqlc/issues/1290
+-- https://github.com/Dionid/sqlc/issues/1290
 CREATE TABLE users (
   sub UUID PRIMARY KEY
 );
@@ -28,7 +28,7 @@ FROM    users
 WHERE   sub = $1
 LIMIT   1;
 
--- https://github.com/sqlc-dev/sqlc/issues/1235
+-- https://github.com/Dionid/sqlc/issues/1235
 
 -- name: SetDefaultName :one
 UPDATE  authors

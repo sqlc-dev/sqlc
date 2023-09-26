@@ -16,7 +16,7 @@ FROM     authors
 GROUP BY name;
 
 
--- https://github.com/sqlc-dev/sqlc/issues/1315
+-- https://github.com/Dionid/sqlc/issues/1315
 
 CREATE TABLE IF NOT EXISTS weather_metrics
 (

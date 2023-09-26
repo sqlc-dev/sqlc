@@ -26,7 +26,7 @@ sql:
 Each mapping of the `overrides` collection has the following keys:
 
 - `db_type`:
-  - The PostgreSQL or MySQL type to override. Find the full list of supported types in [postgresql_type.go](https://github.com/sqlc-dev/sqlc/blob/main/internal/codegen/golang/postgresql_type.go#L12) or [mysql_type.go](https://github.com/sqlc-dev/sqlc/blob/main/internal/codegen/golang/mysql_type.go#L12). Note that for Postgres you must use the pg_catalog prefixed names where available. Can't be used if the `column` key is defined.
+  - The PostgreSQL or MySQL type to override. Find the full list of supported types in [postgresql_type.go](https://github.com/Dionid/sqlc/blob/main/internal/codegen/golang/postgresql_type.go#L12) or [mysql_type.go](https://github.com/Dionid/sqlc/blob/main/internal/codegen/golang/mysql_type.go#L12). Note that for Postgres you must use the pg_catalog prefixed names where available. Can't be used if the `column` key is defined.
 - `column`:
   - In case the type overriding should be done on specific a column of a table instead of a type. `column` should be of the form `table.column` but you can be even more specific by specifying `schema.table.column` or `catalog.schema.table.column`. Can't be used if the `db_type` key is defined.
 - `go_type`:

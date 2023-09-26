@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package plugin;
 
-option go_package = "github.com/sqlc-dev/sqlc/internal/plugin";
+option go_package = "github.com/Dionid/sqlc/internal/plugin";
 
 message File {
   string name = 1 [json_name = "name"];
