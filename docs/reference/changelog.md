@@ -38,12 +38,15 @@ Read more in the [managed databases](../howto/managed-databases.md) documentatio
 
 - Clarify nullable override behavior (#2753)
 - Add managed databases to sidebar (#2764)
+- Pull renaming and type overrides into separate sections (#2774)
+- Update the docs banner for managed dbs (#2775)
 
 #### Features
 
 - (config) Enables the configuration of copyfrom.go similar to quierer and friends (#2727)
 - (vet) Run rules against a managed database (#2751)
 - (upload) Point upload command at new endpoint (#2772)
+- (compiler) Support DO statements (#2777)
 
 #### Miscellaneous Tasks
 
@@ -64,10 +67,12 @@ Read more in the [managed databases](../howto/managed-databases.md) documentatio
 - (windows) Downgrade to mingw 11.2.0 (#2757)
 - (deps) Bump urllib3 from 2.0.4 to 2.0.5 in /docs (#2747)
 - (deps) Bump google.golang.org/grpc from 1.58.1 to 1.58.2 (#2758)
+- (deps) Bump github.com/google/cel-go from 0.18.0 to 0.18.1 (#2778)
 
 #### Ci
 
 - Bump go version to latest in ci workflows (#2722)
+
 
 
 ## [1.21.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.21.0)
