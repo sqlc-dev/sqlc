@@ -41,6 +41,10 @@ to speed up the installation process.
 
 ## GitHub Workflows
 
+We suggest running `diff`, `vet` and `upload` as part of your workflow.
+
+### diff
+
 The following GitHub Workflow configuration runs `sqlc diff` on every push.
 
 ```yaml
@@ -53,9 +57,11 @@ jobs:
     - uses: actions/checkout@v3
     - uses: sqlc-dev/setup-sqlc@v3
       with:
-        sqlc-version: '1.19.0'
+        sqlc-version: '1.22.0'
     - run: sqlc diff
 ```
+
+### vet
 
 The following GitHub Workflow configuration runs [`sqlc vet`](vet.md) on every push.
 You can use `sqlc vet` without a database connection, but you'll need one if your
@@ -85,11 +91,33 @@ jobs:
     - uses: actions/checkout@v3
     - uses: sqlc-dev/setup-sqlc@v3
       with:
-        sqlc-version: '1.19.0'
+        sqlc-version: '1.22.0'
       # Connect and migrate your database here. This is an example which runs
       # commands from a `schema.sql` file.
     - run: psql -h localhost -U postgres -p $PG_PORT -d postgres -f schema.sql
       env:
         PGPASSWORD: postgres
     - run: sqlc vet
+```
+
+### upload
+
+The following GitHub Workflow configuration runs [`sqlc upload`](upload.md) on
+every push to `main`.
+
+```yaml
+name: sqlc
+on: [push]
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/main' }}
+    steps:
+    - uses: actions/checkout@v3
+    - uses: sqlc-dev/setup-sqlc@v3
+      with:
+        sqlc-version: '1.22.0'
+    - run: sqlc upload
+      env:
+        SQLC_AUTH_TOKEN: ${{ secrets.SQLC_AUTH_TOKEN }}
 ```
