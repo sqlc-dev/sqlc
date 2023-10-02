@@ -8,7 +8,7 @@ Released 2023-09-26
 
 ### Release notes
 
-#### Managed databses for `sqlc vet`
+#### Managed databases for `sqlc vet`
 
 If you're using [sqlc vet](../howto/vet.md) to write rules that require access to a running
 database, `sqlc` can now start and manage that database for you. PostgreSQL
