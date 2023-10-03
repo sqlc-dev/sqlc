@@ -35,8 +35,16 @@ type GetTransactionRow struct {
 	JsonGroupArray interface{}
 }
 
-func (q *Queries) GetTransaction(ctx context.Context, arg GetTransactionParams) ([]GetTransactionRow, error) {
-	rows, err := q.db.Query(ctx, getTransaction, arg.ProgramID, arg.Data, arg.Limit)
+func (q *Queries) GetTransaction(ctx context.Context, arg GetTransactionParams, aq ...AdditionalQuery) ([]GetTransactionRow, error) {
+	query := getTransaction
+	queryParams := []interface{}{arg.ProgramID, arg.Data, arg.Limit}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

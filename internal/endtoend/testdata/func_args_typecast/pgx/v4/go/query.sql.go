@@ -18,8 +18,10 @@ type PlusPositionalCastParams struct {
 	Column2 int32
 }
 
-func (q *Queries) PlusPositionalCast(ctx context.Context, arg PlusPositionalCastParams) (int32, error) {
-	row := q.db.QueryRow(ctx, plusPositionalCast, arg.A, arg.Column2)
+func (q *Queries) PlusPositionalCast(ctx context.Context, arg PlusPositionalCastParams, aq ...AdditionalQuery) (int32, error) {
+	query := plusPositionalCast
+	queryParams := []interface{}{arg.A, arg.Column2}
+	row := q.db.QueryRow(ctx, query, queryParams...)
 	var plus int32
 	err := row.Scan(&plus)
 	return plus, err

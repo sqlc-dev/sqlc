@@ -13,8 +13,16 @@ const selectTest = `-- name: SelectTest :many
 SELECT v_daterange_null, v_datemultirange_null, v_tsrange_null, v_tsmultirange_null, v_tstzrange_null, v_tstzmultirange_null, v_numrange_null, v_nummultirange_null, v_int4range_null, v_int4multirange_null, v_int8range_null, v_int8multirange_null, v_daterange, v_datemultirange, v_tsrange, v_tsmultirange, v_tstzrange, v_tstzmultirange, v_numrange, v_nummultirange, v_int4range, v_int4multirange, v_int8range, v_int8multirange from test_table
 `
 
-func (q *Queries) SelectTest(ctx context.Context) ([]TestTable, error) {
-	rows, err := q.db.Query(ctx, selectTest)
+func (q *Queries) SelectTest(ctx context.Context, aq ...AdditionalQuery) ([]TestTable, error) {
+	query := selectTest
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

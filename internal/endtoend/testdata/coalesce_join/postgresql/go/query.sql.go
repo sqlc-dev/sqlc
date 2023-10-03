@@ -20,8 +20,16 @@ type GetBarRow struct {
 	BarID int64
 }
 
-func (q *Queries) GetBar(ctx context.Context) ([]GetBarRow, error) {
-	rows, err := q.db.QueryContext(ctx, getBar)
+func (q *Queries) GetBar(ctx context.Context, aq ...AdditionalQuery) ([]GetBarRow, error) {
+	query := getBar
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

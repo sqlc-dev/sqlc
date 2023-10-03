@@ -15,8 +15,16 @@ const loadFoo = `-- name: LoadFoo :many
 SELECT id, other_id, age, balance, bio, about FROM foo WHERE id = $1
 `
 
-func (q *Queries) LoadFoo(ctx context.Context, id uuid.UUID) ([]Foo, error) {
-	rows, err := q.db.QueryContext(ctx, loadFoo, id)
+func (q *Queries) LoadFoo(ctx context.Context, id uuid.UUID, aq ...AdditionalQuery) ([]Foo, error) {
+	query := loadFoo
+	queryParams := []interface{}{id}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

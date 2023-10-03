@@ -19,8 +19,16 @@ type GetColumnsRow struct {
 	ColumnName string
 }
 
-func (q *Queries) GetColumns(ctx context.Context) ([]GetColumnsRow, error) {
-	rows, err := q.db.QueryContext(ctx, getColumns)
+func (q *Queries) GetColumns(ctx context.Context, aq ...AdditionalQuery) ([]GetColumnsRow, error) {
+	query := getColumns
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -46,8 +54,16 @@ const getTables = `-- name: GetTables :many
 SELECT table_name::text from information_schema.tables
 `
 
-func (q *Queries) GetTables(ctx context.Context) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, getTables)
+func (q *Queries) GetTables(ctx context.Context, aq ...AdditionalQuery) ([]string, error) {
+	query := getTables
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -80,8 +96,16 @@ type GetTimezonesRow struct {
 	IsDst     sql.NullBool
 }
 
-func (q *Queries) GetTimezones(ctx context.Context) ([]GetTimezonesRow, error) {
-	rows, err := q.db.QueryContext(ctx, getTimezones)
+func (q *Queries) GetTimezones(ctx context.Context, aq ...AdditionalQuery) ([]GetTimezonesRow, error) {
+	query := getTimezones
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

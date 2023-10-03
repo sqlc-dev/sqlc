@@ -23,8 +23,16 @@ type RightJoinRow struct {
 	ID_2  int32
 }
 
-func (q *Queries) RightJoin(ctx context.Context, id int32) ([]RightJoinRow, error) {
-	rows, err := q.db.QueryContext(ctx, rightJoin, id)
+func (q *Queries) RightJoin(ctx context.Context, id int32, aq ...AdditionalQuery) ([]RightJoinRow, error) {
+	query := rightJoin
+	queryParams := []interface{}{id}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

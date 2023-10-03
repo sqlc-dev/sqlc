@@ -14,8 +14,16 @@ const identOnNonNullable = `-- name: IdentOnNonNullable :many
 SELECT bar FROM foo WHERE bar = ?
 `
 
-func (q *Queries) IdentOnNonNullable(ctx context.Context, bar sql.NullString) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, identOnNonNullable, bar)
+func (q *Queries) IdentOnNonNullable(ctx context.Context, bar sql.NullString, aq ...AdditionalQuery) ([]string, error) {
+	query := identOnNonNullable
+	queryParams := []interface{}{bar}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -41,8 +49,16 @@ const identOnNullable = `-- name: IdentOnNullable :many
 SELECT maybe_bar FROM foo WHERE maybe_bar = ?
 `
 
-func (q *Queries) IdentOnNullable(ctx context.Context, maybeBar sql.NullString) ([]sql.NullString, error) {
-	rows, err := q.db.QueryContext(ctx, identOnNullable, maybeBar)
+func (q *Queries) IdentOnNullable(ctx context.Context, maybeBar sql.NullString, aq ...AdditionalQuery) ([]sql.NullString, error) {
+	query := identOnNullable
+	queryParams := []interface{}{maybeBar}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -68,8 +84,16 @@ const stringOnNonNullable = `-- name: StringOnNonNullable :many
 SELECT bar FROM foo WHERE bar = ?
 `
 
-func (q *Queries) StringOnNonNullable(ctx context.Context, bar sql.NullString) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, stringOnNonNullable, bar)
+func (q *Queries) StringOnNonNullable(ctx context.Context, bar sql.NullString, aq ...AdditionalQuery) ([]string, error) {
+	query := stringOnNonNullable
+	queryParams := []interface{}{bar}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -95,8 +119,16 @@ const stringOnNullable = `-- name: StringOnNullable :many
 SELECT maybe_bar FROM foo WHERE maybe_bar = ?
 `
 
-func (q *Queries) StringOnNullable(ctx context.Context, maybeBar sql.NullString) ([]sql.NullString, error) {
-	rows, err := q.db.QueryContext(ctx, stringOnNullable, maybeBar)
+func (q *Queries) StringOnNullable(ctx context.Context, maybeBar sql.NullString, aq ...AdditionalQuery) ([]sql.NullString, error) {
+	query := stringOnNullable
+	queryParams := []interface{}{maybeBar}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

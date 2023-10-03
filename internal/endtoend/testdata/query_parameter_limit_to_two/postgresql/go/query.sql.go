@@ -45,13 +45,21 @@ type CreateAuthorParams struct {
 	Titles      []string
 }
 
-func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams) (Author, error) {
-	row := q.db.QueryRowContext(ctx, createAuthor,
+func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams, aq ...AdditionalQuery) (Author, error) {
+	query := createAuthor
+	queryParams := []interface{}{
 		arg.Name,
 		arg.Bio,
 		arg.CountryCode,
 		pq.Array(arg.Titles),
-	)
+	}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var i Author
 	err := row.Scan(
 		&i.ID,
@@ -67,8 +75,16 @@ const createAuthorOnlyTitles = `-- name: CreateAuthorOnlyTitles :one
 INSERT INTO authors (name, titles) VALUES ($1, $2) RETURNING id, name, bio, country_code, titles
 `
 
-func (q *Queries) CreateAuthorOnlyTitles(ctx context.Context, name string, titles []string) (Author, error) {
-	row := q.db.QueryRowContext(ctx, createAuthorOnlyTitles, name, pq.Array(titles))
+func (q *Queries) CreateAuthorOnlyTitles(ctx context.Context, name string, titles []string, aq ...AdditionalQuery) (Author, error) {
+	query := createAuthorOnlyTitles
+	queryParams := []interface{}{name, pq.Array(titles)}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var i Author
 	err := row.Scan(
 		&i.ID,
@@ -86,7 +102,10 @@ WHERE id = $1
 `
 
 func (q *Queries) DeleteAuthor(ctx context.Context, id int64) error {
-	_, err := q.db.ExecContext(ctx, deleteAuthor, id)
+	query := deleteAuthor
+	queryParams := []interface{}{id}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }
 
@@ -107,6 +126,7 @@ func (q *Queries) DeleteAuthors(ctx context.Context, name string, ids []int64) e
 	} else {
 		query = strings.Replace(query, "/*SLICE:ids*/?", "NULL", 1)
 	}
+
 	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }
@@ -116,8 +136,16 @@ SELECT id, name, bio, country_code, titles FROM authors
 WHERE name = $1 AND country_code = $2 LIMIT 1
 `
 
-func (q *Queries) GetAuthor(ctx context.Context, name string, countryCode string) (Author, error) {
-	row := q.db.QueryRowContext(ctx, getAuthor, name, countryCode)
+func (q *Queries) GetAuthor(ctx context.Context, name string, countryCode string, aq ...AdditionalQuery) (Author, error) {
+	query := getAuthor
+	queryParams := []interface{}{name, countryCode}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var i Author
 	err := row.Scan(
 		&i.ID,
@@ -134,8 +162,16 @@ SELECT id, name, bio, country_code, titles FROM authors
 ORDER BY name
 `
 
-func (q *Queries) ListAuthors(ctx context.Context) ([]Author, error) {
-	rows, err := q.db.QueryContext(ctx, listAuthors)
+func (q *Queries) ListAuthors(ctx context.Context, aq ...AdditionalQuery) ([]Author, error) {
+	query := listAuthors
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

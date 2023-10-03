@@ -49,8 +49,16 @@ SELECT bar FROM foo
 `
 
 // This function returns a list of Foos
-func (q *Queries) ManyFoo(ctx context.Context, db DBTX) ([]sql.NullString, error) {
-	rows, err := db.Query(ctx, manyFoo)
+func (q *Queries) ManyFoo(ctx context.Context, db DBTX, aq ...AdditionalQuery) ([]sql.NullString, error) {
+	query := manyFoo
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -74,8 +82,10 @@ SELECT bar FROM foo
 `
 
 // This function returns one Foo
-func (q *Queries) OneFoo(ctx context.Context, db DBTX) (sql.NullString, error) {
-	row := db.QueryRow(ctx, oneFoo)
+func (q *Queries) OneFoo(ctx context.Context, db DBTX, aq ...AdditionalQuery) (sql.NullString, error) {
+	query := oneFoo
+	queryParams := []interface{}{}
+	row := db.QueryRow(ctx, query, queryParams...)
 	var bar sql.NullString
 	err := row.Scan(&bar)
 	return bar, err

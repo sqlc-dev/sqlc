@@ -9,7 +9,7 @@ import (
 )
 
 type Querier interface {
-	User(ctx context.Context) ([]int64, error)
+	User(ctx context.Context, aq ...AdditionalQuery) ([]int64, error)
 	UsersB(ctx context.Context, id []int64) *UsersBBatchResults
 	UsersC(ctx context.Context, id []int64) (int64, error)
 }

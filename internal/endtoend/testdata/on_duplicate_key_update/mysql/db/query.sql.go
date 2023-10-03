@@ -24,7 +24,10 @@ type UpsertAuthorParams struct {
 }
 
 func (q *Queries) UpsertAuthor(ctx context.Context, arg UpsertAuthorParams) error {
-	_, err := q.db.ExecContext(ctx, upsertAuthor, arg.Name, arg.Bio, arg.Bio_2)
+	query := upsertAuthor
+	queryParams := []interface{}{arg.Name, arg.Bio, arg.Bio_2}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }
 
@@ -41,6 +44,9 @@ type UpsertAuthorNamedParams struct {
 }
 
 func (q *Queries) UpsertAuthorNamed(ctx context.Context, arg UpsertAuthorNamedParams) error {
-	_, err := q.db.ExecContext(ctx, upsertAuthorNamed, arg.Name, arg.Bio, arg.Bio)
+	query := upsertAuthorNamed
+	queryParams := []interface{}{arg.Name, arg.Bio, arg.Bio}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }

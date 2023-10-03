@@ -13,8 +13,16 @@ const listBar = `-- name: ListBar :many
 SELECT baz FROM foo.bar
 `
 
-func (q *Queries) ListBar(ctx context.Context) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, listBar)
+func (q *Queries) ListBar(ctx context.Context, aq ...AdditionalQuery) ([]string, error) {
+	query := listBar
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -40,8 +48,16 @@ const listBat = `-- name: ListBat :many
 SELECT baz FROM foo.bat
 `
 
-func (q *Queries) ListBat(ctx context.Context) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, listBat)
+func (q *Queries) ListBat(ctx context.Context, aq ...AdditionalQuery) ([]string, error) {
+	query := listBat
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

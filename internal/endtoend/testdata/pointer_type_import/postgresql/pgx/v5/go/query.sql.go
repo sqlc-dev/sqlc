@@ -14,8 +14,10 @@ const find = `-- name: Find :one
 SELECT bar FROM foo WHERE baz = $1
 `
 
-func (q *Queries) Find(ctx context.Context, baz *netip.Prefix) (*netip.Addr, error) {
-	row := q.db.QueryRow(ctx, find, baz)
+func (q *Queries) Find(ctx context.Context, baz *netip.Prefix, aq ...AdditionalQuery) (*netip.Addr, error) {
+	query := find
+	queryParams := []interface{}{baz}
+	row := q.db.QueryRow(ctx, query, queryParams...)
 	var bar *netip.Addr
 	err := row.Scan(&bar)
 	return bar, err
@@ -25,8 +27,16 @@ const list = `-- name: List :many
 SELECT bar, baz FROM foo
 `
 
-func (q *Queries) List(ctx context.Context) ([]Foo, error) {
-	rows, err := q.db.Query(ctx, list)
+func (q *Queries) List(ctx context.Context, aq ...AdditionalQuery) ([]Foo, error) {
+	query := list
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

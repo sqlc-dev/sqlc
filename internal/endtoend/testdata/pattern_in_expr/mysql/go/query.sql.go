@@ -14,8 +14,16 @@ const fooByBarB = `-- name: FooByBarB :many
 SELECT a, b from foo where foo.a in (select a from bar where bar.b = ?)
 `
 
-func (q *Queries) FooByBarB(ctx context.Context, b sql.NullString) ([]Foo, error) {
-	rows, err := q.db.QueryContext(ctx, fooByBarB, b)
+func (q *Queries) FooByBarB(ctx context.Context, b sql.NullString, aq ...AdditionalQuery) ([]Foo, error) {
+	query := fooByBarB
+	queryParams := []interface{}{b}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -46,8 +54,16 @@ type FooByListParams struct {
 	A_2 sql.NullString
 }
 
-func (q *Queries) FooByList(ctx context.Context, arg FooByListParams) ([]Foo, error) {
-	rows, err := q.db.QueryContext(ctx, fooByList, arg.A, arg.A_2)
+func (q *Queries) FooByList(ctx context.Context, arg FooByListParams, aq ...AdditionalQuery) ([]Foo, error) {
+	query := fooByList
+	queryParams := []interface{}{arg.A, arg.A_2}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -78,8 +94,16 @@ type FooByNotListParams struct {
 	A_2 sql.NullString
 }
 
-func (q *Queries) FooByNotList(ctx context.Context, arg FooByNotListParams) ([]Foo, error) {
-	rows, err := q.db.QueryContext(ctx, fooByNotList, arg.A, arg.A_2)
+func (q *Queries) FooByNotList(ctx context.Context, arg FooByNotListParams, aq ...AdditionalQuery) ([]Foo, error) {
+	query := fooByNotList
+	queryParams := []interface{}{arg.A, arg.A_2}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -105,8 +129,16 @@ const fooByParamList = `-- name: FooByParamList :many
 SELECT a, b from foo where ? in (foo.a, foo.b)
 `
 
-func (q *Queries) FooByParamList(ctx context.Context, a sql.NullString) ([]Foo, error) {
-	rows, err := q.db.QueryContext(ctx, fooByParamList, a)
+func (q *Queries) FooByParamList(ctx context.Context, a sql.NullString, aq ...AdditionalQuery) ([]Foo, error) {
+	query := fooByParamList
+	queryParams := []interface{}{a}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

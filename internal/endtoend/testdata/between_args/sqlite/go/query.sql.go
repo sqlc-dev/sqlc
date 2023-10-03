@@ -20,8 +20,16 @@ type GetBetweenPricesParams struct {
 	ToPrice   int64
 }
 
-func (q *Queries) GetBetweenPrices(ctx context.Context, arg GetBetweenPricesParams) ([]Product, error) {
-	rows, err := q.db.QueryContext(ctx, getBetweenPrices, arg.FromPrice, arg.ToPrice)
+func (q *Queries) GetBetweenPrices(ctx context.Context, arg GetBetweenPricesParams, aq ...AdditionalQuery) ([]Product, error) {
+	query := getBetweenPrices
+	queryParams := []interface{}{arg.FromPrice, arg.ToPrice}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -54,8 +62,16 @@ type GetBetweenPricesTableParams struct {
 	ToPrice   int64
 }
 
-func (q *Queries) GetBetweenPricesTable(ctx context.Context, arg GetBetweenPricesTableParams) ([]Product, error) {
-	rows, err := q.db.QueryContext(ctx, getBetweenPricesTable, arg.FromPrice, arg.ToPrice)
+func (q *Queries) GetBetweenPricesTable(ctx context.Context, arg GetBetweenPricesTableParams, aq ...AdditionalQuery) ([]Product, error) {
+	query := getBetweenPricesTable
+	queryParams := []interface{}{arg.FromPrice, arg.ToPrice}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -88,8 +104,16 @@ type GetBetweenPricesTableAliasParams struct {
 	ToPrice   int64
 }
 
-func (q *Queries) GetBetweenPricesTableAlias(ctx context.Context, arg GetBetweenPricesTableAliasParams) ([]Product, error) {
-	rows, err := q.db.QueryContext(ctx, getBetweenPricesTableAlias, arg.FromPrice, arg.ToPrice)
+func (q *Queries) GetBetweenPricesTableAlias(ctx context.Context, arg GetBetweenPricesTableAliasParams, aq ...AdditionalQuery) ([]Product, error) {
+	query := getBetweenPricesTableAlias
+	queryParams := []interface{}{arg.FromPrice, arg.ToPrice}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

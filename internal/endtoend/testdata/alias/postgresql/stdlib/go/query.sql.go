@@ -15,6 +15,9 @@ WHERE b.id = $1
 `
 
 func (q *Queries) AliasBar(ctx context.Context, id int32) error {
-	_, err := q.db.ExecContext(ctx, aliasBar, id)
+	query := aliasBar
+	queryParams := []interface{}{id}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }

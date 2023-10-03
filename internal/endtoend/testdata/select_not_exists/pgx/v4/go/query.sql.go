@@ -21,8 +21,10 @@ SELECT
     )
 `
 
-func (q *Queries) BarNotExists(ctx context.Context, id int32) (bool, error) {
-	row := q.db.QueryRow(ctx, barNotExists, id)
+func (q *Queries) BarNotExists(ctx context.Context, id int32, aq ...AdditionalQuery) (bool, error) {
+	query := barNotExists
+	queryParams := []interface{}{id}
+	row := q.db.QueryRow(ctx, query, queryParams...)
 	var not_exists bool
 	err := row.Scan(&not_exists)
 	return not_exists, err

@@ -15,7 +15,10 @@ FROM foo
 `
 
 func (q *Queries) Bar(ctx context.Context) error {
-	_, err := q.db.ExecContext(ctx, bar)
+	query := bar
+	queryParams := []interface{}{}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }
 
@@ -25,6 +28,9 @@ FROM foo
 `
 
 func (q *Queries) Bars(ctx context.Context) error {
-	_, err := q.db.ExecContext(ctx, bars)
+	query := bars
+	queryParams := []interface{}{}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }

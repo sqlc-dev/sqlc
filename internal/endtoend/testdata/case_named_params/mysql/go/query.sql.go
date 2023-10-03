@@ -23,13 +23,21 @@ type ListAuthorsParams struct {
 	Username sql.NullString
 }
 
-func (q *Queries) ListAuthors(ctx context.Context, arg ListAuthorsParams) (Author, error) {
-	row := q.db.QueryRowContext(ctx, listAuthors,
+func (q *Queries) ListAuthors(ctx context.Context, arg ListAuthorsParams, aq ...AdditionalQuery) (Author, error) {
+	query := listAuthors
+	queryParams := []interface{}{
 		arg.Email,
 		arg.Email,
 		arg.Username,
 		arg.Username,
-	)
+	}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var i Author
 	err := row.Scan(
 		&i.ID,

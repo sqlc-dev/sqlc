@@ -24,8 +24,16 @@ type AliasExpandRow struct {
 	Title pgtype.Text
 }
 
-func (q *Queries) AliasExpand(ctx context.Context, id int32) ([]AliasExpandRow, error) {
-	rows, err := q.db.Query(ctx, aliasExpand, id)
+func (q *Queries) AliasExpand(ctx context.Context, id int32, aq ...AdditionalQuery) ([]AliasExpandRow, error) {
+	query := aliasExpand
+	queryParams := []interface{}{id}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -56,8 +64,16 @@ type AliasJoinRow struct {
 	Title pgtype.Text
 }
 
-func (q *Queries) AliasJoin(ctx context.Context, id int32) ([]AliasJoinRow, error) {
-	rows, err := q.db.Query(ctx, aliasJoin, id)
+func (q *Queries) AliasJoin(ctx context.Context, id int32, aq ...AdditionalQuery) ([]AliasJoinRow, error) {
+	query := aliasJoin
+	queryParams := []interface{}{id}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

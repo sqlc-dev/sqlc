@@ -27,8 +27,16 @@ type SelectJSONBBuildArrayRow struct {
 	JsonbBuildArray_5 json.RawMessage
 }
 
-func (q *Queries) SelectJSONBBuildArray(ctx context.Context) (SelectJSONBBuildArrayRow, error) {
-	row := q.db.QueryRowContext(ctx, selectJSONBBuildArray)
+func (q *Queries) SelectJSONBBuildArray(ctx context.Context, aq ...AdditionalQuery) (SelectJSONBBuildArrayRow, error) {
+	query := selectJSONBBuildArray
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var i SelectJSONBBuildArrayRow
 	err := row.Scan(
 		&i.JsonbBuildArray,
@@ -57,8 +65,16 @@ type SelectJSONBBuildObjectRow struct {
 	JsonbBuildObject_5 json.RawMessage
 }
 
-func (q *Queries) SelectJSONBBuildObject(ctx context.Context) (SelectJSONBBuildObjectRow, error) {
-	row := q.db.QueryRowContext(ctx, selectJSONBBuildObject)
+func (q *Queries) SelectJSONBBuildObject(ctx context.Context, aq ...AdditionalQuery) (SelectJSONBBuildObjectRow, error) {
+	query := selectJSONBBuildObject
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var i SelectJSONBBuildObjectRow
 	err := row.Scan(
 		&i.JsonbBuildObject,
@@ -87,8 +103,16 @@ type SelectJSONBuildArrayRow struct {
 	JsonBuildArray_5 json.RawMessage
 }
 
-func (q *Queries) SelectJSONBuildArray(ctx context.Context) (SelectJSONBuildArrayRow, error) {
-	row := q.db.QueryRowContext(ctx, selectJSONBuildArray)
+func (q *Queries) SelectJSONBuildArray(ctx context.Context, aq ...AdditionalQuery) (SelectJSONBuildArrayRow, error) {
+	query := selectJSONBuildArray
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var i SelectJSONBuildArrayRow
 	err := row.Scan(
 		&i.JsonBuildArray,
@@ -117,8 +141,16 @@ type SelectJSONBuildObjectRow struct {
 	JsonBuildObject_5 json.RawMessage
 }
 
-func (q *Queries) SelectJSONBuildObject(ctx context.Context) (SelectJSONBuildObjectRow, error) {
-	row := q.db.QueryRowContext(ctx, selectJSONBuildObject)
+func (q *Queries) SelectJSONBuildObject(ctx context.Context, aq ...AdditionalQuery) (SelectJSONBuildObjectRow, error) {
+	query := selectJSONBuildObject
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var i SelectJSONBuildObjectRow
 	err := row.Scan(
 		&i.JsonBuildObject,

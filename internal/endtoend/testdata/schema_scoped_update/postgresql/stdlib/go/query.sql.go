@@ -19,6 +19,9 @@ type SchemaScopedUpdateParams struct {
 }
 
 func (q *Queries) SchemaScopedUpdate(ctx context.Context, arg SchemaScopedUpdateParams) error {
-	_, err := q.db.ExecContext(ctx, schemaScopedUpdate, arg.ID, arg.Name)
+	query := schemaScopedUpdate
+	queryParams := []interface{}{arg.ID, arg.Name}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }

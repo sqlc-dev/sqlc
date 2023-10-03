@@ -1,3 +1,14 @@
+--- a/go/db.go
++++ b/go/db.go
+@@ -29,3 +29,8 @@
+ 		db: tx,
+ 	}
+ }
++
++type AdditionalQuery struct {
++	SQL  string
++	Args []interface{}
++}
 --- a/go/models.go
 +++ b/go/models.go
 @@ -13,3 +13,8 @@
@@ -11,8 +22,26 @@
 +}
 --- a/go/query.sql.go
 +++ b/go/query.sql.go
-@@ -31,16 +31,6 @@
+@@ -24,8 +24,16 @@
+ 	Bio  sql.NullString
+ }
+ 
++func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams, aq ...AdditionalQuery) (Author, error) {
++	query := createAuthor
++	queryParams := []interface{}{arg.Name, arg.Bio}
++
++	if len(aq) > 0 {
++		query += " " + aq[0].SQL
++		queryParams = append(queryParams, aq[0].Args...)
++	}
++
++	row := q.db.QueryRowContext(ctx, query, queryParams...)
+-func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams) (Author, error) {
+-	row := q.db.QueryRowContext(ctx, createAuthor, arg.Name, arg.Bio)
+ 	var i Author
+ 	err := row.Scan(&i.ID, &i.Name, &i.Bio)
  	return i, err
+@@ -32,15 +40,5 @@
  }
  
 -const deleteAuthor = `-- name: DeleteAuthor :exec
@@ -28,7 +57,25 @@
  const getAuthor = `-- name: GetAuthor :one
  SELECT id, name, bio FROM authors
  WHERE id = $1 LIMIT 1
-@@ -55,7 +45,7 @@
+@@ -47,7 +45,15 @@
+ `
+ 
++func (q *Queries) GetAuthor(ctx context.Context, id int64, aq ...AdditionalQuery) (Author, error) {
++	query := getAuthor
++	queryParams := []interface{}{id}
++
++	if len(aq) > 0 {
++		query += " " + aq[0].SQL
++		queryParams = append(queryParams, aq[0].Args...)
++	}
++
++	row := q.db.QueryRowContext(ctx, query, queryParams...)
+-func (q *Queries) GetAuthor(ctx context.Context, id int64) (Author, error) {
+-	row := q.db.QueryRowContext(ctx, getAuthor, id)
+ 	var i Author
+ 	err := row.Scan(&i.ID, &i.Name, &i.Bio)
+ 	return i, err
+@@ -55,11 +61,19 @@
  
  const listAuthors = `-- name: ListAuthors :many
  SELECT id, name, bio FROM authors
@@ -36,8 +83,22 @@
 -ORDER BY name
  `
  
- func (q *Queries) ListAuthors(ctx context.Context) ([]Author, error) {
-@@ -80,3 +70,14 @@
++func (q *Queries) ListAuthors(ctx context.Context, aq ...AdditionalQuery) ([]Author, error) {
++	query := listAuthors
++	queryParams := []interface{}{}
++
++	if len(aq) > 0 {
++		query += " " + aq[0].SQL
++		queryParams = append(queryParams, aq[0].Args...)
++	}
++
++	rows, err := q.db.QueryContext(ctx, query, queryParams...)
+-func (q *Queries) ListAuthors(ctx context.Context) ([]Author, error) {
+-	rows, err := q.db.QueryContext(ctx, listAuthors)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+@@ -80,3 +94,22 @@
  	}
  	return items, nil
  }
@@ -46,8 +107,16 @@
 +SELECT 1
 +`
 +
-+func (q *Queries) SelectOne(ctx context.Context) (int32, error) {
-+	row := q.db.QueryRowContext(ctx, selectOne)
++func (q *Queries) SelectOne(ctx context.Context, aq ...AdditionalQuery) (int32, error) {
++	query := selectOne
++	queryParams := []interface{}{}
++
++	if len(aq) > 0 {
++		query += " " + aq[0].SQL
++		queryParams = append(queryParams, aq[0].Args...)
++	}
++
++	row := q.db.QueryRowContext(ctx, query, queryParams...)
 +	var column_1 int32
 +	err := row.Scan(&column_1)
 +	return column_1, err

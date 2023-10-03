@@ -14,8 +14,16 @@ const getAll = `-- name: GetAll :many
 SELECT a, b FROM foo
 `
 
-func (q *Queries) GetAll(ctx context.Context) ([]*Foo, error) {
-	rows, err := q.db.Query(ctx, getAll)
+func (q *Queries) GetAll(ctx context.Context, aq ...AdditionalQuery) ([]*Foo, error) {
+	query := getAll
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -38,8 +46,16 @@ const getAllAByB = `-- name: GetAllAByB :many
 SELECT a FROM foo WHERE b = $1
 `
 
-func (q *Queries) GetAllAByB(ctx context.Context, b sql.NullInt32) ([]sql.NullInt32, error) {
-	rows, err := q.db.Query(ctx, getAllAByB, b)
+func (q *Queries) GetAllAByB(ctx context.Context, b sql.NullInt32, aq ...AdditionalQuery) ([]sql.NullInt32, error) {
+	query := getAllAByB
+	queryParams := []interface{}{b}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -67,8 +83,10 @@ type GetOneParams struct {
 	B sql.NullInt32
 }
 
-func (q *Queries) GetOne(ctx context.Context, arg *GetOneParams) (*Foo, error) {
-	row := q.db.QueryRow(ctx, getOne, arg.A, arg.B)
+func (q *Queries) GetOne(ctx context.Context, arg *GetOneParams, aq ...AdditionalQuery) (*Foo, error) {
+	query := getOne
+	queryParams := []interface{}{arg.A, arg.B}
+	row := q.db.QueryRow(ctx, query, queryParams...)
 	var i Foo
 	err := row.Scan(&i.A, &i.B)
 	return &i, err

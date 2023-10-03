@@ -14,6 +14,9 @@ DELETE FROM foo WHERE id = ?
 `
 
 func (q *Queries) DeleteFrom(ctx context.Context, id string) error {
-	_, err := q.db.ExecContext(ctx, deleteFrom, id)
+	query := deleteFrom
+	queryParams := []interface{}{id}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }

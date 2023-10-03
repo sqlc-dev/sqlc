@@ -21,8 +21,16 @@ type SelectStaticRow struct {
 	Floater   float64
 }
 
-func (q *Queries) SelectStatic(ctx context.Context) (SelectStaticRow, error) {
-	row := q.db.QueryRowContext(ctx, selectStatic)
+func (q *Queries) SelectStatic(ctx context.Context, aq ...AdditionalQuery) (SelectStaticRow, error) {
+	query := selectStatic
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var i SelectStaticRow
 	err := row.Scan(
 		&i.Column1,

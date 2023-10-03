@@ -16,7 +16,7 @@ const testIN = `-- name: TestIN :many
 SELECT other, total, retyped FROM foo WHERE retyped IN (/*SLICE:paramname*/?)
 `
 
-func (q *Queries) TestIN(ctx context.Context, paramname []pkg.CustomType) ([]Foo, error) {
+func (q *Queries) TestIN(ctx context.Context, paramname []pkg.CustomType, aq ...AdditionalQuery) ([]Foo, error) {
 	query := testIN
 	var queryParams []interface{}
 	if len(paramname) > 0 {
@@ -27,6 +27,12 @@ func (q *Queries) TestIN(ctx context.Context, paramname []pkg.CustomType) ([]Foo
 	} else {
 		query = strings.Replace(query, "/*SLICE:paramname*/?", "NULL", 1)
 	}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
 	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err

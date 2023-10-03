@@ -13,8 +13,16 @@ const listCalories = `-- name: ListCalories :many
 SELECT id FROM calories
 `
 
-func (q *Queries) ListCalories(ctx context.Context) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, listCalories)
+func (q *Queries) ListCalories(ctx context.Context, aq ...AdditionalQuery) ([]string, error) {
+	query := listCalories
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -40,8 +48,16 @@ const listCampuses = `-- name: ListCampuses :many
 SELECT id FROM campus
 `
 
-func (q *Queries) ListCampuses(ctx context.Context) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, listCampuses)
+func (q *Queries) ListCampuses(ctx context.Context, aq ...AdditionalQuery) ([]string, error) {
+	query := listCampuses
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -67,8 +83,16 @@ const listMetadata = `-- name: ListMetadata :many
 SELECT id FROM product_meta
 `
 
-func (q *Queries) ListMetadata(ctx context.Context) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, listMetadata)
+func (q *Queries) ListMetadata(ctx context.Context, aq ...AdditionalQuery) ([]string, error) {
+	query := listMetadata
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -94,8 +118,16 @@ const listStudents = `-- name: ListStudents :many
 SELECT id FROM students
 `
 
-func (q *Queries) ListStudents(ctx context.Context) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, listStudents)
+func (q *Queries) ListStudents(ctx context.Context, aq ...AdditionalQuery) ([]string, error) {
+	query := listStudents
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

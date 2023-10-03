@@ -13,8 +13,16 @@ const fn = `-- name: Fn :one
 SELECT f$n()
 `
 
-func (q *Queries) Fn(ctx context.Context) (int32, error) {
-	row := q.db.QueryRowContext(ctx, fn)
+func (q *Queries) Fn(ctx context.Context, aq ...AdditionalQuery) (int32, error) {
+	query := fn
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var f_n int32
 	err := row.Scan(&f_n)
 	return f_n, err

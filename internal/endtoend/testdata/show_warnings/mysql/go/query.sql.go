@@ -19,8 +19,16 @@ type ShowWarningsRow struct {
 	Message string
 }
 
-func (q *Queries) ShowWarnings(ctx context.Context) ([]ShowWarningsRow, error) {
-	rows, err := q.db.QueryContext(ctx, showWarnings)
+func (q *Queries) ShowWarnings(ctx context.Context, aq ...AdditionalQuery) ([]ShowWarningsRow, error) {
+	query := showWarnings
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

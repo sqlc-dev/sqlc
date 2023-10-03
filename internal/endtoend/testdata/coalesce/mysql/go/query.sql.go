@@ -15,8 +15,16 @@ SELECT coalesce(bar, '') as login
 FROM foo
 `
 
-func (q *Queries) Coalesce(ctx context.Context) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, coalesce)
+func (q *Queries) Coalesce(ctx context.Context, aq ...AdditionalQuery) ([]string, error) {
+	query := coalesce
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -49,8 +57,16 @@ type CoalesceColumnsRow struct {
 	Bar_2 string
 }
 
-func (q *Queries) CoalesceColumns(ctx context.Context) ([]CoalesceColumnsRow, error) {
-	rows, err := q.db.QueryContext(ctx, coalesceColumns)
+func (q *Queries) CoalesceColumns(ctx context.Context, aq ...AdditionalQuery) ([]CoalesceColumnsRow, error) {
+	query := coalesceColumns
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

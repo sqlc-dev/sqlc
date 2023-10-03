@@ -13,8 +13,16 @@ const limitMe = `-- name: LimitMe :many
 SELECT bar FROM foo LIMIT $1
 `
 
-func (q *Queries) LimitMe(ctx context.Context, limit int32) ([]bool, error) {
-	rows, err := q.db.Query(ctx, limitMe, limit)
+func (q *Queries) LimitMe(ctx context.Context, limit int32, aq ...AdditionalQuery) ([]bool, error) {
+	query := limitMe
+	queryParams := []interface{}{limit}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

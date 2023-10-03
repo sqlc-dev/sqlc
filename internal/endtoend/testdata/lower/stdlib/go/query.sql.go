@@ -18,8 +18,16 @@ type LowerParams struct {
 	Bat string
 }
 
-func (q *Queries) Lower(ctx context.Context, arg LowerParams) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, lower, arg.Bar, arg.Bat)
+func (q *Queries) Lower(ctx context.Context, arg LowerParams, aq ...AdditionalQuery) ([]string, error) {
+	query := lower
+	queryParams := []interface{}{arg.Bar, arg.Bat}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

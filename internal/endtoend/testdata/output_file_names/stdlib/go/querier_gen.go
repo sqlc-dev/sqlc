@@ -9,7 +9,7 @@ import (
 )
 
 type Querier interface {
-	User(ctx context.Context) ([]int64, error)
+	User(ctx context.Context, aq ...AdditionalQuery) ([]int64, error)
 }
 
 var _ Querier = (*Queries)(nil)

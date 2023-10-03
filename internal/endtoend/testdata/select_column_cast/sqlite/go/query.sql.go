@@ -13,8 +13,16 @@ const selectColumnCast = `-- name: SelectColumnCast :many
 SELECT CAST(bar AS BLOB) FROM foo
 `
 
-func (q *Queries) SelectColumnCast(ctx context.Context) ([][]byte, error) {
-	rows, err := q.db.QueryContext(ctx, selectColumnCast)
+func (q *Queries) SelectColumnCast(ctx context.Context, aq ...AdditionalQuery) ([][]byte, error) {
+	query := selectColumnCast
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

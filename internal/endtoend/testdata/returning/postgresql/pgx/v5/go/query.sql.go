@@ -17,8 +17,10 @@ DELETE FROM users
   RETURNING id
 `
 
-func (q *Queries) DeleteUserAndReturnID(ctx context.Context, name pgtype.Text) (int32, error) {
-	row := q.db.QueryRow(ctx, deleteUserAndReturnID, name)
+func (q *Queries) DeleteUserAndReturnID(ctx context.Context, name pgtype.Text, aq ...AdditionalQuery) (int32, error) {
+	query := deleteUserAndReturnID
+	queryParams := []interface{}{name}
+	row := q.db.QueryRow(ctx, query, queryParams...)
 	var id int32
 	err := row.Scan(&id)
 	return id, err
@@ -30,8 +32,10 @@ DELETE FROM users
   RETURNING name, id
 `
 
-func (q *Queries) DeleteUserAndReturnUser(ctx context.Context, name pgtype.Text) (User, error) {
-	row := q.db.QueryRow(ctx, deleteUserAndReturnUser, name)
+func (q *Queries) DeleteUserAndReturnUser(ctx context.Context, name pgtype.Text, aq ...AdditionalQuery) (User, error) {
+	query := deleteUserAndReturnUser
+	queryParams := []interface{}{name}
+	row := q.db.QueryRow(ctx, query, queryParams...)
 	var i User
 	err := row.Scan(&i.Name, &i.ID)
 	return i, err
@@ -42,8 +46,10 @@ INSERT INTO users (name) VALUES ($1)
   RETURNING id
 `
 
-func (q *Queries) InsertUserAndReturnID(ctx context.Context, name pgtype.Text) (int32, error) {
-	row := q.db.QueryRow(ctx, insertUserAndReturnID, name)
+func (q *Queries) InsertUserAndReturnID(ctx context.Context, name pgtype.Text, aq ...AdditionalQuery) (int32, error) {
+	query := insertUserAndReturnID
+	queryParams := []interface{}{name}
+	row := q.db.QueryRow(ctx, query, queryParams...)
 	var id int32
 	err := row.Scan(&id)
 	return id, err
@@ -54,8 +60,10 @@ INSERT INTO users (name) VALUES ($1)
   RETURNING name, id
 `
 
-func (q *Queries) InsertUserAndReturnUser(ctx context.Context, name pgtype.Text) (User, error) {
-	row := q.db.QueryRow(ctx, insertUserAndReturnUser, name)
+func (q *Queries) InsertUserAndReturnUser(ctx context.Context, name pgtype.Text, aq ...AdditionalQuery) (User, error) {
+	query := insertUserAndReturnUser
+	queryParams := []interface{}{name}
+	row := q.db.QueryRow(ctx, query, queryParams...)
 	var i User
 	err := row.Scan(&i.Name, &i.ID)
 	return i, err
@@ -72,8 +80,10 @@ type UpdateUserAndReturnIDParams struct {
 	Name_2 pgtype.Text
 }
 
-func (q *Queries) UpdateUserAndReturnID(ctx context.Context, arg UpdateUserAndReturnIDParams) (int32, error) {
-	row := q.db.QueryRow(ctx, updateUserAndReturnID, arg.Name, arg.Name_2)
+func (q *Queries) UpdateUserAndReturnID(ctx context.Context, arg UpdateUserAndReturnIDParams, aq ...AdditionalQuery) (int32, error) {
+	query := updateUserAndReturnID
+	queryParams := []interface{}{arg.Name, arg.Name_2}
+	row := q.db.QueryRow(ctx, query, queryParams...)
 	var id int32
 	err := row.Scan(&id)
 	return id, err
@@ -90,8 +100,10 @@ type UpdateUserAndReturnUserParams struct {
 	Name_2 pgtype.Text
 }
 
-func (q *Queries) UpdateUserAndReturnUser(ctx context.Context, arg UpdateUserAndReturnUserParams) (User, error) {
-	row := q.db.QueryRow(ctx, updateUserAndReturnUser, arg.Name, arg.Name_2)
+func (q *Queries) UpdateUserAndReturnUser(ctx context.Context, arg UpdateUserAndReturnUserParams, aq ...AdditionalQuery) (User, error) {
+	query := updateUserAndReturnUser
+	queryParams := []interface{}{arg.Name, arg.Name_2}
+	row := q.db.QueryRow(ctx, query, queryParams...)
 	var i User
 	err := row.Scan(&i.Name, &i.ID)
 	return i, err

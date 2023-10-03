@@ -13,8 +13,16 @@ const funcParamIdent = `-- name: FuncParamIdent :many
 SELECT name FROM foo WHERE name = $1
 `
 
-func (q *Queries) FuncParamIdent(ctx context.Context, slug string) ([]string, error) {
-	rows, err := q.db.Query(ctx, funcParamIdent, slug)
+func (q *Queries) FuncParamIdent(ctx context.Context, slug string, aq ...AdditionalQuery) ([]string, error) {
+	query := funcParamIdent
+	queryParams := []interface{}{slug}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -37,8 +45,16 @@ const funcParamString = `-- name: FuncParamString :many
 SELECT name FROM foo WHERE name = $1
 `
 
-func (q *Queries) FuncParamString(ctx context.Context, slug string) ([]string, error) {
-	rows, err := q.db.Query(ctx, funcParamString, slug)
+func (q *Queries) FuncParamString(ctx context.Context, slug string, aq ...AdditionalQuery) ([]string, error) {
+	query := funcParamString
+	queryParams := []interface{}{slug}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

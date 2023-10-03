@@ -14,8 +14,16 @@ SELECT coalesce(bar, '')::text as login
 FROM foo
 `
 
-func (q *Queries) CastCoalesce(ctx context.Context) ([]string, error) {
-	rows, err := q.db.Query(ctx, castCoalesce)
+func (q *Queries) CastCoalesce(ctx context.Context, aq ...AdditionalQuery) ([]string, error) {
+	query := castCoalesce
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

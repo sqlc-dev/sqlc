@@ -13,8 +13,16 @@ const schemaScopedFilter = `-- name: SchemaScopedFilter :many
 SELECT id FROM foo.bar WHERE id = $1
 `
 
-func (q *Queries) SchemaScopedFilter(ctx context.Context, id int32) ([]int32, error) {
-	rows, err := q.db.QueryContext(ctx, schemaScopedFilter, id)
+func (q *Queries) SchemaScopedFilter(ctx context.Context, id int32, aq ...AdditionalQuery) ([]int32, error) {
+	query := schemaScopedFilter
+	queryParams := []interface{}{id}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

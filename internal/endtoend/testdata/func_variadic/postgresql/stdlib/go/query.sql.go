@@ -28,12 +28,15 @@ type UpdateJParams struct {
 }
 
 func (q *Queries) UpdateJ(ctx context.Context, arg UpdateJParams) error {
-	_, err := q.db.ExecContext(ctx, updateJ,
+	query := updateJ
+	queryParams := []interface{}{
 		arg.JsonbBuildObject,
 		arg.JsonbBuildObject_2,
 		arg.JsonbBuildObject_3,
 		arg.JsonbBuildObject_4,
 		arg.ID,
-	)
+	}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }

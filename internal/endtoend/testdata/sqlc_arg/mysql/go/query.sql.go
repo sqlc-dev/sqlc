@@ -18,8 +18,16 @@ type ComplicatedParams struct {
 	Slug string
 }
 
-func (q *Queries) Complicated(ctx context.Context, arg ComplicatedParams) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, complicated, arg.Slug, arg.Slug)
+func (q *Queries) Complicated(ctx context.Context, arg ComplicatedParams, aq ...AdditionalQuery) ([]string, error) {
+	query := complicated
+	queryParams := []interface{}{arg.Slug, arg.Slug}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -45,8 +53,16 @@ const funcParamIdent = `-- name: FuncParamIdent :many
 SELECT name FROM foo WHERE name = ?
 `
 
-func (q *Queries) FuncParamIdent(ctx context.Context, slug string) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, funcParamIdent, slug)
+func (q *Queries) FuncParamIdent(ctx context.Context, slug string, aq ...AdditionalQuery) ([]string, error) {
+	query := funcParamIdent
+	queryParams := []interface{}{slug}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -72,8 +88,16 @@ const funcParamString = `-- name: FuncParamString :many
 SELECT name FROM foo WHERE name = ?
 `
 
-func (q *Queries) FuncParamString(ctx context.Context, slug string) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, funcParamString, slug)
+func (q *Queries) FuncParamString(ctx context.Context, slug string, aq ...AdditionalQuery) ([]string, error) {
+	query := funcParamString
+	queryParams := []interface{}{slug}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

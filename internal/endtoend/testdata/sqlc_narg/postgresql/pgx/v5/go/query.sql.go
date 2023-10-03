@@ -15,8 +15,16 @@ const identOnNonNullable = `-- name: IdentOnNonNullable :many
 SELECT bar FROM foo WHERE bar = $1
 `
 
-func (q *Queries) IdentOnNonNullable(ctx context.Context, bar pgtype.Text) ([]string, error) {
-	rows, err := q.db.Query(ctx, identOnNonNullable, bar)
+func (q *Queries) IdentOnNonNullable(ctx context.Context, bar pgtype.Text, aq ...AdditionalQuery) ([]string, error) {
+	query := identOnNonNullable
+	queryParams := []interface{}{bar}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -39,8 +47,16 @@ const identOnNullable = `-- name: IdentOnNullable :many
 SELECT maybe_bar FROM foo WHERE maybe_bar = $1
 `
 
-func (q *Queries) IdentOnNullable(ctx context.Context, maybeBar pgtype.Text) ([]pgtype.Text, error) {
-	rows, err := q.db.Query(ctx, identOnNullable, maybeBar)
+func (q *Queries) IdentOnNullable(ctx context.Context, maybeBar pgtype.Text, aq ...AdditionalQuery) ([]pgtype.Text, error) {
+	query := identOnNullable
+	queryParams := []interface{}{maybeBar}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -63,8 +79,16 @@ const stringOnNonNullable = `-- name: StringOnNonNullable :many
 SELECT bar FROM foo WHERE bar = $1
 `
 
-func (q *Queries) StringOnNonNullable(ctx context.Context, bar pgtype.Text) ([]string, error) {
-	rows, err := q.db.Query(ctx, stringOnNonNullable, bar)
+func (q *Queries) StringOnNonNullable(ctx context.Context, bar pgtype.Text, aq ...AdditionalQuery) ([]string, error) {
+	query := stringOnNonNullable
+	queryParams := []interface{}{bar}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -87,8 +111,16 @@ const stringOnNullable = `-- name: StringOnNullable :many
 SELECT maybe_bar FROM foo WHERE maybe_bar = $1
 `
 
-func (q *Queries) StringOnNullable(ctx context.Context, maybeBar pgtype.Text) ([]pgtype.Text, error) {
-	rows, err := q.db.Query(ctx, stringOnNullable, maybeBar)
+func (q *Queries) StringOnNullable(ctx context.Context, maybeBar pgtype.Text, aq ...AdditionalQuery) ([]pgtype.Text, error) {
+	query := stringOnNullable
+	queryParams := []interface{}{maybeBar}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

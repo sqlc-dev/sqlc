@@ -24,7 +24,10 @@ type CreateAuthorParams struct {
 }
 
 func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams) error {
-	_, err := q.db.ExecContext(ctx, createAuthor, arg.Name, arg.Bio)
+	query := createAuthor
+	queryParams := []interface{}{arg.Name, arg.Bio}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }
 
@@ -34,7 +37,10 @@ WHERE id = ?
 `
 
 func (q *Queries) DeleteAuthor(ctx context.Context, id int64) error {
-	_, err := q.db.ExecContext(ctx, deleteAuthor, id)
+	query := deleteAuthor
+	queryParams := []interface{}{id}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }
 
@@ -43,8 +49,16 @@ SELECT id, name, rating, score, bio FROM authors
 WHERE id = ? LIMIT 1
 `
 
-func (q *Queries) GetAuthor(ctx context.Context, id int64) (Author, error) {
-	row := q.db.QueryRowContext(ctx, getAuthor, id)
+func (q *Queries) GetAuthor(ctx context.Context, id int64, aq ...AdditionalQuery) (Author, error) {
+	query := getAuthor
+	queryParams := []interface{}{id}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var i Author
 	err := row.Scan(
 		&i.ID,
@@ -61,8 +75,16 @@ SELECT id, name, rating, score, bio FROM authors
 ORDER BY name
 `
 
-func (q *Queries) ListAuthors(ctx context.Context) ([]Author, error) {
-	rows, err := q.db.QueryContext(ctx, listAuthors)
+func (q *Queries) ListAuthors(ctx context.Context, aq ...AdditionalQuery) ([]Author, error) {
+	query := listAuthors
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

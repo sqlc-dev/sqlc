@@ -16,6 +16,9 @@ UPDATE foo SET langs = $1
 `
 
 func (q *Queries) test(ctx context.Context, langs *t.Text) error {
-	_, err := q.db.ExecContext(ctx, test, langs)
+	query := test
+	queryParams := []interface{}{langs}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }

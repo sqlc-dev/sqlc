@@ -26,8 +26,10 @@ type SelectJSONBBuildArrayRow struct {
 	JsonbBuildArray_5 []byte
 }
 
-func (q *Queries) SelectJSONBBuildArray(ctx context.Context) (SelectJSONBBuildArrayRow, error) {
-	row := q.db.QueryRow(ctx, selectJSONBBuildArray)
+func (q *Queries) SelectJSONBBuildArray(ctx context.Context, aq ...AdditionalQuery) (SelectJSONBBuildArrayRow, error) {
+	query := selectJSONBBuildArray
+	queryParams := []interface{}{}
+	row := q.db.QueryRow(ctx, query, queryParams...)
 	var i SelectJSONBBuildArrayRow
 	err := row.Scan(
 		&i.JsonbBuildArray,
@@ -56,8 +58,10 @@ type SelectJSONBBuildObjectRow struct {
 	JsonbBuildObject_5 []byte
 }
 
-func (q *Queries) SelectJSONBBuildObject(ctx context.Context) (SelectJSONBBuildObjectRow, error) {
-	row := q.db.QueryRow(ctx, selectJSONBBuildObject)
+func (q *Queries) SelectJSONBBuildObject(ctx context.Context, aq ...AdditionalQuery) (SelectJSONBBuildObjectRow, error) {
+	query := selectJSONBBuildObject
+	queryParams := []interface{}{}
+	row := q.db.QueryRow(ctx, query, queryParams...)
 	var i SelectJSONBBuildObjectRow
 	err := row.Scan(
 		&i.JsonbBuildObject,
@@ -86,8 +90,10 @@ type SelectJSONBuildArrayRow struct {
 	JsonBuildArray_5 []byte
 }
 
-func (q *Queries) SelectJSONBuildArray(ctx context.Context) (SelectJSONBuildArrayRow, error) {
-	row := q.db.QueryRow(ctx, selectJSONBuildArray)
+func (q *Queries) SelectJSONBuildArray(ctx context.Context, aq ...AdditionalQuery) (SelectJSONBuildArrayRow, error) {
+	query := selectJSONBuildArray
+	queryParams := []interface{}{}
+	row := q.db.QueryRow(ctx, query, queryParams...)
 	var i SelectJSONBuildArrayRow
 	err := row.Scan(
 		&i.JsonBuildArray,
@@ -116,8 +122,10 @@ type SelectJSONBuildObjectRow struct {
 	JsonBuildObject_5 []byte
 }
 
-func (q *Queries) SelectJSONBuildObject(ctx context.Context) (SelectJSONBuildObjectRow, error) {
-	row := q.db.QueryRow(ctx, selectJSONBuildObject)
+func (q *Queries) SelectJSONBuildObject(ctx context.Context, aq ...AdditionalQuery) (SelectJSONBuildObjectRow, error) {
+	query := selectJSONBuildObject
+	queryParams := []interface{}{}
+	row := q.db.QueryRow(ctx, query, queryParams...)
 	var i SelectJSONBuildObjectRow
 	err := row.Scan(
 		&i.JsonBuildObject,

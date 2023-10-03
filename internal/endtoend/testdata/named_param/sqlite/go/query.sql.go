@@ -13,8 +13,16 @@ const atParams = `-- name: AtParams :many
 SELECT name FROM foo WHERE name = ?1
 `
 
-func (q *Queries) AtParams(ctx context.Context, slug string) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, atParams, slug)
+func (q *Queries) AtParams(ctx context.Context, slug string, aq ...AdditionalQuery) ([]string, error) {
+	query := atParams
+	queryParams := []interface{}{slug}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -40,8 +48,16 @@ const funcParams = `-- name: FuncParams :many
 SELECT name FROM foo WHERE name = ?1
 `
 
-func (q *Queries) FuncParams(ctx context.Context, slug string) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, funcParams, slug)
+func (q *Queries) FuncParams(ctx context.Context, slug string, aq ...AdditionalQuery) ([]string, error) {
+	query := funcParams
+	queryParams := []interface{}{slug}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -72,8 +88,16 @@ type InsertAtParamsParams struct {
 	Bio  string
 }
 
-func (q *Queries) InsertAtParams(ctx context.Context, arg InsertAtParamsParams) (string, error) {
-	row := q.db.QueryRowContext(ctx, insertAtParams, arg.Name, arg.Bio)
+func (q *Queries) InsertAtParams(ctx context.Context, arg InsertAtParamsParams, aq ...AdditionalQuery) (string, error) {
+	query := insertAtParams
+	queryParams := []interface{}{arg.Name, arg.Bio}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var name string
 	err := row.Scan(&name)
 	return name, err
@@ -88,8 +112,16 @@ type InsertFuncParamsParams struct {
 	Bio  string
 }
 
-func (q *Queries) InsertFuncParams(ctx context.Context, arg InsertFuncParamsParams) (string, error) {
-	row := q.db.QueryRowContext(ctx, insertFuncParams, arg.Name, arg.Bio)
+func (q *Queries) InsertFuncParams(ctx context.Context, arg InsertFuncParamsParams, aq ...AdditionalQuery) (string, error) {
+	query := insertFuncParams
+	queryParams := []interface{}{arg.Name, arg.Bio}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var name string
 	err := row.Scan(&name)
 	return name, err

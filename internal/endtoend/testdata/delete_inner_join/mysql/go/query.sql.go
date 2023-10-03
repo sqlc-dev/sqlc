@@ -19,6 +19,9 @@ WHERE
 `
 
 func (q *Queries) RemoveAllAuthorsFromTheGreatGatsby(ctx context.Context) error {
-	_, err := q.db.ExecContext(ctx, removeAllAuthorsFromTheGreatGatsby)
+	query := removeAllAuthorsFromTheGreatGatsby
+	queryParams := []interface{}{}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }

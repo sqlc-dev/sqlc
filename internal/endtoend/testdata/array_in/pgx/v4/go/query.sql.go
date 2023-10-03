@@ -20,8 +20,16 @@ type InParams struct {
 	ID_2 int32
 }
 
-func (q *Queries) In(ctx context.Context, arg InParams) ([]int32, error) {
-	rows, err := q.db.Query(ctx, in, arg.ID, arg.ID_2)
+func (q *Queries) In(ctx context.Context, arg InParams, aq ...AdditionalQuery) ([]int32, error) {
+	query := in
+	queryParams := []interface{}{arg.ID, arg.ID_2}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

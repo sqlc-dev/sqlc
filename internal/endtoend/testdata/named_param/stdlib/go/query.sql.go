@@ -18,8 +18,16 @@ type AtParamsParams struct {
 	Filter bool
 }
 
-func (q *Queries) AtParams(ctx context.Context, arg AtParamsParams) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, atParams, arg.Slug, arg.Filter)
+func (q *Queries) AtParams(ctx context.Context, arg AtParamsParams, aq ...AdditionalQuery) ([]string, error) {
+	query := atParams
+	queryParams := []interface{}{arg.Slug, arg.Filter}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -50,8 +58,16 @@ type FuncParamsParams struct {
 	Filter bool
 }
 
-func (q *Queries) FuncParams(ctx context.Context, arg FuncParamsParams) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, funcParams, arg.Slug, arg.Filter)
+func (q *Queries) FuncParams(ctx context.Context, arg FuncParamsParams, aq ...AdditionalQuery) ([]string, error) {
+	query := funcParams
+	queryParams := []interface{}{arg.Slug, arg.Filter}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -82,8 +98,16 @@ type InsertAtParamsParams struct {
 	Bio  string
 }
 
-func (q *Queries) InsertAtParams(ctx context.Context, arg InsertAtParamsParams) (string, error) {
-	row := q.db.QueryRowContext(ctx, insertAtParams, arg.Name, arg.Bio)
+func (q *Queries) InsertAtParams(ctx context.Context, arg InsertAtParamsParams, aq ...AdditionalQuery) (string, error) {
+	query := insertAtParams
+	queryParams := []interface{}{arg.Name, arg.Bio}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var name string
 	err := row.Scan(&name)
 	return name, err
@@ -98,8 +122,16 @@ type InsertFuncParamsParams struct {
 	Bio  string
 }
 
-func (q *Queries) InsertFuncParams(ctx context.Context, arg InsertFuncParamsParams) (string, error) {
-	row := q.db.QueryRowContext(ctx, insertFuncParams, arg.Name, arg.Bio)
+func (q *Queries) InsertFuncParams(ctx context.Context, arg InsertFuncParamsParams, aq ...AdditionalQuery) (string, error) {
+	query := insertFuncParams
+	queryParams := []interface{}{arg.Name, arg.Bio}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var name string
 	err := row.Scan(&name)
 	return name, err
@@ -120,8 +152,16 @@ type UpdateParams struct {
 	Name    string
 }
 
-func (q *Queries) Update(ctx context.Context, arg UpdateParams) (Foo, error) {
-	row := q.db.QueryRowContext(ctx, update, arg.SetName, arg.Name)
+func (q *Queries) Update(ctx context.Context, arg UpdateParams, aq ...AdditionalQuery) (Foo, error) {
+	query := update
+	queryParams := []interface{}{arg.SetName, arg.Name}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var i Foo
 	err := row.Scan(&i.Name, &i.Bio)
 	return i, err

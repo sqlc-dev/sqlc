@@ -14,6 +14,9 @@ SELECT a, b FROM foo
 `
 
 func (q *Queries) SelectFoo(ctx context.Context) error {
-	_, err := q.db.ExecContext(ctx, selectFoo)
+	query := selectFoo
+	queryParams := []interface{}{}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }

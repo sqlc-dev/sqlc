@@ -16,8 +16,10 @@ INSERT INTO authors (name) VALUES ($1)
 RETURNING author_id, name, biography
 `
 
-func (q *Queries) CreateAuthor(ctx context.Context, name string) (Author, error) {
-	row := q.db.QueryRow(ctx, createAuthor, name)
+func (q *Queries) CreateAuthor(ctx context.Context, name string, aq ...AdditionalQuery) (Author, error) {
+	query := createAuthor
+	queryParams := []interface{}{name}
+	row := q.db.QueryRow(ctx, query, queryParams...)
 	var i Author
 	err := row.Scan(&i.AuthorID, &i.Name, &i.Biography)
 	return i, err
@@ -37,8 +39,10 @@ SELECT author_id, name, biography FROM authors
 WHERE author_id = $1
 `
 
-func (q *Queries) GetAuthor(ctx context.Context, authorID int32) (Author, error) {
-	row := q.db.QueryRow(ctx, getAuthor, authorID)
+func (q *Queries) GetAuthor(ctx context.Context, authorID int32, aq ...AdditionalQuery) (Author, error) {
+	query := getAuthor
+	queryParams := []interface{}{authorID}
+	row := q.db.QueryRow(ctx, query, queryParams...)
 	var i Author
 	err := row.Scan(&i.AuthorID, &i.Name, &i.Biography)
 	return i, err

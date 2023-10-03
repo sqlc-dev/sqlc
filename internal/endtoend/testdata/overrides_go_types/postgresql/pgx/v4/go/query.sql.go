@@ -19,8 +19,16 @@ const loadFoo = `-- name: LoadFoo :many
 SELECT id, other_id, age, balance, bio, about FROM foo WHERE id = $1
 `
 
-func (q *Queries) LoadFoo(ctx context.Context, id uuid.UUID) ([]Foo, error) {
-	rows, err := q.db.Query(ctx, loadFoo, id)
+func (q *Queries) LoadFoo(ctx context.Context, id uuid.UUID, aq ...AdditionalQuery) ([]Foo, error) {
+	query := loadFoo
+	queryParams := []interface{}{id}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -67,8 +75,16 @@ type LoadFooWithAliasesRow struct {
 	AliasedAbout   *string
 }
 
-func (q *Queries) LoadFooWithAliases(ctx context.Context, namedParameterID uuid.UUID) ([]LoadFooWithAliasesRow, error) {
-	rows, err := q.db.Query(ctx, loadFooWithAliases, namedParameterID)
+func (q *Queries) LoadFooWithAliases(ctx context.Context, namedParameterID uuid.UUID, aq ...AdditionalQuery) ([]LoadFooWithAliasesRow, error) {
+	query := loadFooWithAliases
+	queryParams := []interface{}{namedParameterID}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

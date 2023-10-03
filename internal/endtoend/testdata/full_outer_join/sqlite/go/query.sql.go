@@ -24,8 +24,16 @@ type GetAuthorRow struct {
 	Title sql.NullString
 }
 
-func (q *Queries) GetAuthor(ctx context.Context, id int64) (GetAuthorRow, error) {
-	row := q.db.QueryRowContext(ctx, getAuthor, id)
+func (q *Queries) GetAuthor(ctx context.Context, id int64, aq ...AdditionalQuery) (GetAuthorRow, error) {
+	query := getAuthor
+	queryParams := []interface{}{id}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var i GetAuthorRow
 	err := row.Scan(
 		&i.ID,

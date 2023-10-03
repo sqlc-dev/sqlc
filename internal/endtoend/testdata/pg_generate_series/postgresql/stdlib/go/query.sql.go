@@ -19,8 +19,16 @@ type GenerateSeriesParams struct {
 	Column2 time.Time `json:"column_2"`
 }
 
-func (q *Queries) GenerateSeries(ctx context.Context, arg GenerateSeriesParams) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, generateSeries, arg.Column1, arg.Column2)
+func (q *Queries) GenerateSeries(ctx context.Context, arg GenerateSeriesParams, aq ...AdditionalQuery) ([]string, error) {
+	query := generateSeries
+	queryParams := []interface{}{arg.Column1, arg.Column2}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

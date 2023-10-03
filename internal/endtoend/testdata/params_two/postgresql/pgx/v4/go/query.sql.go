@@ -20,8 +20,16 @@ type FooByAandBParams struct {
 	B sql.NullString
 }
 
-func (q *Queries) FooByAandB(ctx context.Context, arg FooByAandBParams) ([]Foo, error) {
-	rows, err := q.db.Query(ctx, fooByAandB, arg.A, arg.B)
+func (q *Queries) FooByAandB(ctx context.Context, arg FooByAandBParams, aq ...AdditionalQuery) ([]Foo, error) {
+	query := fooByAandB
+	queryParams := []interface{}{arg.A, arg.B}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

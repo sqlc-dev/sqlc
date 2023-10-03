@@ -21,8 +21,16 @@ type AuthorPagesRow struct {
 	TotalPages int64
 }
 
-func (q *Queries) AuthorPages(ctx context.Context) ([]AuthorPagesRow, error) {
-	rows, err := q.db.QueryContext(ctx, authorPages)
+func (q *Queries) AuthorPages(ctx context.Context, aq ...AdditionalQuery) ([]AuthorPagesRow, error) {
+	query := authorPages
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

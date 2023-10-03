@@ -13,8 +13,16 @@ const listFoos = `-- name: ListFoos :one
 SELECT id FROM foo WHERE id = frobnicate($1)
 `
 
-func (q *Queries) ListFoos(ctx context.Context, frobnicate interface{}) (string, error) {
-	row := q.db.QueryRowContext(ctx, listFoos, frobnicate)
+func (q *Queries) ListFoos(ctx context.Context, frobnicate interface{}, aq ...AdditionalQuery) (string, error) {
+	query := listFoos
+	queryParams := []interface{}{frobnicate}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var id string
 	err := row.Scan(&id)
 	return id, err

@@ -21,8 +21,16 @@ type GroupConcatRow struct {
 	GroupConcat sql.NullString
 }
 
-func (q *Queries) GroupConcat(ctx context.Context) ([]GroupConcatRow, error) {
-	rows, err := q.db.QueryContext(ctx, groupConcat)
+func (q *Queries) GroupConcat(ctx context.Context, aq ...AdditionalQuery) ([]GroupConcatRow, error) {
+	query := groupConcat
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -56,8 +64,16 @@ type GroupConcatOrderByRow struct {
 	GroupConcat sql.NullString
 }
 
-func (q *Queries) GroupConcatOrderBy(ctx context.Context) ([]GroupConcatOrderByRow, error) {
-	rows, err := q.db.QueryContext(ctx, groupConcatOrderBy)
+func (q *Queries) GroupConcatOrderBy(ctx context.Context, aq ...AdditionalQuery) ([]GroupConcatOrderByRow, error) {
+	query := groupConcatOrderBy
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

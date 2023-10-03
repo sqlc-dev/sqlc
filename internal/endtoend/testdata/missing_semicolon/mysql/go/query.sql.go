@@ -21,6 +21,9 @@ type SetAuthorParams struct {
 }
 
 func (q *Queries) SetAuthor(ctx context.Context, arg SetAuthorParams) error {
-	_, err := q.db.ExecContext(ctx, setAuthor, arg.Name, arg.ID)
+	query := setAuthor
+	queryParams := []interface{}{arg.Name, arg.ID}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }

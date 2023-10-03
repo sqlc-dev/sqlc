@@ -16,8 +16,16 @@ FROM     authors
 GROUP BY name
 `
 
-func (q *Queries) ListAuthors(ctx context.Context) ([]Author, error) {
-	rows, err := q.db.QueryContext(ctx, listAuthors)
+func (q *Queries) ListAuthors(ctx context.Context, aq ...AdditionalQuery) ([]Author, error) {
+	query := listAuthors
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -45,8 +53,16 @@ FROM     authors
 GROUP BY name
 `
 
-func (q *Queries) ListAuthorsIdenticalAlias(ctx context.Context) ([]Author, error) {
-	rows, err := q.db.QueryContext(ctx, listAuthorsIdenticalAlias)
+func (q *Queries) ListAuthorsIdenticalAlias(ctx context.Context, aq ...AdditionalQuery) ([]Author, error) {
+	query := listAuthorsIdenticalAlias
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -82,8 +98,16 @@ type ListMetricsRow struct {
 	Avg      float64
 }
 
-func (q *Queries) ListMetrics(ctx context.Context) ([]ListMetricsRow, error) {
-	rows, err := q.db.QueryContext(ctx, listMetrics)
+func (q *Queries) ListMetrics(ctx context.Context, aq ...AdditionalQuery) ([]ListMetricsRow, error) {
+	query := listMetrics
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

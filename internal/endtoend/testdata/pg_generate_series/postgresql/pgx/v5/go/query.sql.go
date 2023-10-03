@@ -20,8 +20,16 @@ type GenerateSeriesParams struct {
 	Column2 pgtype.Timestamp `json:"column_2"`
 }
 
-func (q *Queries) GenerateSeries(ctx context.Context, arg GenerateSeriesParams) ([]pgtype.Numeric, error) {
-	rows, err := q.db.Query(ctx, generateSeries, arg.Column1, arg.Column2)
+func (q *Queries) GenerateSeries(ctx context.Context, arg GenerateSeriesParams, aq ...AdditionalQuery) ([]pgtype.Numeric, error) {
+	query := generateSeries
+	queryParams := []interface{}{arg.Column1, arg.Column2}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

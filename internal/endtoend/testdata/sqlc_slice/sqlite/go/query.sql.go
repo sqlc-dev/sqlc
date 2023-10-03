@@ -16,7 +16,7 @@ SELECT bar FROM foo
 WHERE id IN (/*SLICE:favourites*/?)
 `
 
-func (q *Queries) FuncNullable(ctx context.Context, favourites []int64) ([]sql.NullString, error) {
+func (q *Queries) FuncNullable(ctx context.Context, favourites []int64, aq ...AdditionalQuery) ([]sql.NullString, error) {
 	query := funcNullable
 	var queryParams []interface{}
 	if len(favourites) > 0 {
@@ -27,6 +27,12 @@ func (q *Queries) FuncNullable(ctx context.Context, favourites []int64) ([]sql.N
 	} else {
 		query = strings.Replace(query, "/*SLICE:favourites*/?", "NULL", 1)
 	}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
 	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
@@ -98,7 +104,7 @@ type FuncParamIdentParams struct {
 	Favourites []int64
 }
 
-func (q *Queries) FuncParamIdent(ctx context.Context, arg FuncParamIdentParams) ([]string, error) {
+func (q *Queries) FuncParamIdent(ctx context.Context, arg FuncParamIdentParams, aq ...AdditionalQuery) ([]string, error) {
 	query := funcParamIdent
 	var queryParams []interface{}
 	queryParams = append(queryParams, arg.Slug)
@@ -110,6 +116,12 @@ func (q *Queries) FuncParamIdent(ctx context.Context, arg FuncParamIdentParams) 
 	} else {
 		query = strings.Replace(query, "/*SLICE:favourites*/?", "NULL", 1)
 	}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
 	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
@@ -137,7 +149,7 @@ SELECT name FROM foo
 WHERE id IN (/*SLICE:favourites*/?)
 `
 
-func (q *Queries) FuncParamSoloArg(ctx context.Context, favourites []int64) ([]string, error) {
+func (q *Queries) FuncParamSoloArg(ctx context.Context, favourites []int64, aq ...AdditionalQuery) ([]string, error) {
 	query := funcParamSoloArg
 	var queryParams []interface{}
 	if len(favourites) > 0 {
@@ -148,6 +160,12 @@ func (q *Queries) FuncParamSoloArg(ctx context.Context, favourites []int64) ([]s
 	} else {
 		query = strings.Replace(query, "/*SLICE:favourites*/?", "NULL", 1)
 	}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
 	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
@@ -181,7 +199,7 @@ type FuncParamStringParams struct {
 	Favourites []int64
 }
 
-func (q *Queries) FuncParamString(ctx context.Context, arg FuncParamStringParams) ([]string, error) {
+func (q *Queries) FuncParamString(ctx context.Context, arg FuncParamStringParams, aq ...AdditionalQuery) ([]string, error) {
 	query := funcParamString
 	var queryParams []interface{}
 	queryParams = append(queryParams, arg.Slug)
@@ -193,6 +211,12 @@ func (q *Queries) FuncParamString(ctx context.Context, arg FuncParamStringParams
 	} else {
 		query = strings.Replace(query, "/*SLICE:favourites*/?", "NULL", 1)
 	}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
 	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
@@ -237,6 +261,7 @@ func (q *Queries) SliceExec(ctx context.Context, arg SliceExecParams) error {
 	} else {
 		query = strings.Replace(query, "/*SLICE:favourites*/?", "NULL", 1)
 	}
+
 	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }

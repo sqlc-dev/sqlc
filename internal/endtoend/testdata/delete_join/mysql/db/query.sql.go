@@ -26,7 +26,10 @@ type DeleteJoinParams struct {
 }
 
 func (q *Queries) DeleteJoin(ctx context.Context, arg DeleteJoinParams) error {
-	_, err := q.db.ExecContext(ctx, deleteJoin, arg.ID, arg.UserID)
+	query := deleteJoin
+	queryParams := []interface{}{arg.ID, arg.UserID}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }
 
@@ -47,7 +50,10 @@ type DeleteLeftJoinParams struct {
 }
 
 func (q *Queries) DeleteLeftJoin(ctx context.Context, arg DeleteLeftJoinParams) error {
-	_, err := q.db.ExecContext(ctx, deleteLeftJoin, arg.ID, arg.UserID)
+	query := deleteLeftJoin
+	queryParams := []interface{}{arg.ID, arg.UserID}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }
 
@@ -68,6 +74,9 @@ type DeleteRightJoinParams struct {
 }
 
 func (q *Queries) DeleteRightJoin(ctx context.Context, arg DeleteRightJoinParams) error {
-	_, err := q.db.ExecContext(ctx, deleteRightJoin, arg.ID, arg.UserID)
+	query := deleteRightJoin
+	queryParams := []interface{}{arg.ID, arg.UserID}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }

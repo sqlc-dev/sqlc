@@ -15,8 +15,16 @@ WHERE name = ? COLLATE NOCASE
 LIMIT 1
 `
 
-func (q *Queries) GetAccountByName(ctx context.Context, name string) (Account, error) {
-	row := q.db.QueryRowContext(ctx, getAccountByName, name)
+func (q *Queries) GetAccountByName(ctx context.Context, name string, aq ...AdditionalQuery) (Account, error) {
+	query := getAccountByName
+	queryParams := []interface{}{name}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var i Account
 	err := row.Scan(&i.ID, &i.Name)
 	return i, err

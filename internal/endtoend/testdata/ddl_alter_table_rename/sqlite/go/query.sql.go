@@ -14,8 +14,16 @@ const placeholder = `-- name: Placeholder :many
 SELECT name from arenas
 `
 
-func (q *Queries) Placeholder(ctx context.Context) ([]sql.NullString, error) {
-	rows, err := q.db.QueryContext(ctx, placeholder)
+func (q *Queries) Placeholder(ctx context.Context, aq ...AdditionalQuery) ([]sql.NullString, error) {
+	query := placeholder
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

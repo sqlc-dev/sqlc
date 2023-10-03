@@ -13,8 +13,16 @@ const get = `-- name: Get :many
 SELECT bar, "interval" FROM foo LIMIT $1
 `
 
-func (q *Queries) Get(ctx context.Context, limit int32) ([]Foo, error) {
-	rows, err := q.db.QueryContext(ctx, get, limit)
+func (q *Queries) Get(ctx context.Context, limit int32, aq ...AdditionalQuery) ([]Foo, error) {
+	query := get
+	queryParams := []interface{}{limit}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

@@ -23,8 +23,16 @@ type TestInnerLeftRow struct {
 	C sql.NullString
 }
 
-func (q *Queries) TestInnerLeft(ctx context.Context) ([]TestInnerLeftRow, error) {
-	rows, err := q.db.QueryContext(ctx, testInnerLeft)
+func (q *Queries) TestInnerLeft(ctx context.Context, aq ...AdditionalQuery) ([]TestInnerLeftRow, error) {
+	query := testInnerLeft
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -63,8 +71,16 @@ type TestInnerLeftInnerLeftRow struct {
 	E sql.NullString
 }
 
-func (q *Queries) TestInnerLeftInnerLeft(ctx context.Context) ([]TestInnerLeftInnerLeftRow, error) {
-	rows, err := q.db.QueryContext(ctx, testInnerLeftInnerLeft)
+func (q *Queries) TestInnerLeftInnerLeft(ctx context.Context, aq ...AdditionalQuery) ([]TestInnerLeftInnerLeftRow, error) {
+	query := testInnerLeftInnerLeft
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -105,8 +121,16 @@ type TestLeftInnerRow struct {
 	C string
 }
 
-func (q *Queries) TestLeftInner(ctx context.Context) ([]TestLeftInnerRow, error) {
-	rows, err := q.db.QueryContext(ctx, testLeftInner)
+func (q *Queries) TestLeftInner(ctx context.Context, aq ...AdditionalQuery) ([]TestLeftInnerRow, error) {
+	query := testLeftInner
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -145,8 +169,16 @@ type TestLeftInnerLeftInnerRow struct {
 	E string
 }
 
-func (q *Queries) TestLeftInnerLeftInner(ctx context.Context) ([]TestLeftInnerLeftInnerRow, error) {
-	rows, err := q.db.QueryContext(ctx, testLeftInnerLeftInner)
+func (q *Queries) TestLeftInnerLeftInner(ctx context.Context, aq ...AdditionalQuery) ([]TestLeftInnerLeftInnerRow, error) {
+	query := testLeftInnerLeftInner
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

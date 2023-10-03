@@ -13,8 +13,16 @@ const wordSimilarity = `-- name: WordSimilarity :one
 SELECT word_similarity('word', 'two words')
 `
 
-func (q *Queries) WordSimilarity(ctx context.Context) (float32, error) {
-	row := q.db.QueryRowContext(ctx, wordSimilarity)
+func (q *Queries) WordSimilarity(ctx context.Context, aq ...AdditionalQuery) (float32, error) {
+	query := wordSimilarity
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var word_similarity float32
 	err := row.Scan(&word_similarity)
 	return word_similarity, err

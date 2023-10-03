@@ -26,8 +26,16 @@ type AllAuthorsRow struct {
 	AliasName sql.NullString
 }
 
-func (q *Queries) AllAuthors(ctx context.Context) ([]AllAuthorsRow, error) {
-	rows, err := q.db.QueryContext(ctx, allAuthors)
+func (q *Queries) AllAuthors(ctx context.Context, aq ...AdditionalQuery) ([]AllAuthorsRow, error) {
+	query := allAuthors
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

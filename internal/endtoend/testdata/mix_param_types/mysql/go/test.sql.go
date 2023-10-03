@@ -18,8 +18,16 @@ type CountOneParams struct {
 	Name string
 }
 
-func (q *Queries) CountOne(ctx context.Context, arg CountOneParams) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countOne, arg.ID, arg.Name)
+func (q *Queries) CountOne(ctx context.Context, arg CountOneParams, aq ...AdditionalQuery) (int64, error) {
+	query := countOne
+	queryParams := []interface{}{arg.ID, arg.Name}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -35,8 +43,16 @@ type CountThreeParams struct {
 	Name  string
 }
 
-func (q *Queries) CountThree(ctx context.Context, arg CountThreeParams) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countThree, arg.ID, arg.Phone, arg.Name)
+func (q *Queries) CountThree(ctx context.Context, arg CountThreeParams, aq ...AdditionalQuery) (int64, error) {
+	query := countThree
+	queryParams := []interface{}{arg.ID, arg.Phone, arg.Name}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -51,8 +67,16 @@ type CountTwoParams struct {
 	Name string
 }
 
-func (q *Queries) CountTwo(ctx context.Context, arg CountTwoParams) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countTwo, arg.ID, arg.Name)
+func (q *Queries) CountTwo(ctx context.Context, arg CountTwoParams, aq ...AdditionalQuery) (int64, error) {
+	query := countTwo
+	queryParams := []interface{}{arg.ID, arg.Name}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var count int64
 	err := row.Scan(&count)
 	return count, err

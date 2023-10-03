@@ -14,8 +14,16 @@ const dateSub31Days = `-- name: DateSub31Days :one
 SELECT DATE_SUB('1998-01-02', INTERVAL 31 DAY)
 `
 
-func (q *Queries) DateSub31Days(ctx context.Context) (time.Time, error) {
-	row := q.db.QueryRowContext(ctx, dateSub31Days)
+func (q *Queries) DateSub31Days(ctx context.Context, aq ...AdditionalQuery) (time.Time, error) {
+	query := dateSub31Days
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var date_sub time.Time
 	err := row.Scan(&date_sub)
 	return date_sub, err
@@ -26,8 +34,16 @@ SELECT DATE_SUB('2025-01-01 00:00:00',
                 INTERVAL '1 1:1:1' DAY_SECOND)
 `
 
-func (q *Queries) DateSubDaySecond(ctx context.Context) (time.Time, error) {
-	row := q.db.QueryRowContext(ctx, dateSubDaySecond)
+func (q *Queries) DateSubDaySecond(ctx context.Context, aq ...AdditionalQuery) (time.Time, error) {
+	query := dateSubDaySecond
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var date_sub time.Time
 	err := row.Scan(&date_sub)
 	return date_sub, err
@@ -37,8 +53,16 @@ const dateSubOneYear = `-- name: DateSubOneYear :one
 SELECT DATE_SUB('2018-05-01',INTERVAL 1 YEAR)
 `
 
-func (q *Queries) DateSubOneYear(ctx context.Context) (time.Time, error) {
-	row := q.db.QueryRowContext(ctx, dateSubOneYear)
+func (q *Queries) DateSubOneYear(ctx context.Context, aq ...AdditionalQuery) (time.Time, error) {
+	query := dateSubOneYear
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var date_sub time.Time
 	err := row.Scan(&date_sub)
 	return date_sub, err

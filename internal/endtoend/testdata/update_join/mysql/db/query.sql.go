@@ -25,7 +25,10 @@ type UpdateJoinParams struct {
 }
 
 func (q *Queries) UpdateJoin(ctx context.Context, arg UpdateJoinParams) error {
-	_, err := q.db.ExecContext(ctx, updateJoin, arg.IsActive, arg.ID, arg.UserID)
+	query := updateJoin
+	queryParams := []interface{}{arg.IsActive, arg.ID, arg.UserID}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }
 
@@ -45,7 +48,10 @@ type UpdateLeftJoinParams struct {
 }
 
 func (q *Queries) UpdateLeftJoin(ctx context.Context, arg UpdateLeftJoinParams) error {
-	_, err := q.db.ExecContext(ctx, updateLeftJoin, arg.IsActive, arg.ID, arg.UserID)
+	query := updateLeftJoin
+	queryParams := []interface{}{arg.IsActive, arg.ID, arg.UserID}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }
 
@@ -65,6 +71,9 @@ type UpdateRightJoinParams struct {
 }
 
 func (q *Queries) UpdateRightJoin(ctx context.Context, arg UpdateRightJoinParams) error {
-	_, err := q.db.ExecContext(ctx, updateRightJoin, arg.IsActive, arg.ID, arg.UserID)
+	query := updateRightJoin
+	queryParams := []interface{}{arg.IsActive, arg.ID, arg.UserID}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }

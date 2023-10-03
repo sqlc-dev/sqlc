@@ -9,7 +9,7 @@ import (
 )
 
 type Querier interface {
-	GetAll(ctx context.Context) ([]int32, error)
+	GetAll(ctx context.Context, aq ...AdditionalQuery) ([]int32, error)
 }
 
 var _ Querier = (*Queries)(nil)

@@ -86,3 +86,8 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		funcParamIdentStmt: q.funcParamIdentStmt,
 	}
 }
+
+type AdditionalQuery struct {
+	SQL  string
+	Args []interface{}
+}

@@ -25,6 +25,9 @@ type UpdateJoinParams struct {
 }
 
 func (q *Queries) UpdateJoin(ctx context.Context, arg UpdateJoinParams) error {
-	_, err := q.db.ExecContext(ctx, updateJoin, arg.IsActive, arg.ID, arg.UserID)
+	query := updateJoin
+	queryParams := []interface{}{arg.IsActive, arg.ID, arg.UserID}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }

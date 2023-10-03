@@ -21,8 +21,10 @@ type TableNameParams struct {
 	ID_2 int32
 }
 
-func (q *Queries) TableName(ctx context.Context, arg TableNameParams) (int32, error) {
-	row := q.db.QueryRow(ctx, tableName, arg.ID, arg.ID_2)
+func (q *Queries) TableName(ctx context.Context, arg TableNameParams, aq ...AdditionalQuery) (int32, error) {
+	query := tableName
+	queryParams := []interface{}{arg.ID, arg.ID_2}
+	row := q.db.QueryRow(ctx, query, queryParams...)
 	var id int32
 	err := row.Scan(&id)
 	return id, err

@@ -15,7 +15,10 @@ SELECT name FROM foo.bar
 `
 
 func (q *Queries) GetFooBar(ctx context.Context) error {
-	_, err := q.db.ExecContext(ctx, getFooBar)
+	query := getFooBar
+	queryParams := []interface{}{}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }
 
@@ -24,6 +27,9 @@ UPDATE foo.bar SET name = $1
 `
 
 func (q *Queries) UpdateFooBar(ctx context.Context, name sql.NullString) error {
-	_, err := q.db.ExecContext(ctx, updateFooBar, name)
+	query := updateFooBar
+	queryParams := []interface{}{name}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }

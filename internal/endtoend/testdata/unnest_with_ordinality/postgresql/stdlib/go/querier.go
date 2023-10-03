@@ -9,7 +9,7 @@ import (
 )
 
 type Querier interface {
-	GetValues(ctx context.Context) ([]GetValuesRow, error)
+	GetValues(ctx context.Context, aq ...AdditionalQuery) ([]GetValuesRow, error)
 }
 
 var _ Querier = (*Queries)(nil)

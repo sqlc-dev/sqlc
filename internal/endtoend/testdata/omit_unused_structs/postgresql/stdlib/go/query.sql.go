@@ -14,8 +14,16 @@ const query_param_enum_table = `-- name: query_param_enum_table :one
 SELECT id, other, value FROM query_param_enum_table WHERE value = $1
 `
 
-func (q *Queries) query_param_enum_table(ctx context.Context, value NullQueryParamEnumTableEnum) (QueryParamEnumTable, error) {
-	row := q.db.QueryRowContext(ctx, query_param_enum_table, value)
+func (q *Queries) query_param_enum_table(ctx context.Context, value NullQueryParamEnumTableEnum, aq ...AdditionalQuery) (QueryParamEnumTable, error) {
+	query := query_param_enum_table
+	queryParams := []interface{}{value}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var i QueryParamEnumTable
 	err := row.Scan(&i.ID, &i.Other, &i.Value)
 	return i, err
@@ -30,8 +38,16 @@ type query_param_struct_enum_tableParams struct {
 	Value NullQueryParamStructEnumTableEnum
 }
 
-func (q *Queries) query_param_struct_enum_table(ctx context.Context, arg query_param_struct_enum_tableParams) (int32, error) {
-	row := q.db.QueryRowContext(ctx, query_param_struct_enum_table, arg.ID, arg.Value)
+func (q *Queries) query_param_struct_enum_table(ctx context.Context, arg query_param_struct_enum_tableParams, aq ...AdditionalQuery) (int32, error) {
+	query := query_param_struct_enum_table
+	queryParams := []interface{}{arg.ID, arg.Value}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var id int32
 	err := row.Scan(&id)
 	return id, err
@@ -41,8 +57,16 @@ const query_return_enum_table = `-- name: query_return_enum_table :one
 SELECT value FROM query_return_enum_table WHERE id = $1
 `
 
-func (q *Queries) query_return_enum_table(ctx context.Context, id int32) (NullQueryReturnEnumTableEnum, error) {
-	row := q.db.QueryRowContext(ctx, query_return_enum_table, id)
+func (q *Queries) query_return_enum_table(ctx context.Context, id int32, aq ...AdditionalQuery) (NullQueryReturnEnumTableEnum, error) {
+	query := query_return_enum_table
+	queryParams := []interface{}{id}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var value NullQueryReturnEnumTableEnum
 	err := row.Scan(&value)
 	return value, err
@@ -52,8 +76,16 @@ const query_return_full_table = `-- name: query_return_full_table :many
 SELECT id, value FROM query_return_full_table
 `
 
-func (q *Queries) query_return_full_table(ctx context.Context) ([]QueryReturnFullTable, error) {
-	rows, err := q.db.QueryContext(ctx, query_return_full_table)
+func (q *Queries) query_return_full_table(ctx context.Context, aq ...AdditionalQuery) ([]QueryReturnFullTable, error) {
+	query := query_return_full_table
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -84,8 +116,16 @@ type query_return_struct_enum_tableRow struct {
 	Another sql.NullInt32
 }
 
-func (q *Queries) query_return_struct_enum_table(ctx context.Context, id int32) (query_return_struct_enum_tableRow, error) {
-	row := q.db.QueryRowContext(ctx, query_return_struct_enum_table, id)
+func (q *Queries) query_return_struct_enum_table(ctx context.Context, id int32, aq ...AdditionalQuery) (query_return_struct_enum_tableRow, error) {
+	query := query_return_struct_enum_table
+	queryParams := []interface{}{id}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var i query_return_struct_enum_tableRow
 	err := row.Scan(&i.Value, &i.Another)
 	return i, err

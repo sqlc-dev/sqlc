@@ -18,8 +18,16 @@ type MathRow struct {
 	Division int32
 }
 
-func (q *Queries) Math(ctx context.Context) ([]MathRow, error) {
-	rows, err := q.db.QueryContext(ctx, math)
+func (q *Queries) Math(ctx context.Context, aq ...AdditionalQuery) ([]MathRow, error) {
+	query := math
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

@@ -33,8 +33,16 @@ type BooksByTagsRow struct {
 	Tags   []string
 }
 
-func (q *Queries) BooksByTags(ctx context.Context, dollar_1 []string) ([]BooksByTagsRow, error) {
-	rows, err := q.db.QueryContext(ctx, booksByTags, pq.Array(dollar_1))
+func (q *Queries) BooksByTags(ctx context.Context, dollar_1 []string, aq ...AdditionalQuery) ([]BooksByTagsRow, error) {
+	query := booksByTags
+	queryParams := []interface{}{pq.Array(dollar_1)}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -72,8 +80,16 @@ type BooksByTitleYearParams struct {
 	Year  int32
 }
 
-func (q *Queries) BooksByTitleYear(ctx context.Context, arg BooksByTitleYearParams) ([]Book, error) {
-	rows, err := q.db.QueryContext(ctx, booksByTitleYear, arg.Title, arg.Year)
+func (q *Queries) BooksByTitleYear(ctx context.Context, arg BooksByTitleYearParams, aq ...AdditionalQuery) ([]Book, error) {
+	query := booksByTitleYear
+	queryParams := []interface{}{arg.Title, arg.Year}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -109,8 +125,16 @@ INSERT INTO authors (name) VALUES ($1)
 RETURNING author_id, name
 `
 
-func (q *Queries) CreateAuthor(ctx context.Context, name string) (Author, error) {
-	row := q.db.QueryRowContext(ctx, createAuthor, name)
+func (q *Queries) CreateAuthor(ctx context.Context, name string, aq ...AdditionalQuery) (Author, error) {
+	query := createAuthor
+	queryParams := []interface{}{name}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var i Author
 	err := row.Scan(&i.AuthorID, &i.Name)
 	return i, err
@@ -147,8 +171,9 @@ type CreateBookParams struct {
 	Tags      []string
 }
 
-func (q *Queries) CreateBook(ctx context.Context, arg CreateBookParams) (Book, error) {
-	row := q.db.QueryRowContext(ctx, createBook,
+func (q *Queries) CreateBook(ctx context.Context, arg CreateBookParams, aq ...AdditionalQuery) (Book, error) {
+	query := createBook
+	queryParams := []interface{}{
 		arg.AuthorID,
 		arg.Isbn,
 		arg.BookType,
@@ -156,7 +181,14 @@ func (q *Queries) CreateBook(ctx context.Context, arg CreateBookParams) (Book, e
 		arg.Year,
 		arg.Available,
 		pq.Array(arg.Tags),
-	)
+	}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var i Book
 	err := row.Scan(
 		&i.BookID,
@@ -177,7 +209,10 @@ WHERE book_id = $1
 `
 
 func (q *Queries) DeleteBook(ctx context.Context, bookID int32) error {
-	_, err := q.db.ExecContext(ctx, deleteBook, bookID)
+	query := deleteBook
+	queryParams := []interface{}{bookID}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }
 
@@ -186,8 +221,16 @@ SELECT author_id, name FROM authors
 WHERE author_id = $1
 `
 
-func (q *Queries) GetAuthor(ctx context.Context, authorID int32) (Author, error) {
-	row := q.db.QueryRowContext(ctx, getAuthor, authorID)
+func (q *Queries) GetAuthor(ctx context.Context, authorID int32, aq ...AdditionalQuery) (Author, error) {
+	query := getAuthor
+	queryParams := []interface{}{authorID}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var i Author
 	err := row.Scan(&i.AuthorID, &i.Name)
 	return i, err
@@ -198,8 +241,16 @@ SELECT book_id, author_id, isbn, book_type, title, year, available, tags FROM bo
 WHERE book_id = $1
 `
 
-func (q *Queries) GetBook(ctx context.Context, bookID int32) (Book, error) {
-	row := q.db.QueryRowContext(ctx, getBook, bookID)
+func (q *Queries) GetBook(ctx context.Context, bookID int32, aq ...AdditionalQuery) (Book, error) {
+	query := getBook
+	queryParams := []interface{}{bookID}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var i Book
 	err := row.Scan(
 		&i.BookID,
@@ -227,7 +278,10 @@ type UpdateBookParams struct {
 }
 
 func (q *Queries) UpdateBook(ctx context.Context, arg UpdateBookParams) error {
-	_, err := q.db.ExecContext(ctx, updateBook, arg.Title, pq.Array(arg.Tags), arg.BookID)
+	query := updateBook
+	queryParams := []interface{}{arg.Title, pq.Array(arg.Tags), arg.BookID}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }
 
@@ -245,11 +299,14 @@ type UpdateBookISBNParams struct {
 }
 
 func (q *Queries) UpdateBookISBN(ctx context.Context, arg UpdateBookISBNParams) error {
-	_, err := q.db.ExecContext(ctx, updateBookISBN,
+	query := updateBookISBN
+	queryParams := []interface{}{
 		arg.Title,
 		pq.Array(arg.Tags),
 		arg.BookID,
 		arg.Isbn,
-	)
+	}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }

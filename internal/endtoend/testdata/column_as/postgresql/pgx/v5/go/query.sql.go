@@ -18,8 +18,10 @@ type WithAsRow struct {
 	Y int32
 }
 
-func (q *Queries) WithAs(ctx context.Context) (WithAsRow, error) {
-	row := q.db.QueryRow(ctx, withAs)
+func (q *Queries) WithAs(ctx context.Context, aq ...AdditionalQuery) (WithAsRow, error) {
+	query := withAs
+	queryParams := []interface{}{}
+	row := q.db.QueryRow(ctx, query, queryParams...)
 	var i WithAsRow
 	err := row.Scan(&i.X, &i.Y)
 	return i, err
@@ -34,8 +36,10 @@ type WithoutAsRow struct {
 	Y int32
 }
 
-func (q *Queries) WithoutAs(ctx context.Context) (WithoutAsRow, error) {
-	row := q.db.QueryRow(ctx, withoutAs)
+func (q *Queries) WithoutAs(ctx context.Context, aq ...AdditionalQuery) (WithoutAsRow, error) {
+	query := withoutAs
+	queryParams := []interface{}{}
+	row := q.db.QueryRow(ctx, query, queryParams...)
 	var i WithoutAsRow
 	err := row.Scan(&i.X, &i.Y)
 	return i, err

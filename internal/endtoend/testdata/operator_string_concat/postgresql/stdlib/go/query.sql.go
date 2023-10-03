@@ -15,8 +15,16 @@ select txt from Demo
 where txt ~~ '%' || $1 || '%'
 `
 
-func (q *Queries) Test(ctx context.Context, val string) (string, error) {
-	row := q.db.QueryRowContext(ctx, test, val)
+func (q *Queries) Test(ctx context.Context, val string, aq ...AdditionalQuery) (string, error) {
+	query := test
+	queryParams := []interface{}{val}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var txt string
 	err := row.Scan(&txt)
 	return txt, err
@@ -27,8 +35,16 @@ select txt from Demo
 where txt like '%' || $1 || '%'
 `
 
-func (q *Queries) Test2(ctx context.Context, val sql.NullString) (string, error) {
-	row := q.db.QueryRowContext(ctx, test2, val)
+func (q *Queries) Test2(ctx context.Context, val sql.NullString, aq ...AdditionalQuery) (string, error) {
+	query := test2
+	queryParams := []interface{}{val}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var txt string
 	err := row.Scan(&txt)
 	return txt, err
@@ -39,8 +55,16 @@ select txt from Demo
 where txt like concat('%', $1, '%')
 `
 
-func (q *Queries) Test3(ctx context.Context, val interface{}) (string, error) {
-	row := q.db.QueryRowContext(ctx, test3, val)
+func (q *Queries) Test3(ctx context.Context, val interface{}, aq ...AdditionalQuery) (string, error) {
+	query := test3
+	queryParams := []interface{}{val}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var txt string
 	err := row.Scan(&txt)
 	return txt, err

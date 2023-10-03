@@ -126,3 +126,8 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		listUsersStmt:               q.listUsersStmt,
 	}
 }
+
+type AdditionalQuery struct {
+	SQL  string
+	Args []interface{}
+}

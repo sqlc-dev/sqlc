@@ -15,8 +15,16 @@ SELECT DATE_ADD('1900-01-01 00:00:00',
                 INTERVAL '-1 10' DAY_HOUR)
 `
 
-func (q *Queries) DateAddDayHour(ctx context.Context) (time.Time, error) {
-	row := q.db.QueryRowContext(ctx, dateAddDayHour)
+func (q *Queries) DateAddDayHour(ctx context.Context, aq ...AdditionalQuery) (time.Time, error) {
+	query := dateAddDayHour
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var date_add time.Time
 	err := row.Scan(&date_add)
 	return date_add, err
@@ -27,8 +35,16 @@ SELECT DATE_ADD('2100-12-31 23:59:59',
                 INTERVAL '1:1' MINUTE_SECOND)
 `
 
-func (q *Queries) DateAddMinuteSecond(ctx context.Context) (time.Time, error) {
-	row := q.db.QueryRowContext(ctx, dateAddMinuteSecond)
+func (q *Queries) DateAddMinuteSecond(ctx context.Context, aq ...AdditionalQuery) (time.Time, error) {
+	query := dateAddMinuteSecond
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var date_add time.Time
 	err := row.Scan(&date_add)
 	return date_add, err
@@ -40,8 +56,16 @@ SELECT DATE_ADD('2018-05-01',INTERVAL 1 DAY)
 `
 
 // https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_date-add
-func (q *Queries) DateAddOneDay(ctx context.Context) (time.Time, error) {
-	row := q.db.QueryRowContext(ctx, dateAddOneDay)
+func (q *Queries) DateAddOneDay(ctx context.Context, aq ...AdditionalQuery) (time.Time, error) {
+	query := dateAddOneDay
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var date_add time.Time
 	err := row.Scan(&date_add)
 	return date_add, err
@@ -52,8 +76,16 @@ SELECT DATE_ADD('2020-12-31 23:59:59',
                 INTERVAL 1 SECOND)
 `
 
-func (q *Queries) DateAddOneSecond(ctx context.Context) (time.Time, error) {
-	row := q.db.QueryRowContext(ctx, dateAddOneSecond)
+func (q *Queries) DateAddOneSecond(ctx context.Context, aq ...AdditionalQuery) (time.Time, error) {
+	query := dateAddOneSecond
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var date_add time.Time
 	err := row.Scan(&date_add)
 	return date_add, err
@@ -64,8 +96,16 @@ SELECT DATE_ADD('1992-12-31 23:59:59.000002',
            INTERVAL '1.999999' SECOND_MICROSECOND)
 `
 
-func (q *Queries) DateAddSecondMicrosecond(ctx context.Context) (time.Time, error) {
-	row := q.db.QueryRowContext(ctx, dateAddSecondMicrosecond)
+func (q *Queries) DateAddSecondMicrosecond(ctx context.Context, aq ...AdditionalQuery) (time.Time, error) {
+	query := dateAddSecondMicrosecond
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var date_add time.Time
 	err := row.Scan(&date_add)
 	return date_add, err
@@ -76,8 +116,16 @@ SELECT DATE_ADD('2018-12-31 23:59:59',
                 INTERVAL 1 DAY)
 `
 
-func (q *Queries) DateAddTimestampOneSecond(ctx context.Context) (time.Time, error) {
-	row := q.db.QueryRowContext(ctx, dateAddTimestampOneSecond)
+func (q *Queries) DateAddTimestampOneSecond(ctx context.Context, aq ...AdditionalQuery) (time.Time, error) {
+	query := dateAddTimestampOneSecond
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var date_add time.Time
 	err := row.Scan(&date_add)
 	return date_add, err

@@ -176,3 +176,8 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		venueCountByCityStmt: q.venueCountByCityStmt,
 	}
 }
+
+type AdditionalQuery struct {
+	SQL  string
+	Args []interface{}
+}

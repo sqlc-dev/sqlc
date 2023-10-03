@@ -21,8 +21,16 @@ type SumBazRow struct {
 	Quantity interface{}
 }
 
-func (q *Queries) SumBaz(ctx context.Context) ([]SumBazRow, error) {
-	rows, err := q.db.Query(ctx, sumBaz)
+func (q *Queries) SumBaz(ctx context.Context, aq ...AdditionalQuery) ([]SumBazRow, error) {
+	query := sumBaz
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

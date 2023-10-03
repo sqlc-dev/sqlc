@@ -27,11 +27,22 @@ type {{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
 {{range .Comments}}//{{.}}
 {{end -}}
 {{- if $.EmitMethodsWithDBArgument -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) ({{.Ret.DefineType}}, error) {
-	row := db.QueryRow(ctx, {{.ConstantName}}, {{.Arg.Params}})
+func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}} {{- if ne .Arg.Pair ""}}, {{end -}} aq ...AdditionalQuery) ({{.Ret.DefineType}}, error) {
 {{- else -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.DefineType}}, error) {
-	row := q.db.QueryRow(ctx, {{.ConstantName}}, {{.Arg.Params}})
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}} {{- if ne .Arg.Pair ""}}, {{end -}} aq ...AdditionalQuery) ({{.Ret.DefineType}}, error) {
+{{- end -}}
+    query := {{.ConstantName}}
+	queryParams := []interface{}{ {{.Arg.Params}} }
+	{{ if eq .Cmd ":many" }}
+		if len(aq) > 0 {
+			query += " " + aq[0].SQL
+			queryParams = append(queryParams, aq[0].Args...)
+		}
+	{{ end }}
+{{- if $.EmitMethodsWithDBArgument -}}
+	row := db.QueryRow(ctx, query, queryParams...)
+{{- else -}}
+	row := q.db.QueryRow(ctx, query, queryParams...)
 {{- end}}
 	{{- if or (ne .Arg.Pair .Ret.Pair) (ne .Arg.DefineType .Ret.DefineType) }}
 	var {{.Ret.Name}} {{.Ret.Type}}
@@ -45,11 +56,22 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.De
 {{range .Comments}}//{{.}}
 {{end -}}
 {{- if $.EmitMethodsWithDBArgument -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error) {
-	rows, err := db.Query(ctx, {{.ConstantName}}, {{.Arg.Params}})
+func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}} {{- if ne .Arg.Pair ""}}, {{end -}} aq ...AdditionalQuery) ([]{{.Ret.DefineType}}, error) {
 {{- else -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error) {
-	rows, err := q.db.Query(ctx, {{.ConstantName}}, {{.Arg.Params}})
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}} {{- if ne .Arg.Pair ""}}, {{end -}} aq ...AdditionalQuery) ([]{{.Ret.DefineType}}, error) {
+{{- end -}}
+    query := {{.ConstantName}}
+	queryParams := []interface{}{ {{.Arg.Params}} }
+	{{ if eq .Cmd ":many" }}
+		if len(aq) > 0 {
+			query += " " + aq[0].SQL
+			queryParams = append(queryParams, aq[0].Args...)
+		}
+	{{ end }}
+{{ if $.EmitMethodsWithDBArgument -}}
+	rows, err := db.Query(ctx, query, queryParams...)
+{{- else -}}
+	rows, err := q.db.Query(ctx, query, queryParams...)
 {{- end}}
 	if err != nil {
 		return nil, err

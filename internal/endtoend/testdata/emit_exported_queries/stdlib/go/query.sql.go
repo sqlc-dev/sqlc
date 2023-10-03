@@ -19,6 +19,9 @@ type UpdateBarIDParams struct {
 }
 
 func (q *Queries) UpdateBarID(ctx context.Context, arg UpdateBarIDParams) error {
-	_, err := q.db.ExecContext(ctx, UpdateBarID, arg.ID, arg.ID_2)
+	query := UpdateBarID
+	queryParams := []interface{}{arg.ID, arg.ID_2}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }

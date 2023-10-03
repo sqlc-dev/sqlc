@@ -24,8 +24,16 @@ type StarExpansionRow struct {
 	B_3 pgtype.Text
 }
 
-func (q *Queries) StarExpansion(ctx context.Context) ([]StarExpansionRow, error) {
-	rows, err := q.db.Query(ctx, starExpansion)
+func (q *Queries) StarExpansion(ctx context.Context, aq ...AdditionalQuery) ([]StarExpansionRow, error) {
+	query := starExpansion
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

@@ -14,6 +14,9 @@ UPDATE x INNER JOIN y ON y.a = x.a SET x.b = y.b
 `
 
 func (q *Queries) UpdateXWithY(ctx context.Context) error {
-	_, err := q.db.ExecContext(ctx, updateXWithY)
+	query := updateXWithY
+	queryParams := []interface{}{}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }

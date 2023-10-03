@@ -102,4 +102,10 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	}
 }
 {{end}}
+
+type AdditionalQuery struct {
+	SQL  string
+	Args []interface{}
+}
+
 {{end}}

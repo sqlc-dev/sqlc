@@ -17,8 +17,16 @@ SELECT filter_count.count
 FROM filter_count
 `
 
-func (q *Queries) CTEFilter(ctx context.Context, ready bool) ([]int64, error) {
-	rows, err := q.db.Query(ctx, cTEFilter, ready)
+func (q *Queries) CTEFilter(ctx context.Context, ready bool, aq ...AdditionalQuery) ([]int64, error) {
+	query := cTEFilter
+	queryParams := []interface{}{ready}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

@@ -14,8 +14,16 @@ const starExpansionCTE = `-- name: StarExpansionCTE :many
 WITH cte AS (SELECT a, b FROM foo) SELECT c, d FROM bar
 `
 
-func (q *Queries) StarExpansionCTE(ctx context.Context) ([]Bar, error) {
-	rows, err := q.db.QueryContext(ctx, starExpansionCTE)
+func (q *Queries) StarExpansionCTE(ctx context.Context, aq ...AdditionalQuery) ([]Bar, error) {
+	query := starExpansionCTE
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -50,8 +58,16 @@ type StarExpansionTwoCTERow struct {
 	B   sql.NullString
 }
 
-func (q *Queries) StarExpansionTwoCTE(ctx context.Context) ([]StarExpansionTwoCTERow, error) {
-	rows, err := q.db.QueryContext(ctx, starExpansionTwoCTE)
+func (q *Queries) StarExpansionTwoCTE(ctx context.Context, aq ...AdditionalQuery) ([]StarExpansionTwoCTERow, error) {
+	query := starExpansionTwoCTE
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

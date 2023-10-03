@@ -15,8 +15,16 @@ from my_table
 where (cast(?1 as boolean) or not invalid)
 `
 
-func (q *Queries) GetData(ctx context.Context, allowInvalid bool) ([]MyTable, error) {
-	rows, err := q.db.QueryContext(ctx, getData, allowInvalid)
+func (q *Queries) GetData(ctx context.Context, allowInvalid bool, aq ...AdditionalQuery) ([]MyTable, error) {
+	query := getData
+	queryParams := []interface{}{allowInvalid}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

@@ -14,8 +14,16 @@ const findByID = `-- name: FindByID :many
 SELECT id, name FROM users WHERE ? = id
 `
 
-func (q *Queries) FindByID(ctx context.Context, id int32) ([]User, error) {
-	rows, err := q.db.QueryContext(ctx, findByID, id)
+func (q *Queries) FindByID(ctx context.Context, id int32, aq ...AdditionalQuery) ([]User, error) {
+	query := findByID
+	queryParams := []interface{}{id}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -46,8 +54,16 @@ type FindByIDAndNameParams struct {
 	Name sql.NullString
 }
 
-func (q *Queries) FindByIDAndName(ctx context.Context, arg FindByIDAndNameParams) ([]User, error) {
-	rows, err := q.db.QueryContext(ctx, findByIDAndName, arg.ID, arg.Name)
+func (q *Queries) FindByIDAndName(ctx context.Context, arg FindByIDAndNameParams, aq ...AdditionalQuery) ([]User, error) {
+	query := findByIDAndName
+	queryParams := []interface{}{arg.ID, arg.Name}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

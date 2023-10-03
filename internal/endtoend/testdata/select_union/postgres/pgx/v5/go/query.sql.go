@@ -15,8 +15,16 @@ EXCEPT
 SELECT a, b FROM foo
 `
 
-func (q *Queries) SelectExcept(ctx context.Context) ([]Foo, error) {
-	rows, err := q.db.Query(ctx, selectExcept)
+func (q *Queries) SelectExcept(ctx context.Context, aq ...AdditionalQuery) ([]Foo, error) {
+	query := selectExcept
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -41,8 +49,16 @@ INTERSECT
 SELECT a, b FROM foo
 `
 
-func (q *Queries) SelectIntersect(ctx context.Context) ([]Foo, error) {
-	rows, err := q.db.Query(ctx, selectIntersect)
+func (q *Queries) SelectIntersect(ctx context.Context, aq ...AdditionalQuery) ([]Foo, error) {
+	query := selectIntersect
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -67,8 +83,16 @@ UNION
 SELECT a, b FROM foo
 `
 
-func (q *Queries) SelectUnion(ctx context.Context) ([]Foo, error) {
-	rows, err := q.db.Query(ctx, selectUnion)
+func (q *Queries) SelectUnion(ctx context.Context, aq ...AdditionalQuery) ([]Foo, error) {
+	query := selectUnion
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

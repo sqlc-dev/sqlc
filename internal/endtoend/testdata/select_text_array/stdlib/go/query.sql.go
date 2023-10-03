@@ -15,8 +15,16 @@ const selectTextArray = `-- name: SelectTextArray :many
 SELECT $1::TEXT[]
 `
 
-func (q *Queries) SelectTextArray(ctx context.Context, dollar_1 []string) ([][]string, error) {
-	rows, err := q.db.QueryContext(ctx, selectTextArray, pq.Array(dollar_1))
+func (q *Queries) SelectTextArray(ctx context.Context, dollar_1 []string, aq ...AdditionalQuery) ([][]string, error) {
+	query := selectTextArray
+	queryParams := []interface{}{pq.Array(dollar_1)}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

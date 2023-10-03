@@ -23,3 +23,8 @@ func New() *Queries {
 
 type Queries struct {
 }
+
+type AdditionalQuery struct {
+	SQL  string
+	Args []interface{}
+}

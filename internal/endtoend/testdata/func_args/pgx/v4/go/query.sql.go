@@ -13,8 +13,10 @@ const makeIntervalDays = `-- name: MakeIntervalDays :one
 SELECT make_interval(days => $1::int)
 `
 
-func (q *Queries) MakeIntervalDays(ctx context.Context, dollar_1 int32) (int64, error) {
-	row := q.db.QueryRow(ctx, makeIntervalDays, dollar_1)
+func (q *Queries) MakeIntervalDays(ctx context.Context, dollar_1 int32, aq ...AdditionalQuery) (int64, error) {
+	query := makeIntervalDays
+	queryParams := []interface{}{dollar_1}
+	row := q.db.QueryRow(ctx, query, queryParams...)
 	var make_interval int64
 	err := row.Scan(&make_interval)
 	return make_interval, err
@@ -24,8 +26,10 @@ const makeIntervalMonths = `-- name: MakeIntervalMonths :one
 SELECT make_interval(months => $1::int)
 `
 
-func (q *Queries) MakeIntervalMonths(ctx context.Context, months int32) (int64, error) {
-	row := q.db.QueryRow(ctx, makeIntervalMonths, months)
+func (q *Queries) MakeIntervalMonths(ctx context.Context, months int32, aq ...AdditionalQuery) (int64, error) {
+	query := makeIntervalMonths
+	queryParams := []interface{}{months}
+	row := q.db.QueryRow(ctx, query, queryParams...)
 	var make_interval int64
 	err := row.Scan(&make_interval)
 	return make_interval, err
@@ -35,8 +39,10 @@ const makeIntervalSecs = `-- name: MakeIntervalSecs :one
 SELECT make_interval(secs => $1)
 `
 
-func (q *Queries) MakeIntervalSecs(ctx context.Context, secs float64) (int64, error) {
-	row := q.db.QueryRow(ctx, makeIntervalSecs, secs)
+func (q *Queries) MakeIntervalSecs(ctx context.Context, secs float64, aq ...AdditionalQuery) (int64, error) {
+	query := makeIntervalSecs
+	queryParams := []interface{}{secs}
+	row := q.db.QueryRow(ctx, query, queryParams...)
 	var make_interval int64
 	err := row.Scan(&make_interval)
 	return make_interval, err
@@ -51,8 +57,10 @@ type PlusParams struct {
 	B int32
 }
 
-func (q *Queries) Plus(ctx context.Context, arg PlusParams) (int32, error) {
-	row := q.db.QueryRow(ctx, plus, arg.A, arg.B)
+func (q *Queries) Plus(ctx context.Context, arg PlusParams, aq ...AdditionalQuery) (int32, error) {
+	query := plus
+	queryParams := []interface{}{arg.A, arg.B}
+	row := q.db.QueryRow(ctx, query, queryParams...)
 	var plus int32
 	err := row.Scan(&plus)
 	return plus, err
@@ -62,8 +70,10 @@ const tableArgs = `-- name: TableArgs :one
 SELECT table_args(x => $1)
 `
 
-func (q *Queries) TableArgs(ctx context.Context, x int32) (int32, error) {
-	row := q.db.QueryRow(ctx, tableArgs, x)
+func (q *Queries) TableArgs(ctx context.Context, x int32, aq ...AdditionalQuery) (int32, error) {
+	query := tableArgs
+	queryParams := []interface{}{x}
+	row := q.db.QueryRow(ctx, query, queryParams...)
 	var table_args int32
 	err := row.Scan(&table_args)
 	return table_args, err

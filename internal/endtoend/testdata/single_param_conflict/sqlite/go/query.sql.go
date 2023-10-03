@@ -16,8 +16,16 @@ WHERE   id = ?
 LIMIT   1
 `
 
-func (q *Queries) GetAuthorByID(ctx context.Context, id int64) (Author, error) {
-	row := q.db.QueryRowContext(ctx, getAuthorByID, id)
+func (q *Queries) GetAuthorByID(ctx context.Context, id int64, aq ...AdditionalQuery) (Author, error) {
+	query := getAuthorByID
+	queryParams := []interface{}{id}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var i Author
 	err := row.Scan(&i.ID, &i.Name, &i.Bio)
 	return i, err
@@ -30,8 +38,16 @@ WHERE   id = ?
 LIMIT   1
 `
 
-func (q *Queries) GetAuthorIDByID(ctx context.Context, id int64) (int64, error) {
-	row := q.db.QueryRowContext(ctx, getAuthorIDByID, id)
+func (q *Queries) GetAuthorIDByID(ctx context.Context, id int64, aq ...AdditionalQuery) (int64, error) {
+	query := getAuthorIDByID
+	queryParams := []interface{}{id}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	err := row.Scan(&id)
 	return id, err
 }
@@ -43,8 +59,16 @@ WHERE   sub = ?
 LIMIT   1
 `
 
-func (q *Queries) GetUser(ctx context.Context, sub string) (string, error) {
-	row := q.db.QueryRowContext(ctx, getUser, sub)
+func (q *Queries) GetUser(ctx context.Context, sub string, aq ...AdditionalQuery) (string, error) {
+	query := getUser
+	queryParams := []interface{}{sub}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	err := row.Scan(&sub)
 	return sub, err
 }

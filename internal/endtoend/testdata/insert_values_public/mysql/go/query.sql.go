@@ -20,6 +20,9 @@ type InsertValuesParams struct {
 }
 
 func (q *Queries) InsertValues(ctx context.Context, arg InsertValuesParams) error {
-	_, err := q.db.ExecContext(ctx, insertValues, arg.A, arg.B)
+	query := insertValues
+	queryParams := []interface{}{arg.A, arg.B}
+
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
 	return err
 }

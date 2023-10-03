@@ -29,3 +29,8 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		db: tx,
 	}
 }
+
+type AdditionalQuery struct {
+	SQL  string
+	Args []interface{}
+}

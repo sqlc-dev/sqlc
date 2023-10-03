@@ -22,7 +22,7 @@ type {{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
 {{if eq .Cmd ":one"}}
 {{range .Comments}}//{{.}}
 {{end -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) ({{.Ret.DefineType}}, error) {
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}} {{- if ne .Arg.Pair ""}}, {{end -}} aq ...AdditionalQuery) ({{.Ret.DefineType}}, error) {
     {{- template "queryCodeStdExec" . }}
 	{{- if or (ne .Arg.Pair .Ret.Pair) (ne .Arg.DefineType .Ret.DefineType) }}
 	var {{.Ret.Name}} {{.Ret.Type}}
@@ -35,7 +35,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 {{if eq .Cmd ":many"}}
 {{range .Comments}}//{{.}}
 {{end -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error) {
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}} {{- if ne .Arg.Pair ""}}, {{end -}} aq ...AdditionalQuery) ([]{{.Ret.DefineType}}, error) {
     {{- template "queryCodeStdExec" . }}
     if err != nil {
         return nil, err
@@ -109,8 +109,8 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 {{end}}
 
 {{define "queryCodeStdExec"}}
+    query := {{.ConstantName}}
     {{- if .Arg.HasSqlcSlices }}
-        query := {{.ConstantName}}
         var queryParams []interface{}
         {{- if .Arg.Struct }}
             {{- $arg := .Arg }}
@@ -142,14 +142,32 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
               query = strings.Replace(query, "/*SLICE:{{.Arg.Column.Name}}*/?", "NULL", 1)
             }
         {{- end }}
-        {{- if emitPreparedQueries }}
-        {{ queryRetval . }} {{ queryMethod . }}(ctx, nil, query, queryParams...)
-        {{- else}}
-        {{ queryRetval . }} {{ queryMethod . }}(ctx, query, queryParams...)
+
+        {{ if or (eq .Cmd ":many") (eq .Cmd ":one") }}
+            if len(aq) > 0 {
+                query += " " + aq[0].SQL
+                queryParams = append(queryParams, aq[0].Args...)
+            }
+        {{- end }}
+        
+        {{ if emitPreparedQueries }}
+            {{ queryRetval . }} {{ queryMethod . }}(ctx, nil, query, queryParams...)
+        {{- else }}
+            {{ queryRetval . }} {{ queryMethod . }}(ctx, query, queryParams...)
         {{- end -}}
-    {{- else if emitPreparedQueries }}
-        {{- queryRetval . }} {{ queryMethod . }}(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
-    {{- else}}
-        {{- queryRetval . }} {{ queryMethod . }}(ctx, {{.ConstantName}}, {{.Arg.Params}})
+    {{- else }}
+        queryParams := []interface{}{ {{.Arg.Params}} }
+        {{ if or (eq .Cmd ":many") (eq .Cmd ":one") }}
+            if len(aq) > 0 {
+                query += " " + aq[0].SQL
+                queryParams = append(queryParams, aq[0].Args...)
+            }
+        {{- end }}
+
+        {{ if emitPreparedQueries }}
+            {{- queryRetval . }} {{ queryMethod . }}(ctx, q.{{.FieldName}}, query, queryParams...)
+        {{- else}}
+            {{- queryRetval . }} {{ queryMethod . }}(ctx, query, queryParams...)
+        {{- end -}}
     {{- end -}}
 {{end}}

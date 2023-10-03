@@ -86,8 +86,16 @@ JOIN bar ON bar.id = barid
 WHERE owner = ?
 `
 
-func (q *Queries) JoinWhereClause(ctx context.Context, owner string) ([]uint64, error) {
-	rows, err := q.db.QueryContext(ctx, joinWhereClause, owner)
+func (q *Queries) JoinWhereClause(ctx context.Context, owner string, aq ...AdditionalQuery) ([]uint64, error) {
+	query := joinWhereClause
+	queryParams := []interface{}{owner}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

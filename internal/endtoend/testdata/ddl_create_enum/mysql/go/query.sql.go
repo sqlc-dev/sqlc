@@ -13,8 +13,16 @@ const listFoo = `-- name: ListFoo :many
 SELECT foobar, digit FROM foo
 `
 
-func (q *Queries) ListFoo(ctx context.Context) ([]Foo, error) {
-	rows, err := q.db.QueryContext(ctx, listFoo)
+func (q *Queries) ListFoo(ctx context.Context, aq ...AdditionalQuery) ([]Foo, error) {
+	query := listFoo
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

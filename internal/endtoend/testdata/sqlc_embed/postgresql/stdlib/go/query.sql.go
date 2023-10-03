@@ -21,8 +21,16 @@ type DuplicateRow struct {
 	User_2 User
 }
 
-func (q *Queries) Duplicate(ctx context.Context) (DuplicateRow, error) {
-	row := q.db.QueryRowContext(ctx, duplicate)
+func (q *Queries) Duplicate(ctx context.Context, aq ...AdditionalQuery) (DuplicateRow, error) {
+	query := duplicate
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var i DuplicateRow
 	err := row.Scan(
 		&i.User.ID,
@@ -45,8 +53,16 @@ type JoinRow struct {
 	Post Post
 }
 
-func (q *Queries) Join(ctx context.Context) (JoinRow, error) {
-	row := q.db.QueryRowContext(ctx, join)
+func (q *Queries) Join(ctx context.Context, aq ...AdditionalQuery) (JoinRow, error) {
+	query := join
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var i JoinRow
 	err := row.Scan(
 		&i.User.ID,
@@ -67,8 +83,16 @@ type OnlyRow struct {
 	User User
 }
 
-func (q *Queries) Only(ctx context.Context) (OnlyRow, error) {
-	row := q.db.QueryRowContext(ctx, only)
+func (q *Queries) Only(ctx context.Context, aq ...AdditionalQuery) (OnlyRow, error) {
+	query := only
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var i OnlyRow
 	err := row.Scan(&i.User.ID, &i.User.Name, &i.User.Age)
 	return i, err
@@ -82,8 +106,16 @@ type WithAliasRow struct {
 	User User
 }
 
-func (q *Queries) WithAlias(ctx context.Context) (WithAliasRow, error) {
-	row := q.db.QueryRowContext(ctx, withAlias)
+func (q *Queries) WithAlias(ctx context.Context, aq ...AdditionalQuery) (WithAliasRow, error) {
+	query := withAlias
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var i WithAliasRow
 	err := row.Scan(&i.User.ID, &i.User.Name, &i.User.Age)
 	return i, err
@@ -100,8 +132,16 @@ type WithAsteriskRow struct {
 	Age  sql.NullInt32
 }
 
-func (q *Queries) WithAsterisk(ctx context.Context) (WithAsteriskRow, error) {
-	row := q.db.QueryRowContext(ctx, withAsterisk)
+func (q *Queries) WithAsterisk(ctx context.Context, aq ...AdditionalQuery) (WithAsteriskRow, error) {
+	query := withAsterisk
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var i WithAsteriskRow
 	err := row.Scan(
 		&i.User.ID,
@@ -124,8 +164,16 @@ type WithCrossSchemaRow struct {
 	BazUser BazUser
 }
 
-func (q *Queries) WithCrossSchema(ctx context.Context) ([]WithCrossSchemaRow, error) {
-	rows, err := q.db.QueryContext(ctx, withCrossSchema)
+func (q *Queries) WithCrossSchema(ctx context.Context, aq ...AdditionalQuery) ([]WithCrossSchemaRow, error) {
+	query := withCrossSchema
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
@@ -161,8 +209,16 @@ type WithSchemaRow struct {
 	BazUser BazUser
 }
 
-func (q *Queries) WithSchema(ctx context.Context) (WithSchemaRow, error) {
-	row := q.db.QueryRowContext(ctx, withSchema)
+func (q *Queries) WithSchema(ctx context.Context, aq ...AdditionalQuery) (WithSchemaRow, error) {
+	query := withSchema
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var i WithSchemaRow
 	err := row.Scan(&i.BazUser.ID, &i.BazUser.Name)
 	return i, err
@@ -177,8 +233,16 @@ type WithSubqueryRow struct {
 	TotalCount int64
 }
 
-func (q *Queries) WithSubquery(ctx context.Context) ([]WithSubqueryRow, error) {
-	rows, err := q.db.QueryContext(ctx, withSubquery)
+func (q *Queries) WithSubquery(ctx context.Context, aq ...AdditionalQuery) ([]WithSubqueryRow, error) {
+	query := withSubquery
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

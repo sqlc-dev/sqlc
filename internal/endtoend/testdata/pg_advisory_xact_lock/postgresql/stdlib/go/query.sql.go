@@ -15,15 +15,26 @@ SELECT pg_advisory_lock($1)
 `
 
 func (q *Queries) AdvisoryLockExecResult(ctx context.Context, pgAdvisoryLock int64) (sql.Result, error) {
-	return q.db.ExecContext(ctx, advisoryLockExecResult, pgAdvisoryLock)
+	query := advisoryLockExecResult
+	queryParams := []interface{}{pgAdvisoryLock}
+
+	return q.db.ExecContext(ctx, query, queryParams...)
 }
 
 const advisoryLockOne = `-- name: AdvisoryLockOne :one
 SELECT pg_advisory_lock($1)
 `
 
-func (q *Queries) AdvisoryLockOne(ctx context.Context, pgAdvisoryLock int64) (interface{}, error) {
-	row := q.db.QueryRowContext(ctx, advisoryLockOne, pgAdvisoryLock)
+func (q *Queries) AdvisoryLockOne(ctx context.Context, pgAdvisoryLock int64, aq ...AdditionalQuery) (interface{}, error) {
+	query := advisoryLockOne
+	queryParams := []interface{}{pgAdvisoryLock}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var pg_advisory_lock interface{}
 	err := row.Scan(&pg_advisory_lock)
 	return pg_advisory_lock, err
@@ -33,8 +44,16 @@ const advisoryUnlock = `-- name: AdvisoryUnlock :many
 SELECT pg_advisory_unlock($1)
 `
 
-func (q *Queries) AdvisoryUnlock(ctx context.Context, pgAdvisoryUnlock int64) ([]bool, error) {
-	rows, err := q.db.QueryContext(ctx, advisoryUnlock, pgAdvisoryUnlock)
+func (q *Queries) AdvisoryUnlock(ctx context.Context, pgAdvisoryUnlock int64, aq ...AdditionalQuery) ([]bool, error) {
+	query := advisoryUnlock
+	queryParams := []interface{}{pgAdvisoryUnlock}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}

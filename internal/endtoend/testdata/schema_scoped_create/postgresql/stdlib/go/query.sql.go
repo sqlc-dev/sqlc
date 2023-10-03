@@ -18,8 +18,16 @@ type SchemaScopedCreateParams struct {
 	Name string
 }
 
-func (q *Queries) SchemaScopedCreate(ctx context.Context, arg SchemaScopedCreateParams) (int32, error) {
-	row := q.db.QueryRowContext(ctx, schemaScopedCreate, arg.ID, arg.Name)
+func (q *Queries) SchemaScopedCreate(ctx context.Context, arg SchemaScopedCreateParams, aq ...AdditionalQuery) (int32, error) {
+	query := schemaScopedCreate
+	queryParams := []interface{}{arg.ID, arg.Name}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var id int32
 	err := row.Scan(&id)
 	return id, err

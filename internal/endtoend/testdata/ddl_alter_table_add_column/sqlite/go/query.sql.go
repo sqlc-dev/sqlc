@@ -13,8 +13,16 @@ const placeholder = `-- name: Placeholder :many
 SELECT name, location, size from venues
 `
 
-func (q *Queries) Placeholder(ctx context.Context) ([]Venue, error) {
-	rows, err := q.db.QueryContext(ctx, placeholder)
+func (q *Queries) Placeholder(ctx context.Context, aq ...AdditionalQuery) ([]Venue, error) {
+	query := placeholder
+	queryParams := []interface{}{}
+
+	if len(aq) > 0 {
+		query += " " + aq[0].SQL
+		queryParams = append(queryParams, aq[0].Args...)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
