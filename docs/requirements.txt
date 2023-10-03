@@ -1,5 +1,5 @@
 alabaster==0.7.13
-Babel==2.12.1
+Babel==2.13.0
 certifi==2023.7.22
 chardet==5.2.0
 commonmark==0.9.1
