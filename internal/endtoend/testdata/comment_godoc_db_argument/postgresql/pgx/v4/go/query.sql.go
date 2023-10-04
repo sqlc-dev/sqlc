@@ -13,7 +13,7 @@ import (
 )
 
 const execFoo = `-- name: ExecFoo :exec
-INSERT INTO foo (bar) VALUES ("bar")
+INSERT INTO foo (bar) VALUES ('bar')
 `
 
 // This function creates a Foo via :exec
@@ -23,7 +23,7 @@ func (q *Queries) ExecFoo(ctx context.Context, db DBTX) error {
 }
 
 const execResultFoo = `-- name: ExecResultFoo :execresult
-INSERT INTO foo (bar) VALUES ("bar")
+INSERT INTO foo (bar) VALUES ('bar')
 `
 
 // This function creates a Foo via :execresult
@@ -32,7 +32,7 @@ func (q *Queries) ExecResultFoo(ctx context.Context, db DBTX) (pgconn.CommandTag
 }
 
 const execRowFoo = `-- name: ExecRowFoo :execrows
-INSERT INTO foo (bar) VALUES ("bar")
+INSERT INTO foo (bar) VALUES ('bar')
 `
 
 // This function creates a Foo via :execrows
