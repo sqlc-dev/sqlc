@@ -92,11 +92,8 @@ func TestValidSchema(t *testing.T) {
 					if err != nil {
 						t.Fatalf("%s: %s", f, err)
 					}
-					// TODO: Split schema into separate files
-					before, _, _ := strings.Cut(string(contents), "-- name:")
-					before, _, _ = strings.Cut(before, "/* name:")
 					// Support loading pg_dump SQL files
-					before = strings.ReplaceAll(before, "CREATE SCHEMA public;", "CREATE SCHEMA IF NOT EXISTS public;")
+					before := strings.ReplaceAll(string(contents), "CREATE SCHEMA public;", "CREATE SCHEMA IF NOT EXISTS public;")
 					sqls = append(sqls, migrations.RemoveRollbackStatements(before))
 				}
 
