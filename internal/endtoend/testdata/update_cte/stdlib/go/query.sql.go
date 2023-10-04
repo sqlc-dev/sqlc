@@ -12,7 +12,6 @@ import (
 )
 
 const updateCode = `-- name: UpdateCode :one
-
 WITH cc AS (
             UPDATE td3.codes
             SET
@@ -51,7 +50,6 @@ type UpdateCodeRow struct {
 	CodeHash  string
 }
 
-// FILE: query.sql
 func (q *Queries) UpdateCode(ctx context.Context, arg UpdateCodeParams) (UpdateCodeRow, error) {
 	row := q.db.QueryRowContext(ctx, updateCode,
 		arg.CreatedBy,

@@ -1,6 +1,3 @@
-CREATE TABLE foo (id integer not null);
-CREATE TABLE bar (id integer not null references foo(id), title text);
-
 -- name: AliasJoin :many
 SELECT f.id, b.title
 FROM foo f

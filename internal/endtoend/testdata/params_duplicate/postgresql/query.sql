@@ -1,9 +1,3 @@
-CREATE TABLE users (
-    id INT PRIMARY KEY,
-    first_name varchar(255),
-    last_name varchar(255)
-);
-
 /* name: SelectUserByID :many */
 SELECT first_name from
 users where (sqlc.arg(id) = id OR sqlc.arg(id) = 0);

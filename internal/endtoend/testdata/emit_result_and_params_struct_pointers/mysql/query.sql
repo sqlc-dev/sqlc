@@ -1,5 +1,3 @@
-CREATE TABLE foo (a integer, b integer);
-
 /* name: GetOne :one */
 SELECT * FROM foo WHERE a = ? AND b = ? LIMIT 1;
 

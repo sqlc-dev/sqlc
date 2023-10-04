@@ -1,5 +1,3 @@
-CREATE TABLE bar (ready bool not null);
-
 -- name: CTECount :many
 WITH all_count AS (
 	SELECT count(*) FROM bar

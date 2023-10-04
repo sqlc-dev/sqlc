@@ -1,10 +1,3 @@
--- Example queries for sqlc
-CREATE TABLE authors (
-  id   BIGSERIAL PRIMARY KEY,
-  name TEXT      NOT NULL,
-  bio  text
-);
-
 -- name: GetAuthorIDByID :one
 SELECT  id
 FROM    authors
@@ -16,11 +9,6 @@ SELECT  id, name, bio
 FROM    authors
 WHERE   id = $1
 LIMIT   1;
-
--- https://github.com/sqlc-dev/sqlc/issues/1290
-CREATE TABLE users (
-  sub UUID PRIMARY KEY
-);
 
 -- name: GetUser :one
 SELECT  sub

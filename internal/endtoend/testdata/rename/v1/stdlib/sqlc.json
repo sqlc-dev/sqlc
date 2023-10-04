@@ -4,7 +4,7 @@
     {
       "path": "go",
       "name": "querytest",
-      "schema": "query.sql",
+      "schema": "schema.sql",
       "queries": "query.sql"
     }
   ],

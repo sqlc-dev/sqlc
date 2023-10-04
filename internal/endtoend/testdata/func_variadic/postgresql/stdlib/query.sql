@@ -1,8 +1,3 @@
-CREATE TABLE test (
-    id integer,
-    j jsonb NOT NULL
-    );
-
 -- name: UpdateJ :exec
 UPDATE
     test

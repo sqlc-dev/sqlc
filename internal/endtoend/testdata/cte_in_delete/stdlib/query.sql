@@ -1,5 +1,3 @@
-CREATE TABLE bar (id serial primary key not null, ready bool not null);
-
 -- name: DeleteReadyWithCTE :many
 WITH ready_ids AS (
 	SELECT id FROM bar WHERE ready

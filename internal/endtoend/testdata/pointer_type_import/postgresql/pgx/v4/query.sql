@@ -1,5 +1,3 @@
-CREATE TABLE foo (bar date, baz uuid);
-
 -- name: List :many
 SELECT * FROM foo;
 

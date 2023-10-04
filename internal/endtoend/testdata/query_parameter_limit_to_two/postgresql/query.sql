@@ -1,12 +1,3 @@
--- Example queries for sqlc
-CREATE TABLE authors (
-  id   BIGSERIAL PRIMARY KEY,
-  name text      NOT NULL,
-  bio  text,
-  country_code CHAR(2) NOT NULL,
-  titles TEXT[]
-);
-
 -- name: GetAuthor :one
 SELECT * FROM authors
 WHERE name = $1 AND country_code = $2 LIMIT 1;
@@ -33,11 +24,6 @@ WHERE id IN (sqlc.slice(ids)) AND name = $1;
 
 -- name: CreateAuthorOnlyTitles :one
 INSERT INTO authors (name, titles) VALUES ($1, $2) RETURNING *;
-
-CREATE TABLE clients (
-  id INT PRIMARY KEY,
-  name TEXT NOT NULL
-);
 
 -- name: AddNewClient :one
 INSERT INTO clients (

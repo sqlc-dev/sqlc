@@ -1,7 +1,7 @@
 {
     "version": "2",
     "sql": [{
-        "schema": "query.sql",
+        "schema": "schema.sql",
         "queries": "query.sql",
         "engine": "postgresql",
         "gen": {

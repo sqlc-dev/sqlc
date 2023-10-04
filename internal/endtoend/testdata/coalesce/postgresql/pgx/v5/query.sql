@@ -1,10 +1,3 @@
-CREATE TABLE foo (
-    bar text,
-    bat text not null,
-    baz bigint,
-    qux bigint not null
-);
-
 -- name: CoalesceString :many
 SELECT coalesce(bar, '') as login
 FROM foo;

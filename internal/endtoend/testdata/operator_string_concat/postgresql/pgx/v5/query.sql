@@ -1,5 +1,3 @@
-CREATE TABLE demo (txt text not null);
-
 -- name: Test :one
 select * from Demo
 where txt ~~ '%' || sqlc.arg('val') || '%';

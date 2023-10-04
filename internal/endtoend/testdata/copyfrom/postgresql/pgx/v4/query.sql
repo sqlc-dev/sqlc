@@ -1,6 +1,3 @@
-CREATE SCHEMA myschema;
-CREATE TABLE myschema.foo (a text, b integer);
-
 -- name: InsertValues :copyfrom
 -- InsertValues inserts multiple values using copy.
 INSERT INTO myschema.foo (a, b) VALUES ($1, $2);

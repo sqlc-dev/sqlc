@@ -5,7 +5,7 @@
       "path": "go",
       "name": "querytest",
       "engine": "sqlite",
-      "schema": "query.sql",
+      "schema": "schema.sql",
       "queries": "query.sql"
     }
   ]
