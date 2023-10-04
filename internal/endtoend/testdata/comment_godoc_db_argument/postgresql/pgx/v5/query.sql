@@ -8,12 +8,12 @@ SELECT * FROM foo;
 
 -- name: ExecFoo :exec
 -- This function creates a Foo via :exec
-INSERT INTO foo (bar) VALUES ("bar");
+INSERT INTO foo (bar) VALUES ('bar');
 
 -- name: ExecRowFoo :execrows
 -- This function creates a Foo via :execrows
-INSERT INTO foo (bar) VALUES ("bar");
+INSERT INTO foo (bar) VALUES ('bar');
 
 -- name: ExecResultFoo :execresult
 -- This function creates a Foo via :execresult
-INSERT INTO foo (bar) VALUES ("bar");
+INSERT INTO foo (bar) VALUES ('bar');

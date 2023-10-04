@@ -14,7 +14,7 @@ import (
 const any = `-- name: Any :many
 SELECT id
 FROM bar
-WHERE foo = ANY($1::bigserial[])
+WHERE id = ANY($1::bigint[])
 `
 
 func (q *Queries) Any(ctx context.Context, dollar_1 []int64) ([]int64, error) {
