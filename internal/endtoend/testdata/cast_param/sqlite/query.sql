@@ -1,9 +1,3 @@
-create table my_table
-(
-    invalid boolean,
-    foo     varchar
-);
-
 -- name: GetData :many
 select *
 from my_table

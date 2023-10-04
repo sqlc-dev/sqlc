@@ -1,5 +1,3 @@
-CREATE TABLE foo (bar text);
-
 -- name: ListNullable :many
 SELECT
   NULL::text as a,

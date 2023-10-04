@@ -1,7 +1,3 @@
-CREATE TABLE foo (
-  bar  text
-);
-
 -- name: ManyFoo :many
 -- This function returns a list of Foos
 SELECT * FROM foo;

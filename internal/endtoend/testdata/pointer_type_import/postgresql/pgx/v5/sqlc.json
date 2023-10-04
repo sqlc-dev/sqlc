@@ -6,7 +6,7 @@
       "engine": "postgresql",
       "sql_package": "pgx/v5",
       "name": "datatype",
-      "schema": "query.sql",
+      "schema": "schema.sql",
       "queries": "query.sql"
     }
   ]

@@ -1,5 +1,3 @@
-CREATE TABLE foo (bar inet, baz cidr);
-
 -- name: List :many
 SELECT * FROM foo;
 

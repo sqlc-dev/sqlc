@@ -3,7 +3,7 @@
   "sql": [
     {
       "engine": "sqlite",
-      "schema": "query.sql",
+      "schema": "schema.sql",
       "queries": "query.sql",
       "gen": {
         "go": {

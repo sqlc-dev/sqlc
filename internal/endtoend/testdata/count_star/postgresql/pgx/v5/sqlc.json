@@ -6,7 +6,7 @@
       "name": "querytest",
       "engine": "postgresql",
       "sql_package": "pgx/v5",
-      "schema": "query.sql",
+      "schema": "schema.sql",
       "queries": "query.sql"
     }
   ]

@@ -1,8 +1,3 @@
-CREATE TABLE weather (
-  city     text    NOT NULL,
-  temp_lo  integer NOT NULL
-);
-
 -- name: ColdCities :many
 SELECT city
 FROM weather

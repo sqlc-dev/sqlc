@@ -1,5 +1,3 @@
-CREATE TABLE foo (a integer, b integer);
-
 -- name: InsertValues :batchone
 INSERT INTO foo (a, b)
 VALUES ($1, $2)

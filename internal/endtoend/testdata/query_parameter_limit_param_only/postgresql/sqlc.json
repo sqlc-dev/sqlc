@@ -4,7 +4,7 @@
         {
             "path": "go",
             "engine": "postgresql",
-            "schema": "query.sql",
+            "schema": "schema.sql",
             "queries": "query.sql",
             "query_parameter_limit": 2,
             "emit_interface": true,

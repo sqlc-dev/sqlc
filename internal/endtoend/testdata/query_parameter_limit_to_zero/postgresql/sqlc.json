@@ -5,7 +5,7 @@
         "path": "go",
         "engine": "postgresql",
         "name": "querytest",
-        "schema": "query.sql",
+        "schema": "schema.sql",
         "queries": "query.sql",
         "query_parameter_limit": 0,
         "emit_interface": true

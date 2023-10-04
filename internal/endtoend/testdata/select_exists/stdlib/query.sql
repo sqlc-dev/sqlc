@@ -1,5 +1,3 @@
-CREATE TABLE bar (id serial not null);
-
 -- name: BarExists :one
 SELECT
     EXISTS (

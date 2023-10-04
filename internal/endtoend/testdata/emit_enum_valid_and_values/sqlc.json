@@ -6,7 +6,7 @@
       "engine": "postgresql",
       "sql_package": "pgx/v4",
       "name": "querytest",
-      "schema": "query.sql",
+      "schema": "schema.sql",
       "queries": "query.sql",
       "emit_enum_valid_method": true,
       "emit_all_enum_values": true

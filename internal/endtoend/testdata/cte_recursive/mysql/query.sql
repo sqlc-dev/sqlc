@@ -1,5 +1,3 @@
-CREATE TABLE bar (id INT NOT NULL, parent_id INT);
-
 -- name: CTERecursive :many
 WITH RECURSIVE cte AS (
         SELECT b.* FROM bar AS b

@@ -5,7 +5,7 @@
       "path": "go",
       "name": "querytest",
       "engine": "mysql",
-      "schema": "query.sql",
+      "schema": "schema.sql",
       "queries": "query.sql"
     }
   ]
