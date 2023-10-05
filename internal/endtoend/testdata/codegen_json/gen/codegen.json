@@ -26,6 +26,7 @@
       "emit_result_struct_pointers": false,
       "emit_params_struct_pointers": false,
       "emit_methods_with_db_argument": false,
+      "build_tags": "",
       "json_tags_case_style": "",
       "package": "",
       "out": "",

@@ -146,6 +146,8 @@ The `gen` mapping supports the following keys:
 - `emit_all_enum_values`:
   - If true, emit a function per enum type
     that returns all valid enum values.
+- `build_tags`:
+  - build tags to add to the generated code. if you do not want to add it, leave it unset.
 - `json_tags_id_uppercase`:
   - If true, "Id" in json tags will be uppercase. If false, will be camelcase. Defaults to `false`
 - `json_tags_case_style`:
@@ -389,6 +391,7 @@ packages:
     emit_pointers_for_null_types: false
     emit_enum_valid_method: false
     emit_all_enum_values: false
+    build_tags: "some_tag"
     json_tags_case_style: "camel"
     omit_unused_structs: false
     output_batch_file_name: "batch.go"
@@ -443,6 +446,8 @@ Each mapping in the `packages` collection has the following keys:
 - `emit_all_enum_values`:
   - If true, emit a function per enum type
     that returns all valid enum values.
+- `build_tags`:
+  - build tags to add to the generated code. if you do not want to add it, leave it unset.
 - `json_tags_case_style`:
   - `camel` for camelCase, `pascal` for PascalCase, `snake` for snake_case or `none` to use the column name in the DB. Defaults to `none`.
 - `omit_unused_structs`:
