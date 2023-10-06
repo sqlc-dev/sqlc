@@ -38,7 +38,6 @@ type tmplCtx struct {
 	EmitAllEnumValues         bool
 	UsesCopyFrom              bool
 	UsesBatch                 bool
-
 	BuildTags string
 }
 
