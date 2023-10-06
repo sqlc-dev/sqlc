@@ -13,3 +13,12 @@ type RangeVar struct {
 func (n *RangeVar) Pos() int {
 	return n.Location
 }
+
+func (n *RangeVar) Format(buf *TrackedBuffer) {
+	if n == nil {
+		return
+	}
+	if n.Relname != nil {
+		buf.WriteString(*n.Relname)
+	}
+}

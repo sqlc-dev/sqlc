@@ -10,3 +10,10 @@ type ResTarget struct {
 func (n *ResTarget) Pos() int {
 	return n.Location
 }
+
+func (n *ResTarget) Format(buf *TrackedBuffer) {
+	if n == nil {
+		return
+	}
+	buf.astFormat(n.Val)
+}

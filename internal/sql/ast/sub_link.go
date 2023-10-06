@@ -26,3 +26,13 @@ type SubLink struct {
 func (n *SubLink) Pos() int {
 	return n.Location
 }
+
+func (n *SubLink) Format(buf *TrackedBuffer) {
+	if n == nil {
+		return
+	}
+
+	buf.WriteString("EXISTS (")
+	buf.astFormat(n.Subselect)
+	buf.WriteString(")")
+}

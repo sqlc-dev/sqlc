@@ -11,3 +11,10 @@ type ColumnRef struct {
 func (n *ColumnRef) Pos() int {
 	return n.Location
 }
+
+func (n *ColumnRef) Format(buf *TrackedBuffer) {
+	if n == nil {
+		return
+	}
+	buf.astFormat(n.Fields)
+}
