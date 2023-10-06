@@ -447,7 +447,7 @@ Each mapping in the `packages` collection has the following keys:
   - If true, emit a function per enum type
     that returns all valid enum values.
 - `build_tags`:
-  - build tags to add to the generated code. if you do not want to add it, leave it unset.
+  - If set, add a `//go:build <build_tags>` directive at the beginning of each generated Go file.
 - `json_tags_case_style`:
   - `camel` for camelCase, `pascal` for PascalCase, `snake` for snake_case or `none` to use the column name in the DB. Defaults to `none`.
 - `omit_unused_structs`:
