@@ -1,18 +1,18 @@
-# Authoring plugins
+# Using plugins
 
-To use plugins, you must be using [Version 2](../reference/config.md) of
+To use plugins, you must be using [Version 2](../reference/config.md#version-2) of
 the configuration file. The top-level `plugins` array defines the available
 plugins.
 
 ## WASM plugins
 
-> WASM plugins are fully sandboxed. Plugins do not have access to the network,
+> WASM plugins are fully sandboxed; they do not have access to the network,
 > filesystem, or environment variables.
 
 In the `codegen` section, the `out` field dictates what directory will contain
 the new files. The `plugin` key must reference a plugin defined in the
-top-level `plugins` map. The `options` are serialized to a string and passed on
-to the plugin itself.
+top-level `plugins` map. Any `options` are serialized to a string as JSON and
+passed on to the plugin itself.
 
 
 ```yaml
@@ -29,6 +29,8 @@ sql:
   codegen:
   - out: gen
     plugin: greeter
+    options:
+      lang: en-US
 ```
 
 For a complete working example see the following files:
@@ -44,8 +46,8 @@ For a complete working example see the following files:
 
 In the `codegen` section, the `out` field dictates what directory will contain
 the new files. The `plugin` key must reference a plugin defined in the
-top-level `plugins` map. The `options` are serialized to a string and passed on
-to the plugin itself.
+top-level `plugins` map. Any `options` are serialized to a string as JSON and
+passed on to the plugin itself.
 
 ```yaml
 version: '2'
