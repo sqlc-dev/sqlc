@@ -38,7 +38,6 @@ type v1PackageSettings struct {
 	EmitPointersForNullTypes  bool       `json:"emit_pointers_for_null_types" yaml:"emit_pointers_for_null_types"`
 	EmitEnumValidMethod       bool       `json:"emit_enum_valid_method,omitempty" yaml:"emit_enum_valid_method"`
 	EmitAllEnumValues         bool       `json:"emit_all_enum_values,omitempty" yaml:"emit_all_enum_values"`
-	BuildTags                 string     `json:"build_tags,omitempty" yaml:"build_tags"`
 	JSONTagsCaseStyle         string     `json:"json_tags_case_style,omitempty" yaml:"json_tags_case_style"`
 	SQLPackage                string     `json:"sql_package" yaml:"sql_package"`
 	SQLDriver                 string     `json:"sql_driver" yaml:"sql_driver"`
@@ -54,6 +53,7 @@ type v1PackageSettings struct {
 	QueryParameterLimit       *int32     `json:"query_parameter_limit,omitempty" yaml:"query_parameter_limit"`
 	OmitUnusedStructs         bool       `json:"omit_unused_structs,omitempty" yaml:"omit_unused_structs"`
 	Rules                     []string   `json:"rules" yaml:"rules"`
+	BuildTags                 string     `json:"build_tags,omitempty" yaml:"build_tags"`
 }
 
 func v1ParseConfig(rd io.Reader) (Config, error) {

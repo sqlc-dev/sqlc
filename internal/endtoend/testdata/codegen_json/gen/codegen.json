@@ -26,7 +26,6 @@
       "emit_result_struct_pointers": false,
       "emit_params_struct_pointers": false,
       "emit_methods_with_db_argument": false,
-      "build_tags": "",
       "json_tags_case_style": "",
       "package": "",
       "out": "",
@@ -44,7 +43,8 @@
       "query_parameter_limit": 1,
       "output_batch_file_name": "",
       "json_tags_id_uppercase": false,
-      "omit_unused_structs": false
+      "omit_unused_structs": false,
+      "build_tags": ""
     },
     "json": {
       "out": "gen",

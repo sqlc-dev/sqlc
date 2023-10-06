@@ -140,7 +140,6 @@ type SQLGo struct {
 	EmitPointersForNullTypes    bool              `json:"emit_pointers_for_null_types" yaml:"emit_pointers_for_null_types"`
 	EmitEnumValidMethod         bool              `json:"emit_enum_valid_method,omitempty" yaml:"emit_enum_valid_method"`
 	EmitAllEnumValues           bool              `json:"emit_all_enum_values,omitempty" yaml:"emit_all_enum_values"`
-	BuildTags                   string            `json:"build_tags,omitempty" yaml:"build_tags"`
 	JSONTagsCaseStyle           string            `json:"json_tags_case_style,omitempty" yaml:"json_tags_case_style"`
 	Package                     string            `json:"package" yaml:"package"`
 	Out                         string            `json:"out" yaml:"out"`
@@ -157,6 +156,7 @@ type SQLGo struct {
 	InflectionExcludeTableNames []string          `json:"inflection_exclude_table_names,omitempty" yaml:"inflection_exclude_table_names"`
 	QueryParameterLimit         *int32            `json:"query_parameter_limit,omitempty" yaml:"query_parameter_limit"`
 	OmitUnusedStructs           bool              `json:"omit_unused_structs,omitempty" yaml:"omit_unused_structs"`
+	BuildTags                   string            `json:"build_tags,omitempty" yaml:"build_tags"`
 }
 
 type SQLJSON struct {

@@ -180,7 +180,6 @@ func (m *GoCode) CloneVT() *GoCode {
 		EmitResultStructPointers:  m.EmitResultStructPointers,
 		EmitParamsStructPointers:  m.EmitParamsStructPointers,
 		EmitMethodsWithDbArgument: m.EmitMethodsWithDbArgument,
-		BuildTags:                 m.BuildTags,
 		JsonTagsCaseStyle:         m.JsonTagsCaseStyle,
 		Package:                   m.Package,
 		Out:                       m.Out,
@@ -197,6 +196,7 @@ func (m *GoCode) CloneVT() *GoCode {
 		OutputBatchFileName:       m.OutputBatchFileName,
 		JsonTagsIdUppercase:       m.JsonTagsIdUppercase,
 		OmitUnusedStructs:         m.OmitUnusedStructs,
+		BuildTags:                 m.BuildTags,
 	}
 	if rhs := m.InflectionExcludeTableNames; rhs != nil {
 		tmpContainer := make([]string, len(rhs))

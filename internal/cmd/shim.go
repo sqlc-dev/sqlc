@@ -96,7 +96,6 @@ func pluginGoCode(s config.SQLGo) *plugin.GoCode {
 		EmitPointersForNullTypes:    s.EmitPointersForNullTypes,
 		EmitEnumValidMethod:         s.EmitEnumValidMethod,
 		EmitAllEnumValues:           s.EmitAllEnumValues,
-		BuildTags:                   s.BuildTags,
 		JsonTagsCaseStyle:           s.JSONTagsCaseStyle,
 		Package:                     s.Package,
 		Out:                         s.Out,
@@ -111,6 +110,7 @@ func pluginGoCode(s config.SQLGo) *plugin.GoCode {
 		InflectionExcludeTableNames: s.InflectionExcludeTableNames,
 		QueryParameterLimit:         s.QueryParameterLimit,
 		OmitUnusedStructs:           s.OmitUnusedStructs,
+		BuildTags:                   s.BuildTags,
 	}
 }
 
