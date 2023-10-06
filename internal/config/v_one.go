@@ -53,6 +53,7 @@ type v1PackageSettings struct {
 	QueryParameterLimit       *int32     `json:"query_parameter_limit,omitempty" yaml:"query_parameter_limit"`
 	OmitUnusedStructs         bool       `json:"omit_unused_structs,omitempty" yaml:"omit_unused_structs"`
 	Rules                     []string   `json:"rules" yaml:"rules"`
+	BuildTags                 string     `json:"build_tags,omitempty" yaml:"build_tags"`
 }
 
 func v1ParseConfig(rd io.Reader) (Config, error) {
@@ -176,6 +177,7 @@ func (c *V1GenerateSettings) Translate() Config {
 					OutputFilesSuffix:         pkg.OutputFilesSuffix,
 					QueryParameterLimit:       pkg.QueryParameterLimit,
 					OmitUnusedStructs:         pkg.OmitUnusedStructs,
+					BuildTags:                 pkg.BuildTags,
 				},
 			},
 			StrictFunctionChecks: pkg.StrictFunctionChecks,

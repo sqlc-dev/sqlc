@@ -38,6 +38,7 @@ type tmplCtx struct {
 	EmitAllEnumValues         bool
 	UsesCopyFrom              bool
 	UsesBatch                 bool
+	BuildTags                 string
 }
 
 func (t *tmplCtx) OutputQuery(sourceName string) bool {
@@ -143,6 +144,7 @@ func generate(req *plugin.CodeGenRequest, enums []Enum, structs []Struct, querie
 		Enums:                     enums,
 		Structs:                   structs,
 		SqlcVersion:               req.SqlcVersion,
+		BuildTags:                 golang.BuildTags,
 	}
 
 	if tctx.UsesCopyFrom && !tctx.SQLDriver.IsPGX() && golang.SqlDriver != SQLDriverGoSQLDriverMySQL {
