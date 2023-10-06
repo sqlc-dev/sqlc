@@ -147,7 +147,7 @@ The `gen` mapping supports the following keys:
   - If true, emit a function per enum type
     that returns all valid enum values.
 - `build_tags`:
-  - build tags to add to the generated code. if you do not want to add it, leave it unset.
+  - If set, add a `//go:build <build_tags>` directive at the beginning of each generated Go file.
 - `json_tags_id_uppercase`:
   - If true, "Id" in json tags will be uppercase. If false, will be camelcase. Defaults to `false`
 - `json_tags_case_style`:
