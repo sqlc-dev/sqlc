@@ -12,6 +12,9 @@ func mysqlType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 	columnType := sdk.DataType(col.Type)
 	notNull := col.NotNull || col.IsArray
 	unsigned := col.Unsigned
+	if col.IsSqlcDynamic {
+		return "DynamicSql"
+	}
 
 	switch columnType {
 

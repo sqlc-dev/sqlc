@@ -12,6 +12,11 @@ type DBTX interface {
 {{- end }}
 }
 
+{{- if .HasSqlcDynamic }}
+type DynamicSql interface {
+    ToSql(int) (string, []interface{})
+}
+{{- end}}
 {{ if .EmitMethodsWithDBArgument}}
 func New() *Queries {
 	return &Queries{}

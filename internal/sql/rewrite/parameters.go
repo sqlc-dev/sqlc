@@ -61,6 +61,8 @@ func paramFromFuncCall(call *ast.FuncCall) (named.Param, string) {
 		param = named.NewUserNullableParam(paramName)
 	case "slice":
 		param = named.NewSqlcSlice(paramName)
+	case "dynamic":
+		param = named.NewSqlcDynamic(paramName)
 	default:
 		param = named.NewParam(paramName)
 	}
@@ -107,6 +109,8 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 					// This sequence is also replicated in internal/codegen/golang.Field
 					// since it's needed during template generation for replacement
 					replace = fmt.Sprintf(`/*SLICE:%s*/?`, param.Name())
+				} else if param.IsSqlcDynamic() {
+					replace = fmt.Sprintf(`/*DYNAMIC:%s*/?`, param.Name())
 				} else {
 					if engine == config.EngineSQLite {
 						replace = fmt.Sprintf("?%d", argn)

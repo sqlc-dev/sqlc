@@ -34,6 +34,9 @@ func parseIdentifierString(name string) (*plugin.Identifier, error) {
 }
 
 func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
+	if col.IsSqlcDynamic {
+		return "DynamicSql"
+	}
 	columnType := sdk.DataType(col.Type)
 	notNull := col.NotNull || col.IsArray
 	driver := parseDriver(req.Settings.Go.SqlPackage)

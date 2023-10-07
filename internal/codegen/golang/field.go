@@ -28,6 +28,10 @@ func (gf Field) HasSqlcSlice() bool {
 	return gf.Column.IsSqlcSlice
 }
 
+func (gf Field) HasSqlcDynamic() bool {
+	return gf.Column.IsSqlcDynamic
+}
+
 func TagsToString(tags map[string]string) string {
 	if len(tags) == 0 {
 		return ""

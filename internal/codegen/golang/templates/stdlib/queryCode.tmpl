@@ -109,9 +109,12 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 {{end}}
 
 {{define "queryCodeStdExec"}}
-    {{- if .Arg.HasSqlcSlices }}
+    {{- if or .Arg.HasSqlcSlices .Arg.HasSqlcDynamic }}
         query := {{.ConstantName}}
         var queryParams []interface{}
+        {{- if .Arg.HasSqlcDynamic }}
+        curNumb := {{ .Arg.SqlcDynamic }}
+        {{- end }}
         {{- if .Arg.Struct }}
             {{- $arg := .Arg }}
             {{- range .Arg.Struct.Fields }}
@@ -121,14 +124,27 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
                         queryParams = append(queryParams, v)
                       }
                       query = strings.Replace(query, "/*SLICE:{{.Column.Name}}*/?", strings.Repeat(",?", len({{$arg.VariableForField .}}))[1:], 1)
+                      {{- if .HasSqlcDynamic }}
+                      curNumb += len({{$arg.VariableForField .}})
+                      {{- end}}
                     } else {
                       query = strings.Replace(query, "/*SLICE:{{.Column.Name}}*/?", "NULL", 1)
                     }
+                {{- else if .HasSqlcDynamic }}
+                    replaceText, args := {{$arg.VariableForField .}}.ToSql(curNumb)
+                    curNumb += len(args)
+                    query = strings.ReplaceAll(query, "/*DYNAMIC:{{.Column.Name}}*/?", "replaceText", 1)
+                    queryParams = append(queryParams, v)
                 {{- else }}
                   queryParams = append(queryParams, {{$arg.VariableForField .}})
                 {{- end }}
             {{- end }}
         {{- else }}
+            {{- if .Arg.HasSqlcDynamic }}
+                var replaceText string
+                replaceText, queryParams = {{$arg.VariableForField .}}.ToSql(curNumb)
+                query = strings.ReplaceAll(query, "/*DYNAMIC:{{.VariableForField }}*/?", "replaceText", 1)
+            {{- else }}
             {{- /* Single argument parameter to this goroutine (they are not packed
                 in a struct), because .Arg.HasSqlcSlices further up above was true,
                 this section is 100% a slice (impossible to get here otherwise).
@@ -141,6 +157,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
             } else {
               query = strings.Replace(query, "/*SLICE:{{.Arg.Column.Name}}*/?", "NULL", 1)
             }
+            {{- end }}
         {{- end }}
         {{- if emitPreparedQueries }}
         {{ queryRetval . }} {{ queryMethod . }}(ctx, nil, query, queryParams...)

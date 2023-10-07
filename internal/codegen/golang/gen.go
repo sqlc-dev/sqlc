@@ -38,6 +38,7 @@ type tmplCtx struct {
 	EmitAllEnumValues         bool
 	UsesCopyFrom              bool
 	UsesBatch                 bool
+	HasSqlcDynamic            bool
 }
 
 func (t *tmplCtx) OutputQuery(sourceName string) bool {

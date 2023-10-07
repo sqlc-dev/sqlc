@@ -126,7 +126,6 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, args []paramRef, para
 			}
 			return nil
 		}
-
 		for _, rv := range ref.rvs {
 			if rv == nil || rv.Relname == nil {
 				continue
@@ -209,11 +208,12 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, args []paramRef, para
 				a = append(a, Parameter{
 					Number: ref.ref.Number,
 					Column: &Column{
-						Name:         p.Name(),
-						DataType:     dataType,
-						IsNamedParam: isNamed,
-						NotNull:      p.NotNull(),
-						IsSqlcSlice:  p.IsSqlcSlice(),
+						Name:          p.Name(),
+						DataType:      dataType,
+						IsNamedParam:  isNamed,
+						NotNull:       p.NotNull(),
+						IsSqlcSlice:   p.IsSqlcSlice(),
+						IsSqlcDynamic: p.IsSqlcDynamic(),
 					},
 				})
 				continue
@@ -272,17 +272,18 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, args []paramRef, para
 						a = append(a, Parameter{
 							Number: ref.ref.Number,
 							Column: &Column{
-								Name:         p.Name(),
-								OriginalName: c.Name,
-								DataType:     dataType(&c.Type),
-								NotNull:      p.NotNull(),
-								Unsigned:     c.IsUnsigned,
-								IsArray:      c.IsArray,
-								ArrayDims:    c.ArrayDims,
-								Length:       c.Length,
-								Table:        table,
-								IsNamedParam: isNamed,
-								IsSqlcSlice:  p.IsSqlcSlice(),
+								Name:          p.Name(),
+								OriginalName:  c.Name,
+								DataType:      dataType(&c.Type),
+								NotNull:       p.NotNull(),
+								Unsigned:      c.IsUnsigned,
+								IsArray:       c.IsArray,
+								ArrayDims:     c.ArrayDims,
+								Length:        c.Length,
+								Table:         table,
+								IsNamedParam:  isNamed,
+								IsSqlcSlice:   p.IsSqlcSlice(),
+								IsSqlcDynamic: p.IsSqlcDynamic(),
 							},
 						})
 					}
@@ -339,15 +340,16 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, args []paramRef, para
 					a = append(a, Parameter{
 						Number: ref.ref.Number,
 						Column: &Column{
-							Name:         namePrefix + p.Name(),
-							DataType:     dataType(&c.Type),
-							NotNull:      p.NotNull(),
-							Unsigned:     c.IsUnsigned,
-							IsArray:      c.IsArray,
-							ArrayDims:    c.ArrayDims,
-							Table:        table,
-							IsNamedParam: isNamed,
-							IsSqlcSlice:  p.IsSqlcSlice(),
+							Name:          namePrefix + p.Name(),
+							DataType:      dataType(&c.Type),
+							NotNull:       p.NotNull(),
+							Unsigned:      c.IsUnsigned,
+							IsArray:       c.IsArray,
+							ArrayDims:     c.ArrayDims,
+							Table:         table,
+							IsNamedParam:  isNamed,
+							IsSqlcSlice:   p.IsSqlcSlice(),
+							IsSqlcDynamic: p.IsSqlcDynamic(),
 						},
 					})
 				}
@@ -412,11 +414,12 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, args []paramRef, para
 					a = append(a, Parameter{
 						Number: ref.ref.Number,
 						Column: &Column{
-							Name:         p.Name(),
-							DataType:     "any",
-							IsNamedParam: isNamed,
-							NotNull:      p.NotNull(),
-							IsSqlcSlice:  p.IsSqlcSlice(),
+							Name:          p.Name(),
+							DataType:      "any",
+							IsNamedParam:  isNamed,
+							NotNull:       p.NotNull(),
+							IsSqlcSlice:   p.IsSqlcSlice(),
+							IsSqlcDynamic: p.IsSqlcDynamic(),
 						},
 					})
 					continue
@@ -453,11 +456,12 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, args []paramRef, para
 				a = append(a, Parameter{
 					Number: ref.ref.Number,
 					Column: &Column{
-						Name:         p.Name(),
-						DataType:     dataType(paramType),
-						NotNull:      p.NotNull(),
-						IsNamedParam: isNamed,
-						IsSqlcSlice:  p.IsSqlcSlice(),
+						Name:          p.Name(),
+						DataType:      dataType(paramType),
+						NotNull:       p.NotNull(),
+						IsNamedParam:  isNamed,
+						IsSqlcSlice:   p.IsSqlcSlice(),
+						IsSqlcDynamic: p.IsSqlcDynamic(),
 					},
 				})
 			}
@@ -515,17 +519,18 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, args []paramRef, para
 				a = append(a, Parameter{
 					Number: ref.ref.Number,
 					Column: &Column{
-						Name:         p.Name(),
-						OriginalName: c.Name,
-						DataType:     dataType(&c.Type),
-						NotNull:      p.NotNull(),
-						Unsigned:     c.IsUnsigned,
-						IsArray:      c.IsArray,
-						ArrayDims:    c.ArrayDims,
-						Table:        &ast.TableName{Schema: schema, Name: rel},
-						Length:       c.Length,
-						IsNamedParam: isNamed,
-						IsSqlcSlice:  p.IsSqlcSlice(),
+						Name:          p.Name(),
+						OriginalName:  c.Name,
+						DataType:      dataType(&c.Type),
+						NotNull:       p.NotNull(),
+						Unsigned:      c.IsUnsigned,
+						IsArray:       c.IsArray,
+						ArrayDims:     c.ArrayDims,
+						Table:         &ast.TableName{Schema: schema, Name: rel},
+						Length:        c.Length,
+						IsNamedParam:  isNamed,
+						IsSqlcSlice:   p.IsSqlcSlice(),
+						IsSqlcDynamic: p.IsSqlcDynamic(),
 					},
 				})
 			} else {
@@ -626,16 +631,17 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, args []paramRef, para
 						a = append(a, Parameter{
 							Number: number,
 							Column: &Column{
-								Name:         p.Name(),
-								OriginalName: c.Name,
-								DataType:     dataType(&c.Type),
-								NotNull:      c.IsNotNull,
-								Unsigned:     c.IsUnsigned,
-								IsArray:      c.IsArray,
-								ArrayDims:    c.ArrayDims,
-								Table:        table,
-								IsNamedParam: isNamed,
-								IsSqlcSlice:  p.IsSqlcSlice(),
+								Name:          p.Name(),
+								OriginalName:  c.Name,
+								DataType:      dataType(&c.Type),
+								NotNull:       c.IsNotNull,
+								Unsigned:      c.IsUnsigned,
+								IsArray:       c.IsArray,
+								ArrayDims:     c.ArrayDims,
+								Table:         table,
+								IsNamedParam:  isNamed,
+								IsSqlcSlice:   p.IsSqlcSlice(),
+								IsSqlcDynamic: p.IsSqlcDynamic(),
 							},
 						})
 					}

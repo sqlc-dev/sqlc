@@ -164,6 +164,32 @@ func (v QueryValue) HasSqlcSlices() bool {
 	}
 	return false
 }
+func (v QueryValue) HasSqlcDynamic() bool {
+	if v.Struct == nil {
+		if v.Column != nil && v.Column.IsSqlcDynamic {
+			return true
+		}
+		return false
+	}
+	for _, v := range v.Struct.Fields {
+		if v.Column.IsSqlcDynamic {
+			return true
+		}
+	}
+	return false
+}
+func (v QueryValue) SqlcDynamic() int {
+	var count int
+	if v.Struct == nil {
+		return 0
+	}
+	for _, v := range v.Struct.Fields {
+		if !v.Column.IsSqlcDynamic && !v.Column.IsSqlcSlice {
+			count++
+		}
+	}
+	return count
+}
 
 func (v QueryValue) Scan() string {
 	var out []string

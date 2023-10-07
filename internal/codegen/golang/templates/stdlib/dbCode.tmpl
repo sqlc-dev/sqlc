@@ -6,6 +6,12 @@ type DBTX interface {
 	QueryRowContext(context.Context, string, ...interface{}) *sql.Row
 }
 
+{{- if .HasSqlcDynamic }}
+type DynamicSql interface {
+    Sql() (string, []interface{})
+}
+{{- end}}
+
 {{ if .EmitMethodsWithDBArgument}}
 func New() *Queries {
 	return &Queries{}
