@@ -21,4 +21,8 @@ func (n *RangeVar) Format(buf *TrackedBuffer) {
 	if n.Relname != nil {
 		buf.WriteString(*n.Relname)
 	}
+	if n.Alias != nil {
+		buf.WriteString(" ")
+		buf.astFormat(n.Alias)
+	}
 }

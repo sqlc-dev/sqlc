@@ -1,5 +1,7 @@
 package ast
 
+import "strings"
+
 type ColumnRef struct {
 	Name string
 
@@ -16,5 +18,17 @@ func (n *ColumnRef) Format(buf *TrackedBuffer) {
 	if n == nil {
 		return
 	}
-	buf.astFormat(n.Fields)
+
+	if n.Fields != nil {
+		var items []string
+		for _, item := range n.Fields.Items {
+			switch nn := item.(type) {
+			case *String:
+				items = append(items, nn.Str)
+			case *A_Star:
+				items = append(items, "*")
+			}
+		}
+		buf.WriteString(strings.Join(items, "."))
+	}
 }
