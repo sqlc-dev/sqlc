@@ -367,14 +367,6 @@ func codegen(ctx context.Context, combo config.CombinedSettings, sql outPair, re
 	var handler ext.Handler
 	var out string
 	switch {
-	case sql.Gen.Go != nil:
-		out = combo.Go.Out
-		handler = ext.HandleFunc(golang.Generate)
-
-	case sql.Gen.JSON != nil:
-		out = combo.JSON.Out
-		handler = ext.HandleFunc(json.Generate)
-
 	case sql.Plugin != nil:
 		out = sql.Plugin.Out
 		plug, err := findPlugin(combo.Global, sql.Plugin.Plugin)
@@ -403,6 +395,14 @@ func codegen(ctx context.Context, combo config.CombinedSettings, sql outPair, re
 			return "", nil, fmt.Errorf("invalid plugin options")
 		}
 		req.PluginOptions = opts
+
+	case sql.Gen.Go != nil:
+		out = combo.Go.Out
+		handler = ext.HandleFunc(golang.Generate)
+
+	case sql.Gen.JSON != nil:
+		out = combo.JSON.Out
+		handler = ext.HandleFunc(json.Generate)
 
 	default:
 		return "", nil, fmt.Errorf("missing language backend")
