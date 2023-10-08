@@ -179,12 +179,12 @@ func (v QueryValue) HasSqlcDynamic() bool {
 	return false
 }
 func (v QueryValue) SqlcDynamic() int {
-	var count int
+	var count int = 1
 	if v.Struct == nil {
-		return 0
+		return 1
 	}
 	for _, v := range v.Struct.Fields {
-		if !v.Column.IsSqlcDynamic && !v.Column.IsSqlcSlice {
+		if !v.Column.IsSqlcDynamic {
 			count++
 		}
 	}

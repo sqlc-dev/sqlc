@@ -99,18 +99,19 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 			param, origText := paramFromFuncCall(fun)
 			argn := allParams.Add(param)
 			cr.Replace(&ast.ParamRef{
-				Number:   argn,
-				Location: fun.Location,
+				Number:        argn,
+				Location:      fun.Location,
+				IsSqlcDynamic: param.IsSqlcDynamic(),
 			})
 
 			var replace string
-			if engine == config.EngineMySQL || engine == config.EngineSQLite || !dollar {
+			if param.IsSqlcDynamic() {
+				replace = fmt.Sprintf(`/*DYNAMIC:%s*/?`, param.Name())
+			} else if engine == config.EngineMySQL || engine == config.EngineSQLite || !dollar {
 				if param.IsSqlcSlice() {
 					// This sequence is also replicated in internal/codegen/golang.Field
 					// since it's needed during template generation for replacement
 					replace = fmt.Sprintf(`/*SLICE:%s*/?`, param.Name())
-				} else if param.IsSqlcDynamic() {
-					replace = fmt.Sprintf(`/*DYNAMIC:%s*/?`, param.Name())
 				} else {
 					if engine == config.EngineSQLite {
 						replace = fmt.Sprintf("?%d", argn)

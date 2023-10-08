@@ -134,7 +134,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
                     replaceText, args := {{$arg.VariableForField .}}.ToSql(curNumb)
                     curNumb += len(args)
                     query = strings.ReplaceAll(query, "/*DYNAMIC:{{.Column.Name}}*/?", "replaceText", 1)
-                    queryParams = append(queryParams, v)
+                    queryParams = append(queryParams, args...)
                 {{- else }}
                   queryParams = append(queryParams, {{$arg.VariableForField .}})
                 {{- end }}

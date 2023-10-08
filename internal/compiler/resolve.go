@@ -101,11 +101,25 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, args []paramRef, para
 	// resolve a table for an embed
 	var a []Parameter
 	for _, ref := range args {
+		if ref.ref.IsSqlcDynamic {
+			defaultP := named.NewInferredParam("offset", true)
+			p, isNamed := params.FetchMerge(ref.ref.Number, defaultP)
+			a = append(a, Parameter{
+				Number: ref.ref.Number,
+				Column: &Column{
+					Name:          p.Name(),
+					DataType:      "DynamicSql",
+					NotNull:       p.NotNull(),
+					IsNamedParam:  isNamed,
+					IsSqlcDynamic: true,
+				},
+			})
+			continue
+		}
 		aliasMap := map[string]*ast.TableName{}
 		// TODO: Deprecate defaultTable
 		var defaultTable *ast.TableName
 		var tables []*ast.TableName
-
 		typeMap := map[string]map[string]map[string]*catalog.Column{}
 		indexTable := func(table catalog.Table) error {
 			tables = append(tables, table.Rel)

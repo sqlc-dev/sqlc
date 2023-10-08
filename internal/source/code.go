@@ -59,6 +59,9 @@ func Mutate(raw string, a []Edit) (string, error) {
 
 	s := raw
 	for idx, edit := range a {
+		if strings.Contains(edit.Old, "sqlc.dynamic") {
+			continue
+		}
 		start := edit.Location
 		if start > len(s) || start < 0 {
 			return "", fmt.Errorf("edit start location is out of bounds")
