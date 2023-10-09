@@ -31,7 +31,8 @@ CREATE TABLE authors (
 );
 ```
 
-sqlc can generate structs with JSON tags by adding the `emit_json_tags` key to the configuration file as it shows on (configuration reference)[../reference/config.md], by default `false`. The JSON name for a field matches
+sqlc can generate structs with JSON tags by adding the `emit_json_tags` key to the configuration file as it shows on [configuration reference](../reference/config.md).
+The JSON name for a field matches
 the column name in the database.
 
 ```go
