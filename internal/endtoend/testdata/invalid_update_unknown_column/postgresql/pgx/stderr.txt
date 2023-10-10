@@ -1,0 +1,2 @@
+# package querytest
+query.sql:5:2: column "is_deleted" of relation "articles" does not exist

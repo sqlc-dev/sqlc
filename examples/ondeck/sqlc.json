@@ -11,7 +11,8 @@
       "queries": "postgresql/query",
       "engine": "postgresql",
       "database": {
-        "managed": true
+        "managed": true,
+        "analyzer": false
       },
       "rules": [
         "sqlc/db-prepare"

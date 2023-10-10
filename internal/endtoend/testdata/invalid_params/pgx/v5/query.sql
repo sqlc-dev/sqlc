@@ -1,9 +1,7 @@
-CREATE TABLE bar (id serial not null);
-
 -- name: baz :one
 SELECT foo FROM bar WHERE baz = $4;
 
--- name: bar
+-- name: bar :one
 SELECT foo FROM bar WHERE baz = $1 AND baz = $3;
 
 -- name: foo :one

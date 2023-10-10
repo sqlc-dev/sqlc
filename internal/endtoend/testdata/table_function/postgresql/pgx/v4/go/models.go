@@ -4,11 +4,13 @@
 
 package querytest
 
-import ()
+import (
+	"github.com/jackc/pgtype"
+)
 
 type Transaction struct {
 	ID        int64
 	Uri       string
 	ProgramID string
-	Data      string
+	Data      pgtype.JSONB
 }

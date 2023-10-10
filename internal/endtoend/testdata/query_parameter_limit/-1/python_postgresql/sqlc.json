@@ -11,7 +11,7 @@
   ],
   "sql": [
     {
-      "schema": "query.sql",
+      "schema": "schema.sql",
       "queries": "query.sql",
       "engine": "postgresql",
       "codegen": [

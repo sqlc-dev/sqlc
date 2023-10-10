@@ -70,7 +70,11 @@ func TestExamplesVet(t *testing.T) {
 			}
 
 			var stderr bytes.Buffer
-			err := cmd.Vet(ctx, cmd.Env{}, path, "", &stderr)
+			opts := &cmd.Options{
+				Stderr: &stderr,
+				Env:    cmd.Env{},
+			}
+			err := cmd.Vet(ctx, path, "", opts)
 			if err != nil {
 				t.Fatalf("sqlc vet failed: %s %s", err, stderr.String())
 			}

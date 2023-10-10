@@ -13,7 +13,6 @@ import (
 const listAuthors = `-- name: ListAuthors :many
 SELECT   id, name as name, bio
 FROM     authors
-GROUP BY name
 `
 
 func (q *Queries) ListAuthors(ctx context.Context) ([]Author, error) {
@@ -42,7 +41,6 @@ func (q *Queries) ListAuthors(ctx context.Context) ([]Author, error) {
 const listAuthorsIdenticalAlias = `-- name: ListAuthorsIdenticalAlias :many
 SELECT   id, name as name, bio
 FROM     authors
-GROUP BY name
 `
 
 func (q *Queries) ListAuthorsIdenticalAlias(ctx context.Context) ([]Author, error) {
@@ -69,7 +67,7 @@ func (q *Queries) ListAuthorsIdenticalAlias(ctx context.Context) ([]Author, erro
 }
 
 const listMetrics = `-- name: ListMetrics :many
-SELECT time_bucket('15 days', time) AS bucket, city_name, AVG(temp_c)
+SELECT date_trunc('day', time) AS bucket, city_name, AVG(temp_c)
 FROM weather_metrics
 WHERE time > NOW() - (6 * INTERVAL '1 month')
 GROUP BY bucket, city_name
@@ -77,7 +75,7 @@ ORDER BY bucket DESC
 `
 
 type ListMetricsRow struct {
-	Bucket   interface{}
+	Bucket   int64
 	CityName sql.NullString
 	Avg      float64
 }

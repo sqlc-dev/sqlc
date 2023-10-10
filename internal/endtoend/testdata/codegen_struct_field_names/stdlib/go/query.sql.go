@@ -10,7 +10,7 @@ import (
 )
 
 const test = `-- name: test :one
-SELECT id, !!!nobody,_,-would-believe---this-...?!, parent        id from bar limit 1
+SELECT id, "!!!nobody,_,-would-believe---this-...?!", "parent        id" from bar limit 1
 `
 
 func (q *Queries) test(ctx context.Context) (Bar, error) {

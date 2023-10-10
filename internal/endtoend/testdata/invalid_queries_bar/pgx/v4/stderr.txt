@@ -1,3 +1,7 @@
 # package querytest
-query.sql:2:1: INSERT has more target columns than expressions
-query.sql:3:1: INSERT has more expressions than target columns
+query.sql:1:1: INSERT has more target columns than expressions
+query.sql:5:1: INSERT has more expressions than target columns
+---
+# package querytest
+query.sql:2:23: INSERT has more target columns than expressions
+query.sql:5:35: INSERT has more expressions than target columns

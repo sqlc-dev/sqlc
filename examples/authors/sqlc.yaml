@@ -6,6 +6,7 @@ sql:
   queries: postgresql/query.sql
   engine: postgresql
   database:
+    analyzer: false
     managed: true
   rules:
   - sqlc/db-prepare

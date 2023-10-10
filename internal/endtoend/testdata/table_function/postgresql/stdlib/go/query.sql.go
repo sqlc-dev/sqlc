@@ -7,36 +7,35 @@ package querytest
 
 import (
 	"context"
+	"encoding/json"
 )
 
 const getTransaction = `-- name: GetTransaction :many
 SELECT
-	json_extract(transactions.data, '$.transaction.signatures[0]'),
-	json_group_array(instructions.value)
+	jsonb_extract_path(transactions.data, '$.transaction.signatures[0]'),
+	jsonb_agg(instructions.value)
 FROM
   transactions, 
-	json_each(json_extract(transactions.data, '$.transaction.message.instructions')) AS instructions
+	jsonb_each(jsonb_extract_path(transactions.data, '$.transaction.message.instructions[0]')) AS instructions
 WHERE
 	transactions.program_id = $1
-	AND json_extract(transactions.data, '$.transaction.signatures[0]') > $2
-	AND json_extract(json_extract(transactions.data, '$.transaction.message.accountKeys'), '$[' || json_extract(instructions.value, '$.programIdIndex') || ']') = transactions.program_id
+	AND jsonb_extract_path(transactions.data, '$.transaction.signatures[0]') @> to_jsonb($2::text)
+	AND jsonb_extract_path(jsonb_extract_path(transactions.data, '$.transaction.message.accountKeys'), 'key') = to_jsonb(transactions.program_id)
 GROUP BY transactions.id
-LIMIT $3
 `
 
 type GetTransactionParams struct {
 	ProgramID string
 	Data      string
-	Limit     int32
 }
 
 type GetTransactionRow struct {
-	JsonExtract    interface{}
-	JsonGroupArray interface{}
+	JsonbExtractPath json.RawMessage
+	JsonbAgg         json.RawMessage
 }
 
 func (q *Queries) GetTransaction(ctx context.Context, arg GetTransactionParams) ([]GetTransactionRow, error) {
-	rows, err := q.db.QueryContext(ctx, getTransaction, arg.ProgramID, arg.Data, arg.Limit)
+	rows, err := q.db.QueryContext(ctx, getTransaction, arg.ProgramID, arg.Data)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +43,7 @@ func (q *Queries) GetTransaction(ctx context.Context, arg GetTransactionParams) 
 	var items []GetTransactionRow
 	for rows.Next() {
 		var i GetTransactionRow
-		if err := rows.Scan(&i.JsonExtract, &i.JsonGroupArray); err != nil {
+		if err := rows.Scan(&i.JsonbExtractPath, &i.JsonbAgg); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

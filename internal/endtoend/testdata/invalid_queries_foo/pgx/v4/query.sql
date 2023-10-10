@@ -1,5 +1,3 @@
-CREATE TABLE foo (id text not null);
-
 -- name: ListFoos
 SELECT id FROM foo;
 

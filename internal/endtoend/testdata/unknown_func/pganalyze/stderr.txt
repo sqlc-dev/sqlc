@@ -1,0 +1,2 @@
+# package querytest
+query.sql:2:31: function frobnicate(unknown) does not exist

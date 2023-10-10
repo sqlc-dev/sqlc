@@ -11,7 +11,7 @@ import (
 )
 
 const generateSeries = `-- name: GenerateSeries :many
-SELECT generate_series($1::timestamp, $2::timestamp)
+SELECT generate_series($1::timestamp, $2::timestamp, '10 hours')
 `
 
 type GenerateSeriesParams struct {
@@ -19,15 +19,15 @@ type GenerateSeriesParams struct {
 	Column2 time.Time `json:"column_2"`
 }
 
-func (q *Queries) GenerateSeries(ctx context.Context, arg GenerateSeriesParams) ([]string, error) {
+func (q *Queries) GenerateSeries(ctx context.Context, arg GenerateSeriesParams) ([]int64, error) {
 	rows, err := q.db.QueryContext(ctx, generateSeries, arg.Column1, arg.Column2)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []string
+	var items []int64
 	for rows.Next() {
-		var generate_series string
+		var generate_series int64
 		if err := rows.Scan(&generate_series); err != nil {
 			return nil, err
 		}
