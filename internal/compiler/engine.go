@@ -1,26 +1,44 @@
 package compiler
 
 import (
+	"context"
 	"fmt"
 
+	"github.com/sqlc-dev/sqlc/internal/analyzer"
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/engine/dolphin"
 	"github.com/sqlc-dev/sqlc/internal/engine/postgresql"
+	pganalyze "github.com/sqlc-dev/sqlc/internal/engine/postgresql/analyzer"
 	"github.com/sqlc-dev/sqlc/internal/engine/sqlite"
 	"github.com/sqlc-dev/sqlc/internal/opts"
+	"github.com/sqlc-dev/sqlc/internal/quickdb"
+	pb "github.com/sqlc-dev/sqlc/internal/quickdb/v1"
 	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
 )
 
 type Compiler struct {
-	conf    config.SQL
-	combo   config.CombinedSettings
-	catalog *catalog.Catalog
-	parser  Parser
-	result  *Result
+	conf     config.SQL
+	combo    config.CombinedSettings
+	catalog  *catalog.Catalog
+	parser   Parser
+	result   *Result
+	analyzer analyzer.Analyzer
+	client   pb.QuickClient
+
+	schema []string
 }
 
-func NewCompiler(conf config.SQL, combo config.CombinedSettings) *Compiler {
+func NewCompiler(conf config.SQL, combo config.CombinedSettings) (*Compiler, error) {
 	c := &Compiler{conf: conf, combo: combo}
+
+	if conf.Database != nil && conf.Database.Managed {
+		client, err := quickdb.NewClientFromConfig(combo.Global.Cloud)
+		if err != nil {
+			return nil, fmt.Errorf("client error: %w", err)
+		}
+		c.client = client
+	}
+
 	switch conf.Engine {
 	case config.EngineSQLite:
 		c.parser = sqlite.NewParser()
@@ -31,10 +49,15 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings) *Compiler {
 	case config.EnginePostgreSQL:
 		c.parser = postgresql.NewParser()
 		c.catalog = postgresql.NewCatalog()
+		if conf.Database != nil {
+			if conf.Database.Analyzer == nil || *conf.Database.Analyzer {
+				c.analyzer = pganalyze.New(c.client, *conf.Database)
+			}
+		}
 	default:
-		panic(fmt.Sprintf("unknown engine: %s", conf.Engine))
+		return nil, fmt.Errorf("unknown engine: %s", conf.Engine)
 	}
-	return c
+	return c, nil
 }
 
 func (c *Compiler) Catalog() *catalog.Catalog {
@@ -56,4 +79,10 @@ func (c *Compiler) ParseQueries(queries []string, o opts.Parser) error {
 
 func (c *Compiler) Result() *Result {
 	return c.result
+}
+
+func (c *Compiler) Close(ctx context.Context) {
+	if c.analyzer != nil {
+		c.analyzer.Close(ctx)
+	}
 }

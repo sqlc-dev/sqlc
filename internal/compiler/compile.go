@@ -24,7 +24,6 @@ type Parser interface {
 	IsReservedKeyword(string) bool
 }
 
-// end copypasta
 func (c *Compiler) parseCatalog(schemas []string) error {
 	files, err := sqlpath.Glob(schemas)
 	if err != nil {
@@ -38,6 +37,7 @@ func (c *Compiler) parseCatalog(schemas []string) error {
 			continue
 		}
 		contents := migrations.RemoveRollbackStatements(string(blob))
+		c.schema = append(c.schema, contents)
 		stmts, err := c.parser.Parse(strings.NewReader(contents))
 		if err != nil {
 			merr.Add(filename, contents, 0, err)

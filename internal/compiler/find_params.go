@@ -7,14 +7,13 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
 )
 
-func findParameters(root ast.Node) ([]paramRef, error) {
+func findParameters(root ast.Node) ([]paramRef, []error) {
 	refs := make([]paramRef, 0)
 	errors := make([]error, 0)
 	v := paramSearch{seen: make(map[int]struct{}), refs: &refs, errs: &errors}
 	astutils.Walk(v, root)
 	if len(*v.errs) > 0 {
-		problems := *v.errs
-		return nil, problems[0]
+		return refs, *v.errs
 	} else {
 		return refs, nil
 	}
@@ -54,10 +53,6 @@ func (l *limitOffset) Pos() int {
 }
 
 func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
-	if len(*p.errs) > 0 {
-		return p
-	}
-
 	switch n := node.(type) {
 
 	case *ast.A_Expr:

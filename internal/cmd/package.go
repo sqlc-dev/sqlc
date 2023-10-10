@@ -2,13 +2,14 @@ package cmd
 
 import (
 	"context"
-	"io"
 	"os"
 
 	"github.com/sqlc-dev/sqlc/internal/bundler"
 )
 
-func createPkg(ctx context.Context, e Env, dir, filename string, stderr io.Writer) error {
+func createPkg(ctx context.Context, dir, filename string, opts *Options) error {
+	e := opts.Env
+	stderr := opts.Stderr
 	configPath, conf, err := readConfig(stderr, dir, filename)
 	if err != nil {
 		return err
@@ -17,7 +18,7 @@ func createPkg(ctx context.Context, e Env, dir, filename string, stderr io.Write
 	if err := up.Validate(); err != nil {
 		return err
 	}
-	output, err := Generate(ctx, e, dir, filename, stderr)
+	output, err := Generate(ctx, dir, filename, opts)
 	if err != nil {
 		os.Exit(1)
 	}

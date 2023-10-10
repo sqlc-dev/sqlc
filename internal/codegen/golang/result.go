@@ -249,9 +249,7 @@ func buildQueries(req *plugin.CodeGenRequest, structs []Struct) ([]Query, error)
 		if len(query.Columns) == 1 && query.Columns[0].EmbedTable == nil {
 			c := query.Columns[0]
 			name := columnName(c, 0)
-			if c.IsFuncCall {
-				name = strings.Replace(name, "$", "_", -1)
-			}
+			name = strings.Replace(name, "$", "_", -1)
 			gq.Ret = QueryValue{
 				Name:      name,
 				DBName:    name,

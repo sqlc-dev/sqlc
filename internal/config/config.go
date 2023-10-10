@@ -64,8 +64,9 @@ type Config struct {
 }
 
 type Database struct {
-	URI     string `json:"uri" yaml:"uri"`
-	Managed bool   `json:"managed" yaml:"managed"`
+	URI      string `json:"uri" yaml:"uri"`
+	Managed  bool   `json:"managed" yaml:"managed"`
+	Analyzer *bool  `json:"analyzer" yaml:"analyzer"`
 }
 
 type Cloud struct {

@@ -10,6 +10,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/sql/named"
 	"github.com/sqlc-dev/sqlc/internal/sql/rewrite"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
+	"golang.org/x/exp/slog"
 )
 
 func dataType(n *ast.TypeName) string {
@@ -580,8 +581,6 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 						})
 					}
 				}
-			} else {
-				fmt.Println("------------------------")
 			}
 
 			if found == 0 {
@@ -600,7 +599,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 			}
 
 		default:
-			fmt.Printf("unsupported reference type: %T\n", n)
+			slog.Debug("unsupported reference type", "type", fmt.Sprintf("%T", n))
 		}
 	}
 	return a, nil

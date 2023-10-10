@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"os"
 	"runtime/trace"
 	"sort"
@@ -13,8 +12,9 @@ import (
 	"github.com/cubicdaiya/gonp"
 )
 
-func Diff(ctx context.Context, e Env, dir, name string, stderr io.Writer) error {
-	output, err := Generate(ctx, e, dir, name, stderr)
+func Diff(ctx context.Context, dir, name string, opts *Options) error {
+	stderr := opts.Stderr
+	output, err := Generate(ctx, dir, name, opts)
 	if err != nil {
 		return err
 	}

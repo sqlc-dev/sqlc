@@ -4,10 +4,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
-
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
+	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
 	"github.com/sqlc-dev/sqlc/internal/sql/lang"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
 )
@@ -523,6 +522,7 @@ func (c *Compiler) sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, erro
 
 	var tables []*Table
 	for _, item := range list.Items {
+		item := item
 		switch n := item.(type) {
 
 		case *ast.RangeFunction:
@@ -555,16 +555,32 @@ func (c *Compiler) sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, erro
 				Name:    fn.ReturnType.Name,
 			})
 			if err != nil {
-				if n.Alias == nil || len(n.Alias.Colnames.Items) == 0 {
-					continue
-				}
-
-				table = &Table{}
-				for _, colName := range n.Alias.Colnames.Items {
-					table.Columns = append(table.Columns, &Column{
-						Name:     colName.(*ast.String).Str,
-						DataType: "any",
-					})
+				if n.Alias != nil && len(n.Alias.Colnames.Items) > 0 {
+					table = &Table{}
+					for _, colName := range n.Alias.Colnames.Items {
+						table.Columns = append(table.Columns, &Column{
+							Name:     colName.(*ast.String).Str,
+							DataType: "any",
+						})
+					}
+				} else {
+					colName := fn.Rel.Name
+					if n.Alias != nil {
+						colName = *n.Alias.Aliasname
+					}
+					table = &Table{
+						Rel: &ast.TableName{
+							Catalog: fn.Rel.Catalog,
+							Schema:  fn.Rel.Schema,
+							Name:    fn.Rel.Name,
+						},
+						Columns: []*Column{
+							{
+								Name:     colName,
+								DataType: fn.ReturnType.Name,
+							},
+						},
+					}
 				}
 			}
 			if n.Alias != nil {
