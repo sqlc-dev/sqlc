@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	pg_query "github.com/pganalyze/pg_query_go/v4"
+	"github.com/sqlc-dev/sqlc/internal/debug"
 	"github.com/sqlc-dev/sqlc/internal/engine/postgresql"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 )
@@ -63,6 +64,7 @@ func TestFormat(t *testing.T) {
 						t.Error(err)
 					}
 					if expected != actual {
+						debug.Dump(stmts[0].Raw)
 						t.Errorf("- %s", expected)
 						t.Errorf("- %s", string(query))
 						t.Errorf("+ %s", actual)

@@ -24,5 +24,5 @@ func (n *TypeName) Format(buf *TrackedBuffer) {
 	if n == nil {
 		return
 	}
-	buf.astFormat(n.Names)
+	buf.join(n.Names, ".")
 }
