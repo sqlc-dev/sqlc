@@ -14,42 +14,6 @@
       "out": "",
       "plugin": "",
       "options": ""
-    },
-    "go": {
-      "emit_interface": false,
-      "emit_json_tags": false,
-      "emit_db_tags": false,
-      "emit_prepared_queries": false,
-      "emit_exact_table_names": false,
-      "emit_empty_slices": false,
-      "emit_exported_queries": false,
-      "emit_result_struct_pointers": false,
-      "emit_params_struct_pointers": false,
-      "emit_methods_with_db_argument": false,
-      "json_tags_case_style": "",
-      "package": "",
-      "out": "",
-      "sql_package": "",
-      "sql_driver": "",
-      "output_db_file_name": "",
-      "output_models_file_name": "",
-      "output_querier_file_name": "",
-      "output_copyfrom_file_name": "",
-      "output_files_suffix": "",
-      "emit_enum_valid_method": false,
-      "emit_all_enum_values": false,
-      "inflection_exclude_table_names": [],
-      "emit_pointers_for_null_types": false,
-      "query_parameter_limit": 1,
-      "output_batch_file_name": "",
-      "json_tags_id_uppercase": false,
-      "omit_unused_structs": false,
-      "build_tags": ""
-    },
-    "json": {
-      "out": "gen",
-      "indent": "  ",
-      "filename": "codegen.json"
     }
   },
   "catalog": {
@@ -65399,5 +65363,5 @@
     }
   ],
   "sqlc_version": "v1.22.0",
-  "plugin_options": ""
+  "plugin_options": "eyJvdXQiOiJnZW4iLCJpbmRlbnQiOiIgICIsImZpbGVuYW1lIjoiY29kZWdlbi5qc29uIn0="
 }

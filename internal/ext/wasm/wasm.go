@@ -7,7 +7,6 @@ package wasm
 import (
 	"context"
 	"crypto/sha256"
-	_ "embed"
 	"errors"
 	"fmt"
 	"io"

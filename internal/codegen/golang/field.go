@@ -40,9 +40,9 @@ func TagsToString(tags map[string]string) string {
 	return strings.Join(tagParts, " ")
 }
 
-func JSONTagName(name string, settings *plugin.Settings) string {
-	style := settings.Go.JsonTagsCaseStyle
-	idUppercase := settings.Go.JsonTagsIdUppercase
+func JSONTagName(name string, options *opts) string {
+	style := options.JsonTagsCaseStyle
+	idUppercase := options.JsonTagsIdUppercase
 	if style == "" || style == "none" {
 		return name
 	} else {
