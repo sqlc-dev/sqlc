@@ -15,6 +15,7 @@ func (n *BoolExpr) Format(buf *TrackedBuffer) {
 	if n == nil {
 		return
 	}
+	buf.WriteString("(")
 	if items(n.Args) {
 		switch n.Boolop {
 		case BoolExprTypeAnd:
@@ -22,7 +23,9 @@ func (n *BoolExpr) Format(buf *TrackedBuffer) {
 		case BoolExprTypeOr:
 			buf.join(n.Args, " OR ")
 		case BoolExprTypeNot:
-			buf.join(n.Args, " NOT ")
+			buf.WriteString(" NOT ")
+			buf.astFormat(n.Args)
 		}
 	}
+	buf.WriteString(")")
 }

@@ -18,5 +18,8 @@ func (n *RangeFunction) Format(buf *TrackedBuffer) {
 		return
 	}
 	buf.astFormat(n.Functions)
+	if n.Ordinality {
+		buf.WriteString(" WITH ORDINALITY ")
+	}
 	buf.astFormat(n.Alias)
 }

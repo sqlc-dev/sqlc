@@ -16,27 +16,20 @@ import (
 
 func TestFormat(t *testing.T) {
 	t.Parallel()
-	var queries []string
-	err := filepath.Walk("testdata", func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if !strings.Contains(path, filepath.Join("pgx/v5")) {
-			return nil
-		}
-		if info.Name() == "query.sql" {
-			queries = append(queries, path)
-			return filepath.SkipDir
-		}
-		return nil
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
 	parse := postgresql.NewParser()
-	for _, q := range queries {
-		q := q
-		t.Run(filepath.Dir(q), func(t *testing.T) {
+	for _, tc := range FindTests(t, "testdata") {
+		tc := tc
+
+		if !strings.Contains(tc.Path, filepath.Join("pgx/v5")) {
+			continue
+		}
+
+		q := filepath.Join(tc.Path, "query.sql")
+		if _, err := os.Stat(q); os.IsNotExist(err) {
+			continue
+		}
+
+		t.Run(tc.Name, func(t *testing.T) {
 			contents, err := os.ReadFile(q)
 			if err != nil {
 				t.Fatal(err)
@@ -58,6 +51,11 @@ func TestFormat(t *testing.T) {
 					if len(stmts) != 1 {
 						t.Fatal("expected one statement")
 					}
+					if false {
+						r, err := pg_query.Parse(string(query))
+						debug.Dump(r, err)
+					}
+
 					out := ast.Format(stmts[0].Raw)
 					actual, err := pg_query.Fingerprint(out)
 					if err != nil {

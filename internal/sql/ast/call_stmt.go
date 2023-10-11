@@ -10,3 +10,8 @@ func (n *CallStmt) Pos() int {
 	}
 	return n.FuncCall.Pos()
 }
+
+func (n *CallStmt) Format(buf *TrackedBuffer) {
+	buf.WriteString("CALL ")
+	buf.astFormat(n.FuncCall)
+}

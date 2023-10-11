@@ -20,7 +20,14 @@ func (n *JoinExpr) Format(buf *TrackedBuffer) {
 		return
 	}
 	buf.astFormat(n.Larg)
-	buf.WriteString(" JOIN ")
+	switch n.Jointype {
+	case JoinTypeLeft:
+		buf.WriteString(" LEFT JOIN ")
+	case JoinTypeInner:
+		buf.WriteString(" INNER JOIN ")
+	default:
+		buf.WriteString(" JOIN ")
+	}
 	buf.astFormat(n.Rarg)
 	buf.WriteString(" ON ")
 	buf.astFormat(n.Quals)

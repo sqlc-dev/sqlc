@@ -24,5 +24,12 @@ func (n *TypeName) Format(buf *TrackedBuffer) {
 	if n == nil {
 		return
 	}
-	buf.join(n.Names, ".")
+	if items(n.Names) {
+		buf.join(n.Names, ".")
+	} else {
+		buf.WriteString(n.Name)
+	}
+	if items(n.ArrayBounds) {
+		buf.WriteString("[]")
+	}
 }

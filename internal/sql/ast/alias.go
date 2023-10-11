@@ -16,4 +16,9 @@ func (n *Alias) Format(buf *TrackedBuffer) {
 	if n.Aliasname != nil {
 		buf.WriteString(*n.Aliasname)
 	}
+	if items(n.Colnames) {
+		buf.WriteString("(")
+		buf.astFormat((n.Colnames))
+		buf.WriteString(")")
+	}
 }

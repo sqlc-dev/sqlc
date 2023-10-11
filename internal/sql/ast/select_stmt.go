@@ -46,7 +46,24 @@ func (n *SelectStmt) Format(buf *TrackedBuffer) {
 		buf.WriteString(" ")
 	}
 
-	buf.WriteString("SELECT ")
+	if n.Larg != nil && n.Rarg != nil {
+		buf.astFormat(n.Larg)
+		switch n.Op {
+		case Union:
+			buf.WriteString(" UNION ")
+		case Except:
+			buf.WriteString(" EXCEPT ")
+		case Intersect:
+			buf.WriteString(" INTERSECT ")
+		}
+		if n.All {
+			buf.WriteString("ALL ")
+		}
+		buf.astFormat(n.Rarg)
+	} else {
+		buf.WriteString("SELECT ")
+	}
+
 	if items(n.DistinctClause) {
 		buf.WriteString("DISTINCT ")
 		if !todo(n.DistinctClause) {
@@ -65,6 +82,11 @@ func (n *SelectStmt) Format(buf *TrackedBuffer) {
 	if set(n.WhereClause) {
 		buf.WriteString(" WHERE ")
 		buf.astFormat(n.WhereClause)
+	}
+
+	if items(n.GroupClause) {
+		buf.WriteString(" GROUP BY ")
+		buf.astFormat(n.GroupClause)
 	}
 
 	if items(n.SortClause) {

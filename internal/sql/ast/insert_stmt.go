@@ -37,4 +37,9 @@ func (n *InsertStmt) Format(buf *TrackedBuffer) {
 	if set(n.SelectStmt) {
 		buf.astFormat(n.SelectStmt)
 	}
+
+	if items(n.ReturningList) {
+		buf.WriteString(" RETURNING ")
+		buf.astFormat(n.ReturningList)
+	}
 }

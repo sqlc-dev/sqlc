@@ -23,7 +23,14 @@ func (n *RangeVar) Format(buf *TrackedBuffer) {
 		buf.WriteString(".")
 	}
 	if n.Relname != nil {
-		buf.WriteString(*n.Relname)
+		// TODO: What names need to be quoted
+		if *n.Relname == "user" {
+			buf.WriteString(`"`)
+			buf.WriteString(*n.Relname)
+			buf.WriteString(`"`)
+		} else {
+			buf.WriteString(*n.Relname)
+		}
 	}
 	if n.Alias != nil {
 		buf.WriteString(" ")

@@ -1,6 +1,8 @@
 package ast
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type CommonTableExpr struct {
 	Ctename          *string

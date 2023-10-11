@@ -3,8 +3,6 @@ package main
 import (
 	"bytes"
 	"context"
-	"encoding/json"
-	"fmt"
 	"os"
 	osexec "os/exec"
 	"path/filepath"
@@ -97,20 +95,6 @@ func TestReplay(t *testing.T) {
 
 	// t.Parallel()
 	ctx := context.Background()
-	var dirs []string
-	err := filepath.Walk("testdata", func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if info.Name() == "sqlc.json" || info.Name() == "sqlc.yaml" || info.Name() == "sqlc.yml" {
-			dirs = append(dirs, filepath.Dir(path))
-			return filepath.SkipDir
-		}
-		return nil
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	contexts := map[string]textContext{
 		"base": {
@@ -135,24 +119,29 @@ func TestReplay(t *testing.T) {
 		},
 	}
 
-	for _, replay := range dirs {
-		tc := replay
-		for name, testctx := range contexts {
-			name := name
-			testctx := testctx
+	for name, testctx := range contexts {
+		name := name
+		testctx := testctx
 
-			if !testctx.Enabled() {
-				continue
-			}
+		if !testctx.Enabled() {
+			continue
+		}
 
-			t.Run(filepath.Join(name, tc), func(t *testing.T) {
+		for _, replay := range FindTests(t, "testdata", name) {
+			tc := replay
+			t.Run(filepath.Join(name, tc.Name), func(t *testing.T) {
 				t.Parallel()
+
 				var stderr bytes.Buffer
 				var output map[string]string
 				var err error
 
-				path, _ := filepath.Abs(tc)
-				args := parseExec(t, path)
+				path, _ := filepath.Abs(tc.Path)
+				args := tc.Exec
+				if args == nil {
+					args = &Exec{Command: "generate"}
+				}
+				expected := string(tc.Stderr)
 
 				if args.Process != "" {
 					_, err := osexec.LookPath(args.Process)
@@ -167,7 +156,6 @@ func TestReplay(t *testing.T) {
 					}
 				}
 
-				expected := expectedStderr(t, path, name)
 				opts := cmd.Options{
 					Env: cmd.Env{
 						Debug:    opts.DebugFromString(args.Env["SQLCDEBUG"]),
@@ -261,50 +249,6 @@ func cmpDirectory(t *testing.T, dir string, actual map[string]string) {
 			}
 		}
 	}
-}
-
-func expectedStderr(t *testing.T, dir, testctx string) string {
-	t.Helper()
-	paths := []string{
-		filepath.Join(dir, "stderr", fmt.Sprintf("%s.txt", testctx)),
-		filepath.Join(dir, "stderr.txt"),
-	}
-	for _, path := range paths {
-		if _, err := os.Stat(path); !os.IsNotExist(err) {
-			blob, err := os.ReadFile(path)
-			if err != nil {
-				t.Fatal(err)
-			}
-			return string(blob)
-		}
-	}
-	return ""
-}
-
-type exec struct {
-	Command  string            `json:"command"`
-	Process  string            `json:"process"`
-	Contexts []string          `json:"contexts"`
-	Env      map[string]string `json:"env"`
-}
-
-func parseExec(t *testing.T, dir string) exec {
-	t.Helper()
-	var e exec
-	path := filepath.Join(dir, "exec.json")
-	if _, err := os.Stat(path); !os.IsNotExist(err) {
-		blob, err := os.ReadFile(path)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if err := json.Unmarshal(blob, &e); err != nil {
-			t.Fatal(err)
-		}
-	}
-	if e.Command == "" {
-		e.Command = "generate"
-	}
-	return e
 }
 
 func BenchmarkReplay(b *testing.B) {

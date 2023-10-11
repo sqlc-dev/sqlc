@@ -15,5 +15,8 @@ func (n *WithClause) Format(buf *TrackedBuffer) {
 		return
 	}
 	buf.WriteString("WITH")
+	if n.Recursive {
+		buf.WriteString(" RECURSIVE")
+	}
 	buf.astFormat(n.Ctes)
 }

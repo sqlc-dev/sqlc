@@ -18,7 +18,13 @@ func (n *A_Expr) Format(buf *TrackedBuffer) {
 	}
 	buf.astFormat(n.Lexpr)
 	buf.WriteString(" ")
-	buf.astFormat(n.Name)
-	buf.WriteString(" ")
-	buf.astFormat(n.Rexpr)
+	if n.Kind == A_Expr_Kind_IN {
+		buf.WriteString(" IN (")
+		buf.astFormat(n.Rexpr)
+		buf.WriteString(")")
+	} else {
+		buf.astFormat(n.Name)
+		buf.WriteString(" ")
+		buf.astFormat(n.Rexpr)
+	}
 }

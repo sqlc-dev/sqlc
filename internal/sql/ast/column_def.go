@@ -30,3 +30,15 @@ type ColumnDef struct {
 func (n *ColumnDef) Pos() int {
 	return n.Location
 }
+
+func (n *ColumnDef) Format(buf *TrackedBuffer) {
+	if n == nil {
+		return
+	}
+	buf.WriteString(n.Colname)
+	buf.WriteString(" ")
+	buf.astFormat(n.TypeName)
+	if n.IsNotNull {
+		buf.WriteString(" NOT NULL")
+	}
+}

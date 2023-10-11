@@ -35,6 +35,9 @@ func (t *TrackedBuffer) join(n *List, sep string) {
 		return
 	}
 	for i, item := range n.Items {
+		if _, ok := item.(*TODO); ok {
+			continue
+		}
 		if i > 0 {
 			t.WriteString(sep)
 		}

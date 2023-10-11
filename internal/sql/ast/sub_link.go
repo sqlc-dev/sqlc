@@ -31,8 +31,15 @@ func (n *SubLink) Format(buf *TrackedBuffer) {
 	if n == nil {
 		return
 	}
-
-	buf.WriteString("EXISTS (")
+	buf.astFormat(n.Testexpr)
+	switch n.SubLinkType {
+	case EXISTS_SUBLINK:
+		buf.WriteString(" EXISTS (")
+	case ANY_SUBLINK:
+		buf.WriteString(" IN (")
+	default:
+		buf.WriteString(" (")
+	}
 	buf.astFormat(n.Subselect)
 	buf.WriteString(")")
 }
