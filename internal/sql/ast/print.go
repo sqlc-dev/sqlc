@@ -30,6 +30,18 @@ func (t *TrackedBuffer) astFormat(n Node) {
 	}
 }
 
+func (t *TrackedBuffer) join(n *List, sep string) {
+	if n == nil {
+		return
+	}
+	for i, item := range n.Items {
+		if i > 0 {
+			t.WriteString(sep)
+		}
+		t.astFormat(item)
+	}
+}
+
 func Format(n Node) string {
 	tb := NewTrackedBuffer()
 	if ft, ok := n.(formatter); ok {

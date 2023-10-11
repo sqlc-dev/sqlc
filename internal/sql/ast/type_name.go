@@ -19,3 +19,10 @@ type TypeName struct {
 func (n *TypeName) Pos() int {
 	return n.Location
 }
+
+func (n *TypeName) Format(buf *TrackedBuffer) {
+	if n == nil {
+		return
+	}
+	buf.astFormat(n.Names)
+}

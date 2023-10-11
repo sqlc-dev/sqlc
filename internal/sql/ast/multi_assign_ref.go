@@ -9,3 +9,10 @@ type MultiAssignRef struct {
 func (n *MultiAssignRef) Pos() int {
 	return 0
 }
+
+func (n *MultiAssignRef) Format(buf *TrackedBuffer) {
+	if n == nil {
+		return
+	}
+	buf.astFormat(n.Source)
+}

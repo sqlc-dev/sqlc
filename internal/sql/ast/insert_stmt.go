@@ -1,7 +1,5 @@
 package ast
 
-import "github.com/sqlc-dev/sqlc/internal/debug"
-
 type InsertStmt struct {
 	Relation         *RangeVar
 	Cols             *List
@@ -28,7 +26,6 @@ func (n *InsertStmt) Format(buf *TrackedBuffer) {
 
 	buf.WriteString("INSERT INTO ")
 	if n.Relation != nil {
-		debug.Dump(n.Relation)
 		buf.astFormat(n.Relation)
 	}
 	if items(n.Cols) {

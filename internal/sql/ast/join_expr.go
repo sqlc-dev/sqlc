@@ -14,3 +14,14 @@ type JoinExpr struct {
 func (n *JoinExpr) Pos() int {
 	return 0
 }
+
+func (n *JoinExpr) Format(buf *TrackedBuffer) {
+	if n == nil {
+		return
+	}
+	buf.astFormat(n.Larg)
+	buf.WriteString(" JOIN ")
+	buf.astFormat(n.Rarg)
+	buf.WriteString(" ON ")
+	buf.astFormat(n.Quals)
+}
