@@ -18,6 +18,10 @@ func (n *RangeVar) Format(buf *TrackedBuffer) {
 	if n == nil {
 		return
 	}
+	if n.Schemaname != nil {
+		buf.WriteString(*n.Schemaname)
+		buf.WriteString(".")
+	}
 	if n.Relname != nil {
 		buf.WriteString(*n.Relname)
 	}

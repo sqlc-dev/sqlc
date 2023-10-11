@@ -15,5 +15,8 @@ func (n *ResTarget) Format(buf *TrackedBuffer) {
 	if n == nil {
 		return
 	}
+	if n.Name != nil {
+		buf.WriteString(*n.Name)
+	}
 	buf.astFormat(n.Val)
 }

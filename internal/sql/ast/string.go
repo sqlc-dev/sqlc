@@ -1,7 +1,5 @@
 package ast
 
-import "fmt"
-
 type String struct {
 	Str string
 }
@@ -14,5 +12,5 @@ func (n *String) Format(buf *TrackedBuffer) {
 	if n == nil {
 		return
 	}
-	fmt.Fprintf(buf, "%q", n.Str)
+	buf.WriteString(n.Str)
 }

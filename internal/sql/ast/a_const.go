@@ -13,5 +13,11 @@ func (n *A_Const) Format(buf *TrackedBuffer) {
 	if n == nil {
 		return
 	}
-	buf.astFormat(n.Val)
+	if _, ok := n.Val.(*String); ok {
+		buf.WriteString("'")
+		buf.astFormat(n.Val)
+		buf.WriteString("'")
+	} else {
+		buf.astFormat(n.Val)
+	}
 }

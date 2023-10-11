@@ -1,5 +1,7 @@
 package ast
 
+import "fmt"
+
 type SelectStmt struct {
 	DistinctClause *List
 	IntoClause     *IntoClause
@@ -25,26 +27,15 @@ func (n *SelectStmt) Pos() int {
 	return 0
 }
 
-func set(n Node) bool {
-	if n == nil {
-		return false
-	}
-	_, ok := n.(*TODO)
-	if ok {
-		return false
-	}
-	return true
-}
-
-func items(n *List) bool {
-	if n == nil {
-		return false
-	}
-	return len(n.Items) > 0
-}
-
 func (n *SelectStmt) Format(buf *TrackedBuffer) {
 	if n == nil {
+		return
+	}
+
+	if items(n.ValuesLists) {
+		buf.WriteString("VALUES (")
+		buf.astFormat(n.ValuesLists)
+		buf.WriteString(")")
 		return
 	}
 
@@ -54,6 +45,14 @@ func (n *SelectStmt) Format(buf *TrackedBuffer) {
 	}
 
 	buf.WriteString("SELECT ")
+	if items(n.DistinctClause) {
+		buf.WriteString("DISTINCT ")
+		if !todo(n.DistinctClause) {
+			fmt.Fprintf(buf, "ON (")
+			buf.astFormat(n.DistinctClause)
+			fmt.Fprintf(buf, ")")
+		}
+	}
 	buf.astFormat(n.TargetList)
 
 	if items(n.FromClause) {
@@ -65,4 +64,25 @@ func (n *SelectStmt) Format(buf *TrackedBuffer) {
 		buf.WriteString(" WHERE ")
 		buf.astFormat(n.WhereClause)
 	}
+
+	if items(n.SortClause) {
+		buf.WriteString(" ORDER BY ")
+		buf.astFormat(n.SortClause)
+	}
+
+	if set(n.LimitCount) {
+		buf.WriteString(" LIMIT ")
+		buf.astFormat(n.LimitCount)
+	}
+
+	if set(n.LimitOffset) {
+		buf.WriteString(" OFFSET ")
+		buf.astFormat(n.LimitOffset)
+	}
+
+	if items(n.LockingClause) {
+		buf.WriteString(" ")
+		buf.astFormat(n.LockingClause)
+	}
+
 }

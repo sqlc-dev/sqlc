@@ -37,3 +37,30 @@ func Format(n Node) string {
 	}
 	return tb.String()
 }
+
+func set(n Node) bool {
+	if n == nil {
+		return false
+	}
+	_, ok := n.(*TODO)
+	if ok {
+		return false
+	}
+	return true
+}
+
+func items(n *List) bool {
+	if n == nil {
+		return false
+	}
+	return len(n.Items) > 0
+}
+
+func todo(n *List) bool {
+	for _, item := range n.Items {
+		if _, ok := item.(*TODO); !ok {
+			return false
+		}
+	}
+	return true
+}

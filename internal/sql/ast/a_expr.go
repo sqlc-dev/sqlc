@@ -11,3 +11,14 @@ type A_Expr struct {
 func (n *A_Expr) Pos() int {
 	return n.Location
 }
+
+func (n *A_Expr) Format(buf *TrackedBuffer) {
+	if n == nil {
+		return
+	}
+	buf.astFormat(n.Lexpr)
+	buf.WriteString(" ")
+	buf.astFormat(n.Name)
+	buf.WriteString(" ")
+	buf.astFormat(n.Rexpr)
+}
