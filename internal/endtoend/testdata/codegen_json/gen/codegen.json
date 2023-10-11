@@ -13,7 +13,7 @@
     "codegen": {
       "out": "",
       "plugin": "",
-      "options": "eyJvdXQiOiJnZW4iLCJpbmRlbnQiOiIgICIsImZpbGVuYW1lIjoiY29kZWdlbi5qc29uIn0="
+      "options": ""
     }
   },
   "catalog": {
@@ -65363,5 +65363,5 @@
     }
   ],
   "sqlc_version": "v1.22.0",
-  "plugin_options": ""
+  "plugin_options": "eyJvdXQiOiJnZW4iLCJpbmRlbnQiOiIgICIsImZpbGVuYW1lIjoiY29kZWdlbi5qc29uIn0="
 }

@@ -413,7 +413,7 @@ func codegen(ctx context.Context, combo config.CombinedSettings, sql outPair, re
 		if err != nil {
 			return "", nil, fmt.Errorf("opts marshal failed: %w", err)
 		}
-		req.Settings.Codegen.Options = opts
+		req.PluginOptions = opts
 
 	default:
 		return "", nil, fmt.Errorf("missing language backend")
