@@ -3,6 +3,7 @@ package cmd
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -16,7 +17,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/sqlc-dev/sqlc/internal/codegen/golang"
-	"github.com/sqlc-dev/sqlc/internal/codegen/json"
+	genjson "github.com/sqlc-dev/sqlc/internal/codegen/json"
 	"github.com/sqlc-dev/sqlc/internal/compiler"
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/config/convert"
@@ -166,7 +167,7 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 				Gen: config.SQLGen{JSON: sql.Gen.JSON},
 			})
 		}
-		for i, _ := range sql.Codegen {
+		for i := range sql.Codegen {
 			pairs = append(pairs, outPair{
 				SQL:    sql,
 				Plugin: &sql.Codegen[i],
@@ -399,10 +400,20 @@ func codegen(ctx context.Context, combo config.CombinedSettings, sql outPair, re
 	case sql.Gen.Go != nil:
 		out = combo.Go.Out
 		handler = ext.HandleFunc(golang.Generate)
+		opts, err := json.Marshal(sql.Gen.Go)
+		if err != nil {
+			return "", nil, fmt.Errorf("opts marshal failed: %w", err)
+		}
+		req.PluginOptions = opts
 
 	case sql.Gen.JSON != nil:
 		out = combo.JSON.Out
-		handler = ext.HandleFunc(json.Generate)
+		handler = ext.HandleFunc(genjson.Generate)
+		opts, err := json.Marshal(sql.Gen.JSON)
+		if err != nil {
+			return "", nil, fmt.Errorf("opts marshal failed: %w", err)
+		}
+		req.Settings.Codegen.Options = opts
 
 	default:
 		return "", nil, fmt.Errorf("missing language backend")

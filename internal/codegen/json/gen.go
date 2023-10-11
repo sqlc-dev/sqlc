@@ -11,13 +11,13 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
 
-func parseOptions(req *plugin.CodeGenRequest) (*plugin.JSONCode, error) {
+func parseOptions(req *plugin.CodeGenRequest) (*opts, error) {
 	if req.Settings == nil {
-		return new(plugin.JSONCode), nil
+		return new(opts), nil
 	}
 	if req.Settings.Codegen != nil {
 		if len(req.Settings.Codegen.Options) != 0 {
-			var options *plugin.JSONCode
+			var options *opts
 			dec := ejson.NewDecoder(bytes.NewReader(req.Settings.Codegen.Options))
 			dec.DisallowUnknownFields()
 			if err := dec.Decode(&options); err != nil {
@@ -26,10 +26,7 @@ func parseOptions(req *plugin.CodeGenRequest) (*plugin.JSONCode, error) {
 			return options, nil
 		}
 	}
-	if req.Settings.Json != nil {
-		return req.Settings.Json, nil
-	}
-	return new(plugin.JSONCode), nil
+	return new(opts), nil
 }
 
 func Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
