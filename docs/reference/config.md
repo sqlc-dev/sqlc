@@ -8,24 +8,24 @@ file must be in the directory where the `sqlc` command is run.
 ```yaml
 version: "2"
 sql:
-  - schema: "postgresql/schema.sql"
-    queries: "postgresql/query.sql"
-    engine: "postgresql"
-    gen:
-      go:
-        package: "authors"
-        out: "postgresql"
-    database:
-      uri: "postgresql://postgres:postgres@localhost:5432/postgres"
-    rules:
-      - sqlc/db-prepare
-  - schema: "mysql/schema.sql"
-    queries: "mysql/query.sql"
-    engine: "mysql"
-    gen:
-      go:
-        package: "authors"
-        out: "mysql"
+- schema: "postgresql/schema.sql"
+  queries: "postgresql/query.sql"
+  engine: "postgresql"
+  gen:
+    go: 
+      package: "authors"
+      out: "postgresql"
+  database:
+    uri: "postgresql://postgres:postgres@localhost:5432/postgres"
+  rules:
+    - sqlc/db-prepare
+- schema: "mysql/schema.sql"
+  queries: "mysql/query.sql"
+  engine: "mysql"
+  gen:
+    go:
+      package: "authors"
+      out: "mysql"
 ```
 
 ### sql
