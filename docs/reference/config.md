@@ -61,24 +61,24 @@ The `codegen` mapping supports the following keys:
   - A mapping of plugin-specific options.
 
 ```yaml
-version: "2"
+version: '2'
 plugins:
-  - name: py
-    wasm:
-      url: https://github.com/sqlc-dev/sqlc-gen-python/releases/download/v0.16.0-alpha/sqlc-gen-python.wasm
-      sha256: 428476c7408fd4c032da4ec74e8a7344f4fa75e0f98a5a3302f238283b9b95f2
+- name: py
+  wasm:
+    url: https://github.com/sqlc-dev/sqlc-gen-python/releases/download/v0.16.0-alpha/sqlc-gen-python.wasm
+    sha256: 428476c7408fd4c032da4ec74e8a7344f4fa75e0f98a5a3302f238283b9b95f2
 sql:
-  - schema: "schema.sql"
-    queries: "query.sql"
-    engine: postgresql
-    codegen:
-      - out: src/authors
-        plugin: py
-        options:
-          package: authors
-          emit_sync_querier: true
-          emit_async_querier: true
-          query_parameter_limit: 5
+- schema: "schema.sql"
+  queries: "query.sql"
+  engine: postgresql
+  codegen:
+  - out: src/authors
+    plugin: py
+    options:
+      package: authors
+      emit_sync_querier: true
+      emit_async_querier: true
+      query_parameter_limit: 5
 ```
 
 ### database
@@ -93,19 +93,19 @@ syntax. In the following example, the connection string will have the value of
 the `PG_PASSWORD` environment variable set as its password.
 
 ```yaml
-version: "2"
+version: '2'
 sql:
-  - schema: schema.sql
-    queries: query.sql
-    engine: postgresql
-    database:
-      uri: postgresql://postgres:${PG_PASSWORD}@localhost:5432/authors
-    gen:
-      go:
-        package: authors
-        out: postgresql
+- schema: schema.sql
+  queries: query.sql
+  engine: postgresql
+  database:
+    uri: postgresql://postgres:${PG_PASSWORD}@localhost:5432/authors
+  gen:
+    go:
+      package: authors
+      out: postgresql
 ```
-
+ 
 ### gen
 
 The `gen` mapping supports the following keys:
@@ -255,19 +255,19 @@ Each mapping in the `plugins` collection has the following keys:
     - The URL to fetch the WASM file. Supports the `https://` or `file://` schemes.
   - `sha256`
     - The SHA256 checksum for the downloaded file.
-
+   
 ```yaml
 version: "2"
 plugins:
-  - name: "py"
-    wasm:
-      url: "https://github.com/sqlc-dev/sqlc-gen-python/releases/download/v0.16.0-alpha/sqlc-gen-python.wasm"
-      sha256: "428476c7408fd4c032da4ec74e8a7344f4fa75e0f98a5a3302f238283b9b95f2"
-  - name: "js"
-    env:
-      - PATH
-    process:
-      cmd: "sqlc-gen-json"
+- name: "py"
+  wasm: 
+    url: "https://github.com/sqlc-dev/sqlc-gen-python/releases/download/v0.16.0-alpha/sqlc-gen-python.wasm"
+    sha256: "428476c7408fd4c032da4ec74e8a7344f4fa75e0f98a5a3302f238283b9b95f2"
+- name: "js"
+  env:
+  - PATH
+  process: 
+    cmd: "sqlc-gen-json"
 ```
 
 ### rules
@@ -283,7 +283,7 @@ Each mapping in the `rules` collection has the following keys:
 
 See the [vet](../howto/vet.md) documentation for a list of built-in rules and
 help writing custom rules.
-
+   
 ```yaml
 version: "2"
 sql:
@@ -317,11 +317,11 @@ rules:
     rule: |
       query.cmd == "exec"
 ```
-
+  
 ### global overrides
 
 Sometimes, the same configuration must be done across various specifications of
-code generation. Then a global definition for type overriding and field
+code generation.  Then a global definition for type overriding and field
 renaming can be done using the `overrides` mapping the following manner:
 
 ```yaml
@@ -339,27 +339,27 @@ overrides:
           package: "null"
           type: "Time"
 sql:
-  - schema: "postgresql/schema.sql"
-    queries: "postgresql/query.sql"
-    engine: "postgresql"
-    gen:
-      go:
-        package: "authors"
-        out: "postgresql"
-  - schema: "mysql/schema.sql"
-    queries: "mysql/query.sql"
-    engine: "mysql"
-    gen:
-      go:
-        package: "authors"
-        out: "mysql"
+- schema: "postgresql/schema.sql"
+  queries: "postgresql/query.sql"
+  engine: "postgresql"
+  gen:
+    go: 
+      package: "authors"
+      out: "postgresql"
+- schema: "mysql/schema.sql"
+  queries: "mysql/query.sql"
+  engine: "mysql"
+  gen:
+    go:
+      package: "authors"
+      out: "mysql"
 ```
 
 With the previous configuration, whenever a struct field is generated from a
 table column that is called `id`, it will generated as `Identifier`.
 
 Also, whenever there is a nullable `timestamp with time zone` column in a
-Postgres table, it will be generated as `null.Time`. Note that the mapping for
+Postgres table, it will be generated as `null.Time`.  Note that the mapping for
 global type overrides has a field called `engine` that is absent in the regular
 type overrides. This field is only used when there are multiple definitions
 using multiple engines. Otherwise, the value of the `engine` key
