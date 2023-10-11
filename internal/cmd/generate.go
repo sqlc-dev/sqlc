@@ -97,7 +97,7 @@ func readConfig(stderr io.Writer, dir, filename string) (string, *config.Config,
 			return "", nil, errors.New("config file missing")
 		}
 
-		if !yamlMissing && !ymlMissing && !jsonMissing {
+		if (!yamlMissing || !ymlMissing) && !jsonMissing {
 			fmt.Fprintln(stderr, "error: both sqlc.json and sqlc.(yaml|yml) files present")
 			return "", nil, errors.New("sqlc.json and sqlc.(yaml|yml) present")
 		}
