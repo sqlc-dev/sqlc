@@ -1,5 +1,9 @@
 # Managed databases
 
+```{note}
+Managed databases are powered by [sqlc Cloud](https://dashboard.sqlc.dev). Sign up for [free](https://dashboard.sqlc.dev) today.
+```
+
 *Added in v1.22.0*
 
 `sqlc` can create and maintain hosted databases for your project. These
@@ -12,15 +16,12 @@ other use-cases. Beyond linting queries, you can use sqlc managed databases
 in your tests to quickly stand up a database per test suite or even per test,
 providing a real, isolated database for a test run. No cleanup required.
 
-Interested in trying out managed databases? Sign up [here](https://docs.google.com/forms/d/e/1FAIpQLSdxoMzJ7rKkBpuez-KyBcPNyckYV-5iMR--FRB7WnhvAmEvKg/viewform) or send us an email
-at [hello@sqlc.dev](mailto:hello@sqlc.dev).
-
 ## Configuring managed databases
 
 To configure `sqlc` to use a managed database, remove the `uri` key from your
 `database` configuration and replace it with the `managed` key set to `true`.
 Set the `project` key in your `cloud` configuration to the value of your
-project ID, obtained via the sqlc.dev Dashboard.
+project ID, obtained via the [dashboard](https://dashboard.sqlc.dev).
 
 ```yaml
 version: '2'
@@ -37,7 +38,7 @@ sql:
 ## Authentication
 
 `sqlc` expects to find a valid auth token in the value of the `SQLC_AUTH_TOKEN`
-environment variable. You can create an auth token via the sqlc.dev Dashboard.
+environment variable. You can create an auth token via the [dashboard](https://dashboard.sqlc.dev).
 
 ```shell
 export SQLC_AUTH_TOKEN=sqlc_xxxxxxxx
