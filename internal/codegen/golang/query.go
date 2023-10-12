@@ -166,7 +166,11 @@ func (v QueryValue) ColumnNamesAsGoSlice() string {
 	}
 	escapedNames := make([]string, len(v.Struct.Fields))
 	for i, f := range v.Struct.Fields {
-		escapedNames[i] = fmt.Sprintf("%q", f.DBName)
+		if f.Column != nil && f.Column.OriginalName != "" {
+			escapedNames[i] = fmt.Sprintf("%q", f.Column.OriginalName)
+		} else {
+			escapedNames[i] = fmt.Sprintf("%q", f.DBName)
+		}
 	}
 	return "[]string{" + strings.Join(escapedNames, ", ") + "}"
 }

@@ -39,7 +39,10 @@ func validateCopyfrom(n ast.Node) error {
 		return nil
 	}
 	for _, v := range sublist.Items {
-		if _, ok := v.(*ast.ParamRef); !ok {
+		_, ok := v.(*ast.ParamRef)
+		ok = ok || named.IsParamFunc(v)
+		ok = ok || named.IsParamSign(v)
+		if !ok {
 			return errors.New(":copyfrom doesn't support non-parameter values")
 		}
 	}
