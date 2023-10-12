@@ -1,0 +1,2 @@
+# package querytest
+query.sql:3:10: column "adfadsf" does not exist

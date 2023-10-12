@@ -1,0 +1,5 @@
+# package querytest
+query.sql:2:15: relation "nonexisting_relation" does not exist
+query.sql:5:15: relation "nonexisting_relation" does not exist
+query.sql:8:8: relation "nonexisting_relation" does not exist
+query.sql:11:13: relation "nonexisting_relation" does not exist

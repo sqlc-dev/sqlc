@@ -1,0 +1,2 @@
+# package querytest
+query.sql:1:1: function "doesntexist" does not exist
