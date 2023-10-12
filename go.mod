@@ -50,7 +50,7 @@ require (
 	github.com/jackc/pgtype v1.14.0
 	github.com/pingcap/errors v0.11.5-0.20210425183316-da1aaba5fb63 // indirect
 	github.com/pingcap/log v1.1.0 // indirect
-	github.com/pingcap/tidb/parser v0.0.0-20230815160630-b69fa21942d1
+	github.com/pingcap/tidb/parser v0.0.0-20231010133155-38cb4f3312be
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/rogpeppe/go-internal v1.10.0 // indirect
 	github.com/stoewer/go-strcase v1.2.0 // indirect
