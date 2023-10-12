@@ -16,8 +16,11 @@ func TestParseQueryNameAndType(t *testing.T) {
 		`--name: CreateFoo :two`,
 		"-- name:CreateFoo",
 		`--name:CreateFoo :two`,
+		`--  name: CreateFoo :two`,
+		`-- name:  CreateFoo :two`,
+		`-- name: CreateFoo  :two`,
 	} {
-		if _, _, err := ParseQueryNameAndType(query, CommentSyntax{Dash: true}); err == nil {
+		if _, err := ParseQueryMetadata(query, CommentSyntax{Dash: true}); err == nil {
 			t.Errorf("expected invalid metadata: %q", query)
 		}
 	}
@@ -27,21 +30,26 @@ func TestParseQueryNameAndType(t *testing.T) {
 		`-- name comment`,
 		`--name comment`,
 	} {
-		if _, _, err := ParseQueryNameAndType(query, CommentSyntax{Dash: true}); err != nil {
+		if _, err := ParseQueryMetadata(query, CommentSyntax{Dash: true}); err != nil {
 			t.Errorf("expected valid comment: %q", query)
 		}
 	}
 
-	query := `-- name: CreateFoo :one`
-	queryName, queryType, err := ParseQueryNameAndType(query, CommentSyntax{Dash: true})
-	if err != nil {
-		t.Errorf("expected valid metadata: %q", query)
-	}
-	if queryName != "CreateFoo" {
-		t.Errorf("incorrect queryName parsed: %q", query)
-	}
-	if queryType != CmdOne {
-		t.Errorf("incorrect queryType parsed: %q", query)
+	for query, cs := range map[string]CommentSyntax{
+		`-- name: CreateFoo :one`:    {Dash: true},
+		`# name: CreateFoo :one`:     {Hash: true},
+		`/* name: CreateFoo :one */`: {SlashStar: true},
+	} {
+		queryMetadata, err := ParseQueryMetadata(query, cs)
+		if err != nil {
+			t.Errorf("expected valid metadata: %q", query)
+		}
+		if queryMetadata.Name != "CreateFoo" {
+			t.Errorf("incorrect queryName parsed: %q", query)
+		}
+		if queryMetadata.Cmd != CmdOne {
+			t.Errorf("incorrect queryType parsed: %q", query)
+		}
 	}
 
 }
@@ -52,14 +60,24 @@ func TestParseQueryFlags(t *testing.T) {
 			"-- name: CreateFoo :one",
 			"-- @flag-foo",
 		},
+		{
+			"-- name: CreateFoo :one",
+			"-- @flag-foo @flag-bar",
+		},
+		{
+			"-- name: GetFoos :many",
+			"-- @param @flag-bar UUID",
+			"-- @flag-foo",
+		},
 	} {
-		flags, err := ParseQueryFlags(comments)
-		if err != nil {
-			t.Errorf("expected query flags to parse, got error: %s", err)
-		}
+		_, flags := parseParamsAndFlags(comments)
 
 		if !flags["@flag-foo"] {
 			t.Errorf("expected flag not found")
+		}
+
+		if flags["@flag-bar"] {
+			t.Errorf("unexpected flag found")
 		}
 	}
 }

@@ -90,14 +90,15 @@ func (c *Compiler) parseQueries(o opts.Parser) (*Result, error) {
 				merr.Add(filename, src, loc, err)
 				continue
 			}
-			if query.Name != "" {
-				if _, exists := set[query.Name]; exists {
-					merr.Add(filename, src, stmt.Raw.Pos(), fmt.Errorf("duplicate query name: %s", query.Name))
+			queryName := query.Metadata.Name
+			if queryName != "" {
+				if _, exists := set[queryName]; exists {
+					merr.Add(filename, src, stmt.Raw.Pos(), fmt.Errorf("duplicate query name: %s", queryName))
 					continue
 				}
-				set[query.Name] = struct{}{}
+				set[queryName] = struct{}{}
 			}
-			query.Filename = filepath.Base(filename)
+			query.Metadata.Filename = filepath.Base(filename)
 			if query != nil {
 				q = append(q, query)
 			}

@@ -43,11 +43,12 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 		return nil, errors.New("missing semicolon at end of file")
 	}
 
-	name, cmd, err := metadata.ParseQueryNameAndType(strings.TrimSpace(rawSQL), c.parser.CommentSyntax())
+	md, err := metadata.ParseQueryMetadata(rawSQL, c.parser.CommentSyntax())
 	if err != nil {
 		return nil, err
 	}
-	if err := validate.Cmd(raw.Stmt, name, cmd); err != nil {
+
+	if err := validate.Cmd(raw.Stmt, md.Name, md.Cmd); err != nil {
 		return nil, err
 	}
 
@@ -85,22 +86,14 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 		}
 	}
 
-	trimmed, comments, err := source.StripComments(expanded)
-	if err != nil {
-		return nil, err
-	}
-
-	flags, err := metadata.ParseQueryFlags(comments)
+	trimmed, _, err := source.StripComments(expanded)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Query{
 		RawStmt:         raw,
-		Cmd:             cmd,
-		Comments:        comments,
-		Name:            name,
-		Flags:           flags,
+		Metadata:        md,
 		Params:          anlys.Parameters,
 		Columns:         anlys.Columns,
 		SQL:             trimmed,

@@ -90,6 +90,7 @@ func Mutate(raw string, a []Edit) (string, error) {
 	return s, nil
 }
 
+// TODO remove and roll into query parsing
 func StripComments(sql string) (string, []string, error) {
 	s := bufio.NewScanner(strings.NewReader(strings.TrimSpace(sql)))
 	var lines, comments []string
