@@ -11,7 +11,7 @@ Initialize a new Go module named `tutorial.sql.dev/app`
 go mod init tutorial.sqlc.dev/app
 ```
 
-sqlc looks for either a `sqlc.yaml` or `sqlc.json` file in the current
+sqlc looks for either a `sqlc.(yaml|yml)` or `sqlc.json` file in the current
 directory. In our new directory, create a file named `sqlc.yaml` with the
 following contents:
 

@@ -131,6 +131,9 @@
                     "emit_all_enum_values": {
                         "type": "boolean"
                     },
+                    "build_tags": {
+                        "type": "string"
+                    },
                     "json_tags_case_style": {
                         "type": "string"
                     },

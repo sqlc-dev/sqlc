@@ -58,8 +58,6 @@ func pluginSettings(r *compiler.Result, cs config.CombinedSettings) *plugin.Sett
 		Overrides: over,
 		Rename:    cs.Rename,
 		Codegen:   pluginCodegen(cs.Codegen),
-		Go:        pluginGoCode(cs.Go),
-		Json:      pluginJSONCode(cs.JSON),
 	}
 }
 
@@ -75,44 +73,6 @@ func pluginCodegen(s config.Codegen) *plugin.Codegen {
 	}
 }
 
-func pluginGoCode(s config.SQLGo) *plugin.GoCode {
-	if s.QueryParameterLimit == nil {
-		s.QueryParameterLimit = new(int32)
-		*s.QueryParameterLimit = 1
-	}
-
-	return &plugin.GoCode{
-		EmitInterface:               s.EmitInterface,
-		EmitJsonTags:                s.EmitJSONTags,
-		JsonTagsIdUppercase:         s.JsonTagsIDUppercase,
-		EmitDbTags:                  s.EmitDBTags,
-		EmitPreparedQueries:         s.EmitPreparedQueries,
-		EmitExactTableNames:         s.EmitExactTableNames,
-		EmitEmptySlices:             s.EmitEmptySlices,
-		EmitExportedQueries:         s.EmitExportedQueries,
-		EmitResultStructPointers:    s.EmitResultStructPointers,
-		EmitParamsStructPointers:    s.EmitParamsStructPointers,
-		EmitMethodsWithDbArgument:   s.EmitMethodsWithDBArgument,
-		EmitPointersForNullTypes:    s.EmitPointersForNullTypes,
-		EmitEnumValidMethod:         s.EmitEnumValidMethod,
-		EmitAllEnumValues:           s.EmitAllEnumValues,
-		JsonTagsCaseStyle:           s.JSONTagsCaseStyle,
-		Package:                     s.Package,
-		Out:                         s.Out,
-		SqlPackage:                  s.SQLPackage,
-		SqlDriver:                   s.SQLDriver,
-		OutputDbFileName:            s.OutputDBFileName,
-		OutputBatchFileName:         s.OutputBatchFileName,
-		OutputModelsFileName:        s.OutputModelsFileName,
-		OutputQuerierFileName:       s.OutputQuerierFileName,
-		OutputCopyfromFileName:      s.OutputCopyFromFileName,
-		OutputFilesSuffix:           s.OutputFilesSuffix,
-		InflectionExcludeTableNames: s.InflectionExcludeTableNames,
-		QueryParameterLimit:         s.QueryParameterLimit,
-		OmitUnusedStructs:           s.OmitUnusedStructs,
-	}
-}
-
 func pluginGoType(o config.Override) *plugin.ParsedGoType {
 	// Note that there is a slight mismatch between this and the
 	// proto api. The GoType on the override is the unparsed type,
@@ -124,14 +84,6 @@ func pluginGoType(o config.Override) *plugin.ParsedGoType {
 		TypeName:   o.GoTypeName,
 		BasicType:  o.GoBasicType,
 		StructTags: o.GoStructTags,
-	}
-}
-
-func pluginJSONCode(s config.SQLJSON) *plugin.JSONCode {
-	return &plugin.JSONCode{
-		Out:      s.Out,
-		Indent:   s.Indent,
-		Filename: s.Filename,
 	}
 }
 
