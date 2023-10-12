@@ -507,9 +507,10 @@ func (c *Compiler) sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, erro
 			return ok
 		})
 	case *ast.UpdateStmt:
-		list = &ast.List{
-			Items: append(n.FromClause.Items, n.Relations.Items...),
-		}
+		var tv tableVisitor
+		astutils.Walk(&tv, n.FromClause)
+		astutils.Walk(&tv, n.Relations)
+		list = &tv.list
 	case *ast.DoStmt:
 		list = &ast.List{}
 	case *ast.CallStmt:
