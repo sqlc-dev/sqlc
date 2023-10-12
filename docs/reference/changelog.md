@@ -18,9 +18,8 @@ When you turn on managed databases, `sqlc` will use your schema to create a
 template database that it can copy to make future runs of `sqlc vet` very
 performant.
 
-This feature relies on configuration obtained via sqlc Cloud. If you're interested
-in early access you can [sign up here](https://docs.google.com/forms/d/e/1FAIpQLSdxoMzJ7rKkBpuez-KyBcPNyckYV-5iMR--FRB7WnhvAmEvKg/viewform)
-or send us an email at [hello@sqlc.dev](mailto:hello@sqlc.dev).
+This feature relies on configuration obtained via [sqlc
+Cloud](https://dashboard.sqlc.dev).
 
 Read more in the [managed databases](../howto/managed-databases.md) documentation.
 
