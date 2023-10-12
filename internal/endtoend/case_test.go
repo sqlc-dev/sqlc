@@ -68,7 +68,7 @@ func FindTests(t *testing.T, root, testctx string) []*Testcase {
 		if err != nil {
 			return err
 		}
-		if info.Name() == "sqlc.json" || info.Name() == "sqlc.yaml" {
+		if info.Name() == "sqlc.json" || info.Name() == "sqlc.yaml" || info.Name() == "sqlc.yml" {
 			dir := filepath.Dir(path)
 			tcs = append(tcs, &Testcase{
 				Path:       dir,
