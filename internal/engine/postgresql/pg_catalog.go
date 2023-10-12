@@ -29076,19 +29076,6 @@ var funcsgenPGCatalog = []*catalog.Function{
 		Name: "unnest",
 		Args: []*catalog.Argument{
 			{
-				Type: &ast.TypeName{Name: "anyarray"},
-			},
-			{
-				Type: &ast.TypeName{Name: "anyarray"},
-				Mode: ast.FuncParamVariadic,
-			},
-		},
-		ReturnType: &ast.TypeName{Name: "anyelement"},
-	},
-	{
-		Name: "unnest",
-		Args: []*catalog.Argument{
-			{
 				Type: &ast.TypeName{Name: "anymultirange"},
 			},
 		},
