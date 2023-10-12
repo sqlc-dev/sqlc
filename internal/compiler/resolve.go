@@ -600,6 +600,16 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 
 		default:
 			slog.Debug("unsupported reference type", "type", fmt.Sprintf("%T", n))
+			defaultP := named.NewInferredParam(ref.name, false)
+			p, isNamed := params.FetchMerge(ref.ref.Number, defaultP)
+			a = append(a, Parameter{
+				Number: ref.ref.Number,
+				Column: &Column{
+					Name:         p.Name(),
+					DataType:     "any",
+					IsNamedParam: isNamed,
+				},
+			})
 		}
 	}
 	return a, nil
