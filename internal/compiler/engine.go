@@ -6,7 +6,6 @@ import (
 
 	"github.com/sqlc-dev/sqlc/internal/analyzer"
 	"github.com/sqlc-dev/sqlc/internal/config"
-	"github.com/sqlc-dev/sqlc/internal/debug"
 	"github.com/sqlc-dev/sqlc/internal/engine/dolphin"
 	"github.com/sqlc-dev/sqlc/internal/engine/postgresql"
 	pganalyze "github.com/sqlc-dev/sqlc/internal/engine/postgresql/analyzer"
@@ -51,7 +50,6 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings) (*Compiler, err
 		c.parser = postgresql.NewParser()
 		c.catalog = postgresql.NewCatalog()
 		if conf.Database != nil {
-			debug.Dump(conf)
 			if conf.Analyzer.Database == nil || *conf.Analyzer.Database {
 				c.analyzer = pganalyze.New(c.client, *conf.Database)
 			}
