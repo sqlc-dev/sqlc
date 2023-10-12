@@ -2982,7 +2982,6 @@ func convertXmlSerialize(n *pg.XmlSerialize) *ast.XmlSerialize {
 
 func convertNode(node *pg.Node) ast.Node {
 	if node == nil || node.Node == nil {
-		// TODO: WHY
 		return &ast.TODO{}
 	}
 
@@ -3643,7 +3642,6 @@ func convertNode(node *pg.Node) ast.Node {
 		return convertXmlSerialize(n.XmlSerialize)
 
 	default:
-		fmt.Printf("todo: %T\n", n)
 		return &ast.TODO{}
 	}
 }
