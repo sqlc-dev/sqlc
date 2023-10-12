@@ -17,7 +17,7 @@ import (
 func TestFormat(t *testing.T) {
 	t.Parallel()
 	parse := postgresql.NewParser()
-	for _, tc := range FindTests(t, "testdata") {
+	for _, tc := range FindTests(t, "testdata", "base") {
 		tc := tc
 
 		if !strings.Contains(tc.Path, filepath.Join("pgx/v5")) {

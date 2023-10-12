@@ -24,7 +24,7 @@ type Exec struct {
 	Env      map[string]string `json:"env"`
 }
 
-func parseStderr(t *testing.T, dir, textctx string) []byte {
+func parseStderr(t *testing.T, dir, testctx string) []byte {
 	t.Helper()
 	paths := []string{
 		filepath.Join(dir, "stderr", fmt.Sprintf("%s.txt", testctx)),
