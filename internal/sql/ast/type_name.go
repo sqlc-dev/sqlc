@@ -27,7 +27,11 @@ func (n *TypeName) Format(buf *TrackedBuffer) {
 	if items(n.Names) {
 		buf.join(n.Names, ".")
 	} else {
-		buf.WriteString(n.Name)
+		if n.Name == "int4" {
+			buf.WriteString("INTEGER")
+		} else {
+			buf.WriteString(n.Name)
+		}
 	}
 	if items(n.ArrayBounds) {
 		buf.WriteString("[]")

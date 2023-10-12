@@ -3643,6 +3643,7 @@ func convertNode(node *pg.Node) ast.Node {
 		return convertXmlSerialize(n.XmlSerialize)
 
 	default:
+		fmt.Printf("todo: %T\n", n)
 		return &ast.TODO{}
 	}
 }

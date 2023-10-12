@@ -38,6 +38,10 @@ func (n *InsertStmt) Format(buf *TrackedBuffer) {
 		buf.astFormat(n.SelectStmt)
 	}
 
+	if n.OnConflictClause != nil {
+		buf.WriteString(" ON CONFLICT DO NOTHING ")
+	}
+
 	if items(n.ReturningList) {
 		buf.WriteString(" RETURNING ")
 		buf.astFormat(n.ReturningList)

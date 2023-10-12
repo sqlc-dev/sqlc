@@ -30,5 +30,13 @@ func (n *JoinExpr) Format(buf *TrackedBuffer) {
 	}
 	buf.astFormat(n.Rarg)
 	buf.WriteString(" ON ")
-	buf.astFormat(n.Quals)
+	if n.Jointype == JoinTypeInner {
+		if set(n.Quals) {
+			buf.astFormat(n.Quals)
+		} else {
+			buf.WriteString("TRUE")
+		}
+	} else {
+		buf.astFormat(n.Quals)
+	}
 }

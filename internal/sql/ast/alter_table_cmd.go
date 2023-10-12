@@ -39,3 +39,17 @@ type AlterTableCmd struct {
 func (n *AlterTableCmd) Pos() int {
 	return 0
 }
+
+func (n *AlterTableCmd) Format(buf *TrackedBuffer) {
+	if n == nil {
+		return
+	}
+	switch n.Subtype {
+	case AT_AddColumn:
+		buf.WriteString(" ADD COLUMN ")
+	case AT_DropColumn:
+		buf.WriteString(" DROP COLUMN ")
+	}
+
+	buf.astFormat(n.Def)
+}
