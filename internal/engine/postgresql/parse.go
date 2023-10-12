@@ -438,12 +438,21 @@ func translate(node *nodes.Node) (ast.Node, error) {
 				if err != nil {
 					return nil, err
 				}
+
+				primary := false
+				for _, con := range item.ColumnDef.Constraints {
+					if constraint, ok := con.Node.(*nodes.Node_Constraint); ok {
+						primary = constraint.Constraint.Contype == nodes.ConstrType_CONSTR_PRIMARY
+					}
+				}
+
 				create.Cols = append(create.Cols, &ast.ColumnDef{
-					Colname:   item.ColumnDef.Colname,
-					TypeName:  rel.TypeName(),
-					IsNotNull: isNotNull(item.ColumnDef) || primaryKey[item.ColumnDef.Colname],
-					IsArray:   isArray(item.ColumnDef.TypeName),
-					ArrayDims: len(item.ColumnDef.TypeName.ArrayBounds),
+					Colname:    item.ColumnDef.Colname,
+					TypeName:   rel.TypeName(),
+					IsNotNull:  isNotNull(item.ColumnDef) || primaryKey[item.ColumnDef.Colname],
+					IsArray:    isArray(item.ColumnDef.TypeName),
+					ArrayDims:  len(item.ColumnDef.TypeName.ArrayBounds),
+					PrimaryKey: primary,
 				})
 			}
 		}

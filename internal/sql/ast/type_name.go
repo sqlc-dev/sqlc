@@ -19,3 +19,21 @@ type TypeName struct {
 func (n *TypeName) Pos() int {
 	return n.Location
 }
+
+func (n *TypeName) Format(buf *TrackedBuffer) {
+	if n == nil {
+		return
+	}
+	if items(n.Names) {
+		buf.join(n.Names, ".")
+	} else {
+		if n.Name == "int4" {
+			buf.WriteString("INTEGER")
+		} else {
+			buf.WriteString(n.Name)
+		}
+	}
+	if items(n.ArrayBounds) {
+		buf.WriteString("[]")
+	}
+}
