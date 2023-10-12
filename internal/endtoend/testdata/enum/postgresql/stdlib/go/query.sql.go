@@ -61,18 +61,16 @@ func (q *Queries) GetAll(ctx context.Context, db DBTX) ([]User, error) {
 
 const newUser = `-- name: NewUser :exec
 INSERT INTO users (
-    id,
     first_name,
     last_name,
     age,
     shoe_size,
     shirt_size
 ) VALUES
-($1, $2, $3, $4, $5, $6)
+($1, $2, $3, $4, $5)
 `
 
 type NewUserParams struct {
-	ID        int32
 	FirstName string
 	LastName  sql.NullString
 	Age       int32
@@ -82,7 +80,6 @@ type NewUserParams struct {
 
 func (q *Queries) NewUser(ctx context.Context, db DBTX, arg NewUserParams) error {
 	_, err := db.ExecContext(ctx, newUser,
-		arg.ID,
 		arg.FirstName,
 		arg.LastName,
 		arg.Age,

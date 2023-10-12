@@ -20,6 +20,6 @@ LIMIT   1;
 
 -- name: SetDefaultName :one
 UPDATE  authors
-SET     name = "Default Name"
+SET     name = 'Default Name'
 WHERE   id = $1
 RETURNING id;

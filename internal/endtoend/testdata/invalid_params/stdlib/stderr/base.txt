@@ -1,0 +1,5 @@
+# package querytest
+query.sql:1:1: could not determine data type of parameter $1
+query.sql:5:1: could not determine data type of parameter $2
+query.sql:8:8: column "foo" does not exist
+query.sql:11:1: could not determine data type of parameter $2

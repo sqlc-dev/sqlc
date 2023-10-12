@@ -29,6 +29,7 @@ require (
 
 require (
 	github.com/benbjohnson/clock v1.3.5 // indirect
+	github.com/jackc/puddle/v2 v2.2.1 // indirect
 	github.com/pingcap/failpoint v0.0.0-20220801062533-2eaa32854a6c // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect

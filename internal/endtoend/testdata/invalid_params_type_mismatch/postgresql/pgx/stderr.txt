@@ -1,0 +1,2 @@
+# package db
+query.sql:3:12: column "name" is of type boolean but expression is of type bigint

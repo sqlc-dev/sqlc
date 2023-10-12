@@ -1,0 +1,2 @@
+# package querytest
+query.sql:4:15: column "name_typo" of relation "servers" does not exist

@@ -14,6 +14,13 @@ type ParamSet struct {
 	argn int
 }
 
+// Return the name for a given parameter number and a boolean indicating if it
+// was found.
+func (p *ParamSet) NameFor(idx int) (string, bool) {
+	name, ok := p.positionToName[idx]
+	return name, ok
+}
+
 func (p *ParamSet) nextArgNum() int {
 	for {
 		if _, ok := p.positionToName[p.argn]; !ok {

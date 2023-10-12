@@ -4,11 +4,13 @@
 
 package querytest
 
-import ()
+import (
+	"encoding/json"
+)
 
 type Transaction struct {
 	ID        int64
 	Uri       string
 	ProgramID string
-	Data      string
+	Data      json.RawMessage
 }

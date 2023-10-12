@@ -10,5 +10,5 @@ type Book struct {
 	ID     int32
 	Title  string
 	Author string
-	Pages  string
+	Pages  int32
 }

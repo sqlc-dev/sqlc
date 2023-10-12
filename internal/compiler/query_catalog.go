@@ -36,9 +36,22 @@ func (comp *Compiler) buildQueryCatalog(c *catalog.Catalog, node ast.Node, embed
 				if err != nil {
 					return nil, err
 				}
+				var names []string
+				if cte.Aliascolnames != nil {
+					for _, item := range cte.Aliascolnames.Items {
+						if val, ok := item.(*ast.String); ok {
+							names = append(names, val.Str)
+						} else {
+							names = append(names, "")
+						}
+					}
+				}
 				rel := &ast.TableName{Name: *cte.Ctename}
 				for i := range cols {
 					cols[i].Table = rel
+					if len(names) > i {
+						cols[i].Name = names[i]
+					}
 				}
 				qc.ctes[*cte.Ctename] = &Table{
 					Rel:     rel,
@@ -67,7 +80,7 @@ func ConvertColumn(rel *ast.TableName, c *catalog.Column) *Column {
 func (qc QueryCatalog) GetTable(rel *ast.TableName) (*Table, error) {
 	cte, exists := qc.ctes[rel.Name]
 	if exists {
-		return cte, nil
+		return &Table{Rel: rel, Columns: cte.Columns}, nil
 	}
 	src, err := qc.catalog.GetTable(rel)
 	if err != nil {

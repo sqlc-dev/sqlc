@@ -54,7 +54,7 @@ func (q *Queries) GetUser(ctx context.Context, sub pgtype.UUID) (pgtype.UUID, er
 const setDefaultName = `-- name: SetDefaultName :one
 
 UPDATE  authors
-SET     name = "Default Name"
+SET     name = 'Default Name'
 WHERE   id = $1
 RETURNING id
 `

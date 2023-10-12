@@ -139,8 +139,11 @@ func readConfig(stderr io.Writer, dir, filename string) (string, *config.Config,
 	return configPath, &conf, nil
 }
 
-func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer) (map[string]string, error) {
-	configPath, conf, err := readConfig(stderr, dir, filename)
+func Generate(ctx context.Context, dir, filename string, o *Options) (map[string]string, error) {
+	e := o.Env
+	stderr := o.Stderr
+
+	configPath, conf, err := o.ReadConfig(dir, filename)
 	if err != nil {
 		return nil, err
 	}
@@ -343,7 +346,12 @@ func remoteGenerate(ctx context.Context, configPath string, conf *config.Config,
 
 func parse(ctx context.Context, name, dir string, sql config.SQL, combo config.CombinedSettings, parserOpts opts.Parser, stderr io.Writer) (*compiler.Result, bool) {
 	defer trace.StartRegion(ctx, "parse").End()
-	c := compiler.NewCompiler(sql, combo)
+	c, err := compiler.NewCompiler(sql, combo)
+	defer c.Close(ctx)
+	if err != nil {
+		fmt.Fprintf(stderr, "error creating compiler: %s\n", err)
+		return nil, true
+	}
 	if err := c.ParseCatalog(sql.Schema); err != nil {
 		fmt.Fprintf(stderr, "# package %s\n", name)
 		if parserErr, ok := err.(*multierr.Error); ok {

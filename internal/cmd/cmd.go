@@ -197,7 +197,10 @@ var genCmd = &cobra.Command{
 		defer trace.StartRegion(cmd.Context(), "generate").End()
 		stderr := cmd.ErrOrStderr()
 		dir, name := getConfigPath(stderr, cmd.Flag("file"))
-		output, err := Generate(cmd.Context(), ParseEnv(cmd), dir, name, stderr)
+		output, err := Generate(cmd.Context(), dir, name, &Options{
+			Env:    ParseEnv(cmd),
+			Stderr: stderr,
+		})
 		if err != nil {
 			os.Exit(1)
 		}
@@ -219,7 +222,11 @@ var uploadCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		stderr := cmd.ErrOrStderr()
 		dir, name := getConfigPath(stderr, cmd.Flag("file"))
-		if err := createPkg(cmd.Context(), ParseEnv(cmd), dir, name, stderr); err != nil {
+		opts := &Options{
+			Env:    ParseEnv(cmd),
+			Stderr: stderr,
+		}
+		if err := createPkg(cmd.Context(), dir, name, opts); err != nil {
 			fmt.Fprintf(stderr, "error uploading: %s\n", err)
 			os.Exit(1)
 		}
@@ -234,7 +241,11 @@ var checkCmd = &cobra.Command{
 		defer trace.StartRegion(cmd.Context(), "compile").End()
 		stderr := cmd.ErrOrStderr()
 		dir, name := getConfigPath(stderr, cmd.Flag("file"))
-		if _, err := Generate(cmd.Context(), ParseEnv(cmd), dir, name, stderr); err != nil {
+		_, err := Generate(cmd.Context(), dir, name, &Options{
+			Env:    ParseEnv(cmd),
+			Stderr: stderr,
+		})
+		if err != nil {
 			os.Exit(1)
 		}
 		return nil
@@ -277,7 +288,11 @@ var diffCmd = &cobra.Command{
 		defer trace.StartRegion(cmd.Context(), "diff").End()
 		stderr := cmd.ErrOrStderr()
 		dir, name := getConfigPath(stderr, cmd.Flag("file"))
-		if err := Diff(cmd.Context(), ParseEnv(cmd), dir, name, stderr); err != nil {
+		opts := &Options{
+			Env:    ParseEnv(cmd),
+			Stderr: stderr,
+		}
+		if err := Diff(cmd.Context(), dir, name, opts); err != nil {
 			os.Exit(1)
 		}
 		return nil

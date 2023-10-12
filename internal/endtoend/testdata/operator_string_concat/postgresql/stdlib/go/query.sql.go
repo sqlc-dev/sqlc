@@ -7,27 +7,14 @@ package querytest
 
 import (
 	"context"
-	"database/sql"
 )
-
-const test = `-- name: Test :one
-select txt from Demo
-where txt ~~ '%' || $1 || '%'
-`
-
-func (q *Queries) Test(ctx context.Context, val string) (string, error) {
-	row := q.db.QueryRowContext(ctx, test, val)
-	var txt string
-	err := row.Scan(&txt)
-	return txt, err
-}
 
 const test2 = `-- name: Test2 :one
 select txt from Demo
-where txt like '%' || $1 || '%'
+where txt like '%' || $1::text || '%'
 `
 
-func (q *Queries) Test2(ctx context.Context, val sql.NullString) (string, error) {
+func (q *Queries) Test2(ctx context.Context, val string) (string, error) {
 	row := q.db.QueryRowContext(ctx, test2, val)
 	var txt string
 	err := row.Scan(&txt)
@@ -36,10 +23,10 @@ func (q *Queries) Test2(ctx context.Context, val sql.NullString) (string, error)
 
 const test3 = `-- name: Test3 :one
 select txt from Demo
-where txt like concat('%', $1, '%')
+where txt like concat('%', $1::text, '%')
 `
 
-func (q *Queries) Test3(ctx context.Context, val interface{}) (string, error) {
+func (q *Queries) Test3(ctx context.Context, val string) (string, error) {
 	row := q.db.QueryRowContext(ctx, test3, val)
 	var txt string
 	err := row.Scan(&txt)

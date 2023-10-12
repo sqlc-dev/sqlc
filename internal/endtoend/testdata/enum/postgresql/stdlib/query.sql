@@ -3,14 +3,13 @@ SELECT * FROM users;
 
 -- name: NewUser :exec
 INSERT INTO users (
-    id,
     first_name,
     last_name,
     age,
     shoe_size,
     shirt_size
 ) VALUES
-($1, $2, $3, $4, $5, $6);
+($1, $2, $3, $4, $5);
 
 -- name: UpdateSizes :exec
 UPDATE users

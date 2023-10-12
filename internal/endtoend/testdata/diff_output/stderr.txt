@@ -52,3 +52,4 @@
 +	err := row.Scan(&column_1)
 +	return column_1, err
 +}
+

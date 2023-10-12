@@ -13,6 +13,9 @@
       "database": {
         "managed": true
       },
+      "analyzer": {
+        "database": false
+      },
       "rules": [
         "sqlc/db-prepare"
       ],
@@ -21,7 +24,7 @@
       "emit_interface": true
     },
     {
-      "path": "mysql",
+    "path": "mysql",
       "name": "ondeck",
       "schema": "mysql/schema",
       "queries": "mysql/query",

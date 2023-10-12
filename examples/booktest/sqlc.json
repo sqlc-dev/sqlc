@@ -13,6 +13,9 @@
       "database": {
         "managed": true
       },
+      "analyzer": {
+        "database": false
+      },
       "rules": [
         "sqlc/db-prepare"
       ]

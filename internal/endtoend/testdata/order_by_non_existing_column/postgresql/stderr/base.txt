@@ -1,0 +1,2 @@
+# package querytest
+query.sql:1:1: column reference "adfadsf" not found: if you want to skip this validation, set 'strict_order_by' to false

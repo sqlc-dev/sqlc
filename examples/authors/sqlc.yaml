@@ -7,6 +7,8 @@ sql:
   engine: postgresql
   database:
     managed: true
+  analyzer:
+    database: false
   rules:
   - sqlc/db-prepare
   - postgresql-query-too-costly

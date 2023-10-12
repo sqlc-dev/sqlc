@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 	osexec "os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -14,11 +16,12 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"github.com/sqlc-dev/sqlc/internal/cmd"
+	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/opts"
 )
 
 func TestExamples(t *testing.T) {
-	t.Parallel()
+	// t.Parallel()
 	ctx := context.Background()
 
 	examples, err := filepath.Abs(filepath.Join("..", "..", "examples"))
@@ -37,10 +40,14 @@ func TestExamples(t *testing.T) {
 		}
 		tc := replay.Name()
 		t.Run(tc, func(t *testing.T) {
-			t.Parallel()
+			// t.Parallel()
 			path := filepath.Join(examples, tc)
 			var stderr bytes.Buffer
-			output, err := cmd.Generate(ctx, cmd.Env{}, path, "", &stderr)
+			opts := &cmd.Options{
+				Env:    cmd.Env{},
+				Stderr: &stderr,
+			}
+			output, err := cmd.Generate(ctx, path, "", opts)
 			if err != nil {
 				t.Fatalf("sqlc generate failed: %s", stderr.String())
 			}
@@ -68,10 +75,19 @@ func BenchmarkExamples(b *testing.B) {
 			path := filepath.Join(examples, tc)
 			for i := 0; i < b.N; i++ {
 				var stderr bytes.Buffer
-				cmd.Generate(ctx, cmd.Env{}, path, "", &stderr)
+				opts := &cmd.Options{
+					Env:    cmd.Env{},
+					Stderr: &stderr,
+				}
+				cmd.Generate(ctx, path, "", opts)
 			}
 		})
 	}
+}
+
+type textContext struct {
+	Mutate  func(*config.Config)
+	Enabled func() bool
 }
 
 func TestReplay(t *testing.T) {
@@ -79,7 +95,7 @@ func TestReplay(t *testing.T) {
 	// end-to-end tests
 	os.Setenv("SQLC_DUMMY_VALUE", "true")
 
-	t.Parallel()
+	// t.Parallel()
 	ctx := context.Background()
 	var dirs []string
 	err := filepath.Walk("testdata", func(path string, info os.FileInfo, err error) error {
@@ -95,52 +111,96 @@ func TestReplay(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	contexts := map[string]textContext{
+		"base": {
+			Mutate:  func(c *config.Config) {},
+			Enabled: func() bool { return true },
+		},
+		"managed-db": {
+			Mutate: func(c *config.Config) {
+				c.Cloud.Project = "01HAQMMECEYQYKFJN8MP16QC41" // TODO: Read from environment
+				for i := range c.SQL {
+					c.SQL[i].Database = &config.Database{
+						Managed: true,
+					}
+				}
+			},
+			Enabled: func() bool {
+				if len(os.Getenv("CI")) > 0 {
+					return false
+				}
+				return len(os.Getenv("SQLC_AUTH_TOKEN")) > 0
+			},
+		},
+	}
+
 	for _, replay := range dirs {
 		tc := replay
-		t.Run(tc, func(t *testing.T) {
-			t.Parallel()
+		for name, testctx := range contexts {
+			name := name
+			testctx := testctx
 
-			var stderr bytes.Buffer
-			var output map[string]string
-			var err error
+			if !testctx.Enabled() {
+				continue
+			}
 
-			path, _ := filepath.Abs(tc)
-			args := parseExec(t, path)
-			expected := expectedStderr(t, path)
+			t.Run(filepath.Join(name, tc), func(t *testing.T) {
+				t.Parallel()
+				var stderr bytes.Buffer
+				var output map[string]string
+				var err error
 
-			if args.Process != "" {
-				_, err := osexec.LookPath(args.Process)
-				if err != nil {
-					t.Skipf("executable not found: %s %s", args.Process, err)
+				path, _ := filepath.Abs(tc)
+				args := parseExec(t, path)
+
+				if args.Process != "" {
+					_, err := osexec.LookPath(args.Process)
+					if err != nil {
+						t.Skipf("executable not found: %s %s", args.Process, err)
+					}
 				}
-			}
 
-			env := cmd.Env{
-				Debug:    opts.DebugFromString(args.Env["SQLCDEBUG"]),
-				NoRemote: true,
-			}
-			switch args.Command {
-			case "diff":
-				err = cmd.Diff(ctx, env, path, "", &stderr)
-			case "generate":
-				output, err = cmd.Generate(ctx, env, path, "", &stderr)
-				if err == nil {
-					cmpDirectory(t, path, output)
+				if len(args.Contexts) > 0 {
+					if !slices.Contains(args.Contexts, name) {
+						t.Skipf("unsupported context: %s", name)
+					}
 				}
-			case "vet":
-				err = cmd.Vet(ctx, env, path, "", &stderr)
-			default:
-				t.Fatalf("unknown command")
-			}
 
-			if len(expected) == 0 && err != nil {
-				t.Fatalf("sqlc %s failed: %s", args.Command, stderr.String())
-			}
+				expected := expectedStderr(t, path, name)
+				opts := cmd.Options{
+					Env: cmd.Env{
+						Debug:    opts.DebugFromString(args.Env["SQLCDEBUG"]),
+						NoRemote: true,
+					},
+					Stderr:       &stderr,
+					MutateConfig: testctx.Mutate,
+				}
 
-			if diff := cmp.Diff(expected, stderr.String()); diff != "" {
-				t.Errorf("stderr differed (-want +got):\n%s", diff)
-			}
-		})
+				switch args.Command {
+				case "diff":
+					err = cmd.Diff(ctx, path, "", &opts)
+				case "generate":
+					output, err = cmd.Generate(ctx, path, "", &opts)
+					if err == nil {
+						cmpDirectory(t, path, output)
+					}
+				case "vet":
+					err = cmd.Vet(ctx, path, "", &opts)
+				default:
+					t.Fatalf("unknown command")
+				}
+
+				if len(expected) == 0 && err != nil {
+					t.Fatalf("sqlc %s failed: %s", args.Command, stderr.String())
+				}
+
+				diff := cmp.Diff(strings.TrimSpace(expected), strings.TrimSpace(stderr.String()))
+				if diff != "" {
+					t.Fatalf("stderr differed (-want +got):\n%s", diff)
+				}
+			})
+		}
 	}
 }
 
@@ -192,37 +252,40 @@ func cmpDirectory(t *testing.T, dir string, actual map[string]string) {
 		t.Errorf("%s contents differ", dir)
 		for name, contents := range expected {
 			name := name
-			tn := strings.Replace(name, dir+"/", "", -1)
-			t.Run(tn, func(t *testing.T) {
-				if actual[name] == "" {
-					t.Errorf("%s is empty", name)
-					return
-				}
-				if diff := cmp.Diff(contents, actual[name]); diff != "" {
-					t.Errorf("%s differed (-want +got):\n%s", name, diff)
-				}
-			})
+			if actual[name] == "" {
+				t.Errorf("%s is empty", name)
+				return
+			}
+			if diff := cmp.Diff(contents, actual[name]); diff != "" {
+				t.Errorf("%s differed (-want +got):\n%s", name, diff)
+			}
 		}
 	}
 }
 
-func expectedStderr(t *testing.T, dir string) string {
+func expectedStderr(t *testing.T, dir, testctx string) string {
 	t.Helper()
-	path := filepath.Join(dir, "stderr.txt")
-	if _, err := os.Stat(path); !os.IsNotExist(err) {
-		blob, err := os.ReadFile(path)
-		if err != nil {
-			t.Fatal(err)
+	paths := []string{
+		filepath.Join(dir, "stderr", fmt.Sprintf("%s.txt", testctx)),
+		filepath.Join(dir, "stderr.txt"),
+	}
+	for _, path := range paths {
+		if _, err := os.Stat(path); !os.IsNotExist(err) {
+			blob, err := os.ReadFile(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			return string(blob)
 		}
-		return string(blob)
 	}
 	return ""
 }
 
 type exec struct {
-	Command string            `json:"command"`
-	Process string            `json:"process"`
-	Env     map[string]string `json:"env"`
+	Command  string            `json:"command"`
+	Process  string            `json:"process"`
+	Contexts []string          `json:"contexts"`
+	Env      map[string]string `json:"env"`
 }
 
 func parseExec(t *testing.T, dir string) exec {
@@ -266,7 +329,11 @@ func BenchmarkReplay(b *testing.B) {
 			path, _ := filepath.Abs(tc)
 			for i := 0; i < b.N; i++ {
 				var stderr bytes.Buffer
-				cmd.Generate(ctx, cmd.Env{}, path, "", &stderr)
+				opts := &cmd.Options{
+					Env:    cmd.Env{},
+					Stderr: &stderr,
+				}
+				cmd.Generate(ctx, path, "", opts)
 			}
 		})
 	}

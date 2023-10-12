@@ -1,2 +1,0 @@
-# package querytest
-query.sql:4:1: INSERT has more expressions than target columns
