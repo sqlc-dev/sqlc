@@ -21,7 +21,7 @@ import (
 )
 
 func TestExamples(t *testing.T) {
-	// t.Parallel()
+	t.Parallel()
 	ctx := context.Background()
 
 	examples, err := filepath.Abs(filepath.Join("..", "..", "examples"))
@@ -40,7 +40,7 @@ func TestExamples(t *testing.T) {
 		}
 		tc := replay.Name()
 		t.Run(tc, func(t *testing.T) {
-			// t.Parallel()
+			t.Parallel()
 			path := filepath.Join(examples, tc)
 			var stderr bytes.Buffer
 			opts := &cmd.Options{

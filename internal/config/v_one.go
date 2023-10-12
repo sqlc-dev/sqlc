@@ -21,7 +21,7 @@ type v1PackageSettings struct {
 	Name                      string     `json:"name" yaml:"name"`
 	Engine                    Engine     `json:"engine,omitempty" yaml:"engine"`
 	Database                  *Database  `json:"database,omitempty" yaml:"database"`
-  Analyzer                  Analyzer   `json:"analyzer" yaml:"analyzer"`
+	Analyzer                  Analyzer   `json:"analyzer" yaml:"analyzer"`
 	Path                      string     `json:"path" yaml:"path"`
 	Schema                    Paths      `json:"schema" yaml:"schema"`
 	Queries                   Paths      `json:"queries" yaml:"queries"`
@@ -148,6 +148,7 @@ func (c *V1GenerateSettings) Translate() Config {
 			Schema:   pkg.Schema,
 			Queries:  pkg.Queries,
 			Rules:    pkg.Rules,
+			Analyzer: pkg.Analyzer,
 			Gen: SQLGen{
 				Go: &SQLGo{
 					EmitInterface:             pkg.EmitInterface,
