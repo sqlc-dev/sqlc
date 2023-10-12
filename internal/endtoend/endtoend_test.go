@@ -195,13 +195,7 @@ func TestReplay(t *testing.T) {
 					t.Fatalf("sqlc %s failed: %s", args.Command, stderr.String())
 				}
 
-				var diff string
-				for _, expectedErr := range strings.Split(expected, "---\n") {
-					diff = cmp.Diff(strings.TrimSpace(expectedErr), strings.TrimSpace(stderr.String()))
-					if diff == "" {
-						break
-					}
-				}
+				diff := cmp.Diff(strings.TrimSpace(expected), strings.TrimSpace(stderr.String()))
 				if diff != "" {
 					t.Fatalf("stderr differed (-want +got):\n%s", diff)
 				}
