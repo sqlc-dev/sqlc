@@ -11,8 +11,10 @@
       "queries": "postgresql/query-building.sql",
       "engine": "postgresql",
       "database": {
-        "analyzer": false,
         "managed": true
+      },
+      "analyzer": {
+        "database": false
       },
       "rules": [
         "sqlc/db-prepare"

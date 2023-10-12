@@ -2,6 +2,7 @@ package compiler
 
 import (
 	"fmt"
+	"log/slog"
 	"strconv"
 
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
@@ -10,7 +11,6 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/sql/named"
 	"github.com/sqlc-dev/sqlc/internal/sql/rewrite"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
-	"golang.org/x/exp/slog"
 )
 
 func dataType(n *ast.TypeName) string {

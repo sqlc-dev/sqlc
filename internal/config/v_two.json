@@ -75,6 +75,14 @@
                             }
                         }
                     },
+                    "analyzer": {
+                        "type": "object",
+                        "properties": {
+                            "database": {
+                                "type": "boolean"
+                            }
+                        }
+                    },
                     "strict_function_checks": {
                         "type": "boolean"
                     },

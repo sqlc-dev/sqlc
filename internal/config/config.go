@@ -64,9 +64,8 @@ type Config struct {
 }
 
 type Database struct {
-	URI      string `json:"uri" yaml:"uri"`
-	Managed  bool   `json:"managed" yaml:"managed"`
-	Analyzer *bool  `json:"analyzer" yaml:"analyzer"`
+	URI     string `json:"uri" yaml:"uri"`
+	Managed bool   `json:"managed" yaml:"managed"`
 }
 
 type Cloud struct {
@@ -112,6 +111,11 @@ type SQL struct {
 	Gen                  SQLGen    `json:"gen" yaml:"gen"`
 	Codegen              []Codegen `json:"codegen" yaml:"codegen"`
 	Rules                []string  `json:"rules" yaml:"rules"`
+	Analyzer             Analyzer  `json:"analyzer" yaml:"analyzer"`
+}
+
+type Analyzer struct {
+	Database *bool `json:"database" yaml:"database"`
 }
 
 // TODO: Figure out a better name for this

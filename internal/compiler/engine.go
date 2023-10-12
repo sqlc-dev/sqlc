@@ -50,7 +50,7 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings) (*Compiler, err
 		c.parser = postgresql.NewParser()
 		c.catalog = postgresql.NewCatalog()
 		if conf.Database != nil {
-			if conf.Database.Analyzer == nil || *conf.Database.Analyzer {
+			if conf.Analyzer.Database == nil || *conf.Analyzer.Database {
 				c.analyzer = pganalyze.New(c.client, *conf.Database)
 			}
 		}

@@ -4,15 +4,16 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 	osexec "os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"golang.org/x/exp/slices"
 
 	"github.com/sqlc-dev/sqlc/internal/cmd"
 	"github.com/sqlc-dev/sqlc/internal/config"
@@ -166,7 +167,7 @@ func TestReplay(t *testing.T) {
 					}
 				}
 
-				expected := expectedStderr(t, path)
+				expected := expectedStderr(t, path, name)
 				opts := cmd.Options{
 					Env: cmd.Env{
 						Debug:    opts.DebugFromString(args.Env["SQLCDEBUG"]),
@@ -202,7 +203,6 @@ func TestReplay(t *testing.T) {
 					}
 				}
 				if diff != "" {
-					t.Log(stderr.String()) // TODO: Remove
 					t.Fatalf("stderr differed (-want +got):\n%s", diff)
 				}
 			})
@@ -269,15 +269,20 @@ func cmpDirectory(t *testing.T, dir string, actual map[string]string) {
 	}
 }
 
-func expectedStderr(t *testing.T, dir string) string {
+func expectedStderr(t *testing.T, dir, testctx string) string {
 	t.Helper()
-	path := filepath.Join(dir, "stderr.txt")
-	if _, err := os.Stat(path); !os.IsNotExist(err) {
-		blob, err := os.ReadFile(path)
-		if err != nil {
-			t.Fatal(err)
+	paths := []string{
+		filepath.Join(dir, "stderr", fmt.Sprintf("%s.txt", testctx)),
+		filepath.Join(dir, "stderr.txt"),
+	}
+	for _, path := range paths {
+		if _, err := os.Stat(path); !os.IsNotExist(err) {
+			blob, err := os.ReadFile(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			return string(blob)
 		}
-		return string(blob)
 	}
 	return ""
 }

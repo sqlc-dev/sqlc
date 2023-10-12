@@ -30,7 +30,6 @@ func (v *funcCallVisitor) Visit(node ast.Node) astutils.Visitor {
 		return v
 	}
 
-	// Maybe not necessary now?
 	if fn.Schema == "sqlc" {
 		return nil
 	}

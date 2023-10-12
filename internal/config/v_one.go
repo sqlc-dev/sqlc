@@ -53,6 +53,7 @@ type v1PackageSettings struct {
 	QueryParameterLimit       *int32     `json:"query_parameter_limit,omitempty" yaml:"query_parameter_limit"`
 	OmitUnusedStructs         bool       `json:"omit_unused_structs,omitempty" yaml:"omit_unused_structs"`
 	Rules                     []string   `json:"rules" yaml:"rules"`
+	Analyzer                  Analyzer   `json:"analyzer" yaml:"analyzer"`
 }
 
 func v1ParseConfig(rd io.Reader) (Config, error) {
