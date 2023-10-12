@@ -1,4 +1,4 @@
-# Getting started with PostgreSQL 
+# Getting started with PostgreSQL
 
 This tutorial assumes that the latest version of sqlc is
 [installed](../overview/install.md) and ready to use.
@@ -11,7 +11,7 @@ Initialize a new Go module named `tutorial.sqlc.dev/app`
 go mod init tutorial.sqlc.dev/app
 ```
 
-sqlc looks for either a `sqlc.yaml` or `sqlc.json` file in the current
+sqlc looks for either a `sqlc.(yaml|yml)` or `sqlc.json` file in the current
 directory. In our new directory, create a file named `sqlc.yaml` with the
 following contents:
 

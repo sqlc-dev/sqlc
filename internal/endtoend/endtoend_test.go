@@ -86,7 +86,7 @@ func TestReplay(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		if info.Name() == "sqlc.json" || info.Name() == "sqlc.yaml" {
+		if info.Name() == "sqlc.json" || info.Name() == "sqlc.yaml" || info.Name() == "sqlc.yml" {
 			dirs = append(dirs, filepath.Dir(path))
 			return filepath.SkipDir
 		}
@@ -251,7 +251,7 @@ func BenchmarkReplay(b *testing.B) {
 		if err != nil {
 			return err
 		}
-		if info.Name() == "sqlc.json" || info.Name() == "sqlc.yaml" {
+		if info.Name() == "sqlc.json" || info.Name() == "sqlc.yaml" || info.Name() == "sqlc.yml" {
 			dirs = append(dirs, filepath.Dir(path))
 			return filepath.SkipDir
 		}

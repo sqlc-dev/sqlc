@@ -1,6 +1,6 @@
 # Configuration
 
-The `sqlc` tool is configured via a `sqlc.yaml` or `sqlc.json` file. This
+The `sqlc` tool is configured via a `sqlc.(yaml|yml)` or `sqlc.json` file. This
 file must be in the directory where the `sqlc` command is run.
 
 ## Version 2

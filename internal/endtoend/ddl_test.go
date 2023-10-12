@@ -39,7 +39,7 @@ func TestValidSchema(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		if filepath.Base(path) == "sqlc.json" || filepath.Base(path) == "sqlc.yaml" {
+		if filepath.Base(path) == "sqlc.json" || filepath.Base(path) == "sqlc.yaml" || filepath.Base(path) == "sqlc.yml" {
 			stderr := filepath.Join(filepath.Dir(path), "stderr.txt")
 			if _, err := os.Stat(stderr); !os.IsNotExist(err) {
 				return nil

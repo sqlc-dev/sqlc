@@ -39,7 +39,7 @@ func regenerate(dir string) error {
 		if info.IsDir() {
 			return nil
 		}
-		if strings.HasSuffix(path, "sqlc.json") || strings.HasSuffix(path, "sqlc.yaml") {
+		if strings.HasSuffix(path, "sqlc.json") || strings.HasSuffix(path, "sqlc.yaml") || strings.HasSuffix(path, "sqlc.yml") {
 			cwd := filepath.Dir(path)
 			command, err := parseExecCommand(cwd)
 			if err != nil {

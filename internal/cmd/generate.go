@@ -77,8 +77,9 @@ func readConfig(stderr io.Writer, dir, filename string) (string, *config.Config,
 	if filename != "" {
 		configPath = filepath.Join(dir, filename)
 	} else {
-		var yamlMissing, jsonMissing bool
+		var yamlMissing, jsonMissing, ymlMissing bool
 		yamlPath := filepath.Join(dir, "sqlc.yaml")
+		ymlPath := filepath.Join(dir, "sqlc.yml")
 		jsonPath := filepath.Join(dir, "sqlc.json")
 
 		if _, err := os.Stat(yamlPath); os.IsNotExist(err) {
@@ -88,18 +89,27 @@ func readConfig(stderr io.Writer, dir, filename string) (string, *config.Config,
 			jsonMissing = true
 		}
 
-		if yamlMissing && jsonMissing {
-			fmt.Fprintln(stderr, "error parsing configuration files. sqlc.yaml or sqlc.json: file does not exist")
+		if _, err := os.Stat(ymlPath); os.IsNotExist(err) {
+			ymlMissing = true
+		}
+
+		if yamlMissing && ymlMissing && jsonMissing {
+			fmt.Fprintln(stderr, "error parsing configuration files. sqlc.(yaml|yml) or sqlc.json: file does not exist")
 			return "", nil, errors.New("config file missing")
 		}
 
-		if !yamlMissing && !jsonMissing {
-			fmt.Fprintln(stderr, "error: both sqlc.json and sqlc.yaml files present")
-			return "", nil, errors.New("sqlc.json and sqlc.yaml present")
+		if (!yamlMissing || !ymlMissing) && !jsonMissing {
+			fmt.Fprintln(stderr, "error: both sqlc.json and sqlc.(yaml|yml) files present")
+			return "", nil, errors.New("sqlc.json and sqlc.(yaml|yml) present")
 		}
 
-		configPath = yamlPath
-		if yamlMissing {
+		if jsonMissing {
+			if yamlMissing {
+				configPath = ymlPath
+			} else {
+				configPath = yamlPath
+			}
+		} else {
 			configPath = jsonPath
 		}
 	}
