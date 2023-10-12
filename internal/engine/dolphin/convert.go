@@ -419,7 +419,6 @@ func (c *cc) convertInsertStmt(n *pcast.InsertStmt) *ast.InsertStmt {
 		panic("expected range var")
 	}
 
-	// debug.Dump(n)
 	insert := &ast.InsertStmt{
 		Relation:      rangeVar,
 		Cols:          c.convertColumnNames(n.Columns),
@@ -1348,7 +1347,7 @@ func (c *cc) convertTableSource(node *pcast.TableSource) ast.Node {
 	alias := node.AsName.String()
 	switch n := node.Source.(type) {
 
-	case *pcast.SelectStmt:
+	case *pcast.SelectStmt, *pcast.SetOprStmt:
 		rs := &ast.RangeSubselect{
 			Subquery: c.convert(n),
 		}
