@@ -1,0 +1,12 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    schema: "schema.sql"
+    queries: "query.sql"
+    analyzer:
+      database: false
+    gen:
+      go:
+        package: "querytest"
+        out: "go"
+        sql_package: "pgx/v5"
