@@ -18,11 +18,15 @@ func (n *A_Expr) Format(buf *TrackedBuffer) {
 	}
 	buf.astFormat(n.Lexpr)
 	buf.WriteString(" ")
-	if n.Kind == A_Expr_Kind_IN {
+	switch n.Kind {
+	case A_Expr_Kind_IN:
 		buf.WriteString(" IN (")
 		buf.astFormat(n.Rexpr)
 		buf.WriteString(")")
-	} else {
+	case A_Expr_Kind_LIKE:
+		buf.WriteString(" LIKE ")
+		buf.astFormat(n.Rexpr)
+	default:
 		buf.astFormat(n.Name)
 		buf.WriteString(" ")
 		buf.astFormat(n.Rexpr)
