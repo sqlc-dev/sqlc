@@ -17,7 +17,7 @@ func TestParseQueryNameAndType(t *testing.T) {
 		"-- name:CreateFoo",
 		`--name:CreateFoo :two`,
 	} {
-		if _, err := ParseQueryMetadata(query, CommentSyntax{Dash: true}); err == nil {
+		if _, _, err := ParseQueryNameAndType(query, CommentSyntax{Dash: true}); err == nil {
 			t.Errorf("expected invalid metadata: %q", query)
 		}
 	}
@@ -27,7 +27,7 @@ func TestParseQueryNameAndType(t *testing.T) {
 		`-- name comment`,
 		`--name comment`,
 	} {
-		if _, err := ParseQueryMetadata(query, CommentSyntax{Dash: true}); err != nil {
+		if _, _, err := ParseQueryNameAndType(query, CommentSyntax{Dash: true}); err != nil {
 			t.Errorf("expected valid comment: %q", query)
 		}
 	}
@@ -37,15 +37,15 @@ func TestParseQueryNameAndType(t *testing.T) {
 		`# name: CreateFoo :one`:     {Hash: true},
 		`/* name: CreateFoo :one */`: {SlashStar: true},
 	} {
-		queryMetadata, err := ParseQueryMetadata(query, cs)
+		queryName, queryCmd, err := ParseQueryNameAndType(query, cs)
 		if err != nil {
 			t.Errorf("expected valid metadata: %q", query)
 		}
-		if queryMetadata.Name != "CreateFoo" {
-			t.Errorf("incorrect queryName parsed: (%q) %q", queryMetadata.Name, query)
+		if queryName != "CreateFoo" {
+			t.Errorf("incorrect queryName parsed: (%q) %q", queryName, query)
 		}
-		if queryMetadata.Cmd != CmdOne {
-			t.Errorf("incorrect queryType parsed: (%q) %q", queryMetadata.Cmd, query)
+		if queryCmd != CmdOne {
+			t.Errorf("incorrect queryCmd parsed: (%q) %q", queryCmd, query)
 		}
 	}
 
@@ -77,7 +77,7 @@ func TestParseQueryParams(t *testing.T) {
 			" @param @invalid UUID ",
 		},
 	} {
-		params, _, err := parseParamsAndFlags(comments)
+		params, _, err := ParseParamsAndFlags(comments)
 		if err != nil {
 			t.Error("expected comments to parse:", err)
 		}
@@ -123,7 +123,7 @@ func TestParseQueryFlags(t *testing.T) {
 			" @param @flag-bar UUID",
 		},
 	} {
-		_, flags, err := parseParamsAndFlags(comments)
+		_, flags, err := ParseParamsAndFlags(comments)
 		if err != nil {
 			t.Error("expected comments to parse:", err)
 		}

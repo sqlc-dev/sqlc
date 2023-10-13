@@ -8,10 +8,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/sqlc-dev/sqlc/internal/metadata"
 	"github.com/sqlc-dev/sqlc/internal/migrations"
 	"github.com/sqlc-dev/sqlc/internal/multierr"
 	"github.com/sqlc-dev/sqlc/internal/opts"
+	"github.com/sqlc-dev/sqlc/internal/source"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
@@ -20,7 +20,7 @@ import (
 // TODO: Rename this interface Engine
 type Parser interface {
 	Parse(io.Reader) ([]ast.Statement, error)
-	CommentSyntax() metadata.CommentSyntax
+	CommentSyntax() source.CommentSyntax
 	IsReservedKeyword(string) bool
 }
 

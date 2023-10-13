@@ -12,7 +12,7 @@ import (
 	nodes "github.com/pganalyze/pg_query_go/v4"
 	"github.com/pganalyze/pg_query_go/v4/parser"
 
-	"github.com/sqlc-dev/sqlc/internal/metadata"
+	"github.com/sqlc-dev/sqlc/internal/source"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
 )
@@ -199,8 +199,8 @@ func normalizeErr(err error) error {
 }
 
 // https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-COMMENTS
-func (p *Parser) CommentSyntax() metadata.CommentSyntax {
-	return metadata.CommentSyntax{
+func (p *Parser) CommentSyntax() source.CommentSyntax {
+	return source.CommentSyntax{
 		Dash:      true,
 		SlashStar: true,
 	}

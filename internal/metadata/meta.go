@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 	"unicode"
+
+	"github.com/sqlc-dev/sqlc/internal/source"
 )
 
 type Metadata struct {
@@ -17,11 +19,7 @@ type Metadata struct {
 	Filename string
 }
 
-type CommentSyntax struct {
-	Dash      bool
-	Hash      bool
-	SlashStar bool
-}
+type CommentSyntax source.CommentSyntax
 
 const (
 	CmdExec       = ":exec"
@@ -55,12 +53,8 @@ func validateQueryName(name string) error {
 	return nil
 }
 
-func ParseQueryMetadata(rawSql string, commentStyle CommentSyntax) (Metadata, error) {
-	md := Metadata{}
-	s := bufio.NewScanner(strings.NewReader(strings.TrimSpace(rawSql)))
-	var comments []string
-	for s.Scan() {
-		line := s.Text()
+func ParseQueryNameAndType(t string, commentStyle CommentSyntax) (string, string, error) {
+	for _, line := range strings.Split(t, "\n") {
 		var prefix string
 		if strings.HasPrefix(line, "--") {
 			if !commentStyle.Dash {
@@ -83,11 +77,7 @@ func ParseQueryMetadata(rawSql string, commentStyle CommentSyntax) (Metadata, er
 		if prefix == "" {
 			continue
 		}
-
 		rest := line[len(prefix):]
-		rest = strings.TrimSuffix(rest, "*/")
-		comments = append(comments, rest)
-
 		if !strings.HasPrefix(strings.TrimSpace(rest), "name") {
 			continue
 		}
@@ -95,45 +85,35 @@ func ParseQueryMetadata(rawSql string, commentStyle CommentSyntax) (Metadata, er
 			continue
 		}
 		if !strings.HasPrefix(rest, " name: ") {
-			return md, fmt.Errorf("invalid metadata: %s", line)
+			return "", "", fmt.Errorf("invalid metadata: %s", line)
 		}
 
-		comments = comments[:len(comments)-1] // Remove tha name line from returned comments
-
-		parts := strings.Split(strings.TrimSpace(rest), " ")
-
-		if len(parts) == 2 {
-			return md, fmt.Errorf("missing query type [':one', ':many', ':exec', ':execrows', ':execlastid', ':execresult', ':copyfrom', 'batchexec', 'batchmany', 'batchone']: %s", line)
+		part := strings.Split(strings.TrimSpace(line), " ")
+		if prefix == "/*" {
+			part = part[:len(part)-1] // removes the trailing "*/" element
 		}
-		if len(parts) > 3 {
-			return md, fmt.Errorf("invalid query comment: %s", line)
+		if len(part) == 3 {
+			return "", "", fmt.Errorf("missing query type [':one', ':many', ':exec', ':execrows', ':execlastid', ':execresult', ':copyfrom', 'batchexec', 'batchmany', 'batchone']: %s", line)
 		}
-		queryName := parts[1]
-		queryType := parts[2]
+		if len(part) != 4 {
+			return "", "", fmt.Errorf("invalid query comment: %s", line)
+		}
+		queryName := part[2]
+		queryType := strings.TrimSpace(part[3])
 		switch queryType {
 		case CmdOne, CmdMany, CmdExec, CmdExecResult, CmdExecRows, CmdExecLastId, CmdCopyFrom, CmdBatchExec, CmdBatchMany, CmdBatchOne:
 		default:
-			return md, fmt.Errorf("invalid query type: %s", queryType)
+			return "", "", fmt.Errorf("invalid query type: %s", queryType)
 		}
 		if err := validateQueryName(queryName); err != nil {
-			return md, err
+			return "", "", err
 		}
-		md.Name = queryName
-		md.Cmd = queryType
+		return queryName, queryType, nil
 	}
-
-	md.Comments = comments
-
-	var err error
-	md.Params, md.Flags, err = parseParamsAndFlags(md.Comments)
-	if err != nil {
-		return md, err
-	}
-
-	return md, s.Err()
+	return "", "", nil
 }
 
-func parseParamsAndFlags(comments []string) (map[string]string, map[string]bool, error) {
+func ParseParamsAndFlags(comments []string) (map[string]string, map[string]bool, error) {
 	params := make(map[string]string)
 	flags := make(map[string]bool)
 
@@ -155,9 +135,6 @@ func parseParamsAndFlags(comments []string) (map[string]string, map[string]bool,
 			var rest []string
 			for s.Scan() {
 				paramToken := s.Text()
-				if paramToken == "*/" {
-					break
-				}
 				rest = append(rest, paramToken)
 			}
 			params[name] = strings.Join(rest, " ")

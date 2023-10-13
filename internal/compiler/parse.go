@@ -43,7 +43,18 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 		return nil, errors.New("missing semicolon at end of file")
 	}
 
-	md, err := metadata.ParseQueryMetadata(rawSQL, c.parser.CommentSyntax())
+	cleanedComments, err := source.CleanedComments(rawSQL, c.parser.CommentSyntax())
+	if err != nil {
+		return nil, err
+	}
+
+	md := metadata.Metadata{}
+	md.Name, md.Cmd, err = metadata.ParseQueryNameAndType(rawSQL, metadata.CommentSyntax(c.parser.CommentSyntax()))
+	if err != nil {
+		return nil, err
+	}
+
+	md.Params, md.Flags, err = metadata.ParseParamsAndFlags(cleanedComments)
 	if err != nil {
 		return nil, err
 	}
@@ -86,10 +97,12 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 		}
 	}
 
-	trimmed, err := source.StripComments(expanded)
+	trimmed, comments, err := source.StripComments(expanded)
 	if err != nil {
 		return nil, err
 	}
+
+	md.Comments = comments
 
 	return &Query{
 		RawStmt:         raw,

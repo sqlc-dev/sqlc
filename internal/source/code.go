@@ -15,6 +15,12 @@ type Edit struct {
 	OldFunc  func(string) int
 }
 
+type CommentSyntax struct {
+	Dash      bool
+	Hash      bool
+	SlashStar bool
+}
+
 func LineNumber(source string, head int) (int, int) {
 	// Calculate the true line and column number for a query, ignoring spaces
 	var comment bool
@@ -90,21 +96,70 @@ func Mutate(raw string, a []Edit) (string, error) {
 	return s, nil
 }
 
-func StripComments(sql string) (string, error) {
+func StripComments(sql string) (string, []string, error) {
 	s := bufio.NewScanner(strings.NewReader(strings.TrimSpace(sql)))
-	var lines []string
+	var lines, comments []string
 	for s.Scan() {
 		t := s.Text()
+		if strings.HasPrefix(t, "-- name:") {
+			continue
+		}
+		if strings.HasPrefix(t, "/* name:") && strings.HasSuffix(t, "*/") {
+			continue
+		}
+		if strings.HasPrefix(t, "# name:") {
+			continue
+		}
 		if strings.HasPrefix(t, "--") {
+			comments = append(comments, strings.TrimPrefix(t, "--"))
 			continue
 		}
 		if strings.HasPrefix(t, "/*") && strings.HasSuffix(t, "*/") {
+			t = strings.TrimPrefix(t, "/*")
+			t = strings.TrimSuffix(t, "*/")
+			comments = append(comments, t)
 			continue
 		}
 		if strings.HasPrefix(t, "#") {
+			comments = append(comments, strings.TrimPrefix(t, "#"))
 			continue
 		}
 		lines = append(lines, t)
 	}
-	return strings.Join(lines, "\n"), s.Err()
+	return strings.Join(lines, "\n"), comments, s.Err()
+}
+
+func CleanedComments(rawSQL string, cs CommentSyntax) ([]string, error) {
+	s := bufio.NewScanner(strings.NewReader(strings.TrimSpace(rawSQL)))
+	var comments []string
+	for s.Scan() {
+		line := s.Text()
+		var prefix string
+		if strings.HasPrefix(line, "--") {
+			if !cs.Dash {
+				continue
+			}
+			prefix = "--"
+		}
+		if strings.HasPrefix(line, "/*") {
+			if !cs.SlashStar {
+				continue
+			}
+			prefix = "/*"
+		}
+		if strings.HasPrefix(line, "#") {
+			if !cs.Hash {
+				continue
+			}
+			prefix = "#"
+		}
+		if prefix == "" {
+			continue
+		}
+
+		rest := line[len(prefix):]
+		rest = strings.TrimSuffix(rest, "*/")
+		comments = append(comments, rest)
+	}
+	return comments, s.Err()
 }
