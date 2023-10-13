@@ -745,6 +745,7 @@ func (c *cc) convertCaseExpr(n *pcast.CaseExpr) ast.Node {
 		list.Items = append(list.Items, c.convertWhenClause(n))
 	}
 	return &ast.CaseExpr{
+		Arg:       c.convert(n.Value),
 		Args:      list,
 		Defresult: c.convert(n.ElseClause),
 		Location:  n.OriginTextPosition(),
