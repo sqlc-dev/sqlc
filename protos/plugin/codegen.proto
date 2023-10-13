@@ -60,9 +60,19 @@ message Settings {
 }
 
 message Codegen {
+  message Process {
+    string cmd = 1;
+  }
+  message WASM {
+    string url = 1;
+    string sha256 = 2;
+  }
   string out = 1 [json_name = "out"];
   string plugin = 2 [json_name = "plugin"];
   bytes options = 3 [json_name = "options"];
+  repeated string env = 4 [json_name = "env"];
+  Process process = 5 [json_name = "process"];
+  WASM wasm = 6 [json_name = "wasm"];
 }
 
 message Catalog {

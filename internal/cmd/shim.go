@@ -57,20 +57,48 @@ func pluginSettings(r *compiler.Result, cs config.CombinedSettings) *plugin.Sett
 		Queries:   []string(cs.Package.Queries),
 		Overrides: over,
 		Rename:    cs.Rename,
-		Codegen:   pluginCodegen(cs.Codegen),
+		Codegen:   pluginCodegen(cs, cs.Codegen),
 	}
 }
 
-func pluginCodegen(s config.Codegen) *plugin.Codegen {
+func pluginCodegen(cs config.CombinedSettings, s config.Codegen) *plugin.Codegen {
 	opts, err := convert.YAMLtoJSON(s.Options)
 	if err != nil {
 		panic(err)
 	}
-	return &plugin.Codegen{
+	cg := &plugin.Codegen{
 		Out:     s.Out,
 		Plugin:  s.Plugin,
 		Options: opts,
 	}
+	for _, p := range cs.Global.Plugins {
+		if p.Name == s.Plugin {
+			cg.Env = p.Env
+			cg.Process = pluginProcess(p)
+			cg.Wasm = pluginWASM(p)
+			return cg
+		}
+	}
+	return cg
+}
+
+func pluginProcess(p config.Plugin) *plugin.Codegen_Process {
+	if p.Process != nil {
+		return &plugin.Codegen_Process{
+			Cmd: p.Process.Cmd,
+		}
+	}
+	return nil
+}
+
+func pluginWASM(p config.Plugin) *plugin.Codegen_WASM {
+	if p.WASM != nil {
+		return &plugin.Codegen_WASM{
+			Url:    p.WASM.URL,
+			Sha256: p.WASM.SHA256,
+		}
+	}
+	return nil
 }
 
 func pluginGoType(o config.Override) *plugin.ParsedGoType {

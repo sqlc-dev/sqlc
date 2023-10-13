@@ -13,7 +13,12 @@
     "codegen": {
       "out": "gen",
       "plugin": "jsonb",
-      "options": "eyJmaWxlbmFtZSI6ImNvZGVnZW4uanNvbiIsImluZGVudCI6IiAgIn0="
+      "options": "eyJmaWxlbmFtZSI6ImNvZGVnZW4uanNvbiIsImluZGVudCI6IiAgIn0=",
+      "env": [],
+      "process": {
+        "cmd": "sqlc-gen-json"
+      },
+      "wasm": null
     }
   },
   "catalog": {
