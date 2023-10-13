@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -213,9 +212,6 @@ func (a *Analyzer) Analyze(ctx context.Context, n ast.Node, query string, migrat
 		if err != nil {
 			return nil, err
 		}
-		conf.MaxConns = 2
-		conf.MinConns = 0
-		conf.MaxConnLifetime = time.Second * 1
 		pool, err := pgxpool.NewWithConfig(ctx, conf)
 		if err != nil {
 			return nil, err
