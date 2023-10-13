@@ -260,7 +260,7 @@ func TestUpdate(t *testing.T) {
 				}
 			}
 
-			if diff := cmp.Diff(e, c, cmpopts.EquateEmpty()); diff != "" {
+			if diff := cmp.Diff(e, c, cmpopts.EquateEmpty(), cmpopts.IgnoreUnexported(catalog.Column{})); diff != "" {
 				t.Log(test.stmt)
 				t.Errorf("catalog mismatch:\n%s", diff)
 			}

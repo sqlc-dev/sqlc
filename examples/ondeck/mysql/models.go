@@ -11,46 +11,46 @@ import (
 	"time"
 )
 
-type VenuesStatus string
+type VenueStatus string
 
 const (
-	VenuesStatusOpen   VenuesStatus = "open"
-	VenuesStatusClosed VenuesStatus = "closed"
+	VenueStatusOpen   VenueStatus = "open"
+	VenueStatusClosed VenueStatus = "closed"
 )
 
-func (e *VenuesStatus) Scan(src interface{}) error {
+func (e *VenueStatus) Scan(src interface{}) error {
 	switch s := src.(type) {
 	case []byte:
-		*e = VenuesStatus(s)
+		*e = VenueStatus(s)
 	case string:
-		*e = VenuesStatus(s)
+		*e = VenueStatus(s)
 	default:
-		return fmt.Errorf("unsupported scan type for VenuesStatus: %T", src)
+		return fmt.Errorf("unsupported scan type for VenueStatus: %T", src)
 	}
 	return nil
 }
 
-type NullVenuesStatus struct {
-	VenuesStatus VenuesStatus `json:"venues_status"`
-	Valid        bool         `json:"valid"` // Valid is true if VenuesStatus is not NULL
+type NullVenueStatus struct {
+	VenueStatus VenueStatus `json:"venue_status"`
+	Valid       bool        `json:"valid"` // Valid is true if VenueStatus is not NULL
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullVenuesStatus) Scan(value interface{}) error {
+func (ns *NullVenueStatus) Scan(value interface{}) error {
 	if value == nil {
-		ns.VenuesStatus, ns.Valid = "", false
+		ns.VenueStatus, ns.Valid = "", false
 		return nil
 	}
 	ns.Valid = true
-	return ns.VenuesStatus.Scan(value)
+	return ns.VenueStatus.Scan(value)
 }
 
 // Value implements the driver Valuer interface.
-func (ns NullVenuesStatus) Value() (driver.Value, error) {
+func (ns NullVenueStatus) Value() (driver.Value, error) {
 	if !ns.Valid {
 		return nil, nil
 	}
-	return string(ns.VenuesStatus), nil
+	return string(ns.VenueStatus), nil
 }
 
 type City struct {
@@ -62,7 +62,7 @@ type City struct {
 type Venue struct {
 	ID uint64 `json:"id"`
 	// Venues can be either open or closed
-	Status   VenuesStatus   `json:"status"`
+	Status   VenueStatus    `json:"status"`
 	Statuses sql.NullString `json:"statuses"`
 	// This value appears in public URLs
 	Slug            string         `json:"slug"`
