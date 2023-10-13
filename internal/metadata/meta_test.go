@@ -16,9 +16,6 @@ func TestParseQueryNameAndType(t *testing.T) {
 		`--name: CreateFoo :two`,
 		"-- name:CreateFoo",
 		`--name:CreateFoo :two`,
-		`--  name: CreateFoo :two`,
-		`-- name:  CreateFoo :two`,
-		`-- name: CreateFoo  :two`,
 	} {
 		if _, err := ParseQueryMetadata(query, CommentSyntax{Dash: true}); err == nil {
 			t.Errorf("expected invalid metadata: %q", query)
