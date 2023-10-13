@@ -34,6 +34,7 @@
       "output_db_file_name": "",
       "output_models_file_name": "",
       "output_querier_file_name": "",
+      "output_copyfrom_file_name": "",
       "output_files_suffix": "",
       "emit_enum_valid_method": false,
       "emit_all_enum_values": false,
@@ -65396,6 +65397,6 @@
       "insert_into_table": null
     }
   ],
-  "sqlc_version": "v1.20.0",
+  "sqlc_version": "v1.22.0",
   "plugin_options": "eyJmaWxlbmFtZSI6ImNvZGVnZW4uanNvbiIsImluZGVudCI6IiAgIn0="
 }

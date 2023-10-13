@@ -11,7 +11,7 @@ Initialize a new Go module named `tutorial.sql.dev/app`
 go mod init tutorial.sqlc.dev/app
 ```
 
-sqlc looks for either a `sqlc.yaml` or `sqlc.json` file in the current
+sqlc looks for either a `sqlc.(yaml|yml)` or `sqlc.json` file in the current
 directory. In our new directory, create a file named `sqlc.yaml` with the
 following contents:
 
@@ -99,7 +99,7 @@ import (
 func run() error {
 	ctx := context.Background()
 
-	db, err := sql.Open("mysql", "user:password@/dbname")
+	db, err := sql.Open("mysql", "user:password@/dbname?parseTime=true")
 	if err != nil {
 		return err
 	}
@@ -155,3 +155,8 @@ go build ./...
 
 To make that possible, sqlc generates readable, **idiomatic** Go code that you
 otherwise would have had to write yourself. Take a look in `tutorial/query.sql.go`.
+
+If your tables have columns with date or time types, sqlc expects these values
+to scan into `time.Time` structs. If you're using
+`github.com/go-sql-driver/mysql`, ensure that `parseTime=true` has been added to
+the connection string.

@@ -1,15 +1,3 @@
-create table events
-(
-    ID int
-);
-
-create table handled_events
-(
-    last_handled_id int,
-    handler text
-);
-
-
 -- name: SelectAllJoinedAlias :many
 select e.* from events e
     inner join handled_events he

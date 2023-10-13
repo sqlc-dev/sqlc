@@ -1,8 +1,3 @@
--- Comparison Functions and Operators
--- https://www.postgresql.org/docs/current/functions-comparison.html
-
-CREATE TABLE bar (id serial not null);
-
 -- name: GreaterThan :many
 SELECT count(*) > 0 FROM bar;
 
@@ -24,8 +19,8 @@ SELECT count(*) <> 0 FROM bar;
 -- name: Equal :many
 SELECT count(*) = 0 FROM bar;
 
+-- name: IsNull :many
+SELECT id IS NULL FROM bar;
 
-
-
-
-
+-- name: IsNotNull :many
+SELECT id IS NOT NULL FROM bar;

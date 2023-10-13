@@ -6,13 +6,14 @@
       "engine": "postgresql",
       "sql_package": "pgx/v4",
       "name": "querytest",
-      "schema": "query.sql",
+      "schema": "schema.sql",
       "queries": "query.sql",
       "emit_interface": true,
       "output_batch_file_name": "batch_gen.go",
       "output_db_file_name": "db_gen.go",
       "output_models_file_name": "models_gen.go",
-      "output_querier_file_name": "querier_gen.go"
+      "output_querier_file_name": "querier_gen.go",
+      "output_copyfrom_file_name": "copyfrom_gen.go"
     }
   ]
 }

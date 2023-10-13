@@ -9,6 +9,8 @@ body:
       description: What version of sqlc are you running? If you don't know, run `sqlc version`.
       multiple: false
       options:
+        - 1.22.0
+        - 1.21.0
         - 1.20.0
         - 1.19.1
         - 1.19.0
@@ -49,7 +51,7 @@ body:
     id: config
     attributes:
       label: Configuration
-      description: Please include the sqlc.yaml or sqlc.json file you using in your project. This will be automatically formatted, so no need for backticks.
+      description: Please include the sqlc.(yaml|yml) or sqlc.json file you using in your project. This will be automatically formatted, so no need for backticks.
       render: yaml
   - type: input
     id: playground

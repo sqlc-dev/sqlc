@@ -1,0 +1,15 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "path": "go",
+      "name": "authors",
+      "engine": "postgresql",
+      "schema": "schema.sql",
+      "queries": "query.sql",
+      "omit_unused_structs": true,
+      "emit_interface": true,
+      "build_tags": "some_tag"
+    }
+  ]
+}

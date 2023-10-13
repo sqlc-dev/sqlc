@@ -6,7 +6,7 @@
       "sql_package": "database/sql",
       "engine": "mysql",
       "name": "querytest",
-      "schema": "query.sql",
+      "schema": "schema.sql",
       "queries": "query.sql"
     }
   ]

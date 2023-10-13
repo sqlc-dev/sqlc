@@ -39,7 +39,7 @@ func regenerate(dir string) error {
 		if info.IsDir() {
 			return nil
 		}
-		if strings.HasSuffix(path, "sqlc.json") || strings.HasSuffix(path, "sqlc.yaml") {
+		if strings.HasSuffix(path, "sqlc.json") || strings.HasSuffix(path, "sqlc.yaml") || strings.HasSuffix(path, "sqlc.yml") {
 			cwd := filepath.Dir(path)
 			command, err := parseExecCommand(cwd)
 			if err != nil {
@@ -56,6 +56,7 @@ func regenerate(dir string) error {
 			}
 
 			cmd := exec.Command("sqlc-dev", "generate")
+			cmd.Env = append(cmd.Env, "SQLC_DUMMY_VALUE=true")
 			cmd.Dir = cwd
 			out, failed := cmd.CombinedOutput()
 			if failed != nil && !expectFailure {

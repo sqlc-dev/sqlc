@@ -9,6 +9,7 @@ type ColumnDef struct {
 	ArrayDims  int
 	Vals       *List
 	Length     *int
+	PrimaryKey bool
 
 	// From pg.ColumnDef
 	Inhcount      int
@@ -29,4 +30,19 @@ type ColumnDef struct {
 
 func (n *ColumnDef) Pos() int {
 	return n.Location
+}
+
+func (n *ColumnDef) Format(buf *TrackedBuffer) {
+	if n == nil {
+		return
+	}
+	buf.WriteString(n.Colname)
+	buf.WriteString(" ")
+	buf.astFormat(n.TypeName)
+	if n.PrimaryKey {
+		buf.WriteString(" PRIMARY KEY")
+	} else if n.IsNotNull {
+		buf.WriteString(" NOT NULL")
+	}
+	buf.astFormat(n.Constraints)
 }

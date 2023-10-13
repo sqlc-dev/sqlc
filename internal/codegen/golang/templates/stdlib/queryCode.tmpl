@@ -24,7 +24,7 @@ type {{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
 {{end -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) ({{.Ret.DefineType}}, error) {
     {{- template "queryCodeStdExec" . }}
-	{{- if ne .Arg.Pair .Ret.Pair }}
+	{{- if or (ne .Arg.Pair .Ret.Pair) (ne .Arg.DefineType .Ret.DefineType) }}
 	var {{.Ret.Name}} {{.Ret.Type}}
 	{{- end}}
 	err := row.Scan({{.Ret.Scan}})

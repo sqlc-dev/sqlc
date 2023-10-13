@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS hstore;
+
 CREATE TABLE foo (
         bar hstore NOT NULL,
         baz hstore

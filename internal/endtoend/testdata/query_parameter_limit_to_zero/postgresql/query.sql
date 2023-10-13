@@ -1,11 +1,3 @@
--- Example queries for sqlc
-CREATE TABLE authors (
-  id   BIGSERIAL PRIMARY KEY,
-  name text      NOT NULL,
-  bio  text,
-  country_code CHAR(2) NOT NULL
-);
-
 -- name: GetAuthor :one
 SELECT * FROM authors
 WHERE name = $1 AND country_code = $2 LIMIT 1;

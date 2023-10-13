@@ -1,9 +1,3 @@
-CREATE TABLE users (
-    id SERIAL NOT NULL,
-    first_name varchar(255) NOT NULL,
-    last_name varchar(255)
-);
-
 /* name: GetUserByID :one */
 SELECT first_name, id, last_name FROM users WHERE id = sqlc.arg('target_id');
 

@@ -11,3 +11,12 @@ type CoalesceExpr struct {
 func (n *CoalesceExpr) Pos() int {
 	return n.Location
 }
+
+func (n *CoalesceExpr) Format(buf *TrackedBuffer) {
+	if n == nil {
+		return
+	}
+	buf.WriteString("COALESCE(")
+	buf.astFormat(n.Args)
+	buf.WriteString(")")
+}

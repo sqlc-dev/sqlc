@@ -12,3 +12,14 @@ type RangeFunction struct {
 func (n *RangeFunction) Pos() int {
 	return 0
 }
+
+func (n *RangeFunction) Format(buf *TrackedBuffer) {
+	if n == nil {
+		return
+	}
+	buf.astFormat(n.Functions)
+	if n.Ordinality {
+		buf.WriteString(" WITH ORDINALITY ")
+	}
+	buf.astFormat(n.Alias)
+}

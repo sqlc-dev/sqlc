@@ -1,0 +1,19 @@
+{
+  "version": "1",
+  "cloud": {
+    "project": "01HAQMMECEYQYKFJN8MP16QC41"
+  },
+  "packages": [
+    {
+      "path": "go",
+      "engine": "postgresql",
+      "sql_package": "pgx/v5",
+      "database": {
+        "managed": true
+      },
+      "name": "querytest",
+      "schema": "schema.sql",
+      "queries": "query.sql"
+    }
+  ]
+}

@@ -12,6 +12,7 @@ type Edit struct {
 	Location int
 	Old      string
 	New      string
+	OldFunc  func(string) int
 }
 
 func LineNumber(source string, head int) (int, int) {
@@ -66,8 +67,14 @@ func Mutate(raw string, a []Edit) (string, error) {
 		if start > len(s) || start < 0 {
 			return "", fmt.Errorf("edit start location is out of bounds")
 		}
+		var oldLen int
+		if edit.OldFunc != nil {
+			oldLen = edit.OldFunc(s[start:])
+		} else {
+			oldLen = len(edit.Old)
+		}
 
-		stop := edit.Location + len(edit.Old)
+		stop := edit.Location + oldLen
 		if stop > len(s) {
 			return "", fmt.Errorf("edit stop location is out of bounds")
 		}
@@ -76,7 +83,7 @@ func Mutate(raw string, a []Edit) (string, error) {
 		// this edit overlaps the previous one (and is therefore a developer error)
 		if idx != 0 {
 			prevEdit := a[idx-1]
-			if prevEdit.Location < edit.Location+len(edit.Old) {
+			if prevEdit.Location < edit.Location+oldLen {
 				return "", fmt.Errorf("2 edits overlap")
 			}
 		}

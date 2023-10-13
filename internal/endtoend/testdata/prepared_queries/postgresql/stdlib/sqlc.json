@@ -4,7 +4,7 @@
     {
       "name": "querytest",
       "path": "go",
-      "schema": "query.sql",
+      "schema": "schema.sql",
       "queries": "query.sql",
       "engine": "postgresql",
       "emit_prepared_queries": true

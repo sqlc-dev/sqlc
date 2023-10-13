@@ -419,7 +419,6 @@ func (c *cc) convertInsertStmt(n *pcast.InsertStmt) *ast.InsertStmt {
 		panic("expected range var")
 	}
 
-	// debug.Dump(n)
 	insert := &ast.InsertStmt{
 		Relation:      rangeVar,
 		Cols:          c.convertColumnNames(n.Columns),
@@ -953,7 +952,18 @@ func (c *cc) convertIndexPartSpecification(n *pcast.IndexPartSpecification) ast.
 }
 
 func (c *cc) convertIsNullExpr(n *pcast.IsNullExpr) ast.Node {
-	return todo(n)
+	op := ast.BoolExprTypeIsNull
+	if n.Not {
+		op = ast.BoolExprTypeIsNotNull
+	}
+	return &ast.BoolExpr{
+		Boolop: op,
+		Args: &ast.List{
+			Items: []ast.Node{
+				c.convert(n.Expr),
+			},
+		},
+	}
 }
 
 func (c *cc) convertIsTruthExpr(n *pcast.IsTruthExpr) ast.Node {
@@ -1092,7 +1102,7 @@ func (c *cc) convertPatternInExpr(n *pcast.PatternInExpr) ast.Node {
 	return in
 }
 
-func (c *cc) convertPatternLikeExpr(n *pcast.PatternLikeExpr) ast.Node {
+func (c *cc) convertPatternLikeExpr(n *pcast.PatternLikeOrIlikeExpr) ast.Node {
 	return &ast.A_Expr{
 		Kind: ast.A_Expr_Kind(9),
 		Name: &ast.List{
@@ -1254,7 +1264,12 @@ func (c *cc) convertSetOprSelectList(n *pcast.SetOprSelectList) ast.Node {
 
 func (c *cc) convertSetOprStmt(n *pcast.SetOprStmt) ast.Node {
 	if n.SelectList != nil {
-		return c.convertSetOprSelectList(n.SelectList)
+		sn := c.convertSetOprSelectList(n.SelectList)
+		if ss, ok := sn.(*ast.SelectStmt); ok && n.Limit != nil {
+			ss.LimitOffset = c.convert(n.Limit.Offset)
+			ss.LimitCount = c.convert(n.Limit.Count)
+		}
+		return sn
 	}
 	return todo(n)
 }
@@ -1332,7 +1347,7 @@ func (c *cc) convertTableSource(node *pcast.TableSource) ast.Node {
 	alias := node.AsName.String()
 	switch n := node.Source.(type) {
 
-	case *pcast.SelectStmt:
+	case *pcast.SelectStmt, *pcast.SetOprStmt:
 		rs := &ast.RangeSubselect{
 			Subquery: c.convert(n),
 		}
@@ -1418,6 +1433,48 @@ func (c *cc) convertWindowSpec(n *pcast.WindowSpec) ast.Node {
 	return todo(n)
 }
 
+func (c *cc) convertCallStmt(n *pcast.CallStmt) ast.Node {
+	var funcname ast.List
+	for _, s := range []string{n.Procedure.Schema.L, n.Procedure.FnName.L} {
+		if s != "" {
+			funcname.Items = append(funcname.Items, NewIdentifier(s))
+		}
+	}
+	var args ast.List
+	for _, a := range n.Procedure.Args {
+		args.Items = append(args.Items, c.convert(a))
+	}
+	return &ast.CallStmt{
+		FuncCall: &ast.FuncCall{
+			Func: &ast.FuncName{
+				Schema: n.Procedure.Schema.L,
+				Name:   n.Procedure.FnName.L,
+			},
+			Funcname: &funcname,
+			Args:     &args,
+			Location: n.OriginTextPosition(),
+		},
+	}
+}
+
+func (c *cc) convertProcedureInfo(n *pcast.ProcedureInfo) ast.Node {
+	var params ast.List
+	for _, sp := range n.ProcedureParam {
+		paramName := sp.ParamName
+		params.Items = append(params.Items, &ast.FuncParam{
+			Name: &paramName,
+			Type: &ast.TypeName{Name: types.TypeToStr(sp.ParamType.GetType(), sp.ParamType.GetCharset())},
+		})
+	}
+	return &ast.CreateFunctionStmt{
+		Params: &params,
+		Func: &ast.FuncName{
+			Schema: n.ProcedureName.Schema.L,
+			Name:   n.ProcedureName.Name.L,
+		},
+	}
+}
+
 func (c *cc) convert(node pcast.Node) ast.Node {
 	switch n := node.(type) {
 
@@ -1471,6 +1528,9 @@ func (c *cc) convert(node pcast.Node) ast.Node {
 
 	case *pcast.ByItem:
 		return c.convertByItem(n)
+
+	case *pcast.CallStmt:
+		return c.convertCallStmt(n)
 
 	case *pcast.CaseExpr:
 		return c.convertCaseExpr(n)
@@ -1676,7 +1736,7 @@ func (c *cc) convert(node pcast.Node) ast.Node {
 	case *pcast.PatternInExpr:
 		return c.convertPatternInExpr(n)
 
-	case *pcast.PatternLikeExpr:
+	case *pcast.PatternLikeOrIlikeExpr:
 		return c.convertPatternLikeExpr(n)
 
 	case *pcast.PatternRegexpExpr:
@@ -1690,6 +1750,9 @@ func (c *cc) convert(node pcast.Node) ast.Node {
 
 	case *pcast.PrivElem:
 		return c.convertPrivElem(n)
+
+	case *pcast.ProcedureInfo:
+		return c.convertProcedureInfo(n)
 
 	case *pcast.RecoverTableStmt:
 		return c.convertRecoverTableStmt(n)

@@ -7,3 +7,10 @@ type Float struct {
 func (n *Float) Pos() int {
 	return 0
 }
+
+func (n *Float) Format(buf *TrackedBuffer) {
+	if n == nil {
+		return
+	}
+	buf.WriteString(n.Str)
+}

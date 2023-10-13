@@ -1,6 +1,6 @@
 # Configuration
 
-The `sqlc` tool is configured via a `sqlc.yaml` or `sqlc.json` file. This
+The `sqlc` tool is configured via a `sqlc.(yaml|yml)` or `sqlc.json` file. This
 file must be in the directory where the `sqlc` command is run.
 
 ## Version 2
@@ -138,12 +138,16 @@ The `gen` mapping supports the following keys:
   - If true, parameters are passed as pointers to structs. Defaults to `false`.
 - `emit_methods_with_db_argument`:
   - If true, generated methods will accept a DBTX argument instead of storing a DBTX on the `*Queries` struct. Defaults to `false`.
+- `emit_pointers_for_null_types`:
+  - If true and `sql_package` is set to `pgx/v4` or `pgx/v5`, generated types for nullable columns are emitted as pointers (ie. `*string`) instead of `database/sql` null types (ie. `NullString`). Defaults to `false`.
 - `emit_enum_valid_method`:
   - If true, generate a Valid method on enum types,
     indicating whether a string is a valid enum value.
 - `emit_all_enum_values`:
   - If true, emit a function per enum type
     that returns all valid enum values.
+- `build_tags`:
+  - If set, add a `//go:build <build_tags>` directive at the beginning of each generated Go file.
 - `json_tags_id_uppercase`:
   - If true, "Id" in json tags will be uppercase. If false, will be camelcase. Defaults to `false`
 - `json_tags_case_style`:
@@ -158,71 +162,20 @@ The `gen` mapping supports the following keys:
   - Customize the name of the models file. Defaults to `models.go`.
 - `output_querier_file_name`:
   - Customize the name of the querier file. Defaults to `querier.go`.
+- `output_copyfrom_file_name`:
+  - Customize the name of the copyfrom file. Defaults to `copyfrom.go`.
 - `output_files_suffix`:
   - If specified the suffix will be added to the name of the generated files.
 - `query_parameter_limit`:
   - The number of positional arguments that will be generated for Go functions. To always emit a parameter struct, set this to `0`. Defaults to `1`.
 - `rename`:
-  - Customize the name of generated struct fields. Explained in detail on the `Renaming fields` section.
+  - Customize the name of generated struct fields. See [Renaming fields](../howto/rename.md) for usage information.
 - `overrides`:
-  - It is a collection of definitions that dictates which types are used to map a database types. Explained in detail on the  `Type overriding` section.
+  - It is a collection of definitions that dictates which types are used to map a database types.
 
-##### Renaming fields
+##### `overrides`
 
-Struct field names are generated from column names using a simple algorithm:
-split the column name on underscores and capitalize the first letter of each
-part.
-
-```
-account     -> Account
-spotify_url -> SpotifyUrl
-app_id      -> AppID
-```
-
-If you're not happy with a field's generated name, use the `rename` mapping
-to pick a new name. The keys are column names and the values are the struct
-field name to use.
-
-```yaml
-version: "2"
-sql:
-- schema: "postgresql/schema.sql"
-  queries: "postgresql/query.sql"
-  engine: "postgresql"
-  gen:
-    go: 
-      package: "authors"
-      out: "postgresql"
-      rename:
-        spotify_url: "SpotifyURL"
-```
-
-##### Type overriding
-
-The default mapping of PostgreSQL/MySQL types to Go types only uses packages outside
-the standard library when it must.
-
-For example, the `uuid` PostgreSQL type is mapped to `github.com/google/uuid`.
-If a different Go package for UUIDs is required, specify the package in the
-`overrides` array. In this case, I'm going to use the `github.com/gofrs/uuid`
-instead.
-
-```yaml
-version: "2"
-sql:
-- schema: "postgresql/schema.sql"
-  queries: "postgresql/query.sql"
-  engine: "postgresql"
-  gen:
-    go: 
-      package: "authors"
-      out: "postgresql"
-      overrides:
-        - db_type: "uuid"
-          go_type: "github.com/gofrs/uuid.UUID"
-```
-
-Each mapping of the `overrides` collection has the following keys:
+See [Overriding types](../howto/overrides.md) for in-depth guide to using type overrides. Each mapping of the `overrides` collection has the following keys:
 
 - `db_type`:
   - The PostgreSQL or MySQL type to override. Find the full list of supported types in [postgresql_type.go](https://github.com/sqlc-dev/sqlc/blob/main/internal/codegen/golang/postgresql_type.go#L12) or [mysql_type.go](https://github.com/sqlc-dev/sqlc/blob/main/internal/codegen/golang/mysql_type.go#L12). Note that for Postgres you must use the pg_catalog prefixed names where available. Can't be used if the `column` key is defined.
@@ -236,9 +189,6 @@ Each mapping of the `overrides` collection has the following keys:
 - `nullable`:
   - If `true`, use this type when a column is nullable. Defaults to `false`.
 
-When generating code, entries using the `column` key will always have preference over
-entries using the `db_type` key in order to generate the struct.
-
 For more complicated import paths, the `go_type` can also be an object with the following keys:
 
 - `import`:
@@ -251,27 +201,6 @@ For more complicated import paths, the `go_type` can also be an object with the 
   - If set to `true`, generated code will use pointers to the type rather than the type itself.
 - `slice`:
   - If set to `true`, generated code will use a slice of the type rather than the type itself.
-
-An example:
-
-```yaml
-version: "2"
-sql:
-- schema: "postgresql/schema.sql"
-  queries: "postgresql/query.sql"
-  engine: "postgresql"
-  gen:
-    go: 
-      package: "authors"
-      out: "postgresql"
-      overrides:
-        - db_type: "uuid"
-          go_type:
-            import: "a/b/v2"
-            package: "b"
-            type: "MyType"
-            pointer: true
-```
 
 #### kotlin
 
@@ -316,6 +245,8 @@ Each mapping in the `plugins` collection has the following keys:
 
 - `name`:
   - The name of this plugin. Required
+- `env`
+  - A list of environment variables to pass to the plugin. By default, no environment variables are passed.
 - `process`: A mapping with a single `cmd` key
   - `cmd`:
     - The executable to call when using this plugin
@@ -326,13 +257,15 @@ Each mapping in the `plugins` collection has the following keys:
     - The SHA256 checksum for the downloaded file.
    
 ```yaml
-version: 2
+version: "2"
 plugins:
 - name: "py"
   wasm: 
     url: "https://github.com/sqlc-dev/sqlc-gen-python/releases/download/v0.16.0-alpha/sqlc-gen-python.wasm"
     sha256: "428476c7408fd4c032da4ec74e8a7344f4fa75e0f98a5a3302f238283b9b95f2"
 - name: "js"
+  env:
+  - PATH
   process: 
     cmd: "sqlc-gen-json"
 ```
@@ -352,7 +285,7 @@ See the [vet](../howto/vet.md) documentation for a list of built-in rules and
 help writing custom rules.
    
 ```yaml
-version: 2
+version: "2"
 sql:
   - schema: "query.sql"
     queries: "query.sql"
@@ -419,18 +352,18 @@ sql:
   gen:
     go:
       package: "authors"
-      out: "mysql
+      out: "mysql"
 ```
 
 With the previous configuration, whenever a struct field is generated from a
 table column that is called `id`, it will generated as `Identifier`.
 
 Also, whenever there is a nullable `timestamp with time zone` column in a
-Postgres table, it will be generated as `null.Time`.  Note that, the mapping for
+Postgres table, it will be generated as `null.Time`.  Note that the mapping for
 global type overrides has a field called `engine` that is absent in the regular
 type overrides. This field is only used when there are multiple definitions
-using multiple engines. Otherwise, the value of the `engine` key will be
-defaulted to the engine that is currently being used.
+using multiple engines. Otherwise, the value of the `engine` key
+defaults to the engine that is currently being used.
 
 Currently, type overrides and field renaming, both global and regular, are only
 fully supported in Go.
@@ -445,6 +378,7 @@ packages:
     queries: "./sql/query/"
     schema: "./sql/schema/"
     engine: "postgresql"
+    emit_db_tags: false
     emit_prepared_queries: true
     emit_interface: false
     emit_exact_table_names: false
@@ -457,12 +391,15 @@ packages:
     emit_pointers_for_null_types: false
     emit_enum_valid_method: false
     emit_all_enum_values: false
+    build_tags: "some_tag"
     json_tags_case_style: "camel"
     omit_unused_structs: false
     output_batch_file_name: "batch.go"
     output_db_file_name: "db.go"
     output_models_file_name: "models.go"
     output_querier_file_name: "querier.go"
+    output_copyfrom_file_name: "copyfrom.go"
+    query_parameter_limit: 1
 ```
 
 ### packages
@@ -509,6 +446,8 @@ Each mapping in the `packages` collection has the following keys:
 - `emit_all_enum_values`:
   - If true, emit a function per enum type
     that returns all valid enum values.
+- `build_tags`:
+  - If set, add a `//go:build <build_tags>` directive at the beginning of each generated Go file.
 - `json_tags_case_style`:
   - `camel` for camelCase, `pascal` for PascalCase, `snake` for snake_case or `none` to use the column name in the DB. Defaults to `none`.
 - `omit_unused_structs`:
@@ -521,6 +460,8 @@ Each mapping in the `packages` collection has the following keys:
   - Customize the name of the models file. Defaults to `models.go`.
 - `output_querier_file_name`:
   - Customize the name of the querier file. Defaults to `querier.go`.
+- `output_copyfrom_file_name`:
+  - Customize the name of the copyfrom file. Defaults to `copyfrom.go`.
 - `output_files_suffix`:
   - If specified the suffix will be added to the name of the generated files.
 - `query_parameter_limit`:
@@ -556,6 +497,10 @@ Each override document has the following keys:
 - `nullable`:
   - If true, use this type when a column is nullable. Defaults to `false`.
 
+Note that a single `db_type` override configuration applies to either nullable or non-nullable
+columns, but not both. If you want a single `go_type` to override in both cases, you'll
+need to specify two overrides.
+
 For more complicated import paths, the `go_type` can also be an object.
 
 ```yaml
@@ -588,7 +533,7 @@ overrides:
 
 #### Package Level Overrides
 
-Overrides can be configured globally, as demonstrated in the previous sections, or they can be configured on a per-package which
+Overrides can be configured globally, as demonstrated in the previous sections, or they can be configured per-package which
 scopes the override behavior to just a single package:
 
 ```yaml

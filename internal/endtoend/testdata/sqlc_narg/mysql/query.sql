@@ -1,5 +1,3 @@
-CREATE TABLE foo (bar text not null, maybe_bar text);
-
 -- name: IdentOnNonNullable :many
 SELECT bar FROM foo WHERE bar = sqlc.narg(bar);
 

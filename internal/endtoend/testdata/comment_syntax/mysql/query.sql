@@ -1,5 +1,3 @@
-CREATE TABLE foo (bar text);
-
 -- name: DoubleDash :one
 SELECT * FROM foo LIMIT 1;
 

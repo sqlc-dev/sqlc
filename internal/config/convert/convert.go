@@ -59,6 +59,9 @@ func gen(n *yaml.Node) (interface{}, error) {
 
 		}
 
+	case yaml.AliasNode:
+		return gen(n.Alias)
+
 	default:
 		return nil, fmt.Errorf("unknown yaml value: %s (%s)", n.Value, n.Tag)
 

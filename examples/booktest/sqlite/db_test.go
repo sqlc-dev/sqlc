@@ -146,7 +146,7 @@ func TestBooks(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, ab := range res {
-		t.Logf("Book %d: '%s', Author: '%s', ISBN: '%s' Tag: '%v'\n", ab.BookID, ab.Title, ab.Name, ab.Isbn, ab.Tag)
+		t.Logf("Book %d: '%s', Author: '%s', ISBN: '%s' Tag: '%v'\n", ab.BookID, ab.Title, ab.Name.String, ab.Isbn, ab.Tag)
 	}
 
 	// TODO: call say_hello(varchar)

@@ -4,12 +4,12 @@
 database types to Go types. Choices for more complex types are described below.
 
 If you're unsatisfied with the default, you can override any type using the
-[overrides list](config.html#type-overriding) in your `sqlc` config file.
+[overrides list](./config.html#type-overriding) in your `sqlc` config file.
 
 ## Arrays
 
 PostgreSQL [arrays](https://www.postgresql.org/docs/current/arrays.html) are
-materialized as Go slices. Currently, the `pgx/v5` sql package only supports multidimensional arrays.
+materialized as Go slices.
 
 ```sql
 CREATE TABLE places (
@@ -92,7 +92,7 @@ type Store struct {
 ## Null
 
 For structs, null values are represented using the appropriate type from the
-`database/sql` or `pgx` package. 
+`database/sql` or `pgx` package.
 
 ```sql
 CREATE TABLE authors (
@@ -197,5 +197,49 @@ import (
 
 type Book struct {
     Data *dto.BookData
+}
+```
+
+## Geometry
+
+### PostGIS
+
+sqlc can be configured to use the [geom](https://github.com/twpayne/go-geom)
+package for working with PostGIS geometry types.
+
+```sql
+-- Multipolygons in British National Grid (epsg:27700)
+create table shapes(
+  id serial,
+  name varchar,
+  geom geometry(Multipolygon, 27700)
+);
+
+-- name: GetShapes :many
+SELECT * FROM shapes;
+```
+
+```json
+{
+  "version": "1",
+  "packages": [
+    {
+      "path": "db",
+      "engine": "postgresql",
+      "schema": "query.sql",
+      "queries": "query.sql"
+    }
+  ],
+  "overrides": [
+    {
+      "db_type": "geometry",
+      "go_type": "github.com/twpayne/go-geom.MultiPolygon"
+  	},
+  	{
+      "db_type": "geometry",
+  	  "go_type": "github.com/twpayne/go-geom.MultiPolygon",
+  	  "null": true
+  	}
+  ]
 }
 ```

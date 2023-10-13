@@ -1,0 +1,2 @@
+# package querytest
+query.sql:4:9: table alias "p" does not exist

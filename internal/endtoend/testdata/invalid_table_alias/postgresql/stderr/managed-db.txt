@@ -1,0 +1,2 @@
+# package querytest
+query.sql:5:3: missing FROM-clause entry for table "p"

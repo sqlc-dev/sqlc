@@ -5,7 +5,7 @@
       "path": "go",
       "engine": "postgresql",
       "name": "querytest",
-      "schema": "query.sql",
+      "schema": "schema.sql",
       "queries": "query.sql",
       "emit_json_tags": true
     }

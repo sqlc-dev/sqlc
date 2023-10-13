@@ -3,5 +3,5 @@ packages:
   - path: "go"
     name: "querytest"
     engine: "postgresql"
-    schema: "query.sql"
+    schema: "schema.sql"
     queries: "query.sql"

@@ -1,8 +1,3 @@
-CREATE TABLE products (
-    name        TEXT    NOT NULL,
-    price       INT     NOT NULL
-);
-
 -- name: GetBetweenPrices :many
 SELECT  *
 FROM    products

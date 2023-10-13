@@ -122,6 +122,8 @@ func (q *Queries) CreateAuthorAndReturnId(ctx context.Context, arg CreateAuthorA
 
 ## Using CopyFrom
 
+### PostgreSQL
+
 PostgreSQL supports the [COPY protocol](https://www.postgresql.org/docs/current/sql-copy.html) that can insert rows a lot faster than sequential inserts. You can use this easily with sqlc:
 
 ```sql
@@ -146,11 +148,28 @@ func (q *Queries) CreateAuthors(ctx context.Context, arg []CreateAuthorsParams) 
 }
 ```
 
+The `:copyfrom` command requires either `pgx/v4` or `pgx/v5`.
+
+```yaml
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: "query.sql"
+    schema: "query.sql"
+    gen:
+      go:
+        package: "db"
+        sql_package: "pgx/v5"
+        out: "db"
+```
+
+### MySQL
+
 MySQL supports a similar feature using [LOAD DATA](https://dev.mysql.com/doc/refman/8.0/en/load-data.html).
 
 Errors and duplicate keys are treated as warnings and insertion will
-continue, even without an error for some cases.  Use this in a transaction
-and use SHOW WARNINGS to check for any problems and roll back if you want to.
+continue, even without an error for some cases. Use this in a transaction
+and use SHOW WARNINGS to check for any problems and roll back if necessary.
 
 Check the [error handling](https://dev.mysql.com/doc/refman/8.0/en/load-data.html#load-data-error-handling) documentation for more information.
 
@@ -165,4 +184,20 @@ INSERT INTO foo (a, b, c, d) VALUES (?, ?, ?, ?);
 func (q *Queries) InsertValues(ctx context.Context, arg []InsertValuesParams) (int64, error) {
 	...
 }
+```
+
+The `:copyfrom` command requires setting the `sql_package` and `sql_driver` options.
+
+```yaml
+version: "2"
+sql:
+  - engine: "mysql"
+    queries: "query.sql"
+    schema: "query.sql"
+    gen:
+      go:
+        package: "db"
+        sql_package: "database/sql"
+        sql_driver: "github.com/go-sql-driver/mysql"
+        out: "db"
 ```

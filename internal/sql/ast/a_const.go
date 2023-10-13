@@ -8,3 +8,16 @@ type A_Const struct {
 func (n *A_Const) Pos() int {
 	return n.Location
 }
+
+func (n *A_Const) Format(buf *TrackedBuffer) {
+	if n == nil {
+		return
+	}
+	if _, ok := n.Val.(*String); ok {
+		buf.WriteString("'")
+		buf.astFormat(n.Val)
+		buf.WriteString("'")
+	} else {
+		buf.astFormat(n.Val)
+	}
+}

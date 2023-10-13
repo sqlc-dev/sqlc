@@ -6,6 +6,10 @@ const (
 	BoolExprTypeAnd
 	BoolExprTypeOr
 	BoolExprTypeNot
+
+	// Added for MySQL
+	BoolExprTypeIsNull
+	BoolExprTypeIsNotNull
 )
 
 type BoolExprType uint

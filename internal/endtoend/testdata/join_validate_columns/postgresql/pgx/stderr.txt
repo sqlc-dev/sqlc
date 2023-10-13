@@ -1,0 +1,2 @@
+# package querytest
+query.sql:2:65: missing FROM-clause entry for table "book"

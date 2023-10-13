@@ -33,14 +33,14 @@ func parseIdentifierString(name string) (*plugin.Identifier, error) {
 	}
 }
 
-func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
+func postgresType(req *plugin.CodeGenRequest, options *opts, col *plugin.Column) string {
 	if col.IsSqlcDynamic {
 		return "DynamicSql"
 	}
 	columnType := sdk.DataType(col.Type)
 	notNull := col.NotNull || col.IsArray
-	driver := parseDriver(req.Settings.Go.SqlPackage)
-	emitPointersForNull := driver.IsPGX() && req.Settings.Go.EmitPointersForNullTypes
+	driver := parseDriver(options.SqlPackage)
+	emitPointersForNull := driver.IsPGX() && options.EmitPointersForNullTypes
 
 	switch columnType {
 	case "serial", "serial4", "pg_catalog.serial4":
@@ -259,7 +259,7 @@ func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		}
 		return "sql.NullTime"
 
-	case "text", "pg_catalog.varchar", "pg_catalog.bpchar", "string", "citext":
+	case "text", "pg_catalog.varchar", "pg_catalog.bpchar", "string", "citext", "name":
 		if notNull {
 			return "string"
 		}
@@ -346,7 +346,6 @@ func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		if driver == SQLDriverPGXV5 {
 			return "pgtype.Interval"
 		}
-
 		if notNull {
 			return "int64"
 		}
@@ -470,23 +469,45 @@ func postgresType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 		return "interface{}"
 
 	case "bit", "varbit", "pg_catalog.bit", "pg_catalog.varbit":
-		if driver.IsPGX() {
+		if driver == SQLDriverPGXV5 {
 			return "pgtype.Bits"
 		}
-
-	case "box":
-		if driver.IsPGX() {
-			return "pgtype.Box"
+		if driver == SQLDriverPGXV4 {
+			return "pgtype.Varbit"
 		}
 
-	case "cid", "oid":
-		if driver.IsPGX() {
+	case "cid":
+		if driver == SQLDriverPGXV5 {
 			return "pgtype.Uint32"
+		}
+		if driver == SQLDriverPGXV4 {
+			return "pgtype.CID"
+		}
+
+	case "oid":
+		if driver == SQLDriverPGXV5 {
+			return "pgtype.Uint32"
+		}
+		if driver == SQLDriverPGXV4 {
+			return "pgtype.OID"
 		}
 
 	case "tid":
 		if driver.IsPGX() {
 			return "pgtype.TID"
+		}
+
+	case "xid":
+		if driver == SQLDriverPGXV5 {
+			return "pgtype.Uint32"
+		}
+		if driver == SQLDriverPGXV4 {
+			return "pgtype.XID"
+		}
+
+	case "box":
+		if driver.IsPGX() {
+			return "pgtype.Box"
 		}
 
 	case "circle":

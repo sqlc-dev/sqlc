@@ -1,5 +1,3 @@
-CREATE TABLE foo (a text, b text);
-CREATE TABLE bar (a text, b text);
 /* name: FooByBarB :many */
 SELECT a, b from foo where foo.a in (select a from bar where bar.b = ?);
 

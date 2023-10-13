@@ -2,6 +2,7 @@ package compiler
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/sqlc-dev/sqlc/internal/config"
@@ -11,6 +12,14 @@ import (
 )
 
 func (c *Compiler) expand(qc *QueryCatalog, raw *ast.RawStmt) ([]source.Edit, error) {
+	// Return early if there are no A_Star nodes to expand
+	stars := astutils.Search(raw, func(node ast.Node) bool {
+		_, ok := node.(*ast.A_Star)
+		return ok
+	})
+	if len(stars.Items) == 0 {
+		return nil, nil
+	}
 	list := astutils.Search(raw, func(node ast.Node) bool {
 		switch node.(type) {
 		case *ast.DeleteStmt:
@@ -36,22 +45,37 @@ func (c *Compiler) expand(qc *QueryCatalog, raw *ast.RawStmt) ([]source.Edit, er
 	return edits, nil
 }
 
+var validPostgresIdent = regexp.MustCompile(`^[a-z_][a-z0-9_$]*$`)
+
 func (c *Compiler) quoteIdent(ident string) string {
 	if c.parser.IsReservedKeyword(ident) {
-		switch c.conf.Engine {
-		case config.EngineMySQL:
-			return "`" + ident + "`"
-		default:
-			return "\"" + ident + "\""
-		}
+		return c.quote(ident)
 	}
+	// SQL identifiers and key words must begin with a letter (a-z, but also
+	// letters with diacritical marks and non-Latin letters) or an underscore
+	// (_). Subsequent characters in an identifier or key word can be letters,
+	// underscores, digits (0-9), or dollar signs ($).
+	//
+	// https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS
 	if c.conf.Engine == config.EnginePostgreSQL {
 		// camelCase means the column is also camelCase
 		if strings.ToLower(ident) != ident {
-			return "\"" + ident + "\""
+			return c.quote(ident)
+		}
+		if !validPostgresIdent.MatchString(strings.ToLower(ident)) {
+			return c.quote(ident)
 		}
 	}
 	return ident
+}
+
+func (c *Compiler) quote(x string) string {
+	switch c.conf.Engine {
+	case config.EngineMySQL:
+		return "`" + x + "`"
+	default:
+		return "\"" + x + "\""
+	}
 }
 
 func (c *Compiler) expandStmt(qc *QueryCatalog, raw *ast.RawStmt, node ast.Node) ([]source.Edit, error) {
@@ -130,20 +154,45 @@ func (c *Compiler) expandStmt(qc *QueryCatalog, raw *ast.RawStmt, node ast.Node)
 		}
 		var old []string
 		for _, p := range parts {
-			old = append(old, c.quoteIdent(p))
+			if p == "*" {
+				old = append(old, p)
+			} else {
+				old = append(old, c.quoteIdent(p))
+			}
 		}
-		oldString := strings.Join(old, ".")
+
+		var oldString string
+		var oldFunc func(string) int
 
 		// use the sqlc.embed string instead
 		if embed, ok := qc.embeds.Find(ref); ok {
 			oldString = embed.Orig()
+		} else {
+			oldFunc = func(s string) int {
+				length := 0
+				for i, o := range old {
+					if hasSeparator := i > 0; hasSeparator {
+						length++
+					}
+					if strings.HasPrefix(s[length:], o) {
+						length += len(o)
+					} else if quoted := c.quote(o); strings.HasPrefix(s[length:], quoted) {
+						length += len(quoted)
+					} else {
+						length += len(o)
+					}
+				}
+				return length
+			}
 		}
 
 		edits = append(edits, source.Edit{
 			Location: res.Location - raw.StmtLocation,
 			Old:      oldString,
+			OldFunc:  oldFunc,
 			New:      strings.Join(cols, ", "),
 		})
 	}
+
 	return edits, nil
 }

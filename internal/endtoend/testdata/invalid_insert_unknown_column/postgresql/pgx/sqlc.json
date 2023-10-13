@@ -1,0 +1,19 @@
+{
+  "version": "1",
+  "cloud": {
+    "project": "01HAQMMECEYQYKFJN8MP16QC41"
+  },
+  "packages": [
+    {
+      "path": "db",
+      "engine": "postgresql",
+      "database": {
+        "managed": true
+      },
+      "sql_package": "pgx/v5",
+      "schema": "schema.sql",
+      "queries": "query.sql"
+    }
+  ]
+}
+

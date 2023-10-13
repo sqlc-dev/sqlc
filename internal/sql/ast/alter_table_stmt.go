@@ -12,3 +12,13 @@ type AlterTableStmt struct {
 func (n *AlterTableStmt) Pos() int {
 	return 0
 }
+
+func (n *AlterTableStmt) Format(buf *TrackedBuffer) {
+	if n == nil {
+		return
+	}
+	buf.WriteString("ALTER TABLE ")
+	buf.astFormat(n.Relation)
+	buf.astFormat(n.Table)
+	buf.astFormat(n.Cmds)
+}

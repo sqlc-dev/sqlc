@@ -59,6 +59,7 @@ func mergeImports(imps ...fileImports) [][]ImportSpec {
 
 type importer struct {
 	Settings *plugin.Settings
+	Options  *opts
 	Queries  []Query
 	Enums    []Enum
 	Structs  []Struct
@@ -77,21 +78,24 @@ func (i *importer) usesType(typ string) bool {
 
 func (i *importer) Imports(filename string) [][]ImportSpec {
 	dbFileName := "db.go"
-	if i.Settings.Go.OutputDbFileName != "" {
-		dbFileName = i.Settings.Go.OutputDbFileName
+	if i.Options.OutputDbFileName != "" {
+		dbFileName = i.Options.OutputDbFileName
 	}
 	modelsFileName := "models.go"
-	if i.Settings.Go.OutputModelsFileName != "" {
-		modelsFileName = i.Settings.Go.OutputModelsFileName
+	if i.Options.OutputModelsFileName != "" {
+		modelsFileName = i.Options.OutputModelsFileName
 	}
 	querierFileName := "querier.go"
-	if i.Settings.Go.OutputQuerierFileName != "" {
-		querierFileName = i.Settings.Go.OutputQuerierFileName
+	if i.Options.OutputQuerierFileName != "" {
+		querierFileName = i.Options.OutputQuerierFileName
 	}
 	copyfromFileName := "copyfrom.go"
+	if i.Options.OutputCopyfromFileName != "" {
+		copyfromFileName = i.Options.OutputCopyfromFileName
+	}
 	batchFileName := "batch.go"
-	if i.Settings.Go.OutputBatchFileName != "" {
-		batchFileName = i.Settings.Go.OutputBatchFileName
+	if i.Options.OutputBatchFileName != "" {
+		batchFileName = i.Options.OutputBatchFileName
 	}
 
 	switch filename {
@@ -116,7 +120,7 @@ func (i *importer) dbImports() fileImports {
 		{Path: "context"},
 	}
 
-	sqlpkg := parseDriver(i.Settings.Go.SqlPackage)
+	sqlpkg := parseDriver(i.Options.SqlPackage)
 	switch sqlpkg {
 	case SQLDriverPGXV4:
 		pkg = append(pkg, ImportSpec{Path: "github.com/jackc/pgconn"})
@@ -126,7 +130,7 @@ func (i *importer) dbImports() fileImports {
 		pkg = append(pkg, ImportSpec{Path: "github.com/jackc/pgx/v5"})
 	default:
 		std = append(std, ImportSpec{Path: "database/sql"})
-		if i.Settings.Go.EmitPreparedQueries {
+		if i.Options.EmitPreparedQueries {
 			std = append(std, ImportSpec{Path: "fmt"})
 		}
 	}
@@ -152,7 +156,7 @@ var pqtypeTypes = map[string]struct{}{
 	"pqtype.NullRawMessage": {},
 }
 
-func buildImports(settings *plugin.Settings, queries []Query, uses func(string) bool) (map[string]struct{}, map[ImportSpec]struct{}) {
+func buildImports(settings *plugin.Settings, options *opts, queries []Query, uses func(string) bool) (map[string]struct{}, map[ImportSpec]struct{}) {
 	pkg := make(map[ImportSpec]struct{})
 	std := make(map[string]struct{})
 
@@ -160,7 +164,7 @@ func buildImports(settings *plugin.Settings, queries []Query, uses func(string) 
 		std["database/sql"] = struct{}{}
 	}
 
-	sqlpkg := parseDriver(settings.Go.SqlPackage)
+	sqlpkg := parseDriver(options.SqlPackage)
 	for _, q := range queries {
 		if q.Cmd == metadata.CmdExecResult {
 			switch sqlpkg {
@@ -232,7 +236,7 @@ func buildImports(settings *plugin.Settings, queries []Query, uses func(string) 
 }
 
 func (i *importer) interfaceImports() fileImports {
-	std, pkg := buildImports(i.Settings, i.Queries, func(name string) bool {
+	std, pkg := buildImports(i.Settings, i.Options, i.Queries, func(name string) bool {
 		for _, q := range i.Queries {
 			if q.hasRetType() {
 				if usesBatch([]Query{q}) {
@@ -242,8 +246,8 @@ func (i *importer) interfaceImports() fileImports {
 					return true
 				}
 			}
-			if !q.Arg.isEmpty() {
-				if hasPrefixIgnoringSliceAndPointerPrefix(q.Arg.Type(), name) {
+			for _, f := range q.Arg.Pairs() {
+				if hasPrefixIgnoringSliceAndPointerPrefix(f.Type, name) {
 					return true
 				}
 			}
@@ -257,7 +261,7 @@ func (i *importer) interfaceImports() fileImports {
 }
 
 func (i *importer) modelImports() fileImports {
-	std, pkg := buildImports(i.Settings, nil, i.usesType)
+	std, pkg := buildImports(i.Settings, i.Options, nil, i.usesType)
 
 	if len(i.Enums) > 0 {
 		std["fmt"] = struct{}{}
@@ -296,7 +300,7 @@ func (i *importer) queryImports(filename string) fileImports {
 		}
 	}
 
-	std, pkg := buildImports(i.Settings, gq, func(name string) bool {
+	std, pkg := buildImports(i.Settings, i.Options, gq, func(name string) bool {
 		for _, q := range gq {
 			if q.hasRetType() {
 				if q.Ret.EmitStruct() {
@@ -310,15 +314,17 @@ func (i *importer) queryImports(filename string) fileImports {
 					return true
 				}
 			}
-			if !q.Arg.isEmpty() {
-				if q.Arg.EmitStruct() {
-					for _, f := range q.Arg.Struct.Fields {
-						if hasPrefixIgnoringSliceAndPointerPrefix(f.Type, name) {
-							return true
-						}
+			// Check the fields of the argument struct if it's emitted
+			if q.Arg.EmitStruct() {
+				for _, f := range q.Arg.Struct.Fields {
+					if hasPrefixIgnoringSliceAndPointerPrefix(f.Type, name) {
+						return true
 					}
 				}
-				if hasPrefixIgnoringSliceAndPointerPrefix(q.Arg.Type(), name) {
+			}
+			// Check the argument pairs inside the method definition
+			for _, f := range q.Arg.Pairs() {
+				if hasPrefixIgnoringSliceAndPointerPrefix(f.Type, name) {
 					return true
 				}
 			}
@@ -377,7 +383,7 @@ func (i *importer) queryImports(filename string) fileImports {
 		std["context"] = struct{}{}
 	}
 
-	sqlpkg := parseDriver(i.Settings.Go.SqlPackage)
+	sqlpkg := parseDriver(i.Options.SqlPackage)
 	if sqlcSliceScan() {
 		std["strings"] = struct{}{}
 	}
@@ -395,7 +401,7 @@ func (i *importer) copyfromImports() fileImports {
 			copyFromQueries = append(copyFromQueries, q)
 		}
 	}
-	std, pkg := buildImports(i.Settings, copyFromQueries, func(name string) bool {
+	std, pkg := buildImports(i.Settings, i.Options, copyFromQueries, func(name string) bool {
 		for _, q := range copyFromQueries {
 			if q.hasRetType() {
 				if strings.HasPrefix(q.Ret.Type(), name) {
@@ -412,7 +418,7 @@ func (i *importer) copyfromImports() fileImports {
 	})
 
 	std["context"] = struct{}{}
-	if i.Settings.Go.SqlDriver == SQLDriverGoSQLDriverMySQL {
+	if i.Options.SqlDriver == SQLDriverGoSQLDriverMySQL {
 		std["io"] = struct{}{}
 		std["fmt"] = struct{}{}
 		std["sync/atomic"] = struct{}{}
@@ -430,7 +436,7 @@ func (i *importer) batchImports() fileImports {
 			batchQueries = append(batchQueries, q)
 		}
 	}
-	std, pkg := buildImports(i.Settings, batchQueries, func(name string) bool {
+	std, pkg := buildImports(i.Settings, i.Options, batchQueries, func(name string) bool {
 		for _, q := range batchQueries {
 			if q.hasRetType() {
 				if q.Ret.EmitStruct() {
@@ -444,15 +450,15 @@ func (i *importer) batchImports() fileImports {
 					return true
 				}
 			}
-			if !q.Arg.isEmpty() {
-				if q.Arg.EmitStruct() {
-					for _, f := range q.Arg.Struct.Fields {
-						if hasPrefixIgnoringSliceAndPointerPrefix(f.Type, name) {
-							return true
-						}
+			if q.Arg.EmitStruct() {
+				for _, f := range q.Arg.Struct.Fields {
+					if hasPrefixIgnoringSliceAndPointerPrefix(f.Type, name) {
+						return true
 					}
 				}
-				if hasPrefixIgnoringSliceAndPointerPrefix(q.Arg.Type(), name) {
+			}
+			for _, f := range q.Arg.Pairs() {
+				if hasPrefixIgnoringSliceAndPointerPrefix(f.Type, name) {
 					return true
 				}
 			}
@@ -462,7 +468,7 @@ func (i *importer) batchImports() fileImports {
 
 	std["context"] = struct{}{}
 	std["errors"] = struct{}{}
-	sqlpkg := parseDriver(i.Settings.Go.SqlPackage)
+	sqlpkg := parseDriver(i.Options.SqlPackage)
 	switch sqlpkg {
 	case SQLDriverPGXV4:
 		pkg[ImportSpec{Path: "github.com/jackc/pgx/v4"}] = struct{}{}

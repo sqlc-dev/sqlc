@@ -3,6 +3,7 @@ package cmd
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -16,7 +17,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/sqlc-dev/sqlc/internal/codegen/golang"
-	"github.com/sqlc-dev/sqlc/internal/codegen/json"
+	genjson "github.com/sqlc-dev/sqlc/internal/codegen/json"
 	"github.com/sqlc-dev/sqlc/internal/compiler"
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/config/convert"
@@ -76,8 +77,9 @@ func readConfig(stderr io.Writer, dir, filename string) (string, *config.Config,
 	if filename != "" {
 		configPath = filepath.Join(dir, filename)
 	} else {
-		var yamlMissing, jsonMissing bool
+		var yamlMissing, jsonMissing, ymlMissing bool
 		yamlPath := filepath.Join(dir, "sqlc.yaml")
+		ymlPath := filepath.Join(dir, "sqlc.yml")
 		jsonPath := filepath.Join(dir, "sqlc.json")
 
 		if _, err := os.Stat(yamlPath); os.IsNotExist(err) {
@@ -87,18 +89,27 @@ func readConfig(stderr io.Writer, dir, filename string) (string, *config.Config,
 			jsonMissing = true
 		}
 
-		if yamlMissing && jsonMissing {
-			fmt.Fprintln(stderr, "error parsing configuration files. sqlc.yaml or sqlc.json: file does not exist")
+		if _, err := os.Stat(ymlPath); os.IsNotExist(err) {
+			ymlMissing = true
+		}
+
+		if yamlMissing && ymlMissing && jsonMissing {
+			fmt.Fprintln(stderr, "error parsing configuration files. sqlc.(yaml|yml) or sqlc.json: file does not exist")
 			return "", nil, errors.New("config file missing")
 		}
 
-		if !yamlMissing && !jsonMissing {
-			fmt.Fprintln(stderr, "error: both sqlc.json and sqlc.yaml files present")
-			return "", nil, errors.New("sqlc.json and sqlc.yaml present")
+		if (!yamlMissing || !ymlMissing) && !jsonMissing {
+			fmt.Fprintln(stderr, "error: both sqlc.json and sqlc.(yaml|yml) files present")
+			return "", nil, errors.New("sqlc.json and sqlc.(yaml|yml) present")
 		}
 
-		configPath = yamlPath
-		if yamlMissing {
+		if jsonMissing {
+			if yamlMissing {
+				configPath = ymlPath
+			} else {
+				configPath = yamlPath
+			}
+		} else {
 			configPath = jsonPath
 		}
 	}
@@ -128,8 +139,11 @@ func readConfig(stderr io.Writer, dir, filename string) (string, *config.Config,
 	return configPath, &conf, nil
 }
 
-func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer) (map[string]string, error) {
-	configPath, conf, err := readConfig(stderr, dir, filename)
+func Generate(ctx context.Context, dir, filename string, o *Options) (map[string]string, error) {
+	e := o.Env
+	stderr := o.Stderr
+
+	configPath, conf, err := o.ReadConfig(dir, filename)
 	if err != nil {
 		return nil, err
 	}
@@ -145,7 +159,7 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 		return nil, err
 	}
 
-	if conf.Cloud.Project != "" && !e.NoRemote {
+	if conf.Cloud.Project != "" && e.Remote && !e.NoRemote {
 		return remoteGenerate(ctx, configPath, conf, dir, stderr)
 	}
 
@@ -166,7 +180,7 @@ func Generate(ctx context.Context, e Env, dir, filename string, stderr io.Writer
 				Gen: config.SQLGen{JSON: sql.Gen.JSON},
 			})
 		}
-		for i, _ := range sql.Codegen {
+		for i := range sql.Codegen {
 			pairs = append(pairs, outPair{
 				SQL:    sql,
 				Plugin: &sql.Codegen[i],
@@ -332,7 +346,12 @@ func remoteGenerate(ctx context.Context, configPath string, conf *config.Config,
 
 func parse(ctx context.Context, name, dir string, sql config.SQL, combo config.CombinedSettings, parserOpts opts.Parser, stderr io.Writer) (*compiler.Result, bool) {
 	defer trace.StartRegion(ctx, "parse").End()
-	c := compiler.NewCompiler(sql, combo)
+	c, err := compiler.NewCompiler(sql, combo)
+	defer c.Close(ctx)
+	if err != nil {
+		fmt.Fprintf(stderr, "error creating compiler: %s\n", err)
+		return nil, true
+	}
 	if err := c.ParseCatalog(sql.Schema); err != nil {
 		fmt.Fprintf(stderr, "# package %s\n", name)
 		if parserErr, ok := err.(*multierr.Error); ok {
@@ -367,14 +386,6 @@ func codegen(ctx context.Context, combo config.CombinedSettings, sql outPair, re
 	var handler ext.Handler
 	var out string
 	switch {
-	case sql.Gen.Go != nil:
-		out = combo.Go.Out
-		handler = ext.HandleFunc(golang.Generate)
-
-	case sql.Gen.JSON != nil:
-		out = combo.JSON.Out
-		handler = ext.HandleFunc(json.Generate)
-
 	case sql.Plugin != nil:
 		out = sql.Plugin.Out
 		plug, err := findPlugin(combo.Global, sql.Plugin.Plugin)
@@ -386,11 +397,13 @@ func codegen(ctx context.Context, combo config.CombinedSettings, sql outPair, re
 		case plug.Process != nil:
 			handler = &process.Runner{
 				Cmd: plug.Process.Cmd,
+				Env: plug.Env,
 			}
 		case plug.WASM != nil:
 			handler = &wasm.Runner{
 				URL:    plug.WASM.URL,
 				SHA256: plug.WASM.SHA256,
+				Env:    plug.Env,
 			}
 		default:
 			return "", nil, fmt.Errorf("unsupported plugin type")
@@ -399,6 +412,24 @@ func codegen(ctx context.Context, combo config.CombinedSettings, sql outPair, re
 		opts, err := convert.YAMLtoJSON(sql.Plugin.Options)
 		if err != nil {
 			return "", nil, fmt.Errorf("invalid plugin options")
+		}
+		req.PluginOptions = opts
+
+	case sql.Gen.Go != nil:
+		out = combo.Go.Out
+		handler = ext.HandleFunc(golang.Generate)
+		opts, err := json.Marshal(sql.Gen.Go)
+		if err != nil {
+			return "", nil, fmt.Errorf("opts marshal failed: %w", err)
+		}
+		req.PluginOptions = opts
+
+	case sql.Gen.JSON != nil:
+		out = combo.JSON.Out
+		handler = ext.HandleFunc(genjson.Generate)
+		opts, err := json.Marshal(sql.Gen.JSON)
+		if err != nil {
+			return "", nil, fmt.Errorf("opts marshal failed: %w", err)
 		}
 		req.PluginOptions = opts
 

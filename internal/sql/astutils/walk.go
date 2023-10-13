@@ -2158,10 +2158,8 @@ func Walk(f Visitor, node ast.Node) {
 		}
 
 	case *ast.In:
-		if n.List != nil {
-			for _, l := range n.List {
-				Walk(f, l)
-			}
+		for _, l := range n.List {
+			Walk(f, l)
 		}
 		if n.Sel != nil {
 			Walk(f, n.Sel)

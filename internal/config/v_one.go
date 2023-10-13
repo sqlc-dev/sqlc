@@ -11,7 +11,6 @@ import (
 type V1GenerateSettings struct {
 	Version   string              `json:"version" yaml:"version"`
 	Cloud     Cloud               `json:"cloud" yaml:"cloud"`
-	Project   Project             `json:"project" yaml:"project"`
 	Packages  []v1PackageSettings `json:"packages" yaml:"packages"`
 	Overrides []Override          `json:"overrides,omitempty" yaml:"overrides,omitempty"`
 	Rename    map[string]string   `json:"rename,omitempty" yaml:"rename,omitempty"`
@@ -22,6 +21,7 @@ type v1PackageSettings struct {
 	Name                      string     `json:"name" yaml:"name"`
 	Engine                    Engine     `json:"engine,omitempty" yaml:"engine"`
 	Database                  *Database  `json:"database,omitempty" yaml:"database"`
+	Analyzer                  Analyzer   `json:"analyzer" yaml:"analyzer"`
 	Path                      string     `json:"path" yaml:"path"`
 	Schema                    Paths      `json:"schema" yaml:"schema"`
 	Queries                   Paths      `json:"queries" yaml:"queries"`
@@ -47,12 +47,14 @@ type v1PackageSettings struct {
 	OutputDBFileName          string     `json:"output_db_file_name,omitempty" yaml:"output_db_file_name"`
 	OutputModelsFileName      string     `json:"output_models_file_name,omitempty" yaml:"output_models_file_name"`
 	OutputQuerierFileName     string     `json:"output_querier_file_name,omitempty" yaml:"output_querier_file_name"`
+	OutputCopyFromFileName    string     `json:"output_copyfrom_file_name,omitempty" yaml:"output_copyfrom_file_name"`
 	OutputFilesSuffix         string     `json:"output_files_suffix,omitempty" yaml:"output_files_suffix"`
 	StrictFunctionChecks      bool       `json:"strict_function_checks" yaml:"strict_function_checks"`
 	StrictOrderBy             *bool      `json:"strict_order_by" yaml:"strict_order_by"`
 	QueryParameterLimit       *int32     `json:"query_parameter_limit,omitempty" yaml:"query_parameter_limit"`
 	OmitUnusedStructs         bool       `json:"omit_unused_structs,omitempty" yaml:"omit_unused_structs"`
 	Rules                     []string   `json:"rules" yaml:"rules"`
+	BuildTags                 string     `json:"build_tags,omitempty" yaml:"build_tags"`
 }
 
 func v1ParseConfig(rd io.Reader) (Config, error) {
@@ -131,7 +133,6 @@ func (c *V1GenerateSettings) ValidateGlobalOverrides() error {
 func (c *V1GenerateSettings) Translate() Config {
 	conf := Config{
 		Version: c.Version,
-		Project: c.Project,
 		Cloud:   c.Cloud,
 		Rules:   c.Rules,
 	}
@@ -147,6 +148,7 @@ func (c *V1GenerateSettings) Translate() Config {
 			Schema:   pkg.Schema,
 			Queries:  pkg.Queries,
 			Rules:    pkg.Rules,
+			Analyzer: pkg.Analyzer,
 			Gen: SQLGen{
 				Go: &SQLGo{
 					EmitInterface:             pkg.EmitInterface,
@@ -173,9 +175,11 @@ func (c *V1GenerateSettings) Translate() Config {
 					OutputDBFileName:          pkg.OutputDBFileName,
 					OutputModelsFileName:      pkg.OutputModelsFileName,
 					OutputQuerierFileName:     pkg.OutputQuerierFileName,
+					OutputCopyFromFileName:    pkg.OutputCopyFromFileName,
 					OutputFilesSuffix:         pkg.OutputFilesSuffix,
 					QueryParameterLimit:       pkg.QueryParameterLimit,
 					OmitUnusedStructs:         pkg.OmitUnusedStructs,
+					BuildTags:                 pkg.BuildTags,
 				},
 			},
 			StrictFunctionChecks: pkg.StrictFunctionChecks,

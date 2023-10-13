@@ -4,16 +4,16 @@
 var readerHandlerSequenceFor{{.MethodName}} uint32 = 1
 
 func convertRowsFor{{.MethodName}}(w *io.PipeWriter, {{.Arg.SlicePair}}) {
-	e := mysqltsv.NewEncoder(w, {{ len .Arg.Fields }}, nil)
+	e := mysqltsv.NewEncoder(w, {{ len .Arg.CopyFromMySQLFields }}, nil)
 	for _, row := range {{.Arg.Name}} {
 {{- with $arg := .Arg }}
-{{- range $arg.Fields}}
+{{- range $arg.CopyFromMySQLFields}}
 {{- if eq .Type "string"}}
-	e.AppendString({{if eq (len $arg.Fields) 1}}row{{else}}row.{{.Name}}{{end}})
+	e.AppendString({{if eq (len $arg.CopyFromMySQLFields) 1}}row{{else}}row.{{.Name}}{{end}})
 {{- else if eq .Type "[]byte"}}
-	e.AppendBytes({{if eq (len $arg.Fields) 1}}row{{else}}row.{{.Name}}{{end}})
+	e.AppendBytes({{if eq (len $arg.CopyFromMySQLFields) 1}}row{{else}}row.{{.Name}}{{end}})
 {{- else}}
-	e.AppendValue({{if eq (len $arg.Fields) 1}}row{{else}}row.{{.Name}}{{end}})
+	e.AppendValue({{if eq (len $arg.CopyFromMySQLFields) 1}}row{{else}}row.{{.Name}}{{end}})
 {{- end}}
 {{- end}}
 {{- end}}

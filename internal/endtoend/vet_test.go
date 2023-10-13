@@ -31,6 +31,11 @@ func TestExamplesVet(t *testing.T) {
 	t.Parallel()
 	ctx := context.Background()
 
+	authToken := os.Getenv("SQLC_AUTH_TOKEN")
+	if authToken == "" {
+		t.Skip("missing auth token")
+	}
+
 	examples, err := filepath.Abs(filepath.Join("..", "..", "examples"))
 	if err != nil {
 		t.Fatal(err)
@@ -51,11 +56,6 @@ func TestExamplesVet(t *testing.T) {
 			path := filepath.Join(examples, tc)
 
 			if tc != "kotlin" && tc != "python" {
-				if s, found := findSchema(t, filepath.Join(path, "postgresql")); found {
-					db, cleanup := sqltest.CreatePostgreSQLDatabase(t, tc, false, []string{s})
-					defer db.Close()
-					defer cleanup()
-				}
 				if s, found := findSchema(t, filepath.Join(path, "mysql")); found {
 					db, cleanup := sqltest.CreateMySQLDatabase(t, tc, []string{s})
 					defer db.Close()
@@ -70,7 +70,11 @@ func TestExamplesVet(t *testing.T) {
 			}
 
 			var stderr bytes.Buffer
-			err := cmd.Vet(ctx, cmd.Env{}, path, "", &stderr)
+			opts := &cmd.Options{
+				Stderr: &stderr,
+				Env:    cmd.Env{},
+			}
+			err := cmd.Vet(ctx, path, "", opts)
 			if err != nil {
 				t.Fatalf("sqlc vet failed: %s %s", err, stderr.String())
 			}

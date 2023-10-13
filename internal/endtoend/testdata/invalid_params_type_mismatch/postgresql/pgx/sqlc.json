@@ -1,0 +1,13 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "path": "db",
+      "engine": "postgresql",
+      "sql_package": "pgx/v5",
+      "schema": "schema.sql",
+      "queries": "query.sql"
+    }
+  ]
+}
+

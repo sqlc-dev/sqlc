@@ -1,62 +1,40 @@
 package compiler
 
 import (
+	"context"
 	"errors"
 	"fmt"
-	"sort"
 	"strings"
 
-	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/debug"
 	"github.com/sqlc-dev/sqlc/internal/metadata"
 	"github.com/sqlc-dev/sqlc/internal/opts"
 	"github.com/sqlc-dev/sqlc/internal/source"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
-	"github.com/sqlc-dev/sqlc/internal/sql/rewrite"
 	"github.com/sqlc-dev/sqlc/internal/sql/validate"
 )
 
 var ErrUnsupportedStatementType = errors.New("parseQuery: unsupported statement type")
 
 func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query, error) {
+	ctx := context.Background()
+
 	if o.Debug.DumpAST {
 		debug.Dump(stmt)
 	}
-	if err := validate.ParamStyle(stmt); err != nil {
+
+	// validate sqlc-specific syntax
+	if err := validate.SqlcFunctions(stmt); err != nil {
 		return nil, err
 	}
-	numbers, dollar, err := validate.ParamRef(stmt)
-	if err != nil {
-		return nil, err
-	}
+
+	// rewrite queries to remove sqlc.* functions
+
 	raw, ok := stmt.(*ast.RawStmt)
 	if !ok {
 		return nil, errors.New("node is not a statement")
 	}
-	var table *ast.TableName
-	switch n := raw.Stmt.(type) {
-	case *ast.CallStmt:
-	case *ast.SelectStmt:
-	case *ast.DeleteStmt:
-	case *ast.InsertStmt:
-		if err := validate.InsertStmt(n); err != nil {
-			return nil, err
-		}
-		var err error
-		table, err = ParseTableName(n.Relation)
-		if err != nil {
-			return nil, err
-		}
-	case *ast.ListenStmt:
-	case *ast.NotifyStmt:
-	case *ast.TruncateStmt:
-	case *ast.UpdateStmt:
-	case *ast.RefreshMatViewStmt:
-	default:
-		return nil, ErrUnsupportedStatementType
-	}
-
 	rawSQL, err := source.Pluck(src, raw.StmtLocation, raw.StmtLen)
 	if err != nil {
 		return nil, err
@@ -64,59 +42,41 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 	if rawSQL == "" {
 		return nil, errors.New("missing semicolon at end of file")
 	}
-	if err := validate.FuncCall(c.catalog, c.combo, raw); err != nil {
-		return nil, err
-	}
-	if err := validate.In(c.catalog, raw); err != nil {
-		return nil, err
-	}
+
 	name, cmd, err := metadata.ParseQueryNameAndType(strings.TrimSpace(rawSQL), c.parser.CommentSyntax())
 	if err != nil {
 		return nil, err
 	}
-	raw, namedParams, edits := rewrite.NamedParameters(c.conf.Engine, raw, numbers, dollar)
 	if err := validate.Cmd(raw.Stmt, name, cmd); err != nil {
 		return nil, err
 	}
-	rvs := rangeVars(raw.Stmt)
-	refs, err := findParameters(raw.Stmt)
-	if err != nil {
-		return nil, err
-	}
-	refs = uniqueParamRefs(refs, dollar)
-	if c.conf.Engine == config.EngineMySQL || !dollar {
-		sort.Slice(refs, func(i, j int) bool { return refs[i].ref.Location < refs[j].ref.Location })
+
+	var anlys *analysis
+	if c.analyzer != nil {
+		// TODO: Handle panics
+		inference, _ := c.inferQuery(raw, rawSQL)
+		if inference == nil {
+			inference = &analysis{}
+		}
+		if inference.Query == "" {
+			inference.Query = rawSQL
+		}
+
+		result, err := c.analyzer.Analyze(ctx, raw, inference.Query, c.schema, inference.Named)
+		if err != nil {
+			return nil, err
+		}
+
+		// FOOTGUN: combineAnalysis mutates inference
+		anlys = combineAnalysis(inference, result)
 	} else {
-		sort.Slice(refs, func(i, j int) bool { return refs[i].ref.Number < refs[j].ref.Number })
-	}
-	raw, embeds := rewrite.Embeds(raw)
-	qc, err := c.buildQueryCatalog(c.catalog, raw.Stmt, embeds)
-	if err != nil {
-		return nil, err
+		anlys, err = c.analyzeQuery(raw, rawSQL)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	err = c.resolveCatalogEmbeds(qc, rvs, embeds)
-	if err != nil {
-		return nil, err
-	}
-	params, err := c.resolveCatalogRefs(qc, refs, namedParams)
-	if err != nil {
-		return nil, err
-	}
-	cols, err := c.outputColumns(qc, raw.Stmt)
-	if err != nil {
-		return nil, err
-	}
-
-	expandEdits, err := c.expand(qc, raw)
-	if err != nil {
-		return nil, err
-	}
-	edits = append(edits, expandEdits...)
-	expanded, err := source.Mutate(rawSQL, edits)
-	if err != nil {
-		return nil, err
-	}
+	expanded := anlys.Query
 
 	// If the query string was edited, make sure the syntax is valid
 	if expanded != rawSQL {
@@ -141,10 +101,10 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 		Comments:        comments,
 		Name:            name,
 		Flags:           flags,
-		Params:          params,
-		Columns:         cols,
+		Params:          anlys.Parameters,
+		Columns:         anlys.Columns,
 		SQL:             trimmed,
-		InsertIntoTable: table,
+		InsertIntoTable: anlys.Table,
 	}, nil
 }
 

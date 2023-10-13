@@ -2,6 +2,7 @@ package compiler
 
 import (
 	"fmt"
+	"log/slog"
 	"strconv"
 
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
@@ -660,8 +661,6 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, args []paramRef, para
 						})
 					}
 				}
-			} else {
-				fmt.Println("------------------------")
 			}
 
 			if found == 0 {
@@ -680,7 +679,17 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, args []paramRef, para
 			}
 
 		default:
-			fmt.Printf("unsupported reference type: %T\n", n)
+			slog.Debug("unsupported reference type", "type", fmt.Sprintf("%T", n))
+			defaultP := named.NewInferredParam(ref.name, false)
+			p, isNamed := params.FetchMerge(ref.ref.Number, defaultP)
+			a = append(a, Parameter{
+				Number: ref.ref.Number,
+				Column: &Column{
+					Name:         p.Name(),
+					DataType:     "any",
+					IsNamedParam: isNamed,
+				},
+			})
 		}
 	}
 	return a, nil

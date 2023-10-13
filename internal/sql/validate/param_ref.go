@@ -38,7 +38,7 @@ func ParamRef(n ast.Node) (map[int]bool, bool, error) {
 	}
 	for i := 1; i <= len(seen); i += 1 {
 		if _, ok := seen[i]; !ok {
-			return nil, false, &sqlerr.Error{
+			return seen, !nodollar, &sqlerr.Error{
 				Code:    "42P18",
 				Message: fmt.Sprintf("could not determine data type of parameter $%d", i),
 			}

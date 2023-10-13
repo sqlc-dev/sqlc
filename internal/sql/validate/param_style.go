@@ -1,48 +1,68 @@
 package validate
 
 import (
+	"fmt"
+
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
-	"github.com/sqlc-dev/sqlc/internal/sql/named"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
 )
 
-// A query can use one (and only one) of the following formats:
-// - positional parameters           $1
-// - named parameter operator        @param
-// - named parameter function calls  sqlc.arg(param)
-func ParamStyle(n ast.Node) error {
-	namedFunc := astutils.Search(n, named.IsParamFunc)
-	for _, f := range namedFunc.Items {
-		if fc, ok := f.(*ast.FuncCall); ok {
-			args := fc.Args.Items
+type sqlcFuncVisitor struct {
+	err error
+}
 
-			if len(args) == 0 {
-				continue
-			}
-
-			switch val := args[0].(type) {
-			case *ast.FuncCall:
-				return &sqlerr.Error{
-					Code:     "", // TODO: Pick a new error code
-					Message:  "Invalid argument to sqlc.arg()",
-					Location: val.Location,
-				}
-			case *ast.ParamRef:
-				return &sqlerr.Error{
-					Code:     "", // TODO: Pick a new error code
-					Message:  "Invalid argument to sqlc.arg()",
-					Location: val.Location,
-				}
-			case *ast.A_Const, *ast.ColumnRef:
-			default:
-				return &sqlerr.Error{
-					Code:    "", // TODO: Pick a new error code
-					Message: "Invalid argument to sqlc.arg()",
-				}
-
-			}
-		}
+func (v *sqlcFuncVisitor) Visit(node ast.Node) astutils.Visitor {
+	if v.err != nil {
+		return nil
 	}
+
+	call, ok := node.(*ast.FuncCall)
+	if !ok {
+		return v
+	}
+	fn := call.Func
+	if fn == nil {
+		return v
+	}
+
+	// Custom validation for sqlc.arg, sqlc.narg and sqlc.slice
+	// TODO: Replace this once type-checking is implemented
+	if fn.Schema == "sqlc" {
+		if !(fn.Name == "arg" || fn.Name == "narg" || fn.Name == "slice" || fn.Name == "embed") {
+			v.err = sqlerr.FunctionNotFound("sqlc." + fn.Name)
+			return nil
+		}
+
+		if len(call.Args.Items) != 1 {
+			v.err = &sqlerr.Error{
+				Message:  fmt.Sprintf("expected 1 parameter to sqlc.%s; got %d", fn.Name, len(call.Args.Items)),
+				Location: call.Pos(),
+			}
+			return nil
+		}
+
+		switch n := call.Args.Items[0].(type) {
+		case *ast.A_Const:
+		case *ast.ColumnRef:
+		default:
+			v.err = &sqlerr.Error{
+				Message:  fmt.Sprintf("expected parameter to sqlc.%s to be string or reference; got %T", fn.Name, n),
+				Location: call.Pos(),
+			}
+			return nil
+		}
+
+		// If we have sqlc.arg or sqlc.narg, there is no need to resolve the function call.
+		// It won't resolve anyway, sinc it is not a real function.
+		return nil
+	}
+
 	return nil
+}
+
+func SqlcFunctions(n ast.Node) error {
+	visitor := sqlcFuncVisitor{}
+	astutils.Walk(&visitor, n)
+	return visitor.err
 }

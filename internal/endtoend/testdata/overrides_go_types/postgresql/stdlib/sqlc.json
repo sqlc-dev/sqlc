@@ -13,7 +13,7 @@
           "go_type": {
             "import": "github.com/gofrs/uuid",
             "type": "UUID"
-          },
+          }
         },
         {
           "column": "foo.other_id",
@@ -21,7 +21,7 @@
             "import": "github.com/gofrs/uuid",
             "package": "fuid",
             "type": "UUID"
-          },
+          }
         },
         {
           "column": "foo.age",
@@ -30,7 +30,7 @@
             "import": "database/sql",
             "package": "orm",
             "type": "NullInt32"
-          },
+          }
         },
         {
           "column": "foo.balance",
@@ -38,7 +38,7 @@
           "go_type": {
             "import": "github.com/volatiletech/null/v8",
             "type": "Float32"
-          },
+          }
         },
         {
           "column": "foo.bio",
@@ -46,7 +46,7 @@
           "go_type": {
             "import": "gopkg.in/guregu/null.v4",
             "type": "String"
-          },
+          }
         },
         {
           "column": "foo.about",

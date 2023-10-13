@@ -26,7 +26,10 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/debug"
 	"github.com/sqlc-dev/sqlc/internal/opts"
 	"github.com/sqlc-dev/sqlc/internal/plugin"
+	"github.com/sqlc-dev/sqlc/internal/quickdb"
+	pb "github.com/sqlc-dev/sqlc/internal/quickdb/v1"
 	"github.com/sqlc-dev/sqlc/internal/shfmt"
+	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
 	"github.com/sqlc-dev/sqlc/internal/vet"
 )
 
@@ -44,8 +47,12 @@ func NewCmdVet() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			defer trace.StartRegion(cmd.Context(), "vet").End()
 			stderr := cmd.ErrOrStderr()
+			opts := &Options{
+				Env:    ParseEnv(cmd),
+				Stderr: stderr,
+			}
 			dir, name := getConfigPath(stderr, cmd.Flag("file"))
-			if err := Vet(cmd.Context(), ParseEnv(cmd), dir, name, stderr); err != nil {
+			if err := Vet(cmd.Context(), dir, name, opts); err != nil {
 				if !errors.Is(err, ErrFailedChecks) {
 					fmt.Fprintf(stderr, "%s\n", err)
 				}
@@ -56,7 +63,9 @@ func NewCmdVet() *cobra.Command {
 	}
 }
 
-func Vet(ctx context.Context, e Env, dir, filename string, stderr io.Writer) error {
+func Vet(ctx context.Context, dir, filename string, opts *Options) error {
+	e := opts.Env
+	stderr := opts.Stderr
 	configPath, conf, err := readConfig(stderr, dir, filename)
 	if err != nil {
 		return err
@@ -376,6 +385,64 @@ type checker struct {
 	Envmap     map[string]string
 	Stderr     io.Writer
 	NoDatabase bool
+	Client     pb.QuickClient
+}
+
+func (c *checker) fetchDatabaseUri(ctx context.Context, s config.SQL) (string, func() error, error) {
+	cleanup := func() error {
+		return nil
+	}
+
+	if s.Database == nil {
+		panic("fetch database URI called with nil database")
+	}
+	if !s.Database.Managed {
+		uri, err := c.DSN(s.Database.URI)
+		return uri, cleanup, err
+	}
+	if s.Engine != config.EnginePostgreSQL {
+		return "", cleanup, fmt.Errorf("managed: only PostgreSQL currently")
+	}
+
+	if c.Client == nil {
+		// FIXME: Eventual race condition
+		client, err := quickdb.NewClientFromConfig(c.Conf.Cloud)
+		if err != nil {
+			return "", cleanup, fmt.Errorf("managed: client: %w", err)
+		}
+		c.Client = client
+	}
+
+	var migrations []string
+	files, err := sqlpath.Glob(s.Schema)
+	if err != nil {
+		return "", cleanup, err
+	}
+	for _, query := range files {
+		contents, err := os.ReadFile(query)
+		if err != nil {
+			return "", cleanup, fmt.Errorf("read file: %w", err)
+		}
+		migrations = append(migrations, string(contents))
+	}
+
+	resp, err := c.Client.CreateEphemeralDatabase(ctx, &pb.CreateEphemeralDatabaseRequest{
+		Engine:     "postgresql",
+		Region:     quickdb.GetClosestRegion(),
+		Migrations: migrations,
+	})
+	if err != nil {
+		return "", cleanup, fmt.Errorf("managed: create database: %w", err)
+	}
+
+	cleanup = func() error {
+		_, err := c.Client.DropEphemeralDatabase(ctx, &pb.DropEphemeralDatabaseRequest{
+			DatabaseId: resp.DatabaseId,
+		})
+		return err
+	}
+
+	return resp.Uri, cleanup, nil
 }
 
 func (c *checker) DSN(dsn string) (string, error) {
@@ -422,10 +489,16 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 		if c.NoDatabase {
 			return fmt.Errorf("database: connections disabled via command line flag")
 		}
-		dburl, err := c.DSN(s.Database.URI)
+		dburl, cleanup, err := c.fetchDatabaseUri(ctx, s)
 		if err != nil {
 			return err
 		}
+		defer func() {
+			if err := cleanup(); err != nil {
+				fmt.Fprintf(c.Stderr, "error cleaning up: %s\n", err)
+			}
+		}()
+
 		switch s.Engine {
 		case config.EnginePostgreSQL:
 			conn, err := pgx.Connect(ctx, dburl)
