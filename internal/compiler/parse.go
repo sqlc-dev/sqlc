@@ -77,11 +77,10 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 	}
 
 	expanded := anlys.Query
-
 	// If the query string was edited, make sure the syntax is valid
 	if expanded != rawSQL {
 		if _, err := c.parser.Parse(strings.NewReader(expanded)); err != nil {
-			return nil, fmt.Errorf("edited query syntax is invalid: %w", err)
+			return nil, fmt.Errorf("edited query syntax is invalid: %w - %s", err, expanded)
 		}
 	}
 

@@ -11,6 +11,7 @@ import (
 	"text/template"
 
 	"github.com/sqlc-dev/sqlc/internal/codegen/sdk"
+	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/metadata"
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
@@ -181,6 +182,9 @@ func generate(req *plugin.CodeGenRequest, options *opts, enums []Enum, structs [
 		"emitPreparedQueries": tctx.codegenEmitPreparedQueries,
 		"queryMethod":         tctx.codegenQueryMethod,
 		"queryRetval":         tctx.codegenQueryRetval,
+		"dollar": func() bool {
+			return req.Settings.Engine == string(config.EnginePostgreSQL)
+		},
 	}
 
 	tmpl := template.Must(

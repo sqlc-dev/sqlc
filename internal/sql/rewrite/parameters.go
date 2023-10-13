@@ -97,37 +97,37 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 		case named.IsParamFunc(node):
 			fun := node.(*ast.FuncCall)
 			param, origText := paramFromFuncCall(fun)
-			argn := allParams.Add(param)
-			cr.Replace(&ast.ParamRef{
-				Number:        argn,
-				Location:      fun.Location,
-				IsSqlcDynamic: param.IsSqlcDynamic(),
-			})
+			if !param.IsSqlcDynamic() {
+				argn := allParams.Add(param)
+				cr.Replace(&ast.ParamRef{
+					Number:        argn,
+					Location:      fun.Location,
+					IsSqlcDynamic: param.IsSqlcDynamic(),
+				})
 
-			var replace string
-			if param.IsSqlcDynamic() {
-				replace = fmt.Sprintf(`/*DYNAMIC:%s*/?`, param.Name())
-			} else if engine == config.EngineMySQL || engine == config.EngineSQLite || !dollar {
-				if param.IsSqlcSlice() {
-					// This sequence is also replicated in internal/codegen/golang.Field
-					// since it's needed during template generation for replacement
-					replace = fmt.Sprintf(`/*SLICE:%s*/?`, param.Name())
-				} else {
-					if engine == config.EngineSQLite {
-						replace = fmt.Sprintf("?%d", argn)
+				var replace string
+				if engine == config.EngineMySQL || engine == config.EngineSQLite || !dollar {
+					if param.IsSqlcSlice() {
+						// This sequence is also replicated in internal/codegen/golang.Field
+						// since it's needed during template generation for replacement
+						replace = fmt.Sprintf(`/*SLICE:%s*/?`, param.Name())
 					} else {
-						replace = "?"
+						if engine == config.EngineSQLite {
+							replace = fmt.Sprintf("?%d", argn)
+						} else {
+							replace = "?"
+						}
 					}
+				} else {
+					replace = fmt.Sprintf("$%d", argn)
 				}
-			} else {
-				replace = fmt.Sprintf("$%d", argn)
-			}
 
-			edits = append(edits, source.Edit{
-				Location: fun.Location - raw.StmtLocation,
-				Old:      origText,
-				New:      replace,
-			})
+				edits = append(edits, source.Edit{
+					Location: fun.Location - raw.StmtLocation,
+					Old:      origText,
+					New:      replace,
+				})
+			}
 			return false
 
 		case isNamedParamSignCast(node):
@@ -192,6 +192,34 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 			return true
 		}
 	}, nil)
+	node = astutils.Apply(node, func(cr *astutils.Cursor) bool {
+		node := cr.Node()
+		if named.IsParamFunc(node) {
+			fun := node.(*ast.FuncCall)
+			param, origText := paramFromFuncCall(fun)
+			if param.IsSqlcDynamic() {
+				argn := allParams.Add(param)
+				cr.Replace(&ast.ParamRef{
+					Number:        argn,
+					Location:      fun.Location,
+					IsSqlcDynamic: param.IsSqlcDynamic(),
+				})
 
+				var replace string
+				if engine == config.EngineMySQL || engine == config.EngineSQLite || !dollar {
+					replace = fmt.Sprintf(`/*DYNAMIC:%s*/?`, param.Name())
+				} else {
+					replace = fmt.Sprintf(`/*DYNAMIC:%s*/$1`, param.Name())
+				}
+				edits = append(edits, source.Edit{
+					Location: fun.Location - raw.StmtLocation,
+					Old:      origText,
+					New:      replace,
+				})
+			}
+			return false
+		}
+		return true
+	}, nil)
 	return node.(*ast.RawStmt), allParams, edits
 }
