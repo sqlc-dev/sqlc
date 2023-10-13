@@ -61,7 +61,7 @@ func (v QueryValue) Pairs() []Argument {
 		var out []Argument
 		for _, f := range v.Struct.Fields {
 			out = append(out, Argument{
-				Name: toLowerCase(f.Name),
+				Name: escape(toLowerCase(f.Name)),
 				Type: f.Type,
 			})
 		}
@@ -69,7 +69,7 @@ func (v QueryValue) Pairs() []Argument {
 	}
 	return []Argument{
 		{
-			Name: v.Name,
+			Name: escape(v.Name),
 			Type: v.DefineType(),
 		},
 	}
@@ -102,9 +102,9 @@ func (v *QueryValue) DefineType() string {
 
 func (v *QueryValue) ReturnName() string {
 	if v.IsPointer() {
-		return "&" + v.Name
+		return "&" + escape(v.Name)
 	}
-	return v.Name
+	return escape(v.Name)
 }
 
 func (v QueryValue) UniqueFields() []Field {
@@ -129,16 +129,16 @@ func (v QueryValue) Params() string {
 	var out []string
 	if v.Struct == nil {
 		if !v.Column.IsSqlcSlice && strings.HasPrefix(v.Typ, "[]") && v.Typ != "[]byte" && !v.SQLDriver.IsPGX() {
-			out = append(out, "pq.Array("+v.Name+")")
+			out = append(out, "pq.Array("+escape(v.Name)+")")
 		} else {
-			out = append(out, v.Name)
+			out = append(out, escape(v.Name))
 		}
 	} else {
 		for _, f := range v.Struct.Fields {
 			if !f.HasSqlcSlice() && strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" && !v.SQLDriver.IsPGX() {
-				out = append(out, "pq.Array("+v.VariableForField(f)+")")
+				out = append(out, "pq.Array("+escape(v.VariableForField(f))+")")
 			} else {
-				out = append(out, v.VariableForField(f))
+				out = append(out, escape(v.VariableForField(f)))
 			}
 		}
 	}
