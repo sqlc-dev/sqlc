@@ -208,9 +208,6 @@ func (p *Parser) CommentSyntax() metadata.CommentSyntax {
 }
 
 func translate(node *nodes.Node) (ast.Node, error) {
-
-	debug.Dump(node)
-
 	switch inner := node.Node.(type) {
 
 	case *nodes.Node_AlterEnumStmt:
