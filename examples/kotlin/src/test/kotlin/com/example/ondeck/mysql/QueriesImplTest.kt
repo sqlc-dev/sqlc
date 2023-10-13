@@ -25,8 +25,8 @@ class QueriesImplTest {
             name = "The Fillmore",
             city = city.slug,
             spotifyPlaylist = "spotify=uri",
-            status = VenuesStatus.OPEN,
-            statuses = listOf(VenuesStatus.OPEN, VenuesStatus.CLOSED).joinToString(","),
+            status = VenueStatus.OPEN,
+            statuses = listOf(VenueStatus.OPEN, VenueStatus.CLOSED).joinToString(","),
             tags = listOf("rock", "punk").joinToString(",")
         )
         val venue = q.getVenue(
