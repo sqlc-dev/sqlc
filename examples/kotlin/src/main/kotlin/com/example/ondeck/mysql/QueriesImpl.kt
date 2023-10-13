@@ -116,7 +116,7 @@ class QueriesImpl(private val conn: Connection) : Queries {
       name: String,
       city: String,
       spotifyPlaylist: String,
-      status: VenuesStatus,
+      status: VenueStatus,
       statuses: String?,
       tags: String?): Long {
     return conn.prepareStatement(createVenue, Statement.RETURN_GENERATED_KEYS).use { stmt ->
@@ -180,7 +180,7 @@ class QueriesImpl(private val conn: Connection) : Queries {
       }
       val ret = Venue(
                 results.getLong(1),
-                VenuesStatus.lookup(results.getString(2))!!,
+                VenueStatus.lookup(results.getString(2))!!,
                 results.getString(3),
                 results.getString(4),
                 results.getString(5),
@@ -223,7 +223,7 @@ class QueriesImpl(private val conn: Connection) : Queries {
       while (results.next()) {
           ret.add(Venue(
                 results.getLong(1),
-                VenuesStatus.lookup(results.getString(2))!!,
+                VenueStatus.lookup(results.getString(2))!!,
                 results.getString(3),
                 results.getString(4),
                 results.getString(5),
