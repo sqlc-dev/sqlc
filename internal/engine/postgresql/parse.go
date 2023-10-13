@@ -12,6 +12,7 @@ import (
 	nodes "github.com/pganalyze/pg_query_go/v4"
 	"github.com/pganalyze/pg_query_go/v4/parser"
 
+	"github.com/sqlc-dev/sqlc/internal/debug"
 	"github.com/sqlc-dev/sqlc/internal/metadata"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
@@ -207,6 +208,9 @@ func (p *Parser) CommentSyntax() metadata.CommentSyntax {
 }
 
 func translate(node *nodes.Node) (ast.Node, error) {
+
+	debug.Dump(node)
+
 	switch inner := node.Node.(type) {
 
 	case *nodes.Node_AlterEnumStmt:
@@ -236,7 +240,7 @@ func translate(node *nodes.Node) (ast.Node, error) {
 		n := inner.AlterObjectSchemaStmt
 		switch n.ObjectType {
 
-		case nodes.ObjectType_OBJECT_TABLE:
+		case nodes.ObjectType_OBJECT_TABLE, nodes.ObjectType_OBJECT_VIEW, nodes.ObjectType_OBJECT_MATVIEW:
 			rel := parseRelationFromRangeVar(n.Relation)
 			return &ast.AlterTableSetSchemaStmt{
 				Table:     rel.TableName(),
