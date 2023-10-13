@@ -54,6 +54,42 @@ func TestParseQueryNameAndType(t *testing.T) {
 
 }
 
+func TestParseQueryParams(t *testing.T) {
+	for _, comments := range [][]string{
+		{
+			"-- name: CreateFoo :one",
+			"-- @param foo_id UUID",
+		},
+		{
+			"-- name: CreateFoo :one",
+			"-- @param foo_id UUID",
+			"-- invalid",
+		},
+		{
+			"-- name: CreateFoo :one",
+			"-- @invalid",
+			"-- @param foo_id UUID",
+		},
+		{
+			"-- name: GetFoos :many",
+			"-- @param foo_id UUID",
+			"-- @param @invalid UUID",
+		},
+	} {
+		params, _ := parseParamsAndFlags(comments)
+
+		_, ok := params["foo_id"]
+		if !ok {
+			t.Errorf("expected param not found")
+		}
+
+		_, ok = params["invalid"]
+		if ok {
+			t.Errorf("unexpected param found")
+		}
+	}
+}
+
 func TestParseQueryFlags(t *testing.T) {
 	for _, comments := range [][]string{
 		{
