@@ -141,8 +141,9 @@ func parseParamsAndFlags(comments []string) (map[string]string, map[string]bool)
 			parts := strings.SplitN(cleanLine, " ", 2)
 			name := parts[0]
 			switch name {
-			case "param":
-				params[name] = parts[1]
+			case "@param":
+				paramParts := strings.SplitN(parts[1], " ", 2)
+				params[paramParts[0]] = paramParts[1]
 			default:
 				flags[name] = true
 			}
