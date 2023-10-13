@@ -123,32 +123,53 @@ func ParseQueryMetadata(rawSql string, commentStyle CommentSyntax) (Metadata, er
 	}
 
 	md.Comments = comments
-	md.Params, md.Flags = parseParamsAndFlags(md.Comments)
+
+	var err error
+	md.Params, md.Flags, err = parseParamsAndFlags(md.Comments)
+	if err != nil {
+		return md, err
+	}
 
 	return md, s.Err()
 }
 
-func parseParamsAndFlags(comments []string) (map[string]string, map[string]bool) {
+func parseParamsAndFlags(comments []string) (map[string]string, map[string]bool, error) {
 	params := make(map[string]string)
 	flags := make(map[string]bool)
+
 	for _, line := range comments {
-		cleanLine := strings.TrimPrefix(line, "--")
-		cleanLine = strings.TrimPrefix(cleanLine, "/*")
-		cleanLine = strings.TrimPrefix(cleanLine, "#")
-		cleanLine = strings.TrimSuffix(cleanLine, "*/")
-		cleanLine = strings.TrimSpace(cleanLine)
-		if strings.HasPrefix(cleanLine, "@") {
-			parts := strings.SplitN(cleanLine, " ", 2)
-			name := parts[0]
-			switch name {
-			case "@param":
-				paramParts := strings.SplitN(parts[1], " ", 2)
-				params[paramParts[0]] = paramParts[1]
-			default:
-				flags[name] = true
-			}
+		s := bufio.NewScanner(strings.NewReader(line))
+		s.Split(bufio.ScanWords)
+
+		s.Scan() // The first token is always the comment indicator, e.g. "--"
+		s.Scan()
+		token := s.Text()
+
+		if !strings.HasPrefix(token, "@") {
 			continue
 		}
+
+		switch token {
+		case "@param":
+			s.Scan()
+			name := s.Text()
+			var rest []string
+			for s.Scan() {
+				paramToken := s.Text()
+				if paramToken == "*/" {
+					break
+				}
+				rest = append(rest, paramToken)
+			}
+			params[name] = strings.Join(rest, " ")
+		default:
+			flags[token] = true
+		}
+
+		if s.Err() != nil {
+			return params, flags, s.Err()
+		}
 	}
-	return params, flags
+
+	return params, flags, nil
 }

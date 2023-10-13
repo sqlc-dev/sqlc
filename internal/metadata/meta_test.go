@@ -61,6 +61,14 @@ func TestParseQueryParams(t *testing.T) {
 			"-- @param foo_id UUID",
 		},
 		{
+			"/* name: CreateFoo :one */",
+			"/* @param foo_id UUID */",
+		},
+		{
+			"# name: CreateFoo :one",
+			"# @param foo_id UUID",
+		},
+		{
 			"-- name: CreateFoo :one",
 			"-- @param foo_id UUID",
 			"-- invalid",
@@ -76,11 +84,18 @@ func TestParseQueryParams(t *testing.T) {
 			"-- @param @invalid UUID",
 		},
 	} {
-		params, _ := parseParamsAndFlags(comments)
+		params, _, err := parseParamsAndFlags(comments)
+		if err != nil {
+			t.Error("expected comments to parse:", err)
+		}
 
-		_, ok := params["foo_id"]
+		pt, ok := params["foo_id"]
 		if !ok {
 			t.Errorf("expected param not found")
+		}
+
+		if pt != "UUID" {
+			t.Error("unexpected param metadata:", pt)
 		}
 
 		_, ok = params["invalid"]
@@ -97,6 +112,14 @@ func TestParseQueryFlags(t *testing.T) {
 			"-- @flag-foo",
 		},
 		{
+			"/* name: CreateFoo :one */",
+			"/* @flag-foo */",
+		},
+		{
+			"# name: CreateFoo :one",
+			"# @flag-foo",
+		},
+		{
 			"-- name: CreateFoo :one",
 			"-- @flag-foo @flag-bar",
 		},
@@ -106,7 +129,10 @@ func TestParseQueryFlags(t *testing.T) {
 			"-- @flag-foo",
 		},
 	} {
-		_, flags := parseParamsAndFlags(comments)
+		_, flags, err := parseParamsAndFlags(comments)
+		if err != nil {
+			t.Error("expected comments to parse:", err)
+		}
 
 		if !flags["@flag-foo"] {
 			t.Errorf("expected flag not found")
