@@ -12,7 +12,6 @@ import (
 	nodes "github.com/pganalyze/pg_query_go/v4"
 	"github.com/pganalyze/pg_query_go/v4/parser"
 
-	"github.com/sqlc-dev/sqlc/internal/debug"
 	"github.com/sqlc-dev/sqlc/internal/metadata"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
