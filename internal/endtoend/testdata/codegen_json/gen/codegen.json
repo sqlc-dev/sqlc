@@ -13,9 +13,11 @@
     "codegen": {
       "out": "",
       "plugin": "",
-      "options": ""
-    },
-    "plugin": null
+      "options": "",
+      "env": [],
+      "process": null,
+      "wasm": null
+    }
   },
   "catalog": {
     "comment": "",
