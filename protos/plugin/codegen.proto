@@ -43,9 +43,6 @@ message ParsedGoType {
   map<string, string> struct_tags = 5;
 }
 
-message Plugin {
-}
-
 message Settings {
   // PythonCode message was field 8
   // KotlinCode message was field 9
