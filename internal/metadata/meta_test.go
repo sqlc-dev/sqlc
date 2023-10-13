@@ -57,31 +57,27 @@ func TestParseQueryNameAndType(t *testing.T) {
 func TestParseQueryParams(t *testing.T) {
 	for _, comments := range [][]string{
 		{
-			"-- name: CreateFoo :one",
-			"-- @param foo_id UUID",
+			" name: CreateFoo :one",
+			" @param foo_id UUID",
 		},
 		{
-			"/* name: CreateFoo :one */",
-			"/* @param foo_id UUID */",
+			" name: CreateFoo :one ",
+			" @param foo_id UUID ",
 		},
 		{
-			"# name: CreateFoo :one",
-			"# @param foo_id UUID",
+			" name: CreateFoo :one",
+			" @param foo_id UUID",
+			" invalid",
 		},
 		{
-			"-- name: CreateFoo :one",
-			"-- @param foo_id UUID",
-			"-- invalid",
+			" name: CreateFoo :one",
+			" @invalid",
+			" @param foo_id UUID",
 		},
 		{
-			"-- name: CreateFoo :one",
-			"-- @invalid",
-			"-- @param foo_id UUID",
-		},
-		{
-			"-- name: GetFoos :many",
-			"-- @param foo_id UUID",
-			"-- @param @invalid UUID",
+			" name: GetFoos :many ",
+			" @param foo_id UUID ",
+			" @param @invalid UUID ",
 		},
 	} {
 		params, _, err := parseParamsAndFlags(comments)
@@ -108,25 +104,26 @@ func TestParseQueryParams(t *testing.T) {
 func TestParseQueryFlags(t *testing.T) {
 	for _, comments := range [][]string{
 		{
-			"-- name: CreateFoo :one",
-			"-- @flag-foo",
+			" name: CreateFoo :one",
+			" @flag-foo",
 		},
 		{
-			"/* name: CreateFoo :one */",
-			"/* @flag-foo */",
+			" name: CreateFoo :one ",
+			" @flag-foo ",
 		},
 		{
-			"# name: CreateFoo :one",
-			"# @flag-foo",
+			" name: CreateFoo :one",
+			" @flag-foo @flag-bar",
 		},
 		{
-			"-- name: CreateFoo :one",
-			"-- @flag-foo @flag-bar",
+			" name: GetFoos :many",
+			" @param @flag-bar UUID",
+			" @flag-foo",
 		},
 		{
-			"-- name: GetFoos :many",
-			"-- @param @flag-bar UUID",
-			"-- @flag-foo",
+			" name: GetFoos :many",
+			" @flag-foo",
+			" @param @flag-bar UUID",
 		},
 	} {
 		_, flags, err := parseParamsAndFlags(comments)

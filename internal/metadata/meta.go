@@ -141,7 +141,6 @@ func parseParamsAndFlags(comments []string) (map[string]string, map[string]bool,
 		s := bufio.NewScanner(strings.NewReader(line))
 		s.Split(bufio.ScanWords)
 
-		s.Scan() // The first token is always the comment indicator, e.g. "--"
 		s.Scan()
 		token := s.Text()
 
