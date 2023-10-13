@@ -45,10 +45,10 @@ func TestParseQueryNameAndType(t *testing.T) {
 			t.Errorf("expected valid metadata: %q", query)
 		}
 		if queryMetadata.Name != "CreateFoo" {
-			t.Errorf("incorrect queryName parsed: %q", query)
+			t.Errorf("incorrect queryName parsed: (%q) %q", queryMetadata.Name, query)
 		}
 		if queryMetadata.Cmd != CmdOne {
-			t.Errorf("incorrect queryType parsed: %q", query)
+			t.Errorf("incorrect queryType parsed: (%q) %q", queryMetadata.Cmd, query)
 		}
 	}
 
