@@ -51,7 +51,7 @@ func (table *Table) addColumn(c *Catalog, cmd *ast.AlterTableCmd) error {
 		}
 	}
 
-	tc, err := c.defToColumn(table.Rel, cmd.Def)
+	tc, err := c.defineColumn(table.Rel, cmd.Def)
 	if err != nil {
 		return err
 	}
@@ -118,6 +118,8 @@ type Column struct {
 	ArrayDims  int
 	Comment    string
 	Length     *int
+
+	linkedType bool
 }
 
 // An interface is used to resolve a circular import between the catalog and compiler packages.
@@ -302,7 +304,7 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 				continue
 			}
 
-			tc, err := c.defToColumn(stmt.Name, col)
+			tc, err := c.defineColumn(stmt.Name, col)
 			if err != nil {
 				return err
 			}
@@ -321,7 +323,7 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 	return nil
 }
 
-func (c *Catalog) defToColumn(table *ast.TableName, col *ast.ColumnDef) (*Column, error) {
+func (c *Catalog) defineColumn(table *ast.TableName, col *ast.ColumnDef) (*Column, error) {
 	tc := &Column{
 		Name:       col.Colname,
 		Type:       *col.TypeName,
@@ -337,12 +339,12 @@ func (c *Catalog) defToColumn(table *ast.TableName, col *ast.ColumnDef) (*Column
 			Name: fmt.Sprintf("%s_%s", table.Name, col.Colname),
 		}
 		s := &ast.CreateEnumStmt{TypeName: &typeName, Vals: col.Vals}
-		if err := c.createEnum(s, true); err != nil {
+		if err := c.createEnum(s); err != nil {
 			return nil, err
 		}
 		tc.Type = typeName
+		tc.linkedType = true
 	}
-
 	return tc, nil
 }
 
