@@ -83,7 +83,7 @@ func (c *Catalog) Update(stmt ast.Statement, colGen columnGenerator) error {
 		err = c.createCompositeType(n)
 
 	case *ast.CreateEnumStmt:
-		err = c.createEnum(n)
+		err = c.createEnum(n, false)
 
 	case *ast.CreateExtensionStmt:
 		err = c.createExtension(n)

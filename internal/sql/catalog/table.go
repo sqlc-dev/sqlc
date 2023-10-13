@@ -41,7 +41,7 @@ func (table *Table) isExistColumn(cmd *ast.AlterTableCmd) (int, error) {
 	return -1, nil
 }
 
-func (table *Table) addColumn(cmd *ast.AlterTableCmd) error {
+func (table *Table) addColumn(c *Catalog, cmd *ast.AlterTableCmd) error {
 	for _, c := range table.Columns {
 		if c.Name == cmd.Def.Colname {
 			if !cmd.MissingOk {
@@ -51,15 +51,12 @@ func (table *Table) addColumn(cmd *ast.AlterTableCmd) error {
 		}
 	}
 
-	table.Columns = append(table.Columns, &Column{
-		Name:       cmd.Def.Colname,
-		Type:       *cmd.Def.TypeName,
-		IsNotNull:  cmd.Def.IsNotNull,
-		IsUnsigned: cmd.Def.IsUnsigned,
-		IsArray:    cmd.Def.IsArray,
-		ArrayDims:  cmd.Def.ArrayDims,
-		Length:     cmd.Def.Length,
-	})
+	tc, err := c.defToColumn(table.Rel, cmd.Def)
+	if err != nil {
+		return err
+	}
+
+	table.Columns = append(table.Columns, tc)
 	return nil
 }
 
@@ -187,7 +184,7 @@ func (c *Catalog) alterTable(stmt *ast.AlterTableStmt) error {
 		case *ast.AlterTableCmd:
 			switch cmd.Subtype {
 			case ast.AT_AddColumn:
-				if err := table.addColumn(cmd); err != nil {
+				if err := table.addColumn(c, cmd); err != nil {
 					return err
 				}
 			case ast.AT_AlterColumnType:
@@ -305,25 +302,9 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 				continue
 			}
 
-			tc := &Column{
-				Name:       col.Colname,
-				Type:       *col.TypeName,
-				IsNotNull:  col.IsNotNull,
-				IsUnsigned: col.IsUnsigned,
-				IsArray:    col.IsArray,
-				ArrayDims:  col.ArrayDims,
-				Comment:    col.Comment,
-				Length:     col.Length,
-			}
-			if col.Vals != nil {
-				typeName := ast.TypeName{
-					Name: fmt.Sprintf("%s_%s", stmt.Name.Name, col.Colname),
-				}
-				s := &ast.CreateEnumStmt{TypeName: &typeName, Vals: col.Vals}
-				if err := c.createEnum(s); err != nil {
-					return err
-				}
-				tc.Type = typeName
+			tc, err := c.defToColumn(stmt.Name, col)
+			if err != nil {
+				return err
 			}
 			tbl.Columns = append(tbl.Columns, tc)
 		}
@@ -338,6 +319,31 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 
 	schema.Tables = append(schema.Tables, &tbl)
 	return nil
+}
+
+func (c *Catalog) defToColumn(table *ast.TableName, col *ast.ColumnDef) (*Column, error) {
+	tc := &Column{
+		Name:       col.Colname,
+		Type:       *col.TypeName,
+		IsNotNull:  col.IsNotNull,
+		IsUnsigned: col.IsUnsigned,
+		IsArray:    col.IsArray,
+		ArrayDims:  col.ArrayDims,
+		Comment:    col.Comment,
+		Length:     col.Length,
+	}
+	if col.Vals != nil {
+		typeName := ast.TypeName{
+			Name: fmt.Sprintf("%s_%s", table.Name, col.Colname),
+		}
+		s := &ast.CreateEnumStmt{TypeName: &typeName, Vals: col.Vals}
+		if err := c.createEnum(s, true); err != nil {
+			return nil, err
+		}
+		tc.Type = typeName
+	}
+
+	return tc, nil
 }
 
 func (c *Catalog) dropTable(stmt *ast.DropTableStmt) error {
