@@ -58,6 +58,7 @@ func pluginSettings(r *compiler.Result, cs config.CombinedSettings) *plugin.Sett
 		Overrides: over,
 		Rename:    cs.Rename,
 		Codegen:   pluginCodegen(cs.Codegen),
+		Plugin:    pluginPlugin(cs),
 	}
 }
 
@@ -71,6 +72,39 @@ func pluginCodegen(s config.Codegen) *plugin.Codegen {
 		Plugin:  s.Plugin,
 		Options: opts,
 	}
+}
+
+func pluginProcess(p config.Plugin) *plugin.Plugin_Process {
+	if p.Process != nil {
+		return &plugin.Plugin_Process{
+			Cmd: p.Process.Cmd,
+		}
+	}
+	return nil
+}
+
+func pluginWASM(p config.Plugin) *plugin.Plugin_WASM {
+	if p.WASM != nil {
+		return &plugin.Plugin_WASM{
+			Url:    p.WASM.URL,
+			Sha256: p.WASM.SHA256,
+		}
+	}
+	return nil
+}
+
+func pluginPlugin(cs config.CombinedSettings) *plugin.Plugin {
+	for _, p := range cs.Global.Plugins {
+		if p.Name == cs.Codegen.Plugin {
+			return &plugin.Plugin{
+				Name:    p.Name,
+				Env:     p.Env,
+				Process: pluginProcess(p),
+				Wasm:    pluginWASM(p),
+			}
+		}
+	}
+	return nil
 }
 
 func pluginGoType(o config.Override) *plugin.ParsedGoType {
