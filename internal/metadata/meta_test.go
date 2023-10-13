@@ -63,7 +63,7 @@ func TestParseQueryParams(t *testing.T) {
 		},
 		{
 			" name: CreateFoo :one",
-			" @param foo_id UUID",
+			"@param foo_id UUID",
 			" invalid",
 		},
 		{
@@ -106,7 +106,7 @@ func TestParseQueryFlags(t *testing.T) {
 		},
 		{
 			" name: CreateFoo :one ",
-			" @flag-foo ",
+			"@flag-foo ",
 		},
 		{
 			" name: CreateFoo :one",
