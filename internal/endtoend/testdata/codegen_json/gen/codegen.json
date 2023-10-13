@@ -14,7 +14,8 @@
       "out": "",
       "plugin": "",
       "options": ""
-    }
+    },
+    "plugin": null
   },
   "catalog": {
     "comment": "",
