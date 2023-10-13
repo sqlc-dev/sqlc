@@ -41,7 +41,7 @@ func (table *Table) isExistColumn(cmd *ast.AlterTableCmd) (int, error) {
 	return -1, nil
 }
 
-func (table *Table) addColumn(c *Catalog, cmd *ast.AlterTableCmd) error {
+func (c *Catalog) addColumn(table *Table, cmd *ast.AlterTableCmd) error {
 	for _, c := range table.Columns {
 		if c.Name == cmd.Def.Colname {
 			if !cmd.MissingOk {
@@ -50,12 +50,10 @@ func (table *Table) addColumn(c *Catalog, cmd *ast.AlterTableCmd) error {
 			return nil
 		}
 	}
-
 	tc, err := c.defineColumn(table.Rel, cmd.Def)
 	if err != nil {
 		return err
 	}
-
 	table.Columns = append(table.Columns, tc)
 	return nil
 }
@@ -73,14 +71,26 @@ func (table *Table) alterColumnType(cmd *ast.AlterTableCmd) error {
 	return nil
 }
 
-func (table *Table) dropColumn(cmd *ast.AlterTableCmd) error {
+func (c *Catalog) dropColumn(table *Table, cmd *ast.AlterTableCmd) error {
 	index, err := table.isExistColumn(cmd)
 	if err != nil {
 		return err
 	}
-	if index >= 0 {
-		table.Columns = append(table.Columns[:index], table.Columns[index+1:]...)
+	if index < 0 {
+		return nil
 	}
+	col := table.Columns[index]
+	if col.linkedType {
+		drop := &ast.DropTypeStmt{
+			Types: []*ast.TypeName{
+				&col.Type,
+			},
+		}
+		if err := c.dropType(drop); err != nil {
+			return err
+		}
+	}
+	table.Columns = append(table.Columns[:index], table.Columns[index+1:]...)
 	return nil
 }
 
@@ -186,7 +196,7 @@ func (c *Catalog) alterTable(stmt *ast.AlterTableStmt) error {
 		case *ast.AlterTableCmd:
 			switch cmd.Subtype {
 			case ast.AT_AddColumn:
-				if err := table.addColumn(c, cmd); err != nil {
+				if err := c.addColumn(table, cmd); err != nil {
 					return err
 				}
 			case ast.AT_AlterColumnType:
@@ -194,7 +204,7 @@ func (c *Catalog) alterTable(stmt *ast.AlterTableStmt) error {
 					return err
 				}
 			case ast.AT_DropColumn:
-				if err := table.dropColumn(cmd); err != nil {
+				if err := c.dropColumn(table, cmd); err != nil {
 					return err
 				}
 			case ast.AT_DropNotNull:
@@ -303,7 +313,6 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 				}
 				continue
 			}
-
 			tc, err := c.defineColumn(stmt.Name, col)
 			if err != nil {
 				return err
@@ -361,10 +370,21 @@ func (c *Catalog) dropTable(stmt *ast.DropTableStmt) error {
 			return err
 		}
 
-		_, idx, err := schema.getTable(name)
+		tbl, idx, err := schema.getTable(name)
 		if errors.Is(err, sqlerr.NotFound) && stmt.IfExists {
 			continue
 		} else if err != nil {
+			return err
+		}
+
+		drop := &ast.DropTypeStmt{}
+		for _, col := range tbl.Columns {
+			if !col.linkedType {
+				continue
+			}
+			drop.Types = append(drop.Types, &col.Type)
+		}
+		if err := c.dropType(drop); err != nil {
 			return err
 		}
 
@@ -391,6 +411,18 @@ func (c *Catalog) renameColumn(stmt *ast.RenameColumnStmt) error {
 		return sqlerr.ColumnNotFound(tbl.Rel.Name, stmt.Col.Name)
 	}
 	tbl.Columns[idx].Name = *stmt.NewName
+
+	if tbl.Columns[idx].linkedType {
+		name := fmt.Sprintf("%s_%s", tbl.Rel.Name, *stmt.NewName)
+		rename := &ast.RenameTypeStmt{
+			Type:    &tbl.Columns[idx].Type,
+			NewName: &name,
+		}
+		if err := c.renameType(rename); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -405,6 +437,20 @@ func (c *Catalog) renameTable(stmt *ast.RenameTableStmt) error {
 	if stmt.NewName != nil {
 		tbl.Rel.Name = *stmt.NewName
 	}
+
+	for idx := range tbl.Columns {
+		if tbl.Columns[idx].linkedType {
+			name := fmt.Sprintf("%s_%s", *stmt.NewName, tbl.Columns[idx].Name)
+			rename := &ast.RenameTypeStmt{
+				Type:    &tbl.Columns[idx].Type,
+				NewName: &name,
+			}
+			if err := c.renameType(rename); err != nil {
+				return err
+			}
+		}
+	}
+
 	return nil
 }
 

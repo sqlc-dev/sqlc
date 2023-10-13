@@ -9,6 +9,130 @@ import (
 	"fmt"
 )
 
+type AuthorsAddItem string
+
+const (
+	AuthorsAddItemOk    AuthorsAddItem = "ok"
+	AuthorsAddItemAdded AuthorsAddItem = "added"
+)
+
+func (e *AuthorsAddItem) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = AuthorsAddItem(s)
+	case string:
+		*e = AuthorsAddItem(s)
+	default:
+		return fmt.Errorf("unsupported scan type for AuthorsAddItem: %T", src)
+	}
+	return nil
+}
+
+type NullAuthorsAddItem struct {
+	AuthorsAddItem AuthorsAddItem
+	Valid          bool // Valid is true if AuthorsAddItem is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullAuthorsAddItem) Scan(value interface{}) error {
+	if value == nil {
+		ns.AuthorsAddItem, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.AuthorsAddItem.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullAuthorsAddItem) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.AuthorsAddItem), nil
+}
+
+type AuthorsAdded string
+
+const (
+	AuthorsAddedOk AuthorsAdded = "ok"
+)
+
+func (e *AuthorsAdded) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = AuthorsAdded(s)
+	case string:
+		*e = AuthorsAdded(s)
+	default:
+		return fmt.Errorf("unsupported scan type for AuthorsAdded: %T", src)
+	}
+	return nil
+}
+
+type NullAuthorsAdded struct {
+	AuthorsAdded AuthorsAdded
+	Valid        bool // Valid is true if AuthorsAdded is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullAuthorsAdded) Scan(value interface{}) error {
+	if value == nil {
+		ns.AuthorsAdded, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.AuthorsAdded.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullAuthorsAdded) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.AuthorsAdded), nil
+}
+
+type AuthorsBar string
+
+const (
+	AuthorsBarOk AuthorsBar = "ok"
+)
+
+func (e *AuthorsBar) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = AuthorsBar(s)
+	case string:
+		*e = AuthorsBar(s)
+	default:
+		return fmt.Errorf("unsupported scan type for AuthorsBar: %T", src)
+	}
+	return nil
+}
+
+type NullAuthorsBar struct {
+	AuthorsBar AuthorsBar
+	Valid      bool // Valid is true if AuthorsBar is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullAuthorsBar) Scan(value interface{}) error {
+	if value == nil {
+		ns.AuthorsBar, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.AuthorsBar.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullAuthorsBar) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.AuthorsBar), nil
+}
+
 type AuthorsFoo string
 
 const (
@@ -50,98 +174,98 @@ func (ns NullAuthorsFoo) Value() (driver.Value, error) {
 	return string(ns.AuthorsFoo), nil
 }
 
-type AuthorsRenamed string
+type AuthorsRemoveItem string
 
 const (
-	AuthorsRenamedOk AuthorsRenamed = "ok"
+	AuthorsRemoveItemOk AuthorsRemoveItem = "ok"
 )
 
-func (e *AuthorsRenamed) Scan(src interface{}) error {
+func (e *AuthorsRemoveItem) Scan(src interface{}) error {
 	switch s := src.(type) {
 	case []byte:
-		*e = AuthorsRenamed(s)
+		*e = AuthorsRemoveItem(s)
 	case string:
-		*e = AuthorsRenamed(s)
+		*e = AuthorsRemoveItem(s)
 	default:
-		return fmt.Errorf("unsupported scan type for AuthorsRenamed: %T", src)
+		return fmt.Errorf("unsupported scan type for AuthorsRemoveItem: %T", src)
 	}
 	return nil
 }
 
-type NullAuthorsRenamed struct {
-	AuthorsRenamed AuthorsRenamed
-	Valid          bool // Valid is true if AuthorsRenamed is not NULL
+type NullAuthorsRemoveItem struct {
+	AuthorsRemoveItem AuthorsRemoveItem
+	Valid             bool // Valid is true if AuthorsRemoveItem is not NULL
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullAuthorsRenamed) Scan(value interface{}) error {
+func (ns *NullAuthorsRemoveItem) Scan(value interface{}) error {
 	if value == nil {
-		ns.AuthorsRenamed, ns.Valid = "", false
+		ns.AuthorsRemoveItem, ns.Valid = "", false
 		return nil
 	}
 	ns.Valid = true
-	return ns.AuthorsRenamed.Scan(value)
+	return ns.AuthorsRemoveItem.Scan(value)
 }
 
 // Value implements the driver Valuer interface.
-func (ns NullAuthorsRenamed) Value() (driver.Value, error) {
+func (ns NullAuthorsRemoveItem) Value() (driver.Value, error) {
 	if !ns.Valid {
 		return nil, nil
 	}
-	return string(ns.AuthorsRenamed), nil
+	return string(ns.AuthorsRemoveItem), nil
 }
 
-type RenamedFoo string
+type BooksFoo string
 
 const (
-	RenamedFooOk RenamedFoo = "ok"
+	BooksFooOk BooksFoo = "ok"
 )
 
-func (e *RenamedFoo) Scan(src interface{}) error {
+func (e *BooksFoo) Scan(src interface{}) error {
 	switch s := src.(type) {
 	case []byte:
-		*e = RenamedFoo(s)
+		*e = BooksFoo(s)
 	case string:
-		*e = RenamedFoo(s)
+		*e = BooksFoo(s)
 	default:
-		return fmt.Errorf("unsupported scan type for RenamedFoo: %T", src)
+		return fmt.Errorf("unsupported scan type for BooksFoo: %T", src)
 	}
 	return nil
 }
 
-type NullRenamedFoo struct {
-	RenamedFoo RenamedFoo
-	Valid      bool // Valid is true if RenamedFoo is not NULL
+type NullBooksFoo struct {
+	BooksFoo BooksFoo
+	Valid    bool // Valid is true if BooksFoo is not NULL
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullRenamedFoo) Scan(value interface{}) error {
+func (ns *NullBooksFoo) Scan(value interface{}) error {
 	if value == nil {
-		ns.RenamedFoo, ns.Valid = "", false
+		ns.BooksFoo, ns.Valid = "", false
 		return nil
 	}
 	ns.Valid = true
-	return ns.RenamedFoo.Scan(value)
+	return ns.BooksFoo.Scan(value)
 }
 
 // Value implements the driver Valuer interface.
-func (ns NullRenamedFoo) Value() (driver.Value, error) {
+func (ns NullBooksFoo) Value() (driver.Value, error) {
 	if !ns.Valid {
 		return nil, nil
 	}
-	return string(ns.RenamedFoo), nil
+	return string(ns.BooksFoo), nil
 }
 
 type Author struct {
 	ID         int64
 	Foo        AuthorsFoo
-	Bar        AuthorsRenamed
-	Added      string
-	AddItem    string
-	RemoveItem string
+	Bar        AuthorsBar
+	Added      AuthorsAdded
+	AddItem    AuthorsAddItem
+	RemoveItem AuthorsRemoveItem
 }
 
 type Book struct {
 	ID  int64
-	Foo RenamedFoo
+	Foo BooksFoo
 }
