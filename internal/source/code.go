@@ -90,29 +90,21 @@ func Mutate(raw string, a []Edit) (string, error) {
 	return s, nil
 }
 
-// TODO remove and roll into query parsing
-func StripComments(sql string) (string, []string, error) {
+func StripComments(sql string) (string, error) {
 	s := bufio.NewScanner(strings.NewReader(strings.TrimSpace(sql)))
-	var lines, comments []string
+	var lines []string
 	for s.Scan() {
 		t := s.Text()
-		if strings.HasPrefix(t, "-- name:") {
-			continue
-		}
-		if strings.HasPrefix(t, "/* name:") && strings.HasSuffix(t, "*/") {
-			continue
-		}
 		if strings.HasPrefix(t, "--") {
-			comments = append(comments, strings.TrimPrefix(t, "--"))
 			continue
 		}
 		if strings.HasPrefix(t, "/*") && strings.HasSuffix(t, "*/") {
-			t = strings.TrimPrefix(t, "/*")
-			t = strings.TrimSuffix(t, "*/")
-			comments = append(comments, t)
+			continue
+		}
+		if strings.HasPrefix(t, "#") {
 			continue
 		}
 		lines = append(lines, t)
 	}
-	return strings.Join(lines, "\n"), comments, s.Err()
+	return strings.Join(lines, "\n"), s.Err()
 }

@@ -58,7 +58,7 @@ func validateQueryName(name string) error {
 func ParseQueryMetadata(rawSql string, commentStyle CommentSyntax) (Metadata, error) {
 	md := Metadata{}
 	s := bufio.NewScanner(strings.NewReader(strings.TrimSpace(rawSql)))
-	var lines, comments []string
+	var comments []string
 	for s.Scan() {
 		line := s.Text()
 		var prefix string
@@ -81,7 +81,6 @@ func ParseQueryMetadata(rawSql string, commentStyle CommentSyntax) (Metadata, er
 			prefix = "#"
 		}
 		if prefix == "" {
-			lines = append(lines, line)
 			continue
 		}
 

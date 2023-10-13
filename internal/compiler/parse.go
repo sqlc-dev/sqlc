@@ -86,7 +86,7 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 		}
 	}
 
-	trimmed, _, err := source.StripComments(expanded)
+	trimmed, err := source.StripComments(expanded)
 	if err != nil {
 		return nil, err
 	}
