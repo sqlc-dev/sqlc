@@ -79,7 +79,7 @@ func TestParseQueryParams(t *testing.T) {
 	} {
 		params, _, err := ParseParamsAndFlags(comments)
 		if err != nil {
-			t.Error("expected comments to parse:", err)
+			t.Errorf("expected comments to parse, got err: %s", err)
 		}
 
 		pt, ok := params["foo_id"]
@@ -125,7 +125,7 @@ func TestParseQueryFlags(t *testing.T) {
 	} {
 		_, flags, err := ParseParamsAndFlags(comments)
 		if err != nil {
-			t.Error("expected comments to parse:", err)
+			t.Errorf("expected comments to parse, got err: %s", err)
 		}
 
 		if !flags["@flag-foo"] {

@@ -9,6 +9,8 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/source"
 )
 
+type CommentSyntax source.CommentSyntax
+
 type Metadata struct {
 	Name     string
 	Cmd      string
@@ -18,8 +20,6 @@ type Metadata struct {
 
 	Filename string
 }
-
-type CommentSyntax source.CommentSyntax
 
 const (
 	CmdExec       = ":exec"
