@@ -39,7 +39,7 @@ type opts struct {
 	OmitUnusedStructs           bool     `json:"omit_unused_structs,omitempty"`
 	BuildTags                   string   `json:"build_tags,omitempty"`
 
-	// Unused but left in for parsing convenience
+	// Unused but included in marshaled json we receive
 	Overrides json.RawMessage `json:"overrides,omitempty"`
 	Rename    json.RawMessage `json:"rename,omitempty"`
 }
@@ -58,4 +58,12 @@ func parseOpts(req *plugin.CodeGenRequest) (*opts, error) {
 	}
 
 	return options, nil
+}
+
+func validateOpts(opts *opts) error {
+	if opts.EmitMethodsWithDbArgument && opts.EmitPreparedQueries {
+		return fmt.Errorf("invalid options: emit_methods_with_db_argument and emit_prepared_queries options are mutually exclusive")
+	}
+
+	return nil
 }

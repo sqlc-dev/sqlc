@@ -108,6 +108,10 @@ func Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plugin.CodeGenR
 		return nil, err
 	}
 
+	if err := validateOpts(options); err != nil {
+		return nil, err
+	}
+
 	enums := buildEnums(req, options)
 	structs := buildStructs(req, options)
 	queries, err := buildQueries(req, options, structs)
