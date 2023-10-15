@@ -8,7 +8,7 @@ type DBTX interface {
 
 {{- if hasDynamic }}
 type DynamicSql interface {
-    Sql({{ if dollar}}int{{ end }}) (string, []interface{})
+    ToSql({{ if dollar}}int{{ end }}) (string, []interface{})
 }
 {{- end}}
 

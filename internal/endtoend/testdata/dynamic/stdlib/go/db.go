@@ -16,7 +16,7 @@ type DBTX interface {
 	QueryRowContext(context.Context, string, ...interface{}) *sql.Row
 }
 type DynamicSql interface {
-	Sql(int) (string, []interface{})
+	ToSql(int) (string, []interface{})
 }
 
 func New(db DBTX) *Queries {
