@@ -20,7 +20,7 @@ interface Queries {
       name: String,
       city: String,
       spotifyPlaylist: String,
-      status: VenuesStatus,
+      status: VenueStatus,
       statuses: String?,
       tags: String?): Long
   

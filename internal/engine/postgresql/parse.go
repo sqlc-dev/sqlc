@@ -236,7 +236,7 @@ func translate(node *nodes.Node) (ast.Node, error) {
 		n := inner.AlterObjectSchemaStmt
 		switch n.ObjectType {
 
-		case nodes.ObjectType_OBJECT_TABLE:
+		case nodes.ObjectType_OBJECT_TABLE, nodes.ObjectType_OBJECT_VIEW, nodes.ObjectType_OBJECT_MATVIEW:
 			rel := parseRelationFromRangeVar(n.Relation)
 			return &ast.AlterTableSetSchemaStmt{
 				Table:     rel.TableName(),

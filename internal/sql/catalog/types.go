@@ -3,6 +3,7 @@ package catalog
 import (
 	"errors"
 	"fmt"
+
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
 )

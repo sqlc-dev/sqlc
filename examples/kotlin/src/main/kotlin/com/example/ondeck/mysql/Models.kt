@@ -7,12 +7,12 @@ package com.example.ondeck.mysql
 import java.sql.Timestamp
 import java.time.Instant
 
-enum class VenuesStatus(val value: String) {
+enum class VenueStatus(val value: String) {
   OPEN("open"),
   CLOSED("closed");
 
   companion object {
-    private val map = VenuesStatus.values().associateBy(VenuesStatus::value)
+    private val map = VenueStatus.values().associateBy(VenueStatus::value)
     fun lookup(value: String) = map[value]
   }
 }
@@ -26,7 +26,7 @@ data class City (
 data class Venue (
   val id: Long,
   // Venues can be either open or closed
-  val status: VenuesStatus,
+  val status: VenueStatus,
   val statuses: String?,
   // This value appears in public URLs
   val slug: String,

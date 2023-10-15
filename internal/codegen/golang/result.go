@@ -215,7 +215,7 @@ func buildQueries(req *plugin.CodeGenRequest, options *opts, structs []Struct) (
 		if len(query.Params) == 1 && qpl != 0 {
 			p := query.Params[0]
 			gq.Arg = QueryValue{
-				Name:      paramName(p),
+				Name:      escape(paramName(p)),
 				DBName:    p.Column.GetName(),
 				Typ:       goType(req, options, p.Column),
 				SQLDriver: sqlpkg,
@@ -251,7 +251,7 @@ func buildQueries(req *plugin.CodeGenRequest, options *opts, structs []Struct) (
 			name := columnName(c, 0)
 			name = strings.Replace(name, "$", "_", -1)
 			gq.Ret = QueryValue{
-				Name:      name,
+				Name:      escape(name),
 				DBName:    name,
 				Typ:       goType(req, options, c),
 				SQLDriver: sqlpkg,
