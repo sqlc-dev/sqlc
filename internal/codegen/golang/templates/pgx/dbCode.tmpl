@@ -12,7 +12,7 @@ type DBTX interface {
 {{- end }}
 }
 
-{{- if .HasSqlcDynamic }}
+{{- if hasDynamic }}
 type DynamicSql interface {
     ToSql(int) (string, []interface{})
 }

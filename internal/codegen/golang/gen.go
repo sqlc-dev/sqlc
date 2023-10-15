@@ -132,6 +132,13 @@ func generate(req *plugin.CodeGenRequest, options *opts, enums []Enum, structs [
 		Enums:    enums,
 		Structs:  structs,
 	}
+	var hasDynamic bool
+	for _, q := range queries {
+		if q.Arg.HasSqlcDynamic() {
+			hasDynamic = true
+			break
+		}
+	}
 
 	tctx := tmplCtx{
 		EmitInterface:             options.EmitInterface,
@@ -150,8 +157,8 @@ func generate(req *plugin.CodeGenRequest, options *opts, enums []Enum, structs [
 		Package:                   options.Package,
 		Enums:                     enums,
 		Structs:                   structs,
-		SqlcVersion:               req.SqlcVersion,
 		BuildTags:                 options.BuildTags,
+		SqlcVersion:               req.SqlcVersion,
 	}
 
 	if tctx.UsesCopyFrom && !tctx.SQLDriver.IsPGX() && options.SqlDriver != SQLDriverGoSQLDriverMySQL {
@@ -184,6 +191,9 @@ func generate(req *plugin.CodeGenRequest, options *opts, enums []Enum, structs [
 		"queryRetval":         tctx.codegenQueryRetval,
 		"dollar": func() bool {
 			return req.Settings.Engine == string(config.EnginePostgreSQL)
+		},
+		"hasDynamic": func() bool {
+			return hasDynamic
 		},
 	}
 

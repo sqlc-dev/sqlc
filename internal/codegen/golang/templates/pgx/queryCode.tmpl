@@ -1,3 +1,22 @@
+{{define "preexec"}}
+    {{- if .Arg.Struct }}
+    queryParams := []interface{}{ {{.Arg.Params}} }
+    {{- $arg := .Arg }}
+    curNumb := {{ $arg.SqlcDynamic }}
+    {{- range .Arg.Struct.Fields }}
+    {{- if .HasSqlcDynamic }}
+        replaceText, args := {{$arg.VariableForField .}}.ToSql(curNumb)
+        curNumb += len(args)
+        query = strings.ReplaceAll(query, "/*DYNAMIC:{{.Column.Name}}*/$1", replaceText)
+        queryParams = append(queryParams, args...)
+    {{- end}}
+    {{- end}}
+    {{- else}}
+    replaceText, args := {{.Arg.Column.Name}}.ToSql(1)
+    query = strings.ReplaceAll(query, "/*DYNAMIC:{{.Arg.Column.Name}}*/$1", replaceText)
+    {{- end}}
+{{- end}}
+
 {{define "queryCodePgx"}}
 {{range .GoQueries}}
 {{if $.OutputQuery .SourceName}}
@@ -28,10 +47,20 @@ type {{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
 {{end -}}
 {{- if $.EmitMethodsWithDBArgument -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) ({{.Ret.DefineType}}, error) {
+    {{- if .Arg.HasSqlcDynamic }} 
+    {{- template "preexec" .}}
+	row := db.QueryRow(ctx, query, queryParams...)
+    {{- else}}
 	row := db.QueryRow(ctx, {{.ConstantName}}, {{.Arg.Params}})
+    {{- end}}
 {{- else -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.DefineType}}, error) {
+     {{- if .Arg.HasSqlcDynamic }} 
+    {{- template "preexec" .}}
+	row := q.db.QueryRow(ctx, query, queryParams...)
+    {{- else}}
 	row := q.db.QueryRow(ctx, {{.ConstantName}}, {{.Arg.Params}})
+    {{- end}}
 {{- end}}
 	{{- if or (ne .Arg.Pair .Ret.Pair) (ne .Arg.DefineType .Ret.DefineType) }}
 	var {{.Ret.Name}} {{.Ret.Type}}
@@ -46,10 +75,20 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.De
 {{end -}}
 {{- if $.EmitMethodsWithDBArgument -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error) {
+    {{- if .Arg.HasSqlcDynamic }} 
+    {{- template "preexec" .}}
+	rows, err := db.Query(ctx, query, queryParams...)
+    {{- else}}
 	rows, err := db.Query(ctx, {{.ConstantName}}, {{.Arg.Params}})
+    {{- end}}
 {{- else -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error) {
+    {{- if .Arg.HasSqlcDynamic }} 
+    {{- template "preexec" .}}
+	rows, err := q.db.Query(ctx, query, queryParams...)
+    {{- else}}
 	rows, err := q.db.Query(ctx, {{.ConstantName}}, {{.Arg.Params}})
+    {{- end}}
 {{- end}}
 	if err != nil {
 		return nil, err
@@ -79,10 +118,20 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.
 {{end -}}
 {{- if $.EmitMethodsWithDBArgument -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) error {
+    {{- if .Arg.HasSqlcDynamic }} 
+    {{- template "preexec" .}}
+	_, err := db.Exec(ctx, query, queryParams...)
+    {{- else}}
 	_, err := db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
+    {{- end}}
 {{- else -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) error {
+    {{- if .Arg.HasSqlcDynamic }} 
+    {{- template "preexec" .}}
+	_, err := q.db.Exec(ctx, query, queryParams...)
+    {{- else}}
 	_, err := q.db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
+    {{- end}}
 {{- end}}
 	return err
 }
@@ -93,10 +142,20 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) error {
 {{end -}}
 {{if $.EmitMethodsWithDBArgument -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) (int64, error) {
+    {{- if .Arg.HasSqlcDynamic }} 
+    {{- template "preexec" .}}
+	result, err := db.Exec(ctx, query, queryParams...)
+    {{- else}}
 	result, err := db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
+    {{- end}}
 {{- else -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, error) {
+    {{- if .Arg.HasSqlcDynamic }} 
+    {{- template "preexec" .}}
+	result, err := q.db.Exec(ctx, query, queryParams...)
+    {{- else}}
 	result, err := q.db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
+    {{- end}}
 {{- end}}
 	if err != nil {
 		return 0, err
@@ -110,10 +169,20 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, er
 {{end -}}
 {{- if $.EmitMethodsWithDBArgument -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) (pgconn.CommandTag, error) {
+    {{- if .Arg.HasSqlcDynamic }} 
+    {{- template "preexec" .}}
+	return db.Exec(ctx, query, queryParams...)
+    {{- else}}
 	return db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
+    {{- end}}
 {{- else -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (pgconn.CommandTag, error) {
+    {{- if .Arg.HasSqlcDynamic }} 
+    {{- template "preexec" .}}
+	return q.db.Exec(ctx, query, queryParams...)
+    {{- else}}
 	return q.db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
+    {{- end}}
 {{- end}}
 }
 {{end}}
@@ -122,3 +191,4 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (pgconn.Co
 {{end}}
 {{end}}
 {{end}}
+

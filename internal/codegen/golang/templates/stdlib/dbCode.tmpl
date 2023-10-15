@@ -6,9 +6,9 @@ type DBTX interface {
 	QueryRowContext(context.Context, string, ...interface{}) *sql.Row
 }
 
-{{- if .HasSqlcDynamic }}
+{{- if hasDynamic }}
 type DynamicSql interface {
-    Sql() (string, []interface{})
+    Sql({{ if dollar}}int{{ end }}) (string, []interface{})
 }
 {{- end}}
 

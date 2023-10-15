@@ -133,7 +133,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
                 {{- else if .HasSqlcDynamic }}
                     replaceText, args := {{$arg.VariableForField .}}.ToSql(curNumb)
                     curNumb += len(args)
-                    query = strings.ReplaceAllString(query, "/*DYNAMIC:{{.Column.Name}}*/{{- if dollar }}$1{{ else }}?{{ end }}", replaceText)
+                    query = strings.ReplaceAll(query, "/*DYNAMIC:{{.Column.Name}}*/{{- if dollar }}$1{{ else }}?{{ end }}", replaceText)
                     queryParams = append(queryParams, args...)
                 {{- else }}
                   queryParams = append(queryParams, {{$arg.VariableForField .}})
@@ -143,7 +143,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
             {{- if .Arg.HasSqlcDynamic }}
                 var replaceText string
                 replaceText, queryParams = {{ .Arg.Column.Name}}.ToSql(curNumb)
-                query = strings.ReplaceAllString(query, "/*DYNAMIC:{{.Arg.Column.Name}}*/?", "replaceText")
+                query = strings.ReplaceAll(query, "/*DYNAMIC:{{.Arg.Column.Name}}*/?", "replaceText")
             {{- else }}
             {{- /* Single argument parameter to this goroutine (they are not packed
                 in a struct), because .Arg.HasSqlcSlices further up above was true,

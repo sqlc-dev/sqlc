@@ -7,10 +7,11 @@
 package plugin
 
 import (
-	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
-	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
 	sync "sync"
+
+	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
+	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
 const (
@@ -954,13 +955,6 @@ func (x *Column) GetIsSqlcSlice() bool {
 	}
 	return false
 }
-func (x *Column) GetIsSqlcDynamic() bool {
-	if x != nil {
-		return x.IsSqlcDynamic
-	}
-	return false
-}
-
 func (x *Column) GetEmbedTable() *Identifier {
 	if x != nil {
 		return x.EmbedTable

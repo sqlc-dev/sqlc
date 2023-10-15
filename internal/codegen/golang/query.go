@@ -128,14 +128,16 @@ func (v QueryValue) Params() string {
 	}
 	var out []string
 	if v.Struct == nil {
-		if !v.Column.IsSqlcSlice && strings.HasPrefix(v.Typ, "[]") && v.Typ != "[]byte" && !v.SQLDriver.IsPGX() {
+		if v.Column.IsSqlcDynamic {
+		} else if !v.Column.IsSqlcSlice && strings.HasPrefix(v.Typ, "[]") && v.Typ != "[]byte" && !v.SQLDriver.IsPGX() {
 			out = append(out, "pq.Array("+v.Name+")")
 		} else {
 			out = append(out, v.Name)
 		}
 	} else {
 		for _, f := range v.Struct.Fields {
-			if !f.HasSqlcSlice() && strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" && !v.SQLDriver.IsPGX() {
+			if f.HasSqlcDynamic() {
+			} else if !f.HasSqlcSlice() && strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" && !v.SQLDriver.IsPGX() {
 				out = append(out, "pq.Array("+v.VariableForField(f)+")")
 			} else {
 				out = append(out, v.VariableForField(f))
