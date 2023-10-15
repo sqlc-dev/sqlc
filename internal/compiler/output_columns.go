@@ -270,6 +270,10 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 					cols = append(cols, &Column{
 						Name:       embed.Table.Name,
 						EmbedTable: embed.Table,
+						// In general, embeds should not be nullable.
+						// If joins require them to be, this will be overriden
+						// later on.
+						NotNull: true,
 					})
 					continue
 				}
@@ -399,7 +403,7 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 
 	if n, ok := node.(*ast.SelectStmt); ok {
 		for _, col := range cols {
-			if !col.NotNull || col.Table == nil || col.skipTableRequiredCheck {
+			if !col.NotNull || col.skipTableRequiredCheck {
 				continue
 			}
 			for _, f := range n.FromClause.Items {
@@ -423,10 +427,27 @@ const (
 func isTableRequired(n ast.Node, col *Column, prior int) int {
 	switch n := n.(type) {
 	case *ast.RangeVar:
-		if n.Alias == nil && *n.Relname == col.Table.Name {
+		var tblName string
+		if col.Table != nil {
+			tblName = col.Table.Name
+		} else if col.EmbedTable != nil {
+			tblName = col.EmbedTable.Name
+		}
+		if tblName == "" {
+			return tableNotFound
+		}
+		if n.Alias == nil && *n.Relname == tblName {
 			return prior
 		}
-		if n.Alias != nil && *n.Alias.Aliasname == col.TableAlias && *n.Relname == col.Table.Name {
+		if n.Alias != nil && *n.Alias.Aliasname == col.TableAlias && *n.Relname == tblName {
+			return prior
+		}
+	case *ast.RangeSubselect:
+		if n.Alias != nil && n.Alias.Aliasname != nil && *n.Alias.Aliasname == col.TableAlias {
+			return prior
+		}
+	case *ast.RangeFunction:
+		if n.Alias != nil && n.Alias.Aliasname != nil && *n.Alias.Aliasname == col.TableAlias {
 			return prior
 		}
 	case *ast.JoinExpr:
