@@ -21,7 +21,7 @@ func dataType(n *ast.TypeName) string {
 	}
 }
 
-func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, args []paramRef, params *named.ParamSet, embeds rewrite.EmbedSet) ([]Parameter, error) {
+func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, rss []*ast.RangeSubselect, rfs []*ast.RangeFunction, args []paramRef, params *named.ParamSet, embeds rewrite.EmbedSet) ([]Parameter, error) {
 	c := comp.catalog
 
 	aliasMap := map[string]*ast.TableName{}
@@ -78,6 +78,19 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 		}
 	}
 
+	nonTableAliases := make(map[string]bool)
+	for _, rs := range rss {
+		if rs != nil && rs.Alias != nil && rs.Alias.Aliasname != nil {
+			nonTableAliases[*rs.Alias.Aliasname] = true
+		}
+	}
+
+	for _, rf := range rfs {
+		if rf != nil && rf.Alias != nil && rf.Alias.Aliasname != nil {
+			nonTableAliases[*rf.Alias.Aliasname] = true
+		}
+	}
+
 	// resolve a table for an embed
 	for _, embed := range embeds {
 		table, err := c.GetTable(embed.Table)
@@ -89,6 +102,10 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 		if alias, ok := aliasMap[embed.Table.Name]; ok {
 			embed.Table = alias
 			continue
+		}
+
+		if nonTableAliases[embed.Table.Name] {
+			return nil, fmt.Errorf("the embed macro can only be used with tables in models, not subqueries or function-defined tables: %q", embed.Orig())
 		}
 
 		return nil, fmt.Errorf("unable to resolve table with %q: %w", embed.Orig(), err)
