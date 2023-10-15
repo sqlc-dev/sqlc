@@ -59,7 +59,7 @@ func (q *Queries) SelectUsersDynamic(ctx context.Context, arg SelectUsersDynamic
 	curNumb := 2
 	replaceText, args := arg.Dynamic.ToSql(curNumb)
 	curNumb += len(args)
-	query = strings.ReplaceAllString(query, "/*DYNAMIC:dynamic*/$1", replaceText)
+	query = strings.ReplaceAll(query, "/*DYNAMIC:dynamic*/$1", replaceText)
 	queryParams = append(queryParams, args...)
 	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
@@ -104,7 +104,7 @@ func (q *Queries) SelectUsersDynamic2(ctx context.Context, arg SelectUsersDynami
 	curNumb := 3
 	replaceText, args := arg.Dynamic.ToSql(curNumb)
 	curNumb += len(args)
-	query = strings.ReplaceAllString(query, "/*DYNAMIC:dynamic*/$1", replaceText)
+	query = strings.ReplaceAll(query, "/*DYNAMIC:dynamic*/$1", replaceText)
 	queryParams = append(queryParams, args...)
 	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
@@ -151,11 +151,11 @@ func (q *Queries) SelectUsersDynamicMulti(ctx context.Context, arg SelectUsersDy
 	curNumb := 3
 	replaceText, args := arg.Dynamic.ToSql(curNumb)
 	curNumb += len(args)
-	query = strings.ReplaceAllString(query, "/*DYNAMIC:dynamic*/$1", replaceText)
+	query = strings.ReplaceAll(query, "/*DYNAMIC:dynamic*/$1", replaceText)
 	queryParams = append(queryParams, args...)
 	replaceText, args := arg.Order.ToSql(curNumb)
 	curNumb += len(args)
-	query = strings.ReplaceAllString(query, "/*DYNAMIC:order*/$1", replaceText)
+	query = strings.ReplaceAll(query, "/*DYNAMIC:order*/$1", replaceText)
 	queryParams = append(queryParams, args...)
 	rows, err := q.db.Query(ctx, query, queryParams...)
 	if err != nil {
