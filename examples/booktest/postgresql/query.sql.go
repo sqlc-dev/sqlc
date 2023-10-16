@@ -7,10 +7,8 @@ package booktest
 
 import (
 	"context"
-	"database/sql"
-	"time"
 
-	"github.com/lib/pq"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const booksByTags = `-- name: BooksByTags :many
@@ -28,13 +26,13 @@ WHERE tags && $1::varchar[]
 type BooksByTagsRow struct {
 	BookID int32
 	Title  string
-	Name   sql.NullString
+	Name   pgtype.Text
 	Isbn   string
 	Tags   []string
 }
 
 func (q *Queries) BooksByTags(ctx context.Context, dollar_1 []string) ([]BooksByTagsRow, error) {
-	rows, err := q.db.QueryContext(ctx, booksByTags, pq.Array(dollar_1))
+	rows, err := q.db.Query(ctx, booksByTags, dollar_1)
 	if err != nil {
 		return nil, err
 	}
@@ -47,14 +45,11 @@ func (q *Queries) BooksByTags(ctx context.Context, dollar_1 []string) ([]BooksBy
 			&i.Title,
 			&i.Name,
 			&i.Isbn,
-			pq.Array(&i.Tags),
+			&i.Tags,
 		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -73,7 +68,7 @@ type BooksByTitleYearParams struct {
 }
 
 func (q *Queries) BooksByTitleYear(ctx context.Context, arg BooksByTitleYearParams) ([]Book, error) {
-	rows, err := q.db.QueryContext(ctx, booksByTitleYear, arg.Title, arg.Year)
+	rows, err := q.db.Query(ctx, booksByTitleYear, arg.Title, arg.Year)
 	if err != nil {
 		return nil, err
 	}
@@ -89,14 +84,11 @@ func (q *Queries) BooksByTitleYear(ctx context.Context, arg BooksByTitleYearPara
 			&i.Title,
 			&i.Year,
 			&i.Available,
-			pq.Array(&i.Tags),
+			&i.Tags,
 		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -110,7 +102,7 @@ RETURNING author_id, name
 `
 
 func (q *Queries) CreateAuthor(ctx context.Context, name string) (Author, error) {
-	row := q.db.QueryRowContext(ctx, createAuthor, name)
+	row := q.db.QueryRow(ctx, createAuthor, name)
 	var i Author
 	err := row.Scan(&i.AuthorID, &i.Name)
 	return i, err
@@ -143,19 +135,19 @@ type CreateBookParams struct {
 	BookType  BookType
 	Title     string
 	Year      int32
-	Available time.Time
+	Available pgtype.Timestamptz
 	Tags      []string
 }
 
 func (q *Queries) CreateBook(ctx context.Context, arg CreateBookParams) (Book, error) {
-	row := q.db.QueryRowContext(ctx, createBook,
+	row := q.db.QueryRow(ctx, createBook,
 		arg.AuthorID,
 		arg.Isbn,
 		arg.BookType,
 		arg.Title,
 		arg.Year,
 		arg.Available,
-		pq.Array(arg.Tags),
+		arg.Tags,
 	)
 	var i Book
 	err := row.Scan(
@@ -166,7 +158,7 @@ func (q *Queries) CreateBook(ctx context.Context, arg CreateBookParams) (Book, e
 		&i.Title,
 		&i.Year,
 		&i.Available,
-		pq.Array(&i.Tags),
+		&i.Tags,
 	)
 	return i, err
 }
@@ -177,7 +169,7 @@ WHERE book_id = $1
 `
 
 func (q *Queries) DeleteBook(ctx context.Context, bookID int32) error {
-	_, err := q.db.ExecContext(ctx, deleteBook, bookID)
+	_, err := q.db.Exec(ctx, deleteBook, bookID)
 	return err
 }
 
@@ -187,7 +179,7 @@ WHERE author_id = $1
 `
 
 func (q *Queries) GetAuthor(ctx context.Context, authorID int32) (Author, error) {
-	row := q.db.QueryRowContext(ctx, getAuthor, authorID)
+	row := q.db.QueryRow(ctx, getAuthor, authorID)
 	var i Author
 	err := row.Scan(&i.AuthorID, &i.Name)
 	return i, err
@@ -199,7 +191,7 @@ WHERE book_id = $1
 `
 
 func (q *Queries) GetBook(ctx context.Context, bookID int32) (Book, error) {
-	row := q.db.QueryRowContext(ctx, getBook, bookID)
+	row := q.db.QueryRow(ctx, getBook, bookID)
 	var i Book
 	err := row.Scan(
 		&i.BookID,
@@ -209,7 +201,7 @@ func (q *Queries) GetBook(ctx context.Context, bookID int32) (Book, error) {
 		&i.Title,
 		&i.Year,
 		&i.Available,
-		pq.Array(&i.Tags),
+		&i.Tags,
 	)
 	return i, err
 }
@@ -227,7 +219,7 @@ type UpdateBookParams struct {
 }
 
 func (q *Queries) UpdateBook(ctx context.Context, arg UpdateBookParams) error {
-	_, err := q.db.ExecContext(ctx, updateBook, arg.Title, pq.Array(arg.Tags), arg.BookID)
+	_, err := q.db.Exec(ctx, updateBook, arg.Title, arg.Tags, arg.BookID)
 	return err
 }
 
@@ -245,9 +237,9 @@ type UpdateBookISBNParams struct {
 }
 
 func (q *Queries) UpdateBookISBN(ctx context.Context, arg UpdateBookISBNParams) error {
-	_, err := q.db.ExecContext(ctx, updateBookISBN,
+	_, err := q.db.Exec(ctx, updateBookISBN,
 		arg.Title,
-		pq.Array(arg.Tags),
+		arg.Tags,
 		arg.BookID,
 		arg.Isbn,
 	)

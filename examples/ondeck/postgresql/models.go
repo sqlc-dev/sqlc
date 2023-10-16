@@ -5,10 +5,10 @@
 package ondeck
 
 import (
-	"database/sql"
 	"database/sql/driver"
 	"fmt"
-	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 // Venues can be either open or closed
@@ -65,11 +65,11 @@ type Venue struct {
 	Status   Status   `json:"status"`
 	Statuses []Status `json:"statuses"`
 	// This value appears in public URLs
-	Slug            string         `json:"slug"`
-	Name            string         `json:"name"`
-	City            string         `json:"city"`
-	SpotifyPlaylist string         `json:"spotify_playlist"`
-	SongkickID      sql.NullString `json:"songkick_id"`
-	Tags            []string       `json:"tags"`
-	CreatedAt       time.Time      `json:"created_at"`
+	Slug            string           `json:"slug"`
+	Name            string           `json:"name"`
+	City            string           `json:"city"`
+	SpotifyPlaylist string           `json:"spotify_playlist"`
+	SongkickID      pgtype.Text      `json:"songkick_id"`
+	Tags            []string         `json:"tags"`
+	CreatedAt       pgtype.Timestamp `json:"created_at"`
 }

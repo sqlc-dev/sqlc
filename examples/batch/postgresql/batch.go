@@ -8,10 +8,9 @@ package batch
 import (
 	"context"
 	"errors"
-	"time"
 
-	"github.com/jackc/pgtype"
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 var (
@@ -114,13 +113,13 @@ type CreateBookBatchResults struct {
 }
 
 type CreateBookParams struct {
-	AuthorID  int32     `json:"author_id"`
-	Isbn      string    `json:"isbn"`
-	BookType  BookType  `json:"book_type"`
-	Title     string    `json:"title"`
-	Year      int32     `json:"year"`
-	Available time.Time `json:"available"`
-	Tags      []string  `json:"tags"`
+	AuthorID  int32              `json:"author_id"`
+	Isbn      string             `json:"isbn"`
+	BookType  BookType           `json:"book_type"`
+	Title     string             `json:"title"`
+	Year      int32              `json:"year"`
+	Available pgtype.Timestamptz `json:"available"`
+	Tags      []string           `json:"tags"`
 }
 
 func (q *Queries) CreateBook(ctx context.Context, arg []CreateBookParams) *CreateBookBatchResults {
@@ -328,10 +327,10 @@ func (q *Queries) GetBiography(ctx context.Context, authorID []int32) *GetBiogra
 	return &GetBiographyBatchResults{br, len(authorID), false}
 }
 
-func (b *GetBiographyBatchResults) QueryRow(f func(int, pgtype.JSONB, error)) {
+func (b *GetBiographyBatchResults) QueryRow(f func(int, []byte, error)) {
 	defer b.br.Close()
 	for t := 0; t < b.tot; t++ {
-		var biography pgtype.JSONB
+		var biography []byte
 		if b.closed {
 			if f != nil {
 				f(t, biography, ErrBatchAlreadyClosed)
