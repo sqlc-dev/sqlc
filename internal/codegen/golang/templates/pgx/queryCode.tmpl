@@ -3,17 +3,20 @@
     queryParams := []interface{}{ {{.Arg.Params}} }
     {{- $arg := .Arg }}
     curNumb := {{ $arg.SqlcDynamic }}
+    query := {{.ConstantName}}
+    var replaceText string
+    var args []interface{}
     {{- range .Arg.Struct.Fields }}
     {{- if .HasSqlcDynamic }}
-        replaceText, args := {{$arg.VariableForField .}}.ToSql(curNumb)
+        replaceText, args = {{$arg.VariableForField .}}.ToSql(curNumb)
         curNumb += len(args)
         query = strings.ReplaceAll(query, "/*DYNAMIC:{{.Column.Name}}*/$1", replaceText)
         queryParams = append(queryParams, args...)
     {{- end}}
     {{- end}}
     {{- else}}
-    replaceText, args := {{.Arg.Column.Name}}.ToSql(1)
-    query = strings.ReplaceAll(query, "/*DYNAMIC:{{.Arg.Column.Name}}*/$1", replaceText)
+    replaceText, queryParams := {{.Arg.Column.Name}}.ToSql(1)
+    query := strings.ReplaceAll({{.ConstantName}}, "/*DYNAMIC:{{.Arg.Column.Name}}*/$1", replaceText)
     {{- end}}
 {{- end}}
 

@@ -8,6 +8,7 @@ package querytest
 import (
 	"context"
 	"database/sql"
+	"strings"
 )
 
 const selectUsers = `-- name: SelectUsers :many
@@ -60,8 +61,10 @@ func (q *Queries) SelectUsersDynamic(ctx context.Context, arg SelectUsersDynamic
 	query := selectUsersDynamic
 	var queryParams []interface{}
 	curNumb := 2
+	var replaceText string
+	var args []interface{}
 	queryParams = append(queryParams, arg.Age)
-	replaceText, args := arg.Dynamic.ToSql(curNumb)
+	replaceText, args = arg.Dynamic.ToSql()
 	curNumb += len(args)
 	query = strings.ReplaceAll(query, "/*DYNAMIC:dynamic*/?", replaceText)
 	queryParams = append(queryParams, args...)
@@ -110,9 +113,11 @@ func (q *Queries) SelectUsersDynamic2(ctx context.Context, arg SelectUsersDynami
 	query := selectUsersDynamic2
 	var queryParams []interface{}
 	curNumb := 3
+	var replaceText string
+	var args []interface{}
 	queryParams = append(queryParams, arg.Age)
 	queryParams = append(queryParams, arg.Status)
-	replaceText, args := arg.Dynamic.ToSql(curNumb)
+	replaceText, args = arg.Dynamic.ToSql()
 	curNumb += len(args)
 	query = strings.ReplaceAll(query, "/*DYNAMIC:dynamic*/?", replaceText)
 	queryParams = append(queryParams, args...)

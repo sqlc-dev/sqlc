@@ -288,9 +288,13 @@ func sortedImports(std map[string]struct{}, pkg map[ImportSpec]struct{}) fileImp
 func (i *importer) queryImports(filename string) fileImports {
 	var gq []Query
 	anyNonCopyFrom := false
+	useStrings := false
 	for _, query := range i.Queries {
 		if usesBatch([]Query{query}) {
 			continue
+		}
+		if query.Arg.HasSqlcDynamic() {
+			useStrings = true
 		}
 		if query.SourceName == filename {
 			gq = append(gq, query)
@@ -384,7 +388,7 @@ func (i *importer) queryImports(filename string) fileImports {
 	}
 
 	sqlpkg := parseDriver(i.Options.SqlPackage)
-	if sqlcSliceScan() {
+	if useStrings || sqlcSliceScan() {
 		std["strings"] = struct{}{}
 	}
 	if sliceScan() && !sqlpkg.IsPGX() {

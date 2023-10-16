@@ -8,6 +8,7 @@ package querytest
 import (
 	"context"
 	"database/sql"
+	"strings"
 )
 
 const selectUsers = `-- name: SelectUsers :many
@@ -65,9 +66,11 @@ func (q *Queries) SelectUsersDynamic2(ctx context.Context, arg SelectUsersDynami
 	query := selectUsersDynamic2
 	var queryParams []interface{}
 	curNumb := 3
+	var replaceText string
+	var args []interface{}
 	queryParams = append(queryParams, arg.Age)
 	queryParams = append(queryParams, arg.Status)
-	replaceText, args := arg.Dynamic.ToSql(curNumb)
+	replaceText, args = arg.Dynamic.ToSql(curNumb)
 	curNumb += len(args)
 	query = strings.ReplaceAll(query, "/*DYNAMIC:dynamic*/$1", replaceText)
 	queryParams = append(queryParams, args...)
@@ -111,8 +114,10 @@ func (q *Queries) SelectUsersDynamicA(ctx context.Context, arg SelectUsersDynami
 	query := selectUsersDynamicA
 	var queryParams []interface{}
 	curNumb := 2
+	var replaceText string
+	var args []interface{}
 	queryParams = append(queryParams, arg.Age)
-	replaceText, args := arg.Dynamic.ToSql(curNumb)
+	replaceText, args = arg.Dynamic.ToSql(curNumb)
 	curNumb += len(args)
 	query = strings.ReplaceAll(query, "/*DYNAMIC:dynamic*/$1", replaceText)
 	queryParams = append(queryParams, args...)
@@ -156,8 +161,10 @@ func (q *Queries) SelectUsersDynamicB(ctx context.Context, arg SelectUsersDynami
 	query := selectUsersDynamicB
 	var queryParams []interface{}
 	curNumb := 2
+	var replaceText string
+	var args []interface{}
 	queryParams = append(queryParams, arg.Age)
-	replaceText, args := arg.Dynamic.ToSql(curNumb)
+	replaceText, args = arg.Dynamic.ToSql(curNumb)
 	curNumb += len(args)
 	query = strings.ReplaceAll(query, "/*DYNAMIC:dynamic*/$1", replaceText)
 	queryParams = append(queryParams, args...)
@@ -208,13 +215,15 @@ func (q *Queries) SelectUsersDynamicMulti(ctx context.Context, arg SelectUsersDy
 	query := selectUsersDynamicMulti
 	var queryParams []interface{}
 	curNumb := 3
+	var replaceText string
+	var args []interface{}
 	queryParams = append(queryParams, arg.Age)
 	queryParams = append(queryParams, arg.Status)
-	replaceText, args := arg.Dynamic.ToSql(curNumb)
+	replaceText, args = arg.Dynamic.ToSql(curNumb)
 	curNumb += len(args)
 	query = strings.ReplaceAll(query, "/*DYNAMIC:dynamic*/$1", replaceText)
 	queryParams = append(queryParams, args...)
-	replaceText, args := arg.Order.ToSql(curNumb)
+	replaceText, args = arg.Order.ToSql(curNumb)
 	curNumb += len(args)
 	query = strings.ReplaceAll(query, "/*DYNAMIC:order*/$1", replaceText)
 	queryParams = append(queryParams, args...)
@@ -265,13 +274,15 @@ func (q *Queries) SelectUsersDynamicMultiB(ctx context.Context, arg SelectUsersD
 	query := selectUsersDynamicMultiB
 	var queryParams []interface{}
 	curNumb := 3
+	var replaceText string
+	var args []interface{}
 	queryParams = append(queryParams, arg.Age)
 	queryParams = append(queryParams, arg.Status)
-	replaceText, args := arg.Dynamic.ToSql(curNumb)
+	replaceText, args = arg.Dynamic.ToSql(curNumb)
 	curNumb += len(args)
 	query = strings.ReplaceAll(query, "/*DYNAMIC:dynamic*/$1", replaceText)
 	queryParams = append(queryParams, args...)
-	replaceText, args := arg.Order.ToSql(curNumb)
+	replaceText, args = arg.Order.ToSql(curNumb)
 	curNumb += len(args)
 	query = strings.ReplaceAll(query, "/*DYNAMIC:order*/$1", replaceText)
 	queryParams = append(queryParams, args...)

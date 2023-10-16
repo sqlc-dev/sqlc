@@ -7,6 +7,7 @@ package querytest
 
 import (
 	"context"
+	"strings"
 
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -57,7 +58,10 @@ type SelectUsersDynamicRow struct {
 func (q *Queries) SelectUsersDynamic(ctx context.Context, arg SelectUsersDynamicParams) ([]SelectUsersDynamicRow, error) {
 	queryParams := []interface{}{arg.Age}
 	curNumb := 2
-	replaceText, args := arg.Dynamic.ToSql(curNumb)
+	query := selectUsersDynamic
+	var replaceText string
+	var args []interface{}
+	replaceText, args = arg.Dynamic.ToSql(curNumb)
 	curNumb += len(args)
 	query = strings.ReplaceAll(query, "/*DYNAMIC:dynamic*/$1", replaceText)
 	queryParams = append(queryParams, args...)
@@ -102,7 +106,10 @@ type SelectUsersDynamic2Row struct {
 func (q *Queries) SelectUsersDynamic2(ctx context.Context, arg SelectUsersDynamic2Params) ([]SelectUsersDynamic2Row, error) {
 	queryParams := []interface{}{arg.Age, arg.Status}
 	curNumb := 3
-	replaceText, args := arg.Dynamic.ToSql(curNumb)
+	query := selectUsersDynamic2
+	var replaceText string
+	var args []interface{}
+	replaceText, args = arg.Dynamic.ToSql(curNumb)
 	curNumb += len(args)
 	query = strings.ReplaceAll(query, "/*DYNAMIC:dynamic*/$1", replaceText)
 	queryParams = append(queryParams, args...)
@@ -149,11 +156,14 @@ type SelectUsersDynamicMultiRow struct {
 func (q *Queries) SelectUsersDynamicMulti(ctx context.Context, arg SelectUsersDynamicMultiParams) ([]SelectUsersDynamicMultiRow, error) {
 	queryParams := []interface{}{arg.Age, arg.Status}
 	curNumb := 3
-	replaceText, args := arg.Dynamic.ToSql(curNumb)
+	query := selectUsersDynamicMulti
+	var replaceText string
+	var args []interface{}
+	replaceText, args = arg.Dynamic.ToSql(curNumb)
 	curNumb += len(args)
 	query = strings.ReplaceAll(query, "/*DYNAMIC:dynamic*/$1", replaceText)
 	queryParams = append(queryParams, args...)
-	replaceText, args := arg.Order.ToSql(curNumb)
+	replaceText, args = arg.Order.ToSql(curNumb)
 	curNumb += len(args)
 	query = strings.ReplaceAll(query, "/*DYNAMIC:order*/$1", replaceText)
 	queryParams = append(queryParams, args...)
