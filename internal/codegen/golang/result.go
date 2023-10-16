@@ -379,7 +379,11 @@ func columnsToStruct(req *plugin.CodeGenRequest, options *opts, name string, col
 		if c.embed == nil {
 			f.Type = goType(req, options, c.Column)
 		} else {
-			f.Type = c.embed.modelType
+			if c.NotNull {
+				f.Type = c.embed.modelType
+			} else {
+				return nil, fmt.Errorf("embedded macro for %q is nullable, this is currently unsupported", c.embed.modelName)
+			}
 			f.EmbedFields = c.embed.fields
 		}
 
