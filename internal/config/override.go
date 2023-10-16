@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/sqlc-dev/sqlc/internal/pattern"
-	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 )
 
 type Override struct {
@@ -47,39 +46,6 @@ type Override struct {
 
 	// Parsed form of GoStructTag, e.g. {"validate:", "required"}
 	GoStructTags map[string]string
-}
-
-func (o *Override) Matches(n *ast.TableName, defaultSchema string) bool {
-	if n == nil {
-		return false
-	}
-
-	schema := n.Schema
-	if n.Schema == "" {
-		schema = defaultSchema
-	}
-
-	if o.TableCatalog != nil && !o.TableCatalog.MatchString(n.Catalog) {
-		return false
-	}
-
-	if o.TableSchema == nil && schema != "" {
-		return false
-	}
-
-	if o.TableSchema != nil && !o.TableSchema.MatchString(schema) {
-		return false
-	}
-
-	if o.TableRel == nil && n.Name != "" {
-		return false
-	}
-
-	if o.TableRel != nil && !o.TableRel.MatchString(n.Name) {
-		return false
-	}
-
-	return true
 }
 
 func (o *Override) Parse() (err error) {

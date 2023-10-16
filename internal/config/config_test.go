@@ -79,13 +79,12 @@ func FuzzConfig(f *testing.F) {
 func TestInvalidConfig(t *testing.T) {
 	err := Validate(&Config{
 		SQL: []SQL{{
-			Gen: SQLGen{
-				Go: &SQLGo{
-					EmitMethodsWithDBArgument: true,
-					EmitPreparedQueries:       true,
-				},
+			Database: &Database{
+				URI:     "",
+				Managed: false,
 			},
-		}}})
+		}},
+	})
 	if err == nil {
 		t.Errorf("expected err; got nil")
 	}
