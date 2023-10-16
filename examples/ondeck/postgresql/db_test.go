@@ -5,11 +5,10 @@ package ondeck
 
 import (
 	"context"
-	"database/sql"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	_ "github.com/lib/pq"
+	"github.com/jackc/pgx/v5"
 
 	"github.com/sqlc-dev/sqlc/internal/sqltest/hosted"
 )
@@ -123,33 +122,16 @@ func runOnDeckQueries(t *testing.T, q *Queries) {
 	}
 }
 
-func TestPrepared(t *testing.T) {
-	t.Parallel()
-
-	uri := hosted.PostgreSQL(t, []string{"schema"})
-	db, err := sql.Open("postgres", uri)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer db.Close()
-
-	q, err := Prepare(context.Background(), db)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	runOnDeckQueries(t, q)
-}
-
 func TestQueries(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.Background()
 	uri := hosted.PostgreSQL(t, []string{"schema"})
-	db, err := sql.Open("postgres", uri)
+	db, err := pgx.Connect(ctx, uri)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer db.Close()
+	defer db.Close(ctx)
 
 	runOnDeckQueries(t, New(db))
 }

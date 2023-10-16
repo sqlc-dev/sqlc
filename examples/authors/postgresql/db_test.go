@@ -5,23 +5,23 @@ package authors
 
 import (
 	"context"
-	"database/sql"
 	"testing"
 
-	_ "github.com/lib/pq"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/sqlc-dev/sqlc/internal/sqltest/hosted"
 )
 
 func TestAuthors(t *testing.T) {
+	ctx := context.Background()
 	uri := hosted.PostgreSQL(t, []string{"schema.sql"})
-	db, err := sql.Open("postgres", uri)
+	db, err := pgx.Connect(ctx, uri)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer db.Close()
+	defer db.Close(ctx)
 
-	ctx := context.Background()
 	q := New(db)
 
 	// list all authors
@@ -34,7 +34,7 @@ func TestAuthors(t *testing.T) {
 	// create an author
 	insertedAuthor, err := q.CreateAuthor(ctx, CreateAuthorParams{
 		Name: "Brian Kernighan",
-		Bio:  sql.NullString{String: "Co-author of The C Programming Language and The Go Programming Language", Valid: true},
+		Bio:  pgtype.Text{String: "Co-author of The C Programming Language and The Go Programming Language", Valid: true},
 	})
 	if err != nil {
 		t.Fatal(err)
