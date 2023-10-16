@@ -63,7 +63,10 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 		}
 		table, err := c.GetTable(fqn)
 		if err != nil {
-			// If the table name doesn't exist, fisrt check if it's a CTE
+			if qc == nil {
+				continue
+			}
+			// If the table name doesn't exist, first check if it's a CTE
 			if _, qcerr := qc.GetTable(fqn); qcerr != nil {
 				return nil, err
 			}

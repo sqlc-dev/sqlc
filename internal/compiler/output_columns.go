@@ -608,6 +608,9 @@ func (c *Compiler) sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, erro
 			if err != nil {
 				return nil, err
 			}
+			if qc == nil {
+				return nil, fmt.Errorf("query catalog is empty")
+			}
 			table, cerr := qc.GetTable(fqn)
 			if cerr != nil {
 				// TODO: Update error location
