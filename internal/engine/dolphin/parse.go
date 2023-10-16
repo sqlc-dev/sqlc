@@ -10,7 +10,7 @@ import (
 	"github.com/pingcap/tidb/parser"
 	_ "github.com/pingcap/tidb/parser/test_driver"
 
-	"github.com/sqlc-dev/sqlc/internal/metadata"
+	"github.com/sqlc-dev/sqlc/internal/source"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
 )
@@ -86,8 +86,8 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 }
 
 // https://dev.mysql.com/doc/refman/8.0/en/comments.html
-func (p *Parser) CommentSyntax() metadata.CommentSyntax {
-	return metadata.CommentSyntax{
+func (p *Parser) CommentSyntax() source.CommentSyntax {
+	return source.CommentSyntax{
 		Dash:      true,
 		SlashStar: true,
 		Hash:      true,

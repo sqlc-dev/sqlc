@@ -43,11 +43,28 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 		return nil, errors.New("missing semicolon at end of file")
 	}
 
-	name, cmd, err := metadata.ParseQueryNameAndType(strings.TrimSpace(rawSQL), c.parser.CommentSyntax())
+	name, cmd, err := metadata.ParseQueryNameAndType(rawSQL, metadata.CommentSyntax(c.parser.CommentSyntax()))
 	if err != nil {
 		return nil, err
 	}
+
 	if err := validate.Cmd(raw.Stmt, name, cmd); err != nil {
+		return nil, err
+	}
+
+	md := metadata.Metadata{
+		Name: name,
+		Cmd:  cmd,
+	}
+
+	// TODO eventually can use this for name and type/cmd parsing too
+	cleanedComments, err := source.CleanedComments(rawSQL, c.parser.CommentSyntax())
+	if err != nil {
+		return nil, err
+	}
+
+	md.Params, md.Flags, err = metadata.ParseParamsAndFlags(cleanedComments)
+	if err != nil {
 		return nil, err
 	}
 
@@ -90,17 +107,11 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 		return nil, err
 	}
 
-	flags, err := metadata.ParseQueryFlags(comments)
-	if err != nil {
-		return nil, err
-	}
+	md.Comments = comments
 
 	return &Query{
 		RawStmt:         raw,
-		Cmd:             cmd,
-		Comments:        comments,
-		Name:            name,
-		Flags:           flags,
+		Metadata:        md,
 		Params:          anlys.Parameters,
 		Columns:         anlys.Columns,
 		SQL:             trimmed,

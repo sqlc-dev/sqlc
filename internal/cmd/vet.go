@@ -545,7 +545,7 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 	req := codeGenRequest(result, combo)
 	cfg := vetConfig(req)
 	for i, query := range req.Queries {
-		if result.Queries[i].Flags[QueryFlagSqlcVetDisable] {
+		if result.Queries[i].Metadata.Flags[QueryFlagSqlcVetDisable] {
 			if debug.Active {
 				log.Printf("Skipping vet rules for query: %s\n", query.Name)
 			}

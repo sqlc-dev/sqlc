@@ -209,13 +209,13 @@ func pluginQueries(r *compiler.Result) []*plugin.Query {
 			}
 		}
 		out = append(out, &plugin.Query{
-			Name:            q.Name,
-			Cmd:             q.Cmd,
+			Name:            q.Metadata.Name,
+			Cmd:             q.Metadata.Cmd,
 			Text:            q.SQL,
-			Comments:        q.Comments,
+			Comments:        q.Metadata.Comments,
 			Columns:         columns,
 			Params:          params,
-			Filename:        q.Filename,
+			Filename:        q.Metadata.Filename,
 			InsertIntoTable: iit,
 		})
 	}

@@ -1,15 +1,24 @@
 package metadata
 
 import (
+	"bufio"
 	"fmt"
 	"strings"
 	"unicode"
+
+	"github.com/sqlc-dev/sqlc/internal/source"
 )
 
-type CommentSyntax struct {
-	Dash      bool
-	Hash      bool
-	SlashStar bool
+type CommentSyntax source.CommentSyntax
+
+type Metadata struct {
+	Name     string
+	Cmd      string
+	Comments []string
+	Params   map[string]string
+	Flags    map[string]bool
+
+	Filename string
 }
 
 const (
@@ -83,7 +92,7 @@ func ParseQueryNameAndType(t string, commentStyle CommentSyntax) (string, string
 		if prefix == "/*" {
 			part = part[:len(part)-1] // removes the trailing "*/" element
 		}
-		if len(part) == 2 {
+		if len(part) == 3 {
 			return "", "", fmt.Errorf("missing query type [':one', ':many', ':exec', ':execrows', ':execlastid', ':execresult', ':copyfrom', 'batchexec', 'batchmany', 'batchone']: %s", line)
 		}
 		if len(part) != 4 {
@@ -104,19 +113,39 @@ func ParseQueryNameAndType(t string, commentStyle CommentSyntax) (string, string
 	return "", "", nil
 }
 
-func ParseQueryFlags(comments []string) (map[string]bool, error) {
+func ParseParamsAndFlags(comments []string) (map[string]string, map[string]bool, error) {
+	params := make(map[string]string)
 	flags := make(map[string]bool)
+
 	for _, line := range comments {
-		cleanLine := strings.TrimPrefix(line, "--")
-		cleanLine = strings.TrimPrefix(cleanLine, "/*")
-		cleanLine = strings.TrimPrefix(cleanLine, "#")
-		cleanLine = strings.TrimSuffix(cleanLine, "*/")
-		cleanLine = strings.TrimSpace(cleanLine)
-		if strings.HasPrefix(cleanLine, "@") {
-			flagName := strings.SplitN(cleanLine, " ", 2)[0]
-			flags[flagName] = true
+		s := bufio.NewScanner(strings.NewReader(line))
+		s.Split(bufio.ScanWords)
+
+		s.Scan()
+		token := s.Text()
+
+		if !strings.HasPrefix(token, "@") {
 			continue
 		}
+
+		switch token {
+		case "@param":
+			s.Scan()
+			name := s.Text()
+			var rest []string
+			for s.Scan() {
+				paramToken := s.Text()
+				rest = append(rest, paramToken)
+			}
+			params[name] = strings.Join(rest, " ")
+		default:
+			flags[token] = true
+		}
+
+		if s.Err() != nil {
+			return params, flags, s.Err()
+		}
 	}
-	return flags, nil
+
+	return params, flags, nil
 }
