@@ -32,7 +32,7 @@ func TestBatchBooks(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	now := pgtype.Timestamptz{Time: time.Now()}
+	now := pgtype.Timestamptz{Time: time.Now(), Valid: true}
 
 	// batch insert new books
 	newBooksParams := []CreateBookParams{

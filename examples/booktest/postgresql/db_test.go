@@ -16,7 +16,7 @@ import (
 
 func TestBooks(t *testing.T) {
 	ctx := context.Background()
-	uri := hosted.PostgreSQL(t, []string{"schema"})
+	uri := hosted.PostgreSQL(t, []string{"schema.sql"})
 	db, err := pgx.Connect(ctx, uri)
 	if err != nil {
 		t.Fatal(err)
@@ -40,7 +40,7 @@ func TestBooks(t *testing.T) {
 	tq := dq.WithTx(tx)
 
 	// save first book
-	now := pgtype.Timestamptz{Time: time.Now()}
+	now := pgtype.Timestamptz{Time: time.Now(), Valid: true}
 	_, err = tq.CreateBook(ctx, CreateBookParams{
 		AuthorID:  a.AuthorID,
 		Isbn:      "1",
