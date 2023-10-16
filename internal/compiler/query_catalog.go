@@ -103,6 +103,7 @@ func (qc QueryCatalog) GetFunc(rel *ast.FuncName) (*Function, error) {
 	}
 	return &Function{
 		Rel:        rel,
+		Outs:       funcs[0].OutArgs(),
 		ReturnType: funcs[0].ReturnType,
 	}, nil
 }

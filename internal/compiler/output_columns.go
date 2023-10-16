@@ -550,12 +550,15 @@ func (c *Compiler) sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, erro
 			if err != nil {
 				continue
 			}
-			table, err := qc.GetTable(&ast.TableName{
-				Catalog: fn.ReturnType.Catalog,
-				Schema:  fn.ReturnType.Schema,
-				Name:    fn.ReturnType.Name,
-			})
-			if err != nil {
+			var table *Table
+			if fn.ReturnType != nil {
+				table, err = qc.GetTable(&ast.TableName{
+					Catalog: fn.ReturnType.Catalog,
+					Schema:  fn.ReturnType.Schema,
+					Name:    fn.ReturnType.Name,
+				})
+			}
+			if table == nil || err != nil {
 				if n.Alias != nil && len(n.Alias.Colnames.Items) > 0 {
 					table = &Table{}
 					for _, colName := range n.Alias.Colnames.Items {
@@ -575,12 +578,22 @@ func (c *Compiler) sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, erro
 							Schema:  fn.Rel.Schema,
 							Name:    fn.Rel.Name,
 						},
-						Columns: []*Column{
+					}
+					if len(fn.Outs) > 0 {
+						for _, arg := range fn.Outs {
+							table.Columns = append(table.Columns, &Column{
+								Name:     arg.Name,
+								DataType: arg.Type.Name,
+							})
+						}
+					}
+					if fn.ReturnType != nil {
+						table.Columns = []*Column{
 							{
 								Name:     colName,
 								DataType: fn.ReturnType.Name,
 							},
-						},
+						}
 					}
 				}
 			}
