@@ -39,6 +39,17 @@ func (f *Function) InArgs() []*Argument {
 	return args
 }
 
+func (f *Function) OutArgs() []*Argument {
+	var args []*Argument
+	for _, a := range f.Args {
+		switch a.Mode {
+		case ast.FuncParamOut:
+			args = append(args, a)
+		}
+	}
+	return args
+}
+
 func (c *Catalog) createFunction(stmt *ast.CreateFunctionStmt) error {
 	ns := stmt.Func.Schema
 	if ns == "" {
