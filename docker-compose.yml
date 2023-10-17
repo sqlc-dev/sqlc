@@ -6,7 +6,7 @@ services:
       - "3306:3306"
     restart: always
     environment:
-      MYSQL_DATABASE: mysql
+      MYSQL_DATABASE: dinotest
       MYSQL_ROOT_PASSWORD: mysecretpassword
       MYSQL_ROOT_HOST: '%'
 
@@ -16,7 +16,7 @@ services:
       - "3305:3306"
     restart: always
     environment:
-      MYSQL_DATABASE: mysql
+      MYSQL_DATABASE: dinotest
       MYSQL_ROOT_PASSWORD: mysecretpassword
       MYSQL_ROOT_HOST: '%'
     profiles:

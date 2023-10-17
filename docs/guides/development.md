@@ -51,7 +51,7 @@ MYSQL_HOST      127.0.0.1
 MYSQL_PORT      3306
 MYSQL_USER      root
 MYSQL_ROOT_PASSWORD  mysecretpassword
-MYSQL_DATABASE  mysql
+MYSQL_DATABASE  dinotest
 ```
 
 ## Regenerate expected test output
