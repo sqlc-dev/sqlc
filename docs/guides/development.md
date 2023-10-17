@@ -24,7 +24,7 @@ These tests require locally-running database instances. Run these databases
 using [Docker Compose](https://docs.docker.com/compose/).
 
 ```
-docker-compose up -d
+docker compose up -d
 ```
 
 The tests use the following environment variables to connect to the
