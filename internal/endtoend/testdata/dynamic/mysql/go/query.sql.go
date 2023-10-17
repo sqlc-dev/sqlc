@@ -93,15 +93,15 @@ func (q *Queries) SelectUsersDynamic(ctx context.Context, arg SelectUsersDynamic
 const selectUsersDynamic2 = `-- name: SelectUsersDynamic2 :many
 SELECT first_name, last_name
 FROM users
-WHERE age > ? AND
-    job_status = ? AND
-    /*DYNAMIC:dynamic*/?
+WHERE /*DYNAMIC:dynamic*/? AND
+    age > ? AND
+    job_status = ?
 `
 
 type SelectUsersDynamic2Params struct {
+	Dynamic DynamicSql
 	Age     int32
 	Status  string
-	Dynamic DynamicSql
 }
 
 type SelectUsersDynamic2Row struct {
@@ -115,12 +115,12 @@ func (q *Queries) SelectUsersDynamic2(ctx context.Context, arg SelectUsersDynami
 	curNumb := 3
 	var replaceText string
 	var args []interface{}
-	queryParams = append(queryParams, arg.Age)
-	queryParams = append(queryParams, arg.Status)
 	replaceText, args = arg.Dynamic.ToSql()
 	curNumb += len(args)
 	query = strings.ReplaceAll(query, "/*DYNAMIC:dynamic*/?", replaceText)
 	queryParams = append(queryParams, args...)
+	queryParams = append(queryParams, arg.Age)
+	queryParams = append(queryParams, arg.Status)
 	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err

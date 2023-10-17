@@ -20,6 +20,6 @@ SELECT first_name, last_name FROM users WHERE age > sqlc.arg(age) AND sqlc.dynam
 -- name: SelectUsersDynamic2 :many
 SELECT first_name, last_name
 FROM users
-WHERE age > sqlc.arg(age) AND
-    job_status = sqlc.arg(status) AND
-    sqlc.dynamic('dynamic');
+WHERE sqlc.dynamic('dynamic') AND
+    age > sqlc.arg(age) AND
+    job_status = sqlc.arg(status) ;
