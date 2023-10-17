@@ -8,7 +8,6 @@
     "queries": [
       "postgresql/query.sql"
     ],
-    "rename": {},
     "overrides": [],
     "codegen": {
       "out": "",

@@ -8,7 +8,6 @@
     "queries": [
       "query.sql"
     ],
-    "rename": {},
     "overrides": [],
     "codegen": {
       "out": "gen",
