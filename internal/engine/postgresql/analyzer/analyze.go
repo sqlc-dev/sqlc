@@ -101,7 +101,7 @@ func (a *Analyzer) columnInfo(ctx context.Context, field pgconn.FieldDescription
 	if ok {
 		return cinfo.(*pgColumn), nil
 	}
-	rows, err := a.pool.Query(ctx, columnQuery, field.TableOID, field.TableAttributeNumber)
+	rows, err := a.pool.Query(ctx, columnQuery, field.TableOID, int16(field.TableAttributeNumber))
 	if err != nil {
 		return nil, err
 	}
