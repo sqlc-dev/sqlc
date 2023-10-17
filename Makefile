@@ -33,7 +33,7 @@ sqlc-gen-json:
 	go build -o ~/bin/sqlc-gen-json ./cmd/sqlc-gen-json
 
 start:
-	docker-compose up -d
+	docker compose up -d
 
 fmt:
 	go fmt ./...

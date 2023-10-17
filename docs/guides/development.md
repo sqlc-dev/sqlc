@@ -24,7 +24,7 @@ These tests require locally-running database instances. Run these databases
 using [Docker Compose](https://docs.docker.com/compose/).
 
 ```
-docker-compose up -d
+docker compose up -d
 ```
 
 The tests use the following environment variables to connect to the
@@ -51,7 +51,7 @@ MYSQL_HOST      127.0.0.1
 MYSQL_PORT      3306
 MYSQL_USER      root
 MYSQL_ROOT_PASSWORD  mysecretpassword
-MYSQL_DATABASE  dinotest
+MYSQL_DATABASE  mysql
 ```
 
 ## Regenerate expected test output
