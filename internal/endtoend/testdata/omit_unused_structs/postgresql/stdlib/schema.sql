@@ -51,3 +51,11 @@ CREATE TABLE query_return_struct_enum_table (
     value   query_return_struct_enum_table_enum,
     another INTEGER
 );
+
+CREATE TYPE query_sqlc_embed_enum AS ENUM (
+    'm', 'n'
+);
+CREATE TABLE query_sqlc_embed_table (
+    id      INTEGER PRIMARY KEY,
+    value   query_sqlc_embed_enum
+)

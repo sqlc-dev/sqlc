@@ -90,3 +90,18 @@ func (q *Queries) query_return_struct_enum_table(ctx context.Context, id int32) 
 	err := row.Scan(&i.Value, &i.Another)
 	return i, err
 }
+
+const query_sqlc_embed_table = `-- name: query_sqlc_embed_table :one
+SELECT query_sqlc_embed_table.id, query_sqlc_embed_table.value FROM query_sqlc_embed_table WHERE id = $1
+`
+
+type query_sqlc_embed_tableRow struct {
+	QuerySqlcEmbedTable QuerySqlcEmbedTable
+}
+
+func (q *Queries) query_sqlc_embed_table(ctx context.Context, id int32) (query_sqlc_embed_tableRow, error) {
+	row := q.db.QueryRowContext(ctx, query_sqlc_embed_table, id)
+	var i query_sqlc_embed_tableRow
+	err := row.Scan(&i.QuerySqlcEmbedTable.ID, &i.QuerySqlcEmbedTable.Value)
+	return i, err
+}

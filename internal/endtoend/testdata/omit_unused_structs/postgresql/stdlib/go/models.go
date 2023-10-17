@@ -219,6 +219,48 @@ func (ns NullQueryReturnStructEnumTableEnum) Value() (driver.Value, error) {
 	return string(ns.QueryReturnStructEnumTableEnum), nil
 }
 
+type QuerySqlcEmbedEnum string
+
+const (
+	QuerySqlcEmbedEnumM QuerySqlcEmbedEnum = "m"
+	QuerySqlcEmbedEnumN QuerySqlcEmbedEnum = "n"
+)
+
+func (e *QuerySqlcEmbedEnum) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = QuerySqlcEmbedEnum(s)
+	case string:
+		*e = QuerySqlcEmbedEnum(s)
+	default:
+		return fmt.Errorf("unsupported scan type for QuerySqlcEmbedEnum: %T", src)
+	}
+	return nil
+}
+
+type NullQuerySqlcEmbedEnum struct {
+	QuerySqlcEmbedEnum QuerySqlcEmbedEnum
+	Valid              bool // Valid is true if QuerySqlcEmbedEnum is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullQuerySqlcEmbedEnum) Scan(value interface{}) error {
+	if value == nil {
+		ns.QuerySqlcEmbedEnum, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.QuerySqlcEmbedEnum.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullQuerySqlcEmbedEnum) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.QuerySqlcEmbedEnum), nil
+}
+
 type QueryParamEnumTable struct {
 	ID    int32
 	Other QueryParamEnumTableEnum
@@ -228,4 +270,9 @@ type QueryParamEnumTable struct {
 type QueryReturnFullTable struct {
 	ID    int32
 	Value NullQueryReturnFullTableEnum
+}
+
+type QuerySqlcEmbedTable struct {
+	ID    int32
+	Value NullQuerySqlcEmbedEnum
 }
