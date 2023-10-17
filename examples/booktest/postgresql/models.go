@@ -7,7 +7,8 @@ package booktest
 import (
 	"database/sql/driver"
 	"fmt"
-	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type BookType string
@@ -64,6 +65,6 @@ type Book struct {
 	BookType  BookType
 	Title     string
 	Year      int32
-	Available time.Time
+	Available pgtype.Timestamptz
 	Tags      []string
 }

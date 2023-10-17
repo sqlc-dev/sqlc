@@ -5,11 +5,11 @@
 package authors
 
 import (
-	"database/sql"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Author struct {
 	ID   int64
 	Name string
-	Bio  sql.NullString
+	Bio  pgtype.Text
 }

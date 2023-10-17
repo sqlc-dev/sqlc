@@ -14,7 +14,7 @@ SELECT COUNT(*) FROM pilots
 `
 
 func (q *Queries) CountPilots(ctx context.Context) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countPilots)
+	row := q.db.QueryRow(ctx, countPilots)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -25,7 +25,7 @@ DELETE FROM pilots WHERE id = $1
 `
 
 func (q *Queries) DeletePilot(ctx context.Context, id int32) error {
-	_, err := q.db.ExecContext(ctx, deletePilot, id)
+	_, err := q.db.Exec(ctx, deletePilot, id)
 	return err
 }
 
@@ -34,7 +34,7 @@ SELECT id, name FROM pilots LIMIT 5
 `
 
 func (q *Queries) ListPilots(ctx context.Context) ([]Pilot, error) {
-	rows, err := q.db.QueryContext(ctx, listPilots)
+	rows, err := q.db.Query(ctx, listPilots)
 	if err != nil {
 		return nil, err
 	}
@@ -46,9 +46,6 @@ func (q *Queries) ListPilots(ctx context.Context) ([]Pilot, error) {
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

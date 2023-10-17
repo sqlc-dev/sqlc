@@ -7,9 +7,8 @@ package batch
 import (
 	"database/sql/driver"
 	"fmt"
-	"time"
 
-	"github.com/jackc/pgtype"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type BookType string
@@ -55,18 +54,18 @@ func (ns NullBookType) Value() (driver.Value, error) {
 }
 
 type Author struct {
-	AuthorID  int32        `json:"author_id"`
-	Name      string       `json:"name"`
-	Biography pgtype.JSONB `json:"biography"`
+	AuthorID  int32  `json:"author_id"`
+	Name      string `json:"name"`
+	Biography []byte `json:"biography"`
 }
 
 type Book struct {
-	BookID    int32     `json:"book_id"`
-	AuthorID  int32     `json:"author_id"`
-	Isbn      string    `json:"isbn"`
-	BookType  BookType  `json:"book_type"`
-	Title     string    `json:"title"`
-	Year      int32     `json:"year"`
-	Available time.Time `json:"available"`
-	Tags      []string  `json:"tags"`
+	BookID    int32              `json:"book_id"`
+	AuthorID  int32              `json:"author_id"`
+	Isbn      string             `json:"isbn"`
+	BookType  BookType           `json:"book_type"`
+	Title     string             `json:"title"`
+	Year      int32              `json:"year"`
+	Available pgtype.Timestamptz `json:"available"`
+	Tags      []string           `json:"tags"`
 }

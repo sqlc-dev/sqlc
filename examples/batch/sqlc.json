@@ -19,7 +19,7 @@
       "rules": [
         "sqlc/db-prepare"
       ],
-      "sql_package": "pgx/v4",
+      "sql_package": "pgx/v5",
       "emit_json_tags": true,
       "emit_prepared_queries": true,
       "emit_interface": true

@@ -10,6 +10,7 @@
       "schema": "postgresql/schema.sql",
       "queries": "postgresql/query.sql",
       "engine": "postgresql",
+      "sql_package": "pgx/v5",
       "database": {
         "managed": true
       },
