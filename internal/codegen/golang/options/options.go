@@ -1,4 +1,4 @@
-package golang
+package options
 
 import (
 	"bytes"
@@ -8,7 +8,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
 
-type opts struct {
+type Options struct {
 	EmitInterface               bool     `json:"emit_interface"`
 	EmitJsonTags                bool     `json:"emit_json_tags"`
 	JsonTagsIdUppercase         bool     `json:"json_tags_id_uppercase"`
@@ -39,31 +39,24 @@ type opts struct {
 	OmitUnusedStructs           bool     `json:"omit_unused_structs,omitempty"`
 	BuildTags                   string   `json:"build_tags,omitempty"`
 
+	Rename map[string]string `json:"rename,omitempty"`
+
 	// Unused but included in marshaled json we receive
 	Overrides json.RawMessage `json:"overrides,omitempty"`
-	Rename    json.RawMessage `json:"rename,omitempty"`
 }
 
-func parseOpts(req *plugin.CodeGenRequest) (*opts, error) {
-	var options *opts
+func Parse(req *plugin.CodeGenRequest) (*Options, error) {
+	var opts *Options
 	dec := json.NewDecoder(bytes.NewReader(req.PluginOptions))
 	dec.DisallowUnknownFields()
-	if err := dec.Decode(&options); err != nil {
-		return options, fmt.Errorf("unmarshalling options: %w", err)
+	if err := dec.Decode(&opts); err != nil {
+		return opts, fmt.Errorf("unmarshalling options: %w", err)
 	}
 
-	if options.QueryParameterLimit == nil {
-		options.QueryParameterLimit = new(int32)
-		*options.QueryParameterLimit = 1
+	if opts.QueryParameterLimit == nil {
+		opts.QueryParameterLimit = new(int32)
+		*opts.QueryParameterLimit = 1
 	}
 
-	return options, nil
-}
-
-func validateOpts(opts *opts) error {
-	if opts.EmitMethodsWithDbArgument && opts.EmitPreparedQueries {
-		return fmt.Errorf("invalid options: emit_methods_with_db_argument and emit_prepared_queries options are mutually exclusive")
-	}
-
-	return nil
+	return opts, nil
 }

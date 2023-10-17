@@ -56,7 +56,6 @@ func pluginSettings(r *compiler.Result, cs config.CombinedSettings) *plugin.Sett
 		Schema:    []string(cs.Package.Schema),
 		Queries:   []string(cs.Package.Queries),
 		Overrides: over,
-		Rename:    cs.Rename,
 		Codegen:   pluginCodegen(cs, cs.Codegen),
 	}
 }

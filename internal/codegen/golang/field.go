@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/sqlc-dev/sqlc/internal/codegen/golang/options"
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
 
@@ -40,9 +41,9 @@ func TagsToString(tags map[string]string) string {
 	return strings.Join(tagParts, " ")
 }
 
-func JSONTagName(name string, options *opts) string {
-	style := options.JsonTagsCaseStyle
-	idUppercase := options.JsonTagsIdUppercase
+func JSONTagName(name string, opts *options.Options) string {
+	style := opts.JsonTagsCaseStyle
+	idUppercase := opts.JsonTagsIdUppercase
 	if style == "" || style == "none" {
 		return name
 	} else {

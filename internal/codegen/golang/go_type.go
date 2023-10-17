@@ -3,6 +3,7 @@ package golang
 import (
 	"strings"
 
+	"github.com/sqlc-dev/sqlc/internal/codegen/golang/options"
 	"github.com/sqlc-dev/sqlc/internal/codegen/sdk"
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
@@ -31,7 +32,7 @@ func addExtraGoStructTags(tags map[string]string, req *plugin.CodeGenRequest, co
 	}
 }
 
-func goType(req *plugin.CodeGenRequest, options *opts, col *plugin.Column) string {
+func goType(req *plugin.CodeGenRequest, opts *options.Options, col *plugin.Column) string {
 	// Check if the column's type has been overridden
 	for _, oride := range req.Settings.Overrides {
 		if oride.GoType.TypeName == "" {
@@ -49,7 +50,7 @@ func goType(req *plugin.CodeGenRequest, options *opts, col *plugin.Column) strin
 			return oride.GoType.TypeName
 		}
 	}
-	typ := goInnerType(req, options, col)
+	typ := goInnerType(req, opts, col)
 	if col.IsSqlcSlice {
 		return "[]" + typ
 	}
@@ -59,7 +60,7 @@ func goType(req *plugin.CodeGenRequest, options *opts, col *plugin.Column) strin
 	return typ
 }
 
-func goInnerType(req *plugin.CodeGenRequest, options *opts, col *plugin.Column) string {
+func goInnerType(req *plugin.CodeGenRequest, opts *options.Options, col *plugin.Column) string {
 	columnType := sdk.DataType(col.Type)
 	notNull := col.NotNull || col.IsArray
 
@@ -76,9 +77,9 @@ func goInnerType(req *plugin.CodeGenRequest, options *opts, col *plugin.Column) 
 	// TODO: Extend the engine interface to handle types
 	switch req.Settings.Engine {
 	case "mysql":
-		return mysqlType(req, col)
+		return mysqlType(req, opts, col)
 	case "postgresql":
-		return postgresType(req, options, col)
+		return postgresType(req, opts, col)
 	case "sqlite":
 		return sqliteType(req, col)
 	default:

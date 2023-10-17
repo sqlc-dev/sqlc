@@ -5,6 +5,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/sqlc-dev/sqlc/internal/codegen/golang/options"
 	"github.com/sqlc-dev/sqlc/internal/codegen/sdk"
 	"github.com/sqlc-dev/sqlc/internal/debug"
 	"github.com/sqlc-dev/sqlc/internal/plugin"
@@ -33,11 +34,11 @@ func parseIdentifierString(name string) (*plugin.Identifier, error) {
 	}
 }
 
-func postgresType(req *plugin.CodeGenRequest, options *opts, col *plugin.Column) string {
+func postgresType(req *plugin.CodeGenRequest, opts *options.Options, col *plugin.Column) string {
 	columnType := sdk.DataType(col.Type)
 	notNull := col.NotNull || col.IsArray
-	driver := parseDriver(options.SqlPackage)
-	emitPointersForNull := driver.IsPGX() && options.EmitPointersForNullTypes
+	driver := parseDriver(opts.SqlPackage)
+	emitPointersForNull := driver.IsPGX() && opts.EmitPointersForNullTypes
 
 	switch columnType {
 	case "serial", "serial4", "pg_catalog.serial4":
@@ -563,14 +564,14 @@ func postgresType(req *plugin.CodeGenRequest, options *opts, col *plugin.Column)
 				if rel.Name == enum.Name && rel.Schema == schema.Name {
 					if notNull {
 						if schema.Name == req.Catalog.DefaultSchema {
-							return StructName(enum.Name, req.Settings)
+							return StructName(enum.Name, opts)
 						}
-						return StructName(schema.Name+"_"+enum.Name, req.Settings)
+						return StructName(schema.Name+"_"+enum.Name, opts)
 					} else {
 						if schema.Name == req.Catalog.DefaultSchema {
-							return "Null" + StructName(enum.Name, req.Settings)
+							return "Null" + StructName(enum.Name, opts)
 						}
-						return "Null" + StructName(schema.Name+"_"+enum.Name, req.Settings)
+						return "Null" + StructName(schema.Name+"_"+enum.Name, opts)
 					}
 				}
 			}

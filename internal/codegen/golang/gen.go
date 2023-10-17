@@ -10,6 +10,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/sqlc-dev/sqlc/internal/codegen/golang/options"
 	"github.com/sqlc-dev/sqlc/internal/codegen/sdk"
 	"github.com/sqlc-dev/sqlc/internal/metadata"
 	"github.com/sqlc-dev/sqlc/internal/plugin"
@@ -103,64 +104,64 @@ func (t *tmplCtx) codegenQueryRetval(q Query) (string, error) {
 }
 
 func Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
-	options, err := parseOpts(req)
+	opts, err := options.Parse(req)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := validateOpts(options); err != nil {
+	if err := options.Validate(opts); err != nil {
 		return nil, err
 	}
 
-	enums := buildEnums(req, options)
-	structs := buildStructs(req, options)
-	queries, err := buildQueries(req, options, structs)
+	enums := buildEnums(req, opts)
+	structs := buildStructs(req, opts)
+	queries, err := buildQueries(req, opts, structs)
 	if err != nil {
 		return nil, err
 	}
 
-	if options.OmitUnusedStructs {
+	if opts.OmitUnusedStructs {
 		enums, structs = filterUnusedStructs(enums, structs, queries)
 	}
 
-	return generate(req, options, enums, structs, queries)
+	return generate(req, opts, enums, structs, queries)
 }
 
-func generate(req *plugin.CodeGenRequest, options *opts, enums []Enum, structs []Struct, queries []Query) (*plugin.CodeGenResponse, error) {
+func generate(req *plugin.CodeGenRequest, opts *options.Options, enums []Enum, structs []Struct, queries []Query) (*plugin.CodeGenResponse, error) {
 	i := &importer{
 		Settings: req.Settings,
-		Options:  options,
+		Options:  opts,
 		Queries:  queries,
 		Enums:    enums,
 		Structs:  structs,
 	}
 
 	tctx := tmplCtx{
-		EmitInterface:             options.EmitInterface,
-		EmitJSONTags:              options.EmitJsonTags,
-		JsonTagsIDUppercase:       options.JsonTagsIdUppercase,
-		EmitDBTags:                options.EmitDbTags,
-		EmitPreparedQueries:       options.EmitPreparedQueries,
-		EmitEmptySlices:           options.EmitEmptySlices,
-		EmitMethodsWithDBArgument: options.EmitMethodsWithDbArgument,
-		EmitEnumValidMethod:       options.EmitEnumValidMethod,
-		EmitAllEnumValues:         options.EmitAllEnumValues,
+		EmitInterface:             opts.EmitInterface,
+		EmitJSONTags:              opts.EmitJsonTags,
+		JsonTagsIDUppercase:       opts.JsonTagsIdUppercase,
+		EmitDBTags:                opts.EmitDbTags,
+		EmitPreparedQueries:       opts.EmitPreparedQueries,
+		EmitEmptySlices:           opts.EmitEmptySlices,
+		EmitMethodsWithDBArgument: opts.EmitMethodsWithDbArgument,
+		EmitEnumValidMethod:       opts.EmitEnumValidMethod,
+		EmitAllEnumValues:         opts.EmitAllEnumValues,
 		UsesCopyFrom:              usesCopyFrom(queries),
 		UsesBatch:                 usesBatch(queries),
-		SQLDriver:                 parseDriver(options.SqlPackage),
+		SQLDriver:                 parseDriver(opts.SqlPackage),
 		Q:                         "`",
-		Package:                   options.Package,
+		Package:                   opts.Package,
 		Enums:                     enums,
 		Structs:                   structs,
 		SqlcVersion:               req.SqlcVersion,
-		BuildTags:                 options.BuildTags,
+		BuildTags:                 opts.BuildTags,
 	}
 
-	if tctx.UsesCopyFrom && !tctx.SQLDriver.IsPGX() && options.SqlDriver != SQLDriverGoSQLDriverMySQL {
+	if tctx.UsesCopyFrom && !tctx.SQLDriver.IsPGX() && opts.SqlDriver != SQLDriverGoSQLDriverMySQL {
 		return nil, errors.New(":copyfrom is only supported by pgx and github.com/go-sql-driver/mysql")
 	}
 
-	if tctx.UsesCopyFrom && options.SqlDriver == SQLDriverGoSQLDriverMySQL {
+	if tctx.UsesCopyFrom && opts.SqlDriver == SQLDriverGoSQLDriverMySQL {
 		if err := checkNoTimesForMySQLCopyFrom(queries); err != nil {
 			return nil, err
 		}
@@ -217,8 +218,8 @@ func generate(req *plugin.CodeGenRequest, options *opts, enums []Enum, structs [
 			return fmt.Errorf("source error: %w", err)
 		}
 
-		if templateName == "queryFile" && options.OutputFilesSuffix != "" {
-			name += options.OutputFilesSuffix
+		if templateName == "queryFile" && opts.OutputFilesSuffix != "" {
+			name += opts.OutputFilesSuffix
 		}
 
 		if !strings.HasSuffix(name, ".go") {
@@ -229,25 +230,25 @@ func generate(req *plugin.CodeGenRequest, options *opts, enums []Enum, structs [
 	}
 
 	dbFileName := "db.go"
-	if options.OutputDbFileName != "" {
-		dbFileName = options.OutputDbFileName
+	if opts.OutputDbFileName != "" {
+		dbFileName = opts.OutputDbFileName
 	}
 	modelsFileName := "models.go"
-	if options.OutputModelsFileName != "" {
-		modelsFileName = options.OutputModelsFileName
+	if opts.OutputModelsFileName != "" {
+		modelsFileName = opts.OutputModelsFileName
 	}
 	querierFileName := "querier.go"
-	if options.OutputQuerierFileName != "" {
-		querierFileName = options.OutputQuerierFileName
+	if opts.OutputQuerierFileName != "" {
+		querierFileName = opts.OutputQuerierFileName
 	}
 	copyfromFileName := "copyfrom.go"
-	if options.OutputCopyfromFileName != "" {
-		copyfromFileName = options.OutputCopyfromFileName
+	if opts.OutputCopyfromFileName != "" {
+		copyfromFileName = opts.OutputCopyfromFileName
 	}
 
 	batchFileName := "batch.go"
-	if options.OutputBatchFileName != "" {
-		batchFileName = options.OutputBatchFileName
+	if opts.OutputBatchFileName != "" {
+		batchFileName = opts.OutputBatchFileName
 	}
 
 	if err := execute(dbFileName, "dbFile"); err != nil {
@@ -256,7 +257,7 @@ func generate(req *plugin.CodeGenRequest, options *opts, enums []Enum, structs [
 	if err := execute(modelsFileName, "modelsFile"); err != nil {
 		return nil, err
 	}
-	if options.EmitInterface {
+	if opts.EmitInterface {
 		if err := execute(querierFileName, "interfaceFile"); err != nil {
 			return nil, err
 		}

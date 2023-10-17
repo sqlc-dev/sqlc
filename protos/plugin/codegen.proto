@@ -44,17 +44,17 @@ message ParsedGoType {
 }
 
 message Settings {
+  // Rename map was field 5
   // PythonCode message was field 8
   // KotlinCode message was field 9
-  // GoCode message was field 10;
-  // JSONCode message was field 11;
-  reserved 8, 9, 10, 11;
+  // GoCode message was field 10
+  // JSONCode message was field 11
+  reserved 5, 8, 9, 10, 11;
 
   string version = 1 [json_name = "version"];
   string engine = 2 [json_name = "engine"];
   repeated string schema = 3 [json_name = "schema"];
   repeated string queries = 4 [json_name = "queries"];
-  map<string, string> rename = 5 [json_name = "rename"];
   repeated Override overrides = 6 [json_name = "overrides"];
   Codegen codegen = 12 [json_name = "codegen"];
 }

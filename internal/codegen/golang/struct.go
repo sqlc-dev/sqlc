@@ -5,6 +5,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/sqlc-dev/sqlc/internal/codegen/golang/options"
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
 
@@ -15,8 +16,8 @@ type Struct struct {
 	Comment string
 }
 
-func StructName(name string, settings *plugin.Settings) string {
-	if rename := settings.Rename[name]; rename != "" {
+func StructName(name string, opts *options.Options) string {
+	if rename := opts.Rename[name]; rename != "" {
 		return rename
 	}
 	out := ""

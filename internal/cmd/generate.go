@@ -418,6 +418,7 @@ func codegen(ctx context.Context, combo config.CombinedSettings, sql outPair, re
 	case sql.Gen.Go != nil:
 		out = combo.Go.Out
 		handler = ext.HandleFunc(golang.Generate)
+		sql.Gen.Go.Rename = combo.Rename
 		opts, err := json.Marshal(sql.Gen.Go)
 		if err != nil {
 			return "", nil, fmt.Errorf("opts marshal failed: %w", err)

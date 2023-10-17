@@ -5,13 +5,14 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/sqlc-dev/sqlc/internal/codegen/golang/options"
 	"github.com/sqlc-dev/sqlc/internal/codegen/sdk"
 	"github.com/sqlc-dev/sqlc/internal/inflection"
 	"github.com/sqlc-dev/sqlc/internal/metadata"
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
 
-func buildEnums(req *plugin.CodeGenRequest, options *opts) []Enum {
+func buildEnums(req *plugin.CodeGenRequest, opts *options.Options) []Enum {
 	var enums []Enum
 	for _, schema := range req.Catalog.Schemas {
 		if schema.Name == "pg_catalog" || schema.Name == "information_schema" {
@@ -26,14 +27,14 @@ func buildEnums(req *plugin.CodeGenRequest, options *opts) []Enum {
 			}
 
 			e := Enum{
-				Name:      StructName(enumName, req.Settings),
+				Name:      StructName(enumName, opts),
 				Comment:   enum.Comment,
 				NameTags:  map[string]string{},
 				ValidTags: map[string]string{},
 			}
-			if options.EmitJsonTags {
-				e.NameTags["json"] = JSONTagName(enumName, options)
-				e.ValidTags["json"] = JSONTagName("valid", options)
+			if opts.EmitJsonTags {
+				e.NameTags["json"] = JSONTagName(enumName, opts)
+				e.ValidTags["json"] = JSONTagName("valid", opts)
 			}
 
 			seen := make(map[string]struct{}, len(enum.Vals))
@@ -43,7 +44,7 @@ func buildEnums(req *plugin.CodeGenRequest, options *opts) []Enum {
 					value = fmt.Sprintf("value_%d", i)
 				}
 				e.Constants = append(e.Constants, Constant{
-					Name:  StructName(enumName+"_"+value, req.Settings),
+					Name:  StructName(enumName+"_"+value, opts),
 					Value: v,
 					Type:  e.Name,
 				})
@@ -58,7 +59,7 @@ func buildEnums(req *plugin.CodeGenRequest, options *opts) []Enum {
 	return enums
 }
 
-func buildStructs(req *plugin.CodeGenRequest, options *opts) []Struct {
+func buildStructs(req *plugin.CodeGenRequest, opts *options.Options) []Struct {
 	var structs []Struct
 	for _, schema := range req.Catalog.Schemas {
 		if schema.Name == "pg_catalog" || schema.Name == "information_schema" {
@@ -72,29 +73,29 @@ func buildStructs(req *plugin.CodeGenRequest, options *opts) []Struct {
 				tableName = schema.Name + "_" + table.Rel.Name
 			}
 			structName := tableName
-			if !options.EmitExactTableNames {
+			if !opts.EmitExactTableNames {
 				structName = inflection.Singular(inflection.SingularParams{
 					Name:       structName,
-					Exclusions: options.InflectionExcludeTableNames,
+					Exclusions: opts.InflectionExcludeTableNames,
 				})
 			}
 			s := Struct{
 				Table:   &plugin.Identifier{Schema: schema.Name, Name: table.Rel.Name},
-				Name:    StructName(structName, req.Settings),
+				Name:    StructName(structName, opts),
 				Comment: table.Comment,
 			}
 			for _, column := range table.Columns {
 				tags := map[string]string{}
-				if options.EmitDbTags {
+				if opts.EmitDbTags {
 					tags["db"] = column.Name
 				}
-				if options.EmitJsonTags {
-					tags["json"] = JSONTagName(column.Name, options)
+				if opts.EmitJsonTags {
+					tags["json"] = JSONTagName(column.Name, opts)
 				}
 				addExtraGoStructTags(tags, req, column)
 				s.Fields = append(s.Fields, Field{
-					Name:    StructName(column.Name, req.Settings),
-					Type:    goType(req, options, column),
+					Name:    StructName(column.Name, opts),
+					Type:    goType(req, opts, column),
 					Tags:    tags,
 					Comment: column.Comment,
 				})
@@ -181,7 +182,7 @@ func argName(name string) string {
 	return out
 }
 
-func buildQueries(req *plugin.CodeGenRequest, options *opts, structs []Struct) ([]Query, error) {
+func buildQueries(req *plugin.CodeGenRequest, opts *options.Options, structs []Struct) ([]Query, error) {
 	qs := make([]Query, 0, len(req.Queries))
 	for _, query := range req.Queries {
 		if query.Name == "" {
@@ -192,7 +193,7 @@ func buildQueries(req *plugin.CodeGenRequest, options *opts, structs []Struct) (
 		}
 
 		var constantName string
-		if options.EmitExportedQueries {
+		if opts.EmitExportedQueries {
 			constantName = sdk.Title(query.Name)
 		} else {
 			constantName = sdk.LowerTitle(query.Name)
@@ -208,16 +209,16 @@ func buildQueries(req *plugin.CodeGenRequest, options *opts, structs []Struct) (
 			Comments:     query.Comments,
 			Table:        query.InsertIntoTable,
 		}
-		sqlpkg := parseDriver(options.SqlPackage)
+		sqlpkg := parseDriver(opts.SqlPackage)
 
-		qpl := int(*options.QueryParameterLimit)
+		qpl := int(*opts.QueryParameterLimit)
 
 		if len(query.Params) == 1 && qpl != 0 {
 			p := query.Params[0]
 			gq.Arg = QueryValue{
 				Name:      escape(paramName(p)),
 				DBName:    p.Column.GetName(),
-				Typ:       goType(req, options, p.Column),
+				Typ:       goType(req, opts, p.Column),
 				SQLDriver: sqlpkg,
 				Column:    p.Column,
 			}
@@ -229,7 +230,7 @@ func buildQueries(req *plugin.CodeGenRequest, options *opts, structs []Struct) (
 					Column: p.Column,
 				})
 			}
-			s, err := columnsToStruct(req, options, gq.MethodName+"Params", cols, false)
+			s, err := columnsToStruct(req, opts, gq.MethodName+"Params", cols, false)
 			if err != nil {
 				return nil, err
 			}
@@ -238,7 +239,7 @@ func buildQueries(req *plugin.CodeGenRequest, options *opts, structs []Struct) (
 				Name:        "arg",
 				Struct:      s,
 				SQLDriver:   sqlpkg,
-				EmitPointer: options.EmitParamsStructPointers,
+				EmitPointer: opts.EmitParamsStructPointers,
 			}
 
 			if len(query.Params) <= qpl {
@@ -253,7 +254,7 @@ func buildQueries(req *plugin.CodeGenRequest, options *opts, structs []Struct) (
 			gq.Ret = QueryValue{
 				Name:      escape(name),
 				DBName:    name,
-				Typ:       goType(req, options, c),
+				Typ:       goType(req, opts, c),
 				SQLDriver: sqlpkg,
 			}
 		} else if putOutColumns(query) {
@@ -267,8 +268,8 @@ func buildQueries(req *plugin.CodeGenRequest, options *opts, structs []Struct) (
 				same := true
 				for i, f := range s.Fields {
 					c := query.Columns[i]
-					sameName := f.Name == StructName(columnName(c, i), req.Settings)
-					sameType := f.Type == goType(req, options, c)
+					sameName := f.Name == StructName(columnName(c, i), opts)
+					sameType := f.Type == goType(req, opts, c)
 					sameTable := sdk.SameTableName(c.Table, s.Table, req.Catalog.DefaultSchema)
 					if !sameName || !sameType || !sameTable {
 						same = false
@@ -290,7 +291,7 @@ func buildQueries(req *plugin.CodeGenRequest, options *opts, structs []Struct) (
 					})
 				}
 				var err error
-				gs, err = columnsToStruct(req, options, gq.MethodName+"Row", columns, true)
+				gs, err = columnsToStruct(req, opts, gq.MethodName+"Row", columns, true)
 				if err != nil {
 					return nil, err
 				}
@@ -301,7 +302,7 @@ func buildQueries(req *plugin.CodeGenRequest, options *opts, structs []Struct) (
 				Name:        "i",
 				Struct:      gs,
 				SQLDriver:   sqlpkg,
-				EmitPointer: options.EmitResultStructPointers,
+				EmitPointer: opts.EmitResultStructPointers,
 			}
 		}
 
@@ -331,7 +332,7 @@ func putOutColumns(query *plugin.Query) bool {
 // JSON tags: count, count_2, count_2
 //
 // This is unlikely to happen, so don't fix it yet
-func columnsToStruct(req *plugin.CodeGenRequest, options *opts, name string, columns []goColumn, useID bool) (*Struct, error) {
+func columnsToStruct(req *plugin.CodeGenRequest, opts *options.Options, name string, columns []goColumn, useID bool) (*Struct, error) {
 	gs := Struct{
 		Name: name,
 	}
@@ -347,7 +348,7 @@ func columnsToStruct(req *plugin.CodeGenRequest, options *opts, name string, col
 			tagName = SetCaseStyle(colName, "snake")
 		}
 
-		fieldName := StructName(colName, req.Settings)
+		fieldName := StructName(colName, opts)
 		baseFieldName := fieldName
 		// Track suffixes by the ID of the column, so that columns referring to the same numbered parameter can be
 		// reused.
@@ -363,11 +364,11 @@ func columnsToStruct(req *plugin.CodeGenRequest, options *opts, name string, col
 			fieldName = fmt.Sprintf("%s_%d", fieldName, suffix)
 		}
 		tags := map[string]string{}
-		if options.EmitDbTags {
+		if opts.EmitDbTags {
 			tags["db"] = tagName
 		}
-		if options.EmitJsonTags {
-			tags["json"] = JSONTagName(tagName, options)
+		if opts.EmitJsonTags {
+			tags["json"] = JSONTagName(tagName, opts)
 		}
 		addExtraGoStructTags(tags, req, c.Column)
 		f := Field{
@@ -377,7 +378,7 @@ func columnsToStruct(req *plugin.CodeGenRequest, options *opts, name string, col
 			Column: c.Column,
 		}
 		if c.embed == nil {
-			f.Type = goType(req, options, c.Column)
+			f.Type = goType(req, opts, c.Column)
 		} else {
 			f.Type = c.embed.modelType
 			f.EmbedFields = c.embed.fields
