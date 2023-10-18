@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS wallets
+(
+    id BIGSERIAL PRIMARY KEY,
+    address VARCHAR(44) NOT NULL,
+    type VARCHAR(44) NOT NULL,
+    balance DECIMAL(32, 18) NULL
+);

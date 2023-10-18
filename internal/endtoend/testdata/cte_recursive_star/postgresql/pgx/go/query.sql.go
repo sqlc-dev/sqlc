@@ -26,7 +26,7 @@ type GetDictTreeRow struct {
 	ParentCode string
 	Label      string
 	Value      pgtype.Text
-	Path       pgtype.Text
+	Path       []string
 	Depth      int32
 }
 

@@ -58,6 +58,8 @@ func combineAnalysis(prev *analysis, a *analyzer.Analysis) *analysis {
 	if len(prev.Columns) == len(cols) {
 		for i := range prev.Columns {
 			prev.Columns[i].DataType = cols[i].DataType
+			prev.Columns[i].IsArray = cols[i].IsArray
+			prev.Columns[i].ArrayDims = cols[i].ArrayDims
 		}
 	} else {
 		embedding := false
@@ -73,6 +75,8 @@ func combineAnalysis(prev *analysis, a *analyzer.Analysis) *analysis {
 	if len(prev.Parameters) == len(params) {
 		for i := range prev.Parameters {
 			prev.Parameters[i].Column.DataType = params[i].Column.DataType
+			prev.Parameters[i].Column.IsArray = params[i].Column.IsArray
+			prev.Parameters[i].Column.ArrayDims = params[i].Column.ArrayDims
 		}
 	} else {
 		prev.Parameters = params
