@@ -84,6 +84,18 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 			return nil, err
 		}
 
+		// If the query uses star expansion, verify that it was edited. If not,
+		// return an error.
+		stars := astutils.Search(raw, func(node ast.Node) bool {
+			_, ok := node.(*ast.A_Star)
+			return ok
+		})
+		hasStars := len(stars.Items) > 0
+		unchanged := inference.Query == rawSQL
+		if unchanged && hasStars {
+			return nil, fmt.Errorf("star expansion failed for query")
+		}
+
 		// FOOTGUN: combineAnalysis mutates inference
 		anlys = combineAnalysis(inference, result)
 	} else {
