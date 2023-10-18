@@ -4,6 +4,10 @@ package plugin;
 
 option go_package = "github.com/sqlc-dev/sqlc/internal/plugin";
 
+service CodeGenerator {
+  rpc Generate (CodeGenRequest) returns (CodeGenResponse);
+}
+
 message File {
   string name = 1 [json_name = "name"];
   bytes contents = 2 [json_name = "contents"];

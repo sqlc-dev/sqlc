@@ -5,7 +5,11 @@
 package plugin
 
 import (
+	context "context"
 	fmt "fmt"
+	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 	proto "google.golang.org/protobuf/proto"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	io "io"
@@ -1068,6 +1072,98 @@ func (this *CodeGenResponse) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the grpc package it is being compiled against.
+// Requires gRPC-Go v1.32.0 or later.
+const _ = grpc.SupportPackageIsVersion7
+
+// CodeGeneratorClient is the client API for CodeGenerator service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type CodeGeneratorClient interface {
+	Generate(ctx context.Context, in *CodeGenRequest, opts ...grpc.CallOption) (*CodeGenResponse, error)
+}
+
+type codeGeneratorClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewCodeGeneratorClient(cc grpc.ClientConnInterface) CodeGeneratorClient {
+	return &codeGeneratorClient{cc}
+}
+
+func (c *codeGeneratorClient) Generate(ctx context.Context, in *CodeGenRequest, opts ...grpc.CallOption) (*CodeGenResponse, error) {
+	out := new(CodeGenResponse)
+	err := c.cc.Invoke(ctx, "/plugin.CodeGenerator/Generate", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// CodeGeneratorServer is the server API for CodeGenerator service.
+// All implementations must embed UnimplementedCodeGeneratorServer
+// for forward compatibility
+type CodeGeneratorServer interface {
+	Generate(context.Context, *CodeGenRequest) (*CodeGenResponse, error)
+	mustEmbedUnimplementedCodeGeneratorServer()
+}
+
+// UnimplementedCodeGeneratorServer must be embedded to have forward compatible implementations.
+type UnimplementedCodeGeneratorServer struct {
+}
+
+func (UnimplementedCodeGeneratorServer) Generate(context.Context, *CodeGenRequest) (*CodeGenResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Generate not implemented")
+}
+func (UnimplementedCodeGeneratorServer) mustEmbedUnimplementedCodeGeneratorServer() {}
+
+// UnsafeCodeGeneratorServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to CodeGeneratorServer will
+// result in compilation errors.
+type UnsafeCodeGeneratorServer interface {
+	mustEmbedUnimplementedCodeGeneratorServer()
+}
+
+func RegisterCodeGeneratorServer(s grpc.ServiceRegistrar, srv CodeGeneratorServer) {
+	s.RegisterService(&CodeGenerator_ServiceDesc, srv)
+}
+
+func _CodeGenerator_Generate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CodeGenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CodeGeneratorServer).Generate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/plugin.CodeGenerator/Generate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CodeGeneratorServer).Generate(ctx, req.(*CodeGenRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// CodeGenerator_ServiceDesc is the grpc.ServiceDesc for CodeGenerator service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var CodeGenerator_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "plugin.CodeGenerator",
+	HandlerType: (*CodeGeneratorServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Generate",
+			Handler:    _CodeGenerator_Generate_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "plugin/codegen.proto",
+}
+
 func (m *File) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
