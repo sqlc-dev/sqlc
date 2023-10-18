@@ -1,4 +1,4 @@
--- name: Q :one
+-- name: ListItems :one
 WITH
     items1 AS (SELECT 'id'::TEXT AS id, 'name'::TEXT AS name),
     items2 AS (SELECT 'id'::TEXT AS id, 'name'::TEXT AS name)

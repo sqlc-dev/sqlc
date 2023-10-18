@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const q = `-- name: Q :one
+const listItems = `-- name: ListItems :one
 WITH
     items1 AS (SELECT 'id'::TEXT AS id, 'name'::TEXT AS name),
     items2 AS (SELECT 'id'::TEXT AS id, 'name'::TEXT AS name)
@@ -21,14 +21,14 @@ FROM
         JOIN items1 i2 ON 1 = 1
 `
 
-type QRow struct {
+type ListItemsRow struct {
 	Id1 string
 	Id2 string
 }
 
-func (q *Queries) Q(ctx context.Context) (QRow, error) {
-	row := q.db.QueryRow(ctx, q)
-	var i QRow
+func (q *Queries) ListItems(ctx context.Context) (ListItemsRow, error) {
+	row := q.db.QueryRow(ctx, listItems)
+	var i ListItemsRow
 	err := row.Scan(&i.Id1, &i.Id2)
 	return i, err
 }
