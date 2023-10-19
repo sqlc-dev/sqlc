@@ -1,11 +1,13 @@
 # Getting started with SQLite
 
 This tutorial assumes that the latest version of sqlc is
-[installed](../overview/install.md) and ready to use.
+[installed](../overview/install.md) and ready to use. And we'll
+be generating Go code, but other
+[language plugins](../reference/language-support.rst) are available.
 
 Create a new directory called `sqlc-tutorial` and open it up.
 
-Initialize a new Go module named `tutorial.sql.dev/app`
+Initialize a new Go module named `tutorial.sqlc.dev/app`
 
 ```shell
 go mod init tutorial.sqlc.dev/app
@@ -16,19 +18,20 @@ directory. In our new directory, create a file named `sqlc.yaml` with the
 following contents:
 
 ```yaml
-version: 2
+version: "2"
 sql:
   - engine: "sqlite"
-    schema: "schema.sql"
     queries: "query.sql"
+    schema: "schema.sql"
     gen:
       go:
         package: "tutorial"
         out: "tutorial"
 ```
 
-sqlc needs to know your database schema and queries. In the same directory,
-create a file named `schema.sql` with the following contents:
+sqlc needs to know your database schema and queries in order to generate code.
+In the same directory, create a file named `schema.sql` with the following
+content:
 
 ```sql
 CREATE TABLE authors (
@@ -38,7 +41,7 @@ CREATE TABLE authors (
 );
 ```
 
-Next, create a `query.sql` file with the following four queries:
+Next, create a `query.sql` file with the following five queries:
 
 ```sql
 -- name: GetAuthor :one
@@ -57,22 +60,19 @@ INSERT INTO authors (
 )
 RETURNING *;
 
--- name: DeleteAuthor :exec
-DELETE FROM authors
-WHERE id = ?;
-```
-
-For SQL UPDATE if you do not want to return the updated record to the user, add this to the `query.sql` file:
-
-```sql
 -- name: UpdateAuthor :exec
 UPDATE authors
 set name = ?,
 bio = ?
 WHERE id = ?;
+
+-- name: DeleteAuthor :exec
+DELETE FROM authors
+WHERE id = ?;
 ```
 
-Otherwise, to return the updated record back to the user, add this to the `query.sql` file:
+If you prefer, you can alter the `UpdateAuthor` query to return the updated
+record:
 
 ```sql
 -- name: UpdateAuthor :one
@@ -83,13 +83,15 @@ WHERE id = ?
 RETURNING *;
 ```
 
-You are now ready to generate code. Run the `generate` command. You shouldn't see any errors or output.
+You are now ready to generate code. You shouldn't see any output when you run
+the `generate` subcommand, unless something goes wrong:
 
 ```shell
 sqlc generate
 ```
 
-You should now have a `tutorial` package containing three files.
+You should now have a `tutorial` subdirectory with three files containing Go
+source code. These files comprise a Go package named `tutorial`:
 
 ```
 ├── go.mod
@@ -102,7 +104,8 @@ You should now have a `tutorial` package containing three files.
     └── query.sql.go
 ```
 
-You can use your newly generated queries in `app.go`.
+You can use your newly-generated `tutorial` package from any Go program.
+Create a file named `tutorial.go` and add the following contents:
 
 ```go
 package main
@@ -110,14 +113,13 @@ package main
 import (
 	"context"
 	"database/sql"
+	_ "embed"
 	"log"
 	"reflect"
 
-	"tutorial.sqlc.dev/app/tutorial"
-
-	_ "embed"
-
 	_ "github.com/mattn/go-sqlite3"
+
+	"tutorial.sqlc.dev/app/tutorial"
 )
 
 //go:embed schema.sql
@@ -173,12 +175,16 @@ func main() {
 }
 ```
 
-Before the code will compile, you'll need to add the Go SQLite driver.
+Before this code will compile you'll need to fetch the relevant SQLite driver:
 
-```
-go mod tidy
+```shell
+go get github.com/mattn/go-sqlite3
 go build ./...
 ```
 
-To make that possible, sqlc generates readable, **idiomatic** Go code that you
-otherwise would have had to write yourself. Take a look in `tutorial/query.sql.go`.
+The program should compile without errors, and run successfully. To make that
+possible, sqlc generates readable, **idiomatic** Go code that you
+otherwise would've had to write yourself. Take a look in `tutorial/query.sql.go`.
+
+You should now have a working program using sqlc's generated Go source code,
+and hopefully can see how you'd use sqlc in your own real-world applications.
