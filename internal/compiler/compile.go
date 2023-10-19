@@ -65,7 +65,6 @@ func (c *Compiler) parseQueries(o opts.Parser) (*Result, error) {
 	if err != nil {
 		return nil, err
 	}
-fileLoop:
 	for _, filename := range files {
 		blob, err := os.ReadFile(filename)
 		if err != nil {
@@ -92,7 +91,7 @@ fileLoop:
 				merr.Add(filename, src, loc, err)
 				// If this rpc unauthenticated error bubbles up, then all future parsing/analysis will fail
 				if errors.Is(err, rpc.ErrUnauthenticated) {
-					break fileLoop
+					return nil, merr
 				}
 				continue
 			}
