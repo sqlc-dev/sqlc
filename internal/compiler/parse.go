@@ -70,7 +70,6 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 
 	var anlys *analysis
 	if c.analyzer != nil {
-		// TODO: Handle panics
 		inference, _ := c.inferQuery(raw, rawSQL)
 		if inference == nil {
 			inference = &analysis{}
