@@ -156,7 +156,6 @@ func Vet(ctx context.Context, dir, filename string, opts *Options) error {
 		if err := c.checkSQL(ctx, sql); err != nil {
 			if !errors.Is(err, ErrFailedChecks) {
 				fmt.Fprintf(stderr, "%s\n", err)
-				continue
 			}
 			errored = true
 		}
