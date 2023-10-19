@@ -2,8 +2,8 @@ package bundler
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"os"
 
 	"google.golang.org/protobuf/encoding/protojson"
 
@@ -13,8 +13,20 @@ import (
 	pb "github.com/sqlc-dev/sqlc/internal/quickdb/v1"
 )
 
+var ErrNoProject = errors.New(`project uploads require a cloud project
+
+If you don't have a project, you can create one from the sqlc Cloud
+dashboard at https://dashboard.sqlc.dev/. If you have a project, ensure
+you've set its id as the value of the "project" field within the "cloud"
+section of your sqlc configuration. The id will look similar to
+"01HA8TWGMYPHK0V2GGMB3R2TP9".`)
+var ErrNoAuthToken = errors.New(`project uploads require an auth token
+
+If you don't have an auth token, you can create one from the sqlc Cloud
+dashboard at https://dashboard.sqlc.dev/. If you have an auth token, ensure
+you've set it as the value of the SQLC_AUTH_TOKEN environment variable.`)
+
 type Uploader struct {
-	token      string
 	configPath string
 	config     *config.Config
 	dir        string
@@ -23,7 +35,6 @@ type Uploader struct {
 
 func NewUploader(configPath, dir string, conf *config.Config) *Uploader {
 	return &Uploader{
-		token:      os.Getenv("SQLC_AUTH_TOKEN"),
 		configPath: configPath,
 		config:     conf,
 		dir:        dir,
@@ -32,10 +43,10 @@ func NewUploader(configPath, dir string, conf *config.Config) *Uploader {
 
 func (up *Uploader) Validate() error {
 	if up.config.Cloud.Project == "" {
-		return fmt.Errorf("cloud.project is not set")
+		return ErrNoProject
 	}
-	if up.token == "" {
-		return fmt.Errorf("SQLC_AUTH_TOKEN environment variable is not set")
+	if up.config.Cloud.AuthToken == "" {
+		return ErrNoAuthToken
 	}
 	if up.client == nil {
 		client, err := quickdb.NewClientFromConfig(up.config.Cloud)

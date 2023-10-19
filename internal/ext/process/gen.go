@@ -37,6 +37,9 @@ func (r Runner) Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plug
 		fmt.Sprintf("SQLC_VERSION=%s", req.SqlcVersion),
 	}
 	for _, key := range r.Env {
+		if key == "SQLC_AUTH_TOKEN" {
+			continue
+		}
 		cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", key, os.Getenv(key)))
 	}
 

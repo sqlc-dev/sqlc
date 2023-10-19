@@ -400,6 +400,7 @@ func (c *checker) fetchDatabaseUri(ctx context.Context, s config.SQL) (string, f
 		uri, err := c.DSN(s.Database.URI)
 		return uri, cleanup, err
 	}
+
 	if s.Engine != config.EnginePostgreSQL {
 		return "", cleanup, fmt.Errorf("managed: only PostgreSQL currently")
 	}
@@ -418,8 +419,8 @@ func (c *checker) fetchDatabaseUri(ctx context.Context, s config.SQL) (string, f
 	if err != nil {
 		return "", cleanup, err
 	}
-	for _, query := range files {
-		contents, err := os.ReadFile(query)
+	for _, schema := range files {
+		contents, err := os.ReadFile(schema)
 		if err != nil {
 			return "", cleanup, fmt.Errorf("read file: %w", err)
 		}

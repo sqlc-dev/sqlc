@@ -72,6 +72,7 @@ type Cloud struct {
 	Organization string `json:"organization" yaml:"organization"`
 	Project      string `json:"project" yaml:"project"`
 	Hostname     string `json:"hostname" yaml:"hostname"`
+	AuthToken    string `json:"-" yaml:"-"`
 }
 
 type Plugin struct {
@@ -186,8 +187,22 @@ var ErrPluginNoName = errors.New("missing plugin name")
 var ErrPluginExists = errors.New("a plugin with that name already exists")
 var ErrPluginNotFound = errors.New("no plugin found")
 var ErrPluginNoType = errors.New("plugin: field `process` or `wasm` required")
-var ErrPluginBothTypes = errors.New("plugin: both `process` and `wasm` cannot both be defined")
+var ErrPluginBothTypes = errors.New("plugin: `process` and `wasm` cannot both be defined")
 var ErrPluginProcessNoCmd = errors.New("plugin: missing process command")
+
+var ErrInvalidDatabase = errors.New("database must be managed or have a non-empty URI")
+var ErrManagedDatabaseNoProject = errors.New(`managed databases require a cloud project
+
+If you don't have a project, you can create one from the sqlc Cloud
+dashboard at https://dashboard.sqlc.dev/. If you have a project, ensure
+you've set its id as the value of the "project" field within the "cloud"
+section of your sqlc configuration. The id will look similar to
+"01HA8TWGMYPHK0V2GGMB3R2TP9".`)
+var ErrManagedDatabaseNoAuthToken = errors.New(`managed databases require an auth token
+
+If you don't have an auth token, you can create one from the sqlc Cloud
+dashboard at https://dashboard.sqlc.dev/. If you have an auth token, ensure
+you've set it as the value of the SQLC_AUTH_TOKEN environment variable.`)
 
 func ParseConfig(rd io.Reader) (Config, error) {
 	var buf bytes.Buffer
@@ -202,14 +217,26 @@ func ParseConfig(rd io.Reader) (Config, error) {
 	if version.Number == "" {
 		return config, ErrMissingVersion
 	}
+	var err error
 	switch version.Number {
 	case "1":
-		return v1ParseConfig(&buf)
+		config, err = v1ParseConfig(&buf)
+		if err != nil {
+			return config, err
+		}
 	case "2":
-		return v2ParseConfig(&buf)
+		config, err = v2ParseConfig(&buf)
+		if err != nil {
+			return config, err
+		}
 	default:
 		return config, ErrUnknownVersion
 	}
+	err = config.addEnvVars()
+	if err != nil {
+		return config, err
+	}
+	return config, nil
 }
 
 type CombinedSettings struct {

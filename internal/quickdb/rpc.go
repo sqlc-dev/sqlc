@@ -2,7 +2,6 @@ package quickdb
 
 import (
 	"crypto/tls"
-	"os"
 
 	"github.com/riza-io/grpc-go/credentials/basic"
 	"google.golang.org/grpc"
@@ -10,14 +9,14 @@ import (
 
 	"github.com/sqlc-dev/sqlc/internal/config"
 	pb "github.com/sqlc-dev/sqlc/internal/quickdb/v1"
+	"github.com/sqlc-dev/sqlc/internal/rpc"
 )
 
 const defaultHostname = "grpc.sqlc.dev"
 
 func NewClientFromConfig(cloudConfig config.Cloud) (pb.QuickClient, error) {
 	projectID := cloudConfig.Project
-	authToken := os.Getenv("SQLC_AUTH_TOKEN")
-	return NewClient(projectID, authToken, WithHost(cloudConfig.Hostname))
+	return NewClient(projectID, cloudConfig.AuthToken, WithHost(cloudConfig.Hostname))
 }
 
 type options struct {
@@ -41,6 +40,7 @@ func NewClient(project, token string, opts ...Option) (pb.QuickClient, error) {
 	dialOpts := []grpc.DialOption{
 		grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{})),
 		grpc.WithPerRPCCredentials(basic.NewPerRPCCredentials(project, token)),
+		grpc.WithUnaryInterceptor(rpc.UnaryInterceptor),
 	}
 
 	hostname := o.hostname
