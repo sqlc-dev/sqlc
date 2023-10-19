@@ -537,6 +537,15 @@ func postgresType(req *plugin.CodeGenRequest, options *opts, col *plugin.Column)
 			return "pgtype.Polygon"
 		}
 
+	case "vector":
+		if driver == SQLDriverPGXV5 {
+			if emitPointersForNull {
+				return "*pgvector.Vector"
+			} else {
+				return "pgvector.Vector"
+			}
+		}
+
 	case "void":
 		// A void value can only be scanned into an empty interface.
 		return "interface{}"

@@ -219,6 +219,10 @@ func buildImports(settings *plugin.Settings, options *opts, queries []Query, use
 	if uses("uuid.NullUUID") && !overrideNullUUID {
 		pkg[ImportSpec{Path: "github.com/google/uuid"}] = struct{}{}
 	}
+	_, overrideVector := overrideTypes["pgvector.Vector"]
+	if uses("pgvector.Vector") && !overrideVector {
+		pkg[ImportSpec{Path: "github.com/pgvector/pgvector-go"}] = struct{}{}
+	}
 
 	// Custom imports
 	for _, o := range settings.Overrides {

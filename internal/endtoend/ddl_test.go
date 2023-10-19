@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
-	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -32,28 +32,20 @@ func TestValidSchema(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	files := []string{}
+	for _, replay := range FindTests(t, "testdata", "managed-db") {
+		replay := replay // https://golang.org/doc/faq#closures_and_goroutines
 
-	// Find all tests that do not have a stderr.txt file
-	err = filepath.Walk("testdata", func(path string, info fs.FileInfo, err error) error {
-		if err != nil {
-			return err
+		if len(replay.Stderr) > 0 {
+			continue
 		}
-		if filepath.Base(path) == "sqlc.json" || filepath.Base(path) == "sqlc.yaml" || filepath.Base(path) == "sqlc.yml" {
-			stderr := filepath.Join(filepath.Dir(path), "stderr.txt")
-			if _, err := os.Stat(stderr); !os.IsNotExist(err) {
-				return nil
+
+		if replay.Exec != nil {
+			if !slices.Contains(replay.Exec.Contexts, "managed-db") {
+				continue
 			}
-			files = append(files, path)
 		}
-		return nil
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
 
-	for _, file := range files {
-		file := file // https://golang.org/doc/faq#closures_and_goroutines
+		file := filepath.Join(replay.Path, replay.ConfigName)
 		rd, err := os.Open(file)
 		if err != nil {
 			t.Fatal(err)
