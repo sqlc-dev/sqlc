@@ -111,9 +111,6 @@ func TestReplay(t *testing.T) {
 				}
 			},
 			Enabled: func() bool {
-				if len(os.Getenv("CI")) > 0 {
-					return false
-				}
 				return len(os.Getenv("SQLC_AUTH_TOKEN")) > 0
 			},
 		},
