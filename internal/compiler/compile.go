@@ -11,6 +11,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/migrations"
 	"github.com/sqlc-dev/sqlc/internal/multierr"
 	"github.com/sqlc-dev/sqlc/internal/opts"
+	"github.com/sqlc-dev/sqlc/internal/rpc"
 	"github.com/sqlc-dev/sqlc/internal/source"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
@@ -88,6 +89,10 @@ func (c *Compiler) parseQueries(o opts.Parser) (*Result, error) {
 					loc = e.Location
 				}
 				merr.Add(filename, src, loc, err)
+				// If this rpc unauthenticated error bubbles up, then all future parsing/analysis will fail
+				if errors.Is(err, rpc.ErrUnauthenticated) {
+					return nil, merr
+				}
 				continue
 			}
 			queryName := query.Metadata.Name
