@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package pb;
+package analyzer.pb;
 
 option go_package = "github.com/sqlc-dev/sqlc/internal/analyzer/pb";
 
