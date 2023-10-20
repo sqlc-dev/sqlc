@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package analyzer.pb;
+package analysis;
 
-option go_package = "github.com/sqlc-dev/sqlc/internal/analyzer/pb";
+option go_package = "github.com/sqlc-dev/sqlc/internal/analysis";
 
 message Identifier {
 	string catalog = 1;

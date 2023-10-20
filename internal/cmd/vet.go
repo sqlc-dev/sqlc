@@ -461,7 +461,7 @@ func (c *checker) DSN(dsn string) (string, error) {
 
 func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 	// TODO: Create a separate function for this logic so we can
-	combo := config.Combine(c.ConfigPath, *c.Conf, s)
+	combo := config.Combine(*c.Conf, s)
 
 	// TODO: This feels like a hack that will bite us later
 	joined := make([]string, 0, len(s.Schema))

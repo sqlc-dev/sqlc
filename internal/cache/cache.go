@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 )
 
-// The cache directory defaults to ~/.cache/sqlc. This location can be overriden
-// by the SQLCCACHE or XDG_CACHE_HOME environment variable.
+// The cache directory defaults to os.UserCacheDir(). This location can be
+// overridden by the SQLCCACHE environment variable.
 //
 // Currently the cache stores two types of data: plugins and query analysis
 func Dir() (string, error) {
@@ -15,13 +15,9 @@ func Dir() (string, error) {
 	if cache != "" {
 		return cache, nil
 	}
-	cacheHome := os.Getenv("XDG_CACHE_HOME")
-	if cacheHome == "" {
-		home, err := os.UserHomeDir()
-		if err != nil {
-			return "", err
-		}
-		cacheHome = filepath.Join(home, ".cache")
+	cacheHome, err := os.UserCacheDir()
+	if err != nil {
+		return "", err
 	}
 	return filepath.Join(cacheHome, "sqlc"), nil
 }

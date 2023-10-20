@@ -3,7 +3,7 @@ package compiler
 import (
 	"sort"
 
-	analyzer "github.com/sqlc-dev/sqlc/internal/analyzer/pb"
+	analyzer "github.com/sqlc-dev/sqlc/internal/analysis"
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/source"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"

@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	core "github.com/sqlc-dev/sqlc/internal/analyzer/pb"
+	core "github.com/sqlc-dev/sqlc/internal/analysis"
 	"github.com/sqlc-dev/sqlc/internal/config"
 	pb "github.com/sqlc-dev/sqlc/internal/quickdb/v1"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"

@@ -199,7 +199,7 @@ func Generate(ctx context.Context, dir, filename string, o *Options) (map[string
 		errout := &stderrs[i]
 
 		grp.Go(func() error {
-			combo := config.Combine(configPath, *conf, sql.SQL)
+			combo := config.Combine(*conf, sql.SQL)
 			if sql.Plugin != nil {
 				combo.Codegen = *sql.Plugin
 			}

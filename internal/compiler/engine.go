@@ -53,7 +53,7 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings) (*Compiler, err
 			if conf.Analyzer.Database == nil || *conf.Analyzer.Database {
 				c.analyzer = analyzer.Cached(
 					pganalyze.New(c.client, *conf.Database),
-					combo.Path,
+					combo.Global,
 					*conf.Database,
 				)
 			}

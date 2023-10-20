@@ -240,7 +240,6 @@ func ParseConfig(rd io.Reader) (Config, error) {
 }
 
 type CombinedSettings struct {
-	Path      string
 	Global    Config
 	Package   SQL
 	Go        SQLGo
@@ -252,9 +251,8 @@ type CombinedSettings struct {
 	Codegen Codegen
 }
 
-func Combine(path string, conf Config, pkg SQL) CombinedSettings {
+func Combine(conf Config, pkg SQL) CombinedSettings {
 	cs := CombinedSettings{
-		Path:    path,
 		Global:  conf,
 		Package: pkg,
 		Rename:  map[string]string{},
