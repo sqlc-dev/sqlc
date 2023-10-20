@@ -173,9 +173,9 @@ The `gen` mapping supports the following keys:
 - `overrides`:
   - It is a collection of definitions that dictates which types are used to map a database types.
 
-##### `overrides`
+##### overrides
 
-See [Overriding types](../howto/overrides.md) for in-depth guide to using type overrides. Each mapping of the `overrides` collection has the following keys:
+See [Overriding types](../howto/overrides.md) for an in-depth guide to using type overrides. Each mapping of the `overrides` collection has the following keys:
 
 - `db_type`:
   - The PostgreSQL or MySQL type to override. Find the full list of supported types in [postgresql_type.go](https://github.com/sqlc-dev/sqlc/blob/main/internal/codegen/golang/postgresql_type.go#L12) or [mysql_type.go](https://github.com/sqlc-dev/sqlc/blob/main/internal/codegen/golang/mysql_type.go#L12). Note that for Postgres you must use the pg_catalog prefixed names where available. Can't be used if the `column` key is defined.
@@ -318,7 +318,7 @@ rules:
       query.cmd == "exec"
 ```
   
-### global overrides
+### Global overrides
 
 Sometimes, the same configuration must be done across various specifications of
 code generation.  Then a global definition for type overriding and field

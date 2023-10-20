@@ -50,4 +50,4 @@ type Author struct {
 
 ## More control
 
-See the Type Overrides section of the Configuration File docs for fine-grained control over struct field types and tags.
+See the guide to [Overriding types](./overrides.md) for fine-grained control over struct field types and tags.
