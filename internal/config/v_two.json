@@ -31,6 +31,9 @@
                     "engine"
                 ],
                 "properties": {
+                    "name": {
+                        "type": "string"
+                    },
                     "engine": {
                         "enum": [
                             "postgresql",

@@ -25,6 +25,7 @@ import (
 )
 
 func init() {
+	createDBCmd.Flags().StringP("queryset", "", "", "name of the queryset to use")
 	uploadCmd.Flags().BoolP("dry-run", "", false, "dump upload request (default: false)")
 	initCmd.Flags().BoolP("v1", "", false, "generate v1 config yaml file")
 	initCmd.Flags().BoolP("v2", "", true, "generate v2 config yaml file")
@@ -41,6 +42,7 @@ func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int 
 	rootCmd.PersistentFlags().Bool("no-database", false, "disable database connections (default: false)")
 
 	rootCmd.AddCommand(checkCmd)
+	rootCmd.AddCommand(createDBCmd)
 	rootCmd.AddCommand(diffCmd)
 	rootCmd.AddCommand(genCmd)
 	rootCmd.AddCommand(initCmd)

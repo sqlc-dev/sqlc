@@ -103,6 +103,7 @@ type GenGo struct {
 }
 
 type SQL struct {
+	Name                 string    `json:"name" yaml:"name"`
 	Engine               Engine    `json:"engine,omitempty" yaml:"engine"`
 	Schema               Paths     `json:"schema" yaml:"schema"`
 	Queries              Paths     `json:"queries" yaml:"queries"`

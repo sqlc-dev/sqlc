@@ -143,6 +143,7 @@ func (c *V1GenerateSettings) Translate() Config {
 			pkg.StrictOrderBy = &defaultValue
 		}
 		conf.SQL = append(conf.SQL, SQL{
+			Name:     pkg.Name,
 			Engine:   pkg.Engine,
 			Database: pkg.Database,
 			Schema:   pkg.Schema,
