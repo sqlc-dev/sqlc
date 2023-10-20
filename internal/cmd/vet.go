@@ -143,7 +143,6 @@ func Vet(ctx context.Context, dir, filename string, opts *Options) error {
 	}
 
 	c := checker{
-		ConfigPath: configPath,
 		Rules:      rules,
 		Conf:       conf,
 		Dir:        dir,
@@ -379,7 +378,6 @@ type rule struct {
 }
 
 type checker struct {
-	ConfigPath string
 	Rules      map[string]rule
 	Conf       *config.Config
 	Dir        string

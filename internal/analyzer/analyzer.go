@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"hash/fnv"
+	"log/slog"
 	"os"
 	"path/filepath"
 
-	"golang.org/x/exp/slog"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/sqlc-dev/sqlc/internal/analysis"
