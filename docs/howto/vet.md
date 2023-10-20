@@ -191,7 +191,7 @@ sql:
       - sqlc/db-prepare
 ```
 
-When connecting to a database via URI, `sqlc` does not migrate your database. By switching to [managed databases](managed-databases.md), sqlc will create and migrate databases automatically.
+Databases configured with a `uri` must have an up-to-date schema, and `sqlc` does not apply schema migrations your database. You can configure [managed databases](managed-databases.md) instead to have `sqlc` create and migrate databases automatically.
 
 ```yaml
 version: 2
