@@ -1,9 +1,21 @@
 # Getting started with PostgreSQL
 
 This tutorial assumes that the latest version of sqlc is
-[installed](../overview/install.md) and ready to use. And we'll
-be generating Go code, but other
-[language plugins](../reference/language-support.rst) are available.
+[installed](../overview/install.md) and ready to use.
+
+We'll generate Go code here, but other
+[language plugins](../reference/language-support.rst) are available. You'll
+naturally need the Go toolchain if you want to build and run a program with the
+code sqlc generates, but sqlc itself has no dependencies.
+
+We'll also rely on sqlc's [managed databases](../howto/managed-databases.md),
+which require a sqlc Cloud project and auth token. You can get those from
+the [sqlc Cloud dashboard](https://dashboard.sqlc.dev/). Managed databases are
+an optional feature that improves sqlc's query analysis in many cases, but you
+can turn it off simply by removing the `cloud` and `database` sections of your
+configuration.
+
+## Setting up
 
 Create a new directory called `sqlc-tutorial` and open it up.
 
@@ -19,16 +31,28 @@ following contents:
 
 ```yaml
 version: "2"
+cloud:
+  project: "<your project id>"
 sql:
   - engine: "postgresql"
     queries: "query.sql"
     schema: "schema.sql"
+    database:
+      managed: true
     gen:
       go:
         package: "tutorial"
         out: "tutorial"
         sql_package: "pgx/v5"
 ```
+
+And finally, set the `SQLC_AUTH_TOKEN` environment variable:
+
+```shell
+export SQLC_AUTH_TOKEN="<your sqlc auth token>"
+```
+
+## Schema and queries
 
 sqlc needs to know your database schema and queries in order to generate code.
 In the same directory, create a file named `schema.sql` with the following
@@ -84,6 +108,8 @@ WHERE id = $1
 RETURNING *;
 ```
 
+## Generating code
+
 You are now ready to generate code. You shouldn't see any output when you run
 the `generate` subcommand, unless something goes wrong:
 
@@ -104,6 +130,8 @@ source code. These files comprise a Go package named `tutorial`:
     ├── models.go
     └── query.sql.go
 ```
+
+## Using generated code
 
 You can use your newly-generated `tutorial` package from any Go program.
 Create a file named `tutorial.go` and add the following contents:

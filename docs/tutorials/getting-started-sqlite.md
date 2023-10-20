@@ -1,9 +1,14 @@
 # Getting started with SQLite
 
 This tutorial assumes that the latest version of sqlc is
-[installed](../overview/install.md) and ready to use. And we'll
-be generating Go code, but other
-[language plugins](../reference/language-support.rst) are available.
+[installed](../overview/install.md) and ready to use.
+
+We'll generate Go code here, but other
+[language plugins](../reference/language-support.rst) are available. You'll
+naturally need the Go toolchain if you want to build and run a program with the
+code sqlc generates, but sqlc itself has no dependencies.
+
+## Setting up
 
 Create a new directory called `sqlc-tutorial` and open it up.
 
@@ -28,6 +33,8 @@ sql:
         package: "tutorial"
         out: "tutorial"
 ```
+
+## Schema and queries
 
 sqlc needs to know your database schema and queries in order to generate code.
 In the same directory, create a file named `schema.sql` with the following
@@ -83,6 +90,8 @@ WHERE id = ?
 RETURNING *;
 ```
 
+## Generating code
+
 You are now ready to generate code. You shouldn't see any output when you run
 the `generate` subcommand, unless something goes wrong:
 
@@ -103,6 +112,8 @@ source code. These files comprise a Go package named `tutorial`:
     ├── models.go
     └── query.sql.go
 ```
+
+## Using generated code
 
 You can use your newly-generated `tutorial` package from any Go program.
 Create a file named `tutorial.go` and add the following contents:
