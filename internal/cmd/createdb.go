@@ -95,6 +95,7 @@ func CreateDB(ctx context.Context, dir, filename, name string, o *Options) error
 	if err != nil {
 		return fmt.Errorf("managed: create database: %w", err)
 	}
+	fmt.Fprintln(os.Stderr, "WARNING: This database will be removed in two minutes")
 	fmt.Println(resp.Uri)
 	return nil
 }
