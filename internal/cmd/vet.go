@@ -24,6 +24,7 @@ import (
 
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/debug"
+	"github.com/sqlc-dev/sqlc/internal/migrations"
 	"github.com/sqlc-dev/sqlc/internal/opts"
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 	"github.com/sqlc-dev/sqlc/internal/quickdb"
@@ -414,7 +415,7 @@ func (c *checker) fetchDatabaseUri(ctx context.Context, s config.SQL) (string, f
 		c.Client = client
 	}
 
-	var migrations []string
+	var ddl []string
 	files, err := sqlpath.Glob(s.Schema)
 	if err != nil {
 		return "", cleanup, err
@@ -424,13 +425,13 @@ func (c *checker) fetchDatabaseUri(ctx context.Context, s config.SQL) (string, f
 		if err != nil {
 			return "", cleanup, fmt.Errorf("read file: %w", err)
 		}
-		migrations = append(migrations, string(contents))
+		ddl = append(ddl, migrations.RemoveRollbackStatements(string(contents)))
 	}
 
 	resp, err := c.Client.CreateEphemeralDatabase(ctx, &pb.CreateEphemeralDatabaseRequest{
 		Engine:     "postgresql",
 		Region:     quickdb.GetClosestRegion(),
-		Migrations: migrations,
+		Migrations: ddl,
 	})
 	if err != nil {
 		return "", cleanup, fmt.Errorf("managed: create database: %w", err)
