@@ -27,7 +27,7 @@ type Place struct {
 }
 ```
 
-## Dates and Times
+## Dates and times
 
 All date and time types are returned as `time.Time` structs. For
 null time or date values, the `NullTime` type from `database/sql` is used.
