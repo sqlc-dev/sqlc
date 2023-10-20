@@ -3,7 +3,7 @@ package compiler
 import (
 	"sort"
 
-	"github.com/sqlc-dev/sqlc/internal/analyzer"
+	analyzer "github.com/sqlc-dev/sqlc/internal/analysis"
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/source"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
@@ -13,15 +13,37 @@ import (
 )
 
 type analysis struct {
-	Table        *ast.TableName
-	Columns      []*Column
-	QueryCatalog *QueryCatalog
-	Parameters   []Parameter
-	Named        *named.ParamSet
-	Query        string
+	Table      *ast.TableName
+	Columns    []*Column
+	Parameters []Parameter
+	Named      *named.ParamSet
+	Query      string
 }
 
-func convertColumn(c analyzer.Column) *Column {
+func convertTableName(id *analyzer.Identifier) *ast.TableName {
+	if id == nil {
+		return nil
+	}
+	return &ast.TableName{
+		Catalog: id.Catalog,
+		Schema:  id.Schema,
+		Name:    id.Name,
+	}
+}
+
+func convertTypeName(id *analyzer.Identifier) *ast.TypeName {
+	if id == nil {
+		return nil
+	}
+	return &ast.TypeName{
+		Catalog: id.Catalog,
+		Schema:  id.Schema,
+		Name:    id.Name,
+	}
+}
+
+func convertColumn(c *analyzer.Column) *Column {
+	length := int(c.Length)
 	return &Column{
 		Name:         c.Name,
 		OriginalName: c.OriginalName,
@@ -29,16 +51,16 @@ func convertColumn(c analyzer.Column) *Column {
 		NotNull:      c.NotNull,
 		Unsigned:     c.Unsigned,
 		IsArray:      c.IsArray,
-		ArrayDims:    c.ArrayDims,
+		ArrayDims:    int(c.ArrayDims),
 		Comment:      c.Comment,
-		Length:       c.Length,
+		Length:       &length,
 		IsNamedParam: c.IsNamedParam,
 		IsFuncCall:   c.IsFuncCall,
 		Scope:        c.Scope,
-		Table:        c.Table,
+		Table:        convertTableName(c.Table),
 		TableAlias:   c.TableAlias,
-		Type:         c.Type,
-		EmbedTable:   c.EmbedTable,
+		Type:         convertTypeName(c.Type),
+		EmbedTable:   convertTableName(c.EmbedTable),
 		IsSqlcSlice:  c.IsSqlcSlice,
 	}
 }
@@ -51,8 +73,8 @@ func combineAnalysis(prev *analysis, a *analyzer.Analysis) *analysis {
 	var params []Parameter
 	for _, p := range a.Params {
 		params = append(params, Parameter{
-			Number: p.Number,
-			Column: convertColumn(*p.Column),
+			Number: int(p.Number),
+			Column: convertColumn(p.Column),
 		})
 	}
 	if len(prev.Columns) == len(cols) {
@@ -189,11 +211,10 @@ func (c *Compiler) _analyzeQuery(raw *ast.RawStmt, query string, failfast bool) 
 	}
 
 	return &analysis{
-		Table:        table,
-		Columns:      cols,
-		Parameters:   params,
-		QueryCatalog: qc,
-		Query:        expanded,
-		Named:        namedParams,
+		Table:      table,
+		Columns:    cols,
+		Parameters: params,
+		Query:      expanded,
+		Named:      namedParams,
 	}, rerr
 }

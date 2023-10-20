@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	core "github.com/sqlc-dev/sqlc/internal/analyzer"
+	core "github.com/sqlc-dev/sqlc/internal/analysis"
 	"github.com/sqlc-dev/sqlc/internal/config"
 	pb "github.com/sqlc-dev/sqlc/internal/quickdb/v1"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
@@ -250,14 +250,14 @@ func (a *Analyzer) Analyze(ctx context.Context, n ast.Node, query string, migrat
 			dt, isArray, _ := parseType(col.DataType)
 			notNull := col.NotNull
 			name := field.Name
-			result.Columns = append(result.Columns, core.Column{
+			result.Columns = append(result.Columns, &core.Column{
 				Name:         name,
 				OriginalName: field.Name,
 				DataType:     dt,
 				NotNull:      notNull,
 				IsArray:      isArray,
-				ArrayDims:    col.ArrayDims,
-				Table: &ast.TableName{
+				ArrayDims:    int32(col.ArrayDims),
+				Table: &core.Identifier{
 					Schema: tbl.SchemaName,
 					Name:   tbl.TableName,
 				},
@@ -271,13 +271,13 @@ func (a *Analyzer) Analyze(ctx context.Context, n ast.Node, query string, migrat
 			notNull := false
 			name := field.Name
 			dt, isArray, dims := parseType(dataType)
-			result.Columns = append(result.Columns, core.Column{
+			result.Columns = append(result.Columns, &core.Column{
 				Name:         name,
 				OriginalName: field.Name,
 				DataType:     dt,
 				NotNull:      notNull,
 				IsArray:      isArray,
-				ArrayDims:    dims,
+				ArrayDims:    int32(dims),
 			})
 		}
 	}
@@ -293,13 +293,13 @@ func (a *Analyzer) Analyze(ctx context.Context, n ast.Node, query string, migrat
 		if ps != nil {
 			name, _ = ps.NameFor(i + 1)
 		}
-		result.Params = append(result.Params, core.Parameter{
-			Number: i + 1,
+		result.Params = append(result.Params, &core.Parameter{
+			Number: int32(i + 1),
 			Column: &core.Column{
 				Name:      name,
 				DataType:  dt,
 				IsArray:   isArray,
-				ArrayDims: dims,
+				ArrayDims: int32(dims),
 				NotNull:   notNull,
 			},
 		})

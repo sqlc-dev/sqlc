@@ -20,6 +20,7 @@ import (
 	wasmtime "github.com/bytecodealliance/wasmtime-go/v13"
 	"golang.org/x/sync/singleflight"
 
+	"github.com/sqlc-dev/sqlc/internal/cache"
 	"github.com/sqlc-dev/sqlc/internal/info"
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
@@ -76,16 +77,12 @@ func (r *Runner) loadSerializedModule(ctx context.Context, engine *wasmtime.Engi
 	if err != nil {
 		return nil, err
 	}
-	cacheRoot, err := cacheDir()
+	cacheDir, err := cache.PluginsDir()
 	if err != nil {
 		return nil, err
 	}
-	cache := filepath.Join(cacheRoot, "plugins")
-	if err := os.MkdirAll(cache, 0755); err != nil && !os.IsExist(err) {
-		return nil, fmt.Errorf("failed to create cache directory: %w", err)
-	}
 
-	pluginDir := filepath.Join(cache, expected)
+	pluginDir := filepath.Join(cacheDir, expected)
 	modName := fmt.Sprintf("plugin_%s_%s_%s.module", runtime.GOOS, runtime.GOARCH, wasmtimeVersion)
 	modPath := filepath.Join(pluginDir, modName)
 	_, staterr := os.Stat(modPath)
@@ -97,7 +94,7 @@ func (r *Runner) loadSerializedModule(ctx context.Context, engine *wasmtime.Engi
 		return data, nil
 	}
 
-	wmod, err := r.loadWASM(ctx, cache, expected)
+	wmod, err := r.loadWASM(ctx, cacheDir, expected)
 	if err != nil {
 		return nil, err
 	}

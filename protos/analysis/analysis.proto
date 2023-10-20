@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package analysis;
+
+option go_package = "github.com/sqlc-dev/sqlc/internal/analysis";
+
+message Identifier {
+	string catalog = 1;
+	string schema = 2;
+	string name = 3;
+}
+
+message Column {
+	string name = 1;
+	string original_name = 2;
+	string data_type = 3;
+	bool not_null = 4;
+	bool unsigned = 5;
+	bool is_array = 6;
+	int32 array_dims = 7;
+	string comment = 8;
+	int32 length = 9; // *int
+	bool is_named_param = 10;
+	bool is_func_call = 11;
+	string scope = 12;
+	Identifier table = 13;
+	string table_alias = 14;
+	Identifier type = 15;
+	Identifier embed_table = 16;
+	bool is_sqlc_slice = 17;
+}
+
+message Parameter {
+	int32 number = 1;
+	Column column = 2;
+}
+
+message Analysis {
+	repeated Column columns = 1;
+	repeated Parameter params = 2;
+}
