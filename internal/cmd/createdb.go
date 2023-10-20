@@ -22,7 +22,11 @@ var createDBCmd = &cobra.Command{
 		defer trace.StartRegion(cmd.Context(), "createdb").End()
 		stderr := cmd.ErrOrStderr()
 		dir, name := getConfigPath(stderr, cmd.Flag("file"))
-		err := CreateDB(cmd.Context(), dir, name, &Options{
+		qs, err := cmd.Flags().GetString("queryset")
+		if err != nil {
+			return err
+		}
+		err = CreateDB(cmd.Context(), dir, name, qs, &Options{
 			Env:    ParseEnv(cmd),
 			Stderr: stderr,
 		})
@@ -34,7 +38,7 @@ var createDBCmd = &cobra.Command{
 	},
 }
 
-func CreateDB(ctx context.Context, dir, filename string, o *Options) error {
+func CreateDB(ctx context.Context, dir, filename, name string, o *Options) error {
 	_, conf, err := o.ReadConfig(dir, filename)
 	if err != nil {
 		return err
@@ -44,10 +48,16 @@ func CreateDB(ctx context.Context, dir, filename string, o *Options) error {
 	var count int
 	for _, sql := range conf.SQL {
 		sql := sql
+		if name != "" && sql.Name != name {
+			continue
+		}
 		if sql.Database != nil && sql.Database.Managed {
 			queryset = &sql
 			count += 1
 		}
+	}
+	if queryset == nil && name != "" {
+		return fmt.Errorf("no queryset found with name %q", name)
 	}
 	if queryset == nil {
 		return fmt.Errorf("no querysets configured to use a managed database")

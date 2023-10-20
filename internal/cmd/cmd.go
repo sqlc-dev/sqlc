@@ -25,7 +25,7 @@ import (
 )
 
 func init() {
-	createDBCmd.Flags().StringP("queryset", "q", "", "queryset to use")
+	createDBCmd.Flags().StringP("queryset", "", "", "name of the queryset to use")
 	uploadCmd.Flags().BoolP("dry-run", "", false, "dump upload request (default: false)")
 	initCmd.Flags().BoolP("v1", "", false, "generate v1 config yaml file")
 	initCmd.Flags().BoolP("v2", "", true, "generate v2 config yaml file")
