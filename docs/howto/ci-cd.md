@@ -34,7 +34,7 @@ more about uploading projects [here](upload.md)
 
 Install `sqlc` using the [suggested instructions](../overview/install).
 
-Create two steps in your pipeline, one for `sqlc diff`and one for `sqlc vet`. Run `sqlc upload` after merge on your `main` branch.
+Create two steps in your pipeline, one for `sqlc diff` and one for `sqlc vet`. Run `sqlc upload` after merge on your `main` branch.
 
 ## GitHub Actions
 
