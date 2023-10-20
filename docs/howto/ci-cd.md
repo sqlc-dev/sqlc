@@ -26,7 +26,7 @@ helpful in catching anti-patterns before they make it into production. Please
 see the [vet](vet.md) documentation for a complete guide to adding lint rules
 for your project.
 
-`sqlc upload` pushs your database schema and queries to sqlc Cloud. Once
+`sqlc upload` pushes your database schema and queries to sqlc Cloud. Once
 uploaded, we ensure that future releases of sqlc do not break your code. Learn
 more about uploading projects [here](upload.md)
 
