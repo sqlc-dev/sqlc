@@ -84,4 +84,4 @@ type Writer struct {
 ## Limitations
 
 Rename mappings apply to an entire package. Therefore, a column named `foo` and
-a table name `foo` can't be renamed different values.
+a table name `foo` can't map to different rename values.
