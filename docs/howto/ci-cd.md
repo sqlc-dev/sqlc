@@ -129,7 +129,7 @@ jobs:
 Project uploads are powered by [sqlc Cloud](https://dashboard.sqlc.dev). Sign up for [free](https://dashboard.sqlc.dev) today.
 ```
 
-The following GitHub Workflow configuration runs `sqlc upload`(upload.md) on
+The following GitHub Workflow configuration runs [sqlc upload](upload.md) on
 every push to `main`. Create an auth token via the
 [dashboard](https://dashboard.sqlc.dev).
 
