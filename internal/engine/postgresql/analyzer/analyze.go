@@ -13,26 +13,31 @@ import (
 
 	core "github.com/sqlc-dev/sqlc/internal/analysis"
 	"github.com/sqlc-dev/sqlc/internal/config"
+	"github.com/sqlc-dev/sqlc/internal/opts"
 	pb "github.com/sqlc-dev/sqlc/internal/quickdb/v1"
+	"github.com/sqlc-dev/sqlc/internal/shfmt"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/named"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
 )
 
 type Analyzer struct {
-	db     config.Database
-	client pb.QuickClient
-	pool   *pgxpool.Pool
-
-	formats sync.Map
-	columns sync.Map
-	tables  sync.Map
+	db       config.Database
+	client   pb.QuickClient
+	pool     *pgxpool.Pool
+	dbg      opts.Debug
+	replacer *shfmt.Replacer
+	formats  sync.Map
+	columns  sync.Map
+	tables   sync.Map
 }
 
 func New(client pb.QuickClient, db config.Database) *Analyzer {
 	return &Analyzer{
-		db:     db,
-		client: client,
+		db:       db,
+		dbg:      opts.DebugFromEnv(),
+		client:   client,
+		replacer: shfmt.NewReplacer(nil),
 	}
 }
 
@@ -204,8 +209,10 @@ func (a *Analyzer) Analyze(ctx context.Context, n ast.Node, query string, migrat
 				return nil, err
 			}
 			uri = edb.Uri
+		} else if a.dbg.OnlyManagedDatabases {
+			return nil, fmt.Errorf("database: connections disabled via command line flag")
 		} else {
-			uri = a.db.URI
+			uri = a.replacer.Replace(a.db.URI)
 		}
 		conf, err := pgxpool.ParseConfig(uri)
 		if err != nil {
