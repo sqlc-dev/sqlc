@@ -482,7 +482,7 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 	var expl explainer
 	if s.Database != nil { // TODO only set up a database connection if a rule evaluation requires it
 		if s.Database.URI != "" && c.OnlyManagedDB {
-			return fmt.Errorf("database: connections disabled via command line flag")
+			return fmt.Errorf("database: connections disabled via SQLCDEBUG=databases=managed")
 		}
 		dburl, cleanup, err := c.fetchDatabaseUri(ctx, s)
 		if err != nil {
