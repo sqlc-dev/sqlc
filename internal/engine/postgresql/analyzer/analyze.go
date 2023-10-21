@@ -210,7 +210,7 @@ func (a *Analyzer) Analyze(ctx context.Context, n ast.Node, query string, migrat
 			}
 			uri = edb.Uri
 		} else if a.dbg.OnlyManagedDatabases {
-			return nil, fmt.Errorf("database: connections disabled via command line flag")
+			return nil, fmt.Errorf("database: connections disabled via SQLCDEBUG=databases=managed")
 		} else {
 			uri = a.replacer.Replace(a.db.URI)
 		}
