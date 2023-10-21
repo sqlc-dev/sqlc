@@ -4,15 +4,16 @@
 
 `sqlc vet` runs queries through a set of lint rules.
 
-Rules are defined in the `sqlc` [configuration](../reference/config) file. They consist
-of a name, message, and a [Common Expression Language (CEL)](https://github.com/google/cel-spec)
-expression. Expressions are evaluated using [cel-go](https://github.com/google/cel-go).
-If an expression evaluates to `true`, `sqlc vet` will report an error using the given message.
+Rules are defined in the `sqlc` [configuration](../reference/config) file. They
+consist of a name, message, and a [Common Expression Language
+(CEL)](https://github.com/google/cel-spec) expression. Expressions are evaluated
+using [cel-go](https://github.com/google/cel-go).  If an expression evaluates to
+`true`, `sqlc vet` will report an error using the given message.
 
 ## Defining lint rules
 
-Each lint rule's CEL expression has access to information from your sqlc configuration and queries
-via variables defined in the following proto messages.
+Each lint rule's CEL expression has access to information from your sqlc
+configuration and queries via variables defined in the following proto messages.
 
 ```proto
 message Config
@@ -190,12 +191,26 @@ sql:
       - sqlc/db-prepare
 ```
 
+Databases configured with a `uri` must have an up-to-date schema, and `sqlc` does not apply schema migrations your database. You can configure [managed databases](managed-databases.md) instead to have `sqlc` create and migrate databases automatically.
+
+```yaml
+version: 2
+sql:
+  - schema: "query.sql"
+    queries: "query.sql"
+    engine: "postgresql"
+    gen:
+      go:
+        package: "authors"
+        out: "db"
+    database:
+      managed: true
+    rules:
+      - sqlc/db-prepare
+```
+
 To see this in action, check out the [authors
 example](https://github.com/sqlc-dev/sqlc/blob/main/examples/authors/sqlc.yaml).
-
-Please note that `sqlc` does not manage or migrate your database. Use your
-migration tool of choice to create the necessary database tables and objects
-before running `sqlc vet` with the `sqlc/db-prepare` rule.
 
 ## Running lint rules
 

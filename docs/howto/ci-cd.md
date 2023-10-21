@@ -1,12 +1,12 @@
 # Using sqlc in CI/CD
 
 If your project has more than a single developer, we suggest running `sqlc` as
-part of your CI/CD pipeline. The two subcommands you'll want to run are `diff` and `vet`.
+part of your CI/CD pipeline. The three subcommands you'll want to run are `diff`, `vet` and `upload`
 
-`sqlc diff` ensures that your generated code is up to date. New developers to a project may
-forget to run `sqlc generate` after adding a query or updating a schema. They also might
-edit generated code. `sqlc diff` will catch both errors by comparing the expected output
-from `sqlc generate` to what's on disk.
+`sqlc diff` ensures that your generated code is up to date. New developers to a
+project may forget to run `sqlc generate` after adding a query or updating a
+schema. They also might edit generated code. `sqlc diff` will catch both errors
+by comparing the expected output from `sqlc generate` to what's on disk.
 
 ```diff
 % sqlc diff
@@ -26,11 +26,15 @@ helpful in catching anti-patterns before they make it into production. Please
 see the [vet](vet.md) documentation for a complete guide to adding lint rules
 for your project.
 
+`sqlc upload` pushes your database schema and queries to sqlc Cloud. Once
+uploaded, we ensure that future releases of sqlc do not break your code. Learn
+more about uploading projects [here](upload.md)
+
 ## General setup
 
 Install `sqlc` using the [suggested instructions](../overview/install).
 
-Create two steps in your pipeline, one for `sqlc diff`and one for `sqlc vet`.
+Create two steps in your pipeline, one for `sqlc diff` and one for `sqlc vet`. Run `sqlc upload` after merge on your `main` branch.
 
 ## GitHub Actions
 
@@ -38,10 +42,6 @@ We provide the [setup-sqlc](https://github.com/marketplace/actions/setup-sqlc)
 GitHub Action to install `sqlc`. The action uses the built-in
 [tool-cache](https://github.com/actions/toolkit/blob/main/packages/tool-cache/README.md)
 to speed up the installation process.
-
-## GitHub Workflows
-
-We suggest running `diff`, `vet` and `upload` as part of your workflow.
 
 ### diff
 
@@ -63,7 +63,7 @@ jobs:
 
 ### vet
 
-The following GitHub Workflow configuration runs [`sqlc vet`](vet.md) on every push.
+The following GitHub Workflow configuration runs [sqlc vet](vet.md) on every push.
 You can use `sqlc vet` without a database connection, but you'll need one if your
 `sqlc` configuration references the built-in `sqlc/db-prepare` lint rule.
 
@@ -100,10 +100,38 @@ jobs:
     - run: sqlc vet
 ```
 
+#### Managed databases
+
+```{note}
+Managed databases are powered by [sqlc Cloud](https://dashboard.sqlc.dev). Sign up for [free](https://dashboard.sqlc.dev) today.
+```
+
+If you're using [managed databases](managed-databases.md), the `services` block
+in the previous workflow isn't required.
+
+```yaml
+name: sqlc
+on: [push]
+jobs:
+  vet:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: sqlc-dev/setup-sqlc@v3
+      with:
+        sqlc-version: '1.22.0'
+    - run: sqlc vet
+```
+
 ### upload
 
-The following GitHub Workflow configuration runs [`sqlc upload`](upload.md) on
-every push to `main`.
+```{note}
+Project uploads are powered by [sqlc Cloud](https://dashboard.sqlc.dev). Sign up for [free](https://dashboard.sqlc.dev) today.
+```
+
+The following GitHub Workflow configuration runs [sqlc upload](upload.md) on
+every push to `main`. Create an auth token via the
+[dashboard](https://dashboard.sqlc.dev).
 
 ```yaml
 name: sqlc
