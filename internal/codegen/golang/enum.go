@@ -1,11 +1,9 @@
 package golang
 
 import (
-	"regexp"
 	"strings"
+	"unicode"
 )
-
-var IdentPattern = regexp.MustCompile("[^a-zA-Z0-9_]+")
 
 type Constant struct {
 	Name  string
@@ -29,21 +27,38 @@ func (e Enum) ValidTag() string {
 	return TagsToString(e.ValidTags)
 }
 
-func EnumReplace(value string) string {
-	id := strings.Replace(value, "-", "_", -1)
-	id = strings.Replace(id, ":", "_", -1)
-	id = strings.Replace(id, "/", "_", -1)
-	return IdentPattern.ReplaceAllString(id, "")
+func enumReplacer(r rune) rune {
+	if strings.ContainsRune("-/:_", r) {
+		return '_'
+	} else if (r >= 'a' && r <= 'z') ||
+		(r >= 'A' && r <= 'Z') ||
+		(r >= '0' && r <= '9') {
+		return r
+	} else {
+		return -1
+	}
 }
 
+// EnumReplace removes all non ident symbols (all but letters, numbers and
+// underscore) and returns valid ident name for provided name.
+func EnumReplace(value string) string {
+	return strings.Map(enumReplacer, value)
+}
+
+// EnumValueName removes all non ident symbols (all but letters, numbers and
+// underscore) and converts snake case ident to camel case.
 func EnumValueName(value string) string {
-	name := ""
-	id := strings.Replace(value, "-", "_", -1)
-	id = strings.Replace(id, ":", "_", -1)
-	id = strings.Replace(id, "/", "_", -1)
-	id = IdentPattern.ReplaceAllString(id, "")
-	for _, part := range strings.Split(id, "_") {
-		name += strings.Title(part)
+	parts := strings.Split(EnumReplace(value), "_")
+	for i, part := range parts {
+		parts[i] = titleFirst(part)
 	}
-	return name
+
+	return strings.Join(parts, "")
+}
+
+func titleFirst(s string) string {
+	r := []rune(s)
+	r[0] = unicode.ToUpper(r[0])
+
+	return string(r)
 }
