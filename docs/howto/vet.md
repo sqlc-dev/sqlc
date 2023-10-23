@@ -1,4 +1,4 @@
-# Linting queries
+# `vet` - Linting queries
 
 *Added in v1.19.0*
 
@@ -43,7 +43,7 @@ message Parameter
 ```
 
 In addition to this basic information, when you have a PostgreSQL or MySQL
-[database connection configured](../reference/config.html#database)
+[database connection configured](../reference/config.md#database)
 each CEL expression has access to the output from running `EXPLAIN ...` on your query
 via the `postgresql.explain` and `mysql.explain` variables.
 This output is quite complex and depends on the structure of your query but sqlc attempts
@@ -95,7 +95,7 @@ rules:
 The CEL expression environment has two variables containing `EXPLAIN ...` output,
 `postgresql.explain` and `mysql.explain`. `sqlc` only populates the variable associated with
 your configured database engine, and only when you have a
-[database connection configured](../reference/config.html#database).
+[database connection configured](../reference/config.md#database).
 
 For the `postgresql` engine, `sqlc` runs
 
@@ -171,7 +171,7 @@ before running `sqlc vet` with rules that depend on `EXPLAIN ...` output.
 
 ### sqlc/db-prepare
 
-When a [database](../reference/config.html#database) connection is configured, you can
+When a [database](../reference/config.md#database) connection is configured, you can
 run the built-in `sqlc/db-prepare` rule. This rule will attempt to prepare
 each of your queries against the connected database and report any failures.
 
@@ -215,7 +215,7 @@ example](https://github.com/sqlc-dev/sqlc/blob/main/examples/authors/sqlc.yaml).
 ## Running lint rules
 
 When you add the name of a defined rule to the rules list
-for a [sql package](https://docs.sqlc.dev/en/stable/reference/config.html#sql),
+for a [sql package](../reference/config.md#sql),
 `sqlc vet` will evaluate that rule against every query in the package.
 
 In the example below, two rules are defined but only one is enabled.

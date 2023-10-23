@@ -32,7 +32,7 @@ following contents:
 ```yaml
 version: "2"
 cloud:
-  project: "<your project id>"
+  project: "<PROJECT_ID>"
 sql:
   - engine: "postgresql"
     queries: "query.sql"

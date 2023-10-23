@@ -16,7 +16,7 @@ sql:
       package: "authors"
       out: "postgresql"
   database:
-    uri: "postgresql://postgres:postgres@localhost:5432/postgres"
+    managed: true
   rules:
     - sqlc/db-prepare
 - schema: "mysql/schema.sql"
@@ -46,6 +46,8 @@ Each mapping in the `sql` collection has the following keys:
   - A mapping to configure database connections. See [database](#database) for the supported keys.
 - `rules`:
   - A collection of rule names to run via `sqlc vet`. See [rules](#rules) for configuration options.
+- `analzyer`:
+  - A mapping to configure query analysis. See [analyzer](#analyzer) for the supported keys.
 - `strict_function_checks`
   - If true, return an error if a called SQL function does not exist. Defaults to `false`.
 
@@ -85,6 +87,8 @@ sql:
 
 The `database` mapping supports the following keys:
 
+- `managed`:
+  - If true, connect to a [managed database](../howto/managed-databases.md).
 - `uri`:
   - Database connection URI
 
@@ -105,7 +109,14 @@ sql:
       package: authors
       out: postgresql
 ```
- 
+
+### analyzer
+
+The `analyzer` mapping supports the following keys:
+
+- `database`:
+  -  If false, do not use the configured database for query analysis. Defaults to `true`.
+  
 ### gen
 
 The `gen` mapping supports the following keys:
