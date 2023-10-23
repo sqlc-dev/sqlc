@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/antlr/antlr4/runtime/Go/antlr/v4 v4.0.0-20230321174746-8dcc6526cfb1
-	github.com/bytecodealliance/wasmtime-go/v13 v13.0.0
+	github.com/bytecodealliance/wasmtime-go/v14 v14.0.0
 	github.com/cubicdaiya/gonp v1.0.4
 	github.com/davecgh/go-spew v1.1.1
 	github.com/go-sql-driver/mysql v1.7.1

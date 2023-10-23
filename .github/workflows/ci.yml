@@ -10,8 +10,6 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v4
-    # wasmtime can't be built with 12.2
-    - run: choco install mingw --version 11.2.0.07112021 --allow-downgrade
     - uses: actions/setup-go@v4
       with:
         go-version: '1.21.3'
