@@ -6,7 +6,7 @@ on:
   pull_request:
 jobs:
   windows-build:
-    # if: ${{ github.ref == 'refs/heads/main' }}
+    if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v4
