@@ -1,6 +1,4 @@
 version: "2"
-cloud:
-  project: "01HAQMMECEYQYKFJN8MP16QC41"
 sql:
   - engine: "postgresql"
     schema: "schema.sql"
@@ -10,5 +8,3 @@ sql:
         package: "querytest"
         out: "go"
         sql_package: "pgx/v5"
-    database:
-      managed: true
