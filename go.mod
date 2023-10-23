@@ -28,6 +28,7 @@ require (
 
 require (
 	github.com/benbjohnson/clock v1.3.5 // indirect
+	github.com/bytecodealliance/wasmtime-go/v14 v14.0.0 // indirect
 	github.com/jackc/pgconn v1.14.1 // indirect
 	github.com/jackc/puddle/v2 v2.2.1 // indirect
 	github.com/pingcap/failpoint v0.0.0-20220801062533-2eaa32854a6c // indirect
