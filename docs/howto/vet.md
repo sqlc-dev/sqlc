@@ -163,9 +163,14 @@ rules:
   rule: "!has(postgresql.explain)" # A dummy rule to trigger explain
 ```
 
-Please note that `sqlc` does not manage or migrate your database. Use your
-migration tool of choice to create the necessary database tables and objects
-before running `sqlc vet` with rules that depend on `EXPLAIN ...` output.
+Please note that databases configured with a `uri` must have an up-to-date
+schema for `vet` to work correctly, and `sqlc` does not apply schema migrations
+to your database. Use your migration tool of choice to create the necessary
+tables and objects before running `sqlc vet` with rules that depend on
+`EXPLAIN ...` output.
+
+Alternatively, configure [managed databases](managed-databases.md) to have
+`sqlc` create hosted ephemeral databases with the correct schema automatically.
 
 ## Built-in rules
 
@@ -178,7 +183,7 @@ each of your queries against the connected database and report any failures.
 ```yaml
 version: 2
 sql:
-  - schema: "query.sql"
+  - schema: "schema.sql"
     queries: "query.sql"
     engine: "postgresql"
     gen:
@@ -191,12 +196,20 @@ sql:
       - sqlc/db-prepare
 ```
 
-Databases configured with a `uri` must have an up-to-date schema, and `sqlc` does not apply schema migrations your database. You can configure [managed databases](managed-databases.md) instead to have `sqlc` create and migrate databases automatically.
+Please note that databases configured with a `uri` must have an up-to-date
+schema for `vet` to work correctly, and `sqlc` does not apply schema migrations
+to your database. Use your migration tool of choice to create the necessary
+tables and objects before running `sqlc vet` with the `sqlc/db-prepare` rule.
+
+Alternatively, configure [managed databases](managed-databases.md) to have
+`sqlc` create hosted ephemeral databases with the correct schema automatically.
 
 ```yaml
 version: 2
+cloud:
+  project: "<PROJECT_ID>"
 sql:
-  - schema: "query.sql"
+  - schema: "schema.sql"
     queries: "query.sql"
     engine: "postgresql"
     gen:

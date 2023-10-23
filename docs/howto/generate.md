@@ -18,15 +18,23 @@ sql:
 We've written extensive docs on [retrieving](select.md), [inserting](insert.md),
 [updating](update.md), and [deleting](delete.md) rows. 
 
-By default, the analysis is run using our built-in query engine. While fast, this engine can't handle some complex queries and type-inference.
+By default, sqlc runs its analysis using a built-in query analysis engine. While fast, this engine can't handle some complex queries and type-inference.
 
-## Using a managed database
+You can configure sqlc to use a database connection for enhanced analysis using metadata from that database.
+
+The database-backed analyzer currently supports PostgreSQL, with [MySQL](https://github.com/sqlc-dev/sqlc/issues/2902) and [SQLite](https://github.com/sqlc-dev/sqlc/issues/2903)
+support planned in the future.
+
+## Enhanced analysis with managed databases
 
 ```{note}
 Managed databases are powered by [sqlc Cloud](https://dashboard.sqlc.dev). Sign up for [free](https://dashboard.sqlc.dev) today.
 ```
 
-By opting in to [managed database](managed-databases.md), the default analysis is enhanced with metadata from a running database connection. Type inference is improved and query analysis succeeds on a larger set of queries.
+With [managed databases](managed-databases.md) configured, `generate` will automatically create a hosted ephemeral database with your
+schema and use that database to improve its query analysis. And sqlc will cache its analysis locally
+on a per-query basis to speed up future `generate` runs. This saves you the trouble of running and maintaining a database with
+an up-to-date schema. Here's a minimal working configuration:
 
 ```yaml
 version: "2"
@@ -40,17 +48,18 @@ sql:
       managed: true
     gen:
       go:
-        package: "tutorial"
-        out: "tutorial"
+        out: "db"
         sql_package: "pgx/v5"
 ```
 
-The database analyzer currently supports PostgreSQL, with [MySQL](https://github.com/sqlc-dev/sqlc/issues/2902) and [SQLite](https://github.com/sqlc-dev/sqlc/issues/2903)
-support planned in the future.
+## Enhanced analysis using your own database
 
-## Using a database connection
+You can opt-in to database-backed analysis using your own database, by providing a `uri` in your sqlc
+[database](../reference/config.md#database) configuration.
 
-The analyzer uses the configured [database](../reference/config.md#database), whether it be managed or a connection URI.
+The `uri` string can contain references to environment variables using the `${...}`
+syntax. In the following example, the connection string will have the value of
+the `PG_PASSWORD` environment variable set as its password.
 
 ```yaml
 version: "2"
@@ -62,7 +71,8 @@ sql:
       uri: "postgres://postgres:${PG_PASSWORD}@localhost:5432/postgres"
     gen:
       go:
-        package: "tutorial"
-        out: "tutorial"
+        out: "db"
         sql_package: "pgx/v5"
 ```
+
+Databases configured with a `uri` must have an up-to-date schema for query analysis to work correctly, and `sqlc` does not apply schema migrations your database.

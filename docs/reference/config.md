@@ -7,6 +7,8 @@ file must be in the directory where the `sqlc` command is run.
 
 ```yaml
 version: "2"
+cloud:
+  project: "<PROJECT_ID>"
 sql:
 - schema: "postgresql/schema.sql"
   queries: "postgresql/query.sql"
@@ -88,7 +90,7 @@ sql:
 The `database` mapping supports the following keys:
 
 - `managed`:
-  - If true, connect to a [managed database](../howto/managed-databases.md).
+  - If true, connect to a [managed database](../howto/managed-databases.md). Defaults to `false`.
 - `uri`:
   - Database connection URI
 
