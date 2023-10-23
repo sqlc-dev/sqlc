@@ -17,7 +17,7 @@ import (
 	"runtime/trace"
 	"strings"
 
-	wasmtime "github.com/bytecodealliance/wasmtime-go/v13"
+	wasmtime "github.com/bytecodealliance/wasmtime-go/v14"
 	"golang.org/x/sync/singleflight"
 
 	"github.com/sqlc-dev/sqlc/internal/cache"

@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/antlr/antlr4/runtime/Go/antlr/v4 v4.0.0-20230321174746-8dcc6526cfb1
-	github.com/bytecodealliance/wasmtime-go/v13 v13.0.0
+	github.com/bytecodealliance/wasmtime-go/v14 v14.0.0
 	github.com/cubicdaiya/gonp v1.0.4
 	github.com/davecgh/go-spew v1.1.1
 	github.com/go-sql-driver/mysql v1.7.1
@@ -28,7 +28,6 @@ require (
 
 require (
 	github.com/benbjohnson/clock v1.3.5 // indirect
-	github.com/bytecodealliance/wasmtime-go/v14 v14.0.0 // indirect
 	github.com/jackc/pgconn v1.14.1 // indirect
 	github.com/jackc/puddle/v2 v2.2.1 // indirect
 	github.com/pingcap/failpoint v0.0.0-20220801062533-2eaa32854a6c // indirect
