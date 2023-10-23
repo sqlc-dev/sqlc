@@ -24,6 +24,8 @@ type Argument struct {
 	Type       *ast.TypeName
 	HasDefault bool
 	Mode       ast.FuncParamMode
+	IsArray    bool
+	ArrayDims  int
 }
 
 func (f *Function) InArgs() []*Argument {
@@ -65,19 +67,38 @@ func (c *Catalog) createFunction(stmt *ast.CreateFunctionStmt) error {
 		ReturnType: stmt.ReturnType,
 	}
 	types := make([]*ast.TypeName, len(stmt.Params.Items))
+	var cols []*ast.ColumnDef
 	for i, item := range stmt.Params.Items {
 		arg := item.(*ast.FuncParam)
 		var name string
 		if arg.Name != nil {
 			name = *arg.Name
 		}
+		if arg.Mode == ast.FuncParamTable {
+			cols = append(cols, &ast.ColumnDef{
+				Colname:   name,
+				TypeName:  arg.Type,
+				IsArray:   arg.IsArray,
+				ArrayDims: arg.ArrayDims,
+			})
+		}
 		fn.Args[i] = &Argument{
 			Name:       name,
 			Type:       arg.Type,
 			Mode:       arg.Mode,
 			HasDefault: arg.DefExpr != nil,
+			IsArray:    arg.IsArray,
+			ArrayDims:  arg.ArrayDims,
 		}
 		types[i] = arg.Type
+	}
+
+	if len(cols) > 0 {
+		fn.ReturnType = &ast.TypeName{
+			Name:    stmt.Func.Name,
+			Schema:  stmt.Func.Schema,
+			Catalog: stmt.Func.Catalog,
+		}
 	}
 
 	_, idx, err := s.getFunc(stmt.Func, types)

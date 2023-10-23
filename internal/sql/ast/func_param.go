@@ -12,10 +12,12 @@ const (
 )
 
 type FuncParam struct {
-	Name    *string
-	Type    *TypeName
-	DefExpr Node // Will always be &ast.TODO
-	Mode    FuncParamMode
+	Name      *string
+	Type      *TypeName
+	DefExpr   Node // Will always be &ast.TODO
+	Mode      FuncParamMode
+	IsArray   bool
+	ArrayDims int
 }
 
 func (n *FuncParam) Pos() int {

@@ -366,19 +366,27 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 					continue
 				}
 
-				var paramName string
-				var paramType *ast.TypeName
+				var (
+					paramName string
+					paramType *ast.TypeName
+					isArray   bool
+					arrayDims int
+				)
 
 				if argName == "" {
 					if i < len(fun.Args) {
 						paramName = fun.Args[i].Name
 						paramType = fun.Args[i].Type
+						isArray = fun.Args[i].IsArray
+						arrayDims = fun.Args[i].ArrayDims
 					}
 				} else {
 					paramName = argName
 					for _, arg := range fun.Args {
 						if arg.Name == argName {
 							paramType = arg.Type
+							isArray = arg.IsArray
+							arrayDims = arg.ArrayDims
 						}
 					}
 					if paramType == nil {
@@ -402,6 +410,8 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 						NotNull:      p.NotNull(),
 						IsNamedParam: isNamed,
 						IsSqlcSlice:  p.IsSqlcSlice(),
+						IsArray:      isArray,
+						ArrayDims:    arrayDims,
 					},
 				})
 			}

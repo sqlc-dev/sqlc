@@ -24,4 +24,27 @@ BEGIN
 
   RETURN NEXT;
 END;
-$$ LANGUAGE plpgsql;
+$$
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION get_account(
+  _account_id INTEGER,
+  _tags TEXT[][] -- test multidimensional array code generation
+)
+RETURNS TABLE(
+    account_id INTEGER,
+    username TEXT
+)
+AS $$
+BEGIN
+  SELECT
+    account_id,
+    username
+  FROM
+    accounts
+  WHERE
+    account_id = _account_id;
+END;
+$$
+LANGUAGE plpgsql;
+
