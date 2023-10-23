@@ -75,4 +75,5 @@ sql:
         sql_package: "pgx/v5"
 ```
 
-Databases configured with a `uri` must have an up-to-date schema for query analysis to work correctly, and `sqlc` does not apply schema migrations your database.
+Databases configured with a `uri` must have an up-to-date schema for query analysis to work correctly, and `sqlc` does not apply schema migrations your database. Use your migration tool of choice to create the necessary
+tables and objects before running `sqlc generate`.
