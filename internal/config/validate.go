@@ -6,14 +6,6 @@ func Validate(c *Config) error {
 			if sql.Database.URI == "" && !sql.Database.Managed {
 				return ErrInvalidDatabase
 			}
-			if sql.Database.Managed {
-				if c.Cloud.Project == "" {
-					return ErrManagedDatabaseNoProject
-				}
-				if c.Cloud.AuthToken == "" {
-					return ErrManagedDatabaseNoAuthToken
-				}
-			}
 		}
 	}
 	return nil
