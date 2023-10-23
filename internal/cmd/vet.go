@@ -144,13 +144,13 @@ func Vet(ctx context.Context, dir, filename string, opts *Options) error {
 	}
 
 	c := checker{
-		Rules:      rules,
-		Conf:       conf,
-		Dir:        dir,
-		Env:        env,
-		Envmap:     map[string]string{},
-		Stderr:     stderr,
-		NoDatabase: e.NoDatabase,
+		Rules:         rules,
+		Conf:          conf,
+		Dir:           dir,
+		Env:           env,
+		Stderr:        stderr,
+		OnlyManagedDB: e.Debug.OnlyManagedDatabases,
+		Replacer:      shfmt.NewReplacer(nil),
 	}
 	errored := false
 	for _, sql := range conf.SQL {
@@ -379,14 +379,14 @@ type rule struct {
 }
 
 type checker struct {
-	Rules      map[string]rule
-	Conf       *config.Config
-	Dir        string
-	Env        *cel.Env
-	Envmap     map[string]string
-	Stderr     io.Writer
-	NoDatabase bool
-	Client     pb.QuickClient
+	Rules         map[string]rule
+	Conf          *config.Config
+	Dir           string
+	Env           *cel.Env
+	Stderr        io.Writer
+	OnlyManagedDB bool
+	Client        pb.QuickClient
+	Replacer      *shfmt.Replacer
 }
 
 func (c *checker) fetchDatabaseUri(ctx context.Context, s config.SQL) (string, func() error, error) {
@@ -448,14 +448,7 @@ func (c *checker) fetchDatabaseUri(ctx context.Context, s config.SQL) (string, f
 }
 
 func (c *checker) DSN(dsn string) (string, error) {
-	// Populate the environment variable map if it is empty
-	if len(c.Envmap) == 0 {
-		for _, e := range os.Environ() {
-			k, v, _ := strings.Cut(e, "=")
-			c.Envmap[k] = v
-		}
-	}
-	return shfmt.Replace(dsn, c.Envmap), nil
+	return c.Replacer.Replace(dsn), nil
 }
 
 func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
@@ -488,8 +481,8 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 	var prep preparer
 	var expl explainer
 	if s.Database != nil { // TODO only set up a database connection if a rule evaluation requires it
-		if c.NoDatabase {
-			return fmt.Errorf("database: connections disabled via command line flag")
+		if s.Database.URI != "" && c.OnlyManagedDB {
+			return fmt.Errorf("database: connections disabled via SQLCDEBUG=databases=managed")
 		}
 		dburl, cleanup, err := c.fetchDatabaseUri(ctx, s)
 		if err != nil {
