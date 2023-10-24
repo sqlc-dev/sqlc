@@ -65397,6 +65397,6 @@
       "insert_into_table": null
     }
   ],
-  "sqlc_version": "v1.22.0",
+  "sqlc_version": "v1.23.0",
   "plugin_options": "eyJmaWxlbmFtZSI6ImNvZGVnZW4uanNvbiIsImluZGVudCI6IiAgIn0="
 }
