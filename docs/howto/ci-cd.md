@@ -57,7 +57,7 @@ jobs:
     - uses: actions/checkout@v3
     - uses: sqlc-dev/setup-sqlc@v3
       with:
-        sqlc-version: '1.22.0'
+        sqlc-version: '1.23.0'
     - run: sqlc diff
 ```
 
@@ -91,7 +91,7 @@ jobs:
     - uses: actions/checkout@v3
     - uses: sqlc-dev/setup-sqlc@v3
       with:
-        sqlc-version: '1.22.0'
+        sqlc-version: '1.23.0'
       # Connect and migrate your database here. This is an example which runs
       # commands from a `schema.sql` file.
     - run: psql -h localhost -U postgres -p $PG_PORT -d postgres -f schema.sql
@@ -119,7 +119,7 @@ jobs:
     - uses: actions/checkout@v3
     - uses: sqlc-dev/setup-sqlc@v3
       with:
-        sqlc-version: '1.22.0'
+        sqlc-version: '1.23.0'
     - run: sqlc vet
 ```
 
@@ -144,7 +144,7 @@ jobs:
     - uses: actions/checkout@v3
     - uses: sqlc-dev/setup-sqlc@v3
       with:
-        sqlc-version: '1.22.0'
+        sqlc-version: '1.23.0'
     - run: sqlc upload
       env:
         SQLC_AUTH_TOKEN: ${{ secrets.SQLC_AUTH_TOKEN }}
