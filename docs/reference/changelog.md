@@ -16,6 +16,9 @@ issues](https://github.com/sqlc-dev/sqlc/issues?q=is%3Aissue+label%3Aanalyzer)
 in the backlog related to type inference and more complex queries. The easiest
 way to try it out is with [managed databases](../howto/managed-databases.md).
 
+The database-backed analyzer currently supports PostgreSQL, with [MySQL](https://github.com/sqlc-dev/sqlc/issues/2902) and [SQLite](https://github.com/sqlc-dev/sqlc/issues/2903)
+support planned in the future.
+
 #### New `createdb` command
 
 When you have a cloud project configured, you can use the new `sqlc createdb`
@@ -26,8 +29,7 @@ databases](../howto/managed-databases.md#with-other-tools) documentation.
 
 #### Support for pgvector
 
-If you're using [pgvector](https://github.com/pgvector/pgvector), sqlc should
-now understand your queries.
+If you're using [pgvector](https://github.com/pgvector/pgvector), say goodbye to custom overrides! sqlc now generates code using [pgvector-go](https://github.com/pgvector/pgvector-go#pgx) as long as you're using `pgx`. The pgvector extension is also available in [managed databases](../howto/managed-databases.md).
 
 #### Go build tags
 
