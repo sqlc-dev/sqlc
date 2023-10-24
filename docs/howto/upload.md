@@ -1,4 +1,4 @@
-# Uploading projects
+# `upload` - Uploading projects
 
 ```{note}
 Project uploads are powered by [sqlc Cloud](https://dashboard.sqlc.dev). Sign up for [free](https://dashboard.sqlc.dev) today.
@@ -18,7 +18,7 @@ After creating a project, add the project ID to your sqlc configuration file.
 ```yaml
 version: "2"
 cloud:
-  project: "<PROJECT-ID>"
+  project: "<PROJECT_ID>"
 ```
 
 You'll also need to create an auth token and make it available via the

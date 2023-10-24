@@ -1,4 +1,4 @@
-# Linting queries
+# `vet` - Linting queries
 
 *Added in v1.19.0*
 
@@ -43,7 +43,7 @@ message Parameter
 ```
 
 In addition to this basic information, when you have a PostgreSQL or MySQL
-[database connection configured](../reference/config.html#database)
+[database connection configured](../reference/config.md#database)
 each CEL expression has access to the output from running `EXPLAIN ...` on your query
 via the `postgresql.explain` and `mysql.explain` variables.
 This output is quite complex and depends on the structure of your query but sqlc attempts
@@ -95,7 +95,7 @@ rules:
 The CEL expression environment has two variables containing `EXPLAIN ...` output,
 `postgresql.explain` and `mysql.explain`. `sqlc` only populates the variable associated with
 your configured database engine, and only when you have a
-[database connection configured](../reference/config.html#database).
+[database connection configured](../reference/config.md#database).
 
 For the `postgresql` engine, `sqlc` runs
 
@@ -163,22 +163,27 @@ rules:
   rule: "!has(postgresql.explain)" # A dummy rule to trigger explain
 ```
 
-Please note that `sqlc` does not manage or migrate your database. Use your
-migration tool of choice to create the necessary database tables and objects
-before running `sqlc vet` with rules that depend on `EXPLAIN ...` output.
+Please note that databases configured with a `uri` must have an up-to-date
+schema for `vet` to work correctly, and `sqlc` does not apply schema migrations
+to your database. Use your migration tool of choice to create the necessary
+tables and objects before running `sqlc vet` with rules that depend on
+`EXPLAIN ...` output.
+
+Alternatively, configure [managed databases](managed-databases.md) to have
+`sqlc` create hosted ephemeral databases with the correct schema automatically.
 
 ## Built-in rules
 
 ### sqlc/db-prepare
 
-When a [database](../reference/config.html#database) connection is configured, you can
+When a [database](../reference/config.md#database) connection is configured, you can
 run the built-in `sqlc/db-prepare` rule. This rule will attempt to prepare
 each of your queries against the connected database and report any failures.
 
 ```yaml
 version: 2
 sql:
-  - schema: "query.sql"
+  - schema: "schema.sql"
     queries: "query.sql"
     engine: "postgresql"
     gen:
@@ -191,12 +196,20 @@ sql:
       - sqlc/db-prepare
 ```
 
-Databases configured with a `uri` must have an up-to-date schema, and `sqlc` does not apply schema migrations your database. You can configure [managed databases](managed-databases.md) instead to have `sqlc` create and migrate databases automatically.
+Please note that databases configured with a `uri` must have an up-to-date
+schema for `vet` to work correctly, and `sqlc` does not apply schema migrations
+to your database. Use your migration tool of choice to create the necessary
+tables and objects before running `sqlc vet` with the `sqlc/db-prepare` rule.
+
+Alternatively, configure [managed databases](managed-databases.md) to have
+`sqlc` create hosted ephemeral databases with the correct schema automatically.
 
 ```yaml
 version: 2
+cloud:
+  project: "<PROJECT_ID>"
 sql:
-  - schema: "query.sql"
+  - schema: "schema.sql"
     queries: "query.sql"
     engine: "postgresql"
     gen:
@@ -215,7 +228,7 @@ example](https://github.com/sqlc-dev/sqlc/blob/main/examples/authors/sqlc.yaml).
 ## Running lint rules
 
 When you add the name of a defined rule to the rules list
-for a [sql package](https://docs.sqlc.dev/en/stable/reference/config.html#sql),
+for a [sql package](../reference/config.md#sql),
 `sqlc vet` will evaluate that rule against every query in the package.
 
 In the example below, two rules are defined but only one is enabled.
