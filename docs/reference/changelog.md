@@ -382,7 +382,7 @@ rules:
     !(postgresql.explain.plan.plans.all(p, has(p.index_name) || p.plans.all(p, has(p.index_name))))
 ```
 
-The expression environment has two variables containing `EXPLAIN ...` output, `postgresql.explain` and `mysql.explain`. `sqlc` only populates the variable associated with your configured database engine, and only when you have a [database connection configured](../reference/config.html#database).
+The expression environment has two variables containing `EXPLAIN ...` output, `postgresql.explain` and `mysql.explain`. `sqlc` only populates the variable associated with your configured database engine, and only when you have a [database connection configured](../reference/config.md#database).
 
 For the `postgresql` engine, `sqlc` runs
 

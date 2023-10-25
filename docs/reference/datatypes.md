@@ -4,7 +4,7 @@
 database types to Go types. Choices for more complex types are described below.
 
 If you're unsatisfied with the default, you can override any type using the
-[overrides list](./config.html#type-overriding) in your `sqlc` config file.
+[overrides list](config.md#type-overriding) in your `sqlc` config file.
 
 ## Arrays
 
