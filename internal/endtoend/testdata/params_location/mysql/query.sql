@@ -31,3 +31,6 @@ SELECT * FROM users WHERE (job_status = 'APPLIED' OR job_status = 'PENDING')
 AND id > ?
 ORDER BY id
 LIMIT ?;
+
+/* name: SearchByName :many */
+SELECT * FROM users WHERE (first_name = sqlc.narg(name) OR last_name = sqlc.narg(name));

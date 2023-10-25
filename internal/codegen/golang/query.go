@@ -128,14 +128,16 @@ func (v QueryValue) Params() string {
 	}
 	var out []string
 	if v.Struct == nil {
-		if !v.Column.IsSqlcSlice && strings.HasPrefix(v.Typ, "[]") && v.Typ != "[]byte" && !v.SQLDriver.IsPGX() {
+		if v.Column.IsSqlcDynamic {
+		} else if !v.Column.IsSqlcSlice && strings.HasPrefix(v.Typ, "[]") && v.Typ != "[]byte" && !v.SQLDriver.IsPGX() {
 			out = append(out, "pq.Array("+escape(v.Name)+")")
 		} else {
 			out = append(out, escape(v.Name))
 		}
 	} else {
 		for _, f := range v.Struct.Fields {
-			if !f.HasSqlcSlice() && strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" && !v.SQLDriver.IsPGX() {
+			if f.HasSqlcDynamic() {
+			} else if !f.HasSqlcSlice() && strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" && !v.SQLDriver.IsPGX() {
 				out = append(out, "pq.Array("+escape(v.VariableForField(f))+")")
 			} else {
 				out = append(out, escape(v.VariableForField(f)))
@@ -187,6 +189,32 @@ func (v QueryValue) HasSqlcSlices() bool {
 		}
 	}
 	return false
+}
+func (v QueryValue) HasSqlcDynamic() bool {
+	if v.Struct == nil {
+		if v.Column != nil && v.Column.IsSqlcDynamic {
+			return true
+		}
+		return false
+	}
+	for _, v := range v.Struct.Fields {
+		if v.Column.IsSqlcDynamic {
+			return true
+		}
+	}
+	return false
+}
+func (v QueryValue) SqlcDynamic() int {
+	var count int = 1
+	if v.Struct == nil {
+		return 1
+	}
+	for _, v := range v.Struct.Fields {
+		if !v.Column.IsSqlcDynamic {
+			count++
+		}
+	}
+	return count
 }
 
 func (v QueryValue) Scan() string {

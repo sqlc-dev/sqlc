@@ -255,3 +255,40 @@ func (q *Queries) ListUsersWithLimit(ctx context.Context, limit int32) ([]ListUs
 	}
 	return items, nil
 }
+
+const searchByName = `-- name: SearchByName :many
+SELECT id, first_name, last_name, age, job_status FROM users WHERE (first_name = ? OR last_name = ?)
+`
+
+type SearchByNameParams struct {
+	Name sql.NullString
+}
+
+func (q *Queries) SearchByName(ctx context.Context, arg SearchByNameParams) ([]User, error) {
+	rows, err := q.db.QueryContext(ctx, searchByName, arg.Name, arg.Name)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.FirstName,
+			&i.LastName,
+			&i.Age,
+			&i.JobStatus,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

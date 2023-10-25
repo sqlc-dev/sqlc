@@ -37,7 +37,8 @@ type Column struct {
 	Type       *ast.TypeName
 	EmbedTable *ast.TableName
 
-	IsSqlcSlice bool // is this sqlc.slice()
+	IsSqlcSlice   bool // is this sqlc.slice()
+	IsSqlcDynamic bool // is this sqlc.dynamic()
 
 	skipTableRequiredCheck bool
 }

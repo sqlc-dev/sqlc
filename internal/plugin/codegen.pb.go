@@ -7,10 +7,11 @@
 package plugin
 
 import (
-	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
-	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
 	sync "sync"
+
+	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
+	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
 const (
@@ -851,15 +852,16 @@ type Column struct {
 	IsNamedParam bool   `protobuf:"varint,7,opt,name=is_named_param,json=isNamedParam,proto3" json:"is_named_param,omitempty"`
 	IsFuncCall   bool   `protobuf:"varint,8,opt,name=is_func_call,json=isFuncCall,proto3" json:"is_func_call,omitempty"`
 	// XXX: Figure out what PostgreSQL calls `foo.id`
-	Scope        string      `protobuf:"bytes,9,opt,name=scope,proto3" json:"scope,omitempty"`
-	Table        *Identifier `protobuf:"bytes,10,opt,name=table,proto3" json:"table,omitempty"`
-	TableAlias   string      `protobuf:"bytes,11,opt,name=table_alias,json=tableAlias,proto3" json:"table_alias,omitempty"`
-	Type         *Identifier `protobuf:"bytes,12,opt,name=type,proto3" json:"type,omitempty"`
-	IsSqlcSlice  bool        `protobuf:"varint,13,opt,name=is_sqlc_slice,json=isSqlcSlice,proto3" json:"is_sqlc_slice,omitempty"`
-	EmbedTable   *Identifier `protobuf:"bytes,14,opt,name=embed_table,json=embedTable,proto3" json:"embed_table,omitempty"`
-	OriginalName string      `protobuf:"bytes,15,opt,name=original_name,json=originalName,proto3" json:"original_name,omitempty"`
-	Unsigned     bool        `protobuf:"varint,16,opt,name=unsigned,proto3" json:"unsigned,omitempty"`
-	ArrayDims    int32       `protobuf:"varint,17,opt,name=array_dims,json=arrayDims,proto3" json:"array_dims,omitempty"`
+	Scope         string      `protobuf:"bytes,9,opt,name=scope,proto3" json:"scope,omitempty"`
+	Table         *Identifier `protobuf:"bytes,10,opt,name=table,proto3" json:"table,omitempty"`
+	TableAlias    string      `protobuf:"bytes,11,opt,name=table_alias,json=tableAlias,proto3" json:"table_alias,omitempty"`
+	Type          *Identifier `protobuf:"bytes,12,opt,name=type,proto3" json:"type,omitempty"`
+	IsSqlcSlice   bool        `protobuf:"varint,13,opt,name=is_sqlc_slice,json=isSqlcSlice,proto3" json:"is_sqlc_slice,omitempty"`
+	IsSqlcDynamic bool        `protobuf:"varint,13,opt,name=is_sqlc_dynamic,json=isSqlcDynamic,proto3" json:"is_sqlc_dynamic,omitempty"`
+	EmbedTable    *Identifier `protobuf:"bytes,14,opt,name=embed_table,json=embedTable,proto3" json:"embed_table,omitempty"`
+	OriginalName  string      `protobuf:"bytes,15,opt,name=original_name,json=originalName,proto3" json:"original_name,omitempty"`
+	Unsigned      bool        `protobuf:"varint,16,opt,name=unsigned,proto3" json:"unsigned,omitempty"`
+	ArrayDims     int32       `protobuf:"varint,17,opt,name=array_dims,json=arrayDims,proto3" json:"array_dims,omitempty"`
 }
 
 func (x *Column) Reset() {
@@ -977,7 +979,6 @@ func (x *Column) GetIsSqlcSlice() bool {
 	}
 	return false
 }
-
 func (x *Column) GetEmbedTable() *Identifier {
 	if x != nil {
 		return x.EmbedTable

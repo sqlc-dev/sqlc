@@ -33,6 +33,9 @@ func addExtraGoStructTags(tags map[string]string, req *plugin.CodeGenRequest, co
 
 func goType(req *plugin.CodeGenRequest, options *opts, col *plugin.Column) string {
 	// Check if the column's type has been overridden
+	if col.IsSqlcDynamic {
+		return "DynamicSql"
+	}
 	for _, oride := range req.Settings.Overrides {
 		if oride.GoType.TypeName == "" {
 			continue

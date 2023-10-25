@@ -228,17 +228,18 @@ func pluginQueryColumn(c *compiler.Column) *plugin.Column {
 		l = *c.Length
 	}
 	out := &plugin.Column{
-		Name:         c.Name,
-		OriginalName: c.OriginalName,
-		Comment:      c.Comment,
-		NotNull:      c.NotNull,
-		Unsigned:     c.Unsigned,
-		IsArray:      c.IsArray,
-		ArrayDims:    int32(c.ArrayDims),
-		Length:       int32(l),
-		IsNamedParam: c.IsNamedParam,
-		IsFuncCall:   c.IsFuncCall,
-		IsSqlcSlice:  c.IsSqlcSlice,
+		Name:          c.Name,
+		OriginalName:  c.OriginalName,
+		Comment:       c.Comment,
+		NotNull:       c.NotNull,
+		Unsigned:      c.Unsigned,
+		IsArray:       c.IsArray,
+		ArrayDims:     int32(c.ArrayDims),
+		Length:        int32(l),
+		IsNamedParam:  c.IsNamedParam,
+		IsFuncCall:    c.IsFuncCall,
+		IsSqlcSlice:   c.IsSqlcSlice,
+		IsSqlcDynamic: c.IsSqlcDynamic,
 	}
 
 	if c.Type != nil {

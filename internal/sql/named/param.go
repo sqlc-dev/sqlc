@@ -42,9 +42,10 @@ func (n nullability) String() string {
 // - named parameter operator        @param
 // - named parameter function calls  sqlc.arg(param)
 type Param struct {
-	name        string
-	nullability nullability
-	isSqlcSlice bool
+	name          string
+	nullability   nullability
+	isSqlcSlice   bool
+	isSqlcDynamic bool
 }
 
 // NewParam builds a new params with unspecified nullability
@@ -70,6 +71,11 @@ func NewUserNullableParam(name string) Param {
 // NewSqlcSlice is a sqlc.slice() parameter.
 func NewSqlcSlice(name string) Param {
 	return Param{name: name, nullability: nullUnspecified, isSqlcSlice: true}
+}
+
+// NewSqlcDynamic is a sqlc.dynamic() parameter.
+func NewSqlcDynamic(name string) Param {
+	return Param{name: name, nullability: notNullable, isSqlcDynamic: true}
 }
 
 // Name is the user defined name to use for this parameter
@@ -113,6 +119,11 @@ func (p Param) IsSqlcSlice() bool {
 	return p.isSqlcSlice
 }
 
+// IsSlice returns whether this param is a sqlc.dynamic() param.
+func (p Param) IsSqlcDynamic() bool {
+	return p.isSqlcDynamic
+}
+
 // mergeParam creates a new param from 2 partially specified params
 // If the parameters have different names, the first is preferred
 func mergeParam(a, b Param) Param {
@@ -122,8 +133,9 @@ func mergeParam(a, b Param) Param {
 	}
 
 	return Param{
-		name:        name,
-		nullability: a.nullability | b.nullability,
-		isSqlcSlice: a.isSqlcSlice || b.isSqlcSlice,
+		name:          name,
+		nullability:   a.nullability | b.nullability,
+		isSqlcSlice:   a.isSqlcSlice || b.isSqlcSlice,
+		isSqlcDynamic: a.isSqlcDynamic && b.isSqlcDynamic,
 	}
 }

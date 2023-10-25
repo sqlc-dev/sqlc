@@ -10,7 +10,7 @@ import (
 func findParameters(root ast.Node) ([]paramRef, []error) {
 	refs := make([]paramRef, 0)
 	errors := make([]error, 0)
-	v := paramSearch{seen: make(map[int]struct{}), refs: &refs, errs: &errors}
+	v := paramSearch{seen: make(map[int]struct{}), refs: &refs, errs: &errors, rvs: &[]*ast.RangeVar{}}
 	astutils.Walk(v, root)
 	if len(*v.errs) > 0 {
 		return refs, *v.errs
@@ -21,6 +21,7 @@ func findParameters(root ast.Node) ([]paramRef, []error) {
 
 type paramRef struct {
 	parent ast.Node
+	rvs    []*ast.RangeVar
 	rv     *ast.RangeVar
 	ref    *ast.ParamRef
 	name   string // Named parameter support
@@ -30,6 +31,7 @@ type paramSearch struct {
 	parent   ast.Node
 	rangeVar *ast.RangeVar
 	refs     *[]paramRef
+	rvs      *[]*ast.RangeVar
 	seen     map[int]struct{}
 	errs     *[]error
 
@@ -53,6 +55,7 @@ func (l *limitOffset) Pos() int {
 }
 
 func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
+	var reset bool
 	switch n := node.(type) {
 
 	case *ast.A_Expr:
@@ -65,6 +68,7 @@ func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 		p.parent = n.FuncCall
 
 	case *ast.DeleteStmt:
+		reset = true
 		if n.LimitCount != nil {
 			p.limitCount = n.LimitCount
 		}
@@ -73,7 +77,13 @@ func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 		p.parent = node
 
 	case *ast.InsertStmt:
+		reset = true
+		rvs := *p.rvs
+		if n.Relation != nil {
+			rvs = append(rvs, n.Relation)
+		}
 		if s, ok := n.SelectStmt.(*ast.SelectStmt); ok {
+			rvs = append(rvs, toTables(s.FromClause)...)
 			for i, item := range s.TargetList.Items {
 				target, ok := item.(*ast.ResTarget)
 				if !ok {
@@ -87,7 +97,7 @@ func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 					*p.errs = append(*p.errs, fmt.Errorf("INSERT has more expressions than target columns"))
 					return p
 				}
-				*p.refs = append(*p.refs, paramRef{parent: n.Cols.Items[i], ref: ref, rv: n.Relation})
+				*p.refs = append(*p.refs, paramRef{parent: n.Cols.Items[i], ref: ref, rv: n.Relation, rvs: rvs})
 				p.seen[ref.Location] = struct{}{}
 			}
 			for _, item := range s.ValuesLists.Items {
@@ -104,13 +114,16 @@ func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 						*p.errs = append(*p.errs, fmt.Errorf("INSERT has more expressions than target columns"))
 						return p
 					}
-					*p.refs = append(*p.refs, paramRef{parent: n.Cols.Items[i], ref: ref, rv: n.Relation})
+					*p.refs = append(*p.refs, paramRef{parent: n.Cols.Items[i], ref: ref, rv: n.Relation, rvs: rvs})
 					p.seen[ref.Location] = struct{}{}
 				}
 			}
 		}
 
 	case *ast.UpdateStmt:
+		reset = true
+		rvs := append(*p.rvs, toTables(n.FromClause)...)
+		rvs = append(rvs, toTables(n.Relations)...)
 		for _, item := range n.TargetList.Items {
 			target, ok := item.(*ast.ResTarget)
 			if !ok {
@@ -125,7 +138,7 @@ func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 				if !ok {
 					continue
 				}
-				*p.refs = append(*p.refs, paramRef{parent: target, ref: ref, rv: rv})
+				*p.refs = append(*p.refs, paramRef{parent: target, ref: ref, rv: rv, rvs: rvs})
 			}
 			p.seen[ref.Location] = struct{}{}
 		}
@@ -134,12 +147,16 @@ func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 		}
 
 	case *ast.RangeVar:
+		if n != nil {
+			*p.rvs = append(*p.rvs, n)
+		}
 		p.rangeVar = n
 
 	case *ast.ResTarget:
 		p.parent = node
 
 	case *ast.SelectStmt:
+		reset = true
 		if n.LimitCount != nil {
 			p.limitCount = n.LimitCount
 		}
@@ -186,7 +203,7 @@ func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 		}
 
 		if set {
-			*p.refs = append(*p.refs, paramRef{parent: parent, ref: n, rv: p.rangeVar})
+			*p.refs = append(*p.refs, paramRef{parent: parent, ref: n, rv: p.rangeVar, rvs: *p.rvs})
 			p.seen[n.Location] = struct{}{}
 		}
 		return nil
@@ -210,5 +227,20 @@ func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 			p.Visit(n.Expr)
 		}
 	}
+	if reset {
+		rvs := *p.rvs
+		return paramSearch{seen: p.seen, refs: p.refs, errs: p.errs, rvs: &rvs, parent: p.parent, rangeVar: p.rangeVar, limitCount: p.limitCount, limitOffset: p.limitOffset}
+	}
 	return p
+}
+
+func toTables(tbl *ast.List) []*ast.RangeVar {
+	tables := make([]*ast.RangeVar, len(tbl.Items))
+	for _, t := range tbl.Items {
+		item, ok := t.(*ast.RangeVar)
+		if ok && item != nil {
+			tables = append(tables, item)
+		}
+	}
+	return tables
 }

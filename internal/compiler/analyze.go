@@ -186,7 +186,11 @@ func (c *Compiler) _analyzeQuery(raw *ast.RawStmt, query string, failfast bool) 
 		return nil, err
 	}
 
-	params, err := c.resolveCatalogRefs(qc, rvs, refs, namedParams, embeds)
+	params, err := c.resolveCatalogRefs(qc, rvs, refs, namedParams)
+	if err := check(err); err != nil {
+		return nil, err
+	}
+	err = c.resolveCatalogEmbeds(qc, rvs, embeds)
 	if err := check(err); err != nil {
 		return nil, err
 	}

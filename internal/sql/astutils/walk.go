@@ -1818,6 +1818,9 @@ func Walk(f Visitor, node ast.Node) {
 		}
 
 	case *ast.SelectStmt:
+		if n.FromClause != nil {
+			Walk(f, n.FromClause)
+		}
 		if n.DistinctClause != nil {
 			Walk(f, n.DistinctClause)
 		}
@@ -1826,9 +1829,6 @@ func Walk(f Visitor, node ast.Node) {
 		}
 		if n.TargetList != nil {
 			Walk(f, n.TargetList)
-		}
-		if n.FromClause != nil {
-			Walk(f, n.FromClause)
 		}
 		if n.WhereClause != nil {
 			Walk(f, n.WhereClause)
@@ -2032,14 +2032,14 @@ func Walk(f Visitor, node ast.Node) {
 		if n.Relations != nil {
 			Walk(f, n.Relations)
 		}
+		if n.FromClause != nil {
+			Walk(f, n.FromClause)
+		}
 		if n.TargetList != nil {
 			Walk(f, n.TargetList)
 		}
 		if n.WhereClause != nil {
 			Walk(f, n.WhereClause)
-		}
-		if n.FromClause != nil {
-			Walk(f, n.FromClause)
 		}
 		if n.LimitCount != nil {
 			Walk(f, n.LimitCount)
