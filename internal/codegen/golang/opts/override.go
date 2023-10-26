@@ -1,51 +1,133 @@
 package opts
 
 import (
-	"github.com/sqlc-dev/sqlc/internal/codegen/sdk"
-	"github.com/sqlc-dev/sqlc/internal/plugin"
+	"fmt"
+	"os"
+	"strings"
+
+	"github.com/sqlc-dev/sqlc/internal/pattern"
 )
 
 type Override struct {
-	CodeType   string             `json:"code_type"`
-	DbType     string             `json:"db_type"`
-	Nullable   bool               `json:"nullable"`
-	Column     string             `json:"column"`
-	Table      *plugin.Identifier `json:"table"`
-	ColumnName string             `json:"column_name"`
-	GoType     *ParsedGoType      `json:"go_type"`
-	Unsigned   bool               `json:"unsigned"`
+	// name of the golang type to use, e.g. `github.com/segmentio/ksuid.KSUID`
+	GoType GoType `json:"go_type" yaml:"go_type"`
+
+	// additional Go struct tags to add to this field, in raw Go struct tag form, e.g. `validate:"required" x:"y,z"`
+	// see https://github.com/sqlc-dev/sqlc/issues/534
+	GoStructTag GoStructTag `json:"go_struct_tag" yaml:"go_struct_tag"`
+
+	// fully qualified name of the Go type, e.g. `github.com/segmentio/ksuid.KSUID`
+	DBType                  string `json:"db_type" yaml:"db_type"`
+	Deprecated_PostgresType string `json:"postgres_type" yaml:"postgres_type"`
+
+	// True if the GoType should override if the matching type is nullable
+	Nullable bool `json:"nullable" yaml:"nullable"`
+
+	// True if the GoType should override if the matching type is unsiged.
+	Unsigned bool `json:"unsigned" yaml:"unsigned"`
+
+	// Deprecated. Use the `nullable` property instead
+	Deprecated_Null bool `json:"null" yaml:"null"`
+
+	// fully qualified name of the column, e.g. `accounts.id`
+	Column string `json:"column" yaml:"column"`
+
+	ColumnName   *pattern.Match
+	TableCatalog *pattern.Match
+	TableSchema  *pattern.Match
+	TableRel     *pattern.Match
+	GoImportPath string
+	GoPackage    string
+	GoTypeName   string
+	GoBasicType  bool
+
+	// Parsed form of GoStructTag, e.g. {"validate:", "required"}
+	GoStructTags map[string]string
 }
 
-type ParsedGoType struct {
-	ImportPath string            `json:"import_path"`
-	Package    string            `json:"package"`
-	TypeName   string            `json:"type_name"`
-	BasicType  bool              `json:"basic_type"`
-	StructTags map[string]string `json:"struct_tags"`
-}
+func (o *Override) Parse() (err error) {
 
-func (o *Override) Matches(n *plugin.Identifier, defaultSchema string) bool {
-	if n == nil {
-		return false
+	// validate deprecated postgres_type field
+	if o.Deprecated_PostgresType != "" {
+		fmt.Fprintf(os.Stderr, "WARNING: \"postgres_type\" is deprecated. Instead, use \"db_type\" to specify a type override.\n")
+		if o.DBType != "" {
+			return fmt.Errorf(`Type override configurations cannot have "db_type" and "postres_type" together. Use "db_type" alone`)
+		}
+		o.DBType = o.Deprecated_PostgresType
 	}
-	schema := n.Schema
-	if n.Schema == "" {
-		schema = defaultSchema
+
+	// validate deprecated null field
+	if o.Deprecated_Null {
+		fmt.Fprintf(os.Stderr, "WARNING: \"null\" is deprecated. Instead, use the \"nullable\" field.\n")
+		o.Nullable = true
 	}
-	if o.Table.Catalog != "" && !sdk.MatchString(o.Table.Catalog, n.Catalog) {
-		return false
+
+	// validate option combinations
+	switch {
+	case o.Column != "" && o.DBType != "":
+		return fmt.Errorf("Override specifying both `column` (%q) and `db_type` (%q) is not valid.", o.Column, o.DBType)
+	case o.Column == "" && o.DBType == "":
+		return fmt.Errorf("Override must specify one of either `column` or `db_type`")
 	}
-	if o.Table.Schema == "" && schema != "" {
-		return false
+
+	// validate Column
+	if o.Column != "" {
+		colParts := strings.Split(o.Column, ".")
+		switch len(colParts) {
+		case 2:
+			if o.ColumnName, err = pattern.MatchCompile(colParts[1]); err != nil {
+				return err
+			}
+			if o.TableRel, err = pattern.MatchCompile(colParts[0]); err != nil {
+				return err
+			}
+			if o.TableSchema, err = pattern.MatchCompile("public"); err != nil {
+				return err
+			}
+		case 3:
+			if o.ColumnName, err = pattern.MatchCompile(colParts[2]); err != nil {
+				return err
+			}
+			if o.TableRel, err = pattern.MatchCompile(colParts[1]); err != nil {
+				return err
+			}
+			if o.TableSchema, err = pattern.MatchCompile(colParts[0]); err != nil {
+				return err
+			}
+		case 4:
+			if o.ColumnName, err = pattern.MatchCompile(colParts[3]); err != nil {
+				return err
+			}
+			if o.TableRel, err = pattern.MatchCompile(colParts[2]); err != nil {
+				return err
+			}
+			if o.TableSchema, err = pattern.MatchCompile(colParts[1]); err != nil {
+				return err
+			}
+			if o.TableCatalog, err = pattern.MatchCompile(colParts[0]); err != nil {
+				return err
+			}
+		default:
+			return fmt.Errorf("Override `column` specifier %q is not the proper format, expected '[catalog.][schema.]tablename.colname'", o.Column)
+		}
 	}
-	if o.Table.Schema != "" && !sdk.MatchString(o.Table.Schema, schema) {
-		return false
+
+	// validate GoType
+	parsed, err := o.GoType.Parse()
+	if err != nil {
+		return err
 	}
-	if o.Table.Name == "" && n.Name != "" {
-		return false
+	o.GoImportPath = parsed.ImportPath
+	o.GoPackage = parsed.Package
+	o.GoTypeName = parsed.TypeName
+	o.GoBasicType = parsed.BasicType
+
+	// validate GoStructTag
+	tags, err := o.GoStructTag.Parse()
+	if err != nil {
+		return err
 	}
-	if o.Table.Name != "" && !sdk.MatchString(o.Table.Name, n.Name) {
-		return false
-	}
-	return true
+	o.GoStructTags = tags
+
+	return nil
 }
