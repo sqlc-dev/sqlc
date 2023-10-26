@@ -1,3 +1,4 @@
+// Copied from github.com/sqlc-dev/sqlc/internal/config/override.go and removed Engine field from Override
 package opts
 
 import (

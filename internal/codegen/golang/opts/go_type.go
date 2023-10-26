@@ -1,3 +1,4 @@
+// Copied from github.com/sqlc-dev/sqlc/internal/config/go_type.go with minor changes to ParsedGoType
 package opts
 
 import (

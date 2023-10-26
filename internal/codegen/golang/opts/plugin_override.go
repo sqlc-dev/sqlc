@@ -1,3 +1,4 @@
+// Extracted from github.com/sqlc-dev/sqlc/internal/cmd/shim.go
 package opts
 
 import (

@@ -53,16 +53,16 @@ func pluginOverride(r *compiler.Result, o config.Override) *plugin.Override {
 }
 
 func pluginSettings(r *compiler.Result, cs config.CombinedSettings) *plugin.Settings {
-	var overrides []*plugin.Override
+	var over []*plugin.Override
 	for _, o := range cs.Overrides {
-		overrides = append(overrides, pluginOverride(r, o))
+		over = append(over, pluginOverride(r, o))
 	}
 	return &plugin.Settings{
 		Version:   cs.Global.Version,
 		Engine:    string(cs.Package.Engine),
 		Schema:    []string(cs.Package.Schema),
 		Queries:   []string(cs.Package.Queries),
-		Overrides: overrides,
+		Overrides: over,
 		Rename:    cs.Rename,
 		Codegen:   pluginCodegen(cs, cs.Codegen),
 	}
