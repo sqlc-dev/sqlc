@@ -9,19 +9,44 @@ message File {
   bytes contents = 2 [json_name = "contents"];
 }
 
+message Override {
+  // PythonType message was field 9
+  // ParsedGoType message was field 10
+  reserved 9, 10;
+
+  // plugin-specific configuration
+  bytes code_type = 1 [json_name = "code_type"];
+
+  // name of the type to use, e.g. `text`
+  string db_type = 3 [json_name = "db_type"];
+
+  // True if the override should apply to a nullable database type
+  bool nullable = 5 [json_name = "nullable"];
+
+  // fully qualified name of the column, e.g. `accounts.id`
+  string column = 6 [json_name = "column"];
+
+  Identifier table = 7 [json_name = "table"];
+
+  string column_name = 8 [json_name = "column_name"];
+
+  // True if the override should apply to a unsigned database type
+  bool unsigned = 11 [json_name = "unsigned"];
+}
+
 message Settings {
-  // Override list was field 6
   // PythonCode message was field 8
   // KotlinCode message was field 9
   // GoCode message was field 10
   // JSONCode message was field 11
-  reserved 6, 8, 9, 10, 11;
+  reserved 8, 9, 10, 11;
 
   string version = 1 [json_name = "version"];
   string engine = 2 [json_name = "engine"];
   repeated string schema = 3 [json_name = "schema"];
   repeated string queries = 4 [json_name = "queries"];
   map<string, string> rename = 5 [json_name = "rename"];
+  repeated Override overrides = 6 [json_name = "overrides"];
   Codegen codegen = 12 [json_name = "codegen"];
 }
 
