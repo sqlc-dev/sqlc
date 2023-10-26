@@ -7,7 +7,6 @@ import (
 
 	"github.com/sqlc-dev/sqlc/internal/codegen/golang/opts"
 	"github.com/sqlc-dev/sqlc/internal/metadata"
-	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
 
 type fileImports struct {
@@ -59,11 +58,10 @@ func mergeImports(imps ...fileImports) [][]ImportSpec {
 }
 
 type importer struct {
-	Settings *plugin.Settings
-	Options  *opts.Options
-	Queries  []Query
-	Enums    []Enum
-	Structs  []Struct
+	Options *opts.Options
+	Queries []Query
+	Enums   []Enum
+	Structs []Struct
 }
 
 func (i *importer) usesType(typ string) bool {

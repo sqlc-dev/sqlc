@@ -129,11 +129,10 @@ func Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plugin.CodeGenR
 
 func generate(req *plugin.CodeGenRequest, options *opts.Options, enums []Enum, structs []Struct, queries []Query) (*plugin.CodeGenResponse, error) {
 	i := &importer{
-		Settings: req.Settings,
-		Options:  options,
-		Queries:  queries,
-		Enums:    enums,
-		Structs:  structs,
+		Options: options,
+		Queries: queries,
+		Enums:   enums,
+		Structs: structs,
 	}
 
 	tctx := tmplCtx{

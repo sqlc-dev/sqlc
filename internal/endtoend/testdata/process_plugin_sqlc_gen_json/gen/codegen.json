@@ -9,7 +9,6 @@
       "query.sql"
     ],
     "rename": {},
-    "overrides": [],
     "codegen": {
       "out": "gen",
       "plugin": "jsonb",
