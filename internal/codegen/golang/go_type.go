@@ -8,12 +8,12 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
 
-func addExtraGoStructTags(tags map[string]string, req *plugin.CodeGenRequest, col *plugin.Column) {
-	for _, oride := range req.Settings.Overrides {
+func addExtraGoStructTags(tags map[string]string, req *plugin.CodeGenRequest, options *opts.Options, col *plugin.Column) {
+	for _, oride := range options.Overrides {
 		if oride.GoType.StructTags == nil {
 			continue
 		}
-		if !sdk.Matches(oride, col.Table, req.Catalog.DefaultSchema) {
+		if !oride.Matches(col.Table, req.Catalog.DefaultSchema) {
 			// Different table.
 			continue
 		}
@@ -34,7 +34,7 @@ func addExtraGoStructTags(tags map[string]string, req *plugin.CodeGenRequest, co
 
 func goType(req *plugin.CodeGenRequest, options *opts.Options, col *plugin.Column) string {
 	// Check if the column's type has been overridden
-	for _, oride := range req.Settings.Overrides {
+	for _, oride := range options.Overrides {
 		if oride.GoType.TypeName == "" {
 			continue
 		}
@@ -42,7 +42,7 @@ func goType(req *plugin.CodeGenRequest, options *opts.Options, col *plugin.Colum
 		if col.OriginalName != "" {
 			cname = col.OriginalName
 		}
-		sameTable := sdk.Matches(oride, col.Table, req.Catalog.DefaultSchema)
+		sameTable := oride.Matches(col.Table, req.Catalog.DefaultSchema)
 		if oride.Column != "" && sdk.MatchString(oride.ColumnName, cname) && sameTable {
 			if col.IsSqlcSlice {
 				return "[]" + oride.GoType.TypeName
@@ -65,7 +65,7 @@ func goInnerType(req *plugin.CodeGenRequest, options *opts.Options, col *plugin.
 	notNull := col.NotNull || col.IsArray
 
 	// package overrides have a higher precedence
-	for _, oride := range req.Settings.Overrides {
+	for _, oride := range options.Overrides {
 		if oride.GoType.TypeName == "" {
 			continue
 		}

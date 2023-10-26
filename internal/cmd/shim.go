@@ -3,6 +3,7 @@ package cmd
 import (
 	"strings"
 
+	goopts "github.com/sqlc-dev/sqlc/internal/codegen/golang/opts"
 	"github.com/sqlc-dev/sqlc/internal/compiler"
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/config/convert"
@@ -11,7 +12,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
 )
 
-func pluginOverride(r *compiler.Result, o config.Override) *plugin.Override {
+func pluginOverride(r *compiler.Result, o config.Override) goopts.Override {
 	var column string
 	var table plugin.Identifier
 
@@ -33,7 +34,7 @@ func pluginOverride(r *compiler.Result, o config.Override) *plugin.Override {
 			column = colParts[3]
 		}
 	}
-	return &plugin.Override{
+	return goopts.Override{
 		CodeType:   "", // FIXME
 		DbType:     o.DBType,
 		Nullable:   o.Nullable,
@@ -46,18 +47,13 @@ func pluginOverride(r *compiler.Result, o config.Override) *plugin.Override {
 }
 
 func pluginSettings(r *compiler.Result, cs config.CombinedSettings) *plugin.Settings {
-	var over []*plugin.Override
-	for _, o := range cs.Overrides {
-		over = append(over, pluginOverride(r, o))
-	}
 	return &plugin.Settings{
-		Version:   cs.Global.Version,
-		Engine:    string(cs.Package.Engine),
-		Schema:    []string(cs.Package.Schema),
-		Queries:   []string(cs.Package.Queries),
-		Overrides: over,
-		Rename:    cs.Rename,
-		Codegen:   pluginCodegen(cs, cs.Codegen),
+		Version: cs.Global.Version,
+		Engine:  string(cs.Package.Engine),
+		Schema:  []string(cs.Package.Schema),
+		Queries: []string(cs.Package.Queries),
+		Rename:  cs.Rename,
+		Codegen: pluginCodegen(cs, cs.Codegen),
 	}
 }
 
@@ -101,17 +97,57 @@ func pluginWASM(p config.Plugin) *plugin.Codegen_WASM {
 	return nil
 }
 
-func pluginGoType(o config.Override) *plugin.ParsedGoType {
+func pluginGoType(o config.Override) *goopts.ParsedGoType {
 	// Note that there is a slight mismatch between this and the
 	// proto api. The GoType on the override is the unparsed type,
 	// which could be a qualified path or an object, as per
 	// https://docs.sqlc.dev/en/v1.18.0/reference/config.html#type-overriding
-	return &plugin.ParsedGoType{
+	return &goopts.ParsedGoType{
 		ImportPath: o.GoImportPath,
 		Package:    o.GoPackage,
 		TypeName:   o.GoTypeName,
 		BasicType:  o.GoBasicType,
 		StructTags: o.GoStructTags,
+	}
+}
+
+func pluginGoOpts(sqlGo *config.SQLGo, cs config.CombinedSettings, r *compiler.Result) *goopts.Options {
+	var overrides []goopts.Override
+	for _, o := range cs.Overrides {
+		overrides = append(overrides, pluginOverride(r, o))
+	}
+	return &goopts.Options{
+		EmitInterface:             sqlGo.EmitInterface,
+		EmitJsonTags:              sqlGo.EmitJSONTags,
+		JsonTagsIdUppercase:       sqlGo.JsonTagsIDUppercase,
+		EmitDbTags:                sqlGo.EmitDBTags,
+		EmitPreparedQueries:       sqlGo.EmitPreparedQueries,
+		EmitExactTableNames:       sqlGo.EmitExactTableNames,
+		EmitEmptySlices:           sqlGo.EmitEmptySlices,
+		EmitExportedQueries:       sqlGo.EmitExportedQueries,
+		EmitResultStructPointers:  sqlGo.EmitResultStructPointers,
+		EmitParamsStructPointers:  sqlGo.EmitParamsStructPointers,
+		EmitMethodsWithDbArgument: sqlGo.EmitMethodsWithDBArgument,
+		EmitPointersForNullTypes:  sqlGo.EmitPointersForNullTypes,
+		EmitEnumValidMethod:       sqlGo.EmitEnumValidMethod,
+		EmitAllEnumValues:         sqlGo.EmitAllEnumValues,
+		JsonTagsCaseStyle:         sqlGo.JSONTagsCaseStyle,
+		Package:                   sqlGo.Package,
+		Out:                       sqlGo.Out,
+		Overrides:                 overrides,
+		// Rename intentionally omitted
+		SqlPackage:                  sqlGo.SQLPackage,
+		SqlDriver:                   sqlGo.SQLDriver,
+		OutputBatchFileName:         sqlGo.OutputBatchFileName,
+		OutputDbFileName:            sqlGo.OutputDBFileName,
+		OutputModelsFileName:        sqlGo.OutputModelsFileName,
+		OutputQuerierFileName:       sqlGo.OutputQuerierFileName,
+		OutputCopyfromFileName:      sqlGo.OutputCopyFromFileName,
+		OutputFilesSuffix:           sqlGo.OutputFilesSuffix,
+		InflectionExcludeTableNames: sqlGo.InflectionExcludeTableNames,
+		QueryParameterLimit:         sqlGo.QueryParameterLimit,
+		OmitUnusedStructs:           sqlGo.OmitUnusedStructs,
+		BuildTags:                   sqlGo.BuildTags,
 	}
 }
 
