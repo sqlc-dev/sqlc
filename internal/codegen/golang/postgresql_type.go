@@ -5,6 +5,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/sqlc-dev/sqlc/internal/codegen/golang/opts"
 	"github.com/sqlc-dev/sqlc/internal/codegen/sdk"
 	"github.com/sqlc-dev/sqlc/internal/debug"
 	"github.com/sqlc-dev/sqlc/internal/plugin"
@@ -33,7 +34,7 @@ func parseIdentifierString(name string) (*plugin.Identifier, error) {
 	}
 }
 
-func postgresType(req *plugin.CodeGenRequest, options *opts, col *plugin.Column) string {
+func postgresType(req *plugin.CodeGenRequest, options *opts.Options, col *plugin.Column) string {
 	columnType := sdk.DataType(col.Type)
 	notNull := col.NotNull || col.IsArray
 	driver := parseDriver(options.SqlPackage)

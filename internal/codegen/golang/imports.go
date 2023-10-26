@@ -5,6 +5,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/sqlc-dev/sqlc/internal/codegen/golang/opts"
 	"github.com/sqlc-dev/sqlc/internal/metadata"
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
@@ -59,7 +60,7 @@ func mergeImports(imps ...fileImports) [][]ImportSpec {
 
 type importer struct {
 	Settings *plugin.Settings
-	Options  *opts
+	Options  *opts.Options
 	Queries  []Query
 	Enums    []Enum
 	Structs  []Struct
@@ -156,7 +157,7 @@ var pqtypeTypes = map[string]struct{}{
 	"pqtype.NullRawMessage": {},
 }
 
-func buildImports(settings *plugin.Settings, options *opts, queries []Query, uses func(string) bool) (map[string]struct{}, map[ImportSpec]struct{}) {
+func buildImports(settings *plugin.Settings, options *opts.Options, queries []Query, uses func(string) bool) (map[string]struct{}, map[ImportSpec]struct{}) {
 	pkg := make(map[ImportSpec]struct{})
 	std := make(map[string]struct{})
 

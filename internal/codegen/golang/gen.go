@@ -10,6 +10,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/sqlc-dev/sqlc/internal/codegen/golang/opts"
 	"github.com/sqlc-dev/sqlc/internal/codegen/sdk"
 	"github.com/sqlc-dev/sqlc/internal/metadata"
 	"github.com/sqlc-dev/sqlc/internal/plugin"
@@ -103,12 +104,12 @@ func (t *tmplCtx) codegenQueryRetval(q Query) (string, error) {
 }
 
 func Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
-	options, err := parseOpts(req)
+	options, err := opts.ParseOpts(req)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := validateOpts(options); err != nil {
+	if err := opts.ValidateOpts(options); err != nil {
 		return nil, err
 	}
 
@@ -126,7 +127,7 @@ func Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plugin.CodeGenR
 	return generate(req, options, enums, structs, queries)
 }
 
-func generate(req *plugin.CodeGenRequest, options *opts, enums []Enum, structs []Struct, queries []Query) (*plugin.CodeGenResponse, error) {
+func generate(req *plugin.CodeGenRequest, options *opts.Options, enums []Enum, structs []Struct, queries []Query) (*plugin.CodeGenResponse, error) {
 	i := &importer{
 		Settings: req.Settings,
 		Options:  options,

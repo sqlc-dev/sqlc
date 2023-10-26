@@ -1,4 +1,4 @@
-package golang
+package opts
 
 import (
 	"bytes"
@@ -8,7 +8,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
 
-type opts struct {
+type Options struct {
 	EmitInterface               bool     `json:"emit_interface"`
 	EmitJsonTags                bool     `json:"emit_json_tags"`
 	JsonTagsIdUppercase         bool     `json:"json_tags_id_uppercase"`
@@ -44,8 +44,8 @@ type opts struct {
 	Rename    json.RawMessage `json:"rename,omitempty"`
 }
 
-func parseOpts(req *plugin.CodeGenRequest) (*opts, error) {
-	var options *opts
+func ParseOpts(req *plugin.CodeGenRequest) (*Options, error) {
+	var options *Options
 	dec := json.NewDecoder(bytes.NewReader(req.PluginOptions))
 	dec.DisallowUnknownFields()
 	if err := dec.Decode(&options); err != nil {
@@ -60,7 +60,7 @@ func parseOpts(req *plugin.CodeGenRequest) (*opts, error) {
 	return options, nil
 }
 
-func validateOpts(opts *opts) error {
+func ValidateOpts(opts *Options) error {
 	if opts.EmitMethodsWithDbArgument && opts.EmitPreparedQueries {
 		return fmt.Errorf("invalid options: emit_methods_with_db_argument and emit_prepared_queries options are mutually exclusive")
 	}

@@ -5,13 +5,14 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/sqlc-dev/sqlc/internal/codegen/golang/opts"
 	"github.com/sqlc-dev/sqlc/internal/codegen/sdk"
 	"github.com/sqlc-dev/sqlc/internal/inflection"
 	"github.com/sqlc-dev/sqlc/internal/metadata"
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
 
-func buildEnums(req *plugin.CodeGenRequest, options *opts) []Enum {
+func buildEnums(req *plugin.CodeGenRequest, options *opts.Options) []Enum {
 	var enums []Enum
 	for _, schema := range req.Catalog.Schemas {
 		if schema.Name == "pg_catalog" || schema.Name == "information_schema" {
@@ -58,7 +59,7 @@ func buildEnums(req *plugin.CodeGenRequest, options *opts) []Enum {
 	return enums
 }
 
-func buildStructs(req *plugin.CodeGenRequest, options *opts) []Struct {
+func buildStructs(req *plugin.CodeGenRequest, options *opts.Options) []Struct {
 	var structs []Struct
 	for _, schema := range req.Catalog.Schemas {
 		if schema.Name == "pg_catalog" || schema.Name == "information_schema" {
@@ -181,7 +182,7 @@ func argName(name string) string {
 	return out
 }
 
-func buildQueries(req *plugin.CodeGenRequest, options *opts, structs []Struct) ([]Query, error) {
+func buildQueries(req *plugin.CodeGenRequest, options *opts.Options, structs []Struct) ([]Query, error) {
 	qs := make([]Query, 0, len(req.Queries))
 	for _, query := range req.Queries {
 		if query.Name == "" {
@@ -331,7 +332,7 @@ func putOutColumns(query *plugin.Query) bool {
 // JSON tags: count, count_2, count_2
 //
 // This is unlikely to happen, so don't fix it yet
-func columnsToStruct(req *plugin.CodeGenRequest, options *opts, name string, columns []goColumn, useID bool) (*Struct, error) {
+func columnsToStruct(req *plugin.CodeGenRequest, options *opts.Options, name string, columns []goColumn, useID bool) (*Struct, error) {
 	gs := Struct{
 		Name: name,
 	}
