@@ -1,4 +1,4 @@
-// Copied from github.com/sqlc-dev/sqlc/internal/config/override.go and removed Engine field from Override
+// Copied from github.com/sqlc-dev/sqlc/internal/config/override.go
 package opts
 
 import (
@@ -20,6 +20,9 @@ type Override struct {
 	// fully qualified name of the Go type, e.g. `github.com/segmentio/ksuid.KSUID`
 	DBType                  string `json:"db_type" yaml:"db_type"`
 	Deprecated_PostgresType string `json:"postgres_type" yaml:"postgres_type"`
+
+	// for global overrides only when two different engines are in use
+	Engine string `json:"engine,omitempty" yaml:"engine"`
 
 	// True if the GoType should override if the matching type is nullable
 	Nullable bool `json:"nullable" yaml:"nullable"`

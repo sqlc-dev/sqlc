@@ -53,28 +53,31 @@ func ParseOpts(req *plugin.CodeGenRequest) (*Options, error) {
 		return options, fmt.Errorf("unmarshalling options: %w", err)
 	}
 
+	for _, override := range req.Settings.Overrides {
+		var actualOverride Override
+		if err := json.Unmarshal(override.CodeType, &actualOverride); err != nil {
+			return options, err
+		}
+		if err := actualOverride.Parse(); err != nil {
+			return options, err
+		}
+		options.Overrides = append(options.Overrides, NewGoOverride(
+			override,
+			actualOverride,
+		))
+	}
+
+	// in sqlc config.Combine() the "package"-level overrides were appended to
+	// global overrides, so we mimic that behavior here
 	for i := range options.QuerySetOverrides {
 		if err := options.QuerySetOverrides[i].Parse(); err != nil {
 			return options, err
 		}
 
-		// construct a "plugin"-style override to make the next loop simpler
-		override := pluginOverride(req.Catalog.DefaultSchema, options.QuerySetOverrides[i])
-
-		// in sqlc config.Combine() the "package"-level overrides were appended to
-		// global overrides, so we mimic that behavior here
-		req.Settings.Overrides = append(req.Settings.Overrides, override)
-	}
-
-	for _, override := range req.Settings.Overrides {
-		var goType ParsedGoType
-		if err := json.Unmarshal(override.CodeType, &goType); err != nil {
-			return options, err
-		}
-		options.Overrides = append(options.Overrides, GoOverride{
-			override,
-			&goType,
-		})
+		options.Overrides = append(options.Overrides, NewGoOverride(
+			pluginOverride(req.Catalog.DefaultSchema, options.QuerySetOverrides[i]),
+			options.QuerySetOverrides[i],
+		))
 	}
 
 	if options.QueryParameterLimit == nil {

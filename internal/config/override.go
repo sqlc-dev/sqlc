@@ -1,6 +1,7 @@
 package config
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -14,7 +15,7 @@ type Override struct {
 
 	// additional Go struct tags to add to this field, in raw Go struct tag form, e.g. `validate:"required" x:"y,z"`
 	// see https://github.com/sqlc-dev/sqlc/issues/534
-	GoStructTag GoStructTag `json:"go_struct_tag" yaml:"go_struct_tag"`
+	GoStructTag string `json:"go_struct_tag" yaml:"go_struct_tag"`
 
 	// fully qualified name of the Go type, e.g. `github.com/segmentio/ksuid.KSUID`
 	DBType                  string `json:"db_type" yaml:"db_type"`
@@ -39,17 +40,12 @@ type Override struct {
 	TableCatalog *pattern.Match `json:"-"`
 	TableSchema  *pattern.Match `json:"-"`
 	TableRel     *pattern.Match `json:"-"`
-	GoImportPath string         `json:"-"`
-	GoPackage    string         `json:"-"`
-	GoTypeName   string         `json:"-"`
-	GoBasicType  bool           `json:"-"`
 
-	// Parsed form of GoStructTag, e.g. {"validate:", "required"}
-	GoStructTags map[string]string `json:"-"`
+	// For passing plugin-specific configuration
+	CodeType []byte `json:"-"`
 }
 
 func (o *Override) Parse() (err error) {
-
 	// validate deprecated postgres_type field
 	if o.Deprecated_PostgresType != "" {
 		fmt.Fprintf(os.Stderr, "WARNING: \"postgres_type\" is deprecated. Instead, use \"db_type\" to specify a type override.\n")
@@ -115,22 +111,14 @@ func (o *Override) Parse() (err error) {
 		}
 	}
 
-	// validate GoType
-	parsed, err := o.GoType.Parse()
+	// A simple way to get stuff into the Go codegen plugin so that
+	// we can just call Parse() again in there
+	codeType, err := json.Marshal(o)
 	if err != nil {
 		return err
 	}
-	o.GoImportPath = parsed.ImportPath
-	o.GoPackage = parsed.Package
-	o.GoTypeName = parsed.TypeName
-	o.GoBasicType = parsed.BasicType
 
-	// validate GoStructTag
-	tags, err := o.GoStructTag.Parse()
-	if err != nil {
-		return err
-	}
-	o.GoStructTags = tags
+	o.CodeType = codeType
 
 	return nil
 }

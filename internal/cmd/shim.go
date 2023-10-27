@@ -1,10 +1,8 @@
 package cmd
 
 import (
-	"encoding/json"
 	"strings"
 
-	goopts "github.com/sqlc-dev/sqlc/internal/codegen/golang/opts"
 	"github.com/sqlc-dev/sqlc/internal/compiler"
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/config/convert"
@@ -36,13 +34,8 @@ func pluginOverride(r *compiler.Result, o config.Override) *plugin.Override {
 		}
 	}
 
-	goTypeJSON, err := json.Marshal(pluginGoType(o))
-	if err != nil {
-		panic(err)
-	}
-
 	return &plugin.Override{
-		CodeType:   goTypeJSON,
+		CodeType:   o.CodeType,
 		DbType:     o.DBType,
 		Nullable:   o.Nullable,
 		Unsigned:   o.Unsigned,
@@ -106,20 +99,6 @@ func pluginWASM(p config.Plugin) *plugin.Codegen_WASM {
 		}
 	}
 	return nil
-}
-
-func pluginGoType(o config.Override) *goopts.ParsedGoType {
-	// Note that there is a slight mismatch between this and the
-	// proto api. The GoType on the override is the unparsed type,
-	// which could be a qualified path or an object, as per
-	// https://docs.sqlc.dev/en/v1.18.0/reference/config.html#type-overriding
-	return &goopts.ParsedGoType{
-		ImportPath: o.GoImportPath,
-		Package:    o.GoPackage,
-		TypeName:   o.GoTypeName,
-		BasicType:  o.GoBasicType,
-		StructTags: o.GoStructTags,
-	}
 }
 
 func pluginCatalog(c *catalog.Catalog) *plugin.Catalog {

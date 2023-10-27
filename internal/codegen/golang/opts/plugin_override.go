@@ -2,7 +2,6 @@
 package opts
 
 import (
-	"encoding/json"
 	"strings"
 
 	"github.com/sqlc-dev/sqlc/internal/plugin"
@@ -31,32 +30,12 @@ func pluginOverride(defaultSchema string, o Override) *plugin.Override {
 		}
 	}
 
-	goTypeJSON, err := json.Marshal(pluginGoType(o))
-	if err != nil {
-		panic(err)
-	}
-
 	return &plugin.Override{
-		CodeType:   goTypeJSON,
 		DbType:     o.DBType,
 		Nullable:   o.Nullable,
 		Unsigned:   o.Unsigned,
 		Column:     o.Column,
 		ColumnName: column,
 		Table:      &table,
-	}
-}
-
-func pluginGoType(o Override) *ParsedGoType {
-	// Note that there is a slight mismatch between this and the
-	// proto api. The GoType on the override is the unparsed type,
-	// which could be a qualified path or an object, as per
-	// https://docs.sqlc.dev/en/v1.18.0/reference/config.html#type-overriding
-	return &ParsedGoType{
-		ImportPath: o.GoImportPath,
-		Package:    o.GoPackage,
-		TypeName:   o.GoTypeName,
-		BasicType:  o.GoBasicType,
-		StructTags: o.GoStructTags,
 	}
 }
