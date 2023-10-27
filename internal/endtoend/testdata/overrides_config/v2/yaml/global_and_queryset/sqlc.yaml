@@ -1,0 +1,31 @@
+version: "2"
+overrides:
+  go:
+    rename:
+      one: "ONE"
+    overrides:
+      - db_type: "bigint"
+        go_type: "yet/another.Override"
+      - db_type: "text"
+        go_type: "config/global.Text"
+      - column: "overrides.three"
+        go_type:
+          import: "config/global"
+          type: "ShouldSeeThis"
+sql:
+- schema: "../../../schema.sql"
+  queries: "../../../query.sql"
+  engine: "postgresql"
+  gen:
+    go: 
+      out: "db"
+      rename:
+        one: "ONE"
+      overrides:
+        - column: "overrides.three"
+          go_type:
+            import: "config/queryset"
+            type: "ShouldNotSeeThis"
+        - db_type: "bigint"
+          go_type: "yet/another.Override"
+
