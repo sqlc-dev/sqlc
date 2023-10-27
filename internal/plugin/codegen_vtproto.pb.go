@@ -53,11 +53,12 @@ func (m *Override) CloneVT() *Override {
 		Table:      m.Table.CloneVT(),
 		ColumnName: m.ColumnName,
 		Unsigned:   m.Unsigned,
+		Plugin:     m.Plugin,
 	}
-	if rhs := m.CodeType; rhs != nil {
+	if rhs := m.Options; rhs != nil {
 		tmpBytes := make([]byte, len(rhs))
 		copy(tmpBytes, rhs)
-		r.CodeType = tmpBytes
+		r.Options = tmpBytes
 	}
 	if len(m.unknownFields) > 0 {
 		r.unknownFields = make([]byte, len(m.unknownFields))
@@ -514,9 +515,6 @@ func (this *Override) EqualVT(that *Override) bool {
 	} else if this == nil || that == nil {
 		return false
 	}
-	if string(this.CodeType) != string(that.CodeType) {
-		return false
-	}
 	if this.DbType != that.DbType {
 		return false
 	}
@@ -533,6 +531,12 @@ func (this *Override) EqualVT(that *Override) bool {
 		return false
 	}
 	if this.Unsigned != that.Unsigned {
+		return false
+	}
+	if this.Plugin != that.Plugin {
+		return false
+	}
+	if string(this.Options) != string(that.Options) {
 		return false
 	}
 	return string(this.unknownFields) == string(that.unknownFields)
@@ -1245,6 +1249,20 @@ func (m *Override) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if len(m.Options) > 0 {
+		i -= len(m.Options)
+		copy(dAtA[i:], m.Options)
+		i = encodeVarint(dAtA, i, uint64(len(m.Options)))
+		i--
+		dAtA[i] = 0x6a
+	}
+	if len(m.Plugin) > 0 {
+		i -= len(m.Plugin)
+		copy(dAtA[i:], m.Plugin)
+		i = encodeVarint(dAtA, i, uint64(len(m.Plugin)))
+		i--
+		dAtA[i] = 0x62
+	}
 	if m.Unsigned {
 		i--
 		if m.Unsigned {
@@ -1295,13 +1313,6 @@ func (m *Override) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i = encodeVarint(dAtA, i, uint64(len(m.DbType)))
 		i--
 		dAtA[i] = 0x1a
-	}
-	if len(m.CodeType) > 0 {
-		i -= len(m.CodeType)
-		copy(dAtA[i:], m.CodeType)
-		i = encodeVarint(dAtA, i, uint64(len(m.CodeType)))
-		i--
-		dAtA[i] = 0xa
 	}
 	return len(dAtA) - i, nil
 }
@@ -2486,6 +2497,20 @@ func (m *Override) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if len(m.Options) > 0 {
+		i -= len(m.Options)
+		copy(dAtA[i:], m.Options)
+		i = encodeVarint(dAtA, i, uint64(len(m.Options)))
+		i--
+		dAtA[i] = 0x6a
+	}
+	if len(m.Plugin) > 0 {
+		i -= len(m.Plugin)
+		copy(dAtA[i:], m.Plugin)
+		i = encodeVarint(dAtA, i, uint64(len(m.Plugin)))
+		i--
+		dAtA[i] = 0x62
+	}
 	if m.Unsigned {
 		i--
 		if m.Unsigned {
@@ -2536,13 +2561,6 @@ func (m *Override) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 		i = encodeVarint(dAtA, i, uint64(len(m.DbType)))
 		i--
 		dAtA[i] = 0x1a
-	}
-	if len(m.CodeType) > 0 {
-		i -= len(m.CodeType)
-		copy(dAtA[i:], m.CodeType)
-		i = encodeVarint(dAtA, i, uint64(len(m.CodeType)))
-		i--
-		dAtA[i] = 0xa
 	}
 	return len(dAtA) - i, nil
 }
@@ -3663,10 +3681,6 @@ func (m *Override) SizeVT() (n int) {
 	}
 	var l int
 	_ = l
-	l = len(m.CodeType)
-	if l > 0 {
-		n += 1 + l + sov(uint64(l))
-	}
 	l = len(m.DbType)
 	if l > 0 {
 		n += 1 + l + sov(uint64(l))
@@ -3688,6 +3702,14 @@ func (m *Override) SizeVT() (n int) {
 	}
 	if m.Unsigned {
 		n += 2
+	}
+	l = len(m.Plugin)
+	if l > 0 {
+		n += 1 + l + sov(uint64(l))
+	}
+	l = len(m.Options)
+	if l > 0 {
+		n += 1 + l + sov(uint64(l))
 	}
 	n += len(m.unknownFields)
 	return n
@@ -4292,40 +4314,6 @@ func (m *Override) UnmarshalVT(dAtA []byte) error {
 			return fmt.Errorf("proto: Override: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field CodeType", wireType)
-			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if byteLen < 0 {
-				return ErrInvalidLength
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLength
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.CodeType = append(m.CodeType[:0], dAtA[iNdEx:postIndex]...)
-			if m.CodeType == nil {
-				m.CodeType = []byte{}
-			}
-			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field DbType", wireType)
@@ -4498,6 +4486,72 @@ func (m *Override) UnmarshalVT(dAtA []byte) error {
 				}
 			}
 			m.Unsigned = bool(v != 0)
+		case 12:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Plugin", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Plugin = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 13:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Options", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLength
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Options = append(m.Options[:0], dAtA[iNdEx:postIndex]...)
+			if m.Options == nil {
+				m.Options = []byte{}
+			}
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skip(dAtA[iNdEx:])

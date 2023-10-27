@@ -49,22 +49,29 @@ func ParseOpts(req *plugin.CodeGenRequest) (*Options, error) {
 	var options *Options
 	dec := json.NewDecoder(bytes.NewReader(req.PluginOptions))
 	dec.DisallowUnknownFields()
+	fmt.Printf("### %s", string(req.PluginOptions))
 	if err := dec.Decode(&options); err != nil {
 		return options, fmt.Errorf("unmarshalling options: %w", err)
 	}
 
 	for _, override := range req.Settings.Overrides {
-		var actualOverride Override
-		if err := json.Unmarshal(override.CodeType, &actualOverride); err != nil {
+		var overrideOpts OverrideOptions
+		if err := json.Unmarshal(override.Options, &overrideOpts); err != nil {
 			return options, err
 		}
-		if err := actualOverride.Parse(); err != nil {
+		parsedGoType, err := overrideOpts.GoType.Parse()
+		if err != nil {
 			return options, err
 		}
-		options.Overrides = append(options.Overrides, NewGoOverride(
+		parsedGoStructTags, err := overrideOpts.GoStructTag.Parse()
+		if err != nil {
+			return options, err
+		}
+		parsedGoType.StructTags = parsedGoStructTags
+		options.Overrides = append(options.Overrides, GoOverride{
 			override,
-			actualOverride,
-		))
+			parsedGoType,
+		})
 	}
 
 	// in sqlc config.Combine() the "package"-level overrides were appended to

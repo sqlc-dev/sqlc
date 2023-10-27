@@ -47,6 +47,15 @@ type Override struct {
 
 	// Parsed form of GoStructTag, e.g. {"validate:", "required"}
 	GoStructTags map[string]string `json:"-"`
+
+	// For passing plugin-specific configuration
+	Plugin  string          `json:"plugin"` // Irrelevant here in the plugin context
+	Options OverrideOptions `json:"options"`
+}
+
+type OverrideOptions struct {
+	GoType      GoType      `json:"go_type"`
+	GoStructTag GoStructTag `json:"go_struct_tag"`
 }
 
 func (o *Override) Parse() (err error) {

@@ -1,21 +1,22 @@
 package config
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
 
+	gopluginopts "github.com/sqlc-dev/sqlc/internal/codegen/golang/opts"
 	"github.com/sqlc-dev/sqlc/internal/pattern"
+	"gopkg.in/yaml.v3"
 )
 
 type Override struct {
 	// name of the golang type to use, e.g. `github.com/segmentio/ksuid.KSUID`
-	GoType GoType `json:"go_type" yaml:"go_type"`
+	GoType gopluginopts.GoType `json:"go_type" yaml:"go_type"`
 
 	// additional Go struct tags to add to this field, in raw Go struct tag form, e.g. `validate:"required" x:"y,z"`
 	// see https://github.com/sqlc-dev/sqlc/issues/534
-	GoStructTag string `json:"go_struct_tag" yaml:"go_struct_tag"`
+	GoStructTag gopluginopts.GoStructTag `json:"go_struct_tag" yaml:"go_struct_tag"`
 
 	// fully qualified name of the Go type, e.g. `github.com/segmentio/ksuid.KSUID`
 	DBType                  string `json:"db_type" yaml:"db_type"`
@@ -42,7 +43,17 @@ type Override struct {
 	TableRel     *pattern.Match `json:"-"`
 
 	// For passing plugin-specific configuration
-	CodeType []byte `json:"-"`
+	Plugin  string    `json:"plugin,omitempty"`
+	Options yaml.Node `json:"options,omitempty"`
+}
+
+func (o Override) hasGoOptions() bool {
+	hasGoTypePath := o.GoType.Path != ""
+	hasGoTypePackage := o.GoType.Package != ""
+	hasGoTypeName := o.GoType.Name != ""
+	hasGoType := hasGoTypePath || hasGoTypePackage || hasGoTypeName
+	hasGoStructTag := o.GoStructTag != ""
+	return hasGoType || hasGoStructTag
 }
 
 func (o *Override) Parse() (err error) {
@@ -67,6 +78,8 @@ func (o *Override) Parse() (err error) {
 		return fmt.Errorf("Override specifying both `column` (%q) and `db_type` (%q) is not valid.", o.Column, o.DBType)
 	case o.Column == "" && o.DBType == "":
 		return fmt.Errorf("Override must specify one of either `column` or `db_type`")
+	case o.hasGoOptions() && !o.Options.IsZero():
+		return fmt.Errorf("Override can specify go_type/go_struct_tag or options but not both")
 	}
 
 	// validate Column
@@ -110,15 +123,6 @@ func (o *Override) Parse() (err error) {
 			return fmt.Errorf("Override `column` specifier %q is not the proper format, expected '[catalog.][schema.]tablename.colname'", o.Column)
 		}
 	}
-
-	// A simple way to get stuff into the Go codegen plugin so that
-	// we can just call Parse() again in there
-	codeType, err := json.Marshal(o)
-	if err != nil {
-		return err
-	}
-
-	o.CodeType = codeType
 
 	return nil
 }

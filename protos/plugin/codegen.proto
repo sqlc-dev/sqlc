@@ -10,12 +10,10 @@ message File {
 }
 
 message Override {
+  // code_type string was field 1
   // PythonType message was field 9
   // ParsedGoType message was field 10
-  reserved 9, 10;
-
-  // plugin-specific configuration
-  bytes code_type = 1 [json_name = "code_type"];
+  reserved 1, 9, 10;
 
   // name of the type to use, e.g. `text`
   string db_type = 3 [json_name = "db_type"];
@@ -32,6 +30,9 @@ message Override {
 
   // True if the override should apply to a unsigned database type
   bool unsigned = 11 [json_name = "unsigned"];
+
+  string plugin = 12 [json_name = "plugin"];
+  bytes options = 13 [json_name = "options"];
 }
 
 message Settings {

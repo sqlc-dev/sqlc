@@ -1,8 +1,11 @@
 package cmd
 
 import (
+	"encoding/json"
+	"fmt"
 	"strings"
 
+	gopluginopts "github.com/sqlc-dev/sqlc/internal/codegen/golang/opts"
 	"github.com/sqlc-dev/sqlc/internal/compiler"
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/config/convert"
@@ -34,18 +37,39 @@ func pluginOverride(r *compiler.Result, o config.Override) *plugin.Override {
 		}
 	}
 
+	var options []byte
+	var err error
+	if o.Options.IsZero() {
+		// Send go-specific override information to the go codegen plugin
+		options, err = json.Marshal(gopluginopts.OverrideOptions{
+			GoType:      o.GoType,
+			GoStructTag: o.GoStructTag,
+		})
+		if err != nil {
+			panic(err) // TODO don't panic, return err
+		}
+	} else {
+		options, err = convert.YAMLtoJSON(o.Options)
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Printf(">>> %s", string(options))
+	}
+
 	return &plugin.Override{
-		CodeType:   o.CodeType,
 		DbType:     o.DBType,
 		Nullable:   o.Nullable,
 		Unsigned:   o.Unsigned,
 		Column:     o.Column,
 		ColumnName: column,
 		Table:      &table,
+		Options:    options,
 	}
 }
 
 func pluginSettings(r *compiler.Result, cs config.CombinedSettings) *plugin.Settings {
+	// TODO only send overrides meant for this plugin
 	var over []*plugin.Override
 	for _, o := range cs.Overrides {
 		over = append(over, pluginOverride(r, o))
