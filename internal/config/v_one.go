@@ -96,18 +96,13 @@ func v1ParseConfig(rd io.Reader) (Config, error) {
 			*settings.Packages[j].QueryParameterLimit = 1
 		}
 
-		for i := range settings.Packages[j].Overrides {
-			if err := settings.Packages[j].Overrides[i].Parse(); err != nil {
-				return config, err
-			}
-		}
 		if settings.Packages[j].Name == "" {
 			settings.Packages[j].Name = filepath.Base(settings.Packages[j].Path)
 		}
+
 		if settings.Packages[j].Engine == "" {
 			settings.Packages[j].Engine = EnginePostgreSQL
 		}
-
 	}
 
 	return settings.Translate(), nil

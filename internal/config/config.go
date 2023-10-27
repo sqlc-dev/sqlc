@@ -269,7 +269,6 @@ func Combine(conf Config, pkg SQL) CombinedSettings {
 		for k, v := range pkg.Gen.Go.Rename {
 			cs.Rename[k] = v
 		}
-		cs.Overrides = append(cs.Overrides, pkg.Gen.Go.Overrides...)
 	}
 	if pkg.Gen.JSON != nil {
 		cs.JSON = *pkg.Gen.JSON

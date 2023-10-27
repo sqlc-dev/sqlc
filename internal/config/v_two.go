@@ -84,11 +84,6 @@ func v2ParseConfig(rd io.Reader) (Config, error) {
 				*conf.SQL[j].Gen.Go.QueryParameterLimit = 1
 			}
 
-			for i := range conf.SQL[j].Gen.Go.Overrides {
-				if err := conf.SQL[j].Gen.Go.Overrides[i].Parse(); err != nil {
-					return conf, err
-				}
-			}
 			for k, v := range conf.SQL[j].Gen.Go.Rename {
 				conf.SQL[j].Gen.Go.Rename[k] = v
 			}

@@ -33,17 +33,17 @@ type Override struct {
 	// fully qualified name of the column, e.g. `accounts.id`
 	Column string `json:"column" yaml:"column"`
 
-	ColumnName   *pattern.Match
-	TableCatalog *pattern.Match
-	TableSchema  *pattern.Match
-	TableRel     *pattern.Match
-	GoImportPath string
-	GoPackage    string
-	GoTypeName   string
-	GoBasicType  bool
+	ColumnName   *pattern.Match `json:"-"`
+	TableCatalog *pattern.Match `json:"-"`
+	TableSchema  *pattern.Match `json:"-"`
+	TableRel     *pattern.Match `json:"-"`
+	GoImportPath string         `json:"-"`
+	GoPackage    string         `json:"-"`
+	GoTypeName   string         `json:"-"`
+	GoBasicType  bool           `json:"-"`
 
 	// Parsed form of GoStructTag, e.g. {"validate:", "required"}
-	GoStructTags map[string]string
+	GoStructTags map[string]string `json:"-"`
 }
 
 func (o *Override) Parse() (err error) {
