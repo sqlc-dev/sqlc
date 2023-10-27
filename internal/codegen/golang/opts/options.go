@@ -61,8 +61,8 @@ func ParseOpts(req *plugin.CodeGenRequest) (*Options, error) {
 		// construct a "plugin"-style override to make the next loop simpler
 		override := pluginOverride(req.Catalog.DefaultSchema, options.QuerySetOverrides[i])
 
-		// in sqlc config.Combine() the "package"-level configs are appended to global configs,
-		// so we mimic that behavior here
+		// in sqlc config.Combine() the "package"-level overrides were appended to
+		// global overrides, so we mimic that behavior here
 		req.Settings.Overrides = append(req.Settings.Overrides, override)
 	}
 
