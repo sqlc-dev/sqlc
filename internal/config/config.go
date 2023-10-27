@@ -55,12 +55,12 @@ const (
 )
 
 type Config struct {
-	Version string   `json:"version" yaml:"version"`
-	Cloud   Cloud    `json:"cloud" yaml:"cloud"`
-	SQL     []SQL    `json:"sql" yaml:"sql"`
-	Gen     Gen      `json:"overrides,omitempty" yaml:"overrides"`
-	Plugins []Plugin `json:"plugins" yaml:"plugins"`
-	Rules   []Rule   `json:"rules" yaml:"rules"`
+	Version   string    `json:"version" yaml:"version"`
+	Cloud     Cloud     `json:"cloud" yaml:"cloud"`
+	SQL       []SQL     `json:"sql" yaml:"sql"`
+	Overrides Overrides `json:"overrides,omitempty" yaml:"overrides"`
+	Plugins   []Plugin  `json:"plugins" yaml:"plugins"`
+	Rules     []Rule    `json:"rules" yaml:"rules"`
 }
 
 type Database struct {
@@ -93,11 +93,11 @@ type Rule struct {
 	Msg  string `json:"message" yaml:"message"`
 }
 
-type Gen struct {
-	Go *GenGo `json:"go,omitempty" yaml:"go"`
+type Overrides struct {
+	Go *GoOverrides `json:"go,omitempty" yaml:"go"`
 }
 
-type GenGo struct {
+type GoOverrides struct {
 	Overrides []Override        `json:"overrides,omitempty" yaml:"overrides"`
 	Rename    map[string]string `json:"rename,omitempty" yaml:"rename"`
 }
@@ -258,11 +258,11 @@ func Combine(conf Config, pkg SQL) CombinedSettings {
 		Package: pkg,
 		Rename:  map[string]string{},
 	}
-	if conf.Gen.Go != nil {
-		for k, v := range conf.Gen.Go.Rename {
+	if conf.Overrides.Go != nil {
+		for k, v := range conf.Overrides.Go.Rename {
 			cs.Rename[k] = v
 		}
-		cs.Overrides = append(cs.Overrides, conf.Gen.Go.Overrides...)
+		cs.Overrides = append(cs.Overrides, conf.Overrides.Go.Overrides...)
 	}
 	if pkg.Gen.Go != nil {
 		cs.Go = *pkg.Gen.Go
