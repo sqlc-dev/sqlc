@@ -49,7 +49,6 @@ func ParseOpts(req *plugin.CodeGenRequest) (*Options, error) {
 	var options *Options
 	dec := json.NewDecoder(bytes.NewReader(req.PluginOptions))
 	dec.DisallowUnknownFields()
-	fmt.Printf("### %s", string(req.PluginOptions))
 	if err := dec.Decode(&options); err != nil {
 		return options, fmt.Errorf("unmarshalling options: %w", err)
 	}

@@ -1,13 +1,13 @@
 package config
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
 
 	gopluginopts "github.com/sqlc-dev/sqlc/internal/codegen/golang/opts"
 	"github.com/sqlc-dev/sqlc/internal/pattern"
-	"gopkg.in/yaml.v3"
 )
 
 type Override struct {
@@ -43,8 +43,8 @@ type Override struct {
 	TableRel     *pattern.Match `json:"-"`
 
 	// For passing plugin-specific configuration
-	Plugin  string    `json:"plugin,omitempty"`
-	Options yaml.Node `json:"options,omitempty"`
+	Plugin  string          `json:"plugin,omitempty"`
+	Options json.RawMessage `json:"options,omitempty"`
 }
 
 func (o Override) hasGoOptions() bool {
@@ -78,7 +78,7 @@ func (o *Override) Parse() (err error) {
 		return fmt.Errorf("Override specifying both `column` (%q) and `db_type` (%q) is not valid.", o.Column, o.DBType)
 	case o.Column == "" && o.DBType == "":
 		return fmt.Errorf("Override must specify one of either `column` or `db_type`")
-	case o.hasGoOptions() && !o.Options.IsZero():
+	case o.hasGoOptions() && len(o.Options) > 0:
 		return fmt.Errorf("Override can specify go_type/go_struct_tag or options but not both")
 	}
 

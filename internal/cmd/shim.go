@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"encoding/json"
-	"fmt"
 	"strings"
 
 	gopluginopts "github.com/sqlc-dev/sqlc/internal/codegen/golang/opts"
@@ -39,7 +38,7 @@ func pluginOverride(r *compiler.Result, o config.Override) *plugin.Override {
 
 	var options []byte
 	var err error
-	if o.Options.IsZero() {
+	if len(o.Options) == 0 {
 		// Send go-specific override information to the go codegen plugin
 		options, err = json.Marshal(gopluginopts.OverrideOptions{
 			GoType:      o.GoType,
@@ -49,12 +48,7 @@ func pluginOverride(r *compiler.Result, o config.Override) *plugin.Override {
 			panic(err) // TODO don't panic, return err
 		}
 	} else {
-		options, err = convert.YAMLtoJSON(o.Options)
-		if err != nil {
-			panic(err)
-		}
-
-		fmt.Printf(">>> %s", string(options))
+		options = o.Options
 	}
 
 	return &plugin.Override{
