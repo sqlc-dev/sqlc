@@ -1,7 +1,6 @@
 package opts
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 
@@ -47,9 +46,7 @@ type Options struct {
 
 func ParseOpts(req *plugin.CodeGenRequest) (*Options, error) {
 	var options *Options
-	dec := json.NewDecoder(bytes.NewReader(req.PluginOptions))
-	dec.DisallowUnknownFields()
-	if err := dec.Decode(&options); err != nil {
+	if err := json.Unmarshal(req.PluginOptions, &options); err != nil {
 		return options, fmt.Errorf("unmarshalling options: %w", err)
 	}
 
