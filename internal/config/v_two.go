@@ -27,9 +27,9 @@ func v2ParseConfig(rd io.Reader) (Config, error) {
 	if err := conf.validateGlobalOverrides(); err != nil {
 		return conf, err
 	}
-	if conf.Gen.Go != nil {
-		for i := range conf.Gen.Go.Overrides {
-			if err := conf.Gen.Go.Overrides[i].Parse(); err != nil {
+	if conf.Overrides.Go != nil {
+		for i := range conf.Overrides.Go.Overrides {
+			if err := conf.Overrides.Go.Overrides[i].Parse(); err != nil {
 				return conf, err
 			}
 		}
@@ -125,11 +125,11 @@ func (c *Config) validateGlobalOverrides() error {
 			engines[pkg.Engine] = struct{}{}
 		}
 	}
-	if c.Gen.Go == nil {
+	if c.Overrides.Go == nil {
 		return nil
 	}
 	usesMultipleEngines := len(engines) > 1
-	for _, oride := range c.Gen.Go.Overrides {
+	for _, oride := range c.Overrides.Go.Overrides {
 		if usesMultipleEngines && oride.Engine == "" {
 			return fmt.Errorf(`the "engine" field is required for global type overrides because your configuration uses multiple database engines`)
 		}

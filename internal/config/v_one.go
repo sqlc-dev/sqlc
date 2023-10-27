@@ -189,7 +189,7 @@ func (c *V1GenerateSettings) Translate() Config {
 	}
 
 	if len(c.Overrides) > 0 || len(c.Rename) > 0 {
-		conf.Gen.Go = &GenGo{
+		conf.Overrides.Go = &GoOverrides{
 			Overrides: c.Overrides,
 			Rename:    c.Rename,
 		}
