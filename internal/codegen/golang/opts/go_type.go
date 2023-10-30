@@ -28,6 +28,14 @@ type ParsedGoType struct {
 	StructTag  string
 }
 
+func (o *GoType) MarshalJSON() ([]byte, error) {
+	if o.Spec != "" {
+		return json.Marshal(o.Spec)
+	}
+	type alias GoType
+	return json.Marshal(alias(*o))
+}
+
 func (o *GoType) UnmarshalJSON(data []byte) error {
 	var spec string
 	if err := json.Unmarshal(data, &spec); err == nil {
