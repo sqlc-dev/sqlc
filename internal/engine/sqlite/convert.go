@@ -1096,6 +1096,28 @@ func (c *cc) convertCollateExpr(n *parser.Expr_collateContext) ast.Node {
 	}
 }
 
+func (c *cc) convertCase(n *parser.Expr_caseContext) ast.Node {
+	e := &ast.CaseExpr{
+		Args: &ast.List{},
+	}
+	es := n.AllExpr()
+	if n.ELSE_() != nil {
+		e.Defresult = c.convert(es[len(es)-1])
+		es = es[:len(es)-1]
+	}
+	if len(es)%2 == 1 {
+		e.Arg = c.convert(es[0])
+		es = es[1:]
+	}
+	for i := 0; i < len(es); i += 2 {
+		e.Args.Items = append(e.Args.Items, &ast.CaseWhen{
+			Expr:   c.convert(es[i+0]),
+			Result: c.convert(es[i+1]),
+		})
+	}
+	return e
+}
+
 func (c *cc) convert(node node) ast.Node {
 	switch n := node.(type) {
 
@@ -1183,6 +1205,9 @@ func (c *cc) convert(node node) ast.Node {
 
 	case *parser.Expr_castContext:
 		return c.convertCastExpr(n)
+
+	case *parser.Expr_caseContext:
+		return c.convertCase(n)
 
 	default:
 		return todo("convert(case=default)", n)
