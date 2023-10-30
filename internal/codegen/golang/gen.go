@@ -108,6 +108,13 @@ func Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plugin.CodeGenR
 	if err != nil {
 		return nil, err
 	}
+	global, err := opts.ParseGlobalOpts(req)
+	if err != nil {
+		return nil, err
+	}
+	if len(global.Overrides) > 0 {
+		options.Overrides = append(global.Overrides, options.Overrides...)
+	}
 
 	if err := opts.ValidateOpts(options); err != nil {
 		return nil, err
@@ -129,11 +136,10 @@ func Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plugin.CodeGenR
 
 func generate(req *plugin.CodeGenRequest, options *opts.Options, enums []Enum, structs []Struct, queries []Query) (*plugin.CodeGenResponse, error) {
 	i := &importer{
-		Settings: req.Settings,
-		Options:  options,
-		Queries:  queries,
-		Enums:    enums,
-		Structs:  structs,
+		Options: options,
+		Queries: queries,
+		Enums:   enums,
+		Structs: structs,
 	}
 
 	tctx := tmplCtx{

@@ -27,13 +27,13 @@ func v2ParseConfig(rd io.Reader) (Config, error) {
 	if err := conf.validateGlobalOverrides(); err != nil {
 		return conf, err
 	}
-	if conf.Overrides.Go != nil {
-		for i := range conf.Overrides.Go.Overrides {
-			if err := conf.Overrides.Go.Overrides[i].Parse(); err != nil {
-				return conf, err
-			}
-		}
-	}
+	// if conf.Overrides.Go != nil {
+	// 	for i := range conf.Overrides.Go.Overrides {
+	// 		if err := conf.Overrides.Go.Overrides[i].Parse(); err != nil {
+	// 			return conf, err
+	// 		}
+	// 	}
+	// }
 	// TODO: Store built-in plugins somewhere else
 	builtins := map[string]struct{}{
 		"go":   {},
@@ -84,11 +84,11 @@ func v2ParseConfig(rd io.Reader) (Config, error) {
 				*conf.SQL[j].Gen.Go.QueryParameterLimit = 1
 			}
 
-			for i := range conf.SQL[j].Gen.Go.Overrides {
-				if err := conf.SQL[j].Gen.Go.Overrides[i].Parse(); err != nil {
-					return conf, err
-				}
-			}
+			// for i := range conf.SQL[j].Gen.Go.Overrides {
+			// 	if err := conf.SQL[j].Gen.Go.Overrides[i].Parse(); err != nil {
+			// 		return conf, err
+			// 	}
+			// }
 			for k, v := range conf.SQL[j].Gen.Go.Rename {
 				conf.SQL[j].Gen.Go.Rename[k] = v
 			}

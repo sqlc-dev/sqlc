@@ -415,6 +415,15 @@ func codegen(ctx context.Context, combo config.CombinedSettings, sql outPair, re
 		}
 		req.PluginOptions = opts
 
+		global, found := combo.Global.Options[plug.Name]
+		if found {
+			opts, err := convert.YAMLtoJSON(global)
+			if err != nil {
+				return "", nil, fmt.Errorf("invalid plugin options")
+			}
+			req.GlobalOptions = opts
+		}
+
 	case sql.Gen.Go != nil:
 		out = combo.Go.Out
 		handler = ext.HandleFunc(golang.Generate)
@@ -423,6 +432,14 @@ func codegen(ctx context.Context, combo config.CombinedSettings, sql outPair, re
 			return "", nil, fmt.Errorf("opts marshal failed: %w", err)
 		}
 		req.PluginOptions = opts
+
+		if combo.Global.Overrides.Go != nil {
+			opts, err := json.Marshal(combo.Global.Overrides.Go)
+			if err != nil {
+				return "", nil, fmt.Errorf("opts marshal failed: %w", err)
+			}
+			req.GlobalOptions = opts
+		}
 
 	case sql.Gen.JSON != nil:
 		out = combo.JSON.Out

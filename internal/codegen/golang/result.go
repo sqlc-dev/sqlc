@@ -92,7 +92,7 @@ func buildStructs(req *plugin.CodeGenRequest, options *opts.Options) []Struct {
 				if options.EmitJsonTags {
 					tags["json"] = JSONTagName(column.Name, options)
 				}
-				addExtraGoStructTags(tags, req, column)
+				addExtraGoStructTags(tags, req, options, column)
 				s.Fields = append(s.Fields, Field{
 					Name:    StructName(column.Name, req.Settings),
 					Type:    goType(req, options, column),
@@ -370,7 +370,7 @@ func columnsToStruct(req *plugin.CodeGenRequest, options *opts.Options, name str
 		if options.EmitJsonTags {
 			tags["json"] = JSONTagName(tagName, options)
 		}
-		addExtraGoStructTags(tags, req, c.Column)
+		addExtraGoStructTags(tags, req, options, c.Column)
 		f := Field{
 			Name:   fieldName,
 			DBName: colName,

@@ -7,7 +7,6 @@ import (
 
 	"github.com/sqlc-dev/sqlc/internal/codegen/golang/opts"
 	"github.com/sqlc-dev/sqlc/internal/metadata"
-	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
 
 type fileImports struct {
@@ -59,11 +58,10 @@ func mergeImports(imps ...fileImports) [][]ImportSpec {
 }
 
 type importer struct {
-	Settings *plugin.Settings
-	Options  *opts.Options
-	Queries  []Query
-	Enums    []Enum
-	Structs  []Struct
+	Options *opts.Options
+	Queries []Query
+	Enums   []Enum
+	Structs []Struct
 }
 
 func (i *importer) usesType(typ string) bool {
@@ -157,7 +155,7 @@ var pqtypeTypes = map[string]struct{}{
 	"pqtype.NullRawMessage": {},
 }
 
-func buildImports(settings *plugin.Settings, options *opts.Options, queries []Query, uses func(string) bool) (map[string]struct{}, map[ImportSpec]struct{}) {
+func buildImports(options *opts.Options, queries []Query, uses func(string) bool) (map[string]struct{}, map[ImportSpec]struct{}) {
 	pkg := make(map[ImportSpec]struct{})
 	std := make(map[string]struct{})
 
@@ -201,7 +199,8 @@ func buildImports(settings *plugin.Settings, options *opts.Options, queries []Qu
 	}
 
 	overrideTypes := map[string]string{}
-	for _, o := range settings.Overrides {
+	for _, override := range options.Overrides {
+		o := override.Plugin
 		if o.GoType.BasicType || o.GoType.TypeName == "" {
 			continue
 		}
@@ -226,7 +225,9 @@ func buildImports(settings *plugin.Settings, options *opts.Options, queries []Qu
 	}
 
 	// Custom imports
-	for _, o := range settings.Overrides {
+	for _, override := range options.Overrides {
+		o := override.Plugin
+
 		if o.GoType.BasicType || o.GoType.TypeName == "" {
 			continue
 		}
@@ -241,7 +242,7 @@ func buildImports(settings *plugin.Settings, options *opts.Options, queries []Qu
 }
 
 func (i *importer) interfaceImports() fileImports {
-	std, pkg := buildImports(i.Settings, i.Options, i.Queries, func(name string) bool {
+	std, pkg := buildImports(i.Options, i.Queries, func(name string) bool {
 		for _, q := range i.Queries {
 			if q.hasRetType() {
 				if usesBatch([]Query{q}) {
@@ -266,7 +267,7 @@ func (i *importer) interfaceImports() fileImports {
 }
 
 func (i *importer) modelImports() fileImports {
-	std, pkg := buildImports(i.Settings, i.Options, nil, i.usesType)
+	std, pkg := buildImports(i.Options, nil, i.usesType)
 
 	if len(i.Enums) > 0 {
 		std["fmt"] = struct{}{}
@@ -305,7 +306,7 @@ func (i *importer) queryImports(filename string) fileImports {
 		}
 	}
 
-	std, pkg := buildImports(i.Settings, i.Options, gq, func(name string) bool {
+	std, pkg := buildImports(i.Options, gq, func(name string) bool {
 		for _, q := range gq {
 			if q.hasRetType() {
 				if q.Ret.EmitStruct() {
@@ -406,7 +407,7 @@ func (i *importer) copyfromImports() fileImports {
 			copyFromQueries = append(copyFromQueries, q)
 		}
 	}
-	std, pkg := buildImports(i.Settings, i.Options, copyFromQueries, func(name string) bool {
+	std, pkg := buildImports(i.Options, copyFromQueries, func(name string) bool {
 		for _, q := range copyFromQueries {
 			if q.hasRetType() {
 				if strings.HasPrefix(q.Ret.Type(), name) {
@@ -441,7 +442,7 @@ func (i *importer) batchImports() fileImports {
 			batchQueries = append(batchQueries, q)
 		}
 	}
-	std, pkg := buildImports(i.Settings, i.Options, batchQueries, func(name string) bool {
+	std, pkg := buildImports(i.Options, batchQueries, func(name string) bool {
 		for _, q := range batchQueries {
 			if q.hasRetType() {
 				if q.Ret.EmitStruct() {
