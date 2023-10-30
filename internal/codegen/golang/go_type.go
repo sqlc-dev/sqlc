@@ -16,7 +16,7 @@ func addExtraGoStructTags(tags map[string]string, req *plugin.CodeGenRequest, op
 		if override.GoStructTags == nil {
 			continue
 		}
-		if override.Matches(col.Table, req.Catalog.DefaultSchema) {
+		if !override.Matches(col.Table, req.Catalog.DefaultSchema) {
 			// Different table.
 			continue
 		}

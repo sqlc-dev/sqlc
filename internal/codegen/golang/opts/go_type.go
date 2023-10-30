@@ -16,8 +16,8 @@ type GoType struct {
 	Name    string `json:"type" yaml:"type"`
 	Pointer bool   `json:"pointer" yaml:"pointer"`
 	Slice   bool   `json:"slice" yaml:"slice"`
-	Spec    string
-	BuiltIn bool
+	Spec    string `json:"-"`
+	BuiltIn bool   `json:"-"`
 }
 
 type ParsedGoType struct {
