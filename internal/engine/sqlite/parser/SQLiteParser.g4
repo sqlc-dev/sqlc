@@ -282,8 +282,9 @@ expr:
     | ((schema_name DOT)? table_name DOT)? column_name #expr_qualified_column_name
     | unary_operator expr #expr_unary
     | expr PIPE2 expr #expr_binary
-    | expr ( STAR | DIV | MOD) expr #expr_math_op
-    | expr ( PLUS | MINUS) expr #expr_math_op
+    | expr ( PTR | PTR2 ) expr #expr_binary
+    | expr ( STAR | DIV | MOD) expr #expr_binary
+    | expr ( PLUS | MINUS) expr #expr_binary
     | expr ( LT2 | GT2 | AMP | PIPE) expr #expr_comparison
     | expr ( LT | LT_EQ | GT | GT_EQ) expr #expr_comparison
     | expr (
@@ -304,8 +305,8 @@ expr:
         | ( schema_name DOT)? table_name
         | (schema_name DOT)? table_function_name OPEN_PAR (expr (COMMA expr)*)? CLOSE_PAR
     ) #expr_in_select
-    | expr AND_ expr #expr_binary
-    | expr OR_ expr #expr_binary
+    | expr AND_ expr #expr_bool
+    | expr OR_ expr #expr_bool
     | qualified_function_name OPEN_PAR ((DISTINCT_? expr ( COMMA expr)*) | STAR)? CLOSE_PAR filter_clause? over_clause? #expr_function
     | OPEN_PAR expr (COMMA expr)* CLOSE_PAR #expr_list
     | CAST_ OPEN_PAR expr AS_ type_name CLOSE_PAR #expr_cast
