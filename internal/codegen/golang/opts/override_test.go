@@ -54,7 +54,7 @@ func TestTypeOverrides(t *testing.T) {
 	} {
 		tt := test
 		t.Run(tt.override.GoType.Spec, func(t *testing.T) {
-			if err := tt.override.Parse(); err != nil {
+			if err := tt.override.parse(nil); err != nil {
 				t.Fatalf("override parsing failed; %s", err)
 			}
 			if diff := cmp.Diff(tt.pkg, tt.override.GoImportPath); diff != "" {
@@ -89,7 +89,7 @@ func TestTypeOverrides(t *testing.T) {
 	} {
 		tt := test
 		t.Run(tt.override.GoType.Spec, func(t *testing.T) {
-			err := tt.override.Parse()
+			err := tt.override.parse(nil)
 			if err == nil {
 				t.Fatalf("expected parse to fail; got nil")
 			}
@@ -112,6 +112,6 @@ func FuzzOverride(f *testing.F) {
 		o := Override{
 			GoType: GoType{Spec: s},
 		}
-		o.Parse()
+		o.parse(nil)
 	})
 }

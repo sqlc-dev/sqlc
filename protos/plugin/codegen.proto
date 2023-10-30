@@ -10,18 +10,18 @@ message File {
 }
 
 message Settings {
+  // Rename message was field 5
   // Overides message was field 6
   // PythonCode message was field 8
   // KotlinCode message was field 9
   // GoCode message was field 10;
   // JSONCode message was field 11;
-  reserved 8, 9, 10, 11;
+  reserved 5, 8, 9, 10, 11;
 
   string version = 1 [json_name = "version"];
   string engine = 2 [json_name = "engine"];
   repeated string schema = 3 [json_name = "schema"];
   repeated string queries = 4 [json_name = "queries"];
-  map<string, string> rename = 5 [json_name = "rename"];
   Codegen codegen = 12 [json_name = "codegen"];
 }
 

@@ -13,7 +13,9 @@ func addExtraGoStructTags(tags map[string]string, req *plugin.CodeGenRequest, op
 	for _, override := range options.Overrides {
 		oride := override.Plugin
 
-		if override.GoStructTags == nil {
+		debug.Dump(override)
+
+		if oride.GoType.StructTags == nil {
 			continue
 		}
 		if !override.Matches(col.Table, req.Catalog.DefaultSchema) {
@@ -38,7 +40,6 @@ func addExtraGoStructTags(tags map[string]string, req *plugin.CodeGenRequest, op
 func goType(req *plugin.CodeGenRequest, options *opts.Options, col *plugin.Column) string {
 	// Check if the column's type has been overridden
 	for _, override := range options.Overrides {
-		debug.Dump(override)
 		oride := override.Plugin
 
 		if oride.GoType.TypeName == "" {
@@ -84,7 +85,7 @@ func goInnerType(req *plugin.CodeGenRequest, options *opts.Options, col *plugin.
 	// TODO: Extend the engine interface to handle types
 	switch req.Settings.Engine {
 	case "mysql":
-		return mysqlType(req, col)
+		return mysqlType(req, options, col)
 	case "postgresql":
 		return postgresType(req, options, col)
 	case "sqlite":

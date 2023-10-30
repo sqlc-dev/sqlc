@@ -85,7 +85,7 @@ func generatePackageID(importPath string) (string, bool) {
 }
 
 // validate GoType
-func (gt GoType) Parse() (*ParsedGoType, error) {
+func (gt GoType) parse() (*ParsedGoType, error) {
 	var o ParsedGoType
 
 	if gt.Spec == "" {
@@ -179,7 +179,7 @@ type GoStructTag string
 // empty string      {}
 // `a:"b"`           {"a": "b"}
 // `a:"b" x:"y,z"`   {"a": "b", "x": "y,z"}
-func (s GoStructTag) Parse() (map[string]string, error) {
+func (s GoStructTag) parse() (map[string]string, error) {
 	m := make(map[string]string)
 	tags, err := structtag.Parse(string(s))
 	if err != nil {

@@ -104,16 +104,9 @@ func (t *tmplCtx) codegenQueryRetval(q Query) (string, error) {
 }
 
 func Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
-	options, err := opts.ParseOpts(req)
+	options, err := opts.Parse(req)
 	if err != nil {
 		return nil, err
-	}
-	global, err := opts.ParseGlobalOpts(req)
-	if err != nil {
-		return nil, err
-	}
-	if len(global.Overrides) > 0 {
-		options.Overrides = append(global.Overrides, options.Overrides...)
 	}
 
 	if err := opts.ValidateOpts(options); err != nil {

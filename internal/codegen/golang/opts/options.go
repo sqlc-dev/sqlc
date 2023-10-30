@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"maps"
 
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
@@ -47,7 +48,28 @@ type GlobalOptions struct {
 	Rename    map[string]string `json:"rename,omitempty" yaml:"rename"`
 }
 
-func ParseOpts(req *plugin.CodeGenRequest) (*Options, error) {
+func Parse(req *plugin.CodeGenRequest) (*Options, error) {
+	options, err := parseOpts(req)
+	if err != nil {
+		return nil, err
+	}
+	global, err := parseGlobalOpts(req)
+	if err != nil {
+		return nil, err
+	}
+	if len(global.Overrides) > 0 {
+		options.Overrides = append(global.Overrides, options.Overrides...)
+	}
+	if len(global.Rename) > 0 {
+		if options.Rename == nil {
+			options.Rename = map[string]string{}
+		}
+		maps.Copy(options.Rename, global.Rename)
+	}
+	return options, nil
+}
+
+func parseOpts(req *plugin.CodeGenRequest) (*Options, error) {
 	var options Options
 	if len(req.PluginOptions) == 0 {
 		return &options, nil
@@ -58,7 +80,7 @@ func ParseOpts(req *plugin.CodeGenRequest) (*Options, error) {
 	}
 
 	for i := range options.Overrides {
-		if err := options.Overrides[i].Parse(); err != nil {
+		if err := options.Overrides[i].parse(req); err != nil {
 			return nil, err
 		}
 		options.Overrides[i].Plugin = pluginOverride(req, &options.Overrides[i])
@@ -72,7 +94,7 @@ func ParseOpts(req *plugin.CodeGenRequest) (*Options, error) {
 	return &options, nil
 }
 
-func ParseGlobalOpts(req *plugin.CodeGenRequest) (*GlobalOptions, error) {
+func parseGlobalOpts(req *plugin.CodeGenRequest) (*GlobalOptions, error) {
 	var options GlobalOptions
 	if len(req.GlobalOptions) == 0 {
 		return &options, nil
@@ -82,7 +104,7 @@ func ParseGlobalOpts(req *plugin.CodeGenRequest) (*GlobalOptions, error) {
 		return &options, fmt.Errorf("unmarshalling options: %w", err)
 	}
 	for i := range options.Overrides {
-		if err := options.Overrides[i].Parse(); err != nil {
+		if err := options.Overrides[i].parse(req); err != nil {
 			return nil, err
 		}
 		options.Overrides[i].Plugin = pluginOverride(req, &options.Overrides[i])

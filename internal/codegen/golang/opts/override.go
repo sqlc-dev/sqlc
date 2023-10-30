@@ -141,8 +141,7 @@ func (o *Override) Matches(n *plugin.Identifier, defaultSchema string) bool {
 	return true
 }
 
-func (o *Override) Parse() (err error) {
-
+func (o *Override) parse(req *plugin.CodeGenRequest) (err error) {
 	// validate deprecated postgres_type field
 	if o.Deprecated_PostgresType != "" {
 		fmt.Fprintf(os.Stderr, "WARNING: \"postgres_type\" is deprecated. Instead, use \"db_type\" to specify a type override.\n")
@@ -156,6 +155,11 @@ func (o *Override) Parse() (err error) {
 	if o.Deprecated_Null {
 		fmt.Fprintf(os.Stderr, "WARNING: \"null\" is deprecated. Instead, use the \"nullable\" field.\n")
 		o.Nullable = true
+	}
+
+	schema := "public"
+	if req != nil && req.Catalog != nil {
+		schema = req.Catalog.DefaultSchema
 	}
 
 	// validate option combinations
@@ -177,7 +181,7 @@ func (o *Override) Parse() (err error) {
 			if o.TableRel, err = pattern.MatchCompile(colParts[0]); err != nil {
 				return err
 			}
-			if o.TableSchema, err = pattern.MatchCompile("public"); err != nil {
+			if o.TableSchema, err = pattern.MatchCompile(schema); err != nil {
 				return err
 			}
 		case 3:
@@ -209,7 +213,7 @@ func (o *Override) Parse() (err error) {
 	}
 
 	// validate GoType
-	parsed, err := o.GoType.Parse()
+	parsed, err := o.GoType.parse()
 	if err != nil {
 		return err
 	}
@@ -219,7 +223,7 @@ func (o *Override) Parse() (err error) {
 	o.GoBasicType = parsed.BasicType
 
 	// validate GoStructTag
-	tags, err := o.GoStructTag.Parse()
+	tags, err := o.GoStructTag.parse()
 	if err != nil {
 		return err
 	}

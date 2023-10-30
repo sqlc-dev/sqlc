@@ -27,7 +27,7 @@ func buildEnums(req *plugin.CodeGenRequest, options *opts.Options) []Enum {
 			}
 
 			e := Enum{
-				Name:      StructName(enumName, req.Settings),
+				Name:      StructName(enumName, options),
 				Comment:   enum.Comment,
 				NameTags:  map[string]string{},
 				ValidTags: map[string]string{},
@@ -44,7 +44,7 @@ func buildEnums(req *plugin.CodeGenRequest, options *opts.Options) []Enum {
 					value = fmt.Sprintf("value_%d", i)
 				}
 				e.Constants = append(e.Constants, Constant{
-					Name:  StructName(enumName+"_"+value, req.Settings),
+					Name:  StructName(enumName+"_"+value, options),
 					Value: v,
 					Type:  e.Name,
 				})
@@ -81,7 +81,7 @@ func buildStructs(req *plugin.CodeGenRequest, options *opts.Options) []Struct {
 			}
 			s := Struct{
 				Table:   &plugin.Identifier{Schema: schema.Name, Name: table.Rel.Name},
-				Name:    StructName(structName, req.Settings),
+				Name:    StructName(structName, options),
 				Comment: table.Comment,
 			}
 			for _, column := range table.Columns {
@@ -94,7 +94,7 @@ func buildStructs(req *plugin.CodeGenRequest, options *opts.Options) []Struct {
 				}
 				addExtraGoStructTags(tags, req, options, column)
 				s.Fields = append(s.Fields, Field{
-					Name:    StructName(column.Name, req.Settings),
+					Name:    StructName(column.Name, options),
 					Type:    goType(req, options, column),
 					Tags:    tags,
 					Comment: column.Comment,
@@ -268,7 +268,7 @@ func buildQueries(req *plugin.CodeGenRequest, options *opts.Options, structs []S
 				same := true
 				for i, f := range s.Fields {
 					c := query.Columns[i]
-					sameName := f.Name == StructName(columnName(c, i), req.Settings)
+					sameName := f.Name == StructName(columnName(c, i), options)
 					sameType := f.Type == goType(req, options, c)
 					sameTable := sdk.SameTableName(c.Table, s.Table, req.Catalog.DefaultSchema)
 					if !sameName || !sameType || !sameTable {
@@ -348,7 +348,7 @@ func columnsToStruct(req *plugin.CodeGenRequest, options *opts.Options, name str
 			tagName = SetCaseStyle(colName, "snake")
 		}
 
-		fieldName := StructName(colName, req.Settings)
+		fieldName := StructName(colName, options)
 		baseFieldName := fieldName
 		// Track suffixes by the ID of the column, so that columns referring to the same numbered parameter can be
 		// reused.
