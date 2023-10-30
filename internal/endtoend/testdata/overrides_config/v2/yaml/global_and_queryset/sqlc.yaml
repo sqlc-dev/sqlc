@@ -4,14 +4,12 @@ overrides:
     rename:
       one: "ONE"
     overrides:
-      - db_type: "bigint"
-        go_type: "yet/another.Override"
       - db_type: "text"
-        go_type: "config/global.Text"
+        go_type: "github.com/sqlc-dev/sqlc-testdata/pkg.CustomType"
       - column: "overrides.three"
         go_type:
-          import: "config/global"
-          type: "ShouldSeeThis"
+          import: "github.com/sqlc-dev/sqlc-testdata/pkg"
+          type: "CustomType"
 sql:
 - schema: "../../../schema.sql"
   queries: "../../../query.sql"
@@ -24,8 +22,5 @@ sql:
       overrides:
         - column: "overrides.three"
           go_type:
-            import: "config/queryset"
+            import: "invalid/import"
             type: "ShouldNotSeeThis"
-        - db_type: "bigint"
-          go_type: "yet/another.Override"
-

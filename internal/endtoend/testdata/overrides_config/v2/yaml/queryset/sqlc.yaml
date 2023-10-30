@@ -10,8 +10,8 @@ sql:
         one: "ONE"
       overrides:
         - db_type: "text"
-          go_type: "config/queryset.Text"
+          go_type: "github.com/sqlc-dev/sqlc-testdata/pkg.CustomType"
         - column: "overrides.three"
           go_type:
-            import: "config/queryset"
-            type: "Three"
+            import: "github.com/sqlc-dev/sqlc-testdata/pkg"
+            type: "CustomType"

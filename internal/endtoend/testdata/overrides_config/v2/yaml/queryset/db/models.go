@@ -5,13 +5,13 @@
 package db
 
 import (
-	"config/queryset"
+	"github.com/sqlc-dev/sqlc-testdata/pkg"
 )
 
 type Override struct {
-	ONE   queryset.Text
+	ONE   pkg.CustomType
 	Two   int64
-	Three queryset.Three
+	Three pkg.CustomType
 	Four  []byte
-	Five  []queryset.Text
+	Five  []pkg.CustomType
 }

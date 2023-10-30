@@ -5,13 +5,13 @@
 package db
 
 import (
-	"config/global"
+	"github.com/sqlc-dev/sqlc-testdata/pkg"
 )
 
 type Override struct {
-	ONE   global.Text
+	ONE   pkg.CustomType
 	Two   int64
-	Three global.ShouldSeeThis
+	Three pkg.CustomType
 	Four  []byte
-	Five  []global.Text
+	Five  []pkg.CustomType
 }
