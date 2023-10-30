@@ -83,7 +83,6 @@ func parseOpts(req *plugin.CodeGenRequest) (*Options, error) {
 		if err := options.Overrides[i].parse(req); err != nil {
 			return nil, err
 		}
-		options.Overrides[i].Plugin = pluginOverride(req, &options.Overrides[i])
 	}
 
 	if options.QueryParameterLimit == nil {
@@ -107,7 +106,6 @@ func parseGlobalOpts(req *plugin.CodeGenRequest) (*GlobalOptions, error) {
 		if err := options.Overrides[i].parse(req); err != nil {
 			return nil, err
 		}
-		options.Overrides[i].Plugin = pluginOverride(req, &options.Overrides[i])
 	}
 	return &options, nil
 }

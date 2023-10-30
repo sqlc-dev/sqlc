@@ -229,5 +229,6 @@ func (o *Override) parse(req *plugin.CodeGenRequest) (err error) {
 	}
 	o.GoStructTags = tags
 
+	o.Plugin = pluginOverride(req, o)
 	return nil
 }
