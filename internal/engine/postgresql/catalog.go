@@ -8,8 +8,11 @@ func toPointer(x int) *int {
 	return &x
 }
 
-func NewCatalog() *catalog.Catalog {
-	c := catalog.New("public")
+func NewCatalog(defaultSchema string) *catalog.Catalog {
+	if defaultSchema == "" {
+		defaultSchema = "public"
+	}
+	c := catalog.New(defaultSchema)
 	c.Schemas = append(c.Schemas, pgTemp())
 	c.Schemas = append(c.Schemas, genPGCatalog())
 	c.Schemas = append(c.Schemas, genInformationSchema())
