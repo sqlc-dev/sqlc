@@ -411,7 +411,7 @@ func codegen(ctx context.Context, combo config.CombinedSettings, sql outPair, re
 
 		opts, err := convert.YAMLtoJSON(sql.Plugin.Options)
 		if err != nil {
-			return "", nil, fmt.Errorf("invalid plugin options")
+			return "", nil, fmt.Errorf("invalid plugin options: %w", err)
 		}
 		req.PluginOptions = opts
 
@@ -419,7 +419,7 @@ func codegen(ctx context.Context, combo config.CombinedSettings, sql outPair, re
 		if found {
 			opts, err := convert.YAMLtoJSON(global)
 			if err != nil {
-				return "", nil, fmt.Errorf("invalid plugin options")
+				return "", nil, fmt.Errorf("invalid global options; %w", err)
 			}
 			req.GlobalOptions = opts
 		}
