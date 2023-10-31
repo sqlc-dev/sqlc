@@ -164,8 +164,6 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 				cols = append(cols, &Column{Name: name, DataType: "bool", NotNull: true})
 			case lang.IsMathematicalOperator(op):
 				cols = append(cols, &Column{Name: name, DataType: "int", NotNull: true})
-			case op == "||" || op == "->":
-				cols = append(cols, &Column{Name: name, DataType: "text"})
 			default:
 				cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
 			}
