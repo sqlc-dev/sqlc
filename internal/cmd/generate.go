@@ -419,7 +419,7 @@ func codegen(ctx context.Context, combo config.CombinedSettings, sql outPair, re
 		if found {
 			opts, err := convert.YAMLtoJSON(global)
 			if err != nil {
-				return "", nil, fmt.Errorf("invalid global options; %w", err)
+				return "", nil, fmt.Errorf("invalid global options: %w", err)
 			}
 			req.GlobalOptions = opts
 		}
