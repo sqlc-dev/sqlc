@@ -145,7 +145,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 				// TODO: Move this to database-specific engine package
 				dataType := "any"
 				if astutils.Join(n.Name, ".") == "||" {
-					dataType = "string"
+					dataType = "text"
 				}
 
 				defaultP := named.NewParam("")

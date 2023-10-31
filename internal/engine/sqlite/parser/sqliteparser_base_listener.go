@@ -252,6 +252,12 @@ func (s *BaseSQLiteParserListener) EnterExpr_comparison(ctx *Expr_comparisonCont
 // ExitExpr_comparison is called when production expr_comparison is exited.
 func (s *BaseSQLiteParserListener) ExitExpr_comparison(ctx *Expr_comparisonContext) {}
 
+// EnterExpr_bool is called when production expr_bool is entered.
+func (s *BaseSQLiteParserListener) EnterExpr_bool(ctx *Expr_boolContext) {}
+
+// ExitExpr_bool is called when production expr_bool is exited.
+func (s *BaseSQLiteParserListener) ExitExpr_bool(ctx *Expr_boolContext) {}
+
 // EnterExpr_binary is called when production expr_binary is entered.
 func (s *BaseSQLiteParserListener) EnterExpr_binary(ctx *Expr_binaryContext) {}
 
@@ -301,12 +307,6 @@ func (s *BaseSQLiteParserListener) EnterExpr_qualified_column_name(ctx *Expr_qua
 // ExitExpr_qualified_column_name is called when production expr_qualified_column_name is exited.
 func (s *BaseSQLiteParserListener) ExitExpr_qualified_column_name(ctx *Expr_qualified_column_nameContext) {
 }
-
-// EnterExpr_math_op is called when production expr_math_op is entered.
-func (s *BaseSQLiteParserListener) EnterExpr_math_op(ctx *Expr_math_opContext) {}
-
-// ExitExpr_math_op is called when production expr_math_op is exited.
-func (s *BaseSQLiteParserListener) ExitExpr_math_op(ctx *Expr_math_opContext) {}
 
 // EnterExpr_unary is called when production expr_unary is entered.
 func (s *BaseSQLiteParserListener) EnterExpr_unary(ctx *Expr_unaryContext) {}
