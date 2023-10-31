@@ -200,7 +200,7 @@ func buildImports(options *opts.Options, queries []Query, uses func(string) bool
 
 	overrideTypes := map[string]string{}
 	for _, override := range options.Overrides {
-		o := override.Plugin
+		o := override.ShimOverride
 		if o.GoType.BasicType || o.GoType.TypeName == "" {
 			continue
 		}
@@ -226,7 +226,7 @@ func buildImports(options *opts.Options, queries []Query, uses func(string) bool
 
 	// Custom imports
 	for _, override := range options.Overrides {
-		o := override.Plugin
+		o := override.ShimOverride
 
 		if o.GoType.BasicType || o.GoType.TypeName == "" {
 			continue

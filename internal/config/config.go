@@ -209,7 +209,6 @@ type CombinedSettings struct {
 	Package SQL
 	Go      golang.Options
 	JSON    SQLJSON
-	Rename  map[string]string
 
 	// TODO: Combine these into a more usable type
 	Codegen Codegen
@@ -219,18 +218,9 @@ func Combine(conf Config, pkg SQL) CombinedSettings {
 	cs := CombinedSettings{
 		Global:  conf,
 		Package: pkg,
-		Rename:  map[string]string{},
-	}
-	if conf.Overrides.Go != nil {
-		for k, v := range conf.Overrides.Go.Rename {
-			cs.Rename[k] = v
-		}
 	}
 	if pkg.Gen.Go != nil {
 		cs.Go = *pkg.Gen.Go
-		for k, v := range pkg.Gen.Go.Rename {
-			cs.Rename[k] = v
-		}
 	}
 	if pkg.Gen.JSON != nil {
 		cs.JSON = *pkg.Gen.JSON

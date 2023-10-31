@@ -76,10 +76,6 @@ func v2ParseConfig(rd io.Reader) (Config, error) {
 				conf.SQL[j].Gen.Go.QueryParameterLimit = new(int32)
 				*conf.SQL[j].Gen.Go.QueryParameterLimit = 1
 			}
-
-			for k, v := range conf.SQL[j].Gen.Go.Rename {
-				conf.SQL[j].Gen.Go.Rename[k] = v
-			}
 		}
 		if conf.SQL[j].Gen.JSON != nil {
 			if conf.SQL[j].Gen.JSON.Out == "" {

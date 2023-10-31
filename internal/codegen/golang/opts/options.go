@@ -1,7 +1,6 @@
 package opts
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"maps"
@@ -74,9 +73,8 @@ func parseOpts(req *plugin.CodeGenRequest) (*Options, error) {
 	if len(req.PluginOptions) == 0 {
 		return &options, nil
 	}
-	dec := json.NewDecoder(bytes.NewReader(req.PluginOptions))
-	if err := dec.Decode(&options); err != nil {
-		return &options, fmt.Errorf("unmarshalling options: %w", err)
+	if err := json.Unmarshal(req.PluginOptions, &options); err != nil {
+		return nil, fmt.Errorf("unmarshalling plugin options: %w", err)
 	}
 
 	for i := range options.Overrides {
@@ -98,9 +96,8 @@ func parseGlobalOpts(req *plugin.CodeGenRequest) (*GlobalOptions, error) {
 	if len(req.GlobalOptions) == 0 {
 		return &options, nil
 	}
-	dec := json.NewDecoder(bytes.NewReader(req.GlobalOptions))
-	if err := dec.Decode(&options); err != nil {
-		return &options, fmt.Errorf("unmarshalling options: %w", err)
+	if err := json.Unmarshal(req.GlobalOptions, &options); err != nil {
+		return nil, fmt.Errorf("unmarshalling global options: %w", err)
 	}
 	for i := range options.Overrides {
 		if err := options.Overrides[i].parse(req); err != nil {

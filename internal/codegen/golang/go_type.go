@@ -10,7 +10,7 @@ import (
 
 func addExtraGoStructTags(tags map[string]string, req *plugin.CodeGenRequest, options *opts.Options, col *plugin.Column) {
 	for _, override := range options.Overrides {
-		oride := override.Plugin
+		oride := override.ShimOverride
 		if oride.GoType.StructTags == nil {
 			continue
 		}
@@ -36,7 +36,7 @@ func addExtraGoStructTags(tags map[string]string, req *plugin.CodeGenRequest, op
 func goType(req *plugin.CodeGenRequest, options *opts.Options, col *plugin.Column) string {
 	// Check if the column's type has been overridden
 	for _, override := range options.Overrides {
-		oride := override.Plugin
+		oride := override.ShimOverride
 
 		if oride.GoType.TypeName == "" {
 			continue
@@ -69,7 +69,7 @@ func goInnerType(req *plugin.CodeGenRequest, options *opts.Options, col *plugin.
 
 	// package overrides have a higher precedence
 	for _, override := range options.Overrides {
-		oride := override.Plugin
+		oride := override.ShimOverride
 		if oride.GoType.TypeName == "" {
 			continue
 		}
