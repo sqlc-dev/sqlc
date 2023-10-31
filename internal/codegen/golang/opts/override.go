@@ -1,4 +1,4 @@
-package config
+package opts
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/sqlc-dev/sqlc/internal/pattern"
+	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
 
 type Override struct {
@@ -21,7 +22,7 @@ type Override struct {
 	Deprecated_PostgresType string `json:"postgres_type" yaml:"postgres_type"`
 
 	// for global overrides only when two different engines are in use
-	Engine Engine `json:"engine,omitempty" yaml:"engine"`
+	Engine string `json:"engine,omitempty" yaml:"engine"`
 
 	// True if the GoType should override if the matching type is nullable
 	Nullable bool `json:"nullable" yaml:"nullable"`
@@ -35,21 +36,47 @@ type Override struct {
 	// fully qualified name of the column, e.g. `accounts.id`
 	Column string `json:"column" yaml:"column"`
 
-	ColumnName   *pattern.Match
-	TableCatalog *pattern.Match
-	TableSchema  *pattern.Match
-	TableRel     *pattern.Match
-	GoImportPath string
-	GoPackage    string
-	GoTypeName   string
-	GoBasicType  bool
+	ColumnName   *pattern.Match `json:"-"`
+	TableCatalog *pattern.Match `json:"-"`
+	TableSchema  *pattern.Match `json:"-"`
+	TableRel     *pattern.Match `json:"-"`
+	GoImportPath string         `json:"-"`
+	GoPackage    string         `json:"-"`
+	GoTypeName   string         `json:"-"`
+	GoBasicType  bool           `json:"-"`
 
 	// Parsed form of GoStructTag, e.g. {"validate:", "required"}
-	GoStructTags map[string]string
+	GoStructTags map[string]string `json:"-"`
+	ShimOverride *ShimOverride     `json:"-"`
 }
 
-func (o *Override) Parse() (err error) {
+func (o *Override) Matches(n *plugin.Identifier, defaultSchema string) bool {
+	if n == nil {
+		return false
+	}
+	schema := n.Schema
+	if n.Schema == "" {
+		schema = defaultSchema
+	}
+	if o.TableCatalog != nil && !o.TableCatalog.MatchString(n.Catalog) {
+		return false
+	}
+	if o.TableSchema == nil && schema != "" {
+		return false
+	}
+	if o.TableSchema != nil && !o.TableSchema.MatchString(schema) {
+		return false
+	}
+	if o.TableRel == nil && n.Name != "" {
+		return false
+	}
+	if o.TableRel != nil && !o.TableRel.MatchString(n.Name) {
+		return false
+	}
+	return true
+}
 
+func (o *Override) parse(req *plugin.CodeGenRequest) (err error) {
 	// validate deprecated postgres_type field
 	if o.Deprecated_PostgresType != "" {
 		fmt.Fprintf(os.Stderr, "WARNING: \"postgres_type\" is deprecated. Instead, use \"db_type\" to specify a type override.\n")
@@ -63,6 +90,11 @@ func (o *Override) Parse() (err error) {
 	if o.Deprecated_Null {
 		fmt.Fprintf(os.Stderr, "WARNING: \"null\" is deprecated. Instead, use the \"nullable\" field.\n")
 		o.Nullable = true
+	}
+
+	schema := "public"
+	if req != nil && req.Catalog != nil {
+		schema = req.Catalog.DefaultSchema
 	}
 
 	// validate option combinations
@@ -84,7 +116,7 @@ func (o *Override) Parse() (err error) {
 			if o.TableRel, err = pattern.MatchCompile(colParts[0]); err != nil {
 				return err
 			}
-			if o.TableSchema, err = pattern.MatchCompile("public"); err != nil {
+			if o.TableSchema, err = pattern.MatchCompile(schema); err != nil {
 				return err
 			}
 		case 3:
@@ -116,7 +148,7 @@ func (o *Override) Parse() (err error) {
 	}
 
 	// validate GoType
-	parsed, err := o.GoType.Parse()
+	parsed, err := o.GoType.parse()
 	if err != nil {
 		return err
 	}
@@ -126,11 +158,12 @@ func (o *Override) Parse() (err error) {
 	o.GoBasicType = parsed.BasicType
 
 	// validate GoStructTag
-	tags, err := o.GoStructTag.Parse()
+	tags, err := o.GoStructTag.parse()
 	if err != nil {
 		return err
 	}
 	o.GoStructTags = tags
 
+	o.ShimOverride = shimOverride(req, o)
 	return nil
 }

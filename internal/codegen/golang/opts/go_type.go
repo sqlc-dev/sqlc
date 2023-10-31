@@ -1,4 +1,4 @@
-package config
+package opts
 
 import (
 	"encoding/json"
@@ -16,8 +16,8 @@ type GoType struct {
 	Name    string `json:"type" yaml:"type"`
 	Pointer bool   `json:"pointer" yaml:"pointer"`
 	Slice   bool   `json:"slice" yaml:"slice"`
-	Spec    string
-	BuiltIn bool
+	Spec    string `json:"-"`
+	BuiltIn bool   `json:"-"`
 }
 
 type ParsedGoType struct {
@@ -26,6 +26,14 @@ type ParsedGoType struct {
 	TypeName   string
 	BasicType  bool
 	StructTag  string
+}
+
+func (o *GoType) MarshalJSON() ([]byte, error) {
+	if o.Spec != "" {
+		return json.Marshal(o.Spec)
+	}
+	type alias GoType
+	return json.Marshal(alias(*o))
 }
 
 func (o *GoType) UnmarshalJSON(data []byte) error {
@@ -77,7 +85,7 @@ func generatePackageID(importPath string) (string, bool) {
 }
 
 // validate GoType
-func (gt GoType) Parse() (*ParsedGoType, error) {
+func (gt GoType) parse() (*ParsedGoType, error) {
 	var o ParsedGoType
 
 	if gt.Spec == "" {
@@ -171,7 +179,7 @@ type GoStructTag string
 // empty string      {}
 // `a:"b"`           {"a": "b"}
 // `a:"b" x:"y,z"`   {"a": "b", "x": "y,z"}
-func (s GoStructTag) Parse() (map[string]string, error) {
+func (s GoStructTag) parse() (map[string]string, error) {
 	m := make(map[string]string)
 	tags, err := structtag.Parse(string(s))
 	if err != nil {

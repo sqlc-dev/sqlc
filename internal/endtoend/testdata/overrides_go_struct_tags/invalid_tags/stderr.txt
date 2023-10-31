@@ -1,1 +1,2 @@
-error parsing sqlc.json: bad syntax for struct tag pair
+# package override
+error generating code: bad syntax for struct tag pair
