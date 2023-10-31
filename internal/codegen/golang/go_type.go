@@ -5,16 +5,12 @@ import (
 
 	"github.com/sqlc-dev/sqlc/internal/codegen/golang/opts"
 	"github.com/sqlc-dev/sqlc/internal/codegen/sdk"
-	"github.com/sqlc-dev/sqlc/internal/debug"
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
 
 func addExtraGoStructTags(tags map[string]string, req *plugin.CodeGenRequest, options *opts.Options, col *plugin.Column) {
 	for _, override := range options.Overrides {
 		oride := override.Plugin
-
-		debug.Dump(override)
-
 		if oride.GoType.StructTags == nil {
 			continue
 		}
