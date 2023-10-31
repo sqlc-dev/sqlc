@@ -36,7 +36,7 @@ sponsor](https://github.com/sponsors/kyleconroy) today.
 
 Sponsors receive priority support via the sqlc Slack organization.
 
-## Acknowledgements
+## Acknowledgments
 
 sqlc was inspired by [PugSQL](https://pugsql.org/) and
 [HugSQL](https://www.hugsql.org/).
