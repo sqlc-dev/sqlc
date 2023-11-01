@@ -334,7 +334,9 @@ type dbPreparer struct {
 
 func (p *dbPreparer) Prepare(ctx context.Context, name, query string) error {
 	s, err := p.db.PrepareContext(ctx, query)
-	s.Close()
+	if s != nil {
+		s.Close()
+	}
 	return err
 }
 
