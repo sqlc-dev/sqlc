@@ -22,6 +22,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/reflect/protoreflect"
 
 	"github.com/sqlc-dev/sqlc/internal/cache"
 	"github.com/sqlc-dev/sqlc/internal/info"
@@ -210,15 +212,19 @@ func removePGCatalog(req *plugin.GenerateRequest) {
 }
 
 func (r *Runner) Invoke(ctx context.Context, method string, args any, reply any, opts ...grpc.CallOption) error {
-	req, ok := args.(*plugin.GenerateRequest)
+	req, ok := args.(protoreflect.ProtoMessage)
 	if !ok {
-		return status.Error(codes.InvalidArgument, "args isn't a GenerateRequest")
+		return status.Error(codes.InvalidArgument, "args isn't a protoreflect.ProtoMessage")
 	}
 
 	// Remove the pg_catalog schema. Its sheer size causes unknown issues with wasm plugins
-	removePGCatalog(req)
+	genReq, ok := req.(*plugin.GenerateRequest)
+	if ok {
+		removePGCatalog(genReq)
+		req = genReq
+	}
 
-	stdinBlob, err := req.MarshalVT()
+	stdinBlob, err := proto.Marshal(req)
 	if err != nil {
 		return fmt.Errorf("failed to encode codegen request: %w", err)
 	}
@@ -256,7 +262,7 @@ func (r *Runner) Invoke(ctx context.Context, method string, args any, reply any,
 	wasiConfig.SetStderrFile(stderrPath)
 
 	keys := []string{"SQLC_VERSION"}
-	vals := []string{req.SqlcVersion}
+	vals := []string{info.Version}
 	for _, key := range r.Env {
 		keys = append(keys, key)
 		vals = append(vals, os.Getenv(key))
@@ -293,12 +299,12 @@ func (r *Runner) Invoke(ctx context.Context, method string, args any, reply any,
 		return fmt.Errorf("read file: %w", err)
 	}
 
-	resp, ok := reply.(*plugin.GenerateResponse)
+	resp, ok := reply.(protoreflect.ProtoMessage)
 	if !ok {
 		return fmt.Errorf("reply isn't a GenerateResponse")
 	}
 
-	if err := resp.UnmarshalVT(stdoutBlob); err != nil {
+	if err := proto.Unmarshal(stdoutBlob, resp); err != nil {
 		return err
 	}
 

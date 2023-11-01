@@ -12,8 +12,9 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/reflect/protoreflect"
 
-	"github.com/sqlc-dev/sqlc/internal/plugin"
+	"github.com/sqlc-dev/sqlc/internal/info"
 )
 
 type Runner struct {
@@ -22,9 +23,9 @@ type Runner struct {
 }
 
 func (r *Runner) Invoke(ctx context.Context, method string, args any, reply any, opts ...grpc.CallOption) error {
-	req, ok := args.(*plugin.GenerateRequest)
+	req, ok := args.(protoreflect.ProtoMessage)
 	if !ok {
-		return fmt.Errorf("args isn't a GenerateRequest")
+		return fmt.Errorf("args isn't a protoreflect.ProtoMessage")
 	}
 
 	stdin, err := proto.Marshal(req)
@@ -41,7 +42,7 @@ func (r *Runner) Invoke(ctx context.Context, method string, args any, reply any,
 	cmd := exec.CommandContext(ctx, path, method)
 	cmd.Stdin = bytes.NewReader(stdin)
 	cmd.Env = []string{
-		fmt.Sprintf("SQLC_VERSION=%s", req.SqlcVersion),
+		fmt.Sprintf("SQLC_VERSION=%s", info.Version),
 	}
 	for _, key := range r.Env {
 		if key == "SQLC_AUTH_TOKEN" {
@@ -60,9 +61,9 @@ func (r *Runner) Invoke(ctx context.Context, method string, args any, reply any,
 		return fmt.Errorf("process: error running command %s", stderr)
 	}
 
-	resp, ok := reply.(*plugin.GenerateResponse)
+	resp, ok := reply.(protoreflect.ProtoMessage)
 	if !ok {
-		return fmt.Errorf("reply isn't a GenerateResponse")
+		return fmt.Errorf("reply isn't a protoreflect.ProtoMessage")
 	}
 
 	if err := proto.Unmarshal(out, resp); err != nil {
