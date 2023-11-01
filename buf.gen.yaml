@@ -5,6 +5,6 @@ plugins:
   - plugin: buf.build/protocolbuffers/go:v1.30.0
     out: internal
     opt: paths=source_relative
-  - plugin: buf.build/community/planetscale-vtprotobuf:v0.4.0
+  - plugin: buf.build/grpc/go:v1.3.0
     out: internal
     opt: paths=source_relative

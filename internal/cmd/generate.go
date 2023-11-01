@@ -14,6 +14,7 @@ import (
 	"sync"
 
 	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/status"
 
 	"github.com/sqlc-dev/sqlc/internal/codegen/golang"
@@ -380,10 +381,10 @@ func parse(ctx context.Context, name, dir string, sql config.SQL, combo config.C
 	return c.Result(), false
 }
 
-func codegen(ctx context.Context, combo config.CombinedSettings, sql outPair, result *compiler.Result) (string, *plugin.CodeGenResponse, error) {
+func codegen(ctx context.Context, combo config.CombinedSettings, sql outPair, result *compiler.Result) (string, *plugin.GenerateResponse, error) {
 	defer trace.StartRegion(ctx, "codegen").End()
 	req := codeGenRequest(result, combo)
-	var handler ext.Handler
+	var handler grpc.ClientConnInterface
 	var out string
 	switch {
 	case sql.Plugin != nil:
@@ -453,6 +454,7 @@ func codegen(ctx context.Context, combo config.CombinedSettings, sql outPair, re
 	default:
 		return "", nil, fmt.Errorf("missing language backend")
 	}
-	resp, err := handler.Generate(ctx, req)
+	client := plugin.NewCodegenServiceClient(handler)
+	resp, err := client.Generate(ctx, req)
 	return out, resp, err
 }

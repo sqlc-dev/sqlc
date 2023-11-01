@@ -47,7 +47,7 @@ type GlobalOptions struct {
 	Rename    map[string]string `json:"rename,omitempty" yaml:"rename"`
 }
 
-func Parse(req *plugin.CodeGenRequest) (*Options, error) {
+func Parse(req *plugin.GenerateRequest) (*Options, error) {
 	options, err := parseOpts(req)
 	if err != nil {
 		return nil, err
@@ -68,7 +68,7 @@ func Parse(req *plugin.CodeGenRequest) (*Options, error) {
 	return options, nil
 }
 
-func parseOpts(req *plugin.CodeGenRequest) (*Options, error) {
+func parseOpts(req *plugin.GenerateRequest) (*Options, error) {
 	var options Options
 	if len(req.PluginOptions) == 0 {
 		return &options, nil
@@ -91,7 +91,7 @@ func parseOpts(req *plugin.CodeGenRequest) (*Options, error) {
 	return &options, nil
 }
 
-func parseGlobalOpts(req *plugin.CodeGenRequest) (*GlobalOptions, error) {
+func parseGlobalOpts(req *plugin.GenerateRequest) (*GlobalOptions, error) {
 	var options GlobalOptions
 	if len(req.GlobalOptions) == 0 {
 		return &options, nil

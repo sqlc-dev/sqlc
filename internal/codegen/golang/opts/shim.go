@@ -21,7 +21,7 @@ type ShimOverride struct {
 	GoType     *ShimGoType
 }
 
-func shimOverride(req *plugin.CodeGenRequest, o *Override) *ShimOverride {
+func shimOverride(req *plugin.GenerateRequest, o *Override) *ShimOverride {
 	var column string
 	var table plugin.Identifier
 

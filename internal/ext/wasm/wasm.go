@@ -19,6 +19,11 @@ import (
 
 	wasmtime "github.com/bytecodealliance/wasmtime-go/v14"
 	"golang.org/x/sync/singleflight"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/reflect/protoreflect"
 
 	"github.com/sqlc-dev/sqlc/internal/cache"
 	"github.com/sqlc-dev/sqlc/internal/info"
@@ -189,7 +194,7 @@ func (r *Runner) loadWASM(ctx context.Context, cache string, expected string) ([
 // mysterious (reason unknown) bug with wasm plugins when a large amount of
 // tables (like there are in the catalog) are sent.
 // @see https://github.com/sqlc-dev/sqlc/pull/1748
-func removePGCatalog(req *plugin.CodeGenRequest) {
+func removePGCatalog(req *plugin.GenerateRequest) {
 	if req.Catalog == nil || req.Catalog.Schemas == nil {
 		return
 	}
@@ -206,29 +211,38 @@ func removePGCatalog(req *plugin.CodeGenRequest) {
 	req.Catalog.Schemas = filtered
 }
 
-func (r *Runner) Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
-	// Remove the pg_catalog schema. Its sheer size causes unknown issues with wasm plugins
-	removePGCatalog(req)
+func (r *Runner) Invoke(ctx context.Context, method string, args any, reply any, opts ...grpc.CallOption) error {
+	req, ok := args.(protoreflect.ProtoMessage)
+	if !ok {
+		return status.Error(codes.InvalidArgument, "args isn't a protoreflect.ProtoMessage")
+	}
 
-	stdinBlob, err := req.MarshalVT()
+	// Remove the pg_catalog schema. Its sheer size causes unknown issues with wasm plugins
+	genReq, ok := req.(*plugin.GenerateRequest)
+	if ok {
+		removePGCatalog(genReq)
+		req = genReq
+	}
+
+	stdinBlob, err := proto.Marshal(req)
 	if err != nil {
-		return nil, err
+		return fmt.Errorf("failed to encode codegen request: %w", err)
 	}
 
 	engine := wasmtime.NewEngine()
 	module, err := r.loadModule(ctx, engine)
 	if err != nil {
-		return nil, fmt.Errorf("loadModule: %w", err)
+		return fmt.Errorf("loadModule: %w", err)
 	}
 
 	linker := wasmtime.NewLinker(engine)
 	if err := linker.DefineWasi(); err != nil {
-		return nil, err
+		return err
 	}
 
 	dir, err := os.MkdirTemp(os.Getenv("SQLCTMPDIR"), "out")
 	if err != nil {
-		return nil, fmt.Errorf("temp dir: %w", err)
+		return fmt.Errorf("temp dir: %w", err)
 	}
 
 	defer os.RemoveAll(dir)
@@ -237,17 +251,18 @@ func (r *Runner) Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plu
 	stdoutPath := filepath.Join(dir, "stdout")
 
 	if err := os.WriteFile(stdinPath, stdinBlob, 0755); err != nil {
-		return nil, fmt.Errorf("write file: %w", err)
+		return fmt.Errorf("write file: %w", err)
 	}
 
 	// Configure WASI imports to write stdout into a file.
 	wasiConfig := wasmtime.NewWasiConfig()
+	wasiConfig.SetArgv([]string{"plugin.wasm", method})
 	wasiConfig.SetStdinFile(stdinPath)
 	wasiConfig.SetStdoutFile(stdoutPath)
 	wasiConfig.SetStderrFile(stderrPath)
 
 	keys := []string{"SQLC_VERSION"}
-	vals := []string{req.SqlcVersion}
+	vals := []string{info.Version}
 	for _, key := range r.Env {
 		keys = append(keys, key)
 		vals = append(vals, os.Getenv(key))
@@ -261,13 +276,13 @@ func (r *Runner) Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plu
 	err = linker.DefineModule(store, "", module)
 	linkRegion.End()
 	if err != nil {
-		return nil, fmt.Errorf("define wasi: %w", err)
+		return fmt.Errorf("define wasi: %w", err)
 	}
 
 	// Run the function
 	fn, err := linker.GetDefault(store, "")
 	if err != nil {
-		return nil, fmt.Errorf("wasi: get default: %w", err)
+		return fmt.Errorf("wasi: get default: %w", err)
 	}
 
 	callRegion := trace.StartRegion(ctx, "call _start")
@@ -275,17 +290,29 @@ func (r *Runner) Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plu
 	callRegion.End()
 
 	if cerr := checkError(err, stderrPath); cerr != nil {
-		return nil, cerr
+		return cerr
 	}
 
 	// Print WASM stdout
 	stdoutBlob, err := os.ReadFile(stdoutPath)
 	if err != nil {
-		return nil, fmt.Errorf("read file: %w", err)
+		return fmt.Errorf("read file: %w", err)
 	}
 
-	var resp plugin.CodeGenResponse
-	return &resp, resp.UnmarshalVT(stdoutBlob)
+	resp, ok := reply.(protoreflect.ProtoMessage)
+	if !ok {
+		return fmt.Errorf("reply isn't a GenerateResponse")
+	}
+
+	if err := proto.Unmarshal(stdoutBlob, resp); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *Runner) NewStream(ctx context.Context, desc *grpc.StreamDesc, method string, opts ...grpc.CallOption) (grpc.ClientStream, error) {
+	return nil, status.Error(codes.Unimplemented, "")
 }
 
 func checkError(err error, stderrPath string) error {

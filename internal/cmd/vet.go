@@ -629,7 +629,7 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 	return nil
 }
 
-func vetConfig(req *plugin.CodeGenRequest) *vet.Config {
+func vetConfig(req *plugin.GenerateRequest) *vet.Config {
 	return &vet.Config{
 		Version: req.Settings.Version,
 		Engine:  req.Settings.Engine,

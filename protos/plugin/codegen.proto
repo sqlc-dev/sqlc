@@ -4,6 +4,10 @@ package plugin;
 
 option go_package = "github.com/sqlc-dev/sqlc/internal/plugin";
 
+service CodegenService {
+  rpc Generate (GenerateRequest) returns (GenerateResponse);
+}
+
 message File {
   string name = 1 [json_name = "name"];
   bytes contents = 2 [json_name = "contents"];
@@ -116,7 +120,7 @@ message Parameter {
   Column column = 2 [json_name = "column"];
 }
 
-message CodeGenRequest {
+message GenerateRequest {
   Settings settings = 1 [json_name = "settings"];
   Catalog catalog = 2 [json_name = "catalog"];
   repeated Query queries = 3 [json_name = "queries"];
@@ -125,6 +129,6 @@ message CodeGenRequest {
   bytes global_options = 6 [json_name = "global_options"];
 }
 
-message CodeGenResponse {
+message GenerateResponse {
   repeated File files = 1 [json_name = "files"];
 }

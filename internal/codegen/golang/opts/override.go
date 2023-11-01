@@ -76,7 +76,7 @@ func (o *Override) Matches(n *plugin.Identifier, defaultSchema string) bool {
 	return true
 }
 
-func (o *Override) parse(req *plugin.CodeGenRequest) (err error) {
+func (o *Override) parse(req *plugin.GenerateRequest) (err error) {
 	// validate deprecated postgres_type field
 	if o.Deprecated_PostgresType != "" {
 		fmt.Fprintf(os.Stderr, "WARNING: \"postgres_type\" is deprecated. Instead, use \"db_type\" to specify a type override.\n")

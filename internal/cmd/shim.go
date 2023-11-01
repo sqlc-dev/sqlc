@@ -223,8 +223,8 @@ func pluginQueryParam(p compiler.Parameter) *plugin.Parameter {
 	}
 }
 
-func codeGenRequest(r *compiler.Result, settings config.CombinedSettings) *plugin.CodeGenRequest {
-	return &plugin.CodeGenRequest{
+func codeGenRequest(r *compiler.Result, settings config.CombinedSettings) *plugin.GenerateRequest {
+	return &plugin.GenerateRequest{
 		Settings:    pluginSettings(r, settings),
 		Catalog:     pluginCatalog(r.Catalog),
 		Queries:     pluginQueries(r),
