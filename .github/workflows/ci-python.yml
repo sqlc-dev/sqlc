@@ -5,11 +5,9 @@ on:
       - main
   pull_request:
 jobs:
-
   build:
     name: test
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v4
@@ -23,3 +21,5 @@ jobs:
           path: python
       - run: make test
         working-directory: python
+      - run: sqlc diff
+        working-directory: python/examples
