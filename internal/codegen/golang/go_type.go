@@ -8,7 +8,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
 
-func addExtraGoStructTags(tags map[string]string, req *plugin.CodeGenRequest, options *opts.Options, col *plugin.Column) {
+func addExtraGoStructTags(tags map[string]string, req *plugin.GenerateRequest, options *opts.Options, col *plugin.Column) {
 	for _, override := range options.Overrides {
 		oride := override.ShimOverride
 		if oride.GoType.StructTags == nil {
@@ -33,7 +33,7 @@ func addExtraGoStructTags(tags map[string]string, req *plugin.CodeGenRequest, op
 	}
 }
 
-func goType(req *plugin.CodeGenRequest, options *opts.Options, col *plugin.Column) string {
+func goType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Column) string {
 	// Check if the column's type has been overridden
 	for _, override := range options.Overrides {
 		oride := override.ShimOverride
@@ -63,7 +63,7 @@ func goType(req *plugin.CodeGenRequest, options *opts.Options, col *plugin.Colum
 	return typ
 }
 
-func goInnerType(req *plugin.CodeGenRequest, options *opts.Options, col *plugin.Column) string {
+func goInnerType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Column) string {
 	columnType := sdk.DataType(col.Type)
 	notNull := col.NotNull || col.IsArray
 

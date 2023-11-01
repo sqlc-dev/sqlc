@@ -381,7 +381,7 @@ func parse(ctx context.Context, name, dir string, sql config.SQL, combo config.C
 	return c.Result(), false
 }
 
-func codegen(ctx context.Context, combo config.CombinedSettings, sql outPair, result *compiler.Result) (string, *plugin.CodeGenResponse, error) {
+func codegen(ctx context.Context, combo config.CombinedSettings, sql outPair, result *compiler.Result) (string, *plugin.GenerateResponse, error) {
 	defer trace.StartRegion(ctx, "codegen").End()
 	req := codeGenRequest(result, combo)
 	var handler grpc.ClientConnInterface
@@ -454,7 +454,7 @@ func codegen(ctx context.Context, combo config.CombinedSettings, sql outPair, re
 	default:
 		return "", nil, fmt.Errorf("missing language backend")
 	}
-	client := plugin.NewCodeGeneratorClient(handler)
+	client := plugin.NewCodegenServiceClient(handler)
 	resp, err := client.Generate(ctx, req)
 	return out, resp, err
 }

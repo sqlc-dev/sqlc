@@ -19,7 +19,7 @@ func main() {
 }
 
 func run() error {
-	var req plugin.CodeGenRequest
+	var req plugin.GenerateRequest
 	reqBlob, err := io.ReadAll(os.Stdin)
 	if err != nil {
 		return err

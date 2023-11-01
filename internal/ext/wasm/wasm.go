@@ -192,7 +192,7 @@ func (r *Runner) loadWASM(ctx context.Context, cache string, expected string) ([
 // mysterious (reason unknown) bug with wasm plugins when a large amount of
 // tables (like there are in the catalog) are sent.
 // @see https://github.com/sqlc-dev/sqlc/pull/1748
-func removePGCatalog(req *plugin.CodeGenRequest) {
+func removePGCatalog(req *plugin.GenerateRequest) {
 	if req.Catalog == nil || req.Catalog.Schemas == nil {
 		return
 	}
@@ -210,9 +210,9 @@ func removePGCatalog(req *plugin.CodeGenRequest) {
 }
 
 func (r *Runner) Invoke(ctx context.Context, method string, args any, reply any, opts ...grpc.CallOption) error {
-	req, ok := args.(*plugin.CodeGenRequest)
+	req, ok := args.(*plugin.GenerateRequest)
 	if !ok {
-		return status.Error(codes.InvalidArgument, "args isn't a CodeGenRequest")
+		return status.Error(codes.InvalidArgument, "args isn't a GenerateRequest")
 	}
 
 	// Remove the pg_catalog schema. Its sheer size causes unknown issues with wasm plugins
@@ -293,9 +293,9 @@ func (r *Runner) Invoke(ctx context.Context, method string, args any, reply any,
 		return fmt.Errorf("read file: %w", err)
 	}
 
-	resp, ok := reply.(*plugin.CodeGenResponse)
+	resp, ok := reply.(*plugin.GenerateResponse)
 	if !ok {
-		return fmt.Errorf("reply isn't a CodeGenResponse")
+		return fmt.Errorf("reply isn't a GenerateResponse")
 	}
 
 	if err := resp.UnmarshalVT(stdoutBlob); err != nil {

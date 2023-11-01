@@ -393,11 +393,11 @@ func (m *Parameter) CloneMessageVT() proto.Message {
 	return m.CloneVT()
 }
 
-func (m *CodeGenRequest) CloneVT() *CodeGenRequest {
+func (m *GenerateRequest) CloneVT() *GenerateRequest {
 	if m == nil {
-		return (*CodeGenRequest)(nil)
+		return (*GenerateRequest)(nil)
 	}
-	r := &CodeGenRequest{
+	r := &GenerateRequest{
 		Settings:    m.Settings.CloneVT(),
 		Catalog:     m.Catalog.CloneVT(),
 		SqlcVersion: m.SqlcVersion,
@@ -426,15 +426,15 @@ func (m *CodeGenRequest) CloneVT() *CodeGenRequest {
 	return r
 }
 
-func (m *CodeGenRequest) CloneMessageVT() proto.Message {
+func (m *GenerateRequest) CloneMessageVT() proto.Message {
 	return m.CloneVT()
 }
 
-func (m *CodeGenResponse) CloneVT() *CodeGenResponse {
+func (m *GenerateResponse) CloneVT() *GenerateResponse {
 	if m == nil {
-		return (*CodeGenResponse)(nil)
+		return (*GenerateResponse)(nil)
 	}
-	r := &CodeGenResponse{}
+	r := &GenerateResponse{}
 	if rhs := m.Files; rhs != nil {
 		tmpContainer := make([]*File, len(rhs))
 		for k, v := range rhs {
@@ -449,7 +449,7 @@ func (m *CodeGenResponse) CloneVT() *CodeGenResponse {
 	return r
 }
 
-func (m *CodeGenResponse) CloneMessageVT() proto.Message {
+func (m *GenerateResponse) CloneMessageVT() proto.Message {
 	return m.CloneVT()
 }
 
@@ -991,7 +991,7 @@ func (this *Parameter) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
-func (this *CodeGenRequest) EqualVT(that *CodeGenRequest) bool {
+func (this *GenerateRequest) EqualVT(that *GenerateRequest) bool {
 	if this == that {
 		return true
 	} else if this == nil || that == nil {
@@ -1032,14 +1032,14 @@ func (this *CodeGenRequest) EqualVT(that *CodeGenRequest) bool {
 	return string(this.unknownFields) == string(that.unknownFields)
 }
 
-func (this *CodeGenRequest) EqualMessageVT(thatMsg proto.Message) bool {
-	that, ok := thatMsg.(*CodeGenRequest)
+func (this *GenerateRequest) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*GenerateRequest)
 	if !ok {
 		return false
 	}
 	return this.EqualVT(that)
 }
-func (this *CodeGenResponse) EqualVT(that *CodeGenResponse) bool {
+func (this *GenerateResponse) EqualVT(that *GenerateResponse) bool {
 	if this == that {
 		return true
 	} else if this == nil || that == nil {
@@ -1065,8 +1065,8 @@ func (this *CodeGenResponse) EqualVT(that *CodeGenResponse) bool {
 	return string(this.unknownFields) == string(that.unknownFields)
 }
 
-func (this *CodeGenResponse) EqualMessageVT(thatMsg proto.Message) bool {
-	that, ok := thatMsg.(*CodeGenResponse)
+func (this *GenerateResponse) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*GenerateResponse)
 	if !ok {
 		return false
 	}
@@ -1078,86 +1078,86 @@ func (this *CodeGenResponse) EqualMessageVT(thatMsg proto.Message) bool {
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// CodeGeneratorClient is the client API for CodeGenerator service.
+// CodegenServiceClient is the client API for CodegenService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type CodeGeneratorClient interface {
-	Generate(ctx context.Context, in *CodeGenRequest, opts ...grpc.CallOption) (*CodeGenResponse, error)
+type CodegenServiceClient interface {
+	Generate(ctx context.Context, in *GenerateRequest, opts ...grpc.CallOption) (*GenerateResponse, error)
 }
 
-type codeGeneratorClient struct {
+type codegenServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewCodeGeneratorClient(cc grpc.ClientConnInterface) CodeGeneratorClient {
-	return &codeGeneratorClient{cc}
+func NewCodegenServiceClient(cc grpc.ClientConnInterface) CodegenServiceClient {
+	return &codegenServiceClient{cc}
 }
 
-func (c *codeGeneratorClient) Generate(ctx context.Context, in *CodeGenRequest, opts ...grpc.CallOption) (*CodeGenResponse, error) {
-	out := new(CodeGenResponse)
-	err := c.cc.Invoke(ctx, "/plugin.CodeGenerator/Generate", in, out, opts...)
+func (c *codegenServiceClient) Generate(ctx context.Context, in *GenerateRequest, opts ...grpc.CallOption) (*GenerateResponse, error) {
+	out := new(GenerateResponse)
+	err := c.cc.Invoke(ctx, "/plugin.CodegenService/Generate", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// CodeGeneratorServer is the server API for CodeGenerator service.
-// All implementations must embed UnimplementedCodeGeneratorServer
+// CodegenServiceServer is the server API for CodegenService service.
+// All implementations must embed UnimplementedCodegenServiceServer
 // for forward compatibility
-type CodeGeneratorServer interface {
-	Generate(context.Context, *CodeGenRequest) (*CodeGenResponse, error)
-	mustEmbedUnimplementedCodeGeneratorServer()
+type CodegenServiceServer interface {
+	Generate(context.Context, *GenerateRequest) (*GenerateResponse, error)
+	mustEmbedUnimplementedCodegenServiceServer()
 }
 
-// UnimplementedCodeGeneratorServer must be embedded to have forward compatible implementations.
-type UnimplementedCodeGeneratorServer struct {
+// UnimplementedCodegenServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedCodegenServiceServer struct {
 }
 
-func (UnimplementedCodeGeneratorServer) Generate(context.Context, *CodeGenRequest) (*CodeGenResponse, error) {
+func (UnimplementedCodegenServiceServer) Generate(context.Context, *GenerateRequest) (*GenerateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Generate not implemented")
 }
-func (UnimplementedCodeGeneratorServer) mustEmbedUnimplementedCodeGeneratorServer() {}
+func (UnimplementedCodegenServiceServer) mustEmbedUnimplementedCodegenServiceServer() {}
 
-// UnsafeCodeGeneratorServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to CodeGeneratorServer will
+// UnsafeCodegenServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to CodegenServiceServer will
 // result in compilation errors.
-type UnsafeCodeGeneratorServer interface {
-	mustEmbedUnimplementedCodeGeneratorServer()
+type UnsafeCodegenServiceServer interface {
+	mustEmbedUnimplementedCodegenServiceServer()
 }
 
-func RegisterCodeGeneratorServer(s grpc.ServiceRegistrar, srv CodeGeneratorServer) {
-	s.RegisterService(&CodeGenerator_ServiceDesc, srv)
+func RegisterCodegenServiceServer(s grpc.ServiceRegistrar, srv CodegenServiceServer) {
+	s.RegisterService(&CodegenService_ServiceDesc, srv)
 }
 
-func _CodeGenerator_Generate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CodeGenRequest)
+func _CodegenService_Generate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GenerateRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CodeGeneratorServer).Generate(ctx, in)
+		return srv.(CodegenServiceServer).Generate(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/plugin.CodeGenerator/Generate",
+		FullMethod: "/plugin.CodegenService/Generate",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CodeGeneratorServer).Generate(ctx, req.(*CodeGenRequest))
+		return srv.(CodegenServiceServer).Generate(ctx, req.(*GenerateRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// CodeGenerator_ServiceDesc is the grpc.ServiceDesc for CodeGenerator service.
+// CodegenService_ServiceDesc is the grpc.ServiceDesc for CodegenService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var CodeGenerator_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "plugin.CodeGenerator",
-	HandlerType: (*CodeGeneratorServer)(nil),
+var CodegenService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "plugin.CodegenService",
+	HandlerType: (*CodegenServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "Generate",
-			Handler:    _CodeGenerator_Generate_Handler,
+			Handler:    _CodegenService_Generate_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -2148,7 +2148,7 @@ func (m *Parameter) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *CodeGenRequest) MarshalVT() (dAtA []byte, err error) {
+func (m *GenerateRequest) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2161,12 +2161,12 @@ func (m *CodeGenRequest) MarshalVT() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *CodeGenRequest) MarshalToVT(dAtA []byte) (int, error) {
+func (m *GenerateRequest) MarshalToVT(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVT(dAtA[:size])
 }
 
-func (m *CodeGenRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+func (m *GenerateRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m == nil {
 		return 0, nil
 	}
@@ -2234,7 +2234,7 @@ func (m *CodeGenRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *CodeGenResponse) MarshalVT() (dAtA []byte, err error) {
+func (m *GenerateResponse) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -2247,12 +2247,12 @@ func (m *CodeGenResponse) MarshalVT() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *CodeGenResponse) MarshalToVT(dAtA []byte) (int, error) {
+func (m *GenerateResponse) MarshalToVT(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVT(dAtA[:size])
 }
 
-func (m *CodeGenResponse) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+func (m *GenerateResponse) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m == nil {
 		return 0, nil
 	}
@@ -3274,7 +3274,7 @@ func (m *Parameter) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *CodeGenRequest) MarshalVTStrict() (dAtA []byte, err error) {
+func (m *GenerateRequest) MarshalVTStrict() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3287,12 +3287,12 @@ func (m *CodeGenRequest) MarshalVTStrict() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *CodeGenRequest) MarshalToVTStrict(dAtA []byte) (int, error) {
+func (m *GenerateRequest) MarshalToVTStrict(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVTStrict(dAtA[:size])
 }
 
-func (m *CodeGenRequest) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
+func (m *GenerateRequest) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 	if m == nil {
 		return 0, nil
 	}
@@ -3360,7 +3360,7 @@ func (m *CodeGenRequest) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) 
 	return len(dAtA) - i, nil
 }
 
-func (m *CodeGenResponse) MarshalVTStrict() (dAtA []byte, err error) {
+func (m *GenerateResponse) MarshalVTStrict() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3373,12 +3373,12 @@ func (m *CodeGenResponse) MarshalVTStrict() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *CodeGenResponse) MarshalToVTStrict(dAtA []byte) (int, error) {
+func (m *GenerateResponse) MarshalToVTStrict(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVTStrict(dAtA[:size])
 }
 
-func (m *CodeGenResponse) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
+func (m *GenerateResponse) MarshalToSizedBufferVTStrict(dAtA []byte) (int, error) {
 	if m == nil {
 		return 0, nil
 	}
@@ -3808,7 +3808,7 @@ func (m *Parameter) SizeVT() (n int) {
 	return n
 }
 
-func (m *CodeGenRequest) SizeVT() (n int) {
+func (m *GenerateRequest) SizeVT() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -3844,7 +3844,7 @@ func (m *CodeGenRequest) SizeVT() (n int) {
 	return n
 }
 
-func (m *CodeGenResponse) SizeVT() (n int) {
+func (m *GenerateResponse) SizeVT() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -6507,7 +6507,7 @@ func (m *Parameter) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *CodeGenRequest) UnmarshalVT(dAtA []byte) error {
+func (m *GenerateRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -6530,10 +6530,10 @@ func (m *CodeGenRequest) UnmarshalVT(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: CodeGenRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: GenerateRequest: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: CodeGenRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: GenerateRequest: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -6764,7 +6764,7 @@ func (m *CodeGenRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *CodeGenResponse) UnmarshalVT(dAtA []byte) error {
+func (m *GenerateResponse) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -6787,10 +6787,10 @@ func (m *CodeGenResponse) UnmarshalVT(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: CodeGenResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: GenerateResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: CodeGenResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: GenerateResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:

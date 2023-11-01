@@ -22,9 +22,9 @@ type Runner struct {
 }
 
 func (r *Runner) Invoke(ctx context.Context, method string, args any, reply any, opts ...grpc.CallOption) error {
-	req, ok := args.(*plugin.CodeGenRequest)
+	req, ok := args.(*plugin.GenerateRequest)
 	if !ok {
-		return fmt.Errorf("args isn't a CodeGenRequest")
+		return fmt.Errorf("args isn't a GenerateRequest")
 	}
 
 	stdin, err := proto.Marshal(req)
@@ -60,9 +60,9 @@ func (r *Runner) Invoke(ctx context.Context, method string, args any, reply any,
 		return fmt.Errorf("process: error running command %s", stderr)
 	}
 
-	resp, ok := reply.(*plugin.CodeGenResponse)
+	resp, ok := reply.(*plugin.GenerateResponse)
 	if !ok {
-		return fmt.Errorf("reply isn't a CodeGenResponse")
+		return fmt.Errorf("reply isn't a GenerateResponse")
 	}
 
 	if err := proto.Unmarshal(out, resp); err != nil {
