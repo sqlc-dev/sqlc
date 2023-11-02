@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -56,6 +57,7 @@ func (r *Runner) getChecksum(ctx context.Context) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	slog.Warn("fetching WASM binary to calculate sha256. Set this value in sqlc.yaml to prevent unneeded work", "sha256", sum)
 	return sum, nil
 }
 
