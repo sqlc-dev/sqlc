@@ -88,6 +88,9 @@ type Plugin struct {
 		URL    string `json:"url" yaml:"url"`
 		SHA256 string `json:"sha256" yaml:"sha256"`
 	} `json:"wasm" yaml:"wasm"`
+	Remote *struct {
+		Target string `json:"target" yaml:"target"`
+	} `json:"remote" yaml:"remote"`
 }
 
 type Rule struct {
@@ -151,7 +154,7 @@ var ErrPluginBuiltin = errors.New("a built-in plugin with that name already exis
 var ErrPluginNoName = errors.New("missing plugin name")
 var ErrPluginExists = errors.New("a plugin with that name already exists")
 var ErrPluginNotFound = errors.New("no plugin found")
-var ErrPluginNoType = errors.New("plugin: field `process` or `wasm` required")
+var ErrPluginNoType = errors.New("plugin: field `process`, `wasm` or `remote` required")
 var ErrPluginBothTypes = errors.New("plugin: `process` and `wasm` cannot both be defined")
 var ErrPluginProcessNoCmd = errors.New("plugin: missing process command")
 

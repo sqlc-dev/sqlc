@@ -43,7 +43,7 @@ func v2ParseConfig(rd io.Reader) (Config, error) {
 		if _, ok := plugins[conf.Plugins[i].Name]; ok {
 			return conf, ErrPluginExists
 		}
-		if conf.Plugins[i].Process == nil && conf.Plugins[i].WASM == nil {
+		if conf.Plugins[i].Process == nil && conf.Plugins[i].WASM == nil && conf.Plugins[i].Remote == nil {
 			return conf, ErrPluginNoType
 		}
 		if conf.Plugins[i].Process != nil && conf.Plugins[i].WASM != nil {

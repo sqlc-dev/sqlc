@@ -3,6 +3,7 @@ package cmd
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -15,6 +16,7 @@ import (
 
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/status"
 
 	"github.com/sqlc-dev/sqlc/internal/codegen/golang"
@@ -406,6 +408,13 @@ func codegen(ctx context.Context, combo config.CombinedSettings, sql outPair, re
 				SHA256: plug.WASM.SHA256,
 				Env:    plug.Env,
 			}
+		case plug.Remote != nil:
+			handler, err = grpc.DialContext(ctx, plug.Remote.Target,
+				grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{})))
+			if err != nil {
+				return "", nil, err
+			}
+
 		default:
 			return "", nil, fmt.Errorf("unsupported plugin type")
 		}
