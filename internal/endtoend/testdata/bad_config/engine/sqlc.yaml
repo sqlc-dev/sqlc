@@ -1,0 +1,8 @@
+version: 2
+sql:
+- queries: query.sql
+  schema: query.sql
+  engine: "bad_engine"
+  gen:
+    go:
+      out: "db"
