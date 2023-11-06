@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"maps"
+	"path/filepath"
 
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
@@ -16,7 +17,7 @@ type Options struct {
 	EmitPreparedQueries         bool              `json:"emit_prepared_queries" yaml:"emit_prepared_queries"`
 	EmitExactTableNames         bool              `json:"emit_exact_table_names,omitempty" yaml:"emit_exact_table_names"`
 	EmitEmptySlices             bool              `json:"emit_empty_slices,omitempty" yaml:"emit_empty_slices"`
-	EmitExportedQueries         bool              `json:"emit_exported_queries" yaml:"emit_exported_queries`
+	EmitExportedQueries         bool              `json:"emit_exported_queries" yaml:"emit_exported_queries"`
 	EmitResultStructPointers    bool              `json:"emit_result_struct_pointers" yaml:"emit_result_struct_pointers"`
 	EmitParamsStructPointers    bool              `json:"emit_params_struct_pointers" yaml:"emit_params_struct_pointers"`
 	EmitMethodsWithDbArgument   bool              `json:"emit_methods_with_db_argument,omitempty" yaml:"emit_methods_with_db_argument"`
@@ -77,6 +78,14 @@ func parseOpts(req *plugin.GenerateRequest) (*Options, error) {
 		return nil, fmt.Errorf("unmarshalling plugin options: %w", err)
 	}
 
+	if options.Package == "" {
+		if options.Out != "" {
+			options.Package = filepath.Base(options.Out)
+		} else {
+			return nil, fmt.Errorf("invalid options: missing package name")
+		}
+	}
+
 	for i := range options.Overrides {
 		if err := options.Overrides[i].parse(req); err != nil {
 			return nil, err
@@ -110,6 +119,9 @@ func parseGlobalOpts(req *plugin.GenerateRequest) (*GlobalOptions, error) {
 func ValidateOpts(opts *Options) error {
 	if opts.EmitMethodsWithDbArgument && opts.EmitPreparedQueries {
 		return fmt.Errorf("invalid options: emit_methods_with_db_argument and emit_prepared_queries options are mutually exclusive")
+	}
+	if *opts.QueryParameterLimit < 0 {
+		return fmt.Errorf("invalid options: query parameter limit must not be negative")
 	}
 
 	return nil
