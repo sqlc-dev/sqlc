@@ -40,19 +40,19 @@ func main() {
 
 		contents = bytes.ReplaceAll(contents,
 			[]byte(`"github.com/sqlc-dev/sqlc/internal/plugin"`),
-			[]byte(`"github.com/sqlc-dev/sqlc-go/plugin"`))
+			[]byte(`"github.com/sqlc-dev/plugin-sdk-go/plugin"`))
 
 		contents = bytes.ReplaceAll(contents,
 			[]byte(`"github.com/sqlc-dev/sqlc/internal/codegen/sdk"`),
-			[]byte(`"github.com/sqlc-dev/sqlc-go/sdk"`))
+			[]byte(`"github.com/sqlc-dev/plugin-sdk-go/sdk"`))
 
 		contents = bytes.ReplaceAll(contents,
 			[]byte(`"github.com/sqlc-dev/sqlc/internal/metadata"`),
-			[]byte(`"github.com/sqlc-dev/sqlc-go/metadata"`))
+			[]byte(`"github.com/sqlc-dev/plugin-sdk-go/metadata"`))
 
 		contents = bytes.ReplaceAll(contents,
 			[]byte(`"github.com/sqlc-dev/sqlc/internal/pattern"`),
-			[]byte(`"github.com/sqlc-dev/sqlc-go/pattern"`))
+			[]byte(`"github.com/sqlc-dev/plugin-sdk-go/pattern"`))
 
 		contents = bytes.ReplaceAll(contents,
 			[]byte(`"github.com/sqlc-dev/sqlc/internal/debug"`),
