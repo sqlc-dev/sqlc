@@ -20,22 +20,6 @@ Check out [an interactive example](https://play.sqlc.dev/) to see it in action, 
 - [Downloads](https://downloads.sqlc.dev/)
 - [Community](https://discord.gg/EcXzGe5SEs)
 
-## Sponsors
-
-sqlc development is funded by our [generous
-sponsors](https://github.com/sponsors/kyleconroy), including the following
-companies:
-
-- [Context](https://context.app)
-- [ngrok](https://ngrok.com)
-- [RStudio](https://www.rstudio.com/)
-- [時雨堂](https://shiguredo.jp/)
-
-If you use sqlc at your company, please consider [becoming a
-sponsor](https://github.com/sponsors/kyleconroy) today.
-
-Sponsors receive priority support via the sqlc Slack organization.
-
 ## Acknowledgments
 
 sqlc was inspired by [PugSQL](https://pugsql.org/) and
