@@ -17,7 +17,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.17
 	github.com/pganalyze/pg_query_go/v4 v4.2.3
 	github.com/riza-io/grpc-go v0.2.0
-	github.com/spf13/cobra v1.7.0
+	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/sync v0.4.0
