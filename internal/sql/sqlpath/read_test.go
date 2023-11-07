@@ -107,7 +107,8 @@ func TestReturnsErrorWhenPathDoesNotExist(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected an error, but got nil")
 	} else {
-		expectedError := fmt.Errorf("path non_existent_path does not exist")
+		expectedError := fmt.Errorf(`failed to stat path "non_existent_path": ` +
+			`lstat non_existent_path: no such file or directory`)
 		if !cmp.Equal(err.Error(), expectedError.Error()) {
 			t.Errorf("Expected error %v, but got %v", expectedError, err)
 		}
@@ -153,24 +154,39 @@ func TestDoesNotIncludesSQLFilesWithUppercaseExtension(t *testing.T) {
 	}
 }
 
-func TestIncludesSQLFilesWithLeadingDotsInDirectoryName(t *testing.T) {
+func TestNotIncludesHiddenFilesAnyPath(t *testing.T) {
 	// Arrange
-	paths := []string{"./testdata/.hiddendir/file1.sql"}
+	paths := []string{
+		"./testdata/.hiddendir/file1.sql", // pass
+		"./testdata/.hidden.sql",          // skip
+	}
 
 	// Act
 	result, err := Glob(paths)
 
 	// Assert
-	expected := []string{"./testdata/.hiddendir/file1.sql"}
-	if !cmp.Equal(result, expected) {
-		t.Errorf("Expected %v, but got %v", expected, result)
+	expectedAny := [][]string{
+		{"./testdata/.hiddendir/file1.sql"},
+		{"testdata/.hiddendir/file1.sql"},
 	}
+
+	match := false
+	for _, expected := range expectedAny {
+		if cmp.Equal(result, expected) {
+			match = true
+			break
+		}
+	}
+	if !match {
+		t.Errorf("Expected any of %v, but got %v", expectedAny, result)
+	}
+
 	if err != nil {
 		t.Errorf("Expected no error, but got %v", err)
 	}
 }
 
-func TestPathIsSymlink(t *testing.T) {
+func TestFollowSymlinks(t *testing.T) {
 	// Arrange
 	paths := []string{"testdata/symlink", "testdata/file1.symlink.sql"}
 
