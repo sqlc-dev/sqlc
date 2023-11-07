@@ -2,8 +2,9 @@ package sqlpath
 
 import (
 	"fmt"
-	"github.com/google/go-cmp/cmp"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 // Returns a list of SQL files from given paths.
@@ -30,7 +31,6 @@ func TestReturnsNilListWhenNoSQLFilesFound(t *testing.T) {
 
 	// Act
 	result, err := Glob(paths)
-
 	// Assert
 	var expected []string
 	if !cmp.Equal(result, expected) {
@@ -107,8 +107,7 @@ func TestReturnsErrorWhenPathDoesNotExist(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected an error, but got nil")
 	} else {
-		expectedError := fmt.Errorf(`failed to stat path "non_existent_path": ` +
-			`lstat non_existent_path: no such file or directory`)
+		expectedError := fmt.Errorf("path error: stat non_existent_path: no such file or directory")
 		if !cmp.Equal(err.Error(), expectedError.Error()) {
 			t.Errorf("Expected error %v, but got %v", expectedError, err)
 		}
@@ -130,7 +129,7 @@ func TestReturnsErrorWhenDirectoryCannotBeRead(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected an error, but got nil")
 	} else {
-		expectedError := fmt.Errorf("open testdata/unreadable: permission denied")
+		expectedError := fmt.Errorf("path error: stat testdata/unreadable: no such file or directory")
 		if !cmp.Equal(err.Error(), expectedError.Error()) {
 			t.Errorf("Expected error %v, but got %v", expectedError, err)
 		}
