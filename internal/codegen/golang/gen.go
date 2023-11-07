@@ -37,6 +37,7 @@ type tmplCtx struct {
 	EmitMethodsWithDBArgument bool
 	EmitEnumValidMethod       bool
 	EmitAllEnumValues         bool
+	EmitEmbedAlias            bool
 	UsesCopyFrom              bool
 	UsesBatch                 bool
 	BuildTags                 string
@@ -145,6 +146,7 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 		EmitMethodsWithDBArgument: options.EmitMethodsWithDbArgument,
 		EmitEnumValidMethod:       options.EmitEnumValidMethod,
 		EmitAllEnumValues:         options.EmitAllEnumValues,
+		EmitEmbedAlias:            options.EmitEmbedAlias,
 		UsesCopyFrom:              usesCopyFrom(queries),
 		UsesBatch:                 usesBatch(queries),
 		SQLDriver:                 parseDriver(options.SqlPackage),
