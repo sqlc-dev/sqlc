@@ -49,7 +49,7 @@ func Glob(patterns []string) ([]string, error) {
 			files = append(files, path)
 		}
 	}
-	var sqlFiles []string //nolint:prealloc // can be empty
+	var sqlFiles []string
 	for _, file := range files {
 		if !strings.HasSuffix(file, ".sql") {
 			continue
