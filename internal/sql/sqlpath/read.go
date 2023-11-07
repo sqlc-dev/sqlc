@@ -12,6 +12,10 @@ import (
 // Return a list of SQL files in the listed paths. Only includes files ending
 // in .sql. Omits hidden files, directories, and migrations.
 func Glob(paths []string) ([]string, error) {
+	paths, err := expandGlobs(paths)
+	if err != nil {
+		return nil, err
+	}
 	var files []string
 	for _, path := range paths {
 		f, err := os.Stat(path)
@@ -30,7 +34,7 @@ func Glob(paths []string) ([]string, error) {
 			files = append(files, path)
 		}
 	}
-	var sqlFiles []string
+	var sqlFiles []string //nolint:prealloc // can be empty
 	for _, file := range files {
 		if !strings.HasSuffix(file, ".sql") {
 			continue
@@ -44,4 +48,35 @@ func Glob(paths []string) ([]string, error) {
 		sqlFiles = append(sqlFiles, file)
 	}
 	return sqlFiles, nil
+}
+
+func expandGlobs(paths []string) ([]string, error) {
+	expandedPatterns := make([]string, 0, len(paths))
+	for _, pattern := range paths {
+		expansion, err := filepath.Glob(pattern)
+		if err != nil {
+			return nil, fmt.Errorf("failed to expand pattern %q: %w", pattern, err)
+		}
+		if len(expansion) == 0 {
+			fi, err := os.Lstat(pattern)
+			if err != nil {
+				return nil, fmt.Errorf("failed to stat path %q: %w", pattern, err)
+			}
+			if fi == nil {
+				return nil, fmt.Errorf("failed to stat path %q: %w", pattern, os.ErrNotExist)
+			}
+			var isFilepath bool
+			for _, mask := range []os.FileMode{os.ModeDir, os.ModeSymlink, os.FileMode(0x400)} {
+				if fi.Mode()&mask == 0 {
+					isFilepath = true
+					break
+				}
+			}
+			if !isFilepath {
+				continue
+			}
+		}
+		expandedPatterns = append(expandedPatterns, expansion...)
+	}
+	return expandedPatterns, nil
 }
