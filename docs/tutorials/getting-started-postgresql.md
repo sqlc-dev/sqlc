@@ -32,6 +32,7 @@ following contents:
 ```yaml
 version: "2"
 cloud:
+  # Replace this value with your project ID from the sqlc Cloud dashboard
   project: "<PROJECT_ID>"
 sql:
   - engine: "postgresql"
