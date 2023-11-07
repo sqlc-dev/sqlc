@@ -1,1 +1,2 @@
-error parsing sqlc.json: invalid query parameter limit
+# package querytest
+error generating code: invalid options: query parameter limit must not be negative

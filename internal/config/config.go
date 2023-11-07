@@ -139,13 +139,11 @@ type SQLJSON struct {
 var ErrMissingEngine = errors.New("unknown engine")
 var ErrMissingVersion = errors.New("no version number")
 var ErrNoOutPath = errors.New("no output path")
-var ErrNoPackageName = errors.New("missing package name")
 var ErrNoPackagePath = errors.New("missing package path")
 var ErrNoPackages = errors.New("no packages")
 var ErrNoQuerierType = errors.New("no querier emit type enabled")
 var ErrUnknownEngine = errors.New("invalid engine")
 var ErrUnknownVersion = errors.New("invalid version number")
-var ErrInvalidQueryParameterLimit = errors.New("invalid query parameter limit")
 
 var ErrPluginBuiltin = errors.New("a built-in plugin with that name already exists")
 var ErrPluginNoName = errors.New("missing plugin name")
