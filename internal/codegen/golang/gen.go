@@ -124,7 +124,34 @@ func Generate(ctx context.Context, req *plugin.GenerateRequest) (*plugin.Generat
 		enums, structs = filterUnusedStructs(enums, structs, queries)
 	}
 
+	if err := validate(options, enums, structs, queries); err != nil {
+		return nil, err
+	}
+
 	return generate(req, options, enums, structs, queries)
+}
+
+func validate(options *opts.Options, enums []Enum, structs []Struct, queries []Query) error {
+	usedNames := make(map[string]struct{})
+	for _, enum := range enums {
+		usedNames[enum.Name] = struct{}{}
+		usedNames["Null"+enum.Name] = struct{}{}
+	}
+	for _, struckt := range structs {
+		if _, ok := usedNames[struckt.Name]; ok {
+			return fmt.Errorf("struct name conflict: %s", struckt.Name)
+		}
+		usedNames[struckt.Name] = struct{}{}
+	}
+	if !options.EmitExportedQueries {
+		return nil
+	}
+	for _, query := range queries {
+		if _, ok := usedNames[query.ConstantName]; ok {
+			return fmt.Errorf("query constant name conflicts with struct name: %s", query.ConstantName)
+		}
+	}
+	return nil
 }
 
 func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, structs []Struct, queries []Query) (*plugin.GenerateResponse, error) {
