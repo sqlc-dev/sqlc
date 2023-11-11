@@ -14,6 +14,7 @@ import (
 	"sync"
 
 	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/status"
 
 	"github.com/sqlc-dev/sqlc/internal/codegen/golang"
@@ -347,7 +348,11 @@ func remoteGenerate(ctx context.Context, configPath string, conf *config.Config,
 func parse(ctx context.Context, name, dir string, sql config.SQL, combo config.CombinedSettings, parserOpts opts.Parser, stderr io.Writer) (*compiler.Result, bool) {
 	defer trace.StartRegion(ctx, "parse").End()
 	c, err := compiler.NewCompiler(sql, combo)
-	defer c.Close(ctx)
+	defer func() {
+		if c != nil {
+			c.Close(ctx)
+		}
+	}()
 	if err != nil {
 		fmt.Fprintf(stderr, "error creating compiler: %s\n", err)
 		return nil, true
@@ -380,10 +385,10 @@ func parse(ctx context.Context, name, dir string, sql config.SQL, combo config.C
 	return c.Result(), false
 }
 
-func codegen(ctx context.Context, combo config.CombinedSettings, sql outPair, result *compiler.Result) (string, *plugin.CodeGenResponse, error) {
+func codegen(ctx context.Context, combo config.CombinedSettings, sql outPair, result *compiler.Result) (string, *plugin.GenerateResponse, error) {
 	defer trace.StartRegion(ctx, "codegen").End()
 	req := codeGenRequest(result, combo)
-	var handler ext.Handler
+	var handler grpc.ClientConnInterface
 	var out string
 	switch {
 	case sql.Plugin != nil:
@@ -411,9 +416,18 @@ func codegen(ctx context.Context, combo config.CombinedSettings, sql outPair, re
 
 		opts, err := convert.YAMLtoJSON(sql.Plugin.Options)
 		if err != nil {
-			return "", nil, fmt.Errorf("invalid plugin options")
+			return "", nil, fmt.Errorf("invalid plugin options: %w", err)
 		}
 		req.PluginOptions = opts
+
+		global, found := combo.Global.Options[plug.Name]
+		if found {
+			opts, err := convert.YAMLtoJSON(global)
+			if err != nil {
+				return "", nil, fmt.Errorf("invalid global options: %w", err)
+			}
+			req.GlobalOptions = opts
+		}
 
 	case sql.Gen.Go != nil:
 		out = combo.Go.Out
@@ -423,6 +437,14 @@ func codegen(ctx context.Context, combo config.CombinedSettings, sql outPair, re
 			return "", nil, fmt.Errorf("opts marshal failed: %w", err)
 		}
 		req.PluginOptions = opts
+
+		if combo.Global.Overrides.Go != nil {
+			opts, err := json.Marshal(combo.Global.Overrides.Go)
+			if err != nil {
+				return "", nil, fmt.Errorf("opts marshal failed: %w", err)
+			}
+			req.GlobalOptions = opts
+		}
 
 	case sql.Gen.JSON != nil:
 		out = combo.JSON.Out
@@ -436,6 +458,7 @@ func codegen(ctx context.Context, combo config.CombinedSettings, sql outPair, re
 	default:
 		return "", nil, fmt.Errorf("missing language backend")
 	}
-	resp, err := handler.Generate(ctx, req)
+	client := plugin.NewCodegenServiceClient(handler)
+	resp, err := client.Generate(ctx, req)
 	return out, resp, err
 }

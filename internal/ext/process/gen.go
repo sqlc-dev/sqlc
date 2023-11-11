@@ -8,9 +8,13 @@ import (
 	"os"
 	"os/exec"
 
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/reflect/protoreflect"
 
-	"github.com/sqlc-dev/sqlc/internal/plugin"
+	"github.com/sqlc-dev/sqlc/internal/info"
 )
 
 type Runner struct {
@@ -18,23 +22,27 @@ type Runner struct {
 	Env []string
 }
 
-// TODO: Update the gen func signature to take a ctx
-func (r Runner) Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
+func (r *Runner) Invoke(ctx context.Context, method string, args any, reply any, opts ...grpc.CallOption) error {
+	req, ok := args.(protoreflect.ProtoMessage)
+	if !ok {
+		return fmt.Errorf("args isn't a protoreflect.ProtoMessage")
+	}
+
 	stdin, err := proto.Marshal(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to encode codegen request: %s", err)
+		return fmt.Errorf("failed to encode codegen request: %w", err)
 	}
 
 	// Check if the output plugin exists
 	path, err := exec.LookPath(r.Cmd)
 	if err != nil {
-		return nil, fmt.Errorf("process: %s not found", r.Cmd)
+		return fmt.Errorf("process: %s not found", r.Cmd)
 	}
 
-	cmd := exec.CommandContext(ctx, path)
+	cmd := exec.CommandContext(ctx, path, method)
 	cmd.Stdin = bytes.NewReader(stdin)
 	cmd.Env = []string{
-		fmt.Sprintf("SQLC_VERSION=%s", req.SqlcVersion),
+		fmt.Sprintf("SQLC_VERSION=%s", info.Version),
 	}
 	for _, key := range r.Env {
 		if key == "SQLC_AUTH_TOKEN" {
@@ -50,13 +58,21 @@ func (r Runner) Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plug
 		if errors.As(err, &exit) {
 			stderr = string(exit.Stderr)
 		}
-		return nil, fmt.Errorf("process: error running command %s", stderr)
+		return fmt.Errorf("process: error running command %s", stderr)
 	}
 
-	var resp plugin.CodeGenResponse
-	if err := proto.Unmarshal(out, &resp); err != nil {
-		return nil, fmt.Errorf("process: failed to read codegen resp: %s", err)
+	resp, ok := reply.(protoreflect.ProtoMessage)
+	if !ok {
+		return fmt.Errorf("reply isn't a protoreflect.ProtoMessage")
 	}
 
-	return &resp, nil
+	if err := proto.Unmarshal(out, resp); err != nil {
+		return fmt.Errorf("process: failed to read codegen resp: %w", err)
+	}
+
+	return nil
+}
+
+func (r *Runner) NewStream(ctx context.Context, desc *grpc.StreamDesc, method string, opts ...grpc.CallOption) (grpc.ClientStream, error) {
+	return nil, status.Error(codes.Unimplemented, "")
 }

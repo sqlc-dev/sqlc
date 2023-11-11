@@ -289,10 +289,6 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 		}
 	}
 
-	if stmt.ReferTable != nil && len(stmt.Cols) != 0 {
-		return errors.New("create table node cannot have both a ReferTable and Cols")
-	}
-
 	if stmt.ReferTable != nil {
 		_, original, err := c.getTable(stmt.ReferTable)
 		if err != nil {
@@ -302,23 +298,23 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 			newCol := *col // make a copy, so changes to the ReferTable don't propagate
 			tbl.Columns = append(tbl.Columns, &newCol)
 		}
-	} else {
-		for _, col := range stmt.Cols {
-			if notNull, ok := seen[col.Colname]; ok {
-				seen[col.Colname] = notNull || col.IsNotNull
-				if a, ok := coltype[col.Colname]; ok {
-					if !sameType(&a, col.TypeName) {
-						return fmt.Errorf("column %q has a type conflict", col.Colname)
-					}
+	}
+
+	for _, col := range stmt.Cols {
+		if notNull, ok := seen[col.Colname]; ok {
+			seen[col.Colname] = notNull || col.IsNotNull
+			if a, ok := coltype[col.Colname]; ok {
+				if !sameType(&a, col.TypeName) {
+					return fmt.Errorf("column %q has a type conflict", col.Colname)
 				}
-				continue
 			}
-			tc, err := c.defineColumn(stmt.Name, col)
-			if err != nil {
-				return err
-			}
-			tbl.Columns = append(tbl.Columns, tc)
+			continue
 		}
+		tc, err := c.defineColumn(stmt.Name, col)
+		if err != nil {
+			return err
+		}
+		tbl.Columns = append(tbl.Columns, tc)
 	}
 
 	// If one of the merged columns was not null, mark the column as not null

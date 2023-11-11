@@ -8,8 +8,6 @@
     "queries": [
       "postgresql/query.sql"
     ],
-    "rename": {},
-    "overrides": [],
     "codegen": {
       "out": "",
       "plugin": "",
@@ -65366,5 +65364,6 @@
     }
   ],
   "sqlc_version": "v1.23.0",
-  "plugin_options": "eyJvdXQiOiJnZW4iLCJpbmRlbnQiOiIgICIsImZpbGVuYW1lIjoiY29kZWdlbi5qc29uIn0="
+  "plugin_options": "eyJvdXQiOiJnZW4iLCJpbmRlbnQiOiIgICIsImZpbGVuYW1lIjoiY29kZWdlbi5qc29uIn0=",
+  "global_options": ""
 }

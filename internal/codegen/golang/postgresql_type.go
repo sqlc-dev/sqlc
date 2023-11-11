@@ -34,7 +34,7 @@ func parseIdentifierString(name string) (*plugin.Identifier, error) {
 	}
 }
 
-func postgresType(req *plugin.CodeGenRequest, options *opts.Options, col *plugin.Column) string {
+func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Column) string {
 	columnType := sdk.DataType(col.Type)
 	notNull := col.NotNull || col.IsArray
 	driver := parseDriver(options.SqlPackage)
@@ -573,14 +573,14 @@ func postgresType(req *plugin.CodeGenRequest, options *opts.Options, col *plugin
 				if rel.Name == enum.Name && rel.Schema == schema.Name {
 					if notNull {
 						if schema.Name == req.Catalog.DefaultSchema {
-							return StructName(enum.Name, req.Settings)
+							return StructName(enum.Name, options)
 						}
-						return StructName(schema.Name+"_"+enum.Name, req.Settings)
+						return StructName(schema.Name+"_"+enum.Name, options)
 					} else {
 						if schema.Name == req.Catalog.DefaultSchema {
-							return "Null" + StructName(enum.Name, req.Settings)
+							return "Null" + StructName(enum.Name, options)
 						}
-						return "Null" + StructName(schema.Name+"_"+enum.Name, req.Settings)
+						return "Null" + StructName(schema.Name+"_"+enum.Name, options)
 					}
 				}
 			}

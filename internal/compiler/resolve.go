@@ -145,7 +145,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 				// TODO: Move this to database-specific engine package
 				dataType := "any"
 				if astutils.Join(n.Name, ".") == "||" {
-					dataType = "string"
+					dataType = "text"
 				}
 
 				defaultP := named.NewParam("")
@@ -173,6 +173,10 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 				case 2:
 					alias = items[0]
 					key = items[1]
+				case 3:
+					// schema := items[0]
+					alias = items[1]
+					key = items[2]
 				default:
 					panic("too many field items: " + strconv.Itoa(len(items)))
 				}

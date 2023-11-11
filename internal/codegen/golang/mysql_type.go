@@ -3,12 +3,13 @@ package golang
 import (
 	"log"
 
+	"github.com/sqlc-dev/sqlc/internal/codegen/golang/opts"
 	"github.com/sqlc-dev/sqlc/internal/codegen/sdk"
 	"github.com/sqlc-dev/sqlc/internal/debug"
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
 
-func mysqlType(req *plugin.CodeGenRequest, col *plugin.Column) string {
+func mysqlType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Column) string {
 	columnType := sdk.DataType(col.Type)
 	notNull := col.NotNull || col.IsArray
 	unsigned := col.Unsigned
@@ -101,14 +102,14 @@ func mysqlType(req *plugin.CodeGenRequest, col *plugin.Column) string {
 				if enum.Name == columnType {
 					if notNull {
 						if schema.Name == req.Catalog.DefaultSchema {
-							return StructName(enum.Name, req.Settings)
+							return StructName(enum.Name, options)
 						}
-						return StructName(schema.Name+"_"+enum.Name, req.Settings)
+						return StructName(schema.Name+"_"+enum.Name, options)
 					} else {
 						if schema.Name == req.Catalog.DefaultSchema {
-							return "Null" + StructName(enum.Name, req.Settings)
+							return "Null" + StructName(enum.Name, options)
 						}
-						return "Null" + StructName(schema.Name+"_"+enum.Name, req.Settings)
+						return "Null" + StructName(schema.Name+"_"+enum.Name, options)
 					}
 				}
 			}

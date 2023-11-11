@@ -35,6 +35,8 @@ COMMA:     ',';
 ASSIGN:    '=';
 STAR:      '*';
 PLUS:      '+';
+PTR2:      '->>';
+PTR:       '->';
 MINUS:     '-';
 TILDE:     '~';
 PIPE2:     '||';

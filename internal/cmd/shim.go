@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"strings"
-
 	"github.com/sqlc-dev/sqlc/internal/compiler"
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/config/convert"
@@ -11,53 +9,13 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
 )
 
-func pluginOverride(r *compiler.Result, o config.Override) *plugin.Override {
-	var column string
-	var table plugin.Identifier
-
-	if o.Column != "" {
-		colParts := strings.Split(o.Column, ".")
-		switch len(colParts) {
-		case 2:
-			table.Schema = r.Catalog.DefaultSchema
-			table.Name = colParts[0]
-			column = colParts[1]
-		case 3:
-			table.Schema = colParts[0]
-			table.Name = colParts[1]
-			column = colParts[2]
-		case 4:
-			table.Catalog = colParts[0]
-			table.Schema = colParts[1]
-			table.Name = colParts[2]
-			column = colParts[3]
-		}
-	}
-	return &plugin.Override{
-		CodeType:   "", // FIXME
-		DbType:     o.DBType,
-		Nullable:   o.Nullable,
-		Unsigned:   o.Unsigned,
-		Column:     o.Column,
-		ColumnName: column,
-		Table:      &table,
-		GoType:     pluginGoType(o),
-	}
-}
-
 func pluginSettings(r *compiler.Result, cs config.CombinedSettings) *plugin.Settings {
-	var over []*plugin.Override
-	for _, o := range cs.Overrides {
-		over = append(over, pluginOverride(r, o))
-	}
 	return &plugin.Settings{
-		Version:   cs.Global.Version,
-		Engine:    string(cs.Package.Engine),
-		Schema:    []string(cs.Package.Schema),
-		Queries:   []string(cs.Package.Queries),
-		Overrides: over,
-		Rename:    cs.Rename,
-		Codegen:   pluginCodegen(cs, cs.Codegen),
+		Version: cs.Global.Version,
+		Engine:  string(cs.Package.Engine),
+		Schema:  []string(cs.Package.Schema),
+		Queries: []string(cs.Package.Queries),
+		Codegen: pluginCodegen(cs, cs.Codegen),
 	}
 }
 
@@ -99,20 +57,6 @@ func pluginWASM(p config.Plugin) *plugin.Codegen_WASM {
 		}
 	}
 	return nil
-}
-
-func pluginGoType(o config.Override) *plugin.ParsedGoType {
-	// Note that there is a slight mismatch between this and the
-	// proto api. The GoType on the override is the unparsed type,
-	// which could be a qualified path or an object, as per
-	// https://docs.sqlc.dev/en/v1.18.0/reference/config.html#type-overriding
-	return &plugin.ParsedGoType{
-		ImportPath: o.GoImportPath,
-		Package:    o.GoPackage,
-		TypeName:   o.GoTypeName,
-		BasicType:  o.GoBasicType,
-		StructTags: o.GoStructTags,
-	}
 }
 
 func pluginCatalog(c *catalog.Catalog) *plugin.Catalog {
@@ -279,8 +223,8 @@ func pluginQueryParam(p compiler.Parameter) *plugin.Parameter {
 	}
 }
 
-func codeGenRequest(r *compiler.Result, settings config.CombinedSettings) *plugin.CodeGenRequest {
-	return &plugin.CodeGenRequest{
+func codeGenRequest(r *compiler.Result, settings config.CombinedSettings) *plugin.GenerateRequest {
+	return &plugin.GenerateRequest{
 		Settings:    pluginSettings(r, settings),
 		Catalog:     pluginCatalog(r.Catalog),
 		Queries:     pluginQueries(r),

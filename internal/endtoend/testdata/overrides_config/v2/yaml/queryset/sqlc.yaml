@@ -1,0 +1,17 @@
+version: "2"  
+sql:
+- schema: "../../../schema.sql"
+  queries: "../../../query.sql"
+  engine: "postgresql"
+  gen:
+    go: 
+      out: "db"
+      rename:
+        one: "ONE"
+      overrides:
+        - db_type: "text"
+          go_type: "github.com/sqlc-dev/sqlc-testdata/pkg.CustomType"
+        - column: "overrides.three"
+          go_type:
+            import: "github.com/sqlc-dev/sqlc-testdata/pkg"
+            type: "CustomType"

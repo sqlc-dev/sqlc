@@ -158,11 +158,11 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 			if res.Name != nil {
 				name = *res.Name
 			}
-			switch {
-			case lang.IsComparisonOperator(astutils.Join(n.Name, "")):
+			switch op := astutils.Join(n.Name, ""); {
+			case lang.IsComparisonOperator(op):
 				// TODO: Generate a name for these operations
 				cols = append(cols, &Column{Name: name, DataType: "bool", NotNull: true})
-			case lang.IsMathematicalOperator(astutils.Join(n.Name, "")):
+			case lang.IsMathematicalOperator(op):
 				cols = append(cols, &Column{Name: name, DataType: "int", NotNull: true})
 			default:
 				cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})

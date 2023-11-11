@@ -9,6 +9,7 @@ import (
 
 	"github.com/sqlc-dev/sqlc/internal/codegen/json"
 	"github.com/sqlc-dev/sqlc/internal/plugin"
+	"google.golang.org/protobuf/proto"
 )
 
 func main() {
@@ -19,19 +20,19 @@ func main() {
 }
 
 func run() error {
-	var req plugin.CodeGenRequest
+	var req plugin.GenerateRequest
 	reqBlob, err := io.ReadAll(os.Stdin)
 	if err != nil {
 		return err
 	}
-	if err := req.UnmarshalVT(reqBlob); err != nil {
+	if err := proto.Unmarshal(reqBlob, &req); err != nil {
 		return err
 	}
 	resp, err := json.Generate(context.Background(), &req)
 	if err != nil {
 		return err
 	}
-	respBlob, err := resp.MarshalVT()
+	respBlob, err := proto.Marshal(resp)
 	if err != nil {
 		return err
 	}

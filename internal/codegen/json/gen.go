@@ -11,7 +11,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
 
-func parseOptions(req *plugin.CodeGenRequest) (*opts, error) {
+func parseOptions(req *plugin.GenerateRequest) (*opts, error) {
 	if len(req.PluginOptions) == 0 {
 		return new(opts), nil
 	}
@@ -25,7 +25,7 @@ func parseOptions(req *plugin.CodeGenRequest) (*opts, error) {
 	return options, nil
 }
 
-func Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plugin.CodeGenResponse, error) {
+func Generate(ctx context.Context, req *plugin.GenerateRequest) (*plugin.GenerateResponse, error) {
 	options, err := parseOptions(req)
 	if err != nil {
 		return nil, err
@@ -57,7 +57,7 @@ func Generate(ctx context.Context, req *plugin.CodeGenRequest) (*plugin.CodeGenR
 	if err != nil {
 		return nil, err
 	}
-	return &plugin.CodeGenResponse{
+	return &plugin.GenerateResponse{
 		Files: []*plugin.File{
 			{
 				Name:     filename,

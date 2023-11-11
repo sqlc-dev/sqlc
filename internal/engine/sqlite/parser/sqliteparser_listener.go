@@ -122,6 +122,9 @@ type SQLiteParserListener interface {
 	// EnterExpr_comparison is called when entering the expr_comparison production.
 	EnterExpr_comparison(c *Expr_comparisonContext)
 
+	// EnterExpr_bool is called when entering the expr_bool production.
+	EnterExpr_bool(c *Expr_boolContext)
+
 	// EnterExpr_binary is called when entering the expr_binary production.
 	EnterExpr_binary(c *Expr_binaryContext)
 
@@ -145,9 +148,6 @@ type SQLiteParserListener interface {
 
 	// EnterExpr_qualified_column_name is called when entering the expr_qualified_column_name production.
 	EnterExpr_qualified_column_name(c *Expr_qualified_column_nameContext)
-
-	// EnterExpr_math_op is called when entering the expr_math_op production.
-	EnterExpr_math_op(c *Expr_math_opContext)
 
 	// EnterExpr_unary is called when entering the expr_unary production.
 	EnterExpr_unary(c *Expr_unaryContext)
@@ -512,6 +512,9 @@ type SQLiteParserListener interface {
 	// ExitExpr_comparison is called when exiting the expr_comparison production.
 	ExitExpr_comparison(c *Expr_comparisonContext)
 
+	// ExitExpr_bool is called when exiting the expr_bool production.
+	ExitExpr_bool(c *Expr_boolContext)
+
 	// ExitExpr_binary is called when exiting the expr_binary production.
 	ExitExpr_binary(c *Expr_binaryContext)
 
@@ -535,9 +538,6 @@ type SQLiteParserListener interface {
 
 	// ExitExpr_qualified_column_name is called when exiting the expr_qualified_column_name production.
 	ExitExpr_qualified_column_name(c *Expr_qualified_column_nameContext)
-
-	// ExitExpr_math_op is called when exiting the expr_math_op production.
-	ExitExpr_math_op(c *Expr_math_opContext)
 
 	// ExitExpr_unary is called when exiting the expr_unary production.
 	ExitExpr_unary(c *Expr_unaryContext)
