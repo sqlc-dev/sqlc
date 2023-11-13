@@ -21,7 +21,7 @@ jobs:
     - uses: actions/setup-go@v4
       with:
         go-version-file: go.mod
-        cache-dependency-path: go.sum
+        check-latest: true
     - run: go build -o sqlc-pg-gen ./internal/tools/sqlc-pg-gen
     - run: mkdir -p gen/contrib
     - run: ./sqlc-pg-gen gen
