@@ -67,9 +67,11 @@ func Cmd(n ast.Node, name, cmd string) error {
 		return validateCopyfrom(n)
 	}
 	if (cmd == metadata.CmdBatchExec || cmd == metadata.CmdBatchMany) || cmd == metadata.CmdBatchOne {
-		return validateBatch(n)
+		if err := validateBatch(n); err != nil {
+			return err
+		}
 	}
-	if !(cmd == metadata.CmdMany || cmd == metadata.CmdOne) {
+	if !(cmd == metadata.CmdMany || cmd == metadata.CmdOne || cmd == metadata.CmdBatchMany || cmd == metadata.CmdBatchOne) {
 		return nil
 	}
 	var list *ast.List

@@ -5,3 +5,4 @@ query.sql:8:1: invalid query type: :two
 query.sql:11:1: query "DeleteFoo" specifies parameter ":one" without containing a RETURNING clause
 query.sql:14:1: query "UpdateFoo" specifies parameter ":one" without containing a RETURNING clause
 query.sql:17:1: query "InsertFoo" specifies parameter ":one" without containing a RETURNING clause
+query.sql:20:1: query "InsertFoo" specifies parameter ":batchone" without containing a RETURNING clause

@@ -15,3 +15,6 @@ UPDATE foo SET id = $2 WHERE id = $1;
 
 -- name: InsertFoo :one
 INSERT INTO foo (id) VALUES ($1);
+
+-- name: InsertFoo :batchone
+INSERT INTO foo (id) VALUES ($1);
