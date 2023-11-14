@@ -2,11 +2,12 @@
 
 In many cases it's useful to tell `sqlc` explicitly what Go type you want it to
 use for a query input or output. For instance, a PostgreSQL UUID type will map
-to `github.com/google/uuid` by default, but you may want `sqlc` to use
-`github.com/gofrs/uuid` instead.
+to `UUID` from `github.com/jackc/pgx/pgtype` by default when you use
+`pgx/v5`, but you may want `sqlc` to use `UUID` from `github.com/google/uuid`
+instead.
 
-If you'd like `sqlc` to use a different Go type, specify the package and type
-in the `overrides` list.
+If you'd like `sqlc` to use a different Go type, specify the package import
+path and type in the `overrides` list.
 
 ```yaml
 version: "2"
@@ -17,10 +18,13 @@ sql:
   gen:
     go: 
       package: "authors"
-      out: "postgresql"
+      out: "db"
+      sql_package: "pgx/v5"
       overrides:
         - db_type: "uuid"
-          go_type: "github.com/gofrs/uuid.UUID"
+          go_type:
+            import: "github.com/google/uuid"
+            type: "UUID"
 ```
 
 ## The `overrides` list
@@ -51,7 +55,7 @@ entries using the `db_type` key.
 ### The `go_type` map
 
 Some overrides may require more detailed configuration. If necessary, `go_type`
-can also be an object with the following keys:
+can be a map with the following keys:
 
 - `import`:
   - The import path for the package where the type is defined.
@@ -75,7 +79,8 @@ sql:
   gen:
     go: 
       package: "authors"
-      out: "postgresql"
+      out: "db"
+      sql_package: "pgx/v5"
       overrides:
         - db_type: "uuid"
           go_type:
