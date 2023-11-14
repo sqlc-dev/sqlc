@@ -32,11 +32,11 @@ sql:
 Each element in the `overrides` list has the following keys:
 
 - `db_type`:
-  - A database type to override. Find the full list of supported types in [postgresql_type.go](https://github.com/sqlc-dev/sqlc/blob/main/internal/codegen/golang/postgresql_type.go#L12) or [mysql_type.go](https://github.com/sqlc-dev/sqlc/blob/main/internal/codegen/golang/mysql_type.go#L12). Note that for Postgres you must use pg_catalog-prefixed names where available. And note that `db_type` and `column` are mutually exclusive.
+  - A database type to override. Find the full list of supported types in [postgresql_type.go](https://github.com/sqlc-dev/sqlc/blob/main/internal/codegen/golang/postgresql_type.go#L12) or [mysql_type.go](https://github.com/sqlc-dev/sqlc/blob/main/internal/codegen/golang/mysql_type.go#L12). Note that for Postgres you must use pg_catalog-prefixed names where available. `db_type` and `column` are mutually exclusive.
 - `column`:
-  - A column name to override. The value should be of the form `table.column` but you can also specify `schema.table.column` or `catalog.schema.table.column`. Note that `column` and `db_type` are mutually exclusive.
+  - A column name to override. The value should be of the form `table.column` but you can also specify `schema.table.column` or `catalog.schema.table.column`. `column` and `db_type` are mutually exclusive.
 - `go_type`:
-  - The fully-qualified name of a Go type to use in generated code. This is usually a string but can also be [a map](#the-go_type-map) for more complex configurations.
+  - The fully-qualified name of a Go type to use in generated code. This is usually a string but can also be [a map](#the-go-type-map) for more complex configurations.
 - `go_struct_tag`:
   - A reflect-style struct tag to use in generated code, e.g. `a:"b" x:"y,z"`.
     If you want `json` or `db` tags for all fields, use `emit_json_tags` or `emit_db_tags` instead.
