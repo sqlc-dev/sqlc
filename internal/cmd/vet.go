@@ -404,10 +404,6 @@ func (c *checker) fetchDatabaseUri(ctx context.Context, s config.SQL) (string, f
 		return uri, cleanup, err
 	}
 
-	if s.Engine != config.EnginePostgreSQL {
-		return "", cleanup, fmt.Errorf("managed: only PostgreSQL currently")
-	}
-
 	if c.Client == nil {
 		// FIXME: Eventual race condition
 		client, err := quickdb.NewClientFromConfig(c.Conf.Cloud)
@@ -431,7 +427,7 @@ func (c *checker) fetchDatabaseUri(ctx context.Context, s config.SQL) (string, f
 	}
 
 	resp, err := c.Client.CreateEphemeralDatabase(ctx, &pb.CreateEphemeralDatabaseRequest{
-		Engine:     "postgresql",
+		Engine:     string(s.Engine),
 		Region:     quickdb.GetClosestRegion(),
 		Migrations: ddl,
 	})
@@ -446,7 +442,19 @@ func (c *checker) fetchDatabaseUri(ctx context.Context, s config.SQL) (string, f
 		return err
 	}
 
-	return resp.Uri, cleanup, nil
+	var uri string
+	switch s.Engine {
+	case config.EngineMySQL:
+		dburi, err := quickdb.MySQLReformatURI(resp.Uri)
+		if err != nil {
+			return "", cleanup, fmt.Errorf("reformat uri: %w", err)
+		}
+		uri = dburi
+	default:
+		uri = resp.Uri
+	}
+
+	return uri, cleanup, nil
 }
 
 func (c *checker) DSN(dsn string) (string, error) {

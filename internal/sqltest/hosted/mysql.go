@@ -2,8 +2,6 @@ package hosted
 
 import (
 	"context"
-	"fmt"
-	"net/url"
 	"os"
 	"testing"
 
@@ -11,16 +9,6 @@ import (
 	pb "github.com/sqlc-dev/sqlc/internal/quickdb/v1"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
 )
-
-// The database URI returned by the QuickDB service isn't understood by the
-// go-mysql-driver
-func reformatURI(original string) (string, error) {
-	u, err := url.Parse(original)
-	if err != nil {
-		return "", err
-	}
-	return fmt.Sprintf("%s@tcp(%s)%s?multiStatements=true&parseTime=true&tls=true", u.User, u.Host, u.Path), nil
-}
 
 func MySQL(t *testing.T, migrations []string) string {
 	ctx := context.Background()
@@ -67,7 +55,7 @@ func MySQL(t *testing.T, migrations []string) string {
 		}
 	})
 
-	uri, err := reformatURI(resp.Uri)
+	uri, err := quickdb.MySQLReformatURI(resp.Uri)
 	if err != nil {
 		t.Fatalf("uri error: %s", err)
 	}
