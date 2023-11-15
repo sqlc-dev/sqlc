@@ -9,6 +9,8 @@ import (
 	"testing"
 	"time"
 
+	_ "github.com/go-sql-driver/mysql"
+
 	"github.com/sqlc-dev/sqlc/internal/sqltest/hosted"
 )
 
