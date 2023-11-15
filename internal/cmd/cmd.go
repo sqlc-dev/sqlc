@@ -190,7 +190,7 @@ func getConfigPath(stderr io.Writer, f *pflag.Flag) (string, string) {
 
 var genCmd = &cobra.Command{
 	Use:   "generate",
-	Short: "Generate Go code from SQL",
+	Short: "Generate source code from SQL",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		defer trace.StartRegion(cmd.Context(), "generate").End()
 		stderr := cmd.ErrOrStderr()
