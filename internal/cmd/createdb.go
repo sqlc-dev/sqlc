@@ -65,8 +65,14 @@ func CreateDB(ctx context.Context, dir, filename, querySetName string, o *Option
 	if count > 1 {
 		return fmt.Errorf("multiple querysets configured to use managed databases")
 	}
-	if queryset.Engine != config.EnginePostgreSQL {
-		return fmt.Errorf("managed databases currently only support PostgreSQL")
+
+	switch queryset.Engine {
+	case config.EngineMySQL:
+		// pass
+	case config.EnginePostgreSQL:
+		// pass
+	default:
+		return fmt.Errorf("createdb does not support the %s engine", queryset.Engine)
 	}
 
 	var ddl []string
@@ -88,7 +94,7 @@ func CreateDB(ctx context.Context, dir, filename, querySetName string, o *Option
 	}
 
 	resp, err := client.CreateEphemeralDatabase(ctx, &pb.CreateEphemeralDatabaseRequest{
-		Engine:     "postgresql",
+		Engine:     string(queryset.Engine),
 		Region:     quickdb.GetClosestRegion(),
 		Migrations: ddl,
 	})
