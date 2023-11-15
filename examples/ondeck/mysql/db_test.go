@@ -151,7 +151,7 @@ func TestPrepared(t *testing.T) {
 	}
 	defer db.Close()
 
-	q, err := Prepare(context.Background(), sdb)
+	q, err := Prepare(context.Background(), db)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -169,5 +169,5 @@ func TestQueries(t *testing.T) {
 	}
 	defer db.Close()
 
-	runOnDeckQueries(t, New(sdb))
+	runOnDeckQueries(t, New(db))
 }
