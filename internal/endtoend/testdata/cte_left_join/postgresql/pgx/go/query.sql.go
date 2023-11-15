@@ -28,11 +28,6 @@ FROM
 WHERE c1.name = $1
 `
 
-type BadQueryRow struct {
-	Name string
-	Bio  pgtype.Text
-}
-
 func (q *Queries) BadQuery(ctx context.Context, dollar_1 pgtype.Text) error {
 	_, err := q.db.Exec(ctx, badQuery, dollar_1)
 	return err

@@ -312,16 +312,16 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, structs []
 	return qs, nil
 }
 
+var cmdReturnsData = map[string]struct{}{
+	metadata.CmdBatchMany: {},
+	metadata.CmdBatchOne:  {},
+	metadata.CmdMany:      {},
+	metadata.CmdOne:       {},
+}
+
 func putOutColumns(query *plugin.Query) bool {
-	if len(query.Columns) > 0 {
-		return true
-	}
-	for _, allowed := range []string{metadata.CmdMany, metadata.CmdOne, metadata.CmdBatchMany} {
-		if query.Cmd == allowed {
-			return true
-		}
-	}
-	return false
+	_, found := cmdReturnsData[query.Cmd]
+	return found
 }
 
 // It's possible that this method will generate duplicate JSON tag values
