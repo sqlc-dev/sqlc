@@ -8,12 +8,19 @@ import (
 	"database/sql"
 	"testing"
 
-	"github.com/sqlc-dev/sqlc/internal/sqltest"
+	_ "github.com/go-sql-driver/mysql"
+
+	"github.com/sqlc-dev/sqlc/internal/sqltest/hosted"
 )
 
 func TestAuthors(t *testing.T) {
-	sdb, cleanup := sqltest.MySQL(t, []string{"schema.sql"})
-	defer cleanup()
+	ctx := context.Background()
+	uri := hosted.MySQL(t, []string{"schema.sql"})
+	db, err := sql.Open("mysql", uri)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
 
 	ctx := context.Background()
 	db := New(sdb)

@@ -1,0 +1,76 @@
+package hosted
+
+import (
+	"context"
+	"fmt"
+	"net/url"
+	"os"
+	"testing"
+
+	"github.com/sqlc-dev/sqlc/internal/quickdb"
+	pb "github.com/sqlc-dev/sqlc/internal/quickdb/v1"
+	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
+)
+
+// The database URI returned by the QuickDB service isn't understood by the
+// go-mysql-driver
+func reformatURI(original string) (string, error) {
+	u, err := url.Parse(original)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%s@tcp(%s)%s?parseTime=true&tls=true", u.User, u.Host, u.Path), nil
+}
+
+func MySQL(t *testing.T, migrations []string) string {
+	ctx := context.Background()
+	t.Helper()
+
+	once.Do(func() {
+		if err := initClient(); err != nil {
+			t.Log(err)
+		}
+	})
+
+	if client == nil {
+		t.Skip("client init failed")
+	}
+
+	var seed []string
+	files, err := sqlpath.Glob(migrations)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, f := range files {
+		blob, err := os.ReadFile(f)
+		if err != nil {
+			t.Fatal(err)
+		}
+		seed = append(seed, string(blob))
+	}
+
+	resp, err := client.CreateEphemeralDatabase(ctx, &pb.CreateEphemeralDatabaseRequest{
+		Engine:     "mysql",
+		Region:     quickdb.GetClosestRegion(),
+		Migrations: seed,
+	})
+	if err != nil {
+		t.Fatalf("region %s: %s", quickdb.GetClosestRegion(), err)
+	}
+
+	t.Cleanup(func() {
+		_, err = client.DropEphemeralDatabase(ctx, &pb.DropEphemeralDatabaseRequest{
+			DatabaseId: resp.DatabaseId,
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	uri, err := reformatURI(resp.Uri)
+	if err != nil {
+		t.Fatalf("uri error: %s", err)
+	}
+
+	return uri
+}

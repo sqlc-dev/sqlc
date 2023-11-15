@@ -20,8 +20,9 @@ sql:
 - schema: mysql/schema.sql
   queries: mysql/query.sql
   engine: mysql
+  name: mysql
   database:
-    uri: root:${MYSQL_ROOT_PASSWORD}@tcp(${MYSQL_HOST}:${MYSQL_PORT})/authors?multiStatements=true&parseTime=true
+    managed: true
   rules:
   - sqlc/db-prepare
   # - mysql-query-too-costly
