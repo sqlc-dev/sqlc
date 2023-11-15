@@ -19,7 +19,7 @@ func reformatURI(original string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return fmt.Sprintf("%s@tcp(%s)%s?parseTime=true&tls=true", u.User, u.Host, u.Path), nil
+	return fmt.Sprintf("%s@tcp(%s)%s?multiStatements=true&parseTime=true&tls=true", u.User, u.Host, u.Path), nil
 }
 
 func MySQL(t *testing.T, migrations []string) string {

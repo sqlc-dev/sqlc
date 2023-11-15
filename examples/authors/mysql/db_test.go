@@ -16,13 +16,12 @@ import (
 func TestAuthors(t *testing.T) {
 	ctx := context.Background()
 	uri := hosted.MySQL(t, []string{"schema.sql"})
-	db, err := sql.Open("mysql", uri)
+	sdb, err := sql.Open("mysql", uri)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer db.Close()
+	defer sdb.Close()
 
-	ctx := context.Background()
 	db := New(sdb)
 
 	// list all authors
