@@ -46,6 +46,7 @@ func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int 
 	rootCmd.AddCommand(genCmd)
 	rootCmd.AddCommand(initCmd)
 	rootCmd.AddCommand(versionCmd)
+	rootCmd.AddCommand(verifyCmd)
 	rootCmd.AddCommand(pushCmd)
 	rootCmd.AddCommand(NewCmdVet())
 
@@ -209,25 +210,6 @@ var genCmd = &cobra.Command{
 				fmt.Fprintf(stderr, "%s: %s\n", filename, err)
 				return err
 			}
-		}
-		return nil
-	},
-}
-
-var pushCmd = &cobra.Command{
-	Use:     "push",
-	Aliases: []string{"upload"},
-	Short:   "Push the schema, queries, and configuration to your project",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		stderr := cmd.ErrOrStderr()
-		dir, name := getConfigPath(stderr, cmd.Flag("file"))
-		opts := &Options{
-			Env:    ParseEnv(cmd),
-			Stderr: stderr,
-		}
-		if err := Push(cmd.Context(), dir, name, opts); err != nil {
-			fmt.Fprintf(stderr, "error pushing: %s\n", err)
-			os.Exit(1)
 		}
 		return nil
 	},

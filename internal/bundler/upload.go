@@ -84,8 +84,8 @@ func annotate() map[string]string {
 	return labels
 }
 
-func (up *Uploader) buildRequest(ctx context.Context, results []*QuerySetArchive) (*pb.UploadArchiveRequest, error) {
-	conf, err := readFile(up.dir, up.configPath)
+func BuildRequest(ctx context.Context, dir, configPath string, results []*QuerySetArchive) (*pb.UploadArchiveRequest, error) {
+	conf, err := readFile(dir, configPath)
 	if err != nil {
 		return nil, err
 	}
@@ -95,11 +95,11 @@ func (up *Uploader) buildRequest(ctx context.Context, results []*QuerySetArchive
 		Annotations: annotate(),
 	}
 	for i, result := range results {
-		schema, err := readFiles(up.dir, result.Schema)
+		schema, err := readFiles(dir, result.Schema)
 		if err != nil {
 			return nil, err
 		}
-		queries, err := readFiles(up.dir, result.Queries)
+		queries, err := readFiles(dir, result.Queries)
 		if err != nil {
 			return nil, err
 		}
@@ -115,6 +115,10 @@ func (up *Uploader) buildRequest(ctx context.Context, results []*QuerySetArchive
 		})
 	}
 	return res, nil
+}
+
+func (up *Uploader) buildRequest(ctx context.Context, results []*QuerySetArchive) (*pb.UploadArchiveRequest, error) {
+	return BuildRequest(ctx, up.dir, up.configPath, results)
 }
 
 func (up *Uploader) DumpRequestOut(ctx context.Context, result []*QuerySetArchive) error {

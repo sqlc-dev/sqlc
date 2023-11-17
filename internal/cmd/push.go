@@ -2,13 +2,35 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"sync"
+
+	"github.com/spf13/cobra"
 
 	"github.com/sqlc-dev/sqlc/internal/bundler"
 	"github.com/sqlc-dev/sqlc/internal/compiler"
 	"github.com/sqlc-dev/sqlc/internal/config"
 )
+
+var pushCmd = &cobra.Command{
+	Use:     "push",
+	Aliases: []string{"upload"},
+	Short:   "Push the schema, queries, and configuration to your project",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		stderr := cmd.ErrOrStderr()
+		dir, name := getConfigPath(stderr, cmd.Flag("file"))
+		opts := &Options{
+			Env:    ParseEnv(cmd),
+			Stderr: stderr,
+		}
+		if err := Push(cmd.Context(), dir, name, opts); err != nil {
+			fmt.Fprintf(stderr, "error pushing: %s\n", err)
+			os.Exit(1)
+		}
+		return nil
+	},
+}
 
 type pusher struct {
 	m       sync.Mutex
