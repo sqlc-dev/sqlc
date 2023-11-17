@@ -19,6 +19,7 @@ func (g *pusher) ProcessResult(ctx context.Context, combo config.CombinedSetting
 	req := codeGenRequest(result, combo)
 	g.m.Lock()
 	g.results = append(g.results, &bundler.QuerySetArchive{
+		Name:    sql.Name,
 		Schema:  sql.Schema,
 		Queries: sql.Queries,
 		Request: req,

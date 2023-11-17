@@ -4,10 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"os"
 	"strings"
-
-	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/info"
@@ -37,6 +36,7 @@ type Uploader struct {
 }
 
 type QuerySetArchive struct {
+	Name    string
 	Queries []string
 	Schema  []string
 	Request *plugin.GenerateRequest
@@ -94,7 +94,7 @@ func (up *Uploader) buildRequest(ctx context.Context, results []*QuerySetArchive
 		Config:      conf,
 		Annotations: annotate(),
 	}
-	for _, result := range results {
+	for i, result := range results {
 		schema, err := readFiles(up.dir, result.Schema)
 		if err != nil {
 			return nil, err
@@ -103,7 +103,12 @@ func (up *Uploader) buildRequest(ctx context.Context, results []*QuerySetArchive
 		if err != nil {
 			return nil, err
 		}
+		name := result.Name
+		if name == "" {
+			name = fmt.Sprintf("queryset_%d", i)
+		}
 		res.QuerySets = append(res.QuerySets, &pb.QuerySet{
+			Name:    name,
 			Schema:  schema,
 			Queries: queries,
 			Request: result.Request,
@@ -117,7 +122,16 @@ func (up *Uploader) DumpRequestOut(ctx context.Context, result []*QuerySetArchiv
 	if err != nil {
 		return err
 	}
-	fmt.Println(protojson.Format(req))
+	slog.Info("config", "file", req.Config.Name, "bytes", len(req.Config.Contents))
+	for _, qs := range req.QuerySets {
+		slog.Info("codegen_request", "queryset", qs.Name, "file", "codegen_request.pb")
+		for _, file := range qs.Schema {
+			slog.Info("schema", "queryset", qs.Name, "file", file.Name, "bytes", len(file.Contents))
+		}
+		for _, file := range qs.Queries {
+			slog.Info("query", "queryset", qs.Name, "file", file.Name, "bytes", len(file.Contents))
+		}
+	}
 	return nil
 }
 
