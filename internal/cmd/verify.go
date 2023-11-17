@@ -14,7 +14,7 @@ import (
 
 var verifyCmd = &cobra.Command{
 	Use:   "verify",
-	Short: "Verify schema, queries, and configuration against main",
+	Short: "Verify schema, queries, and configuration for this project",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		stderr := cmd.ErrOrStderr()
 		dir, name := getConfigPath(stderr, cmd.Flag("file"))
@@ -42,8 +42,7 @@ func Verify(ctx context.Context, dir, filename string, opts *Options) error {
 	}
 	p := &pusher{}
 	if err := Process(ctx, p, dir, filename, opts); err != nil {
-		// hmmm
-		os.Exit(1)
+		return err
 	}
 	req, err := bundler.BuildRequest(ctx, dir, configPath, p.results)
 	if err != nil {

@@ -16,7 +16,7 @@ import (
 var pushCmd = &cobra.Command{
 	Use:     "push",
 	Aliases: []string{"upload"},
-	Short:   "Push the schema, queries, and configuration to your project",
+	Short:   "Push the schema, queries, and configuration for this project",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		stderr := cmd.ErrOrStderr()
 		dir, name := getConfigPath(stderr, cmd.Flag("file"))
@@ -63,7 +63,7 @@ func Push(ctx context.Context, dir, filename string, opts *Options) error {
 	}
 	p := &pusher{}
 	if err := Process(ctx, p, dir, filename, opts); err != nil {
-		os.Exit(1)
+		return err
 	}
 	if e.DryRun {
 		return up.DumpRequestOut(ctx, p.results)
