@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -9,11 +8,9 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"runtime"
 	"runtime/trace"
 	"sync"
 
-	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/status"
 
@@ -160,126 +157,45 @@ func Generate(ctx context.Context, dir, filename string, o *Options) (map[string
 		return nil, err
 	}
 
+	// Comment on why these two methods exist
 	if conf.Cloud.Project != "" && e.Remote && !e.NoRemote {
 		return remoteGenerate(ctx, configPath, conf, dir, stderr)
 	}
 
-	output := map[string]string{}
-	errored := false
-
-	var pairs []outPair
-	for _, sql := range conf.SQL {
-		if sql.Gen.Go != nil {
-			pairs = append(pairs, outPair{
-				SQL: sql,
-				Gen: config.SQLGen{Go: sql.Gen.Go},
-			})
-		}
-		if sql.Gen.JSON != nil {
-			pairs = append(pairs, outPair{
-				SQL: sql,
-				Gen: config.SQLGen{JSON: sql.Gen.JSON},
-			})
-		}
-		for i := range sql.Codegen {
-			pairs = append(pairs, outPair{
-				SQL:    sql,
-				Plugin: &sql.Codegen[i],
-			})
-		}
+	g := &generator{
+		dir:    dir,
+		output: map[string]string{},
 	}
 
-	var m sync.Mutex
-	grp, gctx := errgroup.WithContext(ctx)
-	grp.SetLimit(runtime.GOMAXPROCS(0))
-
-	stderrs := make([]bytes.Buffer, len(pairs))
-
-	for i, pair := range pairs {
-		sql := pair
-		errout := &stderrs[i]
-
-		grp.Go(func() error {
-			combo := config.Combine(*conf, sql.SQL)
-			if sql.Plugin != nil {
-				combo.Codegen = *sql.Plugin
-			}
-
-			// TODO: This feels like a hack that will bite us later
-			joined := make([]string, 0, len(sql.Schema))
-			for _, s := range sql.Schema {
-				joined = append(joined, filepath.Join(dir, s))
-			}
-			sql.Schema = joined
-
-			joined = make([]string, 0, len(sql.Queries))
-			for _, q := range sql.Queries {
-				joined = append(joined, filepath.Join(dir, q))
-			}
-			sql.Queries = joined
-
-			var name, lang string
-			parseOpts := opts.Parser{
-				Debug: debug.Debug,
-			}
-
-			switch {
-			case sql.Gen.Go != nil:
-				name = combo.Go.Package
-				lang = "golang"
-
-			case sql.Plugin != nil:
-				lang = fmt.Sprintf("process:%s", sql.Plugin.Plugin)
-				name = sql.Plugin.Plugin
-			}
-
-			packageRegion := trace.StartRegion(gctx, "package")
-			trace.Logf(gctx, "", "name=%s dir=%s plugin=%s", name, dir, lang)
-
-			result, failed := parse(gctx, name, dir, sql.SQL, combo, parseOpts, errout)
-			if failed {
-				packageRegion.End()
-				errored = true
-				return nil
-			}
-
-			out, resp, err := codegen(gctx, combo, sql, result)
-			if err != nil {
-				fmt.Fprintf(errout, "# package %s\n", name)
-				fmt.Fprintf(errout, "error generating code: %s\n", err)
-				errored = true
-				packageRegion.End()
-				return nil
-			}
-
-			files := map[string]string{}
-			for _, file := range resp.Files {
-				files[file.Name] = string(file.Contents)
-			}
-
-			m.Lock()
-			for n, source := range files {
-				filename := filepath.Join(dir, out, n)
-				output[filename] = source
-			}
-			m.Unlock()
-
-			packageRegion.End()
-			return nil
-		})
-	}
-	if err := grp.Wait(); err != nil {
+	if err := processQuerySets(ctx, g, conf, dir, o); err != nil {
 		return nil, err
 	}
-	if errored {
-		for i, _ := range stderrs {
-			if _, err := io.Copy(stderr, &stderrs[i]); err != nil {
-				return nil, err
-			}
-		}
-		return nil, fmt.Errorf("errored")
+
+	return g.output, nil
+}
+
+type generator struct {
+	m      sync.Mutex
+	dir    string
+	output map[string]string
+}
+
+func (g *generator) ProcessResult(ctx context.Context, combo config.CombinedSettings, sql outPair, result *compiler.Result) error {
+	out, resp, err := codegen(ctx, combo, sql, result)
+	if err != nil {
+		return err
 	}
-	return output, nil
+	files := map[string]string{}
+	for _, file := range resp.Files {
+		files[file.Name] = string(file.Contents)
+	}
+	g.m.Lock()
+	for n, source := range files {
+		filename := filepath.Join(g.dir, out, n)
+		g.output[filename] = source
+	}
+	g.m.Unlock()
+	return nil
 }
 
 func remoteGenerate(ctx context.Context, configPath string, conf *config.Config, dir string, stderr io.Writer) (map[string]string, error) {

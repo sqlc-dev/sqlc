@@ -26,7 +26,7 @@ import (
 
 func init() {
 	createDBCmd.Flags().StringP("queryset", "", "", "name of the queryset to use")
-	uploadCmd.Flags().BoolP("dry-run", "", false, "dump upload request (default: false)")
+	pushCmd.Flags().BoolP("dry-run", "", false, "dump push request (default: false)")
 	initCmd.Flags().BoolP("v1", "", false, "generate v1 config yaml file")
 	initCmd.Flags().BoolP("v2", "", true, "generate v2 config yaml file")
 	initCmd.MarkFlagsMutuallyExclusive("v1", "v2")
@@ -46,7 +46,7 @@ func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int 
 	rootCmd.AddCommand(genCmd)
 	rootCmd.AddCommand(initCmd)
 	rootCmd.AddCommand(versionCmd)
-	rootCmd.AddCommand(uploadCmd)
+	rootCmd.AddCommand(pushCmd)
 	rootCmd.AddCommand(NewCmdVet())
 
 	rootCmd.SetArgs(args)
@@ -214,9 +214,10 @@ var genCmd = &cobra.Command{
 	},
 }
 
-var uploadCmd = &cobra.Command{
-	Use:   "upload",
-	Short: "Upload the schema, queries, and configuration for this project",
+var pushCmd = &cobra.Command{
+	Use:     "push",
+	Aliases: []string{"upload"},
+	Short:   "Push the schema, queries, and configuration to your project",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		stderr := cmd.ErrOrStderr()
 		dir, name := getConfigPath(stderr, cmd.Flag("file"))
@@ -224,8 +225,8 @@ var uploadCmd = &cobra.Command{
 			Env:    ParseEnv(cmd),
 			Stderr: stderr,
 		}
-		if err := createPkg(cmd.Context(), dir, name, opts); err != nil {
-			fmt.Fprintf(stderr, "error uploading: %s\n", err)
+		if err := Push(cmd.Context(), dir, name, opts); err != nil {
+			fmt.Fprintf(stderr, "error pushing: %s\n", err)
 			os.Exit(1)
 		}
 		return nil

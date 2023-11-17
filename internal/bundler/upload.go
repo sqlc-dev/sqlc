@@ -4,11 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
+	"strings"
 
 	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/info"
+	"github.com/sqlc-dev/sqlc/internal/plugin"
 	"github.com/sqlc-dev/sqlc/internal/quickdb"
 	pb "github.com/sqlc-dev/sqlc/internal/quickdb/v1"
 )
@@ -31,6 +34,12 @@ type Uploader struct {
 	config     *config.Config
 	dir        string
 	client     pb.QuickClient
+}
+
+type QuerySetArchive struct {
+	Queries []string
+	Schema  []string
+	Request *plugin.GenerateRequest
 }
 
 func NewUploader(configPath, dir string, conf *config.Config) *Uploader {
@@ -58,23 +67,52 @@ func (up *Uploader) Validate() error {
 	return nil
 }
 
-func (up *Uploader) buildRequest(ctx context.Context, result map[string]string) (*pb.UploadArchiveRequest, error) {
-	ins, err := readInputs(up.configPath, up.config)
-	if err != nil {
-		return nil, err
-	}
-	outs, err := readOutputs(up.dir, result)
-	if err != nil {
-		return nil, err
-	}
-	return &pb.UploadArchiveRequest{
-		SqlcVersion: info.Version,
-		Inputs:      ins,
-		Outputs:     outs,
-	}, nil
+var envvars = []string{
+	"GITHUB_REPOSITORY",
+	"GITHUB_REF",
+	"GITHUB_REF_NAME",
+	"GITHUB_REF_TYPE",
+	"GITHUB_SHA",
 }
 
-func (up *Uploader) DumpRequestOut(ctx context.Context, result map[string]string) error {
+func annotate() map[string]string {
+	labels := map[string]string{}
+	for _, ev := range envvars {
+		key := strings.ReplaceAll(strings.ToLower(ev), "_", ".")
+		labels[key] = os.Getenv(ev)
+	}
+	return labels
+}
+
+func (up *Uploader) buildRequest(ctx context.Context, results []*QuerySetArchive) (*plugin.UploadArchiveRequest, error) {
+	conf, err := readFile(up.dir, up.configPath)
+	if err != nil {
+		return nil, err
+	}
+	res := &plugin.UploadArchiveRequest{
+		SqlcVersion: info.Version,
+		Config:      conf,
+		Annotations: annotate(),
+	}
+	for _, result := range results {
+		schema, err := readFiles(up.dir, result.Schema)
+		if err != nil {
+			return nil, err
+		}
+		queries, err := readFiles(up.dir, result.Queries)
+		if err != nil {
+			return nil, err
+		}
+		res.Archives = append(res.Archives, &plugin.QuerySetArchive{
+			Schema:  schema,
+			Queries: queries,
+			Request: result.Request,
+		})
+	}
+	return res, nil
+}
+
+func (up *Uploader) DumpRequestOut(ctx context.Context, result []*QuerySetArchive) error {
 	req, err := up.buildRequest(ctx, result)
 	if err != nil {
 		return err
@@ -83,7 +121,7 @@ func (up *Uploader) DumpRequestOut(ctx context.Context, result map[string]string
 	return nil
 }
 
-func (up *Uploader) Upload(ctx context.Context, result map[string]string) error {
+func (up *Uploader) Upload(ctx context.Context, result []*QuerySetArchive) error {
 	if err := up.Validate(); err != nil {
 		return err
 	}
@@ -91,8 +129,9 @@ func (up *Uploader) Upload(ctx context.Context, result map[string]string) error 
 	if err != nil {
 		return err
 	}
-	if _, err := up.client.UploadArchive(ctx, req); err != nil {
-		return fmt.Errorf("upload error: %w", err)
-	}
+	fmt.Println(protojson.Format(req))
+	// if _, err := up.client.UploadArchive(ctx, req); err != nil {
+	// 	return fmt.Errorf("upload error: %w", err)
+	// }
 	return nil
 }
