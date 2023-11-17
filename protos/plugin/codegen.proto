@@ -2,23 +2,8 @@ syntax = "proto3";
 
 package plugin;
 
-option go_package = "github.com/sqlc-dev/sqlc/internal/plugin";
-
 service CodegenService {
   rpc Generate (GenerateRequest) returns (GenerateResponse);
-}
-
-message UploadArchiveRequest {
-  string sqlc_version = 1;
-  File config = 2;
-  repeated QuerySetArchive archives = 3;
-  map<string,string> annotations = 4;
-}
-
-message QuerySetArchive {
-  repeated File schema = 1;
-  repeated File queries = 2;
-  GenerateRequest request = 3;
 }
 
 message File {
