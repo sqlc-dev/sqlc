@@ -28,7 +28,7 @@
       "queries": "mysql/query.sql",
       "engine": "mysql",
       "database": {
-        "uri": "root:${MYSQL_ROOT_PASSWORD}@tcp(${MYSQL_HOST}:${MYSQL_PORT})/booktest?multiStatements=true&parseTime=true"
+        "managed": true
       },
       "rules": [
         "sqlc/db-prepare"
