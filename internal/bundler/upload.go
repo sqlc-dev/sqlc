@@ -84,12 +84,12 @@ func annotate() map[string]string {
 	return labels
 }
 
-func (up *Uploader) buildRequest(ctx context.Context, results []*QuerySetArchive) (*plugin.UploadArchiveRequest, error) {
+func (up *Uploader) buildRequest(ctx context.Context, results []*QuerySetArchive) (*pb.UploadArchiveRequest, error) {
 	conf, err := readFile(up.dir, up.configPath)
 	if err != nil {
 		return nil, err
 	}
-	res := &plugin.UploadArchiveRequest{
+	res := &pb.UploadArchiveRequest{
 		SqlcVersion: info.Version,
 		Config:      conf,
 		Annotations: annotate(),
@@ -103,7 +103,7 @@ func (up *Uploader) buildRequest(ctx context.Context, results []*QuerySetArchive
 		if err != nil {
 			return nil, err
 		}
-		res.Archives = append(res.Archives, &plugin.QuerySetArchive{
+		res.QuerySets = append(res.QuerySets, &pb.QuerySet{
 			Schema:  schema,
 			Queries: queries,
 			Request: result.Request,
@@ -129,9 +129,8 @@ func (up *Uploader) Upload(ctx context.Context, result []*QuerySetArchive) error
 	if err != nil {
 		return err
 	}
-	fmt.Println(protojson.Format(req))
-	// if _, err := up.client.UploadArchive(ctx, req); err != nil {
-	// 	return fmt.Errorf("upload error: %w", err)
-	// }
+	if _, err := up.client.UploadArchive(ctx, req); err != nil {
+		return fmt.Errorf("upload error: %w", err)
+	}
 	return nil
 }

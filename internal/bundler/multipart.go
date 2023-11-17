@@ -4,16 +4,16 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/sqlc-dev/sqlc/internal/plugin"
+	pb "github.com/sqlc-dev/sqlc/internal/quickdb/v1"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
 )
 
-func readFiles(dir string, paths []string) ([]*plugin.File, error) {
+func readFiles(dir string, paths []string) ([]*pb.File, error) {
 	files, err := sqlpath.Glob(paths)
 	if err != nil {
 		return nil, err
 	}
-	var out []*plugin.File
+	var out []*pb.File
 	for _, file := range files {
 		f, err := readFile(dir, file)
 		if err != nil {
@@ -24,7 +24,7 @@ func readFiles(dir string, paths []string) ([]*plugin.File, error) {
 	return out, nil
 }
 
-func readFile(dir string, path string) (*plugin.File, error) {
+func readFile(dir string, path string) (*pb.File, error) {
 	rel, err := filepath.Rel(dir, path)
 	if err != nil {
 		return nil, err
@@ -33,7 +33,7 @@ func readFile(dir string, path string) (*plugin.File, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &plugin.File{
+	return &pb.File{
 		Name:     rel,
 		Contents: blob,
 	}, nil
