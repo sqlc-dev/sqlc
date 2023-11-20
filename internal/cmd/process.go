@@ -17,8 +17,16 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/opts"
 )
 
+type OutputPair struct {
+	Gen    config.SQLGen
+	Plugin *config.Codegen
+
+	config.SQL
+}
+
 type ResultProcessor interface {
-	ProcessResult(context.Context, config.CombinedSettings, outPair, *compiler.Result) error
+	Pairs(context.Context, *config.Config) []OutputPair
+	ProcessResult(context.Context, config.CombinedSettings, OutputPair, *compiler.Result) error
 }
 
 func Process(ctx context.Context, rp ResultProcessor, dir, filename string, o *Options) error {
@@ -49,28 +57,7 @@ func processQuerySets(ctx context.Context, rp ResultProcessor, conf *config.Conf
 
 	errored := false
 
-	var pairs []outPair
-	for _, sql := range conf.SQL {
-		if sql.Gen.Go != nil {
-			pairs = append(pairs, outPair{
-				SQL: sql,
-				Gen: config.SQLGen{Go: sql.Gen.Go},
-			})
-		}
-		if sql.Gen.JSON != nil {
-			pairs = append(pairs, outPair{
-				SQL: sql,
-				Gen: config.SQLGen{JSON: sql.Gen.JSON},
-			})
-		}
-		for i := range sql.Codegen {
-			pairs = append(pairs, outPair{
-				SQL:    sql,
-				Plugin: &sql.Codegen[i],
-			})
-		}
-	}
-
+	pairs := rp.Pairs(ctx, conf)
 	grp, gctx := errgroup.WithContext(ctx)
 	grp.SetLimit(runtime.GOMAXPROCS(0))
 

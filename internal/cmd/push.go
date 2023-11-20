@@ -37,7 +37,17 @@ type pusher struct {
 	results []*bundler.QuerySetArchive
 }
 
-func (g *pusher) ProcessResult(ctx context.Context, combo config.CombinedSettings, sql outPair, result *compiler.Result) error {
+func (g *pusher) Pairs(ctx context.Context, conf *config.Config) []OutputPair {
+	var pairs []OutputPair
+	for _, sql := range conf.SQL {
+		pairs = append(pairs, OutputPair{
+			SQL: sql,
+		})
+	}
+	return pairs
+}
+
+func (g *pusher) ProcessResult(ctx context.Context, combo config.CombinedSettings, sql OutputPair, result *compiler.Result) error {
 	req := codeGenRequest(result, combo)
 	g.m.Lock()
 	g.results = append(g.results, &bundler.QuerySetArchive{
