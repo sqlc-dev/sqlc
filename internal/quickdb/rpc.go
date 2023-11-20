@@ -38,7 +38,9 @@ func NewClient(project, token string, opts ...Option) (pb.QuickClient, error) {
 	}
 
 	dialOpts := []grpc.DialOption{
-		grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{})),
+		grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{
+			InsecureSkipVerify: true,
+		})),
 		grpc.WithPerRPCCredentials(basic.NewPerRPCCredentials(project, token)),
 		grpc.WithUnaryInterceptor(rpc.UnaryInterceptor),
 	}

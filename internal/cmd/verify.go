@@ -49,10 +49,18 @@ func Verify(ctx context.Context, dir, filename string, opts *Options) error {
 		return err
 	}
 	resp, err := client.DetectBreakingChanges(ctx, &quickdbv1.DetectBreakingChangesRequest{
-		Request: req,
+		Request:  req,
+		InCi:     os.Getenv("CI") != "",
+		InGithub: os.Getenv("GITHUB_RUN_ID") != "",
 	})
 	if err != nil {
 		return err
+	}
+	summaryPath := os.Getenv("GITHUB_STEP_SUMMARY")
+	if resp.Summary != "" {
+		if _, err := os.Stat(summaryPath); err == nil {
+			os.WriteFile(summaryPath, []byte(resp.Summary), 0644)
+		}
 	}
 	fmt.Fprintf(stderr, resp.Output)
 	if resp.Errored {

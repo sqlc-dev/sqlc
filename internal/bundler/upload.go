@@ -8,6 +8,8 @@ import (
 	"os"
 	"strings"
 
+	"google.golang.org/protobuf/proto"
+
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/info"
 	"github.com/sqlc-dev/sqlc/internal/plugin"
@@ -107,11 +109,18 @@ func BuildRequest(ctx context.Context, dir, configPath string, results []*QueryS
 		if name == "" {
 			name = fmt.Sprintf("queryset_%d", i)
 		}
+		genreq, err := proto.Marshal(result.Request)
+		if err != nil {
+			return nil, err
+		}
 		res.QuerySets = append(res.QuerySets, &pb.QuerySet{
 			Name:    name,
 			Schema:  schema,
 			Queries: queries,
-			Request: result.Request,
+			CodegenRequest: &pb.File{
+				Name:     "codegen_request.pb",
+				Contents: genreq,
+			},
 		})
 	}
 	return res, nil
