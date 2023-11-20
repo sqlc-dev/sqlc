@@ -48,10 +48,18 @@ func Verify(ctx context.Context, dir, filename string, opts *Options) error {
 	if err != nil {
 		return err
 	}
-	resp, err := client.DetectBreakingChanges(ctx, &quickdbv1.DetectBreakingChangesRequest{
-		Request:  req,
-		InCi:     os.Getenv("CI") != "",
-		InGithub: os.Getenv("GITHUB_RUN_ID") != "",
+	if val := os.Getenv("CI"); val != "" {
+		req.Annotations["env.ci"] = val
+	}
+	if val := os.Getenv("GITHUB_RUN_ID"); val != "" {
+		req.Annotations["github.run.id"] = val
+	}
+
+	resp, err := client.VerifyQuerySets(ctx, &quickdbv1.VerifyQuerySetsRequest{
+		SqlcVersion: req.SqlcVersion,
+		QuerySets:   req.QuerySets,
+		Config:      req.Config,
+		Annotations: req.Annotations,
 	})
 	if err != nil {
 		return err

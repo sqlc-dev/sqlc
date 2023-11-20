@@ -22,7 +22,7 @@ const (
 	Quick_CreateEphemeralDatabase_FullMethodName = "/remote.sqlc.dev.quickdb.v1.Quick/CreateEphemeralDatabase"
 	Quick_DropEphemeralDatabase_FullMethodName   = "/remote.sqlc.dev.quickdb.v1.Quick/DropEphemeralDatabase"
 	Quick_UploadArchive_FullMethodName           = "/remote.sqlc.dev.quickdb.v1.Quick/UploadArchive"
-	Quick_DetectBreakingChanges_FullMethodName   = "/remote.sqlc.dev.quickdb.v1.Quick/DetectBreakingChanges"
+	Quick_VerifyQuerySets_FullMethodName         = "/remote.sqlc.dev.quickdb.v1.Quick/VerifyQuerySets"
 )
 
 // QuickClient is the client API for Quick service.
@@ -32,7 +32,7 @@ type QuickClient interface {
 	CreateEphemeralDatabase(ctx context.Context, in *CreateEphemeralDatabaseRequest, opts ...grpc.CallOption) (*CreateEphemeralDatabaseResponse, error)
 	DropEphemeralDatabase(ctx context.Context, in *DropEphemeralDatabaseRequest, opts ...grpc.CallOption) (*DropEphemeralDatabaseResponse, error)
 	UploadArchive(ctx context.Context, in *UploadArchiveRequest, opts ...grpc.CallOption) (*UploadArchiveResponse, error)
-	DetectBreakingChanges(ctx context.Context, in *DetectBreakingChangesRequest, opts ...grpc.CallOption) (*DetectBreakingChangesResponse, error)
+	VerifyQuerySets(ctx context.Context, in *VerifyQuerySetsRequest, opts ...grpc.CallOption) (*VerifyQuerySetsResponse, error)
 }
 
 type quickClient struct {
@@ -70,9 +70,9 @@ func (c *quickClient) UploadArchive(ctx context.Context, in *UploadArchiveReques
 	return out, nil
 }
 
-func (c *quickClient) DetectBreakingChanges(ctx context.Context, in *DetectBreakingChangesRequest, opts ...grpc.CallOption) (*DetectBreakingChangesResponse, error) {
-	out := new(DetectBreakingChangesResponse)
-	err := c.cc.Invoke(ctx, Quick_DetectBreakingChanges_FullMethodName, in, out, opts...)
+func (c *quickClient) VerifyQuerySets(ctx context.Context, in *VerifyQuerySetsRequest, opts ...grpc.CallOption) (*VerifyQuerySetsResponse, error) {
+	out := new(VerifyQuerySetsResponse)
+	err := c.cc.Invoke(ctx, Quick_VerifyQuerySets_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +86,7 @@ type QuickServer interface {
 	CreateEphemeralDatabase(context.Context, *CreateEphemeralDatabaseRequest) (*CreateEphemeralDatabaseResponse, error)
 	DropEphemeralDatabase(context.Context, *DropEphemeralDatabaseRequest) (*DropEphemeralDatabaseResponse, error)
 	UploadArchive(context.Context, *UploadArchiveRequest) (*UploadArchiveResponse, error)
-	DetectBreakingChanges(context.Context, *DetectBreakingChangesRequest) (*DetectBreakingChangesResponse, error)
+	VerifyQuerySets(context.Context, *VerifyQuerySetsRequest) (*VerifyQuerySetsResponse, error)
 	mustEmbedUnimplementedQuickServer()
 }
 
@@ -103,8 +103,8 @@ func (UnimplementedQuickServer) DropEphemeralDatabase(context.Context, *DropEphe
 func (UnimplementedQuickServer) UploadArchive(context.Context, *UploadArchiveRequest) (*UploadArchiveResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UploadArchive not implemented")
 }
-func (UnimplementedQuickServer) DetectBreakingChanges(context.Context, *DetectBreakingChangesRequest) (*DetectBreakingChangesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DetectBreakingChanges not implemented")
+func (UnimplementedQuickServer) VerifyQuerySets(context.Context, *VerifyQuerySetsRequest) (*VerifyQuerySetsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method VerifyQuerySets not implemented")
 }
 func (UnimplementedQuickServer) mustEmbedUnimplementedQuickServer() {}
 
@@ -173,20 +173,20 @@ func _Quick_UploadArchive_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Quick_DetectBreakingChanges_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DetectBreakingChangesRequest)
+func _Quick_VerifyQuerySets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(VerifyQuerySetsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QuickServer).DetectBreakingChanges(ctx, in)
+		return srv.(QuickServer).VerifyQuerySets(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Quick_DetectBreakingChanges_FullMethodName,
+		FullMethod: Quick_VerifyQuerySets_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QuickServer).DetectBreakingChanges(ctx, req.(*DetectBreakingChangesRequest))
+		return srv.(QuickServer).VerifyQuerySets(ctx, req.(*VerifyQuerySetsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -211,8 +211,8 @@ var Quick_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Quick_UploadArchive_Handler,
 		},
 		{
-			MethodName: "DetectBreakingChanges",
-			Handler:    _Quick_DetectBreakingChanges_Handler,
+			MethodName: "VerifyQuerySets",
+			Handler:    _Quick_VerifyQuerySets_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
