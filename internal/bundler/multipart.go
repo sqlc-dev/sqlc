@@ -4,52 +4,37 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/sqlc-dev/sqlc/internal/config"
 	pb "github.com/sqlc-dev/sqlc/internal/quickdb/v1"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
 )
 
-func readInputs(file string, conf *config.Config) ([]*pb.File, error) {
-	refs := map[string]struct{}{}
-	refs[filepath.Base(file)] = struct{}{}
-
-	for _, pkg := range conf.SQL {
-		for _, paths := range []config.Paths{pkg.Schema, pkg.Queries} {
-			files, err := sqlpath.Glob(paths)
-			if err != nil {
-				return nil, err
-			}
-			for _, file := range files {
-				refs[file] = struct{}{}
-			}
-		}
+func readFiles(dir string, paths []string) ([]*pb.File, error) {
+	files, err := sqlpath.Glob(paths)
+	if err != nil {
+		return nil, err
 	}
-
-	var files []*pb.File
-	for file, _ := range refs {
-		contents, err := os.ReadFile(file)
+	var out []*pb.File
+	for _, file := range files {
+		f, err := readFile(dir, file)
 		if err != nil {
 			return nil, err
 		}
-		files = append(files, &pb.File{
-			Name:     file,
-			Contents: contents,
-		})
+		out = append(out, f)
 	}
-	return files, nil
+	return out, nil
 }
 
-func readOutputs(dir string, output map[string]string) ([]*pb.File, error) {
-	var files []*pb.File
-	for filename, contents := range output {
-		rel, err := filepath.Rel(dir, filename)
-		if err != nil {
-			return nil, err
-		}
-		files = append(files, &pb.File{
-			Name:     rel,
-			Contents: []byte(contents),
-		})
+func readFile(dir string, path string) (*pb.File, error) {
+	rel, err := filepath.Rel(dir, path)
+	if err != nil {
+		return nil, err
 	}
-	return files, nil
+	blob, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.File{
+		Name:     rel,
+		Contents: blob,
+	}, nil
 }

@@ -2,8 +2,6 @@ syntax = "proto3";
 
 package plugin;
 
-option go_package = "github.com/sqlc-dev/sqlc/internal/plugin";
-
 service CodegenService {
   rpc Generate (GenerateRequest) returns (GenerateResponse);
 }
