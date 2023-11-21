@@ -72,4 +72,23 @@ This type of verification is only the start. If your application is deployed on-
 
 Using `verify` requires that you push your queries and schema when you tag a release of your application. We run it on every push to main, as we continuously deploy those commits.
 
-## Suggested workflow
+## Authentication
+
+`sqlc` expects to find a valid auth token in the value of the `SQLC_AUTH_TOKEN`
+environment variable. You can create an auth token via the [dashboard](https://dashboard.sqlc.dev).
+
+```shell
+export SQLC_AUTH_TOKEN=sqlc_xxxxxxxx
+```
+
+
+## Expected workflow
+
+Using `sqlc verify` requires pushing your queries and schema to sqlc Cloud. When
+you release a new version of your application, you should push your schema and
+queries as well. For example, we run `sqlc push` after any change has been
+merged into our `main` branch on Github, as we deploy every commit to
+production.
+
+Locally or in pull requests, run `sqlc verify` to check that existing queries
+continue to work with your current database schema.
