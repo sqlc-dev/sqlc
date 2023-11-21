@@ -206,3 +206,48 @@ func TestFollowSymlinks(t *testing.T) {
 		t.Errorf("Expected no error, but got %v", err)
 	}
 }
+
+func TestGlobPattern(t *testing.T) {
+	// Arrange
+	tests := []struct {
+		pattern  string
+		expected []string
+	}{
+		{
+			pattern: "testdata/glob/*/queries",
+			expected: []string{
+				"testdata/glob/sub1/queries/file1.sql",
+				"testdata/glob/sub2/queries/file2.sql",
+				"testdata/glob/sub3/queries/file3.sql",
+				"testdata/glob/sub3/queries/file4.sql",
+			},
+		},
+		{
+			pattern: "testdata/glob/sub3/queries/file?.sql",
+			expected: []string{
+				"testdata/glob/sub3/queries/file3.sql",
+				"testdata/glob/sub3/queries/file4.sql",
+			},
+		},
+		{
+			pattern: "testdata/glob/sub3/queries/file[1-5].sql",
+			expected: []string{
+				"testdata/glob/sub3/queries/file3.sql",
+				"testdata/glob/sub3/queries/file4.sql",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		// Act
+		result, err := Glob([]string{test.pattern})
+
+		// Assert
+		if !cmp.Equal(result, test.expected) {
+			t.Errorf("Pattern %v: Expected %v, but got %v", test.pattern, test.expected, result)
+		}
+		if err != nil {
+			t.Errorf("Pattern %v: Expected no error, but got %v", test.pattern, err)
+		}
+	}
+}
