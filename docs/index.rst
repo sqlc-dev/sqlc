@@ -43,6 +43,7 @@ code ever again.
 
    howto/generate.md
    howto/push.md
+   howto/verify.md
    howto/vet.md
 
 .. toctree::
