@@ -1,2 +1,2 @@
 # package 
-error generating code: query constant name conflicts with struct name: Foo
+error generating code: query constant name conflicts with enum name: Foo

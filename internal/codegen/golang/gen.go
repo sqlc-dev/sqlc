@@ -132,22 +132,26 @@ func Generate(ctx context.Context, req *plugin.GenerateRequest) (*plugin.Generat
 }
 
 func validate(options *opts.Options, enums []Enum, structs []Struct, queries []Query) error {
-	usedNames := make(map[string]struct{})
+	enumNames := make(map[string]struct{})
 	for _, enum := range enums {
-		usedNames[enum.Name] = struct{}{}
-		usedNames["Null"+enum.Name] = struct{}{}
+		enumNames[enum.Name] = struct{}{}
+		enumNames["Null"+enum.Name] = struct{}{}
 	}
+	structNames := make(map[string]struct{})
 	for _, struckt := range structs {
-		if _, ok := usedNames[struckt.Name]; ok {
-			return fmt.Errorf("struct name conflict: %s", struckt.Name)
+		if _, ok := enumNames[struckt.Name]; ok {
+			return fmt.Errorf("struct name conflicts with enum name: %s", struckt.Name)
 		}
-		usedNames[struckt.Name] = struct{}{}
+		structNames[struckt.Name] = struct{}{}
 	}
 	if !options.EmitExportedQueries {
 		return nil
 	}
 	for _, query := range queries {
-		if _, ok := usedNames[query.ConstantName]; ok {
+		if _, ok := enumNames[query.ConstantName]; ok {
+			return fmt.Errorf("query constant name conflicts with enum name: %s", query.ConstantName)
+		}
+		if _, ok := structNames[query.ConstantName]; ok {
 			return fmt.Errorf("query constant name conflicts with struct name: %s", query.ConstantName)
 		}
 	}
