@@ -7,7 +7,7 @@ Released 2023-11-22
 
 ### Release notes
 
-#### Catch unsafe database migrations with `sqlc verify`
+#### Verifying database schema changes
 
 Schema updates and poorly-written queries often bring down production databases. That’s bad.
 
