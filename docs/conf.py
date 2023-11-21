@@ -33,7 +33,8 @@ release = '1.23.0'
 extensions = [
     'myst_parser',
     'sphinx_rtd_theme',
-    "sphinx_favicon",
+    'sphinx_favicon',
+    'sphinxext.rediraffe',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -76,3 +77,7 @@ myst_enable_extensions = [
     "attrs_inline",
     "colon_fence",
 ]
+
+rediraffe_redirects = {
+    "howto/upload.md": "howto/push.md",
+}

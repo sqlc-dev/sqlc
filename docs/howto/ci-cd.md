@@ -123,13 +123,13 @@ jobs:
     - run: sqlc vet
 ```
 
-### upload
+### push
 
 ```{note}
-Project uploads are powered by [sqlc Cloud](https://dashboard.sqlc.dev). Sign up for [free](https://dashboard.sqlc.dev) today.
+Pushing a project is powered by [sqlc Cloud](https://dashboard.sqlc.dev). Sign up for [free](https://dashboard.sqlc.dev) today.
 ```
 
-The following GitHub Workflow configuration runs [sqlc upload](upload.md) on
+The following GitHub Workflow configuration runs [sqlc push](push.md) on
 every push to `main`. Create an auth token via the
 [dashboard](https://dashboard.sqlc.dev).
 
@@ -145,7 +145,39 @@ jobs:
     - uses: sqlc-dev/setup-sqlc@v3
       with:
         sqlc-version: '1.23.0'
-    - run: sqlc upload
+    - run: sqlc push
       env:
         SQLC_AUTH_TOKEN: ${{ secrets.SQLC_AUTH_TOKEN }}
 ```
+
+### verify
+
+```{note}
+Verify database migrations is powered by [sqlc Cloud](https://dashboard.sqlc.dev). Sign up for [free](https://dashboard.sqlc.dev) today.
+```
+
+```yaml
+name: sqlc
+on: [push]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: sqlc-dev/setup-sqlc@v3
+      with:
+        sqlc-version: '1.23.0'
+    - run: sqlc verify
+      env:
+        SQLC_AUTH_TOKEN: ${{ secrets.SQLC_AUTH_TOKEN }}
+  push:
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/main' }}
+    steps:
+    - uses: sqlc-dev/setup-sqlc@v3
+      with:
+        sqlc-version: '1.23.0'
+    - run: sqlc push
+      env:
+        SQLC_AUTH_TOKEN: ${{ secrets.SQLC_AUTH_TOKEN }}
+``````
