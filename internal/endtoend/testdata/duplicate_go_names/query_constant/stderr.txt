@@ -1,0 +1,2 @@
+# package 
+error generating code: query constant name conflicts with enum name: Foo
