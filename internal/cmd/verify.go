@@ -67,7 +67,9 @@ func Verify(ctx context.Context, dir, filename string, opts *Options) error {
 	summaryPath := os.Getenv("GITHUB_STEP_SUMMARY")
 	if resp.Summary != "" {
 		if _, err := os.Stat(summaryPath); err == nil {
-			os.WriteFile(summaryPath, []byte(resp.Summary), 0644)
+			if err := os.WriteFile(summaryPath, []byte(resp.Summary), 0644); err != nil {
+				return err
+			}
 		}
 	}
 	fmt.Fprintf(stderr, resp.Output)
