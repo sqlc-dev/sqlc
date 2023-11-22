@@ -42,8 +42,8 @@ code ever again.
    :hidden:
 
    howto/generate.md
+   howto/verify.md
    howto/vet.md
-   howto/upload.md
 
 .. toctree::
    :maxdepth: 2

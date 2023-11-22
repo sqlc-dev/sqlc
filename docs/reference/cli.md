@@ -11,7 +11,8 @@ Available Commands:
   generate    Generate Go code from SQL
   help        Help about any command
   init        Create an empty sqlc.yaml settings file
-  upload      Upload the schema, queries, and configuration for this project
+  push        Push schema, queries, and configuration for this project
+  verify      Verify schema, queries, and configuration for this project
   version     Print the sqlc version number
   vet         Vet examines queries
 

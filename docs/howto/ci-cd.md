@@ -1,7 +1,8 @@
 # Using sqlc in CI/CD
 
 If your project has more than a single developer, we suggest running `sqlc` as
-part of your CI/CD pipeline. The three subcommands you'll want to run are `diff`, `vet` and `upload`
+part of your CI/CD pipeline. The four subcommands you'll want to run are `diff`,
+`vet`, `verify` and `push`
 
 `sqlc diff` ensures that your generated code is up to date. New developers to a
 project may forget to run `sqlc generate` after adding a query or updating a
@@ -26,15 +27,21 @@ helpful in catching anti-patterns before they make it into production. Please
 see the [vet](vet.md) documentation for a complete guide to adding lint rules
 for your project.
 
-`sqlc upload` pushes your database schema and queries to sqlc Cloud. Once
-uploaded, we ensure that future releases of sqlc do not break your code. Learn
-more about uploading projects [here](upload.md)
+`sqlc verify` ensures that schema changes do not break production. Existing
+queries are checked against new schema changes for correctness. Please see the
+[verify](verify.md) documentation for a complete guide.
+
+
+`sqlc push` pushes your database schema, queries and configuration to sqlc
+Cloud. These archives are used by `verify` to catch breaking changes to your
+database schema.  Learn more about uploading projects [here](push.md)
 
 ## General setup
 
 Install `sqlc` using the [suggested instructions](../overview/install).
 
-Create two steps in your pipeline, one for `sqlc diff` and one for `sqlc vet`. Run `sqlc upload` after merge on your `main` branch.
+Create three steps in your pipeline for `sqlc diff`, `sqlc vet`, and `sqlc
+verify`. Run `sqlc push` after merge on your `main` branch.
 
 ## GitHub Actions
 
@@ -123,13 +130,13 @@ jobs:
     - run: sqlc vet
 ```
 
-### upload
+### push
 
 ```{note}
-Project uploads are powered by [sqlc Cloud](https://dashboard.sqlc.dev). Sign up for [free](https://dashboard.sqlc.dev) today.
+Pushing a project is powered by [sqlc Cloud](https://dashboard.sqlc.dev). Sign up for [free](https://dashboard.sqlc.dev) today.
 ```
 
-The following GitHub Workflow configuration runs [sqlc upload](upload.md) on
+The following GitHub Workflow configuration runs [sqlc push](push.md) on
 every push to `main`. Create an auth token via the
 [dashboard](https://dashboard.sqlc.dev).
 
@@ -137,7 +144,7 @@ every push to `main`. Create an auth token via the
 name: sqlc
 on: [push]
 jobs:
-  upload:
+  push:
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/main' }}
     steps:
@@ -145,7 +152,39 @@ jobs:
     - uses: sqlc-dev/setup-sqlc@v3
       with:
         sqlc-version: '1.23.0'
-    - run: sqlc upload
+    - run: sqlc push
       env:
         SQLC_AUTH_TOKEN: ${{ secrets.SQLC_AUTH_TOKEN }}
 ```
+
+### verify
+
+```{note}
+Verify database migrations is powered by [sqlc Cloud](https://dashboard.sqlc.dev). Sign up for [free](https://dashboard.sqlc.dev) today.
+```
+
+```yaml
+name: sqlc
+on: [push]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: sqlc-dev/setup-sqlc@v3
+      with:
+        sqlc-version: '1.23.0'
+    - run: sqlc verify
+      env:
+        SQLC_AUTH_TOKEN: ${{ secrets.SQLC_AUTH_TOKEN }}
+  push:
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/main' }}
+    steps:
+    - uses: sqlc-dev/setup-sqlc@v3
+      with:
+        sqlc-version: '1.23.0'
+    - run: sqlc push
+      env:
+        SQLC_AUTH_TOKEN: ${{ secrets.SQLC_AUTH_TOKEN }}
+``````

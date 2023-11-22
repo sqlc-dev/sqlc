@@ -1,6 +1,152 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+(v1-24-0)=
+## [1.24.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.24.0)
+Released 2023-11-22
+
+### Release notes
+
+#### Verifying database schema changes
+
+Schema updates and poorly-written queries often bring down production databases. That’s bad.
+
+Out of the box, `sqlc generate` catches some of these issues. Running `sqlc vet` with the `sqlc/db-prepare` rule catches more subtle problems. But there is a large class of issues that sqlc can’t prevent by looking at current schema and queries alone.
+
+For instance, when a schema change is proposed, existing queries and code running in production might fail when the schema change is applied. Enter `sqlc verify`, which analyzes existing queries against new schema changes and errors if there are any issues.
+
+Let's look at an example. Assume you have these two tables in production.
+
+```sql
+CREATE TABLE users (
+  id UUID PRIMARY KEY
+);
+
+CREATE TABLE user_actions (
+  id UUID PRIMARY KEY,
+  user_id UUID NOT NULL,
+  action TEXT,
+  created_at TIMESTAMP
+);
+```
+
+Your application contains the following query to join user actions against the users table.
+
+```sql
+-- name: GetUserActions :many
+SELECT * FROM users u
+JOIN user_actions ua ON u.id = ua.user_id
+ORDER BY created_at;
+```
+
+So far, so good. Then assume you propose this schema change:
+
+```sql
+ALTER TABLE users ADD COLUMN created_at TIMESTAMP;
+```
+
+Running `sqlc generate` fails with this change, returning a `column reference "created_at" is ambiguous` error. You update your query to fix the issue.
+
+```sql
+-- name: GetUserActions :many
+SELECT * FROM users u
+JOIN user_actions ua ON u.id = ua.user_id
+ORDER BY u.created_at;
+```
+
+While that change fixes the issue, there's a production outage waiting to happen. When the schema change is applied, the existing `GetUserActions` query will begin to fail. The correct way to fix this is to deploy the updated query before applying the schema migration.
+
+It ensures migrations are safe to deploy by sending your current schema and queries to sqlc cloud. There, we run the queries for your latest push against your new schema changes. This check catches backwards incompatible schema changes for existing queries.
+
+Here `sqlc verify` alerts you to the fact that ORDER BY "created_at" is ambiguous.
+
+```sh
+$ sqlc verify
+FAIL: app query.sql
+
+=== Failed
+=== FAIL: app query.sql GetUserActions
+    ERROR: column reference "created_at" is ambiguous (SQLSTATE 42702)
+```
+
+By the way, this scenario isn't made up! It happened to us a few weeks ago. We've been happily testing early versions of `verify` for the last two weeks and haven't had any issues since.
+
+This type of verification is only the start. If your application is deployed on-prem by your customers, `verify` could tell you if it's safe for your customers to rollback to an older version of your app, even after schema migrations have been run.
+
+#### Rename `upload` command to `push`
+
+We've renamed the `upload` sub-command to `push`. We changed the data sent along in a push request. Upload used to include the configuration file, migrations, queries, and all generated code. Push drops the generated code in favor of including the [plugin.GenerateRequest](https://buf.build/sqlc/sqlc/docs/main:plugin#plugin.GenerateRequest), which is the protocol buffer message we pass to codegen plugins.
+
+We also add annotations to each push. By default, we include these environment variables if they are present:
+
+```
+GITHUB_REPOSITORY
+GITHUB_REF
+GITHUB_REF_NAME
+GITHUB_REF_TYPE
+GITHUB_SHA
+```
+
+Like upload, `push` should be run when you tag a release of your application. We run it on every push to main, as we continuously deploy those commits.
+
+#### MySQL support in `createdb`
+
+The `createdb` command, added in the last release, now supports MySQL. If you have a cloud project configured, you can use `sqlc createdb` to spin up a new ephemeral database with your schema and print its connection string to standard output. This is useful for integrating with other tools. Read more in the [managed databases](../howto/managed-databases.md#with-other-tools) documentation.
+
+#### Plugin interface refactor
+
+This release includes a refactored plugin interface to better support future functionality. Plugins now support different methods via a gRPC service interface, allowing plugins to support different functionality in a backwards-compatible way.
+
+By using gRPC interfaces, we can even (theoretically) support [remote plugins](https://github.com/sqlc-dev/sqlc/pull/2938), but that's something for another day.
+
+### Changes
+
+#### Bug Fixes
+
+- (engine/sqlite) Support CASE expr (#2926)
+- (engine/sqlite) Support -> and ->> operators (#2927)
+- (vet) Add a nil pointer check to prevent db/prepare panic (#2934)
+- (compiler) Prevent panic when compiler is nil (#2942)
+- (codegen/golang) Move more Go-specific config validation into the plugin (#2951)
+- (compiler) No panic on full-qualified column names (#2956)
+- (docs) Better discussion of type override nuances (#2972)
+- (codegen) Never generate return structs for :exec (#2976)
+- (generate) Update help text for generate to be more generic (#2981)
+- (generate) Return an error instead of generating duplicate Go names (#2962)
+- (codegen/golang) Pull opts into its own package (#2920)
+- (config) Make some struct and field names less confusing (#2922)
+
+#### Features
+
+- (codegen) Remove Go specific overrides from codegen proto (#2929)
+- (plugin) Use gRPC interface for codegen plugin communication (#2930)
+- (plugin) Calculate SHA256 if it does not exist (#2935)
+- (sqlc-gen-go) Add script to mirror code to sqlc-gen-go (#2952)
+- (createdb) Add support for MySQL (#2980)
+- (verify) Add new command to verify queries and migrations (#2986)
+
+#### Testing
+
+- (ci) New workflow for sqlc-gen-python (#2936)
+- (ci) Rely on go.mod to determine which Go version to use (#2971)
+- (tests) Add glob pattern tests to sqlpath.Glob (#2995)
+- (examples) Use hosted MySQL databases for tests (#2982)
+- (docs) Clean up a little, update LICENSE and README (#2941)
+
+#### Build
+
+- (deps) Bump babel from 2.13.0 to 2.13.1 in /docs (#2911)
+- (deps) Bump github.com/spf13/cobra from 1.7.0 to 1.8.0 (#2944)
+- (deps) Bump github.com/mattn/go-sqlite3 from 1.14.17 to 1.14.18 (#2945)
+- (deps) Bump golang.org/x/sync from 0.4.0 to 0.5.0 (#2946)
+- (deps) Bump github.com/jackc/pgx/v5 from 5.4.3 to 5.5.0 (#2947)
+- (deps) Change github.com/pingcap/tidb/parser to github.com/pingcap/tidb/pkg/parser
+- (deps) Bump github.com/google/cel-go from 0.18.1 to 0.18.2 (#2969)
+- (deps) Bump urllib3 from 2.0.7 to 2.1.0 in /docs (#2975)
+- (buf) Change root of Buf module (#2987)
+- (deps) Bump certifi from 2023.7.22 to 2023.11.17 in /docs (#2993)
+- (ci) Bump Go version from 1.21.3 to 1.21.4 in workflows and Dockerfile (#2961)
+
 (v1-23-0)=
 ## [1.23.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.23.0)
 Released 2023-10-24
