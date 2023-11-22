@@ -1,4 +1,4 @@
-# `verify` - Verifying database schema changes
+# `verify` - Verifying schema changes
 
 ```{note}
 `verify` is powered by [sqlc Cloud](https://dashboard.sqlc.dev). Sign up for [free](https://dashboard.sqlc.dev) today.
