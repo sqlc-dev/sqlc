@@ -8,7 +8,7 @@ certifi==2023.11.17
 chardet==5.2.0
 commonmark==0.9.1
 docutils==0.18.1
-idna==3.4
+idna==3.6
 imagesize==1.4.1
 myst-parser==2.0.0 
 packaging==23.2
