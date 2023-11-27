@@ -34,6 +34,8 @@ sql:
 
 Each mapping in the `sql` collection has the following keys:
 
+- `name`:
+  - An human-friendly identifier for this query set. Optional.
 - `engine`:
   - One of `postgresql`, `mysql` or `sqlite`.
 - `schema`:
