@@ -39,6 +39,7 @@ type tmplCtx struct {
 	EmitAllEnumValues         bool
 	UsesCopyFrom              bool
 	UsesBatch                 bool
+	OmitSqlcVersion           bool
 	BuildTags                 string
 }
 
@@ -185,6 +186,7 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 		Structs:                   structs,
 		SqlcVersion:               req.SqlcVersion,
 		BuildTags:                 options.BuildTags,
+		OmitSqlcVersion:           options.OmitSqlcVersion,
 	}
 
 	if tctx.UsesCopyFrom && !tctx.SQLDriver.IsPGX() && options.SqlDriver != SQLDriverGoSQLDriverMySQL {
