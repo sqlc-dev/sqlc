@@ -42,6 +42,7 @@ code ever again.
    :hidden:
 
    howto/generate.md
+   howto/push.md
    howto/verify.md
    howto/vet.md
 

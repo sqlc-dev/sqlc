@@ -1,17 +1,18 @@
 # CLI
 
-```
+```sh
 Usage:
   sqlc [command]
 
 Available Commands:
   compile     Statically check SQL for syntax and type errors
   completion  Generate the autocompletion script for the specified shell
+  createdb    Create an ephemeral database
   diff        Compare the generated files to the existing files
-  generate    Generate Go code from SQL
+  generate    Generate source code from SQL
   help        Help about any command
   init        Create an empty sqlc.yaml settings file
-  push        Push schema, queries, and configuration for this project
+  push        Push the schema, queries, and configuration for this project
   verify      Verify schema, queries, and configuration for this project
   version     Print the sqlc version number
   vet         Vet examines queries
