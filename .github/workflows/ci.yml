@@ -14,7 +14,7 @@ jobs:
       with:
         go-version-file: go.mod
         check-latest: true
-    - run: go build ./...
+    - run: go test ./...
 
   darwin-build:
     if: ${{ github.ref == 'refs/heads/main' }}
@@ -25,7 +25,20 @@ jobs:
       with:
         go-version-file: go.mod
         check-latest: true
-    - run: go build ./...
+    - run: go test ./...
+
+  linux-purego-build:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-go@v4
+      with:
+        go-version-file: go.mod
+        check-latest: true
+    - run: go test ./...
+      env:
+        CGO_ENABLED: '0'
 
   build:
     name: test

@@ -1,12 +1,9 @@
-//go:build !windows && cgo
-// +build !windows,cgo
-
 package postgresql
 
 import (
 	"fmt"
 
-	pg "github.com/pganalyze/pg_query_go/v4"
+	pg "github.com/wasilibs/go-pgquery"
 
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 )

@@ -20,12 +20,15 @@ require (
 	github.com/riza-io/grpc-go v0.2.0
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
+	github.com/wasilibs/go-pgquery v0.0.0-20231201074715-bbab8b1ab4a9
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/sync v0.5.0
 	google.golang.org/grpc v1.59.0
 	google.golang.org/protobuf v1.31.0
 	gopkg.in/yaml.v3 v3.0.1
 )
+
+require github.com/wasilibs/wazerox v0.0.0-20231117065139-b3503f4aeff6 // indirect
 
 require (
 	github.com/antlr4-go/antlr/v4 v4.13.0 // indirect

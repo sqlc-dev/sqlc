@@ -23,12 +23,14 @@ func Title(s string) string {
 // a backtick, replace it the following way:
 //
 // input:
-// 	SELECT `group` FROM foo
+//
+//	SELECT `group` FROM foo
 //
 // output:
-// 	SELECT ` + "`" + `group` + "`" + ` FROM foo
 //
-// The escaped string must be rendered inside an existing string literal
+//	SELECT ` + "`" + `group` + "`" + ` FROM foo
+//
+// # The escaped string must be rendered inside an existing string literal
 //
 // A string cannot be escaped twice
 func EscapeBacktick(s string) string {
