@@ -33,3 +33,6 @@ func parseNodes(input string) (*wasinodes.ParseResult, error) {
 
 	return &wasiRes, nil
 }
+
+var Parse = parseNodes
+var Fingerprint = cgonodes.Fingerprint
