@@ -5,7 +5,7 @@ on:
       - main
   pull_request:
 jobs:
-  windows-build:
+  windows-test:
     if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: windows-latest
     steps:
@@ -14,9 +14,16 @@ jobs:
       with:
         go-version-file: go.mod
         check-latest: true
+
+    - name: install sqlc-gen-test
+      run: go install github.com/sqlc-dev/sqlc-gen-test@v0.1.0
+
+    - name: install ./...
+      run: go install ./...
+
     - run: go test ./...
 
-  darwin-build:
+  darwin-test:
     if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: macos-latest
     steps:
@@ -25,9 +32,16 @@ jobs:
       with:
         go-version-file: go.mod
         check-latest: true
+
+    - name: install sqlc-gen-test
+      run: go install github.com/sqlc-dev/sqlc-gen-test@v0.1.0
+
+    - name: install ./...
+      run: go install ./...
+
     - run: go test ./...
 
-  linux-purego-build:
+  linux-purego-test:
     if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: macos-latest
     steps:
@@ -36,6 +50,13 @@ jobs:
       with:
         go-version-file: go.mod
         check-latest: true
+
+    - name: install sqlc-gen-test
+      run: go install github.com/sqlc-dev/sqlc-gen-test@v0.1.0
+
+    - name: install ./...
+      run: go install ./...
+
     - run: go test ./...
       env:
         CGO_ENABLED: '0'

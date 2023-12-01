@@ -8,3 +8,6 @@ import (
 )
 
 var parseNodes = nodes.Parse
+
+var Parse = parseNodes
+var Fingerprint = cgonodes.Fingerprint
