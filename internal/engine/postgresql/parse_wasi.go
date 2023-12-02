@@ -7,7 +7,5 @@ import (
 	nodes "github.com/wasilibs/go-pgquery"
 )
 
-var parseNodes = nodes.Parse
-
-var Parse = parseNodes
+var Parse = nodes.Parse
 var Fingerprint = nodes.Fingerprint

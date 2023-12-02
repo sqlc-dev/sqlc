@@ -3,7 +3,7 @@ package postgresql
 import (
 	"fmt"
 
-	pg "github.com/wasilibs/go-pgquery"
+	pg "github.com/pganalyze/pg_query_go/v4"
 
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 )

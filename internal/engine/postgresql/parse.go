@@ -6,7 +6,7 @@ import (
 	"io"
 	"strings"
 
-	nodes "github.com/wasilibs/go-pgquery"
+	nodes "github.com/pganalyze/pg_query_go/v4"
 
 	"github.com/sqlc-dev/sqlc/internal/engine/postgresql/parser"
 	"github.com/sqlc-dev/sqlc/internal/source"
@@ -151,7 +151,7 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 	if err != nil {
 		return nil, err
 	}
-	tree, err := parseNodes(string(contents))
+	tree, err := Parse(string(contents))
 	if err != nil {
 		pErr := normalizeErr(err)
 		return nil, pErr
