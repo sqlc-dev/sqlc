@@ -262,7 +262,7 @@ func (a *Analyzer) Analyze(ctx context.Context, n ast.Node, query string, migrat
 				DataType:     dt,
 				NotNull:      notNull,
 				IsArray:      isArray,
-				ArrayDims:    int32(dims),
+				ArrayDims:    int32(max(col.ArrayDims, dims)),
 				Table: &core.Identifier{
 					Schema: tbl.SchemaName,
 					Name:   tbl.TableName,
