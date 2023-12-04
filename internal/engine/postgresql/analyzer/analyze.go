@@ -253,7 +253,8 @@ func (a *Analyzer) Analyze(ctx context.Context, n ast.Node, query string, migrat
 			if err != nil {
 				return nil, err
 			}
-			dt, isArray, dims := parseType(col.DataType)
+			// TODO: Why are these dims different?
+			dt, isArray, _ := parseType(col.DataType)
 			notNull := col.NotNull
 			name := field.Name
 			result.Columns = append(result.Columns, &core.Column{
@@ -262,7 +263,7 @@ func (a *Analyzer) Analyze(ctx context.Context, n ast.Node, query string, migrat
 				DataType:     dt,
 				NotNull:      notNull,
 				IsArray:      isArray,
-				ArrayDims:    int32(dims),
+				ArrayDims:    int32(col.ArrayDims),
 				Table: &core.Identifier{
 					Schema: tbl.SchemaName,
 					Name:   tbl.TableName,
