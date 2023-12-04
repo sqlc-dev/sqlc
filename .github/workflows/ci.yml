@@ -5,13 +5,13 @@ on:
       - main
   pull_request:
 jobs:
-  # if: ${{ github.ref == 'refs/heads/main' }}
-
   test:
     strategy:
+      max-parallel: 2
       matrix:
         os: [windows-latest, macos-latest, ubuntu-latest]
         cgo: ['1', '0']
+    # if: ${{ github.ref == 'refs/heads/main' || matrix.os == 'ubuntu-latest' }}
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v4
