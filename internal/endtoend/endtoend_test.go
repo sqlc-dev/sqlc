@@ -6,6 +6,7 @@ import (
 	"os"
 	osexec "os/exec"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strings"
 	"testing"
@@ -165,6 +166,12 @@ func TestReplay(t *testing.T) {
 				if len(args.Contexts) > 0 {
 					if !slices.Contains(args.Contexts, name) {
 						t.Skipf("unsupported context: %s", name)
+					}
+				}
+
+				if len(args.OS) > 0 {
+					if !slices.Contains(args.OS, runtime.GOOS) {
+						t.Skipf("unsupported os: %s", runtime.GOOS)
 					}
 				}
 

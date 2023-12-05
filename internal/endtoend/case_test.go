@@ -21,6 +21,7 @@ type Exec struct {
 	Command  string            `json:"command"`
 	Contexts []string          `json:"contexts"`
 	Process  string            `json:"process"`
+	OS       []string          `json:"os"`
 	Env      map[string]string `json:"env"`
 }
 
