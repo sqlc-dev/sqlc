@@ -27,7 +27,7 @@ func lineEndings() cmp.Option {
 
 func stderrTransformer() cmp.Option {
 	return cmp.Transformer("Stderr", func(in string) string {
-		s := strings.Replace(in, "\r\n", "\n", -1)
+		s := strings.Replace(in, "\r", "", -1)
 		return strings.Replace(s, "\\", "/", -1)
 	})
 }
