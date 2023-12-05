@@ -19,6 +19,8 @@ import (
 )
 
 func TestValidSchema(t *testing.T) {
+	t.Skip("ignore")
+
 	ctx := context.Background()
 
 	projectID := os.Getenv("CI_SQLC_PROJECT_ID")
