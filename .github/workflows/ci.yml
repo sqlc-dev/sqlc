@@ -8,7 +8,7 @@ jobs:
   test:
     strategy:
       matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
         cgo: ['1', '0']
         # Workaround no proper support for conditional matrix items
         # https://github.com/orgs/community/discussions/26253#discussioncomment-6745038

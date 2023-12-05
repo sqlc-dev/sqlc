@@ -18,7 +18,7 @@ func TestReturnsListOfSQLFiles(t *testing.T) {
 	result, err := Glob(paths)
 
 	// Assert
-	expected := []string{"testdata/file1.sql", "testdata/file2.sql"}
+	expected := []string{filepath.Join("testdata", "file1.sql"), filepath.Join("testdata", "file2.sql")}
 	if !cmp.Equal(result, expected) {
 		t.Errorf("Expected %v, but got %v, %v", expected, result, cmp.Diff(expected, result))
 	}
@@ -85,7 +85,7 @@ func TestExcludesSQLFilesEndingWithDownSQLWhenSearchingForSQLFiles(t *testing.T)
 	result, err := Glob(paths)
 
 	// Assert
-	expected := []string{"testdata/file1.sql"}
+	expected := []string{filepath.Join("testdata", "file1.sql")}
 	if !cmp.Equal(result, expected) {
 		t.Errorf("Expected %v, but got %v", expected, result)
 	}
@@ -166,22 +166,10 @@ func TestNotIncludesHiddenFilesAnyPath(t *testing.T) {
 	result, err := Glob(paths)
 
 	// Assert
-	expectedAny := [][]string{
-		{"./testdata/.hiddendir/file1.sql"},
-		{"testdata/.hiddendir/file1.sql"},
+	expected := []string{filepath.Join("testdata", ".hiddendir", "file1.sql")}
+	if !cmp.Equal(result, expected) {
+		t.Errorf("Expected %v, but got %v", expected, result)
 	}
-
-	match := false
-	for _, expected := range expectedAny {
-		if cmp.Equal(result, expected) {
-			match = true
-			break
-		}
-	}
-	if !match {
-		t.Errorf("Expected any of %v, but got %v", expectedAny, result)
-	}
-
 	if err != nil {
 		t.Errorf("Expected no error, but got %v", err)
 	}
