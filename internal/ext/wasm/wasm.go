@@ -1,7 +1,3 @@
-//go:build !nowasm && cgo && ((linux && amd64) || (linux && arm64) || (darwin && amd64) || (darwin && arm64) || (windows && amd64))
-
-// The above build constraint is based of the cgo directives in this file:
-// https://github.com/bytecodealliance/wasmtime-go/blob/main/ffi.go
 package wasm
 
 import (
@@ -32,13 +28,6 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/info"
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
-
-func Enabled() bool {
-	return true
-}
-
-// This version must be updated whenever the wasmtime-go dependency is updated
-const wasmtimeVersion = `v14.0.0`
 
 func cacheDir() (string, error) {
 	cache := os.Getenv("SQLCCACHE")
