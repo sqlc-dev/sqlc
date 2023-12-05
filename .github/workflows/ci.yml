@@ -15,10 +15,12 @@ jobs:
         # https://github.com/orgs/community/discussions/26253#discussioncomment-6745038
         isMain: ${{ github.ref == 'refs/heads/main' }}
         exclude:
-          - { isMain: false }
+          - isMain: false
         include:
-          - { os: ubuntu-latest, cgo: '1' }
-          - { os: ubuntu-latest, cgo: '0' }
+          - os: ubuntu-latest
+            cgo: '1'
+          - os: ubuntu-latest
+            cgo: '0'
     name: Test ${{ matrix.os }}-cgo${{ matrix.cgo }}
     runs-on: ${{ matrix.os }}
 
