@@ -31,6 +31,10 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
 
+func Enabled() bool {
+	return true
+}
+
 // This version must be updated whenever the wasmtime-go dependency is updated
 const wasmtimeVersion = `v14.0.0`
 

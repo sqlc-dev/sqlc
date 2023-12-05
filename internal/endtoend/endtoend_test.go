@@ -16,6 +16,7 @@ import (
 
 	"github.com/sqlc-dev/sqlc/internal/cmd"
 	"github.com/sqlc-dev/sqlc/internal/config"
+	"github.com/sqlc-dev/sqlc/internal/ext/wasm"
 	"github.com/sqlc-dev/sqlc/internal/opts"
 )
 
@@ -167,6 +168,10 @@ func TestReplay(t *testing.T) {
 					if !slices.Contains(args.Contexts, name) {
 						t.Skipf("unsupported context: %s", name)
 					}
+				}
+
+				if args.WASM && !wasm.Enabled() {
+					t.Skipf("wasm support not enabled")
 				}
 
 				if len(args.OS) > 0 {
