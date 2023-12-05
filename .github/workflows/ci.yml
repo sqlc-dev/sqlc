@@ -13,7 +13,8 @@ jobs:
         cgo: ['1', '0']
         # Workaround no proper support for conditional matrix items
         # https://github.com/orgs/community/discussions/26253#discussioncomment-6745038
-        isMain: ${{ github.ref == 'refs/heads/main' }}
+        isMain: 
+          - ${{ github.ref == 'refs/heads/main' }}
         exclude:
           - isMain: false
         include:
