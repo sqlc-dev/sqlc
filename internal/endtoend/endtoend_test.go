@@ -247,7 +247,9 @@ func cmpDirectory(t *testing.T, dir string, actual map[string]string) {
 				return
 			}
 			if runtime.GOOS == "windows" {
-				contents = strings.ReplaceAll(contents, "\n", "\r\n")
+				// TODO: It may be better to use .gitattributes to make sure the testdata
+				// has correct line endings on windows too.
+				contents = strings.ReplaceAll(contents, "\r\n", "\n")
 			}
 			if diff := cmp.Diff(contents, actual[name]); diff != "" {
 				t.Errorf("%s differed (-want +got):\n%s", name, diff)
