@@ -22,7 +22,7 @@ jobs:
             cgo: '1'
           - os: ubuntu-latest
             cgo: '0'
-    name: Test ${{ matrix.os }}-cgo${{ matrix.cgo }}
+    name: test ${{ matrix.os }} cgo=${{ matrix.cgo }}
     runs-on: ${{ matrix.os }}
 
     steps:
