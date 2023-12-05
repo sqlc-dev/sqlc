@@ -1,6 +1,6 @@
-// Currently requires cgo for wasmtime.
-//go:build cgo
-// +build cgo
+// Currently requires cgo for wasmtime and has line-ending issues on windows.
+//go:build cgo && !windows
+// +build cgo,!windows
 
 package main
 
@@ -10,7 +10,6 @@ import (
 	"os"
 	osexec "os/exec"
 	"path/filepath"
-	"runtime"
 	"slices"
 	"strings"
 	"testing"
@@ -144,11 +143,6 @@ func TestReplay(t *testing.T) {
 					args = &Exec{Command: "generate"}
 				}
 				expected := string(tc.Stderr)
-				if runtime.GOOS == "windows" {
-					// TODO: It may be better to use .gitattributes to make sure the testdata
-					// has correct line endings on windows too.
-					expected = strings.ReplaceAll(expected, "\r\n", "\n")
-				}
 
 				if args.Process != "" {
 					_, err := osexec.LookPath(args.Process)
@@ -236,13 +230,7 @@ func cmpDirectory(t *testing.T, dir string, actual map[string]string) {
 		if err != nil {
 			return err
 		}
-		contents := string(blob)
-		if runtime.GOOS == "windows" {
-			// TODO: It may be better to use .gitattributes to make sure the testdata
-			// has correct line endings on windows too.
-			contents = strings.ReplaceAll(contents, "\r\n", "\n")
-		}
-		expected[path] = contents
+		expected[path] = string(blob)
 		return nil
 	}
 	if err := filepath.Walk(dir, ff); err != nil {
