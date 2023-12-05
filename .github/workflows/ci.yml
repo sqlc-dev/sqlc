@@ -18,10 +18,10 @@ jobs:
         exclude:
           - isMain: false
         include:
-        - os: windows-latest
+        - os: ubuntu-latest
+          cgo: '1'
+        - os: ubuntu-latest
           cgo: '0'
-        # - os: ubuntu-latest
-        #   cgo: '0'
     name: test ${{ matrix.os }} cgo=${{ matrix.cgo }}
     runs-on: ${{ matrix.os }}
 
@@ -50,7 +50,7 @@ jobs:
         CGO_ENABLED: ${{ matrix.cgo }}
 
     - name: test ./...
-      run: gotestsum --junitfile junit.xml -- -timeout 20m ./...
+      run: gotestsum --junitfile junit.xml -- --tags=examples -timeout 20m ./...
       env:
         CI_SQLC_PROJECT_ID: ${{ secrets.CI_SQLC_PROJECT_ID }}
         CI_SQLC_AUTH_TOKEN: ${{ secrets.CI_SQLC_AUTH_TOKEN }}

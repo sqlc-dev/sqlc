@@ -127,8 +127,15 @@ func TestReplay(t *testing.T) {
 				}
 			},
 			Enabled: func() bool {
-				return false
-				// return len(os.Getenv("SQLC_AUTH_TOKEN")) > 0
+				// Return false if no auth token exists
+				if len(os.Getenv("SQLC_AUTH_TOKEN")) == 0 {
+					return false
+				}
+				// In CI, only run these tests from Linux
+				if os.Getenv("CI") != "" {
+					return runtime.GOOS == "linux"
+				}
+				return true
 			},
 		},
 	}
