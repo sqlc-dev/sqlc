@@ -8,7 +8,6 @@ import (
 	"strings"
 	"testing"
 
-	pg_query "github.com/pganalyze/pg_query_go/v4"
 	"github.com/sqlc-dev/sqlc/internal/debug"
 	"github.com/sqlc-dev/sqlc/internal/engine/postgresql"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
@@ -40,7 +39,7 @@ func TestFormat(t *testing.T) {
 				}
 				query := query
 				t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
-					expected, err := pg_query.Fingerprint(string(query))
+					expected, err := postgresql.Fingerprint(string(query))
 					if err != nil {
 						t.Fatal(err)
 					}
@@ -52,12 +51,12 @@ func TestFormat(t *testing.T) {
 						t.Fatal("expected one statement")
 					}
 					if false {
-						r, err := pg_query.Parse(string(query))
+						r, err := postgresql.Parse(string(query))
 						debug.Dump(r, err)
 					}
 
 					out := ast.Format(stmts[0].Raw)
-					actual, err := pg_query.Fingerprint(out)
+					actual, err := postgresql.Fingerprint(out)
 					if err != nil {
 						t.Error(err)
 					}

@@ -46,7 +46,7 @@ func Glob(patterns []string) ([]string, error) {
 				files = append(files, filepath.Join(path, f.Name()))
 			}
 		} else {
-			files = append(files, path)
+			files = append(files, filepath.Clean(path))
 		}
 	}
 	var sqlFiles []string

@@ -1,3 +1,7 @@
+// Currently requires cgo for wasmtime and has line-ending issues on windows.
+//go:build cgo && !windows
+// +build cgo,!windows
+
 package main
 
 import (

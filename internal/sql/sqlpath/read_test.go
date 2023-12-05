@@ -2,6 +2,8 @@ package sqlpath
 
 import (
 	"fmt"
+	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -16,7 +18,7 @@ func TestReturnsListOfSQLFiles(t *testing.T) {
 	result, err := Glob(paths)
 
 	// Assert
-	expected := []string{"testdata/file1.sql", "testdata/file2.sql"}
+	expected := []string{filepath.Join("testdata", "file1.sql"), filepath.Join("testdata", "file2.sql")}
 	if !cmp.Equal(result, expected) {
 		t.Errorf("Expected %v, but got %v, %v", expected, result, cmp.Diff(expected, result))
 	}
@@ -83,7 +85,7 @@ func TestExcludesSQLFilesEndingWithDownSQLWhenSearchingForSQLFiles(t *testing.T)
 	result, err := Glob(paths)
 
 	// Assert
-	expected := []string{"testdata/file1.sql"}
+	expected := []string{filepath.Join("testdata", "file1.sql")}
 	if !cmp.Equal(result, expected) {
 		t.Errorf("Expected %v, but got %v", expected, result)
 	}
@@ -107,8 +109,8 @@ func TestReturnsErrorWhenPathDoesNotExist(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected an error, but got nil")
 	} else {
-		expectedError := fmt.Errorf("path error: stat non_existent_path: no such file or directory")
-		if !cmp.Equal(err.Error(), expectedError.Error()) {
+		expectedError := fmt.Errorf("path error:")
+		if !strings.HasPrefix(err.Error(), expectedError.Error()) {
 			t.Errorf("Expected error %v, but got %v", expectedError, err)
 		}
 	}
@@ -129,8 +131,8 @@ func TestReturnsErrorWhenDirectoryCannotBeRead(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected an error, but got nil")
 	} else {
-		expectedError := fmt.Errorf("path error: stat testdata/unreadable: no such file or directory")
-		if !cmp.Equal(err.Error(), expectedError.Error()) {
+		expectedError := fmt.Errorf("path error:")
+		if !strings.HasPrefix(err.Error(), expectedError.Error()) {
 			t.Errorf("Expected error %v, but got %v", expectedError, err)
 		}
 	}
@@ -164,22 +166,10 @@ func TestNotIncludesHiddenFilesAnyPath(t *testing.T) {
 	result, err := Glob(paths)
 
 	// Assert
-	expectedAny := [][]string{
-		{"./testdata/.hiddendir/file1.sql"},
-		{"testdata/.hiddendir/file1.sql"},
+	expected := []string{filepath.Join("testdata", ".hiddendir", "file1.sql")}
+	if !cmp.Equal(result, expected) {
+		t.Errorf("Expected %v, but got %v", expected, result)
 	}
-
-	match := false
-	for _, expected := range expectedAny {
-		if cmp.Equal(result, expected) {
-			match = true
-			break
-		}
-	}
-	if !match {
-		t.Errorf("Expected any of %v, but got %v", expectedAny, result)
-	}
-
 	if err != nil {
 		t.Errorf("Expected no error, but got %v", err)
 	}
@@ -194,10 +184,10 @@ func TestFollowSymlinks(t *testing.T) {
 
 	// Assert
 	expected := []string{
-		"testdata/symlink/file1.sql",
-		"testdata/symlink/file1.symlink.sql",
-		"testdata/symlink/file2.sql",
-		"testdata/file1.symlink.sql",
+		filepath.Join("testdata", "symlink", "file1.sql"),
+		filepath.Join("testdata", "symlink", "file1.symlink.sql"),
+		filepath.Join("testdata", "symlink", "file2.sql"),
+		filepath.Join("testdata", "file1.symlink.sql"),
 	}
 	if !cmp.Equal(result, expected) {
 		t.Errorf("Expected %v, but got %v", expected, result)
@@ -216,24 +206,24 @@ func TestGlobPattern(t *testing.T) {
 		{
 			pattern: "testdata/glob/*/queries",
 			expected: []string{
-				"testdata/glob/sub1/queries/file1.sql",
-				"testdata/glob/sub2/queries/file2.sql",
-				"testdata/glob/sub3/queries/file3.sql",
-				"testdata/glob/sub3/queries/file4.sql",
+				filepath.Join("testdata", "glob", "sub1", "queries", "file1.sql"),
+				filepath.Join("testdata", "glob", "sub2", "queries", "file2.sql"),
+				filepath.Join("testdata", "glob", "sub3", "queries", "file3.sql"),
+				filepath.Join("testdata", "glob", "sub3", "queries", "file4.sql"),
 			},
 		},
 		{
 			pattern: "testdata/glob/sub3/queries/file?.sql",
 			expected: []string{
-				"testdata/glob/sub3/queries/file3.sql",
-				"testdata/glob/sub3/queries/file4.sql",
+				filepath.Join("testdata", "glob", "sub3", "queries", "file3.sql"),
+				filepath.Join("testdata", "glob", "sub3", "queries", "file4.sql"),
 			},
 		},
 		{
 			pattern: "testdata/glob/sub3/queries/file[1-5].sql",
 			expected: []string{
-				"testdata/glob/sub3/queries/file3.sql",
-				"testdata/glob/sub3/queries/file4.sql",
+				filepath.Join("testdata", "glob", "sub3", "queries", "file3.sql"),
+				filepath.Join("testdata", "glob", "sub3", "queries", "file4.sql"),
 			},
 		},
 	}

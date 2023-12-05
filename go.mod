@@ -15,17 +15,20 @@ require (
 	github.com/jinzhu/inflection v1.0.0
 	github.com/lib/pq v1.10.9
 	github.com/mattn/go-sqlite3 v1.14.18
-	github.com/pganalyze/pg_query_go/v4 v4.2.3
+	github.com/pganalyze/pg_query_go/v4 v4.2.4-0.20231205012101-7463430c7b73
 	github.com/pingcap/tidb/pkg/parser v0.0.0-20231103154709-4f00ece106b1
 	github.com/riza-io/grpc-go v0.2.0
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
+	github.com/wasilibs/go-pgquery v0.0.0-20231205013331-96e794bb074e
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/sync v0.5.0
 	google.golang.org/grpc v1.59.0
 	google.golang.org/protobuf v1.31.0
 	gopkg.in/yaml.v3 v3.0.1
 )
+
+require github.com/wasilibs/wazerox v0.0.0-20231117065139-b3503f4aeff6 // indirect
 
 require (
 	github.com/antlr4-go/antlr/v4 v4.13.0 // indirect
