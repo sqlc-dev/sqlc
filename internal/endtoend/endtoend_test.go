@@ -234,7 +234,15 @@ func cmpDirectory(t *testing.T, dir string, actual map[string]string) {
 		t.Fatal(err)
 	}
 
-	if !cmp.Equal(expected, actual, cmpopts.EquateEmpty()) {
+	opts := []cmp.Option{
+		cmpopts.EquateEmpty(),
+		cmp.Transformer("LineEndings", func(in string) string {
+			// Replace Windows new lines with Unix newlines
+			return strings.Replace(in, "\r\n", "\n", -1)
+		}),
+	}
+
+	if !cmp.Equal(expected, actual, opts...) {
 		t.Errorf("%s contents differ", dir)
 		for name, contents := range expected {
 			name := name
@@ -242,7 +250,7 @@ func cmpDirectory(t *testing.T, dir string, actual map[string]string) {
 				t.Errorf("%s is empty", name)
 				return
 			}
-			if diff := cmp.Diff(contents, actual[name]); diff != "" {
+			if diff := cmp.Diff(contents, actual[name], opts...); diff != "" {
 				t.Errorf("%s differed (-want +got):\n%s", name, diff)
 			}
 		}
