@@ -1,5 +1,5 @@
-//go:build examples && cgo
-// +build examples,cgo
+//go:build examples
+// +build examples
 
 package authors
 
