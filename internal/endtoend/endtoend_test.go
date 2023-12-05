@@ -10,6 +10,7 @@ import (
 	"os"
 	osexec "os/exec"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strings"
 	"testing"
@@ -244,6 +245,9 @@ func cmpDirectory(t *testing.T, dir string, actual map[string]string) {
 			if actual[name] == "" {
 				t.Errorf("%s is empty", name)
 				return
+			}
+			if runtime.GOOS == "windows" {
+				contents = strings.ReplaceAll(contents, "\n", "\r\n")
 			}
 			if diff := cmp.Diff(contents, actual[name]); diff != "" {
 				t.Errorf("%s differed (-want +got):\n%s", name, diff)
