@@ -144,6 +144,11 @@ func TestReplay(t *testing.T) {
 					args = &Exec{Command: "generate"}
 				}
 				expected := string(tc.Stderr)
+				if runtime.GOOS == "windows" {
+					// TODO: It may be better to use .gitattributes to make sure the testdata
+					// has correct line endings on windows too.
+					expected = strings.ReplaceAll(expected, "\r\n", "\n")
+				}
 
 				if args.Process != "" {
 					_, err := osexec.LookPath(args.Process)
@@ -231,7 +236,13 @@ func cmpDirectory(t *testing.T, dir string, actual map[string]string) {
 		if err != nil {
 			return err
 		}
-		expected[path] = string(blob)
+		contents := string(blob)
+		if runtime.GOOS == "windows" {
+			// TODO: It may be better to use .gitattributes to make sure the testdata
+			// has correct line endings on windows too.
+			contents = strings.ReplaceAll(contents, "\r\n", "\n")
+		}
+		expected[path] = contents
 		return nil
 	}
 	if err := filepath.Walk(dir, ff); err != nil {
@@ -245,11 +256,6 @@ func cmpDirectory(t *testing.T, dir string, actual map[string]string) {
 			if actual[name] == "" {
 				t.Errorf("%s is empty", name)
 				return
-			}
-			if runtime.GOOS == "windows" {
-				// TODO: It may be better to use .gitattributes to make sure the testdata
-				// has correct line endings on windows too.
-				contents = strings.ReplaceAll(contents, "\r\n", "\n")
 			}
 			if diff := cmp.Diff(contents, actual[name]); diff != "" {
 				t.Errorf("%s differed (-want +got):\n%s", name, diff)
