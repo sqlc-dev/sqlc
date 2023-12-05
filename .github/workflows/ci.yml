@@ -7,7 +7,6 @@ on:
 jobs:
   test:
     strategy:
-      max-parallel: 2
       matrix:
         os: [windows-latest, macos-latest, ubuntu-latest]
         cgo: ['1', '0']
