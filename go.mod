@@ -15,12 +15,12 @@ require (
 	github.com/jinzhu/inflection v1.0.0
 	github.com/lib/pq v1.10.9
 	github.com/mattn/go-sqlite3 v1.14.18
-	github.com/pganalyze/pg_query_go/v4 v4.2.4-0.20231202022636-3c8cb1bd9d99
+	github.com/pganalyze/pg_query_go/v4 v4.2.4-0.20231205012101-7463430c7b73
 	github.com/pingcap/tidb/pkg/parser v0.0.0-20231103154709-4f00ece106b1
 	github.com/riza-io/grpc-go v0.2.0
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
-	github.com/wasilibs/go-pgquery v0.0.0-20231202122549-dbe58a6cd4c4
+	github.com/wasilibs/go-pgquery v0.0.0-20231205013331-96e794bb074e
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/sync v0.5.0
 	google.golang.org/grpc v1.59.0

@@ -119,8 +119,8 @@ github.com/mattn/go-isatty v0.0.7/go.mod h1:Iq45c/XA43vh69/j3iqttzPXn0bhXyGjM0Hd
 github.com/mattn/go-isatty v0.0.12/go.mod h1:cbi8OIDigv2wuxKPP5vlRcQ1OAZbq2CE4Kysco4FUpU=
 github.com/mattn/go-sqlite3 v1.14.18 h1:JL0eqdCOq6DJVNPSvArO/bIV9/P7fbGrV00LZHc+5aI=
 github.com/mattn/go-sqlite3 v1.14.18/go.mod h1:2eHXhiwb8IkHr+BDWZGa96P6+rkvnG63S2DGjv9HUNg=
-github.com/pganalyze/pg_query_go/v4 v4.2.4-0.20231202022636-3c8cb1bd9d99 h1:AarAXDJB+iIetitFJncVelAi7t/u+m3c+pkRNkEgTzg=
-github.com/pganalyze/pg_query_go/v4 v4.2.4-0.20231202022636-3c8cb1bd9d99/go.mod h1:pRJ9rCcWIhDLAzymhH2iY5kEVEfU6UGrL1wBWuO7gmM=
+github.com/pganalyze/pg_query_go/v4 v4.2.4-0.20231205012101-7463430c7b73 h1:vZEujakYrBzd7CWMwqTsDRU7bdRm4Aiu76X9K3P+qtI=
+github.com/pganalyze/pg_query_go/v4 v4.2.4-0.20231205012101-7463430c7b73/go.mod h1:pRJ9rCcWIhDLAzymhH2iY5kEVEfU6UGrL1wBWuO7gmM=
 github.com/pingcap/errors v0.11.0/go.mod h1:Oi8TUi2kEtXXLMJk9l1cGmz20kV3TaQ0usTwv5KuLY8=
 github.com/pingcap/errors v0.11.4/go.mod h1:Oi8TUi2kEtXXLMJk9l1cGmz20kV3TaQ0usTwv5KuLY8=
 github.com/pingcap/errors v0.11.5-0.20210425183316-da1aaba5fb63 h1:+FZIDR/D97YOPik4N4lPDaUcLDF/EQPogxtlHB2ZZRM=
@@ -175,8 +175,8 @@ github.com/stretchr/testify v1.8.0/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO
 github.com/stretchr/testify v1.8.1/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o6fzry7u4=
 github.com/stretchr/testify v1.8.4 h1:CcVxjf3Q8PM0mHUKJCdn+eZZtm5yQwehR5yeSVQQcUk=
 github.com/stretchr/testify v1.8.4/go.mod h1:sz/lmYIOXD/1dqDmKjjqLyZ2RngseejIcXlSw2iwfAo=
-github.com/wasilibs/go-pgquery v0.0.0-20231202122549-dbe58a6cd4c4 h1:l8cvYIpTBSHZtRKk6nDZzP7j7GdM4OeSZFy+eSLdLUA=
-github.com/wasilibs/go-pgquery v0.0.0-20231202122549-dbe58a6cd4c4/go.mod h1:BxeTakf417NHQfvSGi4BAzEeTFw8A2dIGXfECy4CyJU=
+github.com/wasilibs/go-pgquery v0.0.0-20231205013331-96e794bb074e h1:sGIC6/D0KqpA+qBSDSVDQswU/IJVYkbnUXnipgTLQWk=
+github.com/wasilibs/go-pgquery v0.0.0-20231205013331-96e794bb074e/go.mod h1:KW0azBSWqkPZ71r+3O4qt8h6A/NisFLp0rbjZ3py4OE=
 github.com/wasilibs/wazerox v0.0.0-20231117065139-b3503f4aeff6 h1:jwbU8u5TuXModzdEG4wI0g4FyuD7ROSttU86go5sPdU=
 github.com/wasilibs/wazerox v0.0.0-20231117065139-b3503f4aeff6/go.mod h1:IQNVyA4d1hWIe23mlMMuqXjyWMdndgSlNx6FqBkwPsM=
 github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f h1:J9EGpcZtP0E/raorCMxlFGSTBrsSlaDGf3jU/qvAE2c=
