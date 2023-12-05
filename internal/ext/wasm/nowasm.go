@@ -10,6 +10,10 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+func Enabled() bool {
+	return false
+}
+
 func (r *Runner) Invoke(ctx context.Context, method string, args any, reply any, opts ...grpc.CallOption) error {
 	return status.Error(codes.FailedPrecondition, "sqlc built without wasmtime support")
 }

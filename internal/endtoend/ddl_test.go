@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strings"
 	"testing"
@@ -19,6 +20,10 @@ import (
 )
 
 func TestValidSchema(t *testing.T) {
+	if os.Getenv("CI") != "" && runtime.GOOS != "linux" {
+		t.Skipf("only run these tests in CI on linux: %s %s", os.Getenv("CI"), runtime.GOOS)
+	}
+
 	ctx := context.Background()
 
 	projectID := os.Getenv("CI_SQLC_PROJECT_ID")
