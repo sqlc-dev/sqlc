@@ -18,6 +18,13 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/opts"
 )
 
+func lineEndings() cmp.Option {
+	return cmp.Transformer("LineEndings", func(in string) string {
+		// Replace Windows new lines with Unix newlines
+		return strings.Replace(in, "\r\n", "\n", -1)
+	})
+}
+
 func TestExamples(t *testing.T) {
 	t.Parallel()
 	ctx := context.Background()
@@ -181,7 +188,7 @@ func TestReplay(t *testing.T) {
 					t.Fatalf("sqlc %s failed: %s", args.Command, stderr.String())
 				}
 
-				diff := cmp.Diff(strings.TrimSpace(expected), strings.TrimSpace(stderr.String()))
+				diff := cmp.Diff(strings.TrimSpace(expected), strings.TrimSpace(stderr.String()), lineEndings())
 				if diff != "" {
 					t.Fatalf("stderr differed (-want +got):\n%s", diff)
 				}
@@ -236,10 +243,7 @@ func cmpDirectory(t *testing.T, dir string, actual map[string]string) {
 
 	opts := []cmp.Option{
 		cmpopts.EquateEmpty(),
-		cmp.Transformer("LineEndings", func(in string) string {
-			// Replace Windows new lines with Unix newlines
-			return strings.Replace(in, "\r\n", "\n", -1)
-		}),
+		lineEndings(),
 	}
 
 	if !cmp.Equal(expected, actual, opts...) {
