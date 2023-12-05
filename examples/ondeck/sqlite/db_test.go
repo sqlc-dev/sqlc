@@ -1,5 +1,5 @@
-//go:build examples
-// +build examples
+//go:build examples && cgo
+// +build examples,cgo
 
 package ondeck
 
