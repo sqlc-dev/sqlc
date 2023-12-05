@@ -25,6 +25,13 @@ func lineEndings() cmp.Option {
 	})
 }
 
+func stderrTransformer() cmp.Option {
+	return cmp.Transformer("Stderr", func(in string) string {
+		s := strings.Replace(in, "\r\n", "\n", -1)
+		return strings.Replace(s, "\\", "/", -1)
+	})
+}
+
 func TestExamples(t *testing.T) {
 	t.Parallel()
 	ctx := context.Background()
@@ -188,7 +195,11 @@ func TestReplay(t *testing.T) {
 					t.Fatalf("sqlc %s failed: %s", args.Command, stderr.String())
 				}
 
-				diff := cmp.Diff(strings.TrimSpace(expected), strings.TrimSpace(stderr.String()), lineEndings())
+				diff := cmp.Diff(
+					strings.TrimSpace(expected),
+					strings.TrimSpace(stderr.String()),
+					stderrTransformer(),
+				)
 				if diff != "" {
 					t.Fatalf("stderr differed (-want +got):\n%s", diff)
 				}
