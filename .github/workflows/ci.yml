@@ -19,9 +19,9 @@ jobs:
           - isMain: false
         include:
         - os: windows-latest
-          cgo: '1'
+          cgo: '0'
         - os: ubuntu-latest
-          cgo: '1'
+          cgo: '0'
     name: test ${{ matrix.os }} cgo=${{ matrix.cgo }}
     runs-on: ${{ matrix.os }}
 

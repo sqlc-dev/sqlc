@@ -1,7 +1,3 @@
-// Currently requires cgo for wasmtime
-//go:build cgo
-// +build cgo
-
 package main
 
 import (
