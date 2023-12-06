@@ -239,7 +239,7 @@ func (r *Runner) Invoke(ctx context.Context, method string, args any, reply any,
 	if result != nil {
 		defer result.Close(ctx)
 	}
-	if cerr := checkError(err, &stderr); cerr != nil {
+	if cerr := checkError(err, stderr); cerr != nil {
 		return cerr
 	}
 
@@ -262,7 +262,7 @@ func (r *Runner) NewStream(ctx context.Context, desc *grpc.StreamDesc, method st
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-func checkError(err error, stderr io.Reader) error {
+func checkError(err error, stderr bytes.Buffer) error {
 	if err == nil {
 		return err
 	}
