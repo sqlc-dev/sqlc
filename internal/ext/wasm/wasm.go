@@ -244,10 +244,7 @@ func (r *Runner) Invoke(ctx context.Context, method string, args any, reply any,
 	}
 
 	// Print WASM stdout
-	stdoutBlob, err := io.ReadAll(&stdout)
-	if err != nil {
-		return fmt.Errorf("read file: %w", err)
-	}
+	stdoutBlob := stdout.Bytes()
 
 	resp, ok := reply.(protoreflect.ProtoMessage)
 	if !ok {
