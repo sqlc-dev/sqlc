@@ -277,9 +277,9 @@ func checkError(err error, stderr io.Reader) error {
 	}
 
 	// Print WASM stdout
-	stderrBlob, rferr := io.ReadAll(stderr)
-	if rferr == nil && len(stderrBlob) > 0 {
-		return errors.New(string(stderrBlob))
+	stderrBlob := stderr.String()
+	if len(stderrBlob) > 0 {
+		return errors.New(stderrBlob)
 	}
 	return fmt.Errorf("call: %w", err)
 }
