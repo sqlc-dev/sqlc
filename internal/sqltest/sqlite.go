@@ -7,8 +7,6 @@ import (
 	"testing"
 
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
-
-	_ "modernc.org/sqlite"
 )
 
 func SQLite(t *testing.T, migrations []string) (*sql.DB, func()) {
