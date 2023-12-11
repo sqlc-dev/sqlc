@@ -67,6 +67,18 @@ rename:
   author: Writer
 ```
 
+```yaml
+version: "2"
+sql:
+  - engine: postgresql
+    queries: query.sql
+    schema: query.sql
+overrides:
+  go:
+    rename:
+      author: Writer
+```
+
 ```go
 package db
 
