@@ -69,6 +69,80 @@ type Post struct {
 }
 ```
 
+### dbmate
+
+```sql
+-- migrate:up
+CREATE TABLE foo (bar INT NOT NULL);
+
+-- migrate:down
+DROP TABLE foo;
+```
+
+```go
+package db
+
+type Foo struct {
+	Bar int32
+}
+```
+
+### golang-migrate
+
+**Warning:**
+[golang-migrate interprets](https://github.com/golang-migrate/migrate/blob/master/MIGRATIONS.md#migration-filename-format)
+migration filenames numerically. However, sqlc parses migration files in
+lexicographic order. If you choose to have sqlc enumerate your migration files,
+make sure their numeric ordering matches their lexicographic ordering to avoid
+unexpected behavior. This can be done by prepending enough zeroes to the
+migration filenames.
+
+This doesn't work as intended.
+
+```
+1_initial.up.sql
+...
+9_foo.up.sql
+# this migration file will be parsed BEFORE 9_foo
+10_bar.up.sql
+```
+
+This worked as intended.
+
+```
+001_initial.up.sql
+...
+009_foo.up.sql
+010_bar.up.sql
+```
+
+In `20060102.up.sql`:
+
+```sql
+CREATE TABLE post (
+    id    int NOT NULL,
+    title text,
+    body  text,
+    PRIMARY KEY(id)
+);
+```
+
+In `20060102.down.sql`:
+
+```sql
+DROP TABLE post;
+```
+
+```go
+package db
+
+type Post struct {
+	ID    int
+	Title sql.NullString
+	Body  sql.NullString
+}
+```
+
 ### goose
 
 ```sql
@@ -129,79 +203,5 @@ package db
 type Comment struct {
 	ID   int32
 	Text string
-}
-```
-
-### golang-migrate
-
-**Warning:**
-[golang-migrate interprets](https://github.com/golang-migrate/migrate/blob/master/MIGRATIONS.md#migration-filename-format)
-migration filenames numerically. However, sqlc parses migration files in
-lexicographic order. If you choose to have sqlc enumerate your migration files,
-make sure their numeric ordering matches their lexicographic ordering to avoid
-unexpected behavior. This can be done by prepending enough zeroes to the
-migration filenames.
-
-This doesn't work as intended.
-
-```
-1_initial.up.sql
-...
-9_foo.up.sql
-# this migration file will be parsed BEFORE 9_foo
-10_bar.up.sql
-```
-
-This worked as intended.
-
-```
-001_initial.up.sql
-...
-009_foo.up.sql
-010_bar.up.sql
-```
-
-In `20060102.up.sql`:
-
-```sql
-CREATE TABLE post (
-    id    int NOT NULL,
-    title text,
-    body  text,
-    PRIMARY KEY(id)
-);
-```
-
-In `20060102.down.sql`:
-
-```sql
-DROP TABLE post;
-```
-
-```go
-package db
-
-type Post struct {
-	ID    int
-	Title sql.NullString
-	Body  sql.NullString
-}
-```
-
-### dbmate
-
-```sql
--- migrate:up
-CREATE TABLE foo (bar INT NOT NULL);
-
--- migrate:down
-DROP TABLE foo;
-```
-
-```go
-package db
-
-type Foo struct {
-	Bar int32
 }
 ```
