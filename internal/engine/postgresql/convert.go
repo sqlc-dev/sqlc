@@ -1896,6 +1896,31 @@ func convertLockingClause(n *pg.LockingClause) *ast.LockingClause {
 	}
 }
 
+func convertMergeStmt(n *pg.MergeStmt) *ast.MergeStmt {
+	if n == nil {
+		return nil
+	}
+
+	return &ast.MergeStmt{
+		Relation:         convertRangeVar(n.Relation),
+		JoinCondition:    convertNode(n.JoinCondition),
+		WithClause:       convertWithClause(n.WithClause),
+		SourceRelation:   convertNode(n.SourceRelation),
+		MergeWhenClauses: convertSlice(n.MergeWhenClauses),
+	}
+}
+
+func convertMergeWhenClause(n *pg.MergeWhenClause) *ast.MergeWhenClause {
+	if n == nil {
+		return nil
+	}
+	return &ast.MergeWhenClause{
+		Condition:  convertNode(n.Condition),
+		TargetList: convertSlice(n.TargetList),
+		Values:     convertSlice(n.Values),
+	}
+}
+
 func convertMinMaxExpr(n *pg.MinMaxExpr) *ast.MinMaxExpr {
 	if n == nil {
 		return nil
@@ -3412,6 +3437,12 @@ func convertNode(node *pg.Node) ast.Node {
 
 	case *pg.Node_LockingClause:
 		return convertLockingClause(n.LockingClause)
+
+	case *pg.Node_MergeStmt:
+		return convertMergeStmt(n.MergeStmt)
+
+	case *pg.Node_MergeWhenClause:
+		return convertMergeWhenClause(n.MergeWhenClause)
 
 	case *pg.Node_MinMaxExpr:
 		return convertMinMaxExpr(n.MinMaxExpr)

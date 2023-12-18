@@ -843,6 +843,12 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 	case *ast.LockingClause:
 		a.apply(n, "LockedRels", nil, n.LockedRels)
 
+	case *ast.MergeStmt:
+		a.apply(n, "Relation", nil, n.Relation)
+
+	case *ast.MergeWhenClause:
+		a.apply(n, "TargetList", nil, n.TargetList)
+
 	case *ast.MinMaxExpr:
 		a.apply(n, "Xpr", nil, n.Xpr)
 		a.apply(n, "Args", nil, n.Args)

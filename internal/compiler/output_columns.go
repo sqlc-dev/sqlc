@@ -122,6 +122,8 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 		targets = &ast.List{}
 	case *ast.UpdateStmt:
 		targets = n.ReturningList
+	case *ast.MergeStmt:
+		targets = &ast.List{}
 	default:
 		return nil, fmt.Errorf("outputColumns: unsupported node type: %T", n)
 	}
@@ -519,6 +521,8 @@ func (c *Compiler) sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, erro
 	case *ast.CallStmt:
 		list = &ast.List{}
 	case *ast.NotifyStmt, *ast.ListenStmt:
+		list = &ast.List{}
+	case *ast.MergeStmt:
 		list = &ast.List{}
 	default:
 		return nil, fmt.Errorf("sourceTables: unsupported node type: %T", n)
