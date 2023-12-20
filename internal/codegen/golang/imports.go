@@ -390,7 +390,7 @@ func (i *importer) queryImports(filename string) fileImports {
 	}
 
 	sqlpkg := parseDriver(i.Options.SqlPackage)
-	if sqlcSliceScan() {
+	if sqlcSliceScan() && !sqlpkg.IsPGX() {
 		std["strings"] = struct{}{}
 	}
 	if sliceScan() && !sqlpkg.IsPGX() {
