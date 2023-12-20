@@ -46,6 +46,10 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 		return nil, err
 	}
 
+	if name == "" {
+		return nil, nil
+	}
+
 	if err := validate.Cmd(raw.Stmt, name, cmd); err != nil {
 		return nil, err
 	}
