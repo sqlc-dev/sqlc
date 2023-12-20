@@ -13,6 +13,10 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/config"
 )
 
+func init() {
+	pushCmd.Flags().StringSliceP("tag", "t", nil, "tag this push with a value")
+}
+
 var pushCmd = &cobra.Command{
 	Use:     "push",
 	Aliases: []string{"upload"},
@@ -20,9 +24,14 @@ var pushCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		stderr := cmd.ErrOrStderr()
 		dir, name := getConfigPath(stderr, cmd.Flag("file"))
+		tags, err := cmd.Flags().GetStringSlice("tag")
+		if err != nil {
+			return err
+		}
 		opts := &Options{
 			Env:    ParseEnv(cmd),
 			Stderr: stderr,
+			Tags:   tags,
 		}
 		if err := Push(cmd.Context(), dir, name, opts); err != nil {
 			fmt.Fprintf(stderr, "error pushing: %s\n", err)
@@ -78,6 +87,6 @@ func Push(ctx context.Context, dir, filename string, opts *Options) error {
 	if e.DryRun {
 		return up.DumpRequestOut(ctx, p.results)
 	} else {
-		return up.Upload(ctx, p.results)
+		return up.Upload(ctx, p.results, opts.Tags)
 	}
 }
