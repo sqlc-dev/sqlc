@@ -72,7 +72,7 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 
 	var anlys *analysis
 	if c.analyzer != nil {
-		inference, _ := c.inferQuery(raw, rawSQL)
+		inference, _ := c.inferQuery(raw, rawSQL, md.Params)
 		if inference == nil {
 			inference = &analysis{}
 		}
@@ -100,7 +100,7 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 		// FOOTGUN: combineAnalysis mutates inference
 		anlys = combineAnalysis(inference, result)
 	} else {
-		anlys, err = c.analyzeQuery(raw, rawSQL)
+		anlys, err = c.analyzeQuery(raw, rawSQL, md.Params)
 		if err != nil {
 			return nil, err
 		}

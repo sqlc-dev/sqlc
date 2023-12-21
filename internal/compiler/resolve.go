@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"strconv"
 
+	"github.com/sqlc-dev/sqlc/internal/metadata"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
 	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
@@ -21,7 +22,7 @@ func dataType(n *ast.TypeName) string {
 	}
 }
 
-func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, args []paramRef, params *named.ParamSet, embeds rewrite.EmbedSet) ([]Parameter, error) {
+func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, args []paramRef, params *named.ParamSet, embeds rewrite.EmbedSet, paramAnnotations map[string]metadata.ParamMetadata) ([]Parameter, error) {
 	c := comp.catalog
 
 	aliasMap := map[string]*ast.TableName{}
@@ -619,5 +620,18 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 			})
 		}
 	}
+
+	// Override the inferrerd type and nullability of annotated named params
+	for i, param := range a {
+		if param.Column.IsNamedParam {
+			if md, ok := paramAnnotations[param.Column.Name]; ok {
+				a[i].Column.DataType = md.DatabaseType
+				if md.ForceNotNull != nil {
+					a[i].Column.NotNull = *md.ForceNotNull
+				}
+			}
+		}
+	}
+
 	return a, nil
 }

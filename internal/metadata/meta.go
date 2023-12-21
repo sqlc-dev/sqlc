@@ -15,7 +15,7 @@ type Metadata struct {
 	Name     string
 	Cmd      string
 	Comments []string
-	Params   map[string]string
+	Params   map[string]ParamMetadata
 	Flags    map[string]bool
 
 	Filename string
@@ -33,6 +33,12 @@ const (
 	CmdBatchMany  = ":batchmany"
 	CmdBatchOne   = ":batchone"
 )
+
+type ParamMetadata struct {
+	DatabaseType string
+	// unset => nil, "!" => true, "?" => false
+	ForceNotNull *bool
+}
 
 // A query name must be a valid Go identifier
 //
@@ -113,8 +119,8 @@ func ParseQueryNameAndType(t string, commentStyle CommentSyntax) (string, string
 	return "", "", nil
 }
 
-func ParseParamsAndFlags(comments []string) (map[string]string, map[string]bool, error) {
-	params := make(map[string]string)
+func ParseParamsAndFlags(comments []string) (map[string]ParamMetadata, map[string]bool, error) {
+	params := make(map[string]ParamMetadata)
 	flags := make(map[string]bool)
 
 	for _, line := range comments {
@@ -137,7 +143,25 @@ func ParseParamsAndFlags(comments []string) (map[string]string, map[string]bool,
 				paramToken := s.Text()
 				rest = append(rest, paramToken)
 			}
-			params[name] = strings.Join(rest, " ")
+			var hasSuffix, suffixValue bool
+			switch name[len(name)-1] {
+			case '!':
+				name = name[:len(name)-1]
+				hasSuffix = true
+				suffixValue = true
+			case '?':
+				name = name[:len(name)-1]
+				hasSuffix = true
+				suffixValue = false
+			}
+			var forceNotNull *bool
+			if hasSuffix {
+				forceNotNull = &suffixValue
+			}
+			params[name] = ParamMetadata{
+				DatabaseType: strings.Join(rest, " "),
+				ForceNotNull: forceNotNull,
+			}
 		default:
 			flags[token] = true
 		}
