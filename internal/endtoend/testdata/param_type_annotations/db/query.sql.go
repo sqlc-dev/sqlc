@@ -8,7 +8,6 @@ package db
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 
 	"github.com/google/uuid"
 )
@@ -29,8 +28,8 @@ const testForceNotNull = `-- name: TestForceNotNull :one
 SELECT id, name FROM test WHERE name = $1
 `
 
-// @param foo! jsonb
-func (q *Queries) TestForceNotNull(ctx context.Context, foo json.RawMessage) (Test, error) {
+// @param foo! uuid
+func (q *Queries) TestForceNotNull(ctx context.Context, foo uuid.UUID) (Test, error) {
 	row := q.db.QueryRowContext(ctx, testForceNotNull, foo)
 	var i Test
 	err := row.Scan(&i.ID, &i.Name)

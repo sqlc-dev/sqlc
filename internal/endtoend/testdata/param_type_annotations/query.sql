@@ -7,7 +7,7 @@ SELECT * FROM test WHERE id = sqlc.arg('foo');
 SELECT * FROM test WHERE name = @foo;
 
 -- name: TestForceNotNull :one
--- @param foo! jsonb
+-- @param foo! uuid
 SELECT * FROM test WHERE name = @foo;
 
 -- name: TestForceNullable :one
