@@ -36,9 +36,16 @@ const (
 
 type ParamMetadata struct {
 	DatabaseType string
-	// unset => nil, "!" => true, "?" => false
-	ForceNotNull *bool
+	Nullability  ParamNullability
 }
+
+type ParamNullability int
+
+const (
+	ParamNullabilityUnspecified   ParamNullability = iota // ""
+	ParamNullabilityForceNotNull                          // "!"
+	ParamNullabilityForceNullable                         // "?"
+)
 
 // A query name must be a valid Go identifier
 //
@@ -143,24 +150,18 @@ func ParseParamsAndFlags(comments []string) (map[string]ParamMetadata, map[strin
 				paramToken := s.Text()
 				rest = append(rest, paramToken)
 			}
-			var hasSuffix, suffixValue bool
-			switch name[len(name)-1] {
-			case '!':
+			var nullability ParamNullability
+			switch {
+			case strings.HasSuffix(name, "!"):
 				name = name[:len(name)-1]
-				hasSuffix = true
-				suffixValue = true
-			case '?':
+				nullability = ParamNullabilityForceNotNull
+			case strings.HasSuffix(name, "?"):
 				name = name[:len(name)-1]
-				hasSuffix = true
-				suffixValue = false
-			}
-			var forceNotNull *bool
-			if hasSuffix {
-				forceNotNull = &suffixValue
+				nullability = ParamNullabilityForceNullable
 			}
 			params[name] = ParamMetadata{
 				DatabaseType: strings.Join(rest, " "),
-				ForceNotNull: forceNotNull,
+				Nullability:  nullability,
 			}
 		default:
 			flags[token] = true

@@ -72,7 +72,7 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 
 	var anlys *analysis
 	if c.analyzer != nil {
-		inference, _ := c.inferQuery(raw, rawSQL, md.Params)
+		inference, _ := c.inferQuery(raw, rawSQL)
 		if inference == nil {
 			inference = &analysis{}
 		}
@@ -100,9 +100,25 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 		// FOOTGUN: combineAnalysis mutates inference
 		anlys = combineAnalysis(inference, result)
 	} else {
-		anlys, err = c.analyzeQuery(raw, rawSQL, md.Params)
+		anlys, err = c.analyzeQuery(raw, rawSQL)
 		if err != nil {
 			return nil, err
+		}
+	}
+
+	// Override the inferrerd type and nullability of annotated named params
+	for i, param := range anlys.Parameters {
+		if !param.Column.IsNamedParam {
+			continue
+		}
+		if paramMetadata, ok := md.Params[param.Column.Name]; ok {
+			anlys.Parameters[i].Column.DataType = paramMetadata.DatabaseType
+			switch paramMetadata.Nullability {
+			case metadata.ParamNullabilityForceNotNull:
+				anlys.Parameters[i].Column.NotNull = true
+			case metadata.ParamNullabilityForceNullable:
+				anlys.Parameters[i].Column.NotNull = false
+			}
 		}
 	}
 

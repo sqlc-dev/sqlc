@@ -5,7 +5,6 @@ import (
 
 	analyzer "github.com/sqlc-dev/sqlc/internal/analysis"
 	"github.com/sqlc-dev/sqlc/internal/config"
-	"github.com/sqlc-dev/sqlc/internal/metadata"
 	"github.com/sqlc-dev/sqlc/internal/source"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/named"
@@ -107,15 +106,15 @@ func combineAnalysis(prev *analysis, a *analyzer.Analysis) *analysis {
 	return prev
 }
 
-func (c *Compiler) analyzeQuery(raw *ast.RawStmt, query string, paramAnnotations map[string]metadata.ParamMetadata) (*analysis, error) {
-	return c._analyzeQuery(raw, query, paramAnnotations, true)
+func (c *Compiler) analyzeQuery(raw *ast.RawStmt, query string) (*analysis, error) {
+	return c._analyzeQuery(raw, query, true)
 }
 
-func (c *Compiler) inferQuery(raw *ast.RawStmt, query string, paramAnnotations map[string]metadata.ParamMetadata) (*analysis, error) {
-	return c._analyzeQuery(raw, query, paramAnnotations, false)
+func (c *Compiler) inferQuery(raw *ast.RawStmt, query string) (*analysis, error) {
+	return c._analyzeQuery(raw, query, false)
 }
 
-func (c *Compiler) _analyzeQuery(raw *ast.RawStmt, query string, paramAnnotations map[string]metadata.ParamMetadata, failfast bool) (*analysis, error) {
+func (c *Compiler) _analyzeQuery(raw *ast.RawStmt, query string, failfast bool) (*analysis, error) {
 	errors := make([]error, 0)
 	check := func(err error) error {
 		if failfast {
@@ -174,7 +173,7 @@ func (c *Compiler) _analyzeQuery(raw *ast.RawStmt, query string, paramAnnotation
 		return nil, err
 	}
 
-	params, err := c.resolveCatalogRefs(qc, rvs, refs, namedParams, embeds, paramAnnotations)
+	params, err := c.resolveCatalogRefs(qc, rvs, refs, namedParams, embeds)
 	if err := check(err); err != nil {
 		return nil, err
 	}
