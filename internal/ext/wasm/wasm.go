@@ -29,31 +29,6 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
 
-func NewRunner(url string, checksum string, env []string) *Runner {
-	return &Runner{
-		URL:    url,
-		SHA256: checksum,
-		Env:    env,
-		rt:     wazero.NewRuntime(context.Background()),
-	}
-}
-
-func cacheDir() (string, error) {
-	cache := os.Getenv("SQLCCACHE")
-	if cache != "" {
-		return cache, nil
-	}
-	cacheHome := os.Getenv("XDG_CACHE_HOME")
-	if cacheHome == "" {
-		home, err := os.UserHomeDir()
-		if err != nil {
-			return "", err
-		}
-		cacheHome = filepath.Join(home, ".cache")
-	}
-	return filepath.Join(cacheHome, "sqlc"), nil
-}
-
 var flight singleflight.Group
 
 // Verify the provided sha256 is valid.

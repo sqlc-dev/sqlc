@@ -7,6 +7,5 @@ type Runner struct {
 	SHA256 string
 	Env    []string
 
-	rt   wazero.Runtime
-	code wazero.CompiledModule
+	rt wazero.Runtime
 }
