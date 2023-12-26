@@ -31,6 +31,11 @@ import (
 
 var flight singleflight.Group
 
+type runtimeAndCode struct {
+	rt   wazero.Runtime
+	code wazero.CompiledModule
+}
+
 // Verify the provided sha256 is valid.
 func (r *Runner) getChecksum(ctx context.Context) (string, error) {
 	if r.SHA256 != "" {
@@ -45,7 +50,7 @@ func (r *Runner) getChecksum(ctx context.Context) (string, error) {
 	return sum, nil
 }
 
-func (r *Runner) loadAndCompile(ctx context.Context) (wazero.CompiledModule, error) {
+func (r *Runner) loadAndCompile(ctx context.Context) (*runtimeAndCode, error) {
 	expected, err := r.getChecksum(ctx)
 	if err != nil {
 		return nil, err
@@ -60,7 +65,7 @@ func (r *Runner) loadAndCompile(ctx context.Context) (wazero.CompiledModule, err
 	if err != nil {
 		return nil, err
 	}
-	data, ok := value.(wazero.CompiledModule)
+	data, ok := value.(*runtimeAndCode)
 	if !ok {
 		return nil, fmt.Errorf("returned value was not a compiled module")
 	}
@@ -108,7 +113,7 @@ func (r *Runner) fetch(ctx context.Context, uri string) ([]byte, string, error) 
 	return wmod, actual, nil
 }
 
-func (r *Runner) loadAndCompileWASM(ctx context.Context, cache string, expected string) (wazero.CompiledModule, error) {
+func (r *Runner) loadAndCompileWASM(ctx context.Context, cache string, expected string) (*runtimeAndCode, error) {
 	pluginDir := filepath.Join(cache, expected)
 	pluginPath := filepath.Join(pluginDir, "plugin.wasm")
 	_, staterr := os.Stat(pluginPath)
@@ -142,17 +147,17 @@ func (r *Runner) loadAndCompileWASM(ctx context.Context, cache string, expected 
 		return nil, fmt.Errorf("wazero.NewCompilationCacheWithDir: %w", err)
 	}
 	config := wazero.NewRuntimeConfig().WithCompilationCache(wazeroCache)
-	r.rt = wazero.NewRuntimeWithConfig(ctx, config)
+	rt := wazero.NewRuntimeWithConfig(ctx, config)
 	// TODO: Handle error
-	wasi_snapshot_preview1.MustInstantiate(ctx, r.rt)
+	wasi_snapshot_preview1.MustInstantiate(ctx, rt)
 
 	// Compile the Wasm binary once so that we can skip the entire compilation time during instantiation.
-	code, err := r.rt.CompileModule(ctx, wmod)
+	code, err := rt.CompileModule(ctx, wmod)
 	if err != nil {
 		return nil, fmt.Errorf("compile module: %w", err)
 	}
 
-	return code, nil
+	return &runtimeAndCode{rt: rt, code: code}, nil
 }
 
 // removePGCatalog removes the pg_catalog schema from the request. There is a
@@ -194,7 +199,7 @@ func (r *Runner) Invoke(ctx context.Context, method string, args any, reply any,
 		return fmt.Errorf("failed to encode codegen request: %w", err)
 	}
 
-	wasmCompiled, err := r.loadAndCompile(ctx)
+	runtimeAndCode, err := r.loadAndCompile(ctx)
 	if err != nil {
 		return fmt.Errorf("loadBytes: %w", err)
 	}
@@ -212,7 +217,7 @@ func (r *Runner) Invoke(ctx context.Context, method string, args any, reply any,
 		conf = conf.WithEnv(key, os.Getenv(key))
 	}
 
-	result, err := r.rt.InstantiateModule(ctx, wasmCompiled, conf)
+	result, err := runtimeAndCode.rt.InstantiateModule(ctx, runtimeAndCode.code, conf)
 	if result != nil {
 		defer result.Close(ctx)
 	}
