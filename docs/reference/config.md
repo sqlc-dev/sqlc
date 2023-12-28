@@ -164,7 +164,7 @@ The `gen` mapping supports the following keys:
   - If true, emit a function per enum type
     that returns all valid enum values.
 - `emit_embed_alias`:
-  - If true, use alias name inside `sqlc.embed()` function instead of table name for field name. Defaults to `false`.
+  - If true, use alias name inside `sqlc.embed()` macro instead of table name for field name. Defaults to `false`.
 - `build_tags`:
   - If set, add a `//go:build <build_tags>` directive at the beginning of each generated Go file.
 - `json_tags_id_uppercase`:
@@ -467,7 +467,7 @@ Each mapping in the `packages` collection has the following keys:
   - If true, emit a function per enum type
     that returns all valid enum values.
 - `emit_embed_alias`:
-  - If true, use alias name inside `sqlc.embed()` function instead of table name for field name. Defaults to `false`.
+  - If true, use alias name inside `sqlc.embed()` macro instead of table name for field name. Defaults to `false`.
 - `build_tags`:
   - If set, add a `//go:build <build_tags>` directive at the beginning of each generated Go file.
 - `json_tags_case_style`:
