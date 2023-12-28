@@ -59,3 +59,23 @@ type ScoreAndTestsRow struct {
 	TestScore TestScore
 }
 ```
+
+sqlc can generate structs with fields based on the alias inside the macro `sqlc.embed()` by adding the `emit_embed_alias` key to the configuration file as it shows on [configuration reference](../reference/config.md).
+
+```sql
+-- name: ListUserLink :many
+SELECT
+    sqlc.embed(owner),
+    sqlc.embed(consumer)
+FROM
+    user_links
+    INNER JOIN users AS owner ON owner.id = user_links.owner_id
+    INNER JOIN users AS consumer ON consumer.id = user_links.consumer_id;
+```
+
+```
+type ListUserLinkRow struct {
+	Owner    User
+	Consumer User
+}
+```

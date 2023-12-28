@@ -67,8 +67,8 @@ FROM
 `
 
 type ListUserLinkRow struct {
-	User   User `db:"user" json:"user"`
-	User_2 User `db:"user_2" json:"user_2"`
+	Owner    User `db:"owner" json:"owner"`
+	Consumer User `db:"consumer" json:"consumer"`
 }
 
 func (q *Queries) ListUserLink(ctx context.Context) ([]ListUserLinkRow, error) {
@@ -81,12 +81,12 @@ func (q *Queries) ListUserLink(ctx context.Context) ([]ListUserLinkRow, error) {
 	for rows.Next() {
 		var i ListUserLinkRow
 		if err := rows.Scan(
-			&i.User.ID,
-			&i.User.Name,
-			&i.User.Age,
-			&i.User_2.ID,
-			&i.User_2.Name,
-			&i.User_2.Age,
+			&i.Owner.ID,
+			&i.Owner.Name,
+			&i.Owner.Age,
+			&i.Consumer.ID,
+			&i.Consumer.Name,
+			&i.Consumer.Age,
 		); err != nil {
 			return nil, err
 		}
@@ -118,13 +118,13 @@ SELECT u.id, u.name, u.age FROM users u
 `
 
 type WithAliasRow struct {
-	User User `db:"user" json:"user"`
+	U User `db:"u" json:"u"`
 }
 
 func (q *Queries) WithAlias(ctx context.Context) (WithAliasRow, error) {
 	row := q.db.QueryRow(ctx, withAlias)
 	var i WithAliasRow
-	err := row.Scan(&i.User.ID, &i.User.Name, &i.User.Age)
+	err := row.Scan(&i.U.ID, &i.U.Name, &i.U.Age)
 	return i, err
 }
 
@@ -159,8 +159,8 @@ INNER JOIN baz.users bu ON users.id = bu.id
 `
 
 type WithCrossSchemaRow struct {
-	User    User    `db:"user" json:"user"`
-	BazUser BazUser `db:"baz_user" json:"baz_user"`
+	User User    `db:"user" json:"user"`
+	Bu   BazUser `db:"bu" json:"bu"`
 }
 
 func (q *Queries) WithCrossSchema(ctx context.Context) ([]WithCrossSchemaRow, error) {
@@ -176,8 +176,8 @@ func (q *Queries) WithCrossSchema(ctx context.Context) ([]WithCrossSchemaRow, er
 			&i.User.ID,
 			&i.User.Name,
 			&i.User.Age,
-			&i.BazUser.ID,
-			&i.BazUser.Name,
+			&i.Bu.ID,
+			&i.Bu.Name,
 		); err != nil {
 			return nil, err
 		}
@@ -194,13 +194,13 @@ SELECT bu.id, bu.name FROM baz.users bu
 `
 
 type WithSchemaRow struct {
-	BazUser BazUser `db:"baz_user" json:"baz_user"`
+	Bu BazUser `db:"bu" json:"bu"`
 }
 
 func (q *Queries) WithSchema(ctx context.Context) (WithSchemaRow, error) {
 	row := q.db.QueryRow(ctx, withSchema)
 	var i WithSchemaRow
-	err := row.Scan(&i.BazUser.ID, &i.BazUser.Name)
+	err := row.Scan(&i.Bu.ID, &i.Bu.Name)
 	return i, err
 }
 

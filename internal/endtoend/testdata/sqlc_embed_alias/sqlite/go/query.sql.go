@@ -15,12 +15,12 @@ SELECT users.id, users.name, users.age, users.id, users.name, users.age FROM use
 `
 
 type DuplicateRow struct {
-	User   User `db:"user" json:"user"`
-	User_2 User `db:"user_2" json:"user_2"`
+	User   User
+	User_2 User
 }
 
 func (q *Queries) Duplicate(ctx context.Context) (DuplicateRow, error) {
-	row := q.db.QueryRow(ctx, duplicate)
+	row := q.db.QueryRowContext(ctx, duplicate)
 	var i DuplicateRow
 	err := row.Scan(
 		&i.User.ID,
@@ -34,24 +34,24 @@ func (q *Queries) Duplicate(ctx context.Context) (DuplicateRow, error) {
 }
 
 const join = `-- name: Join :one
-SELECT users.id, users.name, users.age, posts.id, posts.user_id FROM posts
-INNER JOIN users ON posts.user_id = users.id
+SELECT u.id, u.name, u.age, p.id, p.user_id FROM posts AS p
+INNER JOIN users AS u ON p.user_id = u.users.id
 `
 
 type JoinRow struct {
-	User User `db:"user" json:"user"`
-	Post Post `db:"post" json:"post"`
+	U User
+	P Post
 }
 
 func (q *Queries) Join(ctx context.Context) (JoinRow, error) {
-	row := q.db.QueryRow(ctx, join)
+	row := q.db.QueryRowContext(ctx, join)
 	var i JoinRow
 	err := row.Scan(
-		&i.User.ID,
-		&i.User.Name,
-		&i.User.Age,
-		&i.Post.ID,
-		&i.Post.UserID,
+		&i.U.ID,
+		&i.U.Name,
+		&i.U.Age,
+		&i.P.ID,
+		&i.P.UserID,
 	)
 	return i, err
 }
@@ -67,12 +67,12 @@ FROM
 `
 
 type ListUserLinkRow struct {
-	User   User `db:"user" json:"user"`
-	User_2 User `db:"user_2" json:"user_2"`
+	Owner    User
+	Consumer User
 }
 
 func (q *Queries) ListUserLink(ctx context.Context) ([]ListUserLinkRow, error) {
-	rows, err := q.db.Query(ctx, listUserLink)
+	rows, err := q.db.QueryContext(ctx, listUserLink)
 	if err != nil {
 		return nil, err
 	}
@@ -81,16 +81,19 @@ func (q *Queries) ListUserLink(ctx context.Context) ([]ListUserLinkRow, error) {
 	for rows.Next() {
 		var i ListUserLinkRow
 		if err := rows.Scan(
-			&i.User.ID,
-			&i.User.Name,
-			&i.User.Age,
-			&i.User_2.ID,
-			&i.User_2.Name,
-			&i.User_2.Age,
+			&i.Owner.ID,
+			&i.Owner.Name,
+			&i.Owner.Age,
+			&i.Consumer.ID,
+			&i.Consumer.Name,
+			&i.Consumer.Age,
 		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -103,28 +106,28 @@ SELECT users.id, users.name, users.age FROM users
 `
 
 type OnlyRow struct {
-	User User `db:"user" json:"user"`
+	User User
 }
 
 func (q *Queries) Only(ctx context.Context) (OnlyRow, error) {
-	row := q.db.QueryRow(ctx, only)
+	row := q.db.QueryRowContext(ctx, only)
 	var i OnlyRow
 	err := row.Scan(&i.User.ID, &i.User.Name, &i.User.Age)
 	return i, err
 }
 
 const withAlias = `-- name: WithAlias :one
-SELECT u.id, u.name, u.age FROM users u
+SELECT u.id, u.name, u.age FROM users AS u
 `
 
 type WithAliasRow struct {
-	User User `db:"user" json:"user"`
+	U User
 }
 
 func (q *Queries) WithAlias(ctx context.Context) (WithAliasRow, error) {
-	row := q.db.QueryRow(ctx, withAlias)
+	row := q.db.QueryRowContext(ctx, withAlias)
 	var i WithAliasRow
-	err := row.Scan(&i.User.ID, &i.User.Name, &i.User.Age)
+	err := row.Scan(&i.U.ID, &i.U.Name, &i.U.Age)
 	return i, err
 }
 
@@ -133,14 +136,14 @@ SELECT users.id, users.name, users.age, id, name, age FROM users
 `
 
 type WithAsteriskRow struct {
-	User User          `db:"user" json:"user"`
-	ID   int32         `db:"id" json:"id"`
-	Name string        `db:"name" json:"name"`
-	Age  sql.NullInt32 `db:"age" json:"age"`
+	User User
+	ID   int64
+	Name string
+	Age  sql.NullInt64
 }
 
 func (q *Queries) WithAsterisk(ctx context.Context) (WithAsteriskRow, error) {
-	row := q.db.QueryRow(ctx, withAsterisk)
+	row := q.db.QueryRowContext(ctx, withAsterisk)
 	var i WithAsteriskRow
 	err := row.Scan(
 		&i.User.ID,
@@ -154,17 +157,17 @@ func (q *Queries) WithAsterisk(ctx context.Context) (WithAsteriskRow, error) {
 }
 
 const withCrossSchema = `-- name: WithCrossSchema :many
-SELECT users.id, users.name, users.age, bu.id, bu.name FROM users
-INNER JOIN baz.users bu ON users.id = bu.id
+SELECT u.id, u.name, u.age, bu.id, bu.name FROM users AS u
+INNER JOIN baz.users bu ON u.id = bu.id
 `
 
 type WithCrossSchemaRow struct {
-	User    User    `db:"user" json:"user"`
-	BazUser BazUser `db:"baz_user" json:"baz_user"`
+	U  User
+	Bu BazUser
 }
 
 func (q *Queries) WithCrossSchema(ctx context.Context) ([]WithCrossSchemaRow, error) {
-	rows, err := q.db.Query(ctx, withCrossSchema)
+	rows, err := q.db.QueryContext(ctx, withCrossSchema)
 	if err != nil {
 		return nil, err
 	}
@@ -173,15 +176,18 @@ func (q *Queries) WithCrossSchema(ctx context.Context) ([]WithCrossSchemaRow, er
 	for rows.Next() {
 		var i WithCrossSchemaRow
 		if err := rows.Scan(
-			&i.User.ID,
-			&i.User.Name,
-			&i.User.Age,
-			&i.BazUser.ID,
-			&i.BazUser.Name,
+			&i.U.ID,
+			&i.U.Name,
+			&i.U.Age,
+			&i.Bu.ID,
+			&i.Bu.Name,
 		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -190,17 +196,17 @@ func (q *Queries) WithCrossSchema(ctx context.Context) ([]WithCrossSchemaRow, er
 }
 
 const withSchema = `-- name: WithSchema :one
-SELECT bu.id, bu.name FROM baz.users bu
+SELECT bu.id, bu.name FROM baz.users AS bu
 `
 
 type WithSchemaRow struct {
-	BazUser BazUser `db:"baz_user" json:"baz_user"`
+	Bu BazUser
 }
 
 func (q *Queries) WithSchema(ctx context.Context) (WithSchemaRow, error) {
-	row := q.db.QueryRow(ctx, withSchema)
+	row := q.db.QueryRowContext(ctx, withSchema)
 	var i WithSchemaRow
-	err := row.Scan(&i.BazUser.ID, &i.BazUser.Name)
+	err := row.Scan(&i.Bu.ID, &i.Bu.Name)
 	return i, err
 }
 
@@ -209,12 +215,12 @@ SELECT users.id, users.name, users.age, (SELECT count(*) FROM users) AS total_co
 `
 
 type WithSubqueryRow struct {
-	User       User  `db:"user" json:"user"`
-	TotalCount int64 `db:"total_count" json:"total_count"`
+	User       User
+	TotalCount int64
 }
 
 func (q *Queries) WithSubquery(ctx context.Context) ([]WithSubqueryRow, error) {
-	rows, err := q.db.Query(ctx, withSubquery)
+	rows, err := q.db.QueryContext(ctx, withSubquery)
 	if err != nil {
 		return nil, err
 	}
@@ -231,6 +237,9 @@ func (q *Queries) WithSubquery(ctx context.Context) ([]WithSubqueryRow, error) {
 			return nil, err
 		}
 		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
