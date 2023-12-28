@@ -50,7 +50,7 @@ func TestPutOutColumns_ForZeroColumns(t *testing.T) {
 		},
 		{
 			cmd:  metadata.CmdBatchOne,
-			want: false,
+			want: true,
 		},
 	}
 	for _, tc := range tests {

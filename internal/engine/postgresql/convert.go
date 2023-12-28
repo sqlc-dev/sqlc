@@ -1,6 +1,3 @@
-//go:build !windows && cgo
-// +build !windows,cgo
-
 package postgresql
 
 import (

@@ -10,6 +10,9 @@ type Options struct {
 	Env          Env
 	Stderr       io.Writer
 	MutateConfig func(*config.Config)
+	// TODO: Move these to a command-specific struct
+	Tags    []string
+	Against string
 }
 
 func (o *Options) ReadConfig(dir, filename string) (string, *config.Config, error) {

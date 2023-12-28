@@ -18,7 +18,6 @@ import (
 	"github.com/google/cel-go/cel"
 	"github.com/google/cel-go/ext"
 	"github.com/jackc/pgx/v5"
-	_ "github.com/mattn/go-sqlite3"
 	"github.com/spf13/cobra"
 	"google.golang.org/protobuf/encoding/protojson"
 
@@ -404,10 +403,6 @@ func (c *checker) fetchDatabaseUri(ctx context.Context, s config.SQL) (string, f
 		return uri, cleanup, err
 	}
 
-	if s.Engine != config.EnginePostgreSQL {
-		return "", cleanup, fmt.Errorf("managed: only PostgreSQL currently")
-	}
-
 	if c.Client == nil {
 		// FIXME: Eventual race condition
 		client, err := quickdb.NewClientFromConfig(c.Conf.Cloud)
@@ -431,7 +426,7 @@ func (c *checker) fetchDatabaseUri(ctx context.Context, s config.SQL) (string, f
 	}
 
 	resp, err := c.Client.CreateEphemeralDatabase(ctx, &pb.CreateEphemeralDatabaseRequest{
-		Engine:     "postgresql",
+		Engine:     string(s.Engine),
 		Region:     quickdb.GetClosestRegion(),
 		Migrations: ddl,
 	})
@@ -446,7 +441,19 @@ func (c *checker) fetchDatabaseUri(ctx context.Context, s config.SQL) (string, f
 		return err
 	}
 
-	return resp.Uri, cleanup, nil
+	var uri string
+	switch s.Engine {
+	case config.EngineMySQL:
+		dburi, err := quickdb.MySQLReformatURI(resp.Uri)
+		if err != nil {
+			return "", cleanup, fmt.Errorf("reformat uri: %w", err)
+		}
+		uri = dburi
+	default:
+		uri = resp.Uri
+	}
+
+	return uri, cleanup, nil
 }
 
 func (c *checker) DSN(dsn string) (string, error) {
@@ -521,7 +528,7 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 			prep = &dbPreparer{db}
 			expl = &mysqlExplainer{db}
 		case config.EngineSQLite:
-			db, err := sql.Open("sqlite3", dburl)
+			db, err := sql.Open("sqlite", dburl)
 			if err != nil {
 				return fmt.Errorf("database: connection error: %s", err)
 			}

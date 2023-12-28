@@ -57,7 +57,7 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 		return nil, err
 	}
 
-	var targets *ast.List
+	targets := &ast.List{}
 	switch n := node.(type) {
 	case *ast.DeleteStmt:
 		targets = n.ReturningList
@@ -114,16 +114,8 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 		if isUnion {
 			return c.outputColumns(qc, n.Larg)
 		}
-	case *ast.DoStmt:
-		targets = &ast.List{}
-	case *ast.CallStmt:
-		targets = &ast.List{}
-	case *ast.TruncateStmt, *ast.RefreshMatViewStmt, *ast.NotifyStmt, *ast.ListenStmt:
-		targets = &ast.List{}
 	case *ast.UpdateStmt:
 		targets = n.ReturningList
-	default:
-		return nil, fmt.Errorf("outputColumns: unsupported node type: %T", n)
 	}
 
 	var cols []*Column
@@ -487,7 +479,7 @@ func (r *tableVisitor) Visit(n ast.Node) astutils.Visitor {
 // Return an error if a table is referenced twice
 // Return an error if an unknown column is referenced
 func (c *Compiler) sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, error) {
-	var list *ast.List
+	list := &ast.List{}
 	switch n := node.(type) {
 	case *ast.DeleteStmt:
 		list = n.Relations
@@ -514,14 +506,6 @@ func (c *Compiler) sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, erro
 		astutils.Walk(&tv, n.FromClause)
 		astutils.Walk(&tv, n.Relations)
 		list = &tv.list
-	case *ast.DoStmt:
-		list = &ast.List{}
-	case *ast.CallStmt:
-		list = &ast.List{}
-	case *ast.NotifyStmt, *ast.ListenStmt:
-		list = &ast.List{}
-	default:
-		return nil, fmt.Errorf("sourceTables: unsupported node type: %T", n)
 	}
 
 	var tables []*Table

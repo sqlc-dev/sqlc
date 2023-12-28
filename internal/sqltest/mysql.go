@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
-
 	_ "github.com/go-sql-driver/mysql"
+
+	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
 )
 
 func MySQL(t *testing.T, migrations []string) (*sql.DB, func()) {

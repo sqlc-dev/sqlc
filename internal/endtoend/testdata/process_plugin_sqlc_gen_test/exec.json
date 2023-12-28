@@ -1,3 +1,4 @@
 {
-  "process": "sqlc-gen-test"
+  "process": "sqlc-gen-test",
+  "os": ["linux", "darwin"]
 }

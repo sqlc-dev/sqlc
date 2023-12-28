@@ -5,17 +5,24 @@ package booktest
 
 import (
 	"context"
+	"database/sql"
 	"testing"
 	"time"
 
-	"github.com/sqlc-dev/sqlc/internal/sqltest"
+	_ "github.com/go-sql-driver/mysql"
+
+	"github.com/sqlc-dev/sqlc/internal/sqltest/hosted"
 )
 
 func TestBooks(t *testing.T) {
-	db, cleanup := sqltest.MySQL(t, []string{"schema.sql"})
-	defer cleanup()
-
 	ctx := context.Background()
+	uri := hosted.MySQL(t, []string{"schema.sql"})
+	db, err := sql.Open("mysql", uri)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
 	dq := New(db)
 
 	// create an author

@@ -7,8 +7,6 @@ import (
 	"testing"
 
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
-
-	_ "github.com/mattn/go-sqlite3"
 )
 
 func SQLite(t *testing.T, migrations []string) (*sql.DB, func()) {
@@ -25,7 +23,7 @@ func CreateSQLiteDatabase(t *testing.T, path string, migrations []string) (*sql.
 	t.Helper()
 
 	t.Logf("open %s\n", path)
-	sdb, err := sql.Open("sqlite3", path)
+	sdb, err := sql.Open("sqlite", path)
 	if err != nil {
 		t.Fatal(err)
 	}

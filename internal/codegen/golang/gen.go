@@ -40,6 +40,7 @@ type tmplCtx struct {
 	EmitEmbedAlias            bool
 	UsesCopyFrom              bool
 	UsesBatch                 bool
+	OmitSqlcVersion           bool
 	BuildTags                 string
 }
 
@@ -125,7 +126,38 @@ func Generate(ctx context.Context, req *plugin.GenerateRequest) (*plugin.Generat
 		enums, structs = filterUnusedStructs(enums, structs, queries)
 	}
 
+	if err := validate(options, enums, structs, queries); err != nil {
+		return nil, err
+	}
+
 	return generate(req, options, enums, structs, queries)
+}
+
+func validate(options *opts.Options, enums []Enum, structs []Struct, queries []Query) error {
+	enumNames := make(map[string]struct{})
+	for _, enum := range enums {
+		enumNames[enum.Name] = struct{}{}
+		enumNames["Null"+enum.Name] = struct{}{}
+	}
+	structNames := make(map[string]struct{})
+	for _, struckt := range structs {
+		if _, ok := enumNames[struckt.Name]; ok {
+			return fmt.Errorf("struct name conflicts with enum name: %s", struckt.Name)
+		}
+		structNames[struckt.Name] = struct{}{}
+	}
+	if !options.EmitExportedQueries {
+		return nil
+	}
+	for _, query := range queries {
+		if _, ok := enumNames[query.ConstantName]; ok {
+			return fmt.Errorf("query constant name conflicts with enum name: %s", query.ConstantName)
+		}
+		if _, ok := structNames[query.ConstantName]; ok {
+			return fmt.Errorf("query constant name conflicts with struct name: %s", query.ConstantName)
+		}
+	}
+	return nil
 }
 
 func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, structs []Struct, queries []Query) (*plugin.GenerateResponse, error) {
@@ -156,6 +188,7 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 		Structs:                   structs,
 		SqlcVersion:               req.SqlcVersion,
 		BuildTags:                 options.BuildTags,
+		OmitSqlcVersion:           options.OmitSqlcVersion,
 	}
 
 	if tctx.UsesCopyFrom && !tctx.SQLDriver.IsPGX() && options.SqlDriver != SQLDriverGoSQLDriverMySQL {

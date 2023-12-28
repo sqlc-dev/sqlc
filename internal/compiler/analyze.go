@@ -135,10 +135,6 @@ func (c *Compiler) _analyzeQuery(raw *ast.RawStmt, query string, failfast bool) 
 
 	var table *ast.TableName
 	switch n := raw.Stmt.(type) {
-	case *ast.CallStmt:
-	case *ast.SelectStmt:
-	case *ast.DeleteStmt:
-	case *ast.DoStmt:
 	case *ast.InsertStmt:
 		if err := check(validate.InsertStmt(n)); err != nil {
 			return nil, err
@@ -146,15 +142,6 @@ func (c *Compiler) _analyzeQuery(raw *ast.RawStmt, query string, failfast bool) 
 		var err error
 		table, err = ParseTableName(n.Relation)
 		if err := check(err); err != nil {
-			return nil, err
-		}
-	case *ast.ListenStmt:
-	case *ast.NotifyStmt:
-	case *ast.TruncateStmt:
-	case *ast.UpdateStmt:
-	case *ast.RefreshMatViewStmt:
-	default:
-		if err := check(ErrUnsupportedStatementType); err != nil {
 			return nil, err
 		}
 	}

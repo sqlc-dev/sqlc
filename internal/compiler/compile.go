@@ -79,9 +79,6 @@ func (c *Compiler) parseQueries(o opts.Parser) (*Result, error) {
 		}
 		for _, stmt := range stmts {
 			query, err := c.parseQuery(stmt.Raw, src, o)
-			if err == ErrUnsupportedStatementType {
-				continue
-			}
 			if err != nil {
 				var e *sqlerr.Error
 				loc := stmt.Raw.Pos()
@@ -95,6 +92,10 @@ func (c *Compiler) parseQueries(o opts.Parser) (*Result, error) {
 				}
 				continue
 			}
+			if query == nil {
+				continue
+			}
+			query.Metadata.Filename = filepath.Base(filename)
 			queryName := query.Metadata.Name
 			if queryName != "" {
 				if _, exists := set[queryName]; exists {
@@ -103,10 +104,7 @@ func (c *Compiler) parseQueries(o opts.Parser) (*Result, error) {
 				}
 				set[queryName] = struct{}{}
 			}
-			query.Metadata.Filename = filepath.Base(filename)
-			if query != nil {
-				q = append(q, query)
-			}
+			q = append(q, query)
 		}
 	}
 	if len(merr.Errs()) > 0 {

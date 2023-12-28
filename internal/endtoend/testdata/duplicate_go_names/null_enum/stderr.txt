@@ -1,0 +1,2 @@
+# package 
+error generating code: struct name conflicts with enum name: NullFoo

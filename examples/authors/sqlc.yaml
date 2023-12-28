@@ -2,7 +2,8 @@ version: '2'
 cloud:
   project: "01HAQMMECEYQYKFJN8MP16QC41"
 sql:
-- schema: postgresql/schema.sql
+- name: postgresql
+  schema: postgresql/schema.sql
   queries: postgresql/query.sql
   engine: postgresql
   database:
@@ -17,11 +18,12 @@ sql:
       package: authors
       sql_package: pgx/v5
       out: postgresql
-- schema: mysql/schema.sql
+- name: mysql
+  schema: mysql/schema.sql
   queries: mysql/query.sql
   engine: mysql
   database:
-    uri: root:${MYSQL_ROOT_PASSWORD}@tcp(${MYSQL_HOST}:${MYSQL_PORT})/authors?multiStatements=true&parseTime=true
+    managed: true
   rules:
   - sqlc/db-prepare
   # - mysql-query-too-costly
@@ -29,7 +31,8 @@ sql:
     go:
       package: authors
       out: mysql
-- schema: sqlite/schema.sql
+- name: sqlite
+  schema: sqlite/schema.sql
   queries: sqlite/query.sql
   engine: sqlite
   database:

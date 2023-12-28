@@ -1,0 +1,9 @@
+version: "2"
+sql:
+- schema: "schema.sql"
+  queries: "query.sql"
+  engine: "postgresql"
+  gen:
+    go:
+      out: "db"
+      emit_exported_queries: true

@@ -1,0 +1,8 @@
+version: 2
+sql:
+- queries: sqlite.query.sql
+  schema: sqlite.schema.sql
+  engine: sqlite
+  gen:
+    go:
+      out: db

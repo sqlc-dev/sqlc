@@ -32,6 +32,7 @@ following contents:
 ```yaml
 version: "2"
 cloud:
+  # Replace <PROJECT_ID> with your project ID from the sqlc Cloud dashboard
   project: "<PROJECT_ID>"
 sql:
   - engine: "postgresql"
@@ -45,6 +46,9 @@ sql:
         out: "tutorial"
         sql_package: "pgx/v5"
 ```
+
+Replace `<PROJECT_ID>` with your project ID from the sqlc Cloud dashboard. It
+will look something like `01HA8SZH31HKYE9RR3N3N3TSJM`.
 
 And finally, set the `SQLC_AUTH_TOKEN` environment variable:
 

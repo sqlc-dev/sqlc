@@ -26,7 +26,7 @@ import (
 
 func init() {
 	createDBCmd.Flags().StringP("queryset", "", "", "name of the queryset to use")
-	uploadCmd.Flags().BoolP("dry-run", "", false, "dump upload request (default: false)")
+	pushCmd.Flags().BoolP("dry-run", "", false, "dump push request (default: false)")
 	initCmd.Flags().BoolP("v1", "", false, "generate v1 config yaml file")
 	initCmd.Flags().BoolP("v2", "", true, "generate v2 config yaml file")
 	initCmd.MarkFlagsMutuallyExclusive("v1", "v2")
@@ -46,7 +46,8 @@ func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int 
 	rootCmd.AddCommand(genCmd)
 	rootCmd.AddCommand(initCmd)
 	rootCmd.AddCommand(versionCmd)
-	rootCmd.AddCommand(uploadCmd)
+	rootCmd.AddCommand(verifyCmd)
+	rootCmd.AddCommand(pushCmd)
 	rootCmd.AddCommand(NewCmdVet())
 
 	rootCmd.SetArgs(args)
@@ -190,7 +191,7 @@ func getConfigPath(stderr io.Writer, f *pflag.Flag) (string, string) {
 
 var genCmd = &cobra.Command{
 	Use:   "generate",
-	Short: "Generate Go code from SQL",
+	Short: "Generate source code from SQL",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		defer trace.StartRegion(cmd.Context(), "generate").End()
 		stderr := cmd.ErrOrStderr()
@@ -209,24 +210,6 @@ var genCmd = &cobra.Command{
 				fmt.Fprintf(stderr, "%s: %s\n", filename, err)
 				return err
 			}
-		}
-		return nil
-	},
-}
-
-var uploadCmd = &cobra.Command{
-	Use:   "upload",
-	Short: "Upload the schema, queries, and configuration for this project",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		stderr := cmd.ErrOrStderr()
-		dir, name := getConfigPath(stderr, cmd.Flag("file"))
-		opts := &Options{
-			Env:    ParseEnv(cmd),
-			Stderr: stderr,
-		}
-		if err := createPkg(cmd.Context(), dir, name, opts); err != nil {
-			fmt.Fprintf(stderr, "error uploading: %s\n", err)
-			os.Exit(1)
 		}
 		return nil
 	},

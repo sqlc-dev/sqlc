@@ -34,6 +34,8 @@ sql:
 
 Each mapping in the `sql` collection has the following keys:
 
+- `name`:
+  - An human-friendly identifier for this query set. Optional.
 - `engine`:
   - One of `postgresql`, `mysql` or `sqlite`.
 - `schema`:
@@ -52,6 +54,8 @@ Each mapping in the `sql` collection has the following keys:
   - A mapping to configure query analysis. See [analyzer](#analyzer) for the supported keys.
 - `strict_function_checks`
   - If true, return an error if a called SQL function does not exist. Defaults to `false`.
+- `strict_order_by`
+  - If true, return an error if a order by column is ambiguous. Defaults to `true`.
 
 ### codegen
 
