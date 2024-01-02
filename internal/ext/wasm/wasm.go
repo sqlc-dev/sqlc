@@ -146,12 +146,16 @@ func (r *Runner) loadAndCompileWASM(ctx context.Context, cache string, expected 
 	if err != nil {
 		return nil, fmt.Errorf("wazero.NewCompilationCacheWithDir: %w", err)
 	}
+
 	config := wazero.NewRuntimeConfig().WithCompilationCache(wazeroCache)
 	rt := wazero.NewRuntimeWithConfig(ctx, config)
-	// TODO: Handle error
-	wasi_snapshot_preview1.MustInstantiate(ctx, rt)
 
-	// Compile the Wasm binary once so that we can skip the entire compilation time during instantiation.
+	if _, err := wasi_snapshot_preview1.Instantiate(ctx, rt); err != nil {
+		return nil, fmt.Errorf("wasi_snapshot_preview1 instantiate: %w", err)
+	}
+
+	// Compile the Wasm binary once so that we can skip the entire compilation
+	// time during instantiation.
 	code, err := rt.CompileModule(ctx, wmod)
 	if err != nil {
 		return nil, fmt.Errorf("compile module: %w", err)
