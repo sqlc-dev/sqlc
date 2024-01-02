@@ -51,6 +51,7 @@ jobs:
 
     # Start a PostgreSQL server
     - uses: ikalnytskyi/action-setup-postgres@v4
+      id: postgres
 
     - name: test ./...
       run: gotestsum --junitfile junit.xml -- --tags=examples -timeout 20m ./...
