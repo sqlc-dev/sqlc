@@ -12,15 +12,24 @@ import (
 	quickdbv1 "github.com/sqlc-dev/sqlc/internal/quickdb/v1"
 )
 
+func init() {
+	verifyCmd.Flags().String("against", "", "compare against this tag")
+}
+
 var verifyCmd = &cobra.Command{
 	Use:   "verify",
 	Short: "Verify schema, queries, and configuration for this project",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		stderr := cmd.ErrOrStderr()
 		dir, name := getConfigPath(stderr, cmd.Flag("file"))
+		against, err := cmd.Flags().GetString("against")
+		if err != nil {
+			return err
+		}
 		opts := &Options{
-			Env:    ParseEnv(cmd),
-			Stderr: stderr,
+			Env:     ParseEnv(cmd),
+			Stderr:  stderr,
+			Against: against,
 		}
 		if err := Verify(cmd.Context(), dir, name, opts); err != nil {
 			fmt.Fprintf(stderr, "error verifying: %s\n", err)
@@ -44,7 +53,7 @@ func Verify(ctx context.Context, dir, filename string, opts *Options) error {
 	if err := Process(ctx, p, dir, filename, opts); err != nil {
 		return err
 	}
-	req, err := bundler.BuildRequest(ctx, dir, configPath, p.results)
+	req, err := bundler.BuildRequest(ctx, dir, configPath, p.results, nil)
 	if err != nil {
 		return err
 	}
@@ -56,6 +65,7 @@ func Verify(ctx context.Context, dir, filename string, opts *Options) error {
 	}
 
 	resp, err := client.VerifyQuerySets(ctx, &quickdbv1.VerifyQuerySetsRequest{
+		Against:     opts.Against,
 		SqlcVersion: req.SqlcVersion,
 		QuerySets:   req.QuerySets,
 		Config:      req.Config,

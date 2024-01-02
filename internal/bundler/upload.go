@@ -86,7 +86,7 @@ func annotate() map[string]string {
 	return labels
 }
 
-func BuildRequest(ctx context.Context, dir, configPath string, results []*QuerySetArchive) (*pb.UploadArchiveRequest, error) {
+func BuildRequest(ctx context.Context, dir, configPath string, results []*QuerySetArchive, tags []string) (*pb.UploadArchiveRequest, error) {
 	conf, err := readFile(dir, configPath)
 	if err != nil {
 		return nil, err
@@ -94,6 +94,7 @@ func BuildRequest(ctx context.Context, dir, configPath string, results []*QueryS
 	res := &pb.UploadArchiveRequest{
 		SqlcVersion: info.Version,
 		Config:      conf,
+		Tags:        tags,
 		Annotations: annotate(),
 	}
 	for i, result := range results {
@@ -126,12 +127,12 @@ func BuildRequest(ctx context.Context, dir, configPath string, results []*QueryS
 	return res, nil
 }
 
-func (up *Uploader) buildRequest(ctx context.Context, results []*QuerySetArchive) (*pb.UploadArchiveRequest, error) {
-	return BuildRequest(ctx, up.dir, up.configPath, results)
+func (up *Uploader) buildRequest(ctx context.Context, results []*QuerySetArchive, tags []string) (*pb.UploadArchiveRequest, error) {
+	return BuildRequest(ctx, up.dir, up.configPath, results, tags)
 }
 
 func (up *Uploader) DumpRequestOut(ctx context.Context, result []*QuerySetArchive) error {
-	req, err := up.buildRequest(ctx, result)
+	req, err := up.buildRequest(ctx, result, []string{})
 	if err != nil {
 		return err
 	}
@@ -148,11 +149,11 @@ func (up *Uploader) DumpRequestOut(ctx context.Context, result []*QuerySetArchiv
 	return nil
 }
 
-func (up *Uploader) Upload(ctx context.Context, result []*QuerySetArchive) error {
+func (up *Uploader) Upload(ctx context.Context, result []*QuerySetArchive, tags []string) error {
 	if err := up.Validate(); err != nil {
 		return err
 	}
-	req, err := up.buildRequest(ctx, result)
+	req, err := up.buildRequest(ctx, result, tags)
 	if err != nil {
 		return err
 	}

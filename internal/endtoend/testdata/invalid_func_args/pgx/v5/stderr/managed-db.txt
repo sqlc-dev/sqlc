@@ -1,2 +1,2 @@
 # package querytest
-query.sql:1:8: function random(integer) does not exist
+query.sql:2:8: function random(integer) does not exist

@@ -15,8 +15,6 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/sql/validate"
 )
 
-var ErrUnsupportedStatementType = errors.New("parseQuery: unsupported statement type")
-
 func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query, error) {
 	ctx := context.Background()
 
@@ -46,6 +44,10 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 	name, cmd, err := metadata.ParseQueryNameAndType(rawSQL, metadata.CommentSyntax(c.parser.CommentSyntax()))
 	if err != nil {
 		return nil, err
+	}
+
+	if name == "" {
+		return nil, nil
 	}
 
 	if err := validate.Cmd(raw.Stmt, name, cmd); err != nil {

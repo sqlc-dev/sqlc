@@ -1,0 +1,23 @@
+name: typescript
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+jobs:
+  build:
+    name: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.21.3'
+      - name: install ./...
+        run: go install ./...
+      - uses: actions/checkout@v4
+        with:
+          repository: sqlc-dev/sqlc-gen-typescript
+          path: typescript
+      - run: sqlc diff
+        working-directory: typescript/examples

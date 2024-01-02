@@ -26,7 +26,7 @@ Here's how we'd usually do that:
 SELECT students.*, test_scores.*
 FROM students
 JOIN test_scores ON test_scores.student_id = students.id
-WHERE students.id = ?;
+WHERE students.id = $1;
 ```
 
 When using Go, sqlc will produce a struct like this:
@@ -50,7 +50,7 @@ flattened list of columns.
 SELECT sqlc.embed(students), sqlc.embed(test_scores)
 FROM students
 JOIN test_scores ON test_scores.student_id = students.id
-WHERE students.id = ?;
+WHERE students.id = $1;
 ```
 
 ```

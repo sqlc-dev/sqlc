@@ -1,0 +1,9 @@
+version: 2
+sql:
+- queries: postgresql.query.sql
+  schema: postgresql.schema.sql
+  engine: postgresql
+  gen:
+    go:
+      out: db
+
