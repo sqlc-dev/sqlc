@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"net/url"
 	"os"
 	"path/filepath"
 	"slices"
@@ -11,26 +10,13 @@ import (
 	"testing"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/sqlc-dev/sqlc/internal/config"
-	"github.com/sqlc-dev/sqlc/internal/migrations"
-	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
-	"github.com/sqlc-dev/sqlc/internal/sqltest/pgtest"
+	"github.com/sqlc-dev/sqlc/internal/sqltest/local"
 )
 
 func TestValidSchema(t *testing.T) {
 	ctx := context.Background()
-
-	dburi := os.Getenv("POSTGRESQL_SERVER_URI")
-	if dburi == "" {
-		t.Skip("POSTGRESQL_SERVER_URI is empty")
-	}
-
-	pool, err := pgxpool.New(ctx, dburi)
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	for _, replay := range FindTests(t, "testdata", "managed-db") {
 		replay := replay // https://golang.org/doc/faq#closures_and_goroutines
@@ -73,37 +59,11 @@ func TestValidSchema(t *testing.T) {
 					schema = append(schema, filepath.Join(filepath.Dir(file), path))
 				}
 
-				files, err := sqlpath.Glob(schema)
+				uri := local.PostgreSQL(t, schema)
+
+				conn, err := pgx.Connect(ctx, uri)
 				if err != nil {
-					t.Fatal(err)
-				}
-
-				var sqls []string
-				for _, f := range files {
-					contents, err := os.ReadFile(f)
-					if err != nil {
-						t.Fatalf("%s: %s", f, err)
-					}
-					// Support loading pg_dump SQL files
-					before := strings.ReplaceAll(string(contents), "CREATE SCHEMA public;", "CREATE SCHEMA IF NOT EXISTS public;")
-					sqls = append(sqls, migrations.RemoveRollbackStatements(before))
-				}
-
-				uri, err := url.Parse(dburi)
-				if err != nil {
-					t.Fatal(err)
-				}
-
-				name, cleanup := pgtest.CreateDatabase(t, ctx, pool)
-				t.Cleanup(cleanup)
-
-				uri.Path = name
-				source := uri.String()
-				t.Log(source)
-
-				conn, err := pgx.Connect(ctx, uri.String())
-				if err != nil {
-					t.Fatalf("connect %s: %s", name, err)
+					t.Fatalf("connect %s: %s", uri, err)
 				}
 				defer conn.Close(ctx)
 			})
