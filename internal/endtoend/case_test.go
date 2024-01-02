@@ -22,7 +22,6 @@ type Exec struct {
 	Contexts []string          `json:"contexts"`
 	Process  string            `json:"process"`
 	OS       []string          `json:"os"`
-	WASM     bool              `json:"wasm"`
 	Env      map[string]string `json:"env"`
 }
 

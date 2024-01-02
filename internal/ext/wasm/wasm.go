@@ -1,10 +1,7 @@
-//go:build !nowasm && cgo && ((linux && amd64) || (linux && arm64) || (darwin && amd64) || (darwin && arm64) || (windows && amd64))
-
-// The above build constraint is based of the cgo directives in this file:
-// https://github.com/bytecodealliance/wasmtime-go/blob/main/ffi.go
 package wasm
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha256"
 	"errors"
@@ -15,10 +12,11 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"runtime/trace"
 	"strings"
 
-	wasmtime "github.com/bytecodealliance/wasmtime-go/v14"
+	"github.com/tetratelabs/wazero"
+	"github.com/tetratelabs/wazero/imports/wasi_snapshot_preview1"
+	"github.com/tetratelabs/wazero/sys"
 	"golang.org/x/sync/singleflight"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -31,30 +29,12 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
 
-func Enabled() bool {
-	return true
-}
-
-// This version must be updated whenever the wasmtime-go dependency is updated
-const wasmtimeVersion = `v14.0.0`
-
-func cacheDir() (string, error) {
-	cache := os.Getenv("SQLCCACHE")
-	if cache != "" {
-		return cache, nil
-	}
-	cacheHome := os.Getenv("XDG_CACHE_HOME")
-	if cacheHome == "" {
-		home, err := os.UserHomeDir()
-		if err != nil {
-			return "", err
-		}
-		cacheHome = filepath.Join(home, ".cache")
-	}
-	return filepath.Join(cacheHome, "sqlc"), nil
-}
-
 var flight singleflight.Group
+
+type runtimeAndCode struct {
+	rt   wazero.Runtime
+	code wazero.CompiledModule
+}
 
 // Verify the provided sha256 is valid.
 func (r *Runner) getChecksum(ctx context.Context) (string, error) {
@@ -70,67 +50,26 @@ func (r *Runner) getChecksum(ctx context.Context) (string, error) {
 	return sum, nil
 }
 
-func (r *Runner) loadModule(ctx context.Context, engine *wasmtime.Engine) (*wasmtime.Module, error) {
+func (r *Runner) loadAndCompile(ctx context.Context) (*runtimeAndCode, error) {
 	expected, err := r.getChecksum(ctx)
 	if err != nil {
 		return nil, err
 	}
-	value, err, _ := flight.Do(expected, func() (interface{}, error) {
-		return r.loadSerializedModule(ctx, engine, expected)
-	})
-	if err != nil {
-		return nil, err
-	}
-	data, ok := value.([]byte)
-	if !ok {
-		return nil, fmt.Errorf("returned value was not a byte slice")
-	}
-	return wasmtime.NewModuleDeserialize(engine, data)
-}
-
-func (r *Runner) loadSerializedModule(ctx context.Context, engine *wasmtime.Engine, expectedSha string) ([]byte, error) {
 	cacheDir, err := cache.PluginsDir()
 	if err != nil {
 		return nil, err
 	}
-
-	pluginDir := filepath.Join(cacheDir, expectedSha)
-	modName := fmt.Sprintf("plugin_%s_%s_%s.module", runtime.GOOS, runtime.GOARCH, wasmtimeVersion)
-	modPath := filepath.Join(pluginDir, modName)
-	_, staterr := os.Stat(modPath)
-	if staterr == nil {
-		data, err := os.ReadFile(modPath)
-		if err != nil {
-			return nil, err
-		}
-		return data, nil
-	}
-
-	wmod, err := r.loadWASM(ctx, cacheDir, expectedSha)
+	value, err, _ := flight.Do(expected, func() (interface{}, error) {
+		return r.loadAndCompileWASM(ctx, cacheDir, expected)
+	})
 	if err != nil {
 		return nil, err
 	}
-
-	moduRegion := trace.StartRegion(ctx, "wasmtime.NewModule")
-	module, err := wasmtime.NewModule(engine, wmod)
-	moduRegion.End()
-	if err != nil {
-		return nil, fmt.Errorf("define wasi: %w", err)
+	data, ok := value.(*runtimeAndCode)
+	if !ok {
+		return nil, fmt.Errorf("returned value was not a compiled module")
 	}
-
-	err = os.Mkdir(pluginDir, 0755)
-	if err != nil && !os.IsExist(err) {
-		return nil, fmt.Errorf("mkdirall: %w", err)
-	}
-	out, err := module.Serialize()
-	if err != nil {
-		return nil, fmt.Errorf("serialize: %w", err)
-	}
-	if err := os.WriteFile(modPath, out, 0444); err != nil {
-		return nil, fmt.Errorf("cache wasm: %w", err)
-	}
-
-	return out, nil
+	return data, nil
 }
 
 func (r *Runner) fetch(ctx context.Context, uri string) ([]byte, string, error) {
@@ -174,7 +113,7 @@ func (r *Runner) fetch(ctx context.Context, uri string) ([]byte, string, error) 
 	return wmod, actual, nil
 }
 
-func (r *Runner) loadWASM(ctx context.Context, cache string, expected string) ([]byte, error) {
+func (r *Runner) loadAndCompileWASM(ctx context.Context, cache string, expected string) (*runtimeAndCode, error) {
 	pluginDir := filepath.Join(cache, expected)
 	pluginPath := filepath.Join(pluginDir, "plugin.wasm")
 	_, staterr := os.Stat(pluginPath)
@@ -203,7 +142,26 @@ func (r *Runner) loadWASM(ctx context.Context, cache string, expected string) ([
 		}
 	}
 
-	return wmod, nil
+	wazeroCache, err := wazero.NewCompilationCacheWithDir(filepath.Join(cache, "wazero"))
+	if err != nil {
+		return nil, fmt.Errorf("wazero.NewCompilationCacheWithDir: %w", err)
+	}
+
+	config := wazero.NewRuntimeConfig().WithCompilationCache(wazeroCache)
+	rt := wazero.NewRuntimeWithConfig(ctx, config)
+
+	if _, err := wasi_snapshot_preview1.Instantiate(ctx, rt); err != nil {
+		return nil, fmt.Errorf("wasi_snapshot_preview1 instantiate: %w", err)
+	}
+
+	// Compile the Wasm binary once so that we can skip the entire compilation
+	// time during instantiation.
+	code, err := rt.CompileModule(ctx, wmod)
+	if err != nil {
+		return nil, fmt.Errorf("compile module: %w", err)
+	}
+
+	return &runtimeAndCode{rt: rt, code: code}, nil
 }
 
 // removePGCatalog removes the pg_catalog schema from the request. There is a
@@ -245,75 +203,34 @@ func (r *Runner) Invoke(ctx context.Context, method string, args any, reply any,
 		return fmt.Errorf("failed to encode codegen request: %w", err)
 	}
 
-	engine := wasmtime.NewEngine()
-	module, err := r.loadModule(ctx, engine)
+	runtimeAndCode, err := r.loadAndCompile(ctx)
 	if err != nil {
-		return fmt.Errorf("loadModule: %w", err)
+		return fmt.Errorf("loadBytes: %w", err)
 	}
 
-	linker := wasmtime.NewLinker(engine)
-	if err := linker.DefineWasi(); err != nil {
-		return err
-	}
+	var stderr, stdout bytes.Buffer
 
-	dir, err := os.MkdirTemp(os.Getenv("SQLCTMPDIR"), "out")
-	if err != nil {
-		return fmt.Errorf("temp dir: %w", err)
-	}
-
-	defer os.RemoveAll(dir)
-	stdinPath := filepath.Join(dir, "stdin")
-	stderrPath := filepath.Join(dir, "stderr")
-	stdoutPath := filepath.Join(dir, "stdout")
-
-	if err := os.WriteFile(stdinPath, stdinBlob, 0755); err != nil {
-		return fmt.Errorf("write file: %w", err)
-	}
-
-	// Configure WASI imports to write stdout into a file.
-	wasiConfig := wasmtime.NewWasiConfig()
-	wasiConfig.SetArgv([]string{"plugin.wasm", method})
-	wasiConfig.SetStdinFile(stdinPath)
-	wasiConfig.SetStdoutFile(stdoutPath)
-	wasiConfig.SetStderrFile(stderrPath)
-
-	keys := []string{"SQLC_VERSION"}
-	vals := []string{info.Version}
+	conf := wazero.NewModuleConfig().
+		WithName("").
+		WithArgs("plugin.wasm", method).
+		WithStdin(bytes.NewReader(stdinBlob)).
+		WithStdout(&stdout).
+		WithStderr(&stderr).
+		WithEnv("SQLC_VERSION", info.Version)
 	for _, key := range r.Env {
-		keys = append(keys, key)
-		vals = append(vals, os.Getenv(key))
-	}
-	wasiConfig.SetEnv(keys, vals)
-
-	store := wasmtime.NewStore(engine)
-	store.SetWasi(wasiConfig)
-
-	linkRegion := trace.StartRegion(ctx, "linker.DefineModule")
-	err = linker.DefineModule(store, "", module)
-	linkRegion.End()
-	if err != nil {
-		return fmt.Errorf("define wasi: %w", err)
+		conf = conf.WithEnv(key, os.Getenv(key))
 	}
 
-	// Run the function
-	fn, err := linker.GetDefault(store, "")
-	if err != nil {
-		return fmt.Errorf("wasi: get default: %w", err)
+	result, err := runtimeAndCode.rt.InstantiateModule(ctx, runtimeAndCode.code, conf)
+	if result != nil {
+		defer result.Close(ctx)
 	}
-
-	callRegion := trace.StartRegion(ctx, "call _start")
-	_, err = fn.Call(store)
-	callRegion.End()
-
-	if cerr := checkError(err, stderrPath); cerr != nil {
+	if cerr := checkError(err, stderr); cerr != nil {
 		return cerr
 	}
 
 	// Print WASM stdout
-	stdoutBlob, err := os.ReadFile(stdoutPath)
-	if err != nil {
-		return fmt.Errorf("read file: %w", err)
-	}
+	stdoutBlob := stdout.Bytes()
 
 	resp, ok := reply.(protoreflect.ProtoMessage)
 	if !ok {
@@ -331,23 +248,21 @@ func (r *Runner) NewStream(ctx context.Context, desc *grpc.StreamDesc, method st
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-func checkError(err error, stderrPath string) error {
+func checkError(err error, stderr bytes.Buffer) error {
 	if err == nil {
 		return err
 	}
 
-	var wtError *wasmtime.Error
-	if errors.As(err, &wtError) {
-		if code, ok := wtError.ExitStatus(); ok {
-			if code == 0 {
-				return nil
-			}
+	if exitErr, ok := err.(*sys.ExitError); ok {
+		if exitErr.ExitCode() == 0 {
+			return nil
 		}
 	}
+
 	// Print WASM stdout
-	stderrBlob, rferr := os.ReadFile(stderrPath)
-	if rferr == nil && len(stderrBlob) > 0 {
-		return errors.New(string(stderrBlob))
+	stderrBlob := stderr.String()
+	if len(stderrBlob) > 0 {
+		return errors.New(stderrBlob)
 	}
 	return fmt.Errorf("call: %w", err)
 }
