@@ -3,36 +3,31 @@ package main
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
-	"runtime"
 	"slices"
 	"strings"
 	"testing"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/migrations"
-	"github.com/sqlc-dev/sqlc/internal/quickdb"
-	pb "github.com/sqlc-dev/sqlc/internal/quickdb/v1"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
+	"github.com/sqlc-dev/sqlc/internal/sqltest/pgtest"
 )
 
 func TestValidSchema(t *testing.T) {
-	if os.Getenv("CI") != "" && runtime.GOOS != "linux" {
-		t.Skipf("only run these tests in CI on linux: %s %s", os.Getenv("CI"), runtime.GOOS)
-	}
-
 	ctx := context.Background()
 
-	projectID := os.Getenv("CI_SQLC_PROJECT_ID")
-	authToken := os.Getenv("CI_SQLC_AUTH_TOKEN")
-	if projectID == "" || authToken == "" {
-		t.Skip("missing project id or auth token")
+	dburi := os.Getenv("POSTGRESQL_SERVER_URI")
+	if dburi == "" {
+		t.Skip("POSTGRESQL_SERVER_URI is empty")
 	}
 
-	client, err := quickdb.NewClient(projectID, authToken)
+	pool, err := pgxpool.New(ctx, dburi)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -94,27 +89,21 @@ func TestValidSchema(t *testing.T) {
 					sqls = append(sqls, migrations.RemoveRollbackStatements(before))
 				}
 
-				resp, err := client.CreateEphemeralDatabase(ctx, &pb.CreateEphemeralDatabaseRequest{
-					Engine:     "postgresql",
-					Region:     quickdb.GetClosestRegion(),
-					Migrations: sqls,
-				})
+				uri, err := url.Parse(dburi)
 				if err != nil {
-					t.Fatalf("region %s: %s", quickdb.GetClosestRegion(), err)
+					t.Fatal(err)
 				}
 
-				t.Cleanup(func() {
-					_, err = client.DropEphemeralDatabase(ctx, &pb.DropEphemeralDatabaseRequest{
-						DatabaseId: resp.DatabaseId,
-					})
-					if err != nil {
-						t.Fatal(err)
-					}
-				})
+				name, cleanup := pgtest.CreateDatabase(t, ctx, pool)
+				t.Cleanup(cleanup)
 
-				conn, err := pgx.Connect(ctx, resp.Uri)
+				uri.Path = name
+				source := uri.String()
+				t.Log(source)
+
+				conn, err := pgx.Connect(ctx, uri.String())
 				if err != nil {
-					t.Fatalf("connect %s: %s", resp.Uri, err)
+					t.Fatalf("connect %s: %s", name, err)
 				}
 				defer conn.Close(ctx)
 			})

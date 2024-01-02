@@ -7,7 +7,7 @@ on:
 jobs:
   test:
     strategy:
-      max-parallel: 2
+      # max-parallel: 2
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         cgo: ['1', '0']
@@ -58,6 +58,7 @@ jobs:
         # CI_SQLC_PROJECT_ID: ${{ secrets.CI_SQLC_PROJECT_ID }}
         # CI_SQLC_AUTH_TOKEN: ${{ secrets.CI_SQLC_AUTH_TOKEN }}
         # SQLC_AUTH_TOKEN: ${{ secrets.CI_SQLC_AUTH_TOKEN }}
+        POSTGRESQL_SERVER_URI: ${{ steps.postgres.outputs.connection-uri }}
         CGO_ENABLED: ${{ matrix.cgo }}
 
   vuln_check:
