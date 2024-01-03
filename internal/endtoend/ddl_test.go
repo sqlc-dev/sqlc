@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -9,15 +8,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jackc/pgx/v5"
-
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/sqltest/local"
 )
 
 func TestValidSchema(t *testing.T) {
-	ctx := context.Background()
-
 	for _, replay := range FindTests(t, "testdata", "managed-db") {
 		replay := replay // https://golang.org/doc/faq#closures_and_goroutines
 
@@ -44,7 +39,12 @@ func TestValidSchema(t *testing.T) {
 
 		for j, pkg := range conf.SQL {
 			j, pkg := j, pkg
-			if pkg.Engine != config.EnginePostgreSQL {
+			switch pkg.Engine {
+			case config.EnginePostgreSQL:
+				// pass
+			case config.EngineMySQL:
+				// pass
+			default:
 				continue
 			}
 			t.Run(fmt.Sprintf("endtoend-%s-%d", file, j), func(t *testing.T) {
@@ -59,13 +59,12 @@ func TestValidSchema(t *testing.T) {
 					schema = append(schema, filepath.Join(filepath.Dir(file), path))
 				}
 
-				uri := local.PostgreSQL(t, schema)
-
-				conn, err := pgx.Connect(ctx, uri)
-				if err != nil {
-					t.Fatalf("connect %s: %s", uri, err)
+				switch pkg.Engine {
+				case config.EnginePostgreSQL:
+					local.PostgreSQL(t, schema)
+				case config.EngineMySQL:
+					local.MySQL(t, schema)
 				}
-				defer conn.Close(ctx)
 			})
 		}
 	}

@@ -14,7 +14,7 @@ CREATE TABLE `Calendar` (
   KEY `Relation` (`Relation`),
   KEY `UniqueKey` (`UniqueKey`),
   KEY `IdKey` (`IdKey`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
 CREATE TABLE `Event` (
@@ -32,7 +32,7 @@ CREATE TABLE `Event` (
   KEY `CalendarReference` (`CalendarReference`),
   KEY `UniqueKey` (`UniqueKey`),
   KEY `IdKey` (`IdKey`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
 CREATE TABLE authors (

@@ -2,8 +2,8 @@
 
 CREATE TABLE authors (
   id   BIGINT PRIMARY KEY,
-  username TEXT NULL,
-  email TEXT NULL,
+  username VARCHAR(10) NULL,
+  email VARCHAR(10) NULL,
   name TEXT  NOT NULL,
   bio  TEXT,
   UNIQUE KEY idx_username (username),

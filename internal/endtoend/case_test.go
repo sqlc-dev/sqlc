@@ -52,10 +52,10 @@ func parseExec(t *testing.T, dir string) *Exec {
 	var e Exec
 	blob, err := os.ReadFile(path)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("%s: %s", path, err)
 	}
 	if err := json.Unmarshal(blob, &e); err != nil {
-		t.Fatal(err)
+		t.Fatalf("%s: %s", path, err)
 	}
 	if e.Command == "" {
 		e.Command = "generate"
