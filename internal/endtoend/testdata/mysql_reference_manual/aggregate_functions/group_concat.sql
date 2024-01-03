@@ -1,8 +1,3 @@
-CREATE TABLE student (
-    student_name VARCHAR(255),
-    score DOUBLE
-);
-
 -- name: GroupConcat :many
 SELECT student_name, GROUP_CONCAT(test_score)
 FROM student

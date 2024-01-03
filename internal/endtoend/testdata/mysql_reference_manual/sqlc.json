@@ -4,14 +4,14 @@
     {
       "name": "date_and_time_functions",
       "path": "date_and_time_functions/go",
-      "schema": "date_and_time_functions",
+      "schema": "schema.sql",
       "queries": "date_and_time_functions",
       "engine": "mysql"
     },
     {
       "name": "aggregate_functions",
       "path": "aggregate_functions/go",
-      "schema": "aggregate_functions",
+      "schema": "schema.sql",
       "queries": "aggregate_functions",
       "engine": "mysql"
     }

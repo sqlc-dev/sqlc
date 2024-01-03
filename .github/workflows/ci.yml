@@ -7,7 +7,6 @@ on:
 jobs:
   test:
     strategy:
-      max-parallel: 2
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         cgo: ['1', '0']
@@ -49,12 +48,25 @@ jobs:
       env:
         CGO_ENABLED: ${{ matrix.cgo }}
 
+    # Start a PostgreSQL server
+    - uses: sqlc-dev/action-setup-postgres@master
+      with:
+        postgres-version: "16"
+      id: postgres
+
+    # Start a MySQL server
+    - uses: shogo82148/actions-setup-mysql@v1
+      with:
+        mysql-version: "8.1"
+
     - name: test ./...
       run: gotestsum --junitfile junit.xml -- --tags=examples -timeout 20m ./...
       env:
         CI_SQLC_PROJECT_ID: ${{ secrets.CI_SQLC_PROJECT_ID }}
         CI_SQLC_AUTH_TOKEN: ${{ secrets.CI_SQLC_AUTH_TOKEN }}
         SQLC_AUTH_TOKEN: ${{ secrets.CI_SQLC_AUTH_TOKEN }}
+        MYSQL_SERVER_URI: root:@tcp(localhost:3306)/mysql?multiStatements=true&parseTime=true
+        POSTGRESQL_SERVER_URI: ${{ steps.postgres.outputs.connection-uri }}?sslmode=disable
         CGO_ENABLED: ${{ matrix.cgo }}
 
   vuln_check:

@@ -11,7 +11,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	_ "github.com/lib/pq"
 
-	"github.com/sqlc-dev/sqlc/internal/sqltest/hosted"
+	"github.com/sqlc-dev/sqlc/internal/sqltest/local"
 )
 
 func runOnDeckQueries(t *testing.T, q *Queries) {
@@ -126,10 +126,10 @@ func runOnDeckQueries(t *testing.T, q *Queries) {
 func TestPrepared(t *testing.T) {
 	t.Parallel()
 
-	uri := hosted.PostgreSQL(t, []string{"schema"})
+	uri := local.PostgreSQL(t, []string{"schema"})
 	db, err := sql.Open("postgres", uri)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("%s: %s", uri, err)
 	}
 	defer db.Close()
 
@@ -144,10 +144,10 @@ func TestPrepared(t *testing.T) {
 func TestQueries(t *testing.T) {
 	t.Parallel()
 
-	uri := hosted.PostgreSQL(t, []string{"schema"})
+	uri := local.PostgreSQL(t, []string{"schema"})
 	db, err := sql.Open("postgres", uri)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("%s: %s", uri, err)
 	}
 	defer db.Close()
 

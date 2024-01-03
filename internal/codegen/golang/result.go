@@ -1,6 +1,7 @@
 package golang
 
 import (
+	"bufio"
 	"fmt"
 	"sort"
 	"strings"
@@ -205,8 +206,13 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, structs []
 				comments = append(comments, query.Name)
 			}
 			comments = append(comments, " ")
-			for _, line := range strings.Split(query.Text, "\n") {
+			scanner := bufio.NewScanner(strings.NewReader(query.Text))
+			for scanner.Scan() {
+				line := scanner.Text()
 				comments = append(comments, "  "+line)
+			}
+			if err := scanner.Err(); err != nil {
+				return nil, err
 			}
 		}
 

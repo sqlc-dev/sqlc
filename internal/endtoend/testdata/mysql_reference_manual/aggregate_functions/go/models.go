@@ -10,5 +10,5 @@ import (
 
 type Student struct {
 	StudentName sql.NullString
-	Score       sql.NullFloat64
+	TestScore   sql.NullFloat64
 }

@@ -1,2 +1,2 @@
 # package querytest
-query.sql:4:12: syntax error near "FROM bar;" "
+query.sql:2:12: syntax error near "FROM bar;"

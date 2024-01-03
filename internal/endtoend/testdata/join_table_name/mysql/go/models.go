@@ -4,7 +4,9 @@
 
 package querytest
 
-import ()
+import (
+	"database/sql"
+)
 
 type Bar struct {
 	ID uint64
@@ -12,5 +14,5 @@ type Bar struct {
 
 type Foo struct {
 	ID  uint64
-	Bar uint64
+	Bar sql.NullInt32
 }

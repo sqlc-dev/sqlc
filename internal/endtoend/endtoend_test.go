@@ -17,6 +17,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/cmd"
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/opts"
+	"github.com/sqlc-dev/sqlc/internal/sqltest/local"
 )
 
 func lineEndings() cmp.Option {
@@ -99,7 +100,7 @@ func BenchmarkExamples(b *testing.B) {
 }
 
 type textContext struct {
-	Mutate  func(*config.Config)
+	Mutate  func(*testing.T, string) func(*config.Config)
 	Enabled func() bool
 }
 
@@ -113,15 +114,34 @@ func TestReplay(t *testing.T) {
 
 	contexts := map[string]textContext{
 		"base": {
-			Mutate:  func(c *config.Config) {},
+			Mutate:  func(t *testing.T, path string) func(*config.Config) { return func(c *config.Config) {} },
 			Enabled: func() bool { return true },
 		},
 		"managed-db": {
-			Mutate: func(c *config.Config) {
-				c.Cloud.Project = "01HAQMMECEYQYKFJN8MP16QC41" // TODO: Read from environment
-				for i := range c.SQL {
-					c.SQL[i].Database = &config.Database{
-						Managed: true,
+			Mutate: func(t *testing.T, path string) func(*config.Config) {
+				return func(c *config.Config) {
+					c.Cloud.Project = "01HAQMMECEYQYKFJN8MP16QC41" // TODO: Read from environment
+					for i := range c.SQL {
+						files := []string{}
+						for _, s := range c.SQL[i].Schema {
+							files = append(files, filepath.Join(path, s))
+						}
+						switch c.SQL[i].Engine {
+						case config.EnginePostgreSQL:
+							uri := local.PostgreSQL(t, files)
+							c.SQL[i].Database = &config.Database{
+								URI: uri,
+							}
+						// case config.EngineMySQL:
+						// 	uri := local.MySQL(t, files)
+						// 	c.SQL[i].Database = &config.Database{
+						// 		URI: uri,
+						// 	}
+						default:
+							c.SQL[i].Database = &config.Database{
+								Managed: true,
+							}
+						}
 					}
 				}
 			},
@@ -130,10 +150,12 @@ func TestReplay(t *testing.T) {
 				if len(os.Getenv("SQLC_AUTH_TOKEN")) == 0 {
 					return false
 				}
-				// In CI, only run these tests from Linux
-				if os.Getenv("CI") != "" {
-					return runtime.GOOS == "linux"
+				if len(os.Getenv("POSTGRESQL_SERVER_URI")) == 0 {
+					return false
 				}
+				// if len(os.Getenv("MYSQL_SERVER_URI")) == 0 {
+				// 	return false
+				// }
 				return true
 			},
 		},
@@ -188,7 +210,7 @@ func TestReplay(t *testing.T) {
 						NoRemote: true,
 					},
 					Stderr:       &stderr,
-					MutateConfig: testctx.Mutate,
+					MutateConfig: testctx.Mutate(t, path),
 				}
 
 				switch args.Command {

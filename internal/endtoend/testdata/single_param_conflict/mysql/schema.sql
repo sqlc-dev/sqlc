@@ -7,5 +7,5 @@ CREATE TABLE authors (
 
 -- https://github.com/sqlc-dev/sqlc/issues/1290
 CREATE TABLE users (
-  sub TEXT PRIMARY KEY
+  sub VARCHAR(10) PRIMARY KEY
 );
