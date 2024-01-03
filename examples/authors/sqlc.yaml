@@ -7,7 +7,7 @@ sql:
   queries: postgresql/query.sql
   engine: postgresql
   database:
-    managed: true
+    uri: "${VET_TEST_EXAMPLES_POSTGRES_AUTHORS}"
   analyzer:
     database: false
   rules:
@@ -23,7 +23,7 @@ sql:
   queries: mysql/query.sql
   engine: mysql
   database:
-    managed: true
+    uri: "${VET_TEST_EXAMPLES_MYSQL_AUTHORS}"
   rules:
   - sqlc/db-prepare
   # - mysql-query-too-costly
