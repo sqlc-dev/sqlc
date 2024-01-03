@@ -45,7 +45,17 @@ The output is the files `sqlc` would have sent without the `--dry-run` flag.
 Once you're ready to push, remove the `--dry-run` flag.
 
 ```shell
-sqlc push
+$ sqlc push
+```
+
+### Tags
+
+You can provide tags to associate with a push, primarily as a convenient reference when using `sqlc verify` with the `against` argument.
+
+Tags only refer to a single push, so if you pass an existing tag to `push` it will overwrite the previous reference.
+
+```shell
+$ sqlc push --tag main
 ```
 
 ### Annotations 

@@ -1,6 +1,100 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+(v1-25-0)=
+## [1.25.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.25.0)
+Released 2024-01-03
+
+### Release notes
+
+#### Add tags to push and verify
+
+You can add tags when [pushing](../howto/push.md) schema and queries to [sqlc Cloud](https://dashboard.sqlc.dev). Tags operate like git tags, meaning you can overwrite previously-pushed tag values. We suggest tagging pushes to associate them with something relevant from your environment, e.g. a git tag or branch name.
+
+```
+$ sqlc push --tag v1.0.0
+```
+
+Once you've created a tag, you can refer to it when [verifying](../howto/verify.md) changes, allowing you
+to compare the existing schema against a known set of previous queries.
+
+```
+$ sqlc verify --against v1.0.0
+```
+
+#### C-ya, `cgo`
+
+Over the last month, we've switched out a few different modules to remove our reliance on [cgo](https://go.dev/blog/cgo). Previously, we needed cgo for three separate functions:
+
+- Parsing PostgreSQL queries with [pganalyze/pg_query_go](https://github.com/pganalyze/pg_query_go)
+- Running SQLite databases with [mattn/go-sqlite3](https://github.com/mattn/go-sqlite3)
+- Executing WASM / WASI code with [bytecodealliance/wasmtime-go](https://github.com/bytecodealliance/wasmtime-go)
+
+With the help of the community, we found cgo-free alternatives for each module:
+
+- Parsing PostgreSQL queries, now using [wasilibs/go-pgquery](https://github.com/wasilibs/go-pgquery)
+- Running SQLite databases, now using [modernc.org/sqlite](https://gitlab.com/cznic/sqlite)
+- Executing WASM / WASI code, now using [tetratelabs/wazero](https://github.com/tetratelabs/wazero)
+
+For the first time, Windows users can enjoy full PostgreSQL support without using [WSL](https://learn.microsoft.com/en-us/windows/wsl/about). It's a Christmas miracle!
+
+If you run into any issues with the updated dependencies, please [open an issue](https://github.com/sqlc-dev/sqlc/issues).
+
+### Changes 
+
+#### Bug Fixes
+
+- (codegen) Wrong yaml annotation in go codegen options for output_querier_file_name (#3006)
+- (codegen) Use derived ArrayDims instead of deprecated attndims (#3032)
+- (codegen) Take the maximum array dimensions (#3034)
+- (compiler) Skip analysis of queries without a `name` annotation (#3072)
+- (codegen/golang) Don't import `"strings"` for `sqlc.slice()` with pgx (#3073)
+
+### Documentation
+
+- Add name to query set configuration (#3011)
+- Add a sidebar link for `push`, add Go plugin link (#3023)
+- Update banner for sqlc-gen-typescript (#3036)
+- Add strict_order_by in doc (#3044)
+- Re-order the migration tools list (#3064)
+
+### Features
+
+- (analyzer) Return zero values when encountering unexpected ast nodes (#3069)
+- (codegen/go) add omit_sqlc_version to Go code generation (#3019)
+- (codgen/go) Add `emit_sql_as_comment` option to Go code plugin (#2735)
+- (plugins) Use wazero instead of wasmtime (#3042)
+- (push) Add tag support (#3074)
+- (sqlite) Support emit_pointers_for_null_types (#3026)
+
+### Testing
+
+- (endtoend) Enable for more build targets (#3041)
+- (endtoend) Run MySQL and PostgreSQL locally on the runner (#3095)
+- (typescript) Test against sqlc-gen-typescript (#3046)
+- Add tests for omit_sqlc_version (#3020)
+- Split schema and query for test (#3094)
+
+### Build
+
+- (deps) Bump idna from 3.4 to 3.6 in /docs (#3010)
+- (deps) Bump sphinx-rtd-theme from 1.3.0 to 2.0.0 in /docs (#3016)
+- (deps) Bump golang from 1.21.4 to 1.21.5 (#3043)
+- (deps) Bump actions/setup-go from 4 to 5 (#3047)
+- (deps) Bump github.com/jackc/pgx/v5 from 5.5.0 to 5.5.1 (#3050)
+- (deps) Upgrade to latest version of github.com/wasilibs/go-pgquery (#3052)
+- (deps) Bump google.golang.org/grpc from 1.59.0 to 1.60.0 (#3053)
+- (deps) Bump babel from 2.13.1 to 2.14.0 in /docs (#3055)
+- (deps) Bump actions/upload-artifact from 3 to 4 (#3061)
+- (deps) Bump modernc.org/sqlite from 1.27.0 to 1.28.0 (#3062)
+- (deps) Bump golang.org/x/crypto from 0.14.0 to 0.17.0 (#3068)
+- (deps) Bump google.golang.org/grpc from 1.60.0 to 1.60.1 (#3070)
+- (deps) Bump google.golang.org/protobuf from 1.31.0 to 1.32.0 (#3079)
+- (deps) Bump github.com/tetratelabs/wazero from 1.5.0 to 1.6.0 (#3096)
+- (sqlite) Update to antlr 4.13.1 (#3086)
+- (sqlite) Disable modernc for WASM (#3048)
+- (sqlite) Switch from mattn/go-sqlite3 to modernc.org/sqlite (#3040)
+
 (v1-24-0)=
 ## [1.24.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.24.0)
 Released 2023-11-22

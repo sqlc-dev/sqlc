@@ -81,7 +81,6 @@ environment variable. You can create an auth token via the [dashboard](https://d
 export SQLC_AUTH_TOKEN=sqlc_xxxxxxxx
 ```
 
-
 ## Expected workflow
 
 Using `sqlc verify` requires pushing your queries and schema to sqlc Cloud. When
@@ -90,5 +89,21 @@ queries as well. For example, we run `sqlc push` after any change has been
 merged into our `main` branch on Github, as we deploy every commit to
 production.
 
+```shell
+$ sqlc push --tag main
+```
+
 Locally or in pull requests, run `sqlc verify` to check that existing queries
 continue to work with your current database schema.
+
+```shell
+$ sqlc verify --against main
+```
+
+## Picking a tag
+
+Without an `against` argument, `verify` will run its analysis of the provided schema using your most-recently pushed queries. We suggest using the `against` argument to explicitly select a set of queries for comparison.
+
+```shell
+$ sqlc verify --against [tag]
+```
