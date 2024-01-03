@@ -22,7 +22,7 @@ to compare the existing schema against a known set of previous queries.
 $ sqlc verify --against v1.0.0
 ```
 
-#### See ya, `cgo`
+#### C-ya, `cgo`
 
 Over the last month, we've switched out a few different modules to remove our reliance on [cgo](https://go.dev/blog/cgo). Previously, we needed cgo for three separate functions:
 
