@@ -129,7 +129,7 @@ func TestPrepared(t *testing.T) {
 	uri := local.PostgreSQL(t, []string{"schema"})
 	db, err := sql.Open("postgres", uri)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("%s: %s", uri, err)
 	}
 	defer db.Close()
 
@@ -147,7 +147,7 @@ func TestQueries(t *testing.T) {
 	uri := local.PostgreSQL(t, []string{"schema"})
 	db, err := sql.Open("postgres", uri)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("%s: %s", uri, err)
 	}
 	defer db.Close()
 
