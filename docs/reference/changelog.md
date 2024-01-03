@@ -9,7 +9,7 @@ Released 2024-01-03
 
 #### Add tags to push and verify
 
-Tags can be added when [pushing](../howto/push.md) schema and queries to [sqlc Cloud](https://dashboard.sqlc.dev). Tags operate like git tags, meaning you can overwrite previously published tag values. We suggest tagging pushes to associate them with git tags or git branches.
+You can add tags when [pushing](../howto/push.md) schema and queries to [sqlc Cloud](https://dashboard.sqlc.dev). Tags operate like git tags, meaning you can overwrite previously-pushed tag values. We suggest tagging pushes to associate them with something relevant from your environment, e.g. a git tag or branch name.
 
 ```
 $ sql push --tags v1.0.0
