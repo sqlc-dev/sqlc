@@ -17,12 +17,17 @@ type Testcase struct {
 	Exec       *Exec
 }
 
+type ExecMeta struct {
+	InvalidSchema bool `json:"invalid_schema"`
+}
+
 type Exec struct {
 	Command  string            `json:"command"`
 	Contexts []string          `json:"contexts"`
 	Process  string            `json:"process"`
 	OS       []string          `json:"os"`
 	Env      map[string]string `json:"env"`
+	Meta     ExecMeta          `json:"meta"`
 }
 
 func parseStderr(t *testing.T, dir, testctx string) []byte {

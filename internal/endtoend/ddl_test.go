@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"slices"
-	"strings"
 	"testing"
 
 	"github.com/sqlc-dev/sqlc/internal/config"
@@ -13,15 +11,11 @@ import (
 )
 
 func TestValidSchema(t *testing.T) {
-	for _, replay := range FindTests(t, "testdata", "managed-db") {
+	for _, replay := range FindTests(t, "testdata", "base") {
 		replay := replay // https://golang.org/doc/faq#closures_and_goroutines
 
-		if len(replay.Stderr) > 0 {
-			continue
-		}
-
 		if replay.Exec != nil {
-			if !slices.Contains(replay.Exec.Contexts, "managed-db") {
+			if replay.Exec.Meta.InvalidSchema {
 				continue
 			}
 		}
@@ -49,10 +43,6 @@ func TestValidSchema(t *testing.T) {
 			}
 			t.Run(fmt.Sprintf("endtoend-%s-%d", file, j), func(t *testing.T) {
 				t.Parallel()
-
-				if strings.Contains(file, "pg_dump") {
-					t.Skip("loading pg_dump not supported")
-				}
 
 				var schema []string
 				for _, path := range pkg.Schema {
