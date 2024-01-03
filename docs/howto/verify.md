@@ -102,7 +102,7 @@ $ sqlc verify --against main
 
 ## Picking a tag
 
-By default, `verify` will compare the provided schema against the most recently pushed queries. We suggest using the `against` flag to pick the correct set of queries for comparison.
+Without an `against` argument, `verify` will run its analysis of the provided schema using your most-recently pushed queries. We suggest using the `against` argument to explicitly select a set of queries for comparison.
 
 ```shell
 $ sql verify --against [tag]
