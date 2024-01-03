@@ -50,7 +50,9 @@ jobs:
         CGO_ENABLED: ${{ matrix.cgo }}
 
     # Start a PostgreSQL server
-    - uses: ikalnytskyi/action-setup-postgres@v4
+    - uses: cycle-five/action-setup-postgres
+      with:
+        postgres-version: "16"
       id: postgres
 
     - name: test ./...
