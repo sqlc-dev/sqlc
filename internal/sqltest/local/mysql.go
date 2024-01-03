@@ -4,12 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"net/url"
 	"os"
 	"sync"
 	"testing"
 
-	_ "github.com/go-sql-driver/mysql"
+	"github.com/go-sql-driver/mysql"
 
 	migrate "github.com/sqlc-dev/sqlc/internal/migrations"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
@@ -52,7 +51,7 @@ func MySQL(t *testing.T, migrations []string) string {
 		seed = append(seed, migrate.RemoveRollbackStatements(string(blob)))
 	}
 
-	uri, err := url.Parse(dburi)
+	cfg, err := mysql.ParseDSN(dburi)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -63,7 +62,8 @@ func MySQL(t *testing.T, migrations []string) string {
 		t.Fatal(err)
 	}
 
-	uri.Path = name
+	cfg.DBName = name
+
 	dropQuery := fmt.Sprintf("DROP DATABASE `%s`", name)
 
 	t.Cleanup(func() {
@@ -72,7 +72,7 @@ func MySQL(t *testing.T, migrations []string) string {
 		}
 	})
 
-	db, err := sql.Open("mysql", uri.String())
+	db, err := sql.Open("mysql", cfg.FormatDSN())
 	if err != nil {
 		t.Fatalf("connect %s: %s", name, err)
 	}
@@ -84,5 +84,5 @@ func MySQL(t *testing.T, migrations []string) string {
 		}
 	}
 
-	return uri.String()
+	return cfg.FormatDSN()
 }
