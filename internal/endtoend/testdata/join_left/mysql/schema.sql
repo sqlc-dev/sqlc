@@ -28,11 +28,11 @@ CREATE TABLE super_authors (
 CREATE TABLE users_2 (
     user_id           INT PRIMARY KEY,
     user_nickname     VARCHAR(30) UNIQUE NOT NULL,
-    user_email        TEXT UNIQUE        NOT NULL,
+    user_email        VARCHAR(20) UNIQUE        NOT NULL,
     user_display_name TEXT               NOT NULL,
     user_password     TEXT               NULL,
-    user_google_id    TEXT UNIQUE        NULL,
-    user_apple_id     TEXT UNIQUE        NULL,
+    user_google_id    VARCHAR(20) UNIQUE        NULL,
+    user_apple_id     VARCHAR(20) UNIQUE        NULL,
     user_bio          VARCHAR(160)       NOT NULL DEFAULT '',
     user_created_at   TIMESTAMP          NOT NULL DEFAULT CURRENT_TIMESTAMP,
     user_avatar_id    INT UNIQUE        NULL

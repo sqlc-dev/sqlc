@@ -1,6 +1,6 @@
 CREATE TABLE authors (
   id   BIGINT  NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  name text    NOT NULL,
+  name VARCHAR(10)    NOT NULL,
   bio  text,
   UNIQUE(name)
 );

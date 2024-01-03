@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"strings"
 	"sync"
 	"testing"
 
@@ -79,6 +80,9 @@ func PostgreSQL(t *testing.T, migrations []string) string {
 	defer conn.Close(ctx)
 
 	for _, q := range seed {
+		if len(strings.TrimSpace(q)) == 0 {
+			continue
+		}
 		if _, err := conn.Exec(ctx, q); err != nil {
 			t.Fatalf("%s: %s", q, err)
 		}

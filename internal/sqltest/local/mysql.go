@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"strings"
 	"sync"
 	"testing"
 
@@ -79,6 +80,9 @@ func MySQL(t *testing.T, migrations []string) string {
 	defer db.Close()
 
 	for _, q := range seed {
+		if len(strings.TrimSpace(q)) == 0 {
+			continue
+		}
 		if _, err := db.ExecContext(ctx, q); err != nil {
 			t.Fatalf("%s: %s", q, err)
 		}
