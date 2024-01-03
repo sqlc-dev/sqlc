@@ -50,7 +50,7 @@ jobs:
         CGO_ENABLED: ${{ matrix.cgo }}
 
     # Start a PostgreSQL server
-    - uses: cycle-five/action-setup-postgres
+    - uses: cycle-five/action-setup-postgres@v5
       with:
         postgres-version: "16"
       id: postgres
