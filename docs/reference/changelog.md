@@ -30,7 +30,7 @@ Over the last month, we've switched out a few different modules to remove our re
 - Running SQLite databases with [mattn/go-sqlite3](https://github.com/mattn/go-sqlite3)
 - Executing WASM / WASI code with [bytecodealliance/wasmtime-go](https://github.com/bytecodealliance/wasmtime-go)
 
-With the help of the community, we found cgo-less alternatives for each module:
+With the help of the community, we found cgo-free alternatives for each module:
 
 - Parsing PostgreSQL queries, now using [wasilibs/go-pgquery](https://github.com/wasilibs/go-pgquery)
 - Running SQLite databases, now using [modernc.org/sqlite](https://gitlab.com/cznic/sqlite)
