@@ -50,7 +50,9 @@ $ sqlc push
 
 ### Tags
 
-Each push can be associated with a set of tags. Tags only refer to a single push and are overwritten by subsequent `push` commands.
+You can provide tags to associate with a push, primarily as a convenient reference when using `sqlc verify` with the `against` argument.
+
+Tags only refer to a single push, so if you pass an existing tag to `push` it will overwrite the previous reference.
 
 ```shell
 $ sqlc push --tag main
