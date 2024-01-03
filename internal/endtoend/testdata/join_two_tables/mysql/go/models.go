@@ -16,5 +16,5 @@ type Baz struct {
 
 type Foo struct {
 	BarID uint64
-	BazID uint64
+	BazID int32
 }

@@ -4,4 +4,11 @@
 
 package date_and_time_functions
 
-import ()
+import (
+	"database/sql"
+)
+
+type Student struct {
+	StudentName sql.NullString
+	TestScore   sql.NullFloat64
+}
