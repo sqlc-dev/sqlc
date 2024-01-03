@@ -12,7 +12,7 @@
       "engine": "postgresql",
       "sql_package": "pgx/v5",
       "database": {
-        "managed": true
+        "uri": "${VET_TEST_EXAMPLES_POSTGRES_BOOKTEST}"
       },
       "analyzer": {
         "database": false
@@ -28,7 +28,7 @@
       "queries": "mysql/query.sql",
       "engine": "mysql",
       "database": {
-        "managed": true
+        "uri": "${VET_TEST_EXAMPLES_MYSQL_BOOKTEST}"
       },
       "rules": [
         "sqlc/db-prepare"
