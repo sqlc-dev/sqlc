@@ -7,16 +7,16 @@ on:
 jobs:
   test:
     strategy:
-      max-parallel: 2
+      # max-parallel: 2
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         cgo: ['1', '0']
         # Workaround no native support for conditional matrix items
         # https://github.com/orgs/community/discussions/26253#discussioncomment-6745038
-        isMain:
-          - ${{ github.ref == 'refs/heads/main' }}
-        exclude:
-          - isMain: false
+        # isMain:
+        #   - ${{ github.ref == 'refs/heads/main' }}
+        # exclude:
+        #   - isMain: false
         include:
         - os: ubuntu-latest
           cgo: '1'
