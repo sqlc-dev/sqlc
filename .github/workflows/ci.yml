@@ -55,6 +55,11 @@ jobs:
         postgres-version: "16"
       id: postgres
 
+    # Start a MySQL server
+    - uses: shogo82148/actions-setup-mysql@v1
+      with:
+        mysql-version: "8.1"
+
     - name: test ./...
       run: gotestsum --junitfile junit.xml -- --tags=examples -timeout 20m ./...
       env:
