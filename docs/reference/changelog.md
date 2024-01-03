@@ -19,7 +19,7 @@ Once you've created a tag, you can refer to it when [verifying](../howto/verify.
 to compare the existing schema against a known set of previous queries.
 
 ```
-$ sql verify --against v1.0.0
+$ sqlc verify --against v1.0.0
 ```
 
 #### See ya, `cgo`
