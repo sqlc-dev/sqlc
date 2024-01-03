@@ -50,7 +50,7 @@ jobs:
         CGO_ENABLED: ${{ matrix.cgo }}
 
     # Start a PostgreSQL server
-    - uses: cycle-five/action-setup-postgres@v5
+    - uses: sqlc-dev/action-setup-postgres@master
       with:
         postgres-version: "16"
       id: postgres
@@ -66,6 +66,7 @@ jobs:
         CI_SQLC_PROJECT_ID: ${{ secrets.CI_SQLC_PROJECT_ID }}
         CI_SQLC_AUTH_TOKEN: ${{ secrets.CI_SQLC_AUTH_TOKEN }}
         SQLC_AUTH_TOKEN: ${{ secrets.CI_SQLC_AUTH_TOKEN }}
+        MYSQL_SERVER_URI: root:@tcp(locahost:3306)/mysql?multiStatements=true&parseTime=true
         POSTGRESQL_SERVER_URI: ${{ steps.postgres.outputs.connection-uri }}
         CGO_ENABLED: ${{ matrix.cgo }}
 

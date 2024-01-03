@@ -2,41 +2,41 @@ package local
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"net/url"
 	"os"
 	"sync"
 	"testing"
 
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
+	_ "github.com/go-sql-driver/mysql"
 
 	migrate "github.com/sqlc-dev/sqlc/internal/migrations"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
 )
 
-var postgresPool *pgxpool.Pool
-var postgresSync sync.Once
+var mysqlSync sync.Once
+var mysqlPool *sql.DB
 
-func PostgreSQL(t *testing.T, migrations []string) string {
+func MySQL(t *testing.T, migrations []string) string {
 	ctx := context.Background()
 	t.Helper()
 
-	dburi := os.Getenv("POSTGRESQL_SERVER_URI")
+	dburi := os.Getenv("MYSQL_SERVER_URI")
 	if dburi == "" {
-		t.Skip("POSTGRESQL_SERVER_URI is empty")
+		t.Skip("MYSQL_SERVER_URI is empty")
 	}
 
-	postgresSync.Do(func() {
-		pool, err := pgxpool.New(ctx, dburi)
+	mysqlSync.Do(func() {
+		db, err := sql.Open("mysql", dburi)
 		if err != nil {
 			t.Fatal(err)
 		}
-		postgresPool = pool
+		mysqlPool = db
 	})
 
-	if postgresPool == nil {
-		t.Fatalf("PostgreSQL pool creation failed")
+	if mysqlPool == nil {
+		t.Fatalf("MySQL pool creation failed")
 	}
 
 	var seed []string
@@ -59,27 +59,27 @@ func PostgreSQL(t *testing.T, migrations []string) string {
 
 	name := fmt.Sprintf("sqlc_test_%s", id())
 
-	if _, err := postgresPool.Exec(ctx, fmt.Sprintf(`CREATE DATABASE "%s"`, name)); err != nil {
+	if _, err := mysqlPool.ExecContext(ctx, fmt.Sprintf("CREATE DATABASE `%s`", name)); err != nil {
 		t.Fatal(err)
 	}
 
 	uri.Path = name
-	dropQuery := fmt.Sprintf(`DROP DATABASE IF EXISTS "%s" WITH (FORCE)`, name)
+	dropQuery := fmt.Sprintf("DROP DATABASE `%s`", name)
 
 	t.Cleanup(func() {
-		if _, err := postgresPool.Exec(ctx, dropQuery); err != nil {
+		if _, err := mysqlPool.ExecContext(ctx, dropQuery); err != nil {
 			t.Fatal(err)
 		}
 	})
 
-	conn, err := pgx.Connect(ctx, uri.String())
+	db, err := sql.Open("mysql", uri.String())
 	if err != nil {
 		t.Fatalf("connect %s: %s", name, err)
 	}
-	defer conn.Close(ctx)
+	defer db.Close()
 
 	for _, q := range seed {
-		if _, err := conn.Exec(ctx, q); err != nil {
+		if _, err := db.ExecContext(ctx, q); err != nil {
 			t.Fatalf("%s: %s", q, err)
 		}
 	}
