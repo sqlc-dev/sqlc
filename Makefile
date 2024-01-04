@@ -1,4 +1,4 @@
-.PHONY: build build-endtoend test test-ci test-examples test-endtoend regen start psql mysqlsh proto
+.PHONY: build build-endtoend test test-ci test-examples test-endtoend start psql mysqlsh proto
 
 build:
 	go build ./...
@@ -19,9 +19,6 @@ build-endtoend:
 	cd ./internal/endtoend/testdata && go build ./...
 
 test-ci: test-examples build-endtoend vet
-
-regen: sqlc-dev sqlc-gen-json
-	go run ./scripts/regenerate/
 
 sqlc-dev:
 	go build -o ~/bin/sqlc-dev ./cmd/sqlc/

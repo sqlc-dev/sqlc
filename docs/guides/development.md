@@ -53,16 +53,3 @@ MYSQL_USER      root
 MYSQL_ROOT_PASSWORD  mysecretpassword
 MYSQL_DATABASE  dinotest
 ```
-
-## Regenerate expected test output
-
-If you need to update a large number of expected test output in the
-`internal/endtoend/testdata` directory, run the `regenerate` script.
-
-```
-go build -o ~/go/bin/sqlc-dev ./cmd/sqlc
-go run scripts/regenerate/main.go
-```
-
-Note that this uses the `sqlc-dev` binary, not `sqlc` so make sure you have an
-up to date `sqlc-dev` binary.
