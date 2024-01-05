@@ -8,6 +8,8 @@ We'll generate Go code here, but other
 naturally need the Go toolchain if you want to build and run a program with the
 code sqlc generates, but sqlc itself has no dependencies.
 
+At the end, you'll push your SQL queries to [sqlc Cloud](https://dashboard.sqlc.dev/) for further insights and analysis.
+
 ## Setting up
 
 Create a new directory called `sqlc-tutorial` and open it up.
@@ -181,3 +183,43 @@ database must have the `authors` table as defined in `schema.sql`.
 
 You should now have a working program using sqlc's generated Go source code,
 and hopefully can see how you'd use sqlc in your own real-world applications.
+
+## Query analysis and managed databases
+
+[sqlc Cloud](https://dashboard.sqlc.dev) provides additional insights into your
+queries, catching subtle bugs and performance issues. To get started, create a
+[dashboard account](https://dashboard.sqlc.dev). Once you've signed in, create a
+project and generate an auth token. Add your project's ID to the `cloud` block
+to your sqlc.yaml.
+
+```yaml
+version: "2"
+cloud:
+  # Replace <PROJECT_ID> with your project ID from the sqlc Cloud dashboard
+  project: "<PROJECT_ID>"
+sql:
+  - engine: "mysql"
+    queries: "query.sql"
+    schema: "schema.sql"
+    gen:
+      go:
+        package: "tutorial"
+        out: "tutorial"
+```
+
+Replace `<PROJECT_ID>` with your project ID from the sqlc Cloud dashboard. It
+will look something like `01HA8SZH31HKYE9RR3N3N3TSJM`.
+
+And finally, set the `SQLC_AUTH_TOKEN` environment variable:
+
+```shell
+export SQLC_AUTH_TOKEN="<your sqlc auth token>"
+```
+
+```shell
+$ sqlc push --tag tutorial
+```
+
+In the sidebar, go to the "Insights" section to run checks against your queries.
+If you need access to a pre-configured MySQL database, check out [managed
+databases](../howtwo/managed-databases.md).
