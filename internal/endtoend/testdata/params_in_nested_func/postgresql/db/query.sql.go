@@ -17,7 +17,6 @@ SELECT
 FROM 
     RouterGroup rg
 WHERE
-    rgr.depth = 1 AND
     rg.groupName LIKE CONCAT('%', COALESCE($1::text, rg.groupName), '%') AND
     rg.groupId = COALESCE($2, rg.groupId)
 `
