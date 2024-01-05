@@ -98,6 +98,20 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 	}
 
 	var a []Parameter
+
+	addUnknownParam := func(ref paramRef) {
+		defaultP := named.NewInferredParam(ref.name, false)
+		p, isNamed := params.FetchMerge(ref.ref.Number, defaultP)
+		a = append(a, Parameter{
+			Number: ref.ref.Number,
+			Column: &Column{
+				Name:         p.Name(),
+				DataType:     "any",
+				IsNamedParam: isNamed,
+			},
+		})
+	}
+
 	for _, ref := range args {
 		switch n := ref.parent.(type) {
 
@@ -318,6 +332,8 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 					ReturnType: &ast.TypeName{Name: "any"},
 				}
 			}
+
+			var added bool
 			for i, item := range n.Args.Items {
 				funcName := fun.Name
 				var argName string
@@ -357,6 +373,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 
 					defaultP := named.NewInferredParam(defaultName, false)
 					p, isNamed := params.FetchMerge(ref.ref.Number, defaultP)
+					added = true
 					a = append(a, Parameter{
 						Number: ref.ref.Number,
 						Column: &Column{
@@ -398,6 +415,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 
 				defaultP := named.NewInferredParam(paramName, true)
 				p, isNamed := params.FetchMerge(ref.ref.Number, defaultP)
+				added = true
 				a = append(a, Parameter{
 					Number: ref.ref.Number,
 					Column: &Column{
@@ -411,6 +429,9 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 			}
 
 			if fun.ReturnType == nil {
+				if !added {
+					addUnknownParam(ref)
+				}
 				continue
 			}
 
@@ -420,7 +441,9 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 				Name:    fun.ReturnType.Name,
 			})
 			if err != nil {
-				// The return type wasn't a table.
+				if !added {
+					addUnknownParam(ref)
+				}
 				continue
 			}
 			err = indexTable(table)
@@ -607,16 +630,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 
 		default:
 			slog.Debug("unsupported reference type", "type", fmt.Sprintf("%T", n))
-			defaultP := named.NewInferredParam(ref.name, false)
-			p, isNamed := params.FetchMerge(ref.ref.Number, defaultP)
-			a = append(a, Parameter{
-				Number: ref.ref.Number,
-				Column: &Column{
-					Name:         p.Name(),
-					DataType:     "any",
-					IsNamedParam: isNamed,
-				},
-			})
+			addUnknownParam(ref)
 		}
 	}
 	return a, nil
