@@ -13,7 +13,6 @@ type Routergroup struct {
 	Groupname              string
 	Defaultconfigid        sql.NullInt32
 	Defaultfirmwareversion sql.NullString
-	Inheritpermissions     interface{}
 	Parentgroupid          sql.NullInt32
 	Firmwarepolicy         sql.NullString
 	Styles                 sql.NullString

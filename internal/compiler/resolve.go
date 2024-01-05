@@ -332,6 +332,8 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 					ReturnType: &ast.TypeName{Name: "any"},
 				}
 			}
+
+			var added bool
 			for i, item := range n.Args.Items {
 				funcName := fun.Name
 				var argName string
@@ -371,6 +373,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 
 					defaultP := named.NewInferredParam(defaultName, false)
 					p, isNamed := params.FetchMerge(ref.ref.Number, defaultP)
+					added = true
 					a = append(a, Parameter{
 						Number: ref.ref.Number,
 						Column: &Column{
@@ -412,6 +415,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 
 				defaultP := named.NewInferredParam(paramName, true)
 				p, isNamed := params.FetchMerge(ref.ref.Number, defaultP)
+				added = true
 				a = append(a, Parameter{
 					Number: ref.ref.Number,
 					Column: &Column{
@@ -425,7 +429,9 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 			}
 
 			if fun.ReturnType == nil {
-				addUnknownParam(ref)
+				if !added {
+					addUnknownParam(ref)
+				}
 				continue
 			}
 
@@ -435,7 +441,9 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 				Name:    fun.ReturnType.Name,
 			})
 			if err != nil {
-				addUnknownParam(ref)
+				if !added {
+					addUnknownParam(ref)
+				}
 				continue
 			}
 			err = indexTable(table)
