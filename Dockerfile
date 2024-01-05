@@ -13,7 +13,7 @@ ENV VERSION=$version
 RUN go run scripts/release.go -docker
 
 # STEP 2: Build a tiny image
-FROM scratch
+FROM gcr.io/distroless/base-debian12
 
 COPY --from=builder /workspace/sqlc /workspace/sqlc
 ENTRYPOINT ["/workspace/sqlc"]
