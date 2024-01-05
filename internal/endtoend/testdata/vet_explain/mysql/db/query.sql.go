@@ -316,7 +316,7 @@ SELECT id FROM debug
 WHERE Csmallint = ? LIMIT 1
 `
 
-func (q *Queries) SelectByCsmallint(ctx context.Context, csmallint int32) (int64, error) {
+func (q *Queries) SelectByCsmallint(ctx context.Context, csmallint int16) (int64, error) {
 	row := q.db.QueryRowContext(ctx, selectByCsmallint, csmallint)
 	var id int64
 	err := row.Scan(&id)
@@ -424,7 +424,7 @@ SELECT id FROM debug
 WHERE Cyear = ? LIMIT 1
 `
 
-func (q *Queries) SelectByCyear(ctx context.Context, cyear int32) (int64, error) {
+func (q *Queries) SelectByCyear(ctx context.Context, cyear int16) (int64, error) {
 	row := q.db.QueryRowContext(ctx, selectByCyear, cyear)
 	var id int64
 	err := row.Scan(&id)

@@ -99,7 +99,7 @@ func (ns NullDebugCset) Value() (driver.Value, error) {
 
 type Debug struct {
 	ID               int64
-	Csmallint        int32
+	Csmallint        int16
 	Cint             int32
 	Cinteger         int32
 	Cdecimal         string
@@ -118,7 +118,7 @@ type Debug struct {
 	Cdatetime        time.Time
 	Ctimestamp       time.Time
 	Ctime            time.Time
-	Cyear            int32
+	Cyear            int16
 	Cchar            string
 	Cvarchar         string
 	Cbinary          []byte
