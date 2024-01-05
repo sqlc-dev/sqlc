@@ -3,7 +3,6 @@ package compiler
 import (
 	"fmt"
 
-	"github.com/sqlc-dev/sqlc/internal/debug"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
 )
@@ -13,7 +12,6 @@ func findParameters(root ast.Node) ([]paramRef, []error) {
 	errors := make([]error, 0)
 	v := paramSearch{seen: make(map[int]struct{}), refs: &refs, errs: &errors}
 	astutils.Walk(v, root)
-	debug.Dump(refs)
 	if len(*v.errs) > 0 {
 		return refs, *v.errs
 	} else {
