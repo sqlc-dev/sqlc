@@ -98,6 +98,20 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 	}
 
 	var a []Parameter
+
+	addUnknownParam := func(ref paramRef) {
+		defaultP := named.NewInferredParam(ref.name, false)
+		p, isNamed := params.FetchMerge(ref.ref.Number, defaultP)
+		a = append(a, Parameter{
+			Number: ref.ref.Number,
+			Column: &Column{
+				Name:         p.Name(),
+				DataType:     "any",
+				IsNamedParam: isNamed,
+			},
+		})
+	}
+
 	for _, ref := range args {
 		switch n := ref.parent.(type) {
 
@@ -411,6 +425,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 			}
 
 			if fun.ReturnType == nil {
+				addUnknownParam(ref)
 				continue
 			}
 
@@ -420,7 +435,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 				Name:    fun.ReturnType.Name,
 			})
 			if err != nil {
-				// The return type wasn't a table.
+				addUnknownParam(ref)
 				continue
 			}
 			err = indexTable(table)
@@ -607,16 +622,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 
 		default:
 			slog.Debug("unsupported reference type", "type", fmt.Sprintf("%T", n))
-			defaultP := named.NewInferredParam(ref.name, false)
-			p, isNamed := params.FetchMerge(ref.ref.Number, defaultP)
-			a = append(a, Parameter{
-				Number: ref.ref.Number,
-				Column: &Column{
-					Name:         p.Name(),
-					DataType:     "any",
-					IsNamedParam: isNamed,
-				},
-			})
+			addUnknownParam(ref)
 		}
 	}
 	return a, nil

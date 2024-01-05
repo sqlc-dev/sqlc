@@ -5,6 +5,7 @@ import (
 
 	analyzer "github.com/sqlc-dev/sqlc/internal/analysis"
 	"github.com/sqlc-dev/sqlc/internal/config"
+	"github.com/sqlc-dev/sqlc/internal/debug"
 	"github.com/sqlc-dev/sqlc/internal/source"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/named"
@@ -174,6 +175,7 @@ func (c *Compiler) _analyzeQuery(raw *ast.RawStmt, query string, failfast bool) 
 	}
 
 	params, err := c.resolveCatalogRefs(qc, rvs, refs, namedParams, embeds)
+	debug.Dump(params)
 	if err := check(err); err != nil {
 		return nil, err
 	}
