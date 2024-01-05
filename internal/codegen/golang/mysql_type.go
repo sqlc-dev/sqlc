@@ -38,7 +38,16 @@ func mysqlType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.C
 			return "sql.NullInt32"
 		}
 
-	case "int", "integer", "smallint", "mediumint", "year":
+	case "smallint", "year":
+		if notNull {
+			if unsigned {
+				return "uint16"
+			}
+			return "int16"
+		}
+		return "sql.NullInt16"
+
+	case "int", "integer", "mediumint":
 		if notNull {
 			if unsigned {
 				return "uint32"

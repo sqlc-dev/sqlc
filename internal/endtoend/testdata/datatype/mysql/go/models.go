@@ -55,7 +55,7 @@ type DtNumeric struct {
 	A sql.NullInt32
 	B sql.NullInt32
 	C sql.NullInt32
-	D sql.NullInt32
+	D sql.NullInt16
 	E sql.NullInt32
 	F sql.NullInt64
 	G interface{}
@@ -70,7 +70,7 @@ type DtNumericNotNull struct {
 	A int32
 	B int32
 	C int32
-	D int32
+	D int16
 	E int32
 	F int64
 	G interface{}
@@ -85,7 +85,7 @@ type DtNumericUnsigned struct {
 	A sql.NullInt32
 	B sql.NullInt32
 	C sql.NullInt32
-	D sql.NullInt32
+	D sql.NullInt16
 	E sql.NullInt32
 	F sql.NullInt64
 }
