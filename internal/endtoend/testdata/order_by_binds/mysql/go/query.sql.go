@@ -43,6 +43,34 @@ func (q *Queries) ListAuthorsColumnSort(ctx context.Context, arg ListAuthorsColu
 	return items, nil
 }
 
+const listAuthorsColumnSortFnWtihArg = `-- name: ListAuthorsColumnSortFnWtihArg :many
+SELECT  id, name, bio FROM authors
+ORDER   BY MOD(id, ?)
+`
+
+func (q *Queries) ListAuthorsColumnSortFnWtihArg(ctx context.Context, modArg int64) ([]Author, error) {
+	rows, err := q.db.QueryContext(ctx, listAuthorsColumnSortFnWtihArg, modArg)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Author
+	for rows.Next() {
+		var i Author
+		if err := rows.Scan(&i.ID, &i.Name, &i.Bio); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listAuthorsNameSort = `-- name: ListAuthorsNameSort :many
 SELECT  id, name, bio FROM authors
 WHERE   id > ?
