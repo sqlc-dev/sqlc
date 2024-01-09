@@ -44,11 +44,14 @@ func TagsToString(tags map[string]string) string {
 func JSONTagName(name string, options *opts.Options) string {
 	style := options.JsonTagsCaseStyle
 	idUppercase := options.JsonTagsIdUppercase
-	if style == "" || style == "none" {
-		return name
-	} else {
-		return SetJSONCaseStyle(name, style, idUppercase)
+	addOmitEmpty := options.JsonTagsOmitEmpty
+	if style != "" && style != "none" {
+		name = SetJSONCaseStyle(name, style, idUppercase)
 	}
+	if addOmitEmpty {
+		name = name + ",omitempty"
+	}
+	return name
 }
 
 func SetCaseStyle(name string, style string) string {

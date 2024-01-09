@@ -43,6 +43,7 @@ type v1PackageSettings struct {
 	EmitAllEnumValues         bool              `json:"emit_all_enum_values,omitempty" yaml:"emit_all_enum_values"`
 	EmitSqlAsComment          bool              `json:"emit_sql_as_comment,omitempty" yaml:"emit_sql_as_comment"`
 	JSONTagsCaseStyle         string            `json:"json_tags_case_style,omitempty" yaml:"json_tags_case_style"`
+	JSONTagsOmitEmpty         bool              `json:"json_tags_omit_empty,omitempty" yaml:"json_tags_omit_empty"`
 	SQLPackage                string            `json:"sql_package" yaml:"sql_package"`
 	SQLDriver                 string            `json:"sql_driver" yaml:"sql_driver"`
 	Overrides                 []golang.Override `json:"overrides" yaml:"overrides"`
@@ -158,6 +159,7 @@ func (c *V1GenerateSettings) Translate() Config {
 					SqlDriver:                 pkg.SQLDriver,
 					Overrides:                 pkg.Overrides,
 					JsonTagsCaseStyle:         pkg.JSONTagsCaseStyle,
+					JsonTagsOmitEmpty:         pkg.JSONTagsOmitEmpty,
 					OutputBatchFileName:       pkg.OutputBatchFileName,
 					OutputDbFileName:          pkg.OutputDBFileName,
 					OutputModelsFileName:      pkg.OutputModelsFileName,
