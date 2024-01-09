@@ -1025,18 +1025,7 @@ func (c *cc) convertOrderByClause(n *pcast.OrderByClause) ast.Node {
 	}
 	list := &ast.List{Items: []ast.Node{}}
 	for _, item := range n.Items {
-		switch item.Expr.(type) {
-		case *pcast.CaseExpr:
-			list.Items = append(list.Items, &ast.CaseWhen{
-				Expr:     c.convert(item.Expr),
-				Location: item.Expr.OriginTextPosition(),
-			})
-		case *pcast.ColumnNameExpr:
-			list.Items = append(list.Items, &ast.CaseExpr{
-				Xpr:      c.convert(item.Expr),
-				Location: item.Expr.OriginTextPosition(),
-			})
-		}
+		list.Items = append(list.Items, c.convert(item.Expr))
 	}
 	return list
 }
