@@ -20,6 +20,13 @@ Check out [an interactive example](https://play.sqlc.dev/) to see it in action, 
 - [Downloads](https://downloads.sqlc.dev/)
 - [Community](https://discord.gg/EcXzGe5SEs)
 
+## Official language support
+
+- [sqlc-gen-go](https://github.com/sqlc-dev/sqlc-gen-go)
+- [sqlc-gen-kotlin](https://github.com/sqlc-dev/sqlc-gen-kotlin)
+- [sqlc-gen-python](https://github.com/sqlc-dev/sqlc-gen-python)
+- [sqlc-gen-typescript](https://github.com/sqlc-dev/sqlc-gen-typescript)
+
 ## Acknowledgments
 
 sqlc was inspired by [PugSQL](https://pugsql.org/) and
