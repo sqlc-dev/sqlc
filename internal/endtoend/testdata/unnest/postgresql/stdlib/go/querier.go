@@ -6,11 +6,13 @@ package querytest
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/google/uuid"
 )
 
 type Querier interface {
+	WithTx(tx *sql.Tx) *Queries
 	CreateMemories(ctx context.Context, vampireID []uuid.UUID) ([]Memory, error)
 	GetVampireIDs(ctx context.Context, vampireID []uuid.UUID) ([]uuid.UUID, error)
 }

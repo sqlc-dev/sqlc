@@ -6,9 +6,11 @@ package db
 
 import (
 	"context"
+	"database/sql"
 )
 
 type Querier interface {
+	WithTx(tx *sql.Tx) *Queries
 	GetAll(ctx context.Context) ([]int32, error)
 }
 

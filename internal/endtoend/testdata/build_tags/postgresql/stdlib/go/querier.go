@@ -8,9 +8,11 @@ package authors
 
 import (
 	"context"
+	"database/sql"
 )
 
 type Querier interface {
+	WithTx(tx *sql.Tx) *Queries
 	CreateAuthor(ctx context.Context, arg CreateAuthorParams) (Author, error)
 	DeleteAuthor(ctx context.Context, id int64) error
 	GetAuthor(ctx context.Context, id int64) (Author, error)

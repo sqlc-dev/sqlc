@@ -28,6 +28,7 @@ type v1PackageSettings struct {
 	Schema                    Paths             `json:"schema" yaml:"schema"`
 	Queries                   Paths             `json:"queries" yaml:"queries"`
 	EmitInterface             bool              `json:"emit_interface" yaml:"emit_interface"`
+	UseInterfaceReturnTypes   bool              `json:"use_interface_return_types" yaml:"use_interface_return_types"`
 	EmitJSONTags              bool              `json:"emit_json_tags" yaml:"emit_json_tags"`
 	JsonTagsIDUppercase       bool              `json:"json_tags_id_uppercase" yaml:"json_tags_id_uppercase"`
 	EmitDBTags                bool              `json:"emit_db_tags" yaml:"emit_db_tags"`
@@ -138,6 +139,7 @@ func (c *V1GenerateSettings) Translate() Config {
 			Gen: SQLGen{
 				Go: &golang.Options{
 					EmitInterface:             pkg.EmitInterface,
+					UseInterfaceReturnTypes:   pkg.UseInterfaceReturnTypes,
 					EmitJsonTags:              pkg.EmitJSONTags,
 					JsonTagsIdUppercase:       pkg.JsonTagsIDUppercase,
 					EmitDbTags:                pkg.EmitDBTags,

@@ -101,6 +101,9 @@
                                     "emit_interface": {
                                         "type": "boolean"
                                     },
+                                    "use_interface_return_types": {
+                                        "type": "boolean"
+                                    },
                                     "emit_json_tags": {
                                         "type": "boolean"
                                     },
