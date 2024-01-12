@@ -85,7 +85,7 @@ func CreateDB(ctx context.Context, dir, filename, querySetName string, o *Option
 		if err != nil {
 			return fmt.Errorf("read file: %w", err)
 		}
-		ddl = append(ddl, migrations.RemoveRollbackStatements(string(contents)))
+		ddl = append(ddl, migrations.RemoveIgnoredStatements(string(contents)))
 	}
 
 	now := time.Now().UTC().UnixNano()

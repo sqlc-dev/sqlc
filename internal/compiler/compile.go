@@ -37,7 +37,7 @@ func (c *Compiler) parseCatalog(schemas []string) error {
 			merr.Add(filename, "", 0, err)
 			continue
 		}
-		contents := migrations.RemoveRollbackStatements(string(blob))
+		contents := migrations.RemoveIgnoredStatements(string(blob))
 		c.schema = append(c.schema, contents)
 		stmts, err := c.parser.Parse(strings.NewReader(contents))
 		if err != nil {
