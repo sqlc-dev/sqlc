@@ -4,8 +4,6 @@
 
 package querytest
 
-import ()
-
 type UserDatum struct {
 	ID   string
 	User string

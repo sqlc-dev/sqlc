@@ -4,8 +4,6 @@
 
 package querytest
 
-import ()
-
 type Bar struct {
 	Tags [][]string
 }

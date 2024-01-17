@@ -4,8 +4,6 @@
 
 package querytest
 
-import ()
-
 type Blog struct {
 	ID   int32
 	Name string

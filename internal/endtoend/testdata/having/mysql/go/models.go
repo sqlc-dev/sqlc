@@ -4,8 +4,6 @@
 
 package querytest
 
-import ()
-
 type Weather struct {
 	City   string
 	TempLo int32

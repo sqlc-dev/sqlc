@@ -4,8 +4,6 @@
 
 package hstore
 
-import ()
-
 type Foo struct {
 	Bar interface{}
 	Baz interface{}

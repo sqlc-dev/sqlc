@@ -4,8 +4,6 @@
 
 package querytest
 
-import ()
-
 type User struct {
 	ID int64
 }

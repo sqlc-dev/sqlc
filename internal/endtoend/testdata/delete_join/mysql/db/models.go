@@ -4,8 +4,6 @@
 
 package db
 
-import ()
-
 type JoinTable struct {
 	ID             uint64
 	PrimaryTableID uint64

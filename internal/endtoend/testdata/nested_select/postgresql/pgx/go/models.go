@@ -4,8 +4,6 @@
 
 package querytest
 
-import ()
-
 type Test struct {
 	ID         int64
 	UpdateTime int64

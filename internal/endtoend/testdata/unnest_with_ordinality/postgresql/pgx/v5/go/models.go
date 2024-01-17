@@ -4,8 +4,6 @@
 
 package querytest
 
-import ()
-
 type ArrayValue struct {
 	ID     int64
 	Values []string

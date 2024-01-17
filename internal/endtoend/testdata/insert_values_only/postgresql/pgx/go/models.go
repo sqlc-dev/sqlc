@@ -4,8 +4,6 @@
 
 package querytest
 
-import ()
-
 type Status struct {
 	ID   int32
 	Name string

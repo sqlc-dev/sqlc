@@ -4,8 +4,6 @@
 
 package querytest
 
-import ()
-
 type Foo struct {
 	ID   int32
 	Name string

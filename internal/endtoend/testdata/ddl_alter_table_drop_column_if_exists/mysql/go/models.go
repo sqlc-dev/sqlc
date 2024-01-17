@@ -4,7 +4,5 @@
 
 package querytest
 
-import ()
-
 type Foo struct {
 }

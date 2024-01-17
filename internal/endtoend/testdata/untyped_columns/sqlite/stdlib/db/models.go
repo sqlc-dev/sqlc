@@ -4,8 +4,6 @@
 
 package db
 
-import ()
-
 type Repro struct {
 	ID   interface{}
 	Name interface{}

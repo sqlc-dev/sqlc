@@ -4,8 +4,6 @@
 
 package querytest
 
-import ()
-
 type Demo struct {
 	Txt string
 }

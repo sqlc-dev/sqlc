@@ -5,8 +5,6 @@
 
 package querytest
 
-import ()
-
 type StageUserDataParams struct {
 	IDParam   string
 	UserParam string
