@@ -43,6 +43,9 @@ type Options struct {
 	OmitSqlcVersion             bool              `json:"omit_sqlc_version,omitempty" yaml:"omit_sqlc_version"`
 	OmitUnusedStructs           bool              `json:"omit_unused_structs,omitempty" yaml:"omit_unused_structs"`
 	BuildTags                   string            `json:"build_tags,omitempty" yaml:"build_tags"`
+
+	// This allows overriding *Params stucts with a Model struct
+	ParamsStructOverrides       []ParamsStructOverride `json:"params_struct_overrides,omitempty" yaml:"params_struct_overrides"`          
 }
 
 type GlobalOptions struct {

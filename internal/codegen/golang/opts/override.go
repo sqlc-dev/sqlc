@@ -167,3 +167,8 @@ func (o *Override) parse(req *plugin.GenerateRequest) (err error) {
 	o.ShimOverride = shimOverride(req, o)
 	return nil
 }
+
+type ParamsStructOverride struct {
+	MethodName   string `json:"method_name" yaml:"method_name"`
+	ModelName    string `json:"model_name" yaml:"model_name"`
+}

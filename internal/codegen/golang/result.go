@@ -264,6 +264,22 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, structs []
 			}
 		}
 
+		if qpl <= 1 {
+			pso := options.ParamsStructOverrides
+			for _, o := range pso {
+				if query.Name == o.MethodName {
+					gq.Arg.Typ = o.ModelName 
+
+					// change arg to first letter of model struct name in lowecase
+					m := string(o.ModelName[0])
+					gq.Arg.Name = strings.ToLower(m)
+
+					// set IsParamsStructOverriden to true to skip query param struct
+					gq.IsParamsStructOverriden = true
+				}
+			}			
+		} 
+
 		if len(query.Columns) == 1 && query.Columns[0].EmbedTable == nil {
 			c := query.Columns[0]
 			name := columnName(c, 0)

@@ -320,6 +320,10 @@ func (i *importer) queryImports(filename string) fileImports {
 					return true
 				}
 			}
+			// Check if query params struct is overridden
+			if q.IsParamsStructOverriden {
+				continue
+			}
 			// Check the fields of the argument struct if it's emitted
 			if q.Arg.EmitStruct() {
 				for _, f := range q.Arg.Struct.Fields {

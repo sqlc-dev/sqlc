@@ -266,6 +266,9 @@ type Query struct {
 	Arg          QueryValue
 	// Used for :copyfrom
 	Table *plugin.Identifier
+	
+	// Used to override query param struct
+	IsParamsStructOverriden bool
 }
 
 func (q Query) hasRetType() bool {
