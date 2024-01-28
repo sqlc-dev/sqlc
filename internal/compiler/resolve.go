@@ -312,6 +312,8 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 							IsSqlcSlice:  p.IsSqlcSlice(),
 						},
 					})
+
+					break
 				}
 			}
 
