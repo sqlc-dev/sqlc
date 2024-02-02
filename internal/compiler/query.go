@@ -7,9 +7,10 @@ import (
 )
 
 type Function struct {
-	Rel        *ast.FuncName
-	ReturnType *ast.TypeName
-	Outs       []*catalog.Argument
+	Rel                *ast.FuncName
+	ReturnType         *ast.TypeName
+	Outs               []*catalog.Argument
+	ReturnTableColumns []*catalog.Argument
 }
 
 type Table struct {
