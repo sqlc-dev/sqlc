@@ -9,12 +9,14 @@
 
 package {{.Package}}
 
+{{ if hasImports .SourceName }}
 import (
 	{{range imports .SourceName}}
 	{{range .}}{{.}}
 	{{end}}
 	{{end}}
 )
+{{end}}
 
 {{template "dbCode" . }}
 {{end}}
@@ -40,12 +42,14 @@ import (
 
 package {{.Package}}
 
+{{ if hasImports .SourceName }}
 import (
 	{{range imports .SourceName}}
 	{{range .}}{{.}}
 	{{end}}
 	{{end}}
 )
+{{end}}
 
 {{template "interfaceCode" . }}
 {{end}}
@@ -69,12 +73,14 @@ import (
 
 package {{.Package}}
 
+{{ if hasImports .SourceName }}
 import (
 	{{range imports .SourceName}}
 	{{range .}}{{.}}
 	{{end}}
 	{{end}}
 )
+{{end}}
 
 {{template "modelsCode" . }}
 {{end}}
@@ -167,12 +173,14 @@ type {{.Name}} struct { {{- range .Fields}}
 
 package {{.Package}}
 
+{{ if hasImports .SourceName }}
 import (
 	{{range imports .SourceName}}
 	{{range .}}{{.}}
 	{{end}}
 	{{end}}
 )
+{{end}}
 
 {{template "queryCode" . }}
 {{end}}
@@ -196,12 +204,14 @@ import (
 
 package {{.Package}}
 
+{{ if hasImports .SourceName }}
 import (
 	{{range imports .SourceName}}
 	{{range .}}{{.}}
 	{{end}}
 	{{end}}
 )
+{{end}}
 
 {{template "copyfromCode" . }}
 {{end}}
@@ -225,12 +235,15 @@ import (
 
 package {{.Package}}
 
+{{ if hasImports .SourceName }}
 import (
 	{{range imports .SourceName}}
 	{{range .}}{{.}}
 	{{end}}
 	{{end}}
 )
+{{end}}
+
 {{template "batchCode" . }}
 {{end}}
 

@@ -4,8 +4,6 @@
 
 package db
 
-import ()
-
 type Author struct {
 	ID int64
 }

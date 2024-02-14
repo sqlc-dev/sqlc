@@ -4,8 +4,6 @@
 
 package querytest
 
-import ()
-
 type Venue struct {
 	ID int32
 }

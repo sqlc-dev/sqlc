@@ -4,8 +4,6 @@
 
 package querytest
 
-import ()
-
 type SysAction struct {
 	ID        int64
 	Code      string

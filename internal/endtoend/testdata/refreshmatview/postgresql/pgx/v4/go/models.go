@@ -4,8 +4,6 @@
 
 package querytest
 
-import ()
-
 type Myview struct {
 	int32
 }

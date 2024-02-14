@@ -4,8 +4,6 @@
 
 package querytest
 
-import ()
-
 type Author struct {
 	ID   int64
 	Name string

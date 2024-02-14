@@ -4,8 +4,6 @@
 
 package querytest
 
-import ()
-
 type Calorie struct {
 	ID string
 }

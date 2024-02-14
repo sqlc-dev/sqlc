@@ -4,8 +4,6 @@
 
 package querytest
 
-import ()
-
 type Change struct {
 	Ranked int32
 }

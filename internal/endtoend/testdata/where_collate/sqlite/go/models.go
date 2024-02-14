@@ -4,8 +4,6 @@
 
 package querytest
 
-import ()
-
 type Account struct {
 	ID   string
 	Name string

@@ -4,8 +4,6 @@
 
 package querytest
 
-import ()
-
 type Attribute struct {
 	ID   int64
 	Name string

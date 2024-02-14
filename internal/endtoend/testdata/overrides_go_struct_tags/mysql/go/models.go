@@ -4,8 +4,6 @@
 
 package override
 
-import ()
-
 type Bar struct {
 	Other      string
 	AlsoTagged string `also:"tagged"`

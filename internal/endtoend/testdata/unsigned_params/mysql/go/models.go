@@ -4,8 +4,6 @@
 
 package querytest
 
-import ()
-
 type Foo struct {
 	ID uint32
 }

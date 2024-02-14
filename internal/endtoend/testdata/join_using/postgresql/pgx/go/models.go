@@ -4,8 +4,6 @@
 
 package querytest
 
-import ()
-
 type T1 struct {
 	Fk int32
 }

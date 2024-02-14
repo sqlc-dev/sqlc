@@ -4,8 +4,6 @@
 
 package querytest
 
-import ()
-
 type A struct {
 	ID int64
 	A  string

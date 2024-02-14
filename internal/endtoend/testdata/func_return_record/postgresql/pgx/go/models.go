@@ -4,8 +4,6 @@
 
 package querytest
 
-import ()
-
 type MyTable struct {
 	Data []byte
 }

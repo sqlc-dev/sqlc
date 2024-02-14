@@ -209,6 +209,7 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 		"comment":    sdk.DoubleSlashComment,
 		"escape":     sdk.EscapeBacktick,
 		"imports":    i.Imports,
+		"hasImports": i.HasImports,
 		"hasPrefix":  strings.HasPrefix,
 
 		// These methods are Go specific, they do not belong in the codegen package

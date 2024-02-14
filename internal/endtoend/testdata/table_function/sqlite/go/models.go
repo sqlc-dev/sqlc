@@ -4,8 +4,6 @@
 
 package querytest
 
-import ()
-
 type Transaction struct {
 	Uri       string
 	ProgramID string

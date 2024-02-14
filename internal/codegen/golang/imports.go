@@ -75,6 +75,11 @@ func (i *importer) usesType(typ string) bool {
 	return false
 }
 
+func (i *importer) HasImports(filename string) bool {
+	imports := i.Imports(filename)
+	return len(imports[0]) != 0 || len(imports[1]) != 0
+}
+
 func (i *importer) Imports(filename string) [][]ImportSpec {
 	dbFileName := "db.go"
 	if i.Options.OutputDbFileName != "" {
