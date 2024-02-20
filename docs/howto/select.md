@@ -125,7 +125,7 @@ SELECT bio, birth_year FROM authors
 WHERE id = $1;
 ```
 
-When selecting a single column, only that value that returned. The `GetBioForAuthor`
+When selecting a single column, only that value is returned. The `GetBioForAuthor`
 method takes a single `int` as an argument and returns a `string` and an
 `error`.
 
