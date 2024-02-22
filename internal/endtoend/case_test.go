@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -34,6 +35,7 @@ func parseStderr(t *testing.T, dir, testctx string) []byte {
 	t.Helper()
 	paths := []string{
 		filepath.Join(dir, "stderr", fmt.Sprintf("%s.txt", testctx)),
+		filepath.Join(dir, fmt.Sprintf("stderr_%s.txt", runtime.GOOS)),
 		filepath.Join(dir, "stderr.txt"),
 	}
 	for _, path := range paths {
