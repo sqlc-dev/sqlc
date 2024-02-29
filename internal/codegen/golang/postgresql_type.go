@@ -201,26 +201,26 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		return "[]byte"
 
 	case "date":
-		if driver == SQLDriverPGXV5 {
-			return "pgtype.Date"
-		}
 		if notNull {
 			return "time.Time"
 		}
 		if emitPointersForNull {
 			return "*time.Time"
+		}
+		if driver == SQLDriverPGXV5 {
+			return "pgtype.Date"
 		}
 		return "sql.NullTime"
 
 	case "pg_catalog.time":
-		if driver == SQLDriverPGXV5 {
-			return "pgtype.Time"
-		}
 		if notNull {
 			return "time.Time"
 		}
 		if emitPointersForNull {
 			return "*time.Time"
+		}
+		if driver == SQLDriverPGXV5 {
+			return "pgtype.Time"
 		}
 		return "sql.NullTime"
 
@@ -234,26 +234,26 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		return "sql.NullTime"
 
 	case "pg_catalog.timestamp":
-		if driver == SQLDriverPGXV5 {
-			return "pgtype.Timestamp"
-		}
 		if notNull {
 			return "time.Time"
 		}
 		if emitPointersForNull {
 			return "*time.Time"
+		}
+		if driver == SQLDriverPGXV5 {
+			return "pgtype.Timestamp"
 		}
 		return "sql.NullTime"
 
 	case "pg_catalog.timestamptz", "timestamptz":
-		if driver == SQLDriverPGXV5 {
-			return "pgtype.Timestamptz"
-		}
 		if notNull {
 			return "time.Time"
 		}
 		if emitPointersForNull {
 			return "*time.Time"
+		}
+		if driver == SQLDriverPGXV5 {
+			return "pgtype.Timestamptz"
 		}
 		return "sql.NullTime"
 
@@ -270,14 +270,14 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		return "sql.NullString"
 
 	case "uuid":
-		if driver == SQLDriverPGXV5 {
-			return "pgtype.UUID"
-		}
 		if notNull {
 			return "uuid.UUID"
 		}
 		if emitPointersForNull {
 			return "*uuid.UUID"
+		}
+		if driver == SQLDriverPGXV5 {
+			return "pgtype.UUID"
 		}
 		return "uuid.NullUUID"
 
@@ -341,14 +341,14 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		return "sql.NullString"
 
 	case "interval", "pg_catalog.interval":
-		if driver == SQLDriverPGXV5 {
-			return "pgtype.Interval"
-		}
 		if notNull {
 			return "int64"
 		}
 		if emitPointersForNull {
 			return "*int64"
+		}
+		if driver == SQLDriverPGXV5 {
+			return "pgtype.Interval"
 		}
 		return "sql.NullInt64"
 
