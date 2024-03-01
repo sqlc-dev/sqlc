@@ -150,7 +150,18 @@ func TestBooks(t *testing.T) {
 		t.Logf("Book %d: '%s', Author: '%s', ISBN: '%s' Tags: '%v'\n", ab.BookID, ab.Title, ab.Name.String, ab.Isbn, ab.Tags)
 	}
 
-	// TODO: call say_hello(varchar)
+	// call function
+	pgText, err := dq.SayHello(ctx, "world")
+	if err != nil {
+		t.Fatal(err)
+	}
+	str, err := pgText.Value()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if str != "hello world" {
+		t.Fatal("expected function result to be \"hello world\". actual:", str)
+	}
 
 	// get book 4 and delete
 	b5, err := dq.GetBook(ctx, b3.BookID)
