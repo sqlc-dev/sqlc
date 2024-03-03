@@ -58,3 +58,6 @@ WHERE book_id = $3;
 UPDATE books
 SET title = $1, tags = $2, isbn = $4
 WHERE book_id = $3;
+
+-- name: SayHello :one
+select * from say_hello($1);

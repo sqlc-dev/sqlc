@@ -23,9 +23,9 @@ CREATE TABLE books (
 
 CREATE INDEX books_title_idx ON books(title, year);
 
-CREATE FUNCTION say_hello(text) RETURNS text AS $$
+CREATE FUNCTION say_hello(s text) RETURNS text AS $$
 BEGIN
-          RETURN CONCAT('hello ', $1);
+          RETURN CONCAT('hello ', s);
 END;
 $$ LANGUAGE plpgsql;
 

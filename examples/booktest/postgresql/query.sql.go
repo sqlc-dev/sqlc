@@ -206,6 +206,17 @@ func (q *Queries) GetBook(ctx context.Context, bookID int32) (Book, error) {
 	return i, err
 }
 
+const sayHello = `-- name: SayHello :one
+select say_hello from say_hello($1)
+`
+
+func (q *Queries) SayHello(ctx context.Context, s string) (pgtype.Text, error) {
+	row := q.db.QueryRow(ctx, sayHello, s)
+	var say_hello pgtype.Text
+	err := row.Scan(&say_hello)
+	return say_hello, err
+}
+
 const updateBook = `-- name: UpdateBook :exec
 UPDATE books
 SET title = $1, tags = $2
