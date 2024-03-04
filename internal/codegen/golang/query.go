@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/sqlc-dev/sqlc/internal/codegen/golang/opts"
 	"github.com/sqlc-dev/sqlc/internal/metadata"
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
@@ -15,7 +16,7 @@ type QueryValue struct {
 	DBName      string // The name of the field in the database. Only set if Struct==nil.
 	Struct      *Struct
 	Typ         string
-	SQLDriver   SQLDriver
+	SQLDriver   opts.SQLDriver
 
 	// Column is kept so late in the generation process around to differentiate
 	// between mysql slices and pg arrays
