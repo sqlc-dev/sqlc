@@ -48,7 +48,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		if emitPointersForNull {
 			return "*int32"
 		}
-		if driver == SQLDriverPGXV5 {
+		if driver == opts.SQLDriverPGXV5 {
 			return "pgtype.Int4"
 		}
 		return "sql.NullInt32"
@@ -60,7 +60,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		if emitPointersForNull {
 			return "*int64"
 		}
-		if driver == SQLDriverPGXV5 {
+		if driver == opts.SQLDriverPGXV5 {
 			return "pgtype.Int8"
 		}
 		return "sql.NullInt64"
@@ -72,7 +72,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		if emitPointersForNull {
 			return "*int16"
 		}
-		if driver == SQLDriverPGXV5 {
+		if driver == opts.SQLDriverPGXV5 {
 			return "pgtype.Int2"
 		}
 		return "sql.NullInt16"
@@ -84,7 +84,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		if emitPointersForNull {
 			return "*int32"
 		}
-		if driver == SQLDriverPGXV5 {
+		if driver == opts.SQLDriverPGXV5 {
 			return "pgtype.Int4"
 		}
 		return "sql.NullInt32"
@@ -96,7 +96,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		if emitPointersForNull {
 			return "*int64"
 		}
-		if driver == SQLDriverPGXV5 {
+		if driver == opts.SQLDriverPGXV5 {
 			return "pgtype.Int8"
 		}
 		return "sql.NullInt64"
@@ -108,7 +108,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		if emitPointersForNull {
 			return "*int16"
 		}
-		if driver == SQLDriverPGXV5 {
+		if driver == opts.SQLDriverPGXV5 {
 			return "pgtype.Int2"
 		}
 		return "sql.NullInt16"
@@ -120,7 +120,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		if emitPointersForNull {
 			return "*float64"
 		}
-		if driver == SQLDriverPGXV5 {
+		if driver == opts.SQLDriverPGXV5 {
 			return "pgtype.Float8"
 		}
 		return "sql.NullFloat64"
@@ -132,7 +132,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		if emitPointersForNull {
 			return "*float32"
 		}
-		if driver == SQLDriverPGXV5 {
+		if driver == opts.SQLDriverPGXV5 {
 			return "pgtype.Float4"
 		}
 		return "sql.NullFloat64" // TODO: Change to sql.NullFloat32 after updating the go.mod file
@@ -160,18 +160,18 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		if emitPointersForNull {
 			return "*bool"
 		}
-		if driver == SQLDriverPGXV5 {
+		if driver == opts.SQLDriverPGXV5 {
 			return "pgtype.Bool"
 		}
 		return "sql.NullBool"
 
 	case "json":
 		switch driver {
-		case SQLDriverPGXV5:
+		case opts.SQLDriverPGXV5:
 			return "[]byte"
-		case SQLDriverPGXV4:
+		case opts.SQLDriverPGXV4:
 			return "pgtype.JSON"
-		case SQLDriverLibPQ:
+		case opts.SQLDriverLibPQ:
 			if notNull {
 				return "json.RawMessage"
 			} else {
@@ -183,11 +183,11 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 
 	case "jsonb":
 		switch driver {
-		case SQLDriverPGXV5:
+		case opts.SQLDriverPGXV5:
 			return "[]byte"
-		case SQLDriverPGXV4:
+		case opts.SQLDriverPGXV4:
 			return "pgtype.JSONB"
-		case SQLDriverLibPQ:
+		case opts.SQLDriverLibPQ:
 			if notNull {
 				return "json.RawMessage"
 			} else {
@@ -201,7 +201,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		return "[]byte"
 
 	case "date":
-		if driver == SQLDriverPGXV5 {
+		if driver == opts.SQLDriverPGXV5 {
 			return "pgtype.Date"
 		}
 		if notNull {
@@ -213,7 +213,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		return "sql.NullTime"
 
 	case "pg_catalog.time":
-		if driver == SQLDriverPGXV5 {
+		if driver == opts.SQLDriverPGXV5 {
 			return "pgtype.Time"
 		}
 		if notNull {
@@ -234,7 +234,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		return "sql.NullTime"
 
 	case "pg_catalog.timestamp":
-		if driver == SQLDriverPGXV5 {
+		if driver == opts.SQLDriverPGXV5 {
 			return "pgtype.Timestamp"
 		}
 		if notNull {
@@ -246,7 +246,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		return "sql.NullTime"
 
 	case "pg_catalog.timestamptz", "timestamptz":
-		if driver == SQLDriverPGXV5 {
+		if driver == opts.SQLDriverPGXV5 {
 			return "pgtype.Timestamptz"
 		}
 		if notNull {
@@ -264,13 +264,13 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		if emitPointersForNull {
 			return "*string"
 		}
-		if driver == SQLDriverPGXV5 {
+		if driver == opts.SQLDriverPGXV5 {
 			return "pgtype.Text"
 		}
 		return "sql.NullString"
 
 	case "uuid":
-		if driver == SQLDriverPGXV5 {
+		if driver == opts.SQLDriverPGXV5 {
 			return "pgtype.UUID"
 		}
 		if notNull {
@@ -283,14 +283,14 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 
 	case "inet":
 		switch driver {
-		case SQLDriverPGXV5:
+		case opts.SQLDriverPGXV5:
 			if notNull {
 				return "netip.Addr"
 			}
 			return "*netip.Addr"
-		case SQLDriverPGXV4:
+		case opts.SQLDriverPGXV4:
 			return "pgtype.Inet"
-		case SQLDriverLibPQ:
+		case opts.SQLDriverLibPQ:
 			return "pqtype.Inet"
 		default:
 			return "interface{}"
@@ -298,14 +298,14 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 
 	case "cidr":
 		switch driver {
-		case SQLDriverPGXV5:
+		case opts.SQLDriverPGXV5:
 			if notNull {
 				return "netip.Prefix"
 			}
 			return "*netip.Prefix"
-		case SQLDriverPGXV4:
+		case opts.SQLDriverPGXV4:
 			return "pgtype.CIDR"
-		case SQLDriverLibPQ:
+		case opts.SQLDriverLibPQ:
 			return "pqtype.CIDR"
 		default:
 			return "interface{}"
@@ -313,11 +313,11 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 
 	case "macaddr", "macaddr8":
 		switch driver {
-		case SQLDriverPGXV5:
+		case opts.SQLDriverPGXV5:
 			return "net.HardwareAddr"
-		case SQLDriverPGXV4:
+		case opts.SQLDriverPGXV4:
 			return "pgtype.Macaddr"
-		case SQLDriverLibPQ:
+		case opts.SQLDriverLibPQ:
 			return "pqtype.Macaddr"
 		default:
 			return "interface{}"
@@ -335,13 +335,13 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		if emitPointersForNull {
 			return "*string"
 		}
-		if driver == SQLDriverPGXV5 {
+		if driver == opts.SQLDriverPGXV5 {
 			return "pgtype.Text"
 		}
 		return "sql.NullString"
 
 	case "interval", "pg_catalog.interval":
-		if driver == SQLDriverPGXV5 {
+		if driver == opts.SQLDriverPGXV5 {
 			return "pgtype.Interval"
 		}
 		if notNull {
@@ -354,9 +354,9 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 
 	case "daterange":
 		switch driver {
-		case SQLDriverPGXV4:
+		case opts.SQLDriverPGXV4:
 			return "pgtype.Daterange"
-		case SQLDriverPGXV5:
+		case opts.SQLDriverPGXV5:
 			return "pgtype.Range[pgtype.Date]"
 		default:
 			return "interface{}"
@@ -364,7 +364,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 
 	case "datemultirange":
 		switch driver {
-		case SQLDriverPGXV5:
+		case opts.SQLDriverPGXV5:
 			return "pgtype.Multirange[pgtype.Range[pgtype.Date]]"
 		default:
 			return "interface{}"
@@ -372,9 +372,9 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 
 	case "tsrange":
 		switch driver {
-		case SQLDriverPGXV4:
+		case opts.SQLDriverPGXV4:
 			return "pgtype.Tsrange"
-		case SQLDriverPGXV5:
+		case opts.SQLDriverPGXV5:
 			return "pgtype.Range[pgtype.Timestamp]"
 		default:
 			return "interface{}"
@@ -382,7 +382,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 
 	case "tsmultirange":
 		switch driver {
-		case SQLDriverPGXV5:
+		case opts.SQLDriverPGXV5:
 			return "pgtype.Multirange[pgtype.Range[pgtype.Timestamp]]"
 		default:
 			return "interface{}"
@@ -390,9 +390,9 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 
 	case "tstzrange":
 		switch driver {
-		case SQLDriverPGXV4:
+		case opts.SQLDriverPGXV4:
 			return "pgtype.Tstzrange"
-		case SQLDriverPGXV5:
+		case opts.SQLDriverPGXV5:
 			return "pgtype.Range[pgtype.Timestamptz]"
 		default:
 			return "interface{}"
@@ -400,7 +400,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 
 	case "tstzmultirange":
 		switch driver {
-		case SQLDriverPGXV5:
+		case opts.SQLDriverPGXV5:
 			return "pgtype.Multirange[pgtype.Range[pgtype.Timestamptz]]"
 		default:
 			return "interface{}"
@@ -408,9 +408,9 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 
 	case "numrange":
 		switch driver {
-		case SQLDriverPGXV4:
+		case opts.SQLDriverPGXV4:
 			return "pgtype.Numrange"
-		case SQLDriverPGXV5:
+		case opts.SQLDriverPGXV5:
 			return "pgtype.Range[pgtype.Numeric]"
 		default:
 			return "interface{}"
@@ -418,7 +418,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 
 	case "nummultirange":
 		switch driver {
-		case SQLDriverPGXV5:
+		case opts.SQLDriverPGXV5:
 			return "pgtype.Multirange[pgtype.Range[pgtype.Numeric]]"
 		default:
 			return "interface{}"
@@ -426,9 +426,9 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 
 	case "int4range":
 		switch driver {
-		case SQLDriverPGXV4:
+		case opts.SQLDriverPGXV4:
 			return "pgtype.Int4range"
-		case SQLDriverPGXV5:
+		case opts.SQLDriverPGXV5:
 			return "pgtype.Range[pgtype.Int4]"
 		default:
 			return "interface{}"
@@ -436,7 +436,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 
 	case "int4multirange":
 		switch driver {
-		case SQLDriverPGXV5:
+		case opts.SQLDriverPGXV5:
 			return "pgtype.Multirange[pgtype.Range[pgtype.Int4]]"
 		default:
 			return "interface{}"
@@ -444,9 +444,9 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 
 	case "int8range":
 		switch driver {
-		case SQLDriverPGXV4:
+		case opts.SQLDriverPGXV4:
 			return "pgtype.Int8range"
-		case SQLDriverPGXV5:
+		case opts.SQLDriverPGXV5:
 			return "pgtype.Range[pgtype.Int8]"
 		default:
 			return "interface{}"
@@ -454,7 +454,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 
 	case "int8multirange":
 		switch driver {
-		case SQLDriverPGXV5:
+		case opts.SQLDriverPGXV5:
 			return "pgtype.Multirange[pgtype.Range[pgtype.Int8]]"
 		default:
 			return "interface{}"
@@ -467,26 +467,26 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		return "interface{}"
 
 	case "bit", "varbit", "pg_catalog.bit", "pg_catalog.varbit":
-		if driver == SQLDriverPGXV5 {
+		if driver == opts.SQLDriverPGXV5 {
 			return "pgtype.Bits"
 		}
-		if driver == SQLDriverPGXV4 {
+		if driver == opts.SQLDriverPGXV4 {
 			return "pgtype.Varbit"
 		}
 
 	case "cid":
-		if driver == SQLDriverPGXV5 {
+		if driver == opts.SQLDriverPGXV5 {
 			return "pgtype.Uint32"
 		}
-		if driver == SQLDriverPGXV4 {
+		if driver == opts.SQLDriverPGXV4 {
 			return "pgtype.CID"
 		}
 
 	case "oid":
-		if driver == SQLDriverPGXV5 {
+		if driver == opts.SQLDriverPGXV5 {
 			return "pgtype.Uint32"
 		}
-		if driver == SQLDriverPGXV4 {
+		if driver == opts.SQLDriverPGXV4 {
 			return "pgtype.OID"
 		}
 
@@ -496,10 +496,10 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		}
 
 	case "xid":
-		if driver == SQLDriverPGXV5 {
+		if driver == opts.SQLDriverPGXV5 {
 			return "pgtype.Uint32"
 		}
-		if driver == SQLDriverPGXV4 {
+		if driver == opts.SQLDriverPGXV4 {
 			return "pgtype.XID"
 		}
 
@@ -539,7 +539,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		}
 
 	case "vector":
-		if driver == SQLDriverPGXV5 {
+		if driver == opts.SQLDriverPGXV5 {
 			if emitPointersForNull {
 				return "*pgvector.Vector"
 			} else {
