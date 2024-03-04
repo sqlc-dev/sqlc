@@ -94,6 +94,18 @@ func parseOpts(req *plugin.GenerateRequest) (*Options, error) {
 		}
 	}
 
+	if options.SqlPackage != "" {
+		if err := validatePackage(options.SqlPackage); err != nil {
+			return nil, fmt.Errorf("invalid options: %s", err)
+		}
+	}
+
+	if options.SqlDriver != "" {
+		if err := validateDriver(options.SqlDriver); err != nil {
+			return nil, fmt.Errorf("invalid options: %s", err)
+		}
+	}
+
 	if options.QueryParameterLimit == nil {
 		options.QueryParameterLimit = new(int32)
 		*options.QueryParameterLimit = 1
