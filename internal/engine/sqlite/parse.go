@@ -69,6 +69,7 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 			converter := &cc{}
 			out := converter.convert(stmt)
 			if _, ok := out.(*ast.TODO); ok {
+				loc = stmt.GetStop().GetStop() + 2
 				continue
 			}
 			len := (stmt.GetStop().GetStop() + 1) - loc
