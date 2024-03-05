@@ -242,4 +242,4 @@ $ sqlc push --tag tutorial
 
 In the sidebar, go to the "Insights" section to run checks against your queries.
 If you need access to a pre-configured PostgreSQL database, check out [managed
-databases](../howtwo/managed-databases.md).
+databases](../howto/managed-databases.md).
