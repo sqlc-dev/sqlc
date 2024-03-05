@@ -51,6 +51,15 @@ func TestTypeOverrides(t *testing.T) {
 			"time.Time",
 			false,
 		},
+		{
+			Override{
+				DBType: "text",
+				GoType: GoType{Spec: "github.com/disgoorg/snowflake/v2.ID"},
+			},
+			"github.com/disgoorg/snowflake/v2",
+			"snowflake.ID",
+			false,
+		},
 	} {
 		tt := test
 		t.Run(tt.override.GoType.Spec, func(t *testing.T) {
