@@ -204,6 +204,10 @@ type Book struct {
 }
 ```
 
+## TEXT
+
+For PostgreSQL, when you have a column with the `TEXT`  type, sqlc will map it to `pgtype.Text` by default. If you want to use it as a string in your Golang application, you will need to override it. The `TEXT` datatype is an unlimited size VARCHAR, so, for this reason, if you want to map the `TEXT` SQL datatype to a Golang `string`, you must set the option `pointer: true` in your overrides config. The same applies to MySQL and other supported SQL databases.
+
 ## Geometry
 
 ### PostGIS
