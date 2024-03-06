@@ -23,7 +23,7 @@ require (
 	github.com/wasilibs/go-pgquery v0.0.0-20231208014744-de63626a1e99
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/sync v0.6.0
-	google.golang.org/grpc v1.62.0
+	google.golang.org/grpc v1.62.1
 	google.golang.org/protobuf v1.33.0
 	gopkg.in/yaml.v3 v3.0.1
 	modernc.org/sqlite v1.29.2
