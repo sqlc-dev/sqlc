@@ -210,8 +210,6 @@ In PostgreSQL, when you have a column with the TEXT type, sqlc will map it to a 
 
 To accommodate nullable strings and map them to `*string` in Go, you can use the `emit_pointers_for_null_types` option in your sqlc configuration. This option ensures that nullable SQL columns are represented as pointer types in Go, allowing for a clear distinction between null and non-null values. Another way to do this is by passing the option `pointer: true` when you are overriding the `TEXT` datatype in you sqlc config file.
 
-This behavior is consistent across other supported SQL databases by sqlc, not just PostgreSQL. 
-
 ## Geometry
 
 ### PostGIS
