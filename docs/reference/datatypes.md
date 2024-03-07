@@ -204,6 +204,12 @@ type Book struct {
 }
 ```
 
+## TEXT
+
+In PostgreSQL, when you have a column with the TEXT type, sqlc will map it to a Go string by default. This default mapping applies to `TEXT` columns that are not nullable. However, for nullable `TEXT` columns, sqlc maps them to `pgtype.Text` when using the pgx/v5 driver. This distinction is crucial for developers looking to handle null values appropriately in their Go applications.
+
+To accommodate nullable strings and map them to `*string` in Go, you can use the `emit_pointers_for_null_types` option in your sqlc configuration. This option ensures that nullable SQL columns are represented as pointer types in Go, allowing for a clear distinction between null and non-null values. Another way to do this is by passing the option `pointer: true` when you are overriding the `TEXT` datatype in you sqlc config file.
+
 ## Geometry
 
 ### PostGIS
