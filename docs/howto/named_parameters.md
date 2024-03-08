@@ -92,3 +92,45 @@ type UpdateAuthorParams struct {
 	ID   int64
 }
 ```
+
+You can also use `sqlc.narg()` to INSERT data into your database. Let's suppose you want to create a new author in the database, but at the first moment, you don't have the author's bio, so you will insert the name only. To do this, you can mount your INSERT query like this:
+
+```sql
+-- name: CreateAuthorWithoutBio :one
+INSERT INTO authors (
+  name, bio
+) VALUES (
+  $1, coallesce(sqlc.narg('bio'), NULL)
+)
+RETURNING *;
+```
+
+The following code is generated:
+
+```go
+const createAuthorWithoutBio = `-- name: CreateAuthorWithoutBio :one
+INSERT INTO authors (
+  name, bio
+) VALUES (
+  $1, coallesce($2, NULL)
+)
+RETURNING id, name, bio, aa
+`
+
+type CreateAuthorWithoutBioParams struct {
+	Name string
+	Bio  interface{}
+}
+
+func (q *Queries) CreateAuthorWithoutBio(ctx context.Context, arg CreateAuthorWithoutBioParams) (Author, error) {
+	row := q.db.QueryRowContext(ctx, createAuthorWithoutBio, arg.Name, arg.Bio)
+	var i Author
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Bio,
+		&i.Aa,
+	)
+	return i, err
+}
+```
