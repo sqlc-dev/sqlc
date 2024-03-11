@@ -1,6 +1,6 @@
 # Naming parameters
 
-sqlc tried to generate good names for positional parameters, but sometimes it
+sqlc tries to generate good names for positional parameters, but sometimes it
 lacks enough context. The following SQL generates parameters with less than
 ideal names:
 
