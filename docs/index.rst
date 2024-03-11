@@ -74,6 +74,8 @@ code ever again.
 
    howto/managed-databases.md
 
+   howto/automatic-migrations.md
+
 .. toctree::
    :maxdepth: 3
    :caption: Reference
