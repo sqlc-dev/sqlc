@@ -11,7 +11,7 @@ docutils==0.18.1
 idna==3.6
 imagesize==1.4.1
 myst-parser==2.0.0 
-packaging==23.2
+packaging==24.0
 pyparsing==3.1.2
 pytz==2024.1
 requests==2.31.0
