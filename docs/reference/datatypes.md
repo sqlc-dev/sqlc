@@ -62,7 +62,7 @@ type Author struct {
 
 ## Enums
 
-PostgreSQL [enums](https://www.postgresql.org/docs/current/arrays.html) are
+PostgreSQL [enums](https://www.postgresql.org/docs/current/datatype-enum.html) are
 mapped to an aliased string type.
 
 ```sql
