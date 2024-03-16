@@ -176,8 +176,8 @@ github.com/stretchr/testify v1.5.1/go.mod h1:5W2xD1RspED5o8YsWQXVCued0rvSQ+mT+I5
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.8.4 h1:CcVxjf3Q8PM0mHUKJCdn+eZZtm5yQwehR5yeSVQQcUk=
 github.com/stretchr/testify v1.8.4/go.mod h1:sz/lmYIOXD/1dqDmKjjqLyZ2RngseejIcXlSw2iwfAo=
-github.com/tetratelabs/wazero v1.7.0-pre.1 h1:mOcomS6m5tz4gZgUaocVm0o64uDPPAmErJJmiOVLHvw=
-github.com/tetratelabs/wazero v1.7.0-pre.1/go.mod h1:ytl6Zuh20R/eROuyDaGPkp82O9C/DJfXAwJfQ3X6/7Y=
+github.com/tetratelabs/wazero v1.7.0 h1:jg5qPydno59wqjpGrHph81lbtHzTrWzwwtD4cD88+hQ=
+github.com/tetratelabs/wazero v1.7.0/go.mod h1:ytl6Zuh20R/eROuyDaGPkp82O9C/DJfXAwJfQ3X6/7Y=
 github.com/wasilibs/go-pgquery v0.0.0-20231208014744-de63626a1e99 h1:HFee1ByN4FrqNVd53Mo28ccGO+g5gxqUV/gdvKMe4b8=
 github.com/wasilibs/go-pgquery v0.0.0-20231208014744-de63626a1e99/go.mod h1:f2JMhFocVxY3VKMd9ykUxMnX4EVew9WOgjnfaNBB6C8=
 github.com/wasilibs/wazerox v0.0.0-20231208014050-e6b725634531 h1:zVJ4SZgaEE9sEH2L9k1+eAvCNa/WAAnT9UiMa3/tQrI=
