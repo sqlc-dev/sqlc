@@ -243,6 +243,19 @@ func buildImports(options *opts.Options, queries []Query, uses func(string) bool
 		}
 	}
 
+	// Ensure custom null type is imported
+	if options.GenericNullType != nil {
+		t := options.GenericNullType.Parsed
+
+		if !(t.BasicType && t.TypeName == "") {
+			_, alreadyImported := std[t.ImportPath]
+			hasPackageAlias := t.Package != ""
+			if (!alreadyImported || hasPackageAlias) && uses(t.TypeName) {
+				pkg[ImportSpec{Path: t.ImportPath, ID: t.Package}] = struct{}{}
+			}
+		}
+	}
+
 	return std, pkg
 }
 

@@ -157,6 +157,8 @@ The `gen` mapping supports the following keys:
   - If true, generated methods will accept a DBTX argument instead of storing a DBTX on the `*Queries` struct. Defaults to `false`.
 - `emit_pointers_for_null_types`:
   - If true, generated types for nullable columns are emitted as pointers (ie. `*string`) instead of `database/sql` null types (ie. `NullString`). Currently only supported for PostgreSQL if `sql_package` is `pgx/v4` or `pgx/v5`, and for SQLite. Defaults to `false`.
+- `generic_null_type`:
+  - A fully qualified name to a Go type that is used to wrap nullable fields; for example, `database/sql.Null` would represent a nullable `string` as `sql.Null[string]`. For more complicated import paths, `generic_null_type` can also be an object with the same keys as `go_type` below.
 - `emit_enum_valid_method`:
   - If true, generate a Valid method on enum types,
     indicating whether a string is a valid enum value.
