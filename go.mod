@@ -19,7 +19,7 @@ require (
 	github.com/riza-io/grpc-go v0.2.0
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
-	github.com/tetratelabs/wazero v1.6.0
+	github.com/tetratelabs/wazero v1.7.0
 	github.com/wasilibs/go-pgquery v0.0.0-20231208014744-de63626a1e99
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/sync v0.6.0
