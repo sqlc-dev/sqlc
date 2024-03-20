@@ -3,7 +3,7 @@ package postgresql
 import (
 	"fmt"
 
-	pg "github.com/pganalyze/pg_query_go/v4"
+	pg "github.com/pganalyze/pg_query_go/v5"
 
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 )
@@ -183,7 +183,6 @@ func convertAggref(n *pg.Aggref) *ast.Aggref {
 		Aggtype:       ast.Oid(n.Aggtype),
 		Aggcollid:     ast.Oid(n.Aggcollid),
 		Inputcollid:   ast.Oid(n.Inputcollid),
-		Aggtranstype:  ast.Oid(n.Aggtranstype),
 		Aggargtypes:   convertSlice(n.Aggargtypes),
 		Aggdirectargs: convertSlice(n.Aggdirectargs),
 		Args:          convertSlice(n.Args),
@@ -1663,7 +1662,6 @@ func convertGrantRoleStmt(n *pg.GrantRoleStmt) *ast.GrantRoleStmt {
 		GrantedRoles: convertSlice(n.GrantedRoles),
 		GranteeRoles: convertSlice(n.GranteeRoles),
 		IsGrant:      n.IsGrant,
-		AdminOpt:     n.AdminOpt,
 		Grantor:      convertRoleSpec(n.Grantor),
 		Behavior:     ast.DropBehavior(n.Behavior),
 	}
@@ -1693,7 +1691,6 @@ func convertGroupingFunc(n *pg.GroupingFunc) *ast.GroupingFunc {
 		Xpr:         convertNode(n.Xpr),
 		Args:        convertSlice(n.Args),
 		Refs:        convertSlice(n.Refs),
-		Cols:        convertSlice(n.Cols),
 		Agglevelsup: ast.Index(n.Agglevelsup),
 		Location:    int(n.Location),
 	}
@@ -1754,7 +1751,6 @@ func convertIndexStmt(n *pg.IndexStmt) *ast.IndexStmt {
 		ExcludeOpNames: convertSlice(n.ExcludeOpNames),
 		Idxcomment:     makeString(n.Idxcomment),
 		IndexOid:       ast.Oid(n.IndexOid),
-		OldNode:        ast.Oid(n.OldNode),
 		Unique:         n.Unique,
 		Primary:        n.Primary,
 		Isconstraint:   n.Isconstraint,
@@ -2016,7 +2012,6 @@ func convertOpExpr(n *pg.OpExpr) *ast.OpExpr {
 	return &ast.OpExpr{
 		Xpr:          convertNode(n.Xpr),
 		Opno:         ast.Oid(n.Opno),
-		Opfuncid:     ast.Oid(n.Opfuncid),
 		Opresulttype: ast.Oid(n.Opresulttype),
 		Opretset:     n.Opretset,
 		Opcollid:     ast.Oid(n.Opcollid),
@@ -2108,7 +2103,7 @@ func convertPartitionSpec(n *pg.PartitionSpec) *ast.PartitionSpec {
 		return nil
 	}
 	return &ast.PartitionSpec{
-		Strategy:   makeString(n.Strategy),
+		Strategy:   makeString(n.Strategy.String()),
 		PartParams: convertSlice(n.PartParams),
 		Location:   int(n.Location),
 	}
@@ -2266,11 +2261,6 @@ func convertRangeTblEntry(n *pg.RangeTblEntry) *ast.RangeTblEntry {
 		Lateral:         n.Lateral,
 		Inh:             n.Inh,
 		InFromCl:        n.InFromCl,
-		RequiredPerms:   ast.AclMode(n.RequiredPerms),
-		CheckAsUser:     ast.Oid(n.CheckAsUser),
-		SelectedCols:    makeUint32Slice(n.SelectedCols),
-		InsertedCols:    makeUint32Slice(n.InsertedCols),
-		UpdatedCols:     makeUint32Slice(n.UpdatedCols),
 		SecurityQuals:   convertSlice(n.SecurityQuals),
 	}
 }
@@ -2498,7 +2488,6 @@ func convertScalarArrayOpExpr(n *pg.ScalarArrayOpExpr) *ast.ScalarArrayOpExpr {
 	return &ast.ScalarArrayOpExpr{
 		Xpr:         convertNode(n.Xpr),
 		Opno:        ast.Oid(n.Opno),
-		Opfuncid:    ast.Oid(n.Opfuncid),
 		UseOr:       n.UseOr,
 		Inputcollid: ast.Oid(n.Inputcollid),
 		Args:        convertSlice(n.Args),
