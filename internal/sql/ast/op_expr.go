@@ -3,7 +3,6 @@ package ast
 type OpExpr struct {
 	Xpr          Node
 	Opno         Oid
-	Opfuncid     Oid
 	Opresulttype Oid
 	Opretset     bool
 	Opcollid     Oid

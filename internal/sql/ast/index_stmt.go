@@ -11,7 +11,6 @@ type IndexStmt struct {
 	ExcludeOpNames *List
 	Idxcomment     *string
 	IndexOid       Oid
-	OldNode        Oid
 	Unique         bool
 	Primary        bool
 	Isconstraint   bool

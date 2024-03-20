@@ -3,7 +3,6 @@ package ast
 type ScalarArrayOpExpr struct {
 	Xpr         Node
 	Opno        Oid
-	Opfuncid    Oid
 	UseOr       bool
 	Inputcollid Oid
 	Args        *List
