@@ -127,8 +127,6 @@ github.com/mattn/go-sqlite3 v1.14.22 h1:2gZY6PC6kBnID23Tichd1K+Z0oS6nE/XwU+Vz/5o
 github.com/mattn/go-sqlite3 v1.14.22/go.mod h1:Uh1q+B4BYcTPb+yiD3kU8Ct7aC0hY9fxUwlHK0RXw+Y=
 github.com/ncruces/go-strftime v0.1.9 h1:bY0MQC28UADQmHmaF5dgpLmImcShSi2kHU9XLdhx/f4=
 github.com/ncruces/go-strftime v0.1.9/go.mod h1:Fwc5htZGVVkseilnfgOVb9mKy6w1naJmn9CehxcKcls=
-github.com/pganalyze/pg_query_go/v4 v4.2.4-0.20231205012101-7463430c7b73 h1:vZEujakYrBzd7CWMwqTsDRU7bdRm4Aiu76X9K3P+qtI=
-github.com/pganalyze/pg_query_go/v4 v4.2.4-0.20231205012101-7463430c7b73/go.mod h1:pRJ9rCcWIhDLAzymhH2iY5kEVEfU6UGrL1wBWuO7gmM=
 github.com/pganalyze/pg_query_go/v5 v5.1.0 h1:MlxQqHZnvA3cbRQYyIrjxEjzo560P6MyTgtlaf3pmXg=
 github.com/pganalyze/pg_query_go/v5 v5.1.0/go.mod h1:FsglvxidZsVN+Ltw3Ai6nTgPVcK2BPukH3jCDEqc1Ug=
 github.com/pingcap/errors v0.11.0/go.mod h1:Oi8TUi2kEtXXLMJk9l1cGmz20kV3TaQ0usTwv5KuLY8=
