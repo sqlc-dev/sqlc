@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"go/format"
+	"path/filepath"
 	"strings"
 	"text/template"
 
@@ -249,6 +250,10 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 		if err != nil {
 			fmt.Println(b.String())
 			return fmt.Errorf("source error: %w", err)
+		}
+
+		if options.OutputTrimExtension {
+			name = strings.TrimSuffix(name, filepath.Ext(name))
 		}
 
 		if templateName == "queryFile" && options.OutputFilesSuffix != "" {

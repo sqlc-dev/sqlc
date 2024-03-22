@@ -251,6 +251,9 @@
                                 "output_files_suffix": {
                                     "type": "string"
                                 },
+                                "output_trim_extension": {
+                                    "type": "boolean"
+                                },
                                 "inflection_exclude_table_names": {
                                     "type": "array",
                                     "items": {
