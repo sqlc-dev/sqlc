@@ -7,7 +7,17 @@ package querytest
 
 import (
 	"context"
+	"encoding/json"
 )
+
+const bulkInsert = `-- name: BulkInsert :copyfrom
+INSERT INTO foo (a, b) VALUES (?, ?)
+`
+
+type BulkInsertParams struct {
+	A json.RawMessage
+	B json.RawMessage
+}
 
 const selectFoo = `-- name: SelectFoo :exec
 SELECT a, b FROM foo
