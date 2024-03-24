@@ -238,6 +238,7 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, structs []
 				Typ:       goType(req, options, p.Column),
 				SQLDriver: sqlpkg,
 				Column:    p.Column,
+				QueryText: gq.SQL,
 			}
 		} else if len(query.Params) >= 1 {
 			var cols []goColumn
@@ -257,6 +258,7 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, structs []
 				Struct:      s,
 				SQLDriver:   sqlpkg,
 				EmitPointer: options.EmitParamsStructPointers,
+				QueryText:   gq.SQL,
 			}
 
 			if len(query.Params) <= qpl {
