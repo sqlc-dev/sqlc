@@ -5,8 +5,11 @@
 package querytest
 
 type Book struct {
-	ID     int32
-	Title  string
-	Author string
-	Pages  int32
+	ID            int32
+	Title         string
+	Author        string
+	Pages         int32
+	Score         float64
+	Price         string
+	AvgWordLength interface{}
 }
