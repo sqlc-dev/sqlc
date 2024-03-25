@@ -17,13 +17,14 @@ import (
 )
 
 type tmplCtx struct {
-	Q           string
-	Package     string
-	SQLDriver   opts.SQLDriver
-	Enums       []Enum
-	Structs     []Struct
-	GoQueries   []Query
-	SqlcVersion string
+	Q             string
+	Package       string
+	SQLDriver     opts.SQLDriver
+	Enums         []Enum
+	Structs       []Struct
+	GoQueries     []Query
+	GoReadQueries []Query
+	SqlcVersion   string
 
 	// TODO: Race conditions
 	SourceName string
@@ -37,6 +38,7 @@ type tmplCtx struct {
 	EmitMethodsWithDBArgument bool
 	EmitEnumValidMethod       bool
 	EmitAllEnumValues         bool
+	EmitReadOnlyPrepared      bool
 	UsesCopyFrom              bool
 	UsesBatch                 bool
 	OmitSqlcVersion           bool
@@ -177,6 +179,7 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 		EmitMethodsWithDBArgument: options.EmitMethodsWithDbArgument,
 		EmitEnumValidMethod:       options.EmitEnumValidMethod,
 		EmitAllEnumValues:         options.EmitAllEnumValues,
+		EmitReadOnlyPrepared:      options.EmitReadOnlyPrepared,
 		UsesCopyFrom:              usesCopyFrom(queries),
 		UsesBatch:                 usesBatch(queries),
 		SQLDriver:                 parseDriver(options.SqlPackage),
@@ -240,6 +243,7 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 		w := bufio.NewWriter(&b)
 		tctx.SourceName = name
 		tctx.GoQueries = replacedQueries
+		tctx.GoReadQueries = readOnly(replacedQueries)
 		err := tmpl.ExecuteTemplate(w, templateName, &tctx)
 		w.Flush()
 		if err != nil {
@@ -278,6 +282,7 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 	if options.OutputCopyfromFileName != "" {
 		copyfromFileName = options.OutputCopyfromFileName
 	}
+	readQueriesFileName := "read.go"
 
 	batchFileName := "batch.go"
 	if options.OutputBatchFileName != "" {
@@ -302,6 +307,11 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 	}
 	if tctx.UsesBatch {
 		if err := execute(batchFileName, "batchFile"); err != nil {
+			return nil, err
+		}
+	}
+	if tctx.EmitReadOnlyPrepared {
+		if err := execute(readQueriesFileName, "readQueriesFile"); err != nil {
 			return nil, err
 		}
 	}
@@ -404,4 +414,24 @@ func filterUnusedStructs(enums []Enum, structs []Struct, queries []Query) ([]Enu
 	}
 
 	return keepEnums, keepStructs
+}
+
+func readOnly(queries []Query) []Query {
+	var rq []Query
+	for _, q := range queries {
+		if !q.hasRetType() {
+			continue
+		}
+
+		qsql := strings.ToUpper(q.SQL)
+		if !strings.Contains(qsql, "SELECT") {
+			continue
+		}
+		if strings.Contains(qsql, "UPDATE") || strings.Contains(qsql, "INSERT") {
+			continue
+		}
+
+		rq = append(rq, q)
+	}
+	return rq
 }
