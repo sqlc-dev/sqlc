@@ -427,7 +427,9 @@ func readOnly(queries []Query) []Query {
 		if !strings.Contains(qsql, "SELECT") {
 			continue
 		}
-		if strings.Contains(qsql, "UPDATE") || strings.Contains(qsql, "INSERT") {
+		if strings.Contains(qsql, "INSERT") ||
+			strings.Contains(qsql, "UPDATE") ||
+			strings.Contains(qsql, "DELETE") {
 			continue
 		}
 
