@@ -48,7 +48,7 @@ func (c *CachedAnalyzer) Analyze(ctx context.Context, n ast.Node, q string, sche
 }
 
 func (c *CachedAnalyzer) analyze(ctx context.Context, n ast.Node, q string, schema []string, np *named.ParamSet) (*analysis.Analysis, bool, error) {
-	// Only cache queries for managed databases. We can't be certain the the
+	// Only cache queries for managed databases. We can't be certain the
 	// database is in an unchanged state otherwise
 	if !c.db.Managed {
 		return nil, true, nil
