@@ -9,13 +9,15 @@ import (
 )
 
 type QueryCatalog struct {
-	catalog *catalog.Catalog
-	ctes    map[string]*Table
-	embeds  rewrite.EmbedSet
+	catalog     *catalog.Catalog
+	ctes        map[string]*Table
+	fromClauses map[string]*Table
+	embeds      rewrite.EmbedSet
 }
 
 func (comp *Compiler) buildQueryCatalog(c *catalog.Catalog, node ast.Node, embeds rewrite.EmbedSet) (*QueryCatalog, error) {
 	var with *ast.WithClause
+	var from *ast.List
 	switch n := node.(type) {
 	case *ast.DeleteStmt:
 		with = n.WithClause
@@ -23,12 +25,20 @@ func (comp *Compiler) buildQueryCatalog(c *catalog.Catalog, node ast.Node, embed
 		with = n.WithClause
 	case *ast.UpdateStmt:
 		with = n.WithClause
+		from = n.FromClause
 	case *ast.SelectStmt:
 		with = n.WithClause
+		from = n.FromClause
 	default:
 		with = nil
+		from = nil
 	}
-	qc := &QueryCatalog{catalog: c, ctes: map[string]*Table{}, embeds: embeds}
+	qc := &QueryCatalog{
+		catalog:     c,
+		ctes:        map[string]*Table{},
+		fromClauses: map[string]*Table{},
+		embeds:      embeds,
+	}
 	if with != nil {
 		for _, item := range with.Ctes.Items {
 			if cte, ok := item.(*ast.CommonTableExpr); ok {
@@ -54,6 +64,37 @@ func (comp *Compiler) buildQueryCatalog(c *catalog.Catalog, node ast.Node, embed
 					}
 				}
 				qc.ctes[*cte.Ctename] = &Table{
+					Rel:     rel,
+					Columns: cols,
+				}
+			}
+		}
+	}
+	if from != nil {
+		for _, item := range from.Items {
+			if rs, ok := item.(*ast.RangeSubselect); ok {
+				cols, err := comp.outputColumns(qc, rs.Subquery)
+				if err != nil {
+					return nil, err
+				}
+				var names []string
+				if rs.Alias.Colnames != nil {
+					for _, item := range rs.Alias.Colnames.Items {
+						if val, ok := item.(*ast.String); ok {
+							names = append(names, val.Str)
+						} else {
+							names = append(names, "")
+						}
+					}
+				}
+				rel := &ast.TableName{Name: *rs.Alias.Aliasname}
+				for i := range cols {
+					cols[i].Table = rel
+					if len(names) > i {
+						cols[i].Name = names[i]
+					}
+				}
+				qc.fromClauses[*rs.Alias.Aliasname] = &Table{
 					Rel:     rel,
 					Columns: cols,
 				}
