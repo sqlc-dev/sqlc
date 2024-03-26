@@ -14,6 +14,11 @@ func sqliteType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.
 	dt := strings.ToLower(sdk.DataType(col.Type))
 	notNull := col.NotNull || col.IsArray
 	emitPointersForNull := options.EmitPointersForNullTypes
+	
+	var genericNull *opts.ParsedGoType
+	if options.GenericNullType != nil {
+		genericNull = &options.GenericNullType.Parsed
+	}
 
 	switch dt {
 
@@ -23,6 +28,9 @@ func sqliteType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.
 		}
 		if emitPointersForNull {
 			return "*int64"
+		}
+		if genericNull != nil {
+			return genericNull.TypeName + "[int64]"
 		}
 		return "sql.NullInt64"
 
@@ -36,6 +44,9 @@ func sqliteType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.
 		if emitPointersForNull {
 			return "*float64"
 		}
+		if genericNull != nil {
+			return genericNull.TypeName + "[float64]"
+		}
 		return "sql.NullFloat64"
 
 	case "boolean", "bool":
@@ -45,6 +56,9 @@ func sqliteType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.
 		if emitPointersForNull {
 			return "*bool"
 		}
+		if genericNull != nil {
+			return genericNull.TypeName + "[bool]"
+		}
 		return "sql.NullBool"
 
 	case "date", "datetime", "timestamp":
@@ -53,6 +67,9 @@ func sqliteType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.
 		}
 		if emitPointersForNull {
 			return "*time.Time"
+		}
+		if genericNull != nil {
+			return genericNull.TypeName + "[time.Time]"
 		}
 		return "sql.NullTime"
 
@@ -77,6 +94,9 @@ func sqliteType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.
 		if emitPointersForNull {
 			return "*string"
 		}
+		if genericNull != nil {
+			return genericNull.TypeName + "[string]"
+		}
 		return "sql.NullString"
 
 	case strings.HasPrefix(dt, "decimal"), dt == "numeric":
@@ -85,6 +105,9 @@ func sqliteType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.
 		}
 		if emitPointersForNull {
 			return "*float64"
+		}
+		if genericNull != nil {
+			return genericNull.TypeName + "[float64]"
 		}
 		return "sql.NullFloat64"
 

@@ -1,8 +1,9 @@
 module github.com/sqlc-dev/sqlc/endtoend
 
-go 1.18
+go 1.21
 
 require (
+	github.com/LukaGiorgadze/gonull v1.2.0
 	github.com/go-sql-driver/mysql v1.7.0
 	github.com/gofrs/uuid v4.0.0+incompatible
 	github.com/google/uuid v1.3.0
@@ -12,6 +13,7 @@ require (
 	github.com/jackc/pgx/v4 v4.6.1-0.20200606145419-4e5062306904
 	github.com/jackc/pgx/v5 v5.4.3
 	github.com/lib/pq v1.9.0
+	github.com/pgvector/pgvector-go v0.1.1
 	github.com/sqlc-dev/pqtype v0.2.0
 	github.com/sqlc-dev/sqlc-testdata v1.0.0
 	github.com/volatiletech/null/v8 v8.1.2
@@ -25,7 +27,6 @@ require (
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgproto3/v2 v2.0.1 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
-	github.com/pgvector/pgvector-go v0.1.1 // indirect
 	github.com/volatiletech/inflect v0.0.1 // indirect
 	github.com/volatiletech/randomize v0.0.1 // indirect
 	github.com/volatiletech/strmangle v0.0.1 // indirect
