@@ -73,6 +73,7 @@ func (c *Compiler) Catalog() *catalog.Catalog {
 }
 
 func (c *Compiler) ParseCatalog(schema []string) error {
+
 	return c.parseCatalog(schema)
 }
 

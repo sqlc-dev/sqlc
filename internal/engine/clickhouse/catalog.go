@@ -3,16 +3,14 @@ package clickhouse
 import "github.com/sqlc-dev/sqlc/internal/sql/catalog"
 
 func NewCatalog() *catalog.Catalog {
-	def := "main"
-	return &catalog.Catalog{
+	def := ""
+	c := &catalog.Catalog{
 		DefaultSchema: def,
-		Schemas:       []*catalog.Schema{
-			// defaultSchema(def),
+		Schemas: []*catalog.Schema{
+			&catalog.Schema{Name: ""},
 		},
 		Extensions: map[string]struct{}{},
 	}
-}
-
-func newTestCatalog() *catalog.Catalog {
-	return catalog.New("main")
+	c.Schemas = append(c.Schemas, getInformationSchema())
+	return c
 }
