@@ -424,12 +424,12 @@ func readOnly(queries []Query) []Query {
 		}
 
 		qsql := strings.ToUpper(q.SQL)
-		if !strings.Contains(qsql, "SELECT") {
+		if !strings.Contains(qsql, "SELECT ") {
 			continue
 		}
-		if strings.Contains(qsql, "INSERT") ||
-			strings.Contains(qsql, "UPDATE") ||
-			strings.Contains(qsql, "DELETE") {
+		if strings.Contains(qsql, "INSERT ") ||
+			strings.Contains(qsql, "UPDATE ") ||
+			strings.Contains(qsql, "DELETE ") {
 			continue
 		}
 

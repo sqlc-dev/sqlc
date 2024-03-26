@@ -1,5 +1,5 @@
 /* name: GetUserByID :one */
-SELECT first_name, id, last_name FROM users WHERE id = sqlc.arg('target_id');
+SELECT first_name, id, last_name, updated_at FROM users WHERE id = sqlc.arg('target_id');
 
 /* name: ListUsers :many */
 SELECT first_name, last_name FROM users;

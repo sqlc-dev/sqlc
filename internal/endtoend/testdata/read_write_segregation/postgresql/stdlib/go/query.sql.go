@@ -28,19 +28,25 @@ func (q *Queries) DeleteUsersByName(ctx context.Context, arg DeleteUsersByNamePa
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT first_name, id, last_name FROM users WHERE id = $1
+SELECT first_name, id, last_name, updated_at FROM users WHERE id = $1
 `
 
 type GetUserByIDRow struct {
 	FirstName string
 	ID        int32
 	LastName  sql.NullString
+	UpdatedAt sql.NullTime
 }
 
 func (q *Queries) GetUserByID(ctx context.Context, targetID int32) (GetUserByIDRow, error) {
 	row := q.queryRow(ctx, q.getUserByIDStmt, getUserByID, targetID)
 	var i GetUserByIDRow
-	err := row.Scan(&i.FirstName, &i.ID, &i.LastName)
+	err := row.Scan(
+		&i.FirstName,
+		&i.ID,
+		&i.LastName,
+		&i.UpdatedAt,
+	)
 	return i, err
 }
 

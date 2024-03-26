@@ -64,7 +64,12 @@ func (q *ReadQueries) queryRow(ctx context.Context, stmt *sql.Stmt, query string
 func (q *ReadQueries) GetUserByID(ctx context.Context, targetID int32) (GetUserByIDRow, error) {
 	row := q.queryRow(ctx, q.getUserByIDStmt, getUserByID, targetID)
 	var i GetUserByIDRow
-	err := row.Scan(&i.FirstName, &i.ID, &i.LastName)
+	err := row.Scan(
+		&i.FirstName,
+		&i.ID,
+		&i.LastName,
+		&i.UpdatedAt,
+	)
 	return i, err
 }
 

@@ -12,4 +12,5 @@ type User struct {
 	ID        int32
 	FirstName string
 	LastName  sql.NullString
+	UpdatedAt sql.NullTime
 }
