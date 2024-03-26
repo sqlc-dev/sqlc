@@ -306,7 +306,7 @@ func parse(ctx context.Context, name, dir string, sql config.SQL, combo config.C
 		return nil, true
 	}
 	if err := c.ParseCatalog(sql.Schema); err != nil {
-		fmt.Fprintf(stderr, "# package %s\n", name)
+		fmt.Fprintf(stderr, "# parsing catalog: package %s\n", name)
 		if parserErr, ok := err.(*multierr.Error); ok {
 			for _, fileErr := range parserErr.Errs() {
 				printFileErr(stderr, dir, fileErr)
@@ -320,7 +320,7 @@ func parse(ctx context.Context, name, dir string, sql config.SQL, combo config.C
 		debug.Dump(c.Catalog())
 	}
 	if err := c.ParseQueries(sql.Queries, parserOpts); err != nil {
-		fmt.Fprintf(stderr, "# package %s\n", name)
+		fmt.Fprintf(stderr, "# parsing queries: package %s\n", name)
 		if parserErr, ok := err.(*multierr.Error); ok {
 			for _, fileErr := range parserErr.Errs() {
 				printFileErr(stderr, dir, fileErr)

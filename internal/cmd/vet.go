@@ -540,6 +540,9 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 			// SQLite really doesn't want us to depend on the output of EXPLAIN
 			// QUERY PLAN: https://www.sqlite.org/eqp.html
 			expl = nil
+		case config.EngineClickhouse:
+			// TODO(clickhouse): ch-toko
+			panic("not implemented(ch-todo)")
 		default:
 			return fmt.Errorf("unsupported database uri: %s", s.Engine)
 		}
