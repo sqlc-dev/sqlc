@@ -48,7 +48,7 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings) (*Compiler, err
 		c.catalog = dolphin.NewCatalog()
 	case config.EnginePostgreSQL:
 		c.parser = postgresql.NewParser()
-		c.catalog = postgresql.NewCatalog()
+		c.catalog = postgresql.NewCatalog(c.conf.DefaultSchema)
 		if conf.Database != nil {
 			if conf.Analyzer.Database == nil || *conf.Analyzer.Database {
 				c.analyzer = analyzer.Cached(
