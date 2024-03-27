@@ -2389,6 +2389,15 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "datetime"},
 		},
 		{
+			Name: "NEXTVAL",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "int"},
+		},
+		{
 			Name: "NOW",
 			Args: []*catalog.Argument{
 				{
