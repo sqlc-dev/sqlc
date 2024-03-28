@@ -16,7 +16,7 @@ type {{.MethodName}}BatchResults struct {
     closed bool
 }
 
-{{if .Arg.EmitStruct}}
+{{if .Arg.Struct}}
 type {{.Arg.Type}} struct { {{- range .Arg.Struct.Fields}}
   {{.Name}} {{.Type}} {{if .Tag}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
   {{- end}}
