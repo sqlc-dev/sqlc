@@ -54,7 +54,7 @@ type DtDatetimeNotNull struct {
 type DtNumeric struct {
 	A sql.NullInt32
 	B sql.NullInt32
-	C sql.NullInt32
+	C sql.NullInt16
 	D sql.NullInt16
 	E sql.NullInt32
 	F sql.NullInt64
@@ -69,7 +69,7 @@ type DtNumeric struct {
 type DtNumericNotNull struct {
 	A int32
 	B int32
-	C int32
+	C int8
 	D int16
 	E int32
 	F int64
@@ -84,7 +84,7 @@ type DtNumericNotNull struct {
 type DtNumericUnsigned struct {
 	A sql.NullInt32
 	B sql.NullInt32
-	C sql.NullInt32
+	C sql.NullInt16
 	D sql.NullInt16
 	E sql.NullInt32
 	F sql.NullInt64

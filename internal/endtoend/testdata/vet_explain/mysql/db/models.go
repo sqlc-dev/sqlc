@@ -110,7 +110,7 @@ type Debug struct {
 	Cdouble          float64
 	Cdec             string
 	Cfixed           string
-	Ctinyint         int32
+	Ctinyint         int8
 	Cbool            bool
 	Cmediumint       int32
 	Cbit             interface{}

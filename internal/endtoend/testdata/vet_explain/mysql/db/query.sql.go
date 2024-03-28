@@ -376,7 +376,7 @@ SELECT id FROM debug
 WHERE Ctinyint = ? LIMIT 1
 `
 
-func (q *Queries) SelectByCtinyint(ctx context.Context, ctinyint int32) (int64, error) {
+func (q *Queries) SelectByCtinyint(ctx context.Context, ctinyint int8) (int64, error) {
 	row := q.db.QueryRowContext(ctx, selectByCtinyint, ctinyint)
 	var id int64
 	err := row.Scan(&id)
