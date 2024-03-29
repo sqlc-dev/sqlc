@@ -40,6 +40,9 @@ Each element in the `overrides` list has the following keys:
 - `go_struct_tag`:
   - A reflect-style struct tag to use in generated code, e.g. `a:"b" x:"y,z"`.
     If you want `json` or `db` tags for all fields, use `emit_json_tags` or `emit_db_tags` instead.
+- `unsigned`:
+  - If `true`, sqlc will apply this override when a numeric db_type is unsigned.
+    Note that this has no effect on `column` overrides. Defaults to `false`.
 - `nullable`:
   - If `true`, sqlc will apply this override when a column is nullable.
     Otherwise `sqlc` will apply this override when a column is non-nullable.
