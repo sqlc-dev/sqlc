@@ -32,8 +32,8 @@ func StructName(name string, options *opts.Options) string {
 	}, name)
 
 	for _, p := range strings.Split(name, "_") {
-		if p == "id" {
-			out += "ID"
+		if _, found := options.InitialismsMap[p]; found {
+			out += strings.ToUpper(p)
 		} else {
 			out += strings.Title(p)
 		}
