@@ -167,7 +167,7 @@ The `gen` mapping supports the following keys:
   - If true, emits the SQL statement as a code-block comment above the generated function, appending to any existing comments. Defaults to `false`.
 - `build_tags`:
   - If set, add a `//go:build <build_tags>` directive at the beginning of each generated Go file.
-- `intialisms`:
+- `initialisms`:
   - An array of [initialisms](https://google.github.io/styleguide/go/decisions.html#initialisms) to upper-case. For example, `app_id` becomes `AppID`. Defaults to `["id"]`.
 - `json_tags_id_uppercase`:
   - If true, "Id" in json tags will be uppercase. If false, will be camelcase. Defaults to `false`
