@@ -43,6 +43,9 @@ type Options struct {
 	OmitSqlcVersion             bool              `json:"omit_sqlc_version,omitempty" yaml:"omit_sqlc_version"`
 	OmitUnusedStructs           bool              `json:"omit_unused_structs,omitempty" yaml:"omit_unused_structs"`
 	BuildTags                   string            `json:"build_tags,omitempty" yaml:"build_tags"`
+	Initialisms                 *[]string         `json:"initialisms,omitempty" yaml:"initialisms"`
+
+	InitialismsMap map[string]struct{} `json:"-" yaml:"-"`
 }
 
 type GlobalOptions struct {
@@ -109,6 +112,16 @@ func parseOpts(req *plugin.GenerateRequest) (*Options, error) {
 	if options.QueryParameterLimit == nil {
 		options.QueryParameterLimit = new(int32)
 		*options.QueryParameterLimit = 1
+	}
+
+	if options.Initialisms == nil {
+		options.Initialisms = new([]string)
+		*options.Initialisms = []string{"id"}
+	}
+
+	options.InitialismsMap = map[string]struct{}{}
+	for _, initial := range *options.Initialisms {
+		options.InitialismsMap[initial] = struct{}{}
 	}
 
 	return &options, nil
