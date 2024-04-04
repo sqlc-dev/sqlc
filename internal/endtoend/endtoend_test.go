@@ -120,7 +120,6 @@ func TestReplay(t *testing.T) {
 		"managed-db": {
 			Mutate: func(t *testing.T, path string) func(*config.Config) {
 				return func(c *config.Config) {
-					c.Cloud.Project = "01HAQMMECEYQYKFJN8MP16QC41" // TODO: Read from environment
 					for i := range c.SQL {
 						files := []string{}
 						for _, s := range c.SQL[i].Schema {
@@ -128,7 +127,7 @@ func TestReplay(t *testing.T) {
 						}
 						switch c.SQL[i].Engine {
 						case config.EnginePostgreSQL:
-							uri := local.PostgreSQL(t, files)
+							uri := local.ReadOnlyPostgreSQL(t, files)
 							c.SQL[i].Database = &config.Database{
 								URI: uri,
 							}
@@ -138,18 +137,12 @@ func TestReplay(t *testing.T) {
 						// 		URI: uri,
 						// 	}
 						default:
-							c.SQL[i].Database = &config.Database{
-								Managed: true,
-							}
+							// pass
 						}
 					}
 				}
 			},
 			Enabled: func() bool {
-				// Return false if no auth token exists
-				if len(os.Getenv("SQLC_AUTH_TOKEN")) == 0 {
-					return false
-				}
 				if len(os.Getenv("POSTGRESQL_SERVER_URI")) == 0 {
 					return false
 				}
