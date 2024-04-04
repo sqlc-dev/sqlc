@@ -131,11 +131,11 @@ func TestReplay(t *testing.T) {
 							c.SQL[i].Database = &config.Database{
 								URI: uri,
 							}
-						// case config.EngineMySQL:
-						// 	uri := local.MySQL(t, files)
-						// 	c.SQL[i].Database = &config.Database{
-						// 		URI: uri,
-						// 	}
+						case config.EngineMySQL:
+							uri := local.MySQL(t, files)
+							c.SQL[i].Database = &config.Database{
+								URI: uri,
+							}
 						default:
 							// pass
 						}
@@ -146,9 +146,9 @@ func TestReplay(t *testing.T) {
 				if len(os.Getenv("POSTGRESQL_SERVER_URI")) == 0 {
 					return false
 				}
-				// if len(os.Getenv("MYSQL_SERVER_URI")) == 0 {
-				// 	return false
-				// }
+				if len(os.Getenv("MYSQL_SERVER_URI")) == 0 {
+					return false
+				}
 				return true
 			},
 		},
