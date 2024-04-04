@@ -127,7 +127,7 @@ func TestReplay(t *testing.T) {
 						}
 						switch c.SQL[i].Engine {
 						case config.EnginePostgreSQL:
-							uri := local.PostgreSQL(t, files)
+							uri := local.ReadOnlyPostgreSQL(t, files)
 							c.SQL[i].Database = &config.Database{
 								URI: uri,
 							}
