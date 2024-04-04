@@ -10,20 +10,8 @@ services:
       MYSQL_ROOT_PASSWORD: mysecretpassword
       MYSQL_ROOT_HOST: '%'
 
-  mysql5:
-    image: "mysql/mysql-server:5.7"
-    ports:
-      - "3305:3306"
-    restart: always
-    environment:
-      MYSQL_DATABASE: dinotest
-      MYSQL_ROOT_PASSWORD: mysecretpassword
-      MYSQL_ROOT_HOST: '%'
-    profiles:
-      - mysql
-
   postgresql:
-    image: "postgres:15"
+    image: "postgres:16"
     ports:
       - "5432:5432"
     restart: always
@@ -31,51 +19,3 @@ services:
       POSTGRES_DB: postgres
       POSTGRES_PASSWORD: mysecretpassword
       POSTGRES_USER: postgres
-
-  postgresql14:
-    image: "postgres:14"
-    ports:
-      - "5414:5432"
-    restart: always
-    environment:
-      POSTGRES_DB: postgres
-      POSTGRES_PASSWORD: mysecretpassword
-      POSTGRES_USER: postgres
-    profiles:
-      - postgres
-
-  postgresql13:
-    image: "postgres:13"
-    ports:
-      - "5413:5432"
-    restart: always
-    environment:
-      POSTGRES_DB: postgres
-      POSTGRES_PASSWORD: mysecretpassword
-      POSTGRES_USER: postgres
-    profiles:
-      - postgres
-
-  postgresql12:
-    image: "postgres:12"
-    ports:
-      - "5412:5432"
-    restart: always
-    environment:
-      POSTGRES_DB: postgres
-      POSTGRES_PASSWORD: mysecretpassword
-      POSTGRES_USER: postgres
-    profiles:
-      - postgres
-
-  postgresql11:
-    image: "postgres:11"
-    ports:
-      - "5411:5432"
-    restart: always
-    environment:
-      POSTGRES_DB: postgres
-      POSTGRES_PASSWORD: mysecretpassword
-      POSTGRES_USER: postgres
-    profiles:
-      - postgres
