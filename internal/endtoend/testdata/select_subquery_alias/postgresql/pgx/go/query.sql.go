@@ -24,19 +24,19 @@ where amounts.last_balance < $2
 `
 
 type FindWalletsParams struct {
-	Column1 pgtype.Text
-	Column2 pgtype.Numeric
+	Type        string
+	LastBalance int32
 }
 
 type FindWalletsRow struct {
 	ID           int64
 	Address      string
 	Balance      pgtype.Numeric
-	TotalBalance pgtype.Numeric
+	TotalBalance int64
 }
 
 func (q *Queries) FindWallets(ctx context.Context, arg FindWalletsParams) ([]FindWalletsRow, error) {
-	rows, err := q.db.Query(ctx, findWallets, arg.Column1, arg.Column2)
+	rows, err := q.db.Query(ctx, findWallets, arg.Type, arg.LastBalance)
 	if err != nil {
 		return nil, err
 	}
