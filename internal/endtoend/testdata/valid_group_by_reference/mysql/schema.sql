@@ -1,8 +1,7 @@
 CREATE TABLE authors (
-  id   BIGINT  NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(10)    NOT NULL,
-  bio  text,
-  UNIQUE(name)
+  id   BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(10)  NOT NULL,
+  bio  text
 );
 
 CREATE TABLE IF NOT EXISTS weather_metrics
