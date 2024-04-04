@@ -14,18 +14,12 @@ brew install sqlc
 sudo snap install sqlc
 ```
 
-## go install 
+## go install
 
-### Go >= 1.17:
+Installing recent versions of sqlc requires Go 1.21+.
 
 ```
 go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
-```
-
-### Go < 1.17:
-
-```
-go get github.com/sqlc-dev/sqlc/cmd/sqlc
 ```
 
 ## Docker
