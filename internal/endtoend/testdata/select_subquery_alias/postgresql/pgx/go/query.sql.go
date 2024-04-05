@@ -25,14 +25,14 @@ where amounts.last_balance < $2
 
 type FindWalletsParams struct {
 	Type        string
-	LastBalance int32
+	LastBalance pgtype.Numeric
 }
 
 type FindWalletsRow struct {
 	ID           int64
 	Address      string
 	Balance      pgtype.Numeric
-	TotalBalance int64
+	TotalBalance pgtype.Numeric
 }
 
 func (q *Queries) FindWallets(ctx context.Context, arg FindWalletsParams) ([]FindWalletsRow, error) {
