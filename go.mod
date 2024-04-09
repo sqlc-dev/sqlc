@@ -22,11 +22,11 @@ require (
 	github.com/tetratelabs/wazero v1.7.0
 	github.com/wasilibs/go-pgquery v0.0.0-20240319230125-b9b2e95c69a7
 	github.com/xeipuuv/gojsonschema v1.2.0
-	golang.org/x/sync v0.6.0
-	google.golang.org/grpc v1.63.0
+	golang.org/x/sync v0.7.0
+	google.golang.org/grpc v1.63.2
 	google.golang.org/protobuf v1.33.0
 	gopkg.in/yaml.v3 v3.0.1
-	modernc.org/sqlite v1.29.5
+	modernc.org/sqlite v1.29.6
 )
 
 require (
