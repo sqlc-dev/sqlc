@@ -10,6 +10,7 @@ import (
 )
 
 type Options struct {
+	EnableOpenTracing           bool              `json:"enable_open_tracing" yaml:"enable_open_tracing"`
 	EmitInterface               bool              `json:"emit_interface" yaml:"emit_interface"`
 	EmitJsonTags                bool              `json:"emit_json_tags" yaml:"emit_json_tags"`
 	JsonTagsIdUppercase         bool              `json:"json_tags_id_uppercase" yaml:"json_tags_id_uppercase"`

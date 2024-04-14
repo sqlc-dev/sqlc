@@ -23,6 +23,10 @@ type {{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
 {{range .Comments}}//{{.}}
 {{end -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) ({{.Ret.DefineType}}, error) {
+    {{if eq .EnableOpenTracing true}}
+    span, ctx := opentracing.StartSpanFromContext(ctx, "{{.MethodName}}")
+    defer span.Finish()
+    {{end}}
     {{- template "queryCodeStdExec" . }}
 	{{- if or (ne .Arg.Pair .Ret.Pair) (ne .Arg.DefineType .Ret.DefineType) }}
 	var {{.Ret.Name}} {{.Ret.Type}}
@@ -36,6 +40,10 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 {{range .Comments}}//{{.}}
 {{end -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error) {
+    {{if eq .EnableOpenTracing true}}
+    span, ctx := opentracing.StartSpanFromContext(ctx, "{{.MethodName}}")
+    defer span.Finish()
+    {{end}}
     {{- template "queryCodeStdExec" . }}
     if err != nil {
         return nil, err
@@ -67,6 +75,10 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 {{range .Comments}}//{{.}}
 {{end -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) error {
+    {{if eq .EnableOpenTracing true}}
+    span, ctx := opentracing.StartSpanFromContext(ctx, "{{.MethodName}}")
+    defer span.Finish()
+    {{end}}
     {{- template "queryCodeStdExec" . }}
     return err
 }
@@ -76,6 +88,10 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 {{range .Comments}}//{{.}}
 {{end -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) (int64, error) {
+    {{if eq .EnableOpenTracing true}}
+    span, ctx := opentracing.StartSpanFromContext(ctx, "{{.MethodName}}")
+    defer span.Finish()
+    {{end}}
     {{- template "queryCodeStdExec" . }}
     if err != nil {
         return 0, err
@@ -88,6 +104,10 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 {{range .Comments}}//{{.}}
 {{end -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) (int64, error) {
+    {{if eq .EnableOpenTracing true}}
+    span, ctx := opentracing.StartSpanFromContext(ctx, "{{.MethodName}}")
+    defer span.Finish()
+    {{end}}
     {{- template "queryCodeStdExec" . }}
     if err != nil {
         return 0, err
@@ -100,6 +120,10 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 {{range .Comments}}//{{.}}
 {{end -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) (sql.Result, error) {
+    {{if eq .EnableOpenTracing true}}
+    span, ctx := opentracing.StartSpanFromContext(ctx, "{{.MethodName}}")
+    defer span.Finish()
+    {{end}}
     {{- template "queryCodeStdExec" . }}
 }
 {{end}}
