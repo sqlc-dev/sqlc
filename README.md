@@ -20,6 +20,31 @@ Check out [an interactive example](https://play.sqlc.dev/) to see it in action, 
 - [Downloads](https://downloads.sqlc.dev/)
 - [Community](https://discord.gg/EcXzGe5SEs)
 
+### Delta on top of main sqlc
+Added support for `enable_open_tracing` which adds open tracing to the generated code. 
+```go
+span, ctx := opentracing.StartSpanFromContext(ctx, "MethodName")
+defer span.Finish()
+```
+
+```yaml
+version: "2"
+sql:
+  - engine: "mysql"
+    queries: "query.sql"
+    schema: "schema.sql"
+    gen:
+      go:
+        emit_prepared_queries: true
+        emit_interface: true
+        enable_open_tracing: true
+        emit_exact_table_names: false
+        emit_empty_slices: true
+        emit_json_tags: true
+        package: "authors"
+        out: "./authors"
+```
+
 ## Supported languages
 
 - [sqlc-gen-go](https://github.com/sqlc-dev/sqlc-gen-go)
