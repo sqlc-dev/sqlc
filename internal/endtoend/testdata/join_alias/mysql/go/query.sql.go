@@ -82,11 +82,38 @@ func (q *Queries) AliasJoin(ctx context.Context, id uint64) ([]AliasJoinRow, err
 }
 
 const columnAlias = `-- name: ColumnAlias :many
-SELECT n FROM (SELECT 1 AS n) AS x WHERE n <= ?
+SELECT n FROM (SELECT 1 AS n) WHERE n <= ?
 `
 
 func (q *Queries) ColumnAlias(ctx context.Context, n int32) ([]int32, error) {
 	rows, err := q.db.QueryContext(ctx, columnAlias, n)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []int32
+	for rows.Next() {
+		var n int32
+		if err := rows.Scan(&n); err != nil {
+			return nil, err
+		}
+		items = append(items, n)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const columnAndQueryAlias = `-- name: ColumnAndQueryAlias :many
+SELECT n FROM (SELECT 1 AS n) AS x WHERE n <= ?
+`
+
+func (q *Queries) ColumnAndQueryAlias(ctx context.Context, n int32) ([]int32, error) {
+	rows, err := q.db.QueryContext(ctx, columnAndQueryAlias, n)
 	if err != nil {
 		return nil, err
 	}

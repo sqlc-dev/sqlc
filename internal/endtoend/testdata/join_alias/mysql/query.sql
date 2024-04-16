@@ -14,4 +14,7 @@ WHERE f.id = ?;
 SELECT * FROM (SELECT 1 AS n) AS x WHERE x.n <= ?;
 
 -- name: ColumnAlias :many
+SELECT * FROM (SELECT 1 AS n) WHERE n <= ?;
+
+-- name: ColumnAndQueryAlias :many
 SELECT * FROM (SELECT 1 AS n) AS x WHERE n <= ?;

@@ -2,6 +2,7 @@ package compiler
 
 import (
 	"fmt"
+	"math/rand"
 
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
@@ -78,7 +79,7 @@ func (comp *Compiler) buildQueryCatalog(c *catalog.Catalog, node ast.Node, embed
 					return nil, err
 				}
 				var names []string
-				if rs.Alias.Colnames != nil {
+				if rs.Alias != nil && rs.Alias.Colnames != nil {
 					for _, item := range rs.Alias.Colnames.Items {
 						if val, ok := item.(*ast.String); ok {
 							names = append(names, val.Str)
@@ -87,14 +88,19 @@ func (comp *Compiler) buildQueryCatalog(c *catalog.Catalog, node ast.Node, embed
 						}
 					}
 				}
-				rel := &ast.TableName{Name: *rs.Alias.Aliasname}
+				rel := &ast.TableName{}
+				if rs.Alias != nil && rs.Alias.Aliasname != nil {
+					rel.Name = *rs.Alias.Aliasname
+				} else {
+					rel.Name = fmt.Sprintf("unaliased_table_%d", rand.Int63())
+				}
 				for i := range cols {
 					cols[i].Table = rel
 					if len(names) > i {
 						cols[i].Name = names[i]
 					}
 				}
-				qc.fromClauses[*rs.Alias.Aliasname] = &Table{
+				qc.fromClauses[rel.Name] = &Table{
 					Rel:     rel,
 					Columns: cols,
 				}
