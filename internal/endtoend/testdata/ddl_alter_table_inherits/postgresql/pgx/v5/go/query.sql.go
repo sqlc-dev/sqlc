@@ -101,3 +101,38 @@ func (q *Queries) GetAllPeople(ctx context.Context) ([]Person, error) {
 	}
 	return items, nil
 }
+
+const getOrganizationsByRegion = `-- name: GetOrganizationsByRegion :many
+SELECT party_id, name, joined_on, rank, legal_name, region
+FROM organisation
+WHERE
+	region = 'us' AND
+	rank = 'ensign'
+`
+
+func (q *Queries) GetOrganizationsByRegion(ctx context.Context) ([]Organisation, error) {
+	rows, err := q.db.Query(ctx, getOrganizationsByRegion)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Organisation
+	for rows.Next() {
+		var i Organisation
+		if err := rows.Scan(
+			&i.PartyID,
+			&i.Name,
+			&i.JoinedOn,
+			&i.Rank,
+			&i.LegalName,
+			&i.Region,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
