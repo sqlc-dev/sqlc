@@ -13,9 +13,10 @@ import (
 // A database table is a collection of related data held in a table format within a database.
 // It consists of columns and rows.
 type Table struct {
-	Rel     *ast.TableName
-	Columns []*Column
-	Comment string
+	Rel         *ast.TableName
+	Columns     []*Column
+	Comment     string
+	ChildTables []*Table
 }
 
 func checkMissing(err error, missingOK bool) error {
@@ -55,6 +56,13 @@ func (c *Catalog) addColumn(table *Table, cmd *ast.AlterTableCmd) error {
 		return err
 	}
 	table.Columns = append(table.Columns, tc)
+
+	for _, childTable := range table.ChildTables {
+		if err := c.addColumn(childTable, cmd); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -68,6 +76,13 @@ func (table *Table) alterColumnType(cmd *ast.AlterTableCmd) error {
 		table.Columns[index].IsArray = cmd.Def.IsArray
 		table.Columns[index].ArrayDims = cmd.Def.ArrayDims
 	}
+
+	for _, childTable := range table.ChildTables {
+		if err := childTable.alterColumnType(cmd); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -91,6 +106,13 @@ func (c *Catalog) dropColumn(table *Table, cmd *ast.AlterTableCmd) error {
 		}
 	}
 	table.Columns = append(table.Columns[:index], table.Columns[index+1:]...)
+
+	for _, childTable := range table.ChildTables {
+		if err := c.dropColumn(childTable, cmd); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -102,6 +124,13 @@ func (table *Table) dropNotNull(cmd *ast.AlterTableCmd) error {
 	if index >= 0 {
 		table.Columns[index].IsNotNull = false
 	}
+
+	for _, childTable := range table.ChildTables {
+		if err := childTable.dropNotNull(cmd); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -113,6 +142,13 @@ func (table *Table) setNotNull(cmd *ast.AlterTableCmd) error {
 	if index >= 0 {
 		table.Columns[index].IsNotNull = true
 	}
+
+	for _, childTable := range table.ChildTables {
+		if err := childTable.setNotNull(cmd); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -244,6 +280,15 @@ func (c *Catalog) alterTableSetSchema(stmt *ast.AlterTableSetSchemaStmt) error {
 	}
 	oldSchema.Tables = append(oldSchema.Tables[:idx], oldSchema.Tables[idx+1:]...)
 	newSchema.Tables = append(newSchema.Tables, tbl)
+
+	for _, childTable := range tbl.ChildTables {
+		childStmt := *stmt
+		childStmt.Table = childTable.Rel
+		if err := c.alterTableSetSchema(&childStmt); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -271,6 +316,7 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 		if err != nil {
 			return err
 		}
+		t.ChildTables = append(t.ChildTables, &tbl)
 		// check and ignore duplicate columns
 		for _, col := range t.Columns {
 			if notNull, ok := seen[col.Name]; ok {
@@ -285,7 +331,8 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 
 			seen[col.Name] = col.IsNotNull
 			coltype[col.Name] = col.Type
-			tbl.Columns = append(tbl.Columns, col)
+			inheritedColumn := *col
+			tbl.Columns = append(tbl.Columns, &inheritedColumn)
 		}
 	}
 
@@ -308,6 +355,7 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 					return fmt.Errorf("column %q has a type conflict", col.Colname)
 				}
 			}
+
 			continue
 		}
 		tc, err := c.defineColumn(stmt.Name, col)
@@ -394,6 +442,7 @@ func (c *Catalog) renameColumn(stmt *ast.RenameColumnStmt) error {
 	if err != nil {
 		return checkMissing(err, stmt.MissingOk)
 	}
+
 	idx := -1
 	for i := range tbl.Columns {
 		if tbl.Columns[i].Name == stmt.Col.Name {
@@ -407,7 +456,6 @@ func (c *Catalog) renameColumn(stmt *ast.RenameColumnStmt) error {
 		return sqlerr.ColumnNotFound(tbl.Rel.Name, stmt.Col.Name)
 	}
 	tbl.Columns[idx].Name = *stmt.NewName
-
 	if tbl.Columns[idx].linkedType {
 		name := fmt.Sprintf("%s_%s", tbl.Rel.Name, *stmt.NewName)
 		rename := &ast.RenameTypeStmt{
@@ -415,6 +463,40 @@ func (c *Catalog) renameColumn(stmt *ast.RenameColumnStmt) error {
 			NewName: &name,
 		}
 		if err := c.renameType(rename); err != nil {
+			return err
+		}
+	}
+
+	for _, childTable := range tbl.ChildTables {
+		childStmt := *stmt
+		childStmt.Table = childTable.Rel
+		if err := c.renameColumn(&childStmt); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (table *Table) handleColumnUpdateOnTableRename(
+	c *Catalog,
+	stmt *ast.RenameTableStmt,
+) error {
+	for idx := range table.Columns {
+		if table.Columns[idx].linkedType {
+			name := fmt.Sprintf("%s_%s", *stmt.NewName, table.Columns[idx].Name)
+			rename := &ast.RenameTypeStmt{
+				Type:    &table.Columns[idx].Type,
+				NewName: &name,
+			}
+			if err := c.renameType(rename); err != nil {
+				return err
+			}
+		}
+	}
+
+	for _, child := range table.ChildTables {
+		if err := child.handleColumnUpdateOnTableRename(c, stmt); err != nil {
 			return err
 		}
 	}
@@ -434,17 +516,8 @@ func (c *Catalog) renameTable(stmt *ast.RenameTableStmt) error {
 		tbl.Rel.Name = *stmt.NewName
 	}
 
-	for idx := range tbl.Columns {
-		if tbl.Columns[idx].linkedType {
-			name := fmt.Sprintf("%s_%s", *stmt.NewName, tbl.Columns[idx].Name)
-			rename := &ast.RenameTypeStmt{
-				Type:    &tbl.Columns[idx].Type,
-				NewName: &name,
-			}
-			if err := c.renameType(rename); err != nil {
-				return err
-			}
-		}
+	if err := tbl.handleColumnUpdateOnTableRename(c, stmt); err != nil {
+		return err
 	}
 
 	return nil
