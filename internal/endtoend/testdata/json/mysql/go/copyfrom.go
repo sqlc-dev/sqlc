@@ -21,7 +21,7 @@ func convertRowsForBulkInsert(w *io.PipeWriter, arg []BulkInsertParams) {
 	e := mysqltsv.NewEncoder(w, 2, nil)
 	for _, row := range arg {
 		e.AppendBytes(row.A)
-		e.AppendBytes(row.B)
+		e.AppendValue(row.B)
 	}
 	w.CloseWithError(e.Close())
 }

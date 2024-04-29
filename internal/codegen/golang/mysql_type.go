@@ -108,7 +108,10 @@ func mysqlType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.C
 		return "sql.NullBool"
 
 	case "json":
-		return "json.RawMessage"
+		if notNull {
+			return "json.RawMessage"
+		}
+		return "*json.RawMessage"
 
 	case "any":
 		return "interface{}"
