@@ -12,7 +12,10 @@ type DBTX interface {
 {{- end }}
 }
 
-{{ if .EmitMethodsWithDBArgument}}
+{{ if and .EmitMethodsWithDBArgument .UseSchemaPlaceholder  }}
+func New(schema string) *Queries {
+	return &Queries{schema: schema}
+{{- else if .EmitMethodsWithDBArgument}}
 func New() *Queries {
 	return &Queries{}
 {{- else -}}
@@ -25,7 +28,16 @@ type Queries struct {
     {{if not .EmitMethodsWithDBArgument}}
 	db DBTX
     {{end}}
+    {{if .UseSchemaPlaceholder}}
+	schema string
+    {{end}}
 }
+
+{{if .UseSchemaPlaceholder}}
+func (q *Queries) interpolateSchemaName(query string) string {
+	return strings.ReplaceAll(query, "sqlc_schema_placeholder.", q.schema+".")
+}
+{{end -}}
 
 {{if not .EmitMethodsWithDBArgument}}
 func (q *Queries) WithTx(tx pgx.Tx) *Queries {

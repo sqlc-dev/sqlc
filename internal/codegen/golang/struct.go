@@ -17,6 +17,7 @@ type Struct struct {
 }
 
 func StructName(name string, options *opts.Options) string {
+	name = strings.TrimPrefix(name, "sqlc_schema_placeholder")
 	if rename := options.Rename[name]; rename != "" {
 		return rename
 	}
