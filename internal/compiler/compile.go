@@ -3,6 +3,7 @@ package compiler
 import (
 	"errors"
 	"fmt"
+	"hash/fnv"
 	"io"
 	"os"
 	"path/filepath"
@@ -31,6 +32,7 @@ func (c *Compiler) parseCatalog(schemas []string) error {
 		return err
 	}
 	merr := multierr.New()
+	h := fnv.New64()
 	for _, filename := range files {
 		blob, err := os.ReadFile(filename)
 		if err != nil {
@@ -38,6 +40,7 @@ func (c *Compiler) parseCatalog(schemas []string) error {
 			continue
 		}
 		contents := migrations.RemoveRollbackStatements(string(blob))
+		io.WriteString(h, contents)
 		c.schema = append(c.schema, contents)
 		stmts, err := c.parser.Parse(strings.NewReader(contents))
 		if err != nil {
@@ -51,6 +54,7 @@ func (c *Compiler) parseCatalog(schemas []string) error {
 			}
 		}
 	}
+	c.schemaHash = fmt.Sprintf("%x", h.Sum(nil))
 	if len(merr.Errs()) > 0 {
 		return merr
 	}

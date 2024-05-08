@@ -25,7 +25,8 @@ type Compiler struct {
 	analyzer analyzer.Analyzer
 	client   pb.QuickClient
 
-	schema []string
+	schema     []string
+	schemaHash string
 }
 
 func NewCompiler(conf config.SQL, combo config.CombinedSettings) (*Compiler, error) {

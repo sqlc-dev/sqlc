@@ -1,4 +1,4 @@
-package local
+package createdb
 
 import (
 	"context"
@@ -7,8 +7,8 @@ import (
 	"net/url"
 	"os"
 	"strings"
-	"testing"
 
+	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/jackc/pgx/v5"
 	"golang.org/x/sync/singleflight"
 
@@ -20,17 +20,12 @@ import (
 var flight singleflight.Group
 var cache = poolcache.New()
 
-func PostgreSQL(t *testing.T, migrations []string) string {
-	return postgreSQL(t, migrations, true)
+type Server struct {
+	pool *pgxpool.Pool
 }
 
-func ReadOnlyPostgreSQL(t *testing.T, migrations []string) string {
-	return postgreSQL(t, migrations, false)
-}
-
-func postgreSQL(t *testing.T, migrations []string, rw bool) string {
+func Create(ctx context.Context, srv *pgxpool.Pool, migrations []string) (*pgxpool.Pool, error) {
 	ctx := context.Background()
-	t.Helper()
 
 	dburi := os.Getenv("POSTGRESQL_SERVER_URI")
 	if dburi == "" {

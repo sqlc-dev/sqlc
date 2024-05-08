@@ -59,6 +59,7 @@ const (
 type Config struct {
 	Version   string               `json:"version" yaml:"version"`
 	Cloud     Cloud                `json:"cloud" yaml:"cloud"`
+	Servers   []Server             `json:"servers" yaml:"servers"`
 	SQL       []SQL                `json:"sql" yaml:"sql"`
 	Overrides Overrides            `json:"overrides,omitempty" yaml:"overrides"`
 	Plugins   []Plugin             `json:"plugins" yaml:"plugins"`
@@ -76,6 +77,11 @@ type Cloud struct {
 	Project      string `json:"project" yaml:"project"`
 	Hostname     string `json:"hostname" yaml:"hostname"`
 	AuthToken    string `json:"-" yaml:"-"`
+}
+
+type Server struct {
+	Name string `json:"name" yaml:"name"`
+	URI  string `json:"uri" yaml:"uri"`
 }
 
 type Plugin struct {

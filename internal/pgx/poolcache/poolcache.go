@@ -7,13 +7,22 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-var lock sync.RWMutex
-var pools = map[string]*pgxpool.Pool{}
+type Cache struct {
+	lock  sync.RWMutex
+	pools map[string]*pgxpool.Pool
+}
 
-func New(ctx context.Context, uri string) (*pgxpool.Pool, error) {
-	lock.RLock()
-	existing, found := pools[uri]
-	lock.RUnlock()
+func New() *Cache {
+	return &Cache{
+		pools: map[string]*pgxpool.Pool{},
+	}
+}
+
+// Should only be used in testing contexts
+func (c *Cache) Open(ctx context.Context, uri string) (*pgxpool.Pool, error) {
+	c.lock.RLock()
+	existing, found := c.pools[uri]
+	c.lock.RUnlock()
 
 	if found {
 		return existing, nil
@@ -24,9 +33,9 @@ func New(ctx context.Context, uri string) (*pgxpool.Pool, error) {
 		return nil, err
 	}
 
-	lock.Lock()
-	pools[uri] = pool
-	lock.Unlock()
+	c.lock.Lock()
+	c.pools[uri] = pool
+	c.lock.Unlock()
 
 	return pool, nil
 }
