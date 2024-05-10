@@ -1,4 +1,4 @@
-package createdb
+package analyzer
 
 import (
 	"context"
@@ -8,38 +8,28 @@ import (
 	"strings"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
-	"golang.org/x/sync/singleflight"
-
-	"github.com/sqlc-dev/sqlc/internal/pgx/poolcache"
 )
 
-type Server struct {
-	uri    string
-	flight singleflight.Group
-	cache  *poolcache.Cache
-}
-
-func New(uri string) *Server {
-	return &Server{
-		uri:   uri,
-		cache: poolcache.New(),
-	}
-}
-
-func (s *Server) Create(ctx context.Context, hash string, migrations []string) (string, *pgxpool.Pool, error) {
+func (a *Analyzer) createDb(ctx context.Context, migrations []string) (string, error) {
+	hash := a.fnv(migrations)
 	name := fmt.Sprintf("sqlc_%s", hash)
 
-	uri, err := url.Parse(s.uri)
+	serverUri := a.replacer.Replace(a.servers[0].URI)
+	pool, err := a.serverCache.Open(ctx, serverUri)
 	if err != nil {
-		return "", nil, err
+		return "", err
+	}
+
+	uri, err := url.Parse(serverUri)
+	if err != nil {
+		return "", err
 	}
 	uri.Path = name
 
 	key := uri.String()
-	_, err, _ = s.flight.Do(key, func() (interface{}, error) {
+	_, err, _ = a.flight.Do(key, func() (interface{}, error) {
 		// TODO: Use a parameterized query
-		row := s.pool.QueryRow(ctx,
+		row := pool.QueryRow(ctx,
 			fmt.Sprintf(`SELECT datname FROM pg_database WHERE datname = '%s'`, name))
 
 		var datname string
@@ -49,7 +39,7 @@ func (s *Server) Create(ctx context.Context, hash string, migrations []string) (
 		}
 
 		slog.Info("creating database", "name", name)
-		if _, err := s.pool.Exec(ctx, fmt.Sprintf(`CREATE DATABASE "%s"`, name)); err != nil {
+		if _, err := pool.Exec(ctx, fmt.Sprintf(`CREATE DATABASE "%s"`, name)); err != nil {
 			return nil, err
 		}
 
@@ -71,9 +61,8 @@ func (s *Server) Create(ctx context.Context, hash string, migrations []string) (
 	})
 
 	if err != nil {
-		return "", nil, err
+		return "", err
 	}
 
-	db, err := s.cache.Open(ctx, key)
-	return key, db, err
+	return key, err
 }

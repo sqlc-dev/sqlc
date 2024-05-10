@@ -4,16 +4,20 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"hash/fnv"
+	"io"
 	"strings"
 	"sync"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"golang.org/x/sync/singleflight"
 
 	core "github.com/sqlc-dev/sqlc/internal/analysis"
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/opts"
+	"github.com/sqlc-dev/sqlc/internal/pgx/poolcache"
 	pb "github.com/sqlc-dev/sqlc/internal/quickdb/v1"
 	"github.com/sqlc-dev/sqlc/internal/shfmt"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
@@ -22,22 +26,28 @@ import (
 )
 
 type Analyzer struct {
-	db       config.Database
-	client   pb.QuickClient
-	pool     *pgxpool.Pool
-	dbg      opts.Debug
-	replacer *shfmt.Replacer
-	formats  sync.Map
-	columns  sync.Map
-	tables   sync.Map
+	db          config.Database
+	client      pb.QuickClient
+	pool        *pgxpool.Pool
+	dbg         opts.Debug
+	replacer    *shfmt.Replacer
+	formats     sync.Map
+	columns     sync.Map
+	tables      sync.Map
+	servers     []config.Server
+	serverCache *poolcache.Cache
+	flight      singleflight.Group
 }
 
-func New(client pb.QuickClient, db config.Database) *Analyzer {
+func New(client pb.QuickClient, servers []config.Server, db config.Database) *Analyzer {
 	return &Analyzer{
-		db:       db,
-		dbg:      opts.DebugFromEnv(),
-		client:   client,
-		replacer: shfmt.NewReplacer(nil),
+		// TODO: Pick first
+		servers:     servers,
+		db:          db,
+		dbg:         opts.DebugFromEnv(),
+		client:      client,
+		replacer:    shfmt.NewReplacer(nil),
+		serverCache: poolcache.New(),
 	}
 }
 
@@ -97,6 +107,14 @@ type pgColumn struct {
 type columnKey struct {
 	OID  uint32
 	Attr uint16
+}
+
+func (a *Analyzer) fnv(migrations []string) string {
+	h := fnv.New64()
+	for _, query := range migrations {
+		io.WriteString(h, query)
+	}
+	return fmt.Sprintf("%x", h.Sum(nil))
 }
 
 // Cache these types in memory
@@ -211,6 +229,12 @@ func (a *Analyzer) Analyze(ctx context.Context, n ast.Node, query string, migrat
 			uri = edb.Uri
 		} else if a.dbg.OnlyManagedDatabases {
 			return nil, fmt.Errorf("database: connections disabled via SQLCDEBUG=databases=managed")
+		} else if a.db.Auto {
+			var err error
+			uri, err = a.createDb(ctx, migrations)
+			if err != nil {
+				return nil, err
+			}
 		} else {
 			uri = a.replacer.Replace(a.db.URI)
 		}

@@ -70,6 +70,7 @@ type Config struct {
 type Database struct {
 	URI     string `json:"uri" yaml:"uri"`
 	Managed bool   `json:"managed" yaml:"managed"`
+	Auto    bool   `json:"auto" yaml:"auto"`
 }
 
 type Cloud struct {

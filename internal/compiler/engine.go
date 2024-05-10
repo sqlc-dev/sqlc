@@ -25,8 +25,7 @@ type Compiler struct {
 	analyzer analyzer.Analyzer
 	client   pb.QuickClient
 
-	schema     []string
-	schemaHash string
+	schema []string
 }
 
 func NewCompiler(conf config.SQL, combo config.CombinedSettings) (*Compiler, error) {
@@ -53,7 +52,7 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings) (*Compiler, err
 		if conf.Database != nil {
 			if conf.Analyzer.Database == nil || *conf.Analyzer.Database {
 				c.analyzer = analyzer.Cached(
-					pganalyze.New(c.client, *conf.Database),
+					pganalyze.New(c.client, combo.Global.Servers, *conf.Database),
 					combo.Global,
 					*conf.Database,
 				)
@@ -63,6 +62,14 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings) (*Compiler, err
 		return nil, fmt.Errorf("unknown engine: %s", conf.Engine)
 	}
 	return c, nil
+}
+
+func (c *Compiler) UpdateAnalyzer(db *config.Database) {
+	c.analyzer = analyzer.Cached(
+		pganalyze.New(c.client, *db),
+		c.combo.Global,
+		*db,
+	)
 }
 
 func (c *Compiler) Catalog() *catalog.Catalog {
