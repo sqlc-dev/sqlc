@@ -64,14 +64,6 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings) (*Compiler, err
 	return c, nil
 }
 
-func (c *Compiler) UpdateAnalyzer(db *config.Database) {
-	c.analyzer = analyzer.Cached(
-		pganalyze.New(c.client, *db),
-		c.combo.Global,
-		*db,
-	)
-}
-
 func (c *Compiler) Catalog() *catalog.Catalog {
 	return c.catalog
 }

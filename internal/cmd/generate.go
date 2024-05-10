@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"path/filepath"
 	"runtime/trace"
@@ -28,8 +27,6 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/info"
 	"github.com/sqlc-dev/sqlc/internal/multierr"
 	"github.com/sqlc-dev/sqlc/internal/opts"
-	"github.com/sqlc-dev/sqlc/internal/pgx/createdb"
-	"github.com/sqlc-dev/sqlc/internal/pgx/poolcache"
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 	"github.com/sqlc-dev/sqlc/internal/remote"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
@@ -318,26 +315,6 @@ func parse(ctx context.Context, name, dir string, sql config.SQL, combo config.C
 			fmt.Fprintf(stderr, "error parsing schema: %s\n", err)
 		}
 		return nil, true
-	}
-
-	{
-		uri := combo.Global.Servers[0].URI
-		cache := poolcache.New()
-		pool, err := cache.Open(ctx, uri)
-		if err != nil {
-			log.Println("cache.Open", err)
-			return nil, false
-		}
-		creator := createdb.New(uri, pool)
-		dburi, db, err := creator.Create(ctx, c.SchemaHash, c.Schema)
-		if err != nil {
-			log.Println("creator.Create", err)
-		}
-		fmt.Println(db)
-
-		combo.Package.Database.URI = dburi
-		combo.Package.Database.Managed = false
-		c.UpdateAnalyzer(combo.Package.Database)
 	}
 
 	if parserOpts.Debug.DumpCatalog {
