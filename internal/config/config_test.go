@@ -82,6 +82,7 @@ func TestInvalidConfig(t *testing.T) {
 			Database: &Database{
 				URI:     "",
 				Managed: false,
+				Auto:    false,
 			},
 		}},
 	})
