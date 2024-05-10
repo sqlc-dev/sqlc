@@ -28,6 +28,10 @@ func ReadOnlyPostgreSQL(t *testing.T, migrations []string) string {
 	return postgreSQL(t, migrations, false)
 }
 
+func PostgreSQLServer() string {
+	return os.Getenv("POSTGRESQL_SERVER_URI")
+}
+
 func postgreSQL(t *testing.T, migrations []string, rw bool) string {
 	ctx := context.Background()
 	t.Helper()

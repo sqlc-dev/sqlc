@@ -120,21 +120,26 @@ func TestReplay(t *testing.T) {
 		"managed-db": {
 			Mutate: func(t *testing.T, path string) func(*config.Config) {
 				return func(c *config.Config) {
+					c.Servers = []config.Server{
+						{
+							Name: "postgres",
+							URI:  local.PostgreSQLServer(),
+						},
+
+						{
+							Name: "mysql",
+							URI:  local.MySQLServer(),
+						},
+					}
 					for i := range c.SQL {
-						files := []string{}
-						for _, s := range c.SQL[i].Schema {
-							files = append(files, filepath.Join(path, s))
-						}
 						switch c.SQL[i].Engine {
 						case config.EnginePostgreSQL:
-							uri := local.ReadOnlyPostgreSQL(t, files)
 							c.SQL[i].Database = &config.Database{
-								URI: uri,
+								Auto: true,
 							}
 						case config.EngineMySQL:
-							uri := local.MySQL(t, files)
 							c.SQL[i].Database = &config.Database{
-								URI: uri,
+								Auto: true,
 							}
 						default:
 							// pass

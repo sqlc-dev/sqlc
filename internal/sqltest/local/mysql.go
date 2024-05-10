@@ -18,6 +18,10 @@ import (
 var mysqlSync sync.Once
 var mysqlPool *sql.DB
 
+func MySQLServer() string {
+	return os.Getenv("MYSQL_SERVER_URI")
+}
+
 func MySQL(t *testing.T, migrations []string) string {
 	ctx := context.Background()
 	t.Helper()
