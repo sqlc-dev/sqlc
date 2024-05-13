@@ -17,13 +17,14 @@ import (
 )
 
 type tmplCtx struct {
-	Q           string
-	Package     string
-	SQLDriver   opts.SQLDriver
-	Enums       []Enum
-	Structs     []Struct
-	GoQueries   []Query
-	SqlcVersion string
+	Q             string
+	Package       string
+	PackageModels string
+	SQLDriver     opts.SQLDriver
+	Enums         []Enum
+	Structs       []Struct
+	GoQueries     []Query
+	SqlcVersion   string
 
 	// TODO: Race conditions
 	SourceName string
@@ -182,6 +183,7 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 		SQLDriver:                 parseDriver(options.SqlPackage),
 		Q:                         "`",
 		Package:                   options.Package,
+		PackageModels:             options.PackageModels,
 		Enums:                     enums,
 		Structs:                   structs,
 		SqlcVersion:               req.SqlcVersion,

@@ -18,6 +18,8 @@ type QueryValue struct {
 	Typ         string
 	SQLDriver   opts.SQLDriver
 
+	Package string
+
 	// Column is kept so late in the generation process around to differentiate
 	// between mysql slices and pg arrays
 	Column *plugin.Column

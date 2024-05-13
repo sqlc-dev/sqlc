@@ -5,20 +5,20 @@
         {{- if and (eq .Cmd ":one") ($dbtxParam) }}
             {{range .Comments}}//{{.}}
             {{end -}}
-            {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) ({{.Ret.DefineType}}, error)
+            {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) ({{.Ret.Package}}{{.Ret.DefineType}}, error)
         {{- else if eq .Cmd ":one"}}
             {{range .Comments}}//{{.}}
             {{end -}}
-            {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.DefineType}}, error)
+            {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.Package}}{{.Ret.DefineType}}, error)
         {{- end}}
         {{- if and (eq .Cmd ":many") ($dbtxParam) }}
             {{range .Comments}}//{{.}}
             {{end -}}
-            {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error)
+            {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) ([]{{.Ret.Package}}{{.Ret.DefineType}}, error)
         {{- else if eq .Cmd ":many"}}
             {{range .Comments}}//{{.}}
             {{end -}}
-            {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error)
+            {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.Package}}{{.Ret.DefineType}}, error)
         {{- end}}
         {{- if and (eq .Cmd ":exec") ($dbtxParam) }}
             {{range .Comments}}//{{.}}

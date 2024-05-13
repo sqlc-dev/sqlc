@@ -27,6 +27,8 @@ type Options struct {
 	EmitSqlAsComment            bool              `json:"emit_sql_as_comment,omitempty" yaml:"emit_sql_as_comment"`
 	JsonTagsCaseStyle           string            `json:"json_tags_case_style,omitempty" yaml:"json_tags_case_style"`
 	Package                     string            `json:"package" yaml:"package"`
+	PackageModels               string            `json:"package_models,omitempty" yaml:"package_models,omitempty"`
+	PackageModelsPathImport     string            `json:"package_models_path_import,omitempty" yaml:"package_models_path_import,omitempty"`
 	Out                         string            `json:"out" yaml:"out"`
 	Overrides                   []Override        `json:"overrides,omitempty" yaml:"overrides"`
 	Rename                      map[string]string `json:"rename,omitempty" yaml:"rename"`

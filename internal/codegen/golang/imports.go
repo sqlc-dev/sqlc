@@ -401,6 +401,14 @@ func (i *importer) queryImports(filename string) fileImports {
 	if sliceScan() && !sqlpkg.IsPGX() {
 		pkg[ImportSpec{Path: "github.com/lib/pq"}] = struct{}{}
 	}
+	if i.Options.PackageModels != "" {
+		var path string
+		if i.Options.PackageModelsPathImport != "" {
+			path = fmt.Sprintf("%s/", i.Options.PackageModelsPathImport)
+		}
+		path = path + i.Options.PackageModels
+		pkg[ImportSpec{Path: path}] = struct{}{}
+	}
 
 	return sortedImports(std, pkg)
 }

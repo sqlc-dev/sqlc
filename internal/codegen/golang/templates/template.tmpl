@@ -71,7 +71,12 @@ import (
 //   sqlc {{.SqlcVersion}}
 {{end}}
 
+{{if .PackageModels}}
+package {{.PackageModels}}
+{{else}}
 package {{.Package}}
+{{end}}
+
 
 {{ if hasImports .SourceName }}
 import (

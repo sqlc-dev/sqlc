@@ -24,7 +24,7 @@ type {{.Arg.Type}} struct { {{- range .Arg.Struct.Fields}}
 {{end}}
 
 {{if .Ret.EmitStruct}}
-type {{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
+type {{.Ret.Package}}{{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
   {{.Name}} {{.Type}} {{if .Tag}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
   {{- end}}
 }
@@ -69,13 +69,13 @@ func (b *{{.MethodName}}BatchResults) Exec(f func(int, error)) {
 {{end}}
 
 {{if eq .Cmd ":batchmany"}}
-func (b *{{.MethodName}}BatchResults) Query(f func(int, []{{.Ret.DefineType}}, error)) {
+func (b *{{.MethodName}}BatchResults) Query(f func(int, []{{.Ret.Package}}{{.Ret.DefineType}}, error)) {
 	defer b.br.Close()
    for t := 0; t < b.tot; t++ {
      {{- if $.EmitEmptySlices}}
-     items := []{{.Ret.DefineType}}{}
+     items := []{{.Ret.Package}}{{.Ret.DefineType}}{}
      {{else}}
-     var items []{{.Ret.DefineType}}
+     var items []{{.Ret.Package}}{{.Ret.DefineType}}
      {{end -}}
      if b.closed {
         if f != nil {
@@ -90,7 +90,7 @@ func (b *{{.MethodName}}BatchResults) Query(f func(int, []{{.Ret.DefineType}}, e
        }
        defer rows.Close()
        for rows.Next() {
-           var {{.Ret.Name}} {{.Ret.Type}}
+           var {{.Ret.Name}} {{.Ret.Package}}{{.Ret.Type}}
            if err := rows.Scan({{.Ret.Scan}}); err != nil {
              return err
            }
@@ -109,7 +109,7 @@ func (b *{{.MethodName}}BatchResults) Query(f func(int, []{{.Ret.DefineType}}, e
 func (b *{{.MethodName}}BatchResults) QueryRow(f func(int, {{.Ret.DefineType}}, error)) {
 	defer b.br.Close()
    for t := 0; t < b.tot; t++ {
-     var {{.Ret.Name}} {{.Ret.Type}}
+     var {{.Ret.Name}} {{.Ret.Package}}{{.Ret.Type}}
      if b.closed {
         if f != nil {
           f(t, {{if .Ret.IsPointer}}nil{{else}}{{.Ret.Name}}{{end}}, ErrBatchAlreadyClosed)
