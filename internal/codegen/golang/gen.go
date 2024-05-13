@@ -252,6 +252,9 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 			fmt.Println(b.String())
 			return fmt.Errorf("source error: %w", err)
 		}
+		if templateName == "queryFile" && options.OutputQueriersPathName != "" {
+			name = fmt.Sprintf("%s/%s", options.OutputQueriersPathName, name)
+		}
 
 		if templateName == "queryFile" && options.OutputFilesSuffix != "" {
 			name += options.OutputFilesSuffix
