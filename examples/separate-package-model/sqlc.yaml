@@ -1,0 +1,40 @@
+version: "2"
+sql:
+  - name: postgresql-user
+    schema: postgresql/store/migrations
+    queries: postgresql/store/queries/queryuser.sql
+    engine: postgresql
+    gen:
+      go:
+        package: userstore
+        package_models: models
+        package_models_path_import: postgres-separate-package-model
+        sql_package: pgx/v5
+        out: postgresql
+        output_models_file_name: models/user.go
+        output_queries_path_name: store/userstore
+        output_db_file_name: store/userstore/db.go
+        omit_unused_structs: true
+
+  - name: postgresql-order
+    schema: postgresql/store/migrations
+    queries: postgresql/store/queries/queryorder.sql
+    engine: postgresql
+    gen:
+      go:
+        package: orderstore
+        package_models: models
+        package_models_path_import: postgres-separate-package-model
+        sql_package: pgx/v5
+        out: postgresql
+        output_models_file_name: models/order.go
+        output_queries_path_name: store/orderstore
+        output_db_file_name: store/orderstore/db.go
+        omit_unused_structs: true
+
+overrides:
+  go:
+    overrides:
+      - db_type: "uuid"
+        engine: "postgresql"
+        go_type: "github.com/google/uuid.UUID"
