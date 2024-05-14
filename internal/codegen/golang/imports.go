@@ -267,7 +267,7 @@ func (i *importer) interfaceImports() fileImports {
 	})
 
 	std["context"] = struct{}{}
-
+	i.setImportModels(pkg)
 	return sortedImports(std, pkg)
 }
 
@@ -401,14 +401,7 @@ func (i *importer) queryImports(filename string) fileImports {
 	if sliceScan() && !sqlpkg.IsPGX() {
 		pkg[ImportSpec{Path: "github.com/lib/pq"}] = struct{}{}
 	}
-	if i.Options.PackageModels != "" {
-		var path string
-		if i.Options.PackageModelsPathImport != "" {
-			path = fmt.Sprintf("%s/", i.Options.PackageModelsPathImport)
-		}
-		path = path + i.Options.PackageModels
-		pkg[ImportSpec{Path: path}] = struct{}{}
-	}
+	i.setImportModels(pkg)
 
 	return sortedImports(std, pkg)
 }
@@ -495,6 +488,8 @@ func (i *importer) batchImports() fileImports {
 		pkg[ImportSpec{Path: "github.com/jackc/pgx/v5"}] = struct{}{}
 	}
 
+	i.setImportModels(pkg)
+
 	return sortedImports(std, pkg)
 }
 
@@ -527,4 +522,15 @@ func replaceConflictedArg(imports [][]ImportSpec, queries []Query) []Query {
 		replacedQueries = append(replacedQueries, query)
 	}
 	return replacedQueries
+}
+
+func (i *importer) setImportModels(pkg map[ImportSpec]struct{}) {
+	if i.Options.PackageModels != "" {
+		var path string
+		if i.Options.PackageModelsPathImport != "" {
+			path = fmt.Sprintf("%s/", i.Options.PackageModelsPathImport)
+		}
+		path = path + i.Options.PackageModels
+		pkg[ImportSpec{Path: path}] = struct{}{}
+	}
 }
