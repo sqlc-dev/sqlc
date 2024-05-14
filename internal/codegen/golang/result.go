@@ -277,7 +277,6 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, structs []
 		} else if putOutColumns(query) {
 			var gs *Struct
 			var emit bool
-			var packgage string
 
 			for _, s := range structs {
 				if len(s.Fields) != len(query.Columns) {
@@ -316,16 +315,13 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, structs []
 				emit = true
 			}
 
-			if options.PackageModels != "" {
-				packgage = fmt.Sprintf("%s.", options.PackageModels)
-			}
 			gq.Ret = QueryValue{
 				Emit:        emit,
 				Name:        "i",
 				Struct:      gs,
 				SQLDriver:   sqlpkg,
 				EmitPointer: options.EmitResultStructPointers,
-				Package:     packgage,
+				Package:     options.PackageModels,
 			}
 		}
 

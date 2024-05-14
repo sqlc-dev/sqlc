@@ -29,6 +29,20 @@ func (v QueryValue) EmitStruct() bool {
 	return v.Emit
 }
 
+// GetPackage returns a string in the "package." format
+// if the structure is an Emit and the Package field is not empty,
+// otherwise an empty string will be returned.
+func (v QueryValue) GetPackage() string {
+
+	if !v.Emit {
+		if v.Package != "" {
+			return fmt.Sprintf("%s.", v.Package)
+		}
+	}
+	return ""
+
+}
+
 func (v QueryValue) IsStruct() bool {
 	return v.Struct != nil
 }

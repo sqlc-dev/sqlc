@@ -13,7 +13,7 @@ type {{.Arg.Type}} struct { {{- range .Arg.UniqueFields}}
 {{end}}
 
 {{if .Ret.EmitStruct}}
-type {{.Ret.Package}}{{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
+type {{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
   {{.Name}} {{.Type}} {{if .Tag}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
   {{- end}}
 }
@@ -22,10 +22,10 @@ type {{.Ret.Package}}{{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
 {{if eq .Cmd ":one"}}
 {{range .Comments}}//{{.}}
 {{end -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) ({{.Ret.Package}}{{.Ret.DefineType}}, error) {
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) ({{.Ret.GetPackage}}{{.Ret.DefineType}}, error) {
     {{- template "queryCodeStdExec" . }}
 	{{- if or (ne .Arg.Pair .Ret.Pair) (ne .Arg.DefineType .Ret.DefineType) }}
-	var {{.Ret.Name}} {{.Ret.Package}}{{.Ret.Type}}
+	var {{.Ret.Name}} {{.Ret.GetPackage}}{{.Ret.Type}}
 	{{- end}}
 	err := row.Scan({{.Ret.Scan}})
 	return {{.Ret.ReturnName}}, err
@@ -35,19 +35,19 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 {{if eq .Cmd ":many"}}
 {{range .Comments}}//{{.}}
 {{end -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) ([]{{.Ret.Package}}{{.Ret.DefineType}}, error) {
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) ([]{{.Ret.GetPackage}}{{.Ret.DefineType}}, error) {
     {{- template "queryCodeStdExec" . }}
     if err != nil {
         return nil, err
     }
     defer rows.Close()
     {{- if $.EmitEmptySlices}}
-    items := []{{.Ret.Package}}{{.Ret.DefineType}}{}
+    items := []{{.Ret.GetPackage}}{{.Ret.DefineType}}{}
     {{else}}
-    var items []{{.Ret.Package}}{{.Ret.DefineType}}
+    var items []{{.Ret.GetPackage}}{{.Ret.DefineType}}
     {{end -}}
     for rows.Next() {
-        var {{.Ret.Name}} {{.Ret.Package}}{{.Ret.Type}}
+        var {{.Ret.Name}} {{.Ret.GetPackage}}{{.Ret.Type}}
         if err := rows.Scan({{.Ret.Scan}}); err != nil {
             return nil, err
         }
