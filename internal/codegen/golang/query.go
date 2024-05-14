@@ -116,6 +116,12 @@ func (v *QueryValue) DefineType() string {
 	}
 	return t
 }
+func (v *QueryValue) GetPointer() string {
+	if v.IsPointer() {
+		return "*"
+	}
+	return ""
+}
 
 func (v *QueryValue) ReturnName() string {
 	if v.IsPointer() {

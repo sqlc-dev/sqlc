@@ -27,10 +27,10 @@ type {{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
 {{range .Comments}}//{{.}}
 {{end -}}
 {{- if $.EmitMethodsWithDBArgument -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) ({{.Ret.GetPackage}}{{.Ret.DefineType}}, error) {
+func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) ({{.Ret.GetPointer}}{{.Ret.GetPackage}}{{.Ret.Type}}, error) {
 	row := db.QueryRow(ctx, {{.ConstantName}}, {{.Arg.Params}})
 {{- else -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.GetPackage}}{{.Ret.DefineType}}, error) {
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.GetPointer}}{{.Ret.GetPackage}}{{.Ret.Type}}, error) {
 	row := q.db.QueryRow(ctx, {{.ConstantName}}, {{.Arg.Params}})
 {{- end}}
 	{{- if or (ne .Arg.Pair .Ret.Pair) (ne .Arg.DefineType .Ret.DefineType) }}
@@ -45,10 +45,10 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.Ge
 {{range .Comments}}//{{.}}
 {{end -}}
 {{- if $.EmitMethodsWithDBArgument -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) ([]{{.Ret.GetPackage}}{{.Ret.DefineType}}, error) {
+func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) ([]{{.Ret.GetPointer}}{{.Ret.GetPackage}}{{.Ret.Type}}, error) {
 	rows, err := db.Query(ctx, {{.ConstantName}}, {{.Arg.Params}})
 {{- else -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.GetPackage}}{{.Ret.DefineType}}, error) {
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.GetPointer}}{{.Ret.GetPackage}}{{.Ret.Type}}, error) {
 	rows, err := q.db.Query(ctx, {{.ConstantName}}, {{.Arg.Params}})
 {{- end}}
 	if err != nil {
@@ -56,9 +56,9 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.
 	}
 	defer rows.Close()
 	{{- if $.EmitEmptySlices}}
-	items := []{{.Ret.GetPackage}}{{.Ret.DefineType}}{}
+	items := []{{.Ret.GetPointer}}{{.Ret.GetPackage}}{{.Ret.Type}}{}
 	{{else}}
-	var items []{{.Ret.GetPackage}}{{.Ret.DefineType}}
+	var items []{{.Ret.GetPointer}}{{.Ret.GetPackage}}{{.Ret.Type}}
 	{{end -}}
 	for rows.Next() {
 		var {{.Ret.Name}} {{.Ret.GetPackage}}{{.Ret.Type}}

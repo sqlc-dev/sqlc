@@ -22,7 +22,7 @@ type {{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
 {{if eq .Cmd ":one"}}
 {{range .Comments}}//{{.}}
 {{end -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) ({{.Ret.GetPackage}}{{.Ret.DefineType}}, error) {
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) ({{.Ret.GetPointer}}{{.Ret.GetPackage}}{{.Ret.Type}}, error) {
     {{- template "queryCodeStdExec" . }}
 	{{- if or (ne .Arg.Pair .Ret.Pair) (ne .Arg.DefineType .Ret.DefineType) }}
 	var {{.Ret.Name}} {{.Ret.GetPackage}}{{.Ret.Type}}
@@ -35,16 +35,16 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 {{if eq .Cmd ":many"}}
 {{range .Comments}}//{{.}}
 {{end -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) ([]{{.Ret.GetPackage}}{{.Ret.DefineType}}, error) {
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) ([]{{.Ret.GetPointer}}{{.Ret.GetPackage}}{{.Ret.Type}}, error) {
     {{- template "queryCodeStdExec" . }}
     if err != nil {
         return nil, err
     }
     defer rows.Close()
     {{- if $.EmitEmptySlices}}
-    items := []{{.Ret.GetPackage}}{{.Ret.DefineType}}{}
+    items := []{{.Ret.GetPointer}}{{.Ret.GetPackage}}{{.Ret.Type}}{}
     {{else}}
-    var items []{{.Ret.GetPackage}}{{.Ret.DefineType}}
+    var items []{{.Ret.GetPointer}}{{.Ret.GetPackage}}{{.Ret.Type}}
     {{end -}}
     for rows.Next() {
         var {{.Ret.Name}} {{.Ret.GetPackage}}{{.Ret.Type}}

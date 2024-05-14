@@ -5,20 +5,20 @@
         {{- if and (eq .Cmd ":one") ($dbtxParam) }}
             {{range .Comments}}//{{.}}
             {{end -}}
-            {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) ({{.Ret.GetPackage}}{{.Ret.DefineType}}, error)
+            {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) ({{.Ret.GetPointer}}{{.Ret.GetPackage}}{{.Ret.Type}}, error)
         {{- else if eq .Cmd ":one" }}
             {{range .Comments}}//{{.}}
             {{end -}}
-            {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.GetPackage}}{{.Ret.DefineType}}, error)
+            {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.GetPointer}}{{.Ret.GetPackage}}{{.Ret.Type}}, error)
         {{- end}}
         {{- if and (eq .Cmd ":many") ($dbtxParam) }}
             {{range .Comments}}//{{.}}
             {{end -}}
-            {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) ([]{{.Ret.GetPackage}}{{.Ret.DefineType}}, error)
+            {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) ([]{{.Ret.GetPointer}}{{.Ret.GetPackage}}{{.Ret.Type}}, error)
         {{- else if eq .Cmd ":many" }}
             {{range .Comments}}//{{.}}
             {{end -}}
-            {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.GetPackage}}{{.Ret.DefineType}}, error)
+            {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.GetPointer}}{{.Ret.GetPackage}}{{.Ret.Type}}, error)
         {{- end}}
         {{- if and (eq .Cmd ":exec") ($dbtxParam) }}
             {{range .Comments}}//{{.}}

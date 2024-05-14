@@ -69,13 +69,13 @@ func (b *{{.MethodName}}BatchResults) Exec(f func(int, error)) {
 {{end}}
 
 {{if eq .Cmd ":batchmany"}}
-func (b *{{.MethodName}}BatchResults) Query(f func(int, []{{.Ret.GetPackage}}{{.Ret.DefineType}}, error)) {
+func (b *{{.MethodName}}BatchResults) Query(f func(int, []{{.Ret.GetPointer}}{{.Ret.GetPackage}}{{.Ret.Type}}, error)) {
 	defer b.br.Close()
    for t := 0; t < b.tot; t++ {
      {{- if $.EmitEmptySlices}}
-     items := []{{.Ret.GetPackage}}{{.Ret.DefineType}}{}
+     items := []{{.Ret.GetPointer}}{{.Ret.GetPackage}}{{.Ret.Type}}{}
      {{else}}
-     var items []{{.Ret.GetPackage}}{{.Ret.DefineType}}
+     var items []{{.Ret.GetPointer}}{{.Ret.GetPackage}}{{.Ret.Type}}
      {{end -}}
      if b.closed {
         if f != nil {
