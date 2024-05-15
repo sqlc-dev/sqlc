@@ -10,6 +10,8 @@ import (
 	"strings"
 	"text/template"
 
+	toolsimports "golang.org/x/tools/imports"
+
 	"github.com/sqlc-dev/sqlc/internal/codegen/golang/opts"
 	"github.com/sqlc-dev/sqlc/internal/codegen/sdk"
 	"github.com/sqlc-dev/sqlc/internal/metadata"
@@ -263,6 +265,13 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 		if !strings.HasSuffix(name, ".go") {
 			name += ".go"
 		}
+
+		code, err = toolsimports.Process(name, code, nil)
+		if err != nil {
+			fmt.Println(b.String())
+			return fmt.Errorf("source error: %w", err)
+		}
+
 		output[name] = string(code)
 		return nil
 	}
