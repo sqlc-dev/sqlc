@@ -131,6 +131,10 @@ The `gen` mapping supports the following keys:
 
 - `package`:
   - The package name to use for the generated code. Defaults to `out` basename.
+- `package_models`:
+  - The package name to use for the generated code models. Defaults to `out` basename.
+- `package_models_path_import`:
+  - The name of the model import path to be used when specifying imports in other created packages. By default, no, because all files are created in one package. For example, `github.com/path/internal `, as a result, the import will look like `github.com/path/internal/models `. The parameter should be used together with `package_models`.
 - `out`:
   - Output directory for generated code.
 - `sql_package`:
@@ -183,6 +187,8 @@ The `gen` mapping supports the following keys:
   - Customize the name of the models file. Defaults to `models.go`.
 - `output_querier_file_name`:
   - Customize the name of the querier file. Defaults to `querier.go`.
+- `output_queries_path_name`:
+  - Customize  the path to the generated queries. Defaults to ` `. At this point, you need to specify the same path as to the `db.go`.
 - `output_copyfrom_file_name`:
   - Customize the name of the copyfrom file. Defaults to `copyfrom.go`.
 - `output_files_suffix`:
