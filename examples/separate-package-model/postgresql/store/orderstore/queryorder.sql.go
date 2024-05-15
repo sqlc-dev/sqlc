@@ -8,9 +8,10 @@ package orderstore
 import (
 	"context"
 
+	"postgres-separate-package-model/models"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
-	"postgres-separate-package-model/models"
 )
 
 const createOrder = `-- name: CreateOrder :one

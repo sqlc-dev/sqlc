@@ -8,9 +8,10 @@ package userstore
 import (
 	"context"
 
+	"postgres-separate-package-model/models"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
-	"postgres-separate-package-model/models"
 )
 
 const createUser = `-- name: CreateUser :one

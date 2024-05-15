@@ -8,6 +8,7 @@ import (
 	"database/sql"
 
 	orm "database/sql"
+
 	fuid "github.com/gofrs/uuid"
 	uuid "github.com/gofrs/uuid"
 	null "github.com/volatiletech/null/v8"
