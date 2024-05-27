@@ -1,3 +1,4 @@
+TEST
 # sqlc: A SQL Compiler
 
 ![go](https://github.com/sqlc-dev/sqlc/workflows/go/badge.svg)
