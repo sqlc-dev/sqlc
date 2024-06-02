@@ -16,11 +16,12 @@ Community language support
 
 New languages can be added via :doc:`plugins <../guides/plugins>`.
 
-========  ==============================  ===============  ============  ===============
-Language  Plugin                          MySQL            PostgreSQL    SQLite
-========  ==============================  ===============  ============  ===============
-F#        `kaashyapan/sqlc-gen-fsharp`_   Not implemented  Beta          Beta
-========  ==============================  ===============  ============  ===============
+========  ===============================  ===============  ============  ===============
+Language  Plugin                            MySQL            PostgreSQL    SQLite
+========  ===============================  ===============  ============  ===============
+F#        `kaashyapan/sqlc-gen-fsharp`_    Not implemented  Beta          Beta
+C#        `DaredevilOSS/sqlc-gen-csharp`_  Beta             Beta          Not implemented
+========  ===============================  ===============  ============  ===============
 
 .. _sqlc-gen-go: https://github.com/sqlc-dev/sqlc-gen-go
 .. _kaashyapan/sqlc-gen-fsharp: https://github.com/kaashyapan/sqlc-gen-fsharp
@@ -31,4 +32,3 @@ F#        `kaashyapan/sqlc-gen-fsharp`_   Not implemented  Beta          Beta
 Future language support
 ************************
 
-- `C# <https://github.com/sqlc-dev/sqlc/issues/373>`_
