@@ -35,7 +35,7 @@ Development is possible thanks to our sponsors. If you would like to support sql
 please consider [sponsoring on GitHub](https://github.com/sponsors/kyleconroy).
 
 <p align="center">
-  <a href="https://riza.io/"><img width=400 src="https://sqlc.dev/sponsors/riza.svg" alt="Riza.io"></a>
+  <a href="https://riza.io/"><img width=400 src="https://sqlc.dev/sponsors/riza-readme.png" alt="Riza.io"></a>
 </p>
 
 <p align="center">
