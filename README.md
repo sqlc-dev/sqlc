@@ -29,7 +29,35 @@ Check out [an interactive example](https://play.sqlc.dev/) to see it in action, 
 
 Additional languages can be added via [plugins](https://docs.sqlc.dev/en/latest/reference/language-support.html#community-language-support).
 
-## Acknowledgments
+## Sponsors
 
-sqlc was inspired by [PugSQL](https://pugsql.org/) and
-[HugSQL](https://www.hugsql.org/).
+Development is possible thanks to our sponsors. If you would like to support sqlc,
+please consider [sponsoring on GitHub](https://github.com/sponsors/kyleconroy).
+
+<p align="center">
+  <a href="https://riza.io/"><img width=250 src="https://sqlc.dev/sponsors/riza.svg" alt="Riza.io"></a>
+</p>
+
+<p align="center">
+  <a href="https://coder.com"><img src="https://sqlc.dev/sponsors/coder.png" alt="Coder.com" />
+  <a href="https://mux.com"><img src="https://sqlc.dev/sponsors/mintfun.png" alt="Mint.fun" />
+  <a href="https://mint.fun"><img src="https://sqlc.dev/sponsors/mux.png" alt="Mux.com" />
+</p>
+
+<p align="center">
+  <a href="https://github.com/Cyberax">Cyberax</a> - 
+  <a href="https://github.com/NaNuNaNu">NaNuNaNu</a> - 
+  <a href="https://github.com/Stumble">Stumble</a> - 
+  <a href="https://github.com/WestfalNamur">WestfalNamur</a> - 
+  <a href="https://github.com/alecthomas">alecthomas</a> - 
+  <a href="https://github.com/cameronnewman">cameronnewman</a> - 
+  <a href="https://github.com/danielbprice">danielbprice</a> - 
+  <a href="https://github.com/davherrmann">davherrmann</a> - 
+  <a href="https://github.com/dvob">dvob</a> - 
+  <a href="https://github.com/gilcrest">gilcrest</a> - 
+  <a href="https://github.com/gzuidhof">gzuidhof</a> - 
+  <a href="https://github.com/jeffreylo">jeffreylo</a> - 
+  <a href="https://github.com/mmcloughlin">mmcloughlin</a> - 
+  <a href="https://github.com/ryohei1216">ryohei1216</a> - 
+  <a href="https://github.com/sgielen">sgielen</a>
+</p>
