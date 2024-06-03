@@ -39,9 +39,9 @@ please consider [sponsoring on GitHub](https://github.com/sponsors/kyleconroy).
 </p>
 
 <p align="center">
-  <a href="https://coder.com"><img width=200 src="https://sqlc.dev/sponsors/coder-readme.png" alt="Coder.com" />
-  <a href="https://mux.com"><img width=200 src="https://sqlc.dev/sponsors/mint-readme.png" alt="Mint.fun" />
-  <a href="https://mint.fun"><img width=200 src="https://sqlc.dev/sponsors/mux-readme.png" alt="Mux.com" />
+  <a href="https://coder.com"><img width=200 src="https://sqlc.dev/sponsors/coder-readme.png" alt="Coder.com" /></a>
+  <a href="https://mux.com"><img width=200 src="https://sqlc.dev/sponsors/mint-readme.png" alt="Mint.fun" /></a>
+  <a href="https://mint.fun"><img width=200 src="https://sqlc.dev/sponsors/mux-readme.png" alt="Mux.com" /></a>
 </p>
 
 <p align="center">
