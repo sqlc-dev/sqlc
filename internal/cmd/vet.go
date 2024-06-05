@@ -22,12 +22,12 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/sqlc-dev/sqlc/internal/config"
+	"github.com/sqlc-dev/sqlc/internal/dbmanager"
 	"github.com/sqlc-dev/sqlc/internal/debug"
 	"github.com/sqlc-dev/sqlc/internal/migrations"
 	"github.com/sqlc-dev/sqlc/internal/opts"
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 	"github.com/sqlc-dev/sqlc/internal/quickdb"
-	pb "github.com/sqlc-dev/sqlc/internal/quickdb/v1"
 	"github.com/sqlc-dev/sqlc/internal/shfmt"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
 	"github.com/sqlc-dev/sqlc/internal/vet"
@@ -386,7 +386,7 @@ type checker struct {
 	Env           *cel.Env
 	Stderr        io.Writer
 	OnlyManagedDB bool
-	Client        pb.QuickClient
+	Client        dbmanager.Client
 	Replacer      *shfmt.Replacer
 }
 
@@ -405,10 +405,7 @@ func (c *checker) fetchDatabaseUri(ctx context.Context, s config.SQL) (string, f
 
 	if c.Client == nil {
 		// FIXME: Eventual race condition
-		client, err := quickdb.NewClientFromConfig(c.Conf.Cloud)
-		if err != nil {
-			return "", cleanup, fmt.Errorf("managed: client: %w", err)
-		}
+		client := dbmanager.NewClient(c.Conf.Servers)
 		c.Client = client
 	}
 
@@ -425,20 +422,12 @@ func (c *checker) fetchDatabaseUri(ctx context.Context, s config.SQL) (string, f
 		ddl = append(ddl, migrations.RemoveRollbackStatements(string(contents)))
 	}
 
-	resp, err := c.Client.CreateEphemeralDatabase(ctx, &pb.CreateEphemeralDatabaseRequest{
+	resp, err := c.Client.CreateDatabase(ctx, &dbmanager.CreateDatabaseRequest{
 		Engine:     string(s.Engine),
-		Region:     quickdb.GetClosestRegion(),
 		Migrations: ddl,
 	})
 	if err != nil {
 		return "", cleanup, fmt.Errorf("managed: create database: %w", err)
-	}
-
-	cleanup = func() error {
-		_, err := c.Client.DropEphemeralDatabase(ctx, &pb.DropEphemeralDatabaseRequest{
-			DatabaseId: resp.DatabaseId,
-		})
-		return err
 	}
 
 	var uri string
