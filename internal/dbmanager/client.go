@@ -59,8 +59,8 @@ func (m *ManagedClient) CreateDatabase(ctx context.Context, req *CreateDatabaseR
 		}
 	}
 
-	if base == "" {
-		return nil, fmt.Errorf("no postgres server found")
+	if strings.TrimSpace(base) == "" {
+		return nil, fmt.Errorf("no PostgreSQL database server found")
 	}
 
 	serverUri := m.replacer.Replace(base)
