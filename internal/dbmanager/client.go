@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"hash/fnv"
 	"io"
-	"log/slog"
 	"net/url"
 	"strings"
 
@@ -83,11 +82,9 @@ func (m *ManagedClient) CreateDatabase(ctx context.Context, req *CreateDatabaseR
 
 		var datname string
 		if err := row.Scan(&datname); err == nil {
-			slog.Info("database exists", "name", name)
 			return nil, nil
 		}
 
-		slog.Info("creating database", "name", name)
 		if _, err := pool.Exec(ctx, fmt.Sprintf(`CREATE DATABASE "%s"`, name)); err != nil {
 			return nil, err
 		}
