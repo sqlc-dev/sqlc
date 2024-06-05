@@ -9,6 +9,9 @@ install:
 test:
 	go test ./...
 
+test-managed:
+	MYSQL_SERVER_URI="invalid" POSTGRESQL_SERVER_URI="postgres://postgres:mysecretpassword@localhost:5432/postgres" go test -v ./...
+
 vet:
 	go vet ./...
 

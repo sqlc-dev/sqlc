@@ -13,8 +13,8 @@ import (
 
 	core "github.com/sqlc-dev/sqlc/internal/analysis"
 	"github.com/sqlc-dev/sqlc/internal/config"
+	"github.com/sqlc-dev/sqlc/internal/dbmanager"
 	"github.com/sqlc-dev/sqlc/internal/opts"
-	pb "github.com/sqlc-dev/sqlc/internal/quickdb/v1"
 	"github.com/sqlc-dev/sqlc/internal/shfmt"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/named"
@@ -23,7 +23,7 @@ import (
 
 type Analyzer struct {
 	db       config.Database
-	client   pb.QuickClient
+	client   dbmanager.Client
 	pool     *pgxpool.Pool
 	dbg      opts.Debug
 	replacer *shfmt.Replacer
@@ -32,7 +32,7 @@ type Analyzer struct {
 	tables   sync.Map
 }
 
-func New(client pb.QuickClient, db config.Database) *Analyzer {
+func New(client dbmanager.Client, db config.Database) *Analyzer {
 	return &Analyzer{
 		db:       db,
 		dbg:      opts.DebugFromEnv(),
@@ -201,7 +201,7 @@ func (a *Analyzer) Analyze(ctx context.Context, n ast.Node, query string, migrat
 			if a.client == nil {
 				return nil, fmt.Errorf("client is nil")
 			}
-			edb, err := a.client.CreateEphemeralDatabase(ctx, &pb.CreateEphemeralDatabaseRequest{
+			edb, err := a.client.CreateDatabase(ctx, &dbmanager.CreateDatabaseRequest{
 				Engine:     "postgresql",
 				Migrations: migrations,
 			})

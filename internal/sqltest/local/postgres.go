@@ -18,6 +18,7 @@ import (
 )
 
 var flight singleflight.Group
+var cache = poolcache.New()
 
 func PostgreSQL(t *testing.T, migrations []string) string {
 	return postgreSQL(t, migrations, true)
@@ -25,6 +26,10 @@ func PostgreSQL(t *testing.T, migrations []string) string {
 
 func ReadOnlyPostgreSQL(t *testing.T, migrations []string) string {
 	return postgreSQL(t, migrations, false)
+}
+
+func PostgreSQLServer() string {
+	return os.Getenv("POSTGRESQL_SERVER_URI")
 }
 
 func postgreSQL(t *testing.T, migrations []string, rw bool) string {
@@ -36,7 +41,7 @@ func postgreSQL(t *testing.T, migrations []string, rw bool) string {
 		t.Skip("POSTGRESQL_SERVER_URI is empty")
 	}
 
-	postgresPool, err := poolcache.New(ctx, dburi)
+	postgresPool, err := cache.Open(ctx, dburi)
 	if err != nil {
 		t.Fatalf("PostgreSQL pool creation failed: %s", err)
 	}

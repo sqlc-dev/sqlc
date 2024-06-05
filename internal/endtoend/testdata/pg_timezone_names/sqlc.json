@@ -3,7 +3,7 @@
   "sql": [
     {
       "engine": "postgresql",
-      "schema": "query.sql",
+      "schema": "schema.sql",
       "queries": "query.sql",
       "gen": {
         "go": {
@@ -15,7 +15,7 @@
     },
     {
       "engine": "postgresql",
-      "schema": "query.sql",
+      "schema": "schema.sql",
       "queries": "query.sql",
       "gen": {
         "go": {
@@ -27,7 +27,7 @@
     },
     {
       "engine": "postgresql",
-      "schema": "query.sql",
+      "schema": "schema.sql",
       "queries": "query.sql",
       "gen": {
         "go": {
