@@ -122,13 +122,15 @@ func TestReplay(t *testing.T) {
 				return func(c *config.Config) {
 					c.Servers = []config.Server{
 						{
-							Name: "postgres",
-							URI:  local.PostgreSQLServer(),
+							Name:   "postgres",
+							Engine: config.EnginePostgreSQL,
+							URI:    local.PostgreSQLServer(),
 						},
 
 						{
-							Name: "mysql",
-							URI:  local.MySQLServer(),
+							Name:   "mysql",
+							Engine: config.EngineMySQL,
+							URI:    local.MySQLServer(),
 						},
 					}
 					for i := range c.SQL {

@@ -53,7 +53,7 @@ func (m *ManagedClient) CreateDatabase(ctx context.Context, req *CreateDatabaseR
 
 	var base string
 	for _, server := range m.servers {
-		if strings.HasPrefix(server.URI, "postgres://") {
+		if server.Engine == config.EnginePostgreSQL {
 			base = server.URI
 			break
 		}

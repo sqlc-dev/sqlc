@@ -68,8 +68,9 @@ type Config struct {
 }
 
 type Server struct {
-	Name string `json:"name" yaml:"name"`
-	URI  string `json:"uri" yaml:"uri"`
+	Name   string `json:"name,omitempty" yaml:"name"`
+	Engine Engine `json:"engine,omitempty" yaml:"engine"`
+	URI    string `json:"uri" yaml:"uri"`
 }
 
 type Database struct {
