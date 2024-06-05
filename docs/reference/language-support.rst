@@ -28,6 +28,7 @@ C#        `DaredevilOSS/sqlc-gen-csharp`_  Beta             Beta          Not im
 .. _sqlc-gen-kotlin: https://github.com/sqlc-dev/sqlc-gen-kotlin
 .. _sqlc-gen-python: https://github.com/sqlc-dev/sqlc-gen-python
 .. _sqlc-gen-typescript: https://github.com/sqlc-dev/sqlc-gen-typescript
+.. _DaredevilOSS/sqlc-gen-csharp: https://github.com/DaredevilOSS/sqlc-gen-csharp
 
 Future language support
 ************************
