@@ -6,13 +6,12 @@ import (
 
 	"github.com/sqlc-dev/sqlc/internal/analyzer"
 	"github.com/sqlc-dev/sqlc/internal/config"
+	"github.com/sqlc-dev/sqlc/internal/dbmanager"
 	"github.com/sqlc-dev/sqlc/internal/engine/dolphin"
 	"github.com/sqlc-dev/sqlc/internal/engine/postgresql"
 	pganalyze "github.com/sqlc-dev/sqlc/internal/engine/postgresql/analyzer"
 	"github.com/sqlc-dev/sqlc/internal/engine/sqlite"
 	"github.com/sqlc-dev/sqlc/internal/opts"
-	"github.com/sqlc-dev/sqlc/internal/quickdb"
-	pb "github.com/sqlc-dev/sqlc/internal/quickdb/v1"
 	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
 )
 
@@ -23,7 +22,7 @@ type Compiler struct {
 	parser   Parser
 	result   *Result
 	analyzer analyzer.Analyzer
-	client   pb.QuickClient
+	client   dbmanager.Client
 
 	schema []string
 }
@@ -32,10 +31,7 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings) (*Compiler, err
 	c := &Compiler{conf: conf, combo: combo}
 
 	if conf.Database != nil && conf.Database.Managed {
-		client, err := quickdb.NewClientFromConfig(combo.Global.Cloud)
-		if err != nil {
-			return nil, fmt.Errorf("client error: %w", err)
-		}
+		client := dbmanager.NewClient(combo.Global.Servers)
 		c.client = client
 	}
 
@@ -88,5 +84,8 @@ func (c *Compiler) Result() *Result {
 func (c *Compiler) Close(ctx context.Context) {
 	if c.analyzer != nil {
 		c.analyzer.Close(ctx)
+	}
+	if c.client != nil {
+		c.client.Close(ctx)
 	}
 }
