@@ -15,3 +15,8 @@
   color: #F0F0F4;
   text-decoration: underline;
 }
+
+#sponsorship > img {
+  width: 100%;
+  max-width: 200px;
+}

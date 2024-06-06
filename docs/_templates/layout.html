@@ -4,3 +4,13 @@
 <script defer data-domain="docs.sqlc.dev" data-api="https://proxy.sqlc.dev/api/event" src="https://proxy.sqlc.dev/js/script.js"></script>
 {{ super() }}
 {% endblock %}
+
+{% block menu %}
+{{ super() }}
+<p class="caption" role="heading"><span class="caption-text">Sponsored By</span></p>
+<div>
+<a id="sponsorship" href="https://riza.io?utm_source=sqlc+docs">
+<img src="https://sqlc.dev/sponsors/riza-readme.png" alt="Riza logo" />
+</a>
+</div>
+{% endblock %}
