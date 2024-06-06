@@ -40,8 +40,8 @@ please consider [sponsoring on GitHub](https://github.com/sponsors/kyleconroy).
 
 <p align="center">
   <a href="https://coder.com?utm_source=sqlc+readme"><img width=200 src="https://sqlc.dev/sponsors/coder-readme.png" alt="Coder.com" /></a>
-  <a href="https://mux.com?utm_source=sqlc+readme"><img width=200 src="https://sqlc.dev/sponsors/mint-readme.png" alt="Mint.fun" /></a>
-  <a href="https://mint.fun?utm_source=sqlc+readme"><img width=200 src="https://sqlc.dev/sponsors/mux-readme.png" alt="Mux.com" /></a>
+  <a href="https://mint.fun?utm_source=sqlc+readme"><img width=200 src="https://sqlc.dev/sponsors/mint-readme.png" alt="Mint.fun" /></a>
+  <a href="https://mux.com?utm_source=sqlc+readme"><img width=200 src="https://sqlc.dev/sponsors/mux-readme.png" alt="Mux.com" /></a>
 </p>
 
 <p align="center">
