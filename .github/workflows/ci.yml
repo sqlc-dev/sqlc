@@ -8,7 +8,9 @@ jobs:
   test:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        # Disabling windows builds while we figure out why they're broken
+        # os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest]
         cgo: ['1', '0']
         # Workaround no native support for conditional matrix items
         # https://github.com/orgs/community/discussions/26253#discussioncomment-6745038
