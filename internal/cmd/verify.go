@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"log/slog"
 	"os"
@@ -75,6 +76,7 @@ func Verify(ctx context.Context, dir, filename string, opts *Options) error {
 		existing[qs.Name] = qs
 	}
 
+	var verr error
 	for _, qs := range previous.QuerySets {
 		// TODO: Create a function for this so that we can return early on errors
 
@@ -121,12 +123,14 @@ func Verify(ctx context.Context, dir, filename string, opts *Options) error {
 			}
 			defer db.Close()
 
+			var qerr error
 			for _, query := range codegen.Queries {
 				stmt, err := db.PrepareContext(ctx, query.Text)
 				if err != nil {
 					fmt.Fprintf(stderr, "Failed to prepare the following query:\n")
 					fmt.Fprintf(stderr, "%s\n", query.Text)
 					fmt.Fprintf(stderr, "Error was: %s\n", err)
+					qerr = err
 					continue
 				}
 				if err := stmt.Close(); err != nil {
@@ -134,17 +138,16 @@ func Verify(ctx context.Context, dir, filename string, opts *Options) error {
 				}
 			}
 
-			return nil
+			return qerr
 		}
 
 		if err := check(); err != nil {
+			verr = errors.New("errored")
 			fmt.Fprintf(stderr, "FAIL\t%s\n", qs.Name)
 		} else {
 			fmt.Fprintf(stderr, "ok\t%s\n", qs.Name)
 		}
 	}
 
-	// return fmt.Errorf("BREAKING CHANGES DETECTED")
-
-	return nil
+	return verr
 }
