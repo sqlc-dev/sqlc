@@ -203,10 +203,9 @@ database must have the `authors` table as defined in `schema.sql`.
 You should now have a working program using sqlc's generated Go source code,
 and hopefully can see how you'd use sqlc in your own real-world applications.
 
-## Query analysis and managed databases
+## Query verification
 
-[sqlc Cloud](https://dashboard.sqlc.dev) provides additional insights into your
-queries, catching subtle bugs and performance issues. To get started, create a
+[sqlc Cloud](https://dashboard.sqlc.dev) provides additional verification, catching subtle bugs. To get started, create a
 [dashboard account](https://dashboard.sqlc.dev). Once you've signed in, create a
 project and generate an auth token. Add your project's ID to the `cloud` block
 to your sqlc.yaml.
@@ -240,6 +239,10 @@ export SQLC_AUTH_TOKEN="<your sqlc auth token>"
 $ sqlc push --tag tutorial
 ```
 
-In the sidebar, go to the "Insights" section to run checks against your queries.
-If you need access to a pre-configured PostgreSQL database, check out [managed
-databases](../howto/managed-databases.md).
+In the sidebar, go to the "Queries" section to see your published queries. Run
+`verify` to ensure that previously published queries continue to work against
+updated database schema.
+
+```shell
+$ sqlc verify --against tutorial
+```

@@ -80,54 +80,20 @@ on: [push]
 jobs:
   vet:
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: "postgres:15"
-        env:
-          POSTGRES_DB: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_USER: postgres
-        ports:
-        - 5432:5432
-        # needed because the postgres container does not provide a healthcheck
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-    env:
-      PG_PORT: ${{ job.services.postgres.ports['5432'] }}
-
     steps:
     - uses: actions/checkout@v3
     - uses: sqlc-dev/setup-sqlc@v3
       with:
         sqlc-version: '1.26.0'
-      # Connect and migrate your database here. This is an example which runs
-      # commands from a `schema.sql` file.
-    - run: psql -h localhost -U postgres -p $PG_PORT -d postgres -f schema.sql
+    # Start a PostgreSQL server
+    - uses: sqlc-dev/action-setup-postgres@master
+      with:
+        postgres-version: "16"
+      id: postgres
+    - run: sqlc vet
       env:
-        PGPASSWORD: postgres
-    - run: sqlc vet
-```
+        POSTGRESQL_SERVER_URI: ${{ steps.postgres.outputs.connection-uri }}?sslmode=disable
 
-#### Managed databases
-
-```{note}
-Managed databases are powered by [sqlc Cloud](https://dashboard.sqlc.dev). Sign up for [free](https://dashboard.sqlc.dev) today.
-```
-
-If you're using [managed databases](managed-databases.md), the `services` block
-in the previous workflow isn't required.
-
-```yaml
-name: sqlc
-on: [push]
-jobs:
-  vet:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - uses: sqlc-dev/setup-sqlc@v3
-      with:
-        sqlc-version: '1.26.0'
-    - run: sqlc vet
 ```
 
 ### push
@@ -174,8 +140,13 @@ jobs:
     - uses: sqlc-dev/setup-sqlc@v3
       with:
         sqlc-version: '1.26.0'
+    - uses: sqlc-dev/action-setup-postgres@master
+      with:
+        postgres-version: "16"
+      id: postgres
     - run: sqlc verify
       env:
+        POSTGRESQL_SERVER_URI: ${{ steps.postgres.outputs.connection-uri }}?sslmode=disable
         SQLC_AUTH_TOKEN: ${{ secrets.SQLC_AUTH_TOKEN }}
   push:
     runs-on: ubuntu-latest
