@@ -1,9 +1,5 @@
 # `verify` - Verifying schema changes
 
-```{note}
-`verify` is powered by [sqlc Cloud](https://dashboard.sqlc.dev). Sign up for [free](https://dashboard.sqlc.dev) today.
-```
-
 *Added in v1.24.0*
 
 Schema updates and poorly-written queries often bring down production databases. That’s bad.
