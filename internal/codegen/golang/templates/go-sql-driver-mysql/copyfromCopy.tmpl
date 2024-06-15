@@ -9,11 +9,11 @@ func convertRowsFor{{.MethodName}}(w *io.PipeWriter, {{.Arg.SlicePair}}) {
 {{- with $arg := .Arg }}
 {{- range $arg.CopyFromMySQLFields}}
 {{- if eq .Type "string"}}
-	e.AppendString({{if eq (len $arg.CopyFromMySQLFields) 1}}row{{else}}row.{{.Name}}{{end}})
+	e.AppendString({{if $arg.Struct}}row.{{.Name}}{{else}}row{{end}})
 {{- else if or (eq .Type "[]byte") (eq .Type "json.RawMessage")}}
-	e.AppendBytes({{if eq (len $arg.CopyFromMySQLFields) 1}}row{{else}}row.{{.Name}}{{end}})
+	e.AppendBytes({{if $arg.Struct}}row.{{.Name}}{{else}}row{{end}})
 {{- else}}
-	e.AppendValue({{if eq (len $arg.CopyFromMySQLFields) 1}}row{{else}}row.{{.Name}}{{end}})
+	e.AppendValue({{if $arg.Struct}}row.{{.Name}}{{else}}row{{end}})
 {{- end}}
 {{- end}}
 {{- end}}
