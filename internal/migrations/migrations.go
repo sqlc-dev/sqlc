@@ -15,7 +15,7 @@ func RemoveRollbackStatements(contents string) string {
 	s := bufio.NewScanner(strings.NewReader(contents))
 	var lines []string
 	for s.Scan() {
-		if strings.HasPrefix(s.Text(), "-- +goose Down") {
+		if strings.HasPrefix(strings.ToLower(s.Text()), "-- +goose down") {
 			break
 		}
 		if strings.HasPrefix(s.Text(), "-- +migrate Down") {
