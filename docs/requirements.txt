@@ -11,7 +11,7 @@ docutils==0.18.1
 idna==3.7
 imagesize==1.4.1
 myst-parser==3.0.1 
-packaging==24.0
+packaging==24.1
 pyparsing==3.1.2
 pytz==2024.1
 requests==2.32.3
@@ -25,4 +25,4 @@ sphinxcontrib-jsmath==1.0.1
 sphinxcontrib-qthelp==1.0.7
 sphinxcontrib-serializinghtml==1.1.10
 sphinxext-rediraffe==0.2.7
-urllib3==2.2.1
+urllib3==2.2.2
