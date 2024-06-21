@@ -57,7 +57,7 @@ Next, create a `query.sql` file with the following five queries:
 ```sql
 -- name: GetAuthor :one
 SELECT * FROM authors
-WHERE id = $1 LIMIT 1;
+WHERE id = $1;
 
 -- name: ListAuthors :many
 SELECT * FROM authors
@@ -69,8 +69,6 @@ INSERT INTO authors (
 ) VALUES (
   $1, $2
 )
-RETURNING *;
-
 -- name: UpdateAuthor :exec
 UPDATE authors
   set name = $2,
