@@ -53,7 +53,7 @@ func MySQL(t *testing.T, migrations []string) string {
 		if err != nil {
 			t.Fatal(err)
 		}
-		seed = append(seed, migrate.RemoveRollbackStatements(string(blob)))
+		seed = append(seed, migrate.RemoveIgnoredStatements(string(blob)))
 	}
 
 	cfg, err := mysql.ParseDSN(dburi)
