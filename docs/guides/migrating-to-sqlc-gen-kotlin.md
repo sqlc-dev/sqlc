@@ -33,7 +33,7 @@ already. Add the following configuration for the plugin:
 ```yaml
 version: "2"
 plugins:
-  name: "kt"
+- name: "kt"
   wasm:
     url: "https://downloads.sqlc.dev/plugin/sqlc-gen-kotlin_1.0.0.wasm"
     sha256: "7620dc5d462de41fdc90e2011232c842117b416c98fd5c163d27c5738431a45c"
