@@ -7,10 +7,12 @@ package querytest
 import (
 	"context"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Querier interface {
+	WithTx(tx pgx.Tx) *Queries
 	// InsertSingleValue inserts a single value using copy.
 	InsertSingleValue(ctx context.Context, a []pgtype.Text) (int64, error)
 	// InsertValues inserts multiple values using copy.

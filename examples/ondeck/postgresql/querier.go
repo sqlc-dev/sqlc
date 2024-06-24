@@ -6,9 +6,11 @@ package ondeck
 
 import (
 	"context"
+	"database/sql"
 )
 
 type Querier interface {
+	WithTx(tx *sql.Tx) *Queries
 	// Create a new city. The slug must be unique.
 	// This is the second line of the comment
 	// This is the third line

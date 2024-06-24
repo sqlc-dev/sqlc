@@ -7,10 +7,12 @@ package querytest
 import (
 	"context"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Querier interface {
+	WithTx(tx pgx.Tx) *Queries
 	CreateMemories(ctx context.Context, vampireID []pgtype.UUID) ([]Memory, error)
 	GetVampireIDs(ctx context.Context, vampireID []pgtype.UUID) ([]pgtype.UUID, error)
 }
