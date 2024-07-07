@@ -145,6 +145,31 @@ type Post struct {
 
 ### goose
 
+**Warning:**
+sqlc parses migration files in lexicographic order. **If you are using numeric filenames for migrations in Goose and you choose to have sqlc enumerate your migration files**,
+make sure their numeric ordering matches their lexicographic ordering to avoid
+unexpected behavior. This can be done by prepending enough zeroes to the
+migration filenames.
+
+This doesn't work as intended.
+
+```
+1_initial.sql
+...
+9_foo.sql
+# this migration file will be parsed BEFORE 9_foo
+10_bar.sql
+```
+
+This worked as intended.
+
+```
+001_initial.sql
+...
+009_foo.sql
+010_bar.sql
+```
+
 ```sql
 -- +goose Up
 CREATE TABLE post (
