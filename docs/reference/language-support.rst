@@ -21,6 +21,7 @@ Language  Plugin                            MySQL            PostgreSQL    SQLit
 ========  ===============================  ===============  ============  ===============
 F#        `kaashyapan/sqlc-gen-fsharp`_    Not implemented  Beta          Beta
 C#        `DaredevilOSS/sqlc-gen-csharp`_  Beta             Beta          Not implemented
+Ruby      `DaredevilOSS/sqlc-gen-ruby`_    Beta             Beta          Beta
 ========  ===============================  ===============  ============  ===============
 
 .. _sqlc-gen-go: https://github.com/sqlc-dev/sqlc-gen-go
@@ -29,6 +30,7 @@ C#        `DaredevilOSS/sqlc-gen-csharp`_  Beta             Beta          Not im
 .. _sqlc-gen-python: https://github.com/sqlc-dev/sqlc-gen-python
 .. _sqlc-gen-typescript: https://github.com/sqlc-dev/sqlc-gen-typescript
 .. _DaredevilOSS/sqlc-gen-csharp: https://github.com/DaredevilOSS/sqlc-gen-csharp
+.. _DaredevilOSS/sqlc-gen-ruby: https://github.com/DaredevilOSS/sqlc-gen-ruby
 
 Future language support
 ************************
