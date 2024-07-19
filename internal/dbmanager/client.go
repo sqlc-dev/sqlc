@@ -72,7 +72,7 @@ func (m *ManagedClient) CreateDatabase(ctx context.Context, req *CreateDatabaseR
 	if err != nil {
 		return nil, err
 	}
-	uri.Path = name
+	uri.Path = "/" + name
 
 	key := uri.String()
 	_, err, _ = flight.Do(key, func() (interface{}, error) {
