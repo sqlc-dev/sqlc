@@ -14,6 +14,14 @@ WHERE b = ?;
 SELECT c FROM tbl_ft
 WHERE b = ?;
 
+-- name: SelectAllColsTblFtEqualByTableName :many
+SELECT * FROM tbl_ft
+WHERE tbl_ft = ?;
+
+-- name: SelectAllColsTblFtMatchByTableName :many
+SELECT * FROM tbl_ft
+WHERE tbl_ft MATCH ?;
+
 -- name: SelectHightlighFunc :many
 SELECT highlight(tbl_ft, 0, '<b>', '</b>') FROM tbl_ft
 WHERE b MATCH ?;
