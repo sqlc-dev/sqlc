@@ -3,6 +3,9 @@
 build:
 	go build ./...
 
+build-local:
+	go build -o ../sqlc ./cmd/sqlc
+
 install:
 	go install ./...
 
