@@ -165,9 +165,9 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
               for _, v := range {{.Arg.Name}} {
                 queryParams = append(queryParams, v)
               }
-              query = strings.Replace(query, "/*SLICE:{{.Arg.Column.Name}}*/?", strings.Repeat(",?", len({{.Arg.Name}}))[1:], 1)
+              query = strings.ReplaceAll(query, "/*SLICE:{{.Arg.Column.Name}}*/?", strings.Repeat(",?", len({{.Arg.Name}}))[1:])
             } else {
-              query = strings.Replace(query, "/*SLICE:{{.Arg.Column.Name}}*/?", "NULL", 1)
+              query = strings.ReplaceAll(query, "/*SLICE:{{.Arg.Column.Name}}*/?", "NULL")
             }
         {{- end }}
         {{- if emitPreparedQueries }}
