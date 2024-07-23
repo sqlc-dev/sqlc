@@ -227,7 +227,6 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, structs []
 			SQL:          query.Text,
 			Comments:     comments,
 			Table:        query.InsertIntoTable,
-			EmitSchema:   options.EmitSchemaName,
 		}
 		sqlpkg := parseDriver(options.SqlPackage)
 
