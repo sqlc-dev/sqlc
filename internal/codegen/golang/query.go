@@ -266,8 +266,7 @@ type Query struct {
 	Ret          QueryValue
 	Arg          QueryValue
 	// Used for :copyfrom
-	Table      *plugin.Identifier
-	EmitSchema bool
+	Table *plugin.Identifier
 }
 
 func (q Query) hasRetType() bool {

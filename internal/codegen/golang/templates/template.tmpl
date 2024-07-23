@@ -180,7 +180,9 @@ import (
 	{{end}}
 	{{end}}
 
-	"fmt"
+	{{- if emitSchemaName }}
+	"strings"
+	{{- end }}
 )
 {{end}}
 

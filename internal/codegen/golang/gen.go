@@ -41,6 +41,7 @@ type tmplCtx struct {
 	UsesBatch                 bool
 	OmitSqlcVersion           bool
 	BuildTags                 string
+	EmitSchemaName            bool
 }
 
 func (t *tmplCtx) OutputQuery(sourceName string) bool {
@@ -58,6 +59,10 @@ func (t *tmplCtx) codegenDbarg() string {
 // access to the toplevel tmplCtx
 func (t *tmplCtx) codegenEmitPreparedQueries() bool {
 	return t.EmitPreparedQueries
+}
+
+func (t *tmplCtx) codegenEmitSchemaName() bool {
+	return t.EmitSchemaName
 }
 
 func (t *tmplCtx) codegenQueryMethod(q Query) string {
@@ -187,6 +192,7 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 		SqlcVersion:               req.SqlcVersion,
 		BuildTags:                 options.BuildTags,
 		OmitSqlcVersion:           options.OmitSqlcVersion,
+		EmitSchemaName:            options.EmitSchemaName,
 	}
 
 	if tctx.UsesCopyFrom && !tctx.SQLDriver.IsPGX() && options.SqlDriver != opts.SQLDriverGoSQLDriverMySQL {
@@ -218,6 +224,7 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 		"emitPreparedQueries": tctx.codegenEmitPreparedQueries,
 		"queryMethod":         tctx.codegenQueryMethod,
 		"queryRetval":         tctx.codegenQueryRetval,
+		"emitSchemaName":      tctx.codegenEmitSchemaName,
 	}
 
 	tmpl := template.Must(
