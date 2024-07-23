@@ -138,7 +138,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 
 {{define "queryCodeStdExec"}}
     {{- if .Arg.HasSqlcSlices }}
-        query := {{.ConstantName}}
+        query := strings.ReplaceAll({{.ConstantName}}, "%s", schema)
         var queryParams []interface{}
         {{- if .Arg.Struct }}
             {{- $arg := .Arg }}
@@ -186,6 +186,10 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
     {{- else if emitPreparedQueries }}
         {{- queryRetval . }} {{ queryMethod . }}(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
     {{- else}}
+        {{- if emitSchemaName }}
+        {{- queryRetval . }} {{ queryMethod . }}(ctx, strings.ReplaceAll({{.ConstantName}}, "%s", schema), {{.Arg.Params}})
+        {{- else }}
         {{- queryRetval . }} {{ queryMethod . }}(ctx, {{.ConstantName}}, {{.Arg.Params}})
+        {{- end -}}
     {{- end -}}
 {{end}}
