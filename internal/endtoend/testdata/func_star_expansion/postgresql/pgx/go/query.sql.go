@@ -23,14 +23,26 @@ func (q *Queries) TestFuncGetTime(ctx context.Context) (pgtype.Timestamp, error)
 }
 
 const testFuncSelectBlog = `-- name: TestFuncSelectBlog :one
-select test_func_select_blog from test_func_select_blog($1)
+select id, name, created_at, updated_at from test_func_select_blog($1)
 `
 
-func (q *Queries) TestFuncSelectBlog(ctx context.Context, pID int32) (interface{}, error) {
+type TestFuncSelectBlogRow struct {
+	ID        pgtype.Int4
+	Name      pgtype.Text
+	CreatedAt pgtype.Timestamp
+	UpdatedAt pgtype.Timestamp
+}
+
+func (q *Queries) TestFuncSelectBlog(ctx context.Context, pID int32) (TestFuncSelectBlogRow, error) {
 	row := q.db.QueryRow(ctx, testFuncSelectBlog, pID)
-	var test_func_select_blog interface{}
-	err := row.Scan(&test_func_select_blog)
-	return test_func_select_blog, err
+	var i TestFuncSelectBlogRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
 const testFuncSelectString = `-- name: TestFuncSelectString :one
