@@ -19,6 +19,7 @@ import (
 type CreateDatabaseRequest struct {
 	Engine     string
 	Migrations []string
+	Prefix     string
 }
 
 type CreateDatabaseResponse struct {
@@ -48,11 +49,25 @@ func dbid(migrations []string) string {
 
 func (m *ManagedClient) CreateDatabase(ctx context.Context, req *CreateDatabaseRequest) (*CreateDatabaseResponse, error) {
 	hash := dbid(req.Migrations)
-	name := fmt.Sprintf("sqlc_managed_%s", hash)
+	prefix := req.Prefix
+	if prefix == "" {
+		prefix = "sqlc_managed"
+	}
+	name := fmt.Sprintf("%s_%s", prefix, hash)
+
+	engine := config.Engine(req.Engine)
+	switch engine {
+	case config.EngineMySQL:
+		// pass
+	case config.EnginePostgreSQL:
+		// pass
+	default:
+		return nil, fmt.Errorf("unsupported the %s engine", engine)
+	}
 
 	var base string
 	for _, server := range m.servers {
-		if server.Engine == config.EnginePostgreSQL {
+		if server.Engine == engine {
 			base = server.URI
 			break
 		}
