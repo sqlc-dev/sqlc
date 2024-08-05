@@ -62,7 +62,7 @@ func (m *ManagedClient) CreateDatabase(ctx context.Context, req *CreateDatabaseR
 	case config.EnginePostgreSQL:
 		// pass
 	default:
-		return nil, fmt.Errorf("unsupported the %s engine", engine)
+		return nil, fmt.Errorf("unsupported engine: %s", engine)
 	}
 
 	var base string
