@@ -41,6 +41,7 @@ var verifyCmd = &cobra.Command{
 			Against: against,
 		}
 		if err := Verify(cmd.Context(), dir, name, opts); err != nil {
+			fmt.Fprintf(stderr, "Error verifying queries: %s\n", err)
 			os.Exit(1)
 		}
 		return nil
@@ -111,6 +112,7 @@ func Verify(ctx context.Context, dir, filename string, opts *Options) error {
 
 			// Create (or re-use) a database to verify against
 			resp, err := manager.CreateDatabase(ctx, &dbmanager.CreateDatabaseRequest{
+				Engine:     string(current.Engine),
 				Migrations: ddl,
 			})
 			if err != nil {
@@ -144,6 +146,7 @@ func Verify(ctx context.Context, dir, filename string, opts *Options) error {
 		if err := check(); err != nil {
 			verr = errors.New("errored")
 			fmt.Fprintf(stderr, "FAIL\t%s\n", qs.Name)
+			fmt.Fprintf(stderr, "  ERROR\t%s\n", err)
 		} else {
 			fmt.Fprintf(stderr, "ok\t%s\n", qs.Name)
 		}
