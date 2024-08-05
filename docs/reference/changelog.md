@@ -1,6 +1,44 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+(v1-27-0)=
+## [1.27.0](https://github.com/sqlc-dev/sqlc/releases/tag/1.27.0)
+Released 2024-08-05
+
+### Bug Fixes
+
+- (dbmanager) Add leading slash to db uri path rewrite (#3493)
+- (verify) Include database engine in request (#3522)
+
+### Features
+
+- (golang) Add initialisms configuration (#3308)
+- (compiler) Support subqueries in the FROM clause (second coming) (#3310)
+- Managed databases with any accessible server  (#3421)
+- (vet) Use new dbmanager client (#3423)
+- (verify) Update verify to work with managed databases (#3425)
+
+### Documentation
+
+- Fix typo in config (#3358)
+- Resolve a typo in configuration keys (#3349)
+- Add sponsorship information to README (#3413)
+- Update the language-support to include C# (#3408)
+- Add migration guide for hosted managed databases (#3417)
+- Fix readme links (#3424)
+- Update the managed db and verify documentation (#3426)
+- Add sponsor image (#3428)
+- Add Ruby as supported language (#3487)
+- Update migrating-to-sqlc-gen-kotlin.md (#3454)
+- Fix typo in comment (#3316)
+- Fix deprecated build tag format (#3361)
+
+### Testing
+
+- (endtoend) Re-use databases when possible (#3315)
+- Enabled MySQL database (#3318)
+- Remove internal/sqltest/hosted package (#3521)
+
 (v1-26-0)=
 ## [1.26.0](https://github.com/sqlc-dev/sqlc/releases/tag/1.26.0)
 Released 2024-03-28
