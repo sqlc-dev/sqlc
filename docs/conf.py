@@ -22,7 +22,7 @@ copyright = '2024, Riza, Inc.'
 author = 'Riza, Inc.'
 
 # The full version, including alpha/beta/rc tags
-release = '1.26.0'
+release = '1.27.0'
 
 
 # -- General configuration ---------------------------------------------------
