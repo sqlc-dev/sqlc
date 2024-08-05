@@ -10,6 +10,7 @@ import (
 )
 
 type Querier interface {
+	WithTx(tx *sql.Tx) *Queries
 	CreateCity(ctx context.Context, arg CreateCityParams) error
 	CreateVenue(ctx context.Context, arg CreateVenueParams) (sql.Result, error)
 	DeleteVenue(ctx context.Context, arg DeleteVenueParams) error
