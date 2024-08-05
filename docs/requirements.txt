@@ -2,12 +2,11 @@ Babel==2.15.0
 Jinja2==3.1.4
 MarkupSafe==2.1.5
 Pygments==2.18.0
-Sphinx==6.2.1
-alabaster==1.0.0
+Sphinx==7.4.7
 certifi==2024.7.4
 chardet==5.2.0
 commonmark==0.9.1
-docutils==0.18.1
+docutils==0.20.1
 idna==3.7
 imagesize==1.4.1
 myst-parser==3.0.1 
