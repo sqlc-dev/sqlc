@@ -41,6 +41,7 @@ type tmplCtx struct {
 	UsesBatch                 bool
 	OmitSqlcVersion           bool
 	BuildTags                 string
+	EnableOpenTracing         bool
 }
 
 func (t *tmplCtx) OutputQuery(sourceName string) bool {
