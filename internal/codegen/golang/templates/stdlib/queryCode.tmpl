@@ -22,12 +22,20 @@ type {{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
 {{if eq .Cmd ":one"}}
 {{range .Comments}}//{{.}}
 {{end -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) ({{.Ret.DefineType}}, error) {
+{{- if emitSchemaName }}
+func (q *Queries) {{.MethodName}}(ctx context.Context, schema string, {{ dbarg }} {{.Arg.Pair}}) ({{.Ret.DefineType}}, error) {
+{{- else }}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) error {
+{{- end }}
     {{- template "queryCodeStdExec" . }}
 	{{- if or (ne .Arg.Pair .Ret.Pair) (ne .Arg.DefineType .Ret.DefineType) }}
 	var {{.Ret.Name}} {{.Ret.Type}}
 	{{- end}}
-	err := row.Scan({{.Ret.Scan}})
+	{{- if emitSchemaName }}
+    err := row.Scan(strings.ReplaceAll({{.Ret.Scan}}, "%s", schema))
+    {{- else }}
+    err := row.Scan({{.Ret.Scan}})
+    {{- end }}
 	return {{.Ret.ReturnName}}, err
 }
 {{end}}
@@ -35,7 +43,11 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 {{if eq .Cmd ":many"}}
 {{range .Comments}}//{{.}}
 {{end -}}
+{{- if emitSchemaName }}
+func (q *Queries) {{.MethodName}}(ctx context.Context, schema string,  {{ dbarg }} {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error) {
+{{- else }}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error) {
+{{- end }}
     {{- template "queryCodeStdExec" . }}
     if err != nil {
         return nil, err
@@ -66,7 +78,11 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 {{if eq .Cmd ":exec"}}
 {{range .Comments}}//{{.}}
 {{end -}}
+{{- if emitSchemaName }}
+func (q *Queries) {{.MethodName}}(ctx context.Context, schema string, {{ dbarg }} {{.Arg.Pair}}) error {
+{{- else }}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) error {
+{{- end }}
     {{- template "queryCodeStdExec" . }}
     return err
 }
@@ -75,7 +91,11 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 {{if eq .Cmd ":execrows"}}
 {{range .Comments}}//{{.}}
 {{end -}}
+{{- if emitSchemaName }}
+func (q *Queries) {{.MethodName}}(ctx context.Context, schema string, {{ dbarg }} {{.Arg.Pair}}) (int64, error) {
+{{- else }}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) (int64, error) {
+{{- end }}
     {{- template "queryCodeStdExec" . }}
     if err != nil {
         return 0, err
@@ -87,7 +107,11 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 {{if eq .Cmd ":execlastid"}}
 {{range .Comments}}//{{.}}
 {{end -}}
+{{- if emitSchemaName }}
+func (q *Queries) {{.MethodName}}(ctx context.Context, schema string, {{ dbarg }} {{.Arg.Pair}}) (int64, error) {
+{{- else }}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) (int64, error) {
+{{- end }}
     {{- template "queryCodeStdExec" . }}
     if err != nil {
         return 0, err
@@ -99,7 +123,11 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 {{if eq .Cmd ":execresult"}}
 {{range .Comments}}//{{.}}
 {{end -}}
+{{- if emitSchemaName }}
+func (q *Queries) {{.MethodName}}(ctx context.Context, schema string, {{ dbarg }} {{.Arg.Pair}}) (sql.Result, error) {
+{{else }}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) (sql.Result, error) {
+{{- end }}
     {{- template "queryCodeStdExec" . }}
 }
 {{end}}
@@ -110,7 +138,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 
 {{define "queryCodeStdExec"}}
     {{- if .Arg.HasSqlcSlices }}
-        query := {{.ConstantName}}
+        query := strings.ReplaceAll({{.ConstantName}}, "%s", schema)
         var queryParams []interface{}
         {{- if .Arg.Struct }}
             {{- $arg := .Arg }}
@@ -137,19 +165,31 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
               for _, v := range {{.Arg.Name}} {
                 queryParams = append(queryParams, v)
               }
-              query = strings.Replace(query, "/*SLICE:{{.Arg.Column.Name}}*/?", strings.Repeat(",?", len({{.Arg.Name}}))[1:], 1)
+              query = strings.ReplaceAll(query, "/*SLICE:{{.Arg.Column.Name}}*/?", strings.Repeat(",?", len({{.Arg.Name}}))[1:])
             } else {
-              query = strings.Replace(query, "/*SLICE:{{.Arg.Column.Name}}*/?", "NULL", 1)
+              query = strings.ReplaceAll(query, "/*SLICE:{{.Arg.Column.Name}}*/?", "NULL")
             }
         {{- end }}
         {{- if emitPreparedQueries }}
-        {{ queryRetval . }} {{ queryMethod . }}(ctx, nil, query, queryParams...)
+            {{- if emitSchemaName }}
+            {{ queryRetval . }} {{ queryMethod . }}(ctx, nil, strings.ReplaceAll(query, "%s", schema), queryParams...)
+            {{- else }}
+            {{ queryRetval . }} {{ queryMethod . }}(ctx, nil, query, queryParams...)
+            {{- end }}
         {{- else}}
-        {{ queryRetval . }} {{ queryMethod . }}(ctx, query, queryParams...)
+            {{- if emitSchemaName }}
+            {{ queryRetval . }} {{ queryMethod . }}(ctx, strings.ReplaceAll(query, "%s", schema), queryParams...)
+            {{- else }}
+            {{ queryRetval . }} {{ queryMethod . }}(ctx, query, queryParams...)
+            {{- end -}}
         {{- end -}}
     {{- else if emitPreparedQueries }}
         {{- queryRetval . }} {{ queryMethod . }}(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
     {{- else}}
+        {{- if emitSchemaName }}
+        {{- queryRetval . }} {{ queryMethod . }}(ctx, strings.ReplaceAll({{.ConstantName}}, "%s", schema), {{.Arg.Params}})
+        {{- else }}
         {{- queryRetval . }} {{ queryMethod . }}(ctx, {{.ConstantName}}, {{.Arg.Params}})
+        {{- end -}}
     {{- end -}}
 {{end}}

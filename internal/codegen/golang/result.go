@@ -141,9 +141,7 @@ func newGoEmbed(embed *plugin.Identifier, structs []Struct, defaultSchema string
 		}
 
 		fields := make([]Field, len(s.Fields))
-		for i, f := range s.Fields {
-			fields[i] = f
-		}
+		copy(fields, s.Fields)
 
 		return &goEmbed{
 			modelType: s.Name,
@@ -214,6 +212,10 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, structs []
 			if err := scanner.Err(); err != nil {
 				return nil, err
 			}
+		}
+
+		if options.EmitSchemaName {
+			query.Text = ApplySchema(query.Text)
 		}
 
 		gq := Query{
