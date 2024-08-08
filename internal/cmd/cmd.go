@@ -149,7 +149,7 @@ func ParseEnv(c *cobra.Command) Env {
 	return Env{
 		DryRun:   dr != nil && dr.Changed,
 		Debug:    opts.DebugFromEnv(),
-		Remote:   r != nil && nr.Value.String() == "true",
+		Remote:   r != nil && r.Value.String() == "true",
 		NoRemote: nr != nil && nr.Value.String() == "true",
 	}
 }
