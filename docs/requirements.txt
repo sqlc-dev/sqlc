@@ -1,4 +1,4 @@
-Babel==2.15.0
+Babel==2.16.0
 Jinja2==3.1.4
 MarkupSafe==2.1.5
 Pygments==2.18.0
