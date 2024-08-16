@@ -4,7 +4,7 @@ build:
 	go build ./...
 
 build-local:
-	go build -o ../sqlc ./cmd/sqlc
+	go build -o ../sqlc-tilby ./cmd/sqlc
 
 install:
 	go install ./...
