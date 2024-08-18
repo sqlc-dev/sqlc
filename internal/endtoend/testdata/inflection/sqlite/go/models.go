@@ -4,11 +4,19 @@
 
 package querytest
 
+type Bonuse struct {
+	ID string
+}
+
 type Calorie struct {
 	ID string
 }
 
 type Campus struct {
+	ID string
+}
+
+type ProductMetadatum struct {
 	ID string
 }
 
