@@ -41,6 +41,8 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 {{end}}
 
 {{if eq .Cmd ":many"}}
+var columnRegex = regexp.MustCompile(`SELECT\s+([\w,\s]+)\s+FROM`);
+
 {{range .Comments}}//{{.}}
 {{end -}}
 {{- if emitSchemaName }}
@@ -58,7 +60,7 @@ type {{.MethodName}}FilterParams struct {
     MaxParams   []{{.MethodName}}Filter
 }
 
-func (q *Queries) {{.MethodName}}(ctx context.Context, schema string, filterParams {{.MethodName}}FilterParams, {{ dbarg }} {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error) {
+func (q *Queries) {{.MethodName}}(ctx context.Context, schema string, filterParams {{.MethodName}}FilterParams, {{ dbarg }} {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error) {;
 {{- else }}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error) {
 {{- end }}
@@ -153,6 +155,10 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 {{define "queryCodeStdExec"}}
     {{- if .Arg.HasSqlcSlices }}
         query := strings.ReplaceAll({{.ConstantName}}, "%s", schema)
+
+        // Extract the columns from the query;
+	    columns := columnRegex.FindString(query);
+        
         var queryParams []interface{}
         
         {{- if .Arg.Struct }}
@@ -207,6 +213,9 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
         {{- if emitSchemaName }}
         query := strings.ReplaceAll({{.ConstantName}}, "%s", schema);
 
+        // Extract the columns from the query;
+	    columns := columnRegex.FindString(query);
+
         {{- /**
             If the query has a filter, we need to add the filter to the query
             and the query params.
@@ -216,6 +225,11 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
         var queryParams []interface{};
 
         for _, filter := range filterParams.ExactParams {
+            // Is the filter in the columns?
+            if !strings.Contains(columns, filter.FieldName) {
+                continue
+            }
+            
             if isFirstFilter {
                 query += " WHERE "
                 isFirstFilter = false
@@ -228,6 +242,11 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
         };
 
         for _, filter := range filterParams.InParams {
+            // Is the filter in the columns?
+            if !strings.Contains(columns, filter.FieldName) {
+                continue
+            }
+            
             if isFirstFilter {
                 query += " WHERE "
                 isFirstFilter = false
@@ -240,6 +259,11 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
         };
 
         for _, filter := range filterParams.LikeParams {
+            // Is the filter in the columns?
+            if !strings.Contains(columns, filter.FieldName) {
+                continue
+            }
+
             if isFirstFilter {
                 query += " WHERE "
                 isFirstFilter = false
@@ -252,6 +276,11 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
         };
 
         for _, filter := range filterParams.SinceParams {
+            // Is the filter in the columns?
+            if !strings.Contains(columns, filter.FieldName) {
+                continue
+            }
+
             if isFirstFilter {
                 query += " WHERE "
                 isFirstFilter = false
@@ -264,6 +293,11 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
         };
 
         for _, filter := range filterParams.MaxParams {
+            // Is the filter in the columns?
+            if !strings.Contains(columns, filter.FieldName) {
+                continue
+            }
+
             if isFirstFilter {
                 query += " WHERE "
                 isFirstFilter = false
@@ -274,7 +308,6 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
             query += filter.FieldName + " < ?"
             queryParams = append(queryParams, filter.Value)
         };
-        
 
         {{- queryRetval . }} {{ queryMethod . }}(ctx, query, {{.Arg.Params}})
 
