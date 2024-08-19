@@ -25,6 +25,7 @@ type Options struct {
 	EmitEnumValidMethod         bool              `json:"emit_enum_valid_method,omitempty" yaml:"emit_enum_valid_method"`
 	EmitAllEnumValues           bool              `json:"emit_all_enum_values,omitempty" yaml:"emit_all_enum_values"`
 	EmitEmbedAlias              bool              `json:"emit_embed_alias,omitempty" yaml:"emit_embed_alias"`
+	EmitSqlAsComment            bool              `json:"emit_sql_as_comment,omitempty" yaml:"emit_sql_as_comment"`
 	JsonTagsCaseStyle           string            `json:"json_tags_case_style,omitempty" yaml:"json_tags_case_style"`
 	Package                     string            `json:"package" yaml:"package"`
 	Out                         string            `json:"out" yaml:"out"`
@@ -43,6 +44,9 @@ type Options struct {
 	OmitSqlcVersion             bool              `json:"omit_sqlc_version,omitempty" yaml:"omit_sqlc_version"`
 	OmitUnusedStructs           bool              `json:"omit_unused_structs,omitempty" yaml:"omit_unused_structs"`
 	BuildTags                   string            `json:"build_tags,omitempty" yaml:"build_tags"`
+	Initialisms                 *[]string         `json:"initialisms,omitempty" yaml:"initialisms"`
+
+	InitialismsMap map[string]struct{} `json:"-" yaml:"-"`
 }
 
 type GlobalOptions struct {
@@ -94,9 +98,31 @@ func parseOpts(req *plugin.GenerateRequest) (*Options, error) {
 		}
 	}
 
+	if options.SqlPackage != "" {
+		if err := validatePackage(options.SqlPackage); err != nil {
+			return nil, fmt.Errorf("invalid options: %s", err)
+		}
+	}
+
+	if options.SqlDriver != "" {
+		if err := validateDriver(options.SqlDriver); err != nil {
+			return nil, fmt.Errorf("invalid options: %s", err)
+		}
+	}
+
 	if options.QueryParameterLimit == nil {
 		options.QueryParameterLimit = new(int32)
 		*options.QueryParameterLimit = 1
+	}
+
+	if options.Initialisms == nil {
+		options.Initialisms = new([]string)
+		*options.Initialisms = []string{"id"}
+	}
+
+	options.InitialismsMap = map[string]struct{}{}
+	for _, initial := range *options.Initialisms {
+		options.InitialismsMap[initial] = struct{}{}
 	}
 
 	return &options, nil

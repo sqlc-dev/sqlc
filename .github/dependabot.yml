@@ -4,6 +4,11 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    groups:
+      production-dependencies:
+        dependency-type: "production"
+      development-dependencies:
+        dependency-type: "development"
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
@@ -21,3 +26,9 @@ updates:
       # sphinx
       - dependency-name: "docutils"
       - dependency-name: "sphinx"
+    groups:
+      production-dependencies:
+        dependency-type: "production"
+      development-dependencies:
+        dependency-type: "development"
+

@@ -23,6 +23,7 @@ const (
 	Quick_DropEphemeralDatabase_FullMethodName   = "/remote.sqlc.dev.quickdb.v1.Quick/DropEphemeralDatabase"
 	Quick_UploadArchive_FullMethodName           = "/remote.sqlc.dev.quickdb.v1.Quick/UploadArchive"
 	Quick_VerifyQuerySets_FullMethodName         = "/remote.sqlc.dev.quickdb.v1.Quick/VerifyQuerySets"
+	Quick_GetQuerySets_FullMethodName            = "/remote.sqlc.dev.quickdb.v1.Quick/GetQuerySets"
 )
 
 // QuickClient is the client API for Quick service.
@@ -33,6 +34,7 @@ type QuickClient interface {
 	DropEphemeralDatabase(ctx context.Context, in *DropEphemeralDatabaseRequest, opts ...grpc.CallOption) (*DropEphemeralDatabaseResponse, error)
 	UploadArchive(ctx context.Context, in *UploadArchiveRequest, opts ...grpc.CallOption) (*UploadArchiveResponse, error)
 	VerifyQuerySets(ctx context.Context, in *VerifyQuerySetsRequest, opts ...grpc.CallOption) (*VerifyQuerySetsResponse, error)
+	GetQuerySets(ctx context.Context, in *GetQuerySetsRequest, opts ...grpc.CallOption) (*GetQuerySetsResponse, error)
 }
 
 type quickClient struct {
@@ -79,6 +81,15 @@ func (c *quickClient) VerifyQuerySets(ctx context.Context, in *VerifyQuerySetsRe
 	return out, nil
 }
 
+func (c *quickClient) GetQuerySets(ctx context.Context, in *GetQuerySetsRequest, opts ...grpc.CallOption) (*GetQuerySetsResponse, error) {
+	out := new(GetQuerySetsResponse)
+	err := c.cc.Invoke(ctx, Quick_GetQuerySets_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QuickServer is the server API for Quick service.
 // All implementations must embed UnimplementedQuickServer
 // for forward compatibility
@@ -87,6 +98,7 @@ type QuickServer interface {
 	DropEphemeralDatabase(context.Context, *DropEphemeralDatabaseRequest) (*DropEphemeralDatabaseResponse, error)
 	UploadArchive(context.Context, *UploadArchiveRequest) (*UploadArchiveResponse, error)
 	VerifyQuerySets(context.Context, *VerifyQuerySetsRequest) (*VerifyQuerySetsResponse, error)
+	GetQuerySets(context.Context, *GetQuerySetsRequest) (*GetQuerySetsResponse, error)
 	mustEmbedUnimplementedQuickServer()
 }
 
@@ -105,6 +117,9 @@ func (UnimplementedQuickServer) UploadArchive(context.Context, *UploadArchiveReq
 }
 func (UnimplementedQuickServer) VerifyQuerySets(context.Context, *VerifyQuerySetsRequest) (*VerifyQuerySetsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method VerifyQuerySets not implemented")
+}
+func (UnimplementedQuickServer) GetQuerySets(context.Context, *GetQuerySetsRequest) (*GetQuerySetsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetQuerySets not implemented")
 }
 func (UnimplementedQuickServer) mustEmbedUnimplementedQuickServer() {}
 
@@ -191,6 +206,24 @@ func _Quick_VerifyQuerySets_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Quick_GetQuerySets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetQuerySetsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QuickServer).GetQuerySets(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Quick_GetQuerySets_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QuickServer).GetQuerySets(ctx, req.(*GetQuerySetsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Quick_ServiceDesc is the grpc.ServiceDesc for Quick service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -213,6 +246,10 @@ var Quick_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "VerifyQuerySets",
 			Handler:    _Quick_VerifyQuerySets_Handler,
+		},
+		{
+			MethodName: "GetQuerySets",
+			Handler:    _Quick_GetQuerySets_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

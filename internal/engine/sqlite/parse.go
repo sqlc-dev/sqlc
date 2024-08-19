@@ -5,8 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/antlr/antlr4/runtime/Go/antlr/v4"
-
+	"github.com/antlr4-go/antlr/v4"
 	"github.com/sqlc-dev/sqlc/internal/engine/sqlite/parser"
 	"github.com/sqlc-dev/sqlc/internal/source"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
@@ -70,6 +69,7 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 			converter := &cc{}
 			out := converter.convert(stmt)
 			if _, ok := out.(*ast.TODO); ok {
+				loc = stmt.GetStop().GetStop() + 2
 				continue
 			}
 			len := (stmt.GetStop().GetStop() + 1) - loc

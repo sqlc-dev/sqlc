@@ -16,8 +16,8 @@ import (
 
 	"github.com/sqlc-dev/sqlc/internal/cmd"
 	"github.com/sqlc-dev/sqlc/internal/config"
-	"github.com/sqlc-dev/sqlc/internal/ext/wasm"
 	"github.com/sqlc-dev/sqlc/internal/opts"
+	"github.com/sqlc-dev/sqlc/internal/sqltest/local"
 )
 
 func lineEndings() cmp.Option {
@@ -100,7 +100,7 @@ func BenchmarkExamples(b *testing.B) {
 }
 
 type textContext struct {
-	Mutate  func(*config.Config)
+	Mutate  func(*testing.T, string) func(*config.Config)
 	Enabled func() bool
 }
 
@@ -114,26 +114,47 @@ func TestReplay(t *testing.T) {
 
 	contexts := map[string]textContext{
 		"base": {
-			Mutate:  func(c *config.Config) {},
+			Mutate:  func(t *testing.T, path string) func(*config.Config) { return func(c *config.Config) {} },
 			Enabled: func() bool { return true },
 		},
 		"managed-db": {
-			Mutate: func(c *config.Config) {
-				c.Cloud.Project = "01HAQMMECEYQYKFJN8MP16QC41" // TODO: Read from environment
-				for i := range c.SQL {
-					c.SQL[i].Database = &config.Database{
-						Managed: true,
+			Mutate: func(t *testing.T, path string) func(*config.Config) {
+				return func(c *config.Config) {
+					c.Servers = []config.Server{
+						{
+							Name:   "postgres",
+							Engine: config.EnginePostgreSQL,
+							URI:    local.PostgreSQLServer(),
+						},
+
+						{
+							Name:   "mysql",
+							Engine: config.EngineMySQL,
+							URI:    local.MySQLServer(),
+						},
+					}
+					for i := range c.SQL {
+						switch c.SQL[i].Engine {
+						case config.EnginePostgreSQL:
+							c.SQL[i].Database = &config.Database{
+								Managed: true,
+							}
+						case config.EngineMySQL:
+							c.SQL[i].Database = &config.Database{
+								Managed: true,
+							}
+						default:
+							// pass
+						}
 					}
 				}
 			},
 			Enabled: func() bool {
-				// Return false if no auth token exists
-				if len(os.Getenv("SQLC_AUTH_TOKEN")) == 0 {
+				if len(os.Getenv("POSTGRESQL_SERVER_URI")) == 0 {
 					return false
 				}
-				// In CI, only run these tests from Linux
-				if os.Getenv("CI") != "" {
-					return runtime.GOOS == "linux"
+				if len(os.Getenv("MYSQL_SERVER_URI")) == 0 {
+					return false
 				}
 				return true
 			},
@@ -151,8 +172,6 @@ func TestReplay(t *testing.T) {
 		for _, replay := range FindTests(t, "testdata", name) {
 			tc := replay
 			t.Run(filepath.Join(name, tc.Name), func(t *testing.T) {
-				t.Parallel()
-
 				var stderr bytes.Buffer
 				var output map[string]string
 				var err error
@@ -177,10 +196,6 @@ func TestReplay(t *testing.T) {
 					}
 				}
 
-				if args.WASM && !wasm.Enabled() {
-					t.Skipf("wasm support not enabled")
-				}
-
 				if len(args.OS) > 0 {
 					if !slices.Contains(args.OS, runtime.GOOS) {
 						t.Skipf("unsupported os: %s", runtime.GOOS)
@@ -193,7 +208,7 @@ func TestReplay(t *testing.T) {
 						NoRemote: true,
 					},
 					Stderr:       &stderr,
-					MutateConfig: testctx.Mutate,
+					MutateConfig: testctx.Mutate(t, path),
 				}
 
 				switch args.Command {

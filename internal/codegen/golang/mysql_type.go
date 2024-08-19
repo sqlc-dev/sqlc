@@ -31,14 +31,31 @@ func mysqlType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.C
 		} else {
 			if notNull {
 				if unsigned {
-					return "uint32"
+					return "uint8"
 				}
-				return "int32"
+				return "int8"
 			}
-			return "sql.NullInt32"
+			// The database/sql package does not have a sql.NullInt8 type, so we
+			// use the smallest type they have which is NullInt16
+			return "sql.NullInt16"
 		}
 
-	case "int", "integer", "smallint", "mediumint", "year":
+	case "year":
+		if notNull {
+			return "int16"
+		}
+		return "sql.NullInt16"
+
+	case "smallint":
+		if notNull {
+			if unsigned {
+				return "uint16"
+			}
+			return "int16"
+		}
+		return "sql.NullInt16"
+
+	case "int", "integer", "mediumint":
 		if notNull {
 			if unsigned {
 				return "uint32"

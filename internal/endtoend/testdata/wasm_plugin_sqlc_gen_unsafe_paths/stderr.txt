@@ -1,0 +1,2 @@
+# package test
+error generating code: invalid file output path: /tmp/unsafe.txt

@@ -4,7 +4,6 @@ type GrantRoleStmt struct {
 	GrantedRoles *List
 	GranteeRoles *List
 	IsGrant      bool
-	AdminOpt     bool
 	Grantor      *RoleSpec
 	Behavior     DropBehavior
 }

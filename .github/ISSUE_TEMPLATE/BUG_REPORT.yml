@@ -1,6 +1,6 @@
 name: Bug Report
 description: File a bug report
-labels: [bug, triage]
+labels: [bug]
 body:
   - type: dropdown
     id: version
@@ -9,6 +9,9 @@ body:
       description: What version of sqlc are you running? If you don't know, run `sqlc version`.
       multiple: false
       options:
+        - 1.27.0
+        - 1.26.0
+        - 1.25.0
         - 1.24.0
         - 1.23.0
         - 1.22.0

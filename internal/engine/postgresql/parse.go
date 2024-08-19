@@ -6,7 +6,7 @@ import (
 	"io"
 	"strings"
 
-	nodes "github.com/pganalyze/pg_query_go/v4"
+	nodes "github.com/pganalyze/pg_query_go/v5"
 
 	"github.com/sqlc-dev/sqlc/internal/engine/postgresql/parser"
 	"github.com/sqlc-dev/sqlc/internal/source"
@@ -271,7 +271,7 @@ func translate(node *nodes.Node) (ast.Node, error) {
 				case nodes.AlterTableType_AT_AddColumn:
 					d, ok := altercmd.Def.Node.(*nodes.Node_ColumnDef)
 					if !ok {
-						return nil, fmt.Errorf("expected alter table defintion to be a ColumnDef")
+						return nil, fmt.Errorf("expected alter table definition to be a ColumnDef")
 					}
 
 					rel, err := parseRelationFromNodes(d.ColumnDef.TypeName.Names)
@@ -290,7 +290,7 @@ func translate(node *nodes.Node) (ast.Node, error) {
 				case nodes.AlterTableType_AT_AlterColumnType:
 					d, ok := altercmd.Def.Node.(*nodes.Node_ColumnDef)
 					if !ok {
-						return nil, fmt.Errorf("expected alter table defintion to be a ColumnDef")
+						return nil, fmt.Errorf("expected alter table definition to be a ColumnDef")
 					}
 					col := ""
 					if altercmd.Name != "" {

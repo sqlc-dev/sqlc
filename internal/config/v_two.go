@@ -76,7 +76,7 @@ func v2ParseConfig(rd io.Reader) (Config, error) {
 			if cg.Out == "" {
 				return conf, ErrNoOutPath
 			}
-			// TOOD: Allow the use of built-in codegen from here
+			// TODO: Allow the use of built-in codegen from here
 			if _, ok := plugins[cg.Plugin]; !ok {
 				return conf, ErrPluginNotFound
 			}

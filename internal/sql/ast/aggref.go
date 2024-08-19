@@ -6,7 +6,6 @@ type Aggref struct {
 	Aggtype       Oid
 	Aggcollid     Oid
 	Inputcollid   Oid
-	Aggtranstype  Oid
 	Aggargtypes   *List
 	Aggdirectargs *List
 	Args          *List

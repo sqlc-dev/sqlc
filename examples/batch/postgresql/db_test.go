@@ -1,5 +1,4 @@
 //go:build examples
-// +build examples
 
 package batch
 
@@ -10,11 +9,12 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/sqlc-dev/sqlc/internal/sqltest/hosted"
+
+	"github.com/sqlc-dev/sqlc/internal/sqltest/local"
 )
 
 func TestBatchBooks(t *testing.T) {
-	uri := hosted.PostgreSQL(t, []string{"schema.sql"})
+	uri := local.PostgreSQL(t, []string{"schema.sql"})
 
 	ctx := context.Background()
 

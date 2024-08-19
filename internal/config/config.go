@@ -59,11 +59,18 @@ const (
 type Config struct {
 	Version   string               `json:"version" yaml:"version"`
 	Cloud     Cloud                `json:"cloud" yaml:"cloud"`
+	Servers   []Server             `json:"servers" yaml:"servers"`
 	SQL       []SQL                `json:"sql" yaml:"sql"`
 	Overrides Overrides            `json:"overrides,omitempty" yaml:"overrides"`
 	Plugins   []Plugin             `json:"plugins" yaml:"plugins"`
 	Rules     []Rule               `json:"rules" yaml:"rules"`
 	Options   map[string]yaml.Node `json:"options" yaml:"options"`
+}
+
+type Server struct {
+	Name   string `json:"name,omitempty" yaml:"name"`
+	Engine Engine `json:"engine,omitempty" yaml:"engine"`
+	URI    string `json:"uri" yaml:"uri"`
 }
 
 type Database struct {

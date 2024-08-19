@@ -12,7 +12,7 @@
       "engine": "postgresql",
       "sql_package": "database/sql",
       "database": {
-        "managed": true
+        "uri": "${VET_TEST_EXAMPLES_POSTGRES_ONDECK}"
       },
       "analyzer": {
         "database": false
@@ -31,7 +31,7 @@
       "queries": "mysql/query",
       "engine": "mysql",
       "database": {
-        "managed": true
+        "uri": "${VET_TEST_EXAMPLES_MYSQL_ONDECK}"
       },
       "rules": [
         "sqlc/db-prepare"

@@ -1,4 +1,4 @@
-.PHONY: build build-endtoend test test-ci test-examples test-endtoend regen start psql mysqlsh proto
+.PHONY: build build-endtoend test test-ci test-examples test-endtoend start psql mysqlsh proto
 
 build:
 	go build ./...
@@ -8,6 +8,9 @@ install:
 
 test:
 	go test ./...
+
+test-managed:
+	MYSQL_SERVER_URI="invalid" POSTGRESQL_SERVER_URI="postgres://postgres:mysecretpassword@localhost:5432/postgres" go test -v ./...
 
 vet:
 	go vet ./...
@@ -19,9 +22,6 @@ build-endtoend:
 	cd ./internal/endtoend/testdata && go build ./...
 
 test-ci: test-examples build-endtoend vet
-
-regen: sqlc-dev sqlc-gen-json
-	go run ./scripts/regenerate/
 
 sqlc-dev:
 	go build -o ~/bin/sqlc-dev ./cmd/sqlc/

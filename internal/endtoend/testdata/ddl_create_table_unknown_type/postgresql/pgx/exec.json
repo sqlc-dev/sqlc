@@ -1,3 +1,6 @@
 {
-  "contexts": ["managed-db"]
+  "contexts": ["unknown"],
+  "meta": {
+      "invalid_schema": true
+  }
 }

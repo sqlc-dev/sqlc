@@ -62,7 +62,7 @@ type Author struct {
 
 ## Enums
 
-PostgreSQL [enums](https://www.postgresql.org/docs/current/arrays.html) are
+PostgreSQL [enums](https://www.postgresql.org/docs/current/datatype-enum.html) are
 mapped to an aliased string type.
 
 ```sql
@@ -204,9 +204,80 @@ type Book struct {
 }
 ```
 
+## TEXT
+
+In PostgreSQL, when you have a column with the TEXT type, sqlc will map it to a Go string by default. This default mapping applies to `TEXT` columns that are not nullable. However, for nullable `TEXT` columns, sqlc maps them to `pgtype.Text` when using the pgx/v5 driver. This distinction is crucial for developers looking to handle null values appropriately in their Go applications.
+
+To accommodate nullable strings and map them to `*string` in Go, you can use the `emit_pointers_for_null_types` option in your sqlc configuration. This option ensures that nullable SQL columns are represented as pointer types in Go, allowing for a clear distinction between null and non-null values. Another way to do this is by passing the option `pointer: true` when you are overriding the `TEXT` datatype in you sqlc config file.
+
 ## Geometry
 
 ### PostGIS
+
+#### Using `github.com/twpayne/go-geos` (pgx/v5 only)
+
+sqlc can be configured to use the [geos](https://github.com/twpayne/go-geos)
+package for working with PostGIS geometry types in [GEOS](https://libgeos.org/).
+
+There are three steps:
+
+1. Configure sqlc to use `*github.com/twpayne/go-geos.Geom` for geometry types.
+2. Call `github.com/twpayne/pgx-geos.Register` on each
+   `*github.com/jackc/pgx/v5.Conn`.
+3. Annotate your SQL with `::geometry` typecasts, if needed.
+
+```sql
+-- Multipolygons in British National Grid (epsg:27700)
+create table shapes(
+  id serial,
+  name varchar,
+  geom geometry(Multipolygon, 27700)
+);
+
+-- name: GetCentroids :many
+SELECT id, name, ST_Centriod(geom)::geometry FROM shapes;
+```
+
+```json
+{
+  "version": 2,
+  "gen": {
+    "go": {
+      "overrides": [
+        {
+          "db_type": "geometry",
+          "go_type": {
+            "import": "github.com/twpayne/go-geos",
+            "package": "geos",
+            "pointer": true,
+            "type": "Geom"
+          },
+          "nullable": true
+        }
+      ]
+    }
+  }
+}
+```
+
+```go
+import (
+    "github.com/twpayne/go-geos"
+    pgxgeos "github.com/twpayne/pgx-geos"
+)
+
+// ...
+
+config.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
+    if err := pgxgeos.Register(ctx, conn, geos.NewContext()); err != nil {
+        return err
+    }
+    return nil
+}
+```
+
+
+#### Using `github.com/twpayne/go-geom`
 
 sqlc can be configured to use the [geom](https://github.com/twpayne/go-geom)
 package for working with PostGIS geometry types.

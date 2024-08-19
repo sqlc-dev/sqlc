@@ -12,7 +12,7 @@
       "engine": "postgresql",
       "sql_package": "pgx/v5",
       "database": {
-        "managed": true
+        "uri": "${VET_TEST_EXAMPLES_POSTGRES_JETS}"
       },
       "analyzer": {
         "database": false

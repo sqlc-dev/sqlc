@@ -7,12 +7,14 @@ import (
 )
 
 type Options struct {
-	Env          Env
-	Stderr       io.Writer
-	MutateConfig func(*config.Config)
+	Env    Env
+	Stderr io.Writer
 	// TODO: Move these to a command-specific struct
 	Tags    []string
 	Against string
+
+	// Testing only
+	MutateConfig func(*config.Config)
 }
 
 func (o *Options) ReadConfig(dir, filename string) (string, *config.Config, error) {

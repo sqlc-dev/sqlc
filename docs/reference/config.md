@@ -50,7 +50,7 @@ Each mapping in the `sql` collection has the following keys:
   - A mapping to configure database connections. See [database](#database) for the supported keys.
 - `rules`:
   - A collection of rule names to run via `sqlc vet`. See [rules](#rules) for configuration options.
-- `analzyer`:
+- `analyzer`:
   - A mapping to configure query analysis. See [analyzer](#analyzer) for the supported keys.
 - `strict_function_checks`
   - If true, return an error if a called SQL function does not exist. Defaults to `false`.
@@ -156,7 +156,7 @@ The `gen` mapping supports the following keys:
 - `emit_methods_with_db_argument`:
   - If true, generated methods will accept a DBTX argument instead of storing a DBTX on the `*Queries` struct. Defaults to `false`.
 - `emit_pointers_for_null_types`:
-  - If true and `sql_package` is set to `pgx/v4` or `pgx/v5`, generated types for nullable columns are emitted as pointers (ie. `*string`) instead of `database/sql` null types (ie. `NullString`). Defaults to `false`.
+  - If true, generated types for nullable columns are emitted as pointers (ie. `*string`) instead of `database/sql` null types (ie. `NullString`). Currently only supported for PostgreSQL if `sql_package` is `pgx/v4` or `pgx/v5`, and for SQLite. Defaults to `false`.
 - `emit_enum_valid_method`:
   - If true, generate a Valid method on enum types,
     indicating whether a string is a valid enum value.
@@ -165,8 +165,12 @@ The `gen` mapping supports the following keys:
     that returns all valid enum values.
 - `emit_embed_alias`:
   - If true, use alias name inside `sqlc.embed()` macro instead of table name for field name. Defaults to `false`.
+- `emit_sql_as_comment`:
+  - If true, emits the SQL statement as a code-block comment above the generated function, appending to any existing comments. Defaults to `false`.
 - `build_tags`:
   - If set, add a `//go:build <build_tags>` directive at the beginning of each generated Go file.
+- `initialisms`:
+  - An array of [initialisms](https://google.github.io/styleguide/go/decisions.html#initialisms) to upper-case. For example, `app_id` becomes `AppID`. Defaults to `["id"]`.
 - `json_tags_id_uppercase`:
   - If true, "Id" in json tags will be uppercase. If false, will be camelcase. Defaults to `false`
 - `json_tags_case_style`:

@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime/trace"
+	"strings"
 	"sync"
 
 	"google.golang.org/grpc"
@@ -208,8 +209,21 @@ func (g *generator) ProcessResult(ctx context.Context, combo config.CombinedSett
 		files[file.Name] = string(file.Contents)
 	}
 	g.m.Lock()
+
+	// out is specified by the user, not a plugin
+	absout := filepath.Join(g.dir, out)
+
 	for n, source := range files {
 		filename := filepath.Join(g.dir, out, n)
+		// filepath.Join calls filepath.Clean which should remove all "..", but
+		// double check to make sure
+		if strings.Contains(filename, "..") {
+			return fmt.Errorf("invalid file output path: %s", filename)
+		}
+		// The output file must be contained inside the output directory
+		if !strings.HasPrefix(filename, absout) {
+			return fmt.Errorf("invalid file output path: %s", filename)
+		}
 		g.output[filename] = source
 	}
 	g.m.Unlock()

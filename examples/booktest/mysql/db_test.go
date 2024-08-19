@@ -1,5 +1,4 @@
 //go:build examples
-// +build examples
 
 package booktest
 
@@ -11,12 +10,12 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 
-	"github.com/sqlc-dev/sqlc/internal/sqltest/hosted"
+	"github.com/sqlc-dev/sqlc/internal/sqltest/local"
 )
 
 func TestBooks(t *testing.T) {
 	ctx := context.Background()
-	uri := hosted.MySQL(t, []string{"schema.sql"})
+	uri := local.MySQL(t, []string{"schema.sql"})
 	db, err := sql.Open("mysql", uri)
 	if err != nil {
 		t.Fatal(err)

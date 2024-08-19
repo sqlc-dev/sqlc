@@ -1,0 +1,8 @@
+version: '2'
+sql:
+- schema: schema.sql
+  queries: query.sql
+  engine: mysql
+  gen:
+    go:
+      out: db

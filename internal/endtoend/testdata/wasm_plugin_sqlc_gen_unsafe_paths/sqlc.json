@@ -1,0 +1,25 @@
+{
+  "version": "2",
+  "sql": [
+    {
+      "schema": "schema.sql",
+      "queries": "query.sql",
+      "engine": "postgresql",
+      "codegen": [
+        {
+          "out": "gen",
+          "plugin": "test"
+        }
+      ]
+    }
+  ],
+  "plugins": [
+    {
+      "name": "test",
+      "wasm": {
+        "url": "https://github.com/sqlc-dev/sqlc-gen-unsafe-paths/releases/download/v0.1.1/sqlc-gen-unsafe-paths.wasm",
+        "sha256": "e53ac951dd41b1e4c365e757d9735886f7c8e92f2056ce0be9a5cfcf677c45d9"
+      }
+    }
+  ]
+}

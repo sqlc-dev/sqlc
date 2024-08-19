@@ -75,6 +75,11 @@ func (i *importer) usesType(typ string) bool {
 	return false
 }
 
+func (i *importer) HasImports(filename string) bool {
+	imports := i.Imports(filename)
+	return len(imports[0]) != 0 || len(imports[1]) != 0
+}
+
 func (i *importer) Imports(filename string) [][]ImportSpec {
 	dbFileName := "db.go"
 	if i.Options.OutputDbFileName != "" {
@@ -121,10 +126,10 @@ func (i *importer) dbImports() fileImports {
 
 	sqlpkg := parseDriver(i.Options.SqlPackage)
 	switch sqlpkg {
-	case SQLDriverPGXV4:
+	case opts.SQLDriverPGXV4:
 		pkg = append(pkg, ImportSpec{Path: "github.com/jackc/pgconn"})
 		pkg = append(pkg, ImportSpec{Path: "github.com/jackc/pgx/v4"})
-	case SQLDriverPGXV5:
+	case opts.SQLDriverPGXV5:
 		pkg = append(pkg, ImportSpec{Path: "github.com/jackc/pgx/v5/pgconn"})
 		pkg = append(pkg, ImportSpec{Path: "github.com/jackc/pgx/v5"})
 	default:
@@ -167,9 +172,9 @@ func buildImports(options *opts.Options, queries []Query, uses func(string) bool
 	for _, q := range queries {
 		if q.Cmd == metadata.CmdExecResult {
 			switch sqlpkg {
-			case SQLDriverPGXV4:
+			case opts.SQLDriverPGXV4:
 				pkg[ImportSpec{Path: "github.com/jackc/pgconn"}] = struct{}{}
-			case SQLDriverPGXV5:
+			case opts.SQLDriverPGXV5:
 				pkg[ImportSpec{Path: "github.com/jackc/pgx/v5/pgconn"}] = struct{}{}
 			default:
 				std["database/sql"] = struct{}{}
@@ -184,7 +189,7 @@ func buildImports(options *opts.Options, queries []Query, uses func(string) bool
 	}
 
 	if uses("pgtype.") {
-		if sqlpkg == SQLDriverPGXV5 {
+		if sqlpkg == opts.SQLDriverPGXV5 {
 			pkg[ImportSpec{Path: "github.com/jackc/pgx/v5/pgtype"}] = struct{}{}
 		} else {
 			pkg[ImportSpec{Path: "github.com/jackc/pgtype"}] = struct{}{}
@@ -424,7 +429,7 @@ func (i *importer) copyfromImports() fileImports {
 	})
 
 	std["context"] = struct{}{}
-	if i.Options.SqlDriver == SQLDriverGoSQLDriverMySQL {
+	if i.Options.SqlDriver == opts.SQLDriverGoSQLDriverMySQL {
 		std["io"] = struct{}{}
 		std["fmt"] = struct{}{}
 		std["sync/atomic"] = struct{}{}
@@ -476,9 +481,9 @@ func (i *importer) batchImports() fileImports {
 	std["errors"] = struct{}{}
 	sqlpkg := parseDriver(i.Options.SqlPackage)
 	switch sqlpkg {
-	case SQLDriverPGXV4:
+	case opts.SQLDriverPGXV4:
 		pkg[ImportSpec{Path: "github.com/jackc/pgx/v4"}] = struct{}{}
-	case SQLDriverPGXV5:
+	case opts.SQLDriverPGXV5:
 		pkg[ImportSpec{Path: "github.com/jackc/pgx/v5"}] = struct{}{}
 	}
 

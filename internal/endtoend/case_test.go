@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -17,19 +18,24 @@ type Testcase struct {
 	Exec       *Exec
 }
 
+type ExecMeta struct {
+	InvalidSchema bool `json:"invalid_schema"`
+}
+
 type Exec struct {
 	Command  string            `json:"command"`
 	Contexts []string          `json:"contexts"`
 	Process  string            `json:"process"`
 	OS       []string          `json:"os"`
-	WASM     bool              `json:"wasm"`
 	Env      map[string]string `json:"env"`
+	Meta     ExecMeta          `json:"meta"`
 }
 
 func parseStderr(t *testing.T, dir, testctx string) []byte {
 	t.Helper()
 	paths := []string{
 		filepath.Join(dir, "stderr", fmt.Sprintf("%s.txt", testctx)),
+		filepath.Join(dir, fmt.Sprintf("stderr_%s.txt", runtime.GOOS)),
 		filepath.Join(dir, "stderr.txt"),
 	}
 	for _, path := range paths {
@@ -53,10 +59,10 @@ func parseExec(t *testing.T, dir string) *Exec {
 	var e Exec
 	blob, err := os.ReadFile(path)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("%s: %s", path, err)
 	}
 	if err := json.Unmarshal(blob, &e); err != nil {
-		t.Fatal(err)
+		t.Fatalf("%s: %s", path, err)
 	}
 	if e.Command == "" {
 		e.Command = "generate"

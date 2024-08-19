@@ -27,10 +27,6 @@ support planned in the future.
 
 ## Enhanced analysis with managed databases
 
-```{note}
-Managed databases are powered by [sqlc Cloud](https://dashboard.sqlc.dev). Sign up for [free](https://dashboard.sqlc.dev) today.
-```
-
 With [managed databases](managed-databases.md) configured, `generate` will automatically create a hosted ephemeral database with your
 schema and use that database to improve its query analysis. And sqlc will cache its analysis locally
 on a per-query basis to speed up future `generate` runs. This saves you the trouble of running and maintaining a database with
@@ -38,8 +34,9 @@ an up-to-date schema. Here's a minimal working configuration:
 
 ```yaml
 version: "2"
-cloud:
-  project: "<PROJECT_ID>"
+servers:
+- engine: postgresql
+  uri: "postgres://locahost:5432/postgres?sslmode=disable"
 sql:
   - engine: "postgresql"
     queries: "query.sql"

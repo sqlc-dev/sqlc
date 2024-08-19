@@ -8,6 +8,12 @@ For local development, install `sqlc` under an alias. We suggest `sqlc-dev`.
 go build -o ~/go/bin/sqlc-dev ./cmd/sqlc
 ```
 
+Install `sqlc-gen-json` to avoid test failure.
+
+```
+go build -o ~/go/bin/sqlc-gen-json ./cmd/sqlc-gen-json
+```
+
 ## Running Tests
 
 ```
@@ -53,16 +59,3 @@ MYSQL_USER      root
 MYSQL_ROOT_PASSWORD  mysecretpassword
 MYSQL_DATABASE  dinotest
 ```
-
-## Regenerate expected test output
-
-If you need to update a large number of expected test output in the
-`internal/endtoend/testdata` directory, run the `regenerate` script.
-
-```
-go build -o ~/go/bin/sqlc-dev ./cmd/sqlc
-go run scripts/regenerate/main.go
-```
-
-Note that this uses the `sqlc-dev` binary, not `sqlc` so make sure you have an
-up to date `sqlc-dev` binary.

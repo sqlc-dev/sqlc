@@ -1,0 +1,13 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "path": "go",
+      "engine": "sqlite",
+      "name": "datatype",
+      "schema": "sql/types.sql",
+      "queries": "sql/query.sql",
+      "emit_pointers_for_null_types": true
+    }
+  ]
+}

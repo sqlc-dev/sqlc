@@ -1,8 +1,3 @@
-CREATE TABLE authors (
-  id   BIGINT PRIMARY KEY,
-  bio  TEXT
-);
-
 -- name: ListAuthors :one
 SELECT  *
 FROM    authors
