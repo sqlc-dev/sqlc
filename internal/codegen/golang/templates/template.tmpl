@@ -186,6 +186,7 @@ package {{.Package}}
 import (
 	{{ if .EmitSchemaName }}
 	"strings"
+	"regexp"
 	{{end}}
 	
 	{{range imports .SourceName}}
@@ -221,6 +222,8 @@ package {{.Package}}
 {{ if hasImports .SourceName }}
 import (
 	{{ if .EmitSchemaName }}
+	"strings"
+	"regexp"
 	{{end}}
 
 	{{range imports .SourceName}}
