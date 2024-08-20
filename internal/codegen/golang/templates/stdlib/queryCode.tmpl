@@ -60,6 +60,9 @@ type {{.MethodName}}FilterParams struct {
     MaxParams   []{{.MethodName}}Filter
     SortParam   string
     SortOrder   string
+    Pagination  bool
+    PerPage     int 
+    PageNumber  int
 }
 
 func (q *Queries) {{.MethodName}}(ctx context.Context, schema string, filterParams {{.MethodName}}FilterParams, {{ dbarg }} {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error) {;
@@ -315,6 +318,10 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 
         if filterParams.SortParam != "" {
             query += " ORDER BY " + filterParams.SortParam + " " + filterParams.SortOrder
+        }
+
+        if filterParams.Pagination {
+            query += " LIMIT " + fmt.Sprint(filterParams.PerPage) + " OFFSET " + fmt.Sprint(filterParams.PageNumber * filterParams.PerPage)
         }
 
         // If there is not the ; at the end, add it
