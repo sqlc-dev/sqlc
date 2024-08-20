@@ -31,8 +31,8 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 	{{- if or (ne .Arg.Pair .Ret.Pair) (ne .Arg.DefineType .Ret.DefineType) }}
 	var {{.Ret.Name}} {{.Ret.Type}}
 	{{- end}}
-	{{- if emitSchemaName }}
-    err := row.Scan(strings.ReplaceAll({{.Ret.Scan}}, "%s", schema))
+	{{- if emitSchemaName }} 
+    err := row.Scan({{.Ret.Scan}})
     {{- else }}
     err := row.Scan({{.Ret.Scan}})
     {{- end }}
@@ -58,6 +58,8 @@ type {{.MethodName}}FilterParams struct {
     LikeParams  []{{.MethodName}}Filter
     SinceParams []{{.MethodName}}Filter
     MaxParams   []{{.MethodName}}Filter
+    SortParam   string
+    SortOrder   string
 }
 
 func (q *Queries) {{.MethodName}}(ctx context.Context, schema string, filterParams {{.MethodName}}FilterParams, {{ dbarg }} {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error) {;
@@ -213,13 +215,15 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
         {{- if emitSchemaName }}
         query := strings.ReplaceAll({{.ConstantName}}, "%s", schema);
 
-        // Extract the columns from the query;
-	    columns := columnRegex.FindString(query);
-
         {{- /**
             If the query has a filter, we need to add the filter to the query
             and the query params.
             */}}
+
+        {{- if eq .Cmd ":many"}}
+
+        // Extract the columns from the query;
+	    columns := columnRegex.FindString(query);
 
         isFirstFilter := true;
         var queryParams []interface{};
@@ -309,10 +313,25 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
             queryParams = append(queryParams, filter.Value)
         };
 
-        {{- queryRetval . }} {{ queryMethod . }}(ctx, query, {{.Arg.Params}})
+        if filterParams.SortParam != "" {
+            query += " ORDER BY " + filterParams.SortParam + " " + filterParams.SortOrder
+        }
+
+        // If there is not the ; at the end, add it
+        if !strings.HasSuffix(query, ";") {
+            query += ";"
+        };
+
+        {{- queryRetval . }} {{ queryMethod . }}(ctx, query, queryParams...)
+
+        {{- end }}
 
         {{- else }}
         {{- queryRetval . }} {{ queryMethod . }}(ctx, {{.ConstantName}}, {{.Arg.Params}})
+        {{- end -}}
+
+        {{- if ne .Cmd ":many"}}
+        {{- queryRetval . }} {{ queryMethod . }}(ctx, query, {{.Arg.Params}})
         {{- end -}}
     {{- end -}}
 {{end}}

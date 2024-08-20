@@ -46,7 +46,7 @@ func ApplySchema(query string) string {
 // Helper function to check if a word is a relevant SQL keyword
 func isSQLKeyword(word string) bool {
 	switch word {
-	case "FROM", "JOIN", "LEFT JOIN", "RIGHT JOIN", "FULL JOIN", "INNER JOIN", "CROSS JOIN", "UPDATE", "DELETE FROM", "INSERT INTO":
+	case "FROM", "JOIN", "UPDATE", "INTO":
 		return true
 	}
 	return false
