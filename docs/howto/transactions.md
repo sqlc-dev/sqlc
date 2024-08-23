@@ -57,6 +57,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 You'd use it like this:
 
 ```go
+// Using `github/lib/pq` as the driver.
 func bumpCounter(ctx context.Context, db *sql.DB, queries *tutorial.Queries, id int32) error {
 	tx, err := db.Begin()
 	if err != nil {
@@ -75,5 +76,26 @@ func bumpCounter(ctx context.Context, db *sql.DB, queries *tutorial.Queries, id 
 		return err
 	}
 	return tx.Commit()
+}
+
+// Using `github.com/jackc/pgx/v5` as the driver.
+func bumpCounter(ctx context.Context, db *pgx.Conn, queries *tutorial.Queries, id int32) error {
+	tx, err := db.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+	qtx := queries.WithTx(tx)
+	r, err := qtx.GetRecord(ctx, id)
+	if err != nil {
+		return err
+	}
+	if err := qtx.UpdateRecord(ctx, tutorial.UpdateRecordParams{
+		ID:      r.ID,
+		Counter: r.Counter + 1,
+	}); err != nil {
+		return err
+	}
+	return tx.Commit(ctx)
 }
 ```
