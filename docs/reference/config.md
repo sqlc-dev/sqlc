@@ -273,6 +273,8 @@ Each mapping in the `plugins` collection has the following keys:
 - `process`: A mapping with a single `cmd` key
   - `cmd`:
     - The executable to call when using this plugin
+  - `format`:
+    - The format expected. Supports `json` and `protobuf` formats. Defaults to `protobuf`.
 - `wasm`: A mapping with a two keys `url` and `sha256`
   - `url`:
     - The URL to fetch the WASM file. Supports the `https://` or `file://` schemes.
