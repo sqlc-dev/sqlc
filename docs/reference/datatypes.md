@@ -309,12 +309,12 @@ SELECT * FROM shapes;
     {
       "db_type": "geometry",
       "go_type": "github.com/twpayne/go-geom.MultiPolygon"
-  	},
-  	{
+    },
+    {
       "db_type": "geometry",
-  	  "go_type": "github.com/twpayne/go-geom.MultiPolygon",
-  	  "null": true
-  	}
+      "go_type": "github.com/twpayne/go-geom.MultiPolygon",
+      "nullable": true
+    }
   ]
 }
 ```
