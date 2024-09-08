@@ -17,7 +17,6 @@ type Metadata struct {
 	Comments []string
 	Params   map[string]string
 	Flags    map[string]bool
-	Raw      []string
 	Filename string
 }
 
