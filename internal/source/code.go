@@ -163,3 +163,38 @@ func CleanedComments(rawSQL string, cs CommentSyntax) ([]string, error) {
 	}
 	return comments, s.Err()
 }
+
+func RawComments(rawSQL string, cs CommentSyntax) ([]string, error) {
+	s := bufio.NewScanner(strings.NewReader(strings.TrimSpace(rawSQL)))
+	var comments []string
+	for s.Scan() {
+		line := s.Text()
+		var prefix string
+		if strings.HasPrefix(line, "--") {
+			if !cs.Dash {
+				continue
+			}
+			prefix = "--"
+		}
+		if strings.HasPrefix(line, "/*") {
+			if !cs.SlashStar {
+				continue
+			}
+			prefix = "/*"
+		}
+		if strings.HasPrefix(line, "#") {
+			if !cs.Hash {
+				continue
+			}
+			prefix = "#"
+		}
+		if prefix == "" {
+			continue
+		}
+
+		// rest := line[len(prefix):]
+		// rest = strings.TrimSuffix(rest, "*/")
+		comments = append(comments, line)
+	}
+	return comments, s.Err()
+}

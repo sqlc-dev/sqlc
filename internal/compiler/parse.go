@@ -2,7 +2,6 @@ package compiler
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 
@@ -28,20 +27,15 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 	}
 
 	// rewrite queries to remove sqlc.* functions
-
-	raw, ok := stmt.(*ast.RawStmt)
-	if !ok {
-		return nil, errors.New("node is not a statement")
-	}
-	rawSQL, err := source.Pluck(src, raw.StmtLocation, raw.StmtLen)
+	raw, rawSQL, err := getRaw(stmt, src)
 	if err != nil {
 		return nil, err
 	}
-	if rawSQL == "" {
-		return nil, errors.New("missing semicolon at end of file")
-	}
 
-	name, cmd, err := metadata.ParseQueryNameAndType(rawSQL, metadata.CommentSyntax(c.parser.CommentSyntax()))
+	name, cmd, err := metadata.ParseQueryNameAndType(
+		rawSQL,
+		metadata.CommentSyntax(c.parser.CommentSyntax()),
+	)
 	if err != nil {
 		return nil, err
 	}

@@ -4,18 +4,20 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/sqlc-dev/sqlc/internal/metadata"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
 )
 
 // Schema describes how the data in a relational database may relate to other tables or other data models
 type Schema struct {
-	Name   string
-	Tables []*Table
-	Types  []Type
-	Funcs  []*Function
-
-	Comment string
+	Name        string
+	Tables      []*Table
+	Types       []Type
+	Funcs       []*Function
+	Metadata    metadata.Metadata
+	Comment     string
+	RawComments []string
 }
 
 func (s *Schema) getFunc(rel *ast.FuncName, tns []*ast.TypeName) (*Function, int, error) {
@@ -95,7 +97,7 @@ func (c *Catalog) getSchema(name string) (*Schema, error) {
 	return nil, sqlerr.SchemaNotFound(name)
 }
 
-func (c *Catalog) createSchema(stmt *ast.CreateSchemaStmt) error {
+func (c *Catalog) createSchema(stmt *ast.CreateSchemaStmt, rComments []string) error {
 	if stmt.Name == nil {
 		return fmt.Errorf("create schema: empty name")
 	}
@@ -109,7 +111,7 @@ func (c *Catalog) createSchema(stmt *ast.CreateSchemaStmt) error {
 			return sqlerr.SchemaExists(*stmt.Name)
 		}
 	}
-	c.Schemas = append(c.Schemas, &Schema{Name: *stmt.Name})
+	c.Schemas = append(c.Schemas, &Schema{Name: *stmt.Name, RawComments: rComments})
 	return nil
 }
 

@@ -68,14 +68,16 @@ func pluginCatalog(c *catalog.Catalog) *plugin.Catalog {
 			switch typ := typ.(type) {
 			case *catalog.Enum:
 				enums = append(enums, &plugin.Enum{
-					Name:    typ.Name,
-					Comment: typ.Comment,
-					Vals:    typ.Vals,
+					Name:        typ.Name,
+					Comment:     typ.Comment,
+					Vals:        typ.Vals,
+					RawComments: typ.RawComments,
 				})
 			case *catalog.CompositeType:
 				cts = append(cts, &plugin.CompositeType{
-					Name:    typ.Name,
-					Comment: typ.Comment,
+					Name:        typ.Name,
+					Comment:     typ.Comment,
+					RawComments: typ.RawComments,
 				})
 			}
 		}
@@ -113,8 +115,9 @@ func pluginCatalog(c *catalog.Catalog) *plugin.Catalog {
 					Schema:  t.Rel.Schema,
 					Name:    t.Rel.Name,
 				},
-				Columns: columns,
-				Comment: t.Comment,
+				Columns:     columns,
+				Comment:     t.Comment,
+				RawComments: t.RawComments,
 			})
 		}
 		schemas = append(schemas, &plugin.Schema{
@@ -123,6 +126,7 @@ func pluginCatalog(c *catalog.Catalog) *plugin.Catalog {
 			Tables:         tables,
 			Enums:          enums,
 			CompositeTypes: cts,
+			RawComments:    s.RawComments,
 		})
 	}
 	return &plugin.Catalog{

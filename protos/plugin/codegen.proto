@@ -56,23 +56,27 @@ message Schema {
   repeated Table tables = 3;
   repeated Enum enums = 4;
   repeated CompositeType composite_types = 5;
+  repeated string raw_comments = 6;
 }
 
 message CompositeType {
   string name = 1;
   string comment = 2;
+  repeated string raw_comments = 3;
 }
 
 message Enum {
   string name = 1;
   repeated string vals = 2;
   string comment = 3;
+  repeated string raw_comments = 4;
 }
 
 message Table {
   Identifier rel = 1;
   repeated Column columns = 2;
   string comment = 3;
+  repeated string raw_comments = 4;
 }
 
 message Identifier {

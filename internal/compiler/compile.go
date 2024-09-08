@@ -37,15 +37,28 @@ func (c *Compiler) parseCatalog(schemas []string) error {
 			merr.Add(filename, "", 0, err)
 			continue
 		}
-		contents := migrations.RemoveRollbackStatements(string(blob))
+		src := string(blob)
+		contents := migrations.RemoveRollbackStatements(src)
 		c.schema = append(c.schema, contents)
 		stmts, err := c.parser.Parse(strings.NewReader(contents))
 		if err != nil {
 			merr.Add(filename, contents, 0, err)
 			continue
 		}
-		for i := range stmts {
-			if err := c.catalog.Update(stmts[i], c); err != nil {
+		for i, stmt := range stmts {
+			// Lets just parse the metadata annotations and pass them in.
+			// Update will use them on Types we deem neccesary.
+			// Can either be metadata or just a raw []strings
+			_, rawSQL, err := getRaw(stmt.Raw, src)
+			if err != nil {
+				return err
+			}
+			RawComments, err := source.RawComments(rawSQL, c.parser.CommentSyntax())
+			if err != nil {
+				return err
+			}
+
+			if err := c.catalog.Update(stmts[i], RawComments, c); err != nil {
 				merr.Add(filename, contents, stmts[i].Pos(), err)
 				continue
 			}
@@ -99,7 +112,12 @@ func (c *Compiler) parseQueries(o opts.Parser) (*Result, error) {
 			queryName := query.Metadata.Name
 			if queryName != "" {
 				if _, exists := set[queryName]; exists {
-					merr.Add(filename, src, stmt.Raw.Pos(), fmt.Errorf("duplicate query name: %s", queryName))
+					merr.Add(
+						filename,
+						src,
+						stmt.Raw.Pos(),
+						fmt.Errorf("duplicate query name: %s", queryName),
+					)
 					continue
 				}
 				set[queryName] = struct{}{}
@@ -111,10 +129,28 @@ func (c *Compiler) parseQueries(o opts.Parser) (*Result, error) {
 		return nil, merr
 	}
 	if len(q) == 0 {
-		return nil, fmt.Errorf("no queries contained in paths %s", strings.Join(c.conf.Queries, ","))
+		return nil, fmt.Errorf(
+			"no queries contained in paths %s",
+			strings.Join(c.conf.Queries, ","),
+		)
 	}
 	return &Result{
 		Catalog: c.catalog,
 		Queries: q,
 	}, nil
+}
+
+func getRaw(stmt ast.Node, src string) (*ast.RawStmt, string, error) {
+	raw, ok := stmt.(*ast.RawStmt)
+	if !ok {
+		return nil, "", errors.New("node is not a statement")
+	}
+	rawSQL, err := source.Pluck(src, raw.StmtLocation, raw.StmtLen)
+	if err != nil {
+		return nil, "", err
+	}
+	if rawSQL == "" {
+		return nil, "", errors.New("missing semicolon at end of file")
+	}
+	return raw, rawSQL, nil
 }
