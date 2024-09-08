@@ -192,8 +192,6 @@ func RawComments(rawSQL string, cs CommentSyntax) ([]string, error) {
 			continue
 		}
 
-		// rest := line[len(prefix):]
-		// rest = strings.TrimSuffix(rest, "*/")
 		comments = append(comments, line)
 	}
 	return comments, s.Err()
