@@ -46,9 +46,6 @@ func (c *Compiler) parseCatalog(schemas []string) error {
 			continue
 		}
 		for i, stmt := range stmts {
-			// Lets just parse the metadata annotations and pass them in.
-			// Update will use them on Types we deem neccesary.
-			// Can either be metadata or just a raw []strings
 			_, rawSQL, err := getRaw(stmt.Raw, src)
 			if err != nil {
 				return err
