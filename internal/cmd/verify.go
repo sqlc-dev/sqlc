@@ -102,7 +102,7 @@ func Verify(ctx context.Context, dir, filename string, opts *Options) error {
 				if err != nil {
 					return fmt.Errorf("read file: %w", err)
 				}
-				ddl = append(ddl, migrations.RemoveRollbackStatements(string(contents)))
+				ddl = append(ddl, migrations.RemoveIgnoredStatements(string(contents)))
 			}
 
 			var codegen plugin.GenerateRequest
