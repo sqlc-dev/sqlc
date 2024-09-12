@@ -470,7 +470,7 @@ update_stmt:
         OR_ (ROLLBACK_ | ABORT_ | REPLACE_ | FAIL_ | IGNORE_)
     )? qualified_table_name SET_ (column_name | column_name_list) ASSIGN expr (
         COMMA (column_name | column_name_list) ASSIGN expr
-    )* (WHERE_ expr)? returning_clause?
+    )* (FROM_ table_or_subquery)? (WHERE_ expr)? returning_clause?
 ;
 
 column_name_list:
