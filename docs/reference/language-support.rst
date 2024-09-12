@@ -24,6 +24,8 @@ C#        `DaredevilOSS/sqlc-gen-csharp`_  Beta             Beta          Not im
 Ruby      `DaredevilOSS/sqlc-gen-ruby`_    Beta             Beta          Beta
 ========  ===============================  ===============  ============  ===============
 
+If your language is not supported yet, you can generate arbitrary code using a template: `fdietze/sqlc-gen-from-template`_
+
 .. _sqlc-gen-go: https://github.com/sqlc-dev/sqlc-gen-go
 .. _kaashyapan/sqlc-gen-fsharp: https://github.com/kaashyapan/sqlc-gen-fsharp
 .. _sqlc-gen-kotlin: https://github.com/sqlc-dev/sqlc-gen-kotlin
@@ -31,6 +33,7 @@ Ruby      `DaredevilOSS/sqlc-gen-ruby`_    Beta             Beta          Beta
 .. _sqlc-gen-typescript: https://github.com/sqlc-dev/sqlc-gen-typescript
 .. _DaredevilOSS/sqlc-gen-csharp: https://github.com/DaredevilOSS/sqlc-gen-csharp
 .. _DaredevilOSS/sqlc-gen-ruby: https://github.com/DaredevilOSS/sqlc-gen-ruby
+.. _fdietze/sqlc-gen-from-template: https://github.com/fdietze/sqlc-gen-from-template
 
 Future language support
 ************************
