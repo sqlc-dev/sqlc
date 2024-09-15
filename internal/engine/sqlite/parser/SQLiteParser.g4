@@ -468,7 +468,7 @@ compound_operator:
 update_stmt:
     with_clause? UPDATE_ (
         OR_ (ROLLBACK_ | ABORT_ | REPLACE_ | FAIL_ | IGNORE_)
-    )? qualified_table_name SET_ (column_name | column_name_list) ASSIGN expr (
+    )? table_name (AS_? table_alias)? SET_ (column_name | column_name_list) ASSIGN expr (
         COMMA (column_name | column_name_list) ASSIGN expr
     )* (FROM_ table_or_subquery)? (WHERE_ expr)? returning_clause?
 ;
