@@ -299,6 +299,7 @@ func sortedImports(std map[string]struct{}, pkg map[ImportSpec]struct{}) fileImp
 func (i *importer) queryImports(filename string) fileImports {
 	var gq []Query
 	anyNonCopyFrom := false
+	openTrackingImport := false
 	for _, query := range i.Queries {
 		if usesBatch([]Query{query}) {
 			continue
@@ -308,6 +309,9 @@ func (i *importer) queryImports(filename string) fileImports {
 			if query.Cmd != metadata.CmdCopyFrom {
 				anyNonCopyFrom = true
 			}
+		}
+		if query.EnableOpenTracing {
+			openTrackingImport = true
 		}
 	}
 
@@ -392,6 +396,9 @@ func (i *importer) queryImports(filename string) fileImports {
 
 	if anyNonCopyFrom {
 		std["context"] = struct{}{}
+	}
+	if openTrackingImport {
+		pkg[ImportSpec{Path: "github.com/opentracing/opentracing-go"}] = struct{}{}
 	}
 
 	sqlpkg := parseDriver(i.Options.SqlPackage)
