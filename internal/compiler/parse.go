@@ -53,6 +53,13 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 		Cmd:  cmd,
 	}
 
+	RawComments, err := source.RawComments(rawSQL, c.parser.CommentSyntax())
+	if err != nil {
+		return nil, err
+	}
+
+	md.RawComments = RawComments
+
 	// TODO eventually can use this for name and type/cmd parsing too
 	cleanedComments, err := source.CleanedComments(rawSQL, c.parser.CommentSyntax())
 	if err != nil {

@@ -104,6 +104,7 @@ message Column {
   string original_name = 15;
   bool unsigned = 16;
   int32 array_dims = 17;
+  bool PrimaryKey = 18;
 }
 
 message Query {
@@ -115,6 +116,7 @@ message Query {
   repeated string comments = 6 [json_name = "comments"];
   string filename = 7 [json_name = "filename"];
   Identifier insert_into_table = 8 [json_name = "insert_into_table"];
+  repeated string raw_comments = 9 [json_name = "raw_comments"];
 }
 
 message Parameter {

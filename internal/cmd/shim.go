@@ -96,12 +96,13 @@ func pluginCatalog(c *catalog.Catalog) *plugin.Catalog {
 						Schema:  c.Type.Schema,
 						Name:    c.Type.Name,
 					},
-					Comment:   c.Comment,
-					NotNull:   c.IsNotNull,
-					Unsigned:  c.IsUnsigned,
-					IsArray:   c.IsArray,
-					ArrayDims: int32(c.ArrayDims),
-					Length:    int32(l),
+					Comment:    c.Comment,
+					NotNull:    c.IsNotNull,
+					Unsigned:   c.IsUnsigned,
+					IsArray:    c.IsArray,
+					ArrayDims:  int32(c.ArrayDims),
+					PrimaryKey: c.PrimaryKey,
+					Length:     int32(l),
 					Table: &plugin.Identifier{
 						Catalog: t.Rel.Catalog,
 						Schema:  t.Rel.Schema,
@@ -165,6 +166,7 @@ func pluginQueries(r *compiler.Result) []*plugin.Query {
 			Params:          params,
 			Filename:        q.Metadata.Filename,
 			InsertIntoTable: iit,
+			RawComments:     q.Metadata.RawComments,
 		})
 	}
 	return out

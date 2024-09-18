@@ -12,12 +12,13 @@ import (
 type CommentSyntax source.CommentSyntax
 
 type Metadata struct {
-	Name     string
-	Cmd      string
-	Comments []string
-	Params   map[string]string
-	Flags    map[string]bool
-	Filename string
+	Name        string
+	Cmd         string
+	Comments    []string
+	Params      map[string]string
+	Flags       map[string]bool
+	Filename    string
+	RawComments []string
 }
 
 const (

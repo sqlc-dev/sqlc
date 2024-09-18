@@ -129,6 +129,7 @@ type Column struct {
 	ArrayDims  int
 	Comment    string
 	Length     *int
+	PrimaryKey bool
 
 	RawComment string
 
@@ -341,6 +342,7 @@ func (c *Catalog) defineColumn(table *ast.TableName, col *ast.ColumnDef) (*Colum
 		ArrayDims:  col.ArrayDims,
 		Comment:    col.Comment,
 		Length:     col.Length,
+		PrimaryKey: col.PrimaryKey,
 	}
 	if col.Vals != nil {
 		typeName := ast.TypeName{

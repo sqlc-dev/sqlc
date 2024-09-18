@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	// "github.com/ryboe/q"
+
 	"github.com/sqlc-dev/sqlc/internal/migrations"
 	"github.com/sqlc-dev/sqlc/internal/multierr"
 	"github.com/sqlc-dev/sqlc/internal/opts"
