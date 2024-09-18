@@ -56,23 +56,27 @@ message Schema {
   repeated Table tables = 3;
   repeated Enum enums = 4;
   repeated CompositeType composite_types = 5;
+  repeated string raw_comments = 6;
 }
 
 message CompositeType {
   string name = 1;
   string comment = 2;
+  repeated string raw_comments = 3;
 }
 
 message Enum {
   string name = 1;
   repeated string vals = 2;
   string comment = 3;
+  repeated string raw_comments = 4;
 }
 
 message Table {
   Identifier rel = 1;
   repeated Column columns = 2;
   string comment = 3;
+  repeated string raw_comments = 4;
 }
 
 message Identifier {
@@ -100,6 +104,7 @@ message Column {
   string original_name = 15;
   bool unsigned = 16;
   int32 array_dims = 17;
+  bool PrimaryKey = 18;
 }
 
 message Query {
@@ -111,6 +116,7 @@ message Query {
   repeated string comments = 6 [json_name = "comments"];
   string filename = 7 [json_name = "filename"];
   Identifier insert_into_table = 8 [json_name = "insert_into_table"];
+  repeated string raw_comments = 9 [json_name = "raw_comments"];
 }
 
 message Parameter {

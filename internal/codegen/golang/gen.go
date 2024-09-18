@@ -150,16 +150,28 @@ func validate(options *opts.Options, enums []Enum, structs []Struct, queries []Q
 	}
 	for _, query := range queries {
 		if _, ok := enumNames[query.ConstantName]; ok {
-			return fmt.Errorf("query constant name conflicts with enum name: %s", query.ConstantName)
+			return fmt.Errorf(
+				"query constant name conflicts with enum name: %s",
+				query.ConstantName,
+			)
 		}
 		if _, ok := structNames[query.ConstantName]; ok {
-			return fmt.Errorf("query constant name conflicts with struct name: %s", query.ConstantName)
+			return fmt.Errorf(
+				"query constant name conflicts with struct name: %s",
+				query.ConstantName,
+			)
 		}
 	}
 	return nil
 }
 
-func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, structs []Struct, queries []Query) (*plugin.GenerateResponse, error) {
+func generate(
+	req *plugin.GenerateRequest,
+	options *opts.Options,
+	enums []Enum,
+	structs []Struct,
+	queries []Query,
+) (*plugin.GenerateResponse, error) {
 	i := &importer{
 		Options: options,
 		Queries: queries,
@@ -189,8 +201,11 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 		OmitSqlcVersion:           options.OmitSqlcVersion,
 	}
 
-	if tctx.UsesCopyFrom && !tctx.SQLDriver.IsPGX() && options.SqlDriver != opts.SQLDriverGoSQLDriverMySQL {
-		return nil, errors.New(":copyfrom is only supported by pgx and github.com/go-sql-driver/mysql")
+	if tctx.UsesCopyFrom && !tctx.SQLDriver.IsPGX() &&
+		options.SqlDriver != opts.SQLDriverGoSQLDriverMySQL {
+		return nil, errors.New(
+			":copyfrom is only supported by pgx and github.com/go-sql-driver/mysql",
+		)
 	}
 
 	if tctx.UsesCopyFrom && options.SqlDriver == opts.SQLDriverGoSQLDriverMySQL {

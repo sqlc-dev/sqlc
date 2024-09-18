@@ -237,7 +237,9 @@ func convertAlterDatabaseStmt(n *pg.AlterDatabaseStmt) *ast.AlterDatabaseStmt {
 	}
 }
 
-func convertAlterDefaultPrivilegesStmt(n *pg.AlterDefaultPrivilegesStmt) *ast.AlterDefaultPrivilegesStmt {
+func convertAlterDefaultPrivilegesStmt(
+	n *pg.AlterDefaultPrivilegesStmt,
+) *ast.AlterDefaultPrivilegesStmt {
 	if n == nil {
 		return nil
 	}
@@ -285,7 +287,9 @@ func convertAlterEventTrigStmt(n *pg.AlterEventTrigStmt) *ast.AlterEventTrigStmt
 	}
 }
 
-func convertAlterExtensionContentsStmt(n *pg.AlterExtensionContentsStmt) *ast.AlterExtensionContentsStmt {
+func convertAlterExtensionContentsStmt(
+	n *pg.AlterExtensionContentsStmt,
+) *ast.AlterExtensionContentsStmt {
 	if n == nil {
 		return nil
 	}
@@ -535,7 +539,9 @@ func convertAlterTableMoveAllStmt(n *pg.AlterTableMoveAllStmt) *ast.AlterTableMo
 	}
 }
 
-func convertAlterTableSpaceOptionsStmt(n *pg.AlterTableSpaceOptionsStmt) *ast.AlterTableSpaceOptionsStmt {
+func convertAlterTableSpaceOptionsStmt(
+	n *pg.AlterTableSpaceOptionsStmt,
+) *ast.AlterTableSpaceOptionsStmt {
 	if n == nil {
 		return nil
 	}

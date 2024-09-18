@@ -15,9 +15,10 @@ type Type interface {
 }
 
 type Enum struct {
-	Name    string
-	Vals    []string
-	Comment string
+	Name        string
+	Vals        []string
+	Comment     string
+	RawComments []string
 }
 
 func (e *Enum) SetComment(c string) {
@@ -28,8 +29,9 @@ func (e *Enum) isType() {
 }
 
 type CompositeType struct {
-	Name    string
-	Comment string
+	Name        string
+	Comment     string
+	RawComments []string
 }
 
 func (ct *CompositeType) isType() {
@@ -62,7 +64,7 @@ func sameType(a, b *ast.TypeName) bool {
 	return true
 }
 
-func (c *Catalog) createEnum(stmt *ast.CreateEnumStmt) error {
+func (c *Catalog) createEnum(stmt *ast.CreateEnumStmt, rComments []string) error {
 	ns := stmt.TypeName.Schema
 	if ns == "" {
 		ns = c.DefaultSchema
@@ -85,8 +87,9 @@ func (c *Catalog) createEnum(stmt *ast.CreateEnumStmt) error {
 		return sqlerr.TypeExists(tbl.Name)
 	}
 	schema.Types = append(schema.Types, &Enum{
-		Name: stmt.TypeName.Name,
-		Vals: stringSlice(stmt.Vals),
+		Name:        stmt.TypeName.Name,
+		Vals:        stringSlice(stmt.Vals),
+		RawComments: rComments,
 	})
 	return nil
 }
@@ -113,7 +116,7 @@ func (c *Catalog) getType(rel *ast.TypeName) (Type, int, error) {
 	return s.getType(rel)
 }
 
-func (c *Catalog) createCompositeType(stmt *ast.CompositeTypeStmt) error {
+func (c *Catalog) createCompositeType(stmt *ast.CompositeTypeStmt, rComments []string) error {
 	ns := stmt.TypeName.Schema
 	if ns == "" {
 		ns = c.DefaultSchema
@@ -136,7 +139,8 @@ func (c *Catalog) createCompositeType(stmt *ast.CompositeTypeStmt) error {
 		return sqlerr.TypeExists(tbl.Name)
 	}
 	schema.Types = append(schema.Types, &CompositeType{
-		Name: stmt.TypeName.Name,
+		Name:        stmt.TypeName.Name,
+		RawComments: rComments,
 	})
 	return nil
 }
@@ -228,7 +232,12 @@ func (c *Catalog) alterTypeAddValue(stmt *ast.AlterTypeAddValueStmt) error {
 		}
 
 		if !foundNeighbor {
-			return fmt.Errorf("enum %s unable to find existing neighbor value %s for new value %s", enum.Name, *stmt.NewValNeighbor, *stmt.NewValue)
+			return fmt.Errorf(
+				"enum %s unable to find existing neighbor value %s for new value %s",
+				enum.Name,
+				*stmt.NewValNeighbor,
+				*stmt.NewValue,
+			)
 		}
 	}
 

@@ -35,14 +35,14 @@ func New(defaultSchema string) *Catalog {
 
 func (c *Catalog) Build(stmts []ast.Statement) error {
 	for i := range stmts {
-		if err := c.Update(stmts[i], nil); err != nil {
+		if err := c.Update(stmts[i], nil, nil); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (c *Catalog) Update(stmt ast.Statement, colGen columnGenerator) error {
+func (c *Catalog) Update(stmt ast.Statement, rComments []string, colGen columnGenerator) error {
 	if stmt.Raw == nil {
 		return nil
 	}
@@ -80,10 +80,10 @@ func (c *Catalog) Update(stmt ast.Statement, colGen columnGenerator) error {
 		err = c.commentOnView(n)
 
 	case *ast.CompositeTypeStmt:
-		err = c.createCompositeType(n)
+		err = c.createCompositeType(n, rComments)
 
 	case *ast.CreateEnumStmt:
-		err = c.createEnum(n)
+		err = c.createEnum(n, rComments)
 
 	case *ast.CreateExtensionStmt:
 		err = c.createExtension(n)
@@ -92,13 +92,12 @@ func (c *Catalog) Update(stmt ast.Statement, colGen columnGenerator) error {
 		err = c.createFunction(n)
 
 	case *ast.CreateSchemaStmt:
-		err = c.createSchema(n)
-
+		err = c.createSchema(n, rComments)
 	case *ast.CreateTableStmt:
-		err = c.createTable(n)
+		err = c.createTable(n, rComments)
 
 	case *ast.CreateTableAsStmt:
-		err = c.createTableAs(n, colGen)
+		err = c.createTableAs(n, rComments, colGen)
 
 	case *ast.ViewStmt:
 		err = c.createView(n, colGen)
@@ -132,7 +131,7 @@ func (c *Catalog) Update(stmt ast.Statement, colGen columnGenerator) error {
 					StmtLocation: stmt.Raw.StmtLocation,
 					StmtLen:      stmt.Raw.StmtLen,
 				},
-			}, colGen); err != nil {
+			}, nil, colGen); err != nil {
 				return err
 			}
 		}

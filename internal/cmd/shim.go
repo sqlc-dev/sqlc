@@ -68,14 +68,16 @@ func pluginCatalog(c *catalog.Catalog) *plugin.Catalog {
 			switch typ := typ.(type) {
 			case *catalog.Enum:
 				enums = append(enums, &plugin.Enum{
-					Name:    typ.Name,
-					Comment: typ.Comment,
-					Vals:    typ.Vals,
+					Name:        typ.Name,
+					Comment:     typ.Comment,
+					Vals:        typ.Vals,
+					RawComments: typ.RawComments,
 				})
 			case *catalog.CompositeType:
 				cts = append(cts, &plugin.CompositeType{
-					Name:    typ.Name,
-					Comment: typ.Comment,
+					Name:        typ.Name,
+					Comment:     typ.Comment,
+					RawComments: typ.RawComments,
 				})
 			}
 		}
@@ -94,12 +96,13 @@ func pluginCatalog(c *catalog.Catalog) *plugin.Catalog {
 						Schema:  c.Type.Schema,
 						Name:    c.Type.Name,
 					},
-					Comment:   c.Comment,
-					NotNull:   c.IsNotNull,
-					Unsigned:  c.IsUnsigned,
-					IsArray:   c.IsArray,
-					ArrayDims: int32(c.ArrayDims),
-					Length:    int32(l),
+					Comment:    c.Comment,
+					NotNull:    c.IsNotNull,
+					Unsigned:   c.IsUnsigned,
+					IsArray:    c.IsArray,
+					ArrayDims:  int32(c.ArrayDims),
+					PrimaryKey: c.PrimaryKey,
+					Length:     int32(l),
 					Table: &plugin.Identifier{
 						Catalog: t.Rel.Catalog,
 						Schema:  t.Rel.Schema,
@@ -113,8 +116,9 @@ func pluginCatalog(c *catalog.Catalog) *plugin.Catalog {
 					Schema:  t.Rel.Schema,
 					Name:    t.Rel.Name,
 				},
-				Columns: columns,
-				Comment: t.Comment,
+				Columns:     columns,
+				Comment:     t.Comment,
+				RawComments: t.RawComments,
 			})
 		}
 		schemas = append(schemas, &plugin.Schema{
@@ -123,6 +127,7 @@ func pluginCatalog(c *catalog.Catalog) *plugin.Catalog {
 			Tables:         tables,
 			Enums:          enums,
 			CompositeTypes: cts,
+			RawComments:    s.RawComments,
 		})
 	}
 	return &plugin.Catalog{
@@ -161,6 +166,7 @@ func pluginQueries(r *compiler.Result) []*plugin.Query {
 			Params:          params,
 			Filename:        q.Metadata.Filename,
 			InsertIntoTable: iit,
+			RawComments:     q.Metadata.RawComments,
 		})
 	}
 	return out

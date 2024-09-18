@@ -13,9 +13,10 @@ import (
 // A database table is a collection of related data held in a table format within a database.
 // It consists of columns and rows.
 type Table struct {
-	Rel     *ast.TableName
-	Columns []*Column
-	Comment string
+	Rel         *ast.TableName
+	Columns     []*Column
+	Comment     string
+	RawComments []string
 }
 
 func checkMissing(err error, missingOK bool) error {
@@ -128,6 +129,9 @@ type Column struct {
 	ArrayDims  int
 	Comment    string
 	Length     *int
+	PrimaryKey bool
+
+	RawComment string
 
 	linkedType bool
 }
@@ -247,7 +251,7 @@ func (c *Catalog) alterTableSetSchema(stmt *ast.AlterTableSetSchemaStmt) error {
 	return nil
 }
 
-func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
+func (c *Catalog) createTable(stmt *ast.CreateTableStmt, rComments []string) error {
 	ns := stmt.Name.Schema
 	if ns == "" {
 		ns = c.DefaultSchema
@@ -263,7 +267,7 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 		return sqlerr.RelationExists(stmt.Name.Name)
 	}
 
-	tbl := Table{Rel: stmt.Name, Comment: stmt.Comment}
+	tbl := Table{Rel: stmt.Name, Comment: stmt.Comment, RawComments: rComments}
 	coltype := make(map[string]ast.TypeName) // used to check for duplicate column names
 	seen := make(map[string]bool)            // used to check for duplicate column names
 	for _, inheritTable := range stmt.Inherits {
@@ -338,13 +342,14 @@ func (c *Catalog) defineColumn(table *ast.TableName, col *ast.ColumnDef) (*Colum
 		ArrayDims:  col.ArrayDims,
 		Comment:    col.Comment,
 		Length:     col.Length,
+		PrimaryKey: col.PrimaryKey,
 	}
 	if col.Vals != nil {
 		typeName := ast.TypeName{
 			Name: fmt.Sprintf("%s_%s", table.Name, col.Colname),
 		}
 		s := &ast.CreateEnumStmt{TypeName: &typeName, Vals: col.Vals}
-		if err := c.createEnum(s); err != nil {
+		if err := c.createEnum(s, nil); err != nil {
 			return nil, err
 		}
 		tc.Type = typeName
@@ -450,7 +455,11 @@ func (c *Catalog) renameTable(stmt *ast.RenameTableStmt) error {
 	return nil
 }
 
-func (c *Catalog) createTableAs(stmt *ast.CreateTableAsStmt, colGen columnGenerator) error {
+func (c *Catalog) createTableAs(
+	stmt *ast.CreateTableAsStmt,
+	rComments []string,
+	colGen columnGenerator,
+) error {
 	cols, err := colGen.OutputColumns(stmt.Query)
 	if err != nil {
 		return err
@@ -471,7 +480,8 @@ func (c *Catalog) createTableAs(stmt *ast.CreateTableAsStmt, colGen columnGenera
 			Schema:  schemaName,
 			Name:    *stmt.Into.Rel.Relname,
 		},
-		Columns: cols,
+		Columns:     cols,
+		RawComments: rComments,
 	}
 
 	ns := tbl.Rel.Schema
