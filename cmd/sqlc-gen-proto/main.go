@@ -52,7 +52,7 @@ type options struct {
 	OutDir         string `json:"out_dir,omitempty"          yaml:"out_dir"`
 	UserDefinedDir string `json:"user_defined_dir,omitempty" yaml:"user_defined_dir"`
 	OneOfID        string `json:"one_of_id,omitempty"        yaml:"one_of_id"`
-	DefaultPackage string `json:"defaut_package,omitempty"   yaml:"defaut_package"`
+	DefaultPackage string `json:"default_package,omitempty"  yaml:"default_package"`
 }
 
 func getGenRequest() (*plugin.GenerateRequest, error) {
