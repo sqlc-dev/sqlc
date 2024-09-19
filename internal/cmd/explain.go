@@ -194,7 +194,7 @@ func (c *rawExplainer) explainSQL(ctx context.Context, s config.SQL) error {
 
 			err = yaml.NewEncoder(os.Stdout).Encode([]struct {
 				Name      string
-				Query     string
+				Query     string `yaml:",flow"` // https://github.com/go-yaml/yaml/issues/789
 				Arguments []any
 				Output    interface{}
 			}{{
