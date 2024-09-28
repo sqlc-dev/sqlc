@@ -3,6 +3,7 @@ package metadata
 import (
 	"bufio"
 	"fmt"
+	"github.com/sqlc-dev/sqlc/internal/constants"
 	"strings"
 	"unicode"
 
@@ -134,7 +135,7 @@ func ParseParamsAndFlags(comments []string) (map[string]string, map[string]bool,
 		}
 
 		switch token {
-		case "@param":
+		case constants.QueryFlagParam:
 			s.Scan()
 			name := s.Text()
 			var rest []string
@@ -144,7 +145,7 @@ func ParseParamsAndFlags(comments []string) (map[string]string, map[string]bool,
 			}
 			params[name] = strings.Join(rest, " ")
 
-		case "@sqlc-vet-disable":
+		case constants.QueryFlagSqlcVetDisable:
 			flags[token] = true
 
 			// Vet rules can all be disabled in the same line or split across lines .i.e.
