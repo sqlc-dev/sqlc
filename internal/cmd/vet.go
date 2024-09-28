@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime/trace"
+	"slices"
 	"strings"
 	"time"
 
@@ -538,11 +539,23 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 	req := codeGenRequest(result, combo)
 	cfg := vetConfig(req)
 	for i, query := range req.Queries {
-		if result.Queries[i].Metadata.Flags[QueryFlagSqlcVetDisable] {
-			if debug.Active {
-				log.Printf("Skipping vet rules for query: %s\n", query.Name)
+		md := result.Queries[i].Metadata
+		if md.Flags[QueryFlagSqlcVetDisable] {
+			// If the vet disable flag is specified without any rules listed, all rules are ignored.
+			if len(md.RuleSkiplist) == 0 {
+				if debug.Active {
+					log.Printf("Skipping all vet rules for query: %s\n", query.Name)
+				}
+				continue
 			}
-			continue
+
+			// Rules which are listed to be disabled but not declared in the config file are rejected.
+			for r := range md.RuleSkiplist {
+				if !slices.Contains(s.Rules, r) {
+					fmt.Fprintf(c.Stderr, "%s: %s: rule-check error: rule %q does not exist in the config file\n", query.Filename, query.Name, r)
+					errored = true
+				}
+			}
 		}
 
 		evalMap := map[string]any{
@@ -551,74 +564,81 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 		}
 
 		for _, name := range s.Rules {
-			rule, ok := c.Rules[name]
-			if !ok {
-				return fmt.Errorf("type-check error: a rule with the name '%s' does not exist", name)
-			}
+			if _, skip := md.RuleSkiplist[name]; skip {
+				if debug.Active {
+					log.Printf("Skipping vet rule %q for query: %s\n", name, query.Name)
+				}
+			} else {
+				rule, ok := c.Rules[name]
+				if !ok {
+					return fmt.Errorf("type-check error: a rule with the name '%s' does not exist", name)
+				}
 
-			if rule.NeedsPrepare {
-				if prep == nil {
-					fmt.Fprintf(c.Stderr, "%s: %s: %s: error preparing query: database connection required\n", query.Filename, query.Name, name)
-					errored = true
+				if rule.NeedsPrepare {
+					if prep == nil {
+						fmt.Fprintf(c.Stderr, "%s: %s: %s: error preparing query: database connection required\n", query.Filename, query.Name, name)
+						errored = true
+						continue
+					}
+					prepName := fmt.Sprintf("sqlc_vet_%d_%d", time.Now().Unix(), i)
+					if err := prep.Prepare(ctx, prepName, query.Text); err != nil {
+						fmt.Fprintf(c.Stderr, "%s: %s: %s: error preparing query: %s\n", query.Filename, query.Name, name, err)
+						errored = true
+						continue
+					}
+				}
+
+				// short-circuit for "sqlc/db-prepare" rule which doesn't have a CEL program
+				if rule.Program == nil {
 					continue
 				}
-				prepName := fmt.Sprintf("sqlc_vet_%d_%d", time.Now().Unix(), i)
-				if err := prep.Prepare(ctx, prepName, query.Text); err != nil {
-					fmt.Fprintf(c.Stderr, "%s: %s: %s: error preparing query: %s\n", query.Filename, query.Name, name, err)
-					errored = true
-					continue
-				}
-			}
 
-			// short-circuit for "sqlc/db-prepare" rule which doesn't have a CEL program
-			if rule.Program == nil {
-				continue
-			}
+				// Get explain output for this query if we need it
+				_, pgsqlOK := evalMap["postgresql"]
+				_, mysqlOK := evalMap["mysql"]
+				if rule.NeedsExplain && !(pgsqlOK || mysqlOK) {
+					if expl == nil {
+						fmt.Fprintf(c.Stderr, "%s: %s: %s: error explaining query: database connection required\n", query.Filename, query.Name, name)
+						errored = true
+						continue
+					}
+					engineOutput, err := expl.Explain(ctx, query.Text, query.Params...)
+					if err != nil {
+						fmt.Fprintf(c.Stderr, "%s: %s: %s: error explaining query: %s\n", query.Filename, query.Name, name, err)
+						errored = true
+						continue
+					}
 
-			// Get explain output for this query if we need it
-			_, pgsqlOK := evalMap["postgresql"]
-			_, mysqlOK := evalMap["mysql"]
-			if rule.NeedsExplain && !(pgsqlOK || mysqlOK) {
-				if expl == nil {
-					fmt.Fprintf(c.Stderr, "%s: %s: %s: error explaining query: database connection required\n", query.Filename, query.Name, name)
-					errored = true
-					continue
+					evalMap["postgresql"] = engineOutput.PostgreSQL
+					evalMap["mysql"] = engineOutput.MySQL
 				}
-				engineOutput, err := expl.Explain(ctx, query.Text, query.Params...)
+
+				if debug.Debug.DumpVetEnv {
+					fmt.Printf("vars for rule '%s' evaluating against query '%s':\n", name, query.Name)
+					debug.DumpAsJSON(evalMap)
+				}
+
+				out, _, err := (*rule.Program).Eval(evalMap)
 				if err != nil {
-					fmt.Fprintf(c.Stderr, "%s: %s: %s: error explaining query: %s\n", query.Filename, query.Name, name, err)
+					return err
+				}
+				tripped, ok := out.Value().(bool)
+				if !ok {
+					return fmt.Errorf("expression returned non-bool value: %v", out.Value())
+				}
+				if tripped {
+					// TODO: Get line numbers in the output
+					if rule.Message == "" {
+						fmt.Fprintf(c.Stderr, "%s: %s: %s\n", query.Filename, query.Name, name)
+					} else {
+						fmt.Fprintf(c.Stderr, "%s: %s: %s: %s\n", query.Filename, query.Name, name, rule.Message)
+					}
 					errored = true
-					continue
 				}
-
-				evalMap["postgresql"] = engineOutput.PostgreSQL
-				evalMap["mysql"] = engineOutput.MySQL
-			}
-
-			if debug.Debug.DumpVetEnv {
-				fmt.Printf("vars for rule '%s' evaluating against query '%s':\n", name, query.Name)
-				debug.DumpAsJSON(evalMap)
-			}
-
-			out, _, err := (*rule.Program).Eval(evalMap)
-			if err != nil {
-				return err
-			}
-			tripped, ok := out.Value().(bool)
-			if !ok {
-				return fmt.Errorf("expression returned non-bool value: %v", out.Value())
-			}
-			if tripped {
-				// TODO: Get line numbers in the output
-				if rule.Message == "" {
-					fmt.Fprintf(c.Stderr, "%s: %s: %s\n", query.Filename, query.Name, name)
-				} else {
-					fmt.Fprintf(c.Stderr, "%s: %s: %s: %s\n", query.Filename, query.Name, name, rule.Message)
-				}
-				errored = true
 			}
 		}
 	}
+
 	if errored {
 		return ErrFailedChecks
 	}
