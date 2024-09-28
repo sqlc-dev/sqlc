@@ -18,6 +18,10 @@ type Metadata struct {
 	Params   map[string]string
 	Flags    map[string]bool
 
+	// RuleSkiplist contains the names of rules to disable vetting for.
+	// If the map is empty, but the disable vet flag is specified, then all rules are ignored.
+	RuleSkiplist map[string]struct{}
+
 	Filename string
 }
 
@@ -113,9 +117,10 @@ func ParseQueryNameAndType(t string, commentStyle CommentSyntax) (string, string
 	return "", "", nil
 }
 
-func ParseParamsAndFlags(comments []string) (map[string]string, map[string]bool, error) {
+func ParseParamsAndFlags(comments []string) (map[string]string, map[string]bool, map[string]struct{}, error) {
 	params := make(map[string]string)
 	flags := make(map[string]bool)
+	ruleSkiplist := make(map[string]struct{})
 
 	for _, line := range comments {
 		s := bufio.NewScanner(strings.NewReader(line))
@@ -138,14 +143,27 @@ func ParseParamsAndFlags(comments []string) (map[string]string, map[string]bool,
 				rest = append(rest, paramToken)
 			}
 			params[name] = strings.Join(rest, " ")
+
+		case "@sqlc-vet-disable":
+			flags[token] = true
+
+			// Vet rules can all be disabled in the same line or split across lines .i.e.
+			// /* @sqlc-vet-disable sqlc/db-prepare delete-without-where */
+			// is equivalent to:
+			// /* @sqlc-vet-disable sqlc/db-prepare */
+			// /* @sqlc-vet-disable delete-without-where */
+			for s.Scan() {
+				ruleSkiplist[s.Text()] = struct{}{}
+			}
+
 		default:
 			flags[token] = true
 		}
 
 		if s.Err() != nil {
-			return params, flags, s.Err()
+			return params, flags, ruleSkiplist, s.Err()
 		}
 	}
 
-	return params, flags, nil
+	return params, flags, ruleSkiplist, nil
 }
