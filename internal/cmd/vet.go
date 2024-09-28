@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/sqlc-dev/sqlc/internal/constants"
 	"io"
 	"log"
 	"os"
@@ -37,9 +38,6 @@ import (
 var ErrFailedChecks = errors.New("failed checks")
 
 var pjson = protojson.UnmarshalOptions{AllowPartial: true, DiscardUnknown: true}
-
-const RuleDbPrepare = "sqlc/db-prepare"
-const QueryFlagSqlcVetDisable = "@sqlc-vet-disable"
 
 func NewCmdVet() *cobra.Command {
 	return &cobra.Command{
@@ -110,7 +108,7 @@ func Vet(ctx context.Context, dir, filename string, opts *Options) error {
 	}
 
 	rules := map[string]rule{
-		RuleDbPrepare: {NeedsPrepare: true},
+		constants.QueryRuleDbPrepare: {NeedsPrepare: true},
 	}
 
 	for _, c := range conf.Rules {
@@ -540,7 +538,7 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 	cfg := vetConfig(req)
 	for i, query := range req.Queries {
 		md := result.Queries[i].Metadata
-		if md.Flags[QueryFlagSqlcVetDisable] {
+		if md.Flags[constants.QueryFlagSqlcVetDisable] {
 			// If the vet disable flag is specified without any rules listed, all rules are ignored.
 			if len(md.RuleSkiplist) == 0 {
 				if debug.Active {
