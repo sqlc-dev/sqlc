@@ -79,7 +79,7 @@ func TestParseQueryParams(t *testing.T) {
 			" @param @invalid UUID ",
 		},
 	} {
-		params, _, _, err := ParseParamsAndFlags(comments)
+		params, _, _, err := ParseCommentFlags(comments)
 		if err != nil {
 			t.Errorf("expected comments to parse, got err: %s", err)
 		}
@@ -125,7 +125,7 @@ func TestParseQueryFlags(t *testing.T) {
 			" @param @flag-bar UUID",
 		},
 	} {
-		_, flags, _, err := ParseParamsAndFlags(comments)
+		_, flags, _, err := ParseCommentFlags(comments)
 		if err != nil {
 			t.Errorf("expected comments to parse, got err: %s", err)
 		}
@@ -158,7 +158,7 @@ func TestParseQueryRuleBlocklist(t *testing.T) {
 			" @sqlc-vet-disable delete-without-where ",
 		},
 	} {
-		_, flags, ruleBlocklist, err := ParseParamsAndFlags(comments)
+		_, flags, ruleBlocklist, err := ParseCommentFlags(comments)
 		if err != nil {
 			t.Errorf("expected comments to parse, got err: %s", err)
 		}

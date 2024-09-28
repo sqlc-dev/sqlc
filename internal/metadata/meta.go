@@ -118,7 +118,9 @@ func ParseQueryNameAndType(t string, commentStyle CommentSyntax) (string, string
 	return "", "", nil
 }
 
-func ParseParamsAndFlags(comments []string) (map[string]string, map[string]bool, map[string]struct{}, error) {
+// ParseCommentFlags processes the comments provided with queries to determine the metadata params, flags and rules to skip.
+// All flags in query comments are prefixed with `@`, e.g. @param, @@sqlc-vet-disable.
+func ParseCommentFlags(comments []string) (map[string]string, map[string]bool, map[string]struct{}, error) {
 	params := make(map[string]string)
 	flags := make(map[string]bool)
 	ruleSkiplist := make(map[string]struct{})
