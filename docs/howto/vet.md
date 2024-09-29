@@ -276,7 +276,7 @@ SELECT * FROM authors
 WHERE id = ? LIMIT 1;
 ```
 
-To skip all rules for a query, you can provide the `@sqlc-vet-disable` annotation without any options. 
+To skip all rules for a query, you can provide the `@sqlc-vet-disable` annotation without any parameters. 
 
 ```sql
 /* name: GetAuthor :one */
