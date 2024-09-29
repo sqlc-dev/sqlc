@@ -140,7 +140,7 @@ func TestParseQueryFlags(t *testing.T) {
 	}
 }
 
-func TestParseQueryRuleBlocklist(t *testing.T) {
+func TestParseQueryRuleSkiplist(t *testing.T) {
 	for _, comments := range [][]string{
 		{
 			" name: CreateFoo :one",
@@ -158,7 +158,7 @@ func TestParseQueryRuleBlocklist(t *testing.T) {
 			" @sqlc-vet-disable delete-without-where ",
 		},
 	} {
-		_, flags, ruleBlocklist, err := ParseCommentFlags(comments)
+		_, flags, ruleSkiplist, err := ParseCommentFlags(comments)
 		if err != nil {
 			t.Errorf("expected comments to parse, got err: %s", err)
 		}
@@ -167,16 +167,16 @@ func TestParseQueryRuleBlocklist(t *testing.T) {
 			t.Errorf("expected @sqlc-vet-disable flag not found")
 		}
 
-		if _, ok := ruleBlocklist["sqlc/db-prepare"]; !ok {
-			t.Errorf("expected rule not found in blocklist")
+		if _, ok := ruleSkiplist["sqlc/db-prepare"]; !ok {
+			t.Errorf("expected rule not found in skiplist")
 		}
 
-		if _, ok := ruleBlocklist["delete-without-where"]; !ok {
-			t.Errorf("expected rule not found in blocklist")
+		if _, ok := ruleSkiplist["delete-without-where"]; !ok {
+			t.Errorf("expected rule not found in skiplist")
 		}
 
-		if _, ok := ruleBlocklist["update-without-where"]; ok {
-			t.Errorf("unexpected rule found in blocklist")
+		if _, ok := ruleSkiplist["update-without-where"]; ok {
+			t.Errorf("unexpected rule found in skiplist")
 		}
 	}
 }
