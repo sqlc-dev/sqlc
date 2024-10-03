@@ -39,6 +39,12 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getVenueStmt, err = db.PrepareContext(ctx, getVenue); err != nil {
 		return nil, fmt.Errorf("error preparing query GetVenue: %w", err)
 	}
+	if q.iterCitiesStmt, err = db.PrepareContext(ctx, iterCities); err != nil {
+		return nil, fmt.Errorf("error preparing query IterCities: %w", err)
+	}
+	if q.iterVenuesStmt, err = db.PrepareContext(ctx, iterVenues); err != nil {
+		return nil, fmt.Errorf("error preparing query IterVenues: %w", err)
+	}
 	if q.listCitiesStmt, err = db.PrepareContext(ctx, listCities); err != nil {
 		return nil, fmt.Errorf("error preparing query ListCities: %w", err)
 	}
@@ -82,6 +88,16 @@ func (q *Queries) Close() error {
 	if q.getVenueStmt != nil {
 		if cerr := q.getVenueStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getVenueStmt: %w", cerr)
+		}
+	}
+	if q.iterCitiesStmt != nil {
+		if cerr := q.iterCitiesStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing iterCitiesStmt: %w", cerr)
+		}
+	}
+	if q.iterVenuesStmt != nil {
+		if cerr := q.iterVenuesStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing iterVenuesStmt: %w", cerr)
 		}
 	}
 	if q.listCitiesStmt != nil {
@@ -153,6 +169,8 @@ type Queries struct {
 	deleteVenueStmt      *sql.Stmt
 	getCityStmt          *sql.Stmt
 	getVenueStmt         *sql.Stmt
+	iterCitiesStmt       *sql.Stmt
+	iterVenuesStmt       *sql.Stmt
 	listCitiesStmt       *sql.Stmt
 	listVenuesStmt       *sql.Stmt
 	updateCityNameStmt   *sql.Stmt
@@ -169,6 +187,8 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		deleteVenueStmt:      q.deleteVenueStmt,
 		getCityStmt:          q.getCityStmt,
 		getVenueStmt:         q.getVenueStmt,
+		iterCitiesStmt:       q.iterCitiesStmt,
+		iterVenuesStmt:       q.iterVenuesStmt,
 		listCitiesStmt:       q.listCitiesStmt,
 		listVenuesStmt:       q.listVenuesStmt,
 		updateCityNameStmt:   q.updateCityNameStmt,

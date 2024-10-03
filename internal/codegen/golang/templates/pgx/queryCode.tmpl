@@ -74,6 +74,61 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.
 }
 {{end}}
 
+{{if eq .Cmd ":iter"}}
+{{range .Comments}}//{{.}}
+{{end -}}
+{{- if $.EmitMethodsWithDBArgument -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) {{.MethodName}}Rows {
+	rows, err := db.Query(ctx, {{.ConstantName}}, {{.Arg.Params}})
+{{- else -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) {{.MethodName}}Rows {
+	rows, err := q.db.Query(ctx, {{.ConstantName}}, {{.Arg.Params}})
+{{- end}}
+	if err != nil {
+		return {{.MethodName}}Rows{err: err}
+	}
+	return {{.MethodName}}Rows{rows: rows}
+}
+
+type {{.MethodName}}Rows struct{
+	rows pgx.Rows
+	err  error
+}
+
+func (r *{{.MethodName}}Rows) Iterate() iter.Seq[{{.Ret.DefineType}}] {
+	if r.rows == nil {
+		return func(yield func({{.Ret.DefineType}}) bool) {}
+	}
+
+	return func(yield func({{.Ret.DefineType}}) bool) {
+		for r.rows.Next() {
+			var {{.Ret.Name}} {{.Ret.Type}}
+			err := r.rows.Scan({{.Ret.Scan}})
+			if err != nil {
+				r.err = err
+				return
+			}
+
+			if !yield({{.Ret.ReturnName}}) {
+				r.rows.Close()
+				return
+			}
+		}
+	}
+}
+
+func (r *{{.MethodName}}Rows) Close() {
+	r.rows.Close()
+}
+
+func (r *{{.MethodName}}Rows) Err() error {
+	if r.err != nil {
+		return r.err
+	}
+	return r.rows.Err()
+}
+{{end}}
+
 {{if eq .Cmd ":exec"}}
 {{range .Comments}}//{{.}}
 {{end -}}

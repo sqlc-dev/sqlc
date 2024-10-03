@@ -8,6 +8,7 @@ package authors
 import (
 	"context"
 	"database/sql"
+	"iter"
 )
 
 const createAuthor = `-- name: CreateAuthor :execresult
@@ -47,6 +48,59 @@ func (q *Queries) GetAuthor(ctx context.Context, id int64) (Author, error) {
 	var i Author
 	err := row.Scan(&i.ID, &i.Name, &i.Bio)
 	return i, err
+}
+
+const iterAuthors = `-- name: IterAuthors :iter
+SELECT id, name, bio FROM authors
+ORDER BY name
+`
+
+func (q *Queries) IterAuthors(ctx context.Context) IterAuthorsRows {
+	rows, err := q.db.QueryContext(ctx, iterAuthors)
+	if err != nil {
+		return IterAuthorsRows{err: err}
+	}
+	return IterAuthorsRows{rows: rows}
+}
+
+type IterAuthorsRows struct {
+	rows *sql.Rows
+	err  error
+}
+
+func (r *IterAuthorsRows) Iterate() iter.Seq[Author] {
+	if r.rows == nil {
+		return func(yield func(Author) bool) {}
+	}
+
+	return func(yield func(Author) bool) {
+		for r.rows.Next() {
+			var i Author
+			err := r.rows.Scan(&i.ID, &i.Name, &i.Bio)
+			if err != nil {
+				r.err = err
+				return
+			}
+
+			if !yield(i) {
+				if err = r.rows.Close(); err != nil {
+					r.err = err
+				}
+				return
+			}
+		}
+	}
+}
+
+func (r *IterAuthorsRows) Close() error {
+	return r.rows.Close()
+}
+
+func (r *IterAuthorsRows) Err() error {
+	if r.err != nil {
+		return r.err
+	}
+	return r.rows.Err()
 }
 
 const listAuthors = `-- name: ListAuthors :many

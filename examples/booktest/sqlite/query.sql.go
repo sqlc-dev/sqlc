@@ -8,6 +8,7 @@ package booktest
 import (
 	"context"
 	"database/sql"
+	"iter"
 	"strings"
 	"time"
 )
@@ -236,6 +237,73 @@ func (q *Queries) GetBook(ctx context.Context, bookID int64) (Book, error) {
 		&i.Tag,
 	)
 	return i, err
+}
+
+const iterBooksByTitleYear = `-- name: IterBooksByTitleYear :iter
+SELECT book_id, author_id, isbn, book_type, title, yr, available, tag FROM books
+WHERE title = ? AND yr = ?
+`
+
+type IterBooksByTitleYearParams struct {
+	Title string
+	Yr    int64
+}
+
+func (q *Queries) IterBooksByTitleYear(ctx context.Context, arg IterBooksByTitleYearParams) IterBooksByTitleYearRows {
+	rows, err := q.db.QueryContext(ctx, iterBooksByTitleYear, arg.Title, arg.Yr)
+	if err != nil {
+		return IterBooksByTitleYearRows{err: err}
+	}
+	return IterBooksByTitleYearRows{rows: rows}
+}
+
+type IterBooksByTitleYearRows struct {
+	rows *sql.Rows
+	err  error
+}
+
+func (r *IterBooksByTitleYearRows) Iterate() iter.Seq[Book] {
+	if r.rows == nil {
+		return func(yield func(Book) bool) {}
+	}
+
+	return func(yield func(Book) bool) {
+		for r.rows.Next() {
+			var i Book
+			err := r.rows.Scan(
+				&i.BookID,
+				&i.AuthorID,
+				&i.Isbn,
+				&i.BookType,
+				&i.Title,
+				&i.Yr,
+				&i.Available,
+				&i.Tag,
+			)
+			if err != nil {
+				r.err = err
+				return
+			}
+
+			if !yield(i) {
+				if err = r.rows.Close(); err != nil {
+					r.err = err
+				}
+				return
+			}
+		}
+	}
+}
+
+func (r *IterBooksByTitleYearRows) Close() error {
+	return r.rows.Close()
+}
+
+func (r *IterBooksByTitleYearRows) Err() error {
+	if r.err != nil {
+		return r.err
+	}
+	return r.rows.Err()
 }
 
 const updateBook = `-- name: UpdateBook :exec

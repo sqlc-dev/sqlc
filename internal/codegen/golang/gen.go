@@ -73,7 +73,7 @@ func (t *tmplCtx) codegenQueryMethod(q Query) string {
 		}
 		return db + ".QueryRowContext"
 
-	case ":many":
+	case ":many", ":iter":
 		if t.EmitPreparedQueries {
 			return "q.query"
 		}
@@ -91,7 +91,7 @@ func (t *tmplCtx) codegenQueryRetval(q Query) (string, error) {
 	switch q.Cmd {
 	case ":one":
 		return "row :=", nil
-	case ":many":
+	case ":many", ":iter":
 		return "rows, err :=", nil
 	case ":exec":
 		return "_, err :=", nil

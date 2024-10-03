@@ -7,6 +7,8 @@ package ondeck
 
 import (
 	"context"
+	"database/sql"
+	"iter"
 )
 
 const createCity = `-- name: CreateCity :exec
@@ -40,6 +42,60 @@ func (q *Queries) GetCity(ctx context.Context, slug string) (City, error) {
 	var i City
 	err := row.Scan(&i.Slug, &i.Name)
 	return i, err
+}
+
+const iterCities = `-- name: IterCities :iter
+SELECT slug, name
+FROM city
+ORDER BY name
+`
+
+func (q *Queries) IterCities(ctx context.Context) IterCitiesRows {
+	rows, err := q.query(ctx, q.iterCitiesStmt, iterCities)
+	if err != nil {
+		return IterCitiesRows{err: err}
+	}
+	return IterCitiesRows{rows: rows}
+}
+
+type IterCitiesRows struct {
+	rows *sql.Rows
+	err  error
+}
+
+func (r *IterCitiesRows) Iterate() iter.Seq[City] {
+	if r.rows == nil {
+		return func(yield func(City) bool) {}
+	}
+
+	return func(yield func(City) bool) {
+		for r.rows.Next() {
+			var i City
+			err := r.rows.Scan(&i.Slug, &i.Name)
+			if err != nil {
+				r.err = err
+				return
+			}
+
+			if !yield(i) {
+				if err = r.rows.Close(); err != nil {
+					r.err = err
+				}
+				return
+			}
+		}
+	}
+}
+
+func (r *IterCitiesRows) Close() error {
+	return r.rows.Close()
+}
+
+func (r *IterCitiesRows) Err() error {
+	if r.err != nil {
+		return r.err
+	}
+	return r.rows.Err()
 }
 
 const listCities = `-- name: ListCities :many

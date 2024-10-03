@@ -335,6 +335,7 @@ var cmdReturnsData = map[string]struct{}{
 	metadata.CmdBatchMany: {},
 	metadata.CmdBatchOne:  {},
 	metadata.CmdMany:      {},
+	metadata.CmdIter:      {},
 	metadata.CmdOne:       {},
 }
 

@@ -299,6 +299,7 @@ func sortedImports(std map[string]struct{}, pkg map[ImportSpec]struct{}) fileImp
 func (i *importer) queryImports(filename string) fileImports {
 	var gq []Query
 	anyNonCopyFrom := false
+	containIter := false
 	for _, query := range i.Queries {
 		if usesBatch([]Query{query}) {
 			continue
@@ -307,6 +308,9 @@ func (i *importer) queryImports(filename string) fileImports {
 			gq = append(gq, query)
 			if query.Cmd != metadata.CmdCopyFrom {
 				anyNonCopyFrom = true
+			}
+			if query.Cmd == metadata.CmdIter {
+				containIter = true
 			}
 		}
 	}
@@ -400,6 +404,15 @@ func (i *importer) queryImports(filename string) fileImports {
 	}
 	if sliceScan() && !sqlpkg.IsPGX() {
 		pkg[ImportSpec{Path: "github.com/lib/pq"}] = struct{}{}
+	}
+
+	if containIter {
+		std["iter"] = struct{}{}
+		if sqlpkg.IsPGX() {
+			pkg[ImportSpec{Path: "github.com/jackc/pgx/v5"}] = struct{}{}
+		} else {
+			std["database/sql"] = struct{}{}
+		}
 	}
 
 	return sortedImports(std, pkg)

@@ -7,6 +7,8 @@ package ondeck
 
 import (
 	"context"
+	"database/sql"
+	"iter"
 
 	"github.com/lib/pq"
 )
@@ -95,6 +97,72 @@ func (q *Queries) GetVenue(ctx context.Context, arg GetVenueParams) (Venue, erro
 		&i.CreatedAt,
 	)
 	return i, err
+}
+
+const iterVenues = `-- name: IterVenues :iter
+SELECT id, status, statuses, slug, name, city, spotify_playlist, songkick_id, tags, created_at
+FROM venue
+WHERE city = $1
+ORDER BY name
+`
+
+func (q *Queries) IterVenues(ctx context.Context, city string) IterVenuesRows {
+	rows, err := q.query(ctx, q.iterVenuesStmt, iterVenues, city)
+	if err != nil {
+		return IterVenuesRows{err: err}
+	}
+	return IterVenuesRows{rows: rows}
+}
+
+type IterVenuesRows struct {
+	rows *sql.Rows
+	err  error
+}
+
+func (r *IterVenuesRows) Iterate() iter.Seq[Venue] {
+	if r.rows == nil {
+		return func(yield func(Venue) bool) {}
+	}
+
+	return func(yield func(Venue) bool) {
+		for r.rows.Next() {
+			var i Venue
+			err := r.rows.Scan(
+				&i.ID,
+				&i.Status,
+				pq.Array(&i.Statuses),
+				&i.Slug,
+				&i.Name,
+				&i.City,
+				&i.SpotifyPlaylist,
+				&i.SongkickID,
+				pq.Array(&i.Tags),
+				&i.CreatedAt,
+			)
+			if err != nil {
+				r.err = err
+				return
+			}
+
+			if !yield(i) {
+				if err = r.rows.Close(); err != nil {
+					r.err = err
+				}
+				return
+			}
+		}
+	}
+}
+
+func (r *IterVenuesRows) Close() error {
+	return r.rows.Close()
+}
+
+func (r *IterVenuesRows) Err() error {
+	if r.err != nil {
+		return r.err
+	}
+	return r.rows.Err()
 }
 
 const listVenues = `-- name: ListVenues :many

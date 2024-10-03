@@ -63,6 +63,58 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 }
 {{end}}
 
+{{if eq .Cmd ":iter"}}
+{{range .Comments}}//{{.}}
+{{end -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) {{.MethodName}}Rows {
+    {{- template "queryCodeStdExec" . }}
+	if err != nil {
+		return {{.MethodName}}Rows{err: err}
+	}
+	return {{.MethodName}}Rows{rows: rows}
+}
+
+type {{.MethodName}}Rows struct{
+	rows *sql.Rows
+	err  error
+}
+
+func (r *{{.MethodName}}Rows) Iterate() iter.Seq[{{.Ret.DefineType}}] {
+	if r.rows == nil {
+		return func(yield func({{.Ret.DefineType}}) bool) {}
+	}
+
+	return func(yield func({{.Ret.DefineType}}) bool) {
+		for r.rows.Next() {
+			var {{.Ret.Name}} {{.Ret.Type}}
+			err := r.rows.Scan({{.Ret.Scan}})
+			if err != nil {
+				r.err = err
+				return
+			}
+
+			if !yield({{.Ret.ReturnName}}) {
+				if err = r.rows.Close(); err != nil {
+					r.err = err
+				}
+				return
+			}
+		}
+	}
+}
+
+func (r *{{.MethodName}}Rows) Close() error {
+	return r.rows.Close()
+}
+
+func (r *{{.MethodName}}Rows) Err() error {
+	if r.err != nil {
+		return r.err
+	}
+	return r.rows.Err()
+}
+{{end}}
+
 {{if eq .Cmd ":exec"}}
 {{range .Comments}}//{{.}}
 {{end -}}

@@ -27,6 +27,7 @@ const (
 	CmdExecRows   = ":execrows"
 	CmdExecLastId = ":execlastid"
 	CmdMany       = ":many"
+	CmdIter       = ":iter"
 	CmdOne        = ":one"
 	CmdCopyFrom   = ":copyfrom"
 	CmdBatchExec  = ":batchexec"
@@ -101,7 +102,7 @@ func ParseQueryNameAndType(t string, commentStyle CommentSyntax) (string, string
 		queryName := part[2]
 		queryType := strings.TrimSpace(part[3])
 		switch queryType {
-		case CmdOne, CmdMany, CmdExec, CmdExecResult, CmdExecRows, CmdExecLastId, CmdCopyFrom, CmdBatchExec, CmdBatchMany, CmdBatchOne:
+		case CmdOne, CmdMany, CmdIter, CmdExec, CmdExecResult, CmdExecRows, CmdExecLastId, CmdCopyFrom, CmdBatchExec, CmdBatchMany, CmdBatchOne:
 		default:
 			return "", "", fmt.Errorf("invalid query type: %s", queryType)
 		}
