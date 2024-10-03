@@ -16,7 +16,7 @@ sudo snap install sqlc
 
 ## go install
 
-Installing recent versions of sqlc requires Go 1.21+.
+Installing recent versions of sqlc requires Go 1.23+.
 
 ```
 go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
