@@ -6,6 +6,10 @@ WHERE id = ? LIMIT 1;
 SELECT * FROM authors
 ORDER BY name;
 
+/* name: IterAuthors :iter */
+SELECT * FROM authors
+ORDER BY name;
+
 /* name: CreateAuthor :execresult */
 INSERT INTO authors (
   name, bio

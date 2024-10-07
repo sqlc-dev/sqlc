@@ -4,6 +4,12 @@ FROM venue
 WHERE city = ?
 ORDER BY name;
 
+/* name: IterVenues :iter */
+SELECT *
+FROM venue
+WHERE city = ?
+ORDER BY name;
+
 /* name: DeleteVenue :exec */
 DELETE FROM venue
 WHERE slug = ? AND slug = ?;

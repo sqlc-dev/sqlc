@@ -14,6 +14,10 @@ WHERE book_id = ?;
 SELECT * FROM books
 WHERE title = ? AND yr = ?;
 
+/* name: IterBooksByTitleYear :iter */
+SELECT * FROM books
+WHERE title = ? AND yr = ?;
+
 /* name: BooksByTags :many */
 SELECT
   book_id,

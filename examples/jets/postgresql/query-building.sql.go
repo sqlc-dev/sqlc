@@ -7,6 +7,9 @@ package jets
 
 import (
 	"context"
+	"iter"
+
+	"github.com/jackc/pgx/v5"
 )
 
 const countPilots = `-- name: CountPilots :one
@@ -27,6 +30,56 @@ DELETE FROM pilots WHERE id = $1
 func (q *Queries) DeletePilot(ctx context.Context, id int32) error {
 	_, err := q.db.Exec(ctx, deletePilot, id)
 	return err
+}
+
+const iterPilots = `-- name: IterPilots :iter
+SELECT id, name FROM pilots
+`
+
+func (q *Queries) IterPilots(ctx context.Context) IterPilotsRows {
+	rows, err := q.db.Query(ctx, iterPilots)
+	if err != nil {
+		return IterPilotsRows{err: err}
+	}
+	return IterPilotsRows{rows: rows}
+}
+
+type IterPilotsRows struct {
+	rows pgx.Rows
+	err  error
+}
+
+func (r *IterPilotsRows) Iterate() iter.Seq[Pilot] {
+	if r.rows == nil {
+		return func(yield func(Pilot) bool) {}
+	}
+
+	return func(yield func(Pilot) bool) {
+		for r.rows.Next() {
+			var i Pilot
+			err := r.rows.Scan(&i.ID, &i.Name)
+			if err != nil {
+				r.err = err
+				return
+			}
+
+			if !yield(i) {
+				r.rows.Close()
+				return
+			}
+		}
+	}
+}
+
+func (r *IterPilotsRows) Close() {
+	r.rows.Close()
+}
+
+func (r *IterPilotsRows) Err() error {
+	if r.err != nil {
+		return r.err
+	}
+	return r.rows.Err()
 }
 
 const listPilots = `-- name: ListPilots :many

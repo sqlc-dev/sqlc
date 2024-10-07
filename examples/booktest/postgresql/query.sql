@@ -14,6 +14,10 @@ WHERE book_id = $1;
 SELECT * FROM books
 WHERE title = $1 AND year = $2;
 
+-- name: IterBooksByTitleYear :iter
+SELECT * FROM books
+WHERE title = $1 AND year = $2;
+
 -- name: BooksByTags :many
 SELECT 
   book_id,

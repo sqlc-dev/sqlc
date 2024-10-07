@@ -3,6 +3,11 @@ SELECT *
 FROM city
 ORDER BY name;
 
+/* name: IterCities :iter */
+SELECT *
+FROM city
+ORDER BY name;
+
 /* name: GetCity :one */
 SELECT *
 FROM city

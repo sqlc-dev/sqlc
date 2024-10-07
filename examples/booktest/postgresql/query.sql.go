@@ -7,7 +7,9 @@ package booktest
 
 import (
 	"context"
+	"iter"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -204,6 +206,71 @@ func (q *Queries) GetBook(ctx context.Context, bookID int32) (Book, error) {
 		&i.Tags,
 	)
 	return i, err
+}
+
+const iterBooksByTitleYear = `-- name: IterBooksByTitleYear :iter
+SELECT book_id, author_id, isbn, book_type, title, year, available, tags FROM books
+WHERE title = $1 AND year = $2
+`
+
+type IterBooksByTitleYearParams struct {
+	Title string
+	Year  int32
+}
+
+func (q *Queries) IterBooksByTitleYear(ctx context.Context, arg IterBooksByTitleYearParams) IterBooksByTitleYearRows {
+	rows, err := q.db.Query(ctx, iterBooksByTitleYear, arg.Title, arg.Year)
+	if err != nil {
+		return IterBooksByTitleYearRows{err: err}
+	}
+	return IterBooksByTitleYearRows{rows: rows}
+}
+
+type IterBooksByTitleYearRows struct {
+	rows pgx.Rows
+	err  error
+}
+
+func (r *IterBooksByTitleYearRows) Iterate() iter.Seq[Book] {
+	if r.rows == nil {
+		return func(yield func(Book) bool) {}
+	}
+
+	return func(yield func(Book) bool) {
+		for r.rows.Next() {
+			var i Book
+			err := r.rows.Scan(
+				&i.BookID,
+				&i.AuthorID,
+				&i.Isbn,
+				&i.BookType,
+				&i.Title,
+				&i.Year,
+				&i.Available,
+				&i.Tags,
+			)
+			if err != nil {
+				r.err = err
+				return
+			}
+
+			if !yield(i) {
+				r.rows.Close()
+				return
+			}
+		}
+	}
+}
+
+func (r *IterBooksByTitleYearRows) Close() {
+	r.rows.Close()
+}
+
+func (r *IterBooksByTitleYearRows) Err() error {
+	if r.err != nil {
+		return r.err
+	}
+	return r.rows.Err()
 }
 
 const sayHello = `-- name: SayHello :one

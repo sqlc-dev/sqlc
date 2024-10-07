@@ -97,12 +97,40 @@ func runOnDeckQueries(t *testing.T, q *Queries) {
 	}
 
 	{
+		var actualCities []City
+		rows := q.IterCities(ctx)
+		for actualCity := range rows.Iterate() {
+			actualCities = append(actualCities, actualCity)
+		}
+		if err = rows.Err(); err != nil {
+			t.Error(err)
+		}
+		if diff := cmp.Diff(actualCities, []City{city}); diff != "" {
+			t.Errorf("iter city mismatch:\n%s", diff)
+		}
+	}
+
+	{
 		actual, err := q.ListVenues(ctx, city.Slug)
 		if err != nil {
 			t.Error(err)
 		}
 		if diff := cmp.Diff(actual, []Venue{venue}); diff != "" {
 			t.Errorf("list venue mismatch:\n%s", diff)
+		}
+	}
+
+	{
+		var actualVenues []Venue
+		rows := q.IterVenues(ctx, city.Slug)
+		for actualVenue := range rows.Iterate() {
+			actualVenues = append(actualVenues, actualVenue)
+		}
+		if err = rows.Err(); err != nil {
+			t.Error(err)
+		}
+		if diff := cmp.Diff(actualVenues, []Venue{venue}); diff != "" {
+			t.Errorf("iter venue mismatch:\n%s", diff)
 		}
 	}
 
