@@ -8,8 +8,6 @@ package querytest
 import (
 	"context"
 	"database/sql"
-
-	"github.com/lib/pq"
 )
 
 const duplicate = `-- name: Duplicate :one
@@ -36,7 +34,7 @@ func (q *Queries) Duplicate(ctx context.Context) (DuplicateRow, error) {
 }
 
 const join = `-- name: Join :one
-SELECT users.id, users.name, users.age, posts.id, posts.user_id, posts.likes FROM posts
+SELECT users.id, users.name, users.age, posts.id, posts.user_id FROM posts
 INNER JOIN users ON posts.user_id = users.id
 `
 
@@ -54,7 +52,6 @@ func (q *Queries) Join(ctx context.Context) (JoinRow, error) {
 		&i.User.Age,
 		&i.Post.ID,
 		&i.Post.UserID,
-		pq.Array(&i.Post.Likes),
 	)
 	return i, err
 }
@@ -62,16 +59,16 @@ func (q *Queries) Join(ctx context.Context) (JoinRow, error) {
 const listUserLink = `-- name: ListUserLink :many
 SELECT
     owner.id, owner.name, owner.age,
-    consumer.id, consumer.name, consumer.age
+    consumers.id, consumers.name, consumers.age
 FROM
     user_links
     INNER JOIN users AS owner ON owner.id = user_links.owner_id
-    INNER JOIN users AS consumer ON consumer.id = user_links.consumer_id
+    INNER JOIN users AS consumers ON consumers.id = user_links.consumer_id
 `
 
 type ListUserLinkRow struct {
-	User   User
-	User_2 User
+	Owner     User
+	Consumers User
 }
 
 func (q *Queries) ListUserLink(ctx context.Context) ([]ListUserLinkRow, error) {
@@ -84,12 +81,12 @@ func (q *Queries) ListUserLink(ctx context.Context) ([]ListUserLinkRow, error) {
 	for rows.Next() {
 		var i ListUserLinkRow
 		if err := rows.Scan(
-			&i.User.ID,
-			&i.User.Name,
-			&i.User.Age,
-			&i.User_2.ID,
-			&i.User_2.Name,
-			&i.User_2.Age,
+			&i.Owner.ID,
+			&i.Owner.Name,
+			&i.Owner.Age,
+			&i.Consumers.ID,
+			&i.Consumers.Name,
+			&i.Consumers.Age,
 		); err != nil {
 			return nil, err
 		}
@@ -124,13 +121,13 @@ SELECT u.id, u.name, u.age FROM users u
 `
 
 type WithAliasRow struct {
-	User User
+	U User
 }
 
 func (q *Queries) WithAlias(ctx context.Context) (WithAliasRow, error) {
 	row := q.db.QueryRowContext(ctx, withAlias)
 	var i WithAliasRow
-	err := row.Scan(&i.User.ID, &i.User.Name, &i.User.Age)
+	err := row.Scan(&i.U.ID, &i.U.Name, &i.U.Age)
 	return i, err
 }
 
@@ -165,8 +162,8 @@ INNER JOIN baz.users bu ON users.id = bu.id
 `
 
 type WithCrossSchemaRow struct {
-	User    User
-	BazUser BazUser
+	User User
+	Bu   BazUser
 }
 
 func (q *Queries) WithCrossSchema(ctx context.Context) ([]WithCrossSchemaRow, error) {
@@ -182,8 +179,8 @@ func (q *Queries) WithCrossSchema(ctx context.Context) ([]WithCrossSchemaRow, er
 			&i.User.ID,
 			&i.User.Name,
 			&i.User.Age,
-			&i.BazUser.ID,
-			&i.BazUser.Name,
+			&i.Bu.ID,
+			&i.Bu.Name,
 		); err != nil {
 			return nil, err
 		}
@@ -203,13 +200,13 @@ SELECT bu.id, bu.name FROM baz.users bu
 `
 
 type WithSchemaRow struct {
-	BazUser BazUser
+	Bu BazUser
 }
 
 func (q *Queries) WithSchema(ctx context.Context) (WithSchemaRow, error) {
 	row := q.db.QueryRowContext(ctx, withSchema)
 	var i WithSchemaRow
-	err := row.Scan(&i.BazUser.ID, &i.BazUser.Name)
+	err := row.Scan(&i.Bu.ID, &i.Bu.Name)
 	return i, err
 }
 
