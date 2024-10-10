@@ -9,6 +9,34 @@ import (
 )
 
 func addExtraGoStructTags(tags map[string]string, req *plugin.GenerateRequest, options *opts.Options, col *plugin.Column) {
+	columnType := sdk.DataType(col.Type)
+	notNull := col.NotNull || col.IsArray
+
+	// db_type overrides
+	for _, override := range options.Overrides {
+		oride := override.ShimOverride
+		if oride.GoType.StructTags == nil {
+			continue
+		}
+		if oride.DbType == "" || oride.DbType != columnType {
+			// Different type.
+			continue
+		} 
+		if oride.Nullable == notNull {
+			// Different nullability.
+			continue
+		}
+		if oride.Unsigned != col.Unsigned {
+			// Different signedness.
+			continue
+		}
+		// Add the extra tags.
+		for k, v := range oride.GoType.StructTags {
+			tags[k] = v
+		}
+	}
+
+	// column overrides are more specific, therefore have higher precedence
 	for _, override := range options.Overrides {
 		oride := override.ShimOverride
 		if oride.GoType.StructTags == nil {
