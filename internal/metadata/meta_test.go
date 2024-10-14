@@ -87,7 +87,7 @@ func TestParseQueryParams(t *testing.T) {
 			t.Errorf("expected param not found")
 		}
 
-		if pt != "UUID" {
+		if pt.DatabaseType != "UUID" {
 			t.Error("unexpected param metadata:", pt)
 		}
 
