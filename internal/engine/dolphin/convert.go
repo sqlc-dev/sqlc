@@ -2,7 +2,6 @@ package dolphin
 
 import (
 	"log"
-	"strings"
 
 	pcast "github.com/pingcap/tidb/pkg/parser/ast"
 	"github.com/pingcap/tidb/pkg/parser/mysql"
@@ -25,12 +24,8 @@ func todo(n pcast.Node) *ast.TODO {
 	return &ast.TODO{}
 }
 
-func identifier(id string) string {
-	return strings.ToLower(id)
-}
-
 func NewIdentifier(t string) *ast.String {
-	return &ast.String{Str: identifier(t)}
+	return &ast.String{Str: t}
 }
 
 func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
@@ -122,7 +117,7 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 }
 
 func (c *cc) convertAssignment(n *pcast.Assignment) *ast.ResTarget {
-	name := identifier(n.Column.Name.String())
+	name := n.Column.Name.String()
 	return &ast.ResTarget{
 		Name: &name,
 		Val:  c.convert(n.Expr),
@@ -250,7 +245,7 @@ func convertColumnDef(def *pcast.ColumnDef) *ast.ColumnDef {
 		}
 	}
 	columnDef := ast.ColumnDef{
-		Colname:    def.Name.String(),
+		Colname:    def.Name.Name.O,
 		TypeName:   &ast.TypeName{Name: types.TypeToStr(def.Tp.GetType(), def.Tp.GetCharset())},
 		IsNotNull:  isNotNull(def),
 		IsUnsigned: isUnsigned(def),
@@ -285,7 +280,7 @@ func (c *cc) convertColumnNameExpr(n *pcast.ColumnNameExpr) *ast.ColumnRef {
 func (c *cc) convertColumnNames(cols []*pcast.ColumnName) *ast.List {
 	list := &ast.List{Items: []ast.Node{}}
 	for i := range cols {
-		name := identifier(cols[i].Name.String())
+		name := cols[i].Name.String()
 		list.Items = append(list.Items, &ast.ResTarget{
 			Name: &name,
 		})
@@ -350,7 +345,7 @@ func (c *cc) convertFieldList(n *pcast.FieldList) *ast.List {
 
 func (c *cc) convertFuncCallExpr(n *pcast.FuncCallExpr) ast.Node {
 	schema := n.Schema.String()
-	name := strings.ToLower(n.FnName.String())
+	name := n.FnName.String()
 
 	// TODO: Deprecate the usage of Funcname
 	items := []ast.Node{}
@@ -454,7 +449,7 @@ func (c *cc) convertSelectField(n *pcast.SelectField) *ast.ResTarget {
 	}
 	var name *string
 	if n.AsName.O != "" {
-		asname := identifier(n.AsName.O)
+		asname := n.AsName.O
 		name = &asname
 	}
 	return &ast.ResTarget{
@@ -630,7 +625,7 @@ func (c *cc) convertAdminStmt(n *pcast.AdminStmt) ast.Node {
 }
 
 func (c *cc) convertAggregateFuncExpr(n *pcast.AggregateFuncExpr) *ast.FuncCall {
-	name := strings.ToLower(n.F)
+	name := n.F
 	fn := &ast.FuncCall{
 		Func: &ast.FuncName{
 			Name: name,
@@ -1289,8 +1284,8 @@ func (c *cc) convertSplitRegionStmt(n *pcast.SplitRegionStmt) ast.Node {
 }
 
 func (c *cc) convertTableName(n *pcast.TableName) *ast.RangeVar {
-	schema := identifier(n.Schema.String())
-	rel := identifier(n.Name.String())
+	schema := n.Schema.String()
+	rel := n.Name.String()
 	return &ast.RangeVar{
 		Schemaname: &schema,
 		Relname:    &rel,
