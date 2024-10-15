@@ -59,6 +59,8 @@ func IsReserved(s string) bool {
 		return true
 	case "var":
 		return true
+	case "q":
+		return true
 	default:
 		return false
 	}
