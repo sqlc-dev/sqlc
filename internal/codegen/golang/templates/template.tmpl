@@ -11,6 +11,9 @@ package {{.Package}}
 
 {{ if hasImports .SourceName }}
 import (
+	{{ if .EmitSchemaName }}
+	{{end}}
+	
 	{{range imports .SourceName}}
 	{{range .}}{{.}}
 	{{end}}
@@ -44,6 +47,9 @@ package {{.Package}}
 
 {{ if hasImports .SourceName }}
 import (
+	{{ if .EmitSchemaName }}
+	{{end}}
+
 	{{range imports .SourceName}}
 	{{range .}}{{.}}
 	{{end}}
@@ -75,6 +81,9 @@ package {{.Package}}
 
 {{ if hasImports .SourceName }}
 import (
+	{{ if .EmitSchemaName }}
+	{{end}}
+
 	{{range imports .SourceName}}
 	{{range .}}{{.}}
 	{{end}}
@@ -175,10 +184,16 @@ package {{.Package}}
 
 {{ if hasImports .SourceName }}
 import (
+	{{ if .EmitSchemaName }}
+	"strings"
+	"regexp"
+	{{end}}
+	
 	{{range imports .SourceName}}
 	{{range .}}{{.}}
 	{{end}}
 	{{end}}
+
 )
 {{end}}
 
@@ -206,10 +221,17 @@ package {{.Package}}
 
 {{ if hasImports .SourceName }}
 import (
+	{{ if .EmitSchemaName }}
+	"strings"
+	"regexp"
+	{{end}}
+
 	{{range imports .SourceName}}
 	{{range .}}{{.}}
 	{{end}}
 	{{end}}
+
+	"fmt"
 )
 {{end}}
 
@@ -237,6 +259,9 @@ package {{.Package}}
 
 {{ if hasImports .SourceName }}
 import (
+	{{ if .EmitSchemaName }}
+	{{end}}
+
 	{{range imports .SourceName}}
 	{{range .}}{{.}}
 	{{end}}
