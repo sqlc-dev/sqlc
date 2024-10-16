@@ -1,6 +1,8 @@
 package metadata
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestParseQueryNameAndType(t *testing.T) {
 
@@ -77,7 +79,7 @@ func TestParseQueryParams(t *testing.T) {
 			" @param @invalid UUID ",
 		},
 	} {
-		params, _, err := ParseParamsAndFlags(comments)
+		params, _, _, err := ParseCommentFlags(comments)
 		if err != nil {
 			t.Errorf("expected comments to parse, got err: %s", err)
 		}
@@ -123,7 +125,7 @@ func TestParseQueryFlags(t *testing.T) {
 			" @param @flag-bar UUID",
 		},
 	} {
-		_, flags, err := ParseParamsAndFlags(comments)
+		_, flags, _, err := ParseCommentFlags(comments)
 		if err != nil {
 			t.Errorf("expected comments to parse, got err: %s", err)
 		}
@@ -134,6 +136,47 @@ func TestParseQueryFlags(t *testing.T) {
 
 		if flags["@flag-bar"] {
 			t.Errorf("unexpected flag found")
+		}
+	}
+}
+
+func TestParseQueryRuleSkiplist(t *testing.T) {
+	for _, comments := range [][]string{
+		{
+			" name: CreateFoo :one",
+			" @sqlc-vet-disable sqlc/db-prepare delete-without-where ",
+		},
+		{
+			" name: CreateFoo :one ",
+			" @sqlc-vet-disable sqlc/db-prepare ",
+			" @sqlc-vet-disable delete-without-where ",
+		},
+		{
+			" name: CreateFoo :one",
+			" @sqlc-vet-disable sqlc/db-prepare ",
+			" update-without where",
+			" @sqlc-vet-disable delete-without-where ",
+		},
+	} {
+		_, flags, ruleSkiplist, err := ParseCommentFlags(comments)
+		if err != nil {
+			t.Errorf("expected comments to parse, got err: %s", err)
+		}
+
+		if !flags["@sqlc-vet-disable"] {
+			t.Errorf("expected @sqlc-vet-disable flag not found")
+		}
+
+		if _, ok := ruleSkiplist["sqlc/db-prepare"]; !ok {
+			t.Errorf("expected rule not found in skiplist")
+		}
+
+		if _, ok := ruleSkiplist["delete-without-where"]; !ok {
+			t.Errorf("expected rule not found in skiplist")
+		}
+
+		if _, ok := ruleSkiplist["update-without-where"]; ok {
+			t.Errorf("unexpected rule found in skiplist")
 		}
 	}
 }

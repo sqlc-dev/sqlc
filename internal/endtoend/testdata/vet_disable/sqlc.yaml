@@ -9,7 +9,13 @@ sql:
         out: "db"
     rules:
       - always-fail
+      - no-exec
 rules:
   - name: always-fail
     message: "Fail"
     rule: "true"
+
+  - name: no-exec
+    message: "don't use exec"
+    rule: |
+      query.cmd == "exec"
