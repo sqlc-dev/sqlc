@@ -4,10 +4,6 @@
 
 package querytest
 
-type Bonuse struct {
-	ID string
-}
-
 type Calorie struct {
 	ID string
 }

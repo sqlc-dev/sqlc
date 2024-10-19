@@ -9,33 +9,6 @@ import (
 	"context"
 )
 
-const getBonuses = `-- name: GetBonuses :many
-SELECT id FROM bonuses
-`
-
-func (q *Queries) GetBonuses(ctx context.Context) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, getBonuses)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []string
-	for rows.Next() {
-		var id string
-		if err := rows.Scan(&id); err != nil {
-			return nil, err
-		}
-		items = append(items, id)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getProductMetadata = `-- name: GetProductMetadata :many
 SELECT id FROM product_metadata
 `

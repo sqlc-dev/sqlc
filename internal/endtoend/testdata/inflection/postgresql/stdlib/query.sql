@@ -12,6 +12,3 @@ SELECT * FROM calories;
 
 -- name: GetProductMetadata :many
 SELECT * FROM product_metadata;
-
--- name: GetBonuses :many
-SELECT * FROM bonuses;

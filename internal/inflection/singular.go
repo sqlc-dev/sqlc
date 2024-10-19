@@ -44,10 +44,6 @@ func Singular(s SingularParams) string {
 		return "wave"
 	}
 
-	if strings.ToLower(s.Name) == "bonuses" {
-		return "bonus"
-	}
-
 	if strings.ToLower(s.Name) == "metadata" {
 		return "metadata"
 	}
