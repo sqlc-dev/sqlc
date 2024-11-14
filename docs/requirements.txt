@@ -10,13 +10,13 @@ docutils==0.20.1
 idna==3.10
 imagesize==1.4.1
 myst-parser==4.0.0 
-packaging==24.1
+packaging==24.2
 pyparsing==3.2.0
 pytz==2024.2
 requests==2.32.3
 snowballstemmer==2.2.0
 sphinx-favicon==1.0.1
-sphinx-rtd-theme==3.0.1
+sphinx-rtd-theme==3.0.2
 sphinxcontrib-applehelp==2.0.0
 sphinxcontrib-devhelp==2.0.0
 sphinxcontrib-htmlhelp==2.1.0
