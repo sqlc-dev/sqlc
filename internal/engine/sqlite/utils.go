@@ -12,7 +12,7 @@ type tableNamer interface {
 
 func parseTableName(c tableNamer) *ast.TableName {
 	name := ast.TableName{
-		Name: c.Table_name().GetText(),
+		Name: identifier(c.Table_name().GetText()),
 	}
 	if c.Schema_name() != nil {
 		name.Schema = c.Schema_name().GetText()

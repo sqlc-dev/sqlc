@@ -203,7 +203,7 @@ type Delete_stmt interface {
 func (c *cc) convertDelete_stmtContext(n Delete_stmt) ast.Node {
 	if qualifiedName, ok := n.Qualified_table_name().(*parser.Qualified_table_nameContext); ok {
 
-		tableName := qualifiedName.Table_name().GetText()
+		tableName := identifier(qualifiedName.Table_name().GetText())
 		relation := &ast.RangeVar{
 			Relname: &tableName,
 		}
@@ -854,7 +854,7 @@ func (c *cc) convertReturning_caluseContext(n parser.IReturning_clauseContext) *
 }
 
 func (c *cc) convertInsert_stmtContext(n *parser.Insert_stmtContext) ast.Node {
-	tableName := n.Table_name().GetText()
+	tableName := identifier(n.Table_name().GetText())
 	rel := &ast.RangeVar{
 		Relname: &tableName,
 	}
@@ -936,7 +936,7 @@ func (c *cc) convertTablesOrSubquery(n []parser.ITable_or_subqueryContext) []ast
 		}
 
 		if from.Table_name() != nil {
-			rel := from.Table_name().GetText()
+			rel := identifier(from.Table_name().GetText())
 			rv := &ast.RangeVar{
 				Relname:  &rel,
 				Location: from.GetStart().GetStart(),
