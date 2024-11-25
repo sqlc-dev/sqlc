@@ -9,6 +9,30 @@ import (
 	"context"
 )
 
+const getProductMetadata = `-- name: GetProductMetadata :many
+SELECT id FROM product_metadata
+`
+
+func (q *Queries) GetProductMetadata(ctx context.Context) ([]string, error) {
+	rows, err := q.db.Query(ctx, getProductMetadata)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var id string
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		items = append(items, id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listCalories = `-- name: ListCalories :many
 SELECT id FROM calories
 `
