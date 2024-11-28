@@ -617,7 +617,7 @@ func translate(node *nodes.Node) (ast.Node, error) {
 				MissingOk: n.MissingOk,
 			}, nil
 
-		case nodes.ObjectType_OBJECT_TABLE:
+		case nodes.ObjectType_OBJECT_TABLE, nodes.ObjectType_OBJECT_MATVIEW, nodes.ObjectType_OBJECT_VIEW:
 			rel := parseRelationFromRangeVar(n.Relation)
 			return &ast.RenameTableStmt{
 				Table:     rel.TableName(),
