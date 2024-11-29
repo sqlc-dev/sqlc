@@ -106,6 +106,22 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 		}
 	}
 
+	// Override the inferrerd type and nullability of annotated named params
+	for i, param := range anlys.Parameters {
+		if !param.Column.IsNamedParam {
+			continue
+		}
+		if paramMetadata, ok := md.Params[param.Column.Name]; ok {
+			anlys.Parameters[i].Column.DataType = paramMetadata.DatabaseType
+			switch paramMetadata.Nullability {
+			case metadata.ParamNullabilityForceNotNull:
+				anlys.Parameters[i].Column.NotNull = true
+			case metadata.ParamNullabilityForceNullable:
+				anlys.Parameters[i].Column.NotNull = false
+			}
+		}
+	}
+
 	expanded := anlys.Query
 
 	// If the query string was edited, make sure the syntax is valid

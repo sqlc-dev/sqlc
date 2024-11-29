@@ -15,7 +15,7 @@ type Metadata struct {
 	Name     string
 	Cmd      string
 	Comments []string
-	Params   map[string]string
+	Params   map[string]ParamMetadata
 	Flags    map[string]bool
 
 	Filename string
@@ -32,6 +32,19 @@ const (
 	CmdBatchExec  = ":batchexec"
 	CmdBatchMany  = ":batchmany"
 	CmdBatchOne   = ":batchone"
+)
+
+type ParamMetadata struct {
+	DatabaseType string
+	Nullability  ParamNullability
+}
+
+type ParamNullability int
+
+const (
+	ParamNullabilityUnspecified   ParamNullability = iota // ""
+	ParamNullabilityForceNotNull                          // "!"
+	ParamNullabilityForceNullable                         // "?"
 )
 
 // A query name must be a valid Go identifier
@@ -113,8 +126,8 @@ func ParseQueryNameAndType(t string, commentStyle CommentSyntax) (string, string
 	return "", "", nil
 }
 
-func ParseParamsAndFlags(comments []string) (map[string]string, map[string]bool, error) {
-	params := make(map[string]string)
+func ParseParamsAndFlags(comments []string) (map[string]ParamMetadata, map[string]bool, error) {
+	params := make(map[string]ParamMetadata)
 	flags := make(map[string]bool)
 
 	for _, line := range comments {
@@ -137,7 +150,19 @@ func ParseParamsAndFlags(comments []string) (map[string]string, map[string]bool,
 				paramToken := s.Text()
 				rest = append(rest, paramToken)
 			}
-			params[name] = strings.Join(rest, " ")
+			var nullability ParamNullability
+			switch {
+			case strings.HasSuffix(name, "!"):
+				name = name[:len(name)-1]
+				nullability = ParamNullabilityForceNotNull
+			case strings.HasSuffix(name, "?"):
+				name = name[:len(name)-1]
+				nullability = ParamNullabilityForceNullable
+			}
+			params[name] = ParamMetadata{
+				DatabaseType: strings.Join(rest, " "),
+				Nullability:  nullability,
+			}
 		default:
 			flags[token] = true
 		}
