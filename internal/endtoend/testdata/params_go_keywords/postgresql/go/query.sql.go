@@ -173,6 +173,15 @@ func (q *Queries) KeywordPackage(ctx context.Context, package_ string) error {
 	return err
 }
 
+const keywordQ = `-- name: KeywordQ :exec
+SELECT $1::text
+`
+
+func (q *Queries) KeywordQ(ctx context.Context, q_ string) error {
+	_, err := q.db.Exec(ctx, keywordQ, q_)
+	return err
+}
+
 const keywordRange = `-- name: KeywordRange :exec
 SELECT $1::text
 `
@@ -432,6 +441,17 @@ func (q *Queries) SelectPackage(ctx context.Context) (pgtype.Text, error) {
 	var package_ pgtype.Text
 	err := row.Scan(&package_)
 	return package_, err
+}
+
+const selectQ = `-- name: SelectQ :one
+SELECT "q" FROM go_keywords
+`
+
+func (q *Queries) SelectQ(ctx context.Context) (pgtype.Text, error) {
+	row := q.db.QueryRow(ctx, selectQ)
+	var q_ pgtype.Text
+	err := row.Scan(&q_)
+	return q_, err
 }
 
 const selectRange = `-- name: SelectRange :one

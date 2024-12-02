@@ -106,7 +106,7 @@ func (m *ManagedClient) CreateDatabase(ctx context.Context, req *CreateDatabaseR
 
 		conn, err := pgx.Connect(ctx, uri.String())
 		if err != nil {
-			pool.Exec(ctx, fmt.Sprintf(`DROP DATABASE "%s" IF EXISTS WITH (FORCE)`, name))
+			pool.Exec(ctx, fmt.Sprintf(`DROP DATABASE IF EXISTS "%s" WITH (FORCE)`, name))
 			return nil, fmt.Errorf("connect %s: %s", name, err)
 		}
 		defer conn.Close(ctx)
@@ -123,7 +123,7 @@ func (m *ManagedClient) CreateDatabase(ctx context.Context, req *CreateDatabaseR
 		}
 
 		if migrationErr != nil {
-			pool.Exec(ctx, fmt.Sprintf(`DROP DATABASE "%s" IF EXISTS WITH (FORCE)`, name))
+			pool.Exec(ctx, fmt.Sprintf(`DROP DATABASE IF EXISTS "%s" WITH (FORCE)`, name))
 			return nil, migrationErr
 		}
 

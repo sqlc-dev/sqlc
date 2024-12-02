@@ -259,7 +259,24 @@ rules:
 ### Opting-out of lint rules
 
 For any query, you can tell `sqlc vet` not to evaluate lint rules using the
-`@sqlc-vet-disable` query annotation.
+`@sqlc-vet-disable` query annotation. The annotation accepts a list of rules to ignore.
+
+```sql
+/* name: GetAuthor :one */
+/* @sqlc-vet-disable sqlc/db-prepare no-pg */
+SELECT * FROM authors
+WHERE id = ? LIMIT 1;
+```
+The rules can also be split across lines.
+```sql
+/* name: GetAuthor :one */
+/* @sqlc-vet-disable sqlc/db-prepare */
+/* @sqlc-vet-disable no-pg */
+SELECT * FROM authors
+WHERE id = ? LIMIT 1;
+```
+
+To skip all rules for a query, you can provide the `@sqlc-vet-disable` annotation without any parameters. 
 
 ```sql
 /* name: GetAuthor :one */

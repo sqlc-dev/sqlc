@@ -3,6 +3,7 @@ package metadata
 import (
 	"bufio"
 	"fmt"
+	"github.com/sqlc-dev/sqlc/internal/constants"
 	"strings"
 	"unicode"
 
@@ -17,6 +18,10 @@ type Metadata struct {
 	Comments []string
 	Params   map[string]string
 	Flags    map[string]bool
+
+	// RuleSkiplist contains the names of rules to disable vetting for.
+	// If the map is empty, but the disable vet flag is specified, then all rules are ignored.
+	RuleSkiplist map[string]struct{}
 
 	Filename string
 }
@@ -113,9 +118,12 @@ func ParseQueryNameAndType(t string, commentStyle CommentSyntax) (string, string
 	return "", "", nil
 }
 
-func ParseParamsAndFlags(comments []string) (map[string]string, map[string]bool, error) {
+// ParseCommentFlags processes the comments provided with queries to determine the metadata params, flags and rules to skip.
+// All flags in query comments are prefixed with `@`, e.g. @param, @@sqlc-vet-disable.
+func ParseCommentFlags(comments []string) (map[string]string, map[string]bool, map[string]struct{}, error) {
 	params := make(map[string]string)
 	flags := make(map[string]bool)
+	ruleSkiplist := make(map[string]struct{})
 
 	for _, line := range comments {
 		s := bufio.NewScanner(strings.NewReader(line))
@@ -129,7 +137,7 @@ func ParseParamsAndFlags(comments []string) (map[string]string, map[string]bool,
 		}
 
 		switch token {
-		case "@param":
+		case constants.QueryFlagParam:
 			s.Scan()
 			name := s.Text()
 			var rest []string
@@ -138,14 +146,27 @@ func ParseParamsAndFlags(comments []string) (map[string]string, map[string]bool,
 				rest = append(rest, paramToken)
 			}
 			params[name] = strings.Join(rest, " ")
+
+		case constants.QueryFlagSqlcVetDisable:
+			flags[token] = true
+
+			// Vet rules can all be disabled in the same line or split across lines .i.e.
+			// /* @sqlc-vet-disable sqlc/db-prepare delete-without-where */
+			// is equivalent to:
+			// /* @sqlc-vet-disable sqlc/db-prepare */
+			// /* @sqlc-vet-disable delete-without-where */
+			for s.Scan() {
+				ruleSkiplist[s.Text()] = struct{}{}
+			}
+
 		default:
 			flags[token] = true
 		}
 
 		if s.Err() != nil {
-			return params, flags, s.Err()
+			return params, flags, ruleSkiplist, s.Err()
 		}
 	}
 
-	return params, flags, nil
+	return params, flags, ruleSkiplist, nil
 }

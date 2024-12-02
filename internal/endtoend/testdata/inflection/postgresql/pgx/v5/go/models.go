@@ -12,6 +12,10 @@ type Campus struct {
 	ID string
 }
 
+type ProductMetadatum struct {
+	ID string
+}
+
 type ProductMetum struct {
 	ID string
 }

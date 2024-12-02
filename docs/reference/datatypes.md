@@ -158,8 +158,8 @@ For MySQL, there is no native `uuid` data type. When using `UUID_TO_BIN` to stor
 ## JSON
 
 By default, sqlc will generate the `[]byte`, `pgtype.JSON` or `json.RawMessage` for JSON column type.
-But if you use the `pgx/v5` sql package then you can specify a some struct instead of default type.
-The `pgx` implementation will marshall/unmarshall the struct automatically.
+But if you use the `pgx/v5` sql package then you can specify a struct instead of default type.
+The `pgx` implementation will marshal/unmarshal the struct automatically.
 
 ```go
 package dto

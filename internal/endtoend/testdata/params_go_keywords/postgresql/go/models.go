@@ -34,4 +34,5 @@ type GoKeyword struct {
 	Import      pgtype.Text
 	Return      pgtype.Text
 	Var         pgtype.Text
+	Q           pgtype.Text
 }

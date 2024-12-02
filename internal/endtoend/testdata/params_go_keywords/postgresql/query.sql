@@ -73,6 +73,9 @@ SELECT sqlc.arg('return')::text;
 -- name: KeywordVar :exec
 SELECT sqlc.arg('var')::text;
 
+-- name: KeywordQ :exec
+SELECT sqlc.arg('q')::text;
+
 -- name: SelectBreak :one
 SELECT "break" FROM go_keywords;
 
@@ -147,3 +150,6 @@ SELECT "return" FROM go_keywords;
 
 -- name: SelectVar :one
 SELECT "var" FROM go_keywords;
+
+-- name: SelectQ :one
+SELECT "q" FROM go_keywords;

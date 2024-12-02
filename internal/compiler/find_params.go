@@ -195,7 +195,7 @@ func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 		if n.Sel == nil {
 			p.parent = node
 		} else {
-			if sel, ok := n.Sel.(*ast.SelectStmt); ok && sel.FromClause != nil {
+			if sel, ok := n.Sel.(*ast.SelectStmt); ok && sel.FromClause != nil && len(sel.FromClause.Items) > 0 {
 				from := sel.FromClause
 				if schema, ok := from.Items[0].(*ast.RangeVar); ok && schema != nil {
 					p.rangeVar = &ast.RangeVar{

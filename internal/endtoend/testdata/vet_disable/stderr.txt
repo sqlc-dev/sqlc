@@ -1,1 +1,5 @@
-query.sql: RunVet: always-fail: Fail
+query.sql: RunVetAll: always-fail: Fail
+query.sql: RunVetAll: no-exec: don't use exec
+query.sql: SkipVet_always_fail: no-exec: don't use exec
+query.sql: SkipVet_no_exec: always-fail: Fail
+query.sql: SkipVetInvalidRule: rule-check error: rule "block-delete" does not exist in the config file
