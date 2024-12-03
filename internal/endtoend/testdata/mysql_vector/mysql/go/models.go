@@ -5,6 +5,6 @@
 package querytest
 
 type Foo struct {
-	ID int32
-	Embedding
+	ID        int32
+	Embedding interface{}
 }
