@@ -5208,10 +5208,51 @@ func defaultSchema(name string) *catalog.Schema {
 			Name: "SUM",
 			Args: []*catalog.Argument{
 				{
+					Type: &ast.TypeName{Name: "int"},
+				},
+			},
+			ReturnType:         &ast.TypeName{Name: "bigint"},
+			ReturnTypeNullable: true,
+		},
+		{
+			Name: "SUM",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "bigint"},
+				},
+			},
+			ReturnType:         &ast.TypeName{Name: "bigint"},
+			ReturnTypeNullable: true,
+		},
+		{
+			Name: "SUM",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "float"},
+				},
+			},
+			ReturnType:         &ast.TypeName{Name: "double"},
+			ReturnTypeNullable: true,
+		},
+		{
+			Name: "SUM",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "double"},
+				},
+			},
+			ReturnType:         &ast.TypeName{Name: "double"},
+			ReturnTypeNullable: true,
+		},
+		{
+			Name: "SUM",
+			Args: []*catalog.Argument{
+				{
 					Type: &ast.TypeName{Name: "any"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "any"},
+			ReturnType:         &ast.TypeName{Name: "any"},
+			ReturnTypeNullable: true,
 		},
 		{
 			Name:       "SYSDATE",
