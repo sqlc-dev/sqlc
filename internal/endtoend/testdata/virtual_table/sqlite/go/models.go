@@ -9,7 +9,8 @@ import (
 )
 
 type Ft struct {
-	B string
+	B  string
+	Ft string
 }
 
 type Tbl struct {
@@ -21,6 +22,7 @@ type Tbl struct {
 }
 
 type TblFt struct {
-	B string
-	C string
+	B     string
+	C     string
+	TblFt string
 }
