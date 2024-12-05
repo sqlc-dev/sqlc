@@ -175,6 +175,8 @@ The `gen` mapping supports the following keys:
   - If true, "Id" in json tags will be uppercase. If false, will be camelcase. Defaults to `false`
 - `json_tags_case_style`:
   - `camel` for camelCase, `pascal` for PascalCase, `snake` for snake_case or `none` to use the column name in the DB. Defaults to `none`.
+- `json_tags_omit_empty`:
+  - If true will add `omitempty` to JSON tags. Defaults to `false`.
 - `omit_unused_structs`:
   - If `true`, sqlc won't generate table and enum structs that aren't used in queries for a given package. Defaults to `false`.
 - `output_batch_file_name`:
