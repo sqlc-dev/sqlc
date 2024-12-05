@@ -22,8 +22,8 @@ require (
 	github.com/tetratelabs/wazero v1.8.2
 	github.com/wasilibs/go-pgquery v0.0.0-20240606042535-c0843d6592cc
 	github.com/xeipuuv/gojsonschema v1.2.0
-	golang.org/x/sync v0.9.0
-	google.golang.org/grpc v1.68.0
+	golang.org/x/sync v0.10.0
+	google.golang.org/grpc v1.68.1
 	google.golang.org/protobuf v1.35.2
 	gopkg.in/yaml.v3 v3.0.1
 	modernc.org/sqlite v1.34.2
@@ -32,7 +32,6 @@ require (
 require (
 	cel.dev/expr v0.18.0 // indirect
 	filippo.io/edwards25519 v1.1.0 // indirect
-	github.com/cznic/mathutil v0.0.0-20181122101859-297441e03548 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
