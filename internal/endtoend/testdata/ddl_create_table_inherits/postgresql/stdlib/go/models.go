@@ -20,7 +20,7 @@ type Llc struct {
 type Organisation struct {
 	PartyID   uuid.UUID
 	Name      string
-	LegalName string
+	LegalName sql.NullString
 }
 
 type Party struct {
