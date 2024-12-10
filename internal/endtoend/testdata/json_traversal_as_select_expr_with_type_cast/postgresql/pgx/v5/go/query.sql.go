@@ -12,8 +12,8 @@ import (
 )
 
 const myGet = `-- name: MyGet :many
-SELECT id, myjson, (mt.myjson->'thing1'->'thing2')::text, mt.myjson->'thing1'
-FROM "mytable" mt
+SELECT id, myjson,(mt.myjson -> 'thing1' -> 'thing2')::text,mt.myjson -> 'thing1'
+FROM mytable mt
 `
 
 type MyGetRow struct {
@@ -41,31 +41,6 @@ func (q *Queries) MyGet(ctx context.Context) ([]MyGetRow, error) {
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const myGet2 = `-- name: MyGet2 :many
-SELECT id::text
-FROM "mytable" mt
-`
-
-func (q *Queries) MyGet2(ctx context.Context) ([]string, error) {
-	rows, err := q.db.Query(ctx, myGet2)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []string
-	for rows.Next() {
-		var id string
-		if err := rows.Scan(&id); err != nil {
-			return nil, err
-		}
-		items = append(items, id)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
