@@ -1,0 +1,30 @@
+stmt:{
+	select_stmt:{
+		target_list:{
+			res_target:{
+				val:{
+					type_cast:{
+						arg:{
+							column_ref:{
+								fields:{string:{sval:"id"}}  location:120
+							}
+						}
+						type_name:{
+							names:{string:{sval:"text"}}  typemod:-1  location:124
+						}
+						location:122
+					}
+				}
+				location:120
+			}
+		}
+		from_clause:{
+			range_var:{
+				relname:"mytable"  inh:true  relpersistence:"p"  alias:{aliasname:"mt"}  location:134
+			}
+		}
+		limit_option:LIMIT_OPTION_DEFAULT  op:SETOP_NONE
+	}
+}
+stmt_location:89
+stmt_len:57

@@ -1,0 +1,85 @@
+raw tree.Stmt: stmt:{
+	select_stmt:{
+		target_list:{
+			res_target:{
+				val:{column_ref:{fields:{a_star:{}}  location:28}}
+				location:28
+			}
+		}
+		target_list:{
+			res_target:{
+				val:{
+					type_cast:{
+						arg:{
+							a_expr:{
+								kind:AEXPR_OP
+								name:{string:{sval:"->"}}
+								lexpr:{
+									a_expr:{
+										kind:AEXPR_OP
+										name:{string:{sval:"->"}}
+										lexpr:{
+											column_ref:{
+												fields:{string:{sval:"mt"}}
+												fields:{string:{sval:"myjson"}}
+												location:32
+											}
+										}
+										rexpr:{
+											a_const:{
+												sval:{sval:"thing1"}  location:43
+											}
+										}
+										location:41
+									}
+								}
+								rexpr:{
+									a_const:{sval:{sval:"thing2"}  location:53}
+								}
+								location:51
+							}
+						}
+						type_name:{
+							names:{string:{sval:"text"}}  typemod:-1  location:64
+						}
+						location:62
+					}
+				}
+				location:31
+			}
+		}
+		target_list:{
+			res_target:{
+				val:{
+					a_expr:{
+						kind:AEXPR_OP
+						name:{string:{sval:"->"}}
+						lexpr:{
+							column_ref:{
+								fields:{string:{sval:"mt"}}
+								fields:{string:{sval:"myjson"}}
+								location:70
+							}
+						}
+						rexpr:{
+							a_const:{sval:{sval:"thing1"}  location:81}
+						}
+						location:79
+					}
+				}
+				location:70
+			}
+		}
+		from_clause:{
+			range_var:{
+				relname:"mytable"
+				inh:true
+				relpersistence:"p"
+				alias:{aliasname:"mt"}
+				location:95
+			}
+		}
+		limit_option:LIMIT_OPTION_DEFAULT  op:SETOP_NONE
+	}
+}
+stmt_len:107
