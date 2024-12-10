@@ -12,7 +12,7 @@ import (
 )
 
 const myGet = `-- name: MyGet :many
-SELECT id, myjson,(mt.myjson -> 'thing1' -> 'thing2')::text,mt.myjson -> 'thing1'
+SELECT id, myjson, (mt.myjson->'thing1'->'thing2')::text
 FROM mytable mt
 `
 
@@ -20,7 +20,6 @@ type MyGetRow struct {
 	ID      int64       `json:"id"`
 	Myjson  []byte      `json:"myjson"`
 	Column3 pgtype.Text `json:"column_3"`
-	Column4 interface{} `json:"column_4"`
 }
 
 func (q *Queries) MyGet(ctx context.Context) ([]MyGetRow, error) {
@@ -32,12 +31,7 @@ func (q *Queries) MyGet(ctx context.Context) ([]MyGetRow, error) {
 	var items []MyGetRow
 	for rows.Next() {
 		var i MyGetRow
-		if err := rows.Scan(
-			&i.ID,
-			&i.Myjson,
-			&i.Column3,
-			&i.Column4,
-		); err != nil {
+		if err := rows.Scan(&i.ID, &i.Myjson, &i.Column3); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
