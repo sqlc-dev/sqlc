@@ -256,7 +256,6 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 
 		case *ast.ColumnRef:
 			if hasStarRef(n) {
-
 				// add a column with a reference to an embedded table
 				if embed, ok := qc.embeds.Find(n); ok {
 					cols = append(cols, &Column{
@@ -366,8 +365,12 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 					col.NotNull = false
 				}
 			}
+			if expr, ok := n.Arg.(*ast.A_Expr); ok {
+				if op := astutils.Join(expr.Name, ""); lang.IsJSONOperator(op) {
+					col.NotNull = false
+				}
+			}
 			cols = append(cols, col)
-
 		case *ast.SelectStmt:
 			subcols, err := c.outputColumns(qc, n)
 			if err != nil {
