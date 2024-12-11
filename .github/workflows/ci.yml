@@ -58,7 +58,7 @@ jobs:
     # Start a MySQL server
     - uses: shogo82148/actions-setup-mysql@v1
       with:
-        mysql-version: "8.1"
+        mysql-version: "9.0"
 
     - name: test ./...
       run: gotestsum --junitfile junit.xml -- --tags=examples -timeout 20m ./...
