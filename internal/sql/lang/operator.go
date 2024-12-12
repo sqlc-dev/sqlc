@@ -53,3 +53,13 @@ func IsJSONOperator(s string) bool {
 	}
 	return true
 }
+
+func IsJSONResultAsText(s string) bool {
+	switch s {
+	case "->>":
+	case "#>>":
+	default:
+		return false
+	}
+	return true
+}

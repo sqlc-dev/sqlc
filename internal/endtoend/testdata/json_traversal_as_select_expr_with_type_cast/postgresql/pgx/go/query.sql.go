@@ -11,30 +11,352 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const myGet = `-- name: MyGet :many
-SELECT id, myjson, (mt.myjson->'thing1'->'thing2')::text
-FROM mytable mt
+const getNullable1 = `-- name: GetNullable1 :many
+SELECT null::text
+FROM "mytable"
 `
 
-type MyGetRow struct {
-	ID      int64       `json:"id"`
-	Myjson  []byte      `json:"myjson"`
-	Column3 pgtype.Text `json:"column_3"`
-}
-
-func (q *Queries) MyGet(ctx context.Context) ([]MyGetRow, error) {
-	rows, err := q.db.Query(ctx, myGet)
+func (q *Queries) GetNullable1(ctx context.Context) ([]pgtype.Text, error) {
+	rows, err := q.db.Query(ctx, getNullable1)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []MyGetRow
+	var items []pgtype.Text
 	for rows.Next() {
-		var i MyGetRow
-		if err := rows.Scan(&i.ID, &i.Myjson, &i.Column3); err != nil {
+		var column_1 pgtype.Text
+		if err := rows.Scan(&column_1); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, column_1)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getNullable2 = `-- name: GetNullable2 :many
+SELECT CASE
+    WHEN id = 1 THEN id::int
+    WHEN id = 2 THEN null
+    WHEN id = 3 THEN 8.5
+    WHEN id = 4 THEN 7
+    ELSE '2'
+END
+FROM "mytable"
+`
+
+func (q *Queries) GetNullable2(ctx context.Context) ([]pgtype.Text, error) {
+	rows, err := q.db.Query(ctx, getNullable2)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []pgtype.Text
+	for rows.Next() {
+		var column_1 pgtype.Text
+		if err := rows.Scan(&column_1); err != nil {
+			return nil, err
+		}
+		items = append(items, column_1)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getNullable2A = `-- name: GetNullable2A :many
+SELECT CASE
+    WHEN id = 1 THEN id::int
+    WHEN id = 2 THEN null
+    WHEN id = 3 THEN 8.5
+    ELSE 7
+END
+FROM "mytable"
+`
+
+func (q *Queries) GetNullable2A(ctx context.Context) ([]pgtype.Float8, error) {
+	rows, err := q.db.Query(ctx, getNullable2A)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []pgtype.Float8
+	for rows.Next() {
+		var column_1 pgtype.Float8
+		if err := rows.Scan(&column_1); err != nil {
+			return nil, err
+		}
+		items = append(items, column_1)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getNullable2B = `-- name: GetNullable2B :many
+SELECT CASE
+    WHEN id = 1 THEN id::float
+    WHEN id = 2 THEN null
+    ELSE 7
+END
+FROM "mytable"
+`
+
+func (q *Queries) GetNullable2B(ctx context.Context) ([]pgtype.Float8, error) {
+	rows, err := q.db.Query(ctx, getNullable2B)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []pgtype.Float8
+	for rows.Next() {
+		var column_1 pgtype.Float8
+		if err := rows.Scan(&column_1); err != nil {
+			return nil, err
+		}
+		items = append(items, column_1)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getNullable2C = `-- name: GetNullable2C :many
+SELECT CASE
+    WHEN id = 1 THEN true
+    ELSE null
+    END
+FROM "mytable"
+`
+
+func (q *Queries) GetNullable2C(ctx context.Context) ([]pgtype.Bool, error) {
+	rows, err := q.db.Query(ctx, getNullable2C)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []pgtype.Bool
+	for rows.Next() {
+		var column_1 pgtype.Bool
+		if err := rows.Scan(&column_1); err != nil {
+			return nil, err
+		}
+		items = append(items, column_1)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getNullable2D = `-- name: GetNullable2D :many
+SELECT CASE
+    WHEN id = 2 THEN mt.myjson->'thing1'->>'thing2'
+    ELSE null
+    END
+FROM "mytable" mt
+`
+
+func (q *Queries) GetNullable2D(ctx context.Context) ([]pgtype.Text, error) {
+	rows, err := q.db.Query(ctx, getNullable2D)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []pgtype.Text
+	for rows.Next() {
+		var column_1 pgtype.Text
+		if err := rows.Scan(&column_1); err != nil {
+			return nil, err
+		}
+		items = append(items, column_1)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getNullable2E = `-- name: GetNullable2E :many
+SELECT CASE
+    WHEN id = 2 THEN mt.myjson->'thing1'->'thing2'
+    WHEN id = 3 THEN mt.myjson->'thing1'
+    ELSE null
+    END
+FROM "mytable" mt
+`
+
+func (q *Queries) GetNullable2E(ctx context.Context) ([]interface{}, error) {
+	rows, err := q.db.Query(ctx, getNullable2E)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []interface{}
+	for rows.Next() {
+		var column_1 interface{}
+		if err := rows.Scan(&column_1); err != nil {
+			return nil, err
+		}
+		items = append(items, column_1)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getNullable2F = `-- name: GetNullable2F :many
+SELECT CASE
+    WHEN id = 2 THEN null
+    ELSE 7 - id
+END
+FROM "mytable"
+`
+
+func (q *Queries) GetNullable2F(ctx context.Context) ([]pgtype.Int4, error) {
+	rows, err := q.db.Query(ctx, getNullable2F)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []pgtype.Int4
+	for rows.Next() {
+		var column_1 pgtype.Int4
+		if err := rows.Scan(&column_1); err != nil {
+			return nil, err
+		}
+		items = append(items, column_1)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getNullable3 = `-- name: GetNullable3 :many
+SELECT CASE WHEN true THEN 'hello'::text ELSE null END
+FROM "mytable"
+`
+
+func (q *Queries) GetNullable3(ctx context.Context) ([]pgtype.Text, error) {
+	rows, err := q.db.Query(ctx, getNullable3)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []pgtype.Text
+	for rows.Next() {
+		var column_1 pgtype.Text
+		if err := rows.Scan(&column_1); err != nil {
+			return nil, err
+		}
+		items = append(items, column_1)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getNullable4 = `-- name: GetNullable4 :many
+SELECT CASE WHEN true THEN 'hello'::text END
+FROM "mytable"
+`
+
+func (q *Queries) GetNullable4(ctx context.Context) ([]pgtype.Text, error) {
+	rows, err := q.db.Query(ctx, getNullable4)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []pgtype.Text
+	for rows.Next() {
+		var column_1 pgtype.Text
+		if err := rows.Scan(&column_1); err != nil {
+			return nil, err
+		}
+		items = append(items, column_1)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getNullable5 = `-- name: GetNullable5 :many
+SELECT (mt.myjson->'thing1'->'thing2')::text
+FROM "mytable" mt
+`
+
+func (q *Queries) GetNullable5(ctx context.Context) ([]pgtype.Text, error) {
+	rows, err := q.db.Query(ctx, getNullable5)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []pgtype.Text
+	for rows.Next() {
+		var column_1 pgtype.Text
+		if err := rows.Scan(&column_1); err != nil {
+			return nil, err
+		}
+		items = append(items, column_1)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getNullable6 = `-- name: GetNullable6 :many
+SELECT mt.myjson->'thing1'->>'thing2'
+FROM "mytable" mt
+`
+
+func (q *Queries) GetNullable6(ctx context.Context) ([]pgtype.Text, error) {
+	rows, err := q.db.Query(ctx, getNullable6)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []pgtype.Text
+	for rows.Next() {
+		var column_1 pgtype.Text
+		if err := rows.Scan(&column_1); err != nil {
+			return nil, err
+		}
+		items = append(items, column_1)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getNullable7 = `-- name: GetNullable7 :many
+SELECT mt.myjson->'thing1'->'thing2'
+FROM "mytable" mt
+`
+
+func (q *Queries) GetNullable7(ctx context.Context) ([]interface{}, error) {
+	rows, err := q.db.Query(ctx, getNullable7)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []interface{}
+	for rows.Next() {
+		var column_1 interface{}
+		if err := rows.Scan(&column_1); err != nil {
+			return nil, err
+		}
+		items = append(items, column_1)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

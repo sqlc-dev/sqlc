@@ -132,33 +132,14 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 			if res.Name != nil {
 				name = *res.Name
 			}
-			switch n.Val.(type) {
-			case *ast.String:
-				cols = append(cols, &Column{Name: name, DataType: "text", NotNull: true})
-			case *ast.Integer:
-				cols = append(cols, &Column{Name: name, DataType: "int", NotNull: true})
-			case *ast.Float:
-				cols = append(cols, &Column{Name: name, DataType: "float", NotNull: true})
-			case *ast.Boolean:
-				cols = append(cols, &Column{Name: name, DataType: "bool", NotNull: true})
-			default:
-				cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
-			}
+			cols = append(cols, convertAConstToColumn(n, name))
 
 		case *ast.A_Expr:
 			name := ""
 			if res.Name != nil {
 				name = *res.Name
 			}
-			switch op := astutils.Join(n.Name, ""); {
-			case lang.IsComparisonOperator(op):
-				// TODO: Generate a name for these operations
-				cols = append(cols, &Column{Name: name, DataType: "bool", NotNull: true})
-			case lang.IsMathematicalOperator(op):
-				cols = append(cols, &Column{Name: name, DataType: "int", NotNull: true})
-			default:
-				cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
-			}
+			cols = append(cols, convertAExprToColumn(n, name))
 
 		case *ast.BoolExpr:
 			name := ""
@@ -187,39 +168,48 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 			if res.Name != nil {
 				name = *res.Name
 			}
-			// TODO: The TypeCase and A_Const code has been copied from below. Instead, we
-			// need a recurse function to get the type of a node.
-			if tc, ok := n.Defresult.(*ast.TypeCast); ok {
-				if tc.TypeName == nil {
-					return nil, errors.New("no type name type cast")
-				}
-				name := ""
-				if ref, ok := tc.Arg.(*ast.ColumnRef); ok {
-					name = astutils.Join(ref.Fields, "_")
-				}
-				if res.Name != nil {
-					name = *res.Name
-				}
-				// TODO Validate column names
-				col := toColumn(tc.TypeName)
-				col.Name = name
-				cols = append(cols, col)
-			} else if aconst, ok := n.Defresult.(*ast.A_Const); ok {
-				switch aconst.Val.(type) {
-				case *ast.String:
-					cols = append(cols, &Column{Name: name, DataType: "text", NotNull: true})
-				case *ast.Integer:
-					cols = append(cols, &Column{Name: name, DataType: "int", NotNull: true})
-				case *ast.Float:
-					cols = append(cols, &Column{Name: name, DataType: "float", NotNull: true})
-				case *ast.Boolean:
-					cols = append(cols, &Column{Name: name, DataType: "bool", NotNull: true})
-				default:
-					cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
-				}
-			} else {
-				cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
+
+			typePrecedence := map[string]int{
+				"any":               0,
+				"bool":              1,
+				"int":               2,
+				"pg_catalog.int4":   2,
+				"float":             3,
+				"pg_catalog.float8": 3,
+				"text":              4,
 			}
+
+			chosenType := "any"
+			chosenNullable := false
+			for _, i := range n.Args.Items {
+				cw := i.(*ast.CaseWhen)
+				col, err := convertCaseExprCondToColumn(cw.Result, res.Name)
+				if err != nil {
+					return nil, err
+				}
+				if typePrecedence[col.DataType] > typePrecedence[chosenType] {
+					chosenType = col.DataType
+				}
+				if !col.NotNull {
+					chosenNullable = true
+				}
+			}
+
+			if n.Defresult != nil {
+				defaultCol, err := convertCaseExprCondToColumn(n.Defresult, res.Name)
+				if err != nil {
+					return nil, err
+				}
+				if typePrecedence[defaultCol.DataType] > typePrecedence[chosenType] {
+					chosenType = defaultCol.DataType
+				}
+				if !defaultCol.NotNull {
+					chosenNullable = true
+				}
+			}
+
+			chosenColumn := &Column{Name: name, DataType: chosenType, NotNull: !chosenNullable}
+			cols = append(cols, chosenColumn)
 
 		case *ast.CoalesceExpr:
 			name := "coalesce"
@@ -371,6 +361,7 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 				}
 			}
 			cols = append(cols, col)
+
 		case *ast.SelectStmt:
 			subcols, err := c.outputColumns(qc, n)
 			if err != nil {
@@ -766,4 +757,73 @@ func findColumnForRef(ref *ast.ColumnRef, tables []*Table, targetList *ast.List)
 	}
 
 	return nil
+}
+
+func convertCaseExprCondToColumn(n ast.Node, resTargetName *string) (*Column, error) {
+	var col *Column
+	name := ""
+	if resTargetName != nil {
+		name = *resTargetName
+	}
+
+	if tc, ok := n.(*ast.TypeCast); ok {
+		if tc.TypeName == nil {
+			return nil, errors.New("no type name type cast")
+		}
+		if ref, ok := tc.Arg.(*ast.ColumnRef); ok {
+			name = astutils.Join(ref.Fields, "_")
+		}
+		// TODO Validate column names
+		col = toColumn(tc.TypeName)
+
+		if x, ok := tc.Arg.(*ast.A_Const); ok {
+			if _, ok := x.Val.(*ast.Null); ok {
+				col.NotNull = false
+			}
+		}
+		col.Name = name
+
+	} else if aconst, ok := n.(*ast.A_Const); ok {
+		col = convertAConstToColumn(aconst, name)
+	} else if aexpr, ok := n.(*ast.A_Expr); ok {
+		col = convertAExprToColumn(aexpr, name)
+	} else {
+		col = &Column{Name: name, DataType: "any", NotNull: false}
+	}
+
+	return col, nil
+}
+
+func convertAExprToColumn(aexpr *ast.A_Expr, name string) *Column {
+	var col *Column
+	switch op := astutils.Join(aexpr.Name, ""); {
+	case lang.IsComparisonOperator(op):
+		// TODO: Generate a name for these operations
+		col = &Column{Name: name, DataType: "bool", NotNull: true}
+	case lang.IsMathematicalOperator(op):
+		col = &Column{Name: name, DataType: "int", NotNull: true}
+	case lang.IsJSONOperator(op) && lang.IsJSONResultAsText(op):
+		col = &Column{Name: name, DataType: "text", NotNull: false}
+	default:
+		col = &Column{Name: name, DataType: "any", NotNull: false}
+	}
+
+	return col
+}
+
+func convertAConstToColumn(aconst *ast.A_Const, name string) *Column {
+	var col *Column
+	switch aconst.Val.(type) {
+	case *ast.String:
+		col = &Column{Name: name, DataType: "text", NotNull: true}
+	case *ast.Integer:
+		col = &Column{Name: name, DataType: "int", NotNull: true}
+	case *ast.Float:
+		col = &Column{Name: name, DataType: "float", NotNull: true}
+	case *ast.Boolean:
+		col = &Column{Name: name, DataType: "bool", NotNull: true}
+	default:
+		col = &Column{Name: name, DataType: "any", NotNull: false}
+	}
+	return col
 }
