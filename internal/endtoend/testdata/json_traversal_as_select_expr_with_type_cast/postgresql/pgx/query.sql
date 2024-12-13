@@ -16,6 +16,10 @@ FROM "mytable";
 SELECT CASE WHEN true THEN 'hello'::text ELSE null END
 FROM "mytable";
 
+-- name: GetNullable3B :many
+SELECT CASE WHEN true THEN 'hello'::text ELSE null::text END
+FROM "mytable";
+
 -- name: GetNullable4 :many
 SELECT CASE WHEN true THEN 'hello'::text END
 FROM "mytable";

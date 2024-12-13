@@ -264,6 +264,31 @@ func (q *Queries) GetNullable3(ctx context.Context) ([]pgtype.Text, error) {
 	return items, nil
 }
 
+const getNullable3B = `-- name: GetNullable3B :many
+SELECT CASE WHEN true THEN 'hello'::text ELSE null::text END
+FROM "mytable"
+`
+
+func (q *Queries) GetNullable3B(ctx context.Context) ([]pgtype.Text, error) {
+	rows, err := q.db.Query(ctx, getNullable3B)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []pgtype.Text
+	for rows.Next() {
+		var column_1 pgtype.Text
+		if err := rows.Scan(&column_1); err != nil {
+			return nil, err
+		}
+		items = append(items, column_1)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getNullable4 = `-- name: GetNullable4 :many
 SELECT CASE WHEN true THEN 'hello'::text END
 FROM "mytable"
