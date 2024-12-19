@@ -241,21 +241,21 @@ func (q *Queries) GetNullable2F(ctx context.Context) ([]pgtype.Int4, error) {
 
 const getNullable2G = `-- name: GetNullable2G :many
 SELECT CASE
-    WHEN id = 2 THEN null::text
+    WHEN id = 2 THEN null
     ELSE null
 END
 FROM "mytable"
 `
 
-func (q *Queries) GetNullable2G(ctx context.Context) ([]pgtype.Text, error) {
+func (q *Queries) GetNullable2G(ctx context.Context) ([]interface{}, error) {
 	rows, err := q.db.Query(ctx, getNullable2G)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []pgtype.Text
+	var items []interface{}
 	for rows.Next() {
-		var column_1 pgtype.Text
+		var column_1 interface{}
 		if err := rows.Scan(&column_1); err != nil {
 			return nil, err
 		}
