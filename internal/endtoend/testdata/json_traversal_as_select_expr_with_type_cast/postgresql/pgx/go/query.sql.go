@@ -47,15 +47,15 @@ END
 FROM "mytable"
 `
 
-func (q *Queries) GetNullable2(ctx context.Context) ([]pgtype.Text, error) {
+func (q *Queries) GetNullable2(ctx context.Context) ([]interface{}, error) {
 	rows, err := q.db.Query(ctx, getNullable2)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []pgtype.Text
+	var items []interface{}
 	for rows.Next() {
-		var column_1 pgtype.Text
+		var column_1 interface{}
 		if err := rows.Scan(&column_1); err != nil {
 			return nil, err
 		}
@@ -77,15 +77,15 @@ END
 FROM "mytable"
 `
 
-func (q *Queries) GetNullable2A(ctx context.Context) ([]pgtype.Float8, error) {
+func (q *Queries) GetNullable2A(ctx context.Context) ([]interface{}, error) {
 	rows, err := q.db.Query(ctx, getNullable2A)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []pgtype.Float8
+	var items []interface{}
 	for rows.Next() {
-		var column_1 pgtype.Float8
+		var column_1 interface{}
 		if err := rows.Scan(&column_1); err != nil {
 			return nil, err
 		}
@@ -106,15 +106,15 @@ END
 FROM "mytable"
 `
 
-func (q *Queries) GetNullable2B(ctx context.Context) ([]pgtype.Float8, error) {
+func (q *Queries) GetNullable2B(ctx context.Context) ([]interface{}, error) {
 	rows, err := q.db.Query(ctx, getNullable2B)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []pgtype.Float8
+	var items []interface{}
 	for rows.Next() {
-		var column_1 pgtype.Float8
+		var column_1 interface{}
 		if err := rows.Scan(&column_1); err != nil {
 			return nil, err
 		}
@@ -228,6 +228,34 @@ func (q *Queries) GetNullable2F(ctx context.Context) ([]pgtype.Int4, error) {
 	var items []pgtype.Int4
 	for rows.Next() {
 		var column_1 pgtype.Int4
+		if err := rows.Scan(&column_1); err != nil {
+			return nil, err
+		}
+		items = append(items, column_1)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getNullable2G = `-- name: GetNullable2G :many
+SELECT CASE
+    WHEN id = 2 THEN null::text
+    ELSE null
+END
+FROM "mytable"
+`
+
+func (q *Queries) GetNullable2G(ctx context.Context) ([]pgtype.Text, error) {
+	rows, err := q.db.Query(ctx, getNullable2G)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []pgtype.Text
+	for rows.Next() {
+		var column_1 pgtype.Text
 		if err := rows.Scan(&column_1); err != nil {
 			return nil, err
 		}

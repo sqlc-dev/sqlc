@@ -81,3 +81,10 @@ SELECT CASE
     ELSE 7 - id
 END
 FROM "mytable";
+
+-- name: GetNullable2G :many
+SELECT CASE
+    WHEN id = 2 THEN null
+    ELSE null
+END
+FROM "mytable";

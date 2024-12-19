@@ -132,7 +132,11 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 			if res.Name != nil {
 				name = *res.Name
 			}
-			cols = append(cols, convertAConstToColumn(n, name))
+			col := convertAConstToColumn(n, name)
+			if col.DataType == "null" {
+				col.DataType = "any"
+			}
+			cols = append(cols, col)
 
 		case *ast.A_Expr:
 			name := ""
@@ -164,48 +168,65 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 			cols = append(cols, &Column{Name: name, DataType: "bool", NotNull: notNull})
 
 		case *ast.CaseExpr:
-			name := ""
+			var name string
 			if res.Name != nil {
 				name = *res.Name
 			}
 
-			typePrecedence := map[string]int{
-				"any":               0,
-				"bool":              1,
-				"int":               2,
-				"pg_catalog.int4":   2,
-				"float":             3,
-				"pg_catalog.float8": 3,
-				"text":              4,
-			}
-
-			chosenType := "any"
+			chosenType := ""
 			chosenNullable := false
+
 			for _, i := range n.Args.Items {
 				cw := i.(*ast.CaseWhen)
-				col, err := convertCaseExprCondToColumn(cw.Result, res.Name)
+				col, err := convertCaseExprCondToColumn(cw.Result, &name)
 				if err != nil {
 					return nil, err
 				}
-				if typePrecedence[col.DataType] > typePrecedence[chosenType] {
-					chosenType = col.DataType
+				if col.DataType == "null" {
+					// we don't choose type from this column if its value is null, only choose nullability
+					chosenNullable = true
+					continue
+				}
+				if col.DataType != chosenType {
+					if chosenType == "" {
+						chosenType = col.DataType
+					} else {
+						chosenType = "any"
+					}
 				}
 				if !col.NotNull {
 					chosenNullable = true
 				}
 			}
 
-			if n.Defresult != nil {
-				defaultCol, err := convertCaseExprCondToColumn(n.Defresult, res.Name)
+			var defaultCol *Column
+			if n.Defresult.Pos() != 0 {
+				defaultCol, err = convertCaseExprCondToColumn(n.Defresult, &name)
 				if err != nil {
 					return nil, err
 				}
-				if typePrecedence[defaultCol.DataType] > typePrecedence[chosenType] {
-					chosenType = defaultCol.DataType
+			} else {
+				defaultCol = &Column{Name: name, DataType: "null", NotNull: false}
+			}
+
+			if defaultCol.DataType == "null" {
+				// we don't choose type from this column if its value is null, only choose nullability
+				chosenNullable = true
+			} else {
+				if defaultCol.DataType != chosenType {
+					if chosenType == "" {
+						chosenType = defaultCol.DataType
+					} else {
+						chosenType = "any"
+					}
 				}
 				if !defaultCol.NotNull {
 					chosenNullable = true
 				}
+			}
+
+			if chosenType == "" {
+				chosenType = "any"
 			}
 
 			chosenColumn := &Column{Name: name, DataType: chosenType, NotNull: !chosenNullable}
@@ -811,7 +832,7 @@ func convertAExprToColumn(aexpr *ast.A_Expr, name string) *Column {
 	return col
 }
 
-func convertAConstToColumn(aconst *ast.A_Const, name string) *Column {
+func convertAConstToColumn(aconst *ast.A_Const, name string) (*Column) {
 	var col *Column
 	switch aconst.Val.(type) {
 	case *ast.String:
@@ -822,6 +843,8 @@ func convertAConstToColumn(aconst *ast.A_Const, name string) *Column {
 		col = &Column{Name: name, DataType: "float", NotNull: true}
 	case *ast.Boolean:
 		col = &Column{Name: name, DataType: "bool", NotNull: true}
+	case *ast.Null:
+		col = &Column{Name: name, DataType: "null", NotNull: false}
 	default:
 		col = &Column{Name: name, DataType: "any", NotNull: false}
 	}
