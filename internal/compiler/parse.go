@@ -144,6 +144,18 @@ func rangeVars(root ast.Node) []*ast.RangeVar {
 	return vars
 }
 
+func rangeSubSelects(root ast.Node) []*ast.RangeSubselect {
+	var rss []*ast.RangeSubselect
+	find := astutils.VisitorFunc(func(node ast.Node) {
+		switch n := node.(type) {
+		case *ast.RangeSubselect:
+			rss = append(rss, n)
+		}
+	})
+	astutils.Walk(find, root)
+	return rss
+}
+
 func uniqueParamRefs(in []paramRef, dollar bool) []paramRef {
 	m := make(map[int]bool, len(in))
 	o := make([]paramRef, 0, len(in))

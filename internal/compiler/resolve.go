@@ -21,7 +21,8 @@ func dataType(n *ast.TypeName) string {
 	}
 }
 
-func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, args []paramRef, params *named.ParamSet, embeds rewrite.EmbedSet) ([]Parameter, error) {
+func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, args []paramRef, params *named.ParamSet,
+	embeds rewrite.EmbedSet, rss []*ast.RangeSubselect) ([]Parameter, error) {
 	c := comp.catalog
 
 	aliasMap := map[string]*ast.TableName{}
@@ -67,10 +68,12 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 				continue
 			}
 			// If the table name doesn't exist, first check if it's a CTE
-			if _, qcerr := qc.GetTable(fqn); qcerr != nil {
-				return nil, err
+			var qcTable *Table
+			var qcerr error
+			if qcTable, qcerr = qc.GetTable(fqn); qcerr != nil {
+				return nil, qcerr
 			}
-			continue
+			table = qcTable.toCatalogTable()
 		}
 		err = indexTable(table)
 		if err != nil {
@@ -78,6 +81,23 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 		}
 		if rv.Alias != nil {
 			aliasMap[*rv.Alias.Aliasname] = fqn
+		}
+	}
+
+	for _, rs := range rss {
+		fqn, err := ParseTableName(rs)
+		if err != nil {
+			return nil, err
+		}
+
+		cols, err := comp.outputColumns(qc, rs.Subquery)
+		if err != nil {
+			return nil, err
+		}
+		rsTable := Table{Rel: fqn, Columns: cols}
+		err = indexTable(rsTable.toCatalogTable())
+		if err != nil {
+			return nil, err
 		}
 	}
 
@@ -268,7 +288,6 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 
 		case *ast.BetweenExpr:
 			if n == nil || n.Expr == nil || n.Left == nil || n.Right == nil {
-				fmt.Println("ast.BetweenExpr is nil")
 				continue
 			}
 
@@ -527,7 +546,6 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 
 		case *ast.In:
 			if n == nil || n.List == nil {
-				fmt.Println("ast.In is nil")
 				continue
 			}
 

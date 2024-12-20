@@ -59,3 +59,32 @@ type Parameter struct {
 	Number int
 	Column *Column
 }
+
+func (t *Table) toCatalogTable() catalog.Table {
+	var catalogCols []*catalog.Column
+	for _, qcol := range t.Columns {
+		catalogColType := ast.TypeName{}
+		if qcol.Type != nil {
+			catalogColType = *qcol.Type
+		}
+
+		catalogCol := &catalog.Column{
+			Name:       qcol.Name,
+			Type:       catalogColType,
+			IsNotNull:  qcol.NotNull,
+			IsUnsigned: qcol.Unsigned,
+			IsArray:    qcol.IsArray,
+			ArrayDims:  qcol.ArrayDims,
+			Comment:    qcol.Comment,
+			Length:     qcol.Length,
+		}
+
+		catalogCols = append(catalogCols, catalogCol)
+	}
+
+	return catalog.Table{
+		Rel:     t.Rel,
+		Columns: catalogCols,
+		Comment: "",
+	}
+}

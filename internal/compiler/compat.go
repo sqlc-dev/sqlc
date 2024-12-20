@@ -84,6 +84,15 @@ func parseRelation(node ast.Node) (*Relation, error) {
 			return &Relation{Name: n.Name}, nil
 		}
 
+	case *ast.RangeSubselect:
+		if n == nil {
+			return nil, fmt.Errorf("unexpected nil in %T node", n)
+		}
+		if n.Alias != nil && n.Alias.Aliasname != nil {
+			return &Relation{Name: *n.Alias.Aliasname}, nil
+		}
+		return nil, fmt.Errorf("no alias in subquery")
+
 	default:
 		return nil, fmt.Errorf("unexpected node type: %T", node)
 	}
