@@ -288,6 +288,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 
 		case *ast.BetweenExpr:
 			if n == nil || n.Expr == nil || n.Left == nil || n.Right == nil {
+				fmt.Println("ast.BetweenExpr is nil")
 				continue
 			}
 
@@ -546,6 +547,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 
 		case *ast.In:
 			if n == nil || n.List == nil {
+				fmt.Println("ast.In is nil")
 				continue
 			}
 
