@@ -1,7 +1,7 @@
 # sqlc: A SQL Compiler
 
 ![go](https://github.com/sqlc-dev/sqlc/workflows/go/badge.svg)
-[![Go Report Card](https://goreportcard.com/badge/github.com/sqlc-dev/sqlc)](https://goreportcard.com/report/github.com/sqlc-dev/sqlc)
+[![Go Report Card](https://goreportcard.com/badge/github.com/sqlc-dev/sqlc)](https://goreportcard.com/report/github.com/sqlc-dev/sqlc) [![Gurubase](https://img.shields.io/badge/Gurubase-Ask%20sqlc%20Guru-006BFF)](https://gurubase.io/g/sqlc)
 
 sqlc generates **type-safe code** from SQL. Here's how it works:
 
