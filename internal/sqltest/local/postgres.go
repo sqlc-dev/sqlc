@@ -59,7 +59,7 @@ func postgreSQL(t *testing.T, migrations []string, rw bool) string {
 			t.Fatal(err)
 		}
 		h.Write(blob)
-		seed = append(seed, migrate.RemoveRollbackStatements(string(blob)))
+		seed = append(seed, migrate.RemoveIgnoredStatements(string(blob)))
 	}
 
 	var name string
