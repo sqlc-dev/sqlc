@@ -222,7 +222,7 @@ func (r *Runner) Invoke(ctx context.Context, method string, args any, reply any,
 	}
 
 	result, err := runtimeAndCode.rt.InstantiateModule(ctx, runtimeAndCode.code, conf)
-	if result != nil {
+	if err == nil {
 		defer result.Close(ctx)
 	}
 	if cerr := checkError(err, stderr); cerr != nil {
