@@ -11,7 +11,7 @@ require (
 	github.com/google/cel-go v0.22.1
 	github.com/google/go-cmp v0.6.0
 	github.com/jackc/pgx/v4 v4.18.3
-	github.com/jackc/pgx/v5 v5.7.1
+	github.com/jackc/pgx/v5 v5.7.2
 	github.com/jinzhu/inflection v1.0.0
 	github.com/lib/pq v1.10.9
 	github.com/pganalyze/pg_query_go/v5 v5.1.0
@@ -26,7 +26,7 @@ require (
 	google.golang.org/grpc v1.69.2
 	google.golang.org/protobuf v1.36.0
 	gopkg.in/yaml.v3 v3.0.1
-	modernc.org/sqlite v1.34.3
+	modernc.org/sqlite v1.34.4
 )
 
 require (
