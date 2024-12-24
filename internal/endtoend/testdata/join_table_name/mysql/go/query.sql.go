@@ -17,13 +17,13 @@ WHERE bar.id = ? AND foo.id = ?
 `
 
 type TableNameParams struct {
-	ID   uint64
-	ID_2 uint64
+	ID   int32
+	ID_2 int32
 }
 
-func (q *Queries) TableName(ctx context.Context, arg TableNameParams) (uint64, error) {
+func (q *Queries) TableName(ctx context.Context, arg TableNameParams) (int32, error) {
 	row := q.db.QueryRowContext(ctx, tableName, arg.ID, arg.ID_2)
-	var id uint64
+	var id int32
 	err := row.Scan(&id)
 	return id, err
 }

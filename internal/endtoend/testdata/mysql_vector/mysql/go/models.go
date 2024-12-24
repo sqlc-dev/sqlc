@@ -4,15 +4,7 @@
 
 package querytest
 
-import (
-	"database/sql"
-)
-
-type Bar struct {
-	ID int32
-}
-
 type Foo struct {
-	ID  int32
-	Bar sql.NullInt32
+	ID        int32
+	Embedding interface{}
 }
