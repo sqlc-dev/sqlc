@@ -1,3 +1,3 @@
-CREATE TABLE bar (id serial not null);
-CREATE TABLE foo (id serial not null, bar integer references bar(id));
+CREATE TABLE bar (id integer not null);
+CREATE TABLE foo (id integer not null, bar integer references bar(id));
 

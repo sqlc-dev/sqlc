@@ -9,10 +9,10 @@ import (
 )
 
 type Bar struct {
-	ID uint64
+	ID int32
 }
 
 type Foo struct {
-	ID  uint64
+	ID  int32
 	Bar sql.NullInt32
 }
