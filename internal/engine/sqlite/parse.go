@@ -50,6 +50,7 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 	pp.AddErrorListener(el)
 	// pp.BuildParseTrees = true
 	tree := pp.Parse()
+
 	if el.err != "" {
 		return nil, errors.New(el.err)
 	}
@@ -83,6 +84,7 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 			loc = stmt.GetStop().GetStop() + 2
 		}
 	}
+
 	return stmts, nil
 }
 
