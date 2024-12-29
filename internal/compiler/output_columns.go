@@ -596,9 +596,15 @@ func (c *Compiler) sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, erro
 			if err != nil {
 				return nil, err
 			}
+
+			var tableName string
+			if n.Alias != nil {
+				tableName = *n.Alias.Aliasname
+			}
+
 			tables = append(tables, &Table{
 				Rel: &ast.TableName{
-					Name: *n.Alias.Aliasname,
+					Name: tableName,
 				},
 				Columns: cols,
 			})
