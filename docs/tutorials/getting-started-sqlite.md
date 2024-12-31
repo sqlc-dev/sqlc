@@ -189,7 +189,7 @@ func main() {
 Before this code will compile you'll need to fetch the relevant SQLite driver:
 
 ```shell
-go get github.com/mattn/go-sqlite3
+go get modernc.org/sqlite
 go build ./...
 ```
 
