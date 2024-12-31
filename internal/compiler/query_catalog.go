@@ -86,7 +86,7 @@ func (qc QueryCatalog) GetTable(rel *ast.TableName) (*Table, error) {
 	if err != nil {
 		return nil, err
 	}
-	var cols []*Column
+	cols := make([]*Column, 0, len(src.Columns))
 	for _, c := range src.Columns {
 		cols = append(cols, ConvertColumn(rel, c))
 	}
