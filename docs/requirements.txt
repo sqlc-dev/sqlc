@@ -11,7 +11,7 @@ idna==3.10
 imagesize==1.4.1
 myst-parser==4.0.0 
 packaging==24.2
-pyparsing==3.2.0
+pyparsing==3.2.1
 pytz==2024.2
 requests==2.32.3
 snowballstemmer==2.2.0
