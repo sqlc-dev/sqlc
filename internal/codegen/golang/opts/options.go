@@ -25,6 +25,7 @@ type Options struct {
 	EmitEnumValidMethod         bool              `json:"emit_enum_valid_method,omitempty" yaml:"emit_enum_valid_method"`
 	EmitAllEnumValues           bool              `json:"emit_all_enum_values,omitempty" yaml:"emit_all_enum_values"`
 	EmitSqlAsComment            bool              `json:"emit_sql_as_comment,omitempty" yaml:"emit_sql_as_comment"`
+	GetDBFromContext            bool              `json:"get_db_from_context,omitempty" yaml:"get_db_from_context"`
 	JsonTagsCaseStyle           string            `json:"json_tags_case_style,omitempty" yaml:"json_tags_case_style"`
 	Package                     string            `json:"package" yaml:"package"`
 	Out                         string            `json:"out" yaml:"out"`
@@ -146,6 +147,12 @@ func parseGlobalOpts(req *plugin.GenerateRequest) (*GlobalOptions, error) {
 func ValidateOpts(opts *Options) error {
 	if opts.EmitMethodsWithDbArgument && opts.EmitPreparedQueries {
 		return fmt.Errorf("invalid options: emit_methods_with_db_argument and emit_prepared_queries options are mutually exclusive")
+	}
+	if opts.GetDBFromContext && opts.EmitPreparedQueries {
+		return fmt.Errorf("invalid options: get_db_from_context and emit_prepared_queries options are mutually exclusive")
+	}
+	if opts.GetDBFromContext && opts.EmitMethodsWithDbArgument {
+		return fmt.Errorf("invalid options: get_db_from_context and emit_methods_with_db_argument options are mutually exclusive")
 	}
 	if *opts.QueryParameterLimit < 0 {
 		return fmt.Errorf("invalid options: query parameter limit must not be negative")

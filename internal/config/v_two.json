@@ -143,6 +143,9 @@
                                     "emit_sql_as_comment": {
                                         "type": "boolean"
                                     },
+                                    "get_db_from_context": {
+                                        "type": "boolean"
+                                    },
                                     "build_tags": {
                                         "type": "string"
                                     },

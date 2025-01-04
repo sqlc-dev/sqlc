@@ -37,6 +37,7 @@ type tmplCtx struct {
 	EmitMethodsWithDBArgument bool
 	EmitEnumValidMethod       bool
 	EmitAllEnumValues         bool
+	GetDBFromContext          bool
 	UsesCopyFrom              bool
 	UsesBatch                 bool
 	OmitSqlcVersion           bool
@@ -64,6 +65,9 @@ func (t *tmplCtx) codegenQueryMethod(q Query) string {
 	db := "q.db"
 	if t.EmitMethodsWithDBArgument {
 		db = "db"
+	}
+	if t.GetDBFromContext {
+		db = "q.getDBFromContext(ctx)"
 	}
 
 	switch q.Cmd {
@@ -177,6 +181,7 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 		EmitMethodsWithDBArgument: options.EmitMethodsWithDbArgument,
 		EmitEnumValidMethod:       options.EmitEnumValidMethod,
 		EmitAllEnumValues:         options.EmitAllEnumValues,
+		GetDBFromContext:          options.GetDBFromContext,
 		UsesCopyFrom:              usesCopyFrom(queries),
 		UsesBatch:                 usesBatch(queries),
 		SQLDriver:                 parseDriver(options.SqlPackage),

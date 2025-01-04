@@ -40,7 +40,13 @@ func (q *Queries) {{.MethodName}}(ctx context.Context{{if $.EmitMethodsWithDBArg
 	go convertRowsFor{{.MethodName}}(pw, {{.Arg.Name}})
 	// The string interpolation is necessary because LOAD DATA INFILE requires
 	// the file name to be given as a literal string.
-	result, err := {{if (not $.EmitMethodsWithDBArgument)}}q.{{end}}db.ExecContext(ctx, fmt.Sprintf("LOAD DATA LOCAL INFILE '%s' INTO TABLE {{.TableIdentifierForMySQL}} %s ({{range $index, $name := .Arg.ColumnNames}}{{if gt $index 0}}, {{end}}{{$name}}{{end}})", "Reader::" + rh, mysqltsv.Escaping))
+	{{- $db := "q.db"}}
+	{{- if $.EmitMethodsWithDBArgument}}
+	{{- $db = "db"}}
+	{{- else if $.GetDBFromContext}}
+	{{- $db = "q.getDBFromContext(ctx)"}}
+	{{- end}}
+	result, err := {{$db}}.ExecContext(ctx, fmt.Sprintf("LOAD DATA LOCAL INFILE '%s' INTO TABLE {{.TableIdentifierForMySQL}} %s ({{range $index, $name := .Arg.ColumnNames}}{{if gt $index 0}}, {{end}}{{$name}}{{end}})", "Reader::" + rh, mysqltsv.Escaping))
 	if err != nil {
 		return 0, err
 	}

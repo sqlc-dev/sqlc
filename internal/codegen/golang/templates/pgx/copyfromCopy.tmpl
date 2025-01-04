@@ -42,7 +42,12 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.SlicePair
 	return db.CopyFrom(ctx, {{.TableIdentifierAsGoSlice}}, {{.Arg.ColumnNamesAsGoSlice}}, &iteratorFor{{.MethodName}}{rows: {{.Arg.Name}}})
 {{- else -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.SlicePair}}) (int64, error) {
-	return q.db.CopyFrom(ctx, {{.TableIdentifierAsGoSlice}}, {{.Arg.ColumnNamesAsGoSlice}}, &iteratorFor{{.MethodName}}{rows: {{.Arg.Name}}})
+
+{{- $db := "db"}}
+{{- if $.GetDBFromContext}}
+{{- $db = "getDBFromContext(ctx)"}}
+{{- end}}
+	return q.{{$db}}.CopyFrom(ctx, {{.TableIdentifierAsGoSlice}}, {{.Arg.ColumnNamesAsGoSlice}}, &iteratorFor{{.MethodName}}{rows: {{.Arg.Name}}})
 {{- end}}
 }
 

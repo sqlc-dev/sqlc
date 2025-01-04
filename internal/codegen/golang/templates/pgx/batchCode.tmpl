@@ -46,7 +46,13 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ if $.EmitMethodsWithDB
         }
         batch.Queue({{.ConstantName}}, vals...)
     }
-    br := {{if not $.EmitMethodsWithDBArgument}}q.{{end}}db.SendBatch(ctx, batch)
+	{{- $db := "q.db"}}
+	{{- if $.EmitMethodsWithDBArgument}}
+	{{- $db = "db"}}
+	{{- else if $.GetDBFromContext}}
+	{{- $db = "q.getDBFromContext(ctx)"}}
+	{{- end}}
+    br := {{$db}}.SendBatch(ctx, batch)
     return &{{.MethodName}}BatchResults{br,len({{.Arg.Name}}),false}
 }
 
