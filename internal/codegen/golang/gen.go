@@ -39,6 +39,7 @@ type tmplCtx struct {
 	EmitAllEnumValues         bool
 	UsesCopyFrom              bool
 	UsesBatch                 bool
+	UseInterfaceReturnTypes   bool
 	OmitSqlcVersion           bool
 	BuildTags                 string
 }
@@ -169,6 +170,7 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 
 	tctx := tmplCtx{
 		EmitInterface:             options.EmitInterface,
+		UseInterfaceReturnTypes:   options.UseInterfaceReturnTypes,
 		EmitJSONTags:              options.EmitJsonTags,
 		JsonTagsIDUppercase:       options.JsonTagsIdUppercase,
 		EmitDBTags:                options.EmitDbTags,
