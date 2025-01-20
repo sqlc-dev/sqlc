@@ -9,20 +9,19 @@ jobs:
     strategy:
       matrix:
         # Disabling windows builds while we figure out why they're broken
-        # os: [ubuntu-latest, macos-latest, windows-latest]
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-22.04, macos-14, windows-2022]
         cgo: ['1', '0']
         # Workaround no native support for conditional matrix items
         # https://github.com/orgs/community/discussions/26253#discussioncomment-6745038
-        isMain:
-          - ${{ github.ref == 'refs/heads/main' }}
-        exclude:
-          - isMain: false
-        include:
-        - os: ubuntu-latest
-          cgo: '1'
-        - os: ubuntu-latest
-          cgo: '0'
+        # isMain:
+        #   - ${{ github.ref == 'refs/heads/main' }}
+        # exclude:
+        #   - isMain: false
+        # include:
+        # - os: ubuntu-22.04
+        #   cgo: '1'
+        # - os: ubuntu-22.04
+        #   cgo: '0'
     name: test ${{ matrix.os }} cgo=${{ matrix.cgo }}
     runs-on: ${{ matrix.os }}
 
@@ -71,7 +70,7 @@ jobs:
         CGO_ENABLED: ${{ matrix.cgo }}
 
   vuln_check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     timeout-minutes: 5
 
     steps:
