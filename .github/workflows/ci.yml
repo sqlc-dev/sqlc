@@ -8,20 +8,21 @@ jobs:
   test:
     strategy:
       matrix:
-        # Disabling windows builds while we figure out why they're broken
-        os: [ubuntu-22.04, macos-14, windows-2022]
+        # Disabling windows builds while we fix installing PostgreSQL 16
+        # os: [ubuntu-22.04, macos-14, windows-2022]
+        os: [ubuntu-22.04, macos-14]
         cgo: ['1', '0']
         # Workaround no native support for conditional matrix items
         # https://github.com/orgs/community/discussions/26253#discussioncomment-6745038
-        # isMain:
-        #   - ${{ github.ref == 'refs/heads/main' }}
-        # exclude:
-        #   - isMain: false
-        # include:
-        # - os: ubuntu-22.04
-        #   cgo: '1'
-        # - os: ubuntu-22.04
-        #   cgo: '0'
+        isMain:
+          - ${{ github.ref == 'refs/heads/main' }}
+        exclude:
+          - isMain: false
+        include:
+        - os: ubuntu-22.04
+          cgo: '1'
+        - os: ubuntu-22.04
+          cgo: '0'
     name: test ${{ matrix.os }} cgo=${{ matrix.cgo }}
     runs-on: ${{ matrix.os }}
 
