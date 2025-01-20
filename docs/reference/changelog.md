@@ -1,8 +1,72 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+(v1-28-0)=
+## [1.28.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.28.0)
+Released 2025-01-20
+
+### Features
+
+- (mysql) Add a test for VECTOR column type (#3734)
+- (quickdb) Remove unused func (#3576)
+- (vet) Allow selective disabling of rules per query (#3620)
+- (dolphin) Upgrade to latest TiDB parser (#3733)
+
+### Bug Fixes
+
+- (dbmanager) Use correct SQL to drop databases (#3640)
+- (compiler) Don't crash on WHERE x IN (... UNION ...) (#3652)
+- (golang) Escape q field name (#3647)
+- Postgresql alter materialized view is not registered to statements (#3728)
+- Do not close wazero module on error (#3758) (#3759)
+
+### Documentation
+
+- How-to use transactions with pgx (#3557)
+- Add missing documentation about copyfrom (#3583)
+- Add sqlc-gen-from-template (#3601)
+- Correct spelling and grammar (#3645)
+
+### Miscellaneous Tasks
+
+- Remove the triage label (#3527)
+- Upgrade to Go 1.22.8 to silence vulncheck (#3646)
+
+### Build
+
+- (deps) Bump myst-parser (#3530)
+- (deps) Bump golang from 1.22.5 to 1.22.6 (#3532)
+- (deps) Bump modernc.org/sqlite (#3537)
+- (deps) Bump the production-dependencies group across 1 directory with 4 updates (#3566)
+- (deps) Bump the production-dependencies group across 1 directory with 2 updates (#3565)
+- (deps) Bump golang from 1.22.6 to 1.23.0 (#3546)
+- (deps) Bump golang from 1.23.0 to 1.23.1 (#3586)
+- (deps) Bump the production-dependencies group across 1 directory with 5 updates (#3644)
+- (deps) Bump the production-dependencies group across 1 directory with 5 updates (#3642)
+- (deps) Bump sphinx-rtd-theme (#3648)
+- (deps) Bump pyparsing (#3653)
+- (deps) Bump markupsafe (#3666)
+- (deps) Bump the production-dependencies group across 1 directory with 2 updates (#3707)
+- (deps) Bump golang from 1.23.2 to 1.23.3 (#3691)
+- (deps) Bump the production-dependencies group across 1 directory with 5 updates (#3721)
+- (deps) Bump the production-dependencies group across 1 directory with 2 updates (#3731)
+- (deps) Bump certifi in /docs in the production-dependencies group (#3748)
+- (deps) Bump golang.org/x/crypto from 0.27.0 to 0.31.0 (#3740)
+- (deps) Bump golang from 1.23.3 to 1.23.4 (#3735)
+- (deps) Bump the production-dependencies group across 1 directory with 2 updates (#3749)
+- (deps) Bump the production-dependencies group with 2 updates (#3753)
+- (deps) Bump the production-dependencies group across 1 directory with 3 updates (#3764)
+- (deps) Bump the production-dependencies group (#3761)
+- (deps) Bump jinja2 from 3.1.4 to 3.1.5 in /docs (#3762)
+- (deps) Bump google.golang.org/protobuf (#3776)
+- (deps) Bump the production-dependencies group across 1 directory with 2 updates (#3777)
+- (deps) Bump google.golang.org/grpc (#3784)
+- (deps) Bump golang from 1.23.4 to 1.23.5 (#3791)
+- (deps) Bump the production-dependencies group with 2 updates (#3789)
+- Upgrade to Go 1.23.5 (#3795)
+
 (v1-27-0)=
-## [1.27.0](https://github.com/sqlc-dev/sqlc/releases/tag/1.27.0)
+## [1.27.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.27.0)
 Released 2024-08-05
 
 ### Bug Fixes
@@ -40,7 +104,7 @@ Released 2024-08-05
 - Remove internal/sqltest/hosted package (#3521)
 
 (v1-26-0)=
-## [1.26.0](https://github.com/sqlc-dev/sqlc/releases/tag/1.26.0)
+## [1.26.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.26.0)
 Released 2024-03-28
 
 ### Release notes
