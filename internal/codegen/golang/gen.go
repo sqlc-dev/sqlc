@@ -41,6 +41,7 @@ type tmplCtx struct {
 	UsesBatch                 bool
 	OmitSqlcVersion           bool
 	BuildTags                 string
+	ExposeDbConnection        bool
 }
 
 func (t *tmplCtx) OutputQuery(sourceName string) bool {
@@ -187,6 +188,7 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 		SqlcVersion:               req.SqlcVersion,
 		BuildTags:                 options.BuildTags,
 		OmitSqlcVersion:           options.OmitSqlcVersion,
+		ExposeDbConnection:        options.ExposeDbConnection,
 	}
 
 	if tctx.UsesCopyFrom && !tctx.SQLDriver.IsPGX() && options.SqlDriver != opts.SQLDriverGoSQLDriverMySQL {

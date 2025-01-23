@@ -38,6 +38,7 @@ type Options struct {
 	OutputQuerierFileName       string            `json:"output_querier_file_name,omitempty" yaml:"output_querier_file_name"`
 	OutputCopyfromFileName      string            `json:"output_copyfrom_file_name,omitempty" yaml:"output_copyfrom_file_name"`
 	OutputFilesSuffix           string            `json:"output_files_suffix,omitempty" yaml:"output_files_suffix"`
+	ExposeDbConnection          bool              `json:"expose_db_connection,omitempty" yaml:"expose_db_connection"`
 	InflectionExcludeTableNames []string          `json:"inflection_exclude_table_names,omitempty" yaml:"inflection_exclude_table_names"`
 	QueryParameterLimit         *int32            `json:"query_parameter_limit,omitempty" yaml:"query_parameter_limit"`
 	OmitSqlcVersion             bool              `json:"omit_sqlc_version,omitempty" yaml:"omit_sqlc_version"`
@@ -149,6 +150,9 @@ func ValidateOpts(opts *Options) error {
 	}
 	if *opts.QueryParameterLimit < 0 {
 		return fmt.Errorf("invalid options: query parameter limit must not be negative")
+	}
+	if opts.ExposeDbConnection && opts.EmitMethodsWithDbArgument {
+		return fmt.Errorf("invalid options: expose_db_connection and emit_methods_with_db_argument options are mutually exclusive")
 	}
 
 	return nil
