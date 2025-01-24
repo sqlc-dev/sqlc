@@ -1033,6 +1033,7 @@ func defaultSchema(name string) *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "bool"},
+			ReturnTypeNullable: true,
 		},
 		{
 			Name: "GREATEST",
@@ -1259,6 +1260,7 @@ func defaultSchema(name string) *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "bool"},
+			ReturnTypeNullable: true,
 		},
 		{
 			Name: "IS_IPV4",
@@ -1304,6 +1306,7 @@ func defaultSchema(name string) *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "bool"},
+			ReturnTypeNullable: true,
 		},
 		{
 			Name: "IS_UUID",
@@ -2738,6 +2741,7 @@ func defaultSchema(name string) *catalog.Schema {
 				},
 			},
 			ReturnType: &ast.TypeName{Name: "bool"},
+			ReturnTypeNullable: true,
 		},
 		{
 			Name: "REPEAT",
