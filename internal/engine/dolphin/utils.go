@@ -9,8 +9,8 @@ import (
 
 func parseTableName(n *pcast.TableName) *ast.TableName {
 	return &ast.TableName{
-		Schema: identifier(n.Schema.String()),
-		Name:   identifier(n.Name.String()),
+		Schema: n.Schema.String(),
+		Name:   n.Name.String(),
 	}
 }
 
