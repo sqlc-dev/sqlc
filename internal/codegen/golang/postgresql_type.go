@@ -233,7 +233,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		}
 		return "sql.NullTime"
 
-	case "pg_catalog.timestamp":
+	case "pg_catalog.timestamp", "timestamp":
 		if driver == opts.SQLDriverPGXV5 {
 			return "pgtype.Timestamp"
 		}
