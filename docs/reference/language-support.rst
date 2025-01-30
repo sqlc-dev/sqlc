@@ -16,14 +16,15 @@ Community language support
 
 New languages can be added via :doc:`plugins <../guides/plugins>`.
 
-========  =================================  ===============  ============  ===============
-Language  Plugin                             MySQL            PostgreSQL    SQLite
-========  =================================  ===============  ============  ===============
-F#        `kaashyapan/sqlc-gen-fsharp`_      Not implemented  Beta          Beta
-C#        `DaredevilOSS/sqlc-gen-csharp`_    Beta             Beta          Beta
-Ruby      `DaredevilOSS/sqlc-gen-ruby`_      Beta             Beta          Beta
-[Any]     `fdietze/sqlc-gen-from-template`_  Stable           Stable        Stable
-========  =================================  ===============  ============  ===============
+========  =================================  ===============  ===============  ===============
+Language  Plugin                             MySQL            PostgreSQL       SQLite
+========  =================================  ===============  ===============  ===============
+F#        `kaashyapan/sqlc-gen-fsharp`_      Not implemented  Beta             Beta
+C#        `DaredevilOSS/sqlc-gen-csharp`_    Beta             Beta             Beta
+Ruby      `DaredevilOSS/sqlc-gen-ruby`_      Beta             Beta             Beta
+PHP       `lcarilla/sqlc-plugin-php-dbal`_   Beta             Not implemented  Not implemented
+[Any]     `fdietze/sqlc-gen-from-template`_  Stable           Stable           Stable
+========  =================================  ===============  ===============  ===============
 
 .. _sqlc-gen-go: https://github.com/sqlc-dev/sqlc-gen-go
 .. _kaashyapan/sqlc-gen-fsharp: https://github.com/kaashyapan/sqlc-gen-fsharp
@@ -33,6 +34,7 @@ Ruby      `DaredevilOSS/sqlc-gen-ruby`_      Beta             Beta          Beta
 .. _DaredevilOSS/sqlc-gen-csharp: https://github.com/DaredevilOSS/sqlc-gen-csharp
 .. _DaredevilOSS/sqlc-gen-ruby: https://github.com/DaredevilOSS/sqlc-gen-ruby
 .. _fdietze/sqlc-gen-from-template: https://github.com/fdietze/sqlc-gen-from-template
+.. _lcarilla/sqlc-plugin-php-dbal: https://github.com/lcarilla/sqlc-plugin-php-dbal
 
 Future language support
 ************************
