@@ -23,6 +23,7 @@ F#        `kaashyapan/sqlc-gen-fsharp`_      Not implemented  Beta             B
 C#        `DaredevilOSS/sqlc-gen-csharp`_    Beta             Beta             Beta
 Ruby      `DaredevilOSS/sqlc-gen-ruby`_      Beta             Beta             Beta
 PHP       `lcarilla/sqlc-plugin-php-dbal`_   Beta             Not implemented  Not implemented
+Zig       `tinyzimmer/sqlc-gen-zig`_         Not implemented  Beta             Not implemented
 [Any]     `fdietze/sqlc-gen-from-template`_  Stable           Stable           Stable
 ========  =================================  ===============  ===============  ===============
 
@@ -35,6 +36,7 @@ PHP       `lcarilla/sqlc-plugin-php-dbal`_   Beta             Not implemented  N
 .. _DaredevilOSS/sqlc-gen-ruby: https://github.com/DaredevilOSS/sqlc-gen-ruby
 .. _fdietze/sqlc-gen-from-template: https://github.com/fdietze/sqlc-gen-from-template
 .. _lcarilla/sqlc-plugin-php-dbal: https://github.com/lcarilla/sqlc-plugin-php-dbal
+.. _tinyzimmer/sqlc-gen-zig: https://github.com/tinyzimmer/sqlc-gen-zig
 
 Future language support
 ************************
