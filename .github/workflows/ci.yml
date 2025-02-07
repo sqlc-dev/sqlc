@@ -75,9 +75,4 @@ jobs:
     timeout-minutes: 5
 
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-go@v5
-      with:
-        go-version: '1.23.5'
-    - run: go install golang.org/x/vuln/cmd/govulncheck@latest
-    - run: govulncheck ./...
+    - uses: golang/govulncheck-action@v1
