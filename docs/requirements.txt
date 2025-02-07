@@ -1,9 +1,9 @@
-Babel==2.16.0
+Babel==2.17.0
 Jinja2==3.1.5
 MarkupSafe==3.0.2
 Pygments==2.19.1
 Sphinx==7.4.7
-certifi==2024.12.14
+certifi==2025.1.31
 chardet==5.2.0
 commonmark==0.9.1
 docutils==0.20.1
@@ -12,7 +12,7 @@ imagesize==1.4.1
 myst-parser==4.0.0 
 packaging==24.2
 pyparsing==3.2.1
-pytz==2024.2
+pytz==2025.1
 requests==2.32.3
 snowballstemmer==2.2.0
 sphinx-favicon==1.0.1
