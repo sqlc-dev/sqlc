@@ -50,7 +50,7 @@ func (r *Runner) Invoke(ctx context.Context, method string, args any, reply any,
 			return fmt.Errorf("failed to encode codegen request: %w", err)
 		}
 	default:
-		return fmt.Errorf("Invalid format provided")
+		return fmt.Errorf("unknown plugin format: %s", r.Format)
 	}
 
 	// Check if the output plugin exists
