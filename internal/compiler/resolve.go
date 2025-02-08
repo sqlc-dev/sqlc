@@ -80,6 +80,30 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 			aliasMap[*rv.Alias.Aliasname] = fqn
 		}
 	}
+	if qc != nil {
+		for _, f := range qc.fromClauses {
+			catCols := make([]*catalog.Column, 0, len(f.Columns))
+			for _, col := range f.Columns {
+				catCols = append(catCols, &catalog.Column{
+					Name:       col.Name,
+					Type:       ast.TypeName{Name: col.DataType},
+					IsNotNull:  col.NotNull,
+					IsUnsigned: col.Unsigned,
+					IsArray:    col.IsArray,
+					ArrayDims:  col.ArrayDims,
+					Comment:    col.Comment,
+					Length:     col.Length,
+				})
+			}
+
+			if err := indexTable(catalog.Table{
+				Rel:     f.Rel,
+				Columns: catCols,
+			}); err != nil {
+				return nil, err
+			}
+		}
+	}
 
 	// resolve a table for an embed
 	for _, embed := range embeds {
