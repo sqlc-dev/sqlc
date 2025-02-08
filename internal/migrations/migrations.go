@@ -5,29 +5,48 @@ import (
 	"strings"
 )
 
-// Remove all lines after a rollback comment.
+// Remove all lines that should be ignored by sqlc, such as rollback
+// comments or explicit "sqlc:ignore" lines.
 //
 // goose:       -- +goose Down
 // sql-migrate: -- +migrate Down
 // tern:        ---- create above / drop below ----
 // dbmate:      -- migrate:down
-func RemoveRollbackStatements(contents string) string {
+// generic:     `-- sqlc:ignore` until `-- sqlc:ignore end`
+func RemoveIgnoredStatements(contents string) string {
 	s := bufio.NewScanner(strings.NewReader(contents))
 	var lines []string
+	var ignoring bool
 	for s.Scan() {
-		if strings.HasPrefix(s.Text(), "-- +goose Down") {
+		line := s.Text()
+
+		if strings.HasPrefix(line, "-- +goose Down") {
 			break
 		}
-		if strings.HasPrefix(s.Text(), "-- +migrate Down") {
+		if strings.HasPrefix(line, "-- +migrate Down") {
 			break
 		}
-		if strings.HasPrefix(s.Text(), "---- create above / drop below ----") {
+		if strings.HasPrefix(line, "---- create above / drop below ----") {
 			break
 		}
-		if strings.HasPrefix(s.Text(), "-- migrate:down") {
+		if strings.HasPrefix(line, "-- migrate:down") {
 			break
 		}
-		lines = append(lines, s.Text())
+
+		if strings.HasPrefix(line, "-- sqlc:ignore end") {
+			ignoring = false
+			// no need to keep this line in result
+			line = ""
+		} else if strings.HasPrefix(line, "-- sqlc:ignore") {
+			ignoring = true
+		}
+
+		if ignoring {
+			// make this line empty, so that errors are still reported on the
+			// correct line
+			line = ""
+		}
+		lines = append(lines, line)
 	}
 	return strings.Join(lines, "\n")
 }
