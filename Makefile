@@ -32,6 +32,9 @@ sqlc-pg-gen:
 sqlc-gen-json:
 	go build -o ~/bin/sqlc-gen-json ./cmd/sqlc-gen-json
 
+test-json-process-plugin:
+	go build -o ~/bin/test-json-process-plugin ./scripts/test-json-process-plugin/
+
 start:
 	docker compose up -d
 

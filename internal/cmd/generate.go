@@ -349,8 +349,9 @@ func codegen(ctx context.Context, combo config.CombinedSettings, sql OutputPair,
 		switch {
 		case plug.Process != nil:
 			handler = &process.Runner{
-				Cmd: plug.Process.Cmd,
-				Env: plug.Env,
+				Cmd:    plug.Process.Cmd,
+				Env:    plug.Env,
+				Format: plug.Process.Format,
 			}
 		case plug.WASM != nil:
 			handler = &wasm.Runner{

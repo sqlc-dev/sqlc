@@ -38,6 +38,9 @@ jobs:
     - name: install sqlc-gen-test
       run: go install github.com/sqlc-dev/sqlc-gen-test@v0.1.0
 
+    - name: install test-json-process-plugin
+      run: go install ./scripts/test-json-process-plugin/
+
     - name: install ./...
       run: go install ./...
       env:
