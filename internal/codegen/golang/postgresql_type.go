@@ -213,15 +213,16 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		return "sql.NullTime"
 
 	case "pg_catalog.time":
-		if driver == opts.SQLDriverPGXV5 {
-			return "pgtype.Time"
-		}
 		if notNull {
 			return "time.Time"
 		}
 		if emitPointersForNull {
 			return "*time.Time"
 		}
+		if driver == opts.SQLDriverPGXV5 {
+			return "pgtype.Time"
+		}
+		
 		return "sql.NullTime"
 
 	case "pg_catalog.timetz":
@@ -234,27 +235,29 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		return "sql.NullTime"
 
 	case "pg_catalog.timestamp", "timestamp":
+		if notNull {
+			return "time.Time"
+		}
+		if emitPointersForNull {
+			return "*time.Time"
+		}
 		if driver == opts.SQLDriverPGXV5 {
 			return "pgtype.Timestamp"
 		}
-		if notNull {
-			return "time.Time"
-		}
-		if emitPointersForNull {
-			return "*time.Time"
-		}
+		
 		return "sql.NullTime"
 
 	case "pg_catalog.timestamptz", "timestamptz":
-		if driver == opts.SQLDriverPGXV5 {
-			return "pgtype.Timestamptz"
-		}
 		if notNull {
 			return "time.Time"
 		}
 		if emitPointersForNull {
 			return "*time.Time"
 		}
+		if driver == opts.SQLDriverPGXV5 {
+			return "pgtype.Timestamptz"
+		}
+		
 		return "sql.NullTime"
 
 	case "text", "pg_catalog.varchar", "pg_catalog.bpchar", "string", "citext", "name":
@@ -270,15 +273,16 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		return "sql.NullString"
 
 	case "uuid":
-		if driver == opts.SQLDriverPGXV5 {
-			return "pgtype.UUID"
-		}
 		if notNull {
 			return "uuid.UUID"
 		}
 		if emitPointersForNull {
 			return "*uuid.UUID"
 		}
+		if driver == opts.SQLDriverPGXV5 {
+			return "pgtype.UUID"
+		}
+		
 		return "uuid.NullUUID"
 
 	case "inet":
