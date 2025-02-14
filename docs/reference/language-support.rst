@@ -21,7 +21,7 @@ Language  Plugin                             MySQL            PostgreSQL       S
 ========  =================================  ===============  ===============  ===============
 C#        `DaredevilOSS/sqlc-gen-csharp`_    Beta             Beta             Beta
 F#        `kaashyapan/sqlc-gen-fsharp`_      N/A              Beta             Beta
-Java      `tandemdude/sqlc-gen-java`_        N/A              Beta             N/A 
+Java      `tandemdude/sqlc-gen-java`_        Beta             Beta             N/A 
 PHP       `lcarilla/sqlc-plugin-php-dbal`_   Beta             N/A              N/A    
 Ruby      `DaredevilOSS/sqlc-gen-ruby`_      Beta             Beta             Beta           
 Zig       `tinyzimmer/sqlc-gen-zig`_         N/A              Beta             N/A            
