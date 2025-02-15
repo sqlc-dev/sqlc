@@ -24,7 +24,7 @@ F#        `kaashyapan/sqlc-gen-fsharp`_      N/A              Beta             B
 Java      `tandemdude/sqlc-gen-java`_        Beta             Beta             N/A 
 PHP       `lcarilla/sqlc-plugin-php-dbal`_   Beta             N/A              N/A    
 Ruby      `DaredevilOSS/sqlc-gen-ruby`_      Beta             Beta             Beta           
-Zig       `tinyzimmer/sqlc-gen-zig`_         N/A              Beta             N/A            
+Zig       `tinyzimmer/sqlc-gen-zig`_         N/A              Beta             Beta            
 [Any]     `fdietze/sqlc-gen-from-template`_  Stable           Stable           Stable
 ========  =================================  ===============  ===============  ===============
 
