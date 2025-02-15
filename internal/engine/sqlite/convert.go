@@ -1003,7 +1003,7 @@ func (c *cc) convertTablesOrSubquery(n []parser.ITable_or_subqueryContext) []ast
 }
 
 type Update_stmt interface {
-	Qualified_table_name() parser.IQualified_table_nameContext
+	Table_name() parser.ITable_nameContext
 	GetStart() antlr.Token
 	AllColumn_name() []parser.IColumn_nameContext
 	WHERE_() antlr.TerminalNode
@@ -1017,7 +1017,7 @@ func (c *cc) convertUpdate_stmtContext(n Update_stmt) ast.Node {
 	}
 
 	relations := &ast.List{}
-	tableName := n.Qualified_table_name().GetText()
+	tableName := n.Table_name().GetText()
 	rel := ast.RangeVar{
 		Relname:  &tableName,
 		Location: n.GetStart().GetStart(),
