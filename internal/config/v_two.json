@@ -143,6 +143,9 @@
                                     "emit_sql_as_comment": {
                                         "type": "boolean"
                                     },
+                                    "expose_db_connection": {
+                                        "type": "boolean"
+                                    },
                                     "build_tags": {
                                         "type": "string"
                                     },

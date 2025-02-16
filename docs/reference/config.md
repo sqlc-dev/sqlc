@@ -189,6 +189,8 @@ The `gen` mapping supports the following keys:
   - Customize the name of the copyfrom file. Defaults to `copyfrom.go`.
 - `output_files_suffix`:
   - If specified the suffix will be added to the name of the generated files.
+- `expose_db_connection`:
+  - If true, expose the `DB` field on the `Queries` struct. Defaults to `false`.
 - `query_parameter_limit`:
   - The number of positional arguments that will be generated for Go functions. To always emit a parameter struct, set this to `0`. Defaults to `1`.
 - `rename`:
