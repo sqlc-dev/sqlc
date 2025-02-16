@@ -1,3 +1,6 @@
 {
-    "files.insertFinalNewline": true
+    "files.insertFinalNewline": true,
+    "files.associations": {
+        "*.tmpl": "html"
+    }
 }
