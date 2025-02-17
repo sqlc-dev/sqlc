@@ -17,7 +17,7 @@ require (
 	github.com/pganalyze/pg_query_go/v5 v5.1.0
 	github.com/pingcap/tidb/pkg/parser v0.0.0-20241203170126-9812d85d0d25
 	github.com/riza-io/grpc-go v0.2.0
-	github.com/spf13/cobra v1.8.1
+	github.com/spf13/cobra v1.9.1
 	github.com/spf13/pflag v1.0.6
 	github.com/tetratelabs/wazero v1.8.2
 	github.com/wasilibs/go-pgquery v0.0.0-20240606042535-c0843d6592cc
