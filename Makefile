@@ -29,6 +29,9 @@ sqlc-dev:
 sqlc-pg-gen:
 	go build -o ~/bin/sqlc-pg-gen ./internal/tools/sqlc-pg-gen
 
+sqlc-dolphin-gen:
+	go build -o ~/bin/sqlc-dolphin-gen ./internal/tools/sqlc-dolphin-gen
+
 sqlc-gen-json:
 	go build -o ~/bin/sqlc-gen-json ./cmd/sqlc-gen-json
 
