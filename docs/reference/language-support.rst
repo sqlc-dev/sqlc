@@ -19,7 +19,7 @@ New languages can be added via :doc:`plugins <../guides/plugins>`.
 ========  =================================  ===============  ===============  ===============
 Language  Plugin                             MySQL            PostgreSQL       SQLite
 ========  =================================  ===============  ===============  ===============
-C#        `DaredevilOSS/sqlc-gen-csharp`_    Beta             Beta             Beta
+C#        `DaredevilOSS/sqlc-gen-csharp`_    Stable           Stable           Stable
 F#        `kaashyapan/sqlc-gen-fsharp`_      N/A              Beta             Beta
 Java      `tandemdude/sqlc-gen-java`_        Beta             Beta             N/A 
 PHP       `lcarilla/sqlc-plugin-php-dbal`_   Beta             N/A              N/A    
