@@ -37,9 +37,6 @@ func (q *Queries) AliasExpand(ctx context.Context, id int32) ([]AliasExpandRow, 
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -71,9 +68,6 @@ func (q *Queries) AliasJoin(ctx context.Context, id int32) ([]AliasJoinRow, erro
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

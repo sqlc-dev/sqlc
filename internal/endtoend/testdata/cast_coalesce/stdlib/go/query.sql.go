@@ -28,9 +28,6 @@ func (q *Queries) CastCoalesce(ctx context.Context) ([]string, error) {
 		}
 		items = append(items, login)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}

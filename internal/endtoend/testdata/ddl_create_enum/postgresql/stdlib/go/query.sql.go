@@ -27,9 +27,6 @@ func (q *Queries) ListFoo(ctx context.Context) ([]Foobar, error) {
 		}
 		items = append(items, val)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}

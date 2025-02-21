@@ -64,9 +64,6 @@ func (q *Queries) LimitSQLCArg(ctx context.Context, limit int32) ([]LimitSQLCArg
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -103,9 +100,6 @@ func (q *Queries) ListUserOrders(ctx context.Context, minPrice string) ([]ListUs
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -145,9 +139,6 @@ func (q *Queries) ListUserParenExpr(ctx context.Context, arg ListUserParenExprPa
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -182,9 +173,6 @@ func (q *Queries) ListUsersByFamily(ctx context.Context, arg ListUsersByFamilyPa
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -215,9 +203,6 @@ func (q *Queries) ListUsersByID(ctx context.Context, id int32) ([]ListUsersByIDR
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -246,9 +231,6 @@ func (q *Queries) ListUsersWithLimit(ctx context.Context, limit int32) ([]ListUs
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

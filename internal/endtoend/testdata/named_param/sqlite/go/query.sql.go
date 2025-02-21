@@ -27,9 +27,6 @@ func (q *Queries) AtParams(ctx context.Context, slug string) ([]string, error) {
 		}
 		items = append(items, name)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -53,9 +50,6 @@ func (q *Queries) FuncParams(ctx context.Context, slug string) ([]string, error)
 			return nil, err
 		}
 		items = append(items, name)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

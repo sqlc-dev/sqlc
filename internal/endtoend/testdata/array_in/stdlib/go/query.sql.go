@@ -34,9 +34,6 @@ func (q *Queries) In(ctx context.Context, arg InParams) ([]int32, error) {
 		}
 		items = append(items, id)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}

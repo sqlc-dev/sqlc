@@ -27,9 +27,6 @@ func (q *Queries) MultiFrom(ctx context.Context, login string) ([]string, error)
 		}
 		items = append(items, email)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}

@@ -29,9 +29,6 @@ func (q *Queries) SelectExcept(ctx context.Context) ([]Foo, error) {
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -57,9 +54,6 @@ func (q *Queries) SelectIntersect(ctx context.Context) ([]Foo, error) {
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -87,9 +81,6 @@ func (q *Queries) SelectUnion(ctx context.Context) ([]Foo, error) {
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -115,9 +106,6 @@ func (q *Queries) SelectUnionOther(ctx context.Context) ([]Foo, error) {
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -150,9 +138,6 @@ func (q *Queries) SelectUnionWithLimit(ctx context.Context, arg SelectUnionWithL
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

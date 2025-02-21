@@ -34,9 +34,6 @@ func (q *Queries) ListAuthorsColumnSort(ctx context.Context, arg ListAuthorsColu
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -61,9 +58,6 @@ func (q *Queries) ListAuthorsColumnSortFnWtihArg(ctx context.Context, mod int64)
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -90,9 +84,6 @@ func (q *Queries) ListAuthorsNameSort(ctx context.Context, minID int64) ([]Autho
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

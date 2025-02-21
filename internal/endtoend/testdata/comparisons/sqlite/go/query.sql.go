@@ -27,9 +27,6 @@ func (q *Queries) AlsoNotEqual(ctx context.Context) ([]bool, error) {
 		}
 		items = append(items, column_1)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -53,9 +50,6 @@ func (q *Queries) Equal(ctx context.Context) ([]bool, error) {
 			return nil, err
 		}
 		items = append(items, column_1)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -81,9 +75,6 @@ func (q *Queries) GreaterThan(ctx context.Context) ([]bool, error) {
 		}
 		items = append(items, column_1)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -107,9 +98,6 @@ func (q *Queries) GreaterThanOrEqual(ctx context.Context) ([]bool, error) {
 			return nil, err
 		}
 		items = append(items, column_1)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -135,9 +123,6 @@ func (q *Queries) LessThan(ctx context.Context) ([]bool, error) {
 		}
 		items = append(items, column_1)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -162,9 +147,6 @@ func (q *Queries) LessThanOrEqual(ctx context.Context) ([]bool, error) {
 		}
 		items = append(items, column_1)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -188,9 +170,6 @@ func (q *Queries) NotEqual(ctx context.Context) ([]bool, error) {
 			return nil, err
 		}
 		items = append(items, column_1)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

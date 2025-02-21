@@ -29,9 +29,6 @@ func (q *Queries) GetData(ctx context.Context, allowInvalid bool) ([]MyTable, er
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}

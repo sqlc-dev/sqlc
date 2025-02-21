@@ -32,9 +32,6 @@ func (q *Queries) AtParams(ctx context.Context, arg AtParamsParams) ([]string, e
 		}
 		items = append(items, name)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -63,9 +60,6 @@ func (q *Queries) FuncParams(ctx context.Context, arg FuncParamsParams) ([]strin
 			return nil, err
 		}
 		items = append(items, name)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

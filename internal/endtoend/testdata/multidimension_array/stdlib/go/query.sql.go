@@ -29,9 +29,6 @@ func (q *Queries) TextArray(ctx context.Context) ([][][]string, error) {
 		}
 		items = append(items, tags)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}

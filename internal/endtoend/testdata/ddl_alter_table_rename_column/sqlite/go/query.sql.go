@@ -28,9 +28,6 @@ func (q *Queries) Placeholder(ctx context.Context) ([]sql.NullString, error) {
 		}
 		items = append(items, boo)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}

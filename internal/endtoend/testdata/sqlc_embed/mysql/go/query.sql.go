@@ -141,9 +141,6 @@ func (q *Queries) WithCrossSchema(ctx context.Context) ([]WithCrossSchemaRow, er
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -192,9 +189,6 @@ func (q *Queries) WithSubquery(ctx context.Context) ([]WithSubqueryRow, error) {
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

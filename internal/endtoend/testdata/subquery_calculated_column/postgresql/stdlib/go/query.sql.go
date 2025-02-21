@@ -27,9 +27,6 @@ func (q *Queries) SubqueryCalcColumn(ctx context.Context) ([]int32, error) {
 		}
 		items = append(items, sum)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}

@@ -30,9 +30,6 @@ func (q *Queries) ListAuthorsUnion(ctx context.Context) ([]string, error) {
 		}
 		items = append(items, foo)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}

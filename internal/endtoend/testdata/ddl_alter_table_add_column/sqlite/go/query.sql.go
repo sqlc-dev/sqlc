@@ -27,9 +27,6 @@ func (q *Queries) Placeholder(ctx context.Context) ([]Venue, error) {
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}

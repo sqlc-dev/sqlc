@@ -14,9 +14,9 @@ select percentile_disc(0.5) within group (order by authors.name)
 from authors
 `
 
-func (q *Queries) Percentile(ctx context.Context) (string, error) {
+func (q *Queries) Percentile(ctx context.Context) (interface{}, error) {
 	row := q.db.QueryRowContext(ctx, percentile)
-	var percentile_disc string
+	var percentile_disc interface{}
 	err := row.Scan(&percentile_disc)
 	return percentile_disc, err
 }

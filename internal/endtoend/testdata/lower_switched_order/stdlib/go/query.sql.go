@@ -32,9 +32,6 @@ func (q *Queries) LowerSwitchedOrder(ctx context.Context, arg LowerSwitchedOrder
 		}
 		items = append(items, bar)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}

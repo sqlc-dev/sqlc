@@ -29,9 +29,6 @@ func (q *Queries) SelectUserByID(ctx context.Context, id int32) ([]sql.NullStrin
 		}
 		items = append(items, first_name)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -59,9 +56,6 @@ func (q *Queries) SelectUserByName(ctx context.Context, name sql.NullString) ([]
 		}
 		items = append(items, first_name)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -86,9 +80,6 @@ func (q *Queries) SelectUserQuestion(ctx context.Context, id int32) ([]sql.NullS
 			return nil, err
 		}
 		items = append(items, first_name)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

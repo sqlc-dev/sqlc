@@ -31,9 +31,6 @@ func (q *Queries) Any(ctx context.Context, dollar_1 []int64) ([]int64, error) {
 		}
 		items = append(items, id)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}

@@ -7,17 +7,15 @@ package querytest
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const getDate = `-- name: GetDate :one
 SELECT now from NOW()
 `
 
-func (q *Queries) GetDate(ctx context.Context) (pgtype.Timestamptz, error) {
+func (q *Queries) GetDate(ctx context.Context) (interface{}, error) {
 	row := q.db.QueryRow(ctx, getDate)
-	var now pgtype.Timestamptz
+	var now interface{}
 	err := row.Scan(&now)
 	return now, err
 }

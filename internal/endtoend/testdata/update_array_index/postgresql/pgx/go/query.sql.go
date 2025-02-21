@@ -17,8 +17,8 @@ RETURNING id, names
 `
 
 type UpdateAuthorParams struct {
-	Names   int32
-	Names_2 string
+	Names   []string
+	Names_2 []string
 	ID      int64
 }
 

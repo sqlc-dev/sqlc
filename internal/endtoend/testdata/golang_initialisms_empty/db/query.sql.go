@@ -28,9 +28,6 @@ func (q *Queries) SelectFoo(ctx context.Context) ([]sql.NullString, error) {
 		}
 		items = append(items, bar_id)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
