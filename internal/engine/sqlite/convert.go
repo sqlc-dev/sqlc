@@ -1073,13 +1073,13 @@ func (c *cc) convertBetweenExpr(n *parser.Expr_betweenContext) ast.Node {
 }
 
 func (c *cc) convertCastExpr(n *parser.Expr_castContext) ast.Node {
-	name := n.Type_name().GetText()
+	typeName := n.Type_name().GetText()
 	return &ast.TypeCast{
 		Arg: c.convert(n.Expr()),
 		TypeName: &ast.TypeName{
-			Name: name,
+			Name: typeName,
 			Names: &ast.List{Items: []ast.Node{
-				&ast.String{Str: name},
+				&ast.String{Str: typeName},
 			}},
 			ArrayBounds: &ast.List{},
 		},
