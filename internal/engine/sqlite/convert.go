@@ -1079,7 +1079,7 @@ func (c *cc) convertCastExpr(n *parser.Expr_castContext) ast.Node {
 		TypeName: &ast.TypeName{
 			Name: name,
 			Names: &ast.List{Items: []ast.Node{
-				NewIdentifier(name),
+				&ast.String{Str: name},
 			}},
 			ArrayBounds: &ast.List{},
 		},
