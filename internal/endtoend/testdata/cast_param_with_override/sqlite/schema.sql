@@ -1,0 +1,4 @@
+CREATE TABLE foo (
+    bar REAL NOT NULL,
+    baz INTEGER NOT NULL
+);
