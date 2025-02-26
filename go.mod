@@ -7,9 +7,9 @@ require (
 	github.com/cubicdaiya/gonp v1.0.4
 	github.com/davecgh/go-spew v1.1.1
 	github.com/fatih/structtag v1.2.0
-	github.com/go-sql-driver/mysql v1.8.1
-	github.com/google/cel-go v0.23.2
-	github.com/google/go-cmp v0.6.0
+	github.com/go-sql-driver/mysql v1.9.0
+	github.com/google/cel-go v0.24.0
+	github.com/google/go-cmp v0.7.0
 	github.com/jackc/pgx/v4 v4.18.3
 	github.com/jackc/pgx/v5 v5.7.2
 	github.com/jinzhu/inflection v1.0.0
@@ -17,9 +17,9 @@ require (
 	github.com/pganalyze/pg_query_go/v5 v5.1.0
 	github.com/pingcap/tidb/pkg/parser v0.0.0-20241203170126-9812d85d0d25
 	github.com/riza-io/grpc-go v0.2.0
-	github.com/spf13/cobra v1.8.1
+	github.com/spf13/cobra v1.9.1
 	github.com/spf13/pflag v1.0.6
-	github.com/tetratelabs/wazero v1.8.2
+	github.com/tetratelabs/wazero v1.9.0
 	github.com/wasilibs/go-pgquery v0.0.0-20240606042535-c0843d6592cc
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/sync v0.11.0
