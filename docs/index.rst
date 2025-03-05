@@ -66,6 +66,7 @@ code ever again.
    howto/embedding.md
    howto/overrides.md
    howto/rename.md
+   howto/separate-models-file.md
 
 .. toctree::
    :maxdepth: 3
