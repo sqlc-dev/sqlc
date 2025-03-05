@@ -571,17 +571,24 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 
 			for _, enum := range schema.Enums {
 				if rel.Name == enum.Name && rel.Schema == schema.Name {
+					enumName := ""
 					if notNull {
 						if schema.Name == req.Catalog.DefaultSchema {
-							return StructName(enum.Name, options)
+							enumName = StructName(enum.Name, options)
+						} else {
+							enumName = StructName(schema.Name+"_"+enum.Name, options)
 						}
-						return StructName(schema.Name+"_"+enum.Name, options)
 					} else {
 						if schema.Name == req.Catalog.DefaultSchema {
-							return "Null" + StructName(enum.Name, options)
+							enumName = "Null" + StructName(enum.Name, options)
+						} else {
+							enumName = "Null" + StructName(schema.Name+"_"+enum.Name, options)
 						}
-						return "Null" + StructName(schema.Name+"_"+enum.Name, options)
 					}
+					if options.ModelsPackageImportPath != "" {
+						return options.OutputModelsPackage + "." + enumName
+					}
+					return enumName
 				}
 			}
 

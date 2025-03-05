@@ -88,7 +88,7 @@ func (v QueryValue) Type() string {
 		return v.Typ
 	}
 	if v.Struct != nil {
-		return v.Struct.Name
+		return v.Struct.Type()
 	}
 	panic("no type for QueryValue: " + v.Name)
 }

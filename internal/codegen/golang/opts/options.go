@@ -35,8 +35,11 @@ type Options struct {
 	OutputBatchFileName         string            `json:"output_batch_file_name,omitempty" yaml:"output_batch_file_name"`
 	OutputDbFileName            string            `json:"output_db_file_name,omitempty" yaml:"output_db_file_name"`
 	OutputModelsFileName        string            `json:"output_models_file_name,omitempty" yaml:"output_models_file_name"`
+	OutputModelsPackage         string            `json:"output_models_package,omitempty" yaml:"output_models_package"`
+	ModelsPackageImportPath     string            `json:"models_package_import_path,omitempty" yaml:"models_package_import_path"`
 	OutputQuerierFileName       string            `json:"output_querier_file_name,omitempty" yaml:"output_querier_file_name"`
 	OutputCopyfromFileName      string            `json:"output_copyfrom_file_name,omitempty" yaml:"output_copyfrom_file_name"`
+	OutputQueryFilesDirectory   string            `json:"output_query_files_directory,omitempty" yaml:"output_query_files_directory"`
 	OutputFilesSuffix           string            `json:"output_files_suffix,omitempty" yaml:"output_files_suffix"`
 	InflectionExcludeTableNames []string          `json:"inflection_exclude_table_names,omitempty" yaml:"inflection_exclude_table_names"`
 	QueryParameterLimit         *int32            `json:"query_parameter_limit,omitempty" yaml:"query_parameter_limit"`
@@ -150,6 +153,11 @@ func ValidateOpts(opts *Options) error {
 	if *opts.QueryParameterLimit < 0 {
 		return fmt.Errorf("invalid options: query parameter limit must not be negative")
 	}
-
+	if opts.OutputModelsPackage != "" && opts.ModelsPackageImportPath == "" {
+		return fmt.Errorf("invalid options: models_package_import_path must be set when output_models_package is used")
+	}
+	if opts.ModelsPackageImportPath != "" && opts.OutputModelsPackage == "" {
+		return fmt.Errorf("invalid options: output_models_package must be set when models_package_import_path is used")
+	}
 	return nil
 }
