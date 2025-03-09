@@ -32,7 +32,7 @@ func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams) (Aut
 	var i Author
 	err := row.Scan(&i.ID, &i.Name, &i.Bio)
 	if err != nil {
-		err = fmt.Errorf("error executing query CreateAuthor: %w", err)
+		err = fmt.Errorf("query CreateAuthor: %w", err)
 	}
 	return i, err
 }
@@ -44,7 +44,7 @@ WHERE id = $1
 
 func (q *Queries) DeleteAuthorExec(ctx context.Context, id int64) error {
 	_, err := q.db.Exec(ctx, deleteAuthorExec, id)
-	return fmt.Errorf("error executing query DeleteAuthorExec: %w", err)
+	return fmt.Errorf("query DeleteAuthorExec: %w", err)
 }
 
 const deleteAuthorExecLastID = `-- name: DeleteAuthorExecLastID :execlastid
@@ -60,7 +60,7 @@ WHERE id = $1
 func (q *Queries) DeleteAuthorExecResult(ctx context.Context, id int64) (pgconn.CommandTag, error) {
 	result, err := q.db.Exec(ctx, deleteAuthorExecResult, id)
 	if err != nil {
-		err = fmt.Errorf("error executing query DeleteAuthorExecResult: %w", err)
+		err = fmt.Errorf("query DeleteAuthorExecResult: %w", err)
 	}
 	return result, err
 }
@@ -73,7 +73,7 @@ WHERE id = $1
 func (q *Queries) DeleteAuthorExecRows(ctx context.Context, id int64) (int64, error) {
 	result, err := q.db.Exec(ctx, deleteAuthorExecRows, id)
 	if err != nil {
-		return 0, fmt.Errorf("error executing query DeleteAuthorExecRows: %w", err)
+		return 0, fmt.Errorf("query DeleteAuthorExecRows: %w", err)
 	}
 	return result.RowsAffected(), nil
 }
@@ -88,7 +88,7 @@ func (q *Queries) GetAuthor(ctx context.Context, id int64) (Author, error) {
 	var i Author
 	err := row.Scan(&i.ID, &i.Name, &i.Bio)
 	if err != nil {
-		err = fmt.Errorf("error executing query GetAuthor: %w", err)
+		err = fmt.Errorf("query GetAuthor: %w", err)
 	}
 	return i, err
 }
@@ -101,19 +101,19 @@ ORDER BY name
 func (q *Queries) ListAuthors(ctx context.Context) ([]Author, error) {
 	rows, err := q.db.Query(ctx, listAuthors)
 	if err != nil {
-		return nil, fmt.Errorf("error executing query ListAuthors: %w", err)
+		return nil, fmt.Errorf("query ListAuthors: %w", err)
 	}
 	defer rows.Close()
 	var items []Author
 	for rows.Next() {
 		var i Author
 		if err := rows.Scan(&i.ID, &i.Name, &i.Bio); err != nil {
-			return nil, fmt.Errorf("error executing query ListAuthors: %w", err)
+			return nil, fmt.Errorf("query ListAuthors: %w", err)
 		}
 		items = append(items, i)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("error executing query ListAuthors: %w", err)
+		return nil, fmt.Errorf("query ListAuthors: %w", err)
 	}
 	return items, nil
 }
