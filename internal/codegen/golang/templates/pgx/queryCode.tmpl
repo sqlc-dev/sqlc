@@ -115,17 +115,17 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, er
 {{end -}}
 {{- if $.EmitMethodsWithDBArgument -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) (pgconn.CommandTag, error) {
-	result, err := db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
+	{{queryRetval .}} db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
 {{- else -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (pgconn.CommandTag, error) {
-	result, err := q.db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
+	{{queryRetval .}} q.db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
 {{- end}}
 	{{- if $.WrapErrors}}
 	if err != nil {
 		err = fmt.Errorf("error executing query {{.MethodName}}: %w", err)
 	}
-	{{- end}}
 	return result, err
+	{{- end}}
 }
 {{end}}
 
