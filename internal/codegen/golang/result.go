@@ -353,7 +353,7 @@ func putOutColumns(query *plugin.Query) bool {
 // This is unlikely to happen, so don't fix it yet
 func columnsToStruct(req *plugin.GenerateRequest, options *opts.Options, name string, columns []goColumn, useID bool) (*Struct, error) {
 	gs := Struct{
-		Name: name,
+		Name: CheckRename(name, options),
 	}
 	seen := map[string][]int{}
 	suffixes := map[int]int{}
