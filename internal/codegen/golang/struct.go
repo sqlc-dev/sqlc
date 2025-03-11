@@ -1,6 +1,7 @@
 package golang
 
 import (
+	"log/slog"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -14,6 +15,14 @@ type Struct struct {
 	Name    string
 	Fields  []Field
 	Comment string
+}
+
+func CheckRename(name string, options *opts.Options) string {
+	if rename := options.Rename[name]; rename != "" {
+		slog.Info("CheckRename", slog.String("original", name), slog.String("rename", rename))
+		return rename
+	}
+	return name
 }
 
 func StructName(name string, options *opts.Options) string {
