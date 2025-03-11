@@ -1,7 +1,6 @@
 package golang
 
 import (
-	"log/slog"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -19,7 +18,6 @@ type Struct struct {
 
 func CheckRename(name string, options *opts.Options) string {
 	if rename := options.Rename[name]; rename != "" {
-		slog.Info("CheckRename", slog.String("original", name), slog.String("rename", rename))
 		return rename
 	}
 	return name
