@@ -4,6 +4,18 @@
 
 package datatype
 
+type DtBoolean struct {
+	A *bool
+	B *bool
+	C *bool
+}
+
+type DtBooleanNotNull struct {
+	A bool
+	B bool
+	C bool
+}
+
 type DtInteger struct {
 	A *int8
 	B *int16
