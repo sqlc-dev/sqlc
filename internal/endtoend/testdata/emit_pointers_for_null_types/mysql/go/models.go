@@ -13,6 +13,15 @@ type DtInteger struct {
 	F *int64
 }
 
+type DtIntegerNotNull struct {
+	A int8
+	B int16
+	C int32
+	D int32
+	E int32
+	F int64
+}
+
 type DtUnsignedInteger struct {
 	A *uint8
 	B *uint16
@@ -20,4 +29,13 @@ type DtUnsignedInteger struct {
 	D *uint32
 	E *uint32
 	F *uint64
+}
+
+type DtUnsignedIntegerNotNull struct {
+	A uint8
+	B uint16
+	C uint32
+	D uint32
+	E uint32
+	F uint64
 }
