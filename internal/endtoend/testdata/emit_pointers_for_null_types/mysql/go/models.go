@@ -34,6 +34,26 @@ type DtIntegerNotNull struct {
 	F int64
 }
 
+type DtRealNumber struct {
+	A *float64
+	B *float64
+	C *float64
+	D *float64
+	E *string
+	F *string
+	G *string
+}
+
+type DtRealNumberNotNull struct {
+	A float64
+	B float64
+	C float64
+	D float64
+	E string
+	F string
+	G string
+}
+
 type DtUnsignedInteger struct {
 	A *uint8
 	B *uint16
