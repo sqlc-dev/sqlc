@@ -1,6 +1,8 @@
 module github.com/sqlc-dev/sqlc
 
-go 1.22.9
+go 1.23
+
+toolchain go1.24.1
 
 require (
 	github.com/antlr4-go/antlr/v4 v4.13.1
@@ -15,7 +17,7 @@ require (
 	github.com/jinzhu/inflection v1.0.0
 	github.com/lib/pq v1.10.9
 	github.com/pganalyze/pg_query_go/v6 v6.0.0
-	github.com/pingcap/tidb/pkg/parser v0.0.0-20241203170126-9812d85d0d25
+	github.com/pingcap/tidb/pkg/parser v0.0.0-20250324122243-d51e00e5bbf0
 	github.com/riza-io/grpc-go v0.2.0
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.6
