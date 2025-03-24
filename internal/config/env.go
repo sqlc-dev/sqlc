@@ -13,5 +13,12 @@ func (c *Config) addEnvVars() error {
 	}
 	c.Cloud.AuthToken = authToken
 
+	serverUri := os.Getenv("SQLC_SERVER_URI")
+	if serverUri != "" && len(c.Servers) != 1 {
+		return fmt.Errorf("$SQLC_SERVER_URI may only be used when there is exactly one server in config file")
+	} else if serverUri != "" {
+		c.Servers[0].URI = serverUri
+	}
+
 	return nil
 }
