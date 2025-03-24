@@ -6,7 +6,7 @@ import (
 	"io"
 	"strings"
 
-	nodes "github.com/pganalyze/pg_query_go/v5"
+	nodes "github.com/pganalyze/pg_query_go/v6"
 
 	"github.com/sqlc-dev/sqlc/internal/engine/postgresql/parser"
 	"github.com/sqlc-dev/sqlc/internal/source"

@@ -14,13 +14,13 @@ require (
 	github.com/jackc/pgx/v5 v5.7.2
 	github.com/jinzhu/inflection v1.0.0
 	github.com/lib/pq v1.10.9
-	github.com/pganalyze/pg_query_go/v5 v5.1.0
+	github.com/pganalyze/pg_query_go/v6 v6.0.0
 	github.com/pingcap/tidb/pkg/parser v0.0.0-20241203170126-9812d85d0d25
 	github.com/riza-io/grpc-go v0.2.0
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.6
-	github.com/tetratelabs/wazero v1.8.2
-	github.com/wasilibs/go-pgquery v0.0.0-20240606042535-c0843d6592cc
+	github.com/tetratelabs/wazero v1.9.0
+	github.com/wasilibs/go-pgquery v0.0.0-20250219053243-148840c597e6
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/sync v0.11.0
 	google.golang.org/grpc v1.70.0
@@ -51,7 +51,7 @@ require (
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/rogpeppe/go-internal v1.10.0 // indirect
 	github.com/stoewer/go-strcase v1.2.0 // indirect
-	github.com/wasilibs/wazero-helpers v0.0.0-20240604052452-61d7981e9a38 // indirect
+	github.com/wasilibs/wazero-helpers v0.0.0-20240620070341-3dff1577cd52 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
