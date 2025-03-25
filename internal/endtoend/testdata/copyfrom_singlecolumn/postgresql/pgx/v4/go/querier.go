@@ -6,9 +6,12 @@ package querytest
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v4"
 )
 
 type Querier interface {
+	WithTx(tx pgx.Tx) *Queries
 	CreateAuthors(ctx context.Context, authorID []int32) (int64, error)
 }
 
