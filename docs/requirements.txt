@@ -11,8 +11,8 @@ idna==3.10
 imagesize==1.4.1
 myst-parser==4.0.1 
 packaging==24.2
-pyparsing==3.2.2
-pytz==2025.1
+pyparsing==3.2.3
+pytz==2025.2
 requests==2.32.3
 snowballstemmer==2.2.0
 sphinx-favicon==1.0.1
