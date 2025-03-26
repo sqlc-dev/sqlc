@@ -146,6 +146,13 @@ func (c *cc) convertCreate_virtual_table_fts5(n *parser.Create_virtual_table_stm
 		IfNotExists: n.EXISTS_() != nil,
 	}
 
+	// All FTS5 virtual tables implicitly contain a 'rowid' column.
+	stmt.Cols = append(stmt.Cols, &ast.ColumnDef{
+		Colname:   "rowid",
+		IsNotNull: true,
+		TypeName:  &ast.TypeName{Name: "integer"},
+	})
+
 	for _, arg := range n.AllModule_argument() {
 		var columnName string
 
