@@ -1,3 +1,7 @@
+-- name: SelectRowID :one
+SELECT rowid FROM ft
+LIMIT 1;
+
 -- name: SelectAllColsFt :many
 SELECT b FROM ft
 WHERE b MATCH ?;
