@@ -37,9 +37,6 @@ func (q *Queries) TestInnerLeft(ctx context.Context) ([]TestInnerLeftRow, error)
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -83,9 +80,6 @@ func (q *Queries) TestInnerLeftInnerLeft(ctx context.Context) ([]TestInnerLeftIn
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -118,9 +112,6 @@ func (q *Queries) TestLeftInner(ctx context.Context) ([]TestLeftInnerRow, error)
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -164,9 +155,6 @@ func (q *Queries) TestLeftInnerLeftInner(ctx context.Context) ([]TestLeftInnerLe
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

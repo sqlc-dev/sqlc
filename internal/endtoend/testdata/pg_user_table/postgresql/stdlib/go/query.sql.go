@@ -27,9 +27,6 @@ func (q *Queries) User(ctx context.Context) ([]int64, error) {
 		}
 		items = append(items, id)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}

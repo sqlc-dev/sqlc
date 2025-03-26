@@ -27,9 +27,6 @@ func (q *Queries) SchemaScopedFilter(ctx context.Context, id uint64) ([]uint64, 
 		}
 		items = append(items, id)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}

@@ -28,9 +28,6 @@ func (q *Queries) GetFirst(ctx context.Context) ([]string, error) {
 		}
 		items = append(items, val)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -54,9 +51,6 @@ func (q *Queries) GetSecond(ctx context.Context, val2 sql.NullInt32) ([]SecondVi
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

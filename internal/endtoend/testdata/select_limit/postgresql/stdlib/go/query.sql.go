@@ -29,9 +29,6 @@ func (q *Queries) FooLimit(ctx context.Context, limit int32) ([]sql.NullString, 
 		}
 		items = append(items, a)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -61,9 +58,6 @@ func (q *Queries) FooLimitOffset(ctx context.Context, arg FooLimitOffsetParams) 
 			return nil, err
 		}
 		items = append(items, a)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

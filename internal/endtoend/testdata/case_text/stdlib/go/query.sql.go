@@ -31,9 +31,6 @@ func (q *Queries) CaseStatementText(ctx context.Context, id string) ([]string, e
 		}
 		items = append(items, is_one)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}

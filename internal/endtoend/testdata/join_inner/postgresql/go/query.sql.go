@@ -32,9 +32,6 @@ func (q *Queries) SelectAllJoined(ctx context.Context, handler sql.NullString) (
 		}
 		items = append(items, id)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -62,9 +59,6 @@ func (q *Queries) SelectAllJoinedAlias(ctx context.Context, handler sql.NullStri
 			return nil, err
 		}
 		items = append(items, id)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

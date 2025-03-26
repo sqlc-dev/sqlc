@@ -39,9 +39,6 @@ func (q *Queries) CreateMemories(ctx context.Context, vampireID []uuid.UUID) ([]
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -65,9 +62,6 @@ func (q *Queries) GetVampireIDs(ctx context.Context, vampireID []uuid.UUID) ([]u
 			return nil, err
 		}
 		items = append(items, vampires_id)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

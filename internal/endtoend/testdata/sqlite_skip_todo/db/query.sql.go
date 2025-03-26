@@ -29,9 +29,6 @@ func (q *Queries) GetFoo(ctx context.Context, bar sql.NullString) ([]sql.NullStr
 		}
 		items = append(items, bar)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -55,9 +52,6 @@ func (q *Queries) ListFoo(ctx context.Context) ([]sql.NullString, error) {
 			return nil, err
 		}
 		items = append(items, bar)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

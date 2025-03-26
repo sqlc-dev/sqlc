@@ -32,9 +32,6 @@ func (q *Queries) Lower(ctx context.Context, arg LowerParams) ([]string, error) 
 		}
 		items = append(items, bar)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}

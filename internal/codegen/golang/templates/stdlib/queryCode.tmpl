@@ -53,9 +53,6 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
         }
         items = append(items, {{.Ret.ReturnName}})
     }
-    if err := rows.Close(); err != nil {
-        return nil, err
-    }
     if err := rows.Err(); err != nil {
         return nil, err
     }

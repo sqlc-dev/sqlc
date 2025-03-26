@@ -34,9 +34,6 @@ func (q *Queries) ListBar(ctx context.Context) ([]int32, error) {
 		}
 		items = append(items, id)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}

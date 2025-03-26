@@ -48,9 +48,6 @@ func (q *Queries) AllAuthors(ctx context.Context) ([]AllAuthorsRow, error) {
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -93,9 +90,6 @@ func (q *Queries) AllAuthorsAliases(ctx context.Context) ([]AllAuthorsAliasesRow
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -140,9 +134,6 @@ func (q *Queries) AllAuthorsAliases2(ctx context.Context) ([]AllAuthorsAliases2R
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -185,9 +176,6 @@ func (q *Queries) AllSuperAuthors(ctx context.Context) ([]AllSuperAuthorsRow, er
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -232,9 +220,6 @@ func (q *Queries) AllSuperAuthorsAliases(ctx context.Context) ([]AllSuperAuthors
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -278,9 +263,6 @@ func (q *Queries) AllSuperAuthorsAliases2(ctx context.Context) ([]AllSuperAuthor
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -314,9 +296,6 @@ func (q *Queries) GetMayors(ctx context.Context) ([]GetMayorsRow, error) {
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -353,9 +332,6 @@ func (q *Queries) GetMayorsOptional(ctx context.Context) ([]GetMayorsOptionalRow
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -423,9 +399,6 @@ func (q *Queries) GetSuggestedUsersByID(ctx context.Context, userID int64) ([]Ge
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -453,9 +426,6 @@ func (q *Queries) GetSuggestedUsersByID2(ctx context.Context, userID int64) ([]i
 			return nil, err
 		}
 		items = append(items, user_id)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

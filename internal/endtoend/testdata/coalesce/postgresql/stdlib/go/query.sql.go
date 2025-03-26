@@ -29,9 +29,6 @@ func (q *Queries) CoalesceNumeric(ctx context.Context) ([]int64, error) {
 		}
 		items = append(items, login)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -63,9 +60,6 @@ func (q *Queries) CoalesceNumericColumns(ctx context.Context) ([]CoalesceNumeric
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -96,9 +90,6 @@ func (q *Queries) CoalesceNumericNull(ctx context.Context) ([]CoalesceNumericNul
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -123,9 +114,6 @@ func (q *Queries) CoalesceString(ctx context.Context) ([]string, error) {
 			return nil, err
 		}
 		items = append(items, login)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -158,9 +146,6 @@ func (q *Queries) CoalesceStringColumns(ctx context.Context) ([]CoalesceStringCo
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -190,9 +175,6 @@ func (q *Queries) CoalesceStringNull(ctx context.Context) ([]CoalesceStringNullR
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

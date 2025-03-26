@@ -34,9 +34,6 @@ func (q *Queries) FooByAandB(ctx context.Context, arg FooByAandBParams) ([]Foo, 
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}

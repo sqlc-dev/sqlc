@@ -32,9 +32,6 @@ func (q *Queries) GetAll(ctx context.Context) ([]User, error) {
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -58,9 +55,6 @@ func (q *Queries) GetIDAll(ctx context.Context) ([]int32, error) {
 			return nil, err
 		}
 		items = append(items, id)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

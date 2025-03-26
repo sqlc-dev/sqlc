@@ -30,9 +30,6 @@ func (q *Queries) ColdCities(ctx context.Context, tempLo int32) ([]string, error
 		}
 		items = append(items, city)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}

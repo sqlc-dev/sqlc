@@ -7,17 +7,15 @@ package querytest
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const sumOrder = `-- name: SumOrder :one
 SELECT SUM(quantity) FROM orders
 `
 
-func (q *Queries) SumOrder(ctx context.Context) (pgtype.Numeric, error) {
+func (q *Queries) SumOrder(ctx context.Context) (int64, error) {
 	row := q.db.QueryRow(ctx, sumOrder)
-	var sum pgtype.Numeric
+	var sum int64
 	err := row.Scan(&sum)
 	return sum, err
 }

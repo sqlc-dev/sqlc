@@ -48,9 +48,6 @@ func (q *Queries) GetTransaction(ctx context.Context, arg GetTransactionParams) 
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}

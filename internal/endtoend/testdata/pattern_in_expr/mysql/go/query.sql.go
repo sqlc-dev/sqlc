@@ -28,9 +28,6 @@ func (q *Queries) FooByBarB(ctx context.Context, b sql.NullString) ([]Foo, error
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -59,9 +56,6 @@ func (q *Queries) FooByList(ctx context.Context, arg FooByListParams) ([]Foo, er
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -92,9 +86,6 @@ func (q *Queries) FooByNotList(ctx context.Context, arg FooByNotListParams) ([]F
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -118,9 +109,6 @@ func (q *Queries) FooByParamList(ctx context.Context, a sql.NullString) ([]Foo, 
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

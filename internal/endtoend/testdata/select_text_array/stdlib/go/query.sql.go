@@ -29,9 +29,6 @@ func (q *Queries) SelectTextArray(ctx context.Context, dollar_1 []string) ([][]s
 		}
 		items = append(items, column_1)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}

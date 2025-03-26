@@ -35,9 +35,6 @@ func (q *Queries) GroupConcat(ctx context.Context) ([]GroupConcatRow, error) {
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -69,9 +66,6 @@ func (q *Queries) GroupConcatOrderBy(ctx context.Context) ([]GroupConcatOrderByR
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

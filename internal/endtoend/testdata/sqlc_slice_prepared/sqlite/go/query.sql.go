@@ -46,9 +46,6 @@ func (q *Queries) FuncParamIdent(ctx context.Context, arg FuncParamIdentParams) 
 		}
 		items = append(items, name)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}

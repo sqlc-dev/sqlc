@@ -154,9 +154,6 @@ func (q *Queries) ListAuthors(ctx context.Context) ([]Author, error) {
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}

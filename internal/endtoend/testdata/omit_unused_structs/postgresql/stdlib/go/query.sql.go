@@ -66,9 +66,6 @@ func (q *Queries) query_return_full_table(ctx context.Context) ([]QueryReturnFul
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}

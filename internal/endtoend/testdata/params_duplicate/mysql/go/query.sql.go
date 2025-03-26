@@ -33,9 +33,6 @@ func (q *Queries) SelectUserByID(ctx context.Context, arg SelectUserByIDParams) 
 		}
 		items = append(items, first_name)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -67,9 +64,6 @@ func (q *Queries) SelectUserByName(ctx context.Context, arg SelectUserByNamePara
 		}
 		items = append(items, first_name)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -99,9 +93,6 @@ func (q *Queries) SelectUserQuestion(ctx context.Context, arg SelectUserQuestion
 			return nil, err
 		}
 		items = append(items, first_name)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

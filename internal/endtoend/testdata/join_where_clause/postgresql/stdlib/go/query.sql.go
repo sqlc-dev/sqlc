@@ -35,9 +35,6 @@ func (q *Queries) JoinNoConstraints(ctx context.Context, arg JoinNoConstraintsPa
 		}
 		items = append(items, barid)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -70,9 +67,6 @@ func (q *Queries) JoinParamWhereClause(ctx context.Context, arg JoinParamWhereCl
 		}
 		items = append(items, barid)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -99,9 +93,6 @@ func (q *Queries) JoinWhereClause(ctx context.Context, owner string) ([]int32, e
 			return nil, err
 		}
 		items = append(items, barid)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

@@ -27,9 +27,6 @@ func (q *Queries) ListUsersByRole(ctx context.Context, role NullFooTypeUserRole)
 		}
 		items = append(items, role)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}

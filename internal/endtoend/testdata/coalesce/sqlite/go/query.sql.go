@@ -29,9 +29,6 @@ func (q *Queries) Coalesce(ctx context.Context) ([]string, error) {
 		}
 		items = append(items, login)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -62,9 +59,6 @@ func (q *Queries) CoalesceColumns(ctx context.Context) ([]CoalesceColumnsRow, er
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

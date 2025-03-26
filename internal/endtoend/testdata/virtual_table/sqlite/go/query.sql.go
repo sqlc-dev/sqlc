@@ -51,9 +51,6 @@ func (q *Queries) SelectAllColsFt(ctx context.Context, b string) ([]string, erro
 		}
 		items = append(items, b)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -78,9 +75,6 @@ func (q *Queries) SelectAllColsTblFt(ctx context.Context, b string) ([]TblFt, er
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -113,9 +107,6 @@ func (q *Queries) SelectBm25Func(ctx context.Context, b string) ([]SelectBm25Fun
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -140,9 +131,6 @@ func (q *Queries) SelectHightlighFunc(ctx context.Context, b string) ([]string, 
 			return nil, err
 		}
 		items = append(items, highlight)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -169,9 +157,6 @@ func (q *Queries) SelectOneColFt(ctx context.Context, b string) ([]string, error
 		}
 		items = append(items, b)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -197,9 +182,6 @@ func (q *Queries) SelectOneColTblFt(ctx context.Context, b string) ([]string, er
 		}
 		items = append(items, c)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -223,9 +205,6 @@ func (q *Queries) SelectSnippetFunc(ctx context.Context, snippet int64) ([]strin
 			return nil, err
 		}
 		items = append(items, snippet)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

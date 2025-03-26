@@ -27,9 +27,6 @@ func (q *Queries) GetProductMetadata(ctx context.Context) ([]string, error) {
 		}
 		items = append(items, id)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -53,9 +50,6 @@ func (q *Queries) ListCalories(ctx context.Context) ([]string, error) {
 			return nil, err
 		}
 		items = append(items, id)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -81,9 +75,6 @@ func (q *Queries) ListCampuses(ctx context.Context) ([]string, error) {
 		}
 		items = append(items, id)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -108,9 +99,6 @@ func (q *Queries) ListMetadata(ctx context.Context) ([]string, error) {
 		}
 		items = append(items, id)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -134,9 +122,6 @@ func (q *Queries) ListStudents(ctx context.Context) ([]string, error) {
 			return nil, err
 		}
 		items = append(items, id)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

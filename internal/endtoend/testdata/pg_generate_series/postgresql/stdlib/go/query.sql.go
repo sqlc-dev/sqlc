@@ -33,9 +33,6 @@ func (q *Queries) GenerateSeries(ctx context.Context, arg GenerateSeriesParams) 
 		}
 		items = append(items, generate_series)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}

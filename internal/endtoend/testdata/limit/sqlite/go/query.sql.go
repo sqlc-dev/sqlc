@@ -36,9 +36,6 @@ func (q *Queries) LimitMe(ctx context.Context, limit int64) ([]bool, error) {
 		}
 		items = append(items, bar)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}

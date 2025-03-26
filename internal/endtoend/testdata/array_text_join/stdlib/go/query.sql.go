@@ -31,9 +31,6 @@ func (q *Queries) JoinTextArray(ctx context.Context) ([][]string, error) {
 		}
 		items = append(items, info)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}

@@ -27,9 +27,6 @@ func (q *Queries) GetAllOrganisations(ctx context.Context) ([]Organisation, erro
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -53,9 +50,6 @@ func (q *Queries) GetAllParties(ctx context.Context) ([]Party, error) {
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -85,9 +79,6 @@ func (q *Queries) GetAllPeople(ctx context.Context) ([]Person, error) {
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

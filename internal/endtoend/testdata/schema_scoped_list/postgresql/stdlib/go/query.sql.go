@@ -27,9 +27,6 @@ func (q *Queries) SchemaScopedColList(ctx context.Context) ([]int32, error) {
 		}
 		items = append(items, id)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -53,9 +50,6 @@ func (q *Queries) SchemaScopedList(ctx context.Context) ([]int32, error) {
 			return nil, err
 		}
 		items = append(items, id)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

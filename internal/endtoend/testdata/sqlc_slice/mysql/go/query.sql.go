@@ -42,9 +42,6 @@ func (q *Queries) FuncNullable(ctx context.Context, favourites []int32) ([]sql.N
 		}
 		items = append(items, bar)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -79,9 +76,6 @@ func (q *Queries) FuncNullableNot(ctx context.Context, favourites []int32) ([]sq
 			return nil, err
 		}
 		items = append(items, bar)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -125,9 +119,6 @@ func (q *Queries) FuncParamIdent(ctx context.Context, arg FuncParamIdentParams) 
 		}
 		items = append(items, name)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -162,9 +153,6 @@ func (q *Queries) FuncParamSoloArg(ctx context.Context, favourites []int32) ([]s
 			return nil, err
 		}
 		items = append(items, name)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -207,9 +195,6 @@ func (q *Queries) FuncParamString(ctx context.Context, arg FuncParamStringParams
 			return nil, err
 		}
 		items = append(items, name)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -271,9 +256,6 @@ func (q *Queries) TypedMyStr(ctx context.Context, mystr []mysql.ID) ([]sql.NullS
 			return nil, err
 		}
 		items = append(items, bar)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

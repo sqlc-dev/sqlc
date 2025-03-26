@@ -28,9 +28,6 @@ func (q *Queries) IdentOnNonNullable(ctx context.Context, bar sql.NullString) ([
 		}
 		items = append(items, bar)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -54,9 +51,6 @@ func (q *Queries) IdentOnNullable(ctx context.Context, maybeBar sql.NullString) 
 			return nil, err
 		}
 		items = append(items, maybe_bar)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -82,9 +76,6 @@ func (q *Queries) StringOnNonNullable(ctx context.Context, bar sql.NullString) (
 		}
 		items = append(items, bar)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -108,9 +99,6 @@ func (q *Queries) StringOnNullable(ctx context.Context, maybeBar sql.NullString)
 			return nil, err
 		}
 		items = append(items, maybe_bar)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

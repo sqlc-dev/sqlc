@@ -40,9 +40,6 @@ func (q *Queries) CTERecursive(ctx context.Context, id int32) ([]CTERecursiveRow
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}

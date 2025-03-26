@@ -34,9 +34,6 @@ func (q *Queries) GetBetweenPrices(ctx context.Context, arg GetBetweenPricesPara
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -67,9 +64,6 @@ func (q *Queries) GetBetweenPricesNamed(ctx context.Context, arg GetBetweenPrice
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -102,9 +96,6 @@ func (q *Queries) GetBetweenPricesTable(ctx context.Context, arg GetBetweenPrice
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -135,9 +126,6 @@ func (q *Queries) GetBetweenPricesTableAlias(ctx context.Context, arg GetBetween
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

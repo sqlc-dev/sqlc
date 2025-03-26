@@ -28,9 +28,6 @@ func (q *Queries) StarExpansionCTE(ctx context.Context) ([]Bar, error) {
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -63,9 +60,6 @@ func (q *Queries) StarExpansionTwoCTE(ctx context.Context) ([]StarExpansionTwoCT
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

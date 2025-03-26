@@ -47,9 +47,6 @@ func (q *Queries) AdvisoryUnlock(ctx context.Context, pgAdvisoryUnlock int64) ([
 		}
 		items = append(items, pg_advisory_unlock)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}

@@ -27,9 +27,6 @@ func (q *Queries) ListBar(ctx context.Context) ([]interface{}, error) {
 		}
 		items = append(items, bar)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -53,9 +50,6 @@ func (q *Queries) ListBaz(ctx context.Context) ([]interface{}, error) {
 			return nil, err
 		}
 		items = append(items, baz)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

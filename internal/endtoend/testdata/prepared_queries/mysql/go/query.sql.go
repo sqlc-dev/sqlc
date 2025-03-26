@@ -94,9 +94,6 @@ func (q *Queries) ListUsers(ctx context.Context) ([]ListUsersRow, error) {
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}

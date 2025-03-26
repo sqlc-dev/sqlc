@@ -31,9 +31,6 @@ func (q *Queries) CTEFilter(ctx context.Context, ready bool) ([]int64, error) {
 		}
 		items = append(items, count)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}

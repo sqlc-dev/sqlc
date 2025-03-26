@@ -33,9 +33,6 @@ func (q *Queries) GetColumns(ctx context.Context) ([]GetColumnsRow, error) {
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -59,9 +56,6 @@ func (q *Queries) GetTables(ctx context.Context) ([]string, error) {
 			return nil, err
 		}
 		items = append(items, table_name)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -98,9 +92,6 @@ func (q *Queries) GetTimezones(ctx context.Context) ([]GetTimezonesRow, error) {
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

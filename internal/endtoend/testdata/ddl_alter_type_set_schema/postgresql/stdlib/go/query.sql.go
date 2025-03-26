@@ -27,9 +27,6 @@ func (q *Queries) ListAuthors(ctx context.Context) ([]LogLine, error) {
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}

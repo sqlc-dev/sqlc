@@ -28,9 +28,6 @@ func (q *Queries) GetAll(ctx context.Context) ([]*Foo, error) {
 		}
 		items = append(items, &i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -54,9 +51,6 @@ func (q *Queries) GetAllAByB(ctx context.Context, b sql.NullInt32) ([]sql.NullIn
 			return nil, err
 		}
 		items = append(items, a)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
