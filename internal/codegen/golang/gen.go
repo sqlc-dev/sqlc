@@ -41,6 +41,7 @@ type tmplCtx struct {
 	UsesBatch                 bool
 	OmitSqlcVersion           bool
 	BuildTags                 string
+	WrapErrors                bool
 }
 
 func (t *tmplCtx) OutputQuery(sourceName string) bool {
@@ -98,6 +99,9 @@ func (t *tmplCtx) codegenQueryRetval(q Query) (string, error) {
 	case ":execrows", ":execlastid":
 		return "result, err :=", nil
 	case ":execresult":
+		if t.WrapErrors {
+			return "result, err :=", nil
+		}
 		return "return", nil
 	default:
 		return "", fmt.Errorf("unhandled q.Cmd case %q", q.Cmd)
@@ -187,6 +191,7 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 		SqlcVersion:               req.SqlcVersion,
 		BuildTags:                 options.BuildTags,
 		OmitSqlcVersion:           options.OmitSqlcVersion,
+		WrapErrors:                options.WrapErrors,
 	}
 
 	if tctx.UsesCopyFrom && !tctx.SQLDriver.IsPGX() && options.SqlDriver != opts.SQLDriverGoSQLDriverMySQL {
