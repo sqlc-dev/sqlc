@@ -22,20 +22,53 @@ type {{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
 {{if eq .Cmd ":one"}}
 {{range .Comments}}//{{.}}
 {{end -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) ({{.Ret.DefineType}}, error) {
+{{- if emitSchemaName }}
+func (q *Queries) {{.MethodName}}(ctx context.Context, schema string, {{ dbarg }} {{.Arg.Pair}}) ({{.Ret.DefineType}}, error) {
+{{- else }}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) error {
+{{- end }}
     {{- template "queryCodeStdExec" . }}
 	{{- if or (ne .Arg.Pair .Ret.Pair) (ne .Arg.DefineType .Ret.DefineType) }}
 	var {{.Ret.Name}} {{.Ret.Type}}
 	{{- end}}
-	err := row.Scan({{.Ret.Scan}})
+	{{- if emitSchemaName }} 
+    err := row.Scan({{.Ret.Scan}})
+    {{- else }}
+    err := row.Scan({{.Ret.Scan}})
+    {{- end }}
 	return {{.Ret.ReturnName}}, err
 }
 {{end}}
 
 {{if eq .Cmd ":many"}}
+var columnRegex = regexp.MustCompile(`SELECT\s+([\w,\s]+)\s+FROM`);
+
 {{range .Comments}}//{{.}}
 {{end -}}
+{{- if emitSchemaName }}
+
+type {{.MethodName}}Filter struct {
+    FieldName string
+    Value     string
+}
+
+type {{.MethodName}}FilterParams struct {
+    ExactParams []{{.MethodName}}Filter
+    InParams    []{{.MethodName}}Filter
+    LikeParams  []{{.MethodName}}Filter
+    SinceParams []{{.MethodName}}Filter
+    MaxParams   []{{.MethodName}}Filter
+    SortParam   string
+    SortOrder   string
+    Pagination  bool
+    PerPage     int 
+    PageNumber  int
+}
+
+func (q *Queries) {{.MethodName}}(ctx context.Context, schema string, filterParams {{.MethodName}}FilterParams, {{ dbarg }} {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error) {;
+{{- else }}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error) {
+{{- end }}
     {{- template "queryCodeStdExec" . }}
     if err != nil {
         return nil, err
@@ -66,7 +99,11 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 {{if eq .Cmd ":exec"}}
 {{range .Comments}}//{{.}}
 {{end -}}
+{{- if emitSchemaName }}
+func (q *Queries) {{.MethodName}}(ctx context.Context, schema string, {{ dbarg }} {{.Arg.Pair}}) error {
+{{- else }}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) error {
+{{- end }}
     {{- template "queryCodeStdExec" . }}
     return err
 }
@@ -75,7 +112,11 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 {{if eq .Cmd ":execrows"}}
 {{range .Comments}}//{{.}}
 {{end -}}
+{{- if emitSchemaName }}
+func (q *Queries) {{.MethodName}}(ctx context.Context, schema string, {{ dbarg }} {{.Arg.Pair}}) (int64, error) {
+{{- else }}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) (int64, error) {
+{{- end }}
     {{- template "queryCodeStdExec" . }}
     if err != nil {
         return 0, err
@@ -87,7 +128,11 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 {{if eq .Cmd ":execlastid"}}
 {{range .Comments}}//{{.}}
 {{end -}}
+{{- if emitSchemaName }}
+func (q *Queries) {{.MethodName}}(ctx context.Context, schema string, {{ dbarg }} {{.Arg.Pair}}) (int64, error) {
+{{- else }}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) (int64, error) {
+{{- end }}
     {{- template "queryCodeStdExec" . }}
     if err != nil {
         return 0, err
@@ -99,7 +144,11 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 {{if eq .Cmd ":execresult"}}
 {{range .Comments}}//{{.}}
 {{end -}}
+{{- if emitSchemaName }}
+func (q *Queries) {{.MethodName}}(ctx context.Context, schema string, {{ dbarg }} {{.Arg.Pair}}) (sql.Result, error) {
+{{else }}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) (sql.Result, error) {
+{{- end }}
     {{- template "queryCodeStdExec" . }}
 }
 {{end}}
@@ -110,8 +159,13 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 
 {{define "queryCodeStdExec"}}
     {{- if .Arg.HasSqlcSlices }}
-        query := {{.ConstantName}}
+        query := strings.ReplaceAll({{.ConstantName}}, "%s", schema)
+
+        // Extract the columns from the query;
+	    columns := columnRegex.FindString(query);
+        
         var queryParams []interface{}
+        
         {{- if .Arg.Struct }}
             {{- $arg := .Arg }}
             {{- range .Arg.Struct.Fields }}
@@ -137,19 +191,154 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
               for _, v := range {{.Arg.Name}} {
                 queryParams = append(queryParams, v)
               }
-              query = strings.Replace(query, "/*SLICE:{{.Arg.Column.Name}}*/?", strings.Repeat(",?", len({{.Arg.Name}}))[1:], 1)
+              query = strings.ReplaceAll(query, "/*SLICE:{{.Arg.Column.Name}}*/?", strings.Repeat(",?", len({{.Arg.Name}}))[1:])
             } else {
-              query = strings.Replace(query, "/*SLICE:{{.Arg.Column.Name}}*/?", "NULL", 1)
+              query = strings.ReplaceAll(query, "/*SLICE:{{.Arg.Column.Name}}*/?", "NULL")
             }
         {{- end }}
+
         {{- if emitPreparedQueries }}
-        {{ queryRetval . }} {{ queryMethod . }}(ctx, nil, query, queryParams...)
+            {{- if emitSchemaName }}
+            replacedQuery := strings.ReplaceAll(query, "%s", schema)
+            {{ queryRetval . }} {{ queryMethod . }}(ctx, nil, replacedQuery, queryParams...)
+            {{- else }}
+            {{ queryRetval . }} {{ queryMethod . }}(ctx, nil, query, queryParams...)
+            {{- end }}
         {{- else}}
-        {{ queryRetval . }} {{ queryMethod . }}(ctx, query, queryParams...)
+            {{- if emitSchemaName }}
+            replacedQuery := strings.ReplaceAll(query, "%s", schema)
+            {{ queryRetval . }} {{ queryMethod . }}(ctx, replacedQuery, queryParams...)
+            {{- else }}
+            {{ queryRetval . }} {{ queryMethod . }}(ctx, query, queryParams...)
+            {{- end -}}
         {{- end -}}
     {{- else if emitPreparedQueries }}
         {{- queryRetval . }} {{ queryMethod . }}(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
     {{- else}}
+        {{- if emitSchemaName }}
+        query := strings.ReplaceAll({{.ConstantName}}, "%s", schema);
+
+        {{- /**
+            If the query has a filter, we need to add the filter to the query
+            and the query params.
+            */}}
+
+        {{- if eq .Cmd ":many"}}
+
+        // Extract the columns from the query;
+	    columns := columnRegex.FindString(query);
+
+        isFirstFilter := true;
+        var queryParams []interface{};
+
+        for _, filter := range filterParams.ExactParams {
+            // Is the filter in the columns?
+            if !strings.Contains(columns, filter.FieldName) {
+                continue
+            }
+            
+            if isFirstFilter {
+                query += " WHERE "
+                isFirstFilter = false
+            } else {
+                query += " AND "
+            }
+
+            query += filter.FieldName + " = ?"
+            queryParams = append(queryParams, filter.Value)
+        };
+
+        for _, filter := range filterParams.InParams {
+            // Is the filter in the columns?
+            if !strings.Contains(columns, filter.FieldName) {
+                continue
+            }
+            
+            if isFirstFilter {
+                query += " WHERE "
+                isFirstFilter = false
+            } else {
+                query += " AND "
+            }
+
+            query += filter.FieldName + " IN (?)"
+            queryParams = append(queryParams, filter.Value)
+        };
+
+        for _, filter := range filterParams.LikeParams {
+            // Is the filter in the columns?
+            if !strings.Contains(columns, filter.FieldName) {
+                continue
+            }
+
+            if isFirstFilter {
+                query += " WHERE "
+                isFirstFilter = false
+            } else {
+                query += " AND "
+            }   
+
+            query += filter.FieldName + " LIKE ?"
+            queryParams = append(queryParams, filter.Value)
+        };
+
+        for _, filter := range filterParams.SinceParams {
+            // Is the filter in the columns?
+            if !strings.Contains(columns, filter.FieldName) {
+                continue
+            }
+
+            if isFirstFilter {
+                query += " WHERE "
+                isFirstFilter = false
+            } else {
+                query += " AND "
+            }
+
+            query += filter.FieldName + " > ?"
+            queryParams = append(queryParams, filter.Value)
+        };
+
+        for _, filter := range filterParams.MaxParams {
+            // Is the filter in the columns?
+            if !strings.Contains(columns, filter.FieldName) {
+                continue
+            }
+
+            if isFirstFilter {
+                query += " WHERE "
+                isFirstFilter = false
+            } else {
+                query += " AND "
+            }
+
+            query += filter.FieldName + " < ?"
+            queryParams = append(queryParams, filter.Value)
+        };
+
+        if filterParams.SortParam != "" {
+            query += " ORDER BY " + filterParams.SortParam + " " + filterParams.SortOrder
+        }
+
+        if filterParams.Pagination {
+            query += " LIMIT " + fmt.Sprint(filterParams.PerPage) + " OFFSET " + fmt.Sprint(filterParams.PageNumber * filterParams.PerPage)
+        }
+
+        // If there is not the ; at the end, add it
+        if !strings.HasSuffix(query, ";") {
+            query += ";"
+        };
+
+        {{- queryRetval . }} {{ queryMethod . }}(ctx, query, queryParams...)
+
+        {{- end }}
+
+        {{- else }}
         {{- queryRetval . }} {{ queryMethod . }}(ctx, {{.ConstantName}}, {{.Arg.Params}})
+        {{- end -}}
+
+        {{- if ne .Cmd ":many"}}
+        {{- queryRetval . }} {{ queryMethod . }}(ctx, query, {{.Arg.Params}})
+        {{- end -}}
     {{- end -}}
 {{end}}
