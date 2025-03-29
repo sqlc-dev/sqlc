@@ -28,8 +28,9 @@ func (e *Enum) isType() {
 }
 
 type CompositeType struct {
-	Name    string
-	Comment string
+	Name         string
+	ColTypeNames []*ast.TypeName
+	Comment      string
 }
 
 func (ct *CompositeType) isType() {
@@ -101,6 +102,16 @@ func stringSlice(list *ast.List) []string {
 	return items
 }
 
+func columnTypeNamesSlice(list *ast.List) []*ast.TypeName {
+	items := []*ast.TypeName{}
+	for _, item := range list.Items {
+		if n, ok := item.(*ast.ColumnDef); ok {
+			items = append(items, n.TypeName)
+		}
+	}
+	return items
+}
+
 func (c *Catalog) getType(rel *ast.TypeName) (Type, int, error) {
 	ns := rel.Schema
 	if ns == "" {
@@ -136,7 +147,8 @@ func (c *Catalog) createCompositeType(stmt *ast.CompositeTypeStmt) error {
 		return sqlerr.TypeExists(tbl.Name)
 	}
 	schema.Types = append(schema.Types, &CompositeType{
-		Name: stmt.TypeName.Name,
+		Name:         stmt.TypeName.Name,
+		ColTypeNames: columnTypeNamesSlice(stmt.ColDefList),
 	})
 	return nil
 }
@@ -277,16 +289,11 @@ func (c *Catalog) alterTypeSetSchema(stmt *ast.AlterTypeSetSchemaStmt) error {
 	oldSchema.Types = append(oldSchema.Types[:idx], oldSchema.Types[idx+1:]...)
 	newSchema.Types = append(newSchema.Types, typ)
 
-	// Update all the table columns with the new type
-	for _, schema := range c.Schemas {
-		for _, table := range schema.Tables {
-			for _, column := range table.Columns {
-				if column.Type == oldType {
-					column.Type.Schema = *stmt.NewSchema
-				}
-			}
+	c.updateTypeNames(func(t *ast.TypeName) {
+		if *t == oldType {
+			t.Schema = *stmt.NewSchema
 		}
-	}
+	})
 	return nil
 }
 
@@ -343,8 +350,9 @@ func (c *Catalog) renameType(stmt *ast.RenameTypeStmt) error {
 
 	case *CompositeType:
 		schema.Types[idx] = &CompositeType{
-			Name:    newName,
-			Comment: typ.Comment,
+			Name:         newName,
+			ColTypeNames: typ.ColTypeNames,
+			Comment:      typ.Comment,
 		}
 
 	case *Enum:
@@ -359,16 +367,33 @@ func (c *Catalog) renameType(stmt *ast.RenameTypeStmt) error {
 
 	}
 
-	// Update all the table columns with the new type
+	c.updateTypeNames(func(t *ast.TypeName) {
+		if *t == *stmt.Type {
+			t.Name = newName
+		}
+	})
+
+	return nil
+}
+
+func (c *Catalog) updateTypeNames(typeUpdater func(t *ast.TypeName)) error {
 	for _, schema := range c.Schemas {
+		// Update all the table columns with the new type
 		for _, table := range schema.Tables {
 			for _, column := range table.Columns {
-				if column.Type == *stmt.Type {
-					column.Type.Name = newName
-				}
+				typeUpdater(&column.Type)
+			}
+		}
+		// Update all the composite fields with the new type
+		for _, typ := range schema.Types {
+			composite, ok := typ.(*CompositeType)
+			if !ok {
+				continue
+			}
+			for _, fieldType := range composite.ColTypeNames {
+				typeUpdater(fieldType)
 			}
 		}
 	}
-
 	return nil
 }

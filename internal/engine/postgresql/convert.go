@@ -889,7 +889,8 @@ func convertCompositeTypeStmt(n *pg.CompositeTypeStmt) *ast.CompositeTypeStmt {
 	}
 	rel := parseRelationFromRangeVar(n.Typevar)
 	return &ast.CompositeTypeStmt{
-		TypeName: rel.TypeName(),
+		TypeName:   rel.TypeName(),
+		ColDefList: convertSlice(n.GetColdeflist()),
 	}
 }
 

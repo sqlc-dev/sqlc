@@ -6,6 +6,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/config/convert"
 	"github.com/sqlc-dev/sqlc/internal/info"
 	"github.com/sqlc-dev/sqlc/internal/plugin"
+	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
 )
 
@@ -59,6 +60,18 @@ func pluginWASM(p config.Plugin) *plugin.Codegen_WASM {
 	return nil
 }
 
+func identifierSlice(types []*ast.TypeName) []*plugin.Identifier {
+	ids := []*plugin.Identifier{}
+	for _, typ := range types {
+		ids = append(ids, &plugin.Identifier{
+			Catalog: typ.Catalog,
+			Schema:  typ.Schema,
+			Name:    typ.Name,
+		})
+	}
+	return ids
+}
+
 func pluginCatalog(c *catalog.Catalog) *plugin.Catalog {
 	var schemas []*plugin.Schema
 	for _, s := range c.Schemas {
@@ -74,8 +87,9 @@ func pluginCatalog(c *catalog.Catalog) *plugin.Catalog {
 				})
 			case *catalog.CompositeType:
 				cts = append(cts, &plugin.CompositeType{
-					Name:    typ.Name,
-					Comment: typ.Comment,
+					Name:         typ.Name,
+					Comment:      typ.Comment,
+					ColTypeNames: identifierSlice(typ.ColTypeNames),
 				})
 			}
 		}
