@@ -1,9 +1,10 @@
 package ast
 
 type TableName struct {
-	Catalog string
-	Schema  string
-	Name    string
+	Catalog      string
+	Schema       string
+	Name         string // table name, maybe alias name, maybe original name
+	OriginalName string // table original name
 }
 
 func (n *TableName) Pos() int {
