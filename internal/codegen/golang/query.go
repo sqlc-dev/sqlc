@@ -278,7 +278,7 @@ func (q Query) hasRetType() bool {
 func (q Query) TableIdentifierAsGoSlice() string {
 	escapedNames := make([]string, 0, 3)
 	for _, p := range []string{q.Table.Catalog, q.Table.Schema, q.Table.Name} {
-		if p != "" {
+		if p != "" && p != "sqlc_schema_placeholder" {
 			escapedNames = append(escapedNames, fmt.Sprintf("%q", p))
 		}
 	}

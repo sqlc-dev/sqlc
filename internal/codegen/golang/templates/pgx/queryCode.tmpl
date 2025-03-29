@@ -28,7 +28,7 @@ type {{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
 {{end -}}
 {{- if $.EmitMethodsWithDBArgument -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) ({{.Ret.DefineType}}, error) {
-	row := db.QueryRow(ctx, {{.ConstantName}}, {{.Arg.Params}})
+	row := db.QueryRow(ctx, {{ if $.UseSchemaPlaceholder }}q.interpolateSchemaName({{.ConstantName}}){{else}}{{.ConstantName}}{{end}}, {{.Arg.Params}})
 {{- else -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.DefineType}}, error) {
 	row := q.db.QueryRow(ctx, {{.ConstantName}}, {{.Arg.Params}})
@@ -46,7 +46,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.De
 {{end -}}
 {{- if $.EmitMethodsWithDBArgument -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error) {
-	rows, err := db.Query(ctx, {{.ConstantName}}, {{.Arg.Params}})
+	rows, err := db.Query(ctx, {{ if $.UseSchemaPlaceholder }}q.interpolateSchemaName({{.ConstantName}}){{else}}{{.ConstantName}}{{end}}, {{.Arg.Params}})
 {{- else -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error) {
 	rows, err := q.db.Query(ctx, {{.ConstantName}}, {{.Arg.Params}})
@@ -79,7 +79,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.
 {{end -}}
 {{- if $.EmitMethodsWithDBArgument -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) error {
-	_, err := db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
+	_, err := db.Exec(ctx, {{ if $.UseSchemaPlaceholder }}q.interpolateSchemaName({{.ConstantName}}){{else}}{{.ConstantName}}{{end}}, {{.Arg.Params}})
 {{- else -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) error {
 	_, err := q.db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
@@ -93,7 +93,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) error {
 {{end -}}
 {{if $.EmitMethodsWithDBArgument -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) (int64, error) {
-	result, err := db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
+	result, err := db.Exec(ctx, {{ if $.UseSchemaPlaceholder }}q.interpolateSchemaName({{.ConstantName}}){{else}}{{.ConstantName}}{{end}}, {{.Arg.Params}})
 {{- else -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, error) {
 	result, err := q.db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
@@ -110,7 +110,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, er
 {{end -}}
 {{- if $.EmitMethodsWithDBArgument -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) (pgconn.CommandTag, error) {
-	return db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
+	return db.Exec(ctx, {{ if $.UseSchemaPlaceholder }}q.interpolateSchemaName({{.ConstantName}}){{else}}{{.ConstantName}}{{end}}, {{.Arg.Params}})
 {{- else -}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (pgconn.CommandTag, error) {
 	return q.db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
