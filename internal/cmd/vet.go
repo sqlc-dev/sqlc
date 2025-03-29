@@ -418,7 +418,7 @@ func (c *checker) fetchDatabaseUri(ctx context.Context, s config.SQL) (string, f
 		if err != nil {
 			return "", cleanup, fmt.Errorf("read file: %w", err)
 		}
-		ddl = append(ddl, migrations.RemoveRollbackStatements(string(contents)))
+		ddl = append(ddl, migrations.RemoveIgnoredStatements(string(contents)))
 	}
 
 	resp, err := c.Client.CreateDatabase(ctx, &dbmanager.CreateDatabaseRequest{
