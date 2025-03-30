@@ -6,7 +6,6 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/config/convert"
 	"github.com/sqlc-dev/sqlc/internal/info"
 	"github.com/sqlc-dev/sqlc/internal/plugin"
-	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
 )
 
@@ -60,16 +59,38 @@ func pluginWASM(p config.Plugin) *plugin.Codegen_WASM {
 	return nil
 }
 
-func identifierSlice(types []*ast.TypeName) []*plugin.Identifier {
-	ids := []*plugin.Identifier{}
-	for _, typ := range types {
-		ids = append(ids, &plugin.Identifier{
-			Catalog: typ.Catalog,
-			Schema:  typ.Schema,
-			Name:    typ.Name,
+func columnSlice(cols []*catalog.Column, table *catalog.Table) []*plugin.Column {
+	var columns []*plugin.Column
+	for _, c := range cols {
+		l := -1
+		if c.Length != nil {
+			l = *c.Length
+		}
+		var tableId *plugin.Identifier = nil
+		if table != nil {
+			tableId = &plugin.Identifier{
+				Catalog: table.Rel.Catalog,
+				Schema:  table.Rel.Schema,
+				Name:    table.Rel.Name,
+			}
+		}
+		columns = append(columns, &plugin.Column{
+			Name: c.Name,
+			Type: &plugin.Identifier{
+				Catalog: c.Type.Catalog,
+				Schema:  c.Type.Schema,
+				Name:    c.Type.Name,
+			},
+			Comment:   c.Comment,
+			NotNull:   c.IsNotNull,
+			Unsigned:  c.IsUnsigned,
+			IsArray:   c.IsArray,
+			ArrayDims: int32(c.ArrayDims),
+			Length:    int32(l),
+			Table:     tableId,
 		})
 	}
-	return ids
+	return columns
 }
 
 func pluginCatalog(c *catalog.Catalog) *plugin.Catalog {
@@ -87,47 +108,21 @@ func pluginCatalog(c *catalog.Catalog) *plugin.Catalog {
 				})
 			case *catalog.CompositeType:
 				cts = append(cts, &plugin.CompositeType{
-					Name:         typ.Name,
-					Comment:      typ.Comment,
-					ColTypeNames: identifierSlice(typ.ColTypeNames),
+					Name:    typ.Name,
+					Comment: typ.Comment,
+					Columns: columnSlice(typ.Columns, nil),
 				})
 			}
 		}
 		var tables []*plugin.Table
 		for _, t := range s.Tables {
-			var columns []*plugin.Column
-			for _, c := range t.Columns {
-				l := -1
-				if c.Length != nil {
-					l = *c.Length
-				}
-				columns = append(columns, &plugin.Column{
-					Name: c.Name,
-					Type: &plugin.Identifier{
-						Catalog: c.Type.Catalog,
-						Schema:  c.Type.Schema,
-						Name:    c.Type.Name,
-					},
-					Comment:   c.Comment,
-					NotNull:   c.IsNotNull,
-					Unsigned:  c.IsUnsigned,
-					IsArray:   c.IsArray,
-					ArrayDims: int32(c.ArrayDims),
-					Length:    int32(l),
-					Table: &plugin.Identifier{
-						Catalog: t.Rel.Catalog,
-						Schema:  t.Rel.Schema,
-						Name:    t.Rel.Name,
-					},
-				})
-			}
 			tables = append(tables, &plugin.Table{
 				Rel: &plugin.Identifier{
 					Catalog: t.Rel.Catalog,
 					Schema:  t.Rel.Schema,
 					Name:    t.Rel.Name,
 				},
-				Columns: columns,
+				Columns: columnSlice(t.Columns, t),
 				Comment: t.Comment,
 			})
 		}

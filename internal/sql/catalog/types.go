@@ -28,9 +28,9 @@ func (e *Enum) isType() {
 }
 
 type CompositeType struct {
-	Name         string
-	ColTypeNames []*ast.TypeName
-	Comment      string
+	Name    string
+	Columns []*Column
+	Comment string
 }
 
 func (ct *CompositeType) isType() {
@@ -102,11 +102,11 @@ func stringSlice(list *ast.List) []string {
 	return items
 }
 
-func columnTypeNamesSlice(list *ast.List) []*ast.TypeName {
-	items := []*ast.TypeName{}
+func columnDefsSlice(list *ast.List) []*ast.ColumnDef {
+	items := []*ast.ColumnDef{}
 	for _, item := range list.Items {
 		if n, ok := item.(*ast.ColumnDef); ok {
-			items = append(items, n.TypeName)
+			items = append(items, n)
 		}
 	}
 	return items
@@ -146,10 +146,22 @@ func (c *Catalog) createCompositeType(stmt *ast.CompositeTypeStmt) error {
 	if _, _, err := schema.getType(stmt.TypeName); err == nil {
 		return sqlerr.TypeExists(tbl.Name)
 	}
-	schema.Types = append(schema.Types, &CompositeType{
-		Name:         stmt.TypeName.Name,
-		ColTypeNames: columnTypeNamesSlice(stmt.ColDefList),
-	})
+	ct := &CompositeType{
+		Name: stmt.TypeName.Name,
+	}
+	for _, col := range columnDefsSlice(stmt.ColDefList) {
+		ct.Columns = append(ct.Columns, &Column{
+			Name:       col.Colname,
+			Type:       *col.TypeName,
+			IsNotNull:  col.IsNotNull,
+			IsUnsigned: col.IsUnsigned,
+			IsArray:    col.IsArray,
+			ArrayDims:  col.ArrayDims,
+			Comment:    col.Comment,
+			Length:     col.Length,
+		})
+	}
+	schema.Types = append(schema.Types, ct)
 	return nil
 }
 
@@ -350,9 +362,9 @@ func (c *Catalog) renameType(stmt *ast.RenameTypeStmt) error {
 
 	case *CompositeType:
 		schema.Types[idx] = &CompositeType{
-			Name:         newName,
-			ColTypeNames: typ.ColTypeNames,
-			Comment:      typ.Comment,
+			Name:    newName,
+			Columns: typ.Columns,
+			Comment: typ.Comment,
 		}
 
 	case *Enum:
@@ -390,8 +402,8 @@ func (c *Catalog) updateTypeNames(typeUpdater func(t *ast.TypeName)) error {
 			if !ok {
 				continue
 			}
-			for _, fieldType := range composite.ColTypeNames {
-				typeUpdater(fieldType)
+			for _, fieldType := range composite.Columns {
+				typeUpdater(&fieldType.Type)
 			}
 		}
 	}
