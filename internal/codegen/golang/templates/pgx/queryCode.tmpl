@@ -89,7 +89,14 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) e
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) error {
 	_, err := q.db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
 {{- end}}
-	return {{if $.WrapErrors}}fmt.Errorf("query {{.MethodName}}: %w", err){{else}}err{{end}}
+	{{- if $.WrapErrors }}
+	if err != nil {
+		return fmt.Errorf("query {{.MethodName}}: %w", err)
+	}
+	return nil
+	{{- else }}
+	return err
+	{{- end }}
 }
 {{end}}
 
