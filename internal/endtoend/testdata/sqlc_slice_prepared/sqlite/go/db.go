@@ -79,6 +79,14 @@ type Queries struct {
 	funcParamIdentStmt *sql.Stmt
 }
 
+func (q *Queries) PrepareFuncParamIdent(ctx context.Context) error {
+	var err error
+	if q.funcParamIdentStmt, err = q.db.PrepareContext(ctx, funcParamIdent); err != nil {
+		return fmt.Errorf("error preparing query FuncParamIdent: %w", err)
+	}
+	return nil
+}
+
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
 		db:                 tx,
