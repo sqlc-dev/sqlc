@@ -44,7 +44,10 @@ WHERE id = $1
 
 func (q *Queries) DeleteAuthorExec(ctx context.Context, id int64) error {
 	_, err := q.db.Exec(ctx, deleteAuthorExec, id)
-	return fmt.Errorf("query DeleteAuthorExec: %w", err)
+	if err != nil {
+		return fmt.Errorf("query DeleteAuthorExec: %w", err)
+	}
+	return nil
 }
 
 const deleteAuthorExecLastID = `-- name: DeleteAuthorExecLastID :execlastid
