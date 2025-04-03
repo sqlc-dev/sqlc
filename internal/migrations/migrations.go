@@ -15,16 +15,17 @@ func RemoveRollbackStatements(contents string) string {
 	s := bufio.NewScanner(strings.NewReader(contents))
 	var lines []string
 	for s.Scan() {
-		if strings.HasPrefix(s.Text(), "-- +goose Down") {
+		statement := strings.ToLower(s.Text())
+		if strings.HasPrefix(statement, "-- +goose down") {
 			break
 		}
-		if strings.HasPrefix(s.Text(), "-- +migrate Down") {
+		if strings.HasPrefix(statement, "-- +migrate down") {
 			break
 		}
-		if strings.HasPrefix(s.Text(), "---- create above / drop below ----") {
+		if strings.HasPrefix(statement, "---- create above / drop below ----") {
 			break
 		}
-		if strings.HasPrefix(s.Text(), "-- migrate:down") {
+		if strings.HasPrefix(statement, "-- migrate:down") {
 			break
 		}
 		lines = append(lines, s.Text())
