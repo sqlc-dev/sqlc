@@ -11,6 +11,7 @@ import (
 )
 
 type Querier interface {
+	WithTx(tx *sql.Tx) *Queries
 	CreateNotice(ctx context.Context, cnt int32, createdAt time.Time) error
 	MarkNoticeDone(ctx context.Context, noticeAt sql.NullTime, iD int32) error
 }

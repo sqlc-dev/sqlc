@@ -8,9 +8,11 @@ import (
 	"context"
 
 	"github.com/jackc/pgconn"
+	"github.com/jackc/pgx/v4"
 )
 
 type Querier interface {
+	WithTx(tx pgx.Tx) *Queries
 	DeleteBarByID(ctx context.Context, id int32) (pgconn.CommandTag, error)
 }
 
