@@ -10,6 +10,10 @@ type DBTX interface {
 {{- if .UsesBatch }}
 	SendBatch(context.Context, *pgx.Batch) pgx.BatchResults
 {{- end }}
+{{- if gt (len .CompositeTypes) 0 }}
+	LoadTypes(ctx context.Context, typeNames []string) ([]*pgtype.Type, error)
+	TypeMap() *pgtype.Map
+{{- end }}
 }
 
 {{ if .EmitMethodsWithDBArgument}}
@@ -27,6 +31,26 @@ type Queries struct {
     {{end}}
 }
 
+{{if gt (len .CompositeTypes) 0}}
+{{if not .EmitMethodsWithDBArgument}}
+func (q *Queries) RegisterTypes(ctx context.Context) error {
+	db := q.db
+{{else}}
+func (q *Queries) RegisterTypes(ctx context.Context, db *Queries) error {
+{{end}}
+	typeNames := []string{ 
+	{{- range .CompositeTypes}}
+		"{{.SQLName}}",
+	{{- end}}
+	}
+	dataTypes, err := db.LoadTypes(ctx, typeNames)
+	if err != nil {
+		return err
+	}
+	db.TypeMap().RegisterTypes(dataTypes)
+	return nil
+}
+{{end}}
 {{if not .EmitMethodsWithDBArgument}}
 func (q *Queries) WithTx(tx pgx.Tx) *Queries {
 	return &Queries{

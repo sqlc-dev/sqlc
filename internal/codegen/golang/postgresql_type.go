@@ -587,13 +587,26 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 
 			for _, ct := range schema.CompositeTypes {
 				if rel.Name == ct.Name && rel.Schema == schema.Name {
+					if !driver.IsPGXV5() {
+						if notNull {
+							return "string"
+						}
+						if emitPointersForNull {
+							return "*string"
+						}
+						return "sql.NullString"
+					}
+
+					var ctName string
+					if schema.Name == req.Catalog.DefaultSchema {
+						ctName = StructName(ct.Name, options)
+					} else {
+						ctName = StructName(schema.Name+"_"+ct.Name, options)
+					}
 					if notNull {
-						return "string"
+						return ctName
 					}
-					if emitPointersForNull {
-						return "*string"
-					}
-					return "sql.NullString"
+					return "*" + ctName
 				}
 			}
 		}

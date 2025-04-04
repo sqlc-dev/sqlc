@@ -60,6 +60,82 @@ func buildEnums(req *plugin.GenerateRequest, options *opts.Options) []Enum {
 	return enums
 }
 
+func topoSort(graph map[string]map[string]bool, visited map[string]bool, node string, sorted *[]string) {
+	visited[node] = true
+	for child := range graph[node] {
+		if visited[child] {
+			continue
+		}
+		topoSort(graph, visited, child, sorted)
+	}
+	*sorted = append(*sorted, node)
+}
+
+// Orders types in order such that pgtype.Map can successfully register them
+func sortedCompositeTypes(compositeTypes map[string]CompositeType) []CompositeType {
+	// Map of composite type names to a set of every child composite type name
+	graph := make(map[string]map[string]bool)
+	for typeName, ct := range compositeTypes {
+		graph[typeName] = make(map[string]bool)
+		for _, field := range ct.Fields {
+			fieldType := trimSliceAndPointerPrefix(field.Type)
+			if _, ok := compositeTypes[fieldType]; ok {
+				graph[typeName][fieldType] = true
+			}
+		}
+	}
+
+	visited := make(map[string]bool)
+	sorted := []string{}
+	for typeName := range compositeTypes {
+		if visited[typeName] {
+			continue
+		}
+		topoSort(graph, visited, typeName, &sorted)
+	}
+
+	compositeTypeArr := []CompositeType{}
+	for _, typeName := range sorted {
+		compositeTypeArr = append(compositeTypeArr, compositeTypes[typeName])
+	}
+	return compositeTypeArr
+}
+
+func buildCompositeTypes(req *plugin.GenerateRequest, options *opts.Options) []CompositeType {
+	compositeTypes := make(map[string]CompositeType)
+	for _, schema := range req.Catalog.Schemas {
+		if schema.Name == "pg_catalog" || schema.Name == "information_schema" {
+			continue
+		}
+		for _, ct := range schema.CompositeTypes {
+			var typeName string
+			var sqlName string
+			if schema.Name == req.Catalog.DefaultSchema {
+				typeName = ct.Name
+				sqlName = ct.Name
+			} else {
+				typeName = schema.Name + "_" + ct.Name
+				sqlName = schema.Name + "." + ct.Name
+			}
+			typeName = StructName(typeName, options)
+			compositeType := CompositeType{
+				SQLName: sqlName,
+				Name:    typeName,
+				Comment: ct.Comment,
+			}
+			for _, column := range ct.Columns {
+				compositeType.Fields = append(compositeType.Fields, Field{
+					Name:    StructName(column.Name, options),
+					Type:    goType(req, options, column),
+					Comment: column.Comment,
+				})
+			}
+			compositeTypes[typeName] = compositeType
+		}
+	}
+	return sortedCompositeTypes(compositeTypes)
+}
+
 func buildStructs(req *plugin.GenerateRequest, options *opts.Options) []Struct {
 	var structs []Struct
 	for _, schema := range req.Catalog.Schemas {

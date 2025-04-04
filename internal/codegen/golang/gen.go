@@ -17,13 +17,14 @@ import (
 )
 
 type tmplCtx struct {
-	Q           string
-	Package     string
-	SQLDriver   opts.SQLDriver
-	Enums       []Enum
-	Structs     []Struct
-	GoQueries   []Query
-	SqlcVersion string
+	Q              string
+	Package        string
+	SQLDriver      opts.SQLDriver
+	Enums          []Enum
+	Structs        []Struct
+	CompositeTypes []CompositeType
+	GoQueries      []Query
+	SqlcVersion    string
 
 	// TODO: Race conditions
 	SourceName string
@@ -109,12 +110,17 @@ func Generate(ctx context.Context, req *plugin.GenerateRequest) (*plugin.Generat
 	if err != nil {
 		return nil, err
 	}
+	driver := parseDriver(options.SqlPackage)
 
 	if err := opts.ValidateOpts(options); err != nil {
 		return nil, err
 	}
 
 	enums := buildEnums(req, options)
+	compositeTypes := []CompositeType{}
+	if driver.IsPGXV5() {
+		compositeTypes = buildCompositeTypes(req, options)
+	}
 	structs := buildStructs(req, options)
 	queries, err := buildQueries(req, options, structs)
 	if err != nil {
@@ -125,46 +131,49 @@ func Generate(ctx context.Context, req *plugin.GenerateRequest) (*plugin.Generat
 		enums, structs = filterUnusedStructs(enums, structs, queries)
 	}
 
-	if err := validate(options, enums, structs, queries); err != nil {
+	if err := validate(options, enums, compositeTypes, structs, queries); err != nil {
 		return nil, err
 	}
 
-	return generate(req, options, enums, structs, queries)
+	return generate(req, options, enums, compositeTypes, structs, queries)
 }
 
-func validate(options *opts.Options, enums []Enum, structs []Struct, queries []Query) error {
-	enumNames := make(map[string]struct{})
+func validate(options *opts.Options, enums []Enum, compositeTypes []CompositeType, structs []Struct, queries []Query) error {
+	usedNames := make(map[string]string)
 	for _, enum := range enums {
-		enumNames[enum.Name] = struct{}{}
-		enumNames["Null"+enum.Name] = struct{}{}
+		usedNames[enum.Name] = "enum"
+		usedNames["Null"+enum.Name] = "enum"
 	}
-	structNames := make(map[string]struct{})
 	for _, struckt := range structs {
-		if _, ok := enumNames[struckt.Name]; ok {
-			return fmt.Errorf("struct name conflicts with enum name: %s", struckt.Name)
+		if usedType, ok := usedNames[struckt.Name]; ok {
+			return fmt.Errorf("struct name conflicts with %s name: %s", usedType, struckt.Name)
 		}
-		structNames[struckt.Name] = struct{}{}
+		usedNames[struckt.Name] = "struct"
+	}
+	for _, ct := range compositeTypes {
+		if usedType, ok := usedNames[ct.Name]; ok {
+			return fmt.Errorf("composite type name conflicts with %s name: %s", usedType, ct.Name)
+		}
+		usedNames[ct.Name] = "composite type"
 	}
 	if !options.EmitExportedQueries {
 		return nil
 	}
 	for _, query := range queries {
-		if _, ok := enumNames[query.ConstantName]; ok {
-			return fmt.Errorf("query constant name conflicts with enum name: %s", query.ConstantName)
-		}
-		if _, ok := structNames[query.ConstantName]; ok {
-			return fmt.Errorf("query constant name conflicts with struct name: %s", query.ConstantName)
+		if usedType, ok := usedNames[query.ConstantName]; ok {
+			return fmt.Errorf("query constant name conflicts with %s name: %s", usedType, query.ConstantName)
 		}
 	}
 	return nil
 }
 
-func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, structs []Struct, queries []Query) (*plugin.GenerateResponse, error) {
+func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, compositeTypes []CompositeType, structs []Struct, queries []Query) (*plugin.GenerateResponse, error) {
 	i := &importer{
-		Options: options,
-		Queries: queries,
-		Enums:   enums,
-		Structs: structs,
+		Options:        options,
+		Queries:        queries,
+		Enums:          enums,
+		CompositeTypes: compositeTypes,
+		Structs:        structs,
 	}
 
 	tctx := tmplCtx{
@@ -183,6 +192,7 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 		Q:                         "`",
 		Package:                   options.Package,
 		Enums:                     enums,
+		CompositeTypes:            compositeTypes,
 		Structs:                   structs,
 		SqlcVersion:               req.SqlcVersion,
 		BuildTags:                 options.BuildTags,
