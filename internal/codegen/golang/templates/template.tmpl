@@ -150,6 +150,17 @@ func All{{ .Name }}Values() []{{ .Name }} {
 {{ end }}
 {{end}}
 
+{{range .CompositeTypes}}
+{{if .Comment}}{{comment .Comment}}{{end}}
+type {{.Name}} struct { {{- range .Fields}}
+  {{- if .Comment}}
+  {{comment .Comment}}{{else}}
+  {{- end}}
+  {{.Name}} {{.Type}} {{if .Tag}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
+  {{- end}}
+}
+{{end}}
+
 {{range .Structs}}
 {{if .Comment}}{{comment .Comment}}{{end}}
 type {{.Name}} struct { {{- range .Fields}}
