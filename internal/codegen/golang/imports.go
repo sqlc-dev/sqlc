@@ -142,6 +142,9 @@ func (i *importer) dbImports() fileImports {
 		pkg = append(pkg, ImportSpec{Path: "github.com/jackc/pgx/v5"})
 		if len(i.CompositeTypes) > 0 {
 			pkg = append(pkg, ImportSpec{Path: "github.com/jackc/pgx/v5/pgtype"})
+			if !i.Options.EmitMethodsWithDbArgument {
+				pkg = append(pkg, ImportSpec{Path: "fmt"})
+			}
 		}
 	default:
 		std = append(std, ImportSpec{Path: "database/sql"})
