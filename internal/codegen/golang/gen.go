@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"go/format"
+	"path/filepath"
 	"strings"
 	"text/template"
 
@@ -126,7 +127,7 @@ func Generate(ctx context.Context, req *plugin.GenerateRequest) (*plugin.Generat
 	}
 
 	if options.OmitUnusedStructs {
-		enums, structs = filterUnusedStructs(enums, structs, queries)
+		enums, structs = filterUnusedStructs(options, enums, structs, queries)
 	}
 
 	if err := validate(options, enums, structs, queries); err != nil {
@@ -216,6 +217,7 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 		"imports":    i.Imports,
 		"hasImports": i.HasImports,
 		"hasPrefix":  strings.HasPrefix,
+		"trimPrefix": strings.TrimPrefix,
 
 		// These methods are Go specific, they do not belong in the codegen package
 		// (as that is language independent)
@@ -237,7 +239,7 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 
 	output := map[string]string{}
 
-	execute := func(name, templateName string) error {
+	execute := func(name, packageName, templateName string) error {
 		imports := i.Imports(name)
 		replacedQueries := replaceConflictedArg(imports, queries)
 
@@ -245,6 +247,7 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 		w := bufio.NewWriter(&b)
 		tctx.SourceName = name
 		tctx.GoQueries = replacedQueries
+		tctx.Package = packageName
 		err := tmpl.ExecuteTemplate(w, templateName, &tctx)
 		w.Flush()
 		if err != nil {
@@ -256,8 +259,13 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 			return fmt.Errorf("source error: %w", err)
 		}
 
-		if templateName == "queryFile" && options.OutputFilesSuffix != "" {
-			name += options.OutputFilesSuffix
+		if templateName == "queryFile" {
+			if options.OutputQueryFilesDirectory != "" {
+				name = filepath.Join(options.OutputQueryFilesDirectory, name)
+			}
+			if options.OutputFilesSuffix != "" {
+				name += options.OutputFilesSuffix
+			}
 		}
 
 		if !strings.HasSuffix(name, ".go") {
@@ -289,24 +297,29 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 		batchFileName = options.OutputBatchFileName
 	}
 
-	if err := execute(dbFileName, "dbFile"); err != nil {
+	modelsPackageName := options.Package
+	if options.OutputModelsPackage != "" {
+		modelsPackageName = options.OutputModelsPackage
+	}
+
+	if err := execute(dbFileName, options.Package, "dbFile"); err != nil {
 		return nil, err
 	}
-	if err := execute(modelsFileName, "modelsFile"); err != nil {
+	if err := execute(modelsFileName, modelsPackageName, "modelsFile"); err != nil {
 		return nil, err
 	}
 	if options.EmitInterface {
-		if err := execute(querierFileName, "interfaceFile"); err != nil {
+		if err := execute(querierFileName, options.Package, "interfaceFile"); err != nil {
 			return nil, err
 		}
 	}
 	if tctx.UsesCopyFrom {
-		if err := execute(copyfromFileName, "copyfromFile"); err != nil {
+		if err := execute(copyfromFileName, options.Package, "copyfromFile"); err != nil {
 			return nil, err
 		}
 	}
 	if tctx.UsesBatch {
-		if err := execute(batchFileName, "batchFile"); err != nil {
+		if err := execute(batchFileName, options.Package, "batchFile"); err != nil {
 			return nil, err
 		}
 	}
@@ -317,7 +330,7 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 	}
 
 	for source := range files {
-		if err := execute(source, "queryFile"); err != nil {
+		if err := execute(source, options.Package, "queryFile"); err != nil {
 			return nil, err
 		}
 	}
@@ -367,7 +380,7 @@ func checkNoTimesForMySQLCopyFrom(queries []Query) error {
 	return nil
 }
 
-func filterUnusedStructs(enums []Enum, structs []Struct, queries []Query) ([]Enum, []Struct) {
+func filterUnusedStructs(options *opts.Options, enums []Enum, structs []Struct, queries []Query) ([]Enum, []Struct) {
 	keepTypes := make(map[string]struct{})
 
 	for _, query := range queries {
@@ -394,8 +407,15 @@ func filterUnusedStructs(enums []Enum, structs []Struct, queries []Query) ([]Enu
 
 	keepEnums := make([]Enum, 0, len(enums))
 	for _, enum := range enums {
-		_, keep := keepTypes[enum.Name]
-		_, keepNull := keepTypes["Null"+enum.Name]
+		var enumType string
+		if options.ModelsPackageImportPath != "" {
+			enumType = options.OutputModelsPackage + "." + enum.Name
+		} else {
+			enumType = enum.Name
+		}
+
+		_, keep := keepTypes[enumType]
+		_, keepNull := keepTypes["Null"+enumType]
 		if keep || keepNull {
 			keepEnums = append(keepEnums, enum)
 		}
@@ -403,7 +423,7 @@ func filterUnusedStructs(enums []Enum, structs []Struct, queries []Query) ([]Enu
 
 	keepStructs := make([]Struct, 0, len(structs))
 	for _, st := range structs {
-		if _, ok := keepTypes[st.Name]; ok {
+		if _, ok := keepTypes[st.Type()]; ok {
 			keepStructs = append(keepStructs, st)
 		}
 	}
