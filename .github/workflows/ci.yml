@@ -10,7 +10,7 @@ jobs:
       matrix:
         # Disabling windows builds while we fix installing PostgreSQL 16
         # os: [ubuntu-22.04, macos-14, windows-2022]
-        os: [ubuntu-22.04, macos-14]
+        os: [ubuntu-22.04, macos-15]
         cgo: ['1', '0']
         # Workaround no native support for conditional matrix items
         # https://github.com/orgs/community/discussions/26253#discussioncomment-6745038
