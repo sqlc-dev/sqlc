@@ -1,6 +1,104 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+(v1-29-0)=
+## [1.29.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.29.0)
+Released 2025-04-14
+
+### Bug Fixes
+
+- (docs) Correct spelling and grammar (#3645)
+- (dbmanager) Use correct SQL to drop databases (#3640)
+- (compiler) Don't crash on WHERE x IN (... UNION ...) (#3652)
+- (golang) Escape q field name (#3647)
+- Postgresql alter materialized view is not registered to statements (#3728)
+- Do not close wazero module on error (#3758) (#3759)
+- (pgx) Do not wrap nil error (#3913)
+- (migrations) Normalize case for migration statement for all cases (#3919)
+
+### Documentation
+
+- Add missing documentation about copyfrom (#3583)
+- Add sqlc-gen-from-template (#3601)
+- Add changelog for 1.28.0 (#3797)
+- Add PHP DBAL plugin (#3813)
+- Fix PostGIS function name (#3829)
+- Add Zig plugin (#3824)
+- Add link to tandemdude/sqlc-gen-java (#3819)
+
+### Features
+
+- (docs) How-to use transactions with pgx (#3557)
+- (quickdb) Remove unused func (#3576)
+- (vet) Allow selective disabling of rules per query (#3620)
+- (dolphin) Upgrade to latest TiDB parser (#3733)
+- (mysql) Add a test for VECTOR column type (#3734)
+- (cli) Bump version from 1.27.0 to 1.28.0 (#3798)
+- (codegen/golang) Add an option to wrap query errors that includes query name (#3876)
+
+### Miscellaneous Tasks
+
+- Remove the triage label (#3527)
+- Upgrade to Go 1.22.8 to silence vulncheck (#3646)
+- Update sqlc-gen-java supported engines (#3843)
+
+### Build
+
+- (deps) Bump myst-parser (#3530)
+- (deps) Bump golang from 1.22.5 to 1.22.6 (#3532)
+- (deps) Bump modernc.org/sqlite (#3537)
+- (deps) Bump the production-dependencies group across 1 directory with 4 updates (#3566)
+- (deps) Bump the production-dependencies group across 1 directory with 2 updates (#3565)
+- (deps) Bump golang from 1.22.6 to 1.23.0 (#3546)
+- (deps) Bump golang from 1.23.0 to 1.23.1 (#3586)
+- (deps) Bump the production-dependencies group across 1 directory with 5 updates (#3644)
+- (deps) Bump the production-dependencies group across 1 directory with 5 updates (#3642)
+- (deps) Bump sphinx-rtd-theme (#3648)
+- (deps) Bump pyparsing (#3653)
+- (deps) Bump markupsafe (#3666)
+- (deps) Bump the production-dependencies group across 1 directory with 2 updates (#3707)
+- (deps) Bump golang from 1.23.2 to 1.23.3 (#3691)
+- (deps) Bump the production-dependencies group across 1 directory with 5 updates (#3721)
+- (deps) Bump the production-dependencies group across 1 directory with 2 updates (#3731)
+- (deps) Bump certifi in /docs in the production-dependencies group (#3748)
+- (deps) Bump golang.org/x/crypto from 0.27.0 to 0.31.0 (#3740)
+- (deps) Bump golang from 1.23.3 to 1.23.4 (#3735)
+- (deps) Bump the production-dependencies group across 1 directory with 2 updates (#3749)
+- (deps) Bump the production-dependencies group with 2 updates (#3753)
+- (deps) Bump the production-dependencies group across 1 directory with 3 updates (#3764)
+- (deps) Bump the production-dependencies group (#3761)
+- (deps) Bump jinja2 from 3.1.4 to 3.1.5 in /docs (#3762)
+- (deps) Bump google.golang.org/protobuf (#3776)
+- (deps) Bump the production-dependencies group across 1 directory with 2 updates (#3777)
+- (deps) Bump google.golang.org/grpc (#3784)
+- (deps) Bump golang from 1.23.4 to 1.23.5 (#3791)
+- (deps) Bump the production-dependencies group with 2 updates (#3789)
+- Upgrade to Go 1.23.5 (#3795)
+- (deps) Bump golang.org/x/net from 0.30.0 to 0.33.0 (#3796)
+- (deps) Bump golang from 1.23.5 to 1.23.6 (#3822)
+- Use govulncheck action (#3831)
+- (deps) Bump the production-dependencies group across 1 directory with 3 updates (#3817)
+- (deps) Bump the production-dependencies group across 1 directory with 5 updates (#3826)
+- (deps) Bump golang from 1.23.6 to 1.24.0 (#3842)
+- (deps) Bump myst-parser (#3841)
+- (deps) Bump modernc.org/sqlite (#3846)
+- (deps) Bump golang from 1.24.0 to 1.24.1 (#3870)
+- (deps) Bump jinja2 in /docs in the production-dependencies group (#3872)
+- Upgrade to wazero@v1.9.0 (#3887)
+- Upgrade to Go 1.24.1 (#3892)
+- Upgrade to latest version of MySQL parser (#3893)
+- (deps) Bump pyparsing (#3890)
+- (deps) Bump golang.org/x/net from 0.33.0 to 0.37.0 (#3894)
+- (deps) Bump the production-dependencies group across 1 directory with 8 updates (#3896)
+- (deps) Bump github.com/jackc/pgx/v5 (#3898)
+- (deps) Bump the production-dependencies group (#3899)
+- (deps) Bump modernc.org/sqlite (#3905)
+- (deps) Bump the production-dependencies group across 1 directory with 2 updates (#3914)
+- (deps) Bump urllib3 in /docs in the production-dependencies group (#3926)
+- (deps) Bump golang from 1.24.1 to 1.24.2 (#3915)
+- (deps) Bump the production-dependencies group across 1 directory with 3 updates (#3923)
+- (deps) Upgrade github.com/wasilibs/go-pgquery (#3927)
+
 (v1-28-0)=
 ## [1.28.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.28.0)
 Released 2025-01-20
