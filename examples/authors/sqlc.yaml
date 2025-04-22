@@ -43,6 +43,16 @@ sql:
     go:
       package: authors
       out: sqlite
+- name: ydb
+  schema: ydb/schema.sql
+  queries: ydb/query.sql
+  engine: ydb
+  gen:
+    go:
+      package: authors
+      out: ydb
+
+
 rules:
 - name: postgresql-query-too-costly
   message: "Too costly"
