@@ -4,12 +4,8 @@
 
 package authors
 
-import (
-	"database/sql"
-)
-
 type Author struct {
 	ID   uint64
 	Name string
-	Bio  sql.NullString
+	Bio  *string
 }

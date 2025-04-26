@@ -54,7 +54,6 @@ func link_YDB(t *testing.T, migrations []string, rw bool) TestYDB {
 		baseDB = "/local"
 	}
 
-	// собираем миграции
 	var seed []string
 	files, err := sqlpath.Glob(migrations)
 	if err != nil {
@@ -97,6 +96,7 @@ func link_YDB(t *testing.T, migrations []string, rw bool) TestYDB {
 		driver,
 		ydb.WithTablePathPrefix(prefix),
 		ydb.WithAutoDeclare(),
+		ydb.WithNumericArgs(),
 	)
 	if err != nil {
 		t.Fatalf("failed to create connector: %s", err)

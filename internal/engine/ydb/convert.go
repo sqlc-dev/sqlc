@@ -38,6 +38,154 @@ func NewIdentifier(t string) *ast.String {
 	return &ast.String{Str: identifier(t)}
 }
 
+func (c *cc) convertDelete_stmtContext(n *parser.Delete_stmtContext) ast.Node {
+	batch := n.BATCH() != nil
+
+	tableName := identifier(n.Simple_table_ref().Simple_table_ref_core().GetText())
+	rel := &ast.RangeVar{Relname: &tableName}
+
+	var where ast.Node
+	if n.WHERE() != nil && n.Expr() != nil {
+		where = c.convert(n.Expr())
+	}
+	if n.ON() != nil && n.Into_values_source() != nil {
+		// todo: handle delete with into values source
+	}
+
+	returning := &ast.List{}
+	if ret := n.Returning_columns_list(); ret != nil {
+		returning = c.convert(ret).(*ast.List)
+	}
+
+	stmts := &ast.DeleteStmt{
+		Relations:     &ast.List{Items: []ast.Node{rel}},
+		WhereClause:   where,
+		ReturningList: returning,
+		Batch:         batch,
+	}
+
+	return stmts
+}
+
+func (c *cc) convertInto_table_stmtContext(n *parser.Into_table_stmtContext) ast.Node {
+	tableName := identifier(n.Into_simple_table_ref().Simple_table_ref().Simple_table_ref_core().GetText())
+	rel := &ast.RangeVar{Relname: &tableName}
+
+	onConflict := &ast.OnConflictClause{}
+	switch {
+	case n.INSERT() != nil && n.OR() != nil && n.ABORT() != nil:
+		onConflict.Action = ast.OnConflictAction_INSERT_OR_ABORT
+	case n.INSERT() != nil && n.OR() != nil && n.REVERT() != nil:
+		onConflict.Action = ast.OnConflictAction_INSERT_OR_REVERT
+	case n.INSERT() != nil && n.OR() != nil && n.IGNORE() != nil:
+		onConflict.Action = ast.OnConflictAction_INSERT_OR_IGNORE
+	case n.UPSERT() != nil:
+		onConflict.Action = ast.OnConflictAction_UPSERT
+	case n.REPLACE() != nil:
+		onConflict.Action = ast.OnConflictAction_REPLACE
+	}
+
+	var cols *ast.List
+	var source ast.Node
+	if nVal := n.Into_values_source(); nVal != nil {
+		if nVal.DEFAULT() != nil && nVal.VALUES() != nil {
+			// todo: handle default values when implemented
+		}
+		if pureCols := nVal.Pure_column_list(); pureCols != nil {
+			cols = &ast.List{}
+			for _, anID := range pureCols.AllAn_id() {
+				name := identifier(parseAnId(anID))
+				cols.Items = append(cols.Items, &ast.ResTarget{
+					Name: &name,
+				})
+			}
+		}
+
+		valSource := nVal.Values_source()
+		if valSource != nil {
+			switch {
+			case valSource.Values_stmt() != nil:
+				source = &ast.SelectStmt{
+					ValuesLists: c.convert(valSource.Values_stmt()).(*ast.List),
+					FromClause:  &ast.List{},
+					TargetList:  &ast.List{},
+				}
+
+			case valSource.Select_stmt() != nil:
+				source = c.convert(valSource.Select_stmt())
+			}
+		}
+	}
+
+	returning := &ast.List{}
+	if ret := n.Returning_columns_list(); ret != nil {
+		returning = c.convert(ret).(*ast.List)
+	}
+
+	stmts := &ast.InsertStmt{
+		Relation:         rel,
+		Cols:             cols,
+		SelectStmt:       source,
+		OnConflictClause: onConflict,
+		ReturningList:    returning,
+	}
+
+	return stmts
+}
+
+func (c *cc) convertValues_stmtContext(n *parser.Values_stmtContext) ast.Node {
+	mainList := &ast.List{}
+
+	for _, rowCtx := range n.Values_source_row_list().AllValues_source_row() {
+		rowList := &ast.List{}
+		exprListCtx := rowCtx.Expr_list().(*parser.Expr_listContext)
+
+		for _, exprCtx := range exprListCtx.AllExpr() {
+			if converted := c.convert(exprCtx); converted != nil {
+				rowList.Items = append(rowList.Items, converted)
+			}
+		}
+
+		mainList.Items = append(mainList.Items, rowList)
+
+	}
+
+	return mainList
+}
+
+func (c *cc) convertReturning_columns_listContext(n *parser.Returning_columns_listContext) ast.Node {
+	list := &ast.List{Items: []ast.Node{}}
+
+	if n.ASTERISK() != nil {
+		target := &ast.ResTarget{
+			Indirection: &ast.List{},
+			Val: &ast.ColumnRef{
+				Fields:   &ast.List{Items: []ast.Node{&ast.A_Star{}}},
+				Location: n.ASTERISK().GetSymbol().GetStart(),
+			},
+			Location: n.ASTERISK().GetSymbol().GetStart(),
+		}
+		list.Items = append(list.Items, target)
+		return list
+	}
+
+	for _, idCtx := range n.AllAn_id() {
+		target := &ast.ResTarget{
+			Indirection: &ast.List{},
+			Val: &ast.ColumnRef{
+				Fields: &ast.List{
+					Items: []ast.Node{NewIdentifier(parseAnId(idCtx))},
+				},
+				Location: idCtx.GetStart().GetStart(),
+			},
+			Location: idCtx.GetStart().GetStart(),
+		}
+		list.Items = append(list.Items, target)
+	}
+
+	return list
+}
+
 func (c *cc) convertAlter_table_stmtContext(n *parser.Alter_table_stmtContext) ast.Node {
 	tableRef := parseTableName(n.Simple_table_ref().Simple_table_ref_core())
 
@@ -1609,6 +1757,18 @@ func (c *cc) convert(node node) ast.Node {
 
 	case *parser.Type_name_or_bindContext:
 		return c.convertTypeNameOrBind(n)
+
+	case *parser.Into_table_stmtContext:
+		return c.convertInto_table_stmtContext(n)
+
+	case *parser.Values_stmtContext:
+		return c.convertValues_stmtContext(n)
+
+	case *parser.Returning_columns_listContext:
+		return c.convertReturning_columns_listContext(n)
+
+	case *parser.Delete_stmtContext:
+		return c.convertDelete_stmtContext(n)
 
 	default:
 		return todo("convert(case=default)", n)

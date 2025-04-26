@@ -12,6 +12,8 @@ type DeleteStmt struct {
 	// MySQL multi-table DELETE support
 	Targets    *List // Tables to delete from (e.g., jt.*, pt.*)
 	FromClause Node  // FROM clause with JOINs (Node to support JoinExpr)
+	// YDB specific
+	Batch bool
 }
 
 func (n *DeleteStmt) Pos() int {
@@ -26,6 +28,9 @@ func (n *DeleteStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 	if n.WithClause != nil {
 		buf.astFormat(n.WithClause, d)
 		buf.WriteString(" ")
+	}
+	if n.Batch {
+		buf.WriteString("BATCH ")
 	}
 
 	buf.WriteString("DELETE ")

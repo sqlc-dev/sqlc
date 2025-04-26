@@ -7,7 +7,49 @@ package authors
 
 import (
 	"context"
+	"database/sql"
 )
+
+const createOrUpdateAuthor = `-- name: CreateOrUpdateAuthor :execresult
+UPSERT INTO authors (id, name, bio) VALUES ($p0, $p1, $p2)
+`
+
+type CreateOrUpdateAuthorParams struct {
+	P0 uint64
+	P1 string
+	P2 *string
+}
+
+func (q *Queries) CreateOrUpdateAuthor(ctx context.Context, arg CreateOrUpdateAuthorParams) (sql.Result, error) {
+	return q.db.ExecContext(ctx, createOrUpdateAuthor, arg.P0, arg.P1, arg.P2)
+}
+
+const createOrUpdateAuthorRetunringBio = `-- name: CreateOrUpdateAuthorRetunringBio :one
+UPSERT INTO authors (id, name, bio) VALUES ($p0, $p1, $p2) RETURNING bio
+`
+
+type CreateOrUpdateAuthorRetunringBioParams struct {
+	P0 uint64
+	P1 string
+	P2 *string
+}
+
+func (q *Queries) CreateOrUpdateAuthorRetunringBio(ctx context.Context, arg CreateOrUpdateAuthorRetunringBioParams) (*string, error) {
+	row := q.db.QueryRowContext(ctx, createOrUpdateAuthorRetunringBio, arg.P0, arg.P1, arg.P2)
+	var bio *string
+	err := row.Scan(&bio)
+	return bio, err
+}
+
+const deleteAuthor = `-- name: DeleteAuthor :exec
+DELETE FROM authors
+WHERE id = $p0
+`
+
+func (q *Queries) DeleteAuthor(ctx context.Context, p0 uint64) error {
+	_, err := q.db.ExecContext(ctx, deleteAuthor, p0)
+	return err
+}
 
 const getAuthor = `-- name: GetAuthor :one
 SELECT id, name, bio FROM authors

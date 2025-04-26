@@ -16,6 +16,7 @@ func YDBType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Col
 	emitPointersForNull := options.EmitPointersForNullTypes
 
 	// https://ydb.tech/docs/ru/yql/reference/types/
+	// ydb-go-sdk doesn't support sql.Null* yet
 	switch columnType {
 	// decimal types
 	case "bool":
@@ -25,7 +26,8 @@ func YDBType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Col
 		if emitPointersForNull {
 			return "*bool"
 		}
-		return "sql.NullBool"
+		// return "sql.NullBool"
+		return "*bool"
 
 	case "int8":
 		if notNull {
@@ -34,9 +36,10 @@ func YDBType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Col
 		if emitPointersForNull {
 			return "*int8"
 		}
-		// The database/sql package does not have a sql.NullInt8 type, so we
-		// use the smallest type they have which is NullInt16
-		return "sql.NullInt16"
+		// // The database/sql package does not have a sql.NullInt8 type, so we
+		// // use the smallest type they have which is NullInt16
+		// return "sql.NullInt16"
+		return "*int8"
 	case "int16":
 		if notNull {
 			return "int16"
@@ -44,7 +47,8 @@ func YDBType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Col
 		if emitPointersForNull {
 			return "*int16"
 		}
-		return "sql.NullInt16"
+		// return "sql.NullInt16"
+		return "*int16"
 	case "int32":
 		if notNull {
 			return "int32"
@@ -52,7 +56,8 @@ func YDBType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Col
 		if emitPointersForNull {
 			return "*int32"
 		}
-		return "sql.NullInt32"
+		// return "sql.NullInt32"
+		return "*int32"
 	case "int64":
 		if notNull {
 			return "int64"
@@ -60,7 +65,8 @@ func YDBType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Col
 		if emitPointersForNull {
 			return "*int64"
 		}
-		return "sql.NullInt64"
+		// return "sql.NullInt64"
+		return "*int64"
 
 	case "uint8":
 		if emitPointersForNull {
@@ -92,7 +98,8 @@ func YDBType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Col
 		}
 		// The database/sql package does not have a sql.NullFloat32 type, so we
 		// use the smallest type they have which is NullFloat64
-		return "sql.NullFloat64"
+		// return "sql.NullFloat64"
+		return "*float32"
 	case "double":
 		if notNull {
 			return "float64"
@@ -100,7 +107,8 @@ func YDBType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Col
 		if emitPointersForNull {
 			return "*float64"
 		}
-		return "sql.NullFloat64"
+		// return "sql.NullFloat64"
+		return "*float64"
 
 	// string types
 	case "string", "utf8", "text":
@@ -110,7 +118,7 @@ func YDBType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Col
 		if emitPointersForNull {
 			return "*string"
 		}
-		return "sql.NullString"
+		return "*string"
 
 	// serial types
 	case "smallserial", "serial2":
@@ -120,7 +128,8 @@ func YDBType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Col
 		if emitPointersForNull {
 			return "*int16"
 		}
-		return "sql.NullInt16"
+		// return "sql.NullInt16"
+		return "*int16"
 
 	case "serial", "serial4":
 		if notNull {
@@ -129,7 +138,8 @@ func YDBType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Col
 		if emitPointersForNull {
 			return "*int32"
 		}
-		return "sql.NullInt32"
+		// return "sql.NullInt32"
+		return "*int32"
 
 	case "bigserial", "serial8":
 		if notNull {
@@ -138,10 +148,12 @@ func YDBType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Col
 		if emitPointersForNull {
 			return "*int64"
 		}
-		return "sql.NullInt64"
+		// return "sql.NullInt64"
+		return "*int64"
 
 	case "null":
-		return "sql.Null"
+		// return "sql.Null"
+		return "interface{}"
 
 	default:
 		if debug.Active {

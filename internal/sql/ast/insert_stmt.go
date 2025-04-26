@@ -28,7 +28,18 @@ func (n *InsertStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 		buf.WriteString(" ")
 	}
 
-	buf.WriteString("INSERT INTO ")
+	switch n.OnConflictClause.Action {
+	case OnConflictAction_INSERT_OR_ABORT:
+		buf.WriteString("INSERT OR ABORT INTO ")
+	case OnConflictAction_INSERT_OR_REVERT:
+		buf.WriteString("INSERT OR REVERT INTO ")
+	case OnConflictAction_INSERT_OR_IGNORE:
+		buf.WriteString("INSERT OR IGNORE INTO ")
+	case OnConflictAction_UPSERT:
+		buf.WriteString("UPSERT INTO ")
+	default:
+		buf.WriteString("INSERT INTO ")
+	}
 	if n.Relation != nil {
 		buf.astFormat(n.Relation, d)
 	}
