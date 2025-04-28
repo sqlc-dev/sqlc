@@ -6,9 +6,12 @@ package querytest
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5"
 )
 
 type Querier interface {
+	WithTx(tx pgx.Tx) *Queries
 	User(ctx context.Context) ([]int64, error)
 	UsersB(ctx context.Context, id []int64) *UsersBBatchResults
 	UsersC(ctx context.Context, id []int64) (int64, error)
