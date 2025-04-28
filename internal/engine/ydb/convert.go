@@ -48,8 +48,37 @@ func (c *cc) convertDelete_stmtContext(n *parser.Delete_stmtContext) ast.Node {
 	if n.WHERE() != nil && n.Expr() != nil {
 		where = c.convert(n.Expr())
 	}
+	var cols *ast.List
+	var source ast.Node
 	if n.ON() != nil && n.Into_values_source() != nil {
-		// todo: handle delete with into values source
+		nVal := n.Into_values_source()
+
+		// todo: handle default values when implemented
+
+		if pureCols := nVal.Pure_column_list(); pureCols != nil {
+			cols = &ast.List{}
+			for _, anID := range pureCols.AllAn_id() {
+				name := identifier(parseAnId(anID))
+				cols.Items = append(cols.Items, &ast.ResTarget{
+					Name: &name,
+				})
+			}
+		}
+
+		valSource := nVal.Values_source()
+		if valSource != nil {
+			switch {
+			case valSource.Values_stmt() != nil:
+				source = &ast.SelectStmt{
+					ValuesLists: c.convert(valSource.Values_stmt()).(*ast.List),
+					FromClause:  &ast.List{},
+					TargetList:  &ast.List{},
+				}
+
+			case valSource.Select_stmt() != nil:
+				source = c.convert(valSource.Select_stmt())
+			}
+		}
 	}
 
 	returning := &ast.List{}
@@ -62,6 +91,125 @@ func (c *cc) convertDelete_stmtContext(n *parser.Delete_stmtContext) ast.Node {
 		WhereClause:   where,
 		ReturningList: returning,
 		Batch:         batch,
+		OnCols:        cols,
+		OnSelectStmt:  source,
+	}
+
+	return stmts
+}
+
+func (c *cc) convertUpdate_stmtContext(n *parser.Update_stmtContext) ast.Node {
+	batch := n.BATCH() != nil
+
+	tableName := identifier(n.Simple_table_ref().Simple_table_ref_core().GetText())
+	rel := &ast.RangeVar{Relname: &tableName}
+
+	var where ast.Node
+	var setList *ast.List
+	var cols *ast.List
+	var source ast.Node
+
+	if n.SET() != nil && n.Set_clause_choice() != nil {
+		nSet := n.Set_clause_choice()
+		setList = &ast.List{Items: []ast.Node{}}
+
+		switch {
+		case nSet.Set_clause_list() != nil:
+			for _, clause := range nSet.Set_clause_list().AllSet_clause() {
+				targetCtx := clause.Set_target()
+				columnName := identifier(targetCtx.Column_name().GetText())
+				expr := c.convert(clause.Expr())
+				resTarget := &ast.ResTarget{
+					Name: &columnName,
+					Val:  expr,
+				}
+				setList.Items = append(setList.Items, resTarget)
+			}
+
+		case nSet.Multiple_column_assignment() != nil:
+			multiAssign := nSet.Multiple_column_assignment()
+			targetsCtx := multiAssign.Set_target_list()
+			valuesCtx := multiAssign.Simple_values_source()
+
+			var colNames []string
+			for _, target := range targetsCtx.AllSet_target() {
+				targetCtx := target.(*parser.Set_targetContext)
+				colNames = append(colNames, targetCtx.Column_name().GetText())
+			}
+
+			var rowExpr *ast.RowExpr
+			if exprList := valuesCtx.Expr_list(); exprList != nil {
+				rowExpr = &ast.RowExpr{
+					Args: &ast.List{},
+				}
+				for _, expr := range exprList.AllExpr() {
+					rowExpr.Args.Items = append(rowExpr.Args.Items, c.convert(expr))
+				}
+			}
+
+			for i, colName := range colNames {
+				name := identifier(colName)
+				setList.Items = append(setList.Items, &ast.ResTarget{
+					Name: &name,
+					Val: &ast.MultiAssignRef{
+						Source:   rowExpr,
+						Colno:    i + 1,
+						Ncolumns: len(colNames),
+					},
+				})
+			}
+		}
+
+		if n.WHERE() != nil && n.Expr() != nil {
+			where = c.convert(n.Expr())
+		}
+	} else if n.ON() != nil && n.Into_values_source() != nil {
+
+		// todo: handle default values when implemented
+
+		nVal := n.Into_values_source()
+
+		if pureCols := nVal.Pure_column_list(); pureCols != nil {
+			cols = &ast.List{}
+			for _, anID := range pureCols.AllAn_id() {
+				name := identifier(parseAnId(anID))
+				cols.Items = append(cols.Items, &ast.ResTarget{
+					Name: &name,
+				})
+			}
+		}
+
+		valSource := nVal.Values_source()
+		if valSource != nil {
+			switch {
+			case valSource.Values_stmt() != nil:
+				source = &ast.SelectStmt{
+					ValuesLists: c.convert(valSource.Values_stmt()).(*ast.List),
+					FromClause:  &ast.List{},
+					TargetList:  &ast.List{},
+				}
+
+			case valSource.Select_stmt() != nil:
+				source = c.convert(valSource.Select_stmt())
+			}
+		}
+	}
+
+	returning := &ast.List{}
+	if ret := n.Returning_columns_list(); ret != nil {
+		returning = c.convert(ret).(*ast.List)
+	}
+
+	stmts := &ast.UpdateStmt{
+		Relations:     &ast.List{Items: []ast.Node{rel}},
+		TargetList:    setList,
+		WhereClause:   where,
+		ReturningList: returning,
+		FromClause:  &ast.List{},
+		WithClause: nil,
+		Batch:         batch,
+		OnCols:        cols,
+		OnSelectStmt:  source,
 	}
 
 	return stmts
@@ -88,9 +236,8 @@ func (c *cc) convertInto_table_stmtContext(n *parser.Into_table_stmtContext) ast
 	var cols *ast.List
 	var source ast.Node
 	if nVal := n.Into_values_source(); nVal != nil {
-		if nVal.DEFAULT() != nil && nVal.VALUES() != nil {
-			// todo: handle default values when implemented
-		}
+		// todo: handle default values when implemented
+
 		if pureCols := nVal.Pure_column_list(); pureCols != nil {
 			cols = &ast.List{}
 			for _, anID := range pureCols.AllAn_id() {
@@ -184,20 +331,6 @@ func (c *cc) convertReturning_columns_listContext(n *parser.Returning_columns_li
 	}
 
 	return list
-}
-
-func (c *cc) convertAlter_table_stmtContext(n *parser.Alter_table_stmtContext) ast.Node {
-	tableRef := parseTableName(n.Simple_table_ref().Simple_table_ref_core())
-
-	stmt := &ast.AlterTableStmt{
-		Table: tableRef,
-		Cmds:  &ast.List{},
-	}
-	for _, action := range n.AllAlter_table_action() {
-		if add := action.Alter_table_add_column(); add != nil {
-		}
-	}
-	return stmt
 }
 
 func (c *cc) convertSelectStmtContext(n *parser.Select_stmtContext) ast.Node {
@@ -299,10 +432,7 @@ func (c *cc) convertSelectCoreContext(n *parser.Select_coreContext) ast.Node {
 }
 
 func (c *cc) convertResultColumn(n *parser.Result_columnContext) ast.Node {
-	exprCtx := n.Expr()
-	if exprCtx == nil {
-		// todo
-	}
+	// todo: support opt_id_prefix
 	target := &ast.ResTarget{
 		Location: n.GetStart().GetStart(),
 	}
@@ -322,7 +452,7 @@ func (c *cc) convertResultColumn(n *parser.Result_columnContext) ast.Node {
 	case n.AS() != nil && n.An_id_or_type() != nil:
 		name := parseAnIdOrType(n.An_id_or_type())
 		target.Name = &name
-	case n.An_id_as_compat() != nil:
+	case n.An_id_as_compat() != nil: //nolint
 		// todo: parse as_compat
 	}
 	target.Val = val
@@ -436,7 +566,7 @@ func (c *cc) convertNamedSingleSource(n *parser.Named_single_sourceContext) ast.
 		case *ast.RangeSubselect:
 			source.Alias = &ast.Alias{Aliasname: &aliasText}
 		}
-	} else if n.An_id_as_compat() != nil {
+	} else if n.An_id_as_compat() != nil { //nolint
 		// todo: parse as_compat
 	}
 	return base
@@ -700,7 +830,7 @@ func (c *cc) convertTypeNameComposite(n parser.IType_name_compositeContext) ast.
 	if struct_ := n.Type_name_struct(); struct_ != nil {
 		if structArgs := struct_.AllStruct_arg(); len(structArgs) > 0 {
 			var items []ast.Node
-			for _, _ = range structArgs {
+			for range structArgs {
 				// TODO: Handle struct field names and types
 				items = append(items, &ast.TODO{})
 			}
@@ -715,7 +845,7 @@ func (c *cc) convertTypeNameComposite(n parser.IType_name_compositeContext) ast.
 	if variant := n.Type_name_variant(); variant != nil {
 		if variantArgs := variant.AllVariant_arg(); len(variantArgs) > 0 {
 			var items []ast.Node
-			for _, _ = range variantArgs {
+			for range variantArgs {
 				// TODO: Handle variant arguments
 				items = append(items, &ast.TODO{})
 			}
@@ -793,7 +923,7 @@ func (c *cc) convertTypeNameComposite(n parser.IType_name_compositeContext) ast.
 	if enum := n.Type_name_enum(); enum != nil {
 		if typeTags := enum.AllType_name_tag(); len(typeTags) > 0 {
 			var items []ast.Node
-			for _, _ = range typeTags { // todo: Handle enum tags
+			for range typeTags { // todo: Handle enum tags
 				items = append(items, &ast.TODO{})
 			}
 			return &ast.TypeName{
@@ -1195,7 +1325,7 @@ func (c *cc) convertXorSubexpr(n *parser.Xor_subexprContext) ast.Node {
 					Lexpr: base,
 					Rexpr: c.convert(eqSubs[0]),
 				}
-				if condCtx.ESCAPE() != nil && len(eqSubs) >= 2 {
+				if condCtx.ESCAPE() != nil && len(eqSubs) >= 2 { //nolint
 					// todo: Add ESCAPE support
 				}
 				return expr
@@ -1549,7 +1679,7 @@ func (c *cc) convertUnarySubexprSuffix(base ast.Node, n *parser.Unary_subexpr_su
 		}
 	}
 
-	if n.COLLATE() != nil && n.An_id() != nil {
+	if n.COLLATE() != nil && n.An_id() != nil { //nolint
 		// todo: Handle COLLATE
 	}
 	return colRef
@@ -1769,6 +1899,9 @@ func (c *cc) convert(node node) ast.Node {
 
 	case *parser.Delete_stmtContext:
 		return c.convertDelete_stmtContext(n)
+
+	case *parser.Update_stmtContext:
+		return c.convertUpdate_stmtContext(n)
 
 	default:
 		return todo("convert(case=default)", n)

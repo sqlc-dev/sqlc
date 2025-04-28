@@ -37,6 +37,8 @@ func (n *InsertStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 		buf.WriteString("INSERT OR IGNORE INTO ")
 	case OnConflictAction_UPSERT:
 		buf.WriteString("UPSERT INTO ")
+	case OnConflictAction_REPLACE:
+		buf.WriteString("REPLACE INTO ")
 	default:
 		buf.WriteString("INSERT INTO ")
 	}

@@ -46,13 +46,13 @@ func TestAuthors(t *testing.T) {
 
 	t.Run("CreateOrUpdateAuthorReturningBio", func(t *testing.T) {
 		newBio := "Обновленная биография автора"
-		arg := CreateOrUpdateAuthorRetunringBioParams{
+		arg := CreateOrUpdateAuthorReturningBioParams{
 			P0: 3,
 			P1: "Тестовый Автор",
 			P2: &newBio,
 		}
 
-		returnedBio, err := q.CreateOrUpdateAuthorRetunringBio(ctx, arg)
+		returnedBio, err := q.CreateOrUpdateAuthorReturningBio(ctx, arg)
 		if err != nil {
 			t.Fatalf("failed to create or update author: %v", err)
 		}
@@ -65,6 +65,24 @@ func TestAuthors(t *testing.T) {
 		}
 
 		t.Logf("Author created or updated successfully with bio: %s", *returnedBio)
+	})
+
+	t.Run("Update Author", func(t *testing.T) {
+		arg := UpdateAuthorByIDParams{
+			P0: "Максим Горький",
+			P1: ptr("Обновленная биография"),
+			P2: 10,
+		}
+
+		singleAuthor, err := q.UpdateAuthorByID(ctx, arg)
+		if err != nil {
+			t.Fatal(err)
+		}
+		bio := "Null"
+		if singleAuthor.Bio != nil {
+			bio = *singleAuthor.Bio
+		}
+		t.Logf("- ID: %d | Name: %s | Bio: %s", singleAuthor.ID, singleAuthor.Name, bio)
 	})
 
 	t.Run("ListAuthors", func(t *testing.T) {
@@ -106,24 +124,6 @@ func TestAuthors(t *testing.T) {
 			t.Fatal("expected at least one author with this name, got none")
 		}
 		t.Log("Authors with this name:")
-		for _, a := range authors {
-			bio := "Null"
-			if a.Bio != nil {
-				bio = *a.Bio
-			}
-			t.Logf("- ID: %d | Name: %s | Bio: %s", a.ID, a.Name, bio)
-		}
-	})
-
-	t.Run("ListAuthorsWithIdModulo", func(t *testing.T) {
-		authors, err := q.ListAuthorsWithIdModulo(ctx)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if len(authors) == 0 {
-			t.Fatal("expected at least one author with even ID, got none")
-		}
-		t.Log("Authors with even IDs:")
 		for _, a := range authors {
 			bio := "Null"
 			if a.Bio != nil {

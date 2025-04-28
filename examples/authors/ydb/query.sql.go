@@ -24,26 +24,25 @@ func (q *Queries) CreateOrUpdateAuthor(ctx context.Context, arg CreateOrUpdateAu
 	return q.db.ExecContext(ctx, createOrUpdateAuthor, arg.P0, arg.P1, arg.P2)
 }
 
-const createOrUpdateAuthorRetunringBio = `-- name: CreateOrUpdateAuthorRetunringBio :one
+const createOrUpdateAuthorReturningBio = `-- name: CreateOrUpdateAuthorReturningBio :one
 UPSERT INTO authors (id, name, bio) VALUES ($p0, $p1, $p2) RETURNING bio
 `
 
-type CreateOrUpdateAuthorRetunringBioParams struct {
+type CreateOrUpdateAuthorReturningBioParams struct {
 	P0 uint64
 	P1 string
 	P2 *string
 }
 
-func (q *Queries) CreateOrUpdateAuthorRetunringBio(ctx context.Context, arg CreateOrUpdateAuthorRetunringBioParams) (*string, error) {
-	row := q.db.QueryRowContext(ctx, createOrUpdateAuthorRetunringBio, arg.P0, arg.P1, arg.P2)
+func (q *Queries) CreateOrUpdateAuthorReturningBio(ctx context.Context, arg CreateOrUpdateAuthorReturningBioParams) (*string, error) {
+	row := q.db.QueryRowContext(ctx, createOrUpdateAuthorReturningBio, arg.P0, arg.P1, arg.P2)
 	var bio *string
 	err := row.Scan(&bio)
 	return bio, err
 }
 
 const deleteAuthor = `-- name: DeleteAuthor :exec
-DELETE FROM authors
-WHERE id = $p0
+DELETE FROM authors WHERE id = $p0
 `
 
 func (q *Queries) DeleteAuthor(ctx context.Context, p0 uint64) error {
@@ -118,34 +117,6 @@ func (q *Queries) ListAuthors(ctx context.Context) ([]Author, error) {
 	return items, nil
 }
 
-const listAuthorsWithIdModulo = `-- name: ListAuthorsWithIdModulo :many
-SELECT id, name, bio FROM authors
-WHERE id % 2 = 0
-`
-
-func (q *Queries) ListAuthorsWithIdModulo(ctx context.Context) ([]Author, error) {
-	rows, err := q.db.QueryContext(ctx, listAuthorsWithIdModulo)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Author
-	for rows.Next() {
-		var i Author
-		if err := rows.Scan(&i.ID, &i.Name, &i.Bio); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const listAuthorsWithNullBio = `-- name: ListAuthorsWithNullBio :many
 SELECT id, name, bio FROM authors
 WHERE bio IS NULL
@@ -172,4 +143,21 @@ func (q *Queries) ListAuthorsWithNullBio(ctx context.Context) ([]Author, error) 
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateAuthorByID = `-- name: UpdateAuthorByID :one
+UPDATE authors SET name = $p0, bio = $p1 WHERE id = $p2 RETURNING id, name, bio
+`
+
+type UpdateAuthorByIDParams struct {
+	P0 string
+	P1 *string
+	P2 uint64
+}
+
+func (q *Queries) UpdateAuthorByID(ctx context.Context, arg UpdateAuthorByIDParams) (Author, error) {
+	row := q.db.QueryRowContext(ctx, updateAuthorByID, arg.P0, arg.P1, arg.P2)
+	var i Author
+	err := row.Scan(&i.ID, &i.Name, &i.Bio)
+	return i, err
 }

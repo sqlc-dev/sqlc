@@ -685,6 +685,8 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.apply(n, "Relations", nil, n.Relations)
 		a.apply(n, "UsingClause", nil, n.UsingClause)
 		a.apply(n, "WhereClause", nil, n.WhereClause)
+		a.apply(n, "Cols", nil, n.OnCols)
+		a.apply(n, "SelectStmt", nil, n.OnSelectStmt)
 		a.apply(n, "ReturningList", nil, n.ReturningList)
 		a.apply(n, "WithClause", nil, n.WithClause)
 		a.apply(n, "Targets", nil, n.Targets)
@@ -1174,6 +1176,8 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.apply(n, "TargetList", nil, n.TargetList)
 		a.apply(n, "WhereClause", nil, n.WhereClause)
 		a.apply(n, "FromClause", nil, n.FromClause)
+		a.apply(n, "Cols", nil, n.OnCols)
+		a.apply(n, "SelectStmt", nil, n.OnSelectStmt)
 		a.apply(n, "ReturningList", nil, n.ReturningList)
 		a.apply(n, "WithClause", nil, n.WithClause)
 

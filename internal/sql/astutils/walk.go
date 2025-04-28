@@ -1068,6 +1068,12 @@ func Walk(f Visitor, node ast.Node) {
 		if n.WhereClause != nil {
 			Walk(f, n.WhereClause)
 		}
+		if n.OnCols != nil {
+			Walk(f, n.OnCols)
+		}
+		if n.OnSelectStmt != nil {
+			Walk(f, n.OnSelectStmt)
+		}
 		if n.LimitCount != nil {
 			Walk(f, n.LimitCount)
 		}
@@ -2067,6 +2073,12 @@ func Walk(f Visitor, node ast.Node) {
 		}
 		if n.FromClause != nil {
 			Walk(f, n.FromClause)
+		}
+		if n.OnCols != nil {
+			Walk(f, n.OnCols)
+		}
+		if n.OnSelectStmt != nil {
+			Walk(f, n.OnSelectStmt)
 		}
 		if n.LimitCount != nil {
 			Walk(f, n.LimitCount)
