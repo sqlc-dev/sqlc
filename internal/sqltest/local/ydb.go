@@ -36,7 +36,8 @@ type TestYDB struct {
 func link_YDB(t *testing.T, migrations []string, rw bool) TestYDB {
 	t.Helper()
 
-	// 1) Контекст с таймаутом
+	time.Sleep(1 * time.Second) // wait for YDB to start
+
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -78,7 +79,6 @@ func link_YDB(t *testing.T, migrations []string, rw bool) TestYDB {
 	}
 	prefix := fmt.Sprintf("%s/%s", baseDB, name)
 
-	// 2) Открываем драйвер к корню "/"
 	rootDSN := fmt.Sprintf("grpc://%s?database=%s", dbuiri, baseDB)
 	t.Logf("→ Opening root driver: %s", rootDSN)
 	driver, err := ydb.Open(ctx, rootDSN,
