@@ -173,7 +173,7 @@ func argName(name string) string {
 	out := ""
 	for i, p := range strings.Split(name, "_") {
 		if i == 0 {
-			out += strings.ToLower(p)
+			out += p
 		} else if p == "id" {
 			out += "ID"
 		} else {
