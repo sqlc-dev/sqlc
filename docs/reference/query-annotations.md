@@ -222,3 +222,9 @@ func (b *CreateBookBatchResults) Close() error {
 	//...
 }
 ```
+
+## `:copyfrom`
+
+__NOTE: This command is driver and package specific, see [how to insert](../howto/insert.md#using-copyfrom)
+
+This command is used to insert rows a lot faster than sequential inserts.

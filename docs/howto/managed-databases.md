@@ -25,7 +25,7 @@ Access to a running database server is required. Add a connection string to the 
 version: '2'
 servers:
 - engine: postgresql
-  uri: "postgres://locahost:5432/postgres?sslmode=disable"
+  uri: "postgres://localhost:5432/postgres?sslmode=disable"
 sql:
 - schema: schema.sql
   queries: query.sql
@@ -63,7 +63,7 @@ on a per-query basis to speed up future codegen runs. Here's a minimal working c
 version: '2'
 servers:
 - engine: postgresql
-  uri: "postgres://locahost:5432/postgres?sslmode=disable"
+  uri: "postgres://localhost:5432/postgres?sslmode=disable"
 sql:
 - schema: schema.sql
   queries: query.sql
@@ -89,7 +89,7 @@ to ensure the query is valid. Here's a minimal working configuration:
 version: '2'
 servers:
 - engine: postgresql
-  uri: "postgres://locahost:5432/postgres?sslmode=disable"
+  uri: "postgres://localhost:5432/postgres?sslmode=disable"
 sql:
 - schema: schema.sql
   queries: query.sql

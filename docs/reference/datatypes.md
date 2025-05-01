@@ -235,7 +235,7 @@ create table shapes(
 );
 
 -- name: GetCentroids :many
-SELECT id, name, ST_Centriod(geom)::geometry FROM shapes;
+SELECT id, name, ST_Centroid(geom)::geometry FROM shapes;
 ```
 
 ```json

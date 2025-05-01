@@ -6,7 +6,7 @@ import (
 	"io"
 	"strings"
 
-	nodes "github.com/pganalyze/pg_query_go/v5"
+	nodes "github.com/pganalyze/pg_query_go/v6"
 
 	"github.com/sqlc-dev/sqlc/internal/engine/postgresql/parser"
 	"github.com/sqlc-dev/sqlc/internal/source"
@@ -617,7 +617,7 @@ func translate(node *nodes.Node) (ast.Node, error) {
 				MissingOk: n.MissingOk,
 			}, nil
 
-		case nodes.ObjectType_OBJECT_TABLE:
+		case nodes.ObjectType_OBJECT_TABLE, nodes.ObjectType_OBJECT_MATVIEW, nodes.ObjectType_OBJECT_VIEW:
 			rel := parseRelationFromRangeVar(n.Relation)
 			return &ast.RenameTableStmt{
 				Table:     rel.TableName(),

@@ -165,7 +165,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		}
 		return "sql.NullBool"
 
-	case "json":
+	case "json", "pg_catalog.json":
 		switch driver {
 		case opts.SQLDriverPGXV5:
 			return "[]byte"
@@ -181,7 +181,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 			return "interface{}"
 		}
 
-	case "jsonb":
+	case "jsonb", "pg_catalog.jsonb":
 		switch driver {
 		case opts.SQLDriverPGXV5:
 			return "[]byte"
@@ -233,7 +233,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		}
 		return "sql.NullTime"
 
-	case "pg_catalog.timestamp":
+	case "pg_catalog.timestamp", "timestamp":
 		if driver == opts.SQLDriverPGXV5 {
 			return "pgtype.Timestamp"
 		}

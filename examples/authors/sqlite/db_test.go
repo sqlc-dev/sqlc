@@ -12,6 +12,7 @@ import (
 
 func TestAuthors(t *testing.T) {
 	sdb, cleanup := sqltest.SQLite(t, []string{"schema.sql"})
+	defer sdb.Close()
 	defer cleanup()
 
 	ctx := context.Background()

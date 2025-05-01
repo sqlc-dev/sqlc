@@ -23,5 +23,6 @@ CREATE TABLE go_keywords (
     "for" TEXT,
     "import" TEXT,
     "return" TEXT,
-    "var" TEXT
+    "var" TEXT,
+    "q" TEXT
 );

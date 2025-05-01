@@ -72,6 +72,8 @@ For a complete working example see the following files:
   - A process-based plugin that serializes the CodeGenRequest to JSON
 - [process_plugin_sqlc_gen_json](https://github.com/sqlc-dev/sqlc/tree/main/internal/endtoend/testdata/process_plugin_sqlc_gen_json)
   - An example project showing how to use a process-based plugin
+- [process_plugin_sqlc_gen_json](https://github.com/sqlc-dev/sqlc/tree/main/internal/endtoend/testdata/process_plugin_format_json/)
+  - An example project showing how to use a process-based plugin using json
 
 ## Environment variables
 

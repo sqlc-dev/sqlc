@@ -18,6 +18,7 @@ const (
 
 func TestBooks(t *testing.T) {
 	db, cleanup := sqltest.SQLite(t, []string{"schema.sql"})
+	defer db.Close()
 	defer cleanup()
 
 	ctx := context.Background()

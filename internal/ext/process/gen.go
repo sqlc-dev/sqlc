@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 
@@ -18,8 +19,9 @@ import (
 )
 
 type Runner struct {
-	Cmd string
-	Env []string
+	Cmd    string
+	Format string
+	Env    []string
 }
 
 func (r *Runner) Invoke(ctx context.Context, method string, args any, reply any, opts ...grpc.CallOption) error {
@@ -28,9 +30,27 @@ func (r *Runner) Invoke(ctx context.Context, method string, args any, reply any,
 		return fmt.Errorf("args isn't a protoreflect.ProtoMessage")
 	}
 
-	stdin, err := proto.Marshal(req)
-	if err != nil {
-		return fmt.Errorf("failed to encode codegen request: %w", err)
+	var stdin []byte
+	var err error
+	switch r.Format {
+	case "json":
+		m := &protojson.MarshalOptions{
+			EmitUnpopulated: true,
+			Indent:          "",
+			UseProtoNames:   true,
+		}
+		stdin, err = m.Marshal(req)
+
+		if err != nil {
+			return fmt.Errorf("failed to encode codegen request: %w", err)
+		}
+	case "", "protobuf":
+		stdin, err = proto.Marshal(req)
+		if err != nil {
+			return fmt.Errorf("failed to encode codegen request: %w", err)
+		}
+	default:
+		return fmt.Errorf("unknown plugin format: %s", r.Format)
 	}
 
 	// Check if the output plugin exists
@@ -66,8 +86,15 @@ func (r *Runner) Invoke(ctx context.Context, method string, args any, reply any,
 		return fmt.Errorf("reply isn't a protoreflect.ProtoMessage")
 	}
 
-	if err := proto.Unmarshal(out, resp); err != nil {
-		return fmt.Errorf("process: failed to read codegen resp: %w", err)
+	switch r.Format {
+	case "json":
+		if err := protojson.Unmarshal(out, resp); err != nil {
+			return fmt.Errorf("process: failed to read codegen resp: %w", err)
+		}
+	default:
+		if err := proto.Unmarshal(out, resp); err != nil {
+			return fmt.Errorf("process: failed to read codegen resp: %w", err)
+		}
 	}
 
 	return nil

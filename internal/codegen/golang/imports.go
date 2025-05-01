@@ -402,6 +402,10 @@ func (i *importer) queryImports(filename string) fileImports {
 		pkg[ImportSpec{Path: "github.com/lib/pq"}] = struct{}{}
 	}
 
+	if i.Options.WrapErrors {
+		std["fmt"] = struct{}{}
+	}
+
 	return sortedImports(std, pkg)
 }
 

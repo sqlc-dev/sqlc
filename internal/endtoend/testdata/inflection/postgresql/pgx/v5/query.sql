@@ -9,3 +9,6 @@ SELECT * FROM product_meta;
 
 -- name: ListCalories :many
 SELECT * FROM calories;
+
+-- name: GetProductMetadata :many
+SELECT * FROM product_metadata;

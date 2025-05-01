@@ -915,10 +915,6 @@ func (c *cc) convertHavingClause(n *pcast.HavingClause) ast.Node {
 	return c.convert(n.Expr)
 }
 
-func (c *cc) convertIndexAdviseStmt(n *pcast.IndexAdviseStmt) ast.Node {
-	return todo(n)
-}
-
 func (c *cc) convertIndexLockAndAlgorithm(n *pcast.IndexLockAndAlgorithm) ast.Node {
 	return todo(n)
 }
@@ -1637,9 +1633,6 @@ func (c *cc) convert(node pcast.Node) ast.Node {
 
 	case *pcast.HavingClause:
 		return c.convertHavingClause(n)
-
-	case *pcast.IndexAdviseStmt:
-		return c.convertIndexAdviseStmt(n)
 
 	case *pcast.IndexLockAndAlgorithm:
 		return c.convertIndexLockAndAlgorithm(n)

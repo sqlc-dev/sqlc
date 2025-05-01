@@ -65,7 +65,7 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 		return nil, err
 	}
 
-	md.Params, md.Flags, err = metadata.ParseParamsAndFlags(cleanedComments)
+	md.Params, md.Flags, md.RuleSkiplist, err = metadata.ParseCommentFlags(cleanedComments)
 	if err != nil {
 		return nil, err
 	}

@@ -5,7 +5,7 @@ CREATE TABLE venues (
     statuses         text, -- status[],
     slug             text         not null COMMENT 'This value appears in public URLs',
     name             varchar(255) not null,
-    city             text         not null references city(slug),
+    city             varchar(255) not null references city(slug),
     spotify_playlist varchar(255) not null,
     songkick_id      text,
     tags             text  -- text[]

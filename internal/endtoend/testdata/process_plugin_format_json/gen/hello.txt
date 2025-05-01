@@ -1,0 +1,12 @@
+SELECT id, name, bio FROM authors
+WHERE id = $1 LIMIT 1
+SELECT id, name, bio FROM authors
+ORDER BY name
+INSERT INTO authors (
+          name, bio
+) VALUES (
+  $1, $2
+)
+RETURNING id, name, bio
+DELETE FROM authors
+WHERE id = $1

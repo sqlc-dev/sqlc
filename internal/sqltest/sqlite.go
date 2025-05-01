@@ -16,6 +16,9 @@ func SQLite(t *testing.T, migrations []string) (*sql.DB, func()) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if err := source.Close(); err != nil {
+		t.Fatal(err)
+	}
 	return CreateSQLiteDatabase(t, source.Name(), migrations)
 }
 

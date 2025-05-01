@@ -1,0 +1,4 @@
+{
+  "process": "test-json-process-plugin",
+  "os": [ "darwin", "linux" ]
+}
