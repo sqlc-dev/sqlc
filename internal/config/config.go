@@ -112,6 +112,7 @@ type SQL struct {
 	Name                 string    `json:"name" yaml:"name"`
 	Engine               Engine    `json:"engine,omitempty" yaml:"engine"`
 	Schema               Paths     `json:"schema" yaml:"schema"`
+	DefaultSchema        string    `json:"default_schema" yaml:"default_schema"`
 	Queries              Paths     `json:"queries" yaml:"queries"`
 	Database             *Database `json:"database" yaml:"database"`
 	StrictFunctionChecks bool      `json:"strict_function_checks" yaml:"strict_function_checks"`

@@ -149,7 +149,7 @@ func TestUpdateErrors(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			c := NewCatalog()
+			c := NewCatalog("")
 			err = c.Build(stmts)
 			if err == nil {
 				t.Log(test.stmt)
