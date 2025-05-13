@@ -91,9 +91,9 @@ const getMaxInt = `-- name: GetMaxInt :one
 SELECT max(int_val) FROM test
 `
 
-func (q *Queries) GetMaxInt(ctx context.Context) (interface{}, error) {
+func (q *Queries) GetMaxInt(ctx context.Context) (any, error) {
 	row := q.db.QueryRowContext(ctx, getMaxInt)
-	var max interface{}
+	var max any
 	err := row.Scan(&max)
 	return max, err
 }
@@ -102,9 +102,9 @@ const getMaxText = `-- name: GetMaxText :one
 SELECT max(text_val) FROM test
 `
 
-func (q *Queries) GetMaxText(ctx context.Context) (interface{}, error) {
+func (q *Queries) GetMaxText(ctx context.Context) (any, error) {
 	row := q.db.QueryRowContext(ctx, getMaxText)
-	var max interface{}
+	var max any
 	err := row.Scan(&max)
 	return max, err
 }
@@ -113,9 +113,9 @@ const getMinInt = `-- name: GetMinInt :one
 SELECT min(int_val) FROM test
 `
 
-func (q *Queries) GetMinInt(ctx context.Context) (interface{}, error) {
+func (q *Queries) GetMinInt(ctx context.Context) (any, error) {
 	row := q.db.QueryRowContext(ctx, getMinInt)
-	var min interface{}
+	var min any
 	err := row.Scan(&min)
 	return min, err
 }
@@ -124,9 +124,9 @@ const getMinText = `-- name: GetMinText :one
 SELECT min(text_val) FROM test
 `
 
-func (q *Queries) GetMinText(ctx context.Context) (interface{}, error) {
+func (q *Queries) GetMinText(ctx context.Context) (any, error) {
 	row := q.db.QueryRowContext(ctx, getMinText)
-	var min interface{}
+	var min any
 	err := row.Scan(&min)
 	return min, err
 }

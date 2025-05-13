@@ -18,7 +18,7 @@ const (
 	CalendarMaincalendarFalse CalendarMaincalendar = "false"
 )
 
-func (e *CalendarMaincalendar) Scan(src interface{}) error {
+func (e *CalendarMaincalendar) Scan(src any) error {
 	switch s := src.(type) {
 	case []byte:
 		*e = CalendarMaincalendar(s)
@@ -36,7 +36,7 @@ type NullCalendarMaincalendar struct {
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullCalendarMaincalendar) Scan(value interface{}) error {
+func (ns *NullCalendarMaincalendar) Scan(value any) error {
 	if value == nil {
 		ns.CalendarMaincalendar, ns.Valid = "", false
 		return nil

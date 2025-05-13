@@ -16,7 +16,7 @@ const (
 	QueryParamEnumTableEnumH QueryParamEnumTableEnum = "h"
 )
 
-func (e *QueryParamEnumTableEnum) Scan(src interface{}) error {
+func (e *QueryParamEnumTableEnum) Scan(src any) error {
 	switch s := src.(type) {
 	case []byte:
 		*e = QueryParamEnumTableEnum(s)
@@ -34,7 +34,7 @@ type NullQueryParamEnumTableEnum struct {
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullQueryParamEnumTableEnum) Scan(value interface{}) error {
+func (ns *NullQueryParamEnumTableEnum) Scan(value any) error {
 	if value == nil {
 		ns.QueryParamEnumTableEnum, ns.Valid = "", false
 		return nil
@@ -58,7 +58,7 @@ const (
 	QueryParamStructEnumTableEnumJ QueryParamStructEnumTableEnum = "j"
 )
 
-func (e *QueryParamStructEnumTableEnum) Scan(src interface{}) error {
+func (e *QueryParamStructEnumTableEnum) Scan(src any) error {
 	switch s := src.(type) {
 	case []byte:
 		*e = QueryParamStructEnumTableEnum(s)
@@ -76,7 +76,7 @@ type NullQueryParamStructEnumTableEnum struct {
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullQueryParamStructEnumTableEnum) Scan(value interface{}) error {
+func (ns *NullQueryParamStructEnumTableEnum) Scan(value any) error {
 	if value == nil {
 		ns.QueryParamStructEnumTableEnum, ns.Valid = "", false
 		return nil
@@ -100,7 +100,7 @@ const (
 	QueryReturnEnumTableEnumL QueryReturnEnumTableEnum = "l"
 )
 
-func (e *QueryReturnEnumTableEnum) Scan(src interface{}) error {
+func (e *QueryReturnEnumTableEnum) Scan(src any) error {
 	switch s := src.(type) {
 	case []byte:
 		*e = QueryReturnEnumTableEnum(s)
@@ -118,7 +118,7 @@ type NullQueryReturnEnumTableEnum struct {
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullQueryReturnEnumTableEnum) Scan(value interface{}) error {
+func (ns *NullQueryReturnEnumTableEnum) Scan(value any) error {
 	if value == nil {
 		ns.QueryReturnEnumTableEnum, ns.Valid = "", false
 		return nil
@@ -142,7 +142,7 @@ const (
 	QueryReturnFullTableEnumF QueryReturnFullTableEnum = "f"
 )
 
-func (e *QueryReturnFullTableEnum) Scan(src interface{}) error {
+func (e *QueryReturnFullTableEnum) Scan(src any) error {
 	switch s := src.(type) {
 	case []byte:
 		*e = QueryReturnFullTableEnum(s)
@@ -160,7 +160,7 @@ type NullQueryReturnFullTableEnum struct {
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullQueryReturnFullTableEnum) Scan(value interface{}) error {
+func (ns *NullQueryReturnFullTableEnum) Scan(value any) error {
 	if value == nil {
 		ns.QueryReturnFullTableEnum, ns.Valid = "", false
 		return nil
@@ -184,7 +184,7 @@ const (
 	QueryReturnStructEnumTableEnumL QueryReturnStructEnumTableEnum = "l"
 )
 
-func (e *QueryReturnStructEnumTableEnum) Scan(src interface{}) error {
+func (e *QueryReturnStructEnumTableEnum) Scan(src any) error {
 	switch s := src.(type) {
 	case []byte:
 		*e = QueryReturnStructEnumTableEnum(s)
@@ -202,7 +202,7 @@ type NullQueryReturnStructEnumTableEnum struct {
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullQueryReturnStructEnumTableEnum) Scan(value interface{}) error {
+func (ns *NullQueryReturnStructEnumTableEnum) Scan(value any) error {
 	if value == nil {
 		ns.QueryReturnStructEnumTableEnum, ns.Valid = "", false
 		return nil
@@ -226,7 +226,7 @@ const (
 	QuerySqlcEmbedEnumN QuerySqlcEmbedEnum = "n"
 )
 
-func (e *QuerySqlcEmbedEnum) Scan(src interface{}) error {
+func (e *QuerySqlcEmbedEnum) Scan(src any) error {
 	switch s := src.(type) {
 	case []byte:
 		*e = QuerySqlcEmbedEnum(s)
@@ -244,7 +244,7 @@ type NullQuerySqlcEmbedEnum struct {
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullQuerySqlcEmbedEnum) Scan(value interface{}) error {
+func (ns *NullQuerySqlcEmbedEnum) Scan(value any) error {
 	if value == nil {
 		ns.QuerySqlcEmbedEnum, ns.Valid = "", false
 		return nil

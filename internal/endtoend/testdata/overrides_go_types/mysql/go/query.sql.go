@@ -18,7 +18,7 @@ SELECT other, total, retyped FROM foo WHERE retyped IN (/*SLICE:paramname*/?)
 
 func (q *Queries) TestIN(ctx context.Context, paramname []pkg.CustomType) ([]Foo, error) {
 	query := testIN
-	var queryParams []interface{}
+	var queryParams []any
 	if len(paramname) > 0 {
 		for _, v := range paramname {
 			queryParams = append(queryParams, v)

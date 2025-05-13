@@ -13,15 +13,15 @@ const listBar = `-- name: ListBar :many
 SELECT bar FROM foo
 `
 
-func (q *Queries) ListBar(ctx context.Context) ([]interface{}, error) {
+func (q *Queries) ListBar(ctx context.Context) ([]any, error) {
 	rows, err := q.db.QueryContext(ctx, listBar)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []interface{}
+	var items []any
 	for rows.Next() {
-		var bar interface{}
+		var bar any
 		if err := rows.Scan(&bar); err != nil {
 			return nil, err
 		}
@@ -40,15 +40,15 @@ const listBaz = `-- name: ListBaz :many
 SELECT baz FROM foo
 `
 
-func (q *Queries) ListBaz(ctx context.Context) ([]interface{}, error) {
+func (q *Queries) ListBaz(ctx context.Context) ([]any, error) {
 	rows, err := q.db.QueryContext(ctx, listBaz)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []interface{}
+	var items []any
 	for rows.Next() {
-		var baz interface{}
+		var baz any
 		if err := rows.Scan(&baz); err != nil {
 			return nil, err
 		}

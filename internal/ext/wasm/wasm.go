@@ -59,7 +59,7 @@ func (r *Runner) loadAndCompile(ctx context.Context) (*runtimeAndCode, error) {
 	if err != nil {
 		return nil, err
 	}
-	value, err, _ := flight.Do(expected, func() (interface{}, error) {
+	value, err, _ := flight.Do(expected, func() (any, error) {
 		return r.loadAndCompileWASM(ctx, cacheDir, expected)
 	})
 	if err != nil {

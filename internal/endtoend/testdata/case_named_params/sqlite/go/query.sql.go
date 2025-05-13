@@ -18,8 +18,8 @@ LIMIT   1
 `
 
 type ListAuthorsParams struct {
-	Email    interface{}
-	Username interface{}
+	Email    any
+	Username any
 }
 
 func (q *Queries) ListAuthors(ctx context.Context, arg ListAuthorsParams) (Author, error) {

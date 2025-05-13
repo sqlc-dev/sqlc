@@ -19,8 +19,8 @@ func (r *iteratorFor{{.MethodName}}) Next() bool {
 	return len(r.rows) > 0
 }
 
-func (r iteratorFor{{.MethodName}}) Values() ([]interface{}, error) {
-	return []interface{}{
+func (r iteratorFor{{.MethodName}}) Values() ([]any, error) {
+	return []any{
 {{- if .Arg.Struct }}
 {{- range .Arg.Struct.Fields }}
 		r.rows[0].{{.Name}},

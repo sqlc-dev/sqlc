@@ -18,7 +18,7 @@ const (
 	FooMoodHappy FooMood = "happy"
 )
 
-func (e *FooMood) Scan(src interface{}) error {
+func (e *FooMood) Scan(src any) error {
 	switch s := src.(type) {
 	case []byte:
 		*e = FooMood(s)
@@ -36,7 +36,7 @@ type NullFooMood struct {
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullFooMood) Scan(value interface{}) error {
+func (ns *NullFooMood) Scan(value any) error {
 	if value == nil {
 		ns.FooMood, ns.Valid = "", false
 		return nil

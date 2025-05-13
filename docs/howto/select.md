@@ -54,8 +54,8 @@ type Author struct {
 }
 
 type DBTX interface {
-	QueryContext(context.Context, string, ...interface{}) (*sql.Rows, error)
-	QueryRowContext(context.Context, string, ...interface{}) *sql.Row
+	QueryContext(context.Context, string, ...any) (*sql.Rows, error)
+	QueryRowContext(context.Context, string, ...any) *sql.Row
 }
 
 func New(db DBTX) *Queries {
@@ -146,7 +146,7 @@ import (
 )
 
 type DBTX interface {
-	QueryRowContext(context.Context, string, ...interface{}) *sql.Row
+	QueryRowContext(context.Context, string, ...any) *sql.Row
 }
 
 func New(db DBTX) *Queries {
@@ -228,8 +228,8 @@ type Author struct {
 }
 
 type DBTX interface {
-	QueryContext(context.Context, string, ...interface{}) (*sql.Rows, error)
-	QueryRowContext(context.Context, string, ...interface{}) *sql.Row
+	QueryContext(context.Context, string, ...any) (*sql.Rows, error)
+	QueryRowContext(context.Context, string, ...any) *sql.Row
 }
 
 func New(db DBTX) *Queries {
@@ -319,10 +319,10 @@ type Author struct {
 }
 
 type DBTX interface {
-	ExecContext(context.Context, string, ...interface{}) (sql.Result, error)
+	ExecContext(context.Context, string, ...any) (sql.Result, error)
 	PrepareContext(context.Context, string) (*sql.Stmt, error)
-	QueryContext(context.Context, string, ...interface{}) (*sql.Rows, error)
-	QueryRowContext(context.Context, string, ...interface{}) *sql.Row
+	QueryContext(context.Context, string, ...any) (*sql.Rows, error)
+	QueryRowContext(context.Context, string, ...any) *sql.Row
 }
 
 func New(db DBTX) *Queries {
@@ -346,7 +346,7 @@ WHERE id IN (/*SLICE:ids*/?)
 
 func (q *Queries) ListAuthorsByIDs(ctx context.Context, ids []int64) ([]Author, error) {
 	sql := listAuthorsByIDs
-	var queryParams []interface{}
+	var queryParams []any
 	if len(ids) == 0 {
 		return nil, fmt.Errorf("slice ids must have at least one element")
 	}

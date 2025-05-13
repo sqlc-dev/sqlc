@@ -29,8 +29,8 @@ func (r *iteratorForInsertSingleValue) Next() bool {
 	return len(r.rows) > 0
 }
 
-func (r iteratorForInsertSingleValue) Values() ([]interface{}, error) {
-	return []interface{}{
+func (r iteratorForInsertSingleValue) Values() ([]any, error) {
+	return []any{
 		r.rows[0],
 	}, nil
 }
@@ -62,8 +62,8 @@ func (r *iteratorForInsertValues) Next() bool {
 	return len(r.rows) > 0
 }
 
-func (r iteratorForInsertValues) Values() ([]interface{}, error) {
-	return []interface{}{
+func (r iteratorForInsertValues) Values() ([]any, error) {
+	return []any{
 		r.rows[0].A,
 		r.rows[0].B,
 	}, nil

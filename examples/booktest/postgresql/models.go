@@ -18,7 +18,7 @@ const (
 	BookTypeNONFICTION BookType = "NONFICTION"
 )
 
-func (e *BookType) Scan(src interface{}) error {
+func (e *BookType) Scan(src any) error {
 	switch s := src.(type) {
 	case []byte:
 		*e = BookType(s)
@@ -36,7 +36,7 @@ type NullBookType struct {
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullBookType) Scan(value interface{}) error {
+func (ns *NullBookType) Scan(value any) error {
 	if value == nil {
 		ns.BookType, ns.Valid = "", false
 		return nil

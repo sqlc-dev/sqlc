@@ -21,9 +21,9 @@ SELECT
     )
 `
 
-func (q *Queries) BarNotExists(ctx context.Context) (interface{}, error) {
+func (q *Queries) BarNotExists(ctx context.Context) (any, error) {
 	row := q.db.QueryRowContext(ctx, barNotExists)
-	var column_1 interface{}
+	var column_1 any
 	err := row.Scan(&column_1)
 	return column_1, err
 }

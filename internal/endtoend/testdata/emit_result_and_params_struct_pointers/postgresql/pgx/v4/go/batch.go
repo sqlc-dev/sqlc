@@ -38,7 +38,7 @@ type InsertValuesParams struct {
 func (q *Queries) InsertValues(ctx context.Context, arg []*InsertValuesParams) *InsertValuesBatchResults {
 	batch := &pgx.Batch{}
 	for _, a := range arg {
-		vals := []interface{}{
+		vals := []any{
 			a.A,
 			a.B,
 		}
