@@ -512,8 +512,11 @@ func (c *cc) convertMultiSelect_stmtContext(n *parser.Select_stmtContext) ast.No
 	}
 
 	limitCount, limitOffset := c.convertLimit_stmtContext(n.Limit_stmt())
+	sortClause := c.buildSortClause(n.Order_by_stmt())
+
 	selectStmt.LimitCount = limitCount
 	selectStmt.LimitOffset = limitOffset
+	selectStmt.SortClause = sortClause
 	selectStmt.WithClause = &ast.WithClause{Ctes: &ctes}
 	return selectStmt
 }
@@ -1211,4 +1214,62 @@ func (c *cc) convert(node node) ast.Node {
 	default:
 		return todo("convert(case=default)", n)
 	}
+}
+
+// buildSortClause converts an IOrder_by_stmtContext into an *ast.List of *ast.SortBy nodes.
+func (c *cc) buildSortClause(orderByNode parser.IOrder_by_stmtContext) *ast.List {
+	if orderByNode == nil {
+		return nil
+	}
+
+	orderByCtx, ok := orderByNode.(*parser.Order_by_stmtContext)
+	if !ok {
+		if debug.Active {
+			log.Printf("sqlite.buildSortClause: unexpected type %T for IOrder_by_stmtContext", orderByNode)
+		}
+		return nil
+	}
+
+	if len(orderByCtx.AllOrdering_term()) == 0 {
+		return nil
+	}
+
+	sortItems := &ast.List{Items: []ast.Node{}}
+	for _, otermIP := range orderByCtx.AllOrdering_term() {
+		oterm, ok := otermIP.(*parser.Ordering_termContext)
+		if !ok {
+			if debug.Active {
+				log.Printf("sqlite.buildSortClause: unexpected type %T for IOrdering_termContext", otermIP)
+			}
+			continue
+		}
+
+		sortByDir := ast.SortByDirDefault
+		if adNode := oterm.Asc_desc(); adNode != nil {
+			// Asc_descContext has ASC_() and DESC_() methods which return TerminalNode
+			if adNode.ASC_() != nil {
+				sortByDir = ast.SortByDirAsc
+			} else if adNode.DESC_() != nil {
+				sortByDir = ast.SortByDirDesc
+			}
+		}
+
+		sortByNulls := ast.SortByNullsDefault
+		if oterm.NULLS_() != nil { // NULLS_() is a TerminalNode
+			if oterm.FIRST_() != nil { // FIRST_() is a TerminalNode
+				sortByNulls = ast.SortByNullsFirst
+			} else if oterm.LAST_() != nil { // LAST_() is a TerminalNode
+				sortByNulls = ast.SortByNullsLast
+			}
+		}
+
+		sortItems.Items = append(sortItems.Items, &ast.SortBy{
+			Node:        c.convert(oterm.Expr()),
+			SortbyDir:   sortByDir,
+			SortbyNulls: sortByNulls,
+			UseOp:       &ast.List{}, // Typically empty for standard SQLite ORDER BY
+			Location:    oterm.GetStart().GetStart(),
+		})
+	}
+	return sortItems
 }
