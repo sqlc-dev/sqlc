@@ -2,7 +2,7 @@
 // versions:
 //   sqlc v1.29.0
 
-package querytest
+package order_by_binds
 
 import (
 	"database/sql"
