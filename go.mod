@@ -24,8 +24,8 @@ require (
 	github.com/tetratelabs/wazero v1.9.0
 	github.com/wasilibs/go-pgquery v0.0.0-20250409022910-10ac41983c07
 	github.com/xeipuuv/gojsonschema v1.2.0
-	golang.org/x/sync v0.13.0
-	google.golang.org/grpc v1.72.0
+	golang.org/x/sync v0.14.0
+	google.golang.org/grpc v1.72.1
 	google.golang.org/protobuf v1.36.6
 	gopkg.in/yaml.v3 v3.0.1
 	modernc.org/sqlite v1.37.0
