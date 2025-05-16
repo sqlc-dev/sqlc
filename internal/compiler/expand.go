@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/sqlc-dev/sqlc/internal/config"
+	"github.com/sqlc-dev/sqlc/internal/engine/sqlite"
 	"github.com/sqlc-dev/sqlc/internal/source"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
@@ -148,6 +149,17 @@ func (c *Compiler) expandStmt(qc *QueryCatalog, raw *ast.RawStmt, node ast.Node)
 				}
 				if counts[cname] > 1 {
 					cname = tableName + "." + cname
+				}
+				// Under SQLite, neither json nor jsonb are real data types, and
+				// rather just of type blob, so database drivers just return
+				// whatever raw binary is stored as values. This is a problem
+				// for jsonb, which is considered an internal format to SQLite
+				// and no attempt should be made to parse it outside of the
+				// database itself. For jsonb columns in SQLite, wrap returned
+				// columns in `json(col)` to coerce the internal binary format
+				// to JSON parsable by the user-space application.
+				if _, ok := c.parser.(*sqlite.Parser); ok && column.DataType == "jsonb" {
+					cname = "json(" + cname + ")"
 				}
 				cols = append(cols, cname)
 			}
