@@ -21,7 +21,7 @@ type node interface {
 
 func todo(funcname string, n node) *ast.TODO {
 	if debug.Active {
-		log.Printf("sqlite.%s: Unknown node type %T\n", funcname, n)
+		log.Printf("ydb.%s: Unknown node type %T\n", funcname, n)
 	}
 	return &ast.TODO{}
 }
@@ -34,8 +34,278 @@ func identifier(id string) string {
 	return strings.ToLower(id)
 }
 
+func stripQuotes(s string) string {
+	if len(s) >= 2 && (s[0] == '\'' || s[0] == '"') && s[0] == s[len(s)-1] {
+		return s[1 : len(s)-1]
+	}
+	return s
+}
+
 func NewIdentifier(t string) *ast.String {
 	return &ast.String{Str: identifier(t)}
+}
+
+func (c *cc) convertCreate_group_stmtContext(n *parser.Create_group_stmtContext) ast.Node {
+	if n.CREATE() == nil || n.GROUP() == nil || len(n.AllRole_name()) == 0 {
+		return todo("Create_group_stmtContext", n)
+	}
+	groupName := c.convert(n.Role_name(0))
+
+	stmt := &ast.CreateRoleStmt{
+		StmtType: ast.RoleStmtType(3),
+		Options:  &ast.List{},
+	}
+
+	paramFlag := true
+	switch v := groupName.(type) {
+	case *ast.A_Const:
+		switch val := v.Val.(type) {
+		case *ast.String:
+			paramFlag = false
+			stmt.Role = &val.Str
+		case *ast.Boolean:
+			stmt.BindRole = groupName
+		default:
+			return todo("convertCreate_group_stmtContext", n)
+		}
+	case *ast.ParamRef, *ast.A_Expr:
+		stmt.BindRole = groupName
+	default:
+		return todo("convertCreate_group_stmtContext", n)
+	}
+
+	if debug.Active && paramFlag {
+		log.Printf("YDB does not currently support parameters in the CREATE GROUP statement")
+	}
+
+	if n.WITH() != nil && n.USER() != nil && len(n.AllRole_name()) > 1 {
+		defname := "rolemembers"
+		optionList := &ast.List{}
+		for _, role := range n.AllRole_name()[1:] {
+			roleNode := c.convert(role)
+			roleSpec := &ast.RoleSpec{
+				Roletype: ast.RoleSpecType(1),
+				Location: role.GetStart().GetStart(),
+			}
+			isParam := true
+			switch v := roleNode.(type) {
+			case *ast.A_Const:
+				switch val := v.Val.(type) {
+				case *ast.String:
+					isParam = false
+					roleSpec.Rolename = &val.Str
+				case *ast.Boolean:
+					roleSpec.BindRolename = roleNode
+				default:
+					return todo("convertCreate_group_stmtContext", n)
+				}
+			case *ast.ParamRef, *ast.A_Expr:
+				roleSpec.BindRolename = roleNode
+			default:
+				return todo("convertCreate_group_stmtContext", n)
+			}
+
+			if debug.Active && isParam && !paramFlag {
+				log.Printf("YDB does not currently support parameters in the CREATE GROUP statement")
+			}
+
+			optionList.Items = append(optionList.Items, roleSpec)
+		}
+
+		stmt.Options.Items = append(stmt.Options.Items, &ast.DefElem{
+			Defname:  &defname,
+			Arg:      optionList,
+			Location: n.GetStart().GetStart(),
+		})
+	}
+
+	return stmt
+}
+
+func (c *cc) convertUse_stmtContext(n *parser.Use_stmtContext) ast.Node {
+	if n.USE() != nil && n.Cluster_expr() != nil {
+		clusterExpr := c.convert(n.Cluster_expr())
+		stmt := &ast.UseStmt{
+			Xpr:      clusterExpr,
+			Location: n.GetStart().GetStart(),
+		}
+		return stmt
+	}
+	return todo("convertUse_stmtContext", n)
+}
+
+func (c *cc) convertCluster_exprContext(n *parser.Cluster_exprContext) ast.Node {
+	var node ast.Node
+
+	switch {
+	case n.Pure_column_or_named() != nil:
+		pureCtx := n.Pure_column_or_named()
+		if anID := pureCtx.An_id(); anID != nil {
+			name := parseAnId(anID)
+			node = &ast.ColumnRef{
+				Fields:   &ast.List{Items: []ast.Node{NewIdentifier(name)}},
+				Location: anID.GetStart().GetStart(),
+			}
+		} else if bp := pureCtx.Bind_parameter(); bp != nil {
+			node = c.convert(bp)
+		}
+	case n.ASTERISK() != nil:
+		node = &ast.A_Star{}
+	default:
+		return todo("convertCluster_exprContext", n)
+	}
+
+	if n.An_id() != nil && n.COLON() != nil {
+		name := parseAnId(n.An_id())
+		return &ast.A_Expr{
+			Name:     &ast.List{Items: []ast.Node{&ast.String{Str: ":"}}},
+			Lexpr:    &ast.String{Str: name},
+			Rexpr:    node,
+			Location: n.GetStart().GetStart(),
+		}
+	}
+
+	return node
+}
+
+func (c *cc) convertCreate_user_stmtContext(n *parser.Create_user_stmtContext) ast.Node {
+	if n.CREATE() == nil || n.USER() == nil || n.Role_name() == nil {
+		return todo("convertCreate_user_stmtContext", n)
+	}
+	roleNode := c.convert(n.Role_name())
+
+	stmt := &ast.CreateRoleStmt{
+		StmtType: ast.RoleStmtType(2),
+		Options:  &ast.List{},
+	}
+
+	paramFlag := true
+	switch v := roleNode.(type) {
+	case *ast.A_Const:
+		switch val := v.Val.(type) {
+		case *ast.String:
+			paramFlag = false
+			stmt.Role = &val.Str
+		case *ast.Boolean:
+			stmt.BindRole = roleNode
+		default:
+			return todo("convertCreate_user_stmtContext", n)
+		}
+	case *ast.ParamRef, *ast.A_Expr:
+		stmt.BindRole = roleNode
+	default:
+		return todo("convertCreate_user_stmtContext", n)
+	}
+
+	if debug.Active && paramFlag {
+		log.Printf("YDB does not currently support parameters in the CREATE USER statement")
+	}
+
+	if len(n.AllUser_option()) > 0 {
+		options := []ast.Node{}
+		for _, opt := range n.AllUser_option() {
+			if node := c.convert(opt); node != nil {
+				options = append(options, node)
+			}
+		}
+		if len(options) > 0 {
+			stmt.Options = &ast.List{Items: options}
+		}
+	}
+	return stmt
+}
+
+func (c *cc) convertUser_optionContext(n *parser.User_optionContext) ast.Node {
+	switch {
+	case n.Authentication_option() != nil:
+		aOpt := n.Authentication_option()
+		if pOpt := aOpt.Password_option(); pOpt != nil {
+			if pOpt.PASSWORD() != nil {
+				name := "password"
+				pValue := pOpt.Password_value()
+				var password ast.Node
+				if pValue.STRING_VALUE() != nil {
+					password = &ast.String{Str: stripQuotes(pValue.STRING_VALUE().GetText())}
+				} else {
+					password = &ast.Null{}
+				}
+				return &ast.DefElem{
+					Defname:  &name,
+					Arg:      password,
+					Location: pOpt.GetStart().GetStart(),
+				}
+			}
+		} else if hOpt := aOpt.Hash_option(); hOpt != nil {
+			if debug.Active {
+				log.Printf("YDB does not currently support HASH in CREATE USER statement")
+			}
+			var pass string
+			if hOpt.HASH() != nil && hOpt.STRING_VALUE() != nil {
+				pass = stripQuotes(hOpt.STRING_VALUE().GetText())
+			}
+			name := "hash"
+			return &ast.DefElem{
+				Defname:  &name,
+				Arg:      &ast.String{Str: pass},
+				Location: hOpt.GetStart().GetStart(),
+			}
+		}
+
+	case n.Login_option() != nil:
+		lOpt := n.Login_option()
+		var name string
+		if lOpt.LOGIN() != nil {
+			name = "login"
+		} else if lOpt.NOLOGIN() != nil {
+			name = "nologin"
+		}
+		return &ast.DefElem{
+			Defname:  &name,
+			Arg:      &ast.Boolean{Boolval: lOpt.LOGIN() != nil},
+			Location: lOpt.GetStart().GetStart(),
+		}
+	default:
+		return todo("convertUser_optionContext", n)
+	}
+	return nil
+}
+
+func (c *cc) convertRole_nameContext(n *parser.Role_nameContext) ast.Node {
+	switch {
+	case n.An_id_or_type() != nil:
+		name := parseAnIdOrType(n.An_id_or_type())
+		return &ast.A_Const{Val: NewIdentifier(name), Location: n.GetStart().GetStart()}
+	case n.Bind_parameter() != nil:
+		bindPar := c.convert(n.Bind_parameter())
+		return bindPar
+	}
+	return todo("convertRole_nameContext", n)
+}
+
+func (c *cc) convertCommit_stmtContext(n *parser.Commit_stmtContext) ast.Node {
+	if n.COMMIT() != nil {
+		return &ast.TransactionStmt{Kind: ast.TransactionStmtKind(3)}
+	}
+	return todo("convertCommit_stmtContext", n)
+}
+
+func (c *cc) convertRollback_stmtContext(n *parser.Rollback_stmtContext) ast.Node {
+	if n.ROLLBACK() != nil {
+		return &ast.TransactionStmt{Kind: ast.TransactionStmtKind(4)}
+	}
+	return todo("convertRollback_stmtContext", n)
+}
+
+func (c *cc) convertDrop_table_stmtContext(n *parser.Drop_table_stmtContext) ast.Node {
+	if n.DROP() != nil && (n.TABLESTORE() != nil || (n.EXTERNAL() != nil && n.TABLE() != nil) || n.TABLE() != nil) {
+		name := parseTableName(n.Simple_table_ref().Simple_table_ref_core())
+		stmt := &ast.DropTableStmt{
+			IfExists: n.IF() != nil && n.EXISTS() != nil,
+			Tables:   []*ast.TableName{name},
+		}
+		return stmt
+	}
+	return todo("convertDrop_Table_stmtContxt", n)
 }
 
 func (c *cc) convertDelete_stmtContext(n *parser.Delete_stmtContext) ast.Node {
@@ -52,9 +322,7 @@ func (c *cc) convertDelete_stmtContext(n *parser.Delete_stmtContext) ast.Node {
 	var source ast.Node
 	if n.ON() != nil && n.Into_values_source() != nil {
 		nVal := n.Into_values_source()
-
 		// todo: handle default values when implemented
-
 		if pureCols := nVal.Pure_column_list(); pureCols != nil {
 			cols = &ast.List{}
 			for _, anID := range pureCols.AllAn_id() {
@@ -98,7 +366,85 @@ func (c *cc) convertDelete_stmtContext(n *parser.Delete_stmtContext) ast.Node {
 	return stmts
 }
 
+func (c *cc) convertPragma_stmtContext(n *parser.Pragma_stmtContext) ast.Node {
+	if n.PRAGMA() != nil && n.An_id() != nil {
+		prefix := ""
+		if p := n.Opt_id_prefix_or_type(); p != nil {
+			prefix = parseAnIdOrType(p.An_id_or_type())
+		}
+		items := []ast.Node{}
+		if prefix != "" {
+			items = append(items, &ast.A_Const{Val: NewIdentifier(prefix)})
+		}
+
+		name := parseAnId(n.An_id())
+		items = append(items, &ast.A_Const{Val: NewIdentifier(name)})
+
+		stmt := &ast.Pragma_stmt{
+			Name:     &ast.List{Items: items},
+			Location: n.An_id().GetStart().GetStart(),
+		}
+
+		if n.EQUALS() != nil {
+			stmt.Equals = true
+			if val := n.Pragma_value(0); val != nil {
+				stmt.Values = &ast.List{Items: []ast.Node{c.convert(val)}}
+			}
+		} else if lp := n.LPAREN(); lp != nil {
+			values := []ast.Node{}
+			for _, v := range n.AllPragma_value() {
+				values = append(values, c.convert(v))
+			}
+			stmt.Values = &ast.List{Items: values}
+		}
+
+		return stmt
+	}
+	return todo("convertPragma_stmtContext", n)
+}
+
+func (c *cc) convertPragma_valueContext(n *parser.Pragma_valueContext) ast.Node {
+	switch {
+	case n.Signed_number() != nil:
+		if n.Signed_number().Integer() != nil {
+			text := n.Signed_number().GetText()
+			val, err := parseIntegerValue(text)
+			if err != nil {
+				if debug.Active {
+					log.Printf("Failed to parse integer value '%s': %v", text, err)
+				}
+				return &ast.TODO{}
+			}
+			return &ast.A_Const{Val: &ast.Integer{Ival: val}, Location: n.GetStart().GetStart()}
+		}
+		if n.Signed_number().Real_() != nil {
+			text := n.Signed_number().GetText()
+			return &ast.A_Const{Val: &ast.Float{Str: text}, Location: n.GetStart().GetStart()}
+		}
+	case n.STRING_VALUE() != nil:
+		val := n.STRING_VALUE().GetText()
+		if len(val) >= 2 {
+			val = val[1 : len(val)-1]
+		}
+		return &ast.A_Const{Val: &ast.String{Str: val}, Location: n.GetStart().GetStart()}
+	case n.Bool_value() != nil:
+		var i bool
+		if n.Bool_value().TRUE() != nil {
+			i = true
+		}
+		return &ast.A_Const{Val: &ast.Boolean{Boolval: i}, Location: n.GetStart().GetStart()}
+	case n.Bind_parameter() != nil:
+		bindPar := c.convert(n.Bind_parameter())
+		return bindPar
+	}
+
+	return todo("convertPragma_valueContext", n)
+}
+
 func (c *cc) convertUpdate_stmtContext(n *parser.Update_stmtContext) ast.Node {
+	if n.UPDATE() == nil {
+		return nil
+	}
 	batch := n.BATCH() != nil
 
 	tableName := identifier(n.Simple_table_ref().Simple_table_ref_core().GetText())
@@ -205,8 +551,8 @@ func (c *cc) convertUpdate_stmtContext(n *parser.Update_stmtContext) ast.Node {
 		TargetList:    setList,
 		WhereClause:   where,
 		ReturningList: returning,
-		FromClause:  &ast.List{},
-		WithClause: nil,
+		FromClause:    &ast.List{},
+		WithClause:    nil,
 		Batch:         batch,
 		OnCols:        cols,
 		OnSelectStmt:  source,
@@ -379,7 +725,10 @@ func (c *cc) convertSelectStmtContext(n *parser.Select_stmtContext) ast.Node {
 }
 
 func (c *cc) convertSelectCoreContext(n *parser.Select_coreContext) ast.Node {
-	stmt := &ast.SelectStmt{}
+	stmt := &ast.SelectStmt{
+		TargetList: &ast.List{},
+		FromClause: &ast.List{},
+	}
 	if n.Opt_set_quantifier() != nil {
 		oq := n.Opt_set_quantifier()
 		if oq.DISTINCT() != nil {
@@ -460,6 +809,9 @@ func (c *cc) convertResultColumn(n *parser.Result_columnContext) ast.Node {
 }
 
 func (c *cc) convertJoinSource(n *parser.Join_sourceContext) ast.Node {
+	if n == nil {
+		return nil
+	}
 	fsList := n.AllFlatten_source()
 	if len(fsList) == 0 {
 		return nil
@@ -597,14 +949,10 @@ func (c *cc) convertBindParameter(n *parser.Bind_parameterContext) ast.Node {
 	// !!debug later!!
 	if n.DOLLAR() != nil {
 		if n.TRUE() != nil {
-			return &ast.Boolean{
-				Boolval: true,
-			}
+			return &ast.A_Const{Val: &ast.Boolean{Boolval: true}, Location: n.GetStart().GetStart()}
 		}
 		if n.FALSE() != nil {
-			return &ast.Boolean{
-				Boolval: false,
-			}
+			return &ast.A_Const{Val: &ast.Boolean{Boolval: false}, Location: n.GetStart().GetStart()}
 		}
 
 		if an := n.An_id_or_type(); an != nil {
@@ -1740,7 +2088,7 @@ func (c *cc) convertLiteralValue(n *parser.Literal_valueContext) ast.Node {
 		if n.Bool_value().TRUE() != nil {
 			i = true
 		}
-		return &ast.Boolean{Boolval: i}
+		return &ast.A_Const{Val: &ast.Boolean{Boolval: i}, Location: n.GetStart().GetStart()}
 
 	case n.NULL() != nil:
 		return &ast.Null{}
@@ -1902,6 +2250,39 @@ func (c *cc) convert(node node) ast.Node {
 
 	case *parser.Update_stmtContext:
 		return c.convertUpdate_stmtContext(n)
+
+	case *parser.Drop_table_stmtContext:
+		return c.convertDrop_table_stmtContext(n)
+
+	case *parser.Commit_stmtContext:
+		return c.convertCommit_stmtContext(n)
+
+	case *parser.Rollback_stmtContext:
+		return c.convertRollback_stmtContext(n)
+
+	case *parser.Pragma_valueContext:
+		return c.convertPragma_valueContext(n)
+
+	case *parser.Pragma_stmtContext:
+		return c.convertPragma_stmtContext(n)
+
+	case *parser.Use_stmtContext:
+		return c.convertUse_stmtContext(n)
+
+	case *parser.Cluster_exprContext:
+		return c.convertCluster_exprContext(n)
+
+	case *parser.Create_user_stmtContext:
+		return c.convertCreate_user_stmtContext(n)
+
+	case *parser.Role_nameContext:
+		return c.convertRole_nameContext(n)
+
+	case *parser.User_optionContext:
+		return c.convertUser_optionContext(n)
+
+	case *parser.Create_group_stmtContext:
+		return c.convertCreate_group_stmtContext(n)
 
 	default:
 		return todo("convert(case=default)", n)

@@ -38,11 +38,14 @@ func TestInsert(t *testing.T) {
 									},
 								},
 							},
+							TargetList: &ast.List{},
+							FromClause: &ast.List{},
 						},
 						OnConflictClause: &ast.OnConflictClause{},
 						ReturningList: &ast.List{
 							Items: []ast.Node{
 								&ast.ResTarget{
+									Indirection: &ast.List{},
 									Val: &ast.ColumnRef{
 										Fields: &ast.List{Items: []ast.Node{&ast.A_Star{}}},
 									},
@@ -74,6 +77,8 @@ func TestInsert(t *testing.T) {
 									},
 								},
 							},
+							TargetList: &ast.List{},
+							FromClause: &ast.List{},
 						},
 						OnConflictClause: &ast.OnConflictClause{
 							Action: ast.OnConflictAction_INSERT_OR_IGNORE,
@@ -81,10 +86,12 @@ func TestInsert(t *testing.T) {
 						ReturningList: &ast.List{
 							Items: []ast.Node{
 								&ast.ResTarget{
-									Val: &ast.ColumnRef{Fields: &ast.List{Items: []ast.Node{&ast.String{Str: "id"}}}},
+									Indirection: &ast.List{},
+									Val:         &ast.ColumnRef{Fields: &ast.List{Items: []ast.Node{&ast.String{Str: "id"}}}},
 								},
 								&ast.ResTarget{
-									Val: &ast.ColumnRef{Fields: &ast.List{Items: []ast.Node{&ast.String{Str: "name"}}}},
+									Indirection: &ast.List{},
+									Val:         &ast.ColumnRef{Fields: &ast.List{Items: []ast.Node{&ast.String{Str: "name"}}}},
 								},
 							},
 						},
@@ -99,9 +106,9 @@ func TestInsert(t *testing.T) {
 					Stmt: &ast.InsertStmt{
 						Relation:         &ast.RangeVar{Relname: strPtr("users")},
 						Cols:             &ast.List{Items: []ast.Node{&ast.ResTarget{Name: strPtr("id")}}},
-						SelectStmt:       &ast.SelectStmt{ValuesLists: &ast.List{Items: []ast.Node{&ast.List{Items: []ast.Node{&ast.A_Const{Val: &ast.Integer{Ival: 4}}}}}}},
+						SelectStmt:       &ast.SelectStmt{ValuesLists: &ast.List{Items: []ast.Node{&ast.List{Items: []ast.Node{&ast.A_Const{Val: &ast.Integer{Ival: 4}}}}}}, TargetList: &ast.List{}, FromClause: &ast.List{}},
 						OnConflictClause: &ast.OnConflictClause{Action: ast.OnConflictAction_UPSERT},
-						ReturningList:    &ast.List{Items: []ast.Node{&ast.ResTarget{Val: &ast.ColumnRef{Fields: &ast.List{Items: []ast.Node{&ast.String{Str: "id"}}}}}}},
+						ReturningList:    &ast.List{Items: []ast.Node{&ast.ResTarget{Val: &ast.ColumnRef{Fields: &ast.List{Items: []ast.Node{&ast.String{Str: "id"}}}}, Indirection: &ast.List{}}}},
 					},
 				},
 			},

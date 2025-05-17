@@ -34,6 +34,7 @@ func TestSelect(t *testing.T) {
 								},
 							},
 						},
+						FromClause: &ast.List{},
 					},
 				},
 			},
@@ -52,6 +53,7 @@ func TestSelect(t *testing.T) {
 								},
 							},
 						},
+						FromClause: &ast.List{},
 					},
 				},
 			},
@@ -70,6 +72,7 @@ func TestSelect(t *testing.T) {
 								},
 							},
 						},
+						FromClause: &ast.List{},
 					},
 				},
 			},
@@ -88,6 +91,7 @@ func TestSelect(t *testing.T) {
 								},
 							},
 						},
+						FromClause: &ast.List{},
 					},
 				},
 			},
@@ -104,6 +108,7 @@ func TestSelect(t *testing.T) {
 								},
 							},
 						},
+						FromClause: &ast.List{},
 					},
 				},
 			},
@@ -116,10 +121,13 @@ func TestSelect(t *testing.T) {
 						TargetList: &ast.List{
 							Items: []ast.Node{
 								&ast.ResTarget{
-									Val: &ast.Boolean{Boolval: true},
+									Val: &ast.A_Const{
+										Val: &ast.Boolean{Boolval: true},
+									},
 								},
 							},
 						},
+						FromClause: &ast.List{},
 					},
 				},
 			},
@@ -158,6 +166,7 @@ func TestSelect(t *testing.T) {
 								},
 							},
 						},
+						FromClause: &ast.List{},
 					},
 				},
 			},
@@ -285,7 +294,9 @@ func TestSelect(t *testing.T) {
 									Val: &ast.Null{},
 								},
 								&ast.ResTarget{
-									Val: &ast.Boolean{Boolval: false},
+									Val: &ast.A_Const{
+										Val: &ast.Boolean{Boolval: false},
+									},
 								},
 							},
 						},

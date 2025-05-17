@@ -14,6 +14,8 @@ type objectRefProvider interface {
 	Object_ref() parser.IObject_refContext
 }
 
+
+
 func parseTableName(ctx objectRefProvider) *ast.TableName {
 	return parseObjectRef(ctx.Object_ref())
 }

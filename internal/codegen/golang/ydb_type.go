@@ -49,7 +49,7 @@ func YDBType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Col
 		}
 		// return "sql.NullInt16"
 		return "*int16"
-	case "int32":
+	case "int", "int32": //ydb doesn't have int type, but we need it to support untyped constants 
 		if notNull {
 			return "int32"
 		}
@@ -155,9 +155,12 @@ func YDBType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Col
 		// return "sql.Null"
 		return "interface{}"
 
+	case "any":
+		return "interface{}"
+
 	default:
 		if debug.Active {
-			log.Printf("unknown SQLite type: %s\n", columnType)
+			log.Printf("unknown YDB type: %s\n", columnType)
 		}
 
 		return "interface{}"

@@ -605,7 +605,9 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.apply(n, "Params", nil, n.Params)
 
 	case *ast.CreateRoleStmt:
+		a.apply(n, "BindRole", nil, n.BindRole)
 		a.apply(n, "Options", nil, n.Options)
+		
 
 	case *ast.CreateSchemaStmt:
 		a.apply(n, "Authrole", nil, n.Authrole)
@@ -939,6 +941,11 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 	case *ast.PartitionSpec:
 		a.apply(n, "PartParams", nil, n.PartParams)
 
+	case *ast.Pragma_stmt:
+		a.apply(n, "Pragma", nil, n.Name)
+		a.apply(n, "Args", nil, n.Cols)
+		a.apply(n, "Options", nil, n.Values)
+
 	case *ast.PrepareStmt:
 		a.apply(n, "Argtypes", nil, n.Argtypes)
 		a.apply(n, "Query", nil, n.Query)
@@ -1044,7 +1051,7 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.apply(n, "Val", nil, n.Val)
 
 	case *ast.RoleSpec:
-		// pass
+		a.apply(n, "BindRolename", nil, n.BindRolename)
 
 	case *ast.RowCompareExpr:
 		a.apply(n, "Xpr", nil, n.Xpr)
@@ -1180,6 +1187,9 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.apply(n, "SelectStmt", nil, n.OnSelectStmt)
 		a.apply(n, "ReturningList", nil, n.ReturningList)
 		a.apply(n, "WithClause", nil, n.WithClause)
+
+	case *ast.UseStmt:
+		a.apply(n, "Xpr", nil, n.Xpr)
 
 	case *ast.VacuumStmt:
 		a.apply(n, "Relation", nil, n.Relation)
