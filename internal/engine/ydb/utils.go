@@ -143,3 +143,32 @@ func parseIntegerValue(text string) (int64, error) {
 
 	return strconv.ParseInt(text, base, 64)
 }
+
+func (c *cc) extractRoleSpec(n parser.IRole_nameContext, roletype ast.RoleSpecType) (*ast.RoleSpec, bool, ast.Node) {
+	roleNode := c.convert(n)
+
+	roleSpec := &ast.RoleSpec{
+		Roletype: roletype,
+		Location: n.GetStart().GetStart(),
+	}
+
+	isParam := true
+	switch v := roleNode.(type) {
+	case *ast.A_Const:
+		switch val := v.Val.(type) {
+		case *ast.String:
+			roleSpec.Rolename = &val.Str
+			isParam = false
+		case *ast.Boolean:
+			roleSpec.BindRolename = roleNode
+		default:
+			return nil, false, nil
+		}
+	case *ast.ParamRef, *ast.A_Expr:
+		roleSpec.BindRolename = roleNode
+	default:
+		return nil, false, nil
+	}
+
+	return roleSpec, isParam, roleNode
+}

@@ -45,6 +45,186 @@ func NewIdentifier(t string) *ast.String {
 	return &ast.String{Str: identifier(t)}
 }
 
+func (c *cc) convertDrop_role_stmtCOntext(n *parser.Drop_role_stmtContext) ast.Node {
+	if n.DROP() == nil || (n.USER() == nil && n.GROUP() == nil) || len(n.AllRole_name()) == 0 {
+		return todo("Drop_role_stmtContext", n)
+	}
+
+	stmt := &ast.DropRoleStmt{
+		MissingOk: n.IF() != nil && n.EXISTS() != nil,
+		Roles: &ast.List{},
+	}
+
+	for _, role := range n.AllRole_name() {
+		member, isParam, _ := c.extractRoleSpec(role, ast.RoleSpecType(1))
+		if member == nil {
+			return todo("Drop_role_stmtContext", n)
+		}
+
+		if debug.Active && isParam {
+			log.Printf("YDB does not currently support parameters in the DROP ROLE statement")
+		}
+
+		stmt.Roles.Items = append(stmt.Roles.Items, member)
+	}
+
+	return stmt
+}
+
+func (c *cc) convertAlter_group_stmtContext(n *parser.Alter_group_stmtContext) ast.Node {
+	if n.ALTER() == nil || n.GROUP() == nil || len(n.AllRole_name()) == 0 {
+		return todo("convertAlter_group_stmtContext", n)
+	}
+	role, paramFlag, _ := c.extractRoleSpec(n.Role_name(0), ast.RoleSpecType(1))
+	if role == nil {
+		return todo("convertAlter_group_stmtContext", n)
+	}
+
+	if debug.Active && paramFlag {
+		log.Printf("YDB does not currently support parameters in the ALTER GROUP statement")
+	}
+
+	stmt := &ast.AlterRoleStmt{
+		Role:    role,
+		Action:  1,
+		Options: &ast.List{},
+	}
+
+	switch {
+	case n.RENAME() != nil && n.TO() != nil && len(n.AllRole_name()) > 1:
+		newName := c.convert(n.Role_name(1))
+		action := "rename"
+
+		defElem := &ast.DefElem{
+			Defname:   &action,
+			Defaction: ast.DefElemAction(1),
+			Location:  n.Role_name(1).GetStart().GetStart(),
+		}
+
+		bindFlag := true
+		switch v := newName.(type) {
+		case *ast.A_Const:
+			switch val := v.Val.(type) {
+			case *ast.String:
+				bindFlag = false
+				defElem.Arg = val
+			case *ast.Boolean:
+				defElem.Arg = val
+			default:
+				return todo("convertAlter_group_stmtContext", n)
+			}
+		case *ast.ParamRef, *ast.A_Expr:
+			defElem.Arg = newName
+		default:
+			return todo("convertAlter_group_stmtContext", n)
+		}
+
+		if debug.Active && !paramFlag && bindFlag {
+			log.Printf("YDB does not currently support parameters in the ALTER GROUP statement")
+		}
+
+		stmt.Options.Items = append(stmt.Options.Items, defElem)
+
+	case (n.ADD() != nil || n.DROP() != nil) && len(n.AllRole_name()) > 1:
+		defname := "rolemembers"
+		optionList := &ast.List{}
+		for _, role := range n.AllRole_name()[1:] {
+			member, isParam, _ := c.extractRoleSpec(role, ast.RoleSpecType(1))
+			if member == nil {
+				return todo("convertAlter_group_stmtContext", n)
+			}
+
+			if debug.Active && isParam && !paramFlag {
+				log.Printf("YDB does not currently support parameters in the ALTER GROUP statement")
+			}
+
+			optionList.Items = append(optionList.Items, member)
+		}
+
+		var action ast.DefElemAction
+		if n.ADD() != nil {
+			action = 3
+		} else {
+			action = 4
+		}
+
+		stmt.Options.Items = append(stmt.Options.Items, &ast.DefElem{
+			Defname:   &defname,
+			Arg:       optionList,
+			Defaction: action,
+			Location:  n.GetStart().GetStart(),
+		})
+	}
+
+	return stmt
+}
+
+func (c *cc) convertAlter_user_stmtContext(n *parser.Alter_user_stmtContext) ast.Node {
+	if n.ALTER() == nil || n.USER() == nil || len(n.AllRole_name()) == 0 {
+		return todo("Alter_user_stmtContext", n)
+	}
+
+	role, paramFlag, _ := c.extractRoleSpec(n.Role_name(0), ast.RoleSpecType(1))
+	if role == nil {
+		return todo("convertAlter_group_stmtContext", n)
+	}
+
+	if debug.Active && paramFlag {
+		log.Printf("YDB does not currently support parameters in the ALTER USER statement")
+	}
+
+	stmt := &ast.AlterRoleStmt{
+		Role:    role,
+		Action:  1,
+		Options: &ast.List{},
+	}
+
+	switch {
+	case n.RENAME() != nil && n.TO() != nil && len(n.AllRole_name()) > 1:
+		newName := c.convert(n.Role_name(1))
+		action := "rename"
+
+		defElem := &ast.DefElem{
+			Defname:   &action,
+			Defaction: ast.DefElemAction(1),
+			Location:  n.Role_name(1).GetStart().GetStart(),
+		}
+
+		bindFlag := true
+		switch v := newName.(type) {
+		case *ast.A_Const:
+			switch val := v.Val.(type) {
+			case *ast.String:
+				bindFlag = false
+				defElem.Arg = val
+			case *ast.Boolean:
+				defElem.Arg = val
+			default:
+				return todo("Alter_user_stmtContext", n)
+			}
+		case *ast.ParamRef, *ast.A_Expr:
+			defElem.Arg = newName
+		default:
+			return todo("Alter_user_stmtContext", n)
+		}
+
+		if debug.Active && !paramFlag && bindFlag {
+			log.Printf("YDB does not currently support parameters in the ALTER USER statement")
+		}
+
+		stmt.Options.Items = append(stmt.Options.Items, defElem)
+
+	case len(n.AllUser_option()) > 0:
+		for _, opt := range n.AllUser_option() {
+			if node := c.convert(opt); node != nil {
+				stmt.Options.Items = append(stmt.Options.Items, node)
+			}
+		}
+	}
+
+	return stmt
+}
+
 func (c *cc) convertCreate_group_stmtContext(n *parser.Create_group_stmtContext) ast.Node {
 	if n.CREATE() == nil || n.GROUP() == nil || len(n.AllRole_name()) == 0 {
 		return todo("Create_group_stmtContext", n)
@@ -82,26 +262,8 @@ func (c *cc) convertCreate_group_stmtContext(n *parser.Create_group_stmtContext)
 		defname := "rolemembers"
 		optionList := &ast.List{}
 		for _, role := range n.AllRole_name()[1:] {
-			roleNode := c.convert(role)
-			roleSpec := &ast.RoleSpec{
-				Roletype: ast.RoleSpecType(1),
-				Location: role.GetStart().GetStart(),
-			}
-			isParam := true
-			switch v := roleNode.(type) {
-			case *ast.A_Const:
-				switch val := v.Val.(type) {
-				case *ast.String:
-					isParam = false
-					roleSpec.Rolename = &val.Str
-				case *ast.Boolean:
-					roleSpec.BindRolename = roleNode
-				default:
-					return todo("convertCreate_group_stmtContext", n)
-				}
-			case *ast.ParamRef, *ast.A_Expr:
-				roleSpec.BindRolename = roleNode
-			default:
+			member, isParam, _ := c.extractRoleSpec(role, ast.RoleSpecType(1))
+			if member == nil {
 				return todo("convertCreate_group_stmtContext", n)
 			}
 
@@ -109,7 +271,7 @@ func (c *cc) convertCreate_group_stmtContext(n *parser.Create_group_stmtContext)
 				log.Printf("YDB does not currently support parameters in the CREATE GROUP statement")
 			}
 
-			optionList.Items = append(optionList.Items, roleSpec)
+			optionList.Items = append(optionList.Items, member)
 		}
 
 		stmt.Options.Items = append(stmt.Options.Items, &ast.DefElem{
@@ -2283,6 +2445,15 @@ func (c *cc) convert(node node) ast.Node {
 
 	case *parser.Create_group_stmtContext:
 		return c.convertCreate_group_stmtContext(n)
+
+	case *parser.Alter_user_stmtContext:
+		return c.convertAlter_user_stmtContext(n)
+
+	case *parser.Alter_group_stmtContext:
+		return c.convertAlter_group_stmtContext(n)
+
+	case *parser.Drop_role_stmtContext:
+		return c.convertDrop_role_stmtCOntext(n)
 
 	default:
 		return todo("convert(case=default)", n)
