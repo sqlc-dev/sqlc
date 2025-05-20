@@ -607,7 +607,6 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 	case *ast.CreateRoleStmt:
 		a.apply(n, "BindRole", nil, n.BindRole)
 		a.apply(n, "Options", nil, n.Options)
-		
 
 	case *ast.CreateSchemaStmt:
 		a.apply(n, "Authrole", nil, n.Authrole)
@@ -1028,6 +1027,14 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 	case *ast.ReassignOwnedStmt:
 		a.apply(n, "Roles", nil, n.Roles)
 		a.apply(n, "Newrole", nil, n.Newrole)
+
+	case *ast.RecursiveFuncCall:
+		a.apply(n, "Func", nil, n.Func)
+		a.apply(n, "Funcname", nil, n.Funcname)
+		a.apply(n, "Args", nil, n.Args)
+		a.apply(n, "AggOrder", nil, n.AggOrder)
+		a.apply(n, "AggFilter", nil, n.AggFilter)
+		a.apply(n, "Over", nil, n.Over)
 
 	case *ast.RefreshMatViewStmt:
 		a.apply(n, "Relation", nil, n.Relation)

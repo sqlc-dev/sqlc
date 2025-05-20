@@ -13,6 +13,15 @@ import (
 
 type cc struct {
 	paramCount int
+	content    string
+}
+
+func (c *cc) pos(token antlr.Token) int {
+	if token == nil {
+		return 0
+	}
+	runeIdx := token.GetStart()
+	return byteOffsetFromRuneIndex(c.content, runeIdx)
 }
 
 type node interface {
@@ -52,7 +61,7 @@ func (c *cc) convertDrop_role_stmtCOntext(n *parser.Drop_role_stmtContext) ast.N
 
 	stmt := &ast.DropRoleStmt{
 		MissingOk: n.IF() != nil && n.EXISTS() != nil,
-		Roles: &ast.List{},
+		Roles:     &ast.List{},
 	}
 
 	for _, role := range n.AllRole_name() {
@@ -98,7 +107,7 @@ func (c *cc) convertAlter_group_stmtContext(n *parser.Alter_group_stmtContext) a
 		defElem := &ast.DefElem{
 			Defname:   &action,
 			Defaction: ast.DefElemAction(1),
-			Location:  n.Role_name(1).GetStart().GetStart(),
+			Location:  c.pos(n.Role_name(1).GetStart()),
 		}
 
 		bindFlag := true
@@ -152,7 +161,7 @@ func (c *cc) convertAlter_group_stmtContext(n *parser.Alter_group_stmtContext) a
 			Defname:   &defname,
 			Arg:       optionList,
 			Defaction: action,
-			Location:  n.GetStart().GetStart(),
+			Location:  c.pos(n.GetStart()),
 		})
 	}
 
@@ -187,7 +196,7 @@ func (c *cc) convertAlter_user_stmtContext(n *parser.Alter_user_stmtContext) ast
 		defElem := &ast.DefElem{
 			Defname:   &action,
 			Defaction: ast.DefElemAction(1),
-			Location:  n.Role_name(1).GetStart().GetStart(),
+			Location:  c.pos(n.Role_name(1).GetStart()),
 		}
 
 		bindFlag := true
@@ -277,7 +286,7 @@ func (c *cc) convertCreate_group_stmtContext(n *parser.Create_group_stmtContext)
 		stmt.Options.Items = append(stmt.Options.Items, &ast.DefElem{
 			Defname:  &defname,
 			Arg:      optionList,
-			Location: n.GetStart().GetStart(),
+			Location: c.pos(n.GetStart()),
 		})
 	}
 
@@ -289,7 +298,7 @@ func (c *cc) convertUse_stmtContext(n *parser.Use_stmtContext) ast.Node {
 		clusterExpr := c.convert(n.Cluster_expr())
 		stmt := &ast.UseStmt{
 			Xpr:      clusterExpr,
-			Location: n.GetStart().GetStart(),
+			Location: c.pos(n.GetStart()),
 		}
 		return stmt
 	}
@@ -306,7 +315,7 @@ func (c *cc) convertCluster_exprContext(n *parser.Cluster_exprContext) ast.Node 
 			name := parseAnId(anID)
 			node = &ast.ColumnRef{
 				Fields:   &ast.List{Items: []ast.Node{NewIdentifier(name)}},
-				Location: anID.GetStart().GetStart(),
+				Location: c.pos(anID.GetStart()),
 			}
 		} else if bp := pureCtx.Bind_parameter(); bp != nil {
 			node = c.convert(bp)
@@ -323,7 +332,7 @@ func (c *cc) convertCluster_exprContext(n *parser.Cluster_exprContext) ast.Node 
 			Name:     &ast.List{Items: []ast.Node{&ast.String{Str: ":"}}},
 			Lexpr:    &ast.String{Str: name},
 			Rexpr:    node,
-			Location: n.GetStart().GetStart(),
+			Location: c.pos(n.GetStart()),
 		}
 	}
 
@@ -394,7 +403,7 @@ func (c *cc) convertUser_optionContext(n *parser.User_optionContext) ast.Node {
 				return &ast.DefElem{
 					Defname:  &name,
 					Arg:      password,
-					Location: pOpt.GetStart().GetStart(),
+					Location: c.pos(pOpt.GetStart()),
 				}
 			}
 		} else if hOpt := aOpt.Hash_option(); hOpt != nil {
@@ -409,7 +418,7 @@ func (c *cc) convertUser_optionContext(n *parser.User_optionContext) ast.Node {
 			return &ast.DefElem{
 				Defname:  &name,
 				Arg:      &ast.String{Str: pass},
-				Location: hOpt.GetStart().GetStart(),
+				Location: c.pos(hOpt.GetStart()),
 			}
 		}
 
@@ -424,7 +433,7 @@ func (c *cc) convertUser_optionContext(n *parser.User_optionContext) ast.Node {
 		return &ast.DefElem{
 			Defname:  &name,
 			Arg:      &ast.Boolean{Boolval: lOpt.LOGIN() != nil},
-			Location: lOpt.GetStart().GetStart(),
+			Location: c.pos(lOpt.GetStart()),
 		}
 	default:
 		return todo("convertUser_optionContext", n)
@@ -436,7 +445,7 @@ func (c *cc) convertRole_nameContext(n *parser.Role_nameContext) ast.Node {
 	switch {
 	case n.An_id_or_type() != nil:
 		name := parseAnIdOrType(n.An_id_or_type())
-		return &ast.A_Const{Val: NewIdentifier(name), Location: n.GetStart().GetStart()}
+		return &ast.A_Const{Val: NewIdentifier(name), Location: c.pos(n.GetStart())}
 	case n.Bind_parameter() != nil:
 		bindPar := c.convert(n.Bind_parameter())
 		return bindPar
@@ -490,7 +499,8 @@ func (c *cc) convertDelete_stmtContext(n *parser.Delete_stmtContext) ast.Node {
 			for _, anID := range pureCols.AllAn_id() {
 				name := identifier(parseAnId(anID))
 				cols.Items = append(cols.Items, &ast.ResTarget{
-					Name: &name,
+					Name:     &name,
+					Location: c.pos(anID.GetStart()),
 				})
 			}
 		}
@@ -544,7 +554,7 @@ func (c *cc) convertPragma_stmtContext(n *parser.Pragma_stmtContext) ast.Node {
 
 		stmt := &ast.Pragma_stmt{
 			Name:     &ast.List{Items: items},
-			Location: n.An_id().GetStart().GetStart(),
+			Location: c.pos(n.An_id().GetStart()),
 		}
 
 		if n.EQUALS() != nil {
@@ -577,24 +587,24 @@ func (c *cc) convertPragma_valueContext(n *parser.Pragma_valueContext) ast.Node 
 				}
 				return &ast.TODO{}
 			}
-			return &ast.A_Const{Val: &ast.Integer{Ival: val}, Location: n.GetStart().GetStart()}
+			return &ast.A_Const{Val: &ast.Integer{Ival: val}, Location: c.pos(n.GetStart())}
 		}
 		if n.Signed_number().Real_() != nil {
 			text := n.Signed_number().GetText()
-			return &ast.A_Const{Val: &ast.Float{Str: text}, Location: n.GetStart().GetStart()}
+			return &ast.A_Const{Val: &ast.Float{Str: text}, Location: c.pos(n.GetStart())}
 		}
 	case n.STRING_VALUE() != nil:
 		val := n.STRING_VALUE().GetText()
 		if len(val) >= 2 {
 			val = val[1 : len(val)-1]
 		}
-		return &ast.A_Const{Val: &ast.String{Str: val}, Location: n.GetStart().GetStart()}
+		return &ast.A_Const{Val: &ast.String{Str: val}, Location: c.pos(n.GetStart())}
 	case n.Bool_value() != nil:
 		var i bool
 		if n.Bool_value().TRUE() != nil {
 			i = true
 		}
-		return &ast.A_Const{Val: &ast.Boolean{Boolval: i}, Location: n.GetStart().GetStart()}
+		return &ast.A_Const{Val: &ast.Boolean{Boolval: i}, Location: c.pos(n.GetStart())}
 	case n.Bind_parameter() != nil:
 		bindPar := c.convert(n.Bind_parameter())
 		return bindPar
@@ -628,8 +638,9 @@ func (c *cc) convertUpdate_stmtContext(n *parser.Update_stmtContext) ast.Node {
 				columnName := identifier(targetCtx.Column_name().GetText())
 				expr := c.convert(clause.Expr())
 				resTarget := &ast.ResTarget{
-					Name: &columnName,
-					Val:  expr,
+					Name:     &columnName,
+					Val:      expr,
+					Location: c.pos(clause.Expr().GetStart()),
 				}
 				setList.Items = append(setList.Items, resTarget)
 			}
@@ -664,6 +675,7 @@ func (c *cc) convertUpdate_stmtContext(n *parser.Update_stmtContext) ast.Node {
 						Colno:    i + 1,
 						Ncolumns: len(colNames),
 					},
+					Location: c.pos(targetsCtx.Set_target(i).GetStart()),
 				})
 			}
 		}
@@ -682,7 +694,8 @@ func (c *cc) convertUpdate_stmtContext(n *parser.Update_stmtContext) ast.Node {
 			for _, anID := range pureCols.AllAn_id() {
 				name := identifier(parseAnId(anID))
 				cols.Items = append(cols.Items, &ast.ResTarget{
-					Name: &name,
+					Name:     &name,
+					Location: c.pos(anID.GetStart()),
 				})
 			}
 		}
@@ -725,7 +738,10 @@ func (c *cc) convertUpdate_stmtContext(n *parser.Update_stmtContext) ast.Node {
 
 func (c *cc) convertInto_table_stmtContext(n *parser.Into_table_stmtContext) ast.Node {
 	tableName := identifier(n.Into_simple_table_ref().Simple_table_ref().Simple_table_ref_core().GetText())
-	rel := &ast.RangeVar{Relname: &tableName}
+	rel := &ast.RangeVar{
+		Relname:  &tableName,
+		Location: c.pos(n.Into_simple_table_ref().GetStart()),
+	}
 
 	onConflict := &ast.OnConflictClause{}
 	switch {
@@ -751,7 +767,8 @@ func (c *cc) convertInto_table_stmtContext(n *parser.Into_table_stmtContext) ast
 			for _, anID := range pureCols.AllAn_id() {
 				name := identifier(parseAnId(anID))
 				cols.Items = append(cols.Items, &ast.ResTarget{
-					Name: &name,
+					Name:     &name,
+					Location: c.pos(anID.GetStart()),
 				})
 			}
 		}
@@ -816,9 +833,9 @@ func (c *cc) convertReturning_columns_listContext(n *parser.Returning_columns_li
 			Indirection: &ast.List{},
 			Val: &ast.ColumnRef{
 				Fields:   &ast.List{Items: []ast.Node{&ast.A_Star{}}},
-				Location: n.ASTERISK().GetSymbol().GetStart(),
+				Location: c.pos(n.ASTERISK().GetSymbol()),
 			},
-			Location: n.ASTERISK().GetSymbol().GetStart(),
+			Location: c.pos(n.ASTERISK().GetSymbol()),
 		}
 		list.Items = append(list.Items, target)
 		return list
@@ -831,9 +848,9 @@ func (c *cc) convertReturning_columns_listContext(n *parser.Returning_columns_li
 				Fields: &ast.List{
 					Items: []ast.Node{NewIdentifier(parseAnId(idCtx))},
 				},
-				Location: idCtx.GetStart().GetStart(),
+				Location: c.pos(idCtx.GetStart()),
 			},
-			Location: idCtx.GetStart().GetStart(),
+			Location: c.pos(idCtx.GetStart()),
 		}
 		list.Items = append(list.Items, target)
 	}
@@ -945,7 +962,7 @@ func (c *cc) convertSelectCoreContext(n *parser.Select_coreContext) ast.Node {
 func (c *cc) convertResultColumn(n *parser.Result_columnContext) ast.Node {
 	// todo: support opt_id_prefix
 	target := &ast.ResTarget{
-		Location: n.GetStart().GetStart(),
+		Location: c.pos(n.GetStart()),
 	}
 	var val ast.Node
 	iexpr := n.Expr()
@@ -1091,7 +1108,7 @@ func (c *cc) convertSingleSource(n *parser.Single_sourceContext) ast.Node {
 		tableName := n.Table_ref().GetText() // !! debug !!
 		return &ast.RangeVar{
 			Relname:  &tableName,
-			Location: n.GetStart().GetStart(),
+			Location: c.pos(n.GetStart()),
 		}
 	}
 
@@ -1111,10 +1128,10 @@ func (c *cc) convertBindParameter(n *parser.Bind_parameterContext) ast.Node {
 	// !!debug later!!
 	if n.DOLLAR() != nil {
 		if n.TRUE() != nil {
-			return &ast.A_Const{Val: &ast.Boolean{Boolval: true}, Location: n.GetStart().GetStart()}
+			return &ast.A_Const{Val: &ast.Boolean{Boolval: true}, Location: c.pos(n.GetStart())}
 		}
 		if n.FALSE() != nil {
-			return &ast.A_Const{Val: &ast.Boolean{Boolval: false}, Location: n.GetStart().GetStart()}
+			return &ast.A_Const{Val: &ast.Boolean{Boolval: false}, Location: c.pos(n.GetStart())}
 		}
 
 		if an := n.An_id_or_type(); an != nil {
@@ -1122,13 +1139,13 @@ func (c *cc) convertBindParameter(n *parser.Bind_parameterContext) ast.Node {
 			return &ast.A_Expr{
 				Name:     &ast.List{Items: []ast.Node{&ast.String{Str: "@"}}},
 				Rexpr:    &ast.String{Str: idText},
-				Location: n.GetStart().GetStart(),
+				Location: c.pos(n.GetStart()),
 			}
 		}
 		c.paramCount++
 		return &ast.ParamRef{
 			Number:   c.paramCount,
-			Location: n.GetStart().GetStart(),
+			Location: c.pos(n.GetStart()),
 			Dollar:   true,
 		}
 	}
@@ -1147,7 +1164,7 @@ func (c *cc) convertWildCardField(n *parser.Result_columnContext) *ast.ColumnRef
 	items = append(items, &ast.A_Star{})
 	return &ast.ColumnRef{
 		Fields:   &ast.List{Items: items},
-		Location: n.GetStart().GetStart(),
+		Location: c.pos(n.GetStart()),
 	}
 }
 
@@ -1250,7 +1267,6 @@ func (c *cc) convertTypeName(n parser.IType_nameContext) *ast.TypeName {
 		return nil
 	}
 
-	// Handle composite types
 	if composite := n.Type_name_composite(); composite != nil {
 		if node := c.convertTypeNameComposite(composite); node != nil {
 			if typeName, ok := node.(*ast.TypeName); ok {
@@ -1259,7 +1275,6 @@ func (c *cc) convertTypeName(n parser.IType_nameContext) *ast.TypeName {
 		}
 	}
 
-	// Handle decimal type (e.g., DECIMAL(10,2))
 	if decimal := n.Type_name_decimal(); decimal != nil {
 		if integerOrBinds := decimal.AllInteger_or_bind(); len(integerOrBinds) >= 2 {
 			return &ast.TypeName{
@@ -1697,7 +1712,7 @@ func (c *cc) convertExpr(n *parser.ExprContext) ast.Node {
 		left = &ast.BoolExpr{
 			Boolop:   ast.BoolExprTypeOr,
 			Args:     &ast.List{Items: []ast.Node{left, right}},
-			Location: n.GetStart().GetStart(),
+			Location: c.pos(n.GetStart()),
 		}
 	}
 	return left
@@ -1726,7 +1741,7 @@ func (c *cc) convertOrSubExpr(n *parser.Or_subexprContext) ast.Node {
 		left = &ast.BoolExpr{
 			Boolop:   ast.BoolExprTypeAnd,
 			Args:     &ast.List{Items: []ast.Node{left, right}},
-			Location: n.GetStart().GetStart(),
+			Location: c.pos(n.GetStart()),
 		}
 	}
 	return left
@@ -1758,7 +1773,7 @@ func (c *cc) convertAndSubexpr(n *parser.And_subexprContext) ast.Node {
 			Name:     &ast.List{Items: []ast.Node{&ast.String{Str: "XOR"}}},
 			Lexpr:    left,
 			Rexpr:    right,
-			Location: n.GetStart().GetStart(),
+			Location: c.pos(n.GetStart()),
 		}
 	}
 	return left
@@ -1799,32 +1814,32 @@ func (c *cc) convertXorSubexpr(n *parser.Xor_subexprContext) ast.Node {
 					Left:     c.convert(eqSubs[0]),
 					Right:    c.convert(eqSubs[1]),
 					Not:      condCtx.NOT() != nil,
-					Location: n.GetStart().GetStart(),
+					Location: c.pos(n.GetStart()),
 				}
 			}
 		case condCtx.ISNULL() != nil:
 			return &ast.NullTest{
 				Arg:          base,
 				Nulltesttype: 1, // IS NULL
-				Location:     n.GetStart().GetStart(),
+				Location:     c.pos(n.GetStart()),
 			}
 		case condCtx.NOTNULL() != nil:
 			return &ast.NullTest{
 				Arg:          base,
 				Nulltesttype: 2, // IS NOT NULL
-				Location:     n.GetStart().GetStart(),
+				Location:     c.pos(n.GetStart()),
 			}
 		case condCtx.IS() != nil && condCtx.NULL() != nil:
 			return &ast.NullTest{
 				Arg:          base,
 				Nulltesttype: 1, // IS NULL
-				Location:     n.GetStart().GetStart(),
+				Location:     c.pos(n.GetStart()),
 			}
 		case condCtx.IS() != nil && condCtx.NOT() != nil && condCtx.NULL() != nil:
 			return &ast.NullTest{
 				Arg:          base,
 				Nulltesttype: 2, // IS NOT NULL
-				Location:     n.GetStart().GetStart(),
+				Location:     c.pos(n.GetStart()),
 			}
 		case condCtx.Match_op() != nil:
 			// debug!!!
@@ -1908,7 +1923,7 @@ func (c *cc) convertEqSubexpr(n *parser.Eq_subexprContext) ast.Node {
 			Name:     &ast.List{Items: []ast.Node{&ast.String{Str: opText}}},
 			Lexpr:    left,
 			Rexpr:    right,
-			Location: n.GetStart().GetStart(),
+			Location: c.pos(n.GetStart()),
 		}
 	}
 	return left
@@ -1953,7 +1968,7 @@ func (c *cc) convertNeqSubexpr(n *parser.Neq_subexprContext) ast.Node {
 			Name:     &ast.List{Items: []ast.Node{&ast.String{Str: opText}}},
 			Lexpr:    left,
 			Rexpr:    right,
-			Location: n.GetStart().GetStart(),
+			Location: c.pos(n.GetStart()),
 		}
 	}
 
@@ -1969,7 +1984,7 @@ func (c *cc) convertNeqSubexpr(n *parser.Neq_subexprContext) ast.Node {
 				Name:     &ast.List{Items: []ast.Node{&ast.String{Str: "??"}}},
 				Lexpr:    left,
 				Rexpr:    right,
-				Location: n.GetStart().GetStart(),
+				Location: c.pos(n.GetStart()),
 			}
 		}
 	} else {
@@ -1983,7 +1998,7 @@ func (c *cc) convertNeqSubexpr(n *parser.Neq_subexprContext) ast.Node {
 			left = &ast.A_Expr{
 				Name:     &ast.List{Items: []ast.Node{&ast.String{Str: questionOp}}},
 				Lexpr:    left,
-				Location: n.GetStart().GetStart(),
+				Location: c.pos(n.GetStart()),
 			}
 		}
 	}
@@ -2018,7 +2033,7 @@ func (c *cc) convertBitSubexpr(n *parser.Bit_subexprContext) ast.Node {
 			Name:     &ast.List{Items: []ast.Node{&ast.String{Str: opText}}},
 			Lexpr:    left,
 			Rexpr:    right,
-			Location: n.GetStart().GetStart(),
+			Location: c.pos(n.GetStart()),
 		}
 	}
 	return left
@@ -2051,7 +2066,7 @@ func (c *cc) convertAddSubexpr(n *parser.Add_subexprContext) ast.Node {
 			Name:     &ast.List{Items: []ast.Node{&ast.String{Str: opText}}},
 			Lexpr:    left,
 			Rexpr:    right,
-			Location: n.GetStart().GetStart(),
+			Location: c.pos(n.GetStart()),
 		}
 	}
 	return left
@@ -2080,7 +2095,7 @@ func (c *cc) convertMulSubexpr(n *parser.Mul_subexprContext) ast.Node {
 			Name:     &ast.List{Items: []ast.Node{&ast.String{Str: "||"}}},
 			Lexpr:    left,
 			Rexpr:    right,
-			Location: n.GetStart().GetStart(),
+			Location: c.pos(n.GetStart()),
 		}
 	}
 	return left
@@ -2093,7 +2108,7 @@ func (c *cc) convertConSubexpr(n *parser.Con_subexprContext) ast.Node {
 		return &ast.A_Expr{
 			Name:     &ast.List{Items: []ast.Node{&ast.String{Str: op}}},
 			Rexpr:    operand,
-			Location: n.GetStart().GetStart(),
+			Location: c.pos(n.GetStart()),
 		}
 	}
 	return c.convertUnarySubexpr(n.Unary_subexpr().(*parser.Unary_subexprContext))
@@ -2110,89 +2125,211 @@ func (c *cc) convertUnarySubexpr(n *parser.Unary_subexprContext) ast.Node {
 }
 
 func (c *cc) convertJsonApiExpr(n *parser.Json_api_exprContext) ast.Node {
-	return &ast.TODO{} // todo
+	return todo("Json_api_exprContext", n)
 }
 
 func (c *cc) convertUnaryCasualSubexpr(n *parser.Unary_casual_subexprContext) ast.Node {
-	var baseExpr ast.Node
-
-	if idExpr := n.Id_expr(); idExpr != nil {
-		baseExpr = c.convertIdExpr(idExpr.(*parser.Id_exprContext))
-	} else if atomExpr := n.Atom_expr(); atomExpr != nil {
-		baseExpr = c.convertAtomExpr(atomExpr.(*parser.Atom_exprContext))
+	var current ast.Node
+	switch {
+	case n.Id_expr() != nil:
+		current = c.convertIdExpr(n.Id_expr().(*parser.Id_exprContext))
+	case n.Atom_expr() != nil:
+		current = c.convertAtomExpr(n.Atom_expr().(*parser.Atom_exprContext))
+	default:
+		return todo("Unary_casual_subexprContext", n)
 	}
 
-	suffixCtx := n.Unary_subexpr_suffix()
-	if suffixCtx != nil {
-		ctx, ok := suffixCtx.(*parser.Unary_subexpr_suffixContext)
-		if !ok {
-			return baseExpr
-		}
-		baseExpr = c.convertUnarySubexprSuffix(baseExpr, ctx)
+	if suffix := n.Unary_subexpr_suffix(); suffix != nil {
+		current = c.processSuffixChain(current, suffix.(*parser.Unary_subexpr_suffixContext))
 	}
 
-	return baseExpr
+	return current
 }
 
-func (c *cc) convertUnarySubexprSuffix(base ast.Node, n *parser.Unary_subexpr_suffixContext) ast.Node {
-	if n == nil {
-		return base
-	}
-	colRef, ok := base.(*ast.ColumnRef)
-	if !ok {
-		return base // todo: cover case when unary subexpr with atomic expr
-	}
-
-	for i := 0; i < n.GetChildCount(); i++ {
-		child := n.GetChild(i)
-		switch v := child.(type) {
-		case parser.IKey_exprContext:
-			node := c.convert(v.(*parser.Key_exprContext))
-			if node != nil {
-				colRef.Fields.Items = append(colRef.Fields.Items, node)
-			}
-
-		case parser.IInvoke_exprContext:
-			node := c.convert(v.(*parser.Invoke_exprContext))
-			if node != nil {
-				colRef.Fields.Items = append(colRef.Fields.Items, node)
-			}
+func (c *cc) processSuffixChain(base ast.Node, suffix *parser.Unary_subexpr_suffixContext) ast.Node {
+	current := base
+	for i := 0; i < suffix.GetChildCount(); i++ {
+		child := suffix.GetChild(i)
+		switch elem := child.(type) {
+		case *parser.Key_exprContext:
+			current = c.handleKeySuffix(current, elem)
+		case *parser.Invoke_exprContext:
+			current = c.handleInvokeSuffix(current, elem, i)
 		case antlr.TerminalNode:
-			if v.GetText() == "." {
-				if i+1 < n.GetChildCount() {
-					next := n.GetChild(i + 1)
-					switch w := next.(type) {
-					case parser.IBind_parameterContext:
-						// !!! debug !!!
-						node := c.convert(next.(*parser.Bind_parameterContext))
-						colRef.Fields.Items = append(colRef.Fields.Items, node)
-					case antlr.TerminalNode:
-						// !!! debug !!!
-						val, err := parseIntegerValue(w.GetText())
-						if err != nil {
-							if debug.Active {
-								log.Printf("Failed to parse integer value '%s': %v", w.GetText(), err)
-							}
-							return &ast.TODO{}
-						}
-						node := &ast.A_Const{Val: &ast.Integer{Ival: val}, Location: n.GetStart().GetStart()}
-						colRef.Fields.Items = append(colRef.Fields.Items, node)
-					case parser.IAn_id_or_typeContext:
-						idText := parseAnIdOrType(w)
-						colRef.Fields.Items = append(colRef.Fields.Items, &ast.String{Str: idText})
-					default:
-						colRef.Fields.Items = append(colRef.Fields.Items, &ast.TODO{})
-					}
-					i++
-				}
+			if elem.GetText() == "." {
+				current = c.handleDotSuffix(current, suffix, &i)
 			}
 		}
 	}
+	return current
+}
 
-	if n.COLLATE() != nil && n.An_id() != nil { //nolint
-		// todo: Handle COLLATE
+func (c *cc) handleKeySuffix(base ast.Node, keyCtx *parser.Key_exprContext) ast.Node {
+	keyNode := c.convertKey_exprContext(keyCtx)
+	ind, ok := keyNode.(*ast.A_Indirection)
+	if !ok {
+		return todo("Key_exprContext", keyCtx)
 	}
-	return colRef
+
+	if indirection, ok := base.(*ast.A_Indirection); ok {
+		indirection.Indirection.Items = append(indirection.Indirection.Items, ind.Indirection.Items...)
+		return indirection
+	}
+
+	return &ast.A_Indirection{
+		Arg: base,
+		Indirection: &ast.List{
+			Items: []ast.Node{keyNode},
+		},
+	}
+}
+
+func (c *cc) handleInvokeSuffix(base ast.Node, invokeCtx *parser.Invoke_exprContext, idx int) ast.Node {
+	funcCall, ok := c.convertInvoke_exprContext(invokeCtx).(*ast.FuncCall)
+	if !ok {
+		return todo("Invoke_exprContext", invokeCtx)
+	}
+
+	if idx == 0 {
+		switch baseNode := base.(type) {
+		case *ast.ColumnRef:
+			if len(baseNode.Fields.Items) > 0 {
+				var nameParts []string
+				for _, item := range baseNode.Fields.Items {
+					if s, ok := item.(*ast.String); ok {
+						nameParts = append(nameParts, s.Str)
+					}
+				}
+				funcName := strings.Join(nameParts, ".")
+
+				if funcName == "coalesce" {
+					return &ast.CoalesceExpr{
+						Args:     funcCall.Args,
+						Location: baseNode.Location,
+					}
+				}
+
+				funcCall.Func = &ast.FuncName{Name: funcName}
+				funcCall.Funcname.Items = append(funcCall.Funcname.Items, &ast.String{Str: funcName})
+
+				return funcCall
+			}
+		default:
+			return todo("Invoke_exprContext", invokeCtx)
+		}
+	}
+
+	stmt := &ast.RecursiveFuncCall{
+		Func:        base,
+		Funcname:    funcCall.Funcname,
+		AggStar:     funcCall.AggStar,
+		Location:    funcCall.Location,
+		Args:        funcCall.Args,
+		AggDistinct: funcCall.AggDistinct,
+	}
+	stmt.Funcname.Items = append(stmt.Funcname.Items, base)
+	return stmt
+}
+
+func (c *cc) handleDotSuffix(base ast.Node, suffix *parser.Unary_subexpr_suffixContext, idx *int) ast.Node {
+	if *idx+1 >= suffix.GetChildCount() {
+		return base
+	}
+
+	next := suffix.GetChild(*idx + 1)
+	*idx++
+
+	var field ast.Node
+	switch v := next.(type) {
+	case *parser.Bind_parameterContext:
+		field = c.convertBindParameter(v)
+	case *parser.An_id_or_typeContext:
+		field = &ast.String{Str: parseAnIdOrType(v)}
+	case antlr.TerminalNode:
+		if val, err := parseIntegerValue(v.GetText()); err == nil {
+			field = &ast.A_Const{Val: &ast.Integer{Ival: val}}
+		} else {
+			return &ast.TODO{}
+		}
+	}
+
+	if field == nil {
+		return base
+	}
+
+	if cr, ok := base.(*ast.ColumnRef); ok {
+		cr.Fields.Items = append(cr.Fields.Items, field)
+		return cr
+	}
+	return &ast.ColumnRef{
+		Fields: &ast.List{Items: []ast.Node{base, field}},
+	}
+}
+
+func (c *cc) convertKey_exprContext(n *parser.Key_exprContext) ast.Node {
+	if n.LBRACE_SQUARE() == nil || n.RBRACE_SQUARE() == nil || n.Expr() == nil {
+		return todo("Key_exprContext", n)
+	}
+
+	stmt := &ast.A_Indirection{
+		Indirection: &ast.List{},
+	}
+
+	expr := c.convert(n.Expr())
+
+	stmt.Indirection.Items = append(stmt.Indirection.Items, &ast.A_Indices{
+		Uidx: expr,
+	})
+
+	return stmt
+}
+
+func (c *cc) convertInvoke_exprContext(n *parser.Invoke_exprContext) ast.Node {
+	if n.LPAREN() == nil || n.RPAREN() == nil {
+		return todo("Invoke_exprContext", n)
+	}
+
+	distinct := false
+	if n.Opt_set_quantifier() != nil {
+		distinct = n.Opt_set_quantifier().DISTINCT() != nil
+	}
+
+	stmt := &ast.FuncCall{
+		AggDistinct: distinct,
+		Funcname:    &ast.List{},
+		AggOrder:    &ast.List{},
+		Args:        &ast.List{},
+		Location:    c.pos(n.GetStart()),
+	}
+
+	if nList := n.Named_expr_list(); nList != nil {
+		for _, namedExpr := range nList.AllNamed_expr() {
+			name := parseAnIdOrType(namedExpr.An_id_or_type())
+			expr := c.convert(namedExpr.Expr())
+
+			var res ast.Node
+			if rt, ok := expr.(*ast.ResTarget); ok {
+				if name != "" {
+					rt.Name = &name
+				}
+				res = rt
+			} else if name != "" {
+				res = &ast.ResTarget{
+					Name:     &name,
+					Val:      expr,
+					Location: c.pos(namedExpr.Expr().GetStart()),
+				}
+			} else {
+				res = expr
+			}
+
+			stmt.Args.Items = append(stmt.Args.Items, res)
+		}
+	} else if n.ASTERISK() != nil {
+		stmt.AggStar = true
+	}
+
+	return stmt
 }
 
 func (c *cc) convertIdExpr(n *parser.Id_exprContext) ast.Node {
@@ -2203,6 +2340,7 @@ func (c *cc) convertIdExpr(n *parser.Id_exprContext) ast.Node {
 					NewIdentifier(id.GetText()),
 				},
 			},
+			Location: c.pos(id.GetStart()),
 		}
 	}
 	return &ast.TODO{}
@@ -2210,6 +2348,8 @@ func (c *cc) convertIdExpr(n *parser.Id_exprContext) ast.Node {
 
 func (c *cc) convertAtomExpr(n *parser.Atom_exprContext) ast.Node {
 	switch {
+	case n.An_id_or_type() != nil && n.NAMESPACE() != nil:
+		return NewIdentifier(parseAnIdOrType(n.An_id_or_type()) + "::" + parseIdOrType(n.Id_or_type()))
 	case n.An_id_or_type() != nil:
 		return NewIdentifier(parseAnIdOrType(n.An_id_or_type()))
 	case n.Literal_value() != nil:
@@ -2232,25 +2372,25 @@ func (c *cc) convertLiteralValue(n *parser.Literal_valueContext) ast.Node {
 			}
 			return &ast.TODO{}
 		}
-		return &ast.A_Const{Val: &ast.Integer{Ival: val}, Location: n.GetStart().GetStart()}
+		return &ast.A_Const{Val: &ast.Integer{Ival: val}, Location: c.pos(n.GetStart())}
 
 	case n.Real_() != nil:
 		text := n.Real_().GetText()
-		return &ast.A_Const{Val: &ast.Float{Str: text}, Location: n.GetStart().GetStart()}
+		return &ast.A_Const{Val: &ast.Float{Str: text}, Location: c.pos(n.GetStart())}
 
 	case n.STRING_VALUE() != nil: // !!! debug !!! (problem with quoted strings)
 		val := n.STRING_VALUE().GetText()
 		if len(val) >= 2 {
 			val = val[1 : len(val)-1]
 		}
-		return &ast.A_Const{Val: &ast.String{Str: val}, Location: n.GetStart().GetStart()}
+		return &ast.A_Const{Val: &ast.String{Str: val}, Location: c.pos(n.GetStart())}
 
 	case n.Bool_value() != nil:
 		var i bool
 		if n.Bool_value().TRUE() != nil {
 			i = true
 		}
-		return &ast.A_Const{Val: &ast.Boolean{Boolval: i}, Location: n.GetStart().GetStart()}
+		return &ast.A_Const{Val: &ast.Boolean{Boolval: i}, Location: c.pos(n.GetStart())}
 
 	case n.NULL() != nil:
 		return &ast.Null{}
@@ -2275,7 +2415,7 @@ func (c *cc) convertLiteralValue(n *parser.Literal_valueContext) ast.Node {
 
 	case n.BLOB() != nil:
 		blobText := n.BLOB().GetText()
-		return &ast.A_Const{Val: &ast.String{Str: blobText}, Location: n.GetStart().GetStart()}
+		return &ast.A_Const{Val: &ast.String{Str: blobText}, Location: c.pos(n.GetStart())}
 
 	case n.EMPTY_ACTION() != nil:
 		if debug.Active {

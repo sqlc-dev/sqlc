@@ -42,7 +42,8 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 	if err != nil {
 		return nil, err
 	}
-	input := antlr.NewInputStream(string(blob))
+	content := string(blob)
+	input := antlr.NewInputStream(content)
 	lexer := parser.NewYQLLexer(input)
 	stream := antlr.NewCommonTokenStream(lexer, 0)
 	pp := parser.NewYQLParser(stream)
@@ -62,14 +63,14 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 	if stmtListCtx != nil {
 		loc := 0
 		for _, stmt := range stmtListCtx.AllSql_stmt() {
-			converter := &cc{}
+			converter := &cc{content: string(blob)}
 			out := converter.convert(stmt)
 			if _, ok := out.(*ast.TODO); ok {
-				loc = stmt.GetStop().GetStop() + 2
+				loc = byteOffset(content, stmt.GetStop().GetStop() + 2)
 				continue
 			}
 			if out != nil {
-				len := (stmt.GetStop().GetStop() + 1) - loc
+				len := byteOffset(content, stmt.GetStop().GetStop() + 1) - loc
 				stmts = append(stmts, ast.Statement{
 					Raw: &ast.RawStmt{
 						Stmt:         out,
@@ -77,7 +78,7 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 						StmtLen:      len,
 					},
 				})
-				loc = stmt.GetStop().GetStop() + 2
+				loc = byteOffset(content, stmt.GetStop().GetStop() + 2)
 			}
 		}
 	}

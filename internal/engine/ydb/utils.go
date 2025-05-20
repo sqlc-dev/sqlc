@@ -3,6 +3,7 @@ package ydb
 import (
 	"strconv"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/antlr4-go/antlr/v4"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
@@ -13,8 +14,6 @@ type objectRefProvider interface {
 	antlr.ParserRuleContext
 	Object_ref() parser.IObject_refContext
 }
-
-
 
 func parseTableName(ctx objectRefProvider) *ast.TableName {
 	return parseObjectRef(ctx.Object_ref())
@@ -171,4 +170,27 @@ func (c *cc) extractRoleSpec(n parser.IRole_nameContext, roletype ast.RoleSpecTy
 	}
 
 	return roleSpec, isParam, roleNode
+}
+
+func byteOffset(s string, runeIndex int) int {
+	count := 0
+	for i := range s {
+		if count == runeIndex {
+			return i
+		}
+		count++
+	}
+	return len(s)
+}
+
+func byteOffsetFromRuneIndex(s string, runeIndex int) int {
+	if runeIndex <= 0 {
+		return 0
+	}
+	bytePos := 0
+	for i := 0; i < runeIndex && bytePos < len(s); i++ {
+		_, size := utf8.DecodeRuneInString(s[bytePos:])
+		bytePos += size
+	}
+	return bytePos
 }

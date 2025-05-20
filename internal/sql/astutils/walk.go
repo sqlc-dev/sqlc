@@ -1761,6 +1761,26 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Newrole)
 		}
 
+	case *ast.RecursiveFuncCall:
+		if n.Func != nil {
+			Walk(f, n.Func)
+		}
+		if n.Funcname != nil {
+			Walk(f, n.Funcname)
+		}
+		if n.Args != nil {
+			Walk(f, n.Args)
+		}
+		if n.AggOrder != nil {
+			Walk(f, n.AggOrder)
+		}
+		if n.AggFilter != nil {
+			Walk(f, n.AggFilter)
+		}
+		if n.Over != nil {
+			Walk(f, n.Over)
+		}
+
 	case *ast.RefreshMatViewStmt:
 		if n.Relation != nil {
 			Walk(f, n.Relation)
