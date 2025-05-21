@@ -10,14 +10,58 @@ import (
 	"database/sql"
 )
 
+const cOALESCE = `-- name: COALESCE :many
+SELECT id, name, COALESCE(bio, 'Null value!') FROM authors
+`
+
+type COALESCERow struct {
+	ID   uint64 `json:"id"`
+	Name string `json:"name"`
+	Bio  string `json:"bio"`
+}
+
+func (q *Queries) COALESCE(ctx context.Context) ([]COALESCERow, error) {
+	rows, err := q.db.QueryContext(ctx, cOALESCE)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []COALESCERow
+	for rows.Next() {
+		var i COALESCERow
+		if err := rows.Scan(&i.ID, &i.Name, &i.Bio); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const count = `-- name: Count :one
+SELECT COUNT(*) FROM authors
+`
+
+func (q *Queries) Count(ctx context.Context) (uint64, error) {
+	row := q.db.QueryRowContext(ctx, count)
+	var count uint64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createOrUpdateAuthor = `-- name: CreateOrUpdateAuthor :execresult
 UPSERT INTO authors (id, name, bio) VALUES ($p0, $p1, $p2)
 `
 
 type CreateOrUpdateAuthorParams struct {
-	P0 uint64
-	P1 string
-	P2 *string
+	P0 uint64  `json:"p0"`
+	P1 string  `json:"p1"`
+	P2 *string `json:"p2"`
 }
 
 func (q *Queries) CreateOrUpdateAuthor(ctx context.Context, arg CreateOrUpdateAuthorParams) (sql.Result, error) {
@@ -29,9 +73,9 @@ UPSERT INTO authors (id, name, bio) VALUES ($p0, $p1, $p2) RETURNING bio
 `
 
 type CreateOrUpdateAuthorReturningBioParams struct {
-	P0 uint64
-	P1 string
-	P2 *string
+	P0 uint64  `json:"p0"`
+	P1 string  `json:"p1"`
+	P2 *string `json:"p2"`
 }
 
 func (q *Queries) CreateOrUpdateAuthorReturningBio(ctx context.Context, arg CreateOrUpdateAuthorReturningBioParams) (*string, error) {
@@ -150,9 +194,9 @@ UPDATE authors SET name = $p0, bio = $p1 WHERE id = $p2 RETURNING id, name, bio
 `
 
 type UpdateAuthorByIDParams struct {
-	P0 string
-	P1 *string
-	P2 uint64
+	P0 string  `json:"p0"`
+	P1 *string `json:"p1"`
+	P2 uint64  `json:"p2"`
 }
 
 func (q *Queries) UpdateAuthorByID(ctx context.Context, arg UpdateAuthorByIDParams) (Author, error) {

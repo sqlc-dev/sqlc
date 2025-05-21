@@ -13,6 +13,12 @@ WHERE name = $p0;
 SELECT * FROM authors
 WHERE bio IS NULL;
 
+-- name: Count :one
+SELECT COUNT(*) FROM authors;
+
+-- name: COALESCE :many
+SELECT id, name, COALESCE(bio, 'Null value!') FROM authors;
+
 -- name: CreateOrUpdateAuthor :execresult 
 UPSERT INTO authors (id, name, bio) VALUES ($p0, $p1, $p2);
 

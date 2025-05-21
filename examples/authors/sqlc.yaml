@@ -51,6 +51,7 @@ sql:
     go:
       package: authors
       out: ydb
+      emit_json_tags: true
 
 
 rules:
