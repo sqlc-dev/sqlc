@@ -39,7 +39,7 @@ type CreateAuthorsParams struct {
 func (q *Queries) CreateAuthors(ctx context.Context, arg []CreateAuthorsParams) *CreateAuthorsBatchResults {
 	batch := &pgx.Batch{}
 	for _, a := range arg {
-		vals := []interface{}{
+		vals := []any{
 			a.Name,
 			a.Bio,
 		}
