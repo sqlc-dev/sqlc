@@ -13,6 +13,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/engine/sqlite"
 	"github.com/sqlc-dev/sqlc/internal/opts"
 	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
+	"github.com/sqlc-dev/sqlc/internal/sql/selector"
 )
 
 type Compiler struct {
@@ -23,6 +24,7 @@ type Compiler struct {
 	result   *Result
 	analyzer analyzer.Analyzer
 	client   dbmanager.Client
+	selector selector.Selector
 
 	schema []string
 }
@@ -39,12 +41,15 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings) (*Compiler, err
 	case config.EngineSQLite:
 		c.parser = sqlite.NewParser()
 		c.catalog = sqlite.NewCatalog()
+		c.selector = sqlite.NewSelector()
 	case config.EngineMySQL:
 		c.parser = dolphin.NewParser()
 		c.catalog = dolphin.NewCatalog()
+		c.selector = selector.NewDefaultSelector()
 	case config.EnginePostgreSQL:
 		c.parser = postgresql.NewParser()
 		c.catalog = postgresql.NewCatalog()
+		c.selector = selector.NewDefaultSelector()
 		if conf.Database != nil {
 			if conf.Analyzer.Database == nil || *conf.Analyzer.Database {
 				c.analyzer = analyzer.Cached(
