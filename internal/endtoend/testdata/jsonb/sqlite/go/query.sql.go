@@ -7,6 +7,7 @@ package querytest
 
 import (
 	"context"
+	"encoding/json"
 )
 
 const insertFoo = `-- name: InsertFoo :exec
@@ -24,10 +25,10 @@ INSERT INTO foo (
 `
 
 type InsertFooParams struct {
-	A []byte
-	B []byte
-	C []byte
-	D []byte
+	A json.RawMessage
+	B json.RawMessage
+	C json.RawMessage
+	D json.RawMessage
 }
 
 func (q *Queries) InsertFoo(ctx context.Context, arg InsertFooParams) error {

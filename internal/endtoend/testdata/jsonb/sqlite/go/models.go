@@ -4,9 +4,13 @@
 
 package querytest
 
+import (
+	"encoding/json"
+)
+
 type Foo struct {
-	A []byte
-	B []byte
-	C []byte
-	D []byte
+	A json.RawMessage
+	B json.RawMessage
+	C json.RawMessage
+	D json.RawMessage
 }
