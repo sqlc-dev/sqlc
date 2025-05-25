@@ -56,6 +56,9 @@ func sqliteType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.
 		}
 		return "sql.NullTime"
 
+	case "json", "jsonb":
+		return "json.RawMessage"
+
 	case "any":
 		return "interface{}"
 

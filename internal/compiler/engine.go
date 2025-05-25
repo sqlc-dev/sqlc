@@ -23,6 +23,7 @@ type Compiler struct {
 	result   *Result
 	analyzer analyzer.Analyzer
 	client   dbmanager.Client
+	selector selector
 
 	schema []string
 }
@@ -39,12 +40,15 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings) (*Compiler, err
 	case config.EngineSQLite:
 		c.parser = sqlite.NewParser()
 		c.catalog = sqlite.NewCatalog()
+		c.selector = newSQLiteSelector()
 	case config.EngineMySQL:
 		c.parser = dolphin.NewParser()
 		c.catalog = dolphin.NewCatalog()
+		c.selector = newDefaultSelector()
 	case config.EnginePostgreSQL:
 		c.parser = postgresql.NewParser()
 		c.catalog = postgresql.NewCatalog()
+		c.selector = newDefaultSelector()
 		if conf.Database != nil {
 			if conf.Analyzer.Database == nil || *conf.Analyzer.Database {
 				c.analyzer = analyzer.Cached(
