@@ -1,0 +1,22 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    schema: "schema.sql"
+    queries: "query.sql"
+    gen:
+      go:
+        package: "dynamic"
+        out: "gend"
+        sql_package: "pgx/v5" # Key change for pgx
+        emit_interface: true
+        # Assuming emit_methods_with_db_argument: true for tests.
+        # For pgx/v5, DBTX is usually imported from pgx/v5.
+        overrides:
+          - db_type: "DBTX"
+            go_type:
+              import: "github.com/jackc/pgx/v5" # pgx/v5 specific DBTX
+              type: "DBTX"
+        emit_methods_with_db_argument: true # Explicitly set
+        # emit_prepared_queries: false # Not strictly needed as pgx template handles this differently
+                                     # but good for consistency if stdlib has it.
+                                     # The pgx template for queryCode.tmpl was modified to always build dynamically.

@@ -113,6 +113,180 @@ func (q *Queries) GetAuthor(ctx context.Context, id int64) (Author, error) {
 }
 ```
 
+## Conditional SQL with `sqlc.optional`
+
+The `sqlc.optional` annotation allows for parts of a SQL query to be conditionally included at runtime. This is useful for building queries with optional filters or other dynamic components.
+
+### Purpose
+
+`sqlc.optional` provides a way to construct dynamic SQL queries where certain SQL fragments are only appended to the base query if a corresponding Go parameter is non-`nil`. This avoids the need for complex string manipulation or multiple similar queries for different filtering scenarios.
+
+### Syntax
+
+You include `sqlc.optional` calls directly in your SQL query comments, after the main query body. Each call specifies a key (which becomes part of the Go function parameter name) and the SQL fragment to include.
+
+```sql
+-- name: GetItemsByOwner :many
+SELECT * FROM items
+WHERE owner_id = $1 -- Base condition for mandatory parameter
+sqlc.optional('NameFilter', 'AND name LIKE $2')
+sqlc.optional('ActiveOnly', 'AND is_active = $3');
+```
+
+### Generated Function Signature
+
+For each `sqlc.optional('Key', 'SQLFragment')` annotation, a new parameter is added to the generated Go function. The parameter name is derived from `Key` (converted to lowerCamelCase, e.g., `nameFilter`, `activeOnly`), and its type is `interface{}`.
+
+Given the SQL example above, the generated Go function signature would be:
+
+```go
+func (q *Queries) GetItemsByOwner(ctx context.Context, ownerID int64, nameFilter interface{}, activeOnly interface{}) ([]Item, error)
+```
+
+Here, `ownerID int64` is the standard parameter corresponding to `$1`. `nameFilter interface{}` and `activeOnly interface{}` are the optional parameters generated due to `sqlc.optional`.
+
+### Runtime Behavior
+
+- The SQL fragment associated with an `sqlc.optional` directive is appended to the main query (with a preceding space) if the corresponding Go parameter in the generated function is **not `nil`**.
+- If the parameter is `nil`, the fragment is ignored.
+- The database driver receives the fully constructed SQL string and only the parameters that are active (standard parameters + non-`nil` optional parameters).
+
+### Parameter Numbering
+
+The `$N` placeholders in *any* SQL fragment (whether part of the base query or an `sqlc.optional` fragment) **must** correspond to the position of the argument in the generated Go function's parameter list.
+
+- Standard (non-optional) parameters are numbered first, based on their order in the SQL query.
+- Optional parameters are numbered subsequently, based on the order of their `sqlc.optional` appearance in the SQL query.
+
+**Example:**
+
+For the query:
+```sql
+-- name: GetItemsByOwner :many
+SELECT * FROM items
+WHERE owner_id = $1 -- owner_id is the 1st parameter
+sqlc.optional('NameFilter', 'AND name LIKE $2') -- nameFilter is the 2nd parameter
+sqlc.optional('ActiveOnly', 'AND is_active = $3'); -- activeOnly is the 3rd parameter
+```
+
+The generated Go function is:
+`func (q *Queries) GetItemsByOwner(ctx context.Context, ownerID int64, nameFilter interface{}, activeOnly interface{})`
+
+- In the base query, `$1` refers to `ownerID`.
+- In the `NameFilter` fragment, `$2` refers to `nameFilter`.
+- In the `ActiveOnly` fragment, `$3` refers to `activeOnly`.
+
+If `nameFilter` is `nil` and `activeOnly` is provided, the final SQL sent to the driver might look like:
+`SELECT * FROM items WHERE owner_id = $1 AND is_active = $2`
+And the parameters passed to the driver would be `ownerID` and the value of `activeOnly`. The database driver sees a query with parameters re-numbered sequentially from `$1`. sqlc handles this re-numbering automatically when constructing the query for the driver.
+
+### Complete Example
+
+**SQL (`query.sql`):**
+```sql
+-- name: ListUsers :many
+SELECT id, name, status FROM users
+WHERE 1=1 -- Base condition (can be any valid SQL expression)
+sqlc.optional('NameParam', 'AND name LIKE $1')
+sqlc.optional('StatusParam', 'AND status = $2');
+```
+*(For this specific example, if `NameParam` is active, it's `$1`. If `StatusParam` is active, it's `$2`. If both are active, `NameParam` is `$1` and `StatusParam` is `$2` in their respective fragments, but they become `$1` and `$2` overall if no mandatory params precede them. The parameter numbering in fragments refers to their final position in the argument list passed to the database driver, which sqlc constructs based on active parameters.)*
+
+**Correction to the above parenthetical note, aligning with the "Parameter Numbering" section:**
+The `$N` in the SQL fragments refers to the Go function signature's parameter order.
+- `NameParam` (if not nil) corresponds to `$1`.
+- `StatusParam` (if not nil) corresponds to `$2`.
+
+If `NameParam` is `John%` and `StatusParam` is `active`, the effective SQL is:
+`SELECT id, name, status FROM users WHERE 1=1 AND name LIKE $1 AND status = $2`
+And the parameters passed to the driver are `John%` and `active`.
+
+If `NameParam` is `nil` and `StatusParam` is `active`, the effective SQL is:
+`SELECT id, name, status FROM users WHERE 1=1 AND status = $1`
+And the parameter passed to the driver is `active`. sqlc handles mapping the Go parameters to the correct positional placeholders for the final SQL.
+
+
+**Generated Go (`query.sql.go`):**
+```go
+func (q *Queries) ListUsers(ctx context.Context, nameParam interface{}, statusParam interface{}) ([]User, error) {
+    // ... implementation using strings.Builder ...
+}
+```
+
+**Example Usage (Go):**
+```go
+package main
+
+import (
+	"context"
+	"database/sql"
+	"fmt"
+	"log"
+
+	// assume models and queries are in package "db"
+	"yourmodule/db" // Adjust to your actual module path
+)
+
+func main() {
+	ctx := context.Background()
+	// Assume dbConn is an initialized *sql.DB
+	var dbConn *sql.DB 
+	// dbConn, err := sql.Open("driver-name", "connection-string")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// defer dbConn.Close()
+
+	queries := db.New(dbConn)
+
+	// Example 1: Get all users (both optional parameters are nil)
+	fmt.Println("Fetching all users...")
+	allUsers, err := queries.ListUsers(ctx, nil, nil)
+	if err != nil {
+		log.Fatalf("Failed to list all users: %v", err)
+	}
+	for _, user := range allUsers {
+		fmt.Printf("User: ID=%d, Name=%s, Status=%s\n", user.ID, user.Name, user.Status)
+	}
+
+	fmt.Println("\nFetching users with name starting with 'J':")
+	// Example 2: Get users with name starting with "J"
+	nameFilter := "J%"
+	jUsers, err := queries.ListUsers(ctx, nameFilter, nil)
+	if err != nil {
+		log.Fatalf("Failed to list J-users: %v", err)
+	}
+	for _, user := range jUsers {
+		fmt.Printf("User: ID=%d, Name=%s, Status=%s\n", user.ID, user.Name, user.Status)
+	}
+
+	fmt.Println("\nFetching 'active' users:")
+	// Example 3: Get 'active' users
+	statusFilter := "active"
+	activeUsers, err := queries.ListUsers(ctx, nil, statusFilter)
+	if err != nil {
+		log.Fatalf("Failed to list active users: %v", err)
+	}
+	for _, user := range activeUsers {
+		fmt.Printf("User: ID=%d, Name=%s, Status=%s\n", user.ID, user.Name, user.Status)
+	}
+	
+	fmt.Println("\nFetching 'inactive' users with name 'Jane Doe':")
+	// Example 4: Get 'inactive' users with name 'Jane Doe'
+	nameFilterSpecific := "Jane Doe"
+	statusFilterSpecific := "inactive"
+	janeUsers, err := queries.ListUsers(ctx, nameFilterSpecific, statusFilterSpecific)
+	if err != nil {
+		log.Fatalf("Failed to list specific Jane users: %v", err)
+	}
+	for _, user := range janeUsers {
+		fmt.Printf("User: ID=%d, Name=%s, Status=%s\n", user.ID, user.Name, user.Status)
+	}
+}
+```
+
+This feature provides a powerful way to reduce boilerplate and manage complex queries with multiple optional conditions directly within your SQL files.
+
 ## `:batchexec`
 
 __NOTE: This command only works with PostgreSQL using the `pgx/v4` and `pgx/v5` drivers and outputting Go code.__

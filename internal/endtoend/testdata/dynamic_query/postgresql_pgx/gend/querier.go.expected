@@ -1,0 +1,12 @@
+package dynamic
+
+import (
+	"context"
+)
+
+type Querier interface {
+	GetItems(ctx context.Context, db DBTX, id int32, name interface{}, status interface{}, description interface{}) ([]Item, error)
+	GetItemsNoMandatory(ctx context.Context, db DBTX, name interface{}, status interface{}) ([]Item, error)
+}
+
+var _ Querier = (*Queries)(nil)

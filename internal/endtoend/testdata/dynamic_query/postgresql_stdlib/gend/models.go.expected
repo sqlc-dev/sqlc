@@ -1,0 +1,10 @@
+package dynamic
+
+import "database/sql"
+
+type Item struct {
+	ID          int32
+	Name        string
+	Description sql.NullString
+	Status      sql.NullInt32
+}

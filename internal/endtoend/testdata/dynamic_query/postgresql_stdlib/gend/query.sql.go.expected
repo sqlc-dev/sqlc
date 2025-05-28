@@ -1,0 +1,135 @@
+package dynamic
+
+import (
+	"context"
+	"database/sql"
+	"fmt"
+	"strings"
+)
+
+const getItems = `-- name: GetItems :many
+SELECT id, name, description, status FROM items
+WHERE id > $1  -- Mandatory parameter
+`
+
+const getItemsNoMandatory = `-- name: GetItemsNoMandatory :many
+SELECT id, name, description, status FROM items
+WHERE 1=1
+`
+
+type Item struct {
+	ID          int32
+	Name        string
+	Description sql.NullString
+	Status      sql.NullInt32
+}
+
+// GetItemsParams is a placeholder struct.
+// The actual parameters are taken by the GetItems function directly.
+type GetItemsParams struct {
+	ID          int32
+	Name        interface{}
+	Status      interface{}
+	Description interface{}
+}
+
+func (q *Queries) GetItems(ctx context.Context, db DBTX, id int32, name interface{}, status interface{}, description interface{}) ([]Item, error) {
+	var sqlBuilder strings.Builder
+	sqlBuilder.WriteString(getItems)
+
+	var queryParams []interface{}
+	queryParams = append(queryParams, id) // Add mandatory param $1
+
+	if name != nil {
+		sqlBuilder.WriteString(" AND name = $")
+		queryParams = append(queryParams, name)
+		sqlBuilder.WriteString(fmt.Sprintf("%d", len(queryParams)))
+	}
+	if status != nil {
+		sqlBuilder.WriteString(" AND status = $")
+		queryParams = append(queryParams, status)
+		sqlBuilder.WriteString(fmt.Sprintf("%d", len(queryParams)))
+	}
+	if description != nil {
+		sqlBuilder.WriteString(" AND description LIKE $")
+		queryParams = append(queryParams, description)
+		sqlBuilder.WriteString(fmt.Sprintf("%d", len(queryParams)))
+	}
+
+	rows, err := db.QueryContext(ctx, sqlBuilder.String(), queryParams...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Item
+	for rows.Next() {
+		var i Item
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.Status,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+// GetItemsNoMandatoryParams is a placeholder struct.
+// The actual parameters are taken by the GetItemsNoMandatory function directly.
+type GetItemsNoMandatoryParams struct {
+	Name   interface{}
+	Status interface{}
+}
+
+func (q *Queries) GetItemsNoMandatory(ctx context.Context, db DBTX, name interface{}, status interface{}) ([]Item, error) {
+	var sqlBuilder strings.Builder
+	sqlBuilder.WriteString(getItemsNoMandatory)
+
+	var queryParams []interface{}
+
+	if name != nil {
+		sqlBuilder.WriteString(" AND name = $")
+		queryParams = append(queryParams, name)
+		sqlBuilder.WriteString(fmt.Sprintf("%d", len(queryParams)))
+	}
+	if status != nil {
+		sqlBuilder.WriteString(" AND status = $")
+		queryParams = append(queryParams, status)
+		sqlBuilder.WriteString(fmt.Sprintf("%d", len(queryParams)))
+	}
+
+	rows, err := db.QueryContext(ctx, sqlBuilder.String(), queryParams...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Item
+	for rows.Next() {
+		var i Item
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.Status,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

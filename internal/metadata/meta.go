@@ -24,6 +24,14 @@ type Metadata struct {
 	RuleSkiplist map[string]struct{}
 
 	Filename string
+
+	OptionalBlocks []OptionalBlock
+}
+
+// OptionalBlock stores the condition key and SQL fragment for a sqlc.optional block.
+type OptionalBlock struct {
+	ConditionKey string
+	SQLFragment  string
 }
 
 const (

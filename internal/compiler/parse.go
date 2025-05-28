@@ -10,6 +10,8 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/metadata"
 	"github.com/sqlc-dev/sqlc/internal/opts"
 	"github.com/sqlc-dev/sqlc/internal/source"
+	"strings"
+
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
 	"github.com/sqlc-dev/sqlc/internal/sql/validate"
@@ -57,6 +59,41 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 	md := metadata.Metadata{
 		Name: name,
 		Cmd:  cmd,
+	}
+
+	// Extract sqlc.optional blocks
+	optionalBlocks := astutils.Search(stmt, func(node ast.Node) bool {
+		fn, ok := node.(*ast.FuncCall)
+		if !ok {
+			return false
+		}
+		return fn.Funcname.String() == "sqlc.optional"
+	})
+
+	for _, item := range optionalBlocks.Items {
+		fn := item.(*ast.FuncCall)
+		if len(fn.Args.Items) != 2 {
+			return nil, fmt.Errorf("sqlc.optional expects exactly two arguments, got %d", len(fn.Args.Items))
+		}
+
+		keyArg, okKey := fn.Args.Items[0].(*ast.A_Const)
+		sqlArg, okSQL := fn.Args.Items[1].(*ast.A_Const)
+
+		if !okKey || !okSQL {
+			return nil, fmt.Errorf("sqlc.optional arguments must be string literals")
+		}
+		
+		keyStr, okKeyStr := keyArg.Val.(*ast.String)
+		sqlStr, okSQLStr := sqlArg.Val.(*ast.String)
+
+		if !okKeyStr || !okSQLStr {
+			return nil, fmt.Errorf("sqlc.optional arguments must be string literals")
+		}
+
+		md.OptionalBlocks = append(md.OptionalBlocks, metadata.OptionalBlock{
+			ConditionKey: keyStr.Str,
+			SQLFragment:  sqlStr.Str,
+		})
 	}
 
 	// TODO eventually can use this for name and type/cmd parsing too

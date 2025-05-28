@@ -27,12 +27,11 @@ type {{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
 {{range .Comments}}//{{.}}
 {{end -}}
 {{- if $.EmitMethodsWithDBArgument -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) ({{.Ret.DefineType}}, error) {
-	row := db.QueryRow(ctx, {{.ConstantName}}, {{.Arg.Params}})
-{{- else -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.DefineType}}, error) {
-	row := q.db.QueryRow(ctx, {{.ConstantName}}, {{.Arg.Params}})
+func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}{{- range .OptionalParameters}}, {{.Name}} {{.Type}}{{- end}}) ({{.Ret.DefineType}}, error) {
+	{{- else -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}{{- range .OptionalParameters}}, {{.Name}} {{.Type}}{{- end}}) ({{.Ret.DefineType}}, error) {
 {{- end}}
+{{- template "queryCodePgxExec" . }}
 	{{- if or (ne .Arg.Pair .Ret.Pair) (ne .Arg.DefineType .Ret.DefineType) }}
 	var {{.Ret.Name}} {{.Ret.Type}}
 	{{- end}}
@@ -50,12 +49,11 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.De
 {{range .Comments}}//{{.}}
 {{end -}}
 {{- if $.EmitMethodsWithDBArgument -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error) {
-	rows, err := db.Query(ctx, {{.ConstantName}}, {{.Arg.Params}})
-{{- else -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error) {
-	rows, err := q.db.Query(ctx, {{.ConstantName}}, {{.Arg.Params}})
+func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}{{- range .OptionalParameters}}, {{.Name}} {{.Type}}{{- end}}) ([]{{.Ret.DefineType}}, error) {
+	{{- else -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}{{- range .OptionalParameters}}, {{.Name}} {{.Type}}{{- end}}) ([]{{.Ret.DefineType}}, error) {
 {{- end}}
+{{- template "queryCodePgxExec" . }}
 	if err != nil {
 		return nil, {{if $.WrapErrors}}fmt.Errorf("query {{.MethodName}}: %w", err){{else}}err{{end}}
 	}
@@ -83,12 +81,11 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.
 {{range .Comments}}//{{.}}
 {{end -}}
 {{- if $.EmitMethodsWithDBArgument -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) error {
-	_, err := db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
-{{- else -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) error {
-	_, err := q.db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
+func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}{{- range .OptionalParameters}}, {{.Name}} {{.Type}}{{- end}}) error {
+	{{- else -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}{{- range .OptionalParameters}}, {{.Name}} {{.Type}}{{- end}}) error {
 {{- end}}
+{{- template "queryCodePgxExec" . }}
 	{{- if $.WrapErrors }}
 	if err != nil {
 		return fmt.Errorf("query {{.MethodName}}: %w", err)
@@ -103,13 +100,12 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) error {
 {{if eq .Cmd ":execrows"}}
 {{range .Comments}}//{{.}}
 {{end -}}
-{{if $.EmitMethodsWithDBArgument -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) (int64, error) {
-	result, err := db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
-{{- else -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, error) {
-	result, err := q.db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
+{{- if $.EmitMethodsWithDBArgument -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}{{- range .OptionalParameters}}, {{.Name}} {{.Type}}{{- end}}) (int64, error) {
+	{{- else -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}{{- range .OptionalParameters}}, {{.Name}} {{.Type}}{{- end}}) (int64, error) {
 {{- end}}
+{{- template "queryCodePgxExec" . }}
 	if err != nil {
 		return 0, {{if $.WrapErrors}}fmt.Errorf("query {{.MethodName}}: %w", err){{else}}err{{end}}
 	}
@@ -121,12 +117,11 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, er
 {{range .Comments}}//{{.}}
 {{end -}}
 {{- if $.EmitMethodsWithDBArgument -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) (pgconn.CommandTag, error) {
-	{{queryRetval .}} db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
-{{- else -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (pgconn.CommandTag, error) {
-	{{queryRetval .}} q.db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
+func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}{{- range .OptionalParameters}}, {{.Name}} {{.Type}}{{- end}}) (pgconn.CommandTag, error) {
+	{{- else -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}{{- range .OptionalParameters}}, {{.Name}} {{.Type}}{{- end}}) (pgconn.CommandTag, error) {
 {{- end}}
+{{- template "queryCodePgxExec" . }}
 	{{- if $.WrapErrors}}
 	if err != nil {
 		err = fmt.Errorf("query {{.MethodName}}: %w", err)
@@ -136,7 +131,41 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (pgconn.Co
 }
 {{end}}
 
+{{end}}
+{{end}}
+{{end}}
 
-{{end}}
-{{end}}
+{{define "queryCodePgxExec"}}
+{{ $db := "q.db" }}
+{{- if $.EmitMethodsWithDBArgument }}
+{{ $db = "db" }}
+{{- end }}
+var sqlBuilder strings.Builder
+sqlBuilder.WriteString({{$.Q}}{{escape .SQL}}{{$.Q}})
+
+var queryParams []interface{}
+{{- range .Arg.Pairs }}
+queryParams = append(queryParams, {{.Name}})
+{{- end }}
+
+{{- range $i, $block := .CurrentQueryOptionalBlocks }}
+{{- $goParam := index $.OptionalParameters $i }}
+if {{ $goParam.Name }} != nil {
+    sqlBuilder.WriteString(" ")
+    sqlBuilder.WriteString({{$.Q}}{{$block.SQLFragment}}{{$.Q}})
+    queryParams = append(queryParams, {{ $goParam.Name }})
+}
+{{- end }}
+
+{{- if eq .Cmd ":one"}}
+row := {{$db}}.QueryRow(ctx, sqlBuilder.String(), queryParams...)
+{{- else if eq .Cmd ":many"}}
+rows, err := {{$db}}.Query(ctx, sqlBuilder.String(), queryParams...)
+{{- else if eq .Cmd ":exec"}}
+_, err := {{$db}}.Exec(ctx, sqlBuilder.String(), queryParams...)
+{{- else if eq .Cmd ":execrows"}}
+result, err := {{$db}}.Exec(ctx, sqlBuilder.String(), queryParams...)
+{{- else if eq .Cmd ":execresult"}}
+result, err := {{$db}}.Exec(ctx, sqlBuilder.String(), queryParams...)
+{{- end}}
 {{end}}
