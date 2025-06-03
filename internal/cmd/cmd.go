@@ -204,6 +204,15 @@ var genCmd = &cobra.Command{
 		}
 		defer trace.StartRegion(cmd.Context(), "writefiles").End()
 		for filename, source := range output {
+			different, err := diffFile(filename, []byte(source))
+			if err != nil {
+				fmt.Fprintf(stderr, "%s: %s\n", filename, err)
+				return err
+			}
+			if !different {
+				// if the file is the same, we can skip writing it
+				continue
+			}
 			os.MkdirAll(filepath.Dir(filename), 0755)
 			if err := os.WriteFile(filename, []byte(source), 0644); err != nil {
 				fmt.Fprintf(stderr, "%s: %s\n", filename, err)
@@ -277,4 +286,44 @@ var diffCmd = &cobra.Command{
 		}
 		return nil
 	},
+}
+
+// diffFile is a helper function that compares the contents of a named file to the
+// "source" byte array. It returns true if the contents are different, and false if they are the same.
+// If the named file does not exist, it returns true. It checks in 100 kilobyte chunks to avoid
+// loading the entire file into memory at once.
+func diffFile(name string, source []byte) (bool, error) {
+	fileInfo, err := os.Stat(name)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return true, nil // file does not exist, which is pretty different
+		}
+		return false, fmt.Errorf("error opening file %s: %w", name, err)
+	}
+	targetFileSize := fileInfo.Size()
+	if targetFileSize != int64(len(source)) {
+		return true, nil // sizes are different, so contents are different
+	}
+
+	f, err := os.Open(name)
+	defer f.Close()
+	if err != nil {
+		return false, fmt.Errorf("error opening file %s: %w", name, err)
+	}
+
+	buf := make([]byte, 100*1024) // 100 kilobytes
+	for {
+		n, err := f.Read(buf)
+		if n > 0 && !bytes.Equal(buf[:n], source) {
+			return true, nil // contents are different
+		}
+		if err == io.EOF {
+			break // end of file reached
+		}
+		if err != nil {
+			return false, fmt.Errorf("error reading file %s: %w", name, err)
+		}
+	}
+
+	return false, nil // contents are the same
 }
