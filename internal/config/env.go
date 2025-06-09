@@ -13,5 +13,14 @@ func (c *Config) addEnvVars() error {
 	}
 	c.Cloud.AuthToken = authToken
 
+	defaultSchema := os.Getenv("SQLC_DEFAULT_SCHEMA")
+	if defaultSchema != "" {
+		for i, sql := range c.SQL {
+			if sql.DefaultSchema == "" {
+				c.SQL[i].DefaultSchema = defaultSchema
+			}
+		}
+	}
+
 	return nil
 }
