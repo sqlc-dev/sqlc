@@ -107,24 +107,52 @@ func (c *cc) convertAttach_stmtContext(n *parser.Attach_stmtContext) ast.Node {
 }
 
 func (c *cc) convertCreate_table_stmtContext(n *parser.Create_table_stmtContext) ast.Node {
+	tokenStream := n.GetParser().GetTokenStream().(*antlr.CommonTokenStream)
+
 	stmt := &ast.CreateTableStmt{
 		Name:        parseTableName(n),
 		IfNotExists: n.EXISTS_() != nil,
+		Comment:     comment(tokenStream, n.OPEN_PAR().GetSymbol()),
 	}
+
 	for _, idef := range n.AllColumn_def() {
 		if def, ok := idef.(*parser.Column_defContext); ok {
 			typeName := "any"
 			if def.Type_name() != nil {
 				typeName = def.Type_name().GetText()
 			}
+
 			stmt.Cols = append(stmt.Cols, &ast.ColumnDef{
 				Colname:   identifier(def.Column_name().GetText()),
 				IsNotNull: hasNotNullConstraint(def.AllColumn_constraint()),
 				TypeName:  &ast.TypeName{Name: typeName},
+				Comment:   comment(tokenStream, def.GetStop()),
 			})
+
 		}
 	}
 	return stmt
+}
+
+// comment returns the comment associated with the given context.
+func comment(tokenStream *antlr.CommonTokenStream, from antlr.Token) string {
+	var (
+		hiddenTokens []antlr.Token
+		comment      string
+	)
+
+	hiddenTokens = tokenStream.GetHiddenTokensToRight(from.GetTokenIndex()+1, antlr.TokenHiddenChannel)
+
+	for _, token := range hiddenTokens {
+		// Filter for single-line comments
+		if token.GetTokenType() == parser.SQLiteLexerSINGLE_LINE_COMMENT {
+			// Remove "--" and leading/trailing whitespaces
+			comment = strings.TrimSpace(strings.TrimPrefix(token.GetText(), "--"))
+			return comment
+		}
+	}
+
+	return ""
 }
 
 func (c *cc) convertCreate_virtual_table_stmtContext(n *parser.Create_virtual_table_stmtContext) ast.Node {
