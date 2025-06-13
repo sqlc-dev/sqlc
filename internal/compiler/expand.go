@@ -149,6 +149,11 @@ func (c *Compiler) expandStmt(qc *QueryCatalog, raw *ast.RawStmt, node ast.Node)
 				if counts[cname] > 1 {
 					cname = tableName + "." + cname
 				}
+
+				// This is important for SQLite in particular which needs to
+				// wrap jsonb column values with `json(colname)` so they're in a
+				// publicly usable format (i.e. not jsonb).
+				cname = c.selector.ColumnExpr(cname, column)
 				cols = append(cols, cname)
 			}
 		}
