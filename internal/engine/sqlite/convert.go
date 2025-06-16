@@ -128,7 +128,7 @@ func (c *cc) convertCreate_table_stmtContext(n *parser.Create_table_stmtContext)
 }
 
 func (c *cc) convertCreate_virtual_table_stmtContext(n *parser.Create_virtual_table_stmtContext) ast.Node {
-	switch moduleName := n.Module_name().GetText(); moduleName {
+	switch moduleName := strings.ToLower(n.Module_name().GetText()); moduleName {
 	case "fts5":
 		// https://www.sqlite.org/fts5.html
 		return c.convertCreate_virtual_table_fts5(n)
