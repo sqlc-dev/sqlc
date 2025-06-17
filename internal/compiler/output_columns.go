@@ -620,9 +620,10 @@ func (c *Compiler) sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, erro
 			}
 			if n.Alias != nil {
 				table.Rel = &ast.TableName{
-					Catalog: table.Rel.Catalog,
-					Schema:  table.Rel.Schema,
-					Name:    *n.Alias.Aliasname,
+					Catalog:      table.Rel.Catalog,
+					Schema:       table.Rel.Schema,
+					Name:         *n.Alias.Aliasname,
+					OriginalName: table.Rel.Name,
 				}
 			}
 			tables = append(tables, table)
@@ -656,7 +657,7 @@ func outputColumnRefs(res *ast.ResTarget, tables []*Table, node *ast.ColumnRef) 
 		if schema != "" && t.Rel.Schema != schema {
 			continue
 		}
-		if alias != "" && t.Rel.Name != alias {
+		if alias != "" && t.Rel.Name != alias && t.Rel.OriginalName != alias {
 			continue
 		}
 		for _, c := range t.Columns {
