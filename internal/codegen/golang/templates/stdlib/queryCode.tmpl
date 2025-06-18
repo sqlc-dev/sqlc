@@ -2,6 +2,10 @@
 {{range .GoQueries}}
 {{if $.OutputQuery .SourceName}}
 const {{.ConstantName}} = {{$.Q}}-- name: {{.MethodName}} {{.Cmd}}
+{{if $.EmitQueryComments -}}
+{{range .Comments}}--{{.}}
+{{end -}}
+{{end -}}
 {{escape .SQL}}
 {{$.Q}}
 

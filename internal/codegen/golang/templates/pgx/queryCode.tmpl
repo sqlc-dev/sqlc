@@ -3,6 +3,10 @@
 {{if $.OutputQuery .SourceName}}
 {{if and (ne .Cmd ":copyfrom") (ne (hasPrefix .Cmd ":batch") true)}}
 const {{.ConstantName}} = {{$.Q}}-- name: {{.MethodName}} {{.Cmd}}
+{{if $.EmitQueryComments -}}
+{{range .Comments}}--{{.}}
+{{end -}}
+{{end -}}
 {{escape .SQL}}
 {{$.Q}}
 {{end}}
