@@ -24,4 +24,4 @@ sphinxcontrib-jsmath==1.0.1
 sphinxcontrib-qthelp==2.0.0
 sphinxcontrib-serializinghtml==2.0.0
 sphinxext-rediraffe==0.2.7
-urllib3==2.4.0
+urllib3==2.5.0
