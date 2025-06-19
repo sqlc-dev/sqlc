@@ -3,7 +3,7 @@ Jinja2==3.1.6
 MarkupSafe==3.0.2
 Pygments==2.19.1
 Sphinx==7.4.7
-certifi==2025.1.31
+certifi==2025.6.15
 chardet==5.2.0
 commonmark==0.9.1
 docutils==0.20.1
@@ -13,8 +13,8 @@ myst-parser==4.0.1
 packaging==25.0
 pyparsing==3.2.3
 pytz==2025.2
-requests==2.32.3
-snowballstemmer==2.2.0
+requests==2.32.4
+snowballstemmer==3.0.1
 sphinx-favicon==1.0.1
 sphinx-rtd-theme==3.0.2
 sphinxcontrib-applehelp==2.0.0
@@ -24,4 +24,4 @@ sphinxcontrib-jsmath==1.0.1
 sphinxcontrib-qthelp==2.0.0
 sphinxcontrib-serializinghtml==2.0.0
 sphinxext-rediraffe==0.2.7
-urllib3==2.4.0
+urllib3==2.5.0
