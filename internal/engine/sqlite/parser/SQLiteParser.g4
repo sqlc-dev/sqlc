@@ -360,8 +360,8 @@ insert_stmt:
             )*
             | select_stmt
         ) upsert_clause? returning_clause?
+        | DEFAULT_ VALUES_  returning_clause?
     )
-    | DEFAULT_ VALUES_
 ;
 
 upsert_clause:
