@@ -10,6 +10,15 @@ import (
 	"database/sql"
 )
 
+const insertDefaultValues = `-- name: InsertDefaultValues :exec
+INSERT INTO foo DEFAULT VALUES
+`
+
+func (q *Queries) InsertDefaultValues(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, insertDefaultValues)
+	return err
+}
+
 const insertMultipleValues = `-- name: InsertMultipleValues :exec
 INSERT INTO foo (a, b) VALUES (?, ?), (?, ?)
 `

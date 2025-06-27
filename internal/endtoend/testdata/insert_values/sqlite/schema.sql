@@ -1,2 +1,2 @@
-CREATE TABLE foo (a text, b integer);
+CREATE TABLE foo (a text, b integer default 100);
 
