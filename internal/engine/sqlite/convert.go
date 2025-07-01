@@ -875,7 +875,25 @@ func (c *cc) convertInsert_stmtContext(n *parser.Insert_stmtContext) ast.Node {
 		ReturningList: c.convertReturning_caluseContext(n.Returning_clause()),
 	}
 
-	if n.Select_stmt() != nil {
+	// Check if this is a DEFAULT VALUES insert
+	hasDefaultValues := false
+	for _, child := range n.GetChildren() {
+		if term, ok := child.(antlr.TerminalNode); ok {
+			if term.GetSymbol().GetTokenType() == parser.SQLiteParserDEFAULT_ {
+				hasDefaultValues = true
+				break
+			}
+		}
+	}
+
+	if hasDefaultValues {
+		// For DEFAULT VALUES, create an empty select statement
+		insert.SelectStmt = &ast.SelectStmt{
+			FromClause:  &ast.List{},
+			TargetList:  &ast.List{},
+			ValuesLists: &ast.List{Items: []ast.Node{&ast.List{}}}, // Single empty values list
+		}
+	} else if n.Select_stmt() != nil {
 		if ss, ok := c.convert(n.Select_stmt()).(*ast.SelectStmt); ok {
 			ss.ValuesLists = &ast.List{}
 			insert.SelectStmt = ss
