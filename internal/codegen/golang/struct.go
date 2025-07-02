@@ -12,8 +12,16 @@ import (
 type Struct struct {
 	Table   *plugin.Identifier
 	Name    string
+	Package string
 	Fields  []Field
 	Comment string
+}
+
+func (s Struct) Type() string {
+	if s.Package != "" {
+		return s.Package + "." + s.Name
+	}
+	return s.Name
 }
 
 func StructName(name string, options *opts.Options) string {
