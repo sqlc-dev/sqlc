@@ -134,6 +134,9 @@
                     "emit_sql_as_comment": {
                         "type": "boolean"
                     },
+                    "emit_query_comments": {
+                        "type": "boolean"
+                    },
                     "build_tags": {
                         "type": "string"
                     },
