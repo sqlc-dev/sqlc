@@ -1021,6 +1021,8 @@ func (c *cc) convertTablesOrSubquery(n []parser.ITable_or_subqueryContext) []ast
 }
 
 type Update_stmt interface {
+	node
+
 	Qualified_table_name() parser.IQualified_table_nameContext
 	GetStart() antlr.Token
 	AllColumn_name() []parser.IColumn_nameContext
@@ -1034,50 +1036,66 @@ func (c *cc) convertUpdate_stmtContext(n Update_stmt) ast.Node {
 		return nil
 	}
 
-	relations := &ast.List{}
-	tableName := n.Qualified_table_name().GetText()
-	rel := ast.RangeVar{
-		Relname:  &tableName,
-		Location: n.GetStart().GetStart(),
-	}
-	relations.Items = append(relations.Items, &rel)
-
-	list := &ast.List{}
-	for i, col := range n.AllColumn_name() {
-		colName := identifier(col.GetText())
-		target := &ast.ResTarget{
-			Name: &colName,
-			Val:  c.convert(n.Expr(i)),
+	if qualifiedName, ok := n.Qualified_table_name().(*parser.Qualified_table_nameContext); ok {
+		tableName := identifier(qualifiedName.Table_name().GetText())
+		rel := ast.RangeVar{
+			Relname:  &tableName,
+			Location: n.GetStart().GetStart(),
 		}
-		list.Items = append(list.Items, target)
+
+		if qualifiedName.Schema_name() != nil {
+			schemaName := qualifiedName.Schema_name().GetText()
+			rel.Schemaname = &schemaName
+		}
+
+		if qualifiedName.Alias() != nil {
+			alias := qualifiedName.Alias().GetText()
+			rel.Alias = &ast.Alias{Aliasname: &alias}
+		}
+
+		relations := &ast.List{}
+
+		relations.Items = append(relations.Items, &rel)
+
+		list := &ast.List{}
+		for i, col := range n.AllColumn_name() {
+			colName := identifier(col.GetText())
+			target := &ast.ResTarget{
+				Name: &colName,
+				Val:  c.convert(n.Expr(i)),
+			}
+			list.Items = append(list.Items, target)
+		}
+
+		var where ast.Node = nil
+		if n.WHERE_() != nil {
+			where = c.convert(n.Expr(len(n.AllExpr()) - 1))
+		}
+
+		stmt := &ast.UpdateStmt{
+			Relations:   relations,
+			TargetList:  list,
+			WhereClause: where,
+			FromClause:  &ast.List{},
+			WithClause:  nil, // TODO: support with clause
+		}
+		if n, ok := n.(interface {
+			Returning_clause() parser.IReturning_clauseContext
+		}); ok {
+			stmt.ReturningList = c.convertReturning_caluseContext(n.Returning_clause())
+		} else {
+			stmt.ReturningList = c.convertReturning_caluseContext(nil)
+		}
+		if n, ok := n.(interface {
+			Limit_stmt() parser.ILimit_stmtContext
+		}); ok {
+			limitCount, _ := c.convertLimit_stmtContext(n.Limit_stmt())
+			stmt.LimitCount = limitCount
+		}
+		return stmt
 	}
 
-	var where ast.Node = nil
-	if n.WHERE_() != nil {
-		where = c.convert(n.Expr(len(n.AllExpr()) - 1))
-	}
-
-	stmt := &ast.UpdateStmt{
-		Relations:   relations,
-		TargetList:  list,
-		WhereClause: where,
-		FromClause:  &ast.List{},
-		WithClause:  nil, // TODO: support with clause
-	}
-	if n, ok := n.(interface {
-		Returning_clause() parser.IReturning_clauseContext
-	}); ok {
-		stmt.ReturningList = c.convertReturning_caluseContext(n.Returning_clause())
-	} else {
-		stmt.ReturningList = c.convertReturning_caluseContext(nil)
-	}
-	if n, ok := n.(interface {
-		Limit_stmt() parser.ILimit_stmtContext
-	}); ok {
-		limitCount, _ := c.convertLimit_stmtContext(n.Limit_stmt())
-		stmt.LimitCount = limitCount
-	}
-	return stmt
+	return todo("convertUpdate_stmtContext", n)
 }
 
 func (c *cc) convertBetweenExpr(n *parser.Expr_betweenContext) ast.Node {
