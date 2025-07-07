@@ -25,6 +25,7 @@ Java      `tandemdude/sqlc-gen-java`_        Beta             Beta             N
 PHP       `lcarilla/sqlc-plugin-php-dbal`_   Beta             N/A              N/A    
 Ruby      `DaredevilOSS/sqlc-gen-ruby`_      Beta             Beta             Beta           
 Zig       `tinyzimmer/sqlc-gen-zig`_         N/A              Beta             Beta            
+Gleam     `daniellionel01/parrot`_           Stable           Stable           Stable            
 [Any]     `fdietze/sqlc-gen-from-template`_  Stable           Stable           Stable
 ========  =================================  ===============  ===============  ===============
 
@@ -39,6 +40,7 @@ Zig       `tinyzimmer/sqlc-gen-zig`_         N/A              Beta             B
 .. _lcarilla/sqlc-plugin-php-dbal: https://github.com/lcarilla/sqlc-plugin-php-dbal
 .. _tandemdude/sqlc-gen-java: https://github.com/tandemdude/sqlc-gen-java
 .. _tinyzimmer/sqlc-gen-zig: https://github.com/tinyzimmer/sqlc-gen-zig
+.. _daniellionel01/parrot: https://github.com/daniellionel01/parrot
 
 Future language support
 ************************
