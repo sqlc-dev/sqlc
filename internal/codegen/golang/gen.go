@@ -42,6 +42,10 @@ type tmplCtx struct {
 	OmitSqlcVersion           bool
 	BuildTags                 string
 	WrapErrors                bool
+
+	// Optional Blocks data
+	CurrentQueryOptionalBlocks []metadata.OptionalBlock
+	OptionalParameters         []Argument
 }
 
 func (t *tmplCtx) OutputQuery(sourceName string) bool {
@@ -120,6 +124,7 @@ func Generate(ctx context.Context, req *plugin.GenerateRequest) (*plugin.Generat
 
 	enums := buildEnums(req, options)
 	structs := buildStructs(req, options)
+	// buildQueries will now populate OptionalBlocks in each Query object
 	queries, err := buildQueries(req, options, structs)
 	if err != nil {
 		return nil, err
@@ -239,12 +244,51 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 
 	execute := func(name, templateName string) error {
 		imports := i.Imports(name)
-		replacedQueries := replaceConflictedArg(imports, queries)
-
 		var b bytes.Buffer
 		w := bufio.NewWriter(&b)
 		tctx.SourceName = name
-		tctx.GoQueries = replacedQueries
+
+		var currentGoQueries []Query
+		var currentOptionalBlocks []metadata.OptionalBlock
+		var optionalParameters []Argument
+
+		if templateName == "queryFile" {
+			var fileQueries []Query
+			fileNameWithoutSuffix := strings.TrimSuffix(name, ".go")
+			if options.OutputFilesSuffix != "" {
+				fileNameWithoutSuffix = strings.TrimSuffix(fileNameWithoutSuffix, options.OutputFilesSuffix)
+			}
+
+			for _, q := range queries { // Iterate over the original, complete list of queries
+				if q.SourceName == fileNameWithoutSuffix {
+					fileQueries = append(fileQueries, q)
+					// All queries in the same file are expected to have the same set of optional blocks
+					// for the purpose of generating arguments for the function signature.
+					// So, we derive OptionalParameters from the first query in the file.
+					// CurrentQueryOptionalBlocks will be set for each query within the template if needed,
+					// but for function signature, it's per file.
+					if len(optionalParameters) == 0 { // Populate from the first query in the file
+						currentOptionalBlocks = q.OptionalBlocks // Save for tmplCtx
+						for _, ob := range q.OptionalBlocks {
+							optionalParameters = append(optionalParameters, Argument{
+								Name: sdk.LowerTitle(ob.ConditionKey),
+								Type: "interface{}",
+							})
+						}
+					}
+				}
+			}
+			currentGoQueries = replaceConflictedArg(imports, fileQueries)
+		} else {
+			currentGoQueries = replaceConflictedArg(imports, queries)
+			currentOptionalBlocks = nil // Or an empty slice
+			optionalParameters = nil    // Or an empty slice
+		}
+
+		tctx.GoQueries = currentGoQueries
+		tctx.CurrentQueryOptionalBlocks = currentOptionalBlocks // For the whole file context
+		tctx.OptionalParameters = optionalParameters
+
 		err := tmpl.ExecuteTemplate(w, templateName, &tctx)
 		w.Flush()
 		if err != nil {

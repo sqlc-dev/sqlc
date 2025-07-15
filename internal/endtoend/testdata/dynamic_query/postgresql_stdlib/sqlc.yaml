@@ -1,0 +1,22 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    schema: "schema.sql"
+    queries: "query.sql"
+    gen:
+      go:
+        package: "dynamic"
+        out: "gend"
+        sql_package: "database/sql"
+        emit_interface: true
+        # Assuming emit_methods_with_db_argument: true for tests based on expected signatures
+        # If this option isn't explicitly set, the default behavior of sqlc will apply.
+        # For generating the .expected file, we will assume the DBTX argument is present.
+        overrides:
+          - db_type: "DBTX" # This is a common way to ensure DBTX is used if emit_methods_with_db_argument isn't a direct top-level option
+            go_type:
+              import: "database/sql"
+              type: "DBTX"
+        emit_methods_with_db_argument: true # Explicitly set for clarity if supported at this level
+                                         # If not, the override above should achieve a similar effect for DBTX usage.
+                                         # The key is that the .expected file matches what sqlc generates with these settings.

@@ -22,7 +22,7 @@ type {{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
 {{if eq .Cmd ":one"}}
 {{range .Comments}}//{{.}}
 {{end -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) ({{.Ret.DefineType}}, error) {
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}{{- range .OptionalParameters}}, {{.Name}} {{.Type}}{{- end}}) ({{.Ret.DefineType}}, error) {
     {{- template "queryCodeStdExec" . }}
 	{{- if or (ne .Arg.Pair .Ret.Pair) (ne .Arg.DefineType .Ret.DefineType) }}
 	var {{.Ret.Name}} {{.Ret.Type}}
@@ -40,7 +40,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 {{if eq .Cmd ":many"}}
 {{range .Comments}}//{{.}}
 {{end -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error) {
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}{{- range .OptionalParameters}}, {{.Name}} {{.Type}}{{- end}}) ([]{{.Ret.DefineType}}, error) {
     {{- template "queryCodeStdExec" . }}
     if err != nil {
         return nil, {{if $.WrapErrors}}fmt.Errorf("query {{.MethodName}}: %w", err){{else}}err{{end}}
@@ -71,7 +71,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 {{if eq .Cmd ":exec"}}
 {{range .Comments}}//{{.}}
 {{end -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) error {
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}{{- range .OptionalParameters}}, {{.Name}} {{.Type}}{{- end}}) error {
     {{- template "queryCodeStdExec" . }}
     {{- if $.WrapErrors}}
     if err != nil {
@@ -85,7 +85,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 {{if eq .Cmd ":execrows"}}
 {{range .Comments}}//{{.}}
 {{end -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) (int64, error) {
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}{{- range .OptionalParameters}}, {{.Name}} {{.Type}}{{- end}}) (int64, error) {
     {{- template "queryCodeStdExec" . }}
     if err != nil {
         return 0, {{if $.WrapErrors}}fmt.Errorf("query {{.MethodName}}: %w", err){{else}}err{{end}}
@@ -97,7 +97,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 {{if eq .Cmd ":execlastid"}}
 {{range .Comments}}//{{.}}
 {{end -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) (int64, error) {
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}{{- range .OptionalParameters}}, {{.Name}} {{.Type}}{{- end}}) (int64, error) {
     {{- template "queryCodeStdExec" . }}
     if err != nil {
         return 0, {{if $.WrapErrors}}fmt.Errorf("query {{.MethodName}}: %w", err){{else}}err{{end}}
@@ -109,7 +109,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 {{if eq .Cmd ":execresult"}}
 {{range .Comments}}//{{.}}
 {{end -}}
-func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) (sql.Result, error) {
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}{{- range .OptionalParameters}}, {{.Name}} {{.Type}}{{- end}}) (sql.Result, error) {
     {{- template "queryCodeStdExec" . }}
     {{- if $.WrapErrors}}
     if err != nil {
@@ -125,47 +125,117 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 {{end}}
 
 {{define "queryCodeStdExec"}}
-    {{- if .Arg.HasSqlcSlices }}
-        query := {{.ConstantName}}
-        var queryParams []interface{}
-        {{- if .Arg.Struct }}
-            {{- $arg := .Arg }}
-            {{- range .Arg.Struct.Fields }}
-                {{- if .HasSqlcSlice }}
-                    if len({{$arg.VariableForField .}}) > 0 {
-                      for _, v := range {{$arg.VariableForField .}} {
-                        queryParams = append(queryParams, v)
-                      }
-                      query = strings.Replace(query, "/*SLICE:{{.Column.Name}}*/?", strings.Repeat(",?", len({{$arg.VariableForField .}}))[1:], 1)
-                    } else {
-                      query = strings.Replace(query, "/*SLICE:{{.Column.Name}}*/?", "NULL", 1)
-                    }
-                {{- else }}
-                  queryParams = append(queryParams, {{$arg.VariableForField .}})
+    {{- if emitPreparedQueries }}
+        {{- if .Arg.HasSqlcSlices }}
+            query := {{.ConstantName}}
+            var queryParams []interface{}
+            {{- if .Arg.Struct }}
+                {{- $arg := .Arg }}
+                {{- range .Arg.Struct.Fields }}
+                    {{- if .HasSqlcSlice }}
+                        if len({{$arg.VariableForField .}}) > 0 {
+                          for _, v := range {{$arg.VariableForField .}} {
+                            queryParams = append(queryParams, v)
+                          }
+                          query = strings.Replace(query, "/*SLICE:{{.Column.Name}}*/?", strings.Repeat(",?", len({{$arg.VariableForField .}}))[1:], 1)
+                        } else {
+                          query = strings.Replace(query, "/*SLICE:{{.Column.Name}}*/?", "NULL", 1)
+                        }
+                    {{- else }}
+                      queryParams = append(queryParams, {{$arg.VariableForField .}})
+                    {{- end }}
                 {{- end }}
+            {{- else }}
+                {{- /* Single argument parameter to this goroutine (they are not packed
+                    in a struct), because .Arg.HasSqlcSlices further up above was true,
+                    this section is 100% a slice (impossible to get here otherwise).
+                */}}
+                if len({{.Arg.Name}}) > 0 {
+                  for _, v := range {{.Arg.Name}} {
+                    queryParams = append(queryParams, v)
+                  }
+                  query = strings.Replace(query, "/*SLICE:{{.Arg.Column.Name}}*/?", strings.Repeat(",?", len({{.Arg.Name}}))[1:], 1)
+                } else {
+                  query = strings.Replace(query, "/*SLICE:{{.Arg.Column.Name}}*/?", "NULL", 1)
+                }
             {{- end }}
+            {{ queryRetval . }} {{ queryMethod . }}(ctx, nil, query, queryParams...)
         {{- else }}
-            {{- /* Single argument parameter to this goroutine (they are not packed
-                in a struct), because .Arg.HasSqlcSlices further up above was true,
-                this section is 100% a slice (impossible to get here otherwise).
-            */}}
-            if len({{.Arg.Name}}) > 0 {
-              for _, v := range {{.Arg.Name}} {
-                queryParams = append(queryParams, v)
-              }
-              query = strings.Replace(query, "/*SLICE:{{.Arg.Column.Name}}*/?", strings.Repeat(",?", len({{.Arg.Name}}))[1:], 1)
-            } else {
-              query = strings.Replace(query, "/*SLICE:{{.Arg.Column.Name}}*/?", "NULL", 1)
-            }
+            {{- /* Standard prepared query execution */}}
+            {{ queryRetval . }} {{ queryMethod . }}(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}}{{- range .OptionalParameters}}, {{.Name}}{{- end}})
         {{- end }}
-        {{- if emitPreparedQueries }}
-        {{ queryRetval . }} {{ queryMethod . }}(ctx, nil, query, queryParams...)
-        {{- else}}
-        {{ queryRetval . }} {{ queryMethod . }}(ctx, query, queryParams...)
-        {{- end -}}
-    {{- else if emitPreparedQueries }}
-        {{- queryRetval . }} {{ queryMethod . }}(ctx, q.{{.FieldName}}, {{.ConstantName}}, {{.Arg.Params}})
-    {{- else}}
-        {{- queryRetval . }} {{ queryMethod . }}(ctx, {{.ConstantName}}, {{.Arg.Params}})
-    {{- end -}}
+    {{- else }}
+        {{- /* Dynamic query building for non-prepared queries or when sqlc.slice is present */}}
+        var sqlBuilder strings.Builder
+        sqlBuilder.WriteString({{$.Q}}{{escape .SQL}}{{$.Q}}) // Start with the base SQL from {{.SQL}}
+
+        var queryParams []interface{}
+        {{- range .Arg.Pairs }}
+        queryParams = append(queryParams, {{.Name}})
+        {{- end }}
+
+        {{- range $i, $block := .CurrentQueryOptionalBlocks }}
+        {{- $goParam := index $.OptionalParameters $i }}
+        if {{ $goParam.Name }} != nil {
+            sqlBuilder.WriteString(" ") // Add a space before appending the fragment.
+            sqlBuilder.WriteString({{$.Q}}{{$block.SQLFragment}}{{$.Q}})
+            queryParams = append(queryParams, {{ $goParam.Name }})
+        }
+        {{- end }}
+
+        {{- if .Arg.HasSqlcSlices }} {{/* This logic needs to be integrated with dynamic building */}}
+            {{- /* This part is tricky because sqlc.slice modifies the query string (sqlBuilder)
+                 AND the parameters (queryParams). We need to ensure it happens *after*
+                 optional blocks are processed if optional blocks can also change structure,
+                 or carefully integrate. For now, let's assume sqlc.slice modifications
+                 apply to the already built string from optional blocks.
+                 This might need sqlc.slice to operate on the builder directly or be re-evaluated.
+                 The original sqlc.slice logic replaces placeholders in a static query string.
+                 Here, the query string is dynamic.
+                 A simple approach: if sqlc.slice is present, its logic runs on the sqlBuilder *after* optional parts.
+                 This means the `query` variable in original slice logic becomes `sqlBuilder.String()`
+                 and modifications update the builder or a temporary string from it.
+            */}}
+            queryString := sqlBuilder.String()
+            finalQueryParams := queryParams {{/* Start with params from args + optionals */}}
+            newQueryParams := []interface{}{} // for slice part
+
+            {{- if .Arg.Struct }}
+                {{- $arg := .Arg }}
+                {{- range .Arg.Struct.Fields }}
+                    {{- if .HasSqlcSlice }}
+                        if len({{$arg.VariableForField .}}) > 0 {
+                          for _, v := range {{$arg.VariableForField .}} {
+                            newQueryParams = append(newQueryParams, v)
+                          }
+                          queryString = strings.Replace(queryString, "/*SLICE:{{.Column.Name}}*/?", strings.Repeat(",?", len({{$arg.VariableForField .}}))[1:], 1)
+                        } else {
+                          queryString = strings.Replace(queryString, "/*SLICE:{{.Column.Name}}*/?", "NULL", 1)
+                        }
+                    {{- else }}
+                      {{- /* Already added to queryParams */}}
+                    {{- end }}
+                {{- end }}
+            {{- else }}
+                if len({{.Arg.Name}}) > 0 {
+                  for _, v := range {{.Arg.Name}} {
+                    newQueryParams = append(newQueryParams, v)
+                  }
+                  queryString = strings.Replace(queryString, "/*SLICE:{{.Arg.Column.Name}}*/?", strings.Repeat(",?", len({{.Arg.Name}}))[1:], 1)
+                } else {
+                  queryString = strings.Replace(queryString, "/*SLICE:{{.Arg.Column.Name}}*/?", "NULL", 1)
+                }
+            {{- end }}
+            {{- /* Combine params: original args + optional params are already in queryParams.
+                 newQueryParams are from the slice expansion.
+                 The original sqlc.slice logic rebuilt queryParams from scratch.
+                 Here, we need to decide the order. If slice params come after named args and optionals:
+            */}}
+            finalQueryParams = append(finalQueryParams, newQueryParams...)
+            {{ queryRetval . }} {{ queryMethod . }}(ctx, queryString, finalQueryParams...)
+        {{- else }}
+            {{- /* No sqlc.slice, just dynamic SQL from optional blocks */}}
+            {{ queryRetval . }} {{ queryMethod . }}(ctx, sqlBuilder.String(), queryParams...)
+        {{- end }}
+    {{- end }}
 {{end}}
