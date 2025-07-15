@@ -22,3 +22,17 @@ func (q *Queries) UpdateSet(ctx context.Context, arg UpdateSetParams) error {
 	_, err := q.db.ExecContext(ctx, updateSet, arg.Name, arg.Slug)
 	return err
 }
+
+const updateSetQuoted = `-- name: UpdateSetQuoted :exec
+UPDATE "foo" SET "name" = ? WHERE "slug" = ?
+`
+
+type UpdateSetQuotedParams struct {
+	Name string
+	Slug string
+}
+
+func (q *Queries) UpdateSetQuoted(ctx context.Context, arg UpdateSetQuotedParams) error {
+	_, err := q.db.ExecContext(ctx, updateSetQuoted, arg.Name, arg.Slug)
+	return err
+}
