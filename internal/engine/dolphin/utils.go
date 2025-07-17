@@ -52,6 +52,9 @@ func convertToRangeVarList(list *ast.List, result *ast.List) {
 		if !ok {
 			if list, check := rel.Larg.(*ast.List); check {
 				convertToRangeVarList(list, result)
+			} else if subselect, check := rel.Larg.(*ast.RangeSubselect); check {
+				// Handle subqueries in JOIN clauses
+				result.Items = append(result.Items, subselect)
 			} else {
 				panic("expected range var")
 			}
@@ -64,6 +67,9 @@ func convertToRangeVarList(list *ast.List, result *ast.List) {
 		if !ok {
 			if list, check := rel.Rarg.(*ast.List); check {
 				convertToRangeVarList(list, result)
+			} else if subselect, check := rel.Rarg.(*ast.RangeSubselect); check {
+				// Handle subqueries in JOIN clauses
+				result.Items = append(result.Items, subselect)
 			} else {
 				panic("expected range var")
 			}
@@ -73,6 +79,9 @@ func convertToRangeVarList(list *ast.List, result *ast.List) {
 		}
 
 	case *ast.RangeVar:
+		result.Items = append(result.Items, rel)
+
+	case *ast.RangeSubselect:
 		result.Items = append(result.Items, rel)
 
 	default:

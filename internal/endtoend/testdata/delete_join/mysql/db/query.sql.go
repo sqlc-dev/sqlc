@@ -30,6 +30,17 @@ func (q *Queries) DeleteJoin(ctx context.Context, arg DeleteJoinParams) error {
 	return err
 }
 
+const deleteJoinWithSubquery = `-- name: DeleteJoinWithSubquery :exec
+DELETE pt
+FROM primary_table pt
+JOIN (SELECT 1 as id) jt ON pt.id = jt.id
+`
+
+func (q *Queries) DeleteJoinWithSubquery(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, deleteJoinWithSubquery)
+	return err
+}
+
 const deleteLeftJoin = `-- name: DeleteLeftJoin :exec
 DELETE jt.*,
 pt.*
