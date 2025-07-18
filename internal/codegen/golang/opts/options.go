@@ -24,6 +24,7 @@ type Options struct {
 	EmitPointersForNullTypes    bool              `json:"emit_pointers_for_null_types" yaml:"emit_pointers_for_null_types"`
 	EmitEnumValidMethod         bool              `json:"emit_enum_valid_method,omitempty" yaml:"emit_enum_valid_method"`
 	EmitAllEnumValues           bool              `json:"emit_all_enum_values,omitempty" yaml:"emit_all_enum_values"`
+	EmitQueryComments           bool              `json:"emit_query_comments,omitempty" yaml:"emit_query_comments"`
 	EmitSqlAsComment            bool              `json:"emit_sql_as_comment,omitempty" yaml:"emit_sql_as_comment"`
 	JsonTagsCaseStyle           string            `json:"json_tags_case_style,omitempty" yaml:"json_tags_case_style"`
 	Package                     string            `json:"package" yaml:"package"`
