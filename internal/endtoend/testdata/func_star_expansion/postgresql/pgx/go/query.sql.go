@@ -26,9 +26,9 @@ const testFuncSelectBlog = `-- name: TestFuncSelectBlog :one
 select test_func_select_blog from test_func_select_blog($1)
 `
 
-func (q *Queries) TestFuncSelectBlog(ctx context.Context, pID int32) (interface{}, error) {
+func (q *Queries) TestFuncSelectBlog(ctx context.Context, pID int32) (any, error) {
 	row := q.db.QueryRow(ctx, testFuncSelectBlog, pID)
-	var test_func_select_blog interface{}
+	var test_func_select_blog any
 	err := row.Scan(&test_func_select_blog)
 	return test_func_select_blog, err
 }
