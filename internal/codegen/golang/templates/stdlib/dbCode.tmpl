@@ -1,6 +1,8 @@
 {{define "dbCodeTemplateStd"}}
 type DBTX interface {
+{{- if .EmitBegin }}
 	BeginTx(ctx context.Context, opts driver.TxOptions) (driver.Tx, error)
+{{end}}
 	ExecContext(context.Context, string, ...interface{}) (sql.Result, error)
 	PrepareContext(context.Context, string) (*sql.Stmt, error)
 	QueryContext(context.Context, string, ...interface{}) (*sql.Rows, error)
@@ -102,6 +104,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		{{- end}}
 	}
 }
+{{- if .EmitBegin }}
 func (q *Queries) BeginTx(ctx context.Context, opts driver.TxOptions) (*Queries, error) {
 	tx, err := q.db.BeginTx(ctx, opts)
 	if (err != nil {
@@ -109,5 +112,6 @@ func (q *Queries) BeginTx(ctx context.Context, opts driver.TxOptions) (*Queries,
 	}
 	return q.WithTx(tx), nil
 }
+{{end}}
 {{end}}
 {{end}}

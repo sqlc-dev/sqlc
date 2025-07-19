@@ -1,8 +1,10 @@
 {{define "dbCodeTemplatePgx"}}
 
 type DBTX interface {
+{{- if .EmitBegin }}
 	Begin(context.Context) (pgx.Tx, error)
 	BeginTx(context.Context, txOptions TxOptions) (pgx.Tx, error)
+{{- end }}
 	Exec(context.Context, string, ...interface{}) (pgconn.CommandTag, error)
 	Query(context.Context, string, ...interface{}) (pgx.Rows, error)
 	QueryRow(context.Context, string, ...interface{}) pgx.Row
@@ -35,6 +37,7 @@ func (q *Queries) WithTx(tx pgx.Tx) *Queries {
 		db: tx,
 	}
 }
+{{- if .EmitBegin }}
 func (q *Queries) Begin(ctx context.Context) (*Queries, error) {
 	tx, err := q.db.Begin(ctx)
 	if (err != nil {
@@ -49,5 +52,6 @@ func (q *Queries) BeginTx(ctx context.Context, txOptions TxOptions) (*Queries, e
 	}
 	return q.WithTx(tx), nil
 }
+{{- end }}
 {{end}}
 {{end}}
