@@ -1035,7 +1035,7 @@ func (c *cc) convertUpdate_stmtContext(n Update_stmt) ast.Node {
 	}
 
 	relations := &ast.List{}
-	tableName := n.Qualified_table_name().GetText()
+	tableName := identifier(n.Qualified_table_name().GetText())
 	rel := ast.RangeVar{
 		Relname:  &tableName,
 		Location: n.GetStart().GetStart(),
