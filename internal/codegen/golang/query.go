@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/sqlc-dev/sqlc/internal/codegen/golang/opts"
-	"github.com/sqlc-dev/sqlc/internal/metadata"
 	"github.com/sqlc-dev/sqlc/internal/plugin"
+	"github.com/sqlc-dev/sqlc/internal/metadata"
 )
 
 type QueryValue struct {
@@ -266,7 +266,8 @@ type Query struct {
 	Ret          QueryValue
 	Arg          QueryValue
 	// Used for :copyfrom
-	Table *plugin.Identifier
+	Table          *plugin.Identifier
+	OptionalBlocks []metadata.OptionalBlock
 }
 
 func (q Query) hasRetType() bool {
