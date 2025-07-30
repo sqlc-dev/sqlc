@@ -253,7 +253,7 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 		code, err := format.Source(b.Bytes())
 		if err != nil {
 			fmt.Println(b.String())
-			return fmt.Errorf("source error: %w", err)
+			return fmt.Errorf("source error %s: %w\nHint: Check your sqlc.yml 'gen.go.package' and 'gen.go.out' fields", name, err)
 		}
 
 		if templateName == "queryFile" && options.OutputFilesSuffix != "" {
