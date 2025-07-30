@@ -58,9 +58,9 @@ const getCoalesce = `-- name: GetCoalesce :one
 SELECT coalesce(NULL, 1, 'test')
 `
 
-func (q *Queries) GetCoalesce(ctx context.Context) (interface{}, error) {
+func (q *Queries) GetCoalesce(ctx context.Context) (any, error) {
 	row := q.db.QueryRowContext(ctx, getCoalesce)
-	var coalesce interface{}
+	var coalesce any
 	err := row.Scan(&coalesce)
 	return coalesce, err
 }
@@ -102,9 +102,9 @@ const getIfnull = `-- name: GetIfnull :one
 SELECT ifnull(1, 2)
 `
 
-func (q *Queries) GetIfnull(ctx context.Context) (interface{}, error) {
+func (q *Queries) GetIfnull(ctx context.Context) (any, error) {
 	row := q.db.QueryRowContext(ctx, getIfnull)
-	var ifnull interface{}
+	var ifnull any
 	err := row.Scan(&ifnull)
 	return ifnull, err
 }
@@ -113,9 +113,9 @@ const getIif = `-- name: GetIif :one
 SELECT iif(1, 2, 3)
 `
 
-func (q *Queries) GetIif(ctx context.Context) (interface{}, error) {
+func (q *Queries) GetIif(ctx context.Context) (any, error) {
 	row := q.db.QueryRowContext(ctx, getIif)
-	var iif interface{}
+	var iif any
 	err := row.Scan(&iif)
 	return iif, err
 }
@@ -179,9 +179,9 @@ const getLikelihood = `-- name: GetLikelihood :one
 SELECT likelihood('12345', 0.5)
 `
 
-func (q *Queries) GetLikelihood(ctx context.Context) (interface{}, error) {
+func (q *Queries) GetLikelihood(ctx context.Context) (any, error) {
 	row := q.db.QueryRowContext(ctx, getLikelihood)
-	var likelihood interface{}
+	var likelihood any
 	err := row.Scan(&likelihood)
 	return likelihood, err
 }
@@ -190,9 +190,9 @@ const getLikely = `-- name: GetLikely :one
 SELECT likely('12345')
 `
 
-func (q *Queries) GetLikely(ctx context.Context) (interface{}, error) {
+func (q *Queries) GetLikely(ctx context.Context) (any, error) {
 	row := q.db.QueryRowContext(ctx, getLikely)
-	var likely interface{}
+	var likely any
 	err := row.Scan(&likely)
 	return likely, err
 }
@@ -234,9 +234,9 @@ const getMax3 = `-- name: GetMax3 :one
 SELECT max(1, 3, 2)
 `
 
-func (q *Queries) GetMax3(ctx context.Context) (interface{}, error) {
+func (q *Queries) GetMax3(ctx context.Context) (any, error) {
 	row := q.db.QueryRowContext(ctx, getMax3)
-	var max interface{}
+	var max any
 	err := row.Scan(&max)
 	return max, err
 }
@@ -245,9 +245,9 @@ const getMin3 = `-- name: GetMin3 :one
 SELECT min(1, 3, 2)
 `
 
-func (q *Queries) GetMin3(ctx context.Context) (interface{}, error) {
+func (q *Queries) GetMin3(ctx context.Context) (any, error) {
 	row := q.db.QueryRowContext(ctx, getMin3)
-	var min interface{}
+	var min any
 	err := row.Scan(&min)
 	return min, err
 }
@@ -256,9 +256,9 @@ const getNullif = `-- name: GetNullif :one
 SELECT nullif(1, 2)
 `
 
-func (q *Queries) GetNullif(ctx context.Context) (interface{}, error) {
+func (q *Queries) GetNullif(ctx context.Context) (any, error) {
 	row := q.db.QueryRowContext(ctx, getNullif)
-	var nullif interface{}
+	var nullif any
 	err := row.Scan(&nullif)
 	return nullif, err
 }
@@ -289,9 +289,9 @@ const getRandom = `-- name: GetRandom :one
 SELECT random()
 `
 
-func (q *Queries) GetRandom(ctx context.Context) (interface{}, error) {
+func (q *Queries) GetRandom(ctx context.Context) (any, error) {
 	row := q.db.QueryRowContext(ctx, getRandom)
-	var random interface{}
+	var random any
 	err := row.Scan(&random)
 	return random, err
 }
@@ -300,9 +300,9 @@ const getRandomBlob = `-- name: GetRandomBlob :one
 SELECT randomblob(16)
 `
 
-func (q *Queries) GetRandomBlob(ctx context.Context) (interface{}, error) {
+func (q *Queries) GetRandomBlob(ctx context.Context) (any, error) {
 	row := q.db.QueryRowContext(ctx, getRandomBlob)
-	var randomblob interface{}
+	var randomblob any
 	err := row.Scan(&randomblob)
 	return randomblob, err
 }
@@ -542,9 +542,9 @@ const getUnlikely = `-- name: GetUnlikely :one
 SELECT unlikely('12345')
 `
 
-func (q *Queries) GetUnlikely(ctx context.Context) (interface{}, error) {
+func (q *Queries) GetUnlikely(ctx context.Context) (any, error) {
 	row := q.db.QueryRowContext(ctx, getUnlikely)
-	var unlikely interface{}
+	var unlikely any
 	err := row.Scan(&unlikely)
 	return unlikely, err
 }

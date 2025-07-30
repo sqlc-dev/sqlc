@@ -35,7 +35,7 @@ type {{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
 func (q *Queries) {{.MethodName}}(ctx context.Context, {{ if $.EmitMethodsWithDBArgument}}db DBTX,{{end}} {{.Arg.SlicePair}}) *{{.MethodName}}BatchResults {
     batch := &pgx.Batch{}
     for _, a := range {{index .Arg.Name}} {
-        vals := []interface{}{
+        vals := []any{
         {{- if .Arg.Struct }}
         {{- range .Arg.Struct.Fields }}
             a.{{.Name}},

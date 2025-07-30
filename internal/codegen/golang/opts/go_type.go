@@ -51,7 +51,7 @@ func (o *GoType) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (o *GoType) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (o *GoType) UnmarshalYAML(unmarshal func(any) error) error {
 	var spec string
 	if err := unmarshal(&spec); err == nil {
 		*o = GoType{Spec: spec}
