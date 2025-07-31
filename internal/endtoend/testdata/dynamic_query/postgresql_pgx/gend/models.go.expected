@@ -1,0 +1,10 @@
+package dynamic
+
+import "github.com/jackc/pgx/v5/pgtype"
+
+type Item struct {
+	ID          int32
+	Name        string
+	Description pgtype.Text
+	Status      pgtype.Int4
+}
