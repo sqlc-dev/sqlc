@@ -12,9 +12,18 @@ CREATE TABLE authors (
 If your query has a single parameter, your Go method will also have a single
 parameter.
 
+The parameter syntax varies by database engine:
+
+**PostgreSQL:**
 ```sql
 -- name: UpdateAuthorBios :exec
 UPDATE authors SET bio = $1;
+```
+
+**MySQL and SQLite:**
+```sql
+-- name: UpdateAuthorBios :exec
+UPDATE authors SET bio = ?;
 ```
 
 ```go
@@ -52,11 +61,21 @@ func (q *Queries) UpdateAuthorBios(ctx context.Context, bio string) error {
 If your query has more than one parameter, your Go method will accept a
 `Params` struct.
 
+**PostgreSQL:**
 ```sql
 -- name: UpdateAuthor :exec
 UPDATE authors SET bio = $2
 WHERE id = $1;
 ```
+
+**MySQL and SQLite:**
+```sql
+-- name: UpdateAuthor :exec
+UPDATE authors SET bio = ?
+WHERE id = ?;
+```
+
+Note: For MySQL and SQLite, parameters are bound in the order they appear in the query, regardless of the order in the function signature.
 
 ```go
 package db
