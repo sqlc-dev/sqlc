@@ -5,9 +5,20 @@ CREATE TABLE authors (
   id         SERIAL PRIMARY KEY,
   bio        text   NOT NULL
 );
+```
 
+The parameter syntax varies by database engine:
+
+**PostgreSQL:**
+```sql
 -- name: CreateAuthor :exec
 INSERT INTO authors (bio) VALUES ($1);
+```
+
+**MySQL and SQLite:**
+```sql
+-- name: CreateAuthor :exec
+INSERT INTO authors (bio) VALUES (?);
 ```
 
 ```go
@@ -51,7 +62,10 @@ CREATE TABLE authors (
   name text      NOT NULL,
   bio  text
 );
+```
 
+**PostgreSQL:**
+```sql
 -- name: CreateAuthor :one
 INSERT INTO authors (
   name, bio
@@ -68,6 +82,27 @@ INSERT INTO authors (
 )
 RETURNING id;
 ```
+
+**SQLite (with RETURNING support):**
+```sql
+-- name: CreateAuthor :one
+INSERT INTO authors (
+  name, bio
+) VALUES (
+  ?, ?
+)
+RETURNING *;
+
+-- name: CreateAuthorAndReturnId :one
+INSERT INTO authors (
+  name, bio
+) VALUES (
+  ?, ?
+)
+RETURNING id;
+```
+
+Note: MySQL does not support the `RETURNING` clause. Use `:execresult` instead to get the last insert ID.
 
 ```go
 package db
