@@ -27,3 +27,8 @@ FROM
 WHERE
         jt.id = ?
         AND pt.user_id = ?;
+
+-- name: DeleteJoinWithSubquery :exec
+DELETE pt
+FROM primary_table pt
+JOIN (SELECT 1 as id) jt ON pt.id = jt.id;
