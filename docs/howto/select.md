@@ -8,11 +8,26 @@ CREATE TABLE authors (
   bio        text   NOT NULL,
   birth_year int    NOT NULL
 );
+```
 
+The parameter syntax varies by database engine:
 
+**PostgreSQL:**
+```sql
 -- name: GetAuthor :one
 SELECT * FROM authors
 WHERE id = $1;
+
+-- name: ListAuthors :many
+SELECT * FROM authors
+ORDER BY id;
+```
+
+**MySQL and SQLite:**
+```sql
+-- name: GetAuthor :one
+SELECT * FROM authors
+WHERE id = ?;
 
 -- name: ListAuthors :many
 SELECT * FROM authors
