@@ -28,6 +28,15 @@ Zig       `tinyzimmer/sqlc-gen-zig`_         N/A              Beta             B
 [Any]     `fdietze/sqlc-gen-from-template`_  Stable           Stable           Stable
 ========  =================================  ===============  ===============  ===============
 
+Community projects
+******************
+
+========  =================================  ===============  ===============  ===============
+Language  Project                            MySQL            PostgreSQL       SQLite
+========  =================================  ===============  ===============  ===============
+Gleam     `daniellionel01/parrot`_           Stable           Stable           Stable
+========  =================================  ===============  ===============  ===============
+
 .. _sqlc-gen-go: https://github.com/sqlc-dev/sqlc-gen-go
 .. _kaashyapan/sqlc-gen-fsharp: https://github.com/kaashyapan/sqlc-gen-fsharp
 .. _sqlc-gen-kotlin: https://github.com/sqlc-dev/sqlc-gen-kotlin
@@ -39,7 +48,4 @@ Zig       `tinyzimmer/sqlc-gen-zig`_         N/A              Beta             B
 .. _lcarilla/sqlc-plugin-php-dbal: https://github.com/lcarilla/sqlc-plugin-php-dbal
 .. _tandemdude/sqlc-gen-java: https://github.com/tandemdude/sqlc-gen-java
 .. _tinyzimmer/sqlc-gen-zig: https://github.com/tinyzimmer/sqlc-gen-zig
-
-Future language support
-************************
-
+.. _daniellionel01/parrot: https://github.com/daniellionel01/parrot
