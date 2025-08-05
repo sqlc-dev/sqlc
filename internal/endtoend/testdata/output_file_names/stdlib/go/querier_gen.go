@@ -6,9 +6,11 @@ package querytest
 
 import (
 	"context"
+	"database/sql"
 )
 
 type Querier interface {
+	WithTx(tx *sql.Tx) *Queries
 	User(ctx context.Context) ([]int64, error)
 }
 
