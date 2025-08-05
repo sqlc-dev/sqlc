@@ -1182,7 +1182,12 @@ func (c *cc) convertSetOprType(n *pcast.SetOprType) (op ast.SetOperation, all bo
 func (c *cc) convertSetOprSelectList(n *pcast.SetOprSelectList) ast.Node {
 	selectStmts := make([]*ast.SelectStmt, len(n.Selects))
 	for i, node := range n.Selects {
-		selectStmts[i] = c.convertSelectStmt(node.(*pcast.SelectStmt))
+		switch node := node.(type) {
+		case *pcast.SelectStmt:
+			selectStmts[i] = c.convertSelectStmt(node)
+		case *pcast.SetOprSelectList:
+			selectStmts[i] = c.convertSetOprSelectList(node).(*ast.SelectStmt)
+		}
 	}
 
 	op, all := c.convertSetOprType(n.AfterSetOperator)
