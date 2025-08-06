@@ -16,7 +16,7 @@ const (
 	NewEventSTOP  NewEvent = "STOP"
 )
 
-func (e *NewEvent) Scan(src interface{}) error {
+func (e *NewEvent) Scan(src any) error {
 	switch s := src.(type) {
 	case []byte:
 		*e = NewEvent(s)
@@ -34,7 +34,7 @@ type NullNewEvent struct {
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullNewEvent) Scan(value interface{}) error {
+func (ns *NullNewEvent) Scan(value any) error {
 	if value == nil {
 		ns.NewEvent, ns.Valid = "", false
 		return nil

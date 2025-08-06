@@ -83,7 +83,7 @@ users where (? = id OR  ? = 0)
 
 type SelectUserQuestionParams struct {
 	ID      int32
-	Column2 interface{}
+	Column2 any
 }
 
 func (q *Queries) SelectUserQuestion(ctx context.Context, arg SelectUserQuestionParams) ([]sql.NullString, error) {

@@ -9,6 +9,8 @@ func escape(s string) string {
 
 func IsReserved(s string) bool {
 	switch s {
+	case "any":
+		return true
 	case "break":
 		return true
 	case "default":
