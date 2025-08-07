@@ -42,7 +42,7 @@ func NewIdentifier(t string) *ast.String {
 func (c *cc) convertAlter_table_stmtContext(n *parser.Alter_table_stmtContext) ast.Node {
 	if n.RENAME_() != nil {
 		if newTable, ok := n.New_table_name().(*parser.New_table_nameContext); ok {
-			name := newTable.Any_name().GetText()
+			name := identifier(newTable.Any_name().GetText())
 			return &ast.RenameTableStmt{
 				Table:   parseTableName(n),
 				NewName: &name,
@@ -50,11 +50,11 @@ func (c *cc) convertAlter_table_stmtContext(n *parser.Alter_table_stmtContext) a
 		}
 
 		if newCol, ok := n.GetNew_column_name().(*parser.Column_nameContext); ok {
-			name := newCol.Any_name().GetText()
+			name := identifier(newCol.Any_name().GetText())
 			return &ast.RenameColumnStmt{
 				Table: parseTableName(n),
 				Col: &ast.ColumnRef{
-					Name: n.GetOld_column_name().GetText(),
+					Name: identifier(n.GetOld_column_name().GetText()),
 				},
 				NewName: &name,
 			}
@@ -254,7 +254,7 @@ func (c *cc) convertDelete_stmtContext(n Delete_stmt) ast.Node {
 func (c *cc) convertDrop_stmtContext(n *parser.Drop_stmtContext) ast.Node {
 	if n.TABLE_() != nil || n.VIEW_() != nil {
 		name := ast.TableName{
-			Name: n.Any_name().GetText(),
+			Name: identifier(n.Any_name().GetText()),
 		}
 		if n.Schema_name() != nil {
 			name.Schema = n.Schema_name().GetText()
@@ -1035,7 +1035,7 @@ func (c *cc) convertUpdate_stmtContext(n Update_stmt) ast.Node {
 	}
 
 	relations := &ast.List{}
-	tableName := n.Qualified_table_name().GetText()
+	tableName := identifier(n.Qualified_table_name().GetText())
 	rel := ast.RangeVar{
 		Relname:  &tableName,
 		Location: n.GetStart().GetStart(),
