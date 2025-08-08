@@ -183,9 +183,10 @@ CREATE TABLE books (
     {
       "column": "books.data",
       "go_type": {
-        "import":"example/db",
+        "import":"example.com/db",
         "package": "dto",
-        "type":"BookData"
+        "type":"BookData",
+        "pointer": true
       }
     }
   ]
