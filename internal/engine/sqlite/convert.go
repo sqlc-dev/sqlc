@@ -162,8 +162,7 @@ func (c *cc) convertCreate_virtual_table_fts5(n *parser.Create_virtual_table_stm
 			stmt.Cols = append(stmt.Cols, &ast.ColumnDef{
 				Colname: identifier(columnName),
 				// you can not specify any column constraints in fts5, so we pass them manually
-				IsNotNull: true,
-				TypeName:  &ast.TypeName{Name: "text"},
+				TypeName: &ast.TypeName{Name: "text"},
 			})
 		}
 	}
