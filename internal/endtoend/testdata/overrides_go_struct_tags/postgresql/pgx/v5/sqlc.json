@@ -32,6 +32,10 @@
         {
           "column": "foo.other",
           "go_struct_tag": "type:\"this\""
+        },
+        {
+          "db_type": "text",
+          "go_struct_tag": "utype:\"text\""
         }
       ]
     }

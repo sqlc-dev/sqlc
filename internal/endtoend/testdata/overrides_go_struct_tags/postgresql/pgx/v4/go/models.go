@@ -9,15 +9,15 @@ import (
 )
 
 type Bar struct {
-	ID      sql.NullString `type:"id"`
-	OtherID sql.NullString `type:"other_id"`
-	About   sql.NullString
-	Other   sql.NullString `type:"other"`
+	ID      sql.NullString `type:"id" utype:"text"`
+	OtherID sql.NullString `type:"other_id" utype:"text"`
+	About   sql.NullString `utype:"text"`
+	Other   sql.NullString `type:"other" utype:"text"`
 }
 
 type Foo struct {
-	ID      sql.NullString `source:"foo" type:"id"`
-	OtherID sql.NullString `type:"other_id"`
-	About   sql.NullString `type:"about"`
-	Other   sql.NullString `type:"this"`
+	ID      sql.NullString `source:"foo" type:"id" utype:"text"`
+	OtherID sql.NullString `type:"other_id" utype:"text"`
+	About   sql.NullString `type:"about" utype:"text"`
+	Other   sql.NullString `type:"this" utype:"text"`
 }

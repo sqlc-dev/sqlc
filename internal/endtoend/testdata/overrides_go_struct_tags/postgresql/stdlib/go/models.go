@@ -9,6 +9,6 @@ import (
 )
 
 type Foo struct {
-	ID      sql.NullString `x:"y"`
-	OtherID sql.NullString
+	ID      sql.NullString `utype:"text" x:"y"`
+	OtherID sql.NullString `utype:"text"`
 }

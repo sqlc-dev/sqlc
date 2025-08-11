@@ -11,6 +11,10 @@
         {
           "column": "foo.id",
           "go_struct_tag": "x:\"y\""
+        },
+        {
+          "db_type": "text",
+          "go_struct_tag": "utype:\"text\""
         }
       ]
     }

@@ -5,19 +5,19 @@
 package override
 
 type Bar struct {
-	Other      string
-	AlsoTagged string `also:"tagged"`
-	Tag3       string `tag_with_space:" it's legal!"`
+	Other      string `utype:"text"`
+	AlsoTagged string `also:"tagged" utype:"text"`
+	Tag3       string `tag_with_space:" it's legal!" utype:"text"`
 }
 
 type Baz struct {
-	Other      string
-	AlsoTagged string `also:"tagged"`
-	Tag3       string `tag_with_space:" it's legal!"`
+	Other      string `utype:"text"`
+	AlsoTagged string `also:"tagged" utype:"text"`
+	Tag3       string `tag_with_space:" it's legal!" utype:"text"`
 }
 
 type Foo struct {
-	Other  string
-	Tagged string `a:"b" x:"y,z"`
-	Tag3   string `tag_with_space:" it's legal!"`
+	Other  string `utype:"text"`
+	Tagged string `a:"b" utype:"text" x:"y,z"`
+	Tag3   string `tag_with_space:" it's legal!" utype:"text"`
 }

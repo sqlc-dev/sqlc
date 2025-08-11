@@ -19,6 +19,10 @@
         {
           "go_struct_tag": "tag_with_space:\" it's legal!\"",
           "column": "*.tag3"
+        },
+        {
+          "db_type": "text",
+          "go_struct_tag": "utype:\"text\""
         }
       ]
     }
