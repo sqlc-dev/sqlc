@@ -4,11 +4,8 @@
 
 package override
 
-import (
-	"database/sql"
-)
-
 type Foo struct {
-	ID      sql.NullString `utype:"text" x:"y"`
-	OtherID sql.NullString `utype:"text"`
+	ID          string `utype:"nullable_text" x:"y"`
+	OtherID     string `utype:"nullable_text"`
+	Notnulltext string `utype:"notnull_text"`
 }

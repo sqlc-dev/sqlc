@@ -1,6 +1,7 @@
 CREATE TABLE foo (
     other     text NOT NULL,
-    tagged    text NOT NULL
+    tagged    text NOT NULL,
+    nulltext text
 );
 
 CREATE TABLE bar (

@@ -5,16 +5,17 @@
 package override
 
 type Bar struct {
-	Other      string `utype:"text"`
-	AlsoTagged string `also:"tagged" utype:"text"`
+	Other      string `utype:"notnull_text"`
+	AlsoTagged string `also:"tagged" utype:"notnull_text"`
 }
 
 type Baz struct {
-	Other      string `utype:"text"`
-	AlsoTagged string `also:"tagged" utype:"text"`
+	Other      string `utype:"notnull_text"`
+	AlsoTagged string `also:"tagged" utype:"notnull_text"`
 }
 
 type Foo struct {
-	Other  string `utype:"text"`
-	Tagged string `a:"b" utype:"text" x:"y,z"`
+	Other    string `utype:"notnull_text"`
+	Tagged   string `a:"b" utype:"notnull_text" x:"y,z"`
+	Nulltext string `utype:"nullable_text"`
 }

@@ -4,20 +4,17 @@
 
 package override
 
-import (
-	"database/sql"
-)
-
 type Bar struct {
-	ID      sql.NullString `type:"id" utype:"text"`
-	OtherID sql.NullString `type:"other_id" utype:"text"`
-	About   sql.NullString `utype:"text"`
-	Other   sql.NullString `type:"other" utype:"text"`
+	ID      string `type:"id" utype:"nullable_text"`
+	OtherID string `type:"other_id" utype:"nullable_text"`
+	About   string `utype:"nullable_text"`
+	Other   string `type:"other" utype:"nullable_text"`
 }
 
 type Foo struct {
-	ID      sql.NullString `source:"foo" type:"id" utype:"text"`
-	OtherID sql.NullString `type:"other_id" utype:"text"`
-	About   sql.NullString `type:"about" utype:"text"`
-	Other   sql.NullString `type:"this" utype:"text"`
+	ID          string `source:"foo" type:"id" utype:"nullable_text"`
+	OtherID     string `type:"other_id" utype:"nullable_text"`
+	About       string `type:"about" utype:"nullable_text"`
+	Other       string `type:"this" utype:"nullable_text"`
+	Notnulltext string `utype:"notnull_text"`
 }

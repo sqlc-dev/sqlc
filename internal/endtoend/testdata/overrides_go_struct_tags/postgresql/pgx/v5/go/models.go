@@ -4,20 +4,17 @@
 
 package override
 
-import (
-	"github.com/jackc/pgx/v5/pgtype"
-)
-
 type Bar struct {
-	ID      pgtype.Text `type:"id" utype:"text"`
-	OtherID pgtype.Text `type:"other_id" utype:"text"`
-	About   pgtype.Text `utype:"text"`
-	Other   pgtype.Text `type:"other" utype:"text"`
+	ID      string `type:"id" utype:"nullable_text"`
+	OtherID string `type:"other_id" utype:"nullable_text"`
+	About   string `utype:"nullable_text"`
+	Other   string `type:"other" utype:"nullable_text"`
 }
 
 type Foo struct {
-	ID      pgtype.Text `source:"foo" type:"id" utype:"text"`
-	OtherID pgtype.Text `type:"other_id" utype:"text"`
-	About   pgtype.Text `type:"about" utype:"text"`
-	Other   pgtype.Text `type:"this" utype:"text"`
+	ID          string `source:"foo" type:"id" utype:"nullable_text"`
+	OtherID     string `type:"other_id" utype:"nullable_text"`
+	About       string `type:"about" utype:"nullable_text"`
+	Other       string `type:"this" utype:"nullable_text"`
+	Notnulltext string `utype:"notnull_text"`
 }
