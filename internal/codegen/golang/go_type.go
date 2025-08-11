@@ -14,11 +14,7 @@ func addExtraGoStructTags(tags map[string]string, req *plugin.GenerateRequest, o
 		if oride.GoType.StructTags == nil {
 			continue
 		}
-		if oride.DbType != "" {
-			columnType := sdk.DataType(col.Type)
-			if columnType != oride.DbType {
-				continue
-			}
+		if override.MatchesColumn(col) {
 			for k, v := range oride.GoType.StructTags {
 				tags[k] = v
 			}
@@ -74,16 +70,13 @@ func goType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Colu
 }
 
 func goInnerType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Column) string {
-	columnType := sdk.DataType(col.Type)
-	notNull := col.NotNull || col.IsArray
-
 	// package overrides have a higher precedence
 	for _, override := range options.Overrides {
 		oride := override.ShimOverride
 		if oride.GoType.TypeName == "" {
 			continue
 		}
-		if oride.DbType != "" && oride.DbType == columnType && oride.Nullable != notNull && oride.Unsigned == col.Unsigned {
+		if override.MatchesColumn(col) {
 			return oride.GoType.TypeName
 		}
 	}
