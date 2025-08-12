@@ -14,7 +14,8 @@ func addExtraGoStructTags(tags map[string]string, req *plugin.GenerateRequest, o
 		if oride.GoType.StructTags == nil {
 			continue
 		}
-		if !override.Matches(col.Table, req.Catalog.DefaultSchema) {
+		dbTypeMatches := col.Type.Name == oride.DbType && !col.NotNull == oride.Nullable
+		if !dbTypeMatches && !override.Matches(col.Table, req.Catalog.DefaultSchema) {
 			// Different table.
 			continue
 		}
@@ -22,7 +23,7 @@ func addExtraGoStructTags(tags map[string]string, req *plugin.GenerateRequest, o
 		if col.OriginalName != "" {
 			cname = col.OriginalName
 		}
-		if !sdk.MatchString(oride.ColumnName, cname) {
+		if !dbTypeMatches && !sdk.MatchString(oride.ColumnName, cname) {
 			// Different column.
 			continue
 		}
