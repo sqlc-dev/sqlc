@@ -727,10 +727,6 @@ func (c *cc) convertCaseExpr(n *pcast.CaseExpr) ast.Node {
 	}
 }
 
-func (c *cc) convertChangeStmt(n *pcast.ChangeStmt) ast.Node {
-	return todo(n)
-}
-
 func (c *cc) convertCleanupTableLockStmt(n *pcast.CleanupTableLockStmt) ast.Node {
 	return todo(n)
 }
@@ -1500,9 +1496,6 @@ func (c *cc) convert(node pcast.Node) ast.Node {
 
 	case *pcast.CaseExpr:
 		return c.convertCaseExpr(n)
-
-	case *pcast.ChangeStmt:
-		return c.convertChangeStmt(n)
 
 	case *pcast.CleanupTableLockStmt:
 		return c.convertCleanupTableLockStmt(n)
