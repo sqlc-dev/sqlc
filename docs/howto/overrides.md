@@ -1,6 +1,8 @@
 # Overriding types
 
-.. note:: Type overrides and field renaming are only fully-supported for Go.
+:::{note}
+Type overrides and field renaming are only fully-supported for Go.
+:::
 
 In many cases it's useful to tell `sqlc` explicitly what Go type you want it to
 use for a query input or output. For instance, by default when you use
