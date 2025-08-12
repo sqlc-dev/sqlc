@@ -39,10 +39,11 @@ sql:
           go_type: "time.Time"
 ```
 
-.. tip::
+:::{tip}
   A single `db_type` override configuration applies to either nullable or non-nullable
   columns, but not both. If you want the same Go type to override regardless of
   nullability, you'll need to configure two overrides: one with `nullable: true` and one without.
+:::
 
 ## The `overrides` list
 
@@ -67,12 +68,15 @@ Each element in the `overrides` list has the following keys:
     Note that this only applies to `db_type` overrides and has no effect on `column` overrides.
     Defaults to `false`.
 
-.. tip::
+:::{tip}
   A single `db_type` override configuration applies to either nullable or non-nullable
   columns, but not both. If you want the same Go type to override regardless of nullability, you'll
   need to configure two overrides: one with `nullable: true` and one without.
+:::
 
-.. note:: When generating code, `column` override configurations take precedence over `db_type` configurations.
+:::{note}
+When generating code, `column` override configurations take precedence over `db_type` configurations.
+:::
 
 ### The `go_type` map
 
