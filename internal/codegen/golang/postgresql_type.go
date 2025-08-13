@@ -576,6 +576,11 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 							return StructName(enum.Name, options)
 						}
 						return StructName(schema.Name+"_"+enum.Name, options)
+					} else if emitPointersForNull {
+						if schema.Name == req.Catalog.DefaultSchema {
+							return "*" + StructName(enum.Name, options)
+						}
+						return "*" + StructName(schema.Name+"_"+enum.Name, options)
 					} else {
 						if schema.Name == req.Catalog.DefaultSchema {
 							return "Null" + StructName(enum.Name, options)
