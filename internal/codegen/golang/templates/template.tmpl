@@ -96,7 +96,7 @@ const (
 	{{- end}}
 )
 
-func (e *{{.Name}}) Scan(src interface{}) error {
+func (e *{{.Name}}) Scan(src any) error {
 	switch s := src.(type) {
 	case []byte:
 		*e = {{.Name}}(s)
@@ -114,7 +114,7 @@ type Null{{.Name}} struct {
 }
 
 // Scan implements the Scanner interface.
-func (ns *Null{{.Name}}) Scan(value interface{}) error {
+func (ns *Null{{.Name}}) Scan(value any) error {
 	if value == nil {
 		ns.{{.Name}}, ns.Valid = "", false
 		return nil

@@ -22,7 +22,7 @@ WHERE
 `
 
 type GetGroupsParams struct {
-	GroupName interface{}
+	GroupName any
 	GroupId   sql.NullInt32
 }
 

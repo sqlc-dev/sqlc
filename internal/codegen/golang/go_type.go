@@ -90,6 +90,6 @@ func goInnerType(req *plugin.GenerateRequest, options *opts.Options, col *plugin
 	case "sqlite":
 		return sqliteType(req, options, col)
 	default:
-		return "interface{}"
+		return "any"
 	}
 }

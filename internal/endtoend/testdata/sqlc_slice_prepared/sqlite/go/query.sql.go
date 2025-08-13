@@ -23,7 +23,7 @@ type FuncParamIdentParams struct {
 
 func (q *Queries) FuncParamIdent(ctx context.Context, arg FuncParamIdentParams) ([]string, error) {
 	query := funcParamIdent
-	var queryParams []interface{}
+	var queryParams []any
 	queryParams = append(queryParams, arg.Slug)
 	if len(arg.Favourites) > 0 {
 		for _, v := range arg.Favourites {
