@@ -143,6 +143,8 @@ The `gen` mapping supports the following keys:
   - If true, include support for prepared queries. Defaults to `false`.
 - `emit_interface`:
   - If true, output a `Querier` interface in the generated package. Defaults to `false`.
+- `use_interface_return_types`:
+  - If true, output will use the `Querier` interface as the return type the methods in the generated package. Defaults to `false`.
 - `emit_exact_table_names`:
   - If true, struct names will mirror table names. Otherwise, sqlc attempts to singularize plural table names. Defaults to `false`.
 - `emit_empty_slices`:
