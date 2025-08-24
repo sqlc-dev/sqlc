@@ -989,7 +989,30 @@ func (c *cc) convertLockTablesStmt(n *pcast.LockTablesStmt) ast.Node {
 }
 
 func (c *cc) convertMatchAgainst(n *pcast.MatchAgainst) ast.Node {
-	return todo(n)
+	searchTerm := c.convert(n.Against)
+
+	stringSearchTerm := &ast.TypeCast{
+		Arg: searchTerm,
+		TypeName: &ast.TypeName{
+			Name: "text", // Use 'text' type which maps to string in Go
+		},
+		Location: n.OriginTextPosition(),
+	}
+
+	matchOperation := &ast.A_Const{
+		Val: &ast.String{Str: "MATCH_AGAINST"},
+	}
+
+	return &ast.A_Expr{
+		Name: &ast.List{
+			Items: []ast.Node{
+				&ast.String{Str: "AGAINST"},
+			},
+		},
+		Lexpr:    matchOperation,
+		Rexpr:    stringSearchTerm,
+		Location: n.OriginTextPosition(),
+	}
 }
 
 func (c *cc) convertMaxValueExpr(n *pcast.MaxValueExpr) ast.Node {
