@@ -13,7 +13,7 @@ myst-parser==4.0.1
 packaging==25.0
 pyparsing==3.2.3
 pytz==2025.2
-requests==2.32.4
+requests==2.32.5
 snowballstemmer==3.0.1
 sphinx-favicon==1.0.1
 sphinx-rtd-theme==3.0.2
