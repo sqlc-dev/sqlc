@@ -13,14 +13,11 @@ import (
 
 	migrate "github.com/sqlc-dev/sqlc/internal/migrations"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
+	"github.com/sqlc-dev/sqlc/internal/sqltest/docker"
 )
 
 var mysqlSync sync.Once
 var mysqlPool *sql.DB
-
-func MySQLServer() string {
-	return os.Getenv("MYSQL_SERVER_URI")
-}
 
 func MySQL(t *testing.T, migrations []string) string {
 	ctx := context.Background()
@@ -28,7 +25,15 @@ func MySQL(t *testing.T, migrations []string) string {
 
 	dburi := os.Getenv("MYSQL_SERVER_URI")
 	if dburi == "" {
-		t.Skip("MYSQL_SERVER_URI is empty")
+		if ierr := docker.Installed(); ierr == nil {
+			u, err := docker.StartMySQLServer(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+			dburi = u
+		} else {
+			t.Skip("MYSQL_SERVER_URI is empty")
+		}
 	}
 
 	mysqlSync.Do(func() {
