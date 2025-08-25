@@ -9,7 +9,7 @@ jobs:
     strategy:
       matrix:
         # Disabling windows builds while we fix installing PostgreSQL 16
-        os: [ubuntu-22.04, macos-14, windows-2022]
+        os: [ubuntu-24.04, macos-14, windows-2022]
         cgo: ['1', '0']
         # Workaround no native support for conditional matrix items
         # https://github.com/orgs/community/discussions/26253#discussioncomment-6745038
@@ -18,9 +18,9 @@ jobs:
         # exclude:
         #   - isMain: false
         # include:
-        # - os: ubuntu-22.04
+        # - os: ubuntu-24.04
         #   cgo: '1'
-        # - os: ubuntu-22.04
+        # - os: ubuntu-24.04
         #   cgo: '0'
     name: test ${{ matrix.os }} cgo=${{ matrix.cgo }}
     runs-on: ${{ matrix.os }}
@@ -53,6 +53,7 @@ jobs:
 
     - name: test ./...
       run: gotestsum --junitfile junit.xml -- --tags=examples -timeout 20m ./...
+      if: ${{ matrix.os }} != "windows-2022"
       env:
         CI_SQLC_PROJECT_ID: ${{ secrets.CI_SQLC_PROJECT_ID }}
         CI_SQLC_AUTH_TOKEN: ${{ secrets.CI_SQLC_AUTH_TOKEN }}
@@ -60,7 +61,7 @@ jobs:
         CGO_ENABLED: ${{ matrix.cgo }}
 
   vuln_check:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
 
     steps:
