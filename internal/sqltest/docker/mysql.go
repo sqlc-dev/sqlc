@@ -15,6 +15,13 @@ func StartMySQLServer(c context.Context) (string, error) {
 		return "", err
 	}
 
+	{
+		_, err := exec.Command("docker", "pull", "mysql:8").CombinedOutput()
+		if err != nil {
+			return "", fmt.Errorf("docker pull: mysql:8 %w", err)
+		}
+	}
+
 	ctx, cancel := context.WithTimeout(c, 10*time.Second)
 	defer cancel()
 

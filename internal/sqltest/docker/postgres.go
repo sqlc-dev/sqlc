@@ -15,6 +15,13 @@ func StartPostgreSQLServer(c context.Context) (string, error) {
 		return "", err
 	}
 
+	{
+		_, err := exec.Command("docker", "pull", "postgres:16").CombinedOutput()
+		if err != nil {
+			return "", fmt.Errorf("docker pull: postgres:16 %w", err)
+		}
+	}
+
 	ctx, cancel := context.WithTimeout(c, 5*time.Second)
 	defer cancel()
 
