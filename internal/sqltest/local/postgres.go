@@ -15,6 +15,7 @@ import (
 	migrate "github.com/sqlc-dev/sqlc/internal/migrations"
 	"github.com/sqlc-dev/sqlc/internal/pgx/poolcache"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
+	"github.com/sqlc-dev/sqlc/internal/sqltest/docker"
 )
 
 var flight singleflight.Group
@@ -28,17 +29,21 @@ func ReadOnlyPostgreSQL(t *testing.T, migrations []string) string {
 	return postgreSQL(t, migrations, false)
 }
 
-func PostgreSQLServer() string {
-	return os.Getenv("POSTGRESQL_SERVER_URI")
-}
-
 func postgreSQL(t *testing.T, migrations []string, rw bool) string {
 	ctx := context.Background()
 	t.Helper()
 
 	dburi := os.Getenv("POSTGRESQL_SERVER_URI")
 	if dburi == "" {
-		t.Skip("POSTGRESQL_SERVER_URI is empty")
+		if ierr := docker.Installed(); ierr == nil {
+			u, err := docker.StartPostgreSQLServer(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+			dburi = u
+		} else {
+			t.Skip("POSTGRESQL_SERVER_URI is empty")
+		}
 	}
 
 	postgresPool, err := cache.Open(ctx, dburi)

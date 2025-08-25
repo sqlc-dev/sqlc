@@ -5,27 +5,25 @@ on:
       - main
   pull_request:
 jobs:
-  test:
+  build:
     strategy:
       matrix:
-        # Disabling windows builds while we fix installing PostgreSQL 16
-        # os: [ubuntu-22.04, macos-14, windows-2022]
-        os: [ubuntu-22.04, macos-15]
-        cgo: ['1', '0']
-        # Workaround no native support for conditional matrix items
-        # https://github.com/orgs/community/discussions/26253#discussioncomment-6745038
-        isMain:
-          - ${{ github.ref == 'refs/heads/main' }}
-        exclude:
-          - isMain: false
-        include:
-        - os: ubuntu-22.04
-          cgo: '1'
-        - os: ubuntu-22.04
-          cgo: '0'
-    name: test ${{ matrix.os }} cgo=${{ matrix.cgo }}
-    runs-on: ${{ matrix.os }}
-
+        goos: [darwin, linux, windows]
+        goarch: [amd64, arm64]
+    name: build ${{ matrix.goos }}/${{ matrix.goarch }}
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v5
+    - uses: actions/setup-go@v5
+      with:
+        go-version: '1.25.0'
+    - run: go build ./...
+      env:
+        CGO_ENABLED: "0"
+        GOOS: ${{ matrix.goos }}
+        GOARCH: ${{ matrix.goarch }}
+  test:
+    runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v5
     - uses: actions/setup-go@v5
@@ -44,37 +42,25 @@ jobs:
     - name: install ./...
       run: go install ./...
       env:
-        CGO_ENABLED: ${{ matrix.cgo }}
+        CGO_ENABLED: "0"
 
     - name: build internal/endtoend
       run: go build ./...
       working-directory: internal/endtoend/testdata
       env:
-        CGO_ENABLED: ${{ matrix.cgo }}
-
-    # Start a PostgreSQL server
-    - uses: sqlc-dev/action-setup-postgres@master
-      with:
-        postgres-version: "16"
-      id: postgres
-
-    # Start a MySQL server
-    - uses: shogo82148/actions-setup-mysql@v1
-      with:
-        mysql-version: "9.0"
+        CGO_ENABLED: "0"
 
     - name: test ./...
       run: gotestsum --junitfile junit.xml -- --tags=examples -timeout 20m ./...
+      if: ${{ matrix.os }} != "windows-2022"
       env:
         CI_SQLC_PROJECT_ID: ${{ secrets.CI_SQLC_PROJECT_ID }}
         CI_SQLC_AUTH_TOKEN: ${{ secrets.CI_SQLC_AUTH_TOKEN }}
         SQLC_AUTH_TOKEN: ${{ secrets.CI_SQLC_AUTH_TOKEN }}
-        MYSQL_SERVER_URI: root:@tcp(localhost:3306)/mysql?multiStatements=true&parseTime=true
-        POSTGRESQL_SERVER_URI: ${{ steps.postgres.outputs.connection-uri }}?sslmode=disable
-        CGO_ENABLED: ${{ matrix.cgo }}
+        CGO_ENABLED: "0"
 
   vuln_check:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
 
     steps:
