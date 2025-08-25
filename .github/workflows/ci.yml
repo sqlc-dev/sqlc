@@ -53,15 +53,15 @@ jobs:
         CGO_ENABLED: ${{ matrix.cgo }}
 
     # Start a PostgreSQL server
-    - uses: sqlc-dev/action-setup-postgres@master
-      with:
-        postgres-version: "16"
-      id: postgres
+    # - uses: sqlc-dev/action-setup-postgres@master
+    #   with:
+    #     postgres-version: "16"
+    #   id: postgres
 
     # Start a MySQL server
-    - uses: shogo82148/actions-setup-mysql@v1
-      with:
-        mysql-version: "9.0"
+    # - uses: shogo82148/actions-setup-mysql@v1
+    #   with:
+    #     mysql-version: "9.0"
 
     - name: test ./...
       run: gotestsum --junitfile junit.xml -- --tags=examples -timeout 20m ./...
@@ -69,8 +69,8 @@ jobs:
         CI_SQLC_PROJECT_ID: ${{ secrets.CI_SQLC_PROJECT_ID }}
         CI_SQLC_AUTH_TOKEN: ${{ secrets.CI_SQLC_AUTH_TOKEN }}
         SQLC_AUTH_TOKEN: ${{ secrets.CI_SQLC_AUTH_TOKEN }}
-        MYSQL_SERVER_URI: root:@tcp(localhost:3306)/mysql?multiStatements=true&parseTime=true
-        POSTGRESQL_SERVER_URI: ${{ steps.postgres.outputs.connection-uri }}?sslmode=disable
+        # MYSQL_SERVER_URI: root:@tcp(localhost:3306)/mysql?multiStatements=true&parseTime=true
+        # POSTGRESQL_SERVER_URI: ${{ steps.postgres.outputs.connection-uri }}?sslmode=disable
         CGO_ENABLED: ${{ matrix.cgo }}
 
   vuln_check:

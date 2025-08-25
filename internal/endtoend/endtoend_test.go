@@ -17,7 +17,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/cmd"
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/opts"
-	"github.com/sqlc-dev/sqlc/internal/sqltest/local"
+	"github.com/sqlc-dev/sqlc/internal/sqltest/docker"
 )
 
 func lineEndings() cmp.Option {
@@ -112,6 +112,24 @@ func TestReplay(t *testing.T) {
 	// t.Parallel()
 	ctx := context.Background()
 
+	var mysqlURI, postgresURI string
+	if err := docker.Installed(); err == nil {
+		{
+			host, err := docker.StartPostgreSQLServer(ctx)
+			if err != nil {
+				t.Fatalf("starting postgresql failed: %s", err)
+			}
+			postgresURI = host
+		}
+		{
+			host, err := docker.StartMySQLServer(ctx)
+			if err != nil {
+				t.Fatalf("starting mysql failed: %s", err)
+			}
+			mysqlURI = host
+		}
+	}
+
 	contexts := map[string]textContext{
 		"base": {
 			Mutate:  func(t *testing.T, path string) func(*config.Config) { return func(c *config.Config) {} },
@@ -124,13 +142,13 @@ func TestReplay(t *testing.T) {
 						{
 							Name:   "postgres",
 							Engine: config.EnginePostgreSQL,
-							URI:    local.PostgreSQLServer(),
+							URI:    postgresURI,
 						},
 
 						{
 							Name:   "mysql",
 							Engine: config.EngineMySQL,
-							URI:    local.MySQLServer(),
+							URI:    mysqlURI,
 						},
 					}
 					for i := range c.SQL {
@@ -150,13 +168,8 @@ func TestReplay(t *testing.T) {
 				}
 			},
 			Enabled: func() bool {
-				if len(os.Getenv("POSTGRESQL_SERVER_URI")) == 0 {
-					return false
-				}
-				if len(os.Getenv("MYSQL_SERVER_URI")) == 0 {
-					return false
-				}
-				return true
+				err := docker.Installed()
+				return err == nil
 			},
 		},
 	}
