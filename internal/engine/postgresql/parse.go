@@ -601,7 +601,14 @@ func translate(node *nodes.Node) (ast.Node, error) {
 			}
 			return drop, nil
 
+		default:
+			drop := &ast.DropStmt{
+				MissingOk: n.MissingOk,
+			}
+			return drop, nil
+
 		}
+
 		return nil, errSkip
 
 	case *nodes.Node_RenameStmt:
