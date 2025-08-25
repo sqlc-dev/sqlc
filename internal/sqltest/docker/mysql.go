@@ -5,84 +5,100 @@ import (
 	"database/sql"
 	"fmt"
 	"os/exec"
-	"sync"
+	"strings"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 )
 
-var mysqlSync sync.Once
 var mysqlHost string
 
 func StartMySQLServer(c context.Context) (string, error) {
 	if err := Installed(); err != nil {
 		return "", err
 	}
-
-	{
-		_, err := exec.Command("docker", "pull", "mysql:8").CombinedOutput()
+	if mysqlHost != "" {
+		return mysqlHost, nil
+	}
+	value, err, _ := flight.Do("mysql", func() (interface{}, error) {
+		host, err := startMySQLServer(c)
 		if err != nil {
-			return "", fmt.Errorf("docker pull: mysql:8 %w", err)
+			return "", err
+		}
+		mysqlHost = host
+		return host, nil
+	})
+	if err != nil {
+		return "", err
+	}
+	data, ok := value.(string)
+	if !ok {
+		return "", fmt.Errorf("returned value was not a string")
+	}
+	return data, nil
+}
+
+func startMySQLServer(c context.Context) (string, error) {
+	{
+		_, err := exec.Command("docker", "pull", "mysql:9").CombinedOutput()
+		if err != nil {
+			return "", fmt.Errorf("docker pull: mysql:9 %w", err)
 		}
 	}
 
-	var syncErr error
-	mysqlSync.Do(func() {
-		ctx, cancel := context.WithTimeout(c, 10*time.Second)
-		defer cancel()
+	var exists bool
+	{
+		cmd := exec.Command("docker", "container", "inspect", "sqlc_sqltest_docker_mysql")
+		// This means we've already started the container
+		exists = cmd.Run() == nil
+	}
 
+	if !exists {
 		cmd := exec.Command("docker", "run",
 			"--name", "sqlc_sqltest_docker_mysql",
 			"-e", "MYSQL_ROOT_PASSWORD=mysecretpassword",
 			"-e", "MYSQL_DATABASE=dinotest",
 			"-p", "3306:3306",
 			"-d",
-			"mysql:8",
+			"mysql:9",
 		)
 
 		output, err := cmd.CombinedOutput()
 		fmt.Println(string(output))
-		if err != nil {
-			syncErr = err
-			return
+
+		msg := `Conflict. The container name "/sqlc_sqltest_docker_mysql" is already in use by container`
+		if !strings.Contains(string(output), msg) && err != nil {
+			return "", err
 		}
+	}
 
-		// Create a ticker that fires every 10ms
-		ticker := time.NewTicker(10 * time.Millisecond)
-		defer ticker.Stop()
+	ctx, cancel := context.WithTimeout(c, 10*time.Second)
+	defer cancel()
 
-		uri := "root:mysecretpassword@/dinotest"
+	// Create a ticker that fires every 10ms
+	ticker := time.NewTicker(10 * time.Millisecond)
+	defer ticker.Stop()
 
-		db, err := sql.Open("mysql", uri)
-		if err != nil {
-			syncErr = fmt.Errorf("sql.Open: %w", err)
-			return
-		}
+	uri := "root:mysecretpassword@/dinotest?multiStatements=true&parseTime=true"
 
-		for {
-			select {
-			case <-ctx.Done():
-				syncErr = fmt.Errorf("timeout reached: %w", ctx.Err())
-				return
+	db, err := sql.Open("mysql", uri)
+	if err != nil {
+		return "", fmt.Errorf("sql.Open: %w", err)
+	}
 
-			case <-ticker.C:
-				// Run your function here
-				if err := db.PingContext(ctx); err != nil {
-					continue
-				}
-				mysqlHost = uri
-				return
+	defer db.Close()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return "", fmt.Errorf("timeout reached: %w", ctx.Err())
+
+		case <-ticker.C:
+			// Run your function here
+			if err := db.PingContext(ctx); err != nil {
+				continue
 			}
+			return uri, nil
 		}
-	})
-
-	if syncErr != nil {
-		return "", syncErr
 	}
-
-	if mysqlHost == "" {
-		return "", fmt.Errorf("mysql server setup failed")
-	}
-
-	return mysqlHost, nil
 }
