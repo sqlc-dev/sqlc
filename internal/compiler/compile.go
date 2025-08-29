@@ -1,6 +1,7 @@
 package compiler
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"io"
@@ -38,6 +39,7 @@ func (c *Compiler) parseCatalog(schemas []string) error {
 			continue
 		}
 		contents := migrations.RemoveRollbackStatements(string(blob))
+		contents = removePsqlMetaCommands(contents)
 		c.schema = append(c.schema, contents)
 		stmts, err := c.parser.Parse(strings.NewReader(contents))
 		if err != nil {
@@ -55,6 +57,19 @@ func (c *Compiler) parseCatalog(schemas []string) error {
 		return merr
 	}
 	return nil
+}
+
+func removePsqlMetaCommands(contents string) string {
+	s := bufio.NewScanner(strings.NewReader(contents))
+	var lines []string
+	for s.Scan() {
+		line := s.Text()
+		if strings.HasPrefix(line, `\`) {
+			continue
+		}
+		lines = append(lines, line)
+	}
+	return strings.Join(lines, "\n")
 }
 
 func (c *Compiler) parseQueries(o opts.Parser) (*Result, error) {
