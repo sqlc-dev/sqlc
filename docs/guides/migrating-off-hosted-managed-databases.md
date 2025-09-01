@@ -50,7 +50,7 @@ docker compose up -d
 
 ## Upgrade sqlc
 
-You must be running sqlc v1.29.0 or greater to have access to the `servers`
+You must be running sqlc v1.30.0 or greater to have access to the `servers`
 configuration.
 
 ## Add servers to configuration
