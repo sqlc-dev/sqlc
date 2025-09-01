@@ -64,7 +64,7 @@ jobs:
     - uses: actions/checkout@v3
     - uses: sqlc-dev/setup-sqlc@v3
       with:
-        sqlc-version: '1.29.0'
+        sqlc-version: '1.30.0'
     - run: sqlc diff
 ```
 
@@ -84,7 +84,7 @@ jobs:
     - uses: actions/checkout@v3
     - uses: sqlc-dev/setup-sqlc@v3
       with:
-        sqlc-version: '1.29.0'
+        sqlc-version: '1.30.0'
     # Start a PostgreSQL server
     - uses: sqlc-dev/action-setup-postgres@master
       with:
@@ -117,7 +117,7 @@ jobs:
     - uses: actions/checkout@v3
     - uses: sqlc-dev/setup-sqlc@v3
       with:
-        sqlc-version: '1.29.0'
+        sqlc-version: '1.30.0'
     - run: sqlc push
       env:
         SQLC_AUTH_TOKEN: ${{ secrets.SQLC_AUTH_TOKEN }}
@@ -139,7 +139,7 @@ jobs:
     - uses: actions/checkout@v3
     - uses: sqlc-dev/setup-sqlc@v3
       with:
-        sqlc-version: '1.29.0'
+        sqlc-version: '1.30.0'
     - uses: sqlc-dev/action-setup-postgres@master
       with:
         postgres-version: "16"
@@ -154,7 +154,7 @@ jobs:
     steps:
     - uses: sqlc-dev/setup-sqlc@v3
       with:
-        sqlc-version: '1.29.0'
+        sqlc-version: '1.30.0'
     - run: sqlc push
       env:
         SQLC_AUTH_TOKEN: ${{ secrets.SQLC_AUTH_TOKEN }}
