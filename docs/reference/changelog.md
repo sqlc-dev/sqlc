@@ -1,6 +1,60 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+(v1-30-0)=
+## [1.30.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.30.0)
+Released 2025-09-01
+
+### Bug Fixes
+
+- (compiler/mysql) Prevent panic in convertSetOprSelectList() (#4042)
+- Range subselect alias pointer dereference (#3711)
+- (codegen/golang) Don't omit enums used as arrays (#4058)
+- (codegen/golang) Handle `go_struct_tag` for `db_type` overrides  (#4055)
+- (engine/dolphin) Remove references to deprecated `pcast.ChangeStmt` (#4057)
+- Normalize identifier usage for table names (#4045)
+- (engine/sqlite) Fix parsing of INSERT DEFAULT VALUES syntax (#4010)
+
+### Documentation
+
+- Fix parameter syntax inconsistency for MySQL and SQLite (#4036)
+- Use correct configuration to generate the given output for JSON type override (#4049)
+- Clean up and add to docs regarding type overrides (#4060)
+- Try a different admonition format (#4061)
+- Use the correct admonition format (#4062)
+- Add multi-worded table example for renaming (#4067)
+
+### Features
+
+- (docs) Add link to Gleam/parrot (#4038)
+- (engine/dolphin) Implement MATCH_AGAINST conversion in SQL AST (#1192, #3091) (#4070)
+- (engine/sqlite) Coerce jsonb columns to json before returning to Go code (#3968)
+
+### Testing
+
+- (endtoend) Skip process_plugin_sqlc_gen_json (#4075)
+- (endtoend) Use Docker to start database servers (#4076)
+
+### Build
+
+- (deps) Bump the production-dependencies group across 1 directory with 2 updates (#3941)
+- (deps) Bump packaging (#3940)
+- (deps) Bump golang from 1.24.2 to 1.24.4 (#3983)
+- (deps) Bump golang from 1.24.4 to 1.24.5 (#4014)
+- (deps) Bump urllib3 from 2.4.0 to 2.5.0 in /docs (#3994)
+- (deps) Bump the production-dependencies group across 1 directory with 5 updates (#3989)
+- (deps) Bump the production-dependencies group across 1 directory with 4 updates (#4027)
+- (deps) Bump modernc.org/sqlite (#4032)
+- (deps) Bump the production-dependencies group across 1 directory with 4 updates (#4018)
+- (deps) Bump certifi in /docs in the production-dependencies group (#4041)
+- (deps) Bump google.golang.org/protobuf (#4043)
+- (deps) Bump actions/checkout from 4 to 5 (#4059)
+- (deps) Bump the production-dependencies group across 1 directory with 2 updates (#4071)
+- (deps) Bump requests in /docs in the production-dependencies group (#4068)
+- Upgrade to Go 1.25 (#4074)
+- (deps) Bump golang from 1.24.5 to 1.25.0 (#4063)
+- (deps) Bump github.com/google/cel-go (#4080)
+
 (v1-29-0)=
 ## [1.29.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.29.0)
 Released 2025-04-14
