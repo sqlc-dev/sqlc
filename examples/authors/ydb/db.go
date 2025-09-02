@@ -6,14 +6,15 @@ package authors
 
 import (
 	"context"
-	"database/sql"
+
+	"github.com/ydb-platform/ydb-go-sdk/v3/query"
 )
 
 type DBTX interface {
-	ExecContext(context.Context, string, ...interface{}) (sql.Result, error)
-	PrepareContext(context.Context, string) (*sql.Stmt, error)
-	QueryContext(context.Context, string, ...interface{}) (*sql.Rows, error)
-	QueryRowContext(context.Context, string, ...interface{}) *sql.Row
+	Exec(ctx context.Context, sql string, opts ...query.ExecuteOption) error
+	Query(ctx context.Context, sql string, opts ...query.ExecuteOption) (query.Result, error)
+	QueryResultSet(ctx context.Context, sql string, opts ...query.ExecuteOption) (query.ClosableResultSet, error)
+	QueryRow(ctx context.Context, sql string, opts ...query.ExecuteOption) (query.Row, error)
 }
 
 func New(db DBTX) *Queries {
@@ -22,10 +23,4 @@ func New(db DBTX) *Queries {
 
 type Queries struct {
 	db DBTX
-}
-
-func (q *Queries) WithTx(tx *sql.Tx) *Queries {
-	return &Queries{
-		db: tx,
-	}
 }

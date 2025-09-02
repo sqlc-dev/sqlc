@@ -52,6 +52,7 @@ sql:
       package: authors
       out: ydb
       emit_json_tags: true
+      sql_package: ydb-go-sdk
 
 
 rules:
