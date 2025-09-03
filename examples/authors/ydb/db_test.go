@@ -23,19 +23,19 @@ func TestAuthors(t *testing.T) {
 
 	t.Run("InsertAuthors", func(t *testing.T) {
 		authorsToInsert := []CreateOrUpdateAuthorParams{
-			{P0: 1, P1: "Лев Толстой", P2: ptr("Русский писатель, автор \"Война и мир\"")},
-			{P0: 2, P1: "Александр Пушкин", P2: ptr("Автор \"Евгения Онегина\"")},
-			{P0: 3, P1: "Александр Пушкин", P2: ptr("Русский поэт, драматург и прозаик")},
-			{P0: 4, P1: "Фёдор Достоевский", P2: ptr("Автор \"Преступление и наказание\"")},
-			{P0: 5, P1: "Николай Гоголь", P2: ptr("Автор \"Мёртвые души\"")},
-			{P0: 6, P1: "Антон Чехов", P2: nil},
-			{P0: 7, P1: "Иван Тургенев", P2: ptr("Автор \"Отцы и дети\"")},
-			{P0: 8, P1: "Михаил Лермонтов", P2: nil},
-			{P0: 9, P1: "Даниил Хармс", P2: ptr("Абсурдист, писатель и поэт")},
-			{P0: 10, P1: "Максим Горький", P2: ptr("Автор \"На дне\"")},
-			{P0: 11, P1: "Владимир Маяковский", P2: nil},
-			{P0: 12, P1: "Сергей Есенин", P2: ptr("Русский лирик")},
-			{P0: 13, P1: "Борис Пастернак", P2: ptr("Автор \"Доктор Живаго\"")},
+			{P0: 1, P1: "Leo Tolstoy", P2: ptr("Russian writer, author of \"War and Peace\"")},
+			{P0: 2, P1: "Alexander Pushkin", P2: ptr("Author of \"Eugene Onegin\"")},
+			{P0: 3, P1: "Alexander Pushkin", P2: ptr("Russian poet, playwright, and prose writer")},
+			{P0: 4, P1: "Fyodor Dostoevsky", P2: ptr("Author of \"Crime and Punishment\"")},
+			{P0: 5, P1: "Nikolai Gogol", P2: ptr("Author of \"Dead Souls\"")},
+			{P0: 6, P1: "Anton Chekhov", P2: nil},
+			{P0: 7, P1: "Ivan Turgenev", P2: ptr("Author of \"Fathers and Sons\"")},
+			{P0: 8, P1: "Mikhail Lermontov", P2: nil},
+			{P0: 9, P1: "Daniil Kharms", P2: ptr("Absurdist, writer and poet")},
+			{P0: 10, P1: "Maxim Gorky", P2: ptr("Author of \"At the Bottom\"")},
+			{P0: 11, P1: "Vladimir Mayakovsky", P2: nil},
+			{P0: 12, P1: "Sergei Yesenin", P2: ptr("Russian lyric poet")},
+			{P0: 13, P1: "Boris Pasternak", P2: ptr("Author of \"Doctor Zhivago\"")},
 		}
 
 		for _, author := range authorsToInsert {
@@ -79,7 +79,7 @@ func TestAuthors(t *testing.T) {
 		var i uint64
 		for i = 1; i <= 13; i++ {
 			if err := q.DeleteAuthor(ctx, i, query.WithIdempotent()); err != nil {
-				t.Fatalf("failed to delete authors: %v", err)
+				t.Fatalf("failed to delete author: %v", err)
 			}
 		}
 		authors, err := q.ListAuthors(ctx)

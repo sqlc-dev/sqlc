@@ -28,8 +28,8 @@ func TestAlterUser(t *testing.T) {
 						Options: &ast.List{
 							Items: []ast.Node{
 								&ast.DefElem{
-									Defname: strPtr("rename"),
-									Arg:     &ast.String{Str: "queen"},
+									Defname:   strPtr("rename"),
+									Arg:       &ast.String{Str: "queen"},
 									Defaction: ast.DefElemAction(1),
 								},
 							},
@@ -133,10 +133,10 @@ func TestAlterUser(t *testing.T) {
 		t.Run(tc.stmt, func(t *testing.T) {
 			stmts, err := p.Parse(strings.NewReader(tc.stmt))
 			if err != nil {
-				t.Fatalf("Ошибка парсинга запроса %q: %v", tc.stmt, err)
+				t.Fatalf("Failed to parse query %q: %v", tc.stmt, err)
 			}
 			if len(stmts) == 0 {
-				t.Fatalf("Запрос %q не распарсен", tc.stmt)
+				t.Fatalf("Query %q was not parsed", tc.stmt)
 			}
 
 			diff := cmp.Diff(tc.expected, &stmts[0],
@@ -146,7 +146,7 @@ func TestAlterUser(t *testing.T) {
 				cmpopts.IgnoreFields(ast.A_Const{}, "Location"),
 			)
 			if diff != "" {
-				t.Errorf("Несовпадение AST (-ожидалось +получено):\n%s", diff)
+				t.Errorf("AST mismatch for %q (-expected +got):\n%s", tc.stmt, diff)
 			}
 		})
 	}

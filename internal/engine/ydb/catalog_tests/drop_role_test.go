@@ -69,10 +69,10 @@ func TestDropRole(t *testing.T) {
 		t.Run(tc.stmt, func(t *testing.T) {
 			stmts, err := p.Parse(strings.NewReader(tc.stmt))
 			if err != nil {
-				t.Fatalf("Error parsing %q: %v", tc.stmt, err)
+				t.Fatalf("Failed to parse query %q: %v", tc.stmt, err)
 			}
 			if len(stmts) == 0 {
-				t.Fatalf("Statement %q was not parsed", tc.stmt)
+				t.Fatalf("Query %q was not parsed", tc.stmt)
 			}
 
 			diff := cmp.Diff(tc.expected, &stmts[0],
