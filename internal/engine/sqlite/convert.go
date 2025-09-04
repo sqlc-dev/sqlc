@@ -132,12 +132,47 @@ func (c *cc) convertCreate_virtual_table_stmtContext(n *parser.Create_virtual_ta
 	case "fts5":
 		// https://www.sqlite.org/fts5.html
 		return c.convertCreate_virtual_table_fts5(n)
+	case "rtree":
+		// https://www.sqlite.org/rtree.html
+		return c.convertCreate_virtual_table_rtree(n)
 	default:
 		return todo(
 			fmt.Sprintf("create_virtual_table. unsupported module name: %q", moduleName),
 			n,
 		)
 	}
+}
+
+func (c *cc) convertCreate_virtual_table_rtree(n *parser.Create_virtual_table_stmtContext) ast.Node {
+	stmt := &ast.CreateTableStmt{
+		Name:        parseTableName(n),
+		IfNotExists: n.EXISTS_() != nil,
+	}
+
+	for i, arg := range n.AllModule_argument() {
+		columnExpr, ok := arg.Expr().(*parser.Expr_qualified_column_nameContext)
+		if !ok {
+			continue
+		}
+
+		columnName := columnExpr.Column_name().GetText()
+
+		col := ast.ColumnDef{
+			Colname:   identifier(columnName),
+			IsNotNull: true,
+		}
+
+		// first argument in the rtree is an integer (ID)
+		// https://www.sqlite.org/rtree.html#column_naming_details
+		if i == 0 {
+			col.TypeName = &ast.TypeName{Name: "integer"}
+		} else {
+			col.TypeName = &ast.TypeName{Name: "real"}
+		}
+
+		stmt.Cols = append(stmt.Cols, &col)
+	}
+	return stmt
 }
 
 func (c *cc) convertCreate_virtual_table_fts5(n *parser.Create_virtual_table_stmtContext) ast.Node {
