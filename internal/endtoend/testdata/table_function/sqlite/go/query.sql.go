@@ -57,3 +57,52 @@ func (q *Queries) GetTransaction(ctx context.Context, arg GetTransactionParams) 
 	}
 	return items, nil
 }
+
+const getTransactionWithoutAlias = `-- name: GetTransactionWithoutAlias :many
+SELECT
+    json_extract(transactions.data, '$.transaction.signatures[0]'),
+    json_group_array(value)
+FROM
+    transactions,
+    json_each(json_extract(transactions.data, '$.transaction.message.instructions'))
+WHERE
+    transactions.program_id = ?
+    AND json_extract(transactions.data, '$.transaction.signatures[0]') > ?
+    AND json_extract(json_extract(transactions.data, '$.transaction.message.accountKeys'), '$[' || json_extract(value, '$.programIdIndex') || ']') = transactions.program_id
+GROUP BY transactions.rowid
+LIMIT ?
+`
+
+type GetTransactionWithoutAliasParams struct {
+	ProgramID string
+	Data      string
+	Limit     int64
+}
+
+type GetTransactionWithoutAliasRow struct {
+	JsonExtract    interface{}
+	JsonGroupArray interface{}
+}
+
+func (q *Queries) GetTransactionWithoutAlias(ctx context.Context, arg GetTransactionWithoutAliasParams) ([]GetTransactionWithoutAliasRow, error) {
+	rows, err := q.db.QueryContext(ctx, getTransactionWithoutAlias, arg.ProgramID, arg.Data, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetTransactionWithoutAliasRow
+	for rows.Next() {
+		var i GetTransactionWithoutAliasRow
+		if err := rows.Scan(&i.JsonExtract, &i.JsonGroupArray); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
