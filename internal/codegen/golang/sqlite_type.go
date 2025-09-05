@@ -60,7 +60,7 @@ func sqliteType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.
 		return "json.RawMessage"
 
 	case "any":
-		return "interface{}"
+		return "any"
 
 	}
 
@@ -96,7 +96,7 @@ func sqliteType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.
 			log.Printf("unknown SQLite type: %s\n", dt)
 		}
 
-		return "interface{}"
+		return "any"
 
 	}
 }

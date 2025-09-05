@@ -97,7 +97,7 @@ WHERE id IN ($2) AND name = $1
 
 func (q *Queries) DeleteAuthors(ctx context.Context, name string, ids []int64) error {
 	query := deleteAuthors
-	var queryParams []interface{}
+	var queryParams []any
 	queryParams = append(queryParams, name)
 	if len(ids) > 0 {
 		for _, v := range ids {
