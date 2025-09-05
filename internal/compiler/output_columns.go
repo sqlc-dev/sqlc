@@ -3,6 +3,7 @@ package compiler
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
@@ -315,12 +316,14 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 					DataType:   dataType(fun.ReturnType),
 					NotNull:    !fun.ReturnTypeNullable,
 					IsFuncCall: true,
+					FuncName:   rel.Name,
 				})
 			} else {
 				cols = append(cols, &Column{
 					Name:       name,
 					DataType:   "any",
 					IsFuncCall: true,
+					FuncName:   rel.Name,
 				})
 			}
 
@@ -341,6 +344,10 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 				if res.Name != nil {
 					first.Name = *res.Name
 				}
+				if !(first.IsFuncCall && strings.EqualFold(first.FuncName, "count")) {
+					first.NotNull = false
+				}
+
 				cols = append(cols, first)
 			default:
 				cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
@@ -377,6 +384,12 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 			if res.Name != nil {
 				first.Name = *res.Name
 			}
+			if !(first.IsFuncCall &&
+				(strings.EqualFold(first.FuncName, "count") ||
+					strings.EqualFold(first.FuncName, "total"))) {
+				first.NotNull = false
+			}
+
 			cols = append(cols, first)
 
 		default:
