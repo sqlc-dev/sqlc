@@ -268,6 +268,16 @@ func (i *importer) interfaceImports() fileImports {
 
 	std["context"] = struct{}{}
 
+	sqlpkg := parseDriver(i.Options.SqlPackage)
+	switch sqlpkg {
+	case SQLDriverPGXV4:
+		pkg[ImportSpec{Path: "github.com/jackc/pgx/v4"}] = struct{}{}
+	case SQLDriverPGXV5:
+		pkg[ImportSpec{Path: "github.com/jackc/pgx/v5"}] = struct{}{}
+	default:
+		std["database/sql"] = struct{}{}
+	}
+
 	return sortedImports(std, pkg)
 }
 

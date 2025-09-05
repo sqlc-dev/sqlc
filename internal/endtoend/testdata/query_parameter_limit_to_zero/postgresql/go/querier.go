@@ -6,9 +6,11 @@ package querytest
 
 import (
 	"context"
+	"database/sql"
 )
 
 type Querier interface {
+	WithTx(tx *sql.Tx) *Queries
 	CreateAuthor(ctx context.Context, arg CreateAuthorParams) (Author, error)
 	DeleteAuthor(ctx context.Context, arg DeleteAuthorParams) error
 	GetAuthor(ctx context.Context, arg GetAuthorParams) (Author, error)
