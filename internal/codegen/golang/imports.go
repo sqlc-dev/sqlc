@@ -132,6 +132,8 @@ func (i *importer) dbImports() fileImports {
 	case opts.SQLDriverPGXV5:
 		pkg = append(pkg, ImportSpec{Path: "github.com/jackc/pgx/v5/pgconn"})
 		pkg = append(pkg, ImportSpec{Path: "github.com/jackc/pgx/v5"})
+	case opts.SQLDriverYDBGoSDK:
+		pkg = append(pkg, ImportSpec{Path: "github.com/ydb-platform/ydb-go-sdk/v3/query"})
 	default:
 		std = append(std, ImportSpec{Path: "database/sql"})
 		if i.Options.EmitPreparedQueries {
@@ -177,7 +179,9 @@ func buildImports(options *opts.Options, queries []Query, uses func(string) bool
 			case opts.SQLDriverPGXV5:
 				pkg[ImportSpec{Path: "github.com/jackc/pgx/v5/pgconn"}] = struct{}{}
 			default:
-				std["database/sql"] = struct{}{}
+				if !sqlpkg.IsYDBGoSDK() {
+					std["database/sql"] = struct{}{}
+				}
 			}
 		}
 	}
@@ -267,6 +271,11 @@ func (i *importer) interfaceImports() fileImports {
 	})
 
 	std["context"] = struct{}{}
+	
+	sqlpkg := parseDriver(i.Options.SqlPackage)
+	if sqlpkg.IsYDBGoSDK() {
+		pkg[ImportSpec{Path: "github.com/ydb-platform/ydb-go-sdk/v3/query"}] = struct{}{}
+	}
 
 	return sortedImports(std, pkg)
 }
@@ -395,11 +404,26 @@ func (i *importer) queryImports(filename string) fileImports {
 	}
 
 	sqlpkg := parseDriver(i.Options.SqlPackage)
-	if sqlcSliceScan() && !sqlpkg.IsPGX() {
+	if sqlcSliceScan() && !sqlpkg.IsPGX() && !sqlpkg.IsYDBGoSDK() {
 		std["strings"] = struct{}{}
 	}
-	if sliceScan() && !sqlpkg.IsPGX() {
+	if sliceScan() && !sqlpkg.IsPGX() && !sqlpkg.IsYDBGoSDK() {
 		pkg[ImportSpec{Path: "github.com/lib/pq"}] = struct{}{}
+	}
+
+	if sqlpkg.IsYDBGoSDK() {
+		hasParams := false
+		for _, q := range gq {
+			if !q.Arg.isEmpty() {
+				hasParams = true
+				break
+			}
+		}
+		if hasParams {
+			pkg[ImportSpec{Path: "github.com/ydb-platform/ydb-go-sdk/v3"}] = struct{}{}
+		}
+		pkg[ImportSpec{Path: "github.com/ydb-platform/ydb-go-sdk/v3/query"}] = struct{}{}
+		pkg[ImportSpec{Path: "github.com/ydb-platform/ydb-go-sdk/v3/pkg/xerrors"}] = struct{}{}
 	}
 
 	if i.Options.WrapErrors {

@@ -209,6 +209,15 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 		return nil, errors.New(":batch* commands are only supported by pgx")
 	}
 
+	if tctx.SQLDriver.IsYDBGoSDK() {
+		for _, q := range queries {
+			switch q.Cmd {
+			case metadata.CmdExecResult, metadata.CmdExecRows, metadata.CmdExecLastId:
+				return nil, fmt.Errorf("%s is not supported by ydb-go-sdk", q.Cmd)
+			}
+		}
+	}
+
 	funcMap := template.FuncMap{
 		"lowerTitle": sdk.LowerTitle,
 		"comment":    sdk.DoubleSlashComment,
