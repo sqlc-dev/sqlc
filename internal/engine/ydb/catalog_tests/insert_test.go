@@ -28,6 +28,7 @@ func TestInsert(t *testing.T) {
 							},
 						},
 						SelectStmt: &ast.SelectStmt{
+							DistinctClause: &ast.List{},
 							ValuesLists: &ast.List{
 								Items: []ast.Node{
 									&ast.List{
@@ -40,6 +41,10 @@ func TestInsert(t *testing.T) {
 							},
 							TargetList: &ast.List{},
 							FromClause: &ast.List{},
+							GroupClause: &ast.List{},
+							WindowClause: &ast.List{},
+							SortClause: &ast.List{},
+							LockingClause: &ast.List{},
 						},
 						OnConflictClause: &ast.OnConflictClause{},
 						ReturningList: &ast.List{
@@ -68,6 +73,7 @@ func TestInsert(t *testing.T) {
 							},
 						},
 						SelectStmt: &ast.SelectStmt{
+							DistinctClause: &ast.List{},
 							ValuesLists: &ast.List{
 								Items: []ast.Node{
 									&ast.List{
@@ -79,6 +85,10 @@ func TestInsert(t *testing.T) {
 							},
 							TargetList: &ast.List{},
 							FromClause: &ast.List{},
+							GroupClause: &ast.List{},
+							WindowClause: &ast.List{},
+							SortClause: &ast.List{},
+							LockingClause: &ast.List{},
 						},
 						OnConflictClause: &ast.OnConflictClause{
 							Action: ast.OnConflictAction_INSERT_OR_IGNORE,
@@ -106,7 +116,16 @@ func TestInsert(t *testing.T) {
 					Stmt: &ast.InsertStmt{
 						Relation:         &ast.RangeVar{Relname: strPtr("users")},
 						Cols:             &ast.List{Items: []ast.Node{&ast.ResTarget{Name: strPtr("id")}}},
-						SelectStmt:       &ast.SelectStmt{ValuesLists: &ast.List{Items: []ast.Node{&ast.List{Items: []ast.Node{&ast.A_Const{Val: &ast.Integer{Ival: 4}}}}}}, TargetList: &ast.List{}, FromClause: &ast.List{}},
+						SelectStmt: &ast.SelectStmt{
+							DistinctClause: &ast.List{},
+							ValuesLists: &ast.List{Items: []ast.Node{&ast.List{Items: []ast.Node{&ast.A_Const{Val: &ast.Integer{Ival: 4}}}}}},
+							TargetList: &ast.List{},
+							FromClause: &ast.List{},
+							GroupClause: &ast.List{},
+							WindowClause: &ast.List{},
+							SortClause: &ast.List{},
+							LockingClause: &ast.List{},
+						},
 						OnConflictClause: &ast.OnConflictClause{Action: ast.OnConflictAction_UPSERT},
 						ReturningList:    &ast.List{Items: []ast.Node{&ast.ResTarget{Val: &ast.ColumnRef{Fields: &ast.List{Items: []ast.Node{&ast.String{Str: "id"}}}}, Indirection: &ast.List{}}}},
 					},

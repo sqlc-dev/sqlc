@@ -121,6 +121,7 @@ func TestUpdate(t *testing.T) {
 							},
 						},
 						OnSelectStmt: &ast.SelectStmt{
+							DistinctClause: &ast.List{},
 							ValuesLists: &ast.List{
 								Items: []ast.Node{
 									&ast.List{
@@ -132,6 +133,10 @@ func TestUpdate(t *testing.T) {
 							},
 							FromClause: &ast.List{},
 							TargetList: &ast.List{},
+							GroupClause: &ast.List{},
+							WindowClause: &ast.List{},
+							SortClause: &ast.List{},
+							LockingClause: &ast.List{},
 						},
 						ReturningList: &ast.List{
 							Items: []ast.Node{

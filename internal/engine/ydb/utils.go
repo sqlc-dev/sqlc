@@ -85,7 +85,7 @@ func parseIdOrType(ctx parser.IId_or_typeContext) string {
 	}
 	Id := ctx.(*parser.Id_or_typeContext)
 	if Id.Id() != nil {
-		return identifier(parseIdTable(Id.Id()))
+		return identifier(parseId(Id.Id()))
 	}
 
 	return ""
@@ -112,11 +112,23 @@ func parseAnIdSchema(ctx parser.IAn_id_schemaContext) string {
 	return ""
 }
 
-func parseIdTable(ctx parser.IIdContext) string {
+func parseId(ctx parser.IIdContext) string {
 	if ctx == nil {
 		return ""
 	}
 	return ctx.GetText()
+}
+
+func parseAnIdTable(ctx parser.IAn_id_tableContext) string {
+	if ctx == nil {
+		return ""
+	}
+	if id := ctx.Id_table(); id != nil {
+		return id.GetText()
+	} else if str := ctx.STRING_VALUE(); str != nil {
+		return str.GetText()
+	}
+	return ""
 }
 
 func parseIntegerValue(text string) (int64, error) {
@@ -193,4 +205,17 @@ func byteOffsetFromRuneIndex(s string, runeIndex int) int {
 		bytePos += size
 	}
 	return bytePos
+}
+
+func emptySelectStmt() *ast.SelectStmt {
+	return &ast.SelectStmt{
+		DistinctClause: &ast.List{},
+		TargetList:     &ast.List{},
+		FromClause:     &ast.List{},
+		GroupClause:    &ast.List{},
+		WindowClause:   &ast.List{},
+		ValuesLists:    &ast.List{},
+		SortClause:     &ast.List{},
+		LockingClause:  &ast.List{},
+	}
 }
