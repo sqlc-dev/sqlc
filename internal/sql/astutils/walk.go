@@ -898,6 +898,9 @@ func Walk(f Visitor, node ast.Node) {
 		}
 
 	case *ast.CreateRoleStmt:
+		if n.BindRole != nil {
+			Walk(f, n.BindRole)
+		}
 		if n.Options != nil {
 			Walk(f, n.Options)
 		}
@@ -1067,6 +1070,12 @@ func Walk(f Visitor, node ast.Node) {
 		}
 		if n.WhereClause != nil {
 			Walk(f, n.WhereClause)
+		}
+		if n.OnCols != nil {
+			Walk(f, n.OnCols)
+		}
+		if n.OnSelectStmt != nil {
+			Walk(f, n.OnSelectStmt)
 		}
 		if n.LimitCount != nil {
 			Walk(f, n.LimitCount)
@@ -1510,6 +1519,17 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.PartParams)
 		}
 
+	case *ast.Pragma_stmt:
+		if n.Name != nil {
+			Walk(f, n.Name)
+		}
+		if n.Cols != nil {
+			Walk(f, n.Cols)
+		}
+		if n.Values != nil {
+			Walk(f, n.Values)
+		}
+
 	case *ast.PrepareStmt:
 		if n.Argtypes != nil {
 			Walk(f, n.Argtypes)
@@ -1714,6 +1734,26 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Newrole)
 		}
 
+	case *ast.RecursiveFuncCall:
+		if n.Func != nil {
+			Walk(f, n.Func)
+		}
+		if n.Funcname != nil {
+			Walk(f, n.Funcname)
+		}
+		if n.Args != nil {
+			Walk(f, n.Args)
+		}
+		if n.AggOrder != nil {
+			Walk(f, n.AggOrder)
+		}
+		if n.AggFilter != nil {
+			Walk(f, n.AggFilter)
+		}
+		if n.Over != nil {
+			Walk(f, n.Over)
+		}
+
 	case *ast.RefreshMatViewStmt:
 		if n.Relation != nil {
 			Walk(f, n.Relation)
@@ -1752,7 +1792,9 @@ func Walk(f Visitor, node ast.Node) {
 		}
 
 	case *ast.RoleSpec:
-		// pass
+		if n.BindRolename != nil {
+			Walk(f, n.BindRolename)
+		}
 
 	case *ast.RowCompareExpr:
 		if n.Xpr != nil {
@@ -2041,6 +2083,12 @@ func Walk(f Visitor, node ast.Node) {
 		if n.FromClause != nil {
 			Walk(f, n.FromClause)
 		}
+		if n.OnCols != nil {
+			Walk(f, n.OnCols)
+		}
+		if n.OnSelectStmt != nil {
+			Walk(f, n.OnSelectStmt)
+		}
 		if n.LimitCount != nil {
 			Walk(f, n.LimitCount)
 		}
@@ -2049,6 +2097,11 @@ func Walk(f Visitor, node ast.Node) {
 		}
 		if n.WithClause != nil {
 			Walk(f, n.WithClause)
+		}
+
+	case *ast.UseStmt:
+		if n.Xpr != nil {
+			Walk(f, n.Xpr)
 		}
 
 	case *ast.VacuumStmt:
