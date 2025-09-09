@@ -1,6 +1,6 @@
 module github.com/sqlc-dev/sqlc
 
-go 1.23.0
+go 1.24.0
 
 toolchain go1.24.1
 
@@ -13,7 +13,7 @@ require (
 	github.com/google/cel-go v0.26.1
 	github.com/google/go-cmp v0.7.0
 	github.com/jackc/pgx/v4 v4.18.3
-	github.com/jackc/pgx/v5 v5.7.5
+	github.com/jackc/pgx/v5 v5.7.6
 	github.com/jinzhu/inflection v1.0.0
 	github.com/lib/pq v1.10.9
 	github.com/pganalyze/pg_query_go/v6 v6.1.0
@@ -24,7 +24,7 @@ require (
 	github.com/tetratelabs/wazero v1.9.0
 	github.com/wasilibs/go-pgquery v0.0.0-20250409022910-10ac41983c07
 	github.com/xeipuuv/gojsonschema v1.2.0
-	golang.org/x/sync v0.16.0
+	golang.org/x/sync v0.17.0
 	google.golang.org/grpc v1.75.0
 	google.golang.org/protobuf v1.36.8
 	gopkg.in/yaml.v3 v3.0.1
