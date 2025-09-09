@@ -1582,7 +1582,7 @@ func (c *cc) convertTypeName(n parser.IType_nameContext) *ast.TypeName {
 	if decimal := n.Type_name_decimal(); decimal != nil {
 		if integerOrBinds := decimal.AllInteger_or_bind(); len(integerOrBinds) >= 2 {
 			return &ast.TypeName{
-				Name:    "Decimal",
+				Name:    "decimal",
 				TypeOid: 0,
 				Names: &ast.List{
 					Items: []ast.Node{

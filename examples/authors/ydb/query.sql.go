@@ -25,11 +25,15 @@ type CreateOrUpdateAuthorParams struct {
 
 func (q *Queries) CreateOrUpdateAuthor(ctx context.Context, arg CreateOrUpdateAuthorParams, opts ...query.ExecuteOption) error {
 	err := q.db.Exec(ctx, createOrUpdateAuthor,
-		append(opts, query.WithParameters(ydb.ParamsFromMap(map[string]any{
-			"$p0": arg.P0,
-			"$p1": arg.P1,
-			"$p2": arg.P2,
-		})))...,
+		append(opts,
+			query.WithParameters(
+				ydb.ParamsBuilder().
+					Param("$p0").Uint64(arg.P0).
+					Param("$p1").Text(arg.P1).
+					Param("$p2").BeginOptional().Text(arg.P2).EndOptional().
+					Build(),
+			),
+		)...,
 	)
 	if err != nil {
 		return xerrors.WithStackTrace(err)
@@ -43,9 +47,13 @@ DELETE FROM authors WHERE id = $p0
 
 func (q *Queries) DeleteAuthor(ctx context.Context, p0 uint64, opts ...query.ExecuteOption) error {
 	err := q.db.Exec(ctx, deleteAuthor,
-		append(opts, query.WithParameters(ydb.ParamsFromMap(map[string]any{
-			"$p0": p0,
-		})))...,
+		append(opts,
+			query.WithParameters(
+				ydb.ParamsBuilder().
+					Param("$p0").Uint64(p0).
+					Build(),
+			),
+		)...,
 	)
 	if err != nil {
 		return xerrors.WithStackTrace(err)
@@ -72,9 +80,13 @@ WHERE id = $p0 LIMIT 1
 
 func (q *Queries) GetAuthor(ctx context.Context, p0 uint64, opts ...query.ExecuteOption) (Author, error) {
 	row, err := q.db.QueryRow(ctx, getAuthor,
-		append(opts, query.WithParameters(ydb.ParamsFromMap(map[string]any{
-			"$p0": p0,
-		})))...,
+		append(opts,
+			query.WithParameters(
+				ydb.ParamsBuilder().
+					Param("$p0").Uint64(p0).
+					Build(),
+			),
+		)...,
 	)
 	var i Author
 	if err != nil {
@@ -92,25 +104,20 @@ SELECT id, name, bio FROM authors ORDER BY name
 `
 
 func (q *Queries) ListAuthors(ctx context.Context, opts ...query.ExecuteOption) ([]Author, error) {
-	result, err := q.db.Query(ctx, listAuthors, opts...)
+	result, err := q.db.QueryResultSet(ctx, listAuthors, opts...)
 	if err != nil {
 		return nil, xerrors.WithStackTrace(err)
 	}
 	var items []Author
-	for set, err := range result.ResultSets(ctx) {
+	for row, err := range result.Rows(ctx) {
 		if err != nil {
 			return nil, xerrors.WithStackTrace(err)
 		}
-		for row, err := range set.Rows(ctx) {
-			if err != nil {
-				return nil, xerrors.WithStackTrace(err)
-			}
-			var i Author
-			if err := row.Scan(&i.ID, &i.Name, &i.Bio); err != nil {
-				return nil, xerrors.WithStackTrace(err)
-			}
-			items = append(items, i)
+		var i Author
+		if err := row.Scan(&i.ID, &i.Name, &i.Bio); err != nil {
+			return nil, xerrors.WithStackTrace(err)
 		}
+		items = append(items, i)
 	}
 	if err := result.Close(ctx); err != nil {
 		return nil, xerrors.WithStackTrace(err)

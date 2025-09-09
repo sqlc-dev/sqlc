@@ -151,6 +151,24 @@ func YDBType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Col
 		// return "sql.NullInt64"
 		return "*int64"
 
+	case "json", "jsondocument":
+		if notNull {
+			return "string"
+		}
+		if emitPointersForNull {
+			return "*string"
+		}
+		return "*string"
+		
+	case "date", "date32", "datetime", "timestamp", "tzdate", "tztimestamp", "tzdatetime":
+		if notNull {
+			return "time.Time"
+		}
+		if emitPointersForNull {
+			return "*time.Time"
+		}
+		return "*time.Time"
+
 	case "null":
 		// return "sql.Null"
 		return "interface{}"

@@ -106,7 +106,7 @@ func TestCreateTable(t *testing.T) {
 							{
 								Name: "amount",
 								Type: ast.TypeName{
-									Name: "Decimal",
+									Name: "decimal",
 									Names: &ast.List{
 										Items: []ast.Node{
 											&ast.Integer{Ival: 22},

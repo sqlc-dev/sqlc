@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/sqlc-dev/sqlc/internal/codegen/golang/opts"
+	"github.com/sqlc-dev/sqlc/internal/codegen/sdk"
 	"github.com/sqlc-dev/sqlc/internal/metadata"
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
@@ -292,6 +293,106 @@ func (v QueryValue) YDBParamMapEntries() string {
 
 	parts = append(parts, "")
 	return "\n" + strings.Join(parts, ",\n")
+}
+
+// ydbBuilderMethodForColumnType maps a YDB column data type to a ParamsBuilder method name.
+func ydbBuilderMethodForColumnType(dbType string) string {
+	switch strings.ToLower(dbType) {
+	case "bool":
+		return "Bool"
+	case "uint64":
+		return "Uint64"
+	case "int64":
+		return "Int64"
+	case "uint32":
+		return "Uint32"
+	case "int32":
+		return "Int32"
+	case "uint16":
+		return "Uint16"
+	case "int16":
+		return "Int16"
+	case "uint8":
+		return "Uint8"
+	case "int8":
+		return "Int8"
+	case "float":
+		return "Float"
+	case "double":
+		return "Double"
+	case "json":
+		return "JSON"
+	case "jsondocument":
+		return "JSONDocument"
+	case "utf8", "text", "string":
+		return "Text"
+	case "date":
+		return "Date"
+	case "date32":
+		return "Date32"
+	case "datetime":
+		return "Datetime"
+	case "timestamp":
+		return "Timestamp"
+	case "tzdate":
+		return "TzDate"
+	case "tzdatetime":
+		return "TzDatetime"
+	case "tztimestamp":
+		return "TzTimestamp"
+
+	//TODO: support other types
+	default:
+		return ""
+	}
+}
+
+// YDBParamsBuilder emits Go code that constructs YDB params using ParamsBuilder.
+func (v QueryValue) YDBParamsBuilder() string {
+	if v.isEmpty() {
+		return ""
+	}
+
+	var lines []string
+
+	for _, field := range v.getParameterFields() {
+		if field.Column != nil && field.Column.IsNamedParam {
+			name := field.Column.GetName()
+			if name == "" {
+				continue
+			}
+			paramName := fmt.Sprintf("%q", addDollarPrefix(name))
+			variable := escape(v.VariableForField(field))
+
+			var method string
+			if field.Column != nil && field.Column.Type != nil {
+				method = ydbBuilderMethodForColumnType(sdk.DataType(field.Column.Type))
+			}
+
+			goType := field.Type
+			isPtr := strings.HasPrefix(goType, "*")
+			if isPtr {
+				goType = strings.TrimPrefix(goType, "*")
+			}
+
+			if method == "" {
+				panic(fmt.Sprintf("unknown YDB column type for param %s (goType=%s)", name, goType))
+			}
+
+			if isPtr {
+				lines = append(lines, fmt.Sprintf("\t\t\tParam(%s).BeginOptional().%s(%s).EndOptional().", paramName, method, variable))
+			} else {
+				lines = append(lines, fmt.Sprintf("\t\t\tParam(%s).%s(%s).", paramName, method, variable))
+			}
+		}
+	}
+
+	if len(lines) == 0 {
+		return ""
+	}
+
+	params := strings.Join(lines, "\n")
+	return fmt.Sprintf("\nquery.WithParameters(\n\t\tydb.ParamsBuilder().\n%s\n\t\t\tBuild(),\n\t\t),\n", params)
 }
 
 func (v QueryValue) getParameterFields() []Field {
