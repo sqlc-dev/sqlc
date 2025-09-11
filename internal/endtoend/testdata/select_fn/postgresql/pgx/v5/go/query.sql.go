@@ -7,22 +7,29 @@ package querytest
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const selectBars = `-- name: SelectBars :many
-SELECT foo, baz FROM bar_fn()
+const selectFooEmbed = `-- name: SelectFooEmbed :many
+SELECT foo.foo, foo.baz, 1 AS one FROM foo_fn() AS foo
 `
 
-func (q *Queries) SelectBars(ctx context.Context) ([]Bar, error) {
-	rows, err := q.db.Query(ctx, selectBars)
+type SelectFooEmbedRow struct {
+	Foo Foo
+	One int32
+}
+
+func (q *Queries) SelectFooEmbed(ctx context.Context) ([]SelectFooEmbedRow, error) {
+	rows, err := q.db.Query(ctx, selectFooEmbed)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Bar
+	var items []SelectFooEmbedRow
 	for rows.Next() {
-		var i Bar
-		if err := rows.Scan(&i.Foo, &i.Baz); err != nil {
+		var i SelectFooEmbedRow
+		if err := rows.Scan(&i.Foo.Foo, &i.Foo.Baz, &i.One); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -34,22 +41,46 @@ func (q *Queries) SelectBars(ctx context.Context) ([]Bar, error) {
 }
 
 const selectFoos = `-- name: SelectFoos :many
-SELECT foo_fn FROM foo_fn()
+SELECT foo, baz FROM foo_fn()
 `
 
-func (q *Queries) SelectFoos(ctx context.Context) ([]NullFoo, error) {
+func (q *Queries) SelectFoos(ctx context.Context) ([]Foo, error) {
 	rows, err := q.db.Query(ctx, selectFoos)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []NullFoo
+	var items []Foo
 	for rows.Next() {
-		var foo_fn NullFoo
-		if err := rows.Scan(&foo_fn); err != nil {
+		var i Foo
+		if err := rows.Scan(&i.Foo, &i.Baz); err != nil {
 			return nil, err
 		}
-		items = append(items, foo_fn)
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const selectSingleColumn = `-- name: SelectSingleColumn :many
+SELECT baz FROM foo_fn()
+`
+
+func (q *Queries) SelectSingleColumn(ctx context.Context) ([]pgtype.Int4, error) {
+	rows, err := q.db.Query(ctx, selectSingleColumn)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []pgtype.Int4
+	for rows.Next() {
+		var baz pgtype.Int4
+		if err := rows.Scan(&baz); err != nil {
+			return nil, err
+		}
+		items = append(items, baz)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

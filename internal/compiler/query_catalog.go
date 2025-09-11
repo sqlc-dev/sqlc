@@ -108,7 +108,7 @@ func (qc QueryCatalog) GetFunc(rel *ast.FuncName) (*Function, error) {
 	}, nil
 }
 
-func (qc QueryCatalog) GetCompositeType(rel *ast.TypeName) (*Table, error) {
+func (qc QueryCatalog) GetTableForType(rel *ast.TypeName) (*Table, error) {
 	ty, err := qc.catalog.GetCompostiteType(rel)
 	if err != nil {
 		return &Table{}, err

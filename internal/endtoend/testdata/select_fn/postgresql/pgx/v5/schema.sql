@@ -1,13 +1,8 @@
-CREATE TYPE foo AS ENUM ('bar', 'baz');
+CREATE TYPE foo AS (foo TEXT, baz INTEGER);
 
-CREATE TYPE bar AS (foo foo, baz INTEGER);
-
-CREATE FUNCTION bar_fn()
-RETURNS SETOF bar LANGUAGE SQL STABLE AS $$
-SELECT * FROM VALUES ('bar', 1);
-$$;
+CREATE TABLE bar (foo TEXT, baz INTEGER);
 
 CREATE FUNCTION foo_fn()
 RETURNS SETOF foo LANGUAGE SQL STABLE AS $$
-SELECT * FROM VALUES ('bar');
+SELECT foo, baz FROM bar;
 $$;

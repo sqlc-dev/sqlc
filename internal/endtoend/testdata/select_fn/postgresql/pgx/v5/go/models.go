@@ -5,55 +5,15 @@
 package querytest
 
 import (
-	"database/sql/driver"
-	"fmt"
-
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type Foo string
-
-const (
-	FooBar Foo = "bar"
-	FooBaz Foo = "baz"
-)
-
-func (e *Foo) Scan(src interface{}) error {
-	switch s := src.(type) {
-	case []byte:
-		*e = Foo(s)
-	case string:
-		*e = Foo(s)
-	default:
-		return fmt.Errorf("unsupported scan type for Foo: %T", src)
-	}
-	return nil
-}
-
-type NullFoo struct {
-	Foo   Foo
-	Valid bool // Valid is true if Foo is not NULL
-}
-
-// Scan implements the Scanner interface.
-func (ns *NullFoo) Scan(value interface{}) error {
-	if value == nil {
-		ns.Foo, ns.Valid = "", false
-		return nil
-	}
-	ns.Valid = true
-	return ns.Foo.Scan(value)
-}
-
-// Value implements the driver Valuer interface.
-func (ns NullFoo) Value() (driver.Value, error) {
-	if !ns.Valid {
-		return nil, nil
-	}
-	return string(ns.Foo), nil
-}
-
 type Bar struct {
-	Foo NullFoo
+	Foo pgtype.Text
+	Baz pgtype.Int4
+}
+
+type Foo struct {
+	Foo pgtype.Text
 	Baz pgtype.Int4
 }

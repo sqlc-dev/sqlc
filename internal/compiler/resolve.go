@@ -94,6 +94,17 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 			continue
 		}
 
+		tyName := &ast.TypeName{
+			Catalog: embed.Table.Catalog,
+			Schema:  embed.Table.Schema,
+			Name:    embed.Table.Name,
+		}
+		ty, err := c.GetCompostiteType(tyName)
+		if err == nil {
+			embed.Table = &ast.TableName{Name: ty.Name}
+			continue
+		}
+
 		return nil, fmt.Errorf("unable to resolve table with %q: %w", embed.Orig(), err)
 	}
 
