@@ -61,6 +61,7 @@ message Schema {
 message CompositeType {
   string name = 1;
   string comment = 2;
+  repeated Column columns = 3;
 }
 
 message Enum {
