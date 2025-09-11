@@ -545,7 +545,7 @@ func (c *Compiler) sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, erro
 					Name:    fn.ReturnType.Name,
 				})
 
-				// Successfully found the table
+				// Failed to find table, check for type with name.
 				if err != nil {
 					table, err = qc.GetCompositeType(fn.ReturnType)
 				}

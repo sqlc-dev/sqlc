@@ -155,7 +155,6 @@ func (c *Catalog) createCompositeType(stmt *ast.CompositeTypeStmt) error {
 		Name:    stmt.TypeName.Name,
 		Columns: cols,
 	})
-	// schema.Tables = append(schema.Tables, &Table{Rel: tbl, Columns: cols})
 	return nil
 }
 
