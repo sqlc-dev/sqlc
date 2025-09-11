@@ -544,6 +544,11 @@ func (c *Compiler) sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, erro
 					Schema:  fn.ReturnType.Schema,
 					Name:    fn.ReturnType.Name,
 				})
+
+				// Successfully found the table
+				if err != nil {
+					table, err = qc.GetCompositeType(fn.ReturnType)
+				}
 			}
 			if table == nil || err != nil {
 				if n.Alias != nil && len(n.Alias.Colnames.Items) > 0 {

@@ -30,6 +30,7 @@ func (e *Enum) isType() {
 type CompositeType struct {
 	Name    string
 	Comment string
+	Columns []*Column
 }
 
 func (ct *CompositeType) isType() {
@@ -135,8 +136,24 @@ func (c *Catalog) createCompositeType(stmt *ast.CompositeTypeStmt) error {
 	if _, _, err := schema.getType(stmt.TypeName); err == nil {
 		return sqlerr.TypeExists(tbl.Name)
 	}
+
+	var cols []*Column
+	for _, cDef := range stmt.Cols {
+		cols = append(cols, &Column{
+			Name:       cDef.Colname,
+			Type:       *cDef.TypeName,
+			IsNotNull:  cDef.IsNotNull,
+			IsUnsigned: cDef.IsUnsigned,
+			IsArray:    cDef.IsArray,
+			ArrayDims:  cDef.ArrayDims,
+			Comment:    cDef.Comment,
+			Length:     cDef.Length,
+		})
+	}
+
 	schema.Types = append(schema.Types, &CompositeType{
-		Name: stmt.TypeName.Name,
+		Name:    stmt.TypeName.Name,
+		Columns: cols,
 	})
 	return nil
 }

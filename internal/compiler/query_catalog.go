@@ -107,3 +107,23 @@ func (qc QueryCatalog) GetFunc(rel *ast.FuncName) (*Function, error) {
 		ReturnType: funcs[0].ReturnType,
 	}, nil
 }
+
+func (qc QueryCatalog) GetCompositeType(rel *ast.TypeName) (*Table, error) {
+	ty, err := qc.catalog.GetCompostiteType(rel)
+	if err != nil {
+		return &Table{}, err
+	}
+
+	tblName := &ast.TableName{
+		Catalog: rel.Catalog,
+		Schema:  rel.Schema,
+		Name:    rel.Name,
+	}
+
+	var cols []*Column
+	for _, tyCol := range ty.Columns {
+		cols = append(cols, ConvertColumn(tblName, tyCol))
+	}
+
+	return &Table{Rel: tblName, Columns: cols}, nil
+}
