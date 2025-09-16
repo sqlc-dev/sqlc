@@ -28,7 +28,7 @@ SELECT id FROM debug
 WHERE Cbit = ? LIMIT 1
 `
 
-func (q *Queries) SelectByCbit(ctx context.Context, cbit interface{}) (int64, error) {
+func (q *Queries) SelectByCbit(ctx context.Context, cbit any) (int64, error) {
 	row := q.db.QueryRowContext(ctx, selectByCbit, cbit)
 	var id int64
 	err := row.Scan(&id)
