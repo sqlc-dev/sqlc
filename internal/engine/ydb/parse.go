@@ -64,7 +64,10 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 		loc := 0
 		for _, stmt := range stmtListCtx.AllSql_stmt() {
 			converter := &cc{content: string(blob)}
-			out := converter.convert(stmt)
+			out, ok := stmt.Accept(converter).(ast.Node)
+			if !ok {
+				return nil, fmt.Errorf("expected ast.Node; got %T", out)
+			}
 			if _, ok := out.(*ast.TODO); ok {
 				loc = byteOffset(content, stmt.GetStop().GetStop() + 2)
 				continue

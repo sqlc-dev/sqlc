@@ -156,7 +156,13 @@ func parseIntegerValue(text string) (int64, error) {
 }
 
 func (c *cc) extractRoleSpec(n parser.IRole_nameContext, roletype ast.RoleSpecType) (*ast.RoleSpec, bool, ast.Node) {
-	roleNode := c.convert(n)
+	if n == nil {
+		return nil, false, nil
+	}
+	roleNode, ok := n.Accept(c).(ast.Node)
+	if !ok {
+		return nil, false, nil
+	}
 
 	roleSpec := &ast.RoleSpec{
 		Roletype: roletype,
@@ -218,4 +224,74 @@ func emptySelectStmt() *ast.SelectStmt {
 		SortClause:     &ast.List{},
 		LockingClause:  &ast.List{},
 	}
+}
+
+func (c *cc) collectComparisonOps(n parser.IEq_subexprContext) []antlr.TerminalNode {
+	var ops []antlr.TerminalNode
+	for _, child := range n.GetChildren() {
+		if tn, ok := child.(antlr.TerminalNode); ok {
+			switch tn.GetText() {
+			case "<", "<=", ">", ">=":
+				ops = append(ops, tn)
+			}
+		}
+	}
+	return ops
+}
+
+func (c *cc) collectBitwiseOps(ctx parser.INeq_subexprContext) []antlr.TerminalNode {
+	var ops []antlr.TerminalNode
+	children := ctx.GetChildren()
+	for _, child := range children {
+		if tn, ok := child.(antlr.TerminalNode); ok {
+			txt := tn.GetText()
+			switch txt {
+			case "<<", ">>", "<<|", ">>|", "&", "|", "^":
+				ops = append(ops, tn)
+			}
+		}
+	}
+	return ops
+}
+
+func (c *cc) collectBitOps(ctx parser.IBit_subexprContext) []antlr.TerminalNode {
+	var ops []antlr.TerminalNode
+	children := ctx.GetChildren()
+	for _, child := range children {
+		if tn, ok := child.(antlr.TerminalNode); ok {
+			txt := tn.GetText()
+			switch txt {
+			case "+", "-":
+				ops = append(ops, tn)
+			}
+		}
+	}
+	return ops
+}
+
+func (c *cc) collectAddOps(ctx parser.IAdd_subexprContext) []antlr.TerminalNode {
+	var ops []antlr.TerminalNode
+	for _, child := range ctx.GetChildren() {
+		if tn, ok := child.(antlr.TerminalNode); ok {
+			switch tn.GetText() {
+			case "*", "/", "%":
+				ops = append(ops, tn)
+			}
+		}
+	}
+	return ops
+}
+
+func (c *cc) collectEqualityOps(ctx parser.ICond_exprContext) []antlr.TerminalNode {
+	var ops []antlr.TerminalNode
+	children := ctx.GetChildren()
+	for _, child := range children {
+		if tn, ok := child.(antlr.TerminalNode); ok {
+			switch tn.GetText() {
+			case "=", "==", "!=", "<>":
+				ops = append(ops, tn)
+			}
+		}
+	}
+	return ops
 }
