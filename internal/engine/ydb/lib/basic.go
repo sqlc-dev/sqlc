@@ -5,199 +5,709 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
 )
 
-var types = []string{
-	"bool",
-	"int8", "int16", "int32", "int64",
-	"uint8", "uint16", "uint32", "uint64",
-	"float", "double",
-	"string", "utf8",
-	"any",
-}
-
-var (
-	unsignedTypes = []string{"uint8", "uint16", "uint32", "uint64"}
-	signedTypes   = []string{"int8", "int16", "int32", "int64"}
-	numericTypes  = append(append(unsignedTypes, signedTypes...), "float", "double")
-)
-
 func BasicFunctions() []*catalog.Function {
 	var funcs []*catalog.Function
 
-	for _, typ := range types {
-		// COALESCE, NVL
-		funcs = append(funcs, &catalog.Function{
-			Name: "COALESCE",
-			Args: []*catalog.Argument{
-				{Type: &ast.TypeName{Name: typ}},
-				{Type: &ast.TypeName{Name: typ}},
-				{
-					Type: &ast.TypeName{Name: typ},
-					Mode: ast.FuncParamVariadic,
-				},
-			},
-			ReturnType:         &ast.TypeName{Name: typ},
-			ReturnTypeNullable: false,
-		})
-		funcs = append(funcs, &catalog.Function{
-			Name: "NVL",
-			Args: []*catalog.Argument{
-				{Type: &ast.TypeName{Name: typ}},
-				{Type: &ast.TypeName{Name: typ}},
-				{
-					Type: &ast.TypeName{Name: typ},
-					Mode: ast.FuncParamVariadic,
-				},
-			},
-			ReturnType:         &ast.TypeName{Name: typ},
-			ReturnTypeNullable: false,
-		})
+	funcs = append(funcs, lengthFuncs()...)
+	funcs = append(funcs, substringFuncs()...)
+	funcs = append(funcs, findFuncs()...)
+	funcs = append(funcs, rfindFuncs()...)
+	funcs = append(funcs, startsWithFuncs()...)
+	funcs = append(funcs, endsWithFuncs()...)
+	funcs = append(funcs, ifFuncs()...)
+	funcs = append(funcs, nanvlFuncs()...)
+	funcs = append(funcs, randomFuncs()...)
+	funcs = append(funcs, currentUtcFuncs()...)
+	funcs = append(funcs, currentTzFuncs()...)
+	funcs = append(funcs, addTimezoneFuncs()...)
+	funcs = append(funcs, removeTimezoneFuncs()...)
+	funcs = append(funcs, versionFuncs()...)
+	funcs = append(funcs, ensureFuncs()...)
+	funcs = append(funcs, assumeStrictFuncs()...)
+	funcs = append(funcs, likelyFuncs()...)
+	funcs = append(funcs, evaluateFuncs()...)
+	funcs = append(funcs, simpleTypesLiteralsFuncs()...)
+	funcs = append(funcs, toFromBytesFuncs()...)
+	funcs = append(funcs, byteAtFuncs()...)
+	funcs = append(funcs, testClearSetFlipBitFuncs()...)
+	funcs = append(funcs, absFuncs()...)
+	funcs = append(funcs, justUnwrapNothingFuncs()...)
+	funcs = append(funcs, pickleUnpickleFuncs()...)
 
-		// IF(Bool, T, T) -> T
-		funcs = append(funcs, &catalog.Function{
+	// todo: implement functions:
+	// Udf, AsTuple, AsStruct, AsList, AsDict, AsSet, AsListStrict, AsDictStrict, AsSetStrict,
+	// Variant, AsVariant, Visit, VisitOrDefault, VariantItem, Way, DynamicVariant,
+	// Enum, AsEnum, AsTagged, Untag, TableRow, Callable,
+	// StaticMap, StaticZip, StaticFold, StaticFold1,
+	// AggregationFactory, AggregateTransformInput, AggregateTransformOutput, AggregateFlatten
+
+	return funcs
+}
+
+func lengthFuncs() []*catalog.Function {
+	return []*catalog.Function{
+		{
+			Name: "LENGTH",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+			},
+			ReturnType: &ast.TypeName{Name: "Uint32"},
+		},
+		{
+			Name: "LEN",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+			},
+			ReturnType: &ast.TypeName{Name: "Uint32"},
+		},
+	}
+}
+
+func substringFuncs() []*catalog.Function {
+	funcs := []*catalog.Function{
+		{
+			Name: "Substring",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "String"}},
+				{Type: &ast.TypeName{Name: "Uint32"}},
+			},
+			ReturnType: &ast.TypeName{Name: "String"},
+		},
+		{
+			Name: "Substring",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "String"}},
+				{Type: &ast.TypeName{Name: "Uint32"}},
+				{Type: &ast.TypeName{Name: "Uint32"}},
+			},
+			ReturnType: &ast.TypeName{Name: "String"},
+		},
+	}
+	return funcs
+}
+
+func findFuncs() []*catalog.Function {
+	return []*catalog.Function{
+		{
+			Name: "Find",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+				{Type: &ast.TypeName{Name: "any"}},
+			},
+			ReturnType: &ast.TypeName{Name: "Uint32"},
+		},
+		{
+			Name: "Find",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+				{Type: &ast.TypeName{Name: "any"}},
+				{Type: &ast.TypeName{Name: "Uint32"}},
+			},
+			ReturnType: &ast.TypeName{Name: "Uint32"},
+		},
+	}
+}
+
+func rfindFuncs() []*catalog.Function {
+	return []*catalog.Function{
+		{
+			Name: "RFind",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+				{Type: &ast.TypeName{Name: "any"}},
+			},
+			ReturnType: &ast.TypeName{Name: "Uint32"},
+		},
+		{
+			Name: "RFind",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+				{Type: &ast.TypeName{Name: "any"}},
+				{Type: &ast.TypeName{Name: "Uint32"}},
+			},
+			ReturnType: &ast.TypeName{Name: "Uint32"},
+		},
+	}
+}
+
+func startsWithFuncs() []*catalog.Function {
+	return []*catalog.Function{
+		{
+			Name: "StartsWith",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+				{Type: &ast.TypeName{Name: "any"}},
+			},
+			ReturnType: &ast.TypeName{Name: "Bool"},
+		},
+	}
+}
+
+func endsWithFuncs() []*catalog.Function {
+	return []*catalog.Function{
+		{
+			Name: "EndsWith",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+				{Type: &ast.TypeName{Name: "any"}},
+			},
+			ReturnType: &ast.TypeName{Name: "Bool"},
+		},
+	}
+}
+
+func ifFuncs() []*catalog.Function {
+	return []*catalog.Function{
+		{
 			Name: "IF",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Bool"}},
-				{Type: &ast.TypeName{Name: typ}},
-				{Type: &ast.TypeName{Name: typ}},
+				{Type: &ast.TypeName{Name: "any"}},
 			},
-			ReturnType:         &ast.TypeName{Name: typ},
+			ReturnType:         &ast.TypeName{Name: "any"},
+			ReturnTypeNullable: true,
+		},
+		{
+			Name: "IF",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "Bool"}},
+				{Type: &ast.TypeName{Name: "any"}},
+				{Type: &ast.TypeName{Name: "any"}},
+			},
+			ReturnType:         &ast.TypeName{Name: "any"},
 			ReturnTypeNullable: false,
-		})
+		},
+	}
+}
 
-		// LENGTH, LEN
-		funcs = append(funcs, &catalog.Function{
-			Name: "LENGTH",
+func nanvlFuncs() []*catalog.Function {
+	return []*catalog.Function{
+		{
+			Name: "NANVL",
 			Args: []*catalog.Argument{
-				{Type: &ast.TypeName{Name: typ}},
+				{Type: &ast.TypeName{Name: "any"}},
+				{Type: &ast.TypeName{Name: "any"}},
 			},
-			ReturnType:         &ast.TypeName{Name: "Uint32"},
+			ReturnType:         &ast.TypeName{Name: "any"},
 			ReturnTypeNullable: true,
-		})
-		funcs = append(funcs, &catalog.Function{
-			Name: "LEN",
-			Args: []*catalog.Argument{
-				{Type: &ast.TypeName{Name: typ}},
-			},
-			ReturnType:         &ast.TypeName{Name: "Uint32"},
-			ReturnTypeNullable: true,
-		})
+		},
+	}
+}
 
-		// StartsWith, EndsWith
-		funcs = append(funcs, &catalog.Function{
-			Name: "StartsWith",
+func randomFuncs() []*catalog.Function {
+	return []*catalog.Function{
+		{
+			Name: "Random",
 			Args: []*catalog.Argument{
-				{Type: &ast.TypeName{Name: typ}},
-				{Type: &ast.TypeName{Name: typ}},
+				{Type: &ast.TypeName{Name: "any"}},
+				{Type: &ast.TypeName{Name: "any"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "Double"},
+		},
+		{
+			Name: "RandomNumber",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+				{Type: &ast.TypeName{Name: "any"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "Uint64"},
+		},
+		{
+			Name: "RandomUuid",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+				{Type: &ast.TypeName{Name: "any"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "Uuid"},
+		},
+	}
+}
+
+func currentUtcFuncs() []*catalog.Function {
+	return []*catalog.Function{
+		{
+			Name: "CurrentUtcDate",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "Date"},
+		},
+		{
+			Name: "CurrentUtcDatetime",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "Datetime"},
+		},
+		{
+			Name: "CurrentUtcTimestamp",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "Timestamp"},
+		},
+	}
+}
+
+func currentTzFuncs() []*catalog.Function {
+	return []*catalog.Function{
+		{
+			Name: "CurrentTzDate",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "String"}},
+				{
+					Type: &ast.TypeName{Name: "any"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "TzDate"},
+		},
+		{
+			Name: "CurrentTzDatetime",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "String"}},
+				{
+					Type: &ast.TypeName{Name: "any"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "TzDatetime"},
+		},
+		{
+			Name: "CurrentTzTimestamp",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "String"}},
+				{
+					Type: &ast.TypeName{Name: "any"},
+					Mode: ast.FuncParamVariadic,
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "TzTimestamp"},
+		},
+	}
+}
+
+func addTimezoneFuncs() []*catalog.Function {
+	return []*catalog.Function{
+		{
+			Name: "AddTimezone",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+				{Type: &ast.TypeName{Name: "String"}},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+	}
+}
+
+func removeTimezoneFuncs() []*catalog.Function {
+	return []*catalog.Function{
+		{
+			Name: "RemoveTimezone",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+	}
+}
+
+func versionFuncs() []*catalog.Function {
+	return []*catalog.Function{
+		{
+			Name:       "Version",
+			Args:       []*catalog.Argument{},
+			ReturnType: &ast.TypeName{Name: "String"},
+		},
+	}
+}
+
+func ensureFuncs() []*catalog.Function {
+	return []*catalog.Function{
+		{
+			Name: "Ensure",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+				{Type: &ast.TypeName{Name: "Bool"}},
+				{Type: &ast.TypeName{Name: "String"}},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "EnsureType",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+				{Type: &ast.TypeName{Name: "any"}},
+				{Type: &ast.TypeName{Name: "String"}},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "EnsureConvertibleTo",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+				{Type: &ast.TypeName{Name: "Bool"}},
+				{Type: &ast.TypeName{Name: "String"}},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+	}
+}
+
+func assumeStrictFuncs() []*catalog.Function {
+	return []*catalog.Function{
+		{
+			Name: "AssumeStrict",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+	}
+}
+
+func likelyFuncs() []*catalog.Function {
+	return []*catalog.Function{
+		{
+			Name: "Likely",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Bool"},
-		})
-		funcs = append(funcs, &catalog.Function{
-			Name: "EndsWith",
+		},
+	}
+}
+
+func evaluateFuncs() []*catalog.Function {
+	return []*catalog.Function{
+		{
+			Name: "EvaluateExpr",
 			Args: []*catalog.Argument{
-				{Type: &ast.TypeName{Name: typ}},
-				{Type: &ast.TypeName{Name: typ}},
+				{Type: &ast.TypeName{Name: "any"}},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "EvaluateAtom",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+	}
+}
+
+func simpleTypesLiteralsFuncs() []*catalog.Function {
+	return []*catalog.Function{
+		{
+			Name: "Bool",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Bool"},
-		})
-
-		// ABS(T) -> T
+		},
+		{
+			Name: "Uint8",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "String"}},
+			},
+			ReturnType: &ast.TypeName{Name: "Uint8"},
+		},
+		{
+			Name: "Int32",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "String"}},
+			},
+			ReturnType: &ast.TypeName{Name: "Int32"},
+		},
+		{
+			Name: "Uint32",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "String"}},
+			},
+			ReturnType: &ast.TypeName{Name: "Uint32"},
+		},
+		{
+			Name: "Int64",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "String"}},
+			},
+			ReturnType: &ast.TypeName{Name: "Int64"},
+		},
+		{
+			Name: "Uint64",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "String"}},
+			},
+			ReturnType: &ast.TypeName{Name: "Uint64"},
+		},
+		{
+			Name: "Float",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "String"}},
+			},
+			ReturnType: &ast.TypeName{Name: "Float"},
+		},
+		{
+			Name: "Double",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "String"}},
+			},
+			ReturnType: &ast.TypeName{Name: "Double"},
+		},
+		{
+			Name: "Decimal",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "String"}},
+				{Type: &ast.TypeName{Name: "Uint8"}}, // precision
+				{Type: &ast.TypeName{Name: "Uint8"}}, // scale
+			},
+			ReturnType: &ast.TypeName{Name: "Decimal"},
+		},
+		{
+			Name: "String",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "String"}},
+			},
+			ReturnType: &ast.TypeName{Name: "String"},
+		},
+		{
+			Name: "Utf8",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "String"}},
+			},
+			ReturnType: &ast.TypeName{Name: "Utf8"},
+		},
+		{
+			Name: "Yson",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "String"}},
+			},
+			ReturnType: &ast.TypeName{Name: "Yson"},
+		},
+		{
+			Name: "Json",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "String"}},
+			},
+			ReturnType: &ast.TypeName{Name: "Json"},
+		},
+		{
+			Name: "Date",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "String"}},
+			},
+			ReturnType: &ast.TypeName{Name: "Date"},
+		},
+		{
+			Name: "Datetime",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "String"}},
+			},
+			ReturnType: &ast.TypeName{Name: "Datetime"},
+		},
+		{
+			Name: "Timestamp",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "String"}},
+			},
+			ReturnType: &ast.TypeName{Name: "Timestamp"},
+		},
+		{
+			Name: "Interval",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "String"}},
+			},
+			ReturnType: &ast.TypeName{Name: "Interval"},
+		},
+		{
+			Name: "TzDate",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "String"}},
+			},
+			ReturnType: &ast.TypeName{Name: "TzDate"},
+		},
+		{
+			Name: "TzDatetime",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "String"}},
+			},
+			ReturnType: &ast.TypeName{Name: "TzDatetime"},
+		},
+		{
+			Name: "TzTimestamp",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "String"}},
+			},
+			ReturnType: &ast.TypeName{Name: "TzTimestamp"},
+		},
+		{
+			Name: "Uuid",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "String"}},
+			},
+			ReturnType: &ast.TypeName{Name: "Uuid"},
+		},
 	}
+}
 
-	// SUBSTRING
-	funcs = append(funcs, &catalog.Function{
-		Name: "Substring",
-		Args: []*catalog.Argument{
-			{Type: &ast.TypeName{Name: "String"}},
+func toFromBytesFuncs() []*catalog.Function {
+	return []*catalog.Function{
+		{
+			Name: "ToBytes",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+			},
+			ReturnType: &ast.TypeName{Name: "String"},
 		},
-		ReturnType: &ast.TypeName{Name: "String"},
-	})
-	funcs = append(funcs, &catalog.Function{
-		Name: "Substring",
-		Args: []*catalog.Argument{
-			{Type: &ast.TypeName{Name: "String"}},
-			{Type: &ast.TypeName{Name: "Uint32"}},
+		{
+			Name: "FromBytes",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "String"}},
+				{Type: &ast.TypeName{Name: "any"}},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
 		},
-		ReturnType: &ast.TypeName{Name: "String"},
-	})
-	funcs = append(funcs, &catalog.Function{
-		Name: "Substring",
-		Args: []*catalog.Argument{
-			{Type: &ast.TypeName{Name: "String"}},
-			{Type: &ast.TypeName{Name: "Uint32"}},
-			{Type: &ast.TypeName{Name: "Uint32"}},
-		},
-		ReturnType: &ast.TypeName{Name: "String"},
-	})
-
-	// FIND / RFIND
-	for _, name := range []string{"FIND", "RFIND"} {
-		for _, typ := range []string{"String", "Utf8"} {
-			funcs = append(funcs, &catalog.Function{
-				Name: name,
-				Args: []*catalog.Argument{
-					{Type: &ast.TypeName{Name: typ}},
-					{Type: &ast.TypeName{Name: typ}},
-				},
-				ReturnType: &ast.TypeName{Name: "Uint32"},
-			})
-			funcs = append(funcs, &catalog.Function{
-				Name: name,
-				Args: []*catalog.Argument{
-					{Type: &ast.TypeName{Name: typ}},
-					{Type: &ast.TypeName{Name: typ}},
-					{Type: &ast.TypeName{Name: "Uint32"}},
-				},
-				ReturnType: &ast.TypeName{Name: "Uint32"},
-			})
-		}
 	}
+}
 
-	for _, typ := range numericTypes {
-		funcs = append(funcs, &catalog.Function{
+func byteAtFuncs() []*catalog.Function {
+	return []*catalog.Function{
+		{
+			Name: "ByteAt",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+				{Type: &ast.TypeName{Name: "any"}},
+			},
+			ReturnType: &ast.TypeName{Name: "Uint8"},
+		},
+	}
+}
+
+func testClearSetFlipBitFuncs() []*catalog.Function {
+	return []*catalog.Function{
+		{
+			Name: "TestBit",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+				{Type: &ast.TypeName{Name: "Uint8"}},
+			},
+			ReturnType: &ast.TypeName{Name: "Bool"},
+		},
+		{
+			Name: "ClearBit",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+				{Type: &ast.TypeName{Name: "Uint8"}},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "SetBit",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+				{Type: &ast.TypeName{Name: "Uint8"}},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "FlipBit",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+				{Type: &ast.TypeName{Name: "Uint8"}},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+	}
+}
+
+func absFuncs() []*catalog.Function {
+	return []*catalog.Function{
+		{
 			Name: "Abs",
 			Args: []*catalog.Argument{
-				{Type: &ast.TypeName{Name: typ}},
+				{Type: &ast.TypeName{Name: "any"}},
 			},
-			ReturnType: &ast.TypeName{Name: typ},
-		})
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
 	}
+}
 
-	// NANVL
-	funcs = append(funcs, &catalog.Function{
-		Name: "NANVL",
-		Args: []*catalog.Argument{
-			{Type: &ast.TypeName{Name: "Float"}},
-			{Type: &ast.TypeName{Name: "Float"}},
+func justUnwrapNothingFuncs() []*catalog.Function {
+	return []*catalog.Function{
+		{
+			Name: "Just",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+			},
+			ReturnType:         &ast.TypeName{Name: "any"},
+			ReturnTypeNullable: true,
 		},
-		ReturnType: &ast.TypeName{Name: "Float"},
-	})
-	funcs = append(funcs, &catalog.Function{
-		Name: "NANVL",
-		Args: []*catalog.Argument{
-			{Type: &ast.TypeName{Name: "Double"}},
-			{Type: &ast.TypeName{Name: "Double"}},
+		{
+			Name: "Unwrap",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
 		},
-		ReturnType: &ast.TypeName{Name: "Double"},
-	})
+		{
+			Name: "Unwrap",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+				{Type: &ast.TypeName{Name: "any"}},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "Nothing",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+			},
+			ReturnType:         &ast.TypeName{Name: "any"},
+			ReturnTypeNullable: true,
+		},
+	}
+}
 
-	// Random*
-	funcs = append(funcs, &catalog.Function{
-		Name:       "Random",
-		Args:       []*catalog.Argument{},
-		ReturnType: &ast.TypeName{Name: "Double"},
-	})
-	funcs = append(funcs, &catalog.Function{
-		Name:       "RandomNumber",
-		Args:       []*catalog.Argument{},
-		ReturnType: &ast.TypeName{Name: "Uint64"},
-	})
-	funcs = append(funcs, &catalog.Function{
-		Name:       "RandomUuid",
-		Args:       []*catalog.Argument{},
-		ReturnType: &ast.TypeName{Name: "Uuid"},
-	})
-
-	// todo: add all remain functions
-
-	return funcs
+func pickleUnpickleFuncs() []*catalog.Function {
+	return []*catalog.Function{
+		{
+			Name: "Pickle",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+			},
+			ReturnType: &ast.TypeName{Name: "String"},
+		},
+		{
+			Name: "StablePickle",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+			},
+			ReturnType: &ast.TypeName{Name: "String"},
+		},
+		{
+			Name: "Unpickle",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+				{Type: &ast.TypeName{Name: "String"}},
+			},
+			ReturnType:         &ast.TypeName{Name: "any"},
+			ReturnTypeNullable: true,
+		},
+	}
 }

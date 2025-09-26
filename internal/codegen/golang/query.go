@@ -297,7 +297,9 @@ func (v QueryValue) YDBParamMapEntries() string {
 
 // ydbBuilderMethodForColumnType maps a YDB column data type to a ParamsBuilder method name.
 func ydbBuilderMethodForColumnType(dbType string) string {
-	switch strings.ToLower(dbType) {
+	baseType := extractBaseType(strings.ToLower(dbType))
+
+	switch baseType {
 	case "bool":
 		return "Bool"
 	case "uint64":

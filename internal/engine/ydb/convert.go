@@ -1,6 +1,7 @@
 package ydb
 
 import (
+	"fmt"
 	"log"
 	"strconv"
 	"strings"
@@ -1787,7 +1788,15 @@ func (c *cc) VisitType_name_or_bind(n *parser.Type_name_or_bindContext) interfac
 		}
 		return typeName
 	} else if b := n.Bind_parameter(); b != nil {
-		return &ast.TypeName{Name: "BIND:" + identifier(parseAnIdOrType(b.An_id_or_type()))}
+		param, ok := b.Accept(c).(ast.Node)
+		if !ok {
+			return todo("VisitType_name_or_bind", b)
+		}
+		return &ast.TypeName{
+			Names: &ast.List{
+				Items: []ast.Node{param},
+			},
+		}
 	}
 	return todo("VisitType_name_or_bind", n)
 }
@@ -1796,6 +1805,8 @@ func (c *cc) VisitType_name(n *parser.Type_nameContext) interface{} {
 	if n == nil {
 		return todo("VisitType_name", n)
 	}
+
+	questionCount := len(n.AllQUESTION())
 
 	if composite := n.Type_name_composite(); composite != nil {
 		typeName, ok := composite.Accept(c).(ast.Node)
@@ -1815,8 +1826,12 @@ func (c *cc) VisitType_name(n *parser.Type_nameContext) interface{} {
 			if !ok {
 				return todo("VisitType_name", decimal.Integer_or_bind(1))
 			}
+			name := "decimal"
+			if questionCount > 0 {
+				name = name + "?"
+			}
 			return &ast.TypeName{
-				Name:    "decimal",
+				Name:    name,
 				TypeOid: 0,
 				Names: &ast.List{
 					Items: []ast.Node{
@@ -1829,12 +1844,17 @@ func (c *cc) VisitType_name(n *parser.Type_nameContext) interface{} {
 	}
 
 	if simple := n.Type_name_simple(); simple != nil {
+		name := simple.GetText()
+		if questionCount > 0 {
+			name = name + "?"
+		}
 		return &ast.TypeName{
-			Name:    simple.GetText(),
+			Name:    name,
 			TypeOid: 0,
 		}
 	}
 
+	// todo: handle multiple ? suffixes
 	return todo("VisitType_name", n)
 }
 
@@ -1868,19 +1888,7 @@ func (c *cc) VisitType_name_composite(n *parser.Type_name_compositeContext) inte
 	}
 
 	if opt := n.Type_name_optional(); opt != nil {
-		if typeName := opt.Type_name_or_bind(); typeName != nil {
-			tn, ok := typeName.Accept(c).(ast.Node)
-			if !ok {
-				return todo("VisitType_name_composite", typeName)
-			}
-			return &ast.TypeName{
-				Name:    "Optional",
-				TypeOid: 0,
-				Names: &ast.List{
-					Items: []ast.Node{tn},
-				},
-			}
-		}
+		return opt.Accept(c)
 	}
 
 	if tuple := n.Type_name_tuple(); tuple != nil {
@@ -2023,6 +2031,27 @@ func (c *cc) VisitType_name_composite(n *parser.Type_name_compositeContext) inte
 	}
 
 	return todo("VisitType_name_composite", n)
+}
+
+func (c *cc) VisitType_name_optional(n *parser.Type_name_optionalContext) interface{} {
+	if n == nil || n.Type_name_or_bind() == nil {
+		return todo("VisitType_name_optional", n)
+	}
+
+	tn, ok := n.Type_name_or_bind().Accept(c).(ast.Node)
+	if !ok {
+		return todo("VisitType_name_optional", n.Type_name_or_bind())
+	}
+	innerTypeName, ok := tn.(*ast.TypeName)
+	if !ok {
+		return todo("VisitType_name_optional", n.Type_name_or_bind())
+	}
+	name := fmt.Sprintf("Optional<%s>", innerTypeName.Name)
+	return &ast.TypeName{
+		Name:    name,
+		TypeOid: 0,
+		Names:   &ast.List{},
+	}
 }
 
 func (c *cc) VisitSql_stmt_core(n *parser.Sql_stmt_coreContext) interface{} {
@@ -2799,8 +2828,23 @@ func (c *cc) handleInvokeSuffix(base ast.Node, invokeCtx *parser.Invoke_exprCont
 				}
 				funcName := strings.Join(nameParts, ".")
 
-				if funcName == "coalesce" {
+				if funcName == "coalesce" || funcName == "nvl" {
 					return &ast.CoalesceExpr{
+						Args:     funcCall.Args,
+						Location: baseNode.Location,
+					}
+				}
+
+				if funcName == "greatest" || funcName == "max_of" {
+					return &ast.MinMaxExpr{
+						Op:       ast.MinMaxOp(1),
+						Args:     funcCall.Args,
+						Location: baseNode.Location,
+					}
+				}
+				if funcName == "least" || funcName == "min_of" {
+					return &ast.MinMaxExpr{
+						Op:       ast.MinMaxOp(2),
 						Args:     funcCall.Args,
 						Location: baseNode.Location,
 					}
@@ -2816,15 +2860,12 @@ func (c *cc) handleInvokeSuffix(base ast.Node, invokeCtx *parser.Invoke_exprCont
 		}
 	}
 
-	stmt := &ast.RecursiveFuncCall{
-		Func:        base,
-		Funcname:    funcCall.Funcname,
-		AggStar:     funcCall.AggStar,
-		Location:    funcCall.Location,
-		Args:        funcCall.Args,
-		AggDistinct: funcCall.AggDistinct,
+	stmt := &ast.FuncExpr{
+		Xpr:      base,
+		Args:     funcCall.Args,
+		Location: funcCall.Location,
 	}
-	stmt.Funcname.Items = append(stmt.Funcname.Items, base)
+
 	return stmt
 }
 
@@ -2943,16 +2984,42 @@ func (c *cc) VisitId_expr(n *parser.Id_exprContext) interface{} {
 	if n == nil {
 		return todo("VisitId_expr", n)
 	}
-	if id := n.Identifier(); id != nil {
-		return &ast.ColumnRef{
-			Fields: &ast.List{
-				Items: []ast.Node{
-					NewIdentifier(id.GetText()),
-				},
-			},
-			Location: c.pos(id.GetStart()),
-		}
+
+	ref := &ast.ColumnRef{
+		Fields:   &ast.List{},
+		Location: c.pos(n.GetStart()),
 	}
+
+	if id := n.Identifier(); id != nil {
+		ref.Fields.Items = append(ref.Fields.Items, NewIdentifier(id.GetText()))
+		return ref
+	}
+
+	if keyword := n.Keyword_compat(); keyword != nil {
+		ref.Fields.Items = append(ref.Fields.Items, NewIdentifier(keyword.GetText()))
+		return ref
+	}
+
+	if keyword := n.Keyword_alter_uncompat(); keyword != nil {
+		ref.Fields.Items = append(ref.Fields.Items, NewIdentifier(keyword.GetText()))
+		return ref
+	}
+
+	if keyword := n.Keyword_in_uncompat(); keyword != nil {
+		ref.Fields.Items = append(ref.Fields.Items, NewIdentifier(keyword.GetText()))
+		return ref
+	}
+
+	if keyword := n.Keyword_window_uncompat(); keyword != nil {
+		ref.Fields.Items = append(ref.Fields.Items, NewIdentifier(keyword.GetText()))
+		return ref
+	}
+
+	if keyword := n.Keyword_hint_uncompat(); keyword != nil {
+		ref.Fields.Items = append(ref.Fields.Items, NewIdentifier(keyword.GetText()))
+		return ref
+	}
+
 	return todo("VisitId_expr", n)
 }
 
@@ -2979,9 +3046,41 @@ func (c *cc) VisitAtom_expr(n *parser.Atom_exprContext) interface{} {
 			return todo("VisitAtom_expr", n.Bind_parameter())
 		}
 		return expr
+	case n.Cast_expr() != nil:
+		expr, ok := n.Cast_expr().Accept(c).(ast.Node)
+		if !ok {
+			return todo("VisitAtom_expr", n.Cast_expr())
+		}
+		return expr
 	// TODO: check other cases
 	default:
 		return todo("VisitAtom_expr", n)
+	}
+}
+
+func (c *cc) VisitCast_expr(n *parser.Cast_exprContext) interface{} {
+	if n == nil || n.CAST() == nil || n.Expr() == nil || n.AS() == nil || n.Type_name_or_bind() == nil {
+		return todo("VisitCast_expr", n)
+	}
+
+	expr, ok := n.Expr().Accept(c).(ast.Node)
+	if !ok {
+		return todo("VisitCast_expr", n.Expr())
+	}
+	
+	temp, ok := n.Type_name_or_bind().Accept(c).(ast.Node)
+	if !ok {
+		return todo("VisitCast_expr", n.Type_name_or_bind())
+	}
+	typeName, ok := temp.(*ast.TypeName)
+	if !ok {
+		return todo("VisitCast_expr", n.Type_name_or_bind())
+	}
+
+	return &ast.TypeCast{
+		Arg:      expr,
+		TypeName: typeName,
+		Location: c.pos(n.GetStart()),
 	}
 }
 

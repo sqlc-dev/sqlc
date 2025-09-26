@@ -8,323 +8,400 @@ import (
 func AggregateFunctions() []*catalog.Function {
 	var funcs []*catalog.Function
 
-	// COUNT(*)
-	funcs = append(funcs, &catalog.Function{
-		Name:       "COUNT",
-		Args:       []*catalog.Argument{},
-		ReturnType: &ast.TypeName{Name: "Uint64"},
-	})
+	funcs = append(funcs, countFuncs()...)
+	funcs = append(funcs, minMaxFuncs()...)
+	funcs = append(funcs, sumFuncs()...)
+	funcs = append(funcs, avgFuncs()...)
+	funcs = append(funcs, countIfFuncs()...)
+	funcs = append(funcs, sumIfFuncs()...)
+	funcs = append(funcs, avgIfFuncs()...)
+	funcs = append(funcs, someFuncs()...)
+	funcs = append(funcs, countDistinctEstimateHLLFuncs()...)
+	funcs = append(funcs, maxByMinByFuncs()...)
+	funcs = append(funcs, stddevVarianceFuncs()...)
+	funcs = append(funcs, correlationCovarianceFuncs()...)
+	funcs = append(funcs, percentileMedianFuncs()...)
+	funcs = append(funcs, boolAndOrXorFuncs()...)
+	funcs = append(funcs, bitAndOrXorFuncs()...)
 
-	// COUNT(T) и COUNT(T?)
-	for _, typ := range types {
-		funcs = append(funcs, &catalog.Function{
+	// TODO: Aggregate_List, Top, Bottom, Top_By, Bottom_By, TopFreq, Mode,
+	// Histogram LinearHistogram, LogarithmicHistogram, LogHistogram, CDF,
+	// SessionStart, AGGREGATE_BY, MULTI_AGGREGATE_BY
+
+	return funcs
+}
+
+func countFuncs() []*catalog.Function {
+	return []*catalog.Function{
+		{
 			Name: "COUNT",
 			Args: []*catalog.Argument{
-				{Type: &ast.TypeName{Name: typ}},
+				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Uint64"},
-		})
-		funcs = append(funcs, &catalog.Function{
-			Name: "COUNT",
-			Args: []*catalog.Argument{
-				{Type: &ast.TypeName{Name: typ}, Mode: ast.FuncParamVariadic},
-			},
-			ReturnType: &ast.TypeName{Name: "Uint64"},
-		})
+		},
 	}
+}
 
-	// MIN и MAX
-	for _, typ := range types {
-		funcs = append(funcs, &catalog.Function{
+func minMaxFuncs() []*catalog.Function {
+	return []*catalog.Function{
+		{
 			Name: "MIN",
 			Args: []*catalog.Argument{
-				{Type: &ast.TypeName{Name: typ}},
+				{Type: &ast.TypeName{Name: "any"}},
 			},
-			ReturnType:         &ast.TypeName{Name: typ},
-			ReturnTypeNullable: true,
-		})
-		funcs = append(funcs, &catalog.Function{
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
 			Name: "MAX",
 			Args: []*catalog.Argument{
-				{Type: &ast.TypeName{Name: typ}},
+				{Type: &ast.TypeName{Name: "any"}},
 			},
-			ReturnType:         &ast.TypeName{Name: typ},
-			ReturnTypeNullable: true,
-		})
-	}
-
-	// SUM для unsigned типов
-	for _, typ := range unsignedTypes {
-		funcs = append(funcs, &catalog.Function{
-			Name: "SUM",
-			Args: []*catalog.Argument{
-				{Type: &ast.TypeName{Name: typ}},
-			},
-			ReturnType:         &ast.TypeName{Name: "Uint64"},
-			ReturnTypeNullable: true,
-		})
-	}
-
-	// SUM для signed типов
-	for _, typ := range signedTypes {
-		funcs = append(funcs, &catalog.Function{
-			Name: "SUM",
-			Args: []*catalog.Argument{
-				{Type: &ast.TypeName{Name: typ}},
-			},
-			ReturnType:         &ast.TypeName{Name: "Int64"},
-			ReturnTypeNullable: true,
-		})
-	}
-
-	// SUM для float/double
-	for _, typ := range []string{"float", "double"} {
-		funcs = append(funcs, &catalog.Function{
-			Name: "SUM",
-			Args: []*catalog.Argument{
-				{Type: &ast.TypeName{Name: typ}},
-			},
-			ReturnType:         &ast.TypeName{Name: typ},
-			ReturnTypeNullable: true,
-		})
-	}
-
-	// AVG для целочисленных типов
-	for _, typ := range append(unsignedTypes, signedTypes...) {
-		funcs = append(funcs, &catalog.Function{
-			Name: "AVG",
-			Args: []*catalog.Argument{
-				{Type: &ast.TypeName{Name: typ}},
-			},
-			ReturnType:         &ast.TypeName{Name: "Double"},
-			ReturnTypeNullable: true,
-		})
-	}
-
-	// AVG для float/double
-	for _, typ := range []string{"float", "double"} {
-		funcs = append(funcs, &catalog.Function{
-			Name: "AVG",
-			Args: []*catalog.Argument{
-				{Type: &ast.TypeName{Name: typ}},
-			},
-			ReturnType:         &ast.TypeName{Name: typ},
-			ReturnTypeNullable: true,
-		})
-	}
-
-	// COUNT_IF
-	funcs = append(funcs, &catalog.Function{
-		Name: "COUNT_IF",
-		Args: []*catalog.Argument{
-			{Type: &ast.TypeName{Name: "Bool"}},
+			ReturnType: &ast.TypeName{Name: "any"},
 		},
-		ReturnType:         &ast.TypeName{Name: "Uint64"},
-		ReturnTypeNullable: true,
-	})
+	}
+}
 
-	// SUM_IF для unsigned
-	for _, typ := range unsignedTypes {
-		funcs = append(funcs, &catalog.Function{
-			Name: "SUM_IF",
+func sumFuncs() []*catalog.Function {
+	return []*catalog.Function{
+		{
+			Name: "SUM",
 			Args: []*catalog.Argument{
-				{Type: &ast.TypeName{Name: typ}},
+				{Type: &ast.TypeName{Name: "any"}},
+			},
+			ReturnType:         &ast.TypeName{Name: "any"},
+			ReturnTypeNullable: true,
+		},
+	}
+}
+
+func avgFuncs() []*catalog.Function {
+	return []*catalog.Function{
+		{
+			Name: "AVG",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+			},
+			ReturnType:         &ast.TypeName{Name: "any"},
+			ReturnTypeNullable: true,
+		},
+	}
+}
+
+func countIfFuncs() []*catalog.Function {
+	return []*catalog.Function{
+		{
+			Name: "COUNT_IF",
+			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Bool"}},
 			},
 			ReturnType:         &ast.TypeName{Name: "Uint64"},
 			ReturnTypeNullable: true,
-		})
+		},
 	}
+}
 
-	// SUM_IF для signed
-	for _, typ := range signedTypes {
-		funcs = append(funcs, &catalog.Function{
+func sumIfFuncs() []*catalog.Function {
+	return []*catalog.Function{
+		{
 			Name: "SUM_IF",
 			Args: []*catalog.Argument{
-				{Type: &ast.TypeName{Name: typ}},
+				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "Bool"}},
 			},
-			ReturnType:         &ast.TypeName{Name: "Int64"},
+			ReturnType:         &ast.TypeName{Name: "any"},
 			ReturnTypeNullable: true,
-		})
+		},
 	}
+}
 
-	// SUM_IF для float/double
-	for _, typ := range []string{"float", "double"} {
-		funcs = append(funcs, &catalog.Function{
-			Name: "SUM_IF",
-			Args: []*catalog.Argument{
-				{Type: &ast.TypeName{Name: typ}},
-				{Type: &ast.TypeName{Name: "Bool"}},
-			},
-			ReturnType:         &ast.TypeName{Name: typ},
-			ReturnTypeNullable: true,
-		})
-	}
-
-	// AVG_IF для целочисленных
-	for _, typ := range append(unsignedTypes, signedTypes...) {
-		funcs = append(funcs, &catalog.Function{
+func avgIfFuncs() []*catalog.Function {
+	return []*catalog.Function{
+		{
 			Name: "AVG_IF",
 			Args: []*catalog.Argument{
-				{Type: &ast.TypeName{Name: typ}},
+				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "Bool"}},
 			},
-			ReturnType:         &ast.TypeName{Name: "Double"},
+			ReturnType:         &ast.TypeName{Name: "any"},
 			ReturnTypeNullable: true,
-		})
+		},
 	}
+}
 
-	// AVG_IF для float/double
-	for _, typ := range []string{"float", "double"} {
-		funcs = append(funcs, &catalog.Function{
-			Name: "AVG_IF",
-			Args: []*catalog.Argument{
-				{Type: &ast.TypeName{Name: typ}},
-				{Type: &ast.TypeName{Name: "Bool"}},
-			},
-			ReturnType:         &ast.TypeName{Name: typ},
-			ReturnTypeNullable: true,
-		})
-	}
-
-	// SOME
-	for _, typ := range types {
-		funcs = append(funcs, &catalog.Function{
+func someFuncs() []*catalog.Function {
+	return []*catalog.Function{
+		{
 			Name: "SOME",
 			Args: []*catalog.Argument{
-				{Type: &ast.TypeName{Name: typ}},
+				{Type: &ast.TypeName{Name: "any"}},
 			},
-			ReturnType:         &ast.TypeName{Name: typ},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+	}
+}
+
+func countDistinctEstimateHLLFuncs() []*catalog.Function {
+	return []*catalog.Function{
+		{
+			Name: "CountDistinctEstimate",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+			},
+			ReturnType:         &ast.TypeName{Name: "Uint64"},
 			ReturnTypeNullable: true,
-		})
-	}
-
-	// AGGREGATE_LIST и AGGREGATE_LIST_DISTINCT
-	for _, typ := range types {
-		funcs = append(funcs, &catalog.Function{
-			Name: "AGGREGATE_LIST",
+		},
+		{
+			Name: "HyperLogLog",
 			Args: []*catalog.Argument{
-				{Type: &ast.TypeName{Name: typ}},
+				{Type: &ast.TypeName{Name: "any"}},
 			},
-			ReturnType: &ast.TypeName{Name: "List<" + typ + ">"},
-		})
-		funcs = append(funcs, &catalog.Function{
-			Name: "AGGREGATE_LIST_DISTINCT",
+			ReturnType:         &ast.TypeName{Name: "Uint64"},
+			ReturnTypeNullable: true,
+		},
+		{
+			Name: "HLL",
 			Args: []*catalog.Argument{
-				{Type: &ast.TypeName{Name: typ}},
+				{Type: &ast.TypeName{Name: "any"}},
 			},
-			ReturnType: &ast.TypeName{Name: "List<" + typ + ">"},
-		})
+			ReturnType:         &ast.TypeName{Name: "Uint64"},
+			ReturnTypeNullable: true,
+		},
 	}
+}
 
-	// BOOL_AND, BOOL_OR, BOOL_XOR
-	boolAggrs := []string{"BOOL_AND", "BOOL_OR", "BOOL_XOR"}
-	for _, name := range boolAggrs {
-		funcs = append(funcs, &catalog.Function{
-			Name: name,
+func maxByMinByFuncs() []*catalog.Function {
+	return []*catalog.Function{
+		{
+			Name: "MAX_BY",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+				{Type: &ast.TypeName{Name: "any"}},
+			},
+			ReturnType:         &ast.TypeName{Name: "any"},
+			ReturnTypeNullable: true,
+		},
+		{
+			Name: "MIN_BY",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+				{Type: &ast.TypeName{Name: "any"}},
+			},
+			ReturnType:         &ast.TypeName{Name: "any"},
+			ReturnTypeNullable: true,
+		},
+	}
+	// todo: min/max_by with third argument returning list
+}
+
+func stddevVarianceFuncs() []*catalog.Function {
+	return []*catalog.Function{
+		{
+			Name: "STDDEV",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "Double"}},
+			},
+			ReturnType:         &ast.TypeName{Name: "Double"},
+			ReturnTypeNullable: true,
+		},
+		{
+			Name: "STDDEV_POPULATION",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "Double"}},
+			},
+			ReturnType:         &ast.TypeName{Name: "Double"},
+			ReturnTypeNullable: true,
+		},
+		{
+			Name: "POPULATION_STDDEV",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "Double"}},
+			},
+			ReturnType:         &ast.TypeName{Name: "Double"},
+			ReturnTypeNullable: true,
+		},
+		{
+			Name: "STDDEV_SAMPLE",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "Double"}},
+			},
+			ReturnType:         &ast.TypeName{Name: "Double"},
+			ReturnTypeNullable: true,
+		},
+		{
+			Name: "STDDEVSAMP",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "Double"}},
+			},
+			ReturnType:         &ast.TypeName{Name: "Double"},
+			ReturnTypeNullable: true,
+		},
+		{
+			Name: "VARIANCE",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "Double"}},
+			},
+			ReturnType:         &ast.TypeName{Name: "Double"},
+			ReturnTypeNullable: true,
+		},
+		{
+			Name: "VARIANCE_POPULATION",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "Double"}},
+			},
+			ReturnType:         &ast.TypeName{Name: "Double"},
+			ReturnTypeNullable: true,
+		},
+		{
+			Name: "POPULATION_VARIANCE",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "Double"}},
+			},
+			ReturnType:         &ast.TypeName{Name: "Double"},
+			ReturnTypeNullable: true,
+		},
+		{
+			Name: "VARPOP",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "Double"}},
+			},
+			ReturnType:         &ast.TypeName{Name: "Double"},
+			ReturnTypeNullable: true,
+		},
+		{
+			Name: "VARIANCE_SAMPLE",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "Double"}},
+			},
+			ReturnType:         &ast.TypeName{Name: "Double"},
+			ReturnTypeNullable: true,
+		},
+	}
+}
+
+func correlationCovarianceFuncs() []*catalog.Function {
+	return []*catalog.Function{
+		{
+			Name: "CORRELATION",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "Double"}},
+				{Type: &ast.TypeName{Name: "Double"}},
+			},
+			ReturnType:         &ast.TypeName{Name: "Double"},
+			ReturnTypeNullable: true,
+		},
+		{
+			Name: "COVARIANCE",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "Double"}},
+				{Type: &ast.TypeName{Name: "Double"}},
+			},
+			ReturnType:         &ast.TypeName{Name: "Double"},
+			ReturnTypeNullable: true,
+		},
+		{
+			Name: "COVARIANCE_SAMPLE",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "Double"}},
+				{Type: &ast.TypeName{Name: "Double"}},
+			},
+			ReturnType:         &ast.TypeName{Name: "Double"},
+			ReturnTypeNullable: true,
+		},
+		{
+			Name: "COVARIANCE_POPULATION",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "Double"}},
+				{Type: &ast.TypeName{Name: "Double"}},
+			},
+			ReturnType:         &ast.TypeName{Name: "Double"},
+			ReturnTypeNullable: true,
+		},
+	}
+}
+
+func percentileMedianFuncs() []*catalog.Function {
+	return []*catalog.Function{
+		{
+			Name: "PERCENTILE",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+				{Type: &ast.TypeName{Name: "any"}},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "MEDIAN",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "MEDIAN",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+				{Type: &ast.TypeName{Name: "any"}},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+	}
+}
+
+func boolAndOrXorFuncs() []*catalog.Function {
+	return []*catalog.Function{
+		{
+			Name: "BOOL_AND",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Bool"}},
 			},
 			ReturnType:         &ast.TypeName{Name: "Bool"},
 			ReturnTypeNullable: true,
-		})
-	}
-
-	// BIT_AND, BIT_OR, BIT_XOR
-	bitAggrs := []string{"BIT_AND", "BIT_OR", "BIT_XOR"}
-	for _, typ := range append(unsignedTypes, signedTypes...) {
-		for _, name := range bitAggrs {
-			funcs = append(funcs, &catalog.Function{
-				Name: name,
-				Args: []*catalog.Argument{
-					{Type: &ast.TypeName{Name: typ}},
-				},
-				ReturnType:         &ast.TypeName{Name: typ},
-				ReturnTypeNullable: true,
-			})
-		}
-	}
-
-	// STDDEV и VARIANCE
-	stdDevVariants := []struct {
-		name   string
-		returnType string
-	}{
-		{"STDDEV", "Double"},
-		{"VARIANCE", "Double"},
-		{"STDDEV_SAMPLE", "Double"},
-		{"VARIANCE_SAMPLE", "Double"},
-		{"STDDEV_POPULATION", "Double"},
-		{"VARIANCE_POPULATION", "Double"},
-	}
-	for _, variant := range stdDevVariants {
-		funcs = append(funcs, &catalog.Function{
-			Name: variant.name,
-			Args: []*catalog.Argument{
-				{Type: &ast.TypeName{Name: "Double"}},
-			},
-			ReturnType:         &ast.TypeName{Name: variant.returnType},
-			ReturnTypeNullable: true,
-		})
-	}
-
-	// CORRELATION и COVARIANCE
-	corrCovar := []string{"CORRELATION", "COVARIANCE", "COVARIANCE_SAMPLE", "COVARIANCE_POPULATION"}
-	for _, name := range corrCovar {
-		funcs = append(funcs, &catalog.Function{
-			Name: name,
-			Args: []*catalog.Argument{
-				{Type: &ast.TypeName{Name: "Double"}},
-				{Type: &ast.TypeName{Name: "Double"}},
-			},
-			ReturnType:         &ast.TypeName{Name: "Double"},
-			ReturnTypeNullable: true,
-		})
-	}
-
-	// HISTOGRAM
-	funcs = append(funcs, &catalog.Function{
-		Name: "HISTOGRAM",
-		Args: []*catalog.Argument{
-			{Type: &ast.TypeName{Name: "Double"}},
 		},
-		ReturnType:         &ast.TypeName{Name: "HistogramStruct"},
-		ReturnTypeNullable: true,
-	})
-
-	// TOP и BOTTOM
-	topBottom := []string{"TOP", "BOTTOM"}
-	for _, name := range topBottom {
-		for _, typ := range types {
-			funcs = append(funcs, &catalog.Function{
-				Name: name,
-				Args: []*catalog.Argument{
-					{Type: &ast.TypeName{Name: typ}},
-					{Type: &ast.TypeName{Name: "Uint32"}},
-				},
-				ReturnType: &ast.TypeName{Name: "List<" + typ + ">"},
-			})
-		}
+		{
+			Name: "BOOL_OR",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "Bool"}},
+			},
+			ReturnType:         &ast.TypeName{Name: "Bool"},
+			ReturnTypeNullable: true,
+		},
+		{
+			Name: "BOOL_XOR",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "Bool"}},
+			},
+			ReturnType:         &ast.TypeName{Name: "Bool"},
+			ReturnTypeNullable: true,
+		},
 	}
+}
 
-	// MAX_BY и MIN_BY
-	minMaxBy := []string{"MAX_BY", "MIN_BY"}
-	for _, name := range minMaxBy {
-		for _, typ := range types {
-			funcs = append(funcs, &catalog.Function{
-				Name: name,
-				Args: []*catalog.Argument{
-					{Type: &ast.TypeName{Name: typ}},
-					{Type: &ast.TypeName{Name: "any"}},
-				},
-				ReturnType:         &ast.TypeName{Name: typ},
-				ReturnTypeNullable: true,
-			})
-		}
+func bitAndOrXorFuncs() []*catalog.Function {
+	return []*catalog.Function{
+		{
+			Name: "BIT_AND",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+			},
+			ReturnType:         &ast.TypeName{Name: "any"},
+			ReturnTypeNullable: true,
+		},
+		{
+			Name: "BIT_OR",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+			},
+			ReturnType:         &ast.TypeName{Name: "any"},
+			ReturnTypeNullable: true,
+		},
+		{
+			Name: "BIT_XOR",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+			},
+			ReturnType:         &ast.TypeName{Name: "any"},
+			ReturnTypeNullable: true,
+		},
 	}
-
-	// ... (добавьте другие агрегатные функции по аналогии)
-
-	return funcs
 }

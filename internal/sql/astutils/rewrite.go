@@ -1028,14 +1028,6 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.apply(n, "Roles", nil, n.Roles)
 		a.apply(n, "Newrole", nil, n.Newrole)
 
-	case *ast.RecursiveFuncCall:
-		a.apply(n, "Func", nil, n.Func)
-		a.apply(n, "Funcname", nil, n.Funcname)
-		a.apply(n, "Args", nil, n.Args)
-		a.apply(n, "AggOrder", nil, n.AggOrder)
-		a.apply(n, "AggFilter", nil, n.AggFilter)
-		a.apply(n, "Over", nil, n.Over)
-
 	case *ast.RefreshMatViewStmt:
 		a.apply(n, "Relation", nil, n.Relation)
 

@@ -12,8 +12,10 @@ import (
 
 func YDBType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Column) string {
 	columnType := strings.ToLower(sdk.DataType(col.Type))
-	notNull := col.NotNull || col.IsArray
+	notNull := (col.NotNull || col.IsArray) && !isNullableType(columnType)
 	emitPointersForNull := options.EmitPointersForNullTypes
+
+	columnType = extractBaseType(columnType)
 
 	// https://ydb.tech/docs/ru/yql/reference/types/
 	// ydb-go-sdk doesn't support sql.Null* yet
@@ -49,7 +51,7 @@ func YDBType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Col
 		}
 		// return "sql.NullInt16"
 		return "*int16"
-	case "int", "int32": //ydb doesn't have int type, but we need it to support untyped constants 
+	case "int", "int32": //ydb doesn't have int type, but we need it to support untyped constants
 		if notNull {
 			return "int32"
 		}
@@ -159,7 +161,7 @@ func YDBType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Col
 			return "*string"
 		}
 		return "*string"
-		
+
 	case "date", "date32", "datetime", "timestamp", "tzdate", "tztimestamp", "tzdatetime":
 		if notNull {
 			return "time.Time"
@@ -184,4 +186,19 @@ func YDBType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Col
 		return "interface{}"
 	}
 
+}
+
+// This function extracts the base type from optional types
+func extractBaseType(typeStr string) string {
+	if strings.HasPrefix(typeStr, "optional<") && strings.HasSuffix(typeStr, ">") {
+		return strings.TrimSuffix(strings.TrimPrefix(typeStr, "optional<"), ">")
+	}
+	if strings.HasSuffix(typeStr, "?") {
+		return strings.TrimSuffix(typeStr, "?")
+	}
+	return typeStr
+}
+
+func isNullableType(typeStr string) bool {
+	return strings.HasPrefix(typeStr, "optional<") && strings.HasSuffix(typeStr, ">") || strings.HasSuffix(typeStr, "?")
 }
