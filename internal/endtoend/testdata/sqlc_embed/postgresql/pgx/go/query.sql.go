@@ -11,11 +11,7 @@ import (
 )
 
 const duplicate = `-- name: Duplicate :one
-SELECT
-    users.id, users.name, users.age,
-    users.id, users.name, users.age
-FROM
-    users
+SELECT users.id, users.name, users.age, users.id, users.name, users.age FROM users
 `
 
 type DuplicateRow struct {
@@ -38,12 +34,8 @@ func (q *Queries) Duplicate(ctx context.Context) (DuplicateRow, error) {
 }
 
 const join = `-- name: Join :one
-SELECT
-    users.id, users.name, users.age,
-    posts.id, posts.user_id
-FROM
-    posts
-    INNER JOIN users ON posts.user_id = users.id
+SELECT users.id, users.name, users.age, posts.id, posts.user_id FROM posts
+INNER JOIN users ON posts.user_id = users.id
 `
 
 type JoinRow struct {
@@ -65,10 +57,7 @@ func (q *Queries) Join(ctx context.Context) (JoinRow, error) {
 }
 
 const only = `-- name: Only :one
-SELECT
-    users.id, users.name, users.age
-FROM
-    users
+SELECT users.id, users.name, users.age FROM users
 `
 
 type OnlyRow struct {
@@ -83,10 +72,7 @@ func (q *Queries) Only(ctx context.Context) (OnlyRow, error) {
 }
 
 const withAlias = `-- name: WithAlias :one
-SELECT
-    u.id, u.name, u.age
-FROM
-    users u
+SELECT u.id, u.name, u.age FROM users u
 `
 
 type WithAliasRow struct {
@@ -101,11 +87,7 @@ func (q *Queries) WithAlias(ctx context.Context) (WithAliasRow, error) {
 }
 
 const withAsterisk = `-- name: WithAsterisk :one
-SELECT
-    users.id, users.name, users.age,
-    id, name, age
-FROM
-    users
+SELECT users.id, users.name, users.age, id, name, age FROM users
 `
 
 type WithAsteriskRow struct {
@@ -130,12 +112,8 @@ func (q *Queries) WithAsterisk(ctx context.Context) (WithAsteriskRow, error) {
 }
 
 const withCrossSchema = `-- name: WithCrossSchema :many
-SELECT
-    users.id, users.name, users.age,
-    bu.id, bu.name
-FROM
-    users
-    INNER JOIN baz.users bu ON users.id = bu.id
+SELECT users.id, users.name, users.age, bu.id, bu.name FROM users
+INNER JOIN baz.users bu ON users.id = bu.id
 `
 
 type WithCrossSchemaRow struct {
@@ -170,10 +148,7 @@ func (q *Queries) WithCrossSchema(ctx context.Context) ([]WithCrossSchemaRow, er
 }
 
 const withSchema = `-- name: WithSchema :one
-SELECT
-    bu.id, bu.name
-FROM
-    baz.users bu
+SELECT bu.id, bu.name FROM baz.users bu
 `
 
 type WithSchemaRow struct {
@@ -188,10 +163,7 @@ func (q *Queries) WithSchema(ctx context.Context) (WithSchemaRow, error) {
 }
 
 const withSpaceBeforeParen = `-- name: WithSpaceBeforeParen :one
-SELECT
-    users.id, users.name, users.age
-FROM
-    users
+SELECT users.id, users.name, users.age FROM users
 `
 
 type WithSpaceBeforeParenRow struct {
@@ -206,16 +178,7 @@ func (q *Queries) WithSpaceBeforeParen(ctx context.Context) (WithSpaceBeforePare
 }
 
 const withSubquery = `-- name: WithSubquery :many
-SELECT
-    users.id, users.name, users.age,
-    (
-        SELECT
-            count(*)
-        FROM
-            users
-    ) AS total_count
-FROM
-    users
+SELECT users.id, users.name, users.age, (SELECT count(*) FROM users) AS total_count FROM users
 `
 
 type WithSubqueryRow struct {
