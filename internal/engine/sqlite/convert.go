@@ -927,6 +927,34 @@ func (c *cc) convertParam(n *parser.Expr_bindContext) ast.Node {
 }
 
 func (c *cc) convertInSelectNode(n *parser.Expr_in_selectContext) ast.Node {
+	// Check if this is an EXISTS or NOT EXISTS expression
+	if n.EXISTS_() != nil {
+		sublink := &ast.SubLink{
+			SubLinkType: ast.EXISTS_SUBLINK,
+			Subselect:   c.convert(n.Select_stmt()),
+			Location:    n.GetStart().GetStart(),
+		}
+
+		notExists := n.NOT_() != nil
+		if !notExists && n.GetStart() != nil {
+			notExists = n.GetStart().GetTokenType() == parser.SQLiteParserNOT_
+		}
+
+		// If NOT EXISTS, wrap in a BoolExpr with NOT
+		if notExists {
+			return &ast.BoolExpr{
+				Boolop: ast.BoolExprTypeNot,
+				Args: &ast.List{
+					Items: []ast.Node{sublink},
+				},
+				Location: n.GetStart().GetStart(),
+			}
+		}
+
+		return sublink
+	}
+
+	// Handle other IN expressions (original behavior)
 	return c.convert(n.Select_stmt())
 }
 
@@ -1247,27 +1275,34 @@ func (c *cc) convertCase(n *parser.Expr_caseContext) ast.Node {
 }
 
 func (c *cc) convertUnaryExpr(n *parser.Expr_unaryContext) ast.Node {
-	// Handle unary expressions like NOT NULL
-	children := n.GetChildren()
-	if len(children) >= 2 {
-		for i, child := range children {
-			if term, ok := child.(antlr.TerminalNode); ok {
-				if term.GetSymbol().GetTokenType() == parser.SQLiteParserNOT_ {
-					if i+1 < len(children) {
-						if nextTerm, ok := children[i+1].(antlr.TerminalNode); ok {
-							if nextTerm.GetSymbol().GetTokenType() == parser.SQLiteParserNULL_ {
-								return &ast.A_Const{Val: &ast.Null{}}
-							}
-						}
-					}
+	if unary := n.Unary_operator(); unary != nil && unary.NOT_() != nil {
+		innerExpr := n.Expr()
+		if innerExpr != nil {
+			if strings.EqualFold(innerExpr.GetText(), "NULL") {
+				return &ast.A_Const{Val: &ast.Null{}}
+			}
+			if existsCtx, ok := innerExpr.(*parser.Expr_in_selectContext); ok {
+				inner := c.convertInSelectNode(existsCtx)
+				if boolNode, ok := inner.(*ast.BoolExpr); ok {
+					return boolNode
 				}
+				return &ast.BoolExpr{
+					Boolop:   ast.BoolExprTypeNot,
+					Args:     &ast.List{Items: []ast.Node{inner}},
+					Location: n.GetStart().GetStart(),
+				}
+			}
+			inner := c.convert(innerExpr)
+			return &ast.BoolExpr{
+				Boolop:   ast.BoolExprTypeNot,
+				Args:     &ast.List{Items: []ast.Node{inner}},
+				Location: n.GetStart().GetStart(),
 			}
 		}
 	}
 
-	// For other unary expressions, try to convert the inner expression
-	if n.Expr() != nil {
-		return c.convert(n.Expr())
+	if expr := n.Expr(); expr != nil {
+		return c.convert(expr)
 	}
 
 	return todo("convertUnaryExpr", n)
