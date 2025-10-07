@@ -1,18 +1,13 @@
-CREATE TABLE party (
+CREATE SCHEMA one;
+CREATE SCHEMA two;
+
+CREATE TABLE one.party (
     party_id uuid PRIMARY KEY,
     name text NOT NULL
 );
 
-CREATE TABLE person (
+CREATE TABLE two.person (
     first_name text NOT NULL,
     last_name text NOT NULL
-) INHERITS (party);
+) INHERITS (one.party);
 
-CREATE TABLE organisation (
-    legal_name text
-) INHERITS (party);
-
-CREATE TABLE llc (
-   incorporation_date timestamp,
-   legal_name text NOT NULL
-) INHERITS (organisation); 
