@@ -1,8 +1,6 @@
 -- name: GetAllParties :many
-SELECT * FROM party;
+SELECT * FROM one.party;
 
 -- name: GetAllPeople :many
-SELECT * FROM person;
+SELECT * FROM two.person;
 
--- name: GetAllOrganisations :many
-SELECT * FROM organisation;
