@@ -8,27 +8,14 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type Llc struct {
-	PartyID           pgtype.UUID
-	Name              string
-	LegalName         string
-	IncorporationDate pgtype.Timestamp
-}
-
-type Organisation struct {
-	PartyID   pgtype.UUID
-	Name      string
-	LegalName string
-}
-
-type Party struct {
-	PartyID pgtype.UUID
-	Name    string
-}
-
-type Person struct {
+type ChildPerson struct {
 	PartyID   pgtype.UUID
 	Name      string
 	FirstName string
 	LastName  string
+}
+
+type ParentParty struct {
+	PartyID pgtype.UUID
+	Name    string
 }

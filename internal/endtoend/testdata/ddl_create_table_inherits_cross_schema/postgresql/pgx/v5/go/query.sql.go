@@ -9,43 +9,19 @@ import (
 	"context"
 )
 
-const getAllOrganisations = `-- name: GetAllOrganisations :many
-SELECT party_id, name, legal_name FROM organisation
-`
-
-func (q *Queries) GetAllOrganisations(ctx context.Context) ([]Organisation, error) {
-	rows, err := q.db.Query(ctx, getAllOrganisations)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Organisation
-	for rows.Next() {
-		var i Organisation
-		if err := rows.Scan(&i.PartyID, &i.Name, &i.LegalName); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getAllParties = `-- name: GetAllParties :many
-SELECT party_id, name FROM party
+SELECT party_id, name FROM parent.party
 `
 
-func (q *Queries) GetAllParties(ctx context.Context) ([]Party, error) {
+func (q *Queries) GetAllParties(ctx context.Context) ([]ParentParty, error) {
 	rows, err := q.db.Query(ctx, getAllParties)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Party
+	var items []ParentParty
 	for rows.Next() {
-		var i Party
+		var i ParentParty
 		if err := rows.Scan(&i.PartyID, &i.Name); err != nil {
 			return nil, err
 		}
@@ -58,18 +34,18 @@ func (q *Queries) GetAllParties(ctx context.Context) ([]Party, error) {
 }
 
 const getAllPeople = `-- name: GetAllPeople :many
-SELECT party_id, name, first_name, last_name FROM person
+SELECT party_id, name, first_name, last_name FROM child.person
 `
 
-func (q *Queries) GetAllPeople(ctx context.Context) ([]Person, error) {
+func (q *Queries) GetAllPeople(ctx context.Context) ([]ChildPerson, error) {
 	rows, err := q.db.Query(ctx, getAllPeople)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Person
+	var items []ChildPerson
 	for rows.Next() {
-		var i Person
+		var i ChildPerson
 		if err := rows.Scan(
 			&i.PartyID,
 			&i.Name,

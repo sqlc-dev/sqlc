@@ -1,13 +1,13 @@
-CREATE SCHEMA one;
-CREATE SCHEMA two;
+CREATE SCHEMA parent;
+CREATE SCHEMA child;
 
-CREATE TABLE one.party (
+CREATE TABLE parent.party (
     party_id uuid PRIMARY KEY,
     name text NOT NULL
 );
 
-CREATE TABLE two.person (
+CREATE TABLE child.person (
     first_name text NOT NULL,
     last_name text NOT NULL
-) INHERITS (one.party);
+) INHERITS (parent.party);
 
