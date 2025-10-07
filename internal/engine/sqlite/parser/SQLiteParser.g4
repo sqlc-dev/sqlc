@@ -307,7 +307,7 @@ expr:
     ) #expr_in_select
     | expr AND_ expr #expr_bool
     | expr OR_ expr #expr_bool
-    | qualified_function_name OPEN_PAR ((DISTINCT_? expr ( COMMA expr)*) | STAR)? CLOSE_PAR filter_clause? over_clause? #expr_function
+    | qualified_function_name OPEN_PAR ((DISTINCT_? expr ( COMMA expr)*) order_by_stmt? | STAR)? CLOSE_PAR filter_clause? over_clause? #expr_function
     | OPEN_PAR expr (COMMA expr)* CLOSE_PAR #expr_list
     | CAST_ OPEN_PAR expr AS_ type_name CLOSE_PAR #expr_cast
     | expr COLLATE_ collation_name #expr_collate
