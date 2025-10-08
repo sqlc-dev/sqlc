@@ -11,7 +11,7 @@ import (
 
 func mysqlType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Column) string {
 	columnType := sdk.DataType(col.Type)
-	notNull := col.NotNull || col.IsArray
+	notNull := col.NotNull || (col.IsArray && !options.EmitNullableForNullArrays)
 	unsigned := col.Unsigned
 
 	switch columnType {
