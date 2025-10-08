@@ -304,15 +304,15 @@ func ydbBuilderMethodForColumnType(dbType string) string {
 		return "Bool"
 	case "uint64":
 		return "Uint64"
-	case "int64":
+	case "int64", "bigserial", "serial8":
 		return "Int64"
 	case "uint32":
 		return "Uint32"
-	case "int32":
+	case "int32", "serial", "serial4":
 		return "Int32"
 	case "uint16":
 		return "Uint16"
-	case "int16":
+	case "int16", "smallserial","serial2":
 		return "Int16"
 	case "uint8":
 		return "Uint8"
@@ -342,6 +342,10 @@ func ydbBuilderMethodForColumnType(dbType string) string {
 		return "TzDatetime"
 	case "tztimestamp":
 		return "TzTimestamp"
+	case "uuid":
+		return "UUID"
+	case "yson":
+		return "YSON"
 
 	//TODO: support other types
 	default:

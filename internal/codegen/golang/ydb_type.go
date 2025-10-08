@@ -171,6 +171,24 @@ func YDBType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Col
 		}
 		return "*time.Time"
 
+	case "uuid":
+		if notNull {
+			return "uuid.UUID"
+		}
+		if emitPointersForNull {
+			return "*uuid.UUID"
+		}
+		return "*uuid.UUID"
+
+	case "yson":
+		if notNull {
+			return "[]byte"
+		}
+		if emitPointersForNull {
+			return "*[]byte"
+		}
+		return "*[]byte"
+
 	case "null":
 		// return "sql.Null"
 		return "interface{}"
