@@ -2,6 +2,7 @@ package rewrite
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
@@ -9,14 +10,15 @@ import (
 
 // Embed is an instance of `sqlc.embed(param)`
 type Embed struct {
-	Table *ast.TableName
-	param string
-	Node  *ast.ColumnRef
+	Table  *ast.TableName
+	param  string
+	Node   *ast.ColumnRef
+	spaces string
 }
 
 // Orig string to replace
 func (e Embed) Orig() string {
-	return fmt.Sprintf("sqlc.embed(%s)", e.param)
+	return fmt.Sprintf("sqlc.embed%s(%s)", e.spaces, e.param)
 }
 
 // EmbedSet is a set of Embed instances
@@ -51,6 +53,15 @@ func Embeds(raw *ast.RawStmt) (*ast.RawStmt, EmbedSet) {
 
 			param, _ := flatten(fun.Args)
 
+			// Calculate spaces between function name and opening parenthesis
+			// to handle formatters that insert spaces (e.g., pgFormatter)
+			funcName := "sqlc.embed"
+			spaces := ""
+			if fun.Args != nil && len(fun.Args.Items) > 0 {
+				leftParen := fun.Args.Items[0].Pos() - 1
+				spaces = strings.Repeat(" ", leftParen-fun.Location-len(funcName))
+			}
+
 			node := &ast.ColumnRef{
 				Fields: &ast.List{
 					Items: []ast.Node{
@@ -61,9 +72,10 @@ func Embeds(raw *ast.RawStmt) (*ast.RawStmt, EmbedSet) {
 			}
 
 			embeds = append(embeds, &Embed{
-				Table: &ast.TableName{Name: param},
-				param: param,
-				Node:  node,
+				Table:  &ast.TableName{Name: param},
+				param:  param,
+				Node:   node,
+				spaces: spaces,
 			})
 
 			cr.Replace(node)

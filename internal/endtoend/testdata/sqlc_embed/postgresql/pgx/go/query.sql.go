@@ -162,6 +162,21 @@ func (q *Queries) WithSchema(ctx context.Context) (WithSchemaRow, error) {
 	return i, err
 }
 
+const withSpaceBeforeParen = `-- name: WithSpaceBeforeParen :one
+SELECT users.id, users.name, users.age FROM users
+`
+
+type WithSpaceBeforeParenRow struct {
+	User User `db:"user" json:"user"`
+}
+
+func (q *Queries) WithSpaceBeforeParen(ctx context.Context) (WithSpaceBeforeParenRow, error) {
+	row := q.db.QueryRow(ctx, withSpaceBeforeParen)
+	var i WithSpaceBeforeParenRow
+	err := row.Scan(&i.User.ID, &i.User.Name, &i.User.Age)
+	return i, err
+}
+
 const withSubquery = `-- name: WithSubquery :many
 SELECT users.id, users.name, users.age, (SELECT count(*) FROM users) AS total_count FROM users
 `
