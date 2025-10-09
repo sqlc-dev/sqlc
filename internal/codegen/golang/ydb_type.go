@@ -12,7 +12,8 @@ import (
 
 func YDBType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Column) string {
 	columnType := strings.ToLower(sdk.DataType(col.Type))
-	notNull := (col.NotNull || col.IsArray) && !isNullableType(columnType)
+	isArray := col.IsArray || col.IsSqlcSlice
+	notNull := (col.NotNull || isArray) && (!isNullableType(columnType) || isArray)
 	emitPointersForNull := options.EmitPointersForNullTypes
 
 	columnType = extractBaseType(columnType)

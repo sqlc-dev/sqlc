@@ -24,16 +24,12 @@ type CreateOrUpdateAuthorParams struct {
 }
 
 func (q *Queries) CreateOrUpdateAuthor(ctx context.Context, arg CreateOrUpdateAuthorParams, opts ...query.ExecuteOption) error {
+	parameters := ydb.ParamsBuilder()
+	parameters = parameters.Param("$p0").Uint64(arg.P0)
+	parameters = parameters.Param("$p1").Text(arg.P1)
+	parameters = parameters.Param("$p2").BeginOptional().Text(arg.P2).EndOptional()
 	err := q.db.Exec(ctx, createOrUpdateAuthor,
-		append(opts,
-			query.WithParameters(
-				ydb.ParamsBuilder().
-					Param("$p0").Uint64(arg.P0).
-					Param("$p1").Text(arg.P1).
-					Param("$p2").BeginOptional().Text(arg.P2).EndOptional().
-					Build(),
-			),
-		)...,
+		append(opts, query.WithParameters(parameters.Build()))...,
 	)
 	if err != nil {
 		return xerrors.WithStackTrace(err)
@@ -46,14 +42,10 @@ DELETE FROM authors WHERE id = $p0
 `
 
 func (q *Queries) DeleteAuthor(ctx context.Context, p0 uint64, opts ...query.ExecuteOption) error {
+	parameters := ydb.ParamsBuilder()
+	parameters = parameters.Param("$p0").Uint64(p0)
 	err := q.db.Exec(ctx, deleteAuthor,
-		append(opts,
-			query.WithParameters(
-				ydb.ParamsBuilder().
-					Param("$p0").Uint64(p0).
-					Build(),
-			),
-		)...,
+		append(opts, query.WithParameters(parameters.Build()))...,
 	)
 	if err != nil {
 		return xerrors.WithStackTrace(err)
@@ -79,14 +71,10 @@ WHERE id = $p0 LIMIT 1
 `
 
 func (q *Queries) GetAuthor(ctx context.Context, p0 uint64, opts ...query.ExecuteOption) (Author, error) {
+	parameters := ydb.ParamsBuilder()
+	parameters = parameters.Param("$p0").Uint64(p0)
 	row, err := q.db.QueryRow(ctx, getAuthor,
-		append(opts,
-			query.WithParameters(
-				ydb.ParamsBuilder().
-					Param("$p0").Uint64(p0).
-					Build(),
-			),
-		)...,
+		append(opts, query.WithParameters(parameters.Build()))...,
 	)
 	var i Author
 	if err != nil {

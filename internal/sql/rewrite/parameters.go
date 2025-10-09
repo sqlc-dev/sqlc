@@ -102,7 +102,9 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 			})
 
 			var replace string
-			if engine == config.EngineMySQL || engine == config.EngineSQLite || !dollar {
+			if engine == config.EngineYDB {
+				replace = fmt.Sprintf("$%s", param.Name())
+			} else if engine == config.EngineMySQL || engine == config.EngineSQLite || !dollar {
 				if param.IsSqlcSlice() {
 					// This sequence is also replicated in internal/codegen/golang.Field
 					// since it's needed during template generation for replacement
