@@ -68,6 +68,9 @@ func buildStructs(req *plugin.GenerateRequest, options *opts.Options) []Struct {
 		}
 		for _, table := range schema.Tables {
 			var tableName string
+			if table.Hidden {
+				continue
+			}
 			if schema.Name == req.Catalog.DefaultSchema {
 				tableName = table.Rel.Name
 			} else {
