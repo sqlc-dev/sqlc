@@ -128,6 +128,27 @@ func (v QueryValue) UniqueFields() []Field {
 	return fields
 }
 
+// YDBUniqueFieldsWithComments returns unique fields for YDB struct generation with comments for interface{} fields
+func (v QueryValue) YDBUniqueFieldsWithComments() []Field {
+	seen := map[string]struct{}{}
+	fields := make([]Field, 0, len(v.Struct.Fields))
+
+	for _, field := range v.Struct.Fields {
+		if _, found := seen[field.Name]; found {
+			continue
+		}
+		seen[field.Name] = struct{}{}
+
+		if strings.HasSuffix(field.Type, "interface{}") {
+			field.Comment = "// sqlc couldn't resolve type, pass via params"
+		}
+
+		fields = append(fields, field)
+	}
+
+	return fields
+}
+
 func (v QueryValue) Params() string {
 	if v.isEmpty() {
 		return ""
@@ -198,7 +219,7 @@ func (v QueryValue) HasSqlcSlices() bool {
 func (v QueryValue) Scan() string {
 	var out []string
 	if v.Struct == nil {
-		if strings.HasPrefix(v.Typ, "[]") && v.Typ != "[]byte" && !v.SQLDriver.IsPGX() {
+		if strings.HasPrefix(v.Typ, "[]") && v.Typ != "[]byte" && !v.SQLDriver.IsPGX() && !v.SQLDriver.IsYDBGoSDK() {
 			out = append(out, "pq.Array(&"+v.Name+")")
 		} else {
 			out = append(out, "&"+v.Name)
@@ -209,7 +230,7 @@ func (v QueryValue) Scan() string {
 			// append any embedded fields
 			if len(f.EmbedFields) > 0 {
 				for _, embed := range f.EmbedFields {
-					if strings.HasPrefix(embed.Type, "[]") && embed.Type != "[]byte" && !v.SQLDriver.IsPGX() {
+					if strings.HasPrefix(embed.Type, "[]") && embed.Type != "[]byte" && !v.SQLDriver.IsPGX() && !v.SQLDriver.IsYDBGoSDK() {
 						out = append(out, "pq.Array(&"+v.Name+"."+f.Name+"."+embed.Name+")")
 					} else {
 						out = append(out, "&"+v.Name+"."+f.Name+"."+embed.Name)
@@ -218,7 +239,7 @@ func (v QueryValue) Scan() string {
 				continue
 			}
 
-			if strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" && !v.SQLDriver.IsPGX() {
+			if strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" && !v.SQLDriver.IsPGX() && !v.SQLDriver.IsYDBGoSDK() {
 				out = append(out, "pq.Array(&"+v.Name+"."+f.Name+")")
 			} else {
 				out = append(out, "&"+v.Name+"."+f.Name)
@@ -267,32 +288,6 @@ func addDollarPrefix(name string) string {
 		return name
 	}
 	return "$" + name
-}
-
-// YDBParamMapEntries returns entries for a map[string]any literal for YDB parameters.
-func (v QueryValue) YDBParamMapEntries() string {
-	if v.isEmpty() {
-		return ""
-	}
-
-	var parts []string
-	for _, field := range v.getParameterFields() {
-		if field.Column != nil && field.Column.IsNamedParam {
-			name := field.Column.GetName()
-			if name != "" {
-				key := fmt.Sprintf("%q", addDollarPrefix(name))
-				variable := v.VariableForField(field)
-				parts = append(parts, key+": "+escape(variable))
-			}
-		}
-	}
-
-	if len(parts) == 0 {
-		return ""
-	}
-
-	parts = append(parts, "")
-	return "\n" + strings.Join(parts, ",\n")
 }
 
 // ydbBuilderMethodForColumnType maps a YDB column data type to a ParamsBuilder method name.
@@ -353,52 +348,89 @@ func ydbBuilderMethodForColumnType(dbType string) string {
 	}
 }
 
-// YDBParamsBuilder emits Go code that constructs YDB params using ParamsBuilder.
-func (v QueryValue) YDBParamsBuilder() string {
+// ydbIterateNamedParams iterates over named parameters and calls the provided function for each one.
+// The function receives the field and method name, and should return true to continue iteration.
+func (v QueryValue) ydbIterateNamedParams(fn func(field Field, method string) bool) bool {
 	if v.isEmpty() {
-		return ""
+		return false
 	}
 
-	var lines []string
-
 	for _, field := range v.getParameterFields() {
-		if field.Column != nil && field.Column.IsNamedParam {
+		if field.Column != nil {
 			name := field.Column.GetName()
 			if name == "" {
 				continue
 			}
-			paramName := fmt.Sprintf("%q", addDollarPrefix(name))
-			variable := escape(v.VariableForField(field))
 
 			var method string
 			if field.Column != nil && field.Column.Type != nil {
 				method = ydbBuilderMethodForColumnType(sdk.DataType(field.Column.Type))
 			}
 
-			goType := field.Type
-			isPtr := strings.HasPrefix(goType, "*")
-			if isPtr {
-				goType = strings.TrimPrefix(goType, "*")
-			}
-
-			if method == "" {
-				panic(fmt.Sprintf("unknown YDB column type for param %s (goType=%s)", name, goType))
-			}
-
-			if isPtr {
-				lines = append(lines, fmt.Sprintf("\t\t\tParam(%s).BeginOptional().%s(%s).EndOptional().", paramName, method, variable))
-			} else {
-				lines = append(lines, fmt.Sprintf("\t\t\tParam(%s).%s(%s).", paramName, method, variable))
+			if !fn(field, method) {
+				return false
 			}
 		}
 	}
+	return true
+}
 
-	if len(lines) == 0 {
-		return ""
-	}
+// YDBHasComplexContainers returns true if there are complex container types that sqlc cannot handle automatically.
+func (v QueryValue) YDBHasComplexContainers() bool {
+	hasComplex := false
+	v.ydbIterateNamedParams(func(field Field, method string) bool {
+		if method == "" {
+			hasComplex = true
+			return false
+		}
+		return true
+	})
+	return hasComplex
+}
+
+// YDBParamsBuilder emits Go code that constructs YDB params using ParamsBuilder.
+func (v QueryValue) YDBParamsBuilder() string {
+	var lines []string
+
+	v.ydbIterateNamedParams(func(field Field, method string) bool {
+		if method == "" {
+			return true
+		}
+
+		name := field.Column.GetName()
+		paramName := fmt.Sprintf("%q", addDollarPrefix(name))
+		variable := escape(v.VariableForField(field))
+
+		goType := field.Type
+		isPtr := strings.HasPrefix(goType, "*")
+		isArray := field.Column.IsArray || field.Column.IsSqlcSlice
+
+		if isArray {
+			lines = append(lines, fmt.Sprintf("\tvar list = parameters.Param(%s).BeginList()", paramName))
+			lines = append(lines, fmt.Sprintf("\tfor _, param := range %s {", variable))
+			lines = append(lines, fmt.Sprintf("\t\tlist = list.Add().%s(param)", method))
+			lines = append(lines, "\t}")
+			lines = append(lines, "\tparameters = list.EndList()")
+		} else if isPtr {
+			lines = append(lines, fmt.Sprintf("\tparameters = parameters.Param(%s).BeginOptional().%s(%s).EndOptional()", paramName, method, variable))
+		} else {
+			lines = append(lines, fmt.Sprintf("\tparameters = parameters.Param(%s).%s(%s)", paramName, method, variable))
+		}
+
+		return true
+	})
 
 	params := strings.Join(lines, "\n")
-	return fmt.Sprintf("\nquery.WithParameters(\n\t\tydb.ParamsBuilder().\n%s\n\t\t\tBuild(),\n\t\t),\n", params)
+	return fmt.Sprintf("\tparameters := ydb.ParamsBuilder()\n%s", params)
+}
+
+func (v QueryValue) YDBHasParams() bool {
+	hasParams := false
+	v.ydbIterateNamedParams(func(field Field, method string) bool {
+		hasParams = true
+		return false
+	})
+	return hasParams
 }
 
 func (v QueryValue) getParameterFields() []Field {
@@ -413,6 +445,53 @@ func (v QueryValue) getParameterFields() []Field {
 		}
 	}
 	return v.Struct.Fields
+}
+
+// YDBPair returns the argument name and type for YDB query methods, filtering out interface{} parameters
+// that are handled by manualParams instead.
+func (v QueryValue) YDBPair() string {
+	if v.isEmpty() {
+		return ""
+	}
+
+	var out []string
+	for _, arg := range v.YDBPairs() {
+		out = append(out, arg.Name+" "+arg.Type)
+	}
+	return strings.Join(out, ",")
+}
+
+// YDBPairs returns the argument name and type for YDB query methods, filtering out interface{} parameters
+// that are handled by manualParams instead.
+func (v QueryValue) YDBPairs() []Argument {
+	if v.isEmpty() {
+		return nil
+	}
+
+	if !v.EmitStruct() && v.IsStruct() {
+		var out []Argument
+		for _, f := range v.Struct.Fields {
+			if strings.HasSuffix(f.Type, "interface{}") {
+				continue
+			}
+			out = append(out, Argument{
+				Name: escape(toLowerCase(f.Name)),
+				Type: f.Type,
+			})
+		}
+		return out
+	}
+
+	if strings.HasSuffix(v.Typ, "interface{}") {
+		return nil
+	}
+
+	return []Argument{
+		{
+			Name: escape(v.Name),
+			Type: v.DefineType(),
+		},
+	}
 }
 
 // A struct used to generate methods and fields on the Queries struct
