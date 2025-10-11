@@ -5,7 +5,7 @@
 package db
 
 type Repro struct {
-	ID   interface{}
-	Name interface{}
-	Seq  interface{}
+	ID   any
+	Name any
+	Seq  any
 }

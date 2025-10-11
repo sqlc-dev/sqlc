@@ -27,8 +27,8 @@ func (r *iteratorForStageUserData) Next() bool {
 	return len(r.rows) > 0
 }
 
-func (r iteratorForStageUserData) Values() ([]interface{}, error) {
-	return []interface{}{
+func (r iteratorForStageUserData) Values() ([]any, error) {
+	return []any{
 		r.rows[0].IDParam,
 		r.rows[0].UserParam,
 	}, nil

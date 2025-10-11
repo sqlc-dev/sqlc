@@ -18,7 +18,7 @@ const (
 	FooBatBat FooBat = "bat"
 )
 
-func (e *FooBat) Scan(src interface{}) error {
+func (e *FooBat) Scan(src any) error {
 	switch s := src.(type) {
 	case []byte:
 		*e = FooBat(s)
@@ -36,7 +36,7 @@ type NullFooBat struct {
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullFooBat) Scan(value interface{}) error {
+func (ns *NullFooBat) Scan(value any) error {
 	if value == nil {
 		ns.FooBat, ns.Valid = "", false
 		return nil

@@ -36,7 +36,7 @@ func (p *Paths) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (p *Paths) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (p *Paths) UnmarshalYAML(unmarshal func(any) error) error {
 	out := []string{}
 	if sliceErr := unmarshal(&out); sliceErr != nil {
 		var ele string

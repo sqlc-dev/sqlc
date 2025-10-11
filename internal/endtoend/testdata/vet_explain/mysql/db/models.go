@@ -19,7 +19,7 @@ const (
 	DebugCenumThree DebugCenum = "three"
 )
 
-func (e *DebugCenum) Scan(src interface{}) error {
+func (e *DebugCenum) Scan(src any) error {
 	switch s := src.(type) {
 	case []byte:
 		*e = DebugCenum(s)
@@ -37,7 +37,7 @@ type NullDebugCenum struct {
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullDebugCenum) Scan(value interface{}) error {
+func (ns *NullDebugCenum) Scan(value any) error {
 	if value == nil {
 		ns.DebugCenum, ns.Valid = "", false
 		return nil
@@ -62,7 +62,7 @@ const (
 	DebugCsetThree DebugCset = "three"
 )
 
-func (e *DebugCset) Scan(src interface{}) error {
+func (e *DebugCset) Scan(src any) error {
 	switch s := src.(type) {
 	case []byte:
 		*e = DebugCset(s)
@@ -80,7 +80,7 @@ type NullDebugCset struct {
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullDebugCset) Scan(value interface{}) error {
+func (ns *NullDebugCset) Scan(value any) error {
 	if value == nil {
 		ns.DebugCset, ns.Valid = "", false
 		return nil
@@ -113,7 +113,7 @@ type Debug struct {
 	Ctinyint         int8
 	Cbool            bool
 	Cmediumint       int32
-	Cbit             interface{}
+	Cbit             any
 	Cdate            time.Time
 	Cdatetime        time.Time
 	Ctimestamp       time.Time
