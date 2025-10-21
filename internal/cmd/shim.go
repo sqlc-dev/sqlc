@@ -73,9 +73,34 @@ func pluginCatalog(c *catalog.Catalog) *plugin.Catalog {
 					Vals:    typ.Vals,
 				})
 			case *catalog.CompositeType:
+				var columns []*plugin.Column
+				for _, c := range typ.Columns {
+					l := -1
+					if c.Length != nil {
+						l = *c.Length
+					}
+					columns = append(columns, &plugin.Column{
+						Name: c.Name,
+						Type: &plugin.Identifier{
+							Catalog: c.Type.Catalog,
+							Schema:  c.Type.Schema,
+							Name:    c.Type.Name,
+						},
+						Comment:   c.Comment,
+						NotNull:   c.IsNotNull,
+						Unsigned:  c.IsUnsigned,
+						IsArray:   c.IsArray,
+						ArrayDims: int32(c.ArrayDims),
+						Length:    int32(l),
+						Table: &plugin.Identifier{
+							Name: typ.Name,
+						},
+					})
+				}
 				cts = append(cts, &plugin.CompositeType{
 					Name:    typ.Name,
 					Comment: typ.Comment,
+					Columns: columns,
 				})
 			}
 		}

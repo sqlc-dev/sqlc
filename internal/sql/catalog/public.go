@@ -131,3 +131,21 @@ func (c *Catalog) GetTable(rel *ast.TableName) (Table, error) {
 		return *table, err
 	}
 }
+
+func (c *Catalog) GetCompostiteType(rel *ast.TypeName) (CompositeType, error) {
+	ty, _, err := c.getType(rel)
+	if err != nil {
+		return CompositeType{}, err
+	}
+
+	cTy, ok := ty.(*CompositeType)
+	if !ok {
+		return CompositeType{}, fmt.Errorf("Type %s is not a composite type", rel.Name)
+	}
+
+	if ty == nil {
+		return CompositeType{}, err
+	} else {
+		return *cTy, err
+	}
+}
