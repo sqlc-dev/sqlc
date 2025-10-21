@@ -1,88 +1,42 @@
 package duckdb
 
 import (
-	"errors"
 	"io"
-	"regexp"
-	"strconv"
-	"strings"
-
-	"github.com/pingcap/tidb/pkg/parser"
-	_ "github.com/pingcap/tidb/pkg/parser/test_driver"
 
 	"github.com/sqlc-dev/sqlc/internal/source"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
-	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
 )
 
+// NewParser creates a new DuckDB parser
+// DuckDB uses database-backed validation, so this parser is minimal
+// All actual parsing and validation happens in the database via the analyzer
 func NewParser() *Parser {
-	return &Parser{parser.New()}
+	return &Parser{}
 }
 
-type Parser struct {
-	pingcap *parser.Parser
-}
+type Parser struct{}
 
-var lineColumn = regexp.MustCompile(`^line (\d+) column (\d+) (.*)`)
-
-func normalizeErr(err error) error {
-	if err == nil {
-		return err
-	}
-	parts := strings.Split(err.Error(), "\n")
-	msg := strings.TrimSpace(parts[0] + "\"")
-	out := lineColumn.FindStringSubmatch(msg)
-	if len(out) == 4 {
-		line, lineErr := strconv.Atoi(out[1])
-		col, colErr := strconv.Atoi(out[2])
-		if lineErr != nil || colErr != nil {
-			return errors.New(msg)
-		}
-		return &sqlerr.Error{
-			Message: "syntax error",
-			Err:     errors.New(out[3]),
-			Line:    line,
-			Column:  col,
-		}
-	}
-	return errors.New(msg)
-}
-
+// Parse returns a minimal AST for DuckDB
+// Since DuckDB uses database-backed catalog and analyzer,
+// we don't need to parse SQL into a detailed AST.
+// The analyzer will send queries to the database for validation.
 func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 	blob, err := io.ReadAll(r)
 	if err != nil {
 		return nil, err
 	}
-	stmtNodes, _, err := p.pingcap.Parse(string(blob), "", "")
-	if err != nil {
-		return nil, normalizeErr(err)
-	}
-	var stmts []ast.Statement
-	for i := range stmtNodes {
-		converter := &cc{}
-		out := converter.convert(stmtNodes[i])
-		if _, ok := out.(*ast.TODO); ok {
-			continue
-		}
 
-		// Attach the text location to the ast.Statement node
-		text := stmtNodes[i].Text()
-		loc := strings.Index(string(blob), text)
-
-		stmtLen := len(text)
-		if stmtLen > 0 && text[stmtLen-1] == ';' {
-			stmtLen -= 1 // Subtract one to remove semicolon
-		}
-
-		stmts = append(stmts, ast.Statement{
+	// Return a single TODO statement containing the raw SQL
+	// The database will parse and validate this later
+	return []ast.Statement{
+		{
 			Raw: &ast.RawStmt{
-				Stmt:         out,
-				StmtLocation: loc,
-				StmtLen:      stmtLen,
+				Stmt:         &ast.TODO{},
+				StmtLocation: 0,
+				StmtLen:      len(blob),
 			},
-		})
-	}
-	return stmts, nil
+		},
+	}, nil
 }
 
 // https://duckdb.org/docs/sql/dialect/syntax#comments

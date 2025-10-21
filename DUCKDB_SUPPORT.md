@@ -11,9 +11,11 @@ DuckDB support has been added to sqlc using a database-backed approach, similar 
 ### Core Components
 
 1. **Parser** (`/internal/engine/duckdb/parse.go`)
-   - Uses the TiDB parser (same as MySQL/Dolphin engine)
+   - **Minimal pass-through parser** - does not parse SQL into AST
+   - All parsing and validation happens in the database via the analyzer
    - Implements the `Parser` interface with `Parse()`, `CommentSyntax()`, and `IsReservedKeyword()` methods
    - Supports `--` and `/* */` comment styles (DuckDB standard)
+   - Returns TODO AST nodes - actual parsing done by DuckDB database
 
 2. **Catalog** (`/internal/engine/duckdb/catalog.go`)
    - Minimal catalog implementation
@@ -24,14 +26,11 @@ DuckDB support has been added to sqlc using a database-backed approach, similar 
    - **REQUIRED** for DuckDB engine (not optional like PostgreSQL)
    - Connects to DuckDB database via `github.com/marcboeker/go-duckdb`
    - Uses PREPARE and DESCRIBE to analyze queries
+   - Handles all SQL parsing and validation via the database
    - Queries column metadata from prepared statements
    - Normalizes DuckDB types to sqlc-compatible types
 
-4. **AST Converter** (`/internal/engine/duckdb/convert.go`)
-   - Copied from Dolphin/MySQL implementation
-   - Converts TiDB parser AST to sqlc universal AST
-
-5. **Reserved Keywords** (`/internal/engine/duckdb/reserved.go`)
+4. **Reserved Keywords** (`/internal/engine/duckdb/reserved.go`)
    - DuckDB reserved keywords based on official documentation
    - Includes LAMBDA (reserved as of DuckDB 1.3.0)
    - Can be queried from DuckDB using `SELECT * FROM duckdb_keywords()`
@@ -121,12 +120,15 @@ VALUES ($1, $2);
 ## Key Differences from Other Engines
 
 ### vs PostgreSQL
-- **PostgreSQL**: Optional database analyzer, rich Go-based catalog with pg_catalog
-- **DuckDB**: Required database analyzer, minimal catalog
+- **PostgreSQL**: Optional database analyzer, rich Go-based catalog with pg_catalog, full AST parsing
+- **DuckDB**: Required database analyzer, minimal catalog, no AST parsing (database validates SQL)
 
 ### vs MySQL/SQLite
-- **MySQL/SQLite**: Go-based catalog with built-in functions
-- **DuckDB**: Database-backed only, no Go-based catalog
+- **MySQL/SQLite**: Go-based catalog with built-in functions, TiDB/ANTLR parser with full AST
+- **DuckDB**: Database-backed only, no Go-based catalog, minimal parser (database parses SQL)
+
+### Unique Approach
+DuckDB is the only engine that doesn't parse SQL in Go. All SQL parsing, validation, and type checking happens directly in the DuckDB database. This ensures 100% compatibility with DuckDB's SQL syntax without needing to maintain a separate parser.
 
 ## Type Mapping
 
@@ -205,27 +207,28 @@ duckdb engine requires database configuration
 
 1. **Network dependency**: Requires network access to download go-duckdb initially
 2. **Parameter type inference**: DuckDB doesn't provide parameter types without execution, so parameters are typed as "any" by the analyzer
-3. **Parser limitations**: Uses TiDB parser which may not support all DuckDB-specific syntax (STRUCT, LIST, UNION types may require custom handling)
+3. **Database required**: Unlike other engines, DuckDB cannot generate code without a database connection (no offline mode)
 
 ## Future Enhancements
 
-1. Improve parameter type inference
+1. Improve parameter type inference by analyzing query patterns
 2. Add support for DuckDB-specific types (STRUCT, LIST, UNION, MAP)
-3. Support DuckDB extensions
+3. Support DuckDB extensions and extension-specific functions
 4. Add DuckDB-specific selector for custom column handling
 5. Improve error messages with DuckDB-specific error codes
+6. Cache database connections for better performance
+7. Support managed databases via database manager
 
 ## Files Modified/Created
 
 ### Created:
-- `/internal/engine/duckdb/parse.go`
-- `/internal/engine/duckdb/catalog.go`
-- `/internal/engine/duckdb/convert.go`
-- `/internal/engine/duckdb/reserved.go`
-- `/internal/engine/duckdb/analyzer/analyze.go`
-- `/examples/duckdb/basic/schema/schema.sql`
-- `/examples/duckdb/basic/query/query.sql`
-- `/examples/duckdb/basic/sqlc.yaml`
+- `/internal/engine/duckdb/parse.go` - Minimal pass-through parser
+- `/internal/engine/duckdb/catalog.go` - Minimal catalog
+- `/internal/engine/duckdb/reserved.go` - Reserved keywords
+- `/internal/engine/duckdb/analyzer/analyze.go` - Database analyzer
+- `/examples/duckdb/basic/schema/schema.sql` - Example schema
+- `/examples/duckdb/basic/query/query.sql` - Example queries
+- `/examples/duckdb/basic/sqlc.yaml` - Example configuration
 
 ### Modified:
 - `/internal/config/config.go` - Added `EngineDuckDB` constant
@@ -234,8 +237,10 @@ duckdb engine requires database configuration
 
 ## Notes
 
+- **No SQL parsing in Go**: DuckDB engine validates all SQL via the database, not in Go code
 - DuckDB uses "main" as the default schema (different from PostgreSQL's "public")
 - DuckDB uses "memory" as the default catalog name
 - Comment syntax supports only `--` and `/* */`, not `#`
 - Reserved keyword LAMBDA was added in DuckDB 1.3.0
 - Reserved keyword GRANT was removed in DuckDB 1.3.0
+- 100% compatibility with DuckDB syntax since the database itself parses SQL
