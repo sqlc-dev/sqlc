@@ -1,0 +1,109 @@
+package duckdb
+
+import "strings"
+
+// https://duckdb.org/docs/sql/dialect/keywords_and_identifiers
+// Reserved keywords can be queried using: SELECT * FROM duckdb_keywords()
+func (p *Parser) IsReservedKeyword(s string) bool {
+	switch strings.ToUpper(s) {
+	case "ALL":
+	case "ANALYSE":
+	case "ANALYZE":
+	case "AND":
+	case "ANY":
+	case "ARRAY":
+	case "AS":
+	case "ASC":
+	case "ASYMMETRIC":
+	case "BOTH":
+	case "CASE":
+	case "CAST":
+	case "CHECK":
+	case "COLLATE":
+	case "COLUMN":
+	case "CONSTRAINT":
+	case "CREATE":
+	case "CROSS":
+	case "CURRENT_CATALOG":
+	case "CURRENT_DATE":
+	case "CURRENT_ROLE":
+	case "CURRENT_SCHEMA":
+	case "CURRENT_TIME":
+	case "CURRENT_TIMESTAMP":
+	case "CURRENT_USER":
+	case "DEFAULT":
+	case "DEFERRABLE":
+	case "DESC":
+	case "DISTINCT":
+	case "DO":
+	case "ELSE":
+	case "END":
+	case "EXCEPT":
+	case "FALSE":
+	case "FETCH":
+	case "FOR":
+	case "FOREIGN":
+	case "FROM":
+	case "FULL":
+	case "GLOB":
+	case "GROUP":
+	case "HAVING":
+	case "IN":
+	case "INITIALLY":
+	case "INNER":
+	case "INTERSECT":
+	case "INTO":
+	case "IS":
+	case "ISNULL":
+	case "JOIN":
+	case "LAMBDA": // Reserved as of DuckDB 1.3.0
+	case "LATERAL":
+	case "LEADING":
+	case "LEFT":
+	case "LIKE":
+	case "LIMIT":
+	case "LOCALTIME":
+	case "LOCALTIMESTAMP":
+	case "NATURAL":
+	case "NOT":
+	case "NOTNULL":
+	case "NULL":
+	case "OFFSET":
+	case "ON":
+	case "ONLY":
+	case "OR":
+	case "ORDER":
+	case "OUTER":
+	case "OVERLAPS":
+	case "PLACING":
+	case "PRIMARY":
+	case "QUALIFY":
+	case "REFERENCES":
+	case "RETURNING":
+	case "RIGHT":
+	case "SELECT":
+	case "SESSION_USER":
+	case "SIMILAR":
+	case "SOME":
+	case "SYMMETRIC":
+	case "TABLE":
+	case "TABLESAMPLE":
+	case "THEN":
+	case "TO":
+	case "TRAILING":
+	case "TRUE":
+	case "UNION":
+	case "UNIQUE":
+	case "USER":
+	case "USING":
+	case "VARIADIC":
+	case "VERBOSE":
+	case "WHEN":
+	case "WHERE":
+	case "WINDOW":
+	case "WITH":
+	default:
+		return false
+	}
+	return true
+}

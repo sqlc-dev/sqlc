@@ -1,0 +1,14 @@
+version: "2"
+sql:
+  - name: "basic"
+    engine: "duckdb"
+    schema: "schema/"
+    queries: "query/"
+    database:
+      uri: ":memory:"
+    gen:
+      go:
+        out: "db"
+        package: "db"
+        emit_json_tags: true
+        emit_interface: true
