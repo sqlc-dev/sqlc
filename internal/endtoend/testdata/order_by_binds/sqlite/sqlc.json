@@ -1,0 +1,12 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "path": "go",
+      "engine": "sqlite",
+      "name": "order_by_binds",
+      "schema": "schema.sql",
+      "queries": "query.sql"
+    }
+  ]
+}
