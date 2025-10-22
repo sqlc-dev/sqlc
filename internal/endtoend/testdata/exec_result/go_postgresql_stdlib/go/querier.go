@@ -10,6 +10,7 @@ import (
 )
 
 type Querier interface {
+	WithTx(tx *sql.Tx) *Queries
 	DeleteBarByID(ctx context.Context, id int32) (sql.Result, error)
 }
 
