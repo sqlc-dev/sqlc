@@ -23,3 +23,6 @@ SELECT sqlc.embed(bu) FROM baz.users bu;
 -- name: WithCrossSchema :many
 SELECT sqlc.embed(users), sqlc.embed(bu) FROM users
 INNER JOIN baz.users bu ON users.id = bu.id;
+
+-- name: WithSpaceBeforeParen :one
+SELECT sqlc.embed (users) FROM users;
