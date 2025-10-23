@@ -21,9 +21,9 @@ SELECT
     )
 `
 
-func (q *Queries) BarExists(ctx context.Context, id int64) (int64, error) {
+func (q *Queries) BarExists(ctx context.Context, id int64) (bool, error) {
 	row := q.db.QueryRowContext(ctx, barExists, id)
-	var column_1 int64
-	err := row.Scan(&column_1)
-	return column_1, err
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
 }
