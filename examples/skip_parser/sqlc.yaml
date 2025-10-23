@@ -1,0 +1,15 @@
+version: '2'
+sql:
+- name: postgresql
+  schema: postgresql/schema.sql
+  queries: postgresql/query.sql
+  engine: postgresql
+  database:
+    uri: "${SKIP_PARSER_TEST_POSTGRES}"
+  analyzer:
+    skip_parser: true
+  gen:
+    go:
+      package: skipparser
+      sql_package: pgx/v5
+      out: postgresql

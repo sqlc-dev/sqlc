@@ -1,0 +1,4 @@
+# Generated files - run 'sqlc generate' to create them
+db.go
+models.go
+query.sql.go
