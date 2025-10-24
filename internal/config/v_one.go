@@ -41,6 +41,7 @@ type v1PackageSettings struct {
 	EmitPointersForNullTypes  bool              `json:"emit_pointers_for_null_types" yaml:"emit_pointers_for_null_types"`
 	EmitEnumValidMethod       bool              `json:"emit_enum_valid_method,omitempty" yaml:"emit_enum_valid_method"`
 	EmitAllEnumValues         bool              `json:"emit_all_enum_values,omitempty" yaml:"emit_all_enum_values"`
+	EmitEmbedAlias            bool              `json:"emit_embed_alias,omitempty" yaml:"emit_embed_alias"`
 	EmitSqlAsComment          bool              `json:"emit_sql_as_comment,omitempty" yaml:"emit_sql_as_comment"`
 	JSONTagsCaseStyle         string            `json:"json_tags_case_style,omitempty" yaml:"json_tags_case_style"`
 	SQLPackage                string            `json:"sql_package" yaml:"sql_package"`
@@ -151,6 +152,7 @@ func (c *V1GenerateSettings) Translate() Config {
 					EmitPointersForNullTypes:  pkg.EmitPointersForNullTypes,
 					EmitEnumValidMethod:       pkg.EmitEnumValidMethod,
 					EmitAllEnumValues:         pkg.EmitAllEnumValues,
+					EmitEmbedAlias:            pkg.EmitEmbedAlias,
 					EmitSqlAsComment:          pkg.EmitSqlAsComment,
 					Package:                   pkg.Name,
 					Out:                       pkg.Path,

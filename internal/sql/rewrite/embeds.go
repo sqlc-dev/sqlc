@@ -14,6 +14,11 @@ type Embed struct {
 	Node  *ast.ColumnRef
 }
 
+// Name name or scope of the embed
+func (e Embed) Name() string {
+	return e.param
+}
+
 // Orig string to replace
 func (e Embed) Orig() string {
 	return fmt.Sprintf("sqlc.embed(%s)", e.param)

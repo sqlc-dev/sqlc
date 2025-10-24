@@ -165,6 +165,8 @@ The `gen` mapping supports the following keys:
 - `emit_all_enum_values`:
   - If true, emit a function per enum type
     that returns all valid enum values.
+- `emit_embed_alias`:
+  - If true, use alias name inside `sqlc.embed()` macro instead of table name for field name. Defaults to `false`.
 - `emit_sql_as_comment`:
   - If true, emits the SQL statement as a code-block comment above the generated function, appending to any existing comments. Defaults to `false`.
 - `build_tags`:
@@ -391,6 +393,7 @@ packages:
     emit_pointers_for_null_types: false
     emit_enum_valid_method: false
     emit_all_enum_values: false
+    emit_embed_alias: false
     build_tags: "some_tag"
     json_tags_case_style: "camel"
     omit_unused_structs: false
@@ -448,6 +451,8 @@ Each mapping in the `packages` collection has the following keys:
 - `emit_all_enum_values`:
   - If true, emit a function per enum type
     that returns all valid enum values.
+- `emit_embed_alias`:
+  - If true, use alias name inside `sqlc.embed()` macro instead of table name for field name. Defaults to `false`.
 - `build_tags`:
   - If set, add a `//go:build <build_tags>` directive at the beginning of each generated Go file.
 - `json_tags_case_style`:
