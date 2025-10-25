@@ -34,6 +34,24 @@ func (c *Compiler) parseCatalog(schemas []string) error {
 	if err != nil {
 		return err
 	}
+
+	// Check if we're in skip_parser mode
+	skipParser := c.conf.Analyzer.SkipParser != nil && *c.conf.Analyzer.SkipParser
+
+	// If skip_parser is enabled, just read schema files without parsing
+	if skipParser {
+		for _, filename := range files {
+			blob, err := os.ReadFile(filename)
+			if err != nil {
+				return fmt.Errorf("reading schema file %s: %w", filename, err)
+			}
+			contents := migrations.RemoveRollbackStatements(string(blob))
+			c.schema = append(c.schema, contents)
+		}
+		return nil
+	}
+
+	// Normal path: parse and update catalog
 	merr := multierr.New()
 	for _, filename := range files {
 		blob, err := os.ReadFile(filename)

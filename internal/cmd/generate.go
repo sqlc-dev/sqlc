@@ -305,28 +305,20 @@ func parse(ctx context.Context, name, dir string, sql config.SQL, combo config.C
 		fmt.Fprintf(stderr, "error creating compiler: %s\n", err)
 		return nil, true
 	}
-
-	// Check if skip_parser is enabled
-	skipParser := sql.Analyzer.SkipParser != nil && *sql.Analyzer.SkipParser
-
-	// Skip catalog parsing if skip_parser is enabled
-	if !skipParser {
-		if err := c.ParseCatalog(sql.Schema); err != nil {
-			fmt.Fprintf(stderr, "# package %s\n", name)
-			if parserErr, ok := err.(*multierr.Error); ok {
-				for _, fileErr := range parserErr.Errs() {
-					printFileErr(stderr, dir, fileErr)
-				}
-			} else {
-				fmt.Fprintf(stderr, "error parsing schema: %s\n", err)
+	if err := c.ParseCatalog(sql.Schema); err != nil {
+		fmt.Fprintf(stderr, "# package %s\n", name)
+		if parserErr, ok := err.(*multierr.Error); ok {
+			for _, fileErr := range parserErr.Errs() {
+				printFileErr(stderr, dir, fileErr)
 			}
-			return nil, true
+		} else {
+			fmt.Fprintf(stderr, "error parsing schema: %s\n", err)
 		}
-		if parserOpts.Debug.DumpCatalog {
-			debug.Dump(c.Catalog())
-		}
+		return nil, true
 	}
-
+	if parserOpts.Debug.DumpCatalog {
+		debug.Dump(c.Catalog())
+	}
 	if err := c.ParseQueries(sql.Queries, parserOpts); err != nil {
 		fmt.Fprintf(stderr, "# package %s\n", name)
 		if parserErr, ok := err.(*multierr.Error); ok {
