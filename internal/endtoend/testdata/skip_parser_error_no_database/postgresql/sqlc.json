@@ -1,0 +1,20 @@
+{
+  "version": "2",
+  "sql": [
+    {
+      "name": "test",
+      "engine": "postgresql",
+      "queries": "query.sql",
+      "schema": "schema.sql",
+      "analyzer": {
+        "skip_parser": true
+      },
+      "gen": {
+        "go": {
+          "package": "test",
+          "out": "go"
+        }
+      }
+    }
+  ]
+}

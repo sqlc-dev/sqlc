@@ -1,0 +1,1 @@
+error creating compiler: skip_parser requires database configuration

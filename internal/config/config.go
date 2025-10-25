@@ -123,7 +123,8 @@ type SQL struct {
 }
 
 type Analyzer struct {
-	Database *bool `json:"database" yaml:"database"`
+	Database   *bool `json:"database" yaml:"database"`
+	SkipParser *bool `json:"skip_parser" yaml:"skip_parser"`
 }
 
 // TODO: Figure out a better name for this
