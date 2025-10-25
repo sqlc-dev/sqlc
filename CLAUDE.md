@@ -207,10 +207,6 @@ POSTGRESQL_SERVER_URI="postgres://postgres:mysecretpassword@localhost:5432/postg
 
 ## Common Issues & Solutions
 
-### Network Connectivity Issues
-
-If you see errors about `storage.googleapis.com`, the Go proxy may be unreachable. Tests may still pass for packages that don't require network dependencies.
-
 ### Test Timeouts
 
 End-to-end tests can take a while. Use longer timeouts:
