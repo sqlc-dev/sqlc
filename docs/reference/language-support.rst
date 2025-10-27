@@ -16,18 +16,18 @@ Community language support
 
 New languages can be added via :doc:`plugins <../guides/plugins>`.
 
-========  =================================  ===============  ===============  ===============
-Language  Plugin                             MySQL            PostgreSQL       SQLite
-========  =================================  ===============  ===============  ===============
-C#        `DaredevilOSS/sqlc-gen-csharp`_    Stable           Stable           Stable
-F#        `kaashyapan/sqlc-gen-fsharp`_      N/A              Beta             Beta
-Java      `tandemdude/sqlc-gen-java`_        Beta             Beta             N/A 
-PHP       `lcarilla/sqlc-plugin-php-dbal`_   Beta             N/A              N/A    
-Ruby      `DaredevilOSS/sqlc-gen-ruby`_      Beta             Beta             Beta           
-Zig       `tinyzimmer/sqlc-gen-zig`_         N/A              Beta             Beta            
-Python    `rayakame/sqlc-gen-better-python`_ N/A              Beta             Beta          
-[Any]     `fdietze/sqlc-gen-from-template`_  Stable           Stable           Stable
-========  =================================  ===============  ===============  ===============
+========  ==================================  ===============  ===============  ===============
+Language  Plugin                              MySQL            PostgreSQL       SQLite
+========  ==================================  ===============  ===============  ===============
+C#        `DaredevilOSS/sqlc-gen-csharp`_     Stable           Stable           Stable
+F#        `kaashyapan/sqlc-gen-fsharp`_       N/A              Beta             Beta
+Java      `tandemdude/sqlc-gen-java`_         Beta             Beta             N/A 
+PHP       `lcarilla/sqlc-plugin-php-dbal`_    Beta             N/A              N/A    
+Ruby      `DaredevilOSS/sqlc-gen-ruby`_       Beta             Beta             Beta           
+Zig       `tinyzimmer/sqlc-gen-zig`_          N/A              Beta             Beta            
+Python    `rayakame/sqlc-gen-better-python`_  N/A              Beta             Beta          
+[Any]     `fdietze/sqlc-gen-from-template`_   Stable           Stable           Stable
+========  ==================================  ===============  ===============  ===============
 
 Community projects
 ******************
