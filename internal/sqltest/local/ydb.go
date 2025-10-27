@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -57,10 +58,7 @@ func link_YDB(t *testing.T, migrations []string, rw bool, tls bool) *ydb.Driver 
 		connectionString = fmt.Sprintf("grpc://%s%s", dbuiri, baseDB)
 	}
 
-	db, err := ydb.Open(ctx, connectionString,
-		ydb.WithInsecure(),
-		ydb.WithDiscoveryInterval(time.Hour),
-	)
+	db, err := ydb.Open(ctx, connectionString)
 	if err != nil {
 		t.Fatalf("failed to open YDB connection: %s", err)
 	}
@@ -77,9 +75,16 @@ func link_YDB(t *testing.T, migrations []string, rw bool, tls bool) *ydb.Driver 
 		}
 		stmt := migrate.RemoveRollbackStatements(string(blob))
 
-		err = db.Query().Exec(ctx, stmt, query.WithTxControl(query.EmptyTxControl()))
-		if err != nil {
-			t.Fatalf("failed to apply migration: %s\nSQL: %s", err, stmt)
+		statements := strings.Split(stmt, ";")
+		for _, singleStmt := range statements {
+			singleStmt = strings.TrimSpace(singleStmt)
+			if singleStmt == "" {
+				continue
+			}
+			err = db.Query().Exec(ctx, singleStmt, query.WithTxControl(query.EmptyTxControl()))
+			if err != nil {
+				t.Fatalf("failed to apply migration: %s\nSQL: %s", err, singleStmt)
+			}
 		}
 	}
 

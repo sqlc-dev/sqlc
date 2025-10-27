@@ -1,6 +1,6 @@
 CREATE TABLE authors (
-    id   Uint64,
-    name Utf8 NOT NULL,
-    bio  Utf8,
+    id   Serial,
+    name Text NOT NULL,
+    bio  Text,
     PRIMARY KEY (id)
 );

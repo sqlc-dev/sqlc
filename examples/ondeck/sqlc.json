@@ -55,6 +55,17 @@
       "emit_json_tags": true,
       "emit_prepared_queries": true,
       "emit_interface": true
+    },
+    {
+      "path": "ydb",
+      "name": "ondeck",
+      "schema": "ydb/schema",
+      "queries": "ydb/query",
+      "engine": "ydb",
+      "sql_package": "ydb-go-sdk",
+      "emit_json_tags": true,
+      "emit_prepared_queries": true,
+      "emit_interface": true
     }
   ]
 }
