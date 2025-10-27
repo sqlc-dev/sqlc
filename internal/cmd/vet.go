@@ -14,6 +14,7 @@ import (
 	"runtime/trace"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -386,6 +387,7 @@ type checker struct {
 	Stderr        io.Writer
 	OnlyManagedDB bool
 	Client        dbmanager.Client
+	clientOnce    sync.Once
 	Replacer      *shfmt.Replacer
 }
 
@@ -402,11 +404,10 @@ func (c *checker) fetchDatabaseUri(ctx context.Context, s config.SQL) (string, f
 		return uri, cleanup, err
 	}
 
-	if c.Client == nil {
-		// FIXME: Eventual race condition
-		client := dbmanager.NewClient(c.Conf.Servers)
-		c.Client = client
-	}
+	// Initialize the client exactly once, even if called concurrently
+	c.clientOnce.Do(func() {
+		c.Client = dbmanager.NewClient(c.Conf.Servers)
+	})
 
 	var ddl []string
 	files, err := sqlpath.Glob(s.Schema)

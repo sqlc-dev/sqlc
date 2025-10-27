@@ -5,7 +5,7 @@ type CreateFunctionStmt struct {
 	Params     *List
 	ReturnType *TypeName
 	Func       *FuncName
-	// TODO: Undertand these two fields
+	// TODO: Understand these two fields
 	Options    *List
 	WithClause *List
 }
