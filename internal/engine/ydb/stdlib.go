@@ -15,7 +15,6 @@ func defaultSchema(name string) *catalog.Schema {
 	s.Funcs = append(s.Funcs, lib.AggregateFunctions()...)
 	s.Funcs = append(s.Funcs, lib.WindowFunctions()...)
 	s.Funcs = append(s.Funcs, lib.CppFunctions()...)
-
 	// TODO: add container functions if
 
 	return s

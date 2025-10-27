@@ -24,77 +24,77 @@ func DateTimeFunctions() []*catalog.Function {
 func dateTimeMakeFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "DateTime::MakeDate",
+			Name: "datetime_makedate",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Date"},
 		},
 		{
-			Name: "DateTime::MakeDate32",
+			Name: "datetime_makedate32",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Date32"},
 		},
 		{
-			Name: "DateTime::MakeTzDate32",
+			Name: "datetime_maketzdate32",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "TzDate32"},
 		},
 		{
-			Name: "DateTime::MakeDatetime",
+			Name: "datetime_makedatetime",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Datetime"},
 		},
 		{
-			Name: "DateTime::MakeTzDatetime",
+			Name: "datetime_maketzdatetime",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "TzDatetime"},
 		},
 		{
-			Name: "DateTime::MakeDatetime64",
+			Name: "datetime_makedatetime64",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Datetime64"},
 		},
 		{
-			Name: "DateTime::MakeTzDatetime64",
+			Name: "datetime_maketzdatetime64",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "TzDatetime64"},
 		},
 		{
-			Name: "DateTime::MakeTimestamp",
+			Name: "datetime_maketimestamp",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Timestamp"},
 		},
 		{
-			Name: "DateTime::MakeTzTimestamp",
+			Name: "datetime_maketztimestamp",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "TzTimestamp"},
 		},
 		{
-			Name: "DateTime::MakeTimestamp64",
+			Name: "datetime_maketimestamp64",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Timestamp64"},
 		},
 		{
-			Name: "DateTime::MakeTzTimestamp64",
+			Name: "datetime_maketztimestamp64",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
@@ -106,119 +106,119 @@ func dateTimeMakeFuncs() []*catalog.Function {
 func dateTimeGetFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "DateTime::GetYear",
+			Name: "datetime_getyear",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Uint16"},
 		},
 		{
-			Name: "DateTime::GetYear",
+			Name: "datetime_getyear",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Int32"},
 		},
 		{
-			Name: "DateTime::GetDayOfYear",
+			Name: "datetime_getdayofyear",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Uint16"},
 		},
 		{
-			Name: "DateTime::GetMonth",
+			Name: "datetime_getmonth",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Uint8"},
 		},
 		{
-			Name: "DateTime::GetMonthName",
+			Name: "datetime_getmonthname",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "String"},
 		},
 		{
-			Name: "DateTime::GetWeekOfYear",
+			Name: "datetime_getweekofyear",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Uint8"},
 		},
 		{
-			Name: "DateTime::GetWeekOfYearIso8601",
+			Name: "datetime_getweekofyeariso8601",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Uint8"},
 		},
 		{
-			Name: "DateTime::GetDayOfMonth",
+			Name: "datetime_getdayofmonth",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Uint8"},
 		},
 		{
-			Name: "DateTime::GetDayOfWeek",
+			Name: "datetime_getdayofweek",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Uint8"},
 		},
 		{
-			Name: "DateTime::GetDayOfWeekName",
+			Name: "datetime_getdayofweekname",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "String"},
 		},
 		{
-			Name: "DateTime::GetHour",
+			Name: "datetime_gethour",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Uint8"},
 		},
 		{
-			Name: "DateTime::GetMinute",
+			Name: "datetime_getminute",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Uint8"},
 		},
 		{
-			Name: "DateTime::GetSecond",
+			Name: "datetime_getsecond",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Uint8"},
 		},
 		{
-			Name: "DateTime::GetMillisecondOfSecond",
+			Name: "datetime_getmillisecondofsecond",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Uint32"},
 		},
 		{
-			Name: "DateTime::GetMicrosecondOfSecond",
+			Name: "datetime_getmicrosecondofsecond",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Uint32"},
 		},
 		{
-			Name: "DateTime::GetTimezoneId",
+			Name: "datetime_gettimezoneid",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Uint16"},
 		},
 		{
-			Name: "DateTime::GetTimezoneName",
+			Name: "datetime_gettimezonename",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
@@ -230,7 +230,7 @@ func dateTimeGetFuncs() []*catalog.Function {
 func dateTimeUpdateFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "DateTime::Update",
+			Name: "datetime_update",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
@@ -238,7 +238,7 @@ func dateTimeUpdateFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "DateTime::Update",
+			Name: "datetime_update",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "any"}},
@@ -247,19 +247,8 @@ func dateTimeUpdateFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "DateTime::Update",
+			Name: "datetime_update",
 			Args: []*catalog.Argument{
-				{Type: &ast.TypeName{Name: "any"}},
-				{Type: &ast.TypeName{Name: "any"}},
-				{Type: &ast.TypeName{Name: "any"}},
-			},
-			ReturnType:         &ast.TypeName{Name: "any"},
-			ReturnTypeNullable: true,
-		},
-		{
-			Name: "DateTime::Update",
-			Args: []*catalog.Argument{
-				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "any"}},
@@ -268,9 +257,8 @@ func dateTimeUpdateFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "DateTime::Update",
+			Name: "datetime_update",
 			Args: []*catalog.Argument{
-				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "any"}},
@@ -280,9 +268,8 @@ func dateTimeUpdateFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "DateTime::Update",
+			Name: "datetime_update",
 			Args: []*catalog.Argument{
-				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "any"}},
@@ -293,9 +280,8 @@ func dateTimeUpdateFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "DateTime::Update",
+			Name: "datetime_update",
 			Args: []*catalog.Argument{
-				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "any"}},
@@ -307,7 +293,21 @@ func dateTimeUpdateFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "DateTime::Update",
+			Name: "datetime_update",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+				{Type: &ast.TypeName{Name: "any"}},
+				{Type: &ast.TypeName{Name: "any"}},
+				{Type: &ast.TypeName{Name: "any"}},
+				{Type: &ast.TypeName{Name: "any"}},
+				{Type: &ast.TypeName{Name: "any"}},
+				{Type: &ast.TypeName{Name: "any"}},
+			},
+			ReturnType:         &ast.TypeName{Name: "any"},
+			ReturnTypeNullable: true,
+		},
+		{
+			Name: "datetime_update",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "any"}},
@@ -327,42 +327,42 @@ func dateTimeUpdateFuncs() []*catalog.Function {
 func dateTimeFromFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "DateTime::FromSeconds",
+			Name: "datetime_fromseconds",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Uint32"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Timestamp"},
 		},
 		{
-			Name: "DateTime::FromSeconds64",
+			Name: "datetime_fromseconds64",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Int64"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Timestamp64"},
 		},
 		{
-			Name: "DateTime::FromMilliseconds",
+			Name: "datetime_frommilliseconds",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Uint64"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Timestamp"},
 		},
 		{
-			Name: "DateTime::FromMilliseconds64",
+			Name: "datetime_frommilliseconds64",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Int64"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Timestamp64"},
 		},
 		{
-			Name: "DateTime::FromMicroseconds",
+			Name: "datetime_frommicroseconds",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Uint64"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Timestamp"},
 		},
 		{
-			Name: "DateTime::FromMicroseconds64",
+			Name: "datetime_frommicroseconds64",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Int64"}},
 			},
@@ -374,21 +374,21 @@ func dateTimeFromFuncs() []*catalog.Function {
 func dateTimeToFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "DateTime::ToSeconds",
+			Name: "datetime_toseconds",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "DateTime::ToMilliseconds",
+			Name: "datetime_tomilliseconds",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "DateTime::ToMicroseconds",
+			Name: "datetime_tomicroseconds",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
@@ -400,126 +400,126 @@ func dateTimeToFuncs() []*catalog.Function {
 func dateTimeIntervalFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "DateTime::ToDays",
+			Name: "datetime_todays",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "DateTime::ToHours",
+			Name: "datetime_tohours",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "DateTime::ToMinutes",
+			Name: "datetime_tominutes",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "DateTime::ToSeconds",
+			Name: "datetime_toseconds",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "DateTime::ToMilliseconds",
+			Name: "datetime_tomilliseconds",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "DateTime::ToMicroseconds",
+			Name: "datetime_tomicroseconds",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "DateTime::IntervalFromDays",
+			Name: "datetime_intervalfromdays",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Int32"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Interval"},
 		},
 		{
-			Name: "DateTime::Interval64FromDays",
+			Name: "datetime_interval64fromdays",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Int32"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Interval64"},
 		},
 		{
-			Name: "DateTime::IntervalFromHours",
+			Name: "datetime_intervalfromhours",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Int32"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Interval"},
 		},
 		{
-			Name: "DateTime::Interval64FromHours",
+			Name: "datetime_interval64fromhours",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Int64"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Interval64"},
 		},
 		{
-			Name: "DateTime::IntervalFromMinutes",
+			Name: "datetime_intervalfromminutes",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Int32"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Interval"},
 		},
 		{
-			Name: "DateTime::Interval64FromMinutes",
+			Name: "datetime_interval64fromminutes",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Int64"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Interval64"},
 		},
 		{
-			Name: "DateTime::IntervalFromSeconds",
+			Name: "datetime_intervalfromseconds",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Int64"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Interval"},
 		},
 		{
-			Name: "DateTime::Interval64FromSeconds",
+			Name: "datetime_interval64fromseconds",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Int64"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Interval64"},
 		},
 		{
-			Name: "DateTime::IntervalFromMilliseconds",
+			Name: "datetime_intervalfrommilliseconds",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Int64"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Interval"},
 		},
 		{
-			Name: "DateTime::Interval64FromMilliseconds",
+			Name: "datetime_interval64frommilliseconds",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Int64"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Interval64"},
 		},
 		{
-			Name: "DateTime::IntervalFromMicroseconds",
+			Name: "datetime_intervalfrommicroseconds",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Int64"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Interval"},
 		},
 		{
-			Name: "DateTime::Interval64FromMicroseconds",
+			Name: "datetime_interval64frommicroseconds",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Int64"}},
 			},
@@ -531,7 +531,7 @@ func dateTimeIntervalFuncs() []*catalog.Function {
 func dateTimeStartEndFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "DateTime::StartOfYear",
+			Name: "datetime_startofyear",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
@@ -539,7 +539,7 @@ func dateTimeStartEndFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "DateTime::EndOfYear",
+			Name: "datetime_endofyear",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
@@ -547,7 +547,7 @@ func dateTimeStartEndFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "DateTime::StartOfQuarter",
+			Name: "datetime_startofquarter",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
@@ -555,7 +555,7 @@ func dateTimeStartEndFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "DateTime::EndOfQuarter",
+			Name: "datetime_endofquarter",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
@@ -563,7 +563,7 @@ func dateTimeStartEndFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "DateTime::StartOfMonth",
+			Name: "datetime_startofmonth",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
@@ -571,7 +571,7 @@ func dateTimeStartEndFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "DateTime::EndOfMonth",
+			Name: "datetime_endofmonth",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
@@ -579,7 +579,7 @@ func dateTimeStartEndFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "DateTime::StartOfWeek",
+			Name: "datetime_startofweek",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
@@ -587,7 +587,7 @@ func dateTimeStartEndFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "DateTime::EndOfWeek",
+			Name: "datetime_endofweek",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
@@ -595,7 +595,7 @@ func dateTimeStartEndFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "DateTime::StartOfDay",
+			Name: "datetime_startofday",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
@@ -603,7 +603,7 @@ func dateTimeStartEndFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "DateTime::EndOfDay",
+			Name: "datetime_endofday",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
@@ -611,7 +611,7 @@ func dateTimeStartEndFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "DateTime::StartOf",
+			Name: "datetime_startof",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "any"}},
@@ -620,7 +620,7 @@ func dateTimeStartEndFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "DateTime::EndOf",
+			Name: "datetime_endof",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "any"}},
@@ -634,11 +634,18 @@ func dateTimeStartEndFuncs() []*catalog.Function {
 func dateTimeFormatFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "DateTime::Format",
+			Name: "datetime_format",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "datetime_format_call",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+			},
+			ReturnType: &ast.TypeName{Name: "string"},
 		},
 	}
 }
@@ -646,21 +653,21 @@ func dateTimeFormatFuncs() []*catalog.Function {
 func dateTimeParseFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "DateTime::Parse",
+			Name: "datetime_parse",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "DateTime::Parse64",
+			Name: "datetime_parse64",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "DateTime::ParseRfc822",
+			Name: "datetime_parserfc822",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -668,7 +675,7 @@ func dateTimeParseFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "DateTime::ParseIso8601",
+			Name: "datetime_parseiso8601",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -676,7 +683,7 @@ func dateTimeParseFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "DateTime::ParseHttp",
+			Name: "datetime_parsehttp",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -684,7 +691,7 @@ func dateTimeParseFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "DateTime::ParseX509",
+			Name: "datetime_parsex509",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},

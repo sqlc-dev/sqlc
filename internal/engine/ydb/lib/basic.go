@@ -33,6 +33,7 @@ func BasicFunctions() []*catalog.Function {
 	funcs = append(funcs, absFuncs()...)
 	funcs = append(funcs, justUnwrapNothingFuncs()...)
 	funcs = append(funcs, pickleUnpickleFuncs()...)
+	funcs = append(funcs, asTableFuncs()...)
 
 	// todo: implement functions:
 	// Udf, AsTuple, AsStruct, AsList, AsDict, AsSet, AsListStrict, AsDictStrict, AsSetStrict,
@@ -708,6 +709,17 @@ func pickleUnpickleFuncs() []*catalog.Function {
 			},
 			ReturnType:         &ast.TypeName{Name: "any"},
 			ReturnTypeNullable: true,
+		},
+	}
+}
+
+func asTableFuncs() []*catalog.Function {
+	return []*catalog.Function{
+		{
+			Name: "AS_TABLE",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "any"}},
+			},
 		},
 	}
 }

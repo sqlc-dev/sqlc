@@ -31,28 +31,28 @@ func YsonFunctions() []*catalog.Function {
 func ysonParseFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Yson::Parse",
+			Name: "yson_parse",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Yson"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Yson::ParseJson",
+			Name: "yson_parsejson",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Json"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Yson::ParseJsonDecodeUtf8",
+			Name: "yson_parsejsondecodeutf8",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Json"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Yson::Parse",
+			Name: "yson_parse",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -60,7 +60,7 @@ func ysonParseFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Yson::ParseJson",
+			Name: "yson_parsejson",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -68,7 +68,7 @@ func ysonParseFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Yson::ParseJsonDecodeUtf8",
+			Name: "yson_parsejsondecodeutf8",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -81,7 +81,7 @@ func ysonParseFuncs() []*catalog.Function {
 func ysonFromFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Yson::From",
+			Name: "yson_from",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
@@ -93,7 +93,7 @@ func ysonFromFuncs() []*catalog.Function {
 func ysonWithAttributesFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Yson::WithAttributes",
+			Name: "yson_withattributes",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "any"}},
@@ -107,7 +107,7 @@ func ysonWithAttributesFuncs() []*catalog.Function {
 func ysonEqualsFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Yson::Equals",
+			Name: "yson_equals",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "any"}},
@@ -120,7 +120,7 @@ func ysonEqualsFuncs() []*catalog.Function {
 func ysonGetHashFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Yson::GetHash",
+			Name: "yson_gethash",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
@@ -132,56 +132,56 @@ func ysonGetHashFuncs() []*catalog.Function {
 func ysonIsFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Yson::IsEntity",
+			Name: "yson_isentity",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Bool"},
 		},
 		{
-			Name: "Yson::IsString",
+			Name: "yson_isstring",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Bool"},
 		},
 		{
-			Name: "Yson::IsDouble",
+			Name: "yson_isdouble",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Bool"},
 		},
 		{
-			Name: "Yson::IsUint64",
+			Name: "yson_isuint64",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Bool"},
 		},
 		{
-			Name: "Yson::IsInt64",
+			Name: "yson_isint64",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Bool"},
 		},
 		{
-			Name: "Yson::IsBool",
+			Name: "yson_isbool",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Bool"},
 		},
 		{
-			Name: "Yson::IsList",
+			Name: "yson_islist",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Bool"},
 		},
 		{
-			Name: "Yson::IsDict",
+			Name: "yson_isdict",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
@@ -193,7 +193,7 @@ func ysonIsFuncs() []*catalog.Function {
 func ysonGetLengthFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Yson::GetLength",
+			Name: "yson_getlength",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
@@ -206,7 +206,7 @@ func ysonGetLengthFuncs() []*catalog.Function {
 func ysonConvertToFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Yson::ConvertTo",
+			Name: "yson_convertto",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "any"}},
@@ -214,7 +214,7 @@ func ysonConvertToFuncs() []*catalog.Function {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Yson::ConvertToBool",
+			Name: "yson_converttobool",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
@@ -222,7 +222,7 @@ func ysonConvertToFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Yson::ConvertToInt64",
+			Name: "yson_converttoint64",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
@@ -230,7 +230,7 @@ func ysonConvertToFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Yson::ConvertToUint64",
+			Name: "yson_converttouint64",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
@@ -238,7 +238,7 @@ func ysonConvertToFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Yson::ConvertToDouble",
+			Name: "yson_converttodouble",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
@@ -246,7 +246,7 @@ func ysonConvertToFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Yson::ConvertToString",
+			Name: "yson_converttostring",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
@@ -254,7 +254,7 @@ func ysonConvertToFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Yson::ConvertToList",
+			Name: "yson_converttolist",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
@@ -266,35 +266,35 @@ func ysonConvertToFuncs() []*catalog.Function {
 func ysonConvertToListFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Yson::ConvertToBoolList",
+			Name: "yson_converttoboollist",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Yson::ConvertToInt64List",
+			Name: "yson_converttoint64list",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Yson::ConvertToUint64List",
+			Name: "yson_converttouint64list",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Yson::ConvertToDoubleList",
+			Name: "yson_converttodoublelist",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Yson::ConvertToStringList",
+			Name: "yson_converttostringlist",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
@@ -306,42 +306,42 @@ func ysonConvertToListFuncs() []*catalog.Function {
 func ysonConvertToDictFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Yson::ConvertToDict",
+			Name: "yson_converttodict",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Yson::ConvertToBoolDict",
+			Name: "yson_converttobooldict",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Yson::ConvertToInt64Dict",
+			Name: "yson_converttoint64dict",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Yson::ConvertToUint64Dict",
+			Name: "yson_converttouint64dict",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Yson::ConvertToDoubleDict",
+			Name: "yson_converttodoubledict",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Yson::ConvertToStringDict",
+			Name: "yson_converttostringdict",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
@@ -353,7 +353,7 @@ func ysonConvertToDictFuncs() []*catalog.Function {
 func ysonContainsFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Yson::Contains",
+			Name: "yson_contains",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "String"}},
@@ -367,7 +367,7 @@ func ysonContainsFuncs() []*catalog.Function {
 func ysonLookupFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Yson::Lookup",
+			Name: "yson_lookup",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "String"}},
@@ -376,7 +376,7 @@ func ysonLookupFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Yson::LookupBool",
+			Name: "yson_lookupbool",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "String"}},
@@ -385,7 +385,7 @@ func ysonLookupFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Yson::LookupInt64",
+			Name: "yson_lookupint64",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "String"}},
@@ -394,7 +394,7 @@ func ysonLookupFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Yson::LookupUint64",
+			Name: "yson_lookupuint64",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "String"}},
@@ -403,7 +403,7 @@ func ysonLookupFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Yson::LookupDouble",
+			Name: "yson_lookupdouble",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "String"}},
@@ -412,7 +412,7 @@ func ysonLookupFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Yson::LookupString",
+			Name: "yson_lookupstring",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "String"}},
@@ -421,7 +421,7 @@ func ysonLookupFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Yson::LookupDict",
+			Name: "yson_lookupdict",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "String"}},
@@ -430,7 +430,7 @@ func ysonLookupFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Yson::LookupList",
+			Name: "yson_lookuplist",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "String"}},
@@ -444,7 +444,7 @@ func ysonLookupFuncs() []*catalog.Function {
 func ysonYPathFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Yson::YPath",
+			Name: "yson_ypath",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "String"}},
@@ -453,7 +453,7 @@ func ysonYPathFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Yson::YPathBool",
+			Name: "yson_ypathbool",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "String"}},
@@ -462,7 +462,7 @@ func ysonYPathFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Yson::YPathInt64",
+			Name: "yson_ypathint64",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "String"}},
@@ -471,7 +471,7 @@ func ysonYPathFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Yson::YPathUint64",
+			Name: "yson_ypathuint64",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "String"}},
@@ -480,7 +480,7 @@ func ysonYPathFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Yson::YPathDouble",
+			Name: "yson_ypathdouble",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "String"}},
@@ -489,7 +489,7 @@ func ysonYPathFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Yson::YPathString",
+			Name: "yson_ypathstring",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "String"}},
@@ -498,7 +498,7 @@ func ysonYPathFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Yson::YPathDict",
+			Name: "yson_ypathdict",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "String"}},
@@ -507,7 +507,7 @@ func ysonYPathFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Yson::YPathList",
+			Name: "yson_ypathlist",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "String"}},
@@ -521,7 +521,7 @@ func ysonYPathFuncs() []*catalog.Function {
 func ysonAttributesFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Yson::Attributes",
+			Name: "yson_attributes",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
@@ -533,28 +533,28 @@ func ysonAttributesFuncs() []*catalog.Function {
 func ysonSerializeFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Yson::Serialize",
+			Name: "yson_serialize",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Yson"},
 		},
 		{
-			Name: "Yson::SerializeText",
+			Name: "yson_serializetext",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Yson"},
 		},
 		{
-			Name: "Yson::SerializePretty",
+			Name: "yson_serializepretty",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Yson"},
 		},
 		{
-			Name: "Yson::SerializeJson",
+			Name: "yson_serializejson",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
@@ -562,7 +562,7 @@ func ysonSerializeFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Yson::SerializeJson",
+			Name: "yson_serializejson",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "any"}},
@@ -571,7 +571,7 @@ func ysonSerializeFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Yson::SerializeJson",
+			Name: "yson_serializejson",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "any"}},
@@ -581,7 +581,7 @@ func ysonSerializeFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Yson::SerializeJson",
+			Name: "yson_serializejson",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "any"}},
@@ -592,7 +592,7 @@ func ysonSerializeFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Yson::SerializeJson",
+			Name: "yson_serializejson",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "any"}},
@@ -609,19 +609,19 @@ func ysonSerializeFuncs() []*catalog.Function {
 func ysonOptionsFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name:       "Yson::Options",
+			Name: "yson_options",
 			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Yson::Options",
+			Name: "yson_options",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Bool"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Yson::Options",
+			Name: "yson_options",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Bool"}},
 				{Type: &ast.TypeName{Name: "Bool"}},

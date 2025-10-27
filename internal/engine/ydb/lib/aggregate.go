@@ -36,7 +36,10 @@ func countFuncs() []*catalog.Function {
 		{
 			Name: "COUNT",
 			Args: []*catalog.Argument{
-				{Type: &ast.TypeName{Name: "any"}},
+				{
+					Type: &ast.TypeName{Name: "any"},
+					Mode: ast.FuncParamVariadic,
+				},
 			},
 			ReturnType: &ast.TypeName{Name: "Uint64"},
 		},

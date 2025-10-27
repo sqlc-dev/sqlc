@@ -23,7 +23,7 @@ func UrlFunctions() []*catalog.Function {
 func urlNormalizeFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Url::Normalize",
+			Name: "url_normalize",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -31,7 +31,7 @@ func urlNormalizeFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Url::NormalizeWithDefaultHttpScheme",
+			Name: "url_normalizewithdefaulthttpscheme",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -44,7 +44,7 @@ func urlNormalizeFuncs() []*catalog.Function {
 func urlEncodeDecodeFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Url::Encode",
+			Name: "url_encode",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -52,7 +52,7 @@ func urlEncodeDecodeFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Url::Decode",
+			Name: "url_decode",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -65,7 +65,7 @@ func urlEncodeDecodeFuncs() []*catalog.Function {
 func urlParseFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Url::Parse",
+			Name: "url_parse",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
@@ -77,14 +77,14 @@ func urlParseFuncs() []*catalog.Function {
 func urlGetFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Url::GetScheme",
+			Name: "url_getscheme",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "String"},
 		},
 		{
-			Name: "Url::GetHost",
+			Name: "url_gethost",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -92,7 +92,7 @@ func urlGetFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Url::GetHostPort",
+			Name: "url_gethostport",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -100,7 +100,7 @@ func urlGetFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Url::GetSchemeHost",
+			Name: "url_getschemehost",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -108,7 +108,7 @@ func urlGetFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Url::GetSchemeHostPort",
+			Name: "url_getschemehostport",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -116,7 +116,7 @@ func urlGetFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Url::GetPort",
+			Name: "url_getport",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -124,7 +124,7 @@ func urlGetFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Url::GetTail",
+			Name: "url_gettail",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -132,7 +132,7 @@ func urlGetFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Url::GetPath",
+			Name: "url_getpath",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -140,7 +140,7 @@ func urlGetFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Url::GetFragment",
+			Name: "url_getfragment",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -148,7 +148,7 @@ func urlGetFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Url::GetCGIParam",
+			Name: "url_getcgiparam",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 				{Type: &ast.TypeName{Name: "String"}},
@@ -157,7 +157,7 @@ func urlGetFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Url::GetDomain",
+			Name: "url_getdomain",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 				{Type: &ast.TypeName{Name: "Uint8"}},
@@ -171,42 +171,42 @@ func urlGetFuncs() []*catalog.Function {
 func urlDomainFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Url::GetTLD",
+			Name: "url_gettld",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "String"},
 		},
 		{
-			Name: "Url::IsKnownTLD",
+			Name: "url_isknowntld",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Bool"},
 		},
 		{
-			Name: "Url::IsWellKnownTLD",
+			Name: "url_iswellknowntld",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Bool"},
 		},
 		{
-			Name: "Url::GetDomainLevel",
+			Name: "url_getdomainlevel",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Uint64"},
 		},
 		{
-			Name: "Url::GetSignificantDomain",
+			Name: "url_getsignificantdomain",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "String"},
 		},
 		{
-			Name: "Url::GetSignificantDomain",
+			Name: "url_getsignificantdomain",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 				{Type: &ast.TypeName{Name: "any"}},
@@ -214,7 +214,7 @@ func urlDomainFuncs() []*catalog.Function {
 			ReturnType: &ast.TypeName{Name: "String"},
 		},
 		{
-			Name: "Url::GetOwner",
+			Name: "url_getowner",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -226,7 +226,7 @@ func urlDomainFuncs() []*catalog.Function {
 func urlCutFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Url::CutScheme",
+			Name: "url_cutscheme",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -234,7 +234,7 @@ func urlCutFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Url::CutWWW",
+			Name: "url_cutwww",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -242,7 +242,7 @@ func urlCutFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Url::CutWWW2",
+			Name: "url_cutwww2",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -250,7 +250,7 @@ func urlCutFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Url::CutQueryStringAndFragment",
+			Name: "url_cutquerystringandfragment",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -262,7 +262,7 @@ func urlCutFuncs() []*catalog.Function {
 func urlPunycodeFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Url::HostNameToPunycode",
+			Name: "url_hostnametopunycode",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -270,14 +270,14 @@ func urlPunycodeFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Url::ForceHostNameToPunycode",
+			Name: "url_forcehostnametopunycode",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "String"},
 		},
 		{
-			Name: "Url::PunycodeToHostName",
+			Name: "url_punycodetohostname",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -285,14 +285,14 @@ func urlPunycodeFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Url::ForcePunycodeToHostName",
+			Name: "url_forcepunycodetohostname",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "String"},
 		},
 		{
-			Name: "Url::CanBePunycodeHostName",
+			Name: "url_canbepunycodehostname",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -305,59 +305,14 @@ func urlQueryStringFuncs() []*catalog.Function {
 	// fixme: rewrite with containers if possible
 	return []*catalog.Function{
 		{
-			Name: "Url::QueryStringToList",
+			Name: "url_querystringtolist",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Url::QueryStringToList",
-			Args: []*catalog.Argument{
-				{Type: &ast.TypeName{Name: "String"}},
-				{Type: &ast.TypeName{Name: "Bool"}},
-			},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name: "Url::QueryStringToList",
-			Args: []*catalog.Argument{
-				{Type: &ast.TypeName{Name: "String"}},
-				{Type: &ast.TypeName{Name: "Bool"}},
-				{Type: &ast.TypeName{Name: "Bool"}},
-			},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name: "Url::QueryStringToList",
-			Args: []*catalog.Argument{
-				{Type: &ast.TypeName{Name: "String"}},
-				{Type: &ast.TypeName{Name: "Bool"}},
-				{Type: &ast.TypeName{Name: "Bool"}},
-				{Type: &ast.TypeName{Name: "Uint32"}},
-			},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name: "Url::QueryStringToList",
-			Args: []*catalog.Argument{
-				{Type: &ast.TypeName{Name: "String"}},
-				{Type: &ast.TypeName{Name: "Bool"}},
-				{Type: &ast.TypeName{Name: "Bool"}},
-				{Type: &ast.TypeName{Name: "Uint32"}},
-				{Type: &ast.TypeName{Name: "String"}},
-			},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name: "Url::QueryStringToDict",
-			Args: []*catalog.Argument{
-				{Type: &ast.TypeName{Name: "String"}},
-			},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name: "Url::QueryStringToDict",
+			Name: "url_querystringtolist",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 				{Type: &ast.TypeName{Name: "Bool"}},
@@ -365,7 +320,7 @@ func urlQueryStringFuncs() []*catalog.Function {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Url::QueryStringToDict",
+			Name: "url_querystringtolist",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 				{Type: &ast.TypeName{Name: "Bool"}},
@@ -374,7 +329,7 @@ func urlQueryStringFuncs() []*catalog.Function {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Url::QueryStringToDict",
+			Name: "url_querystringtolist",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 				{Type: &ast.TypeName{Name: "Bool"}},
@@ -384,7 +339,7 @@ func urlQueryStringFuncs() []*catalog.Function {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Url::QueryStringToDict",
+			Name: "url_querystringtolist",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 				{Type: &ast.TypeName{Name: "Bool"}},
@@ -395,14 +350,59 @@ func urlQueryStringFuncs() []*catalog.Function {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Url::BuildQueryString",
+			Name: "url_querystringtodict",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "String"}},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "url_querystringtodict",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "String"}},
+				{Type: &ast.TypeName{Name: "Bool"}},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "url_querystringtodict",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "String"}},
+				{Type: &ast.TypeName{Name: "Bool"}},
+				{Type: &ast.TypeName{Name: "Bool"}},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "url_querystringtodict",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "String"}},
+				{Type: &ast.TypeName{Name: "Bool"}},
+				{Type: &ast.TypeName{Name: "Bool"}},
+				{Type: &ast.TypeName{Name: "Uint32"}},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "url_querystringtodict",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "String"}},
+				{Type: &ast.TypeName{Name: "Bool"}},
+				{Type: &ast.TypeName{Name: "Bool"}},
+				{Type: &ast.TypeName{Name: "Uint32"}},
+				{Type: &ast.TypeName{Name: "String"}},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "url_buildquerystring",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
 			ReturnType: &ast.TypeName{Name: "String"},
 		},
 		{
-			Name: "Url::BuildQueryString",
+			Name: "url_buildquerystring",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "String"}},

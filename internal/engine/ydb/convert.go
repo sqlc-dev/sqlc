@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/antlr4-go/antlr/v4"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/sqlc-dev/sqlc/internal/debug"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	parser "github.com/ydb-platform/yql-parsers/go"
@@ -320,6 +321,196 @@ func (c *cc) VisitUse_stmt(n *parser.Use_stmtContext) interface{} {
 		return stmt
 	}
 	return todo("VisitUse_stmt", n)
+}
+
+func (c *cc) VisitCreate_view_stmt(n *parser.Create_view_stmtContext) interface{} {
+	if n.CREATE() == nil || n.VIEW() == nil || n.Object_ref() == nil || n.AS() == nil || n.Select_stmt() == nil {
+		return todo("VisitCreate_view_stmt", n)
+	}
+
+	viewName := parseObjectRef(n.Object_ref())
+	if viewName == nil {
+		return todo("VisitCreate_view_stmt", n.Object_ref())
+	}
+
+	viewRangeVar := &ast.RangeVar{
+		Relname:  &viewName.Name,
+		Inh:      true,
+		Location: c.pos(n.Object_ref().GetStart()),
+	}
+
+	options := &ast.List{Items: []ast.Node{}}
+	if ctf := n.Create_object_features(); ctf != nil && ctf.Object_features() != nil {
+		optionsResult := ctf.Object_features().Accept(c)
+		if optionsList, ok := optionsResult.(*ast.List); ok {
+			options = optionsList
+		} else {
+			return optionsResult
+		}
+	}
+
+	selectStmt, ok := n.Select_stmt().Accept(c).(ast.Node)
+	if !ok {
+		return todo("VisitCreate_view_stmt", n.Select_stmt())
+	}
+
+	stmt := &ast.ViewStmt{
+		View:    viewRangeVar,
+		Query:   selectStmt,
+		Replace: n.IF() == nil && n.NOT() == nil && n.EXISTS() == nil,
+		Options: options,
+	}
+
+	return stmt
+}
+
+func (c *cc) VisitObject_features(n *parser.Object_featuresContext) interface{} {
+	if n == nil {
+		return todo("VisitObject_features", n)
+	}
+
+	var features []ast.Node
+
+	if n.Object_feature(0) != nil {
+		feature, ok := n.Object_feature(0).Accept(c).(ast.Node)
+		if !ok {
+			return todo("VisitObject_features", n.Object_feature(0))
+		}
+		features = append(features, feature)
+	}
+
+	for _, featureCtx := range n.AllObject_feature() {
+		feature, ok := featureCtx.Accept(c).(ast.Node)
+		if !ok {
+			return todo("VisitObject_features", featureCtx)
+		}
+		features = append(features, feature)
+	}
+
+	if len(features) == 0 {
+		return todo("VisitObject_features", n)
+	}
+
+	return &ast.List{Items: features}
+}
+
+func (c *cc) VisitObject_feature(n *parser.Object_featureContext) interface{} {
+	if n == nil {
+		return todo("VisitObject_feature", n)
+	}
+
+	if kv := n.Object_feature_kv(); kv != nil {
+		expr, ok := kv.Accept(c).(ast.Node)
+		if !ok {
+			return todo("VisitObject_feature", n)
+		}
+		return expr
+	}
+
+	if flag := n.Object_feature_flag(); flag != nil {
+		expr, ok := flag.Accept(c).(ast.Node)
+		if !ok {
+			return todo("VisitObject_feature", n)
+		}
+		return expr
+	}
+
+	return todo("VisitObject_feature", n)
+}
+
+func (c *cc) VisitObject_feature_kv(n *parser.Object_feature_kvContext) interface{} {
+	if n == nil || n.An_id_or_type() == nil || n.EQUALS() == nil || n.Object_feature_value() == nil {
+		return todo("VisitObject_feature_kv", n)
+	}
+
+	optionName := parseAnIdOrType(n.An_id_or_type())
+	if optionName == "" {
+		return todo("VisitObject_feature_kv", n.An_id_or_type())
+	}
+
+	valueNode, ok := n.Object_feature_value().Accept(c).(ast.Node)
+	if !ok {
+		return nil
+	}
+
+	return &ast.DefElem{
+		Defname:   &optionName,
+		Arg:       valueNode,
+		Defaction: ast.DefElemAction(1),
+		Location:  c.pos(n.GetStart()),
+	}
+}
+
+func (c *cc) VisitObject_feature_flag(n *parser.Object_feature_flagContext) interface{} {
+	if n == nil || n.An_id_or_type() == nil {
+		return todo("VisitObject_feature_flag", n)
+	}
+
+	flagName := parseAnIdOrType(n.An_id_or_type())
+	if flagName == "" {
+		return todo("VisitObject_feature_flag", n.An_id_or_type())
+	}
+
+	trueValue := &ast.A_Const{Val: &ast.Boolean{Boolval: false}, Location: c.pos(n.GetStart())}
+
+	return &ast.DefElem{
+		Defname:   &flagName,
+		Arg:       trueValue,
+		Defaction: ast.DefElemAction(1),
+		Location:  c.pos(n.GetStart()),
+	}
+}
+
+func (c *cc) VisitObject_feature_value(n *parser.Object_feature_valueContext) interface{} {
+	if n == nil {
+		return todo("VisitObject_feature_value", n)
+	}
+
+	switch {
+	case n.Id_or_type() != nil:
+		value := parseIdOrType(n.Id_or_type())
+		return &ast.A_Const{Val: &ast.String{Str: value}, Location: c.pos(n.GetStart())}
+
+	case n.Bind_parameter() != nil:
+		bindPar, ok := n.Bind_parameter().Accept(c).(ast.Node)
+		if !ok {
+			return todo("VisitObject_feature_value", n.Bind_parameter())
+		}
+		return bindPar
+
+	case n.STRING_VALUE() != nil:
+		value, _ := parseStringLiteral(n.STRING_VALUE().GetText())
+		return &ast.A_Const{Val: NewIdentifier(value), Location: c.pos(n.GetStart())}
+
+	case n.Bool_value() != nil:
+		return &ast.A_Const{Location: c.pos(n.GetStart()), Val: &ast.Boolean{Boolval: n.Bool_value().TRUE() != nil}}
+	}
+
+	return todo("VisitObject_feature_value", n)
+}
+
+func (c *cc) VisitDrop_view_stmt(n *parser.Drop_view_stmtContext) interface{} {
+	if n.DROP() == nil || n.VIEW() == nil || n.Object_ref() == nil {
+		return todo("VisitDrop_view_stmt", n)
+	}
+
+	viewName := parseObjectRef(n.Object_ref())
+	if viewName == nil {
+		return todo("VisitDrop_view_stmt", n.Object_ref())
+	}
+
+	table := &ast.TableName{
+		Name:    viewName.Name,
+		Schema:  viewName.Schema,
+		Catalog: viewName.Catalog,
+	}
+
+	stmt := &ast.DropTableStmt{
+		IfExists: n.IF() == nil && n.EXISTS() == nil,
+		Tables:   []*ast.TableName{table},
+	}
+
+	return stmt
 }
 
 func (c *cc) VisitCluster_expr(n *parser.Cluster_exprContext) interface{} {
@@ -680,7 +871,10 @@ func (c *cc) VisitDelete_stmt(n *parser.Delete_stmtContext) interface{} {
 	batch := n.BATCH() != nil
 
 	tableName := identifier(n.Simple_table_ref().Simple_table_ref_core().GetText())
-	rel := &ast.RangeVar{Relname: &tableName}
+	rel := &ast.RangeVar{
+		Relname: &tableName,
+		Inh:     true,
+	}
 
 	var where ast.Node
 	if n.WHERE() != nil && n.Expr() != nil {
@@ -690,7 +884,7 @@ func (c *cc) VisitDelete_stmt(n *parser.Delete_stmtContext) interface{} {
 		}
 		where = whereNode
 	}
-	var cols *ast.List
+	var cols = &ast.List{Items: []ast.Node{}}
 	var source ast.Node
 	if n.ON() != nil && n.Into_values_source() != nil {
 		nVal := n.Into_values_source()
@@ -731,7 +925,7 @@ func (c *cc) VisitDelete_stmt(n *parser.Delete_stmtContext) interface{} {
 		}
 	}
 
-	returning := &ast.List{}
+	returning := &ast.List{Items: []ast.Node{}}
 	if ret := n.Returning_columns_list(); ret != nil {
 		temp, ok := ret.Accept(c).(ast.Node)
 		if !ok {
@@ -850,11 +1044,14 @@ func (c *cc) VisitUpdate_stmt(n *parser.Update_stmtContext) interface{} {
 	batch := n.BATCH() != nil
 
 	tableName := identifier(n.Simple_table_ref().Simple_table_ref_core().GetText())
-	rel := &ast.RangeVar{Relname: &tableName}
+	rel := &ast.RangeVar{
+		Relname: &tableName,
+		Inh:     true,
+	}
 
 	var where ast.Node
-	var setList *ast.List
-	var cols *ast.List
+	setList := &ast.List{Items: []ast.Node{}}
+	cols := &ast.List{Items: []ast.Node{}}
 	var source ast.Node
 
 	if n.SET() != nil && n.Set_clause_choice() != nil {
@@ -998,6 +1195,7 @@ func (c *cc) VisitInto_table_stmt(n *parser.Into_table_stmtContext) interface{} 
 	tableName := identifier(n.Into_simple_table_ref().Simple_table_ref().Simple_table_ref_core().GetText())
 	rel := &ast.RangeVar{
 		Relname:  &tableName,
+		Inh:      true,
 		Location: c.pos(n.Into_simple_table_ref().GetStart()),
 	}
 
@@ -1015,7 +1213,7 @@ func (c *cc) VisitInto_table_stmt(n *parser.Into_table_stmtContext) interface{} 
 		onConflict.Action = ast.OnConflictAction_REPLACE
 	}
 
-	var cols *ast.List
+	cols := &ast.List{Items: []ast.Node{}}
 	var source ast.Node
 	if nVal := n.Into_values_source(); nVal != nil {
 		// todo: handle default values when implemented
@@ -1056,7 +1254,7 @@ func (c *cc) VisitInto_table_stmt(n *parser.Into_table_stmtContext) interface{} 
 		}
 	}
 
-	returning := &ast.List{}
+	returning := &ast.List{Items: []ast.Node{}}
 	if ret := n.Returning_columns_list(); ret != nil {
 		temp, ok := ret.Accept(c).(ast.Node)
 		if !ok {
@@ -1491,8 +1689,15 @@ func (c *cc) VisitResult_column(n *parser.Result_columnContext) interface{} {
 	case n.AS() != nil && n.An_id_or_type() != nil:
 		name := parseAnIdOrType(n.An_id_or_type())
 		target.Name = &name
-	case n.An_id_as_compat() != nil: //nolint
-		// todo: parse as_compat
+	case n.An_id_as_compat() != nil:
+		// Handle aliases without AS keyword (compatibility mode)
+		aliasText := n.An_id_as_compat().GetText()
+		// Remove quotes if present
+		if len(aliasText) >= 2 && ((aliasText[0] == '"' && aliasText[len(aliasText)-1] == '"') ||
+			(aliasText[0] == '\'' && aliasText[len(aliasText)-1] == '\'')) {
+			aliasText = aliasText[1 : len(aliasText)-1]
+		}
+		target.Name = &aliasText
 	}
 	target.Val = val
 	return target
@@ -1605,12 +1810,44 @@ func (c *cc) VisitNamed_single_source(n *parser.Named_single_sourceContext) inte
 		switch source := base.(type) {
 		case *ast.RangeVar:
 			source.Alias = &ast.Alias{Aliasname: &aliasText}
+			source.Inh = true
 		case *ast.RangeSubselect:
 			source.Alias = &ast.Alias{Aliasname: &aliasText}
+		case *ast.RangeFunction:
+			source.Alias = &ast.Alias{Aliasname: &aliasText}
+		default:
+			return todo("VisitNamed_single_source", n.An_id())
 		}
-	} else if n.An_id_as_compat() != nil { //nolint
-		// todo: parse as_compat
+	} else if n.An_id_as_compat() != nil {
+		aliasText := n.An_id_as_compat().GetText()
+
+		switch source := base.(type) {
+		case *ast.RangeVar:
+			source.Alias = &ast.Alias{Aliasname: &aliasText}
+			source.Inh = true
+		case *ast.RangeSubselect:
+			source.Alias = &ast.Alias{Aliasname: &aliasText}
+		case *ast.RangeFunction:
+			source.Alias = &ast.Alias{Aliasname: &aliasText}
+		default:
+			return todo("VisitNamed_single_source", n.An_id_as_compat())
+		}
 	}
+
+	if n.Pure_column_list() != nil {
+		if rangeFunc, ok := base.(*ast.RangeFunction); ok {
+			colList := &ast.List{}
+			for _, anID := range n.Pure_column_list().AllAn_id() {
+				colName := parseAnId(anID)
+				colList.Items = append(colList.Items, &ast.String{Str: colName})
+			}
+			if rangeFunc.Alias == nil {
+				rangeFunc.Alias = &ast.Alias{}
+			}
+			rangeFunc.Alias.Colnames = colList
+		}
+	}
+
 	return base
 }
 
@@ -1620,11 +1857,11 @@ func (c *cc) VisitSingle_source(n *parser.Single_sourceContext) interface{} {
 	}
 
 	if n.Table_ref() != nil {
-		tableName := n.Table_ref().GetText() // !! debug !!
-		return &ast.RangeVar{
-			Relname:  &tableName,
-			Location: c.pos(n.GetStart()),
+		result := n.Table_ref().Accept(c)
+		if result == nil {
+			return todo("VisitSingle_source table_ref", n.Table_ref())
 		}
+		return result
 	}
 
 	if n.Select_stmt() != nil {
@@ -1635,11 +1872,86 @@ func (c *cc) VisitSingle_source(n *parser.Single_sourceContext) interface{} {
 		return &ast.RangeSubselect{
 			Subquery: subquery,
 		}
-
 	}
-	// todo: Values stmt
+
+	if n.Values_stmt() != nil {
+		valuesStmt, ok := n.Values_stmt().Accept(c).(ast.Node)
+		if !ok {
+			return todo("VisitSingle_source values_stmt", n.Values_stmt())
+		}
+		return &ast.RangeSubselect{
+			Subquery: valuesStmt,
+		}
+	}
 
 	return todo("VisitSingle_source", n)
+}
+
+func (c *cc) VisitTable_ref(n *parser.Table_refContext) interface{} {
+	if n == nil {
+		return todo("VisitTable_ref", n)
+	}
+
+	if n.Bind_parameter() != nil {
+		tableName := n.Bind_parameter().GetText()
+		log.Println("SQLC doesn't support named parameters for table names (FROM $param)") // FIXME: support named parameters for table names
+		return &ast.RangeVar{
+			Relname:  &tableName,
+			Inh:      false,
+			Location: c.pos(n.GetStart()),
+		}
+	}
+
+	if n.An_id_expr() != nil && n.LPAREN() != nil && n.RPAREN() != nil {
+		funcName := ""
+		if n.An_id_expr().STRING_VALUE() != nil {
+			funcName = n.An_id_expr().STRING_VALUE().GetText()
+		} else if n.An_id_expr().Id_expr() != nil {
+			funcName = n.An_id_expr().Id_expr().GetText()
+		} else {
+			return todo("VisitTable_ref an_id_expr", n.An_id_expr())
+		}
+
+		funcCall := &ast.FuncCall{
+			Func: &ast.FuncName{
+				Name: funcName,
+			},
+			Funcname: &ast.List{
+				Items: []ast.Node{&ast.String{Str: funcName}},
+			},
+			Args:     &ast.List{},
+			AggOrder: &ast.List{},
+		}
+
+		if n.AllTable_arg() != nil {
+			for _, tableArg := range n.AllTable_arg() {
+
+				if tableArg.Named_expr() != nil {
+					argNode, ok := tableArg.Named_expr().Accept(c).(ast.Node)
+					if ok {
+						funcCall.Args.Items = append(funcCall.Args.Items, argNode)
+					}
+				}
+			}
+		}
+
+		return &ast.RangeFunction{
+			Functions: &ast.List{
+				Items: []ast.Node{funcCall},
+			},
+		}
+	}
+
+	if n.Table_key() != nil {
+		tableName := n.Table_key().GetText()
+		return &ast.RangeVar{
+			Relname:  &tableName,
+			Inh:      true,
+			Location: c.pos(n.GetStart()),
+		}
+	}
+
+	return todo("VisitTable_ref", n)
 }
 
 func (c *cc) VisitBind_parameter(n *parser.Bind_parameterContext) interface{} {
@@ -1733,6 +2045,12 @@ func (c *cc) VisitCreate_table_stmt(n *parser.Create_table_stmtContext) interfac
 			return todo("VisitCreate_table_stmt", def.Changefeed())
 		}
 	}
+
+	if n.Table_inherits() != nil {
+		log.Fatalf("INNERITS is not implemented yet")
+		return todo("VisitCreate_table_stmt", n)
+	}
+
 	return stmt
 }
 
@@ -1824,36 +2142,33 @@ func (c *cc) VisitType_name(n *parser.Type_nameContext) interface{} {
 
 	if decimal := n.Type_name_decimal(); decimal != nil {
 		if integerOrBinds := decimal.AllInteger_or_bind(); len(integerOrBinds) >= 2 {
-			first, ok := integerOrBinds[0].Accept(c).(ast.Node)
-			if !ok {
-				return todo("VisitType_name", decimal.Integer_or_bind(0))
-			}
-			second, ok := integerOrBinds[1].Accept(c).(ast.Node)
-			if !ok {
-				return todo("VisitType_name", decimal.Integer_or_bind(1))
-			}
-			name := "decimal"
+			first := integerOrBinds[0].GetText()
+			second := integerOrBinds[1].GetText()
+			name := fmt.Sprintf("Decimal(%s,%s)", first, second)
 			if questionCount > 0 {
 				name = name + "?"
 			}
 			return &ast.TypeName{
 				Name:    name,
 				TypeOid: 0,
-				Names: &ast.List{
-					Items: []ast.Node{
-						first,
-						second,
-					},
-				},
 			}
 		}
 	}
 
 	if simple := n.Type_name_simple(); simple != nil {
 		name := simple.GetText()
+
+		if name == "Integer" {
+			return &ast.TypeName{
+				Name:    "any",
+				TypeOid: 0,
+			}
+		}
+
 		if questionCount > 0 {
 			name = name + "?"
 		}
+
 		return &ast.TypeName{
 			Name:    name,
 			TypeOid: 0,
@@ -2694,9 +3009,18 @@ func (c *cc) VisitCon_subexpr(n *parser.Con_subexprContext) interface{} {
 		if !ok {
 			return todo("VisitCon_subexpr", opCtx)
 		}
+
+		if strings.ToUpper(op) == "NOT" {
+			return &ast.BoolExpr{
+				Boolop:   ast.BoolExprTypeNot,
+				Args:     &ast.List{Items: []ast.Node{operand}},
+				Location: c.pos(n.GetStart()),
+			}
+		}
+
 		return &ast.A_Expr{
 			Name:     &ast.List{Items: []ast.Node{&ast.String{Str: op}}},
-			Rexpr:    operand,
+			Lexpr:    operand,
 			Location: c.pos(n.GetStart()),
 		}
 	}
@@ -2800,47 +3124,86 @@ func (c *cc) VisitId_expr_in(n *parser.Id_expr_inContext) interface{} {
 
 func (c *cc) VisitIn_atom_expr(n *parser.In_atom_exprContext) interface{} {
 	if n == nil {
-		return todo("VisitAtom_expr", n)
+		return todo("VisitIn_atom_expr", n)
 	}
 
 	switch {
-	case n.An_id_or_type() != nil:
-		if n.NAMESPACE() != nil {
-			return NewIdentifier(parseAnIdOrType(n.An_id_or_type()) + "::" + parseIdOrType(n.Id_or_type()))
-		}
-		return NewIdentifier(parseAnIdOrType(n.An_id_or_type()))
 	case n.Literal_value() != nil:
 		expr, ok := n.Literal_value().Accept(c).(ast.Node)
 		if !ok {
-			return todo("VisitAtom_expr", n.Literal_value())
-		}
-		return expr
-	case n.Bind_parameter() != nil:
-		expr, ok := n.Bind_parameter().Accept(c).(ast.Node)
-		if !ok {
-			return todo("VisitAtom_expr", n.Bind_parameter())
-		}
-		return expr
-	case n.Cast_expr() != nil:
-		expr, ok := n.Cast_expr().Accept(c).(ast.Node)
-		if !ok {
-			return todo("VisitAtom_expr", n.Cast_expr())
+			return todo("VisitIn_atom_expr", n.Literal_value())
 		}
 		return expr
 
-	case n.LPAREN() != nil && n.Select_stmt() != nil && n.RPAREN() != nil:
+	case n.Bind_parameter() != nil:
+		expr, ok := n.Bind_parameter().Accept(c).(ast.Node)
+		if !ok {
+			return todo("VisitIn_atom_expr", n.Bind_parameter())
+		}
+		return expr
+
+	case n.Lambda() != nil:
+		expr, ok := n.Lambda().Accept(c).(ast.Node)
+		if !ok {
+			return todo("VisitIn_atom_expr", n.Lambda())
+		}
+		return expr
+
+	case n.Cast_expr() != nil:
+		expr, ok := n.Cast_expr().Accept(c).(ast.Node)
+		if !ok {
+			return todo("VisitIn_atom_expr", n.Cast_expr())
+		}
+		return expr
+
+	case n.Case_expr() != nil:
+		expr, ok := n.Case_expr().Accept(c).(ast.Node)
+		if !ok {
+			return todo("VisitIn_atom_expr", n.Case_expr())
+		}
+		return expr
+
+	case n.An_id_or_type() != nil:
+		if n.NAMESPACE() != nil {
+			left := parseAnIdOrType(n.An_id_or_type())
+			right := parseIdOrType(n.Id_or_type())
+			name := left + "_" + right
+			return &ast.ColumnRef{
+				Fields:   &ast.List{Items: []ast.Node{NewIdentifier(name)}},
+				Location: c.pos(n.GetStart()),
+			}
+		}
+		name := parseAnIdOrType(n.An_id_or_type())
+		return &ast.ColumnRef{
+			Fields:   &ast.List{Items: []ast.Node{NewIdentifier(name)}},
+			Location: c.pos(n.GetStart()),
+		}
+
+	case n.Select_stmt() != nil:
 		selectStmt, ok := n.Select_stmt().Accept(c).(ast.Node)
 		if !ok {
-			return todo("VisitAtom_expr", n.Select_stmt())
+			return todo("VisitIn_atom_expr", n.Select_stmt())
 		}
 		return selectStmt
+
+	case n.Value_constructor() != nil:
+		return todo("VisitIn_atom_expr", n.Value_constructor())
+
+	case n.Bitcast_expr() != nil:
+		return todo("VisitIn_atom_expr", n.Bitcast_expr())
 
 	case n.List_literal() != nil:
 		list, ok := n.List_literal().Accept(c).(ast.Node)
 		if !ok {
-			return todo("VisitAtom_expr", n.List_literal())
+			return todo("VisitIn_atom_expr", n.List_literal())
 		}
 		return list
+
+	case n.Dict_literal() != nil:
+		return todo("VisitIn_atom_expr", n.Dict_literal())
+
+	case n.Struct_literal() != nil:
+		return todo("VisitIn_atom_expr", n.Struct_literal())
 
 	// TODO: check other cases
 	default:
@@ -2957,6 +3320,14 @@ func (c *cc) handleInvokeSuffix(base ast.Node, invokeCtx *parser.Invoke_exprCont
 	}
 
 	switch baseNode := base.(type) {
+	case *ast.FuncCall:
+		funcCall.Func = baseNode.Func
+
+		funcCall.Func.Name = baseNode.Func.Name + "_call"
+
+		funcCall.Funcname.Items = append(funcCall.Funcname.Items, &ast.String{Str: funcCall.Func.Name})
+		return funcCall
+
 	case *ast.ColumnRef:
 		if len(baseNode.Fields.Items) > 0 {
 			var nameParts []string
@@ -2966,7 +3337,7 @@ func (c *cc) handleInvokeSuffix(base ast.Node, invokeCtx *parser.Invoke_exprCont
 				}
 			}
 			funcCall.Func = &ast.FuncName{}
-			if len(nameParts) == 2 {
+			if len(nameParts) == 2 && nameParts[0] == "sqlc" {
 				funcCall.Func.Schema = nameParts[0]
 				funcCall.Func.Name = nameParts[1]
 			} else {
@@ -2999,7 +3370,8 @@ func (c *cc) handleInvokeSuffix(base ast.Node, invokeCtx *parser.Invoke_exprCont
 			return funcCall
 		}
 	default:
-		return todo("VisitInvoke_expr", invokeCtx)
+		spew.Dump(baseNode)
+		return todo("VisitInvoke_exp", invokeCtx)
 	}
 
 	stmt := &ast.FuncExpr{
@@ -3200,16 +3572,34 @@ func (c *cc) VisitAtom_expr(n *parser.Atom_exprContext) interface{} {
 		return expr
 
 	case n.Exists_expr() != nil:
-		return todo("VisitAtom_expr", n.Exists_expr())
+		expr, ok := n.Exists_expr().Accept(c).(ast.Node)
+		if !ok {
+			return todo("VisitAtom_expr", n.Exists_expr())
+		}
+		return expr
 
 	case n.Case_expr() != nil:
-		return todo("VisitAtom_expr", n.Case_expr())
+		expr, ok := n.Case_expr().Accept(c).(ast.Node)
+		if !ok {
+			return todo("VisitAtom_expr", n.Case_expr())
+		}
+		return expr
 
 	case n.An_id_or_type() != nil:
 		if n.NAMESPACE() != nil {
-			return NewIdentifier(parseAnIdOrType(n.An_id_or_type()) + "::" + parseIdOrType(n.Id_or_type()))
+			left := parseAnIdOrType(n.An_id_or_type())
+			right := parseIdOrType(n.Id_or_type())
+			name := left + "_" + right
+			return &ast.ColumnRef{
+				Fields:   &ast.List{Items: []ast.Node{NewIdentifier(name)}},
+				Location: c.pos(n.GetStart()),
+			}
 		}
-		return NewIdentifier(parseAnIdOrType(n.An_id_or_type()))
+		name := parseAnIdOrType(n.An_id_or_type())
+		return &ast.ColumnRef{
+			Fields:   &ast.List{Items: []ast.Node{NewIdentifier(name)}},
+			Location: c.pos(n.GetStart()),
+		}
 
 	case n.Value_constructor() != nil:
 		return todo("VisitAtom_expr", n.Value_constructor())
@@ -3262,6 +3652,38 @@ func (c *cc) VisitCast_expr(n *parser.Cast_exprContext) interface{} {
 	}
 }
 
+func (c *cc) VisitExists_expr(n *parser.Exists_exprContext) interface{} {
+	if n == nil || n.EXISTS() == nil || n.LPAREN() == nil || n.RPAREN() == nil || (n.Select_stmt() == nil && n.Values_stmt() == nil) {
+		return todo("VisitExists_expr", n)
+	}
+
+	exists := &ast.SubLink{
+		Xpr:         &ast.TODO{},
+		SubLinkType: ast.EXISTS_SUBLINK,
+		Location:    c.pos(n.GetStart()),
+	}
+
+	switch {
+	case n.Select_stmt() != nil:
+		Subselect, ok := n.Select_stmt().Accept(c).(ast.Node)
+		if !ok {
+			return todo("VisitExists_expr", n.Select_stmt())
+		}
+		exists.Subselect = Subselect
+	case n.Values_stmt() != nil:
+		Subselect, ok := n.Values_stmt().Accept(c).(ast.Node)
+		if !ok {
+			return todo("VisitExists_expr", n.Values_stmt())
+		}
+		exists.Subselect = Subselect
+
+	default:
+		return todo("VisitExists_expr", n)
+	}
+
+	return exists
+}
+
 func (c *cc) VisitList_literal(n *parser.List_literalContext) interface{} {
 	if n == nil || n.LBRACE_SQUARE() == nil || n.RBRACE_SQUARE() == nil || n.Expr_list() == nil {
 		return todo("VisitList_literal", n)
@@ -3305,11 +3727,10 @@ func (c *cc) VisitLiteral_value(n *parser.Literal_valueContext) interface{} {
 		return &ast.A_Const{Val: &ast.Float{Str: text}, Location: c.pos(n.GetStart())}
 
 	case n.STRING_VALUE() != nil: // !!! debug !!! (problem with quoted strings)
-		val := n.STRING_VALUE().GetText()
-		if len(val) >= 2 {
-			val = val[1 : len(val)-1]
-		}
-		return &ast.A_Const{Val: &ast.String{Str: val}, Location: c.pos(n.GetStart())}
+		originalText := n.STRING_VALUE().GetText()
+		content, _ := parseStringLiteral(originalText)
+
+		return &ast.A_Const{Val: &ast.String{Str: content}, Location: c.pos(n.GetStart())}
 
 	case n.Bool_value() != nil:
 		var i bool
@@ -3386,6 +3807,88 @@ func (c *cc) VisitSmart_parenthesis(n *parser.Smart_parenthesisContext) interfac
 	}
 }
 
+func (c *cc) VisitCase_expr(n *parser.Case_exprContext) interface{} {
+	if n == nil || n.CASE() == nil || n.END() == nil {
+		return todo("VisitCase_expr", n)
+	}
+
+	caseExpr := &ast.CaseExpr{
+		Args:     &ast.List{Items: []ast.Node{}},
+		Location: c.pos(n.GetStart()),
+	}
+
+	whenExprs := n.AllWhen_expr()
+	if len(whenExprs) == 0 {
+		return todo("VisitCase_expr", n)
+	}
+
+	allExprs := n.AllExpr()
+	if len(allExprs) > 0 {
+		firstWhenStart := whenExprs[0].GetStart().GetStart()
+		firstExprStart := allExprs[0].GetStart().GetStart()
+
+		if firstExprStart < firstWhenStart {
+			arg, ok := allExprs[0].Accept(c).(ast.Node)
+			if !ok {
+				return todo("VisitCase_expr", allExprs[0])
+			}
+			caseExpr.Arg = arg
+		}
+	}
+
+	for _, whenExpr := range whenExprs {
+		whenNode, ok := whenExpr.Accept(c).(ast.Node)
+		if !ok {
+			return todo("VisitCase_expr", whenExpr)
+		}
+		caseExpr.Args.Items = append(caseExpr.Args.Items, whenNode)
+	}
+
+	if n.ELSE() != nil {
+		elseStart := n.ELSE().GetSymbol().GetStart()
+		for _, expr := range allExprs {
+			exprStart := expr.GetStart().GetStart()
+			if exprStart > elseStart {
+				elseExpr, ok := expr.Accept(c).(ast.Node)
+				if !ok {
+					return todo("VisitCase_expr", expr)
+				}
+				caseExpr.Defresult = elseExpr
+				break
+			}
+		}
+	}
+
+	return caseExpr
+}
+
+func (c *cc) VisitWhen_expr(n *parser.When_exprContext) interface{} {
+	if n == nil || n.WHEN() == nil || n.THEN() == nil {
+		return todo("VisitWhen_expr", n)
+	}
+
+	whenExprs := n.AllExpr()
+	if len(whenExprs) < 2 {
+		return todo("VisitWhen_expr", n)
+	}
+
+	condition, ok := whenExprs[0].Accept(c).(ast.Node)
+	if !ok {
+		return todo("VisitWhen_expr", whenExprs[0])
+	}
+
+	result, ok := whenExprs[1].Accept(c).(ast.Node)
+	if !ok {
+		return todo("VisitWhen_expr", whenExprs[1])
+	}
+
+	return &ast.CaseWhen{
+		Expr:     condition,
+		Result:   result,
+		Location: c.pos(n.GetStart()),
+	}
+}
+
 func (c *cc) VisitSql_stmt(n *parser.Sql_stmtContext) interface{} {
 	if n == nil || n.Sql_stmt_core() == nil {
 		return todo("VisitSql_stmt", n)
@@ -3414,4 +3917,152 @@ func (c *cc) VisitSql_stmt(n *parser.Sql_stmtContext) interface{} {
 	}
 
 	return expr
+}
+
+func (c *cc) VisitNamed_nodes_stmt(n *parser.Named_nodes_stmtContext) interface{} {
+	return todo("VisitNamed_nodes_stmt", n)
+}
+
+func (c *cc) VisitDeclare_stmt(n *parser.Declare_stmtContext) interface{} {
+	return todo("VisitDeclare_stmt", n)
+}
+
+func (c *cc) VisitImport_stmt(n *parser.Import_stmtContext) interface{} {
+	return todo("VisitImport_stmt", n)
+}
+
+func (c *cc) VisitExport_stmt(n *parser.Export_stmtContext) interface{} {
+	return todo("VisitExport_stmt", n)
+}
+
+func (c *cc) VisitAlter_external_table_stmt(n *parser.Alter_external_table_stmtContext) interface{} {
+	return todo("VisitAlter_external_table_stmt", n)
+}
+
+func (c *cc) VisitDefine_action_or_subquery_stmt(n *parser.Define_action_or_subquery_stmtContext) interface{} {
+	return todo("VisitDefine_action_or_subquery_stmt", n)
+}
+
+func (c *cc) VisitIf_stmt(n *parser.If_stmtContext) interface{} {
+	return todo("VisitIf_stmt", n)
+}
+
+func (c *cc) VisitFor_stmt(n *parser.For_stmtContext) interface{} {
+	return todo("VisitFor_stmt", n)
+}
+
+func (c *cc) VisitCreate_object_stmt(n *parser.Create_object_stmtContext) interface{} {
+	return todo("VisitCreate_object_stmt", n)
+}
+
+func (c *cc) VisitAlter_object_stmt(n *parser.Alter_object_stmtContext) interface{} {
+	return todo("VisitAlter_object_stmt", n)
+}
+
+func (c *cc) VisitDrop_object_stmt(n *parser.Drop_object_stmtContext) interface{} {
+	return todo("VisitDrop_object_stmt", n)
+}
+
+func (c *cc) VisitCreate_external_data_source_stmt(n *parser.Create_external_data_source_stmtContext) interface{} {
+	return todo("VisitCreate_external_data_source_stmt", n)
+}
+
+func (c *cc) VisitAlter_external_data_source_stmt(n *parser.Alter_external_data_source_stmtContext) interface{} {
+	return todo("VisitAlter_external_data_source_stmt", n)
+}
+
+func (c *cc) VisitDrop_external_data_source_stmt(n *parser.Drop_external_data_source_stmtContext) interface{} {
+	return todo("VisitDrop_external_data_source_stmt", n)
+}
+
+func (c *cc) VisitCreate_replication_stmt(n *parser.Create_replication_stmtContext) interface{} {
+	return todo("VisitCreate_replication_stmt", n)
+}
+
+func (c *cc) VisitDrop_replication_stmt(n *parser.Drop_replication_stmtContext) interface{} {
+	return todo("VisitDrop_replication_stmt", n)
+}
+
+func (c *cc) VisitCreate_topic_stmt(n *parser.Create_topic_stmtContext) interface{} {
+	return todo("VisitCreate_topic_stmt", n)
+}
+
+func (c *cc) VisitAlter_topic_stmt(n *parser.Alter_topic_stmtContext) interface{} {
+	return todo("VisitAlter_topic_stmt", n)
+}
+
+func (c *cc) VisitDrop_topic_stmt(n *parser.Drop_topic_stmtContext) interface{} {
+	return todo("VisitDrop_topic_stmt", n)
+}
+
+func (c *cc) VisitGrant_permissions_stmt(n *parser.Grant_permissions_stmtContext) interface{} {
+	return todo("VisitGrant_permissions_stmt", n)
+}
+
+func (c *cc) VisitRevoke_permissions_stmt(n *parser.Revoke_permissions_stmtContext) interface{} {
+	return todo("VisitRevoke_permissions_stmt", n)
+}
+
+func (c *cc) VisitAlter_table_store_stmt(n *parser.Alter_table_store_stmtContext) interface{} {
+	return todo("VisitAlter_table_store_stmt", n)
+}
+
+func (c *cc) VisitUpsert_object_stmt(n *parser.Upsert_object_stmtContext) interface{} {
+	return todo("VisitUpsert_object_stmt", n)
+}
+
+func (c *cc) VisitAlter_replication_stmt(n *parser.Alter_replication_stmtContext) interface{} {
+	return todo("VisitAlter_replication_stmt", n)
+}
+
+func (c *cc) VisitCreate_resource_pool_stmt(n *parser.Create_resource_pool_stmtContext) interface{} {
+	return todo("VisitCreate_resource_pool_stmt", n)
+}
+
+func (c *cc) VisitAlter_resource_pool_stmt(n *parser.Alter_resource_pool_stmtContext) interface{} {
+	return todo("VisitAlter_resource_pool_stmt", n)
+}
+
+func (c *cc) VisitDrop_resource_pool_stmt(n *parser.Drop_resource_pool_stmtContext) interface{} {
+	return todo("VisitDrop_resource_pool_stmt", n)
+}
+
+func (c *cc) VisitCreate_backup_collection_stmt(n *parser.Create_backup_collection_stmtContext) interface{} {
+	return todo("VisitCreate_backup_collection_stmt", n)
+}
+
+func (c *cc) VisitAlter_backup_collection_stmt(n *parser.Alter_backup_collection_stmtContext) interface{} {
+	return todo("VisitAlter_backup_collection_stmt", n)
+}
+
+func (c *cc) VisitDrop_backup_collection_stmt(n *parser.Drop_backup_collection_stmtContext) interface{} {
+	return todo("VisitDrop_backup_collection_stmt", n)
+}
+
+func (c *cc) VisitAnalyze_stmt(n *parser.Analyze_stmtContext) interface{} {
+	return todo("VisitAnalyze_stmt", n)
+}
+
+func (c *cc) VisitCreate_resource_pool_classifier_stmt(n *parser.Create_resource_pool_classifier_stmtContext) interface{} {
+	return todo("VisitCreate_resource_pool_classifier_stmt", n)
+}
+
+func (c *cc) VisitAlter_resource_pool_classifier_stmt(n *parser.Alter_resource_pool_classifier_stmtContext) interface{} {
+	return todo("VisitAlter_resource_pool_classifier_stmt", n)
+}
+
+func (c *cc) VisitDrop_resource_pool_classifier_stmt(n *parser.Drop_resource_pool_classifier_stmtContext) interface{} {
+	return todo("VisitDrop_resource_pool_classifier_stmt", n)
+}
+
+func (c *cc) VisitBackup_stmt(n *parser.Backup_stmtContext) interface{} {
+	return todo("VisitBackup_stmt", n)
+}
+
+func (c *cc) VisitRestore_stmt(n *parser.Restore_stmtContext) interface{} {
+	return todo("VisitRestore_stmt", n)
+}
+
+func (c *cc) VisitAlter_sequence_stmt(n *parser.Alter_sequence_stmtContext) interface{} {
+	return todo("VisitAlter_sequence_stmt", n)
 }

@@ -149,6 +149,7 @@ func (i *importer) dbImports() fileImports {
 var stdlibTypes = map[string]string{
 	"json.RawMessage":  "encoding/json",
 	"time.Time":        "time",
+	"time.Duration":    "time",
 	"net.IP":           "net",
 	"net.HardwareAddr": "net",
 	"netip.Addr":       "net/netip",
@@ -232,6 +233,10 @@ func buildImports(options *opts.Options, queries []Query, uses func(string) bool
 	if uses("pgvector.Vector") && !overrideVector {
 		pkg[ImportSpec{Path: "github.com/pgvector/pgvector-go"}] = struct{}{}
 	}
+	_, overrideDecimal := overrideTypes["types.Decimal"]
+	if uses("types.Decimal") && !overrideDecimal {
+		pkg[ImportSpec{Path: "github.com/ydb-platform/ydb-go-sdk/v3/table/types"}] = struct{}{}
+	}
 
 	// Custom imports
 	for _, override := range options.Overrides {
@@ -271,7 +276,7 @@ func (i *importer) interfaceImports() fileImports {
 	})
 
 	std["context"] = struct{}{}
-	
+
 	sqlpkg := parseDriver(i.Options.SqlPackage)
 	if sqlpkg.IsYDBGoSDK() {
 		pkg[ImportSpec{Path: "github.com/ydb-platform/ydb-go-sdk/v3/query"}] = struct{}{}
@@ -404,7 +409,7 @@ func (i *importer) queryImports(filename string) fileImports {
 	}
 
 	sqlpkg := parseDriver(i.Options.SqlPackage)
-	if sqlcSliceScan() && !sqlpkg.IsPGX() && !sqlpkg.IsYDBGoSDK() {
+	if sqlcSliceScan() && !sqlpkg.IsPGX() && !sqlpkg.IsYDBGoSDK() && i.Options.Engine != "ydb" {
 		std["strings"] = struct{}{}
 	}
 	if sliceScan() && !sqlpkg.IsPGX() && !sqlpkg.IsYDBGoSDK() {

@@ -21,7 +21,7 @@ func PcreFunctions() []*catalog.Function {
 func pcreGrepFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Pcre::Grep",
+			Name: "pcre_grep",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -33,7 +33,7 @@ func pcreGrepFuncs() []*catalog.Function {
 func pcreMatchFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Pcre::Match",
+			Name: "pcre_match",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -45,14 +45,14 @@ func pcreMatchFuncs() []*catalog.Function {
 func pcreBacktrackingFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Pcre::BacktrackingGrep",
+			Name: "pcre_backtrackinggrep",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Pcre::BacktrackingMatch",
+			Name: "pcre_backtrackingmatch",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -64,14 +64,14 @@ func pcreBacktrackingFuncs() []*catalog.Function {
 func pcreMultiFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Pcre::MultiGrep",
+			Name: "pcre_multigrep",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Pcre::MultiMatch",
+			Name: "pcre_multimatch",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -83,7 +83,7 @@ func pcreMultiFuncs() []*catalog.Function {
 func pcreCaptureFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Pcre::Capture",
+			Name: "pcre_capture",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -95,7 +95,7 @@ func pcreCaptureFuncs() []*catalog.Function {
 func pcreReplaceFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Pcre::Replace",
+			Name: "pcre_replace",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},

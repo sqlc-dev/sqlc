@@ -1,0 +1,14 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "path": "go",
+      "engine": "ydb",
+      "name": "datatype",
+      "schema": "schema.sql",
+      "queries": "query.sql",
+      "sql_package": "ydb-go-sdk",
+      "emit_pointers_for_null_types": true
+    }
+  ]
+}

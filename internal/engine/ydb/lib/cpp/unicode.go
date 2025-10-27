@@ -33,7 +33,7 @@ func UnicodeFunctions() []*catalog.Function {
 func unicodeCheckFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Unicode::IsUtf",
+			Name: "unicode_isutf",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -45,7 +45,7 @@ func unicodeCheckFuncs() []*catalog.Function {
 func unicodeLengthFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Unicode::GetLength",
+			Name: "unicode_getlength",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 			},
@@ -57,7 +57,7 @@ func unicodeLengthFuncs() []*catalog.Function {
 func unicodeFindFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Unicode::Find",
+			Name: "unicode_find",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 				{Type: &ast.TypeName{Name: "Utf8"}},
@@ -66,7 +66,7 @@ func unicodeFindFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Unicode::Find",
+			Name: "unicode_find",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 				{Type: &ast.TypeName{Name: "Utf8"}},
@@ -76,7 +76,7 @@ func unicodeFindFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Unicode::RFind",
+			Name: "unicode_rfind",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 				{Type: &ast.TypeName{Name: "Utf8"}},
@@ -85,7 +85,7 @@ func unicodeFindFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Unicode::RFind",
+			Name: "unicode_rfind",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 				{Type: &ast.TypeName{Name: "Utf8"}},
@@ -100,7 +100,7 @@ func unicodeFindFuncs() []*catalog.Function {
 func unicodeSubstringFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Unicode::Substring",
+			Name: "unicode_substring",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 				{Type: &ast.TypeName{Name: "Uint64"}},
@@ -114,35 +114,35 @@ func unicodeSubstringFuncs() []*catalog.Function {
 func unicodeNormalizeFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Unicode::Normalize",
+			Name: "unicode_normalize",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Utf8"},
 		},
 		{
-			Name: "Unicode::NormalizeNFD",
+			Name: "unicode_normalizenfd",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Utf8"},
 		},
 		{
-			Name: "Unicode::NormalizeNFC",
+			Name: "unicode_normalizenfc",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Utf8"},
 		},
 		{
-			Name: "Unicode::NormalizeNFKD",
+			Name: "unicode_normalizenfkd",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Utf8"},
 		},
 		{
-			Name: "Unicode::NormalizeNFKC",
+			Name: "unicode_normalizenfkc",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 			},
@@ -154,14 +154,14 @@ func unicodeNormalizeFuncs() []*catalog.Function {
 func unicodeTranslitFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Unicode::Translit",
+			Name: "unicode_translit",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Utf8"},
 		},
 		{
-			Name: "Unicode::Translit",
+			Name: "unicode_translit",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 				{Type: &ast.TypeName{Name: "String"}},
@@ -174,7 +174,7 @@ func unicodeTranslitFuncs() []*catalog.Function {
 func unicodeLevensteinFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Unicode::LevensteinDistance",
+			Name: "unicode_levensteindistance",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 				{Type: &ast.TypeName{Name: "Utf8"}},
@@ -187,52 +187,52 @@ func unicodeLevensteinFuncs() []*catalog.Function {
 func unicodeFoldFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Unicode::Fold",
+			Name: "unicode_fold",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Utf8"},
 		},
 		{
-			Name: "Unicode::Fold",
-			Args: []*catalog.Argument{
-				{Type: &ast.TypeName{Name: "Utf8"}},
-				{Type: &ast.TypeName{Name: "String"}},
-			},
-			ReturnType: &ast.TypeName{Name: "Utf8"},
-		},
-		{
-			Name: "Unicode::Fold",
+			Name: "unicode_fold",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 				{Type: &ast.TypeName{Name: "String"}},
-				{Type: &ast.TypeName{Name: "Bool"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Utf8"},
 		},
 		{
-			Name: "Unicode::Fold",
+			Name: "unicode_fold",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 				{Type: &ast.TypeName{Name: "String"}},
 				{Type: &ast.TypeName{Name: "Bool"}},
-				{Type: &ast.TypeName{Name: "Bool"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Utf8"},
 		},
 		{
-			Name: "Unicode::Fold",
+			Name: "unicode_fold",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 				{Type: &ast.TypeName{Name: "String"}},
 				{Type: &ast.TypeName{Name: "Bool"}},
 				{Type: &ast.TypeName{Name: "Bool"}},
+			},
+			ReturnType: &ast.TypeName{Name: "Utf8"},
+		},
+		{
+			Name: "unicode_fold",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "Utf8"}},
+				{Type: &ast.TypeName{Name: "String"}},
+				{Type: &ast.TypeName{Name: "Bool"}},
+				{Type: &ast.TypeName{Name: "Bool"}},
 				{Type: &ast.TypeName{Name: "Bool"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Utf8"},
 		},
 		{
-			Name: "Unicode::Fold",
+			Name: "unicode_fold",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 				{Type: &ast.TypeName{Name: "String"}},
@@ -249,7 +249,7 @@ func unicodeFoldFuncs() []*catalog.Function {
 func unicodeReplaceFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Unicode::ReplaceAll",
+			Name: "unicode_replaceall",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 				{Type: &ast.TypeName{Name: "Utf8"}},
@@ -258,7 +258,7 @@ func unicodeReplaceFuncs() []*catalog.Function {
 			ReturnType: &ast.TypeName{Name: "Utf8"},
 		},
 		{
-			Name: "Unicode::ReplaceFirst",
+			Name: "unicode_replacefirst",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 				{Type: &ast.TypeName{Name: "Utf8"}},
@@ -267,7 +267,7 @@ func unicodeReplaceFuncs() []*catalog.Function {
 			ReturnType: &ast.TypeName{Name: "Utf8"},
 		},
 		{
-			Name: "Unicode::ReplaceLast",
+			Name: "unicode_replacelast",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 				{Type: &ast.TypeName{Name: "Utf8"}},
@@ -281,7 +281,7 @@ func unicodeReplaceFuncs() []*catalog.Function {
 func unicodeRemoveFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Unicode::RemoveAll",
+			Name: "unicode_removeall",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 				{Type: &ast.TypeName{Name: "Utf8"}},
@@ -289,7 +289,7 @@ func unicodeRemoveFuncs() []*catalog.Function {
 			ReturnType: &ast.TypeName{Name: "Utf8"},
 		},
 		{
-			Name: "Unicode::RemoveFirst",
+			Name: "unicode_removefirst",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 				{Type: &ast.TypeName{Name: "Utf8"}},
@@ -297,7 +297,7 @@ func unicodeRemoveFuncs() []*catalog.Function {
 			ReturnType: &ast.TypeName{Name: "Utf8"},
 		},
 		{
-			Name: "Unicode::RemoveLast",
+			Name: "unicode_removelast",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 				{Type: &ast.TypeName{Name: "Utf8"}},
@@ -310,14 +310,14 @@ func unicodeRemoveFuncs() []*catalog.Function {
 func unicodeCodePointFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Unicode::ToCodePointList",
+			Name: "unicode_tocodepointlist",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Unicode::FromCodePointList",
+			Name: "unicode_fromcodepointlist",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 			},
@@ -329,7 +329,7 @@ func unicodeCodePointFuncs() []*catalog.Function {
 func unicodeReverseFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Unicode::Reverse",
+			Name: "unicode_reverse",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 			},
@@ -341,21 +341,21 @@ func unicodeReverseFuncs() []*catalog.Function {
 func unicodeCaseFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Unicode::ToLower",
+			Name: "unicode_tolower",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Utf8"},
 		},
 		{
-			Name: "Unicode::ToUpper",
+			Name: "unicode_toupper",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Utf8"},
 		},
 		{
-			Name: "Unicode::ToTitle",
+			Name: "unicode_totitle",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 			},
@@ -367,7 +367,7 @@ func unicodeCaseFuncs() []*catalog.Function {
 func unicodeSplitJoinFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Unicode::SplitToList",
+			Name: "unicode_splittolist",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 				{Type: &ast.TypeName{Name: "Utf8"}},
@@ -375,7 +375,7 @@ func unicodeSplitJoinFuncs() []*catalog.Function {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Unicode::SplitToList",
+			Name: "unicode_splittolist",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 				{Type: &ast.TypeName{Name: "Utf8"}},
@@ -384,7 +384,7 @@ func unicodeSplitJoinFuncs() []*catalog.Function {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Unicode::SplitToList",
+			Name: "unicode_splittolist",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 				{Type: &ast.TypeName{Name: "Utf8"}},
@@ -394,7 +394,7 @@ func unicodeSplitJoinFuncs() []*catalog.Function {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Unicode::SplitToList",
+			Name: "unicode_splittolist",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 				{Type: &ast.TypeName{Name: "Utf8"}},
@@ -405,7 +405,7 @@ func unicodeSplitJoinFuncs() []*catalog.Function {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Unicode::JoinFromList",
+			Name: "unicode_joinfromlist",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "any"}},
 				{Type: &ast.TypeName{Name: "Utf8"}},
@@ -418,14 +418,14 @@ func unicodeSplitJoinFuncs() []*catalog.Function {
 func unicodeToUint64Funcs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Unicode::ToUint64",
+			Name: "unicode_touint64",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Uint64"},
 		},
 		{
-			Name: "Unicode::ToUint64",
+			Name: "unicode_touint64",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 				{Type: &ast.TypeName{Name: "Uint16"}},
@@ -433,7 +433,7 @@ func unicodeToUint64Funcs() []*catalog.Function {
 			ReturnType: &ast.TypeName{Name: "Uint64"},
 		},
 		{
-			Name: "Unicode::TryToUint64",
+			Name: "unicode_trytouint64",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 			},
@@ -441,7 +441,7 @@ func unicodeToUint64Funcs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Unicode::TryToUint64",
+			Name: "unicode_trytouint64",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 				{Type: &ast.TypeName{Name: "Uint16"}},
@@ -455,7 +455,7 @@ func unicodeToUint64Funcs() []*catalog.Function {
 func unicodeStripFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Unicode::Strip",
+			Name: "unicode_strip",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 			},
@@ -467,49 +467,49 @@ func unicodeStripFuncs() []*catalog.Function {
 func unicodeIsFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Unicode::IsAscii",
+			Name: "unicode_isascii",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Bool"},
 		},
 		{
-			Name: "Unicode::IsSpace",
+			Name: "unicode_isspace",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Bool"},
 		},
 		{
-			Name: "Unicode::IsUpper",
+			Name: "unicode_isupper",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Bool"},
 		},
 		{
-			Name: "Unicode::IsLower",
+			Name: "unicode_islower",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Bool"},
 		},
 		{
-			Name: "Unicode::IsAlpha",
+			Name: "unicode_isalpha",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Bool"},
 		},
 		{
-			Name: "Unicode::IsAlnum",
+			Name: "unicode_isalnum",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Bool"},
 		},
 		{
-			Name: "Unicode::IsHex",
+			Name: "unicode_ishex",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 			},
@@ -521,7 +521,7 @@ func unicodeIsFuncs() []*catalog.Function {
 func unicodeIsUnicodeSetFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Unicode::IsUnicodeSet",
+			Name: "unicode_isunicodeset",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Utf8"}},
 				{Type: &ast.TypeName{Name: "Utf8"}},

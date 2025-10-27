@@ -1,0 +1,14 @@
+{
+    "version": "1",
+    "packages": [
+      {
+        "path": "go",
+        "engine": "ydb",
+        "name": "querytest",
+        "schema": "schema.sql",
+        "queries": "query.sql",
+        "query_parameter_limit": 0,
+        "emit_interface": true
+      }
+    ]
+  }

@@ -21,14 +21,14 @@ func StringFunctions() []*catalog.Function {
 func stringBase32Funcs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "String::Base32Encode",
+			Name: "string_base32encode",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "String"},
 		},
 		{
-			Name: "String::Base32Decode",
+			Name: "string_base32decode",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -36,7 +36,7 @@ func stringBase32Funcs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "String::Base32StrictDecode",
+			Name: "string_base32strictdecode",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -49,14 +49,14 @@ func stringBase32Funcs() []*catalog.Function {
 func stringBase64Funcs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "String::Base64Encode",
+			Name: "string_base64encode",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "String"},
 		},
 		{
-			Name: "String::Base64Decode",
+			Name: "string_base64decode",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -64,7 +64,7 @@ func stringBase64Funcs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "String::Base64StrictDecode",
+			Name: "string_base64strictdecode",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -77,14 +77,14 @@ func stringBase64Funcs() []*catalog.Function {
 func stringEscapeFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "String::EscapeC",
+			Name: "string_escapec",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "String"},
 		},
 		{
-			Name: "String::UnescapeC",
+			Name: "string_unescapec",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -96,14 +96,14 @@ func stringEscapeFuncs() []*catalog.Function {
 func stringHexFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "String::HexEncode",
+			Name: "string_hexencode",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "String"},
 		},
 		{
-			Name: "String::HexDecode",
+			Name: "string_hexdecode",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -116,14 +116,14 @@ func stringHexFuncs() []*catalog.Function {
 func stringHtmlFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "String::EncodeHtml",
+			Name: "string_encodehtml",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "String"},
 		},
 		{
-			Name: "String::DecodeHtml",
+			Name: "string_decodehtml",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -135,14 +135,14 @@ func stringHtmlFuncs() []*catalog.Function {
 func stringCgiFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "String::CgiEscape",
+			Name: "string_cgiescape",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "String"},
 		},
 		{
-			Name: "String::CgiUnescape",
+			Name: "string_cgiunescape",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
