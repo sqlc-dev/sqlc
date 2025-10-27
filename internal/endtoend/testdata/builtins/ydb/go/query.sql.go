@@ -674,7 +674,7 @@ func (q *Queries) FUnicodeFind(ctx context.Context) (*uint64, error) {
 }
 
 const fUnicodeGetlength = `-- name: FUnicodeGetlength :one
-SELECT Unicode::Getlength("привет")
+SELECT Unicode::Getlength("你好")
 `
 
 func (q *Queries) FUnicodeGetlength(ctx context.Context) (uint64, error) {
