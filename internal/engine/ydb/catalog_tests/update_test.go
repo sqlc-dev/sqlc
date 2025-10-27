@@ -22,7 +22,7 @@ func TestUpdate(t *testing.T) {
 					Stmt: &ast.UpdateStmt{
 						Relations: &ast.List{
 							Items: []ast.Node{
-								&ast.RangeVar{Relname: strPtr("users")},
+								&ast.RangeVar{Relname: strPtr("users"), Inh: true},
 							},
 						},
 						TargetList: &ast.List{
@@ -57,7 +57,7 @@ func TestUpdate(t *testing.T) {
 						FromClause:   &ast.List{},
 						WithClause:   nil,
 						Batch:        false,
-						OnCols:       nil,
+						OnCols:       &ast.List{Items: []ast.Node{}},
 						OnSelectStmt: nil,
 					},
 				},
@@ -70,7 +70,7 @@ func TestUpdate(t *testing.T) {
 					Stmt: &ast.UpdateStmt{
 						Relations: &ast.List{
 							Items: []ast.Node{
-								&ast.RangeVar{Relname: strPtr("users")},
+								&ast.RangeVar{Relname: strPtr("users"), Inh: true},
 							},
 						},
 						TargetList: &ast.List{
@@ -103,7 +103,7 @@ func TestUpdate(t *testing.T) {
 						FromClause:   &ast.List{},
 						WithClause:   nil,
 						Batch:        true,
-						OnCols:       nil,
+						OnCols:       &ast.List{Items: []ast.Node{}},
 						OnSelectStmt: nil,
 					},
 				},
@@ -114,7 +114,7 @@ func TestUpdate(t *testing.T) {
 			expected: &ast.Statement{
 				Raw: &ast.RawStmt{
 					Stmt: &ast.UpdateStmt{
-						Relations: &ast.List{Items: []ast.Node{&ast.RangeVar{Relname: strPtr("users")}}},
+						Relations: &ast.List{Items: []ast.Node{&ast.RangeVar{Relname: strPtr("users"), Inh: true}}},
 						OnCols: &ast.List{
 							Items: []ast.Node{
 								&ast.ResTarget{Name: strPtr("id")},
@@ -131,11 +131,11 @@ func TestUpdate(t *testing.T) {
 									},
 								},
 							},
-							FromClause: &ast.List{},
-							TargetList: &ast.List{},
-							GroupClause: &ast.List{},
-							WindowClause: &ast.List{},
-							SortClause: &ast.List{},
+							FromClause:    &ast.List{},
+							TargetList:    &ast.List{},
+							GroupClause:   &ast.List{},
+							WindowClause:  &ast.List{},
+							SortClause:    &ast.List{},
 							LockingClause: &ast.List{},
 						},
 						ReturningList: &ast.List{
@@ -155,7 +155,7 @@ func TestUpdate(t *testing.T) {
 						FromClause:  &ast.List{},
 						WithClause:  nil,
 						Batch:       false,
-						TargetList:  nil,
+						TargetList:  &ast.List{Items: []ast.Node{}},
 						WhereClause: nil,
 					},
 				},

@@ -238,6 +238,7 @@ func TestSelect(t *testing.T) {
 							Items: []ast.Node{
 								&ast.RangeVar{
 									Relname: strPtr("users"),
+									Inh:     true,
 								},
 							},
 						},
@@ -274,6 +275,7 @@ func TestSelect(t *testing.T) {
 							Items: []ast.Node{
 								&ast.RangeVar{
 									Relname: strPtr("users"),
+									Inh:     true,
 								},
 							},
 						},
@@ -311,6 +313,7 @@ func TestSelect(t *testing.T) {
 							Items: []ast.Node{
 								&ast.RangeVar{
 									Relname: strPtr("table"),
+									Inh:     true,
 								},
 							},
 						},
@@ -365,6 +368,7 @@ func TestSelect(t *testing.T) {
 							Items: []ast.Node{
 								&ast.RangeVar{
 									Relname: strPtr("users"),
+									Inh:     true,
 								},
 							},
 						},
@@ -409,6 +413,7 @@ func TestSelect(t *testing.T) {
 							Items: []ast.Node{
 								&ast.RangeVar{
 									Relname: strPtr("users"),
+									Inh:     true,
 								},
 							},
 						},
@@ -516,6 +521,7 @@ func TestSelect(t *testing.T) {
 							Items: []ast.Node{
 								&ast.RangeVar{
 									Relname: strPtr("users"),
+									Inh:     true,
 								},
 							},
 						},
@@ -565,6 +571,7 @@ func TestSelect(t *testing.T) {
 							Items: []ast.Node{
 								&ast.RangeVar{
 									Relname: strPtr("users"),
+									Inh:     true,
 								},
 							},
 						},
@@ -606,10 +613,11 @@ func TestSelect(t *testing.T) {
 							Items: []ast.Node{
 								&ast.RangeVar{
 									Relname: strPtr("users"),
+									Inh:     true,
 								},
 							},
 						},
-						GroupClause:   &ast.List{
+						GroupClause: &ast.List{
 							Items: []ast.Node{
 								&ast.ColumnRef{
 									Fields: &ast.List{
@@ -685,6 +693,7 @@ func TestSelect(t *testing.T) {
 							Items: []ast.Node{
 								&ast.RangeVar{
 									Relname: strPtr("users"),
+									Inh:     true,
 								},
 							},
 						},

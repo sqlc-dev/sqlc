@@ -307,7 +307,7 @@ func ydbBuilderMethodForColumnType(dbType string) string {
 		return "Int32"
 	case "uint16":
 		return "Uint16"
-	case "int16", "smallserial","serial2":
+	case "int16", "smallserial", "serial2":
 		return "Int16"
 	case "uint8":
 		return "Uint8"
@@ -321,8 +321,10 @@ func ydbBuilderMethodForColumnType(dbType string) string {
 		return "JSON"
 	case "jsondocument":
 		return "JSONDocument"
-	case "utf8", "text", "string":
+	case "utf8", "text":
 		return "Text"
+	case "string":
+		return "Bytes"
 	case "date":
 		return "Date"
 	case "date32":
@@ -338,12 +340,19 @@ func ydbBuilderMethodForColumnType(dbType string) string {
 	case "tztimestamp":
 		return "TzTimestamp"
 	case "uuid":
-		return "UUID"
+		return "Uuid"
 	case "yson":
 		return "YSON"
 
+	case "integer": // LIMIT/OFFSET parameters support
+		return "Uint64"
+
 	//TODO: support other types
 	default:
+		// Check for decimal types
+		if strings.HasPrefix(baseType, "decimal") {
+			return "Decimal"
+		}
 		return ""
 	}
 }
@@ -404,6 +413,21 @@ func (v QueryValue) YDBParamsBuilder() string {
 		goType := field.Type
 		isPtr := strings.HasPrefix(goType, "*")
 		isArray := field.Column.IsArray || field.Column.IsSqlcSlice
+
+		if method == "Decimal" {
+			if isArray {
+				lines = append(lines, fmt.Sprintf("\tvar list = parameters.Param(%s).BeginList()", paramName))
+				lines = append(lines, fmt.Sprintf("\tfor _, param := range %s {", variable))
+				lines = append(lines, "\t\tlist = list.Add().Decimal(param.Bytes, param.Precision, param.Scale)")
+				lines = append(lines, "\t}")
+				lines = append(lines, "\tparameters = list.EndList()")
+			} else if isPtr {
+				lines = append(lines, fmt.Sprintf("\tparameters = parameters.Param(%s).BeginOptional().Decimal(&%s.Bytes, %s.Precision, %s.Scale).EndOptional()", paramName, variable, variable, variable))
+			} else {
+				lines = append(lines, fmt.Sprintf("\tparameters = parameters.Param(%s).Decimal(%s.Bytes, %s.Precision, %s.Scale)", paramName, variable, variable, variable))
+			}
+			return true
+		}
 
 		if isArray {
 			lines = append(lines, fmt.Sprintf("\tvar list = parameters.Param(%s).BeginList()", paramName))

@@ -42,6 +42,7 @@ type tmplCtx struct {
 	OmitSqlcVersion           bool
 	BuildTags                 string
 	WrapErrors                bool
+	EmitSliceExpansion        bool
 }
 
 func (t *tmplCtx) OutputQuery(sourceName string) bool {
@@ -53,6 +54,10 @@ func (t *tmplCtx) codegenDbarg() string {
 		return "db DBTX, "
 	}
 	return ""
+}
+
+func (t *tmplCtx) shouldExpandSlices(q Query) bool {
+	return t.EmitSliceExpansion && q.Arg.HasSqlcSlices()
 }
 
 // Called as a global method since subtemplate queryCodeStdExec does not have
@@ -181,6 +186,7 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 		EmitMethodsWithDBArgument: options.EmitMethodsWithDbArgument,
 		EmitEnumValidMethod:       options.EmitEnumValidMethod,
 		EmitAllEnumValues:         options.EmitAllEnumValues,
+		EmitSliceExpansion:        options.Engine != "ydb",
 		UsesCopyFrom:              usesCopyFrom(queries),
 		UsesBatch:                 usesBatch(queries),
 		SQLDriver:                 parseDriver(options.SqlPackage),
@@ -232,6 +238,7 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 		"emitPreparedQueries": tctx.codegenEmitPreparedQueries,
 		"queryMethod":         tctx.codegenQueryMethod,
 		"queryRetval":         tctx.codegenQueryRetval,
+		"shouldExpandSlices":  tctx.shouldExpandSlices,
 	}
 
 	tmpl := template.Must(

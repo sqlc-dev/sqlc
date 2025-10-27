@@ -43,7 +43,7 @@ func YDBType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Col
 		// // use the smallest type they have which is NullInt16
 		// return "sql.NullInt16"
 		return "*int8"
-	case "int16":
+	case "int16", "smallint":
 		if notNull {
 			return "int16"
 		}
@@ -52,7 +52,7 @@ func YDBType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Col
 		}
 		// return "sql.NullInt16"
 		return "*int16"
-	case "int", "int32": //ydb doesn't have int type, but we need it to support untyped constants
+	case "int", "int32", "integer":
 		if notNull {
 			return "int32"
 		}
@@ -61,7 +61,7 @@ func YDBType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Col
 		}
 		// return "sql.NullInt32"
 		return "*int32"
-	case "int64":
+	case "int64", "bigint":
 		if notNull {
 			return "int64"
 		}
@@ -72,25 +72,37 @@ func YDBType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Col
 		return "*int64"
 
 	case "uint8":
+		if notNull {
+			return "uint8"
+		}
 		if emitPointersForNull {
 			return "*uint8"
 		}
-		return "uint8"
+		return "*uint8"
 	case "uint16":
+		if notNull {
+			return "uint16"
+		}
 		if emitPointersForNull {
 			return "*uint16"
 		}
-		return "uint16"
+		return "*uint16"
 	case "uint32":
+		if notNull {
+			return "uint32"
+		}
 		if emitPointersForNull {
 			return "*uint32"
 		}
-		return "uint32"
+		return "*uint32"
 	case "uint64":
+		if notNull {
+			return "uint64"
+		}
 		if emitPointersForNull {
 			return "*uint64"
 		}
-		return "uint64"
+		return "*uint64"
 
 	case "float":
 		if notNull {
@@ -114,7 +126,7 @@ func YDBType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Col
 		return "*float64"
 
 	// string types
-	case "string", "utf8", "text":
+	case "utf8", "text":
 		if notNull {
 			return "string"
 		}
@@ -163,7 +175,7 @@ func YDBType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Col
 		}
 		return "*string"
 
-	case "date", "date32", "datetime", "timestamp", "tzdate", "tztimestamp", "tzdatetime":
+	case "date", "date32", "datetime", "timestamp", "tzdate", "tztimestamp", "tzdatetime", "datetime64", "timestamp64", "tzdate32", "tzdatetime64", "tztimestamp64":
 		if notNull {
 			return "time.Time"
 		}
@@ -171,6 +183,15 @@ func YDBType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Col
 			return "*time.Time"
 		}
 		return "*time.Time"
+
+	case "interval", "interval64":
+		if notNull {
+			return "time.Duration"
+		}
+		if emitPointersForNull {
+			return "*time.Duration"
+		}
+		return "*time.Duration"
 
 	case "uuid":
 		if notNull {
@@ -181,7 +202,7 @@ func YDBType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Col
 		}
 		return "*uuid.UUID"
 
-	case "yson":
+	case "yson", "string":
 		if notNull {
 			return "[]byte"
 		}
@@ -198,6 +219,17 @@ func YDBType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Col
 		return "interface{}"
 
 	default:
+		if strings.HasPrefix(columnType, "decimal") {
+			if notNull {
+				return "types.Decimal"
+			}
+
+			if emitPointersForNull {
+				return "*types.Decimal"
+			}
+			return "*types.Decimal"
+		}
+
 		if debug.Active {
 			log.Printf("unknown YDB type: %s\n", columnType)
 		}

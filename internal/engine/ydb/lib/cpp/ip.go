@@ -21,7 +21,7 @@ func IpFunctions() []*catalog.Function {
 func ipFromStringFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Ip::FromString",
+			Name: "ip_fromstring",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -29,7 +29,7 @@ func ipFromStringFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Ip::SubnetFromString",
+			Name: "ip_subnetfromstring",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -42,7 +42,7 @@ func ipFromStringFuncs() []*catalog.Function {
 func ipToStringFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Ip::ToString",
+			Name: "ip_tostring",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -50,7 +50,7 @@ func ipToStringFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Ip::ToString",
+			Name: "ip_tostring",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -63,21 +63,21 @@ func ipToStringFuncs() []*catalog.Function {
 func ipCheckFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Ip::IsIPv4",
+			Name: "ip_isipv4",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Bool"},
 		},
 		{
-			Name: "Ip::IsIPv6",
+			Name: "ip_isipv6",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Bool"},
 		},
 		{
-			Name: "Ip::IsEmbeddedIPv4",
+			Name: "ip_isembeddedipv4",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -89,7 +89,7 @@ func ipCheckFuncs() []*catalog.Function {
 func ipConvertFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Ip::ConvertToIPv6",
+			Name: "ip_converttoipv6",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -101,14 +101,14 @@ func ipConvertFuncs() []*catalog.Function {
 func ipSubnetFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Ip::GetSubnet",
+			Name: "ip_getsubnet",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "String"},
 		},
 		{
-			Name: "Ip::GetSubnet",
+			Name: "ip_getsubnet",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 				{Type: &ast.TypeName{Name: "Uint8"}},
@@ -116,7 +116,7 @@ func ipSubnetFuncs() []*catalog.Function {
 			ReturnType: &ast.TypeName{Name: "String"},
 		},
 		{
-			Name: "Ip::GetSubnetByMask",
+			Name: "ip_getsubnetbymask",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 				{Type: &ast.TypeName{Name: "String"}},
@@ -129,7 +129,7 @@ func ipSubnetFuncs() []*catalog.Function {
 func ipMatchFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Ip::SubnetMatch",
+			Name: "ip_subnetmatch",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 				{Type: &ast.TypeName{Name: "String"}},

@@ -20,7 +20,7 @@ func PireFunctions() []*catalog.Function {
 func pireGrepFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Pire::Grep",
+			Name: "pire_grep",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -32,7 +32,7 @@ func pireGrepFuncs() []*catalog.Function {
 func pireMatchFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Pire::Match",
+			Name: "pire_match",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -44,14 +44,14 @@ func pireMatchFuncs() []*catalog.Function {
 func pireMultiFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Pire::MultiGrep",
+			Name: "pire_multigrep",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Pire::MultiMatch",
+			Name: "pire_multimatch",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -63,7 +63,7 @@ func pireMultiFuncs() []*catalog.Function {
 func pireCaptureFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Pire::Capture",
+			Name: "pire_capture",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -75,7 +75,7 @@ func pireCaptureFuncs() []*catalog.Function {
 func pireReplaceFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Pire::Replace",
+			Name: "pire_replace",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},

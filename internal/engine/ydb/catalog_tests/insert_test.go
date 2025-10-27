@@ -20,7 +20,7 @@ func TestInsert(t *testing.T) {
 			expected: &ast.Statement{
 				Raw: &ast.RawStmt{
 					Stmt: &ast.InsertStmt{
-						Relation: &ast.RangeVar{Relname: strPtr("users")},
+						Relation: &ast.RangeVar{Relname: strPtr("users"), Inh: true},
 						Cols: &ast.List{
 							Items: []ast.Node{
 								&ast.ResTarget{Name: strPtr("id")},
@@ -39,11 +39,11 @@ func TestInsert(t *testing.T) {
 									},
 								},
 							},
-							TargetList: &ast.List{},
-							FromClause: &ast.List{},
-							GroupClause: &ast.List{},
-							WindowClause: &ast.List{},
-							SortClause: &ast.List{},
+							TargetList:    &ast.List{},
+							FromClause:    &ast.List{},
+							GroupClause:   &ast.List{},
+							WindowClause:  &ast.List{},
+							SortClause:    &ast.List{},
 							LockingClause: &ast.List{},
 						},
 						OnConflictClause: &ast.OnConflictClause{},
@@ -66,7 +66,7 @@ func TestInsert(t *testing.T) {
 			expected: &ast.Statement{
 				Raw: &ast.RawStmt{
 					Stmt: &ast.InsertStmt{
-						Relation: &ast.RangeVar{Relname: strPtr("users")},
+						Relation: &ast.RangeVar{Relname: strPtr("users"), Inh: true},
 						Cols: &ast.List{
 							Items: []ast.Node{
 								&ast.ResTarget{Name: strPtr("id")},
@@ -83,11 +83,11 @@ func TestInsert(t *testing.T) {
 									},
 								},
 							},
-							TargetList: &ast.List{},
-							FromClause: &ast.List{},
-							GroupClause: &ast.List{},
-							WindowClause: &ast.List{},
-							SortClause: &ast.List{},
+							TargetList:    &ast.List{},
+							FromClause:    &ast.List{},
+							GroupClause:   &ast.List{},
+							WindowClause:  &ast.List{},
+							SortClause:    &ast.List{},
 							LockingClause: &ast.List{},
 						},
 						OnConflictClause: &ast.OnConflictClause{
@@ -114,17 +114,17 @@ func TestInsert(t *testing.T) {
 			expected: &ast.Statement{
 				Raw: &ast.RawStmt{
 					Stmt: &ast.InsertStmt{
-						Relation:         &ast.RangeVar{Relname: strPtr("users")},
-						Cols:             &ast.List{Items: []ast.Node{&ast.ResTarget{Name: strPtr("id")}}},
+						Relation: &ast.RangeVar{Relname: strPtr("users"), Inh: true},
+						Cols:     &ast.List{Items: []ast.Node{&ast.ResTarget{Name: strPtr("id")}}},
 						SelectStmt: &ast.SelectStmt{
 							DistinctClause: &ast.List{},
-							ValuesLists: &ast.List{Items: []ast.Node{&ast.List{Items: []ast.Node{&ast.A_Const{Val: &ast.Integer{Ival: 4}}}}}},
-							TargetList: &ast.List{},
-							FromClause: &ast.List{},
-							GroupClause: &ast.List{},
-							WindowClause: &ast.List{},
-							SortClause: &ast.List{},
-							LockingClause: &ast.List{},
+							ValuesLists:    &ast.List{Items: []ast.Node{&ast.List{Items: []ast.Node{&ast.A_Const{Val: &ast.Integer{Ival: 4}}}}}},
+							TargetList:     &ast.List{},
+							FromClause:     &ast.List{},
+							GroupClause:    &ast.List{},
+							WindowClause:   &ast.List{},
+							SortClause:     &ast.List{},
+							LockingClause:  &ast.List{},
 						},
 						OnConflictClause: &ast.OnConflictClause{Action: ast.OnConflictAction_UPSERT},
 						ReturningList:    &ast.List{Items: []ast.Node{&ast.ResTarget{Val: &ast.ColumnRef{Fields: &ast.List{Items: []ast.Node{&ast.String{Str: "id"}}}}, Indirection: &ast.List{}}}},

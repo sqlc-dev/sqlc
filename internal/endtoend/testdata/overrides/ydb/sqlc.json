@@ -1,0 +1,19 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "path": "go",
+      "name": "override",
+      "engine": "ydb",
+      "schema": "schema.sql",
+      "queries": "query.sql",
+      "overrides": [
+        {
+          "go_type": "github.com/sqlc-dev/sqlc-testdata/pkg.CustomType",
+          "column": "foo.retyped"
+        }
+      ]
+    }
+  ]
+}
+

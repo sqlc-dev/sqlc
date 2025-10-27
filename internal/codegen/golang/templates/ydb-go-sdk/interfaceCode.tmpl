@@ -3,17 +3,17 @@
     {{- $dbtxParam := .EmitMethodsWithDBArgument -}}
     {{- range .GoQueries}}
         {{- if and (eq .Cmd ":one") ($dbtxParam) }}
-            {{range .Comments}}//{{.}}
-            {{end -}}
+            {{- range .Comments}}//{{.}}
+            {{- end}}
             {{.MethodName}}(ctx context.Context, db DBTX, {{if not .Arg.IsEmpty}}{{.Arg.Pair}}, {{end}}opts ...query.ExecuteOption) ({{.Ret.DefineType}}, error)
         {{- else if eq .Cmd ":one"}}
-            {{range .Comments}}//{{.}}
-            {{end -}}
+            {{- range .Comments}}//{{.}}
+            {{- end}}
             {{.MethodName}}(ctx context.Context, {{if not .Arg.IsEmpty}}{{.Arg.Pair}}, {{end}}opts ...query.ExecuteOption) ({{.Ret.DefineType}}, error)
         {{- end}}
         {{- if and (eq .Cmd ":many") ($dbtxParam) }}
-            {{range .Comments}}//{{.}}
-            {{end -}}
+            {{- range .Comments}}//{{.}}
+            {{- end}}
             {{.MethodName}}(ctx context.Context, db DBTX, {{if not .Arg.IsEmpty}}{{.Arg.Pair}}, {{end}}opts ...query.ExecuteOption) ([]{{.Ret.DefineType}}, error)
         {{- else if eq .Cmd ":many"}}
             {{range .Comments}}//{{.}}
@@ -21,12 +21,12 @@
             {{.MethodName}}(ctx context.Context, {{if not .Arg.IsEmpty}}{{.Arg.Pair}}, {{end}}opts ...query.ExecuteOption) ([]{{.Ret.DefineType}}, error)
         {{- end}}
         {{- if and (eq .Cmd ":exec") ($dbtxParam) }}
-            {{range .Comments}}//{{.}}
-            {{end -}}
+            {{- range .Comments}}//{{.}}
+            {{- end}}
             {{.MethodName}}(ctx context.Context, db DBTX, {{if not .Arg.IsEmpty}}{{.Arg.Pair}}, {{end}}opts ...query.ExecuteOption) error
         {{- else if eq .Cmd ":exec"}}
-            {{range .Comments}}//{{.}}
-            {{end -}}
+            {{- range .Comments}}//{{.}}
+            {{- end}}
             {{.MethodName}}(ctx context.Context, {{if not .Arg.IsEmpty}}{{.Arg.Pair}}, {{end}}opts ...query.ExecuteOption) error
         {{- end}}
     {{- end}}

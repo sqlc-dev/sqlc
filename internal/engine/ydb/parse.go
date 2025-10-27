@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/antlr4-go/antlr/v4"
 	"github.com/sqlc-dev/sqlc/internal/source"
@@ -43,6 +44,9 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 		return nil, err
 	}
 	content := string(blob)
+	if strings.TrimSpace(content) == "" {
+		return nil, nil
+	}
 	input := antlr.NewInputStream(content)
 	lexer := parser.NewYQLLexer(input)
 	stream := antlr.NewCommonTokenStream(lexer, 0)
@@ -69,11 +73,11 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 				return nil, fmt.Errorf("expected ast.Node; got %T", out)
 			}
 			if _, ok := out.(*ast.TODO); ok {
-				loc = byteOffset(content, stmt.GetStop().GetStop() + 2)
+				loc = byteOffset(content, stmt.GetStop().GetStop()+2)
 				continue
 			}
 			if out != nil {
-				len := byteOffset(content, stmt.GetStop().GetStop() + 1) - loc
+				len := byteOffset(content, stmt.GetStop().GetStop()+1) - loc
 				stmts = append(stmts, ast.Statement{
 					Raw: &ast.RawStmt{
 						Stmt:         out,
@@ -81,7 +85,7 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 						StmtLen:      len,
 					},
 				})
-				loc = byteOffset(content, stmt.GetStop().GetStop() + 2)
+				loc = byteOffset(content, stmt.GetStop().GetStop()+2)
 			}
 		}
 	}

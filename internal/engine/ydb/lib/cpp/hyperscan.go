@@ -21,7 +21,7 @@ func HyperscanFunctions() []*catalog.Function {
 func hyperscanGrepFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Hyperscan::Grep",
+			Name: "hyperscan_grep",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -33,7 +33,7 @@ func hyperscanGrepFuncs() []*catalog.Function {
 func hyperscanMatchFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Hyperscan::Match",
+			Name: "hyperscan_match",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -45,14 +45,14 @@ func hyperscanMatchFuncs() []*catalog.Function {
 func hyperscanBacktrackingFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Hyperscan::BacktrackingGrep",
+			Name: "hyperscan_backtrackinggrep",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Hyperscan::BacktrackingMatch",
+			Name: "hyperscan_backtrackingmatch",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -64,14 +64,14 @@ func hyperscanBacktrackingFuncs() []*catalog.Function {
 func hyperscanMultiFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Hyperscan::MultiGrep",
+			Name: "hyperscan_multigrep",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Hyperscan::MultiMatch",
+			Name: "hyperscan_multimatch",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -83,7 +83,7 @@ func hyperscanMultiFuncs() []*catalog.Function {
 func hyperscanCaptureFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Hyperscan::Capture",
+			Name: "hyperscan_capture",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
@@ -95,7 +95,7 @@ func hyperscanCaptureFuncs() []*catalog.Function {
 func hyperscanReplaceFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Hyperscan::Replace",
+			Name: "hyperscan_replace",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},

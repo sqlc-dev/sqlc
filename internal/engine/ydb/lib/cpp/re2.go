@@ -22,14 +22,14 @@ func Re2Functions() []*catalog.Function {
 func re2GrepFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Re2::Grep",
+			Name: "re2_grep",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Re2::Grep",
+			Name: "re2_grep",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 				{Type: &ast.TypeName{Name: "any"}},
@@ -42,14 +42,14 @@ func re2GrepFuncs() []*catalog.Function {
 func re2MatchFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Re2::Match",
+			Name: "re2_match",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Re2::Match",
+			Name: "re2_match",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 				{Type: &ast.TypeName{Name: "any"}},
@@ -62,14 +62,14 @@ func re2MatchFuncs() []*catalog.Function {
 func re2CaptureFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Re2::Capture",
+			Name: "re2_capture",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Re2::Capture",
+			Name: "re2_capture",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 				{Type: &ast.TypeName{Name: "any"}},
@@ -82,14 +82,14 @@ func re2CaptureFuncs() []*catalog.Function {
 func re2FindAndConsumeFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Re2::FindAndConsume",
+			Name: "re2_findandconsume",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Re2::FindAndConsume",
+			Name: "re2_findandconsume",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 				{Type: &ast.TypeName{Name: "any"}},
@@ -102,14 +102,14 @@ func re2FindAndConsumeFuncs() []*catalog.Function {
 func re2ReplaceFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Re2::Replace",
+			Name: "re2_replace",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Re2::Replace",
+			Name: "re2_replace",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 				{Type: &ast.TypeName{Name: "any"}},
@@ -122,14 +122,14 @@ func re2ReplaceFuncs() []*catalog.Function {
 func re2CountFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Re2::Count",
+			Name: "re2_count",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Re2::Count",
+			Name: "re2_count",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 				{Type: &ast.TypeName{Name: "any"}},
@@ -142,19 +142,19 @@ func re2CountFuncs() []*catalog.Function {
 func re2OptionsFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name:       "Re2::Options",
+			Name: "re2_options",
 			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Re2::Options",
+			Name: "re2_options",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Bool"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Re2::Options",
+			Name: "re2_options",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Bool"}},
 				{Type: &ast.TypeName{Name: "Bool"}},
@@ -162,18 +162,8 @@ func re2OptionsFuncs() []*catalog.Function {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Re2::Options",
+			Name: "re2_options",
 			Args: []*catalog.Argument{
-				{Type: &ast.TypeName{Name: "Bool"}},
-				{Type: &ast.TypeName{Name: "Bool"}},
-				{Type: &ast.TypeName{Name: "Bool"}},
-			},
-			ReturnType: &ast.TypeName{Name: "any"},
-		},
-		{
-			Name: "Re2::Options",
-			Args: []*catalog.Argument{
-				{Type: &ast.TypeName{Name: "Bool"}},
 				{Type: &ast.TypeName{Name: "Bool"}},
 				{Type: &ast.TypeName{Name: "Bool"}},
 				{Type: &ast.TypeName{Name: "Bool"}},
@@ -181,9 +171,8 @@ func re2OptionsFuncs() []*catalog.Function {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Re2::Options",
+			Name: "re2_options",
 			Args: []*catalog.Argument{
-				{Type: &ast.TypeName{Name: "Bool"}},
 				{Type: &ast.TypeName{Name: "Bool"}},
 				{Type: &ast.TypeName{Name: "Bool"}},
 				{Type: &ast.TypeName{Name: "Bool"}},
@@ -192,19 +181,18 @@ func re2OptionsFuncs() []*catalog.Function {
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Re2::Options",
+			Name: "re2_options",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Bool"}},
 				{Type: &ast.TypeName{Name: "Bool"}},
 				{Type: &ast.TypeName{Name: "Bool"}},
 				{Type: &ast.TypeName{Name: "Bool"}},
 				{Type: &ast.TypeName{Name: "Bool"}},
-				{Type: &ast.TypeName{Name: "Uint64"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Re2::Options",
+			Name: "re2_options",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Bool"}},
 				{Type: &ast.TypeName{Name: "Bool"}},
@@ -212,12 +200,11 @@ func re2OptionsFuncs() []*catalog.Function {
 				{Type: &ast.TypeName{Name: "Bool"}},
 				{Type: &ast.TypeName{Name: "Bool"}},
 				{Type: &ast.TypeName{Name: "Uint64"}},
-				{Type: &ast.TypeName{Name: "Bool"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Re2::Options",
+			Name: "re2_options",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Bool"}},
 				{Type: &ast.TypeName{Name: "Bool"}},
@@ -226,12 +213,11 @@ func re2OptionsFuncs() []*catalog.Function {
 				{Type: &ast.TypeName{Name: "Bool"}},
 				{Type: &ast.TypeName{Name: "Uint64"}},
 				{Type: &ast.TypeName{Name: "Bool"}},
-				{Type: &ast.TypeName{Name: "Bool"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Re2::Options",
+			Name: "re2_options",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Bool"}},
 				{Type: &ast.TypeName{Name: "Bool"}},
@@ -241,12 +227,11 @@ func re2OptionsFuncs() []*catalog.Function {
 				{Type: &ast.TypeName{Name: "Uint64"}},
 				{Type: &ast.TypeName{Name: "Bool"}},
 				{Type: &ast.TypeName{Name: "Bool"}},
-				{Type: &ast.TypeName{Name: "Bool"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Re2::Options",
+			Name: "re2_options",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Bool"}},
 				{Type: &ast.TypeName{Name: "Bool"}},
@@ -257,12 +242,11 @@ func re2OptionsFuncs() []*catalog.Function {
 				{Type: &ast.TypeName{Name: "Bool"}},
 				{Type: &ast.TypeName{Name: "Bool"}},
 				{Type: &ast.TypeName{Name: "Bool"}},
-				{Type: &ast.TypeName{Name: "Bool"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Re2::Options",
+			Name: "re2_options",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Bool"}},
 				{Type: &ast.TypeName{Name: "Bool"}},
@@ -274,12 +258,11 @@ func re2OptionsFuncs() []*catalog.Function {
 				{Type: &ast.TypeName{Name: "Bool"}},
 				{Type: &ast.TypeName{Name: "Bool"}},
 				{Type: &ast.TypeName{Name: "Bool"}},
-				{Type: &ast.TypeName{Name: "Bool"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Re2::Options",
+			Name: "re2_options",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Bool"}},
 				{Type: &ast.TypeName{Name: "Bool"}},
@@ -292,12 +275,29 @@ func re2OptionsFuncs() []*catalog.Function {
 				{Type: &ast.TypeName{Name: "Bool"}},
 				{Type: &ast.TypeName{Name: "Bool"}},
 				{Type: &ast.TypeName{Name: "Bool"}},
+			},
+			ReturnType: &ast.TypeName{Name: "any"},
+		},
+		{
+			Name: "re2_options",
+			Args: []*catalog.Argument{
+				{Type: &ast.TypeName{Name: "Bool"}},
+				{Type: &ast.TypeName{Name: "Bool"}},
+				{Type: &ast.TypeName{Name: "Bool"}},
+				{Type: &ast.TypeName{Name: "Bool"}},
+				{Type: &ast.TypeName{Name: "Bool"}},
+				{Type: &ast.TypeName{Name: "Uint64"}},
+				{Type: &ast.TypeName{Name: "Bool"}},
+				{Type: &ast.TypeName{Name: "Bool"}},
+				{Type: &ast.TypeName{Name: "Bool"}},
+				{Type: &ast.TypeName{Name: "Bool"}},
+				{Type: &ast.TypeName{Name: "Bool"}},
 				{Type: &ast.TypeName{Name: "Bool"}},
 			},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name: "Re2::Options",
+			Name: "re2_options",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Bool"}},
 				{Type: &ast.TypeName{Name: "Bool"}},

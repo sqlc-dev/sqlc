@@ -25,17 +25,17 @@ func MathFunctions() []*catalog.Function {
 func mathConstantsFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name:       "Math::Pi",
+			Name: "math_pi",
 			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "Double"},
 		},
 		{
-			Name:       "Math::E",
+			Name: "math_e",
 			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "Double"},
 		},
 		{
-			Name:       "Math::Eps",
+			Name: "math_eps",
 			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "Double"},
 		},
@@ -45,21 +45,21 @@ func mathConstantsFuncs() []*catalog.Function {
 func mathCheckFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Math::IsInf",
+			Name: "math_isinf",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Bool"},
 		},
 		{
-			Name: "Math::IsNaN",
+			Name: "math_isnan",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Bool"},
 		},
 		{
-			Name: "Math::IsFinite",
+			Name: "math_isfinite",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 			},
@@ -71,203 +71,203 @@ func mathCheckFuncs() []*catalog.Function {
 func mathUnaryFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Math::Abs",
+			Name: "math_abs",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Double"},
 		},
 		{
-			Name: "Math::Acos",
+			Name: "math_acos",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Double"},
 		},
 		{
-			Name: "Math::Asin",
+			Name: "math_asin",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Double"},
 		},
 		{
-			Name: "Math::Asinh",
+			Name: "math_asinh",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Double"},
 		},
 		{
-			Name: "Math::Atan",
+			Name: "math_atan",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Double"},
 		},
 		{
-			Name: "Math::Cbrt",
+			Name: "math_cbrt",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Double"},
 		},
 		{
-			Name: "Math::Ceil",
+			Name: "math_ceil",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Double"},
 		},
 		{
-			Name: "Math::Cos",
+			Name: "math_cos",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Double"},
 		},
 		{
-			Name: "Math::Cosh",
+			Name: "math_cosh",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Double"},
 		},
 		{
-			Name: "Math::Erf",
+			Name: "math_erf",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Double"},
 		},
 		{
-			Name: "Math::ErfInv",
+			Name: "math_erfinv",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Double"},
 		},
 		{
-			Name: "Math::ErfcInv",
+			Name: "math_erfcinv",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Double"},
 		},
 		{
-			Name: "Math::Exp",
+			Name: "math_exp",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Double"},
 		},
 		{
-			Name: "Math::Exp2",
+			Name: "math_exp2",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Double"},
 		},
 		{
-			Name: "Math::Fabs",
+			Name: "math_fabs",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Double"},
 		},
 		{
-			Name: "Math::Floor",
+			Name: "math_floor",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Double"},
 		},
 		{
-			Name: "Math::Lgamma",
+			Name: "math_lgamma",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Double"},
 		},
 		{
-			Name: "Math::Rint",
+			Name: "math_rint",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Double"},
 		},
 		{
-			Name: "Math::Sigmoid",
+			Name: "math_sigmoid",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Double"},
 		},
 		{
-			Name: "Math::Sin",
+			Name: "math_sin",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Double"},
 		},
 		{
-			Name: "Math::Sinh",
+			Name: "math_sinh",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Double"},
 		},
 		{
-			Name: "Math::Sqrt",
+			Name: "math_sqrt",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Double"},
 		},
 		{
-			Name: "Math::Tan",
+			Name: "math_tan",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Double"},
 		},
 		{
-			Name: "Math::Tanh",
+			Name: "math_tanh",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Double"},
 		},
 		{
-			Name: "Math::Tgamma",
+			Name: "math_tgamma",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Double"},
 		},
 		{
-			Name: "Math::Trunc",
+			Name: "math_trunc",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Double"},
 		},
 		{
-			Name: "Math::Log",
+			Name: "math_log",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Double"},
 		},
 		{
-			Name: "Math::Log2",
+			Name: "math_log2",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Double"},
 		},
 		{
-			Name: "Math::Log10",
+			Name: "math_log10",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 			},
@@ -279,7 +279,7 @@ func mathUnaryFuncs() []*catalog.Function {
 func mathBinaryFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Math::Atan2",
+			Name: "math_atan2",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 				{Type: &ast.TypeName{Name: "Double"}},
@@ -287,7 +287,7 @@ func mathBinaryFuncs() []*catalog.Function {
 			ReturnType: &ast.TypeName{Name: "Double"},
 		},
 		{
-			Name: "Math::Fmod",
+			Name: "math_fmod",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 				{Type: &ast.TypeName{Name: "Double"}},
@@ -295,7 +295,7 @@ func mathBinaryFuncs() []*catalog.Function {
 			ReturnType: &ast.TypeName{Name: "Double"},
 		},
 		{
-			Name: "Math::Hypot",
+			Name: "math_hypot",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 				{Type: &ast.TypeName{Name: "Double"}},
@@ -303,7 +303,7 @@ func mathBinaryFuncs() []*catalog.Function {
 			ReturnType: &ast.TypeName{Name: "Double"},
 		},
 		{
-			Name: "Math::Pow",
+			Name: "math_pow",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 				{Type: &ast.TypeName{Name: "Double"}},
@@ -311,7 +311,7 @@ func mathBinaryFuncs() []*catalog.Function {
 			ReturnType: &ast.TypeName{Name: "Double"},
 		},
 		{
-			Name: "Math::Remainder",
+			Name: "math_remainder",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 				{Type: &ast.TypeName{Name: "Double"}},
@@ -324,7 +324,7 @@ func mathBinaryFuncs() []*catalog.Function {
 func mathLdexpFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Math::Ldexp",
+			Name: "math_ldexp",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 				{Type: &ast.TypeName{Name: "Int32"}},
@@ -337,14 +337,14 @@ func mathLdexpFuncs() []*catalog.Function {
 func mathRoundFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Math::Round",
+			Name: "math_round",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Double"},
 		},
 		{
-			Name: "Math::Round",
+			Name: "math_round",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 				{Type: &ast.TypeName{Name: "Int32"}},
@@ -357,7 +357,7 @@ func mathRoundFuncs() []*catalog.Function {
 func mathFuzzyEqualsFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Math::FuzzyEquals",
+			Name: "math_fuzzyequals",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 				{Type: &ast.TypeName{Name: "Double"}},
@@ -365,7 +365,7 @@ func mathFuzzyEqualsFuncs() []*catalog.Function {
 			ReturnType: &ast.TypeName{Name: "Bool"},
 		},
 		{
-			Name: "Math::FuzzyEquals",
+			Name: "math_fuzzyequals",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 				{Type: &ast.TypeName{Name: "Double"}},
@@ -379,7 +379,7 @@ func mathFuzzyEqualsFuncs() []*catalog.Function {
 func mathModRemFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Math::Mod",
+			Name: "math_mod",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Int64"}},
 				{Type: &ast.TypeName{Name: "Int64"}},
@@ -388,7 +388,7 @@ func mathModRemFuncs() []*catalog.Function {
 			ReturnTypeNullable: true,
 		},
 		{
-			Name: "Math::Rem",
+			Name: "math_rem",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Int64"}},
 				{Type: &ast.TypeName{Name: "Int64"}},
@@ -402,22 +402,22 @@ func mathModRemFuncs() []*catalog.Function {
 func mathRoundingModeFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name:       "Math::RoundDownward",
+			Name: "math_rounddownward",
 			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "Math::RoundToNearest",
+			Name: "math_roundtonearest",
 			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "Math::RoundTowardZero",
+			Name: "math_roundtowardzero",
 			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
 		{
-			Name:       "Math::RoundUpward",
+			Name: "math_roundupward",
 			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "any"},
 		},
@@ -427,7 +427,7 @@ func mathRoundingModeFuncs() []*catalog.Function {
 func mathNearbyIntFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Math::NearbyInt",
+			Name: "math_nearbyint",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "Double"}},
 				{Type: &ast.TypeName{Name: "any"}},

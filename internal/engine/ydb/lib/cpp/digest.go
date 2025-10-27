@@ -19,21 +19,21 @@ func DigestFunctions() []*catalog.Function {
 func digestCrcFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Digest::Crc32c",
+			Name: "digest_crc32c",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Uint32"},
 		},
 		{
-			Name: "Digest::Crc64",
+			Name: "digest_crc64",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Uint64"},
 		},
 		{
-			Name: "Digest::Crc64",
+			Name: "digest_crc64",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 				{Type: &ast.TypeName{Name: "Uint64"}},
@@ -46,14 +46,14 @@ func digestCrcFuncs() []*catalog.Function {
 func digestFnvFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Digest::Fnv32",
+			Name: "digest_fnv32",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Uint32"},
 		},
 		{
-			Name: "Digest::Fnv32",
+			Name: "digest_fnv32",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 				{Type: &ast.TypeName{Name: "Uint32"}},
@@ -61,14 +61,14 @@ func digestFnvFuncs() []*catalog.Function {
 			ReturnType: &ast.TypeName{Name: "Uint32"},
 		},
 		{
-			Name: "Digest::Fnv64",
+			Name: "digest_fnv64",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Uint64"},
 		},
 		{
-			Name: "Digest::Fnv64",
+			Name: "digest_fnv64",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 				{Type: &ast.TypeName{Name: "Uint64"}},
@@ -81,14 +81,14 @@ func digestFnvFuncs() []*catalog.Function {
 func digestMurmurFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Digest::MurMurHash",
+			Name: "digest_murmurhash",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Uint64"},
 		},
 		{
-			Name: "Digest::MurMurHash",
+			Name: "digest_murmurhash",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 				{Type: &ast.TypeName{Name: "Uint64"}},
@@ -96,14 +96,14 @@ func digestMurmurFuncs() []*catalog.Function {
 			ReturnType: &ast.TypeName{Name: "Uint64"},
 		},
 		{
-			Name: "Digest::MurMurHash32",
+			Name: "digest_murmurhash32",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Uint32"},
 		},
 		{
-			Name: "Digest::MurMurHash32",
+			Name: "digest_murmurhash32",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 				{Type: &ast.TypeName{Name: "Uint32"}},
@@ -111,14 +111,14 @@ func digestMurmurFuncs() []*catalog.Function {
 			ReturnType: &ast.TypeName{Name: "Uint32"},
 		},
 		{
-			Name: "Digest::MurMurHash2A",
+			Name: "digest_murmurhash2a",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Uint64"},
 		},
 		{
-			Name: "Digest::MurMurHash2A",
+			Name: "digest_murmurhash2a",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 				{Type: &ast.TypeName{Name: "Uint64"}},
@@ -126,14 +126,14 @@ func digestMurmurFuncs() []*catalog.Function {
 			ReturnType: &ast.TypeName{Name: "Uint64"},
 		},
 		{
-			Name: "Digest::MurMurHash2A32",
+			Name: "digest_murmurhash2a32",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Uint32"},
 		},
 		{
-			Name: "Digest::MurMurHash2A32",
+			Name: "digest_murmurhash2a32",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 				{Type: &ast.TypeName{Name: "Uint32"}},
@@ -146,14 +146,14 @@ func digestMurmurFuncs() []*catalog.Function {
 func digestCityFuncs() []*catalog.Function {
 	return []*catalog.Function{
 		{
-			Name: "Digest::CityHash",
+			Name: "digest_cityhash",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
 			ReturnType: &ast.TypeName{Name: "Uint64"},
 		},
 		{
-			Name: "Digest::CityHash",
+			Name: "digest_cityhash",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 				{Type: &ast.TypeName{Name: "Uint64"}},
@@ -161,7 +161,7 @@ func digestCityFuncs() []*catalog.Function {
 			ReturnType: &ast.TypeName{Name: "Uint64"},
 		},
 		{
-			Name: "Digest::CityHash128",
+			Name: "digest_cityhash128",
 			Args: []*catalog.Argument{
 				{Type: &ast.TypeName{Name: "String"}},
 			},
