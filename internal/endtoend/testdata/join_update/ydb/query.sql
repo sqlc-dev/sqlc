@@ -1,0 +1,6 @@
+-- name: Percentile :exec
+UPDATE group_calc_totals ON
+SELECT gct.group_id, nem.npn
+FROM group_calc_totals gct
+JOIN producer_group_attribute ga ON gct.group_id = ga.group_id
+JOIN npn_external_map nem ON ga.npn_external_map_id = nem.id;

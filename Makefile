@@ -1,4 +1,4 @@
-.PHONY: build build-endtoend test test-ci test-examples test-endtoend start psql mysqlsh proto
+.PHONY: build build-endtoend test test-ci test-examples test-endtoend start psql mysqlsh proto sqlc-dev ydb test-examples-ydb gen-examples-ydb
 
 build:
 	go build ./...
@@ -18,13 +18,21 @@ vet:
 test-examples:
 	go test --tags=examples ./...
 
+ydb-examples: sqlc-dev ydb gen-examples-ydb test-examples-ydb
+
+test-examples-ydb:
+	YDB_SERVER_URI=localhost:2136 go test -v ./examples/authors/ydb/... -count=1
+
+gen-examples-ydb:
+	cd examples/authors/ && SQLCDEBUG=1 ~/bin/sqlc-dev generate && cd ../..
+
 build-endtoend:
 	cd ./internal/endtoend/testdata && go build ./...
 
 test-ci: test-examples build-endtoend vet
 
 sqlc-dev:
-	go build -o ~/bin/sqlc-dev ./cmd/sqlc/
+	go build -x -v -o ~/bin/sqlc-dev ./cmd/sqlc/
 
 sqlc-pg-gen:
 	go build -o ~/bin/sqlc-pg-gen ./internal/tools/sqlc-pg-gen
@@ -37,6 +45,9 @@ test-json-process-plugin:
 
 start:
 	docker compose up -d
+
+ydb:
+	docker compose up -d ydb
 
 fmt:
 	go fmt ./...

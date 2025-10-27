@@ -132,6 +132,8 @@ func (i *importer) dbImports() fileImports {
 	case opts.SQLDriverPGXV5:
 		pkg = append(pkg, ImportSpec{Path: "github.com/jackc/pgx/v5/pgconn"})
 		pkg = append(pkg, ImportSpec{Path: "github.com/jackc/pgx/v5"})
+	case opts.SQLDriverYDBGoSDK:
+		pkg = append(pkg, ImportSpec{Path: "github.com/ydb-platform/ydb-go-sdk/v3/query"})
 	default:
 		std = append(std, ImportSpec{Path: "database/sql"})
 		if i.Options.EmitPreparedQueries {
@@ -147,6 +149,7 @@ func (i *importer) dbImports() fileImports {
 var stdlibTypes = map[string]string{
 	"json.RawMessage":  "encoding/json",
 	"time.Time":        "time",
+	"time.Duration":    "time",
 	"net.IP":           "net",
 	"net.HardwareAddr": "net",
 	"netip.Addr":       "net/netip",
@@ -177,7 +180,9 @@ func buildImports(options *opts.Options, queries []Query, uses func(string) bool
 			case opts.SQLDriverPGXV5:
 				pkg[ImportSpec{Path: "github.com/jackc/pgx/v5/pgconn"}] = struct{}{}
 			default:
-				std["database/sql"] = struct{}{}
+				if !sqlpkg.IsYDBGoSDK() {
+					std["database/sql"] = struct{}{}
+				}
 			}
 		}
 	}
@@ -228,6 +233,10 @@ func buildImports(options *opts.Options, queries []Query, uses func(string) bool
 	if uses("pgvector.Vector") && !overrideVector {
 		pkg[ImportSpec{Path: "github.com/pgvector/pgvector-go"}] = struct{}{}
 	}
+	_, overrideDecimal := overrideTypes["types.Decimal"]
+	if uses("types.Decimal") && !overrideDecimal {
+		pkg[ImportSpec{Path: "github.com/ydb-platform/ydb-go-sdk/v3/table/types"}] = struct{}{}
+	}
 
 	// Custom imports
 	for _, override := range options.Overrides {
@@ -267,6 +276,11 @@ func (i *importer) interfaceImports() fileImports {
 	})
 
 	std["context"] = struct{}{}
+
+	sqlpkg := parseDriver(i.Options.SqlPackage)
+	if sqlpkg.IsYDBGoSDK() {
+		pkg[ImportSpec{Path: "github.com/ydb-platform/ydb-go-sdk/v3/query"}] = struct{}{}
+	}
 
 	return sortedImports(std, pkg)
 }
@@ -395,11 +409,26 @@ func (i *importer) queryImports(filename string) fileImports {
 	}
 
 	sqlpkg := parseDriver(i.Options.SqlPackage)
-	if sqlcSliceScan() && !sqlpkg.IsPGX() {
+	if sqlcSliceScan() && !sqlpkg.IsPGX() && !sqlpkg.IsYDBGoSDK() && i.Options.Engine != "ydb" {
 		std["strings"] = struct{}{}
 	}
-	if sliceScan() && !sqlpkg.IsPGX() {
+	if sliceScan() && !sqlpkg.IsPGX() && !sqlpkg.IsYDBGoSDK() {
 		pkg[ImportSpec{Path: "github.com/lib/pq"}] = struct{}{}
+	}
+
+	if sqlpkg.IsYDBGoSDK() {
+		hasParams := false
+		for _, q := range gq {
+			if !q.Arg.isEmpty() {
+				hasParams = true
+				break
+			}
+		}
+		if hasParams {
+			pkg[ImportSpec{Path: "github.com/ydb-platform/ydb-go-sdk/v3"}] = struct{}{}
+		}
+		pkg[ImportSpec{Path: "github.com/ydb-platform/ydb-go-sdk/v3/query"}] = struct{}{}
+		pkg[ImportSpec{Path: "github.com/ydb-platform/ydb-go-sdk/v3/pkg/xerrors"}] = struct{}{}
 	}
 
 	if i.Options.WrapErrors {

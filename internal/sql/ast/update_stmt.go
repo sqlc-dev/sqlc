@@ -10,6 +10,11 @@ type UpdateStmt struct {
 	LimitCount    Node
 	ReturningList *List
 	WithClause    *WithClause
+
+	// YDB specific
+	Batch        bool
+	OnCols       *List
+	OnSelectStmt Node
 }
 
 func (n *UpdateStmt) Pos() int {
@@ -23,6 +28,10 @@ func (n *UpdateStmt) Format(buf *TrackedBuffer) {
 	if n.WithClause != nil {
 		buf.astFormat(n.WithClause)
 		buf.WriteString(" ")
+	}
+
+	if n.Batch {
+		buf.WriteString("BATCH ")
 	}
 
 	buf.WriteString("UPDATE ")
@@ -98,6 +107,20 @@ func (n *UpdateStmt) Format(buf *TrackedBuffer) {
 	if set(n.WhereClause) {
 		buf.WriteString(" WHERE ")
 		buf.astFormat(n.WhereClause)
+	}
+
+	if items(n.OnCols) || set(n.OnSelectStmt) {
+		buf.WriteString(" ON ")
+
+		if items(n.OnCols) {
+			buf.WriteString("(")
+			buf.astFormat(n.OnCols)
+			buf.WriteString(") ")
+		}
+
+		if set(n.OnSelectStmt) {
+			buf.astFormat(n.OnSelectStmt)
+		}
 	}
 
 	if set(n.LimitCount) {

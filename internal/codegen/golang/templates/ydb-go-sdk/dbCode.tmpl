@@ -1,0 +1,24 @@
+{{define "dbCodeTemplateYDB"}}
+type DBTX interface {
+    Exec(ctx context.Context, sql string, opts ...query.ExecuteOption) error
+	Query(ctx context.Context, sql string, opts ...query.ExecuteOption) (query.Result, error)
+    QueryResultSet(ctx context.Context, sql string, opts ...query.ExecuteOption) (query.ClosableResultSet, error)
+	QueryRow(ctx context.Context, sql string, opts ...query.ExecuteOption) (query.Row, error)
+}
+
+{{ if .EmitMethodsWithDBArgument}}
+func New() *Queries {
+	return &Queries{}
+{{- else -}}
+func New(db DBTX) *Queries {
+	return &Queries{db: db}
+{{- end}}
+}
+
+type Queries struct {
+    {{if not .EmitMethodsWithDBArgument}}
+	db DBTX
+    {{end}}
+}
+
+{{end}}
