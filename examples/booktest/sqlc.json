@@ -46,6 +46,14 @@
       "rules": [
         "sqlc/db-prepare"
       ]
+    },
+    {
+      "name": "booktest",
+      "path": "ydb",
+      "schema": "ydb/schema.sql",
+      "queries": "ydb/query.sql",
+      "engine": "ydb",
+      "sql_package": "ydb-go-sdk"
     }
   ]
 }

@@ -32,7 +32,7 @@ func YDBType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Col
 		// return "sql.NullBool"
 		return "*bool"
 
-	case "int8":
+	case "int8", "tinyint":
 		if notNull {
 			return "int8"
 		}

@@ -1,15 +1,20 @@
 -- name: GetAuthor :one
 SELECT * FROM authors
-WHERE id = $p0 LIMIT 1;
+WHERE id = $id LIMIT 1;
 
 -- name: ListAuthors :many 
-SELECT * FROM authors ORDER BY name;
+SELECT * FROM authors
+ORDER BY name;
 
--- name: CreateOrUpdateAuthor :exec 
-UPSERT INTO authors (id, name, bio) VALUES ($p0, $p1, $p2);
+-- name: CreateOrUpdateAuthor :one 
+UPSERT INTO authors (name, bio) 
+VALUES (
+  $name, $bio
+)
+RETURNING *;
 
 -- name: DeleteAuthor :exec 
-DELETE FROM authors WHERE id = $p0;
+DELETE FROM authors WHERE id = $id;
 
 -- name: DropTable :exec
 DROP TABLE IF EXISTS authors;

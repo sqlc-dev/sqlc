@@ -5,7 +5,7 @@
 package authors
 
 type Author struct {
-	ID   uint64  `json:"id"`
+	ID   int32   `json:"id"`
 	Name string  `json:"name"`
 	Bio  *string `json:"bio"`
 }

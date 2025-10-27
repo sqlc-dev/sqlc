@@ -13,37 +13,44 @@ import (
 	"github.com/ydb-platform/ydb-go-sdk/v3/query"
 )
 
-const createOrUpdateAuthor = `-- name: CreateOrUpdateAuthor :exec
-UPSERT INTO authors (id, name, bio) VALUES ($p0, $p1, $p2)
+const createOrUpdateAuthor = `-- name: CreateOrUpdateAuthor :one
+UPSERT INTO authors (name, bio) 
+VALUES (
+  $name, $bio
+)
+RETURNING id, name, bio
 `
 
 type CreateOrUpdateAuthorParams struct {
-	P0 uint64  `json:"p0"`
-	P1 string  `json:"p1"`
-	P2 *string `json:"p2"`
+	Name string  `json:"name"`
+	Bio  *string `json:"bio"`
 }
 
-func (q *Queries) CreateOrUpdateAuthor(ctx context.Context, arg CreateOrUpdateAuthorParams, opts ...query.ExecuteOption) error {
+func (q *Queries) CreateOrUpdateAuthor(ctx context.Context, arg CreateOrUpdateAuthorParams, opts ...query.ExecuteOption) (Author, error) {
 	parameters := ydb.ParamsBuilder()
-	parameters = parameters.Param("$p0").Uint64(arg.P0)
-	parameters = parameters.Param("$p1").Text(arg.P1)
-	parameters = parameters.Param("$p2").BeginOptional().Text(arg.P2).EndOptional()
-	err := q.db.Exec(ctx, createOrUpdateAuthor,
+	parameters = parameters.Param("$name").Text(arg.Name)
+	parameters = parameters.Param("$bio").BeginOptional().Text(arg.Bio).EndOptional()
+	row, err := q.db.QueryRow(ctx, createOrUpdateAuthor,
 		append(opts, query.WithParameters(parameters.Build()))...,
 	)
+	var i Author
 	if err != nil {
-		return xerrors.WithStackTrace(err)
+		return i, xerrors.WithStackTrace(err)
 	}
-	return nil
+	err = row.Scan(&i.ID, &i.Name, &i.Bio)
+	if err != nil {
+		return i, xerrors.WithStackTrace(err)
+	}
+	return i, nil
 }
 
 const deleteAuthor = `-- name: DeleteAuthor :exec
-DELETE FROM authors WHERE id = $p0
+DELETE FROM authors WHERE id = $id
 `
 
-func (q *Queries) DeleteAuthor(ctx context.Context, p0 uint64, opts ...query.ExecuteOption) error {
+func (q *Queries) DeleteAuthor(ctx context.Context, id int32, opts ...query.ExecuteOption) error {
 	parameters := ydb.ParamsBuilder()
-	parameters = parameters.Param("$p0").Uint64(p0)
+	parameters = parameters.Param("$id").Int32(id)
 	err := q.db.Exec(ctx, deleteAuthor,
 		append(opts, query.WithParameters(parameters.Build()))...,
 	)
@@ -67,12 +74,12 @@ func (q *Queries) DropTable(ctx context.Context, opts ...query.ExecuteOption) er
 
 const getAuthor = `-- name: GetAuthor :one
 SELECT id, name, bio FROM authors
-WHERE id = $p0 LIMIT 1
+WHERE id = $id LIMIT 1
 `
 
-func (q *Queries) GetAuthor(ctx context.Context, p0 uint64, opts ...query.ExecuteOption) (Author, error) {
+func (q *Queries) GetAuthor(ctx context.Context, id int32, opts ...query.ExecuteOption) (Author, error) {
 	parameters := ydb.ParamsBuilder()
-	parameters = parameters.Param("$p0").Uint64(p0)
+	parameters = parameters.Param("$id").Int32(id)
 	row, err := q.db.QueryRow(ctx, getAuthor,
 		append(opts, query.WithParameters(parameters.Build()))...,
 	)
@@ -88,7 +95,8 @@ func (q *Queries) GetAuthor(ctx context.Context, p0 uint64, opts ...query.Execut
 }
 
 const listAuthors = `-- name: ListAuthors :many
-SELECT id, name, bio FROM authors ORDER BY name
+SELECT id, name, bio FROM authors
+ORDER BY name
 `
 
 func (q *Queries) ListAuthors(ctx context.Context, opts ...query.ExecuteOption) ([]Author, error) {
