@@ -128,7 +128,7 @@ SELECT DateTime::Intervalfromdays(7);
 -- name: FUnicodeIsutf :one
 SELECT Unicode::Isutf("hello");
 -- name: FUnicodeGetlength :one
-SELECT Unicode::Getlength("привет");
+SELECT Unicode::Getlength("你好");
 -- name: FUnicodeFind :one
 SELECT Unicode::Find("hello", "ll");
 -- name: FUnicodeRfind :one
