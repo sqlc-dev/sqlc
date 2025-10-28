@@ -1,0 +1,18 @@
+version: "2"
+sql:
+  - name: "duckdb_example"
+    engine: "duckdb"
+    schema:
+      - "schema.sql"
+    queries:
+      - "query.sql"
+    database:
+      managed: false
+      uri: ":memory:"
+    analyzer:
+      database: true
+    gen:
+      go:
+        package: "db"
+        out: "db"
+        sql_package: "database/sql"

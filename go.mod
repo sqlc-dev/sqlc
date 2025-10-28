@@ -11,6 +11,7 @@ require (
 	github.com/fatih/structtag v1.2.0
 	github.com/go-sql-driver/mysql v1.9.3
 	github.com/google/cel-go v0.26.1
+	github.com/marcboeker/go-duckdb v1.8.5
 	github.com/google/go-cmp v0.7.0
 	github.com/jackc/pgx/v4 v4.18.3
 	github.com/jackc/pgx/v5 v5.7.6

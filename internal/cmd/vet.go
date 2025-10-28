@@ -21,6 +21,7 @@ import (
 	"github.com/google/cel-go/cel"
 	"github.com/google/cel-go/ext"
 	"github.com/jackc/pgx/v5"
+	_ "github.com/marcboeker/go-duckdb"
 	"github.com/spf13/cobra"
 	"google.golang.org/protobuf/encoding/protojson"
 
@@ -528,6 +529,18 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 			prep = &dbPreparer{db}
 			// SQLite really doesn't want us to depend on the output of EXPLAIN
 			// QUERY PLAN: https://www.sqlite.org/eqp.html
+			expl = nil
+		case config.EngineDuckDB:
+			db, err := sql.Open("duckdb", dburl)
+			if err != nil {
+				return fmt.Errorf("database: connection error: %s", err)
+			}
+			if err := db.PingContext(ctx); err != nil {
+				return fmt.Errorf("database: connection error: %s", err)
+			}
+			defer db.Close()
+			prep = &dbPreparer{db}
+			// DuckDB supports EXPLAIN
 			expl = nil
 		default:
 			return fmt.Errorf("unsupported database uri: %s", s.Engine)
