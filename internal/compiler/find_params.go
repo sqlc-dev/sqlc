@@ -24,6 +24,8 @@ type paramRef struct {
 	rv     *ast.RangeVar
 	ref    *ast.ParamRef
 	name   string // Named parameter support
+
+	cteName *string // Current CTE name, nil if not inside a CTE.
 }
 
 type paramSearch struct {
@@ -36,6 +38,8 @@ type paramSearch struct {
 	// XXX: Gross state hack for limit
 	limitCount  ast.Node
 	limitOffset ast.Node
+
+	cteName *string // Current CTE name, nil if not inside a CTE.
 }
 
 type limitCount struct {
@@ -54,6 +58,10 @@ func (l *limitOffset) Pos() int {
 
 func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 	switch n := node.(type) {
+
+	case *ast.CommonTableExpr:
+		p.cteName = n.Ctename
+		return p
 
 	case *ast.A_Expr:
 		p.parent = node
@@ -87,7 +95,7 @@ func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 					*p.errs = append(*p.errs, fmt.Errorf("INSERT has more expressions than target columns"))
 					return p
 				}
-				*p.refs = append(*p.refs, paramRef{parent: n.Cols.Items[i], ref: ref, rv: n.Relation})
+				*p.refs = append(*p.refs, paramRef{parent: n.Cols.Items[i], ref: ref, rv: n.Relation, cteName: p.cteName})
 				p.seen[ref.Location] = struct{}{}
 			}
 			for _, item := range s.ValuesLists.Items {
@@ -104,7 +112,7 @@ func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 						*p.errs = append(*p.errs, fmt.Errorf("INSERT has more expressions than target columns"))
 						return p
 					}
-					*p.refs = append(*p.refs, paramRef{parent: n.Cols.Items[i], ref: ref, rv: n.Relation})
+					*p.refs = append(*p.refs, paramRef{parent: n.Cols.Items[i], ref: ref, rv: n.Relation, cteName: p.cteName})
 					p.seen[ref.Location] = struct{}{}
 				}
 			}
@@ -125,7 +133,7 @@ func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 				if !ok {
 					continue
 				}
-				*p.refs = append(*p.refs, paramRef{parent: target, ref: ref, rv: rv})
+				*p.refs = append(*p.refs, paramRef{parent: target, ref: ref, rv: rv, cteName: p.cteName})
 			}
 			p.seen[ref.Location] = struct{}{}
 		}
@@ -186,7 +194,7 @@ func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 		}
 
 		if set {
-			*p.refs = append(*p.refs, paramRef{parent: parent, ref: n, rv: p.rangeVar})
+			*p.refs = append(*p.refs, paramRef{parent: parent, ref: n, rv: p.rangeVar, cteName: p.cteName})
 			p.seen[n.Location] = struct{}{}
 		}
 		return nil

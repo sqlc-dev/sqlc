@@ -22,6 +22,10 @@ func (c *Compiler) OutputColumns(stmt ast.Node) ([]*catalog.Column, error) {
 		return nil, err
 	}
 
+	return convertColumnsToCatalog(cols), nil
+}
+
+func convertColumnsToCatalog(cols []*Column) []*catalog.Column {
 	catCols := make([]*catalog.Column, 0, len(cols))
 	for _, col := range cols {
 		catCols = append(catCols, &catalog.Column{
@@ -35,7 +39,7 @@ func (c *Compiler) OutputColumns(stmt ast.Node) ([]*catalog.Column, error) {
 			Length:     col.Length,
 		})
 	}
-	return catCols, nil
+	return catCols
 }
 
 func hasStarRef(cf *ast.ColumnRef) bool {
