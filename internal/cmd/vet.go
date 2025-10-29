@@ -21,7 +21,6 @@ import (
 	"github.com/google/cel-go/cel"
 	"github.com/google/cel-go/ext"
 	"github.com/jackc/pgx/v5"
-	_ "github.com/marcboeker/go-duckdb"
 	"github.com/spf13/cobra"
 	"google.golang.org/protobuf/encoding/protojson"
 

@@ -8,8 +8,6 @@ import (
 	"strings"
 	"sync"
 
-	_ "github.com/marcboeker/go-duckdb"
-
 	core "github.com/sqlc-dev/sqlc/internal/analysis"
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/dbmanager"
