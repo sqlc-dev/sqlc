@@ -6,11 +6,6 @@ sql:
       - "schema.sql"
     queries:
       - "query.sql"
-    database:
-      managed: false
-      uri: ":memory:"
-    analyzer:
-      database: true
     gen:
       go:
         package: "db"
