@@ -132,16 +132,36 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 	}, nil
 }
 
-func rangeVars(root ast.Node) []*ast.RangeVar {
-	var vars []*ast.RangeVar
-	find := astutils.VisitorFunc(func(node ast.Node) {
-		switch n := node.(type) {
-		case *ast.RangeVar:
-			vars = append(vars, n)
-		}
-	})
-	astutils.Walk(find, root)
-	return vars
+// scopedRangeVar associates a RangeVar with a scope.
+type scopedRangeVar struct {
+	rv *ast.RangeVar
+
+	cteName *string // Current CTE name, nil if not inside a CTE.
+}
+
+// rangeVarsWithScope collects all RangeVars with their scope.
+func rangeVarsWithScope(root ast.Node) []scopedRangeVar {
+	var rvs []scopedRangeVar
+	visitor := &rvSearch{rvs: &rvs, cteName: nil}
+	astutils.Walk(visitor, root)
+	return rvs
+}
+
+// rvSearch finds all RangeVars and tracks their scope.
+type rvSearch struct {
+	rvs *[]scopedRangeVar
+
+	cteName *string // Current CTE name, nil if not inside a CTE.
+}
+
+func (v *rvSearch) Visit(node ast.Node) astutils.Visitor {
+	switch n := node.(type) {
+	case *ast.CommonTableExpr:
+		return &rvSearch{rvs: v.rvs, cteName: n.Ctename}
+	case *ast.RangeVar:
+		*v.rvs = append(*v.rvs, scopedRangeVar{rv: n, cteName: v.cteName})
+	}
+	return v
 }
 
 func uniqueParamRefs(in []paramRef, dollar bool) []paramRef {
