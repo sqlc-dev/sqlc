@@ -173,23 +173,10 @@ func (a *Analyzer) Analyze(ctx context.Context, n ast.Node, query string, migrat
 		})
 	}
 
-	// Extract parameter information
-	// Note: database/sql doesn't have a standard way to get parameter types
-	// We can try to infer them or use DuckDB-specific methods if available
-	// For now, we'll create parameters based on the named parameter set
-	if ps != nil {
-		for i := 1; i <= ps.Size(); i++ {
-			name, _ := ps.NameFor(i)
-			result.Params = append(result.Params, &core.Parameter{
-				Number: int32(i),
-				Column: &core.Column{
-					Name:     name,
-					DataType: "text", // fallback - DuckDB will infer actual type
-					NotNull:  false,
-				},
-			})
-		}
-	}
+	// Note: database/sql doesn't provide a standard way to get parameter types
+	// Parameter type inference will be handled by the catalog-based compiler
+	// We return an empty Params slice and let sqlc infer parameter types
+	// from the query structure and catalog
 
 	return &result, nil
 }
