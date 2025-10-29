@@ -153,7 +153,7 @@ func (c *Compiler) _analyzeQuery(raw *ast.RawStmt, query string, failfast bool) 
 	if err := check(validate.In(c.catalog, raw)); err != nil {
 		return nil, err
 	}
-	rvs := rangeVars(raw.Stmt)
+	scopedRVs := rangeVarsWithScope(raw.Stmt)
 	refs, errs := findParameters(raw.Stmt)
 	if len(errs) > 0 {
 		if failfast {
@@ -173,7 +173,7 @@ func (c *Compiler) _analyzeQuery(raw *ast.RawStmt, query string, failfast bool) 
 		return nil, err
 	}
 
-	params, err := c.resolveCatalogRefs(qc, rvs, refs, namedParams, embeds)
+	params, err := c.resolveCatalogRefs(qc, scopedRVs, refs, namedParams, embeds)
 	if err := check(err); err != nil {
 		return nil, err
 	}
