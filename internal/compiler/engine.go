@@ -8,6 +8,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/dbmanager"
 	"github.com/sqlc-dev/sqlc/internal/engine/dolphin"
+	duckdbanalyze "github.com/sqlc-dev/sqlc/internal/engine/duckdb/analyzer"
 	"github.com/sqlc-dev/sqlc/internal/engine/postgresql"
 	pganalyze "github.com/sqlc-dev/sqlc/internal/engine/postgresql/analyzer"
 	"github.com/sqlc-dev/sqlc/internal/engine/sqlite"
@@ -53,6 +54,20 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings) (*Compiler, err
 			if conf.Analyzer.Database == nil || *conf.Analyzer.Database {
 				c.analyzer = analyzer.Cached(
 					pganalyze.New(c.client, *conf.Database),
+					combo.Global,
+					*conf.Database,
+				)
+			}
+		}
+	case config.EngineDuckDB:
+		// DuckDB uses PostgreSQL-compatible SQL, so we reuse the PostgreSQL parser and catalog
+		c.parser = postgresql.NewParser()
+		c.catalog = postgresql.NewCatalog()
+		c.selector = newDefaultSelector()
+		if conf.Database != nil {
+			if conf.Analyzer.Database == nil || *conf.Analyzer.Database {
+				c.analyzer = analyzer.Cached(
+					duckdbanalyze.New(c.client, *conf.Database),
 					combo.Global,
 					*conf.Database,
 				)

@@ -1,0 +1,13 @@
+version: "2"
+sql:
+  - name: "duckdb_example"
+    engine: "duckdb"
+    schema:
+      - "schema.sql"
+    queries:
+      - "query.sql"
+    gen:
+      go:
+        package: "db"
+        out: "db"
+        sql_package: "database/sql"

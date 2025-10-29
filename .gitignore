@@ -3,6 +3,10 @@ __pycache__
 .DS_Store
 .*.swp
 
+# Build artifacts
+sqlc
+*.test
+
 # Devenv
 .envrc
 .direnv
