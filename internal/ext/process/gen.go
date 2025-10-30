@@ -56,14 +56,14 @@ func (r *Runner) Invoke(ctx context.Context, method string, args any, reply any,
 
 	var cmd *exec.Cmd
 	switch {
-	case r.Cmd != "" && r.GoPkg == "":
+	case r.Cmd != "":
 		// Check if the output plugin exists
 		path, err := exec.LookPath(r.Cmd)
 		if err != nil {
 			return fmt.Errorf("process: %s not found", r.Cmd)
 		}
 		cmd = exec.CommandContext(ctx, path, method)
-	case r.Cmd == "" && r.GoPkg != "":
+	case r.GoPkg != "":
 		// Check if the go binary exists
 		path, err := exec.LookPath("go")
 		if err != nil {
@@ -71,10 +71,6 @@ func (r *Runner) Invoke(ctx context.Context, method string, args any, reply any,
 		}
 		cmd = exec.CommandContext(ctx, path, method)
 		cmd.Args = []string{"run", r.GoPkg}
-	case r.Cmd != "" && r.GoPkg != "":
-		return fmt.Errorf("only one of cmd or go_package is allowed")
-	default:
-		return fmt.Errorf("cmd and go_package cannot both be empty for process plugin")
 	}
 
 	cmd.Stdin = bytes.NewReader(stdin)
