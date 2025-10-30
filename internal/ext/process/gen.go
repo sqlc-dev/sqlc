@@ -70,7 +70,7 @@ func (r *Runner) Invoke(ctx context.Context, method string, args any, reply any,
 			return fmt.Errorf("go binary required to run go package %s", r.GoPkg)
 		}
 		cmd = exec.CommandContext(ctx, path, method)
-		cmd.Args = []string{"run", r.GoPkg}
+		cmd.Args = []string{"go", "run", r.GoPkg}
 	}
 
 	cmd.Stdin = bytes.NewReader(stdin)
