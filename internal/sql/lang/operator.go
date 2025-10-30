@@ -23,6 +23,7 @@ func IsMathematicalOperator(s string) bool {
 	case "-":
 	case "*":
 	case "/":
+	case "div": // MySQL division operator
 	case "%":
 	case "^":
 	case "|/":

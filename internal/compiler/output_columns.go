@@ -155,7 +155,9 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 				// TODO: Generate a name for these operations
 				cols = append(cols, &Column{Name: name, DataType: "bool", NotNull: true})
 			case lang.IsMathematicalOperator(op):
-				cols = append(cols, &Column{Name: name, DataType: "int", NotNull: true})
+				// Improve type inference for mathematical expressions
+				dataType, notNull := c.inferMathExpressionType(n, tables, op)
+				cols = append(cols, &Column{Name: name, DataType: dataType, NotNull: notNull})
 			default:
 				cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
 			}
@@ -769,4 +771,101 @@ func findColumnForRef(ref *ast.ColumnRef, tables []*Table, targetList *ast.List)
 	}
 
 	return nil
+}
+
+// inferMathExpressionType attempts to infer the data type of a mathematical expression
+// by analyzing its operands and the operation being performed
+func (c *Compiler) inferMathExpressionType(expr *ast.A_Expr, tables []*Table, op string) (string, bool) {
+	// Try to infer types from left and right operands
+	leftType := c.inferOperandType(expr.Lexpr, tables)
+	rightType := c.inferOperandType(expr.Rexpr, tables)
+
+	// Debug logging to understand what's happening
+	// fmt.Printf("DEBUG: Math expression %s: left=%s, right=%s\n", op, leftType, rightType)
+
+	// Determine the result type based on operands and operation
+	resultType := c.combineTypes(leftType, rightType, op)
+
+	// For now, assume nullable since we're dealing with database columns
+	// In a more sophisticated implementation, we could track nullability through the expression
+	notNull := false
+
+	return resultType, notNull
+}
+
+// inferOperandType tries to determine the type of an operand in an expression
+func (c *Compiler) inferOperandType(operand ast.Node, tables []*Table) string {
+	switch n := operand.(type) {
+	case *ast.ColumnRef:
+		// Look up the column in the available tables
+		parts := stringSlice(n.Fields)
+		var name string
+		if len(parts) >= 1 {
+			name = parts[len(parts)-1] // Get the column name (last part)
+		}
+
+		for _, table := range tables {
+			for _, col := range table.Columns {
+				if col.Name == name {
+					return col.DataType
+				}
+			}
+		}
+		return "any"
+	case *ast.A_Const:
+		// Determine type based on constant value
+		switch n.Val.(type) {
+		case *ast.Integer:
+			return "int"
+		case *ast.Float:
+			return "float"
+		case *ast.String:
+			return "text"
+		default:
+			return "any"
+		}
+	case *ast.A_Expr:
+		// Recursive case for nested expressions
+		if n.Name != nil {
+			nestedOp := astutils.Join(n.Name, "")
+			if lang.IsMathematicalOperator(nestedOp) {
+				resultType, _ := c.inferMathExpressionType(n, tables, nestedOp)
+				return resultType
+			}
+		}
+		return "any"
+	default:
+		return "any"
+	}
+}
+
+// combineTypes determines the result type when combining two operand types with an operation
+func (c *Compiler) combineTypes(leftType, rightType, op string) string {
+	// Handle division specially - division operations typically result in float
+	if op == "/" {
+		// If either operand is float, result is float
+		if leftType == "float" || rightType == "float" {
+			return "float"
+		}
+		// Even integer division might want to be float in many cases
+		// For safety, return float for division unless both operands are clearly non-numeric
+		if leftType != "text" && rightType != "text" {
+			return "float"
+		}
+	}
+
+	// For other mathematical operations
+	switch {
+	case leftType == "float" || rightType == "float":
+		return "float"
+	case leftType == "int" && rightType == "int":
+		return "int"
+	case leftType == "int" && rightType == "any":
+		return "int"
+	case leftType == "any" && rightType == "int":
+		return "int"
+	default:
+		// Default fallback
+		return "any"
+	}
 }
