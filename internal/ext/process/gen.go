@@ -71,6 +71,20 @@ func (r *Runner) Invoke(ctx context.Context, method string, args any, reply any,
 		}
 		cmd = exec.CommandContext(ctx, path, method)
 		cmd.Args = []string{"go", "run", r.GoPkg}
+		r.Env = append(r.Env, []string{
+			"GO111MODULE",
+			"GOROOT",
+			"GOPATH",
+			"GOPROXY",
+			"GOPRIVATE",
+			"GONOPROXY",
+			"GONOSUMDB",
+			"GOMODCACHE",
+			"GOFLAGS",
+			"GOCACHE",
+			"GOENV",
+			"HOME",
+		}...)
 	}
 
 	cmd.Stdin = bytes.NewReader(stdin)
