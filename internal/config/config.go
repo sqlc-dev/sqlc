@@ -89,6 +89,7 @@ type Plugin struct {
 	Name    string   `json:"name" yaml:"name"`
 	Env     []string `json:"env" yaml:"env"`
 	Process *struct {
+		GoPkg  string `json:"go_package" yaml:"go_package"`
 		Cmd    string `json:"cmd" yaml:"cmd"`
 		Format string `json:"format" yaml:"format"`
 	} `json:"process" yaml:"process"`
