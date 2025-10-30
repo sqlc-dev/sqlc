@@ -71,6 +71,8 @@ func (r *Runner) Invoke(ctx context.Context, method string, args any, reply any,
 		}
 		cmd = exec.CommandContext(ctx, path, method)
 		cmd.Args = []string{"run", r.GoPkg}
+	case r.Cmd != "" && r.GoPkg != "":
+		return fmt.Errorf("only one of cmd or go_package is allowed")
 	default:
 		return fmt.Errorf("cmd and go_package cannot both be empty for process plugin")
 	}
