@@ -89,6 +89,7 @@ type Plugin struct {
 	Name    string   `json:"name" yaml:"name"`
 	Env     []string `json:"env" yaml:"env"`
 	Process *struct {
+		GoPkg  string `json:"go_package" yaml:"go_package"`
 		Cmd    string `json:"cmd" yaml:"cmd"`
 		Format string `json:"format" yaml:"format"`
 	} `json:"process" yaml:"process"`
@@ -226,7 +227,8 @@ var ErrPluginExists = errors.New("a plugin with that name already exists")
 var ErrPluginNotFound = errors.New("no plugin found")
 var ErrPluginNoType = errors.New("plugin: field `process` or `wasm` required")
 var ErrPluginBothTypes = errors.New("plugin: `process` and `wasm` cannot both be defined")
-var ErrPluginProcessNoCmd = errors.New("plugin: missing process command")
+var ErrPluginProcessTooManyCmd = errors.New("plugin: only one of `cmd` or `go_package` is allowed for process plugin")
+var ErrPluginProcessNoCmd = errors.New("plugin: missing `cmd` or `go_package` for process plugin")
 
 var ErrInvalidDatabase = errors.New("database must be managed or have a non-empty URI")
 var ErrManagedDatabaseNoProject = errors.New(`managed databases require a cloud project
