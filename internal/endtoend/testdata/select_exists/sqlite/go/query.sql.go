@@ -7,6 +7,7 @@ package querytest
 
 import (
 	"context"
+	"database/sql"
 )
 
 const barExists = `-- name: BarExists :one
@@ -21,9 +22,9 @@ SELECT
     )
 `
 
-func (q *Queries) BarExists(ctx context.Context, id int64) (int64, error) {
+func (q *Queries) BarExists(ctx context.Context, id int64) (sql.NullInt64, error) {
 	row := q.db.QueryRowContext(ctx, barExists, id)
-	var column_1 int64
+	var column_1 sql.NullInt64
 	err := row.Scan(&column_1)
 	return column_1, err
 }
