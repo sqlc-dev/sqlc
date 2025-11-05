@@ -310,9 +310,22 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 			}
 			fun, err := qc.catalog.ResolveFuncCall(n)
 			if err == nil {
+				var tableCols []*catalog.Argument
+				for _, arg := range fun.Args {
+					if arg.Mode == ast.FuncParamTable {
+						tableCols = append(tableCols, arg)
+					}
+				}
+				var dt string
+				if len(tableCols) == 1 {
+					// A single column will later generate a scalar (or slice of scalar) return type.
+					dt = dataType(tableCols[0].Type)
+				} else {
+					dt = dataType(fun.ReturnType)
+				}
 				cols = append(cols, &Column{
 					Name:       name,
-					DataType:   dataType(fun.ReturnType),
+					DataType:   dt,
 					NotNull:    !fun.ReturnTypeNullable,
 					IsFuncCall: true,
 				})
@@ -537,12 +550,53 @@ func (c *Compiler) sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, erro
 			if err != nil {
 				continue
 			}
+			var (
+				fnRetCatalog string
+				fnRetSchema  string
+				fnRetName    string
+			)
+			if fn.ReturnType != nil {
+				fnRetCatalog = fn.ReturnType.Catalog
+				fnRetSchema = fn.ReturnType.Schema
+				fnRetName = fn.ReturnType.Name
+			}
+			fnsWithName, err := c.catalog.ListFuncsByName(&ast.FuncName{
+				Catalog: fnRetCatalog,
+				Schema:  fnRetSchema,
+				Name:    fnRetName,
+			})
+			// If the function was found, build a table structure to hold the columns to output.
+			if err == nil && len(fnsWithName) == 1 {
+				fnWithName := fnsWithName[0]
+				rel := &ast.TableName{
+					Catalog: fnRetCatalog,
+					Schema:  fnRetSchema,
+					Name:    fnRetName,
+				}
+				var cols []*Column
+				for _, arg := range fnWithName.Args {
+					if arg.Mode == ast.FuncParamTable {
+						col := &catalog.Column{
+							Name:    arg.Name,
+							Type:    *arg.Type,
+							IsArray: arg.IsArray,
+						}
+						convertedCol := ConvertColumn(rel, col)
+						cols = append(cols, convertedCol)
+					}
+				}
+				tables = append(tables, &Table{
+					Rel:     rel,
+					Columns: cols,
+				})
+				continue
+			}
 			var table *Table
 			if fn.ReturnType != nil {
 				table, err = qc.GetTable(&ast.TableName{
-					Catalog: fn.ReturnType.Catalog,
-					Schema:  fn.ReturnType.Schema,
-					Name:    fn.ReturnType.Name,
+					Catalog: fnRetCatalog,
+					Schema:  fnRetSchema,
+					Name:    fnRetName,
 				})
 			}
 			if table == nil || err != nil {
