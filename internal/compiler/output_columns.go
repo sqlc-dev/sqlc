@@ -3,6 +3,7 @@ package compiler
 import (
 	"errors"
 	"fmt"
+	"math/rand"
 
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
@@ -596,16 +597,14 @@ func (c *Compiler) sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, erro
 			if err != nil {
 				return nil, err
 			}
-
-			var tableName string
-			if n.Alias != nil {
-				tableName = *n.Alias.Aliasname
+			rel := &ast.TableName{}
+			if n.Alias != nil && n.Alias.Aliasname != nil {
+				rel.Name = *n.Alias.Aliasname
+			} else {
+				rel.Name = fmt.Sprintf("unnamed_subquery_%d", rand.Int63())
 			}
-
 			tables = append(tables, &Table{
-				Rel: &ast.TableName{
-					Name: tableName,
-				},
+				Rel:     rel,
 				Columns: cols,
 			})
 
