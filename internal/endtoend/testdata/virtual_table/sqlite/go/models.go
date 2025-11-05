@@ -9,7 +9,7 @@ import (
 )
 
 type Ft struct {
-	B string
+	B sql.NullString
 }
 
 type Tbl struct {
@@ -21,6 +21,6 @@ type Tbl struct {
 }
 
 type TblFt struct {
-	B string
-	C string
+	B sql.NullString
+	C sql.NullString
 }
