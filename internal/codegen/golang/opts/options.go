@@ -30,6 +30,7 @@ type Options struct {
 	Out                         string            `json:"out" yaml:"out"`
 	Overrides                   []Override        `json:"overrides,omitempty" yaml:"overrides"`
 	Rename                      map[string]string `json:"rename,omitempty" yaml:"rename"`
+	RenameEnum                  map[string]string `json:"rename_enum,omitempty" yaml:"rename_enum"`
 	SqlPackage                  string            `json:"sql_package" yaml:"sql_package"`
 	SqlDriver                   string            `json:"sql_driver" yaml:"sql_driver"`
 	OutputBatchFileName         string            `json:"output_batch_file_name,omitempty" yaml:"output_batch_file_name"`
@@ -50,8 +51,9 @@ type Options struct {
 }
 
 type GlobalOptions struct {
-	Overrides []Override        `json:"overrides,omitempty" yaml:"overrides"`
-	Rename    map[string]string `json:"rename,omitempty" yaml:"rename"`
+	Overrides  []Override        `json:"overrides,omitempty" yaml:"overrides"`
+	Rename     map[string]string `json:"rename,omitempty" yaml:"rename"`
+	RenameEnum map[string]string `json:"rename_enum,omitempty" yaml:"rename_enum"`
 }
 
 func Parse(req *plugin.GenerateRequest) (*Options, error) {
@@ -71,6 +73,12 @@ func Parse(req *plugin.GenerateRequest) (*Options, error) {
 			options.Rename = map[string]string{}
 		}
 		maps.Copy(options.Rename, global.Rename)
+	}
+	if len(global.RenameEnum) > 0 {
+		if options.RenameEnum == nil {
+			options.RenameEnum = map[string]string{}
+		}
+		maps.Copy(options.RenameEnum, global.RenameEnum)
 	}
 	return options, nil
 }
