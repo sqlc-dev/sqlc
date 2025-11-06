@@ -195,12 +195,18 @@ func (c *cc) convertCreate_view_stmtContext(n *parser.Create_view_stmtContext) a
 type Delete_stmt interface {
 	node
 
+	With_clause() parser.IWith_clauseContext
 	Qualified_table_name() parser.IQualified_table_nameContext
 	WHERE_() antlr.TerminalNode
 	Expr() parser.IExprContext
 }
 
 func (c *cc) convertDelete_stmtContext(n Delete_stmt) ast.Node {
+	var withClause *ast.WithClause
+	if w := n.With_clause(); w != nil {
+		withClause = c.convertWithClause(w)
+	}
+
 	if qualifiedName, ok := n.Qualified_table_name().(*parser.Qualified_table_nameContext); ok {
 
 		tableName := identifier(qualifiedName.Table_name().GetText())
@@ -223,8 +229,8 @@ func (c *cc) convertDelete_stmtContext(n Delete_stmt) ast.Node {
 		relations.Items = append(relations.Items, relation)
 
 		delete := &ast.DeleteStmt{
+			WithClause: withClause,
 			Relations:  relations,
-			WithClause: nil,
 		}
 
 		if n.WHERE_() != nil && n.Expr() != nil {
@@ -854,6 +860,11 @@ func (c *cc) convertReturning_caluseContext(n parser.IReturning_clauseContext) *
 }
 
 func (c *cc) convertInsert_stmtContext(n *parser.Insert_stmtContext) ast.Node {
+	var withClause *ast.WithClause
+	if w := n.With_clause(); w != nil {
+		withClause = c.convertWithClause(w)
+	}
+
 	tableName := identifier(n.Table_name().GetText())
 	rel := &ast.RangeVar{
 		Relname: &tableName,
@@ -870,6 +881,7 @@ func (c *cc) convertInsert_stmtContext(n *parser.Insert_stmtContext) ast.Node {
 	}
 
 	insert := &ast.InsertStmt{
+		WithClause:    withClause,
 		Relation:      rel,
 		Cols:          c.convertColumnNames(n.AllColumn_name()),
 		ReturningList: c.convertReturning_caluseContext(n.Returning_clause()),
@@ -1020,7 +1032,29 @@ func (c *cc) convertTablesOrSubquery(n []parser.ITable_or_subqueryContext) []ast
 	return tables
 }
 
+func (c *cc) convertWithClause(w parser.IWith_clauseContext) *ast.WithClause {
+	var ctes ast.List
+	recursive := w.RECURSIVE_() != nil
+	for idx, cte := range w.AllCte_table_name() {
+		tableName := identifier(cte.Table_name().GetText())
+		var cteCols ast.List
+		for _, col := range cte.AllColumn_name() {
+			cteCols.Items = append(cteCols.Items, NewIdentifier(col.GetText()))
+		}
+		ctes.Items = append(ctes.Items, &ast.CommonTableExpr{
+			Ctename:      &tableName,
+			Ctequery:     c.convert(w.Select_stmt(idx)),
+			Location:     cte.GetStart().GetStart(),
+			Cterecursive: recursive,
+			Ctecolnames:  &cteCols,
+		})
+	}
+
+	return &ast.WithClause{Ctes: &ctes}
+}
+
 type Update_stmt interface {
+	With_clause() parser.IWith_clauseContext
 	Qualified_table_name() parser.IQualified_table_nameContext
 	GetStart() antlr.Token
 	AllColumn_name() []parser.IColumn_nameContext
@@ -1032,6 +1066,11 @@ type Update_stmt interface {
 func (c *cc) convertUpdate_stmtContext(n Update_stmt) ast.Node {
 	if n == nil {
 		return nil
+	}
+
+	var withClause *ast.WithClause
+	if w := n.With_clause(); w != nil {
+		withClause = c.convertWithClause(w)
 	}
 
 	relations := &ast.List{}
@@ -1062,7 +1101,7 @@ func (c *cc) convertUpdate_stmtContext(n Update_stmt) ast.Node {
 		TargetList:  list,
 		WhereClause: where,
 		FromClause:  &ast.List{},
-		WithClause:  nil, // TODO: support with clause
+		WithClause:  withClause,
 	}
 	if n, ok := n.(interface {
 		Returning_clause() parser.IReturning_clauseContext
