@@ -25,6 +25,12 @@ func (c *Compiler) inferExprType(node ast.Node, tables []*Table) *Column {
 		return nil
 	}
 
+	// Only MySQL is supported for now - return nil for other engines
+	// to maintain existing behavior
+	if c.conf.Engine != config.EngineMySQL {
+		return nil
+	}
+
 	switch n := node.(type) {
 	case *ast.ColumnRef:
 		// Try to resolve the column reference
