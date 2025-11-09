@@ -18,7 +18,7 @@ group by author
 type AuthorPagesRow struct {
 	Author     string
 	NumBooks   int64
-	TotalPages interface{}
+	TotalPages any
 }
 
 func (q *Queries) AuthorPages(ctx context.Context) ([]AuthorPagesRow, error) {

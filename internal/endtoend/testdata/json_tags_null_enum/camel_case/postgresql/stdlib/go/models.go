@@ -18,7 +18,7 @@ const (
 	JobPostLocationTypeHybrid   JobPostLocationType = "hybrid"
 )
 
-func (e *JobPostLocationType) Scan(src interface{}) error {
+func (e *JobPostLocationType) Scan(src any) error {
 	switch s := src.(type) {
 	case []byte:
 		*e = JobPostLocationType(s)
@@ -36,7 +36,7 @@ type NullJobPostLocationType struct {
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullJobPostLocationType) Scan(value interface{}) error {
+func (ns *NullJobPostLocationType) Scan(value any) error {
 	if value == nil {
 		ns.JobPostLocationType, ns.Valid = "", false
 		return nil

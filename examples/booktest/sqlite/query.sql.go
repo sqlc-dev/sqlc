@@ -34,7 +34,7 @@ type BooksByTagsRow struct {
 
 func (q *Queries) BooksByTags(ctx context.Context, tags []string) ([]BooksByTagsRow, error) {
 	query := booksByTags
-	var queryParams []interface{}
+	var queryParams []any
 	if len(tags) > 0 {
 		for _, v := range tags {
 			queryParams = append(queryParams, v)

@@ -1,8 +1,8 @@
 package ast
 
 type ParamListInfoData struct {
-	ParamFetchArg  interface{}
-	ParserSetupArg interface{}
+	ParamFetchArg  any
+	ParserSetupArg any
 	NumParams      int
 	ParamMask      []uint32
 }

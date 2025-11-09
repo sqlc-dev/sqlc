@@ -18,7 +18,7 @@ WHERE id IN (/*SLICE:favourites*/?)
 
 func (q *Queries) FuncNullable(ctx context.Context, favourites []int64) ([]sql.NullString, error) {
 	query := funcNullable
-	var queryParams []interface{}
+	var queryParams []any
 	if len(favourites) > 0 {
 		for _, v := range favourites {
 			queryParams = append(queryParams, v)
@@ -56,7 +56,7 @@ WHERE id NOT IN (/*SLICE:favourites*/?)
 
 func (q *Queries) FuncNullableNot(ctx context.Context, favourites []int64) ([]sql.NullString, error) {
 	query := funcNullableNot
-	var queryParams []interface{}
+	var queryParams []any
 	if len(favourites) > 0 {
 		for _, v := range favourites {
 			queryParams = append(queryParams, v)
@@ -100,7 +100,7 @@ type FuncParamIdentParams struct {
 
 func (q *Queries) FuncParamIdent(ctx context.Context, arg FuncParamIdentParams) ([]string, error) {
 	query := funcParamIdent
-	var queryParams []interface{}
+	var queryParams []any
 	queryParams = append(queryParams, arg.Slug)
 	if len(arg.Favourites) > 0 {
 		for _, v := range arg.Favourites {
@@ -139,7 +139,7 @@ WHERE id IN (/*SLICE:favourites*/?)
 
 func (q *Queries) FuncParamSoloArg(ctx context.Context, favourites []int64) ([]string, error) {
 	query := funcParamSoloArg
-	var queryParams []interface{}
+	var queryParams []any
 	if len(favourites) > 0 {
 		for _, v := range favourites {
 			queryParams = append(queryParams, v)
@@ -183,7 +183,7 @@ type FuncParamStringParams struct {
 
 func (q *Queries) FuncParamString(ctx context.Context, arg FuncParamStringParams) ([]string, error) {
 	query := funcParamString
-	var queryParams []interface{}
+	var queryParams []any
 	queryParams = append(queryParams, arg.Slug)
 	if len(arg.Favourites) > 0 {
 		for _, v := range arg.Favourites {
@@ -227,7 +227,7 @@ type SliceExecParams struct {
 
 func (q *Queries) SliceExec(ctx context.Context, arg SliceExecParams) error {
 	query := sliceExec
-	var queryParams []interface{}
+	var queryParams []any
 	queryParams = append(queryParams, arg.Slug)
 	if len(arg.Favourites) > 0 {
 		for _, v := range arg.Favourites {

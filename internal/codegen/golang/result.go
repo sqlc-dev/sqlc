@@ -218,7 +218,7 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, structs []
 
 		gq := Query{
 			Cmd:          query.Cmd,
-			ConstantName: constantName,
+			ConstantName: escape(constantName),
 			FieldName:    sdk.LowerTitle(query.Name) + "Stmt",
 			MethodName:   query.Name,
 			SourceName:   query.Filename,
@@ -415,7 +415,7 @@ func columnsToStruct(req *plugin.GenerateRequest, options *opts.Options, name st
 	// field with the same name has a known type, assign
 	// the known type to the field without a known type
 	for i, field := range gs.Fields {
-		if len(seen[field.Name]) > 1 && field.Type == "interface{}" {
+		if len(seen[field.Name]) > 1 && (field.Type == "interface{}" || field.Type == "any") {
 			for _, j := range seen[field.Name] {
 				if i == j {
 					continue

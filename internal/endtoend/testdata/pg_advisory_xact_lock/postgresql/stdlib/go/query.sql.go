@@ -22,9 +22,9 @@ const advisoryLockOne = `-- name: AdvisoryLockOne :one
 SELECT pg_advisory_lock($1)
 `
 
-func (q *Queries) AdvisoryLockOne(ctx context.Context, pgAdvisoryLock int64) (interface{}, error) {
+func (q *Queries) AdvisoryLockOne(ctx context.Context, pgAdvisoryLock int64) (any, error) {
 	row := q.db.QueryRowContext(ctx, advisoryLockOne, pgAdvisoryLock)
-	var pg_advisory_lock interface{}
+	var pg_advisory_lock any
 	err := row.Scan(&pg_advisory_lock)
 	return pg_advisory_lock, err
 }

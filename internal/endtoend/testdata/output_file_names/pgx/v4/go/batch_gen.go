@@ -30,7 +30,7 @@ type UsersBBatchResults struct {
 func (q *Queries) UsersB(ctx context.Context, id []int64) *UsersBBatchResults {
 	batch := &pgx.Batch{}
 	for _, a := range id {
-		vals := []interface{}{
+		vals := []any{
 			a,
 		}
 		batch.Queue(usersB, vals...)

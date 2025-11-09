@@ -17,7 +17,7 @@ ORDER   BY CASE WHEN $2 = 'name' THEN name END
 
 type ListAuthorsColumnSortParams struct {
 	MinID      int64
-	SortColumn interface{}
+	SortColumn any
 }
 
 func (q *Queries) ListAuthorsColumnSort(ctx context.Context, arg ListAuthorsColumnSortParams) ([]Author, error) {
