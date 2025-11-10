@@ -52,10 +52,25 @@ func (c *Compiler) parseCatalog(schemas []string) error {
 			merr.Add(path, "", 0, err)
 			continue
 		}
-		contents := migrations.RemoveRollbackStatements(string(blob))
-		contents = migrations.RemovePsqlMetaCommands(contents)
+		contents, warnings, err := migrations.PreprocessSchema(string(blob), string(c.conf.Engine))
+		if err != nil {
+			merr.Add(path, string(blob), 0, err)
+			continue
+		}
+		var applyContents string
+		if c.usesManagedAnalyzer() {
+			applyContents, _, err = migrations.PreprocessSchemaForApply(string(blob), string(c.conf.Engine))
+			if err != nil {
+				merr.Add(path, string(blob), 0, err)
+				continue
+			}
+		}
+		c.warns = append(c.warns, warnings...)
 		files = append(files, schemaFile{name: path, contents: contents})
 		c.schema = append(c.schema, contents)
+		if c.usesManagedAnalyzer() {
+			c.applySchema = append(c.applySchema, applyContents)
+		}
 	}
 
 	if c.coreAnalysis {
