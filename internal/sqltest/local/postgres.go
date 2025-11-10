@@ -71,8 +71,15 @@ func postgreSQL(t *testing.T, migrations []string, rw bool) string {
 		if err != nil {
 			t.Fatal(err)
 		}
-		h.Write(blob)
-		seed = append(seed, migrate.RemoveRollbackStatements(string(blob)))
+		ddl, warnings, err := migrate.PreprocessSchemaForApply(string(blob), "postgresql")
+		if err != nil {
+			t.Fatal(err)
+		}
+		h.Write([]byte(ddl))
+		for _, warning := range warnings {
+			t.Log(warning)
+		}
+		seed = append(seed, ddl)
 	}
 
 	var name string

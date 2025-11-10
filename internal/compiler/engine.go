@@ -28,6 +28,7 @@ type Compiler struct {
 	selector selector
 
 	schema []string
+	warns  []string
 
 	// databaseOnlyMode indicates that the compiler should use database-only analysis
 	// and skip building the internal catalog from schema files (analyzer.database: only)
@@ -136,6 +137,12 @@ func (c *Compiler) ParseQueries(queries []string, o opts.Parser) error {
 
 func (c *Compiler) Result() *Result {
 	return c.result
+}
+
+// Warnings returns a copy of any non-fatal schema preprocessing warnings
+// collected while parsing the catalog.
+func (c *Compiler) Warnings() []string {
+	return append([]string(nil), c.warns...)
 }
 
 func (c *Compiler) Close(ctx context.Context) {

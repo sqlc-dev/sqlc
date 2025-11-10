@@ -1,6 +1,3 @@
 {
-    "contexts": ["base"],
-    "meta": {
-        "invalid_schema": true
-    }
+    "contexts": ["base"]
 }

@@ -432,7 +432,14 @@ func (c *checker) fetchDatabaseUri(ctx context.Context, s config.SQL) (string, f
 		if err != nil {
 			return "", cleanup, fmt.Errorf("read file: %w", err)
 		}
-		ddl = append(ddl, migrations.RemoveRollbackStatements(string(contents)))
+		ddlText, warnings, err := migrations.PreprocessSchemaForApply(string(contents), string(s.Engine))
+		if err != nil {
+			return "", cleanup, err
+		}
+		for _, warning := range warnings {
+			fmt.Fprintln(c.Stderr, warning)
+		}
+		ddl = append(ddl, ddlText)
 	}
 
 	resp, err := c.Client.CreateDatabase(ctx, &dbmanager.CreateDatabaseRequest{
@@ -549,7 +556,13 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 					if err != nil {
 						return fmt.Errorf("read schema file: %w", err)
 					}
-					ddl := migrations.RemoveRollbackStatements(string(contents))
+					ddl, warnings, err := migrations.PreprocessSchemaForApply(string(contents), string(s.Engine))
+					if err != nil {
+						return err
+					}
+					for _, warning := range warnings {
+						fmt.Fprintln(c.Stderr, warning)
+					}
 					if _, err := db.ExecContext(ctx, ddl); err != nil {
 						return fmt.Errorf("apply schema %s: %w", schema, err)
 					}

@@ -38,8 +38,12 @@ func (c *Compiler) parseCatalog(schemas []string) error {
 			merr.Add(filename, "", 0, err)
 			continue
 		}
-		contents := migrations.RemoveRollbackStatements(string(blob))
-		contents = migrations.RemovePsqlMetaCommands(contents)
+		contents, warnings, err := migrations.PreprocessSchema(string(blob), string(c.conf.Engine))
+		if err != nil {
+			merr.Add(filename, string(blob), 0, err)
+			continue
+		}
+		c.warns = append(c.warns, warnings...)
 		c.schema = append(c.schema, contents)
 
 		// In database-only mode, we parse the schema to validate syntax
