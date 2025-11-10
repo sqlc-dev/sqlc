@@ -1,10 +1,15 @@
 package migrations
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 )
+
+func containsWarningToken(warning, token string) bool {
+	return strings.Contains(warning, token)
+}
 
 const inputGoose = `
 -- +goose Up
@@ -64,7 +69,10 @@ CREATE TABLE foo (id int);
 `
 
 const outputPsqlMeta = `
+
 CREATE TABLE foo (id int);
+
+
 `
 
 func TestRemoveRollback(t *testing.T) {
@@ -83,8 +91,258 @@ func TestRemoveRollback(t *testing.T) {
 }
 
 func TestRemovePsqlMetaCommands(t *testing.T) {
-	if diff := cmp.Diff(outputPsqlMeta, RemovePsqlMetaCommands(inputPsqlMeta)); diff != "" {
+	got, warnings, err := RemovePsqlMetaCommands(inputPsqlMeta)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(warnings) != 0 {
+		t.Fatalf("unexpected warnings: %v", warnings)
+	}
+	if diff := cmp.Diff(outputPsqlMeta, got); diff != "" {
 		t.Errorf("psql meta-command mismatch:\n%s", diff)
+	}
+}
+
+func TestPreprocessSchema(t *testing.T) {
+	input := `\restrict key
+
+CREATE TABLE foo (id int);
+`
+	wantPostgreSQL := `
+
+CREATE TABLE foo (id int);`
+	wantMySQL := `\restrict key
+
+CREATE TABLE foo (id int);`
+
+	gotPostgreSQL, warningsPostgreSQL, err := PreprocessSchema(input, "postgresql")
+	if err != nil {
+		t.Fatalf("unexpected postgresql error: %v", err)
+	}
+	if len(warningsPostgreSQL) != 0 {
+		t.Fatalf("unexpected postgresql warnings: %v", warningsPostgreSQL)
+	}
+	if diff := cmp.Diff(wantPostgreSQL, gotPostgreSQL); diff != "" {
+		t.Errorf("postgresql preprocess mismatch:\n%s", diff)
+	}
+
+	gotMySQL, warningsMySQL, err := PreprocessSchema(input, "mysql")
+	if err != nil {
+		t.Fatalf("unexpected mysql error: %v", err)
+	}
+	if len(warningsMySQL) != 0 {
+		t.Fatalf("unexpected mysql warnings: %v", warningsMySQL)
+	}
+	if diff := cmp.Diff(wantMySQL, gotMySQL); diff != "" {
+		t.Errorf("mysql preprocess mismatch:\n%s", diff)
+	}
+}
+
+func TestPreprocessSchema_NormalizesBareCR(t *testing.T) {
+	input := "SELECT 1;\r\\restrict key\rSELECT 2;\r"
+	want := "SELECT 1;\n\nSELECT 2;"
+
+	got, warnings, err := PreprocessSchema(input, "postgresql")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(warnings) != 0 {
+		t.Fatalf("unexpected warnings: %v", warnings)
+	}
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Errorf("bare CR normalization mismatch:\n%s", diff)
+	}
+}
+
+func TestPreprocessSchema_RejectsPsqlConditionals(t *testing.T) {
+	input := `\if false
+SELECT invalid ;;;
+\else
+SELECT 42;
+\endif
+`
+	if _, _, err := PreprocessSchema(input, "postgresql"); err == nil {
+		t.Fatalf("expected psql conditional directives to be rejected")
+	}
+}
+
+func TestPreprocessSchema_WarnsForSemanticPsqlCommands(t *testing.T) {
+	tests := []struct {
+		input string
+		token string
+	}{
+		{input: `\connect db`, token: `\connect`},
+		{input: `\i extra.sql`, token: `\i`},
+		{input: `\include extra.sql`, token: `\include`},
+		{input: `\ir extra.sql`, token: `\ir`},
+		{input: `\include_relative extra.sql`, token: `\include_relative`},
+		{input: `\copy foo from '/tmp/data.csv'`, token: `\copy`},
+		{input: `\g`, token: `\g`},
+		{input: `\gdesc`, token: `\gdesc`},
+		{input: `\gx`, token: `\gx`},
+		{input: `\gexec`, token: `\gexec`},
+		{input: `\gset`, token: `\gset`},
+		{input: `\watch 1`, token: `\watch`},
+		{input: `\crosstabview`, token: `\crosstabview`},
+		{input: `\;`, token: `\;`},
+		{input: `\parse stmt SELECT 1`, token: `\parse`},
+		{input: `\bind stmt`, token: `\bind`},
+		{input: `\bind_named stmt`, token: `\bind_named`},
+		{input: `\close_prepared stmt`, token: `\close_prepared`},
+		{input: `\startpipeline`, token: `\startpipeline`},
+		{input: `\sendpipeline`, token: `\sendpipeline`},
+		{input: `\syncpipeline`, token: `\syncpipeline`},
+		{input: `\endpipeline`, token: `\endpipeline`},
+		{input: `\flushrequest`, token: `\flushrequest`},
+		{input: `\flush`, token: `\flush`},
+		{input: `\getresults`, token: `\getresults`},
+		{input: `\q`, token: `\q`},
+		{input: `\quit`, token: `\quit`},
+		{input: `\r`, token: `\r`},
+		{input: `\dl`, token: `\dl`},
+		{input: `\dl+`, token: `\dl+`},
+		{input: `\lo_export 123 '/tmp/blob'`, token: `\lo_export`},
+		{input: `\lo_import '/tmp/blob'`, token: `\lo_import`},
+		{input: `\lo_list`, token: `\lo_list`},
+		{input: `\lo_unlink 123`, token: `\lo_unlink`},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.token, func(t *testing.T) {
+			got, warnings, err := PreprocessSchema(tc.input+"\nSELECT 42;\n", "postgresql")
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if diff := cmp.Diff("\nSELECT 42;", got); diff != "" {
+				t.Fatalf("unexpected output:\n%s", diff)
+			}
+			if len(warnings) != 1 {
+				t.Fatalf("expected one warning, got %v", warnings)
+			}
+			if want := tc.token; warnings[0] == "" || !containsWarningToken(warnings[0], want) {
+				t.Fatalf("warning %q does not mention %s", warnings[0], want)
+			}
+		})
+	}
+}
+
+func TestPreprocessSchemaForApply_RejectsSemanticPsqlCommands(t *testing.T) {
+	tests := []string{
+		`\connect db`,
+		`\i extra.sql`,
+		`\include extra.sql`,
+		`\ir extra.sql`,
+		`\include_relative extra.sql`,
+		`\copy foo from stdin`,
+		`\g`,
+		`\gdesc`,
+		`\gx`,
+		`\gexec`,
+		`\gset`,
+		`\watch 1`,
+		`\crosstabview`,
+		`\;`,
+		`\parse stmt SELECT 1`,
+		`\bind stmt`,
+		`\bind_named stmt`,
+		`\close_prepared stmt`,
+		`\startpipeline`,
+		`\sendpipeline`,
+		`\syncpipeline`,
+		`\endpipeline`,
+		`\flushrequest`,
+		`\flush`,
+		`\getresults`,
+		`\q`,
+		`\quit`,
+		`\r`,
+		`\dl`,
+		`\dl+`,
+		`\lo_export 123 '/tmp/blob'`,
+		`\lo_import '/tmp/blob'`,
+		`\lo_list`,
+		`\lo_unlink 123`,
+	}
+
+	for _, input := range tests {
+		t.Run(input, func(t *testing.T) {
+			if _, _, err := PreprocessSchemaForApply(input+"\nSELECT 42;\n", "postgresql"); err == nil {
+				t.Fatalf("expected %q to be rejected in apply mode", input)
+			}
+		})
+	}
+}
+
+func TestPreprocessSchemaForApply_RejectsUnknownPsqlCommands(t *testing.T) {
+	input := "\\unknown_or_typo extra.sql\nSELECT 42;\n"
+	if _, _, err := PreprocessSchemaForApply(input, "postgresql"); err == nil {
+		t.Fatalf("expected unknown psql command to be rejected in apply mode")
+	}
+}
+
+func TestPreprocessSchemaForApply_AllowsSafePsqlCommands(t *testing.T) {
+	input := "\\restrict key\nSELECT 42;\n\\unrestrict key\n"
+	got, warnings, err := PreprocessSchemaForApply(input, "postgresql")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(warnings) != 0 {
+		t.Fatalf("unexpected warnings: %v", warnings)
+	}
+	if diff := cmp.Diff("\nSELECT 42;\n", got); diff != "" {
+		t.Fatalf("unexpected output:\n%s", diff)
+	}
+}
+
+func TestPreprocessSchemaForApply_SuppressesApproximateSessionWarnings(t *testing.T) {
+	input := `BEGIN;
+SET LOCAL standard_conforming_strings = off;
+SELECT '\still best effort';
+COMMIT;
+`
+
+	got, warnings, err := PreprocessSchemaForApply(input, "postgresql")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if diff := cmp.Diff(input[:len(input)-1], got); diff != "" {
+		t.Fatalf("unexpected output:\n%s", diff)
+	}
+	if len(warnings) != 0 {
+		t.Fatalf("unexpected apply-mode warnings: %v", warnings)
+	}
+}
+
+func TestPreprocessSchema_RejectsUnterminatedCopyFromStdin(t *testing.T) {
+	input := `\copy foo from stdin
+1	alpha
+SELECT 42;
+`
+
+	if _, _, err := PreprocessSchema(input, "postgresql"); err == nil {
+		t.Fatalf("expected unterminated \\copy ... from stdin block to be rejected")
+	}
+}
+
+func TestPreprocessSchema_WarnsForApproximateSessionSemantics(t *testing.T) {
+	input := `BEGIN;
+SET LOCAL standard_conforming_strings = off;
+SELECT '\still best effort';
+COMMIT;
+`
+
+	got, warnings, err := PreprocessSchema(input, "postgresql")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if diff := cmp.Diff(input[:len(input)-1], got); diff != "" {
+		t.Fatalf("unexpected output:\n%s", diff)
+	}
+	if len(warnings) != 1 {
+		t.Fatalf("expected one approximation warning, got %v", warnings)
+	}
+	if !strings.Contains(warnings[0], "approximates psql session semantics") {
+		t.Fatalf("unexpected warning: %q", warnings[0])
 	}
 }
 
