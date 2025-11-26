@@ -12,6 +12,8 @@ type QueryCatalog struct {
 	catalog *catalog.Catalog
 	ctes    map[string]*Table
 	embeds  rewrite.EmbedSet
+
+	lateralTables map[string]*Table
 }
 
 func (comp *Compiler) buildQueryCatalog(c *catalog.Catalog, node ast.Node, embeds rewrite.EmbedSet) (*QueryCatalog, error) {
