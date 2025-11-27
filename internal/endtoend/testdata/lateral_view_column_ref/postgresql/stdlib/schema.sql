@@ -8,6 +8,6 @@ CREATE VIEW foo_lateral AS
 SELECT t.val, sub.result
 FROM foo t
 CROSS JOIN LATERAL (
-  SELECT t.val AS result
+  SELECT t.val::text AS result
   FROM foo LIMIT 1
 ) sub;

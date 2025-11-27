@@ -2,13 +2,13 @@
 // versions:
 //   sqlc v1.30.0
 
-package querytest
+package db
 
 import (
 	"context"
 
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgx/v4"
 )
 
 type DBTX interface {

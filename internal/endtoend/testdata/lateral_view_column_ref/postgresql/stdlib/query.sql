@@ -5,5 +5,5 @@ SELECT val, result FROM foo_lateral;
 SELECT f.id, f.val, sub.result
 FROM foo f
 CROSS JOIN LATERAL (
-  SELECT f.val || '-direct' AS result
+  SELECT (f.val || '-direct')::text AS result
 ) sub;

@@ -3,7 +3,7 @@
 //   sqlc v1.30.0
 // source: query.sql
 
-package querytest
+package db
 
 import (
 	"context"
@@ -14,7 +14,7 @@ SELECT val, result FROM foo_lateral
 `
 
 func (q *Queries) GetFooLateral(ctx context.Context) ([]FooLateral, error) {
-	rows, err := q.db.Query(ctx, getFooLateral)
+	rows, err := q.db.QueryContext(ctx, getFooLateral)
 	if err != nil {
 		return nil, err
 	}
@@ -27,6 +27,9 @@ func (q *Queries) GetFooLateral(ctx context.Context) ([]FooLateral, error) {
 		}
 		items = append(items, i)
 	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -37,18 +40,18 @@ const getFooLateralDirect = `-- name: GetFooLateralDirect :many
 SELECT f.id, f.val, sub.result
 FROM foo f
 CROSS JOIN LATERAL (
-  SELECT f.val || '-direct' AS result
+  SELECT (f.val || '-direct')::text AS result
 ) sub
 `
 
 type GetFooLateralDirectRow struct {
 	ID     int32
 	Val    string
-	Result interface{}
+	Result string
 }
 
 func (q *Queries) GetFooLateralDirect(ctx context.Context) ([]GetFooLateralDirectRow, error) {
-	rows, err := q.db.Query(ctx, getFooLateralDirect)
+	rows, err := q.db.QueryContext(ctx, getFooLateralDirect)
 	if err != nil {
 		return nil, err
 	}
@@ -60,6 +63,9 @@ func (q *Queries) GetFooLateralDirect(ctx context.Context) ([]GetFooLateralDirec
 			return nil, err
 		}
 		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

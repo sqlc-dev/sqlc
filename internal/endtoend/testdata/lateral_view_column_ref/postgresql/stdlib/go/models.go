@@ -2,7 +2,7 @@
 // versions:
 //   sqlc v1.30.0
 
-package querytest
+package db
 
 type Foo struct {
 	ID  int32
