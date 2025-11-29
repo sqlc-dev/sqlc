@@ -391,6 +391,19 @@ type checker struct {
 	Replacer      *shfmt.Replacer
 }
 
+// isInMemorySQLite checks if a SQLite URI refers to an in-memory database
+func isInMemorySQLite(uri string) bool {
+	if uri == ":memory:" || uri == "" {
+		return true
+	}
+	// Check for file URI with mode=memory parameter
+	// e.g., "file:test?mode=memory&cache=shared"
+	if strings.Contains(uri, "mode=memory") {
+		return true
+	}
+	return false
+}
+
 func (c *checker) fetchDatabaseUri(ctx context.Context, s config.SQL) (string, func() error, error) {
 	cleanup := func() error {
 		return nil
@@ -517,7 +530,7 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 			prep = &dbPreparer{db}
 			expl = &mysqlExplainer{db}
 		case config.EngineSQLite:
-			db, err := sql.Open("sqlite", dburl)
+			db, err := sql.Open("sqlite3", dburl)
 			if err != nil {
 				return fmt.Errorf("database: connection error: %s", err)
 			}
@@ -525,6 +538,23 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 				return fmt.Errorf("database: connection error: %s", err)
 			}
 			defer db.Close()
+			// For in-memory SQLite databases, apply migrations
+			if isInMemorySQLite(dburl) {
+				files, err := sqlpath.Glob(s.Schema)
+				if err != nil {
+					return fmt.Errorf("schema: %w", err)
+				}
+				for _, schema := range files {
+					contents, err := os.ReadFile(schema)
+					if err != nil {
+						return fmt.Errorf("read schema file: %w", err)
+					}
+					ddl := migrations.RemoveRollbackStatements(string(contents))
+					if _, err := db.ExecContext(ctx, ddl); err != nil {
+						return fmt.Errorf("apply schema %s: %w", schema, err)
+					}
+				}
+			}
 			prep = &dbPreparer{db}
 			// SQLite really doesn't want us to depend on the output of EXPLAIN
 			// QUERY PLAN: https://www.sqlite.org/eqp.html

@@ -35,7 +35,7 @@ func (q *Queries) Duplicate(ctx context.Context) (DuplicateRow, error) {
 
 const join = `-- name: Join :one
 SELECT u.id, u.name, u.age, p.id, p.user_id FROM posts AS p
-INNER JOIN users AS u ON p.user_id = u.users.id
+INNER JOIN users AS u ON p.user_id = u.id
 `
 
 type JoinRow struct {
