@@ -161,6 +161,10 @@ func TestReplay(t *testing.T) {
 							c.SQL[i].Database = &config.Database{
 								Managed: true,
 							}
+						case config.EngineSQLite:
+							c.SQL[i].Database = &config.Database{
+								Managed: true,
+							}
 						default:
 							// pass
 						}
