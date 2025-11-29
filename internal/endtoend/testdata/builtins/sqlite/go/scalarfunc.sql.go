@@ -384,17 +384,6 @@ func (q *Queries) GetSQLiteCompileOptionUsed(ctx context.Context) (int64, error)
 	return sqlite_compileoption_used, err
 }
 
-const getSQLiteOffset = `-- name: GetSQLiteOffset :one
-SELECT sqlite_offset(1)
-`
-
-func (q *Queries) GetSQLiteOffset(ctx context.Context) (sql.NullInt64, error) {
-	row := q.db.QueryRowContext(ctx, getSQLiteOffset)
-	var sqlite_offset sql.NullInt64
-	err := row.Scan(&sqlite_offset)
-	return sqlite_offset, err
-}
-
 const getSQLiteSourceID = `-- name: GetSQLiteSourceID :one
 SELECT sqlite_source_id()
 `

@@ -1,4 +1,4 @@
-ATTACH 'baz.db' AS baz;
+ATTACH ':memory:' AS baz;
 
 CREATE TABLE users (
     id integer PRIMARY KEY,

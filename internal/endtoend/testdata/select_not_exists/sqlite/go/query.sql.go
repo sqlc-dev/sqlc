@@ -10,7 +10,7 @@ import (
 )
 
 const barNotExists = `-- name: BarNotExists :one
-SELECT 
+SELECT
     NOT EXISTS (
         SELECT
             1
@@ -21,8 +21,8 @@ SELECT
     )
 `
 
-func (q *Queries) BarNotExists(ctx context.Context) (interface{}, error) {
-	row := q.db.QueryRowContext(ctx, barNotExists)
+func (q *Queries) BarNotExists(ctx context.Context, dollar_1 interface{}) (interface{}, error) {
+	row := q.db.QueryRowContext(ctx, barNotExists, dollar_1)
 	var column_1 interface{}
 	err := row.Scan(&column_1)
 	return column_1, err

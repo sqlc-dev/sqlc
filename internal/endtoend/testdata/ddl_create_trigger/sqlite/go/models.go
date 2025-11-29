@@ -18,3 +18,14 @@ type CustomerAddress struct {
 	CustID   int64
 	CustAddr sql.NullString
 }
+
+type TriggerCustomer struct {
+	Name    string
+	Address sql.NullString
+}
+
+type TriggerOrder struct {
+	ID           int64
+	CustomerName sql.NullString
+	Address      sql.NullString
+}
