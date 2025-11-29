@@ -40,6 +40,7 @@ func (a *Analyzer) Analyze(ctx context.Context, n ast.Node, query string, migrat
 
 	if a.conn == nil {
 		var uri string
+		applyMigrations := a.db.Managed
 		if a.db.Managed {
 			// For managed databases, create an in-memory database
 			uri = ":memory:"
@@ -47,6 +48,10 @@ func (a *Analyzer) Analyze(ctx context.Context, n ast.Node, query string, migrat
 			return nil, fmt.Errorf("database: connections disabled via SQLCDEBUG=databases=managed")
 		} else {
 			uri = a.replacer.Replace(a.db.URI)
+			// For in-memory databases, we need to apply migrations since the database starts empty
+			if isInMemoryDatabase(uri) {
+				applyMigrations = true
+			}
 		}
 
 		conn, err := sqlite3.Open(uri)
@@ -55,8 +60,8 @@ func (a *Analyzer) Analyze(ctx context.Context, n ast.Node, query string, migrat
 		}
 		a.conn = conn
 
-		// Apply migrations for managed databases
-		if a.db.Managed {
+		// Apply migrations for managed or in-memory databases
+		if applyMigrations {
 			for _, m := range migrations {
 				if len(strings.TrimSpace(m)) == 0 {
 					continue
@@ -175,6 +180,19 @@ func (a *Analyzer) Close(_ context.Context) error {
 		return err
 	}
 	return nil
+}
+
+// isInMemoryDatabase checks if a SQLite URI refers to an in-memory database
+func isInMemoryDatabase(uri string) bool {
+	if uri == ":memory:" || uri == "" {
+		return true
+	}
+	// Check for file URI with mode=memory parameter
+	// e.g., "file:test?mode=memory&cache=shared"
+	if strings.Contains(uri, "mode=memory") {
+		return true
+	}
+	return false
 }
 
 // normalizeType converts SQLite type declarations to standard type names
