@@ -17,7 +17,7 @@ SELECT  a.id,
         p.name as alias_name
 FROM    authors a
         LEFT JOIN authors p
-            ON (authors.parent_id = p.id)
+            ON (a.parent_id = p.id)
 `
 
 type AllAuthorsRow struct {

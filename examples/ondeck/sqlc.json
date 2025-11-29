@@ -33,6 +33,9 @@
       "database": {
         "uri": "${VET_TEST_EXAMPLES_MYSQL_ONDECK}"
       },
+      "analyzer": {
+        "database": false
+      },
       "rules": [
         "sqlc/db-prepare"
       ],
