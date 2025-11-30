@@ -1,9 +1,5 @@
 package ast
 
-import (
-	"fmt"
-)
-
 type CommonTableExpr struct {
 	Ctename          *string
 	Aliascolnames    *List
@@ -26,8 +22,14 @@ func (n *CommonTableExpr) Format(buf *TrackedBuffer) {
 		return
 	}
 	if n.Ctename != nil {
-		fmt.Fprintf(buf, " %s AS (", *n.Ctename)
+		buf.WriteString(*n.Ctename)
 	}
+	if items(n.Aliascolnames) {
+		buf.WriteString("(")
+		buf.join(n.Aliascolnames, ", ")
+		buf.WriteString(")")
+	}
+	buf.WriteString(" AS (")
 	buf.astFormat(n.Ctequery)
 	buf.WriteString(")")
 }
