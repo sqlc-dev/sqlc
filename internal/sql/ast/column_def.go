@@ -39,6 +39,11 @@ func (n *ColumnDef) Format(buf *TrackedBuffer) {
 	buf.WriteString(n.Colname)
 	buf.WriteString(" ")
 	buf.astFormat(n.TypeName)
+	// Use IsArray from ColumnDef since TypeName.ArrayBounds may not be set
+	// (for type resolution compatibility)
+	if n.IsArray && !items(n.TypeName.ArrayBounds) {
+		buf.WriteString("[]")
+	}
 	if n.PrimaryKey {
 		buf.WriteString(" PRIMARY KEY")
 	} else if n.IsNotNull {

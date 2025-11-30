@@ -11,3 +11,22 @@ type NullTest struct {
 func (n *NullTest) Pos() int {
 	return n.Location
 }
+
+// NullTestType values
+const (
+	NullTestTypeIsNull    NullTestType = 1
+	NullTestTypeIsNotNull NullTestType = 2
+)
+
+func (n *NullTest) Format(buf *TrackedBuffer) {
+	if n == nil {
+		return
+	}
+	buf.astFormat(n.Arg)
+	switch n.Nulltesttype {
+	case NullTestTypeIsNull:
+		buf.WriteString(" IS NULL")
+	case NullTestTypeIsNotNull:
+		buf.WriteString(" IS NOT NULL")
+	}
+}

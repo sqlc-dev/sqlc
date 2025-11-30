@@ -24,11 +24,7 @@ func (n *ColumnRef) Format(buf *TrackedBuffer) {
 		for _, item := range n.Fields.Items {
 			switch nn := item.(type) {
 			case *String:
-				if nn.Str == "user" {
-					items = append(items, `"user"`)
-				} else {
-					items = append(items, nn.Str)
-				}
+				items = append(items, buf.QuoteIdent(nn.Str))
 			case *A_Star:
 				items = append(items, "*")
 			}

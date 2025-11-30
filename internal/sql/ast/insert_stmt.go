@@ -31,15 +31,17 @@ func (n *InsertStmt) Format(buf *TrackedBuffer) {
 	if items(n.Cols) {
 		buf.WriteString(" (")
 		buf.astFormat(n.Cols)
-		buf.WriteString(") ")
+		buf.WriteString(")")
 	}
 
 	if set(n.SelectStmt) {
+		buf.WriteString(" ")
 		buf.astFormat(n.SelectStmt)
 	}
 
 	if n.OnConflictClause != nil {
-		buf.WriteString(" ON CONFLICT DO NOTHING ")
+		buf.WriteString(" ")
+		buf.astFormat(n.OnConflictClause)
 	}
 
 	if items(n.ReturningList) {

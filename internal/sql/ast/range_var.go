@@ -19,18 +19,11 @@ func (n *RangeVar) Format(buf *TrackedBuffer) {
 		return
 	}
 	if n.Schemaname != nil {
-		buf.WriteString(*n.Schemaname)
+		buf.WriteString(buf.QuoteIdent(*n.Schemaname))
 		buf.WriteString(".")
 	}
 	if n.Relname != nil {
-		// TODO: What names need to be quoted
-		if *n.Relname == "user" {
-			buf.WriteString(`"`)
-			buf.WriteString(*n.Relname)
-			buf.WriteString(`"`)
-		} else {
-			buf.WriteString(*n.Relname)
-		}
+		buf.WriteString(buf.QuoteIdent(*n.Relname))
 	}
 	if n.Alias != nil {
 		buf.WriteString(" ")
