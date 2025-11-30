@@ -109,7 +109,7 @@ func TestFormat(t *testing.T) {
 							debug.Dump(r, err)
 						}
 
-						out := ast.Format(stmt.Raw)
+						out := ast.Format(stmt.Raw, parse)
 						actual, err := postgresql.Fingerprint(out)
 						if err != nil {
 							t.Error(err)

@@ -19,11 +19,11 @@ func (n *ResTarget) Format(buf *TrackedBuffer) {
 		buf.astFormat(n.Val)
 		if n.Name != nil {
 			buf.WriteString(" AS ")
-			buf.WriteString(quoteIdent(*n.Name))
+			buf.WriteString(buf.QuoteIdent(*n.Name))
 		}
 	} else {
 		if n.Name != nil {
-			buf.WriteString(quoteIdent(*n.Name))
+			buf.WriteString(buf.QuoteIdent(*n.Name))
 		}
 	}
 }

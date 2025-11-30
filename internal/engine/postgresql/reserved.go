@@ -2,6 +2,26 @@ package postgresql
 
 import "strings"
 
+// hasMixedCase returns true if the string has any uppercase letters
+// (identifiers with mixed case need quoting in PostgreSQL)
+func hasMixedCase(s string) bool {
+	for _, r := range s {
+		if r >= 'A' && r <= 'Z' {
+			return true
+		}
+	}
+	return false
+}
+
+// QuoteIdent returns a quoted identifier if it needs quoting.
+// This implements the format.Formatter interface.
+func (p *Parser) QuoteIdent(s string) string {
+	if p.IsReservedKeyword(s) || hasMixedCase(s) {
+		return `"` + s + `"`
+	}
+	return s
+}
+
 // https://www.postgresql.org/docs/current/sql-keywords-appendix.html
 func (p *Parser) IsReservedKeyword(s string) bool {
 	switch strings.ToLower(s) {
