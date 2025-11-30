@@ -431,6 +431,11 @@ func translate(node *nodes.Node) (ast.Node, error) {
 		for _, elt := range n.TableElts {
 			switch item := elt.Node.(type) {
 			case *nodes.Node_ColumnDef:
+				rel, err := parseRelationFromNodes(item.ColumnDef.TypeName.Names)
+				if err != nil {
+					return nil, err
+				}
+
 				primary := false
 				for _, con := range item.ColumnDef.Constraints {
 					if constraint, ok := con.Node.(*nodes.Node_Constraint); ok {
@@ -440,7 +445,7 @@ func translate(node *nodes.Node) (ast.Node, error) {
 
 				create.Cols = append(create.Cols, &ast.ColumnDef{
 					Colname:    item.ColumnDef.Colname,
-					TypeName:   convertTypeName(item.ColumnDef.TypeName),
+					TypeName:   rel.TypeName(),
 					IsNotNull:  isNotNull(item.ColumnDef) || primaryKey[item.ColumnDef.Colname],
 					IsArray:    isArray(item.ColumnDef.TypeName),
 					ArrayDims:  len(item.ColumnDef.TypeName.ArrayBounds),
