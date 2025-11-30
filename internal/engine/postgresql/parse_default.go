@@ -8,3 +8,5 @@ import (
 
 var Parse = nodes.Parse
 var Fingerprint = nodes.Fingerprint
+
+var nodeDeparse = nodes.Deparse
