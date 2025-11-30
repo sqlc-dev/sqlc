@@ -22,6 +22,39 @@ func (p *Parser) QuoteIdent(s string) string {
 	return s
 }
 
+// TypeName returns the SQL type name for the given namespace and name.
+// This implements the format.Formatter interface.
+func (p *Parser) TypeName(ns, name string) string {
+	if ns == "pg_catalog" {
+		switch name {
+		case "int4":
+			return "integer"
+		case "int8":
+			return "bigint"
+		case "int2":
+			return "smallint"
+		case "float4":
+			return "real"
+		case "float8":
+			return "double precision"
+		case "bool":
+			return "boolean"
+		case "bpchar":
+			return "character"
+		case "timestamptz":
+			return "timestamp with time zone"
+		case "timetz":
+			return "time with time zone"
+		default:
+			return name
+		}
+	}
+	if ns != "" {
+		return ns + "." + name
+	}
+	return name
+}
+
 // https://www.postgresql.org/docs/current/sql-keywords-appendix.html
 func (p *Parser) IsReservedKeyword(s string) bool {
 	switch strings.ToLower(s) {

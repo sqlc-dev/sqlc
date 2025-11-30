@@ -34,6 +34,18 @@ func (t *TrackedBuffer) QuoteIdent(s string) string {
 	return s
 }
 
+// TypeName returns the SQL type name for the given namespace and name.
+// If no formatter is set, it returns "ns.name" or just "name".
+func (t *TrackedBuffer) TypeName(ns, name string) string {
+	if t.formatter != nil {
+		return t.formatter.TypeName(ns, name)
+	}
+	if ns != "" {
+		return ns + "." + name
+	}
+	return name
+}
+
 func (t *TrackedBuffer) astFormat(n Node) {
 	if ft, ok := n.(nodeFormatter); ok {
 		ft.Format(t)
