@@ -34,6 +34,94 @@ func stringSliceFromNodes(s []*nodes.Node) []string {
 	return items
 }
 
+func translateNode(node *nodes.Node) ast.Node {
+	if node == nil {
+		return nil
+	}
+	switch n := node.Node.(type) {
+	case *nodes.Node_String_:
+		return &ast.String{Str: n.String_.Sval}
+	case *nodes.Node_Integer:
+		return &ast.Integer{Ival: int64(n.Integer.Ival)}
+	case *nodes.Node_Boolean:
+		return &ast.Boolean{Boolval: n.Boolean.Boolval}
+	case *nodes.Node_AConst:
+		// A_Const contains a constant value (used in type modifiers like varchar(32))
+		if n.AConst.GetIval() != nil {
+			return &ast.Integer{Ival: int64(n.AConst.GetIval().Ival)}
+		}
+		if n.AConst.GetSval() != nil {
+			return &ast.String{Str: n.AConst.GetSval().Sval}
+		}
+		if n.AConst.GetFval() != nil {
+			return &ast.Float{Str: n.AConst.GetFval().Fval}
+		}
+		if n.AConst.GetBoolval() != nil {
+			return &ast.Boolean{Boolval: n.AConst.GetBoolval().Boolval}
+		}
+		return &ast.TODO{}
+	case *nodes.Node_List:
+		list := &ast.List{}
+		for _, item := range n.List.Items {
+			list.Items = append(list.Items, translateNode(item))
+		}
+		return list
+	default:
+		return &ast.TODO{}
+	}
+}
+
+func translateDefElem(n *nodes.DefElem) *ast.DefElem {
+	if n == nil {
+		return nil
+	}
+	defname := n.Defname
+	return &ast.DefElem{
+		Defname:  &defname,
+		Arg:      translateNode(n.Arg),
+		Location: int(n.Location),
+	}
+}
+
+func translateOptions(opts []*nodes.Node) *ast.List {
+	if opts == nil {
+		return nil
+	}
+	list := &ast.List{}
+	for _, opt := range opts {
+		if de, ok := opt.Node.(*nodes.Node_DefElem); ok {
+			list.Items = append(list.Items, translateDefElem(de.DefElem))
+		}
+	}
+	return list
+}
+
+func translateTypeNameFromPG(tn *nodes.TypeName) *ast.TypeName {
+	if tn == nil {
+		return nil
+	}
+	rel, err := parseRelationFromNodes(tn.Names)
+	if err != nil {
+		return nil
+	}
+	result := rel.TypeName()
+	// Preserve array bounds
+	if len(tn.ArrayBounds) > 0 {
+		result.ArrayBounds = &ast.List{}
+		for _, ab := range tn.ArrayBounds {
+			result.ArrayBounds.Items = append(result.ArrayBounds.Items, translateNode(ab))
+		}
+	}
+	// Preserve type modifiers
+	if len(tn.Typmods) > 0 {
+		result.Typmods = &ast.List{}
+		for _, tm := range tn.Typmods {
+			result.Typmods.Items = append(result.Typmods.Items, translateNode(tm))
+		}
+	}
+	return result
+}
+
 type relation struct {
 	Catalog string
 	Schema  string
@@ -431,11 +519,6 @@ func translate(node *nodes.Node) (ast.Node, error) {
 		for _, elt := range n.TableElts {
 			switch item := elt.Node.(type) {
 			case *nodes.Node_ColumnDef:
-				rel, err := parseRelationFromNodes(item.ColumnDef.TypeName.Names)
-				if err != nil {
-					return nil, err
-				}
-
 				primary := false
 				for _, con := range item.ColumnDef.Constraints {
 					if constraint, ok := con.Node.(*nodes.Node_Constraint); ok {
@@ -445,7 +528,7 @@ func translate(node *nodes.Node) (ast.Node, error) {
 
 				create.Cols = append(create.Cols, &ast.ColumnDef{
 					Colname:    item.ColumnDef.Colname,
-					TypeName:   rel.TypeName(),
+					TypeName:   translateTypeNameFromPG(item.ColumnDef.TypeName),
 					IsNotNull:  isNotNull(item.ColumnDef) || primaryKey[item.ColumnDef.Colname],
 					IsArray:    isArray(item.ColumnDef.TypeName),
 					ArrayDims:  len(item.ColumnDef.TypeName.ArrayBounds),
@@ -494,6 +577,7 @@ func translate(node *nodes.Node) (ast.Node, error) {
 			ReturnType: rt,
 			Replace:    n.Replace,
 			Params:     &ast.List{},
+			Options:    translateOptions(n.Options),
 		}
 		for _, item := range n.Parameters {
 			arg := item.Node.(*nodes.Node_FunctionParameter).FunctionParameter

@@ -31,7 +31,12 @@ func (n *JoinExpr) Format(buf *TrackedBuffer) {
 	case JoinTypeFull:
 		buf.WriteString(" FULL JOIN ")
 	case JoinTypeInner:
-		buf.WriteString(" JOIN ")
+		// CROSS JOIN has no ON or USING clause
+		if !items(n.UsingClause) && !set(n.Quals) {
+			buf.WriteString(" CROSS JOIN ")
+		} else {
+			buf.WriteString(" JOIN ")
+		}
 	default:
 		buf.WriteString(" JOIN ")
 	}

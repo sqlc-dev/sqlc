@@ -25,7 +25,7 @@ func (n *RangeFunction) Format(buf *TrackedBuffer) {
 		buf.WriteString(" WITH ORDINALITY")
 	}
 	if n.Alias != nil {
-		buf.WriteString(" ")
+		buf.WriteString(" AS ")
 		buf.astFormat(n.Alias)
 	}
 }

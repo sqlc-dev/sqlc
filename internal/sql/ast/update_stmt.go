@@ -79,7 +79,13 @@ func (n *UpdateStmt) Format(buf *TrackedBuffer) {
 				switch nn := item.(type) {
 				case *ResTarget:
 					if nn.Name != nil {
-						buf.WriteString(*nn.Name)
+						buf.WriteString(quoteIdent(*nn.Name))
+					}
+					// Handle array subscript indirection (e.g., names[$1])
+					if items(nn.Indirection) {
+						for _, ind := range nn.Indirection.Items {
+							buf.astFormat(ind)
+						}
 					}
 					buf.WriteString(" = ")
 					buf.astFormat(nn.Val)

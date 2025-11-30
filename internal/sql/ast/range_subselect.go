@@ -14,11 +14,14 @@ func (n *RangeSubselect) Format(buf *TrackedBuffer) {
 	if n == nil {
 		return
 	}
+	if n.Lateral {
+		buf.WriteString("LATERAL ")
+	}
 	buf.WriteString("(")
 	buf.astFormat(n.Subquery)
 	buf.WriteString(")")
 	if n.Alias != nil {
-		buf.WriteString(" ")
+		buf.WriteString(" AS ")
 		buf.astFormat(n.Alias)
 	}
 }

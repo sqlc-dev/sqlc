@@ -11,6 +11,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/debug"
 	"github.com/sqlc-dev/sqlc/internal/engine/postgresql"
+	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 )
 
 func TestFormat(t *testing.T) {
@@ -103,27 +104,18 @@ func TestFormat(t *testing.T) {
 							t.Fatal(err)
 						}
 
-						// Parse the query to get a ParseResult for Deparse
-						parseResult, err := postgresql.Parse(query)
-						if err != nil {
-							t.Fatal(err)
-						}
-
 						if false {
-							debug.Dump(parseResult)
+							r, err := postgresql.Parse(query)
+							debug.Dump(r, err)
 						}
 
-						out, err := postgresql.Deparse(parseResult)
-						if err != nil {
-							t.Fatal(err)
-						}
-
+						out := ast.Format(stmt.Raw)
 						actual, err := postgresql.Fingerprint(out)
 						if err != nil {
 							t.Error(err)
 						}
 						if expected != actual {
-							debug.Dump(parseResult)
+							debug.Dump(stmt.Raw)
 							t.Errorf("- %s", expected)
 							t.Errorf("- %s", query)
 							t.Errorf("+ %s", actual)

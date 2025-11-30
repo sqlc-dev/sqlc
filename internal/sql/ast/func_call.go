@@ -32,11 +32,18 @@ func (n *FuncCall) Format(buf *TrackedBuffer) {
 	} else {
 		buf.astFormat(n.Args)
 	}
-	if items(n.AggOrder) {
+	// ORDER BY inside function call (not WITHIN GROUP)
+	if items(n.AggOrder) && !n.AggWithinGroup {
 		buf.WriteString(" ORDER BY ")
 		buf.join(n.AggOrder, ", ")
 	}
 	buf.WriteString(")")
+	// WITHIN GROUP clause for ordered-set aggregates
+	if items(n.AggOrder) && n.AggWithinGroup {
+		buf.WriteString(" WITHIN GROUP (ORDER BY ")
+		buf.join(n.AggOrder, ", ")
+		buf.WriteString(")")
+	}
 	if set(n.AggFilter) {
 		buf.WriteString(" FILTER (WHERE ")
 		buf.astFormat(n.AggFilter)

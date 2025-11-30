@@ -23,4 +23,10 @@ func (n *SortBy) Format(buf *TrackedBuffer) {
 	case SortByDirDesc:
 		buf.WriteString(" DESC")
 	}
+	switch n.SortbyNulls {
+	case SortByNullsFirst:
+		buf.WriteString(" NULLS FIRST")
+	case SortByNullsLast:
+		buf.WriteString(" NULLS LAST")
+	}
 }
