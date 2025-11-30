@@ -17,9 +17,15 @@ func (n *RangeFunction) Format(buf *TrackedBuffer) {
 	if n == nil {
 		return
 	}
+	if n.Lateral {
+		buf.WriteString("LATERAL ")
+	}
 	buf.astFormat(n.Functions)
 	if n.Ordinality {
-		buf.WriteString(" WITH ORDINALITY ")
+		buf.WriteString(" WITH ORDINALITY")
 	}
-	buf.astFormat(n.Alias)
+	if n.Alias != nil {
+		buf.WriteString(" ")
+		buf.astFormat(n.Alias)
+	}
 }

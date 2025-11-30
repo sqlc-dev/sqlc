@@ -20,23 +20,28 @@ func (n *JoinExpr) Format(buf *TrackedBuffer) {
 		return
 	}
 	buf.astFormat(n.Larg)
+	if n.IsNatural {
+		buf.WriteString(" NATURAL")
+	}
 	switch n.Jointype {
 	case JoinTypeLeft:
 		buf.WriteString(" LEFT JOIN ")
+	case JoinTypeRight:
+		buf.WriteString(" RIGHT JOIN ")
+	case JoinTypeFull:
+		buf.WriteString(" FULL JOIN ")
 	case JoinTypeInner:
-		buf.WriteString(" INNER JOIN ")
+		buf.WriteString(" JOIN ")
 	default:
 		buf.WriteString(" JOIN ")
 	}
 	buf.astFormat(n.Rarg)
-	buf.WriteString(" ON ")
-	if n.Jointype == JoinTypeInner {
-		if set(n.Quals) {
-			buf.astFormat(n.Quals)
-		} else {
-			buf.WriteString("TRUE")
-		}
-	} else {
+	if items(n.UsingClause) {
+		buf.WriteString(" USING (")
+		buf.join(n.UsingClause, ", ")
+		buf.WriteString(")")
+	} else if set(n.Quals) {
+		buf.WriteString(" ON ")
 		buf.astFormat(n.Quals)
 	}
 }

@@ -39,7 +39,8 @@ func (n *InsertStmt) Format(buf *TrackedBuffer) {
 	}
 
 	if n.OnConflictClause != nil {
-		buf.WriteString(" ON CONFLICT DO NOTHING ")
+		buf.WriteString(" ")
+		buf.astFormat(n.OnConflictClause)
 	}
 
 	if items(n.ReturningList) {

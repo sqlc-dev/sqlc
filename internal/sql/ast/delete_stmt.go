@@ -28,6 +28,11 @@ func (n *DeleteStmt) Format(buf *TrackedBuffer) {
 		buf.astFormat(n.Relations)
 	}
 
+	if items(n.UsingClause) {
+		buf.WriteString(" USING ")
+		buf.join(n.UsingClause, ", ")
+	}
+
 	if set(n.WhereClause) {
 		buf.WriteString(" WHERE ")
 		buf.astFormat(n.WhereClause)

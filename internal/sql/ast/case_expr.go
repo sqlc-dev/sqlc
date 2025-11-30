@@ -19,8 +19,14 @@ func (n *CaseExpr) Format(buf *TrackedBuffer) {
 		return
 	}
 	buf.WriteString("CASE ")
-	buf.astFormat(n.Args)
-	buf.WriteString(" ELSE ")
-	buf.astFormat(n.Defresult)
-	buf.WriteString(" END ")
+	if set(n.Arg) {
+		buf.astFormat(n.Arg)
+		buf.WriteString(" ")
+	}
+	buf.join(n.Args, " ")
+	if set(n.Defresult) {
+		buf.WriteString(" ELSE ")
+		buf.astFormat(n.Defresult)
+	}
+	buf.WriteString(" END")
 }

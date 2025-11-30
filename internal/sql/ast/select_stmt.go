@@ -89,6 +89,11 @@ func (n *SelectStmt) Format(buf *TrackedBuffer) {
 		buf.astFormat(n.GroupClause)
 	}
 
+	if set(n.HavingClause) {
+		buf.WriteString(" HAVING ")
+		buf.astFormat(n.HavingClause)
+	}
+
 	if items(n.SortClause) {
 		buf.WriteString(" ORDER BY ")
 		buf.astFormat(n.SortClause)

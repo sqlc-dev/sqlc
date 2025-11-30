@@ -18,6 +18,15 @@ func (n *NullIfExpr) Pos() int {
 	return 0
 }
 
+func (n *NullIfExpr) Format(buf *TrackedBuffer) {
+	if n == nil {
+		return
+	}
+	buf.WriteString("NULLIF(")
+	buf.join(n.Args, ", ")
+	buf.WriteString(")")
+}
+
 type Selectivity float64
 
 func (n *Selectivity) Pos() int {
