@@ -17,3 +17,30 @@ type In struct {
 func (n *In) Pos() int {
 	return n.Location
 }
+
+// Format formats the In expression.
+func (n *In) Format(buf *TrackedBuffer) {
+	if n == nil {
+		return
+	}
+	buf.astFormat(n.Expr)
+	if n.Not {
+		buf.WriteString(" NOT IN ")
+	} else {
+		buf.WriteString(" IN ")
+	}
+	if n.Sel != nil {
+		buf.WriteString("(")
+		buf.astFormat(n.Sel)
+		buf.WriteString(")")
+	} else if len(n.List) > 0 {
+		buf.WriteString("(")
+		for i, item := range n.List {
+			if i > 0 {
+				buf.WriteString(", ")
+			}
+			buf.astFormat(item)
+		}
+		buf.WriteString(")")
+	}
+}

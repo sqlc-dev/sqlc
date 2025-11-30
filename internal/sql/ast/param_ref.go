@@ -1,7 +1,5 @@
 package ast
 
-import "fmt"
-
 type ParamRef struct {
 	Number   int
 	Location int
@@ -16,5 +14,5 @@ func (n *ParamRef) Format(buf *TrackedBuffer) {
 	if n == nil {
 		return
 	}
-	fmt.Fprintf(buf, "$%d", n.Number)
+	buf.WriteString(buf.Param(n.Number))
 }

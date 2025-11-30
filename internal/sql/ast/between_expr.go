@@ -15,3 +15,18 @@ type BetweenExpr struct {
 func (n *BetweenExpr) Pos() int {
 	return n.Location
 }
+
+func (n *BetweenExpr) Format(buf *TrackedBuffer) {
+	if n == nil {
+		return
+	}
+	buf.astFormat(n.Expr)
+	if n.Not {
+		buf.WriteString(" NOT BETWEEN ")
+	} else {
+		buf.WriteString(" BETWEEN ")
+	}
+	buf.astFormat(n.Left)
+	buf.WriteString(" AND ")
+	buf.astFormat(n.Right)
+}

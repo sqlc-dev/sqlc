@@ -7,6 +7,9 @@ type DeleteStmt struct {
 	LimitCount    Node
 	ReturningList *List
 	WithClause    *WithClause
+	// MySQL multi-table DELETE support
+	Targets    *List // Tables to delete from (e.g., jt.*, pt.*)
+	FromClause Node  // FROM clause with JOINs (Node to support JoinExpr)
 }
 
 func (n *DeleteStmt) Pos() int {
@@ -23,9 +26,22 @@ func (n *DeleteStmt) Format(buf *TrackedBuffer) {
 		buf.WriteString(" ")
 	}
 
-	buf.WriteString("DELETE FROM ")
-	if items(n.Relations) {
-		buf.astFormat(n.Relations)
+	buf.WriteString("DELETE ")
+
+	// MySQL multi-table DELETE: DELETE t1.*, t2.* FROM t1 JOIN t2 ...
+	if items(n.Targets) {
+		buf.join(n.Targets, ", ")
+		buf.WriteString(" FROM ")
+		if set(n.FromClause) {
+			buf.astFormat(n.FromClause)
+		} else if items(n.Relations) {
+			buf.astFormat(n.Relations)
+		}
+	} else {
+		buf.WriteString("FROM ")
+		if items(n.Relations) {
+			buf.astFormat(n.Relations)
+		}
 	}
 
 	if items(n.UsingClause) {

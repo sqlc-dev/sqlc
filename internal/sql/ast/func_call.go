@@ -11,6 +11,7 @@ type FuncCall struct {
 	AggDistinct    bool
 	FuncVariadic   bool
 	Over           *WindowDef
+	Separator      *string // MySQL GROUP_CONCAT SEPARATOR
 	Location       int
 }
 
@@ -36,6 +37,13 @@ func (n *FuncCall) Format(buf *TrackedBuffer) {
 	if items(n.AggOrder) && !n.AggWithinGroup {
 		buf.WriteString(" ORDER BY ")
 		buf.join(n.AggOrder, ", ")
+	}
+	// SEPARATOR for GROUP_CONCAT (MySQL)
+	if n.Separator != nil {
+		buf.WriteString(" SEPARATOR ")
+		buf.WriteString("'")
+		buf.WriteString(*n.Separator)
+		buf.WriteString("'")
 	}
 	buf.WriteString(")")
 	// WITHIN GROUP clause for ordered-set aggregates
