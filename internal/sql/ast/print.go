@@ -1,6 +1,7 @@
 package ast
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/sqlc-dev/sqlc/internal/debug"
@@ -44,6 +45,24 @@ func (t *TrackedBuffer) TypeName(ns, name string) string {
 		return ns + "." + name
 	}
 	return name
+}
+
+// Param returns the parameter placeholder for the given number.
+// If no formatter is set, it returns PostgreSQL-style $n.
+func (t *TrackedBuffer) Param(n int) string {
+	if t.formatter != nil {
+		return t.formatter.Param(n)
+	}
+	return fmt.Sprintf("$%d", n)
+}
+
+// Cast returns a type cast expression.
+// If no formatter is set, it returns PostgreSQL-style expr::type.
+func (t *TrackedBuffer) Cast(arg, typeName string) string {
+	if t.formatter != nil {
+		return t.formatter.Cast(arg, typeName)
+	}
+	return arg + "::" + typeName
 }
 
 func (t *TrackedBuffer) astFormat(n Node) {

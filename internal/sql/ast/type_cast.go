@@ -14,7 +14,12 @@ func (n *TypeCast) Format(buf *TrackedBuffer) {
 	if n == nil {
 		return
 	}
-	buf.astFormat(n.Arg)
-	buf.WriteString("::")
-	buf.astFormat(n.TypeName)
+	// Format the arg and type to strings first
+	argBuf := NewTrackedBuffer(buf.formatter)
+	argBuf.astFormat(n.Arg)
+
+	typeBuf := NewTrackedBuffer(buf.formatter)
+	typeBuf.astFormat(n.TypeName)
+
+	buf.WriteString(buf.Cast(argBuf.String(), typeBuf.String()))
 }

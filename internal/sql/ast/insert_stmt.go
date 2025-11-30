@@ -1,13 +1,14 @@
 package ast
 
 type InsertStmt struct {
-	Relation         *RangeVar
-	Cols             *List
-	SelectStmt       Node
-	OnConflictClause *OnConflictClause
-	ReturningList    *List
-	WithClause       *WithClause
-	Override         OverridingKind
+	Relation               *RangeVar
+	Cols                   *List
+	SelectStmt             Node
+	OnConflictClause       *OnConflictClause
+	OnDuplicateKeyUpdate   *OnDuplicateKeyUpdate // MySQL-specific
+	ReturningList          *List
+	WithClause             *WithClause
+	Override               OverridingKind
 }
 
 func (n *InsertStmt) Pos() int {
@@ -42,6 +43,11 @@ func (n *InsertStmt) Format(buf *TrackedBuffer) {
 	if n.OnConflictClause != nil {
 		buf.WriteString(" ")
 		buf.astFormat(n.OnConflictClause)
+	}
+
+	if n.OnDuplicateKeyUpdate != nil {
+		buf.WriteString(" ")
+		buf.astFormat(n.OnDuplicateKeyUpdate)
 	}
 
 	if items(n.ReturningList) {

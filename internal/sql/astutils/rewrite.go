@@ -687,6 +687,8 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.apply(n, "WhereClause", nil, n.WhereClause)
 		a.apply(n, "ReturningList", nil, n.ReturningList)
 		a.apply(n, "WithClause", nil, n.WithClause)
+		a.apply(n, "Targets", nil, n.Targets)
+		a.apply(n, "FromClause", nil, n.FromClause)
 
 	case *ast.DiscardStmt:
 		// pass
@@ -812,11 +814,15 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.apply(n, "Cols", nil, n.Cols)
 		a.apply(n, "SelectStmt", nil, n.SelectStmt)
 		a.apply(n, "OnConflictClause", nil, n.OnConflictClause)
+		a.apply(n, "OnDuplicateKeyUpdate", nil, n.OnDuplicateKeyUpdate)
 		a.apply(n, "ReturningList", nil, n.ReturningList)
 		a.apply(n, "WithClause", nil, n.WithClause)
 
 	case *ast.Integer:
 		// pass
+
+	case *ast.IntervalExpr:
+		a.apply(n, "Value", nil, n.Value)
 
 	case *ast.IntoClause:
 		a.apply(n, "Rel", nil, n.Rel)
@@ -883,6 +889,9 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.apply(n, "OnConflictWhere", nil, n.OnConflictWhere)
 		a.apply(n, "ExclRelTlist", nil, n.ExclRelTlist)
 
+	case *ast.OnDuplicateKeyUpdate:
+		a.apply(n, "TargetList", nil, n.TargetList)
+
 	case *ast.OpExpr:
 		a.apply(n, "Xpr", nil, n.Xpr)
 		a.apply(n, "Args", nil, n.Args)
@@ -901,6 +910,12 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 
 	case *ast.ParamRef:
 		// pass
+
+	case *ast.ParenExpr:
+		a.apply(n, "Expr", nil, n.Expr)
+
+	case *ast.VariableExpr:
+		// Leaf node - no children to traverse
 
 	case *ast.PartitionBoundSpec:
 		a.apply(n, "Listdatums", nil, n.Listdatums)

@@ -1,6 +1,9 @@
 package postgresql
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 // hasMixedCase returns true if the string has any uppercase letters
 // (identifiers with mixed case need quoting in PostgreSQL)
@@ -53,6 +56,18 @@ func (p *Parser) TypeName(ns, name string) string {
 		return ns + "." + name
 	}
 	return name
+}
+
+// Param returns the parameter placeholder for the given number.
+// PostgreSQL uses $1, $2, etc.
+func (p *Parser) Param(n int) string {
+	return fmt.Sprintf("$%d", n)
+}
+
+// Cast returns a type cast expression.
+// PostgreSQL uses expr::type syntax.
+func (p *Parser) Cast(arg, typeName string) string {
+	return arg + "::" + typeName
 }
 
 // https://www.postgresql.org/docs/current/sql-keywords-appendix.html

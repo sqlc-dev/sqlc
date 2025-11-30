@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -10,9 +11,21 @@ import (
 
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/debug"
+	"github.com/sqlc-dev/sqlc/internal/engine/dolphin"
 	"github.com/sqlc-dev/sqlc/internal/engine/postgresql"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/sql/format"
 )
+
+// sqlParser is an interface for SQL parsers
+type sqlParser interface {
+	Parse(r io.Reader) ([]ast.Statement, error)
+}
+
+// sqlFormatter is an interface for formatters
+type sqlFormatter interface {
+	format.Formatter
+}
 
 func TestFormat(t *testing.T) {
 	t.Parallel()
@@ -36,9 +49,38 @@ func TestFormat(t *testing.T) {
 				return
 			}
 
-			// For now, only test PostgreSQL since that's the only engine with Format support
 			engine := conf.SQL[0].Engine
-			if engine != config.EnginePostgreSQL {
+
+			// Select the appropriate parser and fingerprint function based on engine
+			var parse sqlParser
+			var formatter sqlFormatter
+			var fingerprint func(string) (string, error)
+
+			switch engine {
+			case config.EnginePostgreSQL:
+				pgParser := postgresql.NewParser()
+				parse = pgParser
+				formatter = pgParser
+				fingerprint = postgresql.Fingerprint
+			case config.EngineMySQL:
+				mysqlParser := dolphin.NewParser()
+				parse = mysqlParser
+				formatter = mysqlParser
+				// For MySQL, we use a "round-trip" fingerprint: parse the SQL, format it,
+				// and return the formatted string. This tests that our formatting produces
+				// valid SQL that parses to the same AST structure.
+				fingerprint = func(sql string) (string, error) {
+					stmts, err := mysqlParser.Parse(strings.NewReader(sql))
+					if err != nil {
+						return "", err
+					}
+					if len(stmts) == 0 {
+						return "", nil
+					}
+					return ast.Format(stmts[0].Raw, mysqlParser), nil
+				}
+			default:
+				// Skip unsupported engines
 				return
 			}
 
@@ -67,8 +109,6 @@ func TestFormat(t *testing.T) {
 			if len(queryFiles) == 0 {
 				return
 			}
-
-			parse := postgresql.NewParser()
 
 			for _, queryFile := range queryFiles {
 				if _, err := os.Stat(queryFile); os.IsNotExist(err) {
@@ -99,7 +139,7 @@ func TestFormat(t *testing.T) {
 						}
 						query := strings.TrimSpace(string(contents[start : start+length]))
 
-						expected, err := postgresql.Fingerprint(query)
+						expected, err := fingerprint(query)
 						if err != nil {
 							t.Fatal(err)
 						}
@@ -109,8 +149,8 @@ func TestFormat(t *testing.T) {
 							debug.Dump(r, err)
 						}
 
-						out := ast.Format(stmt.Raw, parse)
-						actual, err := postgresql.Fingerprint(out)
+						out := ast.Format(stmt.Raw, formatter)
+						actual, err := fingerprint(out)
 						if err != nil {
 							t.Error(err)
 						}

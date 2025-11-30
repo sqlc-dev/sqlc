@@ -31,14 +31,26 @@ func (n *SubLink) Format(buf *TrackedBuffer) {
 	if n == nil {
 		return
 	}
-	buf.astFormat(n.Testexpr)
+	// Format the test expression if present (for IN subqueries etc.)
+	hasTestExpr := n.Testexpr != nil
+	if hasTestExpr {
+		buf.astFormat(n.Testexpr)
+	}
 	switch n.SubLinkType {
 	case EXISTS_SUBLINK:
-		buf.WriteString(" EXISTS (")
+		buf.WriteString("EXISTS (")
 	case ANY_SUBLINK:
-		buf.WriteString(" IN (")
+		if hasTestExpr {
+			buf.WriteString(" IN (")
+		} else {
+			buf.WriteString("IN (")
+		}
 	default:
-		buf.WriteString(" (")
+		if hasTestExpr {
+			buf.WriteString(" (")
+		} else {
+			buf.WriteString("(")
+		}
 	}
 	buf.astFormat(n.Subselect)
 	buf.WriteString(")")

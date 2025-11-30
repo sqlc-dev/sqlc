@@ -18,7 +18,7 @@ func (n *RangeVar) Format(buf *TrackedBuffer) {
 	if n == nil {
 		return
 	}
-	if n.Schemaname != nil {
+	if n.Schemaname != nil && *n.Schemaname != "" {
 		buf.WriteString(buf.QuoteIdent(*n.Schemaname))
 		buf.WriteString(".")
 	}
@@ -26,7 +26,7 @@ func (n *RangeVar) Format(buf *TrackedBuffer) {
 		buf.WriteString(buf.QuoteIdent(*n.Relname))
 	}
 	if n.Alias != nil {
-		buf.WriteString(" ")
+		buf.WriteString(" AS ")
 		buf.astFormat(n.Alias)
 	}
 }
