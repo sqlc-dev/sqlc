@@ -3,13 +3,14 @@ package analyzer
 import (
 	"context"
 	"database/sql"
+	"database/sql/driver"
 	"fmt"
 	"hash/fnv"
 	"io"
 	"strings"
 	"sync"
 
-	_ "github.com/go-sql-driver/mysql"
+	"github.com/go-sql-driver/mysql"
 
 	core "github.com/sqlc-dev/sqlc/internal/analysis"
 	"github.com/sqlc-dev/sqlc/internal/config"
@@ -139,90 +140,102 @@ func (a *Analyzer) Analyze(ctx context.Context, n ast.Node, query string, migrat
 		}
 	}
 
-	// Count parameters in the query
-	paramCount := countParameters(query)
+	// Get metadata directly from prepared statement via driver connection
+	result, err := a.getStatementMetadata(ctx, n, query, ps)
+	if err != nil {
+		return nil, err
+	}
 
-	// Try to prepare the statement first to validate syntax
-	stmt, err := a.conn.PrepareContext(ctx, query)
+	return result, nil
+}
+
+// getStatementMetadata uses the MySQL driver's prepared statement metadata API
+// to get column and parameter type information without executing the query
+func (a *Analyzer) getStatementMetadata(ctx context.Context, n ast.Node, query string, ps *named.ParamSet) (*core.Analysis, error) {
+	var result core.Analysis
+
+	// Get a raw connection to access driver-level prepared statement
+	conn, err := a.conn.Conn(ctx)
+	if err != nil {
+		return nil, a.extractSqlErr(n, fmt.Errorf("failed to get connection: %w", err))
+	}
+	defer conn.Close()
+
+	err = conn.Raw(func(driverConn any) error {
+		// Get the driver connection that supports PrepareContext
+		preparer, ok := driverConn.(driver.ConnPrepareContext)
+		if !ok {
+			return fmt.Errorf("driver connection does not support PrepareContext")
+		}
+
+		// Prepare the statement - this sends COM_STMT_PREPARE to MySQL
+		// and receives column and parameter metadata
+		stmt, err := preparer.PrepareContext(ctx, query)
+		if err != nil {
+			return err
+		}
+		defer stmt.Close()
+
+		// Access the metadata via the StmtMetadata interface from our forked driver
+		meta, ok := stmt.(mysql.StmtMetadata)
+		if !ok {
+			// Fallback: just use param count from NumInput
+			paramCount := stmt.NumInput()
+			for i := 1; i <= paramCount; i++ {
+				name := ""
+				if ps != nil {
+					name, _ = ps.NameFor(i)
+				}
+				result.Params = append(result.Params, &core.Parameter{
+					Number: int32(i),
+					Column: &core.Column{
+						Name:     name,
+						DataType: "any",
+						NotNull:  false,
+					},
+				})
+			}
+			return nil
+		}
+
+		// Get column metadata
+		for _, col := range meta.ColumnMetadata() {
+			result.Columns = append(result.Columns, &core.Column{
+				Name:     col.Name,
+				DataType: strings.ToLower(col.DatabaseTypeName),
+				NotNull:  !col.Nullable,
+				Unsigned: col.Unsigned,
+				Length:   int32(col.Length),
+			})
+		}
+
+		// Get parameter metadata
+		paramMeta := meta.ParamMetadata()
+		for i, param := range paramMeta {
+			name := ""
+			if ps != nil {
+				name, _ = ps.NameFor(i + 1)
+			}
+			result.Params = append(result.Params, &core.Parameter{
+				Number: int32(i + 1),
+				Column: &core.Column{
+					Name:     name,
+					DataType: strings.ToLower(param.DatabaseTypeName),
+					NotNull:  !param.Nullable,
+					Unsigned: param.Unsigned,
+					Length:   int32(param.Length),
+				},
+			})
+		}
+
+		return nil
+	})
+
 	if err != nil {
 		return nil, a.extractSqlErr(n, err)
 	}
-	stmt.Close()
-
-	var result core.Analysis
-
-	// For SELECT queries, execute with default parameter values to get column metadata
-	if isSelectQuery(query) {
-		cols, err := a.getColumnMetadata(ctx, query, paramCount)
-		if err == nil {
-			result.Columns = cols
-		}
-		// If we fail to get column metadata, fall through to return empty columns
-		// and let the catalog-based inference handle it
-	}
-
-	// Build parameter info
-	for i := 1; i <= paramCount; i++ {
-		name := ""
-		if ps != nil {
-			name, _ = ps.NameFor(i)
-		}
-		result.Params = append(result.Params, &core.Parameter{
-			Number: int32(i),
-			Column: &core.Column{
-				Name:     name,
-				DataType: "any",
-				NotNull:  false,
-			},
-		})
-	}
 
 	return &result, nil
-}
-
-// isSelectQuery checks if a query is a SELECT statement
-func isSelectQuery(query string) bool {
-	trimmed := strings.TrimSpace(strings.ToUpper(query))
-	return strings.HasPrefix(trimmed, "SELECT") ||
-		strings.HasPrefix(trimmed, "WITH") // CTEs
-}
-
-// getColumnMetadata executes the query with default values to retrieve column information
-func (a *Analyzer) getColumnMetadata(ctx context.Context, query string, paramCount int) ([]*core.Column, error) {
-	// Generate default parameter values (use 1 for all - works for most types)
-	args := make([]any, paramCount)
-	for i := range args {
-		args[i] = 1
-	}
-
-	// Wrap query to avoid fetching data: SELECT * FROM (query) AS _sqlc_wrapper LIMIT 0
-	// This ensures we get column metadata without executing the actual query
-	wrappedQuery := fmt.Sprintf("SELECT * FROM (%s) AS _sqlc_wrapper LIMIT 0", query)
-
-	rows, err := a.conn.QueryContext(ctx, wrappedQuery, args...)
-	if err != nil {
-		// If wrapped query fails, try direct query with LIMIT 0
-		// Some queries may not support being wrapped (e.g., queries with UNION at the end)
-		return nil, err
-	}
-	defer rows.Close()
-
-	colTypes, err := rows.ColumnTypes()
-	if err != nil {
-		return nil, err
-	}
-
-	var columns []*core.Column
-	for _, col := range colTypes {
-		nullable, _ := col.Nullable()
-		columns = append(columns, &core.Column{
-			Name:     col.Name(),
-			DataType: strings.ToLower(col.DatabaseTypeName()),
-			NotNull:  !nullable,
-		})
-	}
-
-	return columns, nil
 }
 
 // replaceDatabase replaces the database name in a MySQL DSN
@@ -251,47 +264,6 @@ func replaceDatabase(dsn string, newDB string) string {
 
 	// Replace database name between / and ?
 	return dsn[:slashIdx+1] + newDB + dsn[slashIdx+paramIdx:]
-}
-
-// countParameters counts the number of ? placeholders in a query
-func countParameters(query string) int {
-	count := 0
-	inString := false
-	stringChar := byte(0)
-	escaped := false
-
-	for i := 0; i < len(query); i++ {
-		c := query[i]
-
-		if escaped {
-			escaped = false
-			continue
-		}
-
-		if c == '\\' {
-			escaped = true
-			continue
-		}
-
-		if inString {
-			if c == stringChar {
-				inString = false
-			}
-			continue
-		}
-
-		if c == '\'' || c == '"' || c == '`' {
-			inString = true
-			stringChar = c
-			continue
-		}
-
-		if c == '?' {
-			count++
-		}
-	}
-
-	return count
 }
 
 func (a *Analyzer) extractSqlErr(n ast.Node, err error) error {
