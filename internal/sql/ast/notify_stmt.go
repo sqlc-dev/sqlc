@@ -1,5 +1,7 @@
 package ast
 
+import "github.com/sqlc-dev/sqlc/internal/sql/format"
+
 type NotifyStmt struct {
 	Conditionname *string
 	Payload       *string
@@ -9,7 +11,7 @@ func (n *NotifyStmt) Pos() int {
 	return 0
 }
 
-func (n *NotifyStmt) Format(buf *TrackedBuffer) {
+func (n *NotifyStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 	if n == nil {
 		return
 	}

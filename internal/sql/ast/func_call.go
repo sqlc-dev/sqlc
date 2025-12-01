@@ -1,5 +1,7 @@
 package ast
 
+import "github.com/sqlc-dev/sqlc/internal/sql/format"
+
 type FuncCall struct {
 	Func           *FuncName
 	Funcname       *List
@@ -19,11 +21,11 @@ func (n *FuncCall) Pos() int {
 	return n.Location
 }
 
-func (n *FuncCall) Format(buf *TrackedBuffer) {
+func (n *FuncCall) Format(buf *TrackedBuffer, d format.Dialect) {
 	if n == nil {
 		return
 	}
-	buf.astFormat(n.Func)
+	buf.astFormat(n.Func, d)
 	buf.WriteString("(")
 	if n.AggDistinct {
 		buf.WriteString("DISTINCT ")
@@ -31,12 +33,12 @@ func (n *FuncCall) Format(buf *TrackedBuffer) {
 	if n.AggStar {
 		buf.WriteString("*")
 	} else {
-		buf.astFormat(n.Args)
+		buf.astFormat(n.Args, d)
 	}
 	// ORDER BY inside function call (not WITHIN GROUP)
 	if items(n.AggOrder) && !n.AggWithinGroup {
 		buf.WriteString(" ORDER BY ")
-		buf.join(n.AggOrder, ", ")
+		buf.join(n.AggOrder, d, ", ")
 	}
 	// SEPARATOR for GROUP_CONCAT (MySQL)
 	if n.Separator != nil {
@@ -49,16 +51,16 @@ func (n *FuncCall) Format(buf *TrackedBuffer) {
 	// WITHIN GROUP clause for ordered-set aggregates
 	if items(n.AggOrder) && n.AggWithinGroup {
 		buf.WriteString(" WITHIN GROUP (ORDER BY ")
-		buf.join(n.AggOrder, ", ")
+		buf.join(n.AggOrder, d, ", ")
 		buf.WriteString(")")
 	}
 	if set(n.AggFilter) {
 		buf.WriteString(" FILTER (WHERE ")
-		buf.astFormat(n.AggFilter)
+		buf.astFormat(n.AggFilter, d)
 		buf.WriteString(")")
 	}
 	if n.Over != nil {
 		buf.WriteString(" OVER ")
-		buf.astFormat(n.Over)
+		buf.astFormat(n.Over, d)
 	}
 }

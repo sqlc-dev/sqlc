@@ -1,5 +1,7 @@
 package ast
 
+import "github.com/sqlc-dev/sqlc/internal/sql/format"
+
 type DefElem struct {
 	Defnamespace *string
 	Defname      *string
@@ -12,7 +14,7 @@ func (n *DefElem) Pos() int {
 	return n.Location
 }
 
-func (n *DefElem) Format(buf *TrackedBuffer) {
+func (n *DefElem) Format(buf *TrackedBuffer, d format.Dialect) {
 	if n == nil {
 		return
 	}
@@ -31,18 +33,18 @@ func (n *DefElem) Format(buf *TrackedBuffer) {
 						buf.WriteString(s.Str)
 						buf.WriteString("'")
 					} else {
-						buf.astFormat(item)
+						buf.astFormat(item, d)
 					}
 				}
 			} else {
-				buf.astFormat(n.Arg)
+				buf.astFormat(n.Arg, d)
 			}
 		case "language":
 			buf.WriteString("LANGUAGE ")
-			buf.astFormat(n.Arg)
+			buf.astFormat(n.Arg, d)
 		case "volatility":
 			// VOLATILE, STABLE, IMMUTABLE
-			buf.astFormat(n.Arg)
+			buf.astFormat(n.Arg, d)
 		case "strict":
 			if s, ok := n.Arg.(*Boolean); ok && s.Boolval {
 				buf.WriteString("STRICT")
@@ -59,7 +61,7 @@ func (n *DefElem) Format(buf *TrackedBuffer) {
 			buf.WriteString(*n.Defname)
 			if n.Arg != nil {
 				buf.WriteString(" ")
-				buf.astFormat(n.Arg)
+				buf.astFormat(n.Arg, d)
 			}
 		}
 	}

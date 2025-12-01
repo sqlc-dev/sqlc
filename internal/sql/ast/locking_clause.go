@@ -1,5 +1,7 @@
 package ast
 
+import "github.com/sqlc-dev/sqlc/internal/sql/format"
+
 type LockingClause struct {
 	LockedRels *List
 	Strength   LockClauseStrength
@@ -27,7 +29,7 @@ const (
 	LockWaitPolicyError LockWaitPolicy = 3
 )
 
-func (n *LockingClause) Format(buf *TrackedBuffer) {
+func (n *LockingClause) Format(buf *TrackedBuffer, d format.Dialect) {
 	if n == nil {
 		return
 	}
@@ -44,7 +46,7 @@ func (n *LockingClause) Format(buf *TrackedBuffer) {
 	}
 	if items(n.LockedRels) {
 		buf.WriteString(" OF ")
-		buf.join(n.LockedRels, ", ")
+		buf.join(n.LockedRels, d, ", ")
 	}
 	switch n.WaitPolicy {
 	case LockWaitPolicySkip:

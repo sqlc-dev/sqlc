@@ -1,5 +1,7 @@
 package ast
 
+import "github.com/sqlc-dev/sqlc/internal/sql/format"
+
 type WindowDef struct {
 	Name            *string
 	Refname         *string
@@ -17,11 +19,11 @@ func (n *WindowDef) Pos() int {
 
 // Frame option constants (from PostgreSQL's parsenodes.h)
 const (
-	FrameOptionNonDefault   = 0x00001
-	FrameOptionRange        = 0x00002
-	FrameOptionRows         = 0x00004
-	FrameOptionGroups       = 0x00008
-	FrameOptionBetween      = 0x00010
+	FrameOptionNonDefault              = 0x00001
+	FrameOptionRange                   = 0x00002
+	FrameOptionRows                    = 0x00004
+	FrameOptionGroups                  = 0x00008
+	FrameOptionBetween                 = 0x00010
 	FrameOptionStartUnboundedPreceding = 0x00020
 	FrameOptionEndUnboundedPreceding   = 0x00040
 	FrameOptionStartUnboundedFollowing = 0x00080
@@ -35,7 +37,7 @@ const (
 	FrameOptionExcludeTies             = 0x08000
 )
 
-func (n *WindowDef) Format(buf *TrackedBuffer) {
+func (n *WindowDef) Format(buf *TrackedBuffer, d format.Dialect) {
 	if n == nil {
 		return
 	}
@@ -51,7 +53,7 @@ func (n *WindowDef) Format(buf *TrackedBuffer) {
 
 	if items(n.PartitionClause) {
 		buf.WriteString("PARTITION BY ")
-		buf.join(n.PartitionClause, ", ")
+		buf.join(n.PartitionClause, d, ", ")
 		needSpace = true
 	}
 
@@ -60,7 +62,7 @@ func (n *WindowDef) Format(buf *TrackedBuffer) {
 			buf.WriteString(" ")
 		}
 		buf.WriteString("ORDER BY ")
-		buf.join(n.OrderClause, ", ")
+		buf.join(n.OrderClause, d, ", ")
 		needSpace = true
 	}
 
@@ -89,7 +91,7 @@ func (n *WindowDef) Format(buf *TrackedBuffer) {
 		} else if n.FrameOptions&FrameOptionStartCurrentRow != 0 {
 			buf.WriteString("CURRENT ROW")
 		} else if n.FrameOptions&FrameOptionStartOffset != 0 {
-			buf.astFormat(n.StartOffset)
+			buf.astFormat(n.StartOffset, d)
 			buf.WriteString(" PRECEDING")
 		}
 
@@ -102,7 +104,7 @@ func (n *WindowDef) Format(buf *TrackedBuffer) {
 			} else if n.FrameOptions&FrameOptionEndCurrentRow != 0 {
 				buf.WriteString("CURRENT ROW")
 			} else if n.FrameOptions&FrameOptionEndOffset != 0 {
-				buf.astFormat(n.EndOffset)
+				buf.astFormat(n.EndOffset, d)
 				buf.WriteString(" FOLLOWING")
 			}
 		}

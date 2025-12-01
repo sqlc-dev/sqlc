@@ -1,5 +1,7 @@
 package ast
 
+import "github.com/sqlc-dev/sqlc/internal/sql/format"
+
 type ParamRef struct {
 	Number   int
 	Location int
@@ -10,9 +12,9 @@ func (n *ParamRef) Pos() int {
 	return n.Location
 }
 
-func (n *ParamRef) Format(buf *TrackedBuffer) {
+func (n *ParamRef) Format(buf *TrackedBuffer, d format.Dialect) {
 	if n == nil {
 		return
 	}
-	buf.WriteString(buf.Param(n.Number))
+	buf.WriteString(d.Param(n.Number))
 }

@@ -1,5 +1,7 @@
 package ast
 
+import "github.com/sqlc-dev/sqlc/internal/sql/format"
+
 type DoStmt struct {
 	Args *List
 }
@@ -8,7 +10,7 @@ func (n *DoStmt) Pos() int {
 	return 0
 }
 
-func (n *DoStmt) Format(buf *TrackedBuffer) {
+func (n *DoStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 	if n == nil {
 		return
 	}
