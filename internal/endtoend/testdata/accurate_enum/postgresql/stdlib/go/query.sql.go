@@ -7,25 +7,31 @@ package querytest
 
 import (
 	"context"
+	"database/sql"
 )
 
 const createTask = `-- name: CreateTask :one
-INSERT INTO tasks (title, status) VALUES ($1, $2) RETURNING id, title, status
+INSERT INTO tasks (title, status) VALUES ($1, $2) RETURNING id, title, status;
 `
 
-func (q *Queries) CreateTask(ctx context.Context, title string, status Status) (Task, error) {
-	row := q.db.QueryRowContext(ctx, createTask, title, status)
+type CreateTaskParams struct {
+	Column1 sql.NullString
+	Column2 NullStatus
+}
+
+func (q *Queries) CreateTask(ctx context.Context, arg CreateTaskParams) (Task, error) {
+	row := q.db.QueryRowContext(ctx, createTask, arg.Column1, arg.Column2)
 	var i Task
 	err := row.Scan(&i.ID, &i.Title, &i.Status)
 	return i, err
 }
 
 const getTasksByStatus = `-- name: GetTasksByStatus :many
-SELECT id, title, status FROM tasks WHERE status = $1
+SELECT id, title, status FROM tasks WHERE status = $1;
 `
 
-func (q *Queries) GetTasksByStatus(ctx context.Context, status Status) ([]Task, error) {
-	rows, err := q.db.QueryContext(ctx, getTasksByStatus, status)
+func (q *Queries) GetTasksByStatus(ctx context.Context, dollar_1 NullStatus) ([]Task, error) {
+	rows, err := q.db.QueryContext(ctx, getTasksByStatus, dollar_1)
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +54,7 @@ func (q *Queries) GetTasksByStatus(ctx context.Context, status Status) ([]Task, 
 }
 
 const listTasks = `-- name: ListTasks :many
-SELECT id, title, status FROM tasks
+SELECT id, title, status FROM tasks;
 `
 
 func (q *Queries) ListTasks(ctx context.Context) ([]Task, error) {

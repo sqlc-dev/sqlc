@@ -7,18 +7,16 @@ package querytest
 
 import (
 	"context"
+	"database/sql"
 )
 
 const getProductStats = `-- name: GetProductStats :one
-WITH product_stats AS (
-    SELECT COUNT(*) as total, AVG(price) as avg_price FROM products
-)
-SELECT total, avg_price FROM product_stats
+WITH product_stats AS (SELECT count(*) AS total, avg(price) AS avg_price FROM products) SELECT total, avg_price FROM product_stats;
 `
 
 type GetProductStatsRow struct {
-	Total    int64
-	AvgPrice string
+	Total    sql.NullInt64
+	AvgPrice sql.NullString
 }
 
 func (q *Queries) GetProductStats(ctx context.Context) (GetProductStatsRow, error) {
@@ -29,10 +27,7 @@ func (q *Queries) GetProductStats(ctx context.Context) (GetProductStatsRow, erro
 }
 
 const listExpensiveProducts = `-- name: ListExpensiveProducts :many
-WITH expensive AS (
-    SELECT id, name, price FROM products WHERE price > 100
-)
-SELECT id, name, price FROM expensive
+WITH expensive AS (SELECT id, name, price FROM products WHERE price > 100) SELECT id, name, price FROM expensive;
 `
 
 func (q *Queries) ListExpensiveProducts(ctx context.Context) ([]Product, error) {

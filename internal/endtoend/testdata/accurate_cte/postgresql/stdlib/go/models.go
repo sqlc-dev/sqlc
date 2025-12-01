@@ -7,5 +7,5 @@ package querytest
 type Product struct {
 	ID    int32
 	Name  string
-	Price string
+	Price interface{}
 }
