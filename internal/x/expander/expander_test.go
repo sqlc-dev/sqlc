@@ -9,7 +9,7 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jackc/pgx/v5/pgxpool"
-	_ "github.com/ncruces/go-sqlite3/driver"
+	"github.com/ncruces/go-sqlite3"
 	_ "github.com/ncruces/go-sqlite3/embed"
 
 	"github.com/sqlc-dev/sqlc/internal/engine/dolphin"
@@ -42,12 +42,12 @@ func (g *PostgreSQLColumnGetter) GetColumnNames(ctx context.Context, query strin
 	return columns, nil
 }
 
-// SQLColumnGetter implements ColumnGetter for MySQL and SQLite using database/sql.
-type SQLColumnGetter struct {
+// MySQLColumnGetter implements ColumnGetter for MySQL using database/sql.
+type MySQLColumnGetter struct {
 	db *sql.DB
 }
 
-func (g *SQLColumnGetter) GetColumnNames(ctx context.Context, query string) ([]string, error) {
+func (g *MySQLColumnGetter) GetColumnNames(ctx context.Context, query string) ([]string, error) {
 	// Prepare the statement to validate the query and get column metadata
 	stmt, err := g.db.PrepareContext(ctx, query)
 	if err != nil {
@@ -55,8 +55,8 @@ func (g *SQLColumnGetter) GetColumnNames(ctx context.Context, query string) ([]s
 	}
 	defer stmt.Close()
 
-	// Execute with LIMIT 0 workaround by wrapping in a subquery to get column names
-	// without fetching actual data. We need to execute to get column metadata from database/sql.
+	// Execute to get column metadata from database/sql.
+	// database/sql doesn't expose column names from prepared statements directly.
 	rows, err := stmt.QueryContext(ctx)
 	if err != nil {
 		return nil, err
@@ -64,6 +64,29 @@ func (g *SQLColumnGetter) GetColumnNames(ctx context.Context, query string) ([]s
 	defer rows.Close()
 
 	return rows.Columns()
+}
+
+// SQLiteColumnGetter implements ColumnGetter for SQLite using the native ncruces/go-sqlite3 API.
+type SQLiteColumnGetter struct {
+	conn *sqlite3.Conn
+}
+
+func (g *SQLiteColumnGetter) GetColumnNames(ctx context.Context, query string) ([]string, error) {
+	// Prepare the statement - this gives us column metadata without executing
+	stmt, _, err := g.conn.Prepare(query)
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	// Get column names from the prepared statement
+	count := stmt.ColumnCount()
+	columns := make([]string, count)
+	for i := 0; i < count; i++ {
+		columns[i] = stmt.ColumnName(i)
+	}
+
+	return columns, nil
 }
 
 func TestExpandPostgreSQL(t *testing.T) {
@@ -251,7 +274,7 @@ func TestExpandMySQL(t *testing.T) {
 	parser := dolphin.NewParser()
 
 	// Create the expander
-	colGetter := &SQLColumnGetter{db: db}
+	colGetter := &MySQLColumnGetter{db: db}
 	exp := New(colGetter, parser, parser)
 
 	tests := []struct {
@@ -317,15 +340,15 @@ func TestExpandMySQL(t *testing.T) {
 func TestExpandSQLite(t *testing.T) {
 	ctx := context.Background()
 
-	// Create an in-memory SQLite database
-	db, err := sql.Open("sqlite3", ":memory:")
+	// Create an in-memory SQLite database using native API
+	conn, err := sqlite3.Open(":memory:")
 	if err != nil {
 		t.Fatalf("could not open SQLite: %v", err)
 	}
-	defer db.Close()
+	defer conn.Close()
 
 	// Create a test table
-	_, err = db.ExecContext(ctx, `
+	err = conn.Exec(`
 		CREATE TABLE authors (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			name TEXT NOT NULL,
@@ -339,8 +362,8 @@ func TestExpandSQLite(t *testing.T) {
 	// Create the parser which also implements format.Dialect
 	parser := sqlite.NewParser()
 
-	// Create the expander
-	colGetter := &SQLColumnGetter{db: db}
+	// Create the expander using native SQLite column getter
+	colGetter := &SQLiteColumnGetter{conn: conn}
 	exp := New(colGetter, parser, parser)
 
 	tests := []struct {
