@@ -1,5 +1,7 @@
 package ast
 
+import "github.com/sqlc-dev/sqlc/internal/sql/format"
+
 type JoinExpr struct {
 	Jointype    JoinType
 	IsNatural   bool
@@ -15,11 +17,11 @@ func (n *JoinExpr) Pos() int {
 	return 0
 }
 
-func (n *JoinExpr) Format(buf *TrackedBuffer) {
+func (n *JoinExpr) Format(buf *TrackedBuffer, d format.Dialect) {
 	if n == nil {
 		return
 	}
-	buf.astFormat(n.Larg)
+	buf.astFormat(n.Larg, d)
 	if n.IsNatural {
 		buf.WriteString(" NATURAL")
 	}
@@ -40,13 +42,13 @@ func (n *JoinExpr) Format(buf *TrackedBuffer) {
 	default:
 		buf.WriteString(" JOIN ")
 	}
-	buf.astFormat(n.Rarg)
+	buf.astFormat(n.Rarg, d)
 	if items(n.UsingClause) {
 		buf.WriteString(" USING (")
-		buf.join(n.UsingClause, ", ")
+		buf.join(n.UsingClause, d, ", ")
 		buf.WriteString(")")
 	} else if set(n.Quals) {
 		buf.WriteString(" ON ")
-		buf.astFormat(n.Quals)
+		buf.astFormat(n.Quals, d)
 	}
 }

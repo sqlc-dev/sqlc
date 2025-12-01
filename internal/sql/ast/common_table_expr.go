@@ -1,5 +1,7 @@
 package ast
 
+import "github.com/sqlc-dev/sqlc/internal/sql/format"
+
 type CommonTableExpr struct {
 	Ctename          *string
 	Aliascolnames    *List
@@ -17,7 +19,7 @@ func (n *CommonTableExpr) Pos() int {
 	return n.Location
 }
 
-func (n *CommonTableExpr) Format(buf *TrackedBuffer) {
+func (n *CommonTableExpr) Format(buf *TrackedBuffer, d format.Dialect) {
 	if n == nil {
 		return
 	}
@@ -26,10 +28,10 @@ func (n *CommonTableExpr) Format(buf *TrackedBuffer) {
 	}
 	if items(n.Aliascolnames) {
 		buf.WriteString("(")
-		buf.join(n.Aliascolnames, ", ")
+		buf.join(n.Aliascolnames, d, ", ")
 		buf.WriteString(")")
 	}
 	buf.WriteString(" AS (")
-	buf.astFormat(n.Ctequery)
+	buf.astFormat(n.Ctequery, d)
 	buf.WriteString(")")
 }

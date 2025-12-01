@@ -1,5 +1,7 @@
 package ast
 
+import "github.com/sqlc-dev/sqlc/internal/sql/format"
+
 type FuncParamMode int
 
 const (
@@ -22,7 +24,7 @@ func (n *FuncParam) Pos() int {
 	return 0
 }
 
-func (n *FuncParam) Format(buf *TrackedBuffer) {
+func (n *FuncParam) Format(buf *TrackedBuffer, d format.Dialect) {
 	if n == nil {
 		return
 	}
@@ -41,5 +43,5 @@ func (n *FuncParam) Format(buf *TrackedBuffer) {
 		buf.WriteString(" ")
 	}
 	// Parameter type
-	buf.astFormat(n.Type)
+	buf.astFormat(n.Type, d)
 }

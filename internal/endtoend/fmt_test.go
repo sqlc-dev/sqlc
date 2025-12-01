@@ -25,7 +25,7 @@ type sqlParser interface {
 
 // sqlFormatter is an interface for formatters
 type sqlFormatter interface {
-	format.Formatter
+	format.Dialect
 }
 
 func TestFormat(t *testing.T) {

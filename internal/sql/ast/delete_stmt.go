@@ -1,5 +1,7 @@
 package ast
 
+import "github.com/sqlc-dev/sqlc/internal/sql/format"
+
 type DeleteStmt struct {
 	Relations     *List
 	UsingClause   *List
@@ -16,13 +18,13 @@ func (n *DeleteStmt) Pos() int {
 	return 0
 }
 
-func (n *DeleteStmt) Format(buf *TrackedBuffer) {
+func (n *DeleteStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 	if n == nil {
 		return
 	}
 
 	if n.WithClause != nil {
-		buf.astFormat(n.WithClause)
+		buf.astFormat(n.WithClause, d)
 		buf.WriteString(" ")
 	}
 
@@ -30,37 +32,37 @@ func (n *DeleteStmt) Format(buf *TrackedBuffer) {
 
 	// MySQL multi-table DELETE: DELETE t1.*, t2.* FROM t1 JOIN t2 ...
 	if items(n.Targets) {
-		buf.join(n.Targets, ", ")
+		buf.join(n.Targets, d, ", ")
 		buf.WriteString(" FROM ")
 		if set(n.FromClause) {
-			buf.astFormat(n.FromClause)
+			buf.astFormat(n.FromClause, d)
 		} else if items(n.Relations) {
-			buf.astFormat(n.Relations)
+			buf.astFormat(n.Relations, d)
 		}
 	} else {
 		buf.WriteString("FROM ")
 		if items(n.Relations) {
-			buf.astFormat(n.Relations)
+			buf.astFormat(n.Relations, d)
 		}
 	}
 
 	if items(n.UsingClause) {
 		buf.WriteString(" USING ")
-		buf.join(n.UsingClause, ", ")
+		buf.join(n.UsingClause, d, ", ")
 	}
 
 	if set(n.WhereClause) {
 		buf.WriteString(" WHERE ")
-		buf.astFormat(n.WhereClause)
+		buf.astFormat(n.WhereClause, d)
 	}
 
 	if set(n.LimitCount) {
 		buf.WriteString(" LIMIT ")
-		buf.astFormat(n.LimitCount)
+		buf.astFormat(n.LimitCount, d)
 	}
 
 	if items(n.ReturningList) {
 		buf.WriteString(" RETURNING ")
-		buf.astFormat(n.ReturningList)
+		buf.astFormat(n.ReturningList, d)
 	}
 }

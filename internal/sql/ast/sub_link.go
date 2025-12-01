@@ -1,5 +1,7 @@
 package ast
 
+import "github.com/sqlc-dev/sqlc/internal/sql/format"
+
 type SubLinkType uint
 
 const (
@@ -27,14 +29,14 @@ func (n *SubLink) Pos() int {
 	return n.Location
 }
 
-func (n *SubLink) Format(buf *TrackedBuffer) {
+func (n *SubLink) Format(buf *TrackedBuffer, d format.Dialect) {
 	if n == nil {
 		return
 	}
 	// Format the test expression if present (for IN subqueries etc.)
 	hasTestExpr := n.Testexpr != nil
 	if hasTestExpr {
-		buf.astFormat(n.Testexpr)
+		buf.astFormat(n.Testexpr, d)
 	}
 	switch n.SubLinkType {
 	case EXISTS_SUBLINK:
@@ -52,6 +54,6 @@ func (n *SubLink) Format(buf *TrackedBuffer) {
 			buf.WriteString("(")
 		}
 	}
-	buf.astFormat(n.Subselect)
+	buf.astFormat(n.Subselect, d)
 	buf.WriteString(")")
 }

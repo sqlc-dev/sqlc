@@ -1,5 +1,7 @@
 package ast
 
+import "github.com/sqlc-dev/sqlc/internal/sql/format"
+
 type CreateExtensionStmt struct {
 	Extname     *string
 	IfNotExists bool
@@ -10,7 +12,7 @@ func (n *CreateExtensionStmt) Pos() int {
 	return 0
 }
 
-func (n *CreateExtensionStmt) Format(buf *TrackedBuffer) {
+func (n *CreateExtensionStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 	if n == nil {
 		return
 	}

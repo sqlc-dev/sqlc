@@ -17,7 +17,7 @@ func hasMixedCase(s string) bool {
 }
 
 // QuoteIdent returns a quoted identifier if it needs quoting.
-// This implements the format.Formatter interface.
+// This implements the format.Dialect interface.
 func (p *Parser) QuoteIdent(s string) string {
 	if p.IsReservedKeyword(s) || hasMixedCase(s) {
 		return `"` + s + `"`
@@ -26,7 +26,7 @@ func (p *Parser) QuoteIdent(s string) string {
 }
 
 // TypeName returns the SQL type name for the given namespace and name.
-// This implements the format.Formatter interface.
+// This implements the format.Dialect interface.
 func (p *Parser) TypeName(ns, name string) string {
 	if ns == "pg_catalog" {
 		switch name {

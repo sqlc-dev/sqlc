@@ -1,5 +1,7 @@
 package ast
 
+import "github.com/sqlc-dev/sqlc/internal/sql/format"
+
 type TypeName struct {
 	Catalog string
 	Schema  string
@@ -20,7 +22,7 @@ func (n *TypeName) Pos() int {
 	return n.Location
 }
 
-func (n *TypeName) Format(buf *TrackedBuffer) {
+func (n *TypeName) Format(buf *TrackedBuffer, d format.Dialect) {
 	if n == nil {
 		return
 	}
@@ -30,26 +32,26 @@ func (n *TypeName) Format(buf *TrackedBuffer) {
 			first, _ := n.Names.Items[0].(*String)
 			second, _ := n.Names.Items[1].(*String)
 			if first != nil && second != nil {
-				buf.WriteString(buf.TypeName(first.Str, second.Str))
+				buf.WriteString(d.TypeName(first.Str, second.Str))
 				goto addMods
 			}
 		}
 		// For single name types, just output as-is
 		if len(n.Names.Items) == 1 {
 			if s, ok := n.Names.Items[0].(*String); ok {
-				buf.WriteString(buf.TypeName("", s.Str))
+				buf.WriteString(d.TypeName("", s.Str))
 				goto addMods
 			}
 		}
-		buf.join(n.Names, ".")
+		buf.join(n.Names, d, ".")
 	} else {
-		buf.WriteString(buf.TypeName(n.Schema, n.Name))
+		buf.WriteString(d.TypeName(n.Schema, n.Name))
 	}
 addMods:
 	// Add type modifiers (e.g., varchar(255))
 	if items(n.Typmods) {
 		buf.WriteString("(")
-		buf.join(n.Typmods, ", ")
+		buf.join(n.Typmods, d, ", ")
 		buf.WriteString(")")
 	}
 	if items(n.ArrayBounds) {

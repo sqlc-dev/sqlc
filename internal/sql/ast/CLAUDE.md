@@ -17,13 +17,14 @@ The `TrackedBuffer` type (`pg_query.go`) handles SQL formatting with dialect-spe
 - `QuoteIdent(name string)` - quotes identifiers (dialect-specific)
 - `TypeName(ns, name string)` - formats type names (dialect-specific)
 
-### Formatter Interface
-Dialect-specific formatting is handled via the `Formatter` interface:
+### Dialect Interface
+Dialect-specific formatting is handled via the `Dialect` interface:
 ```go
-type Formatter interface {
+type Dialect interface {
     QuoteIdent(string) string
     TypeName(ns, name string) string
     Param(int) string      // $1 for PostgreSQL, ? for MySQL
+    NamedParam(string) string // @name for PostgreSQL, :name for SQLite
     Cast(string) string
 }
 ```

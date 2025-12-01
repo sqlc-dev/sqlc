@@ -1,5 +1,7 @@
 package ast
 
+import "github.com/sqlc-dev/sqlc/internal/sql/format"
+
 type OnConflictClause struct {
 	Action      OnConflictAction
 	Infer       *InferClause
@@ -20,13 +22,13 @@ const (
 	OnConflictActionUpdate    OnConflictAction = 3
 )
 
-func (n *OnConflictClause) Format(buf *TrackedBuffer) {
+func (n *OnConflictClause) Format(buf *TrackedBuffer, d format.Dialect) {
 	if n == nil {
 		return
 	}
 	buf.WriteString("ON CONFLICT ")
 	if n.Infer != nil {
-		buf.astFormat(n.Infer)
+		buf.astFormat(n.Infer, d)
 		buf.WriteString(" ")
 	}
 	switch n.Action {
@@ -45,15 +47,15 @@ func (n *OnConflictClause) Format(buf *TrackedBuffer) {
 						buf.WriteString(*rt.Name)
 					}
 					buf.WriteString(" = ")
-					buf.astFormat(rt.Val)
+					buf.astFormat(rt.Val, d)
 				} else {
-					buf.astFormat(item)
+					buf.astFormat(item, d)
 				}
 			}
 		}
 		if set(n.WhereClause) {
 			buf.WriteString(" WHERE ")
-			buf.astFormat(n.WhereClause)
+			buf.astFormat(n.WhereClause, d)
 		}
 	}
 }
