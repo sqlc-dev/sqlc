@@ -14,5 +14,5 @@ func (n *List) Format(buf *TrackedBuffer, d format.Dialect) {
 	if n == nil {
 		return
 	}
-	buf.join(n, d, ",")
+	buf.join(n, d, ", ")
 }
