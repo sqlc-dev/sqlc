@@ -11,7 +11,7 @@ import (
 )
 
 const getPendingSaleStatuses = `-- name: GetPendingSaleStatuses :many
-WITH w_pending_sale_status AS (SELECT status, column2, column3, column4 FROM (VALUES ('SAVED', 'IDLE', 'IN PROGRESS', 'HELD')) AS pending_sale_status(status)) SELECT status FROM w_pending_sale_status;
+WITH w_pending_sale_status AS (SELECT status FROM (VALUES ('SAVED'), ('IDLE'), ('IN PROGRESS'), ('HELD')) AS pending_sale_status(status)) SELECT status FROM w_pending_sale_status;
 `
 
 func (q *Queries) GetPendingSaleStatuses(ctx context.Context) ([]sql.NullString, error) {

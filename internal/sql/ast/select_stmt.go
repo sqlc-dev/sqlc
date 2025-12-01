@@ -37,9 +37,16 @@ func (n *SelectStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 	}
 
 	if items(n.ValuesLists) {
-		buf.WriteString("VALUES (")
-		buf.astFormat(n.ValuesLists, d)
-		buf.WriteString(")")
+		buf.WriteString("VALUES ")
+		// ValuesLists is a list of rows, where each row is a List of values
+		for i, row := range n.ValuesLists.Items {
+			if i > 0 {
+				buf.WriteString(", ")
+			}
+			buf.WriteString("(")
+			buf.astFormat(row, d)
+			buf.WriteString(")")
+		}
 		return
 	}
 
