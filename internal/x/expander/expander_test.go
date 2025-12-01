@@ -9,9 +9,12 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jackc/pgx/v5/pgxpool"
+	_ "github.com/ncruces/go-sqlite3/driver"
+	_ "github.com/ncruces/go-sqlite3/embed"
 
 	"github.com/sqlc-dev/sqlc/internal/engine/dolphin"
 	"github.com/sqlc-dev/sqlc/internal/engine/postgresql"
+	"github.com/sqlc-dev/sqlc/internal/engine/sqlite"
 )
 
 // PostgreSQLColumnGetter implements ColumnGetter for PostgreSQL using pgxpool.
@@ -39,16 +42,13 @@ func (g *PostgreSQLColumnGetter) GetColumnNames(ctx context.Context, query strin
 	return columns, nil
 }
 
-// MySQLColumnGetter implements ColumnGetter for MySQL using database/sql.
-type MySQLColumnGetter struct {
+// SQLColumnGetter implements ColumnGetter for MySQL and SQLite using database/sql.
+type SQLColumnGetter struct {
 	db *sql.DB
 }
 
-func (g *MySQLColumnGetter) GetColumnNames(ctx context.Context, query string) ([]string, error) {
-	// Use LIMIT 0 to get column metadata without fetching rows
-	limitedQuery := query
-	// For SELECT queries, add LIMIT 0 if not already present
-	rows, err := g.db.QueryContext(ctx, limitedQuery)
+func (g *SQLColumnGetter) GetColumnNames(ctx context.Context, query string) ([]string, error) {
+	rows, err := g.db.QueryContext(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -242,7 +242,7 @@ func TestExpandMySQL(t *testing.T) {
 	parser := dolphin.NewParser()
 
 	// Create the expander
-	colGetter := &MySQLColumnGetter{db: db}
+	colGetter := &SQLColumnGetter{db: db}
 	exp := New(colGetter, parser, parser)
 
 	tests := []struct {
@@ -279,6 +279,95 @@ func TestExpandMySQL(t *testing.T) {
 			name:     "star in middle of columns table qualified",
 			query:    "SELECT id, authors.*, name FROM authors",
 			expected: "SELECT id,authors.id,authors.name,authors.bio,name FROM authors;",
+		},
+		{
+			name:     "count star not expanded",
+			query:    "SELECT COUNT(*) FROM authors",
+			expected: "SELECT COUNT(*) FROM authors", // No change - COUNT(*) should not be expanded
+		},
+		{
+			name:     "count star with other columns",
+			query:    "SELECT COUNT(*), name FROM authors GROUP BY name",
+			expected: "SELECT COUNT(*), name FROM authors GROUP BY name", // No change
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			result, err := exp.Expand(ctx, tc.query)
+			if err != nil {
+				t.Fatalf("Expand failed: %v", err)
+			}
+			if result != tc.expected {
+				t.Errorf("expected %q, got %q", tc.expected, result)
+			}
+		})
+	}
+}
+
+func TestExpandSQLite(t *testing.T) {
+	ctx := context.Background()
+
+	// Create an in-memory SQLite database
+	db, err := sql.Open("sqlite3", ":memory:")
+	if err != nil {
+		t.Fatalf("could not open SQLite: %v", err)
+	}
+	defer db.Close()
+
+	// Create a test table
+	_, err = db.ExecContext(ctx, `
+		CREATE TABLE authors (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			name TEXT NOT NULL,
+			bio TEXT
+		)
+	`)
+	if err != nil {
+		t.Fatalf("failed to create test table: %v", err)
+	}
+
+	// Create the parser which also implements format.Dialect
+	parser := sqlite.NewParser()
+
+	// Create the expander
+	colGetter := &SQLColumnGetter{db: db}
+	exp := New(colGetter, parser, parser)
+
+	tests := []struct {
+		name     string
+		query    string
+		expected string
+	}{
+		{
+			name:     "simple select star",
+			query:    "SELECT * FROM authors",
+			expected: "SELECT id,name,bio FROM authors;",
+		},
+		{
+			name:     "select with no star",
+			query:    "SELECT id, name FROM authors",
+			expected: "SELECT id, name FROM authors", // No change, returns original
+		},
+		{
+			name:     "select star with where clause",
+			query:    "SELECT * FROM authors WHERE id = 1",
+			expected: "SELECT id,name,bio FROM authors WHERE id = 1;",
+		},
+		{
+			name:     "double star",
+			query:    "SELECT *, * FROM authors",
+			expected: "SELECT id,name,bio,id,name,bio FROM authors;",
+		},
+		{
+			name:     "table qualified star",
+			query:    "SELECT authors.* FROM authors",
+			expected: "SELECT authors.id,authors.name,authors.bio FROM authors;",
+		},
+		{
+			name:     "star in middle of columns",
+			query:    "SELECT id, *, name FROM authors",
+			expected: "SELECT id,id,name,bio,name FROM authors;",
 		},
 		{
 			name:     "count star not expanded",
