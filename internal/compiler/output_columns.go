@@ -599,7 +599,24 @@ func (c *Compiler) sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, erro
 			tables = append(tables, table)
 
 		case *ast.RangeSubselect:
-			cols, err := c.outputColumns(qc, n.Subquery)
+			lateralQC := qc
+			if n.Lateral && len(tables) > 0 {
+				// LATERAL allows the subquery to reference columns from preceding FROM items.
+				lateralTables := make(map[string]*Table, len(tables))
+				for _, table := range tables {
+					if table.Rel != nil && table.Rel.Name != "" {
+						lateralTables[table.Rel.Name] = table
+					}
+				}
+				lateralQC = &QueryCatalog{
+					catalog:       qc.catalog,
+					ctes:          qc.ctes,
+					embeds:        qc.embeds,
+					lateralTables: lateralTables,
+				}
+			}
+
+			cols, err := c.outputColumns(lateralQC, n.Subquery)
 			if err != nil {
 				return nil, err
 			}
@@ -644,6 +661,15 @@ func (c *Compiler) sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, erro
 			return nil, fmt.Errorf("sourceTable: unsupported list item type: %T", n)
 		}
 	}
+
+	// Add LATERAL outer tables to the tables list.
+	// LATERAL subqueries can reference these outer tables for column resolution.
+	if qc != nil {
+		for _, lateralTable := range qc.lateralTables {
+			tables = append(tables, lateralTable)
+		}
+	}
+
 	return tables, nil
 }
 
