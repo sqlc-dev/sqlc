@@ -12,10 +12,36 @@ func (n *A_Expr) Pos() int {
 	return n.Location
 }
 
+// isNamedParam returns true if this A_Expr represents a named parameter (@name)
+// and extracts the parameter name if so.
+func (n *A_Expr) isNamedParam() (string, bool) {
+	if n.Name == nil || len(n.Name.Items) != 1 {
+		return "", false
+	}
+	s, ok := n.Name.Items[0].(*String)
+	if !ok || s.Str != "@" {
+		return "", false
+	}
+	if set(n.Lexpr) || !set(n.Rexpr) {
+		return "", false
+	}
+	if nameStr, ok := n.Rexpr.(*String); ok {
+		return nameStr.Str, true
+	}
+	return "", false
+}
+
 func (n *A_Expr) Format(buf *TrackedBuffer) {
 	if n == nil {
 		return
 	}
+
+	// Check for named parameter first (works regardless of Kind)
+	if name, ok := n.isNamedParam(); ok {
+		buf.WriteString(buf.NamedParam(name))
+		return
+	}
+
 	switch n.Kind {
 	case A_Expr_Kind_IN:
 		buf.astFormat(n.Lexpr)
@@ -64,32 +90,8 @@ func (n *A_Expr) Format(buf *TrackedBuffer) {
 		buf.WriteString(", ")
 		buf.astFormat(n.Rexpr)
 		buf.WriteString(")")
-	case A_Expr_Kind_OP:
-		// Check if this is a named parameter (@name)
-		opName := ""
-		if n.Name != nil && len(n.Name.Items) == 1 {
-			if s, ok := n.Name.Items[0].(*String); ok {
-				opName = s.Str
-			}
-		}
-		if opName == "@" && !set(n.Lexpr) && set(n.Rexpr) {
-			// Named parameter: @name (no space after @)
-			buf.WriteString("@")
-			buf.astFormat(n.Rexpr)
-		} else {
-			// Standard binary operator
-			if set(n.Lexpr) {
-				buf.astFormat(n.Lexpr)
-				buf.WriteString(" ")
-			}
-			buf.astFormat(n.Name)
-			if set(n.Rexpr) {
-				buf.WriteString(" ")
-				buf.astFormat(n.Rexpr)
-			}
-		}
 	default:
-		// Fallback for other cases
+		// Standard operator (including A_Expr_Kind_OP)
 		if set(n.Lexpr) {
 			buf.astFormat(n.Lexpr)
 			buf.WriteString(" ")
