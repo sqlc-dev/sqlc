@@ -30,6 +30,9 @@
       "database": {
         "uri": "${VET_TEST_EXAMPLES_MYSQL_BOOKTEST}"
       },
+      "analyzer": {
+        "database": false
+      },
       "rules": [
         "sqlc/db-prepare"
       ]

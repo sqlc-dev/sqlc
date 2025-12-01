@@ -15,12 +15,17 @@ const createAuthor = `-- name: CreateAuthor :execlastid
 INSERT INTO authors (
           name, bio
 ) VALUES (
-  $1, $2
+  ?, ?
 )
 `
 
-func (q *Queries) CreateAuthor(ctx context.Context) (int64, error) {
-	result, err := q.db.ExecContext(ctx, createAuthor)
+type CreateAuthorParams struct {
+	Name string
+	Bio  sql.NullString
+}
+
+func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, createAuthor, arg.Name, arg.Bio)
 	if err != nil {
 		return 0, fmt.Errorf("query CreateAuthor: %w", err)
 	}
@@ -29,11 +34,11 @@ func (q *Queries) CreateAuthor(ctx context.Context) (int64, error) {
 
 const deleteAuthorExec = `-- name: DeleteAuthorExec :exec
 DELETE FROM authors
-WHERE id = $1
+WHERE id = ?
 `
 
-func (q *Queries) DeleteAuthorExec(ctx context.Context) error {
-	_, err := q.db.ExecContext(ctx, deleteAuthorExec)
+func (q *Queries) DeleteAuthorExec(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, deleteAuthorExec, id)
 	if err != nil {
 		err = fmt.Errorf("query DeleteAuthorExec: %w", err)
 	}
@@ -42,11 +47,11 @@ func (q *Queries) DeleteAuthorExec(ctx context.Context) error {
 
 const deleteAuthorExecLastID = `-- name: DeleteAuthorExecLastID :execlastid
 DELETE FROM authors
-WHERE id = $1
+WHERE id = ?
 `
 
-func (q *Queries) DeleteAuthorExecLastID(ctx context.Context) (int64, error) {
-	result, err := q.db.ExecContext(ctx, deleteAuthorExecLastID)
+func (q *Queries) DeleteAuthorExecLastID(ctx context.Context, id int64) (int64, error) {
+	result, err := q.db.ExecContext(ctx, deleteAuthorExecLastID, id)
 	if err != nil {
 		return 0, fmt.Errorf("query DeleteAuthorExecLastID: %w", err)
 	}
@@ -55,11 +60,11 @@ func (q *Queries) DeleteAuthorExecLastID(ctx context.Context) (int64, error) {
 
 const deleteAuthorExecResult = `-- name: DeleteAuthorExecResult :execresult
 DELETE FROM authors
-WHERE id = $1
+WHERE id = ?
 `
 
-func (q *Queries) DeleteAuthorExecResult(ctx context.Context) (sql.Result, error) {
-	result, err := q.db.ExecContext(ctx, deleteAuthorExecResult)
+func (q *Queries) DeleteAuthorExecResult(ctx context.Context, id int64) (sql.Result, error) {
+	result, err := q.db.ExecContext(ctx, deleteAuthorExecResult, id)
 	if err != nil {
 		err = fmt.Errorf("query DeleteAuthorExecResult: %w", err)
 	}
@@ -68,11 +73,11 @@ func (q *Queries) DeleteAuthorExecResult(ctx context.Context) (sql.Result, error
 
 const deleteAuthorExecRows = `-- name: DeleteAuthorExecRows :execrows
 DELETE FROM authors
-WHERE id = $1
+WHERE id = ?
 `
 
-func (q *Queries) DeleteAuthorExecRows(ctx context.Context) (int64, error) {
-	result, err := q.db.ExecContext(ctx, deleteAuthorExecRows)
+func (q *Queries) DeleteAuthorExecRows(ctx context.Context, id int64) (int64, error) {
+	result, err := q.db.ExecContext(ctx, deleteAuthorExecRows, id)
 	if err != nil {
 		return 0, fmt.Errorf("query DeleteAuthorExecRows: %w", err)
 	}
@@ -81,11 +86,11 @@ func (q *Queries) DeleteAuthorExecRows(ctx context.Context) (int64, error) {
 
 const getAuthor = `-- name: GetAuthor :one
 SELECT id, name, bio FROM authors
-WHERE id = $1 LIMIT 1
+WHERE id = ? LIMIT 1
 `
 
-func (q *Queries) GetAuthor(ctx context.Context) (Author, error) {
-	row := q.db.QueryRowContext(ctx, getAuthor)
+func (q *Queries) GetAuthor(ctx context.Context, id int64) (Author, error) {
+	row := q.db.QueryRowContext(ctx, getAuthor, id)
 	var i Author
 	err := row.Scan(&i.ID, &i.Name, &i.Bio)
 	if err != nil {

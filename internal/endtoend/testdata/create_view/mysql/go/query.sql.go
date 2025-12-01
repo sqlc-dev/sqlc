@@ -7,6 +7,7 @@ package querytest
 
 import (
 	"context"
+	"database/sql"
 )
 
 const getFirst = `-- name: GetFirst :many
@@ -37,11 +38,11 @@ func (q *Queries) GetFirst(ctx context.Context) ([]string, error) {
 }
 
 const getSecond = `-- name: GetSecond :many
-SELECT val, val2 FROM second_view WHERE val2 = $1
+SELECT val, val2 FROM second_view WHERE val2 = ?
 `
 
-func (q *Queries) GetSecond(ctx context.Context) ([]SecondView, error) {
-	rows, err := q.db.QueryContext(ctx, getSecond)
+func (q *Queries) GetSecond(ctx context.Context, val2 sql.NullInt32) ([]SecondView, error) {
+	rows, err := q.db.QueryContext(ctx, getSecond, val2)
 	if err != nil {
 		return nil, err
 	}

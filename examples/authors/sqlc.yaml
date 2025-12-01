@@ -24,6 +24,8 @@ sql:
   engine: mysql
   database:
     uri: "${VET_TEST_EXAMPLES_MYSQL_AUTHORS}"
+  analyzer:
+    database: false
   rules:
   - sqlc/db-prepare
   # - mysql-query-too-costly
