@@ -3,11 +3,12 @@ package expander
 import (
 	"context"
 	"database/sql"
+	"database/sql/driver"
 	"fmt"
 	"os"
 	"testing"
 
-	_ "github.com/go-sql-driver/mysql"
+	"github.com/go-sql-driver/mysql"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/ncruces/go-sqlite3"
 	_ "github.com/ncruces/go-sqlite3/embed"
@@ -42,28 +43,46 @@ func (g *PostgreSQLColumnGetter) GetColumnNames(ctx context.Context, query strin
 	return columns, nil
 }
 
-// MySQLColumnGetter implements ColumnGetter for MySQL using database/sql.
+// MySQLColumnGetter implements ColumnGetter for MySQL using the forked driver's StmtMetadata.
 type MySQLColumnGetter struct {
 	db *sql.DB
 }
 
 func (g *MySQLColumnGetter) GetColumnNames(ctx context.Context, query string) ([]string, error) {
-	// Prepare the statement to validate the query and get column metadata
-	stmt, err := g.db.PrepareContext(ctx, query)
+	conn, err := g.db.Conn(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer stmt.Close()
+	defer conn.Close()
 
-	// Execute to get column metadata from database/sql.
-	// database/sql doesn't expose column names from prepared statements directly.
-	rows, err := stmt.QueryContext(ctx)
+	var columns []string
+	err = conn.Raw(func(driverConn any) error {
+		preparer, ok := driverConn.(driver.ConnPrepareContext)
+		if !ok {
+			return fmt.Errorf("driver connection does not support PrepareContext")
+		}
+
+		stmt, err := preparer.PrepareContext(ctx, query)
+		if err != nil {
+			return err
+		}
+		defer stmt.Close()
+
+		meta, ok := stmt.(mysql.StmtMetadata)
+		if !ok {
+			return fmt.Errorf("prepared statement does not implement StmtMetadata")
+		}
+
+		for _, col := range meta.ColumnMetadata() {
+			columns = append(columns, col.Name)
+		}
+		return nil
+	})
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
 
-	return rows.Columns()
+	return columns, nil
 }
 
 // SQLiteColumnGetter implements ColumnGetter for SQLite using the native ncruces/go-sqlite3 API.
@@ -133,7 +152,7 @@ func TestExpandPostgreSQL(t *testing.T) {
 		{
 			name:     "simple select star",
 			query:    "SELECT * FROM authors",
-			expected: "SELECT id,name,bio FROM authors;",
+			expected: "SELECT id, name, bio FROM authors;",
 		},
 		{
 			name:     "select with no star",
@@ -143,52 +162,52 @@ func TestExpandPostgreSQL(t *testing.T) {
 		{
 			name:     "select star with where clause",
 			query:    "SELECT * FROM authors WHERE id = 1",
-			expected: "SELECT id,name,bio FROM authors WHERE id = 1;",
+			expected: "SELECT id, name, bio FROM authors WHERE id = 1;",
 		},
 		{
 			name:     "double star",
 			query:    "SELECT *, * FROM authors",
-			expected: "SELECT id,name,bio,id,name,bio FROM authors;",
+			expected: "SELECT id, name, bio, id, name, bio FROM authors;",
 		},
 		{
 			name:     "table qualified star",
 			query:    "SELECT authors.* FROM authors",
-			expected: "SELECT authors.id,authors.name,authors.bio FROM authors;",
+			expected: "SELECT authors.id, authors.name, authors.bio FROM authors;",
 		},
 		{
 			name:     "star in middle of columns",
 			query:    "SELECT id, *, name FROM authors",
-			expected: "SELECT id,id,name,bio,name FROM authors;",
+			expected: "SELECT id, id, name, bio, name FROM authors;",
 		},
 		{
 			name:     "insert returning star",
 			query:    "INSERT INTO authors (name, bio) VALUES ('John', 'A writer') RETURNING *",
-			expected: "INSERT INTO authors (name,bio) VALUES ('John','A writer') RETURNING id,name,bio;",
+			expected: "INSERT INTO authors (name, bio) VALUES ('John', 'A writer') RETURNING id, name, bio;",
 		},
 		{
 			name:     "insert returning mixed",
 			query:    "INSERT INTO authors (name, bio) VALUES ('John', 'A writer') RETURNING id, *",
-			expected: "INSERT INTO authors (name,bio) VALUES ('John','A writer') RETURNING id,id,name,bio;",
+			expected: "INSERT INTO authors (name, bio) VALUES ('John', 'A writer') RETURNING id, id, name, bio;",
 		},
 		{
 			name:     "update returning star",
 			query:    "UPDATE authors SET name = 'Jane' WHERE id = 1 RETURNING *",
-			expected: "UPDATE authors SET name = 'Jane' WHERE id = 1 RETURNING id,name,bio;",
+			expected: "UPDATE authors SET name = 'Jane' WHERE id = 1 RETURNING id, name, bio;",
 		},
 		{
 			name:     "delete returning star",
 			query:    "DELETE FROM authors WHERE id = 1 RETURNING *",
-			expected: "DELETE FROM authors WHERE id = 1 RETURNING id,name,bio;",
+			expected: "DELETE FROM authors WHERE id = 1 RETURNING id, name, bio;",
 		},
 		{
 			name:     "cte with select star",
 			query:    "WITH a AS (SELECT * FROM authors) SELECT * FROM a",
-			expected: "WITH a AS (SELECT id,name,bio FROM authors) SELECT id,name,bio FROM a;",
+			expected: "WITH a AS (SELECT id, name, bio FROM authors) SELECT id, name, bio FROM a;",
 		},
 		{
 			name:     "multiple ctes with dependency",
 			query:    "WITH a AS (SELECT * FROM authors), b AS (SELECT * FROM a) SELECT * FROM b",
-			expected: "WITH a AS (SELECT id,name,bio FROM authors), b AS (SELECT id,name,bio FROM a) SELECT id,name,bio FROM b;",
+			expected: "WITH a AS (SELECT id, name, bio FROM authors), b AS (SELECT id, name, bio FROM a) SELECT id, name, bio FROM b;",
 		},
 		{
 			name:     "count star not expanded",
@@ -285,7 +304,7 @@ func TestExpandMySQL(t *testing.T) {
 		{
 			name:     "simple select star",
 			query:    "SELECT * FROM authors",
-			expected: "SELECT id,name,bio FROM authors;",
+			expected: "SELECT id, name, bio FROM authors;",
 		},
 		{
 			name:     "select with no star",
@@ -295,22 +314,22 @@ func TestExpandMySQL(t *testing.T) {
 		{
 			name:     "select star with where clause",
 			query:    "SELECT * FROM authors WHERE id = 1",
-			expected: "SELECT id,name,bio FROM authors WHERE id = 1;",
+			expected: "SELECT id, name, bio FROM authors WHERE id = 1;",
 		},
 		{
 			name:     "table qualified star",
 			query:    "SELECT authors.* FROM authors",
-			expected: "SELECT authors.id,authors.name,authors.bio FROM authors;",
+			expected: "SELECT authors.id, authors.name, authors.bio FROM authors;",
 		},
 		{
 			name:     "double table qualified star",
 			query:    "SELECT authors.*, authors.* FROM authors",
-			expected: "SELECT authors.id,authors.name,authors.bio,authors.id,authors.name,authors.bio FROM authors;",
+			expected: "SELECT authors.id, authors.name, authors.bio, authors.id, authors.name, authors.bio FROM authors;",
 		},
 		{
 			name:     "star in middle of columns table qualified",
 			query:    "SELECT id, authors.*, name FROM authors",
-			expected: "SELECT id,authors.id,authors.name,authors.bio,name FROM authors;",
+			expected: "SELECT id, authors.id, authors.name, authors.bio, name FROM authors;",
 		},
 		{
 			name:     "count star not expanded",
@@ -374,7 +393,7 @@ func TestExpandSQLite(t *testing.T) {
 		{
 			name:     "simple select star",
 			query:    "SELECT * FROM authors",
-			expected: "SELECT id,name,bio FROM authors;",
+			expected: "SELECT id, name, bio FROM authors;",
 		},
 		{
 			name:     "select with no star",
@@ -384,22 +403,22 @@ func TestExpandSQLite(t *testing.T) {
 		{
 			name:     "select star with where clause",
 			query:    "SELECT * FROM authors WHERE id = 1",
-			expected: "SELECT id,name,bio FROM authors WHERE id = 1;",
+			expected: "SELECT id, name, bio FROM authors WHERE id = 1;",
 		},
 		{
 			name:     "double star",
 			query:    "SELECT *, * FROM authors",
-			expected: "SELECT id,name,bio,id,name,bio FROM authors;",
+			expected: "SELECT id, name, bio, id, name, bio FROM authors;",
 		},
 		{
 			name:     "table qualified star",
 			query:    "SELECT authors.* FROM authors",
-			expected: "SELECT authors.id,authors.name,authors.bio FROM authors;",
+			expected: "SELECT authors.id, authors.name, authors.bio FROM authors;",
 		},
 		{
 			name:     "star in middle of columns",
 			query:    "SELECT id, *, name FROM authors",
-			expected: "SELECT id,id,name,bio,name FROM authors;",
+			expected: "SELECT id, id, name, bio, name FROM authors;",
 		},
 		{
 			name:     "count star not expanded",
