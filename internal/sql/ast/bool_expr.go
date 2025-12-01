@@ -26,6 +26,12 @@ func (n *BoolExpr) Format(buf *TrackedBuffer) {
 			buf.astFormat(n.Args.Items[0])
 		}
 		buf.WriteString(" IS NOT NULL")
+	case BoolExprTypeNot:
+		// NOT expression: format as NOT <arg>
+		buf.WriteString("NOT ")
+		if items(n.Args) && len(n.Args.Items) > 0 {
+			buf.astFormat(n.Args.Items[0])
+		}
 	default:
 		buf.WriteString("(")
 		if items(n.Args) {
@@ -34,9 +40,6 @@ func (n *BoolExpr) Format(buf *TrackedBuffer) {
 				buf.join(n.Args, " AND ")
 			case BoolExprTypeOr:
 				buf.join(n.Args, " OR ")
-			case BoolExprTypeNot:
-				buf.WriteString(" NOT ")
-				buf.astFormat(n.Args)
 			}
 		}
 		buf.WriteString(")")

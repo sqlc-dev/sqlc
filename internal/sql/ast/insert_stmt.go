@@ -9,6 +9,7 @@ type InsertStmt struct {
 	ReturningList          *List
 	WithClause             *WithClause
 	Override               OverridingKind
+	DefaultValues          bool // SQLite-specific: INSERT INTO ... DEFAULT VALUES
 }
 
 func (n *InsertStmt) Pos() int {
@@ -35,7 +36,9 @@ func (n *InsertStmt) Format(buf *TrackedBuffer) {
 		buf.WriteString(")")
 	}
 
-	if set(n.SelectStmt) {
+	if n.DefaultValues {
+		buf.WriteString(" DEFAULT VALUES")
+	} else if set(n.SelectStmt) {
 		buf.WriteString(" ")
 		buf.astFormat(n.SelectStmt)
 	}

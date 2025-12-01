@@ -13,6 +13,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/debug"
 	"github.com/sqlc-dev/sqlc/internal/engine/dolphin"
 	"github.com/sqlc-dev/sqlc/internal/engine/postgresql"
+	"github.com/sqlc-dev/sqlc/internal/engine/sqlite"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/format"
 )
@@ -78,6 +79,22 @@ func TestFormat(t *testing.T) {
 						return "", nil
 					}
 					return ast.Format(stmts[0].Raw, mysqlParser), nil
+				}
+			case config.EngineSQLite:
+				sqliteParser := sqlite.NewParser()
+				parse = sqliteParser
+				formatter = sqliteParser
+				// For SQLite, we use the same "round-trip" fingerprint strategy as MySQL:
+				// parse the SQL, format it, and return the formatted string.
+				fingerprint = func(sql string) (string, error) {
+					stmts, err := sqliteParser.Parse(strings.NewReader(sql))
+					if err != nil {
+						return "", err
+					}
+					if len(stmts) == 0 {
+						return "", nil
+					}
+					return strings.ToLower(ast.Format(stmts[0].Raw, sqliteParser)), nil
 				}
 			default:
 				// Skip unsupported engines

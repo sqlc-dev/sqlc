@@ -14,6 +14,10 @@ type Formatter interface {
 	// PostgreSQL uses $1, $2, etc. MySQL uses ?
 	Param(n int) string
 
+	// NamedParam returns the named parameter placeholder for the given name.
+	// PostgreSQL uses @name, SQLite uses :name
+	NamedParam(name string) string
+
 	// Cast formats a type cast expression.
 	// PostgreSQL uses expr::type, MySQL uses CAST(expr AS type)
 	Cast(arg, typeName string) string

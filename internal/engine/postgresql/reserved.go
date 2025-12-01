@@ -64,6 +64,12 @@ func (p *Parser) Param(n int) string {
 	return fmt.Sprintf("$%d", n)
 }
 
+// NamedParam returns the named parameter placeholder for the given name.
+// PostgreSQL/sqlc uses @name syntax.
+func (p *Parser) NamedParam(name string) string {
+	return "@" + name
+}
+
 // Cast returns a type cast expression.
 // PostgreSQL uses expr::type syntax.
 func (p *Parser) Cast(arg, typeName string) string {

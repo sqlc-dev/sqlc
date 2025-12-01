@@ -65,6 +65,15 @@ func (t *TrackedBuffer) Cast(arg, typeName string) string {
 	return arg + "::" + typeName
 }
 
+// NamedParam returns the named parameter placeholder for the given name.
+// If no formatter is set, it returns PostgreSQL-style @name.
+func (t *TrackedBuffer) NamedParam(name string) string {
+	if t.formatter != nil {
+		return t.formatter.NamedParam(name)
+	}
+	return "@" + name
+}
+
 func (t *TrackedBuffer) astFormat(n Node) {
 	if ft, ok := n.(nodeFormatter); ok {
 		ft.Format(t)
