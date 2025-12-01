@@ -124,6 +124,7 @@ type SQL struct {
 
 type Analyzer struct {
 	Database *bool `json:"database" yaml:"database"`
+	Accurate *bool `json:"accurate" yaml:"accurate"`
 }
 
 // TODO: Figure out a better name for this
