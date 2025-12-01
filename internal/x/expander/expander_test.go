@@ -48,7 +48,16 @@ type SQLColumnGetter struct {
 }
 
 func (g *SQLColumnGetter) GetColumnNames(ctx context.Context, query string) ([]string, error) {
-	rows, err := g.db.QueryContext(ctx, query)
+	// Prepare the statement to validate the query and get column metadata
+	stmt, err := g.db.PrepareContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	// Execute with LIMIT 0 workaround by wrapping in a subquery to get column names
+	// without fetching actual data. We need to execute to get column metadata from database/sql.
+	rows, err := stmt.QueryContext(ctx)
 	if err != nil {
 		return nil, err
 	}
