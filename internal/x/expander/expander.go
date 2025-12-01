@@ -6,8 +6,6 @@ import (
 	"io"
 	"strings"
 
-	"github.com/jackc/pgx/v5/pgxpool"
-
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
 	"github.com/sqlc-dev/sqlc/internal/sql/format"
@@ -18,20 +16,25 @@ type Parser interface {
 	Parse(r io.Reader) ([]ast.Statement, error)
 }
 
-// Expander expands SELECT * and RETURNING * queries by replacing * with explicit column names
-// obtained from preparing the query against a PostgreSQL database.
-type Expander struct {
-	pool    *pgxpool.Pool
-	parser  Parser
-	dialect format.Dialect
+// ColumnGetter retrieves column names for a query by preparing it against a database.
+type ColumnGetter interface {
+	GetColumnNames(ctx context.Context, query string) ([]string, error)
 }
 
-// New creates a new Expander with the given connection pool, parser, and dialect.
-func New(pool *pgxpool.Pool, parser Parser, dialect format.Dialect) *Expander {
+// Expander expands SELECT * and RETURNING * queries by replacing * with explicit column names
+// obtained from preparing the query against a database.
+type Expander struct {
+	colGetter ColumnGetter
+	parser    Parser
+	dialect   format.Dialect
+}
+
+// New creates a new Expander with the given column getter, parser, and dialect.
+func New(colGetter ColumnGetter, parser Parser, dialect format.Dialect) *Expander {
 	return &Expander{
-		pool:    pool,
-		parser:  parser,
-		dialect: dialect,
+		colGetter: colGetter,
+		parser:    parser,
+		dialect:   dialect,
 	}
 }
 
@@ -333,24 +336,7 @@ func hasStarInList(targets *ast.List) bool {
 
 // getColumnNames prepares the query and returns the column names from the result
 func (e *Expander) getColumnNames(ctx context.Context, query string) ([]string, error) {
-	conn, err := e.pool.Acquire(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Release()
-
-	// Prepare the statement to get column metadata
-	desc, err := conn.Conn().Prepare(ctx, "", query)
-	if err != nil {
-		return nil, err
-	}
-
-	columns := make([]string, len(desc.Fields))
-	for i, field := range desc.Fields {
-		columns[i] = field.Name
-	}
-
-	return columns, nil
+	return e.colGetter.GetColumnNames(ctx, query)
 }
 
 // countStarsInList counts the number of * expressions in a target list
