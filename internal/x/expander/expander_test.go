@@ -271,6 +271,16 @@ func TestExpandMySQL(t *testing.T) {
 			expected: "SELECT authors.id,authors.name,authors.bio FROM authors;",
 		},
 		{
+			name:     "double table qualified star",
+			query:    "SELECT authors.*, authors.* FROM authors",
+			expected: "SELECT authors.id,authors.name,authors.bio,authors.id,authors.name,authors.bio FROM authors;",
+		},
+		{
+			name:     "star in middle of columns table qualified",
+			query:    "SELECT id, authors.*, name FROM authors",
+			expected: "SELECT id,authors.id,authors.name,authors.bio,name FROM authors;",
+		},
+		{
 			name:     "count star not expanded",
 			query:    "SELECT COUNT(*) FROM authors",
 			expected: "SELECT COUNT(*) FROM authors", // No change - COUNT(*) should not be expanded
@@ -280,9 +290,6 @@ func TestExpandMySQL(t *testing.T) {
 			query:    "SELECT COUNT(*), name FROM authors GROUP BY name",
 			expected: "SELECT COUNT(*), name FROM authors GROUP BY name", // No change
 		},
-		// Note: "double star" and "star in middle of columns" tests are skipped for MySQL
-		// because the intermediate query formatting produces invalid MySQL syntax.
-		// These are edge cases that rarely occur in real-world usage.
 	}
 
 	for _, tc := range tests {
