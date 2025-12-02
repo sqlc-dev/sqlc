@@ -16,7 +16,7 @@ require (
 	github.com/jackc/pgx/v5 v5.7.6
 	github.com/jinzhu/inflection v1.0.0
 	github.com/lib/pq v1.10.9
-	github.com/ncruces/go-sqlite3 v0.30.2
+	github.com/ncruces/go-sqlite3 v0.30.3
 	github.com/pganalyze/pg_query_go/v6 v6.1.0
 	github.com/pingcap/tidb/pkg/parser v0.0.0-20250324122243-d51e00e5bbf0
 	github.com/riza-io/grpc-go v0.2.0
