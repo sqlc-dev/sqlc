@@ -45,7 +45,7 @@ func buildEnums(req *plugin.GenerateRequest, options *opts.Options) []Enum {
 					value = fmt.Sprintf("value_%d", i)
 				}
 				e.Constants = append(e.Constants, Constant{
-					Name:  StructName(enumName+"_"+value, options),
+					Name:  EnumValueName(enumName+"_"+value, options),
 					Value: v,
 					Type:  e.Name,
 				})
