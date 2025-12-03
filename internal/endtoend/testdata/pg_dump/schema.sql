@@ -5,6 +5,8 @@
 -- Dumped from database version 15.3 (Debian 15.3-1.pgdg120+1)
 -- Dumped by pg_dump version 15.3
 
+\restrict auwherpfqaiuwrhgp
+
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
