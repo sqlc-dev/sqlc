@@ -64,49 +64,107 @@ func (c *Catalog) ResolveFuncCall(call *ast.FuncCall) (*Function, error) {
 	}
 
 	for _, fun := range funs {
-		args := fun.InArgs()
-		var defaults int
-		var variadic bool
+		// Separate input and output args from the function signature
+		inArgs := fun.InArgs()
+		outArgs := fun.OutArgs()
+
+		// Build known argument names from all parameters (IN/OUT/INOUT/etc.)
 		known := map[string]struct{}{}
-		for _, arg := range args {
+		for _, a := range fun.Args {
+			if a.Name != "" {
+				known[a.Name] = struct{}{}
+			}
+		}
+
+		// Count defaults and whether the last IN arg is variadic
+		var defaultsIn int
+		var variadic bool
+		for _, arg := range inArgs {
 			if arg.HasDefault {
-				defaults += 1
+				defaultsIn += 1
 			}
 			if arg.Mode == ast.FuncParamVariadic {
 				variadic = true
-				defaults += 1
-			}
-			if arg.Name != "" {
-				known[arg.Name] = struct{}{}
+				// Treat the variadic parameter like having a default for count checks
+				defaultsIn += 1
 			}
 		}
 
-		if variadic {
-			if (len(named) + len(positional)) < (len(args) - defaults) {
-				continue
-			}
-		} else {
-			if (len(named) + len(positional)) > len(args) {
-				continue
-			}
-			if (len(named) + len(positional)) < (len(args) - defaults) {
-				continue
-			}
-		}
-
-		// Validate that the provided named arguments exist in the function
+		// Tally named arguments provided by the call: which refer to IN vs OUT names
+		var namedIn, namedOut int
 		var unknownArgName bool
 		for _, expr := range named {
 			if expr.Name != nil {
-				if _, found := known[*expr.Name]; !found {
+				name := *expr.Name
+				if _, ok := known[name]; !ok {
 					unknownArgName = true
+					continue
+				}
+				// Classify whether the provided named arg matches an IN or OUT param
+				var isIn bool
+				for _, a := range inArgs {
+					if a.Name == name {
+						isIn = true
+						break
+					}
+				}
+				if isIn {
+					namedIn += 1
+				} else {
+					// If not IN, treat it as an OUT placeholder/name
+					namedOut += 1
 				}
 			}
 		}
 		if unknownArgName {
+			// Provided a named argument that doesn't exist in the signature
 			continue
 		}
 
+		// Positional arguments always come first (we validated above that
+		// positional cannot follow named). They fill IN parameters first; any
+		// excess positional arguments are treated as placeholders for OUT params
+		var posFillIn = len(positional)
+		if posFillIn > len(inArgs) {
+			posFillIn = len(inArgs)
+		}
+		// Count how many IN arguments are provided (positional for IN + named for IN)
+		inProvided := posFillIn + namedIn
+
+		// Validate IN argument counts against the signature considering defaults/variadic
+		if variadic {
+			if inProvided < (len(inArgs) - defaultsIn) {
+				continue
+			}
+		} else {
+			if inProvided > len(inArgs) {
+				continue
+			}
+			if inProvided < (len(inArgs) - defaultsIn) {
+				continue
+			}
+		}
+
+		// Validate OUT placeholders. These are only valid in procedure calls.
+		// For normal function invocation, callers cannot pass values for OUT params.
+		posOut := 0
+		if len(positional) > len(inArgs) {
+			posOut = len(positional) - len(inArgs)
+		}
+		outProvided := posOut + namedOut
+		if fun.ReturnType == nil {
+			// Procedure: allow passing placeholders for OUT params, but not more than available
+			if outProvided > len(outArgs) {
+				continue
+			}
+		} else {
+			// Function: do not allow any OUT placeholders
+			if outProvided > 0 {
+				continue
+			}
+		}
+
+		// All checks passed for this candidate
 		return &fun, nil
 	}
 
@@ -117,7 +175,7 @@ func (c *Catalog) ResolveFuncCall(call *ast.FuncCall) (*Function, error) {
 
 	return nil, &sqlerr.Error{
 		Code:     "42883",
-		Message:  fmt.Sprintf("function %s(%s) does not exist", call.Func.Name, strings.Join(sig, ", ")),
+		Message:  fmt.Sprintf("CODE 42883: function %s(%s) does not exist", call.Func.Name, strings.Join(sig, ", ")),
 		Location: call.Pos(),
 		// Hint: "No function matches the given name and argument types. You might need to add explicit type casts.",
 	}

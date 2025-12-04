@@ -59,6 +59,23 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 
 	targets := &ast.List{}
 	switch n := node.(type) {
+	case *ast.CallStmt:
+		fun, err := qc.catalog.ResolveFuncCall(n.FuncCall)
+		if err != nil {
+			return nil, err
+		}
+		var cols []*Column
+		for _, arg := range fun.Args {
+			if arg.Mode == ast.FuncParamOut || arg.Mode == ast.FuncParamInOut || arg.Mode == ast.FuncParamTable {
+				name := arg.Name
+				typeName := arg.Type.Name
+				if arg.Type.Names != nil && len(arg.Type.Names.Items) > 0 {
+					typeName = astutils.Join(arg.Type.Names, ".")
+				}
+				cols = append(cols, &Column{Name: name, DataType: typeName, NotNull: false})
+			}
+		}
+		return cols, nil
 	case *ast.DeleteStmt:
 		targets = n.ReturningList
 	case *ast.InsertStmt:
