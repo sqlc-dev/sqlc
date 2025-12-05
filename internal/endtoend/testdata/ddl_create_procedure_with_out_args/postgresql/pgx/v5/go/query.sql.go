@@ -12,7 +12,7 @@ import (
 )
 
 const callInsertData = `-- name: CallInsertData :one
-CALL insert_data($1, $2, null)
+CALL insert_data($1, $2, null, null, null, null, null, null, null, null, null, null, null)
 `
 
 type CallInsertDataParams struct {
@@ -20,15 +20,55 @@ type CallInsertDataParams struct {
 	B int32
 }
 
-func (q *Queries) CallInsertData(ctx context.Context, arg CallInsertDataParams) (pgtype.Int4, error) {
+type CallInsertDataRow struct {
+	C pgtype.Int4
+	I pgtype.Float8
+	J pgtype.Numeric
+	K pgtype.Float4
+	D pgtype.Text
+	H pgtype.Text
+	E pgtype.Timestamp
+	M pgtype.Interval
+	F []byte
+	G []byte
+	L pgtype.Bool
+}
+
+func (q *Queries) CallInsertData(ctx context.Context, arg CallInsertDataParams) (CallInsertDataRow, error) {
 	row := q.db.QueryRow(ctx, callInsertData, arg.A, arg.B)
-	var c pgtype.Int4
-	err := row.Scan(&c)
-	return c, err
+	var i CallInsertDataRow
+	err := row.Scan(
+		&i.C,
+		&i.I,
+		&i.J,
+		&i.K,
+		&i.D,
+		&i.H,
+		&i.E,
+		&i.M,
+		&i.F,
+		&i.G,
+		&i.L,
+	)
+	return i, err
 }
 
 const callInsertDataNamed = `-- name: CallInsertDataNamed :one
-CALL insert_data(b => $1, a => $2, c => null)
+CALL insert_data(
+        b => $1,
+        a => $2,
+        c => null,
+        i => null,
+        j => null,
+        k => null,
+        d => null,
+        h => null,
+        e => null,
+        m => null,
+        f => null,
+        g => null,
+        l => null
+     )
 `
 
 type CallInsertDataNamedParams struct {
@@ -36,33 +76,114 @@ type CallInsertDataNamedParams struct {
 	A int32
 }
 
-func (q *Queries) CallInsertDataNamed(ctx context.Context, arg CallInsertDataNamedParams) (pgtype.Int4, error) {
-	row := q.db.QueryRow(ctx, callInsertDataNamed, arg.B, arg.A)
-	var c pgtype.Int4
-	err := row.Scan(&c)
-	return c, err
+type CallInsertDataNamedRow struct {
+	C pgtype.Int4
+	I pgtype.Float8
+	J pgtype.Numeric
+	K pgtype.Float4
+	D pgtype.Text
+	H pgtype.Text
+	E pgtype.Timestamp
+	M pgtype.Interval
+	F []byte
+	G []byte
+	L pgtype.Bool
 }
 
-const callInsertDataNoArgs = `-- name: CallInsertDataNoArgs :exec
-CALL insert_data(1, 2, null)
+func (q *Queries) CallInsertDataNamed(ctx context.Context, arg CallInsertDataNamedParams) (CallInsertDataNamedRow, error) {
+	row := q.db.QueryRow(ctx, callInsertDataNamed, arg.B, arg.A)
+	var i CallInsertDataNamedRow
+	err := row.Scan(
+		&i.C,
+		&i.I,
+		&i.J,
+		&i.K,
+		&i.D,
+		&i.H,
+		&i.E,
+		&i.M,
+		&i.F,
+		&i.G,
+		&i.L,
+	)
+	return i, err
+}
+
+const callInsertDataNoArgs = `-- name: CallInsertDataNoArgs :one
+CALL insert_data(1, 2, null, null, null, null, null, null, null, null, null, null, null)
 `
 
-func (q *Queries) CallInsertDataNoArgs(ctx context.Context) error {
-	_, err := q.db.Exec(ctx, callInsertDataNoArgs)
-	return err
+type CallInsertDataNoArgsRow struct {
+	C pgtype.Int4
+	I pgtype.Float8
+	J pgtype.Numeric
+	K pgtype.Float4
+	D pgtype.Text
+	H pgtype.Text
+	E pgtype.Timestamp
+	M pgtype.Interval
+	F []byte
+	G []byte
+	L pgtype.Bool
 }
 
-const callInsertDataSqlcArgs = `-- name: CallInsertDataSqlcArgs :exec
-CALL insert_data($1, $2, $3)
+func (q *Queries) CallInsertDataNoArgs(ctx context.Context) (CallInsertDataNoArgsRow, error) {
+	row := q.db.QueryRow(ctx, callInsertDataNoArgs)
+	var i CallInsertDataNoArgsRow
+	err := row.Scan(
+		&i.C,
+		&i.I,
+		&i.J,
+		&i.K,
+		&i.D,
+		&i.H,
+		&i.E,
+		&i.M,
+		&i.F,
+		&i.G,
+		&i.L,
+	)
+	return i, err
+}
+
+const callInsertDataSqlcArgs = `-- name: CallInsertDataSqlcArgs :one
+CALL insert_data($1, $2, null, null, null, null, null, null, null, null, null, null, null)
 `
 
 type CallInsertDataSqlcArgsParams struct {
 	Foo int32
 	Bar int32
-	С   int32
 }
 
-func (q *Queries) CallInsertDataSqlcArgs(ctx context.Context, arg CallInsertDataSqlcArgsParams) error {
-	_, err := q.db.Exec(ctx, callInsertDataSqlcArgs, arg.Foo, arg.Bar, arg.С)
-	return err
+type CallInsertDataSqlcArgsRow struct {
+	C pgtype.Int4
+	I pgtype.Float8
+	J pgtype.Numeric
+	K pgtype.Float4
+	D pgtype.Text
+	H pgtype.Text
+	E pgtype.Timestamp
+	M pgtype.Interval
+	F []byte
+	G []byte
+	L pgtype.Bool
+}
+
+func (q *Queries) CallInsertDataSqlcArgs(ctx context.Context, arg CallInsertDataSqlcArgsParams) (CallInsertDataSqlcArgsRow, error) {
+	row := q.db.QueryRow(ctx, callInsertDataSqlcArgs, arg.Foo, arg.Bar)
+	var i CallInsertDataSqlcArgsRow
+	err := row.Scan(
+		&i.C,
+		&i.I,
+		&i.J,
+		&i.K,
+		&i.D,
+		&i.H,
+		&i.E,
+		&i.M,
+		&i.F,
+		&i.G,
+		&i.L,
+	)
+	return i, err
 }

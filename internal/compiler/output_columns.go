@@ -71,6 +71,8 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 				typeName := arg.Type.Name
 				if arg.Type.Names != nil && len(arg.Type.Names.Items) > 0 {
 					typeName = astutils.Join(arg.Type.Names, ".")
+				} else if arg.Type.Schema != "" {
+					typeName = arg.Type.Schema + "." + arg.Type.Name
 				}
 				cols = append(cols, &Column{Name: name, DataType: typeName, NotNull: false})
 			}
