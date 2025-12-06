@@ -71,6 +71,8 @@ func (c *Compiler) quoteIdent(ident string) string {
 
 func (c *Compiler) quote(x string) string {
 	switch c.conf.Engine {
+	case config.EngineClickHouse:
+		return "`" + x + "`"
 	case config.EngineMySQL:
 		return "`" + x + "`"
 	default:
@@ -83,6 +85,9 @@ func (c *Compiler) expandStmt(qc *QueryCatalog, raw *ast.RawStmt, node ast.Node)
 	if err != nil {
 		return nil, err
 	}
+
+	// Track USING columns to avoid duplicating them in SELECT * expansion
+	usingMap := getJoinUsingMap(node)
 
 	var targets *ast.List
 	switch n := node.(type) {
@@ -126,8 +131,13 @@ func (c *Compiler) expandStmt(qc *QueryCatalog, raw *ast.RawStmt, node ast.Node)
 		counts := map[string]int{}
 		if scope == "" {
 			for _, t := range tables {
-				for _, c := range t.Columns {
-					counts[c.Name] += 1
+				for _, col := range t.Columns {
+					// Don't count columns that are in USING clause for this table
+					// since they won't be included in the expansion
+					if usingInfo, ok := usingMap[t.Rel.Name]; ok && usingInfo.HasColumn(col.Name) {
+						continue
+					}
+					counts[col.Name] += 1
 				}
 			}
 		}
@@ -138,6 +148,12 @@ func (c *Compiler) expandStmt(qc *QueryCatalog, raw *ast.RawStmt, node ast.Node)
 			tableName := c.quoteIdent(t.Rel.Name)
 			scopeName := c.quoteIdent(scope)
 			for _, column := range t.Columns {
+				// Skip columns that are in USING clause for this table
+				// to avoid duplication (USING naturally returns only one column)
+				if usingInfo, ok := usingMap[t.Rel.Name]; ok && usingInfo.HasColumn(column.Name) {
+					continue
+				}
+
 				cname := column.Name
 				if res.Name != nil {
 					cname = *res.Name

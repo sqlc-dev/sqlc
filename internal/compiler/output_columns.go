@@ -3,7 +3,9 @@ package compiler
 import (
 	"errors"
 	"fmt"
+	"log"
 
+	"github.com/sqlc-dev/sqlc/internal/debug"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
 	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
@@ -125,268 +127,11 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 		if !ok {
 			continue
 		}
-		switch n := res.Val.(type) {
-
-		case *ast.A_Const:
-			name := ""
-			if res.Name != nil {
-				name = *res.Name
-			}
-			switch n.Val.(type) {
-			case *ast.String:
-				cols = append(cols, &Column{Name: name, DataType: "text", NotNull: true})
-			case *ast.Integer:
-				cols = append(cols, &Column{Name: name, DataType: "int", NotNull: true})
-			case *ast.Float:
-				cols = append(cols, &Column{Name: name, DataType: "float", NotNull: true})
-			case *ast.Boolean:
-				cols = append(cols, &Column{Name: name, DataType: "bool", NotNull: true})
-			default:
-				cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
-			}
-
-		case *ast.A_Expr:
-			name := ""
-			if res.Name != nil {
-				name = *res.Name
-			}
-			switch op := astutils.Join(n.Name, ""); {
-			case lang.IsComparisonOperator(op):
-				// TODO: Generate a name for these operations
-				cols = append(cols, &Column{Name: name, DataType: "bool", NotNull: true})
-			case lang.IsMathematicalOperator(op):
-				cols = append(cols, &Column{Name: name, DataType: "int", NotNull: true})
-			default:
-				cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
-			}
-
-		case *ast.BoolExpr:
-			name := ""
-			if res.Name != nil {
-				name = *res.Name
-			}
-			notNull := false
-			if len(n.Args.Items) == 1 {
-				switch n.Boolop {
-				case ast.BoolExprTypeIsNull, ast.BoolExprTypeIsNotNull:
-					notNull = true
-				case ast.BoolExprTypeNot:
-					sublink, ok := n.Args.Items[0].(*ast.SubLink)
-					if ok && sublink.SubLinkType == ast.EXISTS_SUBLINK {
-						notNull = true
-						if name == "" {
-							name = "not_exists"
-						}
-					}
-				}
-			}
-			cols = append(cols, &Column{Name: name, DataType: "bool", NotNull: notNull})
-
-		case *ast.CaseExpr:
-			name := ""
-			if res.Name != nil {
-				name = *res.Name
-			}
-			// TODO: The TypeCase and A_Const code has been copied from below. Instead, we
-			// need a recurse function to get the type of a node.
-			if tc, ok := n.Defresult.(*ast.TypeCast); ok {
-				if tc.TypeName == nil {
-					return nil, errors.New("no type name type cast")
-				}
-				name := ""
-				if ref, ok := tc.Arg.(*ast.ColumnRef); ok {
-					name = astutils.Join(ref.Fields, "_")
-				}
-				if res.Name != nil {
-					name = *res.Name
-				}
-				// TODO Validate column names
-				col := toColumn(tc.TypeName)
-				col.Name = name
-				cols = append(cols, col)
-			} else if aconst, ok := n.Defresult.(*ast.A_Const); ok {
-				switch aconst.Val.(type) {
-				case *ast.String:
-					cols = append(cols, &Column{Name: name, DataType: "text", NotNull: true})
-				case *ast.Integer:
-					cols = append(cols, &Column{Name: name, DataType: "int", NotNull: true})
-				case *ast.Float:
-					cols = append(cols, &Column{Name: name, DataType: "float", NotNull: true})
-				case *ast.Boolean:
-					cols = append(cols, &Column{Name: name, DataType: "bool", NotNull: true})
-				default:
-					cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
-				}
-			} else {
-				cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
-			}
-
-		case *ast.CoalesceExpr:
-			name := "coalesce"
-			if res.Name != nil {
-				name = *res.Name
-			}
-			var firstColumn *Column
-			var shouldNotBeNull bool
-			for _, arg := range n.Args.Items {
-				if _, ok := arg.(*ast.A_Const); ok {
-					shouldNotBeNull = true
-					continue
-				}
-				if ref, ok := arg.(*ast.ColumnRef); ok {
-					columns, err := outputColumnRefs(res, tables, ref)
-					if err != nil {
-						return nil, err
-					}
-					for _, c := range columns {
-						if firstColumn == nil {
-							firstColumn = c
-						}
-						shouldNotBeNull = shouldNotBeNull || c.NotNull
-					}
-				}
-			}
-			if firstColumn != nil {
-				firstColumn.NotNull = shouldNotBeNull
-				firstColumn.skipTableRequiredCheck = true
-				cols = append(cols, firstColumn)
-			} else {
-				cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
-			}
-
-		case *ast.ColumnRef:
-			if hasStarRef(n) {
-
-				// add a column with a reference to an embedded table
-				if embed, ok := qc.embeds.Find(n); ok {
-					cols = append(cols, &Column{
-						Name:       embed.Table.Name,
-						EmbedTable: embed.Table,
-					})
-					continue
-				}
-
-				// TODO: This code is copied in func expand()
-				for _, t := range tables {
-					scope := astutils.Join(n.Fields, ".")
-					if scope != "" && scope != t.Rel.Name {
-						continue
-					}
-					for _, c := range t.Columns {
-						cname := c.Name
-						if res.Name != nil {
-							cname = *res.Name
-						}
-						cols = append(cols, &Column{
-							Name:         cname,
-							OriginalName: c.Name,
-							Type:         c.Type,
-							Scope:        scope,
-							Table:        c.Table,
-							TableAlias:   t.Rel.Name,
-							DataType:     c.DataType,
-							NotNull:      c.NotNull,
-							Unsigned:     c.Unsigned,
-							IsArray:      c.IsArray,
-							ArrayDims:    c.ArrayDims,
-							Length:       c.Length,
-						})
-					}
-				}
-				continue
-			}
-
-			columns, err := outputColumnRefs(res, tables, n)
-			if err != nil {
-				return nil, err
-			}
-			cols = append(cols, columns...)
-
-		case *ast.FuncCall:
-			rel := n.Func
-			name := rel.Name
-			if res.Name != nil {
-				name = *res.Name
-			}
-			fun, err := qc.catalog.ResolveFuncCall(n)
-			if err == nil {
-				cols = append(cols, &Column{
-					Name:       name,
-					DataType:   dataType(fun.ReturnType),
-					NotNull:    !fun.ReturnTypeNullable,
-					IsFuncCall: true,
-				})
-			} else {
-				cols = append(cols, &Column{
-					Name:       name,
-					DataType:   "any",
-					IsFuncCall: true,
-				})
-			}
-
-		case *ast.SubLink:
-			name := "exists"
-			if res.Name != nil {
-				name = *res.Name
-			}
-			switch n.SubLinkType {
-			case ast.EXISTS_SUBLINK:
-				cols = append(cols, &Column{Name: name, DataType: "bool", NotNull: true})
-			case ast.EXPR_SUBLINK:
-				subcols, err := c.outputColumns(qc, n.Subselect)
-				if err != nil {
-					return nil, err
-				}
-				first := subcols[0]
-				if res.Name != nil {
-					first.Name = *res.Name
-				}
-				cols = append(cols, first)
-			default:
-				cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
-			}
-
-		case *ast.TypeCast:
-			if n.TypeName == nil {
-				return nil, errors.New("no type name type cast")
-			}
-			name := ""
-			if ref, ok := n.Arg.(*ast.ColumnRef); ok {
-				name = astutils.Join(ref.Fields, "_")
-			}
-			if res.Name != nil {
-				name = *res.Name
-			}
-			// TODO Validate column names
-			col := toColumn(n.TypeName)
-			col.Name = name
-			// TODO Add correct, real type inference
-			if constant, ok := n.Arg.(*ast.A_Const); ok {
-				if _, ok := constant.Val.(*ast.Null); ok {
-					col.NotNull = false
-				}
-			}
-			cols = append(cols, col)
-
-		case *ast.SelectStmt:
-			subcols, err := c.outputColumns(qc, n)
-			if err != nil {
-				return nil, err
-			}
-			first := subcols[0]
-			if res.Name != nil {
-				first.Name = *res.Name
-			}
-			cols = append(cols, first)
-
-		default:
-			name := ""
-			if res.Name != nil {
-				name = *res.Name
-			}
-			cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
-
+		columns, err := c.resolveValue(res, tables, qc, node)
+		if err != nil {
+			return nil, err
 		}
+		cols = append(cols, columns...)
 	}
 
 	if n, ok := node.(*ast.SelectStmt); ok {
@@ -394,12 +139,16 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 			if !col.NotNull || col.Table == nil || col.skipTableRequiredCheck {
 				continue
 			}
-			for _, f := range n.FromClause.Items {
-				res := isTableRequired(f, col, tableRequired)
-				if res != tableNotFound {
-					col.NotNull = res == tableRequired
-					break
+			if n.FromClause != nil {
+				for _, f := range n.FromClause.Items {
+					res := isTableRequired(f, col, tableRequired)
+					if res != tableNotFound {
+						col.NotNull = res == tableRequired
+						break
+					}
 				}
+			} else if debug.Active {
+				log.Printf("compiler: SelectStmt has nil FromClause while processing column %q from table %q\n", col.Name, col.Table.Name)
 			}
 		}
 	}
@@ -496,7 +245,11 @@ func (c *Compiler) sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, erro
 		}
 	case *ast.SelectStmt:
 		var tv tableVisitor
-		astutils.Walk(&tv, n.FromClause)
+		if n.FromClause != nil {
+			astutils.Walk(&tv, n.FromClause)
+		} else if debug.Active {
+			log.Printf("compiler: SelectStmt has nil FromClause in sourceTables\n")
+		}
 		list = &tv.list
 	case *ast.TruncateStmt:
 		list = astutils.Search(n.Relations, func(node ast.Node) bool {
@@ -776,4 +529,325 @@ func findColumnForRef(ref *ast.ColumnRef, tables []*Table, targetList *ast.List)
 	}
 
 	return nil
+}
+
+func (c *Compiler) resolveValue(res *ast.ResTarget, tables []*Table, qc *QueryCatalog, node ast.Node) ([]*Column, error) {
+	var cols []*Column
+
+	switch n := res.Val.(type) {
+
+	case *ast.A_Const:
+		name := ""
+		if res.Name != nil {
+			name = *res.Name
+		}
+		switch n.Val.(type) {
+		case *ast.String:
+			cols = append(cols, &Column{Name: name, DataType: "text", NotNull: true})
+		case *ast.Integer:
+			cols = append(cols, &Column{Name: name, DataType: "int", NotNull: true})
+		case *ast.Float:
+			cols = append(cols, &Column{Name: name, DataType: "float", NotNull: true})
+		case *ast.Boolean:
+			cols = append(cols, &Column{Name: name, DataType: "bool", NotNull: true})
+		default:
+			cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
+		}
+
+	case *ast.A_Expr:
+		name := ""
+		if res.Name != nil {
+			name = *res.Name
+		}
+		switch op := astutils.Join(n.Name, ""); {
+		case lang.IsComparisonOperator(op):
+			// TODO: Generate a name for these operations
+			cols = append(cols, &Column{Name: name, DataType: "bool", NotNull: true})
+		case lang.IsMathematicalOperator(op):
+			cols = append(cols, &Column{Name: name, DataType: "int", NotNull: true})
+		default:
+			cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
+		}
+
+	case *ast.BoolExpr:
+		name := ""
+		if res.Name != nil {
+			name = *res.Name
+		}
+		notNull := false
+		if len(n.Args.Items) == 1 {
+			switch n.Boolop {
+			case ast.BoolExprTypeIsNull, ast.BoolExprTypeIsNotNull:
+				notNull = true
+			case ast.BoolExprTypeNot:
+				sublink, ok := n.Args.Items[0].(*ast.SubLink)
+				if ok && sublink.SubLinkType == ast.EXISTS_SUBLINK {
+					notNull = true
+					if name == "" {
+						name = "not_exists"
+					}
+				}
+			}
+		}
+		cols = append(cols, &Column{Name: name, DataType: "bool", NotNull: notNull})
+
+	case *ast.CaseExpr:
+		name := ""
+		if res.Name != nil {
+			name = *res.Name
+		}
+		// TODO: The TypeCase and A_Const code has been copied from below. Instead, we
+		// need a recurse function to get the type of a node.
+		if tc, ok := n.Defresult.(*ast.TypeCast); ok {
+			if tc.TypeName == nil {
+				return nil, errors.New("no type name type cast")
+			}
+			name := ""
+			if ref, ok := tc.Arg.(*ast.ColumnRef); ok {
+				name = astutils.Join(ref.Fields, "_")
+			}
+			if res.Name != nil {
+				name = *res.Name
+			}
+			// TODO Validate column names
+			col := toColumn(tc.TypeName)
+			col.Name = name
+			cols = append(cols, col)
+		} else if aconst, ok := n.Defresult.(*ast.A_Const); ok {
+			switch aconst.Val.(type) {
+			case *ast.String:
+				cols = append(cols, &Column{Name: name, DataType: "text", NotNull: true})
+			case *ast.Integer:
+				cols = append(cols, &Column{Name: name, DataType: "int", NotNull: true})
+			case *ast.Float:
+				cols = append(cols, &Column{Name: name, DataType: "float", NotNull: true})
+			case *ast.Boolean:
+				cols = append(cols, &Column{Name: name, DataType: "bool", NotNull: true})
+			default:
+				cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
+			}
+		} else {
+			cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
+		}
+
+	case *ast.CoalesceExpr:
+		name := "coalesce"
+		if res.Name != nil {
+			name = *res.Name
+		}
+		var firstColumn *Column
+		var shouldNotBeNull bool
+		for _, arg := range n.Args.Items {
+			if _, ok := arg.(*ast.A_Const); ok {
+				shouldNotBeNull = true
+				continue
+			}
+			if ref, ok := arg.(*ast.ColumnRef); ok {
+				columns, err := outputColumnRefs(res, tables, ref)
+				if err != nil {
+					return nil, err
+				}
+				for _, c := range columns {
+					if firstColumn == nil {
+						firstColumn = c
+					}
+					shouldNotBeNull = shouldNotBeNull || c.NotNull
+				}
+			}
+		}
+		if firstColumn != nil {
+			firstColumn.NotNull = shouldNotBeNull
+			firstColumn.skipTableRequiredCheck = true
+			cols = append(cols, firstColumn)
+		} else {
+			cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
+		}
+
+	case *ast.ColumnRef:
+		if hasStarRef(n) {
+
+			// add a column with a reference to an embedded table
+			if embed, ok := qc.embeds.Find(n); ok {
+				cols = append(cols, &Column{
+					Name:       embed.Table.Name,
+					EmbedTable: embed.Table,
+				})
+				return cols, nil
+			}
+
+			// Extract USING columns from the query to avoid duplication
+			usingMap := getJoinUsingMap(node)
+
+			// TODO: This code is copied in func expand()
+			for _, t := range tables {
+				scope := astutils.Join(n.Fields, ".")
+				if scope != "" && scope != t.Rel.Name {
+					continue
+				}
+				for _, c := range t.Columns {
+					// Skip columns that are in USING clause for this table
+					// to avoid duplication (USING naturally returns only one column)
+					if usingInfo, ok := usingMap[t.Rel.Name]; ok && usingInfo.HasColumn(c.Name) {
+						continue
+					}
+
+					cname := c.Name
+					if res.Name != nil {
+						cname = *res.Name
+					}
+					cols = append(cols, &Column{
+						Name:         cname,
+						OriginalName: c.Name,
+						Type:         c.Type,
+						Scope:        scope,
+						Table:        c.Table,
+						TableAlias:   t.Rel.Name,
+						DataType:     c.DataType,
+						NotNull:      c.NotNull,
+						Unsigned:     c.Unsigned,
+						IsArray:      c.IsArray,
+						ArrayDims:    c.ArrayDims,
+						Length:       c.Length,
+					})
+				}
+			}
+			return cols, nil
+		}
+
+		columns, err := outputColumnRefs(res, tables, n)
+		if err != nil {
+			return nil, err
+		}
+		cols = append(cols, columns...)
+
+	case *ast.FuncCall:
+		rel := n.Func
+		name := rel.Name
+		if res.Name != nil {
+			name = *res.Name
+		}
+
+		fun, err := qc.catalog.ResolveFuncCall(n)
+		if err == nil {
+			var returnType *ast.TypeName
+			var resolved bool
+			if c.TypeResolver != nil {
+				returnType = c.TypeResolver(n, fun, func(node ast.Node) (*catalog.Column, error) {
+					res := &ast.ResTarget{Val: node}
+					cols, err := c.resolveValue(res, tables, qc, node)
+					if err != nil {
+						return nil, err
+					}
+					if len(cols) == 0 {
+						return nil, fmt.Errorf("no columns returned")
+					}
+					col := cols[0]
+					var typeName ast.TypeName
+					if col.Type != nil {
+						typeName = *col.Type
+					} else {
+						typeName = ast.TypeName{Name: col.DataType}
+					}
+					return &catalog.Column{
+						Name:       col.Name,
+						Type:       typeName,
+						IsNotNull:  col.NotNull,
+						IsUnsigned: col.Unsigned,
+						IsArray:    col.IsArray,
+						ArrayDims:  col.ArrayDims,
+						Length:     col.Length,
+					}, nil
+				})
+				if returnType != nil {
+					resolved = true
+				}
+			}
+			if returnType == nil {
+				returnType = fun.ReturnType
+			}
+
+			col := &Column{
+				Name:       name,
+				DataType:   dataType(returnType),
+				NotNull:    !fun.ReturnTypeNullable,
+				IsFuncCall: true,
+			}
+			if resolved {
+				col.Type = returnType
+				col.IsArray = returnType != nil && returnType.ArrayBounds != nil
+				col.ArrayDims = arrayDims(returnType)
+			}
+			cols = append(cols, col)
+		} else {
+			cols = append(cols, &Column{
+				Name:       name,
+				DataType:   "any",
+				IsFuncCall: true,
+			})
+		}
+
+	case *ast.SubLink:
+		name := "exists"
+		if res.Name != nil {
+			name = *res.Name
+		}
+		switch n.SubLinkType {
+		case ast.EXISTS_SUBLINK:
+			cols = append(cols, &Column{Name: name, DataType: "bool", NotNull: true})
+		case ast.EXPR_SUBLINK:
+			subcols, err := c.outputColumns(qc, n.Subselect)
+			if err != nil {
+				return nil, err
+			}
+			first := subcols[0]
+			if res.Name != nil {
+				first.Name = *res.Name
+			}
+			cols = append(cols, first)
+		default:
+			cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
+		}
+
+	case *ast.TypeCast:
+		if n.TypeName == nil {
+			return nil, errors.New("no type name type cast")
+		}
+		name := ""
+		if ref, ok := n.Arg.(*ast.ColumnRef); ok {
+			name = astutils.Join(ref.Fields, "_")
+		}
+		if res.Name != nil {
+			name = *res.Name
+		}
+		// TODO Validate column names
+		col := toColumn(n.TypeName)
+		col.Name = name
+		// TODO Add correct, real type inference
+		if constant, ok := n.Arg.(*ast.A_Const); ok {
+			if _, ok := constant.Val.(*ast.Null); ok {
+				col.NotNull = false
+			}
+		}
+		cols = append(cols, col)
+
+	case *ast.SelectStmt:
+		subcols, err := c.outputColumns(qc, n)
+		if err != nil {
+			return nil, err
+		}
+		first := subcols[0]
+		if res.Name != nil {
+			first.Name = *res.Name
+		}
+		cols = append(cols, first)
+
+	default:
+		name := ""
+		if res.Name != nil {
+			name = *res.Name
+		}
+		cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
+
+	}
+	return cols, nil
 }
