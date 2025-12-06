@@ -132,6 +132,8 @@ func (i *importer) dbImports() fileImports {
 	case opts.SQLDriverPGXV5:
 		pkg = append(pkg, ImportSpec{Path: "github.com/jackc/pgx/v5/pgconn"})
 		pkg = append(pkg, ImportSpec{Path: "github.com/jackc/pgx/v5"})
+	case opts.SQLDriverClickHouseV2:
+		pkg = append(pkg, ImportSpec{Path: "github.com/ClickHouse/clickhouse-go/v2/lib/driver"})
 	default:
 		std = append(std, ImportSpec{Path: "database/sql"})
 		if i.Options.EmitPreparedQueries {
@@ -395,7 +397,7 @@ func (i *importer) queryImports(filename string) fileImports {
 	}
 
 	sqlpkg := parseDriver(i.Options.SqlPackage)
-	if sqlcSliceScan() && !sqlpkg.IsPGX() {
+	if sqlcSliceScan() && !sqlpkg.IsPGX() && !sqlpkg.IsClickHouse() {
 		std["strings"] = struct{}{}
 	}
 	if sliceScan() && !sqlpkg.IsPGX() {
