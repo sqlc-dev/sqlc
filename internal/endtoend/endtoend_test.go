@@ -112,7 +112,7 @@ func TestReplay(t *testing.T) {
 	// t.Parallel()
 	ctx := context.Background()
 
-	var mysqlURI, postgresURI string
+	var mysqlURI, postgresURI, clickhouseURI string
 	if err := docker.Installed(); err == nil {
 		{
 			host, err := docker.StartPostgreSQLServer(ctx)
@@ -127,6 +127,13 @@ func TestReplay(t *testing.T) {
 				t.Fatalf("starting mysql failed: %s", err)
 			}
 			mysqlURI = host
+		}
+		{
+			host, err := docker.StartClickHouseServer(ctx)
+			if err != nil {
+				t.Fatalf("starting clickhouse failed: %s", err)
+			}
+			clickhouseURI = host
 		}
 	}
 
@@ -150,6 +157,12 @@ func TestReplay(t *testing.T) {
 							Engine: config.EngineMySQL,
 							URI:    mysqlURI,
 						},
+
+						{
+							Name:   "clickhouse",
+							Engine: config.EngineClickHouse,
+							URI:    clickhouseURI,
+						},
 					}
 					for i := range c.SQL {
 						switch c.SQL[i].Engine {
@@ -159,6 +172,10 @@ func TestReplay(t *testing.T) {
 							}
 						case config.EngineMySQL:
 							c.SQL[i].Database = &config.Database{
+								Managed: true,
+							}
+						case config.EngineClickHouse:
+              c.SQL[i].Database = &config.Database{
 								Managed: true,
 							}
 						case config.EngineSQLite:

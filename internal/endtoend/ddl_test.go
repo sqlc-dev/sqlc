@@ -54,6 +54,8 @@ func TestValidSchema(t *testing.T) {
 					local.PostgreSQL(t, schema)
 				case config.EngineMySQL:
 					local.MySQL(t, schema)
+				case config.EngineClickHouse:
+					local.ClickHouse(t, schema)
 				}
 			})
 		}
