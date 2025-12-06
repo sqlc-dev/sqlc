@@ -189,6 +189,7 @@ POSTGRESQL_SERVER_URI="postgres://postgres:mysecretpassword@localhost:5432/postg
 - `/cmd/` - Main binaries (sqlc, sqlc-gen-json)
 - `/internal/cmd/` - Command implementations (vet, generate, etc.)
 - `/internal/engine/` - Database engine implementations
+  - `/clickhouse/` - ClickHouse parser and converter
   - `/postgresql/` - PostgreSQL parser and converter
   - `/dolphin/` - MySQL parser (uses TiDB parser)
   - `/sqlite/` - SQLite parser
@@ -289,6 +290,55 @@ git push --force-with-lease origin <feature-branch>
 - **CI Configuration:** `/.github/workflows/ci.yml`
 - **Docker Compose:** `/docker-compose.yml`
 
+## ClickHouse Engine Support
+
+### Implementation Details
+
+The ClickHouse engine was added to support ClickHouse SQL parsing and code generation using the `github.com/AfterShip/clickhouse-sql-parser` library.
+
+**Files involved:**
+- `internal/engine/clickhouse/parse.go` - Parser implementation
+- `internal/engine/clickhouse/convert.go` - AST converter
+- `internal/engine/clickhouse/catalog.go` - Catalog initialization
+- `internal/config/config.go` - Engine constant registration
+- `internal/compiler/engine.go` - Compiler integration
+- `internal/compiler/expand.go` - Quote character handling
+- `examples/clickhouse/` - Example project
+
+**Key features:**
+- Parses ClickHouse SQL into sqlc's internal AST
+- Supports comment syntax: `--` and `/* */`
+- Uses backticks for identifier quoting (ClickHouse standard)
+- Handles ClickHouse-specific keywords
+
+**Testing:**
+```bash
+# Test ClickHouse engine (unit tests)
+go test ./internal/engine/clickhouse -v
+
+# Test compiler integration
+go test ./internal/compiler -v -run TestNewCompilerClickHouse
+
+# Test code generation
+cd examples/clickhouse && /path/to/sqlc generate && go mod init github.com/example/clickhouse && go mod tidy && go build ./gen
+```
+
+**Test Coverage:**
+- Basic SELECT queries with WHERE, ORDER BY, LIMIT
+- INSERT statements with VALUES
+- Aggregate queries (COUNT, SUM, AVG) with GROUP BY and HAVING
+- UNION and UNION ALL queries
+- Subqueries and derived tables
+- Multiple JOINs (INNER, LEFT, RIGHT, FULL)
+- Window functions with OVER clause
+- CAST expressions
+- CASE expressions
+- IS NULL / IS NOT NULL expressions
+- Unary expressions (NOT, negation)
+- Number literals (int, float, scientific notation)
+- String literals and functions
+- ClickHouse-specific features (PREWHERE, SAMPLE, array functions)
+
 ## Recent Fixes & Improvements
 
 ### Fixed Issues
@@ -296,13 +346,15 @@ git push --force-with-lease origin <feature-branch>
 1. **Typo in create_function_stmt.go** - Fixed "Undertand" → "Understand"
 2. **Race condition in vet.go** - Fixed Client initialization using `sync.Once`
 3. **Nil pointer dereference in parse.go** - Fixed unsafe type assertion in primary key parsing
+4. **ClickHouse engine addition** - Added full ClickHouse SQL support with AST parsing
 
 These fixes demonstrate common patterns:
 - Using `sync.Once` for thread-safe lazy initialization
 - Using comma-ok idiom for safe type assertions: `if val, ok := x.(Type); ok { ... }`
 - Adding proper nil checks and defensive programming
+- Registering new database engines following the established pattern
 
 ---
 
-**Last Updated:** 2025-10-21
+**Last Updated:** 2025-11-19
 **Maintainer:** Claude Code

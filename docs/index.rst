@@ -35,6 +35,7 @@ code ever again.
    tutorials/getting-started-mysql.md
    tutorials/getting-started-postgresql.md
    tutorials/getting-started-sqlite.md
+   tutorials/getting-started-clickhouse.md
 
 .. toctree::
    :maxdepth: 2

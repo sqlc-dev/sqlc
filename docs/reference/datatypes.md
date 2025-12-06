@@ -8,8 +8,7 @@ If you're unsatisfied with the default, you can override any type using the
 
 ## Arrays
 
-PostgreSQL [arrays](https://www.postgresql.org/docs/current/arrays.html) are
-materialized as Go slices.
+PostgreSQL [arrays](https://www.postgresql.org/docs/current/arrays.html) are materialized as Go slices.
 
 ```sql
 CREATE TABLE places (
@@ -24,6 +23,24 @@ package db
 type Place struct {
 	Name string
 	Tags []string
+}
+```
+
+ClickHouse [array types](https://clickhouse.com/docs/en/sql-reference/data-types/array) are similarly mapped to Go slices:
+
+```sql
+CREATE TABLE data (
+  tags Array(String),
+  ids  Array(UInt32)
+);
+```
+
+```go
+package db
+
+type Data struct {
+	Tags []string
+	IDs  []uint32
 }
 ```
 
@@ -57,6 +74,28 @@ type Author struct {
 	ID        int
 	CreatedAt time.Time
 	UpdatedAt sql.NullTime
+}
+```
+
+ClickHouse `DateTime` and `Date` types are also mapped to `time.Time`:
+
+```sql
+CREATE TABLE events (
+  created_at DateTime,
+  event_date Date
+);
+```
+
+```go
+package db
+
+import (
+	"time"
+)
+
+type Event struct {
+	CreatedAt time.Time
+	EventDate time.Time
 }
 ```
 
@@ -117,6 +156,46 @@ type Author struct {
 	ID   int
 	Name string
 	Bio  sql.NullString
+}
+```
+
+ClickHouse uses `Nullable(T)` for nullable columns. When using the native `clickhouse/v2`
+driver with `emit_pointers_for_null_types: true`, nullable fields are represented as
+pointers. With `database/sql`, they use the standard `sql.Null*` types:
+
+```sql
+CREATE TABLE articles (
+  id    UInt64,
+  title String,
+  bio   Nullable(String)
+);
+```
+
+With `clickhouse/v2` and `emit_pointers_for_null_types: true`:
+
+```go
+package db
+
+type Article struct {
+	ID    uint64
+	Title string
+	Bio   *string
+}
+```
+
+With `database/sql`:
+
+```go
+package db
+
+import (
+	"database/sql"
+)
+
+type Article struct {
+	ID    uint64
+	Title string
+	Bio   sql.NullString
 }
 ```
 
