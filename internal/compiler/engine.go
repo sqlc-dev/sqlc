@@ -7,14 +7,18 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/analyzer"
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/dbmanager"
+	"github.com/sqlc-dev/sqlc/internal/engine/clickhouse"
 	"github.com/sqlc-dev/sqlc/internal/engine/dolphin"
 	"github.com/sqlc-dev/sqlc/internal/engine/postgresql"
 	pganalyze "github.com/sqlc-dev/sqlc/internal/engine/postgresql/analyzer"
 	"github.com/sqlc-dev/sqlc/internal/engine/sqlite"
 	sqliteanalyze "github.com/sqlc-dev/sqlc/internal/engine/sqlite/analyzer"
 	"github.com/sqlc-dev/sqlc/internal/opts"
+	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
 )
+
+type ResolveTypeFunc func(call *ast.FuncCall, fun *catalog.Function, resolve func(n ast.Node) (*catalog.Column, error)) *ast.TypeName
 
 type Compiler struct {
 	conf     config.SQL
@@ -26,7 +30,8 @@ type Compiler struct {
 	client   dbmanager.Client
 	selector selector
 
-	schema []string
+	schema       []string
+	TypeResolver ResolveTypeFunc
 }
 
 func NewCompiler(conf config.SQL, combo config.CombinedSettings) (*Compiler, error) {
@@ -38,6 +43,11 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings) (*Compiler, err
 	}
 
 	switch conf.Engine {
+	case config.EngineClickHouse:
+		c.parser = clickhouse.NewParser()
+		c.catalog = clickhouse.NewCatalog()
+		c.selector = newDefaultSelector()
+		c.TypeResolver = clickhouse.TypeResolver
 	case config.EngineSQLite:
 		c.parser = sqlite.NewParser()
 		c.catalog = sqlite.NewCatalog()
@@ -79,7 +89,15 @@ func (c *Compiler) Catalog() *catalog.Catalog {
 }
 
 func (c *Compiler) ParseCatalog(schema []string) error {
-	return c.parseCatalog(schema)
+	err := c.parseCatalog(schema)
+	if err == nil && c.conf.Engine == config.EngineClickHouse {
+		// Set the catalog on the ClickHouse parser so it can register
+		// context-dependent functions during query parsing
+		if chParser, ok := c.parser.(*clickhouse.Parser); ok {
+			chParser.Catalog = c.catalog
+		}
+	}
+	return err
 }
 
 func (c *Compiler) ParseQueries(queries []string, o opts.Parser) error {

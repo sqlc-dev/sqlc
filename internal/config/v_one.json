@@ -33,6 +33,7 @@
                 "properties": {
                     "engine": {
                         "enum": [
+                            "clickhouse",
                             "postgresql",
                             "mysql",
                             "sqlite"
@@ -192,6 +193,7 @@
                                 },
                                 "engine": {
                                     "enum": [
+                                        "clickhouse",
                                         "postgresql",
                                         "mysql",
                                         "sqlite"
@@ -300,6 +302,7 @@
                     },
                     "engine": {
                         "enum": [
+                            "clickhouse",
                             "postgresql",
                             "mysql",
                             "sqlite"
