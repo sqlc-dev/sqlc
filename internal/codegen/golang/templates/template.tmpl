@@ -25,6 +25,8 @@ import (
 
 {{if .SQLDriver.IsPGX }}
 	{{- template "dbCodeTemplatePgx" .}}
+{{else if .SQLDriver.IsClickHouse }}
+	{{- template "dbCodeTemplateClickHouse" .}}
 {{else}}
 	{{- template "dbCodeTemplateStd" .}}
 {{end}}
@@ -57,6 +59,8 @@ import (
 {{define "interfaceCode"}}
 	{{if .SQLDriver.IsPGX }}
 		{{- template "interfaceCodePgx" .}}
+	{{else if .SQLDriver.IsClickHouse }}
+		{{- template "interfaceCodeClickHouse" .}}
 	{{else}}
 		{{- template "interfaceCodeStd" .}}
 	{{end}}
@@ -188,6 +192,8 @@ import (
 {{define "queryCode"}}
 {{if .SQLDriver.IsPGX }}
     {{- template "queryCodePgx" .}}
+{{else if .SQLDriver.IsClickHouse }}
+    {{- template "queryCodeClickHouse" .}}
 {{else}}
     {{- template "queryCodeStd" .}}
 {{end}}

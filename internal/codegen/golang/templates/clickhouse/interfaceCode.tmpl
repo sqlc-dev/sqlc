@@ -1,0 +1,16 @@
+{{define "interfaceCodeClickHouse"}}
+type Querier interface { {{- range .GoQueries}}
+	{{- if ne (hasPrefix .Cmd ":batch") true}}
+	{{range .Comments}}//{{.}}
+	{{end -}}
+	{{- if $.EmitMethodsWithDBArgument -}}
+	{{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) ({{.Ret.EmitResultType}}, error)
+	{{- else -}}
+	{{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.EmitResultType}}, error)
+	{{- end -}}
+	{{- end}}
+{{- end}}
+}
+
+var _ Querier = (*Queries)(nil)
+{{end}}

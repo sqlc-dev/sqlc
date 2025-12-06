@@ -1,0 +1,34 @@
+{{define "dbCodeTemplateClickHouse"}}
+
+type DBTX interface {
+	Exec(ctx context.Context, query string, args ...any) error
+	Query(ctx context.Context, query string, args ...any) (driver.Rows, error)
+	QueryRow(ctx context.Context, query string, args ...any) driver.Row
+{{- if .UsesBatch }}
+	PrepareBatch(ctx context.Context, query string) (driver.Batch, error)
+{{- end }}
+}
+
+{{ if .EmitMethodsWithDBArgument}}
+func New() *Queries {
+	return &Queries{}
+{{- else -}}
+func New(db DBTX) *Queries {
+	return &Queries{db: db}
+{{- end}}
+}
+
+type Queries struct {
+    {{if not .EmitMethodsWithDBArgument}}
+	db DBTX
+    {{end}}
+}
+
+{{if not .EmitMethodsWithDBArgument}}
+func (q *Queries) WithTx(tx driver.Conn) *Queries {
+	return &Queries{
+		db: tx,
+	}
+}
+{{end}}
+{{end}}

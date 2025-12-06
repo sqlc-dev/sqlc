@@ -1,0 +1,165 @@
+{{define "queryCodeClickHouse"}}
+{{range .GoQueries}}
+{{if $.OutputQuery .SourceName}}
+{{if and (ne .Cmd ":copyfrom") (ne (hasPrefix .Cmd ":batch") true)}}
+const {{.ConstantName}} = {{$.Q}}-- name: {{.MethodName}} {{.Cmd}}
+{{escape .SQL}}
+{{$.Q}}
+{{end}}
+
+{{if ne (hasPrefix .Cmd ":batch") true}}
+{{if .Arg.EmitStruct}}
+type {{.Arg.Type}} struct { {{- range .Arg.Struct.Fields}}
+  {{.Name}} {{.Type}} {{if .Tag}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
+  {{- end}}
+}
+{{end}}
+
+{{if .Ret.EmitStruct}}
+type {{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
+  {{.Name}} {{.Type}} {{if .Tag}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
+  {{- end}}
+}
+{{end}}
+{{end}}
+
+{{if eq .Cmd ":one"}}
+{{range .Comments}}//{{.}}
+{{end -}}
+{{- if $.EmitMethodsWithDBArgument -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) ({{.Ret.DefineType}}, error) {
+	row := db.QueryRow(ctx, {{.ConstantName}}, {{.Arg.Params}})
+{{- else -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.DefineType}}, error) {
+	row := q.db.QueryRow(ctx, {{.ConstantName}}, {{.Arg.Params}})
+{{- end}}
+	{{- if or (ne .Arg.Pair .Ret.Pair) (ne .Arg.DefineType .Ret.DefineType) }}
+	var {{.Ret.Name}} {{.Ret.Type}}
+	{{- end}}
+	err := row.Scan({{.Ret.Scan}})
+	{{- if $.WrapErrors}}
+	if err != nil {
+		err = fmt.Errorf("query {{.MethodName}}: %w", err)
+	}
+	{{- end}}
+	return {{.Ret.ReturnName}}, err
+}
+{{end}}
+
+{{if eq .Cmd ":many"}}
+{{range .Comments}}//{{.}}
+{{end -}}
+{{- if $.EmitMethodsWithDBArgument -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error) {
+	rows, err := db.Query(ctx, {{.ConstantName}}, {{.Arg.Params}})
+{{- else -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error) {
+	rows, err := q.db.Query(ctx, {{.ConstantName}}, {{.Arg.Params}})
+{{- end}}
+	if err != nil {
+		return nil, {{if $.WrapErrors}}fmt.Errorf("query {{.MethodName}}: %w", err){{else}}err{{end}}
+	}
+	defer rows.Close()
+	{{- if $.EmitEmptySlices}}
+	items := []{{.Ret.DefineType}}{}
+	{{else}}
+	var items []{{.Ret.DefineType}}
+	{{end -}}
+	for rows.Next() {
+		var {{.Ret.Name}} {{.Ret.Type}}
+		if err := rows.Scan({{.Ret.Scan}}); err != nil {
+			return nil, {{if $.WrapErrors}}fmt.Errorf("query {{.MethodName}}: %w", err){{else}}err{{end}}
+		}
+		items = append(items, {{.Ret.ReturnName}})
+	}
+	if err := rows.Err(); err != nil {
+		return nil, {{if $.WrapErrors}}fmt.Errorf("query {{.MethodName}}: %w", err){{else}}err{{end}}
+	}
+	return items, nil
+}
+{{end}}
+
+{{if eq .Cmd ":exec"}}
+{{range .Comments}}//{{.}}
+{{end -}}
+{{- if $.EmitMethodsWithDBArgument -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) error {
+	err := db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
+{{- else -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) error {
+	err := q.db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
+{{- end}}
+	{{- if $.WrapErrors}}
+	if err != nil {
+		return fmt.Errorf("exec {{.MethodName}}: %w", err)
+	}
+	{{- end}}
+	return err
+}
+{{end}}
+
+{{if eq .Cmd ":execrows"}}
+{{range .Comments}}//{{.}}
+{{end -}}
+{{- if $.EmitMethodsWithDBArgument -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) (int64, error) {
+	// ClickHouse doesn't support RowsAffected, returning error
+	return 0, fmt.Errorf(":execrows not supported by ClickHouse driver")
+}
+{{- else -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, error) {
+	// ClickHouse doesn't support RowsAffected, returning error
+	return 0, fmt.Errorf(":execrows not supported by ClickHouse driver")
+}
+{{- end}}
+{{end}}
+
+{{if eq .Cmd ":execlastid"}}
+{{range .Comments}}//{{.}}
+{{end -}}
+{{- if $.EmitMethodsWithDBArgument -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) (int64, error) {
+	// ClickHouse doesn't support LastInsertId, returning error
+	return 0, fmt.Errorf(":execlastid not supported by ClickHouse driver")
+}
+{{- else -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) (int64, error) {
+	// ClickHouse doesn't support LastInsertId, returning error
+	return 0, fmt.Errorf(":execlastid not supported by ClickHouse driver")
+}
+{{- end}}
+{{end}}
+
+{{if eq .Cmd ":execresult"}}
+{{range .Comments}}//{{.}}
+{{end -}}
+{{- if $.EmitMethodsWithDBArgument -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) error {
+	{{- if $.WrapErrors}}
+	err := db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
+	if err != nil {
+		return fmt.Errorf("exec {{.MethodName}}: %w", err)
+	}
+	return nil
+	{{- else}}
+	return db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
+	{{- end}}
+}
+{{- else -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) error {
+	{{- if $.WrapErrors}}
+	err := q.db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
+	if err != nil {
+		return fmt.Errorf("exec {{.MethodName}}: %w", err)
+	}
+	return nil
+	{{- else}}
+	return q.db.Exec(ctx, {{.ConstantName}}, {{.Arg.Params}})
+	{{- end}}
+}
+{{- end}}
+{{end}}
+
+{{end}}
+{{end}}
+{{end}}
