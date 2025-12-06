@@ -19,3 +19,10 @@ services:
       POSTGRES_DB: postgres
       POSTGRES_PASSWORD: mysecretpassword
       POSTGRES_USER: postgres
+
+  clickhouse:
+    image: "clickhouse:lts"
+    ports:
+      - "9000:9000"
+      - "8123:8123"
+    restart: always

@@ -51,6 +51,7 @@ func (p *Paths) UnmarshalYAML(unmarshal func(interface{}) error) error {
 }
 
 const (
+	EngineClickHouse Engine = "clickhouse"
 	EngineMySQL      Engine = "mysql"
 	EnginePostgreSQL Engine = "postgresql"
 	EngineSQLite     Engine = "sqlite"

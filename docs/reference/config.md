@@ -37,7 +37,7 @@ Each mapping in the `sql` collection has the following keys:
 - `name`:
   - An human-friendly identifier for this query set. Optional.
 - `engine`:
-  - One of `postgresql`, `mysql` or `sqlite`.
+   - One of `postgresql`, `mysql`, `sqlite` or `clickhouse`.
 - `schema`:
   - Directory of SQL migrations or path to single SQL file; or a list of paths.
 - `queries`:
@@ -134,7 +134,8 @@ The `gen` mapping supports the following keys:
 - `out`:
   - Output directory for generated code.
 - `sql_package`:
-  - Either `pgx/v4`, `pgx/v5` or `database/sql`. Defaults to `database/sql`.
+   - Either `pgx/v4`, `pgx/v5`, `database/sql` or `clickhouse/v2`. Defaults to `database/sql`.
+   - For ClickHouse, use `clickhouse/v2` for the native driver or omit for `database/sql` compatibility.
 - `sql_driver`:
   - Either `github.com/jackc/pgx/v4`, `github.com/jackc/pgx/v5`, `github.com/lib/pq` or `github.com/go-sql-driver/mysql`. No defaults. Required if query annotation `:copyfrom` is used.
 - `emit_db_tags`:
@@ -158,7 +159,7 @@ The `gen` mapping supports the following keys:
 - `emit_methods_with_db_argument`:
   - If true, generated methods will accept a DBTX argument instead of storing a DBTX on the `*Queries` struct. Defaults to `false`.
 - `emit_pointers_for_null_types`:
-  - If true, generated types for nullable columns are emitted as pointers (ie. `*string`) instead of `database/sql` null types (ie. `NullString`). Currently only supported for PostgreSQL if `sql_package` is `pgx/v4` or `pgx/v5`, and for SQLite. Defaults to `false`.
+   - If true, generated types for nullable columns are emitted as pointers (ie. `*string`) instead of `database/sql` null types (ie. `NullString`). Currently only supported for PostgreSQL if `sql_package` is `pgx/v4` or `pgx/v5`, SQLite, and ClickHouse if `sql_package` is `clickhouse/v2`. Defaults to `false`.
 - `emit_enum_valid_method`:
   - If true, generate a Valid method on enum types,
     indicating whether a string is a valid enum value.

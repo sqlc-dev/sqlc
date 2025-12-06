@@ -1,15 +1,15 @@
 Database and language support
 #############################
 
-==========  =======================  ============  ============  ===============
-Language    Plugin                   MySQL         PostgreSQL    SQLite
-==========  =======================  ============  ============  ===============
-Go          (built-in)               Stable        Stable        Beta
-Go          `sqlc-gen-go`_           Stable        Stable        Beta
-Kotlin      `sqlc-gen-kotlin`_       Beta          Beta          Not implemented
-Python      `sqlc-gen-python`_       Beta          Beta          Not implemented
-TypeScript  `sqlc-gen-typescript`_   Beta          Beta          Not implemented
-==========  =======================  ============  ============  ===============
+==========  =======================  ============  ============  ===============  ===============
+Language    Plugin                   MySQL         PostgreSQL    SQLite           ClickHouse
+==========  =======================  ============  ============  ===============  ===============
+Go          (built-in)               Stable        Stable        Beta             Beta
+Go          `sqlc-gen-go`_           Stable        Stable        Beta             Beta
+Kotlin      `sqlc-gen-kotlin`_       Beta          Beta          Not implemented  Not implemented
+Python      `sqlc-gen-python`_       Beta          Beta          Not implemented  Not implemented
+TypeScript  `sqlc-gen-typescript`_   Beta          Beta          Not implemented  Not implemented
+==========  =======================  ============  ============  ===============  ===============
 
 Community language support
 **************************

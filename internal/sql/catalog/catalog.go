@@ -33,6 +33,155 @@ func New(defaultSchema string) *Catalog {
 	return newCatalog
 }
 
+// Clone creates a deep copy of the catalog, preserving all schemas, tables, types, and functions.
+// This is used to create isolated copies for query parsing where functions might be registered
+// with context-dependent types without affecting the original catalog.
+func (c *Catalog) Clone() *Catalog {
+	if c == nil {
+		return nil
+	}
+
+	cloned := &Catalog{
+		Comment:       c.Comment,
+		DefaultSchema: c.DefaultSchema,
+		Name:          c.Name,
+		Schemas:       make([]*Schema, 0, len(c.Schemas)),
+		SearchPath:    make([]string, len(c.SearchPath)),
+		LoadExtension: c.LoadExtension,
+		Extensions:    make(map[string]struct{}),
+	}
+
+	// Copy search path
+	copy(cloned.SearchPath, c.SearchPath)
+
+	// Copy extensions
+	for k, v := range c.Extensions {
+		cloned.Extensions[k] = v
+	}
+
+	// Clone schemas
+	for _, schema := range c.Schemas {
+		cloned.Schemas = append(cloned.Schemas, cloneSchema(schema))
+	}
+
+	return cloned
+}
+
+func cloneSchema(s *Schema) *Schema {
+	if s == nil {
+		return nil
+	}
+
+	cloned := &Schema{
+		Name:    s.Name,
+		Comment: s.Comment,
+		Tables:  make([]*Table, len(s.Tables)),
+		Types:   make([]Type, len(s.Types)),
+		Funcs:   make([]*Function, len(s.Funcs)),
+	}
+
+	// Clone tables
+	for i, table := range s.Tables {
+		cloned.Tables[i] = cloneTable(table)
+	}
+
+	// Clone types
+	for i, t := range s.Types {
+		cloned.Types[i] = cloneType(t)
+	}
+
+	// Clone functions
+	for i, fn := range s.Funcs {
+		cloned.Funcs[i] = cloneFunction(fn)
+	}
+
+	return cloned
+}
+
+func cloneFunction(f *Function) *Function {
+	if f == nil {
+		return nil
+	}
+
+	cloned := &Function{
+		Name:               f.Name,
+		Comment:            f.Comment,
+		Desc:               f.Desc,
+		ReturnType:         f.ReturnType, // ast.TypeName is immutable for our purposes
+		ReturnTypeNullable: f.ReturnTypeNullable,
+		Args:               make([]*Argument, len(f.Args)),
+	}
+
+	for i, arg := range f.Args {
+		if arg != nil {
+			cloned.Args[i] = &Argument{
+				Name:       arg.Name,
+				Type:       arg.Type, // ast.TypeName is immutable
+				HasDefault: arg.HasDefault,
+				Mode:       arg.Mode,
+			}
+		}
+	}
+
+	return cloned
+}
+
+func cloneTable(t *Table) *Table {
+	if t == nil {
+		return nil
+	}
+
+	cloned := &Table{
+		Rel:     t.Rel,
+		Comment: t.Comment,
+		Columns: make([]*Column, len(t.Columns)),
+	}
+
+	for i, col := range t.Columns {
+		if col != nil {
+			colClone := &Column{
+				Name:       col.Name,
+				Type:       col.Type,
+				IsNotNull:  col.IsNotNull,
+				IsUnsigned: col.IsUnsigned,
+				IsArray:    col.IsArray,
+				ArrayDims:  col.ArrayDims,
+				Comment:    col.Comment,
+				linkedType: col.linkedType,
+			}
+			if col.Length != nil {
+				length := *col.Length
+				colClone.Length = &length
+			}
+			cloned.Columns[i] = colClone
+		}
+	}
+
+	return cloned
+}
+
+func cloneType(t Type) Type {
+	if t == nil {
+		return nil
+	}
+
+	switch typ := t.(type) {
+	case *Enum:
+		return &Enum{
+			Name:    typ.Name,
+			Vals:    append([]string{}, typ.Vals...),
+			Comment: typ.Comment,
+		}
+	case *CompositeType:
+		return &CompositeType{
+			Name:    typ.Name,
+			Comment: typ.Comment,
+		}
+	default:
+		return t
+	}
+}
+
 func (c *Catalog) Build(stmts []ast.Statement) error {
 	for i := range stmts {
 		if err := c.Update(stmts[i], nil); err != nil {

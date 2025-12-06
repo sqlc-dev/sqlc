@@ -1,0 +1,13 @@
+version: "2"
+sql:
+  - engine: "clickhouse"
+    queries: "queries.sql"
+    schema: "schema.sql"
+    strict_order_by: false
+    strict_function_checks: false
+    gen:
+      go:
+        out: "gen"
+        package: "db"
+        sql_package: "clickhouse/v2"
+        emit_pointers_for_null_types: true

@@ -1,0 +1,16 @@
+{
+  "version": "2",
+  "sql": [
+    {
+      "schema": "schema.sql",
+      "queries": "query.sql",
+      "engine": "clickhouse",
+      "gen": {
+        "go": {
+          "out": "go",
+          "package": "db"
+        }
+      }
+    }
+  ]
+}
