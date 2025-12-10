@@ -136,10 +136,11 @@ var initCmd = &cobra.Command{
 }
 
 type Env struct {
-	DryRun   bool
-	Debug    opts.Debug
-	Remote   bool
-	NoRemote bool
+	DryRun     bool
+	Debug      opts.Debug
+	Experiment opts.Experiment
+	Remote     bool
+	NoRemote   bool
 }
 
 func ParseEnv(c *cobra.Command) Env {
@@ -147,10 +148,11 @@ func ParseEnv(c *cobra.Command) Env {
 	r := c.Flag("remote")
 	nr := c.Flag("no-remote")
 	return Env{
-		DryRun:   dr != nil && dr.Changed,
-		Debug:    opts.DebugFromEnv(),
-		Remote:   r != nil && r.Value.String() == "true",
-		NoRemote: nr != nil && nr.Value.String() == "true",
+		DryRun:     dr != nil && dr.Changed,
+		Debug:      opts.DebugFromEnv(),
+		Experiment: opts.ExperimentFromEnv(),
+		Remote:     r != nil && r.Value.String() == "true",
+		NoRemote:   nr != nil && nr.Value.String() == "true",
 	}
 }
 

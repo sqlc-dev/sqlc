@@ -1,5 +1,22 @@
 # Environment variables
 
+## SQLCEXPERIMENT
+
+The `SQLCEXPERIMENT` variable controls experimental features within sqlc. It is
+a comma-separated list of experiment names. This is modeled after Go's
+[GOEXPERIMENT](https://pkg.go.dev/internal/goexperiment) environment variable.
+
+Experiment names can be prefixed with `no` to explicitly disable them.
+
+```
+SQLCEXPERIMENT=foo,bar      # enable foo and bar experiments
+SQLCEXPERIMENT=nofoo        # explicitly disable foo experiment
+SQLCEXPERIMENT=foo,nobar    # enable foo, disable bar
+```
+
+Currently, no experiments are defined. Experiments will be documented here as
+they are introduced.
+
 ## SQLCCACHE
 
 The `SQLCCACHE` environment variable dictates where `sqlc` will store cached
