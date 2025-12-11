@@ -123,7 +123,13 @@ type SQL struct {
 }
 
 type Analyzer struct {
-	Database *bool `json:"database" yaml:"database"`
+	Database *bool   `json:"database" yaml:"database"`
+	PGLite   *PGLite `json:"pglite" yaml:"pglite"`
+}
+
+type PGLite struct {
+	URL    string `json:"url" yaml:"url"`
+	SHA256 string `json:"sha256" yaml:"sha256"`
 }
 
 // TODO: Figure out a better name for this

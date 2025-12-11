@@ -65,6 +65,26 @@ func TestExperimentFromString(t *testing.T) {
 		// 	input: "NewParser,NONEWPARSER",
 		// 	want:  Experiment{NewParser: false},
 		// },
+		{
+			name:  "enable pglite",
+			input: "pglite",
+			want:  Experiment{PGLite: true},
+		},
+		{
+			name:  "disable pglite",
+			input: "nopglite",
+			want:  Experiment{PGLite: false},
+		},
+		{
+			name:  "pglite enable then disable",
+			input: "pglite,nopglite",
+			want:  Experiment{PGLite: false},
+		},
+		{
+			name:  "pglite case insensitive",
+			input: "PGLite",
+			want:  Experiment{PGLite: true},
+		},
 	}
 
 	for _, tt := range tests {
@@ -95,6 +115,11 @@ func TestExperimentEnabled(t *testing.T) {
 		// 	exp:  Experiment{NewParser: true},
 		// 	want: []string{"newparser"},
 		// },
+		{
+			name: "pglite enabled",
+			exp:  Experiment{PGLite: true},
+			want: []string{"pglite"},
+		},
 	}
 
 	for _, tt := range tests {
@@ -131,6 +156,11 @@ func TestExperimentString(t *testing.T) {
 		// 	exp:  Experiment{NewParser: true},
 		// 	want: "newparser",
 		// },
+		{
+			name: "pglite enabled",
+			exp:  Experiment{PGLite: true},
+			want: "pglite",
+		},
 	}
 
 	for _, tt := range tests {
@@ -171,6 +201,16 @@ func TestIsKnownExperiment(t *testing.T) {
 		// 	input: "NewParser",
 		// 	want:  true,
 		// },
+		{
+			name:  "pglite lowercase",
+			input: "pglite",
+			want:  true,
+		},
+		{
+			name:  "pglite mixed case",
+			input: "PGLite",
+			want:  true,
+		},
 	}
 
 	for _, tt := range tests {
