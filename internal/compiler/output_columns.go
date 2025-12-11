@@ -150,12 +150,20 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 			if res.Name != nil {
 				name = *res.Name
 			}
-			switch op := astutils.Join(n.Name, ""); {
+			op := astutils.Join(n.Name, "")
+			switch {
 			case lang.IsComparisonOperator(op):
 				// TODO: Generate a name for these operations
 				cols = append(cols, &Column{Name: name, DataType: "bool", NotNull: true})
 			case lang.IsMathematicalOperator(op):
-				cols = append(cols, &Column{Name: name, DataType: "int", NotNull: true})
+				// Try to infer the type from operands
+				if inferredCol := c.inferExprType(n, tables); inferredCol != nil {
+					inferredCol.Name = name
+					cols = append(cols, inferredCol)
+				} else {
+					// Fallback to previous behavior if inference fails
+					cols = append(cols, &Column{Name: name, DataType: "int", NotNull: true})
+				}
 			default:
 				cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
 			}
@@ -233,6 +241,17 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 					shouldNotBeNull = true
 					continue
 				}
+
+				// Try to infer the type of the argument
+				if inferredCol := c.inferExprType(arg, tables); inferredCol != nil {
+					if firstColumn == nil {
+						firstColumn = inferredCol
+					}
+					shouldNotBeNull = shouldNotBeNull || inferredCol.NotNull
+					continue
+				}
+
+				// Fallback to the old logic for simple column references
 				if ref, ok := arg.(*ast.ColumnRef); ok {
 					columns, err := outputColumnRefs(res, tables, ref)
 					if err != nil {
@@ -247,6 +266,7 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 				}
 			}
 			if firstColumn != nil {
+				firstColumn.Name = name
 				firstColumn.NotNull = shouldNotBeNull
 				firstColumn.skipTableRequiredCheck = true
 				cols = append(cols, firstColumn)
