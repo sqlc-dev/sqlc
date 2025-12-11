@@ -35,7 +35,9 @@ func StructName(name string, options *opts.Options) string {
 		if _, found := options.InitialismsMap[p]; found {
 			out += strings.ToUpper(p)
 		} else {
-			out += strings.Title(p)
+			if len(p) > 0 {
+				out += strings.ToUpper(p[:1]) + p[1:]
+			}
 		}
 	}
 
