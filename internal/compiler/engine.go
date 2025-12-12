@@ -10,6 +10,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/engine/dolphin"
 	"github.com/sqlc-dev/sqlc/internal/engine/postgresql"
 	pganalyze "github.com/sqlc-dev/sqlc/internal/engine/postgresql/analyzer"
+	"github.com/sqlc-dev/sqlc/internal/engine/postgresql/pglite"
 	"github.com/sqlc-dev/sqlc/internal/engine/sqlite"
 	sqliteanalyze "github.com/sqlc-dev/sqlc/internal/engine/sqlite/analyzer"
 	"github.com/sqlc-dev/sqlc/internal/opts"
@@ -59,7 +60,12 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings) (*Compiler, err
 		c.parser = postgresql.NewParser()
 		c.catalog = postgresql.NewCatalog()
 		c.selector = newDefaultSelector()
-		if conf.Database != nil {
+
+		// Check if PGLite analyzer is configured and experiment is enabled
+		exp := opts.ExperimentFromEnv()
+		if exp.PGLite && conf.Analyzer.PGLite != nil {
+			c.analyzer = pglite.New(*conf.Analyzer.PGLite)
+		} else if conf.Database != nil {
 			if conf.Analyzer.Database == nil || *conf.Analyzer.Database {
 				c.analyzer = analyzer.Cached(
 					pganalyze.New(c.client, *conf.Database),
