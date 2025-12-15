@@ -88,6 +88,7 @@ func (a *Analyzer) Analyze(ctx context.Context, n ast.Node, query string, migrat
 	colCount := stmt.ColumnCount()
 	for i := 0; i < colCount; i++ {
 		name := stmt.ColumnName(i)
+		declType := stmt.ColumnDeclType(i)
 		dbName := stmt.ColumnDatabaseName(i)
 		tableName := stmt.ColumnTableName(i)
 		originName := stmt.ColumnOriginName(i)
@@ -96,13 +97,12 @@ func (a *Analyzer) Analyze(ctx context.Context, n ast.Node, query string, migrat
 		var notNull bool
 		var dataType string
 		if originName != "" {
-			var declType string
 			declType, _, notNull, _, _, _ = a.conn.TableColumnMetadata(
 				dbName, tableName, originName)
-
-			// Normalize the data type
-			dataType = normalizeType(declType)
 		}
+
+		// Normalize the data type
+		dataType = normalizeType(declType)
 
 		col := &core.Column{
 			Name:         name,
