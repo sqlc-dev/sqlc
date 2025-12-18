@@ -214,8 +214,8 @@ func TestReplay(t *testing.T) {
 				}
 			},
 			Enabled: func() bool {
-				// Always enabled - tests will fail if databases aren't available
-				return true
+				// Enabled if at least one database URI is available
+				return postgresURI != "" || mysqlURI != ""
 			},
 		},
 	}
