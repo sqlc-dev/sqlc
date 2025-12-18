@@ -16,8 +16,6 @@ var postgresFlight singleflight.Group
 var postgresURI string
 
 // StartPostgreSQLServer starts an existing PostgreSQL installation natively (without Docker).
-// This is intended for CI environments like GitHub Actions where Docker may not be available
-// but PostgreSQL can be installed via the services directive.
 func StartPostgreSQLServer(ctx context.Context) (string, error) {
 	if err := Supported(); err != nil {
 		return "", err

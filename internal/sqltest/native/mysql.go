@@ -16,8 +16,6 @@ var mysqlFlight singleflight.Group
 var mysqlURI string
 
 // StartMySQLServer starts an existing MySQL installation natively (without Docker).
-// This is intended for CI environments like GitHub Actions where Docker may not be available
-// but MySQL can be installed via the services directive.
 func StartMySQLServer(ctx context.Context) (string, error) {
 	if err := Supported(); err != nil {
 		return "", err
@@ -44,7 +42,7 @@ func StartMySQLServer(ctx context.Context) (string, error) {
 }
 
 func startMySQLServer(ctx context.Context) (string, error) {
-	// Standard URI for test MySQL (matches GitHub Actions MySQL service default)
+	// Standard URI for test MySQL
 	uri := "root:mysecretpassword@tcp(localhost:3306)/mysql?multiStatements=true&parseTime=true"
 
 	// Try to connect first - it might already be running
@@ -81,7 +79,7 @@ func startMySQLServer(ctx context.Context) (string, error) {
 			waitCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 			defer cancel()
 
-			// Try with password first (GitHub Actions MySQL service has password)
+			// Try with password first
 			if err := waitForMySQL(waitCtx, uri, 15*time.Second); err == nil {
 				return uri, nil
 			}
