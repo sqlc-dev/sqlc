@@ -86,44 +86,6 @@ The native database support expects the following credentials:
 - **Password**: `mysecretpassword`
 - **Port**: `3306`
 
-## GitHub Actions Setup
-
-For GitHub Actions, use the services directive instead of manual installation:
-
-```yaml
-services:
-  postgres:
-    image: postgres:16
-    env:
-      POSTGRES_PASSWORD: postgres
-    ports:
-      - 5432:5432
-    options: >-
-      --health-cmd pg_isready
-      --health-interval 10s
-      --health-timeout 5s
-      --health-retries 5
-
-  mysql:
-    image: mysql:8
-    env:
-      MYSQL_ROOT_PASSWORD: mysecretpassword
-    ports:
-      - 3306:3306
-    options: >-
-      --health-cmd "mysqladmin ping"
-      --health-interval 10s
-      --health-timeout 5s
-      --health-retries 5
-```
-
-Then set environment variables:
-```yaml
-env:
-  POSTGRESQL_SERVER_URI: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
-  MYSQL_SERVER_URI: root:mysecretpassword@tcp(localhost:3306)/mysql?multiStatements=true&parseTime=true
-```
-
 ## Running Tests
 
 ```bash
