@@ -96,8 +96,10 @@ func startMySQLServer(ctx context.Context) (string, error) {
 	if _, err := exec.LookPath("mysql"); err != nil {
 		slog.Info("native/mysql", "status", "installing")
 
-		// Pre-configure MySQL root password
-		setSelectionsCmd := exec.Command("sudo", "bash", "-c",
+		// Pre-configure MySQL root password (with timeout)
+		debconfCtx, debconfCancel := context.WithTimeout(ctx, 10*time.Second)
+		defer debconfCancel()
+		setSelectionsCmd := exec.CommandContext(debconfCtx, "sudo", "bash", "-c",
 			`echo "mysql-server mysql-server/root_password password mysecretpassword" | sudo debconf-set-selections && `+
 				`echo "mysql-server mysql-server/root_password_again password mysecretpassword" | sudo debconf-set-selections`)
 		setSelectionsCmd.Env = append(os.Environ(), "DEBIAN_FRONTEND=noninteractive")
@@ -105,12 +107,14 @@ func startMySQLServer(ctx context.Context) (string, error) {
 			slog.Debug("native/mysql", "debconf", string(output))
 		}
 
-		// Try to install MySQL server
-		cmd := exec.Command("sudo", "apt-get", "install", "-y", "-qq", "mysql-server")
+		// Try to install MySQL server (with timeout)
+		installCtx, installCancel := context.WithTimeout(ctx, 60*time.Second)
+		defer installCancel()
+		cmd := exec.CommandContext(installCtx, "sudo", "apt-get", "install", "-y", "-qq", "mysql-server")
 		cmd.Env = append(os.Environ(), "DEBIAN_FRONTEND=noninteractive")
 		if output, err := cmd.CombinedOutput(); err != nil {
-			// If apt-get fails (no network), return error
-			return "", fmt.Errorf("apt-get install mysql-server failed (network may be unavailable): %w\n%s", err, output)
+			// If apt-get fails (no network or timeout), return error
+			return "", fmt.Errorf("apt-get install mysql-server failed (network may be unavailable or timed out): %w\n%s", err, output)
 		}
 	}
 
