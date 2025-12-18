@@ -40,7 +40,7 @@ func MySQL(t *testing.T, migrations []string) string {
 			}
 			dburi = u
 		} else {
-			t.Fatal("MYSQL_SERVER_URI is empty and neither Docker nor native installation is available")
+			t.Skip("MYSQL_SERVER_URI is empty and neither Docker nor native installation is available")
 		}
 	}
 
