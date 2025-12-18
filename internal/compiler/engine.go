@@ -32,12 +32,6 @@ type Compiler struct {
 	// databaseOnlyMode indicates that the compiler should use database-only analysis
 	// and skip building the internal catalog from schema files (analyzer.database: only)
 	databaseOnlyMode bool
-	// pgAnalyzer is the PostgreSQL-specific analyzer used in database-only mode
-	// for schema introspection
-	pgAnalyzer *pganalyze.Analyzer
-	// sqliteAnalyzer is the SQLite-specific analyzer used in database-only mode
-	// for schema introspection
-	sqliteAnalyzer *sqliteanalyze.Analyzer
 	// expander is used to expand SELECT * and RETURNING * in database-only mode
 	expander *expander.Expander
 }
@@ -70,17 +64,11 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings, parserOpts opts
 				return nil, fmt.Errorf("analyzer.database: only requires database.uri or database.managed")
 			}
 			c.databaseOnlyMode = true
-			// Create the SQLite analyzer for schema introspection
-			c.sqliteAnalyzer = sqliteanalyze.New(*conf.Database)
-			// Use the analyzer wrapped with cache for query analysis
-			c.analyzer = analyzer.Cached(
-				c.sqliteAnalyzer,
-				combo.Global,
-				*conf.Database,
-			)
-			// Create the expander using the sqliteAnalyzer as the column getter
-			// The parser implements both Parser and format.Dialect interfaces
-			c.expander = expander.New(c.sqliteAnalyzer, parser, parser)
+			// Create the SQLite analyzer (implements Analyzer interface)
+			sqliteAnalyzer := sqliteanalyze.New(*conf.Database)
+			c.analyzer = analyzer.Cached(sqliteAnalyzer, combo.Global, *conf.Database)
+			// Create the expander using the analyzer as the column getter
+			c.expander = expander.New(c.analyzer, parser, parser)
 		} else if conf.Database != nil {
 			if conf.Analyzer.Database.IsEnabled() {
 				c.analyzer = analyzer.Cached(
@@ -109,17 +97,11 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings, parserOpts opts
 				return nil, fmt.Errorf("analyzer.database: only requires database.uri or database.managed")
 			}
 			c.databaseOnlyMode = true
-			// Create the PostgreSQL analyzer for schema introspection
-			c.pgAnalyzer = pganalyze.New(c.client, *conf.Database)
-			// Use the analyzer wrapped with cache for query analysis
-			c.analyzer = analyzer.Cached(
-				c.pgAnalyzer,
-				combo.Global,
-				*conf.Database,
-			)
-			// Create the expander using the pgAnalyzer as the column getter
-			// The parser implements both Parser and format.Dialect interfaces
-			c.expander = expander.New(c.pgAnalyzer, parser, parser)
+			// Create the PostgreSQL analyzer (implements Analyzer interface)
+			pgAnalyzer := pganalyze.New(c.client, *conf.Database)
+			c.analyzer = analyzer.Cached(pgAnalyzer, combo.Global, *conf.Database)
+			// Create the expander using the analyzer as the column getter
+			c.expander = expander.New(c.analyzer, parser, parser)
 		} else if conf.Database != nil {
 			if conf.Analyzer.Database.IsEnabled() {
 				c.analyzer = analyzer.Cached(

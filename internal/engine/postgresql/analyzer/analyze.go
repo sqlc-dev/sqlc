@@ -482,9 +482,9 @@ func (a *Analyzer) IntrospectSchema(ctx context.Context, schemas []string) (*cat
 	return cat, nil
 }
 
-// EnsurePool initializes the database connection pool if not already done.
-// This is useful for accurate mode where we need to connect before analyzing queries.
-func (a *Analyzer) EnsurePool(ctx context.Context, migrations []string) error {
+// EnsureConn initializes the database connection pool if not already done.
+// This is useful for database-only mode where we need to connect before analyzing queries.
+func (a *Analyzer) EnsureConn(ctx context.Context, migrations []string) error {
 	if a.pool != nil {
 		return nil
 	}
