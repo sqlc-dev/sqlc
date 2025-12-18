@@ -179,37 +179,27 @@ func TestReplay(t *testing.T) {
 		"managed-db": {
 			Mutate: func(t *testing.T, path string) func(*config.Config) {
 				return func(c *config.Config) {
-					// Only add servers that are available
-					var servers []config.Server
-					if postgresURI != "" {
-						servers = append(servers, config.Server{
+					// Add all servers - tests will fail if database isn't available
+					c.Servers = []config.Server{
+						{
 							Name:   "postgres",
 							Engine: config.EnginePostgreSQL,
 							URI:    postgresURI,
-						})
-					}
-					if mysqlURI != "" {
-						servers = append(servers, config.Server{
+						},
+						{
 							Name:   "mysql",
 							Engine: config.EngineMySQL,
 							URI:    mysqlURI,
-						})
+						},
 					}
-					c.Servers = servers
 
 					for i := range c.SQL {
 						switch c.SQL[i].Engine {
 						case config.EnginePostgreSQL:
-							if postgresURI == "" {
-								t.Skipf("PostgreSQL not available")
-							}
 							c.SQL[i].Database = &config.Database{
 								Managed: true,
 							}
 						case config.EngineMySQL:
-							if mysqlURI == "" {
-								t.Skipf("MySQL not available")
-							}
 							c.SQL[i].Database = &config.Database{
 								Managed: true,
 							}
@@ -224,8 +214,8 @@ func TestReplay(t *testing.T) {
 				}
 			},
 			Enabled: func() bool {
-				// Enable if at least one database is available
-				return postgresURI != "" || mysqlURI != ""
+				// Always enabled - tests will fail if databases aren't available
+				return true
 			},
 		},
 	}

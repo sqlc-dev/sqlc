@@ -50,7 +50,7 @@ func postgreSQL(t *testing.T, migrations []string, rw bool) string {
 			}
 			dburi = u
 		} else {
-			t.Skip("POSTGRESQL_SERVER_URI is empty and neither Docker nor native installation is available")
+			t.Fatal("POSTGRESQL_SERVER_URI is empty and neither Docker nor native installation is available")
 		}
 	}
 
