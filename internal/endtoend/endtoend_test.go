@@ -18,6 +18,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/opts"
 	"github.com/sqlc-dev/sqlc/internal/sqltest/docker"
+	"github.com/sqlc-dev/sqlc/internal/sqltest/native"
 )
 
 func lineEndings() cmp.Option {
@@ -113,22 +114,62 @@ func TestReplay(t *testing.T) {
 	ctx := context.Background()
 
 	var mysqlURI, postgresURI string
-	if err := docker.Installed(); err == nil {
-		{
-			host, err := docker.StartPostgreSQLServer(ctx)
-			if err != nil {
-				t.Fatalf("starting postgresql failed: %s", err)
+
+	// First, check environment variables
+	if uri := os.Getenv("POSTGRESQL_SERVER_URI"); uri != "" {
+		postgresURI = uri
+	}
+	if uri := os.Getenv("MYSQL_SERVER_URI"); uri != "" {
+		mysqlURI = uri
+	}
+
+	// Try Docker for any missing databases
+	if postgresURI == "" || mysqlURI == "" {
+		if err := docker.Installed(); err == nil {
+			if postgresURI == "" {
+				host, err := docker.StartPostgreSQLServer(ctx)
+				if err != nil {
+					t.Logf("docker postgresql startup failed: %s", err)
+				} else {
+					postgresURI = host
+				}
 			}
-			postgresURI = host
-		}
-		{
-			host, err := docker.StartMySQLServer(ctx)
-			if err != nil {
-				t.Fatalf("starting mysql failed: %s", err)
+			if mysqlURI == "" {
+				host, err := docker.StartMySQLServer(ctx)
+				if err != nil {
+					t.Logf("docker mysql startup failed: %s", err)
+				} else {
+					mysqlURI = host
+				}
 			}
-			mysqlURI = host
 		}
 	}
+
+	// Try native installation for any missing databases (Linux only)
+	if postgresURI == "" || mysqlURI == "" {
+		if err := native.Supported(); err == nil {
+			if postgresURI == "" {
+				host, err := native.StartPostgreSQLServer(ctx)
+				if err != nil {
+					t.Logf("native postgresql startup failed: %s", err)
+				} else {
+					postgresURI = host
+				}
+			}
+			if mysqlURI == "" {
+				host, err := native.StartMySQLServer(ctx)
+				if err != nil {
+					t.Logf("native mysql startup failed: %s", err)
+				} else {
+					mysqlURI = host
+				}
+			}
+		}
+	}
+
+	// Log which databases are available
+	t.Logf("PostgreSQL available: %v (URI: %s)", postgresURI != "", postgresURI)
+	t.Logf("MySQL available: %v (URI: %s)", mysqlURI != "", mysqlURI)
 
 	contexts := map[string]textContext{
 		"base": {
@@ -138,26 +179,37 @@ func TestReplay(t *testing.T) {
 		"managed-db": {
 			Mutate: func(t *testing.T, path string) func(*config.Config) {
 				return func(c *config.Config) {
-					c.Servers = []config.Server{
-						{
+					// Only add servers that are available
+					var servers []config.Server
+					if postgresURI != "" {
+						servers = append(servers, config.Server{
 							Name:   "postgres",
 							Engine: config.EnginePostgreSQL,
 							URI:    postgresURI,
-						},
-
-						{
+						})
+					}
+					if mysqlURI != "" {
+						servers = append(servers, config.Server{
 							Name:   "mysql",
 							Engine: config.EngineMySQL,
 							URI:    mysqlURI,
-						},
+						})
 					}
+					c.Servers = servers
+
 					for i := range c.SQL {
 						switch c.SQL[i].Engine {
 						case config.EnginePostgreSQL:
+							if postgresURI == "" {
+								t.Skipf("PostgreSQL not available")
+							}
 							c.SQL[i].Database = &config.Database{
 								Managed: true,
 							}
 						case config.EngineMySQL:
+							if mysqlURI == "" {
+								t.Skipf("MySQL not available")
+							}
 							c.SQL[i].Database = &config.Database{
 								Managed: true,
 							}
@@ -172,8 +224,8 @@ func TestReplay(t *testing.T) {
 				}
 			},
 			Enabled: func() bool {
-				err := docker.Installed()
-				return err == nil
+				// Enable if at least one database is available
+				return postgresURI != "" || mysqlURI != ""
 			},
 		},
 	}
