@@ -35,6 +35,9 @@ type Compiler struct {
 	// pgAnalyzer is the PostgreSQL-specific analyzer used in database-only mode
 	// for schema introspection
 	pgAnalyzer *pganalyze.Analyzer
+	// sqliteAnalyzer is the SQLite-specific analyzer used in database-only mode
+	// for schema introspection
+	sqliteAnalyzer *sqliteanalyze.Analyzer
 	// expander is used to expand SELECT * and RETURNING * in database-only mode
 	expander *expander.Expander
 }
@@ -53,10 +56,32 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings, parserOpts opts
 
 	switch conf.Engine {
 	case config.EngineSQLite:
-		c.parser = sqlite.NewParser()
+		parser := sqlite.NewParser()
+		c.parser = parser
 		c.catalog = sqlite.NewCatalog()
 		c.selector = newSQLiteSelector()
-		if conf.Database != nil {
+
+		if databaseOnlyMode {
+			// Database-only mode requires a database connection
+			if conf.Database == nil {
+				return nil, fmt.Errorf("analyzer.database: only requires database configuration")
+			}
+			if conf.Database.URI == "" && !conf.Database.Managed {
+				return nil, fmt.Errorf("analyzer.database: only requires database.uri or database.managed")
+			}
+			c.databaseOnlyMode = true
+			// Create the SQLite analyzer for schema introspection
+			c.sqliteAnalyzer = sqliteanalyze.New(*conf.Database)
+			// Use the analyzer wrapped with cache for query analysis
+			c.analyzer = analyzer.Cached(
+				c.sqliteAnalyzer,
+				combo.Global,
+				*conf.Database,
+			)
+			// Create the expander using the sqliteAnalyzer as the column getter
+			// The parser implements both Parser and format.Dialect interfaces
+			c.expander = expander.New(c.sqliteAnalyzer, parser, parser)
+		} else if conf.Database != nil {
 			if conf.Analyzer.Database.IsEnabled() {
 				c.analyzer = analyzer.Cached(
 					sqliteanalyze.New(*conf.Database),

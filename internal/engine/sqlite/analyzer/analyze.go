@@ -14,6 +14,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/opts"
 	"github.com/sqlc-dev/sqlc/internal/shfmt"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
 	"github.com/sqlc-dev/sqlc/internal/sql/named"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
 )
@@ -180,6 +181,144 @@ func (a *Analyzer) Close(_ context.Context) error {
 		return err
 	}
 	return nil
+}
+
+// EnsureConn initializes the database connection if not already done.
+// This is useful for database-only mode where we need to connect before analyzing queries.
+func (a *Analyzer) EnsureConn(ctx context.Context, migrations []string) error {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+
+	if a.conn != nil {
+		return nil
+	}
+
+	var uri string
+	applyMigrations := a.db.Managed
+	if a.db.Managed {
+		// For managed databases, create an in-memory database
+		uri = ":memory:"
+	} else if a.dbg.OnlyManagedDatabases {
+		return fmt.Errorf("database: connections disabled via SQLCDEBUG=databases=managed")
+	} else {
+		uri = a.replacer.Replace(a.db.URI)
+		// For in-memory databases, we need to apply migrations since the database starts empty
+		if isInMemoryDatabase(uri) {
+			applyMigrations = true
+		}
+	}
+
+	conn, err := sqlite3.Open(uri)
+	if err != nil {
+		return fmt.Errorf("failed to open sqlite database: %w", err)
+	}
+	a.conn = conn
+
+	// Apply migrations for managed or in-memory databases
+	if applyMigrations {
+		for _, m := range migrations {
+			if len(strings.TrimSpace(m)) == 0 {
+				continue
+			}
+			if err := a.conn.Exec(m); err != nil {
+				a.conn.Close()
+				a.conn = nil
+				return fmt.Errorf("migration failed: %s: %w", m, err)
+			}
+		}
+	}
+
+	return nil
+}
+
+// GetColumnNames implements the expander.ColumnGetter interface.
+// It prepares a query and returns the column names from the result set description.
+func (a *Analyzer) GetColumnNames(ctx context.Context, query string) ([]string, error) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+
+	if a.conn == nil {
+		return nil, fmt.Errorf("database connection not initialized")
+	}
+
+	stmt, _, err := a.conn.Prepare(query)
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	colCount := stmt.ColumnCount()
+	columns := make([]string, colCount)
+	for i := 0; i < colCount; i++ {
+		columns[i] = stmt.ColumnName(i)
+	}
+
+	return columns, nil
+}
+
+// IntrospectSchema queries the database to build a catalog containing
+// tables and columns for the database.
+func (a *Analyzer) IntrospectSchema(ctx context.Context, schemas []string) (*catalog.Catalog, error) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+
+	if a.conn == nil {
+		return nil, fmt.Errorf("database connection not initialized")
+	}
+
+	// Build catalog
+	cat := &catalog.Catalog{
+		DefaultSchema: "main",
+	}
+
+	// Create default schema
+	mainSchema := &catalog.Schema{Name: "main"}
+	cat.Schemas = append(cat.Schemas, mainSchema)
+
+	// Query tables from sqlite_master
+	stmt, _, err := a.conn.Prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")
+	if err != nil {
+		return nil, fmt.Errorf("introspect tables: %w", err)
+	}
+
+	tableNames := []string{}
+	for stmt.Step() {
+		tableName := stmt.ColumnText(0)
+		tableNames = append(tableNames, tableName)
+	}
+	stmt.Close()
+
+	// For each table, get column information using PRAGMA table_info
+	for _, tableName := range tableNames {
+		tbl := &catalog.Table{
+			Rel: &ast.TableName{
+				Name: tableName,
+			},
+		}
+
+		pragmaStmt, _, err := a.conn.Prepare(fmt.Sprintf("PRAGMA table_info('%s')", tableName))
+		if err != nil {
+			return nil, fmt.Errorf("pragma table_info for %s: %w", tableName, err)
+		}
+
+		for pragmaStmt.Step() {
+			// PRAGMA table_info returns: cid, name, type, notnull, dflt_value, pk
+			colName := pragmaStmt.ColumnText(1)
+			colType := pragmaStmt.ColumnText(2)
+			notNull := pragmaStmt.ColumnInt(3) != 0
+
+			tbl.Columns = append(tbl.Columns, &catalog.Column{
+				Name:      colName,
+				Type:      ast.TypeName{Name: normalizeType(colType)},
+				IsNotNull: notNull,
+			})
+		}
+		pragmaStmt.Close()
+
+		mainSchema.Tables = append(mainSchema.Tables, tbl)
+	}
+
+	return cat, nil
 }
 
 // isInMemoryDatabase checks if a SQLite URI refers to an in-memory database
