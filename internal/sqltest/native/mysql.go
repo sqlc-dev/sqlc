@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"fmt"
 	"log/slog"
-	"os"
 	"os/exec"
 	"time"
 
@@ -16,8 +15,9 @@ import (
 var mysqlFlight singleflight.Group
 var mysqlURI string
 
-// StartMySQLServer installs and starts MySQL natively (without Docker).
-// This is intended for CI environments like GitHub Actions where Docker may not be available.
+// StartMySQLServer starts an existing MySQL installation natively (without Docker).
+// This is intended for CI environments like GitHub Actions where Docker may not be available
+// but MySQL can be installed via the services directive.
 func StartMySQLServer(ctx context.Context) (string, error) {
 	if err := Supported(); err != nil {
 		return "", err
@@ -44,7 +44,7 @@ func StartMySQLServer(ctx context.Context) (string, error) {
 }
 
 func startMySQLServer(ctx context.Context) (string, error) {
-	// Standard URI for test MySQL
+	// Standard URI for test MySQL (matches GitHub Actions MySQL service default)
 	uri := "root:mysecretpassword@tcp(localhost:3306)/mysql?multiStatements=true&parseTime=true"
 
 	// Try to connect first - it might already be running
@@ -56,9 +56,12 @@ func startMySQLServer(ctx context.Context) (string, error) {
 	// Also try without password (default MySQL installation)
 	uriNoPassword := "root@tcp(localhost:3306)/mysql?multiStatements=true&parseTime=true"
 	if err := waitForMySQL(ctx, uriNoPassword, 500*time.Millisecond); err == nil {
-		// MySQL is running without password, set one
+		slog.Info("native/mysql", "status", "already running (no password)")
+		// MySQL is running without password, try to set one
 		if err := setMySQLPassword(ctx); err != nil {
 			slog.Debug("native/mysql", "set-password-error", err)
+			// Return without password if we can't set one
+			return uriNoPassword, nil
 		}
 		// Try again with password
 		if err := waitForMySQL(ctx, uri, 1*time.Second); err == nil {
@@ -68,103 +71,64 @@ func startMySQLServer(ctx context.Context) (string, error) {
 		return uriNoPassword, nil
 	}
 
-	// Try to start existing MySQL service first (might be installed but not running)
+	// Try to start existing MySQL service (might be installed but not running)
 	if _, err := exec.LookPath("mysqld"); err == nil {
 		slog.Info("native/mysql", "status", "starting existing service")
-		if err := startMySQLService(); err == nil {
+		if err := startMySQLService(); err != nil {
+			slog.Debug("native/mysql", "start-error", err)
+		} else {
 			// Wait for MySQL to be ready
 			waitCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 			defer cancel()
 
-			// Try without password first
-			if err := waitForMySQL(waitCtx, uriNoPassword, 30*time.Second); err == nil {
+			// Try with password first (GitHub Actions MySQL service has password)
+			if err := waitForMySQL(waitCtx, uri, 15*time.Second); err == nil {
+				return uri, nil
+			}
+
+			// Try without password
+			if err := waitForMySQL(waitCtx, uriNoPassword, 15*time.Second); err == nil {
 				if err := setMySQLPassword(ctx); err != nil {
 					slog.Debug("native/mysql", "set-password-error", err)
 					return uriNoPassword, nil
 				}
-				return uri, nil
-			}
-
-			// Try with password
-			if err := waitForMySQL(waitCtx, uri, 5*time.Second); err == nil {
-				return uri, nil
+				if err := waitForMySQL(ctx, uri, 1*time.Second); err == nil {
+					return uri, nil
+				}
+				return uriNoPassword, nil
 			}
 		}
 	}
 
-	// Install MySQL if needed
-	if _, err := exec.LookPath("mysql"); err != nil {
-		slog.Info("native/mysql", "status", "installing")
-
-		// Pre-configure MySQL root password (with timeout using Linux timeout command)
-		setSelectionsCmd := exec.Command("sudo", "timeout", "10",
-			"bash", "-c",
-			`echo "mysql-server mysql-server/root_password password mysecretpassword" | sudo debconf-set-selections && `+
-				`echo "mysql-server mysql-server/root_password_again password mysecretpassword" | sudo debconf-set-selections`)
-		setSelectionsCmd.Env = append(os.Environ(), "DEBIAN_FRONTEND=noninteractive")
-		if output, err := setSelectionsCmd.CombinedOutput(); err != nil {
-			slog.Debug("native/mysql", "debconf", string(output))
-		}
-
-		// Try to install MySQL server (with 60 second timeout using Linux timeout command)
-		cmd := exec.Command("sudo", "timeout", "60", "apt-get", "install", "-y", "-qq", "mysql-server")
-		cmd.Env = append(os.Environ(), "DEBIAN_FRONTEND=noninteractive")
-		if output, err := cmd.CombinedOutput(); err != nil {
-			// If apt-get fails (no network or timeout), return error
-			return "", fmt.Errorf("apt-get install mysql-server failed (network may be unavailable or timed out): %w\n%s", err, output)
-		}
-	}
-
-	// Start MySQL service
-	slog.Info("native/mysql", "status", "starting service")
-	if err := startMySQLService(); err != nil {
-		return "", fmt.Errorf("failed to start MySQL: %w", err)
-	}
-
-	// Wait for MySQL to be ready with no password first
-	waitCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
-	defer cancel()
-
-	// Try without password first (fresh installation)
-	if err := waitForMySQL(waitCtx, uriNoPassword, 30*time.Second); err == nil {
-		// Set the password
-		if err := setMySQLPassword(ctx); err != nil {
-			slog.Debug("native/mysql", "set-password-error", err)
-			// Return without password
-			return uriNoPassword, nil
-		}
-		return uri, nil
-	}
-
-	// Try with password
-	if err := waitForMySQL(waitCtx, uri, 5*time.Second); err != nil {
-		return "", fmt.Errorf("timeout waiting for MySQL: %w", err)
-	}
-
-	return uri, nil
+	return "", fmt.Errorf("MySQL is not installed or could not be started")
 }
 
 func startMySQLService() error {
 	// Try systemctl first
 	cmd := exec.Command("sudo", "systemctl", "start", "mysql")
 	if err := cmd.Run(); err == nil {
+		// Give MySQL time to fully initialize
+		time.Sleep(2 * time.Second)
 		return nil
 	}
 
 	// Try mysqld
 	cmd = exec.Command("sudo", "systemctl", "start", "mysqld")
 	if err := cmd.Run(); err == nil {
+		time.Sleep(2 * time.Second)
 		return nil
 	}
 
 	// Try service command
 	cmd = exec.Command("sudo", "service", "mysql", "start")
 	if err := cmd.Run(); err == nil {
+		time.Sleep(2 * time.Second)
 		return nil
 	}
 
 	cmd = exec.Command("sudo", "service", "mysqld", "start")
 	if err := cmd.Run(); err == nil {
+		time.Sleep(2 * time.Second)
 		return nil
 	}
 
@@ -179,28 +143,29 @@ func setMySQLPassword(ctx context.Context) error {
 	}
 	defer db.Close()
 
-	// Set root password
-	_, err = db.ExecContext(ctx, "ALTER USER 'root'@'localhost' IDENTIFIED BY 'mysecretpassword';")
+	// Set root password using mysql_native_password for broader compatibility
+	_, err = db.ExecContext(ctx, "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'mysecretpassword';")
 	if err != nil {
-		// Try older MySQL syntax
-		_, err = db.ExecContext(ctx, "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('mysecretpassword');")
+		// Try without specifying auth plugin
+		_, err = db.ExecContext(ctx, "ALTER USER 'root'@'localhost' IDENTIFIED BY 'mysecretpassword';")
 		if err != nil {
-			return fmt.Errorf("could not set MySQL password: %w", err)
+			// Try older MySQL syntax
+			_, err = db.ExecContext(ctx, "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('mysecretpassword');")
+			if err != nil {
+				return fmt.Errorf("could not set MySQL password: %w", err)
+			}
 		}
 	}
 
 	// Flush privileges
 	_, _ = db.ExecContext(ctx, "FLUSH PRIVILEGES;")
 
-	// Create dinotest database
-	_, _ = db.ExecContext(ctx, "CREATE DATABASE IF NOT EXISTS dinotest;")
-
 	return nil
 }
 
 func waitForMySQL(ctx context.Context, uri string, timeout time.Duration) error {
 	deadline := time.Now().Add(timeout)
-	ticker := time.NewTicker(100 * time.Millisecond)
+	ticker := time.NewTicker(500 * time.Millisecond)
 	defer ticker.Stop()
 
 	var lastErr error
@@ -218,7 +183,11 @@ func waitForMySQL(ctx context.Context, uri string, timeout time.Duration) error 
 				slog.Debug("native/mysql", "open-attempt", err)
 				continue
 			}
-			if err := db.PingContext(ctx); err != nil {
+			// Use a short timeout for ping to avoid hanging
+			pingCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
+			err = db.PingContext(pingCtx)
+			cancel()
+			if err != nil {
 				lastErr = err
 				db.Close()
 				continue

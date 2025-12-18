@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"os"
 	"os/exec"
 	"strings"
 	"time"
@@ -16,8 +15,9 @@ import (
 var postgresFlight singleflight.Group
 var postgresURI string
 
-// StartPostgreSQLServer installs and starts PostgreSQL natively (without Docker).
-// This is intended for CI environments like GitHub Actions where Docker may not be available.
+// StartPostgreSQLServer starts an existing PostgreSQL installation natively (without Docker).
+// This is intended for CI environments like GitHub Actions where Docker may not be available
+// but PostgreSQL can be installed via the services directive.
 func StartPostgreSQLServer(ctx context.Context) (string, error) {
 	if err := Supported(); err != nil {
 		return "", err
@@ -44,7 +44,7 @@ func StartPostgreSQLServer(ctx context.Context) (string, error) {
 }
 
 func startPostgreSQLServer(ctx context.Context) (string, error) {
-	// Check if PostgreSQL is already running
+	// Standard URI for test PostgreSQL
 	uri := "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable"
 
 	// Try to connect first - it might already be running
@@ -53,21 +53,9 @@ func startPostgreSQLServer(ctx context.Context) (string, error) {
 		return uri, nil
 	}
 
-	// Install PostgreSQL if needed
+	// Check if PostgreSQL is installed
 	if _, err := exec.LookPath("psql"); err != nil {
-		slog.Info("native/postgres", "status", "installing")
-		// Update package lists and install PostgreSQL
-		cmd := exec.Command("sudo", "apt-get", "update", "-qq")
-		cmd.Env = append(os.Environ(), "DEBIAN_FRONTEND=noninteractive")
-		if output, err := cmd.CombinedOutput(); err != nil {
-			return "", fmt.Errorf("apt-get update failed: %w\n%s", err, output)
-		}
-
-		cmd = exec.Command("sudo", "apt-get", "install", "-y", "-qq", "postgresql", "postgresql-contrib")
-		cmd.Env = append(os.Environ(), "DEBIAN_FRONTEND=noninteractive")
-		if output, err := cmd.CombinedOutput(); err != nil {
-			return "", fmt.Errorf("apt-get install postgresql failed: %w\n%s", err, output)
-		}
+		return "", fmt.Errorf("PostgreSQL is not installed (psql not found)")
 	}
 
 	// Start PostgreSQL service
