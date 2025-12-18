@@ -41,11 +41,19 @@ func (c *Compiler) parseCatalog(schemas []string) error {
 		contents := migrations.RemoveRollbackStatements(string(blob))
 		c.schema = append(c.schema, contents)
 
+		// In database-only mode, we parse the schema to validate syntax
+		// but don't update the catalog - the database will be the source of truth
 		stmts, err := c.parser.Parse(strings.NewReader(contents))
 		if err != nil {
 			merr.Add(filename, contents, 0, err)
 			continue
 		}
+
+		// Skip catalog updates in database-only mode
+		if c.databaseOnlyMode {
+			continue
+		}
+
 		for i := range stmts {
 			if err := c.catalog.Update(stmts[i], c); err != nil {
 				merr.Add(filename, contents, stmts[i].Pos(), err)
