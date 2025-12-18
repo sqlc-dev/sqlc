@@ -1,0 +1,1 @@
+-- Empty schema - CTE uses VALUES clause only

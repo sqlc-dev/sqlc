@@ -14,6 +14,7 @@ import (
 	sqliteanalyze "github.com/sqlc-dev/sqlc/internal/engine/sqlite/analyzer"
 	"github.com/sqlc-dev/sqlc/internal/opts"
 	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
+	"github.com/sqlc-dev/sqlc/internal/x/expander"
 )
 
 type Compiler struct {
@@ -27,6 +28,15 @@ type Compiler struct {
 	selector selector
 
 	schema []string
+
+	// accurateMode indicates that the compiler should use database-only analysis
+	// and skip building the internal catalog from schema files
+	accurateMode bool
+	// pgAnalyzer is the PostgreSQL-specific analyzer used in accurate mode
+	// for schema introspection
+	pgAnalyzer *pganalyze.Analyzer
+	// expander is used to expand SELECT * and RETURNING * in accurate mode
+	expander *expander.Expander
 }
 
 func NewCompiler(conf config.SQL, combo config.CombinedSettings) (*Compiler, error) {
@@ -36,6 +46,9 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings) (*Compiler, err
 		client := dbmanager.NewClient(combo.Global.Servers)
 		c.client = client
 	}
+
+	// Check for accurate mode
+	accurateMode := conf.Analyzer.Accurate != nil && *conf.Analyzer.Accurate
 
 	switch conf.Engine {
 	case config.EngineSQLite:
@@ -56,10 +69,32 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings) (*Compiler, err
 		c.catalog = dolphin.NewCatalog()
 		c.selector = newDefaultSelector()
 	case config.EnginePostgreSQL:
-		c.parser = postgresql.NewParser()
+		parser := postgresql.NewParser()
+		c.parser = parser
 		c.catalog = postgresql.NewCatalog()
 		c.selector = newDefaultSelector()
-		if conf.Database != nil {
+
+		if accurateMode {
+			// Accurate mode requires a database connection
+			if conf.Database == nil {
+				return nil, fmt.Errorf("accurate mode requires database configuration")
+			}
+			if conf.Database.URI == "" && !conf.Database.Managed {
+				return nil, fmt.Errorf("accurate mode requires database.uri or database.managed")
+			}
+			c.accurateMode = true
+			// Create the PostgreSQL analyzer for schema introspection
+			c.pgAnalyzer = pganalyze.New(c.client, *conf.Database)
+			// Use the analyzer wrapped with cache for query analysis
+			c.analyzer = analyzer.Cached(
+				c.pgAnalyzer,
+				combo.Global,
+				*conf.Database,
+			)
+			// Create the expander using the pgAnalyzer as the column getter
+			// The parser implements both Parser and format.Dialect interfaces
+			c.expander = expander.New(c.pgAnalyzer, parser, parser)
+		} else if conf.Database != nil {
 			if conf.Analyzer.Database == nil || *conf.Analyzer.Database {
 				c.analyzer = analyzer.Cached(
 					pganalyze.New(c.client, *conf.Database),
