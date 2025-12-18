@@ -82,10 +82,10 @@
                         "type": "object",
                         "properties": {
                             "database": {
-                                "type": "boolean"
-                            },
-                            "accurate": {
-                                "type": "boolean"
+                                "oneOf": [
+                                    {"type": "boolean"},
+                                    {"const": "only"}
+                                ]
                             }
                         }
                     },

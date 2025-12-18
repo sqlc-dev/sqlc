@@ -25,9 +25,9 @@ import (
 // Experiment holds the state of all experimental features.
 // Add new experiments as boolean fields to this struct.
 type Experiment struct {
-	// Add experimental feature flags here as they are introduced.
-	// Example:
-	// NewParser bool // Enable new SQL parser
+	// AnalyzerV2 enables the database-only analyzer mode (analyzer.database: only)
+	// which uses the database for all type resolution instead of parsing schema files.
+	AnalyzerV2 bool
 }
 
 // ExperimentFromEnv returns an Experiment initialized from the SQLCEXPERIMENT
@@ -75,10 +75,8 @@ func ExperimentFromString(val string) Experiment {
 // known experiment.
 func isKnownExperiment(name string) bool {
 	switch strings.ToLower(name) {
-	// Add experiment names here as they are introduced.
-	// Example:
-	// case "newparser":
-	// 	return true
+	case "analyzerv2":
+		return true
 	default:
 		return false
 	}
@@ -87,21 +85,17 @@ func isKnownExperiment(name string) bool {
 // setExperiment sets the experiment flag with the given name to the given value.
 func setExperiment(e *Experiment, name string, enabled bool) {
 	switch strings.ToLower(name) {
-	// Add experiment cases here as they are introduced.
-	// Example:
-	// case "newparser":
-	// 	e.NewParser = enabled
+	case "analyzerv2":
+		e.AnalyzerV2 = enabled
 	}
 }
 
 // Enabled returns a slice of all enabled experiment names.
 func (e Experiment) Enabled() []string {
 	var enabled []string
-	// Add enabled experiments here as they are introduced.
-	// Example:
-	// if e.NewParser {
-	// 	enabled = append(enabled, "newparser")
-	// }
+	if e.AnalyzerV2 {
+		enabled = append(enabled, "analyzerv2")
+	}
 	return enabled
 }
 

@@ -29,17 +29,17 @@ type Compiler struct {
 
 	schema []string
 
-	// accurateMode indicates that the compiler should use database-only analysis
-	// and skip building the internal catalog from schema files
-	accurateMode bool
-	// pgAnalyzer is the PostgreSQL-specific analyzer used in accurate mode
+	// databaseOnlyMode indicates that the compiler should use database-only analysis
+	// and skip building the internal catalog from schema files (analyzer.database: only)
+	databaseOnlyMode bool
+	// pgAnalyzer is the PostgreSQL-specific analyzer used in database-only mode
 	// for schema introspection
 	pgAnalyzer *pganalyze.Analyzer
-	// expander is used to expand SELECT * and RETURNING * in accurate mode
+	// expander is used to expand SELECT * and RETURNING * in database-only mode
 	expander *expander.Expander
 }
 
-func NewCompiler(conf config.SQL, combo config.CombinedSettings) (*Compiler, error) {
+func NewCompiler(conf config.SQL, combo config.CombinedSettings, parserOpts opts.Parser) (*Compiler, error) {
 	c := &Compiler{conf: conf, combo: combo}
 
 	if conf.Database != nil && conf.Database.Managed {
@@ -47,8 +47,9 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings) (*Compiler, err
 		c.client = client
 	}
 
-	// Check for accurate mode
-	accurateMode := conf.Analyzer.Accurate != nil && *conf.Analyzer.Accurate
+	// Check for database-only mode (analyzer.database: only)
+	// This feature requires the analyzerv2 experiment to be enabled
+	databaseOnlyMode := conf.Analyzer.Database.IsOnly() && parserOpts.Experiment.AnalyzerV2
 
 	switch conf.Engine {
 	case config.EngineSQLite:
@@ -56,7 +57,7 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings) (*Compiler, err
 		c.catalog = sqlite.NewCatalog()
 		c.selector = newSQLiteSelector()
 		if conf.Database != nil {
-			if conf.Analyzer.Database == nil || *conf.Analyzer.Database {
+			if conf.Analyzer.Database.IsEnabled() {
 				c.analyzer = analyzer.Cached(
 					sqliteanalyze.New(*conf.Database),
 					combo.Global,
@@ -74,15 +75,15 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings) (*Compiler, err
 		c.catalog = postgresql.NewCatalog()
 		c.selector = newDefaultSelector()
 
-		if accurateMode {
-			// Accurate mode requires a database connection
+		if databaseOnlyMode {
+			// Database-only mode requires a database connection
 			if conf.Database == nil {
-				return nil, fmt.Errorf("accurate mode requires database configuration")
+				return nil, fmt.Errorf("analyzer.database: only requires database configuration")
 			}
 			if conf.Database.URI == "" && !conf.Database.Managed {
-				return nil, fmt.Errorf("accurate mode requires database.uri or database.managed")
+				return nil, fmt.Errorf("analyzer.database: only requires database.uri or database.managed")
 			}
-			c.accurateMode = true
+			c.databaseOnlyMode = true
 			// Create the PostgreSQL analyzer for schema introspection
 			c.pgAnalyzer = pganalyze.New(c.client, *conf.Database)
 			// Use the analyzer wrapped with cache for query analysis
@@ -95,7 +96,7 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings) (*Compiler, err
 			// The parser implements both Parser and format.Dialect interfaces
 			c.expander = expander.New(c.pgAnalyzer, parser, parser)
 		} else if conf.Database != nil {
-			if conf.Analyzer.Database == nil || *conf.Analyzer.Database {
+			if conf.Analyzer.Database.IsEnabled() {
 				c.analyzer = analyzer.Cached(
 					pganalyze.New(c.client, *conf.Database),
 					combo.Global,

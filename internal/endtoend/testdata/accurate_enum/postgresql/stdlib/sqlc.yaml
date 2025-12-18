@@ -3,8 +3,10 @@ sql:
   - engine: postgresql
     schema: "schema.sql"
     queries: "query.sql"
+    database:
+      managed: true
     analyzer:
-      accurate: true
+      database: "only"
     gen:
       go:
         package: "querytest"

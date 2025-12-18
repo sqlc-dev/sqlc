@@ -43,28 +43,26 @@ func TestExperimentFromString(t *testing.T) {
 			input: "foo,,bar",
 			want:  Experiment{},
 		},
-		// Add tests for specific experiments as they are introduced.
-		// Example:
-		// {
-		// 	name:  "enable newparser",
-		// 	input: "newparser",
-		// 	want:  Experiment{NewParser: true},
-		// },
-		// {
-		// 	name:  "disable newparser",
-		// 	input: "nonewparser",
-		// 	want:  Experiment{NewParser: false},
-		// },
-		// {
-		// 	name:  "enable then disable",
-		// 	input: "newparser,nonewparser",
-		// 	want:  Experiment{NewParser: false},
-		// },
-		// {
-		// 	name:  "case insensitive",
-		// 	input: "NewParser,NONEWPARSER",
-		// 	want:  Experiment{NewParser: false},
-		// },
+		{
+			name:  "enable analyzerv2",
+			input: "analyzerv2",
+			want:  Experiment{AnalyzerV2: true},
+		},
+		{
+			name:  "disable analyzerv2",
+			input: "noanalyzerv2",
+			want:  Experiment{AnalyzerV2: false},
+		},
+		{
+			name:  "enable then disable analyzerv2",
+			input: "analyzerv2,noanalyzerv2",
+			want:  Experiment{AnalyzerV2: false},
+		},
+		{
+			name:  "analyzerv2 case insensitive",
+			input: "AnalyzerV2",
+			want:  Experiment{AnalyzerV2: true},
+		},
 	}
 
 	for _, tt := range tests {
@@ -88,13 +86,11 @@ func TestExperimentEnabled(t *testing.T) {
 			exp:  Experiment{},
 			want: nil,
 		},
-		// Add tests for specific experiments as they are introduced.
-		// Example:
-		// {
-		// 	name: "newparser enabled",
-		// 	exp:  Experiment{NewParser: true},
-		// 	want: []string{"newparser"},
-		// },
+		{
+			name: "analyzerv2 enabled",
+			exp:  Experiment{AnalyzerV2: true},
+			want: []string{"analyzerv2"},
+		},
 	}
 
 	for _, tt := range tests {
@@ -124,13 +120,11 @@ func TestExperimentString(t *testing.T) {
 			exp:  Experiment{},
 			want: "",
 		},
-		// Add tests for specific experiments as they are introduced.
-		// Example:
-		// {
-		// 	name: "newparser enabled",
-		// 	exp:  Experiment{NewParser: true},
-		// 	want: "newparser",
-		// },
+		{
+			name: "analyzerv2 enabled",
+			exp:  Experiment{AnalyzerV2: true},
+			want: "analyzerv2",
+		},
 	}
 
 	for _, tt := range tests {
@@ -159,18 +153,16 @@ func TestIsKnownExperiment(t *testing.T) {
 			input: "",
 			want:  false,
 		},
-		// Add tests for specific experiments as they are introduced.
-		// Example:
-		// {
-		// 	name:  "newparser lowercase",
-		// 	input: "newparser",
-		// 	want:  true,
-		// },
-		// {
-		// 	name:  "newparser mixed case",
-		// 	input: "NewParser",
-		// 	want:  true,
-		// },
+		{
+			name:  "analyzerv2 lowercase",
+			input: "analyzerv2",
+			want:  true,
+		},
+		{
+			name:  "analyzerv2 mixed case",
+			input: "AnalyzerV2",
+			want:  true,
+		},
 	}
 
 	for _, tt := range tests {

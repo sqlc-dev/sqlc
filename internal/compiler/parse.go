@@ -71,8 +71,8 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 	}
 
 	var anlys *analysis
-	if c.accurateMode && c.expander != nil {
-		// In accurate mode, use the expander for star expansion
+	if c.databaseOnlyMode && c.expander != nil {
+		// In database-only mode, use the expander for star expansion
 		// and rely entirely on the database analyzer for type resolution
 		expandedQuery, err := c.expander.Expand(ctx, rawSQL)
 		if err != nil {

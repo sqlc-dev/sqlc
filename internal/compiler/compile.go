@@ -41,9 +41,9 @@ func (c *Compiler) parseCatalog(schemas []string) error {
 		contents := migrations.RemoveRollbackStatements(string(blob))
 		c.schema = append(c.schema, contents)
 
-		// In accurate mode, we only need to collect schema files for migrations
+		// In database-only mode, we only need to collect schema files for migrations
 		// but don't build the internal catalog from them
-		if c.accurateMode {
+		if c.databaseOnlyMode {
 			continue
 		}
 
@@ -68,8 +68,8 @@ func (c *Compiler) parseCatalog(schemas []string) error {
 func (c *Compiler) parseQueries(o opts.Parser) (*Result, error) {
 	ctx := context.Background()
 
-	// In accurate mode, initialize the database connection pool before parsing queries
-	if c.accurateMode && c.pgAnalyzer != nil {
+	// In database-only mode, initialize the database connection pool before parsing queries
+	if c.databaseOnlyMode && c.pgAnalyzer != nil {
 		if err := c.pgAnalyzer.EnsurePool(ctx, c.schema); err != nil {
 			return nil, fmt.Errorf("failed to initialize database connection: %w", err)
 		}
@@ -131,8 +131,8 @@ func (c *Compiler) parseQueries(o opts.Parser) (*Result, error) {
 		return nil, fmt.Errorf("no queries contained in paths %s", strings.Join(c.conf.Queries, ","))
 	}
 
-	// In accurate mode, build the catalog from the database after parsing all queries
-	if c.accurateMode && c.pgAnalyzer != nil {
+	// In database-only mode, build the catalog from the database after parsing all queries
+	if c.databaseOnlyMode && c.pgAnalyzer != nil {
 		// Default to "public" schema if no specific schemas are specified
 		schemas := []string{"public"}
 		cat, err := c.pgAnalyzer.IntrospectSchema(ctx, schemas)

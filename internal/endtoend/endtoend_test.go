@@ -263,8 +263,9 @@ func TestReplay(t *testing.T) {
 
 				opts := cmd.Options{
 					Env: cmd.Env{
-						Debug:    opts.DebugFromString(args.Env["SQLCDEBUG"]),
-						NoRemote: true,
+						Debug:      opts.DebugFromString(args.Env["SQLCDEBUG"]),
+						Experiment: opts.ExperimentFromString(args.Env["SQLCEXPERIMENT"]),
+						NoRemote:   true,
 					},
 					Stderr:       &stderr,
 					MutateConfig: testctx.Mutate(t, path),
