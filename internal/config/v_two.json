@@ -83,6 +83,9 @@
                         "properties": {
                             "database": {
                                 "type": "boolean"
+                            },
+                            "accurate": {
+                                "type": "boolean"
                             }
                         }
                     },
