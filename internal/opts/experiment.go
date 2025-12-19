@@ -14,7 +14,7 @@ import (
 //
 // Available experiments:
 //
-//	(none currently defined - add experiments here as they are introduced)
+//	pglite - Enable PGLite-based PostgreSQL analyzer (uses embedded WASM PostgreSQL)
 //
 // Example usage:
 //
@@ -28,6 +28,8 @@ type Experiment struct {
 	// Add experimental feature flags here as they are introduced.
 	// Example:
 	// NewParser bool // Enable new SQL parser
+
+	PGLite bool // Enable PGLite-based PostgreSQL analyzer (uses embedded WASM PostgreSQL)
 }
 
 // ExperimentFromEnv returns an Experiment initialized from the SQLCEXPERIMENT
@@ -79,6 +81,8 @@ func isKnownExperiment(name string) bool {
 	// Example:
 	// case "newparser":
 	// 	return true
+	case "pglite":
+		return true
 	default:
 		return false
 	}
@@ -91,6 +95,8 @@ func setExperiment(e *Experiment, name string, enabled bool) {
 	// Example:
 	// case "newparser":
 	// 	e.NewParser = enabled
+	case "pglite":
+		e.PGLite = enabled
 	}
 }
 
@@ -102,6 +108,9 @@ func (e Experiment) Enabled() []string {
 	// if e.NewParser {
 	// 	enabled = append(enabled, "newparser")
 	// }
+	if e.PGLite {
+		enabled = append(enabled, "pglite")
+	}
 	return enabled
 }
 
