@@ -1,0 +1,13 @@
+version: "2"
+sql:
+  - engine: postgresql
+    schema: "schema.sql"
+    queries: "query.sql"
+    database:
+      managed: true
+    analyzer:
+      database: "only"
+    gen:
+      go:
+        package: "querytest"
+        out: "go"
