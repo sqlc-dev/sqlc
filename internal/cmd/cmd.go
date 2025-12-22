@@ -30,6 +30,7 @@ func init() {
 	initCmd.Flags().BoolP("v1", "", false, "generate v1 config yaml file")
 	initCmd.Flags().BoolP("v2", "", true, "generate v2 config yaml file")
 	initCmd.MarkFlagsMutuallyExclusive("v1", "v2")
+	parseCmd.Flags().StringP("dialect", "d", "", "SQL dialect to use (postgresql, mysql, or sqlite)")
 }
 
 // Do runs the command logic.
@@ -44,7 +45,7 @@ func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int 
 	rootCmd.AddCommand(diffCmd)
 	rootCmd.AddCommand(genCmd)
 	rootCmd.AddCommand(initCmd)
-	rootCmd.AddCommand(NewCmdParse())
+	rootCmd.AddCommand(parseCmd)
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(verifyCmd)
 	rootCmd.AddCommand(pushCmd)
