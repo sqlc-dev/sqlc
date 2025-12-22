@@ -44,6 +44,7 @@ func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int 
 	rootCmd.AddCommand(diffCmd)
 	rootCmd.AddCommand(genCmd)
 	rootCmd.AddCommand(initCmd)
+	rootCmd.AddCommand(NewCmdParse())
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(verifyCmd)
 	rootCmd.AddCommand(pushCmd)
