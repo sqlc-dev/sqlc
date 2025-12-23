@@ -1,0 +1,12 @@
+version: '2'
+sql:
+- name: sqlserver
+  schema: schema.sql
+  queries: query.sql
+  engine: mssql
+  database:
+    uri: "sqlserver://sa:MySecretPassword1!@localhost:1433?database=master"
+  gen:
+    go:
+      package: authors
+      out: .
