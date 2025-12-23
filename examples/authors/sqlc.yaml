@@ -46,7 +46,7 @@ sql:
 - name: sqlserver
   schema: sqlserver/schema.sql
   queries: sqlserver/query.sql
-  engine: sqlserver
+  engine: mssql
   database:
     uri: "sqlserver://sa:MySecretPassword1!@localhost:1433?database=master"
   gen:

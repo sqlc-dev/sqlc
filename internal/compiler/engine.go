@@ -121,10 +121,10 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings, parserOpts opts
 
 		// MSSQL only supports database-only mode
 		if conf.Database == nil {
-			return nil, fmt.Errorf("sqlserver engine requires database configuration")
+			return nil, fmt.Errorf("mssql engine requires database configuration")
 		}
 		if conf.Database.URI == "" && !conf.Database.Managed {
-			return nil, fmt.Errorf("sqlserver engine requires database.uri or database.managed")
+			return nil, fmt.Errorf("mssql engine requires database.uri or database.managed")
 		}
 		c.databaseOnlyMode = true
 		// Create the MSSQL analyzer (implements Analyzer interface)
