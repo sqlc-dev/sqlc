@@ -54,6 +54,7 @@ const (
 	EngineMySQL      Engine = "mysql"
 	EnginePostgreSQL Engine = "postgresql"
 	EngineSQLite     Engine = "sqlite"
+	EngineMSSQL      Engine = "sqlserver"
 )
 
 type Config struct {

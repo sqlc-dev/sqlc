@@ -43,6 +43,16 @@ sql:
     go:
       package: authors
       out: sqlite
+- name: sqlserver
+  schema: sqlserver/schema.sql
+  queries: sqlserver/query.sql
+  engine: sqlserver
+  database:
+    uri: "sqlserver://sa:MySecretPassword1!@localhost:1433?database=master"
+  gen:
+    go:
+      package: authors
+      out: sqlserver
 rules:
 - name: postgresql-query-too-costly
   message: "Too costly"
