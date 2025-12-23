@@ -43,6 +43,18 @@ sql:
     go:
       package: authors
       out: sqlite
+- name: sqlserver
+  schema: sqlserver/schema.sql
+  queries: sqlserver/query.sql
+  engine: mssql
+  database:
+    uri: "${VET_TEST_EXAMPLES_MSSQL_AUTHORS}"
+  rules:
+  - sqlc/db-prepare
+  gen:
+    go:
+      package: authors
+      out: sqlserver
 rules:
 - name: postgresql-query-too-costly
   message: "Too costly"
