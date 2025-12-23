@@ -16,12 +16,14 @@ require (
 	github.com/jackc/pgx/v5 v5.7.6
 	github.com/jinzhu/inflection v1.0.0
 	github.com/lib/pq v1.10.9
+	github.com/microsoft/go-mssqldb v1.9.5
 	github.com/ncruces/go-sqlite3 v0.30.3
 	github.com/pganalyze/pg_query_go/v6 v6.1.0
 	github.com/pingcap/tidb/pkg/parser v0.0.0-20250324122243-d51e00e5bbf0
 	github.com/riza-io/grpc-go v0.2.0
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/pflag v1.0.10
+	github.com/sqlc-dev/teesql v0.0.0-20251223200649-2af7220b5d6d
 	github.com/tetratelabs/wazero v1.10.1
 	github.com/wasilibs/go-pgquery v0.0.0-20250409022910-10ac41983c07
 	github.com/xeipuuv/gojsonschema v1.2.0
@@ -46,14 +48,12 @@ require (
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/pgtype v1.14.0 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
-	github.com/microsoft/go-mssqldb v1.9.5 // indirect
 	github.com/ncruces/julianday v1.0.0 // indirect
 	github.com/pingcap/errors v0.11.5-0.20240311024730-e056997136bb // indirect
 	github.com/pingcap/failpoint v0.0.0-20240528011301-b51a646c7c86 // indirect
 	github.com/pingcap/log v1.1.0 // indirect
 	github.com/rogpeppe/go-internal v1.10.0 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
-	github.com/sqlc-dev/teesql v0.0.0-20251223200649-2af7220b5d6d // indirect
 	github.com/stoewer/go-strcase v1.2.0 // indirect
 	github.com/wasilibs/wazero-helpers v0.0.0-20240620070341-3dff1577cd52 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f // indirect
