@@ -50,49 +50,54 @@ func (a *Analyzer) Analyze(ctx context.Context, n ast.Node, query string, migrat
 
 	var result core.Analysis
 
-	// For ClickHouse, we use EXPLAIN to get column information
-	// First, try to prepare the query to get parameter count
-	// ClickHouse uses {name:type} or $1 style placeholders
+	// Check if this is a SELECT query that returns columns
+	// INSERT, UPDATE, DELETE don't return columns
+	isSelectQuery := isSelectStatement(query)
 
-	// Replace named parameters with positional ones for EXPLAIN
-	preparedQuery := query
+	if isSelectQuery {
+		// For ClickHouse, we use DESCRIBE or LIMIT 0 to get column information
 
-	// Use DESCRIBE (query) to get column information
-	describeQuery := fmt.Sprintf("DESCRIBE (%s)", preparedQuery)
-	rows, err := a.conn.QueryContext(ctx, describeQuery)
-	if err != nil {
-		// If DESCRIBE fails, try executing with LIMIT 0
-		limitQuery := addLimit0(preparedQuery)
-		rows, err = a.conn.QueryContext(ctx, limitQuery)
+		// Replace ? placeholders with NULL for introspection
+		// This allows us to run the query to get column types
+		preparedQuery := strings.ReplaceAll(query, "?", "NULL")
+
+		// Use DESCRIBE (query) to get column information
+		describeQuery := fmt.Sprintf("DESCRIBE (%s)", preparedQuery)
+		rows, err := a.conn.QueryContext(ctx, describeQuery)
+		if err != nil {
+			// If DESCRIBE fails, try executing with LIMIT 0
+			limitQuery := addLimit0(preparedQuery)
+			rows, err = a.conn.QueryContext(ctx, limitQuery)
+			if err != nil {
+				return nil, a.extractSqlErr(n, err)
+			}
+		}
+		defer rows.Close()
+
+		// Get column information from result set
+		colTypes, err := rows.ColumnTypes()
 		if err != nil {
 			return nil, a.extractSqlErr(n, err)
 		}
-	}
-	defer rows.Close()
 
-	// Get column information from result set
-	colTypes, err := rows.ColumnTypes()
-	if err != nil {
-		return nil, a.extractSqlErr(n, err)
-	}
+		for i, colType := range colTypes {
+			name := colType.Name()
+			dataType := colType.DatabaseTypeName()
+			nullable, _ := colType.Nullable()
 
-	for i, colType := range colTypes {
-		name := colType.Name()
-		dataType := colType.DatabaseTypeName()
-		nullable, _ := colType.Nullable()
+			col := &core.Column{
+				Name:         name,
+				OriginalName: name,
+				DataType:     normalizeType(dataType),
+				NotNull:      !nullable,
+			}
 
-		col := &core.Column{
-			Name:         name,
-			OriginalName: name,
-			DataType:     normalizeType(dataType),
-			NotNull:      !nullable,
+			// Try to detect if this is an aggregate function result
+			// (ClickHouse doesn't always provide this info)
+			_ = i
+
+			result.Columns = append(result.Columns, col)
 		}
-
-		// Try to detect if this is an aggregate function result
-		// (ClickHouse doesn't always provide this info)
-		_ = i
-
-		result.Columns = append(result.Columns, col)
 	}
 
 	// Detect parameters in the query
@@ -204,8 +209,11 @@ func (a *Analyzer) GetColumnNames(ctx context.Context, query string) ([]string, 
 		return nil, fmt.Errorf("database connection not initialized")
 	}
 
+	// Replace ? placeholders with NULL for introspection
+	preparedQuery := strings.ReplaceAll(query, "?", "NULL")
+
 	// Add LIMIT 0 to avoid fetching data
-	limitQuery := addLimit0(query)
+	limitQuery := addLimit0(preparedQuery)
 
 	rows, err := a.conn.QueryContext(ctx, limitQuery)
 	if err != nil {
@@ -372,7 +380,32 @@ func addLimit0(query string) string {
 	if strings.Contains(lower, "limit") {
 		return query
 	}
-	return query + " LIMIT 0"
+
+	// Remove trailing semicolon and whitespace
+	trimmed := strings.TrimRight(query, " \t\n\r;")
+
+	return trimmed + " LIMIT 0"
+}
+
+// isSelectStatement checks if a query is a SELECT statement that returns columns.
+// It skips past comment lines to find the actual statement.
+func isSelectStatement(query string) bool {
+	lines := strings.Split(query, "\n")
+	for _, line := range lines {
+		trimmed := strings.TrimSpace(line)
+		// Skip empty lines
+		if trimmed == "" {
+			continue
+		}
+		// Skip comment lines
+		if strings.HasPrefix(trimmed, "--") || strings.HasPrefix(trimmed, "#") {
+			continue
+		}
+		// Check if this is a SELECT or WITH statement
+		lower := strings.ToLower(trimmed)
+		return strings.HasPrefix(lower, "select") || strings.HasPrefix(lower, "with")
+	}
+	return false
 }
 
 // isNullable checks if a ClickHouse type is nullable.

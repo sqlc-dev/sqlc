@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/sqlc-dev/doubleclick/ast"
 	"github.com/sqlc-dev/doubleclick/parser"
@@ -22,31 +23,54 @@ func NewParser() *Parser {
 
 // Parse parses ClickHouse SQL statements and converts them to sqlc's AST.
 func (p *Parser) Parse(r io.Reader) ([]sqlcast.Statement, error) {
+	// Read the full source for position calculations
+	srcBytes, err := io.ReadAll(r)
+	if err != nil {
+		return nil, err
+	}
+	src := string(srcBytes)
+
 	ctx := context.Background()
-	stmts, err := parser.Parse(ctx, r)
+	stmts, err := parser.Parse(ctx, strings.NewReader(src))
 	if err != nil {
 		return nil, err
 	}
 
 	var result []sqlcast.Statement
+	loc := 0 // Track from start of file or after previous statement
+
 	for _, stmt := range stmts {
 		converted := p.convert(stmt)
 		if converted == nil {
 			continue
 		}
 		pos := stmt.Pos()
+		// doubleclick uses 1-indexed offsets, convert to 0-indexed
+		stmtStart := pos.Offset
+		if stmtStart > 0 {
+			stmtStart = stmtStart - 1
+		}
+
+		// Find the semicolon that ends this statement
+		semiPos := strings.Index(src[stmtStart:], ";")
+		stmtEnd := stmtStart
+		if semiPos >= 0 {
+			stmtEnd = stmtStart + semiPos + 1 // Include the semicolon
+		}
+
+		// The statement length includes everything from loc to the semicolon
+		stmtLen := stmtEnd - loc
+
 		result = append(result, sqlcast.Statement{
 			Raw: &sqlcast.RawStmt{
 				Stmt:         converted,
-				StmtLocation: pos.Offset,
-				StmtLen:      0,
+				StmtLocation: loc,
+				StmtLen:      stmtLen,
 			},
 		})
-	}
 
-	// Calculate statement lengths
-	for i := 0; i < len(result)-1; i++ {
-		result[i].Raw.StmtLen = result[i+1].Raw.StmtLocation - result[i].Raw.StmtLocation
+		// Move loc past the semicolon for the next statement
+		loc = stmtEnd
 	}
 
 	return result, nil
@@ -335,6 +359,13 @@ func (p *Parser) convertExpr(expr ast.Expression) sqlcast.Node {
 	case *ast.Asterisk:
 		return &sqlcast.ColumnRef{
 			Fields: &sqlcast.List{Items: []sqlcast.Node{&sqlcast.A_Star{}}},
+		}
+
+	case *ast.Parameter:
+		// ClickHouse uses ? for positional parameters
+		return &sqlcast.ParamRef{
+			Number:   0, // Will be assigned during query parsing
+			Location: e.Position.Offset,
 		}
 
 	default:
