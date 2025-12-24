@@ -24,6 +24,33 @@ jobs:
         GOARCH: ${{ matrix.goarch }}
   test:
     runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: mysecretpassword
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+      mysql:
+        image: mysql:9
+        env:
+          MYSQL_DATABASE: dinotest
+          MYSQL_ROOT_PASSWORD: mysecretpassword
+          MYSQL_ROOT_HOST: '%'
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
+      mssql:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: Y
+          MSSQL_SA_PASSWORD: MySecretPassword1!
+          MSSQL_PID: Developer
+        ports:
+          - 1433:1433
     steps:
     - uses: actions/checkout@v6
     - uses: actions/setup-go@v6
@@ -58,6 +85,9 @@ jobs:
         CI_SQLC_AUTH_TOKEN: ${{ secrets.CI_SQLC_AUTH_TOKEN }}
         SQLC_AUTH_TOKEN: ${{ secrets.CI_SQLC_AUTH_TOKEN }}
         CGO_ENABLED: "0"
+        POSTGRESQL_SERVER_URI: "postgres://postgres:mysecretpassword@localhost:5432/postgres?sslmode=disable"
+        MYSQL_SERVER_URI: "root:mysecretpassword@tcp(localhost:3306)/dinotest?parseTime=true"
+        MSSQL_SERVER_URI: "sqlserver://sa:MySecretPassword1!@localhost:1433?database=master"
 
   vuln_check:
     runs-on: ubuntu-24.04
