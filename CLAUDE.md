@@ -7,8 +7,107 @@ This document provides essential information for working with the sqlc codebase,
 ### Prerequisites
 
 - **Go 1.25.0+** - Required for building and testing
-- **Docker & Docker Compose** - Required for integration tests with databases
+- **Docker & Docker Compose** - Required for integration tests with databases (local development)
 - **Git** - For version control
+
+## Claude Code Remote Environment Setup
+
+When running in the Claude Code remote environment (or any environment without Docker), you can install PostgreSQL and MySQL natively. The test framework automatically detects and uses native database installations.
+
+### Step 1: Configure apt Proxy (Required in Remote Environment)
+
+The Claude Code remote environment requires an HTTP proxy for apt. Configure it:
+
+```bash
+bash -c 'echo "Acquire::http::Proxy \"$http_proxy\";"' | sudo tee /etc/apt/apt.conf.d/99proxy
+```
+
+### Step 2: Install PostgreSQL
+
+```bash
+sudo apt-get update
+sudo apt-get install -y postgresql
+sudo service postgresql start
+```
+
+Configure PostgreSQL for password authentication:
+
+```bash
+# Set password for postgres user
+sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres';"
+
+# Enable password authentication for localhost
+echo 'host    all             all             127.0.0.1/32            md5' | sudo tee -a /etc/postgresql/16/main/pg_hba.conf
+sudo service postgresql reload
+```
+
+Test the connection:
+
+```bash
+PGPASSWORD=postgres psql -h 127.0.0.1 -U postgres -c "SELECT 1;"
+```
+
+### Step 3: Install MySQL 9
+
+MySQL 9 is required for full test compatibility (includes VECTOR type support). Download and install from Oracle:
+
+```bash
+# Download MySQL 9 bundle
+curl -LO https://dev.mysql.com/get/Downloads/MySQL-9.1/mysql-server_9.1.0-1ubuntu24.04_amd64.deb-bundle.tar
+
+# Extract packages
+mkdir -p /tmp/mysql9
+tar -xf mysql-server_9.1.0-1ubuntu24.04_amd64.deb-bundle.tar -C /tmp/mysql9
+
+# Install packages (in order)
+cd /tmp/mysql9
+sudo dpkg -i mysql-common_*.deb \
+    mysql-community-client-plugins_*.deb \
+    mysql-community-client-core_*.deb \
+    mysql-community-client_*.deb \
+    mysql-client_*.deb \
+    mysql-community-server-core_*.deb \
+    mysql-community-server_*.deb \
+    mysql-server_*.deb
+
+# Make init script executable
+sudo chmod +x /etc/init.d/mysql
+
+# Initialize data directory and start MySQL
+sudo mysqld --initialize-insecure --user=mysql
+sudo /etc/init.d/mysql start
+
+# Set root password
+mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'mysecretpassword'; FLUSH PRIVILEGES;"
+```
+
+Test the connection:
+
+```bash
+mysql -h 127.0.0.1 -u root -pmysecretpassword -e "SELECT VERSION();"
+```
+
+### Step 4: Run End-to-End Tests
+
+With both databases running, the test framework automatically detects them:
+
+```bash
+# Run all end-to-end tests
+go test --tags=examples -timeout 20m ./internal/endtoend/...
+
+# Run example tests
+go test --tags=examples -timeout 20m ./examples/...
+
+# Run the full test suite
+go test --tags=examples -timeout 20m ./...
+```
+
+The native database support (in `internal/sqltest/native/`) automatically:
+- Detects running PostgreSQL and MySQL instances
+- Starts services if installed but not running
+- Uses standard connection URIs:
+  - PostgreSQL: `postgres://postgres:postgres@127.0.0.1:5432/postgres?sslmode=disable`
+  - MySQL: `root:mysecretpassword@tcp(127.0.0.1:3306)/mysql`
 
 ### Running Tests
 
