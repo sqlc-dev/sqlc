@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log/slog"
 	"os/exec"
 	"strings"
 	"time"
@@ -46,6 +47,8 @@ func startMSSQLServer(c context.Context) (string, error) {
 		}
 	}
 
+	uri := "sqlserver://sa:MySecretPassword1!@localhost:1433?database=master"
+
 	var exists bool
 	{
 		cmd := exec.Command("docker", "container", "inspect", "sqlc_sqltest_docker_mssql")
@@ -81,25 +84,23 @@ func startMSSQLServer(c context.Context) (string, error) {
 	ticker := time.NewTicker(500 * time.Millisecond)
 	defer ticker.Stop()
 
-	uri := "sqlserver://sa:MySecretPassword1!@localhost:1433?database=master"
-
-	db, err := sql.Open("sqlserver", uri)
-	if err != nil {
-		return "", fmt.Errorf("sql.Open: %w", err)
-	}
-
-	defer db.Close()
-
 	for {
 		select {
 		case <-ctx.Done():
 			return "", fmt.Errorf("timeout reached: %w", ctx.Err())
 
 		case <-ticker.C:
-			// Run your function here
-			if err := db.PingContext(ctx); err != nil {
+			db, err := sql.Open("sqlserver", uri)
+			if err != nil {
+				slog.Debug("sqltest", "open", err)
 				continue
 			}
+			if err := db.PingContext(ctx); err != nil {
+				slog.Debug("sqltest", "ping", err)
+				db.Close()
+				continue
+			}
+			db.Close()
 			return uri, nil
 		}
 	}
