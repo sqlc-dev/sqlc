@@ -9,6 +9,8 @@ import (
 	"sync"
 
 	_ "github.com/ClickHouse/clickhouse-go/v2" // ClickHouse driver
+	dcast "github.com/sqlc-dev/doubleclick/ast"
+	"github.com/sqlc-dev/doubleclick/parser"
 
 	core "github.com/sqlc-dev/sqlc/internal/analysis"
 	"github.com/sqlc-dev/sqlc/internal/config"
@@ -331,23 +333,38 @@ type paramInfo struct {
 	Type string
 }
 
-// detectParameters finds parameters in a ClickHouse query.
+// detectParameters finds parameters in a ClickHouse query using the doubleclick parser.
 // ClickHouse supports {name:Type} and ? style parameters.
 func detectParameters(query string) []paramInfo {
 	var params []paramInfo
 
-	// Find all {name:Type} style parameters using regex
-	// This is more reliable than AST walking as it works for all statement types
-	matches := namedParamRegex.FindAllStringSubmatch(query, -1)
-	for _, match := range matches {
-		if len(match) >= 3 {
-			name := match[1]
-			dataType := normalizeType(match[2])
-			params = append(params, paramInfo{
-				Name: name,
-				Type: dataType,
+	ctx := context.Background()
+
+	// First, try to parse and walk the query AST for named parameters
+	stmts, err := parser.Parse(ctx, strings.NewReader(query))
+	if err == nil {
+		for _, stmt := range stmts {
+			walkStatement(stmt, func(expr dcast.Expression) {
+				if param, ok := expr.(*dcast.Parameter); ok {
+					if param.Name != "" {
+						dataType := "any"
+						if param.Type != nil {
+							dataType = normalizeType(param.Type.Name)
+						}
+						params = append(params, paramInfo{
+							Name: param.Name,
+							Type: dataType,
+						})
+					}
+				}
 			})
 		}
+	}
+
+	// If no named parameters found from AST, try to extract VALUES clause for INSERT statements
+	// The doubleclick parser doesn't fully parse VALUES, so we parse it as a SELECT
+	if len(params) == 0 {
+		params = extractValuesParameters(ctx, query)
 	}
 
 	// Count ? placeholders and add them after any named parameters
@@ -360,6 +377,174 @@ func detectParameters(query string) []paramInfo {
 	}
 
 	return params
+}
+
+// extractValuesParameters extracts parameters from INSERT VALUES clause by parsing it as a SELECT.
+// This works around the limitation that doubleclick doesn't parse VALUES clause expressions.
+func extractValuesParameters(ctx context.Context, query string) []paramInfo {
+	var params []paramInfo
+
+	// Find VALUES clause (case insensitive)
+	upperQuery := strings.ToUpper(query)
+	valuesIdx := strings.Index(upperQuery, "VALUES")
+	if valuesIdx == -1 {
+		return params
+	}
+
+	// Extract everything after VALUES
+	valuesClause := query[valuesIdx+6:]
+
+	// Find the parentheses containing the values
+	start := strings.Index(valuesClause, "(")
+	if start == -1 {
+		return params
+	}
+
+	// Find matching closing parenthesis
+	depth := 0
+	end := -1
+	for i := start; i < len(valuesClause); i++ {
+		switch valuesClause[i] {
+		case '(':
+			depth++
+		case ')':
+			depth--
+			if depth == 0 {
+				end = i
+				break
+			}
+		}
+		if end != -1 {
+			break
+		}
+	}
+
+	if end == -1 {
+		return params
+	}
+
+	// Extract the values list and convert to SELECT query
+	valuesList := valuesClause[start+1 : end]
+	selectQuery := "SELECT " + valuesList
+
+	// Parse the synthetic SELECT query
+	stmts, err := parser.Parse(ctx, strings.NewReader(selectQuery))
+	if err != nil {
+		return params
+	}
+
+	// Walk the AST to find Parameter nodes
+	for _, stmt := range stmts {
+		walkStatement(stmt, func(expr dcast.Expression) {
+			if param, ok := expr.(*dcast.Parameter); ok {
+				if param.Name != "" {
+					dataType := "any"
+					if param.Type != nil {
+						dataType = normalizeType(param.Type.Name)
+					}
+					params = append(params, paramInfo{
+						Name: param.Name,
+						Type: dataType,
+					})
+				}
+			}
+		})
+	}
+
+	return params
+}
+
+// walkStatement walks a statement and calls fn for each expression.
+func walkStatement(stmt dcast.Statement, fn func(dcast.Expression)) {
+	switch s := stmt.(type) {
+	case *dcast.SelectQuery:
+		walkSelectQuery(s, fn)
+	case *dcast.SelectWithUnionQuery:
+		for _, sel := range s.Selects {
+			walkStatement(sel, fn)
+		}
+	case *dcast.InsertQuery:
+		if s.Select != nil {
+			walkStatement(s.Select, fn)
+		}
+	}
+}
+
+// walkSelectQuery walks a SELECT query and calls fn for each expression.
+func walkSelectQuery(s *dcast.SelectQuery, fn func(dcast.Expression)) {
+	// Walk columns
+	for _, col := range s.Columns {
+		walkExpression(col, fn)
+	}
+	// Walk WHERE clause
+	if s.Where != nil {
+		walkExpression(s.Where, fn)
+	}
+	// Walk GROUP BY
+	for _, g := range s.GroupBy {
+		walkExpression(g, fn)
+	}
+	// Walk HAVING
+	if s.Having != nil {
+		walkExpression(s.Having, fn)
+	}
+	// Walk ORDER BY
+	for _, o := range s.OrderBy {
+		walkExpression(o.Expression, fn)
+	}
+	// Walk LIMIT
+	if s.Limit != nil {
+		walkExpression(s.Limit, fn)
+	}
+	// Walk OFFSET
+	if s.Offset != nil {
+		walkExpression(s.Offset, fn)
+	}
+}
+
+// walkExpression walks an expression and calls fn for each sub-expression.
+func walkExpression(expr dcast.Expression, fn func(dcast.Expression)) {
+	if expr == nil {
+		return
+	}
+	fn(expr)
+
+	switch e := expr.(type) {
+	case *dcast.BinaryExpr:
+		walkExpression(e.Left, fn)
+		walkExpression(e.Right, fn)
+	case *dcast.UnaryExpr:
+		walkExpression(e.Operand, fn)
+	case *dcast.FunctionCall:
+		for _, arg := range e.Arguments {
+			walkExpression(arg, fn)
+		}
+	case *dcast.Subquery:
+		walkStatement(e.Query, fn)
+	case *dcast.CaseExpr:
+		if e.Operand != nil {
+			walkExpression(e.Operand, fn)
+		}
+		for _, when := range e.Whens {
+			walkExpression(when.Condition, fn)
+			walkExpression(when.Result, fn)
+		}
+		if e.Else != nil {
+			walkExpression(e.Else, fn)
+		}
+	case *dcast.InExpr:
+		walkExpression(e.Expr, fn)
+		for _, v := range e.List {
+			walkExpression(v, fn)
+		}
+		if e.Query != nil {
+			walkStatement(e.Query, fn)
+		}
+	case *dcast.BetweenExpr:
+		walkExpression(e.Expr, fn)
+		walkExpression(e.Low, fn)
+		walkExpression(e.High, fn)
+	}
 }
 
 // namedParamRegex matches ClickHouse named parameters like {name:Type}
