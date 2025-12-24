@@ -11,56 +11,80 @@ import (
 )
 
 const createAuthor = `-- name: CreateAuthor :one
-INSERT INTO authors (name, bio) VALUES ($1, $2) RETURNING id, name, bio
+INSERT INTO authors (name, bio) VALUES ($1, $2) RETURNING id, name, bio;
 `
 
 type CreateAuthorParams struct {
+	Column1 sql.NullString
+	Column2 sql.NullString
+}
+
+type CreateAuthorRow struct {
+	ID   int32
 	Name string
 	Bio  sql.NullString
 }
 
-func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams) (Author, error) {
-	row := q.db.QueryRowContext(ctx, createAuthor, arg.Name, arg.Bio)
-	var i Author
+func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams) (CreateAuthorRow, error) {
+	row := q.db.QueryRowContext(ctx, createAuthor, arg.Column1, arg.Column2)
+	var i CreateAuthorRow
 	err := row.Scan(&i.ID, &i.Name, &i.Bio)
 	return i, err
 }
 
 const deleteAuthor = `-- name: DeleteAuthor :one
-DELETE FROM authors WHERE id = $1 RETURNING id, name, bio
+DELETE FROM authors WHERE id = $1 RETURNING id, name, bio;
 `
 
-func (q *Queries) DeleteAuthor(ctx context.Context, id int32) (Author, error) {
-	row := q.db.QueryRowContext(ctx, deleteAuthor, id)
-	var i Author
+type DeleteAuthorRow struct {
+	ID   int32
+	Name string
+	Bio  sql.NullString
+}
+
+func (q *Queries) DeleteAuthor(ctx context.Context, dollar_1 sql.NullInt32) (DeleteAuthorRow, error) {
+	row := q.db.QueryRowContext(ctx, deleteAuthor, dollar_1)
+	var i DeleteAuthorRow
 	err := row.Scan(&i.ID, &i.Name, &i.Bio)
 	return i, err
 }
 
 const getAuthor = `-- name: GetAuthor :one
-SELECT id, name, bio FROM authors WHERE id = $1
+SELECT id, name, bio FROM authors WHERE id = $1;
 `
 
-func (q *Queries) GetAuthor(ctx context.Context, id int32) (Author, error) {
-	row := q.db.QueryRowContext(ctx, getAuthor, id)
-	var i Author
+type GetAuthorRow struct {
+	ID   int32
+	Name string
+	Bio  sql.NullString
+}
+
+func (q *Queries) GetAuthor(ctx context.Context, dollar_1 sql.NullInt32) (GetAuthorRow, error) {
+	row := q.db.QueryRowContext(ctx, getAuthor, dollar_1)
+	var i GetAuthorRow
 	err := row.Scan(&i.ID, &i.Name, &i.Bio)
 	return i, err
 }
 
 const listAuthors = `-- name: ListAuthors :many
-SELECT id, name, bio FROM authors
+SELECT id, name, bio FROM authors;
 `
 
-func (q *Queries) ListAuthors(ctx context.Context) ([]Author, error) {
+type ListAuthorsRow struct {
+	ID   int32
+	Name string
+	Bio  sql.NullString
+}
+
+func (q *Queries) ListAuthors(ctx context.Context) ([]ListAuthorsRow, error) {
 	rows, err := q.db.QueryContext(ctx, listAuthors)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Author
+	var items []ListAuthorsRow
 	for rows.Next() {
-		var i Author
+		var i ListAuthorsRow
 		if err := rows.Scan(&i.ID, &i.Name, &i.Bio); err != nil {
 			return nil, err
 		}
@@ -76,18 +100,24 @@ func (q *Queries) ListAuthors(ctx context.Context) ([]Author, error) {
 }
 
 const updateAuthor = `-- name: UpdateAuthor :one
-UPDATE authors SET name = $1, bio = $2 WHERE id = $3 RETURNING id, name, bio
+UPDATE authors SET name = $1, bio = $2 WHERE id = $3 RETURNING id, name, bio;
 `
 
 type UpdateAuthorParams struct {
-	Name string
-	Bio  sql.NullString
-	ID   int32
+	Column1 sql.NullString
+	Column2 sql.NullString
+	Column3 sql.NullInt32
 }
 
-func (q *Queries) UpdateAuthor(ctx context.Context, arg UpdateAuthorParams) (Author, error) {
-	row := q.db.QueryRowContext(ctx, updateAuthor, arg.Name, arg.Bio, arg.ID)
-	var i Author
+type UpdateAuthorRow struct {
+	ID   int32
+	Name string
+	Bio  sql.NullString
+}
+
+func (q *Queries) UpdateAuthor(ctx context.Context, arg UpdateAuthorParams) (UpdateAuthorRow, error) {
+	row := q.db.QueryRowContext(ctx, updateAuthor, arg.Column1, arg.Column2, arg.Column3)
+	var i UpdateAuthorRow
 	err := row.Scan(&i.ID, &i.Name, &i.Bio)
 	return i, err
 }

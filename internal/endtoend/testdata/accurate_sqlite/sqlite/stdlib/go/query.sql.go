@@ -11,45 +11,63 @@ import (
 )
 
 const createAuthor = `-- name: CreateAuthor :one
-INSERT INTO authors (name, bio) VALUES (?, ?) RETURNING id, name, bio
+INSERT INTO authors (name, bio) VALUES (?, ?) RETURNING id, name, bio;
 `
 
 type CreateAuthorParams struct {
-	Name string
+	Column1 interface{}
+	Column2 interface{}
+}
+
+type CreateAuthorRow struct {
+	ID   sql.NullInt64
+	Name sql.NullString
 	Bio  sql.NullString
 }
 
-func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams) (Author, error) {
-	row := q.db.QueryRowContext(ctx, createAuthor, arg.Name, arg.Bio)
-	var i Author
+func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams) (CreateAuthorRow, error) {
+	row := q.db.QueryRowContext(ctx, createAuthor, arg.Column1, arg.Column2)
+	var i CreateAuthorRow
 	err := row.Scan(&i.ID, &i.Name, &i.Bio)
 	return i, err
 }
 
 const getAuthor = `-- name: GetAuthor :one
-SELECT id, name, bio FROM authors WHERE id = ?
+SELECT id, name, bio FROM authors WHERE id = ?;
 `
 
-func (q *Queries) GetAuthor(ctx context.Context, id int64) (Author, error) {
-	row := q.db.QueryRowContext(ctx, getAuthor, id)
-	var i Author
+type GetAuthorRow struct {
+	ID   sql.NullInt64
+	Name sql.NullString
+	Bio  sql.NullString
+}
+
+func (q *Queries) GetAuthor(ctx context.Context, dollar_1 interface{}) (GetAuthorRow, error) {
+	row := q.db.QueryRowContext(ctx, getAuthor, dollar_1)
+	var i GetAuthorRow
 	err := row.Scan(&i.ID, &i.Name, &i.Bio)
 	return i, err
 }
 
 const listAuthors = `-- name: ListAuthors :many
-SELECT id, name, bio FROM authors
+SELECT id, name, bio FROM authors;
 `
 
-func (q *Queries) ListAuthors(ctx context.Context) ([]Author, error) {
+type ListAuthorsRow struct {
+	ID   sql.NullInt64
+	Name sql.NullString
+	Bio  sql.NullString
+}
+
+func (q *Queries) ListAuthors(ctx context.Context) ([]ListAuthorsRow, error) {
 	rows, err := q.db.QueryContext(ctx, listAuthors)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Author
+	var items []ListAuthorsRow
 	for rows.Next() {
-		var i Author
+		var i ListAuthorsRow
 		if err := rows.Scan(&i.ID, &i.Name, &i.Bio); err != nil {
 			return nil, err
 		}

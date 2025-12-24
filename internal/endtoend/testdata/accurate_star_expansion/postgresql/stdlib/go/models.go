@@ -3,13 +3,3 @@
 //   sqlc v1.30.0
 
 package querytest
-
-import (
-	"database/sql"
-)
-
-type Author struct {
-	ID   int32
-	Name string
-	Bio  sql.NullString
-}

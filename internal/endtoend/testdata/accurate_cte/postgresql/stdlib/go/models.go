@@ -3,9 +3,3 @@
 //   sqlc v1.30.0
 
 package querytest
-
-type Product struct {
-	ID    int32
-	Name  string
-	Price string
-}

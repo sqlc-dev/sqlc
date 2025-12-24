@@ -4,7 +4,7 @@ sql:
     schema: "schema.sql"
     queries: "query.sql"
     database:
-      managed: true
+      uri: "clickhouse://localhost:9000/default"
     analyzer:
       database: "only"
     gen:

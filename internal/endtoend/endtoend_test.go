@@ -113,7 +113,7 @@ func TestReplay(t *testing.T) {
 	// t.Parallel()
 	ctx := context.Background()
 
-	var mysqlURI, postgresURI string
+	var mysqlURI, postgresURI, clickhouseURI string
 
 	// First, check environment variables
 	if uri := os.Getenv("POSTGRESQL_SERVER_URI"); uri != "" {
@@ -121,6 +121,9 @@ func TestReplay(t *testing.T) {
 	}
 	if uri := os.Getenv("MYSQL_SERVER_URI"); uri != "" {
 		mysqlURI = uri
+	}
+	if uri := os.Getenv("CLICKHOUSE_SERVER_URI"); uri != "" {
+		clickhouseURI = uri
 	}
 
 	// Try Docker for any missing databases
@@ -146,7 +149,7 @@ func TestReplay(t *testing.T) {
 	}
 
 	// Try native installation for any missing databases (Linux only)
-	if postgresURI == "" || mysqlURI == "" {
+	if postgresURI == "" || mysqlURI == "" || clickhouseURI == "" {
 		if err := native.Supported(); err == nil {
 			if postgresURI == "" {
 				host, err := native.StartPostgreSQLServer(ctx)
@@ -164,12 +167,21 @@ func TestReplay(t *testing.T) {
 					mysqlURI = host
 				}
 			}
+			if clickhouseURI == "" {
+				host, err := native.StartClickHouseServer(ctx)
+				if err != nil {
+					t.Logf("native clickhouse startup failed: %s", err)
+				} else {
+					clickhouseURI = host
+				}
+			}
 		}
 	}
 
 	// Log which databases are available
 	t.Logf("PostgreSQL available: %v (URI: %s)", postgresURI != "", postgresURI)
 	t.Logf("MySQL available: %v (URI: %s)", mysqlURI != "", mysqlURI)
+	t.Logf("ClickHouse available: %v (URI: %s)", clickhouseURI != "", clickhouseURI)
 
 	contexts := map[string]textContext{
 		"base": {
@@ -216,6 +228,22 @@ func TestReplay(t *testing.T) {
 			Enabled: func() bool {
 				// Enabled if at least one database URI is available
 				return postgresURI != "" || mysqlURI != ""
+			},
+		},
+		"clickhouse": {
+			Mutate: func(t *testing.T, path string) func(*config.Config) {
+				return func(c *config.Config) {
+					for i := range c.SQL {
+						if c.SQL[i].Engine == config.EngineClickHouse {
+							c.SQL[i].Database = &config.Database{
+								URI: clickhouseURI,
+							}
+						}
+					}
+				}
+			},
+			Enabled: func() bool {
+				return clickhouseURI != ""
 			},
 		},
 	}
